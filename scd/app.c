@@ -39,7 +39,6 @@ static struct
   int initialized;
   npth_mutex_t lock;
   app_t app;        /* Application context in use or NULL. */
-  app_t last_app;   /* Last application object used as this slot or NULL. */
 } lock_table[10];
 
 
@@ -87,7 +86,6 @@ lock_reader (int slot, ctrl_t ctrl)
         }
       lock_table[slot].initialized = 1;
       lock_table[slot].app = NULL;
-      lock_table[slot].last_app = NULL;
     }
 
   res = npth_mutex_lock (&lock_table[slot].lock);
@@ -139,12 +137,6 @@ app_dump_state (void)
             if (lock_table[slot].app->apptype)
               log_printf (" type='%s'", lock_table[slot].app->apptype);
           }
-        if (lock_table[slot].last_app)
-          {
-            log_printf (" lastapp=%p", lock_table[slot].last_app);
-            if (lock_table[slot].last_app->apptype)
-              log_printf (" type='%s'", lock_table[slot].last_app->apptype);
-          }
         log_printf ("\n");
       }
 }
@@ -167,8 +159,6 @@ is_app_allowed (const char *name)
 void
 application_notify_card_reset (int slot)
 {
-  app_t app;
-
   if (slot < 0 || slot >= DIM (lock_table))
     return;
 
@@ -182,19 +172,34 @@ application_notify_card_reset (int slot)
       lock_table[slot].app = NULL;
     }
 
-  /* Deallocate a saved application for that slot, so that we won't
-     try to reuse it.  If there is no saved application, set a flag so
-     that we won't save the current state. */
-  app = lock_table[slot].last_app;
-
-  if (app)
-    {
-      lock_table[slot].last_app = NULL;
-      deallocate_app (app);
-    }
   unlock_reader (slot);
 }
 
+
+/*
+ * This function is called with lock held.
+ */
+static gpg_error_t
+check_conflict (int slot, const char *name)
+{
+  app_t app = lock_table[slot].app;
+
+  if (!app || !name || (app->apptype && !ascii_strcasecmp (app->apptype, name)))
+    return 0;
+
+  if (!app->ref_count)
+    {
+      lock_table[slot].app = NULL;
+      deallocate_app (app);
+      return 0;
+    }
+  else
+    {
+      log_info ("application '%s' in use by reader %d - can't switch\n",
+                app->apptype? app->apptype : "<null>", slot);
+      return gpg_error (GPG_ERR_CONFLICT);
+    }
+}
 
 /* This function is used by the serialno command to check for an
    application conflict which may appear if the serialno command is
@@ -203,18 +208,18 @@ application_notify_card_reset (int slot)
 gpg_error_t
 check_application_conflict (ctrl_t ctrl, int slot, const char *name)
 {
-  app_t app;
-
-  (void)ctrl;
+  gpg_error_t err;
 
   if (slot < 0 || slot >= DIM (lock_table))
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  app = lock_table[slot].initialized ? lock_table[slot].app : NULL;
-  if (app && app->apptype && name)
-    if ( ascii_strcasecmp (app->apptype, name))
-      return gpg_error (GPG_ERR_CONFLICT);
-  return 0;
+  err = lock_reader (slot, ctrl);
+  if (err)
+    return err;
+
+  err = check_conflict (slot, name);
+  unlock_reader (slot);
+  return err;
 }
 
 
@@ -243,40 +248,14 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
     return err;
 
   /* First check whether we already have an application to share. */
-  app = lock_table[slot].initialized ? lock_table[slot].app : NULL;
-  if (app && name)
-    if (!app->apptype || ascii_strcasecmp (app->apptype, name))
-      {
-        unlock_reader (slot);
-        if (app->apptype)
-          log_info ("application '%s' in use by reader %d - can't switch\n",
-                    app->apptype, slot);
-        return gpg_error (GPG_ERR_CONFLICT);
-      }
-
-  /* If we don't have an app, check whether we have a saved
-     application for that slot.  This is useful so that a card does
-     not get reset even if only one session is using the card - this
-     way the PIN cache and other cached data are preserved.  */
-  if (!app && lock_table[slot].initialized && lock_table[slot].last_app)
+  err = check_conflict (slot, name);
+  if (err)
     {
-      app = lock_table[slot].last_app;
-      if (!name || (app->apptype && !ascii_strcasecmp (app->apptype, name)) )
-        {
-          /* Yes, we can reuse this application - either the caller
-             requested an unspecific one or the requested one matches
-             the saved one. */
-          lock_table[slot].app = app;
-          lock_table[slot].last_app = NULL;
-        }
-      else
-        {
-          /* No, this saved application can't be used - deallocate it. */
-          lock_table[slot].last_app = NULL;
-          deallocate_app (app);
-          app = NULL;
-        }
+      unlock_reader (slot);
+      return err;
     }
+
+  app = lock_table[slot].app;
 
   /* If we can reuse an application, bump the reference count and
      return it.  */
@@ -486,10 +465,10 @@ release_application (app_t app)
       return;
     }
 
-  if (lock_table[slot].last_app)
-    deallocate_app (lock_table[slot].last_app);
-  lock_table[slot].last_app = lock_table[slot].app;
-  lock_table[slot].app = NULL;
+  /* We don't deallocate app here.  Instead, we keep it.  This is
+     useful so that a card does not get reset even if only one session
+     is using the card - this way the PIN cache and other cached data
+     are preserved.  */
   unlock_reader (slot);
 }
 
