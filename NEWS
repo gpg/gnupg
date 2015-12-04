@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.1.10 (unreleased)
+Noteworthy changes in version 2.1.10 (2015-12-04)
 -------------------------------------------------
 
  * gpg: New trust models "tofu" and "tofu+pgp".
@@ -32,7 +32,7 @@ Noteworthy changes in version 2.1.10 (unreleased)
    once.
 
  * dirmngr: New option --use-tor.  For full support this requires
-   libassuan version 2.4.1 and a patched version of libadns
+   libassuan version 2.4.2 and a patched version of libadns
    (e.g. adns-1.4-g10-7 as used by the standard Windows installer).
 
  * dirmngr: New option --nameserver to specify the nameserver used in
@@ -45,7 +45,7 @@ Noteworthy changes in version 2.1.10 (unreleased)
  * dirmngr: Fixed handling of premature termination of TLS streams so
    that large numbers of keys can be refreshed via hkps.
 
- * gpg: Fixed a regression in --locate-key since 2.1.9.
+ * gpg: Fixed a regression in --locate-key [since 2.1.9].
 
  * gpg: Fixed another bug for keyrings with legacy keys.
 
