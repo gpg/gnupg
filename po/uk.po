@@ -5,9 +5,9 @@
 # Yuri Chornoivan <yurchor@ukr.net>, 2011, 2014, 2015.
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU gnupg 2.1.0-gitfe8619d\n"
+"Project-Id-Version: GNU gnupg 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-02-18 19:09+0200\n"
+"PO-Revision-Date: 2015-10-23 19:33+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <kde-i18n-uk@kde.org>\n"
 "Language: uk\n"
@@ -34,36 +34,26 @@ msgstr "_Гаразд"
 msgid "|pinentry-label|_Cancel"
 msgstr "_Скасувати"
 
-#, fuzzy
-#| msgid "|pinentry-label|_OK"
 msgid "|pinentry-label|_Yes"
-msgstr "_Гаразд"
+msgstr "_Так"
 
-#, fuzzy
-#| msgid "|pinentry-label|_OK"
 msgid "|pinentry-label|_No"
-msgstr "_Гаразд"
+msgstr "_Ні"
 
 msgid "|pinentry-label|PIN:"
 msgstr "Пінкод:"
 
-#, fuzzy
-#| msgid "|pinentry-label|_Cancel"
 msgid "|pinentry-label|_Save in password manager"
-msgstr "_Скасувати"
+msgstr "_Зберегти у засобі керування паролями"
 
-#, fuzzy
-#| msgid "Do you really want to permanently delete the OpenPGP secret key:"
 msgid "Do you really want to make your passphrase visible on the screen?"
-msgstr "Справді хочете остаточно вилучити закритий ключ OpenPGP:"
+msgstr "Справді хочете зробити пароль видимим на екрані?"
 
 msgid "|pinentry-tt|Make passphrase visible"
-msgstr ""
+msgstr "Зробити пароль видимим"
 
-#, fuzzy
-#| msgid "Enter new passphrase"
 msgid "|pinentry-tt|Hide passphrase"
-msgstr "Вкажіть новий пароль"
+msgstr "Приховати пароль"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -96,7 +86,7 @@ msgstr ""
 "сеансу"
 
 msgid "PIN:"
-msgstr ""
+msgstr "Пінкод:"
 
 msgid "Passphrase:"
 msgstr "Пароль:"
@@ -290,8 +280,7 @@ msgstr[0] "У паролі має бути принаймні %u цифра аб
 msgstr[1] "У паролі має бути принаймні %u цифри або%%0Aспеціальних символи."
 msgstr[2] "У паролі має бути принаймні %u цифр або%%0Aспеціальних символів."
 
-#, fuzzy, c-format
-#| msgid "A passphrase may not be a known term or match%%0Acertain pattern."
+#, c-format
 msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgstr ""
 "Паролем не повинно бути слово зі словника або слово%%0A, що відповідає "
@@ -353,10 +342,8 @@ msgstr "використовувати вказану програму SCdaemon"
 msgid "do not use the SCdaemon"
 msgstr "не використовувати SCdaemon"
 
-#, fuzzy
-#| msgid "|NAME|connect to host NAME"
 msgid "|NAME|accept some commands via NAME"
-msgstr "|NAME|встановити з’єднання з вузлом за вказаною назвою"
+msgstr "приймати певні команди через NAME"
 
 msgid "ignore requests to change the TTY"
 msgstr "ігнорувати запити щодо зміни TTY"
@@ -370,10 +357,8 @@ msgstr "вважати кешовані пінкоди за вказану кі�
 msgid "do not use the PIN cache when signing"
 msgstr "не використовувати кеш пін-кодів для підписування"
 
-#, fuzzy
-#| msgid "do not allow the reuse of old passphrases"
 msgid "disallow the use of an external password cache"
-msgstr "не дозволяти повторне використання старих паролів"
+msgstr "заборонити використання зовнішнього кешу паролів"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr "заборонити клієнтам позначати ключі як надійні"
@@ -385,7 +370,7 @@ msgid "allow caller to override the pinentry"
 msgstr "дозволити функції виклику перевизначати pinentry"
 
 msgid "allow passphrase to be prompted through Emacs"
-msgstr ""
+msgstr "дозволити запит пароля з Emacs"
 
 msgid "enable ssh support"
 msgstr "увімкнути підтримку ssh"
@@ -668,12 +653,12 @@ msgstr "Змінити пароль"
 msgid "I'll change it later"
 msgstr "Я зміню його пізніше"
 
-#, fuzzy, c-format
-#| msgid "Do you really want to delete the selected keys? (y/N) "
+#, c-format
 msgid ""
 "Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
 "%%0A?"
-msgstr "Справді бажаєте вилучити вибрані ключі? (y/N або т/Н) "
+msgstr ""
+"Справді хочете вилучити ключ, що визначається keygrip%%0A  %s%%0A  %%C%%0A?"
 
 msgid "Delete key"
 msgstr "Вилучити ключ"
@@ -832,7 +817,7 @@ msgstr "УВАГА: «%s%s» є застарілим параметром — в
 
 #, c-format
 msgid "unknown debug flag '%s' ignored\n"
-msgstr ""
+msgstr "невідомий прапорець діагностики «%s» проігноровано\n"
 
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
@@ -1766,10 +1751,8 @@ msgstr "створити пару ключів"
 msgid "quickly generate a new key pair"
 msgstr "швидке створення пари ключів"
 
-#, fuzzy
-#| msgid "quickly generate a new key pair"
 msgid "quickly add a new user-id"
-msgstr "швидке створення пари ключів"
+msgstr "швидке додавання нового ідентифікатора користувача"
 
 msgid "full featured key pair generation"
 msgstr "повноцінне створення пари ключів"
@@ -1838,7 +1821,7 @@ msgid "run in server mode"
 msgstr "запустити у режимі сервера"
 
 msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
-msgstr ""
+msgstr "встановити правила TOFU для ключа (good, unknown, bad, ask, auto)"
 
 msgid "create ascii armored output"
 msgstr "створити дані у форматі ASCII"
@@ -2050,18 +2033,16 @@ msgstr "показувати дати завершення строків дії
 msgid "available TOFU policies:\n"
 msgstr "Доступні ключі:\n"
 
-#, fuzzy, c-format
-#| msgid "unknown option '%s'\n"
+#, c-format
 msgid "unknown TOFU policy '%s'\n"
-msgstr "невідомий параметр «%s»\n"
+msgstr "невідомі правила TOFU «%s»\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
-#, fuzzy, c-format
-#| msgid "unknown command '%s'\n"
+#, c-format
 msgid "unknown TOFU DB format '%s'\n"
-msgstr "невідома команда «%s»\n"
+msgstr "невідомий формат бази даних TOFU «%s»\n"
 
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
@@ -2408,9 +2389,11 @@ msgstr "некоректний алгоритм хешування «%s»\n"
 msgid "error parsing key specification '%s': %s\n"
 msgstr "помилка під час спроби завантаження сертифіката «%s»: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid ""
+#| "'%s' does not appear to be a valid key id, fingerprint or key grip.\n"
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
-msgstr ""
+msgstr "«%s» не є коректним ідентифікатором ключа, відбитком або keygrip.\n"
 
 msgid "[filename]"
 msgstr "[назва файла]"
@@ -3099,10 +3082,8 @@ msgstr "зберегти і вийти"
 msgid "show key fingerprint"
 msgstr "показати відбиток ключа"
 
-#, fuzzy
-#| msgid "Enter the keygrip: "
 msgid "show the keygrip"
-msgstr "Вкажіть keygrip: "
+msgstr "показати keygrip"
 
 msgid "list key and user IDs"
 msgstr "показати список ключів та ідентифікаторів користувача"
@@ -3262,7 +3243,7 @@ msgstr "Вам слід вибрати принаймні один іденти�
 
 #, c-format
 msgid "(Use the '%s' command.)\n"
-msgstr ""
+msgstr "(Скористайтеся командою «%s».)\n"
 
 msgid "You can't delete the last user ID!\n"
 msgstr "Не можна вилучати останній ідентифікатор користувача!\n"
@@ -4186,15 +4167,12 @@ msgstr "Критична примітка підпису: "
 msgid "Signature notation: "
 msgstr "Примітка підпису: "
 
-#, fuzzy
-#| msgid "1 bad signature\n"
 msgid "1 good signature\n"
-msgstr "1 помилковий підпис\n"
+msgstr "1 добрий підпис\n"
 
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
+#, c-format
 msgid "%d good signatures\n"
-msgstr "%d помилкових підписів\n"
+msgstr "%d добрих підписів\n"
 
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
@@ -4248,7 +4226,7 @@ msgid "%s: keyring created\n"
 msgstr "%s: створено сховище ключів\n"
 
 msgid "override proxy options set for dirmngr"
-msgstr ""
+msgstr "перевизначити параметри проксі, встановлені для dirmngr"
 
 msgid "include revoked keys in search results"
 msgstr "включити до результатів пошуку відкликані ключі"
@@ -4257,7 +4235,7 @@ msgid "include subkeys when searching by key ID"
 msgstr "включити підключі до пошуку за ідентифікатором ключа"
 
 msgid "override timeout options set for dirmngr"
-msgstr ""
+msgstr "перевизначити параметри часу очікування, встановлені для dirmngr"
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "автоматично отримувати ключі під час перевірки підписів"
@@ -5041,10 +5019,8 @@ msgstr "Буде відкликано:\n"
 msgid "(This is a sensitive revocation key)\n"
 msgstr "(Це критичний ключ відкликання)\n"
 
-#, fuzzy
-#| msgid "Secret key is available.\n"
 msgid "Secret key is not available.\n"
-msgstr "Доступний закритий ключ.\n"
+msgstr "Закритий ключ недоступний.\n"
 
 msgid "Create a designated revocation certificate for this key? (y/N) "
 msgstr ""
@@ -5547,10 +5523,8 @@ msgstr "безмежна"
 #. It gets passed to atoi() so everything after the number is
 #. essentially a comment and need not be translated.  Either key and
 #. uid are both NULL, or neither are NULL.
-#, fuzzy
-#| msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgid "10 translator see trust.c:uid_trust_string_fixed"
-msgstr "10 translator see trustdb.c:uid_trust_string_fixed"
+msgstr "10"
 
 msgid "[ revoked]"
 msgstr "[відклик.]"
@@ -7126,10 +7100,8 @@ msgstr "помилка отримання «%s»: %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "помилка отримання «%s»: стан http %u\n"
 
-#, fuzzy
-#| msgid "CRL access not possible due to disabled %s\n"
 msgid "CRL access not possible due to Tor mode\n"
-msgstr "Доступ до CRL неможливий через вимкнений %s\n"
+msgstr "Доступ до CRL неможливий через увімкнений режим Tor\n"
 
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -7319,7 +7291,7 @@ msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|ФАЙЛ|використовувати сертифікати CA з файла ФАЙЛ для HKP крізь TLS"
 
 msgid "route all network traffic via Tor"
-msgstr ""
+msgstr "маршрутизувати увесь обмін даними з мережею через Tor"
 
 msgid ""
 "@\n"
@@ -7615,10 +7587,8 @@ msgstr "помилка під час спроби читання даних з �
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "занадто об’ємна відповідь від сервера; верхня межа — %d байтів\n"
 
-#, fuzzy
-#| msgid "OCSP request not possible due to disabled HTTP\n"
 msgid "OCSP request not possible due to Tor mode\n"
-msgstr "запит за допомогою OCSP неможливий через вимикання протоколу HTTP\n"
+msgstr "запит за допомогою OCSP неможливий через увімкнений режим Tor\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr "запит за допомогою OCSP неможливий через вимикання протоколу HTTP\n"
@@ -7973,10 +7943,8 @@ msgstr "Параметри керування форматом виведенн�
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Параметри керування інтерактивністю та примусом"
 
-#, fuzzy
-#| msgid "Options controlling the security"
 msgid "Options controlling the use of Tor"
-msgstr "Параметри керування захистом"
+msgstr "Параметри керування використанням Tor"
 
 msgid "Configuration for HTTP servers"
 msgstr "Налаштування для серверів HTTP"
@@ -8006,7 +7974,7 @@ msgid "GPG for S/MIME"
 msgstr "GPG для S/MIME"
 
 msgid "Key Acquirer"
-msgstr ""
+msgstr "Засіб запиту ключів"
 
 msgid "PIN and Passphrase Entry"
 msgstr "Введення пінкодів і паролів"
@@ -8227,18 +8195,29 @@ msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
 
+#~ msgid "Failed to open the keyring DB.\n"
+#~ msgstr "Не вдалося відкрити базу даних сховища ключів.\n"
+
+#~ msgid "Failed to parse '%s'.\n"
+#~ msgstr "Не вдалося обробити «%s».\n"
+
+#~ msgid "Failed to reset keyring handle.\n"
+#~ msgstr "Не вдалося скинути дескриптор сховища ключів.\n"
+
+#~ msgid "Key '%s' is not available\n"
+#~ msgstr "Ключ «%s» є недоступним\n"
+
+#~ msgid "Failed to find key '%s'\n"
+#~ msgstr "Не вдалося знайти ключ «%s»\n"
+
+#~ msgid "Failed to read key '%s' from the keyring\n"
+#~ msgstr "Не вдалося прочитати ключ «%s» зі сховища ключів\n"
+
+#~ msgid "Unknown weak digest '%s'\n"
+#~ msgstr "Невідома слабка контрольна сума «%s»\n"
+
 #~ msgid "cleared passphrase cached with ID: %s\n"
 #~ msgstr "текстовий пароль кешовано з ідентифікатором: %s\n"
-
-#, fuzzy
-#~| msgid "failed to store the key: %s\n"
-#~ msgid "Failed to open the keyring DB.\n"
-#~ msgstr "не вдалося зберегти ключ: %s\n"
-
-#, fuzzy
-#~| msgid "failed to open '%s': %s\n"
-#~ msgid "Failed to parse '%s'.\n"
-#~ msgstr "не вдалося відкрити «%s»: %s\n"
 
 #, fuzzy
 #~| msgid "invalid value\n"
