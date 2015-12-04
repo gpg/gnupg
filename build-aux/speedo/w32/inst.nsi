@@ -606,6 +606,8 @@ Section "GnuPG" SEC_gnupg
 
   SetOutPath "$INSTDIR\share\gnupg"
   File "share/gnupg/gpg-conf.skel"
+  File "share/gnupg/dirmngr-conf.skel"
+  File "share/gnupg/distsigkey.gpg"
 SectionEnd
 
 
@@ -908,6 +910,7 @@ Section "-un.gnupglast"
   no_uiserver:
   ifFileExists "$INSTDIR\bin\gpgconf.exe"  0 no_gpgconf
     ExecWait '"$INSTDIR\bin\gpgconf" --kill gpg-agent'
+    ExecWait '"$INSTDIR\bin\gpgconf" --kill dirmngr'
   no_gpgconf:
 SectionEnd
 
