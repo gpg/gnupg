@@ -224,6 +224,7 @@ static char (* DLSTDCALL CT_close) (unsigned short ctn);
 #define PCSC_E_NOT_TRANSACTED          0x80100016
 #define PCSC_E_READER_UNAVAILABLE      0x80100017
 #define PCSC_E_NO_SERVICE              0x8010001D
+#define PCSC_E_SERVICE_STOPPED         0x8010001E
 #define PCSC_W_REMOVED_CARD            0x80100069
 
 /* Fix pcsc-lite ABI incompatibilty.  */
@@ -873,6 +874,8 @@ pcsc_error_to_sw (long ec)
     case PCSC_E_CANCELLED:           rc = SW_HOST_ABORTED; break;
     case PCSC_E_NO_MEMORY:           rc = SW_HOST_OUT_OF_CORE; break;
     case PCSC_E_TIMEOUT:             rc = SW_HOST_CARD_IO_ERROR; break;
+    case PCSC_E_NO_SERVICE:
+    case PCSC_E_SERVICE_STOPPED:
     case PCSC_E_UNKNOWN_READER:      rc = SW_HOST_NO_READER; break;
     case PCSC_E_SHARING_VIOLATION:   rc = SW_HOST_LOCKING_FAILED; break;
     case PCSC_E_NO_SMARTCARD:        rc = SW_HOST_NO_CARD; break;
