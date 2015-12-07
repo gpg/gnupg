@@ -25,6 +25,8 @@ TESTFILES="$plain_files $data_files"
 TESTDIR=gpgtar.d
 FILELIST="${TESTDIR}/filelist"
 PPFILE="${TESTDIR}/passphrase"
+PPFLAGS="--gpg-args --passphrase-file=$PPFILE"
+
 GPG=../../g10/gpg2
 GPGARGS="$opt_always --no-permission-warning"
 
@@ -73,25 +75,44 @@ do_test()
 for TOOL in "$GPGTAR" "$GPGZIP"
 #for TOOL in "$GPGZIP"
 do
+    # Asymmetric encryption.
     do_test "$TOOL" \
 	    "--encrypt --recipient $usrname2" \
 	    "--list-archive" \
 	    "--decrypt"
 
+    # Asymmetric encryption and signing.
     do_test "$TOOL" \
 	    "--encrypt --recipient $usrname2 --sign --local-user $usrname3" \
 	    "--list-archive" \
 	    "--decrypt"
 
+    # Signing only.
     do_test "$TOOL" \
 	    "--sign --local-user $usrname3" \
 	    "--list-archive" \
 	    "--decrypt"
 
+    # Symmetric encryption.
     do_test "$TOOL" \
-	    "--gpg-args --passphrase-file=$PPFILE --symmetric" \
-	    "--gpg-args --passphrase-file=$PPFILE --list-archive" \
-	    "--gpg-args --passphrase-file=$PPFILE --decrypt"
+	    "${PPFLAGS} --symmetric" \
+	    "${PPFLAGS} --list-archive" \
+	    "${PPFLAGS} --decrypt"
+
+    # Symmetric encryption, explicitly choose cipher.
+    for a in `all_cipher_algos`; do
+	do_test "$TOOL" \
+		"${PPFLAGS} --gpg-args --cipher=$a --symmetric" \
+		"${PPFLAGS} --list-archive" \
+		"${PPFLAGS} --decrypt"
+	break
+    done
+
+    # Asymmetric and symmetric encryption, and signing.
+    do_test "$TOOL" \
+	    "${PPFLAGS} --encrypt --symmetric --recipient $usrname2 --sign --local-user $usrname3" \
+	    "${PPFLAGS} --list-archive" \
+	    "${PPFLAGS} --decrypt"
 done
 
 # Success!
