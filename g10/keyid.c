@@ -284,7 +284,7 @@ format_keyid (u32 *keyid, int format, char *buffer, int len)
   if (format == KF_DEFAULT)
     format = opt.keyid_format;
   if (format == KF_DEFAULT)
-    format = KF_0xLONG;
+    format = KF_SHORT;
 
   switch (format)
     {
@@ -324,7 +324,11 @@ format_keyid (u32 *keyid, int format, char *buffer, int len)
 size_t
 keystrlen(void)
 {
-  switch(opt.keyid_format)
+  int format = opt.keyid_format;
+  if (format == KF_DEFAULT)
+    format = KF_SHORT;
+
+  switch(format)
     {
     case KF_SHORT:
       return 8;
