@@ -281,7 +281,7 @@ do_encode_raw_pkcs1 (const byte *md, size_t mdlen, unsigned int nbits,
    passphrase.  If OVERRIDEDATA is not NULL, OVERRIDEDATALEN bytes
    from this buffer are used instead of the data in CTRL.  The
    override feature is required to allow the use of Ed25519 with ssh
-   because Ed25519 dies the hashing itself.  */
+   because Ed25519 does the hashing itself.  */
 int
 agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
                  const char *desc_text,
