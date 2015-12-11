@@ -505,7 +505,8 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
                                ctrl->digest.raw_value);
         }
 
-      rc = gcry_pk_verify (s_sig, s_hash, s_pkey? s_pkey: s_skey);
+      if (! rc)
+        rc = gcry_pk_verify (s_sig, s_hash, s_pkey? s_pkey: s_skey);
 
       if (rc)
         {
