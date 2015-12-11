@@ -2116,6 +2116,8 @@ check_user_ids (strlist_t *sp,
 
   KEYDB_HANDLE hd = NULL;
 
+  char fingerprint_formatted[MAX_FORMATTED_FINGERPRINT_LEN + 1];
+
   /* A quick check to avoid allocating a new strlist if we can skip
      all keys.  Handles also the case of !SP.  See below for details.  */
   for (t = s; t && (!(t->flags & PK_LIST_CONFIG)
@@ -2135,6 +2137,9 @@ check_user_ids (strlist_t *sp,
       size_t fingerprint_bin_len = sizeof (fingerprint_bin);
       /* We also potentially need a ! at the end.  */
       char fingerprint[2 * MAX_FINGERPRINT_LEN + 1 + 1];
+      int added = 0;
+      int dups = 0;
+      int ambiguous = 0;
 
       /* If the key has been given on the command line and it has not
          been given by one of the encrypt-to options, we skip the
@@ -2271,41 +2276,58 @@ check_user_ids (strlist_t *sp,
           i = strlen (fingerprint);
           fingerprint[i] = '!';
           fingerprint[i + 1] = '\0';
-        }
-      else
-        {
-          fingerprint_from_pk (pk, fingerprint_bin, &fingerprint_bin_len);
-          assert (fingerprint_bin_len == sizeof (fingerprint_bin));
-          bin2hex (fingerprint_bin, MAX_FINGERPRINT_LEN, fingerprint);
+
+          add_to_strlist (&s2, fingerprint);
+          added = 1;
         }
 
-      add_to_strlist (&s2, fingerprint);
+      /* We need the primary key's fingerprint to detect dups so
+         always format it.  */
+      fingerprint_from_pk (pk, fingerprint_bin, &fingerprint_bin_len);
+      assert (fingerprint_bin_len == sizeof (fingerprint_bin));
+      bin2hex (fingerprint_bin, MAX_FINGERPRINT_LEN, fingerprint);
+
+      if (! added)
+        add_to_strlist (&s2, fingerprint);
       s2->flags = s->flags;
 
       release_kbnode (kb);
 
       /* Continue the search.  */
       if (DBG_LOOKUP)
-        log_debug ("%s: Check for duplicates for %s='%s'\n",
+        log_debug ("%s: Checking if %s='%s' is ambiguous or there are dups\n",
                    __func__, option, t->d);
-      err = keydb_search (hd, &desc, 1, NULL);
-      if (! err)
-        /* Another result!  */
+      while (1)
         {
           char fingerprint_bin2[MAX_FINGERPRINT_LEN];
           size_t fingerprint_bin2_len = sizeof (fingerprint_bin2);
           char fingerprint2[2 * MAX_FINGERPRINT_LEN + 1];
 
-          log_error (_("key specification '%s' is ambiguous\n"), t->d);
-          if (!opt.quiet)
-            log_info (_("(check argument of option '%s')\n"), option);
+          err = keydb_search (hd, &desc, 1, NULL);
+          if (gpg_err_code (err) == GPG_ERR_NOT_FOUND
+              || gpg_err_code (err) == GPG_ERR_EOF)
+            /* Not found => not ambiguous.   */
+            break;
+          else if (err)
+            /* An error (other than "not found").  */
+            {
+              log_error (_("error searching the keyring: %s\n"),
+                         gpg_strerror (err));
+              if (! rc)
+                rc = err;
 
-          if (! rc)
-            rc = GPG_ERR_AMBIGUOUS_NAME;
+              break;
+            }
+
+          /* Another result!  */
 
           err = keydb_get_keyblock (hd, &kb);
           if (err)
-            log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));
+            {
+              log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));
+              if (! rc)
+                rc = err;
+            }
           else
             {
               pk = kb->pkt->pkt.public_key;
@@ -2313,25 +2335,53 @@ check_user_ids (strlist_t *sp,
               assert (fingerprint_bin2_len == sizeof (fingerprint_bin2));
               bin2hex (fingerprint_bin2, MAX_FINGERPRINT_LEN, fingerprint2);
 
-              /* TRANSLATORS: The %s prints a key specification which
-                 for example has been given at the command line.  Two
-                 lines with fingerprints are printed after this message.  */
-              log_info (_("'%s' matches at least:\n"), t->d);
-              log_info ("  %s\n", fingerprint);
-              log_info ("  %s\n", fingerprint2);
+              if (strcmp (fingerprint, fingerprint2) == 0)
+                dups ++;
+              else
+                {
+                  ambiguous ++;
+
+                  if (! rc)
+                    rc = GPG_ERR_AMBIGUOUS_NAME;
+
+                  if (ambiguous == 1)
+                    {
+                      /* TRANSLATORS: The %s prints a key
+                         specification which for example has been
+                         given at the command line.  Lines with
+                         fingerprints are printed after this
+                         message.  */
+                      log_error (_("key specification '%s' is ambiguous\n"),
+                                 t->d);
+                      if (!opt.quiet)
+                        log_info (_("(check argument of option '%s')\n"),
+                                  option);
+
+                      log_info (_("'%s' matches at least:\n"), t->d);
+                      log_info ("  %s\n",
+                                format_hexfingerprint
+                                 (fingerprint,
+                                  fingerprint_formatted,
+                                  sizeof fingerprint_formatted));
+                    }
+
+                  log_info ("  %s\n",
+                            format_hexfingerprint
+                             (fingerprint2,
+                              fingerprint_formatted,
+                              sizeof fingerprint_formatted));
+                }
 
               release_kbnode (kb);
             }
         }
-      else if (! (gpg_err_code (err) == GPG_ERR_NOT_FOUND
-                  || gpg_err_code (err) == GPG_ERR_EOF))
-        /* An error (other than "not found").  */
-        {
-          log_error (_("error searching the keyring: %s\n"),
-                     gpg_strerror (err));
-          if (! rc)
-            rc = err;
-        }
+
+      if (dups)
+        log_info (_("Warning: %s appears in the keyring %d times.\n"),
+                  format_hexfingerprint (fingerprint,
+                                         fingerprint_formatted,
+                                         sizeof fingerprint_formatted),
+                  1 + dups);
     }
 
   strlist_rev (&s2);
