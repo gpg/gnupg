@@ -470,7 +470,7 @@ char *
 keydb_search_desc_dump (struct keydb_search_desc *desc)
 {
   char b[MAX_FORMATTED_FINGERPRINT_LEN + 1];
-  char fpr[MAX_FINGERPRINT_LEN + 1];
+  char fpr[2 * MAX_FINGERPRINT_LEN + 1];
 
   switch (desc->mode)
     {
