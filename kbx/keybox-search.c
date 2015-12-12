@@ -25,8 +25,6 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "../common/stringhelp.h" /* ascii_xxxx() */
-
 #include "keybox-defs.h"
 #include <gcrypt.h>
 #include "host2net.h"

@@ -32,9 +32,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "stringhelp.h"
-
 #include "t-support.h"
+#include "stringhelp.h"
 
 static void
 test_map_static_macro_string (void)

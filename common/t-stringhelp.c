@@ -40,9 +40,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "stringhelp.h"
-
 #include "t-support.h"
+#include "stringhelp.h"
 
 
 static char *home_buffer;

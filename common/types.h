@@ -113,14 +113,4 @@
 #  define HAVE_U32_TYPEDEF
 #endif
 
-
-/* Some GCC attributes.  These are replacements for libgpg-error < 1.20.  */
-#ifndef GPGRT_GCC_VERSION
-# if __GNUC__ >= 4
-#  define GPGRT_ATTR_SENTINEL(a) __attribute__ ((sentinel(a)))
-# else
-#  define GPGRT_ATTR_SENTINEL(a)
-# endif
-#endif
-
 #endif /*GNUPG_COMMON_TYPES_H*/

@@ -38,9 +38,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#ifdef HAVE_W32CE_SYSTEM
-#include <gpg-error.h>  /* Defines strerror.  */
-#endif
+#include <gpg-error.h>
 
 
 #ifndef HAVE_GETENV

@@ -37,101 +37,8 @@
 
 /* These error codes are used but not defined in the required
    libgpg-error version.  Define them here. */
-#if GPG_ERROR_VERSION_NUMBER < 0x011200  /* 1.18 */
-# define GPG_ERR_LEGACY_KEY     222
-# define GPG_ERR_OBJ_TERM_STATE 225
-# define GPG_ERR_FORBIDDEN      251
-#endif
-#if GPG_ERROR_VERSION_NUMBER < 0x011300  /* 1.19 */
-# define GPG_ERR_LDAP_GENERAL               721
-# define GPG_ERR_LDAP_ATTR_GENERAL          722
-# define GPG_ERR_LDAP_NAME_GENERAL          723
-# define GPG_ERR_LDAP_SECURITY_GENERAL      724
-# define GPG_ERR_LDAP_SERVICE_GENERAL       725
-# define GPG_ERR_LDAP_UPDATE_GENERAL        726
-# define GPG_ERR_LDAP_E_GENERAL             727
-# define GPG_ERR_LDAP_X_GENERAL             728
-# define GPG_ERR_LDAP_OTHER_GENERAL         729
-# define GPG_ERR_LDAP_X_CONNECTING          750
-# define GPG_ERR_LDAP_REFERRAL_LIMIT        751
-# define GPG_ERR_LDAP_CLIENT_LOOP           752
-# define GPG_ERR_LDAP_NO_RESULTS            754
-# define GPG_ERR_LDAP_CONTROL_NOT_FOUND     755
-# define GPG_ERR_LDAP_NOT_SUPPORTED         756
-# define GPG_ERR_LDAP_CONNECT               757
-# define GPG_ERR_LDAP_NO_MEMORY             758
-# define GPG_ERR_LDAP_PARAM                 759
-# define GPG_ERR_LDAP_USER_CANCELLED        760
-# define GPG_ERR_LDAP_FILTER                761
-# define GPG_ERR_LDAP_AUTH_UNKNOWN          762
-# define GPG_ERR_LDAP_TIMEOUT               763
-# define GPG_ERR_LDAP_DECODING              764
-# define GPG_ERR_LDAP_ENCODING              765
-# define GPG_ERR_LDAP_LOCAL                 766
-# define GPG_ERR_LDAP_SERVER_DOWN           767
-# define GPG_ERR_LDAP_SUCCESS               768
-# define GPG_ERR_LDAP_OPERATIONS            769
-# define GPG_ERR_LDAP_PROTOCOL              770
-# define GPG_ERR_LDAP_TIMELIMIT             771
-# define GPG_ERR_LDAP_SIZELIMIT             772
-# define GPG_ERR_LDAP_COMPARE_FALSE         773
-# define GPG_ERR_LDAP_COMPARE_TRUE          774
-# define GPG_ERR_LDAP_UNSUPPORTED_AUTH      775
-# define GPG_ERR_LDAP_STRONG_AUTH_RQRD      776
-# define GPG_ERR_LDAP_PARTIAL_RESULTS       777
-# define GPG_ERR_LDAP_REFERRAL              778
-# define GPG_ERR_LDAP_ADMINLIMIT            779
-# define GPG_ERR_LDAP_UNAVAIL_CRIT_EXTN     780
-# define GPG_ERR_LDAP_CONFIDENT_RQRD        781
-# define GPG_ERR_LDAP_SASL_BIND_INPROG      782
-# define GPG_ERR_LDAP_NO_SUCH_ATTRIBUTE     784
-# define GPG_ERR_LDAP_UNDEFINED_TYPE        785
-# define GPG_ERR_LDAP_BAD_MATCHING          786
-# define GPG_ERR_LDAP_CONST_VIOLATION       787
-# define GPG_ERR_LDAP_TYPE_VALUE_EXISTS     788
-# define GPG_ERR_LDAP_INV_SYNTAX            789
-# define GPG_ERR_LDAP_NO_SUCH_OBJ           800
-# define GPG_ERR_LDAP_ALIAS_PROBLEM         801
-# define GPG_ERR_LDAP_INV_DN_SYNTAX         802
-# define GPG_ERR_LDAP_IS_LEAF               803
-# define GPG_ERR_LDAP_ALIAS_DEREF           804
-# define GPG_ERR_LDAP_X_PROXY_AUTH_FAIL     815
-# define GPG_ERR_LDAP_BAD_AUTH              816
-# define GPG_ERR_LDAP_INV_CREDENTIALS       817
-# define GPG_ERR_LDAP_INSUFFICIENT_ACC      818
-# define GPG_ERR_LDAP_BUSY                  819
-# define GPG_ERR_LDAP_UNAVAILABLE           820
-# define GPG_ERR_LDAP_UNWILL_TO_PERFORM     821
-# define GPG_ERR_LDAP_LOOP_DETECT           822
-# define GPG_ERR_LDAP_NAMING_VIOLATION      832
-# define GPG_ERR_LDAP_OBJ_CLS_VIOLATION     833
-# define GPG_ERR_LDAP_NOT_ALLOW_NONLEAF     834
-# define GPG_ERR_LDAP_NOT_ALLOW_ON_RDN      835
-# define GPG_ERR_LDAP_ALREADY_EXISTS        836
-# define GPG_ERR_LDAP_NO_OBJ_CLASS_MODS     837
-# define GPG_ERR_LDAP_RESULTS_TOO_LARGE     838
-# define GPG_ERR_LDAP_AFFECTS_MULT_DSAS     839
-# define GPG_ERR_LDAP_VLV                   844
-# define GPG_ERR_LDAP_OTHER                 848
-# define GPG_ERR_LDAP_CUP_RESOURCE_LIMIT    881
-# define GPG_ERR_LDAP_CUP_SEC_VIOLATION     882
-# define GPG_ERR_LDAP_CUP_INV_DATA          883
-# define GPG_ERR_LDAP_CUP_UNSUP_SCHEME      884
-# define GPG_ERR_LDAP_CUP_RELOAD            885
-# define GPG_ERR_LDAP_CANCELLED             886
-# define GPG_ERR_LDAP_NO_SUCH_OPERATION     887
-# define GPG_ERR_LDAP_TOO_LATE              888
-# define GPG_ERR_LDAP_CANNOT_CANCEL         889
-# define GPG_ERR_LDAP_ASSERTION_FAILED      890
-# define GPG_ERR_LDAP_PROX_AUTH_DENIED      891
-#endif /*GPG_ERROR_VERSION_NUMBER < 0x011300*/
-#if GPG_ERROR_VERSION_NUMBER < 0x011500  /* 1.21 */
-# define GPG_ERR_SERVER_FAILED              219
-# define GPG_ERR_NO_KEY                     220
-# define GPG_ERR_NO_NAME                    221
-# define GPG_ERR_TRUE                       255
-# define GPG_ERR_FALSE                      256
-#endif
+/* None right now.  (Use #if GPG_ERROR_VERSION_NUMBER < 0x011500  / * 1.21) */
+
 
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
@@ -160,30 +67,6 @@
 
 
 /* Replacements for macros not available with libgpg-error < 1.20.  */
-#ifndef GPGRT_GCC_VERSION
-
-# ifndef GPGRT_ATTR_FORMAT_ARG
-# if __GNUC__ >= 3 /* Actually 2.8 but testing the major is easier.  */
-#  define GPGRT_ATTR_FORMAT_ARG(a)  __attribute__ ((__format_arg__ (a)))
-# else
-#  define GPGRT_ATTR_FORMAT_ARG(a)
-# endif
-# endif
-
-# if __GNUC__ >= 4
-#  define GPGRT_ATTR_SENTINEL(a) __attribute__ ((sentinel(a)))
-# else
-#  define GPGRT_ATTR_SENTINEL(a)
-# endif
-
-# if __GNUC__ >= 4
-#  define GPGRT_ATTR_USED __attribute__ ((used))
-# else
-#  define GPGRT_ATTR_USED
-# endif
-
-#endif /*libgpg-error < 1.20 */
-
 
 /* We need this type even if we are not using libreadline and or we
    did not include libreadline in the current file. */
