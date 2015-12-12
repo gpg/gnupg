@@ -40,7 +40,7 @@
 #include "call-agent.h"
 #include "../common/membuf.h"
 
-struct stats_s
+struct import_stats_s
 {
   ulong count;
   ulong no_user_id;
@@ -62,23 +62,24 @@ struct stats_s
 
 
 static int import (ctrl_t ctrl,
-                   IOBUF inp, const char* fname, struct stats_s *stats,
+                   IOBUF inp, const char* fname, struct import_stats_s *stats,
 		   unsigned char **fpr, size_t *fpr_len, unsigned int options,
 		   import_screener_t screener, void *screener_arg);
 static int read_block (IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root,
                        int *r_v3keys);
 static void revocation_present (ctrl_t ctrl, kbnode_t keyblock);
 static int import_one (ctrl_t ctrl,
-                       const char *fname, kbnode_t keyblock,struct stats_s *stats,
+                       const char *fname, kbnode_t keyblock,
+                       struct import_stats_s *stats,
                        unsigned char **fpr, size_t *fpr_len,
                        unsigned int options, int from_sk, int silent,
                        import_screener_t screener, void *screener_arg);
 static int import_secret_one (ctrl_t ctrl, const char *fname, kbnode_t keyblock,
-                              struct stats_s *stats, int batch,
+                              struct import_stats_s *stats, int batch,
                               unsigned int options, int for_migration,
                               import_screener_t screener, void *screener_arg);
 static int import_revoke_cert( const char *fname, kbnode_t node,
-                               struct stats_s *stats);
+                               struct import_stats_s *stats);
 static int chk_self_sigs (const char *fname, kbnode_t keyblock,
 			  PKT_public_key *pk, u32 *keyid, int *non_self );
 static int delete_inv_parts (const char *fname, kbnode_t keyblock,
@@ -137,15 +138,15 @@ parse_import_options(char *str,unsigned int *options,int noisy)
 }
 
 
-void *
+import_stats_t
 import_new_stats_handle (void)
 {
-  return xmalloc_clear ( sizeof (struct stats_s) );
+  return xmalloc_clear ( sizeof (struct import_stats_s) );
 }
 
 
 void
-import_release_stats_handle (void *p)
+import_release_stats_handle (import_stats_t p)
 {
   xfree (p);
 }
@@ -183,13 +184,14 @@ import_release_stats_handle (void *p)
  */
 static int
 import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
-		      void *stats_handle, unsigned char **fpr, size_t *fpr_len,
+		      import_stats_t stats_handle,
+                      unsigned char **fpr, size_t *fpr_len,
 		      unsigned int options,
                       import_screener_t screener, void *screener_arg)
 {
   int i;
   int rc = 0;
-  struct stats_s *stats = stats_handle;
+  struct import_stats_s *stats = stats_handle;
 
   if (!stats)
     stats = import_new_stats_handle ();
@@ -256,14 +258,14 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
 
 void
 import_keys (ctrl_t ctrl, char **fnames, int nnames,
-	     void *stats_handle, unsigned int options )
+	     import_stats_t stats_handle, unsigned int options )
 {
   import_keys_internal (ctrl, NULL, fnames, nnames, stats_handle,
                         NULL, NULL, options, NULL, NULL);
 }
 
 int
-import_keys_stream (ctrl_t ctrl, IOBUF inp, void *stats_handle,
+import_keys_stream (ctrl_t ctrl, IOBUF inp, import_stats_t stats_handle,
 		    unsigned char **fpr, size_t *fpr_len, unsigned int options)
 {
   return import_keys_internal (ctrl, inp, NULL, 0, stats_handle,
@@ -273,7 +275,8 @@ import_keys_stream (ctrl_t ctrl, IOBUF inp, void *stats_handle,
 
 /* Variant of import_keys_stream reading from an estream_t.  */
 int
-import_keys_es_stream (ctrl_t ctrl, estream_t fp, void *stats_handle,
+import_keys_es_stream (ctrl_t ctrl, estream_t fp,
+                       import_stats_t stats_handle,
                        unsigned char **fpr, size_t *fpr_len,
                        unsigned int options,
                        import_screener_t screener, void *screener_arg)
@@ -299,7 +302,7 @@ import_keys_es_stream (ctrl_t ctrl, estream_t fp, void *stats_handle,
 
 
 static int
-import (ctrl_t ctrl, IOBUF inp, const char* fname,struct stats_s *stats,
+import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
 	unsigned char **fpr,size_t *fpr_len, unsigned int options,
 	import_screener_t screener, void *screener_arg)
 {
@@ -378,7 +381,7 @@ import_old_secring (ctrl_t ctrl, const char *fname)
   kbnode_t keyblock = NULL;  /* Need to initialize because gcc can't
                                 grasp the return semantics of
                                 read_block. */
-  struct stats_s *stats;
+  struct import_stats_s *stats;
   int v3keys;
 
   inp = iobuf_open (fname);
@@ -422,10 +425,8 @@ import_old_secring (ctrl_t ctrl, const char *fname)
 
 
 void
-import_print_stats (void *hd)
+import_print_stats (import_stats_t stats)
 {
-  struct stats_s *stats = hd;
-
   if (!opt.quiet)
     {
       log_info(_("Total number processed: %lu\n"),
@@ -932,7 +933,7 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
  */
 static int
 import_one (ctrl_t ctrl,
-            const char *fname, kbnode_t keyblock, struct stats_s *stats,
+            const char *fname, kbnode_t keyblock, struct import_stats_s *stats,
 	    unsigned char **fpr, size_t *fpr_len, unsigned int options,
 	    int from_sk, int silent,
             import_screener_t screener, void *screener_arg)
@@ -1318,7 +1319,7 @@ import_one (ctrl_t ctrl,
    true the secret keys are stored by gpg-agent in the transfer format
    (i.e. no re-protection and aksing for passphrases). */
 static gpg_error_t
-transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock,
+transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats, kbnode_t sec_keyblock,
                       int batch)
 {
   gpg_error_t err = 0;
@@ -1652,7 +1653,7 @@ sec_to_pub_keyblock (kbnode_t sec_keyblock)
  */
 static int
 import_secret_one (ctrl_t ctrl, const char *fname, kbnode_t keyblock,
-                   struct stats_s *stats, int batch, unsigned int options,
+                   struct import_stats_s *stats, int batch, unsigned int options,
                    int for_migration,
                    import_screener_t screener, void *screener_arg)
 {
@@ -1819,7 +1820,8 @@ import_secret_one (ctrl_t ctrl, const char *fname, kbnode_t keyblock,
  * Import a revocation certificate; this is a single signature packet.
  */
 static int
-import_revoke_cert( const char *fname, kbnode_t node, struct stats_s *stats )
+import_revoke_cert (const char *fname, kbnode_t node,
+                    struct import_stats_s *stats)
 {
   PKT_public_key *pk = NULL;
   kbnode_t onode;

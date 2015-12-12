@@ -1566,7 +1566,7 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
 static gpg_error_t
 keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
                      int *r_ndesc_used,
-                     void *stats_handle,
+                     import_stats_t stats_handle,
                      struct keyserver_spec *override_keyserver,
                      unsigned char **r_fpr, size_t *r_fprlen)
 
@@ -1749,7 +1749,7 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
                unsigned char **r_fpr, size_t *r_fprlen)
 {
   gpg_error_t err;
-  void *stats_handle;
+  import_stats_t stats_handle;
   int ndesc_used;
   int any_good = 0;
 
@@ -1858,7 +1858,7 @@ keyserver_fetch (ctrl_t ctrl, strlist_t urilist)
       err = gpg_dirmngr_ks_fetch (ctrl, sl->d, &datastream);
       if (!err)
         {
-          void *stats_handle;
+          import_stats_t stats_handle;
 
           stats_handle = import_new_stats_handle();
           import_keys_es_stream (ctrl, datastream, stats_handle, NULL, NULL,

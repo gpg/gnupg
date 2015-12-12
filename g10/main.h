@@ -318,22 +318,25 @@ gcry_mpi_t encode_md_value (PKT_public_key *pk,
                             gcry_md_hd_t md, int hash_algo );
 
 /*-- import.c --*/
+struct import_stats_s;
+typedef struct import_stats_s *import_stats_t;
 typedef gpg_error_t (*import_screener_t)(kbnode_t keyblock, void *arg);
 
 int parse_import_options(char *str,unsigned int *options,int noisy);
 void import_keys (ctrl_t ctrl, char **fnames, int nnames,
-		  void *stats_hd, unsigned int options);
-int import_keys_stream (ctrl_t ctrl, iobuf_t inp, void *stats_hd,
+		  import_stats_t stats_hd, unsigned int options);
+int import_keys_stream (ctrl_t ctrl, iobuf_t inp, import_stats_t stats_hd,
                         unsigned char **fpr,
 			size_t *fpr_len, unsigned int options);
-int import_keys_es_stream (ctrl_t ctrl, estream_t fp, void *stats_handle,
+int import_keys_es_stream (ctrl_t ctrl, estream_t fp,
+                           import_stats_t stats_handle,
                            unsigned char **fpr, size_t *fpr_len,
                            unsigned int options,
                            import_screener_t screener, void *screener_arg);
 gpg_error_t import_old_secring (ctrl_t ctrl, const char *fname);
-void *import_new_stats_handle (void);
-void import_release_stats_handle (void *p);
-void import_print_stats (void *hd);
+import_stats_t import_new_stats_handle (void);
+void import_release_stats_handle (import_stats_t hd);
+void import_print_stats (import_stats_t hd);
 
 int collapse_uids( KBNODE *keyblock );
 
