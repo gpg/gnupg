@@ -358,6 +358,31 @@ print_digest_rejected_note (enum gcry_md_algos algo)
 }
 
 
+/* Print a message
+ *  "(reported error: %s)\n
+ * in verbose mode to further explain an error.  If the error code has
+ * the value IGNORE_EC no message is printed.  A message is also not
+ * printed if ERR is 0.  */
+void
+print_reported_error (gpg_error_t err, gpg_err_code_t ignore_ec)
+{
+  if (!opt.verbose)
+    return;
+
+  if (!gpg_err_code (err))
+    ;
+  else if (gpg_err_code (err) == ignore_ec)
+    ;
+  else if (gpg_err_source (err) == GPG_ERR_SOURCE_DEFAULT)
+    log_info (_("(reported error: %s\n)"),
+              gpg_strerror (err));
+  else
+    log_info (_("(reported error: %s <%s>\n)"),
+              gpg_strerror (err), gpg_strsource (err));
+
+}
+
+
 /* Map OpenPGP algo numbers to those used by Libgcrypt.  We need to do
    this for algorithms we implemented in Libgcrypt after they become
    part of OpenPGP.  */
