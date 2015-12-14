@@ -119,6 +119,11 @@ start_syshelp (ctrl_t ctrl)
 void
 call_syshelp_release (ctrl_t ctrl)
 {
-  assuan_release (ctrl->syshelp_local->assctx);
-  ctrl->syshelp_local->assctx = NULL;
+  if (!ctrl)
+    return;
+  if (ctrl->syshelp_local)
+    {
+      assuan_release (ctrl->syshelp_local->assctx);
+      ctrl->syshelp_local->assctx = NULL;
+    }
 }
