@@ -37,49 +37,31 @@
 #include "main.h" /*for check_key_signature()*/
 #include "i18n.h"
 
-/* off_item is a funny named for an object used to keep track of known
- * keys.  The idea was to use the offset to seek to the known keyblock, but
- * this is not possible if more than one process is using the keyring.
- */
-struct off_item {
-  struct off_item *next;
-  u32 kid[2];
-  /*off_t off;*/
-};
-
-typedef struct off_item **OffsetHashTable;
-
-
-typedef struct keyring_name *KR_NAME;
-struct keyring_name
+typedef struct keyring_resource *KR_RESOURCE;
+struct keyring_resource
 {
-  struct keyring_name *next;
+  struct keyring_resource *next;
   int read_only;
   dotlock_t lockhd;
   int is_locked;
   int did_full_scan;
   char fname[1];
 };
-typedef struct keyring_name const * CONST_KR_NAME;
+typedef struct keyring_resource const * CONST_KR_RESOURCE;
 
-static KR_NAME kr_names;
-static int active_handles;
-
-static OffsetHashTable kr_offtbl;
-static int kr_offtbl_ready;
-
+static KR_RESOURCE kr_resources;
 
 struct keyring_handle
 {
-  CONST_KR_NAME resource;
+  CONST_KR_RESOURCE resource;
   struct {
-    CONST_KR_NAME kr;
+    CONST_KR_RESOURCE kr;
     IOBUF iobuf;
     int eof;
     int error;
   } current;
   struct {
-    CONST_KR_NAME kr;
+    CONST_KR_RESOURCE kr;
     off_t offset;
     size_t pk_no;
     size_t uid_no;
@@ -91,96 +73,96 @@ struct keyring_handle
   } word_match;
 };
 
-
+/* The number of extant handles.  */
+static int active_handles;
 
 static int do_copy (int mode, const char *fname, KBNODE root,
                     off_t start_offset, unsigned int n_packets );
 
 
 
-static struct off_item *
-new_offset_item (void)
+/* We keep a cache of entries that we have entered in the DB.  This
+   includes not only public keys, but also subkeys.
+
+   Note: we'd like to keep the offset of the items that are present,
+   however, this doesn't work, because another concurrent GnuPG
+   process could modify the keyring.  */
+struct key_present {
+  struct key_present *next;
+  u32 kid[2];
+};
+
+/* For the hash table, we use separate chaining with linked lists.
+   This means that we have an array of N linked lists (buckets), which
+   is indexed by KEYID[1] mod N.  Elements present in the keyring will
+   be on the list; elements not present in the keyring will not be on
+   the list.
+
+   Note: since the hash table stores both present and not present
+   information, it cannot be used until we complete a full scan of the
+   keyring.  This is indicated by key_present_hash_ready.  */
+typedef struct key_present **key_present_hash_t;
+static key_present_hash_t key_present_hash;
+static int key_present_hash_ready;
+
+#define KEY_PRESENT_HASH_BUCKETS 2048
+
+/* Allocate a new value for a key present hash table.  */
+static struct key_present *
+key_present_value_new (void)
 {
-  struct off_item *k;
+  struct key_present *k;
 
   k = xmalloc_clear (sizeof *k);
   return k;
 }
 
-#if 0
-static void
-release_offset_items (struct off_item *k)
+/* Allocate a new key present hash table.  */
+static key_present_hash_t
+key_present_hash_new (void)
 {
-  struct off_item *k2;
+  struct key_present **tbl;
 
-  for (; k; k = k2)
-    {
-      k2 = k->next;
-      xfree (k);
-    }
-}
-#endif
-
-static OffsetHashTable
-new_offset_hash_table (void)
-{
-  struct off_item **tbl;
-
-  tbl = xmalloc_clear (2048 * sizeof *tbl);
+  tbl = xmalloc_clear (KEY_PRESENT_HASH_BUCKETS * sizeof *tbl);
   return tbl;
 }
 
-#if 0
-static void
-release_offset_hash_table (OffsetHashTable tbl)
+/* Return whether the value described by KID if it is in the hash
+   table.  Otherwise, return NULL.  */
+static struct key_present *
+key_present_hash_lookup (key_present_hash_t tbl, u32 *kid)
 {
-  int i;
+  struct key_present *k;
 
-  if (!tbl)
-    return;
-  for (i=0; i < 2048; i++)
-    release_offset_items (tbl[i]);
-  xfree (tbl);
-}
-#endif
-
-static struct off_item *
-lookup_offset_hash_table (OffsetHashTable tbl, u32 *kid)
-{
-  struct off_item *k;
-
-  for (k = tbl[(kid[1] & 0x07ff)]; k; k = k->next)
+  for (k = tbl[(kid[1] % (KEY_PRESENT_HASH_BUCKETS - 1))]; k; k = k->next)
     if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
       return k;
   return NULL;
 }
 
+/* Add the key to the hash table TBL if it is not already present.  */
 static void
-update_offset_hash_table (OffsetHashTable tbl, u32 *kid, off_t off)
+key_present_hash_update (key_present_hash_t tbl, u32 *kid)
 {
-  struct off_item *k;
+  struct key_present *k;
 
-  (void)off;
-
-  for (k = tbl[(kid[1] & 0x07ff)]; k; k = k->next)
+  for (k = tbl[(kid[1] % (KEY_PRESENT_HASH_BUCKETS - 1))]; k; k = k->next)
     {
       if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
-        {
-          /*k->off = off;*/
-          return;
-        }
+        return;
     }
 
-  k = new_offset_item ();
+  k = key_present_value_new ();
   k->kid[0] = kid[0];
   k->kid[1] = kid[1];
-  /*k->off = off;*/
-  k->next = tbl[(kid[1] & 0x07ff)];
-  tbl[(kid[1] & 0x07ff)] = k;
+  k->next = tbl[(kid[1] % (KEY_PRESENT_HASH_BUCKETS - 1))];
+  tbl[(kid[1] % (KEY_PRESENT_HASH_BUCKETS - 1))] = k;
 }
 
+/* Add all the keys (public and subkeys) present in the keyblock to
+   the hash TBL.  */
 static void
-update_offset_hash_table_from_kb (OffsetHashTable tbl, KBNODE node, off_t off)
+key_present_hash_update_from_kb (key_present_hash_t tbl, KBNODE node)
 {
   for (; node; node = node->next)
     {
@@ -189,11 +171,11 @@ update_offset_hash_table_from_kb (OffsetHashTable tbl, KBNODE node, off_t off)
         {
           u32 aki[2];
           keyid_from_pk (node->pkt->pkt.public_key, aki);
-          update_offset_hash_table (tbl, aki, off);
+          key_present_hash_update (tbl, aki);
         }
     }
 }
-
+
 /*
  * Register a filename for plain keyring files.  ptr is set to a
  * pointer to be used to create a handles etc, or the already-issued
@@ -203,12 +185,13 @@ update_offset_hash_table_from_kb (OffsetHashTable tbl, KBNODE node, off_t off)
 int
 keyring_register_filename (const char *fname, int read_only, void **ptr)
 {
-    KR_NAME kr;
+    KR_RESOURCE kr;
 
     if (active_handles)
-        BUG (); /* We don't allow that */
+      /* There are open handles.  */
+      BUG ();
 
-    for (kr=kr_names; kr; kr = kr->next)
+    for (kr=kr_resources; kr; kr = kr->next)
       {
         if (same_file_p (kr->fname, fname))
 	  {
@@ -227,12 +210,12 @@ keyring_register_filename (const char *fname, int read_only, void **ptr)
     kr->is_locked = 0;
     kr->did_full_scan = 0;
     /* keep a list of all issued pointers */
-    kr->next = kr_names;
-    kr_names = kr;
+    kr->next = kr_resources;
+    kr_resources = kr;
 
     /* create the offset table the first time a function here is used */
-    if (!kr_offtbl)
-      kr_offtbl = new_offset_hash_table ();
+    if (!key_present_hash)
+      key_present_hash = key_present_hash_new ();
 
     *ptr=kr;
 
@@ -242,7 +225,7 @@ keyring_register_filename (const char *fname, int read_only, void **ptr)
 int
 keyring_is_writable (void *token)
 {
-  KR_NAME r = token;
+  KR_RESOURCE r = token;
 
   return r? (r->read_only || !access (r->fname, W_OK)) : 0;
 }
@@ -256,7 +239,7 @@ KEYRING_HANDLE
 keyring_new (void *token)
 {
   KEYRING_HANDLE hd;
-  KR_NAME resource = token;
+  KR_RESOURCE resource = token;
 
   assert (resource);
 
@@ -317,14 +300,14 @@ keyring_get_resource_name (KEYRING_HANDLE hd)
 int
 keyring_lock (KEYRING_HANDLE hd, int yes)
 {
-    KR_NAME kr;
+    KR_RESOURCE kr;
     int rc = 0;
 
     (void)hd;
 
     if (yes) {
         /* first make sure the lock handles are created */
-        for (kr=kr_names; kr; kr = kr->next) {
+        for (kr=kr_resources; kr; kr = kr->next) {
             if (!keyring_is_writable(kr))
                 continue;
             if (!kr->lockhd) {
@@ -339,7 +322,7 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
             return rc;
 
         /* and now set the locks */
-        for (kr=kr_names; kr; kr = kr->next) {
+        for (kr=kr_resources; kr; kr = kr->next) {
             if (!keyring_is_writable(kr))
                 continue;
             if (kr->is_locked)
@@ -354,7 +337,7 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
     }
 
     if (rc || !yes) {
-        for (kr=kr_names; kr; kr = kr->next) {
+        for (kr=kr_resources; kr; kr = kr->next) {
             if (!keyring_is_writable(kr))
                 continue;
             if (!kr->is_locked)
@@ -588,9 +571,9 @@ keyring_update_keyblock (KEYRING_HANDLE hd, KBNODE kb)
     rc = do_copy (3, hd->found.kr->fname, kb,
                   hd->found.offset, hd->found.n_packets );
     if (!rc) {
-      if (kr_offtbl)
+      if (key_present_hash)
         {
-          update_offset_hash_table_from_kb (kr_offtbl, kb, 0);
+          key_present_hash_update_from_kb (key_present_hash, kb);
         }
       /* better reset the found info */
       hd->found.kr = NULL;
@@ -634,9 +617,9 @@ keyring_insert_keyblock (KEYRING_HANDLE hd, KBNODE kb)
 
     /* do the insert */
     rc = do_copy (1, fname, kb, 0, 0 );
-    if (!rc && kr_offtbl)
+    if (!rc && key_present_hash)
       {
-        update_offset_hash_table_from_kb (kr_offtbl, kb, 0);
+        key_present_hash_update_from_kb (key_present_hash, kb);
       }
 
     return rc;
@@ -981,7 +964,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   int pk_no, uid_no;
   int initial_skip;
   int scanned_from_start;
-  int use_offtbl;
+  int use_key_present_hash;
   PKT_user_id *uid = NULL;
   PKT_public_key *pk = NULL;
   u32 aki[2];
@@ -1038,13 +1021,13 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       return rc;
     }
 
-  use_offtbl = !!kr_offtbl;
-  if (!use_offtbl)
+  use_key_present_hash = !!key_present_hash;
+  if (!use_key_present_hash)
     {
       if (DBG_LOOKUP)
         log_debug ("%s: no offset table.\n", __func__);
     }
-  else if (!kr_offtbl_ready)
+  else if (!key_present_hash_ready)
     {
       if (DBG_LOOKUP)
         log_debug ("%s: initializing offset table. (need_keyid: %d => 1)\n",
@@ -1053,12 +1036,12 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     }
   else if (ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID)
     {
-      struct off_item *oi;
+      struct key_present *oi;
 
       if (DBG_LOOKUP)
         log_debug ("%s: look up by long key id, checking cache\n", __func__);
 
-      oi = lookup_offset_hash_table (kr_offtbl, desc[0].u.kid);
+      oi = key_present_hash_lookup (key_present_hash, desc[0].u.kid);
       if (!oi)
         { /* We know that we don't have this key */
           if (DBG_LOOKUP)
@@ -1153,8 +1136,10 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
           if (need_keyid)
             keyid_from_pk (pk, aki);
 
-          if (use_offtbl && !kr_offtbl_ready && scanned_from_start)
-            update_offset_hash_table (kr_offtbl, aki, main_offset);
+          if (use_key_present_hash
+              && !key_present_hash_ready
+              && scanned_from_start)
+            key_present_hash_update (key_present_hash, aki);
         }
       else if (pkt.pkttype == PKT_USER_ID)
         {
@@ -1258,12 +1243,14 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       hd->current.eof = 1;
       /* if we scanned all keyrings, we are sure that
        * all known key IDs are in our offtbl, mark that. */
-      if (use_offtbl && !kr_offtbl_ready && scanned_from_start)
+      if (use_key_present_hash
+          && !key_present_hash_ready
+          && scanned_from_start)
         {
-          KR_NAME kr;
+          KR_RESOURCE kr;
 
           /* First set the did_full_scan flag for this keyring.  */
-          for (kr=kr_names; kr; kr = kr->next)
+          for (kr=kr_resources; kr; kr = kr->next)
             {
               if (hd->resource == kr)
                 {
@@ -1273,13 +1260,13 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
             }
           /* Then check whether all flags are set and if so, mark the
              offtbl ready */
-          for (kr=kr_names; kr; kr = kr->next)
+          for (kr=kr_resources; kr; kr = kr->next)
             {
               if (!kr->did_full_scan)
                 break;
             }
           if (!kr)
-            kr_offtbl_ready = 1;
+            key_present_hash_ready = 1;
         }
     }
   else
