@@ -1168,6 +1168,7 @@ parse_def_secret_key (ctrl_t ctrl)
       gpg_error_t err;
       KEYDB_SEARCH_DESC desc;
       KBNODE kb;
+      KBNODE node;
 
       err = classify_user_id (t->d, &desc, 1);
       if (err)
@@ -1208,15 +1209,70 @@ parse_def_secret_key (ctrl_t ctrl)
           continue;
         }
 
-      err = agent_probe_secret_key (ctrl, kb->pkt->pkt.public_key);
+      merge_selfsigs (kb);
+
+      err = gpg_error (GPG_ERR_NO_SECKEY);
+      node = kb;
+      do
+        {
+          PKT_public_key *pk = node->pkt->pkt.public_key;
+
+          /* Check that the key has the signing capability.  */
+          if (! (pk->pubkey_usage & PUBKEY_USAGE_SIG))
+            continue;
+
+          /* Check if the key is valid.  */
+          if (pk->flags.revoked)
+            {
+              if (DBG_LOOKUP)
+                log_debug (_("not using %s as default key, %s"), "revoked");
+              continue;
+            }
+          if (pk->has_expired)
+            {
+              if (DBG_LOOKUP)
+                log_debug (_("not using %s as default key, %s"), "expired");
+              continue;
+            }
+          if (pk_is_disabled (pk))
+            {
+              if (DBG_LOOKUP)
+                log_debug (_("not using %s as default key, %s"), "disabled");
+              continue;
+            }
+
+          err = agent_probe_secret_key (ctrl, pk);
+          if (! err)
+            /* This is a valid key.  */
+            break;
+        }
+      while ((node = find_next_kbnode (node, PKT_PUBLIC_SUBKEY)));
+
       release_kbnode (kb);
-      if (! err)
+      if (err)
+        {
+          if (! warned && ! opt.quiet)
+            {
+              if (gpg_err_code (err) == GPG_ERR_NO_SECKEY)
+                log_info (_("Warning: not using '%s' as default key: %s.\n"),
+                          t->d, gpg_strerror (err));
+              else
+                log_info (_("Warning: not using '%s' as default key: no secret key available: %s\n"),
+                          t->d, gpg_strerror (err));
+            }
+        }
+      else
         {
           if (! warned)
-            log_info (_("using \"%s\" as default secret key\n"), t->d);
+            log_info (_("using \"%s\" as default secret key for signing\n"),
+                      t->d);
           break;
         }
     }
+
+  if (! warned && opt.def_secret_key && ! t)
+    log_info (_("all values passed to '%s' ignored.\n"),
+              "--default-key");
 
   warned = 1;
 
