@@ -36,7 +36,7 @@
 #include <assert.h>
 
 #include "i18n.h"
-#include "../common/sh-exectool.h"
+#include "../common/exectool.h"
 #include "../common/sysutils.h"
 #include "gpgtar.h"
 
@@ -937,8 +937,8 @@ gpgtar_create (char **inpattern, int encrypt, int sign)
               + 1 + !!encrypt + !!sign + 2 * !!opt.user
               + !!opt.symmetric);
 
-      err = sh_exec_tool_stream (opt.gpg_program, argv,
-                                 outstream, cipher_stream);
+      err = gnupg_exec_tool_stream (opt.gpg_program, argv,
+                                    outstream, cipher_stream);
       xfree (argv);
       if (err)
         goto leave;

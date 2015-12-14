@@ -1,4 +1,4 @@
-/* sh-exectool.c - Utility functions to execute a helper tool
+/* exectool.c - Utility functions to execute a helper tool
  * Copyright (C) 2015 Werner Koch
  *
  * This file is part of GnuPG.
@@ -216,9 +216,9 @@ copy_buffer_flush (struct copy_buffer *c, estream_t sink)
    the process' stdout is written to OUTPUT.  On error a diagnostic is
    printed, and an error code returned.  */
 gpg_error_t
-sh_exec_tool_stream (const char *pgmname, const char *argv[],
-                     estream_t input,
-                     estream_t output)
+gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
+                        estream_t input,
+                        estream_t output)
 {
   gpg_error_t err;
   pid_t pid;
@@ -256,7 +256,7 @@ sh_exec_tool_stream (const char *pgmname, const char *argv[],
   fds[2].want_read = 1;
   /* Now read as long as we have something to poll.  We continue
      reading even after EOF or error on stdout so that we get the
-     other error messages or remaining outout.  */
+     other error messages or remaining outut.  */
   while (!fds[1].ignore && !fds[2].ignore)
     {
       count = es_poll (fds, DIM(fds), -1);
@@ -361,9 +361,9 @@ nop_free (void *ptr)
    stored at RESULT, a diagnostic is printed, and an error code
    returned.  */
 gpg_error_t
-sh_exec_tool (const char *pgmname, const char *argv[],
-              const char *input_string,
-              char **result, size_t *resultlen)
+gnupg_exec_tool (const char *pgmname, const char *argv[],
+                 const char *input_string,
+                 char **result, size_t *resultlen)
 {
   gpg_error_t err;
   estream_t input = NULL;
@@ -391,7 +391,7 @@ sh_exec_tool (const char *pgmname, const char *argv[],
       goto leave;
     }
 
-  err = sh_exec_tool_stream (pgmname, argv, input, output);
+  err = gnupg_exec_tool_stream (pgmname, argv, input, output);
   if (err)
     goto leave;
 

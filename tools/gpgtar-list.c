@@ -26,7 +26,7 @@
 
 #include "i18n.h"
 #include "gpgtar.h"
-#include "../common/sh-exectool.h"
+#include "../common/exectool.h"
 
 
 
@@ -64,7 +64,7 @@ parse_xoctal (const void *data, size_t length, const char *filename)
             }
           else
             {
-              log_error ("%s: invalid octal number encountered - assuming 0\n", 
+              log_error ("%s: invalid octal number encountered - assuming 0\n",
                          filename);
               value = 0;
               break;
@@ -83,7 +83,7 @@ parse_header (const void *record, const char *filename)
   tar_header_t header;
   int use_prefix;
 
-  use_prefix = (!memcmp (raw->magic, "ustar", 5) 
+  use_prefix = (!memcmp (raw->magic, "ustar", 5)
                 && (raw->magic[5] == ' ' || !raw->magic[5]));
 
 
@@ -135,7 +135,7 @@ parse_header (const void *record, const char *filename)
     n = 0;
   memcpy (header->name+n, raw->name, namelen);
   header->name[n+namelen] = 0;
-  
+
   header->mode  = parse_xoctal (raw->mode, sizeof raw->mode, filename);
   header->uid   = parse_xoctal (raw->uid, sizeof raw->uid, filename);
   header->gid   = parse_xoctal (raw->gid, sizeof raw->gid, filename);
@@ -161,7 +161,7 @@ parse_header (const void *record, const char *filename)
     header->nrecords = (header->size + RECORDSIZE-1)/RECORDSIZE;
   else
     header->nrecords = 0;
-  
+
 
   return header;
 }
@@ -325,8 +325,8 @@ gpgtar_list (const char *filename, int decrypt)
       argv[i++] = NULL;
       assert (i == strlist_length (opt.gpg_arguments) + 2);
 
-      err = sh_exec_tool_stream (opt.gpg_program, argv,
-                                 cipher_stream, stream);
+      err = gnupg_exec_tool_stream (opt.gpg_program, argv,
+                                    cipher_stream, stream);
       xfree (argv);
       if (err)
         goto leave;

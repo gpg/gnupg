@@ -28,7 +28,7 @@
 #include <assert.h>
 
 #include "i18n.h"
-#include "../common/sh-exectool.h"
+#include "../common/exectool.h"
 #include "../common/sysutils.h"
 #include "gpgtar.h"
 
@@ -325,8 +325,8 @@ gpgtar_extract (const char *filename, int decrypt)
       argv[i++] = NULL;
       assert (i == strlist_length (opt.gpg_arguments) + 2);
 
-      err = sh_exec_tool_stream (opt.gpg_program, argv,
-                                 cipher_stream, stream);
+      err = gnupg_exec_tool_stream (opt.gpg_program, argv,
+                                    cipher_stream, stream);
       xfree (argv);
       if (err)
         goto leave;
