@@ -76,11 +76,6 @@ gpg_error_t sh_encrypt_keyblob (ctrl_t ctrl,
                                 const void *keyblob, size_t keybloblen,
                                 char **r_enckeyblob, size_t *r_enckeybloblen);
 
-/*-- sh-exectool.c --*/
-gpg_error_t sh_exec_tool (const char *pgmname, const char *argv[],
-                          const char *input_string,
-                          char **result, size_t *resultlen);
-
 /*-- sh-blockdev.c --*/
 gpg_error_t sh_blockdev_getsz (const char *name, unsigned long long *r_nblocks);
 gpg_error_t sh_is_empty_partition (const char *name);

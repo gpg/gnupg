@@ -55,7 +55,6 @@ g13_syshelp_SOURCES = \
 	keyblob.h \
 	utils.c utils.h \
 	sh-cmd.c \
-	sh-exectool.c \
 	sh-blockdev.c \
 	sh-dmcrypt.c
 

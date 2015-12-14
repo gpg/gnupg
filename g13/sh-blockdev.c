@@ -29,6 +29,7 @@
 #include "g13-syshelp.h"
 #include <assuan.h>
 #include "i18n.h"
+#include "exectool.h"
 #include "keyblob.h"
 
 #ifndef HAVE_STRTOULL
@@ -52,7 +53,7 @@ sh_blockdev_getsz (const char *name, unsigned long long *r_nblocks)
   argv[0] = "--getsz";
   argv[1] = name;
   argv[2] = NULL;
-  err = sh_exec_tool ("/sbin/blockdev", argv, NULL, &result, NULL);
+  err = gnupg_exec_tool ("/sbin/blockdev", argv, NULL, &result, NULL);
   if (!err)
     {
       gpg_err_set_errno (0);
@@ -85,7 +86,7 @@ sh_is_empty_partition (const char *name)
   argv[3] = "UUID";
   argv[4] = name;
   argv[5] = NULL;
-  err = sh_exec_tool ("/sbin/blkid", argv, NULL, &buffer, NULL);
+  err = gnupg_exec_tool ("/sbin/blkid", argv, NULL, &buffer, NULL);
   if (err)
     return gpg_error (GPG_ERR_FALSE);
   if (*buffer)
@@ -102,7 +103,7 @@ sh_is_empty_partition (const char *name)
   argv[3] = "PARTUUID";
   argv[4] = name;
   argv[5] = NULL;
-  err = sh_exec_tool ("/sbin/blkid", argv, NULL, &buffer, NULL);
+  err = gnupg_exec_tool ("/sbin/blkid", argv, NULL, &buffer, NULL);
   if (err)
     return gpg_error (GPG_ERR_FALSE);
   if (!*buffer)

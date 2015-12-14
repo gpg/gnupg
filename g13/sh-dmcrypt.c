@@ -34,6 +34,7 @@
 #include <assuan.h>
 #include "i18n.h"
 #include "utils.h"
+#include "exectool.h"
 #include "keyblob.h"
 
 /* The standard disk block size (logical).  */
@@ -104,7 +105,7 @@ check_blockdev (const char *devname)
 
     argv[0] = "deps";
     argv[1] = NULL;
-    err = sh_exec_tool ("/sbin/dmsetup", argv, NULL, &result, NULL);
+    err = gnupg_exec_tool ("/sbin/dmsetup", argv, NULL, &result, NULL);
   }
   if (err)
     {
