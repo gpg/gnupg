@@ -3623,6 +3623,11 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   send_status_info (ctrl, "KEY-CREATED-AT",
                     numbuf, (size_t)strlen(numbuf), NULL, 0);
 
+  for (; mlen && !*m; mlen--, m++) /* strip leading zeroes */
+    ;
+  for (; elen && !*e; elen--, e++) /* strip leading zeroes */
+    ;
+
   rc = store_fpr (app, keyno, (u32)created_at, fprbuf, PUBKEY_ALGO_RSA,
                   m, mlen, e, elen);
   if (rc)
