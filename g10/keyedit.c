@@ -3233,9 +3233,10 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
                                opt.legacy_list_mode?
                                ((int) keystrlen () + 13):5, "");
 		  /* Ownertrust is only meaningful for the PGP or
-		     classic trust models */
+		     classic trust models, or PGP combined with TOFU */
 		  if (opt.trust_model == TM_PGP
-		      || opt.trust_model == TM_CLASSIC)
+		      || opt.trust_model == TM_CLASSIC
+		      || opt.trust_model == TM_TOFU_PGP)
 		    {
 		      int width = 14 - strlen (otrust);
 		      if (width <= 0)
