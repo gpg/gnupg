@@ -1225,19 +1225,22 @@ parse_def_secret_key (ctrl_t ctrl)
           if (pk->flags.revoked)
             {
               if (DBG_LOOKUP)
-                log_debug (_("not using %s as default key, %s"), "revoked");
+                log_debug ("not using %s as default key, %s\n",
+                           t->d, "revoked");
               continue;
             }
           if (pk->has_expired)
             {
               if (DBG_LOOKUP)
-                log_debug (_("not using %s as default key, %s"), "expired");
+                log_debug ("not using %s as default key, %s\n",
+                           t->d, "expired");
               continue;
             }
           if (pk_is_disabled (pk))
             {
               if (DBG_LOOKUP)
-                log_debug (_("not using %s as default key, %s"), "disabled");
+                log_debug ("not using %s as default key, %s\n",
+                           t->d, "disabled");
               continue;
             }
 
@@ -1253,12 +1256,9 @@ parse_def_secret_key (ctrl_t ctrl)
         {
           if (! warned && ! opt.quiet)
             {
-              if (gpg_err_code (err) == GPG_ERR_NO_SECKEY)
-                log_info (_("Warning: not using '%s' as default key: %s.\n"),
-                          t->d, gpg_strerror (err));
-              else
-                log_info (_("Warning: not using '%s' as default key: no secret key available: %s\n"),
-                          t->d, gpg_strerror (err));
+              log_info (_("Warning: not using '%s' as default key: %s\n"),
+                        t->d, gpg_strerror (GPG_ERR_NO_SECKEY));
+              print_reported_error (err, GPG_ERR_NO_SECKEY);
             }
         }
       else
@@ -1271,7 +1271,7 @@ parse_def_secret_key (ctrl_t ctrl)
     }
 
   if (! warned && opt.def_secret_key && ! t)
-    log_info (_("all values passed to '%s' ignored.\n"),
+    log_info (_("all values passed to '%s' ignored\n"),
               "--default-key");
 
   warned = 1;
