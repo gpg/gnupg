@@ -36,6 +36,19 @@
 #include "strlist.h"
 #include "util.h"
 
+
+static GPGRT_INLINE gpg_error_t
+my_error_from_syserror (void)
+{
+  return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+}
+
+static GPGRT_INLINE gpg_error_t
+my_error_from_errno (int e)
+{
+  return gpg_err_make (default_errsource, gpg_err_code_from_errno (e));
+}
+
 
 /* Fire up a new GPG.  Handle the server's initial greeting.  Returns
    0 on success and stores the assuan context at R_CTX.  */
@@ -74,7 +87,7 @@ start_gpg (ctrl_t ctrl, const char *gpg_program, strlist_t gpg_arguments,
 
   if (fflush (NULL))
     {
-      err = gpg_error_from_syserror ();
+      err = my_error_from_syserror ();
       log_error ("error flushing pending output: %s\n", gpg_strerror (err));
       return err;
     }
@@ -82,7 +95,7 @@ start_gpg (ctrl_t ctrl, const char *gpg_program, strlist_t gpg_arguments,
   argv = xtrycalloc (strlist_length (gpg_arguments) + 3, sizeof *argv);
   if (argv == NULL)
     {
-      err = gpg_error_from_syserror ();
+      err = my_error_from_syserror ();
       return err;
     }
   i = 0;
@@ -196,7 +209,7 @@ writer_thread_main (void *arg)
         {
           if (errno == EINTR)
             continue;
-          err = gpg_error_from_syserror ();
+          err = my_error_from_syserror ();
           break; /* Write error.  */
         }
       length -= nwritten;
@@ -250,7 +263,7 @@ start_writer (int fd, const void *data, size_t datalen, estream_t stream,
 
   parm = xtrymalloc (sizeof *parm);
   if (!parm)
-    return gpg_error_from_syserror ();
+    return my_error_from_syserror ();
   parm->fd = fd;
   parm->data = data;
   parm->datalen = datalen;
@@ -263,7 +276,7 @@ start_writer (int fd, const void *data, size_t datalen, estream_t stream,
   ret = npth_create (&thread, &tattr, writer_thread_main, parm);
   if (ret)
     {
-      err = gpg_error_from_errno (ret);
+      err = my_error_from_errno (ret);
       log_error ("error spawning writer thread: %s\n", gpg_strerror (err));
     }
   else
@@ -304,7 +317,7 @@ reader_thread_main (void *arg)
         {
           if (errno == EINTR)
             continue;
-          err = gpg_error_from_syserror ();
+          err = my_error_from_syserror ();
           break;  /* Read error.  */
         }
 
@@ -357,7 +370,7 @@ start_reader (int fd, membuf_t *mb, estream_t stream,
 
   parm = xtrymalloc (sizeof *parm);
   if (!parm)
-    return gpg_error_from_syserror ();
+    return my_error_from_syserror ();
   parm->fd = fd;
   parm->mb = mb;
   parm->stream = stream;
@@ -369,7 +382,7 @@ start_reader (int fd, membuf_t *mb, estream_t stream,
   ret = npth_create (&thread, &tattr, reader_thread_main, parm);
   if (ret)
     {
-      err = gpg_error_from_errno (ret);
+      err = my_error_from_errno (ret);
       log_error ("error spawning reader thread: %s\n", gpg_strerror (err));
     }
   else
@@ -474,7 +487,7 @@ _gpg_encrypt (ctrl_t ctrl,
   ret = npth_join (reader_thread, NULL);
   if (ret)
     {
-      err = gpg_error_from_errno (ret);
+      err = my_error_from_errno (ret);
       log_error ("waiting for reader thread failed: %s\n", gpg_strerror (err));
       goto leave;
     }
@@ -491,7 +504,7 @@ _gpg_encrypt (ctrl_t ctrl,
   ret = npth_join (writer_thread, NULL);
   if (ret)
     {
-      err = gpg_error_from_errno (ret);
+      err = my_error_from_errno (ret);
       log_error ("waiting for writer thread failed: %s\n", gpg_strerror (err));
       goto leave;
     }
@@ -549,7 +562,7 @@ gpg_encrypt_blob (ctrl_t ctrl,
       *r_ciph = get_membuf (&reader_mb, r_ciphlen);
       if (!*r_ciph)
         {
-          err = gpg_error_from_syserror ();
+          err = my_error_from_syserror ();
           log_error ("error while storing the data in the reader thread: %s\n",
                      gpg_strerror (err));
         }
@@ -646,7 +659,7 @@ _gpg_decrypt (ctrl_t ctrl,
   ret = npth_join (reader_thread, NULL);
   if (ret)
     {
-      err = gpg_error_from_errno (ret);
+      err = my_error_from_errno (ret);
       log_error ("waiting for reader thread failed: %s\n", gpg_strerror (err));
       goto leave;
     }
@@ -662,7 +675,7 @@ _gpg_decrypt (ctrl_t ctrl,
   ret = npth_join (writer_thread, NULL);
   if (ret)
     {
-      err = gpg_error_from_errno (ret);
+      err = my_error_from_errno (ret);
       log_error ("waiting for writer thread failed: %s\n", gpg_strerror (err));
       goto leave;
     }
@@ -717,7 +730,7 @@ gpg_decrypt_blob (ctrl_t ctrl,
       *r_plain = get_membuf (&reader_mb, r_plainlen);
       if (!*r_plain)
         {
-          err = gpg_error_from_syserror ();
+          err = my_error_from_syserror ();
           log_error ("error while storing the data in the reader thread: %s\n",
                      gpg_strerror (err));
         }

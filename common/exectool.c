@@ -54,6 +54,13 @@ typedef struct
 } read_and_log_buffer_t;
 
 
+static inline gpg_error_t
+my_error_from_syserror (void)
+{
+  return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+}
+
+
 static void
 read_and_log_stderr (read_and_log_buffer_t *state, es_poll_t *fderr)
 {
@@ -102,7 +109,7 @@ read_and_log_stderr (read_and_log_buffer_t *state, es_poll_t *fderr)
             }
           else if (es_ferror (fderr->stream))
             {
-              err = gpg_error_from_syserror ();
+              err = my_error_from_syserror ();
               log_error ("error reading stderr of '%s': %s\n",
                          state->pgmname, gpg_strerror (err));
               fderr->ignore = 1; /* Disable.  */
@@ -172,7 +179,7 @@ copy_buffer_do_copy (struct copy_buffer *c, estream_t source, estream_t sink)
           if (errno == EAGAIN)
             return 0;	/* We will just retry next time.  */
 
-          return gpg_error_from_syserror ();
+          return my_error_from_syserror ();
         }
 
       assert (c->nread <= sizeof c->buffer);
@@ -187,7 +194,7 @@ copy_buffer_do_copy (struct copy_buffer *c, estream_t source, estream_t sink)
       if (errno == EAGAIN)
         return 0;	/* We will just retry next time.  */
 
-      return gpg_error_from_syserror ();
+      return my_error_from_syserror ();
     }
 
   assert (nwritten <= c->nread);
@@ -196,7 +203,7 @@ copy_buffer_do_copy (struct copy_buffer *c, estream_t source, estream_t sink)
   assert (c->writep - c->buffer <= sizeof c->buffer);
 
   if (es_fflush (sink) && errno != EAGAIN)
-    err = gpg_error_from_syserror ();
+    err = my_error_from_syserror ();
 
   return err;
 }
@@ -272,7 +279,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
       count = es_poll (fds, DIM(fds), -1);
       if (count == -1)
         {
-          err = gpg_error_from_syserror ();
+          err = my_error_from_syserror ();
           log_error ("error polling '%s': %s\n", pgmname, gpg_strerror (err));
           goto leave;
         }
@@ -391,13 +398,13 @@ gnupg_exec_tool (const char *pgmname, const char *argv[],
       input = es_mopen ((char *) input_string, len, len,
                         0 /* don't grow */, NULL, nop_free, "rb");
       if (! input)
-        return gpg_error_from_syserror ();
+        return my_error_from_syserror ();
     }
 
   output = es_fopenmem (0, "wb");
   if (! output)
     {
-      err = gpg_error_from_syserror ();
+      err = my_error_from_syserror ();
       goto leave;
     }
 
@@ -413,7 +420,7 @@ gnupg_exec_tool (const char *pgmname, const char *argv[],
   *result = xtrymalloc (len);
   if (*result == NULL)
     {
-      err = gpg_error_from_syserror ();
+      err = my_error_from_syserror ();
       goto leave;
     }
 
