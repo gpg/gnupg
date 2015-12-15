@@ -1196,3 +1196,32 @@ keybox_offset (KEYBOX_HANDLE hd)
     return 0;
   return ftello (hd->fp);
 }
+
+gpg_error_t
+keybox_seek (KEYBOX_HANDLE hd, off_t offset)
+{
+  int err;
+
+  if (hd->error)
+    return hd->error; /* still in error state */
+
+  if (! hd->fp)
+    {
+      if (offset == 0)
+        /* No need to open the file.  An unopened file is effectively at
+           offset 0.  */
+        return 0;
+
+      hd->fp = fopen (hd->kb->fname, "rb");
+      if (!hd->fp)
+        {
+          hd->error = gpg_error_from_syserror ();
+          return hd->error;
+        }
+    }
+
+  err = fseeko (hd->fp, offset, SEEK_SET);
+  hd->error = gpg_error_from_errno (err);
+
+  return hd->error;
+}

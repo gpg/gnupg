@@ -77,8 +77,6 @@ int keybox_set_ephemeral (KEYBOX_HANDLE hd, int yes);
 
 int keybox_lock (KEYBOX_HANDLE hd, int yes);
 
-off_t keybox_offset (KEYBOX_HANDLE hd);
-
 /*-- keybox-file.c --*/
 /* Fixme: This function does not belong here: Provide a better
    interface to create a new keybox file.  */
@@ -97,6 +95,8 @@ int keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
                    keybox_blobtype_t want_blobtype,
                    size_t *r_descindex, unsigned long *r_skipped);
 
+off_t keybox_offset (KEYBOX_HANDLE hd);
+gpg_error_t keybox_seek (KEYBOX_HANDLE hd, off_t offset);
 
 /*-- keybox-update.c --*/
 gpg_error_t keybox_insert_keyblock (KEYBOX_HANDLE hd,

@@ -1717,6 +1717,12 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       /* (DESCINDEX is already set).  */
       if (DBG_CLOCK)
         log_clock ("keydb_search leave (cached)");
+
+      hd->current = hd->keyblock_cache.resource;
+      /* HD->KEYBLOCK_CACHE.OFFSET is the last byte in the record.
+         Seek just beyond that.  */
+      keybox_seek (hd->active[hd->current].u.kb,
+                   hd->keyblock_cache.offset + 1);
       return 0;
     }
 
