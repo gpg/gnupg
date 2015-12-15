@@ -81,6 +81,9 @@ struct keyblock_cache {
   u32 *sigstatus;
   int pk_no;
   int uid_no;
+  /* Offset of the record in the keybox.  */
+  int resource;
+  off_t offset;
 };
 
 
@@ -245,6 +248,8 @@ keyblock_cache_clear (struct keydb_handle *hd)
   hd->keyblock_cache.sigstatus = NULL;
   iobuf_close (hd->keyblock_cache.iobuf);
   hd->keyblock_cache.iobuf = NULL;
+  hd->keyblock_cache.resource = -1;
+  hd->keyblock_cache.offset = -1;
 }
 
 
@@ -1701,7 +1706,13 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       && (desc[0].mode == KEYDB_SEARCH_MODE_FPR20
           || desc[0].mode == KEYDB_SEARCH_MODE_FPR)
       && hd->keyblock_cache.state  == KEYBLOCK_CACHE_FILLED
-      && !memcmp (hd->keyblock_cache.fpr, desc[0].u.fpr, 20))
+      && !memcmp (hd->keyblock_cache.fpr, desc[0].u.fpr, 20)
+      /* Make sure the current file position occurs before the cached
+         result to avoid an infinite loop.  */
+      && (hd->current < hd->keyblock_cache.resource
+          || (hd->current == hd->keyblock_cache.resource
+              && (keybox_offset (hd->active[hd->current].u.kb)
+                  <= hd->keyblock_cache.offset))))
     {
       /* (DESCINDEX is already set).  */
       if (DBG_CLOCK)
@@ -1772,6 +1783,12 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       && hd->active[hd->current].type == KEYDB_RESOURCE_TYPE_KEYBOX)
     {
       hd->keyblock_cache.state = KEYBLOCK_CACHE_PREPARED;
+      hd->keyblock_cache.resource = hd->current;
+      /* The current offset is at the start of the next record.  Since
+         a record is at least 1 byte, we just use offset - 1, which is
+         within the record.  */
+      hd->keyblock_cache.offset
+        = keybox_offset (hd->active[hd->current].u.kb) - 1;
       memcpy (hd->keyblock_cache.fpr, desc[0].u.fpr, 20);
     }
 

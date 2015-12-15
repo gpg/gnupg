@@ -77,6 +77,8 @@ int keybox_set_ephemeral (KEYBOX_HANDLE hd, int yes);
 
 int keybox_lock (KEYBOX_HANDLE hd, int yes);
 
+off_t keybox_offset (KEYBOX_HANDLE hd);
+
 /*-- keybox-file.c --*/
 /* Fixme: This function does not belong here: Provide a better
    interface to create a new keybox file.  */

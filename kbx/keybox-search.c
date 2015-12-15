@@ -1188,3 +1188,11 @@ keybox_get_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int *value)
   ec = get_flag_from_image (buffer, length, what, value);
   return ec? gpg_error (ec):0;
 }
+
+off_t
+keybox_offset (KEYBOX_HANDLE hd)
+{
+  if (!hd->fp)
+    return 0;
+  return ftello (hd->fp);
+}
