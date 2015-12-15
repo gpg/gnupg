@@ -223,6 +223,7 @@ check_conflict (int slot, const char *name)
 gpg_error_t
 check_application_conflict (ctrl_t ctrl, const char *name)
 {
+  int slot = ctrl->reader_slot;
   gpg_error_t err;
 
   if (slot < 0 || slot >= DIM (lock_table))
