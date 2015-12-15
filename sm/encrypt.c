@@ -208,8 +208,11 @@ encrypt_dek (const DEK dek, ksba_cert_t cert, unsigned char **encval)
   gcry_sexp_release (s_pkey);
   
   /* Reformat it. */
-  rc = make_canon_sexp (s_ciph, encval, NULL);
-  gcry_sexp_release (s_ciph);
+  if (!rc)
+    {
+      rc = make_canon_sexp (s_ciph, encval, NULL);
+      gcry_sexp_release (s_ciph);
+    }
   return rc;
 }
 
