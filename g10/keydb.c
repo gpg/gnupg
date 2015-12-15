@@ -1386,6 +1386,12 @@ gpg_error_t
 keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 {
   gpg_error_t err;
+  PKT_public_key *pk = kb->pkt->pkt.public_key;
+  KEYDB_SEARCH_DESC desc;
+  size_t len;
+
+  assert (kb);
+  assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
@@ -1393,15 +1399,25 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
   kid_not_found_flush ();
   keyblock_cache_clear (hd);
 
-  if (hd->found < 0 || hd->found >= hd->used)
-    return gpg_error (GPG_ERR_VALUE_NOT_FOUND);
-
   if (opt.dry_run)
     return 0;
 
   err = lock_all (hd);
   if (err)
     return err;
+
+  memset (&desc, 0, sizeof (desc));
+  fingerprint_from_pk (pk, desc.u.fpr, &len);
+  if (len == 20)
+    desc.mode = KEYDB_SEARCH_MODE_FPR20;
+  else
+    log_bug ("%s: Unsupported key length: %zd\n", __func__, len);
+
+  keydb_search_reset (hd);
+  err = keydb_search (hd, &desc, 1, NULL);
+  if (err)
+    return gpg_error (GPG_ERR_VALUE_NOT_FOUND);
+  assert (hd->found >= 0 && hd->found < hd->used);
 
   switch (hd->active[hd->found].type)
     {

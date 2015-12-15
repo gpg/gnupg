@@ -255,12 +255,21 @@ const char *keydb_get_resource_name (KEYDB_HANDLE hd);
    for the user ID node.  */
 gpg_error_t keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb);
 
-/* Replace the currently selected keyblock (i.e., the last result
-   returned by keydb_search) with the key block in KB.
+/* Update the keyblock KB (i.e., extract the fingerprint and find the
+   corresponding keyblock in the keyring).
 
    This doesn't do anything if --dry-run was specified.
 
-   Returns 0 on success.  Otherwise, it returns an error code.  */
+   Returns 0 on success.  Otherwise, it returns an error code.  Note:
+   if there isn't a keyblock in the keyring corresponding to KB, then
+   this function returns GPG_ERR_VALUE_NOT_FOUND.
+
+   This function selects the matching record and modifies the current
+   file position to point to the record just after the selected entry.
+   Thus, if you do a subsequent search using HD, you should first do a
+   keydb_search_reset.  Further, if the selected record is important,
+   you should use keydb_push_found_state and keydb_pop_found_state to
+   save and restore it.  */
 gpg_error_t keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb);
 
 /* Insert a keyblock into one of the underlying keyrings or keyboxes.
