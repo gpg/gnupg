@@ -2101,6 +2101,15 @@ get_default_configname (void)
   return configname;
 }
 
+struct result
+{
+  struct result *next;
+  kbnode_t keyblock;
+  int processed;
+};
+
+/* We show a warning when a key appears multiple times in the DB.  */
+static strlist_t key_dups;
 
 static gpg_error_t
 check_user_ids (strlist_t *sp,
@@ -2128,18 +2137,21 @@ check_user_ids (strlist_t *sp,
 
   for (t = s; t; t = t->next)
     {
-      const char *option;
+      const char *option_str;
+      int option;
 
       KEYDB_SEARCH_DESC desc;
-      KBNODE kb;
-      PKT_public_key *pk;
-      char fingerprint_bin[MAX_FINGERPRINT_LEN];
-      size_t fingerprint_bin_len = sizeof (fingerprint_bin);
+      struct result *results = NULL;
+      struct result *r;
+
+      int count;
+
       /* We also potentially need a ! at the end.  */
       char fingerprint[2 * MAX_FINGERPRINT_LEN + 1 + 1];
-      int added = 0;
-      int dups = 0;
-      int ambiguous = 0;
+      char fingerprint2[2 * MAX_FINGERPRINT_LEN + 1];
+
+      KBNODE best_kb;
+      PKT_public_key *best_pk;
 
       /* If the key has been given on the command line and it has not
          been given by one of the encrypt-to options, we skip the
@@ -2153,15 +2165,16 @@ check_user_ids (strlist_t *sp,
           continue;
         }
 
-      switch (t->flags >> PK_LIST_SHIFT)
+      option = t->flags >> PK_LIST_SHIFT;
+      switch (option)
         {
-        case oDefaultKey: option = "--default-key"; break;
-        case oEncryptTo: option = "--encrypt-to"; break;
-        case oHiddenEncryptTo: option = "--hidden-encrypt-to"; break;
-        case oEncryptToDefaultKey: option = "--encrypt-to-default-key"; break;
-        case oRecipient: option = "--recipient"; break;
-        case oHiddenRecipient: option = "--hidden-recipient"; break;
-        case oLocalUser: option = "--local-user"; break;
+        case oDefaultKey: option_str = "--default-key"; break;
+        case oEncryptTo: option_str = "--encrypt-to"; break;
+        case oHiddenEncryptTo: option_str = "--hidden-encrypt-to"; break;
+        case oEncryptToDefaultKey: option_str = "--encrypt-to-default-key"; break;
+        case oRecipient: option_str = "--recipient"; break;
+        case oHiddenRecipient: option_str = "--hidden-recipient"; break;
+        case oLocalUser: option_str = "--local-user"; break;
         default:
           log_bug ("Unsupport option: %d\n", (t->flags >> PK_LIST_SHIFT));
         }
@@ -2169,7 +2182,7 @@ check_user_ids (strlist_t *sp,
       if (DBG_LOOKUP)
         {
           log_debug ("\n");
-          log_debug ("%s: Checking %s=%s\n", __func__, option, t->d);
+          log_debug ("%s: Checking %s=%s\n", __func__, option_str, t->d);
         }
 
       err = classify_user_id (t->d, &desc, 1);
@@ -2181,7 +2194,7 @@ check_user_ids (strlist_t *sp,
           log_error (_("key \"%s\" not found: %s\n"),
                        t->d, gpg_strerror (err));
           if (!opt.quiet)
-            log_info (_("(check argument of option '%s')\n"), option);
+            log_info (_("(check argument of option '%s')\n"), option_str);
           continue;
         }
 
@@ -2192,7 +2205,7 @@ check_user_ids (strlist_t *sp,
                 || desc.mode == KEYDB_SEARCH_MODE_FPR))
         log_info (_("Warning: value '%s' for option '%s'"
                     " should be a long key ID or a fingerprint\n"),
-                  t->d, option);
+                  t->d, option_str);
 
       if (! hd)
         {
@@ -2206,8 +2219,53 @@ check_user_ids (strlist_t *sp,
       else
         keydb_search_reset (hd);
 
-      err = keydb_search (hd, &desc, 1, NULL);
-      if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+      /* Gather all of the results.  */
+      count = 0;
+      while (1)
+        {
+          KBNODE kb;
+
+          err = keydb_search (hd, &desc, 1, NULL);
+          if (gpg_err_code (err) == GPG_ERR_NOT_FOUND
+              || gpg_err_code (err) == GPG_ERR_EOF)
+            /* No more results.   */
+            break;
+          else if (err)
+            /* An error (other than "not found").  */
+            {
+              log_error (_("error searching the keyring: %s\n"),
+                         gpg_strerror (err));
+              break;
+            }
+
+          err = keydb_get_keyblock (hd, &kb);
+          if (err)
+            {
+              log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));
+              break;
+            }
+
+          /* Another result!  */
+          count ++;
+
+          r = xmalloc_clear (sizeof (*r));
+          r->keyblock = kb;
+          r->next = results;
+          results = r;
+        }
+
+      if (DBG_LOOKUP)
+        {
+          log_debug ("%s resulted in %d matches.\n", t->d, count);
+          for (r = results; r; r = r->next)
+            log_debug ("  %s\n",
+                       hexfingerprint (r->keyblock->pkt->pkt.public_key,
+                                       fingerprint, sizeof (fingerprint)));
+        }
+
+      if (! results && (gpg_err_code (err) == GPG_ERR_NOT_FOUND
+                        || gpg_err_code (err) == GPG_ERR_EOF))
+        /* No match.  */
         {
           if (DBG_LOOKUP)
             log_debug ("%s: '%s' not found.\n", __func__, t->d);
@@ -2219,30 +2277,223 @@ check_user_ids (strlist_t *sp,
 
               log_error (_("key \"%s\" not found\n"), t->d);
               if (!opt.quiet)
-                log_info (_("(check argument of option '%s')\n"), option);
+                log_info (_("(check argument of option '%s')\n"), option_str);
             }
           continue;
         }
-      if (err)
+      else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND
+               || gpg_err_code (err) == GPG_ERR_EOF)
+        /* No more matches.  */
+        ;
+      else if (err)
+        /* Some other error.  An error message was already printed
+           out.  Free RESULTS and continue.  */
         {
           if (! rc)
             rc = err;
 
-          log_error (_("key \"%s\" not found: %s\n"), t->d, gpg_strerror (err));
-          break;
-        }
+          while ((r = results))
+            {
+              results = results->next;
+              release_kbnode (r->keyblock);
+              xfree (r);
+            }
 
-      err = keydb_get_keyblock (hd, &kb);
-      if (err)
-        {
-          if (! rc)
-            rc = err;
-
-          log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));
           continue;
         }
 
-      pk = kb->pkt->pkt.public_key;
+      /* Check for duplicates.  */
+
+      if (DBG_LOOKUP)
+        log_debug ("%s: Checking results of %s='%s' for dups\n",
+                   __func__, option_str, t->d);
+      while (1)
+        {
+          struct result **prevp;
+          struct result *next;
+          struct result *r2;
+          int dups = 0;
+
+          /* After checking a result, we set R->PROCESSED.  Find the
+             next unprocessed result.  */
+          for (r = results; r; r = r->next)
+            if (! r->processed)
+              break;
+
+          if (! r)
+            /* There is nothing left to check.  */
+            break;
+
+          hexfingerprint (r->keyblock->pkt->pkt.public_key,
+                          fingerprint, sizeof fingerprint);
+          r->processed = 1;
+
+          prevp = &results;
+          next = results;
+          while ((r2 = next))
+            {
+              if (r2->processed)
+                {
+                  prevp = &r2->next;
+                  next = r2->next;
+                  continue;
+                }
+
+              hexfingerprint (r2->keyblock->pkt->pkt.public_key,
+                              fingerprint2, sizeof fingerprint2);
+
+              if (strcmp (fingerprint, fingerprint2) != 0)
+                /* Not a dup.  */
+                {
+                  prevp = &r2->next;
+                  next = r2->next;
+                  continue;
+                }
+
+              dups ++;
+
+              /* Remove R2 from the list.  */
+              *prevp = r2->next;
+              release_kbnode (r2->keyblock);
+              next = r2->next;
+              xfree (r2);
+            }
+
+          if (dups && ! strlist_find (key_dups, fingerprint))
+            {
+              log_info (_("Warning: %s appears in the keyring %d times.\n"),
+                        format_hexfingerprint (fingerprint,
+                                               fingerprint_formatted,
+                                               sizeof fingerprint_formatted),
+                        1 + dups);
+              add_to_strlist (&key_dups, fingerprint);
+            }
+        }
+
+      if (DBG_LOOKUP)
+        {
+          log_debug ("After removing dups:\n");
+          for (r = results, count = 0; r; r = r->next)
+            {
+              count ++;
+              log_debug ("  %d: %s\n",
+                         count,
+                         hexfingerprint (r->keyblock->pkt->pkt.public_key,
+                                         fingerprint, sizeof fingerprint));
+            }
+        }
+
+      /* Now we find the best key.  */
+      assert (results);
+      if (! results->next)
+        /* There is only one key.  */
+        {
+          best_kb = results->keyblock;
+          best_pk = best_kb->pkt->pkt.public_key;
+        }
+      else
+        /* We have more than one matching key.  Prune invalid
+           keys.  */
+        {
+          int ambiguous = 0;
+
+          if (DBG_LOOKUP)
+            log_debug ("Pruning bad keys.\n");
+
+          best_pk = NULL;
+          for (r = results; r; r = r->next)
+            {
+              /* Merge in the data from the self sigs so that things
+                 like the revoked status are available.  */
+              merge_keys_and_selfsig (r->keyblock);
+              r->processed = 0;
+            }
+
+          for (r = results; r; r = r->next)
+            {
+              KBNODE kb = r->keyblock;
+              PKT_public_key *pk = kb->pkt->pkt.public_key;
+
+              if (/* Using disabled keys with --encrypt-to is allowed.  */
+                  ! (option == oEncryptTo || option == oHiddenEncryptTo)
+                  && pk_is_disabled (pk))
+                {
+                  if (DBG_LOOKUP)
+                    log_debug ("  Skipping disabled key: %s\n",
+                               hexfingerprint (pk, fingerprint,
+                                               sizeof fingerprint));
+                  r->processed = 1;
+                  continue;
+                }
+              if (pk->flags.revoked)
+                {
+                  if (DBG_LOOKUP)
+                    log_debug ("  Skipping revoked key: %s\n",
+                               hexfingerprint (pk, fingerprint,
+                                               sizeof fingerprint));
+                  r->processed = 1;
+                  continue;
+                }
+              if (pk->has_expired)
+                {
+                  if (DBG_LOOKUP)
+                    log_debug ("  Skipping expired key: %s\n",
+                               hexfingerprint (pk, fingerprint,
+                                               sizeof fingerprint));
+                  r->processed = 1;
+                  continue;
+                }
+
+              if (! best_pk)
+                {
+                  best_pk = pk;
+                  best_kb = kb;
+                  r->processed = 1;
+                  continue;
+                }
+
+              /* We have multiple candidates.  Prefer the newer key.
+
+                 XXX: we should also consider key capabilities (if we
+                 are encrypting to the key, does it have an encryption
+                 capability?).
+
+                 XXX: if we are signing, then we should consider the
+                 key that is actually available (e.g., if one is on a
+                 smart card).  */
+              ambiguous = 1;
+              if (best_pk->timestamp < pk->timestamp)
+                best_pk = pk;
+            }
+
+          if (ambiguous)
+            {
+              /* TRANSLATORS: The %s prints a key specification which
+                 for example has been given at the command line.
+                 Lines with fingerprints are printed after this
+                 message.  */
+              log_error (_("key specification '%s' is ambiguous\n"),
+                         t->d);
+              if (!opt.quiet)
+                log_info (_("(check argument of option '%s')\n"),
+                          option_str);
+
+              log_info (_("'%s' matches at least:\n"), t->d);
+
+              for (r = results; r; r = r->next)
+                if (! r->processed)
+                  log_info ("  %s\n",
+                            format_hexfingerprint
+                            (hexfingerprint (r->keyblock->pkt->pkt.public_key,
+                                             fingerprint, sizeof fingerprint),
+                             fingerprint_formatted,
+                             sizeof fingerprint_formatted));
+
+              if (! rc)
+                rc = GPG_ERR_AMBIGUOUS_NAME;
+            }
+        }
+
       if ((desc.mode == KEYDB_SEARCH_MODE_SHORT_KID
            || desc.mode == KEYDB_SEARCH_MODE_LONG_KID
            || desc.mode == KEYDB_SEARCH_MODE_FPR16
@@ -2253,7 +2504,7 @@ check_user_ids (strlist_t *sp,
            matched the search criteria.  Note: there will always be
            exactly one match.  */
         {
-          kbnode_t n = kb;
+          kbnode_t n = best_kb;
           PKT_public_key *match = NULL;
           int i;
 
@@ -2269,119 +2520,26 @@ check_user_ids (strlist_t *sp,
           while ((n = find_next_kbnode (n, PKT_PUBLIC_SUBKEY)));
           assert (match);
 
-          fingerprint_from_pk (match, fingerprint_bin, &fingerprint_bin_len);
-          assert (fingerprint_bin_len == sizeof (fingerprint_bin));
-          bin2hex (fingerprint_bin, MAX_FINGERPRINT_LEN, fingerprint);
-
+          hexfingerprint (match, fingerprint, sizeof fingerprint);
           i = strlen (fingerprint);
           fingerprint[i] = '!';
           fingerprint[i + 1] = '\0';
-
-          add_to_strlist (&s2, fingerprint);
-          added = 1;
         }
+      else
+        hexfingerprint (best_pk, fingerprint, sizeof fingerprint);
 
-      /* We need the primary key's fingerprint to detect dups so
-         always format it.  */
-      fingerprint_from_pk (pk, fingerprint_bin, &fingerprint_bin_len);
-      assert (fingerprint_bin_len == sizeof (fingerprint_bin));
-      bin2hex (fingerprint_bin, MAX_FINGERPRINT_LEN, fingerprint);
-
-      if (! added)
-        add_to_strlist (&s2, fingerprint);
+      add_to_strlist (&s2, fingerprint);
       s2->flags = s->flags;
 
-      release_kbnode (kb);
-
-      /* Continue the search.  */
-      if (DBG_LOOKUP)
-        log_debug ("%s: Checking if %s='%s' is ambiguous or there are dups\n",
-                   __func__, option, t->d);
-      while (1)
-        {
-          char fingerprint_bin2[MAX_FINGERPRINT_LEN];
-          size_t fingerprint_bin2_len = sizeof (fingerprint_bin2);
-          char fingerprint2[2 * MAX_FINGERPRINT_LEN + 1];
-
-          err = keydb_search (hd, &desc, 1, NULL);
-          if (gpg_err_code (err) == GPG_ERR_NOT_FOUND
-              || gpg_err_code (err) == GPG_ERR_EOF)
-            /* Not found => not ambiguous.   */
-            break;
-          else if (err)
-            /* An error (other than "not found").  */
-            {
-              log_error (_("error searching the keyring: %s\n"),
-                         gpg_strerror (err));
-              if (! rc)
-                rc = err;
-
-              break;
-            }
-
-          /* Another result!  */
-
-          err = keydb_get_keyblock (hd, &kb);
-          if (err)
-            {
-              log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));
-              if (! rc)
-                rc = err;
-            }
-          else
-            {
-              pk = kb->pkt->pkt.public_key;
-              fingerprint_from_pk (pk, fingerprint_bin2, &fingerprint_bin2_len);
-              assert (fingerprint_bin2_len == sizeof (fingerprint_bin2));
-              bin2hex (fingerprint_bin2, MAX_FINGERPRINT_LEN, fingerprint2);
-
-              if (strcmp (fingerprint, fingerprint2) == 0)
-                dups ++;
-              else
-                {
-                  ambiguous ++;
-
-                  if (! rc)
-                    rc = GPG_ERR_AMBIGUOUS_NAME;
-
-                  if (ambiguous == 1)
-                    {
-                      /* TRANSLATORS: The %s prints a key
-                         specification which for example has been
-                         given at the command line.  Lines with
-                         fingerprints are printed after this
-                         message.  */
-                      log_error (_("key specification '%s' is ambiguous\n"),
-                                 t->d);
-                      if (!opt.quiet)
-                        log_info (_("(check argument of option '%s')\n"),
-                                  option);
-
-                      log_info (_("'%s' matches at least:\n"), t->d);
-                      log_info ("  %s\n",
-                                format_hexfingerprint
-                                 (fingerprint,
-                                  fingerprint_formatted,
-                                  sizeof fingerprint_formatted));
-                    }
-
-                  log_info ("  %s\n",
-                            format_hexfingerprint
-                             (fingerprint2,
-                              fingerprint_formatted,
-                              sizeof fingerprint_formatted));
-                }
-
-              release_kbnode (kb);
-            }
-        }
-
-      if (dups)
-        log_info (_("Warning: %s appears in the keyring %d times.\n"),
-                  format_hexfingerprint (fingerprint,
-                                         fingerprint_formatted,
-                                         sizeof fingerprint_formatted),
-                  1 + dups);
+      {
+        struct result *next = results;
+        while ((r = next))
+          {
+            next = r->next;
+            release_kbnode (r->keyblock);
+            xfree (r);
+          }
+      }
     }
 
   strlist_rev (&s2);
