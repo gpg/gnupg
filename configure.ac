@@ -85,6 +85,13 @@ AB_INIT
 
 AC_GNU_SOURCE
 
+# Before we do anything with the C compiler, we first save the user's
+# CFLAGS (they are restored at the end of the configure script).  This
+# is because some configure checks don't work with -Werror, but we'd
+# like to use -Werror with our build.
+CFLAGS_orig=$CFLAGS
+CFLAGS=
+
 # Some status variables.
 have_gpg_error=no
 have_libgcrypt=no
@@ -1574,6 +1581,11 @@ AC_ARG_ENABLE(optimization,
                   [if test $enableval = no ; then
                       CFLAGS=`echo $CFLAGS | sed s/-O[[1-9]]\ /-O0\ /g`
                    fi])
+
+#
+# Add user CFLAGS.
+#
+CFLAGS="$CFLAGS $CFLAGS_orig"
 
 #
 # Decide what to build
