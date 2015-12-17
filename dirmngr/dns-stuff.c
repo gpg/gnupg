@@ -119,6 +119,8 @@ static char tor_credentials[50];
 gpg_error_t
 enable_dns_tormode (int new_circuit)
 {
+  (void) new_circuit;
+
 #if defined(USE_DNS_CERT) && defined(USE_ADNS)
 # if HAVE_ADNS_IF_TORMODE
    if (!*tor_credentials || new_circuit)
