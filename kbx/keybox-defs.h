@@ -80,10 +80,8 @@ struct keybox_name
 struct keybox_found_s
 {
   KEYBOXBLOB blob;
-  off_t offset;
   size_t pk_no;
   size_t uid_no;
-  unsigned int n_packets; /*used for delete and update*/
 };
 
 struct keybox_handle {
