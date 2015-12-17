@@ -70,12 +70,18 @@ enum resource_type {
 
 
 /* Bit flags used with build_pk_list.  */
-#define PK_LIST_ENCRYPT_TO 1   /* This is an encrypt-to recipient.  */
-#define PK_LIST_HIDDEN     2   /* This is a hidden recipient.       */
-#define PK_LIST_CONFIG     4   /* Specified via config file.        */
+enum
+  {
+    PK_LIST_ENCRYPT_TO=1,   /* This is an encrypt-to recipient.  */
+    PK_LIST_HIDDEN=2,       /* This is a hidden recipient.       */
+    PK_LIST_CONFIG=4        /* Specified via config file.        */
+  };
 /* To store private data in the flags they must be left shifted by
    this value.  */
-#define PK_LIST_SHIFT      3
+enum
+  {
+    PK_LIST_SHIFT=3
+  };
 
 /****************
  * A data structure to hold information about the external position
