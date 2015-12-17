@@ -3056,6 +3056,8 @@ main (int argc, char **argv)
 	  case oDefaultKey:
             sl = add_to_strlist (&opt.def_secret_key, pargs.r.ret_str);
             sl->flags = (pargs.r_opt << PK_LIST_SHIFT);
+            if (configfp)
+              sl->flags |= PK_LIST_CONFIG;
             break;
 	  case oDefRecipient:
             if( *pargs.r.ret_str )
@@ -3259,7 +3261,7 @@ main (int argc, char **argv)
               sl->flags |= PK_LIST_CONFIG;
 	    break;
           case oEncryptToDefaultKey:
-            opt.encrypt_to_default_key = 1;
+            opt.encrypt_to_default_key = configfp ? 2 : 1;
             break;
 	  case oRecipient: /* store the recipient */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
@@ -4250,6 +4252,8 @@ main (int argc, char **argv)
               sl = add_to_strlist2 (&remusr, default_key, utf8_strings);
               sl->flags = ((oEncryptToDefaultKey << PK_LIST_SHIFT)
                            | PK_LIST_ENCRYPT_TO);
+              if (opt.encrypt_to_default_key == 2)
+                sl->flags |= PK_LIST_CONFIG;
             }
           else if (have_def_secret_key)
             log_info (_("option '%s' given, but no valid default keys given\n"),
