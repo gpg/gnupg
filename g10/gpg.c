@@ -2153,6 +2153,9 @@ check_user_ids (strlist_t *sp,
       KBNODE best_kb;
       PKT_public_key *best_pk;
 
+      /* Whether the key is for encryption or signing.  */
+      int encrypt = 1;
+
       /* If the key has been given on the command line and it has not
          been given by one of the encrypt-to options, we skip the
          checks.  The reason is that the actual key selection code
@@ -2168,13 +2171,20 @@ check_user_ids (strlist_t *sp,
       option = t->flags >> PK_LIST_SHIFT;
       switch (option)
         {
-        case oDefaultKey: option_str = "--default-key"; break;
+        case oDefaultKey:
+          option_str = "--default-key";
+          encrypt = 0;
+          break;
+        case oLocalUser:
+          option_str = "--local-user";
+          encrypt = 0;
+          break;
+
         case oEncryptTo: option_str = "--encrypt-to"; break;
         case oHiddenEncryptTo: option_str = "--hidden-encrypt-to"; break;
         case oEncryptToDefaultKey: option_str = "--encrypt-to-default-key"; break;
         case oRecipient: option_str = "--recipient"; break;
         case oHiddenRecipient: option_str = "--hidden-recipient"; break;
-        case oLocalUser: option_str = "--local-user"; break;
         default:
           log_bug ("Unsupport option: %d\n", (t->flags >> PK_LIST_SHIFT));
         }
@@ -2385,114 +2395,153 @@ check_user_ids (strlist_t *sp,
 
       /* Now we find the best key.  */
       assert (results);
-      if (! results->next)
-        /* There is only one key.  */
-        {
-          best_kb = results->keyblock;
-          best_pk = best_kb->pkt->pkt.public_key;
-        }
-      else
-        /* We have more than one matching key.  Prune invalid
-           keys.  */
-        {
-          int ambiguous = 0;
+      /* Prune invalid keys.  */
+      {
+        int ambiguous = 0;
 
-          if (DBG_LOOKUP)
-            log_debug ("Pruning bad keys.\n");
+        if (DBG_LOOKUP)
+          log_debug ("Pruning bad keys.\n");
 
-          best_pk = NULL;
-          for (r = results; r; r = r->next)
-            {
-              /* Merge in the data from the self sigs so that things
-                 like the revoked status are available.  */
-              merge_keys_and_selfsig (r->keyblock);
-              r->processed = 0;
-            }
+        best_pk = NULL;
+        for (r = results; r; r = r->next)
+          {
+            KBNODE kb = r->keyblock;
+            PKT_public_key *pk = kb->pkt->pkt.public_key;
+            KBNODE n;
 
-          for (r = results; r; r = r->next)
-            {
-              KBNODE kb = r->keyblock;
-              PKT_public_key *pk = kb->pkt->pkt.public_key;
+            /* Merge in the data from the self sigs so that things
+               like the revoked status are available.  */
+            merge_keys_and_selfsig (kb);
 
-              if (/* Using disabled keys with --encrypt-to is allowed.  */
-                  ! (option == oEncryptTo || option == oHiddenEncryptTo)
-                  && pk_is_disabled (pk))
-                {
-                  if (DBG_LOOKUP)
-                    log_debug ("  Skipping disabled key: %s\n",
-                               hexfingerprint (pk, fingerprint,
-                                               sizeof fingerprint));
-                  r->processed = 1;
+            if (/* Using disabled keys with --encrypt-to is allowed.  */
+                ! (option == oEncryptTo || option == oHiddenEncryptTo)
+                && pk_is_disabled (pk))
+              {
+                if (DBG_LOOKUP)
+                  log_debug ("  Skipping disabled key: %s\n",
+                             hexfingerprint (pk, fingerprint,
+                                             sizeof fingerprint));
+                continue;
+              }
+            if (pk->flags.revoked)
+              {
+                if (DBG_LOOKUP)
+                  log_debug ("  Skipping revoked key: %s\n",
+                             hexfingerprint (pk, fingerprint,
+                                             sizeof fingerprint));
+                continue;
+              }
+            if (pk->has_expired)
+              {
+                if (DBG_LOOKUP)
+                  log_debug ("  Skipping expired key: %s\n",
+                             hexfingerprint (pk, fingerprint,
+                                             sizeof fingerprint));
+                continue;
+              }
+
+            /* Check for the required encryption or signing
+               capability.  */
+            n = kb;
+            do
+              {
+                PKT_public_key *key = n->pkt->pkt.public_key;
+
+                if ((/* Using disabled keys with --encrypt-to is allowed.  */
+                     pk_is_disabled (key)
+                     && ! (option == oEncryptTo
+                           || option == oHiddenEncryptTo))
+                    || key->flags.revoked
+                    || key->has_expired)
+                  /* Invalid.  */
                   continue;
-                }
-              if (pk->flags.revoked)
-                {
-                  if (DBG_LOOKUP)
-                    log_debug ("  Skipping revoked key: %s\n",
-                               hexfingerprint (pk, fingerprint,
-                                               sizeof fingerprint));
-                  r->processed = 1;
+
+                if (encrypt && ! (key->pubkey_usage & PUBKEY_USAGE_ENC))
                   continue;
-                }
-              if (pk->has_expired)
-                {
-                  if (DBG_LOOKUP)
-                    log_debug ("  Skipping expired key: %s\n",
-                               hexfingerprint (pk, fingerprint,
-                                               sizeof fingerprint));
-                  r->processed = 1;
+                if (! encrypt && ! (key->pubkey_usage & PUBKEY_USAGE_SIG))
                   continue;
-                }
 
-              if (! best_pk)
-                {
-                  best_pk = pk;
-                  best_kb = kb;
-                  r->processed = 1;
-                  continue;
-                }
+                /* Key passes basic tests.  */
+                break;
+              }
+            while ((n = find_next_kbnode (n, PKT_PUBLIC_SUBKEY)));
 
-              /* We have multiple candidates.  Prefer the newer key.
-
-                 XXX: we should also consider key capabilities (if we
-                 are encrypting to the key, does it have an encryption
-                 capability?).
-
-                 XXX: if we are signing, then we should consider the
-                 key that is actually available (e.g., if one is on a
-                 smart card).  */
-              ambiguous = 1;
-              if (best_pk->timestamp < pk->timestamp)
-                best_pk = pk;
-            }
-
-          if (ambiguous)
-            {
-              /* TRANSLATORS: The %s prints a key specification which
-                 for example has been given at the command line.
-                 Lines with fingerprints are printed after this
-                 message.  */
-              log_error (_("key specification '%s' is ambiguous\n"),
-                         t->d);
-              if (!opt.quiet)
-                log_info (_("(check argument of option '%s')\n"),
-                          option_str);
-
-              log_info (_("'%s' matches at least:\n"), t->d);
-
-              for (r = results; r; r = r->next)
-                if (! r->processed)
-                  log_info ("  %s\n",
-                            format_hexfingerprint
-                            (hexfingerprint (r->keyblock->pkt->pkt.public_key,
+            if (! n)
+              {
+                if (DBG_LOOKUP)
+                  log_debug ("  Skipping %s, which does not have %s capability.\n",
+                             hexfingerprint (r->keyblock->pkt->pkt.public_key,
                                              fingerprint, sizeof fingerprint),
-                             fingerprint_formatted,
-                             sizeof fingerprint_formatted));
+                             encrypt ? "encrypt" : "sign");
+                continue;
+              }
+            else if (DBG_LOOKUP)
+              log_debug ("  %s is valid and has %s capability.\n",
+                         hexfingerprint (r->keyblock->pkt->pkt.public_key,
+                                         fingerprint, sizeof fingerprint),
+                         encrypt ? "encrypt" : "sign");
 
-              if (! rc)
-                rc = GPG_ERR_AMBIGUOUS_NAME;
-            }
-        }
+
+            if (! best_pk)
+              {
+                best_pk = pk;
+                best_kb = kb;
+                continue;
+              }
+
+            /* We have multiple candidates.  Prefer the newer key.
+
+               XXX: we should also consider key capabilities (if we
+               are encrypting to the key, does it have an encryption
+               capability?).
+
+               XXX: if we are signing, then we should consider the
+               key that is actually available (e.g., if one is on a
+               smart card).  */
+            ambiguous = 1;
+            if (best_pk->timestamp < pk->timestamp)
+              best_pk = pk;
+          }
+
+        if (! results)
+          {
+            if (encrypt)
+              log_error (_("%s: no matching keys are valid encryption keys"),
+                         t->d);
+            else
+              log_error (_("%s: no matching keys are valid signing keys"),
+                         t->d);
+            if (!opt.quiet)
+              log_info (_("(check argument of option '%s')\n"), option_str);
+            continue;
+          }
+
+        if (ambiguous)
+          {
+            /* TRANSLATORS: The %s prints a key specification which
+               for example has been given at the command line.
+               Lines with fingerprints are printed after this
+               message.  */
+            log_error (_("key specification '%s' is ambiguous\n"),
+                       t->d);
+            if (!opt.quiet)
+              log_info (_("(check argument of option '%s')\n"),
+                        option_str);
+
+            log_info (_("'%s' matches at least:\n"), t->d);
+
+            for (r = results; r; r = r->next)
+              log_info ("  %s\n",
+                        format_hexfingerprint
+                        (hexfingerprint (r->keyblock->pkt->pkt.public_key,
+                                         fingerprint, sizeof fingerprint),
+                         fingerprint_formatted,
+                         sizeof fingerprint_formatted));
+
+            if (! rc)
+              rc = GPG_ERR_AMBIGUOUS_NAME;
+          }
+      }
 
       if ((desc.mode == KEYDB_SEARCH_MODE_SHORT_KID
            || desc.mode == KEYDB_SEARCH_MODE_LONG_KID
