@@ -1225,22 +1225,22 @@ parse_def_secret_key (ctrl_t ctrl)
           if (pk->flags.revoked)
             {
               if (DBG_LOOKUP)
-                log_debug ("not using %s as default key, %s\n",
-                           t->d, "revoked");
+                log_debug (_("not using %s as default key, %s"),
+                           keystr_from_pk (pk), "revoked");
               continue;
             }
           if (pk->has_expired)
             {
               if (DBG_LOOKUP)
-                log_debug ("not using %s as default key, %s\n",
-                           t->d, "expired");
+                log_debug (_("not using %s as default key, %s"),
+                           keystr_from_pk (pk), "expired");
               continue;
             }
           if (pk_is_disabled (pk))
             {
               if (DBG_LOOKUP)
-                log_debug ("not using %s as default key, %s\n",
-                           t->d, "disabled");
+                log_debug (_("not using %s as default key, %s"),
+                           keystr_from_pk (pk), "disabled");
               continue;
             }
 
