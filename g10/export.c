@@ -825,6 +825,78 @@ print_status_exported (PKT_public_key *pk)
 }
 
 
+/*
+ * Receive a secret key from agent specified by HEXGRIP.
+ *
+ * Since the key data from agant is encrypted, decrypt it by CIPHERHD.
+ * Then, parse the decrypted key data in transfer format, and put
+ * secret papameters into PK.
+ *
+ * CACHE_NONCE_ADDR is used to share nonce for multple key retrievals.
+ */
+gpg_error_t
+receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
+                           char **cache_nonce_addr, const char *hexgrip,
+                           PKT_public_key *pk)
+{
+  gpg_error_t err = 0;
+  unsigned char *wrappedkey = NULL;
+  size_t wrappedkeylen;
+  unsigned char *key = NULL;
+  size_t keylen, realkeylen;
+  gcry_sexp_t s_skey;
+  char *prompt;
+
+  if (opt.verbose)
+    log_info ("key %s: asking agent for the secret parts\n", hexgrip);
+
+  prompt = gpg_format_keydesc (pk, FORMAT_KEYDESC_EXPORT,1);
+  err = agent_export_key (ctrl, hexgrip, prompt, cache_nonce_addr,
+                          &wrappedkey, &wrappedkeylen);
+  xfree (prompt);
+
+  if (err)
+    goto unwraperror;
+  if (wrappedkeylen < 24)
+    {
+      err = gpg_error (GPG_ERR_INV_LENGTH);
+      goto unwraperror;
+    }
+  keylen = wrappedkeylen - 8;
+  key = xtrymalloc_secure (keylen);
+  if (!key)
+    {
+      err = gpg_error_from_syserror ();
+      goto unwraperror;
+    }
+  err = gcry_cipher_decrypt (cipherhd, key, keylen, wrappedkey, wrappedkeylen);
+  if (err)
+    goto unwraperror;
+  realkeylen = gcry_sexp_canon_len (key, keylen, NULL, &err);
+  if (!realkeylen)
+    goto unwraperror; /* Invalid csexp.  */
+
+  err = gcry_sexp_sscan (&s_skey, NULL, key, realkeylen);
+  if (!err)
+    {
+      err = transfer_format_to_openpgp (s_skey, pk);
+      gcry_sexp_release (s_skey);
+    }
+
+ unwraperror:
+  xfree (key);
+  xfree (wrappedkey);
+  if (err)
+    {
+      log_error ("key %s: error receiving key from agent:"
+                 " %s%s\n", hexgrip, gpg_strerror (err),
+                 gpg_err_code (err) == GPG_ERR_FULLY_CANCELED?
+                 "":_(" - skipped"));
+    }
+  return err;
+}
+
+
 /* Export the keys identified by the list of strings in USERS to the
    stream OUT.  If Secret is false public keys will be exported.  With
    secret true secret keys will be exported; in this case 1 means the
@@ -1203,83 +1275,24 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                 }
               else if (!err)
                 {
-                  /* FIXME: Move this spaghetti code into a separate
-                     function.  */
-                  unsigned char *wrappedkey = NULL;
-                  size_t wrappedkeylen;
-                  unsigned char *key = NULL;
-                  size_t keylen, realkeylen;
-                  gcry_sexp_t s_skey;
-
-                  if (opt.verbose)
-                    log_info ("key %s: asking agent for the secret parts\n",
-                              keystr_with_sub (keyid, subkid));
-
-                  {
-                    char *prompt = gpg_format_keydesc (pk,
-                                                       FORMAT_KEYDESC_EXPORT,1);
-                    err = agent_export_key (ctrl, hexgrip, prompt, &cache_nonce,
-                                            &wrappedkey, &wrappedkeylen);
-                    xfree (prompt);
-                  }
-                  if (err)
-                    goto unwraperror;
-                  if (wrappedkeylen < 24)
-                    {
-                      err = gpg_error (GPG_ERR_INV_LENGTH);
-                      goto unwraperror;
-                    }
-                  keylen = wrappedkeylen - 8;
-                  key = xtrymalloc_secure (keylen);
-                  if (!key)
-                    {
-                      err = gpg_error_from_syserror ();
-                      goto unwraperror;
-                    }
-                  err = gcry_cipher_decrypt (cipherhd, key, keylen,
-                                             wrappedkey, wrappedkeylen);
-                  if (err)
-                    goto unwraperror;
-                  realkeylen = gcry_sexp_canon_len (key, keylen, NULL, &err);
-                  if (!realkeylen)
-                    goto unwraperror; /* Invalid csexp.  */
-
-                  err = gcry_sexp_sscan (&s_skey, NULL, key, realkeylen);
-                  xfree (key);
-                  key = NULL;
-                  if (err)
-                    goto unwraperror;
-                  err = transfer_format_to_openpgp (s_skey, pk);
-                  gcry_sexp_release (s_skey);
-                  if (err)
-                    goto unwraperror;
-
-                  err = build_packet (out, node->pkt);
-                  if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
-                    {
-                      stats->exported++;
-                      print_status_exported (node->pkt->pkt.public_key);
-                    }
-                  goto unwraperror_leave;
-
-                unwraperror:
-                  xfree (wrappedkey);
-                  xfree (key);
+                  err = receive_seckey_from_agent (ctrl, cipherhd, &cache_nonce,
+                                                   hexgrip, pk);
                   if (err)
                     {
-                      log_error ("key %s: error receiving key from agent:"
-                                 " %s%s\n",
-                                 keystr_with_sub (keyid, subkid),
-                                 gpg_strerror (err),
-                                 gpg_err_code (err) == GPG_ERR_FULLY_CANCELED?
-                                 "":_(" - skipped"));
                       if (gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
                         goto leave;
                       skip_until_subkey = 1;
                       err = 0;
                     }
-                unwraperror_leave:
-                  ;
+                  else
+                    {
+                      err = build_packet (out, node->pkt);
+                      if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+                        {
+                          stats->exported++;
+                          print_status_exported (node->pkt->pkt.public_key);
+                        }
+                    }
                 }
               else
                 {
