@@ -773,7 +773,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	goto leave;
 
     if (encryptflag
-        && (rc=build_pk_list (ctrl, remusr, &pk_list, PUBKEY_USAGE_ENC)))
+        && (rc=build_pk_list (ctrl, remusr, &pk_list)))
       goto leave;
 
     /* prepare iobufs */

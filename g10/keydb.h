@@ -373,8 +373,7 @@ void show_revocation_reason( PKT_public_key *pk, int mode );
 int  check_signatures_trust( PKT_signature *sig );
 
 void release_pk_list (PK_LIST pk_list);
-int  build_pk_list (ctrl_t ctrl,
-                    strlist_t rcpts, PK_LIST *ret_pk_list, unsigned use);
+int  build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list);
 gpg_error_t find_and_check_key (ctrl_t ctrl,
                                 const char *name, unsigned int use,
                                 int mark_hidden, pk_list_t *pk_list_addr);

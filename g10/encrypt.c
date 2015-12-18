@@ -500,7 +500,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
     pk_list = provided_keys;
   else
     {
-      if ((rc = build_pk_list (ctrl, remusr, &pk_list, PUBKEY_USAGE_ENC)))
+      if ((rc = build_pk_list (ctrl, remusr, &pk_list)))
         {
           release_progress_context (pfx);
           return rc;

@@ -893,15 +893,12 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
      Bit 0 (PK_LIST_ENCRYPT_TO): This is an encrypt-to recipient.
      Bit 1 (PK_LIST_HIDDEN)    : This is a hidden recipient.
 
-   USE is the desired use for the key - usually PUBKEY_USAGE_ENC.
-
    On success a list of keys is stored at the address RET_PK_LIST; the
    caller must free this list.  On error the value at this address is
    not changed.
  */
 int
-build_pk_list (ctrl_t ctrl,
-               strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
+build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
 {
   PK_LIST pk_list = NULL;
   PKT_public_key *pk=NULL;
@@ -938,12 +935,12 @@ build_pk_list (ctrl_t ctrl,
               compliance_failure();
             }
         }
-      else if ( (use & PUBKEY_USAGE_ENC) && !opt.no_encrypt_to )
+      else if (!opt.no_encrypt_to)
         {
-          /* Encryption has been requested and --encrypt-to has not
-             been disabled.  Check this encrypt-to key. */
+          /* --encrypt-to has not been disabled.  Check this
+             encrypt-to key. */
           pk = xmalloc_clear( sizeof *pk );
-          pk->req_usage = use;
+          pk->req_usage = PUBKEY_USAGE_ENC;
 
           /* We explicitly allow encrypt-to to an disabled key; thus
              we pass 1 for the second last argument and 1 as the last
@@ -956,7 +953,8 @@ build_pk_list (ctrl_t ctrl,
               send_status_inv_recp (0, rov->d);
               goto fail;
             }
-          else if ( !(rc=openpgp_pk_test_algo2 (pk->pubkey_algo, use)) )
+          else if ( !(rc=openpgp_pk_test_algo2 (pk->pubkey_algo,
+                                                PUBKEY_USAGE_ENC)) )
             {
               /* Skip the actual key if the key is already present
                * in the list.  Add it to our list if not. */
@@ -1084,11 +1082,12 @@ build_pk_list (ctrl_t ctrl,
           /* Get and check key for the current name. */
           free_public_key (pk);
           pk = xmalloc_clear( sizeof *pk );
-          pk->req_usage = use;
+          pk->req_usage = PUBKEY_USAGE_ENC;
           rc = get_pubkey_byname (ctrl, NULL, pk, answer, NULL, NULL, 0, 0 );
           if (rc)
             tty_printf(_("No such user ID.\n"));
-          else if ( !(rc=openpgp_pk_test_algo2 (pk->pubkey_algo, use)) )
+          else if ( !(rc=openpgp_pk_test_algo2 (pk->pubkey_algo,
+                                                PUBKEY_USAGE_ENC)) )
             {
               if ( have_def_rec )
                 {
@@ -1157,14 +1156,15 @@ build_pk_list (ctrl_t ctrl,
     {
       /* We are in batch mode and have only a default recipient. */
       pk = xmalloc_clear( sizeof *pk );
-      pk->req_usage = use;
+      pk->req_usage = PUBKEY_USAGE_ENC;
 
       /* The default recipient is allowed to be disabled; thus pass 1
          as second last argument.  We also don't want an AKL. */
       rc = get_pubkey_byname (ctrl, NULL, pk, def_rec, NULL, NULL, 1, 1);
       if (rc)
         log_error(_("unknown default recipient \"%s\"\n"), def_rec );
-      else if ( !(rc=openpgp_pk_test_algo2(pk->pubkey_algo, use)) )
+      else if ( !(rc=openpgp_pk_test_algo2(pk->pubkey_algo,
+                                           PUBKEY_USAGE_ENC)) )
         {
           /* Mark any_recipients here since the default recipient
              would have been used if it wasn't already there.  It
@@ -1199,7 +1199,7 @@ build_pk_list (ctrl_t ctrl,
           if ( (remusr->flags & PK_LIST_ENCRYPT_TO) )
             continue; /* encrypt-to keys are already handled. */
 
-          rc = find_and_check_key (ctrl, remusr->d, use,
+          rc = find_and_check_key (ctrl, remusr->d, PUBKEY_USAGE_ENC,
                                    !!(remusr->flags&PK_LIST_HIDDEN),
                                    &pk_list);
           if (rc)
