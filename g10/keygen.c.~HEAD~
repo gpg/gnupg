@@ -141,6 +141,9 @@ static int write_keyblock (iobuf_t out, kbnode_t node);
 static gpg_error_t gen_card_key (int algo, int keyno, int is_primary,
                                  kbnode_t pub_root,
                                  u32 *timestamp, u32 expireval);
+static int gen_card_key_with_backup (int algo, int keyno, int is_primary,
+                                     kbnode_t pub_root, u32 timestamp,
+                                     u32 expireval, struct para_data_s *para);
 
 
 static void
@@ -3961,166 +3964,6 @@ start_tree(KBNODE *tree)
 }
 
 
-/* Write the *protected* secret key to the file.  */
-static gpg_error_t
-card_write_key_to_backup_file (PKT_public_key *sk, const char *backup_dir)
-{
-  gpg_error_t err = 0;
-  int rc;
-  char name_buffer[50];
-  char *fname;
-  IOBUF fp;
-  mode_t oldmask;
-  PACKET *pkt = NULL;
-
-  keyid_from_pk (sk, NULL);
-  snprintf (name_buffer, sizeof name_buffer, "sk_%08lX%08lX.gpg",
-            (ulong)sk->keyid[0], (ulong)sk->keyid[1]);
-
-  fname = make_filename (backup_dir, name_buffer, NULL);
-  /* Note that the umask call is not anymore needed because
-     iobuf_create now takes care of it.  However, it does not harm
-     and thus we keep it.  */
-  oldmask = umask (077);
-  if (is_secured_filename (fname))
-    {
-      fp = NULL;
-      gpg_err_set_errno (EPERM);
-    }
-  else
-    fp = iobuf_create (fname, 1);
-  umask (oldmask);
-  if (!fp)
-    {
-      err = gpg_error_from_syserror ();
-      log_error (_("can't create backup file '%s': %s\n"), fname, strerror (errno) );
-      goto leave;
-    }
-
-  pkt = xcalloc (1, sizeof *pkt);
-  pkt->pkttype = PKT_SECRET_KEY;
-  pkt->pkt.secret_key = sk;
-
-  rc = build_packet (fp, pkt);
-  if (rc)
-    {
-      log_error ("build packet failed: %s\n", gpg_strerror (rc));
-      iobuf_cancel (fp);
-    }
-  else
-    {
-      unsigned char array[MAX_FINGERPRINT_LEN];
-      char *fprbuf, *p;
-      int n;
-      int i;
-
-      iobuf_close (fp);
-      iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname);
-      log_info (_("Note: backup of card key saved to '%s'\n"), fname);
-
-      fingerprint_from_pk (sk, array, &n);
-      p = fprbuf = xmalloc (MAX_FINGERPRINT_LEN*2 + 1 + 1);
-      if (!p)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-
-      for (i=0; i < n ; i++, p += 2)
-        sprintf (p, "%02X", array[i]);
-      *p++ = ' ';
-      *p = 0;
-
-      write_status_text_and_buffer (STATUS_BACKUP_KEY_CREATED, fprbuf,
-                                    fname, strlen (fname), 0);
-      xfree (fprbuf);
-    }
-
- leave:
-  xfree (pkt);
-  xfree (fname);
-  return err;
-}
-
-
-/* Store key to card and make a backup file in OpenPGP format.  */
-static gpg_error_t
-card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
-                            const char *backup_dir)
-{
-  PKT_public_key *sk;
-  gnupg_isotime_t timestamp;
-  gpg_error_t err;
-  char *hexgrip;
-  int rc;
-  struct agent_card_info_s info;
-  gcry_cipher_hd_t cipherhd = NULL;
-  char *cache_nonce = NULL;
-  void *kek = NULL;
-  size_t keklen;
-
-  sk = copy_public_key (NULL, sub_psk);
-  if (!sk)
-    return gpg_error_from_syserror ();
-
-  epoch2isotime (timestamp, (time_t)sk->timestamp);
-  err = hexkeygrip_from_pk (sk, &hexgrip);
-  if (err)
-    return err;
-
-  memset(&info, 0, sizeof (info));
-  rc = agent_scd_getattr ("SERIALNO", &info);
-  if (rc)
-    return (gpg_error_t)rc;
-
-  rc = agent_keytocard (hexgrip, 2, 1, info.serialno, timestamp);
-  xfree (info.serialno);
-  if (rc)
-    {
-      err = (gpg_error_t)rc;
-      goto leave;
-    }
-
-  err = agent_keywrap_key (ctrl, 1, &kek, &keklen);
-  if (err)
-    {
-      log_error ("error getting the KEK: %s\n", gpg_strerror (err));
-      goto leave;
-    }
-
-  err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_AESWRAP, 0);
-  if (!err)
-    err = gcry_cipher_setkey (cipherhd, kek, keklen);
-  if (err)
-    {
-      log_error ("error setting up an encryption context: %s\n", gpg_strerror (err));
-      goto leave;
-    }
-
-  err = receive_seckey_from_agent (ctrl, cipherhd, &cache_nonce, hexgrip, sk);
-  if (err)
-    {
-      log_error ("error getting secret key from agent: %s\n", gpg_strerror (err));
-      goto leave;
-    }
-
-  err = card_write_key_to_backup_file (sk, backup_dir);
-  if (err)
-    log_error ("writing card key to backup file: %s\n", gpg_strerror (err));
-  else
-    /* Remove secret key data in agent side.  */
-    agent_scd_learn (NULL, 1);
-
- leave:
-  xfree (cache_nonce);
-  gcry_cipher_close (cipherhd);
-  xfree (kek);
-  xfree (hexgrip);
-  free_public_key (sk);
-  return err;
-}
-
-
 static void
 do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 		     struct output_control_s *outctrl, int card)
@@ -4252,7 +4095,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
   if (!err && get_parameter (para, pSUBKEYTYPE))
     {
       sub_psk = NULL;
-      if (!card || (s = get_parameter_value (para, pCARDBACKUPKEY)))
+      if (!card)
         {
           err = do_create (get_parameter_algo (para, pSUBKEYTYPE, NULL),
                            get_parameter_uint (para, pSUBKEYLENGTH),
@@ -4260,7 +4103,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                            pub_root,
                            timestamp,
                            get_parameter_u32 (para, pSUBKEYEXPIRE), 1,
-                           s ? KEYGEN_FLAG_NO_PROTECTION : outctrl->keygen_flags,
+                           outctrl->keygen_flags,
                            get_parameter_passphrase (para),
                            &cache_nonce);
           /* Get the pointer to the generated public subkey packet.  */
@@ -4272,15 +4115,25 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                 if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
                   sub_psk = node->pkt->pkt.public_key;
               assert (sub_psk);
-
-              if (s)
-                err = card_store_key_with_backup (ctrl, sub_psk, opt.homedir);
             }
         }
       else
         {
-          err = gen_card_key (PUBKEY_ALGO_RSA, 2, 0, pub_root, &timestamp,
-                              get_parameter_u32 (para, pKEYEXPIRE));
+          if ((s = get_parameter_value (para, pCARDBACKUPKEY)))
+            {
+              /* A backup of the encryption key has been requested.
+                 Generate the key in software and import it then to
+                 the card.  Write a backup file. */
+              err = gen_card_key_with_backup
+                (PUBKEY_ALGO_RSA, 2, 0, pub_root, timestamp,
+                 get_parameter_u32 (para, pKEYEXPIRE), para);
+            }
+          else
+            {
+              err = gen_card_key (PUBKEY_ALGO_RSA, 2, 0, pub_root,
+                                  &timestamp,
+                                  get_parameter_u32 (para, pKEYEXPIRE));
+            }
         }
 
       if (!err)
