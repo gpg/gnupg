@@ -589,6 +589,7 @@ AC_ISC_POSIX
 AC_SYS_LARGEFILE
 GNUPG_CHECK_USTAR
 
+
 # We need to compile and run a program on the build machine.  A
 # comment in libgpg-error says that the AC_PROG_CC_FOR_BUILD macro in
 # the AC archive is broken for autoconf 2.57.  Given that there is no
@@ -604,6 +605,9 @@ fi
 AC_MSG_RESULT($CC_FOR_BUILD)
 AC_ARG_VAR(CC_FOR_BUILD,[build system C compiler])
 
+# We need to call this macro because other pkg-config macros are
+# not always used.
+PKG_PROG_PKG_CONFIG
 
 
 try_gettext=yes
