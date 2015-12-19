@@ -1,7 +1,7 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-                            Version 1.4.19
+                            Version 1.4.20
 
 	 Copyright 1998-2015 Free Software Foundation, Inc.
          Copyright 1997-2015 Werner Koch
@@ -26,7 +26,7 @@
 
     GnuPG works best on GNU/Linux or *BSD systems.  Most other Unices
     are also supported but are not as well tested as the Free Unices.
-    See http://www.gnupg.org/download/supported_systems.html for a
+    See https://gnupg.org/download/supported_systems.html for a
     list of systems which are known to work.
 
     GnuPG is distributed under the terms of the GNU General Public
@@ -131,16 +131,16 @@
     An online version of the latest manual draft is available at the
     GnuPG web pages:
 
-	http://www.gnupg.org/documentation/
+	https://gnupg.org/documentation/
 
     A list of frequently asked questions is available in the GnuPG
     distribution in the file doc/FAQ and online as:
 
-	http://www.gnupg.org/documentation/faqs.html
+	https://gnupg.org/documentation/faqs.html
 
     A couple of HOWTO documents are available online; for a listing see:
 
-	http://www.gnupg.org/documentation/howtos.html
+	https://gnupg.org/documentation/howtos.html
 
     A man page with a description of all commands and options gets installed
     along with the program.
@@ -781,12 +781,13 @@
     How to Get More Information
     ---------------------------
 
-    The primary WWW page is https://www.gnupg.org
+    The primary WWW page is https://gnupg.org
                or using TOR http://ic6au7wa3f6naxjq.onion
 
     The primary FTP site is ftp://ftp.gnupg.org/gcrypt/
+                         or https://gnupg.org/ftp/gcrypt/
 
-    See https://www.gnupg.org/download/mirrors.html for a list of
+    See https://gnupg.org/download/mirrors.html for a list of
     mirrors and use them if possible.  You may also find GnuPG
     mirrored on some of the regular GNU mirrors.
 
@@ -813,9 +814,9 @@
     of "subscribe" to x-request@gnupg.org, where x is the name of the
     mailing list (gnupg-announce, gnupg-users, etc.).  An archive of
     the mailing lists are available at
-    https://www.gnupg.org/documentation/mailing-lists.html
+    https://gnupg.org/documentation/mailing-lists.html
 
-    Please direct bug reports to http://bugs.gnupg.org or post
+    Please direct bug reports to https://bugs.gnupg.org or post
     them direct to the mailing list <gnupg-devel@gnupg.org>.
 
     Please direct questions about GnuPG to the users mailing list or
@@ -826,7 +827,7 @@
     to do so.
 
     Commercial grade support for GnuPG is available; for a listing of
-    offers see https://www.gnupg.org/service.html .  Maintaining and
+    offers see https://gnupg.org/service.html .  Maintaining and
     improving GnuPG is costly.  Since 2001, g10 Code GmbH, a German
     company owned and headed by GnuPG's principal author Werner Koch,
     is bearing the majority of these costs.  To help them carry on

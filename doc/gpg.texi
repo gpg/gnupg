@@ -532,7 +532,7 @@ This section explains the main commands for key management
 
 @item --gen-key
 @opindex gen-key
-Generate a new key pair using teh current default parameters.  This is
+Generate a new key pair using the current default parameters.  This is
 the standard command to create a new key.
 
 There is also a feature which allows you to create keys in batch
