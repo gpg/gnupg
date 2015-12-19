@@ -1,5 +1,5 @@
 # GnuPG Russian Translation
-# Copyright (C)2003 Free Software Foundation, Inc.
+# Copyright (C) 2015 Free Software Foundation, Inc.
 # This file is distributed under the same license as the GnuPG package.
 # Maxim Britov <maxbritov@tut.by>, 2003.
 # Thanks a lot to Pawel I. Shajdo <zwon@e-mail.ru>.
@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 1.4.18\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-02-12 17:16+0200\n"
+"PO-Revision-Date: 2015-06-25 17:16+0200\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -2815,12 +2815,10 @@ msgstr ""
 "пользователя.\n"
 
 msgid "WARNING: Your encryption subkey expires soon.\n"
-msgstr ""
+msgstr "ВНИМАНИЕ: Срок действия Вашего подключа для шифрования истекает.\n"
 
-#, fuzzy
-#| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
-msgstr "Нельзя изменить срок действия ключа v3\n"
+msgstr "Возможно, надо поменять также срок действия.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
