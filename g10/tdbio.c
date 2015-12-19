@@ -38,7 +38,7 @@
 #include "trustdb.h"
 #include "tdbio.h"
 
-#if defined(HAVE_DOSISH_SYSTEM)
+#if defined(HAVE_DOSISH_SYSTEM) && !defined(ftruncate)
 #define ftruncate chsize
 #endif
 
