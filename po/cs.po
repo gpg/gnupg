@@ -1494,6 +1494,10 @@ msgid "[User ID not found]"
 msgstr "[ID uživatele nenalezeno]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "klíč %s: tajný klíč bez klíče veřejného - přeskočeno\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "„%s“ automaticky získáno přes %s\n"
 
@@ -1509,10 +1513,6 @@ msgstr "neexistuje tajný podklíč pro veřejný klíč %s - ignorováno\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "používám podklíč %s místo primárního klíče %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "klíč %s: tajný klíč bez klíče veřejného - přeskočeno\n"
 
 msgid "be somewhat more quiet"
 msgstr "být o trochu víc tichý"
@@ -3896,6 +3896,11 @@ msgstr "nejednoznačné volby `%s'\n"
 msgid "unknown option `%s'\n"
 msgstr "neznámá volba `%s'\n"
 
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
+msgid "Unknown weak digest '%s'\n"
+msgstr "Neznámý typ podpisu `%s'\n"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Soubor `%s' existuje. "
@@ -4485,6 +4490,11 @@ msgstr ""
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "POZNÁMKA: podpisovému klíči %s skončila platnost %s\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "podpis %s, hashovací algoritmus %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -4613,6 +4623,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "databáze důvěry: synchronizace selhala %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "nemohu vytvořit zámek pro  `%s'\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "nelze zamčít `%s'\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "záznam v databázi důvěry %lu: lseek() se nepodařil: %s\n"
 
@@ -4630,14 +4648,6 @@ msgstr "nemohu otevřít `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: adresář neexistuje!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "nemohu vytvořit zámek pro  `%s'\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "nelze zamčít `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

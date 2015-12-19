@@ -1526,6 +1526,10 @@ msgid "[User ID not found]"
 msgstr "[Ідентифікатор не знайдено]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "ключ %s: закритий ключ без відкритого ключа — пропущено\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "автоматично отримано «%s» за допомогою %s\n"
 
@@ -1542,10 +1546,6 @@ msgstr "немає закритого підключа для відкритог
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "використовуємо підключ %s замість основного ключа %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "ключ %s: закритий ключ без відкритого ключа — пропущено\n"
 
 msgid "be somewhat more quiet"
 msgstr "дещо зменшити кількість повідомлень"
@@ -3963,6 +3963,11 @@ msgstr "неоднозначний параметр «%s»\n"
 msgid "unknown option `%s'\n"
 msgstr "невідомий параметр «%s»\n"
 
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
+msgid "Unknown weak digest '%s'\n"
+msgstr "Невідомий тип підпису «%s»\n"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Файл «%s» існує. "
@@ -4562,6 +4567,11 @@ msgstr ""
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "ЗАУВАЖЕННЯ: строк дії ключа підпису %s завершився %s\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s підпис, алгоритм контрольної суми %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -4690,6 +4700,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: помилка синхронізації: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "не вдалося створити блокування для «%s»\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "не вдалося заблокувати «%s»\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "запис trustdb %lu: помилка lseek: %s\n"
 
@@ -4707,14 +4725,6 @@ msgstr "немає доступу до «%s»: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: каталогу не існує!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "не вдалося створити блокування для «%s»\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "не вдалося заблокувати «%s»\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.19\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2015-09-17 17:02+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -333,7 +333,8 @@ msgstr "無効な外装: 行の長さが%d文字を超えています\n"
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
-"外装の中にquoted printable文字があります。おそらくバグのあるMTAを使われたたのでしょう\n"
+"外装の中にquoted printable文字があります。おそらくバグのあるMTAを使われたたの"
+"でしょう\n"
 
 #, c-format
 msgid "OpenPGP card not available: %s\n"
@@ -720,13 +721,15 @@ msgstr "暗号化しようとしている鍵は全部IDEA暗号を使えませ�
 #, c-format
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr "*警告*: 共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"
+msgstr ""
+"*警告*: 共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"
 
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
-msgstr "*警告*: 圧縮アルゴリズム %s (%d) の強制が、受取人の優先指定をそむきます\n"
+msgstr ""
+"*警告*: 圧縮アルゴリズム %s (%d) の強制が、受取人の優先指定をそむきます\n"
 
 #, c-format
 msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
@@ -765,7 +768,8 @@ msgstr "ディレクトリ「%s」が作成できません: %s\n"
 msgid ""
 "external program calls are disabled due to unsafe options file permissions\n"
 msgstr ""
-"オプション・ファイルの許可モードが安全ではないので、外部プログラムの呼出しは禁止となります。\n"
+"オプション・ファイルの許可モードが安全ではないので、外部プログラムの呼出しは"
+"禁止となります。\n"
 
 msgid "this platform requires temporary files when calling external programs\n"
 msgstr ""
@@ -1456,6 +1460,10 @@ msgid "[User ID not found]"
 msgstr "[ユーザIDが見つかりません]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "鍵%s: 公開鍵のない秘密鍵です - スキップします\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "「%s」を %s から自動取得\n"
 
@@ -1470,10 +1478,6 @@ msgstr "公開副鍵%sに対する秘密副鍵がありません - 無視\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "副鍵%s(主鍵%sではなく)を用います\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "鍵%s: 公開鍵のない秘密鍵です - スキップします\n"
 
 msgid "be somewhat more quiet"
 msgstr "いくらかおとなしく"
@@ -1502,8 +1506,10 @@ msgid ""
 "to any 3rd party.  We need it to implement the web-of-trust; it has nothing\n"
 "to do with the (implicitly created) web-of-certificates."
 msgstr ""
-"この値の指定は、あなた次第です。この値は、第三者に決して提供されません。これは、\n"
-"web-of-trust の実装に必要で、(暗黙的にできた) web-of-certificates とは無関係です。"
+"この値の指定は、あなた次第です。この値は、第三者に決して提供されません。これ"
+"は、\n"
+"web-of-trust の実装に必要で、(暗黙的にできた) web-of-certificates とは無関係"
+"です。"
 
 msgid ""
 "To build the Web-of-Trust, GnuPG needs to know which keys are\n"
@@ -1517,7 +1523,8 @@ msgstr ""
 "\"yes\"と答えてください。\n"
 
 msgid "If you want to use this untrusted key anyway, answer \"yes\"."
-msgstr "この信用されてない鍵をなんにしろ使いたければ、\"yes\"と答えてください。"
+msgstr ""
+"この信用されてない鍵をなんにしろ使いたければ、\"yes\"と答えてください。"
 
 msgid ""
 "Enter the user ID of the addressee to whom you want to send the message."
@@ -1793,6 +1800,11 @@ msgstr "ローカルだけとマークされた署名をインポートします
 msgid "repair damage from the pks keyserver during import"
 msgstr "インポートの際、にpksキーサーバからのダメージを修正します"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "インポート後、信用データベースを更新しない"
+
 msgid "do not update the trustdb after import"
 msgstr "インポート後、信用データベースを更新しない"
 
@@ -1911,6 +1923,14 @@ msgstr "以下で、優先指定が更新できます: gpg --edit-key %s updpref
 msgid "key %s: no user ID\n"
 msgstr "鍵%s: ユーザIDがありません\n"
 
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s: %s\n"
+msgstr "\"%s\"をスキップします: %s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "鍵%s: PKSの副鍵変造を修復\n"
@@ -2006,12 +2026,17 @@ msgstr "鍵%s: \"%s\" %d個のユーザIDをきれいにしました\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "鍵%s:\"%s\"変更なし\n"
 
-#, c-format
-msgid "key %s: secret key with invalid cipher %d - skipped\n"
-msgstr "鍵%s: 無効な暗号方式%dの秘密鍵です - スキップします\n"
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key %s: %s\n"
+msgstr "秘密鍵\"%s\"が見つかりません: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "秘密鍵のインポートは禁止です\n"
+
+#, c-format
+msgid "key %s: secret key with invalid cipher %d - skipped\n"
+msgstr "鍵%s: 無効な暗号方式%dの秘密鍵です - スキップします\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"
@@ -2198,9 +2223,9 @@ msgid ""
 "(by looking at passports, checking fingerprints from different sources, "
 "etc.)\n"
 msgstr ""
-"他のユーザの鍵を正しく検証するために、このユーザの信用度を決めてくださ"
-"い\n"
-"(パスポートを見せてもらったり、他から得たフィンガー・プリントを検査したり、などなど)\n"
+"他のユーザの鍵を正しく検証するために、このユーザの信用度を決めてください\n"
+"(パスポートを見せてもらったり、他から得たフィンガー・プリントを検査したり、な"
+"どなど)\n"
 
 #, c-format
 msgid "  %d = I trust marginally\n"
@@ -2741,6 +2766,14 @@ msgid ""
 msgstr ""
 "*警告*: 主たるユーザIDがありません。このコマンドは、別な\n"
 "              ユーザIDが主になると仮定する場合があります。\n"
+
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "v3鍵の有効期限は変更できません\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -3496,6 +3529,10 @@ msgstr "*警告*: 別バージョンのGnuPGの鍵サーバ・ハンドラ (%s)\
 msgid "keyserver did not send VERSION\n"
 msgstr "鍵サーバはVERSIONを送信しませんでした\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "鍵サーバ通信エラー: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "既知の鍵サーバがありません (オプション--keyserverを使いましょう)\n"
 
@@ -3519,10 +3556,6 @@ msgstr "鍵サーバのタイムアウト\n"
 
 msgid "keyserver internal error\n"
 msgstr "鍵サーバの内部エラー\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "鍵サーバ通信エラー: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -3689,6 +3722,10 @@ msgid "unknown"
 msgstr "未知の"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "署名を検査できません: %s\n"
 
@@ -3782,6 +3819,11 @@ msgstr "あいまいなオプション「%s」\n"
 #, c-format
 msgid "unknown option `%s'\n"
 msgstr "未知のオプション「%s」\n"
+
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
+msgid "Unknown weak digest '%s'\n"
+msgstr "不明の署名タイプ「%s」\n"
 
 #, c-format
 msgid "File `%s' exists. "
@@ -4358,6 +4400,11 @@ msgstr "鍵%sは%lu秒未来にできました (時間旅行か時計の障害�
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "注意: 署名鍵%sは%sに期限切れです\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s署名、ダイジェスト・アルゴリズム %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "未知のクリティカル・ビットにより、鍵%sの署名を不正とみなします\n"
@@ -4399,7 +4446,9 @@ msgstr "--pgp2モードでは、PGP 2.x形式の鍵で分離署名できるだ�
 #, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
-msgstr "*警告*: ダイジェスト・アルゴリズム %s (%d) の強制が、受取人の優先指定と対立します\n"
+msgstr ""
+"*警告*: ダイジェスト・アルゴリズム %s (%d) の強制が、受取人の優先指定と対立し"
+"ます\n"
 
 msgid "signing:"
 msgstr "署名:"
@@ -4471,6 +4520,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "信用データベース: 同期に失敗しました: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "「%s」のロックを作成できません\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "「%s」がロックできません\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "信用データベース レコード%lu: シークに失敗しました: %s\n"
 
@@ -4488,14 +4545,6 @@ msgstr "「%s」にアクセスできません: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ディレクトリがありません!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "「%s」のロックを作成できません\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "「%s」がロックできません\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
@@ -4952,8 +5001,7 @@ msgstr "*警告*: セキュアでないメモリーを使用しています!\n"
 msgid ""
 "please see http://www.gnupg.org/documentation/faqs.html for more "
 "information\n"
-msgstr ""
-"詳細はhttp://www.gnupg.org/documentation/faq.htmlをご覧ください\n"
+msgstr "詳細はhttp://www.gnupg.org/documentation/faq.htmlをご覧ください\n"
 
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "初期化済みの安全なメモリーがない場合には操作できません\n"

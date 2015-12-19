@@ -1526,6 +1526,10 @@ msgid "[User ID not found]"
 msgstr "[Användaridentiteten hittades inte]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "nyckel %s: hemlig nyckel utan publik nyckel - hoppades över\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "hämtade \"%s\" automatiskt via %s\n"
 
@@ -1541,10 +1545,6 @@ msgstr "ingen hemlig undernyckel för publika undernyckeln %s - hoppar över\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "använder undernyckeln %s istället för primära nyckeln %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "nyckel %s: hemlig nyckel utan publik nyckel - hoppades över\n"
 
 msgid "be somewhat more quiet"
 msgstr "var något tystare"
@@ -3994,6 +3994,11 @@ msgstr "tvetydlig flagga \"%s\"\n"
 msgid "unknown option `%s'\n"
 msgstr "okänd flagga \"%s\"\n"
 
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
+msgid "Unknown weak digest '%s'\n"
+msgstr "Okänd signaturtyp \"%s\"\n"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Filen \"%s\" finns. "
@@ -4609,6 +4614,11 @@ msgstr ""
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "OBSERVERA: signaturnyckeln %s gick ut %s\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s signatur, sammandragsalgoritm %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -4737,6 +4747,15 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "tillitsdatabas: synkronisering misslyckades: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "kan inte skapa lås för \"%s\"\n"
+
+# se förra kommentaren
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "kan inte låsa \"%s\"\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "tillitsdatabasposten %lu: lseek misslyckades: %s\n"
 
@@ -4754,15 +4773,6 @@ msgstr "kan inte komma åt \"%s\": %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: katalogen finns inte!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "kan inte skapa lås för \"%s\"\n"
-
-# se förra kommentaren
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "kan inte låsa \"%s\"\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

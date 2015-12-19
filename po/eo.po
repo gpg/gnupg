@@ -1527,6 +1527,10 @@ msgstr "tro da registroj en pk-staplo - malþaltas\n"
 msgid "[User ID not found]"
 msgstr "[Uzantidentigilo ne trovita]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "þlosilo %08lX: sekreta þlosilo sen publika þlosilo - ignorita\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1542,10 +1546,6 @@ msgstr "estas sekreta þlosilo por la publika þlosilo \"%s\"!\n"
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "uzas flankan þlosilon %08lX anstataý la æefa þlosilo %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "þlosilo %08lX: sekreta þlosilo sen publika þlosilo - ignorita\n"
 
 msgid "be somewhat more quiet"
 msgstr "iom malpli da informoj"
@@ -4025,6 +4025,10 @@ msgstr "legas opciojn el '%s'\n"
 msgid "unknown option `%s'\n"
 msgstr "nekonata implicita ricevonto '%s'\n"
 
+#, fuzzy, c-format
+msgid "Unknown weak digest '%s'\n"
+msgstr "nekonata klaso de subskribo"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Dosiero '%s' ekzistas. "
@@ -4630,6 +4634,10 @@ msgid "NOTE: signature key %s expired %s\n"
 msgstr "NOTO: subskribo-þlosilo %08lX eksvalidiøis je %s\n"
 
 #, fuzzy, c-format
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s-subskribo de: %s\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "supozas malbonan subskribon pro nekonata \"critical bit\"\n"
 
@@ -4753,6 +4761,14 @@ msgstr "kiraso: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "fido-datenaro: sync malsukcesis: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "ne povas krei '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "ne povas malfermi '%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "fido-datenaro loko %lu: lseek malsukcesis: %s\n"
@@ -4771,14 +4787,6 @@ msgstr "ne povas fermi '%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: dosierujo ne ekzistas!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "ne povas krei '%s': %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "ne povas malfermi '%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

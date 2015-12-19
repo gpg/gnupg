@@ -1472,6 +1472,10 @@ msgid "[User ID not found]"
 msgstr ""
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr ""
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
 
@@ -1486,10 +1490,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "%s: немагчыма стварыць тэчку: %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr ""
 
 msgid "be somewhat more quiet"
 msgstr "працаваць менш шматслоўна"
@@ -3712,6 +3712,10 @@ msgstr ""
 msgid "unknown option `%s'\n"
 msgstr "невядомая вэрсыя"
 
+#, fuzzy, c-format
+msgid "Unknown weak digest '%s'\n"
+msgstr "невядомая вэрсыя"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Файл \"%s\" ужо йснуе. "
@@ -4273,6 +4277,10 @@ msgstr ""
 msgid "NOTE: signature key %s expired %s\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "нерэчаісны хэш-альгарытм \"%s\"\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -4383,6 +4391,14 @@ msgstr "памылка чытаньня файла"
 msgid "trustdb: sync failed: %s\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "%s: немагчыма стварыць тэчку: %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "немагчыма адкрыць \"%s\"\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr ""
@@ -4401,14 +4417,6 @@ msgstr "немагчыма адкрыць %s: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "%s: немагчыма стварыць тэчку: %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "немагчыма адкрыць \"%s\"\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

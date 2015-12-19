@@ -1460,6 +1460,10 @@ msgid "[User ID not found]"
 msgstr "[找不到用户标识]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "密钥 %s：无相应公钥的私钥――已跳过\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "自动获取‘%s’，通过 %s\n"
 
@@ -1474,10 +1478,6 @@ msgstr "公钥 %s 没有相对应的私钥――忽略\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "使用子钥 %s 而非主钥 %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "密钥 %s：无相应公钥的私钥――已跳过\n"
 
 msgid "be somewhat more quiet"
 msgstr "尽量减少提示信息"
@@ -3803,6 +3803,11 @@ msgstr "有歧义的选项‘%s’\n"
 msgid "unknown option `%s'\n"
 msgstr "未知的选项 '%s'\n"
 
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
+msgid "Unknown weak digest '%s'\n"
+msgstr "未知的签名类型‘%s’\n"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "文件‘%s’已存在。 "
@@ -4374,6 +4379,11 @@ msgstr "密钥 %s 是在 %lu 秒后的未来生成的(可能是因为时空扭�
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "注意：签名密钥 %s 已于 %s 过期\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s 签名，散列算法 %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "假定密钥 %s 的签名由于某个未知的关键位出错而损坏\n"
@@ -4485,6 +4495,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "信任度数据库：同步失败：%s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "不能为‘%s’创建锁定\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "无法锁定‘%s’\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "信任度数据库记录 %lu：lseek 失败：%s\n"
 
@@ -4502,14 +4520,6 @@ msgstr "无法存取‘%s’：%s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s：目录不存在！\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "不能为‘%s’创建锁定\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "无法锁定‘%s’\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

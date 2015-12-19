@@ -1524,6 +1524,10 @@ msgstr "Túl sok bejegyzés van a nyilvánoskulcs-gyorsítótárban - letiltom.\n"
 msgid "[User ID not found]"
 msgstr "[ismeretlen kulcs]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "%08lX kulcs: titkos kulcs nyilvános kulcs nélkül - kihagytam.\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1542,10 +1546,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "A %08lX másodlagos kulcsot használjuk a %08lX elsõdleges helyett.\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "%08lX kulcs: titkos kulcs nyilvános kulcs nélkül - kihagytam.\n"
 
 msgid "be somewhat more quiet"
 msgstr "még szûkszavúbb mód"
@@ -4023,6 +4023,10 @@ msgstr "Az opciókat a \"%s\" állományból olvasom.\n"
 msgid "unknown option `%s'\n"
 msgstr "Ismeretlen alapértelmezett címzett: \"%s\"\n"
 
+#, fuzzy, c-format
+msgid "Unknown weak digest '%s'\n"
+msgstr "ismeretlen aláírásosztály"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "\"%s\" állomány létezik. "
@@ -4635,6 +4639,11 @@ msgid "NOTE: signature key %s expired %s\n"
 msgstr "MEGJEGYZÉS: Aláíró kulcs (%08lX) lejárt: %s\n"
 
 #, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s aláírás, %s kivonatoló algoritmus.\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "Rossz aláírást feltételezek a %08lX kulcstól egy ismeretlen\n"
@@ -4766,6 +4775,14 @@ msgstr "Olvasási hiba: %s.\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "Bizalmi adatbázis: szinkronizáció sikertelen: %s.\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "Nem tudom megnyitni %s-t!\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "Bizalmi adatbázis %lu. rekord: lseek sikertelen: %s.\n"
@@ -4784,14 +4801,6 @@ msgstr "Nem tudom bezárni a(z) \"%s\" állományt: %s.\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: Könyvtár nem létezik!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "Nem tudom megnyitni %s-t!\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

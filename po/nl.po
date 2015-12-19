@@ -1547,6 +1547,10 @@ msgid "[User ID not found]"
 msgstr "[Gebruikers-ID niet gevonden]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "sleutel %s: geheime sleutel zonder publieke sleutel - overgeslagen\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "`%s' automatisch opgehaald via %s\n"
 
@@ -1562,10 +1566,6 @@ msgstr "geen geheime subsleutel voor publieke subsleutel %s - overgeslagen\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "subsleutel %s wordt gebruikt in plaats van primaire sleutel %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "sleutel %s: geheime sleutel zonder publieke sleutel - overgeslagen\n"
 
 msgid "be somewhat more quiet"
 msgstr "wees wat stiller"
@@ -4054,6 +4054,11 @@ msgstr "dubbelzinnige optie `%s'\n"
 msgid "unknown option `%s'\n"
 msgstr "onbekende optie `%s'\n"
 
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
+msgid "Unknown weak digest '%s'\n"
+msgstr "Onbekend ondertekeningstype ‘%s’\n"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Bestand `%s' bestaat. "
@@ -4675,6 +4680,11 @@ msgstr ""
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "NOOT: ondertekeningssleutel %s verviel op %s\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s handtekening, hashalgoritme %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -4811,6 +4821,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "betrouwbaarheidsdatabank (trustdb): synchronisatie mislukt: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "kan geen grendel maken voor `%s'\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "kan `%s' niet vergrendelen\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr ""
 "betrouwbaarheidsdatabank (trustdb): element %lu: lseek is mislukt: %s\n"
@@ -4831,14 +4849,6 @@ msgstr "krijg geen toegang tot `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: map bestaat niet!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "kan geen grendel maken voor `%s'\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "kan `%s' niet vergrendelen\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

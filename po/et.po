@@ -1525,6 +1525,10 @@ msgstr "avalike võtmete puhvris on liiga palju võtmeid - blokeerin\n"
 msgid "[User ID not found]"
 msgstr "[Kasutaja id puudub]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "võti %08lX: salajane võti avaliku võtmeta - jätsin vahele\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1542,10 +1546,6 @@ msgstr "avalikul alamvõtmel %08lX puudub salajane alamvõti - ignoreerin\n"
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "kasutan sekundaarset võtit %08lX primaarse võtme %08lX asemel\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "võti %08lX: salajane võti avaliku võtmeta - jätsin vahele\n"
 
 msgid "be somewhat more quiet"
 msgstr "ole mõnevõrra vaiksem"
@@ -3995,6 +3995,10 @@ msgstr "loen võtmeid failist `%s'\n"
 msgid "unknown option `%s'\n"
 msgstr "tundmatu vaikimisi saaja `%s'\n"
 
+#, fuzzy, c-format
+msgid "Unknown weak digest '%s'\n"
+msgstr "tundmatu allkirja klass"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Fail `%s' on olemas. "
@@ -4600,6 +4604,11 @@ msgid "NOTE: signature key %s expired %s\n"
 msgstr "MÄRKUS: allkirja võti %08lX aegus %s\n"
 
 #, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s allkiri, sõnumilühendi algoritm %s\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "eeldan tundmatu kriitilise biti tõttu võtmel %08lX vigast allkirja\n"
 
@@ -4725,6 +4734,14 @@ msgstr "viga lugemisel: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: sync ebaõnnestus: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "`%s' ei õnnestu luua: %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "`%s' ei õnnestu avada\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb kirje %lu: lseek ebaõnnestus: %s\n"
@@ -4743,14 +4760,6 @@ msgstr "`%s' ei õnnestu sulgeda: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: kataloogi ei ole!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "`%s' ei õnnestu luua: %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "`%s' ei õnnestu avada\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

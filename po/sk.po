@@ -1537,6 +1537,10 @@ msgstr "príli¹ veµa polo¾iek v bufferi verejných kµúèov - vypnuté\n"
 msgid "[User ID not found]"
 msgstr "[User id not found]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "kµúè %08lX: tajný kµúè bez verejného kµúèa - preskoèené\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1554,10 +1558,6 @@ msgstr "existuje tajný kµúè pre tento verejný kµúè %08lX!\n"
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "pou¾ívam sekundárny kµúè %08lX namiesto primárneho kµúèa %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "kµúè %08lX: tajný kµúè bez verejného kµúèa - preskoèené\n"
 
 msgid "be somewhat more quiet"
 msgstr "by» o trochu tich¹í"
@@ -4034,6 +4034,10 @@ msgstr "èítam mo¾nosti z `%s'\n"
 msgid "unknown option `%s'\n"
 msgstr "neznámy implicitný adresát `%s'\n"
 
+#, fuzzy, c-format
+msgid "Unknown weak digest '%s'\n"
+msgstr "neznáma trieda podpisu"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Súbor `%s' existuje. "
@@ -4643,6 +4647,11 @@ msgid "NOTE: signature key %s expired %s\n"
 msgstr "POZNÁMKA: podpisovému kµúèu %08lX skonèila platnos» %s\n"
 
 #, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s podpis, hashovací algoritmus %s\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "predpokladám neplatný podpis kµúèom %08lX, preto¾e je nastavený neznámy "
@@ -4774,6 +4783,14 @@ msgstr "chyba pri èítaní: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "databáza dôvery: synchronizácia zlyhala %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "nemô¾em vytvori» `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "nemo¾no otvori» `%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "záznam v databáze dôvery %lu: lseek() sa nepodaril: %s\n"
@@ -4792,14 +4809,6 @@ msgstr "nemô¾em zavrie» `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: adresár neexistuje!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "nemô¾em vytvori» `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "nemo¾no otvori» `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

@@ -1551,6 +1551,10 @@ msgstr "entradas demais no cache pk - desativado\n"
 msgid "[User ID not found]"
 msgstr "[usuário não encontrado]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "chave %08lX: chave secreta sem chave pública - ignorada\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1566,10 +1570,6 @@ msgstr "há uma chave secreta para esta chave pública!\n"
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "usando chave secundária %08lX ao invés de chave primária %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "chave %08lX: chave secreta sem chave pública - ignorada\n"
 
 msgid "be somewhat more quiet"
 msgstr "ser mais silencioso"
@@ -3982,6 +3982,10 @@ msgstr "lendo opções de `%s'\n"
 msgid "unknown option `%s'\n"
 msgstr "destinatário padrão desconhecido `%s'\n"
 
+#, fuzzy, c-format
+msgid "Unknown weak digest '%s'\n"
+msgstr "classe de assinatura desconhecida"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Arquivo `%s' já existe. "
@@ -4595,6 +4599,10 @@ msgid "NOTE: signature key %s expired %s\n"
 msgstr "NOTA: chave de assinatura %08lX expirou %s\n"
 
 #, fuzzy, c-format
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "assinatura %s de: %s\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "assumindo assinatura incorreta devido a um bit crítico desconhecido\n"
 
@@ -4713,6 +4721,14 @@ msgstr "erro de leitura: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "banco de dados de confiabilidade: sincronização falhou: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "impossível criar %s: %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "impossível abrir `%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "banco de dados de confiabilidade rec %lu: lseek falhou: %s\n"
@@ -4731,14 +4747,6 @@ msgstr "impossível abrir `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: diretório inexistente!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "impossível criar %s: %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "impossível abrir `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

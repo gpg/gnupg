@@ -1588,6 +1588,10 @@ msgstr ""
 msgid "[User ID not found]"
 msgstr "[No s'ha trobat l'id d'usuari]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "clau %08lX: clau secreta sense clau pública - es descarta\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1605,10 +1609,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "s'usarà la clau secundària %08lX en lloc de la primària %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "clau %08lX: clau secreta sense clau pública - es descarta\n"
 
 msgid "be somewhat more quiet"
 msgstr "una mica més silenciós"
@@ -4151,6 +4151,10 @@ msgstr "s'estan llegint opcions de «%s»\n"
 msgid "unknown option `%s'\n"
 msgstr "el destinatari predeterminat és desconegut «%s»\n"
 
+#, fuzzy, c-format
+msgid "Unknown weak digest '%s'\n"
+msgstr "la classe de signatura és desconeguda"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "El fitxer «%s» existeix. "
@@ -4786,6 +4790,11 @@ msgid "NOTE: signature key %s expired %s\n"
 msgstr "NOTA: la clau de signatura %08lX va caducar el %s\n"
 
 #, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "signatura %s, algorisme de resum %s\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "es supossa una signatura incorrecta de la clau %08lX a causa d'un bit crític "
@@ -4918,6 +4927,14 @@ msgstr "error de lectura: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "base de dades de confiança: no s'ha pogut sincronitzar: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "no es pot crear el directori «%s»: %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "no s'ha pogut obrir «%s»\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "reg de la base de dades de confiança %lu: ha fallat lseek: %s\n"
@@ -4939,14 +4956,6 @@ msgstr "no s'ha pogut tancar «%s»: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: el directori no existeix!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "no es pot crear el directori «%s»: %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "no s'ha pogut obrir «%s»\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

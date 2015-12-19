@@ -1485,6 +1485,10 @@ msgid "[User ID not found]"
 msgstr "[ID пользователя не найден]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "ключ %s: закрытый ключ без открытого ключа - пропущен\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "автоматически получили `%s' через %s\n"
 
@@ -1500,10 +1504,6 @@ msgstr "нет закрытого подключа для открытого п�
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "использую подключ %s вместо главного ключа %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "ключ %s: закрытый ключ без открытого ключа - пропущен\n"
 
 msgid "be somewhat more quiet"
 msgstr "уменьшить количество выводимой информации"
@@ -3882,6 +3882,11 @@ msgstr "неоднозначный параметр `%s'\n"
 msgid "unknown option `%s'\n"
 msgstr "неизвестный параметр `%s'\n"
 
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
+msgid "Unknown weak digest '%s'\n"
+msgstr "Неизвестный тип подписи `%s'\n"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Файл `%s' существует. "
@@ -4476,6 +4481,11 @@ msgstr ""
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "ЗАМЕЧАНИЕ: срок действия подписавшего ключа %s истек %s\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "подпись в %s форме, хэш-функция %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -4601,6 +4611,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "таблица доверия: сбой синхронизации: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "невозможно создать блокировку для `%s'\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "невозможно заблокировать `%s'\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "таблица доверия, запись %lu: сбой lseek: %s\n"
 
@@ -4618,14 +4636,6 @@ msgstr "нет доступа к `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: каталог не существует!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "невозможно создать блокировку для `%s'\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "невозможно заблокировать `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

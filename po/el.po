@@ -1546,6 +1546,10 @@ msgstr "πάρα πολλές καταχωρήσεις στη pk cache - απενεργοποιήθηκε\n"
 msgid "[User ID not found]"
 msgstr "[User id δεν βρέθηκε]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "κλειδί %08lX: μυστικό κλειδί χωρίς δημόσιο - παραλείφθηκε\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1562,10 +1566,6 @@ msgstr "κανένα μυστικό υποκλειδί για το δημόσιο υποκλειδί %08lX - αγνόηση\n"
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "χρήση του δευτερεύοντος κλειδιού %08lX αντί του πρωτεύοντος %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "κλειδί %08lX: μυστικό κλειδί χωρίς δημόσιο - παραλείφθηκε\n"
 
 msgid "be somewhat more quiet"
 msgstr "ήσυχη έξοδος"
@@ -4064,6 +4064,10 @@ msgstr "ανάγνωση επιλογών από `%s'\n"
 msgid "unknown option `%s'\n"
 msgstr "άγνωστος προκαθορισμένος παραλήπτης `%s'\n"
 
+#, fuzzy, c-format
+msgid "Unknown weak digest '%s'\n"
+msgstr "άγνωστη κλάση υπογραφής"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Το αρχείο `%s' υπάρχει ήδη. "
@@ -4685,6 +4689,11 @@ msgid "NOTE: signature key %s expired %s\n"
 msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί υπογραφής %08lX έληξε στις %s\n"
 
 #, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s υπογραφή, αλγόριθμος περίληψης %s\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "υπόθεση κακής υπογραφής από κλειδί %08lX λόγω άγνωστου κρίσιμου bit\n"
 
@@ -4813,6 +4822,14 @@ msgstr "σφάλμα ανάγνωσης: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: sync απέτυχε: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "αδυναμία δημιουργίας του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "αδυναμία πρόσβασης του `%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: αποτυχία lseek: %s\n"
@@ -4831,14 +4848,6 @@ msgstr "αδυναμία κλεισίματος του `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ο φάκελος δεν υπάρχει!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "αδυναμία δημιουργίας του `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "αδυναμία πρόσβασης του `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

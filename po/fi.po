@@ -1546,6 +1546,12 @@ msgstr "pk-välimuistissa on liian monta kohdetta - poistettu käytöstä\n"
 msgid "[User ID not found]"
 msgstr "[Käyttäjätunnusta ei löytynyt]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr ""
+"avain %08lX: salaisella avaimella ei ole vastaavaa \n"
+"julkista avainta - ohitetaan\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1563,12 +1569,6 @@ msgstr "ei salaista aliavainta julkiselle aliavaimelle %08lX - ohitetaan\n"
 msgid "using subkey %s instead of primary key %s\n"
 msgstr ""
 "käytetään toissijaista avainta %08lX ensisijaisen avaimen %08lX sijasta\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr ""
-"avain %08lX: salaisella avaimella ei ole vastaavaa \n"
-"julkista avainta - ohitetaan\n"
 
 msgid "be somewhat more quiet"
 msgstr "ole jonkinverran hiljaisempi"
@@ -4051,6 +4051,10 @@ msgstr "luetaan asetukset tiedostosta \"%s\"\n"
 msgid "unknown option `%s'\n"
 msgstr "tuntematon oletusvastaanottaja \"%s\"\n"
 
+#, fuzzy, c-format
+msgid "Unknown weak digest '%s'\n"
+msgstr "tuntematon allekirjoitusluokka"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Tiedosto \"%s\" on olemassa."
@@ -4667,6 +4671,12 @@ msgstr ""
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "HUOM: allekirjoitusavain %08lX vanheni %s\n"
 
+# Ensimmäinen %s on binary, textmode tai unknown, ks. alla
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%sallekirjoitus, tiivistealgoritmi %s\n"
+
 #, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -4798,6 +4808,14 @@ msgstr "lukuvirhe: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: synkronointi epäonnistui: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "tiedostoa \"%s\" ei voi luoda: %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "tiedostoa \"%s\" ei voi avata\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: lseek epäonnistui: %s\n"
@@ -4816,14 +4834,6 @@ msgstr "tiedostoa \"%s\" ei voi sulkea: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: hakemistoa ei ole olemassa!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "tiedostoa \"%s\" ei voi luoda: %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "tiedostoa \"%s\" ei voi avata\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

@@ -1500,6 +1500,10 @@ msgid "[User ID not found]"
 msgstr "[ID utilizator nu a fost găsit]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "cheia %s: cheie secretă fără cheie publică - sărită\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "am adus automat `%s' via %s\n"
 
@@ -1514,10 +1518,6 @@ msgstr "nici o subcheie secretă pentru subcheia publică %s - ignorată\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "folosim subcheia %s în loc de cheia primară %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "cheia %s: cheie secretă fără cheie publică - sărită\n"
 
 msgid "be somewhat more quiet"
 msgstr "fii oarecum mai tăcut"
@@ -3931,6 +3931,11 @@ msgstr "opțiune ambiguă `%s'\n"
 msgid "unknown option `%s'\n"
 msgstr "opțiune necunoscută `%s'\n"
 
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
+msgid "Unknown weak digest '%s'\n"
+msgstr "Tip de semnătură necunoscut `%s'\n"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Fișierul `%s' există. "
@@ -4538,6 +4543,11 @@ msgstr ""
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "NOTĂ: cheia semnăturii %s a expirat %s\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "semnătură %s, algoritm rezumat %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -4660,6 +4670,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: sincronizarea a eșuat: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "nu pot crea încuietoare (lock) pentru `%s'\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "nu pot încuia (lock) `%s'\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: lseek a eșuat: %s\n"
 
@@ -4677,14 +4695,6 @@ msgstr "nu pot accesa `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: directorul nu există!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "nu pot crea încuietoare (lock) pentru `%s'\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "nu pot încuia (lock) `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

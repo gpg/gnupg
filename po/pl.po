@@ -1490,6 +1490,10 @@ msgid "[User ID not found]"
 msgstr "[brak identyfikatora użytkownika]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "klucz %s: klucz tajny bez klucza jawnego - pominięty\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "automatycznie pobrano ,,%s'' za pomocą %s\n"
 
@@ -1505,10 +1509,6 @@ msgstr "brak prywatnego odpowiednika podklucza publicznego %s - zignorowany\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "używany jest podklucz %s zamiast klucza głównego %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "klucz %s: klucz tajny bez klucza jawnego - pominięty\n"
 
 msgid "be somewhat more quiet"
 msgstr "mniej komunikatów"
@@ -3911,6 +3911,11 @@ msgstr "niejednoznaczna opcja ,,%s''\n"
 msgid "unknown option `%s'\n"
 msgstr "nieznana opcja ,,%s''\n"
 
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
+msgid "Unknown weak digest '%s'\n"
+msgstr "Nieznany typ podpisu ,,%s''\n"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Plik ,,%s'' już istnieje. "
@@ -4509,6 +4514,11 @@ msgstr ""
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "UWAGA: klucz podpisujący %s przekroczył datę ważności %s\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "podpis %s, skrót %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -4634,6 +4644,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "baza zaufania: synchronizacja nie powiodła się %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "nie można utworzyć blokady ,,%s''\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "nie można zablokować ,,%s''\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "baza zaufania, wpis %lu: funkcja lseek() nie powiodła się: %s\n"
 
@@ -4651,14 +4669,6 @@ msgstr "nie ma dostępu do ,,%s'': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: katalog nie istnieje!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "nie można utworzyć blokady ,,%s''\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "nie można zablokować ,,%s''\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

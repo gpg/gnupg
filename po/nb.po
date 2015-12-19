@@ -1481,6 +1481,10 @@ msgid "[User ID not found]"
 msgstr "[Brukerid ikke funnet]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "nøkkel %s: hemmelig nøkkel uten offentlig nøkkel - hoppet over\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
 
@@ -1495,10 +1499,6 @@ msgstr "ingen hemmelig undernøkkel for offentlig undernøkkel %s - ignorerer\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "bruker undernøkkel %s i stedet for primærnøkkel %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "nøkkel %s: hemmelig nøkkel uten offentlig nøkkel - hoppet over\n"
 
 msgid "be somewhat more quiet"
 msgstr "være noenlunde stille"
@@ -3783,6 +3783,11 @@ msgstr "flertydig valg «%s»\n"
 msgid "unknown option `%s'\n"
 msgstr "ukjent valg «%s»\n"
 
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
+msgid "Unknown weak digest '%s'\n"
+msgstr "Ukjent signaturtype «%s»\n"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Fila «%s» finnes. "
@@ -4363,6 +4368,11 @@ msgstr ""
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "NOTIS: signaturnøkkelen %s utgikk %s\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s signatur, digestalgoritme %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -4474,6 +4484,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr ""
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "kan ikke opprette lås for «%s»\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "kan ikke låse «%s»\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr ""
 
@@ -4491,14 +4509,6 @@ msgstr "kan ikke aksere «%s»: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr ""
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "kan ikke opprette lås for «%s»\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "kan ikke låse «%s»\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

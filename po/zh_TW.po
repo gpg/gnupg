@@ -1454,6 +1454,10 @@ msgid "[User ID not found]"
 msgstr "[找不到使用者 ID]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "金鑰 %s: 祇有私鑰而沒有公鑰 - 已跳過\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "已自動取回 `%s' (經由 %s )\n"
 
@@ -1468,10 +1472,6 @@ msgstr "公鑰 %s 沒有相對應的私鑰 - 正在忽略\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "使用子鑰 %s 來替換主鑰 %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "金鑰 %s: 祇有私鑰而沒有公鑰 - 已跳過\n"
 
 msgid "be somewhat more quiet"
 msgstr "盡量安靜些"
@@ -3810,6 +3810,11 @@ msgstr "不明確的 `%s' 選項\n"
 msgid "unknown option `%s'\n"
 msgstr "未知的 `%s' 選項\n"
 
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
+msgid "Unknown weak digest '%s'\n"
+msgstr "未知的 `%s' 簽章種類\n"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "檔案 `%s' 已存在. "
@@ -4386,6 +4391,11 @@ msgstr "金鑰 %s 已經在 %lu 秒後的未來製妥 (可能是因為時光旅�
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "請注意: 簽章金鑰 %s 已於 %s 過期\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s 簽章, 摘要演算法 %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "假設金鑰 %s 的損壞簽章導因於某個未知的關鍵位元\n"
@@ -4497,6 +4507,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "信任資料庫: 同步化失敗: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "無法為 `%s' 建立鎖定\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "無法鎖定 `%s'\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "信任資料庫記錄 %lu: 本機搜尋失敗: %s\n"
 
@@ -4514,14 +4532,6 @@ msgstr "無法存取 `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: 目錄不存在!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "無法為 `%s' 建立鎖定\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "無法鎖定 `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

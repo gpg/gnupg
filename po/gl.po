@@ -1540,6 +1540,10 @@ msgstr "demasiadas entradas na caché de chaves públicas - desactivada\n"
 msgid "[User ID not found]"
 msgstr "[Non se atopou o id de usuario]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "chave %08lX: chave secreta sen chave pública - omitida\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1557,10 +1561,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "emprégase a chave secundaria %08lX no canto da primaria %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "chave %08lX: chave secreta sen chave pública - omitida\n"
 
 msgid "be somewhat more quiet"
 msgstr "ser un pouquiño máis calado"
@@ -4049,6 +4049,10 @@ msgstr "lendo as opcións de `%s'\n"
 msgid "unknown option `%s'\n"
 msgstr "destinatario por defecto `%s' descoñecido\n"
 
+#, fuzzy, c-format
+msgid "Unknown weak digest '%s'\n"
+msgstr "clase de sinatura descoñecida"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "O ficheiro `%s' xa existe. "
@@ -4665,6 +4669,11 @@ msgid "NOTE: signature key %s expired %s\n"
 msgstr "NOTA: a chave de sinatura %08lX caducou o %s\n"
 
 #, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "Sinatura %s, algoritmo de resumo %s\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "asumindo unha sinatura incorrecta da chave %08lX debido a un bit crítico "
@@ -4791,6 +4800,14 @@ msgstr "erro de lectura: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "base de datos de confianza: fallou a sincronización: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "non se pode crear `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "non se puido abrir `%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "rexistro da base de datos de confianza %lu: lseek fallou: %s\n"
@@ -4810,14 +4827,6 @@ msgstr "non se pode pechar `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ¡o directorio non existe!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "non se pode crear `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "non se puido abrir `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

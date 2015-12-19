@@ -1536,6 +1536,10 @@ msgstr "terlalu banyak masukan dalam pk cache - ditiadakan\n"
 msgid "[User ID not found]"
 msgstr "[User id tidak ditemukan]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "kunci %08lX: kunci rahasia tanpa kunci publik - dilewati\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1551,10 +1555,6 @@ msgstr "tidak ada subkey rahasia untuk subkey publik %08lX. diabaikan\n"
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "menggunakan kunci sekunder %08lX bukannya kunci primer %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "kunci %08lX: kunci rahasia tanpa kunci publik - dilewati\n"
 
 msgid "be somewhat more quiet"
 msgstr "lebih diam"
@@ -4029,6 +4029,10 @@ msgstr "membaca pilihan dari `%s'\n"
 msgid "unknown option `%s'\n"
 msgstr "penerima baku tidak dikenal `%s'\n"
 
+#, fuzzy, c-format
+msgid "Unknown weak digest '%s'\n"
+msgstr "kelas signature tidak dikenal"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "File `%s' ada. "
@@ -4637,6 +4641,11 @@ msgid "NOTE: signature key %s expired %s\n"
 msgstr "CATATAN: kunci signature %08lX berakhir %s\n"
 
 #, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s signature, algoritma digest %s\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "mengasumsikan signature buruk dari kunci %08lX karena ada bit kritik tidak "
@@ -4766,6 +4775,14 @@ msgstr "kesalahan pembacaan: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: gagal sync: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "tidak dapat membuat %s: %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "tidak dapat membuka `%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: lseek gagal: %s\n"
@@ -4784,14 +4801,6 @@ msgstr "tidak dapat menutup `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: direktori tidak ada!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "tidak dapat membuat %s: %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "tidak dapat membuka `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

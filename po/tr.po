@@ -1484,6 +1484,10 @@ msgid "[User ID not found]"
 msgstr "[Kullanıcı kimliği yok]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "anahtar %s: genel anahtarsız gizli anahtar - atlandı\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
 
@@ -1500,10 +1504,6 @@ msgstr ""
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "yardımcı anahtar %s, asıl anahtar %s yerine kullanılıyor\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "anahtar %s: genel anahtarsız gizli anahtar - atlandı\n"
 
 msgid "be somewhat more quiet"
 msgstr "daha az detaylı"
@@ -3931,6 +3931,11 @@ msgstr "`%s' seçeneği belirsiz\n"
 msgid "unknown option `%s'\n"
 msgstr "`%s' seçeneği bilinmiyor\n"
 
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
+msgid "Unknown weak digest '%s'\n"
+msgstr "imza türü `%s' bilinmiyor\n"
+
 #, c-format
 msgid "File `%s' exists. "
 msgstr "\"%s\" dosyası var. "
@@ -4533,6 +4538,11 @@ msgstr ""
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "BİLGİ: %s imza anahtarının kullanım süresi %s sularında dolmuş\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s imzası, %s özümleme algoritması\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -4659,6 +4669,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "güvence veritabanı: eşzamanlama başarısız: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "`%s' için kilit oluşturulamıyor\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "`%s' kiltlenemedi\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "güvence veritabanı %lu kaydı: erişim başarısız: %s\n"
 
@@ -4676,14 +4694,6 @@ msgstr "'%s' erişilemiyor: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: dizin yok!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "`%s' için kilit oluşturulamıyor\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "`%s' kiltlenemedi\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
