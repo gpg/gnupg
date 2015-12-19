@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.4.8\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-02-27 09:04+0100\n"
+"PO-Revision-Date: 2015-12-19 15:38+0100\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -1518,6 +1518,11 @@ msgid "[User ID not found]"
 msgstr "[User-ID nicht gefunden]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr ""
+"Schlüssel %s: geheimer Schlüssel ohne öffentlichen Schlüssel - übersprungen\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "`%s' automatisch via %s geholt\n"
 
@@ -1534,11 +1539,6 @@ msgstr ""
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "der Unterschlüssel %s wird anstelle des Hauptschlüssels %s verwendet\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr ""
-"Schlüssel %s: geheimer Schlüssel ohne öffentlichen Schlüssel - übersprungen\n"
 
 msgid "be somewhat more quiet"
 msgstr "Etwas weniger Infos"
@@ -3987,6 +3987,10 @@ msgid "unknown option `%s'\n"
 msgstr "Unbekannte Option '%s'\n"
 
 #, c-format
+msgid "Unknown weak digest '%s'\n"
+msgstr "Unbekannter schwacher Hashalgorithmus `%s'\n"
+
+#, c-format
 msgid "File `%s' exists. "
 msgstr "Datei '%s' existiert bereits. "
 
@@ -4605,6 +4609,11 @@ msgid "NOTE: signature key %s expired %s\n"
 msgstr "Hinweis: Signaturschlüssel %s ist am %s verfallen\n"
 
 #, c-format
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr ""
+"Hinweis: Unterschriften basierend auf dem %s Algorithmus werden abgewiesen\n"
+
+#, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "Vermutlich eine FALSCHE Unterschrift von Schlüssel %s, wegen unbekanntem "
@@ -4737,6 +4746,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "\"Trust-DB\": sync fehlgeschlagen: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "Datei `%s' konnte nicht gesperrt werden\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "'%s' kann nicht gesperrt werden\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb Satz %lu: lseek fehlgeschlagen: %s\n"
 
@@ -4754,14 +4771,6 @@ msgstr "kann aus `%s' nicht zugreifen: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: Verzeichnis existiert nicht!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "Datei `%s' konnte nicht gesperrt werden\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "'%s' kann nicht gesperrt werden\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
