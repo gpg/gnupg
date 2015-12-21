@@ -17,14 +17,13 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef G13_CALL_GPG_H
-#define G13_CALL_GPG_H
+#ifndef GNUPG_COMMON_CALL_GPG_H
+#define GNUPG_COMMON_CALL_GPG_H
 
 #include <gpg-error.h>
 
+#include "fwddecl.h"
 #include "strlist.h"
-
-typedef struct server_control_s *ctrl_t;
 
 gpg_error_t gpg_encrypt_blob (ctrl_t ctrl,
 			      const char *gpg_program,
@@ -52,4 +51,4 @@ gpg_error_t gpg_decrypt_stream (ctrl_t ctrl,
 				estream_t cipher_stream,
 				estream_t plain_stream);
 
-#endif /*G13_CALL_GPG_H*/
+#endif /*GNUPG_COMMON_CALL_GPG_H*/

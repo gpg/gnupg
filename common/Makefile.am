@@ -42,7 +42,7 @@ include $(top_srcdir)/am/cmacros.am
 
 common_sources = \
 	common-defs.h \
-	util.h i18n.c i18n.h \
+	util.h fwddecl.h i18n.c i18n.h \
 	types.h host2net.h dynload.h w32help.h \
 	mapstrings.c stringhelp.c stringhelp.h \
 	strlist.c strlist.h \

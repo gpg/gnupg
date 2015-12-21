@@ -52,6 +52,7 @@
 #include "../common/dotlock.h"
 #include "../common/utf8conv.h"
 #include "../common/dynload.h"
+#include "../common/fwddecl.h"
 
 #include "gettime.h"
 
@@ -345,12 +346,5 @@ int _gnupg_isatty (int fd);
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
 #define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
 #define xtoi_4(p)   ((xtoi_2(p) * 256) + xtoi_2((p)+2))
-
-
-/*-- Forward declaration of the commonly used server control structure.  */
-/*   (We need it here as it is used by some callback prototypes.) */
-struct server_control_s;
-typedef struct server_control_s *ctrl_t;
-
 
 #endif /*GNUPG_COMMON_UTIL_H*/
