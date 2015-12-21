@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.1.9\n"
+"Project-Id-Version: gnupg 2.1.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-12-04 18:10+0900\n"
+"PO-Revision-Date: 2015-12-21 21:21+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1485,7 +1485,7 @@ msgid "key"
 msgstr "鍵"
 
 msgid "subkey"
-msgstr "サブ鍵: "
+msgstr "副鍵: "
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -3314,7 +3314,7 @@ msgstr ""
 "              ユーザIDが主になると仮定する場合があります。\n"
 
 msgid "WARNING: Your encryption subkey expires soon.\n"
-msgstr "*警告*: あなたの暗号サブ鍵はもうすぐ期限切れとなります。\n"
+msgstr "*警告*: あなたの暗号副鍵はもうすぐ期限切れとなります。\n"
 
 msgid "You may want to change its expiration date too.\n"
 msgstr "その有効期限も変更したいでしょう\n"
@@ -4512,13 +4512,13 @@ msgstr "OpenPGPの秘密鍵をインポートするためにパスフレーズ�
 
 msgid "Please enter the passphrase to export the OpenPGP secret subkey:"
 msgstr ""
-"OpenPGPの秘密サブ鍵をエクスポートするためにパスフレーズを入力してください:"
+"OpenPGPの秘密副鍵をエクスポートするためにパスフレーズを入力してください:"
 
 msgid "Please enter the passphrase to export the OpenPGP secret key:"
 msgstr "OpenPGPの秘密鍵をエクスポートするためにパスフレーズを入力してください:"
 
 msgid "Do you really want to permanently delete the OpenPGP secret subkey key:"
-msgstr "選択したOpenPGPサブ鍵を本当に永久に削除しますか? (y/N) "
+msgstr "選択したOpenPGP副鍵を本当に永久に削除しますか? (y/N) "
 
 msgid "Do you really want to permanently delete the OpenPGP secret key:"
 msgstr "選択したOpenPGP秘密鍵を本当に永久に削除しますか? (y/N) "
