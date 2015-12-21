@@ -297,7 +297,6 @@ gpg_error_t generate_subkeypair (ctrl_t ctrl, kbnode_t pub_keyblock);
 #ifdef ENABLE_CARD_SUPPORT
 gpg_error_t generate_card_subkeypair (kbnode_t pub_keyblock,
                                       int keyno, const char *serialno);
-int save_unprotected_key_to_card (PKT_public_key *sk, int keyno);
 #endif
 
 

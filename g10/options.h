@@ -220,13 +220,6 @@ struct
      value. */
   int limit_card_insert_tries;
 
-#ifdef ENABLE_CARD_SUPPORT
-  /* FIXME: We don't needs this here as it is done in scdaemon. */
-  const char *ctapi_driver; /* Library to access the ctAPI. */
-  const char *pcsc_driver;  /* Library to access the PC/SC system. */
-  int disable_ccid;    /* Disable the use of the internal CCID driver. */
-#endif /*ENABLE_CARD_SUPPORT*/
-
   struct
   {
     /* If set, require an 0x19 backsig to be present on signatures
