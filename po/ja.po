@@ -7,9 +7,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 1.4.19\n"
+"Project-Id-Version: gnupg 1.4.20\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-09-17 17:02+0900\n"
+"PO-Revision-Date: 2015-12-21 21:25+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -1800,10 +1800,8 @@ msgstr "ローカルだけとマークされた署名をインポートします
 msgid "repair damage from the pks keyserver during import"
 msgstr "インポートの際、にpksキーサーバからのダメージを修正します"
 
-#, fuzzy
-#| msgid "do not update the trustdb after import"
 msgid "do not clear the ownertrust values during import"
-msgstr "インポート後、信用データベースを更新しない"
+msgstr "インポートの際、所有者信用の値をクリアしない"
 
 msgid "do not update the trustdb after import"
 msgstr "インポート後、信用データベースを更新しない"
@@ -1923,13 +1921,12 @@ msgstr "以下で、優先指定が更新できます: gpg --edit-key %s updpref
 msgid "key %s: no user ID\n"
 msgstr "鍵%s: ユーザIDがありません\n"
 
-#, fuzzy, c-format
-#| msgid "skipped \"%s\": %s\n"
+#, c-format
 msgid "key %s: %s\n"
-msgstr "\"%s\"をスキップします: %s\n"
+msgstr "鍵  %s: %s\n"
 
 msgid "rejected by import filter"
-msgstr ""
+msgstr "インポート・フィルタで拒否されました"
 
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
@@ -2026,10 +2023,9 @@ msgstr "鍵%s: \"%s\" %d個のユーザIDをきれいにしました\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "鍵%s:\"%s\"変更なし\n"
 
-#, fuzzy, c-format
-#| msgid "secret key \"%s\" not found: %s\n"
+#, c-format
 msgid "secret key %s: %s\n"
-msgstr "秘密鍵\"%s\"が見つかりません: %s\n"
+msgstr "秘密鍵 %s: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "秘密鍵のインポートは禁止です\n"
@@ -2768,12 +2764,10 @@ msgstr ""
 "              ユーザIDが主になると仮定する場合があります。\n"
 
 msgid "WARNING: Your encryption subkey expires soon.\n"
-msgstr ""
+msgstr "*警告*: あなたの暗号副鍵はもうすぐ期限切れとなります。\n"
 
-#, fuzzy
-#| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
-msgstr "v3鍵の有効期限は変更できません\n"
+msgstr "その有効期限も変更したいでしょう\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -3723,7 +3717,7 @@ msgstr "未知の"
 
 #, c-format
 msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
-msgstr ""
+msgstr "*警告*: 分遣署名ではありません。ファイル「%s」は検証され*ませんでした*!\n"
 
 #, c-format
 msgid "Can't check signature: %s\n"
@@ -3820,10 +3814,9 @@ msgstr "あいまいなオプション「%s」\n"
 msgid "unknown option `%s'\n"
 msgstr "未知のオプション「%s」\n"
 
-#, fuzzy, c-format
-#| msgid "Unknown signature type `%s'\n"
+#, c-format
 msgid "Unknown weak digest '%s'\n"
-msgstr "不明の署名タイプ「%s」\n"
+msgstr "不明の弱いダイジェスト'%s'\n"
 
 #, c-format
 msgid "File `%s' exists. "
@@ -4400,10 +4393,9 @@ msgstr "鍵%sは%lu秒未来にできました (時間旅行か時計の障害�
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "注意: 署名鍵%sは%sに期限切れです\n"
 
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
+#, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s署名、ダイジェスト・アルゴリズム %s\n"
+msgstr "注意: アルゴリズム %s を用いた署名は拒否されました\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
