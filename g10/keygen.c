@@ -3863,7 +3863,7 @@ card_write_key_to_backup_file (PKT_public_key *sk, const char *backup_dir)
     {
       unsigned char array[MAX_FINGERPRINT_LEN];
       char *fprbuf, *p;
-      int n;
+      size_t n;
       int i;
 
       iobuf_close (fp);
