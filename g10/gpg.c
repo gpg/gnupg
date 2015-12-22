@@ -4281,8 +4281,6 @@ main (int argc, char **argv)
       }
 
     {
-      int have_def_secret_key = opt.def_secret_key != NULL;
-
       rc = check_user_ids (&locusr, 1, 1);
       if (rc)
         g10_exit (1);
@@ -4292,25 +4290,6 @@ main (int argc, char **argv)
       rc = check_user_ids (&opt.def_secret_key, 1, 0);
       if (rc)
         g10_exit (1);
-
-      if (opt.encrypt_to_default_key)
-        {
-          const char *default_key = parse_def_secret_key (ctrl);
-          if (default_key)
-            {
-              sl = add_to_strlist2 (&remusr, default_key, utf8_strings);
-              sl->flags = ((oEncryptToDefaultKey << PK_LIST_SHIFT)
-                           | PK_LIST_ENCRYPT_TO);
-              if (opt.encrypt_to_default_key == 2)
-                sl->flags |= PK_LIST_CONFIG;
-            }
-          else if (have_def_secret_key)
-            log_info (_("option '%s' given, but no valid default keys given\n"),
-                      "--encrypt-to-default-key");
-          else
-            log_info (_("option '%s' given, but option '%s' not given\n"),
-                      "--encrypt-to-default-key", "--default-key");
-        }
     }
 
     /* The command dispatcher.  */

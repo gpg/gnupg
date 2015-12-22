@@ -914,6 +914,53 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
   else
     remusr = rcpts;
 
+  if (opt.encrypt_to_default_key)
+    {
+      static int warned;
+
+      const char *default_key = parse_def_secret_key (ctrl);
+      if (default_key)
+        {
+          PK_LIST r = xmalloc_clear (sizeof *r);
+
+          r->pk = xmalloc_clear (sizeof *r->pk);
+          r->pk->req_usage = PUBKEY_USAGE_ENC;
+
+          rc = get_pubkey_byname (ctrl, NULL, r->pk, default_key,
+                                   NULL, NULL, 0, 1);
+          if (rc)
+            {
+              xfree (r->pk);
+              xfree (r);
+
+              log_error (_("Can't encrypt to '%s'.\n"), default_key);
+              if (!opt.quiet)
+                log_info (_("(check argument of option '%s')\n"),
+                          "--default-key");
+            }
+          else
+            {
+              r->next = pk_list;
+              r->flags = 0;
+              pk_list = r;
+            }
+        }
+      else if (opt.def_secret_key)
+        {
+          if (! warned)
+            log_info (_("option '%s' given, but no valid default keys given\n"),
+                      "--encrypt-to-default-key");
+          warned = 1;
+        }
+      else
+        {
+          if (! warned)
+            log_info (_("option '%s' given, but option '%s' not given\n"),
+                      "--encrypt-to-default-key", "--default-key");
+          warned = 1;
+        }
+    }
+
   /* Check whether there are any recipients in the list and build the
    * list of the encrypt-to ones (we always trust them). */
   for ( rov = remusr; rov; rov = rov->next )
