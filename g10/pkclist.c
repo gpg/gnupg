@@ -914,6 +914,13 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
   else
     remusr = rcpts;
 
+  /* XXX: Change this function to use get_pubkeys instead of
+     get_pubkey_byname to detect ambiguous key specifications and warn
+     about duplicate keyblocks.  For ambiguous key specifications on
+     the command line or provided interactively, prompt the user to
+     select the best key.  If a key specification is ambiguous and we
+     are in batch mode, die.  */
+
   if (opt.encrypt_to_default_key)
     {
       static int warned;

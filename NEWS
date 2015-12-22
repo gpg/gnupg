@@ -1,6 +1,9 @@
 Noteworthy changes in version 2.1.11 (unreleased)
 -------------------------------------------------
 
+ * gpg: Don't check for ambigious or non-matching key specification in
+   the config file or given to --encrypt-to.  This feature will return
+   in 2.3.x.
 
 Noteworthy changes in version 2.1.10 (2015-12-04)
 -------------------------------------------------

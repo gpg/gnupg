@@ -120,6 +120,13 @@ build_sk_list (ctrl_t ctrl,
   gpg_error_t err;
   SK_LIST sk_list = NULL;
 
+  /* XXX: Change this function to use get_pubkeys instead of
+     getkey_byname to detect ambiguous key specifications and warn
+     about duplicate keyblocks.  For ambiguous key specifications on
+     the command line or provided interactively, prompt the user to
+     select the best key.  If a key specification is ambiguous and we
+     are in batch mode, die.  */
+
   if (!locusr) /* No user ids given - use the default key.  */
     {
       PKT_public_key *pk;
