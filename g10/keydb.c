@@ -1386,12 +1386,13 @@ gpg_error_t
 keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 {
   gpg_error_t err;
-  PKT_public_key *pk = kb->pkt->pkt.public_key;
+  PKT_public_key *pk;
   KEYDB_SEARCH_DESC desc;
   size_t len;
 
   assert (kb);
   assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
+  pk = kb->pkt->pkt.public_key;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
@@ -1411,7 +1412,7 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
   if (len == 20)
     desc.mode = KEYDB_SEARCH_MODE_FPR20;
   else
-    log_bug ("%s: Unsupported key length: %zd\n", __func__, len);
+    log_bug ("%s: Unsupported key length: %zu\n", __func__, len);
 
   keydb_search_reset (hd);
   err = keydb_search (hd, &desc, 1, NULL);
