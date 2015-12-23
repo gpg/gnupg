@@ -4104,6 +4104,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
   if (!err && get_parameter (para, pSUBKEYTYPE))
     {
       sub_psk = NULL;
+      s = NULL;
       if (!card || (s = get_parameter_value (para, pCARDBACKUPKEY)))
         {
           err = do_create (get_parameter_algo (para, pSUBKEYTYPE, NULL),
