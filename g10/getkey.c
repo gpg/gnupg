@@ -367,7 +367,7 @@ getkey_disable_caches ()
 
 
 void
-pubkey_free (struct pubkey *key)
+pubkey_free (pubkey_t key)
 {
   if (key)
     {
@@ -378,11 +378,11 @@ pubkey_free (struct pubkey *key)
 }
 
 void
-pubkeys_free (struct pubkey *keys)
+pubkeys_free (pubkey_t keys)
 {
   while (keys)
     {
-      struct pubkey *next = keys->next;
+      pubkey_t next = keys->next;
       pubkey_free (keys);
       keys = next;
     }
@@ -420,7 +420,7 @@ gpg_error_t
 get_pubkeys (ctrl_t ctrl,
              char *search_terms, int use, int include_unusable, char *source,
              int warn_possibly_ambiguous,
-             struct pubkey **keys)
+             pubkey_t *r_keys)
 {
   /* We show a warning when a key appears multiple times in the DB.
      This can happen for two reasons:
@@ -442,8 +442,8 @@ get_pubkeys (ctrl_t ctrl,
   KEYDB_SEARCH_DESC desc;
 
   GETKEY_CTX ctx;
-  struct pubkey *results = NULL;
-  struct pubkey *r;
+  pubkey_t results = NULL;
+  pubkey_t r;
 
   int count;
 
@@ -456,7 +456,7 @@ get_pubkeys (ctrl_t ctrl,
                  __func__, source ? source : "user input", search_terms);
     }
 
-  if (*keys)
+  if (*r_keys)
     log_bug ("%s: KEYS should be NULL!\n", __func__);
 
   switch (use)
@@ -571,9 +571,9 @@ get_pubkeys (ctrl_t ctrl,
   count = 0;
   for (r = results; r; r = r->next)
     {
-      struct pubkey **prevp;
-      struct pubkey *next;
-      struct pubkey *r2;
+      pubkey_t *prevp;
+      pubkey_t next;
+      pubkey_t r2;
       int dups = 0;
 
       prevp = &r->next;
@@ -639,7 +639,7 @@ get_pubkeys (ctrl_t ctrl,
         }
     }
   else
-    *keys = results;
+    *r_keys = results;
 
   return err;
 }

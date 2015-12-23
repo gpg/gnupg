@@ -486,19 +486,20 @@ int get_pubkey_fast ( PKT_public_key *pk, u32 *keyid );
 KBNODE get_pubkeyblock( u32 *keyid );
 
 /* A list used by get_pubkeys to gather all of the matches.  */
-struct pubkey
+struct pubkey_s
 {
-  struct pubkey *next;
+  struct pubkey_s *next;
   /* The key to use (either the public key or the subkey).  */
   PKT_public_key *pk;
   kbnode_t keyblock;
 };
+typedef struct pubkey_s *pubkey_t;
 
 /* Free a single key.  This does not remove key from any list!  */
-void pubkey_free (struct pubkey *key);
+void pubkey_free (pubkey_t key);
 
 /* Free a list of public keys.  */
-void pubkeys_free (struct pubkey *keys);
+void pubkeys_free (pubkey_t keys);
 
 /* Returns all keys that match the search specfication SEARCH_TERMS.
    The returned keys should be freed using pubkeys_free.  */
@@ -506,7 +507,7 @@ gpg_error_t
 get_pubkeys (ctrl_t ctrl,
              char *search_terms, int use, int include_unusable, char *source,
              int warn_possibly_ambiguous,
-             struct pubkey **keys);
+             pubkey_t *r_keys);
 
 /* Find a public key identified by the name NAME.
 
