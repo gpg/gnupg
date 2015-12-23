@@ -3861,28 +3861,13 @@ card_write_key_to_backup_file (PKT_public_key *sk, const char *backup_dir)
     }
   else
     {
-      unsigned char array[MAX_FINGERPRINT_LEN];
-      char *fprbuf, *p;
-      size_t n;
-      int i;
+      char *fprbuf;
 
       iobuf_close (fp);
       iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname);
       log_info (_("Note: backup of card key saved to '%s'\n"), fname);
 
-      fingerprint_from_pk (sk, array, &n);
-      p = fprbuf = xmalloc (MAX_FINGERPRINT_LEN*2 + 1 + 1);
-      if (!p)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-
-      for (i=0; i < n ; i++, p += 2)
-        sprintf (p, "%02X", array[i]);
-      *p++ = ' ';
-      *p = 0;
-
+      fprbuf = hexfingerprint (sk, NULL, 0);
       write_status_text_and_buffer (STATUS_BACKUP_KEY_CREATED, fprbuf,
                                     fname, strlen (fname), 0);
       xfree (fprbuf);
