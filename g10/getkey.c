@@ -369,9 +369,12 @@ getkey_disable_caches ()
 void
 pubkey_free (struct pubkey *key)
 {
-  xfree (key->pk);
-  release_kbnode (key->keyblock);
-  xfree (key);
+  if (key)
+    {
+      xfree (key->pk);
+      release_kbnode (key->keyblock);
+      xfree (key);
+    }
 }
 
 void
