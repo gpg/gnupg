@@ -2028,7 +2028,7 @@ cmd_keywrap_key (assuan_context_t ctx, char *line)
 
 
 static const char hlp_import_key[] =
-  "IMPORT_KEY [--unattended] [<cache_nonce>]\n"
+  "IMPORT_KEY [--unattended] [--force] [<cache_nonce>]\n"
   "\n"
   "Import a secret key into the key store.  The key is expected to be\n"
   "encrypted using the current session's key wrapping key (cf. command\n"
@@ -2036,13 +2036,14 @@ static const char hlp_import_key[] =
   "no arguments but uses the inquiry \"KEYDATA\" to ask for the actual\n"
   "key data.  The unwrapped key must be a canonical S-expression.  The\n"
   "option --unattended tries to import the key as-is without any\n"
-  "re-encryption";
+  "re-encryption.  Exisiting key can be overwritten with --force.";
 static gpg_error_t
 cmd_import_key (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
   int opt_unattended;
+  int force;
   unsigned char *wrappedkey = NULL;
   size_t wrappedkeylen;
   gcry_cipher_hd_t cipherhd = NULL;
@@ -2066,6 +2067,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
     }
 
   opt_unattended = has_option (line, "--unattended");
+  force = has_option (line, "--force");
   line = skip_options (line);
 
   p = line;
@@ -2180,7 +2182,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
     }
   else
     {
-      if (!agent_key_available (grip))
+      if (!force && !agent_key_available (grip))
         err = gpg_error (GPG_ERR_EEXIST);
       else
         {
@@ -2202,10 +2204,10 @@ cmd_import_key (assuan_context_t ctx, char *line)
       err = agent_protect (key, passphrase, &finalkey, &finalkeylen,
                            ctrl->s2k_count);
       if (!err)
-        err = agent_write_private_key (grip, finalkey, finalkeylen, 0);
+        err = agent_write_private_key (grip, finalkey, finalkeylen, force);
     }
   else
-    err = agent_write_private_key (grip, key, realkeylen, 0);
+    err = agent_write_private_key (grip, key, realkeylen, force);
 
  leave:
   gcry_sexp_release (openpgp_sexp);
