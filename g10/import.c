@@ -1318,7 +1318,7 @@ import_one (ctrl_t ctrl,
    function prints diagnostics and returns an error code.  If BATCH is
    true the secret keys are stored by gpg-agent in the transfer format
    (i.e. no re-protection and aksing for passphrases). */
-static gpg_error_t
+gpg_error_t
 transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats, kbnode_t sec_keyblock,
                       int batch)
 {
@@ -1389,8 +1389,11 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats, kbnode_t sec_ke
       if (!ski)
         BUG ();
 
-      stats->count++;
-      stats->secret_read++;
+      if (stats)
+        {
+          stats->count++;
+          stats->secret_read++;
+        }
 
       /* We ignore stub keys.  The way we handle them in other parts
          of the code is by asking the agent whether any secret key is
@@ -1561,7 +1564,8 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats, kbnode_t sec_ke
           if (opt.verbose)
             log_info (_("key %s: secret key imported\n"),
                       keystr_from_pk_with_sub (main_pk, pk));
-          stats->secret_imported++;
+          if (stats)
+            stats->secret_imported++;
         }
       else if ( gpg_err_code (err) == GPG_ERR_EEXIST )
         {
@@ -1569,7 +1573,8 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats, kbnode_t sec_ke
             log_info (_("key %s: secret key already exists\n"),
                       keystr_from_pk_with_sub (main_pk, pk));
           err = 0;
-          stats->secret_dups++;
+          if (stats)
+            stats->secret_dups++;
         }
       else
         {
