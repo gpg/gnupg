@@ -20,6 +20,7 @@
 #define GNUPG_AGENT_CVT_OPENPGP_H
 
 gpg_error_t convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
+                                  int dontcare_exist,
                                   unsigned char *grip, const char *prompt,
                                   const char *cache_nonce,
                                   unsigned char **r_key, char **r_passphrase);

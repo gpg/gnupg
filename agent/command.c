@@ -2151,7 +2151,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
 
       xfree (key);
       key = NULL;
-      err = convert_from_openpgp (ctrl, openpgp_sexp, grip,
+      err = convert_from_openpgp (ctrl, openpgp_sexp, force, grip,
                                   ctrl->server_local->keydesc, cache_nonce,
                                   &key, opt_unattended? NULL : &passphrase);
       if (err)

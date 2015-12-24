@@ -685,7 +685,7 @@ try_do_unprotect_cb (struct pin_entry_info_s *pi)
    silently decrypt the key; CACHE_NONCE and R_PASSPHRASE must both be
    NULL in this mode.  */
 static gpg_error_t
-convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
+convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
                            unsigned char *grip, const char *prompt,
                            const char *cache_nonce, const char *passphrase,
                            unsigned char **r_key, char **r_passphrase)
@@ -894,7 +894,7 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
   if (err)
     goto leave;
 
-  if (!from_native && !agent_key_available (grip))
+  if (!dontcare_exist && !from_native && !agent_key_available (grip))
     {
       err = gpg_error (GPG_ERR_EEXIST);
       goto leave;
@@ -1028,12 +1028,12 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
    the key.  The keygrip will be stored at the 20 byte buffer pointed
    to by GRIP.  On error NULL is stored at all return arguments.  */
 gpg_error_t
-convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
+convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp, int dontcare_exist,
                       unsigned char *grip, const char *prompt,
                       const char *cache_nonce,
                       unsigned char **r_key, char **r_passphrase)
 {
-  return convert_from_openpgp_main (ctrl, s_pgp, grip, prompt,
+  return convert_from_openpgp_main (ctrl, s_pgp, dontcare_exist, grip, prompt,
                                     cache_nonce, NULL,
                                     r_key, r_passphrase);
 }
@@ -1052,7 +1052,7 @@ convert_from_openpgp_native (ctrl_t ctrl,
   if (!passphrase)
     return gpg_error (GPG_ERR_INTERNAL);
 
-  err = convert_from_openpgp_main (ctrl, s_pgp, grip, NULL,
+  err = convert_from_openpgp_main (ctrl, s_pgp, 0, grip, NULL,
                                    NULL, passphrase,
                                    r_key, NULL);
 
