@@ -1319,8 +1319,8 @@ import_one (ctrl_t ctrl,
    true the secret keys are stored by gpg-agent in the transfer format
    (i.e. no re-protection and aksing for passphrases). */
 gpg_error_t
-transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats, kbnode_t sec_keyblock,
-                      int batch)
+transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
+                      kbnode_t sec_keyblock, int batch, int force)
 {
   gpg_error_t err = 0;
   void *kek = NULL;
@@ -1556,7 +1556,7 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats, kbnode_t sec_ke
       {
         char *desc = gpg_format_keydesc (pk, FORMAT_KEYDESC_IMPORT, 1);
         err = agent_import_key (ctrl, desc, &cache_nonce,
-                                wrappedkey, wrappedkeylen, batch);
+                                wrappedkey, wrappedkeylen, batch, force);
         xfree (desc);
       }
       if (!err)
@@ -1783,7 +1783,7 @@ import_secret_one (ctrl_t ctrl, const char *fname, kbnode_t keyblock,
               gpg_error_t err;
 
 	      nr_prev = stats->secret_imported;
-              err = transfer_secret_keys (ctrl, stats, keyblock, batch);
+              err = transfer_secret_keys (ctrl, stats, keyblock, batch, 0);
               if (gpg_err_code (err) == GPG_ERR_NOT_PROCESSED)
                 {
                   /* TRANSLATORS: For smartcard, each private key on

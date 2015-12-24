@@ -2216,7 +2216,7 @@ inq_import_key_parms (void *opaque, const char *line)
 /* Call the agent to import a key into the agent.  */
 gpg_error_t
 agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
-                  const void *key, size_t keylen, int unattended)
+                  const void *key, size_t keylen, int unattended, int force)
 {
   gpg_error_t err;
   struct import_key_parm_s parm;
@@ -2246,8 +2246,9 @@ agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
   parm.key    = key;
   parm.keylen = keylen;
 
-  snprintf (line, sizeof line, "IMPORT_KEY%s%s%s",
+  snprintf (line, sizeof line, "IMPORT_KEY%s%s%s%s",
             unattended? " --unattended":"",
+            force? " --force":"",
             cache_nonce_addr && *cache_nonce_addr? " ":"",
             cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"");
   cn_parm.cache_nonce_addr = cache_nonce_addr;

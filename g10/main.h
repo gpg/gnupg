@@ -338,7 +338,7 @@ import_stats_t import_new_stats_handle (void);
 void import_release_stats_handle (import_stats_t hd);
 void import_print_stats (import_stats_t hd);
 gpg_error_t transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
-                                  kbnode_t sec_keyblock, int batch);
+                                  kbnode_t sec_keyblock, int batch, int force);
 
 int collapse_uids( KBNODE *keyblock );
 
