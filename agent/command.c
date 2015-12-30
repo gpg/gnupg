@@ -2036,7 +2036,7 @@ static const char hlp_import_key[] =
   "no arguments but uses the inquiry \"KEYDATA\" to ask for the actual\n"
   "key data.  The unwrapped key must be a canonical S-expression.  The\n"
   "option --unattended tries to import the key as-is without any\n"
-  "re-encryption.  Exisiting key can be overwritten with --force.";
+  "re-encryption.  Existing key can be overwritten with --force.";
 static gpg_error_t
 cmd_import_key (assuan_context_t ctx, char *line)
 {
