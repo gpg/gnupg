@@ -629,15 +629,7 @@ get_pubkeys (ctrl_t ctrl,
 
  out:
   if (err)
-    {
-      while ((r = results))
-        {
-          results = results->next;
-          pubkey_free (r);
-          release_kbnode (r->keyblock);
-          xfree (r);
-        }
-    }
+    pubkeys_free (results);
   else
     *r_keys = results;
 
