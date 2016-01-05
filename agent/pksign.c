@@ -492,21 +492,20 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
    * for RSA internally there is no need to do it here again.  */
   if (check_signature)
     {
+      gcry_sexp_t sexp_key = s_pkey? s_pkey: s_skey;
+
       if (s_hash == NULL)
         {
           if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1)
             rc = do_encode_raw_pkcs1 (data, datalen,
-                                      gcry_pk_get_nbits (s_skey),
-                                      &s_hash);
+                                      gcry_pk_get_nbits (sexp_key), &s_hash);
           else
-            rc = do_encode_md (data, datalen,
-                               ctrl->digest.algo,
-                               &s_hash,
+            rc = do_encode_md (data, datalen, ctrl->digest.algo, &s_hash,
                                ctrl->digest.raw_value);
         }
 
       if (! rc)
-        rc = gcry_pk_verify (s_sig, s_hash, s_pkey? s_pkey: s_skey);
+        rc = gcry_pk_verify (s_sig, s_hash, sexp_key);
 
       if (rc)
         {
