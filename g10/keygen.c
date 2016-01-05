@@ -2006,14 +2006,12 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
 static unsigned
 ask_keysize (int algo, unsigned int primary_keysize)
 {
-  unsigned int nbits, min, def = DEFAULT_STD_KEYSIZE, max=4096;
+  unsigned int nbits;
+  unsigned int min = 1024;
+  unsigned int def = DEFAULT_STD_KEYSIZE;
+  unsigned int max = 4096;
   int for_subkey = !!primary_keysize;
   int autocomp = 0;
-
-  if(opt.expert)
-    min=512;
-  else
-    min=1024;
 
   if (primary_keysize && !opt.expert)
     {
@@ -2029,9 +2027,11 @@ ask_keysize (int algo, unsigned int primary_keysize)
       goto leave;
     }
 
+  /* Deviations from the standard values.  */
   switch(algo)
     {
     case PUBKEY_ALGO_DSA:
+      min = opt.expert? 768 : 1024;
       def=2048;
       max=3072;
       break;
@@ -2047,10 +2047,6 @@ ask_keysize (int algo, unsigned int primary_keysize)
       min=255;
       def=255;
       max=441;
-      break;
-
-    case PUBKEY_ALGO_RSA:
-      min=1024;
       break;
     }
 
