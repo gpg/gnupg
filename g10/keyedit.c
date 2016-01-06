@@ -1195,7 +1195,7 @@ change_passphrase (ctrl_t ctrl, kbnode_t keyblock)
     }
 
   /* Change the passphrase for all keys.  */
-  for (any = 0, node = keyblock; node; node = node->next)
+  for (node = keyblock; node; node = node->next)
     {
       if (node->pkt->pkttype == PKT_PUBLIC_KEY
 	  || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
@@ -2391,7 +2391,7 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
   kdbhd = keydb_new ();
   if (!kdbhd)
     {
-      err = gpg_error_from_syserror ();
+      /* Note that keydb_new has already used log_error.  */
       goto leave;
     }
 

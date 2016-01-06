@@ -2428,7 +2428,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
               err = gpg_error (GPG_ERR_INV_PACKET);
 	      goto leave;
 	    }
-	  for (i = 0; i < ski->ivlen && pktlen; i++, pktlen--)
+	  for (i = 0; i < ski->ivlen; i++, pktlen--)
 	    temp[i] = iobuf_get_noeof (inp);
 	  if (list_mode)
 	    {
@@ -2862,7 +2862,6 @@ parse_plaintext (IOBUF inp, int pkttype, unsigned long pktlen,
     pktlen -= 4;
   pt->len = pktlen;
   pt->buf = inp;
-  pktlen = 0;
 
   if (list_mode)
     {
