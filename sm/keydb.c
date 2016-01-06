@@ -1291,11 +1291,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
         {
           rc = classify_user_id (sl->d, desc+ndesc, 0);
           if (rc)
-            {
-              log_error ("key '%s' not found: %s\n",
-                         sl->d, gpg_strerror (rc));
-              rc = 0;
-            }
+            log_error ("key '%s' not found: %s\n", sl->d, gpg_strerror (rc));
           else
             ndesc++;
         }

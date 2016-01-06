@@ -630,7 +630,7 @@ build_list (const char *text, const char * (*mapf)(int), int (*chkf)(int))
 	}
     }
   if (p)
-    p = stpcpy(p, "\n" );
+    strcpy (p, "\n" );
   return list;
 }
 

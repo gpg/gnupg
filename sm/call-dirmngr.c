@@ -181,9 +181,11 @@ prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
 		server->host, server->port, user, pass, base);
       line[DIM (line) - 1] = 0;
 
-      err = assuan_transact (ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
-      if (gpg_err_code (err) == GPG_ERR_ASS_UNKNOWN_CMD)
-	err = 0;  /* Allow the use of old dirmngr versions.  */
+      assuan_transact (ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+      /* The code below is not required becuase we don't return an error.  */
+      /* err = [above call]  */
+      /* if (gpg_err_code (err) == GPG_ERR_ASS_UNKNOWN_CMD) */
+      /*   err = 0;  /\* Allow the use of old dirmngr versions.  *\/ */
 
       server = server->next;
     }
@@ -402,7 +404,6 @@ unhexify_fpr (const char *hexstr, unsigned char *fpr)
     ;
   if (*s || (n != 40))
     return 0; /* no fingerprint (invalid or wrong length). */
-  n /= 2;
   for (s=hexstr, n=0; *s; s += 2, n++)
     fpr[n] = xtoi_2 (s);
   return 1; /* okay */

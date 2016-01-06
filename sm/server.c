@@ -1083,7 +1083,7 @@ cmd_getauditlog (assuan_context_t ctx, char *line)
 
   opt_data = has_option (line, "--data");
   opt_html = has_option (line, "--html");
-  line = skip_options (line);
+  /* Not needed: line = skip_options (line); */
 
   if (!ctrl->audit)
     return gpg_error (GPG_ERR_NO_DATA);

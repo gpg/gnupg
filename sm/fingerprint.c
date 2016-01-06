@@ -192,7 +192,6 @@ gpgsm_get_keygrip (ksba_cert_t cert, unsigned char *array)
   gcry_sexp_release (s_pkey);
   if (!array)
     {
-      rc = gpg_error (GPG_ERR_GENERAL);
       log_error ("can't calculate keygrip\n");
       return NULL;
     }

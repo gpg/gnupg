@@ -405,7 +405,9 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
         }
       while (!*p || *p == '\n' || *p == '#');
 
-      /* parse line */
+      /* Parse line.  Note that the line has always a LF and spacep
+         does not consider a LF a space.  Thus strpbrk will always
+         succeed.  */
       for (allowed=line; spacep (allowed); allowed++)
         ;
       p = strpbrk (allowed, " :\n");
@@ -1389,10 +1391,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
                                     exptime, listmode, listfp,
                                     (depth && is_root)? -1: depth);
       if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED)
-        {
-          any_expired = 1;
-          rc = 0;
-        }
+        any_expired = 1;
       else if (rc)
         goto leave;
 
@@ -1409,7 +1408,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
           if (gpg_err_code (rc) == GPG_ERR_NO_POLICY_MATCH)
             {
               any_no_policy_match = 1;
-              rc = 1;
+              rc = 1;  /* Be on the safe side and set RC.  */
             }
           else if (rc)
             goto leave;
@@ -1612,7 +1611,8 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
                       /* The find next did not work or returned an
                          identical certificate.  We better stop here
                          to avoid infinite checks. */
-                      rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
+                      /* No need to set RC because it is not used:
+                         rc = gpg_error (GPG_ERR_BAD_SIGNATURE);  */
                       ksba_cert_release (tmp_cert);
                     }
                   else
