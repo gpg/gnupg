@@ -271,12 +271,11 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
       goto leave;
     }
 
-  /* Create the new file. */
+  /* Create the new file.  On success NEWFP is initialized.  */
   rc = create_tmp_file (fname, &bakfname, &tmpfname, &newfp);
   if (rc)
     {
       fclose (fp);
-      fclose (newfp);
       goto leave;
     }
 

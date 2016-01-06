@@ -71,7 +71,6 @@ next_packet (unsigned char const **bufptr, size_t *buflen,
   if ( !(ctb & 0x80) )
     return gpg_error (GPG_ERR_INV_PACKET); /* Invalid CTB. */
 
-  pktlen = 0;
   if ((ctb & 0x40))  /* New style (OpenPGP) CTB.  */
     {
       pkttype = (ctb & 0x3f);
