@@ -8,9 +8,7 @@ i=$srcdir/4gb-packet.asc
 
 if ! $GPG --list-packets $i >/dev/null
 then
-  echo Failed to parse 4GB packet.
-  exit 1
+  error Failed to parse 4GB packet.
 else
-  echo Can parse 4GB packets.
-  exit 0
+  info Can parse 4GB packets.
 fi
