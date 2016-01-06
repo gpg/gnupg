@@ -155,7 +155,8 @@ main (int argc, char **argv)
       void *key;
       size_t keylen;
 
-      printf ("CERT lookup on '%s'\n", name);
+      if (verbose || any_options)
+        printf ("CERT lookup on '%s'\n", name);
 
       err = get_dns_cert (name, DNS_CERTTYPE_ANY, &key, &keylen,
                           &fpr, &fpr_len, &url);
@@ -164,7 +165,8 @@ main (int argc, char **argv)
                 gpg_strerror (err), gpg_strsource (err));
       else if (key)
         {
-          printf ("Key found (%u bytes)\n", (unsigned int)keylen);
+          if (verbose || any_options)
+            printf ("Key found (%u bytes)\n", (unsigned int)keylen);
         }
       else
         {
