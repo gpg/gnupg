@@ -348,7 +348,6 @@ b64enc_finish (struct b64state *state)
         {
           for (idx=0; idx < 4; idx++)
             es_putc (tmp[idx], state->stream);
-          idx = 0;
           if (es_ferror (state->stream))
             goto write_error;
         }
@@ -356,7 +355,6 @@ b64enc_finish (struct b64state *state)
         {
           for (idx=0; idx < 4; idx++)
             putc (tmp[idx], state->fp);
-          idx = 0;
           if (ferror (state->fp))
             goto write_error;
         }

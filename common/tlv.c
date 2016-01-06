@@ -59,7 +59,6 @@ do_find_tlv (const unsigned char *buffer, size_t length,
 
   for (;;)
     {
-      buffer = s;
       if (n < 2)
         return NULL; /* Buffer definitely too short for tag and length. */
       if (!*s || *s == 0xff)

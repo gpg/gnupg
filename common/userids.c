@@ -235,7 +235,6 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
           desc->u.fpr[i] = hextobyte(si);
         for (; i < 20; i++)
           desc->u.fpr[i]= 0;
-        s = se + 1;
         mode = KEYDB_SEARCH_MODE_FPR;
       }
       break;

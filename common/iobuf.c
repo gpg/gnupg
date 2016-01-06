@@ -589,7 +589,6 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	  if (!a->keep_open)
 	    fd_cache_close (a->no_cache ? NULL : a->fname, f);
 	}
-      f = GNUPG_INVALID_FD;
       xfree (a); /* We can free our context now. */
     }
 
