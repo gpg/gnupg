@@ -63,11 +63,12 @@ static int verbose;
     int expected_result;			\
 						\
     tests ++;					\
-						\
-    printf ("%d. Checking %s...",		\
-	    tests, (description) ?: "");	\
-    fflush (stdout);				\
-						\
+    if (verbose)                                \
+      {                                         \
+         printf ("%d. Checking %s...",		\
+	        tests, (description) ?: "");	\
+         fflush (stdout);			\
+      }                                         \
     test_result = (test);			\
     expected_result = (expected);		\
 						\
