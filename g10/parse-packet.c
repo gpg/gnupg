@@ -2517,6 +2517,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
     }
 
+  /* Note that KEYID below has been initialized above in list_mode.  */
   if (list_mode)
     es_fprintf (listfp, "\tkeyid: %08lX%08lX\n",
                 (ulong) keyid[0], (ulong) keyid[1]);

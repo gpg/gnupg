@@ -601,6 +601,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
     if (!opt.no_literal) {
         PACKET pkt;
 
+        /* Note that PT has been initialized above in no_literal mode.  */
         pt->timestamp = make_timestamp ();
         pt->mode = ptmode;
         pt->len = filesize;

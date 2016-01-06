@@ -326,6 +326,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
 
   if (!opt.no_literal)
     {
+      /* Note that PT has been initialized above in no_literal mode.  */
       pt->timestamp = make_timestamp();
       pt->mode = opt.textmode? 't' : 'b';
       pt->len = filesize;

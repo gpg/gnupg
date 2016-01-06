@@ -363,7 +363,13 @@ check_all_keysigs (KBNODE keyblock, int only_selected, int only_selfsigs)
 
           if (only_selfsigs
               && !(keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]))
-            ;  /* Not a selfsig but we want only selfsigs - skip.  */
+            {
+              /* Not a selfsig but we want only selfsigs - skip.  */
+              /* Static analyzer note: A claim that KEYID above has
+                 garbage is not correct because KEYID is set from the
+                 public key packet which is always the first packet in
+                 a keyblock and thus parsed before this signature.  */
+            }
 	  else if (print_and_check_one_sig (keyblock, node, &inv_sigs,
                                             &no_key, &oth_err, &selfsig,
                                             0, only_selfsigs))
@@ -856,6 +862,14 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 
       if (primary_pk->expiredate && !selfsig)
 	{
+          /* Static analyzer note: A claim that PRIMARY_PK might be
+             NULL is not correct because it set from the public key
+             packet which is always the first packet in a keyblock and
+             parsed in the above loop over the keyblock.  In case the
+             keyblock has no packets at all and thus the loop was not
+             entered the above count_uids_with_flag would have
+             detected this case.  */
+
 	  u32 now = make_timestamp ();
 
 	  if (primary_pk->expiredate <= now)
