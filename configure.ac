@@ -1898,6 +1898,7 @@ tools/gpg-zip
 tools/Makefile
 doc/Makefile
 tests/Makefile
+tests/gpgscm/Makefile
 tests/openpgp/Makefile
 tests/migrations/Makefile
 tests/pkits/Makefile
