@@ -2313,6 +2313,11 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		case 3:
 		  for (i = 0; i < 8 && pktlen; i++, pktlen--)
 		    temp[i] = iobuf_get_noeof (inp);
+                  if (i < 8)
+                    {
+		      err = gpg_error (GPG_ERR_INV_PACKET);
+		      goto leave;
+                    }
 		  memcpy (ski->s2k.salt, temp, 8);
 		  break;
 		}
