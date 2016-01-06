@@ -124,25 +124,28 @@ test_timegm (void)
       tp = gmtime (&now);
       if (!tp)
         fail (tidx);
-      tbuf = *tp;
-      tbuf2 = tbuf;
+      else
+        {
+          tbuf = *tp;
+          tbuf2 = tbuf;
 #ifdef HAVE_TIMEGM
-      atime = timegm (&tbuf);
+          atime = timegm (&tbuf);
 #else
-      atime = mktime (&tbuf);
+          atime = mktime (&tbuf);
 #endif
-      if (atime == (time_t)(-1))
-        fail (tidx);
-      if (atime != now)
-        fail (tidx);
+          if (atime == (time_t)(-1))
+            fail (tidx);
+          else if (atime != now)
+            fail (tidx);
 
-      tp = gmtime (&atime);
-      if (!tp)
-        fail (tidx);
-      if (cmp_time_s (tp, &tbuf))
-        fail (tidx);
-      if (cmp_time_s (tp, &tbuf2))
-        fail (tidx);
+          tp = gmtime (&atime);
+          if (!tp)
+            fail (tidx);
+          else if (cmp_time_s (tp, &tbuf))
+            fail (tidx);
+          else if (cmp_time_s (tp, &tbuf2))
+            fail (tidx);
+        }
     }
 }
 

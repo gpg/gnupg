@@ -143,7 +143,7 @@ test_percent_escape (void)
       result = percent_escape (tests[testno].value, tests[testno].extra);
       if (!result)
         fail (testno);
-      if (strcmp (result, tests[testno].expected))
+      else if (strcmp (result, tests[testno].expected))
         fail (testno);
       xfree (result);
     }
@@ -398,13 +398,13 @@ test_make_filename_try (void)
   out = make_filename_try ("~/foo", "bar", NULL);
   if (!out)
     fail (2);
-  if (home)
+  else if (home)
     {
       if (strlen (out) < homelen + 7)
         fail (2);
-      if (strncmp (out, home, homelen))
+      else if (strncmp (out, home, homelen))
         fail (2);
-      if (strcmp (out+homelen, "/foo/bar"))
+      else if (strcmp (out+homelen, "/foo/bar"))
         fail (2);
     }
   else
@@ -417,13 +417,13 @@ test_make_filename_try (void)
   out = make_filename_try ("~", "bar", NULL);
   if (!out)
     fail (2);
-  if (home)
+  else if (home)
     {
       if (strlen (out) < homelen + 3)
         fail (2);
-      if (strncmp (out, home, homelen))
+      else if (strncmp (out, home, homelen))
         fail (2);
-      if (strcmp (out+homelen, "/bar"))
+      else if (strcmp (out+homelen, "/bar"))
         fail (2);
     }
   else
@@ -445,33 +445,33 @@ test_make_absfilename_try (void)
   out = make_absfilename_try ("foo", "bar", NULL);
   if (!out)
     fail (0);
-  if (strlen (out) < cwdlen + 7)
+  else if (strlen (out) < cwdlen + 7)
     fail (0);
-  if (strncmp (out, cwd, cwdlen))
+  else if (strncmp (out, cwd, cwdlen))
     fail (0);
-  if (strcmp (out+cwdlen, "/foo/bar"))
+  else if (strcmp (out+cwdlen, "/foo/bar"))
     fail (0);
   xfree (out);
 
   out = make_absfilename_try ("./foo", NULL);
   if (!out)
     fail (1);
-  if (strlen (out) < cwdlen + 5)
+  else if (strlen (out) < cwdlen + 5)
     fail (1);
-  if (strncmp (out, cwd, cwdlen))
+  else if (strncmp (out, cwd, cwdlen))
     fail (1);
-  if (strcmp (out+cwdlen, "/./foo"))
+  else if (strcmp (out+cwdlen, "/./foo"))
     fail (1);
   xfree (out);
 
   out = make_absfilename_try (".", NULL);
   if (!out)
     fail (2);
-  if (strlen (out) < cwdlen)
+  else if (strlen (out) < cwdlen)
     fail (2);
-  if (strncmp (out, cwd, cwdlen))
+  else if (strncmp (out, cwd, cwdlen))
     fail (2);
-  if (strcmp (out+cwdlen, ""))
+  else if (strcmp (out+cwdlen, ""))
     fail (2);
   xfree (out);
 

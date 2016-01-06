@@ -68,7 +68,7 @@ test_map_static_macro_string (void)
       result = map_static_macro_string (tests[testno].string);
       if (!result)
         fail (testno);
-      if (strcmp (result, tests[testno].expected))
+      else if (strcmp (result, tests[testno].expected))
         fail (testno);
       if (!tests[testno].lastresult)
         tests[testno].lastresult = result;
@@ -80,7 +80,7 @@ test_map_static_macro_string (void)
       result = map_static_macro_string (tests[testno].string);
       if (!result)
         fail (testno);
-      if (strcmp (result, tests[testno].expected))
+      else if (strcmp (result, tests[testno].expected))
         fail (testno);
       if (result != tests[testno].lastresult)
         fail (testno);

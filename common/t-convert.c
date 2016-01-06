@@ -232,13 +232,13 @@ test_bin2hex (void)
   p = bin2hex (stuff, 20, NULL);
   if (!p)
     fail (0);
-  if (strcmp (p, hexstuff))
+  else if (strcmp (p, hexstuff))
     fail (0);
 
   p = bin2hex (stuff, (size_t)(-1), NULL);
   if (p)
     fail (0);
-  if (errno != ENOMEM)
+  else if (errno != ENOMEM)
     fail (1);
 }
 
@@ -264,13 +264,13 @@ test_bin2hexcolon (void)
   p = bin2hexcolon (stuff, 20, NULL);
   if (!p)
     fail (0);
-  if (strcmp (p, hexstuff))
+  else if (strcmp (p, hexstuff))
     fail (0);
 
   p = bin2hexcolon (stuff, (size_t)(-1), NULL);
   if (p)
     fail (0);
-  if (errno != ENOMEM)
+  else if (errno != ENOMEM)
     fail (1);
 }
 
