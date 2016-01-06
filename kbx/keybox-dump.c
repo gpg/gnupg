@@ -388,21 +388,21 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
         putc ('\n', fp );
       }
     if (in_range)
-      {
-        fprintf (fp, "Sig-Expire[%lu-%lu]: [not checked]\n", first, n-1);
-        in_range = 0;
-      }
+      fprintf (fp, "Sig-Expire[%lu-%lu]: [not checked]\n", first, n-1);
   }
   fprintf (fp, "Ownertrust: %d\n", p[0] );
   fprintf (fp, "All-Validity: %d\n", p[1] );
   p += 4;
-  n = get32 (p); p += 4;
+  n = get32 (p);
+  p += 4;
   fprintf (fp, "Recheck-After: %lu\n", n );
-  n = get32 (p ); p += 4;
+  n = get32 (p );
+  p += 4;
   fprintf( fp, "Latest-Timestamp: %lu\n", n );
-  n = get32 (p ); p += 4;
+  n = get32 (p );
+  p += 4;
   fprintf (fp, "Created-At: %lu\n", n );
-  n = get32 (p ); p += 4;
+  n = get32 (p );
   fprintf (fp, "Reserved-Space: %lu\n", n );
 
   if (n >= 4 && unhashed >= 24)
