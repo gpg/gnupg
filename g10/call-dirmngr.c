@@ -1080,10 +1080,8 @@ dns_cert_status_cb (void *opaque, const char *line)
     {
       if (parm->url)
         err = gpg_error (GPG_ERR_DUP_KEY);
-      else if (!(parm->fpr = xtrymalloc (nbytes)))
+      else if (!(parm->url = xtrystrdup (s)))
         err = gpg_error_from_syserror ();
-      else
-        memcpy (parm->fpr, line, (parm->fprlen = nbytes));
     }
 
   return err;
