@@ -22,7 +22,8 @@
 # Programs required before we can run these tests.
 required_pgms = ../../g10/gpg$(EXEEXT) ../../agent/gpg-agent$(EXEEXT) \
                 ../../tools/gpg-connect-agent$(EXEEXT) \
-		../../tools/mk-tdata$(EXEEXT)
+		../../tools/mk-tdata$(EXEEXT) \
+		../gpgscm/gpgscm$(EXEEXT)
 
 AM_CPPFLAGS = -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am
@@ -33,7 +34,11 @@ noinst_PROGRAMS = fake-pinentry
 
 fake_pinentry_SOURCES = fake-pinentry.c
 
-TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) GPG_AGENT_INFO= LC_ALL=C
+TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) GPG_AGENT_INFO= LC_ALL=C \
+	EXEEXT=$(EXEEXT) \
+	PATH=../gpgscm:$(PATH) \
+	objdir=$(shell readlink -f ../..) \
+	GPGSCM_PATH=$(top_srcdir)/tests/gpgscm:$(top_srcdir)/tests/openpgp
 
 if SQLITE3
 sqlite3_dependent_tests = tofu.test
@@ -41,23 +46,44 @@ else
 sqlite3_dependent_tests =
 endif
 
-# Note: version.test needs to be the first test to run and finish.test
+# Note: setup.scm needs to be the first test to run and finish.scm
 # the last one
-TESTS = version.test mds.test \
-	decrypt.test decrypt-dsa.test \
-	sigs.test sigs-dsa.test \
-	encrypt.test encrypt-dsa.test  \
-	seat.test clearsig.test encryptp.test detach.test \
-	armsigs.test armencrypt.test armencryptp.test \
-	signencrypt.test signencrypt-dsa.test \
-	armsignencrypt.test armdetach.test \
-	armdetachm.test detachm.test genkey1024.test \
-	conventional.test conventional-mdc.test \
-	multisig.test verify.test armor.test \
-	import.test ecc.test 4gb-packet.test \
+TESTS = setup.scm \
+	version.scm \
+	mds.scm \
+	decrypt.scm \
+	decrypt-dsa.scm \
+	sigs.scm \
+	sigs-dsa.scm \
+	encrypt.scm \
+	encrypt-dsa.scm \
+	seat.scm \
+	clearsig.scm \
+	encryptp.scm \
+	detach.scm \
+	detachm.scm \
+	armsigs.scm \
+	armencrypt.scm \
+	armencryptp.scm \
+	signencrypt.scm \
+	signencrypt-dsa.scm \
+	armsignencrypt.scm \
+	armdetach.scm \
+	armdetachm.scm \
+	genkey1024.scm \
+	conventional.scm \
+	conventional-mdc.scm \
+	multisig.scm \
+	verify.scm \
+	armor.scm \
+	import.scm \
+	ecc.scm \
+	4gb-packet.scm \
 	$(sqlite3_dependent_tests) \
-	gpgtar.test use-exact-key.test default-key.test \
-	finish.test
+	gpgtar.scm \
+	use-exact-key.scm \
+	default-key.scm \
+	finish.scm
 
 
 TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
