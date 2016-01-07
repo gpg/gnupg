@@ -1497,13 +1497,16 @@ tdbio_read_record (ulong recnum, TRUSTREC *rec, int expected)
           rec->r.ver.trust_model = *p++;
           rec->r.ver.min_cert_level = *p++;
           p += 2;
-          rec->r.ver.created  = buf32_to_ulong(p); p += 4;
-          rec->r.ver.nextcheck = buf32_to_ulong(p); p += 4;
+          rec->r.ver.created  = buf32_to_ulong(p);
+          p += 4;
+          rec->r.ver.nextcheck = buf32_to_ulong(p);
           p += 4;
           p += 4;
-          rec->r.ver.firstfree =buf32_to_ulong(p); p += 4;
           p += 4;
-          rec->r.ver.trusthashtbl =buf32_to_ulong(p); p += 4;
+          rec->r.ver.firstfree = buf32_to_ulong(p);
+          p += 4;
+          p += 4;
+          rec->r.ver.trusthashtbl = buf32_to_ulong(p);
           if (recnum)
             {
               log_error( _("%s: version record with recnum %lu\n"), db_name,
@@ -1520,37 +1523,43 @@ tdbio_read_record (ulong recnum, TRUSTREC *rec, int expected)
       break;
 
     case RECTYPE_FREE:
-      rec->r.free.next  = buf32_to_ulong(p); p += 4;
+      rec->r.free.next  = buf32_to_ulong(p);
       break;
 
     case RECTYPE_HTBL:
       for (i=0; i < ITEMS_PER_HTBL_RECORD; i++)
         {
-          rec->r.htbl.item[i] = buf32_to_ulong(p); p += 4;
+          rec->r.htbl.item[i] = buf32_to_ulong(p);
+          p += 4;
 	}
       break;
 
     case RECTYPE_HLST:
-      rec->r.hlst.next = buf32_to_ulong(p); p += 4;
+      rec->r.hlst.next = buf32_to_ulong(p);
+      p += 4;
       for (i=0; i < ITEMS_PER_HLST_RECORD; i++)
         {
-          rec->r.hlst.rnum[i] = buf32_to_ulong(p); p += 4;
+          rec->r.hlst.rnum[i] = buf32_to_ulong(p);
+          p += 4;
 	}
       break;
 
     case RECTYPE_TRUST:
-      memcpy (rec->r.trust.fingerprint, p, 20); p+=20;
+      memcpy (rec->r.trust.fingerprint, p, 20);
+      p+=20;
       rec->r.trust.ownertrust = *p++;
       rec->r.trust.depth = *p++;
       rec->r.trust.min_ownertrust = *p++;
       p++;
-      rec->r.trust.validlist = buf32_to_ulong(p); p += 4;
+      rec->r.trust.validlist = buf32_to_ulong(p);
       break;
 
     case RECTYPE_VALID:
-      memcpy (rec->r.valid.namehash, p, 20); p+=20;
+      memcpy (rec->r.valid.namehash, p, 20);
+      p+=20;
       rec->r.valid.validity = *p++;
-      rec->r.valid.next = buf32_to_ulong(p); p += 4;
+      rec->r.valid.next = buf32_to_ulong(p);
+      p += 4;
       rec->r.valid.full_count = *p++;
       rec->r.valid.marginal_count = *p++;
       break;

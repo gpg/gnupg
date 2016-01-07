@@ -145,7 +145,6 @@ change_pin (int unblock_v2, int allow_admin)
 	if (strlen (answer) != 1)
 	  continue;
 
-	rc = 0;
 	if (*answer == '1')
 	  {
             /* Change PIN.  */

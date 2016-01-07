@@ -623,7 +623,8 @@ cmd_passwd (assuan_context_t ctx, char *line)
   gpg_error_t err;
 
   (void)ctx;
-  line = skip_options (line);
+  (void)line;
+  /* line = skip_options (line); */
 
   err = gpg_error (GPG_ERR_NOT_SUPPORTED);
 

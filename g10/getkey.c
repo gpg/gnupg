@@ -300,7 +300,8 @@ cache_user_id (KBNODE keyblock)
 	  /* First check for duplicates.  */
 	  for (r = user_id_db; r; r = r->next)
 	    {
-	      keyid_list_t b = r->keyids;
+	      keyid_list_t b;
+
 	      for (b = r->keyids; b; b = b->next)
 		{
 		  if (!memcmp (b->fpr, a->fpr, MAX_FINGERPRINT_LEN))
@@ -2997,7 +2998,6 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
 	  if (DBG_LOOKUP)
 	    log_debug ("\tprimary key may be used\n");
 	  latest_key = keyblock;
-	  latest_date = pk->timestamp;
 	}
     }
 
@@ -3074,7 +3074,6 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
       if (rc)
 	{
 	  log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (rc));
-	  rc = 0;
 	  goto skip;
 	}
 

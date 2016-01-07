@@ -3941,7 +3941,6 @@ main (int argc, char **argv)
 	break;
 
       case aVerify:
-        rc = 0;
 	if (multifile)
 	  {
 	    if ((rc = verify_files (ctrl, argc, argv)))

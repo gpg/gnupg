@@ -724,7 +724,6 @@ tdb_update_ownertrust (PKT_public_key *pk, unsigned int new_trust )
       write_record (&rec);
       tdb_revalidation_mark ();
       do_sync ();
-      err = 0;
     }
   else
     {
@@ -858,7 +857,6 @@ update_validity (PKT_public_key *pk, PKT_user_id *uid,
       /* No record yet - create a new one. */
       size_t dummy;
 
-      err = 0;
       memset (&trec, 0, sizeof trec);
       trec.recnum = tdbio_new_recnum ();
       trec.rectype = RECTYPE_TRUST;

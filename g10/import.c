@@ -353,7 +353,6 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
             && gpg_err_source (rc) == GPG_ERR_SOURCE_KEYBOX)
         {
           stats->not_imported++;
-          rc = 0;
         }
       else if (rc)
         break;
@@ -799,7 +798,6 @@ print_import_check (PKT_public_key * pk, PKT_user_id * id)
   for (i = 0; i < n; i++, pos += 2)
     sprintf (buf+pos, "%02X", fpr[i]);
   strcat (buf, " ");
-  pos += 1;
   strcat (buf, id->name);
   write_status_text (STATUS_IMPORT_CHECK, buf);
   xfree (buf);

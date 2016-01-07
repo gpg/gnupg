@@ -2242,10 +2242,7 @@ ask_curve (int *algo, int *subkey_algo)
               && curves[idx].fix_curve)
             {
               if (subkey_algo && *subkey_algo == PUBKEY_ALGO_ECDSA)
-                {
-                  *subkey_algo = PUBKEY_ALGO_EDDSA;
-                  result = xstrdup ("Ed25519");
-                }
+                *subkey_algo = PUBKEY_ALGO_EDDSA;
               *algo = PUBKEY_ALGO_EDDSA;
               result = xstrdup ("Ed25519");
             }
@@ -3122,6 +3119,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
 	}
       else
 	{
+          r = get_parameter (para, pKEYSERVER);
 	  log_error("%s:%d: invalid keyserver url\n", fname, r->lnr );
 	  return -1;
 	}
@@ -3706,7 +3704,6 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
               || algo == PUBKEY_ALGO_ECDH)
             {
               curve = ask_curve (&algo, NULL);
-              nbits = 0;
               r = xmalloc_clear (sizeof *r + strlen (curve));
               r->key = pKEYCURVE;
               strcpy (r->u.value, curve);

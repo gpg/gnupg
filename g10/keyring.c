@@ -1508,6 +1508,8 @@ keyring_rebuild_cache (void *token,int noisy)
                * the original file is closed */
               tmpfp = NULL;
             }
+          /* Static analyzer note: BAKFILENAME is never NULL here
+             because it is controlled by LASTRESNAME.  */
           rc = lastresname? rename_tmp_file (bakfilename, tmpfilename,
                                              lastresname) : 0;
           xfree (tmpfilename);  tmpfilename = NULL;
@@ -1720,7 +1722,6 @@ do_copy (int mode, const char *fname, KBNODE root,
 	    iobuf_cancel(newfp);
 	    goto leave;
 	}
-	rc = 0;
     }
 
     if( mode == 2 || mode == 3 ) { /* delete or update */
@@ -1764,7 +1765,6 @@ do_copy (int mode, const char *fname, KBNODE root,
 	    iobuf_cancel(newfp);
 	    goto leave;
 	}
-	rc = 0;
     }
 
     /* close both files */

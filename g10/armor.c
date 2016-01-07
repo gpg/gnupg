@@ -274,7 +274,7 @@ parse_hash_header( const char *line )
 	return 0; /* too short or too long */
     if( memcmp( line, "Hash:", 5 ) )
 	return 0; /* invalid header */
-    s = line+5;
+
     for(s=line+5;;s=s2) {
 	for(; *s && (*s==' ' || *s == '\t'); s++ )
 	    ;
