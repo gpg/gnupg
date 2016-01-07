@@ -1,0 +1,160 @@
+Emacs, this is an -*- org -*- file.
+
+* How to run the test suite
+** using the legacy driver
+On POSIX you can just use
+
+  $ make -C tests/openpgp check
+
+or
+
+  $ make -C tests/openpgp check TESTS="setup.scm your-test.scm finish.scm"
+
+as before.
+** using the Scheme driver
+This is a bit tricky because one needs to manually set some
+environment variables.  We should make that easier.  See discussion
+below.  From your build directory, do:
+
+  obj $ srcdir=<path to>/tests/openpgp \
+        GPGSCM_PATH=<path to>/tests/gpgscm:<path to>/tests/openpgp \
+        $(pwd)/tests/gpgscm/gpgscm [gpgscm args] \
+        run-tests.scm [test suite runner args]
+
+*** Arguments supported by the test suite runner
+The test suite runner supports four modes of operation,
+{sequential,parallel}x{isolated,shared}.  You can select the mode of
+operation using a combination of the flags --parallel, --sequential,
+--shared, and --isolated.
+
+By default the tests are run in sequential order, each one in a clean
+environment.
+
+You can specify the tests to run as positional arguments relative to
+srcdir (e.g. just 'version.scm').  By default all tests listed in
+run-tests.scm are executed.  Note that you do not have to specify
+setup.scm and finish.scm, they are executed implicitly.
+
+The test suite runner can be executed in any location that the current
+user can write to.  It will create temporary files and directories,
+but will in general clean up all of them.
+*** Discussion of the various environment variables
+**** srcdir
+Must be set to the source of the openpgp test suite.  Used to locate
+data files.
+**** GPGSCM_PATH
+Used to locate the Scheme library as well as code used by the test
+suite.
+**** BIN_PREFIX
+The test suite does not hardcode any paths to tools.  If set it is
+used to locate the tools to test, otherwise the test suite assumes to
+be run from the build directory.
+**** MKTDATA and GPG_PRESET_PASSPHRASE
+These two tools are not installed by 'make install', hence we need to
+explicitly override their position.  In fact, the location of any tool
+used by the test suite can be overridden this way.  See defs.scm.
+**** argv[0]
+run-tests.scm depends on being able to re-exec gpgscm.  It uses
+argv[0] for that.  Therefore you must use an absolute path to invoke
+gpgscm.
+* How to write tests
+gpgscm provides a number of functions to aid you in writing tests, as
+well as bindings to process management abstractions provided by GnuPG.
+For the Scheme environment provided by TinySCHEME, see the TinySCHEME
+manual that is included in tests/gpgscm/Manual.txt.
+
+For a quick start, please have a look at various tests that are
+already implemented, e.g. 'encrypt.scm'.
+** The test framework
+The functions info, error, and skip display their first argument and
+flush the output buffers.  error and skip will also terminate the
+process, signaling that the test failed or should be skipped.
+
+(for-each-p msg proc list) will display msg, and call proc with each
+element of list while displaying the progress appropriately.
+for-each-p' is similar, but accepts another callback before the 'list'
+argument to format each item.  for-each-p can be safely nested, and
+the inner progress indicator will be abbreviated using '.'.
+** Temporary files
+(lettmp <bindings> <body>) will create and delete temporary files that
+you can use in <body>.  (with-temporary-working-directory <body>) will
+create a temporary director, change to that, and clean it up after
+executing <body>).
+
+make-temporary-file will create a temporary file.  You can optionally
+provide an argument to that function that will serve as tag so you can
+distinguish the files for debugging.  remove-temporary-file will
+delete a file created using make-temporary-file.
+
+** Monadic transformer and pipe support
+Tests often perform sequential transformations on files, or connect
+processes using pipes.  To aid you in this, the test framework
+provides two monadic data structures.
+
+(Currently, the implementation mashes the 'bind' operation together
+with the application of the monad.  Also, there is no 'return'
+operation.  I guess all of that could be implemented on top of
+call/cc, but it isn't at the moment.)
+*** pipe
+The pipe monad constructs pipe lines.  It consists of a function
+pipe:do that binds the functions together and manages the execution of
+the child processes, a family of functions that act as sources, a
+function to spawn processes, and a family of functions acting as
+sinks.
+
+Sources are pipe:open, pipe:defer, pipe:echo.  To spawn a process use
+pipe:spawn, or the convenience function pipe:gpg.  To sink the data
+use pipe:splice, or pipe:write-to.
+
+Example:
+
+  (pipe:do
+    (pipe:echo "3\n1\n2\n")
+    (pipe:spawn '("/usr/bin/sort"))
+    (pipe:write-to "sorted" (logior O_WRONLY O_CREAT) #o600))
+
+Caveats: Due to the single-threaded nature of gpgscm you cannot use
+both a source and sink that is implemented in Scheme.  pipe:defer and
+pipe:echo are executing in gpgscm, and so does pipe:splice.
+*** tr
+The transformer monad describes sequential file transformations.
+
+There is one source function, tr:open.  To describe a transformation
+using some process, use tr:spawn, tr:gpg, or tr:pipe-do.  There are
+several sinks, although sink is not quite the right term, because the
+data is not consumed, and hence one can use them at any position.  The
+"sinks" are tr:write-to, tr:call-with-content, tr:assert-identity, and
+tr:assert-weak-identity.
+
+A somewhat contrived example demonstrating many functions is:
+
+  (tr:do
+    (tr:pipe-do
+      (pipe:echo "3\n1\n2\n")
+      (pipe:spawn '("/usr/bin/sort")))
+    (tr:write-to "reference")
+    (tr:call-with-content
+     (lambda (c)
+       (echo "currently, c contains" (string-length c) "bytes")))
+    (tr:spawn "" '("/usr/bin/gcc" -x c "-E" -o **out** **in**))
+    (tr:pipe-do
+      (pipe:spawn '("/bin/grep" -v "#")))
+    (tr:assert-identity "reference"))
+
+Caveats: As a convenience, gpgscm allows one to specify command line
+arguments as Scheme symbols.  Scheme symbols, however, are
+case-insensitive, and get converted to lower case.  Therefore, the -E
+argument must be given as a string in the example above.  Similarly,
+you need to quote numerical values.
+** Process management
+If you just need to execute a single command, there is (call-with-fds
+cmdline infd outfd errfd) which executes cmdline with the given file
+descriptors bound to it, and waits for its completion returning the
+status code.  There is (call cmdline) which is similar, but calls the
+command with a closed stdin, connecting stdout and stderr to stderr if
+gpgscm is executed with --verbose.  (call-check cmdline) raises an
+exception if the command does not return 0.
+
+(call-popen cmdline input) calls a command, writes input to its stdin,
+and returns any output from stdout, or raises an exception containing
+stderr on failure.

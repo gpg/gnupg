@@ -93,7 +93,7 @@ endif
 if RUN_TESTS
 tests = tests
 else
-tests =
+tests = tests/gpgscm tests/openpgp
 endif
 
 SUBDIRS = m4 common kbx \
