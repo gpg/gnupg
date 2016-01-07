@@ -27,6 +27,7 @@
 # include <math.h>
 #endif
 
+#include <assert.h>
 #include <limits.h>
 #include <float.h>
 #include <ctype.h>
@@ -3654,6 +3655,7 @@ static pointer opexe_3(scheme *sc, enum scheme_opcodes op) {
                case OP_GRE:   comp_func=num_gt; break;
                case OP_LEQ:   comp_func=num_le; break;
                case OP_GEQ:   comp_func=num_ge; break;
+               default: assert (! "reached");
           }
           x=sc->args;
           v=nvalue(car(x));
@@ -3898,12 +3900,15 @@ static pointer opexe_4(scheme *sc, enum scheme_opcodes op) {
                case OP_OPEN_INFILE:     prop=port_input; break;
                case OP_OPEN_OUTFILE:    prop=port_output; break;
                case OP_OPEN_INOUTFILE: prop=port_input|port_output; break;
+               default: assert (! "reached");
           }
           p=port_from_filename(sc,strvalue(car(sc->args)),prop);
           if(p==sc->NIL) {
                s_return(sc,sc->F);
           }
           s_return(sc,p);
+	  break;
+     default: assert (! "reached");
      }
 
 #if USE_STRING_PORTS
@@ -3914,6 +3919,7 @@ static pointer opexe_4(scheme *sc, enum scheme_opcodes op) {
           switch(op) {
                case OP_OPEN_INSTRING:     prop=port_input; break;
                case OP_OPEN_INOUTSTRING:  prop=port_input|port_output; break;
+               default: assert (! "reached");
           }
           p=port_from_string(sc, strvalue(car(sc->args)),
                  strvalue(car(sc->args))+strlength(car(sc->args)), prop);
