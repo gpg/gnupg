@@ -883,7 +883,7 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
     }
   gcry_sexp_release (s_pkey);
 
-  return 0;
+  return err;
 }
 
 
