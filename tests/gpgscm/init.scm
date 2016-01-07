@@ -577,7 +577,8 @@
                     (pop-handler)
                     ,label)))))
 
-(define *error-hook* throw)
+(define (*error-hook* . args)
+  (throw args))
 
 
 ;;;;; Definition of MAKE-ENVIRONMENT, to be used with two-argument EVAL
