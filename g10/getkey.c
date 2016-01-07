@@ -196,7 +196,7 @@ cache_public_key (PKT_public_key * pk)
       /* Remove the last 50% of the entries.  */
       for (ce = pk_cache, n = 0; ce && n < pk_cache_entries/2; n++)
         ce = ce->next;
-      if (ce != pk_cache && ce->next)
+      if (ce && ce != pk_cache && ce->next)
         {
           ce2 = ce->next;
           ce->next = NULL;

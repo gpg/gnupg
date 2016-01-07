@@ -781,7 +781,6 @@ update_min_ownertrust (u32 *kid, unsigned int new_trust )
       write_record (&rec);
       tdb_revalidation_mark ();
       do_sync ();
-      err = 0;
     }
   else
     {

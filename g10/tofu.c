@@ -306,6 +306,9 @@ end_transaction (struct db *db, int only_batch)
   int rc;
   char *err = NULL;
 
+  if (!db)
+    return 0;  /* Shortcut to allow for easier cleanup code.  */
+
   if ((! batch_update || only_batch == 2) && db->batch_update)
     /* The batch transaction is still in open, but we left batch
        mode.  */
@@ -352,6 +355,9 @@ rollback_transaction (struct db *db)
 {
   int rc;
   char *err = NULL;
+
+  if (!db)
+    return 0;  /* Shortcut to allow for easier cleanup code.  */
 
   if (db->batch_update)
     /* Just undo the most recent update; don't revert any progress

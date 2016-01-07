@@ -3395,7 +3395,7 @@ quickgen_set_para (struct para_data_s *para, int for_subkey,
   para = r;
   r = xmalloc_clear (sizeof *r + 20);
   r->key = for_subkey? pSUBKEYTYPE : pKEYTYPE;
-  sprintf (r->u.value, "%d", algo);
+  snprintf (r->u.value, 20, "%d", algo);
   r->next = para;
   para = r;
 
