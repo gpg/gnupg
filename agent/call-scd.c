@@ -113,8 +113,6 @@ static int primary_scd_ctx_reusable;
 
 
 /* Local prototypes.  */
-static gpg_error_t membuf_data_cb (void *opaque,
-				   const void *buffer, size_t length);
 
 
 
@@ -354,7 +352,7 @@ start_scd (ctrl_t ctrl)
     socket_name = NULL;
     init_membuf (&data, 256);
     assuan_transact (ctx, "GETINFO socket_name",
-                     membuf_data_cb, &data, NULL, NULL, NULL, NULL);
+                     put_membuf_cb, &data, NULL, NULL, NULL, NULL);
 
     databuf = get_membuf (&data, &datalen);
     if (databuf && datalen)
@@ -688,16 +686,6 @@ agent_card_serialno (ctrl_t ctrl, char **r_serialno)
 
 
 
-static gpg_error_t
-membuf_data_cb (void *opaque, const void *buffer, size_t length)
-{
-  membuf_t *data = opaque;
-
-  if (buffer)
-    put_membuf (data, buffer, length);
-  return 0;
-}
-
 /* Handle the NEEDPIN inquiry. */
 static gpg_error_t
 inq_needpin (void *opaque, const char *line)
@@ -855,7 +843,7 @@ agent_card_pksign (ctrl_t ctrl,
     snprintf (line, sizeof line, "PKSIGN %s %s",
               hash_algo_option (mdalgo), keyid);
   rc = assuan_transact (ctrl->scd_local->ctx, line,
-                        membuf_data_cb, &data,
+                        put_membuf_cb, &data,
                         inq_needpin, &inqparm,
                         NULL, NULL);
   if (inqparm.any_inq_seen && (gpg_err_code(rc) == GPG_ERR_CANCELED ||
@@ -944,7 +932,7 @@ agent_card_pkdecrypt (ctrl_t ctrl,
   snprintf (line, DIM(line)-1, "PKDECRYPT %s", keyid);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (ctrl->scd_local->ctx, line,
-                        membuf_data_cb, &data,
+                        put_membuf_cb, &data,
                         inq_needpin, &inqparm,
                         padding_info_cb, r_padding);
   if (inqparm.any_inq_seen && (gpg_err_code(rc) == GPG_ERR_CANCELED ||
@@ -984,7 +972,7 @@ agent_card_readcert (ctrl_t ctrl,
   snprintf (line, DIM(line)-1, "READCERT %s", id);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (ctrl->scd_local->ctx, line,
-                        membuf_data_cb, &data,
+                        put_membuf_cb, &data,
                         NULL, NULL,
                         NULL, NULL);
   if (rc)
@@ -1020,7 +1008,7 @@ agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf)
   snprintf (line, DIM(line)-1, "READKEY %s", id);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (ctrl->scd_local->ctx, line,
-                        membuf_data_cb, &data,
+                        put_membuf_cb, &data,
                         NULL, NULL,
                         NULL, NULL);
   if (rc)

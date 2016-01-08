@@ -128,18 +128,6 @@ start_agent (ctrl_t ctrl)
 }
 
 
-
-static gpg_error_t
-membuf_data_cb (void *opaque, const void *buffer, size_t length)
-{
-  membuf_t *data = opaque;
-
-  if (buffer)
-    put_membuf (data, buffer, length);
-  return 0;
-}
-
-
 /* This is the default inquiry callback.  It mainly handles the
    Pinentry notifications.  */
 static gpg_error_t
@@ -215,7 +203,7 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
 
   init_membuf (&data, 1024);
   rc = assuan_transact (agent_ctx, "PKSIGN",
-                        membuf_data_cb, &data, default_inq_cb, ctrl,
+                        put_membuf_cb, &data, default_inq_cb, ctrl,
                         NULL, NULL);
   if (rc)
     {
@@ -282,7 +270,7 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
   snprintf (line, DIM(line)-1, "SCD PKSIGN %s %s", hashopt, keyid);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line,
-                        membuf_data_cb, &data, default_inq_cb, ctrl,
+                        put_membuf_cb, &data, default_inq_cb, ctrl,
                         NULL, NULL);
   if (rc)
     {
@@ -392,7 +380,7 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   cipher_parm.ciphertext = ciphertext;
   cipher_parm.ciphertextlen = ciphertextlen;
   rc = assuan_transact (agent_ctx, "PKDECRYPT",
-                        membuf_data_cb, &data,
+                        put_membuf_cb, &data,
                         inq_ciphertext_cb, &cipher_parm, NULL, NULL);
   if (rc)
     {
@@ -487,7 +475,7 @@ gpgsm_agent_genkey (ctrl_t ctrl,
   if (!gk_parm.sexplen)
     return gpg_error (GPG_ERR_INV_VALUE);
   rc = assuan_transact (agent_ctx, "GENKEY",
-                        membuf_data_cb, &data,
+                        put_membuf_cb, &data,
                         inq_genkey_parms, &gk_parm, NULL, NULL);
   if (rc)
     {
@@ -536,7 +524,7 @@ gpgsm_agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
 
   init_membuf (&data, 1024);
   rc = assuan_transact (agent_ctx, line,
-                        membuf_data_cb, &data,
+                        put_membuf_cb, &data,
                         default_inq_cb, ctrl, NULL, NULL);
   if (rc)
     {
@@ -1117,7 +1105,7 @@ gpgsm_agent_ask_passphrase (ctrl_t ctrl, const char *desc_msg, int repeat,
 
   init_membuf_secure (&data, 64);
   err = assuan_transact (agent_ctx, line,
-                         membuf_data_cb, &data,
+                         put_membuf_cb, &data,
                          default_inq_cb, NULL, NULL, NULL);
 
   if (err)
@@ -1157,7 +1145,7 @@ gpgsm_agent_keywrap_key (ctrl_t ctrl, int forexport,
 
   init_membuf_secure (&data, 64);
   err = assuan_transact (agent_ctx, line,
-                         membuf_data_cb, &data,
+                         put_membuf_cb, &data,
                          default_inq_cb, ctrl, NULL, NULL);
   if (err)
     {
@@ -1251,7 +1239,7 @@ gpgsm_agent_export_key (ctrl_t ctrl, const char *keygrip, const char *desc,
 
   init_membuf_secure (&data, 1024);
   err = assuan_transact (agent_ctx, line,
-                         membuf_data_cb, &data,
+                         put_membuf_cb, &data,
                          default_inq_cb, ctrl, NULL, NULL);
   if (err)
     {

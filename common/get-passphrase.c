@@ -130,17 +130,6 @@ default_inq_cb (void *opaque, const char *line)
 }
 
 
-static gpg_error_t
-membuf_data_cb (void *opaque, const void *buffer, size_t length)
-{
-  membuf_t *data = opaque;
-
-  if (buffer)
-    put_membuf (data, buffer, length);
-  return 0;
-}
-
-
 /* Ask for a passphrase via gpg-agent.  On success the caller needs to
    free the string stored at R_PASSPHRASE.  On error NULL will be
    stored at R_PASSPHRASE and an appropriate gpg error code is
@@ -214,7 +203,7 @@ gnupg_get_passphrase (const char *cache_id,
   else
     init_membuf (&data, 64);
   err = assuan_transact (agent_ctx, line,
-                         membuf_data_cb, &data,
+                         put_membuf_cb, &data,
                          default_inq_cb, NULL, NULL, NULL);
 
   /* Older Pinentries return the old assuan error code for canceled

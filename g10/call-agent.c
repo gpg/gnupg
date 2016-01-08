@@ -137,18 +137,6 @@ status_sc_op_failure (int rc)
 }
 
 
-static gpg_error_t
-membuf_data_cb (void *opaque, const void *buffer, size_t length)
-{
-  membuf_t *data = opaque;
-
-  if (buffer)
-    put_membuf (data, buffer, length);
-  return 0;
-}
-
-
-
 /* This is the default inquiry callback.  It mainly handles the
    Pinentry notifications.  */
 static gpg_error_t
@@ -214,7 +202,7 @@ check_hijacking (assuan_context_t ctx)
   /* AGENT_ID is a command implemented by gnome-keyring-daemon.  It
      does not return any data but an OK line with a remark.  */
   if (assuan_transact (ctx, "AGENT_ID",
-                       membuf_data_cb, &mb, NULL, NULL, NULL, NULL))
+                       put_membuf_cb, &mb, NULL, NULL, NULL, NULL))
     {
       xfree (get_membuf (&mb, NULL));
       return; /* Error - Probably not hijacked.  */
@@ -780,7 +768,7 @@ agent_scd_apdu (const char *hexapdu, unsigned int *r_sw)
 
       snprintf (line, DIM(line)-1, "SCD APDU %s", hexapdu);
       err = assuan_transact (agent_ctx, line,
-                             membuf_data_cb, &mb, NULL, NULL, NULL, NULL);
+                             put_membuf_cb, &mb, NULL, NULL, NULL, NULL);
       if (!err)
         {
           data = get_membuf (&mb, &datalen);
@@ -1292,7 +1280,7 @@ agent_scd_readcert (const char *certidstr,
   snprintf (line, DIM(line)-1, "SCD READCERT %s", certidstr);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line,
-                        membuf_data_cb, &data,
+                        put_membuf_cb, &data,
                         default_inq_cb, &dfltparm,
                         NULL, NULL);
   if (rc)
@@ -1455,7 +1443,7 @@ agent_get_passphrase (const char *cache_id,
 
   init_membuf_secure (&data, 64);
   rc = assuan_transact (agent_ctx, line,
-                        membuf_data_cb, &data,
+                        put_membuf_cb, &data,
                         default_inq_cb, &dfltparm,
                         NULL, NULL);
 
@@ -1553,7 +1541,7 @@ agent_get_s2k_count (unsigned long *r_count)
 
   init_membuf (&data, 32);
   err = assuan_transact (agent_ctx, "GETINFO s2k_count",
-                        membuf_data_cb, &data,
+                        put_membuf_cb, &data,
                         NULL, NULL, NULL, NULL);
   if (err)
     xfree (get_membuf (&data, NULL));
@@ -1825,7 +1813,7 @@ agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
   cn_parm.cache_nonce_addr = cache_nonce_addr;
   cn_parm.passwd_nonce_addr = NULL;
   err = assuan_transact (agent_ctx, line,
-                         membuf_data_cb, &data,
+                         put_membuf_cb, &data,
                          inq_genkey_parms, &gk_parm,
                          cache_nonce_status_cb, &cn_parm);
   if (err)
@@ -1879,7 +1867,7 @@ agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
 
   init_membuf (&data, 1024);
   err = assuan_transact (agent_ctx, line,
-                         membuf_data_cb, &data,
+                         put_membuf_cb, &data,
                          default_inq_cb, &dfltparm,
                          NULL, NULL);
   if (err)
@@ -1967,7 +1955,7 @@ agent_pksign (ctrl_t ctrl, const char *cache_nonce,
             cache_nonce? " -- ":"",
             cache_nonce? cache_nonce:"");
   err = assuan_transact (agent_ctx, line,
-                         membuf_data_cb, &data,
+                         put_membuf_cb, &data,
                          default_inq_cb, &dfltparm,
                          NULL, NULL);
   if (err)
@@ -2097,7 +2085,7 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
     if (err)
       return err;
     err = assuan_transact (agent_ctx, "PKDECRYPT",
-                           membuf_data_cb, &data,
+                           put_membuf_cb, &data,
                            inq_ciphertext_cb, &parm,
                            padding_info_cb, r_padding);
     xfree (parm.ciphertext);
@@ -2177,7 +2165,7 @@ agent_keywrap_key (ctrl_t ctrl, int forexport, void **r_kek, size_t *r_keklen)
 
   init_membuf_secure (&data, 64);
   err = assuan_transact (agent_ctx, line,
-                         membuf_data_cb, &data,
+                         put_membuf_cb, &data,
                          default_inq_cb, &dfltparm,
                          NULL, NULL);
   if (err)
@@ -2309,7 +2297,7 @@ agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
   cn_parm.cache_nonce_addr = cache_nonce_addr;
   cn_parm.passwd_nonce_addr = NULL;
   err = assuan_transact (agent_ctx, line,
-                         membuf_data_cb, &data,
+                         put_membuf_cb, &data,
                          default_inq_cb, &dfltparm,
                          cache_nonce_status_cb, &cn_parm);
   if (err)
@@ -2428,7 +2416,7 @@ agent_get_version (ctrl_t ctrl, char **r_version)
 
   init_membuf (&data, 64);
   err = assuan_transact (agent_ctx, "GETINFO version",
-                        membuf_data_cb, &data,
+                        put_membuf_cb, &data,
                         NULL, NULL, NULL, NULL);
   if (err)
     {

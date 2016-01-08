@@ -116,6 +116,20 @@ put_membuf (membuf_t *mb, const void *buf, size_t len)
 }
 
 
+/* A variant of put_membuf accepting a void * and returning a
+   gpg_error_t (which will always return 0) to be used as a generic
+   callback handler.  This function also allows buffer to be NULL.  */
+gpg_error_t
+put_membuf_cb (void *opaque, const void *buf, size_t len)
+{
+  membuf_t *data = opaque;
+
+  if (buf)
+    put_membuf (data, buf, len);
+  return 0;
+}
+
+
 void
 put_membuf_str (membuf_t *mb, const char *string)
 {

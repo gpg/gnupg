@@ -53,6 +53,7 @@ void init_membuf (membuf_t *mb, int initiallen);
 void init_membuf_secure (membuf_t *mb, int initiallen);
 void clear_membuf (membuf_t *mb, size_t amount);
 void put_membuf  (membuf_t *mb, const void *buf, size_t len);
+gpg_error_t put_membuf_cb (void *opaque, const void *buf, size_t len);
 void put_membuf_str (membuf_t *mb, const char *string);
 void put_membuf_printf (membuf_t *mb, const char *format,
                         ...) GPGRT_ATTR_PRINTF(2,3);
