@@ -368,6 +368,8 @@ gpg_error_t receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
                                        char **cache_nonce_addr, const char *hexgrip,
                                        PKT_public_key *pk);
 
+gpg_error_t export_ssh_key (ctrl_t ctrl, const char *userid);
+
 /*-- dearmor.c --*/
 int dearmor_file( const char *fname );
 int enarmor_file( const char *fname );

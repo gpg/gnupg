@@ -1,7 +1,7 @@
 /* export.c - Export keys in the OpenPGP defined format.
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
  *               2005, 2010 Free Software Foundation, Inc.
- * Copyright (C) 1998-2015  Werner Koch
+ * Copyright (C) 1998-2016  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -34,6 +34,8 @@
 #include "util.h"
 #include "main.h"
 #include "i18n.h"
+#include "membuf.h"
+#include "host2net.h"
 #include "trustdb.h"
 #include "call-agent.h"
 
@@ -1348,5 +1350,297 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   xfree (cache_nonce);
   if( !*any )
     log_info(_("WARNING: nothing exported\n"));
+  return err;
+}
+
+
+
+
+static gpg_error_t
+key_to_sshblob (membuf_t *mb, const char *identifier, ...)
+{
+  va_list arg_ptr;
+  gpg_error_t err = 0;
+  unsigned char nbuf[4];
+  unsigned char *buf;
+  size_t buflen;
+  gcry_mpi_t a;
+
+  ulongtobuf (nbuf, (ulong)strlen (identifier));
+  put_membuf (mb, nbuf, 4);
+  put_membuf_str (mb, identifier);
+  va_start (arg_ptr, identifier);
+  while ((a = va_arg (arg_ptr, gcry_mpi_t)))
+    {
+      err = gcry_mpi_aprint (GCRYMPI_FMT_SSH, &buf, &buflen, a);
+      if (err)
+        break;
+      if (!strcmp (identifier, "ssh-ed25519")
+          && buflen > 5 && buf[4] == 0x40)
+        {
+          /* We need to strip our 0x40 prefix.  */
+          put_membuf (mb, "\x00\x00\x00\x20", 4);
+          put_membuf (mb, buf+5, buflen-5);
+        }
+      else
+        put_membuf (mb, buf, buflen);
+      gcry_free (buf);
+    }
+  va_end (arg_ptr);
+  return err;
+}
+
+/* Export the key identified by USERID in the SSH public key format.
+   The function exports the latest subkey with Authentication
+   capability unless the '!' suffix is used to export a specific
+   key.  */
+gpg_error_t
+export_ssh_key (ctrl_t ctrl, const char *userid)
+{
+  gpg_error_t err;
+  kbnode_t keyblock = NULL;
+  KEYDB_SEARCH_DESC desc;
+  u32 latest_date;
+  u32 curtime = make_timestamp ();
+  kbnode_t latest_key, node;
+  PKT_public_key *pk;
+  const char *identifier;
+  membuf_t mb;
+  estream_t fp = NULL;
+  struct b64state b64_state;
+  const char *fname = "-";
+
+  init_membuf (&mb, 4096);
+
+  /* We need to know whether the key has been specified using the
+     exact syntax ('!' suffix).  Thus we need to run a
+     classify_user_id on our own.  */
+  err = classify_user_id (userid, &desc, 1);
+
+  /* Get the public key.  */
+  if (!err)
+    {
+      getkey_ctx_t getkeyctx;
+
+      err = get_pubkey_byname (ctrl, &getkeyctx, NULL, userid, &keyblock,
+                               NULL,
+                               0  /* Only usable keys or given exact. */,
+                               1  /* No AKL lookup.  */);
+      if (!err)
+        {
+          err = getkey_next (getkeyctx, NULL, NULL);
+          if (!err)
+            err = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
+          else if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY)
+            err = 0;
+        }
+      getkey_end (getkeyctx);
+    }
+  if (err)
+    {
+      log_error (_("key \"%s\" not found: %s\n"), userid, gpg_strerror (err));
+      return err;
+    }
+
+  /* The finish_lookup code in getkey.c does not handle auth keys,
+     thus we have to duplicate the code here to find the latest
+     subkey.  However, if the key has been found using an exact match
+     ('!' notation) we use that key without any further checks and
+     even allow the use of the primary key. */
+  latest_date = 0;
+  latest_key = NULL;
+  for (node = keyblock; node; node = node->next)
+    {
+      if ((node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+           || node->pkt->pkttype == PKT_PUBLIC_KEY)
+          && node->pkt->pkt.public_key->flags.exact)
+        {
+          latest_key = node;
+          break;
+        }
+    }
+  if (!latest_key)
+    {
+      for (node = keyblock; node; node = node->next)
+        {
+          if (node->pkt->pkttype != PKT_PUBLIC_SUBKEY)
+            continue;
+
+          pk = node->pkt->pkt.public_key;
+          if (DBG_LOOKUP)
+            log_debug ("\tchecking subkey %08lX\n",
+                       (ulong) keyid_from_pk (pk, NULL));
+          if (!(pk->pubkey_usage & PUBKEY_USAGE_AUTH))
+            {
+              if (DBG_LOOKUP)
+                log_debug ("\tsubkey not usable for authentication\n");
+              continue;
+            }
+          if (!pk->flags.valid)
+            {
+              if (DBG_LOOKUP)
+                log_debug ("\tsubkey not valid\n");
+              continue;
+            }
+          if (pk->flags.revoked)
+            {
+              if (DBG_LOOKUP)
+                log_debug ("\tsubkey has been revoked\n");
+              continue;
+            }
+          if (pk->has_expired)
+            {
+              if (DBG_LOOKUP)
+                log_debug ("\tsubkey has expired\n");
+              continue;
+            }
+          if (pk->timestamp > curtime && !opt.ignore_valid_from)
+            {
+              if (DBG_LOOKUP)
+                log_debug ("\tsubkey not yet valid\n");
+              continue;
+            }
+          if (DBG_LOOKUP)
+            log_debug ("\tsubkey might be fine\n");
+          /* In case a key has a timestamp of 0 set, we make sure that it
+             is used.  A better change would be to compare ">=" but that
+             might also change the selected keys and is as such a more
+             intrusive change.  */
+          if (pk->timestamp > latest_date || (!pk->timestamp && !latest_date))
+            {
+              latest_date = pk->timestamp;
+              latest_key = node;
+            }
+        }
+    }
+
+  if (!latest_key)
+    {
+      err = gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
+      log_error (_("key \"%s\" not found: %s\n"), userid, gpg_strerror (err));
+      goto leave;
+    }
+
+  pk = latest_key->pkt->pkt.public_key;
+  if (DBG_LOOKUP)
+    log_debug ("\tusing key %08lX\n", (ulong) keyid_from_pk (pk, NULL));
+
+  switch (pk->pubkey_algo)
+    {
+    case PUBKEY_ALGO_DSA:
+      identifier = "ssh-dss";
+      err = key_to_sshblob (&mb, identifier,
+                            pk->pkey[0], pk->pkey[1], pk->pkey[2], pk->pkey[3],
+                            NULL);
+      break;
+
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_S:
+      identifier = "ssh-rsa";
+      err = key_to_sshblob (&mb, identifier, pk->pkey[1], pk->pkey[0], NULL);
+      break;
+
+    case PUBKEY_ALGO_ECDSA:
+      {
+        char *curveoid;
+        const char *curve;
+
+        curveoid = openpgp_oid_to_str (pk->pkey[0]);
+        if (!curveoid)
+          err = gpg_error_from_syserror ();
+        else if (!(curve = openpgp_oid_to_curve (curveoid, 0)))
+          err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+        else
+          {
+            if (!strcmp (curve, "nistp256"))
+              identifier = "ecdsa-sha2-nistp256";
+            else if (!strcmp (curve, "nistp384"))
+              identifier = "ecdsa-sha2-nistp384";
+            else if (!strcmp (curve, "nistp521"))
+              identifier = "ecdsa-sha2-nistp521";
+            else
+              identifier = NULL;
+
+            if (!identifier)
+              err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+            else
+              err = key_to_sshblob (&mb, identifier, pk->pkey[1], NULL);
+          }
+        xfree (curveoid);
+      }
+      break;
+
+    case PUBKEY_ALGO_EDDSA:
+      if (!openpgp_oid_is_ed25519 (pk->pkey[0]))
+        err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+      else
+        {
+          identifier = "ssh-ed25519";
+          err = key_to_sshblob (&mb, identifier, pk->pkey[1], NULL);
+        }
+      break;
+
+    case PUBKEY_ALGO_ELGAMAL_E:
+    case PUBKEY_ALGO_ELGAMAL:
+      err = gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
+      break;
+
+    default:
+      err = GPG_ERR_PUBKEY_ALGO;
+      break;
+    }
+
+  if (err)
+    goto leave;
+
+  if (opt.outfile && *opt.outfile && strcmp (opt.outfile, "-"))
+    fp = es_fopen ((fname = opt.outfile), "w");
+  else
+    fp = es_stdout;
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("error creating '%s': %s\n"), fname, gpg_strerror (err));
+      goto leave;
+    }
+
+  es_fprintf (fp, "%s ", identifier);
+  err = b64enc_start_es (&b64_state, fp, "");
+  if (err)
+    goto leave;
+  {
+    void *blob;
+    size_t bloblen;
+
+    blob = get_membuf (&mb, &bloblen);
+    if (!blob)
+      err = gpg_error_from_syserror ();
+    else
+      err = b64enc_write (&b64_state, blob, bloblen);
+    xfree (blob);
+    if (err)
+      goto leave;
+  }
+  err = b64enc_finish (&b64_state);
+  if (err)
+    goto leave;
+  es_fprintf (fp, " openpgp:0x%08lX\n", (ulong)keyid_from_pk (pk, NULL));
+
+  if (es_ferror (fp))
+    err = gpg_error_from_syserror ();
+  else
+    {
+      if (es_fclose (fp))
+        err = gpg_error_from_syserror ();
+      fp = NULL;
+    }
+
+  if (err)
+    log_error (_("error writing '%s': %s\n"), fname, gpg_strerror (err));
+
+ leave:
+  es_fclose (fp);
+  xfree (get_membuf (&mb, NULL));
+  release_kbnode (keyblock);
   return err;
 }

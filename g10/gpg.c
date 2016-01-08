@@ -1,6 +1,6 @@
 /* gpg.c - The GnuPG utility (main for gpg)
  * Copyright (C) 1998-2011 Free Software Foundation, Inc.
- * Copyright (C) 1997-2014 Werner Koch
+ * Copyright (C) 1997-2016 Werner Koch
  * Copyright (C) 2015 g10 Code GmbH
  *
  * This file is part of GnuPG.
@@ -141,6 +141,7 @@ enum cmd_and_opt_values
     aExport,
     aExportSecret,
     aExportSecretSub,
+    aExportSshKey,
     aCheckKeys,
     aGenRevoke,
     aDesigRevoke,
@@ -453,6 +454,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aFetchKeys, "fetch-keys" , "@" ),
   ARGPARSE_c (aExportSecret, "export-secret-keys" , "@" ),
   ARGPARSE_c (aExportSecretSub, "export-secret-subkeys" , "@" ),
+  ARGPARSE_c (aExportSshKey, "export-ssh-key", "@" ),
   ARGPARSE_c (aImport, "import", N_("import/merge keys")),
   ARGPARSE_c (aFastImport, "fast-import", "@"),
 #ifdef ENABLE_CARD_SUPPORT
@@ -2400,6 +2402,7 @@ main (int argc, char **argv)
 	  case aListSigs:
 	  case aExportSecret:
 	  case aExportSecretSub:
+	  case aExportSshKey:
 	  case aSym:
 	  case aClearsign:
 	  case aGenRevoke:
@@ -4182,6 +4185,17 @@ main (int argc, char **argv)
               }
 	  }
 	free_strlist(sl);
+	break;
+
+      case aExportSshKey:
+        if (argc != 1)
+          wrong_args ("--export-ssh-key <user-id>");
+        rc = export_ssh_key (ctrl, argv[0]);
+        if (rc)
+          {
+            write_status_failure ("export-ssh-key", rc);
+            log_error (_("export as ssh key failed: %s\n"), gpg_strerror (rc));
+          }
 	break;
 
      case aSearchKeys:
