@@ -1329,6 +1329,91 @@ strtokenize (const char *string, const char *delim)
 }
 
 
+
+/* Version number parsing.  */
+
+/* This function parses the first portion of the version number S and
+   stores it in *NUMBER.  On success, this function returns a pointer
+   into S starting with the first character, which is not part of the
+   initial number portion; on failure, NULL is returned.  */
+static const char*
+parse_version_number (const char *s, int *number)
+{
+  int val = 0;
+
+  if (*s == '0' && digitp (s+1))
+    return NULL;  /* Leading zeros are not allowed.  */
+  for (; digitp (s); s++)
+    {
+      val *= 10;
+      val += *s - '0';
+    }
+  *number = val;
+  return val < 0 ? NULL : s;
+}
+
+
+/* This function breaks up the complete string-representation of the
+   version number S, which is of the following struture: <major
+   number>.<minor number>.<micro number><patch level>.  The major,
+   minor and micro number components will be stored in *MAJOR, *MINOR
+   and *MICRO.
+
+   On success, the last component, the patch level, will be returned;
+   in failure, NULL will be returned.  */
+static const char *
+parse_version_string (const char *s, int *major, int *minor, int *micro)
+{
+  s = parse_version_number (s, major);
+  if (!s || *s != '.')
+    return NULL;
+  s++;
+  s = parse_version_number (s, minor);
+  if (!s)
+    return NULL;
+  if (*s == '.')
+    {
+      s++;
+      s = parse_version_number (s, micro);
+      if (!s)
+        return NULL;
+    }
+  else
+    *micro = 0;
+  return s;  /* Patchlevel.  */
+}
+
+
+/* Check that the version string MY_VERSION is greater or equal than
+   REQ_VERSION.  Returns true if the condition is satisfied or false
+   if not.  This works with 3 part and two part version strings; for a
+   two part version string the micor part is assumed to be 0.  */
+int
+compare_version_strings (const char *my_version, const char *req_version)
+{
+  int my_major, my_minor, my_micro;
+  int rq_major, rq_minor, rq_micro;
+
+  if (!my_version || !req_version)
+    return 0;
+
+  if (!parse_version_string (my_version, &my_major, &my_minor, &my_micro))
+    return 0;
+  if (!parse_version_string(req_version, &rq_major, &rq_minor, &rq_micro))
+    return 0;
+
+  if (my_major > rq_major
+      || (my_major == rq_major && my_minor > rq_minor)
+      || (my_major == rq_major && my_minor == rq_minor
+	  && my_micro >= rq_micro))
+    {
+      return 1;
+    }
+  return 0;
+}
+
+
+
 /* Format a string so that it fits within about TARGET_COLS columns.
    If IN_PLACE is 0, then TEXT is copied to a new buffer, which is
    returned.  Otherwise, TEXT is modified in place and returned.

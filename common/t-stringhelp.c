@@ -705,6 +705,7 @@ stresc (char *s)
   return p;
 }
 
+
 static void
 test_format_text (void)
 {
@@ -813,6 +814,65 @@ test_format_text (void)
     fail(0);
 }
 
+
+static void
+test_compare_version_strings (void)
+{
+  struct { const char *a; const char *b; int okay; } tests[] = {
+    { "1.0.0",   "1.0.0", 1 },
+    { "1.0.0-",  "1.0.0", 1 },
+    { "1.0.0-1", "1.0.0", 1 },
+    { "1.0.0.1", "1.0.0", 1 },
+    { "1.0.0",   "1.0.1", 0 },
+    { "1.0.0-",  "1.0.1", 0 },
+    { "1.0.0-1", "1.0.1", 0 },
+    { "1.0.0.1", "1.0.1", 0 },
+    { "1.0.0",   "1.1.0", 0 },
+    { "1.0.0-",  "1.1.0", 0 },
+    { "1.0.0-1", "1.1.0", 0 },
+    { "1.0.0.1", "1.1.0", 0 },
+
+    { "1.0.0",   "1.0.0-", 1 },
+    { "1.0.0",   "1.0.0-1", 1 },
+    { "1.0.0",   "1.0.0.1", 1 },
+    { "1.1.0",   "1.0.0", 1 },
+    { "1.1.1",   "1.1.0", 1 },
+    { "1.1.2",   "1.1.2", 1 },
+    { "1.1.2",   "1.0.2", 1 },
+    { "1.1.2",   "0.0.2", 1 },
+    { "1.1.2",   "1.1.3", 0 },
+
+    { "0.99.1",  "0.9.9", 1 },
+    { "0.9.1",   "0.91.0", 0 },
+
+    { "1.5.3",   "1.5",  1 },
+    { "1.5.0",   "1.5",  1 },
+    { "1.4.99",  "1.5",  0 },
+    { "1.5",     "1.4.99",  1 },
+    { "1.5",     "1.5.0",  1 },
+    { "1.5",     "1.5.1",  0 },
+
+    { "1.5.3-x17",   "1.5-23",  1 },
+
+    { "1.5.3a",   "1.5.3",  1 },
+    { "1.5.3a",   "1.5.3b",  1 },
+
+    { NULL, NULL, 0 }
+  };
+  int idx;
+  int res;
+
+  for (idx=0; idx < DIM(tests); idx++)
+    {
+      res = compare_version_strings (tests[idx].a, tests[idx].b);
+      /* printf ("test %d: '%s'  '%s'  %d  ->  %d\n", */
+      /*         idx, tests[idx].a, tests[idx].b, tests[idx].okay, res); */
+      if (res != tests[idx].okay)
+        fail (idx);
+    }
+}
+
+
 int
 main (int argc, char **argv)
 {
@@ -827,8 +887,9 @@ main (int argc, char **argv)
   test_make_absfilename_try ();
   test_strsplit ();
   test_strtokenize ();
+  test_compare_version_strings ();
   test_format_text ();
 
   xfree (home_buffer);
-  return 0;
+  return !!errcount;
 }

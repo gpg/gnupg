@@ -148,6 +148,9 @@ char **strsplit (char *string, char delim, char replacement, int *count);
 /* Tokenize STRING using the set of delimiters in DELIM.  */
 char **strtokenize (const char *string, const char *delim);
 
+/* Return True if MYVERSION is greater or equal than REQ_VERSION.  */
+int compare_version_strings (const char *my_version, const char *req_version);
+
 /* Format a string so that it fits within about TARGET_COLS columns.  */
 char *format_text (char *text, int in_place, int target_cols, int max_cols);
 
