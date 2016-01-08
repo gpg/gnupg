@@ -1369,6 +1369,12 @@ key_to_sshblob (membuf_t *mb, const char *identifier, ...)
   ulongtobuf (nbuf, (ulong)strlen (identifier));
   put_membuf (mb, nbuf, 4);
   put_membuf_str (mb, identifier);
+  if (!strncmp (identifier, "ecdsa-sha2-", 11))
+    {
+      ulongtobuf (nbuf, (ulong)strlen (identifier+11));
+      put_membuf (mb, nbuf, 4);
+      put_membuf_str (mb, identifier+11);
+    }
   va_start (arg_ptr, identifier);
   while ((a = va_arg (arg_ptr, gcry_mpi_t)))
     {
