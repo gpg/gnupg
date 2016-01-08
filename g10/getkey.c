@@ -2510,6 +2510,7 @@ merge_selfsigs_subkey (KBNODE keyblock, KBNODE subnode)
   keytimestamp = subpk->timestamp;
 
   subpk->flags.valid = 0;
+  subpk->flags.exact = 0;
   subpk->main_keyid[0] = mainpk->main_keyid[0];
   subpk->main_keyid[1] = mainpk->main_keyid[1];
 
@@ -2836,6 +2837,8 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
 
   u32 latest_date;
   KBNODE latest_key;
+  PKT_public_key *pk;
+
 
   assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 
@@ -2850,6 +2853,8 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
 	      assert (k->pkt->pkttype == PKT_PUBLIC_KEY
 		      || k->pkt->pkttype == PKT_PUBLIC_SUBKEY);
 	      foundk = k;
+              pk = k->pkt->pkt.public_key;
+              pk->flags.exact = 1;
 	      break;
 	    }
 	}
@@ -2893,8 +2898,6 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
       /* Either start a loop or check just this one subkey.  */
       for (k = foundk ? foundk : keyblock; k; k = nextk)
 	{
-	  PKT_public_key *pk;
-
 	  if (foundk)
 	    /* If FOUNDK is not NULL, then only consider that exact
 	       key, i.e., don't iterate.  */
@@ -2968,7 +2971,6 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
        - we're just considering the primary key.  */
   if ((!latest_key && !ctx->exact) || foundk == keyblock || req_prim)
     {
-      PKT_public_key *pk;
       if (DBG_LOOKUP && !foundk && !req_prim)
 	log_debug ("\tno suitable subkeys found - trying primary\n");
       pk = keyblock->pkt->pkt.public_key;
@@ -3015,7 +3017,7 @@ found:
 
   if (latest_key)
     {
-      PKT_public_key *pk = latest_key->pkt->pkt.public_key;
+      pk = latest_key->pkt->pkt.public_key;
       if (pk->user_id)
 	free_user_id (pk->user_id);
       pk->user_id = scopy_user_id (foundu);
