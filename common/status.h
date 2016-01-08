@@ -141,6 +141,7 @@ enum
     STATUS_PLAINTEXT_FOLLOWS,   /* Used by g13-syshelp  */
 
     STATUS_ERROR,
+    STATUS_WARNING,
     STATUS_SUCCESS,
     STATUS_FAILURE,
 

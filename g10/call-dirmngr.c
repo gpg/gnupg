@@ -38,6 +38,7 @@
 #include "i18n.h"
 #include "asshelp.h"
 #include "keyserver.h"
+#include "status.h"
 #include "call-dirmngr.h"
 
 
@@ -132,6 +133,40 @@ gpg_dirmngr_deinit_session_data (ctrl_t ctrl)
 }
 
 
+/* Print a warning if the server's version number is less than our
+   version number.  Returns an error code on a connection problem.  */
+static gpg_error_t
+warn_version_mismatch (assuan_context_t ctx, const char *servername)
+{
+  gpg_error_t err;
+  char *serverversion;
+  const char *myversion = strusage (13);
+
+  err = get_assuan_server_version (ctx, 0, &serverversion);
+  if (err)
+    log_error (_("error getting version from '%s': %s\n"),
+               servername, gpg_strerror (err));
+  else if (!compare_version_strings (serverversion, myversion))
+    {
+      char *warn;
+
+      warn = xtryasprintf (_("server '%s' is older than us (%s < %s)"),
+                           servername, serverversion, myversion);
+      if (!warn)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          log_info (_("WARNING: %s\n"), warn);
+          write_status_strings (STATUS_WARNING, "server_version_mismatch 0",
+                                " ", warn, NULL);
+          xfree (warn);
+        }
+    }
+  xfree (serverversion);
+  return err;
+}
+
+
 /* Try to connect to the Dirmngr via a socket or spawn it if possible.
    Handle the server's initial greeting and set global options.  */
 static gpg_error_t
@@ -157,7 +192,7 @@ create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
           log_info (_("no dirmngr running in this session\n"));
         }
     }
-  else if (!err)
+  else if (!err && !(err = warn_version_mismatch (ctx, DIRMNGR_NAME)))
     {
       char *line;
 

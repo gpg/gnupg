@@ -253,6 +253,40 @@ check_hijacking (assuan_context_t ctx)
 
 
 
+/* Print a warning if the server's version number is less than our
+   version number.  Returns an error code on a connection problem.  */
+static gpg_error_t
+warn_version_mismatch (assuan_context_t ctx, const char *servername, int mode)
+{
+  gpg_error_t err;
+  char *serverversion;
+  const char *myversion = strusage (13);
+
+  err = get_assuan_server_version (ctx, mode, &serverversion);
+  if (err)
+    log_error (_("error getting version from '%s': %s\n"),
+               servername, gpg_strerror (err));
+  else if (!compare_version_strings (serverversion, myversion))
+    {
+      char *warn;
+
+      warn = xtryasprintf (_("server '%s' is older than us (%s < %s)"),
+                           servername, serverversion, myversion);
+      if (!warn)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          log_info (_("WARNING: %s\n"), warn);
+          write_status_strings (STATUS_WARNING, "server_version_mismatch 0",
+                                " ", warn, NULL);
+          xfree (warn);
+        }
+    }
+  xfree (serverversion);
+  return err;
+}
+
+
 /* Try to connect to the agent via socket or fork it off and work by
    pipes.  Handle the server's initial greeting */
 static int
@@ -286,7 +320,8 @@ start_agent (ctrl_t ctrl, int for_card)
               log_info (_("no gpg-agent running in this session\n"));
             }
         }
-      else if (!rc)
+      else if (!rc
+               && !(rc = warn_version_mismatch (agent_ctx, GPG_AGENT_NAME, 0)))
         {
           /* Tell the agent that we support Pinentry notifications.
              No error checking so that it will work also with older
@@ -324,9 +359,12 @@ start_agent (ctrl_t ctrl, int for_card)
       struct agent_card_info_s info;
 
       memset (&info, 0, sizeof info);
-      rc = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",
-                            NULL, NULL, NULL, NULL,
-                            learn_status_cb, &info);
+
+      rc = warn_version_mismatch (agent_ctx, SCDAEMON_NAME, 2);
+      if (!rc)
+        rc = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",
+                              NULL, NULL, NULL, NULL,
+                              learn_status_cb, &info);
       if (rc)
         {
           switch (gpg_err_code (rc))

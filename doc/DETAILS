@@ -840,7 +840,12 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     should not contain spaces.  The error code is a either a string
     commencing with a letter or such a string prefixed with a
     numerical error code and an underscore; e.g.: "151011327_EOF".
-
+*** WARNING <location> <error code> [<text>]
+    This is a generic warning status message, it might be followed by
+    error location specific data. <error code> and <location>
+    should not contain spaces.  The error code is a either a string
+    commencing with a letter or such a string prefixed with a
+    numerical error code and an underscore; e.g.: "151011327_EOF".
 *** SUCCESS [<location>]
     Postive confirmation that an operation succeeded.  It is used
     similar to ISO-C's EXIT_SUCCESS.  <location> is optional but if
