@@ -2408,27 +2408,11 @@ gpg_error_t
 agent_get_version (ctrl_t ctrl, char **r_version)
 {
   gpg_error_t err;
-  membuf_t data;
 
   err = start_agent (ctrl, 0);
   if (err)
     return err;
 
-  init_membuf (&data, 64);
-  err = assuan_transact (agent_ctx, "GETINFO version",
-                        put_membuf_cb, &data,
-                        NULL, NULL, NULL, NULL);
-  if (err)
-    {
-      xfree (get_membuf (&data, NULL));
-      *r_version = NULL;
-    }
-  else
-    {
-      put_membuf (&data, "", 1);
-      *r_version = get_membuf (&data, NULL);
-      if (!*r_version)
-        err = gpg_error_from_syserror ();
-    }
+  err = get_assuan_server_version (agent_ctx, 0, r_version);
   return err;
 }

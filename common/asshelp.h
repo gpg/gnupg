@@ -74,6 +74,10 @@ start_new_dirmngr (assuan_context_t *r_ctx,
                    gpg_error_t (*status_cb)(ctrl_t, int, ...),
                    ctrl_t status_cb_arg);
 
+/* Return the version of a server using "GETINFO version".  */
+gpg_error_t get_assuan_server_version (assuan_context_t ctx,
+                                       int mode, char **r_version);
+
 
 /*-- asshelp2.c --*/
 

@@ -42,6 +42,7 @@
 #include "exechelp.h"
 #include "sysutils.h"
 #include "status.h"
+#include "membuf.h"
 #include "asshelp.h"
 
 /* The type we use for lock_agent_spawning.  */
@@ -698,4 +699,41 @@ start_new_dirmngr (assuan_context_t *r_ctx,
 
   *r_ctx = ctx;
   return 0;
+}
+
+
+/* Return the version of a server using "GETINFO version".  On success
+   0 is returned and R_VERSION receives a malloced string with the
+   version which must be freed by the caller.  On error NULL is stored
+   at R_VERSION and an error code returned.  Mode is in general 0 but
+   certian values may be used to modify the used version command:
+
+      MODE == 0 = Use "GETINFO version"
+      MODE == 2 - Use "SCD GETINFO version"
+ */
+gpg_error_t
+get_assuan_server_version (assuan_context_t ctx, int mode, char **r_version)
+{
+  gpg_error_t err;
+  membuf_t data;
+
+  init_membuf (&data, 64);
+  err = assuan_transact (ctx,
+                         mode == 2? "SCD GETINFO version"
+                         /**/     : "GETINFO version",
+                         put_membuf_cb, &data,
+                         NULL, NULL, NULL, NULL);
+  if (err)
+    {
+      xfree (get_membuf (&data, NULL));
+      *r_version = NULL;
+    }
+  else
+    {
+      put_membuf (&data, "", 1);
+      *r_version = get_membuf (&data, NULL);
+      if (!*r_version)
+        err = gpg_error_from_syserror ();
+    }
+  return err;
 }
