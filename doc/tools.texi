@@ -21,7 +21,6 @@ GnuPG comes with a couple of smaller tools:
 * gpgparsemail::          Parse a mail message into an annotated format
 * symcryptrun::           Call a simple symmetric encryption tool.
 * gpg-zip::               Encrypt or sign files into an archive.
-* gpgkey2ssh::            Emit GPG public keys in OpenSSH format.
 @end menu
 
 @c
@@ -1892,77 +1891,5 @@ gpg-zip --list-archive test1
 @ifset isman
 @command{gpg}(1),
 @command{tar}(1),
-@end ifset
-@include see-also-note.texi
-
-
-@c
-@c  GPGKEY2SSH
-@c
-@manpage gpgkey2ssh.1
-@node gpgkey2ssh
-@section Emit GPG public keys in OpenSSH format
-@ifset manverb
-.B gpgkey2ssh \- Emit GPG public keys in OpenSSH format
-@end ifset
-
-@mansect synopsis
-@ifset manverb
-.B  gpgkey2ssh
-.I keyid
-@end ifset
-
-@mansect description
-This tool is deprecated and will be removed soon.
-
-@command{gpgkey2ssh} emits the public key of an OpenPGP RSA or DSA key
-in a format readable by OpenSSH clients and servers.
-
-It takes only a single argument, a key ID, which designates the
-primary key or subkey whose public key should be converted.
-
-The key ID should use upper-case (A-F, not a-f) for all hex digits
-greater than 9, and the key in question must be present in
-@code{gpg}'s public keyring.
-
-The output of a successful run can be used verbatim as an entry in an
-@code{authorized_keys} file for @code{sshd}, or can be prefixed with a
-host name and appended to a @code{known_hosts} file for @code{ssh}.
-
-@mansect return value
-
-The program returns 0 if the key was successfully converted and
-non-zero if there was an error (e.g., if the key ID was malformed, the
-key was not present in the public keyring, or if the key is not an RSA
-or DSA key).
-
-@mansect environment
-@subsection Environment
-
-@table @asis
-
-@item HOME
-Used to locate the default home directory.
-
-@item GNUPGHOME
-If set directory used instead of "~/.gnupg".
-
-@end table
-
-@mansect files
-@subsection FILES
-
-@table @asis
-
-@item gpg2
-The command used to search the user's keyring.
-
-@end table
-
-@mansect see also
-@ifset isman
-@command{gpg2}(1),
-@command{sshd}(8),
-@command{ssh}(1)
 @end ifset
 @include see-also-note.texi

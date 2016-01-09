@@ -51,13 +51,12 @@ else
   gpgtar =
 endif
 
-# Fixme: We should remove the gpgkey2ssh tool.
 bin_PROGRAMS = gpgconf gpg-connect-agent ${symcryptrun}
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail
 endif
 if !HAVE_W32CE_SYSTEM
-bin_PROGRAMS += gpgkey2ssh ${gpgtar}
+bin_PROGRAMS += ${gpgtar}
 endif
 
 if !DISABLE_REGEX
@@ -119,15 +118,6 @@ gpg_connect_agent_LDADD = ../common/libgpgrl.a $(common_libs) \
                           $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
                           $(resource_objs)
 
-if !HAVE_W32CE_SYSTEM
-gpgkey2ssh_SOURCES = gpgkey2ssh.c
-gpgkey2ssh_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
-# common via use of BUG() in an inline function, which
-# some compilers do not eliminate.
-gpgkey2ssh_LDADD = $(common_libs) \
-                   $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV) \
-		   $(NETLIBS)
-endif
 
 if !DISABLE_REGEX
 gpg_check_pattern_SOURCES = gpg-check-pattern.c

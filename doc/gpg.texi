@@ -396,6 +396,21 @@ GnuPG may ask you to enter the passphrase for the key.  This is
 required because the internal protection method of the secret key is
 different from the one specified by the OpenPGP protocol.
 
+@item --export-ssh-key
+@opindex export-ssh-key
+This command is used to export a key in the OpenSSH public key format.
+It requires the specification of one key by the usual means and
+exports the latest valid subkey which has an authentication capability
+to STDOUT or to the file given with option @option{--output}.  That
+output can directly be added to ssh's @file{authorized_key} file.
+
+By specifying the key to export using a key ID or a fingerprint
+suffixed with an exclamation mark (!), a specific subkey or the
+primary key can be exported.  This does not even require that the key
+has the authentication capability flag set.  To view the capability
+flags of a key use @code{--list-options show-usage} along with a key
+listing command.
+
 @item --import
 @itemx --fast-import
 @opindex import

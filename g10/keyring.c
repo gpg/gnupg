@@ -1229,7 +1229,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   if (!rc)
     {
       if (DBG_LOOKUP)
-        log_debug ("%s: returing success\n", __func__);
+        log_debug ("%s: returning success\n", __func__);
       hd->found.offset = main_offset;
       hd->found.kr = hd->current.kr;
       hd->found.pk_no = pk? pk_no : 0;
