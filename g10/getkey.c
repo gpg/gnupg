@@ -155,7 +155,18 @@ print_stats ()
 #endif
 
 
-/* For documentation see keydb.h.  */
+/* Cache a copy of a public key in the public key cache.  PK is not
+ * cached if caching is disabled (via getkey_disable_caches), if
+ * PK->FLAGS.DONT_CACHE is set, we don't know how to derive a key id
+ * from the public key (e.g., unsupported algorithm), or a key with
+ * the key id is already in the cache.
+ *
+ * The public key packet is copied into the cache using
+ * copy_public_key.  Thus, any secret parts are not copied, for
+ * instance.
+ *
+ * This cache is filled by get_pubkey and is read by get_pubkey and
+ * get_pubkey_fast.  */
 void
 cache_public_key (PKT_public_key * pk)
 {
@@ -344,7 +355,9 @@ cache_user_id (KBNODE keyblock)
 }
 
 
-/* For documentation see keydb.h.  */
+/* Disable and drop the public key cache (which is filled by
+   cache_public_key and get_pubkey).  Note: there is currently no way
+   to reenable this cache.  */
 void
 getkey_disable_caches ()
 {
@@ -653,7 +666,27 @@ pk_from_block (GETKEY_CTX ctx, PKT_public_key * pk, KBNODE keyblock,
 }
 
 
-/* For documentation see keydb.h.  */
+/* Return the public key with the key id KEYID and store it at PK.
+ * The resources in *PK should be released using
+ * release_public_key_parts().  This function also stores a copy of
+ * the public key in the user id cache (see cache_public_key).
+ *
+ * If PK is NULL, this function just stores the public key in the
+ * cache and returns the usual return code.
+ *
+ * PK->REQ_USAGE (which is a mask of PUBKEY_USAGE_SIG,
+ * PUBKEY_USAGE_ENC and PUBKEY_USAGE_CERT) is passed through to the
+ * lookup function.  If this is non-zero, only keys with the specified
+ * usage will be returned.  As such, it is essential that
+ * PK->REQ_USAGE be correctly initialized!
+ *
+ * Returns 0 on success, GPG_ERR_NO_PUBKEY if there is no public key
+ * with the specified key id, or another error code if an error
+ * occurs.
+ *
+ * If the data was not read from the cache, then the self-signed data
+ * has definitely been merged into the public key using
+ * merge_selfsigs.  */
 int
 get_pubkey (PKT_public_key * pk, u32 * keyid)
 {
@@ -728,7 +761,16 @@ leave:
 }
 
 
-/* For documentation see keydb.h.  */
+/* Similar to get_pubkey, but it does not take PK->REQ_USAGE into
+ * account nor does it merge in the self-signed data.  This function
+ * also only considers primary keys.  It is intended to be used as a
+ * quick check of the key to avoid recursion.  It should only be used
+ * in very certain cases.  Like get_pubkey and unlike any of the other
+ * lookup functions, this function also consults the user id cache
+ * (see cache_public_key).
+ *
+ * Return the public key in *PK.  The resources in *PK should be
+ * released using release_public_key_parts().  */
 int
 get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
 {
@@ -795,8 +837,12 @@ get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
 }
 
 
-/* For documentation see keydb.h.  */
-KBNODE
+/* Return the key block for the key with key id KEYID or NULL, if an
+ * error occurs.  Use release_kbnode() to release the key block.
+ *
+ * The self-signed data has already been merged into the public key
+ * using merge_selfsigs.  */
+kbnode_t
 get_pubkeyblock (u32 * keyid)
 {
   struct getkey_ctx_s ctx;
@@ -820,7 +866,23 @@ get_pubkeyblock (u32 * keyid)
 }
 
 
-/* For documentation see keydb.h.  */
+/* Return the public key with the key id KEYID iff the secret key is
+ * available and store it at PK.  The resources should be released
+ * using release_public_key_parts().
+ *
+ * Unlike other lookup functions, PK may not be NULL.  PK->REQ_USAGE
+ * is passed through to the lookup function and is a mask of
+ * PUBKEY_USAGE_SIG, PUBKEY_USAGE_ENC and PUBKEY_USAGE_CERT.  Thus, it
+ * must be valid!  If this is non-zero, only keys with the specified
+ * usage will be returned.
+ *
+ * Returns 0 on success.  If a public key with the specified key id is
+ * not found or a secret key is not available for that public key, an
+ * error code is returned.  Note: this function ignores legacy keys.
+ * An error code is also return if an error occurs.
+ *
+ * The self-signed data has already been merged into the public key
+ * using merge_selfsigs.  */
 gpg_error_t
 get_seckey (PKT_public_key *pk, u32 *keyid)
 {
@@ -1070,7 +1132,56 @@ key_byname (GETKEY_CTX *retctx, strlist_t namelist,
 }
 
 
-/* For documentation see keydb.h.  */
+/* Find a public key identified by NAME.
+ *
+ * If name appears to be a valid valid RFC822 mailbox (i.e., email
+ * address) and auto key lookup is enabled (no_akl == 0), then the
+ * specified auto key lookup methods (--auto-key-lookup) are used to
+ * import the key into the local keyring.  Otherwise, just the local
+ * keyring is consulted.
+ *
+ * If RETCTX is not NULL, then the constructed context is returned in
+ * *RETCTX so that getpubkey_next can be used to get subsequent
+ * results.  In this case, getkey_end() must be used to free the
+ * search context.  If RETCTX is not NULL, then RET_KDBHD must be
+ * NULL.
+ *
+ * If PK is not NULL, the public key of the first result is returned
+ * in *PK.  Note: PK->REQ_USAGE must be valid!!!  PK->REQ_USAGE is
+ * passed through to the lookup function and is a mask of
+ * PUBKEY_USAGE_SIG, PUBKEY_USAGE_ENC and PUBKEY_USAGE_CERT.  If this
+ * is non-zero, only keys with the specified usage will be returned.
+ * Note: The self-signed data has already been merged into the public
+ * key using merge_selfsigs.  Free *PK by calling
+ * release_public_key_parts (or, if PK was allocated using xfree, you
+ * can use free_public_key, which calls release_public_key_parts(PK)
+ * and then xfree(PK)).
+ *
+ * NAME is a string, which is turned into a search query using
+ * classify_user_id.
+ *
+ * If RET_KEYBLOCK is not NULL, the keyblock is returned in
+ * *RET_KEYBLOCK.  This should be freed using release_kbnode().
+ *
+ * If RET_KDBHD is not NULL, then the new database handle used to
+ * conduct the search is returned in *RET_KDBHD.  This can be used to
+ * get subsequent results using keydb_search_next or to modify the
+ * returned record.  Note: in this case, no advanced filtering is done
+ * for subsequent results (e.g., PK->REQ_USAGE is not respected).
+ * Unlike RETCTX, this is always returned.
+ *
+ * If INCLUDE_UNUSABLE is set, then unusable keys (see the
+ * documentation for skip_unusable for an exact definition) are
+ * skipped unless they are looked up by key id or by fingerprint.
+ *
+ * If NO_AKL is set, then the auto key locate functionality is
+ * disabled and only the local key ring is considered.  Note: the
+ * local key ring is consulted even if local is not in the
+ * --auto-key-locate option list!
+ *
+ * This function returns 0 on success.  Otherwise, an error code is
+ * returned.  In particular, GPG_ERR_NO_PUBKEY or GPG_ERR_NO_SECKEY
+ * (if want_secret is set) is returned if the key is not found.  */
 int
 get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 		   const char *name, KBNODE * ret_keyblock,
@@ -1334,11 +1445,34 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 }
 
 
-/* For documentation see keydb.h.
-
-   FIXME: We should replace this with the _byname function.  This can
-   be done by creating a userID conforming to the unified fingerprint
-   style.  */
+/* Lookup a key with the specified fingerprint.
+ *
+ * If PK is not NULL, the public key of the first result is returned
+ * in *PK.  Note: this function does an exact search and thus the
+ * returned public key may be a subkey rather than the primary key.
+ * Note: The self-signed data has already been merged into the public
+ * key using merge_selfsigs.  Free *PK by calling
+ * release_public_key_parts (or, if PK was allocated using xfree, you
+ * can use free_public_key, which calls release_public_key_parts(PK)
+ * and then xfree(PK)).
+ *
+ * If PK->REQ_USAGE is set, it is used to filter the search results.
+ * (Thus, if PK is not NULL, PK->REQ_USAGE must be valid!!!)  See the
+ * documentation for finish_lookup to understand exactly how this is
+ * used.
+ *
+ * If R_KEYBLOCK is not NULL, then the first result's keyblock is
+ * returned in *R_KEYBLOCK.  This should be freed using
+ * release_kbnode().
+ *
+ * FPRINT is a byte array whose contents is the fingerprint to use as
+ * the search term.  FPRINT_LEN specifies the length of the
+ * fingerprint (in bytes).  Currently, only 16 and 20-byte
+ * fingerprints are supported.
+ *
+ * FIXME: We should replace this with the _byname function.  This can
+ * be done by creating a userID conforming to the unified fingerprint
+ * style.  */
 int
 get_pubkey_byfprint (PKT_public_key *pk, kbnode_t *r_keyblock,
 		     const byte * fprint, size_t fprint_len)
@@ -1382,7 +1516,16 @@ get_pubkey_byfprint (PKT_public_key *pk, kbnode_t *r_keyblock,
 }
 
 
-/* For documentation see keydb.h.  */
+/* This function is similar to get_pubkey_byfprint, but it doesn't
+ * merge the self-signed data into the public key and subkeys or into
+ * the user ids.  It also doesn't add the key to the user id cache.
+ * Further, this function ignores PK->REQ_USAGE.
+ *
+ * This function is intended to avoid recursion and, as such, should
+ * only be used in very specific situations.
+ *
+ * Like get_pubkey_byfprint, PK may be NULL.  In that case, this
+ * function effectively just checks for the existence of the key.  */
 int
 get_pubkey_byfprint_fast (PKT_public_key * pk,
 			  const byte * fprint, size_t fprint_len)
@@ -1556,7 +1699,30 @@ parse_def_secret_key (ctrl_t ctrl)
   return NULL;
 }
 
-/* For documentation see keydb.h.  */
+
+/* Look up a secret key.
+ *
+ * If PK is not NULL, the public key of the first result is returned
+ * in *PK.  Note: PK->REQ_USAGE must be valid!!!  If PK->REQ_USAGE is
+ * set, it is used to filter the search results.  See the
+ * documentation for finish_lookup to understand exactly how this is
+ * used.  Note: The self-signed data has already been merged into the
+ * public key using merge_selfsigs.  Free *PK by calling
+ * release_public_key_parts (or, if PK was allocated using xfree, you
+ * can use free_public_key, which calls release_public_key_parts(PK)
+ * and then xfree(PK)).
+ *
+ * If --default-key was set, then the specified key is looked up.  (In
+ * this case, the default key is returned even if it is considered
+ * unusable.  See the documentation for skip_unusable for exactly what
+ * this means.)
+ *
+ * Otherwise, this initiates a DB scan that returns all keys that are
+ * usable (see previous paragraph for exactly what usable means) and
+ * for which a secret key is available.
+ *
+ * This function returns the first match.  Additional results can be
+ * returned using getkey_next.  */
 gpg_error_t
 get_seckey_default (ctrl_t ctrl, PKT_public_key *pk)
 {
@@ -1577,8 +1743,44 @@ get_seckey_default (ctrl_t ctrl, PKT_public_key *pk)
 
   return err;
 }
+
+
 
-/* For documentation see keydb.h.  */
+/* Search for keys matching some criteria.
+ *
+ * If RETCTX is not NULL, then the constructed context is returned in
+ * *RETCTX so that getpubkey_next can be used to get subsequent
+ * results.  In this case, getkey_end() must be used to free the
+ * search context.  If RETCTX is not NULL, then RET_KDBHD must be
+ * NULL.
+ *
+ * If PK is not NULL, the public key of the first result is returned
+ * in *PK.  Note: PK->REQ_USAGE must be valid!!!  If PK->REQ_USAGE is
+ * set, it is used to filter the search results.  See the
+ * documentation for finish_lookup to understand exactly how this is
+ * used.  Note: The self-signed data has already been merged into the
+ * public key using merge_selfsigs.  Free *PK by calling
+ * release_public_key_parts (or, if PK was allocated using xfree, you
+ * can use free_public_key, which calls release_public_key_parts(PK)
+ * and then xfree(PK)).
+ *
+ * If NAMES is not NULL, then a search query is constructed using
+ * classify_user_id on each of the strings in the list.  (Recall: the
+ * database does an OR of the terms, not an AND.)  If NAMES is
+ * NULL, then all results are returned.
+ *
+ * If WANT_SECRET is set, then only keys with an available secret key
+ * (either locally or via key registered on a smartcard) are returned.
+ *
+ * This function does not skip unusable keys (see the documentation
+ * for skip_unusable for an exact definition).
+ *
+ * If RET_KEYBLOCK is not NULL, the keyblock is returned in
+ * *RET_KEYBLOCK.  This should be freed using release_kbnode().
+ *
+ * This function returns 0 on success.  Otherwise, an error code is
+ * returned.  In particular, GPG_ERR_NO_PUBKEY or GPG_ERR_NO_SECKEY
+ * (if want_secret is set) is returned if the key is not found.  */
 gpg_error_t
 getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,
                 strlist_t names, int want_secret, kbnode_t *ret_keyblock)
@@ -1588,7 +1790,46 @@ getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,
 }
 
 
-/* For documentation see keydb.h.  */
+/* Search for one key matching some criteria.
+ *
+ * If RETCTX is not NULL, then the constructed context is returned in
+ * *RETCTX so that getpubkey_next can be used to get subsequent
+ * results.  In this case, getkey_end() must be used to free the
+ * search context.  If RETCTX is not NULL, then RET_KDBHD must be
+ * NULL.
+ *
+ * If PK is not NULL, the public key of the first result is returned
+ * in *PK.  Note: PK->REQ_USAGE must be valid!!!  If PK->REQ_USAGE is
+ * set, it is used to filter the search results.  See the
+ * documentation for finish_lookup to understand exactly how this is
+ * used.  Note: The self-signed data has already been merged into the
+ * public key using merge_selfsigs.  Free *PK by calling
+ * release_public_key_parts (or, if PK was allocated using xfree, you
+ * can use free_public_key, which calls release_public_key_parts(PK)
+ * and then xfree(PK)).
+ *
+ * If NAME is not NULL, then a search query is constructed using
+ * classify_user_id on the string.  In this case, even unusable keys
+ * (see the documentation for skip_unusable for an exact definition of
+ * unusable) are returned.  Otherwise, if --default-key was set, then
+ * that key is returned (even if it is unusable).  If neither of these
+ * conditions holds, then the first usable key is returned.
+ *
+ * If WANT_SECRET is set, then only keys with an available secret key
+ * (either locally or via key registered on a smartcard) are returned.
+ *
+ * This function does not skip unusable keys (see the documentation
+ * for skip_unusable for an exact definition).
+ *
+ * If RET_KEYBLOCK is not NULL, the keyblock is returned in
+ * *RET_KEYBLOCK.  This should be freed using release_kbnode().
+ *
+ * This function returns 0 on success.  Otherwise, an error code is
+ * returned.  In particular, GPG_ERR_NO_PUBKEY or GPG_ERR_NO_SECKEY
+ * (if want_secret is set) is returned if the key is not found.
+ *
+ * FIXME: We also have the get_pubkey_byname function which has a
+ * different semantic.  Should be merged with this one.  */
 gpg_error_t
 getkey_byname (ctrl_t ctrl, getkey_ctx_t *retctx, PKT_public_key *pk,
                const char *name, int want_secret, kbnode_t *ret_keyblock)
@@ -1620,7 +1861,22 @@ getkey_byname (ctrl_t ctrl, getkey_ctx_t *retctx, PKT_public_key *pk,
 }
 
 
-/* For documentation see keydb.h.  */
+/* Return the next search result.
+ *
+ * If PK is not NULL, the public key of the next result is returned in
+ * *PK.  Note: The self-signed data has already been merged into the
+ * public key using merge_selfsigs.  Free *PK by calling
+ * release_public_key_parts (or, if PK was allocated using xfree, you
+ * can use free_public_key, which calls release_public_key_parts(PK)
+ * and then xfree(PK)).
+ *
+ * RET_KEYBLOCK can be given as NULL; if it is not NULL it the entire
+ * found keyblock wis retruned hich must be released with
+ * release_kbnode.  If the function returns an error NULL is stored at
+ * RET_KEYBLOCK.
+ *
+ * The self-signed data has already been merged into the public key
+ * using merge_selfsigs.  */
 gpg_error_t
 getkey_next (getkey_ctx_t ctx, PKT_public_key *pk, kbnode_t *ret_keyblock)
 {
@@ -1641,7 +1897,8 @@ getkey_next (getkey_ctx_t ctx, PKT_public_key *pk, kbnode_t *ret_keyblock)
 }
 
 
-/* For documentation see keydb.h.  */
+/* Release any resources used by a key listing context.  This must be
+ * called on the context returned by, e.g., getkey_byname.  */
 void
 getkey_end (getkey_ctx_t ctx)
 {
@@ -1660,7 +1917,10 @@ getkey_end (getkey_ctx_t ctx)
  ************* Merging stuff ********************
  ************************************************/
 
-/* For documentation see keydb.h.  */
+/* Set the mainkey_id fields for all keys in KEYBLOCK.  This is
+ * usually done by merge_selfsigs but at some places we only need the
+ * main_kid not a full merge.  The function also guarantees that all
+ * pk->keyids are computed.  */
 void
 setup_main_keyids (kbnode_t keyblock)
 {
@@ -1689,7 +1949,13 @@ setup_main_keyids (kbnode_t keyblock)
 }
 
 
-/* For documentation see keydb.h.  */
+/* KEYBLOCK corresponds to a public key block.  This function merges
+ * much of the information from the self-signed data into the public
+ * key, public subkey and user id data structures.  If you use the
+ * high-level search API (e.g., get_pubkey) for looking up key blocks,
+ * then you don't need to call this function.  This function is
+ * useful, however, if you change the keyblock, e.g., by adding or
+ * removing a self-signed data packet.  */
 void
 merge_keys_and_selfsig (KBNODE keyblock)
 {
@@ -3139,7 +3405,38 @@ found:
 }
 
 
-/* For documentation see keydb.h.  */
+/* Enumerate some secret keys (specifically, those specified with
+ * --default-key and --try-secret-key).  Use the following procedure:
+ *
+ *  1) Initialize a void pointer to NULL
+ *  2) Pass a reference to this pointer to this function (content)
+ *     and provide space for the secret key (sk)
+ *  3) Call this function as long as it does not return an error (or
+ *     until you are done).  The error code GPG_ERR_EOF indicates the
+ *     end of the listing.
+ *  4) Call this function a last time with SK set to NULL,
+ *     so that can free it's context.
+ *
+ * In pseudo-code:
+ *
+ *   void *ctx = NULL;
+ *   PKT_public_key *sk = xmalloc_clear (sizeof (*sk));
+ *
+ *   while ((err = enum_secret_keys (&ctx, sk)))
+ *     { // Process SK.
+ *       if (done)
+ *         break;
+ *       free_public_key (sk);
+ *       sk = xmalloc_clear (sizeof (*sk));
+ *     }
+ *
+ *   // Release any resources used by CTX.
+ *   enum_secret_keys (&ctx, NULL);
+ *   free_public_key (sk);
+ *
+ *   if (gpg_err_code (err) != GPG_ERR_EOF)
+ *     ; // An error occurred.
+ */
 gpg_error_t
 enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
 {
@@ -3402,8 +3699,8 @@ get_user_id_byfpr_native (const byte *fpr)
 }
 
 
-
-/* For documentation see keydb.h.  */
+/* Return the database handle used by this context.  The context still
+   owns the handle.  */
 KEYDB_HANDLE
 get_ctx_handle (GETKEY_CTX ctx)
 {

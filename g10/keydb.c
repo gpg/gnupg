@@ -533,7 +533,52 @@ keydb_search_desc_dump (struct keydb_search_desc *desc)
       return xasprintf ("Bad search mode (%d)", desc->mode);
     }
 }
+
+
 
+/* Register a resource (keyring or keybox).  The first keyring or
+ * keybox that is added using this function is created if it does not
+ * already exist and the KEYDB_RESOURCE_FLAG_READONLY is not set.
+ *
+ * FLAGS are a combination of the KEYDB_RESOURCE_FLAG_* constants.
+ *
+ * URL must have the following form:
+ *
+ *   gnupg-ring:filename  = plain keyring
+ *   gnupg-kbx:filename   = keybox file
+ *   filename             = check file's type (create as a plain keyring)
+ *
+ * Note: on systems with drive letters (Windows) invalid URLs (i.e.,
+ * those with an unrecognized part before the ':' such as "c:\...")
+ * will silently be treated as bare filenames.  On other systems, such
+ * URLs will cause this function to return GPG_ERR_GENERAL.
+ *
+ * If KEYDB_RESOURCE_FLAG_DEFAULT is set, the resource is a keyring
+ * and the file ends in ".gpg", then this function also checks if a
+ * file with the same name, but the extension ".kbx" exists, is a
+ * keybox and the OpenPGP flag is set.  If so, this function opens
+ * that resource instead.
+ *
+ * If the file is not found, KEYDB_RESOURCE_FLAG_GPGVDEF is set and
+ * the URL ends in ".kbx", then this function will try opening the
+ * same URL, but with the extension ".gpg".  If that file is a keybox
+ * with the OpenPGP flag set or it is a keyring, then we use that
+ * instead.
+ *
+ * If the file is not found, KEYDB_RESOURCE_FLAG_DEFAULT is set, the
+ * file should be created and the file's extension is ".gpg" then we
+ * replace the extension with ".kbx".
+ *
+ * If the KEYDB_RESOURCE_FLAG_PRIMARY is set and the resource is a
+ * keyring (not a keybox), then this resource is considered the
+ * primary resource.  This is used by keydb_locate_writable().  If
+ * another primary keyring is set, then that keyring is considered the
+ * primary.
+ *
+ * If KEYDB_RESOURCE_FLAG_READONLY is set and the resource is a
+ * keyring (not a keybox), then the keyring is marked as read only and
+ * operations just as keyring_insert_keyblock will return
+ * GPG_ERR_ACCESS.  */
 gpg_error_t
 keydb_add_resource (const char *url, unsigned int flags)
 {
@@ -864,6 +909,9 @@ keydb_release (KEYDB_HANDLE hd)
 }
 
 
+/* Set a flag on the handle to suppress use of cached results.  This
+ * is required for updating a keyring and for key listings.  Fixme:
+ * Using a new parameter for keydb_new might be a better solution.  */
 void
 keydb_disable_caching (KEYDB_HANDLE hd)
 {
@@ -872,6 +920,14 @@ keydb_disable_caching (KEYDB_HANDLE hd)
 }
 
 
+/* Return the file name of the resource in which the current search
+ * result was found or, if there is no search result, the filename of
+ * the current resource (i.e., the resource that the file position
+ * points to).  Note: the filename is not necessarily the URL used to
+ * open it!
+ *
+ * This function only returns NULL if no handle is specified, in all
+ * other error cases an empty string is returned.  */
 const char *
 keydb_get_resource_name (KEYDB_HANDLE hd)
 {
@@ -985,6 +1041,22 @@ unlock_all (KEYDB_HANDLE hd)
 
 
 
+/* Save the last found state and invalidate the current selection
+ * (i.e., the entry selected by keydb_search() is invalidated and
+ * something like keydb_get_keyblock() will return an error).  This
+ * does not change the file position.  This makes it possible to do
+ * something like:
+ *
+ *   keydb_search (hd, ...);  // Result 1.
+ *   keydb_push_found_state (hd);
+ *     keydb_search_reset (hd);
+ *     keydb_search (hd, ...);  // Result 2.
+ *   keydb_pop_found_state (hd);
+ *   keydb_get_keyblock (hd, ...);  // -> Result 1.
+ *
+ * Note: it is only possible to save a single save state at a time.
+ * In other words, the the save stack only has room for a single
+ * instance of the state.  */
 void
 keydb_push_found_state (KEYDB_HANDLE hd)
 {
@@ -1014,6 +1086,8 @@ keydb_push_found_state (KEYDB_HANDLE hd)
 }
 
 
+/* Restore the previous save state.  If the saved state is NULL or
+   invalid, this is a NOP.  */
 void
 keydb_pop_found_state (KEYDB_HANDLE hd)
 {
@@ -1204,6 +1278,15 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
 }
 
 
+/* Return the keyblock last found by keydb_search() in *RET_KB.
+ *
+ * On success, the function returns 0 and the caller must free *RET_KB
+ * using release_kbnode().  Otherwise, the function returns an error
+ * code.
+ *
+ * The returned keyblock has the kbnode flag bit 0 set for the node
+ * with the public key used to locate the keyblock or flag bit 1 set
+ * for the user ID node.  */
 gpg_error_t
 keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
 {
@@ -1382,6 +1465,21 @@ build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf, u32 **r_sigstatus)
 }
 
 
+/* Update the keyblock KB (i.e., extract the fingerprint and find the
+ * corresponding keyblock in the keyring).
+ *
+ * This doesn't do anything if --dry-run was specified.
+ *
+ * Returns 0 on success.  Otherwise, it returns an error code.  Note:
+ * if there isn't a keyblock in the keyring corresponding to KB, then
+ * this function returns GPG_ERR_VALUE_NOT_FOUND.
+ *
+ * This function selects the matching record and modifies the current
+ * file position to point to the record just after the selected entry.
+ * Thus, if you do a subsequent search using HD, you should first do a
+ * keydb_search_reset.  Further, if the selected record is important,
+ * you should use keydb_push_found_state and keydb_pop_found_state to
+ * save and restore it.  */
 gpg_error_t
 keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 {
@@ -1449,6 +1547,16 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 }
 
 
+/* Insert a keyblock into one of the underlying keyrings or keyboxes.
+ *
+ * Be default, the keyring / keybox from which the last search result
+ * came is used.  If there was no previous search result (or
+ * keydb_search_reset was called), then the keyring / keybox where the
+ * next search would start is used (i.e., the current file position).
+ *
+ * Note: this doesn't do anything if --dry-run was specified.
+ *
+ * Returns 0 on success.  Otherwise, it returns an error code.  */
 gpg_error_t
 keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 {
@@ -1510,6 +1618,11 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 }
 
 
+/* Delete the currently selected keyblock.  If you haven't done a
+ * search yet on this database handle (or called keydb_search_reset),
+ * then this will return an error.
+ *
+ * Returns 0 on success or an error code, if an error occurs.  */
 gpg_error_t
 keydb_delete_keyblock (KEYDB_HANDLE hd)
 {
@@ -1550,6 +1663,15 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
 
 
 
+/* A database may consists of multiple keyrings / key boxes.  This
+ * sets the "file position" to the start of the first keyring / key
+ * box that is writable (i.e., doesn't have the read-only flag set).
+ *
+ * This first tries the primary keyring (the last keyring (not
+ * keybox!) added using keydb_add_resource() and with
+ * KEYDB_RESOURCE_FLAG_PRIMARY set).  If that is not writable, then it
+ * tries the keyrings / keyboxes in the order in which they were
+ * added.  */
 gpg_error_t
 keydb_locate_writable (KEYDB_HANDLE hd)
 {
@@ -1602,6 +1724,8 @@ keydb_locate_writable (KEYDB_HANDLE hd)
   return gpg_error (GPG_ERR_NOT_FOUND);
 }
 
+
+/* Rebuild the on-disk caches of all key resources.  */
 void
 keydb_rebuild_caches (int noisy)
 {
@@ -1629,6 +1753,8 @@ keydb_rebuild_caches (int noisy)
 }
 
 
+/* Return the number of skipped blocks (because they were to large to
+   read from a keybox) since the last search reset.  */
 unsigned long
 keydb_get_skipped_counter (KEYDB_HANDLE hd)
 {
@@ -1636,6 +1762,12 @@ keydb_get_skipped_counter (KEYDB_HANDLE hd)
 }
 
 
+/* Clears the current search result and resets the handle's position
+ * so that the next search starts at the beginning of the database
+ * (the start of the first resource).
+ *
+ * Returns 0 on success and an error code if an error occurred.
+ * (Currently, this function always returns 0 if HD is valid.)  */
 gpg_error_t
 keydb_search_reset (KEYDB_HANDLE hd)
 {
@@ -1676,6 +1808,24 @@ keydb_search_reset (KEYDB_HANDLE hd)
 }
 
 
+/* Search the database for keys matching the search description.  If
+ * the DB contains any legacy keys, these are silently ignored.
+ *
+ * DESC is an array of search terms with NDESC entries.  The search
+ * terms are or'd together.  That is, the next entry in the DB that
+ * matches any of the descriptions will be returned.
+ *
+ * Note: this function resumes searching where the last search left
+ * off (i.e., at the current file position).  If you want to search
+ * from the start of the database, then you need to first call
+ * keydb_search_reset().
+ *
+ * If no key matches the search description, returns
+ * GPG_ERR_NOT_FOUND.  If there was a match, returns 0.  If an error
+ * occurred, returns an error code.
+ *
+ * The returned key is considered to be selected and the raw data can,
+ * for instance, be returned by calling keydb_get_keyblock().  */
 gpg_error_t
 keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
               size_t ndesc, size_t *descindex)
@@ -1827,6 +1977,11 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
 }
 
 
+/* Return the first non-legacy key in the database.
+ *
+ * If you want the very first key in the database, you can directly
+ * call keydb_search with the search description
+ *  KEYDB_SEARCH_MODE_FIRST.  */
 gpg_error_t
 keydb_search_first (KEYDB_HANDLE hd)
 {
@@ -1843,6 +1998,10 @@ keydb_search_first (KEYDB_HANDLE hd)
 }
 
 
+/* Return the next key (not the next matching key!).
+ *
+ * Unlike calling keydb_search with KEYDB_SEARCH_MODE_NEXT, this
+ * function silently skips legacy keys.  */
 gpg_error_t
 keydb_search_next (KEYDB_HANDLE hd)
 {
@@ -1853,6 +2012,13 @@ keydb_search_next (KEYDB_HANDLE hd)
   return keydb_search (hd, &desc, 1, NULL);
 }
 
+
+/* This is a convenience function for searching for keys with a long
+ * key id.
+ *
+ * Note: this function resumes searching where the last search left
+ * off.  If you want to search the whole database, then you need to
+ * first call keydb_search_reset().  */
 gpg_error_t
 keydb_search_kid (KEYDB_HANDLE hd, u32 *kid)
 {
@@ -1865,6 +2031,13 @@ keydb_search_kid (KEYDB_HANDLE hd, u32 *kid)
   return keydb_search (hd, &desc, 1, NULL);
 }
 
+
+/* This is a convenience function for searching for keys with a long
+ * (20 byte) fingerprint.
+ *
+ * Note: this function resumes searching where the last search left
+ * off.  If you want to search the whole database, then you need to
+ * first call keydb_search_reset().  */
 gpg_error_t
 keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr)
 {
