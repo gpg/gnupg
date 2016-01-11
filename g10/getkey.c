@@ -3059,6 +3059,9 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
   KBNODE keyblock = NULL;
   KBNODE found_key = NULL;
 
+  if (ret_keyblock)
+    *ret_keyblock = NULL;
+
   for (;;)
     {
       rc = keydb_search (ctx->kr_handle, ctx->items, ctx->nitems, NULL);
@@ -3113,7 +3116,8 @@ found:
 
   if (!rc)
     {
-      *ret_keyblock = keyblock; /* Return the keyblock.  */
+      if (ret_keyblock)
+        *ret_keyblock = keyblock; /* Return the keyblock.  */
       keyblock = NULL;
     }
   else if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND && no_suitable_key)

@@ -750,6 +750,11 @@ gpg_error_t getkey_byname (ctrl_t ctrl,
    can use free_public_key, which calls release_public_key_parts(PK)
    and then xfree(PK)).
 
+   RET_KEYBLOCK can be given as NULL; if it is not NULL it the entire
+   found keyblock wis retruned hich must be released with
+   release_kbnode.  If the function returns an error NULL is stored at
+   RET_KEYBLOCK.
+
    The self-signed data has already been merged into the public key
    using merge_selfsigs.  */
 gpg_error_t getkey_next (getkey_ctx_t ctx, PKT_public_key *pk,
