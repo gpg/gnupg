@@ -75,6 +75,7 @@
 #define SPEC_FLAG_USE_PKCS1V2 (1 << 0)
 #define SPEC_FLAG_IS_ECDSA    (1 << 1)
 #define SPEC_FLAG_IS_EdDSA    (1 << 2)  /*(lowercase 'd' on purpose.)*/
+#define SPEC_FLAG_WITH_CERT   (1 << 7)
 
 /* The name of the control file.  */
 #define SSH_CONTROL_FILE_NAME "sshcontrol"
@@ -302,6 +303,42 @@ static ssh_key_type_spec_t ssh_key_types[] =
       "ecdsa-sha2-nistp521", "ECDSA", "ecdsa", "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
       "nistp521", GCRY_MD_SHA512, SPEC_FLAG_IS_ECDSA
+    },
+    {
+      "ssh-ed25519-cert-v01@openssh.com", "Ed25519",
+      "ecc", "qd",  "q", "rs", "qd",
+      NULL,                 ssh_signature_encoder_eddsa,
+      "Ed25519", 0, SPEC_FLAG_IS_EdDSA | SPEC_FLAG_WITH_CERT
+    },
+    {
+      "ssh-rsa-cert-v01@openssh.com", "RSA",
+      "rsa", "nedupq", "en",   "s",  "nedpqu",
+      ssh_key_modifier_rsa, ssh_signature_encoder_rsa,
+      NULL, 0, SPEC_FLAG_USE_PKCS1V2 | SPEC_FLAG_WITH_CERT
+    },
+    {
+      "ssh-dss-cert-v01@openssh.com", "DSA",
+      "dsa", "pqgyx",  "pqgy", "rs", "pqgyx",
+      NULL,                 ssh_signature_encoder_dsa,
+      NULL, 0, SPEC_FLAG_WITH_CERT | SPEC_FLAG_WITH_CERT
+    },
+    {
+      "ecdsa-sha2-nistp256-cert-v01@openssh.com", "ECDSA",
+      "ecdsa", "qd",  "q", "rs", "qd",
+      NULL,                 ssh_signature_encoder_ecdsa,
+      "nistp256", GCRY_MD_SHA256, SPEC_FLAG_IS_ECDSA | SPEC_FLAG_WITH_CERT
+    },
+    {
+      "ecdsa-sha2-nistp384-cert-v01@openssh.com", "ECDSA",
+      "ecdsa", "qd",  "q", "rs", "qd",
+      NULL,                 ssh_signature_encoder_ecdsa,
+      "nistp384", GCRY_MD_SHA384, SPEC_FLAG_IS_ECDSA | SPEC_FLAG_WITH_CERT
+    },
+    {
+      "ecdsa-sha2-nistp521-cert-v01@openssh.com", "ECDSA",
+      "ecdsa", "qd",  "q", "rs", "qd",
+      NULL,                 ssh_signature_encoder_ecdsa,
+      "nistp521", GCRY_MD_SHA512, SPEC_FLAG_IS_ECDSA | SPEC_FLAG_WITH_CERT
     }
   };
 
@@ -531,7 +568,7 @@ stream_write_data (estream_t stream, const unsigned char *buffer, size_t size)
 /* Read a binary string from STREAM into STRING, store size of string
    in STRING_SIZE.  Append a hidden nul so that the result may
    directly be used as a C string.  Depending on SECURE use secure
-   memory for STRING.  */
+   memory for STRING.  If STRING is NULL do only a dummy read.  */
 static gpg_error_t
 stream_read_string (estream_t stream, unsigned int secure,
 		    unsigned char **string, u32 *string_size)
@@ -548,25 +585,35 @@ stream_read_string (estream_t stream, unsigned int secure,
   if (err)
     goto out;
 
-  /* Allocate space.  */
-  if (secure)
-    buffer = xtrymalloc_secure (length + 1);
-  else
-    buffer = xtrymalloc (length + 1);
-  if (! buffer)
+  if (string)
     {
-      err = gpg_error_from_syserror ();
-      goto out;
+      /* Allocate space.  */
+      if (secure)
+        buffer = xtrymalloc_secure (length + 1);
+      else
+        buffer = xtrymalloc (length + 1);
+      if (! buffer)
+        {
+          err = gpg_error_from_syserror ();
+          goto out;
+        }
+
+      /* Read data.  */
+      err = stream_read_data (stream, buffer, length);
+      if (err)
+        goto out;
+
+      /* Finalize string object.  */
+      buffer[length] = 0;
+      *string = buffer;
+    }
+  else  /* Dummy read requested.  */
+    {
+      err = stream_read_skip (stream, length);
+      if (err)
+        goto out;
     }
 
-  /* Read data.  */
-  err = stream_read_data (stream, buffer, length);
-  if (err)
-    goto out;
-
-  /* Finalize string object.  */
-  buffer[length] = 0;
-  *string = buffer;
   if (string_size)
     *string_size = length;
 
@@ -1258,31 +1305,38 @@ mpint_list_free (gcry_mpi_t *mpi_list)
 }
 
 /* Receive key material MPIs from STREAM according to KEY_SPEC;
-   depending on SECRET expect a public key or secret key.  The newly
+   depending on SECRET expect a public key or secret key.  CERT is the
+   certificate blob used if KEY_SPEC indicates the certificate format;
+   it needs to be positioned to the end of the nonce.  The newly
    allocated list of MPIs is stored in MPI_LIST.  Returns usual error
    code.  */
 static gpg_error_t
 ssh_receive_mpint_list (estream_t stream, int secret,
-			ssh_key_type_spec_t key_spec, gcry_mpi_t **mpi_list)
+			ssh_key_type_spec_t *spec, estream_t cert,
+                        gcry_mpi_t **mpi_list)
 {
   const char *elems_public;
   unsigned int elems_n;
   const char *elems;
   int elem_is_secret;
-  gcry_mpi_t *mpis;
-  gpg_error_t err;
+  gcry_mpi_t *mpis = NULL;
+  gpg_error_t err = 0;
   unsigned int i;
 
-  mpis = NULL;
-  err = 0;
-
   if (secret)
-    elems = key_spec.elems_key_secret;
+    elems = spec->elems_key_secret;
   else
-    elems = key_spec.elems_key_public;
+    elems = spec->elems_key_public;
   elems_n = strlen (elems);
+  elems_public = spec->elems_key_public;
 
-  elems_public = key_spec.elems_key_public;
+  /* Check that either noth, CERT and the WITH_CERT flag, are given or
+     none of them.  */
+  if (!(!!(spec->flags & SPEC_FLAG_WITH_CERT) ^ !cert))
+    {
+      err = gpg_error (GPG_ERR_INV_CERT_OBJ);
+      goto out;
+    }
 
   mpis = xtrycalloc (elems_n + 1, sizeof *mpis );
   if (!mpis)
@@ -1295,18 +1349,20 @@ ssh_receive_mpint_list (estream_t stream, int secret,
   for (i = 0; i < elems_n; i++)
     {
       if (secret)
-	elem_is_secret = ! strchr (elems_public, elems[i]);
-      err = stream_read_mpi (stream, elem_is_secret, &mpis[i]);
+	elem_is_secret = !strchr (elems_public, elems[i]);
+
+      if (cert && !elem_is_secret)
+        err = stream_read_mpi (cert, elem_is_secret, &mpis[i]);
+      else
+        err = stream_read_mpi (stream, elem_is_secret, &mpis[i]);
       if (err)
-	break;
+	goto out;
     }
-  if (err)
-    goto out;
 
   *mpi_list = mpis;
+  mpis = NULL;
 
  out:
-
   if (err)
     mpint_list_free (mpis);
 
@@ -2112,6 +2168,7 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
   gpg_error_t err;
   char *key_type = NULL;
   char *comment = NULL;
+  estream_t cert = NULL;
   gcry_sexp_t key = NULL;
   ssh_key_type_spec_t spec;
   gcry_mpi_t *mpi_list = NULL;
@@ -2126,6 +2183,44 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
   err = ssh_key_type_lookup (key_type, NULL, &spec);
   if (err)
     goto out;
+
+  if ((spec.flags & SPEC_FLAG_WITH_CERT))
+    {
+      /* This is an OpenSSH certificate+private key.  The certificate
+         is an SSH string and which we store in an estream object. */
+      unsigned char *buffer;
+      u32 buflen;
+      char *cert_key_type;
+
+      err = stream_read_string (stream, 0, &buffer, &buflen);
+      if (err)
+        goto out;
+      cert = es_fopenmem_init (0, "rb", buffer, buflen);
+      xfree (buffer);
+      if (!cert)
+        {
+          err = gpg_error_from_syserror ();
+          goto out;
+        }
+
+      /* Check that the key type matches.  */
+      err = stream_read_cstring (cert, &cert_key_type);
+      if (err)
+        goto out;
+      if (strcmp (cert_key_type, key_type) )
+        {
+          xfree (cert_key_type);
+          log_error ("key types in received ssh certificate do not match\n");
+          err = gpg_error (GPG_ERR_INV_CERT_OBJ);
+          goto out;
+        }
+      xfree (cert_key_type);
+
+      /* Skip the nonce.  */
+      err = stream_read_string (cert, 0, NULL, NULL);
+      if (err)
+        goto out;
+    }
 
   if ((spec.flags & SPEC_FLAG_IS_EdDSA))
     {
@@ -2146,7 +2241,7 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
           goto out;
         }
 
-      err = stream_read_blob (stream, 0, &mpi_list[0]);
+      err = stream_read_blob (cert? cert : stream, 0, &mpi_list[0]);
       if (err)
         goto out;
       if (secret)
@@ -2196,12 +2291,14 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
        *   mpint	ecdsa_private
        *
        * Note that we use the mpint reader instead of the string
-       * reader for ecsa_public_key.
+       * reader for ecsa_public_key.  For the certificate variante
+       * ecdsa_curve_name+ecdsa_public_key are replaced by the
+       * certificate.
        */
       unsigned char *buffer;
       const char *mapped;
 
-      err = stream_read_string (stream, 0, &buffer, NULL);
+      err = stream_read_string (cert? cert : stream, 0, &buffer, NULL);
       if (err)
         goto out;
       curve_name = buffer;
@@ -2228,13 +2325,13 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
             }
         }
 
-      err = ssh_receive_mpint_list (stream, secret, spec, &mpi_list);
+      err = ssh_receive_mpint_list (stream, secret, &spec, cert, &mpi_list);
       if (err)
         goto out;
     }
   else
     {
-      err = ssh_receive_mpint_list (stream, secret, spec, &mpi_list);
+      err = ssh_receive_mpint_list (stream, secret, &spec, cert, &mpi_list);
       if (err)
         goto out;
     }
@@ -2292,6 +2389,7 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
   *key_new = key;
 
  out:
+  es_fclose (cert);
   mpint_list_free (mpi_list);
   xfree (curve_name);
   xfree (key_type);
