@@ -20,8 +20,9 @@
 
 
 # Programs required before we can run these tests.
-required_pgms = ../../g10/gpg2 ../../agent/gpg-agent \
-                ../../tools/gpg-connect-agent ../../tools/mk-tdata
+required_pgms = ../../g10/gpg2$(EXEEXT) ../../agent/gpg-agent$(EXEEXT) \
+                ../../tools/gpg-connect-agent$(EXEEXT) \
+		../../tools/mk-tdata$(EXEEXT)
 
 AM_CPPFLAGS = -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am
