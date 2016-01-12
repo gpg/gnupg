@@ -406,8 +406,7 @@ int iobuf_cancel (iobuf_t iobuf);
      IOBUFCTRL_DESC: Called with this value to get a human-readable
        description of the filter.  *LEN is the size of the buffer.
        The description is filled into BUF, NUL-terminated.  Always
-       returns 0.  When the size of the buffer is shorter than the
-       description, it is truncated and not NUL-terminated.
+       returns 0.
   */
 int iobuf_push_filter (iobuf_t a, int (*f) (void *opaque, int control,
 					    iobuf_t chain, byte * buf,
