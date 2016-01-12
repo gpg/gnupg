@@ -848,7 +848,7 @@ encrypt_filter (void *opaque, int control,
     }
   else if ( control == IOBUFCTRL_DESC )
     {
-      *(char**)buf = "encrypt_filter";
+      mem2str (buf, "encrypt_filter", *ret_len);
     }
   return rc;
 }

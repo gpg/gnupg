@@ -404,10 +404,10 @@ int iobuf_cancel (iobuf_t iobuf);
        called on the pipeline.
 
      IOBUFCTRL_DESC: Called with this value to get a human-readable
-       description of the filter.  * (char **) BUF should set to the
-       NUL-terminated string.  Note: you need to keep track of this
-       value and, if necessary, free it when the filter function is
-       called with control set to IOBUFCTRL_FREE.
+       description of the filter.  *LEN is the size of the buffer.
+       The description is filled into BUF, NUL-terminated.  Always
+       returns 0.  When the size of the buffer is shorter than the
+       description, it is truncated and not NUL-terminated.
   */
 int iobuf_push_filter (iobuf_t a, int (*f) (void *opaque, int control,
 					    iobuf_t chain, byte * buf,

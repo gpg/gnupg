@@ -131,7 +131,7 @@ progress_filter (void *opaque, int control,
       release_progress_context (pfx);
     }
   else if (control == IOBUFCTRL_DESC)
-    *(char**)buf = "progress_filter";
+    mem2str (buf, "progress_filter", *ret_len);
   return rc;
 }
 

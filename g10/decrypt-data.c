@@ -425,7 +425,7 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
     }
   else if ( control == IOBUFCTRL_DESC )
     {
-      *(char**)buf = "mdc_decode_filter";
+      mem2str (buf, "mdc_decode_filter", *ret_len);
     }
   return rc;
 }
@@ -496,7 +496,7 @@ decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
     }
   else if ( control == IOBUFCTRL_DESC )
     {
-      *(char**)buf = "decode_filter";
+      mem2str (buf, "decode_filter", *ret_len);
     }
   return rc;
 }

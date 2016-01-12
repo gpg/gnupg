@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "iobuf.h"
+#include "stringhelp.h"
 
 /* Return every other byte.  In particular, reads two bytes, returns
    the second one.  */
@@ -16,7 +17,7 @@ every_other_filter (void *opaque, int control,
 
   if (control == IOBUFCTRL_DESC)
     {
-      *(char **) buf = "every_other_filter";
+      mem2str (buf, "every_other_filter", *len);
     }
   if (control == IOBUFCTRL_UNDERFLOW)
     {
@@ -52,7 +53,7 @@ double_filter (void *opaque, int control,
 
   if (control == IOBUFCTRL_DESC)
     {
-      * (char **) buf = "double_filter";
+      mem2str (buf, "double_filter", *len);
     }
   if (control == IOBUFCTRL_FLUSH)
     {

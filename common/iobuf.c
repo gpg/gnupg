@@ -578,7 +578,7 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
     }
   else if (control == IOBUFCTRL_DESC)
     {
-      *(char **) buf = "file_filter(fd)";
+      mem2str (buf, "file_filter(fd)", *ret_len);
     }
   else if (control == IOBUFCTRL_FREE)
     {
@@ -667,7 +667,7 @@ file_es_filter (void *opaque, int control, iobuf_t chain, byte * buf,
     }
   else if (control == IOBUFCTRL_DESC)
     {
-      *(char **) buf = "estream_filter";
+      mem2str (buf, "estream_filter", *ret_len);
     }
   else if (control == IOBUFCTRL_FREE)
     {
@@ -765,7 +765,7 @@ sock_filter (void *opaque, int control, iobuf_t chain, byte * buf,
     }
   else if (control == IOBUFCTRL_DESC)
     {
-      *(char **) buf = "sock_filter";
+      mem2str (buf, "sock_filter", *ret_len);
     }
   else if (control == IOBUFCTRL_FREE)
     {
@@ -993,7 +993,7 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
     }
   else if (control == IOBUFCTRL_DESC)
     {
-      *(char **) buf = "block_filter";
+      mem2str (buf, "block_filter", *ret_len);
     }
   else if (control == IOBUFCTRL_FREE)
     {
@@ -1057,19 +1057,23 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
   return rc;
 }
 
+#define MAX_IOBUF_DESC 32
+/*
+ * Fill the buffer by the description of iobuf A.
+ * The buffer size should be MAX_IOBUF_DESC (or larger).
+ * Returns BUF as (const char *).
+ */
 static const char *
-iobuf_desc (iobuf_t a)
+iobuf_desc (iobuf_t a, byte *buf)
 {
-  size_t dummy_len = 0;
-  const char *desc = "?";
+  size_t len = MAX_IOBUF_DESC;
 
   if (! a || ! a->filter)
-    return desc;
+    memcpy (buf, "?", 2);
+  else
+    a->filter (a->filter_ov, IOBUFCTRL_DESC, NULL, buf, &len);
 
-  a->filter (a->filter_ov, IOBUFCTRL_DESC, NULL,
-	     (byte *) & desc, &dummy_len);
-
-  return desc;
+  return buf;
 }
 
 static void
@@ -1079,9 +1083,10 @@ print_chain (iobuf_t a)
     return;
   for (; a; a = a->chain)
     {
+      byte desc[MAX_IOBUF_DESC];
 
       log_debug ("iobuf chain: %d.%d '%s' filter_eof=%d start=%d len=%d\n",
-		 a->no, a->subno, iobuf_desc (a), a->filter_eof,
+		 a->no, a->subno, iobuf_desc (a, desc), a->filter_eof,
 		 (int) a->d.start, (int) a->d.len);
     }
 }
@@ -1126,6 +1131,7 @@ iobuf_close (iobuf_t a)
 
   for (; a; a = a_chain)
     {
+      byte desc[MAX_IOBUF_DESC];
       int rc2 = 0;
 
       a_chain = a->chain;
@@ -1135,7 +1141,7 @@ iobuf_close (iobuf_t a)
 
       if (DBG_IOBUF)
 	log_debug ("iobuf-%d.%d: close '%s'\n",
-		   a->no, a->subno, iobuf_desc (a));
+		   a->no, a->subno, iobuf_desc (a, desc));
 
       if (a->filter && (rc2 = a->filter (a->filter_ov, IOBUFCTRL_FREE,
 					 a->chain, NULL, &dummy_len)))
@@ -1275,6 +1281,7 @@ do_open (const char *fname, int special_filenames,
   size_t len = 0;
   int print_only = 0;
   int fd;
+  byte desc[MAX_IOBUF_DESC];
 
   assert (use == IOBUF_INPUT || use == IOBUF_OUTPUT);
 
@@ -1321,7 +1328,7 @@ do_open (const char *fname, int special_filenames,
   file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
     log_debug ("iobuf-%d.%d: open '%s' desc=%s fd=%d\n",
-	       a->no, a->subno, fname, iobuf_desc (a), FD2INT (fcx->fp));
+	       a->no, a->subno, fname, iobuf_desc (a, desc), FD2INT (fcx->fp));
 
   return a;
 }
@@ -1439,6 +1446,8 @@ iobuf_sockopen (int fd, const char *mode)
 int
 iobuf_ioctl (iobuf_t a, iobuf_ioctl_t cmd, int intval, void *ptrval)
 {
+  byte desc[MAX_IOBUF_DESC];
+
   if (cmd == IOBUF_IOCTL_KEEP_OPEN)
     {
       /* Keep system filepointer/descriptor open.  This was used in
@@ -1446,7 +1455,7 @@ iobuf_ioctl (iobuf_t a, iobuf_ioctl_t cmd, int intval, void *ptrval)
          anymore.  */
       if (DBG_IOBUF)
 	log_debug ("iobuf-%d.%d: ioctl '%s' keep_open=%d\n",
-		   a ? a->no : -1, a ? a->subno : -1, iobuf_desc (a),
+		   a ? a->no : -1, a ? a->subno : -1, iobuf_desc (a, desc),
 		   intval);
       for (; a; a = a->chain)
 	if (!a->chain && a->filter == file_filter)
@@ -1480,7 +1489,7 @@ iobuf_ioctl (iobuf_t a, iobuf_ioctl_t cmd, int intval, void *ptrval)
     {
       if (DBG_IOBUF)
 	log_debug ("iobuf-%d.%d: ioctl '%s' no_cache=%d\n",
-		   a ? a->no : -1, a ? a->subno : -1, iobuf_desc (a),
+		   a ? a->no : -1, a ? a->subno : -1, iobuf_desc (a, desc),
 		   intval);
       for (; a; a = a->chain)
 	if (!a->chain && a->filter == file_filter)
@@ -1658,8 +1667,9 @@ iobuf_push_filter2 (iobuf_t a,
 
   if (DBG_IOBUF)
     {
+      byte desc[MAX_IOBUF_DESC];
       log_debug ("iobuf-%d.%d: push '%s'\n",
-		 a->no, a->subno, iobuf_desc (a));
+		 a->no, a->subno, iobuf_desc (a, desc));
       print_chain (a);
     }
 
@@ -1681,10 +1691,11 @@ pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
   iobuf_t b;
   size_t dummy_len = 0;
   int rc = 0;
+  byte desc[MAX_IOBUF_DESC];
 
   if (DBG_IOBUF)
     log_debug ("iobuf-%d.%d: pop '%s'\n",
-	       a->no, a->subno, iobuf_desc (a));
+	       a->no, a->subno, iobuf_desc (a, desc));
   if (a->use == IOBUF_INPUT_TEMP || a->use == IOBUF_OUTPUT_TEMP)
     {
       /* This should be the last filter in the pipeline.  */
@@ -2188,6 +2199,7 @@ iobuf_write_temp (iobuf_t dest, iobuf_t source)
 size_t
 iobuf_temp_to_buffer (iobuf_t a, byte * buffer, size_t buflen)
 {
+  byte desc[MAX_IOBUF_DESC];
   size_t n;
 
   while (1)
@@ -2195,7 +2207,7 @@ iobuf_temp_to_buffer (iobuf_t a, byte * buffer, size_t buflen)
       int rc = filter_flush (a);
       if (rc)
 	log_bug ("Flushing iobuf %d.%d (%s) from iobuf_temp_to_buffer failed.  Ignoring.\n",
-		 a->no, a->subno, iobuf_desc (a));
+		 a->no, a->subno, iobuf_desc (a, desc));
       if (! a->chain)
 	break;
       a = a->chain;
