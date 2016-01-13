@@ -214,7 +214,7 @@ if [ "$myhost" = "find-version" ]; then
     esac
 
     beta=no
-    if [ -d .git ]; then
+    if [ -e .git ]; then
       ingit=yes
       tmp=$(git describe --match "${matchstr1}" --long 2>/dev/null)
       if [ -n "$tmp" ]; then

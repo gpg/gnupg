@@ -136,7 +136,7 @@ dist-hook: defsincdate
 
 defsincdate: $(gnupg_TEXINFOS)
 	: >defsincdate ; \
-	if test -d $(top_srcdir)/.git; then \
+	if test -e $(top_srcdir)/.git; then \
 	  (cd $(srcdir) && git log -1 --format='%ct' \
                -- $(gnupg_TEXINFOS) 2>/dev/null) >>defsincdate; \
 	fi
