@@ -928,10 +928,11 @@ keydb_rebuild_caches (void)
 /*
  * Start the next search on this handle right at the beginning
  */
-int
+gpg_error_t
 keydb_search_reset (KEYDB_HANDLE hd)
 {
-  int i, rc = 0;
+  int i;
+  gpg_error_t rc = 0;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -950,8 +951,7 @@ keydb_search_reset (KEYDB_HANDLE hd)
           break;
         }
     }
-  return rc; /* fixme: we need to map error codes or share them with
-                all modules*/
+  return rc;
 }
 
 /*
@@ -980,8 +980,10 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
                               NULL, &skipped);
           break;
         }
-      if (rc == -1) /* EOF -> switch to next resource */
-        hd->current++;
+      if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
+        { /* EOF -> switch to next resource */
+          hd->current++;
+        }
       else if (!rc)
         hd->found = hd->current;
     }

@@ -91,10 +91,11 @@ int keybox_get_cert (KEYBOX_HANDLE hd, ksba_cert_t *ret_cert);
 #endif /*KEYBOX_WITH_X509*/
 int keybox_get_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int *value);
 
-int keybox_search_reset (KEYBOX_HANDLE hd);
-int keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
-                   keybox_blobtype_t want_blobtype,
-                   size_t *r_descindex, unsigned long *r_skipped);
+gpg_error_t keybox_search_reset (KEYBOX_HANDLE hd);
+gpg_error_t keybox_search (KEYBOX_HANDLE hd,
+                           KEYBOX_SEARCH_DESC *desc, size_t ndesc,
+                           keybox_blobtype_t want_blobtype,
+                           size_t *r_descindex, unsigned long *r_skipped);
 
 off_t keybox_offset (KEYBOX_HANDLE hd);
 gpg_error_t keybox_seek (KEYBOX_HANDLE hd, off_t offset);

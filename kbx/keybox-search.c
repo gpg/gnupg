@@ -732,7 +732,7 @@ release_sn_array (struct sn_array_s *array, size_t size)
 
 */
 
-int
+gpg_error_t
 keybox_search_reset (KEYBOX_HANDLE hd)
 {
   if (!hd)
@@ -760,12 +760,12 @@ keybox_search_reset (KEYBOX_HANDLE hd)
    If WANT_BLOBTYPE is not 0 only blobs of this type are considered.
    The value at R_SKIPPED is updated by the number of skipped long
    records (counts PGP and X.509). */
-int
+gpg_error_t
 keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
                keybox_blobtype_t want_blobtype,
                size_t *r_descindex, unsigned long *r_skipped)
 {
-  int rc;
+  gpg_error_t rc;
   size_t n;
   int need_words, any_skip;
   KEYBOXBLOB blob = NULL;
@@ -1021,7 +1021,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
       hd->found.pk_no = pk_no;
       hd->found.uid_no = uid_no;
     }
-  else if (rc == -1)
+  else if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
     {
       _keybox_release_blob (blob);
       hd->eof = 1;
