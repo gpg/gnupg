@@ -82,7 +82,7 @@ gen_start_date = 2011-12-01T06:00:00
 .PHONY: gen-ChangeLog
 gen-ChangeLog:
 	set -e; 							\
-	if test -d $(top_srcdir)/.git; then				\
+	if test -e $(top_srcdir)/.git; then				\
 	  (cd $(top_srcdir) &&                      			\
 	    $(GITLOG_TO_CHANGELOG) --append-dot --tear-off		\
 	    --amend=scripts/git-log-fix	 				\
