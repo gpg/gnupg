@@ -107,7 +107,7 @@ try_make_homedir (const char *fname)
    locked.  This lock check does not work if the directory itself is
    not yet available.  If R_CREATED is not NULL it will be set to true
    if the function created a new keybox.  */
-static int
+static gpg_error_t
 maybe_create_keybox (char *filename, int force, int *r_created)
 {
   dotlock_t lockhd = NULL;
@@ -237,13 +237,13 @@ maybe_create_keybox (char *filename, int force, int *r_created)
  * does not exist.  If AUTO_CREATED is not NULL it will be set to true
  * if the function has created a new keybox.
  */
-int
+gpg_error_t
 keydb_add_resource (const char *url, int force, int secret, int *auto_created)
 {
   static int any_secret, any_public;
   const char *resname = url;
   char *filename = NULL;
-  int rc = 0;
+  gpg_error_t err = 0;
   KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
 
   if (auto_created)
@@ -264,7 +264,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
       else if (strchr (resname, ':'))
         {
           log_error ("invalid key resource URL '%s'\n", url );
-          rc = gpg_error (GPG_ERR_GENERAL);
+          err = gpg_error (GPG_ERR_GENERAL);
           goto leave;
 	}
 #endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
@@ -312,20 +312,24 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
       log_error ("unknown type of key resource '%s'\n", url );
-      rc = gpg_error (GPG_ERR_GENERAL);
+      err = gpg_error (GPG_ERR_GENERAL);
       goto leave;
 
     case KEYDB_RESOURCE_TYPE_KEYBOX:
-      rc = maybe_create_keybox (filename, force, auto_created);
-      if (rc)
+      err = maybe_create_keybox (filename, force, auto_created);
+      if (err)
         goto leave;
       /* Now register the file */
       {
-        void *token = keybox_register_file (filename, secret);
-        if (!token)
-          ; /* already registered - ignore it */
+        void *token;
+
+        err = keybox_register_file (filename, secret, &token);
+        if (gpg_err_code (err) == GPG_ERR_EEXIST)
+          ; /* Already registered - ignore.  */
+        else if (err)
+          ; /* Other error.  */
         else if (used_resources >= MAX_KEYDB_RESOURCES)
-          rc = gpg_error (GPG_ERR_RESOURCE_LIMIT);
+          err = gpg_error (GPG_ERR_RESOURCE_LIMIT);
         else
           {
             all_resources[used_resources].type = rt;
@@ -358,21 +362,21 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
 
     default:
       log_error ("resource type of '%s' not supported\n", url);
-      rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
       goto leave;
     }
 
   /* fixme: check directory permissions and print a warning */
 
  leave:
-  if (rc)
-    log_error ("keyblock resource '%s': %s\n", filename, gpg_strerror(rc));
+  if (err)
+    log_error ("keyblock resource '%s': %s\n", filename, gpg_strerror (err));
   else if (secret)
     any_secret = 1;
   else
     any_public = 1;
   xfree (filename);
-  return rc;
+  return err;
 }
 
 

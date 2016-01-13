@@ -64,7 +64,8 @@ typedef enum
 
 
 /*-- keybox-init.c --*/
-void *keybox_register_file (const char *fname, int secret);
+gpg_error_t keybox_register_file (const char *fname, int secret,
+                                  void **r_token);
 int keybox_is_writable (void *token);
 
 KEYBOX_HANDLE keybox_new_openpgp (void *token, int secret);

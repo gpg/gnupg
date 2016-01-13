@@ -30,23 +30,30 @@
 static KB_NAME kb_names;
 
 
-/* Register a filename for plain keybox files.  Returns a pointer to
-   be used to create a handles and so on.  Returns NULL to indicate
-   that FNAME has already been registered.  */
-void *
-keybox_register_file (const char *fname, int secret)
+/* Register a filename for plain keybox files.  Returns 0 on success,
+ * GPG_ERR_EEXIST if it has already been registered, or another error
+ * code.  On success or with error code GPG_ERR_EEXIST a token usable
+ * to access the keybox handle is stored at R_TOKEN, NULL is stored
+ * for all other errors.  */
+gpg_error_t
+keybox_register_file (const char *fname, int secret, void **r_token)
 {
   KB_NAME kr;
+
+  *r_token = NULL;
 
   for (kr=kb_names; kr; kr = kr->next)
     {
       if (same_file_p (kr->fname, fname) )
-        return NULL; /* Already registered. */
+        {
+          *r_token = kr;
+          return gpg_error (GPG_ERR_EEXIST); /* Already registered. */
+        }
     }
 
   kr = xtrymalloc (sizeof *kr + strlen (fname));
   if (!kr)
-    return NULL;
+    return gpg_error_from_syserror ();
   strcpy (kr->fname, fname);
   kr->secret = !!secret;
 
@@ -64,7 +71,8 @@ keybox_register_file (const char *fname, int secret)
 /*      if (!kb_offtbl) */
 /*        kb_offtbl = new_offset_hash_table (); */
 
-  return kr;
+  *r_token = kr;
+  return 0;
 }
 
 int

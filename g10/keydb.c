@@ -60,7 +60,10 @@ struct resource_item
 
 static struct resource_item all_resources[MAX_KEYDB_RESOURCES];
 static int used_resources;
-static void *primary_keyring=NULL;
+
+/* A pointer used to check for the primary key database by comparing
+   to the struct resource_item's TOKEN.  */
+static void *primary_keydb;
 
 
 /* This is a simple cache used to return the last result of a
@@ -261,7 +264,7 @@ keyblock_cache_clear (struct keydb_handle *hd)
    the keyring or keybox will be created.
 
    Return 0 if it is okay to access the specified file.  */
-static int
+static gpg_error_t
 maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
 {
   dotlock_t lockhd = NULL;
@@ -592,7 +595,7 @@ keydb_add_resource (const char *url, unsigned int flags)
   int read_only = !!(flags&KEYDB_RESOURCE_FLAG_READONLY);
   int is_default = !!(flags&KEYDB_RESOURCE_FLAG_DEFAULT);
   int is_gpgvdef = !!(flags&KEYDB_RESOURCE_FLAG_GPGVDEF);
-  int rc = 0;
+  gpg_error_t err = 0;
   KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
   void *token;
 
@@ -613,7 +616,7 @@ keydb_add_resource (const char *url, unsigned int flags)
   else if (strchr (resname, ':'))
     {
       log_error ("invalid key resource URL '%s'\n", url );
-      rc = gpg_error (GPG_ERR_GENERAL);
+      err = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
 #endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
@@ -708,22 +711,22 @@ keydb_add_resource (const char *url, unsigned int flags)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
       log_error ("unknown type of key resource '%s'\n", url );
-      rc = gpg_error (GPG_ERR_GENERAL);
+      err = gpg_error (GPG_ERR_GENERAL);
       goto leave;
 
     case KEYDB_RESOURCE_TYPE_KEYRING:
-      rc = maybe_create_keyring_or_box (filename, 0, create);
-      if (rc)
+      err = maybe_create_keyring_or_box (filename, 0, create);
+      if (err)
         goto leave;
 
       if (keyring_register_filename (filename, read_only, &token))
         {
           if (used_resources >= MAX_KEYDB_RESOURCES)
-            rc = gpg_error (GPG_ERR_RESOURCE_LIMIT);
+            err = gpg_error (GPG_ERR_RESOURCE_LIMIT);
           else
             {
               if ((flags & KEYDB_RESOURCE_FLAG_PRIMARY))
-                primary_keyring = token;
+                primary_keydb = token;
               all_resources[used_resources].type = rt;
               all_resources[used_resources].u.kr = NULL; /* Not used here */
               all_resources[used_resources].token = token;
@@ -736,26 +739,25 @@ keydb_add_resource (const char *url, unsigned int flags)
              However, we can still mark it as primary even if it was
              already registered.  */
           if ((flags & KEYDB_RESOURCE_FLAG_PRIMARY))
-            primary_keyring = token;
+            primary_keydb = token;
         }
       break;
 
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       {
-        rc = maybe_create_keyring_or_box (filename, 1, create);
-        if (rc)
+        err = maybe_create_keyring_or_box (filename, 1, create);
+        if (err)
           goto leave;
 
-        /* FIXME: How do we register a read-only keybox?  */
-        token = keybox_register_file (filename, 0);
-        if (token)
+        err = keybox_register_file (filename, 0, &token);
+        if (!err)
           {
             if (used_resources >= MAX_KEYDB_RESOURCES)
-              rc = gpg_error (GPG_ERR_RESOURCE_LIMIT);
+              err = gpg_error (GPG_ERR_RESOURCE_LIMIT);
             else
               {
-                /* if ((flags & KEYDB_RESOURCE_FLAG_PRIMARY)) */
-                /*   primary_keyring = token; */
+                if ((flags & KEYDB_RESOURCE_FLAG_PRIMARY))
+                  primary_keydb = token;
                 all_resources[used_resources].type = rt;
                 all_resources[used_resources].u.kb = NULL; /* Not used here */
                 all_resources[used_resources].token = token;
@@ -766,32 +768,31 @@ keydb_add_resource (const char *url, unsigned int flags)
                 used_resources++;
               }
           }
-        else
+        else if (gpg_err_code (err) == GPG_ERR_EEXIST)
           {
             /* Already registered.  We will mark it as the primary key
                if requested.  */
-            /* FIXME: How to do that?  Change the keybox interface?  */
-            /* if ((flags & KEYDB_RESOURCE_FLAG_PRIMARY)) */
-            /*   primary_keyring = token; */
+            if ((flags & KEYDB_RESOURCE_FLAG_PRIMARY))
+              primary_keydb = token;
           }
       }
       break;
 
       default:
 	log_error ("resource type of '%s' not supported\n", url);
-	rc = gpg_error (GPG_ERR_GENERAL);
+	err = gpg_error (GPG_ERR_GENERAL);
 	goto leave;
     }
 
   /* fixme: check directory permissions and print a warning */
 
  leave:
-  if (rc)
-    log_error (_("keyblock resource '%s': %s\n"), filename, gpg_strerror (rc));
+  if (err)
+    log_error (_("keyblock resource '%s': %s\n"), filename, gpg_strerror (err));
   else
     any_registered = 1;
   xfree (filename);
-  return rc;
+  return err;
 }
 
 
@@ -1685,11 +1686,11 @@ keydb_locate_writable (KEYDB_HANDLE hd)
     return rc;
 
   /* If we have a primary set, try that one first */
-  if (primary_keyring)
+  if (primary_keydb)
     {
       for ( ; hd->current >= 0 && hd->current < hd->used; hd->current++)
 	{
-	  if(hd->active[hd->current].token==primary_keyring)
+	  if(hd->active[hd->current].token == primary_keydb)
 	    {
 	      if(keyring_is_writable (hd->active[hd->current].token))
 		return 0;

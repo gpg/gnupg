@@ -31,8 +31,8 @@ typedef struct keydb_handle *KEYDB_HANDLE;
 
 
 /*-- keydb.c --*/
-int keydb_add_resource (const char *url, int force, int secret,
-                        int *auto_created);
+gpg_error_t keydb_add_resource (const char *url, int force, int secret,
+                                int *auto_created);
 KEYDB_HANDLE keydb_new (int secret);
 void keydb_release (KEYDB_HANDLE hd);
 int keydb_set_ephemeral (KEYDB_HANDLE hd, int yes);
