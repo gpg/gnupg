@@ -1003,7 +1003,7 @@ lock_all (KEYDB_HANDLE hd)
               keyring_lock (hd->active[i].u.kr, 0);
               break;
             case KEYDB_RESOURCE_TYPE_KEYBOX:
-              rc = keybox_lock (hd->active[i].u.kb, 0);
+              keybox_lock (hd->active[i].u.kb, 0);
               break;
             }
         }
