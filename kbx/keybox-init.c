@@ -60,7 +60,7 @@ keybox_register_file (const char *fname, int secret, void **r_token)
   kr->handle_table = NULL;
   kr->handle_table_size = 0;
 
-  /* kr->lockhd = NULL;*/
+  kr->lockhd = NULL;
   kr->is_locked = 0;
   kr->did_full_scan = 0;
   /* keep a list of all issued pointers */
@@ -261,17 +261,55 @@ _keybox_close_file (KEYBOX_HANDLE hd)
 
 
 /*
- * Lock the keybox at handle HD, or unlock if YES is false.  Note that
- * we currently ignore the handle and lock all registered keyboxes.
+ * Lock the keybox at handle HD, or unlock if YES is false.
  */
-int
+gpg_error_t
 keybox_lock (KEYBOX_HANDLE hd, int yes)
 {
-  /* FIXME: We need to implement it before we can use it with gpg.
-     gpgsm does the locking in its local keydb.c driver; this should
-     be changed as well.  */
+  gpg_error_t err;
+  KB_NAME kb = hd->kb;
 
-  (void)hd;
-  (void)yes;
-  return 0;
+  if (!keybox_is_writable ((void*)kb))
+    return 0;
+
+  /* Make sure the lock handle has been created.  */
+  if (!kb->lockhd)
+    {
+      kb->lockhd = dotlock_create (kb->fname, 0);
+      if (!kb->lockhd)
+        {
+          /* Unfortuntaley dotlock_create does not properly set ERRNO.  */
+          log_info ("can't allocate lock for '%s'\n", kb->fname );
+          return gpg_error (GPG_ERR_GENERAL);
+        }
+    }
+
+  if (yes) /* Take the lock.  */
+    {
+      if (kb->is_locked)
+        ;
+      else if (!dotlock_take (kb->lockhd, -1))
+        kb->is_locked = 1;
+      else
+        {
+          /* Unfortuntaley dotlock_take does not properly set ERRNO.  */
+          log_info ("can't lock '%s'\n", kb->fname );
+          err = gpg_error (GPG_ERR_GENERAL);
+        }
+    }
+  else /* Release the lock.  */
+    {
+      if (!kb->is_locked)
+        ;
+      else if (!dotlock_release (kb->lockhd))
+        kb->is_locked = 0;
+      else
+        {
+          /* Unfortuntaley dotlock_release does not properly set ERRNO.  */
+          log_info ("can't unlock '%s'\n", kb->fname );
+          err = gpg_error (GPG_ERR_GENERAL);
+        }
+    }
+
+  return err;
 }
