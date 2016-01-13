@@ -266,10 +266,10 @@ _keybox_close_file (KEYBOX_HANDLE hd)
 gpg_error_t
 keybox_lock (KEYBOX_HANDLE hd, int yes)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   KB_NAME kb = hd->kb;
 
-  if (!keybox_is_writable ((void*)kb))
+  if (!keybox_is_writable (kb))
     return 0;
 
   /* Make sure the lock handle has been created.  */
@@ -278,9 +278,9 @@ keybox_lock (KEYBOX_HANDLE hd, int yes)
       kb->lockhd = dotlock_create (kb->fname, 0);
       if (!kb->lockhd)
         {
-          /* Unfortuntaley dotlock_create does not properly set ERRNO.  */
+          err = gpg_error_from_syserror ();
           log_info ("can't allocate lock for '%s'\n", kb->fname );
-          return gpg_error (GPG_ERR_GENERAL);
+          return err;
         }
     }
 
@@ -288,28 +288,26 @@ keybox_lock (KEYBOX_HANDLE hd, int yes)
     {
       if (kb->is_locked)
         ;
-      else if (!dotlock_take (kb->lockhd, -1))
-        kb->is_locked = 1;
-      else
+      else if (dotlock_take (kb->lockhd, -1))
         {
-          /* Unfortuntaley dotlock_take does not properly set ERRNO.  */
+          err = gpg_error_from_syserror ();
           log_info ("can't lock '%s'\n", kb->fname );
-          err = gpg_error (GPG_ERR_GENERAL);
         }
+      else
+        kb->is_locked = 1;
     }
   else /* Release the lock.  */
     {
       if (!kb->is_locked)
         ;
-      else if (!dotlock_release (kb->lockhd))
-        kb->is_locked = 0;
-      else
+      else if (dotlock_release (kb->lockhd))
         {
-          /* Unfortuntaley dotlock_release does not properly set ERRNO.  */
+          err = gpg_error_from_syserror ();
           log_info ("can't unlock '%s'\n", kb->fname );
-          err = gpg_error (GPG_ERR_GENERAL);
         }
-    }
+      else
+        kb->is_locked = 0;
+   }
 
   return err;
 }
