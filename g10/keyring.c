@@ -328,8 +328,20 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
             if (!keyring_is_writable(kr))
                 continue;
             if (kr->is_locked)
-                ;
-            else if (dotlock_take (kr->lockhd, -1) ) {
+                continue;
+
+#ifdef HAVE_W32_SYSTEM
+            /* Under Windows we need to CloseHandle the file before we
+             * try to lock it.  This is because another process might
+             * have taken the lock and is using keybox_file_rename to
+             * rename the base file.  How if our dotlock_take below is
+             * waiting for the lock but we have the base file still
+             * open, keybox_file_rename will never succeed as we are
+             * in a deadlock.  */
+            iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0,
+                         (char*)kr->fname);
+#endif /*HAVE_W32_SYSTEM*/
+            if (dotlock_take (kr->lockhd, -1) ) {
                 log_info ("can't lock '%s'\n", kr->fname );
                 rc = GPG_ERR_GENERAL;
             }
@@ -343,8 +355,9 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
             if (!keyring_is_writable(kr))
                 continue;
             if (!kr->is_locked)
-                ;
-            else if (dotlock_release (kr->lockhd))
+                continue;
+
+            if (dotlock_release (kr->lockhd))
                 log_info ("can't unlock '%s'\n", kr->fname );
             else
                 kr->is_locked = 0;

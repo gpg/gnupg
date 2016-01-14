@@ -286,27 +286,43 @@ keybox_lock (KEYBOX_HANDLE hd, int yes)
 
   if (yes) /* Take the lock.  */
     {
-      if (kb->is_locked)
-        ;
-      else if (dotlock_take (kb->lockhd, -1))
+      if (!kb->is_locked)
         {
-          err = gpg_error_from_syserror ();
-          log_info ("can't lock '%s'\n", kb->fname );
+#ifdef HAVE_W32_SYSTEM
+            /* Under Windows we need to close the file before we try
+             * to lock it.  This is because another process might have
+             * taken the lock and is using keybox_file_rename to
+             * rename the base file.  How if our dotlock_take below is
+             * waiting for the lock but we have the base file still
+             * open, keybox_file_rename will never succeed as we are
+             * in a deadlock.  */
+          if (hd->fp)
+            {
+              fclose (hd->fp);
+              hd->fp = NULL;
+            }
+#endif /*HAVE_W32_SYSTEM*/
+          if (dotlock_take (kb->lockhd, -1))
+            {
+              err = gpg_error_from_syserror ();
+              log_info ("can't lock '%s'\n", kb->fname );
+            }
+          else
+            kb->is_locked = 1;
         }
-      else
-        kb->is_locked = 1;
     }
   else /* Release the lock.  */
     {
-      if (!kb->is_locked)
-        ;
-      else if (dotlock_release (kb->lockhd))
+      if (kb->is_locked)
         {
-          err = gpg_error_from_syserror ();
-          log_info ("can't unlock '%s'\n", kb->fname );
+          if (dotlock_release (kb->lockhd))
+            {
+              err = gpg_error_from_syserror ();
+              log_info ("can't unlock '%s'\n", kb->fname );
+            }
+          else
+            kb->is_locked = 0;
         }
-      else
-        kb->is_locked = 0;
    }
 
   return err;
