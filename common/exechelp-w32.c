@@ -682,64 +682,86 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
 gpg_error_t
 gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *r_exitcode)
 {
-  gpg_err_code_t ec;
-  HANDLE proc = fd_to_handle (pid);
+  return gnupg_wait_processes (&pgmname, &pid, 1, hang, r_exitcode);
+}
+
+/* See exechelp.h for a description.  */
+gpg_error_t
+gnupg_wait_processes (const char **pgmnames, pid_t *pids, size_t count,
+                      int hang, int *r_exitcodes)
+{
+  gpg_err_code_t ec = 0;
+  size_t i;
+  HANDLE *procs;
   int code;
-  DWORD exc;
 
-  if (r_exitcode)
-    *r_exitcode = -1;
+  procs = xtrycalloc (count, sizeof *procs);
+  if (procs == NULL)
+    return gpg_error_from_syserror ();
 
-  if (pid == (pid_t)(-1))
-    return gpg_error (GPG_ERR_INV_VALUE);
+  for (i = 0; i < count; i++)
+    {
+      if (r_exitcodes)
+        r_exitcodes[i] = -1;
+
+      if (pids[i] == (pid_t)(-1))
+        return gpg_error (GPG_ERR_INV_VALUE);
+
+      procs[i] = fd_to_handle (pids[i]);
+    }
 
   /* FIXME: We should do a pth_waitpid here.  However this has not yet
      been implemented.  A special W32 pth system call would even be
      better.  */
-  code = WaitForSingleObject (proc, hang? INFINITE : 0);
+  code = WaitForMultipleObjects (count, procs, TRUE, hang? INFINITE : 0);
   switch (code)
     {
     case WAIT_TIMEOUT:
       ec = GPG_ERR_TIMEOUT;
-      break;
+      goto leave;
 
     case WAIT_FAILED:
-      log_error (_("waiting for process %d to terminate failed: %s\n"),
-                 (int)pid, w32_strerror (-1));
+      log_error (_("waiting for processes to terminate failed: %s\n"),
+                 w32_strerror (-1));
       ec = GPG_ERR_GENERAL;
-      break;
+      goto leave;
 
     case WAIT_OBJECT_0:
-      if (!GetExitCodeProcess (proc, &exc))
+      for (i = 0; i < count; i++)
         {
-          log_error (_("error getting exit code of process %d: %s\n"),
-                     (int)pid, w32_strerror (-1) );
-          ec = GPG_ERR_GENERAL;
-        }
-      else if (exc)
-        {
-          if (!r_exitcode)
-            log_error (_("error running '%s': exit status %d\n"),
-                       pgmname, (int)exc);
+          DWORD exc;
+
+          if (! GetExitCodeProcess (procs[i], &exc))
+            {
+              log_error (_("error getting exit code of process %d: %s\n"),
+                         (int) pids[i], w32_strerror (-1) );
+              ec = GPG_ERR_GENERAL;
+            }
+          else if (exc)
+            {
+              if (!r_exitcodes)
+                log_error (_("error running '%s': exit status %d\n"),
+                           pgmnames[i], (int)exc);
+              else
+                r_exitcodes[i] = (int)exc;
+              ec = GPG_ERR_GENERAL;
+            }
           else
-            *r_exitcode = (int)exc;
-          ec = GPG_ERR_GENERAL;
-        }
-      else
-        {
-          if (r_exitcode)
-            *r_exitcode = 0;
-          ec = 0;
+            {
+              if (r_exitcodes)
+                r_exitcodes[i] = 0;
+            }
         }
       break;
 
     default:
-      log_error ("WaitForSingleObject returned unexpected "
-                 "code %d for pid %d\n", code, (int)pid );
+      log_error ("WaitForMultipleObjects returned unexpected "
+                 "code %d\n", code);
       ec = GPG_ERR_GENERAL;
       break;
     }
 
+ leave:
   return gpg_err_make (GPG_ERR_SOURCE_DEFAULT, ec);
 }
 

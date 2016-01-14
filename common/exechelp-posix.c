@@ -522,60 +522,94 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
 }
 
 
-/* See exechelp.h for the description.  */
+/* See exechelp.h for a description.  */
 gpg_error_t
 gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *r_exitcode)
 {
-  gpg_err_code_t ec;
-  int i, status;
+  return gnupg_wait_processes (&pgmname, &pid, 1, hang, r_exitcode);
+}
 
-  if (r_exitcode)
-    *r_exitcode = -1;
+/* See exechelp.h for a description.  */
+gpg_error_t
+gnupg_wait_processes (const char **pgmnames, pid_t *pids, size_t count,
+                      int hang, int *r_exitcodes)
+{
+  gpg_err_code_t ec = 0;
+  size_t i, left;
 
-  if (pid == (pid_t)(-1))
-    return gpg_error (GPG_ERR_INV_VALUE);
+  for (i = 0; i < count; i++)
+    {
+      if (r_exitcodes)
+        r_exitcodes[i] = -1;
+
+      if (pids[i] == (pid_t)(-1))
+        return gpg_error (GPG_ERR_INV_VALUE);
+    }
+
+  left = count;
+  while (left > 0)
+    {
+      pid_t pid;
+      int status;
 
 #ifdef USE_NPTH
-  i = npth_waitpid (pid, &status, hang? 0:WNOHANG);
+      pid = npth_waitpid (-1, &status, hang ? 0 : WNOHANG);
 #else
-  while ((i=waitpid (pid, &status, hang? 0:WNOHANG)) == (pid_t)(-1)
-	 && errno == EINTR);
+      while ((pid = waitpid (-1, &status, hang ? 0 : WNOHANG)) == (pid_t)(-1)
+             && errno == EINTR);
 #endif
 
-  if (i == (pid_t)(-1))
-    {
-      ec = gpg_err_code_from_errno (errno);
-      log_error (_("waiting for process %d to terminate failed: %s\n"),
-                 (int)pid, strerror (errno));
-    }
-  else if (!i)
-    {
-      ec = GPG_ERR_TIMEOUT; /* Still running.  */
-    }
-  else if (WIFEXITED (status) && WEXITSTATUS (status) == 127)
-    {
-      log_error (_("error running '%s': probably not installed\n"), pgmname);
-      ec = GPG_ERR_CONFIGURATION;
-    }
-  else if (WIFEXITED (status) && WEXITSTATUS (status))
-    {
-      if (!r_exitcode)
-        log_error (_("error running '%s': exit status %d\n"), pgmname,
-                   WEXITSTATUS (status));
+      if (pid == (pid_t)(-1))
+        {
+          ec = gpg_err_code_from_errno (errno);
+          log_error (_("waiting for processes to terminate failed: %s\n"),
+                     strerror (errno));
+          break;
+        }
+      else if (!pid)
+        {
+          ec = GPG_ERR_TIMEOUT; /* Still running.  */
+          break;
+        }
       else
-        *r_exitcode = WEXITSTATUS (status);
-      ec = GPG_ERR_GENERAL;
-    }
-  else if (!WIFEXITED (status))
-    {
-      log_error (_("error running '%s': terminated\n"), pgmname);
-      ec = GPG_ERR_GENERAL;
-    }
-  else
-    {
-      if (r_exitcode)
-        *r_exitcode = 0;
-      ec = 0;
+        {
+          for (i = 0; i < count; i++)
+            if (pid == pids[i])
+              break;
+
+          if (i == count)
+            /* No match, ignore this pid.  */
+            continue;
+
+          /* Process PIDS[i] died.  */
+          left -= 1;
+
+          if (WIFEXITED (status) && WEXITSTATUS (status) == 127)
+            {
+              log_error (_("error running '%s': probably not installed\n"),
+                         pgmnames[i]);
+              ec = GPG_ERR_CONFIGURATION;
+            }
+          else if (WIFEXITED (status) && WEXITSTATUS (status))
+            {
+              if (!r_exitcodes)
+                log_error (_("error running '%s': exit status %d\n"),
+                           pgmnames[i], WEXITSTATUS (status));
+              else
+                r_exitcodes[i] = WEXITSTATUS (status);
+              ec = GPG_ERR_GENERAL;
+            }
+          else if (!WIFEXITED (status))
+            {
+              log_error (_("error running '%s': terminated\n"), pgmnames[i]);
+              ec = GPG_ERR_GENERAL;
+            }
+          else
+            {
+              if (r_exitcodes)
+                r_exitcodes[i] = 0;
+            }
+        }
     }
 
   return gpg_err_make (GPG_ERR_SOURCE_DEFAULT, ec);

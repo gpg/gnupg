@@ -161,6 +161,10 @@ gpg_error_t gnupg_spawn_process_fd (const char *pgmname,
 gpg_error_t gnupg_wait_process (const char *pgmname, pid_t pid, int hang,
                                 int *r_exitcode);
 
+/* Like gnupg_wait_process, but for COUNT processes.  */
+gpg_error_t gnupg_wait_processes (const char **pgmnames, pid_t *pids,
+				  size_t count, int hang, int *r_exitcodes);
+
 
 /* Kill a process; that is send an appropriate signal to the process.
    gnupg_wait_process must be called to actually remove the process

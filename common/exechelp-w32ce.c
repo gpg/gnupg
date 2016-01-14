@@ -796,6 +796,15 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *exitcode)
 }
 
 
+/* See exechelp.h for a description.  */
+gpg_error_t
+gnupg_wait_processes (const char **pgmnames, pid_t *pids, size_t count,
+                      int hang, int *r_exitcodes)
+{
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}
+
+
 void
 gnupg_release_process (pid_t pid)
 {
