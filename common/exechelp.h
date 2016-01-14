@@ -59,6 +59,11 @@ gpg_error_t gnupg_create_inbound_pipe (int filedes[2]);
    inheritable.  */
 gpg_error_t gnupg_create_outbound_pipe (int filedes[2]);
 
+/* Portable function to create a pipe.  Under Windows both ends are
+   inheritable.  */
+gpg_error_t gnupg_create_pipe (int filedes[2]);
+
+
 #define GNUPG_SPAWN_NONBLOCK   16
 #define GNUPG_SPAWN_RUN_ASFW   64
 #define GNUPG_SPAWN_DETACHED  128

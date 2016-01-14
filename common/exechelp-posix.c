@@ -310,6 +310,15 @@ gnupg_create_outbound_pipe (int filedes[2])
 }
 
 
+/* Portable function to create a pipe.  Under Windows both ends are
+   inheritable.  */
+gpg_error_t
+gnupg_create_pipe (int filedes[2])
+{
+  return do_create_pipe (filedes);
+}
+
+
 
 static gpg_error_t
 create_pipe_and_estream (int filedes[2], estream_t *r_fp,

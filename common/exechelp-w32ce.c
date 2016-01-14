@@ -465,6 +465,15 @@ gnupg_create_outbound_pipe (int filedes[2])
 }
 
 
+/* Portable function to create a pipe.  Under Windows both ends are
+   inheritable.  */
+gpg_error_t
+gnupg_create_pipe (int filedes[2])
+{
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}
+
+
 static int
 create_process (const char *pgmname, const char *cmdline,
                 PROCESS_INFORMATION *pi)
