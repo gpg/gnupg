@@ -68,88 +68,27 @@ fseeko (FILE * stream, off_t newpos, int whence)
 #endif /* !defined(HAVE_FSEEKO) && !defined(fseeko) */
 
 
-
 static int
 create_tmp_file (const char *template,
                  char **r_bakfname, char **r_tmpfname, FILE **r_fp)
 {
-  char *bakfname, *tmpfname;
+  gpg_error_t err;
 
-  *r_bakfname = NULL;
-  *r_tmpfname = NULL;
-
-# ifdef USE_ONLY_8DOT3
-  /* Here is another Windoze bug?:
-   * you can't rename("pubring.kbx.tmp", "pubring.kbx");
-   * but	rename("pubring.kbx.tmp", "pubring.aaa");
-   * works.  So we replace ".kbx" by ".kb_" or ".k__".  Note that we
-   * can't use ".bak" and ".tmp", because these suffixes are used by
-   * gpg and would lead to a sharing violation or data corruption.
-   */
-  if (strlen (template) > 4
-      && !strcmp (template+strlen(template)-4, EXTSEP_S "kbx") )
+  err = keybox_tmp_names (template, 0, r_bakfname, r_tmpfname);
+  if (!err)
     {
-      bakfname = xtrymalloc (strlen (template) + 1);
-      if (!bakfname)
-        return gpg_error_from_syserror ();
-      strcpy (bakfname, template);
-      strcpy (bakfname+strlen(template)-4, EXTSEP_S "kb_");
-
-      tmpfname = xtrymalloc (strlen (template) + 1);
-      if (!tmpfname)
+      *r_fp = fopen (*r_tmpfname, "wb");
+      if (!*r_fp)
         {
-          gpg_error_t tmperr = gpg_error_from_syserror ();
-          xfree (bakfname);
-          return tmperr;
+          err = gpg_error_from_syserror ();
+          xfree (*r_tmpfname);
+          *r_tmpfname = NULL;
+          xfree (*r_bakfname);
+          *r_bakfname = NULL;
         }
-      strcpy (tmpfname,template);
-      strcpy (tmpfname + strlen (template)-4, EXTSEP_S "k__");
-    }
-  else
-    { /* File does not end with kbx, thus we hope we are working on a
-         modern file system and appending a suffix works. */
-      bakfname = xtrymalloc ( strlen (template) + 5);
-      if (!bakfname)
-        return gpg_error_from_syserror ();
-      strcpy (stpcpy (bakfname, template), EXTSEP_S "kb_");
-
-      tmpfname = xtrymalloc ( strlen (template) + 5);
-      if (!tmpfname)
-        {
-          gpg_error_t tmperr = gpg_error_from_syserror ();
-          xfree (bakfname);
-          return tmperr;
-        }
-      strcpy (stpcpy (tmpfname, template), EXTSEP_S "k__");
-    }
-# else /* Posix file names */
-  bakfname = xtrymalloc (strlen (template) + 2);
-  if (!bakfname)
-    return gpg_error_from_syserror ();
-  strcpy (stpcpy (bakfname,template),"~");
-
-  tmpfname = xtrymalloc ( strlen (template) + 5);
-  if (!tmpfname)
-    {
-      gpg_error_t tmperr = gpg_error_from_syserror ();
-      xfree (bakfname);
-      return tmperr;
-    }
-  strcpy (stpcpy (tmpfname,template), EXTSEP_S "tmp");
-# endif /* Posix filename */
-
-  *r_fp = fopen (tmpfname, "wb");
-  if (!*r_fp)
-    {
-      gpg_error_t tmperr = gpg_error_from_syserror ();
-      xfree (tmpfname);
-      xfree (bakfname);
-      return tmperr;
     }
 
-  *r_bakfname = bakfname;
-  *r_tmpfname = tmpfname;
-  return 0;
+  return err;
 }
 
 

@@ -36,6 +36,8 @@
 #include "options.h"
 #include "main.h" /*for check_key_signature()*/
 #include "i18n.h"
+#include "../kbx/keybox.h"
+
 
 typedef struct keyring_resource *KR_RESOURCE;
 struct keyring_resource
@@ -1287,69 +1289,36 @@ static int
 create_tmp_file (const char *template,
                  char **r_bakfname, char **r_tmpfname, IOBUF *r_fp)
 {
-  char *bakfname, *tmpfname;
+  gpg_error_t err;
   mode_t oldmask;
 
-  *r_bakfname = NULL;
-  *r_tmpfname = NULL;
+  err = keybox_tmp_names (template, 1, r_bakfname, r_tmpfname);
+  if (err)
+    return err;
 
-# ifdef USE_ONLY_8DOT3
-  /* Here is another Windoze bug?:
-   * you can't rename("pubring.gpg.tmp", "pubring.gpg");
-   * but	rename("pubring.gpg.tmp", "pubring.aaa");
-   * works.  So we replace .gpg by .bak or .tmp
-   */
-  if (strlen (template) > 4
-      && !strcmp (template+strlen(template)-4, EXTSEP_S GPGEXT_GPG) )
+  /* Create the temp file with limited access.  Note that the umask
+     call is not anymore needed because iobuf_create now takes care of
+     it.  However, it does not harm and thus we keep it.  */
+  oldmask = umask (077);
+  if (is_secured_filename (*r_tmpfname))
     {
-      bakfname = xmalloc (strlen (template) + 1);
-      strcpy (bakfname, template);
-      strcpy (bakfname+strlen(template)-4, EXTSEP_S "bak");
-
-      tmpfname = xmalloc (strlen( template ) + 1 );
-      strcpy (tmpfname,template);
-      strcpy (tmpfname+strlen(template)-4, EXTSEP_S "tmp");
+      *r_fp = NULL;
+      gpg_err_set_errno (EPERM);
     }
-    else
-      { /* file does not end with gpg; hmmm */
-	bakfname = xmalloc (strlen( template ) + 5);
-	strcpy (stpcpy(bakfname, template), EXTSEP_S "bak");
-
-	tmpfname = xmalloc (strlen( template ) + 5);
-	strcpy (stpcpy(tmpfname, template), EXTSEP_S "tmp");
+  else
+    *r_fp = iobuf_create (*r_tmpfname, 1);
+  umask (oldmask);
+  if (!*r_fp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("can't create '%s': %s\n"), *r_tmpfname, gpg_strerror (err));
+      xfree (*r_tmpfname);
+      *r_tmpfname = NULL;
+      xfree (*r_bakfname);
+      *r_bakfname = NULL;
     }
-# else /* Posix file names */
-    bakfname = xmalloc (strlen( template ) + 2);
-    strcpy (stpcpy (bakfname,template),"~");
 
-    tmpfname = xmalloc (strlen( template ) + 5);
-    strcpy (stpcpy(tmpfname,template), EXTSEP_S "tmp");
-# endif /* Posix filename */
-
-    /* Create the temp file with limited access.  Note that the umask
-       call is not anymore needed because iobuf_create now takes care
-       of it.  However, it does not harm and thus we keep it.  */
-    oldmask=umask(077);
-    if (is_secured_filename (tmpfname))
-      {
-        *r_fp = NULL;
-        gpg_err_set_errno (EPERM);
-      }
-    else
-      *r_fp = iobuf_create (tmpfname, 1);
-    umask(oldmask);
-    if (!*r_fp)
-      {
-        int rc = gpg_error_from_syserror ();
-	log_error(_("can't create '%s': %s\n"), tmpfname, strerror(errno) );
-        xfree (tmpfname);
-        xfree (bakfname);
-	return rc;
-      }
-
-    *r_bakfname = bakfname;
-    *r_tmpfname = tmpfname;
-    return 0;
+  return err;
 }
 
 
