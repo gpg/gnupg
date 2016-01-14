@@ -6,7 +6,7 @@
                       ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-                               2014-11-04
+                               2016-01-14
 
 
 Table of Contents
@@ -28,8 +28,9 @@ Table of Contents
 .. 1.13 Improved card support
 .. 1.14 New format for key listings
 .. 1.15 Support for Putty
-.. 1.16 Improved X.509 certificate creation
-.. 1.17 Scripts to create a Windows installer
+.. 1.16 Export of SSH public keys
+.. 1.17 Improved X.509 certificate creation
+.. 1.18 Scripts to create a Windows installer
 
 
 A possibly revised version of this article can be found at:
@@ -90,6 +91,8 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   • Creation of X.509 certificates has been improved.  It is now also
     possible to export them directly in PKCS#8 and PEM format for use on
     TLS servers.
+
+  • Export of /ssh/ keys has been integrated.
 
   • The scripts to create a Windows installer are now part of GnuPG.
 
@@ -172,7 +175,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 
   This is best shown with an example:
 
-  ╭────
+  ┌────
   │ $ gpg2 --gen-key
   │ gpg (GnuPG) 2.1.0; Copyright (C) 2014 Free Software Foundation, Inc.
   │ This is free software: you are free to change and redistribute it.
@@ -194,7 +197,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   │       Key fingerprint = 0290 5ABF 17C7 81FB C390  9B00 636A 1BBD 68FD 0088
   │ uid       [ultimate] Glenn Greenwald <glenn@example.org>
   │ sub   rsa2048/84439DCD 2014-11-03
-  ╰────
+  └────
 
   Thus only the name and the mail address are required.  For all other
   parameters the default values are used.  Many graphical frontends
@@ -212,10 +215,10 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   options to create an ECC key.
 
   For those who want to experiment with ECC or already want to prepare a
-  key for future use, the command `--gen-full-key' along with the option
+  key for future use, the command `--full-gen-key' along with the option
   `--expert' is the enabler:
 
-  ╭────
+  ┌────
   │ $ gpg2 --expert --full-gen-key
   │ gpg (GnuPG) 2.1.0; Copyright (C) 2014 Free Software Foundation, Inc.
   │ This is free software: you are free to change and redistribute it.
@@ -264,7 +267,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   │       Key fingerprint = E630 27CF 3D68 22A7 6FF2  093E D179 9E72 3826 60E3
   │ uid       [ultimate] Edward Snowden <edward@example.org>
   │ sub   nistp256/48C9A997 2014-11-03 nistp256
-  ╰────
+  └────
 
   In this example we created a primary ECC key for signing and an subkey
   for encryption.  For both we use the NIST P-256 curve.  The key may
@@ -284,7 +287,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   releases.  Recall that an encryption subkey can be added to a key at
   any time.  If you want to create a signing key you may do it this way:
 
-  ╭────
+  ┌────
   │ $ gpg2 --expert --full-gen-key
   │ gpg (GnuPG) 2.1.0; Copyright (C) 2014 Free Software Foundation, Inc.
   │ This is free software: you are free to change and redistribute it.
@@ -335,7 +338,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   │ pub   ed25519/5C1AFC2A 2014-11-03
   │       Key fingerprint = ED85 4D98 5D8F 502F C6C5  FFB2 AA81 319E 5C1A FC2A
   │ uid       [ultimate] Laura Poitras <laura@example.org>
-  ╰────
+  └────
 
   Support for ECC keys is available only on some keyservers but it is
   expected that this will be fixed over the next few months.
@@ -355,17 +358,17 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   parameter file or interactive prompts for generating a key or to sign
   a key.  This can now be accomplished with a few new commands:
 
-  ╭────
+  ┌────
   │ $ gpg2 --batch --quick-gen-key 'Daniel Ellsberg <ellsberg@example.org>'
   │ gpg: key 911B90A9 marked as ultimately trusted
-  ╰────
+  └────
 
   If a key with that user id already exists, gpg bails out with an error
   message.  You can force creation using the option `--yes'.  If you
   want some more control, you may not use `--batch' and gpg will ask for
   confirmation and show the resulting key:
 
-  ╭────
+  ┌────
   │ $ gpg2 --quick-gen-key 'Daniel Ellsberg <ellsberg@example.org>'
   │ About to create a key for:
   │     "Daniel Ellsberg <ellsberg@example.org>"
@@ -379,13 +382,13 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   │       Key fingerprint = 15CB 723E 2000 A1A8 2505  F3B7 CC00 B501 BD19 AC1C
   │ uid       [ultimate] Daniel Ellsberg <ellsberg@example.org>
   │ sub   rsa2048/72A4D018 2014-11-04
-  ╰────
+  └────
 
   Another common operation is to sign a key.  /gpg/ can do this directly
   from the command line by giving the fingerprint of the to-be-signed
   key:
 
-  ╭────
+  ┌────
   │ $ gpg2 --quick-sign-key  '15CB 723E 2000 A1A8 2505  F3B7 CC00 B501 BD19 AC1C'
   │
   │ pub  rsa2048/BD19AC1C
@@ -394,13 +397,13 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   │  Primary key fingerprint: 15CB 723E 2000 A1A8 2505  F3B7 CC00 B501 BD19 AC1C
   │
   │      Daniel Ellsberg <ellsberg@example.org>
-  ╰────
+  └────
 
   In case the key has already been signed, the command prints a note and
   exits with success.  In case you want to check that it really worked,
   use `=--check-sigs' as usual:
 
-  ╭────
+  ┌────
   │ $ gpg2 --check-sigs  '15CB 723E 2000 A1A8 2505  F3B7 CC00 B501 BD19 AC1C'
   │ gpg: checking the trustdb
   │ gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
@@ -411,7 +414,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   │ sig!         68FD0088 2014-11-04  Glenn Greenwald <glenn@example.org>
   │ sub   rsa2048/72A4D018 2014-11-04
   │ sig!         BD19AC1C 2014-11-04  Daniel Ellsberg <ellsberg@example.org>
-  ╰────
+  └────
 
 
   The fingerprint may also be given without the spaces in which case
@@ -419,6 +422,20 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   user ids of a key, list those user id verbatim after the fingerprint.
   To create a non-exportable key signature, use the command
   `--quick-lsign-key' instead.
+
+  Since version 2.1.4 it possible to directly add another user id to an
+  existing key:
+
+  ┌────
+  │ $ gpg2 -k 8CFDE12197965A9A
+  │ pub   ed25519/8CFDE12197965A9A 2014-08-19
+  │ uid               [ unknown] EdDSA sample key 1
+  │ $ gpg2 --quick-adduid 8CFDE12197965A9A 'Sample 2 <me@example.org>'
+  │ $ gpg2 -k 8CFDE12197965A9A
+  │ pub   ed25519/8CFDE12197965A9A 2014-08-19
+  │ uid               [ unknown] Sample 2 <me@example.org>
+  │ uid               [ unknown] EdDSA sample key 1
+  └────
 
 
 1.6 Improved Pinentry support
@@ -531,10 +548,10 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   dead so that it won’t be used in future.  To interact with the
   /dirmngr/ the `gpg-connect-agent' tool is used:
 
-  ╭────
+  ┌────
   │ $ gpg-connect-agent --dirmngr 'help keyserver' /bye
   │ $ gpg-connect-agent --dirmngr 'keyserver --hosttable' /bye
-  ╰────
+  └────
 
   The first command prints a help screen for the keyserver command and
   the second command prints the current host table.
@@ -571,16 +588,23 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   keybox file.
 
   To convert an existing `pubring.gpg' file to the keybox format, you
-  first rename the file to (for example) `publickeys' so it won’t be
-  recognized by any GnuPG version and then you run the command
+  first backup the ownertrust values, then rename the file to (for
+  example) `publickeys', so it won’t be recognized by any GnuPG version,
+  then run import, and finally restore the ownertrust values:
 
-  ╭────
-  │ $ gpg2 --import publickeys
-  ╰────
+  ┌────
+  │ $ cd ~/.gnupg
+  │ $ gpg --export-ownertrust >otrust.lst
+  │ $ mv pubring.gpg publickeys
+  │ $ gpg2 --import-options import-local-sigs --import publickeys
+  │ $ gpg2 --import-ownertrust otrust.lst
+  └────
 
   You may then rename the `publickeys' file back so that it can be used
   by older GnuPG versions.  Remember that in this case you have two
-  independent copies of the public keys.
+  independent copies of the public keys.  The ownertrust values are kept
+  by all gpg versions in the file `trustdb.gpg' but the above
+  precautions need to be taken to keep them over an import.
 
 
 1.12 Auto-generated revocation certificates
@@ -597,12 +621,15 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 ──────────────────────────
 
   The /scdaemon/, which is responsible for accessing smardcards and
-  other tokens, has received may updates.  In particular plugable USB
+  other tokens, has received many updates.  In particular plugable USB
   readers with a fixed card now work smoothless and similar to standard
-  readers.  The latest features of the /gnuk/ token are supported.  Code
-  for the HSM smartcard has been added.  More card readers with a PIN
+  readers.  The latest features of the [gnuk] token are supported.  Code
+  for the SmartCard-HSM has been added.  More card readers with a PIN
   pad are supported.  The internal CCID driver does now also work with
   certain non-auto configuration equipped readers.
+
+
+  [gnuk] http://www.fsij.org/doc-gnuk/
 
 
 1.14 New format for key listings
@@ -616,11 +643,11 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   either use the algorithm name with appended key length or use the name
   of the curve:
 
-  ╭────
+  ┌────
   │ pub   2048D/1E42B367 2007-12-31 [expires: 2018-12-31]
   │ pub   dsa2048/1E42B367 2007-12-31 [expires: 2018-12-31]
   │ pub   ed25519/0AA914C9 2014-10-18
-  ╰────
+  └────
 
   The first two lines show the same key in the old format and in the new
   format.  The third line shows an example of an ECC key using the
@@ -653,7 +680,18 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   [Putty] http://www.chiark.greenend.org.uk/~sgtatham/putty/
 
 
-1.16 Improved X.509 certificate creation
+1.16 Export of SSH public keys
+──────────────────────────────
+
+  The new command `--export-ssh-key' makes it easy to export an /ssh/
+  public key in the format used for ssh’s `authorized_keys' file.  By
+  default the command exports the newest subkey with an authorization
+  usage flags.  A special syntax can be used to export other subkeys.
+  This command is available since 2.1.11 and replaces the former debug
+  utility /gpgkey2ssh/.
+
+
+1.17 Improved X.509 certificate creation
 ────────────────────────────────────────
 
   In addition to an improved certificate signing request menu, it is now
@@ -673,7 +711,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   and directly exported in a format suitable for OpenSSL based servers.
 
 
-1.17 Scripts to create a Windows installer
+1.18 Scripts to create a Windows installer
 ──────────────────────────────────────────
 
   GnuPG now comes with the /speedo/ build system which may be used to
@@ -686,9 +724,9 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   and GpgEX as a Windows Explorer extension.  GnuPG needs to be unpacked
   and from the top source directory you run this command
 
-  ╭────
+  ┌────
   │ make -f build-aux/speedo.mk w32-installer
-  ╰────
+  └────
 
   This command downloads all direct dependencies, checks the signatures
   using the GnuPG version from the build system (all Linux distros
@@ -696,12 +734,15 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   uses NSIS to create the installer.  Although this sounds easy, some
   experience in setting up a development machine is still required.
   Some versions of the toolchain exhibit bugs and thus your mileage may
-  vary.  Support for keyserver access over TLS is currently not
-  available but will be added with one of the next point releases.
+  vary.  See the [Wiki] for more info.
+
+  Support for keyserver access over TLS is currently not available but
+  will be added with one of the next point releases.
+
+  [Wiki] https://wiki.gnupg.org/Build2.1_Windows
 
 
-
-  # Copyright 2014 The GnuPG Project.
+  # Copyright 2014--2016 The GnuPG Project.
   # This work is licensed under the Creative Commons
   # Attribution-ShareAlike 4.0 International License.  To view a copy of
   # this license, visit http://creativecommons.org/licenses/by-sa/4.0/
