@@ -21,6 +21,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef  HAVE_DOSISH_SYSTEM
+# define WIN32_LEAN_AND_MEAN  /* We only need the OS core stuff.  */
+# include <windows.h>
+#endif
 
 #include "keybox-defs.h"
 
@@ -140,4 +144,65 @@ keybox_tmp_names (const char *filename, int for_keyring,
   *r_bakname = bak_name;
   *r_tmpname = tmp_name;
   return 0;
+}
+
+
+/* Wrapper for rename(2) to handle Windows peculiarities.  */
+gpg_error_t
+keybox_file_rename (const char *oldname, const char *newname)
+{
+  gpg_error_t err = 0;
+
+#ifdef HAVE_DOSISH_SYSTEM
+  int wtime = 0;
+
+  gnupg_remove (newname);
+ again:
+  if (rename (oldname, newname))
+    {
+      if (GetLastError () == ERROR_SHARING_VIOLATION)
+        {
+          /* Another process has the file open.  We do not use a lock
+           * for read but instead we wait until the other process has
+           * closed the file.  This may take long but that would also
+           * be the case with a dotlock approach for read and write.
+           * Note that we don't need this on Unix due to the inode
+           * concept.
+           *
+           * So let's wait until the rename has worked.  We use the
+           * same retry intervals as used by dotlock.c, namely 50ms,
+           * 100ms, 200ms, 400ms, 800ms, 2s, 4s and 8s.  */
+          if (!wtime)
+            wtime = 50;
+          else if (wtime < 800)
+            wtime *= 2;
+          else if (wtime == 800)
+            wtime = 2000;
+          else if (wtime < 8000)
+            wtime *= 2;
+
+          if (wtime >= 800)
+            log_info ("waiting for file '%s' to become accessible ...\n",
+                      oldname);
+
+          Sleep (wtime);
+          goto again;
+        }
+      err = gpg_error_from_syserror ();
+    }
+
+#else /* Unix */
+
+#ifdef __riscos__
+  gnupg_remove (newname);
+#endif
+  if (rename (oldname, newname) )
+    err = gpg_error_from_syserror ();
+
+#endif /* Unix */
+
+  if (err)
+    log_error ("renaming '%s' to '%s' failed: %s\n",
+               oldname, newname, gpg_strerror (err));
+  return err;
 }

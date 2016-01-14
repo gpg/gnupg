@@ -1337,32 +1337,19 @@ rename_tmp_file (const char *bakfname, const char *tmpfname, const char *fname)
   iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname );
 
   /* First make a backup file. */
-#if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-  gnupg_remove (bakfname);
-#endif
-  if (rename (fname, bakfname) )
-    {
-      rc = gpg_error_from_syserror ();
-      log_error ("renaming '%s' to '%s' failed: %s\n",
-                 fname, bakfname, strerror(errno) );
-      return rc;
-    }
+  rc = keybox_file_rename (fname, bakfname);
+  if (rc)
+    goto fail;
 
   /* then rename the file */
-#if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-  gnupg_remove( fname );
-#endif
-  if (rename (tmpfname, fname) )
+  rc = keybox_file_rename (tmpfname, fname);
+  if (rc)
     {
-      rc = gpg_error_from_syserror ();
-      log_error (_("renaming '%s' to '%s' failed: %s\n"),
-                 tmpfname, fname, strerror(errno) );
       register_secured_file (fname);
       goto fail;
     }
 
   /* Now make sure the file has the same permissions as the original */
-
 #ifndef HAVE_DOSISH_SYSTEM
   {
     struct stat statbuf;

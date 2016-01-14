@@ -119,22 +119,15 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
   /* First make a backup file except for secret keyboxes. */
   if (!secret)
     {
-#if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-      gnupg_remove (bakfname);
-#endif
-      if (rename (fname, bakfname) )
-        {
-          return gpg_error_from_syserror ();
-	}
+      rc = keybox_file_rename (fname, bakfname);
+      if (rc)
+        return rc;
     }
 
   /* Then rename the file. */
-#if defined(HAVE_DOSISH_SYSTEM) || defined(__riscos__)
-  gnupg_remove (fname);
-#endif
-  if (rename (tmpfname, fname) )
+  rc = keybox_file_rename (tmpfname, fname);
+  if (rc)
     {
-      rc = gpg_error_from_syserror ();
       if (secret)
         {
 /*            log_info ("WARNING: 2 files with confidential" */
