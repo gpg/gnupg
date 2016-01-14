@@ -272,6 +272,8 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
   int rc;
   mode_t oldmask;
   char *last_slash_in_filename;
+  char *bak_fname = NULL;
+  char *tmp_fname = NULL;
   int save_slash;
 
   /* A quick test whether the filename already exists. */
@@ -350,11 +352,39 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
     }
 
   /* Now the real test while we are locked. */
+
+  /* Gpg either uses pubring.gpg or pubring.kbx and thus different
+   * lock files.  Now, when one gpg process is updating a pubring.gpg
+   * and thus holding the corresponding lock, a second gpg process may
+   * get to here at the time between the two rename operation used by
+   * the first process to update pubring.gpg.  The lock taken above
+   * may not protect the second process if it tries to create a
+   * pubring.kbx file which would be protected by a different lock
+   * file.
+   *
+   * We can detect this case by checking that the two temporary files
+   * used by the update code exist at the same time.  In that case we
+   * do not create a new file but act as if FORCE_CREATE has not been
+   * given.  Obviously there is a race between our two checks but the
+   * worst thing is that we won't create a new file, which is better
+   * than to accidentally creating one.  */
+  rc = keybox_tmp_names (filename, is_box, &bak_fname, &tmp_fname);
+  if (rc)
+    goto leave;
+
   if (!access (filename, F_OK))
     {
       rc = 0;  /* Okay, we may access the file now.  */
       goto leave;
     }
+  if (!access (bak_fname, F_OK) && !access (tmp_fname, F_OK))
+    {
+      /* Very likely another process is updating a pubring.gpg and we
+         should not create a pubring.kbx.  */
+      rc = gpg_error (GPG_ERR_ENOENT);
+      goto leave;
+    }
+
 
   /* The file does not yet exist, create it now. */
   oldmask = umask (077);
@@ -422,6 +452,8 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
       dotlock_release (lockhd);
       dotlock_destroy (lockhd);
     }
+  xfree (bak_fname);
+  xfree (tmp_fname);
   return rc;
 }
 
