@@ -407,9 +407,7 @@ output can directly be added to ssh's @file{authorized_key} file.
 By specifying the key to export using a key ID or a fingerprint
 suffixed with an exclamation mark (!), a specific subkey or the
 primary key can be exported.  This does not even require that the key
-has the authentication capability flag set.  To view the capability
-flags of a key use @code{--list-options show-usage} along with a key
-listing command.
+has the authentication capability flag set.
 
 @item --import
 @itemx --fast-import
@@ -1098,7 +1096,7 @@ give the opposite meaning.  The options are:
   Show usage information for keys and subkeys in the standard key
   listing.  This is a list of letters indicating the allowed usage for a
   key (@code{E}=encryption, @code{S}=signing, @code{C}=certification,
-  @code{A}=authentication).  Defaults to no.
+  @code{A}=authentication).  Defaults to yes.
 
   @item show-policy-urls
   @opindex list-options:show-policy-urls
