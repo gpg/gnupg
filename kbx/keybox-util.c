@@ -169,16 +169,11 @@ keybox_file_rename (const char *oldname, const char *newname)
            * Note that we don't need this on Unix due to the inode
            * concept.
            *
-           * So let's wait until the rename has worked.  We use the
-           * same retry intervals as used by dotlock.c, namely 50ms,
-           * 100ms, 200ms, 400ms, 800ms, 2s, 4s and 8s.  */
-          if (!wtime)
+           * So let's wait until the rename has worked.  The retry
+           * intervals are 50, 100, 200, 400, 800, 50ms, ...  */
+          if (!wtime || wtime >= 800)
             wtime = 50;
-          else if (wtime < 800)
-            wtime *= 2;
-          else if (wtime == 800)
-            wtime = 2000;
-          else if (wtime < 8000)
+          else
             wtime *= 2;
 
           if (wtime >= 800)
