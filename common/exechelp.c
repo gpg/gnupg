@@ -21,11 +21,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
 #include <signal.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <fcntl.h>
 
 #ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
@@ -33,7 +36,7 @@
 #undef USE_GNU_PTH
 #endif
 
-#ifdef USE_GNU_PTH      
+#ifdef USE_GNU_PTH
 #include <pth.h>
 #endif
 #ifndef HAVE_W32_SYSTEM
@@ -63,7 +66,7 @@
    and some are not.  However we want to use pth_fork and pth_waitpid
    here. Using a weak symbol works but is not portable - we should
    provide a an explicit dummy pth module instead of using the
-   pragma.  */ 
+   pragma.  */
 #ifndef _WIN32
 #pragma weak pth_fork
 #pragma weak pth_waitpid
@@ -134,6 +137,13 @@ get_max_fds (void)
   if (max_fds == -1)
     max_fds = 256;  /* Arbitrary limit.  */
 
+  /* AIX returns INT32_MAX instead of a proper value.  We assume that
+     this is always an error and use an arbitrary limit.  */
+#ifdef INT32_MAX
+  if (max_fds == INT32_MAX)
+    max_fds = 256;
+#endif
+
   return max_fds;
 }
 
@@ -202,7 +212,7 @@ get_all_open_fds (void)
   array = calloc (narray, sizeof *array);
   if (!array)
     return NULL;
-  
+
   /* Note:  The list we return is ordered.  */
   for (idx=0, fd=0; fd < max_fd; fd++)
     if (!(fstat (fd, &statbuf) == -1 && errno == EBADF))
@@ -261,7 +271,7 @@ build_w32_commandline_copy (char *buffer, const char *string)
 /* Build a command line for use with W32's CreateProcess.  On success
    CMDLINE gets the address of a newly allocated string.  */
 static gpg_error_t
-build_w32_commandline (const char *pgmname, const char * const *argv, 
+build_w32_commandline (const char *pgmname, const char * const *argv,
                        char **cmdline)
 {
   int i, n;
@@ -289,7 +299,7 @@ build_w32_commandline (const char *pgmname, const char * const *argv,
     return gpg_error_from_syserror ();
 
   p = build_w32_commandline_copy (p, pgmname);
-  for (i=0; argv[i]; i++) 
+  for (i=0; argv[i]; i++)
     {
       *p++ = ' ';
       p = build_w32_commandline_copy (p, argv[i]);
@@ -312,7 +322,7 @@ create_inheritable_pipe (int filedes[2])
   memset (&sec_attr, 0, sizeof sec_attr );
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
-    
+
   if (!CreatePipe (&r, &w, &sec_attr, 0))
     return -1;
 
@@ -404,7 +414,7 @@ do_exec (const char *pgmname, const char *argv[],
 
   /* Close all other files. */
   close_all_fds (3, NULL);
-  
+
   if (preexec)
     preexec ();
   execv (pgmname, arg_list);
@@ -433,7 +443,7 @@ gnupg_create_inbound_pipe (int filedes[2])
           log_error ("failed to translate osfhandle %p\n", (void*)fds[0]);
           CloseHandle (fd_to_handle (fds[1]));
         }
-      else 
+      else
         {
           filedes[1] = _open_osfhandle (fds[1], 1);
           if (filedes[1] == -1)
@@ -472,7 +482,7 @@ gnupg_create_inbound_pipe (int filedes[2])
           This flag is only useful under W32 systems, so that no new
           console is created and pops up a console window when
           starting the server
- 
+
    Bit 6: On W32 run AllowSetForegroundWindow for the child.  Due to
           error problems this actually allows SetForegroundWindow for
           childs of this process.
@@ -487,7 +497,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 #ifdef HAVE_W32_SYSTEM
   gpg_error_t err;
   SECURITY_ATTRIBUTES sec_attr;
-  PROCESS_INFORMATION pi = 
+  PROCESS_INFORMATION pi =
     {
       NULL,      /* Returns process handle.  */
       0,         /* Returns primary thread handle.  */
@@ -515,11 +525,11 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   memset (&sec_attr, 0, sizeof sec_attr );
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
-  
+
   /* Build the command line.  */
   err = build_w32_commandline (pgmname, argv, &cmdline);
   if (err)
-    return err; 
+    return err;
 
   /* Create a pipe.  */
   if (create_inheritable_pipe (rp))
@@ -529,7 +539,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
       xfree (cmdline);
       return err;
     }
-  
+
   /* Start the process.  Note that we can't run the PREEXEC function
      because this would change our own environment. */
   memset (&si, 0, sizeof si);
@@ -543,7 +553,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   cr_flags = (CREATE_DEFAULT_ERROR_MODE
               | ((flags & 128)? DETACHED_PROCESS : 0)
               | GetPriorityClass (GetCurrentProcess ())
-              | CREATE_SUSPENDED); 
+              | CREATE_SUSPENDED);
 /*   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline); */
   if (!CreateProcess (pgmname,       /* Program to start.  */
                       cmdline,       /* Command line arguments.  */
@@ -568,12 +578,12 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
   /* Close the other end of the pipe.  */
   CloseHandle (fd_to_handle (rp[1]));
-  
+
 /*   log_debug ("CreateProcess ready: hProcess=%p hThread=%p" */
 /*              " dwProcessID=%d dwThreadId=%d\n", */
 /*              pi.hProcess, pi.hThread, */
 /*              (int) pi.dwProcessId, (int) pi.dwThreadId); */
-  
+
   /* Fixme: For unknown reasons AllowSetForegroundWindow returns an
      invalid argument error if we pass the correct processID to
      it.  As a workaround we use -1 (ASFW_ANY).  */
@@ -582,7 +592,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
   /* Process has been created suspended; resume it now. */
   ResumeThread (pi.hThread);
-  CloseHandle (pi.hThread); 
+  CloseHandle (pi.hThread);
 
   {
     int x;
@@ -590,7 +600,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     x = _open_osfhandle (rp[0], 0);
     if (x == -1)
       log_error ("failed to translate osfhandle %p\n", (void*)rp[0] );
-    else 
+    else
       *statusfile = fdopen (x, "r");
   }
   if (!*statusfile)
@@ -626,7 +636,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
       return err;
     }
 
-#ifdef USE_GNU_PTH      
+#ifdef USE_GNU_PTH
   *pid = pth_fork? pth_fork () : fork ();
 #else
   *pid = fork ();
@@ -641,7 +651,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     }
 
   if (!*pid)
-    { 
+    {
       gcry_control (GCRYCTL_TERM_SECMEM);
       /* Run child. */
       do_exec (pgmname, argv, fd, fdout, rp[1], preexec);
@@ -695,11 +705,11 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
   memset (&sec_attr, 0, sizeof sec_attr );
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
-  
+
   /* Build the command line.  */
   err = build_w32_commandline (pgmname, argv, &cmdline);
   if (err)
-    return err; 
+    return err;
 
   memset (&si, 0, sizeof si);
   si.cb = sizeof (si);
@@ -746,7 +756,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
 
   /* Process has been created suspended; resume it now. */
   ResumeThread (pi.hThread);
-  CloseHandle (pi.hThread); 
+  CloseHandle (pi.hThread);
 
   *pid = handle_to_pid (pi.hProcess);
   return 0;
@@ -754,7 +764,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
 #else /* !HAVE_W32_SYSTEM */
   gpg_error_t err;
 
-#ifdef USE_GNU_PTH      
+#ifdef USE_GNU_PTH
   *pid = pth_fork? pth_fork () : fork ();
 #else
   *pid = fork ();
@@ -767,7 +777,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
     }
 
   if (!*pid)
-    { 
+    {
       gcry_control (GCRYCTL_TERM_SECMEM);
       /* Run child. */
       do_exec (pgmname, argv, infd, outfd, errfd, NULL);
@@ -805,7 +815,7 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode)
      been implemented.  A special W32 pth system call would even be
      better.  */
   code = WaitForSingleObject (proc, INFINITE);
-  switch (code) 
+  switch (code)
     {
       case WAIT_FAILED:
         log_error (_("waiting for process %d to terminate failed: %s\n"),
@@ -872,7 +882,7 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode)
     }
   else if (WIFEXITED (status) && WEXITSTATUS (status))
     {
-      
+
       if (!exitcode)
         log_error (_("error running `%s': exit status %d\n"), pgmname,
                    WEXITSTATUS (status));
@@ -885,7 +895,7 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int *exitcode)
       log_error (_("error running `%s': terminated\n"), pgmname);
       ec = GPG_ERR_GENERAL;
     }
-  else 
+  else
     {
       if (exitcode)
         *exitcode = 0;
@@ -911,7 +921,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
 #ifdef HAVE_W32_SYSTEM
   gpg_error_t err;
   SECURITY_ATTRIBUTES sec_attr;
-  PROCESS_INFORMATION pi = 
+  PROCESS_INFORMATION pi =
     {
       NULL,      /* Returns process handle.  */
       0,         /* Returns primary thread handle.  */
@@ -936,11 +946,11 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   memset (&sec_attr, 0, sizeof sec_attr );
   sec_attr.nLength = sizeof sec_attr;
   sec_attr.bInheritHandle = FALSE;
-  
+
   /* Build the command line.  */
   err = build_w32_commandline (pgmname, argv, &cmdline);
   if (err)
-    return err; 
+    return err;
 
   /* Start the process.  */
   memset (&si, 0, sizeof si);
@@ -951,7 +961,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   cr_flags = (CREATE_DEFAULT_ERROR_MODE
               | GetPriorityClass (GetCurrentProcess ())
               | CREATE_NEW_PROCESS_GROUP
-              | DETACHED_PROCESS); 
+              | DETACHED_PROCESS);
 /*   log_debug ("CreateProcess(detached), path=`%s' cmdline=`%s'\n", */
 /*              pgmname, cmdline); */
   if (!CreateProcess (pgmname,       /* Program to start.  */
@@ -978,7 +988,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
 /*              pi.hProcess, pi.hThread, */
 /*              (int) pi.dwProcessId, (int) pi.dwThreadId); */
 
-  CloseHandle (pi.hThread); 
+  CloseHandle (pi.hThread);
 
   return 0;
 
@@ -992,7 +1002,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   if (access (pgmname, X_OK))
     return gpg_error_from_syserror ();
 
-#ifdef USE_GNU_PTH      
+#ifdef USE_GNU_PTH
   pid = pth_fork? pth_fork () : fork ();
 #else
   pid = fork ();
@@ -1004,7 +1014,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
     }
   if (!pid)
     {
-      pid_t pid2; 
+      pid_t pid2;
 
       gcry_control (GCRYCTL_TERM_SECMEM);
       if (setsid() == -1 || chdir ("/"))
@@ -1018,12 +1028,12 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
       if (envp)
         for (i=0; envp[i]; i++)
           putenv (xstrdup (envp[i]));
-      
+
       do_exec (pgmname, argv, -1, -1, -1, NULL);
 
       /*NOTREACHED*/
     }
-  
+
   if (waitpid (pid, NULL, 0) == -1)
     log_error ("waitpid failed in gnupg_spawn_process_detached: %s",
                strerror (errno));
