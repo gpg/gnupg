@@ -185,7 +185,7 @@ passphrase).
 
 @item --store
 @opindex store
-Store only (make a simple RFC1991 literal data packet).
+Store only (make a simple literal data packet).
 
 @item --decrypt
 @itemx -d
@@ -2268,33 +2268,32 @@ to consider (e.g. @option{--symmetric}).
 
 @item --s2k-cipher-algo @code{name}
 @opindex s2k-cipher-algo
-Use @code{name} as the cipher algorithm used to protect secret keys.
-The default cipher is @value{GPGSYMENCALGO}. This cipher is also used
-for symmetric encryption with a passphrase if
-@option{--personal-cipher-preferences} and @option{--cipher-algo} is
-not given.
+Use @code{name} as the cipher algorithm for symmetric encryption with
+a passphrase if @option{--personal-cipher-preferences} and
+@option{--cipher-algo} are not given.  The default is @value{GPGSYMENCALGO}.
 
 @item --s2k-digest-algo @code{name}
 @opindex s2k-digest-algo
-Use @code{name} as the digest algorithm used to mangle the passphrases.
-The default algorithm is SHA-1.
+Use @code{name} as the digest algorithm used to mangle the passphrases
+for symmetric encryption.  The defaulte is SHA-1.
 
 @item --s2k-mode @code{n}
 @opindex s2k-mode
-Selects how passphrases are mangled. If @code{n} is 0 a plain
-passphrase (which is not recommended) will be used, a 1 adds a salt to
-the passphrase and a 3 (the default) iterates the whole process a
-number of times (see --s2k-count).  Unless @option{--rfc1991} is used,
-this mode is also used for symmetric encryption with a passphrase.
+Selects how passphrases for symmetric encryption are mangled. If
+@code{n} is 0 a plain passphrase (which is in general not recommended)
+will be used, a 1 adds a salt (which should not be used) to the
+passphrase and a 3 (the default) iterates the whole process a number
+of times (see @option{--s2k-count}).
 
 @item --s2k-count @code{n}
 @opindex s2k-count
-Specify how many times the passphrase mangling is repeated.  This
-value may range between 1024 and 65011712 inclusive.  The default is
-inquired from gpg-agent.  Note that not all values in the
-1024-65011712 range are legal and if an illegal value is selected,
-GnuPG will round up to the nearest legal value.  This option is only
-meaningful if @option{--s2k-mode} is 3.
+Specify how many times the passphrases mangling for symmetric
+encryption is repeated.  This value may range between 1024 and
+65011712 inclusive.  The default is inquired from gpg-agent.  Note
+that not all values in the 1024-65011712 range are legal and if an
+illegal value is selected, GnuPG will round up to the nearest legal
+value.  This option is only meaningful if @option{--s2k-mode} is set
+to the default of 3.
 
 
 @end table
@@ -2339,32 +2338,6 @@ behavior. Note that this is currently the same thing as
 @opindex rfc2440
 Reset all packet, cipher and digest options to strict RFC-2440
 behavior.
-
-@ifclear gpgtowone
-@item --rfc1991
-@opindex rfc1991
-Try to be more RFC-1991 (PGP 2.x) compliant.  This option is
-deprecated will be removed in GnuPG 2.1.
-
-@item --pgp2
-@opindex pgp2
-Set up all options to be as PGP 2.x compliant as possible, and warn if
-an action is taken (e.g. encrypting to a non-RSA key) that will create
-a message that PGP 2.x will not be able to handle. Note that `PGP
-2.x' here means `MIT PGP 2.6.2'. There are other versions of PGP 2.x
-available, but the MIT release is a good common baseline.
-
-This option implies
-@option{--rfc1991 --disable-mdc --no-force-v4-certs
- --escape-from-lines  --force-v3-sigs --allow-weak-digest-algos
- --cipher-algo IDEA --digest-algo MD5 --compress-algo ZIP}.
-It also disables @option{--textmode} when encrypting.
-
-This option is deprecated will be removed in GnuPG 2.1.  The reason
-for dropping PGP-2 support is that the PGP 2 format is not anymore
-considered safe (for example due to the use of the broken MD5 algorithm).
-Note that the decryption of PGP-2 created messages will continue to work.
-@end ifclear
 
 @item --pgp6
 @opindex pgp6
