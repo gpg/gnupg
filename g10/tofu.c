@@ -38,11 +38,16 @@
 #include "options.h"
 #include "mbox-util.h"
 #include "i18n.h"
+#include "ttyio.h"
 #include "trustdb.h"
 #include "mkdir_p.h"
 #include "sqlite.h"
 
 #include "tofu.h"
+
+
+#define CONTROL_L ('L' - 'A' + 1)
+
 
 #define DEBUG_TOFU_CACHE 0
 #if DEBUG_TOFU_CACHE
@@ -144,28 +149,16 @@ tofu_cache_dump (struct db *db)
 #define TIME_AGO_FUTURE_IGNORE (2 * 60 * 60)
 #if 0
 #  define TIME_AGO_UNIT_SMALL 60
-#  define TIME_AGO_UNIT_SMALL_NAME _("minute")
-#  define TIME_AGO_UNIT_SMALL_NAME_PLURAL _("minutes")
 #  define TIME_AGO_MEDIUM_THRESHOLD (60 * TIME_AGO_UNIT_SMALL)
 #  define TIME_AGO_UNIT_MEDIUM (60 * 60)
-#  define TIME_AGO_UNIT_MEDIUM_NAME _("hour")
-#  define TIME_AGO_UNIT_MEDIUM_NAME_PLURAL _("hours")
 #  define TIME_AGO_LARGE_THRESHOLD (24 * 60 * TIME_AGO_UNIT_SMALL)
 #  define TIME_AGO_UNIT_LARGE (24 * 60 * 60)
-#  define TIME_AGO_UNIT_LARGE_NAME _("day")
-#  define TIME_AGO_UNIT_LARGE_NAME_PLURAL _("days")
 #else
 #  define TIME_AGO_UNIT_SMALL (24 * 60 * 60)
-#  define TIME_AGO_UNIT_SMALL_NAME _("day")
-#  define TIME_AGO_UNIT_SMALL_NAME_PLURAL _("days")
 #  define TIME_AGO_MEDIUM_THRESHOLD (4 * TIME_AGO_UNIT_SMALL)
 #  define TIME_AGO_UNIT_MEDIUM (7 * 24 * 60 * 60)
-#  define TIME_AGO_UNIT_MEDIUM_NAME _("week")
-#  define TIME_AGO_UNIT_MEDIUM_NAME_PLURAL _("weeks")
 #  define TIME_AGO_LARGE_THRESHOLD (28 * TIME_AGO_UNIT_SMALL)
 #  define TIME_AGO_UNIT_LARGE (30 * 24 * 60 * 60)
-#  define TIME_AGO_UNIT_LARGE_NAME _("month")
-#  define TIME_AGO_UNIT_LARGE_NAME_PLURAL _("months")
 #endif
 
 
@@ -1435,30 +1428,6 @@ time_ago_scale (signed long t)
   return t / TIME_AGO_UNIT_LARGE;
 }
 
-/* Return the appropriate unit (respecting whether it is plural or
-   singular).  */
-const char *
-time_ago_unit (signed long t)
-{
-  signed long t_scaled = time_ago_scale (t);
-
-  if (t < TIME_AGO_UNIT_MEDIUM)
-    {
-      if (t_scaled == 1)
-	return TIME_AGO_UNIT_SMALL_NAME;
-      return TIME_AGO_UNIT_SMALL_NAME_PLURAL;
-    }
-  if (t < TIME_AGO_UNIT_LARGE)
-    {
-      if (t_scaled == 1)
-	return TIME_AGO_UNIT_MEDIUM_NAME;
-      return TIME_AGO_UNIT_MEDIUM_NAME_PLURAL;
-    }
-  if (t_scaled == 1)
-    return TIME_AGO_UNIT_LARGE_NAME;
-  return TIME_AGO_UNIT_LARGE_NAME_PLURAL;
-}
-
 
 /* Return the policy for the binding <FINGERPRINT, EMAIL> (email has
    already been normalized) and any conflict information in *CONFLICT
@@ -1839,7 +1808,8 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 
     if (policy == TOFU_POLICY_NONE)
       {
-	es_fprintf (fp, _("The binding %s is NOT known.  "), binding);
+	es_fprintf (fp, _("The binding %s is NOT known."), binding);
+        es_fputs ("  ", fp);
 	binding_shown = 1;
       }
     else if (policy == TOFU_POLICY_ASK
@@ -1851,17 +1821,21 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	es_fprintf (fp,
 		    _("The key %s raised a conflict with this binding (%s)."
                       "  Since this binding's policy was 'auto', it was "
-                      "changed to 'ask'.  "),
+                      "changed to 'ask'."),
 		    conflict_pp, binding);
+        es_fputs ("  ", fp);
         xfree (conflict_pp);
 	binding_shown = 1;
       }
+    /* TRANSLATORS: The %s%s is replaced by either a fingerprint and a
+       blank or by two empty strings.  */
     es_fprintf (fp,
 		_("Please indicate whether you believe the binding %s%s"
 		  "is legitimate (the key belongs to the stated owner) "
-		  "or a forgery (bad).\n\n"),
+		  "or a forgery (bad)."),
 		binding_shown ? "" : binding,
 		binding_shown ? "" : " ");
+    es_fputs ("\n\n", fp);
 
     xfree (binding);
 
@@ -1900,7 +1874,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
       {
 	strlist_t strlist_iter;
 
-	es_fprintf (fp, _("Known user ids associated with this key:\n"));
+	es_fprintf (fp, _("Known user IDs associated with this key:\n"));
 	for (strlist_iter = other_user_ids;
 	     strlist_iter;
 	     strlist_iter = strlist_iter->next)
@@ -1918,10 +1892,10 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	    else
 	      other_policy = atoi (other_thing);
 
-	    es_fprintf (fp, _("  %s (policy: %s)\n"),
-			other_user_id,
-			tofu_policy_str (other_policy));
-	  }
+	    es_fprintf (fp, "  %s (", other_user_id);
+	    es_fprintf (fp, _("policy: %s"), tofu_policy_str (other_policy));
+	    es_fprintf (fp, ")\n");
+          }
 	es_fprintf (fp, "\n");
 
 	free_strlist (other_user_ids);
@@ -1970,18 +1944,20 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
       {
 	strlist_t strlist_iter;
 
-	log_error (_("error gathering signature stats: %s.\n"),
-		   err);
+	log_error (_("error gathering signature stats: %s\n"), err);
 	sqlite3_free (err);
 	err = NULL;
 
-	es_fprintf
-	  (fp, _("The email address (%s) is associated with %d keys:\n"),
-	   email, bindings_with_this_email_count);
+	es_fprintf (fp, ngettext("The email address \"%s\" is"
+                                 " associated with %d key:\n",
+                                 "The email address \"%s\" is"
+                                 " associated with %d keys:\n",
+                                 bindings_with_this_email_count),
+                    email, bindings_with_this_email_count);
 	for (strlist_iter = bindings_with_this_email;
 	     strlist_iter;
 	     strlist_iter = strlist_iter->next)
-	  es_fprintf (fp, _("  %s\n"), strlist_iter->d);
+	  es_fprintf (fp, "  %s\n", strlist_iter->d);
       }
     else
       {
@@ -1994,8 +1970,9 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	     any messages signed by this key.  Add a dummy entry.  */
 	  signature_stats_prepend (&stats, fingerprint, TOFU_POLICY_AUTO, 0, 0);
 
-	es_fprintf (fp, _("Statistics for keys with the email '%s':\n"),
-		    email);
+	es_fprintf
+          (fp, _("Statistics for keys with the email address \"%s\":\n"),
+           email);
 	for (stats_iter = stats; stats_iter; stats_iter = stats_iter->next)
 	  {
 	    if (! key || strcmp (key, stats_iter->fingerprint) != 0)
@@ -2005,37 +1982,54 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 		key = stats_iter->fingerprint;
 		this_key = strcmp (key, fingerprint) == 0;
                 key_pp = format_hexfingerprint (key, NULL, 0);
+                es_fprintf (fp, "  %s (", key_pp);
 		if (this_key)
-		  es_fprintf (fp, _("  %s (this key):"), key_pp);
+		  es_fprintf (fp, _("this key"));
 		else
-		  es_fprintf (fp, _("  %s (policy: %s):"),
-			      key_pp, tofu_policy_str (stats_iter->policy));
+		  es_fprintf (fp, _("policy: %s"),
+			      tofu_policy_str (stats_iter->policy));
+                es_fputs ("):\n", fp);
                 xfree (key_pp);
-		es_fprintf (fp, "\n");
 	      }
 
+            es_fputs ("    ", fp);
 	    if (stats_iter->time_ago == -1)
-	      es_fprintf (fp, _("    %ld %s signed in the future.\n"),
-			  stats_iter->count,
-			  stats_iter->count == 1
-			  ? _("message") : _("messages"));
-	    else if (stats_iter->count == 0)
-	      es_fprintf (fp, _("    0 signed messages.\n"));
+	      es_fprintf (fp, ngettext("%ld message signed in the future.",
+                                       "%ld messages signed in the future.",
+                                       stats_iter->count), stats_iter->count);
 	    else
-	      es_fprintf (fp, _("    %ld %s signed over the past %ld %s.\n"),
-			  stats_iter->count,
-			  stats_iter->count == 1
-			  ? _("message") : _("messages"),
-			  time_ago_scale (stats_iter->time_ago),
-			  time_ago_unit (stats_iter->time_ago));
+              {
+                long t_scaled = time_ago_scale (stats_iter->time_ago);
+
+                /* TANSLATORS: This string is concatenated with one of
+                 * the day/week/month strings to form one sentence.  */
+                es_fprintf (fp, ngettext("%ld message signed",
+                                         "%ld messages signed",
+                                         stats_iter->count), stats_iter->count);
+                if (!stats_iter->count)
+                  es_fputs (".", fp);
+                else if (stats_iter->time_ago < TIME_AGO_UNIT_MEDIUM)
+                  es_fprintf (fp, ngettext(" over the past %ld day.",
+                                           " over the past %ld days.",
+                                           t_scaled), t_scaled);
+                else if (stats_iter->time_ago < TIME_AGO_UNIT_LARGE)
+                  es_fprintf (fp, ngettext(" over the past %ld week.",
+                                           " over the past %ld weeks.",
+                                           t_scaled), t_scaled);
+                else
+                  es_fprintf (fp, ngettext(" over the past %ld month.",
+                                           " over the past %ld months.",
+                                           t_scaled), t_scaled);
+              }
+            es_fputs ("\n", fp);
 	  }
       }
 
     if (is_conflict)
       {
-	/* TRANSLATORS: translate the below text.  We don't directly
-	   internationalize that text so that we can tweak it without
-	   breaking translations.  */
+	/* TRANSLATORS: Please translate the text found in the source
+	   file below.  We don't directly internationalize that text
+	   so that we can tweak it without breaking translations.  */
 	char *text = _("TOFU detected a binding conflict");
 	if (strcmp (text, "TOFU detected a binding conflict") == 0)
 	  /* No translation.  Use the English text.  */
@@ -2052,34 +2046,42 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
       }
 
     es_fputc ('\n', fp);
-    /* TRANSLATORS: Two letters (normally the lower and upper case
-       version of the hotkey) for each of the five choices.  If there
-       is only one choice in your language, repeat it.  */
-    choices = _("gG" "aA" "uU" "rR" "bB");
-    es_fprintf (fp, _("(G)ood/(A)ccept once/(U)nknown/(R)eject once/(B)ad? "));
 
     /* Add a NUL terminator.  */
     es_fputc (0, fp);
     if (es_fclose_snatch (fp, (void **) &prompt, NULL))
       log_fatal ("error snatching memory stream\n");
 
+    /* I think showing the large message once is sufficient.  If we
+       would move it right before the cpr_get many lines will scroll
+       away and the user might not realize that he merely entered a
+       wrong choise (because he does not see that either).  As a small
+       benefit we allow C-L to redisplay everything.  */
+    tty_printf ("%s", prompt);
     while (1)
       {
 	char *response;
 
+        /* TRANSLATORS: Two letters (normally the lower and upper case
+           version of the hotkey) for each of the five choices.  If
+           there is only one choice in your language, repeat it.  */
+        choices = _("gG" "aA" "uU" "rR" "bB");
 	if (strlen (choices) != 10)
 	  log_bug ("Bad TOFU conflict translation!  Please report.");
 
-	response = cpr_get ("tofu conflict", prompt);
+	response = cpr_get
+          ("tofu.conflict",
+           _("(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "));
 	trim_spaces (response);
 	cpr_kill_prompt ();
-	if (strlen (response) == 1)
+        if (*response == CONTROL_L)
+          tty_printf ("%s", prompt);
+	else if (strlen (response) == 1)
 	  {
 	    char *choice = strchr (choices, *response);
 	    if (choice)
 	      {
 		int c = ((size_t) choice - (size_t) choices) / 2;
-		assert (0 <= c && c <= 4);
 
 		switch (c)
 		  {
@@ -2160,6 +2162,14 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
   return trust_level;
 }
 
+
+/* Return a malloced string of the form
+ *    "7 months, 1 day, 5 minutes, 0 seconds"
+ * The caller must free that string.
+ *
+ * This is actually a bad hack which may not work correctly with all
+ * languages.
+ */
 static char *
 time_ago_str (long long int t)
 {
@@ -2229,10 +2239,7 @@ time_ago_str (long long int t)
 
   if (years)
     {
-      if (years > 1)
-        es_fprintf (fp, _("%d years"), years);
-      else
-        es_fprintf (fp, _("%d year"), years);
+      es_fprintf (fp, ngettext("%d year", "%d years", years), years);
       count ++;
       first = i;
     }
@@ -2241,11 +2248,7 @@ time_ago_str (long long int t)
     {
       if (count)
         es_fprintf (fp, ", ");
-
-      if (months > 1)
-        es_fprintf (fp, _("%d months"), months);
-      else
-        es_fprintf (fp, _("%d month"), months);
+      es_fprintf (fp, ngettext("%d month", "%d months", months), months);
       count ++;
       first = i;
     }
@@ -2254,11 +2257,7 @@ time_ago_str (long long int t)
     {
       if (count)
         es_fprintf (fp, ", ");
-
-      if (days > 1)
-        es_fprintf (fp, _("%d days"), days);
-      else
-        es_fprintf (fp, _("%d day"), days);
+      es_fprintf (fp, ngettext("%d day", "%d days", days), days);
       count ++;
       first = i;
     }
@@ -2267,11 +2266,7 @@ time_ago_str (long long int t)
     {
       if (count)
         es_fprintf (fp, ", ");
-
-      if (hours > 1)
-        es_fprintf (fp, _("%d hours"), hours);
-      else
-        es_fprintf (fp, _("%d hour"), hours);
+      es_fprintf (fp, ngettext("%d hour", "%d hours", hours), hours);
       count ++;
       first = i;
     }
@@ -2280,11 +2275,7 @@ time_ago_str (long long int t)
     {
       if (count)
         es_fprintf (fp, ", ");
-
-      if (minutes > 1)
-        es_fprintf (fp, _("%d minutes"), minutes);
-      else
-        es_fprintf (fp, _("%d minute"), minutes);
+      es_fprintf (fp, ngettext("%d minute", "%d minutes", minutes), minutes);
       count ++;
       first = i;
     }
@@ -2293,11 +2284,7 @@ time_ago_str (long long int t)
     {
       if (count)
         es_fprintf (fp, ", ");
-
-      if (seconds > 1)
-        es_fprintf (fp, _("%d seconds"), seconds);
-      else
-        es_fprintf (fp, _("%d second"), seconds);
+      es_fprintf (fp, ngettext("%d second", "%d seconds", seconds), seconds);
     }
 
   es_fputc (0, fp);
@@ -2306,6 +2293,7 @@ time_ago_str (long long int t)
 
   return str;
 }
+
 
 static void
 show_statistics (struct dbs *dbs, const char *fingerprint,
@@ -2416,25 +2404,33 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 	  if (messages == 0)
             es_fprintf (fp,
                         _("Verified 0 messages signed by \"%s\""
-                          " (key: %s, policy %s)."),
+                          " (key: %s, policy: %s)."),
                         user_id, fingerprint_pp, tofu_policy_str (policy));
 	  else
 	    {
-              char *first_seen_ago_str = time_ago_str (first_seen_ago);
+              char *first_seen_ago_str =
+                time_ago_str (first_seen_ago);
               char *most_recent_seen_ago_str =
                 time_ago_str (most_recent_seen_ago);
 
-	      es_fprintf (fp,
-			  _("Verified %ld messages signed by \"%s\""
-			    " (key: %s, policy: %s) in the past %s."),
+              /* TRANSLATORS: The final %s is replaced by a string like
+                 "7 months, 1 day, 5 minutes, 0 seconds". */
+	      es_fprintf (fp, ngettext("Verified %ld message signed by \"%s\""
+                                       " (key: %s, policy: %s) in the past %s.",
+                                       "Verified %ld messages signed by \"%s\""
+                                       " (key: %s, policy: %s) in the past %s.",
+                                       messages),
 			  messages, user_id,
 			  fingerprint_pp, tofu_policy_str (policy),
                           first_seen_ago_str);
 
               if (messages > 1)
-                es_fprintf (fp,
-                            _("  The most recent message was verified %s ago."),
-                            most_recent_seen_ago_str);
+                {
+                  es_fputs ("  ", fp);
+                  es_fprintf (fp,
+                              _("The most recent message was verified %s ago."),
+                              most_recent_seen_ago_str);
+                }
 
               xfree (first_seen_ago_str);
               xfree (most_recent_seen_ago_str);
@@ -2465,18 +2461,26 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 	      /* TRANSLATORS: translate the below text.  We don't
 		 directly internationalize that text so that we can
 		 tweak it without breaking translations.  */
-	      text = _("TOFU: few signatures %d %s %s");
-	      if (strcmp (text, "TOFU: few signatures %d %s %s") == 0)
-		text =
-		  "Warning: if you think you've seen more than %d %s "
-		  "signed by this key, then this key might be a forgery!  "
-		  "Carefully examine the email address for small variations "
-		  "(e.g., additional white space).  If the key is suspect, "
-		  "then use '%s' to mark it as being bad.\n";
-              tmp = xasprintf
-                (text,
-                 messages, messages == 1 ? _("message") : _("message"),
-                 set_policy_command);
+	      text = ngettext("TOFU: few signatures %d message %s",
+                              "TOFU: few signatures %d messages %s", 1);
+	      if (strcmp (text, "TOFU: few signatures %d message %s") == 0)
+                {
+                  text =
+                    (messages == 1?
+                     "Warning: if you think you've seen more than %d message "
+                     "signed by this key, then this key might be a forgery!  "
+                     "Carefully examine the email address for small variations "
+                     "(e.g., additional white space).  If the key is suspect, "
+                     "then use '%s' to mark it as being bad.\n"
+                     :
+                     "Warning: if you think you've seen more than %d messages "
+                     "signed by this key, then this key might be a forgery!  "
+                     "Carefully examine the email address for small variations "
+                     "(e.g., additional white space).  If the key is suspect, "
+                     "then use '%s' to mark it as being bad.\n");
+                }
+
+              tmp = xasprintf (text, messages, set_policy_command);
               text = format_text (tmp, 0, 72, 80);
               xfree (tmp);
 	      log_info ("%s", text);

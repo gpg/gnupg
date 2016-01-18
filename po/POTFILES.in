@@ -70,6 +70,7 @@ g10/skclist.c
 g10/tdbdump.c
 g10/tdbio.c
 g10/textfilter.c
+g10/tofu.c
 g10/trustdb.c
 g10/trust.c
 g10/verify.c
