@@ -268,10 +268,23 @@ check_signature_metadata_validity (PKT_public_key *pk, PKT_signature *sig,
     if( pk->timestamp > sig->timestamp )
       {
 	ulong d = pk->timestamp - sig->timestamp;
-	log_info
-          (ngettext("public key %s is %lu second newer than the signature\n",
-                    "public key %s is %lu seconds newer than the signature\n",
-                    d), keystr_from_pk (pk), d);
+        if ( d < 86400 )
+          {
+            log_info
+              (ngettext
+               ("public key %s is %lu second newer than the signature\n",
+                "public key %s is %lu seconds newer than the signature\n",
+                d), keystr_from_pk (pk), d);
+          }
+        else
+          {
+            d /= 86400;
+            log_info
+              (ngettext
+               ("public key %s is %lu day newer than the signature\n",
+                "public key %s is %lu days newer than the signature\n",
+                d), keystr_from_pk (pk), d);
+          }
 	if (!opt.ignore_time_conflict)
 	  return GPG_ERR_TIME_CONFLICT; /* pubkey newer than signature.  */
       }
@@ -280,12 +293,24 @@ check_signature_metadata_validity (PKT_public_key *pk, PKT_signature *sig,
     if( pk->timestamp > cur_time )
       {
 	ulong d = pk->timestamp - cur_time;
-	log_info (ngettext("key %s was created %lu second"
-                           " in the future (time warp or clock problem)\n",
-                           "key %s was created %lu seconds"
-                           " in the future (time warp or clock problem)\n",
-                           d), keystr_from_pk (pk), d);
-	if( !opt.ignore_time_conflict )
+        if (d < 86400)
+          {
+            log_info (ngettext("key %s was created %lu second"
+                               " in the future (time warp or clock problem)\n",
+                               "key %s was created %lu seconds"
+                               " in the future (time warp or clock problem)\n",
+                               d), keystr_from_pk (pk), d);
+          }
+        else
+          {
+            d /= 86400;
+            log_info (ngettext("key %s was created %lu day"
+                               " in the future (time warp or clock problem)\n",
+                               "key %s was created %lu days"
+                               " in the future (time warp or clock problem)\n",
+                               d), keystr_from_pk (pk), d);
+          }
+	if (!opt.ignore_time_conflict)
 	  return GPG_ERR_TIME_CONFLICT;
       }
 
