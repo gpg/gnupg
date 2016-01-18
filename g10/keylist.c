@@ -464,25 +464,23 @@ print_signature_stats (struct keylist_context *s)
   if (!s->check_sigs)
     return;  /* Signature checking was not requested.  */
 
-  if (s->good_sigs == 1)
-    log_info (_("1 good signature\n"));
-  else if (s->good_sigs)
-    log_info (_("%d good signatures\n"), s->good_sigs);
+  if (s->good_sigs)
+    log_info (ngettext("%d good signature\n",
+                       "%d good signatures\n", s->good_sigs), s->good_sigs);
 
-  if (s->inv_sigs == 1)
-    log_info (_("1 bad signature\n"));
-  else if (s->inv_sigs)
-    log_info (_("%d bad signatures\n"), s->inv_sigs);
+  if (s->inv_sigs)
+    log_info (ngettext("%d bad signature\n",
+                       "%d bad signatures\n", s->inv_sigs), s->inv_sigs);
 
-  if (s->no_key == 1)
-    log_info (_("1 signature not checked due to a missing key\n"));
-  else if (s->no_key)
-    log_info (_("%d signatures not checked due to missing keys\n"), s->no_key);
+  if (s->no_key)
+    log_info (ngettext("%d signature not checked due to a missing key\n",
+                       "%d signatures not checked due to missing keys\n",
+                       s->no_key), s->no_key);
 
-  if (s->oth_err == 1)
-    log_info (_("1 signature not checked due to an error\n"));
-  else if (s->oth_err)
-    log_info (_("%d signatures not checked due to errors\n"), s->oth_err);
+  if (s->oth_err)
+    log_info (ngettext("%d signature not checked due to an error\n",
+                       "%d signatures not checked due to errors\n",
+                       s->oth_err), s->oth_err);
 }
 
 
@@ -562,7 +560,9 @@ list_all (ctrl_t ctrl, int secret, int mark_secret)
   if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     log_error ("keydb_search_next failed: %s\n", gpg_strerror (rc));
   if (keydb_get_skipped_counter (hd))
-    log_info (_("Warning: %lu key(s) skipped due to their large size\n"),
+    log_info (ngettext("Warning: %lu key skipped due to its large size\n",
+                       "Warning: %lu keys skipped due to their large sizes\n",
+                       keydb_get_skipped_counter (hd)),
               keydb_get_skipped_counter (hd));
 
   if (opt.check_sigs && !opt.with_colons)

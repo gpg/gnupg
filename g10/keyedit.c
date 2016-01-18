@@ -382,23 +382,25 @@ check_all_keysigs (KBNODE keyblock, int only_selected, int only_selfsigs)
     }
   if (!has_selfsig)
     mis_selfsig++;
-  if (inv_sigs == 1)
-    tty_printf (_("1 bad signature\n"));
-  else if (inv_sigs)
-    tty_printf (_("%d bad signatures\n"), inv_sigs);
-  if (no_key == 1)
-    tty_printf (_("1 signature not checked due to a missing key\n"));
-  else if (no_key)
-    tty_printf (_("%d signatures not checked due to missing keys\n"), no_key);
-  if (oth_err == 1)
-    tty_printf (_("1 signature not checked due to an error\n"));
-  else if (oth_err)
-    tty_printf (_("%d signatures not checked due to errors\n"), oth_err);
-  if (mis_selfsig == 1)
-    tty_printf (_("1 user ID without valid self-signature detected\n"));
-  else if (mis_selfsig)
-    tty_printf (_("%d user IDs without valid self-signatures detected\n"),
-		mis_selfsig);
+
+  if (inv_sigs)
+    tty_printf (ngettext("%d bad signature\n",
+                         "%d bad signatures\n", inv_sigs), inv_sigs);
+
+  if (no_key)
+    tty_printf (ngettext("%d signature not checked due to a missing key\n",
+                         "%d signatures not checked due to missing keys\n",
+                         no_key), no_key);
+
+  if (oth_err)
+    tty_printf (ngettext("%d signature not checked due to an error\n",
+                         "%d signatures not checked due to errors\n",
+                         oth_err), oth_err);
+
+  if (mis_selfsig)
+    tty_printf (ngettext("%d user ID without valid self-signature detected\n",
+                         "%d user IDs without valid self-signatures detected\n",
+                         mis_selfsig), mis_selfsig);
 
   return inv_sigs || no_key || oth_err || mis_selfsig;
 }
@@ -3722,8 +3724,8 @@ menu_delsig (KBNODE pub_keyblock)
   if (changed)
     {
       commit_kbnode (&pub_keyblock);
-      tty_printf (changed == 1 ? _("Deleted %d signature.\n")
-		  : _("Deleted %d signatures.\n"), changed);
+      tty_printf (ngettext("Deleted %d signature.\n",
+                           "Deleted %d signatures.\n", changed), changed);
     }
   else
     tty_printf (_("Nothing deleted.\n"));
@@ -3769,11 +3771,9 @@ menu_clean (KBNODE keyblock, int self_only)
 	    }
 	  else if (sigs)
 	    {
-	      tty_printf (sigs == 1 ?
-			  _("User ID \"%s\": %d signature removed\n") :
-			  _("User ID \"%s\": %d signatures removed\n"),
-			  user, sigs);
-
+	      tty_printf (ngettext("User ID \"%s\": %d signature removed\n",
+                                   "User ID \"%s\": %d signatures removed\n",
+                                   sigs), user, sigs);
 	      modified = 1;
 	    }
 	  else

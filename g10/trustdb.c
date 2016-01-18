@@ -1842,8 +1842,14 @@ reset_trust_records(void)
     }
 
   if (opt.verbose)
-    log_info (_("%d keys processed (%d validity counts cleared)\n"),
-	      count, nreset);
+    {
+      log_info (ngettext("%d key processed",
+                         "%d keys processed",
+                         count), count);
+      log_printf (ngettext(" (%d validity count cleared)\n",
+                           " (%d validity counts cleared)\n",
+                           nreset), nreset);
+    }
 }
 
 /*
@@ -1952,8 +1958,8 @@ validate_keys (int interactive)
 
   klist = utk_list;
 
-  log_info(_("%d marginal(s) needed, %d complete(s) needed, %s trust model\n"),
-	   opt.marginals_needed,opt.completes_needed,trust_model_string());
+  log_info ("marginals needed: %d  completes needed: %d  trust model: %s\n",
+            opt.marginals_needed, opt.completes_needed, trust_model_string ());
 
   for (depth=0; depth < opt.max_cert_depth; depth++)
     {

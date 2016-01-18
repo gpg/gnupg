@@ -1874,8 +1874,11 @@ build_enter_admin_pin_prompt (app_t app, char **r_prompt)
   remaining = value[6];
   xfree (relptr);
 
-  log_info(_("%d Admin PIN attempts remaining before card"
-             " is permanently locked\n"), remaining);
+  log_info (ngettext("%d Admin PIN attempt remaining before card"
+                     " is permanently locked\n",
+                     "%d Admin PIN attempts remaining before card"
+                     " is permanently locked\n",
+                     remaining), remaining);
 
   if (remaining < 3)
     {
@@ -3587,8 +3590,13 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
       log_error (_("generating key failed\n"));
       goto leave;
     }
-  log_info (_("key generation completed (%d seconds)\n"),
-            (int)(time (NULL) - start_at));
+
+  {
+    int nsecs = (int)(time (NULL) - start_at);
+    log_info (ngettext("key generation completed (%d second)\n",
+                       "key generation completed (%d seconds)\n",
+                       nsecs), nsecs);
+  }
 
   keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
   if (!keydata)

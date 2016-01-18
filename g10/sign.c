@@ -235,14 +235,14 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
   if (pksk->timestamp > sig->timestamp )
     {
       ulong d = pksk->timestamp - sig->timestamp;
-      log_info (d==1 ? _("key has been created %lu second "
-                         "in future (time warp or clock problem)\n")
-                : _("key has been created %lu seconds "
-                    "in future (time warp or clock problem)\n"), d );
+      log_info (ngettext("key %s was created %lu second"
+                         " in the future (time warp or clock problem)\n",
+                         "key %s was created %lu seconds"
+                         " in the future (time warp or clock problem)\n",
+                         d), keystr_from_pk (pksk), d);
       if (!opt.ignore_time_conflict)
         return gpg_error (GPG_ERR_TIME_CONFLICT);
     }
-
 
   print_pubkey_algo_note (pksk->pubkey_algo);
 

@@ -1564,8 +1564,10 @@ keyring_rebuild_cache (void *token,int noisy)
             goto leave;
 
           if ( !(++count % 50) && noisy && !opt.quiet)
-            log_info(_("%lu keys cached so far (%lu signatures)\n"),
-                     count, sigcount );
+            log_info (ngettext("%lu keys cached so far (%lu signature)\n",
+                               "%lu keys cached so far (%lu signatures)\n",
+                               sigcount),
+                      count, sigcount);
         }
     } /* end main loop */
   if (rc == -1)
@@ -1575,8 +1577,15 @@ keyring_rebuild_cache (void *token,int noisy)
       log_error ("keyring_search failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
-  if(noisy || opt.verbose)
-    log_info(_("%lu keys cached (%lu signatures)\n"), count, sigcount );
+
+  if (noisy || opt.verbose)
+    {
+      log_info (ngettext("%lu key cached",
+                         "%lu keys cached", count), count);
+      log_printf (ngettext(" (%lu signature)\n",
+                           " (%lu signatures)\n", sigcount), sigcount);
+    }
+
   if (tmpfp)
     {
       if (iobuf_close (tmpfp))

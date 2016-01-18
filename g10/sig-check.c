@@ -268,11 +268,11 @@ check_signature_metadata_validity (PKT_public_key *pk, PKT_signature *sig,
     if( pk->timestamp > sig->timestamp )
       {
 	ulong d = pk->timestamp - sig->timestamp;
-	log_info(d==1
-		 ?_("public key %s is %lu second newer than the signature\n")
-		 :_("public key %s is %lu seconds newer than the signature\n"),
-		 keystr_from_pk(pk),d );
-	if( !opt.ignore_time_conflict )
+	log_info
+          (ngettext("public key %s is %lu second newer than the signature\n",
+                    "public key %s is %lu seconds newer than the signature\n",
+                    d), keystr_from_pk (pk), d);
+	if (!opt.ignore_time_conflict)
 	  return GPG_ERR_TIME_CONFLICT; /* pubkey newer than signature.  */
       }
 
@@ -280,12 +280,11 @@ check_signature_metadata_validity (PKT_public_key *pk, PKT_signature *sig,
     if( pk->timestamp > cur_time )
       {
 	ulong d = pk->timestamp - cur_time;
-	log_info( d==1
-		  ? _("key %s was created %lu second"
-		      " in the future (time warp or clock problem)\n")
-		  : _("key %s was created %lu seconds"
-		      " in the future (time warp or clock problem)\n"),
-		  keystr_from_pk(pk),d );
+	log_info (ngettext("key %s was created %lu second"
+                           " in the future (time warp or clock problem)\n",
+                           "key %s was created %lu seconds"
+                           " in the future (time warp or clock problem)\n",
+                           d), keystr_from_pk (pk), d);
 	if( !opt.ignore_time_conflict )
 	  return GPG_ERR_TIME_CONFLICT;
       }
