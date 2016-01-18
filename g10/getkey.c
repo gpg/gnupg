@@ -621,7 +621,7 @@ get_pubkeys (ctrl_t ctrl,
             {
               char fingerprint_formatted[MAX_FORMATTED_FINGERPRINT_LEN + 1];
 
-              log_info (_("Warning: %s appears in the keyring %d times.\n"),
+              log_info (_("Warning: %s appears in the keyring %d times\n"),
                         format_hexfingerprint (fingerprint,
                                                fingerprint_formatted,
                                                sizeof fingerprint_formatted),

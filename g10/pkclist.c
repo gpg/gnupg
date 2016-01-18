@@ -940,7 +940,7 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
               xfree (r->pk);
               xfree (r);
 
-              log_error (_("Can't encrypt to '%s'.\n"), default_key);
+              log_error (_("can't encrypt to '%s'\n"), default_key);
               if (!opt.quiet)
                 log_info (_("(check argument of option '%s')\n"),
                           "--default-key");
