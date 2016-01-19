@@ -90,6 +90,7 @@ void print_cipher_algo_note (cipher_algo_t algo);
 void print_digest_algo_note (digest_algo_t algo);
 void print_digest_rejected_note (enum gcry_md_algos algo);
 void print_reported_error (gpg_error_t err, gpg_err_code_t skip_if_ec);
+void print_further_info (const char *format, ...) GPGRT_ATTR_PRINTF(1,2);
 void additional_weak_digest (const char* digestname);
 
 /*-- armor.c --*/

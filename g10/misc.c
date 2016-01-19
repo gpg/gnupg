@@ -383,6 +383,27 @@ print_reported_error (gpg_error_t err, gpg_err_code_t ignore_ec)
 }
 
 
+/* Print a message
+ *   "(further info: %s)\n
+ * in verbose mode to further explain an error.  That message is
+ * intended to help debug a problem and should not be translated.
+ */
+void
+print_further_info (const char *format, ...)
+{
+  va_list arg_ptr;
+
+  if (!opt.verbose)
+    return;
+
+  log_info (_("(further info: "));
+  va_start (arg_ptr, format);
+  log_logv (GPGRT_LOG_CONT, format, arg_ptr);
+  va_end (arg_ptr);
+  log_printf (")\n");
+}
+
+
 /* Map OpenPGP algo numbers to those used by Libgcrypt.  We need to do
    this for algorithms we implemented in Libgcrypt after they become
    part of OpenPGP.  */
