@@ -383,7 +383,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     *r_errfp = NULL;
   *pid = (pid_t)(-1); /* Always required.  */
 
-  if (infp)
+  if (r_infp)
     {
       if (create_inheritable_pipe (inpipe, 0))
         {
