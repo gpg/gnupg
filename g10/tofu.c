@@ -261,9 +261,10 @@ begin_transaction (struct db *db, int only_batch)
                           "savepoint batch;", SQLITE_ARG_END);
       if (rc)
         {
-          log_error
-            (_("error beginning %s transaction on TOFU database '%s': %s\n"),
-             "batch", *db->name ? db->name : "combined", err);
+          log_error (_("error beginning transaction on TOFU database: %s\n"),
+                     err);
+          print_further_info ("batch, database '%s'",
+                              *db->name ? db->name : "[combined]");
           sqlite3_free (err);
           return gpg_error (GPG_ERR_GENERAL);
         }
@@ -279,9 +280,10 @@ begin_transaction (struct db *db, int only_batch)
                       "savepoint inner;", SQLITE_ARG_END);
   if (rc)
     {
-      log_error
-        (_("error beginning %s transaction on TOFU database '%s': %s\n"),
-         "inner", *db->name ? db->name : "combined", err);
+      log_error (_("error beginning transaction on TOFU database: %s\n"),
+                 err);
+      print_further_info ("inner, database '%s'",
+                          *db->name ? db->name : "[combined]");
       sqlite3_free (err);
       return gpg_error (GPG_ERR_GENERAL);
     }
@@ -313,9 +315,10 @@ end_transaction (struct db *db, int only_batch)
                           "release batch;", SQLITE_ARG_END);
       if (rc)
         {
-          log_error
-            (_("error committing %s transaction on TOFU database '%s': %s\n"),
-             "batch", *db->name ? db->name : "combined", err);
+          log_error (_("error committing transaction on TOFU database: %s\n"),
+                     err);
+          print_further_info ("batch, database '%s'",
+                              *db->name ? db->name : "[combined]");
           sqlite3_free (err);
           return gpg_error (GPG_ERR_GENERAL);
         }
@@ -333,9 +336,10 @@ end_transaction (struct db *db, int only_batch)
                       "release inner;", SQLITE_ARG_END);
   if (rc)
     {
-      log_error
-        (_("error committing %s transaction on TOFU database '%s': %s\n"),
-         "inner", *db->name ? db->name : "combined", err);
+      log_error (_("error committing transaction on TOFU database: %s\n"),
+                 err);
+      print_further_info ("inner, database '%s'",
+                          *db->name ? db->name : "[combined]");
       sqlite3_free (err);
       return gpg_error (GPG_ERR_GENERAL);
     }
@@ -362,9 +366,10 @@ rollback_transaction (struct db *db)
 
   if (rc)
     {
-      log_error
-        (_("error rolling back inner transaction on TOFU database '%s': %s\n"),
-         *db->name ? db->name : "combined", err);
+      log_error (_("error rolling back transaction on TOFU database: %s\n"),
+                 err);
+      print_further_info ("inner, database '%s'",
+                          *db->name ? db->name : "[combined]");
       sqlite3_free (err);
       return gpg_error (GPG_ERR_GENERAL);
     }
@@ -443,7 +448,7 @@ version_check_cb (void *cookie, int argc, char **argv, char **azColName)
     *version = 1;
   else
     {
-      log_error (_("unsupported TOFU DB version: %s\n"), argv[0]);
+      log_error (_("unsupported TOFU database version: %s\n"), argv[0]);
       *version = -1;
     }
 
@@ -480,8 +485,8 @@ initdb (sqlite3 *db, enum db_type type)
 		     get_single_unsigned_long_cb, &count, &err);
   if (rc)
     {
-      log_error (_("error querying TOFU DB's available tables: %s\n"),
-		 err);
+      log_error (_("error reading TOFU database: %s\n"), err);
+      print_further_info ("query available tables");
       sqlite3_free (err);
       goto out;
     }
@@ -508,16 +513,16 @@ initdb (sqlite3 *db, enum db_type type)
       else if (rc)
 	/* Some error.  */
 	{
-	  log_error (_("error determining TOFU DB's version: %s\n"), err);
+	  log_error (_("error determining TOFU database's version: %s\n"), err);
 	  sqlite3_free (err);
           goto out;
 	}
       else
-	/* Unexpected success.  This can only happen if there are no
-	   rows.  */
-	{
-	  log_error (_("error determining TOFU DB's version: %s\n"),
-		     "select returned 0, but expected ABORT");
+        {
+          /* Unexpected success.  This can only happen if there are no
+             rows.  (select returned 0, but expected ABORT.)  */
+	  log_error (_("error determining TOFU database's version: %s\n"),
+                     gpg_strerror (GPG_ERR_NO_DATA));
           rc = 1;
           goto out;
 	}
@@ -529,8 +534,8 @@ initdb (sqlite3 *db, enum db_type type)
 		     NULL, NULL, &err);
   if (rc)
     {
-      log_error (_("error initializing TOFU database (%s): %s\n"),
-		 "version", err);
+      log_error (_("error initializing TOFU database: %s\n"), err);
+      print_further_info ("create version");
       sqlite3_free (err);
       goto out;
     }
@@ -542,37 +547,37 @@ initdb (sqlite3 *db, enum db_type type)
 		     NULL, NULL, &err);
   if (rc)
     {
-      log_error (_("error initializing TOFU database (%s): %s\n"),
-		 "version, init", err);
+      log_error (_("error initializing TOFU database: %s\n"), err);
+      print_further_info ("insert version");
       sqlite3_free (err);
       goto out;
     }
 
   /* The list of <fingerprint, email> bindings and auxiliary data.
-
-       OID is a unique ID identifying this binding (and used by the
-         signatures table, see below).  Note: OIDs will never be
-         reused.
-
-       FINGERPRINT: The key's fingerprint.
-
-       EMAIL: The normalized email address.
-
-       USER_ID: The unmodified user id from which EMAIL was extracted.
-
-       TIME: The time this binding was first observed.
-
-       POLICY: The trust policy (TOFU_POLICY_BAD, etc. as an integer).
-
-       CONFLICT is either NULL or a fingerprint.  Assume that we have
-         a binding <0xdeadbeef, foo@example.com> and then we observe
-         <0xbaddecaf, foo@example.com>.  There two bindings conflict
-         (they have the same email address).  When we observe the
-         latter binding, we warn the user about the conflict and ask
-         for a policy decision about the new binding.  We also change
-         the old binding's policy to ask if it was auto.  So that we
-         know why this occurred, we also set conflict to 0xbaddecaf.
-  */
+   *
+   *  OID is a unique ID identifying this binding (and used by the
+   *    signatures table, see below).  Note: OIDs will never be
+   *    reused.
+   *
+   *  FINGERPRINT: The key's fingerprint.
+   *
+   *  EMAIL: The normalized email address.
+   *
+   *  USER_ID: The unmodified user id from which EMAIL was extracted.
+   *
+   *  TIME: The time this binding was first observed.
+   *
+   *  POLICY: The trust policy (TOFU_POLICY_BAD, etc. as an integer).
+   *
+   *  CONFLICT is either NULL or a fingerprint.  Assume that we have
+   *    a binding <0xdeadbeef, foo@example.com> and then we observe
+   *    <0xbaddecaf, foo@example.com>.  There two bindings conflict
+   *    (they have the same email address).  When we observe the
+   *    latter binding, we warn the user about the conflict and ask
+   *    for a policy decision about the new binding.  We also change
+   *    the old binding's policy to ask if it was auto.  So that we
+   *     know why this occurred, we also set conflict to 0xbaddecaf.
+   */
   if (type == DB_EMAIL || type == DB_COMBINED)
     rc = sqlite3_exec_printf
       (db, NULL, NULL, &err,
@@ -603,8 +608,8 @@ initdb (sqlite3 *db, enum db_type type)
        " on bindings (fingerprint);\n");
   if (rc)
     {
-      log_error (_("error initializing TOFU database (%s): %s\n"),
-		 "bindings", err);
+      log_error (_("error initializing TOFU database: %s\n"), err);
+      print_further_info ("create bindings");
       sqlite3_free (err);
       goto out;
     }
@@ -633,8 +638,8 @@ initdb (sqlite3 *db, enum db_type type)
 			 NULL, NULL, &err);
       if (rc)
 	{
-	  log_error (_("error initializing TOFU database (%s): %s\n"),
-		     "signatures", err);
+          log_error (_("error initializing TOFU database: %s\n"), err);
+          print_further_info ("create signatures");
 	  sqlite3_free (err);
 	  goto out;
 	}
@@ -646,7 +651,7 @@ initdb (sqlite3 *db, enum db_type type)
       rc = sqlite3_exec (db, "rollback;", NULL, NULL, &err);
       if (rc)
 	{
-	  log_error (_("error aborting transaction on TOFU DB: %s\n"),
+	  log_error (_("error rolling back transaction on TOFU database: %s\n"),
 		     err);
 	  sqlite3_free (err);
 	}
@@ -657,7 +662,7 @@ initdb (sqlite3 *db, enum db_type type)
       rc = sqlite3_exec (db, "end transaction;", NULL, NULL, &err);
       if (rc)
 	{
-	  log_error (_("error committing transaction on TOFU DB: %s\n"),
+	  log_error (_("error committing transaction on TOFU database: %s\n"),
 		     err);
 	  sqlite3_free (err);
 	  return 1;
@@ -692,8 +697,8 @@ opendb (char *filename, enum db_type type)
   rc = sqlite3_open (filename, &db);
   if (rc)
     {
-      log_error (_("can't open TOFU DB ('%s'): %s\n"),
-		 filename, sqlite3_errmsg (db));
+      log_error (_("error opening TOFU database '%s': %s\n"),
+                 filename, sqlite3_errmsg (db));
       /* Even if an error occurs, DB is guaranteed to be valid.  */
       sqlite3_close (db);
       db = NULL;
@@ -755,6 +760,7 @@ getdb (struct dbs *dbs, const char *name, enum db_type type)
   char *filename = NULL;
   int need_link = 1;
   sqlite3 *sqlitedb = NULL;
+  gpg_error_t rc;
 
   assert (dbs);
   assert (name);
@@ -826,10 +832,14 @@ getdb (struct dbs *dbs, const char *name, enum db_type type)
         char *name_db;
 
         /* Make the directory.  */
-        if (gnupg_mkdir_p (opt.homedir, "tofu.d", type_str, prefix, NULL) != 0)
+        rc = gnupg_mkdir_p (opt.homedir, "tofu.d", type_str, prefix, NULL);
+        if (rc)
           {
-            log_error (_("unable to create directory %s/%s/%s/%s"),
-                       opt.homedir, "tofu.d", type_str, prefix);
+            name_db = xstrconcat (opt.homedir, "tofu.d",
+                                  type_str, prefix, NULL);
+            log_error (_("can't create directory '%s': %s\n"),
+                       name_db, gpg_strerror (rc));
+            xfree (name_db);
             goto out;
           }
 
@@ -906,6 +916,8 @@ closedb (struct db *db)
 
 
 /* Create a new DB meta-handle.  Returns NULL on error.  */
+/* FIXME: Change to return an error code for better reporting by the
+   caller.  */
 static struct dbs *
 opendbs (void)
 {
@@ -947,26 +959,27 @@ opendbs (void)
       if (have_tofu_db && have_tofu_d)
 	{
 	  log_info (_("Warning: Home directory contains both tofu.db"
-                      " and tofu.d.  Using split format for TOFU DB.\n"));
+                      " and tofu.d.\n"));
+          log_info (_("Using split format for TOFU database\n"));
 	  opt.tofu_db_format = TOFU_DB_SPLIT;
 	}
       else if (have_tofu_db)
 	{
 	  opt.tofu_db_format = TOFU_DB_FLAT;
 	  if (DBG_TRUST)
-	    log_debug ("Using flat format for TOFU DB.\n");
+	    log_debug ("Using flat format for TOFU database.\n");
 	}
       else if (have_tofu_d)
 	{
 	  opt.tofu_db_format = TOFU_DB_SPLIT;
 	  if (DBG_TRUST)
-	    log_debug ("Using split format for TOFU DB.\n");
+	    log_debug ("Using split format for TOFU database.\n");
 	}
       else
 	{
 	  opt.tofu_db_format = TOFU_DB_FLAT;
 	  if (DBG_TRUST)
-	    log_debug ("Using flat format for TOFU DB.\n");
+	    log_debug ("Using flat format for TOFU database.\n");
 	}
     }
 
@@ -1075,7 +1088,7 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
 {
   char *fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
   struct db *db_email = NULL, *db_key = NULL;
-  int rc;
+  gpg_error_t rc;
   char *err = NULL;
   /* policy_old needs to be a long and not an enum tofu_policy,
      because we pass it by reference to get_single_long_cb2, which
@@ -1091,7 +1104,10 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
 
   db_email = getdb (dbs, email, DB_EMAIL);
   if (! db_email)
-    return gpg_error (GPG_ERR_GENERAL);
+    {
+      rc = gpg_error (GPG_ERR_GENERAL);
+      goto leave;
+    }
 
   if (opt.tofu_db_format == TOFU_DB_SPLIT)
     /* In the split format, we need to update two DBs.  To keep them
@@ -1102,11 +1118,14 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
     {
       db_key = getdb (dbs, fingerprint, DB_KEY);
       if (! db_key)
-	return gpg_error (GPG_ERR_GENERAL);
+        {
+          rc = gpg_error (GPG_ERR_GENERAL);
+          goto leave;
+        }
 
       rc = begin_transaction (db_email, 0);
       if (rc)
-        return gpg_error (GPG_ERR_GENERAL);
+        goto leave;
 
       rc = begin_transaction (db_key, 0);
       if (rc)
@@ -1116,7 +1135,7 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
     {
       rc = begin_transaction (db_email, 1);
       if (rc)
-        return gpg_error (GPG_ERR_GENERAL);
+        goto leave;
     }
 
 
@@ -1174,10 +1193,9 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
      SQLITE_ARG_END);
   if (rc)
     {
-      log_error (_("error updating TOFU binding database"
-		   " (inserting <%s, %s> = %s): %s\n"),
-		 fingerprint_pp, email, tofu_policy_str (policy),
-		 err);
+      log_error (_("error updating TOFU database: %s\n"), err);
+      print_further_info (" insert bindings <%s, %s> = %s",
+                          fingerprint_pp, email, tofu_policy_str (policy));
       sqlite3_free (err);
       goto out;
     }
@@ -1202,9 +1220,9 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
          SQLITE_ARG_STRING, user_id, SQLITE_ARG_END);
       if (rc)
 	{
-	  log_error (_("error updating TOFU binding database"
-		       " (inserting <%s, %s>): %s\n"),
-		     fingerprint_pp, email, err);
+	  log_error (_("error updating TOFU database: %s\n"), err);
+          print_further_info ("insert bindings <%s, %s>",
+                              fingerprint_pp, email);
 	  sqlite3_free (err);
 	  goto out;
 	}
@@ -1216,18 +1234,14 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
   if (opt.tofu_db_format == TOFU_DB_SPLIT)
     /* We only need a transaction for the split format.  */
     {
-      int rc2;
+      gpg_error_t rc2;
 
       if (rc)
         rc2 = rollback_transaction (db_key);
       else
         rc2 = end_transaction (db_key, 0);
       if (rc2)
-	{
-	  log_error (_("error ending transaction on TOFU database: %s\n"),
-		     err);
-	  sqlite3_free (err);
-	}
+        sqlite3_free (err);
 
     out_revert_one:
       if (rc)
@@ -1235,18 +1249,13 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
       else
         rc2 = end_transaction (db_email, 0);
       if (rc2)
-	{
-	  log_error (_("error ending transaction on TOFU database: %s\n"),
-		     err);
-	  sqlite3_free (err);
-	}
+        sqlite3_free (err);
     }
 
+ leave:
   xfree (fingerprint_pp);
 
-  if (rc)
-    return gpg_error (GPG_ERR_GENERAL);
-  return 0;
+  return rc;
 }
 
 
@@ -1461,9 +1470,8 @@ get_policy (struct dbs *dbs, const char *fingerprint, const char *email,
                       SQLITE_ARG_END);
   if (rc)
     {
-      log_error (_("error reading from TOFU database"
-		   " (checking for existing bad bindings): %s\n"),
-		 err);
+      log_error (_("error reading TOFU database: %s\n"), err);
+      print_further_info ("checking for existing bad bindings");
       sqlite3_free (err);
       goto out;
     }
@@ -1477,10 +1485,11 @@ get_policy (struct dbs *dbs, const char *fingerprint, const char *email,
   else if (strlist_length (strlist) != 2)
     /* The result has the wrong form.  */
     {
-      log_error (_("error reading from TOFU database"
-		   " (checking for existing bad bindings):"
-		   " expected 2 results, got %d\n"),
-		 strlist_length (strlist));
+      log_error (_("error reading TOFU database: %s\n"),
+                 gpg_strerror (GPG_ERR_BAD_DATA));
+      print_further_info ("checking for existing bad bindings:"
+                          " expected 2 results, got %d\n",
+                          strlist_length (strlist));
       goto out;
     }
 
@@ -1490,8 +1499,9 @@ get_policy (struct dbs *dbs, const char *fingerprint, const char *email,
   policy = strtol (strlist->d, &tail, 0);
   if (errno || *tail != '\0')
     {
-      log_error (_("error reading from TOFU database: bad value for policy: %s\n"),
-		 strlist->d);
+      log_error (_("error reading TOFU database: %s\n"),
+                 gpg_strerror (GPG_ERR_BAD_DATA));
+      print_further_info ("bad value for policy: %s", strlist->d);
       goto out;
     }
 
@@ -1501,8 +1511,9 @@ get_policy (struct dbs *dbs, const char *fingerprint, const char *email,
 	 || policy == TOFU_POLICY_BAD
 	 || policy == TOFU_POLICY_ASK))
     {
-      log_error (_("TOFU DB is corrupted.  Invalid value for policy (%d).\n"),
-		 policy);
+      log_error (_("error reading TOFU database: %s\n"),
+                 gpg_strerror (GPG_ERR_DB_CORRUPTED));
+      print_further_info ("invalid value for policy (%d)", policy);
       policy = _tofu_GET_POLICY_ERROR;
       goto out;
     }
@@ -1711,9 +1722,8 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
      SQLITE_ARG_STRING, email, SQLITE_ARG_END);
   if (rc)
     {
-      log_error (_("error reading from TOFU database"
-		   " (listing fingerprints): %s\n"),
-		 err);
+      log_error (_("error reading TOFU database: %s\n"), err);
+      print_further_info ("listing fingerprints");
       sqlite3_free (err);
       goto out;
     }
@@ -1863,7 +1873,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	     SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_END);
 	  if (rc)
 	    {
-	      log_error (_("error gathering other user ids: %s.\n"), err);
+	      log_error (_("error gathering other user IDs: %s\n"), err);
 	      sqlite3_free (err);
 	      err = NULL;
 	    }
@@ -2327,9 +2337,8 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
      sig_exclude ? "'" : "");
   if (rc)
     {
-      log_error (_("error reading from TOFU database"
-		   " (getting statistics): %s\n"),
-		 err);
+      log_error (_("error reading TOFU database: %s\n"), err);
+      print_further_info ("getting statistics");
       sqlite3_free (err);
       goto out;
     }
@@ -2556,7 +2565,8 @@ tofu_register (PKT_public_key *pk, const char *user_id,
   dbs = opendbs ();
   if (! dbs)
     {
-      log_error (_("error opening TOFU DB.\n"));
+      log_error (_("error opening TOFU database: %s\n"),
+                 gpg_strerror (GPG_ERR_GENERAL));
       goto die;
     }
 
@@ -2589,7 +2599,8 @@ tofu_register (PKT_public_key *pk, const char *user_id,
   db = getdb (dbs, email, DB_EMAIL);
   if (! db)
     {
-      log_error (_("error opening TOFU DB.\n"));
+      log_error (_("error opening TOFU database: %s\n"),
+                 gpg_strerror (GPG_ERR_GENERAL));
       goto die;
     }
 
@@ -2615,9 +2626,8 @@ tofu_register (PKT_public_key *pk, const char *user_id,
      SQLITE_ARG_END);
   if (rc)
     {
-      log_error (_("error reading from signatures database"
-		   " (checking existence): %s\n"),
-		 err);
+      log_error (_("error reading TOFU database: %s\n"), err);
+      print_further_info ("checking existence");
       sqlite3_free (err);
     }
   else if (c > 1)
@@ -2662,9 +2672,8 @@ tofu_register (PKT_public_key *pk, const char *user_id,
          SQLITE_ARG_END);
       if (rc)
 	{
-	  log_error (_("error updating TOFU DB"
-		       " (inserting into signatures table): %s\n"),
-		     err);
+	  log_error (_("error updating TOFU database: %s\n"), err);
+          print_further_info ("insert signatures");
 	  sqlite3_free (err);
 	}
     }
@@ -2677,7 +2686,6 @@ tofu_register (PKT_public_key *pk, const char *user_id,
     rc = end_transaction (db, 0);
   if (rc)
     {
-      log_error (_("error ending transaction on TOFU database: %s\n"), err);
       sqlite3_free (err);
       goto die;
     }
@@ -2771,7 +2779,8 @@ tofu_get_validity (PKT_public_key *pk, const char *user_id,
   dbs = opendbs ();
   if (! dbs)
     {
-      log_error (_("error opening TOFU DB.\n"));
+      log_error (_("error opening TOFU database: %s\n"),
+                 gpg_strerror (GPG_ERR_GENERAL));
       goto die;
     }
 
@@ -2823,7 +2832,8 @@ tofu_set_policy (kbnode_t kb, enum tofu_policy policy)
   dbs = opendbs ();
   if (! dbs)
     {
-      log_error (_("error opening TOFU DB.\n"));
+      log_error (_("error opening TOFU database: %s\n"),
+                 gpg_strerror (GPG_ERR_GENERAL));
       return gpg_error (GPG_ERR_GENERAL);
     }
 
@@ -2902,7 +2912,8 @@ tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
   dbs = opendbs ();
   if (! dbs)
     {
-      log_error (_("error opening TOFU DB.\n"));
+      log_error (_("error opening TOFU database: %s\n"),
+                 gpg_strerror (GPG_ERR_GENERAL));
       return gpg_error (GPG_ERR_GENERAL);
     }
 
