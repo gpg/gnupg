@@ -430,7 +430,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
           if (infp)
             es_fclose (infp);
           else if (inpipe[1] != INVALID_HANDLE_VALUE)
-            CloseHandle (outpipe[1]);
+            CloseHandle (inpipe[1]);
           if (inpipe[0] != INVALID_HANDLE_VALUE)
             CloseHandle (inpipe[0]);
           return err;
@@ -466,7 +466,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
           if (infp)
             es_fclose (infp);
           else if (inpipe[1] != INVALID_HANDLE_VALUE)
-            CloseHandle (outpipe[1]);
+            CloseHandle (inpipe[1]);
           if (inpipe[0] != INVALID_HANDLE_VALUE)
             CloseHandle (inpipe[0]);
           return err;
