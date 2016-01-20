@@ -483,12 +483,12 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   if (err)
     return err;
 
-  if (inpipe[0] != INVALID_HANDLE_VALUE)
+  if (inpipe[0] == INVALID_HANDLE_VALUE)
     nullhd[0] = w32_open_null (0);
-  if (outpipe[1] != INVALID_HANDLE_VALUE)
-    nullhd[1] = w32_open_null (0);
-  if (errpipe[1] != INVALID_HANDLE_VALUE)
-    nullhd[2] = w32_open_null (0);
+  if (outpipe[1] == INVALID_HANDLE_VALUE)
+    nullhd[1] = w32_open_null (1);
+  if (errpipe[1] == INVALID_HANDLE_VALUE)
+    nullhd[2] = w32_open_null (1);
 
   /* Start the process.  Note that we can't run the PREEXEC function
      because this might change our own environment. */
