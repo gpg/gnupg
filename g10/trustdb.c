@@ -1041,18 +1041,22 @@ tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
 	  else
 	    user_id = user_id_node->pkt->pkt.user_id;
 
+          /* If the user id is revoked or expired, then skip it.  */
 	  if (user_id->is_revoked || user_id->is_expired)
-	    /* If the user id is revoked or expired, then skip it.  */
 	    {
-	      char *s;
-	      if (user_id->is_revoked && user_id->is_expired)
-		s = "revoked and expired";
-	      else if (user_id->is_revoked)
-		s = "revoked";
-	      else
-		s = "expire";
+              if (DBG_TRUST)
+                {
+                  char *s;
+                  if (user_id->is_revoked && user_id->is_expired)
+                    s = "revoked and expired";
+                  else if (user_id->is_revoked)
+                    s = "revoked";
+                  else
+                    s = "expire";
 
-	      log_info ("TOFU: Ignoring %s user id (%s)\n", s, user_id->name);
+                  log_debug ("TOFU: Ignoring %s user id (%s)\n",
+                             s, user_id->name);
+                }
 
 	      continue;
 	    }
