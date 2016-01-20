@@ -93,6 +93,7 @@ enum cmd_and_opt_values
   oPinentryProgram,
   oPinentryTouchFile,
   oPinentryInvisibleChar,
+  oPinentryTimeout,
   oDisplay,
   oTTYname,
   oTTYtype,
@@ -168,6 +169,7 @@ static ARGPARSE_OPTS opts[] = {
                 /* */             N_("|PGM|use PGM as the PIN-Entry program")),
   ARGPARSE_s_s (oPinentryTouchFile, "pinentry-touch-file", "@"),
   ARGPARSE_s_s (oPinentryInvisibleChar, "pinentry-invisible-char", "@"),
+  ARGPARSE_s_u (oPinentryTimeout, "pinentry-timeout", "@"),
   ARGPARSE_s_s (oScdaemonProgram, "scdaemon-program",
                 /* */             N_("|PGM|use PGM as the SCdaemon program") ),
   ARGPARSE_s_n (oDisableScdaemon, "disable-scdaemon",
@@ -580,6 +582,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.pinentry_touch_file = NULL;
       xfree (opt.pinentry_invisible_char);
       opt.pinentry_invisible_char = NULL;
+      opt.pinentry_timeout = 0;
       opt.scdaemon_program = NULL;
       opt.def_cache_ttl = DEFAULT_CACHE_TTL;
       opt.def_cache_ttl_ssh = DEFAULT_CACHE_TTL_SSH;
@@ -632,6 +635,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       xfree (opt.pinentry_invisible_char);
       opt.pinentry_invisible_char = xtrystrdup (pargs->r.ret_str); break;
       break;
+    case oPinentryTimeout: opt.pinentry_timeout = pargs->r.ret_ulong; break;
     case oScdaemonProgram: opt.scdaemon_program = pargs->r.ret_str; break;
     case oDisableScdaemon: opt.disable_scdaemon = 1; break;
     case oDisableCheckOwnSocket: disable_check_own_socket = 1; break;
@@ -1124,6 +1128,8 @@ main (int argc, char **argv )
                  GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       es_printf ("allow-emacs-pinentry:%lu:\n",
                  GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
+      es_printf ("pinentry-timeout:%lu:0:\n",
+                 GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME);
 
       agent_exit (0);
     }

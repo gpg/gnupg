@@ -402,6 +402,13 @@ This option asks the Pinentry to use @var{char} for displaying hidden
 characters.  @var{char} must be one character UTF-8 string.  A
 Pinentry may or may not honor this request.
 
+@item --pinentry-timeout @var{n}
+@opindex pinentry-timeout
+This option asks the Pinentry to timeout after @var{n} seconds with no
+user input.  The default value of 0 does not ask the pinentry to
+timeout, however a Pinentry may use its own default timeout value in
+this case.  A Pinentry may or may not honor this request.
+
 @item --pinentry-program @var{filename}
 @opindex pinentry-program
 Use program @var{filename} as the PIN entry.  The default is

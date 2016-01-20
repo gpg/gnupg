@@ -491,6 +491,18 @@ start_pinentry (ctrl_t ctrl)
         }
     }
 
+  if (opt.pinentry_timeout)
+    {
+      char *optstr;
+      if ((optstr = xtryasprintf ("SETTIMEOUT %lu", opt.pinentry_timeout)))
+        {
+          assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+                           NULL);
+          /* We ignore errors because this is just a fancy thing.  */
+          xfree (optstr);
+        }
+    }
+
   /* Tell the pinentry the name of a file it shall touch after having
      messed with the tty.  This is optional and only supported by
      newer pinentries and thus we do no error checking. */

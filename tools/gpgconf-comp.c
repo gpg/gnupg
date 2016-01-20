@@ -582,6 +582,10 @@ static gc_option_t gc_options_gpg_agent[] =
      GC_LEVEL_EXPERT, "gnupg",
      N_("do not allow the reuse of old passphrases"),
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
+   { "pinentry-timeout", GC_OPT_FLAG_RUNTIME,
+     GC_LEVEL_ADVANCED, "gnupg",
+     N_("|N|set the Pinentry timeout to N seconds"),
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG_AGENT },
 
    GC_OPTION_NULL
  };

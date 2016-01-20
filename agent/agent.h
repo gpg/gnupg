@@ -94,6 +94,11 @@ struct
      custom invisible character.  */
   char *pinentry_invisible_char;
 
+  /* The timeout value for the Pinentry in seconds.  This is passed to
+     the pinentry if it is not 0.  It is up to the pinentry to act
+     upon this timeout value.  */
+  unsigned long pinentry_timeout;
+
   /* The default and maximum TTL of cache entries. */
   unsigned long def_cache_ttl;     /* Default. */
   unsigned long def_cache_ttl_ssh; /* for SSH. */
