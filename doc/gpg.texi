@@ -2275,7 +2275,7 @@ a passphrase if @option{--personal-cipher-preferences} and
 @item --s2k-digest-algo @code{name}
 @opindex s2k-digest-algo
 Use @code{name} as the digest algorithm used to mangle the passphrases
-for symmetric encryption.  The defaulte is SHA-1.
+for symmetric encryption.  The default is SHA-1.
 
 @item --s2k-mode @code{n}
 @opindex s2k-mode
