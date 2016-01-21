@@ -950,11 +950,6 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
   All other data after this header is raw image (JPEG) data.
 
 
-* Unattended key generation
-
-   Please see the GnuPG manual for a description.
-
-
 * Layout of the TrustDB
 
   The TrustDB is built from fixed length records, where the first byte

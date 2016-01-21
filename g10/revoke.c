@@ -564,14 +564,18 @@ gen_standard_revoke (PKT_public_key *psk, const char *cache_nonce)
               (int)len, tmpstr);
   xfree (tmpstr);
 
-  es_fprintf (memfp, "%s\n\n%s\n\n:",
+  es_fprintf (memfp, "%s\n\n%s\n\n%s\n\n:",
+     _("A revocation certificate is a kind of \"kill switch\" to publicly\n"
+       "declare that a key shall not anymore be used.  It is not possible\n"
+       "to retract such a revocation certificate once it has been published."),
      _("Use it to revoke this key in case of a compromise or loss of\n"
        "the secret key.  However, if the secret key is still accessible,\n"
        "it is better to generate a new revocation certificate and give\n"
-       "a reason for the revocation."),
+       "a reason for the revocation.  For details see the description of\n"
+       "of the gpg command \"--gen-revoke\" in the GnuPG manual."),
      _("To avoid an accidental use of this file, a colon has been inserted\n"
        "before the 5 dashes below.  Remove this colon with a text editor\n"
-       "before making use of this revocation certificate."));
+       "before importing and publishing this revocation certificate."));
 
   es_putc (0, memfp);
 
@@ -583,6 +587,9 @@ gen_standard_revoke (PKT_public_key *psk, const char *cache_nonce)
   reason.code = 0x00; /* No particular reason.  */
   reason.desc = NULL;
   rc = create_revocation (fname, &reason, psk, NULL, leadin, 3, cache_nonce);
+  if (!rc && !opt.quiet)
+    log_info (_("revocation certificate stored as '%s.rev'\n"), fname);
+
   xfree (leadin);
   xfree (fname);
 
