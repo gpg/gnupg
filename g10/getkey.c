@@ -1333,9 +1333,9 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	         mailbox for the getname search, but it helps cut down
 	         on the problem of searching for something like "john"
 	         and getting a whole lot of keys back. */
-	      if (opt.keyserver)
+	      if (keyserver_any_configured (ctrl))
 		{
-		  mechanism = opt.keyserver->uri;
+		  mechanism = "keyserver";
 		  glo_ctrl.in_auto_key_retrieve++;
 		  rc = keyserver_import_name (ctrl, name, &fpr, &fpr_len,
                                               opt.keyserver);

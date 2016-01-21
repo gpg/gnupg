@@ -109,8 +109,7 @@ static gpg_error_t keyserver_get (ctrl_t ctrl,
                                   KEYDB_SEARCH_DESC *desc, int ndesc,
                                   struct keyserver_spec *override_keyserver,
                                   unsigned char **r_fpr, size_t *r_fprlen);
-static gpg_error_t keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
-                                  struct keyserver_spec *keyserver);
+static gpg_error_t keyserver_put (ctrl_t ctrl, strlist_t keyspecs);
 
 
 /* Reasonable guess.  The commonly used test key simon.josefsson.org
@@ -1005,7 +1004,7 @@ keyserver_export (ctrl_t ctrl, strlist_t users)
 
   if(sl)
     {
-      rc = keyserver_put (ctrl, sl, opt.keyserver);
+      rc = keyserver_put (ctrl, sl);
       free_strlist(sl);
     }
 
@@ -1129,6 +1128,14 @@ keyserver_import (ctrl_t ctrl, strlist_t users)
   xfree(desc);
 
   return rc;
+}
+
+
+/* Return true if any keyserver has been configured. */
+int
+keyserver_any_configured (ctrl_t ctrl)
+{
+  return !gpg_dirmngr_ks_list (ctrl, NULL);
 }
 
 
@@ -1380,7 +1387,12 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
   opt.keyserver_options.import_options|=IMPORT_FAST;
 
   /* If refresh_add_fake_v3_keyids is on and it's a HKP or MAILTO
-     scheme, then enable fake v3 keyid generation. */
+     scheme, then enable fake v3 keyid generation.  Note that this
+     works only with a keyserver configured. gpg.conf
+     (i.e. opt.keyserver); however that method of configuring a
+     keyserver is deprecated and in any case it is questionable
+     whether we should keep on supporting these ancient and broken
+     keyservers.  */
   if((opt.keyserver_options.options&KEYSERVER_ADD_FAKE_V3) && opt.keyserver
      && (ascii_strcasecmp(opt.keyserver->scheme,"hkp")==0 ||
 	 ascii_strcasecmp(opt.keyserver->scheme,"mailto")==0))
@@ -1775,21 +1787,21 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
 }
 
 
-/* Send all keys specified by KEYSPECS to the KEYSERVERS.  */
+/* Send all keys specified by KEYSPECS to the configured keyserver.  */
 static gpg_error_t
-keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
-               struct keyserver_spec *keyserver)
+keyserver_put (ctrl_t ctrl, strlist_t keyspecs)
 
 {
   gpg_error_t err;
   strlist_t kspec;
+  char *ksurl;
 
   if (!keyspecs)
     return 0;  /* Return success if the list is empty.  */
 
-  if (!opt.keyserver)
+  if (gpg_dirmngr_ks_list (ctrl, &ksurl))
     {
-      log_error (_("no keyserver known (use option --keyserver)\n"));
+      log_error (_("no keyserver known\n"));
       return gpg_error (GPG_ERR_NO_KEYSERVER);
     }
 
@@ -1807,14 +1819,9 @@ keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
         log_error (_("skipped \"%s\": %s\n"), kspec->d, gpg_strerror (err));
       else
         {
-          if (keyserver->host)
-            log_info (_("sending key %s to %s server %s\n"),
-                      keystr (keyblock->pkt->pkt.public_key->keyid),
-                      keyserver->scheme, keyserver->host);
-          else
-            log_info (_("sending key %s to %s\n"),
-                      keystr (keyblock->pkt->pkt.public_key->keyid),
-                      keyserver->uri);
+          log_info (_("sending key %s to %s\n"),
+                    keystr (keyblock->pkt->pkt.public_key->keyid),
+                    ksurl?ksurl:"[?]");
 
           err = gpg_dirmngr_ks_put (ctrl, data, datalen, keyblock);
           release_kbnode (keyblock);
@@ -1827,6 +1834,7 @@ keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
         }
     }
 
+  xfree (ksurl);
 
   return err;
 
@@ -1940,15 +1948,15 @@ keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
 	      free_keyserver_spec(spec);
 	    }
 	}
-      else if(opt.keyserver)
+      else if (keyserver_any_configured (ctrl))
 	{
 	  /* If only a fingerprint is provided, try and fetch it from
-	     our --keyserver */
+	     the configured keyserver. */
 
 	  err = keyserver_import_fprint (ctrl, *fpr,*fpr_len,opt.keyserver);
 	}
       else
-	log_info(_("no keyserver known (use option --keyserver)\n"));
+	log_info(_("no keyserver known\n"));
 
       /* Give a better string here? "CERT fingerprint for \"%s\"
 	 found, but no keyserver" " known (use option

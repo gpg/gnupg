@@ -31,6 +31,7 @@ struct keyserver_spec *keyserver_match(struct keyserver_spec *spec);
 struct keyserver_spec *parse_keyserver_uri (const char *string,
                                             int require_scheme);
 struct keyserver_spec *parse_preferred_keyserver(PKT_signature *sig);
+int keyserver_any_configured (ctrl_t ctrl);
 int keyserver_export (ctrl_t ctrl, strlist_t users);
 int keyserver_import (ctrl_t ctrl, strlist_t users);
 int keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,

@@ -157,6 +157,13 @@ keyserver_match (struct keyserver_spec *spec)
 }
 
 int
+keyserver_any_configured (ctrl_t ctrl)
+{
+  (void)ctrl;
+  return 0;
+}
+
+int
 keyserver_import_keyid (u32 *keyid, void *dummy)
 {
   (void)keyid;

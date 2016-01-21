@@ -1803,8 +1803,8 @@ check_sig_and_print (CTX c, kbnode_t node)
        no information from the DNS PKA, this is a third try. */
 
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
-      && opt.keyserver
-      && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE))
+      && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE)
+      && keyserver_any_configured (c->ctrl))
     {
       int res;
 

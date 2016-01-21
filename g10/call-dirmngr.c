@@ -404,7 +404,8 @@ gpg_dirmngr_ks_list (ctrl_t ctrl, char **r_keyserver)
 
   memset (&stparm, 0, sizeof stparm);
   stparm.keyword = "KEYSERVER";
-  *r_keyserver = NULL;
+  if (r_keyserver)
+    *r_keyserver = NULL;
 
   err = open_context (ctrl, &ctx);
   if (err)
@@ -420,7 +421,10 @@ gpg_dirmngr_ks_list (ctrl_t ctrl, char **r_keyserver)
       goto leave;
     }
 
-  *r_keyserver = stparm.source;
+  if (r_keyserver)
+    *r_keyserver = stparm.source;
+  else
+    xfree (stparm.source);
   stparm.source = NULL;
 
  leave:

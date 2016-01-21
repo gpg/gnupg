@@ -2471,9 +2471,9 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
 			  char *tempkeystr=xstrdup(keystr_from_pk(pk));
 
 			  /* No, so try and get it */
-			  if(opt.keyserver
-			     && (opt.keyserver_options.options
-				 & KEYSERVER_AUTO_KEY_RETRIEVE))
+			  if ((opt.keyserver_options.options
+                               & KEYSERVER_AUTO_KEY_RETRIEVE)
+                              && keyserver_any_configured (ctrl))
 			    {
 			      log_info(_("WARNING: key %s may be revoked:"
 					 " fetching revocation key %s\n"),
