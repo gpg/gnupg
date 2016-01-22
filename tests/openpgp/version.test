@@ -31,7 +31,7 @@ if [ -d private-keys-v1.d ]; then
     rmdir private-keys-v1.d
 fi
 for i in pubring.gpg pubring.gpg~ trustdb.gpg trustdb.gpg~ ; do
-  [ -d "$i" ] && rm "$i"
+  [ -f "$i" ] && rm "$i"
 done
 
 # Now start the agent right away, so that there is only one place
