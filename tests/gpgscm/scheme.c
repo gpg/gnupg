@@ -2679,7 +2679,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                sc->dump = cont_dump(sc->code);
                s_return(sc,sc->args != sc->NIL ? car(sc->args) : sc->NIL);
           } else {
-               Error_0(sc,"illegal function");
+               Error_1(sc,"illegal function",sc->code);
           }
 
      case OP_DOMACRO:    /* do macro */
