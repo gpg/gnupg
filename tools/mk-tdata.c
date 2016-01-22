@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 
 #ifndef RAND_MAX   /* for SunOS */
@@ -29,6 +30,11 @@ main(int argc, char **argv)
   int i, c = 0;
   int limit =0;
   int char_mode = 0;
+
+#if HAVE_W32_SYSTEM
+  if (setmode (fileno (stdout), O_BINARY) == -1)
+    perror ("setmode");
+#endif
 
   if (argc)
     {
