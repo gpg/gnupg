@@ -224,6 +224,7 @@ struct scheme_interface {
   void (*setimmutable)(pointer p);
   void (*load_file)(scheme *sc, FILE *fin);
   void (*load_string)(scheme *sc, const char *input);
+  pointer (*mk_port_from_file)(scheme *sc, FILE *f, int kind);
 };
 #endif
 

@@ -4610,7 +4610,8 @@ static struct scheme_interface vtbl ={
   setimmutable,
 
   scheme_load_file,
-  scheme_load_string
+  scheme_load_string,
+  port_from_file
 };
 #endif
 
