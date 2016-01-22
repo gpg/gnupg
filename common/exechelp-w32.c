@@ -829,6 +829,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
 /*              (int) pi.dwProcessId, (int) pi.dwThreadId); */
 
   CloseHandle (pi.hThread);
+  CloseHandle (pi.hProcess);
 
   return 0;
 }
