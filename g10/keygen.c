@@ -2533,8 +2533,11 @@ ask_user_id (int mode, int full, KBNODE keyblock)
                   }
 		else if( digitp(aname) )
 		    tty_printf(_("Name may not start with a digit\n"));
-		else if( strlen(aname) < 5 )
+		else if (*aname && strlen (aname) < 5)
+                  {
 		    tty_printf(_("Name must be at least 5 characters long\n"));
+                    /* However, we allow an empty name.  */
+                  }
 		else
 		    break;
 	    }
@@ -2577,11 +2580,20 @@ ask_user_id (int mode, int full, KBNODE keyblock)
 
 	xfree(uid);
 	uid = p = xmalloc(strlen(aname)+strlen(amail)+strlen(acomment)+12+10);
-	p = stpcpy(p, aname );
-	if( *acomment )
-	    p = stpcpy(stpcpy(stpcpy(p," ("), acomment),")");
-	if( *amail )
-	    p = stpcpy(stpcpy(stpcpy(p," <"), amail),">");
+        if (!*aname && *amail && !*acomment && !random_is_faked ())
+          { /* Empty name and comment but with mail address.  Use
+               simplified form with only the non-angle-bracketed mail
+               address.  */
+            p = stpcpy (p, amail);
+          }
+        else
+          {
+            p = stpcpy (p, aname );
+            if (*acomment)
+              p = stpcpy(stpcpy(stpcpy(p," ("), acomment),")");
+            if (*amail)
+              p = stpcpy(stpcpy(stpcpy(p," <"), amail),">");
+          }
 
 	/* Append a warning if the RNG is switched into fake mode.  */
         if ( random_is_faked ()  )
