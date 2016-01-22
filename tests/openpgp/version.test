@@ -56,14 +56,12 @@ info "Creating sample data files"
 for i in 500 9000 32000 80000; do
     $MKTDATA  $i >data-$i
 done
-cat $srcdir/../../doc/HACKING \
-    $srcdir/../../doc/DETAILS \
-    $srcdir/../../doc/gpg.texi >plain-large
 
 info "Unpacking samples"
 $GPG --dearmor < $srcdir/plain-1o.asc > ./plain-1
 $GPG --dearmor < $srcdir/plain-2o.asc > ./plain-2
 $GPG --dearmor < $srcdir/plain-3o.asc > ./plain-3
+$GPG --dearmor < $srcdir/plain-largeo.asc > ./plain-large
 
 info "Storing private keys"
 for i in 50B2D4FA4122C212611048BC5FC31BD44393626E \
