@@ -1345,12 +1345,13 @@ cache_isvalid (ctrl_t ctrl, const char *issuer_hash,
       if (n != 16)
         {
           log_error (_("WARNING: invalid cache record length for S/N "));
+          log_printf ("0x");
           log_printhex ("", sn, snlen);
         }
       else if (opt.verbose)
         {
           unsigned char record[16];
-          char *tmp = hexify_data (sn, snlen);
+          char *tmp = hexify_data (sn, snlen, 1);
 
           if (cdb_read (cdb, record, n, cdb_datapos (cdb)))
             log_error (_("problem reading cache record for S/N %s: %s\n"),
@@ -1366,7 +1367,7 @@ cache_isvalid (ctrl_t ctrl, const char *issuer_hash,
     {
       if (opt.verbose)
         {
-          char *serialno = hexify_data (sn, snlen);
+          char *serialno = hexify_data (sn, snlen, 1);
           log_info (_("S/N %s is valid, it is not listed in the CRL\n"),
                     serialno );
           xfree (serialno);
@@ -2095,7 +2096,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
         err = gpg_error (GPG_ERR_CHECKSUM);
         goto leave;
       }
-    checksum = hexify_data (md5buf, 16);
+    checksum = hexify_data (md5buf, 16, 0);
   }
 
 

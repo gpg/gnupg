@@ -59,17 +59,23 @@ hashify_data( const char* data, size_t len )
 {
   unsigned char buf[20];
   gcry_md_hash_buffer (GCRY_MD_SHA1, buf, data, len);
-  return hexify_data( buf, 20 );
+  return hexify_data (buf, 20, 0);
 }
 
 char*
-hexify_data( const unsigned char* data, size_t len )
+hexify_data (const unsigned char* data, size_t len, int with_prefix)
 {
   int i;
-  char* result = xmalloc( sizeof( char ) * (2*len+1));
+  char *result = xmalloc (2*len + (with_prefix?2:0) + 1);
+  char *p;
 
-  for( i = 0; i < 2*len; i+=2 )
-    sprintf( result+i, "%02X", *data++);
+  if (with_prefix)
+    p = stpcpy (result, "0x");
+  else
+    p = result;
+
+  for (i = 0; i < 2*len; i+=2 )
+    snprintf (p+i, 3, "%02X", *data++);
   return result;
 }
 

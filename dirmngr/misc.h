@@ -28,7 +28,7 @@ size_t unhexify (unsigned char *result, const char *string);
 char* hashify_data( const char* data, size_t len );
 
 /* Returns data as a hex string. */
-char* hexify_data( const unsigned char* data, size_t len );
+char* hexify_data (const unsigned char* data, size_t len, int with_prefix);
 
 /* Returns the serial number as a hex string.  */
 char* serial_hex ( ksba_sexp_t serial );
