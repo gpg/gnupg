@@ -222,7 +222,7 @@ GPG_CONNECT_AGENT="../../tools/gpg-connect-agent"
 GPGCONF="../../tools/gpgconf"
 GPG_PRESET_PASSPHRASE="../../agent/gpg-preset-passphrase"
 MKTDATA="../../tools/mk-tdata"
-PINENTRY="$(cd $srcdir && /bin/pwd)/pinentry.sh"
+PINENTRY="$(/bin/pwd)/fake-pinentry${EXEEXT}"
 # Default to empty passphrase for pinentry.sh
 PINENTRY_USER_DATA=
 
