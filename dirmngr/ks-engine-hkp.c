@@ -545,9 +545,9 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
   if (hi->pool)
     {
       /* Deal with the pool name before selecting a host. */
-      if (r_poolname && hi->cname)
+      if (r_poolname)
         {
-          *r_poolname = xtrystrdup (hi->cname);
+          *r_poolname = xtrystrdup (hi->cname? hi->cname : hi->name);
           if (!*r_poolname)
             return gpg_error_from_syserror ();
         }
