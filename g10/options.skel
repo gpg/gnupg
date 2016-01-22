@@ -21,16 +21,14 @@
 # GnuPG. If the first non white space character of a line is a '#',
 # this line is ignored.  Empty lines are also ignored.
 #
-# See the man page for a list of options.
+# See the gpg man page for a list of options.
 
-# Uncomment the following option to get rid of the copyright notice
-
-#no-greeting
 
 # If you have more than 1 secret key in your keyring, you may want to
 # uncomment the following option and set your preferred keyid.
 
 #default-key 621CC013
+
 
 # If you do not pass a recipient to gpg, it will ask for one.  Using
 # this option you can encrypt to a default key.  Key validation will
@@ -40,37 +38,6 @@
 #default-recipient some-user-id
 #default-recipient-self
 
-# By default GnuPG creates version 4 signatures for data files as
-# specified by OpenPGP.  Some earlier (PGP 6, PGP 7) versions of PGP
-# require the older version 3 signatures.  Setting this option forces
-# GnuPG to create version 3 signatures.
-
-#force-v3-sigs
-
-# Because some mailers change lines starting with "From " to ">From "
-# it is good to handle such lines in a special way when creating
-# cleartext signatures; all other PGP versions do it this way too.
-# To enable full OpenPGP compliance you may want to use this option.
-
-#no-escape-from-lines
-
-# When verifying a signature made from a subkey, ensure that the cross
-# certification "back signature" on the subkey is present and valid.
-# This protects against a subtle attack against subkeys that can sign.
-# Defaults to --no-require-cross-certification.  However for new
-# installations it should be enabled.
-
-require-cross-certification
-
-
-# If you do not use the Latin-1 (ISO-8859-1) charset, you should tell
-# GnuPG which is the native character set.  Please check the man page
-# for supported character sets.  This character set is only used for
-# metadata and not for the actual message which does not undergo any
-# translation.  Note that future version of GnuPG will change to UTF-8
-# as default character set.
-
-#charset utf-8
 
 # Group names may be defined like this:
 #   group mynames = paige 0x12345678 joe patti
@@ -84,16 +51,17 @@ require-cross-certification
 
 #group mynames = paige 0x12345678 joe patti
 
-# Some old Windows platforms require 8.3 filenames.  If your system
-# can handle long filenames, uncomment this.
 
-#no-mangle-dos-filenames
+# GnuPG can automatically locate and retrieve keys as needed using
+# this option.  This happens when encrypting to an email address (in
+# the "user@@example.com" form) and there are no keys matching
+# "user@example.com" in the local keyring.  This option takes any
+# number mechanisms which are tried in the given order.  The default
+# is "--auto-key-locate local" to search for keys only in the local
+# key database.  Uncomment the next line to locate a missing key using
+# two DNS based mechanisms.
 
-# Lock the file only once for the lifetime of a process.  If you do
-# not define this, the lock will be obtained and released every time
-# it is needed - normally this is not needed.
-
-#lock-once
+#auto-key-locate local,pka,dane
 
 
 # Common options for keyserver functions:
@@ -109,18 +77,6 @@ require-cross-certification
 #           Can be used more than once to increase the amount
 #           of information shown.
 #
-# use-temp-files = use temporary files instead of a pipe to talk to the
-#                  keyserver.  Some platforms (Win32 for one) always
-#                  have this on.
-#
-# keep-temp-files = do not delete temporary files after using them
-#                   (really only useful for debugging)
-#
-# honor-http-proxy = if the keyserver uses HTTP, honor the http_proxy
-#                    environment variable
-#
-# broken-http-proxy = try to work around a buggy HTTP proxy
-#
 # auto-key-retrieve = automatically fetch keys as needed from the keyserver
 #                     when verifying signatures or when importing keys that
 #                     have been revoked by a revocation key that is not
@@ -131,10 +87,12 @@ require-cross-certification
 
 #keyserver-options auto-key-retrieve
 
+
 # Uncomment this line to display photo user IDs in key listings and
 # when a signature from a key with a photo is verified.
 
 #show-photos
+
 
 # Use this program to display photo user IDs
 #
@@ -166,3 +124,16 @@ require-cross-certification
 #
 # Use your MIME handler to view photos:
 # photo-viewer "metamail -q -d -b -c %T -s 'KeyID 0x%k' -f GnuPG"
+
+
+# Because some mailers change lines starting with "From " to ">From "
+# it is good to handle such lines in a special way when creating
+# cleartext signatures; all other PGP versions do it this way too.
+# To enable full OpenPGP compliance you may want to use this option.
+
+#no-escape-from-lines
+
+
+# Uncomment the following option to get rid of the copyright notice
+
+#no-greeting
