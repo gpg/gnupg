@@ -336,6 +336,9 @@ typedef int (*lookup_ttl_t)(const char *hexgrip);
 /*-- gpg-agent.c --*/
 void agent_exit (int rc)
                 GPGRT_ATTR_NORETURN; /* Also implemented in other tools */
+void agent_set_progress_cb (void (*cb)(ctrl_t ctrl, const char *what,
+                                       int printchar, int current, int total),
+                            ctrl_t ctrl);
 gpg_error_t agent_copy_startup_env (ctrl_t ctrl);
 const char *get_agent_socket_name (void);
 const char *get_agent_ssh_socket_name (void);

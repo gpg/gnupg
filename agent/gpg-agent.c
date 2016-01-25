@@ -372,6 +372,32 @@ static pid_t parent_pid = (pid_t)(-1);
 /* Number of active connections.  */
 static int active_connections;
 
+/* This object is used to dispatch progress messages from Libgcrypt to
+ * the right thread.  Given that we won't have at max a few dozen
+ * connections at the same time using a linked list is the easiest way
+ * to handle this. */
+struct progress_dispatch_s
+{
+  struct progress_dispatch_s *next;
+  /* The control object of the connection.  If this is NULL no
+   * connection is associated with this item and it is free for reuse
+   * by new connections.  */
+  ctrl_t ctrl;
+
+  /* The thread id of (npth_self) of the connection.  */
+  npth_t tid;
+
+  /* The callback set by the connection.  This is similar to the
+   * Libgcrypt callback but with the control object passed as the
+   * first argument.  */
+  void (*cb)(ctrl_t ctrl,
+             const char *what, int printchar,
+             int current, int total);
+};
+struct progress_dispatch_s *progress_dispatch_list;
+
+
+
 
 /*
    Local prototypes.
@@ -383,6 +409,9 @@ static gnupg_fd_t create_server_socket (char *name, int primary, int cygwin,
                                         assuan_sock_nonce_t *nonce);
 static void create_directories (void);
 
+static void agent_libgcrypt_progress_cb (void *data, const char *what,
+                                         int printchar,
+                                         int current, int total);
 static void agent_init_default_ctrl (ctrl_t ctrl);
 static void agent_deinit_default_ctrl (ctrl_t ctrl);
 
@@ -760,6 +789,7 @@ main (int argc, char **argv )
 
   setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
+  gcry_set_progress_handler (agent_libgcrypt_progress_cb, NULL);
 
   disable_core_dumps ();
 
@@ -1445,6 +1475,88 @@ agent_exit (int rc)
 }
 
 
+/* This is our callback function for gcrypt progress messages.  It is
+   set once at startup and dispatches progress messages to the
+   corresponding threads of the agent.  */
+static void
+agent_libgcrypt_progress_cb (void *data, const char *what, int printchar,
+                             int current, int total)
+{
+  struct progress_dispatch_s *dispatch;
+  npth_t mytid = npth_self ();
+
+  (void)data;
+
+  for (dispatch = progress_dispatch_list; dispatch; dispatch = dispatch->next)
+    if (dispatch->ctrl && dispatch->tid == mytid)
+      break;
+  if (dispatch && dispatch->cb)
+    dispatch->cb (dispatch->ctrl, what, printchar, current, total);
+}
+
+
+/* If a progress dispatcher callback has been associated with the
+ * current connection unregister it.  */
+static void
+unregister_progress_cb (void)
+{
+  struct progress_dispatch_s *dispatch;
+  npth_t mytid = npth_self ();
+
+  for (dispatch = progress_dispatch_list; dispatch; dispatch = dispatch->next)
+    if (dispatch->ctrl && dispatch->tid == mytid)
+      break;
+  if (dispatch)
+    {
+      dispatch->ctrl = NULL;
+      dispatch->cb = NULL;
+    }
+}
+
+
+/* Setup a progress callback CB for the current connection.  Using a
+ * CB of NULL disables the callback.  */
+void
+agent_set_progress_cb (void (*cb)(ctrl_t ctrl, const char *what,
+                                  int printchar, int current, int total),
+                       ctrl_t ctrl)
+{
+  struct progress_dispatch_s *dispatch, *firstfree;
+  npth_t mytid = npth_self ();
+
+  firstfree = NULL;
+  for (dispatch = progress_dispatch_list; dispatch; dispatch = dispatch->next)
+    {
+      if (dispatch->ctrl && dispatch->tid == mytid)
+        break;
+      if (!dispatch->ctrl && !firstfree)
+        firstfree = dispatch;
+    }
+  if (!dispatch) /* None allocated: Reuse or allocate a new one.  */
+    {
+      if (firstfree)
+        {
+          dispatch = firstfree;
+        }
+      else if ((dispatch = xtrycalloc (1, sizeof *dispatch)))
+        {
+          dispatch->next = progress_dispatch_list;
+          progress_dispatch_list = dispatch;
+        }
+      else
+        {
+          log_error ("error allocating new progress dispatcher slot: %s\n",
+                     gpg_strerror (gpg_error_from_syserror ()));
+          return;
+        }
+      dispatch->ctrl = ctrl;
+      dispatch->tid = mytid;
+    }
+
+  dispatch->cb = cb;
+}
+
+
 /* Each thread has its own local variables conveyed by a control
    structure usually identified by an argument named CTRL.  This
    function is called immediately after allocating the control
@@ -1481,6 +1593,7 @@ agent_init_default_ctrl (ctrl_t ctrl)
 static void
 agent_deinit_default_ctrl (ctrl_t ctrl)
 {
+  unregister_progress_cb ();
   session_env_release (ctrl->session_env);
 
   if (ctrl->lc_ctype)

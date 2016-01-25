@@ -446,6 +446,23 @@ agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid)
 }
 
 
+/* An agent progress callback for Libgcrypt.  This has been registered
+ * to be called via the progress dispatcher mechanism from
+ * gpg-agent.c  */
+static void
+progress_cb (ctrl_t ctrl, const char *what, int printchar,
+             int current, int total)
+{
+  if (!ctrl || !ctrl->server_local || !ctrl->server_local->assuan_ctx)
+    ;
+  else if (printchar == '\n' && what && !strcmp (what, "primegen"))
+    agent_print_status (ctrl, "PROGRESS", "%.20s X 100 100", what);
+  else
+    agent_print_status (ctrl, "PROGRESS", "%.20s %c %d %d",
+                        what, printchar=='\n'?'X':printchar, current, total);
+}
+
+
 /* Helper to print a message while leaving a command.  */
 static gpg_error_t
 leave_cmd (assuan_context_t ctx, gpg_error_t err)
@@ -3205,6 +3222,7 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
   ctrl->digest.raw_value = 0;
 
   assuan_set_io_monitor (ctx, io_monitor, NULL);
+  agent_set_progress_cb (progress_cb, ctrl);
 
   for (;;)
     {
