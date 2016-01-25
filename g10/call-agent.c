@@ -1749,29 +1749,28 @@ static gpg_error_t
 cache_nonce_status_cb (void *opaque, const char *line)
 {
   struct cache_nonce_parm_s *parm = opaque;
-  const char *keyword = line;
-  int keywordlen;
+  const char *s;
 
-  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
-    ;
-  while (spacep (line))
-    line++;
-
-  if (keywordlen == 11 && !memcmp (keyword, "CACHE_NONCE", keywordlen))
+  if ((s = has_leading_keyword (line, "CACHE_NONCE")))
     {
       if (parm->cache_nonce_addr)
         {
           xfree (*parm->cache_nonce_addr);
-          *parm->cache_nonce_addr = xtrystrdup (line);
+          *parm->cache_nonce_addr = xtrystrdup (s);
         }
     }
-  else if (keywordlen == 12 && !memcmp (keyword, "PASSWD_NONCE", keywordlen))
+  else if ((s = has_leading_keyword (line, "PASSWD_NONCE")))
     {
       if (parm->passwd_nonce_addr)
         {
           xfree (*parm->passwd_nonce_addr);
-          *parm->passwd_nonce_addr = xtrystrdup (line);
+          *parm->passwd_nonce_addr = xtrystrdup (s);
         }
+    }
+  else if ((s = has_leading_keyword (line, "PROGRESS")))
+    {
+      if (opt.enable_progress_filter)
+        write_status_text (STATUS_PROGRESS, s);
     }
 
   return 0;
