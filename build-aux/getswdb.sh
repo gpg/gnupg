@@ -37,6 +37,7 @@ Options:
     --skip-verify      Do not check signatures
     --skip-selfcheck   Do not check GnuPG version
     --find-sha1sum     Print the name of the sha1sum utility
+    --find-sha256sum   Print the name of the sha256sum utility
     --help             Print this help.
 EOF
     exit $1
@@ -49,6 +50,7 @@ skip_download=no
 skip_verify=no
 skip_selfcheck=no
 find_sha1sum=no
+find_sha256sum=no
 while test $# -gt 0; do
     case "$1" in
 	# Set up `optarg'.
@@ -76,6 +78,9 @@ while test $# -gt 0; do
         --find-sha1sum)
             find_sha1sum=yes
             ;;
+        --find-sha256sum)
+            find_sha256sum=yes
+            ;;
 	*)
 	    usage 1 1>&2
 	    ;;
@@ -95,6 +100,21 @@ if [ ${find_sha1sum} = yes ]; then
     echo "false"
     exit 1
 fi
+
+# Mac OSX has only a shasum and not sha256sum
+if [ ${find_sha256sum} = yes ]; then
+    for i in 'shasum -a 256' sha256sum ; do
+       tmp=$($i </dev/null 2>/dev/null | cut -d ' ' -f1)
+       tmp2="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+       if [ x"$tmp" = x"$tmp2" ]; then
+           echo "$i"
+           exit 0
+       fi
+    done
+    echo "false"
+    exit 1
+fi
+
 
 # Get GnuPG version from VERSION file.  For a GIT checkout this means
 # that ./autogen.sh must have been run first.  For a regular tarball

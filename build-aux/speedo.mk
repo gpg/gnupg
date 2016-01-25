@@ -260,39 +260,51 @@ gnupg_ver        := $(shell awk '$$1=="gnupg21_ver" {print $$2}' swdb.lst)
 
 libgpg_error_ver := $(shell awk '$$1=="libgpg_error_ver" {print $$2}' swdb.lst)
 libgpg_error_sha1:= $(shell awk '$$1=="libgpg_error_sha1" {print $$2}' swdb.lst)
+libgpg_error_sha2:= $(shell awk '$$1=="libgpg_error_sha2" {print $$2}' swdb.lst)
 
 npth_ver  := $(shell awk '$$1=="npth_ver" {print $$2}' swdb.lst)
 npth_sha1 := $(shell awk '$$1=="npth_sha1" {print $$2}' swdb.lst)
+npth_sha2 := $(shell awk '$$1=="npth_sha2" {print $$2}' swdb.lst)
 
 libgcrypt_ver  := $(shell awk '$$1=="libgcrypt_ver" {print $$2}' swdb.lst)
 libgcrypt_sha1 := $(shell awk '$$1=="libgcrypt_sha1" {print $$2}' swdb.lst)
+libgcrypt_sha2 := $(shell awk '$$1=="libgcrypt_sha2" {print $$2}' swdb.lst)
 
 libassuan_ver  := $(shell awk '$$1=="libassuan_ver" {print $$2}' swdb.lst)
 libassuan_sha1 := $(shell awk '$$1=="libassuan_sha1" {print $$2}' swdb.lst)
+libassuan_sha2 := $(shell awk '$$1=="libassuan_sha2" {print $$2}' swdb.lst)
 
 libksba_ver  := $(shell awk '$$1=="libksba_ver" {print $$2}' swdb.lst)
 libksba_sha1 := $(shell awk '$$1=="libksba_sha1" {print $$2}' swdb.lst)
+libksba_sha2 := $(shell awk '$$1=="libksba_sha2" {print $$2}' swdb.lst)
 
 gpgme_ver  := $(shell awk '$$1=="gpgme_ver" {print $$2}' swdb.lst)
 gpgme_sha1 := $(shell awk '$$1=="gpgme_sha1" {print $$2}' swdb.lst)
+gpgme_sha2 := $(shell awk '$$1=="gpgme_sha2" {print $$2}' swdb.lst)
 
 pinentry_ver  := $(shell awk '$$1=="pinentry_ver" {print $$2}' swdb.lst)
 pinentry_sha1 := $(shell awk '$$1=="pinentry_sha1" {print $$2}' swdb.lst)
+pinentry_sha2 := $(shell awk '$$1=="pinentry_sha2" {print $$2}' swdb.lst)
 
 gpa_ver  := $(shell awk '$$1=="gpa_ver" {print $$2}' swdb.lst)
 gpa_sha1 := $(shell awk '$$1=="gpa_sha1" {print $$2}' swdb.lst)
+gpa_sha2 := $(shell awk '$$1=="gpa_sha2" {print $$2}' swdb.lst)
 
 gpgex_ver  := $(shell awk '$$1=="gpgex_ver" {print $$2}' swdb.lst)
 gpgex_sha1 := $(shell awk '$$1=="gpgex_sha1" {print $$2}' swdb.lst)
+gpgex_sha2 := $(shell awk '$$1=="gpgex_sha2" {print $$2}' swdb.lst)
 
 zlib_ver  := $(shell awk '$$1=="zlib_ver" {print $$2}' swdb.lst)
 zlib_sha1 := $(shell awk '$$1=="zlib_sha1_gz" {print $$2}' swdb.lst)
+zlib_sha2 := $(shell awk '$$1=="zlib_sha2_gz" {print $$2}' swdb.lst)
 
 bzip2_ver  := $(shell awk '$$1=="bzip2_ver" {print $$2}' swdb.lst)
 bzip2_sha1 := $(shell awk '$$1=="bzip2_sha1_gz" {print $$2}' swdb.lst)
+bzip2_sha2 := $(shell awk '$$1=="bzip2_sha2_gz" {print $$2}' swdb.lst)
 
 adns_ver  := $(shell awk '$$1=="adns_ver" {print $$2}' swdb.lst)
 adns_sha1 := $(shell awk '$$1=="adns_sha1" {print $$2}' swdb.lst)
+adns_sha2 := $(shell awk '$$1=="adns_sha2" {print $$2}' swdb.lst)
 
 $(info Information from the version database)
 $(info GnuPG ..........: $(gnupg_ver) (building $(gnupg_ver_this)))
@@ -628,6 +640,10 @@ SHA1SUM := $(shell $(topsrc)/build-aux/getswdb.sh --find-sha1sum)
 ifeq ($(SHA1SUM),false)
 $(error The sha1sum tool is missing)
 endif
+SHA2SUM := $(shell $(topsrc)/build-aux/getswdb.sh --find-sha256sum)
+ifeq ($(SHA2SUM),false)
+$(error The sha256sum tool is missing)
+endif
 
 
 BUILD_ISODATE=$(shell date -u +%Y-%m-%d)
@@ -705,6 +721,7 @@ define SETVARS
         git="$(call GETVAR,speedo_pkg_$(1)_git)";                       \
         gitref="$(call GETVAR,speedo_pkg_$(1)_gitref)";                 \
         tar="$(call GETVAR,speedo_pkg_$(1)_tar)";                       \
+        sha2="$(call GETVAR,$(1)_sha2)";                                \
         sha1="$(call GETVAR,$(1)_sha1)";                                \
         pkgsdir="$(sdir)/$(1)";                                         \
         if [ "$(1)" = "gnupg" ]; then                                   \
@@ -739,6 +756,7 @@ define SETVARS_W64
         git="$(call GETVAR,speedo_pkg_$(1)_git)";                       \
         gitref="$(call GETVAR,speedo_pkg_$(1)_gitref)";                 \
         tar="$(call GETVAR,speedo_pkg_$(1)_tar)";                       \
+        sha2="$(call GETVAR,$(1)_sha2)";                                \
         sha1="$(call GETVAR,$(1)_sha1)";                                \
         pkgsdir="$(sdir)/$(1)";                                         \
         if [ "$(1)" = "gnupg" ]; then                                   \
@@ -814,11 +832,19 @@ $(stampdir)/stamp-$(1)-00-unpack: $(stampdir)/stamp-directories
                   | $$$${pretar} | tar x$$$${opt}f - ;; \
 	   esac;					\
 	   if [ -f tmp.tgz ]; then                      \
-	     if [ -n "$$$${sha1}" ]; then               \
+	     if [ -n "$$$${sha2}" ]; then               \
+               tmp=$$$$($(SHA2SUM) <tmp.tgz|cut -d' ' -f1);\
+               if [ "$$$${tmp}" != "$$$${sha2}" ]; then \
+	         echo "speedo:";                        \
+                 echo "speedo: ERROR: SHA-256 checksum mismatch for $(1)";\
+	         echo "speedo:";                        \
+                 exit 1;                                \
+               fi;                                      \
+	     elif [ -n "$$$${sha1}" ]; then            \
                tmp=$$$$($(SHA1SUM) <tmp.tgz|cut -d' ' -f1);\
                if [ "$$$${tmp}" != "$$$${sha1}" ]; then \
 	         echo "speedo:";                        \
-                 echo "speedo: ERROR: checksum mismatch for $(1)";\
+                 echo "speedo: ERROR: SHA-1 checksum mismatch for $(1)";\
 	         echo "speedo:";                        \
                  exit 1;                                \
                fi;                                      \
@@ -1128,7 +1154,17 @@ installer-from-source: dist-source
 	 tar xJf "../$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).tar.xz";\
 	 cd $(INST_NAME)-$(INST_VERSION); \
          $(MAKE) -f build-aux/speedo.mk this-w32-installer SELFCHECK=0;\
-	 mv "PLAY/inst/$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe" ../.. ;\
+	 reldate="$$(date -u +%Y-%m-%d)" ;\
+	 exefile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe" ;\
+	 mv "PLAY/inst/$$exefile" ../.. ;\
+	 exefile="../../$$exefile" ;\
+	 ( pref="#+macro: gnupg21_w32_" ;\
+         echo "$${pref}ver  $(INST_VERSION)_$(BUILD_DATESTR)"  ;\
+         echo "$${pref}date $${reldate}" ;\
+         echo "$${pref}size $$(wc -c <$$exefile|awk '{print int($$1/1024)}')k";\
+	 echo "$${pref}sha1 $$(sha1sum <$$exefile|cut -d' ' -f1)" ;\
+	 echo "$${pref}sha2 $$(sha256sum <$$exefile|cut -d' ' -f1)" ;\
+	 ) | tee $$exefile.swdb ;\
 	)
 
 endif
