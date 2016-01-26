@@ -103,7 +103,7 @@ insert_duptable (duptable_t *table, unsigned char *fpr, int *exists)
 #error cannot handle a table larger than 16 bits or smaller than 8 bits
 #elif DUPTABLE_BITS > 8
   idx <<= (DUPTABLE_BITS - 8);
-  idx |= (fpr[1] & ~(~0 << 4));
+  idx |= (fpr[1] & ~(~0U << 4));
 #endif
 
   for (t = table[idx]; t; t = t->next)
