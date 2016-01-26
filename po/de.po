@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-01-19 16:22+0100\n"
+"PO-Revision-Date: 2016-01-26 13:18+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -4264,9 +4264,8 @@ msgstr "fordere Schlüssel %s von %s-Server %s an\n"
 msgid "requesting key %s from %s\n"
 msgstr "fordere Schlüssel %s von %s an\n"
 
-#, c-format
-msgid "sending key %s to %s server %s\n"
-msgstr "sende Schlüssel %s auf den %s-Server %s\n"
+msgid "no keyserver known\n"
+msgstr "Kein Schlüsselserver bekannt\n"
 
 #, c-format
 msgid "sending key %s to %s\n"
@@ -5061,26 +5060,42 @@ msgid "This is a revocation certificate for the OpenPGP key:"
 msgstr "Dies ist ein Widerrufszertifikat für den OpenPGP Schlüssel:"
 
 msgid ""
+"A revocation certificate is a kind of \"kill switch\" to publicly\n"
+"declare that a key shall not anymore be used.  It is not possible\n"
+"to retract such a revocation certificate once it has been published."
+msgstr ""
+"Ein Widerrufszertifikat ist eine Art von Notausschalter der öffentlich\n"
+"verlautbart, daß ein Schlüssel nicht mehr benutzt werden soll.  Es ist\n"
+"nicht möglich, ein einmal veröffentlichtes Widerrufszertifikat wieder\n"
+"zurückzuziehen."
+
+msgid ""
 "Use it to revoke this key in case of a compromise or loss of\n"
 "the secret key.  However, if the secret key is still accessible,\n"
 "it is better to generate a new revocation certificate and give\n"
-"a reason for the revocation."
+"a reason for the revocation.  For details see the description of\n"
+"of the gpg command \"--gen-revoke\" in the GnuPG manual."
 msgstr ""
 "Benutzen Sie es, um einen Schlüssel zu widerrufen, falls der private\n"
 "Schlüssel verloren wurde oder kompromittiert ist.  Falls jedoch auf\n"
 "den privaten Schlüssel noch zugegriffen werden kann, so ist es besser,\n"
 "ein neues Widerrufszertifikat zu erzeugen, um den Grund des Widerrufs\n"
-"mit angeben zu können."
+"mit angeben zu können.  Weitere Informationen finden Sie im GnuPG\n"
+"Handbuch unter der Beschreibung des gpg Kommandos \"--gen-revoke\"."
 
 msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
 "before the 5 dashes below.  Remove this colon with a text editor\n"
-"before making use of this revocation certificate."
+"before importing and publishing this revocation certificate."
 msgstr ""
 "Um eine versehentliche Aktivierung des Widerrufszertifikats zu\n"
 "vermeiden, wurde ein Doppelpunkt direkt vor den 5 Spiegelstrichen\n"
 "unten eingefügt.  Vor dem Import dieses Widerrufszertifikats\n"
-"entfernen Sie bitte dieses Doppelpunkt mittels eines Texteditors."
+"entfernen Sie bitte diesen Doppelpunkt mittels eines Texteditors."
+
+#, c-format
+msgid "revocation certificate stored as '%s.rev'\n"
+msgstr "Widerrufzertifikat wurde als '%s.rev' gespeichert.\n"
 
 #, c-format
 msgid "secret key \"%s\" not found\n"
@@ -8238,6 +8253,9 @@ msgstr "|N|Lasse die Passphrase nach N Tagen verfallen"
 msgid "do not allow the reuse of old passphrases"
 msgstr "Verbiete die Wiedernutzung alter Passphrases."
 
+msgid "|N|set the Pinentry timeout to N seconds"
+msgstr "|N|Setze die Pinentry Zeitüberschreitung auf N Sekunden"
+
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAME|NAME als voreingestellten Schlüssel benutzen"
 
@@ -8526,6 +8544,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "sending key %s to %s server %s\n"
+#~ msgstr "sende Schlüssel %s auf den %s-Server %s\n"
 
 #~ msgid "error commiting transaction on TOFU database: %s\n"
 #~ msgstr ""
@@ -8918,9 +8939,6 @@ msgstr ""
 
 #~ msgid "searching for \"%s\" from %s\n"
 #~ msgstr "suche nach \"%s\" auf %s\n"
-
-#~ msgid "no keyserver action!\n"
-#~ msgstr "Kein Schlüsselserver-Vorgang\n"
 
 #~ msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 #~ msgstr ""
