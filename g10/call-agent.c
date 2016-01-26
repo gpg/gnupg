@@ -701,14 +701,10 @@ learn_status_cb (void *opaque, const char *line)
         {
           const char *curve;
 
-          i = 0;
-          do
-            {
-              curve = openpgp_enum_curves (&i);
-              if (!strcmp (curve, line+n))
-                break;
-            }
-          while (curve != NULL);
+          for (i = 0; (curve = openpgp_enum_curves (&i));)
+            if (!strcmp (curve, line+n))
+              break;
+
           parm->key_attr[keyno].curve = curve;
         }
     }
