@@ -1,7 +1,7 @@
 /* gpg.c - The GnuPG utility (main for gpg)
  * Copyright (C) 1998-2011 Free Software Foundation, Inc.
  * Copyright (C) 1997-2016 Werner Koch
- * Copyright (C) 2015 g10 Code GmbH
+ * Copyright (C) 2015-2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
