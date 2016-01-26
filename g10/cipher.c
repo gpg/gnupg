@@ -145,7 +145,7 @@ cipher_filter( void *opaque, int control,
 	cipher_close(cfx->cipher_hd);
     }
     else if( control == IOBUFCTRL_DESC ) {
-	*(char**)buf = "cipher_filter";
+        mem2str (buf, "cipher_filter", *ret_len);
     }
     return rc;
 }

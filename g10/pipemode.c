@@ -281,7 +281,7 @@ pipemode_filter( void *opaque, int control,
 	*ret_len = n;
     }
     else if( control == IOBUFCTRL_DESC )
-	*(char**)buf = "pipemode_filter";
+        mem2str (buf, "pipemode_filter", *ret_len);
     return rc;
 }
 

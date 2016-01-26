@@ -247,6 +247,6 @@ compress_filter_bz2( void *opaque, int control,
 	zfx->release (zfx);
     }
   else if( control == IOBUFCTRL_DESC )
-    *(char**)buf = "compress_filter";
+    mem2str (buf, "compress_filter", *ret_len);
   return rc;
 }

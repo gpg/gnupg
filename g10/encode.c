@@ -736,7 +736,7 @@ encrypt_filter( void *opaque, int control,
 	xfree(efx->symkey_s2k);
       }
     else if( control == IOBUFCTRL_DESC ) {
-	*(char**)buf = "encrypt_filter";
+        mem2str (buf, "encrypt_filter", *ret_len);
     }
     return rc;
 }

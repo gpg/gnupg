@@ -459,7 +459,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
         a->keep_open = a->no_cache = 0;
     }
     else if( control == IOBUFCTRL_DESC ) {
-	*(char**)buf = "file_filter";
+        mem2str (buf, "file_filter", *ret_len);
     }
     else if( control == IOBUFCTRL_FREE ) {
 	if( f != stdin && f != stdout ) {
@@ -572,7 +572,7 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
         a->no_cache = 0;
     }
     else if ( control == IOBUFCTRL_DESC ) {
-	*(char**)buf = "file_filter(fd)";
+        mem2str (buf, "file_filter(fd)", *ret_len);
     }
     else if ( control == IOBUFCTRL_FREE ) {
 #ifdef HAVE_DOSISH_SYSTEM
@@ -660,7 +660,7 @@ sock_filter (void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
         a->no_cache = 0;
     }
     else if ( control == IOBUFCTRL_DESC ) {
-	*(char**)buf = "sock_filter";
+        mem2str (buf, "sock_filter", *ret_len);
     }
     else if ( control == IOBUFCTRL_FREE ) {
         if (!a->keep_open)
@@ -852,7 +852,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 	a->buflen = 0;
     }
     else if( control == IOBUFCTRL_DESC ) {
-	*(char**)buf = "block_filter";
+        mem2str (buf, "block_filter", *ret_len);
     }
     else if( control == IOBUFCTRL_FREE ) {
 	if( a->use == 2 ) { /* write the end markers */
@@ -906,6 +906,24 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     return rc;
 }
 
+#define MAX_IOBUF_DESC 32
+/*
+ * Fill the buffer by the description of iobuf A.
+ * The buffer size should be MAX_IOBUF_DESC (or larger).
+ * Returns BUF as (const char *).
+ */
+static const char *
+iobuf_desc (iobuf_t a, byte *buf)
+{
+  size_t len = MAX_IOBUF_DESC;
+
+  if (! a || ! a->filter)
+    memcpy (buf, "?", 2);
+  else
+    a->filter (a->filter_ov, IOBUFCTRL_DESC, NULL, buf, &len);
+
+  return buf;
+}
 
 static void
 print_chain( IOBUF a )
@@ -913,16 +931,11 @@ print_chain( IOBUF a )
     if( !DBG_IOBUF )
 	return;
     for(; a; a = a->chain ) {
-	size_t dummy_len = 0;
-	const char *desc = "[none]";
-
-	if( a->filter )
-	    a->filter( a->filter_ov, IOBUFCTRL_DESC, NULL,
-						(byte*)&desc, &dummy_len );
+        byte desc[MAX_IOBUF_DESC];
 
 	log_debug("iobuf chain: %d.%d `%s' filter_eof=%d start=%d len=%d\n",
-		   a->no, a->subno, desc?desc:"?", a->filter_eof,
-		   (int)a->d.start, (int)a->d.len );
+		  a->no, a->subno, iobuf_desc (a, desc), a->filter_eof,
+		  (int)a->d.start, (int)a->d.len );
     }
 }
 
@@ -971,13 +984,14 @@ iobuf_close ( IOBUF a )
     }
 
     for( ; a && !rc ; a = a2 ) {
+        byte desc[MAX_IOBUF_DESC];
 	a2 = a->chain;
 	if( a->use == 2 && (rc=iobuf_flush(a)) )
 	    log_error("iobuf_flush failed on close: %s\n", g10_errstr(rc));
 
 	if( DBG_IOBUF )
 	    log_debug("iobuf-%d.%d: close `%s'\n", a->no, a->subno,
-                      a->desc?a->desc:"?");
+                      iobuf_desc (a, desc));
 	if( a->filter && (rc = a->filter(a->filter_ov, IOBUFCTRL_FREE,
 					 a->chain, NULL, &dummy_len)) )
 	    log_error("IOBUFCTRL_FREE failed on close: %s\n", g10_errstr(rc) );
@@ -1132,7 +1146,6 @@ iobuf_open( const char *fname )
 	a->real_fname = xstrdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
-    file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: open `%s' fd=%d\n",
@@ -1166,7 +1179,6 @@ iobuf_fdopen( int fd, const char *mode )
     sprintf(fcx->fname, "[fd %d]", fd );
     a->filter = file_filter;
     a->filter_ov = fcx;
-    file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: fdopen `%s'\n", a->no, a->subno, fcx->fname );
@@ -1190,7 +1202,6 @@ iobuf_sockopen ( int fd, const char *mode )
     sprintf(scx->fname, "[sock %d]", fd );
     a->filter = sock_filter;
     a->filter_ov = scx;
-    sock_filter( scx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     sock_filter( scx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: sockopen `%s'\n", a->no, a->subno, scx->fname);
@@ -1213,6 +1224,7 @@ iobuf_create( const char *fname )
     size_t len;
     int print_only = 0;
     int fd;
+    byte desc[MAX_IOBUF_DESC];
 
     if( !fname || (*fname=='-' && !fname[1]) ) {
 	fp = FILEP_OR_FD_FOR_STDOUT;
@@ -1235,11 +1247,10 @@ iobuf_create( const char *fname )
 	a->real_fname = xstrdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
-    file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: create `%s'\n", a->no, a->subno,
-                  a->desc?a->desc:"?" );
+                  iobuf_desc (a, desc));
 
     return a;
 }
@@ -1257,6 +1268,7 @@ iobuf_append( const char *fname )
     FILE *fp;
     file_filter_ctx_t *fcx;
     size_t len;
+    byte desc[MAX_IOBUF_DESC];
 
     if( !fname )
 	return NULL;
@@ -1269,11 +1281,10 @@ iobuf_append( const char *fname )
     a->real_fname = xstrdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
-    file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: append `%s'\n", a->no, a->subno,
-                  a->desc?a->desc:"?" );
+                  iobuf_desc (a, desc));
 
     return a;
 }
@@ -1286,6 +1297,7 @@ iobuf_openrw( const char *fname )
     FILEP_OR_FD fp;
     file_filter_ctx_t *fcx;
     size_t len;
+    byte desc[MAX_IOBUF_DESC];
 
     if( !fname )
 	return NULL;
@@ -1298,11 +1310,10 @@ iobuf_openrw( const char *fname )
     a->real_fname = xstrdup( fname );
     a->filter = file_filter;
     a->filter_ov = fcx;
-    file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: openrw `%s'\n", a->no, a->subno,
-                  a->desc?a->desc:"?");
+                  iobuf_desc (a, desc));
 
     return a;
 }
@@ -1311,11 +1322,13 @@ iobuf_openrw( const char *fname )
 int
 iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
 {
+    byte desc[MAX_IOBUF_DESC];
+
     if ( cmd == 1 ) {  /* keep system filepointer/descriptor open */
         if( DBG_IOBUF )
             log_debug("iobuf-%d.%d: ioctl `%s' keep=%d\n",
                       a? a->no:-1, a?a->subno:-1,
-                      a&&a->desc?a->desc:"?", intval );
+                      iobuf_desc (a, desc), intval );
         for( ; a; a = a->chain )
             if( !a->chain && a->filter == file_filter ) {
                 file_filter_ctx_t *b = a->filter_ov;
@@ -1345,7 +1358,7 @@ iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
         if( DBG_IOBUF )
             log_debug("iobuf-%d.%d: ioctl `%s' no_cache=%d\n",
                       a? a->no:-1, a?a->subno:-1,
-                      a&&a->desc?a->desc:"?", intval );
+                      iobuf_desc (a, desc), intval );
         for( ; a; a = a->chain )
             if( !a->chain && a->filter == file_filter ) {
                 file_filter_ctx_t *b = a->filter_ov;
@@ -1457,11 +1470,12 @@ iobuf_push_filter2( IOBUF a,
     a->filter_ov_owner = rel_ov;
 
     a->subno = b->subno + 1;
-    f( ov, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &dummy_len );
 
     if( DBG_IOBUF ) {
+        byte desc[MAX_IOBUF_DESC];
+
 	log_debug("iobuf-%d.%d: push `%s'\n", a->no, a->subno,
-                  a->desc?a->desc:"?" );
+                  iobuf_desc (a, desc));
 	print_chain( a );
     }
 
@@ -1482,13 +1496,14 @@ pop_filter( IOBUF a, int (*f)(void *opaque, int control,
     IOBUF b;
     size_t dummy_len=0;
     int rc=0;
+    byte desc[MAX_IOBUF_DESC];
 
     if( a->directfp )
 	BUG();
 
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: pop `%s'\n", a->no, a->subno,
-                  a->desc?a->desc:"?" );
+                  iobuf_desc (a, desc));
     if( !a->filter ) { /* this is simple */
 	b = a->chain;
 	assert(b);
@@ -1563,10 +1578,12 @@ underflow(IOBUF a)
 
     if( a->filter_eof ) {
 	if( a->chain ) {
+            byte desc[MAX_IOBUF_DESC];
+
 	    IOBUF b = a->chain;
 	    if( DBG_IOBUF )
 		log_debug("iobuf-%d.%d: pop `%s' in underflow\n",
-                          a->no, a->subno, a->desc?a->desc:"?" );
+                          a->no, a->subno, iobuf_desc (a, desc) );
 	    xfree(a->d.buf);
 	    xfree(a->real_fname);
 	    memcpy(a, b, sizeof *a);
@@ -1625,7 +1642,6 @@ underflow(IOBUF a)
 		a->filter_ov = NULL;
 	    }
 	    a->filter = NULL;
-	    a->desc = NULL;
 	    a->filter_ov = NULL;
 	    a->filter_eof = 1;
 	    if( !len && a->chain ) {

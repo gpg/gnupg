@@ -1300,7 +1300,7 @@ armor_filter( void *opaque, int control,
         release_armor_context (afx);
     }
     else if( control == IOBUFCTRL_DESC )
-	*(char**)buf = "armor_filter";
+        mem2str (buf, "armor_filter", *ret_len);
     return rc;
 }
 
