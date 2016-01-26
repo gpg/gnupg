@@ -1,9 +1,53 @@
-Noteworthy changes in version 2.1.11 (unreleased)
+Noteworthy changes in version 2.1.11 (2016-01-26)
 -------------------------------------------------
+
+ * gpg: New command --export-ssh-key to replace the gpgkey2ssh tool.
+
+ * gpg: Allow to generate mail address only keys with --gen-key.
+
+ * gpg: "--list-options show-usage" is now the default.
+
+ * gpg: Make lookup of DNS CERT records holding an URL work.
+
+ * gpg: Emit PROGRESS status lines during key generation.
 
  * gpg: Don't check for ambigious or non-matching key specification in
    the config file or given to --encrypt-to.  This feature will return
    in 2.3.x.
+
+ * gpg: Lock keybox files while updating them.
+
+ * gpg: Solve rare error on Windows during keyring and Keybox updates.
+
+ * gpg: Fix possible keyring corruption. (bug#2193)
+
+ * gpg: Fix regression of "bkuptocard" sub-command in --edit-key and
+   remove "checkbkupkey" sub-command introduced with 2.1.  (bug#2169)
+
+ * gpg: Fix internal error in gpgv when using default keyid-format.
+
+ * gpg: Fix --auto-key-retrieve to work with dirmngr.conf configured
+   keyservers. (bug#2147).
+
+ * agent: New option --pinentry-timeout.
+
+ * scd: Improve unplugging of USB readers under Windows.
+
+ * scd: Fix regression for generating RSA keys on card.
+
+ * dirmmgr: All configured keyservers are now searched.
+
+ * dirmngr: Install CA certificate for hkps.pool.sks-keyservers.net.
+   Use this certiticate even if --hkp-cacert is not used.
+
+ * gpgtar: Add actual encryption code.  gpgtar does now fully replace
+   gpg-zip.
+
+ * gpgtar: Fix filename encoding problem on Windows.
+
+ * Print a warning if a GnuPG component is using an older version of
+   gpg-agent, dirmngr, or scdaemon.
+
 
 Noteworthy changes in version 2.1.10 (2015-12-04)
 -------------------------------------------------
