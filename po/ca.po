@@ -1302,6 +1302,22 @@ msgid "Enter passphrase: "
 msgstr "Introduïu la contrasenya: "
 
 #, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
+msgid "error getting version from '%s': %s\n"
+msgstr "error en crear l'anell «%s»: %s\n"
+
+#, c-format
+msgid "server '%s' is older than us (%s < %s)"
+msgstr ""
+
+# FIXME: preferència? jm
+# Ho discutírem en la llista, segur.  Deu ser als arxius.  ivb
+#, fuzzy, c-format
+#| msgid "WARNING: %s overrides %s\n"
+msgid "WARNING: %s\n"
+msgstr "AVÍS: %s té preferència sobre %s\n"
+
+#, fuzzy, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "la clau secreta no està disponible"
 
@@ -1816,6 +1832,11 @@ msgid "remove as much as possible from key during export"
 msgstr ""
 
 #, fuzzy
+#| msgid "%s: skipped: %s\n"
+msgid " - skipped"
+msgstr "%s: es descarta: %s\n"
+
+#, fuzzy
 msgid "exporting secret keys not allowed\n"
 msgstr "s'està escrivint la clau secreta a «%s»\n"
 
@@ -1829,17 +1850,34 @@ msgstr ""
 "clau %08lX: la signatura de la subclau és en el lloc equivocat - es "
 "descarta\n"
 
-#, fuzzy
-#| msgid "%s: skipped: %s\n"
-msgid " - skipped"
-msgstr "%s: es descarta: %s\n"
-
 msgid "WARNING: nothing exported\n"
 msgstr "AVÍS: no s'ha exportat res\n"
+
+#, fuzzy, c-format
+#| msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
+msgstr "error en crear «%s»: %s\n"
 
 #, fuzzy
 msgid "[User ID not found]"
 msgstr "[No s'ha trobat l'id d'usuari]"
+
+#, fuzzy, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "opcions d'importació no vàlides\n"
+
+#, c-format
+msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error looking up: %s\n"
+msgstr "error en la lectura de «%s»: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
+msgid "Warning: %s appears in the keyring %d times\n"
+msgstr "error en crear l'anell «%s»: %s\n"
 
 #, fuzzy, c-format
 msgid "automatically retrieved '%s' via %s\n"
@@ -1858,13 +1896,18 @@ msgid "secret key \"%s\" not found: %s\n"
 msgstr "no s'ha trobat la clau secreta «%s»: %s\n"
 
 #, fuzzy, c-format
-msgid "(check argument of option '%s')\n"
-msgstr "opcions d'importació no vàlides\n"
+#| msgid "|NAME|use NAME as default secret key"
+msgid "Warning: not using '%s' as default key: %s\n"
+msgstr "|NOM|usa NOM com a clau secreta predeterminada"
 
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
-msgid "using \"%s\" as default secret key\n"
+msgid "using \"%s\" as default secret key for signing\n"
 msgstr "|NOM|usa NOM com a clau secreta predeterminada"
+
+#, c-format
+msgid "all values passed to '%s' ignored\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
@@ -2238,28 +2281,6 @@ msgid "Note: old default options file '%s' ignored\n"
 msgstr "NOTA: es descarta el fitxer d'opcions predeterminades antic «%s»\n"
 
 #, c-format
-msgid ""
-"Warning: value '%s' for option '%s' should be a long key ID or a "
-"fingerprint\n"
-msgstr ""
-
-#, c-format
-msgid "key specification '%s' is ambiguous\n"
-msgstr ""
-
-#. TRANSLATORS: The %s prints a key specification which
-#. for example has been given at the command line.  Two
-#. lines with fingerprints are printed after this message.
-#, c-format
-msgid "'%s' matches at least:\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error creating keyring `%s': %s\n"
-msgid "error searching the keyring: %s\n"
-msgstr "error en crear l'anell «%s»: %s\n"
-
-#, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 
@@ -2469,14 +2490,6 @@ msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "AVÍS: s'han donat destinataris (-r) sense usar xifratge de clau pública\n"
 
-#, fuzzy, c-format
-msgid "option '%s' given, but no valid default keys given\n"
-msgstr "l'algoritme de dispersió és invàlid «%s»\n"
-
-#, fuzzy, c-format
-msgid "option '%s' given, but option '%s' not given\n"
-msgstr "l'algoritme de dispersió és invàlid «%s»\n"
-
 msgid "--store [filename]"
 msgstr "--store [nom_del_fitxer]"
 
@@ -2550,6 +2563,11 @@ msgstr "la recepció des del servidor de claus ha fallat: %s\n"
 
 #, c-format
 msgid "key export failed: %s\n"
+msgstr "l'exportació de la clau ha fallat: %s\n"
+
+#, fuzzy, c-format
+#| msgid "key export failed: %s\n"
+msgid "export as ssh key failed: %s\n"
 msgstr "l'exportació de la clau ha fallat: %s\n"
 
 #, c-format
@@ -3056,33 +3074,33 @@ msgstr "[revocació]"
 msgid "[self-signature]"
 msgstr "[autosignatura]"
 
-msgid "1 bad signature\n"
-msgstr "1 signatura errònia\n"
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d signatures errònies\n"
+msgstr[1] "%d signatures errònies\n"
 
-#, c-format
-msgid "%d bad signatures\n"
-msgstr "%d signatures errònies\n"
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 signatura no comprovada per falta de clau\n"
+msgstr[1] "1 signatura no comprovada per falta de clau\n"
 
-msgid "1 signature not checked due to a missing key\n"
-msgstr "1 signatura no comprovada per falta de clau\n"
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to an error\n"
+msgid "%d signature not checked due to an error\n"
+msgid_plural "%d signatures not checked due to errors\n"
+msgstr[0] "1 signatura no comprovada a causa d'un error\n"
+msgstr[1] "1 signatura no comprovada a causa d'un error\n"
 
-#, c-format
-msgid "%d signatures not checked due to missing keys\n"
-msgstr "%d signatures no comprovades per falta de clau\n"
-
-msgid "1 signature not checked due to an error\n"
-msgstr "1 signatura no comprovada a causa d'un error\n"
-
-#, c-format
-msgid "%d signatures not checked due to errors\n"
-msgstr "%d signatures no comprovades a causa d'errors\n"
-
-msgid "1 user ID without valid self-signature detected\n"
-msgstr "Ha estat detectat 1 ID sense autosignatura vàlida\n"
-
-#, c-format
-msgid "%d user IDs without valid self-signatures detected\n"
-msgstr "Han estat detectats %d IDs sense autosignatura vàlida\n"
+#, fuzzy, c-format
+#| msgid "%d user IDs without valid self-signatures detected\n"
+msgid "%d user ID without valid self-signature detected\n"
+msgid_plural "%d user IDs without valid self-signatures detected\n"
+msgstr[0] "Han estat detectats %d IDs sense autosignatura vàlida\n"
+msgstr[1] "Han estat detectats %d IDs sense autosignatura vàlida\n"
 
 #, fuzzy
 msgid ""
@@ -3740,14 +3758,12 @@ msgid "Really delete this self-signature? (y/N)"
 msgstr "Realment voleu esborrar aquesta autosignatura? (s/N)"
 
 # Werner FIXME: use ngettext. jm
-#, c-format
+#, fuzzy, c-format
+#| msgid "Deleted %d signature.\n"
 msgid "Deleted %d signature.\n"
-msgstr "S'ha esborrat %d signatura.\n"
-
-# Werner FIXME: use ngettext. jm
-#, c-format
-msgid "Deleted %d signatures.\n"
-msgstr "S'han esborrat %d signatures.\n"
+msgid_plural "Deleted %d signatures.\n"
+msgstr[0] "S'ha esborrat %d signatura.\n"
+msgstr[1] "S'ha esborrat %d signatura.\n"
 
 msgid "Nothing deleted.\n"
 msgstr "No s'hi ha eliminat res.\n"
@@ -3761,11 +3777,9 @@ msgstr "L'ID d'usuari «%s» està revocat."
 
 #, fuzzy, c-format
 msgid "User ID \"%s\": %d signature removed\n"
-msgstr "L'ID d'usuari «%s» està revocat."
-
-#, fuzzy, c-format
-msgid "User ID \"%s\": %d signatures removed\n"
-msgstr "L'ID d'usuari «%s» està revocat."
+msgid_plural "User ID \"%s\": %d signatures removed\n"
+msgstr[0] "L'ID d'usuari «%s» està revocat."
+msgstr[1] "L'ID d'usuari «%s» està revocat."
 
 #, fuzzy, c-format
 msgid "User ID \"%s\": already minimized\n"
@@ -4311,37 +4325,6 @@ msgid "Please correct the error first\n"
 msgstr "Corregiu l'error primer\n"
 
 msgid ""
-"You need a Passphrase to protect your secret key.\n"
-"\n"
-msgstr ""
-"Cal una contrasenya per a protegir la clau secreta.\n"
-"\n"
-
-#, fuzzy
-msgid ""
-"Please enter a passphrase to protect the off-card backup of the new "
-"encryption key."
-msgstr "Introduïu la contrasenya; aquesta ha de ser una frase secreta \n"
-
-msgid "passphrase not correctly repeated; try again"
-msgstr "la contrasenya no s'ha repetit correctament; torneu a intentar-ho"
-
-#, c-format
-msgid "%s.\n"
-msgstr "%s.\n"
-
-msgid ""
-"You don't want a passphrase - this is probably a *bad* idea!\n"
-"I will do it anyway.  You can change your passphrase at any time,\n"
-"using this program with the option \"--edit-key\".\n"
-"\n"
-msgstr ""
-"No voleu contrasenya: és una mala idea!\n"
-"Bé. Si voleu canviar-la més endavant,\n"
-"useu aquest programa amb l'opció \"--edit-key\".\n"
-"\n"
-
-msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
 "disks) during the prime generation; this gives the random number\n"
@@ -4386,6 +4369,14 @@ msgstr ""
 
 msgid "Key generation canceled.\n"
 msgstr "La generació de claus ha estat cancel·lada.\n"
+
+#, fuzzy, c-format
+msgid "can't create backup file '%s': %s\n"
+msgstr "no s'ha pogut crear «%s»: %s\n"
+
+#, c-format
+msgid "Note: backup of card key saved to '%s'\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "writing public key to `%s'\n"
@@ -4445,18 +4436,6 @@ msgstr "Les parts secretes de la clau primària no estan disponibles.\n"
 msgid "Really create? (y/N) "
 msgstr "Crear realment? "
 
-#, fuzzy, c-format
-msgid "storing key onto card failed: %s\n"
-msgstr "no s'ha pogut eliminar el bloc de claus: %s\n"
-
-#, fuzzy, c-format
-msgid "can't create backup file '%s': %s\n"
-msgstr "no s'ha pogut crear «%s»: %s\n"
-
-#, c-format
-msgid "Note: backup of card key saved to '%s'\n"
-msgstr ""
-
 msgid "never     "
 msgstr "mai       "
 
@@ -4475,19 +4454,18 @@ msgstr "Notació de signatura crítica: "
 msgid "Signature notation: "
 msgstr "Notació de signatura: "
 
-#, fuzzy
-#| msgid "1 bad signature\n"
-msgid "1 good signature\n"
-msgstr "1 signatura errònia\n"
-
 #, fuzzy, c-format
 #| msgid "%d bad signatures\n"
-msgid "%d good signatures\n"
-msgstr "%d signatures errònies\n"
+msgid "%d good signature\n"
+msgid_plural "%d good signatures\n"
+msgstr[0] "%d signatures errònies\n"
+msgstr[1] "%d signatures errònies\n"
 
 #, c-format
-msgid "Warning: %lu key(s) skipped due to their large size\n"
-msgstr ""
+msgid "Warning: %lu key skipped due to its large size\n"
+msgid_plural "Warning: %lu keys skipped due to their large sizes\n"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Keyring"
 msgstr "Anell"
@@ -4518,20 +4496,28 @@ msgid "      Card serial no. ="
 msgstr ""
 
 #, fuzzy, c-format
-msgid "renaming '%s' to '%s' failed: %s\n"
-msgstr "no s'ha pogut crear l'armadura: %s\n"
-
-#, fuzzy, c-format
 msgid "caching keyring '%s'\n"
 msgstr "s'està comprovant l'anell «%s»\n"
 
 #, fuzzy, c-format
-msgid "%lu keys cached so far (%lu signatures)\n"
-msgstr "s'han comprovat %lu claus (%lu signatures)\n"
+msgid "%lu keys cached so far (%lu signature)\n"
+msgid_plural "%lu keys cached so far (%lu signatures)\n"
+msgstr[0] "s'han comprovat %lu claus (%lu signatures)\n"
+msgstr[1] "s'han comprovat %lu claus (%lu signatures)\n"
 
 #, fuzzy, c-format
-msgid "%lu keys cached (%lu signatures)\n"
-msgstr "s'han comprovat %lu claus (%lu signatures)\n"
+#| msgid "\t%lu keys updated\n"
+msgid "%lu key cached"
+msgid_plural "%lu keys cached"
+msgstr[0] "\t%lu clau actualitzades\n"
+msgstr[1] "\t%lu clau actualitzades\n"
+
+#, fuzzy, c-format
+#| msgid "1 bad signature\n"
+msgid " (%lu signature)\n"
+msgid_plural " (%lu signatures)\n"
+msgstr[0] "1 signatura errònia\n"
+msgstr[1] "1 signatura errònia\n"
 
 # Fitxer indi fins final.  Hau!  ivb
 # Grrr. Com em tracten els esclaus ja... jm
@@ -4577,16 +4563,14 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "%s: no és un ID vàlid\n"
 
 #, fuzzy, c-format
-msgid "refreshing 1 key from %s\n"
-msgstr "s'està sol·licitant la clau %08lX de %s\n"
+msgid "refreshing %d key from %s\n"
+msgid_plural "refreshing %d keys from %s\n"
+msgstr[0] "s'està sol·licitant la clau %08lX de %s\n"
+msgstr[1] "s'està sol·licitant la clau %08lX de %s\n"
 
 #, fuzzy, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "AVÍS: no s'ha pogut eliminar el fitxer temporal (%s) «%s»: %s\n"
-
-#, fuzzy, c-format
-msgid "refreshing %d keys from %s\n"
-msgstr "s'està sol·licitant la clau %08lX de %s\n"
 
 #, fuzzy, c-format
 msgid "key \"%s\" not found on keyserver\n"
@@ -4607,9 +4591,10 @@ msgstr "s'està sol·licitant la clau %08lX de %s\n"
 msgid "requesting key %s from %s\n"
 msgstr "s'està sol·licitant la clau %08lX de %s\n"
 
-#, fuzzy, c-format
-msgid "sending key %s to %s server %s\n"
-msgstr "s'està cercant «%s» al servidor HKP %s\n"
+# «del servidor», «en el servidor»?  ivb
+#, fuzzy
+msgid "no keyserver known\n"
+msgstr "error de servidor de claus"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"
@@ -4835,6 +4820,17 @@ msgstr "AVÍS: %s és una opció desaconsellada.\n"
 #| msgid "%s signature, digest algorithm %s\n"
 msgid "Note: signatures using the %s algorithm are rejected\n"
 msgstr "signatura %s, algorisme de resum %s\n"
+
+#, fuzzy, c-format
+msgid "(reported error: %s)\n"
+msgstr "error de lectura: %s\n"
+
+#, fuzzy, c-format
+msgid "(reported error: %s <%s>)\n"
+msgstr "error de lectura: %s\n"
+
+msgid "(further info: "
+msgstr ""
 
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
@@ -5266,6 +5262,19 @@ msgstr "%s: es descarta: la clau pública està desactivada\n"
 msgid "%s: skipped: public key already present\n"
 msgstr "%s: es descarta: la clau pública ja està present\n"
 
+#, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
+msgid "can't encrypt to '%s'\n"
+msgstr "no s'ha pogut connectar amb «%s»: %s\n"
+
+#, fuzzy, c-format
+msgid "option '%s' given, but no valid default keys given\n"
+msgstr "l'algoritme de dispersió és invàlid «%s»\n"
+
+#, fuzzy, c-format
+msgid "option '%s' given, but option '%s' not given\n"
+msgstr "l'algoritme de dispersió és invàlid «%s»\n"
+
 msgid "You did not specify a user ID. (you may use \"-r\")\n"
 msgstr "No heu especificat un ID d'usuari. (podeu usar «-r»)\n"
 
@@ -5308,11 +5317,6 @@ msgstr "clau %08lX: sense ID\n"
 
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "les dades no s'han desat; useu l'opció \"--output\" per desar-les\n"
-
-#, fuzzy, c-format
-#| msgid "error creating `%s': %s\n"
-msgid "error creating '%s': %s\n"
-msgstr "error en crear «%s»: %s\n"
 
 # Indi? ivb
 # Em pense que no. jm
@@ -5408,17 +5412,29 @@ msgid "This is a revocation certificate for the OpenPGP key:"
 msgstr "Voleu crear un certificat de revocació per a aquesta clau? "
 
 msgid ""
+"A revocation certificate is a kind of \"kill switch\" to publicly\n"
+"declare that a key shall not anymore be used.  It is not possible\n"
+"to retract such a revocation certificate once it has been published."
+msgstr ""
+
+msgid ""
 "Use it to revoke this key in case of a compromise or loss of\n"
 "the secret key.  However, if the secret key is still accessible,\n"
 "it is better to generate a new revocation certificate and give\n"
-"a reason for the revocation."
+"a reason for the revocation.  For details see the description of\n"
+"of the gpg command \"--gen-revoke\" in the GnuPG manual."
 msgstr ""
 
 msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
 "before the 5 dashes below.  Remove this colon with a text editor\n"
-"before making use of this revocation certificate."
+"before importing and publishing this revocation certificate."
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Revocation certificate created.\n"
+msgid "revocation certificate stored as '%s.rev'\n"
+msgstr "S'ha creat el certificat de revocació.\n"
 
 #, fuzzy, c-format
 msgid "secret key \"%s\" not found\n"
@@ -5430,6 +5446,11 @@ msgstr "no s'ha trobat la clau secreta «%s»: %s\n"
 #, c-format
 msgid "'%s' matches multiple secret keys:\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
+msgid "error searching the keyring: %s\n"
+msgstr "error en crear l'anell «%s»: %s\n"
 
 #, fuzzy
 msgid "Create a revocation certificate for this key? (y/N) "
@@ -5514,26 +5535,39 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "public key %s is %lu second newer than the signature\n"
-msgstr "la clau pública %08lX és %lu segons anterior a la signatura\n"
+msgid_plural "public key %s is %lu seconds newer than the signature\n"
+msgstr[0] "la clau pública %08lX és %lu segons anterior a la signatura\n"
+msgstr[1] "la clau pública %08lX és %lu segons anterior a la signatura\n"
 
 #, fuzzy, c-format
-msgid "public key %s is %lu seconds newer than the signature\n"
-msgstr "la clau pública %08lX és %lu segons anterior a la signatura\n"
+msgid "public key %s is %lu day newer than the signature\n"
+msgid_plural "public key %s is %lu days newer than the signature\n"
+msgstr[0] "la clau pública %08lX és %lu segons anterior a la signatura\n"
+msgstr[1] "la clau pública %08lX és %lu segons anterior a la signatura\n"
 
 # Werner FIXME: Use ngettext. jm
 #, fuzzy, c-format
 msgid ""
 "key %s was created %lu second in the future (time warp or clock problem)\n"
-msgstr ""
+msgid_plural ""
+"key %s was created %lu seconds in the future (time warp or clock problem)\n"
+msgstr[0] ""
+"la clau s'ha creat %lu segon en el futur (salt en el temps o problemes\n"
+"amb el rellotge)\n"
+msgstr[1] ""
 "la clau s'ha creat %lu segon en el futur (salt en el temps o problemes\n"
 "amb el rellotge)\n"
 
-# Werner FIXME: use ngettext. jm
+# Werner FIXME: Use ngettext. jm
 #, fuzzy, c-format
-msgid ""
-"key %s was created %lu seconds in the future (time warp or clock problem)\n"
-msgstr ""
-"la clau s'ha creat %lu segons en el futur (salt en el temps o problemes\n"
+msgid "key %s was created %lu day in the future (time warp or clock problem)\n"
+msgid_plural ""
+"key %s was created %lu days in the future (time warp or clock problem)\n"
+msgstr[0] ""
+"la clau s'ha creat %lu segon en el futur (salt en el temps o problemes\n"
+"amb el rellotge)\n"
+msgstr[1] ""
+"la clau s'ha creat %lu segon en el futur (salt en el temps o problemes\n"
 "amb el rellotge)\n"
 
 #, fuzzy, c-format
@@ -5776,6 +5810,242 @@ msgid "input line longer than %d characters\n"
 msgstr "la línia d'entrada és superior a %d caràcters\n"
 
 #, fuzzy, c-format
+msgid "error beginning transaction on TOFU database: %s\n"
+msgstr "error mentre s'enviava a «%s»: %s\n"
+
+#, c-format
+msgid "error committing transaction on TOFU database: %s\n"
+msgstr ""
+
+#, c-format
+msgid "error rolling back transaction on TOFU database: %s\n"
+msgstr ""
+
+# Suportats? ivb
+# A Softcatalà diuen molt «implementat». jm
+# Precissament acabem de parlar d'«implementat a la llista del GNOME
+# i s'ha dit que és erroni, igual que «suportat» :) Les alternatives
+# encara no m'agraden massa... jm
+#, fuzzy, c-format
+msgid "unsupported TOFU database version: %s\n"
+msgstr ""
+"\n"
+"Algoritmes suportats:\n"
+
+#, fuzzy, c-format
+msgid "error reading TOFU database: %s\n"
+msgstr "error mentre s'enviava a «%s»: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error writing secret keyring `%s': %s\n"
+msgid "error determining TOFU database's version: %s\n"
+msgstr "s'ha produït un error mentre s'escrivia l'anell secret «%s»: %s\n"
+
+#, fuzzy, c-format
+#| msgid "%s: error writing dir record: %s\n"
+msgid "error initializing TOFU database: %s\n"
+msgstr "%s: error en escriure el registre de directoris: %s\n"
+
+#, fuzzy, c-format
+msgid "error opening TOFU database '%s': %s\n"
+msgstr "error en la lectura de «%s»: %s\n"
+
+msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
+msgstr ""
+
+msgid "Using split format for TOFU database\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error updating TOFU database: %s\n"
+msgstr "error mentre s'enviava a «%s»: %s\n"
+
+#, fuzzy, c-format
+msgid "public key %s not found: %s\n"
+msgstr "no s'ha trobat la clau pública %08lX: %s\n"
+
+#, fuzzy, c-format
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "error en la lectura de «%s»: %s\n"
+
+#, c-format
+msgid "The binding %s is NOT known."
+msgstr ""
+
+#, c-format
+msgid ""
+"The key %s raised a conflict with this binding (%s).  Since this binding's "
+"policy was 'auto', it was changed to 'ask'."
+msgstr ""
+
+#, c-format
+msgid ""
+"Please indicate whether you believe the binding %s%sis legitimate (the key "
+"belongs to the stated owner) or a forgery (bad)."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error gathering other user IDs: %s\n"
+msgstr "error en crear «%s»: %s\n"
+
+msgid "Known user IDs associated with this key:\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Policy: "
+msgid "policy: %s"
+msgstr "Política: "
+
+#, fuzzy, c-format
+msgid "error gathering signature stats: %s\n"
+msgstr "error en crear «%s»: %s\n"
+
+#, c-format
+msgid "The email address \"%s\" is associated with %d key:\n"
+msgid_plural "The email address \"%s\" is associated with %d keys:\n"
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "Statistics for keys with the email address \"%s\":\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "list keys"
+msgid "this key"
+msgstr "llista claus"
+
+#, c-format
+msgid "%ld message signed in the future."
+msgid_plural "%ld messages signed in the future."
+msgstr[0] ""
+msgstr[1] ""
+
+#, fuzzy, c-format
+msgid "%ld message signed"
+msgid_plural "%ld messages signed"
+msgstr[0] "|algo [fitxers]|imprimeix resums de missatges"
+msgstr[1] "|algo [fitxers]|imprimeix resums de missatges"
+
+#, c-format
+msgid " over the past %ld day."
+msgid_plural " over the past %ld days."
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid " over the past %ld week."
+msgid_plural " over the past %ld weeks."
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid " over the past %ld month."
+msgid_plural " over the past %ld months."
+msgstr[0] ""
+msgstr[1] ""
+
+#. TRANSLATORS: Please translate the text found in the source
+#. file below.  We don't directly internationalize that text
+#. so that we can tweak it without breaking translations.
+msgid "TOFU detected a binding conflict"
+msgstr ""
+
+#. TRANSLATORS: Two letters (normally the lower and upper case
+#. version of the hotkey) for each of the five choices.  If
+#. there is only one choice in your language, repeat it.
+msgid "gGaAuUrRbB"
+msgstr ""
+
+msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error changing TOFU policy: %s\n"
+msgstr "error en la creació de la contrasenya: %s\n"
+
+#, c-format
+msgid "%d year"
+msgid_plural "%d years"
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "%d month"
+msgid_plural "%d months"
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "%d day"
+msgid_plural "%d days"
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "Have never verified a message signed by key %s!\n"
+msgstr ""
+
+#, c-format
+msgid "Failed to collect signature statistics for \"%s\" (key %s)\n"
+msgstr ""
+
+#, c-format
+msgid "Verified 0 messages signed by \"%s\" (key: %s, policy: %s)."
+msgstr ""
+
+#. TRANSLATORS: The final %s is replaced by a string like
+#. "7 months, 1 day, 5 minutes, 0 seconds".
+#, c-format
+msgid ""
+"Verified %ld message signed by \"%s\" (key: %s, policy: %s) in the past %s."
+msgid_plural ""
+"Verified %ld messages signed by \"%s\" (key: %s, policy: %s) in the past %s."
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "The most recent message was verified %s ago."
+msgstr ""
+
+msgid "Warning: we've have yet to see a message signed by this key!\n"
+msgstr ""
+
+msgid "Warning: we've only seen a single message signed by this key!\n"
+msgstr ""
+
+#. TRANSLATORS: translate the below text.  We don't
+#. directly internationalize that text so that we can
+#. tweak it without breaking translations.
+#, c-format
+msgid "TOFU: few signatures %d message %s"
+msgid_plural "TOFU: few signatures %d messages %s"
+msgstr[0] ""
+msgstr[1] ""
+
+#, fuzzy, c-format
+msgid "error opening TOFU database: %s\n"
+msgstr "error mentre s'enviava a «%s»: %s\n"
+
+#, fuzzy, c-format
 #| msgid "`%s' is not a valid long keyID\n"
 msgid "'%s' is not a valid long keyID\n"
 msgstr "«%s» no és un ID de clau llarg vàlid\n"
@@ -5841,19 +6111,24 @@ msgstr ""
 "no és necessària una comprovació de la base de dades de confiança\n"
 "\n"
 
-#, fuzzy, c-format
-msgid "public key %s not found: %s\n"
-msgstr "no s'ha trobat la clau pública %08lX: %s\n"
-
 msgid "please do a --check-trustdb\n"
 msgstr "si us plau, feu un --check-trustdb\n"
 
 msgid "checking the trustdb\n"
 msgstr "s'està comprovant la base de dades de confiança\n"
 
-#, c-format
-msgid "%d keys processed (%d validity counts cleared)\n"
-msgstr "s'han processat %d claus (s'han netejat %d comptes de validesa)\n"
+#, fuzzy, c-format
+msgid "%d key processed"
+msgid_plural "%d keys processed"
+msgstr[0] "fins ara s'han processat %lu claus\n"
+msgstr[1] "fins ara s'han processat %lu claus\n"
+
+#, fuzzy, c-format
+#| msgid "%d keys processed (%d validity counts cleared)\n"
+msgid " (%d validity count cleared)\n"
+msgid_plural " (%d validity counts cleared)\n"
+msgstr[0] "s'han processat %d claus (s'han netejat %d comptes de validesa)\n"
+msgstr[1] "s'han processat %d claus (s'han netejat %d comptes de validesa)\n"
 
 msgid "no ultimately trusted keys found\n"
 msgstr "no s'han trobat claus amb confiança absoluta\n"
@@ -5862,10 +6137,6 @@ msgstr "no s'han trobat claus amb confiança absoluta\n"
 msgid "public key of ultimately trusted key %s not found\n"
 msgstr ""
 "no s'ha trobat la clau pública de la clau amb confiança absoluta %08lX\n"
-
-#, c-format
-msgid "%d marginal(s) needed, %d complete(s) needed, %s trust model\n"
-msgstr ""
 
 #, c-format
 msgid ""
@@ -6067,8 +6338,11 @@ msgid "card is permanently locked!\n"
 msgstr ""
 
 #, c-format
-msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
-msgstr ""
+msgid "%d Admin PIN attempt remaining before card is permanently locked\n"
+msgid_plural ""
+"%d Admin PIN attempts remaining before card is permanently locked\n"
+msgstr[0] ""
+msgstr[1] ""
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
 #. the start of the string.  Use %%0A to force a linefeed.
@@ -6159,8 +6433,10 @@ msgid "generating key failed\n"
 msgstr "La generació de claus ha fallat: %s\n"
 
 #, fuzzy, c-format
-msgid "key generation completed (%d seconds)\n"
-msgstr "La generació de claus ha fallat: %s\n"
+msgid "key generation completed (%d second)\n"
+msgid_plural "key generation completed (%d seconds)\n"
+msgstr[0] "La generació de claus ha fallat: %s\n"
+msgstr[1] "La generació de claus ha fallat: %s\n"
 
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr ""
@@ -8404,6 +8680,9 @@ msgstr "|N|usa el mode de contrasenya especificat"
 msgid "do not allow the reuse of old passphrases"
 msgstr "error en la creació de la contrasenya: %s\n"
 
+msgid "|N|set the Pinentry timeout to N seconds"
+msgstr ""
+
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NOM|usa NOM com a clau secreta predeterminada"
 
@@ -8700,6 +8979,91 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "%d signatures not checked due to missing keys\n"
+#~ msgstr "%d signatures no comprovades per falta de clau\n"
+
+#~ msgid "%d signatures not checked due to errors\n"
+#~ msgstr "%d signatures no comprovades a causa d'errors\n"
+
+#~ msgid "1 user ID without valid self-signature detected\n"
+#~ msgstr "Ha estat detectat 1 ID sense autosignatura vàlida\n"
+
+# Werner FIXME: use ngettext. jm
+#~ msgid "Deleted %d signatures.\n"
+#~ msgstr "S'han esborrat %d signatures.\n"
+
+#, fuzzy
+#~ msgid "User ID \"%s\": %d signatures removed\n"
+#~ msgstr "L'ID d'usuari «%s» està revocat."
+
+#~ msgid ""
+#~ "You need a Passphrase to protect your secret key.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Cal una contrasenya per a protegir la clau secreta.\n"
+#~ "\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "Please enter a passphrase to protect the off-card backup of the new "
+#~ "encryption key."
+#~ msgstr "Introduïu la contrasenya; aquesta ha de ser una frase secreta \n"
+
+#~ msgid "passphrase not correctly repeated; try again"
+#~ msgstr "la contrasenya no s'ha repetit correctament; torneu a intentar-ho"
+
+#~ msgid "%s.\n"
+#~ msgstr "%s.\n"
+
+#~ msgid ""
+#~ "You don't want a passphrase - this is probably a *bad* idea!\n"
+#~ "I will do it anyway.  You can change your passphrase at any time,\n"
+#~ "using this program with the option \"--edit-key\".\n"
+#~ "\n"
+#~ msgstr ""
+#~ "No voleu contrasenya: és una mala idea!\n"
+#~ "Bé. Si voleu canviar-la més endavant,\n"
+#~ "useu aquest programa amb l'opció \"--edit-key\".\n"
+#~ "\n"
+
+#, fuzzy
+#~ msgid "storing key onto card failed: %s\n"
+#~ msgstr "no s'ha pogut eliminar el bloc de claus: %s\n"
+
+#, fuzzy
+#~| msgid "1 bad signature\n"
+#~ msgid "1 good signature\n"
+#~ msgstr "1 signatura errònia\n"
+
+#, fuzzy
+#~ msgid "renaming '%s' to '%s' failed: %s\n"
+#~ msgstr "no s'ha pogut crear l'armadura: %s\n"
+
+#, fuzzy
+#~ msgid "%lu keys cached (%lu signatures)\n"
+#~ msgstr "s'han comprovat %lu claus (%lu signatures)\n"
+
+#, fuzzy
+#~ msgid "refreshing 1 key from %s\n"
+#~ msgstr "s'està sol·licitant la clau %08lX de %s\n"
+
+#, fuzzy
+#~ msgid "sending key %s to %s server %s\n"
+#~ msgstr "s'està cercant «%s» al servidor HKP %s\n"
+
+#, fuzzy
+#~ msgid "public key %s is %lu seconds newer than the signature\n"
+#~ msgstr "la clau pública %08lX és %lu segons anterior a la signatura\n"
+
+# Werner FIXME: use ngettext. jm
+#, fuzzy
+#~ msgid ""
+#~ "key %s was created %lu seconds in the future (time warp or clock "
+#~ "problem)\n"
+#~ msgstr ""
+#~ "la clau s'ha creat %lu segons en el futur (salt en el temps o problemes\n"
+#~ "amb el rellotge)\n"
+
 #, fuzzy
 #~| msgid "can't open the keyring"
 #~ msgid "Failed to open the keyring DB.\n"
@@ -8961,11 +9325,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "searching for \"%s\" from %s\n"
 #~ msgstr "s'està cercant «%s» al servidor HKP %s\n"
-
-# «del servidor», «en el servidor»?  ivb
-#, fuzzy
-#~ msgid "no keyserver action!\n"
-#~ msgstr "error de servidor de claus"
 
 # «del servidor», «en el servidor»?  ivb
 #, fuzzy
@@ -10073,9 +10432,6 @@ msgstr ""
 #~ msgid "   signed by %08lX at %s%s\n"
 #~ msgstr "   signat per %08lX el %s%s\n"
 
-#~ msgid "Policy: "
-#~ msgstr "Política: "
-
 #~ msgid "Experimental algorithms should not be used!\n"
 #~ msgstr "No hauríeu d'usar algoritmes experimentals!\n"
 
@@ -10425,9 +10781,6 @@ msgstr ""
 
 #~ msgid "\t%lu due to new pubkeys\n"
 #~ msgstr "\\t%lu degut a noves claus públiques\n"
-
-#~ msgid "\t%lu keys updated\n"
-#~ msgstr "\t%lu clau actualitzades\n"
 
 #~ msgid "Ooops, no keys\n"
 #~ msgstr "Ooops, no hi ha claus\n"

@@ -1178,6 +1178,20 @@ msgstr "не вдалося пропустити через проксі зап�
 msgid "Enter passphrase: "
 msgstr "Введіть пароль: "
 
+#, fuzzy, c-format
+#| msgid "error creating keyring '%s': %s\n"
+msgid "error getting version from '%s': %s\n"
+msgstr "помилка під час спроби створення сховища ключів «%s»: %s\n"
+
+#, c-format
+msgid "server '%s' is older than us (%s < %s)"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "WARNING: %s overrides %s\n"
+msgid "WARNING: %s\n"
+msgstr "УВАГА: %s перевизначає %s\n"
+
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "Не вдалося отримати доступ до картки OpenPGP: %s\n"
@@ -1654,6 +1668,9 @@ msgstr "вилучити невикористовувані частини кл�
 msgid "remove as much as possible from key during export"
 msgstr "вилучити максимум частин з ключа під час експортування"
 
+msgid " - skipped"
+msgstr " - пропущено"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "експортування закритих ключів заборонено\n"
 
@@ -1665,14 +1682,34 @@ msgstr "ключ %s: ключ у стилі PGP 2.x — пропущено\n"
 msgid "key %s: key material on-card - skipped\n"
 msgstr "ключ %s: матеріал ключа на карті — пропущено\n"
 
-msgid " - skipped"
-msgstr " - пропущено"
-
 msgid "WARNING: nothing exported\n"
 msgstr "УВАГА: нічого не експортовано\n"
 
+#, c-format
+msgid "error creating '%s': %s\n"
+msgstr "помилка створення «%s»: %s.\n"
+
 msgid "[User ID not found]"
 msgstr "[Ідентифікатор не знайдено]"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "(check argument of option '%s')\n"
+msgstr "не вказано аргументу до параметра «%.50s»\n"
+
+#, c-format
+msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error closing %s: %s\n"
+msgid "error looking up: %s\n"
+msgstr "помилка під час спроби закрити %s: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error creating keyring '%s': %s\n"
+msgid "Warning: %s appears in the keyring %d times\n"
+msgstr "помилка під час спроби створення сховища ключів «%s»: %s\n"
 
 #, c-format
 msgid "automatically retrieved '%s' via %s\n"
@@ -1690,14 +1727,18 @@ msgid "secret key \"%s\" not found: %s\n"
 msgstr "закритий ключ «%s» не знайдено: %s\n"
 
 #, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "(check argument of option '%s')\n"
-msgstr "не вказано аргументу до параметра «%.50s»\n"
+#| msgid "|NAME|use NAME as default secret key"
+msgid "Warning: not using '%s' as default key: %s\n"
+msgstr "|NAME|використовувати вказаний типовий закритий ключ"
 
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
-msgid "using \"%s\" as default secret key\n"
+msgid "using \"%s\" as default secret key for signing\n"
 msgstr "|NAME|використовувати вказаний типовий закритий ключ"
+
+#, c-format
+msgid "all values passed to '%s' ignored\n"
+msgstr ""
 
 #, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
@@ -2049,29 +2090,6 @@ msgid "Note: old default options file '%s' ignored\n"
 msgstr "ЗАУВАЖЕННЯ: застарілий файл типових параметрів «%s» проігноровано\n"
 
 #, c-format
-msgid ""
-"Warning: value '%s' for option '%s' should be a long key ID or a "
-"fingerprint\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "option \"%.50s\" is ambiguous\n"
-msgid "key specification '%s' is ambiguous\n"
-msgstr "параметр «%.50s» є неоднозначним\n"
-
-#. TRANSLATORS: The %s prints a key specification which
-#. for example has been given at the command line.  Two
-#. lines with fingerprints are printed after this message.
-#, c-format
-msgid "'%s' matches at least:\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error creating keyring '%s': %s\n"
-msgid "error searching the keyring: %s\n"
-msgstr "помилка під час спроби створення сховища ключів «%s»: %s\n"
-
-#, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr "libgcrypt занадто стара (потрібна — %s, маємо %s)\n"
 
@@ -2275,16 +2293,6 @@ msgstr ""
 "УВАГА: отримувачів (-r) вказано без використання шифрування відкритим "
 "ключем\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: invalid date given\n"
-msgid "option '%s' given, but no valid default keys given\n"
-msgstr "рядок %d: вказано некоректну дату\n"
-
-#, fuzzy, c-format
-#| msgid "line %d: invalid date given\n"
-msgid "option '%s' given, but option '%s' not given\n"
-msgstr "рядок %d: вказано некоректну дату\n"
-
 msgid "--store [filename]"
 msgstr "--store [назва файла]"
 
@@ -2362,6 +2370,11 @@ msgstr "помилка під час спроби отримання даних 
 
 #, c-format
 msgid "key export failed: %s\n"
+msgstr "помилка під час спроби експортування ключа: %s\n"
+
+#, fuzzy, c-format
+#| msgid "key export failed: %s\n"
+msgid "export as ssh key failed: %s\n"
 msgstr "помилка під час спроби експортування ключа: %s\n"
 
 #, c-format
@@ -2848,33 +2861,40 @@ msgstr "[відкликання]"
 msgid "[self-signature]"
 msgstr "[самопідпис]"
 
-msgid "1 bad signature\n"
-msgstr "1 помилковий підпис\n"
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d помилкових підписів\n"
+msgstr[1] "%d помилкових підписів\n"
+msgstr[2] "%d помилкових підписів\n"
 
-#, c-format
-msgid "%d bad signatures\n"
-msgstr "%d помилкових підписів\n"
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 підпис не перевірено через те, що немає ключа\n"
+msgstr[1] "1 підпис не перевірено через те, що немає ключа\n"
+msgstr[2] "1 підпис не перевірено через те, що немає ключа\n"
 
-msgid "1 signature not checked due to a missing key\n"
-msgstr "1 підпис не перевірено через те, що немає ключа\n"
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to an error\n"
+msgid "%d signature not checked due to an error\n"
+msgid_plural "%d signatures not checked due to errors\n"
+msgstr[0] "1 підпис не перевірено через помилку\n"
+msgstr[1] "1 підпис не перевірено через помилку\n"
+msgstr[2] "1 підпис не перевірено через помилку\n"
 
-#, c-format
-msgid "%d signatures not checked due to missing keys\n"
-msgstr "%d підписів не перевірено через те, що немає ключів\n"
-
-msgid "1 signature not checked due to an error\n"
-msgstr "1 підпис не перевірено через помилку\n"
-
-#, c-format
-msgid "%d signatures not checked due to errors\n"
-msgstr "%d підписів не перевірено через помилки\n"
-
-msgid "1 user ID without valid self-signature detected\n"
-msgstr "виявлено 1 ідентифікатор користувача без коректного самопідпису\n"
-
-#, c-format
-msgid "%d user IDs without valid self-signatures detected\n"
-msgstr "виявлено %d ідентифікаторів користувачів без коректних самопідписів\n"
+#, fuzzy, c-format
+#| msgid "%d user IDs without valid self-signatures detected\n"
+msgid "%d user ID without valid self-signature detected\n"
+msgid_plural "%d user IDs without valid self-signatures detected\n"
+msgstr[0] ""
+"виявлено %d ідентифікаторів користувачів без коректних самопідписів\n"
+msgstr[1] ""
+"виявлено %d ідентифікаторів користувачів без коректних самопідписів\n"
+msgstr[2] ""
+"виявлено %d ідентифікаторів користувачів без коректних самопідписів\n"
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3461,13 +3481,13 @@ msgstr "Вилучити цей невідомий підпис? (y/N/q або �
 msgid "Really delete this self-signature? (y/N)"
 msgstr "Вилучити цей самопідпис? (y/N або т/Н)"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "Deleted %d signature.\n"
 msgid "Deleted %d signature.\n"
-msgstr "Вилучено %d підпис.\n"
-
-#, c-format
-msgid "Deleted %d signatures.\n"
-msgstr "Вилучено %d підписів.\n"
+msgid_plural "Deleted %d signatures.\n"
+msgstr[0] "Вилучено %d підпис.\n"
+msgstr[1] "Вилучено %d підпис.\n"
+msgstr[2] "Вилучено %d підпис.\n"
 
 msgid "Nothing deleted.\n"
 msgstr "Нічого не вилучено.\n"
@@ -3479,13 +3499,13 @@ msgstr "некоректний"
 msgid "User ID \"%s\" compacted: %s\n"
 msgstr "Ідентифікатор користувача «%s» ущільнено: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "User ID \"%s\": %d signature removed\n"
 msgid "User ID \"%s\": %d signature removed\n"
-msgstr "Ідентифікатор користувача «%s»: вилучено %d підпис\n"
-
-#, c-format
-msgid "User ID \"%s\": %d signatures removed\n"
-msgstr "Ідентифікатор користувача «%s»: вилучено %d підписів\n"
+msgid_plural "User ID \"%s\": %d signatures removed\n"
+msgstr[0] "Ідентифікатор користувача «%s»: вилучено %d підпис\n"
+msgstr[1] "Ідентифікатор користувача «%s»: вилучено %d підпис\n"
+msgstr[2] "Ідентифікатор користувача «%s»: вилучено %d підпис\n"
 
 #, c-format
 msgid "User ID \"%s\": already minimized\n"
@@ -4011,38 +4031,6 @@ msgid "Please correct the error first\n"
 msgstr "Спочатку виправте помилку\n"
 
 msgid ""
-"You need a Passphrase to protect your secret key.\n"
-"\n"
-msgstr ""
-"Вам потрібен пароль для захисту вашого закритого ключа.\n"
-"\n"
-
-msgid ""
-"Please enter a passphrase to protect the off-card backup of the new "
-"encryption key."
-msgstr ""
-"Будь ласка, вкажіть пароль для захисту позакарткової резервної копії нового "
-"ключа шифрування."
-
-msgid "passphrase not correctly repeated; try again"
-msgstr "помилка під час повторного введення пароля, повторіть спробу"
-
-#, c-format
-msgid "%s.\n"
-msgstr "%s.\n"
-
-msgid ""
-"You don't want a passphrase - this is probably a *bad* idea!\n"
-"I will do it anyway.  You can change your passphrase at any time,\n"
-"using this program with the option \"--edit-key\".\n"
-"\n"
-msgstr ""
-"Ви не використовуєте пароля — дуже погана робота!\n"
-"Вашу забаганку буде виконано. Пізніше ви зможете змінити пароль,\n"
-"за допомогою цієї програми з параметром «--edit-key».\n"
-"\n"
-
-msgid ""
 "We need to generate a lot of random bytes. It is a good idea to perform\n"
 "some other action (type on the keyboard, move the mouse, utilize the\n"
 "disks) during the prime generation; this gives the random number\n"
@@ -4088,6 +4076,14 @@ msgstr ""
 
 msgid "Key generation canceled.\n"
 msgstr "Створення ключа скасовано.\n"
+
+#, c-format
+msgid "can't create backup file '%s': %s\n"
+msgstr "не вдалося створити файл резервної копії «%s»: %s\n"
+
+#, c-format
+msgid "Note: backup of card key saved to '%s'\n"
+msgstr "ЗАУВАЖЕННЯ: резервну копію ключа на картці збережено до «%s»\n"
 
 #, c-format
 msgid "writing public key to '%s'\n"
@@ -4137,18 +4133,6 @@ msgstr "Закриті частини основного ключа зберіг
 msgid "Really create? (y/N) "
 msgstr "Створити? (y/N або т/Н) "
 
-#, c-format
-msgid "storing key onto card failed: %s\n"
-msgstr "спроба зберігання ключа на картці зазнала невдачі: %s\n"
-
-#, c-format
-msgid "can't create backup file '%s': %s\n"
-msgstr "не вдалося створити файл резервної копії «%s»: %s\n"
-
-#, c-format
-msgid "Note: backup of card key saved to '%s'\n"
-msgstr "ЗАУВАЖЕННЯ: резервну копію ключа на картці збережено до «%s»\n"
-
 msgid "never     "
 msgstr "ніколи    "
 
@@ -4167,16 +4151,24 @@ msgstr "Критична примітка підпису: "
 msgid "Signature notation: "
 msgstr "Примітка підпису: "
 
-msgid "1 good signature\n"
-msgstr "1 добрий підпис\n"
+#, fuzzy, c-format
+#| msgid "%d good signatures\n"
+msgid "%d good signature\n"
+msgid_plural "%d good signatures\n"
+msgstr[0] "%d добрих підписів\n"
+msgstr[1] "%d добрих підписів\n"
+msgstr[2] "%d добрих підписів\n"
 
-#, c-format
-msgid "%d good signatures\n"
-msgstr "%d добрих підписів\n"
-
-#, c-format
-msgid "Warning: %lu key(s) skipped due to their large size\n"
-msgstr "Попередження: %lu ключів пропущено через їхній надто великий розмір\n"
+#, fuzzy, c-format
+#| msgid "Warning: %lu key(s) skipped due to their large size\n"
+msgid "Warning: %lu key skipped due to its large size\n"
+msgid_plural "Warning: %lu keys skipped due to their large sizes\n"
+msgstr[0] ""
+"Попередження: %lu ключів пропущено через їхній надто великий розмір\n"
+msgstr[1] ""
+"Попередження: %lu ключів пропущено через їхній надто великий розмір\n"
+msgstr[2] ""
+"Попередження: %lu ключів пропущено через їхній надто великий розмір\n"
 
 msgid "Keyring"
 msgstr "Сховище ключів"
@@ -4206,20 +4198,32 @@ msgid "      Card serial no. ="
 msgstr "Серійний номер картки ="
 
 #, c-format
-msgid "renaming '%s' to '%s' failed: %s\n"
-msgstr "спроба перейменування «%s» на «%s» зазнала невдачі: %s\n"
-
-#, c-format
 msgid "caching keyring '%s'\n"
 msgstr "кешування сховища ключів «%s»\n"
 
-#, c-format
-msgid "%lu keys cached so far (%lu signatures)\n"
-msgstr "зараз кешовано %lu ключів (%lu підписів)\n"
+#, fuzzy, c-format
+#| msgid "%lu keys cached so far (%lu signatures)\n"
+msgid "%lu keys cached so far (%lu signature)\n"
+msgid_plural "%lu keys cached so far (%lu signatures)\n"
+msgstr[0] "зараз кешовано %lu ключів (%lu підписів)\n"
+msgstr[1] "зараз кешовано %lu ключів (%lu підписів)\n"
+msgstr[2] "зараз кешовано %lu ключів (%lu підписів)\n"
 
-#, c-format
-msgid "%lu keys cached (%lu signatures)\n"
-msgstr "кешовано %lu ключів (%lu підписів)\n"
+#, fuzzy, c-format
+#| msgid "flush the cache"
+msgid "%lu key cached"
+msgid_plural "%lu keys cached"
+msgstr[0] "спорожнити кеш"
+msgstr[1] "спорожнити кеш"
+msgstr[2] "спорожнити кеш"
+
+#, fuzzy, c-format
+#| msgid "1 bad signature\n"
+msgid " (%lu signature)\n"
+msgid_plural " (%lu signatures)\n"
+msgstr[0] "1 помилковий підпис\n"
+msgstr[1] "1 помилковий підпис\n"
+msgstr[2] "1 помилковий підпис\n"
 
 #, c-format
 msgid "%s: keyring created\n"
@@ -4261,17 +4265,17 @@ msgstr "некоректний протокол сервера ключів (н�
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "«%s» не є ідентифікатором ключа: пропускаємо\n"
 
-#, c-format
-msgid "refreshing 1 key from %s\n"
-msgstr "оновлюємо 1 ключ з %s\n"
+#, fuzzy, c-format
+#| msgid "refreshing %d keys from %s\n"
+msgid "refreshing %d key from %s\n"
+msgid_plural "refreshing %d keys from %s\n"
+msgstr[0] "оновлюємо %d ключів з %s\n"
+msgstr[1] "оновлюємо %d ключів з %s\n"
+msgstr[2] "оновлюємо %d ключів з %s\n"
 
 #, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr "УВАГА: не вдалося оновити ключ %s за допомогою %s: %s\n"
-
-#, c-format
-msgid "refreshing %d keys from %s\n"
-msgstr "оновлюємо %d ключів з %s\n"
 
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
@@ -4292,9 +4296,10 @@ msgstr "надсилаємо запит щодо ключа %s до %s серв�
 msgid "requesting key %s from %s\n"
 msgstr "надсилаємо запит щодо ключа %s з %s\n"
 
-#, c-format
-msgid "sending key %s to %s server %s\n"
-msgstr "надсилаємо ключ %s до %s сервера %s\n"
+#, fuzzy
+#| msgid "invalid keyserver options\n"
+msgid "no keyserver known\n"
+msgstr "некоректні параметри сервера ключів\n"
 
 #, c-format
 msgid "sending key %s to %s\n"
@@ -4513,6 +4518,19 @@ msgstr "УВАГА: алгоритм обчислення контрольних
 #, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
 msgstr "Зауваження: підписи за допомогою алгоритму %s відкинуто\n"
+
+#, fuzzy, c-format
+#| msgid "%s:%u: read error: %s\n"
+msgid "(reported error: %s)\n"
+msgstr "%s:%u: помилка під час читання: %s\n"
+
+#, fuzzy, c-format
+#| msgid "read error in '%s': %s\n"
+msgid "(reported error: %s <%s>)\n"
+msgstr "помилка читання у «%s»: %s\n"
+
+msgid "(further info: "
+msgstr ""
 
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
@@ -4910,6 +4928,21 @@ msgstr "%s: пропущено: відкритий ключ вимкнено\n"
 msgid "%s: skipped: public key already present\n"
 msgstr "%s: пропущено: відкритий ключ вже існує\n"
 
+#, fuzzy, c-format
+#| msgid "can't connect to '%s': %s\n"
+msgid "can't encrypt to '%s'\n"
+msgstr "не вдалося встановити з’єднання з «%s»: %s\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: invalid date given\n"
+msgid "option '%s' given, but no valid default keys given\n"
+msgstr "рядок %d: вказано некоректну дату\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: invalid date given\n"
+msgid "option '%s' given, but option '%s' not given\n"
+msgstr "рядок %d: вказано некоректну дату\n"
+
 msgid "You did not specify a user ID. (you may use \"-r\")\n"
 msgstr ""
 "Вами не вказано ідентифікатора користувача. (можете скористатися «-r»)\n"
@@ -4955,10 +4988,6 @@ msgid "data not saved; use option \"--output\" to save it\n"
 msgstr ""
 "дані не збережено; скористайтеся для їхнього збереження параметром «--"
 "output»\n"
-
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "помилка створення «%s»: %s.\n"
 
 msgid "Detached signature.\n"
 msgstr "Від’єднаний підпис.\n"
@@ -5044,24 +5073,47 @@ msgid "This is a revocation certificate for the OpenPGP key:"
 msgstr "Це сертифікат відкликання для ключа OpenPGP:"
 
 msgid ""
+"A revocation certificate is a kind of \"kill switch\" to publicly\n"
+"declare that a key shall not anymore be used.  It is not possible\n"
+"to retract such a revocation certificate once it has been published."
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Use it to revoke this key in case of a compromise or loss of\n"
+#| "the secret key.  However, if the secret key is still accessible,\n"
+#| "it is better to generate a new revocation certificate and give\n"
+#| "a reason for the revocation."
+msgid ""
 "Use it to revoke this key in case of a compromise or loss of\n"
 "the secret key.  However, if the secret key is still accessible,\n"
 "it is better to generate a new revocation certificate and give\n"
-"a reason for the revocation."
+"a reason for the revocation.  For details see the description of\n"
+"of the gpg command \"--gen-revoke\" in the GnuPG manual."
 msgstr ""
 "Скористайтеся цим для відкликання цього ключа у випадку його\n"
 "компрометації або втрати закритої частини. Втім, якщо доступ до\n"
 "закритого ключа не втрачено, краще створити новий сертифікат\n"
 "відкликання і вказати причину відкликання."
 
+#, fuzzy
+#| msgid ""
+#| "To avoid an accidental use of this file, a colon has been inserted\n"
+#| "before the 5 dashes below.  Remove this colon with a text editor\n"
+#| "before making use of this revocation certificate."
 msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
 "before the 5 dashes below.  Remove this colon with a text editor\n"
-"before making use of this revocation certificate."
+"before importing and publishing this revocation certificate."
 msgstr ""
 "Щоб уникнути випадкового використання цього файла, перед п’ятьма\n"
 "дефісами нижче додано двокрапку. Вилучіть цю двокрапку у текстовому\n"
 "редакторі, перш ніж скористатися цим сертифікатом відкликання."
+
+#, fuzzy, c-format
+#| msgid "Revocation certificate created.\n"
+msgid "revocation certificate stored as '%s.rev'\n"
+msgstr "Створено сертифікат відкликання.\n"
 
 #, fuzzy, c-format
 #| msgid "secret key \"%s\" not found: %s\n"
@@ -5074,6 +5126,11 @@ msgstr "закритий ключ «%s» не знайдено: %s\n"
 #, c-format
 msgid "'%s' matches multiple secret keys:\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error creating keyring '%s': %s\n"
+msgid "error searching the keyring: %s\n"
+msgstr "помилка під час спроби створення сховища ключів «%s»: %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Створити сертифікат відкликання для цього ключа? (y/N або т/Н) "
@@ -5155,26 +5212,53 @@ msgid "WARNING: signing subkey %s has an invalid cross-certification\n"
 msgstr ""
 "УВАГА: підписування підключа %s містить некоректну перехресну сертифікацію\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "public key %s is %lu second newer than the signature\n"
 msgid "public key %s is %lu second newer than the signature\n"
-msgstr "відкритий ключ %s є на %lu секунду новішим за підпис\n"
+msgid_plural "public key %s is %lu seconds newer than the signature\n"
+msgstr[0] "відкритий ключ %s є на %lu секунду новішим за підпис\n"
+msgstr[1] "відкритий ключ %s є на %lu секунду новішим за підпис\n"
+msgstr[2] "відкритий ключ %s є на %lu секунду новішим за підпис\n"
 
-#, c-format
-msgid "public key %s is %lu seconds newer than the signature\n"
-msgstr "відкритий ключ %s є на %lu секунд новішим за підпис\n"
+#, fuzzy, c-format
+#| msgid "public key %s is %lu second newer than the signature\n"
+msgid "public key %s is %lu day newer than the signature\n"
+msgid_plural "public key %s is %lu days newer than the signature\n"
+msgstr[0] "відкритий ключ %s є на %lu секунду новішим за підпис\n"
+msgstr[1] "відкритий ключ %s є на %lu секунду новішим за підпис\n"
+msgstr[2] "відкритий ключ %s є на %lu секунду новішим за підпис\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid ""
+#| "key %s was created %lu second in the future (time warp or clock problem)\n"
 msgid ""
 "key %s was created %lu second in the future (time warp or clock problem)\n"
-msgstr ""
+msgid_plural ""
+"key %s was created %lu seconds in the future (time warp or clock problem)\n"
+msgstr[0] ""
+"ключ %s було створено з позначкою на %lu секунду у майбутньому (часова петля "
+"або проблема з годинником)\n"
+msgstr[1] ""
+"ключ %s було створено з позначкою на %lu секунду у майбутньому (часова петля "
+"або проблема з годинником)\n"
+msgstr[2] ""
 "ключ %s було створено з позначкою на %lu секунду у майбутньому (часова петля "
 "або проблема з годинником)\n"
 
-#, c-format
-msgid ""
-"key %s was created %lu seconds in the future (time warp or clock problem)\n"
-msgstr ""
-"ключ %s було створено з позначкою на %lu секунд у майбутньому (часова петля "
+#, fuzzy, c-format
+#| msgid ""
+#| "key %s was created %lu second in the future (time warp or clock problem)\n"
+msgid "key %s was created %lu day in the future (time warp or clock problem)\n"
+msgid_plural ""
+"key %s was created %lu days in the future (time warp or clock problem)\n"
+msgstr[0] ""
+"ключ %s було створено з позначкою на %lu секунду у майбутньому (часова петля "
+"або проблема з годинником)\n"
+msgstr[1] ""
+"ключ %s було створено з позначкою на %lu секунду у майбутньому (часова петля "
+"або проблема з годинником)\n"
+msgstr[2] ""
+"ключ %s було створено з позначкою на %lu секунду у майбутньому (часова петля "
 "або проблема з годинником)\n"
 
 #, c-format
@@ -5404,6 +5488,260 @@ msgstr ""
 msgid "input line longer than %d characters\n"
 msgstr "рядок вхідних даних довший за %d символів\n"
 
+#, fuzzy, c-format
+#| msgid "error sending standard options: %s\n"
+msgid "error beginning transaction on TOFU database: %s\n"
+msgstr "помилка під час спроби надсилання стандартних параметрів: %s\n"
+
+#, c-format
+msgid "error committing transaction on TOFU database: %s\n"
+msgstr ""
+
+#, c-format
+msgid "error rolling back transaction on TOFU database: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "unsupported algorithm: %s"
+msgid "unsupported TOFU database version: %s\n"
+msgstr "непідтримуваний алгоритм: %s"
+
+#, fuzzy, c-format
+#| msgid "error sending data: %s\n"
+msgid "error reading TOFU database: %s\n"
+msgstr "помилка під час спроби надсилання даних: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error writing base64 encoding: %s\n"
+msgid "error determining TOFU database's version: %s\n"
+msgstr "помилка під час спроби запису у кодуванні base64: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error initializing reader object: %s\n"
+msgid "error initializing TOFU database: %s\n"
+msgstr "помилка під час спроби ініціалізації об’єкта читання: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error opening '%s': %s\n"
+msgid "error opening TOFU database '%s': %s\n"
+msgstr "помилка під час відкриття «%s»: %s\n"
+
+msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
+msgstr ""
+
+msgid "Using split format for TOFU database\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error sending data: %s\n"
+msgid "error updating TOFU database: %s\n"
+msgstr "помилка під час спроби надсилання даних: %s\n"
+
+#, c-format
+msgid "public key %s not found: %s\n"
+msgstr "відкритий ключ %s не знайдено: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error setting OCSP target: %s\n"
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "помилка під час встановлення призначення за OCSP: %s\n"
+
+#, c-format
+msgid "The binding %s is NOT known."
+msgstr ""
+
+#, c-format
+msgid ""
+"The key %s raised a conflict with this binding (%s).  Since this binding's "
+"policy was 'auto', it was changed to 'ask'."
+msgstr ""
+
+#, c-format
+msgid ""
+"Please indicate whether you believe the binding %s%sis legitimate (the key "
+"belongs to the stated owner) or a forgery (bad)."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error getting responder ID: %s\n"
+msgid "error gathering other user IDs: %s\n"
+msgstr "помилка під час спроби отримання ідентифікатора відповідача: %s\n"
+
+msgid "Known user IDs associated with this key:\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "validity: %s"
+msgid "policy: %s"
+msgstr "чинність: %s"
+
+#, fuzzy, c-format
+#| msgid "error getting stored flags: %s\n"
+msgid "error gathering signature stats: %s\n"
+msgstr "помилка під час спроби отримання збережених прапорців: %s\n"
+
+#, c-format
+msgid "The email address \"%s\" is associated with %d key:\n"
+msgid_plural "The email address \"%s\" is associated with %d keys:\n"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#, c-format
+msgid "Statistics for keys with the email address \"%s\":\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "list keys"
+msgid "this key"
+msgstr "показати список ключів"
+
+#, c-format
+msgid "%ld message signed in the future."
+msgid_plural "%ld messages signed in the future."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#, fuzzy, c-format
+#| msgid "print message digests"
+msgid "%ld message signed"
+msgid_plural "%ld messages signed"
+msgstr[0] "показати контрольні суми повідомлень"
+msgstr[1] "показати контрольні суми повідомлень"
+msgstr[2] "показати контрольні суми повідомлень"
+
+#, c-format
+msgid " over the past %ld day."
+msgid_plural " over the past %ld days."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#, c-format
+msgid " over the past %ld week."
+msgid_plural " over the past %ld weeks."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#, c-format
+msgid " over the past %ld month."
+msgid_plural " over the past %ld months."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#. TRANSLATORS: Please translate the text found in the source
+#. file below.  We don't directly internationalize that text
+#. so that we can tweak it without breaking translations.
+msgid "TOFU detected a binding conflict"
+msgstr ""
+
+#. TRANSLATORS: Two letters (normally the lower and upper case
+#. version of the hotkey) for each of the five choices.  If
+#. there is only one choice in your language, repeat it.
+msgid "gGaAuUrRbB"
+msgstr ""
+
+msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error creating a pipe: %s\n"
+msgid "error changing TOFU policy: %s\n"
+msgstr "помилка під час спроби створення каналу: %s\n"
+
+#, c-format
+msgid "%d year"
+msgid_plural "%d years"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#, c-format
+msgid "%d month"
+msgid_plural "%d months"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#, c-format
+msgid "%d day"
+msgid_plural "%d days"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#, c-format
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#, c-format
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#, c-format
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#, c-format
+msgid "Have never verified a message signed by key %s!\n"
+msgstr ""
+
+#, c-format
+msgid "Failed to collect signature statistics for \"%s\" (key %s)\n"
+msgstr ""
+
+#, c-format
+msgid "Verified 0 messages signed by \"%s\" (key: %s, policy: %s)."
+msgstr ""
+
+#. TRANSLATORS: The final %s is replaced by a string like
+#. "7 months, 1 day, 5 minutes, 0 seconds".
+#, c-format
+msgid ""
+"Verified %ld message signed by \"%s\" (key: %s, policy: %s) in the past %s."
+msgid_plural ""
+"Verified %ld messages signed by \"%s\" (key: %s, policy: %s) in the past %s."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#, c-format
+msgid "The most recent message was verified %s ago."
+msgstr ""
+
+msgid "Warning: we've have yet to see a message signed by this key!\n"
+msgstr ""
+
+msgid "Warning: we've only seen a single message signed by this key!\n"
+msgstr ""
+
+#. TRANSLATORS: translate the below text.  We don't
+#. directly internationalize that text so that we can
+#. tweak it without breaking translations.
+#, c-format
+msgid "TOFU: few signatures %d message %s"
+msgid_plural "TOFU: few signatures %d messages %s"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#, fuzzy, c-format
+#| msgid "error sending data: %s\n"
+msgid "error opening TOFU database: %s\n"
+msgstr "помилка під час спроби надсилання даних: %s\n"
+
 #, c-format
 msgid "'%s' is not a valid long keyID\n"
 msgstr "«%s» не є коректним довгим ідентифікатором ключа\n"
@@ -5464,19 +5802,27 @@ msgstr "потреби у перевірці trustdb на основі моде�
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "потреби у оновленні trustdb на основі моделі довіри «%s» немає\n"
 
-#, c-format
-msgid "public key %s not found: %s\n"
-msgstr "відкритий ключ %s не знайдено: %s\n"
-
 msgid "please do a --check-trustdb\n"
 msgstr "будь ласка, скористайтеся параметром --check-trustdb\n"
 
 msgid "checking the trustdb\n"
 msgstr "перевірка trustdb\n"
 
-#, c-format
-msgid "%d keys processed (%d validity counts cleared)\n"
-msgstr "Оброблено %d ключів (очищено %d значень чинності)\n"
+#, fuzzy, c-format
+#| msgid "%lu keys processed so far\n"
+msgid "%d key processed"
+msgid_plural "%d keys processed"
+msgstr[0] "оброблено %lu ключів\n"
+msgstr[1] "оброблено %lu ключів\n"
+msgstr[2] "оброблено %lu ключів\n"
+
+#, fuzzy, c-format
+#| msgid "%d keys processed (%d validity counts cleared)\n"
+msgid " (%d validity count cleared)\n"
+msgid_plural " (%d validity counts cleared)\n"
+msgstr[0] "Оброблено %d ключів (очищено %d значень чинності)\n"
+msgstr[1] "Оброблено %d ключів (очищено %d значень чинності)\n"
+msgstr[2] "Оброблено %d ключів (очищено %d значень чинності)\n"
 
 msgid "no ultimately trusted keys found\n"
 msgstr "не знайдено ключів з необмеженою довірою\n"
@@ -5484,10 +5830,6 @@ msgstr "не знайдено ключів з необмеженою довір�
 #, c-format
 msgid "public key of ultimately trusted key %s not found\n"
 msgstr "не знайдено відкритий ключ ключа з необмеженою довірою %s\n"
-
-#, c-format
-msgid "%d marginal(s) needed, %d complete(s) needed, %s trust model\n"
-msgstr "потрібно %d обмежених, потрібно %d повних, модель довіри %s\n"
 
 #, c-format
 msgid ""
@@ -5698,9 +6040,18 @@ msgstr "помилка отримання стану CHV з картки\n"
 msgid "card is permanently locked!\n"
 msgstr "картку заблоковано!\n"
 
-#, c-format
-msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
-msgstr ""
+#, fuzzy, c-format
+#| msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
+msgid "%d Admin PIN attempt remaining before card is permanently locked\n"
+msgid_plural ""
+"%d Admin PIN attempts remaining before card is permanently locked\n"
+msgstr[0] ""
+"залишилося %d спроб визначення адміністративного пінкоду перед тим, як "
+"картку буде остаточно заблоковано\n"
+msgstr[1] ""
+"залишилося %d спроб визначення адміністративного пінкоду перед тим, як "
+"картку буде остаточно заблоковано\n"
+msgstr[2] ""
 "залишилося %d спроб визначення адміністративного пінкоду перед тим, як "
 "картку буде остаточно заблоковано\n"
 
@@ -5781,9 +6132,13 @@ msgstr "зачекайте на завершення створення ключ
 msgid "generating key failed\n"
 msgstr "помилка під час створення ключа\n"
 
-#, c-format
-msgid "key generation completed (%d seconds)\n"
-msgstr "створення ключа завершено (за %d секунд)\n"
+#, fuzzy, c-format
+#| msgid "key generation completed (%d seconds)\n"
+msgid "key generation completed (%d second)\n"
+msgid_plural "key generation completed (%d seconds)\n"
+msgstr[0] "створення ключа завершено (за %d секунд)\n"
+msgstr[1] "створення ключа завершено (за %d секунд)\n"
+msgstr[2] "створення ключа завершено (за %d секунд)\n"
 
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr "некоректна структура картки OpenPGP (DO 0x93)\n"
@@ -7906,6 +8261,11 @@ msgstr "|N|завершувати строк дії паролів за вказ
 msgid "do not allow the reuse of old passphrases"
 msgstr "не дозволяти повторне використання старих паролів"
 
+#, fuzzy
+#| msgid "|N|set LDAP timeout to N seconds"
+msgid "|N|set the Pinentry timeout to N seconds"
+msgstr "|N|встановити вказаний час очікування даних від LDAP"
+
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAME|використовувати вказаний типовий закритий ключ"
 
@@ -8194,6 +8554,88 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#, fuzzy
+#~| msgid "option \"%.50s\" is ambiguous\n"
+#~ msgid "key specification '%s' is ambiguous\n"
+#~ msgstr "параметр «%.50s» є неоднозначним\n"
+
+#~ msgid "%d signatures not checked due to missing keys\n"
+#~ msgstr "%d підписів не перевірено через те, що немає ключів\n"
+
+#~ msgid "%d signatures not checked due to errors\n"
+#~ msgstr "%d підписів не перевірено через помилки\n"
+
+#~ msgid "1 user ID without valid self-signature detected\n"
+#~ msgstr "виявлено 1 ідентифікатор користувача без коректного самопідпису\n"
+
+#~ msgid "Deleted %d signatures.\n"
+#~ msgstr "Вилучено %d підписів.\n"
+
+#~ msgid "User ID \"%s\": %d signatures removed\n"
+#~ msgstr "Ідентифікатор користувача «%s»: вилучено %d підписів\n"
+
+#~ msgid ""
+#~ "You need a Passphrase to protect your secret key.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Вам потрібен пароль для захисту вашого закритого ключа.\n"
+#~ "\n"
+
+#~ msgid ""
+#~ "Please enter a passphrase to protect the off-card backup of the new "
+#~ "encryption key."
+#~ msgstr ""
+#~ "Будь ласка, вкажіть пароль для захисту позакарткової резервної копії "
+#~ "нового ключа шифрування."
+
+#~ msgid "passphrase not correctly repeated; try again"
+#~ msgstr "помилка під час повторного введення пароля, повторіть спробу"
+
+#~ msgid "%s.\n"
+#~ msgstr "%s.\n"
+
+#~ msgid ""
+#~ "You don't want a passphrase - this is probably a *bad* idea!\n"
+#~ "I will do it anyway.  You can change your passphrase at any time,\n"
+#~ "using this program with the option \"--edit-key\".\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Ви не використовуєте пароля — дуже погана робота!\n"
+#~ "Вашу забаганку буде виконано. Пізніше ви зможете змінити пароль,\n"
+#~ "за допомогою цієї програми з параметром «--edit-key».\n"
+#~ "\n"
+
+#~ msgid "storing key onto card failed: %s\n"
+#~ msgstr "спроба зберігання ключа на картці зазнала невдачі: %s\n"
+
+#~ msgid "1 good signature\n"
+#~ msgstr "1 добрий підпис\n"
+
+#~ msgid "renaming '%s' to '%s' failed: %s\n"
+#~ msgstr "спроба перейменування «%s» на «%s» зазнала невдачі: %s\n"
+
+#~ msgid "%lu keys cached (%lu signatures)\n"
+#~ msgstr "кешовано %lu ключів (%lu підписів)\n"
+
+#~ msgid "refreshing 1 key from %s\n"
+#~ msgstr "оновлюємо 1 ключ з %s\n"
+
+#~ msgid "sending key %s to %s server %s\n"
+#~ msgstr "надсилаємо ключ %s до %s сервера %s\n"
+
+#~ msgid "public key %s is %lu seconds newer than the signature\n"
+#~ msgstr "відкритий ключ %s є на %lu секунд новішим за підпис\n"
+
+#~ msgid ""
+#~ "key %s was created %lu seconds in the future (time warp or clock "
+#~ "problem)\n"
+#~ msgstr ""
+#~ "ключ %s було створено з позначкою на %lu секунд у майбутньому (часова "
+#~ "петля або проблема з годинником)\n"
+
+#~ msgid "%d marginal(s) needed, %d complete(s) needed, %s trust model\n"
+#~ msgstr "потрібно %d обмежених, потрібно %d повних, модель довіри %s\n"
 
 #~ msgid "Failed to open the keyring DB.\n"
 #~ msgstr "Не вдалося відкрити базу даних сховища ключів.\n"
