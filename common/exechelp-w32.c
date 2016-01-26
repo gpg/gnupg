@@ -65,7 +65,7 @@
 #include "exechelp.h"
 
 /* Define to 1 do enable debugging.  */
-#define DEBUG_W32_SPAWN 1
+#define DEBUG_W32_SPAWN 0
 
 
 /* It seems Vista doesn't grok X_OK and so fails access() tests.
