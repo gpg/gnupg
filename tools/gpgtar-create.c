@@ -72,13 +72,13 @@ fillup_entry_w32 (tar_header_t hdr)
   for (p=hdr->name; *p; p++)
     if (*p == '/')
       *p = '\\';
-  wfname = utf8_to_wchar (hdr->name);
+  wfname = native_to_wchar (hdr->name);
   for (p=hdr->name; *p; p++)
     if (*p == '\\')
       *p = '/';
   if (!wfname)
     {
-      log_error ("error utf8-ing '%s': %s\n", hdr->name, w32_strerror (-1));
+      log_error ("error converting '%s': %s\n", hdr->name, w32_strerror (-1));
       return gpg_error_from_syserror ();
     }
   if (!GetFileAttributesExW (wfname, GetFileExInfoStandard, &fad))
@@ -299,7 +299,7 @@ scan_directory (const char *dname, scanctrl_t scanctrl)
     for (p=fname; *p; p++)
       if (*p == '/')
         *p = '\\';
-    wfname = utf8_to_wchar (fname);
+    wfname = native_to_wchar (fname);
     xfree (fname);
     if (!wfname)
       {
@@ -322,11 +322,11 @@ scan_directory (const char *dname, scanctrl_t scanctrl)
 
   do
     {
-      char *fname = wchar_to_utf8 (fi.cFileName);
+      char *fname = wchar_to_native (fi.cFileName);
       if (!fname)
         {
           err = gpg_error_from_syserror ();
-          log_error ("error utf8-ing filename: %s\n", w32_strerror (-1));
+          log_error ("error converting filename: %s\n", w32_strerror (-1));
           break;
         }
       for (p=fname; *p; p++)

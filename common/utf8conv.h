@@ -48,6 +48,8 @@ size_t jnlib_iconv (jnlib_iconv_t cd, const char **inbuf, size_t *inbytesleft,
 int jnlib_iconv_close (jnlib_iconv_t cd);
 
 #ifdef HAVE_W32_SYSTEM
+char *wchar_to_native (const wchar_t *string);
+wchar_t *native_to_wchar (const char *string);
 char *wchar_to_utf8 (const wchar_t *string);
 wchar_t *utf8_to_wchar (const char *string);
 #endif /*HAVE_W32_SYSTEM*/

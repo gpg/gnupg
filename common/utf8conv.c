@@ -713,17 +713,17 @@ jnlib_iconv_close (jnlib_iconv_t cd)
 
 
 #ifdef HAVE_W32_SYSTEM
-/* Return a malloced string encoded in UTF-8 from the wide char input
+/* Return a malloced string encoded for CODEPAGE from the wide char input
    string STRING.  Caller must free this value.  Returns NULL and sets
    ERRNO on failure.  Calling this function with STRING set to NULL is
    not defined.  */
-char *
-wchar_to_utf8 (const wchar_t *string)
+static char *
+wchar_to_cp (const wchar_t *string, unsigned int codepage)
 {
   int n;
   char *result;
 
-  n = WideCharToMultiByte (CP_UTF8, 0, string, -1, NULL, 0, NULL, NULL);
+  n = WideCharToMultiByte (codepage, 0, string, -1, NULL, 0, NULL, NULL);
   if (n < 0)
     {
       gpg_err_set_errno (EINVAL);
@@ -734,7 +734,7 @@ wchar_to_utf8 (const wchar_t *string)
   if (!result)
     return NULL;
 
-  n = WideCharToMultiByte (CP_UTF8, 0, string, -1, result, n, NULL, NULL);
+  n = WideCharToMultiByte (codepage, 0, string, -1, result, n, NULL, NULL);
   if (n < 0)
     {
       xfree (result);
@@ -745,18 +745,18 @@ wchar_to_utf8 (const wchar_t *string)
 }
 
 
-/* Return a malloced wide char string from an UTF-8 encoded input
+/* Return a malloced wide char string from a CODEPAGE encoded input
    string STRING.  Caller must free this value.  Returns NULL and sets
    ERRNO on failure.  Calling this function with STRING set to NULL is
    not defined.  */
-wchar_t *
-utf8_to_wchar (const char *string)
+static wchar_t *
+cp_to_wchar (const char *string, unsigned int codepage)
 {
   int n;
   size_t nbytes;
   wchar_t *result;
 
-  n = MultiByteToWideChar (CP_UTF8, 0, string, -1, NULL, 0);
+  n = MultiByteToWideChar (codepage, 0, string, -1, NULL, 0);
   if (n < 0)
     {
       gpg_err_set_errno (EINVAL);
@@ -773,7 +773,7 @@ utf8_to_wchar (const char *string)
   if (!result)
     return NULL;
 
-  n = MultiByteToWideChar (CP_UTF8, 0, string, -1, result, n);
+  n = MultiByteToWideChar (codepage, 0, string, -1, result, n);
   if (n < 0)
     {
       xfree (result);
@@ -782,4 +782,49 @@ utf8_to_wchar (const char *string)
     }
   return result;
 }
+
+
+/* Return a malloced string encoded in the active code page from the
+ * wide char input string STRING.  Caller must free this value.
+ * Returns NULL and sets ERRNO on failure.  Calling this function with
+ * STRING set to NULL is not defined.  */
+char *
+wchar_to_native (const wchar_t *string)
+{
+  return wchar_to_cp (string, CP_ACP);
+}
+
+
+/* Return a malloced wide char string from an UTF-8 encoded input
+ * string STRING.  Caller must free this value.  Returns NULL and sets
+ * ERRNO on failure.  Calling this function with STRING set to NULL is
+ * not defined.  */
+wchar_t *
+native_to_wchar (const char *string)
+{
+  return cp_to_wchar (string, CP_ACP);
+}
+
+
+/* Return a malloced string encoded in UTF-8 from the wide char input
+ * string STRING.  Caller must free this value.  Returns NULL and sets
+ * ERRNO on failure.  Calling this function with STRING set to NULL is
+ * not defined.  */
+char *
+wchar_to_utf8 (const wchar_t *string)
+{
+  return wchar_to_cp (string, CP_UTF8);
+}
+
+
+/* Return a malloced wide char string from an UTF-8 encoded input
+ * string STRING.  Caller must free this value.  Returns NULL and sets
+ * ERRNO on failure.  Calling this function with STRING set to NULL is
+ * not defined.  */
+wchar_t *
+utf8_to_wchar (const char *string)
+{
+  return cp_to_wchar (string, CP_UTF8);
+}
+
 #endif /*HAVE_W32_SYSTEM*/
