@@ -1952,7 +1952,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
          int no_debug)
 {
   int rc;
-  size_t msglen;
+  int msglen;
   int eagain_retries = 0;
 
   /* Fixme: The next line for the current Valgrind without support
@@ -1973,6 +1973,8 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
             }
           return CCID_DRIVER_ERR_CARD_IO_ERROR;
         }
+      if (msglen < 0)
+        return CCID_DRIVER_ERR_INV_VALUE;  /* Faulty libusb.  */
       *nread = msglen;
     }
   else
@@ -2081,7 +2083,7 @@ abort_cmd (ccid_driver_t handle, int seqno)
   int rc;
   char dummybuf[8];
   unsigned char msg[100];
-  size_t msglen;
+  int msglen;
 
   if (!handle->idev)
     {
@@ -2252,7 +2254,7 @@ ccid_poll (ccid_driver_t handle)
 {
   int rc;
   unsigned char msg[10];
-  size_t msglen;
+  int msglen;
   int i, j;
 
   if (handle->idev)
