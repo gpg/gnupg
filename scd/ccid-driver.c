@@ -83,11 +83,12 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
+#include <unistd.h>
 #ifdef HAVE_NPTH
 # include <npth.h>
 #endif /*HAVE_NPTH*/
 
-#include <usb.h>
+#include <libusb.h>
 
 #include "scdaemon.h"
 #include "iso7816.h"
@@ -237,7 +238,7 @@ static struct
    structure is used as handle for most functions. */
 struct ccid_driver_s
 {
-  usb_dev_handle *idev;
+  libusb_device_handle *idev;
   char *rid;
   int dev_fd;  /* -1 for USB transport or file descriptor of the
                    transport device. */
@@ -985,7 +986,7 @@ parse_ccid_descriptor (ccid_driver_t handle,
 
 
 static char *
-get_escaped_usb_string (usb_dev_handle *idev, int idx,
+get_escaped_usb_string (libusb_device_handle *idev, int idx,
                         const char *prefix, const char *suffix)
 {
   int rc;
@@ -1005,18 +1006,20 @@ get_escaped_usb_string (usb_dev_handle *idev, int idx,
   /* First get the list of supported languages and use the first one.
      If we do don't find it we try to use English.  Note that this is
      all in a 2 bute Unicode encoding using little endian. */
-  rc = usb_control_msg (idev, USB_ENDPOINT_IN, USB_REQ_GET_DESCRIPTOR,
-                        (USB_DT_STRING << 8), 0,
-                        (char*)buf, sizeof buf, 1000 /* ms timeout */);
+  rc = libusb_control_transfer (idev, LIBUSB_ENDPOINT_IN,
+                                LIBUSB_REQUEST_GET_DESCRIPTOR,
+                                (LIBUSB_DT_STRING << 8), 0,
+                                (char*)buf, sizeof buf, 1000 /* ms timeout */);
   if (rc < 4)
     langid = 0x0409; /* English.  */
   else
     langid = (buf[3] << 8) | buf[2];
 
-  rc = usb_control_msg (idev, USB_ENDPOINT_IN, USB_REQ_GET_DESCRIPTOR,
-                        (USB_DT_STRING << 8) + idx, langid,
-                        (char*)buf, sizeof buf, 1000 /* ms timeout */);
-  if (rc < 2 || buf[1] != USB_DT_STRING)
+  rc = libusb_control_transfer (idev, LIBUSB_ENDPOINT_IN,
+                                LIBUSB_REQUEST_GET_DESCRIPTOR,
+                                (LIBUSB_DT_STRING << 8) + idx, langid,
+                                (char*)buf, sizeof buf, 1000 /* ms timeout */);
+  if (rc < 2 || buf[1] != LIBUSB_DT_STRING)
     return NULL; /* Error or not a string. */
   len = buf[0];
   if (len > rc)
@@ -1059,7 +1062,7 @@ get_escaped_usb_string (usb_dev_handle *idev, int idx,
    physical reader after a reset.  It returns an allocated and possibly
    percent escaped string or NULL if not enough memory is available. */
 static char *
-make_reader_id (usb_dev_handle *idev,
+make_reader_id (libusb_device_handle *idev,
                 unsigned int vendor, unsigned int product,
                 unsigned char serialno_index)
 {
@@ -1082,7 +1085,7 @@ make_reader_id (usb_dev_handle *idev,
 
 /* Helper to find the endpoint from an interface descriptor.  */
 static int
-find_endpoint (struct usb_interface_descriptor *ifcdesc, int mode)
+find_endpoint (const struct libusb_interface_descriptor *ifcdesc, int mode)
 {
   int no;
   int want_bulk_in = 0;
@@ -1091,21 +1094,21 @@ find_endpoint (struct usb_interface_descriptor *ifcdesc, int mode)
     want_bulk_in = 0x80;
   for (no=0; no < ifcdesc->bNumEndpoints; no++)
     {
-      struct usb_endpoint_descriptor *ep = ifcdesc->endpoint + no;
-      if (ep->bDescriptorType != USB_DT_ENDPOINT)
+      const struct libusb_endpoint_descriptor *ep = ifcdesc->endpoint + no;
+      if (ep->bDescriptorType != LIBUSB_DT_ENDPOINT)
         ;
       else if (mode == 2
-          && ((ep->bmAttributes & USB_ENDPOINT_TYPE_MASK)
-              == USB_ENDPOINT_TYPE_INTERRUPT)
-          && (ep->bEndpointAddress & 0x80))
-        return (ep->bEndpointAddress & 0x0f);
-      else if (((ep->bmAttributes & USB_ENDPOINT_TYPE_MASK)
-                == USB_ENDPOINT_TYPE_BULK)
+               && ((ep->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK)
+                   == LIBUSB_TRANSFER_TYPE_INTERRUPT)
+               && (ep->bEndpointAddress & 0x80))
+        return ep->bEndpointAddress;
+      else if (((ep->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK)
+                == LIBUSB_TRANSFER_TYPE_BULK)
                && (ep->bEndpointAddress & 0x80) == want_bulk_in)
-        return (ep->bEndpointAddress & 0x0f);
+        return ep->bEndpointAddress;
     }
-  /* Should never happen.  */
-  return mode == 2? 0x83 : mode == 1? 0x82 :1;
+
+  return -1;
 }
 
 
@@ -1116,10 +1119,10 @@ static int
 scan_or_find_usb_device (int scan_mode,
                          int *readerno, int *count, char **rid_list,
                          const char *readerid,
-                         struct usb_device *dev,
+                         struct libusb_device *dev,
                          char **r_rid,
-                         struct usb_device **r_dev,
-                         usb_dev_handle **r_idev,
+                         struct libusb_device_descriptor *desc,
+                         libusb_device_handle **r_idev,
                          unsigned char **ifcdesc_extra,
                          size_t *ifcdesc_extra_len,
                          int *interface_number,
@@ -1128,29 +1131,33 @@ scan_or_find_usb_device (int scan_mode,
   int cfg_no;
   int ifc_no;
   int set_no;
-  struct usb_config_descriptor *config;
-  struct usb_interface *interface;
-  struct usb_interface_descriptor *ifcdesc;
+  const struct libusb_interface_descriptor *ifcdesc;
   char *rid;
-  usb_dev_handle *idev;
+  libusb_device_handle *idev;
+  int err;
+
+  err = libusb_get_device_descriptor (dev, desc);
+  if (err < 0)
+    return err;
 
   *r_idev = NULL;
 
-  for (cfg_no=0; cfg_no < dev->descriptor.bNumConfigurations; cfg_no++)
+  for (cfg_no=0; cfg_no < desc->bNumConfigurations; cfg_no++)
     {
-      config = dev->config + cfg_no;
-      if(!config)
-        continue;
+      struct libusb_config_descriptor *config;
+
+      err = libusb_get_config_descriptor (dev, cfg_no, &config);
+      if (err < 0)
+        {
+          libusb_free_config_descriptor (config);
+          continue;
+        }
 
       for (ifc_no=0; ifc_no < config->bNumInterfaces; ifc_no++)
         {
-          interface = config->interface + ifc_no;
-          if (!interface)
-            continue;
-
-          for (set_no=0; set_no < interface->num_altsetting; set_no++)
+          for (set_no=0; set_no < config->interface->num_altsetting; set_no++)
             {
-              ifcdesc = (interface->altsetting + set_no);
+              ifcdesc = (config->interface->altsetting + set_no);
               /* The second condition is for older SCM SPR 532 who did
                  not know about the assigned CCID class.  The third
                  condition does the same for a Cherry SmartTerminal
@@ -1161,24 +1168,24 @@ scan_or_find_usb_device (int scan_mode,
                        && ifcdesc->bInterfaceSubClass == 0
                        && ifcdesc->bInterfaceProtocol == 0)
                       || (ifcdesc->bInterfaceClass == 255
-                          && dev->descriptor.idVendor == VENDOR_SCM
-                          && dev->descriptor.idProduct == SCM_SPR532)
+                          && desc->idVendor == VENDOR_SCM
+                          && desc->idProduct == SCM_SPR532)
                       || (ifcdesc->bInterfaceClass == 255
-                          && dev->descriptor.idVendor == VENDOR_CHERRY
-                          && dev->descriptor.idProduct == CHERRY_ST2000)))
+                          && desc->idVendor == VENDOR_CHERRY
+                          && desc->idProduct == CHERRY_ST2000)))
                 {
-                  idev = usb_open (dev);
-                  if (!idev)
+                  err = libusb_open (dev, &idev);
+                  if (err < 0)
                     {
                       DEBUGOUT_1 ("usb_open failed: %s\n",
-                                  strerror (errno));
+                                  libusb_error_name (err));
                       continue; /* with next setting. */
                     }
 
                   rid = make_reader_id (idev,
-                                        dev->descriptor.idVendor,
-                                        dev->descriptor.idProduct,
-                                        dev->descriptor.iSerialNumber);
+                                        desc->idVendor,
+                                        desc->idProduct,
+                                        desc->iSerialNumber);
                   if (rid)
                     {
                       if (scan_mode)
@@ -1219,16 +1226,16 @@ scan_or_find_usb_device (int scan_mode,
                           if (ifcdesc_extra && ifcdesc_extra_len)
                             {
                               *ifcdesc_extra = malloc (ifcdesc
-                                                       ->extralen);
+                                                       ->extra_length);
                               if (!*ifcdesc_extra)
                                 {
-                                  usb_close (idev);
+                                  libusb_close (idev);
                                   free (rid);
                                   return 1; /* Out of core. */
                                 }
                               memcpy (*ifcdesc_extra, ifcdesc->extra,
-                                      ifcdesc->extralen);
-                              *ifcdesc_extra_len = ifcdesc->extralen;
+                                      ifcdesc->extra_length);
+                              *ifcdesc_extra_len = ifcdesc->extra_length;
                             }
 
                           if (interface_number)
@@ -1241,8 +1248,6 @@ scan_or_find_usb_device (int scan_mode,
                           if (ep_intr)
                             *ep_intr = find_endpoint (ifcdesc, 2);
 
-                          if (r_dev)
-                            *r_dev = dev;
                           if (r_rid)
                             {
                               *r_rid = rid;
@@ -1265,7 +1270,7 @@ scan_or_find_usb_device (int scan_mode,
                       free (rid);
                     }
 
-                  usb_close (idev);
+                  libusb_close (idev);
                   idev = NULL;
                   return 0;
                 }
@@ -1316,27 +1321,27 @@ scan_or_find_usb_device (int scan_mode,
 static int
 scan_or_find_devices (int readerno, const char *readerid,
                       char **r_rid,
-                      struct usb_device **r_dev,
+                      struct libusb_device_descriptor *r_desc,
                       unsigned char **ifcdesc_extra,
                       size_t *ifcdesc_extra_len,
                       int *interface_number,
                       int *ep_bulk_out, int *ep_bulk_in, int *ep_intr,
-                      usb_dev_handle **r_idev,
+                      libusb_device_handle **r_idev,
                       int *r_fd)
 {
   char *rid_list = NULL;
   int count = 0;
-  struct usb_bus *busses, *bus;
-  struct usb_device *dev = NULL;
-  usb_dev_handle *idev = NULL;
+  libusb_device **dev_list = NULL;
+  libusb_device *dev;
+  libusb_device_handle *idev = NULL;
   int scan_mode = (readerno == -1 && !readerid);
   int i;
+  ssize_t n;
+  struct libusb_device_descriptor desc;
 
   /* Set return values to a default. */
   if (r_rid)
     *r_rid = NULL;
-  if (r_dev)
-    *r_dev = NULL;
   if (ifcdesc_extra)
     *ifcdesc_extra = NULL;
   if (ifcdesc_extra_len)
@@ -1354,39 +1359,32 @@ scan_or_find_devices (int readerno, const char *readerid,
       assert (r_rid);
     }
 
-  usb_find_busses();
-  usb_find_devices();
+  n = libusb_get_device_list (NULL, &dev_list);
 
-#ifdef HAVE_USB_GET_BUSSES
-  busses = usb_get_busses();
-#else
-  busses = usb_busses;
-#endif
-
-  for (bus = busses; bus; bus = bus->next)
+  for (i = 0; i < n; i++)
     {
-      for (dev = bus->devices; dev; dev = dev->next)
+      dev = dev_list[i];
+      if (scan_or_find_usb_device (scan_mode, &readerno, &count, &rid_list,
+                                   readerid,
+                                   dev,
+                                   r_rid,
+                                   &desc,
+                                   &idev,
+                                   ifcdesc_extra,
+                                   ifcdesc_extra_len,
+                                   interface_number,
+                                   ep_bulk_out, ep_bulk_in, ep_intr))
         {
-          if (scan_or_find_usb_device (scan_mode, &readerno, &count, &rid_list,
-                                       readerid,
-                                       dev,
-                                       r_rid,
-                                       r_dev,
-                                       &idev,
-                                       ifcdesc_extra,
-                                       ifcdesc_extra_len,
-                                       interface_number,
-                                       ep_bulk_out, ep_bulk_in, ep_intr))
+          /* Found requested device or out of core. */
+          if (!idev)
             {
-              /* Found requested device or out of core. */
-              if (!idev)
-                {
-                  free (rid_list);
-                  return -1; /* error */
-                }
-              *r_idev = idev;
-              return 0;
+              free (rid_list);
+              return -1; /* error */
             }
+          *r_idev = idev;
+          if (r_desc)
+            memcpy (r_desc, &desc, sizeof (struct libusb_device_descriptor));
+          return 0;
         }
     }
 
@@ -1501,7 +1499,7 @@ ccid_get_reader_list (void)
 
   if (!initialized_usb)
     {
-      usb_init ();
+      libusb_init (NULL);
       initialized_usb = 1;
     }
 
@@ -1546,20 +1544,20 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid,
                   const char **rdrname_p)
 {
   int rc = 0;
-  struct usb_device *dev = NULL;
-  usb_dev_handle *idev = NULL;
+  libusb_device_handle *idev = NULL;
   int dev_fd = -1;
   char *rid = NULL;
   unsigned char *ifcdesc_extra = NULL;
   size_t ifcdesc_extra_len;
   int readerno;
   int ifc_no, ep_bulk_out, ep_bulk_in, ep_intr;
+  struct libusb_device_descriptor desc;
 
   *handle = NULL;
 
   if (!initialized_usb)
     {
-      usb_init ();
+      libusb_init (NULL);
       initialized_usb = 1;
     }
 
@@ -1581,7 +1579,7 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid,
   else
     readerno = 0;  /* Default. */
 
-  if (scan_or_find_devices (readerno, readerid, &rid, &dev,
+  if (scan_or_find_devices (readerno, readerid, &rid, &desc,
                             &ifcdesc_extra, &ifcdesc_extra_len,
                             &ifc_no, &ep_bulk_out, &ep_bulk_in, &ep_intr,
                             &idev, &dev_fd) )
@@ -1607,9 +1605,9 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid,
     {
       (*handle)->idev = idev;
       (*handle)->dev_fd = -1;
-      (*handle)->id_vendor = dev->descriptor.idVendor;
-      (*handle)->id_product = dev->descriptor.idProduct;
-      (*handle)->bcd_device = dev->descriptor.bcdDevice;
+      (*handle)->id_vendor = desc.idVendor;
+      (*handle)->id_product = desc.idProduct;
+      (*handle)->bcd_device = desc.bcdDevice;
       (*handle)->ifc_no = ifc_no;
       (*handle)->ep_bulk_out = ep_bulk_out;
       (*handle)->ep_bulk_in = ep_bulk_in;
@@ -1639,8 +1637,8 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid,
           goto leave;
         }
 
-      rc = usb_claim_interface (idev, ifc_no);
-      if (rc)
+      rc = libusb_claim_interface (idev, ifc_no);
+      if (rc < 0)
         {
           DEBUGOUT_1 ("usb_claim_interface failed: %d\n", rc);
           rc = CCID_DRIVER_ERR_CARD_IO_ERROR;
@@ -1656,7 +1654,7 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid,
     {
       free (rid);
       if (idev)
-        usb_close (idev);
+        libusb_close (idev);
       if (dev_fd != -1)
         close (dev_fd);
       free (*handle);
@@ -1697,8 +1695,8 @@ do_close_reader (ccid_driver_t handle)
     }
   if (handle->idev)
     {
-      usb_release_interface (handle->idev, handle->ifc_no);
-      usb_close (handle->idev);
+      libusb_release_interface (handle->idev, handle->ifc_no);
+      libusb_close (handle->idev);
       handle->idev = NULL;
     }
   if (handle->dev_fd != -1)
@@ -1721,8 +1719,7 @@ int
 ccid_shutdown_reader (ccid_driver_t handle)
 {
   int rc = 0;
-  struct usb_device *dev = NULL;
-  usb_dev_handle *idev = NULL;
+  libusb_device_handle *idev = NULL;
   unsigned char *ifcdesc_extra = NULL;
   size_t ifcdesc_extra_len;
   int ifc_no, ep_bulk_out, ep_bulk_in, ep_intr;
@@ -1732,7 +1729,7 @@ ccid_shutdown_reader (ccid_driver_t handle)
 
   do_close_reader (handle);
 
-  if (scan_or_find_devices (-1, handle->rid, NULL, &dev,
+  if (scan_or_find_devices (-1, handle->rid, NULL, NULL,
                             &ifcdesc_extra, &ifcdesc_extra_len,
                             &ifc_no, &ep_bulk_out, &ep_bulk_in, &ep_intr,
                             &idev, NULL) || !idev)
@@ -1756,7 +1753,7 @@ ccid_shutdown_reader (ccid_driver_t handle)
           goto leave;
         }
 
-      rc = usb_claim_interface (idev, ifc_no);
+      rc = libusb_claim_interface (idev, ifc_no);
       if (rc)
         {
           DEBUGOUT_1 ("usb_claim_interface failed: %d\n", rc);
@@ -1770,7 +1767,7 @@ ccid_shutdown_reader (ccid_driver_t handle)
   if (rc)
     {
       if (handle->idev)
-        usb_close (handle->idev);
+        libusb_close (handle->idev);
       handle->idev = NULL;
       if (handle->dev_fd != -1)
         close (handle->dev_fd);
@@ -1843,11 +1840,6 @@ writen (int fd, const void *buf, size_t nbytes)
   return 0;
 }
 
-#if defined(ENXIO) && !defined(LIBUSB_PATH_MAX) && defined(__GNU_LIBRARY__)
-#define LIBUSB_ERRNO_NO_SUCH_DEVICE ENXIO       /* libusb-compat */
-#elif defined(ENODEV)
-#define LIBUSB_ERRNO_NO_SUCH_DEVICE ENODEV      /* Original libusb */
-#endif
 
 /* Write a MSG of length MSGLEN to the designated bulk out endpoint.
    Returns 0 on success. */
@@ -1916,35 +1908,23 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
 
   if (handle->idev)
     {
-      rc = usb_bulk_write (handle->idev,
-                           handle->ep_bulk_out,
-                           (char*)msg, msglen,
-                           5000 /* ms timeout */);
-      if (rc == msglen)
-        return 0;
-#ifdef LIBUSB_ERRNO_NO_SUCH_DEVICE
-      if (rc == -(LIBUSB_ERRNO_NO_SUCH_DEVICE))
-        {
-          /* The Linux libusb returns a negative error value.  Catch
-             the most important one.  */
-          errno = LIBUSB_ERRNO_NO_SUCH_DEVICE;
-          rc = -1;
-        }
-#endif /*LIBUSB_ERRNO_NO_SUCH_DEVICE*/
+      int transferred;
 
-      if (rc == -1)
+      rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_out,
+                                 (char*)msg, msglen, &transferred,
+                                 5000 /* ms timeout */);
+      if (rc == 0 && transferred == msglen)
+        return 0;
+
+      if (rc < 0)
         {
-          DEBUGOUT_1 ("usb_bulk_write error: %s\n", strerror (errno));
-#ifdef LIBUSB_ERRNO_NO_SUCH_DEVICE
-          if (errno == LIBUSB_ERRNO_NO_SUCH_DEVICE)
+          DEBUGOUT_1 ("usb_bulk_write error: %s\n", libusb_error_name (rc));
+          if (rc == LIBUSB_ERROR_NO_DEVICE)
             {
               handle->enodev_seen = 1;
               return CCID_DRIVER_ERR_NO_READER;
             }
-#endif /*LIBUSB_ERRNO_NO_SUCH_DEVICE*/
         }
-      else
-        DEBUGOUT_1 ("usb_bulk_write failed: %d\n", rc);
     }
   else
     {
@@ -1981,14 +1961,11 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
  retry:
   if (handle->idev)
     {
-      rc = usb_bulk_read (handle->idev,
-                          handle->ep_bulk_in,
-                          (char*)buffer, length,
-                          timeout);
+      rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_in,
+                                 (char*)buffer, length, &msglen, timeout);
       if (rc < 0)
         {
-          rc = errno;
-          DEBUGOUT_1 ("usb_bulk_read error: %s\n", strerror (rc));
+          DEBUGOUT_1 ("usb_bulk_read error: %s\n", libusb_error_name (rc));
           if (rc == EAGAIN && eagain_retries++ < 3)
             {
               my_sleep (1);
@@ -1996,7 +1973,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
             }
           return CCID_DRIVER_ERR_CARD_IO_ERROR;
         }
-      *nread = msglen = rc;
+      *nread = msglen;
     }
   else
     {
@@ -2117,17 +2094,17 @@ abort_cmd (ccid_driver_t handle, int seqno)
   /* Send the abort command to the control pipe.  Note that we don't
      need to keep track of sent abort commands because there should
      never be another thread using the same slot concurrently.  */
-  rc = usb_control_msg (handle->idev,
-                        0x21,/* bmRequestType: host-to-device,
-                                class specific, to interface.  */
-                        1,   /* ABORT */
-                        (seqno << 8 | 0 /* slot */),
-                        handle->ifc_no,
-                        dummybuf, 0,
-                        1000 /* ms timeout */);
+  rc = libusb_control_transfer (handle->idev,
+                                0x21,/* bmRequestType: host-to-device,
+                                        class specific, to interface.  */
+                                1,   /* ABORT */
+                                (seqno << 8 | 0 /* slot */),
+                                handle->ifc_no,
+                                dummybuf, 0,
+                                1000 /* ms timeout */);
   if (rc < 0)
     {
-      DEBUGOUT_1 ("usb_control_msg error: %s\n", strerror (errno));
+      DEBUGOUT_1 ("usb_control_msg error: %s\n", libusb_error_name (rc));
       return CCID_DRIVER_ERR_CARD_IO_ERROR;
     }
 
@@ -2137,6 +2114,8 @@ abort_cmd (ccid_driver_t handle, int seqno)
   seqno--;  /* Adjust for next increment.  */
   do
     {
+      int transferred;
+
       seqno++;
       msg[0] = PC_to_RDR_Abort;
       msg[5] = 0; /* slot */
@@ -2147,32 +2126,27 @@ abort_cmd (ccid_driver_t handle, int seqno)
       msglen = 10;
       set_msg_len (msg, 0);
 
-      rc = usb_bulk_write (handle->idev,
-                           handle->ep_bulk_out,
-                           (char*)msg, msglen,
-                           5000 /* ms timeout */);
-      if (rc == msglen)
+      rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_out,
+                                 (char*)msg, msglen, &transferred,
+                                 5000 /* ms timeout */);
+      if (rc == 0 && transferred == msglen)
         rc = 0;
-      else if (rc == -1)
+      else if (rc < 0)
         DEBUGOUT_1 ("usb_bulk_write error in abort_cmd: %s\n",
-                    strerror (errno));
-      else
-        DEBUGOUT_1 ("usb_bulk_write failed in abort_cmd: %d\n", rc);
+                    libusb_error_name (rc));
 
       if (rc)
         return rc;
 
-      rc = usb_bulk_read (handle->idev,
-                          handle->ep_bulk_in,
-                          (char*)msg, sizeof msg,
-                          5000 /*ms timeout*/);
+      rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_in,
+                                 (char*)msg, sizeof msg, &msglen,
+                                 5000 /*ms timeout*/);
       if (rc < 0)
         {
           DEBUGOUT_1 ("usb_bulk_read error in abort_cmd: %s\n",
-                      strerror (errno));
+                      libusb_error_name (rc));
           return CCID_DRIVER_ERR_CARD_IO_ERROR;
         }
-      msglen = rc;
 
       if (msglen < 10)
         {
@@ -2283,11 +2257,10 @@ ccid_poll (ccid_driver_t handle)
 
   if (handle->idev)
     {
-      rc = usb_bulk_read (handle->idev,
-                          handle->ep_intr,
-                          (char*)msg, sizeof msg,
-                          0 /* ms timeout */ );
-      if (rc < 0 && errno == ETIMEDOUT)
+      rc = libusb_bulk_transfer (handle->idev, handle->ep_intr,
+                                 (char*)msg, sizeof msg, &msglen,
+                                 0 /* ms timeout */ );
+      if (rc == LIBUSB_ERROR_TIMEOUT)
         return 0;
     }
   else
@@ -2295,12 +2268,9 @@ ccid_poll (ccid_driver_t handle)
 
   if (rc < 0)
     {
-      DEBUGOUT_1 ("usb_intr_read error: %s\n", strerror (errno));
+      DEBUGOUT_1 ("usb_intr_read error: %s\n", libusb_error_name (rc));
       return CCID_DRIVER_ERR_CARD_IO_ERROR;
     }
-
-  msglen = rc;
-  rc = 0;
 
   if (msglen < 1)
     {
@@ -2365,8 +2335,8 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits)
       if (!retries)
         {
           DEBUGOUT ("USB: CALLING USB_CLEAR_HALT\n");
-          usb_clear_halt (handle->idev, handle->ep_bulk_in);
-          usb_clear_halt (handle->idev, handle->ep_bulk_out);
+          libusb_clear_halt (handle->idev, handle->ep_bulk_in);
+          libusb_clear_halt (handle->idev, handle->ep_bulk_out);
         }
       else
           DEBUGOUT ("USB: RETRYING bulk_in AGAIN\n");
@@ -3112,7 +3082,7 @@ ccid_transceive (ccid_driver_t handle,
 
       if (tpdulen < 4)
         {
-          usb_clear_halt (handle->idev, handle->ep_bulk_in);
+          libusb_clear_halt (handle->idev, handle->ep_bulk_in);
           return CCID_DRIVER_ERR_ABORTED;
         }
 
@@ -3546,7 +3516,7 @@ ccid_transceive_secure (ccid_driver_t handle,
 
   if (tpdulen < 4)
     {
-      usb_clear_halt (handle->idev, handle->ep_bulk_in);
+      libusb_clear_halt (handle->idev, handle->ep_bulk_in);
       return CCID_DRIVER_ERR_ABORTED;
     }
   if (debug_level > 1)

@@ -783,15 +783,52 @@ AM_PATH_KSBA("$NEED_KSBA_API:$NEED_KSBA_VERSION",have_ksba=yes,have_ksba=no)
 #
 # FiXME: Use GNUPG_CHECK_LIBUSB and modify to use separate AC_SUBSTs.
 if test "$use_ccid_driver" = yes ; then
-  AC_CHECK_LIB(usb, usb_bulk_write,
-                [ LIBUSB_LIBS="$LIBUSB_LIBS -lusb"
-                  AC_DEFINE(HAVE_LIBUSB,1,
-                           [defined if libusb is available])
+   case $target in
+     *-*-darwin*)
+       LIBUSB_LIBS="-lusb-1.0 -Wl,-framework,CoreFoundation -Wl,-framework,IOKit"
+       ;;
+     *-*-freebsd*)
+       # FreeBSD has a native 1.0 compatible library by -lusb.
+       LIBUSB_LIBS="-lusb"
+       ;;
+     *)
+       LIBUSB_LIBS="-lusb-1.0"
+       ;;
+   esac
+   AC_CHECK_LIB(usb-1.0, libusb_init,
+                [ LIBUSB_LIBS="$LIBUSB_LIBS"
+                  AC_DEFINE(HAVE_LIBUSB,1, [defined if libusb is available])
                   have_libusb=yes
                ])
-  AC_CHECK_FUNCS(usb_create_match)
+   AC_DEFINE([HAVE_LIBUSB])
+   AC_MSG_CHECKING([libusb include dir])
+   usb_incdir_found="no"
+   for _incdir in "" "/usr/include/libusb-1.0" "/usr/local/include/libusb-1.0"; do
+     _libusb_save_cppflags=$CPPFLAGS
+     if test -n "${_incdir}"; then
+       CPPFLAGS="-I${_incdir} ${CPPFLAGS}"
+     fi
+     AC_PREPROC_IFELSE([AC_LANG_SOURCE([[@%:@include <libusb.h>]])],
+     [usb_incdir=${_incdir}; usb_incdir_found="yes"], [])
+     CPPFLAGS=${_libusb_save_cppflags}
+     if test "$usb_incdir_found" = "yes"; then
+       break
+     fi
+   done
+   if test "$usb_incdir_found" = "yes"; then
+     AC_MSG_RESULT([${usb_incdir}])
+   else
+     AC_MSG_RESULT([not found])
+     use_ccid_driver=no
+   fi
+   if test "$usb_incdir" = ""; then
+     LIBUSB_CPPFLAGS=""
+   else
+     LIBUSB_CPPFLAGS="-I${usb_incdir}"
+   fi
 fi
 AC_SUBST(LIBUSB_LIBS)
+AC_SUBST(LIBUSB_CPPFLAGS)
 
 #
 # Check wether it is necessary to link against libdl.
