@@ -207,7 +207,7 @@ N  to change the name.
 C  to change the comment.
 E  to change the email address.
 O  to continue with key generation.
-Q  to to quit the key generation.
+Q  to quit the key generation.
 .
 
 .gpg.keygen.sub.okay
@@ -337,7 +337,7 @@ file (which is shown in brackets) will be used.
 
 .gpg.ask_revocation_reason.code
 # revoke.c (ask_revocation_reason)
-You should specify a reason for the certification.  Depending on the
+You should specify a reason for the revocation.  Depending on the
 context you have the ability to choose from this list:
   "Key has been compromised"
       Use this if you have a reason to believe that unauthorized persons
@@ -373,7 +373,7 @@ your system administrator whether you should trust this certificate.
 
 
 .gpgsm.crl-problem
-# This tex is displayed by the audit log for problems with
+# This text is displayed by the audit log for problems with
 # the CRL or OCSP checking.
 Depending on your configuration a problem retrieving the CRL or
 performing an OCSP check occurred.  There are a great variety of
