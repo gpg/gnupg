@@ -797,10 +797,7 @@ if test "$use_ccid_driver" = yes ; then
    esac
    AC_CHECK_LIB(usb-1.0, libusb_init,
                 [ LIBUSB_LIBS="$LIBUSB_LIBS"
-                  AC_DEFINE(HAVE_LIBUSB,1, [defined if libusb is available])
-                  have_libusb=yes
-               ])
-   AC_DEFINE([HAVE_LIBUSB])
+                  have_libusb=yes ])
    AC_MSG_CHECKING([libusb include dir])
    usb_incdir_found="no"
    for _incdir in "" "/usr/include/libusb-1.0" "/usr/local/include/libusb-1.0"; do
@@ -819,9 +816,16 @@ if test "$use_ccid_driver" = yes ; then
      AC_MSG_RESULT([${usb_incdir}])
    else
      AC_MSG_RESULT([not found])
+     usb_incdir=""
+     have_libusb=no
      use_ccid_driver=no
+     LIBUSB_LIBS=""
    fi
-   if test "$usb_incdir" = ""; then
+
+   if test "$have_libusb" = yes; then
+     AC_DEFINE(HAVE_LIBUSB,1, [defined if libusb is available])
+   fi
+   if test x"$usb_incdir" = x; then
      LIBUSB_CPPFLAGS=""
    else
      LIBUSB_CPPFLAGS="-I${usb_incdir}"
