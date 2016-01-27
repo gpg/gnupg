@@ -486,7 +486,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aGenRandom,"gen-random", "@" ),
   ARGPARSE_c (aServer,   "server",  N_("run in server mode")),
   ARGPARSE_c (aTOFUPolicy, "tofu-policy",
-	      N_("|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)")),
+	      N_("|VALUE|set the TOFU policy for a key")),
 
   ARGPARSE_group (301, N_("@\nOptions:\n ")),
 
