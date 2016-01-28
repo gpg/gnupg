@@ -600,6 +600,11 @@
 ; Also redefine 'package'
 (define *colon-hook* eval)
 
+(macro (package form)
+  `(apply (lambda ()
+	    ,@(cdr form)
+	    (current-environment))))
+
 ;;;;; I/O
 
 (define (input-output-port? p)
