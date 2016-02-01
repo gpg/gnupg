@@ -353,7 +353,7 @@ static void
 burn_stack (int bytes)
 {
     char buf[64];
-    
+
     wipememory(buf,sizeof buf);
     bytes -= sizeof buf;
     if (bytes > 0)
@@ -375,8 +375,8 @@ do_encrypt_block( CAST5_context *c, byte *outbuf, const byte *inbuf )
     /* (L0,R0) <-- (m1...m64).	(Split the plaintext into left and
      * right 32-bit halves L0 = m1...m32 and R0 = m33...m64.)
      */
-    l = inbuf[0] << 24 | inbuf[1] << 16 | inbuf[2] << 8 | inbuf[3];
-    r = inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] << 8 | inbuf[7];
+    l = (u32)inbuf[0] << 24 | inbuf[1] << 16 | inbuf[2] << 8 | inbuf[3];
+    r = (u32)inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] << 8 | inbuf[7];
 
     /* (16 rounds) for i from 1 to 16, compute Li and Ri as follows:
      *	Li = Ri-1;
@@ -433,8 +433,8 @@ do_decrypt_block (CAST5_context *c, byte *outbuf, const byte *inbuf )
     Km = c->Km;
     Kr = c->Kr;
 
-    l = inbuf[0] << 24 | inbuf[1] << 16 | inbuf[2] << 8 | inbuf[3];
-    r = inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] << 8 | inbuf[7];
+    l = (u32)inbuf[0] << 24 | inbuf[1] << 16 | inbuf[2] << 8 | inbuf[3];
+    r = (u32)inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] << 8 | inbuf[7];
 
     t = l; l = r; r = t ^ F1(r, Km[15], Kr[15]);
     t = l; l = r; r = t ^ F3(r, Km[14], Kr[14]);
@@ -588,10 +588,10 @@ do_cast_setkey( CAST5_context *c, const byte *key, unsigned keylen )
     if( keylen != 16 )
 	return G10ERR_WRONG_KEYLEN;
 
-    x[0] = key[0]  << 24 | key[1]  << 16 | key[2]  << 8 | key[3];
-    x[1] = key[4]  << 24 | key[5]  << 16 | key[6]  << 8 | key[7];
-    x[2] = key[8]  << 24 | key[9]  << 16 | key[10] << 8 | key[11];
-    x[3] = key[12] << 24 | key[13] << 16 | key[14] << 8 | key[15];
+    x[0] = (u32)key[0]  << 24 | key[1]  << 16 | key[2]  << 8 | key[3];
+    x[1] = (u32)key[4]  << 24 | key[5]  << 16 | key[6]  << 8 | key[7];
+    x[2] = (u32)key[8]  << 24 | key[9]  << 16 | key[10] << 8 | key[11];
+    x[3] = (u32)key[12] << 24 | key[13] << 16 | key[14] << 8 | key[15];
 
     key_schedule( x, z, k );
     for(i=0; i < 16; i++ )

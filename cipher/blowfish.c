@@ -278,7 +278,7 @@ static void
 burn_stack (int bytes)
 {
     char buf[64];
-    
+
     wipememory(buf,sizeof buf);
     bytes -= sizeof buf;
     if (bytes > 0)
@@ -424,8 +424,8 @@ do_encrypt_block( BLOWFISH_context *bc, byte *outbuf, const byte *inbuf )
 {
     u32 d1, d2;
 
-    d1 = inbuf[0] << 24 | inbuf[1] << 16 | inbuf[2] << 8 | inbuf[3];
-    d2 = inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] << 8 | inbuf[7];
+    d1 = (u32)inbuf[0] << 24 | inbuf[1] << 16 | inbuf[2] << 8 | inbuf[3];
+    d2 = (u32)inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] << 8 | inbuf[7];
     do_encrypt( bc, &d1, &d2 );
     outbuf[0] = (d1 >> 24) & 0xff;
     outbuf[1] = (d1 >> 16) & 0xff;
@@ -449,8 +449,8 @@ do_decrypt_block( BLOWFISH_context *bc, byte *outbuf, const byte *inbuf )
 {
     u32 d1, d2;
 
-    d1 = inbuf[0] << 24 | inbuf[1] << 16 | inbuf[2] << 8 | inbuf[3];
-    d2 = inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] << 8 | inbuf[7];
+    d1 = (u32)inbuf[0] << 24 | inbuf[1] << 16 | inbuf[2] << 8 | inbuf[3];
+    d2 = (u32)inbuf[4] << 24 | inbuf[5] << 16 | inbuf[6] << 8 | inbuf[7];
     decrypt( bc, &d1, &d2 );
     outbuf[0] = (d1 >> 24) & 0xff;
     outbuf[1] = (d1 >> 16) & 0xff;

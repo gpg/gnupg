@@ -738,7 +738,7 @@ block_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
 			}
 		    }
 		    else if( c == 255 ) {
-			a->size  = iobuf_get(chain) << 24;
+                        a->size  = (size_t)iobuf_get(chain) << 24;
 			a->size |= iobuf_get(chain) << 16;
 			a->size |= iobuf_get(chain) << 8;
 			if( (c = iobuf_get(chain)) == -1 ) {

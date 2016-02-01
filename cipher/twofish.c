@@ -549,7 +549,7 @@ static void
 burn_stack (int bytes)
 {
     char buf[64];
-    
+
     wipememory(buf,sizeof buf);
     bytes -= sizeof buf;
     if (bytes > 0)
@@ -702,7 +702,7 @@ twofish_setkey (void *ctx, const byte *key, unsigned int keylen)
     burn_stack (23+6*sizeof(void*));
     return rc;
 }
-        
+
 
 
 /* Macros to compute the g() function in the encryption and decryption
@@ -756,7 +756,7 @@ twofish_setkey (void *ctx, const byte *key, unsigned int keylen)
 
 #define INPACK(n, x, m) \
    x = in[4 * (n)] ^ (in[4 * (n) + 1] << 8) \
-     ^ (in[4 * (n) + 2] << 16) ^ (in[4 * (n) + 3] << 24) ^ ctx->w[m]
+     ^ (in[4 * (n) + 2] << 16) ^ ((u32)in[4 * (n) + 3] << 24) ^ ctx->w[m]
 
 #define OUTUNPACK(n, x, m) \
    x ^= ctx->w[m]; \
