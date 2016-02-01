@@ -299,6 +299,7 @@ typedef struct
     unsigned int backsig:2;       /* 0=none, 1=bad, 2=good.  */
     unsigned int serialno_valid:1;/* SERIALNO below is valid.  */
     unsigned int exact:1;         /* Found via exact (!) search.  */
+    unsigned int mailing_list:1;
   } flags;
   PKT_user_id *user_id;   /* If != NULL: found by that uid. */
   struct revocation_key *revkey;
@@ -417,6 +418,9 @@ void reset_literals_seen(void);
 int proc_packets (ctrl_t ctrl, void *ctx, iobuf_t a );
 int proc_signature_packets (ctrl_t ctrl, void *ctx, iobuf_t a,
 			    strlist_t signedfiles, const char *sigfile );
+int proc_symkey_packet (ctrl_t ctrl, iobuf_t a, DEK *dek);
+int proc_pubkey_packet (ctrl_t ctrl, iobuf_t a, DEK *dek);
+
 int proc_signature_packets_by_fd (ctrl_t ctrl,
                                   void *anchor, IOBUF a, int signed_data_fd );
 int proc_encryption_packets (ctrl_t ctrl, void *ctx, iobuf_t a);
@@ -615,6 +619,8 @@ void build_attribute_subpkt(PKT_user_id *uid,byte type,
 			    const void *buf,u32 buflen,
 			    const void *header,u32 headerlen);
 struct notation *string_to_notation(const char *string,int is_utf8);
+struct notation *blob_to_notation(const char *name,
+                                  const char *data, size_t len);
 struct notation *sig_to_notation(PKT_signature *sig);
 void free_notation(struct notation *notation);
 
@@ -676,6 +682,7 @@ int make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 			PKT_user_id *uid, PKT_public_key *subpk,
 			PKT_public_key *pksk, int sigclass, int digest_algo,
 			u32 timestamp, u32 duration,
+                        struct notation *notations,
 			int (*mksubpkt)(PKT_signature *, void *),
 			void *opaque,
                         const char *cache_nonce);
@@ -685,6 +692,7 @@ gpg_error_t update_keysig_packet (PKT_signature **ret_sig,
                       PKT_user_id *uid,
                       PKT_public_key *subpk,
                       PKT_public_key *pksk,
+                      struct notation *notation,
                       int (*mksubpkt)(PKT_signature *, void *),
                       void *opaque   );
 

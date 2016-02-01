@@ -1431,7 +1431,7 @@ generate_card_keys (ctrl_t ctrl)
          the serialnumber and thus it won't harm.  */
     }
 
-  generate_keypair (ctrl, 1, NULL, info.serialno, want_backup);
+  generate_keypair (ctrl, 1, 0, NULL, info.serialno, want_backup);
 
  leave:
   agent_release_card_info (&info);

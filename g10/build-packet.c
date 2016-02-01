@@ -1038,6 +1038,87 @@ string_to_notation(const char *string,int is_utf8)
 }
 
 struct notation *
+blob_to_notation(const char *name, const char *data, size_t len)
+{
+  const char *s;
+  int saw_at=0;
+  struct notation *notation;
+
+  notation=xmalloc_clear(sizeof(*notation));
+
+  if(*name=='-')
+    {
+      notation->flags.ignore=1;
+      name++;
+    }
+
+  if(*name=='!')
+    {
+      notation->flags.critical=1;
+      name++;
+    }
+
+  /* If and when the IETF assigns some official name tags, we'll have
+     to add them here. */
+
+  for( s=name ; *s; s++ )
+    {
+      if( *s=='@')
+	saw_at++;
+
+      /* -notationname is legal without an = sign */
+      if(!*s && notation->flags.ignore)
+	break;
+
+      if (*s == '=')
+        {
+          log_error(_("a notation name may not contain an '=' character\n"));
+          goto fail;
+        }
+
+      if (!isascii (*s) || (!isgraph(*s) && !isspace(*s)))
+	{
+	  log_error(_("a notation name must have only printable characters"
+		      " or spaces\n") );
+	  goto fail;
+	}
+    }
+
+  notation->name=xstrdup (name);
+
+  if(!saw_at && !opt.expert)
+    {
+      log_error(_("a user notation name must contain the '@' character\n"));
+      goto fail;
+    }
+
+  if (saw_at > 1)
+    {
+      log_error(_("a notation name must not contain more than"
+		  " one '@' character\n"));
+      goto fail;
+    }
+
+  notation->bdat = xmalloc (len);
+  memcpy (notation->bdat, data, len);
+  notation->blen = len;
+
+  /* The maximum size of a notation is 65k, i.e., we need 5 bytes of
+     space.  */
+  notation->value=xmalloc(2+strlen(_("not human readable (65000 bytes)"))+2+1);
+  strcpy(notation->value,"[ ");
+  sprintf(&notation->value[strlen (notation->value)],
+          _("not human readable (%zd bytes)"), len);
+  strcat(notation->value," ]");
+
+  return notation;
+
+ fail:
+  free_notation(notation);
+  return NULL;
+}
+
+struct notation *
 sig_to_notation(PKT_signature *sig)
 {
   const byte *p;
@@ -1083,9 +1164,12 @@ sig_to_notation(PKT_signature *sig)
 	  n->blen=n2;
 	  memcpy(n->bdat,&p[8+n1],n2);
 
-	  n->value=xmalloc(2+strlen(_("not human readable"))+2+1);
+          /* The maximum size of a notation is 65k, i.e., we need 5
+             bytes of space.  */
+	  n->value=xmalloc(2+strlen(_("not human readable (65000 bytes)"))+2+1);
 	  strcpy(n->value,"[ ");
-	  strcat(n->value,_("not human readable"));
+	  sprintf(&n->value[strlen (n->value)],
+                  _("not human readable (%d bytes)"), n2);
 	  strcat(n->value," ]");
 	}
 

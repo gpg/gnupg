@@ -59,6 +59,7 @@ typedef struct
   DEK *symkey_dek;
   STRING2KEY *symkey_s2k;
   cipher_filter_context_t cfx;
+  ctrl_t ctrl;
 } encrypt_filter_context_t;
 
 
@@ -221,6 +222,8 @@ void display_online_help( const char *keyword );
 
 /*-- encode.c --*/
 int setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek);
+int write_symkey_enc (STRING2KEY *symkey_s2k, DEK *symkey_dek, DEK *dek,
+                      iobuf_t out);
 int use_mdc (pk_list_t pk_list,int algo);
 int encrypt_symmetric (const char *filename );
 int encrypt_store (const char *filename );
@@ -231,7 +234,11 @@ void encrypt_crypt_files (ctrl_t ctrl,
                           int nfiles, char **files, strlist_t remusr);
 int encrypt_filter (void *opaque, int control,
 		    iobuf_t a, byte *buf, size_t *ret_len);
+int write_pubkey_enc_from_list(ctrl_t ctrl, PK_LIST pk_list, DEK *dek, iobuf_t out );
 
+gpg_error_t symmetric_encrypt_buffer (DEK *dek, const char *password,
+                                      char *inbuffer, size_t inlen,
+                                      char **outbuffer, size_t *outlen);
 
 /*-- sign.c --*/
 int complete_sig (PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md,
@@ -280,10 +287,15 @@ void show_basic_key_info (KBNODE keyblock);
 u32 parse_expire_string(const char *string);
 u32 ask_expire_interval(int object,const char *def_expire);
 u32 ask_expiredate(void);
-void quick_generate_keypair (ctrl_t ctrl, const char *uid);
-void generate_keypair (ctrl_t ctrl, int full, const char *fname,
+void quick_generate_keypair (ctrl_t ctrl, const char *uid, int mailing_list);
+void generate_keypair (ctrl_t ctrl, int full, int mailing_list,
+                       const char *fname,
                        const char *card_serialno, int card_backup_key);
 int keygen_set_std_prefs (const char *string,int personal);
+int write_keybinding (KBNODE root,
+                      PKT_public_key *pri_psk, PKT_public_key *sub_psk,
+                      unsigned int use, u32 timestamp, const char *cache_nonce,
+                      struct notation *notation);
 PKT_user_id *keygen_get_std_prefs (void);
 int keygen_add_key_expire( PKT_signature *sig, void *opaque );
 int keygen_add_std_prefs( PKT_signature *sig, void *opaque );

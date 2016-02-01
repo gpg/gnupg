@@ -747,6 +747,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
     memset( &zfx, 0, sizeof zfx);
     memset( &mfx, 0, sizeof mfx);
     memset( &efx, 0, sizeof efx);
+    efx.ctrl = ctrl;
     init_packet( &pkt );
 
     if( filenames ) {
@@ -1369,6 +1370,7 @@ make_keysig_packet (PKT_signature **ret_sig, PKT_public_key *pk,
 		    PKT_public_key *pksk,
 		    int sigclass, int digest_algo,
                     u32 timestamp, u32 duration,
+                    struct notation *notations,
 		    int (*mksubpkt)(PKT_signature *, void *), void *opaque,
                     const char *cache_nonce)
 {
@@ -1444,6 +1446,9 @@ make_keysig_packet (PKT_signature **ret_sig, PKT_public_key *pk,
       sig->expiredate=sig->timestamp+duration;
     sig->sig_class = sigclass;
 
+    if (notations)
+      keygen_add_notations (sig, notations);
+
     build_sig_subpkt_from_sig( sig );
     mk_notation_policy_etc (sig, pk, pksk);
 
@@ -1485,6 +1490,7 @@ update_keysig_packet( PKT_signature **ret_sig,
                       PKT_user_id *uid,
                       PKT_public_key *subpk,
                       PKT_public_key *pksk,
+                      struct notation *notations,
                       int (*mksubpkt)(PKT_signature *, void *),
                       void *opaque)
 {
@@ -1551,6 +1557,9 @@ update_keysig_packet( PKT_signature **ret_sig,
 
     if (mksubpkt)
       rc = (*mksubpkt)(sig, opaque);
+
+    if (!rc && notations)
+      keygen_add_notations (sig, notations);
 
     if (!rc) {
         hash_sigversion_to_magic (md, sig);

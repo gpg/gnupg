@@ -38,10 +38,10 @@
 #include "i18n.h"
 #include "status.h"
 #include "pkglue.h"
+#include "mailing-list.h"
 
 
 static int encrypt_simple( const char *filename, int mode, int use_seskey );
-static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, iobuf_t out );
 
 /****************
  * Encrypt FILENAME with only the symmetric cipher.  Take input from
@@ -419,7 +419,8 @@ setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek)
 }
 
 
-static int
+/* DEK is initialized.  */
+int
 write_symkey_enc (STRING2KEY *symkey_s2k, DEK *symkey_dek, DEK *dek,
                   iobuf_t out)
 {
@@ -628,7 +629,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   if (DBG_CRYPTO)
     log_printhex ("DEK is: ", cfx.dek->key, cfx.dek->keylen );
 
-  rc = write_pubkey_enc_from_list (pk_list, cfx.dek, out);
+  rc = write_pubkey_enc_from_list (ctrl, pk_list, cfx.dek, out);
   if (rc)
     goto leave;
 
@@ -822,7 +823,8 @@ encrypt_filter (void *opaque, int control,
           if (DBG_CRYPTO)
             log_printhex ("DEK is: ", efx->cfx.dek->key, efx->cfx.dek->keylen);
 
-          rc = write_pubkey_enc_from_list (efx->pk_list, efx->cfx.dek, a);
+          rc = write_pubkey_enc_from_list (efx->ctrl,
+                                           efx->pk_list, efx->cfx.dek, a);
           if (rc)
             return rc;
 
@@ -854,75 +856,114 @@ encrypt_filter (void *opaque, int control,
 }
 
 
+static int
+write_pubkey_enc (PKT_public_key *pk, int flags, DEK *dek, iobuf_t out)
+{
+  int rc;
+  PKT_pubkey_enc *enc;
+  gcry_mpi_t frame;
+  PACKET pkt;
+
+  print_pubkey_algo_note ( pk->pubkey_algo );
+  enc = xmalloc_clear ( sizeof *enc );
+  enc->pubkey_algo = pk->pubkey_algo;
+  keyid_from_pk( pk, enc->keyid );
+  enc->throw_keyid = (opt.throw_keyids || (flags&1));
+
+  if (opt.throw_keyids && (PGP6 || PGP7 || PGP8))
+    {
+      log_info(_("you may not use %s while in %s mode\n"),
+               "--throw-keyids",compliance_option_string());
+      compliance_failure();
+    }
+
+  /* Okay, what's going on: We have the session key somewhere in
+   * the structure DEK and want to encode this session key in an
+   * integer value of n bits. pubkey_nbits gives us the number of
+   * bits we have to use.  We then encode the session key in some
+   * way and we get it back in the big intger value FRAME.  Then
+   * we use FRAME, the public key PK->PKEY and the algorithm
+   * number PK->PUBKEY_ALGO and pass it to pubkey_encrypt which
+   * returns the encrypted value in the array ENC->DATA.  This
+   * array has a size which depends on the used algorithm (e.g. 2
+   * for Elgamal).  We don't need frame anymore because we have
+   * everything now in enc->data which is the passed to
+   * build_packet().  */
+  frame = encode_session_key (pk->pubkey_algo, dek,
+                              pubkey_nbits (pk->pubkey_algo, pk->pkey));
+  rc = pk_encrypt (pk->pubkey_algo, enc->data, frame, pk, pk->pkey);
+  gcry_mpi_release (frame);
+  if (rc)
+    log_error ("pubkey_encrypt failed: %s\n", gpg_strerror (rc) );
+  else
+    {
+      if ( opt.verbose )
+        {
+          char *ustr = get_user_id_string_native (enc->keyid);
+          log_info (_("%s/%s encrypted for: \"%s\"\n"),
+                    openpgp_pk_algo_name (enc->pubkey_algo),
+                    openpgp_cipher_algo_name (dek->algo),
+                    ustr );
+          xfree (ustr);
+        }
+      /* And write it. */
+      init_packet (&pkt);
+      pkt.pkttype = PKT_PUBKEY_ENC;
+      pkt.pkt.pubkey_enc = enc;
+      rc = build_packet (out, &pkt);
+      if (rc)
+        log_error ("build_packet(pubkey_enc) failed: %s\n",
+                   gpg_strerror (rc));
+    }
+  free_pubkey_enc(enc);
+  return rc;
+}
+
 /*
  * Write pubkey-enc packets from the list of PKs to OUT.
  */
-static int
-write_pubkey_enc_from_list (PK_LIST pk_list, DEK *dek, iobuf_t out)
+int
+write_pubkey_enc_from_list (ctrl_t ctrl, PK_LIST pk_list, DEK *dek, iobuf_t out)
 {
-  PACKET pkt;
   PKT_public_key *pk;
-  PKT_pubkey_enc  *enc;
-  int rc;
+  int rc = 0;
 
   for ( ; pk_list; pk_list = pk_list->next )
     {
-      gcry_mpi_t frame;
-
       pk = pk_list->pk;
 
-      print_pubkey_algo_note ( pk->pubkey_algo );
-      enc = xmalloc_clear ( sizeof *enc );
-      enc->pubkey_algo = pk->pubkey_algo;
-      keyid_from_pk( pk, enc->keyid );
-      enc->throw_keyid = (opt.throw_keyids || (pk_list->flags&1));
-
-      if (opt.throw_keyids && (PGP6 || PGP7 || PGP8))
+      if (pk->flags.mailing_list)
         {
-          log_info(_("you may not use %s while in %s mode\n"),
-                   "--throw-keyids",compliance_option_string());
-          compliance_failure();
-        }
+          KBNODE kb = get_pubkeyblock (pk->main_keyid);
+          PK_LIST subscribers;
+          PK_LIST subscriber;
 
-      /* Okay, what's going on: We have the session key somewhere in
-       * the structure DEK and want to encode this session key in an
-       * integer value of n bits. pubkey_nbits gives us the number of
-       * bits we have to use.  We then encode the session key in some
-       * way and we get it back in the big intger value FRAME.  Then
-       * we use FRAME, the public key PK->PKEY and the algorithm
-       * number PK->PUBKEY_ALGO and pass it to pubkey_encrypt which
-       * returns the encrypted value in the array ENC->DATA.  This
-       * array has a size which depends on the used algorithm (e.g. 2
-       * for Elgamal).  We don't need frame anymore because we have
-       * everything now in enc->data which is the passed to
-       * build_packet().  */
-      frame = encode_session_key (pk->pubkey_algo, dek,
-                                  pubkey_nbits (pk->pubkey_algo, pk->pkey));
-      rc = pk_encrypt (pk->pubkey_algo, enc->data, frame, pk, pk->pkey);
-      gcry_mpi_release (frame);
-      if (rc)
-        log_error ("pubkey_encrypt failed: %s\n", gpg_strerror (rc) );
-      else
-        {
-          if ( opt.verbose )
+          if (! kb)
             {
-              char *ustr = get_user_id_string_native (enc->keyid);
-              log_info (_("%s/%s encrypted for: \"%s\"\n"),
-                        openpgp_pk_algo_name (enc->pubkey_algo),
-                        openpgp_cipher_algo_name (dek->algo),
-                        ustr );
-              xfree (ustr);
-	    }
-          /* And write it. */
-          init_packet (&pkt);
-          pkt.pkttype = PKT_PUBKEY_ENC;
-          pkt.pkt.pubkey_enc = enc;
-          rc = build_packet (out, &pkt);
+              log_error (_("failed to find keyblock corresponding to %s\n"),
+                         keystr (pk->main_keyid));
+              return gpg_error (GPG_ERR_INTERNAL);
+            }
+
+          rc = mailing_list_subscribers (ctrl, kb, &subscribers);
+          release_kbnode (kb);
           if (rc)
-            log_error ("build_packet(pubkey_enc) failed: %s\n",
-                       gpg_strerror (rc));
-	}
-      free_pubkey_enc(enc);
+            {
+              log_error (_("failed to list subscribers for %s\n"),
+                         keystr (pk->main_keyid));
+              return rc;
+            }
+
+          for (subscriber = subscribers;
+               ! rc && subscriber;
+               subscriber = subscriber->next)
+            rc = write_pubkey_enc (subscriber->pk, subscriber->flags, dek, out);
+
+          release_pk_list (subscribers);
+        }
+      else
+        rc = write_pubkey_enc (pk, pk_list->flags, dek, out);
+
       if (rc)
         return rc;
     }

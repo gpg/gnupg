@@ -60,6 +60,7 @@
 #include "asshelp.h"
 #include "call-dirmngr.h"
 #include "tofu.h"
+#include "mailing-list.h"
 #include "../common/init.h"
 #include "../common/shareddefs.h"
 
@@ -110,6 +111,8 @@ enum cmd_and_opt_values
     aQuickKeygen,
     aFullKeygen,
     aKeygen,
+    aMailingListKeygen,
+    aQuickMailingListKeygen,
     aSignEncr,
     aSignEncrSym,
     aSignSym,
@@ -118,6 +121,9 @@ enum cmd_and_opt_values
     aQuickSignKey,
     aQuickLSignKey,
     aQuickAddUid,
+    aMailingListAddSub,
+    aMailingListRMSub,
+    aMailingListSubs,
     aListConfig,
     aListGcryptConfig,
     aGPGConfList,
@@ -422,10 +428,20 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aListSecretKeys, "list-secret-keys", N_("list secret keys")),
   ARGPARSE_c (aKeygen,	    "gen-key",
               N_("generate a new key pair")),
+  ARGPARSE_c (aMailingListKeygen,	    "gen-mailing-list-key",
+              N_("generate a new key pair for a mailing list")),
   ARGPARSE_c (aQuickKeygen, "quick-gen-key" ,
               N_("quickly generate a new key pair")),
+  ARGPARSE_c (aQuickMailingListKeygen, "quick-gen-mailing-list-key" ,
+              N_("quickly generate a new mailing list key pair")),
   ARGPARSE_c (aQuickAddUid,  "quick-adduid",
               N_("quickly add a new user-id")),
+  ARGPARSE_c (aMailingListAddSub,  "mailing-list-add-sub",
+              N_("add a subscriber to a mailing list key")),
+  ARGPARSE_c (aMailingListRMSub,  "mailing-list-rm-sub",
+              N_("remove a subscriber from a mailing list key")),
+  ARGPARSE_c (aMailingListSubs,  "mailing-list-subs",
+              N_("list a mailing list's current subscribers")),
   ARGPARSE_c (aFullKeygen,  "full-gen-key" ,
               N_("full featured key pair generation")),
   ARGPARSE_c (aGenRevoke, "gen-revoke",N_("generate a revocation certificate")),
@@ -2427,6 +2443,9 @@ main (int argc, char **argv)
 	  case aStore:
 	  case aQuickKeygen:
 	  case aQuickAddUid:
+          case aMailingListAddSub:
+          case aMailingListRMSub:
+          case aMailingListSubs:
 	  case aExportOwnerTrust:
 	  case aImportOwnerTrust:
           case aRebuildKeydbCaches:
@@ -2434,6 +2453,8 @@ main (int argc, char **argv)
             break;
 
 	  case aKeygen:
+          case aMailingListKeygen:
+          case aQuickMailingListKeygen:
 	  case aFullKeygen:
 	  case aEditKey:
 	  case aDeleteSecretKeys:
@@ -3765,8 +3786,13 @@ main (int argc, char **argv)
       case aDeleteSecretAndPublicKeys:
       case aQuickKeygen:
       case aQuickAddUid:
+      case aMailingListAddSub:
+      case aMailingListRMSub:
+      case aMailingListSubs:
       case aFullKeygen:
       case aKeygen:
+      case aQuickMailingListKeygen:
+      case aMailingListKeygen:
       case aImport:
       case aExportSecret:
       case aExportSecretSub:
@@ -4082,33 +4108,65 @@ main (int argc, char **argv)
 	break;
 
       case aQuickKeygen:
-        if (argc != 1 )
-          wrong_args("--gen-key user-id");
-        username = make_username (fname);
-        quick_generate_keypair (ctrl, username);
-        xfree (username);
+      case aQuickMailingListKeygen:
+        {
+          int mailing_list = cmd == aQuickMailingListKeygen;
+          const char *option_help;
+          if (mailing_list)
+            option_help = "--quick-gen-mailing-list-key user-id";
+          else
+            option_help = "--quick-gen-key user-id";
+
+          if (argc != 1 )
+            wrong_args(option_help);
+          username = make_username (fname);
+          printf ("'%s'\n", username);
+          quick_generate_keypair (ctrl, username, mailing_list);
+          xfree (username);
+        }
         break;
 
       case aKeygen: /* generate a key */
-	if( opt.batch ) {
-	    if( argc > 1 )
-		wrong_args("--gen-key [parameterfile]");
-	    generate_keypair (ctrl, 0, argc? *argv : NULL, NULL, 0);
-	}
-	else {
-            if (opt.command_fd != -1 && argc)
-              {
-                if( argc > 1 )
-                  wrong_args("--gen-key [parameterfile]");
+      case aMailingListKeygen:
+        {
+          int mailing_list = cmd == aMailingListKeygen;
+          const char *option_help;
+          const char *option_help_short;
+          if (mailing_list)
+            {
+              option_help = "--gen-mailing-list-key [parameterfile]";
+              option_help_short = "--gen-mailing-list-key";
+            }
+          else
+            {
+              option_help = "--gen-key [parameterfile]";
+              option_help_short = "--gen-key";
+            }
 
-                opt.batch = 1;
-                generate_keypair (ctrl, 0, argc? *argv : NULL, NULL, 0);
-              }
-            else if (argc)
-              wrong_args ("--gen-key");
-            else
-              generate_keypair (ctrl, 0, NULL, NULL, 0);
-	}
+          if( opt.batch )
+            {
+              if( argc > 1 )
+                wrong_args(option_help);
+              generate_keypair (ctrl, 0, mailing_list,
+                                argc? *argv : NULL, NULL, 0);
+            }
+          else
+            {
+              if (opt.command_fd != -1 && argc)
+                {
+                  if( argc > 1 )
+                    wrong_args(option_help);
+
+                  opt.batch = 1;
+                  generate_keypair (ctrl, 0, mailing_list,
+                                    argc? *argv : NULL, NULL, 0);
+                }
+              else if (argc)
+                wrong_args (option_help_short);
+              else
+                generate_keypair (ctrl, 0, mailing_list, NULL, NULL, 0);
+            }
+        }
 	break;
 
       case aFullKeygen: /* Generate a key with all options. */
@@ -4116,13 +4174,13 @@ main (int argc, char **argv)
           {
 	    if (argc > 1)
               wrong_args ("--full-gen-key [parameterfile]");
-	    generate_keypair (ctrl, 1, argc? *argv : NULL, NULL, 0);
+	    generate_keypair (ctrl, 1, 0, argc? *argv : NULL, NULL, 0);
           }
 	else
           {
 	    if (argc)
               wrong_args("--full-gen-key");
-	    generate_keypair (ctrl, 1, NULL, NULL, 0);
+	    generate_keypair (ctrl, 1, 0, NULL, NULL, 0);
 	}
 	break;
 
@@ -4137,6 +4195,76 @@ main (int argc, char **argv)
           keyedit_quick_adduid (ctrl, uid, newuid);
         }
 	break;
+
+      case aMailingListAddSub:
+      case aMailingListRMSub:
+        {
+          int add = cmd == aMailingListAddSub;
+          const char *option_help;
+          KBNODE kb;
+
+          if (add)
+            option_help = "--mailing-list-add-sub mailing-list-keyid subcriber-keyid...";
+          else
+            option_help = "--mailing-list-rm-sub mailing-list-keyid subcriber-keyid...";
+
+          if (argc < 2)
+            wrong_args (option_help);
+
+          rc = get_pubkey_byname (ctrl, NULL, NULL, argv[0], &kb, NULL, 1, 1);
+          if (rc)
+            log_error (_("key \"%s\" not found: %s\n"),
+                       argv[0], gpg_strerror (rc));
+          else
+            {
+              int i;
+
+              for (i = 1; i < argc; i ++)
+                if (add)
+                  mailing_list_add_subscriber (ctrl, kb, argv[i]);
+                else
+                  mailing_list_rm_subscriber (ctrl, kb, argv[i]);
+            }
+
+          break;
+        }
+
+      case aMailingListSubs:
+        {
+          KBNODE kb = NULL;
+          PKT_public_key *pk;
+          PK_LIST pklist;
+          PK_LIST i;
+          int count = 0;
+
+          if (argc != 1)
+            wrong_args ("--mailing-list-subs mailing-list-keyid");
+
+          rc = get_pubkey_byname (ctrl, NULL, NULL, argv[0], &kb, NULL, 1, 1);
+          if (rc)
+            log_error (_("key \"%s\" not found: %s\n"),
+                       argv[0], gpg_strerror (rc));
+          else
+            {
+              pk = kb->pkt->pkt.public_key;
+
+              rc = mailing_list_subscribers (ctrl, kb, &pklist);
+              if (rc)
+                log_error ("Failed to list %s's subscribers.\n",
+                           keystr (pk->keyid));
+              else
+                {
+                  for (i = pklist; i; i = i->next, count ++)
+                    es_printf ("%s\n", keystr (i->pk->keyid));
+
+                  es_printf ("  %d subscribers.\n", count);
+
+                  release_pk_list (pklist);
+                }
+            }
+
+          break;
+        }
 
       case aFastImport:
         opt.import_options |= IMPORT_FAST;

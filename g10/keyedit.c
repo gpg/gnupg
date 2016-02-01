@@ -49,6 +49,7 @@
 #include "call-agent.h"
 #include "host2net.h"
 #include "tofu.h"
+#include "mailing-list.h"
 
 static void show_prefs (PKT_user_id * uid, PKT_signature * selfsig,
 			int verbose);
@@ -92,6 +93,8 @@ static int menu_revsubkey (KBNODE pub_keyblock);
 static int enable_disable_key (KBNODE keyblock, int disable);
 #endif /*!NO_TRUST_MODELS*/
 static void menu_showphoto (KBNODE keyblock);
+static int menu_addsub (ctrl_t ctrl, KBNODE keyblock, const char *sub);
+static int menu_rmsub (ctrl_t ctrl, KBNODE keyblock, const char *sub);
 
 static int update_trust = 0;
 
@@ -1089,7 +1092,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 					 node->pkt->pkt.user_id,
 					 NULL,
 					 pk,
-					 0x13, 0, 0, 0,
+					 0x13, 0, 0, 0, NULL,
 					 keygen_add_std_prefs, primary_pk,
                                          NULL);
 	      else
@@ -1098,7 +1101,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 					 NULL,
 					 pk,
 					 class, 0,
-					 timestamp, duration,
+					 timestamp, duration, NULL,
 					 sign_mk_attrib, &attrib,
                                          NULL);
 	      if (rc)
@@ -1369,7 +1372,7 @@ enum cmdids
   cmdSHOWPREF,
   cmdSETPREF, cmdPREFKS, cmdNOTATION, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST,
   cmdCHKTRUST, cmdADDCARDKEY, cmdKEYTOCARD, cmdBKUPTOCARD,
-  cmdCLEAN, cmdMINIMIZE, cmdGRIP, cmdNOP
+  cmdCLEAN, cmdMINIMIZE, cmdGRIP, cmdADDSUB, cmdRMSUB, cmdNOP
 };
 
 static struct
@@ -1463,6 +1466,10 @@ static struct
     N_("compact unusable user IDs and remove unusable signatures from key")},
   { "minimize", cmdMINIMIZE, KEYEDIT_NOT_SK,
     N_("compact unusable user IDs and remove all signatures from key")},
+  { "addsub", cmdADDSUB, KEYEDIT_NEED_SK | KEYEDIT_ONLY_SK,
+    N_("add a subscriber to a mailing list")},
+  { "rmsub", cmdRMSUB, KEYEDIT_NEED_SK | KEYEDIT_ONLY_SK,
+    N_("add a subscriber to a mailing list")},
 
   { NULL, cmdNONE, 0, NULL}
 };
@@ -2182,6 +2189,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 	    show_names (NULL, keyblock, keyblock->pkt->pkt.public_key,
 			count ? NODFLG_SELUID : 0, 2);
+            kbnode_dump (keyblock);
 	  }
 	  break;
 
@@ -2268,6 +2276,23 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  if (menu_clean (keyblock, 1))
 	    redisplay = modified = 1;
 	  break;
+
+        case cmdADDSUB:
+          if (menu_addsub (ctrl, keyblock, arg_string))
+	    {
+	      redisplay = 1;
+	      modified = 1;
+	      merge_keys_and_selfsig (keyblock);
+	    }
+          break;
+        case cmdRMSUB:
+          if (menu_rmsub (ctrl, keyblock, arg_string))
+	    {
+	      redisplay = 1;
+	      modified = 1;
+	      merge_keys_and_selfsig (keyblock);
+	    }
+          break;
 
 	case cmdQUIT:
 	  if (have_commands)
@@ -2639,6 +2664,17 @@ tty_print_notations (int indent, PKT_signature * sig)
 }
 
 
+static void
+show_notations (PKT_signature * selfsig)
+{
+  if (selfsig->flags.notation)
+    {
+      tty_printf ("     ");
+      tty_printf (_("Notations: "));
+      tty_print_notations (5 + strlen (_("Notations: ")), selfsig);
+    }
+}
+
 /*
  * Show preferences of a public keyblock.
  */
@@ -2777,12 +2813,7 @@ show_prefs (PKT_user_id * uid, PKT_signature * selfsig, int verbose)
 	      tty_printf ("\n");
 	    }
 
-	  if (selfsig->flags.notation)
-	    {
-	      tty_printf ("     ");
-	      tty_printf (_("Notations: "));
-	      tty_print_notations (5 + strlen (_("Notations: ")), selfsig);
-	    }
+          show_notations (selfsig);
 	}
     }
   else
@@ -2974,21 +3005,56 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
     }
 }
 
-
 static void
 show_names (estream_t fp,
             KBNODE keyblock, PKT_public_key * pk, unsigned int flag,
 	    int with_prefs)
 {
   KBNODE node;
-  int i = 0;
+  int userids = 0;
+  int keys = 0;
 
   for (node = keyblock; node; node = node->next)
     {
-      if (node->pkt->pkttype == PKT_USER_ID && !is_deleted_kbnode (node))
+      if ((node->pkt->pkttype == PKT_PUBLIC_KEY
+           || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+          && !is_deleted_kbnode (node))
+        {
+          PKT_public_key *pk2 = node->pkt->pkt.public_key;
+          ++ keys;
+
+          if (with_prefs && pk)
+            {
+              if (pk->version > 3 || pk2->selfsigversion > 3)
+                {
+                  KBNODE signode;
+
+                  for (signode = node->next;
+                       signode && signode->pkt->pkttype == PKT_SIGNATURE;
+                       signode = signode->next)
+                    {
+                      PKT_signature *selfsig = signode->pkt->pkt.signature;
+
+                      if (selfsig->flags.notation)
+                        {
+                          tty_printf ("     Self-sig from %s on %s %s:\n",
+                                      isotimestamp (pk->timestamp),
+                                      node == keyblock
+                                      ? "primary key" : "subkey",
+                                      keystr (pk2->keyid));
+                          show_notations (selfsig);
+                        }
+                    }
+                }
+              else
+                tty_fprintf (fp, _("There are no preferences on a"
+                                   " PGP 2.x-style KEY.\n"));
+            }
+        }
+      else if (node->pkt->pkttype == PKT_USER_ID && !is_deleted_kbnode (node))
 	{
 	  PKT_user_id *uid = node->pkt->pkt.user_id;
-	  ++i;
+	  ++userids;
 	  if (!flag || (flag && (node->flag & flag)))
 	    {
 	      if (!(flag & NODFLG_MARK_A) && pk)
@@ -2997,11 +3063,11 @@ show_names (estream_t fp,
 	      if (flag & NODFLG_MARK_A)
 		tty_fprintf (fp, "     ");
 	      else if (node->flag & NODFLG_SELUID)
-		tty_fprintf (fp, "(%d)* ", i);
+		tty_fprintf (fp, "(%d)* ", userids);
 	      else if (uid->is_primary)
-		tty_fprintf (fp, "(%d). ", i);
+		tty_fprintf (fp, "(%d). ", userids);
 	      else
-		tty_fprintf (fp, "(%d)  ", i);
+		tty_fprintf (fp, "(%d)  ", userids);
 	      tty_print_utf8_string2 (fp, uid->name, uid->len, 0);
 	      tty_fprintf (fp, "\n");
 	      if (with_prefs && pk)
@@ -3590,7 +3656,7 @@ menu_adduid (kbnode_t pub_keyblock, int photo, const char *photo_name,
       return 0;
     }
 
-  err = make_keysig_packet (&sig, pk, uid, NULL, pk, 0x13, 0, 0, 0,
+  err = make_keysig_packet (&sig, pk, uid, NULL, pk, 0x13, 0, 0, 0, NULL,
                             keygen_add_std_prefs, pk, NULL);
   if (err)
     {
@@ -3973,7 +4039,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
       break;
     }
 
-  rc = make_keysig_packet (&sig, pk, NULL, NULL, pk, 0x1F, 0, 0, 0,
+  rc = make_keysig_packet (&sig, pk, NULL, NULL, pk, 0x1F, 0, 0, 0, NULL,
 			   keygen_add_revkey, &revkey, NULL);
   if (rc)
     {
@@ -4080,12 +4146,13 @@ menu_expire (KBNODE pub_keyblock)
 
 	      if (mainkey)
 		rc = update_keysig_packet (&newsig, sig, main_pk, uid, NULL,
-					   main_pk, keygen_add_key_expire,
-					   main_pk);
+					   main_pk, NULL,
+                                           keygen_add_key_expire, main_pk);
 	      else
 		rc =
 		  update_keysig_packet (&newsig, sig, main_pk, NULL, sub_pk,
-					main_pk, keygen_add_key_expire, sub_pk);
+					main_pk, NULL,
+                                        keygen_add_key_expire, sub_pk);
 	      if (rc)
 		{
 		  log_error ("make_keysig_packet failed: %s\n",
@@ -4188,7 +4255,7 @@ menu_backsign (KBNODE pub_keyblock)
 	  PACKET *newpkt;
 
 	  rc = update_keysig_packet (&newsig, sig_pk->pkt->pkt.signature,
-                                     main_pk, NULL, sub_pk, main_pk,
+                                     main_pk, NULL, sub_pk, main_pk, NULL,
                                      NULL, NULL);
 	  if (!rc)
 	    {
@@ -4341,7 +4408,7 @@ menu_set_primary_uid (KBNODE pub_keyblock)
 		    {
 		      int rc = update_keysig_packet (&newsig, sig,
 						     main_pk, uid, NULL,
-						     main_pk,
+						     main_pk, NULL,
 						     change_primary_uid_cb,
 						     action > 0 ? "x" : NULL);
 		      if (rc)
@@ -4431,7 +4498,7 @@ menu_set_preferences (KBNODE pub_keyblock)
 		  int rc;
 
 		  rc = update_keysig_packet (&newsig, sig,
-					     main_pk, uid, NULL, main_pk,
+					     main_pk, uid, NULL, main_pk, NULL,
                                              keygen_upd_std_prefs, NULL);
 		  if (rc)
 		    {
@@ -4566,7 +4633,7 @@ menu_set_keyserver_url (const char *url, KBNODE pub_keyblock)
 
 		  rc = update_keysig_packet (&newsig, sig,
 					     main_pk, uid, NULL,
-					     main_pk,
+					     main_pk, NULL,
 					     keygen_add_keyserver_url, uri);
 		  if (rc)
 		    {
@@ -4765,7 +4832,7 @@ menu_set_notation (const char *string, KBNODE pub_keyblock)
 
 		  rc = update_keysig_packet (&newsig, sig,
 					     main_pk, uid, NULL,
-					     main_pk,
+					     main_pk, NULL,
 					     keygen_add_notations, notation);
 		  if (rc)
 		    {
@@ -5358,7 +5425,7 @@ reloop:			/* (must use this, because we are modifing the list) */
 	}
       rc = make_keysig_packet (&sig, primary_pk,
 			       unode->pkt->pkt.user_id,
-			       NULL, signerkey, 0x30, 0, 0, 0,
+			       NULL, signerkey, 0x30, 0, 0, 0, NULL,
                                sign_mk_attrib, &attrib, NULL);
       free_public_key (signerkey);
       if (rc)
@@ -5451,7 +5518,7 @@ menu_revuid (KBNODE pub_keyblock)
 	    node->flag &= ~NODFLG_SELUID;
 
 	    rc = make_keysig_packet (&sig, pk, uid, NULL, pk, 0x30, 0,
-				     timestamp, 0,
+				     timestamp, 0, NULL,
 				     sign_mk_attrib, &attrib, NULL);
 	    if (rc)
 	      {
@@ -5516,7 +5583,7 @@ menu_revkey (KBNODE pub_keyblock)
     return 0;
 
   rc = make_keysig_packet (&sig, pk, NULL, NULL, pk,
-			   0x20, 0, 0, 0,
+			   0x20, 0, 0, 0, NULL,
 			   revocation_reason_build_cb, reason, NULL);
   if (rc)
     {
@@ -5578,8 +5645,8 @@ menu_revsubkey (KBNODE pub_keyblock)
 
 	  node->flag &= ~NODFLG_SELKEY;
 	  rc = make_keysig_packet (&sig, mainpk, NULL, subpk, mainpk,
-				   0x28, 0, 0, 0, sign_mk_attrib, &attrib,
-                                   NULL);
+				   0x28, 0, 0, 0, NULL,
+                                   sign_mk_attrib, &attrib, NULL);
 	  if (rc)
 	    {
               write_status_error ("keysig", rc);
@@ -5675,4 +5742,41 @@ menu_showphoto (KBNODE keyblock)
 	    }
 	}
     }
+}
+
+static int
+menu_addsub (ctrl_t ctrl, KBNODE keyblock, const char *sub)
+{
+  if (! sub || ! *sub)
+    /* XXX: testing hack, remove.  */
+    // sub = "72DC07B5";
+    sub = "32C5067D";
+
+  if (! sub || ! *sub)
+    {
+      tty_printf (_("Usage: addsub KEYID\n"));
+      return 0;
+    }
+
+  return mailing_list_add_subscriber (ctrl, keyblock, sub) == 0;
+}
+
+
+static int
+menu_rmsub (ctrl_t ctrl, KBNODE keyblock, const char *sub)
+{
+  PKT_public_key *pk = keyblock->pkt->pkt.public_key;
+
+  if (! sub || ! *sub)
+    sub = "E3AC040E";
+
+  if (! sub || ! *sub)
+    {
+      tty_printf (_("Usage: rmsub KEYID\n"));
+      return 0;
+    }
+
+  printf ("rmsub %s %s\n", keystr (pk->keyid), sub);
+
+  return mailing_list_rm_subscriber (ctrl, keyblock, sub) == 0;
 }

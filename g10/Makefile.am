@@ -133,7 +133,8 @@ gpg2_SOURCES  = gpg.c		\
 	      call-agent.c call-agent.h \
 	      trust.c $(trust_source) $(tofu_source) \
 	      $(card_source) \
-	      exec.c exec.h
+	      exec.c exec.h \
+	      mailing-list.c mailing-list.h
 
 gpgv2_SOURCES = gpgv.c           \
 	      $(common_source)  \

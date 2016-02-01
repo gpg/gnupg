@@ -69,6 +69,8 @@ struct mainproc_context
   md_filter_context_t mfx;
   int sigs_only;    /* Process only signatures and reject all other stuff. */
   int encrypt_only; /* Process only encryption messages. */
+  int symkey_only;  /* Just process a SK-ESK packet.  */
+  int pubkey_only;  /* Just process a PK-ESK packet.  */
 
   /* Name of the file with the complete signature or the file with the
      detached signature.  This is currently only used to deduce the
@@ -140,8 +142,11 @@ release_list( CTX c )
   c->any.data = 0;
   c->any.uncompress_failed = 0;
   c->last_was_session_key = 0;
-  xfree (c->dek);
-  c->dek = NULL;
+  if (! (c->symkey_only || c->pubkey_only))
+    {
+      xfree (c->dek);
+      c->dek = NULL;
+    }
 }
 
 
@@ -1242,6 +1247,49 @@ proc_signature_packets (ctrl_t ctrl, void *anchor, iobuf_t a,
   return rc;
 }
 
+int
+proc_symkey_packet (ctrl_t ctrl, iobuf_t a, DEK *dek)
+{
+  CTX c = xmalloc_clear (sizeof *c);
+  int rc;
+
+  c->ctrl = ctrl;
+  c->symkey_only = 1;
+
+  rc = do_proc_packets (ctrl, c, a);
+  if (! rc && ! c->dek)
+    rc = gpg_error (GPG_ERR_BAD_KEY);
+
+  if (c->dek)
+    *dek = *c->dek;
+
+  xfree (c->dek);
+  xfree (c);
+
+  return rc;
+}
+
+int
+proc_pubkey_packet (ctrl_t ctrl, iobuf_t a, DEK *dek)
+{
+  CTX c = xmalloc_clear (sizeof *c);
+  int rc;
+
+  c->ctrl = ctrl;
+  c->pubkey_only = 1;
+
+  rc = do_proc_packets (ctrl, c, a);
+  if (! rc && ! c->dek)
+    rc = gpg_error (GPG_ERR_BAD_KEY);
+
+  if (c->dek)
+    *dek = *c->dek;
+
+  xfree (c->dek);
+  xfree (c);
+
+  return rc;
+}
 
 int
 proc_signature_packets_by_fd (ctrl_t ctrl,
@@ -1361,6 +1409,50 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
             default: newpkt = 0; break;
 	    }
 	}
+      else if (c->symkey_only)
+        {
+          switch (pkt->pkttype)
+            {
+            case PKT_PUBLIC_KEY:
+            case PKT_SECRET_KEY:
+            case PKT_USER_ID:
+            case PKT_SIGNATURE:
+            case PKT_PUBKEY_ENC:
+            case PKT_ENCRYPTED_MDC:
+            case PKT_PLAINTEXT:
+            case PKT_COMPRESSED:
+            case PKT_ONEPASS_SIG:
+            case PKT_GPG_CONTROL:
+              write_status_text (STATUS_UNEXPECTED, "0");
+              rc = GPG_ERR_UNEXPECTED;
+              goto leave;
+
+            case PKT_SYMKEY_ENC:  proc_symkey_enc (c, pkt); break;
+            default: newpkt = 0; break;
+	    }
+	}
+      else if (c->pubkey_only)
+        {
+          switch (pkt->pkttype)
+            {
+            case PKT_PUBLIC_KEY:
+            case PKT_SECRET_KEY:
+            case PKT_USER_ID:
+            case PKT_SIGNATURE:
+            case PKT_SYMKEY_ENC:
+            case PKT_ENCRYPTED_MDC:
+            case PKT_PLAINTEXT:
+            case PKT_COMPRESSED:
+            case PKT_ONEPASS_SIG:
+            case PKT_GPG_CONTROL:
+              write_status_text (STATUS_UNEXPECTED, "0");
+              rc = GPG_ERR_UNEXPECTED;
+              goto leave;
+
+            case PKT_PUBKEY_ENC: proc_pubkey_enc (ctrl, c, pkt); break;
+            default: newpkt = 0; break;
+	    }
+	}
       else if (c->sigs_only)
         {
           switch (pkt->pkttype)
@@ -1472,7 +1564,8 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
 
  leave:
   release_list (c);
-  xfree(c->dek);
+  if (! (c->symkey_only || c->pubkey_only))
+    xfree(c->dek);
   free_packet (pkt);
   xfree (pkt);
   free_md_filter_context (&c->mfx);

@@ -89,7 +89,8 @@ enum para_name {
   pSERIALNO,
   pCARDBACKUPKEY,
   pHANDLE,
-  pKEYSERVER
+  pKEYSERVER,
+  pMAILINGLIST
 };
 
 struct para_data_s {
@@ -102,6 +103,7 @@ struct para_data_s {
         unsigned int usage;
         struct revocation_key revkey;
         char value[1];
+        int is_mailing_list;
     } u;
 };
 
@@ -807,7 +809,7 @@ make_backsig (PKT_signature *sig, PKT_public_key *pk,
   cache_public_key (sub_pk);
 
   err = make_keysig_packet (&backsig, pk, NULL, sub_pk, sub_psk, 0x19,
-                            0, timestamp, 0, NULL, NULL, cache_nonce);
+                            0, timestamp, 0, NULL, NULL, NULL, cache_nonce);
   if (err)
     log_error ("make_keysig_packet failed for backsig: %s\n",
                gpg_strerror (err));
@@ -915,7 +917,7 @@ write_direct_sig (KBNODE root, PKT_public_key *psk,
 
   /* Make the signature.  */
   err = make_keysig_packet (&sig, pk, NULL,NULL, psk, 0x1F,
-                            0, timestamp, 0,
+                            0, timestamp, 0, NULL,
                             keygen_add_revkey, revkey, cache_nonce);
   if (err)
     {
@@ -931,13 +933,13 @@ write_direct_sig (KBNODE root, PKT_public_key *psk,
 }
 
 
-
 /* Write a self-signature to the first user id in ROOT using the key
    PSK.  USE and TIMESTAMP give the extra data we need for the
    signature.  */
 static gpg_error_t
 write_selfsigs (KBNODE root, PKT_public_key *psk,
-		unsigned int use, u32 timestamp, const char *cache_nonce)
+		unsigned int use, u32 timestamp,
+                int mailing_list, const char *cache_nonce)
 {
   gpg_error_t err;
   PACKET *pkt;
@@ -945,6 +947,7 @@ write_selfsigs (KBNODE root, PKT_public_key *psk,
   PKT_user_id *uid;
   KBNODE node;
   PKT_public_key *pk;
+  struct notation *notations = NULL;
 
   if (opt.verbose)
     log_info (_("writing self signature\n"));
@@ -968,10 +971,95 @@ write_selfsigs (KBNODE root, PKT_public_key *psk,
      signature creation is able to retrieve the public key.  */
   cache_public_key (pk);
 
+  if (mailing_list)
+    /* Add the mailing-list notation.  */
+    {
+      char *notation = "mailing-list@gnupg.org=1";
+      struct notation *notation_blob;
+
+      notation_blob = string_to_notation (notation, 0);
+      if (! notation_blob)
+        {
+          log_bug ("Failed to create notation: %s\n", notation);
+          return gpg_error (GPG_ERR_INTERNAL);
+        }
+
+      notation_blob->next = notations;
+      notations = notation_blob;
+    }
+
+  if (mailing_list)
+    /* Add the subscriber-list-session-key notation.  */
+    {
+      char *notation = "subscriber-list-session-key@gnupg.org";
+      struct pk_list pk_list;
+      /* The public key encrypted session key as a packet.  */
+      iobuf_t pk_esk;
+      DEK session_key_initial;
+      char *buffer;
+      size_t len;
+      struct notation *notation_blob;
+
+      /* The initial session key encrypted with the new subscriber's
+         public key.  */
+      /* Initialize PK_LIST with just the encryption key.  */
+      pk_list.next = NULL;
+      pk_list.pk = pk;
+      /* Don't throw the key id.  */
+      pk_list.flags = 0;
+
+      pk_esk = iobuf_temp ();
+      if (! pk_esk)
+        {
+          log_bug ("Out of memory allocating pk_esk\n");
+          return gpg_error (GPG_ERR_INTERNAL);
+        }
+
+      memset (&session_key_initial, 0, sizeof (session_key_initial));
+      session_key_initial.algo = default_cipher_algo ();
+      make_session_key (&session_key_initial);
+
+      /* We don't need ctrl: we are certain that pk_list doesn't
+         contain a mailing list key, which is the only thing that
+         write_pubkey_enc_from_list needs ctrl for.  */
+      err = write_pubkey_enc_from_list (NULL, &pk_list,
+                                        &session_key_initial, pk_esk);
+      if (err)
+        {
+          log_bug ("Failed to generate PK-ESK packet: %s\n",
+                   gpg_strerror (err));
+          return err;
+        }
+
+      buffer = iobuf_get_temp_buffer (pk_esk);
+      len = iobuf_get_temp_length (pk_esk);
+
+      notation_blob = blob_to_notation (notation, buffer, len);
+      if (! notation_blob)
+        {
+          log_bug ("Failed to create notation: %s=<SE-ESK packet, %zd bytes>\n",
+                   notation, len);
+          return gpg_error (GPG_ERR_INTERNAL);
+        }
+
+      {
+        FILE *fp = fopen ("/tmp/subscriber-list-session-key", "w");
+        fwrite (buffer, len, 1, fp);
+        fclose (fp);
+      }
+
+      notation_blob->next = notations;
+      notations = notation_blob;
+    }
+
+
   /* Make the signature.  */
+  /* We pass a callback (keygen_add_std_prefs) to add some extra data
+     to the self-signature.  */
   err = make_keysig_packet (&sig, pk, uid, NULL, psk, 0x13,
-                            0, timestamp, 0,
+                            0, timestamp, 0, notations,
                             keygen_add_std_prefs, pk, cache_nonce);
+  free_notation (notations);
   if (err)
     {
       log_error ("make_keysig_packet failed: %s\n", gpg_strerror (err));
@@ -991,9 +1079,10 @@ write_selfsigs (KBNODE root, PKT_public_key *psk,
    signature creation time.  PRI_PSK is the key use for signing.
    SUB_PSK is a key used to create a back-signature; that one is only
    used if USE has the PUBKEY_USAGE_SIG capability.  */
-static int
+int
 write_keybinding (KBNODE root, PKT_public_key *pri_psk, PKT_public_key *sub_psk,
-                  unsigned int use, u32 timestamp, const char *cache_nonce)
+                  unsigned int use, u32 timestamp, const char *cache_nonce,
+                  struct notation *notations)
 {
   gpg_error_t err;
   PACKET *pkt;
@@ -1029,7 +1118,7 @@ write_keybinding (KBNODE root, PKT_public_key *pri_psk, PKT_public_key *sub_psk,
   oduap.usage = use;
   oduap.pk = sub_pk;
   err = make_keysig_packet (&sig, pri_pk, NULL, sub_pk, pri_psk, 0x18,
-                            0, timestamp, 0,
+                            0, timestamp, 0, notations,
                             keygen_add_key_flags_and_expire, &oduap,
                             cache_nonce);
   if (err)
@@ -2471,7 +2560,7 @@ uid_already_in_keyblock (kbnode_t keyblock, const char *uid)
    the function prevents the creation of an already existing user
    ID.  IF FULL is not set some prompts are not shown.  */
 static char *
-ask_user_id (int mode, int full, KBNODE keyblock)
+ask_user_id (int mode, int full, int mailing_list, KBNODE keyblock)
 {
     char *answer;
     char *aname, *acomment, *amail, *uid;
@@ -2557,7 +2646,10 @@ ask_user_id (int mode, int full, KBNODE keyblock)
 	    }
 	}
 	if (!acomment) {
-          if (full) {
+          if (mailing_list) {
+            xfree (acomment);
+            acomment = xstrdup ("mailing list");
+          } else if (full) {
 	    for(;;) {
 		xfree(acomment);
 		acomment = cpr_get("keygen.comment",_("Comment: "));
@@ -2766,7 +2858,7 @@ generate_user_id (KBNODE keyblock, const char *uidstr)
     }
   else
     {
-      p = ask_user_id (1, 1, keyblock);
+      p = ask_user_id (1, 1, 0, keyblock);
       if (!p)
         return NULL;  /* Canceled. */
       uid = uid_from_string (p);
@@ -2974,6 +3066,8 @@ get_parameter_u32( struct para_data_s *para, enum para_name key )
     return r->u.expire;
   if( r->key == pKEYUSAGE || r->key == pSUBKEYUSAGE )
     return r->u.usage;
+  if( r->key == pMAILINGLIST )
+    return r->u.is_mailing_list;
 
   return (unsigned int)strtoul( r->u.value, NULL, 10 );
 }
@@ -3436,13 +3530,14 @@ quickgen_set_para (struct para_data_s *para, int for_subkey,
  * Unattended generation of a standard key.
  */
 void
-quick_generate_keypair (ctrl_t ctrl, const char *uid)
+quick_generate_keypair (ctrl_t ctrl, const char *uid, int mailing_list)
 {
   gpg_error_t err;
   struct para_data_s *para = NULL;
   struct para_data_s *r;
   struct output_control_s outctrl;
   int use_tty;
+  const char *mailing_list_comment = " (mailing list)";
 
   memset (&outctrl, 0, sizeof outctrl);
 
@@ -3452,9 +3547,12 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid)
              && gnupg_isatty (fileno (stdout))
              && gnupg_isatty (fileno (stderr)));
 
-  r = xmalloc_clear (sizeof *r + strlen (uid));
+  r = xmalloc_clear (sizeof *r + strlen (uid)
+                     + (mailing_list ? strlen (mailing_list_comment) : 0));
   r->key = pUSERID;
   strcpy (r->u.value, uid);
+  if (mailing_list_comment)
+    strcat (r->u.value, mailing_list_comment);
   r->next = para;
   para = r;
 
@@ -3474,6 +3572,15 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid)
       if (!cpr_get_answer_is_yes_def ("quick_keygen.okay",
                                       _("Continue? (Y/n) "), 1))
         goto leave;
+    }
+
+  if (mailing_list)
+    {
+      r = xcalloc (1, sizeof *r );
+      r->key = pMAILINGLIST;
+      r->u.is_mailing_list = 1;
+      r->next = para;
+      para = r;
     }
 
   /* Check whether such a user ID already exists.  */
@@ -3545,7 +3652,7 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid)
  * mode).
  */
 void
-generate_keypair (ctrl_t ctrl, int full, const char *fname,
+generate_keypair (ctrl_t ctrl, int full, int mailing_list, const char *fname,
                   const char *card_serialno, int card_backup_key)
 {
   unsigned int nbits;
@@ -3575,6 +3682,15 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
     {
       read_parameter_file (ctrl, fname);
       return;
+    }
+
+  if (mailing_list)
+    {
+      r = xcalloc (1, sizeof *r );
+      r->key = pMAILINGLIST;
+      r->u.is_mailing_list = 1;
+      r->next = para;
+      para = r;
     }
 
   if (card_serialno)
@@ -3787,7 +3903,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
   r->next = para;
   para = r;
 
-  uid = ask_user_id (0, full, NULL);
+  uid = ask_user_id (0, full, mailing_list, NULL);
   if (!uid)
     {
       log_error(_("Key generation canceled.\n"));
@@ -4071,6 +4187,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
       write_uid (pub_root, s );
       err = write_selfsigs (pub_root, pri_psk,
                             get_parameter_uint (para, pKEYUSAGE), timestamp,
+                            get_parameter_uint (para, pMAILINGLIST),
                             cache_nonce);
     }
 
@@ -4088,7 +4205,8 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                           get_parameter_u32 (para, pKEYEXPIRE));
       if (!err)
         err = write_keybinding (pub_root, pri_psk, NULL,
-                                PUBKEY_USAGE_AUTH, timestamp, cache_nonce);
+                                PUBKEY_USAGE_AUTH, timestamp, cache_nonce,
+                                NULL);
     }
 
   if (!err && get_parameter (para, pSUBKEYTYPE))
@@ -4129,7 +4247,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
       if (!err)
         err = write_keybinding (pub_root, pri_psk, sub_psk,
                                 get_parameter_uint (para, pSUBKEYUSAGE),
-                                timestamp, cache_nonce);
+                                timestamp, cache_nonce, NULL);
       did_sub = 1;
     }
 
@@ -4334,7 +4452,8 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
       sub_psk = node->pkt->pkt.public_key;
 
   /* Write the binding signature.  */
-  err = write_keybinding (keyblock, pri_psk, sub_psk, use, cur_time, NULL);
+  err = write_keybinding (keyblock, pri_psk, sub_psk, use, cur_time,
+                          NULL, NULL);
   if (err)
     goto leave;
 
@@ -4437,7 +4556,7 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
           sub_pk = node->pkt->pkt.public_key;
       assert (sub_pk);
       err = write_keybinding (pub_keyblock, pri_pk, sub_pk,
-                              use, cur_time, NULL);
+                              use, cur_time, NULL, NULL);
     }
 
  leave:

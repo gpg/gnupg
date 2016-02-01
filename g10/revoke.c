@@ -346,7 +346,7 @@ gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr)
 
 	    /* create it */
 	    rc = make_keysig_packet( &sig, pk, NULL, NULL, pk2, 0x20, 0,
-				     0, 0,
+				     0, 0, NULL,
 				     revocation_reason_build_cb, reason,
                                      NULL);
 	    if( rc ) {
@@ -473,7 +473,7 @@ create_revocation (const char *filename,
   push_armor_filter (afx, out);
 
   rc = make_keysig_packet (&sig, psk, NULL, NULL, psk, 0x20, 0,
-                           0, 0,
+                           0, 0, NULL,
                            revocation_reason_build_cb, reason, cache_nonce);
   if (rc)
     {

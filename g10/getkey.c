@@ -2318,6 +2318,24 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 
 			}
 		    }
+
+                  if (sig->flags.notation && ! pk->flags.mailing_list)
+                    /* If the mailing-list notation appears on any
+                       self-sig (not only the latest one), we consider
+                       the key to be a mailing list key.  */
+                    {
+                      struct notation *notations = sig_to_notation (sig);
+                      struct notation *n;
+
+                      for (n = notations; n; n = n->next)
+                        if (strcmp (n->name, "mailing-list@gnupg.org") == 0)
+                          {
+                            pk->flags.mailing_list = 1;
+                            break;
+                          }
+
+                      free_notation (notations);
+                    }
 		}
 	    }
 	}
@@ -2467,6 +2485,24 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 		  if (sig->version > sigversion)
 		    sigversion = sig->version;
 		}
+
+              if (sig->flags.notation && ! pk->flags.mailing_list)
+                /* If the mailing-list notation appears on any
+                   self-sig (not only the latest one), we consider
+                   the key to be a mailing list key.  */
+                {
+                  struct notation *notations = sig_to_notation (sig);
+                  struct notation *n;
+
+                  for (n = notations; n; n = n->next)
+                    if (strcmp (n->name, "mailing-list@gnupg.org") == 0)
+                      {
+                        pk->flags.mailing_list = 1;
+                        break;
+                      }
+
+                  free_notation (notations);
+                }
 	    }
 	}
     }
@@ -2777,6 +2813,7 @@ merge_selfsigs_subkey (KBNODE keyblock, KBNODE subnode)
 
   subpk->flags.valid = 0;
   subpk->flags.exact = 0;
+  subpk->flags.mailing_list = mainpk->flags.mailing_list;
   subpk->main_keyid[0] = mainpk->main_keyid[0];
   subpk->main_keyid[1] = mainpk->main_keyid[1];
 
