@@ -417,24 +417,33 @@ gnupg_exec_tool (const char *pgmname, const char *argv[],
   if (err)
     goto leave;
 
-  *result = xtrymalloc (len);
-  if (*result == NULL)
+  *result = xtrymalloc (len + 1);
+  if (!*result)
     {
       err = my_error_from_syserror ();
       goto leave;
     }
 
-  err = es_read (output, *result, len, &nread);
-  if (! err)
+  if (len)
     {
-      assert (nread == len || !"short read on memstream");
-      if (resultlen)
-        *resultlen = len;
+      err = es_read (output, *result, len, &nread);
+      if (err)
+        goto leave;
+      if (nread != len)
+        log_fatal ("%s: short read from memstream\n", __func__);
     }
+  (*result)[len] = 0;
+
+  if (resultlen)
+    *resultlen = len;
 
  leave:
-  if (input)
-    es_fclose (input);
+  es_fclose (input);
   es_fclose (output);
+  if (err)
+    {
+      xfree (*result);
+      *result = NULL;
+    }
   return err;
 }
