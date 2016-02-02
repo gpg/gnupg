@@ -161,7 +161,9 @@ static const char hlp_device[] =
   "DEVICE <name>\n"
   "\n"
   "Set the device used by further commands.\n"
-  "A device name or a PARTUUID string may be used.";
+  "A device name or a PARTUUID string may be used.\n"
+  "Access to that device (by the g13 system) is locked\n"
+  "until a new DEVICE command or end of this process\n";
 static gpg_error_t
 cmd_device (assuan_context_t ctx, char *line)
 {
@@ -185,7 +187,7 @@ cmd_device (assuan_context_t ctx, char *line)
       break;
   if (!ti)
     {
-      set_error (GPG_ERR_EACCES, "device not configured for user");
+      err = set_error (GPG_ERR_EACCES, "device not configured for user");
       goto leave;
     }
 
@@ -212,6 +214,8 @@ cmd_device (assuan_context_t ctx, char *line)
   ctrl->server_local->devicefp = fp;
   fp = NULL;
   ctrl->devti = ti;
+
+  /* Fixme: Take some kind of lock.  */
 
  leave:
   es_fclose (fp);
@@ -255,7 +259,7 @@ cmd_create (assuan_context_t ctx, char *line)
   err = sh_is_empty_partition (ctrl->server_local->devicename);
   if (err)
     {
-      assuan_set_error (ctx, err, "Partition is not empty");
+      err = assuan_set_error (ctx, err, "Partition is not empty");
       goto leave;
     }
 
