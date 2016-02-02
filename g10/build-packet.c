@@ -1215,14 +1215,18 @@ write_32(IOBUF out, u32 a)
 
 
 /****************
- * calculate the length of a header
+ * calculate the length of a header.
+ *
+ * LEN is the length of the packet's body.  NEW_CTB is whether we are
+ * using a new or old format packet.
+ *
+ * This function does not handle indeterminate lengths or partial body
+ * lengths.  (If you pass LEN as 0, then this function assumes you
+ * really mean an empty body.)
  */
 static int
 calc_header_length( u32 len, int new_ctb )
 {
-    if( !len )
-	return 1; /* only the ctb */
-
     if( new_ctb ) {
 	if( len < 192 )
 	    return 2;
