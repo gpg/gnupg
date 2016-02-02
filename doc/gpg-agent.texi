@@ -243,8 +243,14 @@ debugger.
 This option inhibits the use of the very secure random quality level
 (Libgcrypt’s @code{GCRY_VERY_STRONG_RANDOM}) and degrades all request
 down to standard random quality.  It is only used for testing and
-shall not be used for any production quality keys.  This option is
+should not be used for any production quality keys.  This option is
 only effective when given on the command line.
+
+On GNU/Linux, another way to quickly generate insecure keys is to use
+@command{rngd} to fill the kernel's entropy pool with lower quality
+random data.  @command{rngd} is typically provided by the
+@command{rng-tools} package.  It can be run as follows: @samp{sudo
+rngd -f -r /dev/urandom}.
 
 @item --debug-pinentry
 @opindex debug-pinentry
