@@ -25,6 +25,8 @@
 
 int be_parse_conttype_name (const char *name);
 int be_is_supported_conttype (int conttype);
+gpg_error_t be_take_lock_for_create (ctrl_t ctrl, const char *fname,
+                                     dotlock_t *r_lock);
 gpg_error_t be_get_detached_name (int conttype, const char *fname,
                                   char **r_name, int *r_isdir);
 gpg_error_t be_create_new_keys (int conttype, membuf_t *mb);

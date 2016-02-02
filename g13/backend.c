@@ -23,6 +23,7 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 #include "g13.h"
 #include "i18n.h"
@@ -87,6 +88,64 @@ be_is_supported_conttype (int conttype)
     }
 }
 
+
+/* Create a lock file for the container FNAME and store the lock at
+ * R_LOCK and return 0.  On error return an error code and store NULL
+ * at R_LOCK.  */
+gpg_error_t
+be_take_lock_for_create (ctrl_t ctrl, const char *fname, dotlock_t *r_lock)
+{
+  gpg_error_t err;
+  dotlock_t lock = NULL;
+  struct stat sb;
+
+  *r_lock = NULL;
+
+  /* A DM-crypt container requires special treatment by using the
+     syshelper fucntions.  */
+  if (ctrl->conttype == CONTTYPE_DM_CRYPT)
+    {
+      /*  */
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      goto leave;
+    }
+
+
+  /* A quick check to see that no container with that name already
+     exists.  */
+  if (!access (fname, F_OK))
+    {
+      err = gpg_error (GPG_ERR_EEXIST);
+      goto leave;
+    }
+
+  /* Take a lock and proceed with the creation.  If there is a lock we
+     immediately return an error because for creation it does not make
+     sense to wait.  */
+  lock = dotlock_create (fname, 0);
+  if (!lock)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  if (dotlock_take (lock, 0))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  /* Check again that the file does not exist.  */
+  err = stat (fname, &sb)? 0 : gpg_error (GPG_ERR_EEXIST);
+
+ leave:
+  if (!err)
+    {
+      *r_lock = lock;
+      lock = NULL;
+    }
+  dotlock_destroy (lock);
+  return err;
+}
 
 
 /* If the backend requires a separate file or directory for the

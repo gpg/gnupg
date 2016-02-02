@@ -239,35 +239,10 @@ g13_create_container (ctrl_t ctrl, const char *filename, strlist_t keys)
   if (!keys)
     return gpg_error (GPG_ERR_NO_PUBKEY);
 
-  /* A quick check to see that no container with that name already
-     exists.  */
-  if (!access (filename, F_OK))
-    return gpg_error (GPG_ERR_EEXIST);
+  err = be_take_lock_for_create (ctrl, filename, &lock);
+  if (err)
+    goto leave;
 
-  /* Take a lock and proceed with the creation.  If there is a lock we
-     immediately return an error because for creation it does not make
-     sense to wait.  */
-  lock = dotlock_create (filename, 0);
-  if (!lock)
-    return gpg_error_from_syserror ();
-  if (dotlock_take (lock, 0))
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-  else
-    err = 0;
-
-  /* Check again that the file does not exist.  */
-  {
-      struct stat sb;
-
-      if (!stat (filename, &sb))
-        {
-          err = gpg_error (GPG_ERR_EEXIST);
-          goto leave;
-        }
-  }
   /* And a possible detached file or directory may not exist either.  */
   err = be_get_detached_name (ctrl->conttype, filename,
                               &detachedname, &detachedisdir);
