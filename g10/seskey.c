@@ -31,9 +31,11 @@
 #include "i18n.h"
 
 
-/****************
- * Make a session key and put it into DEK
- */
+/* Generate a new session key in *DEK that is appropriate for the
+   algorithm DEK->ALGO (i.e., ensure that the key is not weak).
+
+   This function overwrites DEK->KEYLEN, DEK->KEY.  The rest of the
+   fields are left as is.  */
 void
 make_session_key( DEK *dek )
 {
@@ -67,11 +69,12 @@ make_session_key( DEK *dek )
 }
 
 
-/****************
- * Encode the session key. NBITS is the number of bits which should be used
- * for packing the session key.
- * returns: A mpi with the session key (caller must free)
- */
+/* Encode the session key stored in DEK as an MPI in preparation to
+   encrypt it with the public key algorithm OPENPGP_PK_ALGO with a key
+   whose length (the size of the public key) is NBITS.
+
+   On success, returns an MPI, which the caller must free using
+   gcry_mpi_release().  */
 gcry_mpi_t
 encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
 {
@@ -136,14 +139,15 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
     log_bug ("can't encode a %d bit key in a %d bits frame\n",
              dek->keylen*8, nbits );
 
-  /* We encode the session key in this way:
+  /* We encode the session key according to PKCS#1 v1.5 (see section
+   * 13.1.1 of RFC 4880):
    *
-   *	   0  2  RND(n bytes)  0  A  DEK(k bytes)  CSUM(2 bytes)
+   *	   0  2  RND(i bytes)  0  A  DEK(k bytes)  CSUM(2 bytes)
    *
    * (But how can we store the leading 0 - the external representaion
    *  of MPIs doesn't allow leading zeroes =:-)
    *
-   * RND are non-zero random bytes.
+   * RND are (at least 1) non-zero random bytes.
    * A   is the cipher algorithm
    * DEK is the encryption key (session key) length k depends on the
    *	   cipher algorithm (20 is used with blowfish160).
@@ -154,6 +158,8 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
   n = 0;
   frame[n++] = 0;
   frame[n++] = 2;
+  /* The number of random bytes are the number of otherwise unused
+     bytes.  See diagram above.  */
   i = nframe - 6 - dek->keylen;
   assert( i > 0 );
   p = gcry_random_bytes_secure (i, GCRY_STRONG_RANDOM);

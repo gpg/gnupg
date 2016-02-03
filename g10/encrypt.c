@@ -75,7 +75,6 @@ encrypt_seskey (DEK *dek, DEK **seskey, byte *enckey)
   if (!*seskey)
     {
       *seskey=xmalloc_clear(sizeof(DEK));
-      (*seskey)->keylen=dek->keylen;
       (*seskey)->algo=dek->algo;
       make_session_key(*seskey);
       /*log_hexdump( "thekey", c->key, c->keylen );*/
@@ -326,7 +325,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
 
   if (!opt.no_literal)
     {
-      /* Note that PT has been initialized above in no_literal mode.  */
+      /* Note that PT has been initialized above in !no_literal mode.  */
       pt->timestamp = make_timestamp();
       pt->mode = opt.textmode? 't' : 'b';
       pt->len = filesize;
