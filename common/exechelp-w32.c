@@ -713,9 +713,10 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *r_exitcode)
         }
       else if (exc)
         {
-          log_error (_("error running '%s': exit status %d\n"),
-                     pgmname, (int)exc );
-          if (r_exitcode)
+          if (!r_exitcode)
+            log_error (_("error running '%s': exit status %d\n"),
+                       pgmname, (int)exc);
+          else
             *r_exitcode = (int)exc;
           ec = GPG_ERR_GENERAL;
         }
