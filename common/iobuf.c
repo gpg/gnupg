@@ -2260,7 +2260,7 @@ void
 iobuf_flush_temp (iobuf_t temp)
 {
   if (temp->use == IOBUF_INPUT || temp->use == IOBUF_INPUT_TEMP)
-    log_bug ("iobuf_writestr called on an input pipeline!\n");
+    log_bug ("iobuf_flush_temp called on an input pipeline!\n");
   while (temp->chain)
     pop_filter (temp, temp->filter, NULL);
 }
