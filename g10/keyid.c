@@ -274,12 +274,15 @@ v3_keyid (gcry_mpi_t a, u32 *ki)
 }
 
 
-const char *
+char *
 format_keyid (u32 *keyid, int format, char *buffer, int len)
 {
   char tmp[KEYID_STR_SIZE];
   if (! buffer)
-    buffer = tmp;
+    {
+      buffer = tmp;
+      len = sizeof (tmp);
+    }
 
   if (format == KF_DEFAULT)
     format = opt.keyid_format;
