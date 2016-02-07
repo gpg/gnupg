@@ -24,6 +24,9 @@
 #include "util.h"
 #include "dek.h"
 
+/*#define MAILING_LIST_DUMP_NOTATIONS 1*/
+#define MAILING_LIST_DUMP_NOTATIONS 0
+
 void kbnode_dump (KBNODE kb);
 
 /* Get a copy of all the session keys and store them in *DEKS and the
@@ -40,5 +43,13 @@ gpg_error_t mailing_list_rm_subscriber (ctrl_t ctrl, KBNODE ml_kb,
 
 gpg_error_t mailing_list_subscribers (ctrl_t ctrl, KBNODE kb,
                                       PK_LIST *pklistp);
+
+gpg_error_t mailing_list_subscribers_ext (ctrl_t ctrl, KBNODE kb,
+                                          PK_LIST *pklistp,
+                                          DEK **deksp, int *ndeksp);
+
+gpg_error_t mailing_list_reprotect_one (PKT_public_key *pk);
+gpg_error_t mailing_list_reprotect (KBNODE kb);
+
 
 #endif

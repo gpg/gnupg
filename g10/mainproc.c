@@ -71,6 +71,7 @@ struct mainproc_context
   int encrypt_only; /* Process only encryption messages. */
   int symkey_only;  /* Just process a SK-ESK packet.  */
   int pubkey_only;  /* Just process a PK-ESK packet.  */
+  int encrypted_data_only;  /* Just process encrypted data packets.  */
 
   /* Name of the file with the complete signature or the file with the
      detached signature.  This is currently only used to deduce the
@@ -98,6 +99,8 @@ struct mainproc_context
   int trustletter;  /* Temporary usage in list_node. */
   ulong symkeys;
   struct kidlist_item *pkenc_list; /* List of encryption packets. */
+  estream_t outputfp; /* Overrides where to send the contents of the message.  */
+  u32 timestamp; /* Timestamp stored in the last literal packet.  */
   struct {
     unsigned int sig_seen:1;      /* Set to true if a signature packet
                                      has been seen. */
@@ -142,7 +145,7 @@ release_list( CTX c )
   c->any.data = 0;
   c->any.uncompress_failed = 0;
   c->last_was_session_key = 0;
-  if (! (c->symkey_only || c->pubkey_only))
+  if (! (c->symkey_only || c->pubkey_only || c->encrypted_data_only))
     {
       xfree (c->dek);
       c->dek = NULL;
@@ -663,8 +666,11 @@ proc_encrypted (CTX c, PACKET *pkt)
        * ways to specify the session key (symmmetric and PK). */
     }
 
-  xfree (c->dek);
-  c->dek = NULL;
+  if (! c->encrypted_data_only)
+    {
+      xfree (c->dek);
+      c->dek = NULL;
+    }
   free_packet (pkt);
   c->last_was_session_key = 0;
   write_status (STATUS_END_DECRYPTION);
@@ -765,12 +771,25 @@ proc_plaintext( CTX c, PACKET *pkt )
 
   if (!rc)
     {
-      rc = handle_plaintext (pt, &c->mfx, c->sigs_only, clearsig);
+      estream_t outputfp = NULL;
+      CTX ci;
+      for (ci = c; ci && ! outputfp; ci = ci->anchor)
+        outputfp = ci->outputfp;
+
+      rc = handle_plaintext (pt, &c->mfx, c->sigs_only, outputfp, clearsig);
       if (gpg_err_code (rc) == GPG_ERR_EACCES && !c->sigs_only)
         {
           /* Can't write output but we hash it anyway to check the
              signature. */
-          rc = handle_plaintext( pt, &c->mfx, 1, clearsig );
+          rc = handle_plaintext( pt, &c->mfx, 1, NULL, clearsig);
+        }
+
+      if (! rc)
+        {
+          /* Save the time stamp in the root.  */
+          for (ci = c; ci->anchor; ci = ci->anchor)
+            ;
+          ci->timestamp = pt->timestamp;
         }
     }
 
@@ -1292,6 +1311,30 @@ proc_pubkey_packet (ctrl_t ctrl, iobuf_t a, DEK *dek)
 }
 
 int
+proc_encrypted_data (ctrl_t ctrl, iobuf_t input, DEK *dek,
+                     estream_t outputfp, u32 *timestamp)
+{
+  CTX c = xmalloc_clear (sizeof *c);
+  int rc;
+
+  c->ctrl = ctrl;
+  c->encrypted_data_only = 1;
+  c->dek = dek;
+  c->outputfp = outputfp;
+
+  reset_literals_seen();
+  rc = do_proc_packets (ctrl, c, input);
+  reset_literals_seen();
+
+  if (timestamp)
+    *timestamp = c->timestamp;
+
+  xfree (c);
+
+  return rc;
+}
+
+int
 proc_signature_packets_by_fd (ctrl_t ctrl,
                               void *anchor, iobuf_t a, int signed_data_fd )
 {
@@ -1416,9 +1459,10 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
             case PKT_PUBLIC_KEY:
             case PKT_SECRET_KEY:
             case PKT_USER_ID:
-            case PKT_SIGNATURE:
             case PKT_PUBKEY_ENC:
+            case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC:
+            case PKT_SIGNATURE:
             case PKT_PLAINTEXT:
             case PKT_COMPRESSED:
             case PKT_ONEPASS_SIG:
@@ -1438,9 +1482,10 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
             case PKT_PUBLIC_KEY:
             case PKT_SECRET_KEY:
             case PKT_USER_ID:
-            case PKT_SIGNATURE:
             case PKT_SYMKEY_ENC:
+            case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC:
+            case PKT_SIGNATURE:
             case PKT_PLAINTEXT:
             case PKT_COMPRESSED:
             case PKT_ONEPASS_SIG:
@@ -1450,6 +1495,30 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
               goto leave;
 
             case PKT_PUBKEY_ENC: proc_pubkey_enc (ctrl, c, pkt); break;
+            default: newpkt = 0; break;
+	    }
+	}
+      else if (c->encrypted_data_only)
+        {
+          switch (pkt->pkttype)
+            {
+            case PKT_PUBLIC_KEY:
+            case PKT_SECRET_KEY:
+            case PKT_USER_ID:
+            case PKT_SYMKEY_ENC:
+            case PKT_PUBKEY_ENC:
+            case PKT_SIGNATURE:
+            case PKT_PLAINTEXT:
+            case PKT_COMPRESSED:
+            case PKT_ONEPASS_SIG:
+            case PKT_GPG_CONTROL:
+              write_status_text (STATUS_UNEXPECTED, "0");
+              rc = GPG_ERR_UNEXPECTED;
+              goto leave;
+
+            case PKT_ENCRYPTED:
+            case PKT_ENCRYPTED_MDC:
+              proc_encrypted (c, pkt); break;
             default: newpkt = 0; break;
 	    }
 	}
@@ -1563,8 +1632,25 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
 
 
  leave:
+  if (opt.show_session_key && c->dek)
+    {
+      char numbuf[25];
+      char *hexbuf;
+
+      snprintf (numbuf, sizeof numbuf, "%d:", c->dek->algo);
+      hexbuf = bin2hex (c->dek->key, c->dek->keylen, NULL);
+      if (!hexbuf)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
+      log_info ("session key: '%s%s'\n", numbuf, hexbuf);
+      write_status_strings (STATUS_SESSION_KEY, numbuf, hexbuf, NULL);
+      xfree (hexbuf);
+    }
+
   release_list (c);
-  if (! (c->symkey_only || c->pubkey_only))
+  if (! (c->symkey_only || c->pubkey_only || c->encrypted_data_only))
     xfree(c->dek);
   free_packet (pkt);
   xfree (pkt);

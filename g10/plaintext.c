@@ -211,10 +211,10 @@ get_output_file (const byte *embedded_name, int embedded_namelen,
  * from the plaintext.  */
 int
 handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
-		  int nooutput, int clearsig)
+		  int nooutput, estream_t fp, int clearsig)
 {
+  int user_supplied_fp = !! fp;
   char *fname = NULL;
-  estream_t fp = NULL;
   static off_t count = 0;
   int err = 0;
   int c;
@@ -248,7 +248,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	}
     }
 
-  if (! nooutput)
+  if (! nooutput && !fp)
     {
       err = get_output_file (pt->name, pt->namelen, pt->buf, &fname, &fp);
       if (err)
@@ -491,7 +491,8 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
       pt->buf = NULL;
     }
 
-  if (fp && fp != es_stdout && fp != opt.outfp && es_fclose (fp))
+  if (fp && fp != es_stdout && fp != opt.outfp && ! user_supplied_fp
+      && es_fclose (fp))
     {
       err = gpg_error_from_syserror ();
       log_error ("error closing '%s': %s\n", fname, gpg_strerror (err));

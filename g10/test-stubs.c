@@ -466,3 +466,10 @@ void
 tofu_end_batch_update (void)
 {
 }
+
+gpg_error_t
+mailing_list_reprotect (KBNODE kb)
+{
+  (void) kb;
+  return 0;
+}

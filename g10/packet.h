@@ -269,6 +269,7 @@ struct seckey_info
 typedef struct
 {
   u32     timestamp;	    /* key made */
+  u32     timestamp_saved;  /* The fake timestamp (for when the key was encrypted) */
   u32     expiredate;     /* expires at this date or 0 if not at all */
   u32     max_expiredate; /* must not expire past this date */
   struct revoke_info revoked;
@@ -300,6 +301,7 @@ typedef struct
     unsigned int serialno_valid:1;/* SERIALNO below is valid.  */
     unsigned int exact:1;         /* Found via exact (!) search.  */
     unsigned int mailing_list:1;
+    unsigned int pkey_decrypted:1;/* Never ever save this keyblock to disk.  */
   } flags;
   PKT_user_id *user_id;   /* If != NULL: found by that uid. */
   struct revocation_key *revkey;
@@ -420,6 +422,8 @@ int proc_signature_packets (ctrl_t ctrl, void *ctx, iobuf_t a,
 			    strlist_t signedfiles, const char *sigfile );
 int proc_symkey_packet (ctrl_t ctrl, iobuf_t a, DEK *dek);
 int proc_pubkey_packet (ctrl_t ctrl, iobuf_t a, DEK *dek);
+int proc_encrypted_data (ctrl_t ctrl, iobuf_t a, DEK *dek, estream_t outputfp,
+                         u32 *timestamp);
 
 int proc_signature_packets_by_fd (ctrl_t ctrl,
                                   void *anchor, IOBUF a, int signed_data_fd );
@@ -673,7 +677,7 @@ int decrypt_data (ctrl_t ctrl, void *ctx, PKT_encrypted *ed, DEK *dek );
 gpg_error_t get_output_file (const byte *embedded_name, int embedded_namelen,
                              iobuf_t data, char **fnamep, estream_t *fpp);
 int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
-					int nooutput, int clearsig );
+                      int nooutput, estream_t outputfp, int clearsig);
 int ask_for_detached_datafile( gcry_md_hd_t md, gcry_md_hd_t md2,
 			       const char *inname, int textmode );
 

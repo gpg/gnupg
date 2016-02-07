@@ -45,6 +45,7 @@
 #include "../common/shareddefs.h"
 #include "host2net.h"
 #include "mbox-util.h"
+#include "mailing-list.h"
 
 
 /* The default algorithms.  If you change them remember to change them
@@ -1019,6 +1020,31 @@ write_selfsigs (KBNODE root, PKT_public_key *psk,
       session_key_initial.algo = default_cipher_algo ();
       make_session_key (&session_key_initial);
 
+      /* XXX: Remove.  */
+      // if (DBG_PACKET)
+        {
+          char *fn =
+            xasprintf ("%s/mailing-list-%s-subscriber-list-session-key-initial.txt",
+                       opt.homedir, keystr (psk->keyid));
+          FILE *fp = fopen (fn, "w");
+          if (fp)
+            {
+              char numbuf[25];
+              char hexbuf[2 * session_key_initial.keylen + 1];
+
+              log_debug ("Writing unencrypted initial session key to %s\n",
+                         fn);
+
+              snprintf (numbuf, sizeof numbuf, "%d:", session_key_initial.algo);
+              bin2hex (session_key_initial.key, session_key_initial.keylen,
+                       hexbuf);
+              fwrite (numbuf, strlen (numbuf), 1, fp);
+              fwrite (hexbuf, strlen (hexbuf), 1, fp);
+              fclose (fp);
+            }
+          xfree (fn);
+        }
+
       /* We don't need ctrl: we are certain that pk_list doesn't
          contain a mailing list key, which is the only thing that
          write_pubkey_enc_from_list needs ctrl for.  */
@@ -1042,11 +1068,21 @@ write_selfsigs (KBNODE root, PKT_public_key *psk,
           return gpg_error (GPG_ERR_INTERNAL);
         }
 
-      {
-        FILE *fp = fopen ("/tmp/subscriber-list-session-key", "w");
-        fwrite (buffer, len, 1, fp);
-        fclose (fp);
-      }
+      if (MAILING_LIST_DUMP_NOTATIONS)
+        {
+          char *fn =
+            xasprintf ("%s/mailing-list-%s-subscriber-list-session-key-initial.gpg",
+                       opt.homedir, keystr (psk->keyid));
+          FILE *fp = fopen (fn, "w");
+          if (fp)
+            {
+              log_debug ("Writing encrypted initial session key to %s\n",
+                         fn);
+              fwrite (buffer, len, 1, fp);
+              fclose (fp);
+            }
+          xfree (fn);
+        }
 
       notation_blob->next = notations;
       notations = notation_blob;

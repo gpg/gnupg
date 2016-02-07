@@ -37,6 +37,7 @@
 #include "../kbx/keybox.h"
 #include "keydb.h"
 #include "i18n.h"
+#include "mailing-list.h"
 
 static int active_handles;
 
@@ -1524,6 +1525,10 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
   assert (kb);
   assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
   pk = kb->pkt->pkt.public_key;
+
+  /* If the mailing list parameters are decrypted, restore the fake
+     data.  */
+  mailing_list_reprotect (kb);
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);

@@ -312,6 +312,9 @@ mailing_list_add_subscriber (ctrl_t ctrl, KBNODE ml_kb, const char *sub)
      keyblock.  */
   PKT_public_key *ml_ek = NULL;
 
+  DEK *deks = NULL;
+  int ndeks;
+
   /* The first session key.  */
   DEK session_key_initial;
   /* The current session key.  */
@@ -414,7 +417,7 @@ mailing_list_add_subscriber (ctrl_t ctrl, KBNODE ml_kb, const char *sub)
   }
 
   /* Make sure we haven't already added this encryption key.  Or, if
-     we have and it is unsubscriber, resubscribe it.  */
+     we have and it is unsubscribed, resubscribe it.  */
   {
     KBNODE n;
     char sub_ek_fp[MAX_FINGERPRINT_LEN];
@@ -426,11 +429,31 @@ mailing_list_add_subscriber (ctrl_t ctrl, KBNODE ml_kb, const char *sub)
       {
         char fp[MAX_FINGERPRINT_LEN];
         size_t fplen;
+        PKT_public_key *x;
 
         if (n->pkt->pkttype != PKT_PUBLIC_SUBKEY)
           continue;
 
-        fingerprint_from_pk (n->pkt->pkt.public_key, fp, &fplen);
+        x = n->pkt->pkt.public_key;
+
+        if (gcry_mpi_cmp (x->pkey[0], GCRYMPI_CONST_TWO) == 0)
+          /* The subkey is still encrypted.  Decrypt them all.  */
+          {
+            err = mailing_list_subscribers_ext (ctrl, ml_kb, NULL,
+                                                &deks, &ndeks);
+            if (err)
+              {
+                log_error ("failed to decrypt subscribers' keys: %s",
+                           gpg_strerror (err));
+                goto out;
+              }
+
+            assert (x->flags.pkey_decrypted);
+            assert (gcry_mpi_cmp (x->pkey[0], GCRYMPI_CONST_TWO) != 0);
+            assert (x->timestamp_saved);
+          }
+
+        fingerprint_from_pk (x, fp, &fplen);
         if (sub_ek_fplen == fplen && memcmp (sub_ek_fp, fp, fplen) == 0)
           /* Got a match!  */
           break;
@@ -439,7 +462,7 @@ mailing_list_add_subscriber (ctrl_t ctrl, KBNODE ml_kb, const char *sub)
     if (n)
       {
         /* XXX: If SUB was a subscriber, but is currently
-           unsubscriber, readd.  */
+           unsubscriber, re-add.  */
         log_error ("%s is already a subscriber.\n", sub);
         goto out;
       }
@@ -450,10 +473,11 @@ mailing_list_add_subscriber (ctrl_t ctrl, KBNODE ml_kb, const char *sub)
      access to it) and the current session key (we need to encrypt the
      new subscriber's parameters with it).  */
   {
-    DEK *deks = NULL;
-    int ndeks;
-    err = mailing_list_get_subscriber_list_session_keys (ctrl, ml_kb,
-                                                         &deks, &ndeks);
+    /* We may have already gotten the session keys above.  If so,
+       don't repeat the work.  */
+    if (! deks)
+      err = mailing_list_get_subscriber_list_session_keys (ctrl, ml_kb,
+                                                           &deks, &ndeks);
     if (err)
       {
         log_error ("Failed to get session keys for mailing list: %s\n",
@@ -468,6 +492,7 @@ mailing_list_add_subscriber (ctrl_t ctrl, KBNODE ml_kb, const char *sub)
     session_key = deks[session_key_i];
 
     xfree (deks);
+    deks = NULL;
   }
 
   /* Make a new subkey using the new subscriber's selected encryption
@@ -494,6 +519,31 @@ mailing_list_add_subscriber (ctrl_t ctrl, KBNODE ml_kb, const char *sub)
     ml_ek->main_keyid[0] = ml_pk->keyid[0];
     ml_ek->main_keyid[1] = ml_pk->keyid[1];
     ml_ek->pubkey_usage = PUBKEY_USAGE_ENC;
+    ml_ek->timestamp = make_timestamp();
+    /* Since the parameters are not unique, make sure the time stamps
+       are.  */
+    {
+      KBNODE n;
+      if (DBG_PACKET)
+        log_debug ("Choose timestamp: %x, checking that it is unique.\n",
+                   ml_ek->timestamp);
+      for (n = ml_kb; n; n = n->next)
+        if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+          {
+            PKT_public_key *x = n->pkt->pkt.public_key;
+            if (x->timestamp_saved == ml_ek->timestamp)
+              {
+                if (DBG_PACKET)
+                  log_debug ("Timestamp collision!  Advancing to %x and restarting\n",
+                             ml_ek->timestamp);
+                ml_ek->timestamp ++;
+                /* Restart.  (This skips the first node, but that's
+                   never a subkey.)  */
+                n = ml_kb;
+                continue;
+              }
+          }
+    }
     ml_ek->expiredate = 0;
     ml_ek->max_expiredate = 0;
     ml_ek->prefs = NULL;
@@ -508,19 +558,132 @@ mailing_list_add_subscriber (ctrl_t ctrl, KBNODE ml_kb, const char *sub)
   /* Encrypt the parameters and the current time using the current
      session key.  */
   {
+    /* Create the data that we want to encrypt.  */
+    iobuf_t params = iobuf_temp ();
     int i;
     int n = pubkey_get_npkey (ml_ek->pubkey_algo);
 
+    /* XXX.  */
+    iobuf_write (params, "XXXYYY ", 7);
+
     for (i = 0; i < n; i ++)
       {
-        /* XXX: Finish me: actually encrypt the keys; don't just copy
-           them.  */
-        (void) session_key;
-
-        ml_ek->pkey[i] = gcry_mpi_copy (ml_ek->pkey[i]);
+        err = gpg_mpi_write (params, ml_ek->pkey[i]);
+        ml_ek->pkey[i] = GCRYMPI_CONST_TWO;
+        if (err)
+          {
+            log_error ("encrypting subscriber's key: %s\n",
+                       gpg_strerror (err));
+            iobuf_close (params);
+            goto out;
+          }
       }
 
-    /* XXX: Encrypt the creation time.  */
+    iobuf_flush_temp (params);
+
+    if (MAILING_LIST_DUMP_NOTATIONS)
+      /* Save the raw data for debugging purposes.  */
+      {
+        char *ml_pk_keyid = xstrdup (keystr (ml_pk->keyid));
+        char *fn = xasprintf ("%s/mailing-list-%s-public-key-%s.txt",
+                              opt.homedir, ml_pk_keyid,
+                              keystr (sub_ek->keyid));
+        FILE *fp = fopen (fn, "w");
+        xfree (ml_pk_keyid);
+        if (fp)
+          {
+            log_debug ("Writing unencrypted public-key parameters to %s\n", fn);
+            fwrite (iobuf_get_temp_buffer (params),
+                    iobuf_get_temp_length (params), 1, fp);
+            fclose (fp);
+          }
+        xfree (fn);
+      }
+
+
+    /* Setup the encryption pipeline.  (Based on encrypt_simple.)  */
+    {
+      PKT_plaintext pt;
+      PACKET pkt;
+      cipher_filter_context_t cfx;
+      int len = iobuf_get_temp_length (params);
+      iobuf_t in;
+
+      in = iobuf_temp_with_content (iobuf_get_temp_buffer (params), len);
+      iobuf_close (params);
+      params = NULL;
+
+      if (! in)
+        {
+          log_error ("failed to create iobuf");
+          goto out;
+        }
+
+      params = iobuf_temp ();
+
+      memset (&pt, 0, sizeof (pt));
+      pt.namelen = 0;
+      pt.mode = 'b';
+      pt.len = len;
+      pt.new_ctb = 0;
+      pt.timestamp = sub_ek->timestamp;
+      pt.buf = in;
+
+      pkt.pkttype = PKT_PLAINTEXT;
+      pkt.pkt.plaintext = &pt;
+
+      memset (&cfx, 0, sizeof cfx);
+      cfx.dek = &session_key;
+      cfx.datalen = calc_packet_length (&pkt);
+      iobuf_push_filter (params, cipher_filter, &cfx);
+
+      err = build_packet (params, &pkt);
+      if (err)
+        {
+          log_error ("building packet: %s\n", gpg_strerror (err));
+          goto out;
+        }
+    }
+
+    iobuf_flush_temp (params);
+
+    {
+      char *notation = "public-key@gnupg.org";
+      char *buffer = iobuf_get_temp_buffer (params);
+      size_t len = iobuf_get_temp_length (params);
+      struct notation *notation_blob
+        = blob_to_notation (notation, buffer, len);
+
+      if (! notation_blob)
+        {
+          log_bug ("Failed to create notation: %s=<SE-ESK packet, %zd bytes>\n",
+                   notation, len);
+          err = gpg_error (GPG_ERR_INTERNAL);
+          goto out;
+        }
+
+      notation_blob->next = notations;
+      notations = notation_blob;
+
+      if (MAILING_LIST_DUMP_NOTATIONS)
+        {
+          char *ml_pk_keyid = xstrdup (keystr (ml_pk->keyid));
+          char *fn = xasprintf ("%s/mailing-list-%s-public-key-%s.gpg",
+                                opt.homedir, ml_pk_keyid,
+                                keystr (sub_ek->keyid));
+          FILE *fp = fopen (fn, "w");
+          xfree (ml_pk_keyid);
+          if (fp)
+            {
+              log_debug ("Writing encrypted public-key parameters to %s (because this SED packet is not preceeded by an ESK packet, an OpenPGP implementation assumes that it is IDEA encoded.  As such, to manually dump this packet, you need to use --override-session-key).\n", fn);
+              fwrite (buffer, len, 1, fp);
+              fclose (fp);
+            }
+          xfree (fn);
+        }
+
+      iobuf_close (params);
+    }
 
     /* Recompute ml_ek->keyid.  */
     {
@@ -598,12 +761,14 @@ mailing_list_add_subscriber (ctrl_t ctrl, KBNODE ml_kb, const char *sub)
     buffer = iobuf_get_temp_buffer (pk_esk);
     len = iobuf_get_temp_length (pk_esk);
 
-    /* XXX */
-    if (DBG_PACKET)
+    if (MAILING_LIST_DUMP_NOTATIONS)
       {
-        char *fn = xasprintf ("/tmp/subscriber-list-key-%s",
+        char *ml_pk_keyid = xstrdup (keystr (ml_pk->keyid));
+        char *fn = xasprintf ("%s/mailing-list-%s-subscriber-list-key-%s.gpg",
+                              opt.homedir, ml_pk_keyid,
                               keystr (sub_ek->keyid));
         FILE *fp = fopen (fn, "w");
+        xfree (ml_pk_keyid);
         if (fp)
           {
             log_debug ("Writing subscriber-list-key to %s\n", fn);
@@ -630,7 +795,7 @@ mailing_list_add_subscriber (ctrl_t ctrl, KBNODE ml_kb, const char *sub)
 
   /* Write the binding signature.  */
   err = write_keybinding (ml_kb, ml_pk, NULL, ml_ek->pubkey_usage,
-                          make_timestamp(), NULL, notations);
+                          ml_ek->timestamp, NULL, notations);
   if (err)
     {
       log_error ("Error creating key binding: %s\n", gpg_strerror (err));
@@ -719,8 +884,9 @@ mailing_list_rm_subscriber (ctrl_t ctrl, KBNODE ml_kb, const char *sub_orig)
       goto out;
     }
 
-  err = mailing_list_get_subscriber_list_session_keys (ctrl, ml_kb,
-                                                       &deks, &ndeks);
+  /* Get the session keys and make sure the public keys are
+     decrypted.  */
+  err = mailing_list_subscribers_ext (ctrl, ml_kb, NULL, &deks, &ndeks);
   if (err)
     {
       log_error ("Failed to get session keys: %s\n", gpg_strerror (err));
@@ -845,13 +1011,16 @@ mailing_list_rm_subscriber (ctrl_t ctrl, KBNODE ml_kb, const char *sub_orig)
           return gpg_error (GPG_ERR_INTERNAL);
         }
 
-      {
-        char *fn = xasprintf ("/tmp/subscriber-list-session-key-%d", ndeks);
-        FILE *fp = fopen (fn, "w");
-        xfree (fn);
-        fwrite (buffer, len, 1, fp);
-        fclose (fp);
-      }
+      if (MAILING_LIST_DUMP_NOTATIONS)
+        {
+          char *fn =
+            xasprintf ("%s/mailing-list-%s-subscriber-list-session-key-%d.gpg",
+                       opt.homedir, keystr (ml_pk->keyid), ndeks);
+          FILE *fp = fopen (fn, "w");
+          xfree (fn);
+          fwrite (buffer, len, 1, fp);
+          fclose (fp);
+        }
 
       notation_blob->next = notations;
       notations = notation_blob;
@@ -907,6 +1076,8 @@ mailing_list_rm_subscriber (ctrl_t ctrl, KBNODE ml_kb, const char *sub_orig)
 
       ek->expiredate = make_timestamp();
 
+      mailing_list_reprotect_one (ek);
+
       err = update_keysig_packet (&newsig, sig, ml_pk, NULL, ek,
                                   ml_pk, notations,
                                   keygen_add_key_expire, ek);
@@ -953,8 +1124,25 @@ mailing_list_rm_subscriber (ctrl_t ctrl, KBNODE ml_kb, const char *sub_orig)
   return err;
 }
 
+/* Return the actual subscribers to the mailing list in *PKLISTP and,
+   in the process, update their public key parameters and creation
+   time stamp with the actual values taken from the encrypted data.
+
+   It is ok for PKLISTP to be NULL.  In this case, only KB is
+   updated.
+
+   Calling this function multiple times is okay.  It just costs some
+   extra processing time.  */
+
 gpg_error_t
 mailing_list_subscribers (ctrl_t ctrl, KBNODE kb, PK_LIST *pklistp)
+{
+  return mailing_list_subscribers_ext (ctrl, kb, pklistp, NULL, NULL);
+}
+
+gpg_error_t
+mailing_list_subscribers_ext (ctrl_t ctrl, KBNODE kb, PK_LIST *pklistp,
+                              DEK **deksp, int *ndeksp)
 {
   gpg_error_t err;
 
@@ -967,17 +1155,20 @@ mailing_list_subscribers (ctrl_t ctrl, KBNODE kb, PK_LIST *pklistp)
 
   err = mailing_list_get_subscriber_list_session_keys (ctrl, kb,
                                                        &deks, &ndeks);
+  if (err)
+    return err;
 
   for (n = kb; n; n = n->next)
     {
       if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY)
         {
           pk = n->pkt->pkt.public_key;
-          if (pk->has_expired)
-            /* The subscriber was removed.  */
+
+          if (gcry_mpi_cmp (pk->pkey[0], GCRYMPI_CONST_TWO) != 0)
+            /* Key is already decrypted.  No need to do it again.  */
             {
               if (DBG_PACKET)
-                log_debug ("%s: Skipping subscriber %s who was unsubscribed.\n",
+                log_debug ("%s: Already decrypted %s.\n",
                            __func__, keystr (pk->keyid));
               pk = NULL;
             }
@@ -987,34 +1178,131 @@ mailing_list_subscribers (ctrl_t ctrl, KBNODE kb, PK_LIST *pklistp)
           PKT_signature *sig = n->pkt->pkt.signature;
           struct notation *notations;
           struct notation *x;
+          int session_key = -1;
+          char *pkenc = NULL;
+          int pklen = 0;
 
           notations = sig_to_notation (sig);
           if (! notations)
             continue;
 
           for (x = notations; x; x = x->next)
-            /* If the public key is encrypted, then this is a subscriber.  */
             if (strcmp (x->name, "public-key-encrypted-with@gnupg.org") == 0)
+              /* If the public key is encrypted, then this is a subscriber.  */
+              session_key = atoi (x->value);
+            else if (strcmp (x->name, "public-key@gnupg.org") == 0)
               {
-                PK_LIST r = xmalloc_clear (sizeof *r);
-                int i = atoi (x->value);
-
-                if (i >= ndeks)
-                  {
-                    log_error ("Unable to decrypt subkey %s: session key %d not available.\n",
-                               keystr (pk->keyid), i);
-                    goto out;
-                  }
-
-                /* XXX: Decrypt the public key parameters using the
-                   session key.  */
-                (void) i;
-
-                r->pk = copy_public_key (NULL, pk);
-                r->next = pklist;
-                pklist = r;
+                pklen = x->blen;
+                pkenc = xmalloc (pklen);
+                memcpy (pkenc, x->bdat, pklen);
               }
 
+          if (session_key == -1 && pkenc)
+            log_error ("subkey public-key-encrypted-with@gnupg.org notation, but no public-key@gnupg.org notation!");
+          else if (session_key != -1 && ! pkenc)
+            log_error ("subkey public-key@gnupg.org notation, but no public-key-encrypted-with@gnupg.org notation!");
+          else if (session_key != -1 && pkenc)
+            {
+              if (session_key >= ndeks)
+                log_error ("Unable to decrypt subkey %s: session key %d not available.\n",
+                           keystr (pk->keyid), session_key);
+              else
+                {
+                  DEK dek = deks[session_key];
+                  iobuf_t encrypted_data
+                    = iobuf_temp_with_content (pkenc, pklen);
+                  estream_t decrypted_data_fp;
+                  char *decrypted_data = NULL;
+                  size_t len = 0;
+                  /* We don't use an MDC as it adds unnecessary
+                     overhead: notations are stored in the hashed
+                     area, which is signed so an MDC doesn't offer any
+                     extra protection.  */
+                  int no_mdc_warn = opt.no_mdc_warn;
+                  int ignore_mdc_error = opt.ignore_mdc_error;
+                  u32 timestamp;
+
+                  decrypted_data_fp = es_fopenmem (0, "rw,samethread");
+                  if (! decrypted_data_fp)
+                    log_fatal ("Error creating memory stream\n");
+
+                  opt.no_mdc_warn = 1;
+                  opt.ignore_mdc_error = 1;
+                  err = proc_encrypted_data (ctrl, encrypted_data, &dek,
+                                             decrypted_data_fp, &timestamp);
+                  opt.no_mdc_warn = no_mdc_warn;
+                  opt.ignore_mdc_error = ignore_mdc_error;
+
+                  if (es_fclose_snatch (decrypted_data_fp,
+                                        (void **) &decrypted_data, &len))
+                    log_fatal ("error snatching memory stream\n");
+
+                  pk->flags.pkey_decrypted = 1;
+                  pk->timestamp_saved = pk->timestamp;
+                  pk->timestamp = timestamp;
+
+                  {
+                    char *p = decrypted_data;
+                    int i;
+                    size_t r;
+
+                    /* XXX: Remove this check (and the data that we
+                       insert).  */
+                    if (memcmp (p, "XXXYYY ", 7) != 0)
+                      log_bug ("Bad data.\n");
+                    p += 7; len -= 7;
+
+                    for (i = 0; i < pubkey_get_npkey (pk->pubkey_algo); i ++)
+                      {
+                        if (len == 0)
+                          err = GPG_ERR_TOO_SHORT;
+                        if (! err)
+                          err = gcry_mpi_scan (&pk->pkey[i], GCRYMPI_FMT_PGP,
+                                               p, len, &r);
+                        if (err)
+                          {
+                            log_error ("Error parsing MPI %d\n", i + 1);
+                            goto out;
+                          }
+
+                        p += r;
+                        len -= r;
+                      }
+                  }
+
+                  /* Recompute ml_ek->keyid.  */
+                  {
+                    char fp[MAX_FINGERPRINT_LEN];
+                    size_t fplen;
+                    u32 keyid[2];
+                    char *keyid_old
+                      = format_keyid (pk->keyid, KF_DEFAULT, NULL, 0);
+
+                    fingerprint_from_pk (pk, fp, &fplen);
+                    keyid_from_fingerprint (fp, fplen, keyid);
+                    pk->keyid[0] = keyid[0];
+                    pk->keyid[1] = keyid[1];
+
+                    if (DBG_PACKET)
+                      log_debug ("Decrypted %s -> %s\n",
+                                 keyid_old, keystr (keyid));
+                  }
+
+                  xfree (decrypted_data);
+
+                  if (pklistp && ! pk->has_expired)
+                    {
+                      PK_LIST r;
+
+                      r = xmalloc_clear (sizeof *r);
+                      r->pk = copy_public_key (NULL, pk);
+                      r->next = pklist;
+                      pklist = r;
+                    }
+                }
+            }
+
+          xfree (pkenc);
           free_notation (notations);
         }
       else
@@ -1029,12 +1317,64 @@ mailing_list_subscribers (ctrl_t ctrl, KBNODE kb, PK_LIST *pklistp)
     }
 
  out:
-  xfree (deks);
+  if (! err && deksp)
+    {
+      *deksp = deks;
+      *ndeksp = ndeks;
+    }
+  else
+    xfree (deks);
 
   if (err)
     release_pk_list (pklist);
-  else
+  else if (pklistp)
     *pklistp = pklist;
+
+  return err;
+}
+
+/* mailing_list_subscribers (and related functions) decrypt the
+   mailing list parameters and update the keyblock.  These should
+   never be written to disk.  This function restores the fake
+   values.  */
+gpg_error_t
+mailing_list_reprotect_one (PKT_public_key *pk)
+{
+  if (pk->flags.pkey_decrypted)
+    {
+      int i;
+      for (i = 0; i < pubkey_get_npkey (pk->pubkey_algo); i ++)
+        pk->pkey[i] = GCRYMPI_CONST_TWO;
+      pk->timestamp = pk->timestamp_saved;
+      pk->timestamp_saved = 0;
+
+      pk->flags.pkey_decrypted = 0;
+    }
+
+  return 0;
+}
+
+gpg_error_t
+mailing_list_reprotect (KBNODE kb)
+{
+  gpg_error_t err = 0;
+  PKT_public_key *pk = kb->pkt->pkt.public_key;
+  KBNODE n;
+
+  if (! pk->flags.mailing_list)
+    /* Not a mailing list key.  Nothing to do.  */
+    return 0;
+
+  for (n = kb; n; n = n->next)
+    {
+      if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        {
+          pk = n->pkt->pkt.public_key;
+          err = mailing_list_reprotect_one (pk);
+          if (err)
+            return err;
+        }
+    }
 
   return err;
 }
