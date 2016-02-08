@@ -1,0 +1,70 @@
+After making sure a gpg2 with mailing list support is in your patch,
+run test.sh as follows (when you run it, it will ask for two
+passwords, use the password 'a'):
+
+  # ./test.sh
+  ***************
+  Generating a user key (use a password of 'a').
+  ***************
+  'Some User <some@user.org>'
+
+  ***************
+  Importing some public keys.
+    Running: gpg2 --batch --import keys.gpg
+  ***************
+
+  ***************
+  Set the password to 'a'
+  ***************
+
+  ***************
+  Creating mailing list.
+    Running: gpg2 --batch --quick-gen-mailing-list-key gnupg-devel <gnupg-devel@gnupg.org>
+  ***************
+  'gnupg-devel <gnupg-devel@gnupg.org>'
+
+  ...
+
+To get more verbose output, run test.sh with the -v flag.  To get even
+more output, change the gpg2 invocations to include --debug=packet.
+
+A summary of the commands:
+
+  --mailing-list-key-gen
+  --quick-gen-mailing-list-key 'Name <mailing-list@example.com>'
+
+    Create a new mailing list key.
+
+  --mailing-list-add-sub ML-KEYID SUB-KEYID...
+  --mailing-list-add-rm ML-KEYID SUB-KEYID...
+
+    Add or remove one or more subscribers from the mailing list.
+
+  --mailing-list-subs ML-KEYID
+
+    List the subscribers (using their decryted keyids!)
+
+    Compare:
+
+      $ gpg2 -k 2A08A54D
+      pub   rsa2048/2A08A54D 2016-02-08 [SC]
+      uid         [ultimate] gnupg-devel <gnupg-devel@gnupg.org> (mailing list)
+      sub   rsa2048/ED2D0863 2016-02-08 [E]
+      sub   rsa2/7C03B9E1 2016-02-08 [E]
+      sub   rsa2/83BCEFE4 2016-02-08 [E]
+      sub   rsa2/04A1E753 2016-02-08 [E]
+      sub   rsa2/535EB487 2016-02-08 [E]
+
+    The above 2-bit RSA keys!  These are the encrypted keys.  Here are
+    the real subscribers:
+
+      $ gpg2 --mailing-list-subs 2A08A54D
+      D1B030E3
+      AA45C71F
+      94244910
+      95A0BEEA
+        4 subscribers.
+
+To encrypt to a mailing list, just do: gpg2 -r ML-KEYID -e and a gnupg
+with encrypted mailing list support will automatically encrypt to the
+list of current subscribers.
