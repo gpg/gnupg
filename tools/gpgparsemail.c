@@ -67,7 +67,9 @@ struct parse_info_s {
   int smfm_state;              /* State of PGP/MIME or S/MIME parsing.  */
   int is_smime;                /* This is S/MIME and not PGP/MIME. */
 
-  char *signing_protocol;
+  const char *signing_protocol;
+  const char *signing_protocol_2; /* there are two ways to present
+                                     PKCS7 */
   int hashing_level;           /* The nesting level we are hashing. */
   int hashing;
   FILE *hash_file;
@@ -139,15 +141,15 @@ xmalloc (size_t n)
 /*   return p; */
 /* } */
 
-static char *
-xstrdup (const char *string)
-{
-  void *p = malloc (strlen (string)+1);
-  if (!p)
-    die ("out of core: %s", strerror (errno));
-  strcpy (p, string);
-  return p;
-}
+/* static char * */
+/* xstrdup (const char *string) */
+/* { */
+/*   void *p = malloc (strlen (string)+1); */
+/*   if (!p) */
+/*     die ("out of core: %s", strerror (errno)); */
+/*   strcpy (p, string); */
+/*   return p; */
+/* } */
 
 #ifndef HAVE_STPCPY
 static char *
@@ -364,8 +366,8 @@ mime_signed_begin (struct parse_info_s *info, rfc822parse_t msg,
             {
               info->smfm_state = 1;
               info->is_smime = 0;
-              free (info->signing_protocol);
-              info->signing_protocol = xstrdup (s);
+              info->signing_protocol = "application/pgp-signature";
+              info->signing_protocol_2 = NULL;
             }
         }
       else if (!strcmp (s, "application/pkcs7-signature")
@@ -377,8 +379,8 @@ mime_signed_begin (struct parse_info_s *info, rfc822parse_t msg,
             {
               info->smfm_state = 1;
               info->is_smime = 1;
-              free (info->signing_protocol);
-              info->signing_protocol = xstrdup (s);
+              info->signing_protocol = "application/pkcs7-signature";
+              info->signing_protocol_2 = "application/x-pkcs7-signature";
             }
         }
       else if (verbose)
@@ -516,10 +518,15 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
                   char *buf = xmalloc (strlen (s1) + strlen (s2) + 2);
                   strcpy (stpcpy (stpcpy (buf, s1), "/"), s2);
                   assert (info->signing_protocol);
-                  if (strcmp (buf, info->signing_protocol))
-                    err ("invalid %s structure; expected '%s', found '%s'",
+                  if (strcmp (buf, info->signing_protocol) &&
+                      (!info->signing_protocol_2
+                       || strcmp (buf,info->signing_protocol_2)))
+                    err ("invalid %s structure; expected %s%s%s, found '%s'",
                          info->is_smime? "S/MIME":"PGP/MIME",
-                         info->signing_protocol, buf);
+                         info->signing_protocol,
+                         info->signing_protocol_2 ? " or " : "",
+                         info->signing_protocol_2 ? info->signing_protocol_2:"",
+                         buf);
                   else
                     {
                       printf ("c begin_signature\n");
