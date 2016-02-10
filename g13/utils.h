@@ -25,6 +25,8 @@
 /* Append a new tuple to a memory buffer.  */
 void append_tuple (membuf_t *membuf,
                    int tag, const void *value, size_t length);
+void append_tuple_uint (membuf_t *membuf, int tag,
+                        unsigned long long value);
 
 /* The tuple descriptor object. */
 struct tupledesc_s;
@@ -36,6 +38,8 @@ void destroy_tupledesc (tupledesc_t tupledesc);
 tupledesc_t ref_tupledesc (tupledesc_t tupledesc);
 const void *find_tuple (tupledesc_t tupledesc,
                         unsigned int tag, size_t *r_length);
+gpg_error_t find_tuple_uint (tupledesc_t tupledesc, unsigned int tag,
+                             unsigned long long *r_value);
 const void *next_tuple (tupledesc_t tupledesc,
                         unsigned int *r_tag, size_t *r_length);
 

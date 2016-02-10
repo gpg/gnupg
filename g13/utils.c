@@ -1,5 +1,6 @@
 /* utils.c - Utility functions
  * Copyright (C) 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2009, 2015, 2016  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -61,10 +62,45 @@ append_tuple (membuf_t *membuf, int tag, const void *value, size_t length)
 }
 
 
+/* Append the unsigned integer VALUE under TAG to MEMBUF.  We make
+ * sure that the most significant bit is always cleared to explicitly
+ * flag the value as unsigned.  */
+void
+append_tuple_uint (membuf_t *membuf, int tag, unsigned long long value)
+{
+  unsigned char buf[16];
+  unsigned char *p;
+  unsigned int len;
+
+  p = buf + sizeof buf;
+  len = 0;
+  do
+    {
+      if (p == buf)
+        BUG () ;
+      *--p = (value & 0xff);
+      value >>= 8;
+      len++;
+    }
+  while (value);
+
+  /* Prepend a zero byte if the first byte has its MSB set.  */
+  if ((*p & 0x80))
+    {
+      if (p == buf)
+        BUG () ;
+      *--p = 0;
+      len++;
+    }
+
+  append_tuple (membuf, tag, p, len);
+}
+
+
 /* Create a tuple object by moving the ownership of (DATA,DATALEN) to
-   a new object.  Returns 0 on success and stores the new object at
-   R_TUPLEHD.  The return object must be released using
-   destroy_tuples().  */
+ * a new object.  Returns 0 on success and stores the new object at
+ * R_TUPLEHD.  The return object must be released using
+ * destroy_tuples().  */
 gpg_error_t
 create_tupledesc (tupledesc_t *r_desc, void *data, size_t datalen)
 {
@@ -108,7 +144,7 @@ ref_tupledesc (tupledesc_t tupledesc)
 
 /* Find the first tuple with tag TAG.  On success return a pointer to
    its value and store the length of the value at R_LENGTH.  If no
-   tuple was return NULL.  For future use by next_tupe, the last
+   tuple was found return NULL.  For use by next_tuple, the last
    position is stored in the descriptor.  */
 const void *
 find_tuple (tupledesc_t tupledesc, unsigned int tag, size_t *r_length)
@@ -144,6 +180,43 @@ find_tuple (tupledesc_t tupledesc, unsigned int tag, size_t *r_length)
       s += n;
     }
   return NULL;
+}
+
+
+/* Similar to find-tuple but expects an unsigned int value and stores
+ * that at R_VALUE.  If the tag was not found GPG_ERR_NOT_FOUND is
+ * returned and 0 stored at R_VALUE.  If the value cannot be converted
+ * to an unsigned integer GPG_ERR_ERANGE is returned.  */
+gpg_error_t
+find_tuple_uint (tupledesc_t tupledesc, unsigned int tag,
+                 unsigned long long *r_value)
+{
+  const unsigned char *s;
+  size_t n;
+  unsigned long long value = 0;
+
+  *r_value = 0;
+
+  s = find_tuple (tupledesc, tag, &n);
+  if (!s)
+    return gpg_error (GPG_ERR_NOT_FOUND);
+  if (!n || (*s & 0x80)) /* No bytes or negative.  */
+    return gpg_error (GPG_ERR_ERANGE);
+  if (n && !*s) /* Skip a leading zero.  */
+    {
+      n--;
+      s++;
+    }
+  if (n > sizeof value)
+    return gpg_error (GPG_ERR_ERANGE);
+  for (; n; n--, s++)
+    {
+      value <<= 8;
+      value |= *s;
+    }
+
+  *r_value = value;
+  return 0;
 }
 
 

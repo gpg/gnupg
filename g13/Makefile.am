@@ -23,6 +23,9 @@ EXTRA_DIST = ChangeLog-2011
 bin_PROGRAMS = g13
 sbin_PROGRAMS = g13-syshelp
 
+noinst_PROGRAMS = $(module_tests)
+TESTS = $(module_tests)
+
 AM_CPPFLAGS = -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
@@ -61,3 +64,14 @@ g13_syshelp_SOURCES = \
 g13_syshelp_LDADD = $(libcommon) \
 	$(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) \
 	$(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
+
+
+module_tests = t-utils
+t_common_ldadd = $(libcommon) $(LIBGCRYPT_LIBS) \
+	         $(LIBASSUAN_LIBS)
+
+t_utils_SOURCES = t-utils.c utils.c
+t_utils_LDADD = $(t_common_ldadd)
+
+
+$(PROGRAMS) : $(libcommon) $(libcommonpth)
