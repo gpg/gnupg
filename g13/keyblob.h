@@ -84,6 +84,17 @@
 /* This is an ISO 8601 time string with the date the container was
    created.  */
 
+#define KEYBLOB_TAG_CONT_NSEC 7
+/* Number of 512-byte sectors of the entire container including all
+   copies of the setup area.  */
+
+#define KEYBLOB_TAG_ENC_NSEC  8
+#define KEYBLOB_TAG_ENC_OFF   9
+/* Number of 512-byte sectors used for the encrypted data and its
+   start offset in 512-byte sectors from the begin of the container.
+   Note that these information can also be deduced from the
+   unencrypted part of the setup area.  */
+
 #define KEYBLOB_TAG_ALGOSTR 10
 /* For a dm-crypt container this is the used algorithm string.  For
    example: "aes-cbc-essiv:sha256".  */
@@ -120,7 +131,6 @@
 /* The value of this tag is a copy of the setup area prefix header
    block (packet 61 with marker "GnuPG/G13\x00".  We use it to allow
    signing of that cleartext data.  */
-
 
 #define KEYBLOB_TAG_FILLER   0xffff
 /* This tag may be used for alignment and padding purposes.  The value
