@@ -33,7 +33,7 @@
 #include "g13-syshelp.h"
 #include <assuan.h>
 #include "i18n.h"
-#include "utils.h"
+#include "g13tuple.h"
 #include "exectool.h"
 #include "keyblob.h"
 

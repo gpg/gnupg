@@ -36,7 +36,7 @@ g13_SOURCES = \
 	g13.c g13.h \
 	g13-common.c g13-common.h \
 	keyblob.h \
-	utils.c utils.h \
+	g13tuple.c g13tuple.h \
 	server.c server.h \
 	create.c create.h \
 	mount.c mount.h \
@@ -56,7 +56,7 @@ g13_syshelp_SOURCES = \
 	g13-syshelp.c g13-syshelp.h \
 	g13-common.c g13-common.h \
 	keyblob.h \
-	utils.c utils.h \
+	g13tuple.c g13tuple.h \
 	sh-cmd.c \
 	sh-blockdev.c \
 	sh-dmcrypt.c
@@ -66,12 +66,12 @@ g13_syshelp_LDADD = $(libcommon) \
 	$(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
 
 
-module_tests = t-utils
+module_tests = t-g13tuple
 t_common_ldadd = $(libcommon) $(LIBGCRYPT_LIBS) \
 	         $(LIBASSUAN_LIBS)
 
-t_utils_SOURCES = t-utils.c utils.c
-t_utils_LDADD = $(t_common_ldadd)
+t_g13tuple_SOURCES = t-g13tuple.c g13tuple.c
+t_g13tuple_LDADD = $(t_common_ldadd)
 
 
 $(PROGRAMS) : $(libcommon) $(libcommonpth)

@@ -21,7 +21,7 @@
 #define G13_BACKEND_H
 
 #include "../common/membuf.h"
-#include "utils.h"  /* For tupledesc_t */
+#include "g13tuple.h"
 
 int be_parse_conttype_name (const char *name);
 int be_is_supported_conttype (int conttype);

@@ -1,4 +1,4 @@
-/* t-utils.c - Module test for utils.c
+/* t-g13tuple.c - Module test for g13tuple.c
  * Copyright (C) 2016 Werner Koch
  *
  * This file is part of GnuPG.
@@ -25,9 +25,9 @@
 
 #include "util.h"
 #include "keyblob.h"
-#include "utils.h"
+#include "g13tuple.h"
 
-#define PGM "t-utils"
+#define PGM "t-g13tuple"
 
 static int verbose;
 static int debug;

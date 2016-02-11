@@ -32,7 +32,7 @@
 
 #include "keyblob.h"
 #include "backend.h"
-#include "utils.h"
+#include "g13tuple.h"
 #include "../common/sysutils.h"
 #include "../common/call-gpg.h"
 #include "mountinfo.h"

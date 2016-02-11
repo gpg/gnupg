@@ -29,7 +29,11 @@
 #include "g13.h"
 #include <assuan.h>
 #include "i18n.h"
-#include "utils.h"
+#include "g13tuple.h"
+#include "keyblob.h"
+#include "membuf.h"
+#include "create.h"
+
 
 /* Local data for this module.  A pointer to this is stored in the
    CTRL object of each connection.  */

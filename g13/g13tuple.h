@@ -1,4 +1,4 @@
-/* utils.h - Defs for utility fucthe dispatcher to the various backends.ntions
+/* g13tuple.h - Tuple handling
  * Copyright (C) 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef G13_UTILS_H
-#define G13_UTILS_H
+#ifndef G13_G13TUPLE_H
+#define G13_G13TUPLE_H
 
 #include "../common/membuf.h"
 
@@ -44,4 +44,4 @@ const void *next_tuple (tupledesc_t tupledesc,
                         unsigned int *r_tag, size_t *r_length);
 
 
-#endif /*G13_UTILS_H*/
+#endif /*G13_G13TUPLE_H*/

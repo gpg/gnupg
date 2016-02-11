@@ -1,4 +1,4 @@
-/* utils.c - Utility functions
+/* g13tuple.c - Tuple handling
  * Copyright (C) 2009 Free Software Foundation, Inc.
  * Copyright (C) 2009, 2015, 2016  Werner Koch
  *
@@ -26,7 +26,7 @@
 #include <assert.h>
 
 #include "g13.h"
-#include "utils.h"
+#include "g13tuple.h"
 
 
 /* Definition of the tuple descriptor object.  */
