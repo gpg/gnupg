@@ -22,8 +22,6 @@
 #ifndef G10_KEYDB_H
 #define G10_KEYDB_H
 
-#include <assuan.h>
-
 #include "types.h"
 #include "util.h"
 #include "packet.h"
@@ -248,8 +246,6 @@ gpg_error_t build_sk_list (ctrl_t ctrl, strlist_t locusr,
 
 /*-- passphrase.h --*/
 unsigned char encode_s2k_iterations (int iterations);
-assuan_context_t agent_open (int try, const char *orig_codeset);
-void agent_close (assuan_context_t ctx);
 int  have_static_passphrase(void);
 const char *get_static_passphrase (void);
 void set_passphrase_from_string(const char *pass);
