@@ -43,5 +43,7 @@ gpg_error_t find_tuple_uint (tupledesc_t tupledesc, unsigned int tag,
 const void *next_tuple (tupledesc_t tupledesc,
                         unsigned int *r_tag, size_t *r_length);
 
+void dump_tupledesc (tupledesc_t tuples);
+
 
 #endif /*G13_G13TUPLE_H*/

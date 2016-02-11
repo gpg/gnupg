@@ -210,32 +210,6 @@ decrypt_keyblob (ctrl_t ctrl, const void *enckeyblob, size_t enckeybloblen,
 }
 
 
-static void
-dump_keyblob (tupledesc_t tuples)
-{
-  size_t n;
-  unsigned int tag;
-  const void *value;
-
-  log_info ("keyblob dump:\n");
-  tag = KEYBLOB_TAG_BLOBVERSION;
-  value = find_tuple (tuples, tag, &n);
-  while (value)
-    {
-      log_info ("   tag: %-5u len: %-2u value: ", tag, (unsigned int)n);
-      if (tag == KEYBLOB_TAG_ENCKEY
-          ||  tag == KEYBLOB_TAG_MACKEY)
-        log_printf ("[confidential]\n");
-      else if (!n)
-        log_printf ("[none]\n");
-      else
-        log_printhex ("", value, n);
-      value = next_tuple (tuples, &tag, &n);
-    }
-}
-
-
-
 /* Mount the container with name FILENAME at MOUNTPOINT.  */
 gpg_error_t
 g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
@@ -323,7 +297,7 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
       goto leave;
     }
   if (opt.verbose)
-    dump_keyblob (tuples);
+    dump_tupledesc (tuples);
 
   value = find_tuple (tuples, KEYBLOB_TAG_CONTTYPE, &n);
   if (!value || n != 2)

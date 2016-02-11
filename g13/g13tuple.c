@@ -27,6 +27,7 @@
 
 #include "g13.h"
 #include "g13tuple.h"
+#include "keyblob.h"  /* Required for dump_tupledesc.  */
 
 
 /* Definition of the tuple descriptor object.  */
@@ -183,21 +184,14 @@ find_tuple (tupledesc_t tupledesc, unsigned int tag, size_t *r_length)
 }
 
 
-/* Similar to find-tuple but expects an unsigned int value and stores
- * that at R_VALUE.  If the tag was not found GPG_ERR_NOT_FOUND is
- * returned and 0 stored at R_VALUE.  If the value cannot be converted
- * to an unsigned integer GPG_ERR_ERANGE is returned.  */
-gpg_error_t
-find_tuple_uint (tupledesc_t tupledesc, unsigned int tag,
-                 unsigned long long *r_value)
+/* Helper for find_tuple_uint and others.  */
+static gpg_error_t
+convert_uint (const unsigned char *s, size_t n, unsigned long long *r_value)
 {
-  const unsigned char *s;
-  size_t n;
   unsigned long long value = 0;
 
   *r_value = 0;
 
-  s = find_tuple (tupledesc, tag, &n);
   if (!s)
     return gpg_error (GPG_ERR_NOT_FOUND);
   if (!n || (*s & 0x80)) /* No bytes or negative.  */
@@ -214,9 +208,24 @@ find_tuple_uint (tupledesc_t tupledesc, unsigned int tag,
       value <<= 8;
       value |= *s;
     }
-
   *r_value = value;
   return 0;
+}
+
+
+/* Similar to find-tuple but expects an unsigned int value and stores
+ * that at R_VALUE.  If the tag was not found GPG_ERR_NOT_FOUND is
+ * returned and 0 stored at R_VALUE.  If the value cannot be converted
+ * to an unsigned integer GPG_ERR_ERANGE is returned.  */
+gpg_error_t
+find_tuple_uint (tupledesc_t tupledesc, unsigned int tag,
+                 unsigned long long *r_value)
+{
+  const unsigned char *s;
+  size_t n;
+
+  s = find_tuple (tupledesc, tag, &n);
+  return convert_uint (s, n, r_value);
 }
 
 
@@ -251,4 +260,69 @@ next_tuple (tupledesc_t tupledesc, unsigned int *r_tag, size_t *r_length)
     }
 
   return NULL;
+}
+
+
+/* Return true if BUF has only printable characters.  */
+static int
+all_printable (const void *buf, size_t buflen)
+{
+  const unsigned char *s;
+
+  for (s=buf ; buflen; s++, buflen--)
+    if (*s < 32 && *s > 126)
+      return 0;
+  return 1;
+}
+
+
+/* Print information about TUPLES to the log stream.  */
+void
+dump_tupledesc (tupledesc_t tuples)
+{
+  size_t n;
+  unsigned int tag;
+  const void *value;
+  unsigned long long uint;
+
+  log_info ("keyblob dump:\n");
+  tag = KEYBLOB_TAG_BLOBVERSION;
+  value = find_tuple (tuples, tag, &n);
+  while (value)
+    {
+      log_info ("   tag: %-5u len: %-2u value: ", tag, (unsigned int)n);
+      if (!n)
+        log_printf ("[none]\n");
+      else
+        {
+          switch (tag)
+            {
+            case KEYBLOB_TAG_ENCKEY:
+            case KEYBLOB_TAG_MACKEY:
+              log_printf ("[confidential]\n");
+              break;
+
+            case KEYBLOB_TAG_ALGOSTR:
+              if (n < 100 && all_printable (value, n))
+                log_printf ("%.*s\n", (int)n, (const char*)value);
+              else
+                log_printhex ("", value, n);
+              break;
+
+            case KEYBLOB_TAG_CONT_NSEC:
+            case KEYBLOB_TAG_ENC_NSEC:
+            case KEYBLOB_TAG_ENC_OFF:
+              if (!convert_uint (value, n, &uint))
+                log_printf ("%llu\n", uint);
+              else
+                log_printhex ("", value, n);
+              break;
+
+            default:
+              log_printhex ("", value, n);
+              break;
+            }
+        }
+      value = next_tuple (tuples, &tag, &n);
+    }
 }
