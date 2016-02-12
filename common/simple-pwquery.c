@@ -618,6 +618,7 @@ simple_query (const char *query)
   int fd = -1;
   int nread;
   char response[500];
+  int have = 0;
   int rc;
 
   rc = agent_open (&fd);
@@ -628,40 +629,78 @@ simple_query (const char *query)
   if (rc)
     goto leave;
 
-  /* get response */
-  nread = readline (fd, response, 499);
-  if (nread < 0)
+  while (1)
     {
-      rc = -nread;
-      goto leave;
-    }
-  if (nread < 3)
-    {
-      rc = SPWQ_PROTOCOL_ERROR;
-      goto leave;
-    }
+      if (! have || ! strchr (response, '\n'))
+        /* get response */
+        {
+          nread = readline (fd, &response[have],
+                            sizeof (response) - 1 /* NUL */ - have);
+          if (nread < 0)
+            {
+              rc = -nread;
+              goto leave;
+            }
+          have += nread;
+          if (have < 3)
+            {
+              rc = SPWQ_PROTOCOL_ERROR;
+              goto leave;
+            }
+          response[have] = 0;
+        }
 
-  if (response[0] == 'O' && response[1] == 'K')
-    /* OK, do nothing.  */;
-  else if ((nread > 7 && !memcmp (response, "ERR 111", 7)
-            && (response[7] == ' ' || response[7] == '\n') )
-           || ((nread > 4 && !memcmp (response, "ERR ", 4)
-                && (strtoul (response+4, NULL, 0) & 0xffff) == 99)) )
-    {
-      /* 111 is the old Assuan code for canceled which might still
-         be in use by old installations. 99 is GPG_ERR_CANCELED as
-         used by modern gpg-agents; 0xffff is used to mask out the
-         error source.  */
+      if (response[0] == 'O' && response[1] == 'K')
+        /* OK, do nothing.  */;
+      else if ((nread > 7 && !memcmp (response, "ERR 111", 7)
+                && (response[7] == ' ' || response[7] == '\n') )
+               || ((nread > 4 && !memcmp (response, "ERR ", 4)
+                    && (strtoul (response+4, NULL, 0) & 0xffff) == 99)) )
+        {
+          /* 111 is the old Assuan code for canceled which might still
+             be in use by old installations. 99 is GPG_ERR_CANCELED as
+             used by modern gpg-agents; 0xffff is used to mask out the
+             error source.  */
 #ifdef SPWQ_USE_LOGGING
-      log_info (_("canceled by user\n") );
+          log_info (_("canceled by user\n") );
 #endif
-    }
-  else
-    {
+        }
+      else if (response[0] == 'S' && response[1] == ' ')
+        {
+          char *nextline;
+          int consumed;
+
+          nextline = strchr (response, '\n');
+          if (! nextline)
+            /* Point to the NUL.  */
+            nextline = &response[have];
+          else
+            /* Move past the \n.  */
+            nextline ++;
+
+          consumed = (size_t) nextline - (size_t) response;
+
+          /* Skip any additional newlines.  */
+          while (consumed < have && response[consumed] == '\n')
+            consumed ++;
+
+          have -= consumed;
+
+          if (have)
+            memmove (response, &response[consumed], have + 1);
+
+          continue;
+        }
+      else
+        {
 #ifdef SPWQ_USE_LOGGING
-      log_error (_("problem with the agent\n"));
+          log_error (_("problem with the agent (unexpected response \"%s\"\n"),
+                     response);
 #endif
-      rc = SPWQ_ERR_RESPONSE;
+          rc = SPWQ_ERR_RESPONSE;
+        }
+
+      break;
     }
 
  leave:
