@@ -479,9 +479,10 @@ create_version_record (void)
 int
 tdbio_set_dbname( const char *new_dbname, int create, int *r_nofile)
 {
-    char *fname;
+    char *fname, *p;
     struct stat statbuf;
     static int initialized = 0;
+    int save_slash;
 
     if( !initialized ) {
 	atexit( cleanup );
@@ -514,68 +515,75 @@ tdbio_set_dbname( const char *new_dbname, int create, int *r_nofile)
     if (stat (fname, &statbuf) == 0 && statbuf.st_size > 0)
       /* OK, we have the valid trustdb.gpg already.  */
       return 0;
+    else if (!create)
+      {
+        *r_nofile = 1;
+        return 0;
+      }
+
+  /* Here comes: No valid trustdb.gpg AND CREATE==1 */
+
+    /*
+     * Make sure the directory exists.  This should be done before
+     * acquiring the lock, which assumes the existence of the directory.
+     */
+    p = strrchr( fname, DIRSEP_C );
+#if HAVE_W32_SYSTEM
+    {
+      /* Windows may either have a slash or a backslash.  Take
+         care of it.  */
+      char *pp = strrchr (fname, '/');
+      if (!p || pp > p)
+        p = pp;
+    }
+#endif /*HAVE_W32_SYSTEM*/
+    assert (p);
+    save_slash = *p;
+    *p = 0;
+    if ( access( fname, F_OK ) ) {
+        try_make_homedir( fname );
+        if (access (fname, F_OK ))
+          log_fatal (_("%s: directory does not exist!\n"), fname);
+    }
+    *p = save_slash;
 
     take_write_lock ();
 
     if( access( fname, R_OK ) ) {
+        FILE *fp;
+        TRUSTREC rec;
+        int rc;
+        mode_t oldmask;
+
         if( errno != ENOENT )
             log_fatal( _("can't access `%s': %s\n"), fname, strerror(errno) );
 
-	if (!create)
-          *r_nofile = 1;
-        else {
-	    FILE *fp;
-	    TRUSTREC rec;
-	    int rc;
-	    char *p = strrchr( fname, DIRSEP_C );
-	    mode_t oldmask;
-            int save_slash;
 
-#if HAVE_W32_SYSTEM
-            {
-              /* Windows may either have a slash or a backslash.  Take
-                 care of it.  */
-              char *pp = strrchr (fname, '/');
-              if (!p || pp > p)
-                p = pp;
-            }
-#endif /*HAVE_W32_SYSTEM*/
-	    assert (p);
-            save_slash = *p;
-	    *p = 0;
-	    if( access( fname, F_OK ) ) {
-		try_make_homedir( fname );
-                if (access (fname, F_OK ))
-                  log_fatal (_("%s: directory does not exist!\n"), fname);
-	    }
-	    *p = save_slash;
+        oldmask=umask(077);
+        if (is_secured_filename (fname)) {
+            fp = NULL;
+            errno = EPERM;
+        }
+        else
+            fp =fopen( fname, "wb" );
+        umask(oldmask);
+        if( !fp )
+            log_fatal( _("can't create `%s': %s\n"), fname, strerror(errno) );
+        fclose(fp);
+        db_fd = open( db_name, O_RDWR | MY_O_BINARY );
+        if( db_fd == -1 )
+            log_fatal( _("can't open `%s': %s\n"), db_name, strerror(errno) );
 
-	    oldmask=umask(077);
-            if (is_secured_filename (fname)) {
-                fp = NULL;
-                errno = EPERM;
-            }
-            else
-                fp =fopen( fname, "wb" );
-	    umask(oldmask);
-	    if( !fp )
-		log_fatal( _("can't create `%s': %s\n"), fname, strerror(errno) );
-	    fclose(fp);
-	    db_fd = open( db_name, O_RDWR | MY_O_BINARY );
-	    if( db_fd == -1 )
-		log_fatal( _("can't open `%s': %s\n"), db_name, strerror(errno) );
+        rc = create_version_record ();
+        if( rc )
+            log_fatal( _("%s: failed to create version record: %s"),
+                     fname, g10_errstr(rc));
+        /* and read again to check that we are okay */
+        if( tdbio_read_record( 0, &rec, RECTYPE_VER ) )
+            log_fatal( _("%s: invalid trustdb created\n"), db_name );
 
-            rc = create_version_record ();
-	    if( rc )
-		log_fatal( _("%s: failed to create version record: %s"),
-						   fname, g10_errstr(rc));
-	    /* and read again to check that we are okay */
-	    if( tdbio_read_record( 0, &rec, RECTYPE_VER ) )
-		log_fatal( _("%s: invalid trustdb created\n"), db_name );
-
-	    if( !opt.quiet )
-		log_info(_("%s: trustdb created\n"), db_name);
-	}
+        if( !opt.quiet )
+            log_info(_("%s: trustdb created\n"), db_name);
     }
 
     release_write_lock ();
