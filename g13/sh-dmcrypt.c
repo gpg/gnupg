@@ -45,7 +45,7 @@
 
 /* The length of the crypto setup area in sectors.  16 KiB is a nice
    multiple of a modern block size and should be sufficient for all
-   kind of extra public key encryption packet.  */
+   kind of extra public key encryption packets.  */
 #define SETUP_AREA_SECTORS 32  /* 16 KiB */
 
 /* The number of header block copies stored at the begin and end of
@@ -208,11 +208,14 @@ mk_setup_area_prefix (size_t *r_length)
 }
 
 
+/* Create a new g13 styloe DM-Crypt container on devoce DEVNAME.  */
 gpg_error_t
 sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname, estream_t devfp)
 {
   gpg_error_t err;
   char *header_space;
+  size_t header_space_size, header_space_used;
+  size_t paddinglen;
   char *targetname = NULL;
   size_t nread;
   char *p;
@@ -226,11 +229,14 @@ sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname, estream_t devfp)
   size_t keyblob_len;
   size_t n;
   const char *s;
+  unsigned char *packet;
+  int copy;
 
   if (!ctrl->devti)
     return gpg_error (GPG_ERR_INV_ARG);
 
-  header_space = xtrymalloc (HEADER_SECTORS * SECTOR_SIZE);
+  header_space_size = SETUP_AREA_SECTORS * SECTOR_SIZE;
+  header_space = xtrymalloc (header_space_size);
   if (!header_space)
     return gpg_error_from_syserror ();
 
@@ -248,7 +254,7 @@ sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname, estream_t devfp)
     append_tuple (&keyblob, KEYBLOB_TAG_CREATED, tbuf, strlen (tbuf));
   }
 
-  /* Rewind out stream.  */
+  /* Rewind device stream.  */
   if (es_fseeko (devfp, 0, SEEK_SET))
     {
       err = gpg_error_from_syserror ();
@@ -259,9 +265,9 @@ sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname, estream_t devfp)
   es_clearerr (devfp);
 
   /* Extra check that the device is empty.  */
-  if (es_read (devfp, header_space, HEADER_SECTORS * SECTOR_SIZE, &nread))
+  if (es_read (devfp, header_space, header_space_size, &nread))
     err = gpg_error_from_syserror ();
-  else if (nread != HEADER_SECTORS * SECTOR_SIZE)
+  else if (nread != header_space_size)
     err = gpg_error (GPG_ERR_TOO_SHORT);
   else
     err = 0;
@@ -302,7 +308,10 @@ sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname, estream_t devfp)
       err = gpg_error (GPG_ERR_TOO_SHORT);
       goto leave;
     }
+  append_tuple_uint (&keyblob, KEYBLOB_TAG_CONT_NSEC, nblocks);
   nblocks -= HEADER_SECTORS + FOOTER_SECTORS;
+  append_tuple_uint (&keyblob, KEYBLOB_TAG_ENC_NSEC, nblocks);
+  append_tuple_uint (&keyblob, KEYBLOB_TAG_ENC_OFF, HEADER_SECTORS);
 
   /* Device mapper needs a name for the device: Take it from the label
      or use "0".  */
@@ -349,6 +358,9 @@ sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname, estream_t devfp)
       goto leave;
     }
   append_tuple (&keyblob, KEYBLOB_TAG_HDRCOPY, p, n);
+  assert (n < header_space_size);
+  memcpy (header_space, p, n);
+  header_space_used = n;
 
   /* Turn the keyblob into a buffer and callback to encrypt it.  */
   keyblob_buf = get_membuf (&keyblob, &keyblob_len);
@@ -363,29 +375,133 @@ sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname, estream_t devfp)
       log_error ("encrypting the keyblob failed: %s\n", gpg_strerror (err));
       goto leave;
     }
+  log_debug ("plain setuparea=%p %zu bytes\n", keyblob_buf, keyblob_len);
   wipememory (keyblob_buf, keyblob_len);
   xfree (keyblob_buf);
   keyblob_buf = NULL;
 
-  /* Create the container.  */
-  /* { */
-  /*   const char *argv[3]; */
+  log_debug ("encry setuparea=%p %zu bytes\n", p, n);
+  if (n >= header_space_size || (header_space_used + n) >= header_space_size)
+    {
+      err = gpg_error (GPG_ERR_TOO_LARGE);
+      log_error ("setup area would overflow: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+  memcpy (header_space + header_space_used, p, n);
+  header_space_used += n;
 
-  /*   argv[0] = "create"; */
-  /*   argv[1] = targetname; */
-  /*   argv[2] = NULL; */
-  /*   err = sh_exec_tool ("/sbin/dmsetup", argv, table, &result, NULL); */
-  /* } */
-  /* if (err) */
-  /*   { */
-  /*     log_error ("error running dmsetup for '%s': %s\n", */
-  /*                devname, gpg_strerror (err)); */
-  /*     goto leave; */
-  /*   } */
-  /* log_debug ("dmsetup result: %s\n", result); */
+  /* Write the padding.  */
+  packet = header_space + header_space_used;
+  paddinglen = header_space_size - header_space_used;
+  if (paddinglen < 16)
+    {
+      err = gpg_error (GPG_ERR_TOO_LARGE);
+      log_error ("setup area too short for padding: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+  packet[0] = (0xc0|61); /* CTB for Private packet type 0x61.  */
+  packet[1] = 0xff;      /* 5 byte length packet, value 20.  */
+  packet[2] = (paddinglen-6) >> 24;
+  packet[3] = (paddinglen-6) >> 16;
+  packet[4] = (paddinglen-6) >> 8;
+  packet[5] = (paddinglen-6);
+  packet += 6;
+  paddinglen -= 6;
+  header_space_used += 6;
+  for ( ;paddinglen >= 10;
+        paddinglen -= 10, packet += 10, header_space_used += 10)
+    memcpy (packet, "GnuPG/PAD", 10);
+  for ( ;paddinglen; paddinglen--, packet++, header_space_used++)
+    *packet = 0;
+
+  if (header_space_used != header_space_size)
+    BUG ();
+
+  /* Create the container.  */
+  {
+    const char *argv[3];
+
+    argv[0] = "create";
+    argv[1] = targetname;
+    argv[2] = NULL;
+    log_debug ("now running \"dmsetup create %s\"\n", targetname);
+    log_debug ("  with table='%s'\"\n", table);
+    err = gnupg_exec_tool ("/sbin/dmsetup", argv, table, &result, NULL);
+  }
+  if (err)
+    {
+      log_error ("error running dmsetup for '%s': %s\n",
+                 devname, gpg_strerror (err));
+      goto leave;
+    }
+  if (result && *result)
+    log_debug ("dmsetup result: %s\n", result);
 
   /* Write the setup area.  */
+  if (es_fseeko (devfp, 0, SEEK_SET))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error seeking to begin of '%s': %s\n",
+                 devname, gpg_strerror (err));
+      goto leave;
+    }
+  es_clearerr (devfp);
 
+  for (copy = 0; copy < HEADER_SETUP_AREA_COPIES; copy++)
+    {
+      size_t nwritten;
+
+      if (es_write (devfp, header_space, header_space_size, &nwritten))
+        {
+          err = gpg_error_from_syserror ();
+          break;
+        }
+      else if (nwritten != header_space_size)
+        {
+          err = gpg_error (GPG_ERR_TOO_SHORT);
+          break;
+        }
+    }
+  if (err)
+    {
+      log_error ("error writing header space copy %d of '%s': %s\n",
+                 copy, devname, gpg_strerror (err));
+      goto leave;
+    }
+
+  if (es_fseeko (devfp,
+                 (- header_space_size * FOOTER_SETUP_AREA_COPIES), SEEK_END))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error seeking to end of '%s': %s\n",
+                 devname, gpg_strerror (err));
+      goto leave;
+    }
+  es_clearerr (devfp);
+
+  for (copy = 0; copy < FOOTER_SETUP_AREA_COPIES; copy++)
+    {
+      size_t nwritten;
+
+      if (es_write (devfp, header_space, header_space_size, &nwritten))
+        {
+          err = gpg_error_from_syserror ();
+          break;
+        }
+      else if (nwritten != header_space_size)
+        {
+          err = gpg_error (GPG_ERR_TOO_SHORT);
+          break;
+        }
+    }
+  if (!err && es_fflush (devfp))
+    err = gpg_error_from_syserror ();
+  if (err)
+    {
+      log_error ("error writing footer space copy %d of '%s': %s\n",
+                 copy, devname, gpg_strerror (err));
+      goto leave;
+    }
 
  leave:
   wipememory (hexkey, sizeof hexkey);
@@ -403,5 +519,168 @@ sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname, estream_t devfp)
   xfree (targetname);
   xfree (result);
   xfree (header_space);
+  return err;
+}
+
+
+/* Mount a DM-Crypt congtainer on device DEVNAME taking keys and other
+ * meta data from KEYBLOB.  */
+gpg_error_t
+sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
+                            tupledesc_t keyblob)
+{
+  gpg_error_t err;
+  char *targetname = NULL;
+  char hexkey[16*2+1];
+  char *table = NULL;
+  unsigned long long nblocks, nblocks2;
+  char *result = NULL;
+  size_t n;
+  const char *s;
+  const char *algostr;
+  size_t algostrlen;
+
+  if (!ctrl->devti)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  /* Check that the device is not yet used by device mapper. */
+  err = check_blockdev (devname);
+  if (err)
+    goto leave;
+
+  /* Compute the number of blocks and compare them to the value
+     provided as meta data.  */
+  err = sh_blockdev_getsz (devname, &nblocks);
+  if (err)
+    {
+      log_error ("error getting size of '%s': %s\n",
+                 devname, gpg_strerror (err));
+      goto leave;
+    }
+  err = find_tuple_uint (keyblob, KEYBLOB_TAG_CONT_NSEC, &nblocks2);
+  if (err)
+    {
+      log_error ("error getting size from keyblob: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+  if (nblocks != nblocks2)
+    {
+      log_error ("inconsistent size of container: expected==%llu got=%llu\n",
+                 nblocks2, nblocks);
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+  if (nblocks <= HEADER_SECTORS + MIN_ENCRYPTED_SPACE + FOOTER_SECTORS)
+    {
+      log_error ("device '%s' is too small (min=%d blocks)\n",
+                 devname,
+                 HEADER_SECTORS + MIN_ENCRYPTED_SPACE + FOOTER_SECTORS);
+      err = gpg_error (GPG_ERR_TOO_SHORT);
+      goto leave;
+    }
+  nblocks -= HEADER_SECTORS + FOOTER_SECTORS;
+  err = find_tuple_uint (keyblob, KEYBLOB_TAG_ENC_NSEC, &nblocks2);
+  if (err)
+    {
+      log_error ("error getting enc size from keyblob: %s\n",
+                 gpg_strerror (err));
+      goto leave;
+    }
+  if (nblocks != nblocks2)
+    {
+      log_error ("inconsistent size of enc data: expected==%llu got=%llu\n",
+                 nblocks2, nblocks);
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+  /* Check that the offset is consistent.  */
+  err = find_tuple_uint (keyblob, KEYBLOB_TAG_ENC_OFF, &nblocks2);
+  if (err)
+    {
+      log_error ("error getting enc offset from keyblob: %s\n",
+                 gpg_strerror (err));
+      goto leave;
+    }
+  if (nblocks2 != HEADER_SECTORS)
+    {
+      log_error ("inconsistent offset of enc data: expected==%llu got=%d\n",
+                 nblocks2, HEADER_SECTORS);
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+
+  /* Device mapper needs a name for the device: Take it from the label
+     or use "0".  */
+  targetname = strconcat ("g13-", ctrl->client.uname, "-",
+                          ctrl->devti->label? ctrl->devti->label : "0",
+                          NULL);
+  if (!targetname)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  /* Get the algorithm string.  */
+  algostr = find_tuple (keyblob, KEYBLOB_TAG_ALGOSTR, &algostrlen);
+  if (!algostr || algostrlen > 100)
+    {
+      log_error ("algo string not found in keyblob or too long\n");
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+
+  /* Get the key.  */
+  s = find_tuple (keyblob, KEYBLOB_TAG_ENCKEY, &n);
+  if (!s || n != 16)
+    {
+      if (!s)
+        log_error ("no key found in keyblob\n");
+      else
+        log_error ("unexpected size of key (%zu)\n", n);
+      err = gpg_error (GPG_ERR_INV_KEYLEN);
+      goto leave;
+    }
+  bin2hex (s, 16, hexkey);
+
+  /* Build dmcrypt table. */
+  table = es_bsprintf ("0 %llu crypt %.*s %s 0 %s %d",
+                       nblocks, (int)algostrlen, algostr,
+                       hexkey, devname, HEADER_SECTORS);
+  wipememory (hexkey, sizeof hexkey);
+  if (!table)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  /* Load the table.  */
+  {
+    const char *argv[3];
+
+    argv[0] = "create";
+    argv[1] = targetname;
+    argv[2] = NULL;
+    log_debug ("now running \"dmsetup create %s\"\n", targetname);
+    err = gnupg_exec_tool ("/sbin/dmsetup", argv, table, &result, NULL);
+  }
+  if (err)
+    {
+      log_error ("error running dmsetup for '%s': %s\n",
+                 devname, gpg_strerror (err));
+      goto leave;
+    }
+  if (result && *result)
+    log_debug ("dmsetup result: %s\n", result);
+
+
+ leave:
+  wipememory (hexkey, sizeof hexkey);
+  if (table)
+    {
+      wipememory (table, strlen (table));
+      xfree (table);
+    }
+  xfree (targetname);
+  xfree (result);
   return err;
 }

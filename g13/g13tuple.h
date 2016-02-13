@@ -36,6 +36,9 @@ gpg_error_t create_tupledesc (tupledesc_t *r_tupledesc,
                               void *data, size_t datalen);
 void destroy_tupledesc (tupledesc_t tupledesc);
 tupledesc_t ref_tupledesc (tupledesc_t tupledesc);
+#define unref_tupledesc(a) destroy_tupledesc ((a))
+const void *get_tupledesc_data (tupledesc_t tupledesc, size_t *r_datalen);
+
 const void *find_tuple (tupledesc_t tupledesc,
                         unsigned int tag, size_t *r_length);
 gpg_error_t find_tuple_uint (tupledesc_t tupledesc, unsigned int tag,

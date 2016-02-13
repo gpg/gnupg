@@ -20,8 +20,10 @@
 #ifndef G13_CREATE_H
 #define G13_CREATE_H
 
-gpg_error_t g13_create_container (ctrl_t ctrl, const char *filename,
-                                  strlist_t keys);
+gpg_error_t g13_encrypt_keyblob (ctrl_t ctrl,
+                                 void *keyblob, size_t keybloblen,
+                                 void **r_encblob, size_t *r_encbloblen);
+gpg_error_t g13_create_container (ctrl_t ctrl, const char *filename);
 
 
 #endif /*G13_CREATE_H*/

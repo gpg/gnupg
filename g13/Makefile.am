@@ -45,7 +45,8 @@ g13_SOURCES = \
 	runner.c runner.h \
 	backend.c backend.h \
 	be-encfs.c be-encfs.h \
-	be-truecrypt.c be-truecrypt.h
+	be-truecrypt.c be-truecrypt.h \
+	be-dmcrypt.c be-dmcrypt.h
 
 g13_LDADD = $(libcommonpth) \
 	$(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \

@@ -47,11 +47,14 @@ struct server_control_s
   /* Type of the current container.  See the CONTTYPE_ constants.  */
   int conttype;
 
+  strlist_t recipients; /* List of recipients.  */
+
 };
 
 
 /*-- g13.c --*/
 void g13_init_default_ctrl (ctrl_t ctrl);
 void g13_deinit_default_ctrl (ctrl_t ctrl);
+void g13_request_shutdown (void);
 
 #endif /*G13_H*/

@@ -172,8 +172,14 @@ cmd_device (assuan_context_t ctx, char *line)
   tab_item_t ti;
   estream_t fp = NULL;
 
-  /* strcpy (line, "/dev/sdb1"); /\* FIXME *\/ */
   line = skip_options (line);
+
+/* # warning hardwired to /dev/sdb1 ! */
+/*   if (strcmp (line, "/dev/sdb1")) */
+/*     { */
+/*       err = gpg_error (GPG_ERR_ENOENT); */
+/*       goto leave; */
+/*     } */
 
   /* Always close an open device stream of this session. */
   xfree (ctrl->server_local->devicename);
@@ -239,6 +245,81 @@ cmd_create (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
+  estream_t fp = NULL;
+
+  line = skip_options (line);
+  if (strcmp (line, "dm-crypt"))
+    {
+      err = set_error (GPG_ERR_INV_ARG, "Type must be \"dm-crypt\"");
+      goto leave;
+    }
+
+  if (!ctrl->server_local->devicename
+      || !ctrl->server_local->devicefp
+      || !ctrl->devti)
+    {
+      err = set_error (GPG_ERR_ENOENT, "No device has been set");
+      goto leave;
+    }
+
+  err = sh_is_empty_partition (ctrl->server_local->devicename);
+  if (err)
+    {
+      if (gpg_err_code (err) == GPG_ERR_FALSE)
+        err = gpg_error (GPG_ERR_CONFLICT);
+      err = assuan_set_error (ctx, err, "Partition is not empty");
+      goto leave;
+    }
+
+  /* We need a writeable stream to create the container.  */
+  fp = es_fopen (ctrl->server_local->devicename, "r+b");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error opening '%s': %s\n",
+                 ctrl->server_local->devicename, gpg_strerror (err));
+      goto leave;
+    }
+  if (es_setvbuf (fp, NULL, _IONBF, 0))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error setting '%s' to _IONBF: %s\n",
+                 ctrl->server_local->devicename, gpg_strerror (err));
+      goto leave;
+    }
+
+  err = sh_dmcrypt_create_container (ctrl,
+                                     ctrl->server_local->devicename,
+                                     fp);
+  if (es_fclose (fp))
+    {
+      gpg_error_t err2 = gpg_error_from_syserror ();
+      log_error ("error closing '%s': %s\n",
+                 ctrl->server_local->devicename, gpg_strerror (err2));
+      if (!err)
+        err = err2;
+    }
+  fp = NULL;
+
+ leave:
+  es_fclose (fp);
+  return leave_cmd (ctx, err);
+}
+
+
+static const char hlp_mount[] =
+  "MOUNT <type>\n"
+  "\n"
+  "Mount an encrypted partition on the current device.\n"
+  "<type> must be \"dm-crypt\" for now.";
+static gpg_error_t
+cmd_mount (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+  unsigned char *keyblob = NULL;
+  size_t keybloblen;
+  tupledesc_t tuples = NULL;
 
   line = skip_options (line);
 
@@ -257,23 +338,45 @@ cmd_create (assuan_context_t ctx, char *line)
     }
 
   err = sh_is_empty_partition (ctrl->server_local->devicename);
+  if (!err)
+    {
+      err = gpg_error (GPG_ERR_ENODEV);
+      assuan_set_error (ctx, err, "Partition is empty");
+      goto leave;
+    }
+  err = 0;
+
+  /* We expect that the client already decrypted the keyblob.
+   * Eventually we should move reading of the keyblob to here and ask
+   * the client to decrypt it.  */
+  assuan_begin_confidential (ctx);
+  err = assuan_inquire (ctx, "KEYBLOB",
+                        &keyblob, &keybloblen, 4 * 1024);
+  assuan_end_confidential (ctx);
   if (err)
     {
-      err = assuan_set_error (ctx, err, "Partition is not empty");
+      log_error (_("assuan_inquire failed: %s\n"), gpg_strerror (err));
+      goto leave;
+    }
+  err = create_tupledesc (&tuples, keyblob, keybloblen);
+  if (!err)
+    keyblob = NULL;
+  else
+    {
+      if (gpg_err_code (err) == GPG_ERR_NOT_SUPPORTED)
+        log_error ("unknown keyblob version received\n");
       goto leave;
     }
 
-  err = sh_dmcrypt_create_container (ctrl,
-                                     ctrl->server_local->devicename,
-                                     ctrl->server_local->devicefp);
-
-
-
+  err = sh_dmcrypt_mount_container (ctrl,
+                                    ctrl->server_local->devicename,
+                                    tuples);
 
  leave:
+  xfree (tuples);
+  destroy_tupledesc (tuples);
   return leave_cmd (ctx, err);
 }
-
 
 
 static const char hlp_getinfo[] =
@@ -372,6 +475,7 @@ register_commands (assuan_context_t ctx, int fail_all)
   } table[] =  {
     { "DEVICE",        cmd_device, hlp_device },
     { "CREATE",        cmd_create, hlp_create },
+    { "MOUNT",         cmd_mount,  hlp_mount  },
     { "INPUT",         NULL },
     { "OUTPUT",        NULL },
     { "GETINFO",       cmd_getinfo, hlp_getinfo },

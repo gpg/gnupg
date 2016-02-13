@@ -270,6 +270,10 @@ main ( int argc, char **argv)
                strerror (errno));
 
   opt.homedir = default_homedir ();
+  /* Fixme: We enable verbose mode here because there is currently no
+     way to do this when starting g13-syshelp.  To fix that we should
+     add a g13-syshelp.conf file in /etc/gnupg.  */
+  opt.verbose = 1;
 
   /* First check whether we have a debug option on the commandline.  */
   orig_argc = argc;

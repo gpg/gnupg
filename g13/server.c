@@ -45,8 +45,6 @@ struct server_local_s
   assuan_context_t assuan_ctx;
 
   char *containername;  /* Malloced active containername.  */
-
-  strlist_t recipients; /* List of recipients.  */
 };
 
 
@@ -194,7 +192,7 @@ reset_notify (assuan_context_t ctx, char *line)
   xfree (ctrl->server_local->containername);
   ctrl->server_local->containername = NULL;
 
-  FREE_STRLIST (ctrl->server_local->recipients);
+  FREE_STRLIST (ctrl->recipients);
 
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
@@ -372,7 +370,7 @@ cmd_recipient (assuan_context_t ctx, char *line)
 
   line = skip_options (line);
 
-  if (!add_to_strlist_try (&ctrl->server_local->recipients, line))
+  if (!add_to_strlist_try (&ctrl->recipients, line))
     err = gpg_error_from_syserror ();
 
   return leave_cmd (ctx, err);
@@ -438,11 +436,11 @@ cmd_create (assuan_context_t ctx, char *line)
     }
 
   /* Create container.  */
-  err = g13_create_container (ctrl, line, ctrl->server_local->recipients);
+  err = g13_create_container (ctrl, line);
 
   if (!err)
     {
-      FREE_STRLIST (ctrl->server_local->recipients);
+      FREE_STRLIST (ctrl->recipients);
 
       /* Store the filename.  */
       ctrl->server_local->containername = xtrystrdup (line);

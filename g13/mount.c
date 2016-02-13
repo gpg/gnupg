@@ -70,11 +70,8 @@ parse_header (const char *filename,
     log_info ("WARNING: unknown meta information in '%s'\n", filename);
   if (packet[19])
     log_info ("WARNING: OS flag is not supported in '%s'\n", filename);
-  if (packet[24] != 1 || packet[25] != 0)
-    {
-      log_error ("meta data copies in '%s' are not supported\n", filename);
-      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-    }
+  if (packet[24] > 1 )
+    log_info ("Note: meta data copies in '%s' are ignored\n", filename);
 
   len = buf32_to_uint (packet+20);
 
@@ -216,6 +213,7 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
 {
   gpg_error_t err;
   dotlock_t lock;
+  int needs_syshelp;
   void *enckeyblob = NULL;
   size_t enckeybloblen;
   void *keyblob = NULL;
@@ -230,6 +228,12 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   /* A quick check to see whether the container exists.  */
   if (access (filename, R_OK))
     return gpg_error_from_syserror ();
+
+  /* Decide whether we need to use the g13-syshelp because we can't
+     use lock files for them.  This is most likely the case for device
+     files; thus we test for this.  FIXME: The correct solution would
+     be to call g13-syshelp to match the file against the g13tab.  */
+  needs_syshelp = !strncmp (filename, "/dev/", 5);
 
   if (!mountpoint)
     {
@@ -247,21 +251,25 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
       mountpoint = mountpoint_buffer;
     }
 
-  /* Try to take a lock.  */
-  lock = dotlock_create (filename, 0);
-  if (!lock)
-    {
-      xfree (mountpoint_buffer);
-      return gpg_error_from_syserror ();
-    }
-
-  if (dotlock_take (lock, 0))
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
+  err = 0;
+  if (needs_syshelp)
+    lock = NULL;
   else
-    err = 0;
+    {
+      /* Try to take a lock.  */
+      lock = dotlock_create (filename, 0);
+      if (!lock)
+        {
+          xfree (mountpoint_buffer);
+          return gpg_error_from_syserror ();
+        }
+
+      if (dotlock_take (lock, 0))
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
 
   /* Check again that the file exists.  */
   {
@@ -275,6 +283,8 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   }
 
   /* Read the encrypted keyblob.  */
+  /* Fixme: Should we move this to syshelp for dm-crypt or do we
+     assume that the encrypted device is world readable?  */
   err = read_keyblob (filename, &enckeyblob, &enckeybloblen);
   if (err)
     goto leave;
@@ -311,8 +321,15 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
       goto leave;
     }
   err = be_mount_container (ctrl, conttype, filename, mountpoint, tuples, &rid);
-  if (!err)
+  if (err)
+    ;
+  else if (conttype == CONTTYPE_DM_CRYPT)
+    g13_request_shutdown ();
+  else
     {
+      /* Unless this is a DM-CRYPT mount we put it into our mounttable
+         so that we can manage the mounts ourselves.  For dm-crypt we
+         do not keep a process to monitor he mounts (for now).  */
       err = mountinfo_add_mount (filename, mountpoint, conttype, rid,
                                  !!mountpoint_buffer);
       /* Fixme: What shall we do if this fails?  Add a provisional

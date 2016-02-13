@@ -31,13 +31,15 @@
 #include "backend.h"
 #include "be-encfs.h"
 #include "be-truecrypt.h"
+#include "be-dmcrypt.h"
+#include "call-syshelp.h"
 
-
+#define no_such_backend(a) _no_such_backend ((a), __func__)
 static gpg_error_t
-no_such_backend (int conttype)
+_no_such_backend (int conttype, const char *func)
 {
-  log_error ("invalid backend %d given - this is most likely a bug\n",
-             conttype);
+  log_error ("invalid backend %d given in %s - this is most likely a bug\n",
+             conttype, func);
   return gpg_error (GPG_ERR_INTERNAL);
 }
 
@@ -81,6 +83,7 @@ be_is_supported_conttype (int conttype)
   switch (conttype)
     {
     case CONTTYPE_ENCFS:
+    case CONTTYPE_DM_CRYPT:
       return 1;
 
     default:
@@ -106,7 +109,7 @@ be_take_lock_for_create (ctrl_t ctrl, const char *fname, dotlock_t *r_lock)
   if (ctrl->conttype == CONTTYPE_DM_CRYPT)
     {
       /*  */
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      err = call_syshelp_set_device (ctrl, fname);
       goto leave;
     }
 
@@ -186,6 +189,9 @@ be_create_new_keys (int conttype, membuf_t *mb)
     case CONTTYPE_TRUECRYPT:
       return be_truecrypt_create_new_keys (mb);
 
+    case CONTTYPE_DM_CRYPT:
+      return 0;
+
     default:
       return no_such_backend (conttype);
     }
@@ -205,6 +211,9 @@ be_create_container (ctrl_t ctrl, int conttype,
     case CONTTYPE_ENCFS:
       return be_encfs_create_container (ctrl, fname, tuples, r_id);
 
+    case CONTTYPE_DM_CRYPT:
+      return be_dmcrypt_create_container (ctrl);
+
     default:
       return no_such_backend (conttype);
     }
@@ -221,6 +230,9 @@ be_mount_container (ctrl_t ctrl, int conttype,
     {
     case CONTTYPE_ENCFS:
       return be_encfs_mount_container (ctrl, fname, mountpoint, tuples, r_id);
+
+    case CONTTYPE_DM_CRYPT:
+      return be_dmcrypt_mount_container (ctrl, fname, mountpoint, tuples);
 
     default:
       return no_such_backend (conttype);

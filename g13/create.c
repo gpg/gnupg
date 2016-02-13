@@ -103,17 +103,16 @@ create_new_keyblob (ctrl_t ctrl, int is_detached,
    CTRL the result is a single OpenPGP binary message, a single
    special OpenPGP packet encapsulating a CMS message or a
    concatenation of both with the CMS packet being the last.  */
-static gpg_error_t
-encrypt_keyblob (ctrl_t ctrl, void *keyblob, size_t keybloblen,
-                 strlist_t keys,
-                 void **r_encblob, size_t *r_encbloblen)
+gpg_error_t
+g13_encrypt_keyblob (ctrl_t ctrl, void *keyblob, size_t keybloblen,
+                     void **r_encblob, size_t *r_encbloblen)
 {
   gpg_error_t err;
 
   /* FIXME:  For now we only implement OpenPGP.  */
   err = gpg_encrypt_blob (ctrl, opt.gpg_program, opt.gpg_arguments,
                           keyblob, keybloblen,
-                          keys,
+                          ctrl->recipients,
                           r_encblob, r_encbloblen);
 
   return err;
@@ -219,11 +218,10 @@ write_keyblob (const char *filename,
 
 
 /* Create a new container under the name FILENAME and intialize it
-   using the current settings.  KEYS is a list of public keys to which
-   the container will be encrypted.  If the file already exists an
-   error is returned.  */
+   using the current settings.  If the file already exists an error is
+   returned.  */
 gpg_error_t
-g13_create_container (ctrl_t ctrl, const char *filename, strlist_t keys)
+g13_create_container (ctrl_t ctrl, const char *filename)
 {
   gpg_error_t err;
   dotlock_t lock;
@@ -236,7 +234,7 @@ g13_create_container (ctrl_t ctrl, const char *filename, strlist_t keys)
   tupledesc_t tuples = NULL;
   unsigned int dummy_rid;
 
-  if (!keys)
+  if (!ctrl->recipients)
     return gpg_error (GPG_ERR_NO_PUBKEY);
 
   err = be_take_lock_for_create (ctrl, filename, &lock);
@@ -259,29 +257,32 @@ g13_create_container (ctrl_t ctrl, const char *filename, strlist_t keys)
         }
     }
 
-  /* Create a new keyblob.  */
-  err = create_new_keyblob (ctrl, !!detachedname, &keyblob, &keybloblen);
-  if (err)
-    goto leave;
+  if (ctrl->conttype != CONTTYPE_DM_CRYPT)
+    {
+      /* Create a new keyblob.  */
+      err = create_new_keyblob (ctrl, !!detachedname, &keyblob, &keybloblen);
+      if (err)
+        goto leave;
 
-  /* Encrypt that keyblob.  */
-  err = encrypt_keyblob (ctrl, keyblob, keybloblen, keys,
-                         &enckeyblob, &enckeybloblen);
-  if (err)
-    goto leave;
+      /* Encrypt that keyblob.  */
+      err = g13_encrypt_keyblob (ctrl, keyblob, keybloblen,
+                                 &enckeyblob, &enckeybloblen);
+      if (err)
+        goto leave;
 
-  /* Put a copy of the keyblob into a tuple structure.  */
-  err = create_tupledesc (&tuples, keyblob, keybloblen);
-  if (err)
-    goto leave;
-  keyblob = NULL;
-  /* if (opt.verbose) */
-  /*   dump_keyblob (tuples); */
+      /* Put a copy of the keyblob into a tuple structure.  */
+      err = create_tupledesc (&tuples, keyblob, keybloblen);
+      if (err)
+        goto leave;
+      keyblob = NULL;
+      /* if (opt.verbose) */
+      /*   dump_keyblob (tuples); */
 
-  /* Write out the header, the encrypted keyblob and some padding. */
-  err = write_keyblob (filename, enckeyblob, enckeybloblen);
-  if (err)
-    goto leave;
+      /* Write out the header, the encrypted keyblob and some padding. */
+      err = write_keyblob (filename, enckeyblob, enckeybloblen);
+      if (err)
+        goto leave;
+    }
 
   /* Create and append the container.  FIXME: We should pass the
      estream object in addition to the filename, so that the backend

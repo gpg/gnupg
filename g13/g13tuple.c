@@ -143,6 +143,18 @@ ref_tupledesc (tupledesc_t tupledesc)
 }
 
 
+/* Return a pointer to the memory used to store the tuples.  This is
+ * the data originally provided to create_tupledesc.  It is higly
+ * recommended that the callers uses ref_tupledesc before calling this
+ * function and unref_tupledesc when the return data will not anymore
+ * be used.  */
+const void *
+get_tupledesc_data (tupledesc_t tupledesc, size_t *r_datalen)
+{
+  *r_datalen = tupledesc->datalen;
+  return tupledesc->data;
+}
+
 /* Find the first tuple with tag TAG.  On success return a pointer to
    its value and store the length of the value at R_LENGTH.  If no
    tuple was found return NULL.  For use by next_tuple, the last

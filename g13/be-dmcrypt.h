@@ -1,4 +1,4 @@
-/* call-syshelp.h - Communication with g13-syshelp
+/* be-dmcrypt.h - Public defs for the DM-Crypt based backend
  * Copyright (C) 2015 Werner Koch
  *
  * This file is part of GnuPG.
@@ -17,17 +17,16 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GNUPG_G13_CALL_SYSHELP_H
-#define GNUPG_G13_CALL_SYSHELP_H
+#ifndef G13_BE_DMCRYPT_H
+#define G13_BE_DMCRYPT_H
 
-#include "g13tuple.h"
+#include "backend.h"
 
-void call_syshelp_release (ctrl_t ctrl);
-gpg_error_t call_syshelp_set_device (ctrl_t ctrl, const char *fname);
-gpg_error_t call_syshelp_run_create (ctrl_t ctrl, int conttype);
-gpg_error_t call_syshelp_run_mount (ctrl_t ctrl, int conttype,
-                                    const char *mountpoint,
-                                    tupledesc_t tuples);
+gpg_error_t be_dmcrypt_create_container (ctrl_t ctrl);
+gpg_error_t be_dmcrypt_mount_container (ctrl_t ctrl,
+                                        const char *fname,
+                                        const char *mountpoint,
+                                        tupledesc_t tuples);
 
 
-#endif /*GNUPG_G13_CALL_SYSHELP_H*/
+#endif /*G13_BE_DMCRYPT_H*/

@@ -459,7 +459,7 @@ main ( int argc, char **argv)
           if (default_config)
             {
               if (parse_debug)
-                log_info (_("NOTE: no default option file '%s'\n"), configname);
+                log_info (_("Note: no default option file '%s'\n"), configname);
             }
           else
             {
@@ -625,6 +625,8 @@ main ( int argc, char **argv)
   /* Now that we have the options parsed we need to update the default
      control structure.  */
   g13_init_default_ctrl (&ctrl);
+  ctrl.recipients = recipients;
+  recipients = NULL;
 
   if (nogreeting)
     greeting = 0;
@@ -646,7 +648,7 @@ main ( int argc, char **argv)
 
       for (i=0; i < argc; i++)
         if (argv[i][0] == '-' && argv[i][1] == '-')
-          log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
+          log_info (_("Note: '%s' is not considered an option\n"), argv[i]);
     }
 
 
@@ -698,7 +700,7 @@ main ( int argc, char **argv)
       strlist_t sl;
       int failed = 0;
 
-      for (sl = recipients; sl; sl = sl->next)
+      for (sl = ctrl->recipients; sl; sl = sl->next)
         if (check_encryption_key ())
           failed = 1;
       if (failed)
@@ -738,7 +740,7 @@ main ( int argc, char **argv)
           log_error ("server exited with error: %s <%s>\n",
                      gpg_strerror (err), gpg_strsource (err));
         else
-          shutdown_pending++;
+          g13_request_shutdown ();
       }
       break;
 
@@ -747,12 +749,12 @@ main ( int argc, char **argv)
         if (argc != 1)
           wrong_args ("--create filename");
         start_idle_task ();
-        err = g13_create_container (&ctrl, argv[0], recipients);
+        err = g13_create_container (&ctrl, argv[0]);
         if (err)
           log_error ("error creating a new container: %s <%s>\n",
                      gpg_strerror (err), gpg_strsource (err));
         else
-          shutdown_pending++;
+          g13_request_shutdown ();
       }
       break;
 
@@ -797,6 +799,16 @@ void
 g13_deinit_default_ctrl (ctrl_t ctrl)
 {
   call_syshelp_release (ctrl);
+  FREE_STRLIST (ctrl->recipients);
+}
+
+
+/* Request a shutdown.  This can be used when the process should
+ * finish instead of running the idle task.  */
+void
+g13_request_shutdown (void)
+{
+  shutdown_pending++;
 }
 
 
@@ -932,9 +944,11 @@ idle_task (void *dummy_arg)
 	}
 
       if (ret <= 0)
-	/* Interrupt or timeout.  Will be handled when calculating the
-	   next timeout.  */
-	continue;
+        {
+          /* Interrupt or timeout.  Will be handled when calculating the
+             next timeout.  */
+          continue;
+        }
 
       /* Here one would add processing of file descriptors.  */
     }

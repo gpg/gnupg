@@ -21,7 +21,7 @@
 #define G13_SYSHELP_H
 
 #include "g13-common.h"
-
+#include "g13tuple.h"
 
 struct tab_item_s;
 typedef struct tab_item_s *tab_item_t;
@@ -83,6 +83,8 @@ gpg_error_t sh_is_empty_partition (const char *name);
 /*-- sh-dmcrypt.c --*/
 gpg_error_t sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname,
                                          estream_t devfp);
+gpg_error_t sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
+                                        tupledesc_t keyblob);
 
 
 #endif /*G13_SYSHELP_H*/
