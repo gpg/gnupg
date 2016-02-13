@@ -577,6 +577,27 @@ release_tab_items (tab_item_t tab)
 }
 
 
+void
+g13_syshelp_i_know_what_i_am_doing (void)
+{
+  const char * const yesfile = "Yes-g13-I-know-what-I-am-doing";
+  char *fname;
+
+  fname = make_filename (gnupg_sysconfdir (), yesfile, NULL);
+  if (access (fname, F_OK))
+    {
+      log_info ("*******************************************************\n");
+      log_info ("* The G13 support for DM-Crypt is new and not matured.\n");
+      log_info ("* Bugs or improper use may delete all your disks!\n");
+      log_info ("* To confirm that you are ware of this risk, create\n");
+      log_info ("* the file '%s'.\n", fname);
+      log_info ("*******************************************************\n");
+      exit (1);
+    }
+  xfree (fname);
+}
+
+
 /* Parse the /etc/gnupg/g13tab for user USERNAME.  Return a table for
    the user on success.  Return NULL on error and print
    diagnostics. */

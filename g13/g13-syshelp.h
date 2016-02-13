@@ -69,6 +69,7 @@ struct server_control_s
 
 /*-- g13-syshelp.c --*/
 void g13_syshelp_init_default_ctrl (struct server_control_s *ctrl);
+void g13_syshelp_i_know_what_i_am_doing (void);
 
 /*-- sh-cmd.c --*/
 gpg_error_t syshelp_server (ctrl_t ctrl);

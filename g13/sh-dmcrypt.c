@@ -1,5 +1,5 @@
 /* sh-dmcrypt.c - The DM-Crypt part for g13-syshelp
- * Copyright (C) 2015 Werner Koch
+ * Copyright (C) 2015, 2016 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -234,6 +234,8 @@ sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname, estream_t devfp)
 
   if (!ctrl->devti)
     return gpg_error (GPG_ERR_INV_ARG);
+
+  g13_syshelp_i_know_what_i_am_doing ();
 
   header_space_size = SETUP_AREA_SECTORS * SECTOR_SIZE;
   header_space = xtrymalloc (header_space_size);
@@ -542,6 +544,8 @@ sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
 
   if (!ctrl->devti)
     return gpg_error (GPG_ERR_INV_ARG);
+
+  g13_syshelp_i_know_what_i_am_doing ();
 
   /* Check that the device is not yet used by device mapper. */
   err = check_blockdev (devname);
