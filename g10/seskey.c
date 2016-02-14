@@ -32,10 +32,10 @@
 
 
 /* Generate a new session key in *DEK that is appropriate for the
-   algorithm DEK->ALGO (i.e., ensure that the key is not weak).
-
-   This function overwrites DEK->KEYLEN, DEK->KEY.  The rest of the
-   fields are left as is.  */
+ * algorithm DEK->ALGO (i.e., ensure that the key is not weak).
+ *
+ * This function overwrites DEK->KEYLEN, DEK->KEY.  The rest of the
+ * fields are left as is.  */
 void
 make_session_key( DEK *dek )
 {
@@ -70,11 +70,11 @@ make_session_key( DEK *dek )
 
 
 /* Encode the session key stored in DEK as an MPI in preparation to
-   encrypt it with the public key algorithm OPENPGP_PK_ALGO with a key
-   whose length (the size of the public key) is NBITS.
-
-   On success, returns an MPI, which the caller must free using
-   gcry_mpi_release().  */
+ * encrypt it with the public key algorithm OPENPGP_PK_ALGO with a key
+ * whose length (the size of the public key) is NBITS.
+ *
+ * On success, returns an MPI, which the caller must free using
+ * gcry_mpi_release().  */
 gcry_mpi_t
 encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
 {
