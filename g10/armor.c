@@ -796,6 +796,24 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		}
 	    }
 
+            /* Occasionally a bug MTA will leave the = escaped as
+               =3D.  If the 4 characters following that are valid
+               Radix64 characters and they are following by a new
+               line, assume that this is the case and skip the
+               3D.  */
+            if (afx->buffer_pos + 6 < afx->buffer_len
+                && afx->buffer[afx->buffer_pos + 0] == '3'
+                && afx->buffer[afx->buffer_pos + 1] == 'D'
+                && asctobin[afx->buffer[afx->buffer_pos + 2]] != 255
+                && asctobin[afx->buffer[afx->buffer_pos + 3]] != 255
+                && asctobin[afx->buffer[afx->buffer_pos + 4]] != 255
+                && asctobin[afx->buffer[afx->buffer_pos + 5]] != 255
+                && afx->buffer[afx->buffer_pos + 6] == '\n')
+              {
+                afx->buffer_pos += 2;
+                afx->qp_detected = 1;
+              }
+
 	    if (!n)
 	      onlypad = 1;
 
