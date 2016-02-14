@@ -280,12 +280,14 @@ void show_basic_key_info (KBNODE keyblock);
 u32 parse_expire_string(const char *string);
 u32 ask_expire_interval(int object,const char *def_expire);
 u32 ask_expiredate(void);
+unsigned int ask_key_flags (int algo, int subkey, unsigned int current);
 void quick_generate_keypair (ctrl_t ctrl, const char *uid);
 void generate_keypair (ctrl_t ctrl, int full, const char *fname,
                        const char *card_serialno, int card_backup_key);
 int keygen_set_std_prefs (const char *string,int personal);
 PKT_user_id *keygen_get_std_prefs (void);
 int keygen_add_key_expire( PKT_signature *sig, void *opaque );
+int keygen_add_key_flags (PKT_signature *sig, void *opaque);
 int keygen_add_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_upd_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_add_keyserver_url(PKT_signature *sig, void *opaque);

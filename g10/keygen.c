@@ -252,6 +252,18 @@ keygen_add_key_expire (PKT_signature *sig, void *opaque)
 }
 
 
+/* Add the key usage (i.e. key flags) in SIG from the public keys
+ * pubkey_usage field.  OPAQUE has the public key.  */
+int
+keygen_add_key_flags (PKT_signature *sig, void *opaque)
+{
+  PKT_public_key *pk = opaque;
+
+  do_add_key_flags (sig, pk->pubkey_usage);
+  return 0;
+}
+
+
 static int
 keygen_add_key_flags_and_expire (PKT_signature *sig, void *opaque)
 {
@@ -1646,9 +1658,10 @@ print_key_flags(int flags)
 }
 
 
-/* Returns the key flags */
-static unsigned int
-ask_key_flags(int algo,int subkey)
+/* Ask for the key flags and return them.  CURRENT gives the curren
+ * usage which should normally be given as 0. */
+unsigned int
+ask_key_flags (int algo, int subkey, unsigned int current)
 {
   /* TRANSLATORS: Please use only plain ASCII characters for the
      translation.  If this is not possible use single digits.  The
@@ -1663,7 +1676,6 @@ ask_key_flags(int algo,int subkey)
   const char *togglers=_("SsEeAaQq");
   char *answer=NULL;
   const char *s;
-  unsigned int current=0;
   unsigned int possible=openpgp_pk_algo_usage(algo);
 
   if ( strlen(togglers) != 8 )
@@ -1678,8 +1690,12 @@ ask_key_flags(int algo,int subkey)
     possible&=~PUBKEY_USAGE_CERT;
 
   /* Preload the current set with the possible set, minus
-     authentication, since nobody really uses auth yet. */
-  current=possible&~PUBKEY_USAGE_AUTH;
+     authentication if CURRENT has been given as 0.  If CURRENT has
+     been has non-zero we mask with all possible usages. */
+  if (current)
+    current &= possible;
+  else
+    current = (possible&~PUBKEY_USAGE_AUTH);
 
   for(;;)
     {
@@ -1922,13 +1938,13 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
       else if ((algo == 7 || !strcmp (answer, "dsa/*")) && opt.expert)
         {
           algo = PUBKEY_ALGO_DSA;
-          *r_usage = ask_key_flags (algo, addmode);
+          *r_usage = ask_key_flags (algo, addmode, 0);
           break;
 	}
       else if ((algo == 8 || !strcmp (answer, "rsa/*")) && opt.expert)
         {
           algo = PUBKEY_ALGO_RSA;
-          *r_usage = ask_key_flags (algo, addmode);
+          *r_usage = ask_key_flags (algo, addmode, 0);
           break;
 	}
       else if ((algo == 9 || !strcmp (answer, "ecc+ecc"))
@@ -1947,7 +1963,7 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
       else if ((algo == 11 || !strcmp (answer, "ecc/*")) && opt.expert)
         {
           algo = PUBKEY_ALGO_ECDSA;
-          *r_usage = ask_key_flags (algo, addmode);
+          *r_usage = ask_key_flags (algo, addmode, 0);
           break;
 	}
       else if ((algo == 12 || !strcmp (answer, "ecc/e"))
@@ -1985,7 +2001,7 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
           xfree (keygrip);
           keygrip = answer;
           answer = NULL;
-          *r_usage = ask_key_flags (algo, addmode);
+          *r_usage = ask_key_flags (algo, addmode, 0);
           break;
 	}
       else

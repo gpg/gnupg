@@ -70,6 +70,7 @@ static int menu_clean (KBNODE keyblock, int self_only);
 static void menu_delkey (KBNODE pub_keyblock);
 static int menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive);
 static int menu_expire (KBNODE pub_keyblock);
+static int menu_changeusage (kbnode_t keyblock);
 static int menu_backsign (KBNODE pub_keyblock);
 static int menu_set_primary_uid (KBNODE pub_keyblock);
 static int menu_set_preferences (KBNODE pub_keyblock);
@@ -1362,7 +1363,7 @@ enum cmdids
   cmdREVSIG, cmdREVKEY, cmdREVUID, cmdDELSIG, cmdPRIMARY, cmdDEBUG,
   cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID, cmdADDKEY, cmdDELKEY,
   cmdADDREVOKER, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
-  cmdEXPIRE, cmdBACKSIGN,
+  cmdEXPIRE, cmdCHANGEUSAGE, cmdBACKSIGN,
 #ifndef NO_TRUST_MODELS
   cmdENABLEKEY, cmdDISABLEKEY,
 #endif /*!NO_TRUST_MODELS*/
@@ -1393,6 +1394,7 @@ static struct
   { "key", cmdSELKEY, 0, N_("select subkey N")},
   { "check", cmdCHECK, 0, N_("check signatures")},
   { "c", cmdCHECK, 0, NULL},
+  { "change-usage", cmdCHANGEUSAGE, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK, NULL},
   { "cross-certify", cmdBACKSIGN, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK, NULL},
   { "backsign", cmdBACKSIGN, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK, NULL},
   { "sign", cmdSIGN, KEYEDIT_NOT_SK | KEYEDIT_TAIL_MATCH,
@@ -2117,6 +2119,15 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    {
 	      merge_keys_and_selfsig (keyblock);
               run_subkey_warnings = 1;
+	      modified = 1;
+	      redisplay = 1;
+	    }
+	  break;
+
+	case cmdCHANGEUSAGE:
+	  if (menu_changeusage (keyblock))
+	    {
+	      merge_keys_and_selfsig (keyblock);
 	      modified = 1;
 	      redisplay = 1;
 	    }
@@ -4106,6 +4117,112 @@ menu_expire (KBNODE pub_keyblock)
     }
 
   update_trust = 1;
+  return 1;
+}
+
+
+/* Change the capability of a selected key.  This command should only
+ * be used to rectify badly created keys and as such is not suggested
+ * for general use.  */
+static int
+menu_changeusage (kbnode_t keyblock)
+{
+  int n1, rc;
+  int mainkey = 0;
+  PKT_public_key *main_pk, *sub_pk;
+  PKT_user_id *uid;
+  kbnode_t node;
+  u32 keyid[2];
+
+  n1 = count_selected_keys (keyblock);
+  if (n1 > 1)
+    {
+      tty_printf (_("You must select exactly one key.\n"));
+      return 0;
+    }
+  else if (n1)
+    tty_printf ("Changing usage of a subkey.\n");
+  else
+    {
+      tty_printf ("Changing usage of the primary key.\n");
+      mainkey = 1;
+    }
+
+  /* Now we can actually change the self-signature(s) */
+  main_pk = sub_pk = NULL;
+  uid = NULL;
+  for (node = keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+	{
+	  main_pk = node->pkt->pkt.public_key;
+	  keyid_from_pk (main_pk, keyid);
+	}
+      else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+	{
+          if (node->flag & NODFLG_SELKEY)
+            sub_pk = node->pkt->pkt.public_key;
+          else
+            sub_pk = NULL;
+	}
+      else if (node->pkt->pkttype == PKT_USER_ID)
+	uid = node->pkt->pkt.user_id;
+      else if (main_pk && node->pkt->pkttype == PKT_SIGNATURE
+	       && (mainkey || sub_pk))
+	{
+	  PKT_signature *sig = node->pkt->pkt.signature;
+	  if (keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
+	      && ((mainkey && uid
+		   && uid->created && (sig->sig_class & ~3) == 0x10)
+		  || (!mainkey && sig->sig_class == 0x18))
+	      && sig->flags.chosen_selfsig)
+	    {
+	      /* This is the self-signature which is to be replaced.  */
+	      PKT_signature *newsig;
+	      PACKET *newpkt;
+
+	      if ((mainkey && main_pk->version < 4)
+		  || (!mainkey && sub_pk->version < 4))
+		{
+		  log_info ("You can't change the capabilities of a v3 key\n");
+		  return 0;
+		}
+
+              if (mainkey)
+                main_pk->pubkey_usage = ask_key_flags (main_pk->pubkey_algo, 0,
+                                                       main_pk->pubkey_usage);
+              else
+                sub_pk->pubkey_usage  = ask_key_flags (sub_pk->pubkey_algo, 1,
+                                                       sub_pk->pubkey_usage);
+
+	      if (mainkey)
+		rc = update_keysig_packet (&newsig, sig, main_pk, uid, NULL,
+					   main_pk, keygen_add_key_flags,
+					   main_pk);
+	      else
+		rc =
+		  update_keysig_packet (&newsig, sig, main_pk, NULL, sub_pk,
+					main_pk, keygen_add_key_flags, sub_pk);
+	      if (rc)
+		{
+		  log_error ("make_keysig_packet failed: %s\n",
+			     gpg_strerror (rc));
+		  return 0;
+		}
+
+	      /* Replace the packet.  */
+	      newpkt = xmalloc_clear (sizeof *newpkt);
+	      newpkt->pkttype = PKT_SIGNATURE;
+	      newpkt->pkt.signature = newsig;
+	      free_packet (node->pkt);
+	      xfree (node->pkt);
+	      node->pkt = newpkt;
+	      sub_pk = NULL;
+              break;
+	    }
+	}
+    }
+
   return 1;
 }
 
