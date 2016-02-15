@@ -1515,11 +1515,11 @@ iobuf_ioctl (iobuf_t a, iobuf_ioctl_t cmd, int intval, void *ptrval)
         log_debug ("iobuf-*.*: ioctl '%s' fsync\n",
                    ptrval? (const char*)ptrval:"<null>");
 
-	if (!a && !intval && ptrval)
-	  {
-	    return fd_cache_synchronize (ptrval);
-	  }
-      }
+      if (!a && !intval && ptrval)
+        {
+          return fd_cache_synchronize (ptrval);
+        }
+    }
 
 
   return -1;

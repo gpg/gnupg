@@ -825,18 +825,18 @@ encrypt_filter (void *opaque, int control,
           if (rc)
             return rc;
 
-	    if(efx->symkey_s2k && efx->symkey_dek)
-	      {
-		rc=write_symkey_enc(efx->symkey_s2k,efx->symkey_dek,
-				    efx->cfx.dek,a);
-		if(rc)
-		  return rc;
-	      }
+          if(efx->symkey_s2k && efx->symkey_dek)
+            {
+              rc=write_symkey_enc(efx->symkey_s2k,efx->symkey_dek,
+                                  efx->cfx.dek,a);
+              if(rc)
+                return rc;
+            }
 
-	    iobuf_push_filter (a, cipher_filter, &efx->cfx);
+          iobuf_push_filter (a, cipher_filter, &efx->cfx);
 
-	    efx->header_okay = 1;
-	}
+          efx->header_okay = 1;
+        }
       rc = iobuf_write (a, buf, size);
 
     }

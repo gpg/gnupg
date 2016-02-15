@@ -749,8 +749,8 @@ prepare_search (KEYRING_HANDLE hd)
         if (!hd->current.kr) {
           if (DBG_LOOKUP)
             log_debug ("%s: keyring not available!\n", __func__);
-            hd->current.eof = 1;
-            return -1; /* keyring not available */
+          hd->current.eof = 1;
+          return -1; /* keyring not available */
         }
         assert (!hd->current.iobuf);
     }
