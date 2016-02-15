@@ -821,8 +821,8 @@ get_dns_cert (const char *name, int want_certtype,
                  answer, 65536);
   /* Not too big, not too small, no errors and at least 1 answer. */
   if (r >= sizeof (HEADER) && r <= 65536
-      && (((HEADER *) answer)->rcode) == NOERROR
-      && (count = ntohs (((HEADER *) answer)->ancount)))
+      && (((HEADER *)(void *) answer)->rcode) == NOERROR
+      && (count = ntohs (((HEADER *)(void *) answer)->ancount)))
     {
       int rc;
       unsigned char *pt, *emsg;
@@ -1081,8 +1081,12 @@ getsrv (const char *name,struct srventry **list)
   }
 #else /*!USE_ADNS*/
   {
-    unsigned char answer[2048];
-    HEADER *header = (HEADER *)answer;
+    union {
+      unsigned char ans[2048];
+      HEADER header[1];
+    } res;
+    unsigned char *answer = res.ans;
+    HEADER *header = res.header;
     unsigned char *pt, *emsg;
     int r;
     u16 dlen;
@@ -1305,8 +1309,12 @@ get_dns_cname (const char *name, char **r_cname)
   }
 #else /*!USE_ADNS*/
   {
-    unsigned char answer[2048];
-    HEADER *header = (HEADER *)answer;
+    union {
+      unsigned char ans[2048];
+      HEADER header[1];
+    } res;
+    unsigned char *answer = res.ans;
+    HEADER *header = res.header;
     unsigned char *pt, *emsg;
     int r;
     char *cname;
