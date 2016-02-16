@@ -783,7 +783,11 @@ AM_PATH_KSBA("$NEED_KSBA_API:$NEED_KSBA_VERSION",have_ksba=yes,have_ksba=no)
 #
 # FiXME: Use GNUPG_CHECK_LIBUSB and modify to use separate AC_SUBSTs.
 if test "$use_ccid_driver" = yes ; then
-   case $target in
+   case "${host}" in
+     *-mingw32*)
+       LIBUSB_LIBS=
+       LIBUSB_CPPFLAGS=
+       ;;
      *-*-darwin*)
        LIBUSB_LIBS="-lusb-1.0 -Wl,-framework,CoreFoundation -Wl,-framework,IOKit"
        ;;
@@ -795,6 +799,8 @@ if test "$use_ccid_driver" = yes ; then
        LIBUSB_LIBS="-lusb-1.0"
        ;;
    esac
+fi
+if test x"$LIBUSB_LIBS" != x ; then
    AC_CHECK_LIB(usb-1.0, libusb_init,
                 [ LIBUSB_LIBS="$LIBUSB_LIBS"
                   have_libusb=yes ])
