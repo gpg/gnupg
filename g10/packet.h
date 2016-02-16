@@ -651,6 +651,8 @@ int check_signature2 (PKT_signature *sig, gcry_md_hd_t digest,
 		      u32 *r_expiredate, int *r_expired, int *r_revoked,
 		      PKT_public_key *ret_pk);
 
+/* Checks KB's signatures and possible reorders them.  */
+int keyblock_check_sigs (KBNODE kb, int only_selfsigs);
 
 /*-- pubkey-enc.c --*/
 gpg_error_t get_session_key (ctrl_t ctrl, PKT_pubkey_enc *k, DEK *dek);

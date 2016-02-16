@@ -165,6 +165,7 @@ enum cmd_and_opt_values
     aPasswd,
     aServer,
     aTOFUPolicy,
+    aCheckKey,
 
     oTextmode,
     oNoTextmode,
@@ -487,6 +488,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aServer,   "server",  N_("run in server mode")),
   ARGPARSE_c (aTOFUPolicy, "tofu-policy",
 	      N_("|VALUE|set the TOFU policy for a key")),
+  ARGPARSE_c (aCheckKey, "check-key", N_("Check a key")),
 
   ARGPARSE_group (301, N_("@\nOptions:\n ")),
 
@@ -2461,6 +2463,10 @@ main (int argc, char **argv)
             break;
 
           case aTOFUPolicy:
+            set_cmd (&cmd, pargs.r_opt);
+            break;
+
+          case aCheckKey:
             set_cmd (&cmd, pargs.r_opt);
             break;
 
@@ -4588,6 +4594,31 @@ main (int argc, char **argv)
 	}
 #endif /*USE_TOFU*/
 	break;
+
+      case aCheckKey:
+        {
+          int i;
+
+	  if (argc < 1)
+	    wrong_args ("--check-key KEYID...");
+
+	  for (i = 0; i < argc; i ++)
+	    {
+	      kbnode_t kb;
+
+              rc = get_pubkey_byname (ctrl, NULL, NULL, argv[i], &kb,
+                                      NULL, 1, 1);
+              if (rc)
+                {
+		  log_error (_("looking up key '%s': %s\n"),
+                             argv[i], gpg_strerror (rc));
+		  g10_exit (1);
+		}
+
+              keyblock_check_sigs (kb, 0);
+	    }
+	}
+        break;
 
       case aListPackets:
 	opt.list_packets=2;

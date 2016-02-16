@@ -263,6 +263,15 @@ int check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 			  PKT_public_key *ret_pk, int *is_selfsig,
 			  u32 *r_expiredate, int *r_expired );
 
+int check_signature_end (PKT_public_key *pk, PKT_signature *sig,
+                         gcry_md_hd_t digest,
+                         int *r_expired, int *r_revoked,
+                         PKT_public_key *ret_pk);
+int check_signature_only_end (PKT_public_key *pk, PKT_signature *sig,
+                              gcry_md_hd_t digest);
+void hash_uid_node( KBNODE unode, gcry_md_hd_t md, PKT_signature *sig );
+
+
 /*-- delkey.c --*/
 gpg_error_t delete_keys (strlist_t names, int secret, int allow_both);
 

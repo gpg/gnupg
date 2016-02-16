@@ -1238,54 +1238,6 @@ change_passphrase (ctrl_t ctrl, kbnode_t keyblock)
 
 
 
-/*
- * There are some keys out (due to a bug in gnupg), where the sequence
- * of the packets is wrong.  This function fixes that.
- * Returns: true if the keyblock has been fixed.
- *
- * Note:  This function does not work if there is more than one user ID.
- */
-static int
-fix_key_signature_order (KBNODE keyblock)
-{
-  KBNODE node, last, subkey;
-  int fixed = 0;
-
-  /* Locate key signatures of class 0x10..0x13 behind sub key packets.  */
-  for (subkey = last = NULL, node = keyblock; node;
-       last = node, node = node->next)
-    {
-      switch (node->pkt->pkttype)
-	{
-	case PKT_PUBLIC_SUBKEY:
-	case PKT_SECRET_SUBKEY:
-	  if (!subkey)
-	    subkey = last; /* Actually it is the one before the subkey.  */
-	  break;
-	case PKT_SIGNATURE:
-	  if (subkey)
-	    {
-	      PKT_signature *sig = node->pkt->pkt.signature;
-	      if (sig->sig_class >= 0x10 && sig->sig_class <= 0x13)
-		{
-		  log_info (_("moving a key signature to the correct place\n"));
-		  last->next = node->next;
-		  node->next = subkey->next;
-		  subkey->next = node;
-		  node = last;
-		  fixed = 1;
-		}
-	    }
-	  break;
-	default:
-	  break;
-	}
-    }
-
-  return fixed;
-}
-
-
 /* Fix various problems in the keyblock.  Returns true if the keyblock
    was changed.  Note that a pointer to the keyblock must be given and
    the function may change it (i.e. replacing the first node).  */
@@ -1294,9 +1246,9 @@ fix_keyblock (kbnode_t *keyblockp)
 {
   int changed = 0;
 
-  if (fix_key_signature_order (*keyblockp))
-    changed++;
   if (collapse_uids (keyblockp))
+    changed++;
+  if (keyblock_check_sigs (*keyblockp, 0))
     changed++;
   reorder_keyblock (*keyblockp);
   /* If we modified the keyblock, make sure the flags are right. */
@@ -1370,7 +1322,7 @@ enum cmdids
   cmdSHOWPREF,
   cmdSETPREF, cmdPREFKS, cmdNOTATION, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST,
   cmdCHKTRUST, cmdADDCARDKEY, cmdKEYTOCARD, cmdBKUPTOCARD,
-  cmdCLEAN, cmdMINIMIZE, cmdGRIP, cmdNOP
+  cmdCLEAN, cmdMINIMIZE, cmdGRIP, cmdCHECKKEY, cmdNOP
 };
 
 static struct
@@ -1465,6 +1417,8 @@ static struct
     N_("compact unusable user IDs and remove unusable signatures from key")},
   { "minimize", cmdMINIMIZE, KEYEDIT_NOT_SK,
     N_("compact unusable user IDs and remove all signatures from key")},
+  { "checkkey", cmdCHECKKEY, KEYEDIT_NOT_SK,
+    N_("check the key")},
 
   { NULL, cmdNONE, 0, NULL}
 };
@@ -2279,6 +2233,11 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  if (menu_clean (keyblock, 1))
 	    redisplay = modified = 1;
 	  break;
+
+        case cmdCHECKKEY:
+          if (keyblock_check_sigs (keyblock, 0))
+            redisplay = modified = 1;
+          break;
 
 	case cmdQUIT:
 	  if (have_commands)
