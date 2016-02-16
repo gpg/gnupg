@@ -262,19 +262,30 @@ can't do anything about it without actually downloading the keys.
 
 
 @menu
-* GnuPG-1 and GnuPG-2::   Relationship between the two branches.
+* Component interaction:: How the components work together.
+* GnuPG-1 and GnuPG-2::   Relationship between GnuPG 1.4 and 2.x.
 @end menu
 
+
+@node Component interaction
+@subsection How the components work together.
+
+
+@float Figure,fig:moduleoverview
+@caption{GnuPG module overview}
+@center @image{gnupg-module-overview, 150mm,,GnuPG modules}
+@end float
+
+
 @node GnuPG-1 and GnuPG-2
-@subsection  Relationship between the two branches.
+@subsection  Relationship between GnuPG 1.4 and 2.x.
 
-Here is a little picture showing how the components work together:
+Here is a little picture showing how the different GnuPG versions make
+use of a smartcard:
 
-@image{gnupg-card-architecture, 10cm}
-
-@noindent
-Lets try to explain it:
-
-TO BE DONE.
+@float Figure,fig:cardarchitecture
+@caption{GnuPG card architecture}
+@center @image{gnupg-card-architecture, 150mm,, GnuPG card architecture}
+@end float
 
 
