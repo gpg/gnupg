@@ -256,9 +256,7 @@ check_portable_app (const char *dir)
   char *fname;
 
   fname = xstrconcat (dir, DIRSEP_S "gpgconf.exe", NULL);
-  if (access (fname, F_OK))
-    log_error ("required binary '%s' is not installed\n", fname);
-  else
+  if (!access (fname, F_OK))
     {
       strcpy (fname + strlen (fname) - 3, "ctl");
       if (!access (fname, F_OK))
