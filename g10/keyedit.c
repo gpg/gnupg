@@ -322,97 +322,584 @@ print_and_check_one_sig (KBNODE keyblock, KBNODE node,
 
 
 
-/*
- * Check the keysigs and set the flags to indicate errors.
- * Returns true if error found.
- */
+/* Order two signatures.  The actual ordering isn't important.  Our
+   goal is to ensure that identical signatures occur together.  */
 static int
-check_all_keysigs (KBNODE keyblock, int only_selected, int only_selfsigs)
+sig_comparison (const void *av, const void *bv)
 {
-  KBNODE kbctx;
-  KBNODE node;
-  int inv_sigs = 0;
-  int no_key = 0;
-  int oth_err = 0;
-  int has_selfsig = 0;
-  int mis_selfsig = 0;
-  int selected = !only_selected;
-  int anyuid = 0;
-  u32 keyid[2];
+  const KBNODE an = *(const KBNODE *) av;
+  const KBNODE bn = *(const KBNODE *) bv;
+  const PKT_signature *a;
+  const PKT_signature *b;
+  int ndataa;
+  int ndatab;
+  int i;
 
-  for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
+  assert (an->pkt->pkttype == PKT_SIGNATURE);
+  assert (bn->pkt->pkttype == PKT_SIGNATURE);
+
+  a = an->pkt->pkt.signature;
+  b = bn->pkt->pkt.signature;
+
+  if (a->digest_algo < b->digest_algo)
+    return -1;
+  if (a->digest_algo > b->digest_algo)
+    return 1;
+
+  ndataa = pubkey_get_nsig (a->pubkey_algo);
+  ndatab = pubkey_get_nsig (a->pubkey_algo);
+  assert (ndataa == ndatab);
+
+  for (i = 0; i < ndataa; i ++)
     {
-      if (node->pkt->pkttype == PKT_PUBLIC_KEY)
-        {
-          if (only_selfsigs)
-            keyid_from_pk (node->pkt->pkt.public_key, keyid);
-        }
-      else if (node->pkt->pkttype == PKT_USER_ID)
-	{
-	  PKT_user_id *uid = node->pkt->pkt.user_id;
-
-	  if (only_selected)
-	    selected = (node->flag & NODFLG_SELUID);
-	  if (selected)
-	    {
-	      tty_printf ("uid  ");
-	      tty_print_utf8_string (uid->name, uid->len);
-	      tty_printf ("\n");
-	      if (anyuid && !has_selfsig)
-		mis_selfsig++;
-	      has_selfsig = 0;
-	      anyuid = 1;
-	    }
-	}
-      else if (selected && node->pkt->pkttype == PKT_SIGNATURE
-	       && ((node->pkt->pkt.signature->sig_class & ~3) == 0x10
-		   || node->pkt->pkt.signature->sig_class == 0x30))
-	{
-	  int selfsig;
-          PKT_signature *sig = node->pkt->pkt.signature;
-
-          if (only_selfsigs
-              && !(keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]))
-            {
-              /* Not a selfsig but we want only selfsigs - skip.  */
-              /* Static analyzer note: A claim that KEYID above has
-                 garbage is not correct because KEYID is set from the
-                 public key packet which is always the first packet in
-                 a keyblock and thus parsed before this signature.  */
-            }
-	  else if (print_and_check_one_sig (keyblock, node, &inv_sigs,
-                                            &no_key, &oth_err, &selfsig,
-                                            0, only_selfsigs))
-	    {
-	      if (selfsig)
-		has_selfsig = 1;
-	    }
-	  /* Hmmm: should we update the trustdb here? */
-	}
+      int c = gcry_mpi_cmp (a->data[i], b->data[i]);
+      if (c != 0)
+        return c;
     }
-  if (!has_selfsig)
-    mis_selfsig++;
 
-  if (inv_sigs)
-    tty_printf (ngettext("%d bad signature\n",
-                         "%d bad signatures\n", inv_sigs), inv_sigs);
+  /* Okay, they are equal.  */
+  return 0;
+}
 
-  if (no_key)
-    tty_printf (ngettext("%d signature not checked due to a missing key\n",
-                         "%d signatures not checked due to missing keys\n",
-                         no_key), no_key);
+/* Perform a few sanity checks on a keyblock is okay and possibly
+   repair some damage.  Concretely:
 
-  if (oth_err)
-    tty_printf (ngettext("%d signature not checked due to an error\n",
-                         "%d signatures not checked due to errors\n",
-                         oth_err), oth_err);
+     - Detect duplicate signatures and remove them.
 
-  if (mis_selfsig)
-    tty_printf (ngettext("%d user ID without valid self-signature detected\n",
-                         "%d user IDs without valid self-signatures detected\n",
-                         mis_selfsig), mis_selfsig);
+     - Detect out of order signatures and relocate them (e.g., a sig
+       over user id X located under subkey Y).
 
-  return inv_sigs || no_key || oth_err || mis_selfsig;
+   Note: this function does not remove signatures that don't belong or
+   components that are not signed!  (Although it would be trivial to
+   do so.)
+
+   If ONLY_SELFSIGS is true, then this function only reorders self
+   signatures (it still checks all signatures for duplicates,
+   however).
+
+   Returns 1 if the keyblock was modified, 0 otherwise.  */
+static int
+check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
+{
+  gpg_error_t err;
+  PKT_public_key *pk;
+  KBNODE n, n_next, *n_prevp, n2;
+  char *pending_desc = NULL;
+  PKT_public_key *issuer;
+  KBNODE last_printed_component;
+  KBNODE current_component = NULL;
+  int dups = 0;
+  int missing_issuer = 0;
+  int reordered = 0;
+  int bad_signature = 0;
+  int missing_selfsig = 0;
+  int modified = 0;
+
+  assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
+  pk = kb->pkt->pkt.public_key;
+
+  /* First we look for duplicates.  */
+  {
+    int nsigs = 0;
+    KBNODE *sigs;
+    int i;
+    int last_i;
+
+    /* Count the sigs.  */
+    for (n = kb; n; n = n->next)
+      if (is_deleted_kbnode (n))
+        continue;
+      else if (n->pkt->pkttype == PKT_SIGNATURE)
+        nsigs ++;
+
+    /* Add them all to the SIGS array.  */
+    sigs = xmalloc_clear (sizeof (*sigs) * nsigs);
+
+    i = 0;
+    for (n = kb; n; n = n->next)
+      {
+        if (is_deleted_kbnode (n))
+          continue;
+
+        if (n->pkt->pkttype != PKT_SIGNATURE)
+          continue;
+
+        sigs[i] = n;
+        i ++;
+      }
+    assert (i == nsigs);
+
+    qsort (sigs, nsigs, sizeof (sigs[0]), sig_comparison);
+
+    last_i = 0;
+    for (i = 1; i < nsigs; i ++)
+      {
+        assert (sigs[last_i]);
+        assert (sigs[last_i]->pkt->pkttype == PKT_SIGNATURE);
+        assert (sigs[i]);
+        assert (sigs[i]->pkt->pkttype == PKT_SIGNATURE);
+
+        if (sig_comparison (&sigs[last_i], &sigs[i]) == 0)
+          /* They are the same.  Kill the latter.  */
+          {
+            if (DBG_PACKET)
+              {
+                PKT_signature *sig = sigs[i]->pkt->pkt.signature;
+
+                log_debug ("Signature appears multiple times, deleting duplicate:\n");
+                log_debug ("  sig: class 0x%x, issuer: %s, timestamp: %s (%lld), digest: %02x %02x\n",
+                           sig->sig_class, keystr (sig->keyid),
+                           isotimestamp (sig->timestamp),
+                           (long long) sig->timestamp,
+                           sig->digest_start[0], sig->digest_start[1]);
+              }
+
+            /* Remove sigs[i] from the keyblock.  */
+            {
+              KBNODE z, *prevp;
+              int to_kill = last_i;
+              last_i = i;
+
+              for (prevp = &kb, z = kb; z; prevp = &z->next, z = z->next)
+                if (z == sigs[to_kill])
+                  break;
+
+              *prevp = sigs[to_kill]->next;
+
+              sigs[to_kill]->next = NULL;
+              release_kbnode (sigs[to_kill]);
+              sigs[to_kill] = NULL;
+
+              dups ++;
+              modified = 1;
+            }
+          }
+        else
+          last_i = i;
+      }
+
+    xfree (sigs);
+  }
+
+  /* Make sure the sigs occur after the component (public key, subkey,
+     user id) that they sign.  */
+  issuer = NULL;
+  last_printed_component = NULL;
+  for (n_prevp = &kb, n = kb;
+       n;
+       /* If we moved n, then n_prevp is need valid.  */
+       n_prevp = (n->next == n_next ? &n->next : n_prevp), n = n_next)
+    {
+      PACKET *p;
+      int processed_current_component;
+      PKT_signature *sig;
+      int rc;
+      int dump_sig_params = 0;
+
+      n_next = n->next;
+
+      if (is_deleted_kbnode (n))
+        continue;
+
+      p = n->pkt;
+
+      if (issuer && issuer != pk)
+        {
+          free_public_key (issuer);
+          issuer = NULL;
+        }
+
+      xfree (pending_desc);
+      pending_desc = NULL;
+
+      switch (p->pkttype)
+        {
+        case PKT_PUBLIC_KEY:
+          assert (p->pkt.public_key == pk);
+          if (only_selected && ! (n->flag & NODFLG_SELKEY))
+            {
+              current_component = NULL;
+              break;
+            }
+
+          if (DBG_PACKET)
+            log_debug ("public key %s: timestamp: %s (%lld)\n",
+                       pk_keyid_str (pk),
+                       isotimestamp (pk->timestamp),
+                       (long long) pk->timestamp);
+          current_component = n;
+          break;
+        case PKT_PUBLIC_SUBKEY:
+          if (only_selected && ! (n->flag & NODFLG_SELKEY))
+            {
+              current_component = NULL;
+              break;
+            }
+
+          if (DBG_PACKET)
+            log_debug ("subkey %s: timestamp: %s (%lld)\n",
+                       pk_keyid_str (p->pkt.public_key),
+                       isotimestamp (p->pkt.public_key->timestamp),
+                       (long long) p->pkt.public_key->timestamp);
+          current_component = n;
+          break;
+        case PKT_USER_ID:
+          if (only_selected && ! (n->flag & NODFLG_SELUID))
+            {
+              current_component = NULL;
+              break;
+            }
+
+          if (DBG_PACKET)
+            log_debug ("user id: %s\n",
+                       p->pkt.user_id->attrib_data
+                       ? "[ photo id ]"
+                       : p->pkt.user_id->name);
+          current_component = n;
+          break;
+        case PKT_SIGNATURE:
+          if (! current_component)
+            /* The current component is not selected, don't check the
+               sigs under it.  */
+            break;
+
+          sig = n->pkt->pkt.signature;
+
+          pending_desc = xasprintf ("  sig: class: 0x%x, issuer: %s, timestamp: %s (%lld), digest: %02x %02x",
+                                    sig->sig_class,
+                                    keystr (sig->keyid),
+                                    isotimestamp (sig->timestamp),
+                                    (long long) sig->timestamp,
+                                    sig->digest_start[0], sig->digest_start[1]);
+
+
+          if (keyid_cmp (pk_keyid (pk), sig->keyid) == 0)
+            issuer = pk;
+          else
+            /* Issuer is a different key.  */
+            {
+              if (only_selfsigs)
+                continue;
+
+              issuer = xmalloc (sizeof (*issuer));
+              err = get_pubkey (issuer, sig->keyid);
+              if (err)
+                {
+                  xfree (issuer);
+                  issuer = NULL;
+                  if (DBG_PACKET)
+                    {
+                      if (pending_desc)
+                        log_debug ("%s", pending_desc);
+                      log_debug ("    Can't check signature allegedly issued by %s: %s\n",
+                                keystr (sig->keyid), gpg_strerror (err));
+                    }
+                  missing_issuer ++;
+                  break;
+                }
+            }
+
+          if ((err = openpgp_pk_test_algo (sig->pubkey_algo)))
+            {
+              if (DBG_PACKET && pending_desc)
+                log_debug ("%s", pending_desc);
+              tty_printf (_("can't check signature with unsupported public-key algorithm (%d): %s.\n"),
+                          sig->pubkey_algo, gpg_strerror (err));
+              break;
+            }
+          if ((err = openpgp_md_test_algo (sig->digest_algo)))
+            {
+              if (DBG_PACKET && pending_desc)
+                log_debug ("%s", pending_desc);
+              tty_printf (_("can't check signature with unsupported message-digest algorithm %d: %s.\n"),
+                          sig->digest_algo, gpg_strerror (err));
+              break;
+            }
+
+          /* We iterate over the keyblock.  Most likely, the matching
+             component is the current component so always try that
+             first.  */
+          processed_current_component = 0;
+          for (n2 = current_component;
+               n2;
+               n2 = (processed_current_component ? n2->next : kb),
+                 processed_current_component = 1)
+            if (is_deleted_kbnode (n2))
+              continue;
+            else if (processed_current_component && n2 == current_component)
+              /* Don't process it twice.  */
+              continue;
+            else
+              {
+                err = check_signature_over_key_or_uid (issuer, sig, kb, n2->pkt,
+                                                       NULL, NULL);
+                if (! err)
+                  break;
+              }
+
+          /* n/sig is a signature and n2 is the component (public key,
+             subkey or user id) that it signs, if any.
+             current_component is that component that it appears to
+             apply to (according to the ordering).  */
+
+          if (current_component == n2)
+            {
+              if (DBG_PACKET)
+                {
+                  log_debug ("%s", pending_desc);
+                  log_debug ("    Good signature over last key or uid!\n");
+                }
+
+              rc = 0;
+            }
+          else if (n2)
+            {
+              assert (n2->pkt->pkttype == PKT_USER_ID
+                      || n2->pkt->pkttype == PKT_PUBLIC_KEY
+                      || n2->pkt->pkttype == PKT_PUBLIC_SUBKEY);
+
+              if (DBG_PACKET)
+                {
+                  log_debug ("%s", pending_desc);
+                  log_debug ("    Good signature out of order!  (Over %s (%d) '%s')\n",
+                             n2->pkt->pkttype == PKT_USER_ID
+                             ? "user id"
+                             : n2->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                             ? "subkey"
+                             : "primary key",
+                             n2->pkt->pkttype,
+                             n2->pkt->pkttype == PKT_USER_ID
+                             ? n2->pkt->pkt.user_id->name
+                             : pk_keyid_str (n2->pkt->pkt.public_key));
+                }
+
+              /* Reorder the packets: move the signature n to be just
+                 after n2.  */
+
+              /* Unlink the signature.  */
+              assert (n_prevp);
+              *n_prevp = n->next;
+
+              /* Insert the sig immediately after the component.  */
+              n->next = n2->next;
+              n2->next = n;
+
+              reordered ++;
+              modified = 1;
+
+              rc = 0;
+            }
+          else
+            {
+              if (DBG_PACKET)
+                {
+                  log_debug ("%s", pending_desc);
+                  log_debug ("    Bad signature.\n");
+                }
+
+              if (DBG_PACKET)
+                dump_sig_params = 1;
+
+              bad_signature ++;
+
+              rc = GPG_ERR_BAD_SIGNATURE;
+            }
+
+          /* We don't cache the result here, because we haven't
+             completely checked that the signature is legitimate.  For
+             instance, if we have a revocation certificate on Alice's
+             key signed by Bob, the signature may be good, but we
+             haven't checked that Bob is a designated revoker.  */
+          /* cache_sig_result (sig, rc); */
+
+          {
+            int has_selfsig = 0;
+            if (! rc && issuer == pk)
+              {
+                if (n2->pkt->pkttype == PKT_PUBLIC_KEY
+                    && (/* Direct key signature.  */
+                        sig->sig_class == 0x1f
+                        /* Key revocation signature.  */
+                        || sig->sig_class == 0x20))
+                  has_selfsig = 1;
+                if (n2->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                    && (/* Subkey binding sig.  */
+                        sig->sig_class == 0x18
+                        /* Subkey revocation sig.  */
+                        || sig->sig_class == 0x28))
+                  has_selfsig = 1;
+                if (n2->pkt->pkttype == PKT_USER_ID
+                    && (/* Certification sigs.  */
+                        sig->sig_class == 0x10
+                        || sig->sig_class == 0x11
+                        || sig->sig_class == 0x12
+                        || sig->sig_class == 0x13
+                        /* Certification revocation sig.  */
+                        || sig->sig_class == 0x30))
+                  has_selfsig = 1;
+              }
+
+            if ((n2 && n2 != last_printed_component)
+                || (! n2 && last_printed_component != current_component))
+              {
+                int is_reordered = n2 && n2 != current_component;
+                if (n2)
+                  last_printed_component = n2;
+                else
+                  last_printed_component = current_component;
+
+                if (last_printed_component->pkt->pkttype == PKT_USER_ID)
+                  {
+                    tty_printf ("uid  ");
+                    tty_print_utf8_string (last_printed_component
+                                           ->pkt->pkt.user_id->name,
+                                           last_printed_component
+                                           ->pkt->pkt.user_id->len);
+                  }
+                else if (last_printed_component->pkt->pkttype
+                         == PKT_PUBLIC_KEY)
+                  tty_printf ("pub  %s",
+                              pk_keyid_str (last_printed_component
+                                            ->pkt->pkt.public_key));
+                else
+                  tty_printf ("sub  %s",
+                              pk_keyid_str (last_printed_component
+                                            ->pkt->pkt.public_key));
+
+                if (is_reordered)
+                  tty_printf (_(" (reordered signatures follow)"));
+                tty_printf ("\n");
+              }
+
+            print_one_sig (rc, kb, n, NULL, NULL, NULL, has_selfsig,
+                           0, only_selfsigs);
+          }
+
+          if (dump_sig_params)
+            {
+              int i;
+
+              for (i = 0; i < pubkey_get_nsig (sig->pubkey_algo); i ++)
+                {
+                  char buffer[1024];
+                  size_t len;
+                  char *printable;
+                  gcry_mpi_print (GCRYMPI_FMT_USG,
+                                  buffer, sizeof (buffer), &len,
+                                  sig->data[i]);
+                  printable = bin2hex (buffer, len, NULL);
+                  log_info ("        %d: %s\n", i, printable);
+                  xfree (printable);
+                }
+            }
+          break;
+        default:
+          if (DBG_PACKET)
+            log_debug ("unhandled packet: %d\n", p->pkttype);
+          break;
+        }
+    }
+
+  xfree (pending_desc);
+  pending_desc = NULL;
+
+  if (issuer != pk)
+    free_public_key (issuer);
+  issuer = NULL;
+
+  /* Identify keys / uids that don't have a self-sig.  */
+  {
+    int has_selfsig = 0;
+    PACKET *p;
+    PKT_signature *sig;
+
+    current_component = NULL;
+    for (n = kb; n; n = n->next)
+      {
+        if (is_deleted_kbnode (n))
+          continue;
+
+        p = n->pkt;
+
+        switch (p->pkttype)
+          {
+          case PKT_PUBLIC_KEY:
+          case PKT_PUBLIC_SUBKEY:
+          case PKT_USER_ID:
+            if (current_component && ! has_selfsig)
+              missing_selfsig ++;
+            current_component = n;
+            has_selfsig = 0;
+            break;
+
+          case PKT_SIGNATURE:
+            if (! current_component || has_selfsig)
+              break;
+
+            sig = n->pkt->pkt.signature;
+
+            if (! (sig->flags.checked && sig->flags.valid))
+              break;
+
+            if (keyid_cmp (pk_keyid (pk), sig->keyid) != 0)
+              /* Different issuer, couldn't be a self-sig.  */
+              break;
+
+            if (current_component->pkt->pkttype == PKT_PUBLIC_KEY
+                && (/* Direct key signature.  */
+                    sig->sig_class == 0x1f
+                    /* Key revocation signature.  */
+                    || sig->sig_class == 0x20))
+              has_selfsig = 1;
+            if (current_component->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                && (/* Subkey binding sig.  */
+                    sig->sig_class == 0x18
+                    /* Subkey revocation sig.  */
+                    || sig->sig_class == 0x28))
+              has_selfsig = 1;
+            if (current_component->pkt->pkttype == PKT_USER_ID
+                && (/* Certification sigs.  */
+                    sig->sig_class == 0x10
+                    || sig->sig_class == 0x11
+                    || sig->sig_class == 0x12
+                    || sig->sig_class == 0x13
+                    /* Certification revocation sig.  */
+                    || sig->sig_class == 0x30))
+              has_selfsig = 1;
+
+            break;
+
+          default:
+            if (current_component && ! has_selfsig)
+              missing_selfsig ++;
+            current_component = NULL;
+          }
+      }
+  }
+
+  if (dups || missing_issuer || bad_signature || reordered)
+    tty_printf (_("key %s:\n"), pk_keyid_str (pk));
+
+  if (dups)
+    tty_printf (ngettext ("%d duplicate signature removed\n",
+                          "%d duplicate signatures removed\n", dups), dups);
+  if (missing_issuer)
+    tty_printf (ngettext ("%d signature not checked due to a missing key\n",
+                          "%d signatures not checked due to missing keys\n",
+                          missing_issuer), missing_issuer);
+  if (bad_signature)
+    tty_printf (ngettext ("%d bad signature\n",
+                          "%d bad signatures\n",
+                          bad_signature), bad_signature);
+  if (reordered)
+    tty_printf (ngettext ("%d signature reordered\n",
+                          "%d signatures reordered\n",
+                          reordered), reordered);
+
+  if (only_selfsigs && (bad_signature || reordered))
+    tty_printf (_("Warning: errors found and only checked self-signatures, run 'check' to check all signatures.\n"));
+
+  return modified;
 }
 
 
@@ -1247,54 +1734,6 @@ change_passphrase (ctrl_t ctrl, kbnode_t keyblock)
 
 
 
-/*
- * There are some keys out (due to a bug in gnupg), where the sequence
- * of the packets is wrong.  This function fixes that.
- * Returns: true if the keyblock has been fixed.
- *
- * Note:  This function does not work if there is more than one user ID.
- */
-static int
-fix_key_signature_order (KBNODE keyblock)
-{
-  KBNODE node, last, subkey;
-  int fixed = 0;
-
-  /* Locate key signatures of class 0x10..0x13 behind sub key packets.  */
-  for (subkey = last = NULL, node = keyblock; node;
-       last = node, node = node->next)
-    {
-      switch (node->pkt->pkttype)
-	{
-	case PKT_PUBLIC_SUBKEY:
-	case PKT_SECRET_SUBKEY:
-	  if (!subkey)
-	    subkey = last; /* Actually it is the one before the subkey.  */
-	  break;
-	case PKT_SIGNATURE:
-	  if (subkey)
-	    {
-	      PKT_signature *sig = node->pkt->pkt.signature;
-	      if (sig->sig_class >= 0x10 && sig->sig_class <= 0x13)
-		{
-		  log_info (_("moving a key signature to the correct place\n"));
-		  last->next = node->next;
-		  node->next = subkey->next;
-		  subkey->next = node;
-		  node = last;
-		  fixed = 1;
-		}
-	    }
-	  break;
-	default:
-	  break;
-	}
-    }
-
-  return fixed;
-}
-
-
 /* Fix various problems in the keyblock.  Returns true if the keyblock
    was changed.  Note that a pointer to the keyblock must be given and
    the function may change it (i.e. replacing the first node).  */
@@ -1303,9 +1742,9 @@ fix_keyblock (kbnode_t *keyblockp)
 {
   int changed = 0;
 
-  if (fix_key_signature_order (*keyblockp))
-    changed++;
   if (collapse_uids (keyblockp))
+    changed++;
+  if (check_all_keysigs (*keyblockp, 0, 1))
     changed++;
   reorder_keyblock (*keyblockp);
   /* If we modified the keyblock, make sure the flags are right. */
