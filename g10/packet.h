@@ -279,8 +279,12 @@ typedef struct
   byte    pubkey_usage;   /* for now only used to pass it to getkey() */
   byte    req_usage;      /* hack to pass a request to getkey() */
   u32     has_expired;    /* set to the expiration date if expired */
-  u32     main_keyid[2];  /* keyid of the primary key */
-  u32     keyid[2];	    /* calculated by keyid_from_pk() */
+  /* keyid of the primary key.  Never access this value directly.
+     Instead, use pk_main_keyid().  */
+  u32     main_keyid[2];
+  /* keyid of this key.  Never access this value directly!  Instead,
+     use pk_keyid().  */
+  u32     keyid[2];
   prefitem_t *prefs;      /* list of preferences (may be NULL) */
   struct
   {

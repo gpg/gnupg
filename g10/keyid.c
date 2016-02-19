@@ -2,6 +2,7 @@
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
  *               2004, 2006, 2010 Free Software Foundation, Inc.
  * Copyright (C) 2014 Werner Koch
+ * Copyright (C) 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -274,6 +275,52 @@ v3_keyid (gcry_mpi_t a, u32 *ki)
 }
 
 
+/* Return PK's keyid.  The memory is owned by PK.  */
+u32 *
+pk_keyid (PKT_public_key *pk)
+{
+  keyid_from_pk (pk, NULL);
+
+  /* Uncomment this for help tracking down bugs related to keyid or
+     main_keyid not being set correctly.  */
+#if 0
+  if (! (pk->main_keyid[0] || pk->main_keyid[1]))
+    log_bug ("pk->main_keyid not set!\n");
+  if (keyid_cmp (pk->keyid, pk->main_keyid) == 0
+      && ! pk->flags.primary)
+    log_bug ("keyid and main_keyid are the same, but primary flag not set!\n");
+  if (keyid_cmp (pk->keyid, pk->main_keyid) != 0
+      && pk->flags.primary)
+    log_bug ("keyid and main_keyid are different, but primary flag set!\n");
+#endif
+
+  return pk->keyid;
+}
+
+/* Return the keyid of the primary key associated with PK.  The memory
+   is owned by PK.  */
+u32 *
+pk_main_keyid (PKT_public_key *pk)
+{
+  /* Uncomment this for help tracking down bugs related to keyid or
+     main_keyid not being set correctly.  */
+#if 0
+  if (! (pk->main_keyid[0] || pk->main_keyid[1]))
+    log_bug ("pk->main_keyid not set!\n");
+#endif
+
+  return pk->main_keyid;
+}
+
+/* Copy the keyid in SRC to DEST and return DEST.  */
+u32 *
+keyid_copy (u32 *dest, const u32 *src)
+{
+  dest[0] = src[0];
+  dest[1] = src[1];
+  return dest;
+}
+
 char *
 format_keyid (u32 *keyid, int format, char *buffer, int len)
 {
@@ -395,6 +442,14 @@ keystr_from_pk_with_sub (PKT_public_key *main_pk, PKT_public_key *sub_pk)
   return keystr_with_sub (main_pk->keyid, sub_pk? sub_pk->keyid:NULL);
 }
 
+
+/* Return PK's key id as a string using the default format.  PK owns
+   the storage.  */
+const char *
+pk_keyid_str (PKT_public_key *pk)
+{
+  return keystr (pk_keyid (pk));
+}
 
 
 const char *

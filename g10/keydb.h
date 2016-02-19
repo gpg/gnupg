@@ -1,7 +1,7 @@
 /* keydb.h - Key database
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
  *               2006, 2010 Free Software Foundation, Inc.
- * Copyright (C) 2015 g10 Code GmbH
+ * Copyright (C) 2015, 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -396,12 +396,44 @@ char *pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize);
 u32 v3_keyid (gcry_mpi_t a, u32 *ki);
 void hash_public_key( gcry_md_hd_t md, PKT_public_key *pk );
 char *format_keyid (u32 *keyid, int format, char *buffer, int len);
+
+/* Return PK's keyid.  The memory is owned by PK.  */
+u32 *pk_keyid (PKT_public_key *pk);
+
+/* Return the keyid of the primary key associated with PK.  The memory
+   is owned by PK.  */
+u32 *pk_main_keyid (PKT_public_key *pk);
+
+/* Order A and B.  If A < B then return -1, if A == B then return 0,
+   and if A > B then return 1.  */
+static int GPGRT_ATTR_UNUSED
+keyid_cmp (const u32 *a, const u32 *b)
+{
+  if (a[0] < b[0])
+    return -1;
+  if (a[0] > b[0])
+    return 1;
+  if (a[1] < b[1])
+    return -1;
+  if (a[1] > b[1])
+    return 1;
+  return 0;
+}
+
+/* Copy the keyid in SRC to DEST and return DEST.  */
+u32 *keyid_copy (u32 *dest, const u32 *src);
+
 size_t keystrlen(void);
 const char *keystr(u32 *keyid);
 const char *keystr_with_sub (u32 *main_kid, u32 *sub_kid);
 const char *keystr_from_pk(PKT_public_key *pk);
 const char *keystr_from_pk_with_sub (PKT_public_key *main_pk,
                                      PKT_public_key *sub_pk);
+
+/* Return PK's key id as a string using the default format.  PK owns
+   the storage.  */
+const char *pk_keyid_str (PKT_public_key *pk);
+
 const char *keystr_from_desc(KEYDB_SEARCH_DESC *desc);
 u32 keyid_from_pk( PKT_public_key *pk, u32 *keyid );
 u32 keyid_from_sig( PKT_signature *sig, u32 *keyid );
