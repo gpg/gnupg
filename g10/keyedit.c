@@ -3953,8 +3953,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
 		  log_error (_("this key has already been designated "
 			       "as a revoker\n"));
 
-		  sprintf (buf, "%08lX%08lX",
-			   (ulong) pk->keyid[0], (ulong) pk->keyid[1]);
+                  format_keyid (pk_keyid (pk), KF_LONG, buf, sizeof (buf));
 		  write_status_text (STATUS_ALREADY_SIGNED, buf);
 
 		  break;

@@ -3840,15 +3840,15 @@ card_write_key_to_backup_file (PKT_public_key *sk, const char *backup_dir)
 {
   gpg_error_t err = 0;
   int rc;
+  char keyid_buffer[2 * 8 + 1];
   char name_buffer[50];
   char *fname;
   IOBUF fp;
   mode_t oldmask;
   PACKET *pkt = NULL;
 
-  keyid_from_pk (sk, NULL);
-  snprintf (name_buffer, sizeof name_buffer, "sk_%08lX%08lX.gpg",
-            (ulong)sk->keyid[0], (ulong)sk->keyid[1]);
+  format_keyid (pk_keyid (sk), KF_LONG, keyid_buffer, sizeof (keyid_buffer));
+  snprintf (name_buffer, sizeof name_buffer, "sk_%s.gpg", keyid_buffer);
 
   fname = make_filename (backup_dir, name_buffer, NULL);
   /* Note that the umask call is not anymore needed because
