@@ -1,7 +1,7 @@
 /* keyedit.c - Edit properties of a key
  * Copyright (C) 1998-2010 Free Software Foundation, Inc.
  * Copyright (C) 1998-2015 Werner Koch
- * Copyright (C) 2015 g10 Code GmbH
+ * Copyright (C) 2015, 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -189,24 +189,23 @@ print_and_check_one_sig_colon (KBNODE keyblock, KBNODE node,
 
 
 /*
- * Print information about a signature, check it and return true if
- * the signature is okay.  NODE must be a signature packet.  With
- * EXTENDED set all possible signature list options will always be
- * printed.
+ * Print information about a signature (rc is its status), check it
+ * and return true if the signature is okay.  NODE must be a signature
+ * packet.  With EXTENDED set all possible signature list options will
+ * always be printed.
  */
 static int
-print_and_check_one_sig (KBNODE keyblock, KBNODE node,
-			 int *inv_sigs, int *no_key, int *oth_err,
-			 int *is_selfsig, int print_without_key, int extended)
+print_one_sig (int rc, KBNODE keyblock, KBNODE node,
+               int *inv_sigs, int *no_key, int *oth_err,
+               int is_selfsig, int print_without_key, int extended)
 {
   PKT_signature *sig = node->pkt->pkt.signature;
-  int rc, sigrc;
+  int sigrc;
   int is_rev = sig->sig_class == 0x30;
 
   /* TODO: Make sure a cached sig record here still has the pk that
      issued it.  See also keylist.c:list_keyblock_print */
 
-  rc = check_key_signature (keyblock, node, is_selfsig);
   switch (gpg_err_code (rc))
     {
     case 0:
@@ -257,7 +256,7 @@ print_and_check_one_sig (KBNODE keyblock, KBNODE node,
 	tty_printf ("[%s] ", gpg_strerror (rc));
       else if (sigrc == '?')
 	;
-      else if (*is_selfsig)
+      else if (is_selfsig)
 	{
 	  tty_printf (is_rev ? _("[revocation]") : _("[self-signature]"));
           if (extended && sig->flags.chosen_selfsig)
@@ -309,6 +308,16 @@ print_and_check_one_sig (KBNODE keyblock, KBNODE node,
     }
 
   return (sigrc == '!');
+}
+
+static int
+print_and_check_one_sig (KBNODE keyblock, KBNODE node,
+			 int *inv_sigs, int *no_key, int *oth_err,
+			 int *is_selfsig, int print_without_key, int extended)
+{
+  return print_one_sig (check_key_signature (keyblock, node, is_selfsig),
+                        keyblock, node, inv_sigs, no_key, oth_err,
+                        *is_selfsig, print_without_key, extended);
 }
 
 
