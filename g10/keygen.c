@@ -4079,6 +4079,13 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
       assert (pri_psk);
     }
 
+  /* Make sure a few fields are correctly set up before going further.  */
+  pri_psk->flags.primary = 1;
+  keyid_from_pk (pri_psk, NULL);
+  /* We don't use pk_keyid to get keyid, because it also asserts that
+     main_keyid is set!  */
+  keyid_copy (pri_psk->main_keyid, pri_psk->keyid);
+
   if (!err && (revkey = get_parameter_revkey (para, pREVOKER)))
     err = write_direct_sig (pub_root, pri_psk, revkey, timestamp, cache_nonce);
 
