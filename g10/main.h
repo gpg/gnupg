@@ -263,6 +263,19 @@ int check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 			  PKT_public_key *ret_pk, int *is_selfsig,
 			  u32 *r_expiredate, int *r_expired );
 
+/* Returns whether SIGNER generated the signature SIG over the packet
+   PACKET, which is a key, subkey or uid, and comes from the key block
+   KB.  If SIGNER is NULL, it is looked up based on the information in
+   SIG.  If not NULL, sets *IS_SELFSIG to indicate whether the
+   signature is a self-signature and *RET_PK to a copy of the signer's
+   key.  */
+gpg_error_t check_signature_over_key_or_uid (PKT_public_key *signer,
+                                             PKT_signature *sig,
+                                             KBNODE kb, PACKET *packet,
+                                             int *is_selfsig,
+                                             PKT_public_key *ret_pk);
+
+
 /*-- delkey.c --*/
 gpg_error_t delete_keys (strlist_t names, int secret, int allow_both);
 
