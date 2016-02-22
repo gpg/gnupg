@@ -532,7 +532,8 @@ sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
                             tupledesc_t keyblob)
 {
   gpg_error_t err;
-  char *targetname = NULL;
+  char *targetname_abs = NULL;
+  const char *targetname;
   char hexkey[16*2+1];
   char *table = NULL;
   unsigned long long nblocks, nblocks2;
@@ -615,14 +616,19 @@ sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
 
   /* Device mapper needs a name for the device: Take it from the label
      or use "0".  */
-  targetname = strconcat ("g13-", ctrl->client.uname, "-",
-                          ctrl->devti->label? ctrl->devti->label : "0",
-                          NULL);
-  if (!targetname)
+  targetname_abs = strconcat ("/dev/mapper/",
+                              "g13-", ctrl->client.uname, "-",
+                              ctrl->devti->label? ctrl->devti->label : "0",
+                              NULL);
+  if (!targetname_abs)
     {
       err = gpg_error_from_syserror ();
       goto leave;
     }
+  targetname = strrchr (targetname_abs, '/');
+  if (!targetname)
+    BUG ();
+  targetname++;
 
   /* Get the algorithm string.  */
   algostr = find_tuple (keyblob, KEYBLOB_TAG_ALGOSTR, &algostrlen);
@@ -675,6 +681,28 @@ sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
     }
   if (result && *result)
     log_debug ("dmsetup result: %s\n", result);
+  xfree (result);
+  result = NULL;
+
+  /* Mount if a mountpoint has been given.  */
+  if (ctrl->devti->mountpoint)
+    {
+      const char *argv[3];
+
+      argv[0] = targetname_abs;
+      argv[1] = ctrl->devti->mountpoint;
+      argv[2] = NULL;
+      log_debug ("now running \"mount %s %s\"\n",
+                 targetname_abs, ctrl->devti->mountpoint);
+      err = gnupg_exec_tool ("/bin/mount", argv, NULL, &result, NULL);
+      if (err)
+        {
+          log_error ("error running mount: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+      if (result && *result)  /* (We should not see output to stdout).  */
+        log_info ("WARNING: mount returned data on stdout! (%s)\n", result);
+    }
 
 
  leave:
@@ -684,7 +712,7 @@ sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
       wipememory (table, strlen (table));
       xfree (table);
     }
-  xfree (targetname);
+  xfree (targetname_abs);
   xfree (result);
   return err;
 }

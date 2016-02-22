@@ -512,15 +512,23 @@ main ( int argc, char **argv)
           ctrl.client.uid = (uid_t)myuid;
       }
 
-      pwd = getpwuid (ctrl.client.uid);
-      if (!pwd || !*pwd->pw_name)
-        {
-          log_info ("WARNING: Name for UID not found: %s\n", strerror (errno));
-          ctrl.fail_all_cmds = 1;
-          ctrl.client.uname = xstrdup ("?");
-        }
-      else
-        ctrl.client.uname = xstrdup (pwd->pw_name);
+    pwd = getpwuid (ctrl.client.uid);
+    if (!pwd || !*pwd->pw_name)
+      {
+        log_info ("WARNING: Name for UID not found: %s\n", strerror (errno));
+        ctrl.fail_all_cmds = 1;
+        ctrl.client.uname = xstrdup ("?");
+      }
+    else
+      ctrl.client.uname = xstrdup (pwd->pw_name);
+
+    /* Check that the user name does not contain a directory
+       separator. */
+    if (strchr (ctrl.client.uname, '/'))
+      {
+        log_info ("WARNING: Invalid user name passed\n");
+        ctrl.fail_all_cmds = 1;
+      }
   }
 #else /*!HAVE_PWD_H || !HAVE_GETPWUID*/
   log_info ("WARNING: System does not support required syscalls\n");
