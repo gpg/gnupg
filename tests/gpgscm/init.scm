@@ -542,8 +542,9 @@
 ;              (if-something goes-wrong)
 ;              (with-these calls))
 ;
-;    "Catch" establishes a scope spanning multiple call-frames
-;    until another "catch" is encountered.
+;    "Catch" establishes a scope spanning multiple call-frames until
+;    another "catch" is encountered.  Within the recovery expression
+;    the thrown exception is bound to *error*.
 ;
 ;    Exceptions are thrown with:
 ;
@@ -566,13 +567,13 @@
 
 (define (throw . x)
      (if (more-handlers?)
-          (apply (pop-handler))
+          (apply (pop-handler) x)
           (apply error x)))
 
 (macro (catch form)
      (let ((label (gensym)))
           `(call/cc (lambda (exit)
-               (push-handler (lambda () (exit ,(cadr form))))
+               (push-handler (lambda (*error*) (exit ,(cadr form))))
                (let ((,label (begin ,@(cddr form))))
                     (pop-handler)
                     ,label)))))
