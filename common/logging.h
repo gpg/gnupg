@@ -81,6 +81,10 @@ void log_logv (int level, const char *fmt, va_list arg_ptr);
 void log_string (int level, const char *string);
 
 
+#define log_assert(expr)                                               \
+  do                                                                    \
+    if (! (expr)) log_bug ("Assertion " #expr " failed.\n");            \
+  while (0)
 void log_bug (const char *fmt, ...)    GPGRT_ATTR_NR_PRINTF(1,2);
 void log_fatal (const char *fmt, ...)  GPGRT_ATTR_NR_PRINTF(1,2);
 void log_error (const char *fmt, ...)  GPGRT_ATTR_PRINTF(1,2);
