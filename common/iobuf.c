@@ -2237,6 +2237,9 @@ iobuf_copy (iobuf_t dest, iobuf_t source)
   assert (source->use == IOBUF_INPUT || source->use == IOBUF_INPUT_TEMP);
   assert (dest->use == IOBUF_OUTPUT || source->use == IOBUF_OUTPUT_TEMP);
 
+  if (iobuf_error (dest))
+    return -1;
+
   temp = xmalloc (temp_size);
   while (1)
     {
