@@ -2515,8 +2515,16 @@ iobuf_get_fname_nonnull (iobuf_t a)
 
 
 /****************
- * enable partial block mode as described in the OpenPGP draft.
- * LEN is the first length byte on read, but ignored on writes.
+ * Enable or disable partial body length mode (RFC 4880 4.2.2.4).
+ *
+ * If LEN is 0, this disables partial block mode by popping the
+ * partial body length filter, which which must be the most recently
+ * added filter.
+ *
+ * If LEN is non-zero, it pushes a partial body length filter.  If
+ * this is a read filter, LEN must be the length byte from the first
+ * chunk and A should be position just after this first partial body
+ * length header.
  */
 void
 iobuf_set_partial_body_length_mode (iobuf_t a, size_t len)
@@ -2525,21 +2533,17 @@ iobuf_set_partial_body_length_mode (iobuf_t a, size_t len)
 
   ctx->use = a->use;
   if (!len)
+    /* Disable partial body length mode.  */
     {
       if (a->use == IOBUF_INPUT)
 	log_debug ("pop_filter called in set_partial_block_mode"
 		   " - please report\n");
-      /* XXX: This pop_filter doesn't make sense.  Since we haven't
-	 actually added the filter to the pipeline yet, why are we
-	 popping anything?  Moreover, since we don't report an error,
-	 the caller won't directly see an error.  I think that it
-	 would be better to push the filter and set a->error to
-	 GPG_ERR_BAD_DATA, but Werner thinks it's impossible for len
-	 to be 0 (but he doesn't want to remove the check just in
-	 case).  */
+
+      log_assert (a->filter == block_filter);
       pop_filter (a, block_filter, NULL);
     }
   else
+    /* Enabled partial body length mode.  */
     {
       ctx->partial = 1;
       ctx->size = 0;
