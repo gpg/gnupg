@@ -2227,8 +2227,8 @@ size_t
 iobuf_copy (iobuf_t dest, iobuf_t source)
 {
   char *temp;
-  /* Use a 1 MB buffer.  */
-  const size_t temp_size = 1024 * 1024;
+  /* Use a 32 KB buffer.  */
+  const size_t temp_size = 32 * 1024;
 
   size_t nread;
   size_t nwrote = 0;
