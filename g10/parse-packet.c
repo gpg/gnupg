@@ -581,7 +581,7 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC:
             case PKT_COMPRESSED:
-              iobuf_set_partial_block_mode (inp, c & 0xff);
+              iobuf_set_partial_body_length_mode (inp, c & 0xff);
               pktlen = 0;	/* To indicate partial length.  */
               partial = 1;
               break;

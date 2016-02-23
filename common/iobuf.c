@@ -2513,7 +2513,7 @@ iobuf_get_fname_nonnull (iobuf_t a)
  * LEN is the first length byte on read, but ignored on writes.
  */
 void
-iobuf_set_partial_block_mode (iobuf_t a, size_t len)
+iobuf_set_partial_body_length_mode (iobuf_t a, size_t len)
 {
   block_filter_ctx_t *ctx = xcalloc (1, sizeof *ctx);
 

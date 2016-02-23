@@ -592,7 +592,7 @@ const char *iobuf_get_fname_nonnull (iobuf_t a);
    length headers (see Section 4.2.2.4 of RFC 4880).  Concretely, it
    just returns / writes the data and finishes the packet with an
    EOF.  */
-void iobuf_set_partial_block_mode (iobuf_t a, size_t len);
+void iobuf_set_partial_body_length_mode (iobuf_t a, size_t len);
 
 /* If PARTIAL is set, then read from the pipeline until the first EOF
    is returned.

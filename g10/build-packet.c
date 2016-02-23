@@ -551,7 +551,7 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
     }
     wipememory(buf,1000); /* burn the buffer */
     if( (ctb&0x40) && !pt->len )
-      iobuf_set_partial_block_mode(out, 0 ); /* turn off partial */
+      iobuf_set_partial_body_length_mode(out, 0 ); /* turn off partial */
     if( pt->len && n != pt->len )
       log_error("do_plaintext(): wrote %lu bytes but expected %lu bytes\n",
 		(ulong)n, (ulong)pt->len );
@@ -1334,7 +1334,7 @@ write_new_header( IOBUF out, int ctb, u32 len, int hdrlen )
     if( iobuf_put(out, ctb ) )
 	return -1;
     if( !len ) {
-	iobuf_set_partial_block_mode(out, 512 );
+	iobuf_set_partial_body_length_mode(out, 512 );
     }
     else {
 	if( len < 192 ) {
