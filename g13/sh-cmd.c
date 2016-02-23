@@ -379,6 +379,121 @@ cmd_mount (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_suspend[] =
+  "SUSPEND <type>\n"
+  "\n"
+  "Suspend an encrypted partition and wipe the key.\n"
+  "<type> must be \"dm-crypt\" for now.";
+static gpg_error_t
+cmd_suspend (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+
+  line = skip_options (line);
+
+  if (strcmp (line, "dm-crypt"))
+    {
+      err = set_error (GPG_ERR_INV_ARG, "Type must be \"dm-crypt\"");
+      goto leave;
+    }
+
+  if (!ctrl->server_local->devicename
+      || !ctrl->server_local->devicefp
+      || !ctrl->devti)
+    {
+      err = set_error (GPG_ERR_ENOENT, "No device has been set");
+      goto leave;
+    }
+
+  err = sh_is_empty_partition (ctrl->server_local->devicename);
+  if (!err)
+    {
+      err = gpg_error (GPG_ERR_ENODEV);
+      assuan_set_error (ctx, err, "Partition is empty");
+      goto leave;
+    }
+  err = 0;
+
+  err = sh_dmcrypt_suspend_container (ctrl, ctrl->server_local->devicename);
+
+ leave:
+  return leave_cmd (ctx, err);
+}
+
+
+static const char hlp_resume[] =
+  "RESUME <type>\n"
+  "\n"
+  "Resume an encrypted partition and set the key.\n"
+  "<type> must be \"dm-crypt\" for now.";
+static gpg_error_t
+cmd_resume (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+  unsigned char *keyblob = NULL;
+  size_t keybloblen;
+  tupledesc_t tuples = NULL;
+
+  line = skip_options (line);
+
+  if (strcmp (line, "dm-crypt"))
+    {
+      err = set_error (GPG_ERR_INV_ARG, "Type must be \"dm-crypt\"");
+      goto leave;
+    }
+
+  if (!ctrl->server_local->devicename
+      || !ctrl->server_local->devicefp
+      || !ctrl->devti)
+    {
+      err = set_error (GPG_ERR_ENOENT, "No device has been set");
+      goto leave;
+    }
+
+  err = sh_is_empty_partition (ctrl->server_local->devicename);
+  if (!err)
+    {
+      err = gpg_error (GPG_ERR_ENODEV);
+      assuan_set_error (ctx, err, "Partition is empty");
+      goto leave;
+    }
+  err = 0;
+
+  /* We expect that the client already decrypted the keyblob.
+   * Eventually we should move reading of the keyblob to here and ask
+   * the client to decrypt it.  */
+  assuan_begin_confidential (ctx);
+  err = assuan_inquire (ctx, "KEYBLOB",
+                        &keyblob, &keybloblen, 4 * 1024);
+  assuan_end_confidential (ctx);
+  if (err)
+    {
+      log_error (_("assuan_inquire failed: %s\n"), gpg_strerror (err));
+      goto leave;
+    }
+  err = create_tupledesc (&tuples, keyblob, keybloblen);
+  if (!err)
+    keyblob = NULL;
+  else
+    {
+      if (gpg_err_code (err) == GPG_ERR_NOT_SUPPORTED)
+        log_error ("unknown keyblob version received\n");
+      goto leave;
+    }
+
+  err = sh_dmcrypt_resume_container (ctrl,
+                                     ctrl->server_local->devicename,
+                                     tuples);
+
+ leave:
+  xfree (tuples);
+  destroy_tupledesc (tuples);
+  return leave_cmd (ctx, err);
+}
+
+
 static const char hlp_getinfo[] =
   "GETINFO <what>\n"
   "\n"
@@ -476,6 +591,8 @@ register_commands (assuan_context_t ctx, int fail_all)
     { "DEVICE",        cmd_device, hlp_device },
     { "CREATE",        cmd_create, hlp_create },
     { "MOUNT",         cmd_mount,  hlp_mount  },
+    { "SUSPEND",       cmd_suspend,hlp_suspend},
+    { "RESUME",        cmd_resume, hlp_resume },
     { "INPUT",         NULL },
     { "OUTPUT",        NULL },
     { "GETINFO",       cmd_getinfo, hlp_getinfo },

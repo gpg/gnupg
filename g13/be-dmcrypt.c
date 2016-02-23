@@ -62,3 +62,38 @@ be_dmcrypt_mount_container (ctrl_t ctrl,
  leave:
   return err;
 }
+
+
+/* Suspend the container described by the filename FNAME.  */
+gpg_error_t
+be_dmcrypt_suspend_container (ctrl_t ctrl, const char *fname)
+{
+  gpg_error_t err;
+
+  err = call_syshelp_set_device (ctrl, fname);
+  if (err)
+    goto leave;
+
+  err = call_syshelp_run_suspend (ctrl, CONTTYPE_DM_CRYPT);
+
+ leave:
+  return err;
+}
+
+
+/* Resume the container described by the filename FNAME and the keyblob
+ * information in TUPLES.  */
+gpg_error_t
+be_dmcrypt_resume_container (ctrl_t ctrl, const char *fname, tupledesc_t tuples)
+{
+  gpg_error_t err;
+
+  err = call_syshelp_set_device (ctrl, fname);
+  if (err)
+    goto leave;
+
+  err = call_syshelp_run_resume (ctrl, CONTTYPE_DM_CRYPT, tuples);
+
+ leave:
+  return err;
+}

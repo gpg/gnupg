@@ -39,6 +39,10 @@ gpg_error_t be_mount_container (ctrl_t ctrl, int conttype,
                                 const char *fname, const char *mountpoint,
                                 tupledesc_t tuples,
                                 unsigned int *r_id);
+gpg_error_t be_suspend_container (ctrl_t ctrl, int conttype,
+                                  const char *fname);
+gpg_error_t be_resume_container (ctrl_t ctrl, int conttype,
+                                 const char *fname, tupledesc_t tuples);
 
 
 #endif /*G13_BACKEND_H*/

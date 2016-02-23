@@ -198,7 +198,7 @@ be_create_new_keys (int conttype, membuf_t *mb)
 }
 
 
-/*  Dispatcher to the backend's create function.  */
+/* Dispatcher to the backend's create function.  */
 gpg_error_t
 be_create_container (ctrl_t ctrl, int conttype,
                      const char *fname, int fd, tupledesc_t tuples,
@@ -220,7 +220,7 @@ be_create_container (ctrl_t ctrl, int conttype,
 }
 
 
-/*  Dispatcher to the backend's mount function.  */
+/* Dispatcher to the backend's mount function.  */
 gpg_error_t
 be_mount_container (ctrl_t ctrl, int conttype,
                     const char *fname,  const char *mountpoint,
@@ -233,6 +233,43 @@ be_mount_container (ctrl_t ctrl, int conttype,
 
     case CONTTYPE_DM_CRYPT:
       return be_dmcrypt_mount_container (ctrl, fname, mountpoint, tuples);
+
+    default:
+      return no_such_backend (conttype);
+    }
+}
+
+
+/* Dispatcher to the backend's suspend function.  */
+gpg_error_t
+be_suspend_container (ctrl_t ctrl, int conttype, const char *fname)
+{
+  switch (conttype)
+    {
+    case CONTTYPE_ENCFS:
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+    case CONTTYPE_DM_CRYPT:
+      return be_dmcrypt_suspend_container (ctrl, fname);
+
+    default:
+      return no_such_backend (conttype);
+    }
+}
+
+
+/* Dispatcher to the backend's resume function.  */
+gpg_error_t
+be_resume_container (ctrl_t ctrl, int conttype, const char *fname,
+                     tupledesc_t tuples)
+{
+  switch (conttype)
+    {
+    case CONTTYPE_ENCFS:
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+    case CONTTYPE_DM_CRYPT:
+      return be_dmcrypt_resume_container (ctrl, fname, tuples);
 
     default:
       return no_such_backend (conttype);

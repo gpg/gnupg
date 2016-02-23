@@ -30,8 +30,9 @@
 #include "i18n.h"
 #include "keyblob.h"
 #include "server.h"
-#include "mount.h"
 #include "create.h"
+#include "mount.h"
+#include "suspend.h"
 
 
 /* The filepointer for status message used in non-server mode */
@@ -356,6 +357,56 @@ cmd_umount (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_suspend[] =
+  "SUSPEND\n"
+  "\n"
+  "Suspend the currently set device.";
+static gpg_error_t
+cmd_suspend (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+
+  line = skip_options (line);
+  if (*line)
+    {
+      err = gpg_error (GPG_ERR_ASS_SYNTAX);
+      goto leave;
+    }
+
+  /* Perform the suspend operation.  */
+  err = g13_suspend_container (ctrl, ctrl->server_local->containername);
+
+ leave:
+  return leave_cmd (ctx, err);
+}
+
+
+static const char hlp_resume[] =
+  "RESUME\n"
+  "\n"
+  "Resume the currently set device.";
+static gpg_error_t
+cmd_resume (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+
+  line = skip_options (line);
+  if (*line)
+    {
+      err = gpg_error (GPG_ERR_ASS_SYNTAX);
+      goto leave;
+    }
+
+  /* Perform the suspend operation.  */
+  err = g13_resume_container (ctrl, ctrl->server_local->containername);
+
+ leave:
+  return leave_cmd (ctx, err);
+}
+
+
 static const char hlp_recipient[] =
   "RECIPIENT <userID>\n"
   "\n"
@@ -543,6 +594,8 @@ register_commands (assuan_context_t ctx)
     { "OPEN",          cmd_open,   hlp_open },
     { "MOUNT",         cmd_mount,  hlp_mount},
     { "UMOUNT",        cmd_umount, hlp_umount },
+    { "SUSPEND",       cmd_suspend, hlp_suspend },
+    { "RESUME",        cmd_resume,  hlp_resume },
     { "RECIPIENT",     cmd_recipient, hlp_recipient },
     { "SIGNER",        cmd_signer, hlp_signer },
     { "CREATE",        cmd_create, hlp_create },

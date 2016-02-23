@@ -337,6 +337,7 @@ mount_status_cb (void *opaque, const char *line)
 }
 
 
+/* Inquire callback for MOUNT and RESUME.  */
 static gpg_error_t
 mount_inq_cb (void *opaque, const char *line)
 {
@@ -363,9 +364,11 @@ mount_inq_cb (void *opaque, const char *line)
 }
 
 
-/* Run the MOUNT command on the current device.  CONTTYPES gives the
-   requested content type for the new container.  MOUNTPOINT the
-   desired mount point or NULL for default.  */
+/*
+ * Run the MOUNT command on the current device.  CONTTYPES gives the
+ * requested content type for the new container.  MOUNTPOINT the
+ * desired mount point or NULL for default.
+ */
 gpg_error_t
 call_syshelp_run_mount (ctrl_t ctrl, int conttype, const char *mountpoint,
                         tupledesc_t tuples)
@@ -398,6 +401,83 @@ call_syshelp_run_mount (ctrl_t ctrl, int conttype, const char *mountpoint,
   else
     {
       (void)mountpoint; /* Not used.  */
+      log_error ("invalid backend type %d given\n", conttype);
+      err = GPG_ERR_INTERNAL;
+      goto leave;
+    }
+
+ leave:
+  return err;
+}
+
+
+
+/*
+ * Run the SUSPEND command on the current device.  CONTTYPES gives the
+ * requested content type for the new container.
+ */
+gpg_error_t
+call_syshelp_run_suspend (ctrl_t ctrl, int conttype)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+
+  err = start_syshelp (ctrl, &ctx);
+  if (err)
+    goto leave;
+
+  if (conttype == CONTTYPE_DM_CRYPT)
+    {
+      err = assuan_transact (ctx, "SUSPEND dm-crypt",
+                             NULL, NULL,
+                             NULL, NULL,
+                             NULL, NULL);
+    }
+  else
+    {
+      log_error ("invalid backend type %d given\n", conttype);
+      err = GPG_ERR_INTERNAL;
+      goto leave;
+    }
+
+ leave:
+  return err;
+}
+
+
+
+/* Run the RESUME command on the current device.  CONTTYPES gives the
+   requested content type for the container.  */
+gpg_error_t
+call_syshelp_run_resume (ctrl_t ctrl, int conttype, tupledesc_t tuples)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  struct mount_parm_s parm;
+
+  memset (&parm, 0, sizeof parm);
+
+  err = start_syshelp (ctrl, &ctx);
+  if (err)
+    goto leave;
+
+  /* tty_get ("waiting for debugger"); */
+  /* tty_kill_prompt (); */
+
+  parm.ctx = ctx;
+  parm.ctrl = ctrl;
+  if (conttype == CONTTYPE_DM_CRYPT)
+    {
+      ref_tupledesc (tuples);
+      parm.keyblob = get_tupledesc_data (tuples, &parm.keybloblen);
+      err = assuan_transact (ctx, "RESUME dm-crypt",
+                             NULL, NULL,
+                             mount_inq_cb, &parm,
+                             NULL, NULL);
+      unref_tupledesc (tuples);
+    }
+  else
+    {
       log_error ("invalid backend type %d given\n", conttype);
       err = GPG_ERR_INTERNAL;
       goto leave;

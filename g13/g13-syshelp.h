@@ -86,6 +86,10 @@ gpg_error_t sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname,
                                          estream_t devfp);
 gpg_error_t sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
                                         tupledesc_t keyblob);
+gpg_error_t sh_dmcrypt_suspend_container (ctrl_t ctrl, const char *devname);
+gpg_error_t sh_dmcrypt_resume_container (ctrl_t ctrl, const char *devname,
+                                         tupledesc_t keyblob);
+
 
 
 #endif /*G13_SYSHELP_H*/

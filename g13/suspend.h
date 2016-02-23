@@ -1,5 +1,5 @@
-/* mount.h - Defs to mount a crypto container
- * Copyright (C) 2009 Free Software Foundation, Inc.
+/* suspend.h - Suspend/Resume a crypto container.
+ * Copyright (C) 2016 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -17,15 +17,10 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef G13_MOUNT_H
-#define G13_MOUNT_H
+#ifndef G13_SUSPEND_H
+#define G13_SUSPEND_H
 
-gpg_error_t g13_mount_container (ctrl_t ctrl,
-                                 const char *filename,
-                                 const char *mountpoint);
-gpg_error_t g13_umount_container (ctrl_t ctrl,
-                                  const char *filename,
-                                  const char *mountpoint);
+gpg_error_t g13_suspend_container (ctrl_t ctrl, const char *filename);
+gpg_error_t g13_resume_container (ctrl_t ctrl, const char *filename);
 
-
-#endif /*G13_MOUNT_H*/
+#endif /*G13_SUSPEND_H*/

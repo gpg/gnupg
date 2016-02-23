@@ -72,10 +72,13 @@
 #endif
 
 
-/* Check whether the block device DEVNAME is used by device mapper.
-   Returns: 0 if the device is good and not yet used by DM.  */
+/*
+ * Check whether the block device DEVNAME is used by device mapper.
+ * If EXPECT_BUSY is set no error message is printed if the device is
+ * busy.  Returns: 0 if the device is good and not yet used by DM.
+ */
 static gpg_error_t
-check_blockdev (const char *devname)
+check_blockdev (const char *devname, int expect_busy)
 {
   gpg_error_t err;
   struct stat sb;
@@ -147,8 +150,10 @@ check_blockdev (const char *devname)
 
           if (xmajor == devmajor && xminor == devminor)
             {
-              log_error ("device '%s' (%u:%u) already used by device mapper\n",
-                         devname, devmajor, devminor);
+              if (!expect_busy)
+                log_error ("device '%s' (%u:%u)"
+                           " already in use by device mapper\n",
+                           devname, devmajor, devminor);
               err = gpg_error (GPG_ERR_EBUSY);
               goto leave;
             }
@@ -290,7 +295,7 @@ sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname, estream_t devfp)
     }
 
   /* Check that the device is not used by device mapper. */
-  err = check_blockdev (devname);
+  err = check_blockdev (devname, 0);
   if (err)
     goto leave;
 
@@ -525,7 +530,7 @@ sh_dmcrypt_create_container (ctrl_t ctrl, const char *devname, estream_t devfp)
 }
 
 
-/* Mount a DM-Crypt congtainer on device DEVNAME taking keys and other
+/* Mount a DM-Crypt container on device DEVNAME taking keys and other
  * meta data from KEYBLOB.  */
 gpg_error_t
 sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
@@ -549,7 +554,7 @@ sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
   g13_syshelp_i_know_what_i_am_doing ();
 
   /* Check that the device is not yet used by device mapper. */
-  err = check_blockdev (devname);
+  err = check_blockdev (devname, 0);
   if (err)
     goto leave;
 
@@ -704,6 +709,226 @@ sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
         log_info ("WARNING: mount returned data on stdout! (%s)\n", result);
     }
 
+
+ leave:
+  wipememory (hexkey, sizeof hexkey);
+  if (table)
+    {
+      wipememory (table, strlen (table));
+      xfree (table);
+    }
+  xfree (targetname_abs);
+  xfree (result);
+  return err;
+}
+
+
+/* Suspend a DM-Crypt container on device DEVNAME and wipe the keys.  */
+gpg_error_t
+sh_dmcrypt_suspend_container (ctrl_t ctrl, const char *devname)
+{
+  gpg_error_t err;
+  char *targetname_abs = NULL;
+  const char *targetname;
+  char *result = NULL;
+
+  if (!ctrl->devti)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  g13_syshelp_i_know_what_i_am_doing ();
+
+  /* Check that the device is used by device mapper. */
+  err = check_blockdev (devname, 1);
+  if (gpg_err_code (err) != GPG_ERR_EBUSY)
+    {
+      log_error ("device '%s' is not used by the device mapper: %s\n",
+                 devname, gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Fixme: Check that this is really a g13 partition.  */
+
+  /* Device mapper needs a name for the device: Take it from the label
+     or use "0".  */
+  targetname_abs = strconcat ("/dev/mapper/",
+                              "g13-", ctrl->client.uname, "-",
+                              ctrl->devti->label? ctrl->devti->label : "0",
+                              NULL);
+  if (!targetname_abs)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  targetname = strrchr (targetname_abs, '/');
+  if (!targetname)
+    BUG ();
+  targetname++;
+
+  /* Send the suspend command.  */
+  {
+    const char *argv[3];
+
+    argv[0] = "suspend";
+    argv[1] = targetname;
+    argv[2] = NULL;
+    log_debug ("now running \"dmsetup suspend %s\"\n", targetname);
+    err = gnupg_exec_tool ("/sbin/dmsetup", argv, NULL, &result, NULL);
+  }
+  if (err)
+    {
+      log_error ("error running \"dmsetup suspend %s\": %s\n",
+                 targetname, gpg_strerror (err));
+      goto leave;
+    }
+  if (result && *result)
+    log_debug ("dmsetup result: %s\n", result);
+  xfree (result);
+  result = NULL;
+
+  /* Send the wipe key command.  */
+  {
+    const char *argv[5];
+
+    argv[0] = "message";
+    argv[1] = targetname;
+    argv[2] = "0";
+    argv[3] = "key wipe";
+    argv[4] = NULL;
+    log_debug ("now running \"dmsetup message %s 0 key wipe\"\n", targetname);
+    err = gnupg_exec_tool ("/sbin/dmsetup", argv, NULL, &result, NULL);
+  }
+  if (err)
+    {
+      log_error ("error running \"dmsetup message %s 0 key wipe\": %s\n",
+                 targetname, gpg_strerror (err));
+      goto leave;
+    }
+  if (result && *result)
+    log_debug ("dmsetup result: %s\n", result);
+  xfree (result);
+  result = NULL;
+
+
+ leave:
+  xfree (targetname_abs);
+  xfree (result);
+  return err;
+}
+
+
+/* Resume a DM-Crypt container on device DEVNAME taking keys and other
+ * meta data from KEYBLOB.  */
+gpg_error_t
+sh_dmcrypt_resume_container (ctrl_t ctrl, const char *devname,
+                             tupledesc_t keyblob)
+{
+  gpg_error_t err;
+  char *targetname_abs = NULL;
+  const char *targetname;
+  char hexkey[8+16*2+1]; /* 8 is used to prepend "key set ".  */
+  char *table = NULL;
+  char *result = NULL;
+  size_t n;
+  const char *s;
+  const char *algostr;
+  size_t algostrlen;
+
+  if (!ctrl->devti)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  g13_syshelp_i_know_what_i_am_doing ();
+
+  /* Check that the device is used by device mapper. */
+  err = check_blockdev (devname, 1);
+  if (gpg_err_code (err) != GPG_ERR_EBUSY)
+    {
+      log_error ("device '%s' is not used by the device mapper: %s\n",
+                 devname, gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Device mapper needs a name for the device: Take it from the label
+     or use "0".  */
+  targetname_abs = strconcat ("/dev/mapper/",
+                              "g13-", ctrl->client.uname, "-",
+                              ctrl->devti->label? ctrl->devti->label : "0",
+                              NULL);
+  if (!targetname_abs)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  targetname = strrchr (targetname_abs, '/');
+  if (!targetname)
+    BUG ();
+  targetname++;
+
+  /* Get the algorithm string.  */
+  algostr = find_tuple (keyblob, KEYBLOB_TAG_ALGOSTR, &algostrlen);
+  if (!algostr || algostrlen > 100)
+    {
+      log_error ("algo string not found in keyblob or too long\n");
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+
+  /* Get the key.  */
+  s = find_tuple (keyblob, KEYBLOB_TAG_ENCKEY, &n);
+  if (!s || n != 16)
+    {
+      if (!s)
+        log_error ("no key found in keyblob\n");
+      else
+        log_error ("unexpected size of key (%zu)\n", n);
+      err = gpg_error (GPG_ERR_INV_KEYLEN);
+      goto leave;
+    }
+  strcpy (hexkey, "key set ");
+  bin2hex (s, 16, hexkey+8);
+
+  /* Send the key */
+  {
+    const char *argv[4];
+
+    argv[0] = "message";
+    argv[1] = targetname;
+    argv[2] = "0";
+    argv[3] = NULL;
+    log_debug ("now running \"dmsetup message %s 0 [key set]\"\n", targetname);
+    err = gnupg_exec_tool ("/sbin/dmsetup", argv, hexkey, &result, NULL);
+  }
+  wipememory (hexkey, sizeof hexkey);
+  if (err)
+    {
+      log_error ("error running \"dmsetup message %s 0 [key set]\": %s\n",
+                 devname, gpg_strerror (err));
+      goto leave;
+    }
+  if (result && *result)
+    log_debug ("dmsetup result: %s\n", result);
+  xfree (result);
+  result = NULL;
+
+  /* Send the resume command. */
+  {
+    const char *argv[3];
+
+    argv[0] = "resume";
+    argv[1] = targetname;
+    argv[2] = NULL;
+    log_debug ("now running \"dmsetup resume %s\"\n", targetname);
+    err = gnupg_exec_tool ("/sbin/dmsetup", argv, NULL, &result, NULL);
+  }
+  if (err)
+    {
+      log_error ("error running \"dmsetup resume %s\": %s\n",
+                 targetname, gpg_strerror (err));
+      goto leave;
+    }
+  if (result && *result)
+    log_debug ("dmsetup result: %s\n", result);
+  xfree (result);
+  result = NULL;
 
  leave:
   wipememory (hexkey, sizeof hexkey);

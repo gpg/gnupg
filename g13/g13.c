@@ -42,6 +42,7 @@
 #include "runner.h"
 #include "create.h"
 #include "mount.h"
+#include "suspend.h"
 #include "mountinfo.h"
 #include "backend.h"
 #include "call-syshelp.h"
@@ -58,6 +59,8 @@ enum cmd_and_opt_values {
   aCreate,
   aMount,
   aUmount,
+  aSuspend,
+  aResume,
   aServer,
 
   oOptions,
@@ -109,6 +112,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aCreate, "create", N_("Create a new file system container")),
   ARGPARSE_c (aMount,  "mount",  N_("Mount a file system container") ),
   ARGPARSE_c (aUmount, "umount", N_("Unmount a file system container") ),
+  ARGPARSE_c (aSuspend, "suspend", N_("Suspend a file system container") ),
+  ARGPARSE_c (aResume,  "resume",  N_("Resume a file system container") ),
   ARGPARSE_c (aServer, "server", N_("Run in server mode")),
 
   ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
@@ -490,7 +495,8 @@ main ( int argc, char **argv)
         case aServer:
         case aMount:
         case aUmount:
-          /* nokeysetup = 1; */
+        case aSuspend:
+        case aResume:
         case aCreate:
           set_cmd (&cmd, pargs.r_opt);
           break;
@@ -766,6 +772,40 @@ main ( int argc, char **argv)
         err = g13_mount_container (&ctrl, argv[0], argc == 2?argv[1]:NULL);
         if (err)
           log_error ("error mounting container '%s': %s <%s>\n",
+                     *argv, gpg_strerror (err), gpg_strsource (err));
+      }
+      break;
+
+    case aUmount: /* Unmount a mounted container.  */
+      {
+        if (argc != 1)
+          wrong_args ("--umount filename");
+        err = GPG_ERR_NOT_IMPLEMENTED;
+        log_error ("error unmounting container '%s': %s <%s>\n",
+                   *argv, gpg_strerror (err), gpg_strsource (err));
+      }
+      break;
+
+    case aSuspend: /* Suspend a container. */
+      {
+        /* Fixme: Should we add a suspend all container option?  */
+        if (argc != 1)
+          wrong_args ("--suspend filename");
+        err = g13_suspend_container (&ctrl, argv[0]);
+        if (err)
+          log_error ("error suspending container '%s': %s <%s>\n",
+                     *argv, gpg_strerror (err), gpg_strsource (err));
+      }
+      break;
+
+    case aResume: /* Resume a suspended container. */
+      {
+        /* Fixme: Should we add a resume all container option?  */
+        if (argc != 1)
+          wrong_args ("--resume filename");
+        err = g13_resume_container (&ctrl, argv[0]);
+        if (err)
+          log_error ("error resuming container '%s': %s <%s>\n",
                      *argv, gpg_strerror (err), gpg_strsource (err));
       }
       break;

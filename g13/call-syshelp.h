@@ -28,6 +28,9 @@ gpg_error_t call_syshelp_run_create (ctrl_t ctrl, int conttype);
 gpg_error_t call_syshelp_run_mount (ctrl_t ctrl, int conttype,
                                     const char *mountpoint,
                                     tupledesc_t tuples);
+gpg_error_t call_syshelp_run_suspend (ctrl_t ctrl, int conttype);
+gpg_error_t call_syshelp_run_resume (ctrl_t ctrl, int conttype,
+                                     tupledesc_t tuples);
 
 
 #endif /*GNUPG_G13_CALL_SYSHELP_H*/
