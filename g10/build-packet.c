@@ -528,33 +528,23 @@ calc_plaintext( PKT_plaintext *pt )
 static int
 do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
 {
-    int i, rc = 0;
-    u32 n;
-    byte buf[1000]; /* this buffer has the plaintext! */
-    int nbytes;
+    int rc = 0;
+    size_t nbytes;
 
     write_header(out, ctb, calc_plaintext( pt ) );
     iobuf_put(out, pt->mode );
     iobuf_put(out, pt->namelen );
-    for(i=0; i < pt->namelen; i++ )
-	iobuf_put(out, pt->name[i] );
+    iobuf_write (out, pt->name, pt->namelen);
     rc = write_32(out, pt->timestamp );
     if (rc)
       return rc;
 
-    n = 0;
-    while( (nbytes=iobuf_read(pt->buf, buf, 1000)) != -1 ) {
-      rc = iobuf_write (out, buf, nbytes);
-      if (rc)
-        break;
-      n += nbytes;
-    }
-    wipememory(buf,1000); /* burn the buffer */
+    nbytes = iobuf_copy (out, pt->buf);
     if( (ctb&0x40) && !pt->len )
       iobuf_set_partial_body_length_mode(out, 0 ); /* turn off partial */
-    if( pt->len && n != pt->len )
+    if( pt->len && nbytes != pt->len )
       log_error("do_plaintext(): wrote %lu bytes but expected %lu bytes\n",
-		(ulong)n, (ulong)pt->len );
+		(ulong)nbytes, (ulong)pt->len );
 
     return rc;
 }

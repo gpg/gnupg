@@ -2253,6 +2253,9 @@ iobuf_copy (iobuf_t dest, iobuf_t source)
         break;
       nwrote += nread;
     }
+
+  /* Burn the buffer.  */
+  wipememory (temp, sizeof (temp));
   xfree (temp);
 
   return nwrote;
