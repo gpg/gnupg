@@ -1450,6 +1450,10 @@ write_header2( IOBUF out, int ctb, u32 len, int hdrlen )
   /* An old format packet.  Refer to RFC 4880, Section 4.2.1 to
      understand how lengths are encoded in this case.  */
 
+  /* The length encoding is stored in the two least significant bits.
+     Make sure they are cleared.  */
+  log_assert ((ctb & 3) == 0);
+
   log_assert (hdrlen == 0 || hdrlen == 2 || hdrlen == 3 || hdrlen == 5);
 
   if (hdrlen)
@@ -1462,10 +1466,13 @@ write_header2( IOBUF out, int ctb, u32 len, int hdrlen )
         /* 01 => 2 byte length.  If len < 256, this is not the most
            compact encoding, but it is a correct encoding.  */
 	ctb |= 1;
-      else
+      else if (hdrlen == 5)
         /* 10 => 4 byte length.  If len < 65536, this is not the most
            compact encoding, but it is a correct encoding.  */
 	ctb |= 2;
+      else
+        log_bug ("Can't encode length=%d in a %d byte header!\n",
+                 len, hdrlen);
     }
   else
     {
