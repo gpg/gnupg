@@ -1086,7 +1086,12 @@ check_key_signature2 (kbnode_t root, kbnode_t node, PKT_public_key *check_pk,
 	  }
       }
   else
-      BUG ();
+    {
+      log_info ("sig issued by %s with class %d (digest: %x %x) is not valid over a user id or a key id, ignoring.\n",
+                keystr (sig->keyid), sig->sig_class,
+                sig->digest_start[0], sig->digest_start[1]);
+      rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
+    }
 
   cache_sig_result  (sig, rc);
 
