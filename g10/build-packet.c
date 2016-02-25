@@ -310,6 +310,11 @@ write_fake_data (IOBUF out, gcry_mpi_t a)
 }
 
 
+/* Serialize the user id (RFC 4880, Section 5.11) or the user
+   attribute UID (Section 5.12) and write it to OUT.
+
+   CTB is the serialization's CTB.  It specifies the header format and
+   the packet's type.  The header length must not be set.  */
 static int
 do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
@@ -332,12 +337,31 @@ do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 }
 
 
+/* Serialize the key (RFC 4880, Section 5.5) described by PK and write
+   it to OUT.
+
+   This function serializes both primary keys and subkeys with or
+   without a secret part.
+
+   CTB is the serialization's CTB.  It specifies the header format and
+   the packet's type.  The header length must not be set.
+
+   PK->VERSION specifies the serialization format.  A value of 0 means
+   to use the default version.  Currently, only version 4 packets are
+   supported.
+ */
 static int
 do_key (iobuf_t out, int ctb, PKT_public_key *pk)
 {
   gpg_error_t err = 0;
+  /* The length of the body is stored in the packet's header, which
+     occurs before the body.  Unfortunately, we don't know the length
+     of the packet's body until we've written all of the data!  To
+     work around this, we first write the data into this temporary
+     buffer, then generate the header, and finally copy the contents
+     of this buffer to OUT.  */
+  iobuf_t a = iobuf_temp();
   int i, nskey, npkey;
-  iobuf_t a = iobuf_temp(); /* Build in a self-enlarging buffer.  */
 
   log_assert (pk->version == 0 || pk->version == 4);
   log_assert (ctb_pkttype (ctb) == PKT_PUBLIC_KEY
@@ -355,7 +379,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
   iobuf_put (a, pk->pubkey_algo );
 
   /* Get number of secret and public parameters.  They are held in one
-     array first the public ones, then the secret ones.  */
+     array: the public ones followed by the secret ones.  */
   nskey = pubkey_get_nskey (pk->pubkey_algo);
   npkey = pubkey_get_npkey (pk->pubkey_algo);
 
@@ -463,7 +487,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
          writing all the other stuff, so that we know the length of
          the packet */
       write_header2 (out, ctb, iobuf_get_temp_length(a), pk->hdrbytes);
-      /* And finally write it out to the real stream. */
+       /* And finally write it out to the real stream. */
       err = iobuf_write_temp (out, a);
     }
 
@@ -471,6 +495,11 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
   return err;
 }
 
+/* Serialize the symmetric-key encrypted session key packet (RFC 4880,
+   5.3) described by ENC and write it to OUT.
+
+   CTB is the serialization's CTB.  It specifies the header format and
+   the packet's type.  The header length must not be set.  */
 static int
 do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
 {
@@ -479,10 +508,23 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
 
     log_assert (ctb_pkttype (ctb) == PKT_SYMKEY_ENC);
 
+    /* The only acceptable version.  */
     assert( enc->version == 4 );
-    switch( enc->s2k.mode ) {
-      case 0: case 1: case 3: break;
-      default: log_bug("do_symkey_enc: s2k=%d\n", enc->s2k.mode );
+
+    /* RFC 4880, Section 3.7.  */
+    switch( enc->s2k.mode )
+      {
+      /* Simple S2K.  */
+      case 0:
+      /* Salted S2K.  */
+      case 1:
+      /* Iterated and salted S2K.  */
+      case 3:
+        /* Reasonable values.  */
+        break;
+
+      default:
+        log_bug("do_symkey_enc: s2k=%d\n", enc->s2k.mode );
     }
     iobuf_put( a, enc->version );
     iobuf_put( a, enc->cipher_algo );
@@ -504,6 +546,11 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
 }
 
 
+/* Serialize the public-key encrypted session key packet (RFC 4880,
+   5.1) described by ENC and write it to OUT.
+
+   CTB is the serialization's CTB.  It specifies the header format and
+   the packet's type.  The header length must not be set.  */
 static int
 do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
 {
@@ -548,6 +595,8 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
 }
 
 
+/* Calculate the length of the serialized plaintext packet PT (RFC
+   4480, Section 5.9).  */
 static u32
 calc_plaintext( PKT_plaintext *pt )
 {
@@ -561,6 +610,15 @@ calc_plaintext( PKT_plaintext *pt )
   return pt->len? (1 + 1 + pt->namelen + 4 + pt->len) : 0;
 }
 
+/* Serialize the plaintext packet (RFC 4880, 5.9) described by PT and
+   write it to OUT.
+
+   The body of the message is stored in PT->BUF.  The amount of data
+   to write is PT->LEN.  (PT->BUF should be configured to return EOF
+   after this much data has been read.)  If PT->LEN is 0 and CTB
+   indicates that this is a new format packet, then partial block mode
+   is assumed to have been enabled on OUT.  On success, partial block
+   mode is disabled.  */
 static int
 do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
 {
@@ -591,6 +649,13 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
 
 
 
+/* Serialize the symmetrically encrypted data packet (RFC 4880,
+   Section 5.7) described by ED and write it to OUT.
+
+   Note: this only writes the packets header!  The call must then
+   follow up and write the initial random data and the body to OUT.
+   (If you use the encryption iobuf filter (cipher_filter), then this
+   is done automatically.)  */
 static int
 do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed )
 {
@@ -608,6 +673,14 @@ do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed )
     return rc;
 }
 
+/* Serialize the symmetrically encrypted integrity protected data
+   packet (RFC 4880, Section 5.13) described by ED and write it to
+   OUT.
+
+   Note: this only writes the packet's header!  The caller must then
+   follow up and write the initial random data, the body and the MDC
+   packet to OUT.  (If you use the encryption iobuf filter
+   (cipher_filter), then this is done automatically.)  */
 static int
 do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed )
 {
@@ -628,6 +701,11 @@ do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed )
 }
 
 
+/* Serialize the compressed packet (RFC 4880, Section 5.6) described
+   by CD and write it to OUT.
+
+   Note: this only writes the packet's header!  The caller must then
+   follow up and write the body to OUT.  */
 static int
 do_compressed( IOBUF out, int ctb, PKT_compressed *cd )
 {
@@ -983,6 +1061,15 @@ build_attribute_subpkt(PKT_user_id *uid,byte type,
   uid->attrib_len+=idx+headerlen+buflen;
 }
 
+/* Turn the notation described by the string STRING into a notation.
+
+   STRING has the form:
+
+     - -name - Delete the notation.
+     - name@domain.name=value - Normal notation
+     - !name@domain.name=value - Notation with critical bit set.
+
+   The caller must free the result using free_notation().  */
 struct notation *
 string_to_notation(const char *string,int is_utf8)
 {
@@ -1073,6 +1160,8 @@ string_to_notation(const char *string,int is_utf8)
   return NULL;
 }
 
+/* Return all of the notations stored in the signature SIG.  The
+   caller must free them using free_notation().  */
 struct notation *
 sig_to_notation(PKT_signature *sig)
 {
@@ -1081,6 +1170,15 @@ sig_to_notation(PKT_signature *sig)
   int seq=0,crit;
   struct notation *list=NULL;
 
+  /* See RFC 4880, 5.2.3.16 for the format of notation data.  In
+     short, a notation has:
+
+       - 4 bytes of flags
+       - 2 byte name length (n1)
+       - 2 byte value length (n2)
+       - n1 bytes of name data
+       - n2 bytes of value data
+   */
   while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_NOTATION,&len,&seq,&crit)))
     {
       int n1,n2;
@@ -1092,7 +1190,9 @@ sig_to_notation(PKT_signature *sig)
 	  continue;
 	}
 
+      /* name length.  */
       n1=(p[4]<<8)|p[5];
+      /* value length.  */
       n2=(p[6]<<8)|p[7];
 
       if(8+n1+n2!=len)
@@ -1108,12 +1208,14 @@ sig_to_notation(PKT_signature *sig)
       n->name[n1]='\0';
 
       if(p[0]&0x80)
+        /* The value is human-readable.  */
 	{
 	  n->value=xmalloc(n2+1);
 	  memcpy(n->value,&p[8+n1],n2);
 	  n->value[n2]='\0';
 	}
       else
+        /* Binary data.  */
 	{
 	  n->bdat=xmalloc(n2);
 	  n->blen=n2;
@@ -1134,6 +1236,9 @@ sig_to_notation(PKT_signature *sig)
   return list;
 }
 
+/* Release the resources associated with the *list* of notations.  To
+   release a single notation, make sure that notation->next is
+   NULL.  */
 void
 free_notation(struct notation *notation)
 {
@@ -1150,6 +1255,8 @@ free_notation(struct notation *notation)
     }
 }
 
+/* Serialize the signature packet (RFC 4880, Section 5.2) described by
+   SIG and write it to OUT.  */
 static int
 do_signature( IOBUF out, int ctb, PKT_signature *sig )
 {
@@ -1217,6 +1324,8 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
 }
 
 
+/* Serialize the one-pass signature packet (RFC 4880, Section 5.4)
+   described by OPS and write it to OUT.  */
 static int
 do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops )
 {
@@ -1236,6 +1345,7 @@ do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops )
 }
 
 
+/* Write a 16-bit quantity to OUT in big endian order.  */
 static int
 write_16(IOBUF out, u16 a)
 {
@@ -1245,6 +1355,7 @@ write_16(IOBUF out, u16 a)
     return 0;
 }
 
+/* Write a 32-bit quantity to OUT in big endian order.  */
 static int
 write_32(IOBUF out, u32 a)
 {
@@ -1308,11 +1419,26 @@ write_sign_packet_header (IOBUF out, int ctb, u32 len)
 }
 
 /****************
- * If HDRLEN is > 0, try to build a header of this length.  We need
- * this so that we can hash packets without reading them again.  If
- * len is 0, write a partial or indeterminate length header, unless
- * hdrlen is specified in which case write an actual zero length
- * (using the specified hdrlen).
+ * Write a packet header to OUT.
+ *
+ * CTB is the ctb.  It determines whether a new or old format packet
+ * header should be written.  The length field is adjusted, but the
+ * CTB is otherwise written out as is.
+ *
+ * LEN is the length of the packet's body.
+ *
+ * If HDRLEN is set, then we don't necessarily use the most efficient
+ * encoding to store LEN, but the specified length.  (If this is not
+ * possible, this is a bug.)  In this case, LEN=0 means a 0 length
+ * packet.  Note: setting HDRLEN is only supported for old format
+ * packets!
+ *
+ * If HDRLEN is not set, then the shortest encoding is used.  In this
+ * case, LEN=0 means the body has an indeterminate length and a
+ * partial body length header (if a new format packet) or an
+ * indeterminate length header (if an old format packet) is written
+ * out.  Further, if using partial body lengths, this enables partial
+ * body length mode on OUT.
  */
 static int
 write_header2( IOBUF out, int ctb, u32 len, int hdrlen )
@@ -1320,26 +1446,39 @@ write_header2( IOBUF out, int ctb, u32 len, int hdrlen )
   if( ctb & 0x40 )
     return write_new_header( out, ctb, len, hdrlen );
 
+  /* An old format packet.  Refer to RFC 4880, Section 4.2.1 to
+     understand how lengths are encoded in this case.  */
+
   log_assert (hdrlen == 0 || hdrlen == 2 || hdrlen == 3 || hdrlen == 5);
 
-  if( hdrlen )
+  if (hdrlen)
+    /* Header length is given.  */
     {
       if( hdrlen == 2 && len < 256 )
+        /* 00 => 1 byte length.  */
 	;
       else if( hdrlen == 3 && len < 65536 )
+        /* 01 => 2 byte length.  If len < 256, this is not the most
+           compact encoding, but it is a correct encoding.  */
 	ctb |= 1;
       else
+        /* 10 => 4 byte length.  If len < 65536, this is not the most
+           compact encoding, but it is a correct encoding.  */
 	ctb |= 2;
     }
   else
     {
       if( !len )
+        /* 11 => Indeterminate length.  */
 	ctb |= 3;
       else if( len < 256 )
+        /* 00 => 1 byte length.  */
 	;
       else if( len < 65536 )
+        /* 01 => 2 byte length.  */
 	ctb |= 1;
       else
+        /* 10 => 4 byte length.  */
 	ctb |= 2;
     }
 
@@ -1368,6 +1507,20 @@ write_header2( IOBUF out, int ctb, u32 len, int hdrlen )
 }
 
 
+/* Write a new format header to OUT.
+
+   CTB is the ctb.
+
+   LEN is the length of the packet's body.  If LEN is 0, then enables
+   partial body length mode (i.e., the body is of an indeterminant
+   length) on OUT.  Note: this function cannot be used to generate a
+   header for a zero length packet.
+
+   HDRLEN is the length of the packet's header.  If HDRLEN is 0, the
+   shortest encoding is chosen based on the length of the packet's
+   body.  Currently, values other than 0 are not supported.
+
+   Returns 0 on success.  */
 static int
 write_new_header( IOBUF out, int ctb, u32 len, int hdrlen )
 {

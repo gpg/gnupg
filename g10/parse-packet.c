@@ -1668,7 +1668,7 @@ enum_sig_subpkt (const subpktarea_t * pktbuf, sigsubpkttype_t reqtype,
     }
   if (reqtype == SIGSUBPKT_TEST_CRITICAL)
     /* Returning NULL means we found a subpacket with the critical bit
-       set that we dn't grok.  We've iterated over all the subpackets
+       set that we don't grok.  We've iterated over all the subpackets
        and haven't found such a packet so we need to return a non-NULL
        value.  */
     return buffer;

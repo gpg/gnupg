@@ -79,49 +79,91 @@ typedef struct {
     byte value;
 } prefitem_t;
 
+/* A string-to-key specifier as defined in RFC 4880, Section 3.7.  */
 typedef struct
 {
   int  mode;      /* Must be an integer due to the GNU modes 1001 et al.  */
   byte hash_algo;
   byte salt[8];
+  /* The *coded* (i.e., the serialized version) iteration count.  */
   u32  count;
 } STRING2KEY;
 
+/* A symmetric-key encrypted session key packet as defined in RFC
+   4880, Section 5.3.  All fields are serialized.  */
 typedef struct {
-    byte version;
-    byte cipher_algo;	 /* cipher algorithm used */
-    STRING2KEY s2k;
-    byte seskeylen;   /* keylength in byte or 0 for no seskey */
-    byte seskey[1];
+  /* RFC 4880: this must be 4.  */
+  byte version;
+  /* The cipher algorithm used.  */
+  byte cipher_algo;
+  /* The string-to-key specifier.  */
+  STRING2KEY s2k;
+  /* The length of SESKEY in bytes or 0 if this packet does not
+     encrypt a session key.  (In the latter case, the results of the
+     S2K function on the password is the session key. See RFC 4880,
+     Section 5.3.)  */
+  byte seskeylen;
+  /* The session key as encrypted by the S2K specifier.  */
+  byte seskey[1];
 } PKT_symkey_enc;
 
+/* A public-key encrypted session key packet as defined in RFC 4880,
+   Section 5.1.  All fields are serialized.  */
 typedef struct {
-    u32     keyid[2];	    /* 64 bit keyid */
-    byte    version;
-    byte    pubkey_algo;    /* algorithm used for public key scheme */
-    byte    throw_keyid;
-    gcry_mpi_t     data[PUBKEY_MAX_NENC];
+  /* The 64-bit keyid.  */
+  u32     keyid[2];
+  /* The packet's version.  Currently, only version 3 is defined.  */
+  byte    version;
+  /* The algorithm used for the public key encryption scheme.  */
+  byte    pubkey_algo;
+  /* Whether to hide the key id.  This value is not directly
+     serialized.  */
+  byte    throw_keyid;
+  /* The session key.  */
+  gcry_mpi_t     data[PUBKEY_MAX_NENC];
 } PKT_pubkey_enc;
 
 
+/* A one-pass signature packet as defined in RFC 4880, Section
+   5.4.  All fields are serialized.  */
 typedef struct {
-    u32     keyid[2];	    /* 64 bit keyid */
-    byte    sig_class;	    /* sig classification */
+    u32     keyid[2];	    /* The 64-bit keyid */
+    /* The signature's classification (RFC 4880, Section 5.2.1).  */
+    byte    sig_class;
     byte    digest_algo;    /* algorithm used for digest */
     byte    pubkey_algo;    /* algorithm used for public key scheme */
-    byte    last;	    /* a stupid flag */
+    /* A message can be signed by multiple keys.  In this case, there
+       are n one-pass signature packets before the message to sign and
+       n signatures packets after the message.  It is conceivable that
+       someone wants to not only sign the message, but all of the
+       signatures.  Now we need to distinguish between signing the
+       message and signing the message plus the surrounding
+       signatures.  This is the point of this flag.  If set, it means:
+       I sign all of the data starting at the next packet.  */
+    byte    last;
 } PKT_onepass_sig;
 
 
+/* A v4 OpenPGP signature has a hashed and unhashed area containing
+   co-called signature subpackets (RFC 4880, Section 5.2.3).  These
+   areas are described by this data structure.  Use enum_sig_subpkt to
+   parse this area.  */
 typedef struct {
     size_t size;  /* allocated */
-    size_t len;   /* used */
-    byte data[1];
+    size_t len;   /* used (serialized) */
+    byte data[1]; /* the serialized subpackes (serialized) */
 } subpktarea_t;
 
+/* The in-memory representation of a designated revoker signature
+   subpacket (RFC 4880, Section 5.2.3.15).  */
 struct revocation_key {
+  /* A bit field.  0x80 must be set.  0x40 means this information is
+     sensitive (and should not be uploaded to a keyserver by
+     default).  */
   byte class;
+  /* The public-key algorithm ID.  */
   byte algid;
+  /* The fingerprint of the authorized key.  */
   byte fpr[MAX_FINGERPRINT_LEN];
 };
 
@@ -139,7 +181,11 @@ typedef struct
 } pka_info_t;
 
 
-/* Object to keep information pertaining to a signature. */
+/* A signature packet (RFC 4880, Section 5.2).  Only a subset of these
+   fields are directly serialized (these are marked as such); the rest
+   are read from the subpackets, which are not synthesized when
+   serializing this data structure (i.e., when using build_packet()).
+   Instead, the subpackets must be created by hand.  */
 typedef struct
 {
   struct
@@ -156,14 +202,26 @@ typedef struct
     unsigned expired:1;
     unsigned pka_tried:1;   /* Set if we tried to retrieve the PKA record. */
   } flags;
-  u32     keyid[2];	  /* 64 bit keyid */
-  u32     timestamp;	  /* Signature made (seconds since Epoch). */
+  /* The key that allegedly generated this signature.  (Directly
+     serialized in v3 sigs; for v4 sigs, this must be explicitly added
+     as an issuer subpacket (5.2.3.5.)  */
+  u32     keyid[2];
+  /* When the signature was made (seconds since the Epoch).  (Directly
+     serialized in v3 sigs; for v4 sigs, this must be explicitly added
+     as a signature creation time subpacket (5.2.3.4).)  */
+  u32     timestamp;
   u32     expiredate;     /* Expires at this date or 0 if not at all. */
+  /* The serialization format used / to use.  If 0, then defaults to
+     version 3.  (Serialized.)  */
   byte    version;
-  byte    sig_class;	  /* Sig classification, append for MD calculation. */
-  byte    pubkey_algo;    /* Algorithm used for public key scheme */
-                          /* (PUBKEY_ALGO_xxx) */
-  byte    digest_algo;    /* Algorithm used for digest (DIGEST_ALGO_xxxx). */
+  /* The signature type. (See RFC 4880, Section 5.2.1.)  */
+  byte    sig_class;
+  /* Algorithm used for public key scheme (e.g., PUBKEY_ALGO_RSA).
+     (Serialized.)  */
+  byte    pubkey_algo;
+  /* Algorithm used for digest (e.g., DIGEST_ALGO_SHA1).
+     (Serialized.)  */
+  byte    digest_algo;
   byte    trust_depth;
   byte    trust_value;
   const byte *trust_regexp;
@@ -173,7 +231,10 @@ typedef struct
                                 available.  See also flags.pka_tried. */
   subpktarea_t *hashed;      /* All subpackets with hashed data (v4 only). */
   subpktarea_t *unhashed;    /* Ditto for unhashed data. */
-  byte digest_start[2];      /* First 2 bytes of the digest. */
+  /* First 2 bytes of the digest.  (Serialized.  Note: this is not
+     automatically filled in when serializing a signature!)  */
+  byte digest_start[2];
+  /* The signature.  (Serialized.)  */
   gcry_mpi_t  data[PUBKEY_MAX_NSIG];
   /* The message digest and its length (in bytes).  Note the maximum
      digest length is 512 bits (64 bytes).  If DIGEST_LEN is 0, then
@@ -192,14 +253,21 @@ struct user_attribute {
 };
 
 
-/* (See also keybox-search-desc.h) */
-struct gpg_pkt_user_id_s
+/* A user id (RFC 4880, Section 5.11) or a user attribute packet (RFC
+   4880, Section 5.12).  Only a subset of these fields are directly
+   serialized (these are marked as such); the rest are read from the
+   self-signatures in merge_keys_and_selfsig()).  */
+typedef struct
 {
   int ref;              /* reference counter */
-  int len;	        /* length of the name */
+  /* The length of NAME.  */
+  int len;
   struct user_attribute *attribs;
   int numattribs;
-  byte *attrib_data;    /* if this is not NULL, the packet is an attribute */
+  /* If this is not NULL, the packet is a user attribute rather than a
+     user id.  (Serialized.)  */
+  byte *attrib_data;
+  /* The length of ATTRIB_DATA.  */
   unsigned long attrib_len;
   byte *namehash;
   int help_key_usage;
@@ -220,9 +288,11 @@ struct gpg_pkt_user_id_s
     unsigned int ks_modify:1;
     unsigned int compacted:1;
   } flags;
+  /* The text contained in the user id packet, which is normally the
+     name and email address of the key holder (See RFC 4880 5.11).
+     (Serialized.)  */
   char name[1];
-};
-typedef struct gpg_pkt_user_id_s PKT_user_id;
+} PKT_user_id;
 
 
 
@@ -254,6 +324,14 @@ struct seckey_info
 
 
 /****************
+ * The in-memory representation of a public key (RFC 4880, Section
+ * 5.5).  Note: this structure contains significantly more information
+ * thatn is contained in an OpenPGP public key packet.  This
+ * information is derived from the self-signed signatures (by
+ * merge_keys_and_selfsig()) and is ignored when serializing the
+ * packet.  The fields that are actually written out when serializing
+ * this packet are marked as accordingly.
+ *
  * We assume that secret keys have the same number of parameters as
  * the public key and that the public parameters are the first items
  * in the PKEY array.  Thus NPKEY is always less than NSKEY and it is
@@ -268,14 +346,22 @@ struct seckey_info
  */
 typedef struct
 {
-  u32     timestamp;	    /* key made */
+  /* When the key was created.  (Serialized.)  */
+  u32     timestamp;
   u32     expiredate;     /* expires at this date or 0 if not at all */
   u32     max_expiredate; /* must not expire past this date */
   struct revoke_info revoked;
-  byte    hdrbytes;	    /* number of header bytes */
+  /* An OpenPGP packet consists of a header and a body.  This is the
+     size of the header.  If this is 0, an appropriate size is
+     automatically chosen based on the size of the body.
+     (Serialized.)  */
+  byte    hdrbytes;
+  /* The serialization format.  If 0, the default version (4) is used
+     when serializing.  (Serialized.)  */
   byte    version;
   byte    selfsigversion; /* highest version of all of the self-sigs */
-  byte    pubkey_algo;    /* algorithm used for public key scheme */
+  /* The public key algorithm.  (Serialized.)  */
+  byte    pubkey_algo;
   byte    pubkey_usage;   /* for now only used to pass it to getkey() */
   byte    req_usage;      /* hack to pass a request to getkey() */
   u32     has_expired;    /* set to the expiration date if expired */
@@ -314,9 +400,13 @@ typedef struct
   char    *serialno;      /* Malloced hex string or NULL if it is
                              likely not on a card.  See also
                              flags.serialno_valid.  */
-  struct seckey_info *seckey_info;  /* If not NULL this malloced
-                                       structure describes a secret
-                                       key.  */
+  /* If not NULL this malloced structure describes a secret key.
+     (Serialized.)  */
+  struct seckey_info *seckey_info;
+  /* The public key.  Contains pubkey_get_npkey (pubkey_algo) +
+     pubkey_get_nskey (pubkey_algo) MPIs.  (If pubkey_get_npkey
+     returns 0, then the algorithm is not understood and the PKEY
+     contains a single opaque MPI.)  (Serialized.)  */
   gcry_mpi_t  pkey[PUBKEY_MAX_NSKEY]; /* Right, NSKEY elements.  */
 } PKT_public_key;
 
@@ -332,20 +422,46 @@ typedef struct {
     char data[1];
 } PKT_comment;
 
+/* A compression packet (RFC 4880, Section 5.6).  */
 typedef struct {
-    u32  len;		  /* reserved */
-    byte  new_ctb;
-    byte  algorithm;
-    iobuf_t buf;	  /* IOBUF reference */
+  /* Not used.  */
+  u32 len;
+  /* Whether the serialized version of the packet used / should use
+     the new format.  */
+  byte  new_ctb;
+  /* The compression algorithm.  */
+  byte  algorithm;
+  /* An iobuf holding the data to be decompressed.  (This is not used
+     for compression!)  */
+  iobuf_t buf;
 } PKT_compressed;
 
+/* A symmetrically encrypted data packet (RFC 4880, Section 5.7) or a
+   symmetrically encrypted integrity protected data packet (Section
+   5.13) */
 typedef struct {
-    u32  len;		  /* Remaining length of encrypted data. */
-    int  extralen;        /* This is (blocksize+2).  Used by build_packet. */
-    byte new_ctb;	  /* uses a new CTB */
-    byte is_partial;      /* partial length encoded */
-    byte mdc_method;	  /* > 0: integrity protected encrypted data packet */
-    iobuf_t buf;	  /* IOBUF reference */
+  /* Remaining length of encrypted data. */
+  u32  len;
+  /* When encrypting, the first block size bytes of data are random
+     data and the following 2 bytes are copies of the last two bytes
+     of the random data (RFC 4880, Section 5.7).  This provides a
+     simple check that the key is correct.  extralen is the size of
+     this extra data.  This is used by build_packet when writing out
+     the packet's header. */
+  int  extralen;
+  /* Whether the serialized version of the packet used / should use
+     the new format.  */
+  byte new_ctb;
+  /* Whether the packet has an indeterminate length (old format) or
+     was encoded using partial body length headers (new format).
+     Note: this is ignored when encrypting.  */
+  byte is_partial;
+  /* If 0, MDC is disabled.  Otherwise, the MDC method that was used
+     (currently, only DIGEST_ALGO_SHA1 is supported).  */
+  byte mdc_method;
+  /* An iobuf holding the data to be decrypted.  (This is not used for
+     encryption!)  */
+  iobuf_t buf;
 } PKT_encrypted;
 
 typedef struct {
@@ -357,15 +473,22 @@ typedef struct {
     unsigned int sigcache;
 } PKT_ring_trust;
 
+/* A plaintext packet (see RFC 4880, 5.9).  */
 typedef struct {
-    u32  len;		  /* length of encrypted data */
-    iobuf_t buf;	  /* IOBUF reference */
-    byte new_ctb;
-    byte is_partial;      /* partial length encoded */
-    int mode;
-    u32 timestamp;
-    int  namelen;
-    char name[1];
+  /* The length of data in BUF or 0 if unknown.  */
+  u32  len;
+  /* A buffer containing the data stored in the packet's body.  */
+  iobuf_t buf;
+  byte new_ctb;
+  byte is_partial;      /* partial length encoded */
+  /* The data's formatting.  This is either 'b', 't', 'u', 'l' or '1'
+     (however, the last two are deprecated).  */
+  int mode;
+  u32 timestamp;
+  /* The name of the file.  This can be at most 255 characters long,
+     since namelen is just a byte in the serialized format.  */
+  int  namelen;
+  char name[1];
 } PKT_plaintext;
 
 typedef struct {
@@ -401,18 +524,38 @@ struct packet_struct {
 		       } while(0)
 
 
+/* A notation.  See RFC 4880, Section 5.2.3.16.  */
 struct notation
 {
+  /* The notation's name.  */
   char *name;
+  /* If the notation is human readable, then the value is stored here
+     as a NUL-terminated string.  */
   char *value;
+  /* Sometimes we want to %-expand the value.  In these cases, we save
+     that transformed value here.  */
   char *altvalue;
+  /* If the notation is not human readable, then the value is strored
+     here.  */
   unsigned char *bdat;
+  /* The amount of data stored in BDAT.
+
+     Note: if this is 0 and BDAT is NULL, this does not necessarily
+     mean that the value is human readable.  It could be that we have
+     a 0-length value.  To determine whether the notation is human
+     readable, always check if VALUE is not NULL.  This works, because
+     if a human-readable value has a length of 0, we will still
+     allocate space for the NUL byte.  */
   size_t blen;
   struct
   {
+    /* The notation is critical.  */
     unsigned int critical:1;
+    /* The notation should be deleted.  */
     unsigned int ignore:1;
   } flags;
+
+  /* A field to facilitate creating a list of notations.  */
   struct notation *next;
 };
 
