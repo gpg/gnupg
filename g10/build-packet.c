@@ -54,6 +54,29 @@ static int write_sign_packet_header( IOBUF out, int ctb, u32 len );
 static int write_header2( IOBUF out, int ctb, u32 len, int hdrlen );
 static int write_new_header( IOBUF out, int ctb, u32 len, int hdrlen );
 
+/* Returns 1 if CTB is a new format ctb and 0 if CTB is an old format
+   ctb.  */
+static int
+ctb_new_format_p (int ctb)
+{
+  /* Bit 7 must always be set.  */
+  log_assert ((ctb & (1 << 7)));
+  /* Bit 6 indicates whether the packet is a new format packet.  */
+  return (ctb & (1 << 6));
+}
+
+/* Extract the packet type from a CTB.  */
+static int
+ctb_pkttype (int ctb)
+{
+  if (ctb_new_format_p (ctb))
+    /* Bits 0 through 5 are the packet type.  */
+    return (ctb & ((1 << 6) - 1));
+  else
+    /* Bits 2 through 5 are the packet type.  */
+    return (ctb & ((1 << 6) - 1)) >> 2;
+}
+
 /****************
  * Build a packet and write it to INP
  * Returns: 0 := okay
@@ -292,6 +315,9 @@ do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
   int rc;
 
+  log_assert (ctb_pkttype (ctb) == PKT_USER_ID
+              || ctb_pkttype (ctb) == PKT_ATTRIBUTE);
+
   if (uid->attrib_data)
     {
       write_header(out, ctb, uid->attrib_len);
@@ -312,6 +338,12 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
   gpg_error_t err = 0;
   int i, nskey, npkey;
   iobuf_t a = iobuf_temp(); /* Build in a self-enlarging buffer.  */
+
+  log_assert (pk->version == 0 || pk->version == 4);
+  log_assert (ctb_pkttype (ctb) == PKT_PUBLIC_KEY
+              || ctb_pkttype (ctb) == PKT_PUBLIC_SUBKEY
+              || ctb_pkttype (ctb) == PKT_SECRET_KEY
+              || ctb_pkttype (ctb) == PKT_SECRET_SUBKEY);
 
   /* Write the version number - if none is specified, use 4 */
   if ( !pk->version )
@@ -335,7 +367,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
       write_fake_data (a, pk->pkey[0]);
       goto leave;
     }
-  assert (npkey < nskey);
+  log_assert (npkey < nskey);
 
   for (i=0; i < npkey; i++ )
     {
@@ -445,6 +477,8 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
     int rc = 0;
     IOBUF a = iobuf_temp();
 
+    log_assert (ctb_pkttype (ctb) == PKT_SYMKEY_ENC);
+
     assert( enc->version == 4 );
     switch( enc->s2k.mode ) {
       case 0: case 1: case 3: break;
@@ -476,6 +510,8 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
   int rc = 0;
   int n, i;
   IOBUF a = iobuf_temp();
+
+  log_assert (ctb_pkttype (ctb) == PKT_PUBKEY_ENC);
 
   iobuf_put (a, 3); /* Version.  */
 
@@ -531,7 +567,11 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
     int rc = 0;
     size_t nbytes;
 
+    log_assert (ctb_pkttype (ctb) == PKT_PLAINTEXT);
+
     write_header(out, ctb, calc_plaintext( pt ) );
+    log_assert (pt->mode == 'b' || pt->mode == 't' || pt->mode == 'u'
+                || pt->mode == 'l' || pt->mode == '1');
     iobuf_put(out, pt->mode );
     iobuf_put(out, pt->namelen );
     iobuf_write (out, pt->name, pt->namelen);
@@ -557,6 +597,9 @@ do_encrypted( IOBUF out, int ctb, PKT_encrypted *ed )
     int rc = 0;
     u32 n;
 
+    log_assert (! ed->mdc_method);
+    log_assert (ctb_pkttype (ctb) == PKT_ENCRYPTED);
+
     n = ed->len ? (ed->len + ed->extralen) : 0;
     write_header(out, ctb, n );
 
@@ -571,7 +614,8 @@ do_encrypted_mdc( IOBUF out, int ctb, PKT_encrypted *ed )
     int rc = 0;
     u32 n;
 
-    assert( ed->mdc_method );
+    log_assert (ed->mdc_method);
+    log_assert (ctb_pkttype (ctb) == PKT_ENCRYPTED_MDC);
 
     /* Take version number and the following MDC packet in account. */
     n = ed->len ? (ed->len + ed->extralen + 1 + 22) : 0;
@@ -588,6 +632,8 @@ static int
 do_compressed( IOBUF out, int ctb, PKT_compressed *cd )
 {
     int rc = 0;
+
+    log_assert (ctb_pkttype (ctb) == PKT_COMPRESSED);
 
     /* We must use the old convention and don't use blockmode for the
        sake of PGP 2 compatibility.  However if the new_ctb flag was
@@ -1111,8 +1157,16 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
   int n, i;
   IOBUF a = iobuf_temp();
 
-  if ( !sig->version )
-    iobuf_put( a, 3 );
+  log_assert (ctb_pkttype (ctb) == PKT_SIGNATURE);
+
+  if ( !sig->version || sig->version == 3)
+    {
+      iobuf_put( a, 3 );
+
+      /* Version 3 packets don't support subpackets.  */
+      log_assert (! sig->hashed);
+      log_assert (! sig->unhashed);
+    }
   else
     iobuf_put( a, sig->version );
   if ( sig->version < 4 )
@@ -1166,6 +1220,8 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
 static int
 do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops )
 {
+  log_assert (ctb_pkttype (ctb) == PKT_ONEPASS_SIG);
+
     write_header(out, ctb, 4 + 8 + 1);
 
     iobuf_put (out, 3);  /* Version.  */
@@ -1263,6 +1319,8 @@ write_header2( IOBUF out, int ctb, u32 len, int hdrlen )
 {
   if( ctb & 0x40 )
     return write_new_header( out, ctb, len, hdrlen );
+
+  log_assert (hdrlen == 0 || hdrlen == 2 || hdrlen == 3 || hdrlen == 5);
 
   if( hdrlen )
     {
