@@ -1166,22 +1166,17 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
 static int
 do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops )
 {
-    int rc = 0;
-    IOBUF a = iobuf_temp();
+    write_header(out, ctb, 4 + 8 + 1);
 
-    iobuf_put (a, 3);  /* Version.  */
-    iobuf_put(a, ops->sig_class );
-    iobuf_put(a, ops->digest_algo );
-    iobuf_put(a, ops->pubkey_algo );
-    write_32(a, ops->keyid[0] );
-    write_32(a, ops->keyid[1] );
-    iobuf_put(a, ops->last );
+    iobuf_put (out, 3);  /* Version.  */
+    iobuf_put(out, ops->sig_class );
+    iobuf_put(out, ops->digest_algo );
+    iobuf_put(out, ops->pubkey_algo );
+    write_32(out, ops->keyid[0] );
+    write_32(out, ops->keyid[1] );
+    iobuf_put(out, ops->last );
 
-    write_header(out, ctb, iobuf_get_temp_length(a) );
-    rc = iobuf_write_temp( out, a );
-
-    iobuf_close(a);
-    return rc;
+    return 0;
 }
 
 
