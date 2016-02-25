@@ -638,8 +638,9 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
       return rc;
 
     nbytes = iobuf_copy (out, pt->buf);
-    if( (ctb&0x40) && !pt->len )
-      iobuf_set_partial_body_length_mode(out, 0 ); /* turn off partial */
+    if(ctb_new_format_p (ctb) && !pt->len)
+      /* Turn off partial body length mode.  */
+      iobuf_set_partial_body_length_mode (out, 0);
     if( pt->len && nbytes != pt->len )
       log_error("do_plaintext(): wrote %lu bytes but expected %lu bytes\n",
 		(ulong)nbytes, (ulong)pt->len );
@@ -1443,7 +1444,7 @@ write_sign_packet_header (IOBUF out, int ctb, u32 len)
 static int
 write_header2( IOBUF out, int ctb, u32 len, int hdrlen )
 {
-  if( ctb & 0x40 )
+  if (ctb_new_format_p (ctb))
     return write_new_header( out, ctb, len, hdrlen );
 
   /* An old format packet.  Refer to RFC 4880, Section 4.2.1 to
