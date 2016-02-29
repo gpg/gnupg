@@ -1062,6 +1062,33 @@ build_attribute_subpkt(PKT_user_id *uid,byte type,
   uid->attrib_len+=idx+headerlen+buflen;
 }
 
+/* Returns a human-readable string corresponding to the notation.
+   This ignores notation->value.  The caller must free the result.  */
+static char *
+notation_value_to_human_readable_string (struct notation *notation)
+{
+  if(notation->bdat)
+    /* Binary data.  */
+    {
+      size_t len = notation->blen;
+      int i;
+      char preview[20];
+
+      for (i = 0; i < len && i < sizeof (preview) - 1; i ++)
+        if (isprint (notation->bdat[i]))
+          preview[i] = notation->bdat[i];
+        else
+          preview[i] = '?';
+      preview[i] = 0;
+
+      return xasprintf (_("[ not human readable (%zd bytes: %s%s) ]"),
+                        len, preview, i < len ? "..." : "");
+    }
+  else
+    /* The value is human-readable.  */
+    return xstrdup (notation->value);
+}
+
 /* Turn the notation described by the string STRING into a notation.
 
    STRING has the form:
@@ -1222,10 +1249,7 @@ sig_to_notation(PKT_signature *sig)
 	  n->blen=n2;
 	  memcpy(n->bdat,&p[8+n1],n2);
 
-	  n->value=xmalloc(2+strlen(_("not human readable"))+2+1);
-	  strcpy(n->value,"[ ");
-	  strcat(n->value,_("not human readable"));
-	  strcat(n->value," ]");
+          n->value = notation_value_to_human_readable_string (n);
 	}
 
       n->flags.critical=crit;
