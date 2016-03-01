@@ -29,7 +29,6 @@
 #include <config.h>
 #include <ctype.h>
 #include <errno.h>
-#include <npth.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
