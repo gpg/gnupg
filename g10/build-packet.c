@@ -618,7 +618,12 @@ calc_plaintext( PKT_plaintext *pt )
    after this much data has been read.)  If PT->LEN is 0 and CTB
    indicates that this is a new format packet, then partial block mode
    is assumed to have been enabled on OUT.  On success, partial block
-   mode is disabled.  */
+   mode is disabled.
+
+   If PT->BUF is NULL, the the caller must write out the data.  In
+   this case, if PT->LEN was 0, then partial body length mode was
+   enabled and the caller must disable it by calling
+   iobuf_set_partial_body_length_mode (out, 0).  */
 static int
 do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
 {
@@ -637,13 +642,16 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
     if (rc)
       return rc;
 
-    nbytes = iobuf_copy (out, pt->buf);
-    if(ctb_new_format_p (ctb) && !pt->len)
-      /* Turn off partial body length mode.  */
-      iobuf_set_partial_body_length_mode (out, 0);
-    if( pt->len && nbytes != pt->len )
-      log_error("do_plaintext(): wrote %lu bytes but expected %lu bytes\n",
-		(ulong)nbytes, (ulong)pt->len );
+    if (pt->buf)
+      {
+        nbytes = iobuf_copy (out, pt->buf);
+        if(ctb_new_format_p (ctb) && !pt->len)
+          /* Turn off partial body length mode.  */
+          iobuf_set_partial_body_length_mode (out, 0);
+        if( pt->len && nbytes != pt->len )
+          log_error("do_plaintext(): wrote %lu bytes but expected %lu bytes\n",
+                    (ulong)nbytes, (ulong)pt->len );
+      }
 
     return rc;
 }
