@@ -56,6 +56,34 @@ typedef enum
   }
 pkttype_t;
 
+static inline const char *
+pkttype_str (pkttype_t type)
+{
+  switch (type)
+    {
+    case PKT_PUBKEY_ENC: return "PUBKEY_ENC";
+    case PKT_SIGNATURE: return "SIGNATURE";
+    case PKT_SYMKEY_ENC: return "SYMKEY_ENC";
+    case PKT_ONEPASS_SIG: return "ONEPASS_SIG";
+    case PKT_SECRET_KEY: return "SECRET_KEY";
+    case PKT_PUBLIC_KEY: return "PUBLIC_KEY";
+    case PKT_SECRET_SUBKEY: return "SECRET_SUBKEY";
+    case PKT_COMPRESSED: return "COMPRESSED";
+    case PKT_ENCRYPTED: return "ENCRYPTED";
+    case PKT_MARKER: return "MARKER";
+    case PKT_PLAINTEXT: return "PLAINTEXT";
+    case PKT_RING_TRUST: return "RING_TRUST";
+    case PKT_USER_ID: return "USER_ID";
+    case PKT_PUBLIC_SUBKEY: return "PUBLIC_SUBKEY";
+    case PKT_OLD_COMMENT: return "OLD_COMMENT";
+    case PKT_ATTRIBUTE: return "ATTRIBUTE";
+    case PKT_ENCRYPTED_MDC: return "ENCRYPTED_MDC";
+    case PKT_MDC: return "MDC";
+    case PKT_COMMENT: return "COMMENT";
+    case PKT_GPG_CONTROL: return "GPG_CONTROL";
+    default: return "unknown packet type";
+    }
+}
 
 typedef enum
   {
