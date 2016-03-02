@@ -1586,6 +1586,8 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
           log_error (_("a gpg-agent is already running - "
                        "not starting a new one\n"));
           *name = 0; /* Inhibit removal of the socket by cleanup(). */
+          if (opt.ssh_support)
+            *socket_name_ssh = 0; /* Likewise for the ssh socket.  */
           assuan_sock_close (fd);
           agent_exit (2);
         }
