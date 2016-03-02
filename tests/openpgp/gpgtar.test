@@ -59,7 +59,7 @@ do_test()
           >"$FILELIST"
     for F in $TESTFILES
     do
-	grep -qe "\\b${F}\\b" "$FILELIST"
+        awk '{print $NF}' "$FILELIST" | grep "^${F}$" >/dev/null
     done
 
     $TOOL --gpg "$GPG"  --gpg-args "$GPGARGS" $EXTRACT_FLAGS \
@@ -67,7 +67,7 @@ do_test()
           "${TESTDIR}/test.tar.pgp"
     for F in $TESTFILES
     do
-	diff -q "$F" "${TESTDIR}/$F"
+	cmp "$F" "${TESTDIR}/$F"
     done
   )
 }

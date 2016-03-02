@@ -32,7 +32,7 @@ fi
 for x in 8BC90111 3E880CFF F5F77B83 45117079 1EA97479
 do
     if ! echo | $GPG -s -u "$x" | $GPG --verify --status-fd=1 \
-            | grep -q 'VALIDSIG 5FBA84ACE02DCB17DA3DFF6BBCA43C441EA97479'
+            | grep 'VALIDSIG 5FBA84ACE02DCB17DA3DFF6BBCA43C441EA97479' >/dev/null
     then
         echo | $GPG -s -u "$x" | $GPG --verify --status-fd=2
         error "Unexpected key used for signing (not the signing subkey, specified \"$x\")."
@@ -44,7 +44,7 @@ done
 for x in 8BC90111 F5F77B83 1EA97479
 do
     if ! echo | $GPG -s -u "$x!" | $GPG --verify --status-fd=1 \
-            | grep -q "VALIDSIG [0-9A-F]*$x "
+            | grep "VALIDSIG [0-9A-F]*$x " >/dev/null
     then
         echo | $GPG -s -u "$x!" | $GPG --verify --status-fd=2
         error "Unexpected key used for signing (specified: \"$x!\")."

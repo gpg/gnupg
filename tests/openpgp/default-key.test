@@ -35,7 +35,7 @@ do
     info "Trying --default-key $x"
 
     if ! echo | $GPG --default-key "$x" -s | $GPG --verify --status-fd=1 \
-            | grep -q 'VALIDSIG 5FBA84ACE02DCB17DA3DFF6BBCA43C441EA97479'
+            | grep 'VALIDSIG 5FBA84ACE02DCB17DA3DFF6BBCA43C441EA97479' >/dev/null
     then
         echo | $GPG --default-key "$x" -s | $GPG --verify --status-fd=2
         error "Unexpected key used for signing (not the signing subkey, specified \"$x\")."
@@ -59,7 +59,7 @@ do
                      --default-key "$x" --encrypt-to-default-key \
                      -r 439F02CA -e \
             | $GPG --list-packets \
-            | grep -q "keyid[ ][A-F0-9]*45117079"
+            | grep "keyid[ ][A-F0-9]*45117079" >/dev/null
     then
         echo | $GPG --trust-model=always \
                     --default-key "$x" --encrypt-to-default-key \
