@@ -193,36 +193,77 @@ initialize(void)
 
 /****************
  * Check whether this is an armored file or not See also
- * parse-packet.c for details on this code For unknown historic
- * reasons we use a string here but only the first byte will be used.
+ * parse-packet.c for details on this code.
  * Returns: True if it seems to be armored
  */
 static int
 is_armored( const byte *buf )
 {
-    int ctb, pkttype;
+  int ctb, pkttype;
+  int indeterminate_length_allowed;
 
     ctb = *buf;
     if( !(ctb & 0x80) )
-	return 1; /* invalid packet: assume it is armored */
+      /* The most significant bit of the CTB must be set.  Since it is
+         cleared, this is not a binary OpenPGP message.  Assume it is
+         armored.  */
+      return 1;
+
     pkttype =  ctb & 0x40 ? (ctb & 0x3f) : ((ctb>>2)&0xf);
     switch( pkttype ) {
-      case PKT_MARKER:
-      case PKT_SYMKEY_ENC:
-      case PKT_ONEPASS_SIG:
-      case PKT_PUBLIC_KEY:
-      case PKT_SECRET_KEY:
       case PKT_PUBKEY_ENC:
       case PKT_SIGNATURE:
-      case PKT_COMMENT:
-      case PKT_OLD_COMMENT:
-      case PKT_PLAINTEXT:
+      case PKT_SYMKEY_ENC:
+      case PKT_ONEPASS_SIG:
+      case PKT_SECRET_KEY:
+      case PKT_PUBLIC_KEY:
+      case PKT_SECRET_SUBKEY:
+      case PKT_MARKER:
+      case PKT_RING_TRUST:
+      case PKT_USER_ID:
+      case PKT_PUBLIC_SUBKEY:
+      case PKT_ATTRIBUTE:
+      case PKT_MDC:
+	indeterminate_length_allowed = 0;
+        break;
+
       case PKT_COMPRESSED:
       case PKT_ENCRYPTED:
-	return 0; /* seems to be a regular packet: not armored */
+      case PKT_ENCRYPTED_MDC:
+      case PKT_PLAINTEXT:
+      case PKT_OLD_COMMENT:
+      case PKT_COMMENT:
+      case PKT_GPG_CONTROL:
+	indeterminate_length_allowed = 1;
+        break;
+
+      default:
+        /* Invalid packet type.  */
+        return 1;
     }
 
-    return 1;
+    if (! indeterminate_length_allowed)
+      /* It is only legal to use an indeterminate length with a few
+         packet types.  If a packet uses an indeterminate length, but
+         that is not allowed, then the data is not valid binary
+         OpenPGP data.  */
+      {
+        int new_format;
+        int indeterminate_length;
+
+        new_format = !! (ctb & (1 << 6));
+        if (new_format)
+          indeterminate_length = (buf[1] >= 224 && buf[1] < 255);
+        else
+          indeterminate_length = (ctb & 3) == 3;
+
+        if (indeterminate_length)
+          return 1;
+      }
+
+    /* The first CTB seems legit.  It is probably not armored
+       data.  */
+    return 0;
 }
 
 
