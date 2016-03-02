@@ -421,6 +421,13 @@ int iobuf_push_filter2 (iobuf_t a,
 				  byte * buf, size_t * len), void *ov,
 			int rel_ov);
 
+/* Pop the top filter.  The top filter must have the filter function F
+   and the cookie OV.  The cookie check is ignored if OV is NULL.  */
+int iobuf_pop_filter (iobuf_t a,
+                      int (*f) (void *opaque, int control,
+                                iobuf_t chain, byte * buf, size_t * len),
+                      void *ov);
+
 /* Used for debugging.  Prints out the chain using log_debug if
    IOBUF_DEBUG_MODE is not 0.  */
 int iobuf_print_chain (iobuf_t a);

@@ -1683,10 +1683,10 @@ iobuf_push_filter2 (iobuf_t a,
 /****************
  * Remove an i/o filter.
  */
-static int
-pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
-			       iobuf_t chain, byte * buf, size_t * len),
-	    void *ov)
+int
+iobuf_pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
+                                       iobuf_t chain, byte * buf, size_t * len),
+                  void *ov)
 {
   iobuf_t b;
   size_t dummy_len = 0;
@@ -1716,12 +1716,13 @@ pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
     if (b->filter == f && (!ov || b->filter_ov == ov))
       break;
   if (!b)
-    log_bug ("pop_filter(): filter function not found\n");
+    log_bug ("iobuf_pop_filter(): filter function not found\n");
 
   /* flush this stream if it is an output stream */
   if (a->use == IOBUF_OUTPUT && (rc = filter_flush (b)))
     {
-      log_error ("filter_flush failed in pop_filter: %s\n", gpg_strerror (rc));
+      log_error ("filter_flush failed in iobuf_pop_filter: %s\n",
+                 gpg_strerror (rc));
       return rc;
     }
   /* and tell the filter to free it self */
@@ -2268,7 +2269,7 @@ iobuf_flush_temp (iobuf_t temp)
   if (temp->use == IOBUF_INPUT || temp->use == IOBUF_INPUT_TEMP)
     log_bug ("iobuf_flush_temp called on an input pipeline!\n");
   while (temp->chain)
-    pop_filter (temp, temp->filter, NULL);
+    iobuf_pop_filter (temp, temp->filter, NULL);
 }
 
 
@@ -2467,9 +2468,9 @@ iobuf_seek (iobuf_t a, off_t newpos)
 
   /* remove filters, but the last */
   if (a->chain)
-    log_debug ("pop_filter called in iobuf_seek - please report\n");
+    log_debug ("iobuf_pop_filter called in iobuf_seek - please report\n");
   while (a->chain)
-    pop_filter (a, a->filter, NULL);
+    iobuf_pop_filter (a, a->filter, NULL);
 
   return 0;
 }
@@ -2536,11 +2537,11 @@ iobuf_set_partial_body_length_mode (iobuf_t a, size_t len)
     /* Disable partial body length mode.  */
     {
       if (a->use == IOBUF_INPUT)
-	log_debug ("pop_filter called in set_partial_block_mode"
+	log_debug ("iobuf_pop_filter called in set_partial_block_mode"
 		   " - please report\n");
 
       log_assert (a->filter == block_filter);
-      pop_filter (a, block_filter, NULL);
+      iobuf_pop_filter (a, block_filter, NULL);
     }
   else
     /* Enabled partial body length mode.  */
