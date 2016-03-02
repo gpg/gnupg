@@ -232,6 +232,8 @@ void encrypt_crypt_files (ctrl_t ctrl,
 int encrypt_filter (void *opaque, int control,
 		    iobuf_t a, byte *buf, size_t *ret_len);
 
+int write_pubkey_enc (PKT_public_key *pk, int throw_keyid,
+                      DEK *dek, iobuf_t out);
 
 /*-- sign.c --*/
 int complete_sig (PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md,

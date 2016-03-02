@@ -1,6 +1,7 @@
 /* encrypt.c - Main encryption driver
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
  *               2006, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -854,80 +855,89 @@ encrypt_filter (void *opaque, int control,
 
 
 /*
+ * Write a pubkey-enc packet for the public key PK to OUT.
+ */
+int
+write_pubkey_enc (PKT_public_key *pk, int throw_keyid, DEK *dek, iobuf_t out)
+{
+  PACKET pkt;
+  PKT_pubkey_enc *enc;
+  int rc;
+  gcry_mpi_t frame;
+
+  print_pubkey_algo_note ( pk->pubkey_algo );
+  enc = xmalloc_clear ( sizeof *enc );
+  enc->pubkey_algo = pk->pubkey_algo;
+  keyid_from_pk( pk, enc->keyid );
+  enc->throw_keyid = throw_keyid;
+
+  /* Okay, what's going on: We have the session key somewhere in
+   * the structure DEK and want to encode this session key in an
+   * integer value of n bits. pubkey_nbits gives us the number of
+   * bits we have to use.  We then encode the session key in some
+   * way and we get it back in the big intger value FRAME.  Then
+   * we use FRAME, the public key PK->PKEY and the algorithm
+   * number PK->PUBKEY_ALGO and pass it to pubkey_encrypt which
+   * returns the encrypted value in the array ENC->DATA.  This
+   * array has a size which depends on the used algorithm (e.g. 2
+   * for Elgamal).  We don't need frame anymore because we have
+   * everything now in enc->data which is the passed to
+   * build_packet().  */
+  frame = encode_session_key (pk->pubkey_algo, dek,
+                              pubkey_nbits (pk->pubkey_algo, pk->pkey));
+  rc = pk_encrypt (pk->pubkey_algo, enc->data, frame, pk, pk->pkey);
+  gcry_mpi_release (frame);
+  if (rc)
+    log_error ("pubkey_encrypt failed: %s\n", gpg_strerror (rc) );
+  else
+    {
+      if ( opt.verbose )
+        {
+          char *ustr = get_user_id_string_native (enc->keyid);
+          log_info (_("%s/%s encrypted for: \"%s\"\n"),
+                    openpgp_pk_algo_name (enc->pubkey_algo),
+                    openpgp_cipher_algo_name (dek->algo),
+                    ustr );
+          xfree (ustr);
+        }
+      /* And write it. */
+      init_packet (&pkt);
+      pkt.pkttype = PKT_PUBKEY_ENC;
+      pkt.pkt.pubkey_enc = enc;
+      rc = build_packet (out, &pkt);
+      if (rc)
+        log_error ("build_packet(pubkey_enc) failed: %s\n",
+                   gpg_strerror (rc));
+    }
+  free_pubkey_enc(enc);
+  return rc;
+}
+
+
+/*
  * Write pubkey-enc packets from the list of PKs to OUT.
  */
 static int
 write_pubkey_enc_from_list (PK_LIST pk_list, DEK *dek, iobuf_t out)
 {
-  PACKET pkt;
-  PKT_public_key *pk;
-  PKT_pubkey_enc  *enc;
-  int rc;
+  if (opt.throw_keyids && (PGP6 || PGP7 || PGP8))
+    {
+      log_info(_("you may not use %s while in %s mode\n"),
+               "--throw-keyids",compliance_option_string());
+      compliance_failure();
+    }
 
   for ( ; pk_list; pk_list = pk_list->next )
     {
-      gcry_mpi_t frame;
-
-      pk = pk_list->pk;
-
-      print_pubkey_algo_note ( pk->pubkey_algo );
-      enc = xmalloc_clear ( sizeof *enc );
-      enc->pubkey_algo = pk->pubkey_algo;
-      keyid_from_pk( pk, enc->keyid );
-      enc->throw_keyid = (opt.throw_keyids || (pk_list->flags&1));
-
-      if (opt.throw_keyids && (PGP6 || PGP7 || PGP8))
-        {
-          log_info(_("you may not use %s while in %s mode\n"),
-                   "--throw-keyids",compliance_option_string());
-          compliance_failure();
-        }
-
-      /* Okay, what's going on: We have the session key somewhere in
-       * the structure DEK and want to encode this session key in an
-       * integer value of n bits. pubkey_nbits gives us the number of
-       * bits we have to use.  We then encode the session key in some
-       * way and we get it back in the big intger value FRAME.  Then
-       * we use FRAME, the public key PK->PKEY and the algorithm
-       * number PK->PUBKEY_ALGO and pass it to pubkey_encrypt which
-       * returns the encrypted value in the array ENC->DATA.  This
-       * array has a size which depends on the used algorithm (e.g. 2
-       * for Elgamal).  We don't need frame anymore because we have
-       * everything now in enc->data which is the passed to
-       * build_packet().  */
-      frame = encode_session_key (pk->pubkey_algo, dek,
-                                  pubkey_nbits (pk->pubkey_algo, pk->pkey));
-      rc = pk_encrypt (pk->pubkey_algo, enc->data, frame, pk, pk->pkey);
-      gcry_mpi_release (frame);
-      if (rc)
-        log_error ("pubkey_encrypt failed: %s\n", gpg_strerror (rc) );
-      else
-        {
-          if ( opt.verbose )
-            {
-              char *ustr = get_user_id_string_native (enc->keyid);
-              log_info (_("%s/%s encrypted for: \"%s\"\n"),
-                        openpgp_pk_algo_name (enc->pubkey_algo),
-                        openpgp_cipher_algo_name (dek->algo),
-                        ustr );
-              xfree (ustr);
-	    }
-          /* And write it. */
-          init_packet (&pkt);
-          pkt.pkttype = PKT_PUBKEY_ENC;
-          pkt.pkt.pubkey_enc = enc;
-          rc = build_packet (out, &pkt);
-          if (rc)
-            log_error ("build_packet(pubkey_enc) failed: %s\n",
-                       gpg_strerror (rc));
-	}
-      free_pubkey_enc(enc);
+      PKT_public_key *pk = pk_list->pk;
+      int throw_keyid = (opt.throw_keyids || (pk_list->flags&1));
+      int rc = write_pubkey_enc (pk, throw_keyid, dek, out);
       if (rc)
         return rc;
     }
+
   return 0;
 }
-
 
 void
 encrypt_crypt_files (ctrl_t ctrl, int nfiles, char **files, strlist_t remusr)
