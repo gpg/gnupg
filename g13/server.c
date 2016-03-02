@@ -33,7 +33,7 @@
 #include "create.h"
 #include "mount.h"
 #include "suspend.h"
-
+#include "../common/server-help.h"
 
 /* The filepointer for status message used in non-server mode */
 static FILE *statusfp;
@@ -63,37 +63,6 @@ static int command_has_option (const char *cmd, const char *cmdopt);
 
 /* Set an error and a description.  */
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
-
-
-/* Skip over options.  Blanks after the options are also removed.  */
-static char *
-skip_options (const char *line)
-{
-  while (spacep (line))
-    line++;
-  while ( *line == '-' && line[1] == '-' )
-    {
-      while (*line && !spacep (line))
-        line++;
-      while (spacep (line))
-        line++;
-    }
-  return (char*)line;
-}
-
-
-/* Check whether the option NAME appears in LINE.  */
-/* static int */
-/* has_option (const char *line, const char *name) */
-/* { */
-/*   const char *s; */
-/*   int n = strlen (name); */
-
-/*   s = strstr (line, name); */
-/*   if (s && s >= skip_options (line)) */
-/*     return 0; */
-/*   return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n))); */
-/* } */
 
 
 /* Helper to print a message while leaving a command.  */

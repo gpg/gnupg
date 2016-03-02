@@ -32,6 +32,7 @@
 #include "util.h"
 #include "i18n.h"
 #include "options.h"
+#include "../common/server-help.h"
 #include "../common/sysutils.h"
 #include "status.h"
 
@@ -67,40 +68,6 @@ close_message_fd (ctrl_t ctrl)
       ctrl->server_local->message_fd = GNUPG_INVALID_FD;
     }
 }
-
-
-/* Skip over options.  Blanks after the options are also removed.  */
-static char *
-skip_options (const char *line)
-{
-  while (spacep (line))
-    line++;
-  while ( *line == '-' && line[1] == '-' )
-    {
-      while (*line && !spacep (line))
-        line++;
-      while (spacep (line))
-        line++;
-    }
-  return (char*)line;
-}
-
-
-/* Check whether the option NAME appears in LINE.  */
-static int
-has_option (const char *line, const char *name)
-{
-  const char *s;
-  int n = strlen (name);
-
-  s = strstr (line, name);
-  if (s && s >= skip_options (line))
-    return 0;
-  return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
-}
-
-
-
 
 
 /* Called by libassuan for Assuan options.  See the Assuan manual for

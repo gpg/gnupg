@@ -41,6 +41,7 @@
 #include "cvt-openpgp.h"
 #include "../common/ssh-utils.h"
 #include "../common/asshelp.h"
+#include "../common/server-help.h"
 
 
 /* Maximum allowed size of the inquired ciphertext.  */
@@ -226,86 +227,6 @@ reset_notify (assuan_context_t ctx, char *line)
   clear_nonce_cache (ctrl);
 
   return 0;
-}
-
-
-/* Skip over options in LINE.
-
-   Blanks after the options are also removed.  Options are indicated
-   by two leading dashes followed by a string consisting of non-space
-   characters.  The special option "--" indicates an explicit end of
-   options; all what follows will not be considered an option.  The
-   first no-option string also indicates the end of option parsing. */
-static char *
-skip_options (const char *line)
-{
-  while (spacep (line))
-    line++;
-  while ( *line == '-' && line[1] == '-' )
-    {
-      while (*line && !spacep (line))
-        line++;
-      while (spacep (line))
-        line++;
-    }
-  return (char*)line;
-}
-
-
-/* Check whether the option NAME appears in LINE.  An example for a
-   line with options is:
-     --algo=42 --data foo bar
-   This function would then only return true if NAME is "data".  */
-static int
-has_option (const char *line, const char *name)
-{
-  const char *s;
-  int n = strlen (name);
-
-  s = strstr (line, name);
-  if (s && s >= skip_options (line))
-    return 0;
-  return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
-}
-
-
-/* Same as has_option but does only test for the name of the option
-   and ignores an argument, i.e. with NAME being "--hash" it would
-   return true for "--hash" as well as for "--hash=foo". */
-static int
-has_option_name (const char *line, const char *name)
-{
-  const char *s;
-  int n = strlen (name);
-
-  s = strstr (line, name);
-  if (s && s >= skip_options (line))
-    return 0;
-  return (s && (s == line || spacep (s-1))
-          && (!s[n] || spacep (s+n) || s[n] == '='));
-}
-
-
-/* Return a pointer to the argument of the option with NAME.  If such
-   an option is not given, NULL is retruned. */
-static char *
-option_value (const char *line, const char *name)
-{
-  char *s;
-  int n = strlen (name);
-
-  s = strstr (line, name);
-  if (s && s >= skip_options (line))
-    return NULL;
-  if (s && (s == line || spacep (s-1))
-      && s[n] && (spacep (s+n) || s[n] == '='))
-    {
-      s += n + 1;
-      s += strspn (s, " ");
-      if (*s && !spacep(s))
-        return s;
-    }
-  return NULL;
 }
 
 

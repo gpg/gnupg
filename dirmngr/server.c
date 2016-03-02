@@ -53,6 +53,7 @@
 #include "dns-stuff.h"
 #include "mbox-util.h"
 #include "zb32.h"
+#include "server-help.h"
 
 /* To avoid DoS attacks we limit the size of a certificate to
    something reasonable.  The DoS was actually only an issue back when
@@ -270,78 +271,6 @@ strcpy_escaped_plus (char *d, const unsigned char *s)
         *d++ = *s++;
     }
   *d = 0;
-}
-
-
-/* Check whether the option NAME appears in LINE */
-static int
-has_option (const char *line, const char *name)
-{
-  const char *s;
-  int n = strlen (name);
-
-  s = strstr (line, name);
-  return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
-}
-
-/* Same as has_option but only considers options at the begin of the
-   line.  This is useful for commands which allow arbitrary strings on
-   the line.  */
-static int
-has_leading_option (const char *line, const char *name)
-{
-  const char *s;
-  int n;
-
-  if (name[0] != '-' || name[1] != '-' || !name[2] || spacep (name+2))
-    return 0;
-  n = strlen (name);
-  while ( *line == '-' && line[1] == '-' )
-    {
-      s = line;
-      while (*line && !spacep (line))
-        line++;
-      if (n == (line - s) && !strncmp (s, name, n))
-        return 1;
-      while (spacep (line))
-        line++;
-    }
-  return 0;
-}
-
-
-/* Same as has_option but does only test for the name of the option
-   and ignores an argument, i.e. with NAME being "--hash" it would
-   return a pointer for "--hash" as well as for "--hash=foo".  If
-   thhere is no such option NULL is returned.  The pointer returned
-   points right behind the option name, this may be an equal sign, Nul
-   or a space.  */
-/* static const char * */
-/* has_option_name (const char *line, const char *name) */
-/* { */
-/*   const char *s; */
-/*   int n = strlen (name); */
-
-/*   s = strstr (line, name); */
-/*   return (s && (s == line || spacep (s-1)) */
-/*           && (!s[n] || spacep (s+n) || s[n] == '=')) ? (s+n) : NULL; */
-/* } */
-
-
-/* Skip over options.  It is assumed that leading spaces have been
-   removed (this is the case for lines passed to a handler from
-   assuan).  Blanks after the options are also removed. */
-static char *
-skip_options (char *line)
-{
-  while ( *line == '-' && line[1] == '-' )
-    {
-      while (*line && !spacep (line))
-        line++;
-      while (spacep (line))
-        line++;
-    }
-  return line;
 }
 
 

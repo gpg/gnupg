@@ -42,6 +42,7 @@
 #include "ccid-driver.h"
 #endif
 #include "asshelp.h"
+#include "server-help.h"
 
 /* Maximum length allowed as a PIN; used for INQUIRE NEEDPIN */
 #define MAXLEN_PIN 100
@@ -217,53 +218,6 @@ update_card_removed (int vrdr, int value)
   if (value)
     application_notify_card_reset (vreader_slot (vrdr));
 }
-
-
-/* Check whether the option NAME appears in LINE.  Returns 1 or 0. */
-static int
-has_option (const char *line, const char *name)
-{
-  const char *s;
-  int n = strlen (name);
-
-  s = strstr (line, name);
-  return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
-}
-
-/* Same as has_option but does only test for the name of the option
-   and ignores an argument, i.e. with NAME being "--hash" it would
-   return a pointer for "--hash" as well as for "--hash=foo".  If
-   there is no such option NULL is returned.  The pointer returned
-   points right behind the option name, this may be an equal sign, Nul
-   or a space.  */
-static const char *
-has_option_name (const char *line, const char *name)
-{
-  const char *s;
-  int n = strlen (name);
-
-  s = strstr (line, name);
-  return (s && (s == line || spacep (s-1))
-          && (!s[n] || spacep (s+n) || s[n] == '=')) ? (s+n) : NULL;
-}
-
-
-/* Skip over options.  It is assumed that leading spaces have been
-   removed (this is the case for lines passed to a handler from
-   assuan).  Blanks after the options are also removed. */
-static char *
-skip_options (char *line)
-{
-  while ( *line == '-' && line[1] == '-' )
-    {
-      while (*line && !spacep (line))
-        line++;
-      while (spacep (line))
-        line++;
-    }
-  return line;
-}
-
 
 
 /* Convert the STRING into a newly allocated buffer while translating

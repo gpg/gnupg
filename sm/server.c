@@ -30,6 +30,7 @@
 #include "gpgsm.h"
 #include <assuan.h>
 #include "sysutils.h"
+#include "server-help.h"
 
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
@@ -92,38 +93,6 @@ strcpy_escaped_plus (char *d, const char *s)
         *d++ = *s++;
     }
   *d = 0;
-}
-
-
-/* Skip over options.
-   Blanks after the options are also removed. */
-static char *
-skip_options (const char *line)
-{
-  while (spacep (line))
-    line++;
-  while ( *line == '-' && line[1] == '-' )
-    {
-      while (*line && !spacep (line))
-        line++;
-      while (spacep (line))
-        line++;
-    }
-  return (char*)line;
-}
-
-
-/* Check whether the option NAME appears in LINE */
-static int
-has_option (const char *line, const char *name)
-{
-  const char *s;
-  int n = strlen (name);
-
-  s = strstr (line, name);
-  if (s && s >= skip_options (line))
-    return 0;
-  return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
 }
 
 
