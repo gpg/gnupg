@@ -221,6 +221,7 @@ void display_online_help( const char *keyword );
 
 /*-- encode.c --*/
 int setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek);
+void encrypt_seskey (DEK *dek, DEK **seskey, byte *enckey);
 int use_mdc (pk_list_t pk_list,int algo);
 int encrypt_symmetric (const char *filename );
 int encrypt_store (const char *filename );

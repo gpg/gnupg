@@ -66,7 +66,15 @@ encrypt_store (const char *filename)
 }
 
 
-static void
+/* *SESKEY contains the unencrypted session key ((*SESKEY)->KEY) and
+   the algorithm that will be used to encrypt the contents of the SED
+   packet ((*SESKEY)->ALGO).  If *SESKEY is NULL, then a random
+   session key that is appropriate for DEK->ALGO is generated and
+   stored there.
+
+   Encrypt that session key using DEK and store the result in ENCKEY,
+   which must be large enough to hold (*SESKEY)->KEYLEN + 1 bytes.  */
+void
 encrypt_seskey (DEK *dek, DEK **seskey, byte *enckey)
 {
   gcry_cipher_hd_t hd;

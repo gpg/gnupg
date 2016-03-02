@@ -36,7 +36,7 @@ bin_PROGRAMS = gpg2
 if !HAVE_W32CE_SYSTEM
 bin_PROGRAMS += gpgv2
 endif
-noinst_PROGRAMS = $(module_tests)
+noinst_PROGRAMS = gpgcompose $(module_tests)
 TESTS = $(module_tests)
 
 if ENABLE_BZIP2_SUPPORT
@@ -104,8 +104,7 @@ common_source =  \
 	      pkglue.c pkglue.h \
 	      ecdh.c
 
-gpg2_SOURCES  = gpg.c		\
-	      server.c          \
+gpg_sources = server.c          \
 	      $(common_source)	\
 	      pkclist.c 	\
 	      skclist.c 	\
@@ -118,7 +117,6 @@ gpg2_SOURCES  = gpg.c		\
 	      sign.c		\
 	      verify.c		\
 	      revoke.c		\
-	      keyedit.c 	\
 	      dearmor.c 	\
 	      import.c		\
 	      export.c		\
@@ -135,6 +133,11 @@ gpg2_SOURCES  = gpg.c		\
 	      $(card_source) \
 	      exec.c exec.h
 
+gpg2_SOURCES  = gpg.c \
+	keyedit.c 	\
+	$(gpg_sources)
+
+gpgcompose_SOURCES  = gpgcompose.c  $(gpg_sources)
 gpgv2_SOURCES = gpgv.c           \
 	      $(common_source)  \
 	      verify.c
@@ -156,6 +159,11 @@ gpgv2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
               $(GPG_ERROR_LIBS) \
 	      $(LIBICONV) $(resource_objs) $(extra_sys_libs)
 gpgv2_LDFLAGS = $(extra_bin_ldflags)
+
+gpgcompose_LDADD = $(LDADD) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
+             $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
+	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
+gpgcompose_LDFLAGS = $(extra_bin_ldflags)
 
 t_common_ldadd =
 module_tests = t-rmd160 t-keydb t-keydb-get-keyblock

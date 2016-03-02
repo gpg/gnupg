@@ -29,6 +29,7 @@
 #include "filter.h"
 #include "../common/openpgpdefs.h"
 #include "../common/userids.h"
+#include "util.h"
 
 #define DEBUG_PARSE_PACKET 1
 
