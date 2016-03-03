@@ -33,6 +33,12 @@ GPGARGS="$opt_always --no-permission-warning"
 GPGTAR="../../tools/gpgtar"
 GPGZIP="sh ../../tools/gpg-zip"
 
+# Skip test if gpgtar has not been built.
+if ! test -x "$GPGTAR"
+then
+    exit 77
+fi
+
 # Create, inspect, and extract an archive with the given options.
 #
 # $1 the tool to test
