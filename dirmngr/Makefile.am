@@ -141,11 +141,11 @@ t_ldap_parse_uri_SOURCES = \
         http.c dns-stuff.c \
         $(ldap_url) $(t_common_src)
 t_ldap_parse_uri_CFLAGS = -DWITHOUT_NPTH=1 \
-			  $(GPG_ERROR_CFLAGS)
+			  $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 t_ldap_parse_uri_LDADD = $(ldaplibs) $(t_common_ldadd) $(DNSLIBS)
 
 t_dns_stuff_CFLAGS = -DWITHOUT_NPTH=1 \
-		     $(GPG_ERROR_CFLAGS)
+		     $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 t_dns_stuff_SOURCES = t-dns-stuff.c dns-stuff.c
 t_dns_stuff_LDADD   = $(t_common_ldadd) $(DNSLIBS)
 
