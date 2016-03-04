@@ -149,7 +149,7 @@ name for remote debugging.
 @c
 @manpage addgnupghome.8
 @node addgnupghome
-@section Create .gnupg home directories.
+@section Create .gnupg home directories
 @ifset manverb
 .B addgnupghome
 \- Create .gnupg home directories
@@ -184,7 +184,7 @@ addgnupghome account1 account2 ... accountn
 @c
 @manpage gpgconf.1
 @node gpgconf
-@section Modify .gnupg home directories.
+@section Modify .gnupg home directories
 @ifset manverb
 .B gpgconf
 \- Modify .gnupg home directories
@@ -985,7 +985,7 @@ no feature to change the global option file through @command{gpgconf}.
 @c
 @manpage applygnupgdefaults.8
 @node applygnupgdefaults
-@section Run gpgconf for all users.
+@section Run gpgconf for all users
 @ifset manverb
 .B applygnupgdefaults
 \- Run gpgconf --apply-defaults for all users.
@@ -1018,7 +1018,7 @@ applygnupgdefaults
 @c   GPG-PRESET-PASSPHRASE
 @c
 @node gpg-preset-passphrase
-@section Put a passphrase into the cache.
+@section Put a passphrase into the cache
 @manpage gpg-preset-passphrase.1
 @ifset manverb
 .B gpg-preset-passphrase
@@ -1054,7 +1054,7 @@ this passphrase presetting by starting @command{gpg-agent} with the
 
 @manpause
 @node Invoking gpg-preset-passphrase
-@subsection List of all commands and options.
+@subsection List of all commands and options
 @mancont
 
 @noindent
@@ -1121,7 +1121,7 @@ for other users.
 @c   GPG-CONNECT-AGENT
 @c
 @node gpg-connect-agent
-@section Communicate with a running agent.
+@section Communicate with a running agent
 @manpage gpg-connect-agent.1
 @ifset manverb
 .B gpg-connect-agent
@@ -1151,7 +1151,7 @@ here we connect to a running instance.
 
 @manpause
 @node Invoking gpg-connect-agent
-@subsection List of all options.
+@subsection List of all options
 
 @noindent
 @command{gpg-connect-agent} is invoked this way:
@@ -1251,7 +1251,7 @@ a new line always starts with a D and a space.
 
 @mansect control commands
 @node Controlling gpg-connect-agent
-@subsection Control commands.
+@subsection Control commands
 
 While reading Assuan commands, gpg-agent also allows a few special
 commands to control its operation.  These control commands all start
@@ -1652,7 +1652,7 @@ debugging.  Run it with @code{--help} for usage information.
 @c   SYMCRYPTRUN
 @c
 @node symcryptrun
-@section Call a simple symmetric encryption tool.
+@section Call a simple symmetric encryption tool
 @manpage symcryptrun.1
 @ifset manverb
 .B symcryptrun
@@ -1692,7 +1692,7 @@ configured with @samp{--enable-symcryptrun} at build time.
 
 @manpause
 @node Invoking symcryptrun
-@subsection List of all commands and options.
+@subsection List of all commands and options
 
 @noindent
 @command{symcryptrun} is invoked this way:

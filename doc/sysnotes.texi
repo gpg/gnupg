@@ -3,7 +3,7 @@
 @c For copying conditions, see the file gnupg.texi.
 
 @node System Notes
-@chapter Notes pertaining to certain OSes.
+@chapter Notes pertaining to certain OSes
 
 GnuPG has been developed on GNU/Linux systems and is know to work on
 almost all Free OSes.  All modern POSIX systems should be supported

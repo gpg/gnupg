@@ -539,7 +539,7 @@ certificates have been loaded correctly.
 @c
 @mansect signals
 @node Dirmngr Signals
-@section Use of signals.
+@section Use of signals
 
 A running @command{dirmngr} may be controlled by signals, i.e. using
 the @command{kill} command to send a signal to the process.

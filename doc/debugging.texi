@@ -86,7 +86,7 @@ should not occur but sometimes things go wrong), run it using
 
 
 @node Debugging Hints
-@section Various hints on debugging.
+@section Various hints on debugging
 
 @itemize @bullet
 
@@ -258,7 +258,7 @@ can't do anything about it without actually downloading the keys.
 @c ***  Architecture Details  *****************
 @c ********************************************
 @node Architecture Details
-@section How the whole thing works internally.
+@section How the whole thing works internally
 
 
 @menu
@@ -266,9 +266,8 @@ can't do anything about it without actually downloading the keys.
 * GnuPG-1 and GnuPG-2::   Relationship between GnuPG 1.4 and 2.x.
 @end menu
 
-
 @node Component interaction
-@subsection How the components work together.
+@subsection How the components work together
 
 
 @float Figure,fig:moduleoverview
@@ -278,7 +277,7 @@ can't do anything about it without actually downloading the keys.
 
 
 @node GnuPG-1 and GnuPG-2
-@subsection  Relationship between GnuPG 1.4 and 2.x.
+@subsection  Relationship between GnuPG 1.4 and 2.x
 
 Here is a little picture showing how the different GnuPG versions make
 use of a smartcard:

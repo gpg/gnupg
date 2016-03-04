@@ -2437,7 +2437,7 @@ done with @code{--with-colons}.
 @c ********  OPENPGP OPTIONS  ****************
 @c *******************************************
 @node OpenPGP Options
-@subsection OpenPGP protocol specific options.
+@subsection OpenPGP protocol specific options
 
 @table @gnupgtabopt
 
@@ -2625,7 +2625,7 @@ SHA224, SHA384, and SHA512 digests.
 @c ********  ESOTERIC OPTIONS  ***************
 @c *******************************************
 @node GPG Esoteric Options
-@subsection Doing things one usually doesn't want to do.
+@subsection Doing things one usually doesn't want to do
 
 @table @gnupgtabopt
 

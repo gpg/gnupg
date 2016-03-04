@@ -745,7 +745,7 @@ a small helper script is provided to create these files (@pxref{addgnupghome}).
 @c
 @mansect signals
 @node Agent Signals
-@section Use of some signals.
+@section Use of some signals
 A running @command{gpg-agent} may be controlled by signals, i.e. using
 the @command{kill} command to send a signal to the process.
 

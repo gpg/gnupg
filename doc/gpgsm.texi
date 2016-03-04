@@ -594,7 +594,7 @@ done with @code{--with-colons}.
 @c *************  CMS OPTIONS  ***************
 @c *******************************************
 @node CMS Options
-@subsection How to change how the CMS is created.
+@subsection How to change how the CMS is created
 
 @table @gnupgtabopt
 @item --include-certs @var{n}
@@ -625,7 +625,7 @@ interoperability problems.
 @c ********  ESOTERIC OPTIONS  ***************
 @c *******************************************
 @node Esoteric Options
-@subsection Doing things one usually do not want to do.
+@subsection Doing things one usually do not want to do
 
 
 @table @gnupgtabopt
@@ -1153,7 +1153,7 @@ default is @samp{sha256}.
 @c ***************           *****************
 @c *******************************************
 @node GPGSM Protocol
-@section The Protocol the Server Mode Uses.
+@section The Protocol the Server Mode Uses
 
 Description of the protocol used to access @command{GPGSM}.
 @command{GPGSM} does implement the Assuan protocol and in addition
@@ -1469,7 +1469,7 @@ The certificates must be specified unambiguously otherwise an error is
 returned.
 
 @node GPGSM GETAUDITLOG
-@subsection Retrieve an audit log.
+@subsection Retrieve an audit log
 @anchor{gpgsm-cmd getauditlog}
 
 This command is used to retrieve an audit log.
@@ -1512,7 +1512,7 @@ started with option @option{--disable-dirmngr}.
 @end table
 
 @node GPGSM OPTION
-@subsection  Session options.
+@subsection  Session options
 
 The standard Assuan option handler supports these options.
 

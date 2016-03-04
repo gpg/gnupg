@@ -4,7 +4,7 @@
 @c For copying conditions, see the file gnupg.texi.
 
 @node Installation
-@chapter A short installation guide.
+@chapter A short installation guide
 
 Unfortunately the installation guide has not been finished in time.
 Instead of delaying the release of GnuPG 2.0 even further, I decided to

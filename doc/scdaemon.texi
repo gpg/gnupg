@@ -628,17 +628,17 @@ status line is @code{PADDING} with the only defined value being 0 and
 meaning padding has been removed.
 
 @node Scdaemon GETATTR
-@subsection Read an attribute's value.
+@subsection Read an attribute's value
 
 TO BE WRITTEN.
 
 @node Scdaemon SETATTR
-@subsection Update an attribute's value.
+@subsection Update an attribute's value
 
 TO BE WRITTEN.
 
 @node Scdaemon WRITEKEY
-@subsection Write a key to a card.
+@subsection Write a key to a card
 
 @example
   WRITEKEY [--force] @var{keyid}
@@ -657,18 +657,18 @@ actual card application.
 
 
 @node Scdaemon GENKEY
-@subsection Generate a new key on-card.
+@subsection Generate a new key on-card
 
 TO BE WRITTEN.
 
 @node Scdaemon RANDOM
-@subsection Return random bytes generate on-card.
+@subsection Return random bytes generated on-card
 
 TO BE WRITTEN.
 
 
 @node Scdaemon PASSWD
-@subsection Change PINs.
+@subsection Change PINs
 
 @example
    PASSWD [--reset] [--nullpin] @var{chvno}
@@ -680,7 +680,7 @@ is used to initialize the PIN of TCOS cards (6 byte NullPIN only).
 
 
 @node Scdaemon CHECKPIN
-@subsection Perform a VERIFY operation.
+@subsection Perform a VERIFY operation
 
 @example
   CHECKPIN @var{idstr}
@@ -709,7 +709,7 @@ and only if the retry counter is still at 3.
 
 
 @node Scdaemon RESTART
-@subsection Perform a RESTART operation.
+@subsection Perform a RESTART operation
 
 @example
   RESTART
@@ -727,7 +727,7 @@ command; i.e. to select another application.
 
 
 @node Scdaemon APDU
-@subsection Send a verbatim APDU to the card.
+@subsection Send a verbatim APDU to the card
 
 @example
   APDU [--atr] [--more] [--exlen[=@var{n}]] [@var{hexstring}]
