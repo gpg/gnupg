@@ -40,7 +40,7 @@ OpenPGP standard. @command{@gpgname} features complete key management and
 all bells and whistles you can expect from a decent OpenPGP
 implementation.
 
-In contrast to the standalone command gpg from GnuPG 1.x, which is
+In contrast to the standalone command gpg from GnuPG 1.x, which
 might be better suited for server and embedded platforms, the 2.x
 version is commonly installed under the name @command{gpg2} and
 targeted to the desktop as it requires several other modules to be
