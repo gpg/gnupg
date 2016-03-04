@@ -102,7 +102,7 @@ so that @code{gpgsm} can help dirmngr.
 @item --fetch-crl @var{url}
 @opindex fetch-crl
 This command requires an URL as additional argument, and it will make
-dirmngr try to retrieve an import the CRL from that @var{url} into
+dirmngr try to retrieve and import the CRL from that @var{url} into
 it's cache.  This is mainly useful for debugging purposes.  The
 @command{dirmngr-client} provides the same feature for a running dirmngr.
 
@@ -364,11 +364,11 @@ out. The default is currently 100 seconds.  0 will never timeout.
 
 @item --add-servers
 @opindex add-servers
-This options makes dirmngr add any servers it discovers when validating
+This option makes dirmngr add any servers it discovers when validating
 certificates against CRLs to the internal list of servers to consult for
 certificates and CRLs.
 
-This options is useful when trying to validate a certificate that has
+This option is useful when trying to validate a certificate that has
 a CRL distribution point that points to a server that is not already
 listed in the ldapserverlist. Dirmngr will always go to this server and
 try to download the CRL, but chances are high that the certificate used
@@ -397,8 +397,8 @@ not contain information about an assigned responder.  Note, that
 @item --ocsp-signer @var{fpr}|@var{file}
 @opindex ocsp-signer
 Use the certificate with the fingerprint @var{fpr} to check the
-responses of the default OCSP Responder.  Alternativly a filename can be
-given in which case the respinse is expected to be signed by one of the
+responses of the default OCSP Responder.  Alternatively a filename can be
+given in which case the response is expected to be signed by one of the
 certificates described in that file.  Any argument which contains a
 slash, dot or tilde is considered a filename.  Usual filename expansion
 takes place: A tilde at the start followed by a slash is replaced by the
@@ -550,7 +550,7 @@ Here is a list of supported signals:
 
 @item SIGHUP
 @cpindex SIGHUP
-This signals flushes all internally cached CRLs as well as any cached
+This signal flushes all internally cached CRLs as well as any cached
 certificates.  Then the certificate cache is reinitialized as on
 startup.  Options are re-read from the configuration file.  Instead of
 sending this signal it is better to use
@@ -756,7 +756,7 @@ Only this answer will let Dirmngr consider the CRL as valid.
 Check whether the certificate with FINGERPRINT (SHA-1 hash of the
 entire X.509 certificate blob) is valid or not by consulting the CRL
 responsible for this certificate.  If the fingerprint has not been
-given or the certificate is not know, the function inquires the
+given or the certificate is not known, the function inquires the
 certificate using:
 
 @example

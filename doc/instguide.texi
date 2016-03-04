@@ -12,7 +12,7 @@ release without that guide.  The chapter on gpg-agent and gpgsm do
 include brief information on how to set up the whole thing.  Please
 watch the GnuPG website for updates of the documentation.  In the
 meantime you may search the GnuPG mailing list archives or ask on the
-gnupg-users mailing listsfor advise on how to solve problems or how to
+gnupg-users mailing list for advise on how to solve problems or how to
 get that whole thing up and running.
 
 ** Building the software

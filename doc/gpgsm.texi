@@ -108,7 +108,7 @@ abbreviate this command.
 @table @gnupgtabopt
 @item --encrypt
 @opindex encrypt
-Perform an encryption.  The keys the data is encrypted too must be set
+Perform an encryption.  The keys the data is encrypted to must be set
 using the option @option{--recipient}.
 
 @item --decrypt
@@ -136,7 +136,7 @@ Run in server mode and wait for commands on the @code{stdin}.
 Behave as a Dirmngr client issuing the request @var{command} with the
 optional list of @var{args}.  The output of the Dirmngr is printed
 stdout.  Please note that file names given as arguments should have an
-absolute file name (i.e. commencing with @code{/} because they are
+absolute file name (i.e. commencing with @code{/}) because they are
 passed verbatim to the Dirmngr and the working directory of the
 Dirmngr might not be the same as the one of this client.  Currently it
 is not possible to pass data via stdin to the Dirmngr.  @var{command}
@@ -835,7 +835,7 @@ signatures in the same way as handwritten signatures are.  Comments
 start with a hash mark and empty lines are ignored.  Lines do have a
 length limit but this is not a serious limitation as the format of the
 entries is fixed and checked by gpgsm: A non-comment line starts with
-optional whitespace, followed by exactly 40 hex character, white space
+optional whitespace, followed by exactly 40 hex characters, white space
 and a lowercased 2 letter country code.  Additional data delimited with
 by a white space is current ignored but might late be used for other
 purposes.
@@ -988,7 +988,7 @@ these status codes:
 
 @item The signature is invalid
 This means that the signature verification failed (this is an indication
-of af a transfer error, a program error or tampering with the message).
+of a transfer error, a program error or tampering with the message).
 @command{gpgsm} issues one of these status codes sequences:
   @table @code
   @item  @code{BADSIG}
@@ -1075,7 +1075,7 @@ parameter.  The only supported value for @var{algo} is @samp{rsa}.
 The requested length of a generated key in bits.  Defaults to 2048.
 
 @item Key-Grip: @var{hexstring}
-This is optional and used to generate a CSR or certificatet for an
+This is optional and used to generate a CSR or certificate for an
 already existing key.  Key-Length will be ignored when given.
 
 @item Key-Usage: @var{usage-list}
@@ -1227,7 +1227,7 @@ correct.
 
 Set the file descriptor to be used for the output (i.e. the encrypted
 message). Obviously the pipe must be open at that point, the server
-establishes its own end.  If the server returns an error he client
+establishes its own end.  If the server returns an error the client
 should consider this session failed.
 
 The option armor encodes the output in @acronym{PEM} format, the
@@ -1309,7 +1309,7 @@ possible to use the command
   SIGNER @var{userID}
 @end example
 
-to the signer's key.  @var{userID} should be the
+to set the signer's key.  @var{userID} should be the
 internal representation of the key; the server may accept any other way
 of specification.  If this is a valid and trusted recipient the server
 does respond with OK, otherwise the return is an ERR with the reason why
@@ -1318,13 +1318,13 @@ this key.  If the policy is not to sign at all if not all
 keys are valid, the client has to take care of this.  All
 @code{SIGNER} commands are cumulative until a @code{RESET} is done.
 Note that a @code{SIGN} does not reset this list of signers which is in
-contrats to the @code{RECIPIENT} command.
+contrast to the @code{RECIPIENT} command.
 
 
 @node GPGSM VERIFY
 @subsection Verifying a Message
 
-To verify a mesage the command:
+To verify a message the command:
 
 @example
   VERIFY
@@ -1387,7 +1387,7 @@ in turn this requires that the usual escape quoting rules are done.
 
 Lists only the keys where a secret key is available.
 
-The list commands  commands are affected by the option
+The list commands are affected by the option
 
 @example
   OPTION list-mode=@var{mode}

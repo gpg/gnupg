@@ -61,7 +61,7 @@ on a disk; the latter is often called a Soft-PSE.
 @item Shell model
 The standard model for validation of certificates under X.509.  At the
 time of the verification all certificates must be valid and not expired.
-See also @emph{Chain mode}.
+See also @emph{Chain model}.
 
 
 @item X.509

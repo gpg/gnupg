@@ -10,7 +10,7 @@ there is a need to track down problems.  We call this debugging in a
 reminiscent to the moth jamming a relay in a Mark II box back in 1947.
 
 Most of the problems a merely configuration and user problems but
-nevertheless there are the most annoying ones and responsible for many
+nevertheless they are the most annoying ones and responsible for many
 gray hairs.  We try to give some guidelines here on how to identify and
 solve the problem at hand.
 
@@ -131,7 +131,7 @@ but Dirmngr's OCSP feature has not been enabled using
 
 The far most common reason for this is that the environment variable
 @code{GPG_TTY} has not been set correctly.  Make sure that it has been
-set to a real tty devce and not just to @samp{/dev/tty};
+set to a real tty device and not just to @samp{/dev/tty};
 i.e. @samp{GPG_TTY=tty} is plainly wrong; what you want is
 @samp{GPG_TTY=`tty`} --- note the back ticks.  Also make sure that
 this environment variable gets exported, that is you should follow up
@@ -162,7 +162,7 @@ making use of ssh.
 
 @item Exporting a secret key without a certificate
 
-I may happen that you have created a certificate request using
+It may happen that you have created a certificate request using
 @command{gpgsm} but not yet received and imported the certificate from
 the CA.  However, you want to export the secret key to another machine
 right now to import the certificate over there then.  You can do this

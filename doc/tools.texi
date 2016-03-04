@@ -166,7 +166,7 @@ name for remote debugging.
 If GnuPG is installed on a system with existing user accounts, it is
 sometimes required to populate the GnuPG home directory with existing
 files.  Especially a @file{trustlist.txt} and a keybox with some
-initial certificates are often desired.  This scripts help to do this
+initial certificates are often desired.  This script helps to do this
 by copying all files from @file{/etc/skel/.gnupg} to the home
 directories of the accounts given on the command line.  It takes care
 not to overwrite existing GnuPG home directories.
@@ -246,7 +246,7 @@ throughout this section.
 * Invoking gpgconf::       List of all commands and options.
 * Format conventions::     Formatting conventions relevant for all commands.
 * Listing components::     List all gpgconf components.
-* Checking programs::      Check all programs know to gpgconf.
+* Checking programs::      Check all programs known to gpgconf.
 * Listing options::        List all options of a component.
 * Changing options::       Changing options of a component.
 * Listing global options:: List all global options.
@@ -507,7 +507,7 @@ the locale environment of the @command{gpgconf} program.
 The command @code{--list-components} will list all components that can
 be configured with @command{gpgconf}.  Usually, one component will
 correspond to one GnuPG-related program and contain the options of
-that programs configuration file that can be modified using
+that program's configuration file that can be modified using
 @command{gpgconf}.  However, this is not necessarily the case.  A
 component might also be a group of selected options from several
 programs, or contain entirely virtual options that have a special
@@ -1208,7 +1208,7 @@ be used to directly connect to any Assuan style socket server.
 @itemx --exec
 @opindex exec
 Take the rest of the command line as a program and it's arguments and
-execute it as an assuan server. Here is how you would run @command{gpgsm}:
+execute it as an Assuan server. Here is how you would run @command{gpgsm}:
 @smallexample
  gpg-connect-agent --exec gpgsm --server
 @end smallexample
@@ -1217,7 +1217,7 @@ Note that you may not use options on the command line in this case.
 @item --no-ext-connect
 @opindex no-ext-connect
 When using @option{-S} or @option{--exec}, @command{gpg-connect-agent}
-connects to the assuan server in extended mode to allow descriptor
+connects to the Assuan server in extended mode to allow descriptor
 passing.  This option makes it use the old mode.
 
 @item --no-autostart
@@ -1566,7 +1566,7 @@ Do the check using the OCSP protocol and ignore any CRLs.
 
 @item --force-default-responder
 @opindex force-default-responder
-When checking using the OCSP protocl, force the use of the default OCSP
+When checking using the OCSP protocol, force the use of the default OCSP
 responder.  That is not to use the Reponder as given by the certificate.
 
 @item --ping

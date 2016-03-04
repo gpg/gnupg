@@ -284,7 +284,7 @@ Avoid using the output of this command in scripts or other programs as
 it is likely to change as GnuPG changes.  See @option{--with-colons}
 for a machine-parseable key listing command that is appropriate for
 use in scripts and other programs.  Never use the regular output for
-scripts - it is only for human consumption.
+scripts --- it is only for human consumption.
 
 @item --list-secret-keys
 @itemx -K
@@ -379,7 +379,7 @@ safeguard against accidental deletion of multiple keys.
 
 @item --delete-secret-keys @code{name}
 @opindex delete-secret-keys
-gRemove key from the secret keyring. In batch mode the key must be
+Remove key from the secret keyring. In batch mode the key must be
 specified by fingerprint.  The option @option{--yes} can be used to
 advice gpg-agent not to request a confirmation.  This extra
 pre-caution is done because @command{gpg} can't be sure that the
@@ -420,7 +420,7 @@ exported keys are written to STDOUT or to the file given with option
 @option{--armor} to allow easy printing of the key for paper backup;
 however the external tool @command{paperkey} does a better job for
 creating backups on paper.  Note that exporting a secret key can be a
-security risk if the exported keys are send over an insecure channel.
+security risk if the exported keys are sent over an insecure channel.
 
 The second form of the command has the special property to render the
 secret part of the primary key useless; this is a GNU extension to
@@ -533,7 +533,7 @@ corrupted trustdb.  Example:
 Update the trustdb with the ownertrust values stored in @code{files} (or
 STDIN if not given); existing values will be overwritten.  In case of a
 severely damaged trustdb and if you have a recent backup of the
-ownertrust values (e.g. in the file @file{otrust.txt}, you may re-create
+ownertrust values (e.g. in the file @file{otrust.txt}), you may re-create
 the trustdb using these commands:
 @c man:.RS
 @example
@@ -1082,7 +1082,7 @@ behaviour and to change the default configuration.
 * GPG Input and Output::        Input and Output.
 * OpenPGP Options::             OpenPGP protocol specific options.
 * Compliance Options::          Compliance options.
-* GPG Esoteric Options::        Doing things one usually don't want to do.
+* GPG Esoteric Options::        Doing things one usually doesn't want to do.
 * Deprecated Options::          Deprecated options.
 @end menu
 
@@ -1808,7 +1808,7 @@ are available for all keyserver types, some common options are:
   @option{--recv-keys} command as a whole. Defaults to 30 seconds.
 
   @item http-proxy=@code{value}
-  This options is deprecated.
+  This option is deprecated.
   Set the proxy to use for HTTP and HKP keyservers.
   This overrides any proxy defined in @file{dirmngr.conf}.
 
@@ -2174,7 +2174,7 @@ stop by the OS limits. Defaults to 0, which means "no limit".
 @opindex input-size-hint
 This option can be used to tell GPG the size of the input data in
 bytes.  @var{n} must be a positive base-10 number.  This option is
-only useful if the input is not taken from a file.  GPG may use thos
+only useful if the input is not taken from a file.  GPG may use this
 hint to optimize its buffer allocation strategy.  It is also used by
 the @option{--status-fd} line ``PROGRESS'' to provide a value for
 ``total'' if that is not available by other means.
@@ -3171,7 +3171,7 @@ workaround!
 
 @item --enable-special-filenames
 @opindex enable-special-filenames
-This options enables a mode in which filenames of the form
+This option enables a mode in which filenames of the form
 @file{-&n}, where n is a non-negative decimal number,
 refer to the file descriptor n and not to a file with that name.
 
@@ -3324,7 +3324,7 @@ files; They all live in in the current home directory (@pxref{option
 
   @item ~/.gnupg/pubring.kbx
   @efindex pubring.kbx
-  The public keyring using a different format.  This file is sharred
+  The public keyring using a different format.  This file is shared
   with @command{gpgsm}.  You should backup this file.
 
   @item ~/.gnupg/pubring.kbx.lock
@@ -3804,7 +3804,7 @@ can be handled.  See also @samp{Key-Type} above.
 
 @item Subkey-Length: @var{nbits}
 Length of the secondary key (subkey) in bits.  The default is returned
-by running the command @samp{@gpgname --gpgconf-list}".
+by running the command @samp{@gpgname --gpgconf-list}.
 
 @item Subkey-Usage: @var{usage-list}
 Key usage lists for a subkey; similar to @samp{Key-Usage}.

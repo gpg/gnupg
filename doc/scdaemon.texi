@@ -81,7 +81,7 @@ abbreviate this command.
 
 @item --server
 @opindex server
-Run in server mode and wait for commands on the @code{stdin}.  This is
+Run in server mode and wait for commands on the @code{stdin}.  The
 default mode is to create a socket and listen for commands there.
 
 @item --multi-server
@@ -213,7 +213,7 @@ insertions.
 @opindex debug-allow-core-dump
 For security reasons we won't create a core dump when the process
 aborts.  For debugging purposes it is sometimes better to allow core
-dump.  This options enables it and also changes the working directory to
+dump.  This option enables it and also changes the working directory to
 @file{/tmp} when running in @option{--server} mode.
 
 @item --debug-log-tid
@@ -390,7 +390,7 @@ comes with almost all German banking cards.
 @node SmartCard-HSM
 @subsection The SmartCard-HSM card application ``sc-hsm''
 
-This application adds read/only support for keys and certificates
+This application adds read-only support for keys and certificates
 stored on a @uref{http://www.smartcard-hsm.com, SmartCard-HSM}.
 
 To generate keys and store certifiates you may use
@@ -433,12 +433,12 @@ name may be changed on the command line (@pxref{option --options}).
 
 @item scd-event
 @cindex scd-event
-If this file is present and executable, it will be called on veyer card
-reader's status changed. An example of this script is provided with the
+If this file is present and executable, it will be called on every card
+reader's status change.  An example of this script is provided with the
 distribution
 
 @item reader_@var{n}.status
-This file is created by @command{sdaemon} to let other applications now
+This file is created by @command{scdaemon} to let other applications now
 about reader status changes.  Its use is now deprecated in favor of
 @file{scd-event}.
 
@@ -469,7 +469,7 @@ $ scdaemon --server -v
 
 The SC-Daemon should be started by the system to provide access to
 external tokens.  Using Smartcards on a multi-user system does not
-make much sense expect for system services, but in this case no
+make much sense except for system services, but in this case no
 regular user accounts are hosted on the machine.
 
 A client connects to the SC-Daemon by connecting to the socket named
@@ -490,7 +490,7 @@ synchronizing access to a token between sessions.
 * Scdaemon SETATTR::      Update an attribute's value.
 * Scdaemon WRITEKEY::     Write a key to a card.
 * Scdaemon GENKEY::       Generate a new key on-card.
-* Scdaemon RANDOM::       Return random bytes generate on-card.
+* Scdaemon RANDOM::       Return random bytes generated on-card.
 * Scdaemon PASSWD::       Change PINs.
 * Scdaemon CHECKPIN::     Perform a VERIFY operation.
 * Scdaemon RESTART::      Restart connection
@@ -561,7 +561,7 @@ returned in @var{hexstring_with_keygrip}.
 
 This function is used to read a certificate identified by
 @var{hexified_certid} from the card.  With OpenPGP cards the keyid
-@code{OpenPGP.3} may be used to rad the certificate of version 2 cards.
+@code{OpenPGP.3} may be used to read the certificate of version 2 cards.
 
 
 @node Scdaemon READKEY
@@ -622,7 +622,7 @@ using the command
 
 where @var{keyid} is the hexified ID of the key to be used.
 
-If the card is ware of the apdding format a status line with padding
+If the card is aware of the apdding format a status line with padding
 information is send before the plaintext data.  The key for this
 status line is @code{PADDING} with the only defined value being 0 and
 meaning padding has been removed.

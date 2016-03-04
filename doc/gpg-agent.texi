@@ -708,7 +708,7 @@ that key.  The flag is automatically set if a new key was loaded into
 @code{gpg-agent} using the option @option{-c} of the @code{ssh-add}
 command.
 
-The keygrip may be prefixed with a @code{!} to disable an entry entry.
+The keygrip may be prefixed with a @code{!} to disable an entry.
 
 The following example lists exactly one key.  Note that keys available
 through a OpenPGP smartcard in the active smartcard reader are
@@ -939,7 +939,7 @@ Here is an example session:
    S: # session key follows
    S: S PADDING 0
    S: D (value 1234567890ABCDEF0)
-   S: OK descryption successful
+   S: OK decryption successful
 @end smallexample
 @end cartouche
 
@@ -951,7 +951,7 @@ that the padding has been removed.
 @node Agent PKSIGN
 @subsection Signing a Hash
 
-The client ask the agent to sign a given hash value.  A default key
+The client asks the agent to sign a given hash value.  A default key
 will be chosen if no key has been set.  To set a key a client first
 uses:
 
@@ -961,7 +961,7 @@ uses:
 
 This can be used multiple times to create multiple signature, the list
 of keys is reset with the next PKSIGN command or a RESET.  The server
-test whether the key is a valid key to sign something and responds with
+tests whether the key is a valid key to sign something and responds with
 okay.
 
 @example
@@ -993,7 +993,7 @@ The actual signing is done using
    PKSIGN <options>
 @end example
 
-Options are not yet defined, but my later be used to choose among
+Options are not yet defined, but may later be used to choose among
 different algorithms.  The agent does then some checks, asks for the
 passphrase and as a result the server returns the signature as an SPKI
 like S-expression in "D" lines:
@@ -1113,7 +1113,7 @@ are to be used for this.
 
 There is no actual need because we can expect that secret keys
 created by a 3rd party are stored on a smartcard.  If we have
-generated the key ourself, we do not need to import it.
+generated the key ourselves, we do not need to import it.
 
 @node Agent EXPORT
 @subsection Export a Secret Key
@@ -1292,7 +1292,7 @@ passphrase will be retrieved from the pinentry module unless the
 retrieved from the client.
 
 The @var{timeout} parameter keeps the passphrase cached for the specified
-number of seconds. A value of @code{-1} means infinate while @code{0} means
+number of seconds. A value of @code{-1} means infinite while @code{0} means
 the default (currently only a timeout of -1 is allowed, which means to never
 expire it).
 
@@ -1342,7 +1342,7 @@ least one of the keygrips corresponds to an available secret key.
 @end example
 
 This command is used to register a smartcard.  With the --send
-option given the certificates are send back.
+option given the certificates are sent back.
 
 
 @node Agent PASSWD
