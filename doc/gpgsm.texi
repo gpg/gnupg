@@ -1114,7 +1114,7 @@ integer of arbitrary length.  The special value @samp{random} can be
 used to create a 64 bit random serial number.
 
 @item Issuer-DN: @var{issuer-name}
-This is the DN name of the issuer in rfc2253 format.  If it is not set
+This is the DN name of the issuer in RFC-2253 format.  If it is not set
 it will default to the subject DN and a special GnuPG extension will
 be included in the certificate to mark it as a standalone certificate.
 

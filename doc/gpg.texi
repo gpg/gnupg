@@ -1429,7 +1429,7 @@ Valid values for @code{name} are:
 
   @item koi8-r
   @opindex display-charset:koi8-r
-  The usual Russian set (rfc1489).
+  The usual Russian set (RFC-1489).
 
   @item utf-8
   @opindex display-charset:utf-8
@@ -1656,7 +1656,7 @@ mechanisms, in the order they are to be tried:
 @table @asis
 
   @item cert
-  Locate a key using DNS CERT, as specified in rfc4398.
+  Locate a key using DNS CERT, as specified in RFC-4398.
 
   @item pka
   Locate a key using DNS PKA.

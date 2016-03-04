@@ -111,7 +111,7 @@ escaped) RFC-2253 string
 
 @item By exact match on the issuer's DN.
 This is indicated by a leading hash mark, directly followed by a slash
-and then directly followed by the rfc2253 encoded DN of the issuer.
+and then directly followed by the RFC-2253 encoded DN of the issuer.
 This should return the Root cert of the issuer.  See note above.
 
 @cartouche
