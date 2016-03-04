@@ -111,7 +111,7 @@ use_exec=yes
 use_trust_models=yes
 use_tofu=yes
 card_support=yes
-use_ccid_driver=yes
+use_ccid_driver=auto
 dirmngr_auto_start=yes
 use_tls_library=no
 large_secmem=no
@@ -782,7 +782,7 @@ AM_PATH_KSBA("$NEED_KSBA_API:$NEED_KSBA_VERSION",have_ksba=yes,have_ksba=no)
 # libusb allows us to use the integrated CCID smartcard reader driver.
 #
 # FiXME: Use GNUPG_CHECK_LIBUSB and modify to use separate AC_SUBSTs.
-if test "$use_ccid_driver" = yes ; then
+if test "$use_ccid_driver" = auto || test "$use_ccid_driver" = yes; then
    case "${host}" in
      *-mingw32*)
        LIBUSB_LIBS=
@@ -824,7 +824,9 @@ if test x"$LIBUSB_LIBS" != x ; then
      AC_MSG_RESULT([not found])
      usb_incdir=""
      have_libusb=no
-     use_ccid_driver=no
+     if test "$use_ccid_driver" != yes; then
+       use_ccid_driver=no
+     fi
      LIBUSB_LIBS=""
    fi
 
@@ -1853,6 +1855,17 @@ if test "$require_iconv" = yes; then
 *** install a suitable library; for example GNU Libiconv which is
 *** available at:
 ***   http://ftp.gnu.org/gnu/libiconv/
+***]])
+  fi
+fi
+
+if test "$use_ccid_driver" = yes; then
+  if test "$have_libusb" != yes; then
+    die=yes
+    AC_MSG_NOTICE([[
+***
+*** You need libusb to build the internal ccid driver.  Please
+*** install a libusb suitable for your system.
 ***]])
   fi
 fi
