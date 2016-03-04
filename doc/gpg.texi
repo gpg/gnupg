@@ -193,7 +193,7 @@ Make a detached signature.
 @item --encrypt
 @itemx -e
 @opindex encrypt
-Encrypt data. This option may be combined with @option{--sign} (for a
+Encrypt data. This command may be combined with @option{--sign} (for a
 signed and encrypted message), @option{--symmetric} (for a message that
 may be decrypted via a secret key or a passphrase), or @option{--sign}
 and @option{--symmetric} together (for a signed message that may be
@@ -204,7 +204,7 @@ decrypted via a secret key or a passphrase).
 @opindex symmetric
 Encrypt with a symmetric cipher using a passphrase. The default
 symmetric cipher used is @value{GPGSYMENCALGO}, but may be chosen with the
-@option{--cipher-algo} option. This option may be combined with
+@option{--cipher-algo} option. This command may be combined with
 @option{--sign} (for a signed and symmetrically encrypted message),
 @option{--encrypt} (for a message that may be decrypted via a secret key
 or a passphrase), or @option{--sign} and @option{--encrypt} together
@@ -957,7 +957,7 @@ signing.
   currently have them. Cross-certification signatures protect against a
   subtle attack against signing subkeys. See
   @option{--require-cross-certification}.  All new keys generated have
-  this signature by default, so this option is only useful to bring
+  this signature by default, so this command is only useful to bring
   older keys up to date.
 
   @item save
@@ -1594,7 +1594,7 @@ Set what trust model GnuPG should follow. The models are:
   keys and email addresses (which are extracted from user ids and
   normalized).  There are five policies, which can be set manually
   using the @option{--tofu-policy} option.  The default policy can be
-  set using the @option{--tofu-default-policy} policy.
+  set using the @option{--tofu-default-policy} option.
 
   The TOFU policies are: @code{auto}, @code{good}, @code{unknown},
   @code{bad} and @code{ask}.  The @code{auto} policy is used by
@@ -2637,7 +2637,7 @@ Don't make any changes (this is not completely implemented).
 @item --list-only
 @opindex list-only
 Changes the behaviour of some commands. This is like @option{--dry-run} but
-different in some cases. The semantic of this command may be extended in
+different in some cases. The semantic of this option may be extended in
 the future. Currently it only skips the actual decryption pass and
 therefore enables a fast listing of the encryption keys.
 

@@ -221,7 +221,7 @@ guarantees.}
 
 @command{gpgconf} provides access to the configuration of one or more
 components of the GnuPG system.  These components correspond more or
-less to the programs that exist in the GnuPG framework, like GnuPG,
+less to the programs that exist in the GnuPG framework, like GPG,
 GPGSM, DirMngr, etc.  But this is not a strict one-to-one
 relationship.  Not all configuration options are available through
 @command{gpgconf}.  @command{gpgconf} provides a generic and abstract
@@ -487,7 +487,7 @@ quote character is only needed to be able to differentiate between no
 value and the empty string as value.
 
 @item string list
-If the option takes a number argument and it can occur more than once,
+If the option takes a string argument and it can occur more than once,
 then the option argument is either empty, or it is a comma-separated
 list of string arguments as described above.
 @end table
@@ -520,7 +520,7 @@ an atomic way with a single operation.  The GUI could for example
 provide a menu with one entry for each component, or a window with one
 tabulator sheet per component.
 
-The command argument @code{--list-components} lists all available
+The command @code{--list-components} lists all available
 components, one per line.  The format of each line is:
 
 @code{@var{name}:@var{description}:@var{pgmname}:}
@@ -565,7 +565,7 @@ components.  It runs each program to test whether it is installed and
 runnable.  This also includes a syntax check of all config file options
 of the program.
 
-The command argument @code{--check-programs} lists all available
+The command @code{--check-programs} lists all available
 programs, one per line.  The format of each line is:
 
 @code{@var{name}:@var{description}:@var{pgmname}:@var{avail}:@var{okay}:@var{cfgfile}:@var{line}:@var{error}:}
@@ -640,7 +640,7 @@ Every component contains one or more options.  Options may be gathered
 into option groups to allow the GUI to give visual hints to the user
 about which options are related.
 
-The command argument @code{@w{--list-options @var{component}}} lists
+The command @code{@w{--list-options @var{component}}} lists
 all options (and the groups they belong to) in the component
 @var{component}, one per line.  @var{component} must be the string in
 the field @var{name} in the output of the @code{--list-components}
@@ -925,7 +925,7 @@ This is the group field of the key.  It is percent escaped.
 This describes a rule record. All rule records up to the next key record
 make up a rule set for that key.  The format of a rule record is:
 
-  @code{r:::@var{component}:@var{option}:@var{flags}:@var{value}:}
+  @code{r:::@var{component}:@var{option}:@var{flag}:@var{value}:}
 
 @table @var
 @item component

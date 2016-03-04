@@ -145,7 +145,6 @@ When it is ready, you should see the final notice:
 
 @cartouche
 @example
-  gpgsm: certificate request created
   Ready.  You should now send this request to your CA.
 @end example
 @end cartouche

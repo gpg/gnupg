@@ -313,10 +313,10 @@ Even if a card reader features a pinpad, do not try to use it.
 @opindex allow-admin
 This option disables the use of admin class commands for card
 applications where this is supported.  Currently we support it for the
-OpenPGP card. This commands is useful to inhibit accidental access to
+OpenPGP card. This option is useful to inhibit accidental access to
 admin class command which could ultimately lock the card through wrong
 PIN numbers.  Note that GnuPG versions older than 2.0.11 featured an
-@option{--allow-admin} command which was required to use such admin
+@option{--allow-admin} option which was required to use such admin
 commands.  This option has no more effect today because the default is
 now to allow admin commands.
 

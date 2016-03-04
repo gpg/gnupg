@@ -636,7 +636,7 @@ Sometimes signatures are broken in that they announce a different digest
 algorithm than actually used.  @command{gpgsm} uses a one-pass data
 processing model and thus needs to rely on the announced digest
 algorithms to properly hash the data.  As a workaround this option may
-be used to tell gpg to also hash the data using the algorithm
+be used to tell @command{gpgsm} to also hash the data using the algorithm
 @var{name}; this slows processing down a little bit but allows verification of
 such broken signatures.  If @command{gpgsm} prints an error like
 ``digest algo 8 has not been enabled'' you may want to try this option,
@@ -1262,7 +1262,7 @@ is no need to set recipients.  @command{GPGSM} automatically strips any
 @acronym{S/MIME} headers from the input, so it is valid to pass an
 entire MIME part to the INPUT pipe.
 
-The encryption is done by using the command
+The decryption is done by using the command
 
 @example
   DECRYPT

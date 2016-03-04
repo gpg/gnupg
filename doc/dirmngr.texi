@@ -419,7 +419,7 @@ prefix with a hash mark are ignored.
 @item --ocsp-max-clock-skew @var{n}
 @opindex ocsp-max-clock-skew
 The number of seconds a skew between the OCSP responder and them local
-clock is accepted.  Default is 600 (20 minutes).
+clock is accepted.  Default is 600 (10 minutes).
 
 @item --ocsp-max-period @var{n}
 @opindex ocsp-max-period
@@ -747,7 +747,7 @@ this the root certificate:
   C: END
 @end example
 
-Only this answer will let Dirmngr consider the CRL as valid.
+Only this answer will let Dirmngr consider the certificate as valid.
 
 
 @node Dirmngr CHECKCRL
