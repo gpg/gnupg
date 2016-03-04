@@ -95,7 +95,7 @@ Walter Koch, Wayne Chapeskie, Wim Vandeputte, Winona Brown, Yosiaki
 IIDA, Yoshihiro Kajiki and Gerlinde Klaes.
 
 This software has been made possible by the previous work of Chris
-Wedgwood, Jean-loup Gailly, Jon Callas, Mark Adler, Martin Hellmann
+Wedgwood, Jean-loup Gailly, Jon Callas, Mark Adler, Martin Hellman,
 Paul Kendall, Philip R. Zimmermann, Peter Gutmann, Philip A. Nelson,
 Taher Elgamal, Torbjorn Granlund, Whitfield Diffie, some unknown NSA
 mathematicians and all the folks who have worked hard to create
