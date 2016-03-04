@@ -661,7 +661,7 @@ trustworthy enough into this file.  Places where to look for the
 fingerprint of a root certificate are letters received from the CA or
 the website of the CA (after making 100% sure that this is indeed the
 website of that CA).  You may want to consider disallowing interactive
-updates of this file by using the @xref{option --no-allow-mark-trusted}.
+updates of this file by using the @ref{option --no-allow-mark-trusted}.
 It might even be advisable to change the permissions to read-only so
 that this file can't be changed inadvertently.
 
@@ -1476,8 +1476,7 @@ following values are defined:
   Use a loopback pinentry.  This fakes a pinentry by using inquiries
   back to the caller to ask for a passphrase.  This option may only be
   set if the agent has been configured for that.
-  To disable this feature use @xref{option --no-allow-loopback-pinentry}.
-
+  To disable this feature use @ref{option --no-allow-loopback-pinentry}.
   @end table
 
 @item cache-ttl-opt-preset

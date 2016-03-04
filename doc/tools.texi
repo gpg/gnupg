@@ -811,7 +811,7 @@ case a short name is not known.
 @item default
 This field is defined only for options for which the @code{default} or
 @code{default desc} flag is set.  If the @code{default} flag is set,
-its format is that of an @emph{option argument} (@xref{Format
+its format is that of an @emph{option argument} (@pxref{Format
 conventions}, for details).  If the default value is empty, then no
 default is known.  Otherwise, the value specifies the default value
 for this option.  If the @code{default desc} flag is set, the field is
@@ -821,7 +821,7 @@ not given.
 @item argdef
 This field is defined only for options for which the @code{optional
 arg} flag is set.  If the @code{no arg desc} flag is not set, its
-format is that of an @emph{option argument} (@xref{Format
+format is that of an @emph{option argument} (@pxref{Format
 conventions}, for details).  If the default value is empty, then no
 default is known.  Otherwise, the value specifies the default argument
 for this option.  If the @code{no arg desc} flag is set, the field is

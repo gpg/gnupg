@@ -1843,7 +1843,7 @@ key signer (defaults to 3)
 @item --tofu-default-policy @code{auto|good|unknown|bad|ask}
 @opindex tofu-default-policy
 The default TOFU policy (defaults to @code{auto}).  For more
-information about the meaning of this option, @xref{trust-model-tofu}.
+information about the meaning of this option, @pxref{trust-model-tofu}.
 
 @item --max-cert-depth @code{n}
 @opindex max-cert-depth
