@@ -1440,7 +1440,7 @@ Valid values for @code{name} are:
 @item --utf8-strings
 @itemx --no-utf8-strings
 @opindex utf8-strings
-Assume that command line arguments are given as UTF8 strings. The
+Assume that command line arguments are given as UTF-8 strings. The
 default (@option{--no-utf8-strings}) is to assume that arguments are
 encoded in the character set as specified by
 @option{--display-charset}. These options affect all following
@@ -2770,7 +2770,7 @@ must contain a '@@' character in the form keyname@@domain.example.com
 is to help prevent pollution of the IETF reserved notation
 namespace. The @option{--expert} flag overrides the '@@'
 check. @code{value} may be any printable string; it will be encoded in
-UTF8, so you should check that your @option{--display-charset} is set
+UTF-8, so you should check that your @option{--display-charset} is set
 correctly. If you prefix @code{name} with an exclamation mark (!), the
 notation data will be flagged as critical
 (rfc4880:5.2.3.16). @option{--sig-notation} sets a notation for data
