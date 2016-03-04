@@ -137,7 +137,7 @@ abbreviate this command.
 @itemx -h
 @opindex help
 Print a usage message summarizing the most useful command-line options.
-Note that you cannot abbreviate this command.
+Note that you can abbreviate this command.
 
 @item --dump-options
 @opindex dump-options
