@@ -3442,11 +3442,11 @@ show keys
 show fingerprint
 
 @item gpg --verify @code{pgpfile}
-@itemx gpg --verify @code{sigfile}
+@itemx gpg --verify @code{sigfile} [@code{datafile}]
 Verify the signature of the file but do not output the data unless
-requested. The second form is used for detached signatures, where
+requested.  The second form is used for detached signatures, where
 @code{sigfile} is the detached signature (either ASCII armored or
-binary) and are the signed data; if this is not given, the name of the
+binary) and @code{datafile} are the signed data; if this is not given, the name of the
 file holding the signed data is constructed by cutting off the
 extension (".asc" or ".sig") of @code{sigfile} or by asking the user
 for the filename.  If the option @option{--output} is also used the
