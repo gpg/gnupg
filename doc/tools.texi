@@ -1139,7 +1139,7 @@ The @command{gpg-connect-agent} is a utility to communicate with a
 running @command{gpg-agent}.  It is useful to check out the commands
 @command{gpg-agent} provides using the Assuan interface.  It might
 also be useful for scripting simple applications.  Input is expected
-at stdin and out put gets printed to stdout.
+at stdin and output gets printed to stdout.
 
 It is very similar to running @command{gpg-agent} in server mode; but
 here we connect to a running instance.
@@ -1780,7 +1780,8 @@ The possible exit status codes of @command{symcryptrun} are:
 @node gpg-zip
 @section Encrypt or sign files into an archive
 @ifset manverb
-.B gpg-zip \- Encrypt or sign files into an archive
+.B gpg-zip
+\- Encrypt or sign files into an archive
 @end ifset
 
 @mansect synopsis

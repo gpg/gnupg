@@ -108,7 +108,7 @@ one (e.g. @file{@value{BINDIR}/pinentry}).
 
 @manpause
 @noindent
-@xref{Option Index},for an index to @command{GPG-AGENT}'s commands and options.
+@xref{Option Index}, for an index to @command{GPG-AGENT}'s commands and options.
 @mancont
 
 @menu

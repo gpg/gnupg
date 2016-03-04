@@ -41,7 +41,7 @@ information and indices.  The commonly used one is the file
 @file{pubring.kbx} in the @file{.gnupg} directory. It contains all
 X.509 certificates as well as OpenPGP keys@footnote{Well, OpenPGP keys
 are not implemented, @command{gpg} still used the keyring file
-@file{pubring.gpg}} .
+@file{pubring.gpg}.}.
 
 @noindent
 When called the standard way, e.g.:

@@ -229,7 +229,7 @@ self-test for debugging purposes.
 @opindex c
 @opindex csh
 Format the info output in daemon mode for use with the standard Bourne
-shell respective the C-shell . The default ist to guess it based on the
+shell respective the C-shell. The default is to guess it based on the
 environment variable @code{SHELL} which is in almost all cases
 sufficient.
 

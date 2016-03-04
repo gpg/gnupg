@@ -608,11 +608,11 @@ This is a simple command to generate a standard key with one user id.
 In contrast to @option{--gen-key} the key is generated directly
 without the need to answer a bunch of prompts.  Unless the option
 @option{--yes} is given, the key creation will be canceled if the
-given user id already exists in the key ring.
+given user id already exists in the keyring.
 
 If invoked directly on the console without any special options an
 answer to a ``Continue?'' style confirmation prompt is required.  In
-case the user id already exists in the key ring a second prompt to
+case the user id already exists in the keyring a second prompt to
 force the creation of the key will show up.
 
 If @code{algo} or @code{usage} are given, only the primary key is
@@ -962,12 +962,12 @@ signing.
 
   @item save
   @opindex keyedit:save
-  Save all changes to the key rings and quit.
+  Save all changes to the keyrings and quit.
 
   @item quit
   @opindex keyedit:quit
   Quit the program without updating the
-  key rings.
+  keyrings.
 @end table
 
 @c man:.RS
@@ -2062,7 +2062,7 @@ keys can be used.
 Disable the use of all @option{--encrypt-to} and
 @option{--hidden-encrypt-to} keys.
 
-@item --group @code{name=value1 }
+@item --group @code{name=value}
 @opindex group
 Sets up a named group, which is similar to aliases in email programs.
 Any time the group name is a recipient (@option{-r} or
@@ -3403,7 +3403,6 @@ Operation is further controlled by a few environment variables:
   language selection done through the Registry.  If used and set to a
   valid and available language name (@var{langid}), the file with the
   translation is loaded from
-
   @code{@var{gpgdir}/gnupg.nls/@var{langid}.mo}.  Here @var{gpgdir} is the
   directory out of which the gpg binary has been loaded.  If it can't be
   loaded the Registry is tried and as last resort the native Windows
