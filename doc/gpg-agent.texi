@@ -1341,7 +1341,7 @@ least one of the keygrips corresponds to an available secret key.
   LEARN [--send]
 @end example
 
-This command is used to register a smartcard.  With the --send
+This command is used to register a smartcard.  With the @option{--send}
 option given the certificates are sent back.
 
 

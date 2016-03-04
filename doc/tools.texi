@@ -319,9 +319,9 @@ may use this command to ensure that they are started.
 @item --kill [@var{component}]
 @opindex kill
 Kill the given component.  Components which support killing are
-gpg-agent and scdaemon.  Components which don't support reloading are
-ignored.  Note that as of now reload and kill have the same effect for
-scdaemon.
+@command{gpg-agent} and @command{scdaemon}.  Components which don't
+support reloading are ignored.  Note that as of now reload and kill
+have the same effect for @command{scdaemon}.
 
 @item --create-socketdir
 @opindex create-socketdir
@@ -699,9 +699,9 @@ If this flag is set, and the @code{optional arg} flag is set, then the
 option has a special meaning if no argument is given.
 
 @item no change (128)
-If this flag is set, gpgconf ignores requests to change the value.  GUI
-frontends should grey out this option.  Note, that manual changes of the
-configuration files are still possible.
+If this flag is set, @command{gpgconf} ignores requests to change the
+value.  GUI frontends should grey out this option.  Note, that manual
+changes of the configuration files are still possible.
 @end table
 
 @item level
@@ -1137,9 +1137,9 @@ for other users.
 @mansect description
 The @command{gpg-connect-agent} is a utility to communicate with a
 running @command{gpg-agent}.  It is useful to check out the commands
-gpg-agent provides using the Assuan interface.  It might also be useful
-for scripting simple applications.  Input is expected at stdin and out
-put gets printed to stdout.
+@command{gpg-agent} provides using the Assuan interface.  It might
+also be useful for scripting simple applications.  Input is expected
+at stdin and out put gets printed to stdout.
 
 It is very similar to running @command{gpg-agent} in server mode; but
 here we connect to a running instance.
@@ -1673,14 +1673,15 @@ debugging.  Run it with @code{--help} for usage information.
 @end ifset
 
 @mansect description
-Sometimes simple encryption tools are already in use for a long time and
-there might be a desire to integrate them into the GnuPG framework.  The
-protocols and encryption methods might be non-standard or not even
-properly documented, so that a full-fledged encryption tool with an
-interface like gpg is not doable.  @command{symcryptrun} provides a
-solution: It operates by calling the external encryption/decryption
-module and provides a passphrase for a key using the standard
-@command{pinentry} based mechanism through @command{gpg-agent}.
+Sometimes simple encryption tools are already in use for a long time
+and there might be a desire to integrate them into the GnuPG
+framework.  The protocols and encryption methods might be non-standard
+or not even properly documented, so that a full-fledged encryption
+tool with an interface like @command{gpg} is not doable.
+@command{symcryptrun} provides a solution: It operates by calling the
+external encryption/decryption module and provides a passphrase for a
+key using the standard @command{pinentry} based mechanism through
+@command{gpg-agent}.
 
 Note, that @command{symcryptrun} is only available if GnuPG has been
 configured with @samp{--enable-symcryptrun} at build time.

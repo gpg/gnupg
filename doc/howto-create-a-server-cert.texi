@@ -206,7 +206,7 @@ followed by a Ctrl-D
 @end example
 @end cartouche
 
-gpgsm tells you that it has imported the certificate. It is now
+@command{gpgsm} tells you that it has imported the certificate. It is now
 associated with the key you used when creating the request. The root
 certificate has not been found, so you may want to import it from the
 CACert website.

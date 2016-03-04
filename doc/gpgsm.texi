@@ -569,7 +569,7 @@ When doing a key listing, do a full validation check for each key and
 print the result.  This is usually a slow operation because it
 requires a CRL lookup and other operations.
 
-When used along with --import, a validation of the certificate to
+When used along with @option{--import}, a validation of the certificate to
 import is done and only imported if it succeeds the test.  Note that
 this does not affect an already available certificate in the DB.
 This option is therefore useful to simply verify a certificate.
@@ -581,7 +581,7 @@ certificate.
 
 @item --with-keygrip
 Include the keygrip in standard key listings.  Note that the keygrip is
-always listed in --with-colons mode.
+always listed in @option{--with-colons} mode.
 
 @item --with-secret
 @opindex with-secret
@@ -834,7 +834,7 @@ They are defined as certificates capable of creating legally binding
 signatures in the same way as handwritten signatures are.  Comments
 start with a hash mark and empty lines are ignored.  Lines do have a
 length limit but this is not a serious limitation as the format of the
-entries is fixed and checked by gpgsm: A non-comment line starts with
+entries is fixed and checked by @command{gpgsm}: A non-comment line starts with
 optional whitespace, followed by exactly 40 hex characters, white space
 and a lowercased 2 letter country code.  Additional data delimited with
 by a white space is current ignored but might late be used for other
@@ -893,7 +893,7 @@ into the directory @file{/etc/skel/.gnupg/} so that newly created users
 start up with a working configuration.  For existing users a small
 helper script is provided to create these files (@pxref{addgnupghome}).
 
-For internal purposes gpgsm creates and maintains a few other files;
+For internal purposes @command{gpgsm} creates and maintains a few other files;
 they all live in in the current home directory (@pxref{option
 --homedir}).  Only @command{gpgsm} may modify these files.
 
@@ -1230,8 +1230,8 @@ message). Obviously the pipe must be open at that point, the server
 establishes its own end.  If the server returns an error the client
 should consider this session failed.
 
-The option armor encodes the output in @acronym{PEM} format, the
-@code{--base64} option applies just a base 64 encoding.  No option
+The option @option{--armor} encodes the output in @acronym{PEM} format, the
+@option{--base64} option applies just a base-64 encoding.  No option
 creates binary output (@acronym{BER}).
 
 The actual encryption is done using the command
@@ -1257,7 +1257,7 @@ closed.
 @subsection Decrypting a message
 
 Input and output FDs are set the same way as in encryption, but
-@code{INPUT} refers to the ciphertext and output to the plaintext. There
+@code{INPUT} refers to the ciphertext and @code{OUTPUT} to the plaintext. There
 is no need to set recipients.  @command{GPGSM} automatically strips any
 @acronym{S/MIME} headers from the input, so it is valid to pass an
 entire MIME part to the INPUT pipe.
@@ -1297,8 +1297,8 @@ requested, only the signature is written.
   SIGN [--detached]
 @end example
 
-Sign the data set with the INPUT command and write it to the sink set by
-OUTPUT.  With @code{--detached}, a detached signature is created
+Sign the data set with the @code{INPUT} command and write it to the sink set by
+@code{OUTPUT}.  With @code{--detached}, a detached signature is created
 (surprise).
 
 The key used for signing is the default one or the one specified in
@@ -1422,14 +1422,14 @@ required: Spaces are to be translated into "+" or into "%20"; in turn
 this requires that the usual escape quoting rules are done.
 
 If the @option{--data} option has not been given, the format of the
-output depends on what was set with the OUTPUT command.  When using
+output depends on what was set with the @code{OUTPUT} command.  When using
 @acronym{PEM} encoding a few informational lines are prepended.
 
-If the @option{--data} has been given, a target set via OUTPUT is
+If the @option{--data} has been given, a target set via @code{OUTPUT} is
 ignored and the data is returned inline using standard
 @code{D}-lines. This avoids the need for an extra file descriptor.  In
 this case the options @option{--armor} and @option{--base64} may be used
-in the same way as with the OUTPUT command.
+in the same way as with the @code{OUTPUT} command.
 
 
 @node GPGSM IMPORT
@@ -1479,7 +1479,7 @@ GETAUDITLOG [--data] [--html]
 @end example
 
 If @option{--data} is used, the audit log is send using D-lines
-instead of being sent to the file descriptor given by an OUTPUT
+instead of being sent to the file descriptor given by an @code{OUTPUT}
 command.  If @option{--html} is used, the output is formatted as an
 XHTML block. This is designed to be incorporated into a HTML
 document.
@@ -1570,7 +1570,7 @@ signers certicate and all other positive values include up to
 @item list-to-output
 If @var{value} is true the output of the list commands
 (@pxref{gpgsm-cmd listkeys}) is written to the file descriptor set
-with the last OUTPUT command.  If @var{value} is false the output is
+with the last @code{OUTPUT} command.  If @var{value} is false the output is
 written via data lines; this is the default.
 
 @item with-validation

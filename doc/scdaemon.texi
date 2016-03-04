@@ -533,7 +533,7 @@ the @code{0x5A} tag in the GDO file (FIX=0x2F02).
 @end example
 
 Learn all useful information of the currently inserted card.  When
-used without the force options, the command might do an INQUIRE
+used without the @option{--force} option, the command might do an INQUIRE
 like this:
 
 @example

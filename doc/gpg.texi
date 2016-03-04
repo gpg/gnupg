@@ -723,12 +723,12 @@ line.
 
   @item sign
   @opindex keyedit:sign
-  Make a signature on key of user @code{name} If the key is not yet
-  signed by the default user (or the users given with -u), the program
+  Make a signature on key of user @code{name}. If the key is not yet
+  signed by the default user (or the users given with @option{-u}), the program
   displays the information of the key again, together with its
   fingerprint and asks whether it should be signed. This question is
   repeated for all users specified with
-  -u.
+  @option{-u}.
 
   @item lsign
   @opindex keyedit:lsign
@@ -2598,7 +2598,7 @@ Set up all options to be as PGP 6 compliant as possible. This
 restricts you to the ciphers IDEA (if the IDEA plugin is installed),
 3DES, and CAST5, the hashes MD5, SHA1 and RIPEMD160, and the
 compression algorithms none and ZIP. This also disables
---throw-keyids, and making signatures with signing subkeys as PGP 6
+@option{--throw-keyids}, and making signatures with signing subkeys as PGP 6
 does not understand signatures made by signing subkeys.
 
 This option implies @option{--disable-mdc --escape-from-lines}.
@@ -2815,7 +2815,7 @@ The same %-expandos used for notation data are available here as well.
 @opindex set-filename
 Use @code{string} as the filename which is stored inside messages.
 This overrides the default, which is to use the actual filename of the
-file being encrypted.  Using the empty string for @var{string}
+file being encrypted.  Using the empty string for @code{string}
 effectively removes the filename from the output.
 
 @item --for-your-eyes-only

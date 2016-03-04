@@ -99,9 +99,9 @@ This uses a substring search but considers only the mail address
 @item By exact match on the subject's DN.
 This is indicated by a leading slash, directly followed by the RFC-2253
 encoded DN of the subject.  Note that you can't use the string printed
-by "gpgsm --list-keys" because that one has been reordered and modified
-for better readability; use --with-colons to print the raw (but standard
-escaped) RFC-2253 string
+by @code{gpgsm --list-keys} because that one has been reordered and modified
+for better readability; use @option{--with-colons} to print the raw
+(but standard escaped) RFC-2253 string
 
 @cartouche
 @example
