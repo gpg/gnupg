@@ -19,7 +19,7 @@ get that whole thing up and running.
 
 Building the software is described in the file @file{INSTALL}.  Given
 that you are already reading this documentation we can only give some
-extra hints
+extra hints.
 
 To comply with the rules on GNU systems you should have build time
 configured @command{gnupg} using:

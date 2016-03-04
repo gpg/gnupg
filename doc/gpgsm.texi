@@ -703,7 +703,7 @@ memory allocation
 @item 6  (64)
 caching
 @item 7  (128)
-show memory statistics.
+show memory statistics
 @item 9  (512)
 write hashed data to files named @code{dbgmd-000*}
 @item 10 (1024)
@@ -1269,7 +1269,7 @@ The decryption is done by using the command
 @end example
 
 It performs the decrypt operation after doing some check on the internal
-state. (e.g. that all needed data has been set).  Because it utilizes
+state (e.g. that all needed data has been set).  Because it utilizes
 the GPG-Agent for the session key decryption, there is no need to ask
 the client for a protecting passphrase - GpgAgent takes care of this by
 requesting this from the user.

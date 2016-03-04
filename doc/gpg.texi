@@ -598,7 +598,7 @@ fingerprint (preferred) or their keyid.
 @node OpenPGP Key Management
 @subsection How to manage your keys
 
-This section explains the main commands for key management
+This section explains the main commands for key management.
 
 @table @gnupgtabopt
 

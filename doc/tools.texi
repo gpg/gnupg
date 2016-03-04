@@ -1446,7 +1446,7 @@ string @code{true} or @code{yes}.  The evaluation is done by passing
 Run commands from @var{file}.
 
 @item /bye
-Terminate the connection and the program
+Terminate the connection and the program.
 
 @item /help
 Print a list of available control commands.

@@ -101,7 +101,7 @@ This is indicated by a leading slash, directly followed by the RFC-2253
 encoded DN of the subject.  Note that you can't use the string printed
 by @code{gpgsm --list-keys} because that one has been reordered and modified
 for better readability; use @option{--with-colons} to print the raw
-(but standard escaped) RFC-2253 string
+(but standard escaped) RFC-2253 string.
 
 @cartouche
 @example
@@ -132,7 +132,7 @@ RFC-2253 encoded DN of the issuer. See note above.
 @end example
 @end cartouche
 
-@item By keygrip
+@item By keygrip.
 This is indicated by an ampersand followed by the 40 hex digits of a
 keygrip.  @command{gpgsm} prints the keygrip when using the command
 @option{--dump-cert}.  It does not yet work for OpenPGP keys.
