@@ -230,7 +230,7 @@ however carefully selected to best aid in debugging.
 
 @item --debug @var{flags}
 @opindex debug
-This option is only useful for debugging and the behaviour may change at
+This option is only useful for debugging and the behavior may change at
 any time without notice.  FLAGS are bit encoded and may be given in
 usual C-Syntax. The currently defined bits are:
 
@@ -366,7 +366,7 @@ version of the used Pinentry.
 @opindex ignore-cache-for-signing
 This option will let @command{gpg-agent} bypass the passphrase cache for all
 signing operation.  Note that there is also a per-session option to
-control this behaviour but this command line option takes precedence.
+control this behavior but this command line option takes precedence.
 
 @item --default-cache-ttl @var{n}
 @opindex default-cache-ttl

@@ -160,7 +160,7 @@ helpers to debug problems.
 
 @item --debug @var{flags}
 @opindex debug
-This option is only useful for debugging and the behaviour may change at
+This option is only useful for debugging and the behavior may change at
 any time without notice.  FLAGS are bit encoded and may be given in
 usual C-Syntax. The currently defined bits are:
 

@@ -422,8 +422,8 @@ is de-escaped by replacing all occurrences of @code{%XY} by the byte
 that has the hexadecimal value @code{XY}.  @code{X} and @code{Y} are
 from the set @code{0-9a-f}.
 
-@item localised
-Some fields contain strings that are described to be @emph{localised}.
+@item localized
+Some fields contain strings that are described to be @emph{localized}.
 Such strings are translated to the active language and formatted in
 the active character set.
 
@@ -804,7 +804,7 @@ error and abort the operation.
 @item argname
 This field is only defined for options with an argument type
 @var{type} that is not @code{0}.  In this case it may contain a
-@emph{percent-escaped} and @emph{localised string} that gives a short
+@emph{percent-escaped} and @emph{localized string} that gives a short
 name for the argument.  The field may also be empty, though, in which
 case a short name is not known.
 
