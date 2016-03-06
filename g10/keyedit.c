@@ -2292,7 +2292,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 
 	    if (!(n1 = count_selected_uids (keyblock)))
               {
-                tty_printf (_("You must select at least one user ID.\n"));
+                tty_printf (_("You must select at least one user ID. Hint: use 'uid <N>' command to select a UID.\n"));
                 if (!opt.expert)
                   tty_printf (_("(Use the '%s' command.)\n"), "uid");
               }
@@ -2316,7 +2316,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 
 	    if (!(n1 = count_selected_uids (keyblock)))
               {
-                tty_printf (_("You must select at least one user ID.\n"));
+                tty_printf (_("You must select at least one user ID. Hint: use 'uid <N>' command to select a UID.\n"));
                 if (!opt.expert)
                   tty_printf (_("(Use the '%s' command.)\n"), "uid");
               }
