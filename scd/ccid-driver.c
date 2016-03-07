@@ -1155,9 +1155,10 @@ scan_or_find_usb_device (int scan_mode,
 
       for (ifc_no=0; ifc_no < config->bNumInterfaces; ifc_no++)
         {
-          for (set_no=0; set_no < config->interface->num_altsetting; set_no++)
+          for (set_no=0; set_no < config->interface[ifc_no].num_altsetting;
+               set_no++)
             {
-              ifcdesc = (config->interface->altsetting + set_no);
+              ifcdesc = (config->interface[ifc_no].altsetting + set_no);
               /* The second condition is for older SCM SPR 532 who did
                  not know about the assigned CCID class.  The third
                  condition does the same for a Cherry SmartTerminal
