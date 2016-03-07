@@ -737,12 +737,6 @@ This is actually not a debugging option but only useful as such.  It
 lets @command{gpgsm} ignore all notAfter dates, this is used by the regression
 tests.
 
-@item --fixed-passphrase @var{string}
-@opindex fixed-passphrase
-Supply the passphrase @var{string} to the gpg-protect-tool.  This
-option is only useful for the regression tests included with this
-package and may be revised or removed at any time without notice.
-
 @item --no-common-certs-import
 @opindex no-common-certs-import
 Suppress the import of common certificates on keybox creation.

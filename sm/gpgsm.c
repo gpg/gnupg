@@ -99,7 +99,6 @@ enum cmd_and_opt_values {
   oDebugAllowCoreDump,
   oDebugNoChainValidation,
   oDebugIgnoreExpiration,
-  oFixedPassphrase,
   oLogFile,
   oNoLogFile,
   oAuditLog,
@@ -332,7 +331,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDebugAllowCoreDump, "debug-allow-core-dump", "@"),
   ARGPARSE_s_n (oDebugNoChainValidation, "debug-no-chain-validation", "@"),
   ARGPARSE_s_n (oDebugIgnoreExpiration,  "debug-ignore-expiration", "@"),
-  ARGPARSE_s_s (oFixedPassphrase, "fixed-passphrase", "@"),
 
   ARGPARSE_s_i (oStatusFD, "status-fd",
                 N_("|FD|write status info to this FD")),
@@ -1264,7 +1262,6 @@ main ( int argc, char **argv)
           break;
         case oDebugNoChainValidation: opt.no_chain_validation = 1; break;
         case oDebugIgnoreExpiration: opt.ignore_expiration = 1; break;
-        case oFixedPassphrase: opt.fixed_passphrase = pargs.r.ret_str; break;
 
         case oStatusFD: ctrl.status_fd = pargs.r.ret_int; break;
         case oLoggerFD: log_set_fd (pargs.r.ret_int ); break;

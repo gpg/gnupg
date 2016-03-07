@@ -125,7 +125,6 @@ struct
   int no_policy_check;      /* ignore certificate policies */
   int no_chain_validation;  /* Bypass all cert chain validity tests */
   int ignore_expiration;    /* Ignore the notAfter validity checks. */
-  char *fixed_passphrase;   /* Passphrase used by regression tests.  */
 
   int auto_issuer_key_retrieve; /* try to retrieve a missing issuer key. */
 
