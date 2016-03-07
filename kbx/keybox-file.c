@@ -77,7 +77,7 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
       return gpg_error_from_syserror ();
     }
 
-  imagelen = (c1 << 24) | (c2 << 16) | (c3 << 8 ) | c4;
+  imagelen = ((unsigned int) c1 << 24) | (c2 << 16) | (c3 << 8 ) | c4;
   if (imagelen < 5)
     return gpg_error (GPG_ERR_TOO_SHORT);
 
