@@ -737,6 +737,34 @@ This is actually not a debugging option but only useful as such.  It
 lets @command{gpgsm} ignore all notAfter dates, this is used by the regression
 tests.
 
+@item --passphrase-fd @code{n}
+@opindex passphrase-fd
+Read the passphrase from file descriptor @code{n}. Only the first line
+will be read from file descriptor @code{n}. If you use 0 for @code{n},
+the passphrase will be read from STDIN. This can only be used if only
+one passphrase is supplied.
+
+Note that this passphrase is only used if the option @option{--batch}
+has also been given.
+
+@item --pinentry-mode @code{mode}
+@opindex pinentry-mode
+Set the pinentry mode to @code{mode}.  Allowed values for @code{mode}
+are:
+@table @asis
+  @item default
+  Use the default of the agent, which is @code{ask}.
+  @item ask
+  Force the use of the Pinentry.
+  @item cancel
+  Emulate use of Pinentry's cancel button.
+  @item error
+  Return a Pinentry error (``No Pinentry'').
+  @item loopback
+  Redirect Pinentry queries to the caller.  Note that in contrast to
+  Pinentry the user is not prompted again if he enters a bad password.
+@end table
+
 @item --no-common-certs-import
 @opindex no-common-certs-import
 Suppress the import of common certificates on keybox creation.

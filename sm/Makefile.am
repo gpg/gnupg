@@ -54,7 +54,8 @@ gpgsm_SOURCES = \
 	certreqgen.c \
 	certreqgen-ui.c \
 	minip12.c minip12.h \
-	qualified.c
+	qualified.c \
+	passphrase.c passphrase.h
 
 
 common_libs = ../kbx/libkeybox509.a $(libcommon)

@@ -37,6 +37,8 @@
 #include "asshelp.h"
 #include "keydb.h" /* fixme: Move this to import.c */
 #include "membuf.h"
+#include "shareddefs.h"
+#include "passphrase.h"
 
 
 static assuan_context_t agent_ctx = NULL;
@@ -74,6 +76,11 @@ struct import_key_parm_s
   size_t keylen;
 };
 
+struct default_inq_parm_s
+{
+  ctrl_t ctrl;
+  assuan_context_t ctx;
+};
 
 
 /* Print a warning if the server's version number is less than our
@@ -151,6 +158,20 @@ start_agent (ctrl_t ctrl)
              agents.  */
           assuan_transact (agent_ctx, "OPTION allow-pinentry-notify",
                            NULL, NULL, NULL, NULL, NULL, NULL);
+
+          /* Pass on the pinentry mode.  */
+          if (opt.pinentry_mode)
+            {
+              char *tmp = xasprintf ("OPTION pinentry-mode=%s",
+                                     str_pinentry_mode (opt.pinentry_mode));
+              rc = assuan_transact (agent_ctx, tmp,
+                               NULL, NULL, NULL, NULL, NULL, NULL);
+              xfree (tmp);
+              if (rc)
+                log_error ("setting pinentry mode '%s' failed: %s\n",
+                           str_pinentry_mode (opt.pinentry_mode),
+                           gpg_strerror (rc));
+            }
         }
     }
 
@@ -163,14 +184,14 @@ start_agent (ctrl_t ctrl)
   return rc;
 }
 
-
 /* This is the default inquiry callback.  It mainly handles the
    Pinentry notifications.  */
 static gpg_error_t
 default_inq_cb (void *opaque, const char *line)
 {
-  gpg_error_t err;
-  ctrl_t ctrl = opaque;
+  gpg_error_t err = 0;
+  struct default_inq_parm_s *parm = opaque;
+  ctrl_t ctrl = parm->ctrl;
 
   if (has_leading_keyword (line, "PINENTRY_LAUNCHED"))
     {
@@ -180,10 +201,18 @@ default_inq_cb (void *opaque, const char *line)
                    "PINENTRY_LAUNCHED");
       /* We do not pass errors to avoid breaking other code.  */
     }
+  else if ((has_leading_keyword (line, "PASSPHRASE")
+            || has_leading_keyword (line, "NEW_PASSPHRASE"))
+           && opt.pinentry_mode == PINENTRY_MODE_LOOPBACK
+           && have_static_passphrase ())
+    {
+      const char *s = get_static_passphrase ();
+      err = assuan_send_data (parm->ctx, s, strlen (s));
+    }
   else
     log_error ("ignoring gpg-agent inquiry '%s'\n", line);
 
-  return 0;
+  return err;
 }
 
 
@@ -200,6 +229,7 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
   char *p, line[ASSUAN_LINELENGTH];
   membuf_t data;
   size_t len;
+  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
 
   *r_buf = NULL;
   rc = start_agent (ctrl);
@@ -239,7 +269,7 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
 
   init_membuf (&data, 1024);
   rc = assuan_transact (agent_ctx, "PKSIGN",
-                        put_membuf_cb, &data, default_inq_cb, ctrl,
+                        put_membuf_cb, &data, default_inq_cb, &inq_parm,
                         NULL, NULL);
   if (rc)
     {
@@ -272,6 +302,7 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
   const char *hashopt;
   unsigned char *sigbuf;
   size_t sigbuflen;
+  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
 
   (void)desc;
 
@@ -306,7 +337,7 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
   snprintf (line, DIM(line)-1, "SCD PKSIGN %s %s", hashopt, keyid);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (agent_ctx, line,
-                        put_membuf_cb, &data, default_inq_cb, ctrl,
+                        put_membuf_cb, &data, default_inq_cb, &inq_parm,
                         NULL, NULL);
   if (rc)
     {
@@ -356,7 +387,10 @@ inq_ciphertext_cb (void *opaque, const char *line)
       assuan_end_confidential (parm->ctx);
     }
   else
-    rc = default_inq_cb (parm->ctrl, line);
+    {
+      struct default_inq_parm_s inq_parm = { parm->ctrl, parm->ctx };
+      rc = default_inq_cb (&inq_parm, line);
+    }
 
   return rc;
 }
@@ -476,7 +510,10 @@ inq_genkey_parms (void *opaque, const char *line)
       rc = assuan_send_data (parm->ctx, parm->sexp, parm->sexplen);
     }
   else
-    rc = default_inq_cb (parm->ctrl, line);
+    {
+      struct default_inq_parm_s inq_parm = { parm->ctrl, parm->ctx };
+      rc = default_inq_cb (&inq_parm, line);
+    }
 
   return rc;
 }
@@ -544,6 +581,7 @@ gpgsm_agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
   size_t len;
   unsigned char *buf;
   char line[ASSUAN_LINELENGTH];
+  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
 
   *r_pubkey = NULL;
   rc = start_agent (ctrl);
@@ -561,7 +599,7 @@ gpgsm_agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
   init_membuf (&data, 1024);
   rc = assuan_transact (agent_ctx, line,
                         put_membuf_cb, &data,
-                        default_inq_cb, ctrl, NULL, NULL);
+                        default_inq_cb, &inq_parm, NULL, NULL);
   if (rc)
     {
       xfree (get_membuf (&data, &len));
@@ -631,6 +669,7 @@ gpgsm_agent_scd_serialno (ctrl_t ctrl, char **r_serialno)
 {
   int rc;
   char *serialno = NULL;
+  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
 
   *r_serialno = NULL;
   rc = start_agent (ctrl);
@@ -639,7 +678,7 @@ gpgsm_agent_scd_serialno (ctrl_t ctrl, char **r_serialno)
 
   rc = assuan_transact (agent_ctx, "SCD SERIALNO",
                         NULL, NULL,
-                        default_inq_cb, ctrl,
+                        default_inq_cb, &inq_parm,
                         scd_serialno_status_cb, &serialno);
   if (!rc && !serialno)
     rc = gpg_error (GPG_ERR_INTERNAL);
@@ -700,6 +739,7 @@ gpgsm_agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list)
 {
   int rc;
   strlist_t list = NULL;
+  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
 
   *r_list = NULL;
   rc = start_agent (ctrl);
@@ -708,7 +748,7 @@ gpgsm_agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list)
 
   rc = assuan_transact (agent_ctx, "SCD LEARN --force",
                         NULL, NULL,
-                        default_inq_cb, ctrl,
+                        default_inq_cb, &inq_parm,
                         scd_keypairinfo_status_cb, &list);
   if (!rc && !list)
     rc = gpg_error (GPG_ERR_NO_DATA);
@@ -797,6 +837,7 @@ gpgsm_agent_marktrusted (ctrl_t ctrl, ksba_cert_t cert)
   int rc;
   char *fpr, *dn, *dnfmt;
   char line[ASSUAN_LINELENGTH];
+  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
 
   rc = start_agent (ctrl);
   if (rc)
@@ -825,7 +866,7 @@ gpgsm_agent_marktrusted (ctrl_t ctrl, ksba_cert_t cert)
   xfree (fpr);
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL,
-                        default_inq_cb, ctrl, NULL, NULL);
+                        default_inq_cb, &inq_parm, NULL, NULL);
   return rc;
 }
 
@@ -983,6 +1024,7 @@ gpgsm_agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
+  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
 
   rc = start_agent (ctrl);
   if (rc)
@@ -1005,7 +1047,7 @@ gpgsm_agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc)
   line[DIM(line)-1] = 0;
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL,
-                        default_inq_cb, ctrl, NULL, NULL);
+                        default_inq_cb, &inq_parm, NULL, NULL);
   return rc;
 }
 
@@ -1018,6 +1060,7 @@ gpgsm_agent_get_confirmation (ctrl_t ctrl, const char *desc)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
+  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
 
   rc = start_agent (ctrl);
   if (rc)
@@ -1027,7 +1070,7 @@ gpgsm_agent_get_confirmation (ctrl_t ctrl, const char *desc)
   line[DIM(line)-1] = 0;
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL,
-                        default_inq_cb, ctrl, NULL, NULL);
+                        default_inq_cb, &inq_parm, NULL, NULL);
   return rc;
 }
 
@@ -1128,6 +1171,7 @@ gpgsm_agent_ask_passphrase (ctrl_t ctrl, const char *desc_msg, int repeat,
   char line[ASSUAN_LINELENGTH];
   char *arg4 = NULL;
   membuf_t data;
+  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
 
   *r_passphrase = NULL;
 
@@ -1146,7 +1190,7 @@ gpgsm_agent_ask_passphrase (ctrl_t ctrl, const char *desc_msg, int repeat,
   init_membuf_secure (&data, 64);
   err = assuan_transact (agent_ctx, line,
                          put_membuf_cb, &data,
-                         default_inq_cb, NULL, NULL, NULL);
+                         default_inq_cb, &inq_parm, NULL, NULL);
 
   if (err)
     xfree (get_membuf (&data, NULL));
@@ -1174,6 +1218,7 @@ gpgsm_agent_keywrap_key (ctrl_t ctrl, int forexport,
   size_t len;
   unsigned char *buf;
   char line[ASSUAN_LINELENGTH];
+  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
 
   *r_kek = NULL;
   err = start_agent (ctrl);
@@ -1186,7 +1231,7 @@ gpgsm_agent_keywrap_key (ctrl_t ctrl, int forexport,
   init_membuf_secure (&data, 64);
   err = assuan_transact (agent_ctx, line,
                          put_membuf_cb, &data,
-                         default_inq_cb, ctrl, NULL, NULL);
+                         default_inq_cb, &inq_parm, NULL, NULL);
   if (err)
     {
       xfree (get_membuf (&data, &len));
@@ -1217,7 +1262,10 @@ inq_import_key_parms (void *opaque, const char *line)
       assuan_end_confidential (parm->ctx);
     }
   else
-    err = default_inq_cb (parm->ctrl, line);
+    {
+      struct default_inq_parm_s inq_parm = { parm->ctrl, parm->ctx };
+      err = default_inq_cb (&inq_parm, line);
+    }
 
   return err;
 }
@@ -1259,6 +1307,7 @@ gpgsm_agent_export_key (ctrl_t ctrl, const char *keygrip, const char *desc,
   size_t len;
   unsigned char *buf;
   char line[ASSUAN_LINELENGTH];
+  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
 
   *r_result = NULL;
 
@@ -1280,7 +1329,7 @@ gpgsm_agent_export_key (ctrl_t ctrl, const char *keygrip, const char *desc,
   init_membuf_secure (&data, 1024);
   err = assuan_transact (agent_ctx, line,
                          put_membuf_cb, &data,
-                         default_inq_cb, ctrl, NULL, NULL);
+                         default_inq_cb, &inq_parm, NULL, NULL);
   if (err)
     {
       xfree (get_membuf (&data, &len));

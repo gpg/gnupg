@@ -32,6 +32,8 @@
 #include <gcrypt.h>
 #include <assuan.h> /* malloc hooks */
 
+#include "passphrase.h"
+#include "../common/shareddefs.h"
 #include "../kbx/keybox.h" /* malloc hooks */
 #include "i18n.h"
 #include "keydb.h"
@@ -120,6 +122,8 @@ enum cmd_and_opt_values {
   oProtectToolProgram,
   oFakedSystemTime,
 
+  oPassphraseFD,
+  oPinentryMode,
 
   oAssumeArmor,
   oAssumeBase64,
@@ -242,6 +246,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oBase64, "base64", N_("create base-64 encoded output")),
 
   ARGPARSE_s_s (oP12Charset, "p12-charset", "@"),
+
+  ARGPARSE_s_i (oPassphraseFD,    "passphrase-fd", "@"),
+  ARGPARSE_s_s (oPinentryMode,    "pinentry-mode", "@"),
 
   ARGPARSE_s_n (oAssumeArmor, "assume-armor",
                 N_("assume input is in PEM format")),
@@ -910,7 +917,7 @@ main ( int argc, char **argv)
   estream_t auditfp = NULL;
   estream_t htmlauditfp = NULL;
   struct assuan_malloc_hooks malloc_hooks;
-
+  int pwfd = -1;
   /*mtrace();*/
 
   early_system_init ();
@@ -1149,6 +1156,16 @@ main ( int argc, char **argv)
         case oP12Charset:
           opt.p12_charset = pargs.r.ret_str;
           break;
+
+        case oPassphraseFD:
+	  pwfd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);
+	  break;
+
+        case oPinentryMode:
+	  opt.pinentry_mode = parse_pinentry_mode (pargs.r.ret_str);
+	  if (opt.pinentry_mode == -1)
+            log_error (_("invalid pinentry mode '%s'\n"), pargs.r.ret_str);
+	  break;
 
           /* Input encoding selection.  */
         case oAssumeArmor:
@@ -1457,6 +1474,9 @@ main ( int argc, char **argv)
 
   if (log_get_errorcount(0))
     gpgsm_exit(2);
+
+  if (pwfd != -1)	/* Read the passphrase now.  */
+    read_passphrase_from_fd (pwfd);
 
   /* Now that we have the options parsed we need to update the default
      control structure.  */
