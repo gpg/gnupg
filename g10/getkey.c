@@ -1678,7 +1678,7 @@ parse_def_secret_key (ctrl_t ctrl)
         }
       else
         {
-          if (! warned)
+          if (! warned && ! opt.quiet)
             log_info (_("using \"%s\" as default secret key for signing\n"),
                       t->d);
           break;
