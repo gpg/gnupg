@@ -310,12 +310,16 @@ print_one_sig (int rc, KBNODE keyblock, KBNODE node,
   return (sigrc == '!');
 }
 
+
 static int
 print_and_check_one_sig (KBNODE keyblock, KBNODE node,
 			 int *inv_sigs, int *no_key, int *oth_err,
 			 int *is_selfsig, int print_without_key, int extended)
 {
-  return print_one_sig (check_key_signature (keyblock, node, is_selfsig),
+  int rc;
+
+  rc = check_key_signature (keyblock, node, is_selfsig);
+  return print_one_sig (rc,
                         keyblock, node, inv_sigs, no_key, oth_err,
                         *is_selfsig, print_without_key, extended);
 }
