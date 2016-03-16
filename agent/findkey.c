@@ -1311,7 +1311,7 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
       break;
 
     case PRIVATE_KEY_SHADOWED:
-      err = gpg_error (GPG_ERR_KEY_ON_CARD);
+      err = remove_key_file (grip);
       break;
 
     default:
