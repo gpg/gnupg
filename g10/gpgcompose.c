@@ -259,8 +259,8 @@ show_help (struct option options[])
 
   for (i = 0; ; i ++)
     {
-      char *option = options[i].option;
-      char *help = options[i].help;
+      const char *option = options[i].option;
+      const char *help = options[i].help;
 
       int l;
       int j;
