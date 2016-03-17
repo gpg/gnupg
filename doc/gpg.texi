@@ -1227,10 +1227,12 @@ the opposite meaning. The options are:
 @itemx --disable-large-rsa
 @opindex enable-large-rsa
 @opindex disable-large-rsa
-With --gen-key and --batch, enable the creation of larger RSA secret
-keys than is generally recommended (up to 8192 bits).  These large
-keys are more expensive to use, and their signatures and
-certifications are also larger.
+With --gen-key and --batch, enable the creation of RSA secret keys as
+large as 8192 bit.  Note: 8192 bit is more than is generally
+recommended.  These large keys don't significantly improve security,
+but they are more expensive to use, and their signatures and
+certifications are larger.  This option is only available if the
+binary was build with large-secmem support.
 
 @item --enable-dsa2
 @itemx --disable-dsa2
