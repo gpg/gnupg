@@ -1962,8 +1962,9 @@ validate_keys (int interactive)
 
   klist = utk_list;
 
-  log_info ("marginals needed: %d  completes needed: %d  trust model: %s\n",
-            opt.marginals_needed, opt.completes_needed, trust_model_string ());
+  if (!opt.quiet)
+    log_info ("marginals needed: %d  completes needed: %d  trust model: %s\n",
+              opt.marginals_needed, opt.completes_needed, trust_model_string());
 
   for (depth=0; depth < opt.max_cert_depth; depth++)
     {
@@ -2048,10 +2049,11 @@ validate_keys (int interactive)
       for (kar=keys; kar->keyblock; kar++)
           store_validation_status (depth, kar->keyblock, stored);
 
-      log_info (_("depth: %d  valid: %3d  signed: %3d"
-                  "  trust: %d-, %dq, %dn, %dm, %df, %du\n"),
-                depth, valids, key_count, ot_unknown, ot_undefined,
-                ot_never, ot_marginal, ot_full, ot_ultimate );
+      if (!opt.quiet)
+        log_info (_("depth: %d  valid: %3d  signed: %3d"
+                    "  trust: %d-, %dq, %dn, %dm, %df, %du\n"),
+                  depth, valids, key_count, ot_unknown, ot_undefined,
+                  ot_never, ot_marginal, ot_full, ot_ultimate );
 
       /* Build a new kdlist from all fully valid keys in KEYS */
       if (klist != utk_list)
@@ -2120,8 +2122,9 @@ validate_keys (int interactive)
       else
         {
           tdbio_write_nextcheck (next_expire);
-          log_info (_("next trustdb check due at %s\n"),
-                    strtimestamp (next_expire));
+          if (!opt.quiet)
+            log_info (_("next trustdb check due at %s\n"),
+                      strtimestamp (next_expire));
         }
 
       rc2 = tdbio_update_version_record ();
