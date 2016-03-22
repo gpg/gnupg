@@ -1658,7 +1658,7 @@ print_key_flags(int flags)
 }
 
 
-/* Ask for the key flags and return them.  CURRENT gives the curren
+/* Ask for the key flags and return them.  CURRENT gives the current
  * usage which should normally be given as 0. */
 unsigned int
 ask_key_flags (int algo, int subkey, unsigned int current)
@@ -1673,10 +1673,10 @@ ask_key_flags (int algo, int subkey, unsigned int current)
        a = Toggle authentication capability
        q = Finish
   */
-  const char *togglers=_("SsEeAaQq");
-  char *answer=NULL;
+  const char *togglers = _("SsEeAaQq");
+  char *answer = NULL;
   const char *s;
-  unsigned int possible=openpgp_pk_algo_usage(algo);
+  unsigned int possible = openpgp_pk_algo_usage(algo);
 
   if ( strlen(togglers) != 8 )
     {
@@ -1701,7 +1701,9 @@ ask_key_flags (int algo, int subkey, unsigned int current)
     {
       tty_printf("\n");
       tty_printf(_("Possible actions for a %s key: "),
-		 openpgp_pk_algo_name (algo));
+                 (algo == PUBKEY_ALGO_ECDSA
+                  || algo == PUBKEY_ALGO_EDDSA)
+                 ? "ECDSA/EdDSA" : openpgp_pk_algo_name (algo));
       print_key_flags(possible);
       tty_printf("\n");
       tty_printf(_("Current allowed actions: "));
