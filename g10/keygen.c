@@ -2143,26 +2143,32 @@ ask_keysize (int algo, unsigned int primary_keysize)
 static char *
 ask_curve (int *algo, int *subkey_algo)
 {
+  /* NB: We always use a complete algo list so that we have stable
+     numbers in the menu regardless on how Gpg was configured.  */
   struct {
     const char *name;
-    int available;
+    int available;   /* Available in Libycrypt (runtime checked) */
     int expert_only;
-    int fix_curve;
+    const char* eddsa_curve; /* Corresponding EdDSA curve.  */
     const char *pretty_name;
+    int supported;   /* Supported by gpg.  */
   } curves[] = {
-#if GPG_USE_EDDSA
-    { "Curve25519",      0, 0, 1, "Curve 25519" },
-#endif
 #if GPG_USE_ECDSA || GPG_USE_ECDH
-    { "NIST P-256",      0, 1, 0, },
-    { "NIST P-384",      0, 0, 0, },
-    { "NIST P-521",      0, 1, 0, },
-    { "brainpoolP256r1", 0, 1, 0, "Brainpool P-256" },
-    { "brainpoolP384r1", 0, 1, 0, "Brainpool P-384" },
-    { "brainpoolP512r1", 0, 1, 0, "Brainpool P-512" },
-    { "secp256k1",       0, 1, 0  },
+# define MY_USE_ECDSADH 1
+#else
+# define MY_USE_ECDSADH 0
 #endif
+    { "Curve25519",      0, 0, "Ed25519", "Curve 25519", GPG_USE_EDDSA  },
+    { "Curve448",        0, 1, "Ed448",   "Curve 448",   0/*reserved*/  },
+    { "NIST P-256",      0, 1, NULL, NULL,               MY_USE_ECDSADH },
+    { "NIST P-384",      0, 0, NULL, NULL,               MY_USE_ECDSADH },
+    { "NIST P-521",      0, 1, NULL, NULL,               MY_USE_ECDSADH },
+    { "brainpoolP256r1", 0, 1, NULL, "Brainpool P-256",  MY_USE_ECDSADH },
+    { "brainpoolP384r1", 0, 1, NULL, "Brainpool P-384",  MY_USE_ECDSADH },
+    { "brainpoolP512r1", 0, 1, NULL, "Brainpool P-512",  MY_USE_ECDSADH },
+    { "secp256k1",       0, 1, NULL, NULL,               MY_USE_ECDSADH },
   };
+#undef MY_USE_ECDSADH
   int idx;
   char *answer;
   char *result = NULL;
@@ -2170,32 +2176,32 @@ ask_curve (int *algo, int *subkey_algo)
 
   tty_printf (_("Please select which elliptic curve you want:\n"));
 
- again:
   keyparms = NULL;
   for (idx=0; idx < DIM(curves); idx++)
     {
       int rc;
 
       curves[idx].available = 0;
+      if (!curves[idx].supported)
+        continue;
       if (!opt.expert && curves[idx].expert_only)
         continue;
 
-      /* FIXME: The strcmp below is a temporary hack during
-         development.  It shall be removed as soon as we have proper
-         Curve25519 support in Libgcrypt.  */
+      /* We need to switch from the ECDH name of the curve to the
+         EDDSA name of the curve if we want a signing key.  */
       gcry_sexp_release (keyparms);
       rc = gcry_sexp_build (&keyparms, NULL,
                             "(public-key(ecc(curve %s)))",
-                            (!strcmp (curves[idx].name, "Curve25519")
-                             ? "Ed25519" : curves[idx].name));
+                            curves[idx].eddsa_curve? curves[idx].eddsa_curve
+                            /**/                   : curves[idx].name);
       if (rc)
         continue;
       if (!gcry_pk_get_curve (keyparms, 0, NULL))
         continue;
-      if (subkey_algo && curves[idx].fix_curve)
+      if (subkey_algo && curves[idx].eddsa_curve)
         {
-          /* Both Curve 25519 keys are to be created.  Check that
-             Libgcrypt also supports the real Curve25519.  */
+          /* Both Curve 25519 (or 448) keys are to be created.  Check that
+             Libgcrypt also supports the real Curve25519 (or 448).  */
           gcry_sexp_release (keyparms);
           rc = gcry_sexp_build (&keyparms, NULL,
                                 "(public-key(ecc(curve %s)))",
@@ -2242,25 +2248,15 @@ ask_curve (int *algo, int *subkey_algo)
         tty_printf (_("Invalid selection.\n"));
       else
         {
-          if (curves[idx].fix_curve)
-            {
-              log_info ("WARNING: Curve25519 is not yet part of the"
-                        " OpenPGP standard.\n");
-
-              if (!cpr_get_answer_is_yes("experimental_curve.override",
-                                         "Use this curve anyway? (y/N) ")  )
-                goto again;
-            }
-
           /* If the user selected a signing algorithm and Curve25519
-             we need to update the algo and and the curve name.  */
+             we need to set the algo to EdDSA and update the curve name. */
           if ((*algo == PUBKEY_ALGO_ECDSA || *algo == PUBKEY_ALGO_EDDSA)
-              && curves[idx].fix_curve)
+              && curves[idx].eddsa_curve)
             {
               if (subkey_algo && *subkey_algo == PUBKEY_ALGO_ECDSA)
                 *subkey_algo = PUBKEY_ALGO_EDDSA;
               *algo = PUBKEY_ALGO_EDDSA;
-              result = xstrdup ("Ed25519");
+              result = xstrdup (curves[idx].eddsa_curve);
             }
           else
             result = xstrdup (curves[idx].name);
