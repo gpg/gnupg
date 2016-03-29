@@ -706,7 +706,8 @@ opendb (char *filename, enum db_type type)
 
   /* If a DB is locked wait up to 5 seconds for the lock to be cleared
      before failing.  */
-  sqlite3_busy_timeout (db, 5 * 1000);
+  if (db)
+    sqlite3_busy_timeout (db, 5 * 1000);
 
   if (filename_free)
     xfree (filename);
