@@ -172,7 +172,7 @@ speedo_spkgs  = \
 
 ifeq ($(TARGETOS),w32)
 speedo_spkgs += \
-	zlib bzip2 adns libiconv
+	zlib bzip2 adns libiconv libsqlite3
 ifeq ($(WITH_GUI),1)
 speedo_spkgs += gettext
 endif
@@ -324,6 +324,7 @@ endif
 # Version number for external packages
 pkg_config_ver = 0.23
 libiconv_ver = 1.14
+libsqlite3_ver = 3120000
 gettext_ver = 0.18.2.1
 libffi_ver = 3.0.13
 glib_ver = 2.34.3
@@ -414,6 +415,7 @@ speedo_pkg_zlib_tar       = $(pkgrep)/zlib/zlib-$(zlib_ver).tar.gz
 speedo_pkg_bzip2_tar      = $(pkgrep)/bzip2/bzip2-$(bzip2_ver).tar.gz
 speedo_pkg_adns_tar       = $(pkg10rep)/adns/adns-$(adns_ver).tar.bz2
 speedo_pkg_libiconv_tar   = $(pkg2rep)/libiconv-$(libiconv_ver).tar.gz
+speedo_pkg_libsqlite3_tar = $(pkg2rep)/sqlite-autoconf-$(libsqlite3_ver).tar.gz
 speedo_pkg_gettext_tar    = $(pkg2rep)/gettext-$(gettext_ver).tar.gz
 speedo_pkg_libffi_tar     = $(pkg2rep)/libffi-$(libffi_ver).tar.gz
 speedo_pkg_glib_tar       = $(pkg2rep)/glib-$(glib_ver).tar.xz
