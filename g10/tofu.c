@@ -28,7 +28,6 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <stdarg.h>
-#include <sched.h>
 #include <sqlite3.h>
 
 #include "gpg.h"
@@ -240,7 +239,7 @@ begin_transaction (struct db *db, int only_batch)
       batch_update_started = gnupg_get_time ();
 
       /* Yield to allow another process a chance to run.  */
-      sched_yield ();
+      gpgrt_yield ();
     }
 
   /* XXX: In split mode, this can end in deadlock.
