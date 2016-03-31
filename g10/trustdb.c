@@ -2451,10 +2451,11 @@ validate_keys (int interactive)
       for (kar=keys; kar->keyblock; kar++)
           store_validation_status (depth, kar->keyblock, stored);
 
-      log_info (_("depth: %d  valid: %3d  signed: %3d"
-                  "  trust: %d-, %dq, %dn, %dm, %df, %du\n"),
-                depth, valids, key_count, ot_unknown, ot_undefined,
-                ot_never, ot_marginal, ot_full, ot_ultimate );
+      if (!opt.quiet)
+        log_info (_("depth: %d  valid: %3d  signed: %3d"
+                    "  trust: %d-, %dq, %dn, %dm, %df, %du\n"),
+                  depth, valids, key_count, ot_unknown, ot_undefined,
+                  ot_never, ot_marginal, ot_full, ot_ultimate );
 
       /* Build a new kdlist from all fully valid keys in KEYS */
       if (klist != utk_list)
@@ -2520,8 +2521,9 @@ validate_keys (int interactive)
       else
         {
           tdbio_write_nextcheck (next_expire);
-          log_info (_("next trustdb check due at %s\n"),
-                    strtimestamp (next_expire));
+          if (!opt.quiet)
+            log_info (_("next trustdb check due at %s\n"),
+                      strtimestamp (next_expire));
         }
 
       if(tdbio_update_version_record()!=0)
