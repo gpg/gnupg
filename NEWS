@@ -1,5 +1,24 @@
-Noteworthy changes in version 2.0.30 (unreleased)
+Noteworthy changes in version 2.0.30 (2016-03-31)
 -------------------------------------------------
+
+ * gpg: Avoid too early timeout during key generation with 2.1 cards.
+
+ * agent: Fixed printing of ssh fingerprints for 384 bit ECDSA keys.
+
+ * agent: Fixed an alignment bug related to the passphrase
+   confirmation.
+
+ * scdaemon: Fixed a "conflicting usage" bug.
+
+ * scdaemon: Fixed usb card reader removal problem on Windows 8 and
+   later.
+
+ * Fixed a problem on AIX due to peculiarity with RLIMIT_NOFILE.
+
+ * Updated the Japanese and Dutch translations.
+
+ * Fixed a few other bugs.
+
 
 Noteworthy changes in version 2.0.29 (2015-09-08)
 -------------------------------------------------
