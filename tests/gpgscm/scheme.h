@@ -118,6 +118,12 @@ typedef struct cell *pointer;
 typedef void * (*func_alloc)(size_t);
 typedef void (*func_dealloc)(void *);
 
+/* table of functions required for foreign objects */
+typedef struct foreign_object_vtable {
+     void (*finalize)(scheme *sc, void *data);
+     void (*to_string)(scheme *sc, char *out, size_t size, void *data);
+} foreign_object_vtable;
+
 /* num, for generic arithmetic */
 typedef struct num {
      char is_fixnum;
@@ -157,6 +163,7 @@ pointer mk_counted_string(scheme *sc, const char *str, int len);
 pointer mk_empty_string(scheme *sc, int len, char fill);
 pointer mk_character(scheme *sc, int c);
 pointer mk_foreign_func(scheme *sc, foreign_func f);
+pointer mk_foreign_object(scheme *sc, const foreign_object_vtable *vtable, void *data);
 void putstr(scheme *sc, const char *s);
 int list_length(scheme *sc, pointer a);
 int eqv(pointer a, pointer b);
@@ -177,6 +184,9 @@ struct scheme_interface {
   pointer (*mk_character)(scheme *sc, int c);
   pointer (*mk_vector)(scheme *sc, int len);
   pointer (*mk_foreign_func)(scheme *sc, foreign_func f);
+  pointer (*mk_foreign_object)(scheme *sc, const foreign_object_vtable *vtable, void *data);
+  const foreign_object_vtable *(*get_foreign_object_vtable)(pointer p);
+  void *(*get_foreign_object_data)(pointer p);
   void (*putstr)(scheme *sc, const char *s);
   void (*putcharacter)(scheme *sc, int c);
 

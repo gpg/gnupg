@@ -125,7 +125,8 @@ enum scheme_types {
   T_MACRO=12,
   T_PROMISE=13,
   T_ENVIRONMENT=14,
-  T_LAST_SYSTEM_TYPE=14
+  T_FOREIGN_OBJECT=15,
+  T_LAST_SYSTEM_TYPE=15
 };
 
 /* ADJ is enough slack to align cells in a TYPE_BITS-bit boundary */
@@ -234,6 +235,14 @@ INTERFACE INLINE pointer closure_env(pointer p)    { return cdr(p); }
 
 INTERFACE INLINE int is_continuation(pointer p)    { return (type(p)==T_CONTINUATION); }
 #define cont_dump(p)     cdr(p)
+
+INTERFACE INLINE int is_foreign_object(pointer p) { return (type(p)==T_FOREIGN_OBJECT); }
+INTERFACE const foreign_object_vtable *get_foreign_object_vtable(pointer p) {
+  return p->_object._foreign_object._vtable;
+}
+INTERFACE void *get_foreign_object_data(pointer p) {
+  return p->_object._foreign_object._data;
+}
 
 /* To do: promise should be forced ONCE only */
 INTERFACE INLINE int is_promise(pointer p)  { return (type(p)==T_PROMISE); }
@@ -930,6 +939,15 @@ pointer mk_foreign_func(scheme *sc, foreign_func f) {
   return (x);
 }
 
+pointer mk_foreign_object(scheme *sc, const foreign_object_vtable *vtable, void *data) {
+  pointer x = get_cell(sc, sc->NIL, sc->NIL);
+
+  typeflag(x) = (T_FOREIGN_OBJECT | T_ATOM);
+  x->_object._foreign_object._vtable=vtable;
+  x->_object._foreign_object._data = data;
+  return (x);
+}
+
 INTERFACE pointer mk_character(scheme *sc, int c) {
   pointer x = get_cell(sc,sc->NIL, sc->NIL);
 
@@ -1341,6 +1359,8 @@ static void finalize_cell(scheme *sc, pointer a) {
       port_close(sc,a,port_input|port_output);
     }
     sc->free(a->_object._port);
+  } else if(is_foreign_object(a)) {
+    a->_object._foreign_object._vtable->finalize(sc, a->_object._foreign_object._data);
   }
 }
 
@@ -2043,6 +2063,9 @@ static void atom2str(scheme *sc, pointer l, int f, char **pp, int *plen) {
           snprintf(p,STRBUFFSIZE,"#<FOREIGN PROCEDURE %ld>", procnum(l));
      } else if (is_continuation(l)) {
           p = "#<CONTINUATION>";
+     } else if (is_foreign_object(l)) {
+          p = sc->strbuff;
+          l->_object._foreign_object._vtable->to_string(sc, p, STRBUFFSIZE, l->_object._foreign_object._data);
      } else {
           p = "#<ERROR>";
      }
@@ -4587,6 +4610,9 @@ static struct scheme_interface vtbl ={
   mk_character,
   mk_vector,
   mk_foreign_func,
+  mk_foreign_object,
+  get_foreign_object_vtable,
+  get_foreign_object_data,
   putstr,
   putcharacter,
 

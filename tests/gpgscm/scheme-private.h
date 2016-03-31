@@ -55,6 +55,10 @@ struct cell {
       struct cell *_car;
       struct cell *_cdr;
     } _cons;
+    struct {
+         char *_data;
+         const foreign_object_vtable *_vtable;
+    } _foreign_object;
   } _object;
 };
 
@@ -206,6 +210,10 @@ int is_promise(pointer p);
 int is_environment(pointer p);
 int is_immutable(pointer p);
 void setimmutable(pointer p);
+
+int is_foreign_object(pointer p);
+const foreign_object_vtable *get_foreign_object_vtable(pointer p);
+void *get_foreign_object_data(pointer p);
 
 #ifdef __cplusplus
 }
