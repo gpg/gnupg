@@ -55,29 +55,24 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|_Annuleren"
 
-#| msgid "|pinentry-label|_OK"
 msgid "|pinentry-label|_Yes"
 msgstr "|pinentry-label|_Ja"
 
-#| msgid "|pinentry-label|_OK"
 msgid "|pinentry-label|_No"
 msgstr "|pinentry-label|_Nee"
 
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|Pincode:"
 
-#| msgid "|pinentry-label|_Cancel"
 msgid "|pinentry-label|_Save in password manager"
 msgstr "|pinentry-label|_Bewaren in de wachtwoordmanager"
 
-#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
 msgid "Do you really want to make your passphrase visible on the screen?"
 msgstr "Wilt U uw wachtwoordzin echt zichtbaar maken op het scherm?"
 
 msgid "|pinentry-tt|Make passphrase visible"
 msgstr "|pinentry-tt|Wachtwoordzin zichtbaar maken"
 
-#| msgid "invalid passphrase"
 msgid "|pinentry-tt|Hide passphrase"
 msgstr "|pinentry-tt|Wachtwoordzin verbergen"
 
@@ -410,7 +405,6 @@ msgstr "ssh-ondersteuning mogelijk maken"
 msgid "enable putty support"
 msgstr "putty-ondersteuning mogelijk maken"
 
-#| msgid "do not allow the reuse of old passphrases"
 msgid "disallow the use of an external password cache"
 msgstr "het gebruik van een externe wachtwoordcache niet toestaan"
 
@@ -3281,7 +3275,6 @@ msgstr ""
 msgid "WARNING: Your encryption subkey expires soon.\n"
 msgstr "Waarschuwing: Uw subsleutel voor versleutelen vervalt weldra.\n"
 
-#| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
 msgstr "Misschien wilt u ook zijn vervaldatum wijzigen.\n"
 
@@ -3980,6 +3973,11 @@ msgstr "       Vingerafdruk van de subsleutel:"
 
 msgid "      Key fingerprint ="
 msgstr "      Vingerafdruk van de sleutel ="
+
+#, fuzzy, c-format
+#| msgid "WARNING: using experimental digest algorithm %s\n"
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "WAARSCHUWING: er wordt een experimenteel hashalgoritme %s gebruikt\n"
 
 msgid "      Card serial no. ="
 msgstr "         Serienummer van de kaart ="
@@ -5181,6 +5179,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "betrouwbaarheidsdatabank (trustdb): synchronisatie mislukt: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "kan geen grendel maken voor `%s'\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "kan `%s' niet vergrendelen\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr ""
 "betrouwbaarheidsdatabank (trustdb): element %lu: lseek is mislukt: %s\n"
@@ -5201,14 +5207,6 @@ msgstr "krijg geen toegang tot `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: map bestaat niet!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "kan geen grendel maken voor `%s'\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "kan `%s' niet vergrendelen\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
@@ -5476,7 +5474,6 @@ msgstr "sleutelwoord is te lang"
 msgid "missing argument"
 msgstr "ontbrekend argument"
 
-#| msgid "invalid armor"
 msgid "invalid argument"
 msgstr "ongeldig argument"
 
@@ -5497,7 +5494,6 @@ msgid "missing argument for option \"%.50s\"\n"
 msgstr "ontbrekend argument voor optie \"%.50s\"\n"
 
 #, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
 msgid "invalid argument for option \"%.50s\"\n"
 msgstr "ontbrekend argument voor optie \"%.50s\"\n"
 

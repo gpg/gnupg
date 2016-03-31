@@ -1396,7 +1396,8 @@ msgstr "遠隔プログラムの実行は、サポートしていません\n"
 msgid ""
 "external program calls are disabled due to unsafe options file permissions\n"
 msgstr ""
-"オプション・ファイルの許可モードが安全ではないので、外部プログラムの呼出しは禁止となります。\n"
+"オプション・ファイルの許可モードが安全ではないので、外部プログラムの呼出しは"
+"禁止となります。\n"
 
 msgid "this platform requires temporary files when calling external programs\n"
 msgstr ""
@@ -1737,8 +1738,8 @@ msgstr "*警告*: homedir 「%s」の安全でない上位ディレクトリ所�
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
 msgstr ""
-"*警告*: コンフィグレーション・ファイル「%s」の安全でない上位ディレクトリ所有"
-"\n"
+"*警告*: コンフィグレーション・ファイル「%s」の安全でない上位ディレクトリ所"
+"有\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
@@ -3632,8 +3633,8 @@ msgid ""
 "Please enter a passphrase to protect the off-card backup of the new "
 "encryption key."
 msgstr ""
-"パスフレーズを入力してください。これは新しく作られる暗号化鍵のカード外のバック"
-"アップを保護するものです。"
+"パスフレーズを入力してください。これは新しく作られる暗号化鍵のカード外のバッ"
+"クアップを保護するものです。"
 
 #, c-format
 msgid "%s.\n"
