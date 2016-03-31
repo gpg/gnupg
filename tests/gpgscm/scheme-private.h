@@ -139,8 +139,8 @@ char    linebuff[LINESIZE];
 #ifndef STRBUFFSIZE
 #define STRBUFFSIZE 256
 #endif
-char    strbuff[STRBUFFSIZE];
-
+char    *strbuff;
+size_t strbuff_size;
 FILE *tmpfp;
 int tok;
 int print_flag;

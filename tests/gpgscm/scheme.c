@@ -67,6 +67,7 @@
 #define banner "TinyScheme 1.41"
 
 #include <string.h>
+#include <stddef.h>
 #include <stdlib.h>
 
 #ifdef __APPLE__
@@ -1071,6 +1072,21 @@ INTERFACE pointer gensym(scheme *sc) {
      return sc->NIL;
 }
 
+/* double the size of the string buffer */
+static int expand_strbuff(scheme *sc) {
+  size_t new_size = sc->strbuff_size * 2;
+  char *new_buffer = sc->malloc(new_size);
+  if (new_buffer == 0) {
+    sc->no_memory = 1;
+    return 1;
+  }
+  memcpy(new_buffer, sc->strbuff, sc->strbuff_size);
+  sc->free(sc->strbuff);
+  sc->strbuff = new_buffer;
+  sc->strbuff_size = new_size;
+  return 0;
+}
+
 /* make symbol or number atom from string */
 static pointer mk_atom(scheme *sc, char *q) {
      char    c, *p;
@@ -1612,7 +1628,7 @@ INTERFACE void putcharacter(scheme *sc, int c) {
 static char *readstr_upto(scheme *sc, char *delim) {
   char *p = sc->strbuff;
 
-  while ((p - sc->strbuff < sizeof(sc->strbuff)) &&
+  while ((p - sc->strbuff < sc->strbuff_size) &&
          !is_one_of(delim, (*p++ = inchar(sc))));
 
   if(p == sc->strbuff+2 && p[-2] == '\\') {
@@ -1633,8 +1649,15 @@ static pointer readstrexp(scheme *sc) {
 
   for (;;) {
     c=inchar(sc);
-    if(c == EOF || p-sc->strbuff > sizeof(sc->strbuff)-1) {
+    if(c == EOF) {
       return sc->F;
+    }
+    if(p-sc->strbuff > (sc->strbuff_size)-1) {
+      ptrdiff_t offset = p - sc->strbuff;
+      if (expand_strbuff(sc) != 0) {
+        return sc->F;
+      }
+      p = sc->strbuff + offset;
     }
     switch(state) {
         case st_ok:
@@ -4670,6 +4693,12 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   sc->loadport=sc->NIL;
   sc->nesting=0;
   sc->interactive_repl=0;
+  sc->strbuff = sc->malloc(STRBUFFSIZE);
+  if (sc->strbuff == 0) {
+     sc->no_memory=1;
+     return 0;
+  }
+  sc->strbuff_size = STRBUFFSIZE;
 
   if (alloc_cellseg(sc,FIRST_CELLSEGS) != FIRST_CELLSEGS) {
     sc->no_memory=1;
@@ -4794,6 +4823,7 @@ void scheme_deinit(scheme *sc) {
   for(i=0; i<=sc->last_cell_seg; i++) {
     sc->free(sc->alloc_seg[i]);
   }
+  sc->free(sc->strbuff);
 
 #if SHOW_ERROR_LINE
   for(i=0; i<=sc->file_i; i++) {
