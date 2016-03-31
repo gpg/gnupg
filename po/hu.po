@@ -5207,13 +5207,13 @@ msgstr "Bizalmi adatbázis %lu. rekord: írás sikertelen (n=%d): %s.\n"
 msgid "trustdb transaction too large\n"
 msgstr "Bizalmi adatbázis tranzakciója túl nagy.\n"
 
-#, fuzzy, c-format
-msgid "can't access `%s': %s\n"
-msgstr "Nem tudom bezárni a(z) \"%s\" állományt: %s.\n"
-
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: Könyvtár nem létezik!\n"
+
+#, fuzzy, c-format
+msgid "can't access `%s': %s\n"
+msgstr "Nem tudom bezárni a(z) \"%s\" állományt: %s.\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

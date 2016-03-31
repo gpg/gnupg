@@ -5378,14 +5378,14 @@ msgstr ""
 msgid "trustdb transaction too large\n"
 msgstr "la transacció de la base de dades de confiança és massa gran\n"
 
+#, c-format
+msgid "%s: directory does not exist!\n"
+msgstr "%s: el directori no existeix!\n"
+
 # No em passe! ;)  ivb
 #, fuzzy, c-format
 msgid "can't access `%s': %s\n"
 msgstr "no s'ha pogut tancar «%s»: %s\n"
-
-#, c-format
-msgid "%s: directory does not exist!\n"
-msgstr "%s: el directori no existeix!\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

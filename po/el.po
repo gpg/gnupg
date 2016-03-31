@@ -5254,13 +5254,13 @@ msgstr "trustdb rec %lu: αποτυχία write (n=%d): %s\n"
 msgid "trustdb transaction too large\n"
 msgstr "πολύ μεγάλη συναλλαγή trustdb\n"
 
-#, fuzzy, c-format
-msgid "can't access `%s': %s\n"
-msgstr "αδυναμία κλεισίματος του `%s': %s\n"
-
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ο φάκελος δεν υπάρχει!\n"
+
+#, fuzzy, c-format
+msgid "can't access `%s': %s\n"
+msgstr "αδυναμία κλεισίματος του `%s': %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

@@ -5245,13 +5245,13 @@ msgstr "trustdb rec %lu: scrittura fallita (n=%d): %s\n"
 msgid "trustdb transaction too large\n"
 msgstr "transazione del trustdb troppo grande\n"
 
-#, fuzzy, c-format
-msgid "can't access `%s': %s\n"
-msgstr "impossibile chiudere `%s': %s\n"
-
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: la directory non esiste!\n"
+
+#, fuzzy, c-format
+msgid "can't access `%s': %s\n"
+msgstr "impossibile chiudere `%s': %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

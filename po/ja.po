@@ -4911,12 +4911,12 @@ msgid "trustdb transaction too large\n"
 msgstr "信用データベースのトランザクションが大きすぎます\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
-msgstr "「%s」にアクセスできません: %s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ディレクトリがありません!\n"
+
+#, c-format
+msgid "can't access `%s': %s\n"
+msgstr "「%s」にアクセスできません: %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

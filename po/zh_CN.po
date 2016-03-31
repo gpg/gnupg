@@ -4958,12 +4958,12 @@ msgid "trustdb transaction too large\n"
 msgstr "信任度数据库处理量过大\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
-msgstr "无法存取‘%s’：%s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s：目录不存在！\n"
+
+#, c-format
+msgid "can't access `%s': %s\n"
+msgstr "无法存取‘%s’：%s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

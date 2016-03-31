@@ -5207,13 +5207,13 @@ msgstr "base de dados de confiança rec %lu: escrita falhou (n=%d): %s\n"
 msgid "trustdb transaction too large\n"
 msgstr "transação de base de dados de confiança muito grande\n"
 
-#, fuzzy, c-format
-msgid "can't access `%s': %s\n"
-msgstr "impossível fechar `%s': %s\n"
-
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: diretoria inexistente!\n"
+
+#, fuzzy, c-format
+msgid "can't access `%s': %s\n"
+msgstr "impossível fechar `%s': %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

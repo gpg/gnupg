@@ -5243,13 +5243,13 @@ msgstr ""
 msgid "trustdb transaction too large\n"
 msgstr "transacción da base de datos de confianza demasiado grande\n"
 
-#, fuzzy, c-format
-msgid "can't access `%s': %s\n"
-msgstr "non se pode pechar `%s': %s\n"
-
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ¡o directorio non existe!\n"
+
+#, fuzzy, c-format
+msgid "can't access `%s': %s\n"
+msgstr "non se pode pechar `%s': %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

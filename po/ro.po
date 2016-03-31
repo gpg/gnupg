@@ -5119,12 +5119,12 @@ msgid "trustdb transaction too large\n"
 msgstr "tranzacþia trustdb prea mare\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
-msgstr "nu pot accesa `%s': %s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: directorul nu existã!\n"
+
+#, c-format
+msgid "can't access `%s': %s\n"
+msgstr "nu pot accesa `%s': %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

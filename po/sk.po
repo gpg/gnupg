@@ -5223,13 +5223,13 @@ msgstr "záznam v databáze dôvery %lu: zápis sa nepodaril (n=%d): %s\n"
 msgid "trustdb transaction too large\n"
 msgstr "transakcia s databázou dôvery je príli¹ dlhá\n"
 
-#, fuzzy, c-format
-msgid "can't access `%s': %s\n"
-msgstr "nemô¾em zavrie» `%s': %s\n"
-
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: adresár neexistuje!\n"
+
+#, fuzzy, c-format
+msgid "can't access `%s': %s\n"
+msgstr "nemô¾em zavrie» `%s': %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

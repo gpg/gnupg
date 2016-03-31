@@ -5154,12 +5154,12 @@ msgid "trustdb transaction too large\n"
 msgstr "tillitsdatabastransaktion för stor\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
-msgstr "kan inte komma åt \"%s\": %s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: katalogen finns inte!\n"
+
+#, c-format
+msgid "can't access `%s': %s\n"
+msgstr "kan inte komma åt \"%s\": %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

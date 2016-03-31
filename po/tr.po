@@ -5089,12 +5089,12 @@ msgid "trustdb transaction too large\n"
 msgstr "güvence veritabanı işlemi çok uzun\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
-msgstr "'%s' erişilemiyor: %s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: dizin yok!\n"
+
+#, c-format
+msgid "can't access `%s': %s\n"
+msgstr "'%s' erişilemiyor: %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
