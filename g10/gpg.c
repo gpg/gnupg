@@ -681,7 +681,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oSkipHiddenRecipients, "skip-hidden-recipients", "@"),
   ARGPARSE_s_n (oNoSkipHiddenRecipients, "no-skip-hidden-recipients", "@"),
   ARGPARSE_s_i (oDefCertLevel, "default-cert-check-level", "@"), /* old */
+#ifndef NO_TRUST_MODELS
   ARGPARSE_s_n (oAlwaysTrust, "always-trust", "@"),
+#endif
   ARGPARSE_s_s (oTrustModel, "trust-model", "@"),
   ARGPARSE_s_s (oTOFUDefaultPolicy, "tofu-default-policy", "@"),
   ARGPARSE_s_s (oTOFUDBFormat, "tofu-db-format", "@"),
