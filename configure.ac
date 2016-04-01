@@ -263,8 +263,11 @@ AC_MSG_CHECKING([whether to enable TOFU])
 AC_ARG_ENABLE(tofu,
                 AC_HELP_STRING([--disable-tofu],
                                [disable the TOFU trust model]),
-              use_tofu=$enableval, use_tofu=yes)
+              use_tofu=$enableval, use_tofu=$use_trust_models)
 AC_MSG_RESULT($use_tofu)
+if test "$use_trust_models" = no && test "$use_tofu" = yes; then
+    AC_MSG_ERROR([both --disable-trust-models and --enable-tofu given])
+fi
 
 
 
