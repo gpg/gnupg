@@ -3167,8 +3167,7 @@ msgstr "Der folgende Schlüssel wurde am %s von %s Schlüssel %s widerrufen\n"
 
 #, c-format
 msgid "This key may be revoked by %s key %s"
-msgstr ""
-"Dieser Schlüssel könnte durch %s mit Schlüssel %s  widerrufen worden sein"
+msgstr "Dieser Schlüssel kann von %s-Schlüssel %s widerrufen werden"
 
 msgid "(sensitive)"
 msgstr "(empfindlich)"
