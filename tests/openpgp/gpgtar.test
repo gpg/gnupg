@@ -27,7 +27,7 @@ FILELIST="${TESTDIR}/filelist"
 PPFILE="${TESTDIR}/passphrase"
 PPFLAGS="--gpg-args --passphrase-file=$PPFILE"
 
-GPG=../../g10/gpg2
+GPG=../../g10/gpg
 GPGARGS="$opt_always --no-permission-warning"
 
 GPGTAR="../../tools/gpgtar"

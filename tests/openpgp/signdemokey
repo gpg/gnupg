@@ -10,7 +10,7 @@ name="$1"
 user_id="$2"
 user_id_no="$3"
 
-echo "abc" | ../g10/gpg2 --options ./gpg.conf --homedir $name \
+echo "abc" | ../g10/gpg --options ./gpg.conf --homedir $name \
 		--sign-key --batch --yes --passphrase-fd 0 $user_id \
 		$user_id_no sign save
 

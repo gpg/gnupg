@@ -729,7 +729,11 @@ gnupg_module_name (int which)
       X(bindir, "gpgsm");
 
     case GNUPG_MODULE_NAME_GPG:
-      X(bindir, NAME_OF_INSTALLED_GPG);
+#if USE_GPG2_HACK
+      X(bindir, GPG_NAME "2");
+#else
+      X(bindir, GPG_NAME);
+#endif
 
     case GNUPG_MODULE_NAME_CONNECT_AGENT:
       X(bindir, "gpg-connect-agent");

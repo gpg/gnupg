@@ -19,7 +19,8 @@
 ## Process this file with automake to produce Makefile.in
 
 ACLOCAL_AMFLAGS = -I m4
-DISTCHECK_CONFIGURE_FLAGS = --enable-symcryptrun --enable-mailto --enable-g13
+DISTCHECK_CONFIGURE_FLAGS = --enable-symcryptrun --enable-g13 \
+  --enable-gpg2-is-gpg
 
 GITLOG_TO_CHANGELOG=gitlog-to-changelog
 

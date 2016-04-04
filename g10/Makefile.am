@@ -32,11 +32,24 @@ AM_CFLAGS = $(SQLITE3_CFLAGS) $(LIBGCRYPT_CFLAGS) \
 
 needed_libs = ../kbx/libkeybox.a $(libcommon)
 
-bin_PROGRAMS = gpg2
-if !HAVE_W32CE_SYSTEM
-bin_PROGRAMS += gpgv2
+# Because there are no program specific transform macros we need to
+# work around that to allow installaing gpg as gpg2.
+gpg2_hack_list = gpg gpgv
+if USE_GPG2_HACK
+gpg2_hack_uninst = gpg2 gpgv2
+use_gpg2_hack = yes
+else
+gpg2_hack_uninst = $(gpg2_hack_list)
+use_gpg2_hack = no
 endif
-noinst_PROGRAMS = gpgcompose $(module_tests)
+
+# NB: We use noinst_ for gpg and gpgv so that we can install them with
+# the install-hook target under the name gpg2/gpgv2.
+noinst_PROGRAMS = gpg
+if !HAVE_W32CE_SYSTEM
+noinst_PROGRAMS += gpgv
+endif
+noinst_PROGRAMS += gpgcompose $(module_tests)
 TESTS = $(module_tests)
 
 if ENABLE_BZIP2_SUPPORT
@@ -133,12 +146,12 @@ gpg_sources = server.c          \
 	      $(card_source) \
 	      exec.c exec.h
 
-gpg2_SOURCES  = gpg.c \
+gpg_SOURCES  = gpg.c \
 	keyedit.c 	\
 	$(gpg_sources)
 
 gpgcompose_SOURCES  = gpgcompose.c  $(gpg_sources)
-gpgv2_SOURCES = gpgv.c           \
+gpgv_SOURCES = gpgv.c           \
 	      $(common_source)  \
 	      verify.c \
 	      dearmor.c
@@ -152,14 +165,14 @@ gpgv2_SOURCES = gpgv.c           \
 
 LDADD =  $(needed_libs) ../common/libgpgrl.a \
          $(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS)
-gpg2_LDADD = $(LDADD) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
+gpg_LDADD = $(LDADD) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
              $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
-gpg2_LDFLAGS = $(extra_bin_ldflags)
-gpgv2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
+gpg_LDFLAGS = $(extra_bin_ldflags)
+gpgv_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
               $(GPG_ERROR_LIBS) \
 	      $(LIBICONV) $(resource_objs) $(extra_sys_libs)
-gpgv2_LDFLAGS = $(extra_bin_ldflags)
+gpgv_LDFLAGS = $(extra_bin_ldflags)
 
 gpgcompose_LDADD = $(LDADD) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
              $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
@@ -185,6 +198,42 @@ t_stutter_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 
 $(PROGRAMS): $(needed_libs) ../common/libgpgrl.a
 
+# NB: To install gpg and gpgv we use this -hook.  This code has to
+# duplicate most of the automake generated install-binPROGRAMS target
+# so that directories are created and the transform feature works.
+install-exec-hook:
+	@echo "running install-exec-hook"; \
+        echo " $(MKDIR_P) '$(DESTDIR)$(bindir)'"; \
+        $(MKDIR_P) "$(DESTDIR)$(bindir)"; \
+	for p in $(gpg2_hack_list); do \
+          echo "$$p$(EXEEXT) $$p$(EXEEXT)"; done | \
+	sed 's/$(EXEEXT)$$//' | \
+	while read p p1; do if test -f $$p \
+	  ; then echo "$$p"; echo "$$p"; else :; fi; \
+	done | \
+	sed -e 'p;s,.*/,,;n;h' \
+	    -e 's|.*|.|' \
+	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
+	sed 'N;N;N;s,\n, ,g' | \
+	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
+	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
+	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
+	    else { print "f", $$3 "/" $$4, $$1; } } \
+	  END { for (d in files) print "f", d, files[d] }' | \
+	while read type dir files; do \
+	    for f in $$files; do \
+	       if test $(use_gpg2_hack) = yes ; \
+		 then f2=`echo "$${f}" | sed 's/$(EXEEXT)$$//'`2$(EXEEXT); \
+	         else f2="$${f}" ;\
+	       fi ; \
+	       echo "$(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) \
+                     $${f} '$(DESTDIR)$(bindir)/$${f2}'"; \
+	       $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) \
+                     $${f} "$(DESTDIR)$(bindir)/$${f2}"; \
+	    done; \
+	done
+
+
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) $(srcdir)/options.skel \
@@ -194,15 +243,15 @@ install-data-local:
 	$(INSTALL_DATA) $(srcdir)/distsigkey.gpg \
 				$(DESTDIR)$(pkgdatadir)/distsigkey.gpg
 
+# NB: For uninstalling gpg and gpgv we use -local because there is
+# no need for a specific order the targets need to be run.
 uninstall-local:
 	-@rm $(DESTDIR)$(pkgdatadir)/gpg-conf.skel
 	-@rm $(DESTDIR)$(pkgdatadir)/dirmngr-conf.skel
 	-@rm $(DESTDIR)$(pkgdatadir)/distsigkey.gpg
-
-
-# There has never been a gpg for WindowsCE, thus we don't need a gpg2 here
-if HAVE_W32CE_SYSTEM
-install-exec-hook:
-	mv -f $(DESTDIR)$(bindir)/gpg2$(EXEEXT) \
-              $(DESTDIR)$(bindir)/gpg$(EXEEXT)
-endif
+	-@files=`for p in $(gpg2_hack_uninst); do echo "$$p"; done | \
+	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
+	      -e 's/$$/$(EXEEXT)/' \
+	`; \
+	echo " ( cd '$(DESTDIR)$(bindir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(bindir)" && rm -f $$files

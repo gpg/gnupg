@@ -215,13 +215,10 @@ test -n "$GNUPG_DIRMNGR_LDAP_PGM" \
 AC_ARG_ENABLE(gpg2-is-gpg,
     AC_HELP_STRING([--enable-gpg2-is-gpg],[Set installed name of gpg2 to gpg]),
     gpg2_is_gpg=$enableval)
-if test "$gpg2_is_gpg" = "yes"; then
-   name_of_installed_gpg=gpg
-else
-   name_of_installed_gpg=gpg2
+if test "$gpg2_is_gpg" != "yes"; then
+   AC_DEFINE(USE_GPG2_HACK, 1, [Define to install gpg as gpg2])
 fi
-AC_DEFINE_UNQUOTED(NAME_OF_INSTALLED_GPG, "$name_of_installed_gpg",
-                   [The name of the installed GPG tool])
+AM_CONDITIONAL(USE_GPG2_HACK, test "$gpg2_is_gpg" != "yes")
 
 
 # SELinux support includes tracking of sensitive files to avoid

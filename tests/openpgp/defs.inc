@@ -215,7 +215,7 @@ fi
 unset GPG_AGENT_INFO
 
 # (--no-permission-warning makes only sense on the commandline)
-GPG="../../g10/gpg2 --no-permission-warning "
+GPG="../../g10/gpg --no-permission-warning "
 # (We may not use a relative name for gpg-agent.)
 GPG_AGENT="$(cd ../../agent && /bin/pwd)/gpg-agent"
 GPG_CONNECT_AGENT="../../tools/gpg-connect-agent"

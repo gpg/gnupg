@@ -20,7 +20,7 @@
 
 
 # Programs required before we can run these tests.
-required_pgms = ../../g10/gpg2$(EXEEXT) ../../agent/gpg-agent$(EXEEXT) \
+required_pgms = ../../g10/gpg$(EXEEXT) ../../agent/gpg-agent$(EXEEXT) \
                 ../../tools/gpg-connect-agent$(EXEEXT) \
 		../../tools/mk-tdata$(EXEEXT)
 

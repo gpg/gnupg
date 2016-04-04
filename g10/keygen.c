@@ -3779,7 +3779,12 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
     {
       tty_printf ( _("Note: Use \"%s %s\""
                      " for a full featured key generation dialog.\n"),
-                   NAME_OF_INSTALLED_GPG, "--full-gen-key" );
+#if USE_GPG2_HACK
+                   GPG_NAME "2"
+#else
+                   GPG_NAME
+#endif
+                   , "--full-gen-key" );
       para = quickgen_set_para (para, 0,
                                 DEFAULT_STD_ALGO, DEFAULT_STD_KEYSIZE,
                                 DEFAULT_STD_CURVE);
