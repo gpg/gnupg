@@ -100,6 +100,9 @@ are replaced by the HOME directory. If the filename
 does not contain a slash, it is assumed to be in the
 home-directory ("~/.gnupg" if --homedir is not used).
 
+If @var{file} ends in @code{.asc} then it is assumed to be an armored
+keyring produced e.g. by @code{gpg --export}.
+
 @item --status-fd @var{n}
 @opindex status-fd
 Write special status strings to the file descriptor @var{n}.  See the

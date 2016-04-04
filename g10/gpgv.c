@@ -25,9 +25,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
-#ifdef HAVE_DOSISH_SYSTEM
-#include <fcntl.h> /* for setmode() */
-#endif
+#include <fcntl.h>
 #ifdef HAVE_LIBREADLINE
 #define GNUPG_LIBREADLINE_H_INCLUDED
 #include <readline/readline.h>
@@ -135,6 +133,66 @@ my_strusage( int level )
 }
 
 
+static char *
+make_temp_dir (void)
+{
+  char *result;
+  char *tmp;
+#if defined (_WIN32)
+  int err;
+
+  tmp = xmalloc (MAX_PATH+2);
+  err = GetTempPath (MAX_PATH + 1, tmp);
+  if (err == 0 || err > MAX_PATH + 1)
+    strcpy (tmp, "c:\\windows\\temp");
+  else
+    {
+      int len = strlen (tmp);
+
+      /* GetTempPath may return with \ on the end */
+      while (len > 0 && tmp[len-1] == '\\')
+        {
+          tmp[len-1] = '\0';
+          len--;
+        }
+    }
+#else /* More unixish systems */
+  tmp = getenv ("TMPDIR");
+  if (tmp == NULL)
+    {
+      tmp = getenv ("TMP");
+      if (tmp == NULL)
+        {
+#ifdef __riscos__
+          tmp = "<Wimp$ScrapDir>.GnuPG";
+          mkdir (tmp, 0700); /* Error checks occur later on */
+#else
+          tmp = "/tmp";
+#endif
+        }
+    }
+#endif
+
+  result = xasprintf ("%s" DIRSEP_S "gpg-XXXXXX", tmp);
+
+#if defined (_WIN32)
+  xfree(tmp);
+#endif
+
+  if (result == NULL)
+    return NULL;
+
+  if (! gnupg_mkdtemp (result))
+    {
+      log_error (_("can't create directory '%s': %s\n"),
+                 result, strerror (errno));
+      xfree (result);
+      return NULL;
+    }
+
+  return result;
+}
+
 
 int
 main( int argc, char **argv )
@@ -143,6 +201,7 @@ main( int argc, char **argv )
   int rc=0;
   strlist_t sl;
   strlist_t nrings = NULL;
+  strlist_t tmprings = NULL;
   unsigned configlineno;
   ctrl_t ctrl;
 
@@ -216,8 +275,63 @@ main( int argc, char **argv )
                         (KEYDB_RESOURCE_FLAG_READONLY
                          |KEYDB_RESOURCE_FLAG_GPGVDEF));
   for (sl = nrings; sl; sl = sl->next)
-    keydb_add_resource (sl->d, KEYDB_RESOURCE_FLAG_READONLY);
+    {
+      char *name = sl->d;
+      if (strlen (name) >= 4
+          && strcmp (&name[strlen (name) - 4], ".asc") == 0)
+        {
+          /* The file is an armored keyring.  Dearmor it.  */
+          char *tmpdir = NULL, *tmpname = NULL;
+          int fd = -1, success;
 
+          tmpdir = make_temp_dir ();
+          if (tmpdir == NULL)
+            goto cleanup;
+
+          tmpname = xasprintf ("%s" DIRSEP_S "key", tmpdir);
+          if (tmpname == NULL)
+            goto cleanup;
+
+          if (! add_to_strlist_try (&tmprings, tmpname))
+            goto cleanup;
+
+#ifndef O_BINARY
+#define O_BINARY	0
+#endif
+          fd = open (tmpname, O_WRONLY|O_CREAT|O_BINARY, S_IRUSR);
+          if (fd == -1)
+            goto cleanup;
+
+          rc = dearmor_file (name, fd);
+          close (fd);
+          fd = -2;
+          if (rc)
+            goto cleanup;
+
+          keydb_add_resource (tmpname, KEYDB_RESOURCE_FLAG_READONLY);
+
+        cleanup:
+          success = tmpdir && tmpname && fd != -1;
+          if (fd >= 0)
+            close (fd);
+          if (tmpname)
+            {
+              if (! success)
+                unlink (tmpname);
+              xfree (tmpname);
+            }
+          if (tmpdir)
+            {
+              if (! success)
+                rmdir (tmpdir);
+              xfree (tmpdir);
+            }
+          if (! success)
+            g10_exit (1);
+        }
+      else
+        keydb_add_resource (name, KEYDB_RESOURCE_FLAG_READONLY);
+    }
   FREE_STRLIST (nrings);
 
   ctrl = xcalloc (1, sizeof *ctrl);
@@ -226,6 +340,14 @@ main( int argc, char **argv )
     log_error("verify signatures failed: %s\n", gpg_strerror (rc) );
 
   xfree (ctrl);
+
+  for (sl = tmprings; sl; sl = sl->next)
+    {
+      unlink (sl->d);
+      sl->d[strlen (sl->d) - 4] = 0;
+      rmdir (sl->d);
+    }
+  FREE_STRLIST (tmprings);
 
   /* cleanup */
   g10_exit (0);

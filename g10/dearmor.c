@@ -35,10 +35,11 @@
 #include "i18n.h"
 
 /****************
- * Take an armor file and write it out without armor
+ * Take an armor file and write it out without armor.  If outfd is not
+ * -1, the output will be written to the given file descriptor.
  */
 int
-dearmor_file( const char *fname )
+dearmor_file( const char *fname, int outfd )
 {
     armor_filter_context_t *afx;
     IOBUF inp = NULL, out = NULL;
@@ -64,7 +65,7 @@ dearmor_file( const char *fname )
 
     push_armor_filter ( afx, inp );
 
-    if( (rc = open_outfile (-1, fname, 0, 0, &out)) )
+    if( (rc = open_outfile (outfd, fname, 0, 0, &out)) )
 	goto leave;
 
     while( (c = iobuf_get(inp)) != -1 )

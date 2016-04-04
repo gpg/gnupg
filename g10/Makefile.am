@@ -140,7 +140,8 @@ gpg2_SOURCES  = gpg.c \
 gpgcompose_SOURCES  = gpgcompose.c  $(gpg_sources)
 gpgv2_SOURCES = gpgv.c           \
 	      $(common_source)  \
-	      verify.c
+	      verify.c \
+	      dearmor.c
 
 #gpgd_SOURCES = gpgd.c \
 #	       ks-proto.h \
