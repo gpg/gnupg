@@ -116,6 +116,25 @@ static unsigned char bintoasc[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 static unsigned char asctobin[256]; /* runtime initialized */
 
 
+/* Build the helptable for radix64 to bin conversion. */
+static void
+init_asctobin (void)
+{
+  static int initialized;
+  int i;
+  unsigned char *s;
+
+  if (initialized)
+    return;
+  initialized = 1;
+
+  for (i=0; i < 256; i++ )
+    asctobin[i] = 255; /* Used to detect invalid characters. */
+  for (s=bintoasc, i=0; *s; s++, i++)
+    asctobin[*s] = i;
+}
+
+
 /* Prototypes.  */
 static gpg_error_t read_certificate (const char *fname,
                                      unsigned char **rbuf, size_t *rbuflen);
@@ -233,19 +252,6 @@ main (int argc, char **argv )
     }
   if (log_get_errorcount (0))
     exit (2);
-
-  /* Build the helptable for radix64 to bin conversion. */
-  if (opt.pem)
-    {
-      int i;
-      unsigned char *s;
-
-      for (i=0; i < 256; i++ )
-        asctobin[i] = 255; /* Used to detect invalid characters. */
-      for (s=bintoasc, i=0; *s; s++, i++)
-        asctobin[*s] = i;
-    }
-
 
   if (cmd_ping)
     err = 0;
@@ -461,6 +467,8 @@ read_pem_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
     s_waitend
   } state = s_init;
 
+  init_asctobin ();
+
   fp = fname? fopen (fname, "r") : stdin;
   if (!fp)
     return gpg_error_from_errno (errno);
@@ -612,6 +620,15 @@ read_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
 
   if (opt.pem)
     return read_pem_certificate (fname, rbuf, rbuflen);
+  else if (fname)
+    {
+      /* A filename has been given.  Let's just assume it is in PEM
+         format and decode it, and fall back to interpreting it as
+         binary certificate if that fails.  */
+      err = read_pem_certificate (fname, rbuf, rbuflen);
+      if (! err)
+        return 0;
+    }
 
   fp = fname? fopen (fname, "rb") : stdin;
   if (!fp)
