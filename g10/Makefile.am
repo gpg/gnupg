@@ -49,7 +49,9 @@ noinst_PROGRAMS = gpg
 if !HAVE_W32CE_SYSTEM
 noinst_PROGRAMS += gpgv
 endif
+if MAINTAINER_MODE
 noinst_PROGRAMS += gpgcompose $(module_tests)
+endif
 TESTS = $(module_tests)
 
 if ENABLE_BZIP2_SUPPORT

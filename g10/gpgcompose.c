@@ -1,4 +1,4 @@
-/* gpgcompose.c - Create OpenPGP messages by hand.
+/* gpgcompose.c - Maintainer tool to create OpenPGP messages by hand.
  * Copyright (C) 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
