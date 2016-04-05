@@ -49,6 +49,13 @@
 #endif /*HAVE_W32_SYSTEM*/
 
 
+#if USE_GPG2_HACK
+# define gpg2_suffix "2"
+#else
+# define gpg2_suffix ""
+#endif
+
+
 static int verbose;
 
 
@@ -267,7 +274,17 @@ main (int argc, char **argv)
 
   fputs ("@c defs.inc                         -*- texinfo -*-\n"
          "@c Common and build specific constants for the manuals.\n"
-         "@c This file has been created by " PGM ".\n", stdout);
+         "@c This file has been created by " PGM ".\n\n", stdout);
+
+  fputs ("@ifclear defsincincluded\n"
+         "@set defsincincluded 1\n\n", stdout);
+
+
+  fputs ("\n@c Flags\n\n", stdout);
+
+#if USE_GPG2_HACK
+  fputs ("@set gpgtwohack 1\n\n", stdout);
+#endif
 
   fputs ("\n@c Directories\n\n", stdout);
 
@@ -306,8 +323,16 @@ main (int argc, char **argv)
   /* Fixme: Use a config.h macro here:  */
   fputs ("@set GPGSYMENCALGO AES-128\n", stdout);
 
+  fputs ("\n@c Macros\n\n", stdout);
 
+  printf ("@macro gpgname\n%s%s\n@end macro\n", GPG_NAME, gpg2_suffix);
+  printf ("@macro gpgvname\n%sv%s\n@end macro\n", GPG_NAME, gpg2_suffix);
+
+
+  /* Trailer.  */
   fputs ("\n"
+         "@end ifclear\n"
+         "\n"
          "@c Loc" "al Variables:\n"
          "@c buffer-read-only: t\n"
          "@c End:\n", stdout);

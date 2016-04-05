@@ -11,9 +11,31 @@
 @cindex command options
 @cindex options, GPG command
 
-@macro gpgname
-gpg2
-@end macro
+
+@c Begin standard stuff
+@ifclear gpgtwohack
+@manpage gpg.1
+@ifset manverb
+.B gpg
+\- OpenPGP encryption and signing tool
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  gpg
+.RB [ \-\-homedir
+.IR dir ]
+.RB [ \-\-options
+.IR file ]
+.RI [ options ]
+.I command
+.RI [ args ]
+@end ifset
+@end ifclear
+@c End standard stuff
+
+@c Begin gpg2 hack stuff
+@ifset gpgtwohack
 @manpage gpg2.1
 @ifset manverb
 .B gpg2
@@ -31,6 +53,8 @@ gpg2
 .I command
 .RI [ args ]
 @end ifset
+@end ifset
+@c End gpg2 hack stuff
 
 
 @mansect description
@@ -40,17 +64,21 @@ OpenPGP standard. @command{@gpgname} features complete key management and
 all bells and whistles you can expect from a decent OpenPGP
 implementation.
 
+@ifclear gpgtwohack
+Note that this version of GnuPG features all modern algorithms and
+should thus be preferred over older GnuPG versions.  If you are
+looking for version 1 of GnuPG, you may find that version installed
+under the name @command{gpg1}.
+@end ifclear
+@ifset gpgtwohack
 In contrast to the standalone command gpg from GnuPG 1.x, which
 might be better suited for server and embedded platforms, the 2.x
-version is commonly installed under the name @command{gpg2} and
+version is commonly installed under the name @command{@gpgname} and
 targeted to the desktop as it requires several other modules to be
 installed.
+@end ifset
 
 @manpause
-The old 1.x version will be kept maintained and it is possible to
-install both versions on the same system.  Documentation for the old
-GnuPG 1.x command is available as a man page and at
-@inforef{Top,GnuPG 1,gpg}.
 
 @xref{Option Index}, for an index to @command{@gpgname}'s commands and options.
 @mancont
@@ -1777,7 +1805,7 @@ This is dummy option. @command{@gpgname} always requires the agent.
 
 @item --gpg-agent-info
 @opindex gpg-agent-info
-This is dummy option. It has no effect when used with @command{gpg2}.
+This is dummy option. It has no effect when used with @command{@gpgname}.
 
 
 @item --agent-program @var{file}
@@ -3394,7 +3422,7 @@ for @samp{Subkey-Type}.
 
 @item Key-Length: @var{nbits}
 The requested length of the generated key in bits.  The default is
-returned by running the command @samp{gpg2 --gpgconf-list}.
+returned by running the command @samp{@gpgname --gpgconf-list}.
 
 @item Key-Grip: @var{hexstring}
 This is optional and used to generate a CSR or certificate for an
@@ -3417,7 +3445,7 @@ can be handled.  See also @samp{Key-Type} above.
 
 @item Subkey-Length: @var{nbits}
 Length of the secondary key (subkey) in bits.  The default is returned
-by running the command @samp{gpg2 --gpgconf-list}".
+by running the command @samp{@gpgname --gpgconf-list}".
 
 @item Subkey-Usage: @var{usage-list}
 Key usage lists for a subkey; similar to @samp{Key-Usage}.
@@ -3496,9 +3524,9 @@ $ cat >foo <<EOF
      %commit
      %echo done
 EOF
-$ gpg2 --batch --gen-key foo
+$ @gpgname --batch --gen-key foo
  [...]
-$ gpg2 --no-default-keyring --secret-keyring ./foo.sec \
+$ @gpgname --no-default-keyring --secret-keyring ./foo.sec \
        --keyring ./foo.pub --list-secret-keys
 /home/wk/work/gnupg-stable/scratch/foo.sec
 ------------------------------------------

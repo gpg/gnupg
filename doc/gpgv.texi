@@ -8,11 +8,8 @@
 
 @include defs.inc
 
-@c Begin GnuPG 1.x specific stuff
-@ifset gpgone
-@macro gpgvname
-gpgv
-@end macro
+@c Begin standard stuff
+@ifclear gpgtwohack
 @manpage gpgv.1
 @node gpgv
 @section Verify OpenPGP signatures
@@ -27,14 +24,11 @@ gpgv
 .RI [ options ]
 .I signed_files
 @end ifset
-@end ifset
-@c End GnuPG 1.x specific stuff
+@end ifclear
+@c End standard stuff
 
-@c Begin GnuPG 2 specific stuff
-@ifclear gpgone
-@macro gpgvname
-gpgv2
-@end macro
+@c Begin gpg2 hack stuff
+@ifset gpgtwohack
 @manpage gpgv2.1
 @node gpgv
 @section Verify OpenPGP signatures
@@ -49,10 +43,8 @@ gpgv2
 .RI [ options ]
 .I signed_files
 @end ifset
-@end ifclear
-@c End GnuPG 2 specific stuff
-
-
+@end ifset
+@c End gpg2 hack stuff
 
 @mansect description
 @code{@gpgvname} is an OpenPGP signature verification tool.

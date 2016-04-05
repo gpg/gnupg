@@ -78,11 +78,16 @@ YAT2M_OPTIONS = -I $(srcdir) \
 
 myman_sources = gnupg7.texi gpg.texi gpgsm.texi gpg-agent.texi \
 	        dirmngr.texi scdaemon.texi tools.texi
-myman_pages   = gpg2.1 gpgsm.1 gpg-agent.1 dirmngr.8 scdaemon.1 gpgv2.1 \
+myman_pages   = gpgsm.1 gpg-agent.1 dirmngr.8 scdaemon.1 \
                 watchgnupg.1 gpgconf.1 addgnupghome.8 gpg-preset-passphrase.1 \
 		gpg-connect-agent.1 gpgparsemail.1 symcryptrun.1 \
 		applygnupgdefaults.8 \
 		dirmngr-client.1
+if USE_GPG2_HACK
+myman_pages += gpg2.1 gpgv2.1
+else
+myman_pages += gpg.1 gpgv.1
+endif
 
 man_MANS = $(myman_pages) gnupg.7
 
