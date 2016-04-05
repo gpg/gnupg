@@ -50,8 +50,9 @@ if !HAVE_W32CE_SYSTEM
 noinst_PROGRAMS += gpgv
 endif
 if MAINTAINER_MODE
-noinst_PROGRAMS += gpgcompose $(module_tests)
+noinst_PROGRAMS += gpgcompose
 endif
+noinst_PROGRAMS += $(module_tests)
 TESTS = $(module_tests)
 
 if ENABLE_BZIP2_SUPPORT
