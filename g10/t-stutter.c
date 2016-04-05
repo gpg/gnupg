@@ -37,12 +37,13 @@
  *
  * How to generate a test message:
  *
- *   $ echo 0123456789abcdefghijklmnopqrstuvwxyz | gpg2 --disable-mdc -z 0 -c  > msg.asc
- *   $ gpg2 --list-packets msg.asc
+ *   $ echo 0123456789abcdefghijklmnopqrstuvwxyz | \
+ *         gpg --disable-mdc -z 0 -c  > msg.asc
+ *   $ gpg --list-packets msg.asc
  *   # Make sure the encryption packet contains a literal packet (without
  *   # any nesting).
  *   $ gpgsplit msg.asc
- *   $ gpg2 --show-session-key -d msg.asc
+ *   $ gpg --show-session-key -d msg.asc
  *   $ ./t-stutter --debug SESSION_KEY 000002-009.encrypted
  */
 

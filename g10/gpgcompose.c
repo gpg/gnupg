@@ -553,7 +553,7 @@ static struct option user_id_options[] = {
     "\"Name (comment) <email@example.org>\"" },
   { NULL, NULL,
     "Example:\n\n"
-    "  $ gpgcompose --user-id \"USERID\" | gpg2 --list-packets" }
+    "  $ gpgcompose --user-id \"USERID\" | " GPG_NAME " --list-packets" }
 };
 
 static int
@@ -662,7 +662,7 @@ static struct option pk_options[] = {
   { NULL, NULL,
     "Example:\n\n"
     "  $ gpgcompose --public-key $KEYID --user-id \"USERID\" \\\n"
-    "  | gpg2 --list-packets" }
+    "  | " GPG_NAME " --list-packets" }
 };
 
 static int
@@ -1554,7 +1554,7 @@ static struct option sig_options[] = {
     "Example:\n\n"
     "  $ gpgcompose --public-key $KEYID --user-id USERID \\\n"
     "  --signature --class 0x10 --issuer $KEYID --issuer-keyid self \\\n"
-    "  | gpg2 --list-packets"}
+    "  | " GPG_NAME " --list-packets"}
 };
 
 static int
@@ -2146,12 +2146,12 @@ static struct option sk_esk_options[] = {
     "password.  The session key may be prefaced with an integer and a colon "
     "to indicate the cipher to use for the SED packet (making --sed-cipher "
     "unnecessary and allowing the direct use of the result of "
-    "\"gpg2 --show-session-key\")." },
+    "\"" GPG_NAME " --show-session-key\")." },
   { "", sk_esk_password, "The password." },
   { NULL, NULL,
     "Example:\n\n"
     "  $ gpgcompose --sk-esk foobar --encrypted \\\n"
-    "  --literal --value foo | gpg2 --list-packets" }
+    "  --literal --value foo | " GPG_NAME " --list-packets" }
 };
 
 static int
@@ -2388,14 +2388,14 @@ static struct option pk_esk_options[] = {
     "then a new session key is generated.  The session key may be "
     "prefaced with an integer and a colon to indicate the cipher to use "
     "for the SED packet (making --sed-cipher unnecessary and allowing the "
-    "direct use of the result of \"gpg2 --show-session-key\")." },
+    "direct use of the result of \"" GPG_NAME " --show-session-key\")." },
   { "--throw-keyid", pk_esk_throw_keyid,
     "Throw the keyid." },
   { "", pk_esk_keyid, "The key id." },
   { NULL, NULL,
     "Example:\n\n"
     "  $ gpgcompose --pk-esk $KEYID --encrypted --literal --value foo \\\n"
-    "  | gpg2 --list-packets"}
+    "  | " GPG_NAME " --list-packets"}
 };
 
 static int
@@ -2494,14 +2494,14 @@ static struct option encrypted_options[] = {
     "string.  If this is not given or is \"auto\", then the last session key "
     "is used.  If there was none, then an error is raised.  The session key "
     "must be prefaced with an integer and a colon to indicate the cipher "
-    "to use (this is format used by \"gpg2 --show-session-key\")." },
+    "to use (this is format used by \"" GPG_NAME " --show-session-key\")." },
   { NULL, NULL,
     "After creating the packet, this command clears the current "
     "session key.\n\n"
     "Example: nested encryption packets:\n\n"
     "  $ gpgcompose --sk-esk foo --encrypted-mdc \\\n"
     "  --sk-esk bar --encrypted-mdc \\\n"
-    "  --literal --value 123 --encrypted-pop --encrypted-pop | gpg2 -d" }
+    "  --literal --value 123 --encrypted-pop --encrypted-pop | " GPG_NAME" -d" }
 };
 
 static int
@@ -2743,7 +2743,7 @@ static struct option literal_options[] = {
     "The literal's name." },
   { NULL, NULL,
     "Example:\n\n"
-    "  $ gpgcompose --literal --value foobar | gpg2 -d"}
+    "  $ gpgcompose --literal --value foobar | " GPG_NAME " -d"}
 };
 
 static int

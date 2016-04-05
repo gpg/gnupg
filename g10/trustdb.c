@@ -421,13 +421,13 @@ how_to_fix_the_trustdb ()
 
   log_info (_("You may try to re-create the trustdb using the commands:\n"));
   log_info ("  cd %s\n", default_homedir ());
-  log_info ("  gpg2 --export-ownertrust > otrust.tmp\n");
+  log_info ("  %s --export-ownertrust > otrust.tmp\n", GPG_NAME);
 #ifdef HAVE_W32_SYSTEM
   log_info ("  del %s\n", name);
 #else
   log_info ("  rm %s\n", name);
 #endif
-  log_info ("  gpg2 --import-ownertrust < otrust.tmp\n");
+  log_info ("  %s --import-ownertrust < otrust.tmp\n", GPG_NAME);
   log_info (_("If that does not work, please consult the manual\n"));
 }
 
