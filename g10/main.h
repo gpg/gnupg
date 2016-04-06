@@ -389,7 +389,7 @@ gpg_error_t receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
 gpg_error_t export_ssh_key (ctrl_t ctrl, const char *userid);
 
 /*-- dearmor.c --*/
-int dearmor_file( const char *fname, int outfd );
+int dearmor_file( const char *fname );
 int enarmor_file( const char *fname );
 
 /*-- revoke.c --*/

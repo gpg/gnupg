@@ -4285,7 +4285,7 @@ main (int argc, char **argv)
       case aDeArmor:
 	if( argc > 1 )
 	    wrong_args("--dearmor [file]");
-	rc = dearmor_file( argc? *argv: NULL, -1 );
+	rc = dearmor_file( argc? *argv: NULL );
 	if( rc )
           {
             write_status_failure ("dearmor", rc);
