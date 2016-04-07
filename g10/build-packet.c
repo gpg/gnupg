@@ -486,7 +486,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
       /* Build the header of the packet - which we must do after
          writing all the other stuff, so that we know the length of
          the packet */
-      write_header2 (out, ctb, iobuf_get_temp_length(a), pk->hdrbytes);
+      write_header2 (out, ctb, iobuf_get_temp_length(a), 0);
        /* And finally write it out to the real stream. */
       err = iobuf_write_temp (out, a);
     }
