@@ -327,7 +327,7 @@ struct seckey_info
 /****************
  * The in-memory representation of a public key (RFC 4880, Section
  * 5.5).  Note: this structure contains significantly more information
- * thatn is contained in an OpenPGP public key packet.  This
+ * than is contained in an OpenPGP public key packet.  This
  * information is derived from the self-signed signatures (by
  * merge_keys_and_selfsig()) and is ignored when serializing the
  * packet.  The fields that are actually written out when serializing
