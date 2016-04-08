@@ -694,7 +694,8 @@ line.
   Make a trust signature. This is a signature that combines the notions
   of certification (like a regular signature), and trust (like the
   "trust" command). It is generally only useful in distinct communities
-  or groups.
+  or groups.  For more information please read the sections
+  ``Trust Signature'' and ``Regular Expression'' in RFC-4880.
 @end table
 
 @c man:.RS
