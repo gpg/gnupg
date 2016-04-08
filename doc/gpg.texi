@@ -2448,20 +2448,6 @@ be given in C syntax (e.g. 0x0042).
 @opindex debug-all
 Set all useful debugging flags.
 
-@ifset gpgone
-@item --debug-ccid-driver
-@opindex debug-ccid-driver
-Enable debug output from the included CCID driver for smartcards.
-Note that this option is only available on some system.
-@end ifset
-
-@item --faked-system-time @var{epoch}
-@opindex faked-system-time
-This option is only useful for testing; it sets the system time back or
-forth to @var{epoch} which is the number of seconds elapsed since the year
-1970.  Alternatively @var{epoch} may be given as a full ISO time string
-(e.g. "20070924T154812").
-
 @item --enable-progress-filter
 @opindex enable-progress-filter
 Enable certain PROGRESS status outputs. This option allows frontends
