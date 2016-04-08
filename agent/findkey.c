@@ -35,6 +35,7 @@
 #include "agent.h"
 #include "i18n.h"
 #include "../common/ssh-utils.h"
+#include "../common/private-keys.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -50,6 +51,75 @@ struct try_unprotect_arg_s
                           user should change the passphrase.  */
 };
 
+
+static gpg_error_t
+write_extended_private_key (char *fname, estream_t fp,
+                            const void *buf, size_t len)
+{
+  gpg_error_t err;
+  pkc_t pk = NULL;
+  gcry_sexp_t key = NULL;
+  int remove = 0;
+  int line;
+
+  err = pkc_parse (&pk, &line, fp);
+  if (err)
+    {
+      log_error ("error parsing '%s' line %d: %s\n",
+                 fname, line, gpg_strerror (err));
+      goto leave;
+    }
+
+  err = gcry_sexp_sscan (&key, NULL, buf, len);
+  if (err)
+    goto leave;
+
+  err = pkc_set_private_key (pk, key);
+  if (err)
+    goto leave;
+
+  err = es_fseek (fp, 0, SEEK_SET);
+  if (err)
+    goto leave;
+
+  err = pkc_write (pk, fp);
+  if (err)
+    {
+      log_error ("error writing '%s': %s\n", fname, gpg_strerror (err));
+      remove = 1;
+      goto leave;
+    }
+
+  if (ftruncate (es_fileno (fp), es_ftello (fp)))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error truncating '%s': %s\n", fname, gpg_strerror (err));
+      remove = 1;
+      goto leave;
+    }
+
+  if (es_fclose (fp))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error closing '%s': %s\n", fname, gpg_strerror (err));
+      remove = 1;
+      goto leave;
+    }
+  else
+    fp = NULL;
+
+  bump_key_eventcounter ();
+
+ leave:
+  if (fp)
+    es_fclose (fp);
+  if (remove)
+    gnupg_remove (fname);
+  xfree (fname);
+  gcry_sexp_release (key);
+  pkc_release (pk);
+  return err;
+}
 
 /* Write an S-expression formatted key to our key storage.  With FORCE
    passed as true an existing key with the given GRIP will get
@@ -77,13 +147,45 @@ agent_write_private_key (const unsigned char *grip,
       return gpg_error (GPG_ERR_EEXIST);
     }
 
-  fp = es_fopen (fname, force? "wb,mode=-rw" : "wbx,mode=-rw");
+  fp = es_fopen (fname, force? "rb+,mode=-rw" : "wbx,mode=-rw");
   if (!fp)
     {
       gpg_error_t tmperr = gpg_error_from_syserror ();
       log_error ("can't create '%s': %s\n", fname, gpg_strerror (tmperr));
       xfree (fname);
       return tmperr;
+    }
+
+  /* See if an existing key is in extended format.  */
+  if (force)
+    {
+      gpg_error_t rc;
+      char first;
+
+      if (es_fread (&first, 1, 1, fp) != 1)
+        {
+          rc = gpg_error_from_syserror ();
+          log_error ("error reading first byte from '%s': %s\n",
+                     fname, strerror (errno));
+          xfree (fname);
+          es_fclose (fp);
+          return rc;
+        }
+
+      rc = es_fseek (fp, 0, SEEK_SET);
+      if (rc)
+        {
+          log_error ("error seeking in '%s': %s\n", fname, strerror (errno));
+          xfree (fname);
+          es_fclose (fp);
+          return rc;
+        }
+
+      if (first != '(')
+        {
+          /* Key is in extended format.  */
+          return write_extended_private_key (fname, fp, buffer, length);
+        }
     }
 
   if (es_fwrite (buffer, length, 1, fp) != 1)
@@ -95,6 +197,18 @@ agent_write_private_key (const unsigned char *grip,
       xfree (fname);
       return tmperr;
     }
+
+  /* When force is given, the file might have to be truncated.  */
+  if (force && ftruncate (es_fileno (fp), es_ftello (fp)))
+    {
+      gpg_error_t tmperr = gpg_error_from_syserror ();
+      log_error ("error truncating '%s': %s\n", fname, gpg_strerror (tmperr));
+      es_fclose (fp);
+      gnupg_remove (fname);
+      xfree (fname);
+      return tmperr;
+    }
+
   if (es_fclose (fp))
     {
       gpg_error_t tmperr = gpg_error_from_syserror ();
@@ -531,6 +645,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   size_t buflen, erroff;
   gcry_sexp_t s_skey;
   char hexgrip[40+4+1];
+  char first;
 
   *result = NULL;
 
@@ -544,6 +659,50 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
       rc = gpg_error_from_syserror ();
       if (gpg_err_code (rc) != GPG_ERR_ENOENT)
         log_error ("can't open '%s': %s\n", fname, strerror (errno));
+      xfree (fname);
+      return rc;
+    }
+
+  if (es_fread (&first, 1, 1, fp) != 1)
+    {
+      rc = gpg_error_from_syserror ();
+      log_error ("error reading first byte from '%s': %s\n",
+                 fname, strerror (errno));
+      xfree (fname);
+      es_fclose (fp);
+      return rc;
+    }
+
+  rc = es_fseek (fp, 0, SEEK_SET);
+  if (rc)
+    {
+      log_error ("error seeking in '%s': %s\n", fname, strerror (errno));
+      xfree (fname);
+      es_fclose (fp);
+      return rc;
+    }
+
+  if (first != '(')
+    {
+      /* Key is in extended format.  */
+      pkc_t pk;
+      int line;
+
+      rc = pkc_parse (&pk, &line, fp);
+      es_fclose (fp);
+
+      if (rc)
+        log_error ("error parsing '%s' line %d: %s\n",
+                   fname, line, gpg_strerror (rc));
+      else
+        {
+          rc = pkc_get_private_key (pk, result);
+          pkc_release (pk);
+          if (rc)
+            log_error ("error getting private key from '%s': %s\n",
+                       fname, gpg_strerror (rc));
+        }
+
       xfree (fname);
       return rc;
     }

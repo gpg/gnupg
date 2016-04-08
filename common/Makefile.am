@@ -89,7 +89,8 @@ common_sources = \
 	strlist.c strlist.h \
 	call-gpg.c call-gpg.h \
 	exectool.c exectool.h \
-	server-help.c server-help.h
+	server-help.c server-help.h \
+	private-keys.c private-keys.h
 
 if HAVE_W32_SYSTEM
 common_sources += w32-reg.c w32-afunix.c w32-afunix.h
@@ -154,7 +155,8 @@ endif
 module_tests = t-stringhelp t-timestuff \
                t-convert t-percent t-gettime t-sysutils t-sexputil \
 	       t-session-env t-openpgp-oid t-ssh-utils \
-	       t-mapstrings t-zb32 t-mbox-util t-iobuf t-strlist
+	       t-mapstrings t-zb32 t-mbox-util t-iobuf t-strlist \
+	       t-private-keys
 if !HAVE_W32CE_SYSTEM
 module_tests += t-exechelp
 endif
@@ -203,6 +205,7 @@ t_zb32_LDADD = $(t_common_ldadd)
 t_mbox_util_LDADD = $(t_common_ldadd)
 t_iobuf_LDADD = $(t_common_ldadd)
 t_strlist_LDADD = $(t_common_ldadd)
+t_private_keys_LDADD = $(t_common_ldadd)
 
 # System specific test
 if HAVE_W32_SYSTEM

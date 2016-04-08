@@ -16,7 +16,71 @@ and should have permissions 700.
 The secret keys are stored in files with a name matching the
 hexadecimal representation of the keygrip[2] and suffixed with ".key".
 
-* Unprotected Private Key Format
+* Extended Private Key Format
+
+GnuPG 2.3+ will use a new format to store private keys that is both
+more flexible and easier to read and edit by human beings.  The new
+format stores name,value-pairs using the common mail and http header
+convention.  Example (here indented with two spaces):
+
+  Description: Key to sign all GnuPG released tarballs.
+    The key is actually stored on a smart card.
+  Use-for-ssh: yes
+  OpenSSH-cert: long base64 encoded string wrapped so that this
+    key file can be easily edited with a standard editor.
+  Key: (shadowed-private-key
+    (rsa
+    (n #00AA1AD2A55FD8C8FDE9E1941772D9CC903FA43B268CB1B5A1BAFDC900
+    2961D8AEA153424DC851EF13B83AC64FBE365C59DC1BD3E83017C90D4365B4
+    83E02859FC13DB5842A00E969480DB96CE6F7D1C03600392B8E08EF0C01FC7
+    19F9F9086B25AD39B4F1C2A2DF3E2BE317110CFFF21D4A11455508FE407997
+    601260816C8422297C0637BB291C3A079B9CB38A92CE9E551F80AA0EBF4F0E
+    72C3F250461E4D31F23A7087857FC8438324A013634563D34EFDDCBF2EA80D
+    F9662C9CCD4BEF2522D8BDFED24CEF78DC6B309317407EAC576D889F88ADA0
+    8C4FFB480981FB68C5C6CA27503381D41018E6CDC52AAAE46B166BDC10637A
+    E186A02BA2497FDC5D1221#)
+    (e #00010001#)
+    (shadowed t1-v1
+     (#D2760001240102000005000011730000# OPENPGP.1)
+    )))
+
+GnuPG 2.2 is able to read and update keys using the new format, but
+will not create new files using the new format.  Furthermore, it only
+makes use of the value stored under the name 'Key:'.
+
+Keys in the extended format can be recognized by looking at the first
+byte of the file.  If it starts with a '(' it is a naked S-expression,
+otherwise it is a key in extended format.
+
+** Names
+
+A name must start with a letter and end with a colon.  Valid
+characters are all ASCII letters, numbers and the hyphen.  Comparison
+of names is done case insensitively.  Names may be used several times
+to represent an array of values.
+
+The name "Key:" is special in that it may occur only once and the
+associated value holds the actual S-expression with the cryptographic
+key.  The S-expression is formatted using the 'Advanced Format'
+(GCRYSEXP_FMT_ADVANCED) that avoids non-printable characters so that
+the file can be easily inspected and edited.  See section 'Private Key
+Format' below for details.
+
+** Values
+
+Values are UTF-8 encoded strings.  Values can be wrapped at any point,
+and continued in the next line indicated by leading whitespace.  A
+continuation line with one leading space does not introduce a blank so
+that the lines can be effectively concatenated.  A blank line as part
+of a continuation line encodes a newline.
+
+** Comments
+
+Lines containing only whitespace, and lines starting with whitespace
+followed by '#' are considered to be comments and are ignored.
+
+* Private Key Format
+** Unprotected Private Key Format
 
 The content of the file is an S-Expression like the ones used with
 Libgcrypt.  Here is an example of an unprotected file:
@@ -42,7 +106,7 @@ optional but required for some operations to calculate the fingerprint
 of the key.  This timestamp should be a string with the number of
 seconds since Epoch or an ISO time string (yyyymmddThhmmss).
 
-* Protected Private Key Format
+** Protected Private Key Format
 
 A protected key is like this:
 
@@ -67,7 +131,7 @@ optional; the isotimestamp is 15 bytes long (e.g. "19610711T172000").
 
 The currently defined protection modes are:
 
-** openpgp-s2k3-sha1-aes-cbc
+*** openpgp-s2k3-sha1-aes-cbc
 
   This describes an algorithm using using AES in CBC mode for
   encryption, SHA-1 for integrity protection and the String to Key
@@ -116,7 +180,7 @@ The currently defined protection modes are:
   the stored one - If they don't match the integrity of the key is not
   given.
 
-** openpgp-s2k3-ocb-aes
+*** openpgp-s2k3-ocb-aes
 
   This describes an algorithm using using AES-128 in OCB mode, a nonce
   of 96 bit, a taglen of 128 bit, and the String to Key algorithm 3
@@ -154,7 +218,7 @@ The currently defined protection modes are:
    (protected-at "18950523T000000")
   )
 
-** openpgp-native
+*** openpgp-native
 
   This is a wrapper around the OpenPGP Private Key Transport format
   which resembles the standard OpenPGP format and allows the use of an
@@ -191,7 +255,7 @@ The currently defined protection modes are:
    (uri http://foo.bar x-foo:whatever_you_want)
    (comment whatever))
 
-* Shadowed Private Key Format
+** Shadowed Private Key Format
 
 To keep track of keys stored on IC cards we use a third format for
 private kyes which are called shadow keys as they are only a reference
@@ -219,7 +283,7 @@ readers don't allow passing a variable length PIN.
 
 More items may be added to the list.
 
-* OpenPGP Private Key Transfer Format
+** OpenPGP Private Key Transfer Format
 
 This format is used to transfer keys between gpg and gpg-agent.
 
@@ -251,7 +315,7 @@ This format is used to transfer keys between gpg and gpg-agent.
  * S2KSALT is the 8 byte salt
  * S2KCOUNT is the count value from RFC-4880.
 
-* Persistent Passphrase Format
+** Persistent Passphrase Format
 
 Note: That this has not yet been implemented.
 

@@ -1,0 +1,57 @@
+#!/bin/sh
+# Copyright 2016 g10 Code GmbH
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.  This file is
+# distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY, to the extent permitted by law; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+if [ -z "$srcdir" ]; then
+   echo "not called from make" >&2
+   exit 1
+fi
+
+unset GNUPGHOME
+set -e
+
+# (We may not use a relative name for gpg-agent.)
+GPG_AGENT="$(cd ../../agent && /bin/pwd)/gpg-agent"
+GPG="../../g10/gpg --no-permission-warning --no-greeting --no-secmem-warning
+--batch --agent-program=${GPG_AGENT}|--debug-quick-random"
+
+TEST="extended-private-key-format"
+
+setup_home()
+{
+    XGNUPGHOME="`mktemp -d`"
+    mkdir -p "$XGNUPGHOME/private-keys-v1.d"
+    for F in $srcdir/$TEST.gpghome/*.asc; do
+	$GPG --dearmor <"$F" >"$XGNUPGHOME/`basename $F .asc`"
+    done
+    for F in $srcdir/$TEST.gpghome/private-keys-v1.d/*.asc; do
+	$GPG --dearmor <"$F" >"$XGNUPGHOME/private-keys-v1.d/`basename $F .asc`"
+    done
+    chmod go-rwx $XGNUPGHOME/* $XGNUPGHOME/*/*
+    export GNUPGHOME="$XGNUPGHOME"
+}
+
+cleanup_home()
+{
+    rm -rf -- "$XGNUPGHOME"
+}
+
+assert_keys_usable()
+{
+    for KEY in C40FDECF ECABF51D; do
+	$GPG --list-secret-keys $KEY >/dev/null
+    done
+}
+
+setup_home
+assert_keys_usable
+cleanup_home
+
+
+# XXX try changing a key, and check that the format is not changed.

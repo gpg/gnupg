@@ -333,6 +333,9 @@ int _gnupg_isatty (int fd);
 /*-- Macros to replace ctype ones to avoid locale problems. --*/
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')
 #define digitp(p)   (*(p) >= '0' && *(p) <= '9')
+#define alphap(p)   ((*(p) >= 'A' && *(p) <= 'Z')       \
+                     || (*(p) >= 'a' && *(p) <= 'z'))
+#define alnump(p)   (alphap (p) || digitp (p))
 #define hexdigitp(a) (digitp (a)                     \
                       || (*(a) >= 'A' && *(a) <= 'F')  \
                       || (*(a) >= 'a' && *(a) <= 'f'))
