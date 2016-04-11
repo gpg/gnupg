@@ -51,6 +51,7 @@ are
  - build   :: Changes to the build system
  - speedo  :: Speedo build system specific changes
  - doc     :: Documentation changes
+ - indent  :: Indentation and similar changes
 
 Typo fixes and documentation updates don't need a ChangeLog entry;
 thus you would use a commit message like
