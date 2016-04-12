@@ -43,23 +43,6 @@ optional but required for some operations to calculate the fingerprint
 of the key.  This timestamp should be a string with the number of
 seconds since Epoch or an ISO time string (yyyymmddThhmmss).
 
-Actually this form should not be used for regular purposes and only
-accepted by gpg-agent with the configuration option:
---allow-non-canonical-key-format.  The regular way to represent the
-keys is in canonical representation[3]:
-
-(private-key
-   (rsa
-    (n #00e0ce9..[some bytes not shown]..51#)
-    (e #010001#)
-    (d #046129F..[some bytes not shown]..81#)
-    (p #00e861b..[some bytes not shown]..f1#)
-    (q #00f7a7c..[some bytes not shown]..61#)
-    (u #304559a..[some bytes not shown]..9b#)
-   )
-   (uri http://foo.bar x-foo:whatever_you_want)
-)
-
 
 Protected Private Key Format
 ==============================
@@ -90,7 +73,7 @@ The currently defined protection modes are:
 
   This describes an algorithm using using AES in CBC mode for
   encryption, SHA-1 for integrity protection and the String to Key
-  algorithm 3 from OpenPGP (rfc2440).
+  algorithm 3 from OpenPGP (rfc4880).
 
   Example:
 
@@ -116,7 +99,7 @@ The currently defined protection modes are:
   easily be stripped by looking for the end of the list.
 
   The hash is calculated on the concatenation of the public key and
-  secret key parameter lists: i.e it is required to hash the
+  secret key parameter lists: i.e. it is required to hash the
   concatenation of these 6 canonical encoded lists for RSA, including
   the parenthesis, the algorithm keyword and (if used) the protected-at
   list.
@@ -135,7 +118,46 @@ The currently defined protection modes are:
   the stored one - If they don't match the integrity of the key is not
   given.
 
-2. openpgp-native
+2. openpgp-s2k3-ocb-aes
+
+  This describes an algorithm using using AES-128 in OCB mode, a nonce
+  of 96 bit, a taglen of 128 bit, and the String to Key algorithm 3
+  from OpenPGP (rfc4880).
+
+  Example:
+
+  (protected openpgp-s2k3-ocb-aes
+    ((sha1 16byte_salt no_of_iterations) 12byte_nonce)
+    encrypted_octet_string
+  )
+
+  The encrypted_octet string should yield this S-Exp (in canonical
+  representation) after decryption:
+
+  (
+   (
+    (d #046129F..[some bytes not shown]..81#)
+    (p #00e861b..[some bytes not shown]..f1#)
+    (q #00f7a7c..[some bytes not shown]..61#)
+    (u #304559a..[some bytes not shown]..9b#)
+   )
+  )
+
+  For padding reasons, random bytes may be appended to this list -
+  they can easily be stripped by looking for the end of the list.
+
+  The associated data required for this protection mode is the list
+  formiing the public key parameters.  For the above example this is
+  is this canonical encoded S-expression:
+
+  (rsa
+   (n #00e0ce9..[some bytes not shown]..51#)
+   (e #010001#)
+   (protected-at "18950523T000000")
+  )
+
+
+3. openpgp-native
 
   This is a wrapper around the OpenPGP Private Key Transport format
   which resembles the standard OpenPGP format and allows the use of an

@@ -41,6 +41,18 @@
 #include "cvt-openpgp.h"
 #include "sexp-parse.h"
 
+
+#if GCRYPT_VERSION_NUMBER < 0x010700
+# define OCB_MODE_SUPPORTED 0
+#else
+# define OCB_MODE_SUPPORTED 1
+#endif
+
+/* To use the openpgp-s2k3-ocb-aes scheme by default set the value of
+ * this macro to 1.  Note that the caller of agent_protect may
+ * override this default.  */
+#define PROT_DEFAULT_TO_OCB 0
+
 /* The protection mode for encryption.  The supported modes for
    decryption are listed in agent_unprotect().  */
 #define PROT_CIPHER        GCRY_CIPHER_AES128
@@ -85,6 +97,7 @@ hash_passphrase (const char *passphrase, int hashalgo,
                  int s2kmode,
                  const unsigned char *s2ksalt, unsigned long s2kcount,
                  unsigned char *key, size_t keylen);
+
 
 
 
@@ -302,70 +315,108 @@ calculate_mic (const unsigned char *plainkey, unsigned char *sha1hash)
    encrypted block in RESULT or return with an error code.  SHA1HASH
    is the 20 byte SHA-1 hash required for the integrity code.
 
-   The parameter block is expected to be an incomplete S-Expression of
-   the form (example in advanced format):
+   The parameter block is expected to be an incomplete canonical
+   encoded S-Expression of the form (example in advanced format):
 
      (d #046129F..[some bytes not shown]..81#)
      (p #00e861b..[some bytes not shown]..f1#)
      (q #00f7a7c..[some bytes not shown]..61#)
      (u #304559a..[some bytes not shown]..9b#)
 
-   the returned block is the S-Expression:
+     the returned block is the S-Expression:
 
-    (protected mode (parms) encrypted_octet_string)
+     (protected mode (parms) encrypted_octet_string)
 
 */
 static int
-do_encryption (const unsigned char *protbegin, size_t protlen,
-               const char *passphrase,  const unsigned char *sha1hash,
+do_encryption (const unsigned char *hashbegin, size_t hashlen,
+               const unsigned char *protbegin, size_t protlen,
+               const char *passphrase,
+               const char *timestamp_exp, size_t timestamp_exp_len,
                unsigned char **result, size_t *resultlen,
-	       unsigned long s2k_count)
+	       unsigned long s2k_count, int use_ocb)
 {
   gcry_cipher_hd_t hd;
-  const char *modestr = "openpgp-s2k3-sha1-" PROT_CIPHER_STRING "-cbc";
+  const char *modestr;
+  unsigned char hashvalue[20];
   int blklen, enclen, outlen;
   unsigned char *iv = NULL;
+  unsigned int ivsize;  /* Size of the buffer allocated for IV.  */
+  const unsigned char *s2ksalt; /* Points into IV.  */
   int rc;
   char *outbuf = NULL;
   char *p;
   int saltpos, ivpos, encpos;
 
+  s2ksalt = iv;  /* Silence compiler warning.  */
+
   *resultlen = 0;
   *result = NULL;
 
-  rc = gcry_cipher_open (&hd, PROT_CIPHER, GCRY_CIPHER_MODE_CBC,
+  if (use_ocb && !OCB_MODE_SUPPORTED)
+    return gpg_error (GPG_ERR_UNSUPPORTED_PROTECTION);
+
+  modestr = (use_ocb? "openpgp-s2k3-ocb-aes"
+             /*   */: "openpgp-s2k3-sha1-" PROT_CIPHER_STRING "-cbc");
+
+  rc = gcry_cipher_open (&hd, PROT_CIPHER,
+#if OCB_MODE_SUPPORTED
+                         use_ocb? GCRY_CIPHER_MODE_OCB :
+#endif
+                         GCRY_CIPHER_MODE_CBC,
                          GCRY_CIPHER_SECURE);
   if (rc)
     return rc;
 
-
   /* We need to work on a copy of the data because this makes it
-     easier to add the trailer and the padding and more important we
-     have to prefix the text with 2 parenthesis, so we have to
-     allocate enough space for:
-
-     ((<parameter_list>)(4:hash4:sha120:<hashvalue>)) + padding
-
-     We always append a full block of random bytes as padding but
-     encrypt only what is needed for a full blocksize.  */
+   * easier to add the trailer and the padding and more important we
+   * have to prefix the text with 2 parenthesis.  In CBC mode we
+   * have to allocate enough space for:
+   *
+   *   ((<parameter_list>)(4:hash4:sha120:<hashvalue>)) + padding
+   *
+   * we always append a full block of random bytes as padding but
+   * encrypt only what is needed for a full blocksize.  In OCB mode we
+   * have to allocate enough space for just:
+   *
+   *   ((<parameter_list>))
+   */
   blklen = gcry_cipher_get_algo_blklen (PROT_CIPHER);
-  outlen = 2 + protlen + 2 + 6 + 6 + 23 + 2 + blklen;
-  enclen = outlen/blklen * blklen;
-  outbuf = gcry_malloc_secure (outlen);
+  if (use_ocb)
+    {
+      /*       ((            )) */
+      outlen = 2 + protlen + 2 ;
+      enclen = outlen + 16 /* taglen */;
+      outbuf = gcry_malloc_secure (enclen);
+    }
+  else
+    {
+      /*       ((            )( 4:hash 4:sha1 20:<hash> ))  <padding>  */
+      outlen = 2 + protlen + 2 + 6   + 6    + 23      + 2 + blklen;
+      enclen = outlen/blklen * blklen;
+      outbuf = gcry_malloc_secure (outlen);
+    }
   if (!outbuf)
     rc = out_of_core ();
+
+  /* Allocate a buffer for the nonce and the salt.  */
   if (!rc)
     {
-      /* Allocate random bytes to be used as IV, padding and s2k salt. */
-      iv = xtrymalloc (blklen*2+8);
+      /* Allocate random bytes to be used as IV, padding and s2k salt
+       * or in OCB mode for a nonce and the s2k salt.  The IV/nonce is
+       * set later because for OCB we need to set the key first.  */
+      ivsize = (use_ocb? 12 : (blklen*2)) + 8;
+      iv = xtrymalloc (ivsize);
       if (!iv)
-        rc = gpg_error (GPG_ERR_ENOMEM);
+        rc = gpg_error_from_syserror ();
       else
         {
-          gcry_create_nonce (iv, blklen*2+8);
-          rc = gcry_cipher_setiv (hd, iv, blklen);
+          gcry_create_nonce (iv, ivsize);
+          s2ksalt = iv + ivsize - 8;
         }
     }
+
+  /* Hash the passphrase and set the key.  */
   if (!rc)
     {
       unsigned char *key;
@@ -377,14 +428,52 @@ do_encryption (const unsigned char *protbegin, size_t protlen,
       else
         {
           rc = hash_passphrase (passphrase, GCRY_MD_SHA1,
-                                3, iv+2*blklen,
-				s2k_count ? s2k_count : get_standard_s2k_count(),
+                                3, s2ksalt,
+				s2k_count? s2k_count:get_standard_s2k_count(),
 				key, keylen);
           if (!rc)
             rc = gcry_cipher_setkey (hd, key, keylen);
           xfree (key);
         }
     }
+
+  /* Set the IV/nonce.  */
+  if (!rc)
+    {
+      rc = gcry_cipher_setiv (hd, iv, use_ocb? 12 : blklen);
+    }
+
+  if (use_ocb)
+    {
+      /* In OCB Mode we use only the public key parameters as AAD.  */
+      rc = gcry_cipher_authenticate (hd, hashbegin, protbegin - hashbegin);
+      if (!rc)
+        rc = gcry_cipher_authenticate (hd, timestamp_exp, timestamp_exp_len);
+      if (!rc)
+        rc = gcry_cipher_authenticate
+          (hd, protbegin+protlen, hashlen - (protbegin+protlen - hashbegin));
+
+    }
+  else
+    {
+      /* Hash the entire expression for CBC mode.  Because
+       * TIMESTAMP_EXP won't get protected, we can't simply hash a
+       * continuous buffer but need to call md_write several times.  */
+      gcry_md_hd_t md;
+
+      rc = gcry_md_open (&md, GCRY_MD_SHA1, 0 );
+      if (!rc)
+        {
+          gcry_md_write (md, hashbegin, hashlen);
+          gcry_md_write (md, timestamp_exp, timestamp_exp_len);
+          gcry_md_write (md, ")", 1);
+          memcpy (hashvalue, gcry_md_read (md, GCRY_MD_SHA1), 20);
+          gcry_md_close (md);
+        }
+    }
+
+
+  /* Encrypt.  */
   if (!rc)
     {
       p = outbuf;
@@ -392,17 +481,42 @@ do_encryption (const unsigned char *protbegin, size_t protlen,
       *p++ = '(';
       memcpy (p, protbegin, protlen);
       p += protlen;
-      memcpy (p, ")(4:hash4:sha120:", 17);
-      p += 17;
-      memcpy (p, sha1hash, 20);
-      p += 20;
-      *p++ = ')';
-      *p++ = ')';
-      memcpy (p, iv+blklen, blklen);
-      p += blklen;
+      if (use_ocb)
+        {
+          *p++ = ')';
+          *p++ = ')';
+        }
+      else
+        {
+          memcpy (p, ")(4:hash4:sha120:", 17);
+          p += 17;
+          memcpy (p, hashvalue, 20);
+          p += 20;
+          *p++ = ')';
+          *p++ = ')';
+          memcpy (p, iv+blklen, blklen); /* Add padding.  */
+          p += blklen;
+        }
       assert ( p - outbuf == outlen);
-      rc = gcry_cipher_encrypt (hd, outbuf, enclen, NULL, 0);
+#if OCB_MODE_SUPPORTED
+      if (use_ocb)
+        {
+          gcry_cipher_final (hd);
+          rc = gcry_cipher_encrypt (hd, outbuf, outlen, NULL, 0);
+          if (!rc)
+            {
+              log_assert (outlen + 16 == enclen);
+              rc = gcry_cipher_gettag (hd, outbuf + outlen, 16);
+            }
+        }
+      else
+#endif /*OCB_MODE_SUPPORTED*/
+        {
+          rc = gcry_cipher_encrypt (hd, outbuf, enclen, NULL, 0);
+        }
     }
+
+  /* Release cipher handle and check for errors.  */
   gcry_cipher_close (hd);
   if (rc)
     {
@@ -429,7 +543,7 @@ do_encryption (const unsigned char *protbegin, size_t protlen,
        (int)strlen (modestr), modestr,
        &saltpos,
        (unsigned int)strlen (countbuf), countbuf,
-       blklen, &ivpos, blklen, "",
+       use_ocb? 12 : blklen, &ivpos, use_ocb? 12 : blklen, "",
        enclen, &encpos, enclen, "");
     if (!p)
       {
@@ -438,11 +552,12 @@ do_encryption (const unsigned char *protbegin, size_t protlen,
         xfree (outbuf);
         return tmperr;
       }
+
   }
   *resultlen = strlen (p);
   *result = (unsigned char*)p;
-  memcpy (p+saltpos, iv+2*blklen, 8);
-  memcpy (p+ivpos, iv, blklen);
+  memcpy (p+saltpos, s2ksalt, 8);
+  memcpy (p+ivpos, iv, use_ocb? 12 : blklen);
   memcpy (p+encpos, outbuf, enclen);
   xfree (iv);
   xfree (outbuf);
@@ -452,11 +567,13 @@ do_encryption (const unsigned char *protbegin, size_t protlen,
 
 
 /* Protect the key encoded in canonical format in PLAINKEY.  We assume
-   a valid S-Exp here. */
+   a valid S-Exp here.  With USE_UCB set to -1 the default scheme is
+   used (ie. either CBC or OCB), set to 0 the old CBC mode is used,
+   and set to 1 OCB is used. */
 int
 agent_protect (const unsigned char *plainkey, const char *passphrase,
                unsigned char **result, size_t *resultlen,
-	       unsigned long s2k_count)
+	       unsigned long s2k_count, int use_ocb)
 {
   int rc;
   const char *parmlist;
@@ -466,14 +583,15 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   const unsigned char *prot_begin, *prot_end, *real_end;
   size_t n;
   int c, infidx, i;
-  unsigned char hashvalue[20];
   char timestamp_exp[35];
   unsigned char *protected;
   size_t protectedlen;
   int depth = 0;
   unsigned char *p;
-  gcry_md_hd_t md;
   int have_curve = 0;
+
+  if (use_ocb == -1)
+    use_ocb = PROT_DEFAULT_TO_OCB;
 
   /* Create an S-expression with the protected-at timestamp.  */
   memcpy (timestamp_exp, "(12:protected-at15:", 19);
@@ -575,21 +693,10 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   assert (!depth);
   real_end = s-1;
 
-  /* Hash the stuff.  Because the timestamp_exp won't get protected,
-     we can't simply hash a continuous buffer but need to use several
-     md_writes.  */
-  rc = gcry_md_open (&md, GCRY_MD_SHA1, 0 );
-  if (rc)
-    return rc;
-  gcry_md_write (md, hash_begin, hash_end - hash_begin);
-  gcry_md_write (md, timestamp_exp, 35);
-  gcry_md_write (md, ")", 1);
-  memcpy (hashvalue, gcry_md_read (md, GCRY_MD_SHA1), 20);
-  gcry_md_close (md);
-
-  rc = do_encryption (prot_begin, prot_end - prot_begin + 1,
-                      passphrase,  hashvalue,
-                      &protected, &protectedlen, s2k_count);
+  rc = do_encryption (hash_begin, hash_end - hash_begin + 1,
+                      prot_begin, prot_end - prot_begin + 1,
+                      passphrase, timestamp_exp, sizeof (timestamp_exp),
+                      &protected, &protectedlen, s2k_count, use_ocb);
   if (rc)
     return rc;
 
@@ -631,11 +738,13 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
 
 /* Do the actual decryption and check the return list for consistency.  */
 static int
-do_decryption (const unsigned char *protected, size_t protectedlen,
+do_decryption (const unsigned char *aad_begin, size_t aad_len,
+               const unsigned char *aadhole_begin, size_t aadhole_len,
+               const unsigned char *protected, size_t protectedlen,
                const char *passphrase,
                const unsigned char *s2ksalt, unsigned long s2kcount,
                const unsigned char *iv, size_t ivlen,
-               int prot_cipher, int prot_cipher_keylen,
+               int prot_cipher, int prot_cipher_keylen, int is_ocb,
                unsigned char **result)
 {
   int rc = 0;
@@ -644,11 +753,29 @@ do_decryption (const unsigned char *protected, size_t protectedlen,
   unsigned char *outbuf;
   size_t reallen;
 
-  blklen = gcry_cipher_get_algo_blklen (prot_cipher);
-  if (protectedlen < 4 || (protectedlen%blklen))
-    return gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
+  if (is_ocb && !OCB_MODE_SUPPORTED)
+    return gpg_error (GPG_ERR_UNSUPPORTED_PROTECTION);
 
-  rc = gcry_cipher_open (&hd, prot_cipher, GCRY_CIPHER_MODE_CBC,
+  blklen = gcry_cipher_get_algo_blklen (prot_cipher);
+  if (is_ocb)
+    {
+      /* OCB does not require a multiple of the block length but we
+       * check that it is long enough for the 128 bit tag and that we
+       * have the 96 bit nonce.  */
+      if (protectedlen < (4 + 16) || ivlen != 12)
+        return gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
+    }
+  else
+    {
+      if (protectedlen < 4 || (protectedlen%blklen))
+        return gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
+    }
+
+  rc = gcry_cipher_open (&hd, prot_cipher,
+#if OCB_MODE_SUPPORTED
+                         is_ocb? GCRY_CIPHER_MODE_OCB :
+#endif
+                         GCRY_CIPHER_MODE_CBC,
                          GCRY_CIPHER_SECURE);
   if (rc)
     return rc;
@@ -656,8 +783,8 @@ do_decryption (const unsigned char *protected, size_t protectedlen,
   outbuf = gcry_malloc_secure (protectedlen);
   if (!outbuf)
     rc = out_of_core ();
-  if (!rc)
-    rc = gcry_cipher_setiv (hd, iv, ivlen);
+
+  /* Hash the passphrase and set the key.  */
   if (!rc)
     {
       unsigned char *key;
@@ -674,21 +801,60 @@ do_decryption (const unsigned char *protected, size_t protectedlen,
           xfree (key);
         }
     }
+
+  /* Set the IV/nonce.  */
   if (!rc)
-    rc = gcry_cipher_decrypt (hd, outbuf, protectedlen,
-                              protected, protectedlen);
+    {
+      rc = gcry_cipher_setiv (hd, iv, ivlen);
+    }
+
+  /* Decrypt.  */
+  if (!rc)
+    {
+#if OCB_MODE_SUPPORTED
+      if (is_ocb)
+        {
+          rc = gcry_cipher_authenticate (hd, aad_begin,
+                                         aadhole_begin - aad_begin);
+          if (!rc)
+            rc = gcry_cipher_authenticate
+              (hd, aadhole_begin + aadhole_len,
+               aad_len - (aadhole_begin+aadhole_len - aad_begin));
+
+          if (!rc)
+            {
+              gcry_cipher_final (hd);
+              rc = gcry_cipher_decrypt (hd, outbuf, protectedlen - 16,
+                                        protected, protectedlen - 16);
+            }
+          if (!rc)
+            rc = gcry_cipher_checktag (hd, protected + protectedlen - 16, 16);
+        }
+      else
+#endif /*OCB_MODE_SUPPORTED*/
+        {
+          rc = gcry_cipher_decrypt (hd, outbuf, protectedlen,
+                                    protected, protectedlen);
+        }
+    }
+
+  /* Release cipher handle and check for errors.  */
   gcry_cipher_close (hd);
   if (rc)
     {
       xfree (outbuf);
       return rc;
     }
-  /* Do a quick check first. */
+
+  /* Do a quick check on the data structure. */
   if (*outbuf != '(' && outbuf[1] != '(')
     {
+      /* Note that in OCB mode this is actually invalid _encrypted_
+       * data and not a bad passphrase.  */
       xfree (outbuf);
       return gpg_error (GPG_ERR_BAD_PASSPHRASE);
     }
+
   /* Check that we have a consistent S-Exp. */
   reallen = gcry_sexp_canon_len (outbuf, protectedlen, NULL, NULL);
   if (!reallen || (reallen + blklen < protectedlen) )
@@ -702,11 +868,12 @@ do_decryption (const unsigned char *protected, size_t protectedlen,
 
 
 /* Merge the parameter list contained in CLEARTEXT with the original
-   protect lists PROTECTEDKEY by replacing the list at REPLACEPOS.
-   Return the new list in RESULT and the MIC value in the 20 byte
-   buffer SHA1HASH.  CUTOFF and CUTLEN will receive the offset and the
-   length of the resulting list which should go into the MIC
-   calculation but then be removed.  */
+ * protect lists PROTECTEDKEY by replacing the list at REPLACEPOS.
+ * Return the new list in RESULT and the MIC value in the 20 byte
+ * buffer SHA1HASH; if SHA1HASH is NULL no MIC will be computed.
+ * CUTOFF and CUTLEN will receive the offset and the length of the
+ * resulting list which should go into the MIC calculation but then be
+ * removed.  */
 static int
 merge_lists (const unsigned char *protectedkey,
              size_t replacepos,
@@ -730,7 +897,7 @@ merge_lists (const unsigned char *protectedkey,
     return gpg_error (GPG_ERR_BUG);
 
   /* Estimate the required size of the resulting list.  We have a large
-     safety margin of >20 bytes (MIC hash from CLEARTEXT and the
+     safety margin of >20 bytes (FIXME: MIC hash from CLEARTEXT and the
      removed "protected-" */
   newlistlen = gcry_sexp_canon_len (protectedkey, 0, NULL, NULL);
   if (!newlistlen)
@@ -749,7 +916,7 @@ merge_lists (const unsigned char *protectedkey,
   memcpy (p, protectedkey+15+10, replacepos-15-10);
   p += replacepos-15-10;
 
-  /* copy the cleartext */
+  /* Copy the cleartext.  */
   s = cleartext;
   if (*s != '(' && s[1] != '(')
     return gpg_error (GPG_ERR_BUG);  /*we already checked this */
@@ -774,26 +941,29 @@ merge_lists (const unsigned char *protectedkey,
     goto invalid_sexp;
   endpos = s;
   s++;
-  /* Intermezzo: Get the MIC */
-  if (*s != '(')
-    goto invalid_sexp;
-  s++;
-  n = snext (&s);
-  if (!smatch (&s, n, "hash"))
-    goto invalid_sexp;
-  n = snext (&s);
-  if (!smatch (&s, n, "sha1"))
-    goto invalid_sexp;
-  n = snext (&s);
-  if (n != 20)
-    goto invalid_sexp;
-  memcpy (sha1hash, s, 20);
-  s += n;
-  if (*s != ')')
-    goto invalid_sexp;
-  /* End intermezzo */
 
-  /* append the parameter list */
+  /* Intermezzo: Get the MIC if requested.  */
+  if (sha1hash)
+    {
+      if (*s != '(')
+        goto invalid_sexp;
+      s++;
+      n = snext (&s);
+      if (!smatch (&s, n, "hash"))
+        goto invalid_sexp;
+      n = snext (&s);
+      if (!smatch (&s, n, "sha1"))
+        goto invalid_sexp;
+      n = snext (&s);
+      if (n != 20)
+        goto invalid_sexp;
+      memcpy (sha1hash, s, 20);
+      s += n;
+      if (*s != ')')
+        goto invalid_sexp;
+    }
+
+  /* Append the parameter list.  */
   memcpy (p, startpos, endpos - startpos);
   p += endpos - startpos;
 
@@ -867,9 +1037,11 @@ agent_unprotect (ctrl_t ctrl,
     const char *name; /* Name of the protection method. */
     int algo;         /* (A zero indicates the "openpgp-native" hack.)  */
     int keylen;       /* Used key length in bytes.  */
+    unsigned int is_ocb:1;
   } algotable[] = {
     { "openpgp-s2k3-sha1-aes-cbc",    GCRY_CIPHER_AES128, (128/8)},
     { "openpgp-s2k3-sha1-aes256-cbc", GCRY_CIPHER_AES256, (256/8)},
+    { "openpgp-s2k3-ocb-aes",         GCRY_CIPHER_AES128, (128/8), 1},
     { "openpgp-native", 0, 0 }
   };
   int rc;
@@ -882,6 +1054,8 @@ agent_unprotect (ctrl_t ctrl,
   unsigned long s2kcount;
   const unsigned char *iv;
   int prot_cipher, prot_cipher_keylen;
+  int is_ocb;
+  const unsigned char *aad_begin, *aad_end, *aadhole_begin, *aadhole_end;
   const unsigned char *prot_begin;
   unsigned char *cleartext;
   unsigned char *final;
@@ -902,6 +1076,15 @@ agent_unprotect (ctrl_t ctrl,
     return gpg_error (GPG_ERR_UNKNOWN_SEXP);
   if (*s != '(')
     return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+  {
+    aad_begin = aad_end = s;
+    aad_end++;
+    i = 1;
+    rc = sskip (&aad_end, &i);
+    if (rc)
+      return rc;
+  }
+
   s++;
   n = snext (&s);
   if (!n)
@@ -912,7 +1095,6 @@ agent_unprotect (ctrl_t ctrl,
     ;
   if (!protect_info[infidx].algo)
     return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-
 
   /* See wether we have a protected-at timestamp.  */
   protect_list = s;  /* Save for later.  */
@@ -969,6 +1151,14 @@ agent_unprotect (ctrl_t ctrl,
         return rc;
     }
   /* found */
+  {
+    aadhole_begin = aadhole_end = prot_begin;
+    aadhole_end++;
+    i = 1;
+    rc = sskip (&aadhole_end, &i);
+    if (rc)
+      return rc;
+  }
   n = snext (&s);
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP);
@@ -976,14 +1166,17 @@ agent_unprotect (ctrl_t ctrl,
   /* Lookup the protection algo.  */
   prot_cipher = 0;        /* (avoid gcc warning) */
   prot_cipher_keylen = 0; /* (avoid gcc warning) */
-  for (i= 0; i < DIM (algotable); i++)
+  is_ocb = 0;
+  for (i=0; i < DIM (algotable); i++)
     if (smatch (&s, n, algotable[i].name))
       {
         prot_cipher = algotable[i].algo;
         prot_cipher_keylen = algotable[i].keylen;
+        is_ocb = algotable[i].is_ocb;
         break;
       }
-  if (i == DIM (algotable))
+  if (i == DIM (algotable)
+      || (is_ocb && !OCB_MODE_SUPPORTED))
     return gpg_error (GPG_ERR_UNSUPPORTED_PROTECTION);
 
   if (!prot_cipher)  /* This is "openpgp-native".  */
@@ -1048,8 +1241,16 @@ agent_unprotect (ctrl_t ctrl,
   s++; /* skip list end */
 
   n = snext (&s);
-  if (n != 16) /* Wrong blocksize for IV (we support only 128 bit). */
-    return gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
+  if (is_ocb)
+    {
+      if (n != 12) /* Wrong size of the nonce. */
+        return gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
+    }
+  else
+    {
+      if (n != 16) /* Wrong blocksize for IV (we support only 128 bit). */
+        return gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
+    }
   iv = s;
   s += n;
   if (*s != ')' )
@@ -1060,15 +1261,19 @@ agent_unprotect (ctrl_t ctrl,
     return gpg_error (GPG_ERR_INV_SEXP);
 
   cleartext = NULL; /* Avoid cc warning. */
-  rc = do_decryption (s, n,
+  rc = do_decryption (aad_begin, aad_end - aad_begin,
+                      aadhole_begin, aadhole_end - aadhole_begin,
+                      s, n,
                       passphrase, s2ksalt, s2kcount,
-                      iv, 16, prot_cipher, prot_cipher_keylen,
+                      iv, is_ocb? 12:16,
+                      prot_cipher, prot_cipher_keylen, is_ocb,
                       &cleartext);
   if (rc)
     return rc;
 
   rc = merge_lists (protectedkey, prot_begin-protectedkey, cleartext,
-                    sha1hash, &final, &finallen, &cutoff, &cutlen);
+                    is_ocb? NULL : sha1hash,
+                    &final, &finallen, &cutoff, &cutlen);
   /* Albeit cleartext has been allocated in secure memory and thus
      xfree will wipe it out, we do an extra wipe just in case
      somethings goes badly wrong. */
@@ -1077,15 +1282,19 @@ agent_unprotect (ctrl_t ctrl,
   if (rc)
     return rc;
 
-  rc = calculate_mic (final, sha1hash2);
-  if (!rc && memcmp (sha1hash, sha1hash2, 20))
-    rc = gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
-  if (rc)
+  if (!is_ocb)
     {
-      wipememory (final, finallen);
-      xfree (final);
-      return rc;
+      rc = calculate_mic (final, sha1hash2);
+      if (!rc && memcmp (sha1hash, sha1hash2, 20))
+        rc = gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
+      if (rc)
+        {
+          wipememory (final, finallen);
+          xfree (final);
+          return rc;
+        }
     }
+
   /* Now remove the part which is included in the MIC but should not
      go into the final thing.  */
   if (cutlen)
@@ -1184,7 +1393,6 @@ agent_private_key_type (const unsigned char *privatekey)
           n = snext (&s);
           if (!n)
             return PRIVATE_KEY_UNKNOWN; /* Invalid sexp.  */
-          log_debug ("openpgp-native protection '%.*s'\n", (int)n, s);
           if (smatch (&s, n, "none"))
             return PRIVATE_KEY_OPENPGP_NONE;  /* Yes.  */
         }

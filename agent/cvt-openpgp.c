@@ -1066,7 +1066,7 @@ convert_from_openpgp_native (ctrl_t ctrl,
 
           if (!agent_protect (*r_key, passphrase,
                               &protectedkey, &protectedkeylen,
-                              ctrl->s2k_count))
+                              ctrl->s2k_count, -1))
             agent_write_private_key (grip, protectedkey, protectedkeylen, 1);
           xfree (protectedkey);
         }

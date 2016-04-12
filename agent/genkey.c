@@ -58,7 +58,7 @@ store_key (gcry_sexp_t private, const char *passphrase, int force,
     {
       unsigned char *p;
 
-      rc = agent_protect (buf, passphrase, &p, &len, s2k_count);
+      rc = agent_protect (buf, passphrase, &p, &len, s2k_count, -1);
       if (rc)
         {
           xfree (buf);

@@ -2140,7 +2140,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
   if (passphrase)
     {
       err = agent_protect (key, passphrase, &finalkey, &finalkeylen,
-                           ctrl->s2k_count);
+                           ctrl->s2k_count, -1);
       if (!err)
         err = agent_write_private_key (grip, finalkey, finalkeylen, force);
     }

@@ -69,6 +69,7 @@ enum cmd_and_opt_values
   oHomedir,
   oPrompt,
   oStatusMsg,
+  oDebugUseOCB,
 
   oAgentProgram
 };
@@ -96,6 +97,7 @@ static const char *opt_passphrase;
 static char *opt_prompt;
 static int opt_status_msg;
 static const char *opt_agent_program;
+static int opt_debug_use_ocb;
 
 static char *get_passphrase (int promptno);
 static void release_passphrase (char *pw);
@@ -131,6 +133,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oStatusMsg, "enable-status-msg", "@"),
 
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
+
+  ARGPARSE_s_n (oDebugUseOCB,  "debug-use-ocb", "@"), /* For hacking only.  */
 
   ARGPARSE_end ()
 };
@@ -333,7 +337,8 @@ read_and_protect (const char *fname)
     return;
 
   pw = get_passphrase (1);
-  rc = agent_protect (key, pw, &result, &resultlen, 0);
+  rc = agent_protect (key, pw, &result, &resultlen, 0,
+                      opt_debug_use_ocb? 1 : -1);
   release_passphrase (pw);
   xfree (key);
   if (rc)
@@ -598,6 +603,7 @@ main (int argc, char **argv )
         case oHaveCert: opt_have_cert = 1; break;
         case oPrompt: opt_prompt = pargs.r.ret_str; break;
         case oStatusMsg: opt_status_msg = 1; break;
+        case oDebugUseOCB: opt_debug_use_ocb = 1; break;
 
         default: pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}
