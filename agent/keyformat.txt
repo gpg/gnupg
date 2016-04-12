@@ -240,6 +240,8 @@ This format is used to transfer keys between gpg and gpg-agent.
 Persistent Passphrase Format
 ============================
 
+Note: That this has not yet been implemented.
+
 To allow persistent storage of cached passphrases we use a scheme
 similar to the private-key storage format.  This is a master
 passphrase format where each file may protect several secrets under

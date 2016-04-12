@@ -49,7 +49,7 @@ snext (unsigned char const **buf)
 }
 
 /* Skip over the S-Expression BUF points to and update BUF to point to
-   the chacter right behind.  DEPTH gives the initial number of open
+   the character right behind.  DEPTH gives the initial number of open
    lists and may be passed as a positive number to skip over the
    remainder of an S-Expression if the current position is somewhere
    in an S-Expression.  The function may return an error code if it
