@@ -1,11 +1,11 @@
-keyformat.txt (wk 2001-12-18)
------------------------------
+keyformat.txt               emacs, please switch to -*- org -*- mode
+-------------
 
 
 Some notes on the format of the secret keys used with gpg-agent.
 
-Location of keys
-================
+* Location of keys
+
 The secret keys[1] are stored on a per file basis in a directory below
 the ~/.gnupg home directory.  This directory is named
 
@@ -16,9 +16,8 @@ and should have permissions 700.
 The secret keys are stored in files with a name matching the
 hexadecimal representation of the keygrip[2] and suffixed with ".key".
 
+* Unprotected Private Key Format
 
-Unprotected Private Key Format
-==============================
 The content of the file is an S-Expression like the ones used with
 Libgcrypt.  Here is an example of an unprotected file:
 
@@ -43,9 +42,8 @@ optional but required for some operations to calculate the fingerprint
 of the key.  This timestamp should be a string with the number of
 seconds since Epoch or an ISO time string (yyyymmddThhmmss).
 
+* Protected Private Key Format
 
-Protected Private Key Format
-==============================
 A protected key is like this:
 
 (protected-private-key
@@ -69,7 +67,7 @@ optional; the isotimestamp is 15 bytes long (e.g. "19610711T172000").
 
 The currently defined protection modes are:
 
-1. openpgp-s2k3-sha1-aes-cbc
+** openpgp-s2k3-sha1-aes-cbc
 
   This describes an algorithm using using AES in CBC mode for
   encryption, SHA-1 for integrity protection and the String to Key
@@ -118,7 +116,7 @@ The currently defined protection modes are:
   the stored one - If they don't match the integrity of the key is not
   given.
 
-2. openpgp-s2k3-ocb-aes
+** openpgp-s2k3-ocb-aes
 
   This describes an algorithm using using AES-128 in OCB mode, a nonce
   of 96 bit, a taglen of 128 bit, and the String to Key algorithm 3
@@ -156,8 +154,7 @@ The currently defined protection modes are:
    (protected-at "18950523T000000")
   )
 
-
-3. openpgp-native
+** openpgp-native
 
   This is a wrapper around the OpenPGP Private Key Transport format
   which resembles the standard OpenPGP format and allows the use of an
@@ -194,10 +191,8 @@ The currently defined protection modes are:
    (uri http://foo.bar x-foo:whatever_you_want)
    (comment whatever))
 
+* Shadowed Private Key Format
 
-
-Shadowed Private Key Format
-============================
 To keep track of keys stored on IC cards we use a third format for
 private kyes which are called shadow keys as they are only a reference
 to keys stored on a token:
@@ -224,9 +219,7 @@ readers don't allow passing a variable length PIN.
 
 More items may be added to the list.
 
-
-OpenPGP Private Key Transfer Format
-===================================
+* OpenPGP Private Key Transfer Format
 
 This format is used to transfer keys between gpg and gpg-agent.
 
@@ -239,28 +232,26 @@ This format is used to transfer keys between gpg and gpg-agent.
   (protection PROTTYPE PROTALGO IV S2KMODE S2KHASH S2KSALT S2KCOUNT))
 
 
-* V is the packet version number (3 or 4).
-* PUBKEYALGO is a Libgcrypt algo name
-* CURVENAME is the name of the curve - only used with ECC.
-* P1 .. PN are the parameters; the public parameters are never encrypted
-  the secrect key parameters are encrypted if the "protection" list is
-  given.  To make this more explicit each parameter is preceded by a
-  flag "_" for cleartext or "e" for encrypted text.
-* CSUM is the deprecated 16 bit checksum as defined by OpenPGP.  This
-  is an optional element.
-* If PROTTYPE is "sha1" the new style SHA1 checksum is used if it is "sum"
-  the old 16 bit checksum (above) is used and if it is "none" no
-  protection at all is used.
-* PROTALGO is a Libgcrypt style cipher algorithm name
-* IV is the initialization verctor.
-* S2KMODE is the value from RFC-4880.
-* S2KHASH is a a libgcrypt style hash algorithm identifier.
-* S2KSALT is the 8 byte salt
-* S2KCOUNT is the count value from RFC-4880.
+ * V is the packet version number (3 or 4).
+ * PUBKEYALGO is a Libgcrypt algo name
+ * CURVENAME is the name of the curve - only used with ECC.
+ * P1 .. PN are the parameters; the public parameters are never encrypted
+   the secrect key parameters are encrypted if the "protection" list is
+   given.  To make this more explicit each parameter is preceded by a
+   flag "_" for cleartext or "e" for encrypted text.
+ * CSUM is the deprecated 16 bit checksum as defined by OpenPGP.  This
+   is an optional element.
+ * If PROTTYPE is "sha1" the new style SHA1 checksum is used if it is "sum"
+   the old 16 bit checksum (above) is used and if it is "none" no
+   protection at all is used.
+ * PROTALGO is a Libgcrypt style cipher algorithm name
+ * IV is the initialization verctor.
+ * S2KMODE is the value from RFC-4880.
+ * S2KHASH is a a libgcrypt style hash algorithm identifier.
+ * S2KSALT is the 8 byte salt
+ * S2KCOUNT is the count value from RFC-4880.
 
-
-Persistent Passphrase Format
-============================
+* Persistent Passphrase Format
 
 Note: That this has not yet been implemented.
 
@@ -355,14 +346,8 @@ hashed:
     (protected-at "20100915T111722")
    )
 
+* Notes
 
-
-
-
-
-
-Notes:
-======
 [1] I usually use the terms private and secret key exchangeable but prefer the
 term secret key because it can be visually be better distinguished
 from the term public key.
