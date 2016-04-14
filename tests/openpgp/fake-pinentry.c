@@ -25,19 +25,36 @@
 int
 main (int argc, char **argv)
 {
+  static char *passphrase;
+  char *p;
+
   (void) argc, (void) argv;
+
+  setvbuf (stdin, NULL, _IOLBF, BUFSIZ);
+  setvbuf (stdout, NULL, _IOLBF, BUFSIZ);
+
+  if (!passphrase)
+    {
+      passphrase = getenv ("PINENTRY_USER_DATA");
+      if (!passphrase)
+        passphrase = "";
+      for (p=passphrase; *p; p++)
+        if (*p == '\r' || *p == '\n')
+          *p = '.';
+      printf ("# Passphrase='%s'\n", passphrase);
+    }
 
   printf ("OK - what's up?\n");
 
   while (! feof (stdin))
     {
-      char buffer[128];
+      char buffer[1024];
 
       if (fgets (buffer, sizeof buffer, stdin) == NULL)
 	break;
 
       if (strncmp (buffer, "GETPIN", 6) == 0)
-	printf ("D %s\nOK\n", getenv ("PINENTRY_USER_DATA") ?: "");
+	printf ("D %s\nOK\n", passphrase);
       else if (strncmp (buffer, "BYE", 3) == 0)
 	{
 	  printf ("OK\n");
