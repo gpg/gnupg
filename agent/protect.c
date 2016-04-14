@@ -464,9 +464,11 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
       rc = gcry_md_open (&md, GCRY_MD_SHA1, 0 );
       if (!rc)
         {
-          gcry_md_write (md, hashbegin, hashlen);
+          gcry_md_write (md, hashbegin, protbegin - hashbegin);
+          gcry_md_write (md, protbegin, protlen);
           gcry_md_write (md, timestamp_exp, timestamp_exp_len);
-          gcry_md_write (md, ")", 1);
+          gcry_md_write (md, protbegin+protlen,
+                         hashlen - (protbegin+protlen - hashbegin));
           memcpy (hashvalue, gcry_md_read (md, GCRY_MD_SHA1), 20);
           gcry_md_close (md);
         }
