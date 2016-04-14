@@ -363,7 +363,7 @@ read_and_protect (const char *fname)
 
 
 static void
-read_and_unprotect (const char *fname)
+read_and_unprotect (ctrl_t ctrl, const char *fname)
 {
   int  rc;
   unsigned char *key;
@@ -376,7 +376,7 @@ read_and_unprotect (const char *fname)
   if (!key)
     return;
 
-  rc = agent_unprotect (NULL, key, (pw=get_passphrase (1)),
+  rc = agent_unprotect (ctrl, key, (pw=get_passphrase (1)),
                         protected_at, &result, &resultlen);
   release_passphrase (pw);
   xfree (key);
@@ -388,10 +388,14 @@ read_and_unprotect (const char *fname)
       return;
     }
   if (opt.verbose)
-    log_info ("key protection done at %.4s-%.2s-%.2s %.2s:%.2s:%s\n",
-              protected_at, protected_at+4, protected_at+6,
-              protected_at+9, protected_at+11, protected_at+13);
-
+    {
+      if (*protected_at)
+        log_info ("key protection done at %.4s-%.2s-%.2s %.2s:%.2s:%s\n",
+                  protected_at, protected_at+4, protected_at+6,
+                  protected_at+9, protected_at+11, protected_at+13);
+      else
+        log_info ("key protection done at [unknown]\n");
+    }
 
   if (opt_armor)
     {
@@ -552,6 +556,7 @@ main (int argc, char **argv )
   ARGPARSE_ARGS pargs;
   int cmd = 0;
   const char *fname;
+  ctrl_t ctrl;
 
   early_system_init ();
   set_strusage (my_strusage);
@@ -617,6 +622,15 @@ main (int argc, char **argv )
   else if (argc > 1)
     usage (1);
 
+  /* Allocate an CTRL object.  An empty object should sufficent.  */
+  ctrl = xtrycalloc (1, sizeof *ctrl);
+  if (!ctrl)
+    {
+      log_error ("error allocating connection control data: %s\n",
+                 strerror (errno));
+      agent_exit (1);
+    }
+
   /* Set the information which can't be taken from envvars.  */
   gnupg_prepare_get_passphrase (GPG_ERR_SOURCE_DEFAULT,
                                 opt.verbose,
@@ -630,7 +644,7 @@ main (int argc, char **argv )
   if (cmd == oProtect)
     read_and_protect (fname);
   else if (cmd == oUnprotect)
-    read_and_unprotect (fname);
+    read_and_unprotect (ctrl, fname);
   else if (cmd == oShadow)
     read_and_shadow (fname);
   else if (cmd == oShowShadowInfo)
@@ -645,6 +659,8 @@ main (int argc, char **argv )
     }
   else
     show_file (fname);
+
+  xfree (ctrl);
 
   agent_exit (0);
   return 8; /*NOTREACHED*/
@@ -737,12 +753,79 @@ release_passphrase (char *pw)
 
 
 /* Stub function.  */
-gpg_error_t
-convert_from_openpgp_native (gcry_sexp_t s_pgp, const char *passphrase,
-                             unsigned char **r_key)
+int
+agent_key_available (const unsigned char *grip)
 {
-  (void)s_pgp;
-  (void)passphrase;
-  (void)r_key;
-  return gpg_error (GPG_ERR_BUG);
+  (void)grip;
+  return -1;  /* Not available.  */
+}
+
+char *
+agent_get_cache (const char *key, cache_mode_t cache_mode)
+{
+  (void)key;
+  (void)cache_mode;
+  return NULL;
+}
+
+gpg_error_t
+agent_askpin (ctrl_t ctrl,
+              const char *desc_text, const char *prompt_text,
+              const char *initial_errtext,
+              struct pin_entry_info_s *pininfo,
+              const char *keyinfo, cache_mode_t cache_mode)
+{
+  gpg_error_t err;
+  unsigned char *passphrase;
+  size_t size;
+
+  (void)ctrl;
+  (void)desc_text;
+  (void)prompt_text;
+  (void)initial_errtext;
+  (void)keyinfo;
+  (void)cache_mode;
+
+  *pininfo->pin = 0; /* Reset the PIN. */
+  passphrase = get_passphrase (0);
+  size = strlen (passphrase);
+  if (size >= pininfo->max_length)
+    return gpg_error (GPG_ERR_TOO_LARGE);
+
+  memcpy (&pininfo->pin, passphrase, size);
+  xfree (passphrase);
+  pininfo->pin[size] = 0;
+  if (pininfo->check_cb)
+    {
+      /* More checks by utilizing the optional callback. */
+      pininfo->cb_errtext = NULL;
+      err = pininfo->check_cb (pininfo);
+    }
+  else
+    err = 0;
+  return err;
+}
+
+/* Replacement for the function in findkey.c.  Here we write the key
+ * to stdout. */
+int
+agent_write_private_key (const unsigned char *grip,
+                         const void *buffer, size_t length, int force)
+{
+  char hexgrip[40+4+1];
+  char *p;
+
+  (void)force;
+
+  bin2hex (grip, 20, hexgrip);
+  strcpy (hexgrip+40, ".key");
+  p = make_advanced (buffer, length);
+  if (p)
+    {
+      printf ("# Begin dump of %s\n%s%s# End dump of %s\n",
+              hexgrip, p, (*p && p[strlen(p)-1] == '\n')? "":"\n", hexgrip);
+      xfree (p);
+    }
+
+  return 0;
 }

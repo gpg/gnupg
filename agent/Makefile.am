@@ -74,7 +74,7 @@ gpg_agent_DEPENDENCIES = $(resource_objs)
 
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \
-	protect.c
+	protect.c cvt-openpgp.c
 
 gpg_protect_tool_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS)
 gpg_protect_tool_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) \
