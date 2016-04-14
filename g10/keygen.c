@@ -2329,8 +2329,8 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
       r = xmalloc_clear(sizeof(*r));
       r->key = pKEYUSAGE;
       r->u.usage = openpgp_pk_algo_usage(algo);
-      r->next = para;
-      para = r;
+      r->next = para->next;
+      para->next = r;
     }
   else if (err == -1)
     return -1;
@@ -2363,8 +2363,8 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 	  r = xmalloc_clear (sizeof(*r));
 	  r->key = pSUBKEYUSAGE;
 	  r->u.usage = openpgp_pk_algo_usage (algo);
-	  r->next = para;
-	  para = r;
+	  r->next = para->next;
+	  para->next = r;
 	}
       else if (err == -1)
 	return -1;
@@ -2400,8 +2400,8 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 	    p = stpcpy(stpcpy(stpcpy(p," ("), s2 ),")");
 	  if( s3 )
 	    p = stpcpy(stpcpy(stpcpy(p," <"), s3 ),">");
-	  r->next = para;
-	  para = r;
+	  r->next = para->next;
+	  para->next = r;
 	  have_user_id=1;
 	}
     }
@@ -2460,13 +2460,13 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
     r = xmalloc_clear( sizeof *r );
     r->key = pPASSPHRASE_S2K;
     r->u.s2k = s2k;
-    r->next = para;
-    para = r;
+    r->next = para->next;
+    para->next = r;
     r = xmalloc_clear( sizeof *r );
     r->key = pPASSPHRASE_DEK;
     r->u.dek = dek;
-    r->next = para;
-    para = r;
+    r->next = para->next;
+    para->next = r;
   }
 
   /* Make KEYCREATIONDATE from Creation-Date.  */
@@ -2504,8 +2504,8 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
       r = xmalloc_clear( sizeof *r + 20 );
       r->key = pSUBKEYEXPIRE;
       r->u.expire = seconds;
-      r->next = para;
-      para = r;
+      r->next = para->next;
+      para->next = r;
     }
 
   if( !!outctrl->pub.newfname ^ !!outctrl->sec.newfname ) {
