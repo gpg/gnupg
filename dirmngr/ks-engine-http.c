@@ -44,8 +44,14 @@ ks_http_help (ctrl_t ctrl, parsed_uri_t uri)
     "Supported methods: fetch\n";
   gpg_error_t err;
 
+#if  HTTP_USE_GNUTLS || HTTP_USE_NTBTLS
+  const char data2[] = "  http\n  https";
+#else
+  const char data2[] = "  http";
+#endif
+
   if (!uri)
-    err = ks_print_help (ctrl, "  http");
+    err = ks_print_help (ctrl, data2);
   else if (uri->is_http && strcmp (uri->scheme, "hkp"))
     err = ks_print_help (ctrl, data);
   else
