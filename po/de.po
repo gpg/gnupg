@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-01-26 13:18+0100\n"
+"PO-Revision-Date: 2016-04-15 11:41+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -298,8 +298,7 @@ msgstr ""
 "Regeln aufgebaut sein."
 
 msgid "Warning: You have entered an insecure passphrase."
-msgstr ""
-"WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben."
+msgstr "WARNUNG:  Sie haben eine offensichtlich unsichere%0APassphrase eingegeben."
 
 #, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
