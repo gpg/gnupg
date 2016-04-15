@@ -38,7 +38,9 @@ ks_http_help (ctrl_t ctrl, parsed_uri_t uri)
   const char const data[] =
     "Handler for HTTP URLs:\n"
     "  http://\n"
+#if  HTTP_USE_GNUTLS || HTTP_USE_NTBTLS
     "  https://\n"
+#endif
     "Supported methods: fetch\n";
   gpg_error_t err;
 
