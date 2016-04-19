@@ -36,12 +36,34 @@ check_armored_private_key()
     check_exported_private_key $1
 }
 
+logfile="`pwd`/pinentry.log"
+ppfile="`pwd`/passphrases"
+rm -f -- $logfile $ppfile
+touch $ppfile
+
+prepare_passphrase()
+{
+    echo $* >>$ppfile
+}
+
+prepare_passphrase_confirm()
+{
+    echo "fake-entry being started to CONFIRM the weak phrase" >>$ppfile
+}
+
+assert_passphrases_consumed()
+{
+    if test -s $ppfile; then
+        echo "Expected $ppfile to be empty, but these are enqueued:" >&2
+        cat "$ppfile" >&2
+        exit 1
+    fi
+    rm -f -- $logfile
+}
+
 # XXX: Currently, gpg does not allow one to export private keys
-# without a passphrase (issue2070, issue2324), and our fake pinentry
-# only allows us to specify one passphrase.  We therefore use the
-# passphrase of our first key to unlock it (the other keys are not
-# protected), and also use the same passphrase for the exported keys.
-export PINENTRY_USER_DATA="$usrpass1"
+# without a passphrase (issue2070, issue2324).
+export PINENTRY_USER_DATA="--logfile=$logfile --passphrasefile=$ppfile"
 
 info "Checking key export."
 for KEY in D74C5F22 C40FDECF ECABF51D
@@ -56,13 +78,53 @@ do
     check_armored_public_key $KEY.public
     rm $KEY.public
 
+    if [ $KEY = D74C5F22 ]; then
+        # Key D74C5F22 is protected by a passphrase.  Prepare this
+        # one.  Currently, GnuPG does not ask for an export passphrase
+        # in this case.
+        prepare_passphrase "$usrpass1"
+    else
+        # We use a weak passphrase which we'll have to confirm.
+        prepare_passphrase "export passphrase"
+        prepare_passphrase_confirm
+        prepare_passphrase "export passphrase"
+
+        # Key C40FDECF has a subkey.
+        if [ $KEY = C40FDECF ]; then
+            prepare_passphrase "export passphrase"
+            prepare_passphrase_confirm
+            prepare_passphrase "export passphrase"
+        fi
+    fi
+
     $GPG --export-secret-keys $KEY >$KEY.private
     check_exported_private_key $KEY.private
     rm $KEY.private
 
+    assert_passphrases_consumed
+
+    if [ $KEY = D74C5F22 ]; then
+        # Key D74C5F22 is protected by a passphrase.  Prepare this
+        # one.  Currently, GnuPG does not ask for an export passphrase
+        # in this case.
+        prepare_passphrase "$usrpass1"
+    else
+        # We use a stronger passphrase here.
+        prepare_passphrase "strong export passphrase H0LHWCHPkNa36A"
+        prepare_passphrase "strong export passphrase H0LHWCHPkNa36A"
+
+        # Key C40FDECF has a subkey.
+        if [ $KEY = C40FDECF ]; then
+            prepare_passphrase "strong export passphrase H0LHWCHPkNa36A"
+            prepare_passphrase "strong export passphrase H0LHWCHPkNa36A"
+        fi
+    fi
+
     $GPG --armor --export-secret-keys $KEY >$KEY.private
     check_armored_private_key $KEY.private
     rm $KEY.private
+
+    assert_passphrases_consumed
 done
 
 progress_end
