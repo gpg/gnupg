@@ -973,9 +973,12 @@ Directly sign a key from the passphrase without any further user
 interaction.  The @code{fpr} must be the verified primary fingerprint
 of a key in the local keyring. If no @code{names} are given, all
 useful user ids are signed; with given [@code{names}] only useful user
-ids matching one of theses names are signed.  The command
-@option{--quick-lsign-key} marks the signatures as non-exportable.  If
-such a non-exportable signature already exists the
+ids matching one of theses names are signed.  By default, or if a name
+is prefixed with a '*', a case insensitive substring match is used.
+If a name is prefixed with a '=' a case sensitive exact match is done.
+
+The command @option{--quick-lsign-key} marks the signatures as
+non-exportable.  If such a non-exportable signature already exists the
 @option{--quick-sign-key} turns it into a exportable signature.
 
 This command uses reasonable defaults and thus does not provide the

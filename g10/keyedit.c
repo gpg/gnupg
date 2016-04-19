@@ -2927,12 +2927,11 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
 
 
 /* Unattended key signing function.  If the key specifified by FPR is
-   availabale and FPR is the primary fingerprint all user ids of the
-   user ids of the key are signed using the default signing key.  If
-   UIDS is an empty list all usable UIDs are signed, if it is not
-   empty, only those user ids matching one of the entries of the loist
-   are signed.  With LOCAL being true kthe signatures are marked as
-   non-exportable.  */
+   available and FPR is the primary fingerprint all user ids of the
+   key are signed using the default signing key.  If UIDS is an empty
+   list all usable UIDs are signed, if it is not empty, only those
+   user ids matching one of the entries of the list are signed.  With
+   LOCAL being true the signatures are marked as non-exportable.  */
 void
 keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
                     strlist_t locusr, int local)
@@ -3025,27 +3024,72 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
   menu_select_uid (keyblock, 0);   /* Better clear the flags first. */
   for (sl=uids; sl; sl = sl->next)
     {
+      const char *name = sl->d;
+      int count = 0;
+
+      sl->flags &= ~(1|2);  /* Clear flags used for error reporting.  */
+
       for (node = keyblock; node; node = node->next)
         {
           if (node->pkt->pkttype == PKT_USER_ID)
             {
               PKT_user_id *uid = node->pkt->pkt.user_id;
 
-              if (!uid->attrib_data
-                  && ascii_memistr (uid->name, uid->len, sl->d))
+              if (uid->attrib_data)
+                ;
+              else if (*name == '='
+                       && strlen (name+1) == uid->len
+                       && !memcmp (uid->name, name + 1, uid->len))
+                { /* Exact match - we don't do a check for ambiguity
+                   * in this case.  */
+                  node->flag |= NODFLG_SELUID;
+                  if (any != -1)
+                    {
+                      sl->flags |= 1;  /* Report as found.  */
+                      any = 1;
+                    }
+                }
+              else if (ascii_memistr (uid->name, uid->len,
+                                      *name == '*'? name+1:name))
                 {
                   node->flag |= NODFLG_SELUID;
-                  any = 1;
+                  if (any != -1)
+                    {
+                      sl->flags |= 1;  /* Report as found.  */
+                      any = 1;
+                    }
+                  count++;
                 }
             }
         }
+
+      if (count > 1)
+        {
+          any = -1;        /* Force failure at end.  */
+          sl->flags |= 2;  /* Report as ambiguous.  */
+        }
     }
 
-  if (uids && !any)
+  /* Check whether all given user ids were found.  */
+  for (sl=uids; sl; sl = sl->next)
+    if (!(sl->flags & 1))
+      any = -1;  /* That user id was not found.  */
+
+  /* Print an error if there was a problem with the user ids.  */
+  if (uids && any < 1)
     {
       if (!opt.verbose)
         show_key_with_all_names (ctrl, es_stdout, keyblock, 0, 0, 0, 0, 0, 1);
       es_fflush (es_stdout);
+      for (sl=uids; sl; sl = sl->next)
+        {
+          if ((sl->flags & 2))
+            log_info (_("Invalid user ID '%s': %s\n"),
+                      sl->d, gpg_strerror (GPG_ERR_AMBIGUOUS_NAME));
+          else if (!(sl->flags & 1))
+            log_info (_("Invalid user ID '%s': %s\n"),
+                      sl->d, gpg_strerror (GPG_ERR_NOT_FOUND));
+        }
       log_error ("%s  %s", _("No matching user IDs."), _("Nothing to sign.\n"));
       goto leave;
     }
