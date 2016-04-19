@@ -57,6 +57,7 @@ TESTS = version.test mds.test \
 	import.test ecc.test 4gb-packet.test \
 	$(sqlite3_dependent_tests) \
 	gpgtar.test use-exact-key.test default-key.test \
+	export.test \
 	finish.test
 
 

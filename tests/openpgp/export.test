@@ -1,0 +1,68 @@
+#!/bin/sh
+
+. $srcdir/defs.inc || exit 3
+
+check_exported_public_key()
+{
+    $GPG --list-packets $1 >$1.packets
+    grep '^:public key packet:' $1.packets >/dev/null
+    grep "^	keyid: .*$KEY$" $1.packets >/dev/null
+    grep '^:user ID packet:' $1.packets >/dev/null
+    grep "^:signature packet:.*keyid.*$KEY" $1.packets >/dev/null
+    rm $1.packets
+}
+
+check_armored_public_key()
+{
+    grep '^-----BEGIN PGP PUBLIC KEY BLOCK-----$' $1 >/dev/null
+    grep '^-----END PGP PUBLIC KEY BLOCK-----$' $1 >/dev/null
+    check_exported_public_key $1
+}
+
+check_exported_private_key()
+{
+    $GPG --list-packets $1 >$1.packets
+    grep '^:secret key packet:' $1.packets >/dev/null
+    grep "^	keyid: .*$KEY$" $1.packets >/dev/null
+    grep '^:user ID packet:' $1.packets >/dev/null
+    grep "^:signature packet:.*keyid.*$KEY" $1.packets >/dev/null
+    rm $1.packets
+}
+
+check_armored_private_key()
+{
+    grep '^-----BEGIN PGP PRIVATE KEY BLOCK-----$' $1 >/dev/null
+    grep '^-----END PGP PRIVATE KEY BLOCK-----$' $1 >/dev/null
+    check_exported_private_key $1
+}
+
+# XXX: Currently, gpg does not allow one to export private keys
+# without a passphrase (issue2070, issue2324), and our fake pinentry
+# only allows us to specify one passphrase.  We therefore use the
+# passphrase of our first key to unlock it (the other keys are not
+# protected), and also use the same passphrase for the exported keys.
+export PINENTRY_USER_DATA="$usrpass1"
+
+info "Checking key export."
+for KEY in D74C5F22 C40FDECF ECABF51D
+do
+    progress $KEY
+
+    $GPG --export $KEY >$KEY.public
+    check_exported_public_key $KEY.public
+    rm $KEY.public
+
+    $GPG --armor --export $KEY >$KEY.public
+    check_armored_public_key $KEY.public
+    rm $KEY.public
+
+    $GPG --export-secret-keys $KEY >$KEY.private
+    check_exported_private_key $KEY.private
+    rm $KEY.private
+
+    $GPG --armor --export-secret-keys $KEY >$KEY.private
+    check_armored_private_key $KEY.private
+    rm $KEY.private
+done
+
+progress_end
