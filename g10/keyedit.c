@@ -752,7 +752,9 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
                 else
                   last_printed_component = current_component;
 
-                if (last_printed_component->pkt->pkttype == PKT_USER_ID)
+                if (!modified)
+                  ;
+                else if (last_printed_component->pkt->pkttype == PKT_USER_ID)
                   {
                     tty_printf ("uid  ");
                     tty_print_utf8_string (last_printed_component
@@ -770,13 +772,17 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
                               pk_keyid_str (last_printed_component
                                             ->pkt->pkt.public_key));
 
-                if (is_reordered)
-                  tty_printf (_(" (reordered signatures follow)"));
-                tty_printf ("\n");
+                if (modified)
+                  {
+                    if (is_reordered)
+                      tty_printf (_(" (reordered signatures follow)"));
+                    tty_printf ("\n");
+                  }
               }
 
-            print_one_sig (rc, kb, n, NULL, NULL, NULL, has_selfsig,
-                           0, only_selfsigs);
+            if (modified)
+              print_one_sig (rc, kb, n, NULL, NULL, NULL, has_selfsig,
+                             0, only_selfsigs);
           }
 
           if (dump_sig_params)
