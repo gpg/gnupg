@@ -21,30 +21,116 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
+
+FILE *log_stream;
+
+int
+reply (const char *fmt, ...)
+{
+  int result;
+  va_list ap;
+
+  if (log_stream)
+    {
+      fprintf (log_stream, "> ");
+      va_start (ap, fmt);
+      vfprintf (log_stream, fmt, ap);
+      va_end (ap);
+    }
+  va_start (ap, fmt);
+  result = vprintf (fmt, ap);
+  va_end (ap);
+
+  return result;
+}
+
+#define spacep(p)   (*(p) == ' ' || *(p) == '\t')
+
+/* Skip over options in LINE.
+
+   Blanks after the options are also removed.  Options are indicated
+   by two leading dashes followed by a string consisting of non-space
+   characters.  The special option "--" indicates an explicit end of
+   options; all what follows will not be considered an option.  The
+   first no-option string also indicates the end of option parsing. */
+char *
+skip_options (const char *line)
+{
+  while (spacep (line))
+    line++;
+  while (*line == '-' && line[1] == '-')
+    {
+      while (*line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+    }
+  return (char*) line;
+}
+
+
+/* Return a pointer to the argument of the option with NAME.  If such
+   an option is not given, NULL is returned. */
+char *
+option_value (const char *line, const char *name)
+{
+  char *s;
+  int n = strlen (name);
+
+  s = strstr (line, name);
+  if (s && s >= skip_options (line))
+    return NULL;
+  if (s && (s == line || spacep (s-1))
+      && s[n] && (spacep (s+n) || s[n] == '='))
+    {
+      s += n + 1;
+      s += strspn (s, " ");
+      if (*s && !spacep(s))
+        return s;
+    }
+  return NULL;
+}
 
 int
 main (int argc, char **argv)
 {
+  char *args;
+  char *logfile;
   static char *passphrase;
-  char *p;
 
+  /* We get our options via PINENTRY_USER_DATA.  */
   (void) argc, (void) argv;
 
   setvbuf (stdin, NULL, _IOLBF, BUFSIZ);
   setvbuf (stdout, NULL, _IOLBF, BUFSIZ);
 
-  if (!passphrase)
+  args = getenv ("PINENTRY_USER_DATA");
+  if (! args)
+    args = "";
+
+  logfile = option_value (args, "--logfile");
+  if (logfile)
     {
-      passphrase = getenv ("PINENTRY_USER_DATA");
-      if (!passphrase)
-        passphrase = "";
-      for (p=passphrase; *p; p++)
-        if (*p == '\r' || *p == '\n')
-          *p = '.';
-      printf ("# Passphrase='%s'\n", passphrase);
+      char *p = logfile, more;
+      while (*p && ! spacep (p))
+        p++;
+      more = !! *p;
+      *p = 0;
+      args = more ? p+1 : p;
+
+      log_stream = fopen (logfile, "a");
+      if (! log_stream)
+        {
+          perror (logfile);
+          return 1;
+        }
     }
 
-  printf ("OK - what's up?\n");
+  passphrase = skip_options (args);
+
+  reply ("# fake-pinentry started.  Passphrase='%s'.\n", passphrase);
+  reply ("OK - what's up?\n");
 
   while (! feof (stdin))
     {
@@ -53,15 +139,23 @@ main (int argc, char **argv)
       if (fgets (buffer, sizeof buffer, stdin) == NULL)
 	break;
 
+      if (log_stream)
+        fprintf (log_stream, "< %s", buffer);
+
       if (strncmp (buffer, "GETPIN", 6) == 0)
-	printf ("D %s\nOK\n", passphrase);
+        reply ("D %s\n", passphrase);
       else if (strncmp (buffer, "BYE", 3) == 0)
 	{
-	  printf ("OK\n");
+	  reply ("OK\n");
 	  break;
 	}
-      else
-	printf ("OK\n");
+
+      reply ("OK\n");
     }
+
+  reply ("# Connection terminated.\n");
+  if (log_stream)
+    fclose (log_stream);
+
   return 0;
 }
