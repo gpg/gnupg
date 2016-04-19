@@ -44,6 +44,74 @@ reply (const char *fmt, ...)
 
   return result;
 }
+
+/* Return the first line from FNAME, removing it from the file.  */
+char *
+get_passphrase (const char *fname)
+{
+  char *passphrase = NULL;
+  size_t fname_len;
+  char *fname_new;
+  FILE *source, *sink;
+  char linebuf[80];
+
+  fname_len = strlen (fname);
+  fname_new = malloc (fname_len + 5);
+  if (fname_new == NULL)
+    {
+      perror ("malloc");
+      exit (1);
+    }
+  snprintf (fname_new, fname_len + 5, "%s.new", fname);
+
+  source = fopen (fname, "r");
+  if (! source)
+    {
+      perror (fname);
+      exit (1);
+    }
+
+  sink = fopen (fname_new, "w");
+  if (! sink)
+    {
+      perror (fname_new);
+      exit (1);
+    }
+
+  while (fgets (linebuf, sizeof linebuf, source))
+    {
+      linebuf[sizeof linebuf - 1] = 0;
+      if (passphrase == NULL)
+        {
+          passphrase = strdup (linebuf);
+          if (passphrase == NULL)
+            {
+              perror ("strdup");
+              exit (1);
+            }
+        }
+      else
+        fputs (linebuf, sink);
+    }
+
+  if (ferror (source))
+    {
+      perror (fname);
+      exit (1);
+    }
+
+  if (ferror (sink))
+    {
+      perror (fname_new);
+      exit (1);
+    }
+
+  fclose (source);
+  fclose (sink);
+  rename (fname_new, fname);
+  return passphrase;
+}
+
 
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')
 
@@ -97,7 +165,8 @@ main (int argc, char **argv)
 {
   char *args;
   char *logfile;
-  static char *passphrase;
+  char *passphrasefile;
+  char *passphrase;
 
   /* We get our options via PINENTRY_USER_DATA.  */
   (void) argc, (void) argv;
@@ -127,7 +196,30 @@ main (int argc, char **argv)
         }
     }
 
-  passphrase = skip_options (args);
+  passphrasefile = option_value (args, "--passphrasefile");
+  if (passphrasefile)
+    {
+      char *p = passphrasefile, more;
+      while (*p && ! spacep (p))
+        p++;
+      more = !! *p;
+      *p = 0;
+      args = more ? p+1 : p;
+
+      passphrase = get_passphrase (passphrasefile);
+      if (! passphrase)
+        {
+          reply ("# Passphrasefile '%s' is empty.  Terminating.\n",
+                 passphrasefile);
+          return 1;
+        }
+
+      p = passphrase + strlen (passphrase) - 1;
+      if (*p == '\n')
+        *p = 0;
+    }
+  else
+    passphrase = skip_options (args);
 
   reply ("# fake-pinentry started.  Passphrase='%s'.\n", passphrase);
   reply ("OK - what's up?\n");
