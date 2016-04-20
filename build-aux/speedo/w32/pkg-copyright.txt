@@ -1,11 +1,11 @@
 Here is a list with collected copyright notices. For details see the
-description of each individual package.  [Compiled by wk FIXME]
+description of each individual package.  [Compiled by wk 2016-04-20]
 
 GnuPG is
 
-  Copyright (C) 1997-2015 Werner Koch
-  Copyright (C) 1994-2015 Free Software Foundation, Inc.
-  Copyright (C) 2003-2015 g10 Code GmbH
+  Copyright (C) 1997-2016 Werner Koch
+  Copyright (C) 1994-2016 Free Software Foundation, Inc.
+  Copyright (C) 2003-2016 g10 Code GmbH
   Copyright (C) 2002 Klarälvdalens Datakonsult AB
   Copyright (C) 1995-1997, 2000-2007 Ulrich Drepper <drepper@gnu.ai.mit.edu>
   Copyright (C) 1994 X Consortium
@@ -102,3 +102,21 @@ NSIS is
 
   [It is distributed along with NSIS and the same conditions as stated
    above apply]
+
+
+ADNS is
+
+  Copyright (C) 1997-2000,2003,2006 Ian Jackson
+  Copyright (C) 1999-2000,2003,2006 Tony Finch
+  Copyright (C) 1991 Massachusetts Institute of Technology
+
+
+SQLite has
+
+  been put into the public-domain by its author D. Richard Hipp:
+  The author disclaims copyright to this source code.  In place of
+  a legal notice, here is a blessing:
+
+      May you do good and not evil.
+      May you find forgiveness for yourself and forgive others.
+      May you share freely, never taking more than you give.

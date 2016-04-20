@@ -172,7 +172,7 @@ speedo_spkgs  = \
 
 ifeq ($(TARGETOS),w32)
 speedo_spkgs += \
-	zlib bzip2 adns libiconv libsqlite3
+	zlib bzip2 adns sqlite libiconv
 ifeq ($(WITH_GUI),1)
 speedo_spkgs += gettext
 endif
@@ -306,6 +306,11 @@ adns_ver  := $(shell awk '$$1=="adns_ver" {print $$2}' swdb.lst)
 adns_sha1 := $(shell awk '$$1=="adns_sha1" {print $$2}' swdb.lst)
 adns_sha2 := $(shell awk '$$1=="adns_sha2" {print $$2}' swdb.lst)
 
+sqlite_ver  := $(shell awk '$$1=="sqlite_ver" {print $$2}' swdb.lst)
+sqlite_sha1 := $(shell awk '$$1=="sqlite_sha1_gz" {print $$2}' swdb.lst)
+sqlite_sha2 := $(shell awk '$$1=="sqlite_sha2_gz" {print $$2}' swdb.lst)
+
+
 $(info Information from the version database)
 $(info GnuPG ..........: $(gnupg_ver) (building $(gnupg_ver_this)))
 $(info Libgpg-error ...: $(libgpg_error_ver))
@@ -315,6 +320,7 @@ $(info Libassuan ......: $(libassuan_ver))
 $(info Zlib ...........: $(zlib_ver))
 $(info Bzip2 ..........: $(bzip2_ver))
 $(info ADNS ...........: $(adns_ver))
+$(info SQLite .........: $(sqlite_ver))
 $(info GPGME ..........: $(gpgme_ver))
 $(info Pinentry .......: $(pinentry_ver))
 $(info GPA ............: $(gpa_ver))
@@ -324,7 +330,6 @@ endif
 # Version number for external packages
 pkg_config_ver = 0.23
 libiconv_ver = 1.14
-libsqlite3_ver = 3120000
 gettext_ver = 0.18.2.1
 libffi_ver = 3.0.13
 glib_ver = 2.34.3
@@ -413,9 +418,9 @@ endif
 speedo_pkg_pkg_config_tar = $(pkg2rep)/pkg-config-$(pkg_config_ver).tar.gz
 speedo_pkg_zlib_tar       = $(pkgrep)/zlib/zlib-$(zlib_ver).tar.gz
 speedo_pkg_bzip2_tar      = $(pkgrep)/bzip2/bzip2-$(bzip2_ver).tar.gz
+speedo_pkg_sqlite_tar     = $(pkgrep)/sqlite/sqlite-autoconf-$(sqlite_ver).tar.gz
 speedo_pkg_adns_tar       = $(pkg10rep)/adns/adns-$(adns_ver).tar.bz2
 speedo_pkg_libiconv_tar   = $(pkg2rep)/libiconv-$(libiconv_ver).tar.gz
-speedo_pkg_libsqlite3_tar = $(pkg2rep)/sqlite-autoconf-$(libsqlite3_ver).tar.gz
 speedo_pkg_gettext_tar    = $(pkg2rep)/gettext-$(gettext_ver).tar.gz
 speedo_pkg_libffi_tar     = $(pkg2rep)/libffi-$(libffi_ver).tar.gz
 speedo_pkg_glib_tar       = $(pkg2rep)/glib-$(glib_ver).tar.xz

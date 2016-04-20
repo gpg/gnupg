@@ -573,8 +573,8 @@ Section "GnuPG" SEC_gnupg
   SectionIn RO
 
   SetOutPath "$INSTDIR\bin"
-  File /oname=gpg.exe "bin/gpg2.exe"
-  File /oname=gpgv.exe "bin/gpgv2.exe"
+  File "bin/gpg.exe"
+  File "bin/gpgv.exe"
   File "bin/gpgsm.exe"
   File "bin/gpgconf.exe"
   File "bin/gpg-connect-agent.exe"
