@@ -25,7 +25,7 @@ else
 openpgp =
 endif
 
-SUBDIRS = ${openpgp} . pkits
+SUBDIRS = ${openpgp} . migrations pkits
 
 GPGSM = ../sm/gpgsm
 
