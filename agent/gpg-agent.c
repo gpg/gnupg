@@ -1908,8 +1908,12 @@ create_private_keys_directory (const char *home)
       else if (!opt.quiet)
         log_info (_("directory '%s' created\n"), fname);
     }
+  if (gnupg_chmod (fname, "-rwx"))
+    log_error (_("can't set permissions of '%s': %s\n"),
+               fname, strerror (errno));
   xfree (fname);
 }
+
 
 /* Create the directory only if the supplied directory name is the
    same as the default one.  This way we avoid to create arbitrary

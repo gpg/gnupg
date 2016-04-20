@@ -50,3 +50,18 @@ assert_migrated()
 setup_home
 trigger_migration
 assert_migrated
+
+# Test with an existing private-keys-v1.d.
+setup_home
+mkdir "$GNUPGHOME/private-keys-v1.d"
+trigger_migration
+assert_migrated
+
+# Test with an existing private-keys-v1.d with weird permissions.
+setup_home
+mkdir "$GNUPGHOME/private-keys-v1.d"
+chmod 0 "$GNUPGHOME/private-keys-v1.d"
+trigger_migration
+assert_migrated
+
+# XXX Check a case where the migration fails.

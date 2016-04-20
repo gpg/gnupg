@@ -61,6 +61,7 @@ void gnupg_reopen_std (const char *pgmname);
 void gnupg_allow_set_foregound_window (pid_t pid);
 int  gnupg_remove (const char *fname);
 int  gnupg_mkdir (const char *name, const char *modestr);
+int gnupg_chmod (const char *name, const char *modestr);
 char *gnupg_mkdtemp (char *template);
 int  gnupg_setenv (const char *name, const char *value, int overwrite);
 int  gnupg_unsetenv (const char *name);

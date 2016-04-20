@@ -554,6 +554,40 @@ gnupg_remove (const char *fname)
 }
 
 
+#ifndef HAVE_W32_SYSTEM
+static mode_t
+modestr_to_mode (const char *modestr)
+{
+  mode_t mode = 0;
+
+  if (modestr && *modestr)
+    {
+      modestr++;
+      if (*modestr && *modestr++ == 'r')
+        mode |= S_IRUSR;
+      if (*modestr && *modestr++ == 'w')
+        mode |= S_IWUSR;
+      if (*modestr && *modestr++ == 'x')
+        mode |= S_IXUSR;
+      if (*modestr && *modestr++ == 'r')
+        mode |= S_IRGRP;
+      if (*modestr && *modestr++ == 'w')
+        mode |= S_IWGRP;
+      if (*modestr && *modestr++ == 'x')
+        mode |= S_IXGRP;
+      if (*modestr && *modestr++ == 'r')
+        mode |= S_IROTH;
+      if (*modestr && *modestr++ == 'w')
+        mode |= S_IWOTH;
+      if (*modestr && *modestr++ == 'x')
+        mode |= S_IXOTH;
+    }
+
+  return mode;
+}
+#endif
+
+
 /* A wrapper around mkdir which takes a string for the mode argument.
    This makes it easier to handle the mode argument which is not
    defined on all systems.  The format of the modestring is
@@ -589,31 +623,22 @@ gnupg_mkdir (const char *name, const char *modestr)
      because this sets ERRNO.  */
   return mkdir (name);
 #else
-  mode_t mode = 0;
+  return mkdir (name, modestr_to_mode (modestr));
+#endif
+}
 
-  if (modestr && *modestr)
-    {
-      modestr++;
-      if (*modestr && *modestr++ == 'r')
-        mode |= S_IRUSR;
-      if (*modestr && *modestr++ == 'w')
-        mode |= S_IWUSR;
-      if (*modestr && *modestr++ == 'x')
-        mode |= S_IXUSR;
-      if (*modestr && *modestr++ == 'r')
-        mode |= S_IRGRP;
-      if (*modestr && *modestr++ == 'w')
-        mode |= S_IWGRP;
-      if (*modestr && *modestr++ == 'x')
-        mode |= S_IXGRP;
-      if (*modestr && *modestr++ == 'r')
-        mode |= S_IROTH;
-      if (*modestr && *modestr++ == 'w')
-        mode |= S_IWOTH;
-      if (*modestr && *modestr++ == 'x')
-        mode |= S_IXOTH;
-    }
-  return mkdir (name, mode);
+
+/* A wrapper around mkdir which takes a string for the mode argument.
+   This makes it easier to handle the mode argument which is not
+   defined on all systems.  The format of the modestring is the same
+   as for gnupg_mkdir.  */
+int
+gnupg_chmod (const char *name, const char *modestr)
+{
+#ifdef HAVE_W32_SYSTEM
+  return 0;
+#else
+  return chmod (name, modestr_to_mode (modestr));
 #endif
 }
 
