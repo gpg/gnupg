@@ -46,6 +46,7 @@ strlist_t add_to_strlist_try (strlist_t *list, const char *string);
 strlist_t add_to_strlist2( strlist_t *list, const char *string, int is_utf8);
 
 strlist_t append_to_strlist (strlist_t *list, const char *string);
+strlist_t append_to_strlist_try (strlist_t *list, const char *string);
 strlist_t append_to_strlist2 (strlist_t *list, const char *string,
                               int is_utf8);
 

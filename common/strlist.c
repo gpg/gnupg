@@ -112,9 +112,24 @@ add_to_strlist2( strlist_t *list, const char *string, int is_utf8 )
 strlist_t
 append_to_strlist( strlist_t *list, const char *string )
 {
+  strlist_t sl;
+  sl = append_to_strlist_try (list, string);
+  if (sl == NULL)
+    abort ();
+  return sl;
+}
+
+
+/* Add STRING to the LIST at the end.  */
+strlist_t
+append_to_strlist_try (strlist_t *list, const char *string)
+{
     strlist_t r, sl;
 
     sl = xmalloc( sizeof *sl + strlen(string));
+    if (sl == NULL)
+      return NULL;
+
     sl->flags = 0;
     strcpy(sl->d, string);
     sl->next = NULL;
