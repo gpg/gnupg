@@ -13,6 +13,7 @@ if [ -z "$srcdir" ]; then
    exit 1
 fi
 
+unset GNUPGHOME
 set -e
 
 # (We may not use a relative name for gpg-agent.)
@@ -20,22 +21,28 @@ GPG_AGENT="$(cd ../../agent && /bin/pwd)/gpg-agent"
 GPG="../../g10/gpg --no-permission-warning --no-greeting --no-secmem-warning
 --batch --agent-program=${GPG_AGENT}|--debug-quick-random"
 
-export GNUPGHOME="from-classic.gpghome"
+TEST="from-classic"
 
 setup_home()
 {
-    rm -rf -- "$GNUPGHOME"
-    mkdir "$GNUPGHOME"
-    for F in $srcdir/$GNUPGHOME/*.asc
-    do
-	$GPG --dearmor <"$F" >"$GNUPGHOME/`echo $F | sed -e 's/....$//'`"
+    XGNUPGHOME="`mktemp -d`"
+    rm -rf -- scratch
+    mkdir -p "$XGNUPGHOME"
+    for F in $srcdir/$TEST.gpghome/*.asc; do
+	$GPG --dearmor <"$F" >"$XGNUPGHOME/`basename $F .asc`"
     done
-    chmod go-rwx $GNUPGHOME/*
+    chmod go-rwx $XGNUPGHOME/*
+    export GNUPGHOME="$XGNUPGHOME"
+}
+
+cleanup_home()
+{
+    rm -rf -- "$XGNUPGHOME"
 }
 
 trigger_migration()
 {
-    $GPG --list-secret-keys >/dev/null
+    $GPG --list-secret-keys >/dev/null 2>&1
 }
 
 assert_migrated()
@@ -50,12 +57,14 @@ assert_migrated()
 setup_home
 trigger_migration
 assert_migrated
+cleanup_home
 
 # Test with an existing private-keys-v1.d.
 setup_home
 mkdir "$GNUPGHOME/private-keys-v1.d"
 trigger_migration
 assert_migrated
+cleanup_home
 
 # Test with an existing private-keys-v1.d with weird permissions.
 setup_home
@@ -63,5 +72,6 @@ mkdir "$GNUPGHOME/private-keys-v1.d"
 chmod 0 "$GNUPGHOME/private-keys-v1.d"
 trigger_migration
 assert_migrated
+cleanup_home
 
 # XXX Check a case where the migration fails.
