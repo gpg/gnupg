@@ -39,6 +39,7 @@
 #include "common-defs.h"
 #include "strlist.h"
 #include "utf8conv.h"
+#include "mischelp.h"
 
 void
 free_strlist( strlist_t sl )
@@ -47,6 +48,19 @@ free_strlist( strlist_t sl )
 
     for(; sl; sl = sl2 ) {
 	sl2 = sl->next;
+	xfree(sl);
+    }
+}
+
+
+void
+free_strlist_wipe (strlist_t sl)
+{
+    strlist_t sl2;
+
+    for(; sl; sl = sl2 ) {
+	sl2 = sl->next;
+        wipememory (sl, sizeof *sl + strlen (sl->d));
 	xfree(sl);
     }
 }

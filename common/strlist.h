@@ -40,6 +40,8 @@ struct string_list
 typedef struct string_list *strlist_t;
 
 void    free_strlist (strlist_t sl);
+void	free_strlist_wipe (strlist_t sl);
+
 strlist_t add_to_strlist (strlist_t *list, const char *string);
 strlist_t add_to_strlist_try (strlist_t *list, const char *string);
 
