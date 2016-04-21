@@ -38,9 +38,16 @@
 #include <langinfo.h>
 #endif
 #include <errno.h>
-#ifndef HAVE_ANDROID_SYSTEM
+
+#if HAVE_W32_SYSTEM
+# /* Tell libgpg-error to provide the iconv macros.  */
+# define GPGRT_ENABLE_W32_ICONV_MACROS 1
+#elif HAVE_ANDROID_SYSTEM
+# /* No iconv support.  */
+#else
 # include <iconv.h>
 #endif
+
 
 #include "util.h"
 #include "common-defs.h"
@@ -244,8 +251,8 @@ set_native_charset (const char *newset)
      as Latin-1.  This makes sense because many Unix system don't have
      their locale set up properly and thus would get annoying error
      messages and we have to handle all the "bug" reports. Latin-1 has
-     always been the character set used for 8 bit characters on Unix
-     systems. */
+     traditionally been the character set used for 8 bit characters on
+     Unix systems. */
   if ( !*newset
        || !ascii_strcasecmp (newset, "8859-1" )
        || !ascii_strcasecmp (newset, "646" )
@@ -700,7 +707,8 @@ jnlib_iconv (jnlib_iconv_t cd,
              const char **inbuf, size_t *inbytesleft,
              char **outbuf, size_t *outbytesleft)
 {
-  return iconv ((iconv_t)cd, (char**)inbuf, inbytesleft, outbuf, outbytesleft);
+  return iconv ((iconv_t)cd, (ICONV_CONST char**)inbuf, inbytesleft,
+                outbuf, outbytesleft);
 }
 
 /* Wrapper function for iconv_close, required for W32 as we dlopen that

@@ -172,9 +172,9 @@ speedo_spkgs  = \
 
 ifeq ($(TARGETOS),w32)
 speedo_spkgs += \
-	zlib bzip2 adns sqlite libiconv
+	zlib bzip2 adns sqlite
 ifeq ($(WITH_GUI),1)
-speedo_spkgs += gettext
+speedo_spkgs += gettext libiconv
 endif
 endif
 

@@ -47,8 +47,9 @@ m4_define([mym4_version],      m4_argn(4, mym4_verslist))
 m4_define([mym4_revision],     m4_argn(7, mym4_verslist))
 m4_define([mym4_revision_dec], m4_argn(8, mym4_verslist))
 m4_esyscmd([echo ]mym4_version[>VERSION])
-AC_INIT([mym4_package],[mym4_version], [http://bugs.gnupg.org])
+AC_INIT([mym4_package],[mym4_version], [https://bugs.gnupg.org])
 
+# Note that for Windows we require version 1.22
 NEED_GPG_ERROR_VERSION=1.21
 
 NEED_LIBGCRYPT_API=1
@@ -639,6 +640,7 @@ case "${host}" in
                    we use a simplified version of gettext])
         have_dosish_system=yes
         have_w32_system=yes
+        require_iconv=no
         run_tests=no
         use_ldapwrapper=no  # Fixme: Do this only for CE.
         case "${host}" in

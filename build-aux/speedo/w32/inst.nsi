@@ -633,11 +633,6 @@ Section "-libgpg-error" SEC_libgpg_error
   File include/gpg-error.h
 SectionEnd
 
-Section "-libiconv" SEC_libiconv
-  SetOutPath "$INSTDIR\bin"
-  File bin/libiconv-2.dll
-SectionEnd
-
 Section "-zlib" SEC_zlib
   SetOutPath "$INSTDIR\bin"
   File bin/zlib1.dll
@@ -701,6 +696,11 @@ Section "-gpgme" SEC_gpgme
 SectionEnd
 
 !ifdef WITH_GUI
+Section "-libiconv" SEC_libiconv
+  SetOutPath "$INSTDIR\bin"
+  File bin/libiconv-2.dll
+SectionEnd
+
 Section "-gettext" SEC_gettext
   SetOutPath "$INSTDIR\bin"
   File bin/libintl-8.dll
@@ -1054,6 +1054,10 @@ Section "-un.gettext"
   Delete "$INSTDIR\bin\libintl-8.dll"
 SectionEnd
 
+Section "-un.libiconv"
+  Delete "$INSTDIR\bin\libiconv-2.dll"
+SectionEnd
+
 Section "-un.gpgme"
   Delete "$INSTDIR\bin\libgpgme-11.dll"
   Delete "$INSTDIR\bin\libgpgme-glib-11.dll"
@@ -1095,10 +1099,6 @@ SectionEnd
 
 Section "-un.zlib"
   Delete "$INSTDIR\bin\zlib1.dll"
-SectionEnd
-
-Section "-un.libiconv"
-  Delete "$INSTDIR\bin\libiconv-2.dll"
 SectionEnd
 
 Section "-un.libgpg-error"
