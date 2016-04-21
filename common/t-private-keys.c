@@ -269,7 +269,6 @@ run_modification_tests (void)
 {
   gpg_error_t err;
   pkc_t pk;
-  pke_t e;
   gcry_sexp_t key;
   char *buf;
 
@@ -380,7 +379,6 @@ convert (const char *fname)
   gcry_sexp_t key;
   char *buf;
   size_t buflen;
-  gpgrt_ssize_t nread;
   struct stat st;
   pkc_t pk;
 

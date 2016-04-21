@@ -347,7 +347,7 @@ _pkc_add (pkc_t pk, char *name, char *value, strlist_t raw_value,
     {
       pke_t last;
 
-      if (preserve_order)
+      if (preserve_order || name == NULL)
 	last = pk->last;
       else
 	{
