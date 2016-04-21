@@ -8,7 +8,7 @@ case "$myhost:$myhostsub" in
     extraoptions="$extraoptions --disable-zip --enable-gpg2-is-gpg"
     ;;
   w32:)
-    extraoptions="--enable-gpgtar"
+    extraoptions="--enable-gpgtar --enable-gpg2-is-gpg"
     ;;
 esac
 

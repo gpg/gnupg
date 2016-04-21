@@ -33,7 +33,7 @@ AM_CFLAGS = $(SQLITE3_CFLAGS) $(LIBGCRYPT_CFLAGS) \
 needed_libs = ../kbx/libkeybox.a $(libcommon)
 
 # Because there are no program specific transform macros we need to
-# work around that to allow installaing gpg as gpg2.
+# work around that to allow installing gpg as gpg2.
 gpg2_hack_list = gpg gpgv
 if USE_GPG2_HACK
 gpg2_hack_uninst = gpg2 gpgv2
