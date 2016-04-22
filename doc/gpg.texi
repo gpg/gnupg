@@ -1640,7 +1640,9 @@ process. @option{--no-auto-check-trustdb} disables this option.
 @opindex use-agent
 Try to use the GnuPG-Agent.  With this option, GnuPG first tries to
 connect to the agent before it asks for a
-passphrase. @option{--no-use-agent} disables this option.
+passphrase. @option{--no-use-agent} disables this option.  Note, that
+the tool @command{gpg-preset-passphrase}, which comes with GnuPG-2,
+cannot be used to preset a passphrase for this version of GnuPG.
 
 @item --gpg-agent-info
 @opindex gpg-agent-info
