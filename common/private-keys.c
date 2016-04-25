@@ -61,6 +61,15 @@ struct private_key_entry
   char *value;
 };
 
+
+/* Helper */
+static inline gpg_error_t
+my_error_from_syserror (void)
+{
+  return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+}
+
+
 
 
 /* Allocation and deallocation.  */
@@ -179,7 +188,7 @@ assert_raw_value (pke_t entry)
 		&entry->value[offset]);
       if (append_to_strlist_try (&entry->raw_value, buf) == NULL)
 	{
-	  err = gpg_error_from_syserror ();
+	  err = my_error_from_syserror ();
 	  goto leave;
 	}
 
@@ -267,7 +276,7 @@ assert_value (pke_t entry)
 
   entry->value = p = xtrymalloc (len);
   if (entry->value == NULL)
-    return gpg_error_from_syserror ();
+    return my_error_from_syserror ();
 
   swallow_ws = 0;
   for (s = entry->raw_value; s; s = s->next)
@@ -326,7 +335,7 @@ _pkc_add (pkc_t pk, char *name, char *value, strlist_t raw_value,
       goto leave;
     }
 
-  if (name && strcasecmp (name, "Key:") == 0 && pkc_lookup (pk, "Key:"))
+  if (name && ascii_strcasecmp (name, "Key:") == 0 && pkc_lookup (pk, "Key:"))
     {
       err = gpg_error (GPG_ERR_INV_NAME);
       goto leave;
@@ -335,7 +344,7 @@ _pkc_add (pkc_t pk, char *name, char *value, strlist_t raw_value,
   e = xtrycalloc (1, sizeof *e);
   if (e == NULL)
     {
-      err = gpg_error_from_syserror ();
+      err = my_error_from_syserror ();
       goto leave;
     }
 
@@ -356,17 +365,18 @@ _pkc_add (pkc_t pk, char *name, char *value, strlist_t raw_value,
 
 	  /* If so, find the last in that block.  */
 	  if (last)
-	    while (last->next)
-	      {
-		pke_t next = last->next;
+            {
+              while (last->next)
+                {
+                  pke_t next = last->next;
 
-		if (next->name && strcasecmp (next->name, name) == 0)
-		  last = next;
-		else
-		  break;
-	      }
-	  /* Otherwise, just find the last entry.  */
-	  else
+                  if (next->name && ascii_strcasecmp (next->name, name) == 0)
+                    last = next;
+                  else
+                    break;
+                }
+            }
+	  else /* Otherwise, just find the last entry.  */
 	    last = pk->last;
 	}
 
@@ -410,13 +420,13 @@ pkc_add (pkc_t pk, const char *name, const char *value)
 
   k = xtrystrdup (name);
   if (k == NULL)
-    return gpg_error_from_syserror ();
+    return my_error_from_syserror ();
 
   v = xtrystrdup (value);
   if (v == NULL)
     {
       xfree (k);
-      return gpg_error_from_syserror ();
+      return my_error_from_syserror ();
     }
 
   return _pkc_add (pk, k, v, NULL, 0);
@@ -441,7 +451,7 @@ pkc_set (pkc_t pk, const char *name, const char *value)
 
       v = xtrystrdup (value);
       if (v == NULL)
-	return gpg_error_from_syserror ();
+	return my_error_from_syserror ();
 
       free_strlist_wipe (e->raw_value);
       e->raw_value = NULL;
@@ -496,7 +506,7 @@ pkc_lookup (pkc_t pk, const char *name)
 {
   pke_t entry;
   for (entry = pk->first; entry; entry = entry->next)
-    if (entry->name && strcasecmp (entry->name, name) == 0)
+    if (entry->name && ascii_strcasecmp (entry->name, name) == 0)
       return entry;
   return NULL;
 }
@@ -518,7 +528,7 @@ pke_t
 pke_next_value (pke_t entry, const char *name)
 {
   for (entry = entry->next; entry; entry = entry->next)
-    if (entry->name && strcasecmp (entry->name, name) == 0)
+    if (entry->name && ascii_strcasecmp (entry->name, name) == 0)
       return entry;
   return NULL;
 }
@@ -558,13 +568,13 @@ pkc_set_private_key (pkc_t pk, gcry_sexp_t sexp)
 
   raw = xtrymalloc (len);
   if (raw == NULL)
-    return gpg_error_from_syserror ();
+    return my_error_from_syserror ();
 
   clean = xtrymalloc (len);
   if (clean == NULL)
     {
       xfree (raw);
-      return gpg_error_from_syserror ();
+      return my_error_from_syserror ();
     }
 
   gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, raw, len);
@@ -621,7 +631,7 @@ pkc_parse (pkc_t *result, int *errlinep, estream_t stream)
 
   *result = pkc_new ();
   if (*result == NULL)
-    return gpg_error_from_syserror ();
+    return my_error_from_syserror ();
 
   if (errlinep)
     *errlinep = 0;
@@ -640,7 +650,7 @@ pkc_parse (pkc_t *result, int *errlinep, estream_t stream)
 	  /* A continuation.  */
 	  if (append_to_strlist_try (&raw_value, buf) == NULL)
 	    {
-	      err = gpg_error_from_syserror ();
+	      err = my_error_from_syserror ();
 	      goto leave;
 	    }
 	  continue;
@@ -672,26 +682,26 @@ pkc_parse (pkc_t *result, int *errlinep, estream_t stream)
 	  value = colon + 1;
 	  tmp = *value;
 	  *value = 0;
-	  name = xstrdup (p);
+	  name = xtrystrdup (p);
 	  *value = tmp;
 
 	  if (name == NULL)
 	    {
-	      err = gpg_error_from_syserror ();
+	      err = my_error_from_syserror ();
 	      goto leave;
 	    }
 
-	  if (append_to_strlist (&raw_value, value) == NULL)
+	  if (append_to_strlist_try (&raw_value, value) == NULL)
 	    {
-	      err = gpg_error_from_syserror ();
+	      err = my_error_from_syserror ();
 	      goto leave;
 	    }
 	  continue;
 	}
 
-      if (append_to_strlist (&raw_value, buf) == NULL)
+      if (append_to_strlist_try (&raw_value, buf) == NULL)
 	{
-	  err = gpg_error_from_syserror ();
+	  err = my_error_from_syserror ();
 	  goto leave;
 	}
     }
@@ -733,7 +743,7 @@ pkc_write (pkc_t pk, estream_t stream)
 	es_fputs (s->d, stream);
 
       if (es_ferror (stream))
-	return gpg_error_from_syserror ();
+	return my_error_from_syserror ();
     }
 
   return 0;
