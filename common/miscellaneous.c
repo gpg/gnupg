@@ -106,6 +106,17 @@ setup_libgcrypt_logging (void)
 }
 
 
+/* Print an out of core message and let the process die.  The printed
+ * error is taken from ERRNO.  */
+void
+xoutofcore (void)
+{
+  gpg_error_t err = gpg_error_from_syserror ();
+  log_fatal (_("error allocating enough memory: %s\n"), gpg_strerror (err));
+  abort (); /* Never called; just to make the compiler happy.  */
+}
+
+
 /* A wrapper around gcry_cipher_algo_name to return the string
    "AES-128" instead of "AES".  Given that we have an alias in
    libgcrypt for it, it does not harm to too much to return this other

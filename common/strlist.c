@@ -128,8 +128,8 @@ append_to_strlist( strlist_t *list, const char *string )
 {
   strlist_t sl;
   sl = append_to_strlist_try (list, string);
-  if (sl == NULL)
-    abort ();
+  if (!sl)
+    xoutofcore ();
   return sl;
 }
 
@@ -140,7 +140,7 @@ append_to_strlist_try (strlist_t *list, const char *string)
 {
     strlist_t r, sl;
 
-    sl = xmalloc( sizeof *sl + strlen(string));
+    sl = xtrymalloc( sizeof *sl + strlen(string));
     if (sl == NULL)
       return NULL;
 
