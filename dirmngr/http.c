@@ -560,10 +560,14 @@ http_session_release (http_session_t sess)
 
 
 /* Create a new session object which is currently used to enable TLS
-   support.  It may eventually allow reusing existing connections.  */
+ * support.  It may eventually allow reusing existing connections.
+ * Valid values for FLAGS are:
+ *   HTTP_FLAG_TRUST_DEF - Use the CAs set with http_register_tls_ca
+ *   HTTP_FLAG_TRUST_SYS - Also use the CAs defined by the system
+ */
 gpg_error_t
 http_session_new (http_session_t *r_session, const char *tls_priority,
-                  const char *intended_hostname)
+                  const char *intended_hostname, unsigned int flags)
 {
   gpg_error_t err;
   http_session_t sess;
@@ -629,14 +633,34 @@ http_session_new (http_session_t *r_session, const char *tls_priority,
       }
 
     /* Add configured certificates to the session.  */
-    for (sl = tls_ca_certlist; sl; sl = sl->next)
+    if ((flags & HTTP_FLAG_TRUST_DEF))
       {
-        rc = gnutls_certificate_set_x509_trust_file
-          (sess->certcred, sl->d,
-           (sl->flags & 1)? GNUTLS_X509_FMT_PEM : GNUTLS_X509_FMT_DER);
+        for (sl = tls_ca_certlist; sl; sl = sl->next)
+          {
+            rc = gnutls_certificate_set_x509_trust_file
+              (sess->certcred, sl->d,
+               (sl->flags & 1)? GNUTLS_X509_FMT_PEM : GNUTLS_X509_FMT_DER);
+            if (rc < 0)
+              log_info ("setting CA from file '%s' failed: %s\n",
+                        sl->d, gnutls_strerror (rc));
+          }
+      }
+
+    /* Add system certificates to the session.  */
+    if ((flags & HTTP_FLAG_TRUST_SYS))
+      {
+#if GNUTLS_VERSION_NUMBER >= 0x030014
+        static int shown;
+
+        rc = gnutls_certificate_set_x509_system_trust (sess->certcred);
         if (rc < 0)
-          log_info ("setting CA from file '%s' failed: %s\n",
-                    sl->d, gnutls_strerror (rc));
+          log_info ("setting system CAs failed: %s\n", gnutls_strerror (rc));
+        else if (!shown)
+          {
+            shown = 1;
+            log_info ("number of system provided CAs: %d\n", rc);
+          }
+#endif /* gnutls >= 3.0.20 */
       }
 
     rc = gnutls_init (&sess->tls_session, GNUTLS_CLIENT);

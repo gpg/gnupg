@@ -80,11 +80,13 @@ enum
     HTTP_FLAG_TRY_PROXY = 1,     /* Try to use a proxy.  */
     HTTP_FLAG_SHUTDOWN = 2,      /* Close sending end after the request.  */
     HTTP_FLAG_FORCE_TOR = 4,     /* Force a TOR connection.  */
-    HTTP_FLAG_LOG_RESP = 8,      /* Log the server respone.  */
+    HTTP_FLAG_LOG_RESP = 8,      /* Log the server response.  */
     HTTP_FLAG_FORCE_TLS = 16,    /* Force the use of TLS.  */
     HTTP_FLAG_IGNORE_CL = 32,    /* Ignore content-length.  */
     HTTP_FLAG_IGNORE_IPv4 = 64,  /* Do not use IPv4.  */
-    HTTP_FLAG_IGNORE_IPv6 = 128  /* Do not use IPv6.  */
+    HTTP_FLAG_IGNORE_IPv6 = 128, /* Do not use IPv6.  */
+    HTTP_FLAG_TRUST_DEF   = 256, /* Use the default CAs.  */
+    HTTP_FLAG_TRUST_SYS   = 512  /* Also use the system defined CAs.  */
   };
 
 
@@ -99,7 +101,8 @@ void http_register_tls_ca (const char *fname);
 
 gpg_error_t http_session_new (http_session_t *r_session,
                               const char *tls_priority,
-                              const char *intended_hostname);
+                              const char *intended_hostname,
+                              unsigned int flags);
 http_session_t http_session_ref (http_session_t sess);
 void http_session_release (http_session_t sess);
 
