@@ -1274,7 +1274,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	{
 	  unsigned char *fpr = NULL;
 	  size_t fpr_len;
-	  int did_key_byname = 0;
+	  int did_akl_local = 0;
 	  int no_fingerprint = 0;
 	  const char *mechanism = "?";
 
@@ -1288,7 +1288,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 
 	    case AKL_LOCAL:
 	      mechanism = "Local";
-	      did_key_byname = 1;
+	      did_akl_local = 1;
 	      if (retctx)
 		{
 		  getkey_end (*retctx);
@@ -1318,6 +1318,13 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	      mechanism = "DANE";
 	      glo_ctrl.in_auto_key_retrieve++;
 	      rc = keyserver_import_cert (ctrl, name, 1, &fpr, &fpr_len);
+	      glo_ctrl.in_auto_key_retrieve--;
+	      break;
+
+	    case AKL_WKD:
+	      mechanism = "WKD";
+	      glo_ctrl.in_auto_key_retrieve++;
+	      rc = keyserver_import_wkd (ctrl, name, &fpr, &fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 	      break;
 
@@ -1386,22 +1393,20 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 
 	      add_to_strlist (&namelist, fpr_string);
 	    }
-	  else if (!rc && !fpr && !did_key_byname)
-	    /* The acquisition method said no failure occurred, but it
-	       didn't return a fingerprint.  That's a failure.  */
-	    {
-	      no_fingerprint = 1;
+	  else if (!rc && !fpr && !did_akl_local)
+            { /* The acquisition method said no failure occurred, but
+                 it didn't return a fingerprint.  That's a failure.  */
+              no_fingerprint = 1;
 	      rc = GPG_ERR_NO_PUBKEY;
 	    }
 	  xfree (fpr);
 	  fpr = NULL;
 
-	  if (!rc && !did_key_byname)
-	    /* There was no error and we didn't do a local lookup.
-	       This means that we imported a key into the local
-	       keyring.  Try to read the imported key from the
-	       keyring.  */
-	    {
+	  if (!rc && !did_akl_local)
+            { /* There was no error and we didn't do a local lookup.
+	         This means that we imported a key into the local
+	         keyring.  Try to read the imported key from the
+	         keyring.  */
 	      if (retctx)
 		{
 		  getkey_end (*retctx);
@@ -3195,6 +3200,7 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
 	      if (DBG_LOOKUP)
 		log_debug ("\tsubkey has expired\n");
 	      continue;
+
 	    }
 	  if (pk->timestamp > curtime && !opt.ignore_valid_from)
 	    {
@@ -3769,6 +3775,8 @@ parse_auto_key_locate (char *options)
 	akl->type = AKL_PKA;
       else if (ascii_strcasecmp (tok, "dane") == 0)
 	akl->type = AKL_DANE;
+      else if (ascii_strcasecmp (tok, "wkd") == 0)
+	akl->type = AKL_WKD;
       else if ((akl->spec = parse_keyserver_uri (tok, 1)))
 	akl->type = AKL_SPEC;
       else

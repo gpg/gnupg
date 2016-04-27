@@ -2004,6 +2004,39 @@ keyserver_import_pka (ctrl_t ctrl, const char *name,
 }
 
 
+/* Import a key using the Web Key Directory protocol.  */
+gpg_error_t
+keyserver_import_wkd (ctrl_t ctrl, const char *name,
+                      unsigned char **fpr, size_t *fpr_len)
+{
+  gpg_error_t err;
+  estream_t key;
+
+  err = gpg_dirmngr_wkd_get (ctrl, name, &key);
+  if (err)
+    ;
+  else if (key)
+    {
+      int armor_status = opt.no_armor;
+
+      /* Keys returned via WKD are in binary format. */
+      opt.no_armor = 1;
+
+      err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
+                                   (opt.keyserver_options.import_options
+                                    | IMPORT_NO_SECKEY),
+                                   NULL, NULL);
+
+      opt.no_armor = armor_status;
+
+      es_fclose (key);
+      key = NULL;
+    }
+
+  return err;
+}
+
+
 /* Import a key by name using LDAP */
 int
 keyserver_import_ldap (ctrl_t ctrl,

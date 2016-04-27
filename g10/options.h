@@ -73,6 +73,7 @@ struct
   int with_fingerprint; /* Option --with-fingerprint active.  */
   int with_keygrip;     /* Option --with-keygrip active.  */
   int with_secret;      /* Option --with-secret active.  */
+  int with_wkd_hash;    /* Option --with-wkd-hash.  */
   int fingerprint; /* list fingerprints */
   int list_sigs;   /* list signatures */
   int print_pka_records;
@@ -245,6 +246,7 @@ struct
       AKL_CERT,
       AKL_PKA,
       AKL_DANE,
+      AKL_WKD,
       AKL_LDAP,
       AKL_KEYSERVER,
       AKL_SPEC

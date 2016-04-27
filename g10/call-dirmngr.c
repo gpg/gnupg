@@ -1064,7 +1064,7 @@ gpg_dirmngr_ks_put (ctrl_t ctrl, void *data, size_t datalen, kbnode_t keyblock)
 
 
 
-/* Data callback for the DNS_CERT command. */
+/* Data callback for the DNS_CERT and WKD_GET commands. */
 static gpg_error_t
 dns_cert_data_cb (void *opaque, const void *data, size_t datalen)
 {
@@ -1283,6 +1283,65 @@ gpg_dirmngr_get_pka (ctrl_t ctrl, const char *userid,
  leave:
   xfree (parm.fpr);
   xfree (parm.url);
+  xfree (line);
+  close_context (ctrl, ctx);
+  return err;
+}
+
+
+
+/* Ask the dirmngr to retrieve a key via the Web Key Directory
+ * protocol.  On success a new estream with the key is stored at
+ * R_KEY.
+ */
+gpg_error_t
+gpg_dirmngr_wkd_get (ctrl_t ctrl, const char *name, estream_t *r_key)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  struct dns_cert_parm_s parm;
+  char *line = NULL;
+
+  memset (&parm, 0, sizeof parm);
+
+  err = open_context (ctrl, &ctx);
+  if (err)
+    return err;
+
+  line = es_bsprintf ("WKD_GET -- %s", name);
+  if (!line)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  if (strlen (line) + 2 >= ASSUAN_LINELENGTH)
+    {
+      err = gpg_error (GPG_ERR_TOO_LARGE);
+      goto leave;
+    }
+
+  parm.memfp = es_fopenmem (0, "rwb");
+  if (!parm.memfp)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = assuan_transact (ctx, line, dns_cert_data_cb, &parm,
+                         NULL, NULL, NULL, &parm);
+  if (err)
+    goto leave;
+
+  if (r_key)
+    {
+      es_rewind (parm.memfp);
+      *r_key = parm.memfp;
+      parm.memfp = NULL;
+    }
+
+ leave:
+  xfree (parm.fpr);
+  xfree (parm.url);
+  es_fclose (parm.memfp);
   xfree (line);
   close_context (ctrl, ctx);
   return err;

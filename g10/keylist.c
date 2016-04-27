@@ -1116,6 +1116,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr,
       if (node->pkt->pkttype == PKT_USER_ID)
 	{
 	  PKT_user_id *uid = node->pkt->pkt.user_id;
+          int indent;
 
 	  if ((uid->is_expired || uid->is_revoked)
 	      && !(opt.list_options & LIST_SHOW_UNUSABLE_UIDS))
@@ -1133,24 +1134,45 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr,
 	      || (opt.list_options & LIST_SHOW_UID_VALIDITY))
 	    {
 	      const char *validity;
-	      int indent;
 
 	      validity = uid_trust_string_fixed (pk, uid);
-	      indent =
-		(keystrlen () + (opt.legacy_list_mode? 9:11)) -
-		atoi (uid_trust_string_fixed (NULL, NULL));
-
+	      indent = ((keystrlen () + (opt.legacy_list_mode? 9:11))
+                        - atoi (uid_trust_string_fixed (NULL, NULL)));
 	      if (indent < 0 || indent > 40)
 		indent = 0;
 
 	      es_fprintf (es_stdout, "uid%*s%s ", indent, "", validity);
 	    }
 	  else
-	    es_fprintf (es_stdout, "uid%*s",
-                        (int) keystrlen () + (opt.legacy_list_mode? 10:12), "");
+            {
+              indent = keystrlen () + (opt.legacy_list_mode? 10:12);
+              es_fprintf (es_stdout, "uid%*s", indent, "");
+            }
 
 	  print_utf8_buffer (es_stdout, uid->name, uid->len);
 	  es_putc ('\n', es_stdout);
+
+          if (opt.with_wkd_hash)
+            {
+              char *mbox, *hash, *p;
+              char hashbuf[32];
+
+              mbox = mailbox_from_userid (uid->name);
+              if (mbox && (p = strchr (mbox, '@')))
+                {
+                  *p++ = 0;
+                  gcry_md_hash_buffer (GCRY_MD_SHA1, hashbuf,
+                                       mbox, strlen (mbox));
+                  hash = zb32_encode (hashbuf, 8*20);
+                  if (hash)
+                    {
+                      es_fprintf (es_stdout, "   %*s%s@%s\n",
+                                  indent, "", hash, p);
+                      xfree (hash);
+                    }
+                }
+              xfree (mbox);
+            }
 
 	  if ((opt.list_options & LIST_SHOW_PHOTOS) && uid->attribs != NULL)
 	    show_photos (uid->attribs, uid->numattribs, pk, uid);

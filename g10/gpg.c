@@ -185,6 +185,7 @@ enum cmd_and_opt_values
     oWithICAOSpelling,
     oWithKeygrip,
     oWithSecret,
+    oWithWKDHash,
     oAnswerYes,
     oAnswerNo,
     oKeyring,
@@ -721,6 +722,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oWithICAOSpelling, "with-icao-spelling", "@"),
   ARGPARSE_s_n (oWithKeygrip,     "with-keygrip", "@"),
   ARGPARSE_s_n (oWithSecret,      "with-secret", "@"),
+  ARGPARSE_s_n (oWithWKDHash,     "with-wkd-hash", "@"),
   ARGPARSE_s_s (oDisableCipherAlgo,  "disable-cipher-algo", "@"),
   ARGPARSE_s_s (oDisablePubkeyAlgo,  "disable-pubkey-algo", "@"),
   ARGPARSE_s_n (oAllowNonSelfsignedUID,      "allow-non-selfsigned-uid", "@"),
@@ -2573,6 +2575,10 @@ main (int argc, char **argv)
 
 	  case oWithSecret:
             opt.with_secret = 1;
+            break;
+
+	  case oWithWKDHash:
+            opt.with_wkd_hash = 1;
             break;
 
 	  case oSecretKeyring:

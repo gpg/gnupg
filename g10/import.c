@@ -1279,7 +1279,7 @@ import_one (ctrl_t ctrl,
         {
           xfree (*fpr);
           /* Note that we need to compare against 0 here because
-             COUNT gets only incremented after returning form this
+             COUNT gets only incremented after returning from this
              function.  */
           if (!stats->count)
             *fpr = fingerprint_from_pk (pk, NULL, fpr_len);

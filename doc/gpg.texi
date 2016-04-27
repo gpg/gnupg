@@ -1600,6 +1600,10 @@ mechanisms, in the order they are to be tried:
   Locate a key using DANE, as specified
   in draft-ietf-dane-openpgpkey-05.txt.
 
+  @item wkd
+  Locate a key using the Web Key Directory protocol.
+  This is an experimental method and semantics may change.
+
   @item ldap
   Using DNS Service Discovery, check the domain in question for any LDAP
   keyservers to use.  If this fails, attempt to locate the key using the
@@ -2234,6 +2238,11 @@ Print the ICAO spelling of the fingerprint in addition to the hex digits.
 @item --with-keygrip
 @opindex with-keygrip
 Include the keygrip in the key listings.
+
+@item --with-wkd-hash
+@opindex with-wkd-hash
+Print a Web Key Directory indentifier along with each user ID in key
+listings.  This is an experimental feature and semantics may change.
 
 @item --with-secret
 @opindex with-secret

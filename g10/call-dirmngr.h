@@ -40,6 +40,8 @@ gpg_error_t gpg_dirmngr_dns_cert (ctrl_t ctrl,
 gpg_error_t gpg_dirmngr_get_pka (ctrl_t ctrl, const char *userid,
                                  unsigned char **r_fpr, size_t *r_fprlen,
                                  char **r_url);
+gpg_error_t gpg_dirmngr_wkd_get (ctrl_t ctrl, const char *name,
+                                 estream_t *r_key);
 
 
 #endif /*GNUPG_G10_CALL_DIRMNGR_H*/

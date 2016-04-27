@@ -186,6 +186,17 @@ keyserver_import_pka (const char *name,unsigned char *fpr)
   return -1;
 }
 
+gpg_error_t
+keyserver_import_wkd (ctrl_t ctrl, const char *name,
+                      unsigned char **fpr, size_t *fpr_len)
+{
+  (void)ctrl;
+  (void)name;
+  (void)fpr;
+  (void)fpr_len;
+  return GPG_ERR_BUG;
+}
+
 int
 keyserver_import_name (const char *name,struct keyserver_spec *spec)
 {

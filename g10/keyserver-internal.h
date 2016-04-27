@@ -45,6 +45,8 @@ int keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
                            unsigned char **fpr,size_t *fpr_len);
 gpg_error_t keyserver_import_pka (ctrl_t ctrl, const char *name,
                                   unsigned char **fpr,size_t *fpr_len);
+gpg_error_t keyserver_import_wkd (ctrl_t ctrl, const char *name,
+                                  unsigned char **fpr, size_t *fpr_len);
 int keyserver_import_name (ctrl_t ctrl,
                            const char *name,unsigned char **fpr,size_t *fpr_len,
                            struct keyserver_spec *keyserver);
