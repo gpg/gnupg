@@ -1,7 +1,7 @@
 /* server.c - LDAP and Keyserver access server
  * Copyright (C) 2002 Klarälvdalens Datakonsult AB
  * Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2011, 2015 g10 Code GmbH
- * Copyright (C) 2014 Werner Koch
+ * Copyright (C) 2014, 2015, 2016 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -621,7 +621,7 @@ static const char hlp_dns_cert[] =
   "  *     Return the first record of any supported subtype\n"
   "  PGP   Return the first record of subtype PGP (3)\n"
   "  IPGP  Return the first record of subtype IPGP (6)\n"
-  "If the content of a certifciate is available (PGP) it is returned\n"
+  "If the content of a certificate is available (PGP) it is returned\n"
   "by data lines.  Fingerprints and URLs are returned via status lines.\n"
   "In --pka mode the fingerprint and if available an URL is returned.\n"
   "In --dane mode the key is returned from RR type 61";
@@ -793,6 +793,75 @@ cmd_dns_cert (assuan_context_t ctx, char *line)
   xfree (mbox);
   xfree (namebuf);
   xfree (encodedhash);
+  return leave_cmd (ctx, err);
+}
+
+
+
+static const char hlp_wkd_get[] =
+  "WKD_GET <user_id>\n"
+  "\n"
+  "Return the key for <user_id> from a Web Key Directory.\n";
+static gpg_error_t
+cmd_wkd_get (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+  char *mbox = NULL;
+  char *domain;     /* Points to mbox.  */
+  char sha1buf[20];
+  char *uri = NULL;
+  char *encodedhash = NULL;
+
+  line = skip_options (line);
+
+  mbox = mailbox_from_userid (line);
+  if (!mbox || !(domain = strchr (mbox, '@')))
+    {
+      err = set_error (GPG_ERR_INV_USER_ID, "no mailbox in user id");
+      goto leave;
+    }
+  *domain++ = 0;
+
+  gcry_md_hash_buffer (GCRY_MD_SHA1, sha1buf, mbox, strlen (mbox));
+  encodedhash = zb32_encode (sha1buf, 8*20);
+  if (!encodedhash)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  uri = strconcat ("https://",
+                   domain,
+                   "/.well-known/openpgpkey/hu/",
+                   domain,
+                   "/",
+                   encodedhash,
+                   NULL);
+  if (!uri)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  /* Setup an output stream and perform the get.  */
+  {
+    estream_t outfp;
+
+    outfp = es_fopencookie (ctx, "w", data_line_cookie_functions);
+    if (!outfp)
+      err = set_error (GPG_ERR_ASS_GENERAL, "error setting up a data stream");
+    else
+      {
+        err = ks_action_fetch (ctrl, uri, outfp);
+        es_fclose (outfp);
+      }
+  }
+
+ leave:
+  xfree (uri);
+  xfree (encodedhash);
+  xfree (mbox);
   return leave_cmd (ctx, err);
 }
 
@@ -1076,7 +1145,7 @@ static const char hlp_checkocsp[] =
   "Processing then takes place without further interaction; in\n"
   "particular dirmngr tries to locate other required certificates by\n"
   "its own mechanism which includes a local certificate store as well\n"
-  "as a list of trusted root certifciates.\n"
+  "as a list of trusted root certificates.\n"
   "\n"
   "If the option --force-default-responder is given, only the default\n"
   "OCSP responder will be used and any other methods of obtaining an\n"
@@ -2018,7 +2087,7 @@ cmd_ks_fetch (assuan_context_t ctx, char *line)
   /* No options for now.  */
   line = skip_options (line);
 
-  err = ensure_keyserver (ctrl);
+  err = ensure_keyserver (ctrl);  /* FIXME: Why do we needs this here?  */
   if (err)
     goto leave;
 
@@ -2261,6 +2330,7 @@ register_commands (assuan_context_t ctx)
     const char * const help;
   } table[] = {
     { "DNS_CERT",   cmd_dns_cert,   hlp_dns_cert },
+    { "WKD_GET",    cmd_wkd_get,    hlp_wkd_get },
     { "LDAPSERVER", cmd_ldapserver, hlp_ldapserver },
     { "ISVALID",    cmd_isvalid,    hlp_isvalid },
     { "CHECKCRL",   cmd_checkcrl,   hlp_checkcrl },
