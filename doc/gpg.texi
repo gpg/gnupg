@@ -476,7 +476,8 @@ only LDAP supports them all.
 @opindex fetch-keys
 Retrieve keys located at the specified URIs. Note that different
 installations of GnuPG may support different protocols (HTTP, FTP,
-LDAP, etc.)
+LDAP, etc.).  When using HTTPS the system provided root certificates
+are used by this command.
 
 @item --update-trustdb
 @opindex update-trustdb
