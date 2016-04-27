@@ -1149,7 +1149,8 @@ scan_or_find_usb_device (int scan_mode,
       err = libusb_get_config_descriptor (dev, cfg_no, &config);
       if (err < 0)
         {
-          libusb_free_config_descriptor (config);
+          if (err == LIBUSB_ERROR_NO_MEM)
+            return err;
           continue;
         }
 
@@ -1232,6 +1233,7 @@ scan_or_find_usb_device (int scan_mode,
                                 {
                                   libusb_close (idev);
                                   free (rid);
+                                  libusb_free_config_descriptor (config);
                                   return 1; /* Out of core. */
                                 }
                               memcpy (*ifcdesc_extra, ifcdesc->extra,
@@ -1258,6 +1260,7 @@ scan_or_find_usb_device (int scan_mode,
                             free (rid);
 
                           *r_idev = idev;
+                          libusb_free_config_descriptor (config);
                           return 1; /* Found requested device. */
                         }
                       else
@@ -1273,10 +1276,13 @@ scan_or_find_usb_device (int scan_mode,
 
                   libusb_close (idev);
                   idev = NULL;
+                  libusb_free_config_descriptor (config);
                   return 0;
                 }
             }
         }
+
+      libusb_free_config_descriptor (config);
     }
 
   return 0;
@@ -1376,6 +1382,7 @@ scan_or_find_devices (int readerno, const char *readerid,
                                    interface_number,
                                    ep_bulk_out, ep_bulk_in, ep_intr))
         {
+          libusb_free_device_list (dev_list, 1);
           /* Found requested device or out of core. */
           if (!idev)
             {
@@ -1388,6 +1395,8 @@ scan_or_find_devices (int readerno, const char *readerid,
           return 0;
         }
     }
+
+  libusb_free_device_list (dev_list, 1);
 
   /* Now check whether there are any devices with special transport types. */
   for (i=0; transports[i].name; i++)
