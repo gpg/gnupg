@@ -1976,11 +1976,12 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
       if (rc < 0)
         {
           DEBUGOUT_1 ("usb_bulk_read error: %s\n", libusb_error_name (rc));
-          if (rc == EAGAIN && eagain_retries++ < 3)
+          if (rc == LIBUSB_ERROR_NO_DEVICE)
             {
-              my_sleep (1);
-              goto retry;
+              handle->enodev_seen = 1;
+              return CCID_DRIVER_ERR_NO_READER;
             }
+
           return CCID_DRIVER_ERR_CARD_IO_ERROR;
         }
       if (msglen < 0)
