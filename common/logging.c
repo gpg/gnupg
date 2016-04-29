@@ -919,18 +919,37 @@ log_clock (const char *string)
 }
 
 
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
+#ifdef GPGRT_HAVE_MACRO_FUNCTION
 void
 bug_at( const char *file, int line, const char *func )
 {
-  log_log (GPGRT_LOG_BUG, ("... this is a bug (%s:%d:%s)\n"), file, line, func);
+  log_log (GPGRT_LOG_BUG, "... this is a bug (%s:%d:%s)\n", file, line, func);
   abort (); /* Never called; just to make the compiler happy.  */
 }
-#else
+#else /*!GPGRT_HAVE_MACRO_FUNCTION*/
 void
 bug_at( const char *file, int line )
 {
-  log_log (GPGRT_LOG_BUG, _("you found a bug ... (%s:%d)\n"), file, line);
+  log_log (GPGRT_LOG_BUG, "you found a bug ... (%s:%d)\n", file, line);
   abort (); /* Never called; just to make the compiler happy.  */
 }
-#endif
+#endif /*!GPGRT_HAVE_MACRO_FUNCTION*/
+
+
+#ifdef GPGRT_HAVE_MACRO_FUNCTION
+void
+_log_assert (const char *expr, const char *file, int line, const char *func)
+{
+  log_log (GPGRT_LOG_BUG, "Assertion \"%s\" in %s failed (%s:%d)\n",
+           expr, func, file, line);
+  abort (); /* Never called; just to make the compiler happy.  */
+}
+#else /*!GPGRT_HAVE_MACRO_FUNCTION*/
+void
+_log_assert (const char *expr, const char *file, int line)
+{
+  log_log (GPGRT_LOG_BUG, "Assertion \"%s\" failed (%s:%d)\n",
+           file, line, func);
+  abort (); /* Never called; just to make the compiler happy.  */
+}
+#endif /*!GPGRT_HAVE_MACRO_FUNCTION*/

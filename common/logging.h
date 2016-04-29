@@ -52,11 +52,22 @@ estream_t log_get_stream (void);
 #ifdef GPGRT_HAVE_MACRO_FUNCTION
   void bug_at (const char *file, int line, const char *func)
                GPGRT_ATTR_NORETURN;
-# define BUG() bug_at( __FILE__ , __LINE__, __FUNCTION__ )
-#else
-  void bug_at( const char *file, int line );
+  void _log_assert (const char *expr, const char *file, int line,
+                    const char *func) GPGRT_ATTR_NORETURN;
+# define BUG() bug_at( __FILE__ , __LINE__, __FUNCTION__)
+# define log_assert(expr)    do {                               \
+    if (!(expr))                                                \
+      _log_assert (#expr, __FILE__, __LINE__, __FUNCTION__);    \
+  } while (0)
+#else /*!GPGRT_HAVE_MACRO_FUNCTION*/
+  void bug_at (const char *file, int line);
+  void _log_assert (const char *expr, const char *file, int line;
 # define BUG() bug_at( __FILE__ , __LINE__ )
-#endif
+# define log_assert(expr)    do {                               \
+    if (!(expr))                                                \
+      _log_assert (#expr, __FILE__, __LINE__);                  \
+  } while (0)
+#endif /*!GPGRT_HAVE_MACRO_FUNCTION*/
 
 /* Flag values for log_set_prefix. */
 #define GPGRT_LOG_WITH_PREFIX  1
@@ -79,12 +90,6 @@ enum jnlib_log_levels {
 void log_log (int level, const char *fmt, ...) GPGRT_ATTR_PRINTF(2,3);
 void log_logv (int level, const char *fmt, va_list arg_ptr);
 void log_string (int level, const char *string);
-
-
-#define log_assert(expr)                                               \
-  do                                                                    \
-    if (! (expr)) log_bug ("Assertion " #expr " failed.\n");            \
-  while (0)
 void log_bug (const char *fmt, ...)    GPGRT_ATTR_NR_PRINTF(1,2);
 void log_fatal (const char *fmt, ...)  GPGRT_ATTR_NR_PRINTF(1,2);
 void log_error (const char *fmt, ...)  GPGRT_ATTR_PRINTF(1,2);
