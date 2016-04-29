@@ -25,7 +25,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
-#include <assert.h>
 #ifdef HAVE_LOCALE_H
 # include <locale.h>
 #endif
@@ -261,7 +260,7 @@ open_context (ctrl_t ctrl, assuan_context_t *r_ctx)
       if (dml)
         {
           /* Found an inactive local session - return that.  */
-          assert (!dml->is_active);
+          log_assert (!dml->is_active);
 
           /* But first do the per session init if not yet done.  */
           if (!dml->set_keyservers_done)
@@ -804,7 +803,7 @@ record_output (estream_t output,
       type_str = "sig";
       break;
     default:
-      assert (! "Unhandled type.");
+      log_assert (! "Unhandled type.");
     }
 
   if (pub_key_length > 0)

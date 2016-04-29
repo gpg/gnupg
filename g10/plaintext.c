@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #include <sys/types.h>
 #ifdef HAVE_DOSISH_SYSTEM
 # include <fcntl.h> /* for setmode() */
@@ -636,7 +635,7 @@ ask_for_detached_datafile (gcry_md_hd_t md, gcry_md_hd_t md2,
       if (opt.verbose)
 	log_info (_("reading stdin ...\n"));
       fp = iobuf_open (NULL);
-      assert (fp);
+      log_assert (fp);
     }
   do_hash (md, md2, fp, textmode);
   iobuf_close (fp);

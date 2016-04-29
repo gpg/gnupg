@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #ifndef DISABLE_REGEX
 #include <sys/types.h>
@@ -1079,9 +1078,9 @@ tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
 	    tofu_validity = TRUST_NEVER;
 	  else
 	    {
-	      assert (tl == TRUST_MARGINAL
-		      || tl == TRUST_FULLY
-		      || tl == TRUST_ULTIMATE);
+	      log_assert (tl == TRUST_MARGINAL
+                          || tl == TRUST_FULLY
+                          || tl == TRUST_ULTIMATE);
 
 	      if (tl > tofu_validity)
 		/* XXX: We we really want the max?  */

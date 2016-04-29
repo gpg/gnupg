@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "util.h"
@@ -40,9 +39,9 @@ get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt)
   gcry_mpi_t data;
 
   list = gcry_sexp_find_token (sexp, item, 0);
-  assert (list);
+  log_assert (list);
   data = gcry_sexp_nth_mpi (list, 1, mpifmt);
-  assert (data);
+  log_assert (data);
   gcry_sexp_release (list);
   return data;
 }

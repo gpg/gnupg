@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -317,7 +316,7 @@ put_record_into_cache (ulong recno, const char *data)
 	}
 
       /* Now put into the cache.  */
-      assert (unused);
+      log_assert (unused);
       r = unused;
       r->flags.used = 1;
       r->recno = recno;
@@ -383,7 +382,7 @@ put_record_into_cache (ulong recno, const char *data)
       release_write_lock ();
 
       /* Now put into the cache.  */
-      assert (unused);
+      log_assert (unused);
       r = unused;
       r->flags.used = 1;
       r->recno = recno;
@@ -666,7 +665,7 @@ tdbio_set_dbname (const char *new_dbname, int create, int *r_nofile)
       p = pp;
   }
 #endif /*HAVE_W32_SYSTEM*/
-  assert (p);
+  log_assert (p);
   save_slash = *p;
   *p = 0;
   if (access (fname, F_OK))
@@ -751,7 +750,7 @@ open_db ()
 {
   TRUSTREC rec;
 
-  assert( db_fd == -1 );
+  log_assert( db_fd == -1 );
 
 #ifdef HAVE_W32CE_SYSTEM
   {
@@ -811,7 +810,7 @@ create_hashtable( TRUSTREC *vr, int type )
   if (offset == -1)
     log_fatal ("trustdb: lseek to end failed: %s\n", strerror(errno));
   recnum = offset / TRUST_RECORD_LEN;
-  assert (recnum); /* This is will never be the first record. */
+  log_assert (recnum); /* This is will never be the first record. */
 
   if (!type)
     vr->r.ver.trusthashtbl = recnum;
@@ -1770,7 +1769,7 @@ tdbio_new_recnum ()
       if (offset == (off_t)(-1))
         log_fatal ("trustdb: lseek to end failed: %s\n", strerror (errno));
       recnum = offset / TRUST_RECORD_LEN;
-      assert (recnum); /* this is will never be the first record */
+      log_assert (recnum); /* this is will never be the first record */
       /* We must write a record, so that the next call to this
        * function returns another recnum.  */
       memset (&rec, 0, sizeof rec);

@@ -19,7 +19,6 @@
 
 #include <config.h>
 #include <stdio.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "iobuf.h"
@@ -64,7 +63,7 @@ release_progress_context (progress_filter_context_t *pfx)
 {
   if (!pfx)
     return;
-  assert (pfx->refcount);
+  log_assert (pfx->refcount);
   if ( --pfx->refcount )
     return;
   xfree (pfx->what);
@@ -143,8 +142,8 @@ handle_progress (progress_filter_context_t *pfx, IOBUF inp, const char *name)
   if (!pfx)
     return;
 
-  assert (opt.enable_progress_filter);
-  assert (is_status_enabled ());
+  log_assert (opt.enable_progress_filter);
+  log_assert (is_status_enabled ());
 
   if ( !iobuf_is_pipe_filename (name) && *name )
     filesize = iobuf_get_filelength (inp, NULL);

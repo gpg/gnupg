@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #include <ctype.h>
 
 #include "gpg.h"
@@ -137,7 +136,7 @@ release_armor_context (armor_filter_context_t *afx)
 {
   if (!afx)
     return;
-  assert (afx->refcount);
+  log_assert (afx->refcount);
   if ( --afx->refcount )
     return;
   xfree (afx);

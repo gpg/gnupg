@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "util.h"
@@ -57,7 +56,7 @@ release_dfx_context (decode_filter_ctx_t dfx)
   if (!dfx)
     return;
 
-  assert (dfx->refcount);
+  log_assert (dfx->refcount);
   if ( !--dfx->refcount )
     {
       gcry_cipher_close (dfx->cipher_hd);
@@ -273,8 +272,8 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
          bytes are appended.  */
       int datalen = gcry_md_get_algo_dlen (ed->mdc_method);
 
-      assert (dfx->cipher_hd);
-      assert (dfx->mdc_hash);
+      log_assert (dfx->cipher_hd);
+      log_assert (dfx->mdc_hash);
       gcry_cipher_decrypt (dfx->cipher_hd, dfx->defer, 22, NULL, 0);
       gcry_md_write (dfx->mdc_hash, dfx->defer, 2);
       gcry_md_final (dfx->mdc_hash);
@@ -320,8 +319,8 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
     }
   else if( control == IOBUFCTRL_UNDERFLOW )
     {
-      assert (a);
-      assert (size > 44); /* Our code requires at least this size.  */
+      log_assert (a);
+      log_assert (size > 44); /* Our code requires at least this size.  */
 
       /* Get at least 22 bytes and put it ahead in the buffer.  */
       if (dfx->partial)
@@ -414,7 +413,7 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
 	}
       else
         {
-          assert ( dfx->eof_seen );
+          log_assert ( dfx->eof_seen );
           rc = -1; /* Return EOF.  */
 	}
       *ret_len = n;
@@ -447,7 +446,7 @@ decode_filter( void *opaque, int control, IOBUF a, byte *buf, size_t *ret_len)
     }
   else if ( control == IOBUFCTRL_UNDERFLOW )
     {
-      assert(a);
+      log_assert (a);
 
       if (fc->partial)
         {

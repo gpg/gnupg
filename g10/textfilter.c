@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "status.h"
@@ -70,7 +69,7 @@ standard( text_filter_context_t *tfx, IOBUF a,
     size_t len = 0;
     unsigned maxlen;
 
-    assert( size > 10 );
+    log_assert( size > 10 );
     size -= 2;	/* reserve 2 bytes to append CR,LF */
     while( !rc && len < size ) {
 	int lf_seen;

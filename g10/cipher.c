@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "status.h"
@@ -123,7 +122,7 @@ cipher_filter( void *opaque, int control,
 	rc = -1; /* not yet used */
     }
     else if( control == IOBUFCTRL_FLUSH ) { /* encrypt */
-	assert(a);
+	log_assert(a);
 	if( !cfx->header ) {
 	    write_header( cfx, a );
 	}
@@ -139,7 +138,7 @@ cipher_filter( void *opaque, int control,
                                                  (cfx->mdc_hash));
 	    byte temp[22];
 
-	    assert( hashlen == 20 );
+	    log_assert( hashlen == 20 );
 	    /* We must hash the prefix of the MDC packet here. */
 	    temp[0] = 0xd3;
 	    temp[1] = 0x14;

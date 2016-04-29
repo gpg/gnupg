@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "options.h"
@@ -80,7 +79,7 @@ encrypt_seskey (DEK *dek, DEK **seskey, byte *enckey)
   gcry_cipher_hd_t hd;
   byte buf[33];
 
-  assert ( dek->keylen <= 32 );
+  log_assert ( dek->keylen <= 32 );
   if (!*seskey)
     {
       *seskey=xmalloc_clear(sizeof(DEK));

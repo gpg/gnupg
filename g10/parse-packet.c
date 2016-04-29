@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "util.h"
@@ -487,7 +486,7 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
   off_t pos;
 
   *skip = 0;
-  assert (!pkt->pkt.generic);
+  log_assert (!pkt->pkt.generic);
   if (retpos || list_mode)
     {
       pos = iobuf_tell (inp);
@@ -1114,7 +1113,7 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 	log_info (_("WARNING: potentially insecure symmetrically"
 		    " encrypted session key\n"));
     }
-  assert (!pktlen);
+  log_assert (!pktlen);
 
   if (list_mode)
     {
@@ -2421,7 +2420,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	   * NOTE: if you change the ivlen above 16, don't forget to
 	   * enlarge temp.  */
 	  ski->ivlen = openpgp_cipher_blocklen (ski->algo);
-	  assert (ski->ivlen <= sizeof (temp));
+	  log_assert (ski->ivlen <= sizeof (temp));
 
 	  if (ski->s2k.mode == 1001)
 	    ski->ivlen = 0;
@@ -2660,7 +2659,7 @@ parse_user_id (IOBUF inp, int pkttype, unsigned long pktlen, PACKET * packet)
 void
 make_attribute_uidname (PKT_user_id * uid, size_t max_namelen)
 {
-  assert (max_namelen > 70);
+  log_assert (max_namelen > 70);
   if (uid->numattribs <= 0)
     sprintf (uid->name, "[bad attribute packet of size %lu]",
 	     uid->attrib_len);

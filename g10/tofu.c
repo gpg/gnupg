@@ -26,7 +26,6 @@
 #include <config.h>
 #include <stdio.h>
 #include <sys/stat.h>
-#include <assert.h>
 #include <stdarg.h>
 #include <sqlite3.h>
 
@@ -388,7 +387,7 @@ tofu_begin_batch_update (void)
 void
 tofu_end_batch_update (void)
 {
-  assert (batch_update > 0);
+  log_assert (batch_update > 0);
   batch_update --;
 
   if (batch_update == 0)
@@ -411,7 +410,7 @@ get_single_unsigned_long_cb (void *cookie, int argc, char **argv,
 
   (void) azColName;
 
-  assert (argc == 1);
+  log_assert (argc == 1);
 
   errno = 0;
   *count = strtoul (argv[0], &tail, 0);
@@ -682,16 +681,16 @@ opendb (char *filename, enum db_type type)
 
   if (opt.tofu_db_format == TOFU_DB_FLAT)
     {
-      assert (! filename);
-      assert (type == DB_COMBINED);
+      log_assert (! filename);
+      log_assert (type == DB_COMBINED);
 
       filename = make_filename (opt.homedir, "tofu.db", NULL);
       filename_free = 1;
     }
   else
-    assert (type == DB_EMAIL || type == DB_KEY);
+    log_assert (type == DB_EMAIL || type == DB_KEY);
 
-  assert (filename);
+  log_assert (filename);
 
   rc = sqlite3_open (filename, &db);
   if (rc)
@@ -762,9 +761,9 @@ getdb (struct dbs *dbs, const char *name, enum db_type type)
   sqlite3 *sqlitedb = NULL;
   gpg_error_t rc;
 
-  assert (dbs);
-  assert (name);
-  assert (type == DB_EMAIL || type == DB_KEY);
+  log_assert (dbs);
+  log_assert (name);
+  log_assert (type == DB_EMAIL || type == DB_KEY);
 
   if (opt.tofu_db_format == TOFU_DB_FLAT)
     /* When using the flat format, we only have a single DB, the
@@ -772,8 +771,8 @@ getdb (struct dbs *dbs, const char *name, enum db_type type)
     {
       if (dbs->db)
         {
-          assert (dbs->db->type == DB_COMBINED);
-          assert (! dbs->db->next);
+          log_assert (dbs->db->type == DB_COMBINED);
+          log_assert (! dbs->db->next);
           return dbs->db;
         }
 
@@ -814,7 +813,7 @@ getdb (struct dbs *dbs, const char *name, enum db_type type)
         goto out;
       }
 
-  assert (db_cache_count == count);
+  log_assert (db_cache_count == count);
 
   if (type == DB_COMBINED)
     filename = NULL;
@@ -883,18 +882,18 @@ closedb (struct db *db)
   if (opt.tofu_db_format == TOFU_DB_FLAT)
     /* If we are using the flat format, then there is only ever the
        combined DB.  */
-    assert (! db->next);
+    log_assert (! db->next);
 
   if (db->type == DB_COMBINED)
     {
-      assert (opt.tofu_db_format == TOFU_DB_FLAT);
-      assert (! db->name[0]);
+      log_assert (opt.tofu_db_format == TOFU_DB_FLAT);
+      log_assert (! db->name[0]);
     }
   else
     {
-      assert (opt.tofu_db_format == TOFU_DB_SPLIT);
-      assert (db->type != DB_COMBINED);
-      assert (db->name[0]);
+      log_assert (opt.tofu_db_format == TOFU_DB_SPLIT);
+      log_assert (db->type != DB_COMBINED);
+      log_assert (db->name[0]);
     }
 
   if (db->batch_update)
@@ -1002,10 +1001,10 @@ closedbs (struct dbs *dbs)
           /* When we leave batch mode we leave batch mode on any
              cached connections.  */
           if (! batch_update)
-            assert (! db->batch_update);
+            log_assert (! db->batch_update);
         }
       if (! batch_update)
-        assert (! db->batch_update);
+        log_assert (! db->batch_update);
 
       /* Join the two lists.  */
       db->next = db_cache;
@@ -1060,7 +1059,7 @@ get_single_long_cb (void *cookie, int argc, char **argv, char **azColName)
 
   (void) azColName;
 
-  assert (argc == 1);
+  log_assert (argc == 1);
 
   errno = 0;
   *count = strtol (argv[0], &tail, 0);
@@ -1203,7 +1202,7 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
   if (db_key)
     /* We also need to update the key DB.  */
     {
-      assert (opt.tofu_db_format == TOFU_DB_SPLIT);
+      log_assert (opt.tofu_db_format == TOFU_DB_SPLIT);
 
       rc = sqlite3_stepx
 	(db_key->db, &db_key->s.record_binding_update2, NULL, NULL, &err,
@@ -1228,7 +1227,7 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
 	}
     }
   else
-    assert (opt.tofu_db_format == TOFU_DB_FLAT);
+    log_assert (opt.tofu_db_format == TOFU_DB_FLAT);
 
  out:
   if (opt.tofu_db_format == TOFU_DB_SPLIT)
@@ -1416,7 +1415,7 @@ signature_stats_collect_cb (void *cookie, int argc, char **argv,
     }
   i ++;
 
-  assert (argc == i);
+  log_assert (argc == i);
 
   signature_stats_prepend (statsp, argv[0], policy, time_ago, count);
 
@@ -1531,13 +1530,13 @@ get_policy (struct dbs *dbs, const char *fingerprint, const char *email,
     }
 
  out:
-  assert (policy == _tofu_GET_POLICY_ERROR
-	  || policy == TOFU_POLICY_NONE
-	  || policy == TOFU_POLICY_AUTO
-	  || policy == TOFU_POLICY_GOOD
-	  || policy == TOFU_POLICY_UNKNOWN
-	  || policy == TOFU_POLICY_BAD
-	  || policy == TOFU_POLICY_ASK);
+  log_assert (policy == _tofu_GET_POLICY_ERROR
+              || policy == TOFU_POLICY_NONE
+              || policy == TOFU_POLICY_AUTO
+              || policy == TOFU_POLICY_GOOD
+              || policy == TOFU_POLICY_UNKNOWN
+              || policy == TOFU_POLICY_BAD
+              || policy == TOFU_POLICY_ASK);
 
   free_strlist (strlist);
 
@@ -1576,13 +1575,13 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 
   /* Make sure _tofu_GET_TRUST_ERROR isn't equal to any of the trust
      levels.  */
-  assert (_tofu_GET_TRUST_ERROR != TRUST_UNKNOWN
-	  && _tofu_GET_TRUST_ERROR != TRUST_EXPIRED
-	  && _tofu_GET_TRUST_ERROR != TRUST_UNDEFINED
-	  && _tofu_GET_TRUST_ERROR != TRUST_NEVER
-	  && _tofu_GET_TRUST_ERROR != TRUST_MARGINAL
-	  && _tofu_GET_TRUST_ERROR != TRUST_FULLY
-	  && _tofu_GET_TRUST_ERROR != TRUST_ULTIMATE);
+  log_assert (_tofu_GET_TRUST_ERROR != TRUST_UNKNOWN
+              && _tofu_GET_TRUST_ERROR != TRUST_EXPIRED
+              && _tofu_GET_TRUST_ERROR != TRUST_UNDEFINED
+              && _tofu_GET_TRUST_ERROR != TRUST_NEVER
+              && _tofu_GET_TRUST_ERROR != TRUST_MARGINAL
+              && _tofu_GET_TRUST_ERROR != TRUST_FULLY
+              && _tofu_GET_TRUST_ERROR != TRUST_ULTIMATE);
 
   db = getdb (dbs, email, DB_EMAIL);
   if (! db)
@@ -1740,7 +1739,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
     {
       /* If we've seen this binding, then we've seen this email and
 	 policy couldn't possibly be TOFU_POLICY_NONE.  */
-      assert (policy == TOFU_POLICY_NONE);
+      log_assert (policy == TOFU_POLICY_NONE);
 
       if (DBG_TRUST)
 	log_debug ("TOFU: New binding <%s, %s>, no conflict.\n",
@@ -1772,7 +1771,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
        there is a conflict.  (If the policy was ask (cases #1 and #2)
        and we weren't allowed to ask, we'd have already exited).  */
     {
-      assert (policy == TOFU_POLICY_NONE);
+      log_assert (policy == TOFU_POLICY_NONE);
 
       if (record_binding (dbs, fingerprint, email, user_id,
 			  TOFU_POLICY_ASK, 0) != 0)
@@ -1893,7 +1892,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	    char *other_thing;
 	    enum tofu_policy other_policy;
 
-	    assert (strlist_iter->next);
+	    log_assert (strlist_iter->next);
 	    strlist_iter = strlist_iter->next;
 	    other_thing = strlist_iter->d;
 
@@ -2353,7 +2352,7 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
       signed long first_seen_ago;
       signed long most_recent_seen_ago;
 
-      assert (strlist_length (strlist) == 3);
+      log_assert (strlist_length (strlist) == 3);
 
       errno = 0;
       messages = strtol (strlist->d, &tail, 0);
@@ -2656,7 +2655,7 @@ tofu_register (PKT_public_key *pk, const char *user_id,
 	log_debug ("TOFU: Saving signature <%s, %s, %s>\n",
 		   fingerprint_pp, email, sig_digest);
 
-      assert (c == 0);
+      log_assert (c == 0);
 
       rc = sqlite3_stepx
 	(db->db, &db->s.register_insert, NULL, NULL, &err,
@@ -2720,20 +2719,20 @@ tofu_wot_trust_combine (int tofu_base, int wot_base)
   int wot = wot_base & TRUST_MASK;
   int upper = (tofu_base & ~TRUST_MASK) | (wot_base & ~TRUST_MASK);
 
-  assert (tofu == TRUST_UNKNOWN
-	  || tofu == TRUST_EXPIRED
-	  || tofu == TRUST_UNDEFINED
-	  || tofu == TRUST_NEVER
-	  || tofu == TRUST_MARGINAL
-	  || tofu == TRUST_FULLY
-	  || tofu == TRUST_ULTIMATE);
-  assert (wot == TRUST_UNKNOWN
-	  || wot == TRUST_EXPIRED
-	  || wot == TRUST_UNDEFINED
-	  || wot == TRUST_NEVER
-	  || wot == TRUST_MARGINAL
-	  || wot == TRUST_FULLY
-	  || wot == TRUST_ULTIMATE);
+  log_assert (tofu == TRUST_UNKNOWN
+              || tofu == TRUST_EXPIRED
+              || tofu == TRUST_UNDEFINED
+              || tofu == TRUST_NEVER
+              || tofu == TRUST_MARGINAL
+              || tofu == TRUST_FULLY
+              || tofu == TRUST_ULTIMATE);
+  log_assert (wot == TRUST_UNKNOWN
+              || wot == TRUST_EXPIRED
+              || wot == TRUST_UNDEFINED
+              || wot == TRUST_NEVER
+              || wot == TRUST_MARGINAL
+              || wot == TRUST_FULLY
+              || wot == TRUST_ULTIMATE);
 
   /* We first consider negative trust policys.  These trump positive
      trust policies.  */
@@ -2826,7 +2825,7 @@ tofu_set_policy (kbnode_t kb, enum tofu_policy policy)
   PKT_public_key *pk;
   char *fingerprint = NULL;
 
-  assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
+  log_assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
   pk = kb->pkt->pkt.public_key;
 
   dbs = opendbs ();
@@ -2906,8 +2905,8 @@ tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
   char *email;
 
   /* Make sure PK is a primary key.  */
-  assert (pk->main_keyid[0] == pk->keyid[0]
-	  && pk->main_keyid[1] == pk->keyid[1]);
+  log_assert (pk->main_keyid[0] == pk->keyid[0]
+              && pk->main_keyid[1] == pk->keyid[1]);
 
   dbs = opendbs ();
   if (! dbs)

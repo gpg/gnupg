@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "options.h"
@@ -66,7 +65,7 @@ mk_notation_policy_etc (PKT_signature *sig,
     struct notation *nd=NULL;
     struct expando_args args;
 
-    assert(sig->version>=4);
+    log_assert(sig->version>=4);
 
     memset(&args,0,sizeof(args));
     args.pk=pk;
@@ -1143,7 +1142,7 @@ clearsign_file (ctrl_t ctrl,
 		}
 	    }
 	}
-	assert(any);
+	log_assert(any);
 	iobuf_writestr(out, LF );
     }
 
@@ -1377,9 +1376,9 @@ make_keysig_packet (PKT_signature **ret_sig, PKT_public_key *pk,
     int sigversion;
     gcry_md_hd_t md;
 
-    assert( (sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x1F
-	    || sigclass == 0x20 || sigclass == 0x18 || sigclass == 0x19
-	    || sigclass == 0x30 || sigclass == 0x28 );
+    log_assert ((sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x1F
+                || sigclass == 0x20 || sigclass == 0x18 || sigclass == 0x19
+                || sigclass == 0x30 || sigclass == 0x28 );
 
     sigversion = 4;
     if (sigversion < pksk->version)

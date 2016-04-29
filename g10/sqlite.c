@@ -21,7 +21,6 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "util.h"
@@ -88,7 +87,7 @@ sqlite3_stepx (sqlite3 *db,
       stmt = *stmtp;
 
       /* Make sure this statement is associated with the supplied db.  */
-      assert (db == sqlite3_db_handle (stmt));
+      log_assert (db == sqlite3_db_handle (stmt));
 
 #if DEBUG_TOFU_CACHE
       prepares_saved ++;
@@ -171,7 +170,7 @@ sqlite3_stepx (sqlite3 *db,
 
     }
   t = va_arg (va, enum sqlite_arg_type);
-  assert (t == SQLITE_ARG_END);
+  log_assert (t == SQLITE_ARG_END);
   va_end (va);
 
   for (;;)

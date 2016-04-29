@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "util.h"
@@ -106,7 +105,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
                   + 7 ) & (~7));
 
       /* alg+key+csum fit and the size is congruent to 8.  */
-      assert (!(nframe%8) && nframe > 1 + dek->keylen + 2 );
+      log_assert (!(nframe%8) && nframe > 1 + dek->keylen + 2 );
 
       frame = xmalloc_secure (nframe);
       n = 0;
@@ -117,7 +116,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
       frame[n++] = csum;
       i = nframe - n;         /* Number of padded bytes.  */
       memset (frame+n, i, i); /* Use it as the value of each padded byte.  */
-      assert (n+i == nframe);
+      log_assert (n+i == nframe);
 
       if (DBG_CRYPTO)
         log_debug ("encode_session_key: "
@@ -161,7 +160,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
   /* The number of random bytes are the number of otherwise unused
      bytes.  See diagram above.  */
   i = nframe - 6 - dek->keylen;
-  assert( i > 0 );
+  log_assert( i > 0 );
   p = gcry_random_bytes_secure (i, GCRY_STRONG_RANDOM);
   /* Replace zero bytes by new values.  */
   for (;;)
@@ -195,7 +194,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
   n += dek->keylen;
   frame[n++] = csum >>8;
   frame[n++] = csum;
-  assert (n == nframe);
+  log_assert (n == nframe);
   if (gcry_mpi_scan( &a, GCRYMPI_FMT_USG, frame, n, &nframe))
     BUG();
   xfree (frame);
@@ -227,12 +226,12 @@ do_encode_md( gcry_md_hd_t md, int algo, size_t len, unsigned nbits,
     frame[n++] = 0;
     frame[n++] = 1; /* block type */
     i = nframe - len - asnlen -3 ;
-    assert( i > 1 );
+    log_assert( i > 1 );
     memset( frame+n, 0xff, i ); n += i;
     frame[n++] = 0;
     memcpy( frame+n, asn, asnlen ); n += asnlen;
     memcpy( frame+n, gcry_md_read (md, algo), len ); n += len;
-    assert( n == nframe );
+    log_assert( n == nframe );
 
     if (gcry_mpi_scan( &a, GCRYMPI_FMT_USG, frame, n, &nframe ))
 	BUG();
@@ -263,8 +262,8 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
   gcry_mpi_t frame;
   size_t mdlen;
 
-  assert (hash_algo);
-  assert (pk);
+  log_assert (hash_algo);
+  log_assert (pk);
 
   if (pk->pubkey_algo == PUBKEY_ALGO_EDDSA)
     {

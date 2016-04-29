@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "util.h"
@@ -302,7 +301,7 @@ free_attributes(PKT_user_id *uid)
 void
 free_user_id (PKT_user_id *uid)
 {
-    assert (uid->ref > 0);
+    log_assert (uid->ref > 0);
     if (--uid->ref)
         return;
 

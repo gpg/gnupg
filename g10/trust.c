@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "keydb.h"
@@ -561,7 +560,7 @@ clean_sigs_from_uid (kbnode_t keyblock, kbnode_t uidnode,
   kbnode_t node;
   u32 keyid[2];
 
-  assert (keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+  log_assert (keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
 
   keyid_from_pk (keyblock->pkt->pkt.public_key, keyid);
 
@@ -654,8 +653,8 @@ clean_uid_from_key (kbnode_t keyblock, kbnode_t uidnode, int noisy)
   PKT_user_id *uid = uidnode->pkt->pkt.user_id;
   int deleted = 0;
 
-  assert (keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
-  assert (uidnode->pkt->pkttype==PKT_USER_ID);
+  log_assert (keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+  log_assert (uidnode->pkt->pkttype==PKT_USER_ID);
 
   /* Skip valid user IDs, compacted user IDs, and non-self-signed user
      IDs if --allow-non-selfsigned-uid is set. */
@@ -706,8 +705,8 @@ clean_one_uid (kbnode_t keyblock, kbnode_t uidnode, int noisy, int self_only,
 {
   int dummy = 0;
 
-  assert (keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
-  assert (uidnode->pkt->pkttype==PKT_USER_ID);
+  log_assert (keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+  log_assert (uidnode->pkt->pkttype==PKT_USER_ID);
 
   if (!uids_cleaned)
     uids_cleaned = &dummy;

@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "util.h"
@@ -563,8 +562,8 @@ check_revocation_keys (PKT_public_key *pk, PKT_signature *sig)
   int i;
   int rc = GPG_ERR_GENERAL;
 
-  assert(IS_KEY_REV(sig));
-  assert((sig->keyid[0]!=pk->keyid[0]) || (sig->keyid[0]!=pk->keyid[1]));
+  log_assert (IS_KEY_REV(sig));
+  log_assert ((sig->keyid[0]!=pk->keyid[0]) || (sig->keyid[0]!=pk->keyid[1]));
 
   /* Avoid infinite recursion.  Consider the following:
    *
@@ -857,14 +856,14 @@ check_signature_over_key_or_uid (PKT_public_key *signer,
       /* Primary key revocation.  */
       || sig->sig_class == 0x20)
     {
-      assert (packet->pkttype == PKT_PUBLIC_KEY);
+      log_assert (packet->pkttype == PKT_PUBLIC_KEY);
       hash_public_key (md, packet->pkt.public_key);
       rc = check_signature_end_simple (signer, sig, md);
     }
   else if (/* Primary key binding (made by a subkey).  */
       sig->sig_class == 0x19)
     {
-      assert (packet->pkttype == PKT_PUBLIC_KEY);
+      log_assert (packet->pkttype == PKT_PUBLIC_KEY);
       hash_public_key (md, packet->pkt.public_key);
       hash_public_key (md, signer);
       rc = check_signature_end_simple (signer, sig, md);
@@ -874,7 +873,7 @@ check_signature_over_key_or_uid (PKT_public_key *signer,
            /* Subkey revocation.  */
            || sig->sig_class == 0x28)
     {
-      assert (packet->pkttype == PKT_PUBLIC_SUBKEY);
+      log_assert (packet->pkttype == PKT_PUBLIC_SUBKEY);
       hash_public_key (md, pripk);
       hash_public_key (md, packet->pkt.public_key);
       rc = check_signature_end_simple (signer, sig, md);
@@ -887,7 +886,7 @@ check_signature_over_key_or_uid (PKT_public_key *signer,
            /* Certification revocation.  */
            || sig->sig_class == 0x30)
     {
-      assert (packet->pkttype == PKT_USER_ID);
+      log_assert (packet->pkttype == PKT_USER_ID);
       hash_public_key (md, pripk);
       hash_uid_packet (packet->pkt.user_id, md, sig);
       rc = check_signature_end_simple (signer, sig, md);
@@ -964,8 +963,8 @@ check_key_signature2 (kbnode_t root, kbnode_t node, PKT_public_key *check_pk,
     *r_expiredate = 0;
   if (r_expired)
     *r_expired = 0;
-  assert (node->pkt->pkttype == PKT_SIGNATURE);
-  assert (root->pkt->pkttype == PKT_PUBLIC_KEY);
+  log_assert (node->pkt->pkttype == PKT_SIGNATURE);
+  log_assert (root->pkt->pkttype == PKT_PUBLIC_KEY);
 
   pk = root->pkt->pkt.public_key;
   sig = node->pkt->pkt.signature;

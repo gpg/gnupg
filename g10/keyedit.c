@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #include <ctype.h>
 #ifdef HAVE_LIBREADLINE
 # define GNUPG_LIBREADLINE_H_INCLUDED
@@ -339,8 +338,8 @@ sig_comparison (const void *av, const void *bv)
   int ndatab;
   int i;
 
-  assert (an->pkt->pkttype == PKT_SIGNATURE);
-  assert (bn->pkt->pkttype == PKT_SIGNATURE);
+  log_assert (an->pkt->pkttype == PKT_SIGNATURE);
+  log_assert (bn->pkt->pkttype == PKT_SIGNATURE);
 
   a = an->pkt->pkt.signature;
   b = bn->pkt->pkt.signature;
@@ -352,7 +351,7 @@ sig_comparison (const void *av, const void *bv)
 
   ndataa = pubkey_get_nsig (a->pubkey_algo);
   ndatab = pubkey_get_nsig (a->pubkey_algo);
-  assert (ndataa == ndatab);
+  log_assert (ndataa == ndatab);
 
   for (i = 0; i < ndataa; i ++)
     {
@@ -399,7 +398,7 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
   int missing_selfsig = 0;
   int modified = 0;
 
-  assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
+  log_assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
   pk = kb->pkt->pkt.public_key;
 
   /* First we look for duplicates.  */
@@ -431,17 +430,17 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
         sigs[i] = n;
         i ++;
       }
-    assert (i == nsigs);
+    log_assert (i == nsigs);
 
     qsort (sigs, nsigs, sizeof (sigs[0]), sig_comparison);
 
     last_i = 0;
     for (i = 1; i < nsigs; i ++)
       {
-        assert (sigs[last_i]);
-        assert (sigs[last_i]->pkt->pkttype == PKT_SIGNATURE);
-        assert (sigs[i]);
-        assert (sigs[i]->pkt->pkttype == PKT_SIGNATURE);
+        log_assert (sigs[last_i]);
+        log_assert (sigs[last_i]->pkt->pkttype == PKT_SIGNATURE);
+        log_assert (sigs[i]);
+        log_assert (sigs[i]->pkt->pkttype == PKT_SIGNATURE);
 
         if (sig_comparison (&sigs[last_i], &sigs[i]) == 0)
           /* They are the same.  Kill the latter.  */
@@ -519,7 +518,7 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
       switch (p->pkttype)
         {
         case PKT_PUBLIC_KEY:
-          assert (p->pkt.public_key == pk);
+          log_assert (p->pkt.public_key == pk);
           if (only_selected && ! (n->flag & NODFLG_SELKEY))
             {
               current_component = NULL;
@@ -658,9 +657,9 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
             }
           else if (n2)
             {
-              assert (n2->pkt->pkttype == PKT_USER_ID
-                      || n2->pkt->pkttype == PKT_PUBLIC_KEY
-                      || n2->pkt->pkttype == PKT_PUBLIC_SUBKEY);
+              log_assert (n2->pkt->pkttype == PKT_USER_ID
+                          || n2->pkt->pkttype == PKT_PUBLIC_KEY
+                          || n2->pkt->pkttype == PKT_PUBLIC_SUBKEY);
 
               if (DBG_PACKET)
                 {
@@ -681,7 +680,7 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
                  after n2.  */
 
               /* Unlink the signature.  */
-              assert (n_prevp);
+              log_assert (n_prevp);
               *n_prevp = n->next;
 
               /* Insert the sig immediately after the component.  */
@@ -1577,7 +1576,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 	      PKT_signature *sig;
 	      struct sign_attrib attrib;
 
-	      assert (primary_pk);
+	      log_assert (primary_pk);
 	      memset (&attrib, 0, sizeof attrib);
 	      attrib.non_exportable = local;
 	      attrib.non_revocable = nonrevocable;
@@ -2639,7 +2638,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	case cmdPREF:
 	  {
 	    int count = count_selected_uids (keyblock);
-	    assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+	    log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 	    show_names (NULL, keyblock, keyblock->pkt->pkt.public_key,
 			count ? NODFLG_SELUID : 0, 1);
 	  }
@@ -2648,7 +2647,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	case cmdSHOWPREF:
 	  {
 	    int count = count_selected_uids (keyblock);
-	    assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+	    log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 	    show_names (NULL, keyblock, keyblock->pkt->pkt.public_key,
 			count ? NODFLG_SELUID : 0, 2);
 	  }
@@ -4052,7 +4051,7 @@ menu_adduid (kbnode_t pub_keyblock, int photo, const char *photo_name,
     }
   if (!node) /* No subkey.  */
     pub_where = NULL;
-  assert (pk);
+  log_assert (pk);
 
   if (photo)
     {
@@ -4349,7 +4348,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
   size_t fprlen;
   int rc;
 
-  assert (pub_keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+  log_assert (pub_keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 
   pk = pub_keyblock->pkt->pkt.public_key;
 
@@ -4736,7 +4735,7 @@ menu_backsign (KBNODE pub_keyblock)
   KBNODE node;
   u32 timestamp;
 
-  assert (pub_keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+  log_assert (pub_keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 
   merge_keys_and_selfsig (pub_keyblock);
   main_pk = pub_keyblock->pkt->pkt.public_key;
@@ -5485,7 +5484,7 @@ menu_select_uid_namehash (KBNODE keyblock, const char *namehash)
   KBNODE node;
   int i;
 
-  assert (strlen (namehash) == NAMEHASH_LEN * 2);
+  log_assert (strlen (namehash) == NAMEHASH_LEN * 2);
 
   for (i = 0; i < NAMEHASH_LEN; i++)
     hash[i] = hextobyte (&namehash[i * 2]);
@@ -5819,7 +5818,7 @@ menu_revsig (KBNODE keyblock)
   int rc, any, skip = 1, all = !count_selected_uids (keyblock);
   struct revocation_reason_info *reason = NULL;
 
-  assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+  log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 
   /* First check whether we have any signatures at all.  */
   any = 0;
@@ -5960,7 +5959,7 @@ reloop:			/* (must use this, because we are modifing the list) */
 	  || node->pkt->pkttype != PKT_SIGNATURE)
 	continue;
       unode = find_prev_kbnode (keyblock, node, PKT_USER_ID);
-      assert (unode);		/* we already checked this */
+      log_assert (unode); /* we already checked this */
 
       memset (&attrib, 0, sizeof attrib);
       attrib.reason = reason;

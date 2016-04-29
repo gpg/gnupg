@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <errno.h>
 
 #include "gpg.h"
@@ -243,7 +242,7 @@ parse_keyserver_uri (const char *string,int require_scheme)
   int count;
   char *uri,*options;
 
-  assert(string!=NULL);
+  log_assert (string);
 
   keyserver=xmalloc_clear(sizeof(struct keyserver_spec));
 

@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <assert.h>
 #include <errno.h>
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -425,7 +424,7 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
 
   if ( !s2k )
     {
-      assert (mode != 3 && mode != 4);
+      log_assert (mode != 3 && mode != 4);
       /* This is used for the old rfc1991 mode
        * Note: This must match the code in encode.c with opt.rfc1991 set */
       s2k = &help_s2k;

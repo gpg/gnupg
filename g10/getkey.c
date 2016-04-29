@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <ctype.h>
 
 #include "gpg.h"
@@ -220,7 +219,7 @@ cache_public_key (PKT_public_key * pk)
               pk_cache_entries--;
             }
         }
-      assert (pk_cache_entries < MAX_PK_CACHE_ENTRIES);
+      log_assert (pk_cache_entries < MAX_PK_CACHE_ENTRIES);
     }
   pk_cache_entries++;
   ce = xmalloc (sizeof *ce);
@@ -659,8 +658,8 @@ pk_from_block (GETKEY_CTX ctx, PKT_public_key * pk, KBNODE keyblock,
 
   (void) ctx;
 
-  assert (a->pkt->pkttype == PKT_PUBLIC_KEY
-	  || a->pkt->pkttype == PKT_PUBLIC_SUBKEY);
+  log_assert (a->pkt->pkttype == PKT_PUBLIC_KEY
+              || a->pkt->pkttype == PKT_PUBLIC_SUBKEY);
 
   copy_public_key (pk, a->pkt->pkt.public_key);
 }
@@ -779,7 +778,7 @@ get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
   KBNODE keyblock;
   u32 pkid[2];
 
-  assert (pk);
+  log_assert (pk);
 #if MAX_PK_CACHE_ENTRIES
   {
     /* Try to get it from the cache */
@@ -817,8 +816,8 @@ get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
       return GPG_ERR_NO_PUBKEY;
     }
 
-  assert (keyblock && keyblock->pkt
-          && keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+  log_assert (keyblock && keyblock->pkt
+              && keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 
   /* We return the primary key.  If KEYID matched a subkey, then we
      return an error.  */
@@ -970,7 +969,7 @@ skip_unusable (void *dummy, u32 * keyid, int uid_no)
 
       /* If UID_NO is non-zero, then the keyblock better have at least
 	 that many UIDs.  */
-      assert (uids_seen == uid_no);
+      log_assert (uids_seen == uid_no);
     }
 
   if (!unusable)
@@ -1040,8 +1039,8 @@ key_byname (GETKEY_CTX *retctx, strlist_t namelist,
   if (retctx)
     {
       /* Reset the returned context in case of error.  */
-      assert (!ret_kdbhd); /* Not allowed because the handle is stored
-			      in the context.  */
+      log_assert (!ret_kdbhd); /* Not allowed because the handle is stored
+                                  in the context.  */
       *retctx = NULL;
     }
   if (ret_kdbhd)
@@ -1380,7 +1379,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	    {
 	      char fpr_string[MAX_FINGERPRINT_LEN * 2 + 1];
 
-	      assert (fpr_len <= MAX_FINGERPRINT_LEN);
+	      log_assert (fpr_len <= MAX_FINGERPRINT_LEN);
 
 	      free_strlist (namelist);
 	      namelist = NULL;
@@ -1440,7 +1439,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 
   if (retctx && *retctx)
     {
-      assert (!(*retctx)->extra_list);
+      log_assert (!(*retctx)->extra_list);
       (*retctx)->extra_list = namelist;
     }
   else
@@ -1564,8 +1563,8 @@ get_pubkey_byfprint_fast (PKT_public_key * pk,
       return GPG_ERR_NO_PUBKEY;
     }
 
-  assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY
-	  || keyblock->pkt->pkttype == PKT_PUBLIC_SUBKEY);
+  log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY
+              || keyblock->pkt->pkttype == PKT_PUBLIC_SUBKEY);
   if (pk)
     copy_public_key (pk, keyblock->pkt->pkt.public_key);
   release_kbnode (keyblock);
@@ -3111,7 +3110,7 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
   PKT_public_key *pk;
 
 
-  assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+  log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 
   if (ctx->exact)
     /* Get the key or subkey that matched the low-level search
@@ -3121,8 +3120,8 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
 	{
 	  if ((k->flag & 1))
 	    {
-	      assert (k->pkt->pkttype == PKT_PUBLIC_KEY
-		      || k->pkt->pkttype == PKT_PUBLIC_SUBKEY);
+	      log_assert (k->pkt->pkttype == PKT_PUBLIC_KEY
+                          || k->pkt->pkttype == PKT_PUBLIC_SUBKEY);
 	      foundk = k;
               pk = k->pkt->pkt.public_key;
               pk->flags.exact = 1;
@@ -3136,7 +3135,7 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
     {
       if ((k->flag & 2))
 	{
-	  assert (k->pkt->pkttype == PKT_USER_ID);
+	  log_assert (k->pkt->pkttype == PKT_USER_ID);
 	  foundu = k->pkt->pkt.user_id;
 	  break;
 	}
@@ -3856,8 +3855,8 @@ have_secret_key_with_kid (u32 *keyid)
              match a single key or subkey.  */
 	  if ((node->flag & 1))
             {
-              assert (node->pkt->pkttype == PKT_PUBLIC_KEY
-                      || node->pkt->pkttype == PKT_PUBLIC_SUBKEY);
+              log_assert (node->pkt->pkttype == PKT_PUBLIC_KEY
+                          || node->pkt->pkttype == PKT_PUBLIC_SUBKEY);
 
               if (!agent_probe_secret_key (NULL, node->pkt->pkt.public_key))
 		result = 1; /* Secret key available.  */

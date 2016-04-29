@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #ifdef HAVE_LIBREADLINE
 # define GNUPG_LIBREADLINE_H_INCLUDED
 # include <readline/readline.h>
@@ -901,7 +900,7 @@ change_private_do (const char *args, int nr)
   int n;
   int rc;
 
-  assert (nr >= 1 && nr <= 4);
+  log_assert (nr >= 1 && nr <= 4);
   do_name[11] = '0' + nr;
 
   if (args && (args = strchr (args, '<')))  /* Read it from a file */
@@ -1247,7 +1246,7 @@ show_card_key_info (struct agent_card_info_s *info)
 static int
 replace_existing_key_p (struct agent_card_info_s *info, int keyno)
 {
-  assert (keyno >= 0 && keyno <= 3);
+  log_assert (keyno >= 0 && keyno <= 3);
 
   if ((keyno == 1 && info->fpr1valid)
       || (keyno == 2 && info->fpr2valid)
@@ -1538,8 +1537,8 @@ card_store_subkey (KBNODE node, int use)
   int rc;
   gnupg_isotime_t timebuf;
 
-  assert (node->pkt->pkttype == PKT_PUBLIC_KEY
-          || node->pkt->pkttype == PKT_PUBLIC_SUBKEY);
+  log_assert (node->pkt->pkttype == PKT_PUBLIC_KEY
+              || node->pkt->pkttype == PKT_PUBLIC_SUBKEY);
 
   pk = node->pkt->pkt.public_key;
 

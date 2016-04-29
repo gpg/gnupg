@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "util.h"
@@ -75,7 +74,7 @@ pk_ecdh_default_params (unsigned int qbits)
           break;
         }
     }
-  assert (i < DIM (kek_params_table));
+  log_assert (i < DIM (kek_params_table));
   if (DBG_CRYPTO)
     log_printhex ("ECDH KEK params are", kek_params, sizeof(kek_params) );
 
@@ -134,7 +133,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       }
 
     secret_x_size = (nbits+7)/8;
-    assert (nbytes >= secret_x_size);
+    log_assert (nbytes >= secret_x_size);
     if ((nbytes & 1))
       /* Remove the "04" prefix of non-compressed format.  */
       memmove (secret_x, secret_x+1, secret_x_size);
@@ -241,16 +240,16 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
 
     gcry_md_final (h);
 
-    assert( gcry_md_get_algo_dlen (kdf_hash_algo) >= 32 );
+    log_assert( gcry_md_get_algo_dlen (kdf_hash_algo) >= 32 );
 
     memcpy (secret_x, gcry_md_read (h, kdf_hash_algo),
             gcry_md_get_algo_dlen (kdf_hash_algo));
     gcry_md_close (h);
 
     old_size = secret_x_size;
-    assert( old_size >= gcry_cipher_get_algo_keylen( kdf_encr_algo ) );
+    log_assert( old_size >= gcry_cipher_get_algo_keylen( kdf_encr_algo ) );
     secret_x_size = gcry_cipher_get_algo_keylen( kdf_encr_algo );
-    assert( secret_x_size <= gcry_md_get_algo_dlen (kdf_hash_algo) );
+    log_assert( secret_x_size <= gcry_md_get_algo_dlen (kdf_hash_algo) );
 
     /* We could have allocated more, so clean the tail before returning.  */
     memset (secret_x+secret_x_size, 0, old_size - secret_x_size);

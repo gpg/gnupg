@@ -26,7 +26,6 @@
 #include <string.h>
 #include <errno.h>
 #include <time.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "util.h"
@@ -767,7 +766,7 @@ fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
   md = do_fingerprint_md(pk);
   dp = gcry_md_read( md, 0 );
   len = gcry_md_get_algo_dlen (gcry_md_get_algo (md));
-  assert( len <= MAX_FINGERPRINT_LEN );
+  log_assert( len <= MAX_FINGERPRINT_LEN );
   if (!array)
     array = xmalloc ( len );
   memcpy (array, dp, len );
@@ -849,7 +848,7 @@ format_hexfingerprint (const char *fingerprint, char *buffer, size_t buflen)
           buffer[j ++] = fingerprint[i];
         }
       buffer[j ++] = 0;
-      assert (j == space);
+      log_assert (j == space);
     }
   else
     {

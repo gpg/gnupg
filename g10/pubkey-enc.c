@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "util.h"
@@ -197,7 +196,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {
       fingerprint_from_pk (sk, fp, &fpn);
-      assert (fpn == 20);
+      log_assert (fpn == 20);
     }
 
   /* Decrypt. */
@@ -267,7 +266,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
           goto leave;
         }
       nframe -= frame[nframe-1]; /* Remove padding.  */
-      assert (!n); /* (used just below) */
+      log_assert (!n); /* (used just below) */
     }
   else
     {

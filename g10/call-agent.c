@@ -25,7 +25,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
-#include <assert.h>
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
@@ -712,7 +711,7 @@ learn_status_cb (void *opaque, const char *line)
            && strchr("1234", keyword[11]))
     {
       int no = keyword[11] - '1';
-      assert (no >= 0 && no <= 3);
+      log_assert (no >= 0 && no <= 3);
       xfree (parm->private_do[no]);
       parm->private_do[no] = unescape_status_string (line);
     }
@@ -2133,7 +2132,7 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   buf = get_membuf (&data, &len);
   if (!buf)
     return gpg_error_from_syserror ();
-  assert (len); /* (we forced Nul termination.)  */
+  log_assert (len); /* (we forced Nul termination.)  */
 
   if (*buf != '(')
     {

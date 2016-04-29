@@ -69,8 +69,6 @@
 #include "i18n.h"
 #include "zb32.h"
 
-#include <assert.h>
-
 
 #ifdef ENABLE_SELINUX_HACKS
 /* A object and a global variable to keep track of files marked as

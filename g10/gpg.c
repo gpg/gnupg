@@ -26,7 +26,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <assert.h>
 #ifdef HAVE_STAT
 #include <sys/stat.h> /* for stat() */
 #endif
@@ -1389,7 +1388,7 @@ check_permissions (const char *path, int item)
   if(opt.no_perm_warn)
     return 0;
 
-  assert(item==0 || item==1 || item==2);
+  log_assert(item==0 || item==1 || item==2);
 
   /* extensions may attach a path */
   if(item==2 && path[0]!=DIRSEP_C)

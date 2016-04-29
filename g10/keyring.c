@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -243,7 +242,7 @@ keyring_new (void *token)
   KEYRING_HANDLE hd;
   KR_RESOURCE resource = token;
 
-  assert (resource);
+  log_assert (resource);
 
   hd = xtrycalloc (1, sizeof *hd);
   if (!hd)
@@ -258,7 +257,7 @@ keyring_release (KEYRING_HANDLE hd)
 {
     if (!hd)
         return;
-    assert (active_handles > 0);
+    log_assert (active_handles > 0);
     active_handles--;
     xfree (hd->word_match.name);
     xfree (hd->word_match.pattern);
@@ -691,7 +690,7 @@ keyring_delete_keyblock (KEYRING_HANDLE hd)
 int
 keyring_search_reset (KEYRING_HANDLE hd)
 {
-    assert (hd);
+    log_assert (hd);
 
     hd->current.kr = NULL;
     iobuf_close (hd->current.iobuf);
@@ -752,7 +751,7 @@ prepare_search (KEYRING_HANDLE hd)
           hd->current.eof = 1;
           return -1; /* keyring not available */
         }
-        assert (!hd->current.iobuf);
+        log_assert (!hd->current.iobuf);
     }
     else { /* EOF */
         if (DBG_LOOKUP)
@@ -1084,7 +1083,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
           if (desc[n].mode == KEYDB_SEARCH_MODE_WORDS)
             name = desc[n].u.name;
         }
-      assert (name);
+      log_assert (name);
       if ( !hd->word_match.name || strcmp (hd->word_match.name, name) )
         {
           /* name changed */
@@ -1713,7 +1712,7 @@ do_copy (int mode, const char *fname, KBNODE root,
 	    goto leave;
 	}
 	/* skip this keyblock */
-	assert( n_packets );
+	log_assert( n_packets );
 	rc = skip_some_packets( fp, n_packets );
 	if( rc ) {
 	    log_error("%s: skipping %u packets failed: %s\n",

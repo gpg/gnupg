@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "options.h"
@@ -1835,9 +1834,9 @@ import_revoke_cert (const char *fname, kbnode_t node,
 
   (void)fname;
 
-  assert( !node->next );
-  assert( node->pkt->pkttype == PKT_SIGNATURE );
-  assert( node->pkt->pkt.signature->sig_class == 0x20 );
+  log_assert (!node->next );
+  log_assert (node->pkt->pkttype == PKT_SIGNATURE );
+  log_assert (node->pkt->pkt.signature->sig_class == 0x20 );
 
   keyid[0] = node->pkt->pkt.signature->keyid[0];
   keyid[1] = node->pkt->pkt.signature->keyid[1];
@@ -2720,7 +2719,7 @@ append_uid (kbnode_t keyblock, kbnode_t node, int *n_sigs,
   (void)fname;
   (void)keyid;
 
-  assert(node->pkt->pkttype == PKT_USER_ID );
+  log_assert (node->pkt->pkttype == PKT_USER_ID );
 
   /* find the position */
   for (n = keyblock; n; n_where = n, n = n->next)
@@ -2773,8 +2772,8 @@ merge_sigs (kbnode_t dst, kbnode_t src, int *n_sigs,
   (void)fname;
   (void)keyid;
 
-  assert(dst->pkt->pkttype == PKT_USER_ID );
-  assert(src->pkt->pkttype == PKT_USER_ID );
+  log_assert (dst->pkt->pkttype == PKT_USER_ID);
+  log_assert (src->pkt->pkttype == PKT_USER_ID);
 
   for (n=src->next; n && n->pkt->pkttype != PKT_USER_ID; n = n->next)
     {
@@ -2821,8 +2820,8 @@ merge_keysigs (kbnode_t dst, kbnode_t src, int *n_sigs,
   (void)fname;
   (void)keyid;
 
-  assert (dst->pkt->pkttype == PKT_PUBLIC_SUBKEY
-          || dst->pkt->pkttype == PKT_SECRET_SUBKEY);
+  log_assert (dst->pkt->pkttype == PKT_PUBLIC_SUBKEY
+              || dst->pkt->pkttype == PKT_SECRET_SUBKEY);
 
   for (n=src->next; n ; n = n->next)
     {
@@ -2882,8 +2881,8 @@ append_key (kbnode_t keyblock, kbnode_t node, int *n_sigs,
   (void)fname;
   (void)keyid;
 
-  assert( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-          || node->pkt->pkttype == PKT_SECRET_SUBKEY );
+  log_assert (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+              || node->pkt->pkttype == PKT_SECRET_SUBKEY);
 
   while (node)
     {

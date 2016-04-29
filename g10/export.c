@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "options.h"
@@ -781,10 +780,10 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   ski->algo = protect_algo;
   ski->s2k.mode = s2k_mode;
   ski->s2k.hash_algo = s2k_algo;
-  assert (sizeof ski->s2k.salt == sizeof s2k_salt);
+  log_assert (sizeof ski->s2k.salt == sizeof s2k_salt);
   memcpy (ski->s2k.salt, s2k_salt, sizeof s2k_salt);
   ski->s2k.count = s2k_count;
-  assert (ivlen <= sizeof ski->iv);
+  log_assert (ivlen <= sizeof ski->iv);
   memcpy (ski->iv, iv, ivlen);
   ski->ivlen = ivlen;
 

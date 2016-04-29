@@ -24,9 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #ifdef HAVE_DOSISH_SYSTEM
-#include <fcntl.h>		/* for setmode() */
+# include <fcntl.h>		/* for setmode() */
 #endif
 
 #include "gpg.h"
@@ -799,7 +798,7 @@ print_subpackets_colon (PKT_signature * sig)
 {
   byte *i;
 
-  assert (opt.show_subpackets);
+  log_assert (opt.show_subpackets);
 
   for (i = opt.show_subpackets; *i; i++)
     {
@@ -1788,9 +1787,9 @@ do_reorder_keyblock (KBNODE keyblock, int attr)
       if (node->pkt->pkttype == PKT_USER_ID)
 	break;
     }
-  assert (node);
-  assert (last);	 /* The user ID is never the first packet.  */
-  assert (primary0);	 /* Ditto (this is the node before primary).  */
+  log_assert (node);
+  log_assert (last);	 /* The user ID is never the first packet.  */
+  log_assert (primary0); /* Ditto (this is the node before primary).  */
   if (node == primary)
     return; /* Already the first one.  */
 

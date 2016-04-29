@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <time.h>
 
 #include "gpg.h"
@@ -855,7 +854,7 @@ do_check_sig (CTX c, kbnode_t node, int *is_selfsig,
   gcry_md_hd_t md_good = NULL;
   int algo, rc;
 
-  assert (node->pkt->pkttype == PKT_SIGNATURE);
+  log_assert (node->pkt->pkttype == PKT_SIGNATURE);
   if (is_selfsig)
     *is_selfsig = 0;
   sig = node->pkt->pkt.signature;
@@ -1523,7 +1522,7 @@ pka_uri_from_sig (CTX c, PKT_signature *sig)
 {
   if (!sig->flags.pka_tried)
     {
-      assert (!sig->pka_info);
+      log_assert (!sig->pka_info);
       sig->flags.pka_tried = 1;
       sig->pka_info = get_pka_address (sig);
       if (sig->pka_info)
@@ -1637,7 +1636,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 /*     dump_kbnode (c->list); */
 
     n = c->list;
-    assert (n);
+    log_assert (n);
     if ( n->pkt->pkttype == PKT_SIGNATURE )
       {
         /* This is either "S{1,n}" case (detached signature) or
@@ -1864,7 +1863,7 @@ check_sig_and_print (CTX c, kbnode_t node)
           if (un->pkt->pkt.user_id->attrib_data)
             continue;
 
-          assert (pk);
+          log_assert (pk);
 
 	  /* Since this is just informational, don't actually ask the
 	     user to update any trust information.  (Note: we register

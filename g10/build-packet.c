@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <ctype.h>
 
 #include "gpg.h"
@@ -91,7 +90,7 @@ build_packet( IOBUF out, PACKET *pkt )
 
     if( DBG_PACKET )
 	log_debug("build_packet() type=%d\n", pkt->pkttype );
-    assert( pkt->pkt.generic );
+    log_assert( pkt->pkt.generic );
 
     switch ((pkttype = pkt->pkttype))
       {
@@ -266,7 +265,7 @@ calc_packet_length( PACKET *pkt )
     u32 n=0;
     int new_ctb = 0;
 
-    assert( pkt->pkt.generic );
+    log_assert (pkt->pkt.generic);
     switch( pkt->pkttype ) {
       case PKT_PLAINTEXT:
 	n = calc_plaintext( pkt->pkt.plaintext );
@@ -465,7 +464,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
           byte *p;
           unsigned int ndatabits;
 
-          assert (gcry_mpi_get_flag (pk->pkey[npkey], GCRYMPI_FLAG_OPAQUE));
+          log_assert (gcry_mpi_get_flag (pk->pkey[npkey], GCRYMPI_FLAG_OPAQUE));
           p = gcry_mpi_get_opaque (pk->pkey[npkey], &ndatabits);
           if (p)
             iobuf_write (a, p, (ndatabits+7)/8 );
@@ -509,7 +508,7 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
     log_assert (ctb_pkttype (ctb) == PKT_SYMKEY_ENC);
 
     /* The only acceptable version.  */
-    assert( enc->version == 4 );
+    log_assert( enc->version == 4 );
 
     /* RFC 4880, Section 3.7.  */
     switch( enc->s2k.mode )
@@ -798,7 +797,7 @@ delete_sig_subpkt (subpktarea_t *area, sigsubpkttype_t reqtype )
 
     if (!okay)
         log_error ("delete_subpkt: buffer shorter than subpacket\n");
-    assert (unused <= area->len);
+    log_assert (unused <= area->len);
     area->len -= unused;
     return !!unused;
 }
@@ -1437,7 +1436,7 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
 static int
 do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops )
 {
-  log_assert (ctb_pkttype (ctb) == PKT_ONEPASS_SIG);
+    log_assert (ctb_pkttype (ctb) == PKT_ONEPASS_SIG);
 
     write_header(out, ctb, 4 + 8 + 1);
 

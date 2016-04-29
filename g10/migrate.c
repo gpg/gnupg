@@ -23,7 +23,6 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <assert.h>
 
 #include "gpg.h"
 #include "options.h"

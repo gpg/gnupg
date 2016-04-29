@@ -29,7 +29,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <assert.h>
 #include <errno.h>
 #ifdef HAVE_ZIP
 # include <zlib.h>

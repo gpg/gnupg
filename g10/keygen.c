@@ -24,7 +24,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
-#include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -1371,7 +1370,7 @@ gen_elg (int algo, unsigned int nbits, KBNODE pub_root,
   char *keyparms;
   char nbitsstr[35];
 
-  assert (is_ELGAMAL (algo));
+  log_assert (is_ELGAMAL (algo));
 
   if (nbits < 1024)
     {
@@ -1513,9 +1512,9 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
   gpg_error_t err;
   char *keyparms;
 
-  assert (algo == PUBKEY_ALGO_ECDSA
-          || algo == PUBKEY_ALGO_EDDSA
-          || algo == PUBKEY_ALGO_ECDH);
+  log_assert (algo == PUBKEY_ALGO_ECDSA
+              || algo == PUBKEY_ALGO_EDDSA
+              || algo == PUBKEY_ALGO_ECDH);
 
   if (!curve || !*curve)
     return gpg_error (GPG_ERR_UNKNOWN_CURVE);
@@ -1571,7 +1570,7 @@ gen_rsa (int algo, unsigned int nbits, KBNODE pub_root,
   char nbitsstr[35];
   const unsigned maxsize = (opt.flags.large_rsa ? 8192 : 4096);
 
-  assert (is_RSA(algo));
+  log_assert (is_RSA(algo));
 
   if (!nbits)
     nbits = DEFAULT_STD_KEYSIZE;
@@ -2794,7 +2793,7 @@ generate_user_id (KBNODE keyblock, const char *uidstr)
 static void
 append_to_parameter (struct para_data_s *para, struct para_data_s *r)
 {
-  assert (para);
+  log_assert (para);
   while (para->next)
     para = para->next;
   para->next = r;
@@ -4034,7 +4033,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
               push_armor_filter (outctrl->pub.afx, outctrl->pub.stream);
             }
         }
-      assert( outctrl->pub.stream );
+      log_assert( outctrl->pub.stream );
       if (opt.verbose)
         log_info (_("writing public key to '%s'\n"), outctrl->pub.fname );
     }
@@ -4079,7 +4078,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
   if (!err)
     {
       pri_psk = pub_root->next->pkt->pkt.public_key;
-      assert (pri_psk);
+      log_assert (pri_psk);
 
       /* Make sure a few fields are correctly set up before going
          further.  */
@@ -4141,7 +4140,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
               for (node = pub_root; node; node = node->next)
                 if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
                   sub_psk = node->pkt->pkt.public_key;
-              assert (sub_psk);
+              log_assert (sub_psk);
 
               if (s)
                 err = card_store_key_with_backup (ctrl, sub_psk, opt.homedir);
@@ -4327,7 +4326,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
   xfree (hexgrip);
   hexgrip = NULL;
   algo = ask_algo (ctrl, 1, NULL, &use, &hexgrip);
-  assert (algo);
+  log_assert (algo);
 
   if (hexgrip)
     nbits = 0;
@@ -4392,7 +4391,7 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
   u32 cur_time;
   struct para_data_s *para = NULL;
 
-  assert (keyno >= 1 && keyno <= 3);
+  log_assert (keyno >= 1 && keyno <= 3);
 
   para = xtrycalloc (1, sizeof *para + strlen (serialno) );
   if (!para)
@@ -4462,7 +4461,7 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
       for (node = pub_keyblock; node; node = node->next)
         if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
           sub_pk = node->pkt->pkt.public_key;
-      assert (sub_pk);
+      log_assert (sub_pk);
       err = write_keybinding (pub_keyblock, pri_pk, sub_pk,
                               use, cur_time, NULL);
     }

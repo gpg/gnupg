@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -861,7 +860,7 @@ keydb_new (void)
   hd->saved_found = -1;
   hd->is_reset = 1;
 
-  assert (used_resources <= MAX_KEYDB_RESOURCES);
+  log_assert (used_resources <= MAX_KEYDB_RESOURCES);
   for (i=j=0; ! die && i < used_resources; i++)
     {
       switch (all_resources[i].type)
@@ -919,7 +918,7 @@ keydb_release (KEYDB_HANDLE hd)
 
   if (!hd)
     return;
-  assert (active_handles > 0);
+  log_assert (active_handles > 0);
   active_handles--;
 
   unlock_all (hd);
@@ -1521,8 +1520,8 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
   KEYDB_SEARCH_DESC desc;
   size_t len;
 
-  assert (kb);
-  assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
+  log_assert (kb);
+  log_assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
   pk = kb->pkt->pkt.public_key;
 
   if (!hd)
@@ -1549,7 +1548,7 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
   err = keydb_search (hd, &desc, 1, NULL);
   if (err)
     return gpg_error (GPG_ERR_VALUE_NOT_FOUND);
-  assert (hd->found >= 0 && hd->found < hd->used);
+  log_assert (hd->found >= 0 && hd->found < hd->used);
 
   switch (hd->active[hd->found].type)
     {
