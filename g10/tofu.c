@@ -1,5 +1,5 @@
 /* tofu.c - TOFU trust model.
- * Copyright (C) 2015 g10 Code GmbH
+ * Copyright (C) 2015, 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -398,7 +398,66 @@ tofu_end_batch_update (void)
         end_transaction (db, 1);
     }
 }
+
+
+
 
+/* Wrapper around strtol which prints a warning in case of a
+ * conversion error.  On success the converted value is stored at
+ * R_VALUE and 0 is returned; on error FALLBACK is stored at R_VALUE
+ * and an error code is returned.  */
+static gpg_error_t
+string_to_long (long *r_value, const char *string, long fallback, int line)
+{
+  gpg_error_t err;
+  char *tail = NULL;
+
+  gpg_err_set_errno (0);
+  *r_value = strtol (string, &tail, 0);
+  if (errno || !(!strcmp (tail, ".0") || !*tail))
+    {
+      err = errno? gpg_error_from_errno (errno) : gpg_error (GPG_ERR_BAD_DATA);
+      log_debug ("%s:%d: "
+                 "strtol failed for DB returned string (tail=%.10s): %s\n",
+                 __FILE__, line, tail, gpg_strerror (err));
+      *r_value = fallback;
+    }
+  else
+    err = 0;
+
+  return err;
+}
+
+
+/* Wrapper around strtoul which prints a warning in case of a
+ * conversion error.  On success the converted value is stored at
+ * R_VALUE and 0 is returned; on error FALLBACK is stored at R_VALUE
+ * and an error code is returned.  */
+static gpg_error_t
+string_to_ulong (unsigned long *r_value, const char *string,
+                 unsigned long fallback, int line)
+{
+  gpg_error_t err;
+  char *tail = NULL;
+
+  gpg_err_set_errno (0);
+  *r_value = strtoul (string, &tail, 0);
+  if (errno || !(!strcmp (tail, ".0") || !*tail))
+    {
+      err = errno? gpg_error_from_errno (errno) : gpg_error (GPG_ERR_BAD_DATA);
+      log_debug ("%s:%d: "
+                 "strtoul failed for DB returned string (tail=%.10s): %s\n",
+                 __FILE__, line, tail, gpg_strerror (err));
+      *r_value = fallback;
+    }
+  else
+    err = 0;
+
+  return err;
+}
+
+
+
 /* Collect results of a select count (*) ...; style query.  Aborts if
    the argument is not a valid integer (or real of the form X.0).  */
 static int
@@ -406,17 +465,13 @@ get_single_unsigned_long_cb (void *cookie, int argc, char **argv,
 			     char **azColName)
 {
   unsigned long int *count = cookie;
-  char *tail = NULL;
 
   (void) azColName;
 
   log_assert (argc == 1);
 
-  errno = 0;
-  *count = strtoul (argv[0], &tail, 0);
-  if (errno || ! (strcmp (tail, ".0") == 0 || *tail == '\0'))
-    /* Abort.  */
-    return 1;
+  if (string_to_ulong (count, argv[0], 0, __LINE__))
+    return 1; /* Abort.  */
   return 0;
 }
 
@@ -1055,17 +1110,14 @@ static int
 get_single_long_cb (void *cookie, int argc, char **argv, char **azColName)
 {
   long *count = cookie;
-  char *tail = NULL;
 
   (void) azColName;
 
   log_assert (argc == 1);
 
-  errno = 0;
-  *count = strtol (argv[0], &tail, 0);
-  if (errno || ! (strcmp (tail, ".0") == 0 || *tail == '\0'))
-    /* Abort.  */
-    return 1;
+  if (string_to_long (count, argv[0], 0, __LINE__))
+    return 1; /* Abort.  */
+
   return 0;
 }
 
@@ -1356,43 +1408,28 @@ signature_stats_collect_cb (void *cookie, int argc, char **argv,
 			    char **azColName, sqlite3_stmt *stmt)
 {
   struct signature_stats **statsp = cookie;
-  char *tail;
   int i = 0;
   enum tofu_policy policy;
   long time_ago;
   unsigned long count;
+  long along;
 
   (void) azColName;
   (void) stmt;
 
   i ++;
 
-  tail = NULL;
-  errno = 0;
-  policy = strtol (argv[i], &tail, 0);
-  if (errno || ! (strcmp (tail, ".0") == 0 || *tail == '\0'))
-    {
-      /* Abort.  */
-      log_error ("%s: Error converting %s to an integer (tail = '%s')\n",
-		 __func__, argv[i], tail);
-      return 1;
-    }
+  if (string_to_long (&along, argv[i], 0, __LINE__))
+    return 1;  /* Abort */
+  policy = along;
   i ++;
 
   if (! argv[i])
     time_ago = 0;
   else
     {
-      tail = NULL;
-      errno = 0;
-      time_ago = strtol (argv[i], &tail, 0);
-      if (errno || ! (strcmp (tail, ".0") == 0 || *tail == '\0'))
-        {
-          /* Abort.  */
-          log_error ("%s: Error converting %s to an integer (tail = '%s')\n",
-                     __func__, argv[i], tail);
-          return 1;
-        }
+      if (string_to_long (&time_ago, argv[i], 0, __LINE__))
+        return 1; /* Abort.  */
     }
   i ++;
 
@@ -1402,16 +1439,8 @@ signature_stats_collect_cb (void *cookie, int argc, char **argv,
     count = 0;
   else
     {
-      tail = NULL;
-      errno = 0;
-      count = strtoul (argv[i], &tail, 0);
-      if (errno || ! (strcmp (tail, ".0") == 0 || *tail == '\0'))
-        {
-          /* Abort.  */
-          log_error ("%s: Error converting %s to an integer (tail = '%s')\n",
-                     __func__, argv[i], tail);
-          return 1;
-        }
+      if (string_to_ulong (&count, argv[i], 0, __LINE__))
+        return 1; /* Abort */
     }
   i ++;
 
@@ -1449,8 +1478,8 @@ get_policy (struct dbs *dbs, const char *fingerprint, const char *email,
   int rc;
   char *err = NULL;
   strlist_t strlist = NULL;
-  char *tail = NULL;
   enum tofu_policy policy = _tofu_GET_POLICY_ERROR;
+  long along;
 
   db = getdb (dbs, email, DB_EMAIL);
   if (! db)
@@ -1494,15 +1523,14 @@ get_policy (struct dbs *dbs, const char *fingerprint, const char *email,
 
   /* The result has the right form.  */
 
-  errno = 0;
-  policy = strtol (strlist->d, &tail, 0);
-  if (errno || *tail != '\0')
+  if (string_to_long (&along, strlist->d, 0, __LINE__))
     {
       log_error (_("error reading TOFU database: %s\n"),
                  gpg_strerror (GPG_ERR_BAD_DATA));
       print_further_info ("bad value for policy: %s", strlist->d);
       goto out;
     }
+  policy = along;
 
   if (! (policy == TOFU_POLICY_AUTO
 	 || policy == TOFU_POLICY_GOOD
@@ -2347,52 +2375,24 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
               fingerprint_pp);
   else
     {
-      char *tail = NULL;
       signed long messages;
       signed long first_seen_ago;
       signed long most_recent_seen_ago;
 
       log_assert (strlist_length (strlist) == 3);
 
-      errno = 0;
-      messages = strtol (strlist->d, &tail, 0);
-      if (errno || *tail != '\0')
-	/* Abort.  */
-	{
-	  log_debug ("%s:%d: Couldn't convert %s (messages) to an int: %s.\n",
-		     __func__, __LINE__, strlist->d, strerror (errno));
-	  messages = -1;
-	}
+      string_to_long (&messages, strlist->d, -1, __LINE__);
 
       if (messages == 0 && *strlist->next->d == '\0')
-	/* min(NULL) => NULL => "".  */
-        {
+        { /* min(NULL) => NULL => "".  */
           first_seen_ago = -1;
           most_recent_seen_ago = -1;
         }
       else
 	{
-	  errno = 0;
-	  first_seen_ago = strtol (strlist->next->d, &tail, 0);
-	  if (errno || *tail != '\0')
-	    /* Abort.  */
-	    {
-	      log_debug ("%s:%d: Couldn't convert %s (first_seen) to an int: %s.\n",
-			 __func__, __LINE__,
-			 strlist->next->d, strerror (errno));
-	      first_seen_ago = 0;
-	    }
-
-	  errno = 0;
-	  most_recent_seen_ago = strtol (strlist->next->next->d, &tail, 0);
-	  if (errno || *tail != '\0')
-	    /* Abort.  */
-	    {
-	      log_debug ("%s:%d: Couldn't convert %s (most_recent_seen) to an int: %s.\n",
-			 __func__, __LINE__,
-			 strlist->next->next->d, strerror (errno));
-	      most_recent_seen_ago = 0;
-	    }
+          string_to_long (&first_seen_ago, strlist->next->d, 0, __LINE__);
+	  string_to_long (&most_recent_seen_ago, strlist->next->next->d, 0,
+                          __LINE__);
 	}
 
       if (messages == -1 || first_seen_ago == 0)
@@ -2493,7 +2493,7 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
               xfree (tmp);
 	      log_info ("%s", text);
               xfree (text);
-	      free (set_policy_command);
+	      es_free (set_policy_command);
 	    }
 	}
     }
