@@ -567,8 +567,8 @@ Use the source, Luke :-). The output format is still subject to change.
 Pack or unpack an arbitrary input into/from an OpenPGP ASCII armor.
 This is a GnuPG extension to OpenPGP and in general not very useful.
 
-@item --tofu-set-policy @code{auto|good|unknown|bad|ask}  @code{key...}
-@opindex tofu-set-policy
+@item --tofu-policy @code{auto|good|unknown|bad|ask}  @code{key...}
+@opindex tofu-policy
 Set the TOFU policy for all the bindings associated with the specified
 keys.  For more information about the meaning of the policies,
 @pxref{trust-model-tofu}.  The keys may be specified either by their
