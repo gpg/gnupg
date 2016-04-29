@@ -715,7 +715,21 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
   if (fmt)
     {
       if (ignore_arg_ptr)
-        es_fputs_unlocked (fmt, logstream);
+        { /* This is used by log_string and comes with the extra
+           * feature that after a LF the next line is indent at the
+           * length of the prefix.  Note that we do not yet include
+           * the length of the timestamp and pid in the indent
+           * computation.  */
+          const char *p, *pend;
+
+          for (p = fmt; (pend = strchr (p, '\n')); p = pend+1)
+            es_fprintf_unlocked (logstream, "%*s%.*s",
+                                 (int)((p != fmt
+                                        && (with_prefix || force_prefixes))
+                                       ?strlen (prefix_buffer)+2:0), "",
+                                 (int)(pend - p)+1, p);
+          es_fputs_unlocked (p, logstream);
+        }
       else
         es_vfprintf_unlocked (logstream, fmt, arg_ptr);
       if (*fmt && fmt[strlen(fmt)-1] != '\n')
@@ -769,12 +783,13 @@ do_log_ignore_arg (int level, const char *str, ...)
 }
 
 
+/* Log STRING at LEVEL but indent from the second line on by the
+ * length of the prefix.  */
 void
 log_string (int level, const char *string)
 {
   /* We need a dummy arg_ptr, but there is no portable way to create
-     one.  So we call the do_logv function through a variadic wrapper.
-     MB: Why not just use "%s"?  */
+   * one.  So we call the do_logv function through a variadic wrapper. */
   do_log_ignore_arg (level, string);
 }
 
