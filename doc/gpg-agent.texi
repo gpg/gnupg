@@ -54,6 +54,32 @@ The agent is automatically started on demand by @command{gpg},
 Thus there is no reason to start it manually.  In case you want to use
 the included Secure Shell Agent you may start the agent using:
 
+@c From dkg on gnupg-devel on 2016-04-21:
+@c
+@c Here's an attempt at writing a short description of the goals of an
+@c isolated cryptographic agent:
+@c
+@c   A cryptographic agent should control access to secret key material.
+@c   The agent permits use of the secret key material by a supplicant
+@c   without providing a copy of the secret key material to the supplicant.
+@c
+@c   An isolated cryptographic agent separates the request for use of
+@c   secret key material from permission for use of secret key material.
+@c   That is, the system or process requesting use of the key (the
+@c   "supplicant") can be denied use of the key by the owner/operator of
+@c   the agent (the "owner"), which the supplicant has no control over.
+@c
+@c   One way of enforcing this split is a per-key or per-session
+@c   passphrase, known only by the owner, which must be supplied to the
+@c   agent to permit the use of the secret key material.  Another way is
+@c   with an out-of-band permission mechanism (e.g. a button or GUI
+@c   interface that the owner has access to, but the supplicant does not).
+@c
+@c   The rationale for this separation is that it allows access to the
+@c   secret key to be tightly controled and audited, and it doesn't permit
+@c   the the supplicant to either copy the key or to override the owner's
+@c   intentions.
+
 @example
 gpg-connect-agent /bye
 @end example
