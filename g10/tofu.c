@@ -2795,16 +2795,29 @@ tofu_wot_trust_combine (int tofu_base, int wot_base)
 
   /* Now we only have positive or neutral trust policies.  We take
      the max.  */
-  if (tofu == TRUST_ULTIMATE || wot == TRUST_ULTIMATE)
+  if (tofu == TRUST_ULTIMATE)
+    return upper | TRUST_ULTIMATE | TRUST_FLAG_TOFU_BASED;
+  if (wot == TRUST_ULTIMATE)
     return upper | TRUST_ULTIMATE;
-  if (tofu == TRUST_FULLY || wot == TRUST_FULLY)
+
+  if (tofu == TRUST_FULLY)
+    return upper | TRUST_FULLY | TRUST_FLAG_TOFU_BASED;
+  if (wot == TRUST_FULLY)
     return upper | TRUST_FULLY;
-  if (tofu == TRUST_MARGINAL || wot == TRUST_MARGINAL)
+
+  if (tofu == TRUST_MARGINAL)
+    return upper | TRUST_MARGINAL | TRUST_FLAG_TOFU_BASED;
+  if (wot == TRUST_MARGINAL)
     return upper | TRUST_MARGINAL;
-  if (tofu == TRUST_UNDEFINED || wot == TRUST_UNDEFINED)
+
+  if (tofu == TRUST_UNDEFINED)
+    return upper | TRUST_UNDEFINED | TRUST_FLAG_TOFU_BASED;
+  if (wot == TRUST_UNDEFINED)
     return upper | TRUST_UNDEFINED;
+
   return upper | TRUST_UNKNOWN;
 }
+
 
 /* Return the validity (TRUST_NEVER, etc.) of the binding
    <FINGERPRINT, USER_ID>.

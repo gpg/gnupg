@@ -505,6 +505,22 @@ do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
 }
 
 
+/* Write a TRUST_foo status line inclduing the validation model.  */
+static void
+write_trust_status (int statuscode, int trustlevel)
+{
+  int tm;
+
+  /* For the combined tofu+pgp method, we return the trust model which
+   * was responsible for the trustlevel.  */
+  if (opt.trust_model == TM_TOFU_PGP)
+    tm = (trustlevel & TRUST_FLAG_TOFU_BASED)? TM_TOFU : TM_PGP;
+  else
+    tm = opt.trust_model;
+  write_status_strings (statuscode, "0 ", trust_model_string (tm), NULL);
+}
+
+
 /****************
  * Check whether we can trust this signature.
  * Returns an error code if we should not trust this signature.
@@ -626,7 +642,7 @@ check_signatures_trust( PKT_signature *sig )
       /* fall thru */
     case TRUST_UNKNOWN:
     case TRUST_UNDEFINED:
-      write_status( STATUS_TRUST_UNDEFINED );
+      write_trust_status (STATUS_TRUST_UNDEFINED, trustlevel);
       log_info(_("WARNING: This key is not certified with"
                  " a trusted signature!\n"));
       log_info(_("         There is no indication that the "
@@ -636,7 +652,7 @@ check_signatures_trust( PKT_signature *sig )
 
     case TRUST_NEVER:
       /* currently we won't get that status */
-      write_status( STATUS_TRUST_NEVER );
+      write_trust_status (STATUS_TRUST_NEVER, trustlevel);
       log_info(_("WARNING: We do NOT trust this key!\n"));
       log_info(_("         The signature is probably a FORGERY.\n"));
       if (opt.with_fingerprint)
@@ -645,7 +661,7 @@ check_signatures_trust( PKT_signature *sig )
       break;
 
     case TRUST_MARGINAL:
-      write_status( STATUS_TRUST_MARGINAL );
+      write_trust_status (STATUS_TRUST_MARGINAL, trustlevel);
       log_info(_("WARNING: This key is not certified with"
                  " sufficiently trusted signatures!\n"));
       log_info(_("         It is not certain that the"
@@ -654,13 +670,13 @@ check_signatures_trust( PKT_signature *sig )
       break;
 
     case TRUST_FULLY:
-      write_status( STATUS_TRUST_FULLY );
+      write_trust_status (STATUS_TRUST_FULLY, trustlevel);
       if (opt.with_fingerprint)
         print_fingerprint (NULL, pk, 1);
       break;
 
     case TRUST_ULTIMATE:
-      write_status( STATUS_TRUST_ULTIMATE );
+      write_trust_status (STATUS_TRUST_ULTIMATE, trustlevel);
       if (opt.with_fingerprint)
         print_fingerprint (NULL, pk, 1);
       break;

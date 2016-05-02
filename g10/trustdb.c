@@ -378,16 +378,16 @@ do_sync(void)
       }
 }
 
-static const char *
-trust_model_string(void)
+const char *
+trust_model_string (int model)
 {
-  switch(opt.trust_model)
+  switch (model)
     {
     case TM_CLASSIC:  return "classic";
-    case TM_PGP:      return "PGP";
+    case TM_PGP:      return "pgp";
     case TM_EXTERNAL: return "external";
-    case TM_TOFU:     return "TOFU";
-    case TM_TOFU_PGP: return "TOFU+PGP";
+    case TM_TOFU:     return "tofu";
+    case TM_TOFU_PGP: return "tofu+pgp";
     case TM_ALWAYS:   return "always";
     case TM_DIRECT:   return "direct";
     default:          return "unknown";
@@ -470,7 +470,8 @@ init_trustdb ()
 	}
 
       if(opt.verbose)
-	log_info(_("using %s trust model\n"),trust_model_string());
+	log_info(_("using %s trust model\n"),
+                 trust_model_string (opt.trust_model));
     }
 
   if (opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC
@@ -522,7 +523,7 @@ check_trustdb ()
     }
   else
     log_info (_("no need for a trustdb check with '%s' trust model\n"),
-	      trust_model_string());
+	      trust_model_string(opt.trust_model));
 }
 
 
@@ -538,7 +539,7 @@ update_trustdb()
     validate_keys (1);
   else
     log_info (_("no need for a trustdb update with '%s' trust model\n"),
-	      trust_model_string());
+	      trust_model_string(opt.trust_model));
 }
 
 void
@@ -1963,7 +1964,8 @@ validate_keys (int interactive)
 
   if (!opt.quiet)
     log_info ("marginals needed: %d  completes needed: %d  trust model: %s\n",
-              opt.marginals_needed, opt.completes_needed, trust_model_string());
+              opt.marginals_needed, opt.completes_needed,
+              trust_model_string (opt.trust_model));
 
   for (depth=0; depth < opt.max_cert_depth; depth++)
     {

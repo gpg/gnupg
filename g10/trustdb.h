@@ -21,7 +21,7 @@
 #ifndef G10_TRUSTDB_H
 #define G10_TRUSTDB_H
 
-/* Trust values must be sorted in ascending order */
+/* Trust values must be sorted in ascending order! */
 #define TRUST_MASK	 15
 #define TRUST_UNKNOWN	  0  /* o: not yet calculated/assigned */
 #define TRUST_EXPIRED	  1  /* e: calculation may be invalid */
@@ -30,11 +30,13 @@
 #define TRUST_MARGINAL	  4  /* m: marginally trusted */
 #define TRUST_FULLY	  5  /* f: fully trusted      */
 #define TRUST_ULTIMATE	  6  /* u: ultimately trusted */
-/* trust values not covered by the mask */
-#define TRUST_FLAG_REVOKED 32 /* r: revoked */
-#define TRUST_FLAG_SUB_REVOKED 64 /* r: revoked but for subkeys */
-#define TRUST_FLAG_DISABLED 128 /* d: key/uid disabled */
+/* Trust values not covered by the mask. */
+#define TRUST_FLAG_REVOKED        32 /* r: revoked */
+#define TRUST_FLAG_SUB_REVOKED    64 /* r: revoked but for subkeys */
+#define TRUST_FLAG_DISABLED      128 /* d: key/uid disabled */
 #define TRUST_FLAG_PENDING_CHECK 256 /* a check-trustdb is pending */
+#define TRUST_FLAG_TOFU_BASED    512 /* The trust value is based on
+                                      * the TOFU information.  */
 
 /* Private value used in tofu.c - must be different from the trust
    values.  */
@@ -117,6 +119,7 @@ void check_trustdb (void);
 void update_trustdb (void);
 int setup_trustdb( int level, const char *dbname );
 void how_to_fix_the_trustdb (void);
+const char *trust_model_string (int model);
 void init_trustdb( void );
 void tdb_check_trustdb_stale (void);
 void sync_trustdb( void );
