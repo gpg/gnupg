@@ -469,8 +469,8 @@ open_card (ctrl_t ctrl, const char *apptype)
           else if (sw == SW_HOST_CARD_INACTIVE)
             err = gpg_error (GPG_ERR_CARD_RESET);
           else
-            err = gpg_error (GPG_ERR_CARD);
-	}
+            err = gpg_error (GPG_ERR_ENODEV);
+        }
       else
         err = select_application (ctrl, slot, apptype, &ctrl->app_ctx);
     }
