@@ -2232,7 +2232,8 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 
 /* Return a malloced string of the form
  *    "7 months, 1 day, 5 minutes, 0 seconds"
- * The caller must free that string.
+ * The caller should replace all '~' in the returned string by a space
+ * and also free the returned string.
  *
  * This is actually a bad hack which may not work correctly with all
  * languages.
@@ -2306,7 +2307,9 @@ time_ago_str (long long int t)
 
   if (years)
     {
-      es_fprintf (fp, ngettext("%d year", "%d years", years), years);
+      /* TRANSLATORS: The tilde ('~') is used here to indicate a
+       * non-breakable space  */
+      es_fprintf (fp, ngettext("%d~year", "%d~years", years), years);
       count ++;
       first = i;
     }
@@ -2315,7 +2318,7 @@ time_ago_str (long long int t)
     {
       if (count)
         es_fprintf (fp, ", ");
-      es_fprintf (fp, ngettext("%d month", "%d months", months), months);
+      es_fprintf (fp, ngettext("%d~month", "%d~months", months), months);
       count ++;
       first = i;
     }
@@ -2324,7 +2327,7 @@ time_ago_str (long long int t)
     {
       if (count)
         es_fprintf (fp, ", ");
-      es_fprintf (fp, ngettext("%d day", "%d days", days), days);
+      es_fprintf (fp, ngettext("%d~day", "%d~days", days), days);
       count ++;
       first = i;
     }
@@ -2333,7 +2336,7 @@ time_ago_str (long long int t)
     {
       if (count)
         es_fprintf (fp, ", ");
-      es_fprintf (fp, ngettext("%d hour", "%d hours", hours), hours);
+      es_fprintf (fp, ngettext("%d~hour", "%d~hours", hours), hours);
       count ++;
       first = i;
     }
@@ -2342,7 +2345,7 @@ time_ago_str (long long int t)
     {
       if (count)
         es_fprintf (fp, ", ");
-      es_fprintf (fp, ngettext("%d minute", "%d minutes", minutes), minutes);
+      es_fprintf (fp, ngettext("%d~minute", "%d~minutes", minutes), minutes);
       count ++;
       first = i;
     }
@@ -2351,7 +2354,7 @@ time_ago_str (long long int t)
     {
       if (count)
         es_fprintf (fp, ", ");
-      es_fprintf (fp, ngettext("%d second", "%d seconds", seconds), seconds);
+      es_fprintf (fp, ngettext("%d~second", "%d~seconds", seconds), seconds);
     }
 
   es_fputc (0, fp);
@@ -2485,12 +2488,15 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
             }
 
           {
-            char *tmpmsg;
+            char *tmpmsg, *p;
             es_fputc (0, fp);
             if (es_fclose_snatch (fp, (void **) &tmpmsg, NULL))
               log_fatal ("error snatching memory stream\n");
             msg = format_text (tmpmsg, 0, 72, 80);
             es_free (tmpmsg);
+            for (p=msg; *p; p++)
+              if (*p == '~')
+                *p = ' ';
           }
 
 	  log_string (GPGRT_LOG_INFO, msg);
