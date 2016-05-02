@@ -40,11 +40,15 @@
 #include "trustdb.h"
 #include "mkdir_p.h"
 #include "sqlite.h"
+#include "status.h"
 
 #include "tofu.h"
 
 
 #define CONTROL_L ('L' - 'A' + 1)
+
+/* Number of signed messages required to not show extra warnings.  */
+#define NO_WARNING_THRESHOLD 10
 
 
 #define DEBUG_TOFU_CACHE 0
@@ -1205,7 +1209,7 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
 	{
 	  log_debug ("TOFU: Error reading from binding database"
 		     " (reading policy for <%s, %s>): %s\n",
-		     fingerprint_pp, email, err);
+		     fingerprint, email, err);
 	  sqlite3_free (err);
 	}
     }
@@ -1215,18 +1219,24 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
       if (policy_old != TOFU_POLICY_NONE)
 	log_debug ("Changing TOFU trust policy for binding <%s, %s>"
 		   " from %s to %s.\n",
-		   fingerprint_pp, email,
+		   fingerprint, email,
 		   tofu_policy_str (policy_old),
 		   tofu_policy_str (policy));
       else
 	log_debug ("Set TOFU trust policy for binding <%s, %s> to %s.\n",
-		   fingerprint_pp, email,
+		   fingerprint, email,
 		   tofu_policy_str (policy));
     }
 
   if (policy_old == policy)
     /* Nothing to do.  */
     goto out;
+
+  if (opt.dry_run)
+    {
+      log_info ("TOFU database update skipped due to --dry-run\n");
+      goto out;
+    }
 
   rc = sqlite3_stepx
     (db_email->db, &db_email->s.record_binding_update, NULL, NULL, &err,
@@ -1246,7 +1256,7 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
     {
       log_error (_("error updating TOFU database: %s\n"), err);
       print_further_info (" insert bindings <%s, %s> = %s",
-                          fingerprint_pp, email, tofu_policy_str (policy));
+                          fingerprint, email, tofu_policy_str (policy));
       sqlite3_free (err);
       goto out;
     }
@@ -1273,7 +1283,7 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
 	{
 	  log_error (_("error updating TOFU database: %s\n"), err);
           print_further_info ("insert bindings <%s, %s>",
-                              fingerprint_pp, email);
+                              fingerprint, email);
 	  sqlite3_free (err);
 	  goto out;
 	}
@@ -1680,7 +1690,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
       policy = opt.tofu_default_policy;
       if (DBG_TRUST)
 	log_debug ("TOFU: binding <%s, %s>'s policy is auto (default: %s).\n",
-		   fingerprint_pp, email,
+		   fingerprint, email,
 		   tofu_policy_str (opt.tofu_default_policy));
     }
   switch (policy)
@@ -1693,7 +1703,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	 We don't need to ask the user anything.  */
       if (DBG_TRUST)
 	log_debug ("TOFU: Known binding <%s, %s>'s policy: %s\n",
-		   fingerprint_pp, email, tofu_policy_str (policy));
+		   fingerprint, email, tofu_policy_str (policy));
       trust_level = tofu_policy_to_trust_level (policy);
       goto out;
 
@@ -1771,7 +1781,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 
       if (DBG_TRUST)
 	log_debug ("TOFU: New binding <%s, %s>, no conflict.\n",
-		   email, fingerprint_pp);
+		   email, fingerprint);
 
       if (record_binding (dbs, fingerprint, email, user_id,
 			  TOFU_POLICY_AUTO, 0) != 0)
@@ -1828,8 +1838,6 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
       ((policy == TOFU_POLICY_NONE && bindings_with_this_email_count > 0)
        || (policy == TOFU_POLICY_ASK && conflict));
     estream_t fp;
-    char *binding;
-    int binding_shown;
     strlist_t other_user_ids = NULL;
     struct signature_stats *stats = NULL;
     struct signature_stats *stats_iter = NULL;
@@ -1838,43 +1846,65 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 
     fp = es_fopenmem (0, "rw,samethread");
     if (! fp)
-      log_fatal ("Error creating memory stream\n");
+      log_fatal ("error creating memory stream: %s\n",
+                 gpg_strerror (gpg_error_from_syserror()));
 
-    binding = xasprintf ("<%s, %s>", fingerprint_pp, email);
-    binding_shown = 0;
+    /* Format the first part of the message.  */
+    {
+      estream_t fp1;
+      char *binding = xasprintf ("<%s, %s>", fingerprint, email);
+      int binding_shown = 0;
+      char *tmpstr, *text;
 
-    if (policy == TOFU_POLICY_NONE)
-      {
-	es_fprintf (fp, _("The binding %s is NOT known."), binding);
-        es_fputs ("  ", fp);
-	binding_shown = 1;
-      }
-    else if (policy == TOFU_POLICY_ASK
-	     /* If there the conflict is with itself, then don't
-		display this message.  */
-	     && conflict && strcmp (conflict, fingerprint) != 0)
-      {
-        char *conflict_pp = format_hexfingerprint (conflict, NULL, 0);
-	es_fprintf (fp,
-		    _("The key %s raised a conflict with this binding (%s)."
-                      "  Since this binding's policy was 'auto', it was "
-                      "changed to 'ask'."),
-		    conflict_pp, binding);
-        es_fputs ("  ", fp);
-        xfree (conflict_pp);
-	binding_shown = 1;
-      }
-    /* TRANSLATORS: The %s%s is replaced by either a fingerprint and a
-       blank or by two empty strings.  */
-    es_fprintf (fp,
-		_("Please indicate whether you believe the binding %s%s"
-		  "is legitimate (the key belongs to the stated owner) "
-		  "or a forgery (bad)."),
-		binding_shown ? "" : binding,
-		binding_shown ? "" : " ");
-    es_fputs ("\n\n", fp);
+      fp1 = es_fopenmem (0, "rw,samethread");
+      if (!fp1)
+        log_fatal ("error creating memory stream: %s\n",
+                   gpg_strerror (gpg_error_from_syserror()));
 
-    xfree (binding);
+      if (policy == TOFU_POLICY_NONE)
+        {
+          es_fprintf (fp1, _("The binding %s is NOT known."), binding);
+          es_fputs ("  ", fp1);
+          binding_shown = 1;
+        }
+      else if (policy == TOFU_POLICY_ASK
+               /* If there the conflict is with itself, then don't
+                  display this message.  */
+               && conflict && strcmp (conflict, fingerprint) != 0)
+        {
+          es_fprintf (fp1,
+                      _("The key with fingerprint %s raised a conflict "
+                        "with the binding %s."
+                        "  Since this binding's policy was 'auto', it was "
+                        "changed to 'ask'."),
+                      conflict, binding);
+          es_fputs ("  ", fp1);
+          binding_shown = 1;
+        }
+
+      /* TRANSLATORS: The %s%s is replaced by either a fingerprint and a
+         blank or by two empty strings.  */
+      es_fprintf (fp1,
+                  _("Please indicate whether you believe the binding %s%s"
+                    "is legitimate (the key belongs to the stated owner) "
+                    "or a forgery (bad)."),
+                  binding_shown ? "" : binding,
+                  binding_shown ? "" : " ");
+      es_fputc ('\n', fp1);
+
+      xfree (binding);
+
+      es_fputc (0, fp1);
+      if (es_fclose_snatch (fp1, (void **)&tmpstr, NULL))
+        log_fatal ("error snatching memory stream\n");
+      text = format_text (tmpstr, 0, 72, 80);
+      es_free (tmpstr);
+
+      es_fputs (text, fp);
+      xfree (text);
+    }
+
+    es_fputc ('\n', fp);
 
     /* Find other user ids associated with this key and whether the
        bindings are marked as good or bad.  */
@@ -2370,6 +2400,9 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
       goto out;
     }
 
+  write_status_text_and_buffer (STATUS_TOFU_USER, fingerprint,
+                                email, strlen (email), 0);
+
   if (! strlist)
     log_info (_("Have never verified a message signed by key %s!\n"),
               fingerprint_pp);
@@ -2396,8 +2429,8 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 	}
 
       if (messages == -1 || first_seen_ago == 0)
-        log_info (_("Failed to collect signature statistics"
-                    " for \"%s\" (key %s)\n"),
+        log_info (_("Failed to collect signature statistics for \"%s\"\n"
+                    "(key %s)\n"),
                   user_id, fingerprint_pp);
       else
 	{
@@ -2407,55 +2440,67 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 
 	  fp = es_fopenmem (0, "rw,samethread");
 	  if (! fp)
-	    log_fatal ("error creating memory stream\n");
+            log_fatal ("error creating memory stream: %s\n",
+                       gpg_strerror (gpg_error_from_syserror()));
 
 	  if (messages == 0)
-            es_fprintf (fp,
-                        _("Verified 0 messages signed by \"%s\""
-                          " (key: %s, policy: %s)."),
-                        user_id, fingerprint_pp, tofu_policy_str (policy));
+            {
+              es_fprintf (fp, _("Verified %ld messages signed by \"%s\"."),
+                          0L, user_id);
+              es_fputc ('\n', fp);
+            }
 	  else
 	    {
-              char *first_seen_ago_str =
-                time_ago_str (first_seen_ago);
-              char *most_recent_seen_ago_str =
-                time_ago_str (most_recent_seen_ago);
+              char *first_seen_ago_str = time_ago_str (first_seen_ago);
 
               /* TRANSLATORS: The final %s is replaced by a string like
                  "7 months, 1 day, 5 minutes, 0 seconds". */
-	      es_fprintf (fp, ngettext("Verified %ld message signed by \"%s\""
-                                       " (key: %s, policy: %s) in the past %s.",
-                                       "Verified %ld messages signed by \"%s\""
-                                       " (key: %s, policy: %s) in the past %s.",
-                                       messages),
-			  messages, user_id,
-			  fingerprint_pp, tofu_policy_str (policy),
-                          first_seen_ago_str);
+	      es_fprintf (fp,
+                          ngettext("Verified %ld message signed by \"%s\"\n"
+                                   "in the past %s.",
+                                   "Verified %ld messages signed by \"%s\"\n"
+                                   "in the past %s.",
+                                   messages),
+			  messages, user_id, first_seen_ago_str);
 
               if (messages > 1)
                 {
+                  char *tmpstr = time_ago_str (most_recent_seen_ago);
                   es_fputs ("  ", fp);
-                  es_fprintf (fp,
-                              _("The most recent message was verified %s ago."),
-                              most_recent_seen_ago_str);
+                  es_fprintf (fp, _("The most recent message was"
+                                    " verified %s ago."), tmpstr);
+                  xfree (tmpstr);
                 }
-
               xfree (first_seen_ago_str);
-              xfree (most_recent_seen_ago_str);
+
+              if (opt.verbose)
+                {
+                  es_fputs ("  ", fp);
+                  es_fputc ('(', fp);
+                  es_fprintf (fp, _("policy: %s"), tofu_policy_str (policy));
+                  es_fputs (")\n", fp);
+                }
+              else
+                es_fputs ("\n", fp);
             }
 
-	  es_fputc (0, fp);
-	  if (es_fclose_snatch (fp, (void **) &msg, NULL))
-	    log_fatal ("error snatching memory stream\n");
+          {
+            char *tmpmsg;
+            es_fputc (0, fp);
+            if (es_fclose_snatch (fp, (void **) &tmpmsg, NULL))
+              log_fatal ("error snatching memory stream\n");
+            msg = format_text (tmpmsg, 0, 72, 80);
+            es_free (tmpmsg);
+          }
 
-	  log_info ("%s\n", msg);
+	  log_string (GPGRT_LOG_INFO, msg);
           xfree (msg);
 
-	  if (policy == TOFU_POLICY_AUTO && messages < 10)
+	  if (policy == TOFU_POLICY_AUTO && messages < NO_WARNING_THRESHOLD)
 	    {
 	      char *set_policy_command;
 	      char *text;
-              char *tmp;
+              char *tmpmsg;
 
 	      if (messages == 0)
 		log_info (_("Warning: we've have yet to see"
@@ -2465,34 +2510,29 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
                             " single message signed by this key!\n"));
 
 	      set_policy_command =
-		xasprintf ("gpg --tofu-policy bad \"%s\"", fingerprint);
-	      /* TRANSLATORS: translate the below text.  We don't
-		 directly internationalize that text so that we can
-		 tweak it without breaking translations.  */
-	      text = ngettext("TOFU: few signatures %d message %s",
-                              "TOFU: few signatures %d messages %s", 1);
-	      if (strcmp (text, "TOFU: few signatures %d message %s") == 0)
-                {
-                  text =
-                    (messages == 1?
-                     "Warning: if you think you've seen more than %d message "
-                     "signed by this key, then this key might be a forgery!  "
-                     "Carefully examine the email address for small variations "
-                     "(e.g., additional white space).  If the key is suspect, "
-                     "then use '%s' to mark it as being bad.\n"
-                     :
-                     "Warning: if you think you've seen more than %d messages "
-                     "signed by this key, then this key might be a forgery!  "
-                     "Carefully examine the email address for small variations "
-                     "(e.g., additional white space).  If the key is suspect, "
-                     "then use '%s' to mark it as being bad.\n");
-                }
+		xasprintf ("gpg --tofu-policy bad %s", fingerprint);
 
-              tmp = xasprintf (text, messages, set_policy_command);
-              text = format_text (tmp, 0, 72, 80);
-              xfree (tmp);
-	      log_info ("%s", text);
+              tmpmsg = xasprintf
+                (ngettext
+                 ("Warning: if you think you've seen more than %ld message "
+                  "signed by this key, then this key might be a forgery!  "
+                  "Carefully examine the email address for small "
+                  "variations.  If the key is suspect, then use\n"
+                  "  %s\n"
+                  "to mark it as being bad.\n",
+                  "Warning: if you think you've seen more than %ld messages "
+                  "signed by this key, then this key might be a forgery!  "
+                      "Carefully examine the email address for small "
+                  "variations.  If the key is suspect, then use\n"
+                  "  %s\n"
+                  "to mark it as being bad.\n",
+                  messages),
+                  messages, set_policy_command);
+              text = format_text (tmpmsg, 0, 72, 80);
+              xfree (tmpmsg);
+	      log_string (GPGRT_LOG_INFO, text);
               xfree (text);
+
 	      es_free (set_policy_command);
 	    }
 	}
@@ -2634,18 +2674,22 @@ tofu_register (PKT_public_key *pk, const char *user_id,
        because <fingerprint, email, sig_time, sig_digest> is the
        primary key!  */
     log_debug ("SIGNATURES DB contains duplicate records"
-	       " <key: %s, %s, time: 0x%lx, sig: %s, %s>."
+	       " <%s, %s, 0x%lx, %s, %s>."
 	       "  Please report.\n",
-	       fingerprint_pp, email, (unsigned long) sig_time,
+	       fingerprint, email, (unsigned long) sig_time,
 	       sig_digest, origin);
   else if (c == 1)
     {
       already_verified = 1;
       if (DBG_TRUST)
 	log_debug ("Already observed the signature"
-		   " <key: %s, %s, time: 0x%lx, sig: %s, %s>\n",
-		   fingerprint_pp, email, (unsigned long) sig_time,
+		   " <%s, %s, 0x%lx, %s, %s>\n",
+		   fingerprint, email, (unsigned long) sig_time,
 		   sig_digest, origin);
+    }
+  else if (opt.dry_run)
+    {
+      log_info ("TOFU database update skipped due to --dry-run\n");
     }
   else
     /* This is the first time that we've seen this signature.
@@ -2653,7 +2697,7 @@ tofu_register (PKT_public_key *pk, const char *user_id,
     {
       if (DBG_TRUST)
 	log_debug ("TOFU: Saving signature <%s, %s, %s>\n",
-		   fingerprint_pp, email, sig_digest);
+		   fingerprint, email, sig_digest);
 
       log_assert (c == 0);
 
