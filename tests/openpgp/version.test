@@ -105,6 +105,6 @@ $GPG_PRESET_PASSPHRASE --preset -P abc A0747D5F9425E6664F4FFBEED20FBCA79FDED2BD
 
 
 info "Printing the GPG version"
-$GPG --version
+$GPG --version | awk '{print "    > " $0}'
 
 #fixme: check that the output is as expected

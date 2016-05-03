@@ -55,13 +55,24 @@ show_stdnames (void)
 {
   const char *name, *assname;
   int iterator = 0;
+  int count;
 
-  printf ("Known envvars:");
+  printf ("    > Known envvars:");
+  count = 20;
   while ((name = session_env_list_stdenvnames (&iterator, &assname)))
     {
+      if (count > 60)
+        {
+          printf ("\n    >");
+          count = 7;
+        }
       printf ( " %s", name);
+      count += strlen (name) + 1;
       if (assname)
-        printf ( "(%s)", assname);
+        {
+          printf ( "(%s)", assname);
+          count += strlen (assname) + 2;
+        }
     }
   putchar('\n');
 }

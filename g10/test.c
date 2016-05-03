@@ -74,10 +74,13 @@ static int verbose;
 						\
     if (test_result == expected_result)		\
       {						\
-        printf (" ok.\n");			\
+        if (verbose) printf (" ok.\n");         \
       }						\
     else					\
       {						\
+        if (!verbose)                           \
+          printf ("%d. Checking %s...",         \
+                  tests, (description) ?: "");  \
 	printf (" failed.\n");			\
 	printf ("  %s == %s failed.\n",		\
 		STRINGIFY(test),		\
@@ -125,7 +128,8 @@ exit_tests (int force)
 {
   if (tests_failed == 0)
     {
-      printf ("All %d tests passed.\n", tests);
+      if (verbose)
+        printf ("All %d tests passed.\n", tests);
       exit (!!force);
     }
   else

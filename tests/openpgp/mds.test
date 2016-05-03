@@ -26,7 +26,7 @@ cat /dev/null | $GPG --with-colons --print-mds >y
 if have_hash_algo "MD5"; then
   test_one ":1:"    "D41D8CD98F00B204E9800998ECF8427E"
 else
-  echo "Hash algorithm MD5 is not installed (not an error)"
+  echo "    > Hash algorithm MD5 is not installed (not an error)"
 fi
 # SHA-1
 test_one ":2:"    "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709"

@@ -35,18 +35,18 @@ print_open_fds (int *array)
 {
   int n;
 
+  if (!verbose)
+    return;
+
   for (n=0; array[n] != -1; n++)
     ;
   printf ("open file descriptors: %d", n);
-  if (verbose)
-    {
-      putchar (' ');
-      putchar (' ');
-      putchar ('(');
-      for (n=0; array[n] != -1; n++)
-        printf ("%d%s", array[n], array[n+1] == -1?"":" ");
-      putchar (')');
-    }
+  putchar (' ');
+  putchar (' ');
+  putchar ('(');
+  for (n=0; array[n] != -1; n++)
+    printf ("%d%s", array[n], array[n+1] == -1?"":" ");
+  putchar (')');
   putchar ('\n');
 }
 
@@ -84,7 +84,8 @@ test_close_all_fds (void)
   system (buffer);
 #endif
 
-  printf ("max. file descriptors: %d\n", max_fd);
+  if (verbose)
+    printf ("max. file descriptors: %d\n", max_fd);
   array = xget_all_open_fds ();
   print_open_fds (array);
   for (initial_count=n=0; array[n] != -1; n++)

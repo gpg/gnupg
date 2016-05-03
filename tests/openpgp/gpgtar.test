@@ -68,7 +68,7 @@ do_test()
         awk '{print $NF}' "$FILELIST" | grep "^${F}$" >/dev/null
     done
 
-    $TOOL --gpg "$GPG"  --gpg-args "$GPGARGS" $EXTRACT_FLAGS \
+    $TOOL --gpg "$GPG"  --gpg-args "$GPGARGS" $EXTRACT_FLAGS --quiet \
           --tar-args --directory="${TESTDIR}" \
           "${TESTDIR}/test.tar.pgp"
     for F in $TESTFILES

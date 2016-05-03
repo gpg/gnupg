@@ -34,6 +34,8 @@ Usage: gpg-zip [--help] [--version] [--encrypt] [--decrypt] [--symmetric]
 
 Encrypt or sign files into an archive."
 
+tar_verbose_opt="v"
+
 while test $# -gt 0 ; do
   case $1 in
     -h | --help | --h*)
@@ -113,6 +115,10 @@ while test $# -gt 0 ; do
       shift
       shift
       ;;
+    --quiet)
+      tar_verbose_opt=""
+      shift
+      ;;
     --)
       shift
       break
@@ -135,7 +141,7 @@ elif test x$list = xyes ; then
    cat "$1" | $GPG $gpg_args | $TAR $tar_args -tf -
 elif test x$unpack = xyes ; then
 #   echo "cat \"$1\" | $GPG $gpg_args | $TAR $tar_args -xvf -" 1>&2
-   cat "$1" | $GPG $gpg_args | $TAR $tar_args -xvf -
+   cat "$1" | $GPG $gpg_args | $TAR $tar_args -x${tar_verbose_opt}f -
 else
    echo "$usage" 1>&2
    exit 1
