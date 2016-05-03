@@ -668,9 +668,53 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
        - shell :: The standard X.509 model.
        - chain :: The chain model.
        - steed :: The STEED model.
+       - tofu  :: The TOFU model
 
     Note that the term =TRUST_= in the status names is used for
     historic reasons; we now speak of validity.
+
+*** TOFU_USER <fingerprint_in_hex> <mbox>
+
+    This status identifies the key and the userid for all following
+    Tofu information.  The fingerprint is the fingerprint of the
+    primary key and the mbox is in general the mailbox part of the
+    userid encoded in UTF-8 and percent escaped.
+
+*** TOFU_STATS <validity> <sign-count> 0 [<policy> [<tm1> <tm2>]]
+
+    Statistics for the current user id.
+
+    Values for VALIDITY are:
+    - 0 :: conflict
+    - 1 :: key without history
+    - 2 :: key with too little history
+    - 3 :: key with enough history for basic trust
+    - 4 :: key with a lot of history
+
+    Values for POLICY are:
+    - none    :: No Policy set
+    - auto    :: Policy is "auto"
+    - good    :: Policy is "good"
+    - bad     :: Policy is "bad"
+    - ask     :: Policy is "ask"
+    - unknown :: Policy is not known.
+
+    TM1 gives the number of seconds since the the first messages was
+    verified.  TM2 gives the number of seconds since the most recent
+    message was verified.
+
+*** TOFU_STATS_SHORT <long_string>
+
+    Information about the TOFU binding for the signature.
+    Example: "15 signatures verified. 10 messages encrypted"
+
+*** TOFU_STATS_LONG <long_string>
+
+    Information about the TOFU binding for the signature in verbose
+    format.  The LONG_STRING is percent escaped.
+    Example: 'Verified 9 messages signed by "Werner Koch
+    (dist sig)" in the past 3 minutes, 40 seconds.  The most
+    recent message was verified 4 seconds ago.'
 
 *** PKA_TRUST_
     This is is one:

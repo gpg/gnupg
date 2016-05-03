@@ -47,8 +47,12 @@
 
 #define CONTROL_L ('L' - 'A' + 1)
 
-/* Number of signed messages required to not show extra warnings.  */
-#define NO_WARNING_THRESHOLD 10
+/* Number of signed messages required to indicate that enough history
+ * is available for basic trust.  */
+#define BASIC_TRUST_THRESHOLD  10
+/* Number of signed messages required to indicate that a lot of
+ * history is available.  */
+#define FULL_TRUST_THRESHOLD  100
 
 
 #define DEBUG_TOFU_CACHE 0
@@ -2365,6 +2369,40 @@ time_ago_str (long long int t)
 }
 
 
+/* Write TOFU_STATS status line.  */
+static void
+write_stats_status (long messages, enum tofu_policy policy,
+                    long first_seen_ago, long most_recent_seen_ago)
+{
+  char numbuf1[35];
+  char numbuf2[35];
+  char numbuf3[35];
+  const char *validity;
+
+  if (messages < 1)
+    validity = "1"; /* Key without history.  */
+  else if (messages < BASIC_TRUST_THRESHOLD)
+    validity = "2"; /* Key with too little history.  */
+  else if (messages < FULL_TRUST_THRESHOLD)
+    validity = "3"; /* Key with enough history for basic trust.  */
+  else
+    validity = "4"; /* Key with a lot of history.  */
+
+  snprintf (numbuf1, sizeof numbuf1, " %ld", messages);
+  *numbuf2 = *numbuf3 = 0;
+  if (first_seen_ago >= 0 && most_recent_seen_ago >= 0)
+    {
+      snprintf (numbuf2, sizeof numbuf2, " %ld", first_seen_ago);
+      snprintf (numbuf3, sizeof numbuf3, " %ld", most_recent_seen_ago);
+    }
+
+  write_status_strings (STATUS_TOFU_STATS,
+                        validity, numbuf1, " 0",
+                        " ", tofu_policy_str (policy),
+                        numbuf2, numbuf3,
+                        NULL);
+}
+
 static void
 show_statistics (struct dbs *dbs, const char *fingerprint,
 		 const char *email, const char *user_id,
@@ -2407,8 +2445,11 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
                                 email, strlen (email), 0);
 
   if (! strlist)
-    log_info (_("Have never verified a message signed by key %s!\n"),
-              fingerprint_pp);
+    {
+      log_info (_("Have never verified a message signed by key %s!\n"),
+                fingerprint_pp);
+      write_stats_status (0,  TOFU_POLICY_NONE, -1, -1);
+    }
   else
     {
       signed long messages;
@@ -2432,14 +2473,20 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 	}
 
       if (messages == -1 || first_seen_ago == 0)
-        log_info (_("Failed to collect signature statistics for \"%s\"\n"
-                    "(key %s)\n"),
-                  user_id, fingerprint_pp);
+        {
+          write_stats_status (0, TOFU_POLICY_NONE, -1, -1);
+          log_info (_("Failed to collect signature statistics for \"%s\"\n"
+                      "(key %s)\n"),
+                    user_id, fingerprint_pp);
+        }
       else
 	{
 	  enum tofu_policy policy = get_policy (dbs, fingerprint, email, NULL);
 	  estream_t fp;
 	  char *msg;
+
+          write_stats_status (messages, policy,
+                              first_seen_ago, most_recent_seen_ago);
 
 	  fp = es_fopenmem (0, "rw,samethread");
 	  if (! fp)
@@ -2497,12 +2544,18 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
             for (p=msg; *p; p++)
               if (*p == '~')
                 *p = ' ';
+
+            /* Print a status line but suppress the trailing LF.
+             * Spaces are not percent escaped. */
+            if (*msg)
+              write_status_buffer (STATUS_TOFU_STATS_LONG,
+                                   msg, strlen (msg)-1, -1);
           }
 
 	  log_string (GPGRT_LOG_INFO, msg);
           xfree (msg);
 
-	  if (policy == TOFU_POLICY_AUTO && messages < NO_WARNING_THRESHOLD)
+	  if (policy == TOFU_POLICY_AUTO && messages < BASIC_TRUST_THRESHOLD)
 	    {
 	      char *set_policy_command;
 	      char *text;
