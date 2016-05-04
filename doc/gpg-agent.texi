@@ -329,11 +329,13 @@ accept Root-CA keys.
 This option allows the use of @command{gpg-preset-passphrase} to seed the
 internal cache of @command{gpg-agent} with passphrases.
 
-@anchor{option --allow-loopback-pinentry}
+@anchor{option --no-allow-loopback-pinentry}
+@item --no-allow-loopback-pinentry
 @item --allow-loopback-pinentry
+@opindex no-allow-loopback-pinentry
 @opindex allow-loopback-pinentry
-Allow clients to use the loopback pinentry features; see the option
-@option{pinentry-mode} for details.
+Disallow or allow clients to use the loopback pinentry features; see
+the option @option{pinentry-mode} for details.  Allow is the default.
 
 @item --no-allow-external-cache
 @opindex no-allow-external-cache
@@ -1455,7 +1457,7 @@ following values are defined:
   Use a loopback pinentry.  This fakes a pinentry by using inquiries
   back to the caller to ask for a passphrase.  This option may only be
   set if the agent has been configured for that.
-  Use the @xref{option --allow-loopback-pinentry}.
+  To disable this feature use @xref{option --no-allow-loopback-pinentry}.
 
   @end table
 

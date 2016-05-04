@@ -122,6 +122,7 @@ enum cmd_and_opt_values
   oNoAllowMarkTrusted,
   oAllowPresetPassphrase,
   oAllowLoopbackPinentry,
+  oNoAllowLoopbackPinentry,
   oNoAllowExternalCache,
   oAllowEmacsPinentry,
   oKeepTTY,
@@ -220,8 +221,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oAllowMarkTrusted,   "allow-mark-trusted", "@"),
   ARGPARSE_s_n (oAllowPresetPassphrase, "allow-preset-passphrase",
                 /* */                    N_("allow presetting passphrase")),
-  ARGPARSE_s_n (oAllowLoopbackPinentry, "allow-loopback-pinentry",
-                                   N_("allow caller to override the pinentry")),
+  ARGPARSE_s_n (oNoAllowLoopbackPinentry, "no-allow-loopback-pinentry",
+                                N_("disallow caller to override the pinentry")),
+  ARGPARSE_s_n (oAllowLoopbackPinentry, "allow-loopback-pinentry", "@"),
   ARGPARSE_s_n (oAllowEmacsPinentry,  "allow-emacs-pinentry",
                 /* */    N_("allow passphrase to be prompted through Emacs")),
 
@@ -626,6 +628,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 1;
       opt.allow_external_cache = 1;
+      opt.allow_loopback_pinentry = 1;
       opt.allow_emacs_pinentry = 0;
       opt.disable_scdaemon = 0;
       disable_check_own_socket = 0;
@@ -699,6 +702,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oAllowPresetPassphrase: opt.allow_preset_passphrase = 1; break;
 
     case oAllowLoopbackPinentry: opt.allow_loopback_pinentry = 1; break;
+    case oNoAllowLoopbackPinentry: opt.allow_loopback_pinentry = 0; break;
 
     case oNoAllowExternalCache: opt.allow_external_cache = 0;
       break;
@@ -1154,8 +1158,8 @@ main (int argc, char **argv )
 #ifdef HAVE_W32_SYSTEM
       es_printf ("enable-putty-support:%lu:\n", GC_OPT_FLAG_NONE);
 #endif
-      es_printf ("allow-loopback-pinentry:%lu:\n",
-                 GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
+      es_printf ("no-allow-loopback-pinentry:%lu:\n",
+              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       es_printf ("allow-emacs-pinentry:%lu:\n",
                  GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       es_printf ("pinentry-timeout:%lu:0:\n",
