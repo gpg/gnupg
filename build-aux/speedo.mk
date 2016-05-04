@@ -866,9 +866,13 @@ $(stampdir)/stamp-$(1)-00-unpack: $(stampdir)/stamp-directories
                  | sed -e 's,\.tar.*$$$$,,'`;		\
 	   mv $$$${base} $(1);				\
 	   patch="$(patdir)/$(1)-$$$${base#$(1)-}.patch";\
+	   patchx="$(patdir)/$(1).patch";               \
 	   if [ -x "$$$${patch}" ]; then  		\
              echo "speedo: applying patch $$$${patch}"; \
              cd $(1); "$$$${patch}"; 	 		\
+	   elif [ -x "$$$${patchx}" ]; then  		\
+             echo "speedo: applying patch $$$${patchx}";\
+             cd $(1); "$$$${patchx}"; 	 		\
 	   elif [ -f "$$$${patch}" ]; then  		\
              echo "speedo: warning: $$$${patch} is not executable"; \
 	   fi;						\
