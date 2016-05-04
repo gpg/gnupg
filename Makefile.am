@@ -43,7 +43,8 @@ EXTRA_DIST = build-aux/config.rpath build-aux/potomo autogen.sh autogen.rc \
              build-aux/speedo/w32/gnupg-logo-164x314.bmp    \
              build-aux/speedo/patches/atk-1.32.0.patch	    \
              build-aux/speedo/patches/libiconv-1.14.patch   \
-             build-aux/speedo/patches/pango-1.29.4.patch
+             build-aux/speedo/patches/pango-1.29.4.patch    \
+             build-aux/speedo/patches/sqlite.patch
 
 
 DISTCLEANFILES = g10defs.h
