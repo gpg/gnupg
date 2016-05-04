@@ -395,7 +395,7 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "virhe luotaessa salasanaa: %s\n"
 
-msgid "allow caller to override the pinentry"
+msgid "disallow caller to override the pinentry"
 msgstr ""
 
 msgid "allow passphrase to be prompted through Emacs"
@@ -492,6 +492,10 @@ msgstr "hakemiston \"%s\" luominen ei onnistu: %s\n"
 #, fuzzy, c-format
 msgid "directory '%s' created\n"
 msgstr "%s: hakemisto luotu\n"
+
+#, fuzzy, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "VAROITUS: oikeudet kohteessa %s \"%s\" eivät ole turvallisia\"\n"
 
 #, fuzzy, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -746,9 +750,9 @@ msgstr "virhe luotaessa salasanaa: %s\n"
 msgid "error forking process: %s\n"
 msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
 
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr ""
+#, fuzzy, c-format
+msgid "waiting for processes to terminate failed: %s\n"
+msgstr "päivitys epäonnistui: %s\n"
 
 #, fuzzy, c-format
 msgid "error running '%s': probably not installed\n"
@@ -765,6 +769,10 @@ msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
 #, fuzzy, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "virhe kirjoitettaessa salaiseen avainrenkaaseen \"%s\": %s\n"
+
+#, c-format
+msgid "waiting for process %d to terminate failed: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
@@ -784,6 +792,10 @@ msgstr "käyttäjän peruma\n"
 
 #, fuzzy
 msgid "problem with the agent\n"
+msgstr "agentin käytössä on ongelmia: agentti vastaa 0x%lx\n"
+
+#, fuzzy, c-format
+msgid "problem with the agent (unexpected response \"%s\")\n"
 msgstr "agentin käytössä on ongelmia: agentti vastaa 0x%lx\n"
 
 #, c-format
@@ -841,6 +853,10 @@ msgstr ""
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error allocating enough memory: %s\n"
+msgstr "virhe luotaessa avainrengasta \"%s\": %s\n"
 
 #, c-format
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
@@ -1118,10 +1134,6 @@ msgstr "ei käsitelty"
 msgid "invalid option \"%.50s\"\n"
 msgstr "virheelliset tuontivalitsimet\n"
 
-#, c-format
-msgid "you found a bug ... (%s:%d)\n"
-msgstr "olet löytänyt ohjelmistovian ... (%s:%d)\n"
-
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "ascii-koodaaminen epäonnistui: %s\n"
@@ -1226,6 +1238,11 @@ msgstr ""
 "viallista\n"
 "MTA:ta on käytetty\n"
 
+#, fuzzy, c-format
+#| msgid "not human readable"
+msgid "[ not human readable (%zu bytes: %s%s) ]"
+msgstr "ei ihmisten luettavissa"
+
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1243,11 +1260,21 @@ msgstr "käyttäjänotaatin täytyy sisältää \"@\"-merkki\n"
 msgid "a notation value must not use any control characters\n"
 msgstr "notaatiosssa ei saa olla erikoismerkkejä\n"
 
+#, fuzzy
+msgid "a notation name may not contain an '=' character\n"
+msgstr "käyttäjänotaatin täytyy sisältää \"@\"-merkki\n"
+
+#, fuzzy
+#| msgid ""
+#| "a notation name must have only printable characters or spaces, and end "
+#| "with an '='\n"
+msgid "a notation name must have only printable characters or spaces\n"
+msgstr ""
+"notaation nimen täytyy sisältää vain tulostettavia merkkejä tai "
+"välilyöntejä, ja sen täytyy loppua merkkiin \"=\"\n"
+
 msgid "WARNING: invalid notation data found\n"
 msgstr "VAROITUS: löydettiin väärin muotoiltua notaatiodataa\n"
-
-msgid "not human readable"
-msgstr "ei ihmisten luettavissa"
 
 #, c-format
 msgid "failed to proxy %s inquiry to client\n"
@@ -1341,10 +1368,6 @@ msgstr "ei vastaavaa julkista avainta: %s\n"
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "error allocating enough memory: %s\n"
-msgstr "virhe luotaessa avainrengasta \"%s\": %s\n"
 
 #, fuzzy, c-format
 #| msgid "error reading `%s': %s\n"
@@ -1682,12 +1705,12 @@ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "valittu symmetrinen salain %s (%d) ei ole vastaanottajan suosima\n"
 
 #, c-format
-msgid "you may not use %s while in %s mode\n"
-msgstr "valitsinta %s ei voi käyttää %s-tilassa\n"
-
-#, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s salattu vastaanottajalle: \"%s\"\n"
+
+#, c-format
+msgid "you may not use %s while in %s mode\n"
+msgstr "valitsinta %s ei voi käyttää %s-tilassa\n"
 
 #, c-format
 msgid "%s encrypted data\n"
@@ -1982,7 +2005,7 @@ msgstr "|algo [tiedostot]|tulosta viestien tiivisteet"
 msgid "run in server mode"
 msgstr ""
 
-msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
+msgid "|VALUE|set the TOFU policy for a key"
 msgstr ""
 
 msgid "create ascii armored output"
@@ -2987,11 +3010,28 @@ msgid "[self-signature]"
 msgstr "[oma-allekirjoitus]"
 
 #, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d väärää allekirjoitusta\n"
-msgstr[1] "%d väärää allekirjoitusta\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "avain %08lX: julkisen avaimen algoritmia ei tueta\n"
+
+# Ensimmäinen %s on binary, textmode tai unknown, ks. alla
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "%sallekirjoitus, tiivistealgoritmi %s\n"
+
+#, fuzzy
+msgid " (reordered signatures follow)"
+msgstr "Allekirjoitus täsmää lähettäjään \""
+
+#, fuzzy, c-format
+msgid "key %s:\n"
+msgstr "ohitetaan \"%s\": %s\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Käyttäjätunnus \"%s\" on mitätöity."
+msgstr[1] "Käyttäjätunnus \"%s\" on mitätöity."
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to a missing key\n"
@@ -3001,20 +3041,23 @@ msgstr[0] "1 allekirjoitus jätetty tarkistamatta puuttuvan avaimen vuoksi\n"
 msgstr[1] "1 allekirjoitus jätetty tarkistamatta puuttuvan avaimen vuoksi\n"
 
 #, fuzzy, c-format
-#| msgid "1 signature not checked due to an error\n"
-msgid "%d signature not checked due to an error\n"
-msgid_plural "%d signatures not checked due to errors\n"
-msgstr[0] "1 allekirjoitus jätetty tarkistamatta virheen vuoksi\n"
-msgstr[1] "1 allekirjoitus jätetty tarkistamatta virheen vuoksi\n"
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d väärää allekirjoitusta\n"
+msgstr[1] "%d väärää allekirjoitusta\n"
 
 #, fuzzy, c-format
-#| msgid "%d user IDs without valid self-signatures detected\n"
-msgid "%d user ID without valid self-signature detected\n"
-msgid_plural "%d user IDs without valid self-signatures detected\n"
-msgstr[0] ""
-"havaittiin %d käyttäjätunnusta ilman voimassaolevaa oma-allekirjoitusta\n"
-msgstr[1] ""
-"havaittiin %d käyttäjätunnusta ilman voimassaolevaa oma-allekirjoitusta\n"
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Allekirjoitus täsmää lähettäjään \""
+msgstr[1] "Allekirjoitus täsmää lähettäjään \""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
 
 #, fuzzy
 msgid ""
@@ -3235,9 +3278,6 @@ msgstr ""
 #| msgid "error creating passphrase: %s\n"
 msgid "key %s: error changing passphrase: %s\n"
 msgstr "virhe luotaessa salasanaa: %s\n"
-
-msgid "moving a key signature to the correct place\n"
-msgstr "siirretään avaimen allekirjoitus oikealle paikalle\n"
 
 msgid "save and quit"
 msgstr "tallenna ja lopeta"
@@ -3516,6 +3556,11 @@ msgstr "virhe: sormenjälki on väärä\n"
 #, fuzzy, c-format
 msgid "\"%s\" is not the primary fingerprint\n"
 msgstr "TrustDB:n alustaminen ei onnistu: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid value\n"
+msgid "Invalid user ID '%s': %s\n"
+msgstr "arvo ei kelpaa\n"
 
 #, fuzzy
 #| msgid "No such user ID.\n"
@@ -4342,6 +4387,13 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d väärää allekirjoitusta\n"
 msgstr[1] "%d väärää allekirjoitusta\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to an error\n"
+msgid "%d signature not checked due to an error\n"
+msgid_plural "%d signatures not checked due to errors\n"
+msgstr[0] "1 allekirjoitus jätetty tarkistamatta virheen vuoksi\n"
+msgstr[1] "1 allekirjoitus jätetty tarkistamatta virheen vuoksi\n"
 
 #, c-format
 msgid "Warning: %lu key skipped due to its large size\n"
@@ -5570,13 +5622,13 @@ msgstr "trustdb rec %lu: kirjoittaminen epäonnistuin (n=%d): %s\n"
 msgid "trustdb transaction too large\n"
 msgstr "trustdb-tapahtuma on liian suuri\n"
 
-#, fuzzy, c-format
-msgid "can't access '%s': %s\n"
-msgstr "tiedostoa \"%s\" ei voi sulkea: %s\n"
-
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: hakemistoa ei ole olemassa!\n"
+
+#, fuzzy, c-format
+msgid "can't access '%s': %s\n"
+msgstr "tiedostoa \"%s\" ei voi sulkea: %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
@@ -5723,8 +5775,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"The key %s raised a conflict with this binding (%s).  Since this binding's "
-"policy was 'auto', it was changed to 'ask'."
+"The key with fingerprint %s raised a conflict with the binding %s.  Since "
+"this binding's policy was 'auto', it was changed to 'ask'."
 msgstr ""
 
 #, c-format
@@ -5813,39 +5865,41 @@ msgstr ""
 msgid "error changing TOFU policy: %s\n"
 msgstr "virhe luotaessa salasanaa: %s\n"
 
+#. TRANSLATORS: The tilde ('~') is used here to indicate a
+#. * non-breakable space
 #, c-format
-msgid "%d year"
-msgid_plural "%d years"
+msgid "%d~year"
+msgid_plural "%d~years"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d month"
-msgid_plural "%d months"
+msgid "%d~month"
+msgid_plural "%d~months"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d day"
-msgid_plural "%d days"
+msgid "%d~day"
+msgid_plural "%d~days"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d hour"
-msgid_plural "%d hours"
+msgid "%d~hour"
+msgid_plural "%d~hours"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d minute"
-msgid_plural "%d minutes"
+msgid "%d~minute"
+msgid_plural "%d~minutes"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d second"
-msgid_plural "%d seconds"
+msgid "%d~second"
+msgid_plural "%d~seconds"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -5854,20 +5908,22 @@ msgid "Have never verified a message signed by key %s!\n"
 msgstr ""
 
 #, c-format
-msgid "Failed to collect signature statistics for \"%s\" (key %s)\n"
+msgid ""
+"Failed to collect signature statistics for \"%s\"\n"
+"(key %s)\n"
 msgstr ""
 
-#, c-format
-msgid "Verified 0 messages signed by \"%s\" (key: %s, policy: %s)."
-msgstr ""
+#, fuzzy, c-format
+msgid "Verified %ld messages signed by \"%s\"."
+msgstr "|algo [tiedostot]|tulosta viestien tiivisteet"
 
-#. TRANSLATORS: The final %s is replaced by a string like
-#. "7 months, 1 day, 5 minutes, 0 seconds".
 #, c-format
 msgid ""
-"Verified %ld message signed by \"%s\" (key: %s, policy: %s) in the past %s."
+"Verified %ld message signed by \"%s\"\n"
+"in the past %s."
 msgid_plural ""
-"Verified %ld messages signed by \"%s\" (key: %s, policy: %s) in the past %s."
+"Verified %ld messages signed by \"%s\"\n"
+"in the past %s."
 msgstr[0] ""
 msgstr[1] ""
 
@@ -5881,12 +5937,19 @@ msgstr ""
 msgid "Warning: we've only seen a single message signed by this key!\n"
 msgstr ""
 
-#. TRANSLATORS: translate the below text.  We don't
-#. directly internationalize that text so that we can
-#. tweak it without breaking translations.
 #, c-format
-msgid "TOFU: few signatures %d message %s"
-msgid_plural "TOFU: few signatures %d messages %s"
+msgid ""
+"Warning: if you think you've seen more than %ld message signed by this key, "
+"then this key might be a forgery!  Carefully examine the email address for "
+"small variations.  If the key is suspect, then use\n"
+"  %s\n"
+"to mark it as being bad.\n"
+msgid_plural ""
+"Warning: if you think you've seen more than %ld messages signed by this key, "
+"then this key might be a forgery!  Carefully examine the email address for "
+"small variations.  If the key is suspect, then use\n"
+"  %s\n"
+"to mark it as being bad.\n"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -8776,6 +8839,21 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "you found a bug ... (%s:%d)\n"
+#~ msgstr "olet löytänyt ohjelmistovian ... (%s:%d)\n"
+
+#, fuzzy
+#~| msgid "%d user IDs without valid self-signatures detected\n"
+#~ msgid "%d user ID without valid self-signature detected\n"
+#~ msgid_plural "%d user IDs without valid self-signatures detected\n"
+#~ msgstr[0] ""
+#~ "havaittiin %d käyttäjätunnusta ilman voimassaolevaa oma-allekirjoitusta\n"
+#~ msgstr[1] ""
+#~ "havaittiin %d käyttäjätunnusta ilman voimassaolevaa oma-allekirjoitusta\n"
+
+#~ msgid "moving a key signature to the correct place\n"
+#~ msgstr "siirretään avaimen allekirjoitus oikealle paikalle\n"
+
 #~ msgid "%d signatures not checked due to missing keys\n"
 #~ msgstr ""
 #~ "%d allekirjoitusta jätetty tarkistamatta puuttuvien avainten vuoksi\n"
@@ -8869,11 +8947,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Failed to parse '%s'.\n"
 #~ msgstr "tiedostoa \"%s\" ei voi avata: %s\n"
-
-#, fuzzy
-#~| msgid "invalid value\n"
-#~ msgid "invalid value '%s'\n"
-#~ msgstr "arvo ei kelpaa\n"
 
 #, fuzzy
 #~ msgid "error looking up secret key \"%s\": %s\n"

@@ -414,7 +414,7 @@ msgstr "tillad klienter at markere nøgler som »trusted« (troværdige)"
 msgid "allow presetting passphrase"
 msgstr "tillad forhåndsindstilling af adgangsfrase"
 
-msgid "allow caller to override the pinentry"
+msgid "disallow caller to override the pinentry"
 msgstr ""
 
 msgid "allow passphrase to be prompted through Emacs"
@@ -517,6 +517,11 @@ msgstr "kan ikke oprette mappe »%s«: %s\n"
 #| msgid "directory `%s' created\n"
 msgid "directory '%s' created\n"
 msgstr "mappe »%s« oprettet\n"
+
+#, fuzzy, c-format
+#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
+msgid "can't set permissions of '%s': %s\n"
+msgstr "Advarsel: usikre rettigheder på %s »%s«\n"
 
 #, fuzzy, c-format
 #| msgid "stat() failed for `%s': %s\n"
@@ -792,8 +797,9 @@ msgstr "fejl ved oprettelse af datakanal: %s\n"
 msgid "error forking process: %s\n"
 msgstr "fejl ved forgrening af proces: %s\n"
 
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
+#, fuzzy, c-format
+#| msgid "waiting for process %d to terminate failed: %s\n"
+msgid "waiting for processes to terminate failed: %s\n"
 msgstr "ventning på at proces %d skulle terminere mislykkedes: %s\n"
 
 #, fuzzy, c-format
@@ -815,6 +821,10 @@ msgstr "fejl ved kørsel af »%s«: termineret\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "fejl ved indhentelse af afslutningskode for proces %d: %s\n"
 
+#, c-format
+msgid "waiting for process %d to terminate failed: %s\n"
+msgstr "ventning på at proces %d skulle terminere mislykkedes: %s\n"
+
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
@@ -831,6 +841,11 @@ msgstr "afbrudt af brugeren\n"
 
 msgid "problem with the agent\n"
 msgstr "problem med agenten\n"
+
+#, fuzzy, c-format
+#| msgid "problem with the agent: %s\n"
+msgid "problem with the agent (unexpected response \"%s\")\n"
+msgstr "problem med agenten: %s\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -886,6 +901,10 @@ msgstr "ikke nok kerne i sikker hukommelse under allokering af %lu byte"
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "ikke nok kerne under allokering af %lu byte"
+
+#, c-format
+msgid "error allocating enough memory: %s\n"
+msgstr "fejl ved allokering af nok hukommelse: %s\n"
 
 #, c-format
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
@@ -1138,10 +1157,6 @@ msgstr "uden for kerne\n"
 msgid "invalid option \"%.50s\"\n"
 msgstr "ugyldigt tilvalg »%.50s«\n"
 
-#, c-format
-msgid "you found a bug ... (%s:%d)\n"
-msgstr "du fandt en fejl ... (%s:%d)\n"
-
 #, fuzzy, c-format
 #| msgid "conversion from `%s' to `%s' not available\n"
 msgid "conversion from '%s' to '%s' not available\n"
@@ -1246,6 +1261,11 @@ msgid ""
 msgstr ""
 "citeret udskrivingstegn i panser - måske på grund af en fejlbehæftet MTA\n"
 
+#, fuzzy, c-format
+#| msgid "not human readable"
+msgid "[ not human readable (%zu bytes: %s%s) ]"
+msgstr "kan ikke læses af mennesker"
+
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1262,11 +1282,22 @@ msgstr "et notationsnavn må ikke indeholde mere end et »@«-tegn\n"
 msgid "a notation value must not use any control characters\n"
 msgstr "en notationsværdi må ikke bruge nogen kontroltegn\n"
 
+#, fuzzy
+#| msgid "a notation name must not contain more than one '@' character\n"
+msgid "a notation name may not contain an '=' character\n"
+msgstr "et notationsnavn må ikke indeholde mere end et »@«-tegn\n"
+
+#, fuzzy
+#| msgid ""
+#| "a notation name must have only printable characters or spaces, and end "
+#| "with an '='\n"
+msgid "a notation name must have only printable characters or spaces\n"
+msgstr ""
+"et notationsnavn må kun have udskrivningstegn eller mellemrum og skal "
+"sluttes med et »=«\n"
+
 msgid "WARNING: invalid notation data found\n"
 msgstr "ADVARSEL: Ingen notationsdata fundet\n"
-
-msgid "not human readable"
-msgstr "kan ikke læses af mennesker"
 
 #, c-format
 msgid "failed to proxy %s inquiry to client\n"
@@ -1354,10 +1385,6 @@ msgstr "Adresse hvor offentlig nøgle skal hentes: "
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "Fejl: Adresse er for lang (begrænsningen er %d tegn).\n"
-
-#, c-format
-msgid "error allocating enough memory: %s\n"
-msgstr "fejl ved allokering af nok hukommelse: %s\n"
 
 #, fuzzy, c-format
 #| msgid "error reading `%s': %s\n"
@@ -1701,12 +1728,12 @@ msgstr ""
 "tvang for symmetrisk chiffer %s (%d) overtræder modtagerens præferencer\n"
 
 #, c-format
-msgid "you may not use %s while in %s mode\n"
-msgstr "du kan ikke bruge %s i tilstanden %s\n"
-
-#, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s krypteret for: »%s«\n"
+
+#, c-format
+msgid "you may not use %s while in %s mode\n"
+msgstr "du kan ikke bruge %s i tilstanden %s\n"
 
 #, c-format
 msgid "%s encrypted data\n"
@@ -1991,7 +2018,7 @@ msgstr "vis beskedsammendrag"
 msgid "run in server mode"
 msgstr "kør i servertilstand"
 
-msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
+msgid "|VALUE|set the TOFU policy for a key"
 msgstr ""
 
 msgid "create ascii armored output"
@@ -3011,11 +3038,32 @@ msgid "[self-signature]"
 msgstr "[egenunderskrift]"
 
 #, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d ugyldige underskrifter\n"
-msgstr[1] "%d ugyldige underskrifter\n"
+#| msgid "key %s: unsupported public key algorithm\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "nøgle %s: ikke understøttet offentlig nøglealgoritme\n"
+
+#, fuzzy, c-format
+#| msgid "card does not support digest algorithm %s\n"
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "kort understøtter ikke sammendragsalgoritme %s\n"
+
+#, fuzzy
+#| msgid "Good signature from"
+msgid " (reordered signatures follow)"
+msgstr "God underskrift fra"
+
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s:\n"
+msgstr "udelod »%s«: %s\n"
+
+#, fuzzy, c-format
+#| msgid "User ID \"%s\": %d signature removed\n"
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Bruger-id »%s«: %d underskrift fjernet\n"
+msgstr[1] "Bruger-id »%s«: %d underskrift fjernet\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to a missing key\n"
@@ -3025,18 +3073,24 @@ msgstr[0] "1 underskrift er ikke kontrolleret på grund af en manglende nøgle\n
 msgstr[1] "1 underskrift er ikke kontrolleret på grund af en manglende nøgle\n"
 
 #, fuzzy, c-format
-#| msgid "1 signature not checked due to an error\n"
-msgid "%d signature not checked due to an error\n"
-msgid_plural "%d signatures not checked due to errors\n"
-msgstr[0] "1 underskrift er ikke kontrolleret på grund af en fejl\n"
-msgstr[1] "1 underskrift er ikke kontrolleret på grund af en fejl\n"
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d ugyldige underskrifter\n"
+msgstr[1] "%d ugyldige underskrifter\n"
 
 #, fuzzy, c-format
-#| msgid "%d user IDs without valid self-signatures detected\n"
-msgid "%d user ID without valid self-signature detected\n"
-msgid_plural "%d user IDs without valid self-signatures detected\n"
-msgstr[0] "%d bruger-id'er uden gyldige egenunderskrifter detekteret\n"
-msgstr[1] "%d bruger-id'er uden gyldige egenunderskrifter detekteret\n"
+#| msgid "Good signature from"
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "God underskrift fra"
+msgstr[1] "God underskrift fra"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3243,9 +3297,6 @@ msgstr ""
 #| msgid "error creating passphrase: %s\n"
 msgid "key %s: error changing passphrase: %s\n"
 msgstr "fejl ved oprettelse af adgangsfrase: %s\n"
-
-msgid "moving a key signature to the correct place\n"
-msgstr "flytter en nøgleunderskrift til det korrekte sted\n"
 
 msgid "save and quit"
 msgstr "gem og afslut"
@@ -3515,6 +3566,11 @@ msgstr "ugyldig fingeraftryk"
 #| msgid "failed to get the fingerprint\n"
 msgid "\"%s\" is not the primary fingerprint\n"
 msgstr "kunne ikke indhente fingeraftrykket\n"
+
+#, fuzzy, c-format
+#| msgid "invalid value\n"
+msgid "Invalid user ID '%s': %s\n"
+msgstr "ugyldig værdi\n"
 
 #, fuzzy
 #| msgid "No such user ID.\n"
@@ -4340,6 +4396,13 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d ugyldige underskrifter\n"
 msgstr[1] "%d ugyldige underskrifter\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to an error\n"
+msgid "%d signature not checked due to an error\n"
+msgid_plural "%d signatures not checked due to errors\n"
+msgstr[0] "1 underskrift er ikke kontrolleret på grund af en fejl\n"
+msgstr[1] "1 underskrift er ikke kontrolleret på grund af en fejl\n"
 
 #, c-format
 msgid "Warning: %lu key skipped due to its large size\n"
@@ -5577,14 +5640,14 @@ msgstr "trustdb rec %lu: skrivning mislykkedes (n=%d): %s\n"
 msgid "trustdb transaction too large\n"
 msgstr "transaktion for trustdb er for stor\n"
 
+#, c-format
+msgid "%s: directory does not exist!\n"
+msgstr "%s: mappe findes ikke!\n"
+
 #, fuzzy, c-format
 #| msgid "can't access `%s': %s\n"
 msgid "can't access '%s': %s\n"
 msgstr "kan ikke tilgå »%s«: %s\n"
-
-#, c-format
-msgid "%s: directory does not exist!\n"
-msgstr "%s: mappe findes ikke!\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
@@ -5734,8 +5797,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"The key %s raised a conflict with this binding (%s).  Since this binding's "
-"policy was 'auto', it was changed to 'ask'."
+"The key with fingerprint %s raised a conflict with the binding %s.  Since "
+"this binding's policy was 'auto', it was changed to 'ask'."
 msgstr ""
 
 #, c-format
@@ -5828,39 +5891,41 @@ msgstr ""
 msgid "error changing TOFU policy: %s\n"
 msgstr "fejl ved oprettelse af datakanal: %s\n"
 
+#. TRANSLATORS: The tilde ('~') is used here to indicate a
+#. * non-breakable space
 #, c-format
-msgid "%d year"
-msgid_plural "%d years"
+msgid "%d~year"
+msgid_plural "%d~years"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d month"
-msgid_plural "%d months"
+msgid "%d~month"
+msgid_plural "%d~months"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d day"
-msgid_plural "%d days"
+msgid "%d~day"
+msgid_plural "%d~days"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d hour"
-msgid_plural "%d hours"
+msgid "%d~hour"
+msgid_plural "%d~hours"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d minute"
-msgid_plural "%d minutes"
+msgid "%d~minute"
+msgid_plural "%d~minutes"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d second"
-msgid_plural "%d seconds"
+msgid "%d~second"
+msgid_plural "%d~seconds"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -5869,20 +5934,23 @@ msgid "Have never verified a message signed by key %s!\n"
 msgstr ""
 
 #, c-format
-msgid "Failed to collect signature statistics for \"%s\" (key %s)\n"
+msgid ""
+"Failed to collect signature statistics for \"%s\"\n"
+"(key %s)\n"
 msgstr ""
 
-#, c-format
-msgid "Verified 0 messages signed by \"%s\" (key: %s, policy: %s)."
-msgstr ""
+#, fuzzy, c-format
+#| msgid "print message digests"
+msgid "Verified %ld messages signed by \"%s\"."
+msgstr "vis beskedsammendrag"
 
-#. TRANSLATORS: The final %s is replaced by a string like
-#. "7 months, 1 day, 5 minutes, 0 seconds".
 #, c-format
 msgid ""
-"Verified %ld message signed by \"%s\" (key: %s, policy: %s) in the past %s."
+"Verified %ld message signed by \"%s\"\n"
+"in the past %s."
 msgid_plural ""
-"Verified %ld messages signed by \"%s\" (key: %s, policy: %s) in the past %s."
+"Verified %ld messages signed by \"%s\"\n"
+"in the past %s."
 msgstr[0] ""
 msgstr[1] ""
 
@@ -5896,12 +5964,19 @@ msgstr ""
 msgid "Warning: we've only seen a single message signed by this key!\n"
 msgstr ""
 
-#. TRANSLATORS: translate the below text.  We don't
-#. directly internationalize that text so that we can
-#. tweak it without breaking translations.
 #, c-format
-msgid "TOFU: few signatures %d message %s"
-msgid_plural "TOFU: few signatures %d messages %s"
+msgid ""
+"Warning: if you think you've seen more than %ld message signed by this key, "
+"then this key might be a forgery!  Carefully examine the email address for "
+"small variations.  If the key is suspect, then use\n"
+"  %s\n"
+"to mark it as being bad.\n"
+msgid_plural ""
+"Warning: if you think you've seen more than %ld messages signed by this key, "
+"then this key might be a forgery!  Carefully examine the email address for "
+"small variations.  If the key is suspect, then use\n"
+"  %s\n"
+"to mark it as being bad.\n"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -8995,6 +9070,19 @@ msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
 
+#~ msgid "you found a bug ... (%s:%d)\n"
+#~ msgstr "du fandt en fejl ... (%s:%d)\n"
+
+#, fuzzy
+#~| msgid "%d user IDs without valid self-signatures detected\n"
+#~ msgid "%d user ID without valid self-signature detected\n"
+#~ msgid_plural "%d user IDs without valid self-signatures detected\n"
+#~ msgstr[0] "%d bruger-id'er uden gyldige egenunderskrifter detekteret\n"
+#~ msgstr[1] "%d bruger-id'er uden gyldige egenunderskrifter detekteret\n"
+
+#~ msgid "moving a key signature to the correct place\n"
+#~ msgstr "flytter en nøgleunderskrift til det korrekte sted\n"
+
 #, fuzzy
 #~| msgid "option \"%.50s\" is ambiguous\n"
 #~ msgid "key specification '%s' is ambiguous\n"
@@ -9095,11 +9183,6 @@ msgstr ""
 #~| msgid "failed to open `%s': %s\n"
 #~ msgid "Failed to parse '%s'.\n"
 #~ msgstr "kan ikke åbne »%s«: %s\n"
-
-#, fuzzy
-#~| msgid "invalid value\n"
-#~ msgid "invalid value '%s'\n"
-#~ msgstr "ugyldig værdi\n"
 
 #, fuzzy
 #~| msgid "error reading secret keyblock \"%s\": %s\n"

@@ -389,7 +389,9 @@ msgstr "nedovolit klientům označovat klíče za „důvěryhodné“"
 msgid "allow presetting passphrase"
 msgstr "umožnit přednastavení hesla"
 
-msgid "allow caller to override the pinentry"
+#, fuzzy
+#| msgid "allow caller to override the pinentry"
+msgid "disallow caller to override the pinentry"
 msgstr "umožnit volajícímu přebít pinentry"
 
 msgid "allow passphrase to be prompted through Emacs"
@@ -477,6 +479,12 @@ msgstr "nelze vytvořit adresář „%s“: %s\n"
 #, c-format
 msgid "directory '%s' created\n"
 msgstr "adresář „%s“ vytvořen\n"
+
+# TODO: i18n of first %s
+#, fuzzy, c-format
+#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
+msgid "can't set permissions of '%s': %s\n"
+msgstr "Varování: přístupová práva %s „%s“ nejsou bezpečná\n"
 
 #, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -732,8 +740,9 @@ msgstr "chyba při vytváření proudu pro rouru: %s\n"
 msgid "error forking process: %s\n"
 msgstr "chyba při rozdvojování procesu: %s\n"
 
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
+#, fuzzy, c-format
+#| msgid "waiting for process %d to terminate failed: %s\n"
+msgid "waiting for processes to terminate failed: %s\n"
 msgstr "čekání na konec procesu %d se nezdařilo: %s\n"
 
 #, c-format
@@ -753,6 +762,10 @@ msgid "error getting exit code of process %d: %s\n"
 msgstr "chyba při získání návratového kódu procesu %d: %s\n"
 
 #, c-format
+msgid "waiting for process %d to terminate failed: %s\n"
+msgstr "čekání na konec procesu %d se nezdařilo: %s\n"
+
+#, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "nelze se připojit k „%s“: %s\n"
 
@@ -767,6 +780,11 @@ msgstr "zrušeno uživatelem\n"
 
 msgid "problem with the agent\n"
 msgstr "problém s agentem\n"
+
+#, fuzzy, c-format
+#| msgid "problem with the agent: %s\n"
+msgid "problem with the agent (unexpected response \"%s\")\n"
+msgstr "problém s agentem: %s\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -824,6 +842,10 @@ msgstr "při pokusu alokovat %lu bajtů došla bezpečná paměť"
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "při pokusu alokovat %lu bajtů došla paměť"
+
+#, c-format
+msgid "error allocating enough memory: %s\n"
+msgstr "chyba při alokování dostatečného množství paměti: %s\n"
 
 #, c-format
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
@@ -1065,10 +1087,6 @@ msgid "invalid option \"%.50s\"\n"
 msgstr "neplatný parametr „%.50s“\n"
 
 #, c-format
-msgid "you found a bug ... (%s:%d)\n"
-msgstr "našli jste chybu… (%s:%d)\n"
-
-#, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "převod z „%s“ na „%s“ není k dispozici\n"
 
@@ -1168,6 +1186,11 @@ msgstr ""
 "neplatný znak (quoted-printable) v ASCII kódování – pravděpodobně byl použit "
 "špatný MTA\n"
 
+#, fuzzy, c-format
+#| msgid "not human readable"
+msgid "[ not human readable (%zu bytes: %s%s) ]"
+msgstr "není v přímo čitelném formátu"
+
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1184,11 +1207,22 @@ msgstr "jméno uživatele nesmí obsahovat více než jeden znak „@“\n"
 msgid "a notation value must not use any control characters\n"
 msgstr "hodnota nemůže obsahovat žádné kontrolní znaky\n"
 
+#, fuzzy
+#| msgid "a notation name must not contain more than one '@' character\n"
+msgid "a notation name may not contain an '=' character\n"
+msgstr "jméno uživatele nesmí obsahovat více než jeden znak „@“\n"
+
+#, fuzzy
+#| msgid ""
+#| "a notation name must have only printable characters or spaces, and end "
+#| "with an '='\n"
+msgid "a notation name must have only printable characters or spaces\n"
+msgstr ""
+"symbolické jméno smí obsahovat pouze písmena, číslice, tečky nebo podtržítka "
+"a musí končit znakem „=“\n"
+
 msgid "WARNING: invalid notation data found\n"
 msgstr "VAROVÁNÍ: nalezen neplatný formát zápisu data\n"
-
-msgid "not human readable"
-msgstr "není v přímo čitelném formátu"
 
 #, c-format
 msgid "failed to proxy %s inquiry to client\n"
@@ -1274,10 +1308,6 @@ msgstr "URL pro získání veřejného klíče: "
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "Chyba: URL je příliš dlouhé (limit je %d znaků).\n"
-
-#, c-format
-msgid "error allocating enough memory: %s\n"
-msgstr "chyba při alokování dostatečného množství paměti: %s\n"
 
 #, c-format
 msgid "error reading '%s': %s\n"
@@ -1595,12 +1625,12 @@ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "vyžádaná symetrická šifra %s (%d) nevyhovuje předvolbám příjemce\n"
 
 #, c-format
-msgid "you may not use %s while in %s mode\n"
-msgstr "použití %s není v módu %s dovoleno\n"
-
-#, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s zašifrovaný pro: „%s“\n"
+
+#, c-format
+msgid "you may not use %s while in %s mode\n"
+msgstr "použití %s není v módu %s dovoleno\n"
 
 #, c-format
 msgid "%s encrypted data\n"
@@ -1872,7 +1902,9 @@ msgstr "vypsat hash zprávy"
 msgid "run in server mode"
 msgstr "pracovat v režimu serveru"
 
-msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
+#, fuzzy
+#| msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
+msgid "|VALUE|set the TOFU policy for a key"
 msgstr ""
 "|HODNOTA|nastavit TOFU politiku klíči (good [dobrý], unknown [neznámý], bad "
 "[špatný], ask [zeptat se], auto)"
@@ -2848,12 +2880,33 @@ msgid "[self-signature]"
 msgstr "[podpis klíče jím samým]"
 
 #, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d špatných podpisů\n"
-msgstr[1] "%d špatných podpisů\n"
-msgstr[2] "%d špatných podpisů\n"
+#| msgid "key %s: unsupported public key algorithm\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "klíč %s: nepodporovaný algoritmus veřejného klíče\n"
+
+#, fuzzy, c-format
+#| msgid "card does not support digest algorithm %s\n"
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "karta nepodporuje hashovací algoritmus %s\n"
+
+#, fuzzy
+#| msgid "Good signature from"
+msgid " (reordered signatures follow)"
+msgstr "Dobrý podpis od"
+
+#, fuzzy, c-format
+#| msgid "key %s: %s\n"
+msgid "key %s:\n"
+msgstr "klíč %s: %s\n"
+
+#, fuzzy, c-format
+#| msgid "User ID \"%s\": %d signature removed\n"
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Uživatelské ID „%s“: %d podpisů odstraněno\n"
+msgstr[1] "Uživatelské ID „%s“: %d podpisů odstraněno\n"
+msgstr[2] "Uživatelské ID „%s“: %d podpisů odstraněno\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to a missing key\n"
@@ -2864,23 +2917,26 @@ msgstr[1] "1 podpis neověřen, protože chybí klíč\n"
 msgstr[2] "1 podpis neověřen, protože chybí klíč\n"
 
 #, fuzzy, c-format
-#| msgid "1 signature not checked due to an error\n"
-msgid "%d signature not checked due to an error\n"
-msgid_plural "%d signatures not checked due to errors\n"
-msgstr[0] "1 podpis neověřen, protože vznikla chyba\n"
-msgstr[1] "1 podpis neověřen, protože vznikla chyba\n"
-msgstr[2] "1 podpis neověřen, protože vznikla chyba\n"
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d špatných podpisů\n"
+msgstr[1] "%d špatných podpisů\n"
+msgstr[2] "%d špatných podpisů\n"
 
 #, fuzzy, c-format
-#| msgid "%d user IDs without valid self-signatures detected\n"
-msgid "%d user ID without valid self-signature detected\n"
-msgid_plural "%d user IDs without valid self-signatures detected\n"
-msgstr[0] ""
-"objeveno %d identifikátorů uživatele bez platného podpisu jím samým\n"
-msgstr[1] ""
-"objeveno %d identifikátorů uživatele bez platného podpisu jím samým\n"
-msgstr[2] ""
-"objeveno %d identifikátorů uživatele bez platného podpisu jím samým\n"
+#| msgid "Good signature from"
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Dobrý podpis od"
+msgstr[1] "Dobrý podpis od"
+msgstr[2] "Dobrý podpis od"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3079,9 +3135,6 @@ msgstr ""
 #, c-format
 msgid "key %s: error changing passphrase: %s\n"
 msgstr "klíč %s: chyba při měnění hesla: %s\n"
-
-msgid "moving a key signature to the correct place\n"
-msgstr "přesunuji podpis klíče na správné místo\n"
 
 msgid "save and quit"
 msgstr "uložit a ukončit"
@@ -3327,6 +3380,11 @@ msgstr "„%s“ není otisk\n"
 #, c-format
 msgid "\"%s\" is not the primary fingerprint\n"
 msgstr "„%s“ není primární otisk\n"
+
+#, fuzzy, c-format
+#| msgid "read error in '%s': %s\n"
+msgid "Invalid user ID '%s': %s\n"
+msgstr "chyba při čtení v „%s“: %s\n"
 
 msgid "No matching user IDs."
 msgstr "Žádný identifikátor uživatele neodpovídá."
@@ -4113,6 +4171,14 @@ msgid_plural "%d good signatures\n"
 msgstr[0] "%d dobrých podpisů\n"
 msgstr[1] "%d dobrých podpisů\n"
 msgstr[2] "%d dobrých podpisů\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to an error\n"
+msgid "%d signature not checked due to an error\n"
+msgid_plural "%d signatures not checked due to errors\n"
+msgstr[0] "1 podpis neověřen, protože vznikla chyba\n"
+msgstr[1] "1 podpis neověřen, protože vznikla chyba\n"
+msgstr[2] "1 podpis neověřen, protože vznikla chyba\n"
 
 #, fuzzy, c-format
 #| msgid "Warning: %lu key(s) skipped due to their large size\n"
@@ -5328,12 +5394,12 @@ msgid "trustdb transaction too large\n"
 msgstr "transakce s databází důvěry je příliš dlouhá\n"
 
 #, c-format
-msgid "can't access '%s': %s\n"
-msgstr "k „%s“ nelze přistoupit: %s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: adresář neexistuje!\n"
+
+#, c-format
+msgid "can't access '%s': %s\n"
+msgstr "k „%s“ nelze přistoupit: %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
@@ -5481,8 +5547,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"The key %s raised a conflict with this binding (%s).  Since this binding's "
-"policy was 'auto', it was changed to 'ask'."
+"The key with fingerprint %s raised a conflict with the binding %s.  Since "
+"this binding's policy was 'auto', it was changed to 'ask'."
 msgstr ""
 
 #, c-format
@@ -5581,44 +5647,46 @@ msgstr ""
 msgid "error changing TOFU policy: %s\n"
 msgstr "chyba při vytváření roury: %s\n"
 
+#. TRANSLATORS: The tilde ('~') is used here to indicate a
+#. * non-breakable space
 #, c-format
-msgid "%d year"
-msgid_plural "%d years"
+msgid "%d~year"
+msgid_plural "%d~years"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
 #, c-format
-msgid "%d month"
-msgid_plural "%d months"
+msgid "%d~month"
+msgid_plural "%d~months"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
 #, c-format
-msgid "%d day"
-msgid_plural "%d days"
+msgid "%d~day"
+msgid_plural "%d~days"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
 #, c-format
-msgid "%d hour"
-msgid_plural "%d hours"
+msgid "%d~hour"
+msgid_plural "%d~hours"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
 #, c-format
-msgid "%d minute"
-msgid_plural "%d minutes"
+msgid "%d~minute"
+msgid_plural "%d~minutes"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
 #, c-format
-msgid "%d second"
-msgid_plural "%d seconds"
+msgid "%d~second"
+msgid_plural "%d~seconds"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
@@ -5628,20 +5696,23 @@ msgid "Have never verified a message signed by key %s!\n"
 msgstr ""
 
 #, c-format
-msgid "Failed to collect signature statistics for \"%s\" (key %s)\n"
+msgid ""
+"Failed to collect signature statistics for \"%s\"\n"
+"(key %s)\n"
 msgstr ""
 
-#, c-format
-msgid "Verified 0 messages signed by \"%s\" (key: %s, policy: %s)."
-msgstr ""
+#, fuzzy, c-format
+#| msgid "print message digests"
+msgid "Verified %ld messages signed by \"%s\"."
+msgstr "vypsat hash zprávy"
 
-#. TRANSLATORS: The final %s is replaced by a string like
-#. "7 months, 1 day, 5 minutes, 0 seconds".
 #, c-format
 msgid ""
-"Verified %ld message signed by \"%s\" (key: %s, policy: %s) in the past %s."
+"Verified %ld message signed by \"%s\"\n"
+"in the past %s."
 msgid_plural ""
-"Verified %ld messages signed by \"%s\" (key: %s, policy: %s) in the past %s."
+"Verified %ld messages signed by \"%s\"\n"
+"in the past %s."
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
@@ -5656,12 +5727,19 @@ msgstr ""
 msgid "Warning: we've only seen a single message signed by this key!\n"
 msgstr ""
 
-#. TRANSLATORS: translate the below text.  We don't
-#. directly internationalize that text so that we can
-#. tweak it without breaking translations.
 #, c-format
-msgid "TOFU: few signatures %d message %s"
-msgid_plural "TOFU: few signatures %d messages %s"
+msgid ""
+"Warning: if you think you've seen more than %ld message signed by this key, "
+"then this key might be a forgery!  Carefully examine the email address for "
+"small variations.  If the key is suspect, then use\n"
+"  %s\n"
+"to mark it as being bad.\n"
+msgid_plural ""
+"Warning: if you think you've seen more than %ld messages signed by this key, "
+"then this key might be a forgery!  Carefully examine the email address for "
+"small variations.  If the key is suspect, then use\n"
+"  %s\n"
+"to mark it as being bad.\n"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
@@ -8453,6 +8531,23 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "you found a bug ... (%s:%d)\n"
+#~ msgstr "našli jste chybu… (%s:%d)\n"
+
+#, fuzzy
+#~| msgid "%d user IDs without valid self-signatures detected\n"
+#~ msgid "%d user ID without valid self-signature detected\n"
+#~ msgid_plural "%d user IDs without valid self-signatures detected\n"
+#~ msgstr[0] ""
+#~ "objeveno %d identifikátorů uživatele bez platného podpisu jím samým\n"
+#~ msgstr[1] ""
+#~ "objeveno %d identifikátorů uživatele bez platného podpisu jím samým\n"
+#~ msgstr[2] ""
+#~ "objeveno %d identifikátorů uživatele bez platného podpisu jím samým\n"
+
+#~ msgid "moving a key signature to the correct place\n"
+#~ msgstr "přesunuji podpis klíče na správné místo\n"
 
 #~ msgid "key specification '%s' is ambiguous\n"
 #~ msgstr "výběr klíče pomocí „%s“ není jednoznačné\n"

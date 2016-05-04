@@ -384,7 +384,7 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
-msgid "allow caller to override the pinentry"
+msgid "disallow caller to override the pinentry"
 msgstr ""
 
 msgid "allow passphrase to be prompted through Emacs"
@@ -480,6 +480,10 @@ msgstr "tidak dapat membuat direktori `%s': %s\n"
 #, fuzzy, c-format
 msgid "directory '%s' created\n"
 msgstr "%s: direktori tercipta\n"
+
+#, fuzzy, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "Peringatan: permisi tidak aman pada %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -734,9 +738,9 @@ msgstr "kesalahan penciptaan passphrase: %s\n"
 msgid "error forking process: %s\n"
 msgstr "kesalahan membaca `%s': %s\n"
 
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr ""
+#, fuzzy, c-format
+msgid "waiting for processes to terminate failed: %s\n"
+msgstr "gagal memperbarui: %s\n"
 
 #, fuzzy, c-format
 msgid "error running '%s': probably not installed\n"
@@ -753,6 +757,10 @@ msgstr "kesalahan membaca `%s': %s\n"
 #, fuzzy, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
+
+#, c-format
+msgid "waiting for process %d to terminate failed: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
@@ -772,6 +780,10 @@ msgstr "dibatalkan oleh user\n"
 
 #, fuzzy
 msgid "problem with the agent\n"
+msgstr "masalah dengan agen: agen mengembalikan 0x%lx\n"
+
+#, fuzzy, c-format
+msgid "problem with the agent (unexpected response \"%s\")\n"
 msgstr "masalah dengan agen: agen mengembalikan 0x%lx\n"
 
 #, c-format
@@ -829,6 +841,10 @@ msgstr ""
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error allocating enough memory: %s\n"
+msgstr "kesalahan menulis keyring `%s': %s\n"
 
 #, c-format
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
@@ -1106,10 +1122,6 @@ msgstr "tidak diproses"
 msgid "invalid option \"%.50s\"\n"
 msgstr "opsi impor tidak valid\n"
 
-#, c-format
-msgid "you found a bug ... (%s:%d)\n"
-msgstr "anda menemukan kesalahan ...(%s:%d)\n"
-
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "gagal enarmoring: %s\n"
@@ -1213,6 +1225,11 @@ msgstr ""
 "karakter yang dapat dicetak dalam armor - mungkin telah digunakan MTA yang "
 "mengandung bug\n"
 
+#, fuzzy, c-format
+#| msgid "not human readable"
+msgid "[ not human readable (%zu bytes: %s%s) ]"
+msgstr "tidak dapat dibaca manusia"
+
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1230,11 +1247,21 @@ msgstr "nama notasi pengguna tidak boleh mengandung karakter '@'\n"
 msgid "a notation value must not use any control characters\n"
 msgstr "nilai notasi tidak boleh menggunakan karakter kendali\n"
 
+#, fuzzy
+msgid "a notation name may not contain an '=' character\n"
+msgstr "nama notasi pengguna tidak boleh mengandung karakter '@'\n"
+
+#, fuzzy
+#| msgid ""
+#| "a notation name must have only printable characters or spaces, and end "
+#| "with an '='\n"
+msgid "a notation name must have only printable characters or spaces\n"
+msgstr ""
+"nama notasi harus hanya terdiri dari karakter yang dapat dicetak atau spasi, "
+"dan diakhiri dengan sebuah '='\n"
+
 msgid "WARNING: invalid notation data found\n"
 msgstr "PERINGATAN: ditemukan notasi data tidak valid\n"
-
-msgid "not human readable"
-msgstr "tidak dapat dibaca manusia"
 
 #, c-format
 msgid "failed to proxy %s inquiry to client\n"
@@ -1328,10 +1355,6 @@ msgstr "tidak ada kunci publik yang sesuai: %s\n"
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "error allocating enough memory: %s\n"
-msgstr "kesalahan menulis keyring `%s': %s\n"
 
 #, fuzzy, c-format
 #| msgid "error reading `%s': %s\n"
@@ -1669,12 +1692,12 @@ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "memaksa cipher simetrik %s (%d) melanggar preferensi penerima\n"
 
 #, c-format
-msgid "you may not use %s while in %s mode\n"
-msgstr "anda tidak boleh menggunakan %s saat dalam mode %s.\n"
-
-#, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s dienkripsi untuk: %s\n"
+
+#, c-format
+msgid "you may not use %s while in %s mode\n"
+msgstr "anda tidak boleh menggunakan %s saat dalam mode %s.\n"
 
 #, c-format
 msgid "%s encrypted data\n"
@@ -1966,7 +1989,7 @@ msgstr "|algo [file]|cetak digest pesan"
 msgid "run in server mode"
 msgstr ""
 
-msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
+msgid "|VALUE|set the TOFU policy for a key"
 msgstr ""
 
 msgid "create ascii armored output"
@@ -2971,11 +2994,27 @@ msgid "[self-signature]"
 msgstr "[self-signature]"
 
 #, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d signature yang buruk\n"
-msgstr[1] "%d signature yang buruk\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "kunci %08lX: algoritma publik key tidak didukung\n"
+
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "%s signature, algoritma digest %s\n"
+
+#, fuzzy
+msgid " (reordered signatures follow)"
+msgstr "Signature baik dari \""
+
+#, fuzzy, c-format
+msgid "key %s:\n"
+msgstr "melewati `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "User ID \"%s\" dibatalkan."
+msgstr[1] "User ID \"%s\" dibatalkan."
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to a missing key\n"
@@ -2985,18 +3024,23 @@ msgstr[0] "1 signature tidak diperiksa karena tidak ada kunci\n"
 msgstr[1] "1 signature tidak diperiksa karena tidak ada kunci\n"
 
 #, fuzzy, c-format
-#| msgid "1 signature not checked due to an error\n"
-msgid "%d signature not checked due to an error\n"
-msgid_plural "%d signatures not checked due to errors\n"
-msgstr[0] "1 signature tidak diperiksa karena kesalahan\n"
-msgstr[1] "1 signature tidak diperiksa karena kesalahan\n"
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d signature yang buruk\n"
+msgstr[1] "%d signature yang buruk\n"
 
 #, fuzzy, c-format
-#| msgid "%d user IDs without valid self-signatures detected\n"
-msgid "%d user ID without valid self-signature detected\n"
-msgid_plural "%d user IDs without valid self-signatures detected\n"
-msgstr[0] "terdeteksi ID %d user tanpa self-signature yang valid\n"
-msgstr[1] "terdeteksi ID %d user tanpa self-signature yang valid\n"
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Signature baik dari \""
+msgstr[1] "Signature baik dari \""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
 
 #, fuzzy
 msgid ""
@@ -3217,9 +3261,6 @@ msgstr ""
 #| msgid "error creating passphrase: %s\n"
 msgid "key %s: error changing passphrase: %s\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
-
-msgid "moving a key signature to the correct place\n"
-msgstr "memindahkan signature kunci ke tempat yang tepat\n"
 
 msgid "save and quit"
 msgstr "simpan dan berhenti"
@@ -3498,6 +3539,11 @@ msgstr "kesalahan: fingerprint tidak valid\n"
 #, fuzzy, c-format
 msgid "\"%s\" is not the primary fingerprint\n"
 msgstr "gagal inisialisasi TrustDB: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid value\n"
+msgid "Invalid user ID '%s': %s\n"
+msgstr "nilai yang tidak valid\n"
 
 #, fuzzy
 #| msgid "No such user ID.\n"
@@ -4324,6 +4370,13 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d signature yang buruk\n"
 msgstr[1] "%d signature yang buruk\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to an error\n"
+msgid "%d signature not checked due to an error\n"
+msgid_plural "%d signatures not checked due to errors\n"
+msgstr[0] "1 signature tidak diperiksa karena kesalahan\n"
+msgstr[1] "1 signature tidak diperiksa karena kesalahan\n"
 
 #, c-format
 msgid "Warning: %lu key skipped due to its large size\n"
@@ -5532,13 +5585,13 @@ msgstr "trustdb rec %lu: write failed (n=%d): %s\n"
 msgid "trustdb transaction too large\n"
 msgstr "transaksi trustdb terlalu besar\n"
 
-#, fuzzy, c-format
-msgid "can't access '%s': %s\n"
-msgstr "tidak dapat menutup `%s': %s\n"
-
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: direktori tidak ada!\n"
+
+#, fuzzy, c-format
+msgid "can't access '%s': %s\n"
+msgstr "tidak dapat menutup `%s': %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
@@ -5685,8 +5738,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"The key %s raised a conflict with this binding (%s).  Since this binding's "
-"policy was 'auto', it was changed to 'ask'."
+"The key with fingerprint %s raised a conflict with the binding %s.  Since "
+"this binding's policy was 'auto', it was changed to 'ask'."
 msgstr ""
 
 #, c-format
@@ -5775,39 +5828,41 @@ msgstr ""
 msgid "error changing TOFU policy: %s\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
+#. TRANSLATORS: The tilde ('~') is used here to indicate a
+#. * non-breakable space
 #, c-format
-msgid "%d year"
-msgid_plural "%d years"
+msgid "%d~year"
+msgid_plural "%d~years"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d month"
-msgid_plural "%d months"
+msgid "%d~month"
+msgid_plural "%d~months"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d day"
-msgid_plural "%d days"
+msgid "%d~day"
+msgid_plural "%d~days"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d hour"
-msgid_plural "%d hours"
+msgid "%d~hour"
+msgid_plural "%d~hours"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d minute"
-msgid_plural "%d minutes"
+msgid "%d~minute"
+msgid_plural "%d~minutes"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d second"
-msgid_plural "%d seconds"
+msgid "%d~second"
+msgid_plural "%d~seconds"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -5816,20 +5871,22 @@ msgid "Have never verified a message signed by key %s!\n"
 msgstr ""
 
 #, c-format
-msgid "Failed to collect signature statistics for \"%s\" (key %s)\n"
+msgid ""
+"Failed to collect signature statistics for \"%s\"\n"
+"(key %s)\n"
 msgstr ""
 
-#, c-format
-msgid "Verified 0 messages signed by \"%s\" (key: %s, policy: %s)."
-msgstr ""
+#, fuzzy, c-format
+msgid "Verified %ld messages signed by \"%s\"."
+msgstr "|algo [file]|cetak digest pesan"
 
-#. TRANSLATORS: The final %s is replaced by a string like
-#. "7 months, 1 day, 5 minutes, 0 seconds".
 #, c-format
 msgid ""
-"Verified %ld message signed by \"%s\" (key: %s, policy: %s) in the past %s."
+"Verified %ld message signed by \"%s\"\n"
+"in the past %s."
 msgid_plural ""
-"Verified %ld messages signed by \"%s\" (key: %s, policy: %s) in the past %s."
+"Verified %ld messages signed by \"%s\"\n"
+"in the past %s."
 msgstr[0] ""
 msgstr[1] ""
 
@@ -5843,12 +5900,19 @@ msgstr ""
 msgid "Warning: we've only seen a single message signed by this key!\n"
 msgstr ""
 
-#. TRANSLATORS: translate the below text.  We don't
-#. directly internationalize that text so that we can
-#. tweak it without breaking translations.
 #, c-format
-msgid "TOFU: few signatures %d message %s"
-msgid_plural "TOFU: few signatures %d messages %s"
+msgid ""
+"Warning: if you think you've seen more than %ld message signed by this key, "
+"then this key might be a forgery!  Carefully examine the email address for "
+"small variations.  If the key is suspect, then use\n"
+"  %s\n"
+"to mark it as being bad.\n"
+msgid_plural ""
+"Warning: if you think you've seen more than %ld messages signed by this key, "
+"then this key might be a forgery!  Carefully examine the email address for "
+"small variations.  If the key is suspect, then use\n"
+"  %s\n"
+"to mark it as being bad.\n"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -8734,6 +8798,19 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "you found a bug ... (%s:%d)\n"
+#~ msgstr "anda menemukan kesalahan ...(%s:%d)\n"
+
+#, fuzzy
+#~| msgid "%d user IDs without valid self-signatures detected\n"
+#~ msgid "%d user ID without valid self-signature detected\n"
+#~ msgid_plural "%d user IDs without valid self-signatures detected\n"
+#~ msgstr[0] "terdeteksi ID %d user tanpa self-signature yang valid\n"
+#~ msgstr[1] "terdeteksi ID %d user tanpa self-signature yang valid\n"
+
+#~ msgid "moving a key signature to the correct place\n"
+#~ msgstr "memindahkan signature kunci ke tempat yang tepat\n"
+
 #~ msgid "%d signatures not checked due to missing keys\n"
 #~ msgstr "%d signature tidak diperiksa karena tidak ada kunci\n"
 
@@ -8826,11 +8903,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Failed to parse '%s'.\n"
 #~ msgstr "tidak dapat membuka `%s': %s\n"
-
-#, fuzzy
-#~| msgid "invalid value\n"
-#~ msgid "invalid value '%s'\n"
-#~ msgstr "nilai yang tidak valid\n"
 
 #, fuzzy
 #~ msgid "error looking up secret key \"%s\": %s\n"

@@ -394,7 +394,7 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "eroare la crearea frazei-parolã: %s\n"
 
-msgid "allow caller to override the pinentry"
+msgid "disallow caller to override the pinentry"
 msgstr ""
 
 msgid "allow passphrase to be prompted through Emacs"
@@ -491,6 +491,10 @@ msgstr "nu pot crea directorul `%s': %s\n"
 #| msgid "directory `%s' created\n"
 msgid "directory '%s' created\n"
 msgstr "director `%s' creat\n"
+
+#, fuzzy, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "AVERTISMENT: permisiuni nesigure (unsafe) pentru extensia `%s'\n"
 
 #, fuzzy, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -750,9 +754,9 @@ msgstr "eroare la crearea frazei-parolã: %s\n"
 msgid "error forking process: %s\n"
 msgstr "eroare la citire `%s': %s\n"
 
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr ""
+#, fuzzy, c-format
+msgid "waiting for processes to terminate failed: %s\n"
+msgstr "actualizarea a eºuat: %s\n"
 
 #, fuzzy, c-format
 msgid "error running '%s': probably not installed\n"
@@ -769,6 +773,10 @@ msgstr "eroare la citire `%s': %s\n"
 #, fuzzy, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "eroare la obþinerea informaþiei pentru cheia curentã: %s\n"
+
+#, c-format
+msgid "waiting for process %d to terminate failed: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
@@ -788,6 +796,10 @@ msgstr "anulatã de utilizator\n"
 
 #, fuzzy
 msgid "problem with the agent\n"
+msgstr "problemã cu agentul: agentul returneazã 0x%lx\n"
+
+#, fuzzy, c-format
+msgid "problem with the agent (unexpected response \"%s\")\n"
 msgstr "problemã cu agentul: agentul returneazã 0x%lx\n"
 
 #, c-format
@@ -844,6 +856,10 @@ msgstr ""
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error allocating enough memory: %s\n"
+msgstr "eroare la crearea inelului de chei `%s': %s\n"
 
 #, c-format
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
@@ -1123,10 +1139,6 @@ msgstr "neforþat(ã)"
 msgid "invalid option \"%.50s\"\n"
 msgstr "opþiuni enumerare invalide\n"
 
-#, c-format
-msgid "you found a bug ... (%s:%d)\n"
-msgstr "aþi gãsit un bug ... (%s:%d)\n"
-
 #, fuzzy, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "redenumirea `%s' ca `%s' a eºuat: %s\n"
@@ -1228,6 +1240,11 @@ msgstr ""
 "caracter printabil în ghilimele în armurã - probabil a fost folosit un MTA "
 "cu bug-uri\n"
 
+#, fuzzy, c-format
+#| msgid "not human readable"
+msgid "[ not human readable (%zu bytes: %s%s) ]"
+msgstr "ilizibil"
+
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1245,11 +1262,22 @@ msgid "a notation value must not use any control characters\n"
 msgstr ""
 "o valoare de notaþie trebuie sã nu foloseascã nici un caracter de control\n"
 
+#, fuzzy
+#| msgid "a notation name must not contain more than one '@' character\n"
+msgid "a notation name may not contain an '=' character\n"
+msgstr "un nume de notaþie trebuie sã nu conþinã mai mult de un caracter '@'\n"
+
+#, fuzzy
+#| msgid ""
+#| "a notation name must have only printable characters or spaces, and end "
+#| "with an '='\n"
+msgid "a notation name must have only printable characters or spaces\n"
+msgstr ""
+"un nume de notaþie trebuie sã conþinã numai caractere imprimabile sau spaþii "
+"ºi sã se termine cu un '='\n"
+
 msgid "WARNING: invalid notation data found\n"
 msgstr "AVERTISMENT: am gãsit date de notare invalide\n"
-
-msgid "not human readable"
-msgstr "ilizibil"
 
 #, c-format
 msgid "failed to proxy %s inquiry to client\n"
@@ -1337,10 +1365,6 @@ msgstr "URL pentru a aduce cheia publicã: "
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "Eroare: URL prea lung (limita este de %d caractere).\n"
-
-#, fuzzy, c-format
-msgid "error allocating enough memory: %s\n"
-msgstr "eroare la crearea inelului de chei `%s': %s\n"
 
 #, fuzzy, c-format
 #| msgid "error reading `%s': %s\n"
@@ -1670,12 +1694,12 @@ msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "forþând cifrul simetric %s (%d) violaþi preferinþele destinatarului\n"
 
 #, c-format
-msgid "you may not use %s while in %s mode\n"
-msgstr "nu puteþi folosi %s câtã vreme în modul %s\n"
-
-#, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s cifrat pentru: \"%s\"\n"
+
+#, c-format
+msgid "you may not use %s while in %s mode\n"
+msgstr "nu puteþi folosi %s câtã vreme în modul %s\n"
 
 #, c-format
 msgid "%s encrypted data\n"
@@ -1964,7 +1988,7 @@ msgstr "|algo [fiºiere]|afiºeazã rezumate mesaje"
 msgid "run in server mode"
 msgstr ""
 
-msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
+msgid "|VALUE|set the TOFU policy for a key"
 msgstr ""
 
 msgid "create ascii armored output"
@@ -3004,11 +3028,30 @@ msgid "[self-signature]"
 msgstr "[auto-semnãturã]"
 
 #, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d semnãturi incorecte\n"
-msgstr[1] "%d semnãturi incorecte\n"
+#| msgid "key %s: unsupported public key algorithm\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "cheia %s: algoritm cu cheie publicã nesuportat\n"
+
+#, fuzzy, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "semnãturã %s, algoritm rezumat %s\n"
+
+#, fuzzy
+#| msgid "revoke signatures"
+msgid " (reordered signatures follow)"
+msgstr "revocã semnãturi"
+
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s:\n"
+msgstr "sãritã \"%s\": %s\n"
+
+#, fuzzy, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "ID utilizator \"%s\" a fost revocat."
+msgstr[1] "ID utilizator \"%s\" a fost revocat."
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to a missing key\n"
@@ -3018,18 +3061,23 @@ msgstr[0] "1 semnãturã nu a fost verificatã din cauza unei chei lipsã\n"
 msgstr[1] "1 semnãturã nu a fost verificatã din cauza unei chei lipsã\n"
 
 #, fuzzy, c-format
-#| msgid "1 signature not checked due to an error\n"
-msgid "%d signature not checked due to an error\n"
-msgid_plural "%d signatures not checked due to errors\n"
-msgstr[0] "1 semnãturã nu a fost verificatã din cauza unei erori\n"
-msgstr[1] "1 semnãturã nu a fost verificatã din cauza unei erori\n"
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d semnãturi incorecte\n"
+msgstr[1] "%d semnãturi incorecte\n"
 
 #, fuzzy, c-format
-#| msgid "%d user IDs without valid self-signatures detected\n"
-msgid "%d user ID without valid self-signature detected\n"
-msgid_plural "%d user IDs without valid self-signatures detected\n"
-msgstr[0] "am gãsit %d ID-uri utilizator fãrã auto-semnãturi valide\n"
-msgstr[1] "am gãsit %d ID-uri utilizator fãrã auto-semnãturi valide\n"
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Semnãturã bunã din \"%s\""
+msgstr[1] "Semnãturã bunã din \"%s\""
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3230,9 +3278,6 @@ msgstr ""
 #| msgid "error creating passphrase: %s\n"
 msgid "key %s: error changing passphrase: %s\n"
 msgstr "eroare la crearea frazei-parolã: %s\n"
-
-msgid "moving a key signature to the correct place\n"
-msgstr "mut o semnãturã de cheie în locul corect\n"
 
 msgid "save and quit"
 msgstr "salveazã ºi terminã"
@@ -3501,6 +3546,11 @@ msgstr "amprentã invalidã"
 #, fuzzy, c-format
 msgid "\"%s\" is not the primary fingerprint\n"
 msgstr "am eºuat sã stochez amprenta: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid value\n"
+msgid "Invalid user ID '%s': %s\n"
+msgstr "valoare invalidã\n"
 
 #, fuzzy
 #| msgid "No such user ID.\n"
@@ -4323,6 +4373,13 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d semnãturi incorecte\n"
 msgstr[1] "%d semnãturi incorecte\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to an error\n"
+msgid "%d signature not checked due to an error\n"
+msgid_plural "%d signatures not checked due to errors\n"
+msgstr[0] "1 semnãturã nu a fost verificatã din cauza unei erori\n"
+msgstr[1] "1 semnãturã nu a fost verificatã din cauza unei erori\n"
 
 #, c-format
 msgid "Warning: %lu key skipped due to its large size\n"
@@ -5556,14 +5613,14 @@ msgstr "trustdb rec %lu: scrierea a eºuat (n=%d): %s\n"
 msgid "trustdb transaction too large\n"
 msgstr "tranzacþia trustdb prea mare\n"
 
+#, c-format
+msgid "%s: directory does not exist!\n"
+msgstr "%s: directorul nu existã!\n"
+
 #, fuzzy, c-format
 #| msgid "can't access `%s': %s\n"
 msgid "can't access '%s': %s\n"
 msgstr "nu pot accesa `%s': %s\n"
-
-#, c-format
-msgid "%s: directory does not exist!\n"
-msgstr "%s: directorul nu existã!\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
@@ -5710,8 +5767,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"The key %s raised a conflict with this binding (%s).  Since this binding's "
-"policy was 'auto', it was changed to 'ask'."
+"The key with fingerprint %s raised a conflict with the binding %s.  Since "
+"this binding's policy was 'auto', it was changed to 'ask'."
 msgstr ""
 
 #, c-format
@@ -5801,39 +5858,41 @@ msgstr ""
 msgid "error changing TOFU policy: %s\n"
 msgstr "eroare la crearea frazei-parolã: %s\n"
 
+#. TRANSLATORS: The tilde ('~') is used here to indicate a
+#. * non-breakable space
 #, c-format
-msgid "%d year"
-msgid_plural "%d years"
+msgid "%d~year"
+msgid_plural "%d~years"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d month"
-msgid_plural "%d months"
+msgid "%d~month"
+msgid_plural "%d~months"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d day"
-msgid_plural "%d days"
+msgid "%d~day"
+msgid_plural "%d~days"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d hour"
-msgid_plural "%d hours"
+msgid "%d~hour"
+msgid_plural "%d~hours"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d minute"
-msgid_plural "%d minutes"
+msgid "%d~minute"
+msgid_plural "%d~minutes"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d second"
-msgid_plural "%d seconds"
+msgid "%d~second"
+msgid_plural "%d~seconds"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -5842,20 +5901,22 @@ msgid "Have never verified a message signed by key %s!\n"
 msgstr ""
 
 #, c-format
-msgid "Failed to collect signature statistics for \"%s\" (key %s)\n"
+msgid ""
+"Failed to collect signature statistics for \"%s\"\n"
+"(key %s)\n"
 msgstr ""
 
-#, c-format
-msgid "Verified 0 messages signed by \"%s\" (key: %s, policy: %s)."
-msgstr ""
+#, fuzzy, c-format
+msgid "Verified %ld messages signed by \"%s\"."
+msgstr "|algo [fiºiere]|afiºeazã rezumate mesaje"
 
-#. TRANSLATORS: The final %s is replaced by a string like
-#. "7 months, 1 day, 5 minutes, 0 seconds".
 #, c-format
 msgid ""
-"Verified %ld message signed by \"%s\" (key: %s, policy: %s) in the past %s."
+"Verified %ld message signed by \"%s\"\n"
+"in the past %s."
 msgid_plural ""
-"Verified %ld messages signed by \"%s\" (key: %s, policy: %s) in the past %s."
+"Verified %ld messages signed by \"%s\"\n"
+"in the past %s."
 msgstr[0] ""
 msgstr[1] ""
 
@@ -5869,12 +5930,19 @@ msgstr ""
 msgid "Warning: we've only seen a single message signed by this key!\n"
 msgstr ""
 
-#. TRANSLATORS: translate the below text.  We don't
-#. directly internationalize that text so that we can
-#. tweak it without breaking translations.
 #, c-format
-msgid "TOFU: few signatures %d message %s"
-msgid_plural "TOFU: few signatures %d messages %s"
+msgid ""
+"Warning: if you think you've seen more than %ld message signed by this key, "
+"then this key might be a forgery!  Carefully examine the email address for "
+"small variations.  If the key is suspect, then use\n"
+"  %s\n"
+"to mark it as being bad.\n"
+msgid_plural ""
+"Warning: if you think you've seen more than %ld messages signed by this key, "
+"then this key might be a forgery!  Carefully examine the email address for "
+"small variations.  If the key is suspect, then use\n"
+"  %s\n"
+"to mark it as being bad.\n"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -8802,6 +8870,19 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "you found a bug ... (%s:%d)\n"
+#~ msgstr "aþi gãsit un bug ... (%s:%d)\n"
+
+#, fuzzy
+#~| msgid "%d user IDs without valid self-signatures detected\n"
+#~ msgid "%d user ID without valid self-signature detected\n"
+#~ msgid_plural "%d user IDs without valid self-signatures detected\n"
+#~ msgstr[0] "am gãsit %d ID-uri utilizator fãrã auto-semnãturi valide\n"
+#~ msgstr[1] "am gãsit %d ID-uri utilizator fãrã auto-semnãturi valide\n"
+
+#~ msgid "moving a key signature to the correct place\n"
+#~ msgstr "mut o semnãturã de cheie în locul corect\n"
+
 #~ msgid "%d signatures not checked due to missing keys\n"
 #~ msgstr "%d semnãturi nu au fost verificate din cauza unor chei lipsã\n"
 
@@ -8893,11 +8974,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Failed to parse '%s'.\n"
 #~ msgstr "Nu pot deschide `%s': %s\n"
-
-#, fuzzy
-#~| msgid "invalid value\n"
-#~ msgid "invalid value '%s'\n"
-#~ msgstr "valoare invalidã\n"
 
 #, fuzzy
 #~| msgid "error reading secret keyblock \"%s\": %s\n"
@@ -10218,9 +10294,6 @@ msgstr ""
 
 #~ msgid "revsig"
 #~ msgstr "revsem"
-
-#~ msgid "revoke signatures"
-#~ msgstr "revocã semnãturi"
 
 #~ msgid "revuid"
 #~ msgstr "revuid"

@@ -428,7 +428,7 @@ msgstr "tillåt klienter att markera nycklar som \"trusted\""
 msgid "allow presetting passphrase"
 msgstr "tillåt förinställning av lösenfras"
 
-msgid "allow caller to override the pinentry"
+msgid "disallow caller to override the pinentry"
 msgstr ""
 
 msgid "allow passphrase to be prompted through Emacs"
@@ -534,6 +534,12 @@ msgstr "%s: kan inte skapa katalog: %s\n"
 #| msgid "directory `%s' created\n"
 msgid "directory '%s' created\n"
 msgstr "katalogen \"%s\" skapades\n"
+
+# Extension är vad? FIXME
+#, fuzzy, c-format
+#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
+msgid "can't set permissions of '%s': %s\n"
+msgstr "Varning: osäkra rättigheter på %s \"%s\"\n"
 
 #, fuzzy, c-format
 #| msgid "stat() failed for `%s': %s\n"
@@ -811,8 +817,9 @@ msgstr "fel när ett rör skapades: %s\n"
 msgid "error forking process: %s\n"
 msgstr "fel vid grening av process: %s\n"
 
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
+#, fuzzy, c-format
+#| msgid "waiting for process %d to terminate failed: %s\n"
+msgid "waiting for processes to terminate failed: %s\n"
 msgstr "misslyckades med att vänta på att processen %d skulle avslutas: %s\n"
 
 #, fuzzy, c-format
@@ -834,6 +841,10 @@ msgstr "fel vid körning av \"%s\": avslutades\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "fel vid hämtning av avslutskod för processen %d: %s\n"
 
+#, c-format
+msgid "waiting for process %d to terminate failed: %s\n"
+msgstr "misslyckades med att vänta på att processen %d skulle avslutas: %s\n"
+
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
@@ -850,6 +861,11 @@ msgstr "avbruten av användaren\n"
 
 msgid "problem with the agent\n"
 msgstr "problem med agenten\n"
+
+#, fuzzy, c-format
+#| msgid "problem with the agent: %s\n"
+msgid "problem with the agent (unexpected response \"%s\")\n"
+msgstr "problem med agenten: %s\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -906,6 +922,10 @@ msgstr "slut på kärna i säkert minne vid allokering av %lu byte"
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "slut på kärna vid allokering av %lu byte"
+
+#, c-format
+msgid "error allocating enough memory: %s\n"
+msgstr "fel vid allokering av tillräckligt mycket minne: %s\n"
 
 #, c-format
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
@@ -1158,10 +1178,6 @@ msgstr "slut på minne\n"
 msgid "invalid option \"%.50s\"\n"
 msgstr "ogiltig flagga \"%.50s\"\n"
 
-#, c-format
-msgid "you found a bug ... (%s:%d)\n"
-msgstr "du har hittat ett fel i programmet ... (%s:%d)\n"
-
 #, fuzzy, c-format
 #| msgid "conversion from `%s' to `%s' not available\n"
 msgid "conversion from '%s' to '%s' not available\n"
@@ -1272,6 +1288,11 @@ msgstr ""
 "beror sannolikt på att en felaktig e-postserver eller e-postklient har "
 "använts\n"
 
+#, fuzzy, c-format
+#| msgid "not human readable"
+msgid "[ not human readable (%zu bytes: %s%s) ]"
+msgstr "inte läsbart"
+
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1288,11 +1309,22 @@ msgstr "ett notationsnamn får inte innehålla fler än ett \"@\"-tecken\n"
 msgid "a notation value must not use any control characters\n"
 msgstr "ett notationsvärde får inte använda några styrtecken\n"
 
+#, fuzzy
+#| msgid "a notation name must not contain more than one '@' character\n"
+msgid "a notation name may not contain an '=' character\n"
+msgstr "ett notationsnamn får inte innehålla fler än ett \"@\"-tecken\n"
+
+#, fuzzy
+#| msgid ""
+#| "a notation name must have only printable characters or spaces, and end "
+#| "with an '='\n"
+msgid "a notation name must have only printable characters or spaces\n"
+msgstr ""
+"ett notationsnamn får endast innehålla skrivbara tecken eller blanksteg, och "
+"sluta med ett \"'=\"\n"
+
 msgid "WARNING: invalid notation data found\n"
 msgstr "VARNING: ogiltig notationsdata hittades\n"
-
-msgid "not human readable"
-msgstr "inte läsbart"
 
 #, c-format
 msgid "failed to proxy %s inquiry to client\n"
@@ -1380,10 +1412,6 @@ msgstr "Url för att hämta publik nyckel: "
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "Fel: URL:en är för lång (gränsen är %d tecken).\n"
-
-#, c-format
-msgid "error allocating enough memory: %s\n"
-msgstr "fel vid allokering av tillräckligt mycket minne: %s\n"
 
 #, fuzzy, c-format
 #| msgid "error reading `%s': %s\n"
@@ -1731,12 +1759,12 @@ msgstr ""
 "tvinga symmetriskt chiffer med %s (%d) strider mot mottagarinställningarna\n"
 
 #, c-format
-msgid "you may not use %s while in %s mode\n"
-msgstr "du kan inte använda %s när du är i %s-läget\n"
-
-#, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s krypterad för: \"%s\"\n"
+
+#, c-format
+msgid "you may not use %s while in %s mode\n"
+msgstr "du kan inte använda %s när du är i %s-läget\n"
 
 #, c-format
 msgid "%s encrypted data\n"
@@ -2024,7 +2052,7 @@ msgstr "skriv ut kontrollsummor"
 msgid "run in server mode"
 msgstr "kör i serverläge"
 
-msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
+msgid "|VALUE|set the TOFU policy for a key"
 msgstr ""
 
 msgid "create ascii armored output"
@@ -3074,11 +3102,32 @@ msgid "[self-signature]"
 msgstr "[självsignatur]"
 
 #, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d felaktiga signaturer\n"
-msgstr[1] "%d felaktiga signaturer\n"
+#| msgid "key %s: unsupported public key algorithm\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr "nyckel %s: algoritmen för publika nycklar stöds inte\n"
+
+#, fuzzy, c-format
+#| msgid "card does not support digest algorithm %s\n"
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "kortet har inte stöd för sammandragsalgoritmen %s\n"
+
+#, fuzzy
+#| msgid "Good signature from"
+msgid " (reordered signatures follow)"
+msgstr "Korrekt signatur från"
+
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s:\n"
+msgstr "hoppade över \"%s\": %s\n"
+
+#, fuzzy, c-format
+#| msgid "User ID \"%s\": %d signature removed\n"
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "Användaridentitet \"%s\": %d signaturer borttagna\n"
+msgstr[1] "Användaridentitet \"%s\": %d signaturer borttagna\n"
 
 #, fuzzy, c-format
 #| msgid "1 signature not checked due to a missing key\n"
@@ -3088,18 +3137,24 @@ msgstr[0] "1 signatur validerades inte eftersom nyckeln saknades\n"
 msgstr[1] "1 signatur validerades inte eftersom nyckeln saknades\n"
 
 #, fuzzy, c-format
-#| msgid "1 signature not checked due to an error\n"
-msgid "%d signature not checked due to an error\n"
-msgid_plural "%d signatures not checked due to errors\n"
-msgstr[0] "1 signatur validerades inte eftersom ett fel uppstod\n"
-msgstr[1] "1 signatur validerades inte eftersom ett fel uppstod\n"
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d felaktiga signaturer\n"
+msgstr[1] "%d felaktiga signaturer\n"
 
 #, fuzzy, c-format
-#| msgid "%d user IDs without valid self-signatures detected\n"
-msgid "%d user ID without valid self-signature detected\n"
-msgid_plural "%d user IDs without valid self-signatures detected\n"
-msgstr[0] "%d användaridentiteter utan giltiga självsignaturer hittades\n"
-msgstr[1] "%d användaridentiteter utan giltiga självsignaturer hittades\n"
+#| msgid "Good signature from"
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "Korrekt signatur från"
+msgstr[1] "Korrekt signatur från"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3299,9 +3354,6 @@ msgstr ""
 #| msgid "error creating passphrase: %s\n"
 msgid "key %s: error changing passphrase: %s\n"
 msgstr "fel när lösenfras skapades: %s\n"
-
-msgid "moving a key signature to the correct place\n"
-msgstr "flyttar en nyckelsignatur till den rätta platsen\n"
 
 msgid "save and quit"
 msgstr "spara och avsluta"
@@ -3573,6 +3625,11 @@ msgstr "ogiltigt fingeravtryck"
 #| msgid "failed to get the fingerprint\n"
 msgid "\"%s\" is not the primary fingerprint\n"
 msgstr "misslyckades med att få fingeravtrycket\n"
+
+#, fuzzy, c-format
+#| msgid "invalid value\n"
+msgid "Invalid user ID '%s': %s\n"
+msgstr "ogiltigt värde\n"
 
 #, fuzzy
 #| msgid "No such user ID.\n"
@@ -4411,6 +4468,13 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d felaktiga signaturer\n"
 msgstr[1] "%d felaktiga signaturer\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to an error\n"
+msgid "%d signature not checked due to an error\n"
+msgid_plural "%d signatures not checked due to errors\n"
+msgstr[0] "1 signatur validerades inte eftersom ett fel uppstod\n"
+msgstr[1] "1 signatur validerades inte eftersom ett fel uppstod\n"
 
 #, c-format
 msgid "Warning: %lu key skipped due to its large size\n"
@@ -5675,14 +5739,14 @@ msgstr "tillitsdatabasposten %lu: skrivning misslyckades (n=%d): %s\n"
 msgid "trustdb transaction too large\n"
 msgstr "tillitsdatabastransaktion för stor\n"
 
+#, c-format
+msgid "%s: directory does not exist!\n"
+msgstr "%s: katalogen finns inte!\n"
+
 #, fuzzy, c-format
 #| msgid "can't access `%s': %s\n"
 msgid "can't access '%s': %s\n"
 msgstr "kan inte komma åt \"%s\": %s\n"
-
-#, c-format
-msgid "%s: directory does not exist!\n"
-msgstr "%s: katalogen finns inte!\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
@@ -5832,8 +5896,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"The key %s raised a conflict with this binding (%s).  Since this binding's "
-"policy was 'auto', it was changed to 'ask'."
+"The key with fingerprint %s raised a conflict with the binding %s.  Since "
+"this binding's policy was 'auto', it was changed to 'ask'."
 msgstr ""
 
 #, c-format
@@ -5926,39 +5990,41 @@ msgstr ""
 msgid "error changing TOFU policy: %s\n"
 msgstr "fel när ett rör skapades: %s\n"
 
+#. TRANSLATORS: The tilde ('~') is used here to indicate a
+#. * non-breakable space
 #, c-format
-msgid "%d year"
-msgid_plural "%d years"
+msgid "%d~year"
+msgid_plural "%d~years"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d month"
-msgid_plural "%d months"
+msgid "%d~month"
+msgid_plural "%d~months"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d day"
-msgid_plural "%d days"
+msgid "%d~day"
+msgid_plural "%d~days"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d hour"
-msgid_plural "%d hours"
+msgid "%d~hour"
+msgid_plural "%d~hours"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d minute"
-msgid_plural "%d minutes"
+msgid "%d~minute"
+msgid_plural "%d~minutes"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d second"
-msgid_plural "%d seconds"
+msgid "%d~second"
+msgid_plural "%d~seconds"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -5967,20 +6033,23 @@ msgid "Have never verified a message signed by key %s!\n"
 msgstr ""
 
 #, c-format
-msgid "Failed to collect signature statistics for \"%s\" (key %s)\n"
+msgid ""
+"Failed to collect signature statistics for \"%s\"\n"
+"(key %s)\n"
 msgstr ""
 
-#, c-format
-msgid "Verified 0 messages signed by \"%s\" (key: %s, policy: %s)."
-msgstr ""
+#, fuzzy, c-format
+#| msgid "print message digests"
+msgid "Verified %ld messages signed by \"%s\"."
+msgstr "skriv ut kontrollsummor"
 
-#. TRANSLATORS: The final %s is replaced by a string like
-#. "7 months, 1 day, 5 minutes, 0 seconds".
 #, c-format
 msgid ""
-"Verified %ld message signed by \"%s\" (key: %s, policy: %s) in the past %s."
+"Verified %ld message signed by \"%s\"\n"
+"in the past %s."
 msgid_plural ""
-"Verified %ld messages signed by \"%s\" (key: %s, policy: %s) in the past %s."
+"Verified %ld messages signed by \"%s\"\n"
+"in the past %s."
 msgstr[0] ""
 msgstr[1] ""
 
@@ -5994,12 +6063,19 @@ msgstr ""
 msgid "Warning: we've only seen a single message signed by this key!\n"
 msgstr ""
 
-#. TRANSLATORS: translate the below text.  We don't
-#. directly internationalize that text so that we can
-#. tweak it without breaking translations.
 #, c-format
-msgid "TOFU: few signatures %d message %s"
-msgid_plural "TOFU: few signatures %d messages %s"
+msgid ""
+"Warning: if you think you've seen more than %ld message signed by this key, "
+"then this key might be a forgery!  Carefully examine the email address for "
+"small variations.  If the key is suspect, then use\n"
+"  %s\n"
+"to mark it as being bad.\n"
+msgid_plural ""
+"Warning: if you think you've seen more than %ld messages signed by this key, "
+"then this key might be a forgery!  Carefully examine the email address for "
+"small variations.  If the key is suspect, then use\n"
+"  %s\n"
+"to mark it as being bad.\n"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -9139,6 +9215,19 @@ msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
 
+#~ msgid "you found a bug ... (%s:%d)\n"
+#~ msgstr "du har hittat ett fel i programmet ... (%s:%d)\n"
+
+#, fuzzy
+#~| msgid "%d user IDs without valid self-signatures detected\n"
+#~ msgid "%d user ID without valid self-signature detected\n"
+#~ msgid_plural "%d user IDs without valid self-signatures detected\n"
+#~ msgstr[0] "%d användaridentiteter utan giltiga självsignaturer hittades\n"
+#~ msgstr[1] "%d användaridentiteter utan giltiga självsignaturer hittades\n"
+
+#~ msgid "moving a key signature to the correct place\n"
+#~ msgstr "flyttar en nyckelsignatur till den rätta platsen\n"
+
 #, fuzzy
 #~| msgid "option \"%.50s\" is ambiguous\n"
 #~ msgid "key specification '%s' is ambiguous\n"
@@ -9239,11 +9328,6 @@ msgstr ""
 #~| msgid "failed to open `%s': %s\n"
 #~ msgid "Failed to parse '%s'.\n"
 #~ msgstr "misslyckades med att öppna \"%s\": %s\n"
-
-#, fuzzy
-#~| msgid "invalid value\n"
-#~ msgid "invalid value '%s'\n"
-#~ msgstr "ogiltigt värde\n"
 
 #, fuzzy
 #~| msgid "error reading secret keyblock \"%s\": %s\n"
