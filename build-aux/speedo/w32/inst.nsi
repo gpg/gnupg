@@ -790,6 +790,11 @@ Section "-gpgme" SEC_gpgme
   File include/gpgme.h
 SectionEnd
 
+Section "-sqlite" SEC_sqlite
+  SetOutPath "$INSTDIR\bin"
+  File bin/libsqlite3-0.dll
+SectionEnd
+
 !ifdef WITH_GUI
 Section "-libiconv" SEC_libiconv
   SetOutPath "$INSTDIR\bin"
@@ -1361,6 +1366,10 @@ Section "-un.gnupg"
   RMDir "$INSTDIR\share\locale\zh_TW\LC_MESSAGES"
   RMDir "$INSTDIR\share\locale\zh_TW"
   RMDir "$INSTDIR\share\locale"
+SectionEnd
+
+Section "-un.sqlite"
+  Delete "$INSTDIR\bin\libsqlite3-0.dll"
 SectionEnd
 
 Section "-un.gnupginst"
