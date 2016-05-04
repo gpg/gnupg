@@ -449,8 +449,10 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
               {
                 PKT_signature *sig = sigs[i]->pkt->pkt.signature;
 
-                log_debug ("Signature appears multiple times, deleting duplicate:\n");
-                log_debug ("  sig: class 0x%x, issuer: %s, timestamp: %s (%lld), digest: %02x %02x\n",
+                log_debug ("Signature appears multiple times, "
+                           "deleting duplicate:\n");
+                log_debug ("  sig: class 0x%x, issuer: %s,"
+                           " timestamp: %s (%lld), digest: %02x %02x\n",
                            sig->sig_class, keystr (sig->keyid),
                            isotimestamp (sig->timestamp),
                            (long long) sig->timestamp,
@@ -606,7 +608,8 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
             {
               if (DBG_PACKET && pending_desc)
                 log_debug ("%s", pending_desc);
-              tty_printf (_("can't check signature with unsupported public-key algorithm (%d): %s.\n"),
+              tty_printf (_("can't check signature with unsupported"
+                            " public-key algorithm (%d): %s.\n"),
                           sig->pubkey_algo, gpg_strerror (err));
               break;
             }
@@ -614,7 +617,8 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
             {
               if (DBG_PACKET && pending_desc)
                 log_debug ("%s", pending_desc);
-              tty_printf (_("can't check signature with unsupported message-digest algorithm %d: %s.\n"),
+              tty_printf (_("can't check signature with unsupported"
+                            " message-digest algorithm %d: %s.\n"),
                           sig->digest_algo, gpg_strerror (err));
               break;
             }
@@ -664,7 +668,8 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
               if (DBG_PACKET)
                 {
                   log_debug ("%s", pending_desc);
-                  log_debug ("    Good signature out of order!  (Over %s (%d) '%s')\n",
+                  log_debug ("    Good signature out of order!"
+                             "  (Over %s (%d) '%s')\n",
                              n2->pkt->pkttype == PKT_USER_ID
                              ? "user id"
                              : n2->pkt->pkttype == PKT_PUBLIC_SUBKEY
@@ -906,7 +911,8 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
                           reordered), reordered);
 
   if (only_selfsigs && (bad_signature || reordered))
-    tty_printf (_("Warning: errors found and only checked self-signatures, run 'check' to check all signatures.\n"));
+    tty_printf (_("Warning: errors found and only checked self-signatures,"
+                  " run '%s' to check all signatures.\n"), "check");
 
   return modified;
 }
@@ -989,7 +995,8 @@ trustsig_prompt (byte * trust_value, byte * trust_depth, char **regexp)
   tty_printf ("\n");
 
   tty_printf (_("Please enter the depth of this trust signature.\n"
-		"A depth greater than 1 allows the key you are signing to make\n"
+		"A depth greater than 1 allows the key you are"
+                " signing to make\n"
 		"trust signatures on your behalf.\n"));
   tty_printf ("\n");
 

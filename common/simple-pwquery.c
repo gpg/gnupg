@@ -694,7 +694,7 @@ simple_query (const char *query)
       else
         {
 #ifdef SPWQ_USE_LOGGING
-          log_error (_("problem with the agent (unexpected response \"%s\"\n"),
+          log_error (_("problem with the agent (unexpected response \"%s\")\n"),
                      response);
 #endif
           rc = SPWQ_ERR_RESPONSE;

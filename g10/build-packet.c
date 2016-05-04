@@ -1088,7 +1088,7 @@ notation_value_to_human_readable_string (struct notation *notation)
           preview[i] = '?';
       preview[i] = 0;
 
-      return xasprintf (_("[ not human readable (%zd bytes: %s%s) ]"),
+      return xasprintf (_("[ not human readable (%zu bytes: %s%s) ]"),
                         len, preview, i < len ? "..." : "");
     }
   else
