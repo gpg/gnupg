@@ -1,5 +1,54 @@
-Noteworthy changes in version 2.1.12 (unreleased)
+Noteworthy changes in version 2.1.12 (2016-05-04)
 -------------------------------------------------
+
+ * gpg: New --edit-key sub-command "change-usage" for testing
+   purposes.
+
+ * gpg: Out of order key-signatures are now systematically detected
+   and fixed by --edit-key.
+
+ * gpg: Improved detection of non-armored messages.
+
+ * gpg: Removed the extra prompt needed to create Curve25519 keys.
+
+ * gpg: Improved user ID selection for --quick-sign-key.
+
+ * gpg: Use the root CAs provided by the system with --fetch-key.
+
+ * gpg: Add support for the experimental Web Key Directory key
+   location service.
+
+ * gpg: Improve formatting of Tofu messages and emit new Tofu specific
+   status lines.
+
+ * gpgsm: Add option --pinentry-mode to support a loopback pinentry.
+
+ * gpgsm: A new pubring.kbx is now created with the header blob so
+   that gpg can detect that the keybox format needs to be used.
+
+ * agent: Add read support for the new private key protection format
+   openpgp-s2k-ocb-aes.
+
+ * agent: Add read support for the new extended private key format.
+
+ * agent: Default to --allow-loopback-pinentry and add option
+   --no-allow-loopback-pinentry.
+
+ * scd: Changed to use the new libusb 1.0 API for the internal CCID
+   driver.
+
+ * dirmngr: The dirmngr-client does now auto-detect the PEM format.
+
+ * g13: Add experimental support for dm-crypt.
+
+ * w32: Tofu support is now available with the Speedo build method.
+
+ * w32: Removed the need for libiconv.dll.
+
+ * The man pages for gpg and gpgv are now installed under the correct
+   name (gpg2 or gpg - depending on a configure option).
+
+ * Lots of internal cleanups and bug fixes.
 
 
 Noteworthy changes in version 2.1.11 (2016-01-26)
