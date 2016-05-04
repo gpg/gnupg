@@ -156,10 +156,10 @@ VIAddVersionKey "FileVersion" "${PROD_VERSION}"
 !insertmacro MUI_PAGE_LICENSE "${TOP_SRCDIR}/COPYING"
 
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW PrintNonAdminWarning
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE CheckExistingVersion
 !insertmacro MUI_PAGE_COMPONENTS
 
-!define MUI_PAGE_CUSTOMFUNCTION_LEAVE CheckExistingVersion
-!insertmacro MUI_PAGE_DIRECTORY
+# We don't have MUI_PAGE_DIRECTORY
 
 !ifdef HAVE_STARTMENU
 
@@ -260,11 +260,11 @@ LangString T_RunKeyManager ${LANG_GERMAN} \
    "Die Schlüsselverwaltung aufrufen"
 
 LangString T_MoreInfo ${LANG_ENGLISH} \
-   "Click here for GnuPG's website"
+   "Click here to see how to help the GnuPG Project"
 LangString T_MoreInfo ${LANG_GERMAN} \
-   "Hier klicken um zur GnuPG Homepage zu gelangen"
-LangString T_MoreInfoURL ${LANG_ENGLISH} "https://gnupg.org"
-LangString T_MoreInfoURL ${LANG_GERMAN}  "https://gnupg.org"
+   "Hier klicken um dem GnuPG Projekt zu zu helfen"
+LangString T_MoreInfoURL ${LANG_ENGLISH} "https://gnupg.org/donate"
+LangString T_MoreInfoURL ${LANG_GERMAN}  "https://gnupg.org/donate"
 
 LangString T_ShowReadme ${LANG_ENGLISH} \
    "Show the README file"
@@ -319,8 +319,8 @@ FunctionEnd
 
 
 # Check whether GnuPG has already been installed.  This is called as
-# a leave function from the directory page.  A call to abort will get
-# back to the directory selection.
+# a leave function from the components page.  A call to abort will get
+# back to the components selection.
 Function CheckExistingVersion
   ClearErrors
   FileOpen $0 "$INSTDIR\VERSION" r
