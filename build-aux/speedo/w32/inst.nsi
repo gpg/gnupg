@@ -608,6 +608,63 @@ Section "GnuPG" SEC_gnupg
   File "share/gnupg/gpg-conf.skel"
   File "share/gnupg/dirmngr-conf.skel"
   File "share/gnupg/distsigkey.gpg"
+
+  SetOutPath "$INSTDIR\share\locale\ca\LC_MESSAGES"
+  File share/locale/ca/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\cs\LC_MESSAGES"
+  File share/locale/cs/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\da\LC_MESSAGES"
+  File share/locale/da/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\de\LC_MESSAGES"
+  File share/locale/de/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\el\LC_MESSAGES"
+  File share/locale/el/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\en@boldquot\LC_MESSAGES"
+  File share/locale/en@boldquot/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\en@quot\LC_MESSAGES"
+  File share/locale/en@quot/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\eo\LC_MESSAGES"
+  File share/locale/eo/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\es\LC_MESSAGES"
+  File share/locale/es/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\et\LC_MESSAGES"
+  File share/locale/et/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\fi\LC_MESSAGES"
+  File share/locale/fi/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\fr\LC_MESSAGES"
+  File share/locale/fr/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\gl\LC_MESSAGES"
+  File share/locale/gl/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\hu\LC_MESSAGES"
+  File share/locale/hu/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\id\LC_MESSAGES"
+  File share/locale/id/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\it\LC_MESSAGES"
+  File share/locale/it/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\ja\LC_MESSAGES"
+  File share/locale/ja/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\nb\LC_MESSAGES"
+  File share/locale/nb/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\pl\LC_MESSAGES"
+  File share/locale/pl/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\pt\LC_MESSAGES"
+  File share/locale/pt/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\ro\LC_MESSAGES"
+  File share/locale/ro/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\ru\LC_MESSAGES"
+  File share/locale/ru/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\sk\LC_MESSAGES"
+  File share/locale/sk/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\sv\LC_MESSAGES"
+  File share/locale/sv/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\tr\LC_MESSAGES"
+  File share/locale/tr/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\uk\LC_MESSAGES"
+  File share/locale/uk/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\zh_CN\LC_MESSAGES"
+  File share/locale/zh_CN/LC_MESSAGES/gnupg2.mo
+  SetOutPath "$INSTDIR\share\locale\zh_TW\LC_MESSAGES"
+  File share/locale/zh_TW/LC_MESSAGES/gnupg2.mo
 SectionEnd
 
 
@@ -631,6 +688,44 @@ Section "-libgpg-error" SEC_libgpg_error
   File /oname=libgpg-error.imp lib/libgpg-error.dll.a
   SetOutPath "$INSTDIR\include"
   File include/gpg-error.h
+  SetOutPath "$INSTDIR\share\locale\cs\LC_MESSAGES"
+  File share/locale/cs/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\da\LC_MESSAGES"
+  File share/locale/da/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\de\LC_MESSAGES"
+  File share/locale/de/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\eo\LC_MESSAGES"
+  File share/locale/eo/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\fr\LC_MESSAGES"
+  File share/locale/fr/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\hu\LC_MESSAGES"
+  File share/locale/hu/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\it\LC_MESSAGES"
+  File share/locale/it/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\ja\LC_MESSAGES"
+  File share/locale/ja/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\nl\LC_MESSAGES"
+  File share/locale/nl/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\pl\LC_MESSAGES"
+  File share/locale/pl/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\pt\LC_MESSAGES"
+  File share/locale/pt/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\ro\LC_MESSAGES"
+  File share/locale/ro/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\ru\LC_MESSAGES"
+  File share/locale/ru/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\sr\LC_MESSAGES"
+  File share/locale/sr/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\sv\LC_MESSAGES"
+  File share/locale/sv/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\uk\LC_MESSAGES"
+  File share/locale/uk/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\vi\LC_MESSAGES"
+  File share/locale/vi/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\zh_CN\LC_MESSAGES"
+  File share/locale/zh_CN/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\zh_TW\LC_MESSAGES"
+  File share/locale/zh_TW/LC_MESSAGES/libgpg-error.mo
 SectionEnd
 
 Section "-zlib" SEC_zlib
@@ -1105,6 +1200,64 @@ Section "-un.libgpg-error"
   Delete "$INSTDIR\bin\libgpg-error-0.dll"
   Delete "$INSTDIR\lib\libgpg-error.imp"
   Delete "$INSTDIR\include\gpg-error.h"
+  Delete "$INSTDIR\share\locale\cs\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\cs\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\cs"
+  Delete "$INSTDIR\share\locale\da\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\da\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\da"
+  Delete "$INSTDIR\share\locale\de\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\de\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\de"
+  Delete "$INSTDIR\share\locale\eo\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\eo\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\eo"
+  Delete "$INSTDIR\share\locale\fr\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\fr\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\fr"
+  Delete "$INSTDIR\share\locale\hu\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\hu\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\hu"
+  Delete "$INSTDIR\share\locale\it\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\it\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\it"
+  Delete "$INSTDIR\share\locale\ja\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\ja\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\ja"
+  Delete "$INSTDIR\share\locale\nl\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\nl\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\nl"
+  Delete "$INSTDIR\share\locale\pl\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\pl\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\pl"
+  Delete "$INSTDIR\share\locale\pt\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\pt\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\pt"
+  Delete "$INSTDIR\share\locale\ro\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\ro\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\ro"
+  Delete "$INSTDIR\share\locale\ru\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\ru\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\ru"
+  Delete "$INSTDIR\share\locale\sr\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\sr\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\sr"
+  Delete "$INSTDIR\share\locale\sv\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\sv\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\sv"
+  Delete "$INSTDIR\share\locale\uk\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\uk\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\uk"
+  Delete "$INSTDIR\share\locale\vi\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\vi\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\vi"
+  Delete "$INSTDIR\share\locale\zh_CN\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\zh_CN\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\zh_CN"
+  Delete "$INSTDIR\share\locale\zh_TW\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\zh_TW\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\zh_TW"
+  RMDir "$INSTDIR\share\locale"
 SectionEnd
 
 Section "-un.gnupg"
@@ -1120,6 +1273,92 @@ Section "-un.gnupg"
 
   Delete "$INSTDIR\share\gnupg\gpg-conf.skel"
   RMDir  "$INSTDIR\share\gnupg"
+
+  Delete "$INSTDIR\share\locale\ca\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\ca\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\ca"
+  Delete "$INSTDIR\share\locale\cs\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\cs\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\cs"
+  Delete "$INSTDIR\share\locale\da\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\da\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\da"
+  Delete "$INSTDIR\share\locale\de\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\de\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\de"
+  Delete "$INSTDIR\share\locale\el\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\el\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\el"
+  Delete "$INSTDIR\share\locale\en@boldquot\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\en@boldquot\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\en@boldquot"
+  Delete "$INSTDIR\share\locale\en@quot\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\en@quot\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\en@quot"
+  Delete "$INSTDIR\share\locale\eo\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\eo\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\eo"
+  Delete "$INSTDIR\share\locale\es\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\es\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\es"
+  Delete "$INSTDIR\share\locale\et\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\et\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\et"
+  Delete "$INSTDIR\share\locale\fi\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\fi\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\fi"
+  Delete "$INSTDIR\share\locale\fr\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\fr\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\fr"
+  Delete "$INSTDIR\share\locale\gl\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\gl\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\gl"
+  Delete "$INSTDIR\share\locale\hu\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\hu\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\hu"
+  Delete "$INSTDIR\share\locale\id\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\id\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\id"
+  Delete "$INSTDIR\share\locale\it\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\it\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\it"
+  Delete "$INSTDIR\share\locale\ja\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\ja\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\ja"
+  Delete "$INSTDIR\share\locale\nb\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\nb\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\nb"
+  Delete "$INSTDIR\share\locale\pl\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\pl\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\pl"
+  Delete "$INSTDIR\share\locale\pt\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\pt\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\pt"
+  Delete "$INSTDIR\share\locale\ro\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\ro\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\ro"
+  Delete "$INSTDIR\share\locale\ru\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\ru\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\ru"
+  Delete "$INSTDIR\share\locale\sk\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\sk\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\sk"
+  Delete "$INSTDIR\share\locale\sv\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\sv\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\sv"
+  Delete "$INSTDIR\share\locale\tr\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\tr\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\tr"
+  Delete "$INSTDIR\share\locale\uk\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\uk\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\uk"
+  Delete "$INSTDIR\share\locale\zh_CN\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\zh_CN\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\zh_CN"
+  Delete "$INSTDIR\share\locale\zh_TW\LC_MESSAGES\gnupg2.mo"
+  RMDir "$INSTDIR\share\locale\zh_TW\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\zh_TW"
+  RMDir "$INSTDIR\share\locale"
 SectionEnd
 
 Section "-un.gnupginst"
