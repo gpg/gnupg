@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-04-15 11:41+0200\n"
+"PO-Revision-Date: 2016-05-04 11:03+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -298,7 +298,8 @@ msgstr ""
 "Regeln aufgebaut sein."
 
 msgid "Warning: You have entered an insecure passphrase."
-msgstr "WARNUNG:  Sie haben eine offensichtlich unsichere%0APassphrase eingegeben."
+msgstr ""
+"WARNUNG:  Sie haben eine offensichtlich unsichere%0APassphrase eingegeben."
 
 #, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
@@ -377,8 +378,8 @@ msgstr "Verbiete Aufrufern Schlüssel als \"vertrauenswürdig\" zu markieren"
 msgid "allow presetting passphrase"
 msgstr "Erlaube ein \"preset\" von Passphrases"
 
-msgid "allow caller to override the pinentry"
-msgstr "Aufrufer darf das Pinentry ersetzen"
+msgid "disallow caller to override the pinentry"
+msgstr "Aufrufer darf das Pinentry nicht ersetzen"
 
 msgid "allow passphrase to be prompted through Emacs"
 msgstr "Erlaube die Eingabe einer Passphrase über Emacs"
@@ -464,6 +465,10 @@ msgstr "Verzeichnis `%s' kann nicht erzeugt werden: %s\n"
 #, c-format
 msgid "directory '%s' created\n"
 msgstr "Verzeichnis `%s' erzeugt\n"
+
+#, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "Zugriffsrechte für '%s' können nicht gesetzt werden: %s\n"
 
 #, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -733,8 +738,8 @@ msgid "error forking process: %s\n"
 msgstr "Fehler beim \"Forken\" des Prozess: %s\n"
 
 #, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "Das Warten auf die Beendigung des Prozesses %d schlug fehl: %s\n"
+msgid "waiting for processes to terminate failed: %s\n"
+msgstr "Das Warten auf die Beendigung von Prozessen schlug fehl: %s\n"
 
 #, c-format
 msgid "error running '%s': probably not installed\n"
@@ -753,6 +758,10 @@ msgid "error getting exit code of process %d: %s\n"
 msgstr "Fehler beim Holen des Exitwerte des Prozesses %d: %s\n"
 
 #, c-format
+msgid "waiting for process %d to terminate failed: %s\n"
+msgstr "Das Warten auf die Beendigung des Prozesses %d schlug fehl: %s\n"
+
+#, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "Verbindung zu '%s' kann nicht aufgebaut werden: %s\n"
 
@@ -767,6 +776,10 @@ msgstr "Vom Benutzer abgebrochen\n"
 
 msgid "problem with the agent\n"
 msgstr "Problem mit dem Agenten\n"
+
+#, c-format
+msgid "problem with the agent (unexpected response \"%s\")\n"
+msgstr "Problem mit dem Agenten (unerwartete Antwort \"%s\")\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -823,6 +836,10 @@ msgstr ""
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "Kein Speicher mehr vorhanden, als %lu Byte zugewiesen werden sollten"
+
+#, c-format
+msgid "error allocating enough memory: %s\n"
+msgstr "Fehler beim Zuteilen genügenden Speichers: %s\n"
 
 #, c-format
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
@@ -1063,10 +1080,6 @@ msgid "invalid option \"%.50s\"\n"
 msgstr "Ungültige Option \"%.50s\"\n"
 
 #, c-format
-msgid "you found a bug ... (%s:%d)\n"
-msgstr "Sie haben einen Bug (Programmfehler) gefunden ... (%s:%d)\n"
-
-#, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "Umwandlung von `%s' in `%s' ist nicht verfügbar\n"
 
@@ -1166,6 +1179,10 @@ msgstr ""
 "\"quoted printable\" Zeichen in der ASCII-Hülle gefunden - möglicherweise\n"
 " war ein fehlerhafter Email-Transporter(\"MTA\") die Ursache\n"
 
+#, c-format
+msgid "[ not human readable (%zu bytes: %s%s) ]"
+msgstr "[ Nicht als Klartext darstellbar (%zu bytes: %s%s) ]"
+
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1182,11 +1199,16 @@ msgstr "Ein \"notation\"-Wert darf das '@'-Zeichen maximal einmal verwenden\n"
 msgid "a notation value must not use any control characters\n"
 msgstr "Ein \"notation\"-Wert darf keine Kontrollzeichen verwenden\n"
 
+msgid "a notation name may not contain an '=' character\n"
+msgstr "Ein \"notation\"-Wert darf das '='-Zeichen nicht verwenden\n"
+
+msgid "a notation name must have only printable characters or spaces\n"
+msgstr ""
+"Ein \"notation\"-Name darf nur Buchstaben, Zahlen, Punkte oder Unterstriche "
+"enthalten\n"
+
 msgid "WARNING: invalid notation data found\n"
 msgstr "WARNUNG: Ungültige \"Notation\"-Daten gefunden\n"
-
-msgid "not human readable"
-msgstr "nicht als Klartext darstellbar"
 
 #, c-format
 msgid "failed to proxy %s inquiry to client\n"
@@ -1271,10 +1293,6 @@ msgstr "URL um den öffentlichen Schlüssel zu holen: "
 #, c-format
 msgid "Error: URL too long (limit is %d characters).\n"
 msgstr "Fehler: URL ist zu lang (Grenze beträgt %d Zeichen).\n"
-
-#, c-format
-msgid "error allocating enough memory: %s\n"
-msgstr "Fehler beim Zuteilen genügenden Speichers: %s\n"
 
 #, c-format
 msgid "error reading '%s': %s\n"
@@ -1603,12 +1621,12 @@ msgstr ""
 "verletzt die Empfängervoreinstellungen\n"
 
 #, c-format
-msgid "you may not use %s while in %s mode\n"
-msgstr "Die Benutzung von %s ist im %s-Modus nicht erlaubt.\n"
-
-#, c-format
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s verschlüsselt für: %s\n"
+
+#, c-format
+msgid "you may not use %s while in %s mode\n"
+msgstr "Die Benutzung von %s ist im %s-Modus nicht erlaubt.\n"
 
 #, c-format
 msgid "%s encrypted data\n"
@@ -1876,10 +1894,8 @@ msgstr "Hashwerte für die Dateien ausgeben"
 msgid "run in server mode"
 msgstr "Im Server Modus ausführen"
 
-msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
-msgstr ""
-"|WERT|Setze die TOFU-Politik für einen Schlüssel (good, unknown, bad, ask, "
-"auto)"
+msgid "|VALUE|set the TOFU policy for a key"
+msgstr "|WERT|Setze die TOFU-Politik für einen Schlüssel"
 
 msgid "create ascii armored output"
 msgstr "Ausgabe mit ASCII-Hülle versehen"
@@ -2867,10 +2883,30 @@ msgid "[self-signature]"
 msgstr "[Eigenbeglaubigung]"
 
 #, c-format
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d falsche Beglaubigung\n"
-msgstr[1] "%d falsche Beglaubigungen\n"
+msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+msgstr ""
+"Die Signatur mit den nicht unterstützten Public-Key-Verfahren (%d) kann "
+"nicht geprüft werden: %s\n"
+
+#, c-format
+msgid ""
+"can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr ""
+"Die Signatur mit der nicht unterstützten Hashmethode (%d) kann nicht\n"
+"geprüft werden: %s.\n"
+
+msgid " (reordered signatures follow)"
+msgstr " (neu geordnete Signaturen folgen)"
+
+#, c-format
+msgid "key %s:\n"
+msgstr "Schlüssel %s:\n"
+
+#, c-format
+msgid "%d duplicate signature removed\n"
+msgid_plural "%d duplicate signatures removed\n"
+msgstr[0] "%d doppelte Signatur entfernt\n"
+msgstr[1] "%d doppelte Signaturen entfernt\n"
 
 #, c-format
 msgid "%d signature not checked due to a missing key\n"
@@ -2879,16 +2915,24 @@ msgstr[0] "%d Beglaubigung wegen fehlendem Schlüssel nicht geprüft\n"
 msgstr[1] "%d Beglaubigungen wegen fehlender Schlüssel nicht geprüft\n"
 
 #, c-format
-msgid "%d signature not checked due to an error\n"
-msgid_plural "%d signatures not checked due to errors\n"
-msgstr[0] "%d Beglaubigung aufgrund eines Fehlers nicht geprüft\n"
-msgstr[1] "%d Beglaubigungen aufgrund von Fehlern nicht geprüft\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d falsche Beglaubigung\n"
+msgstr[1] "%d falsche Beglaubigungen\n"
 
 #, c-format
-msgid "%d user ID without valid self-signature detected\n"
-msgid_plural "%d user IDs without valid self-signatures detected\n"
-msgstr[0] "%d User-ID ohne gültige Eigenbeglaubigung entdeckt\n"
-msgstr[1] "%d User-IDs ohne gültige Eigenbeglaubigungen entdeckt\n"
+msgid "%d signature reordered\n"
+msgid_plural "%d signatures reordered\n"
+msgstr[0] "%d Signatur neu eingeordnet\n"
+msgstr[1] "%d Signaturen neu eingeordnet\n"
+
+#, c-format
+msgid ""
+"Warning: errors found and only checked self-signatures, run '%s' to check "
+"all signatures.\n"
+msgstr ""
+"WARNUNG: Es wurden Fehler gefunden aber nur Eigenbeglaubigungen geprüft; um "
+"alle Beglaubigungen zu prüfen das Kommando '%s' verwenden.\n"
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3091,9 +3135,6 @@ msgstr ""
 #, c-format
 msgid "key %s: error changing passphrase: %s\n"
 msgstr "Schlüssel %s: Fehler beim Ändern der Passphrase: %s\n"
-
-msgid "moving a key signature to the correct place\n"
-msgstr "schiebe eine Beglaubigung an die richtige Stelle\n"
 
 msgid "save and quit"
 msgstr "speichern und Menü verlassen"
@@ -3349,6 +3390,10 @@ msgstr "\"%s\" ist kein Fingerabdruck\n"
 #, c-format
 msgid "\"%s\" is not the primary fingerprint\n"
 msgstr "\"%s\" ist nicht der Fingerabdruck des Hauptschlüssels\n"
+
+#, c-format
+msgid "Invalid user ID '%s': %s\n"
+msgstr "Ungültige User-ID '%s': %s\n"
 
 msgid "No matching user IDs."
 msgstr "Keine passende User-ID"
@@ -4138,6 +4183,12 @@ msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "%d korrekte Signatur\n"
 msgstr[1] "%d korrekte Signaturen\n"
+
+#, c-format
+msgid "%d signature not checked due to an error\n"
+msgid_plural "%d signatures not checked due to errors\n"
+msgstr[0] "%d Beglaubigung aufgrund eines Fehlers nicht geprüft\n"
+msgstr[1] "%d Beglaubigungen aufgrund von Fehlern nicht geprüft\n"
 
 #, c-format
 msgid "Warning: %lu key skipped due to its large size\n"
@@ -5368,12 +5419,12 @@ msgid "trustdb transaction too large\n"
 msgstr "trustdb Transaktion zu groß\n"
 
 #, c-format
-msgid "can't access '%s': %s\n"
-msgstr "kann auf `%s' nicht zugreifen: %s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: Verzeichnis existiert nicht!\n"
+
+#, c-format
+msgid "can't access '%s': %s\n"
+msgstr "kann auf `%s' nicht zugreifen: %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
@@ -5515,11 +5566,12 @@ msgstr "Die Bindung %s ist NICHT bekannt."
 
 #, c-format
 msgid ""
-"The key %s raised a conflict with this binding (%s).  Since this binding's "
-"policy was 'auto', it was changed to 'ask'."
+"The key with fingerprint %s raised a conflict with the binding %s.  Since "
+"this binding's policy was 'auto', it was changed to 'ask'."
 msgstr ""
-"Der Schlüssel %s steht im Konflikt mit der Bindung (%s).  Die Richtlinie "
-"dieser Bindung wurde deswegen von 'auto' auf 'ask' geändert."
+"Der Schlüssel mit dem Fingerabdruck %s steht im Konflikt mit der Bindung "
+"(%s).  Die Richtlinie dieser Bindung wurde deswegen von 'auto' auf 'ask' "
+"geändert."
 
 #, c-format
 msgid ""
@@ -5614,70 +5666,73 @@ msgstr "(G)ut, einmal (A)kzeptieren, (U)nbekannt, einmal ab(L)ehnen, (F)alsch?"
 msgid "error changing TOFU policy: %s\n"
 msgstr "Fehler beim Ändern der TOFU Richtlinie: %s\n"
 
+#. TRANSLATORS: The tilde ('~') is used here to indicate a
+#. * non-breakable space
 #, c-format
-msgid "%d year"
-msgid_plural "%d years"
-msgstr[0] "%d Jahr"
-msgstr[1] "%d Jahre"
+msgid "%d~year"
+msgid_plural "%d~years"
+msgstr[0] "%d~Jahr"
+msgstr[1] "%d~Jahre"
 
 #, c-format
-msgid "%d month"
-msgid_plural "%d months"
-msgstr[0] "%d Monat"
-msgstr[1] "%d Monate"
+msgid "%d~month"
+msgid_plural "%d~months"
+msgstr[0] "%d~Monat"
+msgstr[1] "%d~Monate"
 
 #, c-format
-msgid "%d day"
-msgid_plural "%d days"
-msgstr[0] "%d Tag"
-msgstr[1] "%d Tage"
+msgid "%d~day"
+msgid_plural "%d~days"
+msgstr[0] "%d~Tag"
+msgstr[1] "%d~Tage"
 
 #, c-format
-msgid "%d hour"
-msgid_plural "%d hours"
-msgstr[0] "%d Stunde"
-msgstr[1] "%d Stunden"
+msgid "%d~hour"
+msgid_plural "%d~hours"
+msgstr[0] "%d~Stunde"
+msgstr[1] "%d~Stunden"
 
 #, c-format
-msgid "%d minute"
-msgid_plural "%d minutes"
-msgstr[0] "%d Minute"
-msgstr[1] "%d Minuten"
+msgid "%d~minute"
+msgid_plural "%d~minutes"
+msgstr[0] "%d~Minute"
+msgstr[1] "%d~Minuten"
 
 #, c-format
-msgid "%d second"
-msgid_plural "%d seconds"
-msgstr[0] "%d Sekunde"
-msgstr[1] "%d Sekunden"
+msgid "%d~second"
+msgid_plural "%d~seconds"
+msgstr[0] "%d~Sekunde"
+msgstr[1] "%d~Sekunden"
 
 #, c-format
 msgid "Have never verified a message signed by key %s!\n"
 msgstr "Es wurde noch keine Nachricht mit dem Schlüssel %s überprüft!\n"
 
 #, c-format
-msgid "Failed to collect signature statistics for \"%s\" (key %s)\n"
+msgid ""
+"Failed to collect signature statistics for \"%s\"\n"
+"(key %s)\n"
 msgstr ""
 "Signaturstatistiken für \"%s\" (Schlüssel %s) konnten nicht gesammelt "
 "werden\n"
 
 #, c-format
-msgid "Verified 0 messages signed by \"%s\" (key: %s, policy: %s)."
-msgstr ""
-"Keine von \"%s\" signierten Nachrichten überprüft (Schl.: %s, Richtl.: %s)."
+msgid "Verified %ld messages signed by \"%s\"."
+msgstr "%ld überprüfte Nachrichten von \"%s\"."
 
-#. TRANSLATORS: The final %s is replaced by a string like
-#. "7 months, 1 day, 5 minutes, 0 seconds".
 #, c-format
 msgid ""
-"Verified %ld message signed by \"%s\" (key: %s, policy: %s) in the past %s."
+"Verified %ld message signed by \"%s\"\n"
+"in the past %s."
 msgid_plural ""
-"Verified %ld messages signed by \"%s\" (key: %s, policy: %s) in the past %s."
+"Verified %ld messages signed by \"%s\"\n"
+"in the past %s."
 msgstr[0] ""
-"%ld von \"%s\" (Schl.: %s, Richtl.: %s) signierte Nachricht in den letzten "
-"%s überprüft."
+"%ld überprüfte Nachricht von \"%s\"\n"
+"in den letzten %s."
 msgstr[1] ""
-"%ld von \"%s\" (Schl.: %s, Richtl.: %s) signierte Nachrichten in den letzten "
-"%s überprüft."
+"%ld überprüfte Nachrichten von \"%s\"\n"
+"in den letzten %s."
 
 #, c-format
 msgid "The most recent message was verified %s ago."
@@ -5693,26 +5748,33 @@ msgstr ""
 "WARNUNG: Wir haben nur eine einzige mit diesem Schlüssel signierte Nachricht "
 "gesehen.\n"
 
-#. TRANSLATORS: translate the below text.  We don't
-#. directly internationalize that text so that we can
-#. tweak it without breaking translations.
 #, c-format
-msgid "TOFU: few signatures %d message %s"
-msgid_plural "TOFU: few signatures %d messages %s"
+msgid ""
+"Warning: if you think you've seen more than %ld message signed by this key, "
+"then this key might be a forgery!  Carefully examine the email address for "
+"small variations.  If the key is suspect, then use\n"
+"  %s\n"
+"to mark it as being bad.\n"
+msgid_plural ""
+"Warning: if you think you've seen more than %ld messages signed by this key, "
+"then this key might be a forgery!  Carefully examine the email address for "
+"small variations.  If the key is suspect, then use\n"
+"  %s\n"
+"to mark it as being bad.\n"
 msgstr[0] ""
-"WARNUNG: Falls sie glauben, mehr als %d mit diesem Schlüssel signierte\n"
-"Nachricht erhalten zu haben, so kann es sich bei diesem Schlüssel um\n"
-"eine Fälschung handeln!  Prüfen Sie die Email-Adresse genau auf kleine\n"
-"Variationen (z.B. zusätzliche Leerzeichen).  Falls Ihnen der Schlüssel\n"
-"suspekt erscheint, so benutzen Sie '%s' um den Schlüssel als Fälschung\n"
-"zu markieren."
+"WARNUNG: Falls sie glauben, mehr als %ld mit diesem Schlüssel signierte "
+"Nachricht erhalten zu haben, so kann es sich bei diesem Schlüssel um eine "
+"Fälschung handeln!  Prüfen Sie die Email-Adresse genau auf kleine "
+"Variationen.  Falls Ihnen der Schlüssel suspekt erscheint, so benutzen Sie\n"
+"  %s\n"
+"um den Schlüssel als Fälschung zu markieren.\n"
 msgstr[1] ""
-"WARNUNG: Falls sie glauben, mehr als %d mit diesem Schlüssel signierte\n"
-"Nachrichten erhalten zu haben, so kann es sich bei diesem Schlüssel um\n"
-"eine Fälschung handeln!  Prüfen Sie die Email-Adresse genau auf kleine\n"
-"Variationen (z.B. zusätzliche Leerzeichen).  Falls Ihnen der Schlüssel\n"
-"suspekt erscheint, so benutzen Sie '%s' um den Schlüssel als Fälschung\n"
-"zu markieren."
+"WARNUNG: Falls sie glauben, mehr als %ld mit diesem Schlüssel signierte "
+"Nachrichten erhalten zu haben, so kann es sich bei diesem Schlüssel um eine "
+"Fälschung handeln!  Prüfen Sie die Email-Adresse genau auf kleine "
+"Variationen.  Falls Ihnen der Schlüssel suspekt erscheint, so benutzen Sie\n"
+"  %s\n"
+"um den Schlüssel als Fälschung zu markieren.\n"
 
 #, c-format
 msgid "error opening TOFU database: %s\n"
@@ -8543,6 +8605,39 @@ msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
 
+#~ msgid "you found a bug ... (%s:%d)\n"
+#~ msgstr "Sie haben einen Bug (Programmfehler) gefunden ... (%s:%d)\n"
+
+#~ msgid "%d user ID without valid self-signature detected\n"
+#~ msgid_plural "%d user IDs without valid self-signatures detected\n"
+#~ msgstr[0] "%d User-ID ohne gültige Eigenbeglaubigung entdeckt\n"
+#~ msgstr[1] "%d User-IDs ohne gültige Eigenbeglaubigungen entdeckt\n"
+
+#~ msgid "moving a key signature to the correct place\n"
+#~ msgstr "schiebe eine Beglaubigung an die richtige Stelle\n"
+
+#~ msgid "%d day"
+#~ msgid_plural "%d days"
+#~ msgstr[0] "%d Tag"
+#~ msgstr[1] "%d Tage"
+
+#~ msgid "TOFU: few signatures %d message %s"
+#~ msgid_plural "TOFU: few signatures %d messages %s"
+#~ msgstr[0] ""
+#~ "WARNUNG: Falls sie glauben, mehr als %d mit diesem Schlüssel signierte\n"
+#~ "Nachricht erhalten zu haben, so kann es sich bei diesem Schlüssel um\n"
+#~ "eine Fälschung handeln!  Prüfen Sie die Email-Adresse genau auf kleine\n"
+#~ "Variationen (z.B. zusätzliche Leerzeichen).  Falls Ihnen der Schlüssel\n"
+#~ "suspekt erscheint, so benutzen Sie '%s' um den Schlüssel als Fälschung\n"
+#~ "zu markieren."
+#~ msgstr[1] ""
+#~ "WARNUNG: Falls sie glauben, mehr als %d mit diesem Schlüssel signierte\n"
+#~ "Nachrichten erhalten zu haben, so kann es sich bei diesem Schlüssel um\n"
+#~ "eine Fälschung handeln!  Prüfen Sie die Email-Adresse genau auf kleine\n"
+#~ "Variationen (z.B. zusätzliche Leerzeichen).  Falls Ihnen der Schlüssel\n"
+#~ "suspekt erscheint, so benutzen Sie '%s' um den Schlüssel als Fälschung\n"
+#~ "zu markieren."
+
 #~ msgid "sending key %s to %s server %s\n"
 #~ msgstr "sende Schlüssel %s auf den %s-Server %s\n"
 
@@ -8696,10 +8791,6 @@ msgstr ""
 #~| msgid "failed to open '%s': %s\n"
 #~ msgid "Failed to parse '%s'.\n"
 #~ msgstr "Datei `%s' kann nicht gescannt werden\n"
-
-#~| msgid "invalid value\n"
-#~ msgid "invalid value '%s'\n"
-#~ msgstr "Ungültiger Wert '%s'\n"
 
 #~| msgid "error reading secret keyblock \"%s\": %s\n"
 #~ msgid "error looking up secret key \"%s\": %s\n"
