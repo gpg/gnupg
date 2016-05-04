@@ -2101,7 +2101,8 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	/* TRANSLATORS: Please translate the text found in the source
 	   file below.  We don't directly internationalize that text
 	   so that we can tweak it without breaking translations.  */
-	char *text = _("TOFU detected a binding conflict");
+	const char *text = _("TOFU detected a binding conflict");
+        char *textbuf;
 	if (strcmp (text, "TOFU detected a binding conflict") == 0)
 	  /* No translation.  Use the English text.  */
 	  text =
@@ -2111,9 +2112,9 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	    "Alternatively, a new key may indicate a man-in-the-middle "
 	    "attack!  Before accepting this key, you should talk to or "
 	    "call the person to make sure this new key is legitimate.";
-        text = format_text (text, 0, 72, 80);
+        textbuf = format_text (text, 0, 72, 80);
 	es_fprintf (fp, "\n%s\n", text);
-        xfree (text);
+        xfree (textbuf);
       }
 
     es_fputc ('\n', fp);
