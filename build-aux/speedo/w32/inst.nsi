@@ -1271,6 +1271,8 @@ Section "-un.gnupg"
   Delete "$INSTDIR\bin\gpg-connect-agent.exe"
   Delete "$INSTDIR\bin\gpgtar.exe"
 
+  Delete "$INSTDIR\share\gnupg\dirmngr-conf.skel"
+  Delete "$INSTDIR\share\gnupg\distsigkey.gpg"
   Delete "$INSTDIR\share\gnupg\gpg-conf.skel"
   RMDir  "$INSTDIR\share\gnupg"
 
