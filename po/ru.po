@@ -23,7 +23,7 @@ msgstr ""
 
 #, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
-msgstr "сбой при блокировке для ввода PIN: %s\n"
+msgstr "сбой при блокировке для ввода пароля: %s\n"
 
 #. TRANSLATORS: These are labels for buttons etc used in
 #. Pinentries.  An underscore indicates that the next letter
@@ -371,10 +371,8 @@ msgstr "не позволять клиентам помечать ключи к�
 msgid "allow presetting passphrase"
 msgstr "разрешить предустанавливать фразу-пароль"
 
-#, fuzzy
-#| msgid "allow caller to override the pinentry"
 msgid "disallow caller to override the pinentry"
-msgstr "разрешить клиентам замещать собой pinentry"
+msgstr "не позволять вызывающей программе замещать собой программу ввода пароля"
 
 msgid "allow passphrase to be prompted through Emacs"
 msgstr "разрешить ввод фразы-пароля через Emacs"
@@ -459,10 +457,9 @@ msgstr "не могу создать каталог '%s': %s\n"
 msgid "directory '%s' created\n"
 msgstr "создан каталог '%s'\n"
 
-#, fuzzy, c-format
-#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
+#, c-format
 msgid "can't set permissions of '%s': %s\n"
-msgstr "Внимание: небезопасные права доступа %s \"%s\"\n"
+msgstr "не удалось задать права доступа для '%s': %s\n"
 
 #, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -678,15 +675,15 @@ msgstr ""
 "Удаление его может лишить Вас возможности доступа к удаленным машинам."
 
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
-msgstr "DSA требует длины хэша, кратной 8 битам\n"
+msgstr "DSA требует длины хеша, кратной 8 битам\n"
 
 #, c-format
 msgid "%s key uses an unsafe (%u bit) hash\n"
-msgstr "%s ключ использует небезопасный (%u бит) хэш\n"
+msgstr "%s ключ использует небезопасный (%u бит) хеш\n"
 
 #, c-format
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
-msgstr "%zu-битный хэш недопустим для %u-битного ключа %s\n"
+msgstr "%zu-битный хеш недопустим для %u-битного ключа %s\n"
 
 #, c-format
 msgid "checking created signature failed: %s\n"
@@ -705,7 +702,7 @@ msgstr "алгоритм защиты %d (%s) не поддерживается\
 
 #, c-format
 msgid "protection hash algorithm %d (%s) is not supported\n"
-msgstr "хэш-функция защиты %d (%s) не поддерживается\n"
+msgstr "хеш-функция защиты %d (%s) не поддерживается\n"
 
 #, c-format
 msgid "error creating a pipe: %s\n"
@@ -719,10 +716,9 @@ msgstr "ошибка при создании потока для канала к
 msgid "error forking process: %s\n"
 msgstr "ошибка при дублировании процесса: %s\n"
 
-#, fuzzy, c-format
-#| msgid "waiting for process %d to terminate failed: %s\n"
+#, c-format
 msgid "waiting for processes to terminate failed: %s\n"
-msgstr "сбой при ожидании завершения процесса %d: %s\n"
+msgstr "сбой при ожидании завершения процесса: %s\n"
 
 #, c-format
 msgid "error running '%s': probably not installed\n"
@@ -760,10 +756,9 @@ msgstr "прервано пользователем\n"
 msgid "problem with the agent\n"
 msgstr "проблема с агентом\n"
 
-#, fuzzy, c-format
-#| msgid "problem with the agent: %s\n"
+#, c-format
 msgid "problem with the agent (unexpected response \"%s\")\n"
-msgstr "проблема с агентом: %s\n"
+msgstr "проблема с агентом (неожиданный ответ \"%s\")\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -931,7 +926,7 @@ msgstr "Данные успешно подписаны"
 
 #, c-format
 msgid "data hash algorithm: %s"
-msgstr "хэш-функция данных: %s"
+msgstr "хеш-функция данных: %s"
 
 #, c-format
 msgid "Signer %d"
@@ -939,7 +934,7 @@ msgstr "Подпись %d"
 
 #, c-format
 msgid "attr hash algorithm: %s"
-msgstr "хэш-функция атрибутов: %s"
+msgstr "хеш-функция атрибутов: %s"
 
 msgid "Data decryption succeeded"
 msgstr "Данные успешно расшифрованы"
@@ -958,7 +953,7 @@ msgstr "Разбор данных завершен"
 
 #, c-format
 msgid "bad data hash algorithm: %s"
-msgstr "недопустимая хэш-функция данных: %s"
+msgstr "недопустимая хеш-функция данных: %s"
 
 #, c-format
 msgid "Signature %d"
@@ -1162,45 +1157,37 @@ msgstr ""
 "символ quoted printable в текстовом формате - испорчено почтовой "
 "программой?\n"
 
-#, fuzzy, c-format
-#| msgid "not human readable"
+#, c-format
 msgid "[ not human readable (%zu bytes: %s%s) ]"
-msgstr "не для чтения человеком"
+msgstr "[ не для чтения человеком (%zu байт: %s%s) ]"
 
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
 msgstr ""
-"имя примечания должно содержать только печатные символы или пробелы и "
+"имя замечания должно содержать только печатные символы или пробелы и "
 "заканчиваться знаком '='\n"
 
 msgid "a user notation name must contain the '@' character\n"
-msgstr "имя примечания пользователя должно содержать символ '@'\n"
+msgstr "имя замечания должно содержать символ '@'\n"
 
 msgid "a notation name must not contain more than one '@' character\n"
 msgstr ""
-"имя примечания пользователя не должно содержать более одного символа '@'\n"
+"имя замечания не должно содержать более одного символа '@'\n"
 
 msgid "a notation value must not use any control characters\n"
-msgstr "в значении примечания не должно быть управляющих символов\n"
+msgstr "в тексте замечания не должно быть управляющих символов\n"
 
-#, fuzzy
-#| msgid "a notation name must not contain more than one '@' character\n"
 msgid "a notation name may not contain an '=' character\n"
 msgstr ""
-"имя примечания пользователя не должно содержать более одного символа '@'\n"
+"имя примечания не должно содержать символа '='\n"
 
-#, fuzzy
-#| msgid ""
-#| "a notation name must have only printable characters or spaces, and end "
-#| "with an '='\n"
 msgid "a notation name must have only printable characters or spaces\n"
 msgstr ""
-"имя примечания должно содержать только печатные символы или пробелы и "
-"заканчиваться знаком '='\n"
+"имя замечания должно содержать только печатные символы или пробелы\n"
 
 msgid "WARNING: invalid notation data found\n"
-msgstr "Внимание: найдена недопустимая форма записи примечания\n"
+msgstr "Внимание: найдена недопустимая форма записи замечания\n"
 
 #, c-format
 msgid "failed to proxy %s inquiry to client\n"
@@ -1864,17 +1851,13 @@ msgid "update the trust database"
 msgstr "обновить таблицу доверия"
 
 msgid "print message digests"
-msgstr "вывести хэши сообщений"
+msgstr "вывести хеши сообщений"
 
 msgid "run in server mode"
 msgstr "запуск в режиме сервера"
 
-#, fuzzy
-#| msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
 msgid "|VALUE|set the TOFU policy for a key"
-msgstr ""
-"|VALUE|установить правила TOFU для ключа (good - хороший, unknown - "
-"неизвестно, bad - плохой, ask - спрашивать, auto - автоматически)"
+msgstr "|VALUE|установить правила TOFU для ключа"
 
 msgid "create ascii armored output"
 msgstr "вывод в текстовом формате"
@@ -1955,7 +1938,7 @@ msgid "Cipher: "
 msgstr "Симметричные шифры: "
 
 msgid "Hash: "
-msgstr "Хэш-функции: "
+msgstr "Хеш-функции: "
 
 msgid "Compression: "
 msgstr "Алгоритмы сжатия: "
@@ -2045,13 +2028,13 @@ msgid "show policy URLs during signature listings"
 msgstr "показать в списке подписей URL правил"
 
 msgid "show all notations during signature listings"
-msgstr "показать в списке подписей все примечания"
+msgstr "показать в списке подписей все замечания"
 
 msgid "show IETF standard notations during signature listings"
-msgstr "показать в списке подписей примечания стандарта IETF"
+msgstr "показать в списке подписей замечания стандарта IETF"
 
 msgid "show user-supplied notations during signature listings"
-msgstr "показать в списке подписей пользовательские примечания"
+msgstr "показать в списке подписей пользовательские замечания"
 
 msgid "show preferred keyserver URLs during signature listings"
 msgstr "показать в списке подписей URL предпочтительных серверов ключей"
@@ -2103,7 +2086,7 @@ msgstr "'%s' - не допустимый срок действия подпис�
 
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
-msgstr "недопустимый режим ввода PIN '%s'\n"
+msgstr "недопустимый режим ввода пароля '%s'\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
@@ -2147,13 +2130,13 @@ msgid "show policy URLs during signature verification"
 msgstr "показать при проверке подписи URL правил"
 
 msgid "show all notations during signature verification"
-msgstr "показать при проверке подписей все примечания"
+msgstr "показать при проверке подписей все замечания"
 
 msgid "show IETF standard notations during signature verification"
-msgstr "показать при проверке подписей примечания стандарта IETF"
+msgstr "показать при проверке подписей замечания стандарта IETF"
 
 msgid "show user-supplied notations during signature verification"
-msgstr "показать при проверке подписей пользовательские примечания"
+msgstr "показать при проверке подписей пользовательские замечания"
 
 msgid "show preferred keyserver URLs during signature verification"
 msgstr "показать при проверке подписей URL предпочтительных серверов ключей"
@@ -2218,13 +2201,13 @@ msgid "selected cipher algorithm is invalid\n"
 msgstr "выбран недопустимый алгоритм шифрования\n"
 
 msgid "selected digest algorithm is invalid\n"
-msgstr "выбрана недопустимая хэш-функция\n"
+msgstr "выбрана недопустимая хеш-функция\n"
 
 msgid "selected compression algorithm is invalid\n"
 msgstr "выбран недопустимый алгоритм сжатия\n"
 
 msgid "selected certification digest algorithm is invalid\n"
-msgstr "выбрана недопустимая хэш-функция для сертификации\n"
+msgstr "выбрана недопустимая хеш-функция для сертификации\n"
 
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed должен быть больше 0\n"
@@ -2254,7 +2237,7 @@ msgid "invalid personal cipher preferences\n"
 msgstr "недопустимые личные предпочтения шифра\n"
 
 msgid "invalid personal digest preferences\n"
-msgstr "недопустимые личные предпочтения хэш-функции\n"
+msgstr "недопустимые личные предпочтения хеш-функции\n"
 
 msgid "invalid personal compress preferences\n"
 msgstr "недопустимые личные предпочтения алгоритмов сжатия\n"
@@ -2269,7 +2252,7 @@ msgstr "шифрование '%s' в режиме %s использовать н
 
 #, c-format
 msgid "you may not use digest algorithm '%s' while in %s mode\n"
-msgstr "хэш-функцию '%s' в режиме %s использовать нельзя\n"
+msgstr "хеш-функцию '%s' в режиме %s использовать нельзя\n"
 
 #, c-format
 msgid "you may not use compression algorithm '%s' while in %s mode\n"
@@ -2379,7 +2362,7 @@ msgstr "ошибка преобразования в текстовый форм
 
 #, c-format
 msgid "invalid hash algorithm '%s'\n"
-msgstr "недопустимая хэш-функция '%s'\n"
+msgstr "недопустимая хеш-функция '%s'\n"
 
 #, c-format
 msgid "error parsing key specification '%s': %s\n"
@@ -2537,7 +2520,7 @@ msgstr "         \"%s\": предпочитает шифр %s\n"
 
 #, c-format
 msgid "         \"%s\": preference for digest algorithm %s\n"
-msgstr "         \"%s\": предпочитает хэш-функцию %s\n"
+msgstr "         \"%s\": предпочитает хеш-функцию %s\n"
 
 #, c-format
 msgid "         \"%s\": preference for compression algorithm %s\n"
@@ -2838,35 +2821,30 @@ msgstr "[отзыв]"
 msgid "[self-signature]"
 msgstr "[самоподпись]"
 
-#, fuzzy, c-format
-#| msgid "key %s: unsupported public key algorithm\n"
+#, c-format
 msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "ключ %s: алгоритм с открытым ключом не поддерживается\n"
+msgstr ""
+"не удалось проверить подпись: алгоритм с открытым ключом %d не поддерживается: %s.\n"
 
-#, fuzzy, c-format
-#| msgid "card does not support digest algorithm %s\n"
+#, c-format
 msgid ""
 "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "карта не поддерживает хэш-функцию %s\n"
+msgstr ""
+"не удалось проверить подпись: хеш-функция %d не поддерживается: %s.\n"
 
-#, fuzzy
-#| msgid "Good signature from"
 msgid " (reordered signatures follow)"
-msgstr "Хорошая подпись пользователя"
+msgstr "(порядок подписей изменен)"
 
-#, fuzzy, c-format
-#| msgid "key %s: %s\n"
+#, c-format
 msgid "key %s:\n"
-msgstr "ключ %s: %s\n"
+msgstr "ключ %s:\n"
 
-#, fuzzy, c-format
-#| msgid "User ID \"%s\": %d signature removed\n"
-#| msgid_plural "User ID \"%s\": %d signatures removed\n"
+#, c-format
 msgid "%d duplicate signature removed\n"
 msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "ID пользователя \"%s\": %d подпись удалена\n"
-msgstr[1] "ID пользователя \"%s\": %d подписи удалены\n"
-msgstr[2] "ID пользователя \"%s\": %d подписей удалено\n"
+msgstr[0] "%d повторная подпись удалена\n"
+msgstr[1] "%d повторные подписи удалены\n"
+msgstr[2] "%d повторных подписей удалено\n"
 
 #, c-format
 msgid "%d signature not checked due to a missing key\n"
@@ -2882,19 +2860,20 @@ msgstr[0] "%d плохая подпись\n"
 msgstr[1] "%d плохих подписи\n"
 msgstr[2] "%d плохих подписей\n"
 
-#, fuzzy, c-format
-#| msgid "Good signature from"
+#, c-format
 msgid "%d signature reordered\n"
 msgid_plural "%d signatures reordered\n"
-msgstr[0] "Хорошая подпись пользователя"
-msgstr[1] "Хорошая подпись пользователя"
-msgstr[2] "Хорошая подпись пользователя"
+msgstr[0] "Порядок %d подписи изменен\n"
+msgstr[1] "Порядок %d подписей изменен\n"
+msgstr[2] "Порядок %d подписей изменен\n"
 
 #, c-format
 msgid ""
 "Warning: errors found and only checked self-signatures, run '%s' to check "
 "all signatures.\n"
 msgstr ""
+"Внимание: обнаружены ошибки, проверялись только самоподписи; для проверки "
+"всех подписей выполните '%s'.\n"
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3174,7 +3153,7 @@ msgstr ""
 "установить URL предпочтительного сервера ключей для выбранных ID пользователя"
 
 msgid "set a notation for the selected user IDs"
-msgstr "установить примечание для выбранных ID пользователя"
+msgstr "установить замечание для выбранных ID пользователя"
 
 msgid "change the passphrase"
 msgstr "сменить фразу-пароль"
@@ -3338,10 +3317,9 @@ msgstr "\"%s\" - не отпечаток\n"
 msgid "\"%s\" is not the primary fingerprint\n"
 msgstr "\"%s\" - не первичный отпечаток\n"
 
-#, fuzzy, c-format
-#| msgid "invalid value\n"
+#, c-format
 msgid "Invalid user ID '%s': %s\n"
-msgstr "недопустимое значение\n"
+msgstr "Недопустимый ID пользователя '%s': %s\n"
 
 msgid "No matching user IDs."
 msgstr "Нет подходящих ID пользователей."
@@ -3350,7 +3328,7 @@ msgid "Nothing to sign.\n"
 msgstr "Подписывать нечего.\n"
 
 msgid "Digest: "
-msgstr "Хэш: "
+msgstr "Хеш: "
 
 msgid "Features: "
 msgstr "Характеристики: "
@@ -3362,7 +3340,7 @@ msgid "Preferred keyserver: "
 msgstr "Предпочтительный сервер ключей: "
 
 msgid "Notations: "
-msgstr "Примечания: "
+msgstr "Замечания: "
 
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "В ID пользователя типа PGP 2.x не может быть предпочтений.\n"
@@ -3575,7 +3553,7 @@ msgid "Are you sure you want to delete it? (y/N) "
 msgstr "Вы действительно хотите удалить его? (y/N) "
 
 msgid "Enter the notation: "
-msgstr "Введите примечание: "
+msgstr "Введите замечание: "
 
 msgid "Proceed? (y/N) "
 msgstr "Продолжить? (y/N) "
@@ -3586,7 +3564,7 @@ msgstr "Нет ID пользователя с индексом %d\n"
 
 #, c-format
 msgid "No user ID with hash %s\n"
-msgstr "Нет ID пользователя с хэшем %s\n"
+msgstr "Нет ID пользователя с хешем %s\n"
 
 #, c-format
 msgid "No subkey with key ID '%s'.\n"
@@ -3668,7 +3646,7 @@ msgid "too many cipher preferences\n"
 msgstr "слишком много шифровых предпочтений\n"
 
 msgid "too many digest preferences\n"
-msgstr "слишком много предпочтений для хэш-функций\n"
+msgstr "слишком много предпочтений для хеш-функций\n"
 
 msgid "too many compression preferences\n"
 msgstr "слишком много предпочтений для методов сжатия\n"
@@ -3698,7 +3676,7 @@ msgid ""
 "WARNING: some OpenPGP programs can't handle a DSA key with this digest size\n"
 msgstr ""
 "Внимание: некоторые реализации OpenPGP не могут обрабатывать ключи DSA с "
-"такой длиной хэша\n"
+"такой длиной хеша\n"
 
 msgid "Sign"
 msgstr "Подписать"
@@ -4118,10 +4096,10 @@ msgid "Critical preferred keyserver: "
 msgstr "Критический предпочтительный сервер ключей: "
 
 msgid "Critical signature notation: "
-msgstr "Критическое примечание к подписи: "
+msgstr "Критическое замечание к подписи: "
 
 msgid "Signature notation: "
-msgstr "Примечание к подписи: "
+msgstr "Замечание к подписи: "
 
 #, c-format
 msgid "%d good signature\n"
@@ -4152,7 +4130,7 @@ msgid "skipped \"%s\": %s\n"
 msgstr "пропущено \"%s\": %s\n"
 
 msgid "Primary key fingerprint:"
-msgstr "Отпечаток главного ключа:"
+msgstr "Отпечаток первичного ключа:"
 
 msgid "     Subkey fingerprint:"
 msgstr "      Отпечаток подключа:"
@@ -4160,7 +4138,7 @@ msgstr "      Отпечаток подключа:"
 #. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
-msgstr " Отпечаток главного ключа:"
+msgstr " Отпечаток первичного ключа:"
 
 msgid "      Subkey fingerprint:"
 msgstr "       Отпечаток подключа:"
@@ -4289,7 +4267,7 @@ msgstr "сеансовый ключ зашифрован по %s\n"
 
 #, c-format
 msgid "passphrase generated with unknown digest algorithm %d\n"
-msgstr "фраза-пароль создана с незнакомой хэш-функцией %d\n"
+msgstr "фраза-пароль создана с незнакомой хеш-функцией %d\n"
 
 #, c-format
 msgid "public key is %s\n"
@@ -4408,7 +4386,7 @@ msgstr "Подпись действительна до %s\n"
 
 #, c-format
 msgid "%s signature, digest algorithm %s%s%s\n"
-msgstr "формат подписи: %s, хэш-функция %s%s%s\n"
+msgstr "формат подписи: %s, хеш-функция %s%s%s\n"
 
 msgid "binary"
 msgstr "двоичный"
@@ -4470,15 +4448,15 @@ msgstr ""
 
 #, c-format
 msgid "WARNING: using experimental digest algorithm %s\n"
-msgstr "Внимание: используется экспериментальная хэш-функция %s\n"
+msgstr "Внимание: используется экспериментальная хеш-функция %s\n"
 
 #, c-format
 msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "Внимание: хэш-функция %s не рекомендуется\n"
+msgstr "Внимание: хеш-функция %s не рекомендуется\n"
 
 #, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "Замечание: подписи с хэш-функцией %s игнорируются\n"
+msgstr "Замечание: подписи с хеш-функцией %s игнорируются\n"
 
 #, c-format
 msgid "(reported error: %s)\n"
@@ -4541,7 +4519,7 @@ msgstr "Открытый ключ ECDSA бывает в кодировке SEC, 
 
 #, c-format
 msgid "unknown weak digest '%s'\n"
-msgstr "неизвестный слабый хэш '%s'\n"
+msgstr "неизвестный слабый хеш '%s'\n"
 
 #, c-format
 msgid "File '%s' exists. "
@@ -5122,14 +5100,14 @@ msgstr ""
 
 #, c-format
 msgid "%s key %s uses an unsafe (%zu bit) hash\n"
-msgstr "ключ %s %s использует небезопасный (%zu-битный) хэш\n"
+msgstr "ключ %s %s использует небезопасный (%zu-битный) хеш\n"
 
 #, c-format
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
-msgstr "Ключ %s %s требует %zu-битного или более длинного хэша (хэш %s)\n"
+msgstr "Ключ %s %s требует %zu-битного или более длинного хеша (хеш %s)\n"
 
 msgid "WARNING: signature digest conflict in message\n"
-msgstr "Внимание: конфликт хэшей подписей в сообщении\n"
+msgstr "Внимание: конфликт хешей подписей в сообщении\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
@@ -5210,7 +5188,7 @@ msgstr "ключ %s: нет подключа для подписи связи п
 #, c-format
 msgid "WARNING: unable to %%-expand notation (too large).  Using unexpanded.\n"
 msgstr ""
-"Внимание: не могу развернуть %% в примечании (слишком длинное).\n"
+"Внимание: не могу развернуть %% в замечании (слишком длинное).\n"
 "          Использую неразвернутым.\n"
 
 #, c-format
@@ -5236,7 +5214,7 @@ msgstr "подпись %s/%s пользователя \"%s\"\n"
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
 msgstr ""
-"Внимание: использование хэш-функции %s (%d) нарушает предпочтения "
+"Внимание: использование хеш-функции %s (%d) нарушает предпочтения "
 "получателя\n"
 
 msgid "signing:"
@@ -5350,7 +5328,7 @@ msgstr "%s: недопустимая таблица доверия\n"
 
 #, c-format
 msgid "%s: failed to create hashtable: %s\n"
-msgstr "%s: сбой создания таблицы хэшей: %s\n"
+msgstr "%s: сбой создания таблицы хешей: %s\n"
 
 #, c-format
 msgid "%s: error updating version record: %s\n"
@@ -5465,15 +5443,12 @@ msgstr "ошибка установки уровня доверия привяз
 msgid "The binding %s is NOT known."
 msgstr "Привязка %s неизвестна."
 
-#, fuzzy, c-format
-#| msgid ""
-#| "The key %s raised a conflict with this binding (%s).  Since this "
-#| "binding's policy was 'auto', it was changed to 'ask'."
+#, c-format
 msgid ""
 "The key with fingerprint %s raised a conflict with the binding %s.  Since "
 "this binding's policy was 'auto', it was changed to 'ask'."
 msgstr ""
-"Ключ %s противоречит этой привязке (%s). Поскольку правило привязки было "
+"Ключ с отпечатком %s противоречит этой привязке %s. Поскольку правило привязки было "
 "'автоматически', оно изменилось на 'спрашивать'."
 
 #, c-format
@@ -5576,81 +5551,63 @@ msgstr "ошибка при смене правила TOFU: %s\n"
 
 #. TRANSLATORS: The tilde ('~') is used here to indicate a
 #. * non-breakable space
-#, fuzzy, c-format
-#| msgid "%d year"
-#| msgid_plural "%d years"
+#, c-format
 msgid "%d~year"
 msgid_plural "%d~years"
-msgstr[0] "%d год"
-msgstr[1] "%d года"
-msgstr[2] "%d лет"
+msgstr[0] "%d~год"
+msgstr[1] "%d~года"
+msgstr[2] "%d~лет"
 
-#, fuzzy, c-format
-#| msgid "%d month"
-#| msgid_plural "%d months"
+#, c-format
 msgid "%d~month"
 msgid_plural "%d~months"
-msgstr[0] "%d месяц"
-msgstr[1] "%d месяца"
-msgstr[2] "%d месяцев"
+msgstr[0] "%d~месяц"
+msgstr[1] "%d~месяца"
+msgstr[2] "%d~месяцев"
 
 #, c-format
 msgid "%d~day"
 msgid_plural "%d~days"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%d~день"
+msgstr[1] "%d~дня"
+msgstr[2] "%d~дней"
 
-#, fuzzy, c-format
-#| msgid "%d hour"
-#| msgid_plural "%d hours"
+#, c-format
 msgid "%d~hour"
 msgid_plural "%d~hours"
-msgstr[0] "%d час"
-msgstr[1] "%d часа"
-msgstr[2] "%d часов"
+msgstr[0] "%d~час"
+msgstr[1] "%d~часа"
+msgstr[2] "%d~часов"
 
-#, fuzzy, c-format
-#| msgid "%d minute"
-#| msgid_plural "%d minutes"
+#, c-format
 msgid "%d~minute"
 msgid_plural "%d~minutes"
-msgstr[0] "%d минута"
-msgstr[1] "%d минуты"
-msgstr[2] "%d минут"
+msgstr[0] "%d~минута"
+msgstr[1] "%d~минуты"
+msgstr[2] "%d~минут"
 
-#, fuzzy, c-format
-#| msgid "%d second"
-#| msgid_plural "%d seconds"
+#, c-format
 msgid "%d~second"
 msgid_plural "%d~seconds"
-msgstr[0] "%d секунда"
-msgstr[1] "%d секунды"
-msgstr[2] "%d секунд"
+msgstr[0] "%d~секунда"
+msgstr[1] "%d~секунды"
+msgstr[2] "%d~секунд"
 
 #, c-format
 msgid "Have never verified a message signed by key %s!\n"
 msgstr "Сообщения, подписанные ключом %s, никогда не проверялись!\n"
 
-#, fuzzy, c-format
-#| msgid "Failed to collect signature statistics for \"%s\" (key %s)\n"
+#, c-format
 msgid ""
 "Failed to collect signature statistics for \"%s\"\n"
 "(key %s)\n"
-msgstr "Не удалось собрать статистику для \"%s\" (ключ %s)\n"
+msgstr "Не удалось собрать статистику подписей для \"%s\"\n(ключ %s)\n"
 
-#, fuzzy, c-format
-#| msgid "Verified 0 messages signed by \"%s\" (key: %s, policy: %s)."
+#, c-format
 msgid "Verified %ld messages signed by \"%s\"."
-msgstr "Проверено 0 сообщений, подписанных \"%s\" (ключ: %s, правило: %s)."
+msgstr "Проверено %ld сообщений, подписанных \"%s\"."
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Verified %ld message signed by \"%s\" (key: %s, policy: %s) in the past "
-#| "%s."
-#| msgid_plural ""
-#| "Verified %ld messages signed by \"%s\" (key: %s, policy: %s) in the past "
-#| "%s."
+#, c-format
 msgid ""
 "Verified %ld message signed by \"%s\"\n"
 "in the past %s."
@@ -5658,11 +5615,11 @@ msgid_plural ""
 "Verified %ld messages signed by \"%s\"\n"
 "in the past %s."
 msgstr[0] ""
-"Проверено %ld сообщение, подписанное \"%s\" (ключ: %s, правило: %s) за %s."
+"Проверено %ld сообщение, подписанное \"%s\"\n за %s."
 msgstr[1] ""
-"Проверены %ld сообщения, подписанные \"%s\" (ключ: %s, правило: %s) за %s."
+"Проверены %ld сообщения, подписанные \"%s\"\n за %s."
 msgstr[2] ""
-"Проверено %ld сообщений, подписанных \"%s\" (ключ: %s, правило: %s) за %s."
+"Проверено %ld сообщений, подписанных \"%s\"\n за %s."
 
 #, c-format
 msgid "The most recent message was verified %s ago."
@@ -5692,8 +5649,23 @@ msgid_plural ""
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[0] ""
+"Внимание: если вы видели больше %ld сообщения, подписанного этим ключом, "
+"этот ключ может быть подделкой! Внимательно проверьте, не внесены ли в адрес "
+"электронной почты небольшие изменения. В случае подозрений пометьте ключ "
+"как некачественный командой\n"
+"  %s\n"
 msgstr[1] ""
+"Внимание: если вы видели больше %ld сообщений, подписанных этим ключом, "
+"этот ключ может быть подделкой! Внимательно проверьте, не внесены ли в адрес "
+"электронной почты небольшие изменения. В случае подозрений пометьте ключ "
+"как некачественный командой\n"
+"  %s\n"
 msgstr[2] ""
+"Внимание: если вы видели больше %ld сообщений, подписанных этим ключом, "
+"этот ключ может быть подделкой! Внимательно проверьте, не внесены ли в адрес "
+"электронной почты небольшие изменения. В случае подозрений пометьте ключ "
+"как некачественный командой\n"
+"  %s\n"
 
 #, c-format
 msgid "error opening TOFU database: %s\n"
@@ -6083,7 +6055,7 @@ msgstr "отпечаток на карте не совпадает с запро
 
 #, c-format
 msgid "card does not support digest algorithm %s\n"
-msgstr "карта не поддерживает хэш-функцию %s\n"
+msgstr "карта не поддерживает хеш-функцию %s\n"
 
 #, c-format
 msgid "signatures created so far: %lu\n"
@@ -6350,7 +6322,7 @@ msgstr "используется схема проверки: %s"
 
 #, c-format
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
-msgstr "%u-битный хэш недопустим для %u-битного ключа %s\n"
+msgstr "%u-битный хеш недопустим для %u-битного ключа %s\n"
 
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(это алгоритм MD2)\n"
@@ -6454,7 +6426,7 @@ msgstr "строка %d: ошибка получения кода подписы
 
 #, c-format
 msgid "line %d: invalid hash algorithm given\n"
-msgstr "строка %d: задана недопустимая хэш-функция\n"
+msgstr "строка %d: задана недопустимая хеш-функция\n"
 
 #, c-format
 msgid "line %d: invalid authority-key-id\n"
@@ -6699,7 +6671,7 @@ msgid "|NAME|use cipher algorithm NAME"
 msgstr "|NAME|использовать алгоритм шифрования NAME"
 
 msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NAME|использовать хэш-функцию NAME"
+msgstr "|NAME|использовать хеш-функцию NAME"
 
 msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
 msgstr "Вызов: @GPGSM@ [параметры] [файлы] (-h для подсказки)"
@@ -6844,11 +6816,11 @@ msgstr ""
 
 #, c-format
 msgid "hash algorithm %d (%s) for signer %d not supported; using %s\n"
-msgstr "хэш-функция %d (%s) для %d не поддерживается; использую %s\n"
+msgstr "хеш-функция %d (%s) для %d не поддерживается; использую %s\n"
 
 #, c-format
 msgid "hash algorithm used for signer %d: %s (%s)\n"
-msgstr "хэш-функция для подписи %d: %s (%s)\n"
+msgstr "хеш-функция для подписи %d: %s (%s)\n"
 
 #, c-format
 msgid "checking for qualified certificate failed: %s\n"
@@ -6867,7 +6839,7 @@ msgstr " с помощью сертификата с ID 0x%08lX\n"
 msgid ""
 "invalid signature: message digest attribute does not match computed one\n"
 msgstr ""
-"недопустимая подпись: атрибут хэш-функции сообщения не соответствует "
+"недопустимая подпись: атрибут хеш-функции сообщения не соответствует "
 "вычисленному\n"
 
 msgid "Good signature from"
@@ -7050,7 +7022,7 @@ msgstr "запись неподдерживаемого типа в '%s', стр
 
 #, c-format
 msgid "invalid issuer hash in '%s' line %u\n"
-msgstr "неправильный хэш издателя в '%s', строка %u\n"
+msgstr "неправильный хеш издателя в '%s', строка %u\n"
 
 #, c-format
 msgid "no issuer DN in '%s' line %u\n"
@@ -7062,7 +7034,7 @@ msgstr "недопустимая метка времени в '%s', строка
 
 #, c-format
 msgid "WARNING: invalid cache file hash in '%s' line %u\n"
-msgstr "Внимание: недопустимый хэш файла буфера в '%s', строка %u\n"
+msgstr "Внимание: недопустимый хеш файла буфера в '%s', строка %u\n"
 
 msgid "detected errors in cache dir file\n"
 msgstr "в файле каталога буфера обнаружены ошибки\n"
@@ -7084,15 +7056,15 @@ msgstr "ошибка переименования '%s' в '%s': %s\n"
 
 #, c-format
 msgid "can't hash '%s': %s\n"
-msgstr "невозможно получить хэш '%s': %s\n"
+msgstr "невозможно получить хеш '%s': %s\n"
 
 #, c-format
 msgid "error setting up MD5 hash context: %s\n"
-msgstr "ошибка установки контекста хэша MD5: %s\n"
+msgstr "ошибка установки контекста хеша MD5: %s\n"
 
 #, c-format
 msgid "error hashing '%s': %s\n"
-msgstr "ошибка при получении хэша '%s': %s\n"
+msgstr "ошибка при получении хеша '%s': %s\n"
 
 #, c-format
 msgid "invalid formatted checksum for '%s'\n"
@@ -7181,7 +7153,7 @@ msgstr "ошибка получения данных из файла буфер�
 
 #, c-format
 msgid "unknown hash algorithm '%s'\n"
-msgstr "недопустимая хэш-функция '%s'\n"
+msgstr "недопустимая хеш-функция '%s'\n"
 
 #, c-format
 msgid "gcry_md_open for algorithm %d failed: %s\n"
@@ -7922,7 +7894,7 @@ msgstr "статус ответчика OCSP на '%s': %s\n"
 
 #, c-format
 msgid "hashing the OCSP response for '%s' failed: %s\n"
-msgstr "сбой получения хэша ответа OCSP для '%s': %s\n"
+msgstr "сбой получения хеша ответа OCSP для '%s': %s\n"
 
 msgid "not signed by a default OCSP signer's certificate"
 msgstr "не подписано основным сертификатом подписывающего OCSP"
@@ -7975,7 +7947,7 @@ msgstr "используется ответчик OCSP '%s'\n"
 
 #, c-format
 msgid "failed to establish a hashing context for OCSP: %s\n"
-msgstr "сбой при установлении контекста хэша для OCSP: %s\n"
+msgstr "сбой при установлении контекста хеша для OCSP: %s\n"
 
 #, c-format
 msgid "error getting OCSP status for target certificate: %s\n"
@@ -8086,7 +8058,7 @@ msgid "certificate chain is good\n"
 msgstr "хорошая цепочка сертификатов\n"
 
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "DSA требует 160-битной хэш-функции\n"
+msgstr "DSA требует 160-битной хеш-функции\n"
 
 msgid "certificate should not have been used for CRL signing\n"
 msgstr ""
@@ -8206,7 +8178,7 @@ msgid "do not allow the reuse of old passphrases"
 msgstr "не разрешать повторное использование старых фраз-паролей"
 
 msgid "|N|set the Pinentry timeout to N seconds"
-msgstr "|N|установить время ожидания ввода PIN N секунд"
+msgstr "|N|установить время ожидания ввода пароля N секунд"
 
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAME|использовать NAME как основной секретный ключ"
@@ -8497,193 +8469,3 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
-
-#~ msgid "you found a bug ... (%s:%d)\n"
-#~ msgstr "Вы нашли ошибку в программе ... (%s:%d)\n"
-
-#~ msgid "%d user ID without valid self-signature detected\n"
-#~ msgid_plural "%d user IDs without valid self-signatures detected\n"
-#~ msgstr[0] "обнаружен %d ID пользователя без действительной самоподписи\n"
-#~ msgstr[1] "обнаружены %d ID пользователя без действительной самоподписи\n"
-#~ msgstr[2] "обнаружено %d ID пользователя без действительной самоподписи\n"
-
-#~ msgid "moving a key signature to the correct place\n"
-#~ msgstr "перемещение подписи ключа в нужное место\n"
-
-#~ msgid "%d day"
-#~ msgid_plural "%d days"
-#~ msgstr[0] "%d день"
-#~ msgstr[1] "%d дня"
-#~ msgstr[2] "%d дней"
-
-#  I believe the translation produces an equivalent Russian output
-#  for that code snippet in g10/tofu.c -- ineiev
-#~ msgid "TOFU: few signatures %d message %s"
-#~ msgid_plural "TOFU: few signatures %d messages %s"
-#~ msgstr[0] ""
-#~ "Внимание: если Вы думаете, что видели больше %d сообщения, подписанного "
-#~ "этим ключом, то этот ключ может быть подделкой! Проверьте внимательно, не "
-#~ "внесены ли в адрес электронной почты небольшие изменения (напр., "
-#~ "дополнительные пробелы). В случае подозрений отметьте его как плохой с "
-#~ "помощью '%s'.\n"
-#~ " "
-#~ msgstr[1] ""
-#~ "Внимание: если Вы думаете, что видели больше %d сообщений, подписанных "
-#~ "этим ключом, то этот ключ может быть подделкой! Проверьте внимательно, не "
-#~ "внесены ли в адрес электронной почты небольшие изменения (напр., "
-#~ "дополнительные пробелы). В случае подозрений отметьте его как плохой с "
-#~ "помощью '%s'.\n"
-#~ " "
-#~ msgstr[2] ""
-#~ "Внимание: если Вы думаете, что видели больше %d сообщений, подписанных "
-#~ "этим ключом, то этот ключ может быть подделкой! Проверьте внимательно, не "
-#~ "внесены ли в адрес электронной почты небольшие изменения (напр., "
-#~ "дополнительные пробелы). В случае подозрений отметьте его как плохой с "
-#~ "помощью '%s'.\n"
-#~ " "
-
-#~ msgid "key specification '%s' is ambiguous\n"
-#~ msgstr "спецификация ключа '%s' неоднозначна\n"
-
-#~ msgid "'%s' matches at least:\n"
-#~ msgstr "'%s' соответствует по меньшей мере:\n"
-
-#~ msgid "%d signatures not checked due to missing keys\n"
-#~ msgstr "%d подписей не проверено за отсутствием ключей\n"
-
-#~ msgid "%d signatures not checked due to errors\n"
-#~ msgstr "%d подписей не проверено из-за ошибок\n"
-
-#~ msgid "1 user ID without valid self-signature detected\n"
-#~ msgstr "обнаружен 1 ID пользователя без действительной самоподписи\n"
-
-#~ msgid "Deleted %d signatures.\n"
-#~ msgstr "Удалено %d подписей.\n"
-
-#~ msgid "User ID \"%s\": %d signatures removed\n"
-#~ msgstr "ID пользователя \"%s\": %d подписей удалено\n"
-
-#~ msgid ""
-#~ "You need a Passphrase to protect your secret key.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Для защиты секретного ключа необходима фраза-пароль.\n"
-#~ "\n"
-
-#~ msgid ""
-#~ "Please enter a passphrase to protect the off-card backup of the new "
-#~ "encryption key."
-#~ msgstr ""
-#~ "Введите фразу-пароль для защиты архивной копии нового ключа для "
-#~ "шифрования."
-
-#~ msgid "passphrase not correctly repeated; try again"
-#~ msgstr "фраза-пароль повторена неверно; попробуйте еще раз"
-
-#~ msgid "%s.\n"
-#~ msgstr "%s.\n"
-
-#~ msgid ""
-#~ "You don't want a passphrase - this is probably a *bad* idea!\n"
-#~ "I will do it anyway.  You can change your passphrase at any time,\n"
-#~ "using this program with the option \"--edit-key\".\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Хотите обойтись без фразы-пароля? Скорее всего, это ПЛОХАЯ мысль!\n"
-#~ "Работа будет продолжена. Вы можете сменить фразу-пароль в любое время,\n"
-#~ "запустив данную программу с параметром \"--edit-key\".\n"
-#~ "\n"
-
-#~ msgid "storing key onto card failed: %s\n"
-#~ msgstr "сбой сохранения ключа на карте: %s\n"
-
-#~ msgid "1 good signature\n"
-#~ msgstr "1 хорошая подпись\n"
-
-#~ msgid "renaming '%s' to '%s' failed: %s\n"
-#~ msgstr "сбой при переименовании '%s' в '%s': %s\n"
-
-#~ msgid "%lu keys cached (%lu signatures)\n"
-#~ msgstr "%lu ключей помещено в буфер (%lu подписей)\n"
-
-#~ msgid "refreshing 1 key from %s\n"
-#~ msgstr "обновление 1 ключа из %s\n"
-
-#~ msgid "sending key %s to %s server %s\n"
-#~ msgstr "отправка ключа %s на сервер %s %s\n"
-
-#~ msgid "public key %s is %lu seconds newer than the signature\n"
-#~ msgstr "открытый ключ %s на %lu секунд новее подписи\n"
-
-#~ msgid ""
-#~ "key %s was created %lu seconds in the future (time warp or clock "
-#~ "problem)\n"
-#~ msgstr ""
-#~ "ключ %s создан на %lu секунд в будущем (петля во времени или проблемы с "
-#~ "часами)\n"
-
-#~ msgid "%d marginal(s) needed, %d complete(s) needed, %s trust model\n"
-#~ msgstr ""
-#~ "требуется %d с ограниченным доверием, %d с полным, модель доверия %s\n"
-
-#~ msgid "cleared passphrase cached with ID: %s\n"
-#~ msgstr "в буфере сброшена фраза-пароль с индексом %s\n"
-
-#, fuzzy
-#~| msgid "failed to store the key: %s\n"
-#~ msgid "Failed to open the keyring DB.\n"
-#~ msgstr "сбой сохранения ключа: %s\n"
-
-#, fuzzy
-#~| msgid "failed to open '%s': %s\n"
-#~ msgid "Failed to parse '%s'.\n"
-#~ msgstr "не могу открыть '%s': %s\n"
-
-#, fuzzy
-#~| msgid "error locking keybox: %s\n"
-#~ msgid "error looking up secret key \"%s\": %s\n"
-#~ msgstr "ошибка блокировки щита с ключами: %s\n"
-
-#~ msgid "Please select at most one subkey.\n"
-#~ msgstr "Выделите не более одного подключа.\n"
-
-#~ msgid "apparently no running dirmngr\n"
-#~ msgstr "видимо, dirmngr не работает\n"
-
-#~ msgid "no running dirmngr - starting one\n"
-#~ msgstr "dirmngr не выполняется - запуск\n"
-
-#~ msgid "malformed %s environment variable\n"
-#~ msgstr "неправильная переменная окружения %s\n"
-
-#~ msgid "dirmngr protocol version %d is not supported\n"
-#~ msgstr "протокол dirmngr версии %d не поддерживается\n"
-
-#~ msgid "can't connect to the dirmngr - trying fall back\n"
-#~ msgstr "не могу подключиться к dirmngr - пробую запасной вариант\n"
-
-#~ msgid "export keys in an S-expression based format"
-#~ msgstr "экспортировать ключи в формате на основе S-выражений"
-
-#~ msgid "Directory Manager"
-#~ msgstr "Управление каталогами"
-
-#~ msgid "toggle between the secret and public key listings"
-#~ msgstr "переключение между просмотром открытых и закрытых ключей"
-
-#~ msgid "Please use the command \"toggle\" first.\n"
-#~ msgstr "Сначала воспользуйтесь командой \"toggle\".\n"
-
-#~ msgid "Passphrase"
-#~ msgstr "Фраза-пароль"
-
-#~ msgid "use temporary files to pass data to keyserver helpers"
-#~ msgstr "передавать данные в сервер с помощью временных файлов"
-
-#~ msgid "do not delete temporary files after using them"
-#~ msgstr "не удалять временные файлы после использования"
-
-#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-#~ msgstr ""
-#~ "ВНИМАНИЕ: параметр сервера ключей `%s' на данной платформе не "
-#~ "используется\n"
