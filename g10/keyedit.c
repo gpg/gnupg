@@ -2206,8 +2206,9 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  break;
 
 	case cmdCHECK:
-	  check_all_keysigs (keyblock, count_selected_uids (keyblock),
-                             !strcmp (arg_string, "selfsig"));
+	  if (check_all_keysigs (keyblock, count_selected_uids (keyblock),
+                                 !strcmp (arg_string, "selfsig")))
+            modified = 1;
 	  break;
 
 	case cmdSIGN:
