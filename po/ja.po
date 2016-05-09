@@ -4,13 +4,13 @@
 # IIDA Yosiaki <iida@gnu.org>, 1999, 2000, 2002, 2003, 2004.
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # Takashi P.KATOH, 2002.
-# NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015.
+# NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.1.10\n"
+"Project-Id-Version: gnupg 2.1.12\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-12-21 21:21+0900\n"
+"PO-Revision-Date: 2016-05-09 14:44+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -361,10 +361,8 @@ msgstr "クライアントが鍵に\"trusted\"マークをつけることを認�
 msgid "allow presetting passphrase"
 msgstr "パスフレーズの事前設定を認める"
 
-#, fuzzy
-#| msgid "allow caller to override the pinentry"
 msgid "disallow caller to override the pinentry"
-msgstr "pinentryより優先してパスフレーズ入力を認める"
+msgstr "pinentryより優先してパスフレーズ入力を認めない"
 
 msgid "allow passphrase to be prompted through Emacs"
 msgstr "Emacsを通じてパスフレーズを催促することを認める"
@@ -449,10 +447,9 @@ msgstr "ディレクトリ'%s'が作成できません: %s\n"
 msgid "directory '%s' created\n"
 msgstr "ディレクトリ'%s'が作成されました\n"
 
-#, fuzzy, c-format
-#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
+#, c-format
 msgid "can't set permissions of '%s': %s\n"
-msgstr "警告: '%s'の安全でない許可 \"%s\"\n"
+msgstr "'%s'の許可が設定できません: %s\n"
 
 #, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -709,10 +706,9 @@ msgstr "パイプのストリーム作成エラー: %s\n"
 msgid "error forking process: %s\n"
 msgstr "プロセスforkエラー: %s\n"
 
-#, fuzzy, c-format
-#| msgid "waiting for process %d to terminate failed: %s\n"
+#, c-format
 msgid "waiting for processes to terminate failed: %s\n"
-msgstr "プロセス%dの終了待ちが失敗: %s\n"
+msgstr "プロセスの終了待ちが失敗: %s\n"
 
 #, c-format
 msgid "error running '%s': probably not installed\n"
@@ -750,10 +746,9 @@ msgstr "ユーザによる取消し\n"
 msgid "problem with the agent\n"
 msgstr "エージェントに障害\n"
 
-#, fuzzy, c-format
-#| msgid "problem with the agent: %s\n"
+#, c-format
 msgid "problem with the agent (unexpected response \"%s\")\n"
-msgstr "エージェントに問題: %s\n"
+msgstr "エージェントに問題 (予期しない応答 \"%s\")\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -1154,10 +1149,9 @@ msgstr ""
 "外装の中にquoted printable文字があります。おそらくバグのあるMTAが使われたので"
 "しょう\n"
 
-#, fuzzy, c-format
-#| msgid "not human readable"
+#, c-format
 msgid "[ not human readable (%zu bytes: %s%s) ]"
-msgstr "人には読めません"
+msgstr "[ 人には読めません (%zuバイト: %s%s) ]"
 
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
@@ -1174,18 +1168,12 @@ msgstr "ユーザ注釈名は、一つより大きい'@'文字を含んではな
 msgid "a notation value must not use any control characters\n"
 msgstr "注釈名の値に制御文字を使ってはいけません\n"
 
-#, fuzzy
-#| msgid "a notation name must not contain more than one '@' character\n"
 msgid "a notation name may not contain an '=' character\n"
-msgstr "ユーザ注釈名は、一つより大きい'@'文字を含んではなりません\n"
+msgstr "ユーザ注釈名は、'='の文字を含んではなりません\n"
 
-#, fuzzy
-#| msgid ""
-#| "a notation name must have only printable characters or spaces, and end "
-#| "with an '='\n"
 msgid "a notation name must have only printable characters or spaces\n"
 msgstr ""
-"注釈名には印字可能な文字か空白のみを使い、'='で終わらなければなりません\n"
+"注釈名には印字可能な文字か空白のみを使わなければなりません\n"
 
 msgid "WARNING: invalid notation data found\n"
 msgstr "*警告*: 無効な注釈データを発見\n"
@@ -1197,19 +1185,17 @@ msgstr "プロキシ%sのクライアントへの問い合わせが失敗しま�
 msgid "Enter passphrase: "
 msgstr "パスフレーズを入力: "
 
-#, fuzzy, c-format
-#| msgid "error creating keyring '%s': %s\n"
+#, c-format
 msgid "error getting version from '%s': %s\n"
-msgstr "鍵リング'%s'の作成エラー: %s\n"
+msgstr "%s'からバージョン取得エラー: %s\n"
 
 #, c-format
 msgid "server '%s' is older than us (%s < %s)"
-msgstr ""
+msgstr "サーバ'%s'はこちらより古いです(%s < %s)"
 
-#, fuzzy, c-format
-#| msgid "WARNING: %s overrides %s\n"
+#, c-format
 msgid "WARNING: %s\n"
-msgstr "*警告*: %sは%sより優先\n"
+msgstr "*警告*: %s\n"
 
 #, c-format
 msgid "OpenPGP card not available: %s\n"
@@ -1692,24 +1678,18 @@ msgstr "[ユーザIDが見つかりません]"
 msgid "(check argument of option '%s')\n"
 msgstr "(オプション'%s'の引数を確認ください)\n"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Warning: value '%s' for option '%s' should be a long key ID or a "
-#| "fingerprint\n"
+#, c-format
 msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
 msgstr ""
-"警告: 値'%s'(オプション'%s'に対する)は長い鍵IDかフィンガープリントであるべき"
-"です。\n"
+"警告: '%s'は長い鍵IDかフィンガープリントであるべきです。\n"
 
-#, fuzzy, c-format
-#| msgid "error closing %s: %s\n"
+#, c-format
 msgid "error looking up: %s\n"
-msgstr "'%s'でクローズのエラー: %s\n"
+msgstr "検索のエラー: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error searching the keyring: %s\n"
+#, c-format
 msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "鍵リング探索エラー: %s\n"
+msgstr "警告: %sは鍵リングに%d回出現します\n"
 
 #, c-format
 msgid "automatically retrieved '%s' via %s\n"
@@ -1726,19 +1706,17 @@ msgstr "フィンガープリントがありません"
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "秘密鍵\"%s\"が見つかりません: %s\n"
 
-#, fuzzy, c-format
-#| msgid "using \"%s\" as default secret key\n"
+#, c-format
 msgid "Warning: not using '%s' as default key: %s\n"
-msgstr "デフォルトの秘密鍵として\"%s\"を用います\n"
+msgstr "警告: デフォルトの秘密鍵として '%s' を用いません: %s\n"
 
-#, fuzzy, c-format
-#| msgid "using \"%s\" as default secret key\n"
+#, c-format
 msgid "using \"%s\" as default secret key for signing\n"
-msgstr "デフォルトの秘密鍵として\"%s\"を用います\n"
+msgstr "デフォルトの署名用の秘密鍵として\"%s\"を用います\n"
 
 #, c-format
 msgid "all values passed to '%s' ignored\n"
-msgstr ""
+msgstr "'%s'に渡されたすべての値は無視されました\n"
 
 #, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
@@ -1859,10 +1837,8 @@ msgstr "メッセージ・ダイジェストを表示"
 msgid "run in server mode"
 msgstr "サーバ・モードで実行"
 
-#, fuzzy
-#| msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
 msgid "|VALUE|set the TOFU policy for a key"
-msgstr "|VALUE|TOFUポリシーを鍵に設定する(good, unknown, bad, ask, auto)"
+msgstr "|VALUE|TOFUポリシーを鍵に設定する"
 
 msgid "create ascii armored output"
 msgstr "ASCII形式の外装を作成"
@@ -2333,10 +2309,9 @@ msgstr "鍵サーバからの受信に失敗しました: %s\n"
 msgid "key export failed: %s\n"
 msgstr "鍵のエクスポートに失敗しました: %s\n"
 
-#, fuzzy, c-format
-#| msgid "key export failed: %s\n"
+#, c-format
 msgid "export as ssh key failed: %s\n"
-msgstr "鍵のエクスポートに失敗しました: %s\n"
+msgstr "ssh鍵としてのエクスポートに失敗しました: %s\n"
 
 #, c-format
 msgid "keyserver search failed: %s\n"
@@ -2811,56 +2786,47 @@ msgstr "[失効]"
 msgid "[self-signature]"
 msgstr "[自己署名]"
 
-#, fuzzy, c-format
-#| msgid "key %s: unsupported public key algorithm\n"
+#, c-format
 msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "鍵%s: サポートしていない公開鍵アルゴリズムです\n"
+msgstr "サポートしていない公開鍵アルゴリズム(%d)の署名は確認できません: %s.\n"
 
-#, fuzzy, c-format
-#| msgid "card does not support digest algorithm %s\n"
+#, c-format
 msgid ""
 "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "カードはダイジェスト・アルゴリズム %s をサポートしていません\n"
+msgstr "サポートしていないメッセージ・ダイジェスト(%d)の署名は確認できません: %s.\n"
 
-#, fuzzy
-#| msgid "Good signature from"
 msgid " (reordered signatures follow)"
-msgstr "正しい署名"
+msgstr "(順番を変えた署名が続きます)"
 
-#, fuzzy, c-format
-#| msgid "key %s: %s\n"
+#, c-format
 msgid "key %s:\n"
-msgstr "鍵  %s: %s\n"
+msgstr "鍵  %s:\n"
 
-#, fuzzy, c-format
-#| msgid "User ID \"%s\": %d signature removed\n"
+#, c-format
 msgid "%d duplicate signature removed\n"
 msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "ユーザID \"%s\": %d の署名が除去されました\n"
+msgstr[0] "%d個の重複した署名が除去されました\n"
 
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
+#, c-format
 msgid "%d signature not checked due to a missing key\n"
 msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "鍵がないため1個の署名を検査しません\n"
+msgstr[0] "鍵がないため%d個の署名は検査しません\n"
 
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
+#, c-format
 msgid "%d bad signature\n"
 msgid_plural "%d bad signatures\n"
-msgstr[0] "不正な署名%d個\n"
+msgstr[0] "%d個の不正な署名\n"
 
-#, fuzzy, c-format
-#| msgid "Good signature from"
+#, c-format
 msgid "%d signature reordered\n"
 msgid_plural "%d signatures reordered\n"
-msgstr[0] "正しい署名"
+msgstr[0] "%d個の正しい署名\n"
 
 #, c-format
 msgid ""
 "Warning: errors found and only checked self-signatures, run '%s' to check "
 "all signatures.\n"
-msgstr ""
+msgstr "警告: エラーがあり、自己署名だけ確認しました。'%s'を実行してすべての署名を確認ください。\n"
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3296,10 +3262,9 @@ msgstr "\"%s\"はフィンガープリントではありません\n"
 msgid "\"%s\" is not the primary fingerprint\n"
 msgstr "\"%s\" はプライマリ・フィンガープリントではありません\n"
 
-#, fuzzy, c-format
-#| msgid "read error in '%s': %s\n"
+#, c-format
 msgid "Invalid user ID '%s': %s\n"
-msgstr "'%s'で読み込みエラー: %s\n"
+msgstr "無効なユーザID '%s': %s\n"
 
 msgid "No matching user IDs."
 msgstr "マッチするユーザIDはありません。"
@@ -3426,8 +3391,7 @@ msgstr "この不明の署名を削除しますか? (y/N/q)"
 msgid "Really delete this self-signature? (y/N)"
 msgstr "この自己署名を本当に削除しますか? (y/N)"
 
-#, fuzzy, c-format
-#| msgid "Deleted %d signature.\n"
+#, c-format
 msgid "Deleted %d signature.\n"
 msgid_plural "Deleted %d signatures.\n"
 msgstr[0] "%d個の署名を削除しました。\n"
@@ -3442,8 +3406,7 @@ msgstr "無効"
 msgid "User ID \"%s\" compacted: %s\n"
 msgstr "ユーザID \"%s\" は、コンパクトになりました: %s\n"
 
-#, fuzzy, c-format
-#| msgid "User ID \"%s\": %d signature removed\n"
+#, c-format
 msgid "User ID \"%s\": %d signature removed\n"
 msgid_plural "User ID \"%s\": %d signatures removed\n"
 msgstr[0] "ユーザID \"%s\": %d の署名が除去されました\n"
@@ -4066,23 +4029,20 @@ msgstr "クリティカルな署名注釈: "
 msgid "Signature notation: "
 msgstr "署名注釈: "
 
-#, fuzzy, c-format
-#| msgid "%d good signatures\n"
+#, c-format
 msgid "%d good signature\n"
 msgid_plural "%d good signatures\n"
 msgstr[0] "正しい署名%d個\n"
 
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to an error\n"
+#, c-format
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
-msgstr[0] "エラーのため1個の署名を検査しません\n"
+msgstr[0] "エラーのため%d個の署名を検査しません\n"
 
-#, fuzzy, c-format
-#| msgid "Warning: %lu key(s) skipped due to their large size\n"
+#, c-format
 msgid "Warning: %lu key skipped due to its large size\n"
 msgid_plural "Warning: %lu keys skipped due to their large sizes\n"
-msgstr[0] "*警告*: %lu 鍵がその大きさのためスキップされました\n"
+msgstr[0] "*警告*: %lu個の鍵がその大きさのためスキップされました\n"
 
 msgid "Keyring"
 msgstr "鍵リング"
@@ -4115,23 +4075,20 @@ msgstr "   カードシリアル番号 ="
 msgid "caching keyring '%s'\n"
 msgstr "鍵リング'%s'をキャッシュします\n"
 
-#, fuzzy, c-format
-#| msgid "%lu keys cached so far (%lu signatures)\n"
+#, c-format
 msgid "%lu keys cached so far (%lu signature)\n"
 msgid_plural "%lu keys cached so far (%lu signatures)\n"
-msgstr[0] "%lu個の鍵までキャッシュ済 (%lu個の署名)\n"
+msgstr[0] "これまで%lu個の鍵をキャッシュしました (%lu個の署名)\n"
 
-#, fuzzy, c-format
-#| msgid "flush the cache"
+#, c-format
 msgid "%lu key cached"
 msgid_plural "%lu keys cached"
-msgstr[0] "キャッシュをフラッシュします"
+msgstr[0] "%lu個の鍵をキャッシュしました"
 
-#, fuzzy, c-format
-#| msgid "1 bad signature\n"
+#, c-format
 msgid " (%lu signature)\n"
 msgid_plural " (%lu signatures)\n"
-msgstr[0] "不正な署名1個\n"
+msgstr[0] " (%lu個の不正な署名)\n"
 
 #, c-format
 msgid "%s: keyring created\n"
@@ -4172,8 +4129,7 @@ msgstr "無効な鍵サーバ・プロトコルです (us %d!=handler %d)\n"
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\"鍵IDではありません: スキップします\n"
 
-#, fuzzy, c-format
-#| msgid "refreshing %d keys from %s\n"
+#, c-format
 msgid "refreshing %d key from %s\n"
 msgid_plural "refreshing %d keys from %s\n"
 msgstr[0] "%d本の鍵を%sから更新\n"
@@ -4200,10 +4156,8 @@ msgstr "鍵%sを%sからサーバ%sに要求\n"
 msgid "requesting key %s from %s\n"
 msgstr "鍵%sを%sに要求\n"
 
-#, fuzzy
-#| msgid "invalid keyserver options\n"
 msgid "no keyserver known\n"
-msgstr "無効な鍵サーバ・オプションです\n"
+msgstr "鍵サーバがわかりません\n"
 
 #, c-format
 msgid "sending key %s to %s\n"
@@ -4414,18 +4368,16 @@ msgstr "*警告*: ダイジェスト・アルゴリズム %s は廃止されて�
 msgid "Note: signatures using the %s algorithm are rejected\n"
 msgstr "注意: アルゴリズム %s を用いた署名は拒否されました\n"
 
-#, fuzzy, c-format
-#| msgid "%s:%u: read error: %s\n"
+#, c-format
 msgid "(reported error: %s)\n"
-msgstr "%s:%u: 読み込みエラー: %s\n"
+msgstr "(報告されたエラー: %s)\n"
 
-#, fuzzy, c-format
-#| msgid "read error in '%s': %s\n"
+#, c-format
 msgid "(reported error: %s <%s>)\n"
-msgstr "'%s'で読み込みエラー: %s\n"
+msgstr "(報告されたエラー: %s <%s>)\n"
 
 msgid "(further info: "
-msgstr ""
+msgstr "(より詳細な情報: "
 
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
@@ -4814,10 +4766,9 @@ msgstr "%s: スキップ: 公開鍵は使用禁止です\n"
 msgid "%s: skipped: public key already present\n"
 msgstr "%s: スキップ: 公開鍵はもうあります\n"
 
-#, fuzzy, c-format
-#| msgid "can't connect to '%s': %s\n"
+#, c-format
 msgid "can't encrypt to '%s'\n"
-msgstr "'%s'へ接続できません: %s\n"
+msgstr "'%s'に暗号化できません\n"
 
 #, c-format
 msgid "option '%s' given, but no valid default keys given\n"
@@ -4959,13 +4910,10 @@ msgid ""
 "declare that a key shall not anymore be used.  It is not possible\n"
 "to retract such a revocation certificate once it has been published."
 msgstr ""
+"失効証明書は \"殺すスイッチ\" のようなもので、鍵がそれ以上使えない\n"
+"ように公に宣言するものです。一度発行されると、そのような失効証明書は\n"
+"撤回することはできません。"
 
-#, fuzzy
-#| msgid ""
-#| "Use it to revoke this key in case of a compromise or loss of\n"
-#| "the secret key.  However, if the secret key is still accessible,\n"
-#| "it is better to generate a new revocation certificate and give\n"
-#| "a reason for the revocation."
 msgid ""
 "Use it to revoke this key in case of a compromise or loss of\n"
 "the secret key.  However, if the secret key is still accessible,\n"
@@ -4975,26 +4923,21 @@ msgid ""
 msgstr ""
 "秘密鍵のコンプロマイズや紛失の場合、これを使ってこの鍵を失効させます。\n"
 "しかし、秘密鍵がまだアクセス可能である場合、新しい失効証明書を生成し、\n"
-"失効の理由をつける方がよいでしょう。"
+"失効の理由をつける方がよいでしょう。詳細は、GnuPGマニュアルの"
+"gpgコマンド \"--gen-revoke\"の記述をご覧ください。"
 
-#, fuzzy
-#| msgid ""
-#| "To avoid an accidental use of this file, a colon has been inserted\n"
-#| "before the 5 dashes below.  Remove this colon with a text editor\n"
-#| "before making use of this revocation certificate."
 msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before importing and publishing this revocation certificate."
 msgstr ""
-"このファイルを誤って使うのを避けるため、以下ではコロンが5つのダッシュの前に挿"
-"入されます。\n"
-"この失効証明書を使う前にはテクスト・エディタでこのコロンを削除してください。"
+"このファイルを誤って使うのを避けるため、以下ではコロンが5つのダッシュ\n"
+"の前に挿入されます。この失効証明書をインポートして公開する前に、テク\n"
+"スト・エディタでこのコロンを削除してください。"
 
-#, fuzzy, c-format
-#| msgid "Revocation certificate created.\n"
+#, c-format
 msgid "revocation certificate stored as '%s.rev'\n"
-msgstr "失効証明書を作成。\n"
+msgstr "失効証明書を '%s.rev' に保管しました。\n"
 
 #, c-format
 msgid "secret key \"%s\" not found\n"
@@ -5088,34 +5031,28 @@ msgstr "詳細は%sをご覧ください\n"
 msgid "WARNING: signing subkey %s has an invalid cross-certification\n"
 msgstr "*警告*: 無効な相互証明が、署名副鍵%sにあります\n"
 
-#, fuzzy, c-format
-#| msgid "public key %s is %lu second newer than the signature\n"
+#, c-format
 msgid "public key %s is %lu second newer than the signature\n"
 msgid_plural "public key %s is %lu seconds newer than the signature\n"
-msgstr[0] "公開鍵%sは、署名よりも%lu秒新しいものです\n"
+msgstr[0] "公開鍵%sは、署名よりも%lu秒、新しいものです\n"
 
-#, fuzzy, c-format
-#| msgid "public key %s is %lu second newer than the signature\n"
+#, c-format
 msgid "public key %s is %lu day newer than the signature\n"
 msgid_plural "public key %s is %lu days newer than the signature\n"
-msgstr[0] "公開鍵%sは、署名よりも%lu秒新しいものです\n"
+msgstr[0] "公開鍵%sは、署名よりも%lu日、新しいものです\n"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "key %s was created %lu second in the future (time warp or clock problem)\n"
+#, c-format
 msgid ""
 "key %s was created %lu second in the future (time warp or clock problem)\n"
 msgid_plural ""
 "key %s was created %lu seconds in the future (time warp or clock problem)\n"
-msgstr[0] "鍵%sは%lu秒未来にできました (時間歪曲か時計の障害でしょう)\n"
+msgstr[0] "鍵%sは%lu秒、未来にできました (時間歪曲か時計の障害でしょう)\n"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "key %s was created %lu second in the future (time warp or clock problem)\n"
+#, c-format
 msgid "key %s was created %lu day in the future (time warp or clock problem)\n"
 msgid_plural ""
 "key %s was created %lu days in the future (time warp or clock problem)\n"
-msgstr[0] "鍵%sは%lu秒未来にできました (時間歪曲か時計の障害でしょう)\n"
+msgstr[0] "鍵%sは%lu日、未来にできました (時間歪曲か時計の障害でしょう)\n"
 
 #, c-format
 msgid "Note: signature key %s expired %s\n"
@@ -5334,204 +5271,194 @@ msgstr "%d文字以上の長さのテキスト行は、取り扱えません\n"
 msgid "input line longer than %d characters\n"
 msgstr "入力行の長さが%d文字を超えています\n"
 
-#, fuzzy, c-format
-#| msgid "error sending standard options: %s\n"
+#, c-format
 msgid "error beginning transaction on TOFU database: %s\n"
-msgstr "標準オプションを送信エラー: %s\n"
+msgstr "TOFUデータベースのトランザクション開始エラー: %s\n"
 
 #, c-format
 msgid "error committing transaction on TOFU database: %s\n"
-msgstr ""
+msgstr "TOFUデータベースのトランザクションコミットのエラー: %s\n"
 
 #, c-format
 msgid "error rolling back transaction on TOFU database: %s\n"
-msgstr ""
+msgstr "TOFUデータベースのトランザクションのロールバックのエラー: %s\n"
 
-#, fuzzy, c-format
-#| msgid "unsupported algorithm: %s"
+#, c-format
 msgid "unsupported TOFU database version: %s\n"
-msgstr "サポートされていないアルゴリズム: %s"
+msgstr "サポートされていないTOFUデータベースバージョン: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error sending data: %s\n"
+#, c-format
 msgid "error reading TOFU database: %s\n"
-msgstr "データ送信エラー: %s\n"
+msgstr "TOFUデータベースの読み込みエラー: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error writing base64 encoding: %s\n"
+#, c-format
 msgid "error determining TOFU database's version: %s\n"
-msgstr "base64エンコーディングの書き込みエラー: %s\n"
+msgstr "TOFUデータベースのバージョン判定エラー: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error initializing reader object: %s\n"
+#, c-format
 msgid "error initializing TOFU database: %s\n"
-msgstr "リーダ・オブジェクトの初期化エラー: %s\n"
+msgstr "TOFUデータベースの初期化エラー: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error opening '%s': %s\n"
+#, c-format
 msgid "error opening TOFU database '%s': %s\n"
-msgstr "'%s'を開く際、エラー: %s\n"
+msgstr "TOFUデータベースのオープンでエラー '%s': %s\n"
 
 msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr ""
+msgstr "警告: tofu.db と tofu.d の両方がホームディレクトリにあります。\n"
 
 msgid "Using split format for TOFU database\n"
-msgstr ""
+msgstr "TOFUデータベースに分割フォーマットを使用\n"
 
-#, fuzzy, c-format
-#| msgid "error sending data: %s\n"
+#, c-format
 msgid "error updating TOFU database: %s\n"
-msgstr "データ送信エラー: %s\n"
+msgstr "TOFUデータベースの更新エラー: %s\n"
 
 #, c-format
 msgid "public key %s not found: %s\n"
 msgstr "公開鍵%sが見つかりません: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error setting OCSP target: %s\n"
+#, c-format
 msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "OCSPターゲットの設定エラー: %s\n"
+msgstr "TOFUデータベースの信用レベルの設定エラー: %s\n"
 
 #, c-format
 msgid "The binding %s is NOT known."
-msgstr ""
+msgstr "%sのバインディングは不明です。"
 
 #, c-format
 msgid ""
 "The key with fingerprint %s raised a conflict with the binding %s.  Since "
 "this binding's policy was 'auto', it was changed to 'ask'."
 msgstr ""
+"鍵のフィンガープリント%sがバインディング%sと衝突しました。このバインディングポリシーは"
+"'auto'だったので、'ask'に変更されました。"
 
 #, c-format
 msgid ""
 "Please indicate whether you believe the binding %s%sis legitimate (the key "
 "belongs to the stated owner) or a forgery (bad)."
 msgstr ""
+"バインディング%s%sが適切(鍵は述べられた所有者に属する)か、偽られたものか(ダメ)かを指示してください。"
 
-#, fuzzy, c-format
-#| msgid "error getting responder ID: %s\n"
+#, c-format
 msgid "error gathering other user IDs: %s\n"
-msgstr "応答IDの取得エラー: %s\n"
+msgstr "ほかのユーザIDの収集エラー: %s\n"
 
 msgid "Known user IDs associated with this key:\n"
-msgstr ""
+msgstr "この鍵に結びつけられた知られているユーザID:\n"
 
-#, fuzzy, c-format
-#| msgid "validity: %s"
+#, c-format
 msgid "policy: %s"
-msgstr "有効性: %s"
+msgstr "ポリシー: %s"
 
-#, fuzzy, c-format
-#| msgid "error getting stored flags: %s\n"
+#, c-format
 msgid "error gathering signature stats: %s\n"
-msgstr "保存されたフラグの取得エラー: %s\n"
+msgstr "署名の統計の収集エラー: %s\n"
 
 #, c-format
 msgid "The email address \"%s\" is associated with %d key:\n"
 msgid_plural "The email address \"%s\" is associated with %d keys:\n"
 msgstr[0] ""
+"電子メールアドレス\"%s\"は%d個の鍵に結びつけられます:\n"
 
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
-msgstr ""
+msgstr "この電子メールアドレス\"%s\"の鍵の統計:\n"
 
-#, fuzzy
-#| msgid "list keys"
 msgid "this key"
-msgstr "鍵の一覧"
+msgstr "この鍵"
 
 #, c-format
 msgid "%ld message signed in the future."
 msgid_plural "%ld messages signed in the future."
-msgstr[0] ""
+msgstr[0] "%ld個のメッセージが未来に署名されました。"
 
-#, fuzzy, c-format
-#| msgid "print message digests"
+#, c-format
 msgid "%ld message signed"
 msgid_plural "%ld messages signed"
-msgstr[0] "メッセージ・ダイジェストを表示"
+msgstr[0] "%ld個のメッセージに署名しました"
 
 #, c-format
 msgid " over the past %ld day."
 msgid_plural " over the past %ld days."
-msgstr[0] ""
+msgstr[0] "過去%ld日に。"
 
 #, c-format
 msgid " over the past %ld week."
 msgid_plural " over the past %ld weeks."
-msgstr[0] ""
+msgstr[0] "過去%ld週間に。"
 
 #, c-format
 msgid " over the past %ld month."
 msgid_plural " over the past %ld months."
-msgstr[0] ""
+msgstr[0] "過去%ld月に。"
 
 #. TRANSLATORS: Please translate the text found in the source
 #. file below.  We don't directly internationalize that text
 #. so that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
-msgstr ""
+msgstr "TOFUはバインディングの衝突を検出しました"
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
 #. version of the hotkey) for each of the five choices.  If
 #. there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
-msgstr ""
+msgstr "gGaAuUrRbB"
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
-msgstr ""
+msgstr "(G)ood-良, (A)ccept once-一度だけ良, (U)nknown-不明, (R)eject once-一度だけ否, (B)ad-ダメ? "
 
-#, fuzzy, c-format
-#| msgid "error creating a pipe: %s\n"
+#, c-format
 msgid "error changing TOFU policy: %s\n"
-msgstr "パイプの作成エラー: %s\n"
+msgstr "TOFUポリシーの作成エラー: %s\n"
 
 #. TRANSLATORS: The tilde ('~') is used here to indicate a
 #. * non-breakable space
 #, c-format
 msgid "%d~year"
 msgid_plural "%d~years"
-msgstr[0] ""
+msgstr[0] "%d~年"
 
 #, c-format
 msgid "%d~month"
 msgid_plural "%d~months"
-msgstr[0] ""
+msgstr[0] "%d~月"
 
 #, c-format
 msgid "%d~day"
 msgid_plural "%d~days"
-msgstr[0] ""
+msgstr[0] "%d~月"
 
 #, c-format
 msgid "%d~hour"
 msgid_plural "%d~hours"
-msgstr[0] ""
+msgstr[0] "%d~時間"
 
 #, c-format
 msgid "%d~minute"
 msgid_plural "%d~minutes"
-msgstr[0] ""
+msgstr[0] "%d~分"
 
 #, c-format
 msgid "%d~second"
 msgid_plural "%d~seconds"
-msgstr[0] ""
+msgstr[0] "%d~秒"
 
 #, c-format
 msgid "Have never verified a message signed by key %s!\n"
-msgstr ""
+msgstr "鍵%sで署名されたメッセージを検証したことは一度もありません!\n"
 
 #, c-format
 msgid ""
 "Failed to collect signature statistics for \"%s\"\n"
 "(key %s)\n"
 msgstr ""
+"\"%s\"の署名の統計を収集することに失敗しました\n"
+"(鍵 %s)\n"
 
-#, fuzzy, c-format
-#| msgid "print message digests"
+#, c-format
 msgid "Verified %ld messages signed by \"%s\"."
-msgstr "メッセージ・ダイジェストを表示"
+msgstr "%ld個のメッセージを検証しました(\"%s\"で署名されたもの)。"
 
 #, c-format
 msgid ""
@@ -5541,16 +5468,17 @@ msgid_plural ""
 "Verified %ld messages signed by \"%s\"\n"
 "in the past %s."
 msgstr[0] ""
+"メッセージを%ld回検証しました(\"%s\"で署名されたもの。かつて %s)。"
 
 #, c-format
 msgid "The most recent message was verified %s ago."
-msgstr ""
+msgstr "もっとも最近のメッセージは%s前に検証されました。"
 
 msgid "Warning: we've have yet to see a message signed by this key!\n"
-msgstr ""
+msgstr "警告: この鍵で署名されたメッセージを検証したことはありません!\n"
 
 msgid "Warning: we've only seen a single message signed by this key!\n"
-msgstr ""
+msgstr "警告: この鍵で署名されたメッセージを検証したことは一度しかありません!\n"
 
 #, c-format
 msgid ""
@@ -5566,11 +5494,15 @@ msgid_plural ""
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[0] ""
+"警告: この鍵で署名されたメッセージを%ld回以上見たと思う場合、偽"
+"者の可能性があります! 少数のバリエーションでこの電子メールアドレ"
+"スを注意深く検査してください。この鍵が疑われる場合、\n"
+"  %s\n"
+"でダメとマークしてください。\n"
 
-#, fuzzy, c-format
-#| msgid "error sending data: %s\n"
+#, c-format
 msgid "error opening TOFU database: %s\n"
-msgstr "データ送信エラー: %s\n"
+msgstr "TOFUデータベースのオープンでエラー: %s\n"
 
 #, c-format
 msgid "'%s' is not a valid long keyID\n"
@@ -5635,17 +5567,15 @@ msgstr "--check-trustdbを実行してください\n"
 msgid "checking the trustdb\n"
 msgstr "信用データベースの検査\n"
 
-#, fuzzy, c-format
-#| msgid "%lu keys processed so far\n"
+#, c-format
 msgid "%d key processed"
 msgid_plural "%d keys processed"
-msgstr[0] "これまで%lu個の鍵を処理\n"
+msgstr[0] "%d個の鍵を処理"
 
-#, fuzzy, c-format
-#| msgid "%d keys processed (%d validity counts cleared)\n"
+#, c-format
 msgid " (%d validity count cleared)\n"
 msgid_plural " (%d validity counts cleared)\n"
-msgstr[0] "%d本の鍵を処理 (うち%d本の有効性数をクリア)\n"
+msgstr[0] " (うち%d本の有効性数をクリア)\n"
 
 msgid "no ultimately trusted keys found\n"
 msgstr "究極的に信用する鍵が見つかりません\n"
@@ -5849,8 +5779,7 @@ msgstr "カードからCHVステイタスの取得でエラー\n"
 msgid "card is permanently locked!\n"
 msgstr "カードが永久にロックされてます!\n"
 
-#, fuzzy, c-format
-#| msgid "%d Admin PIN attempts remaining before card is permanently locked\n"
+#, c-format
 msgid "%d Admin PIN attempt remaining before card is permanently locked\n"
 msgid_plural ""
 "%d Admin PIN attempts remaining before card is permanently locked\n"
@@ -5931,8 +5860,7 @@ msgstr "鍵生成の間、お待ちください ...\n"
 msgid "generating key failed\n"
 msgstr "鍵の生成に失敗しました\n"
 
-#, fuzzy, c-format
-#| msgid "key generation completed (%d seconds)\n"
+#, c-format
 msgid "key generation completed (%d second)\n"
 msgid_plural "key generation completed (%d seconds)\n"
 msgstr[0] "鍵の生成が完了しました (%d秒)\n"
@@ -8029,10 +7957,8 @@ msgstr "|N|N日後にパスフレーズを期限切れとする"
 msgid "do not allow the reuse of old passphrases"
 msgstr "古いパスフレーズを再使用することを認めない"
 
-#, fuzzy
-#| msgid "|N|set LDAP timeout to N seconds"
 msgid "|N|set the Pinentry timeout to N seconds"
-msgstr "|N|LDAPのタイムアウトをN秒とする"
+msgstr "|N|PinentryのタイムアウトをN秒とする"
 
 msgid "|NAME|use NAME as default secret key"
 msgstr "|NAME|デフォルトの秘密鍵としてNAMEを用いる"
@@ -8323,12 +8249,6 @@ msgstr ""
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "あなたはバグを発見しました ... (%s:%d)\n"
-
-#, fuzzy
-#~| msgid "%d user IDs without valid self-signatures detected\n"
-#~ msgid "%d user ID without valid self-signature detected\n"
-#~ msgid_plural "%d user IDs without valid self-signatures detected\n"
-#~ msgstr[0] "有効な自己署名のないユーザIDを%d個検出\n"
 
 #~ msgid "moving a key signature to the correct place\n"
 #~ msgstr "鍵の署名を正しい場所に移動します\n"
