@@ -350,8 +350,9 @@ sig_comparison (const void *av, const void *bv)
     return 1;
 
   ndataa = pubkey_get_nsig (a->pubkey_algo);
-  ndatab = pubkey_get_nsig (a->pubkey_algo);
-  log_assert (ndataa == ndatab);
+  ndatab = pubkey_get_nsig (b->pubkey_algo);
+  if (ndataa != ndatab)
+    return (ndataa < ndatab)? -1 : 1;
 
   for (i = 0; i < ndataa; i ++)
     {
