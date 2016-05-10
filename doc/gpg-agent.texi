@@ -337,6 +337,10 @@ internal cache of @command{gpg-agent} with passphrases.
 Disallow or allow clients to use the loopback pinentry features; see
 the option @option{pinentry-mode} for details.  Allow is the default.
 
+The @option{--force} option of the Assuan command @command{DELETE_KEY}
+is also controlled by this option: The option is ignored if a loopback
+pinentry is disallowed.
+
 @item --no-allow-external-cache
 @opindex no-allow-external-cache
 Tell Pinentry not to enable features which use an external cache for
@@ -820,8 +824,17 @@ fi
 @section Agent's Assuan Protocol
 
 Note: this section does only document the protocol, which is used by
-GnuPG components; it does not deal with the ssh-agent protocol.
+GnuPG components; it does not deal with the ssh-agent protocol.  To
+see the full specification of each command, use
 
+@example
+  gpg-connect-agent 'help COMMAND' /bye
+@end example
+
+@noindent
+or just 'help' to list all available commands.
+
+@noindent
 The @command{gpg-agent} daemon is started on demand by the GnuPG
 components.
 

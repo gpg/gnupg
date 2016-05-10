@@ -184,8 +184,14 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
               prompt = gpg_format_keydesc (node->pkt->pkt.public_key,
                                            FORMAT_KEYDESC_DELKEY, 1);
               err = hexkeygrip_from_pk (node->pkt->pkt.public_key, &hexgrip);
+              /* NB: We require --yes to advise the agent not to
+               * request a confirmation.  The rationale for this extra
+               * pre-caution is that since 2.1 the secret key may also
+               * be used for other protocols and thus deleting it from
+               * the gpg would also delete the key for other tools. */
               if (!err)
-                err = agent_delete_key (NULL, hexgrip, prompt);
+                err = agent_delete_key (NULL, hexgrip, prompt,
+                                        opt.answer_yes);
               xfree (prompt);
               xfree (hexgrip);
               if (err)

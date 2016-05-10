@@ -196,7 +196,7 @@ gpg_error_t agent_export_key (ctrl_t ctrl, const char *keygrip,
 
 /* Delete a key from the agent.  */
 gpg_error_t agent_delete_key (ctrl_t ctrl, const char *hexkeygrip,
-                              const char *desc);
+                              const char *desc, int force);
 
 /* Change the passphrase of a key.  */
 gpg_error_t agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc,

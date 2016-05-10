@@ -2333,8 +2333,9 @@ cmd_export_key (assuan_context_t ctx, char *line)
 static const char hlp_delete_key[] =
   "DELETE_KEY [--force] <hexstring_with_keygrip>\n"
   "\n"
-  "Delete a secret key from the key store.\n"
-  "Unless --force is used the agent asks the user for confirmation.\n";
+  "Delete a secret key from the key store.  If --force is used\n"
+  "and a loopback pinentry is allowed, the agent will not ask\n"
+  "the user for confirmation.";
 static gpg_error_t
 cmd_delete_key (assuan_context_t ctx, char *line)
 {
@@ -2348,6 +2349,11 @@ cmd_delete_key (assuan_context_t ctx, char *line)
 
   force = has_option (line, "--force");
   line = skip_options (line);
+
+  /* If the use of a loopback pinentry has been disabled, we assume
+   * that a silent deletion of keys shall also not be allowed.  */
+  if (!opt.allow_loopback_pinentry)
+    force = 0;
 
   err = parse_keygrip (ctx, line, grip);
   if (err)

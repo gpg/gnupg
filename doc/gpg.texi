@@ -376,13 +376,20 @@ safeguard against accidental deletion of multiple keys.
 
 @item --delete-secret-keys @code{name}
 @opindex delete-secret-keys
-Remove key from the secret keyring. In batch mode the key
-must be specified by fingerprint.
+gRemove key from the secret keyring. In batch mode the key must be
+specified by fingerprint.  The option @option{--yes} can be used to
+advice gpg-agent not to request a confirmation.  This extra
+pre-caution is done because @command{gpg} can't be sure that the
+secret key (as controlled by gpg-agent) is only used for the given
+OpenPGP public key.
+
 
 @item --delete-secret-and-public-key @code{name}
 @opindex delete-secret-and-public-key
 Same as @option{--delete-key}, but if a secret key exists, it will be
 removed first. In batch mode the key must be specified by fingerprint.
+The option @option{--yes} can be used to advice gpg-agent not to
+request a confirmation.
 
 @item --export
 @opindex export
