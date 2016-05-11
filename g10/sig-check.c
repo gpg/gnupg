@@ -797,15 +797,20 @@ check_signature_over_key_or_uid (PKT_public_key *signer,
             *is_selfsig = 1;
         }
       else
-        /* See if one of the subkeys was the signer (although this is
-           extremely unlikely).  */
         {
           kbnode_t ctx = NULL;
           kbnode_t n;
 
-          while ((n = walk_kbnode (kb, &ctx, PKT_PUBLIC_SUBKEY)))
+          /* See if one of the subkeys was the signer (although this
+             is extremely unlikely).  */
+          while ((n = walk_kbnode (kb, &ctx, 0)))
             {
-              PKT_public_key *subk = n->pkt->pkt.public_key;
+              PKT_public_key *subk;
+
+              if (n->pkt->pkttype != PKT_PUBLIC_SUBKEY)
+                continue;
+
+              subk = n->pkt->pkt.public_key;
               if (sig->keyid[0] == subk->keyid[0]
                   && sig->keyid[1] == subk->keyid[1])
                 /* Issued by a subkey.  */
