@@ -548,7 +548,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     that case, this status tag does not appear.
 
 *** ATTRIBUTE <arguments>
-    The list or argemnts are:
+    The list or arguments are:
     - <fpr>
     - <octets>
     - <type>
@@ -602,17 +602,28 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
        - 13 :: Key disabled
        - 14 :: Syntax error in specification
 
+    If no specific reason was given a previously emitted status code
+    KEY_CONSIDERED may be used to analyzed the problem.
+
     Note that for historical reasons the INV_RECP status is also used
     for gpgsm's SIGNER command where it relates to signer's of course.
     Newer GnuPG versions are using INV_SGNR; applications should
     ignore the INV_RECP during the sender's command processing once
     they have seen an INV_SGNR.  Different codes are used so that they
     can be distinguish while doing an encrypt+sign operation.
+
 *** NO_RECP <reserved>
     Issued if no recipients are usable.
 
 *** NO_SGNR <reserved>
     Issued if no senders are usable.
+
+*** KEY_CONSIDERED <fpr> <flags>
+    Issued to explian the lookup of a key.  FPR is the hexified
+    fingerprint of the primary key.  The bit values for FLAGS are:
+
+    - 1 :: The key has not been selected.
+    - 2 :: All subkeys of the key are expired or have been revoked.
 
 *** KEYEXPIRED <expire-timestamp>
     The key has expired.  expire-timestamp is the expiration time in

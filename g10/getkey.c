@@ -38,6 +38,7 @@
 #include "call-agent.h"
 #include "host2net.h"
 #include "mbox-util.h"
+#include "status.h"
 
 #define MAX_PK_CACHE_ENTRIES   PK_UID_CACHE_SIZE
 #define MAX_UID_CACHE_ENTRIES  PK_UID_CACHE_SIZE
@@ -46,6 +47,13 @@
 #error We need the cache for key creation
 #endif
 
+/* Flags values returned by the lookup code.  Note that the values are
+ * directly used by the KEY_CONSIDERED status line.  */
+#define LOOKUP_NOT_SELECTED        (1<<0)
+#define LOOKUP_ALL_SUBKEYS_EXPIRED (1<<1)  /* or revoked */
+
+
+/* A context object used by the lookup functions.  */
 struct getkey_ctx_s
 {
   /* Part of the search criteria: whether the search is an exact
@@ -3045,51 +3053,54 @@ merge_selfsigs (KBNODE keyblock)
 
 
 /* See whether the key satisfies any additional requirements specified
-   in CTX.  If so, return 1 and set CTX->FOUND_KEY to an appropriate
-   key or subkey.  Otherwise, return 0 if there was no appropriate
-   key.
-
-   In case the primary key is not required, select a suitable subkey.
-   We need the primary key if PUBKEY_USAGE_CERT is set in
-   CTX->REQ_USAGE or we are in PGP6 or PGP7 mode and PUBKEY_USAGE_SIG
-   is set in CTX->REQ_USAGE.
-
-   If any of PUBKEY_USAGE_SIG, PUBKEY_USAGE_ENC and PUBKEY_USAGE_CERT
-   are set in CTX->REQ_USAGE, we filter by the key's function.
-   Concretely, if PUBKEY_USAGE_SIG and PUBKEY_USAGE_CERT are set, then
-   we only return a key if it is (at least) either a signing or a
-   certification key.
-
-   If CTX->REQ_USAGE is set, then we reject any keys that are not good
-   (i.e., valid, not revoked, not expired, etc.).  This allows the
-   getkey functions to be used for plain key listings.
-
-   Sets the matched key's user id field (pk->user_id) to the user id
-   that matched the low-level search criteria or NULL.
-
-
-   This function needs to handle several different cases:
-
-    1. No requested usage and no primary key requested
-       Examples for this case are that we have a keyID to be used
-       for decrytion or verification.
-    2. No usage but primary key requested
-       This is the case for all functions which work on an
-       entire keyblock, e.g. for editing or listing
-    3. Usage and primary key requested
-       FXME
-    4. Usage but no primary key requested
-       FIXME
-
+ * in CTX.  If so, return 1 and set CTX->FOUND_KEY to an appropriate
+ * key or subkey.  Otherwise, return 0 if there was no appropriate
+ * key.
+ *
+ * In case the primary key is not required, select a suitable subkey.
+ * We need the primary key if PUBKEY_USAGE_CERT is set in
+ * CTX->REQ_USAGE or we are in PGP6 or PGP7 mode and PUBKEY_USAGE_SIG
+ * is set in CTX->REQ_USAGE.
+ *
+ * If any of PUBKEY_USAGE_SIG, PUBKEY_USAGE_ENC and PUBKEY_USAGE_CERT
+ * are set in CTX->REQ_USAGE, we filter by the key's function.
+ * Concretely, if PUBKEY_USAGE_SIG and PUBKEY_USAGE_CERT are set, then
+ * we only return a key if it is (at least) either a signing or a
+ * certification key.
+ *
+ * If CTX->REQ_USAGE is set, then we reject any keys that are not good
+ * (i.e., valid, not revoked, not expired, etc.).  This allows the
+ * getkey functions to be used for plain key listings.
+ *
+ * Sets the matched key's user id field (pk->user_id) to the user id
+ * that matched the low-level search criteria or NULL.  If R_FLAGS is
+ * not NULL set certain flags for more detailed error reporting.  Used
+ * flags are:
+ * - LOOKUP_ALL_SUBKEYS_EXPIRED :: All Subkeys are expired or have
+ *                                 been revoked.
+ *
+ * This function needs to handle several different cases:
+ *
+ *  1. No requested usage and no primary key requested
+ *     Examples for this case are that we have a keyID to be used
+ *     for decrytion or verification.
+ *  2. No usage but primary key requested
+ *     This is the case for all functions which work on an
+ *     entire keyblock, e.g. for editing or listing
+ *  3. Usage and primary key requested
+ *     FIXME
+ *  4. Usage but no primary key requested
+ *     FIXME
+ *
  */
-static KBNODE
-finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
+static kbnode_t
+finish_lookup (getkey_ctx_t ctx, kbnode_t keyblock, unsigned int *r_flags)
 {
-  KBNODE k;
+  kbnode_t k;
 
   /* If CTX->EXACT is set, the key or subkey that actually matched the
      low-level search criteria.  */
-  KBNODE foundk = NULL;
+  kbnode_t foundk = NULL;
   /* The user id (if any) that matched the low-level search criteria.  */
   PKT_user_id *foundu = NULL;
 
@@ -3100,21 +3111,23 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
      if signing data while --pgp6 or --pgp7 is on since pgp 6 and 7
      do not understand signatures made by a signing subkey.  PGP 8
      does. */
-  int req_prim = (ctx->req_usage & PUBKEY_USAGE_CERT) ||
-    ((PGP6 || PGP7) && (ctx->req_usage & PUBKEY_USAGE_SIG));
+  int req_prim = ((ctx->req_usage & PUBKEY_USAGE_CERT)
+                  || ((PGP6 || PGP7) && (ctx->req_usage & PUBKEY_USAGE_SIG)));
 
   u32 curtime = make_timestamp ();
 
   u32 latest_date;
-  KBNODE latest_key;
+  kbnode_t latest_key;
   PKT_public_key *pk;
-
 
   log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 
+  if (r_flags)
+    *r_flags = 0;
+
+  /* For an exact match mark the primary or subkey that matched the
+     low-level search criteria.  */
   if (ctx->exact)
-    /* Get the key or subkey that matched the low-level search
-       criteria.  */
     {
       for (k = keyblock; k; k = k->next)
 	{
@@ -3154,24 +3167,28 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
 
   latest_date = 0;
   latest_key = NULL;
-  /* Set latest_key to the latest (the one with the most recent
-     timestamp) good (valid, not revoked, not expired, etc.) subkey.
-
-     Don't bother if we are only looking for a primary key or we need
-     an exact match and the exact match is not a subkey.  */
+  /* Set LATEST_KEY to the latest (the one with the most recent
+   * timestamp) good (valid, not revoked, not expired, etc.) subkey.
+   *
+   * Don't bother if we are only looking for a primary key or we need
+   * an exact match and the exact match is not a subkey.  */
   if (req_prim || (foundk && foundk->pkt->pkttype != PKT_PUBLIC_SUBKEY))
     ;
   else
     {
-      KBNODE nextk;
+      kbnode_t nextk;
+      int n_subkeys = 0;
+      int n_revoked_or_expired = 0;
 
       /* Either start a loop or check just this one subkey.  */
       for (k = foundk ? foundk : keyblock; k; k = nextk)
 	{
 	  if (foundk)
-	    /* If FOUNDK is not NULL, then only consider that exact
-	       key, i.e., don't iterate.  */
-	    nextk = NULL;
+            {
+              /* If FOUNDK is not NULL, then only consider that exact
+                 key, i.e., don't iterate.  */
+              nextk = NULL;
+            }
 	  else
 	    nextk = k->next;
 
@@ -3182,37 +3199,40 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
 	  if (DBG_LOOKUP)
 	    log_debug ("\tchecking subkey %08lX\n",
 		       (ulong) keyid_from_pk (pk, NULL));
+
 	  if (!pk->flags.valid)
 	    {
 	      if (DBG_LOOKUP)
 		log_debug ("\tsubkey not valid\n");
 	      continue;
 	    }
+	  if (!((pk->pubkey_usage & USAGE_MASK) & req_usage))
+	    {
+	      if (DBG_LOOKUP)
+		log_debug ("\tusage does not match: want=%x have=%x\n",
+			   req_usage, pk->pubkey_usage);
+	      continue;
+	    }
+
+          n_subkeys++;
 	  if (pk->flags.revoked)
 	    {
 	      if (DBG_LOOKUP)
 		log_debug ("\tsubkey has been revoked\n");
+              n_revoked_or_expired++;
 	      continue;
 	    }
 	  if (pk->has_expired)
 	    {
 	      if (DBG_LOOKUP)
 		log_debug ("\tsubkey has expired\n");
+              n_revoked_or_expired++;
 	      continue;
-
 	    }
 	  if (pk->timestamp > curtime && !opt.ignore_valid_from)
 	    {
 	      if (DBG_LOOKUP)
 		log_debug ("\tsubkey not yet valid\n");
-	      continue;
-	    }
-
-	  if (!((pk->pubkey_usage & USAGE_MASK) & req_usage))
-	    {
-	      if (DBG_LOOKUP)
-		log_debug ("\tusage does not match: want=%x have=%x\n",
-			   req_usage, pk->pubkey_usage);
 	      continue;
 	    }
 
@@ -3228,18 +3248,20 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
 	      latest_key = k;
 	    }
 	}
+      if (n_subkeys == n_revoked_or_expired && r_flags)
+        *r_flags |= LOOKUP_ALL_SUBKEYS_EXPIRED;
     }
 
   /* Check if the primary key is ok (valid, not revoke, not expire,
-     matches requested usage) if:
-
-       - we didn't find an appropriate subkey and we're not doing an
-         exact search,
-
-       - we're doing an exact match and the exact match was the
-         primary key, or,
-
-       - we're just considering the primary key.  */
+   * matches requested usage) if:
+   *
+   *   - we didn't find an appropriate subkey and we're not doing an
+   *     exact search,
+   *
+   *   - we're doing an exact match and the exact match was the
+   *     primary key, or,
+   *
+   *   - we're just considering the primary key.  */
   if ((!latest_key && !ctx->exact) || foundk == keyblock || req_prim)
     {
       if (DBG_LOOKUP && !foundk && !req_prim)
@@ -3250,6 +3272,12 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
 	  if (DBG_LOOKUP)
 	    log_debug ("\tprimary key not valid\n");
 	}
+      else if (!((pk->pubkey_usage & USAGE_MASK) & req_usage))
+	{
+	  if (DBG_LOOKUP)
+	    log_debug ("\tprimary key usage does not match: "
+		       "want=%x have=%x\n", req_usage, pk->pubkey_usage);
+	}
       else if (pk->flags.revoked)
 	{
 	  if (DBG_LOOKUP)
@@ -3259,12 +3287,6 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
 	{
 	  if (DBG_LOOKUP)
 	    log_debug ("\tprimary key has expired\n");
-	}
-      else if (!((pk->pubkey_usage & USAGE_MASK) & req_usage))
-	{
-	  if (DBG_LOOKUP)
-	    log_debug ("\tprimary key usage does not match: "
-		       "want=%x have=%x\n", req_usage, pk->pubkey_usage);
 	}
       else /* Okay.  */
 	{
@@ -3309,6 +3331,34 @@ found:
 }
 
 
+/* Print a KEY_CONSIDERED status line.  */
+static void
+print_status_key_considered (kbnode_t keyblock, unsigned int flags)
+{
+  char hexfpr[2*MAX_FINGERPRINT_LEN + 1];
+  kbnode_t node;
+  char flagbuf[20];
+
+  if (!is_status_enabled ())
+    return;
+
+  for (node=keyblock; node; node = node->next)
+    if (node->pkt->pkttype == PKT_PUBLIC_KEY
+        || node->pkt->pkttype == PKT_SECRET_KEY)
+      break;
+  if (!node)
+    {
+      log_error ("%s: keyblock w/o primary key\n", __func__);
+      return;
+    }
+
+  hexfingerprint (node->pkt->pkt.public_key, hexfpr, sizeof hexfpr);
+  snprintf (flagbuf, sizeof flagbuf, " %u", flags);
+  write_status_strings (STATUS_KEY_CONSIDERED, hexfpr, flagbuf, NULL);
+}
+
+
+
 /* A high-level function to lookup keys.
 
    This function builds on top of the low-level keydb API.  It first
@@ -3329,6 +3379,7 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
   int no_suitable_key = 0;
   KBNODE keyblock = NULL;
   KBNODE found_key = NULL;
+  unsigned int infoflags;
 
   if (ret_keyblock)
     *ret_keyblock = NULL;
@@ -3360,14 +3411,19 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
        * merge_selfsigs.  For secret keys, premerge transferred the
        * keys to the keyblock.  */
       merge_selfsigs (keyblock);
-      found_key = finish_lookup (ctx, keyblock);
+      found_key = finish_lookup (ctx, keyblock, &infoflags);
+      if (!found_key)
+        infoflags |= LOOKUP_NOT_SELECTED;
+      print_status_key_considered (keyblock, infoflags);
       if (found_key)
 	{
 	  no_suitable_key = 0;
 	  goto found;
 	}
       else
-	no_suitable_key = 1;
+        {
+          no_suitable_key = 1;
+        }
 
     skip:
       /* Release resources and continue search. */
@@ -3381,7 +3437,7 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
       keydb_disable_caching (ctx->kr_handle);
     }
 
-found:
+ found:
   if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     log_error ("keydb_search failed: %s\n", gpg_strerror (rc));
 
