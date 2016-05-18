@@ -79,7 +79,8 @@ static ARGPARSE_OPTS opts[] = {
                 N_("|FD|write status info to this FD")),
   ARGPARSE_s_i (oLoggerFD, "logger-fd", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
-  ARGPARSE_s_s (oWeakDigest, "weak-digest", "@"),
+  ARGPARSE_s_s (oWeakDigest, "weak-digest",
+                N_("|ALGO|reject signatures made with ALGO")),
 
   ARGPARSE_end ()
 };
