@@ -834,8 +834,6 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
   uri = strconcat ("https://",
                    domain,
                    "/.well-known/openpgpkey/hu/",
-                   domain,
-                   "/",
                    encodedhash,
                    NULL);
   if (!uri)
