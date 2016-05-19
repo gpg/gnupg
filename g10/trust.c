@@ -156,6 +156,7 @@ uid_trust_string_fixed (PKT_public_key *key, PKT_user_id *uid)
         case TRUST_UNKNOWN:   return _("[ unknown]");
         case TRUST_EXPIRED:   return _("[ expired]");
         case TRUST_UNDEFINED: return _("[  undef ]");
+        case TRUST_NEVER:     return _("[  never ]");
         case TRUST_MARGINAL:  return _("[marginal]");
         case TRUST_FULLY:     return _("[  full  ]");
         case TRUST_ULTIMATE:  return _("[ultimate]");
