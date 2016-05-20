@@ -831,7 +831,7 @@ print_status_exported (PKT_public_key *pk)
  *
  * Since the key data from agant is encrypted, decrypt it by CIPHERHD.
  * Then, parse the decrypted key data in transfer format, and put
- * secret papameters into PK.
+ * secret parameters into PK.
  *
  * CACHE_NONCE_ADDR is used to share nonce for multple key retrievals.
  */
