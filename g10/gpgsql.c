@@ -1,4 +1,4 @@
-/* sqlite.c - SQLite helper functions.
+/* gpgsql.c - SQLite helper functions.
  * Copyright (C) 2015 g10 Code GmbH
  *
  * This file is part of GnuPG.
@@ -26,15 +26,15 @@
 #include "util.h"
 #include "logging.h"
 
-#include "sqlite.h"
+#include "gpgsql.h"
 
 /* This is a convenience function that combines sqlite3_mprintf and
    sqlite3_exec.  */
 int
-sqlite3_exec_printf (sqlite3 *db,
-		     int (*callback)(void*,int,char**,char**), void *cookie,
-		     char **errmsg,
-		     const char *sql, ...)
+gpgsql_exec_printf (sqlite3 *db,
+                    int (*callback)(void*,int,char**,char**), void *cookie,
+                    char **errmsg,
+                    const char *sql, ...)
 {
   va_list ap;
   int rc;
@@ -56,12 +56,12 @@ sqlite3_exec_printf (sqlite3 *db,
 }
 
 int
-sqlite3_stepx (sqlite3 *db,
-               sqlite3_stmt **stmtp,
-               sqlite3_stepx_callback callback,
-               void *cookie,
-               char **errmsg,
-               const char *sql, ...)
+gpgsql_stepx (sqlite3 *db,
+              sqlite3_stmt **stmtp,
+              gpgsql_stepx_callback callback,
+              void *cookie,
+              char **errmsg,
+              const char *sql, ...)
 {
   int rc;
   int err = 0;
@@ -69,7 +69,7 @@ sqlite3_stepx (sqlite3 *db,
 
   va_list va;
   int args;
-  enum sqlite_arg_type t;
+  enum gpgsql_arg_type t;
   int i;
 
   int cols;
@@ -128,7 +128,7 @@ sqlite3_stepx (sqlite3 *db,
     {
       for (i = 1; i <= args; i ++)
         {
-          t = va_arg (va, enum sqlite_arg_type);
+          t = va_arg (va, enum gpgsql_arg_type);
           switch (t)
             {
             case SQLITE_ARG_INT:
@@ -169,7 +169,7 @@ sqlite3_stepx (sqlite3 *db,
         }
 
     }
-  t = va_arg (va, enum sqlite_arg_type);
+  t = va_arg (va, enum gpgsql_arg_type);
   log_assert (t == SQLITE_ARG_END);
   va_end (va);
 

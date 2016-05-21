@@ -39,7 +39,7 @@
 #include "ttyio.h"
 #include "trustdb.h"
 #include "mkdir_p.h"
-#include "sqlite.h"
+#include "gpgsql.h"
 #include "status.h"
 
 #include "tofu.h"
@@ -262,7 +262,7 @@ begin_transaction (struct db *db, int only_batch)
 
   if (batch_update && ! db->batch_update)
     {
-      rc = sqlite3_stepx (db->db, &db->s.savepoint_batch,
+      rc = gpgsql_stepx (db->db, &db->s.savepoint_batch,
                           NULL, NULL, &err,
                           "savepoint batch;", SQLITE_ARG_END);
       if (rc)
@@ -281,7 +281,7 @@ begin_transaction (struct db *db, int only_batch)
   if (only_batch)
     return 0;
 
-  rc = sqlite3_stepx (db->db, &db->s.savepoint_inner,
+  rc = gpgsql_stepx (db->db, &db->s.savepoint_inner,
                       NULL, NULL, &err,
                       "savepoint inner;", SQLITE_ARG_END);
   if (rc)
@@ -316,7 +316,7 @@ end_transaction (struct db *db, int only_batch)
     {
       db->batch_update = 0;
 
-      rc = sqlite3_stepx (db->db, &db->s.savepoint_batch_commit,
+      rc = gpgsql_stepx (db->db, &db->s.savepoint_batch_commit,
                           NULL, NULL, &err,
                           "release batch;", SQLITE_ARG_END);
       if (rc)
@@ -337,7 +337,7 @@ end_transaction (struct db *db, int only_batch)
   if (only_batch)
     return 0;
 
-  rc = sqlite3_stepx (db->db, &db->s.savepoint_inner_commit,
+  rc = gpgsql_stepx (db->db, &db->s.savepoint_inner_commit,
                       NULL, NULL, &err,
                       "release inner;", SQLITE_ARG_END);
   if (rc)
@@ -640,7 +640,7 @@ initdb (sqlite3 *db, enum db_type type)
    *     know why this occurred, we also set conflict to 0xbaddecaf.
    */
   if (type == DB_EMAIL || type == DB_COMBINED)
-    rc = sqlite3_exec_printf
+    rc = gpgsql_exec_printf
       (db, NULL, NULL, &err,
        "create table bindings\n"
        " (oid INTEGER PRIMARY KEY AUTOINCREMENT,\n"
@@ -659,7 +659,7 @@ initdb (sqlite3 *db, enum db_type type)
 
        Note: since the data is split on the email address, there is no
        need to index the email column.  */
-    rc = sqlite3_exec_printf
+    rc = gpgsql_exec_printf
       (db, NULL, NULL, &err,
        "create table bindings\n"
        " (oid INTEGER PRIMARY KEY AUTOINCREMENT,\n"
@@ -1220,7 +1220,7 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
        purposes, there is no need to start a transaction or to die if
        there is a failure.  */
     {
-      rc = sqlite3_stepx
+      rc = gpgsql_stepx
 	(db_email->db, &db_email->s.record_binding_get_old_policy,
          get_single_long_cb2, &policy_old, &err,
 	 "select policy from bindings where fingerprint = ? and email = ?",
@@ -1259,7 +1259,7 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
       goto out;
     }
 
-  rc = sqlite3_stepx
+  rc = gpgsql_stepx
     (db_email->db, &db_email->s.record_binding_update, NULL, NULL, &err,
      "insert or replace into bindings\n"
      " (oid, fingerprint, email, user_id, time, policy)\n"
@@ -1287,7 +1287,7 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
     {
       log_assert (opt.tofu_db_format == TOFU_DB_SPLIT);
 
-      rc = sqlite3_stepx
+      rc = gpgsql_stepx
 	(db_key->db, &db_key->s.record_binding_update2, NULL, NULL, &err,
 	 "insert or replace into bindings\n"
 	 " (oid, fingerprint, email, user_id)\n"
@@ -1520,7 +1520,7 @@ get_policy (tofu_dbs_t dbs, const char *fingerprint, const char *email,
      (TOFU_POLICY_NONE cannot appear in the DB.  Thus, if POLICY is
      still TOFU_POLICY_NONE after executing the query, then the
      result set was empty.)  */
-  rc = sqlite3_stepx (db->db, &db->s.get_policy_select_policy_and_conflict,
+  rc = gpgsql_stepx (db->db, &db->s.get_policy_select_policy_and_conflict,
                       strings_collect_cb2, &strlist, &err,
                       "select policy, conflict from bindings\n"
                       " where fingerprint = ? and email = ?",
@@ -1773,7 +1773,7 @@ get_trust (tofu_dbs_t dbs, const char *fingerprint, const char *email,
      address.  Note: if the binding in question is in the DB, it will
      also be returned.  Thus, if the result set is empty, then this is
      a new binding.  */
-  rc = sqlite3_stepx
+  rc = gpgsql_stepx
     (db->db, &db->s.get_trust_bindings_with_this_email,
      strings_collect_cb2, &bindings_with_this_email, &err,
      "select distinct fingerprint from bindings where email = ?;",
@@ -1942,7 +1942,7 @@ get_trust (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 
       if (db_key)
 	{
-	  rc = sqlite3_stepx
+	  rc = gpgsql_stepx
 	    (db_key->db, &db_key->s.get_trust_gather_other_user_ids,
              strings_collect_cb2, &other_user_ids, &err,
              opt.tofu_db_format == TOFU_DB_SPLIT
@@ -1993,7 +1993,7 @@ get_trust (tofu_dbs_t dbs, const char *fingerprint, const char *email,
     /* XXX: When generating the statistics, do we want the time
        embedded in the signature (column 'sig_time') or the time that
        we first verified the signature (column 'time').  */
-    rc = sqlite3_stepx
+    rc = gpgsql_stepx
       (db->db, &db->s.get_trust_gather_other_keys,
        signature_stats_collect_cb, &stats, &err,
        "select fingerprint, policy, time_ago, count(*)\n"
@@ -2223,7 +2223,7 @@ get_trust (tofu_dbs_t dbs, const char *fingerprint, const char *email,
       if (! may_ask)
 	/* If we weren't allowed to ask, also update this key as
 	   conflicting with itself.  */
-	rc = sqlite3_exec_printf
+	rc = gpgsql_exec_printf
 	  (db->db, NULL, NULL, &err,
 	   "update bindings set policy = %d, conflict = %Q"
 	   " where email = %Q"
@@ -2231,7 +2231,7 @@ get_trust (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 	   TOFU_POLICY_ASK, fingerprint, email, TOFU_POLICY_AUTO,
 	   TOFU_POLICY_ASK, fingerprint);
       else
-	rc = sqlite3_exec_printf
+	rc = gpgsql_exec_printf
 	  (db->db, NULL, NULL, &err,
 	   "update bindings set policy = %d, conflict = %Q"
 	   " where email = %Q and fingerprint != %Q and policy = %d;",
@@ -2438,7 +2438,7 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 
   fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
 
-  rc = sqlite3_exec_printf
+  rc = gpgsql_exec_printf
     (db->db, strings_collect_cb, &strlist, &err,
      "select count (*), strftime('%%s','now') - min (signatures.time),\n"
      "  strftime('%%s','now') - max (signatures.time)\n"
@@ -2731,7 +2731,7 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
 
   /* If we've already seen this signature before, then don't add
      it again.  */
-  rc = sqlite3_stepx
+  rc = gpgsql_stepx
     (db->db, &db->s.register_already_seen,
      get_single_unsigned_long_cb2, &c, &err,
      "select count (*)\n"
@@ -2781,7 +2781,7 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
 
       log_assert (c == 0);
 
-      rc = sqlite3_stepx
+      rc = gpgsql_stepx
 	(db->db, &db->s.register_insert, NULL, NULL, &err,
 	 "insert into signatures\n"
 	 " (binding, sig_digest, origin, sig_time, time)\n"
