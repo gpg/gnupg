@@ -645,9 +645,10 @@ export_pubkey_buffer (ctrl_t ctrl, const char *keyspec, unsigned int options,
 }
 
 gpg_error_t
-tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
+tofu_get_policy (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *user_id,
 		 enum tofu_policy *policy)
 {
+  (void)ctrl;
   (void)pk;
   (void)user_id;
   (void)policy;

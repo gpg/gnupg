@@ -63,6 +63,7 @@ enum tofu_policy
     _tofu_GET_POLICY_ERROR = 100
   };
 
+
 /* Return a string representation of a trust policy.  Returns "???" if
    POLICY is not valid.  */
 const char *tofu_policy_str (enum tofu_policy policy);
@@ -78,7 +79,7 @@ int tofu_policy_to_trust_level (enum tofu_policy policy);
    interact with the user in the case of a conflict or if the
    binding's policy is ask.  This function returns the binding's trust
    level.  If an error occurs, it returns TRUST_UNKNOWN.  */
-int tofu_register (PKT_public_key *pk, const char *user_id,
+int tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
 		   const byte *sigs_digest, int sigs_digest_len,
 		   time_t sig_time, const char *origin, int may_ask);
 
@@ -91,18 +92,21 @@ int tofu_wot_trust_combine (int tofu, int wot);
    <PK, USER_ID>.  If MAY_ASK is 1, then this function may
    interact with the user.  If not, TRUST_UNKNOWN is returned.  If an
    error occurs, TRUST_UNDEFINED is returned.  */
-int tofu_get_validity (PKT_public_key *pk, const char *user_id, int may_ask);
+int tofu_get_validity (ctrl_t ctrl,
+                       PKT_public_key *pk, const char *user_id, int may_ask);
 
 /* Set the policy for all non-revoked user ids in the keyblock KB to
    POLICY.  */
-gpg_error_t tofu_set_policy (kbnode_t kb, enum tofu_policy policy);
+gpg_error_t tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy);
 
 /* Set the TOFU policy for all non-revoked users in the key with the
    key id KEYID to POLICY.  */
-gpg_error_t tofu_set_policy_by_keyid (u32 *keyid, enum tofu_policy policy);
+gpg_error_t tofu_set_policy_by_keyid (ctrl_t ctrl,
+                                      u32 *keyid, enum tofu_policy policy);
 
 /* Return the TOFU policy for the specified binding in *POLICY.  */
-gpg_error_t tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
+gpg_error_t tofu_get_policy (ctrl_t ctrl,
+                             PKT_public_key *pk, PKT_user_id *user_id,
 			     enum tofu_policy *policy);
 
 /* When doing a lot of DB activities (in particular, when listing
@@ -110,5 +114,8 @@ gpg_error_t tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
    significantly speed up operations.  */
 void tofu_begin_batch_update (void);
 void tofu_end_batch_update (void);
+
+/* Release all of the resources associated with a DB meta-handle.  */
+void tofu_closedbs (ctrl_t ctrl);
 
 #endif /*G10_TOFU_H*/

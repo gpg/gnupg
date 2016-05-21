@@ -782,7 +782,8 @@ opendb (char *filename, enum db_type type)
   return db;
 }
 
-struct dbs
+/* Definition of the Tofu dabase meta handle.  */
+struct tofu_dbs_s
 {
   struct db *db;
 };
@@ -814,7 +815,7 @@ link_db (struct db **head, struct db *db)
    TYPE must be either DB_MAIL or DB_KEY.  In the combined format, the
    combined DB is always returned.  */
 static struct db *
-getdb (struct dbs *dbs, const char *name, enum db_type type)
+getdb (tofu_dbs_t dbs, const char *name, enum db_type type)
 {
   struct db *t = NULL;
   char *name_sanitized = NULL;
@@ -980,9 +981,12 @@ closedb (struct db *db)
 /* Create a new DB meta-handle.  Returns NULL on error.  */
 /* FIXME: Change to return an error code for better reporting by the
    caller.  */
-static struct dbs *
-opendbs (void)
+static tofu_dbs_t
+opendbs (ctrl_t ctrl)
 {
+  if (ctrl->tofu.dbs)
+    return ctrl->tofu.dbs;
+
   if (opt.tofu_db_format == TOFU_DB_AUTO)
     {
       char *filename = make_filename (opt.homedir, "tofu.db", NULL);
@@ -1045,13 +1049,20 @@ opendbs (void)
 	}
     }
 
-  return xmalloc_clear (sizeof (struct dbs));
+  ctrl->tofu.dbs = xmalloc_clear (sizeof (struct tofu_dbs_s));
+  return ctrl->tofu.dbs;
 }
 
+
 /* Release all of the resources associated with a DB meta-handle.  */
-static void
-closedbs (struct dbs *dbs)
+void
+tofu_closedbs (ctrl_t ctrl)
 {
+  tofu_dbs_t dbs = ctrl->tofu.dbs;
+
+  if (!dbs)
+    return;  /* Not initialized.  */
+
   if (dbs->db)
     {
       struct db *old_head = db_cache;
@@ -1103,7 +1114,8 @@ closedbs (struct dbs *dbs)
         }
     }
 
-  xfree (dbs);
+  xfree (ctrl->tofu.dbs);
+  ctrl->tofu.dbs = NULL;
 
 #if DEBUG_TOFU_CACHE
   log_debug ("Queries: %d (prepares saved: %d)\n",
@@ -1142,7 +1154,7 @@ get_single_long_cb2 (void *cookie, int argc, char **argv, char **azColName,
 
    If SHOW_OLD is set, the binding's old policy is displayed.  */
 static gpg_error_t
-record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
+record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 		const char *user_id, enum tofu_policy policy, int show_old)
 {
   char *fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
@@ -1485,7 +1497,7 @@ time_ago_scale (signed long t)
    if CONFLICT is not NULL.  Returns _tofu_GET_POLICY_ERROR if an error
    occurs.  */
 static enum tofu_policy
-get_policy (struct dbs *dbs, const char *fingerprint, const char *email,
+get_policy (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 	    char **conflict)
 {
   struct db *db;
@@ -1598,7 +1610,7 @@ get_policy (struct dbs *dbs, const char *fingerprint, const char *email,
    conflicting binding's policy to TOFU_POLICY_ASK.  In either case,
    we return TRUST_UNDEFINED.  */
 static enum tofu_policy
-get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
+get_trust (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 	   const char *user_id, int may_ask)
 {
   char *fingerprint_pp;
@@ -2405,7 +2417,7 @@ write_stats_status (long messages, enum tofu_policy policy,
 }
 
 static void
-show_statistics (struct dbs *dbs, const char *fingerprint,
+show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 		 const char *email, const char *user_id,
 		 const char *sig_exclude)
 {
@@ -2646,11 +2658,11 @@ email_from_user_id (const char *user_id)
    This function returns the binding's trust level on return.  If an
    error occurs, this function returns TRUST_UNKNOWN.  */
 int
-tofu_register (PKT_public_key *pk, const char *user_id,
+tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
 	       const byte *sig_digest_bin, int sig_digest_bin_len,
 	       time_t sig_time, const char *origin, int may_ask)
 {
-  struct dbs *dbs;
+  tofu_dbs_t dbs;
   struct db *db;
   char *fingerprint = NULL;
   char *fingerprint_pp = NULL;
@@ -2664,7 +2676,7 @@ tofu_register (PKT_public_key *pk, const char *user_id,
 
   sig_digest = make_radix64_string (sig_digest_bin, sig_digest_bin_len);
 
-  dbs = opendbs ();
+  dbs = opendbs (ctrl);
   if (! dbs)
     {
       log_error (_("error opening TOFU database: %s\n"),
@@ -2806,8 +2818,6 @@ tofu_register (PKT_public_key *pk, const char *user_id,
   xfree (email);
   xfree (fingerprint_pp);
   xfree (fingerprint);
-  if (dbs)
-    closedbs (dbs);
   xfree (sig_digest);
 
   return trust_level;
@@ -2887,15 +2897,15 @@ tofu_wot_trust_combine (int tofu_base, int wot_base)
 
    Returns TRUST_UNDEFINED if an error occurs.  */
 int
-tofu_get_validity (PKT_public_key *pk, const char *user_id,
+tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
 		   int may_ask)
 {
-  struct dbs *dbs;
+  tofu_dbs_t dbs;
   char *fingerprint = NULL;
   char *email = NULL;
   int trust_level = TRUST_UNDEFINED;
 
-  dbs = opendbs ();
+  dbs = opendbs (ctrl);
   if (! dbs)
     {
       log_error (_("error opening TOFU database: %s\n"),
@@ -2925,9 +2935,6 @@ tofu_get_validity (PKT_public_key *pk, const char *user_id,
  die:
   xfree (email);
   xfree (fingerprint);
-  if (dbs)
-    closedbs (dbs);
-
   return trust_level;
 }
 
@@ -2939,16 +2946,16 @@ tofu_get_validity (PKT_public_key *pk, const char *user_id,
 
    Returns 0 on success and an error code otherwise.  */
 gpg_error_t
-tofu_set_policy (kbnode_t kb, enum tofu_policy policy)
+tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
 {
-  struct dbs *dbs;
+  tofu_dbs_t dbs;
   PKT_public_key *pk;
   char *fingerprint = NULL;
 
   log_assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
   pk = kb->pkt->pkt.public_key;
 
-  dbs = opendbs ();
+  dbs = opendbs (ctrl);
   if (! dbs)
     {
       log_error (_("error opening TOFU database: %s\n"),
@@ -2987,8 +2994,6 @@ tofu_set_policy (kbnode_t kb, enum tofu_policy policy)
     }
 
   xfree (fingerprint);
-  closedbs (dbs);
-
   return 0;
 }
 
@@ -3000,13 +3005,13 @@ tofu_set_policy (kbnode_t kb, enum tofu_policy policy)
 
    Returns 0 on success and an error code otherwise.  */
 gpg_error_t
-tofu_set_policy_by_keyid (u32 *keyid, enum tofu_policy policy)
+tofu_set_policy_by_keyid (ctrl_t ctrl, u32 *keyid, enum tofu_policy policy)
 {
   kbnode_t keyblock = get_pubkeyblock (keyid);
   if (! keyblock)
     return gpg_error (GPG_ERR_NO_PUBKEY);
 
-  return tofu_set_policy (keyblock, policy);
+  return tofu_set_policy (ctrl, keyblock, policy);
 }
 
 /* Return the TOFU policy for the specified binding in *POLICY.  If no
@@ -3017,10 +3022,10 @@ tofu_set_policy_by_keyid (u32 *keyid, enum tofu_policy policy)
 
    Returns 0 on success and an error code otherwise.  */
 gpg_error_t
-tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
+tofu_get_policy (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *user_id,
 		 enum tofu_policy *policy)
 {
-  struct dbs *dbs;
+  tofu_dbs_t dbs;
   char *fingerprint;
   char *email;
 
@@ -3028,7 +3033,7 @@ tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
   log_assert (pk->main_keyid[0] == pk->keyid[0]
               && pk->main_keyid[1] == pk->keyid[1]);
 
-  dbs = opendbs ();
+  dbs = opendbs (ctrl);
   if (! dbs)
     {
       log_error (_("error opening TOFU database: %s\n"),
@@ -3044,8 +3049,6 @@ tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
 
   xfree (email);
   xfree (fingerprint);
-  closedbs (dbs);
-
   if (*policy == _tofu_GET_POLICY_ERROR)
     return gpg_error (GPG_ERR_GENERAL);
   return 0;

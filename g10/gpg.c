@@ -2046,6 +2046,7 @@ gpg_init_default_ctrl (ctrl_t ctrl)
 static void
 gpg_deinit_default_ctrl (ctrl_t ctrl)
 {
+  tofu_closedbs (ctrl);
   gpg_dirmngr_deinit_session_data (ctrl);
 }
 
@@ -4586,7 +4587,7 @@ main (int argc, char **argv)
 		}
 
 	      merge_keys_and_selfsig (kb);
-	      if (tofu_set_policy (kb, policy))
+	      if (tofu_set_policy (ctrl, kb, policy))
 		g10_exit (1);
 	    }
 

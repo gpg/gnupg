@@ -63,6 +63,10 @@ typedef struct dirmngr_local_s *dirmngr_local_t;
 typedef struct kbnode_struct *KBNODE;
 typedef struct kbnode_struct *kbnode_t;
 
+/* TOFU database meta object.  */
+struct tofu_dbs_s;
+typedef struct tofu_dbs_s *tofu_dbs_t;
+
 
 /* Session control object.  This object is passed to most functions to
    convey the status of a session.  Note that the defaults are set by
@@ -74,6 +78,12 @@ struct server_control_s
 
   /* Local data for call-dirmngr.c  */
   dirmngr_local_t dirmngr_local;
+
+  /* Local data for tofu.c  */
+  struct {
+    tofu_dbs_t dbs;
+  } tofu;
+
 };
 
 

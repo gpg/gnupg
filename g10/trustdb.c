@@ -1065,12 +1065,12 @@ tdb_get_validity_core (ctrl_t ctrl,
 	  user_ids ++;
 
 	  if (sig)
-	    tl = tofu_register (main_pk, user_id->name,
+	    tl = tofu_register (ctrl, main_pk, user_id->name,
 				sig->digest, sig->digest_len,
 				sig->timestamp, "unknown",
 				may_ask);
 	  else
-	    tl = tofu_get_validity (main_pk, user_id->name, may_ask);
+	    tl = tofu_get_validity (ctrl, main_pk, user_id->name, may_ask);
 
 	  if (tl == TRUST_EXPIRED)
 	    user_ids_expired ++;

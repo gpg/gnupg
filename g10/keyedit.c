@@ -3485,7 +3485,7 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 	    {
 #ifdef USE_TOFU
 	      enum tofu_policy policy;
-	      if (! tofu_get_policy (primary, uid, &policy)
+	      if (! tofu_get_policy (ctrl, primary, uid, &policy)
 		  && policy != TOFU_POLICY_NONE)
 		es_fprintf (fp, "%s", tofu_policy_str (policy));
 #endif /*USE_TOFU*/

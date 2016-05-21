@@ -1545,7 +1545,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	    {
 #ifdef USE_TOFU
 	      enum tofu_policy policy;
-	      if (! tofu_get_policy (pk, uid, &policy)
+	      if (! tofu_get_policy (ctrl, pk, uid, &policy)
 		  && policy != TOFU_POLICY_NONE)
 		es_fprintf (es_stdout, "%s", tofu_policy_str (policy));
 #endif /*USE_TOFU*/
