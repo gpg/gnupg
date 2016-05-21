@@ -1603,19 +1603,22 @@ get_policy (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 }
 
 /* Return the trust level (TRUST_NEVER, etc.) for the binding
-   <FINGERPRINT, EMAIL> (email is already normalized).  If no policy
-   is registered, returns TOFU_POLICY_NONE.  If an error occurs,
-   returns _tofu_GET_TRUST_ERROR.
-
-   USER_ID is the unadultered user id.
-
-   If MAY_ASK is set, then we may interact with the user.  This is
-   necessary if there is a conflict or the binding's policy is
-   TOFU_POLICY_ASK.  In the case of a conflict, we set the new
-   conflicting binding's policy to TOFU_POLICY_ASK.  In either case,
-   we return TRUST_UNDEFINED.  */
+ * <FINGERPRINT, EMAIL> (email is already normalized).  If no policy
+ * is registered, returns TOFU_POLICY_NONE.  If an error occurs,
+ * returns _tofu_GET_TRUST_ERROR.
+ *
+ * PK is the public key object for FINGERPRINT.
+ *
+ * USER_ID is the unadulterated user id.
+ *
+ * If MAY_ASK is set, then we may interact with the user.  This is
+ * necessary if there is a conflict or the binding's policy is
+ * TOFU_POLICY_ASK.  In the case of a conflict, we set the new
+ * conflicting binding's policy to TOFU_POLICY_ASK.  In either case,
+ * we return TRUST_UNDEFINED.  */
 static enum tofu_policy
-get_trust (tofu_dbs_t dbs, const char *fingerprint, const char *email,
+get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
+           const char *fingerprint, const char *email,
 	   const char *user_id, int may_ask)
 {
   char *fingerprint_pp;
@@ -1650,42 +1653,10 @@ get_trust (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 
   policy = get_policy (dbs, fingerprint, email, &conflict);
   if (policy == TOFU_POLICY_AUTO || policy == TOFU_POLICY_NONE)
-    /* See if the key is ultimately trusted.  If so, we're done.  */
-    {
-      PKT_public_key *pk;
+    { /* See if the key is ultimately trusted.  If so, we're done.  */
       u32 kid[2];
-      char fpr_bin[MAX_FINGERPRINT_LEN+1];
-      size_t fpr_bin_len;
 
-      if (!hex2str (fingerprint, fpr_bin, sizeof fpr_bin, &fpr_bin_len))
-        {
-          log_error ("error converting fingerprint: %s\n",
-                     gpg_strerror (gpg_error_from_syserror ()));
-          return _tofu_GET_TRUST_ERROR;
-        }
-
-      /* We need to lookup the key by fingerprint again so that we can
-         properly extract the keyid.  Extracting direct from the
-         fingerprint works only for v4 keys and would assume that
-         there is no collision in the low 64 bit.  We can't guarantee
-         the latter in case the Tofu DB is used with a different
-         keyring.  In any case the UTK stuff needs to be changed to
-         use only fingerprints.  */
-      pk = xtrycalloc (1, sizeof *pk);
-      if (!pk)
-         {
-           log_error (_("out of core\n"));
-           return _tofu_GET_TRUST_ERROR;
-         }
-      rc = get_pubkey_byfprint_fast (pk, fpr_bin, fpr_bin_len);
-      if (rc)
-        {
-          log_error (_("public key %s not found: %s\n"),
-                     fingerprint, gpg_strerror (rc));
-          return _tofu_GET_TRUST_ERROR;
-        }
       keyid_from_pk (pk, kid);
-      free_public_key (pk);
 
       if (tdb_keyid_is_utk (kid))
         {
@@ -2670,7 +2641,6 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
   tofu_dbs_t dbs;
   struct db *db;
   char *fingerprint = NULL;
-  char *fingerprint_pp = NULL;
   char *email = NULL;
   char *err = NULL;
   int rc;
@@ -2690,7 +2660,6 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
     }
 
   fingerprint = hexfingerprint (pk, NULL, 0);
-  fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
 
   if (! *user_id)
     {
@@ -2706,7 +2675,7 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
 
   /* It's necessary to get the trust so that we are certain that the
      binding has been registered.  */
-  trust_level = get_trust (dbs, fingerprint, email, user_id, may_ask);
+  trust_level = get_trust (dbs, pk, fingerprint, email, user_id, may_ask);
   if (trust_level == _tofu_GET_TRUST_ERROR)
     /* An error.  */
     {
@@ -2821,7 +2790,6 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
 		     already_verified ? NULL : sig_digest);
 
   xfree (email);
-  xfree (fingerprint_pp);
   xfree (fingerprint);
   xfree (sig_digest);
 
@@ -2929,7 +2897,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
 
   email = email_from_user_id (user_id);
 
-  trust_level = get_trust (dbs, fingerprint, email, user_id, may_ask);
+  trust_level = get_trust (dbs, pk, fingerprint, email, user_id, may_ask);
   if (trust_level == _tofu_GET_TRUST_ERROR)
     /* An error.  */
     trust_level = TRUST_UNDEFINED;
