@@ -2101,7 +2101,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	/* TRANSLATORS: Please translate the text found in the source
 	   file below.  We don't directly internationalize that text
 	   so that we can tweak it without breaking translations.  */
-	const char *text = _("TOFU detected a binding conflict");
+	char *text = _("TOFU detected a binding conflict");
         char *textbuf;
 	if (strcmp (text, "TOFU detected a binding conflict") == 0)
 	  /* No translation.  Use the English text.  */
@@ -2542,15 +2542,18 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
               log_fatal ("error snatching memory stream\n");
             msg = format_text (tmpmsg, 0, 72, 80);
             es_free (tmpmsg);
-            for (p=msg; *p; p++)
-              if (*p == '~')
-                *p = ' ';
 
             /* Print a status line but suppress the trailing LF.
              * Spaces are not percent escaped. */
             if (*msg)
               write_status_buffer (STATUS_TOFU_STATS_LONG,
                                    msg, strlen (msg)-1, -1);
+
+            /* Remove the non-breaking space markers.  */
+            for (p=msg; *p; p++)
+              if (*p == '~')
+                *p = ' ';
+
           }
 
 	  log_string (GPGRT_LOG_INFO, msg);

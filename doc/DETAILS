@@ -688,7 +688,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 
     This status identifies the key and the userid for all following
     Tofu information.  The fingerprint is the fingerprint of the
-    primary key and the mbox is in general the mailbox part of the
+    primary key and the mbox is in general the addr-spec part of the
     userid encoded in UTF-8 and percent escaped.
 
 *** TOFU_STATS <validity> <sign-count> 0 [<policy> [<tm1> <tm2>]]
@@ -730,8 +730,8 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 *** PKA_TRUST_
     This is is one:
 
-    - PKA_TRUST_GOOD <mailbox>
-    - PKA_TRUST_BAD  <mailbox>
+    - PKA_TRUST_GOOD <addr-spec>
+    - PKA_TRUST_BAD  <addr-spec>
 
     Depending on the outcome of the PKA check one of the above status
     codes is emitted in addition to a =TRUST_*= status.
