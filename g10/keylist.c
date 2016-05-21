@@ -130,7 +130,7 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
      is very bad for W32 because of a sharing violation. For real OSes
      it might lead to false results if we are later listing a keyring
      which is associated with the inode of a deleted file.  */
-  check_trustdb_stale ();
+  check_trustdb_stale (ctrl);
 
 #ifdef USE_TOFU
   tofu_begin_batch_update ();
@@ -154,7 +154,7 @@ secret_key_list (ctrl_t ctrl, strlist_t list)
 {
   (void)ctrl;
 
-  check_trustdb_stale ();
+  check_trustdb_stale (ctrl);
 
   if (!list)
     list_all (ctrl, 1, 0);
@@ -1010,7 +1010,7 @@ list_keyblock_pka (ctrl_t ctrl, kbnode_t keyblock)
 
 
 static void
-list_keyblock_print (KBNODE keyblock, int secret, int fpr,
+list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
                      struct keylist_context *listctx)
 {
   int rc;
@@ -1051,7 +1051,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr,
   else
     s2k_char = ' ';
 
-  check_trustdb_stale ();
+  check_trustdb_stale (ctrl);
 
 
   es_fprintf (es_stdout, "%s%c  %s/%s %s",
@@ -1088,7 +1088,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr,
      include, but it looks sort of confusing in the listing... */
   if (opt.list_options & LIST_SHOW_VALIDITY)
     {
-      int validity = get_validity (pk, NULL, NULL, 0);
+      int validity = get_validity (ctrl, pk, NULL, NULL, 0);
       es_fprintf (es_stdout, " [%s]", trust_value_to_string (validity));
     }
 #endif
@@ -1134,9 +1134,9 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr,
 	    {
 	      const char *validity;
 
-	      validity = uid_trust_string_fixed (pk, uid);
+	      validity = uid_trust_string_fixed (ctrl, pk, uid);
 	      indent = ((keystrlen () + (opt.legacy_list_mode? 9:11))
-                        - atoi (uid_trust_string_fixed (NULL, NULL)));
+                        - atoi (uid_trust_string_fixed (ctrl, NULL, NULL)));
 	      if (indent < 0 || indent > 40)
 		indent = 0;
 
@@ -1174,7 +1174,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr,
             }
 
 	  if ((opt.list_options & LIST_SHOW_PHOTOS) && uid->attribs != NULL)
-	    show_photos (uid->attribs, uid->numattribs, pk, uid);
+	    show_photos (ctrl, uid->attribs, uid->numattribs, pk, uid);
 	}
       else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
@@ -1390,7 +1390,8 @@ print_revokers (estream_t fp, PKT_public_key * pk)
    record (i.e. requested via --list-secret-key).  If HAS_SECRET a
    secret key is available even if SECRET is not set.  */
 static void
-list_keyblock_colon (KBNODE keyblock, int secret, int has_secret, int fpr)
+list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
+                     int secret, int has_secret, int fpr)
 {
   int rc;
   KBNODE kbctx;
@@ -1437,7 +1438,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int has_secret, int fpr)
     ;
   else
     {
-      trustletter = get_validity_info (pk, NULL);
+      trustletter = get_validity_info (ctrl, pk, NULL);
       if (trustletter == 'u')
         ulti_hack = 1;
       es_putc (trustletter, es_stdout);
@@ -1519,7 +1520,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int has_secret, int fpr)
 	      int uid_validity;
 
 	      if (!ulti_hack)
-		uid_validity = get_validity_info (pk, uid);
+		uid_validity = get_validity_info (ctrl, pk, uid);
 	      else
 		uid_validity = 'u';
 	      es_fprintf (es_stdout, "%s:%c::::", str, uid_validity);
@@ -1814,9 +1815,9 @@ list_keyblock (ctrl_t ctrl,
   if (opt.print_pka_records || opt.print_dane_records)
     list_keyblock_pka (ctrl, keyblock);
   else if (opt.with_colons)
-    list_keyblock_colon (keyblock, secret, has_secret, fpr);
+    list_keyblock_colon (ctrl, keyblock, secret, has_secret, fpr);
   else
-    list_keyblock_print (keyblock, secret, fpr, listctx);
+    list_keyblock_print (ctrl, keyblock, secret, fpr, listctx);
   if (secret)
     es_fflush (es_stdout);
 }

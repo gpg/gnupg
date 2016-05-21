@@ -70,7 +70,7 @@ static struct key_item *utk_list;      /* all ultimately trusted keys */
 
 static int pending_check_trustdb;
 
-static int validate_keys (int interactive);
+static int validate_keys (ctrl_t ctrl, int interactive);
 
 
 /**********************************************
@@ -494,7 +494,7 @@ init_trustdb ()
  * when a check is due.  This can be used to run the check from a crontab
  */
 void
-check_trustdb ()
+check_trustdb (ctrl_t ctrl)
 {
   init_trustdb();
   if (opt.trust_model == TM_PGP || opt.trust_model == TM_CLASSIC
@@ -519,7 +519,7 @@ check_trustdb ()
 	    }
 	}
 
-      validate_keys (0);
+      validate_keys (ctrl, 0);
     }
   else
     log_info (_("no need for a trustdb check with '%s' trust model\n"),
@@ -531,12 +531,12 @@ check_trustdb ()
  * Recreate the WoT.
  */
 void
-update_trustdb()
+update_trustdb (ctrl_t ctrl)
 {
-  init_trustdb();
+  init_trustdb ();
   if (opt.trust_model == TM_PGP || opt.trust_model == TM_CLASSIC
       || opt.trust_model == TM_TOFU_PGP || opt.trust_model == TM_TOFU)
-    validate_keys (1);
+    validate_keys (ctrl, 1);
   else
     log_info (_("no need for a trustdb update with '%s' trust model\n"),
 	      trust_model_string(opt.trust_model));
@@ -565,14 +565,14 @@ trustdb_pending_check(void)
 /* If the trustdb is dirty, and we're interactive, update it.
    Otherwise, check it unless no-auto-check-trustdb is set. */
 void
-tdb_check_or_update (void)
+tdb_check_or_update (ctrl_t ctrl)
 {
-  if(trustdb_pending_check())
+  if (trustdb_pending_check ())
     {
-      if(opt.interactive)
-	update_trustdb();
-      else if(!opt.no_auto_check_trustdb)
-	check_trustdb();
+      if (opt.interactive)
+	update_trustdb (ctrl);
+      else if (!opt.no_auto_check_trustdb)
+	check_trustdb (ctrl);
     }
 }
 
@@ -938,7 +938,7 @@ tdb_cache_disabled_value (PKT_public_key *pk)
 
 
 void
-tdb_check_trustdb_stale (void)
+tdb_check_trustdb_stale (ctrl_t ctrl)
 {
   static int did_nextcheck=0;
 
@@ -968,7 +968,7 @@ tdb_check_trustdb_stale (void)
             {
               if (!opt.quiet)
                 log_info (_("checking the trustdb\n"));
-              validate_keys (0);
+              validate_keys (ctrl, 0);
             }
         }
     }
@@ -981,7 +981,8 @@ tdb_check_trustdb_stale (void)
  * by the TOFU code to record statistics.
  */
 unsigned int
-tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
+tdb_get_validity_core (ctrl_t ctrl,
+                       PKT_public_key *pk, PKT_user_id *uid,
                        PKT_public_key *main_pk,
 		       PKT_signature *sig,
 		       int may_ask)
@@ -1008,7 +1009,7 @@ tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
   if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
     return TRUST_UNKNOWN;
 
-  check_trustdb_stale();
+  check_trustdb_stale (ctrl);
 
   if(opt.trust_model==TM_DIRECT)
     {
@@ -1267,7 +1268,7 @@ enum_cert_paths_print (void **context, FILE *fp,
  ****************************************/
 
 static int
-ask_ownertrust (u32 *kid,int minimum)
+ask_ownertrust (ctrl_t ctrl, u32 *kid, int minimum)
 {
   PKT_public_key *pk;
   int rc;
@@ -1291,7 +1292,7 @@ ask_ownertrust (u32 *kid,int minimum)
     }
   else
     {
-      ot=edit_ownertrust(pk,0);
+      ot=edit_ownertrust (ctrl, pk, 0);
       if(ot>0)
 	ot = tdb_get_ownertrust (pk);
       else if(ot==0)
@@ -1881,7 +1882,7 @@ reset_trust_records(void)
  *
  */
 static int
-validate_keys (int interactive)
+validate_keys (ctrl_t ctrl, int interactive)
 {
   int rc = 0;
   int quit=0;
@@ -1989,7 +1990,7 @@ validate_keys (int interactive)
 
           if (interactive && k->ownertrust == TRUST_UNKNOWN)
 	    {
-	      k->ownertrust = ask_ownertrust (k->kid,min);
+	      k->ownertrust = ask_ownertrust (ctrl, k->kid,min);
 
 	      if (k->ownertrust == (unsigned int)(-1))
 		{

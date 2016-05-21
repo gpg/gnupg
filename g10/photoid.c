@@ -48,7 +48,7 @@
 /* Generate a new photo id packet, or return NULL if canceled.
    FIXME:  Should we add a duplicates check similar to generate_user_id? */
 PKT_user_id *
-generate_photo_id(PKT_public_key *pk,const char *photo_name)
+generate_photo_id (ctrl_t ctrl, PKT_public_key *pk,const char *photo_name)
 {
   PKT_user_id *uid;
   int error=1,i;
@@ -163,7 +163,7 @@ generate_photo_id(PKT_public_key *pk,const char *photo_name)
          "user" may not be able to dismiss a viewer window! */
       if(opt.command_fd==-1)
 	{
-	  show_photos (uid->attribs, uid->numattribs, pk, uid);
+	  show_photos (ctrl, uid->attribs, uid->numattribs, pk, uid);
 	  switch(cpr_get_answer_yes_no_quit("photoid.jpeg.okay",
 					 _("Is this photo correct (y/N/q)? ")))
 	    {
@@ -286,9 +286,10 @@ static const char *get_default_photo_command(void)
 }
 #endif
 
+
 void
-show_photos(const struct user_attribute *attrs, int count,
-            PKT_public_key *pk, PKT_user_id *uid)
+show_photos (ctrl_t ctrl, const struct user_attribute *attrs, int count,
+             PKT_public_key *pk, PKT_user_id *uid)
 {
 #ifdef DISABLE_PHOTO_VIEWER
   (void)attrs;
@@ -303,8 +304,8 @@ show_photos(const struct user_attribute *attrs, int count,
 
   memset (&args, 0, sizeof(args));
   args.pk = pk;
-  args.validity_info = get_validity_info (pk, uid);
-  args.validity_string = get_validity_string (pk, uid);
+  args.validity_info = get_validity_info (ctrl, pk, uid);
+  args.validity_string = get_validity_string (ctrl, pk, uid);
   namehash_from_uid (uid);
   args.namehash = uid->namehash;
 

@@ -51,7 +51,8 @@
 
 static void show_prefs (PKT_user_id * uid, PKT_signature * selfsig,
 			int verbose);
-static void show_names (estream_t fp, KBNODE keyblock, PKT_public_key * pk,
+static void show_names (ctrl_t ctrl, estream_t fp,
+                        kbnode_t keyblock, PKT_public_key * pk,
 			unsigned int flag, int with_prefs);
 static void show_key_with_all_names (ctrl_t ctrl, estream_t fp,
                                      KBNODE keyblock, int only_marked,
@@ -61,8 +62,8 @@ static void show_key_with_all_names (ctrl_t ctrl, estream_t fp,
 static void show_key_and_fingerprint (kbnode_t keyblock, int with_subkeys);
 static void show_key_and_grip (kbnode_t keyblock);
 static void subkey_expire_warning (kbnode_t keyblock);
-static int menu_adduid (KBNODE keyblock, int photo, const char *photo_name,
-                        const char *uidstr);
+static int menu_adduid (ctrl_t ctrl, kbnode_t keyblock,
+                        int photo, const char *photo_name, const char *uidstr);
 static void menu_deluid (KBNODE pub_keyblock);
 static int menu_delsig (KBNODE pub_keyblock);
 static int menu_clean (KBNODE keyblock, int self_only);
@@ -85,13 +86,13 @@ static int count_selected_uids (KBNODE keyblock);
 static int real_uids_left (KBNODE keyblock);
 static int count_selected_keys (KBNODE keyblock);
 static int menu_revsig (KBNODE keyblock);
-static int menu_revuid (KBNODE keyblock);
+static int menu_revuid (ctrl_t ctrl, kbnode_t keyblock);
 static int menu_revkey (KBNODE pub_keyblock);
 static int menu_revsubkey (KBNODE pub_keyblock);
 #ifndef NO_TRUST_MODELS
 static int enable_disable_key (KBNODE keyblock, int disable);
 #endif /*!NO_TRUST_MODELS*/
-static void menu_showphoto (KBNODE keyblock);
+static void menu_showphoto (ctrl_t ctrl, kbnode_t keyblock);
 
 static int update_trust = 0;
 
@@ -2022,7 +2023,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
      and run the stale check as early as possible.  Note, that for
      non- W32 platforms it is run indirectly trough a call to
      get_validity ().  */
-  check_trustdb_stale ();
+  check_trustdb_stale (ctrl);
 #endif
 
   /* Get the public key */
@@ -2295,7 +2296,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  photo = 1;
 	  /* fall through */
 	case cmdADDUID:
-	  if (menu_adduid (keyblock, photo, arg_string, NULL))
+	  if (menu_adduid (ctrl, keyblock, photo, arg_string, NULL))
 	    {
 	      update_trust = 1;
 	      redisplay = 1;
@@ -2537,7 +2538,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
                       n1 > 1 ? _("Really revoke all selected user IDs? (y/N) ")
 		      :        _("Really revoke this user ID? (y/N) ")))
 	      {
-		if (menu_revuid (keyblock))
+		if (menu_revuid (ctrl, keyblock))
 		  {
 		    modified = 1;
 		    redisplay = 1;
@@ -2631,7 +2632,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 
 	  show_key_with_all_names (ctrl, NULL, keyblock, 0, 0, 0, 1, 0, 0);
 	  tty_printf ("\n");
-	  if (edit_ownertrust (find_kbnode (keyblock,
+	  if (edit_ownertrust (ctrl, find_kbnode (keyblock,
 					    PKT_PUBLIC_KEY)->pkt->pkt.
 			       public_key, 1))
 	    {
@@ -2648,7 +2649,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  {
 	    int count = count_selected_uids (keyblock);
 	    log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
-	    show_names (NULL, keyblock, keyblock->pkt->pkt.public_key,
+	    show_names (ctrl, NULL, keyblock, keyblock->pkt->pkt.public_key,
 			count ? NODFLG_SELUID : 0, 1);
 	  }
 	  break;
@@ -2657,7 +2658,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  {
 	    int count = count_selected_uids (keyblock);
 	    log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
-	    show_names (NULL, keyblock, keyblock->pkt->pkt.public_key,
+	    show_names (ctrl, NULL, keyblock, keyblock->pkt->pkt.public_key,
 			count ? NODFLG_SELUID : 0, 2);
 	  }
 	  break;
@@ -2733,7 +2734,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 #endif /*!NO_TRUST_MODELS*/
 
 	case cmdSHOWPHOTO:
-	  menu_showphoto (keyblock);
+	  menu_showphoto (ctrl, keyblock);
 	  break;
 
 	case cmdCLEAN:
@@ -2863,7 +2864,7 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
 
 #ifdef HAVE_W32_SYSTEM
   /* See keyedit_menu for why we need this.  */
-  check_trustdb_stale ();
+  check_trustdb_stale (ctrl);
 #endif
 
   /* Search the key; we don't want the whole getkey stuff here.  */
@@ -2914,7 +2915,7 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
 
   fix_keyblock (&keyblock);
 
-  if (menu_adduid (keyblock, 0, NULL, uidstring))
+  if (menu_adduid (ctrl, keyblock, 0, NULL, uidstring))
     {
       err = keydb_update_keyblock (kdbhd, keyblock);
       if (err)
@@ -2956,7 +2957,7 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
 
 #ifdef HAVE_W32_SYSTEM
   /* See keyedit_menu for why we need this.  */
-  check_trustdb_stale ();
+  check_trustdb_stale (ctrl);
 #endif
 
   /* We require a fingerprint because only this uniquely identifies a
@@ -3371,7 +3372,7 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 	    es_putc ('e', fp);
 	  else if (!(opt.fast_list_mode || opt.no_expensive_trust_checks))
 	    {
-	      int trust = get_validity_info (pk, NULL);
+	      int trust = get_validity_info (ctrl, pk, NULL);
 	      if (trust == 'u')
 		ulti_hack = 1;
 	      es_putc (trust, fp);
@@ -3430,7 +3431,7 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 	      int uid_validity;
 
 	      if (primary && !ulti_hack)
-		uid_validity = get_validity_info (primary, uid);
+		uid_validity = get_validity_info (ctrl, primary, uid);
 	      else
 		uid_validity = 'u';
 	      es_fprintf (fp, "%c::::::::", uid_validity);
@@ -3497,8 +3498,8 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 
 
 static void
-show_names (estream_t fp,
-            KBNODE keyblock, PKT_public_key * pk, unsigned int flag,
+show_names (ctrl_t ctrl, estream_t fp,
+            kbnode_t keyblock, PKT_public_key * pk, unsigned int flag,
 	    int with_prefs)
 {
   KBNODE node;
@@ -3513,7 +3514,7 @@ show_names (estream_t fp,
 	  if (!flag || (flag && (node->flag & flag)))
 	    {
 	      if (!(flag & NODFLG_MARK_A) && pk)
-		tty_fprintf (fp, "%s ", uid_trust_string_fixed (pk, uid));
+		tty_fprintf (fp, "%s ", uid_trust_string_fixed (ctrl, pk, uid));
 
 	      if (flag & NODFLG_MARK_A)
 		tty_fprintf (fp, "     ");
@@ -3600,12 +3601,12 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
 	       * output */
 	      static int did_warn = 0;
 
-	      trust = get_validity_string (pk, NULL);
+	      trust = get_validity_string (ctrl, pk, NULL);
 	      otrust = get_ownertrust_string (pk);
 
 	      /* Show a warning once */
 	      if (!did_warn
-		  && (get_validity (pk, NULL, NULL, 0)
+		  && (get_validity (ctrl, pk, NULL, NULL, 0)
 		      & TRUST_FLAG_PENDING_CHECK))
 		{
 		  did_warn = 1;
@@ -3792,7 +3793,7 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
 	}
     }
 
-  show_names (fp,
+  show_names (ctrl, fp,
               keyblock, primary, only_marked ? NODFLG_MARK_A : 0, with_prefs);
 
   if (do_warn && !nowarn)
@@ -4037,8 +4038,8 @@ subkey_expire_warning (kbnode_t keyblock)
  * user id.
  */
 static int
-menu_adduid (kbnode_t pub_keyblock, int photo, const char *photo_name,
-             const char *uidstring)
+menu_adduid (ctrl_t ctrl, kbnode_t pub_keyblock,
+             int photo, const char *photo_name, const char *uidstring)
 {
   PKT_user_id *uid;
   PKT_public_key *pk = NULL;
@@ -4100,7 +4101,7 @@ menu_adduid (kbnode_t pub_keyblock, int photo, const char *photo_name,
 	    }
 	}
 
-      uid = generate_photo_id (pk, photo_name);
+      uid = generate_photo_id (ctrl, pk, photo_name);
     }
   else
     uid = generate_user_id (pub_keyblock, uidstring);
@@ -6015,7 +6016,7 @@ reloop:			/* (must use this, because we are modifing the list) */
 /* Revoke a user ID (i.e. revoke a user ID selfsig).  Return true if
    keyblock changed.  */
 static int
-menu_revuid (KBNODE pub_keyblock)
+menu_revuid (ctrl_t ctrl, kbnode_t pub_keyblock)
 {
   PKT_public_key *pk = pub_keyblock->pkt->pkt.public_key;
   KBNODE node;
@@ -6096,7 +6097,7 @@ menu_revuid (KBNODE pub_keyblock)
 		/* If the trustdb has an entry for this key+uid then the
 		   trustdb needs an update. */
 		if (!update_trust
-		    && (get_validity (pk, uid, NULL, 0) & TRUST_MASK) >=
+		    && (get_validity (ctrl, pk, uid, NULL, 0) & TRUST_MASK) >=
 		    TRUST_UNDEFINED)
 		  update_trust = 1;
 #endif /*!NO_TRUST_MODELS*/
@@ -6258,7 +6259,7 @@ enable_disable_key (KBNODE keyblock, int disable)
 
 
 static void
-menu_showphoto (KBNODE keyblock)
+menu_showphoto (ctrl_t ctrl, kbnode_t keyblock)
 {
   KBNODE node;
   int select_all = !count_selected_uids (keyblock);
@@ -6295,7 +6296,7 @@ menu_showphoto (KBNODE keyblock)
 				    "key %s (uid %d)\n"),
 				  image_type_to_string (type, 1),
 				  (ulong) size, keystr_from_pk (pk), count);
-		      show_photos (&uid->attribs[i], 1, pk, uid);
+		      show_photos (ctrl, &uid->attribs[i], 1, pk, uid);
 		    }
 		}
 	    }

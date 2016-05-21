@@ -58,8 +58,9 @@ g10_exit( int rc )
  * this utility assumes that all keys in the keyring are trustworthy
  */
 int
-check_signatures_trust( PKT_signature *sig )
+check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
 {
+  (void)ctrl;
   (void)sig;
   return 0;
 }
@@ -91,22 +92,25 @@ cache_disabled_value(PKT_public_key *pk)
 }
 
 void
-check_trustdb_stale(void)
+check_trustdb_stale (ctrl_t ctrl)
 {
+  (void)ctrl;
 }
 
 int
-get_validity_info (PKT_public_key *pk, PKT_user_id *uid)
+get_validity_info (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid)
 {
+  (void)ctrl;
   (void)pk;
   (void)uid;
   return '?';
 }
 
 unsigned int
-get_validity (PKT_public_key *pk, PKT_user_id *uid, PKT_signature *sig,
-	      int may_ask)
+get_validity (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid,
+              PKT_signature *sig, int may_ask)
 {
+  (void)ctrl;
   (void)pk;
   (void)uid;
   (void)sig;
@@ -122,8 +126,9 @@ trust_value_to_string (unsigned int value)
 }
 
 const char *
-uid_trust_string_fixed (PKT_public_key *key, PKT_user_id *uid)
+uid_trust_string_fixed (ctrl_t ctrl, PKT_public_key *key, PKT_user_id *uid)
 {
+  (void)ctrl;
   (void)key;
   (void)uid;
   return "err";

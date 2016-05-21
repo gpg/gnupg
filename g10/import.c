@@ -249,7 +249,7 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
      interactive or by not setting no-auto-check-trustdb */
 
   if (!(options & IMPORT_FAST))
-    check_or_update_trustdb ();
+    check_or_update_trustdb (ctrl);
 
   return rc;
 }

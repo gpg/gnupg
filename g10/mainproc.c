@@ -1002,7 +1002,7 @@ list_node (CTX c, kbnode_t node)
           keyid_from_pk( pk, keyid );
           if (mainkey)
             c->trustletter = (opt.fast_list_mode?
-                              0 : get_validity_info( pk, NULL));
+                              0 : get_validity_info (c->ctrl, pk, NULL));
           es_printf ("%s:", mainkey? "pub":"sub" );
           if (c->trustletter)
             es_putc (c->trustletter, es_stdout);
@@ -1603,31 +1603,31 @@ check_sig_and_print (CTX c, kbnode_t node)
     }
 
   /* Check that the message composition is valid.
-
-     Per RFC-2440bis (-15) allowed:
-
-     S{1,n}           -- detached signature.
-     S{1,n} P         -- old style PGP2 signature
-     O{1,n} P S{1,n}  -- standard OpenPGP signature.
-     C P S{1,n}       -- cleartext signature.
-
-
-          O = One-Pass Signature packet.
-          S = Signature packet.
-          P = OpenPGP Message packet (Encrypted | Compressed | Literal)
-                 (Note that the current rfc2440bis draft also allows
-                  for a signed message but that does not work as it
-                  introduces ambiguities.)
-              We keep track of these packages using the marker packet
-              CTRLPKT_PLAINTEXT_MARK.
-          C = Marker packet for cleartext signatures.
-
-     We reject all other messages.
-
-     Actually we are calling this too often, i.e. for verification of
-     each message but better have some duplicate work than to silently
-     introduce a bug here.
-  */
+   *
+   * Per RFC-2440bis (-15) allowed:
+   *
+   * S{1,n}           -- detached signature.
+   * S{1,n} P         -- old style PGP2 signature
+   * O{1,n} P S{1,n}  -- standard OpenPGP signature.
+   * C P S{1,n}       -- cleartext signature.
+   *
+   *
+   *      O = One-Pass Signature packet.
+   *      S = Signature packet.
+   *      P = OpenPGP Message packet (Encrypted | Compressed | Literal)
+   *             (Note that the current rfc2440bis draft also allows
+   *              for a signed message but that does not work as it
+   *              introduces ambiguities.)
+   *          We keep track of these packages using the marker packet
+   *          CTRLPKT_PLAINTEXT_MARK.
+   *      C = Marker packet for cleartext signatures.
+   *
+   * We reject all other messages.
+   *
+   * Actually we are calling this too often, i.e. for verification of
+   * each message but better have some duplicate work than to silently
+   * introduce a bug here.
+   */
   {
     kbnode_t n;
     int n_onepass, n_sig;
@@ -1871,7 +1871,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 	     does not print a LF we need to compute the validity
 	     before calling that function.  */
           if ((opt.verify_options & VERIFY_SHOW_UID_VALIDITY))
-            valid = get_validity (pk, un->pkt->pkt.user_id, NULL, 0);
+            valid = get_validity (c->ctrl, pk, un->pkt->pkt.user_id, NULL, 0);
           else
             valid = 0; /* Not used.  */
 
@@ -1950,7 +1950,8 @@ check_sig_and_print (CTX c, kbnode_t node)
                   dump_attribs (un->pkt->pkt.user_id, pk);
 
                   if (opt.verify_options&VERIFY_SHOW_PHOTOS)
-                    show_photos (un->pkt->pkt.user_id->attribs,
+                    show_photos (c->ctrl,
+                                 un->pkt->pkt.user_id->attribs,
                                  un->pkt->pkt.user_id->numattribs,
                                  pk ,un->pkt->pkt.user_id);
                 }
@@ -1973,7 +1974,8 @@ check_sig_and_print (CTX c, kbnode_t node)
 		       actually ask the user to update any trust
 		       information.  */
                     valid = (trust_value_to_string
-                             (get_validity (pk, un->pkt->pkt.user_id, sig, 0)));
+                             (get_validity (c->ctrl, pk,
+                                            un->pkt->pkt.user_id, sig, 0)));
                   log_printf (" [%s]\n",valid);
                 }
               else
@@ -2061,7 +2063,7 @@ check_sig_and_print (CTX c, kbnode_t node)
         {
           if ((opt.verify_options & VERIFY_PKA_LOOKUPS))
             pka_uri_from_sig (c, sig); /* Make sure PKA info is available. */
-          rc = check_signatures_trust (sig);
+          rc = check_signatures_trust (c->ctrl, sig);
         }
 
       /* Print extra information about the signature.  */

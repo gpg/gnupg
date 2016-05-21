@@ -178,7 +178,7 @@ show_revocation_reason( PKT_public_key *pk, int mode )
  */
 #ifndef NO_TRUST_MODELS
 static int
-do_edit_ownertrust (PKT_public_key *pk, int mode,
+do_edit_ownertrust (ctrl_t ctrl, PKT_public_key *pk, int mode,
                     unsigned *new_trust, int defer_help )
 {
   char *p;
@@ -248,7 +248,8 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
 
 		if((opt.verify_options&VERIFY_SHOW_PHOTOS)
 		   && un->pkt->pkt.user_id->attrib_data)
-		  show_photos (un->pkt->pkt.user_id->attribs,
+		  show_photos (ctrl,
+                               un->pkt->pkt.user_id->attribs,
                                un->pkt->pkt.user_id->numattribs, pk,
                                un->pkt->pkt.user_id);
 
@@ -376,14 +377,14 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
  */
 #ifndef NO_TRUST_MODELS
 int
-edit_ownertrust (PKT_public_key *pk, int mode )
+edit_ownertrust (ctrl_t ctrl, PKT_public_key *pk, int mode )
 {
   unsigned int trust = 0;
   int no_help = 0;
 
   for(;;)
     {
-      switch ( do_edit_ownertrust (pk, mode, &trust, no_help ) )
+      switch ( do_edit_ownertrust (ctrl, pk, mode, &trust, no_help ) )
         {
         case -1: /* quit */
           return -1;
@@ -526,7 +527,7 @@ write_trust_status (int statuscode, int trustlevel)
  * Returns an error code if we should not trust this signature.
  */
 int
-check_signatures_trust( PKT_signature *sig )
+check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
 {
   PKT_public_key *pk = xmalloc_clear( sizeof *pk );
   unsigned int trustlevel = TRUST_UNKNOWN;
@@ -553,7 +554,7 @@ check_signatures_trust( PKT_signature *sig )
     log_info(_("WARNING: this key might be revoked (revocation key"
 	       " not present)\n"));
 
-  trustlevel = get_validity (pk, NULL, sig, 1);
+  trustlevel = get_validity (ctrl, pk, NULL, sig, 1);
 
   if ( (trustlevel & TRUST_FLAG_REVOKED) )
     {
@@ -845,7 +846,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
     }
 
   /* Key found and usable.  Check validity. */
-  trustlevel = get_validity (pk, pk->user_id, NULL, 1);
+  trustlevel = get_validity (ctrl, pk, pk->user_id, NULL, 1);
   if ( (trustlevel & TRUST_FLAG_DISABLED) )
     {
       /* Key has been disabled. */
@@ -1183,7 +1184,7 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
                 { /* Check validity of this key. */
                   int trustlevel;
 
-                  trustlevel = get_validity (pk, pk->user_id, NULL, 1);
+                  trustlevel = get_validity (ctrl, pk, pk->user_id, NULL, 1);
                   if ( (trustlevel & TRUST_FLAG_DISABLED) )
                     {
                       tty_printf (_("Public key is disabled.\n") );

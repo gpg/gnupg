@@ -4432,12 +4432,12 @@ main (int argc, char **argv)
       case aUpdateTrustDB:
 	if( argc )
 	    wrong_args("--update-trustdb");
-	update_trustdb();
+	update_trustdb (ctrl);
 	break;
 
       case aCheckTrustDB:
         /* Old versions allowed for arguments - ignore them */
-        check_trustdb();
+        check_trustdb (ctrl);
 	break;
 
       case aFixTrustDB:

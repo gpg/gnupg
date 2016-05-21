@@ -347,6 +347,9 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
         return NULL;
       if ( gcry_md_algo_info (hash_algo, GCRYCTL_GET_ASNOID, asn, &asnlen) )
         BUG();
+      log_debug ("%s: hash_algo=%d pk=%p\n", __func__, hash_algo, pk);
+      log_debug ("%s: pk->pkey[0]=%p\n", __func__, pk->pkey[0]);
+      gcry_log_debugmpi ("pkey[0]", pk->pkey[0]);
       frame = do_encode_md (md, hash_algo, gcry_md_get_algo_dlen (hash_algo),
                             gcry_mpi_get_nbits (pk->pkey[0]), asn, asnlen);
       xfree (asn);

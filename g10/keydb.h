@@ -222,7 +222,7 @@ gpg_error_t keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr);
 
 /*-- pkclist.c --*/
 void show_revocation_reason( PKT_public_key *pk, int mode );
-int  check_signatures_trust( PKT_signature *sig );
+int  check_signatures_trust (ctrl_t ctrl, PKT_signature *sig);
 
 void release_pk_list (PK_LIST pk_list);
 int  build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list);

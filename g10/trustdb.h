@@ -83,20 +83,22 @@ void register_trusted_key (const char *string);
 
 const char *trust_value_to_string (unsigned int value);
 int string_to_trust_value (const char *str);
-const char *uid_trust_string_fixed (PKT_public_key *key, PKT_user_id *uid);
+const char *uid_trust_string_fixed (ctrl_t ctrl,
+                                    PKT_public_key *key, PKT_user_id *uid);
 
 unsigned int get_ownertrust (PKT_public_key *pk);
 void update_ownertrust (PKT_public_key *pk, unsigned int new_trust);
 int clear_ownertrusts (PKT_public_key *pk);
 
 void revalidation_mark (void);
-void check_trustdb_stale (void);
-void check_or_update_trustdb (void);
+void check_trustdb_stale (ctrl_t ctrl);
+void check_or_update_trustdb (ctrl_t ctrl);
 
-unsigned int get_validity (PKT_public_key *pk, PKT_user_id *uid,
+unsigned int get_validity (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid,
 			   PKT_signature *sig, int may_ask);
-int get_validity_info (PKT_public_key *pk, PKT_user_id *uid);
-const char *get_validity_string (PKT_public_key *pk, PKT_user_id *uid);
+int get_validity_info (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid);
+const char *get_validity_string (ctrl_t ctrl,
+                                 PKT_public_key *pk, PKT_user_id *uid);
 
 void mark_usable_uid_certs (kbnode_t keyblock, kbnode_t uidnode,
                             u32 *main_kid, struct key_item *klist,
@@ -115,22 +117,23 @@ void tdb_register_trusted_keyid (u32 *keyid);
 void tdb_register_trusted_key (const char *string);
 /* Returns whether KID is on the list of ultimately trusted keys.  */
 int tdb_keyid_is_utk (u32 *kid);
-void check_trustdb (void);
-void update_trustdb (void);
+void check_trustdb (ctrl_t ctrl);
+void update_trustdb (ctrl_t ctrl);
 int setup_trustdb( int level, const char *dbname );
 void how_to_fix_the_trustdb (void);
 const char *trust_model_string (int model);
 void init_trustdb( void );
-void tdb_check_trustdb_stale (void);
+void tdb_check_trustdb_stale (ctrl_t ctrl);
 void sync_trustdb( void );
 
 void tdb_revalidation_mark (void);
 int trustdb_pending_check(void);
-void tdb_check_or_update (void);
+void tdb_check_or_update (ctrl_t ctrl);
 
 int tdb_cache_disabled_value (PKT_public_key *pk);
 
-unsigned int tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
+unsigned int tdb_get_validity_core (ctrl_t ctrl,
+                                    PKT_public_key *pk, PKT_user_id *uid,
                                     PKT_public_key *main_pk,
 				    PKT_signature *sig, int may_ask);
 
@@ -158,6 +161,6 @@ void export_ownertrust(void);
 void import_ownertrust(const char *fname);
 
 /*-- pkclist.c --*/
-int edit_ownertrust (PKT_public_key *pk, int mode );
+int edit_ownertrust (ctrl_t ctrl, PKT_public_key *pk, int mode);
 
 #endif /*G10_TRUSTDB_H*/
