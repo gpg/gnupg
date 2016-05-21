@@ -84,8 +84,8 @@ enum db_type
    theis case, NAME is either the normalized email address or the
    fingerprint.
 
-   To initialize this data structure, call opendbs().  When you are
-   done, clean it up using closedbs().  To get a handle to a database,
+   To initialize this data structure, call opendbs().  Cleanup is done
+   when the CTRL object is released.  To get a handle to a database,
    use the getdb() function.  This will either return an existing
    handle or open a new DB connection, as appropriate.  */
 struct db
@@ -1063,7 +1063,12 @@ tofu_closedbs (ctrl_t ctrl)
   if (!dbs)
     return;  /* Not initialized.  */
 
-  if (dbs->db)
+  if (dbs->db && dbs->db->type == DB_COMBINED)
+    {
+      log_assert (!dbs->db->next);
+      closedb (dbs->db);
+    }
+  else if (dbs->db)
     {
       struct db *old_head = db_cache;
       struct db *db;
