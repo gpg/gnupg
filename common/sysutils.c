@@ -636,6 +636,8 @@ int
 gnupg_chmod (const char *name, const char *modestr)
 {
 #ifdef HAVE_W32_SYSTEM
+  (void)name;
+  (void)modestr;
   return 0;
 #else
   return chmod (name, modestr_to_mode (modestr));
