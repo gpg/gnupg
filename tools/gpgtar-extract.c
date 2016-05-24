@@ -30,6 +30,7 @@
 #include "i18n.h"
 #include "../common/exectool.h"
 #include "../common/sysutils.h"
+#include "../common/ccparray.h"
 #include "gpgtar.h"
 
 
@@ -299,8 +300,8 @@ gpgtar_extract (const char *filename, int decrypt)
 
   if (decrypt)
     {
-      int i;
       strlist_t arg;
+      ccparray_t ccp;
       const char **argv;
 
       cipher_stream = stream;
@@ -311,19 +312,19 @@ gpgtar_extract (const char *filename, int decrypt)
           goto leave;
         }
 
-      argv = xtrycalloc (strlist_length (opt.gpg_arguments) + 2,
-                         sizeof *argv);
-      if (argv == NULL)
+      ccparray_init (&ccp, 0);
+
+      ccparray_put (&ccp, "--decrypt");
+      for (arg = opt.gpg_arguments; arg; arg = arg->next)
+        ccparray_put (&ccp, arg->d);
+
+      ccparray_put (&ccp, NULL);
+      argv = ccparray_get (&ccp, NULL);
+      if (!argv)
         {
           err = gpg_error_from_syserror ();
           goto leave;
         }
-      i = 0;
-      argv[i++] = "--decrypt";
-      for (arg = opt.gpg_arguments; arg; arg = arg->next)
-        argv[i++] = arg->d;
-      argv[i++] = NULL;
-      assert (i == strlist_length (opt.gpg_arguments) + 2);
 
       err = gnupg_exec_tool_stream (opt.gpg_program, argv,
                                     cipher_stream, stream);

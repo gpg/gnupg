@@ -38,6 +38,7 @@
 #include "i18n.h"
 #include "../common/exectool.h"
 #include "../common/sysutils.h"
+#include "../common/ccparray.h"
 #include "gpgtar.h"
 
 #ifndef HAVE_LSTAT
@@ -888,8 +889,8 @@ gpgtar_create (char **inpattern, int encrypt, int sign)
 
   if (encrypt || sign)
     {
-      int i;
       strlist_t arg;
+      ccparray_t ccp;
       const char **argv;
 
       err = es_fseek (outstream, 0, SEEK_SET);
@@ -899,43 +900,36 @@ gpgtar_create (char **inpattern, int encrypt, int sign)
       /* '--encrypt' may be combined with '--symmetric', but 'encrypt'
          is set either way.  Clear it if no recipients are specified.
          XXX: Fix command handling.  */
-       if (opt.symmetric && opt.recipients == NULL)
-         encrypt = 0;
+      if (opt.symmetric && opt.recipients == NULL)
+        encrypt = 0;
 
-      argv = xtrycalloc (strlist_length (opt.gpg_arguments)
-                         + 2 * strlist_length (opt.recipients)
-                         + 1 + !!encrypt + !!sign + 2 * !!opt.user
-                         + !!opt.symmetric,
-                         sizeof *argv);
-      if (argv == NULL)
+      ccparray_init (&ccp, 0);
+      if (encrypt)
+        ccparray_put (&ccp, "--encrypt");
+      if (sign)
+        ccparray_put (&ccp, "--sign");
+      if (opt.user)
+        {
+          ccparray_put (&ccp, "--local-user");
+          ccparray_put (&ccp, opt.user);
+        }
+      if (opt.symmetric)
+        ccparray_put (&ccp, "--symmetric");
+      for (arg = opt.recipients; arg; arg = arg->next)
+        {
+          ccparray_put (&ccp, "--recipient");
+          ccparray_put (&ccp, arg->d);
+        }
+      for (arg = opt.gpg_arguments; arg; arg = arg->next)
+        ccparray_put (&ccp, arg->d);
+
+      ccparray_put (&ccp, NULL);
+      argv = ccparray_get (&ccp, NULL);
+      if (!argv)
         {
           err = gpg_error_from_syserror ();
           goto leave;
         }
-      i = 0;
-      if (encrypt)
-        argv[i++] = "--encrypt";
-      if (sign)
-        argv[i++] = "--sign";
-      if (opt.user)
-        {
-          argv[i++] = "--local-user";
-          argv[i++] = opt.user;
-        }
-      if (opt.symmetric)
-        argv[i++] = "--symmetric";
-      for (arg = opt.recipients; arg; arg = arg->next)
-        {
-          argv[i++] = "--recipient";
-          argv[i++] = arg->d;
-        }
-      for (arg = opt.gpg_arguments; arg; arg = arg->next)
-        argv[i++] = arg->d;
-      argv[i++] = NULL;
-      assert (i == strlist_length (opt.gpg_arguments)
-              + 2 * strlist_length (opt.recipients)
-              + 1 + !!encrypt + !!sign + 2 * !!opt.user
-              + !!opt.symmetric);
 
       err = gnupg_exec_tool_stream (opt.gpg_program, argv,
                                     outstream, cipher_stream);
