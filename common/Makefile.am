@@ -72,6 +72,7 @@ common_sources = \
 	xasprintf.c \
 	xreadline.c \
 	membuf.c membuf.h \
+	ccparray.c ccparray.h \
 	iobuf.c iobuf.h \
 	ttyio.c ttyio.h \
 	asshelp.c asshelp2.c asshelp.h \
@@ -156,7 +157,7 @@ module_tests = t-stringhelp t-timestuff \
                t-convert t-percent t-gettime t-sysutils t-sexputil \
 	       t-session-env t-openpgp-oid t-ssh-utils \
 	       t-mapstrings t-zb32 t-mbox-util t-iobuf t-strlist \
-	       t-private-keys
+	       t-private-keys t-ccparray
 if !HAVE_W32CE_SYSTEM
 module_tests += t-exechelp
 endif
@@ -206,6 +207,7 @@ t_mbox_util_LDADD = $(t_common_ldadd)
 t_iobuf_LDADD = $(t_common_ldadd)
 t_strlist_LDADD = $(t_common_ldadd)
 t_private_keys_LDADD = $(t_common_ldadd)
+t_ccparray_LDADD = $(t_common_ldadd)
 
 # System specific test
 if HAVE_W32_SYSTEM
