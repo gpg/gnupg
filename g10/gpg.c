@@ -2046,7 +2046,9 @@ gpg_init_default_ctrl (ctrl_t ctrl)
 static void
 gpg_deinit_default_ctrl (ctrl_t ctrl)
 {
+#ifdef USE_TOFU
   tofu_closedbs (ctrl);
+#endif
   gpg_dirmngr_deinit_session_data (ctrl);
 }
 
