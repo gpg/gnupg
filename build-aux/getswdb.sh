@@ -11,9 +11,7 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 # The URL of the file to retrieve.
-# (some wget versions seem to have problems with SubjectAltName, thus
-#  we do not use www.gnupg.org)
-urlbase="https://gnupg.org/"
+urlbase="https://versions.gnupg.org/"
 
 WGET=wget
 GPGV=gpgv
