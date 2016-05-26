@@ -787,24 +787,28 @@ AM_PATH_KSBA("$NEED_KSBA_API:$NEED_KSBA_VERSION",have_ksba=yes,have_ksba=no)
 if test "$use_ccid_driver" = auto || test "$use_ccid_driver" = yes; then
    case "${host}" in
      *-mingw32*)
+       LIBUSB_NAME=
        LIBUSB_LIBS=
        LIBUSB_CPPFLAGS=
        ;;
      *-*-darwin*)
-       LIBUSB_LIBS="-lusb-1.0 -Wl,-framework,CoreFoundation -Wl,-framework,IOKit"
+       LIBUSB_NAME=usb-1.0
+       LIBUSB_LIBS="-Wl,-framework,CoreFoundation -Wl,-framework,IOKit"
        ;;
      *-*-freebsd*)
        # FreeBSD has a native 1.0 compatible library by -lusb.
-       LIBUSB_LIBS="-lusb"
+       LIBUSB_NAME=usb
+       LIBUSB_LIBS=
        ;;
      *)
-       LIBUSB_LIBS="-lusb-1.0"
+       LIBUSB_NAME=usb-1.0
+       LIBUSB_LIBS=
        ;;
    esac
 fi
-if test x"$LIBUSB_LIBS" != x ; then
-   AC_CHECK_LIB(usb-1.0, libusb_init,
-                [ LIBUSB_LIBS="$LIBUSB_LIBS"
+if test x"$LIBUSB_NAME" != x ; then
+   AC_CHECK_LIB($LIBUSB_NAME, libusb_init,
+                [ LIBUSB_LIBS="-l$LIBUSB_NAME $LIBUSB_LIBS"
                   have_libusb=yes ])
    AC_MSG_CHECKING([libusb include dir])
    usb_incdir_found="no"
