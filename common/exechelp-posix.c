@@ -278,7 +278,7 @@ get_all_open_fds (void)
 static void
 do_exec (const char *pgmname, const char *argv[],
          int fd_in, int fd_out, int fd_err,
-         void (*preexec)(void) )
+         int *except, void (*preexec)(void) )
 {
   char **arg_list;
   int i, j;
@@ -324,7 +324,7 @@ do_exec (const char *pgmname, const char *argv[],
     }
 
   /* Close all other files. */
-  close_all_fds (3, NULL);
+  close_all_fds (3, except);
 
   if (preexec)
     preexec ();
@@ -420,7 +420,7 @@ gnupg_create_pipe (int filedes[2])
 /* Fork and exec the PGMNAME, see exechelp.h for details.  */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
-                     void (*preexec)(void), unsigned int flags,
+                     int *except, void (*preexec)(void), unsigned int flags,
                      estream_t *r_infp,
                      estream_t *r_outfp,
                      estream_t *r_errfp,
@@ -525,7 +525,8 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
       gcry_control (GCRYCTL_TERM_SECMEM);
       es_fclose (outfp);
       es_fclose (errfp);
-      do_exec (pgmname, argv, inpipe[0], outpipe[1], errpipe[1], preexec);
+      do_exec (pgmname, argv, inpipe[0], outpipe[1], errpipe[1],
+               except, preexec);
       /*NOTREACHED*/
     }
 
@@ -575,7 +576,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
     {
       gcry_control (GCRYCTL_TERM_SECMEM);
       /* Run child. */
-      do_exec (pgmname, argv, infd, outfd, errfd, NULL);
+      do_exec (pgmname, argv, infd, outfd, errfd, NULL, NULL);
       /*NOTREACHED*/
     }
 
@@ -728,7 +729,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
         for (i=0; envp[i]; i++)
           putenv (xstrdup (envp[i]));
 
-      do_exec (pgmname, argv, -1, -1, -1, NULL);
+      do_exec (pgmname, argv, -1, -1, -1, NULL, NULL);
 
       /*NOTREACHED*/
     }

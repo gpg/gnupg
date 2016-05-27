@@ -357,7 +357,7 @@ gnupg_create_pipe (int filedes[2])
 /* Fork and exec the PGMNAME, see exechelp.h for details.  */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
-                     void (*preexec)(void), unsigned int flags,
+                     int *except, void (*preexec)(void), unsigned int flags,
                      estream_t *r_infp,
                      estream_t *r_outfp,
                      estream_t *r_errfp,
@@ -387,6 +387,8 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   int i;
   es_syshd_t syshd;
   gpg_err_source_t errsource = default_errsource;
+
+  (void)except; /* Not yet used.  */
 
   if (r_infp)
     *r_infp = NULL;

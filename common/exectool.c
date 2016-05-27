@@ -188,7 +188,8 @@ copy_buffer_do_copy (struct copy_buffer *c, estream_t source, estream_t sink)
   if (c->nread == 0)
     return 0;	/* Done copying.  */
 
-  err = es_write (sink, c->writep, c->nread, &nwritten);
+
+  err = sink? es_write (sink, c->writep, c->nread, &nwritten) : 0;
   if (err)
     {
       if (errno == EAGAIN)
@@ -202,7 +203,7 @@ copy_buffer_do_copy (struct copy_buffer *c, estream_t source, estream_t sink)
   c->nread -= nwritten;
   assert (c->writep - c->buffer <= sizeof c->buffer);
 
-  if (es_fflush (sink) && errno != EAGAIN)
+  if (sink && es_fflush (sink) && errno != EAGAIN)
     err = my_error_from_syserror ();
 
   return err;
@@ -228,36 +229,80 @@ copy_buffer_flush (struct copy_buffer *c, estream_t sink)
 
 
 /* Run the program PGMNAME with the command line arguments given in
-   the NULL terminates array ARGV.  If INPUT is not NULL it will be
-   fed to stdin of the process.  stderr is logged using log_info and
-   the process' stdout is written to OUTPUT.  On error a diagnostic is
-   printed, and an error code returned.  */
+ * the NULL terminates array ARGV.  If INPUT is not NULL it will be
+ * fed to stdin of the process.  stderr is logged using log_info and
+ * the process' stdout is written to OUTPUT.  If OUTPUT is NULL the
+ * output is discarded.  If INEXTRA is given, an additional input
+ * stream will be passed to the child; to tell the child about this
+ * ARGV is scanned and the first occurrence of an argument
+ * "-&@INEXTRA@" is replaced by the concatenation of "-&" and the
+ * child's file descriptor of the pipe created for the INEXTRA stream.
+ *
+ * On error a diagnostic is printed and an error code returned.  */
 gpg_error_t
 gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
-                        estream_t input,
+                        estream_t input, estream_t inextra,
                         estream_t output)
 {
   gpg_error_t err;
   pid_t pid;
   estream_t infp = NULL;
+  estream_t extrafp = NULL;
   estream_t outfp, errfp;
-  es_poll_t fds[3];
+  es_poll_t fds[4];
+  int exceptclose[2];
+  int extrapipe[2] = {-1, -1};
+  char extrafdbuf[20];
+  const char *argsave = NULL;
+  int argsaveidx;
   int count;
   read_and_log_buffer_t fderrstate;
-  struct copy_buffer cpbuf[2];
+  struct copy_buffer cpbuf_in, cpbuf_out, cpbuf_extra; /* Fixme: malloc them. */
 
   memset (fds, 0, sizeof fds);
   memset (&fderrstate, 0, sizeof fderrstate);
-  copy_buffer_init (&cpbuf[0]);
-  copy_buffer_init (&cpbuf[1]);
+  copy_buffer_init (&cpbuf_in);
+  copy_buffer_init (&cpbuf_out);
+  copy_buffer_init (&cpbuf_extra);
+
+  if (inextra)
+    {
+      err = gnupg_create_outbound_pipe (extrapipe, &extrafp, 1);
+      if (err)
+        {
+          log_error ("error running outbound pipe for extra fp: %s\n",
+                     gpg_strerror (err));
+          return err;
+        }
+      exceptclose[0] = extrapipe[0]; /* Do not close in child. */
+      exceptclose[1] = -1;
+      /* Now find the argument marker and replace by the pipe's fd.
+         Yeah, that is an ugly non-thread safe hack but it safes us to
+         create a copy of the array.  */
+      snprintf (extrafdbuf, sizeof extrafdbuf, "-&%d", extrapipe[0]);
+      for (argsaveidx=0; argv[argsaveidx]; argsaveidx++)
+        if (!strcmp (argv[argsaveidx], "-&@INEXTRA@"))
+          {
+            argsave = argv[argsaveidx];
+            argv[argsaveidx] = extrafdbuf;
+            break;
+          }
+    }
+  else
+    exceptclose[0] = -1;
 
   err = gnupg_spawn_process (pgmname, argv,
-                             NULL, GNUPG_SPAWN_NONBLOCK,
+                             exceptclose, NULL, GNUPG_SPAWN_NONBLOCK,
                              input? &infp : NULL,
                              &outfp, &errfp, &pid);
+  if (extrapipe[0] != -1)
+    close (extrapipe[0]);
+  if (argsave)
+    argv[argsaveidx] = argsave;
   if (err)
     {
       log_error ("error running '%s': %s\n", pgmname, gpg_strerror (err));
+      es_fclose (extrafp);
       return err;
     }
 
@@ -271,6 +316,11 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   fds[1].want_read = 1;
   fds[2].stream = errfp;
   fds[2].want_read = 1;
+  fds[3].stream = extrafp;
+  fds[3].want_write = 1;
+  if (!inextra)
+    fds[3].ignore = 1;
+
   /* Now read as long as we have something to poll.  We continue
      reading even after EOF or error on stdout so that we get the
      other error messages or remaining outut.  */
@@ -291,7 +341,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
 
       if (fds[0].got_write)
         {
-          err = copy_buffer_do_copy (&cpbuf[0], input, fds[0].stream);
+          err = copy_buffer_do_copy (&cpbuf_in, input, fds[0].stream);
           if (err)
             {
               log_error ("error feeding data to '%s': %s\n",
@@ -301,7 +351,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
 
           if (es_feof (input))
             {
-              err = copy_buffer_flush (&cpbuf[0], fds[0].stream);
+              err = copy_buffer_flush (&cpbuf_in, fds[0].stream);
               if (err)
                 {
                   log_error ("error feeding data to '%s': %s\n",
@@ -314,9 +364,35 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
             }
         }
 
+      if (fds[3].got_write)
+        {
+          log_assert (inextra);
+          err = copy_buffer_do_copy (&cpbuf_extra, inextra, fds[3].stream);
+          if (err)
+            {
+              log_error ("error feeding data to '%s': %s\n",
+                         pgmname, gpg_strerror (err));
+              goto leave;
+            }
+
+          if (es_feof (inextra))
+            {
+              err = copy_buffer_flush (&cpbuf_extra, fds[3].stream);
+              if (err)
+                {
+                  log_error ("error feeding data to '%s': %s\n",
+                             pgmname, gpg_strerror (err));
+                  goto leave;
+                }
+
+              fds[3].ignore = 1; /* ready.  */
+              es_fclose (extrafp); extrafp = NULL;
+            }
+        }
+
       if (fds[1].got_read)
         {
-          err = copy_buffer_do_copy (&cpbuf[1], fds[1].stream, output);
+          err = copy_buffer_do_copy (&cpbuf_out, fds[1].stream, output);
           if (err)
             {
               log_error ("error reading data from '%s': %s\n",
@@ -329,7 +405,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
         read_and_log_stderr (&fderrstate, fds + 2);
     }
 
-  err = copy_buffer_flush (&cpbuf[1], output);
+  err = copy_buffer_flush (&cpbuf_out, output);
   if (err)
     {
       log_error ("error reading data from '%s': %s\n",
@@ -339,6 +415,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
 
   read_and_log_stderr (&fderrstate, NULL); /* Flush.  */
   es_fclose (infp); infp = NULL;
+  es_fclose (extrafp); extrafp = NULL;
   es_fclose (outfp); outfp = NULL;
   es_fclose (errfp); errfp = NULL;
 
@@ -350,14 +427,17 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
     gnupg_kill_process (pid);
 
   es_fclose (infp);
+  es_fclose (extrafp);
   es_fclose (outfp);
   es_fclose (errfp);
   if (pid != (pid_t)(-1))
     gnupg_wait_process (pgmname, pid, 1, NULL);
   gnupg_release_process (pid);
 
-  copy_buffer_shred (&cpbuf[0]);
-  copy_buffer_shred (&cpbuf[1]);
+  copy_buffer_shred (&cpbuf_in);
+  copy_buffer_shred (&cpbuf_out);
+  if (inextra)
+    copy_buffer_shred (&cpbuf_extra);
   return err;
 }
 
@@ -408,7 +488,7 @@ gnupg_exec_tool (const char *pgmname, const char *argv[],
       goto leave;
     }
 
-  err = gnupg_exec_tool_stream (pgmname, argv, input, output);
+  err = gnupg_exec_tool_stream (pgmname, argv, input, NULL, output);
   if (err)
     goto leave;
 

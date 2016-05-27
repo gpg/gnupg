@@ -327,7 +327,7 @@ gpgtar_list (const char *filename, int decrypt)
         }
 
       err = gnupg_exec_tool_stream (opt.gpg_program, argv,
-                                    cipher_stream, stream);
+                                    cipher_stream, NULL, stream);
       xfree (argv);
       if (err)
         goto leave;

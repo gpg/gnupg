@@ -90,6 +90,10 @@ gpg_error_t gnupg_create_pipe (int filedes[2]);
    If PREEXEC is not NULL, the given function will be called right
    before the exec.
 
+   IF EXCEPT is not NULL, it is expected to be an ordered list of file
+   descriptors, terminated by an entry with the value (-1).  These
+   file descriptors won't be closed before spawning a new program.
+
    Returns 0 on success or an error code.  Calling gnupg_wait_process
    and gnupg_release_process is required if the function succeeded.
 
@@ -116,7 +120,7 @@ gpg_error_t gnupg_create_pipe (int filedes[2]);
  */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
-                     void (*preexec)(void), unsigned int flags,
+                     int *execpt, void (*preexec)(void), unsigned int flags,
                      estream_t *r_infp,
                      estream_t *r_outfp,
                      estream_t *r_errfp,

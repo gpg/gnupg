@@ -48,9 +48,9 @@ gpg_error_t gnupg_exec_tool (const char *pgmname, const char *argv[],
    the NULL terminates array ARGV.  If INPUT is not NULL it will be
    fed to stdin of the process.  stderr is logged using log_info and
    the process' stdout is written to OUTPUT.  On error a diagnostic is
-   printed, and an error code returned.  */
+   printed, and an error code returned.  INEXTRA is reserved. */
 gpg_error_t gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
-				 estream_t input,
-				 estream_t output);
+                                    estream_t input, estream_t inextra,
+                                    estream_t output);
 
 #endif /* GNUPG_COMMON_EXECTOOL_H */
