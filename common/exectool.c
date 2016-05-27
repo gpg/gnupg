@@ -251,7 +251,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   copy_buffer_init (&cpbuf[0]);
   copy_buffer_init (&cpbuf[1]);
 
-  err = gnupg_spawn_process (pgmname, argv, GPG_ERR_SOURCE_DEFAULT,
+  err = gnupg_spawn_process (pgmname, argv,
                              NULL, GNUPG_SPAWN_NONBLOCK,
                              input? &infp : NULL,
                              &outfp, &errfp, &pid);

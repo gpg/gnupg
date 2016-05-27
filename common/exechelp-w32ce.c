@@ -509,7 +509,6 @@ create_process (const char *pgmname, const char *cmdline,
 /* Fork and exec the PGMNAME, see exechelp.h for details.  */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
-                     gpg_err_source_t errsource,
                      void (*preexec)(void), unsigned int flags,
                      estream_t *r_infp,
                      estream_t *r_outfp,
@@ -534,6 +533,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   } errpipe = {INVALID_HANDLE_VALUE, 0};
   estream_t outfp = NULL;
   estream_t errfp = NULL;
+  gpg_err_source_t errsource = default_errsource;
 
   (void)preexec;
   (void)flags;

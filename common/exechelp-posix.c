@@ -73,6 +73,20 @@
 #include "exechelp.h"
 
 
+/* Helper */
+static inline gpg_error_t
+my_error_from_syserror (void)
+{
+  return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+}
+
+static inline gpg_error_t
+my_error (int errcode)
+{
+  return gpg_err_make (default_errsource, errcode);
+}
+
+
 /* Return the maximum number of currently allowed open file
    descriptors.  Only useful on POSIX systems but returns a value on
    other systems too.  */
@@ -285,12 +299,46 @@ do_create_pipe (int filedes[2])
 
   if (pipe (filedes) == -1)
     {
-      err = gpg_error_from_syserror ();
+      err = my_error_from_syserror ();
       filedes[0] = filedes[1] = -1;
     }
 
   return err;
 }
+
+
+static gpg_error_t
+create_pipe_and_estream (int filedes[2], estream_t *r_fp,
+                         int outbound, int nonblock)
+{
+  gpg_error_t err;
+
+  if (pipe (filedes) == -1)
+    {
+      err = my_error_from_syserror ();
+      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
+      filedes[0] = filedes[1] = -1;
+      *r_fp = NULL;
+      return err;
+    }
+
+  if (!outbound)
+    *r_fp = es_fdopen (filedes[0], nonblock? "r,nonblock" : "r");
+  else
+    *r_fp = es_fdopen (filedes[1], nonblock? "w,nonblock" : "w");
+  if (!*r_fp)
+    {
+      err = my_error_from_syserror ();
+      log_error (_("error creating a stream for a pipe: %s\n"),
+                 gpg_strerror (err));
+      close (filedes[0]);
+      close (filedes[1]);
+      filedes[0] = filedes[1] = -1;
+      return err;
+    }
+  return 0;
+}
+
 
 /* Portable function to create a pipe.  Under Windows the write end is
    inheritable.  */
@@ -319,46 +367,9 @@ gnupg_create_pipe (int filedes[2])
 }
 
 
-
-static gpg_error_t
-create_pipe_and_estream (int filedes[2], estream_t *r_fp,
-                         int outbound, int nonblock,
-                         gpg_err_source_t errsource)
-{
-  gpg_error_t err;
-
-  if (pipe (filedes) == -1)
-    {
-      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
-      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
-      filedes[0] = filedes[1] = -1;
-      *r_fp = NULL;
-      return err;
-    }
-
-  if (outbound)
-    *r_fp = es_fdopen (filedes[0], nonblock? "r,nonblock" : "r");
-  else
-    *r_fp = es_fdopen (filedes[1], nonblock? "w,nonblock" : "w");
-  if (!*r_fp)
-    {
-      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
-      log_error (_("error creating a stream for a pipe: %s\n"),
-                 gpg_strerror (err));
-      close (filedes[0]);
-      close (filedes[1]);
-      filedes[0] = filedes[1] = -1;
-      return err;
-    }
-  return 0;
-}
-
-
-
 /* Fork and exec the PGMNAME, see exechelp.h for details.  */
 gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
-                     gpg_err_source_t errsource,
                      void (*preexec)(void), unsigned int flags,
                      estream_t *r_infp,
                      estream_t *r_outfp,
@@ -384,14 +395,14 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
   if (r_infp)
     {
-      err = create_pipe_and_estream (inpipe, &infp, 0, nonblock, errsource);
+      err = create_pipe_and_estream (inpipe, &infp, 1, nonblock);
       if (err)
         return err;
     }
 
   if (r_outfp)
     {
-      err = create_pipe_and_estream (outpipe, &outfp, 1, nonblock, errsource);
+      err = create_pipe_and_estream (outpipe, &outfp, 0, nonblock);
       if (err)
         {
           if (infp)
@@ -407,7 +418,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
   if (r_errfp)
     {
-      err = create_pipe_and_estream (errpipe, &errfp, 1, nonblock, errsource);
+      err = create_pipe_and_estream (errpipe, &errfp, 0, nonblock);
       if (err)
         {
           if (infp)
@@ -432,7 +443,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   *pid = fork ();
   if (*pid == (pid_t)(-1))
     {
-      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      err = my_error_from_syserror ();
       log_error (_("error forking process: %s\n"), gpg_strerror (err));
 
       if (infp)
@@ -505,7 +516,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
   *pid = fork ();
   if (*pid == (pid_t)(-1))
     {
-      err = gpg_error_from_syserror ();
+      err = my_error_from_syserror ();
       log_error (_("error forking process: %s\n"), strerror (errno));
       return err;
     }
@@ -543,7 +554,7 @@ gnupg_wait_processes (const char **pgmnames, pid_t *pids, size_t count,
         r_exitcodes[i] = -1;
 
       if (pids[i] == (pid_t)(-1))
-        return gpg_error (GPG_ERR_INV_VALUE);
+        return my_error (GPG_ERR_INV_VALUE);
     }
 
   left = count;
@@ -638,16 +649,16 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   int i;
 
   if (getuid() != geteuid())
-    return gpg_error (GPG_ERR_BUG);
+    return my_error (GPG_ERR_BUG);
 
   if (access (pgmname, X_OK))
-    return gpg_error_from_syserror ();
+    return my_error_from_syserror ();
 
   pid = fork ();
   if (pid == (pid_t)(-1))
     {
       log_error (_("error forking process: %s\n"), strerror (errno));
-      return gpg_error_from_syserror ();
+      return my_error_from_syserror ();
     }
   if (!pid)
     {

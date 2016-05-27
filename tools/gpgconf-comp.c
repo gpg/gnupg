@@ -1626,7 +1626,7 @@ gc_component_check_options (int component, estream_t out, const char *conf_file)
 
   result = 0;
   errlines = NULL;
-  err = gnupg_spawn_process (pgmname, argv, GPG_ERR_SOURCE_DEFAULT, NULL, 0,
+  err = gnupg_spawn_process (pgmname, argv, NULL, 0,
                              NULL, NULL, &errfp, &pid);
   if (err)
     result |= 1; /* Program could not be run.  */
@@ -1965,7 +1965,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
   argv[0] = "--gpgconf-list";
   argv[1] = NULL;
 
-  err = gnupg_spawn_process (pgmname, argv, GPG_ERR_SOURCE_DEFAULT, NULL, 0,
+  err = gnupg_spawn_process (pgmname, argv, NULL, 0,
                              NULL, &outfp, NULL, &pid);
   if (err)
     {
