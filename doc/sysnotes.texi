@@ -11,28 +11,6 @@ right now, however there are probably a lot of smaller glitches we need
 to fix first.  The major problem areas are:
 
 @itemize
-@item 
-For logging to sockets and other internal operations the
-@code{fopencookie} function (@code{funopen} under *BSD) is used.  This
-is a very convenient function which makes it possible to create outputs in
-a structures and easy maintainable way.  The drawback however is that
-most proprietary OSes don't support this function.  At g10@tie{}Code we
-have looked into several ways on how to overcome this limitation but no
-sufficiently easy and maintainable way has been found.  Porting
-@emph{glibc} to a general POSIX system is of course an option and would
-make writing portable software much easier; this it has not yet been
-done and the system administrator would need to cope with the GNU
-specific admin things in addition to the generic ones of his system.
-
-We have now settled to use explicit stdio wrappers with a functionality
-similar to funopen.  Although the code for this has already been written
-(@emph{libestream}), we have not yet changed GnuPG to use it.
-
-This means that on systems not supporting either @code{funopen} or
-@code{fopencookie}, logging to a socket won't work, prompts are not
-formatted as pretty as they should be and @command{gpgsm}'s
-@code{LISTKEYS} Assuan command does not work.
-
 @item
 We are planning to use file descriptor passing for interprocess
 communication.  This will allow us save a lot of resources and improve
@@ -78,9 +56,3 @@ The periodical smartcard status checking done by @command{scdaemon} is
 not yet supported.
 
 @end itemize
-
-
-
-
-
-

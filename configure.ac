@@ -1383,7 +1383,7 @@ AC_CHECK_FUNCS([waitpid wait4 sigaction sigprocmask pipe getaddrinfo])
 AC_CHECK_FUNCS([ttyname rand ftello fsync stat lstat])
 AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol \
                 memrchr isascii timegm getrusage setrlimit stat setlocale   \
-                flockfile funlockfile fopencookie funopen getpwnam getpwuid \
+                flockfile funlockfile getpwnam getpwuid \
                 getenv inet_pton strpbrk])
 
 if test "$have_android_system" = yes; then
