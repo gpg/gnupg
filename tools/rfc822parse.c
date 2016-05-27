@@ -1117,7 +1117,7 @@ dump_structure (rfc822parse_t msg, part_t part, int indent)
     {
       rfc822parse_field_t ctx;
       part_t save_part; /* ugly hack - we should have a function to
-                           get part inforation. */
+                           get part information. */
       const char *s;
 
       save_part = msg->current_part;
@@ -1177,8 +1177,13 @@ show_event (rfc822parse_event_t event)
     case RFC822PARSE_T2BODY: s= "T2Body"; break;
     case RFC822PARSE_FINISH: s= "Finish"; break;
     case RFC822PARSE_RCVD_SEEN: s= "Rcvd_Seen"; break;
+    case RFC822PARSE_LEVEL_DOWN: s= "Level_Down"; break;
+    case RFC822PARSE_LEVEL_UP:   s= "Level_Up"; break;
     case RFC822PARSE_BOUNDARY: s= "Boundary"; break;
     case RFC822PARSE_LAST_BOUNDARY: s= "Last_Boundary"; break;
+    case RFC822PARSE_BEGIN_HEADER: s= "Begin_Header"; break;
+    case RFC822PARSE_PREAMBLE: s= "Preamble"; break;
+    case RFC822PARSE_EPILOGUE: s= "Epilogue"; break;
     default: s= "***invalid event***"; break;
     }
   printf ("*** got RFC822 event %s\n", s);
