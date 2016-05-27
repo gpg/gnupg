@@ -695,10 +695,10 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
       return err;
     }
 
-  err = gnupg_create_inbound_pipe (outpipe);
+  err = gnupg_create_inbound_pipe (outpipe, NULL, 0);
   if (!err)
     {
-      err = gnupg_create_inbound_pipe (errpipe);
+      err = gnupg_create_inbound_pipe (errpipe, NULL, 0);
       if (err)
         {
           close (outpipe[0]);

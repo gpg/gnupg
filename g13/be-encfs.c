@@ -246,9 +246,9 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
   if (err)
     goto leave;
 
-  err = gnupg_create_inbound_pipe (inbound);
+  err = gnupg_create_inbound_pipe (inbound, NULL, 0);
   if (!err)
-    err = gnupg_create_outbound_pipe (outbound);
+    err = gnupg_create_outbound_pipe (outbound, NULL, 0);
   if (err)
     {
       log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));

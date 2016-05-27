@@ -450,18 +450,24 @@ create_inheritable_pipe (int filedes[2], int inherit_idx)
 /* Portable function to create a pipe.  Under Windows the write end is
    inheritable (i.e. an rendezvous id).  */
 gpg_error_t
-gnupg_create_inbound_pipe (int filedes[2])
+gnupg_create_inbound_pipe (int filedes[2], estream_t *r_fp, int nonblock)
 {
-  return create_inheritable_pipe (filedes, 1);
+  if (r_fp)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  else
+    return create_inheritable_pipe (filedes, 1);
 }
 
 
 /* Portable function to create a pipe.  Under Windows the read end is
    inheritable (i.e. an rendezvous id).  */
 gpg_error_t
-gnupg_create_outbound_pipe (int filedes[2])
+gnupg_create_outbound_pipe (int filedes[2], estream_t *r_fp, int nonblock)
 {
-  return create_inheritable_pipe (filedes, 0);
+  if (r_fp)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  else
+    return create_inheritable_pipe (filedes, 0);
 }
 
 
