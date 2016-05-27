@@ -932,7 +932,7 @@ gpgtar_create (char **inpattern, int encrypt, int sign)
         }
 
       err = gnupg_exec_tool_stream (opt.gpg_program, argv,
-                                    outstream, NULL, cipher_stream);
+                                    outstream, NULL, cipher_stream, NULL, NULL);
       xfree (argv);
       if (err)
         goto leave;

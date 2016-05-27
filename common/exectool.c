@@ -44,13 +44,17 @@
 #include "exechelp.h"
 #include "sysutils.h"
 #include "util.h"
+#include "exectool.h"
 
 typedef struct
 {
   const char *pgmname;
+  exec_tool_status_cb_t status_cb;
+  void *status_cb_value;
   int cont;
-  int used;
-  char buffer[256];
+  size_t used;
+  size_t buffer_size;
+  char *buffer;
 } read_and_log_buffer_t;
 
 
@@ -83,14 +87,37 @@ read_and_log_stderr (read_and_log_buffer_t *state, es_poll_t *fderr)
             pname++;
           else
             pname = state->pgmname;
-          /* If our pgmname plus colon is identical to the start of
-             the output, print only the output.  */
           len = strlen (pname);
-          if (!state->cont
+
+          if (state->status_cb
+              && !strncmp (state->buffer, "[GNUPG:] ", 9)
+              && state->buffer[9] >= 'A' && state->buffer[9] <= 'Z')
+            {
+              char *rest;
+
+              rest = strchr (state->buffer + 9, ' ');
+              if (!rest)
+                {
+                  /* Set REST to an empty string.  */
+                  rest = state->buffer + strlen (state->buffer);
+                }
+              else
+                {
+                  *rest++ = 0;
+                  trim_spaces (rest);
+                }
+              state->status_cb (state->status_cb_value,
+                                state->buffer + 9, rest);
+            }
+          else if (!state->cont
               && !strncmp (state->buffer, pname, len)
               && strlen (state->buffer) > strlen (pname)
               && state->buffer[len] == ':' )
-            log_info ("%s\n", state->buffer);
+            {
+              /* PGMNAME plus colon is identical to the start of
+                 the output: print only the output.  */
+              log_info ("%s\n", state->buffer);
+            }
           else
             log_info ("%s%c %s\n",
                       pname, state->cont? '+':':', state->buffer);
@@ -123,10 +150,39 @@ read_and_log_stderr (read_and_log_buffer_t *state, es_poll_t *fderr)
         }
       else
         {
-          if (state->used >= sizeof state->buffer - 1)
+          if (state->used >= state->buffer_size - 1)
             {
-              read_and_log_stderr (state, NULL);
-              state->cont = 1;
+              if (state->status_cb)
+                {
+                  /* A status callback requires that we have a full
+                   * line.  Thus we need to enlarget the buffer in
+                   * this case.  */
+                  char *newbuffer;
+                  size_t newsize = state->buffer_size + 256;
+
+                  newbuffer = xtrymalloc (newsize);
+                  if (!newbuffer)
+                    {
+                      log_error ("error allocating memory for status cb: %s\n",
+                                 gpg_strerror (my_error_from_syserror ()));
+                      /* We better disable the status CB in this case.  */
+                      state->status_cb = NULL;
+                      read_and_log_stderr (state, NULL);
+                      state->cont = 1;
+                    }
+                  else
+                    {
+                      memcpy (newbuffer, state->buffer, state->used);
+                      xfree (state->buffer);
+                      state->buffer = newbuffer;
+                      state->buffer_size = newsize;
+                    }
+                }
+              else
+                {
+                  read_and_log_stderr (state, NULL);
+                  state->cont = 1;
+                }
             }
           state->buffer[state->used++] = c;
         }
@@ -242,7 +298,9 @@ copy_buffer_flush (struct copy_buffer *c, estream_t sink)
 gpg_error_t
 gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
                         estream_t input, estream_t inextra,
-                        estream_t output)
+                        estream_t output,
+                        exec_tool_status_cb_t status_cb,
+                        void *status_cb_value)
 {
   gpg_error_t err;
   pid_t pid;
@@ -265,6 +323,14 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   copy_buffer_init (&cpbuf_out);
   copy_buffer_init (&cpbuf_extra);
 
+  fderrstate.pgmname = pgmname;
+  fderrstate.status_cb = status_cb;
+  fderrstate.status_cb_value = status_cb_value;
+  fderrstate.buffer_size = 256;
+  fderrstate.buffer = xtrymalloc (fderrstate.buffer_size);
+  if (!fderrstate.buffer)
+    return my_error_from_syserror ();
+
   if (inextra)
     {
       err = gnupg_create_outbound_pipe (extrapipe, &extrafp, 1);
@@ -272,6 +338,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
         {
           log_error ("error running outbound pipe for extra fp: %s\n",
                      gpg_strerror (err));
+          xfree (fderrstate.buffer);
           return err;
         }
       exceptclose[0] = extrapipe[0]; /* Do not close in child. */
@@ -303,10 +370,9 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
     {
       log_error ("error running '%s': %s\n", pgmname, gpg_strerror (err));
       es_fclose (extrafp);
+      xfree (fderrstate.buffer);
       return err;
     }
-
-  fderrstate.pgmname = pgmname;
 
   fds[0].stream = infp;
   fds[0].want_write = 1;
@@ -438,6 +504,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   copy_buffer_shred (&cpbuf_out);
   if (inextra)
     copy_buffer_shred (&cpbuf_extra);
+  xfree (fderrstate.buffer);
   return err;
 }
 
@@ -488,7 +555,7 @@ gnupg_exec_tool (const char *pgmname, const char *argv[],
       goto leave;
     }
 
-  err = gnupg_exec_tool_stream (pgmname, argv, input, NULL, output);
+  err = gnupg_exec_tool_stream (pgmname, argv, input, NULL, output, NULL, NULL);
   if (err)
     goto leave;
 

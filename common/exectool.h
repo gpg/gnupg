@@ -32,6 +32,17 @@
 
 #include <gpg-error.h>
 
+/* This callback can be used to process --status-fd outputs of GnuPG
+ * tools.  OPAQUE can be used to communicate between the caller of the
+ * function and the callback.  KEYWORD is the status keyword (see
+ * doc/DETAILS); it is never NULL.  ARGS are the arguments of the
+ * status line and will also never be NULL; the caller may modify this
+ * string.  */
+typedef void (*exec_tool_status_cb_t) (void *opaque,
+                                       const char *keyword,
+                                       char *args);
+
+
 /* Run the program PGMNAME with the command line arguments given in
    the NULL terminates array ARGV.  If INPUT_STRING is not NULL it
    will be fed to stdin of the process.  stderr is logged using
@@ -51,6 +62,8 @@ gpg_error_t gnupg_exec_tool (const char *pgmname, const char *argv[],
    printed, and an error code returned.  INEXTRA is reserved. */
 gpg_error_t gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
                                     estream_t input, estream_t inextra,
-                                    estream_t output);
+                                    estream_t output,
+                                    exec_tool_status_cb_t status_cb,
+                                    void *status_cb_value);
 
 #endif /* GNUPG_COMMON_EXECTOOL_H */
