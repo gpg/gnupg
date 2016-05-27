@@ -71,6 +71,49 @@ release_progress_context (progress_filter_context_t *pfx)
 }
 
 
+static void
+write_status_progress (const char *what,
+                       unsigned long current, unsigned long total)
+{
+  char buffer[50];
+
+  /* Although we use an unsigned long for the values, 32 bit
+   * applications using GPGME will use an "int" and thus are limited
+   * in the total size which can be represented.  On Windows, where
+   * sizeof(int)==sizeof(long), this is even worse and will lead to an
+   * integer overflow for all files larger than 2 GiB.  Although, the
+   * allowed value range of TOTAL and CURRENT is nowhere specified, we
+   * better protect applications from the need to handle negative
+   * values.  The common usage pattern of the progress information is
+   * to display how many percent of the operation has been done and
+   * thus scaling CURRENT and TOTAL down before they get to large,
+   * should not have a noticeable effect except for rounding
+   * imprecision. */
+  if (total)
+    {
+      if (current > total)
+        current = total;
+
+      while (total > 1024*1024)
+        {
+          total /= 1024;
+          current /= 1024;
+        }
+    }
+  else
+    {
+      while (current > 1024*1024)
+        {
+          current /= 1024;
+        }
+    }
+
+  snprintf (buffer, sizeof buffer, "%.20s ? %lu %lu",
+            what? what : "?", current, total);
+  write_status_text (STATUS_PROGRESS, buffer);
+}
+
+
 /****************
  * The filter is used to report progress to the user.
  */
@@ -83,17 +126,11 @@ progress_filter (void *opaque, int control,
 
   if (control == IOBUFCTRL_INIT)
     {
-      char buffer[50];
-
       pfx->last = 0;
       pfx->offset = 0;
       pfx->last_time = make_timestamp ();
 
-      sprintf (buffer, "%.20s ? %lu %lu",
-               pfx->what? pfx->what : "?",
-               pfx->offset,
-	       pfx->total);
-      write_status_text (STATUS_PROGRESS, buffer);
+      write_status_progress (pfx->what, pfx->offset, pfx->total);
     }
   else if (control == IOBUFCTRL_UNDERFLOW)
     {
@@ -113,14 +150,7 @@ progress_filter (void *opaque, int control,
       if ((len == -1 && pfx->offset != pfx->last)
 	  || timestamp - pfx->last_time > 0)
 	{
-	  char buffer[50];
-
-	  sprintf (buffer, "%.20s ? %lu %lu",
-                   pfx->what? pfx->what : "?",
-                   pfx->offset,
-		   pfx->total);
-	  write_status_text (STATUS_PROGRESS, buffer);
-
+          write_status_progress (pfx->what, pfx->offset, pfx->total);
 	  pfx->last = pfx->offset;
 	  pfx->last_time = timestamp;
 	}
