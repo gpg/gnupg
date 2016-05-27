@@ -67,6 +67,11 @@
 # include <sys/stat.h>
 #endif
 
+#if __linux__
+# include <sys/types.h>
+# include <dirent.h>
+#endif /*__linux__ */
+
 #include "util.h"
 #include "i18n.h"
 #include "sysutils.h"
@@ -96,6 +101,45 @@ get_max_fds (void)
   int max_fds = -1;
 #ifdef HAVE_GETRLIMIT
   struct rlimit rl;
+
+  /* Under Linux we can figure out the highest used file descriptor by
+   * reading /proc/PID/fd.  This is in the common cases much fast than
+   * for example doing 4096 close calls where almost all of them will
+   * fail.  On a system with a limit of 4096 files and only 8 files
+   * open with the highest number being 10, we speedup close_all_fds
+   * from 125ms to 0.4ms including readdir.
+   *
+   * Another option would be to close the file descriptors as returned
+   * from reading that directory - however then we need to snapshot
+   * that list before starting to close them.  */
+#ifdef __linux__
+  {
+    char dirname[50];
+    DIR *dir = NULL;
+    struct dirent *dir_entry;
+    const char *s;
+    int x;
+
+    snprintf (dirname, sizeof dirname, "/proc/%u/fd", (unsigned int)getpid ());
+    dir = opendir (dirname);
+    if (dir)
+      {
+        while ((dir_entry = readdir (dir)))
+          {
+            s = dir_entry->d_name;
+            if ( *s < '0' || *s > '9')
+              continue;
+            x = atoi (s);
+            if (x > max_fds)
+              max_fds = x;
+          }
+        closedir (dir);
+      }
+    if (max_fds != -1)
+      return max_fds + 1;
+    }
+#endif /* __linux__ */
+
 
 # ifdef RLIMIT_NOFILE
   if (!getrlimit (RLIMIT_NOFILE, &rl))
