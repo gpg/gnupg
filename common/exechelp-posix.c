@@ -114,14 +114,12 @@ get_max_fds (void)
    * that list before starting to close them.  */
 #ifdef __linux__
   {
-    char dirname[50];
     DIR *dir = NULL;
     struct dirent *dir_entry;
     const char *s;
     int x;
 
-    snprintf (dirname, sizeof dirname, "/proc/%u/fd", (unsigned int)getpid ());
-    dir = opendir (dirname);
+    dir = opendir ("/proc/self/fd");
     if (dir)
       {
         while ((dir_entry = readdir (dir)))
