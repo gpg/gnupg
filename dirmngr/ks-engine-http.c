@@ -73,6 +73,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
   estream_t fp = NULL;
   char *request_buffer = NULL;
 
+ once_more:
   /* Note that we only use the system provided certificates with the
    * fetch command.  */
   err = http_session_new (&session, NULL, NULL, HTTP_FLAG_TRUST_SYS);
@@ -81,7 +82,6 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
   http_session_set_log_cb (session, cert_log_cb);
 
   *r_fp = NULL;
- once_more:
   err = http_open (&http,
                    HTTP_REQ_GET,
                    url,
@@ -146,6 +146,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
                 url = request_buffer;
                 http_close (http, 0);
                 http = NULL;
+                http_session_release (session);
                 goto once_more;
               }
             err = gpg_error_from_syserror ();
