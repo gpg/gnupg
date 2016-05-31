@@ -423,7 +423,7 @@ if [ -d .git ]; then
     [ -z "${SILENT}" ] && cat <<EOF
 *** Activating trailing whitespace git pre-commit hook. ***
     For more information see this thread:
-      http://mail.gnome.org/archives/desktop-devel-list/2009-May/msg00084html
+      http://mail.gnome.org/archives/desktop-devel-list/2009-May/msg00084.html
     To deactivate this pre-commit hook again move .git/hooks/pre-commit
     and .git/hooks/pre-commit.sample out of the way.
 EOF
