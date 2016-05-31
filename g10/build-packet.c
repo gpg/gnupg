@@ -1277,8 +1277,9 @@ sig_to_notation(PKT_signature *sig)
 {
   const byte *p;
   size_t len;
-  int seq=0,crit;
-  struct notation *list=NULL;
+  int seq = 0;
+  int crit;
+  notation_t list = NULL;
 
   /* See RFC 4880, 5.2.3.16 for the format of notation data.  In
      short, a notation has:
@@ -1323,6 +1324,7 @@ sig_to_notation(PKT_signature *sig)
 	  n->value=xmalloc(n2+1);
 	  memcpy(n->value,&p[8+n1],n2);
 	  n->value[n2]='\0';
+          n->flags.human = 1;
 	}
       else
         /* Binary data.  */

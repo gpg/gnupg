@@ -401,7 +401,7 @@ void
 show_notation (PKT_signature * sig, int indent, int mode, int which)
 {
   estream_t fp = mode ? log_get_stream () : es_stdout;
-  struct notation *nd, *notations;
+  notation_t nd, notations;
 
   if (which == 0)
     which = 3;
@@ -448,6 +448,10 @@ show_notation (PKT_signature * sig, int indent, int mode, int which)
 	{
 	  write_status_buffer (STATUS_NOTATION_NAME,
 			       nd->name, strlen (nd->name), 0);
+          if (nd->flags.critical || nd->flags.human)
+            write_status_text (STATUS_NOTATION_FLAGS,
+                               nd->flags.critical && nd->flags.human? "1 1" :
+                               nd->flags.critical? "1 0" : "0 1");
 	  write_status_buffer (STATUS_NOTATION_DATA,
 			       nd->value, strlen (nd->value), 50);
 	}

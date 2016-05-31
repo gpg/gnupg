@@ -531,12 +531,14 @@ struct notation
   /* The notation's name.  */
   char *name;
   /* If the notation is human readable, then the value is stored here
-     as a NUL-terminated string.  */
+     as a NUL-terminated string.  If it is not human readable a human
+     readable approximation of the binary value _may_ be stored
+     here.  */
   char *value;
   /* Sometimes we want to %-expand the value.  In these cases, we save
      that transformed value here.  */
   char *altvalue;
-  /* If the notation is not human readable, then the value is strored
+  /* If the notation is not human readable, then the value is stored
      here.  */
   unsigned char *bdat;
   /* The amount of data stored in BDAT.
@@ -552,6 +554,8 @@ struct notation
   {
     /* The notation is critical.  */
     unsigned int critical:1;
+    /* The notation is human readable.  */
+    unsigned int human:1;
     /* The notation should be deleted.  */
     unsigned int ignore:1;
   } flags;
@@ -559,6 +563,7 @@ struct notation
   /* A field to facilitate creating a list of notations.  */
   struct notation *next;
 };
+typedef struct notation *notation_t;
 
 /*-- mainproc.c --*/
 void reset_literals_seen(void);

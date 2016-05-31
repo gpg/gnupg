@@ -520,14 +520,17 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     letter 'T'.
 
 *** NOTATION_
-    There are actually two related status codes to convey notation
+    There are actually three related status codes to convey notation
     data:
 
     - NOTATION_NAME <name>
+    - NOTATION_FLAGS <critical> <human_readable>
     - NOTATION_DATA <string>
 
-    <name> and <string> are %XX escaped; the data may be split among
-    several NOTATION_DATA lines.
+    <name> and <string> are %XX escaped.  The data may be split among
+    several NOTATION_DATA lines.  NOTATION_FLAGS is emitted after
+    NOTATION_NAME and gives the critical and human readable flags;
+    the flag values are either 0 or 1.
 
 *** POLICY_URL <string>
     Note that URL in <string> is %XX escaped.
