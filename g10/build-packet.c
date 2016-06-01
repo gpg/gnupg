@@ -329,7 +329,7 @@ do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
     }
   else
     {
-      write_header2( out, ctb, uid->len, 2 );
+      write_header2( out, ctb, uid->len, 0 );
       rc = iobuf_write( out, uid->name, uid->len );
     }
   return rc;
