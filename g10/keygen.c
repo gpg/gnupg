@@ -1,6 +1,6 @@
 /* keygen.c - Generate a key pair
  * Copyright (C) 1998-2007, 2009-2011  Free Software Foundation, Inc.
- * Copyright (C) 2014, 2015  Werner Koch
+ * Copyright (C) 2014, 2015, 2016  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -54,6 +54,7 @@
 #define DEFAULT_STD_CURVE      NULL
 #define DEFAULT_STD_SUBALGO    PUBKEY_ALGO_RSA
 #define DEFAULT_STD_SUBKEYSIZE 2048
+#define DEFAULT_STD_SUBKEYUSE  PUBKEY_USAGE_ENC
 #define DEFAULT_STD_SUBCURVE   NULL
 
 /* Flag bits used during key generation.  */
@@ -2017,6 +2018,86 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
 }
 
 
+static void
+get_keysize_range (int algo,
+                   unsigned int *min, unsigned int *def, unsigned int *max)
+{
+  *min = 1024;
+  *def = DEFAULT_STD_KEYSIZE;
+  *max = 4096;
+
+  /* Deviations from the standard values.  */
+  switch(algo)
+    {
+    case PUBKEY_ALGO_DSA:
+      *min = opt.expert? 768 : 1024;
+      *def=2048;
+      *max=3072;
+      break;
+
+    case PUBKEY_ALGO_ECDSA:
+    case PUBKEY_ALGO_ECDH:
+      *min=256;
+      *def=256;
+      *max=521;
+      break;
+
+    case PUBKEY_ALGO_EDDSA:
+      *min=255;
+      *def=255;
+      *max=441;
+      break;
+    }
+}
+
+
+/* Return a fixed up keysize depending on ALGO.  */
+static unsigned int
+fixup_keysize (unsigned int nbits, int algo, int silent)
+{
+  if (algo == PUBKEY_ALGO_DSA && (nbits % 64))
+    {
+      nbits = ((nbits + 63) / 64) * 64;
+      if (!silent)
+        tty_printf (_("rounded up to %u bits\n"), nbits);
+    }
+  else if (algo == PUBKEY_ALGO_EDDSA)
+    {
+      if (nbits != 255 && nbits != 441)
+        {
+          if (nbits < 256)
+            nbits = 255;
+          else
+            nbits = 441;
+          if (!silent)
+            tty_printf (_("rounded to %u bits\n"), nbits);
+        }
+    }
+  else if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA)
+    {
+      if (nbits != 256 && nbits != 384 && nbits != 521)
+        {
+          if (nbits < 256)
+            nbits = 256;
+          else if (nbits < 384)
+            nbits = 384;
+          else
+            nbits = 521;
+          if (!silent)
+            tty_printf (_("rounded to %u bits\n"), nbits);
+        }
+    }
+  else if ((nbits % 32))
+    {
+      nbits = ((nbits + 31) / 32) * 32;
+      if (!silent)
+        tty_printf (_("rounded up to %u bits\n"), nbits );
+    }
+
+  return nbits;
+}
+
+
 /* Ask for the key size.  ALGO is the algorithm.  If PRIMARY_KEYSIZE
    is not 0, the function asks for the size of the encryption
    subkey. */
@@ -2024,11 +2105,11 @@ static unsigned
 ask_keysize (int algo, unsigned int primary_keysize)
 {
   unsigned int nbits;
-  unsigned int min = 1024;
-  unsigned int def = DEFAULT_STD_KEYSIZE;
-  unsigned int max = 4096;
+  unsigned int min, def, max;
   int for_subkey = !!primary_keysize;
   int autocomp = 0;
+
+  get_keysize_range (algo, &min, &def, &max);
 
   if (primary_keysize && !opt.expert)
     {
@@ -2042,29 +2123,6 @@ ask_keysize (int algo, unsigned int primary_keysize)
         nbits = primary_keysize;
       autocomp = 1;
       goto leave;
-    }
-
-  /* Deviations from the standard values.  */
-  switch(algo)
-    {
-    case PUBKEY_ALGO_DSA:
-      min = opt.expert? 768 : 1024;
-      def=2048;
-      max=3072;
-      break;
-
-    case PUBKEY_ALGO_ECDSA:
-    case PUBKEY_ALGO_ECDH:
-      min=256;
-      def=256;
-      max=521;
-      break;
-
-    case PUBKEY_ALGO_EDDSA:
-      min=255;
-      def=255;
-      max=441;
-      break;
     }
 
   tty_printf(_("%s keys may be between %u and %u bits long.\n"),
@@ -2095,45 +2153,7 @@ ask_keysize (int algo, unsigned int primary_keysize)
   tty_printf (_("Requested keysize is %u bits\n"), nbits);
 
  leave:
-  if (algo == PUBKEY_ALGO_DSA && (nbits % 64))
-    {
-      nbits = ((nbits + 63) / 64) * 64;
-      if (!autocomp)
-        tty_printf (_("rounded up to %u bits\n"), nbits);
-    }
-  else if (algo == PUBKEY_ALGO_EDDSA)
-    {
-      if (nbits != 255 && nbits != 441)
-        {
-          if (nbits < 256)
-            nbits = 255;
-          else
-            nbits = 441;
-          if (!autocomp)
-            tty_printf (_("rounded to %u bits\n"), nbits);
-        }
-    }
-  else if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA)
-    {
-      if (nbits != 256 && nbits != 384 && nbits != 521)
-        {
-          if (nbits < 256)
-            nbits = 256;
-          else if (nbits < 384)
-            nbits = 384;
-          else
-            nbits = 521;
-          if (!autocomp)
-            tty_printf (_("rounded to %u bits\n"), nbits);
-        }
-    }
-  else if ((nbits % 32))
-    {
-      nbits = ((nbits + 31) / 32) * 32;
-      if (!autocomp)
-        tty_printf (_("rounded up to %u bits\n"), nbits );
-    }
-
+  nbits = fixup_keysize (nbits, algo, autocomp);
   return nbits;
 }
 
@@ -2885,6 +2905,50 @@ get_parameter_algo( struct para_data_s *para, enum para_name key,
   return i;
 }
 
+
+/* Parse a usage string.  The usage keywords "auth", "sign", "encr"
+ * may be elimited by space, tab, or comma.  On error -1 is returned
+ * instead of the usage flags/  */
+static int
+parse_usagestr (const char *usagestr)
+{
+  gpg_error_t err;
+  char **tokens = NULL;
+  const char *s;
+  int i;
+  unsigned int use = 0;
+
+  tokens = strtokenize (usagestr, " \t,");
+  if (!tokens)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("strtokenize failed: %s\n", gpg_strerror (err));
+      return -1;
+    }
+
+  for (i=0; (s = tokens[i]); i++)
+    {
+      if (!*s)
+        ;
+      else if (!ascii_strcasecmp (s, "sign"))
+        use |= PUBKEY_USAGE_SIG;
+      else if (!ascii_strcasecmp (s, "encrypt")
+                || !ascii_strcasecmp (s, "encr"))
+        use |= PUBKEY_USAGE_ENC;
+      else if (!ascii_strcasecmp (s, "auth"))
+        use |= PUBKEY_USAGE_AUTH;
+      else
+        {
+          xfree (tokens);
+          return -1; /* error */
+        }
+    }
+
+  xfree (tokens);
+  return use;
+}
+
+
 /*
  * Parse the usage parameter and set the keyflags.  Returns -1 on
  * error, 0 for no usage given or 1 for usage available.
@@ -2893,32 +2957,23 @@ static int
 parse_parameter_usage (const char *fname,
                        struct para_data_s *para, enum para_name key)
 {
-    struct para_data_s *r = get_parameter( para, key );
-    char *p, *pn;
-    unsigned int use;
+  struct para_data_s *r = get_parameter( para, key );
+  int i;
 
-    if( !r )
-	return 0; /* none (this is an optional parameter)*/
+  if (!r)
+    return 0; /* none (this is an optional parameter)*/
 
-    use = 0;
-    pn = r->u.value;
-    while ( (p = strsep (&pn, " \t,")) ) {
-        if ( !*p)
-            ;
-        else if ( !ascii_strcasecmp (p, "sign") )
-            use |= PUBKEY_USAGE_SIG;
-        else if ( !ascii_strcasecmp (p, "encrypt") )
-            use |= PUBKEY_USAGE_ENC;
-        else if ( !ascii_strcasecmp (p, "auth") )
-            use |= PUBKEY_USAGE_AUTH;
-        else {
-            log_error("%s:%d: invalid usage list\n", fname, r->lnr );
-            return -1; /* error */
-        }
+  i = parse_usagestr (r->u.value);
+  if (i == -1)
+    {
+      log_error ("%s:%d: invalid usage list\n", fname, r->lnr );
+      return -1; /* error */
     }
-    r->u.usage = use;
-    return 1;
+
+  r->u.usage = i;
+  return 1;
 }
+
 
 static int
 parse_revocation_key (const char *fname,
@@ -4260,12 +4315,119 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 }
 
 
-/* Add a new subkey to an existing key.  Returns 0 if a new key has
-   been generated and put into the keyblocks.  */
 gpg_error_t
-generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
+parse_subkey_algostr_usagestr (ctrl_t ctrl, const char *algostr,
+                               const char *usagestr,
+                               int *r_algo, unsigned int *r_usage,
+                               unsigned int *r_nbits, char **r_curve)
+{
+  int algo;
+  unsigned int use, nbits;
+  int wantuse;
+  unsigned int min, def, max;
+  const char *curve = NULL;
+  int eccalgo = 0;
+
+  *r_curve = NULL;
+
+  nbits = 0;
+  /* Parse the algo string.  */
+  if (!algostr || !*algostr
+      || !strcmp (algostr, "default") || !strcmp (algostr, "-"))
+    {
+      algo = DEFAULT_STD_SUBALGO;
+      use = DEFAULT_STD_SUBKEYUSE;
+    }
+  else if (*algostr == '&' && strlen (algostr) == 41)
+    {
+      /* Take algo from existing key.  */
+      algo = check_keygrip (ctrl, algostr+1);
+      /* FIXME: We need the curve name as well.  */
+      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
+  else if (!strncmp (algostr, "rsa", 3))
+    {
+      algo = PUBKEY_ALGO_RSA;
+      use = DEFAULT_STD_SUBKEYUSE;
+      if (algostr[3])
+        nbits = atoi (algostr + 3);
+    }
+  else if (!strncmp (algostr, "elg", 3))
+    {
+      algo = PUBKEY_ALGO_ELGAMAL_E;
+      use = PUBKEY_USAGE_ENC;
+      if (algostr[3])
+        nbits = atoi (algostr + 3);
+    }
+  else if (!strncmp (algostr, "dsa", 3))
+    {
+      algo = PUBKEY_ALGO_DSA;
+      use = PUBKEY_USAGE_SIG;
+      if (algostr[3])
+        nbits = atoi (algostr + 3);
+    }
+  else if ((curve = openpgp_is_curve_supported (algostr, &algo)))
+    {
+      if (!algo)
+        {
+          algo = PUBKEY_ALGO_ECDH; /* Default ECC algorithm.  */
+          eccalgo = 1;  /* Remember - we may need to fix it up.  */
+        }
+
+      if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_EDDSA)
+        use = PUBKEY_USAGE_SIG;
+      else
+        use = PUBKEY_USAGE_ENC;
+    }
+  else
+    return gpg_error (GPG_ERR_INV_CURVE);
+
+  /* Parse the usage string.  */
+  if (!usagestr || !*usagestr
+      || !strcmp (usagestr, "default") || !strcmp (usagestr, "-"))
+    ; /* Keep default usage */
+  else if ((wantuse = parse_usagestr (usagestr)) != -1)
+    {
+      use = wantuse;
+      if (eccalgo && !(use & PUBKEY_USAGE_ENC))
+        algo = PUBKEY_ALGO_ECDSA; /* Switch from ECDH to ECDSA.  */
+    }
+  else
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  /* Make sure the keysize is in the allowed range.  */
+  get_keysize_range (algo, &min, &def, &max);
+  if (!nbits)
+    nbits = def;
+  else if (nbits < min)
+    nbits = min;
+  else if (nbits > max)
+    nbits = max;
+
+  nbits = fixup_keysize (nbits, algo, 1);
+
+  if (curve)
+    {
+      *r_curve = xtrystrdup (curve);
+      if (!*r_curve)
+        return gpg_error_from_syserror ();
+    }
+  *r_algo = algo;
+  *r_usage = use;
+  *r_nbits = nbits;
+  return 0;
+}
+
+
+/* Add a new subkey to an existing key.  Returns 0 if a new key has
+   been generated and put into the keyblocks.  If any of ALGOSTR,
+   USAGESTR, or EXPIRESTR is NULL interactive mode is used. */
+gpg_error_t
+generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
+                     const char *usagestr, const char *expirestr)
 {
   gpg_error_t err = 0;
+  int interactive;
   kbnode_t node;
   PKT_public_key *pri_psk = NULL;
   PKT_public_key *sub_psk = NULL;
@@ -4277,6 +4439,8 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
   u32 cur_time;
   char *hexgrip = NULL;
   char *serialno = NULL;
+
+  interactive = (!algostr || !usagestr || !expirestr);
 
   /* Break out the primary key.  */
   node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
@@ -4317,32 +4481,72 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
     goto leave;
   if (agent_get_keyinfo (NULL, hexgrip, &serialno))
     {
-      tty_printf (_("Secret parts of primary key are not available.\n"));
+      if (interactive)
+        tty_printf (_("Secret parts of primary key are not available.\n"));
+      else
+        log_info (  _("Secret parts of primary key are not available.\n"));
+      err = gpg_error (GPG_ERR_NO_SECKEY);
       goto leave;
     }
   if (serialno)
-    tty_printf (_("Secret parts of primary key are stored on-card.\n"));
+    {
+      if (interactive)
+        tty_printf (_("Secret parts of primary key are stored on-card.\n"));
+      else
+        log_info (  _("Secret parts of primary key are stored on-card.\n"));
+    }
 
   xfree (hexgrip);
   hexgrip = NULL;
-  algo = ask_algo (ctrl, 1, NULL, &use, &hexgrip);
-  log_assert (algo);
-
-  if (hexgrip)
-    nbits = 0;
-  else if (algo == PUBKEY_ALGO_ECDSA
-           || algo == PUBKEY_ALGO_EDDSA
-           || algo == PUBKEY_ALGO_ECDH)
-    curve = ask_curve (&algo, NULL);
-  else
-    nbits = ask_keysize (algo, 0);
-
-  expire = ask_expire_interval (0, NULL);
-  if (!cpr_enabled() && !cpr_get_answer_is_yes("keygen.sub.okay",
-                                               _("Really create? (y/N) ")))
+  if (interactive)
     {
-      err = gpg_error (GPG_ERR_CANCELED);
-      goto leave;
+      algo = ask_algo (ctrl, 1, NULL, &use, &hexgrip);
+      log_assert (algo);
+
+      if (hexgrip)
+        nbits = 0;
+      else if (algo == PUBKEY_ALGO_ECDSA
+               || algo == PUBKEY_ALGO_EDDSA
+               || algo == PUBKEY_ALGO_ECDH)
+        curve = ask_curve (&algo, NULL);
+      else
+        nbits = ask_keysize (algo, 0);
+
+      expire = ask_expire_interval (0, NULL);
+      if (!cpr_enabled() && !cpr_get_answer_is_yes("keygen.sub.okay",
+                                                   _("Really create? (y/N) ")))
+        {
+          err = gpg_error (GPG_ERR_CANCELED);
+          goto leave;
+        }
+    }
+  else /* Unattended mode.  */
+    {
+      err = parse_subkey_algostr_usagestr (ctrl, algostr, usagestr,
+                                           &algo, &use, &nbits, &curve);
+      if (err)
+        goto leave;
+
+      if (!expirestr || !*expirestr || !strcmp (expirestr, "none")
+          || !strcmp (expirestr, "never") || !strcmp (expirestr, "-"))
+        expire = 0;
+      else
+        expire = parse_expire_string (expirestr);
+      if (expire == (u32)-1 )
+	{
+          err = gpg_error (GPG_ERR_INV_VALUE);
+	  goto leave;
+	}
+
+      /* Check that usage is possible.  */
+      if ( ((use & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_AUTH|PUBKEY_USAGE_CERT))
+            && !pubkey_get_nsig (algo))
+           || ((use & PUBKEY_USAGE_ENC)
+               && !pubkey_get_nenc (algo)))
+        {
+          err = gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+          goto leave;
+        }
     }
 
   if (hexgrip)

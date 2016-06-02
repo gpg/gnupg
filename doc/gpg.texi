@@ -620,6 +620,35 @@ supplied passphrase is used for the new key and the agent does not ask
 for it.  To create a key without any protection @code{--passphrase ''}
 may be used.
 
+@item --quick-addkey @code{fpr} [@code{algo} [@code{usage} [@code{expire}]]]
+@opindex quick-addkey
+Directly add a subkey to the key identified by the fingerprint
+@code{fpr}.  Without the optional arguments an encryption subkey is
+added.  If any of the arguments are given a more specific subkey is
+added.
+
+@code{algo} may be any of the supported algorithms or curve names given
+in the format as used by key listings.  To use the default algorithm
+the string ``default'' or ``-'' can be used. Supported algorithms are
+``rsa'', ``dsa'', ``elg'', ``ed25519'', ``cv25519'', and other ECC
+curves.  For example the string ``rsa'' adds an RSA key with the
+default key length; a string ``rsa4096'' requests that the key length
+is 4096 bits.
+
+Depending on the given @code{algo} the subkey may either be an
+encryption subkey or a signing subkey.  If an algorithm is capable of
+signing and encryption and such a subkey is desired, a @code{usage}
+string must be given.  This string is either ``default'' or ``-'' to
+keep the default or a comma delimited list of keywords: ``sign'' for a
+signing subkey, ``auth'' for an authentication subkey, and ``encr''
+for an encryption subkey (``encrypt'' can be used as alias for
+``encr'').  The valid combinations depend on the algorithm.
+
+The @code{expire} argument can be used to specify an expiration date
+for the subkey.  Several formats are supported; commonly the ISO
+YYYY-MM-DD format is used.  The values ``never'', ``none'', or ``-''
+can be used for no expiration date.
+
 @item --gen-key
 @opindex gen-key
 Generate a new key pair using the current default parameters.  This is
@@ -635,6 +664,7 @@ extended version of @option{--gen-key}.
 There is also a feature which allows you to create keys in batch
 mode. See the manual section ``Unattended key generation'' on how
 to use this.
+
 
 @item --gen-revoke @code{name}
 @opindex gen-revoke

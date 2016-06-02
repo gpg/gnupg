@@ -1,6 +1,6 @@
 /* keyedit.c - Edit properties of a key
  * Copyright (C) 1998-2010 Free Software Foundation, Inc.
- * Copyright (C) 1998-2015 Werner Koch
+ * Copyright (C) 1998-2016 Werner Koch
  * Copyright (C) 2015, 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
@@ -2349,7 +2349,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  break;
 
 	case cmdADDKEY:
-	  if (!generate_subkeypair (ctrl, keyblock))
+	  if (!generate_subkeypair (ctrl, keyblock, NULL, NULL, NULL))
 	    {
 	      redisplay = 1;
 	      modified = 1;
@@ -2935,6 +2935,75 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
 }
 
 
+/* Find a keyblock by fingerprint because only this uniquely
+ * identifies a key and may thus be used to select a key for
+ * unattended subkey creation os key signing.  */
+static gpg_error_t
+find_by_primary_fpr (ctrl_t ctrl, const char *fpr,
+                     kbnode_t *r_keyblock, KEYDB_HANDLE *r_kdbhd)
+{
+  gpg_error_t err;
+  kbnode_t keyblock = NULL;
+  KEYDB_HANDLE kdbhd = NULL;
+  KEYDB_SEARCH_DESC desc;
+  byte fprbin[MAX_FINGERPRINT_LEN];
+  size_t fprlen;
+
+  *r_keyblock = NULL;
+  *r_kdbhd = NULL;
+
+  if (classify_user_id (fpr, &desc, 1)
+      || !(desc.mode == KEYDB_SEARCH_MODE_FPR
+           || desc.mode == KEYDB_SEARCH_MODE_FPR16
+           || desc.mode == KEYDB_SEARCH_MODE_FPR20))
+    {
+      log_error (_("\"%s\" is not a fingerprint\n"), fpr);
+      err = gpg_error (GPG_ERR_INV_NAME);
+      goto leave;
+    }
+  err = get_pubkey_byname (ctrl, NULL, NULL, fpr, &keyblock, &kdbhd, 1, 1);
+  if (err)
+    {
+      log_error (_("key \"%s\" not found: %s\n"), fpr, gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Check that the primary fingerprint has been given. */
+  fingerprint_from_pk (keyblock->pkt->pkt.public_key, fprbin, &fprlen);
+  if (fprlen == 16 && desc.mode == KEYDB_SEARCH_MODE_FPR16
+      && !memcmp (fprbin, desc.u.fpr, 16))
+    ;
+  else if (fprlen == 16 && desc.mode == KEYDB_SEARCH_MODE_FPR
+           && !memcmp (fprbin, desc.u.fpr, 16)
+           && !desc.u.fpr[16]
+           && !desc.u.fpr[17]
+           && !desc.u.fpr[18]
+           && !desc.u.fpr[19])
+    ;
+  else if (fprlen == 20 && (desc.mode == KEYDB_SEARCH_MODE_FPR20
+                            || desc.mode == KEYDB_SEARCH_MODE_FPR)
+           && !memcmp (fprbin, desc.u.fpr, 20))
+    ;
+  else
+    {
+      log_error (_("\"%s\" is not the primary fingerprint\n"), fpr);
+      err = gpg_error (GPG_ERR_INV_NAME);
+      goto leave;
+    }
+
+  *r_keyblock = keyblock;
+  keyblock = NULL;
+  *r_kdbhd = kdbhd;
+  kdbhd = NULL;
+  err = 0;
+
+ leave:
+  release_kbnode (keyblock);
+  keydb_release (kdbhd);
+  return err;
+}
+
+
 /* Unattended key signing function.  If the key specifified by FPR is
    available and FPR is the primary fingerprint all user ids of the
    key are signed using the default signing key.  If UIDS is an empty
@@ -2949,7 +3018,6 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
   kbnode_t keyblock = NULL;
   KEYDB_HANDLE kdbhd = NULL;
   int modified = 0;
-  KEYDB_SEARCH_DESC desc;
   PKT_public_key *pk;
   kbnode_t node;
   strlist_t sl;
@@ -2963,47 +3031,8 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
   /* We require a fingerprint because only this uniquely identifies a
      key and may thus be used to select a key for unattended key
      signing.  */
-  if (classify_user_id (fpr, &desc, 1)
-      || !(desc.mode == KEYDB_SEARCH_MODE_FPR
-           || desc.mode == KEYDB_SEARCH_MODE_FPR16
-           || desc.mode == KEYDB_SEARCH_MODE_FPR20))
-    {
-      log_error (_("\"%s\" is not a fingerprint\n"), fpr);
-      goto leave;
-    }
-  err = get_pubkey_byname (ctrl, NULL, NULL, fpr, &keyblock, &kdbhd, 1, 1);
-  if (err)
-    {
-      log_error (_("key \"%s\" not found: %s\n"), fpr, gpg_strerror (err));
-      goto leave;
-    }
-
-  /* Check that the primary fingerprint has been given. */
-  {
-    byte fprbin[MAX_FINGERPRINT_LEN];
-    size_t fprlen;
-
-    fingerprint_from_pk (keyblock->pkt->pkt.public_key, fprbin, &fprlen);
-    if (fprlen == 16 && desc.mode == KEYDB_SEARCH_MODE_FPR16
-        && !memcmp (fprbin, desc.u.fpr, 16))
-      ;
-    else if (fprlen == 16 && desc.mode == KEYDB_SEARCH_MODE_FPR
-             && !memcmp (fprbin, desc.u.fpr, 16)
-             && !desc.u.fpr[16]
-             && !desc.u.fpr[17]
-             && !desc.u.fpr[18]
-             && !desc.u.fpr[19])
-      ;
-    else if (fprlen == 20 && (desc.mode == KEYDB_SEARCH_MODE_FPR20
-                              || desc.mode == KEYDB_SEARCH_MODE_FPR)
-             && !memcmp (fprbin, desc.u.fpr, 20))
-      ;
-    else
-      {
-        log_error (_("\"%s\" is not the primary fingerprint\n"), fpr);
-        goto leave;
-      }
-  }
+  if (find_by_primary_fpr (ctrl, fpr, &keyblock, &kdbhd))
+    goto leave;
 
   if (fix_keyblock (&keyblock))
     modified++;
@@ -3122,6 +3151,67 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
   if (update_trust)
     revalidation_mark ();
 
+
+ leave:
+  release_kbnode (keyblock);
+  keydb_release (kdbhd);
+}
+
+
+/* Unattended subkey creation function.
+ *
+ */
+void
+keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
+                      const char *usagestr, const char *expirestr)
+{
+  gpg_error_t err;
+  kbnode_t keyblock;
+  KEYDB_HANDLE kdbhd;
+  int modified = 0;
+  PKT_public_key *pk;
+
+#ifdef HAVE_W32_SYSTEM
+  /* See keyedit_menu for why we need this.  */
+  check_trustdb_stale (ctrl);
+#endif
+
+  /* We require a fingerprint because only this uniquely identifies a
+   * key and may thus be used to select a key for unattended subkey
+   * creation.  */
+  if (find_by_primary_fpr (ctrl, fpr, &keyblock, &kdbhd))
+    goto leave;
+
+  if (fix_keyblock (&keyblock))
+    modified++;
+
+  pk = keyblock->pkt->pkt.public_key;
+  if (pk->flags.revoked)
+    {
+      if (!opt.verbose)
+        show_key_with_all_names (ctrl, es_stdout, keyblock, 0, 0, 0, 0, 0, 1);
+      log_error ("%s%s", _("Key is revoked."), "\n");
+      goto leave;
+    }
+
+  /* Create the subkey.  Noet that the called function already prints
+   * an error message. */
+  if (!generate_subkeypair (ctrl, keyblock, algostr, usagestr, expirestr))
+    modified = 1;
+  es_fflush (es_stdout);
+
+  /* Store.  */
+  if (modified)
+    {
+      err = keydb_update_keyblock (kdbhd, keyblock);
+      if (err)
+        {
+          log_error (_("update failed: %s\n"), gpg_strerror (err));
+          goto leave;
+        }
+    }
+  else
+    log_info (_("Key not changed so no update needed.\n"));
 
  leave:
   release_kbnode (keyblock);

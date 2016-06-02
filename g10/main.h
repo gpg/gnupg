@@ -287,6 +287,8 @@ void keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 void keyedit_passwd (ctrl_t ctrl, const char *username);
 void keyedit_quick_adduid (ctrl_t ctrl, const char *username,
                            const char *newuid);
+void keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
+                           const char *usagestr, const char *expirestr);
 void keyedit_quick_sign (ctrl_t ctrl, const char *fpr,
                          strlist_t uids, strlist_t locusr, int local);
 void show_basic_key_info (KBNODE keyblock);
@@ -311,7 +313,10 @@ int keygen_add_revkey(PKT_signature *sig, void *opaque);
 gpg_error_t make_backsig (PKT_signature *sig, PKT_public_key *pk,
                           PKT_public_key *sub_pk, PKT_public_key *sub_psk,
                           u32 timestamp, const char *cache_nonce);
-gpg_error_t generate_subkeypair (ctrl_t ctrl, kbnode_t pub_keyblock);
+gpg_error_t generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock,
+                                 const char *algostr,
+                                 const char *usagestr,
+                                 const char *expirestr);
 #ifdef ENABLE_CARD_SUPPORT
 gpg_error_t generate_card_subkeypair (kbnode_t pub_keyblock,
                                       int keyno, const char *serialno);

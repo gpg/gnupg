@@ -117,6 +117,7 @@ enum cmd_and_opt_values
     aQuickSignKey,
     aQuickLSignKey,
     aQuickAddUid,
+    aQuickAddKey,
     aListConfig,
     aListGcryptConfig,
     aGPGConfList,
@@ -426,6 +427,7 @@ static ARGPARSE_OPTS opts[] = {
               N_("quickly generate a new key pair")),
   ARGPARSE_c (aQuickAddUid,  "quick-adduid",
               N_("quickly add a new user-id")),
+  ARGPARSE_c (aQuickAddKey,  "quick-addkey", "@"),
   ARGPARSE_c (aFullKeygen,  "full-gen-key" ,
               N_("full featured key pair generation")),
   ARGPARSE_c (aGenRevoke, "gen-revoke",N_("generate a revocation certificate")),
@@ -2433,6 +2435,7 @@ main (int argc, char **argv)
 	  case aStore:
 	  case aQuickKeygen:
 	  case aQuickAddUid:
+	  case aQuickAddKey:
 	  case aExportOwnerTrust:
 	  case aImportOwnerTrust:
           case aRebuildKeydbCaches:
@@ -3775,6 +3778,7 @@ main (int argc, char **argv)
       case aDeleteSecretAndPublicKeys:
       case aQuickKeygen:
       case aQuickAddUid:
+      case aQuickAddKey:
       case aFullKeygen:
       case aKeygen:
       case aImport:
@@ -4145,6 +4149,30 @@ main (int argc, char **argv)
           uid = *argv++; argc--;
           newuid = *argv++; argc--;
           keyedit_quick_adduid (ctrl, uid, newuid);
+        }
+	break;
+
+      case aQuickAddKey:
+        {
+          const char *x_fpr, *x_algo, *x_usage, *x_expire;
+
+          if (argc < 1 || argc > 4)
+            wrong_args ("--quick-addkey FINGERPRINT [ALGO [USAGE [EXPIRE]]]");
+          x_fpr = *argv++; argc--;
+          x_algo = "";
+          x_usage = "";
+          x_expire = "";
+          if (argc)
+            {
+              x_algo = *argv++; argc--;
+              if (argc)
+                {
+                  x_usage = *argv++; argc--;
+                  if (argc)
+                    x_expire = *argv++; argc--;
+                }
+            }
+          keyedit_quick_addkey (ctrl, x_fpr, x_algo, x_usage, x_expire);
         }
 	break;
 
