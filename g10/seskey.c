@@ -211,9 +211,12 @@ do_encode_md( gcry_md_hd_t md, int algo, size_t len, unsigned nbits,
     int i,n;
     gcry_mpi_t a;
 
-    if( len + asnlen + 4  > nframe )
-      log_bug ("can't encode a %d bit MD into a %d bits frame, algo=%d\n",
-               (int)(len*8), (int)nbits, algo);
+    if (len + asnlen + 4  > nframe)
+      {
+        log_error ("can't encode a %d bit MD into a %d bits frame, algo=%d\n",
+                   (int)(len*8), (int)nbits, algo);
+        return NULL;
+      }
 
     /* We encode the MD in this way:
      *

@@ -301,6 +301,8 @@ write_fake_data (IOBUF out, gcry_mpi_t a)
 
   if (!a)
     return 0;
+  if (!gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
+    return 0; /* e.g. due to generating a key with wrong usage.  */
   p = gcry_mpi_get_opaque ( a, &n);
   if (!p)
     return 0; /* For example due to a read error in
