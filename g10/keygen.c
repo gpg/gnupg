@@ -166,11 +166,14 @@ print_status_key_created (int letter, PKT_public_key *pk, const char *handle)
   if (letter || pk)
     {
       *p++ = letter;
-      *p++ = ' ';
-      fingerprint_from_pk (pk, array, &n);
-      s = array;
-      for (i=0; i < n ; i++, s++, p += 2)
-        sprintf (p, "%02X", *s);
+      if (pk)
+        {
+          *p++ = ' ';
+          fingerprint_from_pk (pk, array, &n);
+          s = array;
+          for (i=0; i < n ; i++, s++, p += 2)
+            sprintf (p, "%02X", *s);
+        }
     }
   if (*handle)
     {
@@ -4662,7 +4665,8 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
   if (err)
     goto leave;
 
-  write_status_text (STATUS_KEY_CREATED, "S");
+  print_status_key_created ('S', sub_psk, NULL);
+
 
  leave:
   xfree (key_from_hexgrip);
@@ -4691,6 +4695,7 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
   u32 expire;
   u32 cur_time;
   struct para_data_s *para = NULL;
+  PKT_public_key *sub_pk = NULL;
 
   log_assert (keyno >= 1 && keyno <= 3);
 
@@ -4757,8 +4762,6 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
   /* Get the pointer to the generated public subkey packet.  */
   if (!err)
     {
-      PKT_public_key *sub_pk = NULL;
-
       for (node = pub_keyblock; node; node = node->next)
         if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
           sub_pk = node->pkt->pkt.public_key;
@@ -4771,7 +4774,7 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
   if (err)
     log_error (_("Key generation failed: %s\n"), gpg_strerror (err) );
   else
-    write_status_text (STATUS_KEY_CREATED, "S");
+    print_status_key_created ('S', sub_pk, NULL);
   release_parameter_list (para);
   return err;
 }
