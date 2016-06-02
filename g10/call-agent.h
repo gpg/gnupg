@@ -156,7 +156,8 @@ gpg_error_t agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
                                char **r_serialno);
 
 /* Generate a new key.  */
-gpg_error_t agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
+gpg_error_t agent_genkey (ctrl_t ctrl,
+                          char **cache_nonce_addr, char **passwd_nonce_addr,
                           const char *keyparms, int no_protection,
                           const char *passphrase,
                           gcry_sexp_t *r_pubkey);
@@ -200,6 +201,7 @@ gpg_error_t agent_delete_key (ctrl_t ctrl, const char *hexkeygrip,
 
 /* Change the passphrase of a key.  */
 gpg_error_t agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
+                          int verify,
                           char **cache_nonce_addr, char **passwd_nonce_addr);
 /* Get the version reported by gpg-agent.  */
 gpg_error_t agent_get_version (ctrl_t ctrl, char **r_version);

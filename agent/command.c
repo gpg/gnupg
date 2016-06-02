@@ -207,7 +207,7 @@ clear_nonce_cache (ctrl_t ctrl)
 }
 
 
-/* This function is called by Libassuan whenever thee client sends a
+/* This function is called by Libassuan whenever the client sends a
    reset.  It has been registered similar to the other Assuan
    commands.  */
 static gpg_error_t
@@ -857,7 +857,8 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 
 
 static const char hlp_genkey[] =
-  "GENKEY [--no-protection] [--preset] [--inq-passwd] [<cache_nonce>]\n"
+  "GENKEY [--no-protection] [--preset] [--inq-passwd]\n"
+  "       [--passwd-nonce=<s>] [<cache_nonce>]\n"
   "\n"
   "Generate a new key, store the secret part and return the public\n"
   "part.  Here is an example transaction:\n"
@@ -873,7 +874,8 @@ static const char hlp_genkey[] =
   "When the --preset option is used the passphrase for the generated\n"
   "key will be added to the cache.  When --inq-passwd is used an inquire\n"
   "with the keyword NEWPASSWD is used to request the passphrase for the\n"
-  "new key.\n";
+  "new key.  When a --passwd-nonce is used, the corresponding cached\n"
+  "passphrase is used to protect the new key.";
 static gpg_error_t
 cmd_genkey (assuan_context_t ctx, char *line)
 {
@@ -885,10 +887,12 @@ cmd_genkey (assuan_context_t ctx, char *line)
   unsigned char *newpasswd = NULL;
   membuf_t outbuf;
   char *cache_nonce = NULL;
+  char *passwd_nonce = NULL;
   int opt_preset;
   int opt_inq_passwd;
   size_t n;
-  char *p;
+  char *p, *pend;
+  int c;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
@@ -896,6 +900,21 @@ cmd_genkey (assuan_context_t ctx, char *line)
   no_protection = has_option (line, "--no-protection");
   opt_preset = has_option (line, "--preset");
   opt_inq_passwd = has_option (line, "--inq-passwd");
+  passwd_nonce = option_value (line, "--passwd-nonce");
+  if (passwd_nonce)
+    {
+      for (pend = passwd_nonce; *pend && !spacep (pend); pend++)
+        ;
+      c = *pend;
+      *pend = '\0';
+      passwd_nonce = xtrystrdup (passwd_nonce);
+      *pend = c;
+      if (!passwd_nonce)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
   line = skip_options (line);
 
   p = line;
@@ -933,6 +952,8 @@ cmd_genkey (assuan_context_t ctx, char *line)
         }
 
     }
+  else if (passwd_nonce)
+    newpasswd = agent_get_cache (passwd_nonce, CACHE_MODE_NONCE);
 
   rc = agent_genkey (ctrl, cache_nonce, (char*)value, valuelen, no_protection,
                      newpasswd, opt_preset, &outbuf);
@@ -951,6 +972,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
   else
     rc = write_and_clear_outbuf (ctx, &outbuf);
   xfree (cache_nonce);
+  xfree (passwd_nonce);
   return leave_cmd (ctx, rc);
 }
 
@@ -1715,6 +1737,24 @@ cmd_passwd (assuan_context_t ctx, char *line)
   else if (opt_verify)
     {
       /* All done.  */
+      if (passphrase)
+        {
+          if (!passwd_nonce)
+            {
+              char buf[12];
+              gcry_create_nonce (buf, 12);
+              passwd_nonce = bin2hex (buf, 12, NULL);
+            }
+          if (passwd_nonce
+              && !agent_put_cache (passwd_nonce, CACHE_MODE_NONCE,
+                                   passphrase, CACHE_TTL_NONCE))
+            {
+              assuan_write_status (ctx, "PASSWD_NONCE", passwd_nonce);
+              xfree (ctrl->server_local->last_passwd_nonce);
+              ctrl->server_local->last_passwd_nonce = passwd_nonce;
+              passwd_nonce = NULL;
+            }
+        }
     }
   else
     {
@@ -1785,6 +1825,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
   gcry_sexp_release (s_skey);
   xfree (shadow_info);
   xfree (cache_nonce);
+  xfree (passwd_nonce);
   return leave_cmd (ctx, err);
 }
 

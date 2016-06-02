@@ -1805,7 +1805,7 @@ inq_genkey_parms (void *opaque, const char *line)
    PASSPHRASE is not NULL the agent is requested to protect the key
    with that passphrase instead of asking for one.  */
 gpg_error_t
-agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
+agent_genkey (ctrl_t ctrl, char **cache_nonce_addr, char **passwd_nonce_addr,
               const char *keyparms, int no_protection,
               const char *passphrase, gcry_sexp_t *r_pubkey)
 {
@@ -1827,19 +1827,26 @@ agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
     return err;
   dfltparm.ctx = agent_ctx;
 
-  err = assuan_transact (agent_ctx, "RESET",
-                         NULL, NULL, NULL, NULL, NULL, NULL);
-  if (err)
-    return err;
+  if (passwd_nonce_addr && *passwd_nonce_addr)
+    ; /* A RESET would flush the passwd nonce cache.  */
+  else
+    {
+      err = assuan_transact (agent_ctx, "RESET",
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+      if (err)
+        return err;
+    }
 
   init_membuf (&data, 1024);
   gk_parm.dflt     = &dfltparm;
   gk_parm.keyparms = keyparms;
   gk_parm.passphrase = passphrase;
-  snprintf (line, sizeof line, "GENKEY%s%s%s",
+  snprintf (line, sizeof line, "GENKEY%s%s%s%s%s",
             no_protection? " --no-protection" :
             passphrase   ? " --inq-passwd" :
             /*          */ "",
+            passwd_nonce_addr && *passwd_nonce_addr? " --passwd-nonce=":"",
+            passwd_nonce_addr && *passwd_nonce_addr? *passwd_nonce_addr:"",
             cache_nonce_addr && *cache_nonce_addr? " ":"",
             cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"");
   cn_parm.cache_nonce_addr = cache_nonce_addr;
@@ -2389,13 +2396,14 @@ agent_delete_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
 
 
 /* Ask the agent to change the passphrase of the key identified by
-   HEXKEYGRIP.  If DESC is not NULL, display DESC instead of the
-   default description message.  If CACHE_NONCE_ADDR is not NULL the
-   agent is advised to first try a passphrase associated with that
-   nonce.  If PASSWD_NONCE_ADDR is not NULL the agent will try to use
-   the passphrase associated with that nonce.  */
+ * HEXKEYGRIP.  If DESC is not NULL, display DESC instead of the
+ * default description message.  If CACHE_NONCE_ADDR is not NULL the
+ * agent is advised to first try a passphrase associated with that
+ * nonce.  If PASSWD_NONCE_ADDR is not NULL the agent will try to use
+ * the passphrase associated with that nonce for the new passphrase.
+ * If VERIFY is true the passphrase is only verified.  */
 gpg_error_t
-agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
+agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc, int verify,
               char **cache_nonce_addr, char **passwd_nonce_addr)
 {
   gpg_error_t err;
@@ -2414,7 +2422,6 @@ agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
   if (!hexkeygrip || strlen (hexkeygrip) != 40)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-
   if (desc)
     {
       snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
@@ -2424,12 +2431,18 @@ agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
         return err;
     }
 
-  snprintf (line, DIM(line)-1, "PASSWD %s%s %s%s %s",
-            cache_nonce_addr && *cache_nonce_addr? "--cache-nonce=":"",
-            cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"",
-            passwd_nonce_addr && *passwd_nonce_addr? "--passwd-nonce=":"",
-            passwd_nonce_addr && *passwd_nonce_addr? *passwd_nonce_addr:"",
-            hexkeygrip);
+  if (verify)
+    snprintf (line, DIM(line)-1, "PASSWD %s%s --verify %s",
+              cache_nonce_addr && *cache_nonce_addr? "--cache-nonce=":"",
+              cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"",
+              hexkeygrip);
+  else
+    snprintf (line, DIM(line)-1, "PASSWD %s%s %s%s %s",
+              cache_nonce_addr && *cache_nonce_addr? "--cache-nonce=":"",
+              cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"",
+              passwd_nonce_addr && *passwd_nonce_addr? "--passwd-nonce=":"",
+              passwd_nonce_addr && *passwd_nonce_addr? *passwd_nonce_addr:"",
+              hexkeygrip);
   cn_parm.cache_nonce_addr = cache_nonce_addr;
   cn_parm.passwd_nonce_addr = passwd_nonce_addr;
   err = assuan_transact (agent_ctx, line, NULL, NULL,
@@ -2437,6 +2450,7 @@ agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
                          cache_nonce_status_cb, &cn_parm);
   return err;
 }
+
 
 /* Return the version reported by gpg-agent.  */
 gpg_error_t

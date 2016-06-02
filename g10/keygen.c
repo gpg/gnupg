@@ -1304,14 +1304,15 @@ do_create_from_keygrip (ctrl_t ctrl, int algo, const char *hexkeygrip,
 static int
 common_gen (const char *keyparms, int algo, const char *algoelem,
             kbnode_t pub_root, u32 timestamp, u32 expireval, int is_subkey,
-            int keygen_flags, const char *passphrase, char **cache_nonce_addr)
+            int keygen_flags, const char *passphrase,
+            char **cache_nonce_addr, char **passwd_nonce_addr)
 {
   int err;
   PACKET *pkt;
   PKT_public_key *pk;
   gcry_sexp_t s_key;
 
-  err = agent_genkey (NULL, cache_nonce_addr, keyparms,
+  err = agent_genkey (NULL, cache_nonce_addr, passwd_nonce_addr, keyparms,
                       !!(keygen_flags & KEYGEN_FLAG_NO_PROTECTION),
                       passphrase,
                       &s_key);
@@ -1372,7 +1373,8 @@ common_gen (const char *keyparms, int algo, const char *algoelem,
 static int
 gen_elg (int algo, unsigned int nbits, KBNODE pub_root,
          u32 timestamp, u32 expireval, int is_subkey,
-         int keygen_flags, const char *passphrase, char **cache_nonce_addr)
+         int keygen_flags, const char *passphrase,
+         char **cache_nonce_addr, char **passwd_nonce_addr)
 {
   int err;
   char *keyparms;
@@ -1413,7 +1415,8 @@ gen_elg (int algo, unsigned int nbits, KBNODE pub_root,
     {
       err = common_gen (keyparms, algo, "pgy",
                         pub_root, timestamp, expireval, is_subkey,
-                        keygen_flags, passphrase, cache_nonce_addr);
+                        keygen_flags, passphrase,
+                        cache_nonce_addr, passwd_nonce_addr);
       xfree (keyparms);
     }
 
@@ -1427,7 +1430,8 @@ gen_elg (int algo, unsigned int nbits, KBNODE pub_root,
 static gpg_error_t
 gen_dsa (unsigned int nbits, KBNODE pub_root,
          u32 timestamp, u32 expireval, int is_subkey,
-         int keygen_flags, const char *passphrase, char **cache_nonce_addr)
+         int keygen_flags, const char *passphrase,
+         char **cache_nonce_addr, char **passwd_nonce_addr)
 {
   int err;
   unsigned int qbits;
@@ -1500,7 +1504,8 @@ gen_dsa (unsigned int nbits, KBNODE pub_root,
     {
       err = common_gen (keyparms, PUBKEY_ALGO_DSA, "pqgy",
                         pub_root, timestamp, expireval, is_subkey,
-                        keygen_flags, passphrase, cache_nonce_addr);
+                        keygen_flags, passphrase,
+                        cache_nonce_addr, passwd_nonce_addr);
       xfree (keyparms);
     }
 
@@ -1515,7 +1520,8 @@ gen_dsa (unsigned int nbits, KBNODE pub_root,
 static gpg_error_t
 gen_ecc (int algo, const char *curve, kbnode_t pub_root,
          u32 timestamp, u32 expireval, int is_subkey,
-         int keygen_flags, const char *passphrase, char **cache_nonce_addr)
+         int keygen_flags, const char *passphrase,
+         char **cache_nonce_addr, char **passwd_nonce_addr)
 {
   gpg_error_t err;
   char *keyparms;
@@ -1557,7 +1563,8 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
     {
       err = common_gen (keyparms, algo, "",
                         pub_root, timestamp, expireval, is_subkey,
-                        keygen_flags, passphrase, cache_nonce_addr);
+                        keygen_flags, passphrase,
+                        cache_nonce_addr, passwd_nonce_addr);
       xfree (keyparms);
     }
 
@@ -1571,7 +1578,8 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
 static int
 gen_rsa (int algo, unsigned int nbits, KBNODE pub_root,
          u32 timestamp, u32 expireval, int is_subkey,
-         int keygen_flags, const char *passphrase, char **cache_nonce_addr)
+         int keygen_flags, const char *passphrase,
+         char **cache_nonce_addr, char **passwd_nonce_addr)
 {
   int err;
   char *keyparms;
@@ -1612,7 +1620,8 @@ gen_rsa (int algo, unsigned int nbits, KBNODE pub_root,
     {
       err = common_gen (keyparms, algo, "ne",
                         pub_root, timestamp, expireval, is_subkey,
-                        keygen_flags, passphrase, cache_nonce_addr);
+                        keygen_flags, passphrase,
+                        cache_nonce_addr, passwd_nonce_addr);
       xfree (keyparms);
     }
 
@@ -2751,7 +2760,8 @@ ask_user_id (int mode, int full, KBNODE keyblock)
 static int
 do_create (int algo, unsigned int nbits, const char *curve, KBNODE pub_root,
            u32 timestamp, u32 expiredate, int is_subkey,
-           int keygen_flags, const char *passphrase, char **cache_nonce_addr)
+           int keygen_flags, const char *passphrase,
+           char **cache_nonce_addr, char **passwd_nonce_addr)
 {
   gpg_error_t err;
 
@@ -2766,18 +2776,22 @@ do_create (int algo, unsigned int nbits, const char *curve, KBNODE pub_root,
 
   if (algo == PUBKEY_ALGO_ELGAMAL_E)
     err = gen_elg (algo, nbits, pub_root, timestamp, expiredate, is_subkey,
-                   keygen_flags, passphrase, cache_nonce_addr);
+                   keygen_flags, passphrase,
+                   cache_nonce_addr, passwd_nonce_addr);
   else if (algo == PUBKEY_ALGO_DSA)
     err = gen_dsa (nbits, pub_root, timestamp, expiredate, is_subkey,
-                   keygen_flags, passphrase, cache_nonce_addr);
+                   keygen_flags, passphrase,
+                   cache_nonce_addr, passwd_nonce_addr);
   else if (algo == PUBKEY_ALGO_ECDSA
            || algo == PUBKEY_ALGO_EDDSA
            || algo == PUBKEY_ALGO_ECDH)
     err = gen_ecc (algo, curve, pub_root, timestamp, expiredate, is_subkey,
-                   keygen_flags, passphrase, cache_nonce_addr);
+                   keygen_flags, passphrase,
+                   cache_nonce_addr, passwd_nonce_addr);
   else if (algo == PUBKEY_ALGO_RSA)
     err = gen_rsa (algo, nbits, pub_root, timestamp, expiredate, is_subkey,
-                   keygen_flags, passphrase, cache_nonce_addr);
+                   keygen_flags, passphrase,
+                   cache_nonce_addr, passwd_nonce_addr);
   else
     BUG();
 
@@ -4169,7 +4183,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                      get_parameter_u32( para, pKEYEXPIRE ), 0,
                      outctrl->keygen_flags,
                      get_parameter_passphrase (para),
-                     &cache_nonce);
+                     &cache_nonce, NULL);
   else
     err = gen_card_key (PUBKEY_ALGO_RSA, 1, 1, pub_root,
                         &timestamp,
@@ -4232,7 +4246,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                            get_parameter_u32 (para, pSUBKEYEXPIRE), 1,
                            s ? KEYGEN_FLAG_NO_PROTECTION : outctrl->keygen_flags,
                            get_parameter_passphrase (para),
-                           &cache_nonce);
+                           &cache_nonce, NULL);
           /* Get the pointer to the generated public subkey packet.  */
           if (!err)
             {
@@ -4508,8 +4522,11 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
   unsigned int nbits = 0;
   char *curve = NULL;
   u32 cur_time;
+  char *key_from_hexgrip = NULL;
   char *hexgrip = NULL;
   char *serialno = NULL;
+  char *cache_nonce = NULL;
+  char *passwd_nonce = NULL;
 
   interactive = (!algostr || !usagestr || !expirestr);
 
@@ -4567,14 +4584,12 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
         log_info (  _("Secret parts of primary key are stored on-card.\n"));
     }
 
-  xfree (hexgrip);
-  hexgrip = NULL;
   if (interactive)
     {
-      algo = ask_algo (ctrl, 1, NULL, &use, &hexgrip);
+      algo = ask_algo (ctrl, 1, NULL, &use, &key_from_hexgrip);
       log_assert (algo);
 
-      if (hexgrip)
+      if (key_from_hexgrip)
         nbits = 0;
       else if (algo == PUBKEY_ALGO_ECDSA
                || algo == PUBKEY_ALGO_EDDSA
@@ -4599,12 +4614,40 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
         goto leave;
     }
 
-  if (hexgrip)
-    err = do_create_from_keygrip (ctrl, algo, hexgrip,
-                                  keyblock, cur_time, expire, 1);
+  /* Verify the passphrase now so that we get a cache item for the
+   * primary key passphrase.  The agent also returns a passphrase
+   * nonce, which we can use to set the passphrase for the subkey to
+   * that of the primary key.  */
+  {
+    char *desc = gpg_format_keydesc (pri_psk, FORMAT_KEYDESC_NORMAL, 1);
+    err = agent_passwd (ctrl, hexgrip, desc, 1 /*=verify*/,
+                        &cache_nonce, &passwd_nonce);
+    xfree (desc);
+  }
+
+  /* Start creation.  */
+  if (key_from_hexgrip)
+    {
+      err = do_create_from_keygrip (ctrl, algo, key_from_hexgrip,
+                                    keyblock, cur_time, expire, 1);
+    }
   else
-    err = do_create (algo, nbits, curve,
-                     keyblock, cur_time, expire, 1, 0, NULL, NULL);
+    {
+      const char *passwd;
+
+      /* If the pinentry loopback mode is not and we have a static
+         passphrase (i.e. set with --passphrase{,-fd,-file} while in batch
+         mode), we use that passphrase for the new subkey.  */
+      if (opt.pinentry_mode != PINENTRY_MODE_LOOPBACK
+          && have_static_passphrase ())
+        passwd = get_static_passphrase ();
+      else
+        passwd = NULL;
+
+      err = do_create (algo, nbits, curve,
+                       keyblock, cur_time, expire, 1, 0,
+                       passwd, &cache_nonce, &passwd_nonce);
+    }
   if (err)
     goto leave;
 
@@ -4614,16 +4657,20 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
       sub_psk = node->pkt->pkt.public_key;
 
   /* Write the binding signature.  */
-  err = write_keybinding (keyblock, pri_psk, sub_psk, use, cur_time, NULL);
+  err = write_keybinding (keyblock, pri_psk, sub_psk, use, cur_time,
+                          cache_nonce);
   if (err)
     goto leave;
 
   write_status_text (STATUS_KEY_CREATED, "S");
 
  leave:
+  xfree (key_from_hexgrip);
   xfree (curve);
   xfree (hexgrip);
   xfree (serialno);
+  xfree (cache_nonce);
+  xfree (passwd_nonce);
   if (err)
     log_error (_("Key generation failed: %s\n"), gpg_strerror (err) );
   return err;
