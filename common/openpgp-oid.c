@@ -35,7 +35,7 @@
 #include <assert.h>
 
 #include "util.h"
-
+#include "openpgpdefs.h"
 
 /* A table with all our supported OpenPGP curves.  */
 static struct {
@@ -43,10 +43,11 @@ static struct {
   const char *oidstr; /* IETF formatted OID.  */
   unsigned int nbits; /* Nominal bit length of the curve.  */
   const char *alias;  /* NULL or alternative name of the curve.  */
+  int pubkey_algo;    /* Required OpenPGP algo or 0 for ECDSA/ECDH.  */
 } oidtable[] = {
 
-  { "Curve25519",      "1.3.6.1.4.1.3029.1.5.1", 255, "cv25519" },
-  { "Ed25519",         "1.3.6.1.4.1.11591.15.1", 255, "ed25519" },
+  { "Curve25519", "1.3.6.1.4.1.3029.1.5.1", 255, "cv25519", PUBKEY_ALGO_ECDH },
+  { "Ed25519",    "1.3.6.1.4.1.11591.15.1", 255, "ed25519", PUBKEY_ALGO_EDDSA },
 
   { "NIST P-256",      "1.2.840.10045.3.1.7",    256, "nistp256" },
   { "NIST P-384",      "1.3.132.0.34",           384, "nistp384" },
@@ -406,5 +407,31 @@ openpgp_enum_curves (int *iterp)
       idx++;
     }
   *iterp = idx;
+  return NULL;
+}
+
+
+/* Return the Libgcrypt name for for the gpg curve NAME if supported.
+ * If R_ALGO is not NULL the required OpenPGP public key algo or 0 is
+ * stored at that address.  NULL is returned if the curev is not
+ * supported. */
+const char *
+openpgp_is_curve_supported (const char *name, int *r_algo)
+{
+  int idx;
+
+  if (r_algo)
+    *r_algo = 0;
+  for (idx = 0; idx < DIM (oidtable) && oidtable[idx].name; idx++)
+    {
+      if (!strcmp (name, (oidtable[idx].alias? oidtable[idx].alias
+                          /**/               : oidtable[idx].name))
+          && curve_supported_p (oidtable[idx].name))
+        {
+          if (r_algo)
+            *r_algo = oidtable[idx].pubkey_algo;
+          return oidtable[idx].name;
+        }
+    }
   return NULL;
 }
