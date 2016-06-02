@@ -54,7 +54,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <assert.h>
-
+/* #include <execinfo.h> */
 
 #define GNUPG_COMMON_NEED_AFLOCAL 1
 #include "util.h"
@@ -748,6 +748,19 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
       if (missing_lf)
         es_putc_unlocked ('\n', logstream );
       es_funlockfile (logstream);
+      /* Using backtrace requires a configure test and to pass
+       * -rdynamic to gcc.  Thus we do not enable it now.  */
+      /* { */
+      /*   void *btbuf[20]; */
+      /*   int btidx, btlen; */
+      /*   char **btstr; */
+
+      /*   btlen = backtrace (btbuf, DIM (btbuf)); */
+      /*   btstr = backtrace_symbols (btbuf, btlen); */
+      /*   if (btstr) */
+      /*     for (btidx=0; btidx < btlen; btidx++) */
+      /*       log_debug ("[%d] %s\n", btidx, btstr[btidx]); */
+      /* } */
       abort ();
     }
   else
