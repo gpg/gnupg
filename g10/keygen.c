@@ -136,6 +136,12 @@ static byte zip_prefs[MAX_PREFS];
 static int nzip_prefs;
 static int mdc_available,ks_modify;
 
+static gpg_error_t parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
+                                     const char *algostr, const char *usagestr,
+                                     const char *expirestr,
+                                     int *r_algo, unsigned int *r_usage,
+                                     u32 *r_expire,
+                                     unsigned int *r_nbits, char **r_curve);
 static void do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 				 struct output_control_s *outctrl, int card );
 static int write_keyblock (iobuf_t out, kbnode_t node);
@@ -3467,13 +3473,20 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
 /* Helper for quick_generate_keypair.  */
 static struct para_data_s *
 quickgen_set_para (struct para_data_s *para, int for_subkey,
-                   int algo, int nbits, const char *curve)
+                   int algo, int nbits, const char *curve, unsigned int use)
 {
   struct para_data_s *r;
 
-  r = xmalloc_clear (sizeof *r + 20);
+  r = xmalloc_clear (sizeof *r + 30);
   r->key = for_subkey? pSUBKEYUSAGE :  pKEYUSAGE;
-  strcpy (r->u.value, for_subkey ? "encrypt" : "sign");
+  if (use)
+    snprintf (r->u.value, 30, "%s%s%s%s",
+              (use & PUBKEY_USAGE_ENC)?  "encr " : "",
+              (use & PUBKEY_USAGE_SIG)?  "sign " : "",
+              (use & PUBKEY_USAGE_AUTH)? "auth " : "",
+              (use & PUBKEY_USAGE_CERT)? "cert " : "");
+  else
+    strcpy (r->u.value, for_subkey ? "encr" : "sign");
   r->next = para;
   para = r;
   r = xmalloc_clear (sizeof *r + 20);
@@ -3507,7 +3520,8 @@ quickgen_set_para (struct para_data_s *para, int for_subkey,
  * Unattended generation of a standard key.
  */
 void
-quick_generate_keypair (ctrl_t ctrl, const char *uid)
+quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
+                        const char *usagestr, const char *expirestr)
 {
   gpg_error_t err;
   struct para_data_s *para = NULL;
@@ -3518,6 +3532,7 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid)
   memset (&outctrl, 0, sizeof outctrl);
 
   use_tty = (!opt.batch && !opt.answer_yes
+             && !*algostr && !*usagestr && !*expirestr
              && !cpr_enabled ()
              && gnupg_isatty (fileno (stdin))
              && gnupg_isatty (fileno (stdout))
@@ -3578,12 +3593,39 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid)
       }
   }
 
-  para = quickgen_set_para (para, 0,
-                            DEFAULT_STD_ALGO, DEFAULT_STD_KEYSIZE,
-                            DEFAULT_STD_CURVE);
-  para = quickgen_set_para (para, 1,
-                            DEFAULT_STD_SUBALGO, DEFAULT_STD_SUBKEYSIZE,
-                            DEFAULT_STD_SUBCURVE);
+  if (*algostr || *usagestr || *expirestr)
+    {
+      /* Extended unattended mode.  Creates only the primary key. */
+      int algo;
+      unsigned int use;
+      u32 expire;
+      unsigned int nbits;
+      char *curve;
+
+      err = parse_algo_usage_expire (ctrl, 0, algostr, usagestr, expirestr,
+                                     &algo, &use, &expire, &nbits, &curve);
+      if (err)
+        {
+          log_error (_("Key generation failed: %s\n"), gpg_strerror (err) );
+          goto leave;
+        }
+
+      para = quickgen_set_para (para, 0, algo, nbits, curve, use);
+      r = xmalloc_clear (sizeof *r + 20);
+      r->key = pKEYEXPIRE;
+      r->u.expire = expire;
+      r->next = para;
+      para = r;
+    }
+  else
+    {
+      para = quickgen_set_para (para, 0,
+                                DEFAULT_STD_ALGO, DEFAULT_STD_KEYSIZE,
+                                DEFAULT_STD_CURVE, 0);
+      para = quickgen_set_para (para, 1,
+                                DEFAULT_STD_SUBALGO, DEFAULT_STD_SUBKEYSIZE,
+                                DEFAULT_STD_SUBCURVE, 0);
+    }
 
   /* If the pinentry loopback mode is not and we have a static
      passphrase (i.e. set with --passphrase{,-fd,-file} while in batch
@@ -3601,6 +3643,7 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid)
     }
 
   proc_parameter_file (ctrl, para, "[internal]", &outctrl, 0);
+
  leave:
   release_parameter_list (para);
 }
@@ -3844,10 +3887,10 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
                    , "--full-gen-key" );
       para = quickgen_set_para (para, 0,
                                 DEFAULT_STD_ALGO, DEFAULT_STD_KEYSIZE,
-                                DEFAULT_STD_CURVE);
+                                DEFAULT_STD_CURVE, 0);
       para = quickgen_set_para (para, 1,
                                 DEFAULT_STD_SUBALGO, DEFAULT_STD_SUBKEYSIZE,
-                                DEFAULT_STD_SUBCURVE);
+                                DEFAULT_STD_SUBCURVE, 0);
     }
 
 
@@ -4318,7 +4361,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 }
 
 
-gpg_error_t
+static gpg_error_t
 parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
                          const char *algostr, const char *usagestr,
                          const char *expirestr,
@@ -4340,8 +4383,9 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
   if (!algostr || !*algostr
       || !strcmp (algostr, "default") || !strcmp (algostr, "-"))
     {
-      algo = DEFAULT_STD_SUBALGO;
-      use = DEFAULT_STD_SUBKEYUSE;
+      algo = for_subkey? DEFAULT_STD_SUBALGO : DEFAULT_STD_ALGO;
+      use = for_subkey?  DEFAULT_STD_SUBKEYUSE : DEFAULT_STD_KEYUSE;
+      nbits = for_subkey?DEFAULT_STD_SUBKEYSIZE : DEFAULT_STD_KEYSIZE;
     }
   else if (*algostr == '&' && strlen (algostr) == 41)
     {

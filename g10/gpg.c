@@ -4096,11 +4096,29 @@ main (int argc, char **argv)
 	break;
 
       case aQuickKeygen:
-        if (argc != 1 )
-          wrong_args("--gen-key user-id");
-        username = make_username (fname);
-        quick_generate_keypair (ctrl, username);
-        xfree (username);
+        {
+          const char *x_algo, *x_usage, *x_expire;
+
+          if (argc < 1 || argc > 4)
+            wrong_args("--quick-gen-key USER-ID [ALGO [USAGE [EXPIRE]]]");
+          username = make_username (fname);
+          argv++, argc--;
+          x_algo = "";
+          x_usage = "";
+          x_expire = "";
+          if (argc)
+            {
+              x_algo = *argv++; argc--;
+              if (argc)
+                {
+                  x_usage = *argv++; argc--;
+                  if (argc)
+                    x_expire = *argv++; argc--;
+                }
+            }
+          quick_generate_keypair (ctrl, username, x_algo, x_usage, x_expire);
+          xfree (username);
+        }
         break;
 
       case aKeygen: /* generate a key */
