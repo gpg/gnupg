@@ -51,6 +51,7 @@
    is inside the bounds enforced by ask_keysize and gen_xxx.  */
 #define DEFAULT_STD_ALGO       PUBKEY_ALGO_RSA
 #define DEFAULT_STD_KEYSIZE    2048
+#define DEFAULT_STD_KEYUSE     (PUBKEY_USAGE_CERT|PUBKEY_USAGE_SIG)
 #define DEFAULT_STD_CURVE      NULL
 #define DEFAULT_STD_SUBALGO    PUBKEY_ALGO_RSA
 #define DEFAULT_STD_SUBKEYSIZE 2048
@@ -2937,6 +2938,8 @@ parse_usagestr (const char *usagestr)
         use |= PUBKEY_USAGE_ENC;
       else if (!ascii_strcasecmp (s, "auth"))
         use |= PUBKEY_USAGE_AUTH;
+      else if (!ascii_strcasecmp (s, "cert"))
+        use |= PUBKEY_USAGE_CERT;
       else
         {
           xfree (tokens);
@@ -4316,13 +4319,15 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
 
 gpg_error_t
-parse_subkey_algostr_usagestr (ctrl_t ctrl, const char *algostr,
-                               const char *usagestr,
-                               int *r_algo, unsigned int *r_usage,
-                               unsigned int *r_nbits, char **r_curve)
+parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
+                         const char *algostr, const char *usagestr,
+                         const char *expirestr,
+                         int *r_algo, unsigned int *r_usage, u32 *r_expire,
+                         unsigned int *r_nbits, char **r_curve)
 {
   int algo;
   unsigned int use, nbits;
+  u32 expire;
   int wantuse;
   unsigned int min, def, max;
   const char *curve = NULL;
@@ -4348,7 +4353,7 @@ parse_subkey_algostr_usagestr (ctrl_t ctrl, const char *algostr,
   else if (!strncmp (algostr, "rsa", 3))
     {
       algo = PUBKEY_ALGO_RSA;
-      use = DEFAULT_STD_SUBKEYUSE;
+      use = for_subkey? DEFAULT_STD_SUBKEYUSE : DEFAULT_STD_KEYUSE;
       if (algostr[3])
         nbits = atoi (algostr + 3);
     }
@@ -4395,6 +4400,27 @@ parse_subkey_algostr_usagestr (ctrl_t ctrl, const char *algostr,
   else
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  /* Make sure a primary key has the CERT usage.  */
+  if (!for_subkey)
+    use |= PUBKEY_USAGE_CERT;
+
+  /* Check that usage is possible.  */
+  if (/**/((use & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_AUTH|PUBKEY_USAGE_CERT))
+           && !pubkey_get_nsig (algo))
+       || ((use & PUBKEY_USAGE_ENC)
+           && !pubkey_get_nenc (algo))
+       || (for_subkey && (use & PUBKEY_USAGE_CERT)))
+    return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+
+  /* Parse the expire string.  */
+  if (!expirestr || !*expirestr || !strcmp (expirestr, "none")
+      || !strcmp (expirestr, "never") || !strcmp (expirestr, "-"))
+    expire = 0;
+  else
+    expire = parse_expire_string (expirestr);
+  if (expire == (u32)-1 )
+    return gpg_error (GPG_ERR_INV_VALUE);
+
   /* Make sure the keysize is in the allowed range.  */
   get_keysize_range (algo, &min, &def, &max);
   if (!nbits)
@@ -4414,6 +4440,7 @@ parse_subkey_algostr_usagestr (ctrl_t ctrl, const char *algostr,
     }
   *r_algo = algo;
   *r_usage = use;
+  *r_expire = expire;
   *r_nbits = nbits;
   return 0;
 }
@@ -4522,31 +4549,10 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
     }
   else /* Unattended mode.  */
     {
-      err = parse_subkey_algostr_usagestr (ctrl, algostr, usagestr,
-                                           &algo, &use, &nbits, &curve);
+      err = parse_algo_usage_expire (ctrl, 1, algostr, usagestr, expirestr,
+                                     &algo, &use, &expire, &nbits, &curve);
       if (err)
         goto leave;
-
-      if (!expirestr || !*expirestr || !strcmp (expirestr, "none")
-          || !strcmp (expirestr, "never") || !strcmp (expirestr, "-"))
-        expire = 0;
-      else
-        expire = parse_expire_string (expirestr);
-      if (expire == (u32)-1 )
-	{
-          err = gpg_error (GPG_ERR_INV_VALUE);
-	  goto leave;
-	}
-
-      /* Check that usage is possible.  */
-      if ( ((use & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_AUTH|PUBKEY_USAGE_CERT))
-            && !pubkey_get_nsig (algo))
-           || ((use & PUBKEY_USAGE_ENC)
-               && !pubkey_get_nenc (algo)))
-        {
-          err = gpg_error (GPG_ERR_WRONG_KEY_USAGE);
-          goto leave;
-        }
     }
 
   if (hexgrip)
