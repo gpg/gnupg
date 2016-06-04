@@ -1776,12 +1776,13 @@ AC_ARG_ENABLE([build-timestamp],
         BUILD_TIMESTAMP=`date -u +%Y-%m-%dT%H:%M+0000 2>/dev/null || date`
       else
         BUILD_TIMESTAMP="$enableval"
-      fi],
-     [BUILD_TIMESTAMP="<none>"])
+      fi
+      BUILD_HOSTNAME="$ac_hostname"],
+     [BUILD_TIMESTAMP="<none>"
+      BUILD_HOSTNAME="<anon>"])
 AC_SUBST(BUILD_TIMESTAMP)
 AC_DEFINE_UNQUOTED(BUILD_TIMESTAMP, "$BUILD_TIMESTAMP",
                    [The time this package was configured for a build])
-BUILD_HOSTNAME="$ac_hostname"
 AC_SUBST(BUILD_HOSTNAME)
 
 

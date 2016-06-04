@@ -448,7 +448,9 @@ speedo_pkg_libgcrypt_configure = --disable-static
 speedo_pkg_libksba_configure = --disable-static
 
 ifeq ($(TARGETOS),w32)
-speedo_pkg_gnupg_configure = --enable-gpg2-is-gpg --disable-g13 --disable-ntbtls
+speedo_pkg_gnupg_configure = \
+        --enable-gpg2-is-gpg --disable-g13 --disable-ntbtls \
+        --enable-build-timestamp
 else
 speedo_pkg_gnupg_configure = --disable-g13
 endif
