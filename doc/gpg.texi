@@ -1679,13 +1679,14 @@ mechanisms, in the order they are to be tried:
 
 @end table
 
-@item --keyid-format @code{short|0xshort|long|0xlong}
+@item --keyid-format @code{none|short|0xshort|long|0xlong}
 @opindex keyid-format
-Select how to display key IDs. "short" is the traditional 8-character
-key ID. "long" is the more accurate (but less convenient)
-16-character key ID. Add an "0x" to either to include an "0x" at the
-beginning of the key ID, as in 0x99242560.  Note that this option is
-ignored if the option --with-colons is used.
+Select how to display key IDs.  "none" does not show the key ID at all
+but shows the fingerprint in a separate line.  "short" is the
+traditional 8-character key ID.  "long" is the more accurate (but less
+convenient) 16-character key ID.  Add an "0x" to either to include an
+"0x" at the beginning of the key ID, as in 0x99242560.  Note that this
+option is ignored if the option @option{--with-colons} is used.
 
 @item --keyserver @code{name}
 @opindex keyserver

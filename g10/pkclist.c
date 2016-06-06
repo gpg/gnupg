@@ -189,7 +189,6 @@ do_edit_ownertrust (ctrl_t ctrl, PKT_public_key *pk, int mode,
   int min_num;
   int did_help=defer_help;
   unsigned int minimum = tdb_get_min_ownertrust (pk);
-  char pkstrbuf[PUBKEY_STRING_SIZE];
 
   switch(minimum)
     {
@@ -222,13 +221,12 @@ do_edit_ownertrust (ctrl_t ctrl, PKT_public_key *pk, int mode,
           {
             KBNODE keyblock, un;
 
-            tty_printf(_("No trust value assigned to:\n"));
-	    tty_printf("%s/%s %s\n",
-                       pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
-                       keystr(keyid), datestr_from_pk( pk ) );
-	    p=get_user_id_native(keyid);
-	    tty_printf(_("      \"%s\"\n"),p);
-	    xfree(p);
+            tty_printf (_("No trust value assigned to:\n"));
+            print_key_line (NULL, pk, 0);
+
+	    p = get_user_id_native(keyid);
+	    tty_printf (_("      \"%s\"\n"),p);
+	    xfree (p);
 
             keyblock = get_pubkeyblock (keyid);
             if (!keyblock)

@@ -426,6 +426,7 @@ char *format_seckey_info (PKT_public_key *pk);
 void print_seckey_info (PKT_public_key *pk);
 void print_pubkey_info (estream_t fp, PKT_public_key *pk);
 void print_card_key_info (estream_t fp, KBNODE keyblock);
+void print_key_line (estream_t fp, PKT_public_key *pk, int secret);
 
 /*-- verify.c --*/
 void print_file_status( int status, const char *name, int what );

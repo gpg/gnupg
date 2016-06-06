@@ -337,6 +337,11 @@ format_keyid (u32 *keyid, int format, char *buffer, int len)
 
   switch (format)
     {
+    case KF_NONE:
+      if (len)
+        *buffer = 0;
+      break;
+
     case KF_SHORT:
       snprintf (buffer, len, "%08lX", (ulong)keyid[1]);
       break;
@@ -401,22 +406,32 @@ const char *
 keystr (u32 *keyid)
 {
   static char keyid_str[KEYID_STR_SIZE];
-  return format_keyid (keyid, opt.keyid_format, keyid_str, sizeof (keyid_str));
+  int format = opt.keyid_format;
+
+  if (format == KF_NONE)
+    format = KF_LONG;
+
+  return format_keyid (keyid, format, keyid_str, sizeof (keyid_str));
 }
 
-
+/* This function returns the key id of the main and possible the
+ * subkey as one string.  It is used by error messages.  */
 const char *
 keystr_with_sub (u32 *main_kid, u32 *sub_kid)
 {
   static char buffer[KEYID_STR_SIZE+1+KEYID_STR_SIZE];
   char *p;
+  int format = opt.keyid_format;
 
-  mem2str (buffer, keystr (main_kid), KEYID_STR_SIZE);
+  if (format == KF_NONE)
+    format = KF_LONG;
+
+  format_keyid (main_kid, format, buffer, KEYID_STR_SIZE);
   if (sub_kid)
     {
       p = buffer + strlen (buffer);
       *p++ = '/';
-      mem2str (p, keystr (sub_kid), KEYID_STR_SIZE);
+      format_keyid (sub_kid, format, p, KEYID_STR_SIZE);
     }
   return buffer;
 }

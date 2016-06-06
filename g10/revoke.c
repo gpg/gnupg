@@ -530,7 +530,7 @@ gen_standard_revoke (PKT_public_key *psk, const char *cache_nonce)
   void *leadin;
   size_t len;
   u32 keyid[2];
-  char pkstrbuf[PUBKEY_STRING_SIZE];
+  int kl;
   char *orig_codeset;
 
   dir = get_openpgp_revocdir (opt.homedir);
@@ -550,16 +550,16 @@ gen_standard_revoke (PKT_public_key *psk, const char *cache_nonce)
   es_fprintf (memfp, "%s\n\n",
               _("This is a revocation certificate for the OpenPGP key:"));
 
-  es_fprintf (memfp, "pub  %s/%s %s\n",
-              pubkey_string (psk, pkstrbuf, sizeof pkstrbuf),
-              keystr (keyid),
-              datestr_from_pk (psk));
+  print_key_line (memfp, psk, 0);
 
-  print_fingerprint (memfp, psk, 3);
+  if (opt.keyid_format != KF_NONE)
+    print_fingerprint (memfp, psk, 3);
+
+  kl = opt.keyid_format == KF_NONE? 0 : keystrlen ();
 
   tmpstr = get_user_id (keyid, &len);
   es_fprintf (memfp, "uid%*s%.*s\n\n",
-              (int)keystrlen () + 10, "",
+              kl + 10, "",
               (int)len, tmpstr);
   xfree (tmpstr);
 

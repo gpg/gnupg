@@ -3256,6 +3256,8 @@ main (int argc, char **argv)
 	      opt.keyid_format=KF_0xSHORT;
 	    else if(ascii_strcasecmp(pargs.r.ret_str,"0xlong")==0)
 	      opt.keyid_format=KF_0xLONG;
+	    else if(ascii_strcasecmp(pargs.r.ret_str,"none")==0)
+	      opt.keyid_format = KF_NONE;
 	    else
 	      log_error("unknown keyid-format '%s'\n",pargs.r.ret_str);
 	    break;

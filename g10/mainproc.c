@@ -985,13 +985,10 @@ print_userid (PACKET *pkt)
 static void
 list_node (CTX c, kbnode_t node)
 {
-  int mainkey;
-  char pkstrbuf[PUBKEY_STRING_SIZE];
-
   if (!node)
     ;
-  else if ((mainkey = (node->pkt->pkttype == PKT_PUBLIC_KEY))
-           || node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+  else if (node->pkt->pkttype == PKT_PUBLIC_KEY
+           || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
     {
       PKT_public_key *pk = node->pkt->pkt.public_key;
 
@@ -1000,10 +997,10 @@ list_node (CTX c, kbnode_t node)
           u32 keyid[2];
 
           keyid_from_pk( pk, keyid );
-          if (mainkey)
+          if (pk->flags.primary)
             c->trustletter = (opt.fast_list_mode?
                               0 : get_validity_info (c->ctrl, pk, NULL));
-          es_printf ("%s:", mainkey? "pub":"sub" );
+          es_printf ("%s:", pk->flags.primary? "pub":"sub" );
           if (c->trustletter)
             es_putc (c->trustletter, es_stdout);
           es_printf (":%u:%d:%08lX%08lX:%s:%s::",
@@ -1012,33 +1009,19 @@ list_node (CTX c, kbnode_t node)
                      (ulong)keyid[0],(ulong)keyid[1],
                      colon_datestr_from_pk( pk ),
                      colon_strtime (pk->expiredate) );
-          if (mainkey && !opt.fast_list_mode)
+          if (pk->flags.primary && !opt.fast_list_mode)
             es_putc (get_ownertrust_info (pk), es_stdout);
           es_putc (':', es_stdout);
+          es_putc ('\n', es_stdout);
         }
       else
-        es_printf ("%s  %s/%s %s",
-                   mainkey? "pub":"sub",
-                   pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
-                   keystr_from_pk (pk),
-                   datestr_from_pk (pk));
-
-      if (pk->flags.revoked)
         {
-          es_printf (" [");
-          es_printf (_("revoked: %s"), revokestr_from_pk (pk));
-          es_printf ("]\n");
+          print_key_line (es_stdout, pk, 0);
         }
-      else if( pk->expiredate && !opt.with_colons)
-        {
-          es_printf (" [");
-          es_printf (_("expires: %s"), expirestr_from_pk (pk));
-          es_printf ("]\n");
-        }
-      else
-        es_putc ('\n', es_stdout);
 
-      if ((mainkey && opt.fingerprint) || opt.fingerprint > 1)
+      if (opt.keyid_format == KF_NONE && !opt.with_colons)
+        ; /* Already printed.  */
+      else if ((pk->flags.primary && opt.fingerprint) || opt.fingerprint > 1)
         print_fingerprint (NULL, pk, 0);
 
       if (opt.with_colons)
@@ -1048,8 +1031,10 @@ list_node (CTX c, kbnode_t node)
                        node->next->pkt->pkt.ring_trust->trustval);
         }
 
-      if (mainkey)
+      if (pk->flags.primary)
         {
+          int kl = opt.keyid_format == KF_NONE? 0 : keystrlen ();
+
           /* Now list all userids with their signatures. */
           for (node = node->next; node; node = node->next)
             {
@@ -1064,7 +1049,7 @@ list_node (CTX c, kbnode_t node)
                                node->pkt->pkt.user_id->attrib_data?"uat":"uid");
                   else
                     es_printf ("uid%*s",
-                               (int)keystrlen ()+(opt.legacy_list_mode? 9:11),
+                               kl + (opt.legacy_list_mode? 9:11),
                                "" );
                   print_userid (node->pkt);
                   if (opt.with_colons)
@@ -1086,7 +1071,7 @@ list_node (CTX c, kbnode_t node)
             }
         }
     }
-  else if ((mainkey = (node->pkt->pkttype == PKT_SECRET_KEY) )
+  else if (node->pkt->pkttype == PKT_SECRET_KEY
            || node->pkt->pkttype == PKT_SECRET_SUBKEY)
     {
 
@@ -1719,7 +1704,7 @@ check_sig_and_print (CTX c, kbnode_t node)
     {
       log_info (_("Signature made %s\n"), asctimestamp(sig->timestamp));
       log_info (_("               using %s key %s\n"),
-                astr? astr: "?",keystr(sig->keyid));
+                astr? astr: "?", keystr(sig->keyid));
     }
   else
     log_info (_("Signature made %s using %s key ID %s\n"),

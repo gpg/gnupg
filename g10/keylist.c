@@ -1022,10 +1022,8 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
   KBNODE node;
   PKT_public_key *pk;
   int skip_sigs = 0;
-  int s2k_char;
   char *hexgrip = NULL;
   char *serialno = NULL;
-  char pkstrbuf[PUBKEY_STRING_SIZE];
 
   /* Get the keyid from the keyblock.  */
   node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
@@ -1047,62 +1045,19 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 
   if (secret)
     {
+      /* Encode some info about the secret key in SECRET.  */
       if (!agent_get_keyinfo (NULL, hexgrip, &serialno))
-        s2k_char = serialno? '>':' ';
+        secret = serialno? 3 : 1;
       else
-        s2k_char = '#';  /* Key not found.  */
+        secret = 2;  /* Key not found.  */
     }
-  else
-    s2k_char = ' ';
 
   check_trustdb_stale (ctrl);
 
+  /* Print the "pub" line and in KF_NONE mode the fingerprint.  */
+  print_key_line (es_stdout, pk, secret);
 
-  es_fprintf (es_stdout, "%s%c  %s/%s %s",
-              secret? "sec":"pub",
-              s2k_char,
-              pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
-              keystr_from_pk (pk), datestr_from_pk (pk));
-
-  if ((opt.list_options & LIST_SHOW_USAGE))
-    {
-      es_fprintf (es_stdout, " [%s]", usagestr_from_pk (pk, 0));
-    }
-  if (pk->flags.revoked)
-    {
-      es_fprintf (es_stdout, " [");
-      es_fprintf (es_stdout, _("revoked: %s"), revokestr_from_pk (pk));
-      es_fprintf (es_stdout, "]");
-    }
-  else if (pk->has_expired)
-    {
-      es_fprintf (es_stdout, " [");
-      es_fprintf (es_stdout, _("expired: %s"), expirestr_from_pk (pk));
-      es_fprintf (es_stdout, "]");
-    }
-  else if (pk->expiredate)
-    {
-      es_fprintf (es_stdout, " [");
-      es_fprintf (es_stdout, _("expires: %s"), expirestr_from_pk (pk));
-      es_fprintf (es_stdout, "]");
-    }
-
-#if 0
-  /* I need to think about this some more.  It's easy enough to
-     include, but it looks sort of confusing in the listing... */
-  if (opt.list_options & LIST_SHOW_VALIDITY)
-    {
-      int validity = get_validity (ctrl, pk, NULL, NULL, 0);
-      es_fprintf (es_stdout, " [%s]", trust_value_to_string (validity));
-    }
-#endif
-
-  if (pk->pubkey_algo >= 100)
-    es_fprintf (es_stdout, " [experimental algorithm %d]", pk->pubkey_algo);
-
-  es_fprintf (es_stdout, "\n");
-
-  if (fpr)
+  if (fpr && opt.keyid_format != KF_NONE)
     print_fingerprint (NULL, pk, 0);
 
   if (opt.with_keygrip && hexgrip)
@@ -1120,6 +1075,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 	{
 	  PKT_user_id *uid = node->pkt->pkt.user_id;
           int indent;
+          int kl = opt.keyid_format == KF_NONE? 10 : keystrlen ();
 
 	  if ((uid->is_expired || uid->is_revoked)
 	      && !(opt.list_options & LIST_SHOW_UNUSABLE_UIDS))
@@ -1139,7 +1095,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 	      const char *validity;
 
 	      validity = uid_trust_string_fixed (ctrl, pk, uid);
-	      indent = ((keystrlen () + (opt.legacy_list_mode? 9:11))
+	      indent = ((kl + (opt.legacy_list_mode? 9:11))
                         - atoi (uid_trust_string_fixed (ctrl, NULL, NULL)));
 	      if (indent < 0 || indent > 40)
 		indent = 0;
@@ -1148,7 +1104,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 	    }
 	  else
             {
-              indent = keystrlen () + (opt.legacy_list_mode? 10:12);
+              indent = kl + (opt.legacy_list_mode? 10:12);
               es_fprintf (es_stdout, "uid%*s", indent, "");
             }
 
@@ -1205,42 +1161,13 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
           if (secret)
             {
               if (!agent_get_keyinfo (NULL, hexgrip, &serialno))
-                s2k_char = serialno? '>':' ';
+                secret = serialno? 3 : 1;
               else
-                s2k_char = '#';  /* Key not found.  */
+                secret = '2';  /* Key not found.  */
             }
-          else
-            s2k_char = ' ';
 
-	  es_fprintf (es_stdout, "%s%c  %s/%s %s",
-                  secret? "ssb":"sub",
-                  s2k_char,
-                  pubkey_string (pk2, pkstrbuf, sizeof pkstrbuf),
-		  keystr_from_pk (pk2), datestr_from_pk (pk2));
-
-          if ((opt.list_options & LIST_SHOW_USAGE))
-            {
-              es_fprintf (es_stdout, " [%s]", usagestr_from_pk (pk2, 0));
-            }
-	  if (pk2->flags.revoked)
-	    {
-	      es_fprintf (es_stdout, " [");
-	      es_fprintf (es_stdout, _("revoked: %s"), revokestr_from_pk (pk2));
-	      es_fprintf (es_stdout, "]");
-	    }
-	  else if (pk2->has_expired)
-	    {
-	      es_fprintf (es_stdout, " [");
-	      es_fprintf (es_stdout, _("expired: %s"), expirestr_from_pk (pk2));
-	      es_fprintf (es_stdout, "]");
-	    }
-	  else if (pk2->expiredate)
-	    {
-	      es_fprintf (es_stdout, " [");
-	      es_fprintf (es_stdout, _("expires: %s"), expirestr_from_pk (pk2));
-	      es_fprintf (es_stdout, "]");
-	    }
-	  es_putc ('\n', es_stdout);
+          /* Print the "sub" line.  */
+          print_key_line (es_stdout, pk2, secret);
 	  if (fpr > 1)
             {
               print_fingerprint (NULL, pk2, 0);
@@ -1861,6 +1788,7 @@ print_icao_hexdigit (estream_t fp, int c)
  *      3: direct use of tty but only primary key.
  *      4: direct use of tty but only subkey.
  *     10: Same as 0 but with_colons etc is ignored.
+ *     20: Same as 0 but using a compact format.
  *
  * Modes 1 and 2 will try and print both subkey and primary key
  * fingerprints.  A MODE with bit 7 set is used internally.  If
@@ -1878,12 +1806,19 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
   int primary = 0;
   int with_colons = opt.with_colons;
   int with_icao   = opt.with_icao_spelling;
+  int compact = 0;
 
   if (mode == 10)
     {
       mode = 0;
       with_colons = 0;
       with_icao = 0;
+    }
+  else if (mode == 20)
+    {
+      mode = 0;
+      with_colons = 0;
+      compact = 1;
     }
 
   if (pk->main_keyid[0] == pk->keyid[0]
@@ -1946,6 +1881,10 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
     {
       es_fprintf (fp, "fpr:::::::::%s:", hexfpr);
     }
+  else if (compact)
+    {
+      tty_fprintf (fp, "%*s%s", 6, "", hexfpr);
+    }
   else
     {
       char fmtfpr[MAX_FORMATTED_FINGERPRINT_LEN + 1];
@@ -1996,6 +1935,75 @@ print_card_serialno (const char *serialno)
   es_putc ('\n', es_stdout);
 }
 
+
+/* Print a public or secret (sub)key line.  Example:
+ *
+ * pub   dsa2048 2007-12-31 [SC] [expires: 2018-12-31]
+ *       80615870F5BAD690333686D0F2AD85AC1E42B367
+ *
+ * Some global options may result in a different output format.  If
+ * SECRET is set, "sec" or "ssb" is used instead of "pub" or "sub" and
+ * depending on the value a flag character is shown:
+ *
+ *    1 := ' ' Regular secret key
+ *    2 := '#' Stub secret key
+ *    3 := '>' Secret key is on a token.
+ */
+void
+print_key_line (estream_t fp, PKT_public_key *pk, int secret)
+{
+  char pkstrbuf[PUBKEY_STRING_SIZE];
+
+  tty_fprintf (fp, "%s%c  %s",
+               pk->flags.primary? (secret? "sec":"pub")
+               /**/             : (secret? "ssb":"sub"),
+               secret == 2? '#' : secret == 3? '>' : ' ',
+               pubkey_string (pk, pkstrbuf, sizeof pkstrbuf));
+  if (opt.keyid_format != KF_NONE)
+    tty_fprintf (fp, "/%s", keystr_from_pk (pk));
+  tty_fprintf (fp, " %s", datestr_from_pk (pk));
+
+  if ((opt.list_options & LIST_SHOW_USAGE))
+    {
+      tty_fprintf (fp, " [%s]", usagestr_from_pk (pk, 0));
+    }
+  if (pk->flags.revoked)
+    {
+      tty_fprintf (fp, " [");
+      tty_fprintf (fp, _("revoked: %s"), revokestr_from_pk (pk));
+      tty_fprintf (fp, "]");
+    }
+  else if (pk->has_expired)
+    {
+      tty_fprintf (fp, " [");
+      tty_fprintf (fp, _("expired: %s"), expirestr_from_pk (pk));
+      tty_fprintf (fp, "]");
+    }
+  else if (pk->expiredate)
+    {
+      tty_fprintf (fp, " [");
+      tty_fprintf (fp, _("expires: %s"), expirestr_from_pk (pk));
+      tty_fprintf (fp, "]");
+    }
+
+#if 0
+  /* I need to think about this some more.  It's easy enough to
+     include, but it looks sort of confusing in the listing... */
+  if (opt.list_options & LIST_SHOW_VALIDITY)
+    {
+      int validity = get_validity (ctrl, pk, NULL, NULL, 0);
+      tty_fprintf (fp, " [%s]", trust_value_to_string (validity));
+    }
+#endif
+
+  if (pk->pubkey_algo >= 100)
+    tty_fprintf (fp, " [experimental algorithm %d]", pk->pubkey_algo);
+
+  tty_fprintf (fp, "\n");
+
+  if (pk->flags.primary && opt.keyid_format == KF_NONE)
+    print_fingerprint (fp, pk, 20);
+}
 
 
 void
