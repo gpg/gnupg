@@ -572,7 +572,8 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
 
           sig = n->pkt->pkt.signature;
 
-          pending_desc = xasprintf ("  sig: class: 0x%x, issuer: %s, timestamp: %s (%lld), digest: %02x %02x",
+          pending_desc = xasprintf ("  sig: class: 0x%x, issuer: %s,"
+                                    " timestamp: %s (%lld), digest: %02x %02x",
                                     sig->sig_class,
                                     keystr (sig->keyid),
                                     isotimestamp (sig->timestamp),
@@ -598,8 +599,9 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
                     {
                       if (pending_desc)
                         log_debug ("%s", pending_desc);
-                      log_debug ("    Can't check signature allegedly issued by %s: %s\n",
-                                keystr (sig->keyid), gpg_strerror (err));
+                      log_debug ("    Can't check signature allegedly"
+                                 " issued by %s: %s\n",
+                                 keystr (sig->keyid), gpg_strerror (err));
                     }
                   missing_issuer ++;
                   break;
