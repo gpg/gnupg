@@ -182,6 +182,7 @@ enum cmd_and_opt_values
     oNoAskCertLevel,
     oFingerprint,
     oWithFingerprint,
+    oWithSubkeyFingerprint,
     oWithICAOSpelling,
     oWithKeygrip,
     oWithSecret,
@@ -720,6 +721,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oUtf8Strings,      "utf8-strings", "@"),
   ARGPARSE_s_n (oNoUtf8Strings, "no-utf8-strings", "@"),
   ARGPARSE_s_n (oWithFingerprint, "with-fingerprint", "@"),
+  ARGPARSE_s_n (oWithSubkeyFingerprint, "with-subkey-fingerprint", "@"),
+  ARGPARSE_s_n (oWithSubkeyFingerprint, "with-subkey-fingerprints", "@"),
   ARGPARSE_s_n (oWithICAOSpelling, "with-icao-spelling", "@"),
   ARGPARSE_s_n (oWithKeygrip,     "with-keygrip", "@"),
   ARGPARSE_s_n (oWithSecret,      "with-secret", "@"),
@@ -2565,6 +2568,9 @@ main (int argc, char **argv)
 	  case oWithFingerprint:
             opt.with_fingerprint = 1;
             opt.fingerprint++;
+            break;
+	  case oWithSubkeyFingerprint:
+            opt.with_subkey_fingerprint = 1;
             break;
 	  case oWithICAOSpelling:
             opt.with_icao_spelling = 1;

@@ -71,6 +71,7 @@ struct
   int with_key_data;
   int with_icao_spelling; /* Print ICAO spelling with fingerprints.  */
   int with_fingerprint; /* Option --with-fingerprint active.  */
+  int with_subkey_fingerprint; /* Option --with-subkey-fingerprint active.  */
   int with_keygrip;     /* Option --with-keygrip active.  */
   int with_secret;      /* Option --with-secret active.  */
   int with_wkd_hash;    /* Option --with-wkd-hash.  */

@@ -384,6 +384,9 @@ keystrlen(void)
 
   switch(format)
     {
+    case KF_NONE:
+      return 0;
+
     case KF_SHORT:
       return 8;
 

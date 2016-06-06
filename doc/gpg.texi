@@ -342,7 +342,8 @@ fingerprints. This is the same output as @option{--list-keys} but with
 the additional output of a line with the fingerprint. May also be
 combined with @option{--list-sigs} or @option{--check-sigs}.  If this
 command is given twice, the fingerprints of all secondary keys are
-listed too.
+listed too.  This command also forces pretty printing of fingerprints
+if the keyid format has been set to "none".
 
 @item --list-packets
 @opindex list-packets
@@ -2275,6 +2276,14 @@ allow to convey suitable information for elliptic curves.
 @opindex with-fingerprint
 Same as the command @option{--fingerprint} but changes only the format
 of the output and may be used together with another command.
+
+@item --with-subkey-fingerprint
+@opindex with-subkey-fingerprint
+If a fingerprint is printed for the primary key, this option forces
+printing of the fingerprint for all subkeys.  This could also be
+achieved by using the @option{--with-fingerprint} twice but by using
+this option along with keyid-format "none" a compact fingerprint is
+printed.
 
 @item --with-icao-spelling
 @opindex with-icao-spelling

@@ -1168,7 +1168,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 
           /* Print the "sub" line.  */
           print_key_line (es_stdout, pk2, secret);
-	  if (fpr > 1)
+	  if (fpr > 1 || opt.with_subkey_fingerprint)
             {
               print_fingerprint (NULL, pk2, 0);
               if (serialno)
@@ -1821,6 +1821,10 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
       compact = 1;
     }
 
+  if (!opt.fingerprint && !opt.with_fingerprint
+      && opt.with_subkey_fingerprint && opt.keyid_format == KF_NONE)
+    compact = 1;
+
   if (pk->main_keyid[0] == pk->keyid[0]
       && pk->main_keyid[1] == pk->keyid[1])
     primary = 1;
@@ -1873,7 +1877,13 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
   else
     {
       fp = override_fp? override_fp : es_stdout;
-      text = _("      Key fingerprint =");
+      if (opt.keyid_format == KF_NONE)
+        {
+          text = "     ";  /* To indent ICAO spelling.  */
+          compact = 1;
+        }
+      else
+        text = _("      Key fingerprint =");
     }
 
   hexfingerprint (pk, hexfpr, sizeof hexfpr);
@@ -1881,7 +1891,7 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
     {
       es_fprintf (fp, "fpr:::::::::%s:", hexfpr);
     }
-  else if (compact)
+  else if (compact && !opt.fingerprint && !opt.with_fingerprint)
     {
       tty_fprintf (fp, "%*s%s", 6, "", hexfpr);
     }
@@ -1889,7 +1899,10 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
     {
       char fmtfpr[MAX_FORMATTED_FINGERPRINT_LEN + 1];
       format_hexfingerprint (hexfpr, fmtfpr, sizeof fmtfpr);
-      tty_fprintf (fp, "%s %s", text, fmtfpr);
+      if (compact)
+        tty_fprintf (fp, "%*s%s", 6, "", fmtfpr);
+      else
+        tty_fprintf (fp, "%s %s", text, fmtfpr);
     }
   tty_fprintf (fp, "\n");
   if (!with_colons && with_icao)
