@@ -333,7 +333,7 @@ format_keyid (u32 *keyid, int format, char *buffer, int len)
   if (format == KF_DEFAULT)
     format = opt.keyid_format;
   if (format == KF_DEFAULT)
-    format = KF_SHORT;
+    format = KF_NONE;
 
   switch (format)
     {
@@ -380,7 +380,7 @@ keystrlen(void)
 {
   int format = opt.keyid_format;
   if (format == KF_DEFAULT)
-    format = KF_SHORT;
+    format = KF_NONE;
 
   switch(format)
     {

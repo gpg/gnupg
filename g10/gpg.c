@@ -2249,7 +2249,7 @@ main (int argc, char **argv)
     opt.mangle_dos_filenames = 0;
     opt.min_cert_level = 2;
     set_screen_dimensions ();
-    opt.keyid_format = KF_SHORT;
+    opt.keyid_format = KF_NONE;
     opt.def_sig_expire = "0";
     opt.def_cert_expire = "0";
     set_homedir (default_homedir ());
