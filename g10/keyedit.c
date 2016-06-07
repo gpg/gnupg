@@ -2428,7 +2428,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
             else if (*arg_string == '~')
               fname = make_filename (arg_string, NULL);
             else
-              fname = make_filename (opt.homedir, arg_string, NULL);
+              fname = make_filename (gnupg_homedir (), arg_string, NULL);
 
 	    /* Open that file.  */
 	    a = iobuf_open (fname);

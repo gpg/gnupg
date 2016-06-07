@@ -169,7 +169,6 @@ main( int argc, char **argv )
   opt.trust_model = TM_ALWAYS;
   opt.batch = 1;
 
-  opt.homedir = default_homedir ();
   opt.weak_digests = NULL;
 
   tty_no_terminal(1);
@@ -196,7 +195,7 @@ main( int argc, char **argv )
         case oLoggerFD:
           log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
           break;
-        case oHomedir: opt.homedir = pargs.r.ret_str; break;
+        case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
         case oWeakDigest:
           additional_weak_digest(pargs.r.ret_str);
           break;

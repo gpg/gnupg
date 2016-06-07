@@ -617,14 +617,15 @@ tdbio_set_dbname (const char *new_dbname, int create, int *r_nofile)
 
   if (!new_dbname)
     {
-      fname = make_filename (opt.homedir, "trustdb" EXTSEP_S GPGEXT_GPG, NULL);
+      fname = make_filename (gnupg_homedir (),
+                             "trustdb" EXTSEP_S GPGEXT_GPG, NULL);
     }
   else if (*new_dbname != DIRSEP_C )
     {
       if (strchr (new_dbname, DIRSEP_C))
         fname = make_filename (new_dbname, NULL);
       else
-        fname = make_filename (opt.homedir, new_dbname, NULL);
+        fname = make_filename (gnupg_homedir (), new_dbname, NULL);
     }
   else
     {

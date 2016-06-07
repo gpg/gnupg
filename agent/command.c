@@ -1258,7 +1258,8 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
       char *dirname;
       struct dirent *dir_entry;
 
-      dirname = make_filename_try (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, NULL);
+      dirname = make_filename_try (gnupg_homedir (),
+                                   GNUPG_PRIVATE_KEYS_DIR, NULL);
       if (!dirname)
         {
           err = gpg_error_from_syserror ();

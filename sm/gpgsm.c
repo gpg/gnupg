@@ -581,7 +581,7 @@ my_strusage( int level )
       break;
 
     case 31: p = "\nHome: "; break;
-    case 32: p = opt.homedir; break;
+    case 32: p = gnupg_homedir (); break;
     case 33: p = _("\nSupported algorithms:\n"); break;
     case 34:
       if (!ciphers)
@@ -964,8 +964,6 @@ main ( int argc, char **argv)
      remember to update the Gpgconflist entry as well.  */
   opt.def_cipher_algoid = DEFAULT_CIPHER_ALGO;
 
-  opt.homedir = default_homedir ();
-
 
   /* First check whether we have a config file on the commandline */
   orig_argc = argc;
@@ -989,7 +987,7 @@ main ( int argc, char **argv)
           opt.no_homedir_creation = 1;
         }
       else if (pargs.r_opt == oHomedir)
-        opt.homedir = pargs.r.ret_str;
+        gnupg_set_homedir (pargs.r.ret_str);
       else if (pargs.r_opt == aCallProtectTool)
         break; /* This break makes sure that --version and --help are
                   passed to the protect-tool. */
@@ -1024,9 +1022,10 @@ main ( int argc, char **argv)
 
   /* Set the default option file */
   if (default_config )
-    configname = make_filename (opt.homedir, GPGSM_NAME EXTSEP_S "conf", NULL);
+    configname = make_filename (gnupg_homedir (),
+                                GPGSM_NAME EXTSEP_S "conf", NULL);
   /* Set the default policy file */
-  opt.policy_file = make_filename (opt.homedir, "policies.txt", NULL);
+  opt.policy_file = make_filename (gnupg_homedir (), "policies.txt", NULL);
 
   argc        = orig_argc;
   argv        = orig_argv;
@@ -1304,7 +1303,7 @@ main ( int argc, char **argv)
 	    }
           break;
         case oNoOptions: opt.no_homedir_creation = 1; break; /* no-options */
-        case oHomedir: opt.homedir = pargs.r.ret_str; break;
+        case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
         case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
 
         case oDisplay:
@@ -1468,7 +1467,7 @@ main ( int argc, char **argv)
   configname = NULL;
 
   if (!opt.config_filename)
-    opt.config_filename = make_filename (opt.homedir,
+    opt.config_filename = make_filename (gnupg_homedir (),
                                          GPGSM_NAME EXTSEP_S "conf",
                                          NULL);
 
@@ -1605,7 +1604,7 @@ main ( int argc, char **argv)
   /* Set the random seed file. */
   if (use_random_seed)
     {
-      char *p = make_filename (opt.homedir, "random_seed", NULL);
+      char *p = make_filename (gnupg_homedir (), "random_seed", NULL);
       gcry_control (GCRYCTL_SET_RANDOM_SEED_FILE, p);
       xfree(p);
     }

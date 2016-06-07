@@ -2281,7 +2281,7 @@ update_reader_status_file (int set_card_removed_flag)
 	     depends on how client sessions will associate the reader
 	     status with their session.  */
           snprintf (templ, sizeof templ, "reader_%d.status", vr->slot);
-          fname = make_filename (opt.homedir, templ, NULL );
+          fname = make_filename (gnupg_homedir (), templ, NULL );
           fp = fopen (fname, "w");
           if (fp)
             {
@@ -2300,7 +2300,7 @@ update_reader_status_file (int set_card_removed_flag)
             char *homestr, *envstr;
             gpg_error_t err;
 
-            homestr = make_filename (opt.homedir, NULL);
+            homestr = make_filename (gnupg_homedir (), NULL);
             if (gpgrt_asprintf (&envstr, "GNUPGHOME=%s", homestr) < 0)
               log_error ("out of core while building environment\n");
             else
@@ -2323,7 +2323,7 @@ update_reader_status_file (int set_card_removed_flag)
                            (status & 2)? "PRESENT": "NOCARD");
                 args[8] = NULL;
 
-                fname = make_filename (opt.homedir, "scd-event", NULL);
+                fname = make_filename (gnupg_homedir (), "scd-event", NULL);
                 err = gnupg_spawn_process_detached (fname, args, envs);
                 if (err && gpg_err_code (err) != GPG_ERR_ENOENT)
                   log_error ("failed to run event handler '%s': %s\n",

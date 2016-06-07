@@ -2956,10 +2956,6 @@ main (int argc, char *argv[])
   int processed;
   ctrl_t ctrl;
 
-  opt.homedir = default_homedir ();
-  if (! opt.homedir)
-    opt.homedir = "";
-
   opt.ignore_time_conflict = 1;
   /* Allow notations in the IETF space, for instance.  */
   opt.expert = 1;

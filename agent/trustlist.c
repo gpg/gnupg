@@ -344,7 +344,14 @@ read_trustfiles (void)
     return gpg_error_from_syserror ();
   tableidx = 0;
 
-  fname = make_filename (opt.homedir, "trustlist.txt", NULL);
+  fname = make_filename_try (gnupg_homedir (), "trustlist.txt", NULL);
+  if (!fname)
+    {
+      err = gpg_error_from_syserror ();
+      xfree (table);
+      return err;
+    }
+
   if ( access (fname, F_OK) )
     {
       if ( errno == ENOENT )
@@ -608,7 +615,10 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
      trustlist with only admin priviliges to modify it.  Of course
      this is not a secure way of denying access, but it avoids the
      usual clicking on an Okay button most users are used to. */
-  fname = make_filename (opt.homedir, "trustlist.txt", NULL);
+  fname = make_filename_try (gnupg_homedir (), "trustlist.txt", NULL);
+  if (!fname)
+    return gpg_error_from_syserror ();
+
   if ( access (fname, W_OK) && errno != ENOENT)
     {
       xfree (fname);
@@ -733,7 +743,15 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       return is_disabled? gpg_error (GPG_ERR_NOT_TRUSTED) : 0;
     }
 
-  fname = make_filename (opt.homedir, "trustlist.txt", NULL);
+  fname = make_filename_try (gnupg_homedir (), "trustlist.txt", NULL);
+  if (!fname)
+    {
+      err = gpg_error_from_syserror ();
+      unlock_trusttable ();
+      xfree (fprformatted);
+      xfree (nameformatted);
+      return err;
+    }
   if ( access (fname, F_OK) && errno == ENOENT)
     {
       fp = es_fopen (fname, "wx,mode=-rw-r");

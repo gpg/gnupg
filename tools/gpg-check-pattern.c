@@ -181,8 +181,6 @@ main (int argc, char **argv )
   setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_INIT_SECMEM, 4096, 0);
 
-  opt.homedir = default_homedir ();
-
   pargs.argc = &argc;
   pargs.argv = &argv;
   pargs.flags=  1;  /* (do not remove the args) */
@@ -191,7 +189,7 @@ main (int argc, char **argv )
       switch (pargs.r_opt)
         {
         case oVerbose: opt.verbose++; break;
-        case oHomedir: opt.homedir = pargs.r.ret_str; break;
+        case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
         case oCheck: opt.checkonly = 1; break;
         case oNull: opt.null = 1; break;
 

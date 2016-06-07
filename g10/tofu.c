@@ -747,7 +747,7 @@ opendb (char *filename, enum db_type type)
       log_assert (! filename);
       log_assert (type == DB_COMBINED);
 
-      filename = make_filename (opt.homedir, "tofu.db", NULL);
+      filename = make_filename (gnupg_homedir (), "tofu.db", NULL);
       filename_free = 1;
     }
   else
@@ -895,10 +895,10 @@ getdb (tofu_dbs_t dbs, const char *name, enum db_type type)
         char *name_db;
 
         /* Make the directory.  */
-        rc = gnupg_mkdir_p (opt.homedir, "tofu.d", type_str, prefix, NULL);
+        rc = gnupg_mkdir_p (gnupg_homedir (), "tofu.d", type_str, prefix, NULL);
         if (rc)
           {
-            name_db = xstrconcat (opt.homedir, "tofu.d",
+            name_db = xstrconcat (gnupg_homedir (), "tofu.d",
                                   type_str, prefix, NULL);
             log_error (_("can't create directory '%s': %s\n"),
                        name_db, gpg_strerror (rc));
@@ -908,7 +908,7 @@ getdb (tofu_dbs_t dbs, const char *name, enum db_type type)
 
         name_db = xstrconcat (name_sanitized, ".db", NULL);
         filename = make_filename
-          (opt.homedir, "tofu.d", type_str, prefix, name_db, NULL);
+          (gnupg_homedir (), "tofu.d", type_str, prefix, name_db, NULL);
         xfree (name_db);
       }
     }
@@ -989,7 +989,7 @@ opendbs (ctrl_t ctrl)
 
   if (opt.tofu_db_format == TOFU_DB_AUTO)
     {
-      char *filename = make_filename (opt.homedir, "tofu.db", NULL);
+      char *filename = make_filename (gnupg_homedir (), "tofu.db", NULL);
       struct stat s;
       int have_tofu_db = 0;
       int have_tofu_d = 0;

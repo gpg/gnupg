@@ -4261,7 +4261,8 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
               log_assert (sub_psk);
 
               if (s)
-                err = card_store_key_with_backup (ctrl, sub_psk, opt.homedir);
+                err = card_store_key_with_backup (ctrl,
+                                                  sub_psk, gnupg_homedir ());
             }
         }
       else

@@ -287,7 +287,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
       if (strchr(resname, DIRSEP_C) )
         filename = make_filename (resname, NULL);
       else
-        filename = make_filename (opt.homedir, resname, NULL);
+        filename = make_filename (gnupg_homedir (), resname, NULL);
     }
   else
     filename = xstrdup (resname);

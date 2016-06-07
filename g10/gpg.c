@@ -1000,9 +1000,9 @@ my_strusage( int level )
 
       case 31: p = "\nHome: "; break;
 #ifndef __riscos__
-      case 32: p = opt.homedir; break;
+      case 32: p = gnupg_homedir (); break;
 #else /* __riscos__ */
-      case 32: p = make_filename(opt.homedir, NULL); break;
+      case 32: p = make_filename(gnupg_homedir (), NULL); break;
 #endif /* __riscos__ */
       case 33: p = _("\nSupported algorithms:\n"); break;
       case 34:
@@ -1177,18 +1177,6 @@ set_debug (const char *level)
 
   if (opt.debug)
     parse_debug_flag (NULL, &opt.debug, debug_flags);
-}
-
-
-
-/* We need the home directory also in some other directories, so make
-   sure that both variables are always in sync. */
-static void
-set_homedir (const char *dir)
-{
-  if (!dir)
-    dir = "";
-  opt.homedir = dir;
 }
 
 
@@ -1412,7 +1400,8 @@ check_permissions (const char *path, int item)
      could be rectified if the homedir itself had proper
      permissions. */
   if(item!=0 && homedir_cache>-1
-     && ascii_strncasecmp(opt.homedir,tmppath,strlen(opt.homedir))==0)
+     && !ascii_strncasecmp (gnupg_homedir (), tmppath,
+                            strlen (gnupg_homedir ())))
     {
       ret=homedir_cache;
       goto end;
@@ -2082,18 +2071,19 @@ get_default_configname (void)
 	    break;
 	}
 
-      configname = make_filename (opt.homedir, name, NULL);
+      configname = make_filename (gnupg_homedir (), name, NULL);
     }
   while (access (configname, R_OK));
 
   xfree(name);
 
   if (! configname)
-    configname = make_filename (opt.homedir, GPG_NAME EXTSEP_S "conf", NULL);
+    configname = make_filename (gnupg_homedir (),
+                                GPG_NAME EXTSEP_S "conf", NULL);
   if (! access (configname, R_OK))
     {
       /* Print a warning when both config files are present.  */
-      char *p = make_filename (opt.homedir, "options", NULL);
+      char *p = make_filename (gnupg_homedir (), "options", NULL);
       if (! access (p, R_OK))
 	log_info (_("Note: old default options file '%s' ignored\n"), p);
       xfree (p);
@@ -2101,7 +2091,7 @@ get_default_configname (void)
   else
     {
       /* Use the old default only if it exists.  */
-      char *p = make_filename (opt.homedir, "options", NULL);
+      char *p = make_filename (gnupg_homedir (), "options", NULL);
       if (!access (p, R_OK))
 	{
 	  xfree (configname);
@@ -2252,7 +2242,7 @@ main (int argc, char **argv)
     opt.keyid_format = KF_NONE;
     opt.def_sig_expire = "0";
     opt.def_cert_expire = "0";
-    set_homedir (default_homedir ());
+    gnupg_set_homedir (NULL);
     opt.passphrase_repeat = 1;
     opt.emit_version = 1; /* Limit to the major number.  */
     opt.weak_digests = NULL;
@@ -2281,7 +2271,7 @@ main (int argc, char **argv)
             opt.no_homedir_creation = 1;
           }
         else if( pargs.r_opt == oHomedir )
-	    set_homedir ( pargs.r.ret_str );
+	    gnupg_set_homedir (pargs.r.ret_str);
 	else if( pargs.r_opt == oNoPermissionWarn )
 	    opt.no_perm_warn=1;
 	else if (pargs.r_opt == oStrict )
@@ -2295,10 +2285,10 @@ main (int argc, char **argv)
     }
 
 #ifdef HAVE_DOSISH_SYSTEM
-    if ( strchr (opt.homedir,'\\') ) {
-        char *d, *buf = xmalloc (strlen (opt.homedir)+1);
-        const char *s = opt.homedir;
-        for (d=buf,s=opt.homedir; *s; s++)
+    if ( strchr (gnupg_homedir, '\\') ) {
+      char *d, *buf = xmalloc (strlen (gnupg_homedir ())+1);
+      const char *s;
+      for (d=buf, s = gnupg_homedir (); *s; s++)
           {
             *d++ = *s == '\\'? '/': *s;
 #ifdef HAVE_W32_SYSTEM
@@ -2307,7 +2297,7 @@ main (int argc, char **argv)
 #endif
           }
         *d = 0;
-        set_homedir (buf);
+        gnupg_set_homedir (buf);
     }
 #endif
 
@@ -2344,7 +2334,7 @@ main (int argc, char **argv)
     pargs.flags= ARGPARSE_FLAG_KEEP;
 
     /* By this point we have a homedir, and cannot change it. */
-    check_permissions(opt.homedir,0);
+    check_permissions (gnupg_homedir (), 0);
 
   next_pass:
     if( configname ) {
@@ -3668,7 +3658,7 @@ main (int argc, char **argv)
 
     /* Set the random seed file. */
     if( use_random_seed ) {
-	char *p = make_filename(opt.homedir, "random_seed", NULL );
+      char *p = make_filename (gnupg_homedir (), "random_seed", NULL );
 	gcry_control (GCRYCTL_SET_RANDOM_SEED_FILE, p);
         if (!access (p, F_OK))
           register_secured_file (p);

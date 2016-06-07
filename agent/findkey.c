@@ -135,7 +135,8 @@ agent_write_private_key (const unsigned char *grip,
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
 
-  fname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
+  fname = make_filename (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR,
+                         hexgrip, NULL);
 
   /* FIXME: Write to a temp file first so that write failures during
      key updates won't lead to a key loss.  */
@@ -652,7 +653,8 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
 
-  fname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
+  fname = make_filename (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR,
+                         hexgrip, NULL);
   fp = es_fopen (fname, "rb");
   if (!fp)
     {
@@ -767,7 +769,8 @@ remove_key_file (const unsigned char *grip)
 
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
-  fname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
+  fname = make_filename (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR,
+                         hexgrip, NULL);
   if (gnupg_remove (fname))
     err = gpg_error_from_syserror ();
   xfree (fname);
@@ -1289,7 +1292,8 @@ agent_key_available (const unsigned char *grip)
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
 
-  fname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
+  fname = make_filename (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR,
+                         hexgrip, NULL);
   result = !access (fname, R_OK)? 0 : -1;
   xfree (fname);
   return result;

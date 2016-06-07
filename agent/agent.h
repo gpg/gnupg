@@ -62,7 +62,6 @@ struct
   int quiet;           /* Be as quiet as possible */
   int dry_run;         /* Don't change any persistent data */
   int batch;           /* Batch mode */
-  const char *homedir; /* Configuration directory name */
 
   /* True if we handle sigusr2.  */
   int sigusr2_enabled;

@@ -209,7 +209,7 @@ my_strusage( int level )
             "Connect to a running agent and send commands\n");
       break;
     case 31: p = "\nHome: "; break;
-    case 32: p = opt.homedir; break;
+    case 32: p = gnupg_homedir (); break;
     case 33: p = "\n"; break;
 
     default: p = NULL; break;
@@ -555,7 +555,7 @@ get_var_ext (const char *name)
             log_error ("getcwd failed: %s\n", strerror (errno));
         }
       else if (!strcmp (s, "homedir"))
-        result = make_filename (opt.homedir, NULL);
+        result = make_filename (gnupg_homedir (), NULL);
       else if (!strcmp (s, "sysconfdir"))
         result = xstrdup (gnupg_sysconfdir ());
       else if (!strcmp (s, "bindir"))
@@ -1181,7 +1181,6 @@ main (int argc, char **argv)
   assuan_set_gpg_err_source (0);
 
 
-  opt.homedir = default_homedir ();
   opt.autostart = 1;
   opt.connect_flags = 1;
 
@@ -1196,7 +1195,7 @@ main (int argc, char **argv)
 	case oQuiet:     opt.quiet = 1; break;
         case oVerbose:   opt.verbose++; break;
         case oNoVerbose: opt.verbose = 0; break;
-        case oHomedir:   opt.homedir = pargs.r.ret_str; break;
+        case oHomedir:   gnupg_set_homedir (pargs.r.ret_str); break;
         case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
         case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
         case oNoAutostart:    opt.autostart = 0; break;
@@ -1225,7 +1224,7 @@ main (int argc, char **argv)
        in particular handy on Windows. */
   if (opt.use_uiserver)
     {
-      opt.raw_socket = make_absfilename (opt.homedir, "S.uiserver", NULL);
+      opt.raw_socket = make_absfilename (gnupg_homedir (), "S.uiserver", NULL);
     }
 
   /* Print a warning if an argument looks like an option.  */
@@ -2209,7 +2208,7 @@ start_agent (void)
   if (opt.use_dirmngr)
     err = start_new_dirmngr (&ctx,
                              GPG_ERR_SOURCE_DEFAULT,
-                             opt.homedir,
+                             gnupg_homedir (),
                              opt.dirmngr_program,
                              opt.autostart,
                              !opt.quiet, 0,
@@ -2217,7 +2216,7 @@ start_agent (void)
   else
     err = start_new_gpg_agent (&ctx,
                                GPG_ERR_SOURCE_DEFAULT,
-                               opt.homedir,
+                               gnupg_homedir (),
                                opt.agent_program,
                                NULL, NULL,
                                session_env,

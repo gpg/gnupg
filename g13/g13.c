@@ -247,7 +247,7 @@ my_strusage( int level )
       break;
 
     case 31: p = "\nHome: "; break;
-    case 32: p = opt.homedir; break;
+    case 32: p = gnupg_homedir (); break;
 
     default: p = NULL; break;
     }
@@ -391,8 +391,6 @@ main ( int argc, char **argv)
     log_fatal ("error allocating session environment block: %s\n",
                strerror (errno));
 
-  opt.homedir = default_homedir ();
-
   /* First check whether we have a config file on the commandline.  */
   orig_argc = argc;
   orig_argv = argv;
@@ -412,7 +410,7 @@ main ( int argc, char **argv)
       else if (pargs.r_opt == oNoOptions)
         default_config = 0; /* --no-options */
       else if (pargs.r_opt == oHomedir)
-        opt.homedir = pargs.r.ret_str;
+        gnupg_set_homedir (pargs.r.ret_str);
     }
 
   /* Initialize the secure memory. */
@@ -446,7 +444,7 @@ main ( int argc, char **argv)
 
   /* Set the default option file */
   if (default_config )
-    configname = make_filename (opt.homedir, G13_NAME".conf", NULL);
+    configname = make_filename (gnupg_homedir (), G13_NAME".conf", NULL);
 
   argc        = orig_argc;
   argv        = orig_argv;
@@ -552,7 +550,7 @@ main ( int argc, char **argv)
 	    }
           break;
 
-        case oHomedir: opt.homedir = pargs.r.ret_str; break;
+        case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
 
         case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
         case oGpgProgram: opt.gpg_program = pargs.r.ret_str;  break;
@@ -623,7 +621,8 @@ main ( int argc, char **argv)
   configname = NULL;
 
   if (!opt.config_filename)
-    opt.config_filename = make_filename (opt.homedir, G13_NAME".conf", NULL);
+    opt.config_filename = make_filename (gnupg_homedir (),
+                                         G13_NAME".conf", NULL);
 
   if (log_get_errorcount(0))
     g13_exit(2);
@@ -690,7 +689,7 @@ main ( int argc, char **argv)
   /* Set the standard GnuPG random seed file.  */
   if (use_random_seed)
     {
-      char *p = make_filename (opt.homedir, "random_seed", NULL);
+      char *p = make_filename (gnupg_homedir (), "random_seed", NULL);
       gcry_control (GCRYCTL_SET_RANDOM_SEED_FILE, p);
       xfree(p);
     }

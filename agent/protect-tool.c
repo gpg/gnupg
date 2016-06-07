@@ -86,7 +86,6 @@ struct rsa_secret_key_s
 };
 
 
-static const char *opt_homedir;
 static int opt_armor;
 static int opt_canonical;
 static int opt_store;
@@ -577,9 +576,6 @@ main (int argc, char **argv )
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
 
 
-  opt_homedir = default_homedir ();
-
-
   pargs.argc = &argc;
   pargs.argv = &argv;
   pargs.flags=  1;  /* (do not remove the args) */
@@ -590,7 +586,7 @@ main (int argc, char **argv )
         case oVerbose: opt.verbose++; break;
         case oArmor:   opt_armor=1; break;
         case oCanonical: opt_canonical=1; break;
-        case oHomedir: opt_homedir = pargs.r.ret_str; break;
+        case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
 
         case oAgentProgram: opt_agent_program = pargs.r.ret_str; break;
 
@@ -634,7 +630,7 @@ main (int argc, char **argv )
   /* Set the information which can't be taken from envvars.  */
   gnupg_prepare_get_passphrase (GPG_ERR_SOURCE_DEFAULT,
                                 opt.verbose,
-                                opt_homedir,
+                                gnupg_homedir (),
                                 opt_agent_program,
                                 NULL, NULL, NULL);
 

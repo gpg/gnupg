@@ -106,7 +106,6 @@ struct
   int marginals_needed;
   int completes_needed;
   int max_cert_depth;
-  const char *homedir;
   const char *agent_program;
   const char *dirmngr_program;
 

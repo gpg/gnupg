@@ -1,6 +1,6 @@
 /* homedir.c - Setup the home directory.
  * Copyright (C) 2004, 2006, 2007, 2010 Free Software Foundation, Inc.
- * Copyright (C) 2013 Werner Koch
+ * Copyright (C) 2013, 2016 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -57,6 +57,12 @@
 
 #include "util.h"
 #include "sysutils.h"
+
+
+/* The GnuPG homedir.  This is only accessed by the functions
+ * gnupg_homedir and gnupg_set_homedir.  Malloced.  */
+static char *the_gnupg_homedir;
+
 
 #ifdef HAVE_W32_SYSTEM
 /* A flag used to indicate that a control file for gpgconf has been
@@ -368,6 +374,30 @@ w32_commondir (void)
 #endif /*HAVE_W32_SYSTEM*/
 
 
+/* Change the homedir.  Some care must be taken to set this early
+ * enough becuase previous calls to gnupg_homedir may else return a
+ * different string.  */
+void
+gnupg_set_homedir (const char *newdir)
+{
+  if (!newdir || !*newdir)
+    newdir = default_homedir ();
+  xfree (the_gnupg_homedir);
+  the_gnupg_homedir = xstrdup (newdir);
+}
+
+
+/* Return the homedir.  The returned string is valid until another
+ * gnupg-set-homedir call.  Note that this may be a relative string.
+ * This function replaced the former global opt.homedir.  */
+const char *
+gnupg_homedir (void)
+{
+  /* If a homedir has not been set, set it to the default.  */
+  if (!the_gnupg_homedir)
+    the_gnupg_homedir = xstrdup (default_homedir ());
+  return the_gnupg_homedir;
+}
 
 
 /* Return the name of the sysconfdir.  This is a static string.  This

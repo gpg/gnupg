@@ -159,7 +159,7 @@ my_strusage( int level )
       break;
 
     case 31: p = "\nHome: "; break;
-    case 32: p = opt.homedir; break;
+    case 32: p = gnupg_homedir (); break;
 
     default: p = NULL; break;
     }
@@ -269,7 +269,6 @@ main ( int argc, char **argv)
     log_fatal ("error allocating session environment block: %s\n",
                strerror (errno));
 
-  opt.homedir = default_homedir ();
   /* Fixme: We enable verbose mode here because there is currently no
      way to do this when starting g13-syshelp.  To fix that we should
      add a g13-syshelp.conf file in /etc/gnupg.  */
@@ -393,7 +392,7 @@ main ( int argc, char **argv)
         case oStatusFD: ctrl.status_fd = pargs.r.ret_int; break;
         case oLoggerFD: log_set_fd (pargs.r.ret_int ); break;
 
-        case oHomedir: opt.homedir = pargs.r.ret_str; break;
+        case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
 
         case oFakedSystemTime:
           {
@@ -427,7 +426,8 @@ main ( int argc, char **argv)
   configname = NULL;
 
   if (!opt.config_filename)
-    opt.config_filename = make_filename (opt.homedir, G13_NAME".conf", NULL);
+    opt.config_filename = make_filename (gnupg_homedir (),
+                                         G13_NAME".conf", NULL);
 
   if (log_get_errorcount(0))
     g13_exit(2);
@@ -472,7 +472,7 @@ main ( int argc, char **argv)
   /* Set the standard GnuPG random seed file.  */
   if (use_random_seed)
     {
-      char *p = make_filename (opt.homedir, "random_seed", NULL);
+      char *p = make_filename (gnupg_homedir (), "random_seed", NULL);
       gcry_control (GCRYCTL_SET_RANDOM_SEED_FILE, p);
       xfree(p);
     }

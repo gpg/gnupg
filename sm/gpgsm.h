@@ -61,7 +61,6 @@ struct
   int dry_run;      /* don't change any persistent data */
   int no_homedir_creation;
 
-  const char *homedir;         /* Configuration directory name */
   const char *config_filename; /* Name of the used config file. */
   const char *agent_program;
 

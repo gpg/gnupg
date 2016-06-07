@@ -79,8 +79,7 @@ struct
   int quiet;          /* be as quiet as possible */
   int dry_run;        /* don't change any persistent data */
   int batch;          /* batch mode */
-  const char *homedir;      /* Configuration directory name */
-  const char *homedir_cache; /* Ditto for cache files (/var/cache/dirmngr).  */
+  const char *homedir_cache; /* Dir for cache files (/var/cache/dirmngr).  */
 
   char *config_filename;     /* Name of a config file, which will be
                                 reread on a HUP if it is not NULL. */

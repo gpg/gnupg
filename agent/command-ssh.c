@@ -897,7 +897,7 @@ open_control_file (ssh_control_file_t *r_cf, int append)
   /* Note: As soon as we start to use non blocking functions here
      (i.e. where Pth might switch threads) we need to employ a
      mutex.  */
-  cf->fname = make_filename_try (opt.homedir, SSH_CONTROL_FILE_NAME, NULL);
+  cf->fname = make_filename_try (gnupg_homedir (), SSH_CONTROL_FILE_NAME, NULL);
   if (!cf->fname)
     {
       err = gpg_error_from_syserror ();
@@ -2734,7 +2734,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
   {
     char *dname;
 
-    dname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, NULL);
+    dname = make_filename (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR, NULL);
     if (!dname)
       {
         err = gpg_err_code_from_syserror ();

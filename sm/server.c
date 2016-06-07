@@ -1308,7 +1308,7 @@ gpgsm_server (certlist_t default_recplist)
     }
   if (opt.verbose || opt.debug)
     {
-      char *tmp = NULL;
+      char *tmp;
 
       /* Fixme: Use the really used socket name.  */
       if (asprintf (&tmp,
@@ -1316,7 +1316,7 @@ gpgsm_server (certlist_t default_recplist)
                     "Config: %s\n"
                     "DirmngrInfo: %s\n"
                     "%s",
-                    opt.homedir,
+                    gnupg_homedir (),
                     opt.config_filename,
                     (dirmngr_user_socket_name ()
                      ? dirmngr_user_socket_name ()

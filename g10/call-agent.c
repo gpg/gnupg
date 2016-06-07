@@ -303,7 +303,7 @@ start_agent (ctrl_t ctrl, int for_card)
     {
       rc = start_new_gpg_agent (&agent_ctx,
                                 GPG_ERR_SOURCE_DEFAULT,
-                                opt.homedir,
+                                gnupg_homedir (),
                                 opt.agent_program,
                                 opt.lc_ctype, opt.lc_messages,
                                 opt.session_env,

@@ -55,7 +55,6 @@ struct
   int quiet;          /* Be as quiet as possible.  */
   int dry_run;        /* Don't change any persistent data.  */
 
-  const char *homedir;         /* Configuration directory name.  */
   const char *config_filename; /* Name of the used config file.  */
 
   /* Filename of the AGENT program.  */

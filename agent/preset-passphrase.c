@@ -66,7 +66,6 @@ enum cmd_and_opt_values
 aTest };
 
 
-static const char *opt_homedir;
 static const char *opt_passphrase;
 
 static ARGPARSE_OPTS opts[] = {
@@ -219,8 +218,6 @@ main (int argc, char **argv)
   i18n_init ();
   init_common_subsystems (&argc, &argv);
 
-  opt_homedir = default_homedir ();
-
   pargs.argc = &argc;
   pargs.argv = &argv;
   pargs.flags=  1;  /* (do not remove the args) */
@@ -229,7 +226,7 @@ main (int argc, char **argv)
       switch (pargs.r_opt)
         {
         case oVerbose: opt.verbose++; break;
-        case oHomedir: opt_homedir = pargs.r.ret_str; break;
+        case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
 
         case oPreset: cmd = oPreset; break;
         case oForget: cmd = oForget; break;
@@ -248,7 +245,7 @@ main (int argc, char **argv)
 
   /* Tell simple-pwquery about the the standard socket name.  */
   {
-    char *tmp = make_filename (opt_homedir, GPG_AGENT_SOCK_NAME, NULL);
+    char *tmp = make_filename (gnupg_homedir (), GPG_AGENT_SOCK_NAME, NULL);
     simple_pw_set_socket (tmp);
     xfree (tmp);
   }

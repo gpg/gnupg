@@ -2440,22 +2440,13 @@ start_command_handler (assuan_fd_t fd)
 
   if (!hello_line)
     {
-      size_t n;
-      const char *cfgname;
-
-      cfgname = opt.config_filename? opt.config_filename : "[none]";
-
-      n = (30 + strlen (opt.homedir) + strlen (cfgname)
-           + strlen (hello) + 1);
-      hello_line = xmalloc (n+1);
-      snprintf (hello_line, n,
-                "Home: %s\n"
-                "Config: %s\n"
-                "%s",
-                opt.homedir,
-                cfgname,
-                hello);
-      hello_line[n] = 0;
+      hello_line = xtryasprintf
+        ("Home: %s\n"
+         "Config: %s\n"
+         "%s",
+         gnupg_homedir (),
+         opt.config_filename? opt.config_filename : "[none]",
+         hello);
     }
 
   ctrl->server_local->assuan_ctx = ctx;

@@ -463,8 +463,6 @@ main (int argc, char **argv )
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
     csh_style = 1;
 
-  opt.homedir = default_homedir ();
-
   /* Check whether we have a config file on the commandline */
   orig_argc = argc;
   orig_argv = argv;
@@ -484,7 +482,7 @@ main (int argc, char **argv )
 	else if (pargs.r_opt == oNoOptions)
           default_config = 0; /* --no-options */
 	else if (pargs.r_opt == oHomedir)
-          opt.homedir = pargs.r.ret_str;
+          gnupg_set_homedir (pargs.r.ret_str);
     }
 
   /* initialize the secure memory. */
@@ -497,7 +495,7 @@ main (int argc, char **argv )
 
 
   if (default_config)
-    configname = make_filename (opt.homedir, SCDAEMON_NAME EXTSEP_S "conf",
+    configname = make_filename (gnupg_homedir (), SCDAEMON_NAME EXTSEP_S "conf",
                                 NULL );
 
 
@@ -582,7 +580,7 @@ main (int argc, char **argv )
         case oNoGreeting: nogreeting = 1; break;
         case oNoVerbose: opt.verbose = 0; break;
         case oNoOptions: break; /* no-options */
-        case oHomedir: opt.homedir = pargs.r.ret_str; break;
+        case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
         case oNoDetach: nodetach = 1; break;
         case oLogFile: logfile = pargs.r.ret_str; break;
         case oCsh: csh_style = 1; break;
@@ -674,8 +672,8 @@ main (int argc, char **argv )
       if (config_filename)
 	filename = xstrdup (config_filename);
       else
-        filename = make_filename (opt.homedir, SCDAEMON_NAME EXTSEP_S "conf",
-                                  NULL);
+        filename = make_filename (gnupg_homedir (),
+                                  SCDAEMON_NAME EXTSEP_S "conf", NULL);
       filename_esc = percent_escape (filename, NULL);
 
       es_printf ("%s-%s.conf:%lu:\"%s\n",
@@ -1044,7 +1042,7 @@ create_socket_name (char *standard_name)
 {
   char *name;
 
-  name = make_filename (opt.homedir, standard_name, NULL);
+  name = make_filename (gnupg_homedir (), standard_name, NULL);
   if (strchr (name, PATHSEP_C))
     {
       log_error (("'%s' are not allowed in the socket name\n"), PATHSEP_S);

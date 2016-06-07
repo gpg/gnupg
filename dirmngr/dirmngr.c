@@ -795,9 +795,7 @@ main (int argc, char **argv)
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
     csh_style = 1;
 
-  opt.homedir = default_homedir ();
-
-  /* Now with NPth running we can set the logging callback.  Our
+    /* Now with NPth running we can set the logging callback.  Our
      windows implementation does not yet feature the NPth TLS
      functions.  */
 #ifndef HAVE_W32_SYSTEM
@@ -835,7 +833,7 @@ main (int argc, char **argv)
         default_config = 0; /* --no-options */
       else if (pargs.r_opt == oHomedir)
         {
-          opt.homedir = pargs.r.ret_str;
+          gnupg_set_homedir (pargs.r.ret_str);
           homedir_seen = 1;
         }
       else if (pargs.r_opt == aDaemon)
@@ -862,9 +860,9 @@ main (int argc, char **argv)
   if (opt.system_daemon && !homedir_seen)
     {
 #ifdef HAVE_W32CE_SYSTEM
-      opt.homedir = DIRSEP_S "gnupg";
+      gnupg_set_homedir (DIRSEP_S "gnupg");
 #else
-      opt.homedir = gnupg_sysconfdir ();
+      gnupg_set_homedir (gnupg_sysconfdir ());
 #endif
       opt.homedir_cache = gnupg_cachedir ();
       socket_name = dirmngr_sys_socket_name ();
@@ -875,7 +873,7 @@ main (int argc, char **argv)
     socket_name = dirmngr_sys_socket_name ();
 
   if (default_config)
-    configname = make_filename (opt.homedir, DIRMNGR_NAME".conf", NULL );
+    configname = make_filename (gnupg_homedir (), DIRMNGR_NAME".conf", NULL );
 
   argc = orig_argc;
   argv = orig_argv;
@@ -989,7 +987,7 @@ main (int argc, char **argv)
     greeting = 0;
 
   if (!opt.homedir_cache)
-    opt.homedir_cache = opt.homedir;
+    opt.homedir_cache = xstrdup (gnupg_homedir ());
 
   if (greeting)
     {
@@ -1019,7 +1017,8 @@ main (int argc, char **argv)
           log_info (_("Note: '%s' is not considered an option\n"), argv[i]);
     }
 
-  if (!access ("/etc/"DIRMNGR_NAME, F_OK) && !strncmp (opt.homedir, "/etc/", 5))
+  if (!access ("/etc/"DIRMNGR_NAME, F_OK)
+      && !strncmp (gnupg_homedir (), "/etc/", 5))
     log_info
       ("NOTE: DirMngr is now a proper part of %s.  The configuration and"
        " other directory names changed.  Please check that no other version"
@@ -1043,7 +1042,7 @@ main (int argc, char **argv)
 #if USE_LDAP
   if (!ldapfile)
     {
-      ldapfile = make_filename (opt.homedir,
+      ldapfile = make_filename (gnupg_homedir (),
                                 opt.system_daemon?
                                 "ldapservers.conf":"dirmngr_ldapservers.conf",
                                 NULL);
@@ -1396,7 +1395,7 @@ main (int argc, char **argv)
       /* First the configuration file.  This is not an option, but it
 	 is vital information for GPG Conf.  */
       if (!opt.config_filename)
-        opt.config_filename = make_filename (opt.homedir,
+        opt.config_filename = make_filename (gnupg_homedir (),
                                              "dirmngr.conf", NULL );
 
       filename = percent_escape (opt.config_filename, NULL);
@@ -1416,7 +1415,7 @@ main (int argc, char **argv)
          and having both of them is thus problematic.  --no-detach is
          also only usable on the command line.  --batch is unused.  */
 
-      filename = make_filename (opt.homedir,
+      filename = make_filename (gnupg_homedir (),
                                 opt.system_daemon?
                                 "ldapservers.conf":"dirmngr_ldapservers.conf",
                                 NULL);
@@ -1658,7 +1657,7 @@ parse_ocsp_signer (const char *string)
     {
       if (string[0] == '.' && string[1] == '/' )
         string += 2;
-      fname = make_filename (opt.homedir, string, NULL);
+      fname = make_filename (gnupg_homedir (), string, NULL);
     }
 
   fp = es_fopen (fname, "r");

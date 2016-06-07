@@ -804,8 +804,6 @@ main (int argc, char **argv )
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
     csh_style = 1;
 
-  opt.homedir = default_homedir ();
-
   /* Record some of the original environment strings. */
   {
     const char *s;
@@ -861,7 +859,7 @@ main (int argc, char **argv )
 	else if (pargs.r_opt == oNoOptions)
           default_config = 0; /* --no-options */
 	else if (pargs.r_opt == oHomedir)
-          opt.homedir = pargs.r.ret_str;
+          gnupg_set_homedir (pargs.r.ret_str);
 	else if (pargs.r_opt == oDebugQuickRandom)
           {
             gcry_control (GCRYCTL_ENABLE_QUICK_RANDOM, 0);
@@ -878,8 +876,8 @@ main (int argc, char **argv )
   */
 
   if (default_config)
-    configname = make_filename (opt.homedir, GPG_AGENT_NAME EXTSEP_S "conf",
-                                NULL );
+    configname = make_filename (gnupg_homedir (),
+                                GPG_AGENT_NAME EXTSEP_S "conf", NULL);
 
   argc = orig_argc;
   argv = orig_argv;
@@ -944,7 +942,7 @@ main (int argc, char **argv )
         case oNoGreeting: /* Dummy option.  */ break;
         case oNoVerbose: opt.verbose = 0; break;
         case oNoOptions: break; /* no-options */
-        case oHomedir: opt.homedir = pargs.r.ret_str; break;
+        case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
         case oNoDetach: nodetach = 1; break;
         case oLogFile: logfile = pargs.r.ret_str; break;
         case oCsh: csh_style = 1; break;
@@ -1030,7 +1028,7 @@ main (int argc, char **argv )
   finalize_rereadable_options ();
 
   /* Turn the homedir into an absolute one. */
-  opt.homedir = make_absfilename (opt.homedir, NULL);
+  gnupg_set_homedir (make_absfilename (gnupg_homedir (), NULL));
 
   /* Print a warning if an argument looks like an option.  */
   if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
@@ -1104,8 +1102,8 @@ main (int argc, char **argv )
       char *filename_esc;
 
       /* List options and default values in the GPG Conf format.  */
-      filename = make_filename (opt.homedir, GPG_AGENT_NAME EXTSEP_S "conf",
-                                NULL );
+      filename = make_filename (gnupg_homedir (),
+                                GPG_AGENT_NAME EXTSEP_S "conf", NULL);
       filename_esc = percent_escape (filename, NULL);
 
       es_printf ("%s-%s.conf:%lu:\"%s\n",
@@ -1764,7 +1762,7 @@ create_socket_name (char *standard_name, int with_homedir)
   char *name;
 
   if (with_homedir)
-    name = make_filename (opt.homedir, standard_name, NULL);
+    name = make_filename (gnupg_homedir (), standard_name, NULL);
   else
     name = make_filename (standard_name, NULL);
   if (strchr (name, PATHSEP_C))
@@ -1932,7 +1930,7 @@ create_directories (void)
   const char *defhome = standard_homedir ();
   char *home;
 
-  home = make_filename (opt.homedir, NULL);
+  home = make_filename (gnupg_homedir (), NULL);
   if ( stat (home, &statbuf) )
     {
       if (errno == ENOENT)
@@ -2731,7 +2729,7 @@ check_own_socket (void)
   if (check_own_socket_running || shutdown_pending)
     return;  /* Still running or already shutting down.  */
 
-  sockname = make_filename (opt.homedir, GPG_AGENT_SOCK_NAME, NULL);
+  sockname = make_filename_try (gnupg_homedir (), GPG_AGENT_SOCK_NAME, NULL);
   if (!sockname)
     return; /* Out of memory.  */
 
@@ -2757,7 +2755,9 @@ check_for_running_agent (int silent)
   char *sockname;
   assuan_context_t ctx = NULL;
 
-  sockname = make_filename (opt.homedir, GPG_AGENT_SOCK_NAME, NULL);
+  sockname = make_filename_try (gnupg_homedir (), GPG_AGENT_SOCK_NAME, NULL);
+  if (!sockname)
+    return gpg_error_from_syserror ();
 
   err = assuan_new (&ctx);
   if (!err)

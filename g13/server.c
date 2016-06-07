@@ -631,12 +631,12 @@ g13_server (ctrl_t ctrl)
 
   if (opt.verbose || opt.debug)
     {
-      char *tmp = NULL;
+      char *tmp;
 
       tmp = xtryasprintf ("Home: %s\n"
                           "Config: %s\n"
                           "%s",
-                          opt.homedir,
+                          gnupg_homedir (),
                           opt.config_filename,
                           hello);
       if (tmp)

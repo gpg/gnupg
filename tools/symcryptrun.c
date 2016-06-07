@@ -214,7 +214,7 @@ my_strusage (int level)
             "Call a simple symmetric encryption tool\n");
       break;
     case 31: p = "\nHome: "; break;
-    case 32: p = opt.homedir; break;
+    case 32: p = gnupg_homedir (); break;
     case 33: p = "\n"; break;
 
     default: p = NULL; break;
@@ -896,8 +896,6 @@ main (int argc, char **argv)
   i18n_init();
   init_common_subsystems (&argc, &argv);
 
-  opt.homedir = default_homedir ();
-
   /* Check whether we have a config file given on the commandline */
   orig_argc = argc;
   orig_argv = argv;
@@ -915,11 +913,11 @@ main (int argc, char **argv)
       else if (pargs.r_opt == oNoOptions)
         default_config = 0; /* --no-options */
       else if (pargs.r_opt == oHomedir)
-	opt.homedir = pargs.r.ret_str;
+	gnupg_set_homedir (pargs.r.ret_str);
     }
 
   if (default_config)
-    configname = make_filename (opt.homedir, "symcryptrun.conf", NULL );
+    configname = make_filename (gnupg_homedir (), "symcryptrun.conf", NULL );
 
   argc = orig_argc;
   argv = orig_argv;
@@ -1010,7 +1008,7 @@ main (int argc, char **argv)
 
   /* Tell simple-pwquery about the the standard socket name.  */
   {
-    char *tmp = make_filename (opt.homedir, GPG_AGENT_SOCK_NAME, NULL);
+    char *tmp = make_filename (gnupg_homedir (), GPG_AGENT_SOCK_NAME, NULL);
     simple_pw_set_socket (tmp);
     xfree (tmp);
   }

@@ -695,12 +695,12 @@ gpg_server (ctrl_t ctrl)
   assuan_set_pointer (ctx, ctrl);
   if (opt.verbose || opt.debug)
     {
-      char *tmp = NULL;
+      char *tmp;
 
       tmp = xtryasprintf ("Home: %s\n"
                           "Config: %s\n"
                           "%s",
-                          opt.homedir,
+                          gnupg_homedir (),
                           "fixme: need config filename",
                           hello);
       if (tmp)

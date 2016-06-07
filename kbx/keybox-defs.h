@@ -140,7 +140,6 @@ typedef struct _keybox_openpgp_info *keybox_openpgp_info_t;
 
 /* Don't know whether this is needed: */
 /*  static struct { */
-/*    const char *homedir; */
 /*    int dry_run; */
 /*    int quiet; */
 /*    int verbose; */
