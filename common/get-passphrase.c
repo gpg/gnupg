@@ -47,7 +47,6 @@ static struct
 {
   gpg_err_source_t errsource;
   int verbosity;
-  const char *homedir;
   const char *agent_program;
   const char *lc_ctype;
   const char *lc_messages;
@@ -62,7 +61,6 @@ static struct
 void
 gnupg_prepare_get_passphrase (gpg_err_source_t errsource,
                               int verbosity,
-                              const char *homedir,
                               const char *agent_program,
                               const char *opt_lc_ctype,
                               const char *opt_lc_messages,
@@ -70,7 +68,6 @@ gnupg_prepare_get_passphrase (gpg_err_source_t errsource,
 {
   agentargs.errsource          = errsource;
   agentargs.verbosity          = verbosity;
-  agentargs.homedir            = homedir;
   agentargs.agent_program      = agent_program;
   agentargs.lc_ctype           = opt_lc_ctype;
   agentargs.lc_messages        = opt_lc_messages;
@@ -93,7 +90,6 @@ start_agent (void)
 
   err = start_new_gpg_agent (&agent_ctx,
                              agentargs.errsource,
-                             agentargs.homedir,
                              agentargs.agent_program,
                              agentargs.lc_ctype,
                              agentargs.lc_messages,

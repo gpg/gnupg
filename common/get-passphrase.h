@@ -34,7 +34,6 @@
 
 void gnupg_prepare_get_passphrase (gpg_err_source_t errsource,
                                    int verbosity,
-                                   const char *homedir,
                                    const char *agent_program,
                                    const char *opt_lc_ctype,
                                    const char *opt_lc_messages,

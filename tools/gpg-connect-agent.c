@@ -2208,7 +2208,6 @@ start_agent (void)
   if (opt.use_dirmngr)
     err = start_new_dirmngr (&ctx,
                              GPG_ERR_SOURCE_DEFAULT,
-                             gnupg_homedir (),
                              opt.dirmngr_program,
                              opt.autostart,
                              !opt.quiet, 0,
@@ -2216,7 +2215,6 @@ start_agent (void)
   else
     err = start_new_gpg_agent (&ctx,
                                GPG_ERR_SOURCE_DEFAULT,
-                               gnupg_homedir (),
                                opt.agent_program,
                                NULL, NULL,
                                session_env,

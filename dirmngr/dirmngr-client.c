@@ -298,7 +298,6 @@ main (int argc, char **argv )
 
   err = start_new_dirmngr (&ctx,
                            GPG_ERR_SOURCE_DEFAULT,
-                           default_homedir (),
                            opt.dirmngr_program
                              ? opt.dirmngr_program
                              : gnupg_module_name (GNUPG_MODULE_NAME_DIRMNGR),

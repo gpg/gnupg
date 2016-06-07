@@ -351,7 +351,6 @@ unlock_spawning (lock_spawn_t *lock, const char *name)
 gpg_error_t
 start_new_gpg_agent (assuan_context_t *r_ctx,
                      gpg_err_source_t errsource,
-                     const char *homedir,
                      const char *agent_program,
                      const char *opt_lc_ctype,
                      const char *opt_lc_messages,
@@ -375,7 +374,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
       return err;
     }
 
-  sockname = make_absfilename (homedir, GPG_AGENT_SOCK_NAME, NULL);
+  sockname = make_absfilename (gnupg_homedir (), GPG_AGENT_SOCK_NAME, NULL);
   err = assuan_socket_connect (ctx, sockname, 0, 0);
   if (err && autostart)
     {
@@ -418,7 +417,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
       /* We better pass an absolute home directory to the agent just
          in case gpg-agent does not convert the passed name to an
          absolute one (which it should do).  */
-      abs_homedir = make_absfilename_try (homedir, NULL);
+      abs_homedir = make_absfilename_try (gnupg_homedir (), NULL);
       if (!abs_homedir)
         {
           gpg_error_t tmperr = gpg_err_make (errsource,
@@ -455,7 +454,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
       argv[i++] = "--daemon";
       argv[i++] = NULL;
 
-      if (!(err = lock_spawning (&lock, homedir, "agent", verbose))
+      if (!(err = lock_spawning (&lock, gnupg_homedir (), "agent", verbose))
           && assuan_socket_connect (ctx, sockname, 0, 0))
         {
           err = gnupg_spawn_process_detached (program? program : agent_program,
@@ -538,7 +537,6 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
 gpg_error_t
 start_new_dirmngr (assuan_context_t *r_ctx,
                    gpg_err_source_t errsource,
-                   const char *homedir,
                    const char *dirmngr_program,
                    int autostart,
                    int verbose, int debug,
@@ -605,7 +603,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
         status_cb (status_cb_arg, STATUS_PROGRESS,
                    "starting_dirmngr ? 0 0", NULL);
 
-      abs_homedir = make_absfilename (homedir, NULL);
+      abs_homedir = make_absfilename (gnupg_homedir (), NULL);
       if (!abs_homedir)
         {
           gpg_error_t tmperr = gpg_err_make (errsource,
@@ -641,7 +639,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
          TRY_SYSTEM_DAEMON should never be true because
          dirmngr_user_socket_name() won't return NULL.  */
 
-      if (!(err = lock_spawning (&lock, homedir, "dirmngr", verbose))
+      if (!(err = lock_spawning (&lock, gnupg_homedir (), "dirmngr", verbose))
           && assuan_socket_connect (ctx, sockname, 0, 0))
         {
           err = gnupg_spawn_process_detached (dirmngr_program, argv, NULL);
@@ -678,7 +676,6 @@ start_new_dirmngr (assuan_context_t *r_ctx,
       xfree (abs_homedir);
     }
 #else
-  (void)homedir;
   (void)dirmngr_program;
   (void)verbose;
   (void)status_cb;
