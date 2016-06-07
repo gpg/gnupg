@@ -4121,7 +4121,9 @@ main (int argc, char **argv)
                 {
                   x_usage = *argv++; argc--;
                   if (argc)
-                    x_expire = *argv++; argc--;
+                    {
+                      x_expire = *argv++; argc--;
+                    }
                 }
             }
           quick_generate_keypair (ctrl, username, x_algo, x_usage, x_expire);
@@ -4195,7 +4197,9 @@ main (int argc, char **argv)
                 {
                   x_usage = *argv++; argc--;
                   if (argc)
-                    x_expire = *argv++; argc--;
+                   {
+                     x_expire = *argv++; argc--;
+                   }
                 }
             }
           keyedit_quick_addkey (ctrl, x_fpr, x_algo, x_usage, x_expire);
