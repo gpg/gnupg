@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.1.12\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-05-09 14:44+0900\n"
+"PO-Revision-Date: 2016-06-07 14:12+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1172,8 +1172,7 @@ msgid "a notation name may not contain an '=' character\n"
 msgstr "ユーザ注釈名は、'='の文字を含んではなりません\n"
 
 msgid "a notation name must have only printable characters or spaces\n"
-msgstr ""
-"注釈名には印字可能な文字か空白のみを使わなければなりません\n"
+msgstr "注釈名には印字可能な文字か空白のみを使わなければなりません\n"
 
 msgid "WARNING: invalid notation data found\n"
 msgstr "*警告*: 無効な注釈データを発見\n"
@@ -1680,8 +1679,7 @@ msgstr "(オプション'%s'の引数を確認ください)\n"
 
 #, c-format
 msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-"警告: '%s'は長い鍵IDかフィンガープリントであるべきです。\n"
+msgstr "警告: '%s'は長い鍵IDかフィンガープリントであるべきです。\n"
 
 #, c-format
 msgid "error looking up: %s\n"
@@ -2027,335 +2025,6 @@ msgstr "鍵の一覧に鍵リングの名前を表示する"
 msgid "show expiration dates during signature listings"
 msgstr "署名の一覧時に有効期限の日付を表示する"
 
-msgid "available TOFU policies:\n"
-msgstr "利用可能なTOFUポリシー:\n"
-
-#, c-format
-msgid "unknown TOFU policy '%s'\n"
-msgstr "不明のTOFUポリシー'%s'\n"
-
-msgid "(use \"help\" to list choices)\n"
-msgstr "(選択肢の一覧には\"help\"を使ってください)\n"
-
-#, c-format
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "不明のTOFU DBフォーマット'%s'\n"
-
-#, c-format
-msgid "Note: old default options file '%s' ignored\n"
-msgstr "*注意*: 以前デフォルトだったオプション・ファイル'%s'は、無視されます\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr "libgcrypt が古すぎます (必要 %s, 現在 %s)\n"
-
-#, c-format
-msgid "Note: %s is not for normal use!\n"
-msgstr "*注意*: 普通%sは使いません!\n"
-
-#, c-format
-msgid "'%s' is not a valid signature expiration\n"
-msgstr "'%s'は、有効な署名表現ではありません\n"
-
-#, c-format
-msgid "invalid pinentry mode '%s'\n"
-msgstr "無効な pinentry mode '%s'です\n"
-
-#, c-format
-msgid "'%s' is not a valid character set\n"
-msgstr "'%s'は、有効な文字集合ではありません\n"
-
-msgid "could not parse keyserver URL\n"
-msgstr "鍵サーバのURLを解析不能\n"
-
-#, c-format
-msgid "%s:%d: invalid keyserver options\n"
-msgstr "%s:%d: 無効な鍵サーバ・オプションです\n"
-
-msgid "invalid keyserver options\n"
-msgstr "無効な鍵サーバ・オプションです\n"
-
-#, c-format
-msgid "%s:%d: invalid import options\n"
-msgstr "%s:%d: 無効なインポート・オプションです\n"
-
-msgid "invalid import options\n"
-msgstr "無効なインポート・オプションです\n"
-
-#, c-format
-msgid "%s:%d: invalid export options\n"
-msgstr "%s:%d: 無効なエクスポート・オプションです\n"
-
-msgid "invalid export options\n"
-msgstr "無効なエクスポート・オプションです\n"
-
-#, c-format
-msgid "%s:%d: invalid list options\n"
-msgstr "%s:%d: 無効な一覧オプションです\n"
-
-msgid "invalid list options\n"
-msgstr "無効な一覧オプションです\n"
-
-msgid "display photo IDs during signature verification"
-msgstr "署名の検証時にフォトIDを表示する"
-
-msgid "show policy URLs during signature verification"
-msgstr "署名の検証時にポリシーURLを表示する"
-
-msgid "show all notations during signature verification"
-msgstr "署名の検証時にすべての注釈を表示する"
-
-msgid "show IETF standard notations during signature verification"
-msgstr "署名の検証時にIETF標準注釈を表示する"
-
-msgid "show user-supplied notations during signature verification"
-msgstr "署名の検証時にユーザの注釈を表示する"
-
-msgid "show preferred keyserver URLs during signature verification"
-msgstr "署名の検証時に優先鍵サーバURLを表示する"
-
-msgid "show user ID validity during signature verification"
-msgstr "署名の検証時にユーザIDの有効性を表示する"
-
-msgid "show revoked and expired user IDs in signature verification"
-msgstr "署名の検証時に失効したユーザID、期限切れとなったユーザIDを表示する"
-
-msgid "show only the primary user ID in signature verification"
-msgstr "署名の検証時に主なユーザIDだけをを表示する"
-
-msgid "validate signatures with PKA data"
-msgstr "PKAデータで署名を検証する"
-
-msgid "elevate the trust of signatures with valid PKA data"
-msgstr "有効なPKAデータで署名の信用度を上昇させる"
-
-#, c-format
-msgid "%s:%d: invalid verify options\n"
-msgstr "%s:%d: 無効な検証オプションです\n"
-
-msgid "invalid verify options\n"
-msgstr "無効な検証オプションです\n"
-
-#, c-format
-msgid "unable to set exec-path to %s\n"
-msgstr "exec-pathを%sに設定不能\n"
-
-#, c-format
-msgid "%s:%d: invalid auto-key-locate list\n"
-msgstr "%s:%d: 無効な auto-key-locate リストです\n"
-
-msgid "invalid auto-key-locate list\n"
-msgstr "無効な auto-key-locate リストです\n"
-
-msgid "WARNING: program may create a core file!\n"
-msgstr "*警告*: プログラムはcoreファイルを作成することがあります!\n"
-
-#, c-format
-msgid "WARNING: %s overrides %s\n"
-msgstr "*警告*: %sは%sより優先\n"
-
-#, c-format
-msgid "%s not allowed with %s!\n"
-msgstr "%sは%sとともに使うことはできません!\n"
-
-#, c-format
-msgid "%s makes no sense with %s!\n"
-msgstr "%sは%sとともに使っても無意味です!\n"
-
-msgid "WARNING: running with faked system time: "
-msgstr "*警告*: ニセモノのシステム時刻で実行しています: "
-
-#, c-format
-msgid "will not run with insecure memory due to %s\n"
-msgstr "%s のため、セキュアでないメモリで実行しません\n"
-
-msgid "selected cipher algorithm is invalid\n"
-msgstr "選択された暗号アルゴリズムは、無効です\n"
-
-msgid "selected digest algorithm is invalid\n"
-msgstr "選択されたダイジェスト・アルゴリズムは、無効です\n"
-
-msgid "selected compression algorithm is invalid\n"
-msgstr "選択された圧縮アルゴリズムは、無効です\n"
-
-msgid "selected certification digest algorithm is invalid\n"
-msgstr "選択された証明書ダイジェスト・アルゴリズムは、無効です\n"
-
-msgid "completes-needed must be greater than 0\n"
-msgstr "completes-neededは正の値が必要です\n"
-
-msgid "marginals-needed must be greater than 1\n"
-msgstr "marginals-neededは1より大きな値が必要です\n"
-
-msgid "max-cert-depth must be in the range from 1 to 255\n"
-msgstr "max-cert-depthは1から255の範囲でなければなりません\n"
-
-msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
-msgstr "無効なdefault-cert-level。0か1か2か3でなければなりません\n"
-
-msgid "invalid min-cert-level; must be 1, 2, or 3\n"
-msgstr "無効なmin-cert-level。0か1か2か3でなければなりません\n"
-
-msgid "Note: simple S2K mode (0) is strongly discouraged\n"
-msgstr "*注意*: 単純なS2Kモード(0)の使用には強く反対します\n"
-
-msgid "invalid S2K mode; must be 0, 1 or 3\n"
-msgstr "無効なS2Kモード。0か1か3でなければなりません\n"
-
-msgid "invalid default preferences\n"
-msgstr "無効なデフォルトの優先指定\n"
-
-msgid "invalid personal cipher preferences\n"
-msgstr "無効な個人用暗号方式の優先指定\n"
-
-msgid "invalid personal digest preferences\n"
-msgstr "無効な個人用ダイジェストの優先指定\n"
-
-msgid "invalid personal compress preferences\n"
-msgstr "無効な個人用圧縮の優先指定\n"
-
-#, c-format
-msgid "%s does not yet work with %s\n"
-msgstr "%sは%sではまだ機能しません\n"
-
-#, c-format
-msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgstr "暗号アルゴリズム'%s'を%sモードで使うことはできません\n"
-
-#, c-format
-msgid "you may not use digest algorithm '%s' while in %s mode\n"
-msgstr "ダイジェスト・アルゴリズム'%s'を%sモードで使うことはできません\n"
-
-#, c-format
-msgid "you may not use compression algorithm '%s' while in %s mode\n"
-msgstr "圧縮アルゴリズム'%s'を%sモードで使うことはできません\n"
-
-#, c-format
-msgid "failed to initialize the TrustDB: %s\n"
-msgstr "信用データベースの初期化に失敗しました: %s\n"
-
-msgid "WARNING: recipients (-r) given without using public key encryption\n"
-msgstr "*警告*: 公開鍵暗号を使わずに、受取人 (-r) を指定しています\n"
-
-msgid "--store [filename]"
-msgstr "--store [ファイル名]"
-
-msgid "--symmetric [filename]"
-msgstr "--symmetric [ファイル名]"
-
-#, c-format
-msgid "symmetric encryption of '%s' failed: %s\n"
-msgstr "'%s'の共通鍵暗号に失敗しました: %s\n"
-
-msgid "--encrypt [filename]"
-msgstr "--encrypt [ファイル名]"
-
-msgid "--symmetric --encrypt [filename]"
-msgstr "--symmetric --encrypt [ファイル名]"
-
-msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
-msgstr "--symmetric --encryptを--s2k-mode 0で使うことはできません\n"
-
-#, c-format
-msgid "you cannot use --symmetric --encrypt while in %s mode\n"
-msgstr "--symmetric --encryptを%sモードで使うことはできません\n"
-
-msgid "--sign [filename]"
-msgstr "--sign [ファイル名]"
-
-msgid "--sign --encrypt [filename]"
-msgstr "--sign --encrypt [ファイル名]"
-
-msgid "--symmetric --sign --encrypt [filename]"
-msgstr "--symmetric --sign --encrypt [ファイル名]"
-
-msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
-msgstr "--symmetric --sign --encryptを--s2k-mode 0で使うことはできません\n"
-
-#, c-format
-msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
-msgstr "--symmetric --sign --encryptを%sモードで使うことはできません\n"
-
-msgid "--sign --symmetric [filename]"
-msgstr "--sign --symmetric [ファイル名]"
-
-msgid "--clearsign [filename]"
-msgstr "--clearsign [ファイル名]"
-
-msgid "--decrypt [filename]"
-msgstr "--decrypt [ファイル名]"
-
-msgid "--sign-key user-id"
-msgstr "--sign-key ユーザid"
-
-msgid "--lsign-key user-id"
-msgstr "--lsign-key ユーザid"
-
-msgid "--edit-key user-id [commands]"
-msgstr "--edit-key ユーザid [コマンド]"
-
-msgid "--passwd <user-id>"
-msgstr "--passwd <ユーザid>"
-
-#, c-format
-msgid "keyserver send failed: %s\n"
-msgstr "鍵サーバへの送信に失敗しました: %s\n"
-
-#, c-format
-msgid "keyserver receive failed: %s\n"
-msgstr "鍵サーバからの受信に失敗しました: %s\n"
-
-#, c-format
-msgid "key export failed: %s\n"
-msgstr "鍵のエクスポートに失敗しました: %s\n"
-
-#, c-format
-msgid "export as ssh key failed: %s\n"
-msgstr "ssh鍵としてのエクスポートに失敗しました: %s\n"
-
-#, c-format
-msgid "keyserver search failed: %s\n"
-msgstr "鍵サーバの検索に失敗しました: %s\n"
-
-#, c-format
-msgid "keyserver refresh failed: %s\n"
-msgstr "鍵サーバの更新に失敗しました: %s\n"
-
-#, c-format
-msgid "dearmoring failed: %s\n"
-msgstr "外装除去に失敗しました: %s\n"
-
-#, c-format
-msgid "enarmoring failed: %s\n"
-msgstr "外装に失敗しました: %s\n"
-
-#, c-format
-msgid "invalid hash algorithm '%s'\n"
-msgstr "無効なハッシュ・アルゴリズム'%s'です\n"
-
-#, c-format
-msgid "error parsing key specification '%s': %s\n"
-msgstr "鍵指定'%s'の構文解析エラー: %s\n"
-
-#, c-format
-msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
-msgstr "'%s'は有効な鍵ID, フィンガープリント、keygripではないようです。\n"
-
-msgid "[filename]"
-msgstr "[ファイル名]"
-
-msgid "Go ahead and type your message ...\n"
-msgstr "開始します。メッセージを打ってください ...\n"
-
-msgid "the given certification policy URL is invalid\n"
-msgstr "あたえられた証明書ポリシーURLは無効です\n"
-
-msgid "the given signature policy URL is invalid\n"
-msgstr "あたえられた署名ポリシーURLは無効です\n"
-
-msgid "the given preferred keyserver URL is invalid\n"
-msgstr "指定された優先鍵サーバURLは無効です\n"
-
 msgid "|FILE|take the keys from the keyring FILE"
 msgstr "|FILE|鍵リングFILEの鍵を扱います"
 
@@ -2364,6 +2033,9 @@ msgstr "日時の矛盾を警告だけにします"
 
 msgid "|FD|write status info to this FD"
 msgstr "|FD|このFDにステイタス情報を書き出す"
+
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr "|ALGO|ALGOで作成された署名を拒絶する"
 
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "使い方: gpgv [オプション] [ファイル] (ヘルプは -h)"
@@ -2793,7 +2465,8 @@ msgstr "サポートしていない公開鍵アルゴリズム(%d)の署名は�
 #, c-format
 msgid ""
 "can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "サポートしていないメッセージ・ダイジェスト(%d)の署名は確認できません: %s.\n"
+msgstr ""
+"サポートしていないメッセージ・ダイジェスト(%d)の署名は確認できません: %s.\n"
 
 msgid " (reordered signatures follow)"
 msgstr "(順番を変えた署名が続きます)"
@@ -2826,7 +2499,9 @@ msgstr[0] "%d個の正しい署名\n"
 msgid ""
 "Warning: errors found and only checked self-signatures, run '%s' to check "
 "all signatures.\n"
-msgstr "警告: エラーがあり、自己署名だけ確認しました。'%s'を実行してすべての署名を確認ください。\n"
+msgstr ""
+"警告: エラーがあり、自己署名だけ確認しました。'%s'を実行してすべての署名を確"
+"認ください。\n"
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3482,6 +3157,9 @@ msgstr "ユーザID\"%s\"のv3自己署名をスキップします\n"
 msgid "Enter your preferred keyserver URL: "
 msgstr "優先鍵サーバURLを入力してください: "
 
+msgid "could not parse keyserver URL\n"
+msgstr "鍵サーバのURLを解析不能\n"
+
 msgid "Are you sure you want to replace it? (y/N) "
 msgstr "本当に置き換えたいですか? (y/N) "
 
@@ -3727,6 +3405,10 @@ msgid "No key with this keygrip\n"
 msgstr "このkeygripの鍵はありません\n"
 
 #, c-format
+msgid "rounded to %u bits\n"
+msgstr "%uビットに切り上げます\n"
+
+#, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "%s 鍵は %u から %u ビットの長さで可能です。\n"
 
@@ -3741,10 +3423,6 @@ msgstr "鍵長は? (%u) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "要求された鍵長は%uビット\n"
-
-#, c-format
-msgid "rounded to %u bits\n"
-msgstr "%uビットに切り上げます\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "ご希望の楕円曲線を選択してください:\n"
@@ -4162,6 +3840,10 @@ msgstr "鍵サーバがわかりません\n"
 #, c-format
 msgid "sending key %s to %s\n"
 msgstr "鍵%sを%sへ送信\n"
+
+#, c-format
+msgid "keyserver send failed: %s\n"
+msgstr "鍵サーバへの送信に失敗しました: %s\n"
 
 #, c-format
 msgid "requesting key from '%s'\n"
@@ -4923,8 +4605,8 @@ msgid ""
 msgstr ""
 "秘密鍵のコンプロマイズや紛失の場合、これを使ってこの鍵を失効させます。\n"
 "しかし、秘密鍵がまだアクセス可能である場合、新しい失効証明書を生成し、\n"
-"失効の理由をつける方がよいでしょう。詳細は、GnuPGマニュアルの"
-"gpgコマンド \"--gen-revoke\"の記述をご覧ください。"
+"失効の理由をつける方がよいでしょう。詳細は、GnuPGマニュアルのgpgコマンド \"--"
+"gen-revoke\"の記述をご覧ください。"
 
 msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
@@ -5314,10 +4996,6 @@ msgid "error updating TOFU database: %s\n"
 msgstr "TOFUデータベースの更新エラー: %s\n"
 
 #, c-format
-msgid "public key %s not found: %s\n"
-msgstr "公開鍵%sが見つかりません: %s\n"
-
-#, c-format
 msgid "error setting TOFU binding's trust level to %s\n"
 msgstr "TOFUデータベースの信用レベルの設定エラー: %s\n"
 
@@ -5330,15 +5008,16 @@ msgid ""
 "The key with fingerprint %s raised a conflict with the binding %s.  Since "
 "this binding's policy was 'auto', it was changed to 'ask'."
 msgstr ""
-"鍵のフィンガープリント%sがバインディング%sと衝突しました。このバインディングポリシーは"
-"'auto'だったので、'ask'に変更されました。"
+"鍵のフィンガープリント%sがバインディング%sと衝突しました。このバインディング"
+"ポリシーは'auto'だったので、'ask'に変更されました。"
 
 #, c-format
 msgid ""
 "Please indicate whether you believe the binding %s%sis legitimate (the key "
 "belongs to the stated owner) or a forgery (bad)."
 msgstr ""
-"バインディング%s%sが適切(鍵は述べられた所有者に属する)か、偽られたものか(ダメ)かを指示してください。"
+"バインディング%s%sが適切(鍵は述べられた所有者に属する)か、偽られたものか(ダ"
+"メ)かを指示してください。"
 
 #, c-format
 msgid "error gathering other user IDs: %s\n"
@@ -5358,8 +5037,7 @@ msgstr "署名の統計の収集エラー: %s\n"
 #, c-format
 msgid "The email address \"%s\" is associated with %d key:\n"
 msgid_plural "The email address \"%s\" is associated with %d keys:\n"
-msgstr[0] ""
-"電子メールアドレス\"%s\"は%d個の鍵に結びつけられます:\n"
+msgstr[0] "電子メールアドレス\"%s\"は%d個の鍵に結びつけられます:\n"
 
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
@@ -5406,7 +5084,9 @@ msgid "gGaAuUrRbB"
 msgstr "gGaAuUrRbB"
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
-msgstr "(G)ood-良, (A)ccept once-一度だけ良, (U)nknown-不明, (R)eject once-一度だけ否, (B)ad-ダメ? "
+msgstr ""
+"(G)ood-良, (A)ccept once-一度だけ良, (U)nknown-不明, (R)eject once-一度だけ"
+"否, (B)ad-ダメ? "
 
 #, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -5467,8 +5147,7 @@ msgid ""
 msgid_plural ""
 "Verified %ld messages signed by \"%s\"\n"
 "in the past %s."
-msgstr[0] ""
-"メッセージを%ld回検証しました(\"%s\"で署名されたもの。かつて %s)。"
+msgstr[0] "メッセージを%ld回検証しました(\"%s\"で署名されたもの。かつて %s)。"
 
 #, c-format
 msgid "The most recent message was verified %s ago."
@@ -5478,7 +5157,8 @@ msgid "Warning: we've have yet to see a message signed by this key!\n"
 msgstr "警告: この鍵で署名されたメッセージを検証したことはありません!\n"
 
 msgid "Warning: we've only seen a single message signed by this key!\n"
-msgstr "警告: この鍵で署名されたメッセージを検証したことは一度しかありません!\n"
+msgstr ""
+"警告: この鍵で署名されたメッセージを検証したことは一度しかありません!\n"
 
 #, c-format
 msgid ""
@@ -5494,9 +5174,9 @@ msgid_plural ""
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[0] ""
-"警告: この鍵で署名されたメッセージを%ld回以上見たと思う場合、偽"
-"者の可能性があります! 少数のバリエーションでこの電子メールアドレ"
-"スを注意深く検査してください。この鍵が疑われる場合、\n"
+"警告: この鍵で署名されたメッセージを%ld回以上見たと思う場合、偽者の可能性があ"
+"ります! 少数のバリエーションでこの電子メールアドレスを注意深く検査してくださ"
+"い。この鍵が疑われる場合、\n"
 "  %s\n"
 "でダメとマークしてください。\n"
 
@@ -5561,6 +5241,10 @@ msgstr "信用モデル'%s'で信用データベースの検査は、不要で�
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "信用モデル'%s'で信用データベースの更新は、不要です\n"
 
+#, c-format
+msgid "public key %s not found: %s\n"
+msgstr "公開鍵%sが見つかりません: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "--check-trustdbを実行してください\n"
 
@@ -5599,7 +5283,7 @@ msgid "undefined"
 msgstr "未定義"
 
 msgid "never"
-msgstr "断じてなし"
+msgstr "全くなし"
 
 msgid "marginal"
 msgstr "まぁまぁ"
@@ -5632,6 +5316,9 @@ msgstr "[  不明  ]"
 
 msgid "[  undef ]"
 msgstr "[ 未定義 ]"
+
+msgid "[  never ]"
+msgstr "[全くなし]"
 
 msgid "[marginal]"
 msgstr "[まぁまぁ]"
@@ -6522,8 +6209,24 @@ msgstr "%s:%u: ユーザなしに与えられたパスワード\n"
 msgid "%s:%u: skipping this line\n"
 msgstr "%s:%u: この行はスキップ\n"
 
+#, c-format
+msgid "invalid pinentry mode '%s'\n"
+msgstr "無効な pinentry mode '%s'です\n"
+
 msgid "could not parse keyserver\n"
 msgstr "鍵サーバのURLを解析不能\n"
+
+msgid "WARNING: program may create a core file!\n"
+msgstr "*警告*: プログラムはcoreファイルを作成することがあります!\n"
+
+msgid "WARNING: running with faked system time: "
+msgstr "*警告*: ニセモノのシステム時刻で実行しています: "
+
+msgid "selected cipher algorithm is invalid\n"
+msgstr "選択された暗号アルゴリズムは、無効です\n"
+
+msgid "selected digest algorithm is invalid\n"
+msgstr "選択されたダイジェスト・アルゴリズムは、無効です\n"
 
 #, c-format
 msgid "importing common certificates '%s'\n"
@@ -8246,6 +7949,277 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "available TOFU policies:\n"
+#~ msgstr "利用可能なTOFUポリシー:\n"
+
+#~ msgid "unknown TOFU policy '%s'\n"
+#~ msgstr "不明のTOFUポリシー'%s'\n"
+
+#~ msgid "(use \"help\" to list choices)\n"
+#~ msgstr "(選択肢の一覧には\"help\"を使ってください)\n"
+
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "不明のTOFU DBフォーマット'%s'\n"
+
+#~ msgid "Note: old default options file '%s' ignored\n"
+#~ msgstr ""
+#~ "*注意*: 以前デフォルトだったオプション・ファイル'%s'は、無視されます\n"
+
+#~ msgid "libgcrypt is too old (need %s, have %s)\n"
+#~ msgstr "libgcrypt が古すぎます (必要 %s, 現在 %s)\n"
+
+#~ msgid "Note: %s is not for normal use!\n"
+#~ msgstr "*注意*: 普通%sは使いません!\n"
+
+#~ msgid "'%s' is not a valid signature expiration\n"
+#~ msgstr "'%s'は、有効な署名表現ではありません\n"
+
+#~ msgid "'%s' is not a valid character set\n"
+#~ msgstr "'%s'は、有効な文字集合ではありません\n"
+
+#~ msgid "%s:%d: invalid keyserver options\n"
+#~ msgstr "%s:%d: 無効な鍵サーバ・オプションです\n"
+
+#~ msgid "invalid keyserver options\n"
+#~ msgstr "無効な鍵サーバ・オプションです\n"
+
+#~ msgid "%s:%d: invalid import options\n"
+#~ msgstr "%s:%d: 無効なインポート・オプションです\n"
+
+#~ msgid "invalid import options\n"
+#~ msgstr "無効なインポート・オプションです\n"
+
+#~ msgid "%s:%d: invalid export options\n"
+#~ msgstr "%s:%d: 無効なエクスポート・オプションです\n"
+
+#~ msgid "invalid export options\n"
+#~ msgstr "無効なエクスポート・オプションです\n"
+
+#~ msgid "%s:%d: invalid list options\n"
+#~ msgstr "%s:%d: 無効な一覧オプションです\n"
+
+#~ msgid "invalid list options\n"
+#~ msgstr "無効な一覧オプションです\n"
+
+#~ msgid "display photo IDs during signature verification"
+#~ msgstr "署名の検証時にフォトIDを表示する"
+
+#~ msgid "show policy URLs during signature verification"
+#~ msgstr "署名の検証時にポリシーURLを表示する"
+
+#~ msgid "show all notations during signature verification"
+#~ msgstr "署名の検証時にすべての注釈を表示する"
+
+#~ msgid "show IETF standard notations during signature verification"
+#~ msgstr "署名の検証時にIETF標準注釈を表示する"
+
+#~ msgid "show user-supplied notations during signature verification"
+#~ msgstr "署名の検証時にユーザの注釈を表示する"
+
+#~ msgid "show preferred keyserver URLs during signature verification"
+#~ msgstr "署名の検証時に優先鍵サーバURLを表示する"
+
+#~ msgid "show user ID validity during signature verification"
+#~ msgstr "署名の検証時にユーザIDの有効性を表示する"
+
+#~ msgid "show revoked and expired user IDs in signature verification"
+#~ msgstr "署名の検証時に失効したユーザID、期限切れとなったユーザIDを表示する"
+
+#~ msgid "show only the primary user ID in signature verification"
+#~ msgstr "署名の検証時に主なユーザIDだけをを表示する"
+
+#~ msgid "validate signatures with PKA data"
+#~ msgstr "PKAデータで署名を検証する"
+
+#~ msgid "elevate the trust of signatures with valid PKA data"
+#~ msgstr "有効なPKAデータで署名の信用度を上昇させる"
+
+#~ msgid "%s:%d: invalid verify options\n"
+#~ msgstr "%s:%d: 無効な検証オプションです\n"
+
+#~ msgid "invalid verify options\n"
+#~ msgstr "無効な検証オプションです\n"
+
+#~ msgid "unable to set exec-path to %s\n"
+#~ msgstr "exec-pathを%sに設定不能\n"
+
+#~ msgid "%s:%d: invalid auto-key-locate list\n"
+#~ msgstr "%s:%d: 無効な auto-key-locate リストです\n"
+
+#~ msgid "invalid auto-key-locate list\n"
+#~ msgstr "無効な auto-key-locate リストです\n"
+
+#~ msgid "WARNING: %s overrides %s\n"
+#~ msgstr "*警告*: %sは%sより優先\n"
+
+#~ msgid "%s not allowed with %s!\n"
+#~ msgstr "%sは%sとともに使うことはできません!\n"
+
+#~ msgid "%s makes no sense with %s!\n"
+#~ msgstr "%sは%sとともに使っても無意味です!\n"
+
+#~ msgid "will not run with insecure memory due to %s\n"
+#~ msgstr "%s のため、セキュアでないメモリで実行しません\n"
+
+#~ msgid "selected compression algorithm is invalid\n"
+#~ msgstr "選択された圧縮アルゴリズムは、無効です\n"
+
+#~ msgid "selected certification digest algorithm is invalid\n"
+#~ msgstr "選択された証明書ダイジェスト・アルゴリズムは、無効です\n"
+
+#~ msgid "completes-needed must be greater than 0\n"
+#~ msgstr "completes-neededは正の値が必要です\n"
+
+#~ msgid "marginals-needed must be greater than 1\n"
+#~ msgstr "marginals-neededは1より大きな値が必要です\n"
+
+#~ msgid "max-cert-depth must be in the range from 1 to 255\n"
+#~ msgstr "max-cert-depthは1から255の範囲でなければなりません\n"
+
+#~ msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
+#~ msgstr "無効なdefault-cert-level。0か1か2か3でなければなりません\n"
+
+#~ msgid "invalid min-cert-level; must be 1, 2, or 3\n"
+#~ msgstr "無効なmin-cert-level。0か1か2か3でなければなりません\n"
+
+#~ msgid "Note: simple S2K mode (0) is strongly discouraged\n"
+#~ msgstr "*注意*: 単純なS2Kモード(0)の使用には強く反対します\n"
+
+#~ msgid "invalid S2K mode; must be 0, 1 or 3\n"
+#~ msgstr "無効なS2Kモード。0か1か3でなければなりません\n"
+
+#~ msgid "invalid default preferences\n"
+#~ msgstr "無効なデフォルトの優先指定\n"
+
+#~ msgid "invalid personal cipher preferences\n"
+#~ msgstr "無効な個人用暗号方式の優先指定\n"
+
+#~ msgid "invalid personal digest preferences\n"
+#~ msgstr "無効な個人用ダイジェストの優先指定\n"
+
+#~ msgid "invalid personal compress preferences\n"
+#~ msgstr "無効な個人用圧縮の優先指定\n"
+
+#~ msgid "%s does not yet work with %s\n"
+#~ msgstr "%sは%sではまだ機能しません\n"
+
+#~ msgid "you may not use cipher algorithm '%s' while in %s mode\n"
+#~ msgstr "暗号アルゴリズム'%s'を%sモードで使うことはできません\n"
+
+#~ msgid "you may not use digest algorithm '%s' while in %s mode\n"
+#~ msgstr "ダイジェスト・アルゴリズム'%s'を%sモードで使うことはできません\n"
+
+#~ msgid "you may not use compression algorithm '%s' while in %s mode\n"
+#~ msgstr "圧縮アルゴリズム'%s'を%sモードで使うことはできません\n"
+
+#~ msgid "failed to initialize the TrustDB: %s\n"
+#~ msgstr "信用データベースの初期化に失敗しました: %s\n"
+
+#~ msgid "WARNING: recipients (-r) given without using public key encryption\n"
+#~ msgstr "*警告*: 公開鍵暗号を使わずに、受取人 (-r) を指定しています\n"
+
+#~ msgid "--store [filename]"
+#~ msgstr "--store [ファイル名]"
+
+#~ msgid "--symmetric [filename]"
+#~ msgstr "--symmetric [ファイル名]"
+
+#~ msgid "symmetric encryption of '%s' failed: %s\n"
+#~ msgstr "'%s'の共通鍵暗号に失敗しました: %s\n"
+
+#~ msgid "--encrypt [filename]"
+#~ msgstr "--encrypt [ファイル名]"
+
+#~ msgid "--symmetric --encrypt [filename]"
+#~ msgstr "--symmetric --encrypt [ファイル名]"
+
+#~ msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
+#~ msgstr "--symmetric --encryptを--s2k-mode 0で使うことはできません\n"
+
+#~ msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+#~ msgstr "--symmetric --encryptを%sモードで使うことはできません\n"
+
+#~ msgid "--sign [filename]"
+#~ msgstr "--sign [ファイル名]"
+
+#~ msgid "--sign --encrypt [filename]"
+#~ msgstr "--sign --encrypt [ファイル名]"
+
+#~ msgid "--symmetric --sign --encrypt [filename]"
+#~ msgstr "--symmetric --sign --encrypt [ファイル名]"
+
+#~ msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
+#~ msgstr "--symmetric --sign --encryptを--s2k-mode 0で使うことはできません\n"
+
+#~ msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+#~ msgstr "--symmetric --sign --encryptを%sモードで使うことはできません\n"
+
+#~ msgid "--sign --symmetric [filename]"
+#~ msgstr "--sign --symmetric [ファイル名]"
+
+#~ msgid "--clearsign [filename]"
+#~ msgstr "--clearsign [ファイル名]"
+
+#~ msgid "--decrypt [filename]"
+#~ msgstr "--decrypt [ファイル名]"
+
+#~ msgid "--sign-key user-id"
+#~ msgstr "--sign-key ユーザid"
+
+#~ msgid "--lsign-key user-id"
+#~ msgstr "--lsign-key ユーザid"
+
+#~ msgid "--edit-key user-id [commands]"
+#~ msgstr "--edit-key ユーザid [コマンド]"
+
+#~ msgid "--passwd <user-id>"
+#~ msgstr "--passwd <ユーザid>"
+
+#~ msgid "keyserver receive failed: %s\n"
+#~ msgstr "鍵サーバからの受信に失敗しました: %s\n"
+
+#~ msgid "key export failed: %s\n"
+#~ msgstr "鍵のエクスポートに失敗しました: %s\n"
+
+#~ msgid "export as ssh key failed: %s\n"
+#~ msgstr "ssh鍵としてのエクスポートに失敗しました: %s\n"
+
+#~ msgid "keyserver search failed: %s\n"
+#~ msgstr "鍵サーバの検索に失敗しました: %s\n"
+
+#~ msgid "keyserver refresh failed: %s\n"
+#~ msgstr "鍵サーバの更新に失敗しました: %s\n"
+
+#~ msgid "dearmoring failed: %s\n"
+#~ msgstr "外装除去に失敗しました: %s\n"
+
+#~ msgid "enarmoring failed: %s\n"
+#~ msgstr "外装に失敗しました: %s\n"
+
+#~ msgid "invalid hash algorithm '%s'\n"
+#~ msgstr "無効なハッシュ・アルゴリズム'%s'です\n"
+
+#~ msgid "error parsing key specification '%s': %s\n"
+#~ msgstr "鍵指定'%s'の構文解析エラー: %s\n"
+
+#~ msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+#~ msgstr "'%s'は有効な鍵ID, フィンガープリント、keygripではないようです。\n"
+
+#~ msgid "[filename]"
+#~ msgstr "[ファイル名]"
+
+#~ msgid "Go ahead and type your message ...\n"
+#~ msgstr "開始します。メッセージを打ってください ...\n"
+
+#~ msgid "the given certification policy URL is invalid\n"
+#~ msgstr "あたえられた証明書ポリシーURLは無効です\n"
+
+#~ msgid "the given signature policy URL is invalid\n"
+#~ msgstr "あたえられた署名ポリシーURLは無効です\n"
+
+#~ msgid "the given preferred keyserver URL is invalid\n"
+#~ msgstr "指定された優先鍵サーバURLは無効です\n"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "あなたはバグを発見しました ... (%s:%d)\n"
