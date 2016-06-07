@@ -374,7 +374,14 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
       return err;
     }
 
-  sockname = make_absfilename (gnupg_homedir (), GPG_AGENT_SOCK_NAME, NULL);
+  sockname = make_filename_try (gnupg_socketdir (), GPG_AGENT_SOCK_NAME, NULL);
+  if (!sockname)
+    {
+      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      assuan_release (ctx);
+      return err;
+    }
+
   err = assuan_socket_connect (ctx, sockname, 0, 0);
   if (err && autostart)
     {

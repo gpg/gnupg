@@ -375,7 +375,7 @@ main (int argc, char **argv)
         }
 
       {
-        char *tmp = make_filename (default_homedir (),
+        char *tmp = make_filename (gnupg_socketdir (),
                                    GPG_AGENT_SOCK_NAME, NULL);
         es_fprintf (outfp, "agent-socket:%s\n", gc_percent_escape (tmp));
         xfree (tmp);

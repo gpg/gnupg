@@ -1762,7 +1762,7 @@ create_socket_name (char *standard_name, int with_homedir)
   char *name;
 
   if (with_homedir)
-    name = make_filename (gnupg_homedir (), standard_name, NULL);
+    name = make_filename (gnupg_socketdir (), standard_name, NULL);
   else
     name = make_filename (standard_name, NULL);
   if (strchr (name, PATHSEP_C))
@@ -2729,7 +2729,7 @@ check_own_socket (void)
   if (check_own_socket_running || shutdown_pending)
     return;  /* Still running or already shutting down.  */
 
-  sockname = make_filename_try (gnupg_homedir (), GPG_AGENT_SOCK_NAME, NULL);
+  sockname = make_filename_try (gnupg_socketdir (), GPG_AGENT_SOCK_NAME, NULL);
   if (!sockname)
     return; /* Out of memory.  */
 
@@ -2755,7 +2755,7 @@ check_for_running_agent (int silent)
   char *sockname;
   assuan_context_t ctx = NULL;
 
-  sockname = make_filename_try (gnupg_homedir (), GPG_AGENT_SOCK_NAME, NULL);
+  sockname = make_filename_try (gnupg_socketdir (), GPG_AGENT_SOCK_NAME, NULL);
   if (!sockname)
     return gpg_error_from_syserror ();
 

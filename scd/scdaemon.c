@@ -1042,7 +1042,7 @@ create_socket_name (char *standard_name)
 {
   char *name;
 
-  name = make_filename (gnupg_homedir (), standard_name, NULL);
+  name = make_filename (gnupg_socketdir (), standard_name, NULL);
   if (strchr (name, PATHSEP_C))
     {
       log_error (("'%s' are not allowed in the socket name\n"), PATHSEP_S);

@@ -245,7 +245,7 @@ main (int argc, char **argv)
 
   /* Tell simple-pwquery about the the standard socket name.  */
   {
-    char *tmp = make_filename (gnupg_homedir (), GPG_AGENT_SOCK_NAME, NULL);
+    char *tmp = make_filename (gnupg_socketdir (), GPG_AGENT_SOCK_NAME, NULL);
     simple_pw_set_socket (tmp);
     xfree (tmp);
   }

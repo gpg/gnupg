@@ -222,6 +222,7 @@ const char *standard_homedir (void);
 const char *default_homedir (void);
 void gnupg_set_homedir (const char *newdir);
 const char *gnupg_homedir (void);
+const char *gnupg_socketdir (void);
 const char *gnupg_sysconfdir (void);
 const char *gnupg_bindir (void);
 const char *gnupg_libexecdir (void);

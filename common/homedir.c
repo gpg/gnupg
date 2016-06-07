@@ -375,7 +375,7 @@ w32_commondir (void)
 
 
 /* Change the homedir.  Some care must be taken to set this early
- * enough becuase previous calls to gnupg_homedir may else return a
+ * enough because previous calls to gnupg_homedir may else return a
  * different string.  */
 void
 gnupg_set_homedir (const char *newdir)
@@ -397,6 +397,35 @@ gnupg_homedir (void)
   if (!the_gnupg_homedir)
     the_gnupg_homedir = xstrdup (default_homedir ());
   return the_gnupg_homedir;
+}
+
+
+/*
+ * Return the name of the socket dir.  That is the directory used for
+ * the IPC local sockets.  This is an absolute filename.
+ */
+const char *
+gnupg_socketdir (void)
+{
+  static char *name;
+
+  if (!name)
+    {
+      /* Check XDG variable.  */
+
+      /* XDG is not set: Check whether we have a /run directory.  */
+
+      /* If there is no run directpry we assume a /var/run directory.  */
+
+      /* Check that the user directory exists or create it if
+       * required,  */
+
+      /* If nothing works fall back to the homedir.  */
+      if (!name)
+        name = make_absfilename (gnupg_homedir (), NULL);
+    }
+
+  return name;
 }
 
 
@@ -631,7 +660,7 @@ dirmngr_user_socket_name (void)
   static char *name;
 
   if (!name)
-    name = make_absfilename (default_homedir (), DIRMNGR_SOCK_NAME, NULL);
+    name = make_filename (gnupg_socketdir (), DIRMNGR_SOCK_NAME, NULL);
   return name;
 }
 
