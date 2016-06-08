@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "gpgconf.h"
 #include "i18n.h"
@@ -53,6 +54,8 @@ enum cmd_and_opt_values
     aListDirs,
     aLaunch,
     aKill,
+    aCreateSocketDir,
+    aRemoveSocketDir,
     aReload
   };
 
@@ -78,6 +81,8 @@ static ARGPARSE_OPTS opts[] =
     { aReload,        "reload", 256, N_("reload all or a given component")},
     { aLaunch,        "launch", 256, N_("launch a given component")},
     { aKill,          "kill", 256,   N_("kill a given component")},
+    { aCreateSocketDir, "create-socketdir", 256, "@"},
+    { aRemoveSocketDir, "remove-socketdir", 256, "@"},
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
 
@@ -191,6 +196,8 @@ main (int argc, char **argv)
         case aReload:
         case aLaunch:
         case aKill:
+        case aCreateSocketDir:
+        case aRemoveSocketDir:
 	  cmd = pargs.r_opt;
 	  break;
 
@@ -388,6 +395,66 @@ main (int argc, char **argv)
         xfree (tmp);
       }
       break;
+
+    case aCreateSocketDir:
+      {
+        char *socketdir;
+        unsigned int flags;
+
+        /* Make sure that the top /run/user/UID/gnupg dir has been
+         * created.  */
+        gnupg_socketdir ();
+
+        /* Check the /var/run dir.  */
+        socketdir = _gnupg_socketdir_internal (1, &flags);
+        if ((flags & 64) && !opt.dry_run)
+          {
+            /* No sub dir - create it. */
+            if (gnupg_mkdir (socketdir, "-rwx"))
+              gc_error (1, errno, "error creating '%s'", socketdir);
+            /* Try again.  */
+            socketdir = _gnupg_socketdir_internal (1, &flags);
+          }
+
+        /* Give some info.  */
+        if ( (flags & ~32) || opt.verbose || opt.dry_run)
+          {
+            log_info ("socketdir is '%s'\n", socketdir);
+            if ((flags &   1)) log_info ("\tgeneral error\n");
+            if ((flags &   2)) log_info ("\tno /run/user dir\n");
+            if ((flags &   4)) log_info ("\tbad permissions\n");
+            if ((flags &   8)) log_info ("\tbad permissions (subdir)\n");
+            if ((flags &  16)) log_info ("\tmkdir failed\n");
+            if ((flags &  32)) log_info ("\tnon-default homedir\n");
+            if ((flags &  64)) log_info ("\tno such subdir\n");
+            if ((flags & 128)) log_info ("\tusing homedir as fallback\n");
+          }
+
+        if ((flags & ~32) && !opt.dry_run)
+          gc_error (1, 0, "error creating socket directory");
+
+        xfree (socketdir);
+      }
+      break;
+
+    case aRemoveSocketDir:
+      {
+        char *socketdir;
+        unsigned int flags;
+
+        /* Check the /var/run dir.  */
+        socketdir = _gnupg_socketdir_internal (1, &flags);
+        if ((flags & 128))
+          log_info ("ignoring request to remove non /run/user socket dir\n");
+        else if (opt.dry_run)
+          ;
+        else if (rmdir (socketdir))
+          gc_error (1, errno, "error removing '%s'", socketdir);
+
+        xfree (socketdir);
+      }
+      break;
+
     }
 
   if (outfp != es_stdout)
