@@ -2285,7 +2285,7 @@ main (int argc, char **argv)
     }
 
 #ifdef HAVE_DOSISH_SYSTEM
-    if ( strchr (gnupg_homedir, '\\') ) {
+    if ( strchr (gnupg_homedir (), '\\') ) {
       char *d, *buf = xmalloc (strlen (gnupg_homedir ())+1);
       const char *s;
       for (d=buf, s = gnupg_homedir (); *s; s++)

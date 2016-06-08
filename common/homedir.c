@@ -454,6 +454,8 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
 {
 #if defined(HAVE_W32_SYSTEM) || !defined(HAVE_STAT)
 
+  char *name;
+
   (void)skip_checks;
   *r_info = 0;
   name = xstrdup (gnupg_homedir ());

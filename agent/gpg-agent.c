@@ -555,8 +555,6 @@ remove_socket (char *name, char *redir_name)
 {
   if (name && *name)
     {
-      char *p;
-
       if (redir_name)
         name = redir_name;
 

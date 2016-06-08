@@ -371,7 +371,6 @@ cleanup (void)
   if (socket_name && *socket_name)
     {
       char *name;
-      char *p;
 
       name = redir_socket_name? redir_socket_name : socket_name;
 
