@@ -1839,18 +1839,6 @@ behaviour as used by anonymous recipients (created by using
 @option{--throw-keyids} or @option{--hidden-recipient}) and might come
 handy in case where an encrypted message contains a bogus key ID.
 
-@item --skip-hidden-recipients
-@itemx --no-skip-hidden-recipients
-@opindex skip-hidden-recipients
-@opindex no-skip-hidden-recipients
-During decryption skip all anonymous recipients.  This option helps in
-the case that people use the hidden recipients feature to hide there
-own encrypt-to key from others.  If oneself has many secret keys this
-may lead to a major annoyance because all keys are tried in turn to
-decrypt soemthing which was not really intended for it.  The drawback
-of this option is that it is currently not possible to decrypt a
-message which includes real anonymous recipients.
-
 
 @end table
 
