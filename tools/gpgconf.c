@@ -87,6 +87,7 @@ static ARGPARSE_OPTS opts[] =
     { oDryRun, "dry-run",   0, N_("do not make any changes") },
     { oRuntime, "runtime",  0, N_("activate changes at runtime, if possible") },
     /* hidden options */
+    { oHomedir, "homedir", 2, "@" },
     { oNoVerbose, "no-verbose",  0, "@"},
     {0}
   };
@@ -176,6 +177,7 @@ main (int argc, char **argv)
 	  break;
         case oVerbose:   opt.verbose++; break;
         case oNoVerbose: opt.verbose = 0; break;
+        case oHomedir:   gnupg_set_homedir (pargs.r.ret_str); break;
 
 	case aListDirs:
         case aListComponents:
