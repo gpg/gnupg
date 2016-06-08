@@ -1183,6 +1183,10 @@ main (int argc, char **argv)
         }
       cleanup_socket = 1;
 
+      if (gnupg_chmod (serv_addr.sun_path, "-rwx"))
+        log_error (_("can't set permissions of '%s': %s\n"),
+                   serv_addr.sun_path, strerror (errno));
+
       if (listen (FD2INT (fd), 5) == -1)
         {
           log_error (_("listen() failed: %s\n"), strerror (errno));

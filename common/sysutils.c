@@ -628,7 +628,7 @@ gnupg_mkdir (const char *name, const char *modestr)
 }
 
 
-/* A wrapper around mkdir which takes a string for the mode argument.
+/* A wrapper around chmod which takes a string for the mode argument.
    This makes it easier to handle the mode argument which is not
    defined on all systems.  The format of the modestring is the same
    as for gnupg_mkdir.  */

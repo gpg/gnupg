@@ -1112,6 +1112,10 @@ create_server_socket (const char *name, char **r_redir_name,
       scd_exit (2);
     }
 
+  if (gnupg_chmod (unaddr->sun_path, "-rwx"))
+    log_error (_("can't set permissions of '%s': %s\n"),
+               unaddr->sun_path, strerror (errno));
+
   if (listen (FD2INT(fd), 5 ) == -1)
     {
       log_error (_("listen() failed: %s\n"),
