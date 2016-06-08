@@ -376,13 +376,6 @@ cleanup (void)
       name = redir_socket_name? redir_socket_name : socket_name;
 
       gnupg_remove (name);
-      p = strrchr (name, '/');
-      if (p)
-        {
-          *p = 0;
-          rmdir (name);
-          *p = '/';
-        }
       *socket_name = 0;
     }
 }

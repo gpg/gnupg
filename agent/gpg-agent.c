@@ -1,6 +1,6 @@
 /* gpg-agent.c  -  The GnuPG Agent
  * Copyright (C) 2000-2007, 2009-2010 Free Software Foundation, Inc.
- * Copyright (C) 2000-2014 Werner Koch
+ * Copyright (C) 2000-2016 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -561,13 +561,6 @@ remove_socket (char *name, char *redir_name)
         name = redir_name;
 
       gnupg_remove (name);
-      p = strrchr (name, '/');
-      if (p)
-	{
-	  *p = 0;
-	  rmdir (name);
-	  *p = '/';
-	}
       *name = 0;
     }
 }
