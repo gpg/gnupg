@@ -99,18 +99,17 @@ dirmngr_ldap_LDADD = $(libcommon) no-libgcrypt.o \
 endif
 
 dirmngr_client_SOURCES = dirmngr-client.c
-dirmngr_client_LDADD = $(libcommon) no-libgcrypt.o \
-	                $(LIBASSUAN_LIBS) \
-	               $(GPG_ERROR_LIBS) $(NETLIBS) $(LIBINTL) $(LIBICONV)
+dirmngr_client_LDADD = $(libcommon) \
+                       $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
+                       $(LIBGCRYPT_LIBS) $(NETLIBS) $(LIBINTL) $(LIBICONV)
 dirmngr_client_LDFLAGS = $(extra_bin_ldflags)
-
 
 no-libgcrypt.c : $(top_srcdir)/tools/no-libgcrypt.c
 	cat $(top_srcdir)/tools/no-libgcrypt.c > no-libgcrypt.c
 
 
 t_common_src = t-support.h
-t_common_ldadd = $(libcommon) no-libgcrypt.o $(LIBASSUAN_LIBS) \
+t_common_ldadd = $(libcommon) $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
                  $(GPG_ERROR_LIBS) $(NETLIBS) \
                  $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) \
                  $(DNSLIBS) $(LIBINTL) $(LIBICONV)

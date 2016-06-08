@@ -91,12 +91,12 @@ gpgsplit_LDADD = $(common_libs) \
 	         $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 		 $(ZLIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
-gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
+gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c
 
 # common sucks in gpg-error, will they, nil they (some compilers
 # do not eliminate the supposed-to-be-unused-inline-functions).
 gpgconf_LDADD = $(maybe_commonpth_libs) $(opt_libassuan_libs) \
-                $(LIBINTL) $(GPG_ERROR_LIBS) $(NETLIBS) \
+                $(LIBINTL) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(NETLIBS) \
 	        $(LIBICONV) $(W32SOCKLIBS)
 gpgconf_LDFLAGS = $(extra_bin_ldflags)
 
@@ -111,10 +111,11 @@ symcryptrun_LDADD = $(LIBUTIL_LIBS) $(common_libs) $(pwquery_libs) \
 watchgnupg_SOURCES = watchgnupg.c
 watchgnupg_LDADD = $(NETLIBS)
 
-gpg_connect_agent_SOURCES = gpg-connect-agent.c no-libgcrypt.c
-# FIXME: remove PTH_LIBS (why do we need them at all?)
+gpg_connect_agent_SOURCES = gpg-connect-agent.c
+# FIXME: remove NPTH_LIBS (why do we need them at all?)
 gpg_connect_agent_LDADD = ../common/libgpgrl.a $(common_libs) \
-	                  $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) \
+	                  $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
+                          $(NPTH_LIBS) $(GPG_ERROR_LIBS) \
                           $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
                           $(resource_objs)
 
@@ -130,10 +131,9 @@ gpgtar_SOURCES = \
 	gpgtar.c gpgtar.h \
 	gpgtar-create.c \
 	gpgtar-extract.c \
-	gpgtar-list.c \
-	no-libgcrypt.c
+	gpgtar-list.c
 gpgtar_CFLAGS = $(GPG_ERROR_CFLAGS)
-gpgtar_LDADD = $(libcommon) $(GPG_ERROR_LIBS) \
+gpgtar_LDADD = $(libcommon) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
                $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS)
 
 
