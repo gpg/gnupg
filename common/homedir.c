@@ -53,15 +53,22 @@
 #endif
 #endif /*HAVE_W32_SYSTEM*/
 
+#ifdef HAVE_STAT
+#include <sys/stat.h> /* for stat() */
+#endif
+
 
 
 #include "util.h"
 #include "sysutils.h"
-
+#include "zb32.h"
 
 /* The GnuPG homedir.  This is only accessed by the functions
  * gnupg_homedir and gnupg_set_homedir.  Malloced.  */
 static char *the_gnupg_homedir;
+
+/* Flag indicating that home directory is not the default one.  */
+static byte non_default_homedir;
 
 
 #ifdef HAVE_W32_SYSTEM
@@ -76,13 +83,13 @@ static char *the_gnupg_homedir;
 
    This flag is not used on Unix systems.
  */
-static int w32_portable_app;
+static byte w32_portable_app;
 #endif /*HAVE_W32_SYSTEM*/
 
 #ifdef HAVE_W32_SYSTEM
 /* This flag is true if this process' binary has been installed under
    bin and not in the root directory as often used before GnuPG 2.1. */
-static int w32_bin_is_bin;
+static byte w32_bin_is_bin;
 #endif /*HAVE_W32_SYSTEM*/
 
 
@@ -148,6 +155,20 @@ w32_shgetfolderpath (HWND a, int b, HANDLE c, DWORD d, LPSTR e)
     return -1;
 }
 #endif /*HAVE_W32_SYSTEM*/
+
+
+/* Check whether DIR is the default homedir.  */
+static int
+is_gnupg_default_homedir (const char *dir)
+{
+  int result;
+  char *a = make_absfilename (dir, NULL);
+  char *b = make_absfilename (GNUPG_DEFAULT_HOMEDIR, NULL);
+  result = !compare_filenames (a, b);
+  xfree (b);
+  xfree (a);
+  return result;
+}
 
 
 /* Get the standard home directory.  In general this function should
@@ -248,6 +269,8 @@ default_homedir (void)
 #endif /*HAVE_W32_SYSTEM*/
   if (!dir || !*dir)
     dir = GNUPG_DEFAULT_HOMEDIR;
+  else if (!is_gnupg_default_homedir (dir))
+    non_default_homedir = 1;
 
   return dir;
 }
@@ -382,27 +405,217 @@ gnupg_set_homedir (const char *newdir)
 {
   if (!newdir || !*newdir)
     newdir = default_homedir ();
+  else if (!is_gnupg_default_homedir (newdir))
+    non_default_homedir = 1;
   xfree (the_gnupg_homedir);
-  the_gnupg_homedir = xstrdup (newdir);
+  the_gnupg_homedir = make_absfilename (newdir, NULL);;
 }
 
 
 /* Return the homedir.  The returned string is valid until another
- * gnupg-set-homedir call.  Note that this may be a relative string.
- * This function replaced the former global opt.homedir.  */
+ * gnupg-set-homedir call.  This is always an absolute directory name.
+ * The function replaces the former global var opt.homedir.  */
 const char *
 gnupg_homedir (void)
 {
   /* If a homedir has not been set, set it to the default.  */
   if (!the_gnupg_homedir)
-    the_gnupg_homedir = xstrdup (default_homedir ());
+    the_gnupg_homedir = make_absfilename (default_homedir (), NULL);
   return the_gnupg_homedir;
+}
+
+
+/* Return whether the home dir is the default one.  */
+int
+gnupg_default_homedir_p (void)
+{
+  return !non_default_homedir;
+}
+
+
+/* Helper for gnupg-socketdir.  This is a global function, so that
+ * gpgconf can use it for its --create-socketdir command.  If
+ * SKIP_CHECKS is set permission checks etc. are not done.  The
+ * function always returns a malloced directory name and stores these
+ * bit flags at R_INFO:
+ *
+ *   1 := Internal error, stat failed, out of core, etc.
+ *   2 := No /run/user directory.
+ *   4 := Directory not owned by the user, not a directory
+ *        or wrong permissions.
+ *   8 := Same as 4 but for the subdir.
+ *  16 := mkdir failed
+ *  32 := Non default homedir; checking subdir.
+ *  64 := Subdir does not exist.
+ * 128 := Using homedir as fallback.
+ */
+char *
+_gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
+{
+#if defined(HAVE_W32_SYSTEM) || !defined(HAVE_STAT)
+
+  (void)skip_checks;
+  *r_info = 0;
+  name = xstrdup (gnupg_homedir ());
+
+#else /* Unix and stat(2) available. */
+
+  static const char * const bases[] = { "/run", "/var/run", NULL};
+  int i;
+  struct stat sb;
+  char prefix[13 + 1 + 20 + 6 + 1];
+  const char *s;
+  char *name = NULL;
+
+  *r_info = 0;
+
+  /* First make sure that non_default_homedir can be set.  */
+  gnupg_homedir ();
+
+  /* It has been suggested to first check XDG_RUNTIME_DIR envvar.
+   * However, the specs state that the lifetime of the directory MUST
+   * be bound to the user being logged in.  Now GnuPG may also be run
+   * as a background process with no (desktop) user logged in.  Thus
+   * we better don't do that.  */
+
+  /* Check whether we have a /run/user dir.  */
+  for (i=0; bases[i]; i++)
+    {
+      snprintf (prefix, sizeof prefix, "%s/user/%u",
+                bases[i], (unsigned int)getuid ());
+      if (!stat (prefix, &sb) && S_ISDIR(sb.st_mode))
+        break;
+    }
+  if (!bases[i])
+    {
+      *r_info |= 2; /* No /run/user directory.  */
+      goto leave;
+    }
+
+  if (sb.st_uid != getuid ())
+    {
+      *r_info |= 4; /* Not owned by the user.  */
+      if (!skip_checks)
+        goto leave;
+    }
+
+  if (strlen (prefix) + 7 >= sizeof prefix)
+    {
+      *r_info |= 1; /* Ooops: Buffer too short to append "/gnupg".  */
+      goto leave;
+    }
+  strcat (prefix, "/gnupg");
+
+  /* Check whether the gnupg sub directory has proper permissions.  */
+  if (stat (prefix, &sb))
+    {
+      if (errno != ENOENT)
+        {
+          *r_info |= 1; /* stat failed.  */
+          goto leave;
+        }
+
+      /* Try to create the directory and check again.  */
+      if (gnupg_mkdir (prefix, "-rwx"))
+        {
+          *r_info |= 16; /* mkdir failed.  */
+          goto leave;
+        }
+      if (stat (prefix, &sb))
+        {
+          *r_info |= 1; /* stat failed.  */
+          goto leave;
+        }
+    }
+  /* Check that it is a directory, owned by the user, and only the
+   * user has permissions to use it.  */
+  if (!S_ISDIR(sb.st_mode)
+      || sb.st_uid != getuid ()
+      || (sb.st_mode & (S_IRWXG|S_IRWXO)))
+    {
+      *r_info |= 4; /* Bad permissions or not a directory. */
+      if (!skip_checks)
+        goto leave;
+    }
+
+  /* If a non default homedir is used, we check whether an
+   * corresponding sub directory below the socket dir is available
+   * and use that.  We has the non default homedir to keep the new
+   * subdir short enough.  */
+  if (non_default_homedir)
+    {
+      char sha1buf[20];
+      char *suffix;
+
+      *r_info |= 32; /* Testing subdir.  */
+      s = gnupg_homedir ();
+      gcry_md_hash_buffer (GCRY_MD_SHA1, sha1buf, s, strlen (s));
+      suffix = zb32_encode (sha1buf, 8*15);
+      if (!suffix)
+        {
+          *r_info |= 1; /* Out of core etc. */
+          goto leave;
+        }
+      name = strconcat (prefix, "/d.", suffix, NULL);
+      xfree (suffix);
+      if (!name)
+        {
+          *r_info |= 1; /* Out of core etc. */
+          goto leave;
+        }
+
+      /* Stat that directory and check constraints.  Note that we
+       * do not auto create such a directory because we would not
+       * have a way to remove it.  Thus the directory needs to be
+       * pre-created.  The command
+       *    gpgconf --create-socketdir
+       * can be used tocreate that directory.  */
+      if (stat (name, &sb))
+        {
+          if (errno != ENOENT)
+            *r_info |= 1; /* stat failed. */
+          else
+            *r_info |= 64; /* Subdir does not exist.  */
+          if (!skip_checks)
+            {
+              xfree (name);
+              name = NULL;
+              goto leave;
+            }
+        }
+      else if (!S_ISDIR(sb.st_mode)
+               || sb.st_uid != getuid ()
+               || (sb.st_mode & (S_IRWXG|S_IRWXO)))
+        {
+          *r_info |= 8; /* Bad permissions or subdir is not a directory.  */
+          if (!skip_checks)
+            {
+              xfree (name);
+              name = NULL;
+              goto leave;
+            }
+        }
+    }
+  else
+    name = xstrdup (prefix);
+
+ leave:
+  /* If nothing works fall back to the homedir.  */
+  if (!name)
+    {
+      *r_info |= 128; /* Fallback.  */
+      name = xstrdup (gnupg_homedir ());
+    }
+
+#endif /* Unix */
+
+  return name;
 }
 
 
 /*
  * Return the name of the socket dir.  That is the directory used for
- * the IPC local sockets.  This is an absolute filename.
+ * the IPC local sockets.  This is an absolute directory name.
  */
 const char *
 gnupg_socketdir (void)
@@ -411,18 +624,8 @@ gnupg_socketdir (void)
 
   if (!name)
     {
-      /* Check XDG variable.  */
-
-      /* XDG is not set: Check whether we have a /run directory.  */
-
-      /* If there is no run directpry we assume a /var/run directory.  */
-
-      /* Check that the user directory exists or create it if
-       * required,  */
-
-      /* If nothing works fall back to the homedir.  */
-      if (!name)
-        name = make_absfilename (gnupg_homedir (), NULL);
+      unsigned int dummy;
+      name = _gnupg_socketdir_internal (0, &dummy);
     }
 
   return name;

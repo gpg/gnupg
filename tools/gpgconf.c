@@ -383,8 +383,7 @@ main (int argc, char **argv)
         xfree (tmp);
       }
       {
-        /* We need to use make_filename to expand a possible "~/".  */
-        char *tmp = make_filename (default_homedir (), NULL);
+        char *tmp = xstrdup (gnupg_homedir ());
         es_fprintf (outfp, "homedir:%s\n", gc_percent_escape (tmp));
         xfree (tmp);
       }

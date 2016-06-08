@@ -1020,9 +1020,6 @@ main (int argc, char **argv )
 
   finalize_rereadable_options ();
 
-  /* Turn the homedir into an absolute one. */
-  gnupg_set_homedir (make_absfilename (gnupg_homedir (), NULL));
-
   /* Print a warning if an argument looks like an option.  */
   if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
     {

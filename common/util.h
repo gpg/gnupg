@@ -222,6 +222,7 @@ const char *standard_homedir (void);
 const char *default_homedir (void);
 void gnupg_set_homedir (const char *newdir);
 const char *gnupg_homedir (void);
+int gnupg_default_homedir_p (void);
 const char *gnupg_socketdir (void);
 const char *gnupg_sysconfdir (void);
 const char *gnupg_bindir (void);
@@ -232,6 +233,8 @@ const char *gnupg_localedir (void);
 const char *gnupg_cachedir (void);
 const char *dirmngr_sys_socket_name (void);
 const char *dirmngr_user_socket_name (void);
+
+char *_gnupg_socketdir_internal (int skip_checks, unsigned *r_info);
 
 /* All module names.  We also include gpg and gpgsm for the sake for
    gpgconf. */

@@ -555,7 +555,7 @@ get_var_ext (const char *name)
             log_error ("getcwd failed: %s\n", strerror (errno));
         }
       else if (!strcmp (s, "homedir"))
-        result = make_filename (gnupg_homedir (), NULL);
+        result = xstrdup (gnupg_homedir ());
       else if (!strcmp (s, "sysconfdir"))
         result = xstrdup (gnupg_sysconfdir ());
       else if (!strcmp (s, "bindir"))
