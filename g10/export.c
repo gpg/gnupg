@@ -390,6 +390,71 @@ exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, KBNODE node)
   return result;
 }
 
+/* return an error if the key represented by the S-expression s_key
+   and the OpenPGP key represented by pk do not use the same curve. */
+static gpg_error_t
+match_curve_skey_pk (gcry_sexp_t s_key, PKT_public_key *pk)
+{
+  gcry_sexp_t curve = NULL, flags = NULL;
+  char *curve_str = NULL, *flag;
+  const char *oidstr = NULL;
+  gcry_mpi_t curve_as_mpi = NULL;
+  gpg_error_t err;
+  int is_eddsa = 0, idx = 0;
+
+  if (!(pk->pubkey_algo==PUBKEY_ALGO_ECDH ||
+        pk->pubkey_algo==PUBKEY_ALGO_ECDSA ||
+        pk->pubkey_algo==PUBKEY_ALGO_EDDSA))
+    return gpg_error (GPG_ERR_PUBKEY_ALGO);
+
+  curve = gcry_sexp_find_token (s_key, "curve", 0);
+  if (!curve)
+    {
+      log_error ("no reported curve\n");
+      err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
+    }
+  curve_str = gcry_sexp_nth_string (curve, 1);
+  gcry_sexp_release (curve); curve = NULL;
+  if (!curve_str)
+    {
+      log_error ("no curve name\n");
+      return gpg_error (GPG_ERR_UNKNOWN_CURVE);
+    }
+  oidstr = openpgp_curve_to_oid (curve_str, NULL);
+  if (!oidstr)
+    {
+      log_error ("no OID known for curve '%s'\n", curve_str);
+      gcry_free (curve_str);
+      return gpg_error (GPG_ERR_UNKNOWN_CURVE);
+    }
+  gcry_free (curve_str);
+  err = openpgp_oid_from_str (oidstr, &curve_as_mpi);
+  if (err)
+    return err;
+  if (gcry_mpi_cmp(pk->pkey[0], curve_as_mpi))
+    {
+      log_error ("curves do not match\n");
+      err = gpg_error (GPG_ERR_INV_CURVE);
+    }
+  gcry_mpi_release (curve_as_mpi);
+  flags = gcry_sexp_find_token (s_key, "flags", 0);
+  if (flags)
+    for (idx = 1; idx < gcry_sexp_length (flags); idx++)
+      {
+        flag = gcry_sexp_nth_string (flags, idx);
+        if (flag && (strcmp ("eddsa", flag) == 0))
+          is_eddsa = 1;
+        gcry_free (flag);
+      }
+  if (is_eddsa !=
+      (pk->pubkey_algo==PUBKEY_ALGO_EDDSA))
+    {
+      log_error ("disagreement about EdDSA\n");
+      err = gpg_error (GPG_ERR_INV_CURVE);
+    }
+
+  return err;
+}
 
 /* Return a canonicalized public key algoithms.  This is used to
    compare different flavors of algorithms (e.g. ELG and ELG_E are
@@ -411,6 +476,150 @@ canon_pk_algo (enum gcry_pk_algos algo)
     }
 }
 
+/* take a cleartext dump of a secret key in PK and change the
+   parameter array in PK to include the secret parameters.  */
+static gpg_error_t
+cleartext_secret_key_to_openpgp (gcry_sexp_t s_key, PKT_public_key *pk)
+{
+  gpg_error_t err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  gcry_sexp_t top_list;
+  gcry_sexp_t key = NULL;
+  char *key_type = NULL;
+  enum gcry_pk_algos pk_algo;
+  struct seckey_info *ski;
+  int idx, sec_start;
+  gcry_mpi_t pub_params[10] = { NULL };
+
+  /* we look for a private-key, then the first element in it tells us
+     the type */
+  top_list = gcry_sexp_find_token (s_key, "private-key", 0);
+  if (!top_list)
+    goto bad_seckey;
+  if (gcry_sexp_length(top_list) != 2)
+    goto bad_seckey;
+  key = gcry_sexp_nth (top_list, 1);
+  if (!key)
+    goto bad_seckey;
+  key_type = gcry_sexp_nth_string(key, 0);
+  pk_algo = gcry_pk_map_name (key_type);
+
+  log_assert(pk->seckey_info == NULL);
+
+  pk->seckey_info = ski = xtrycalloc (1, sizeof *ski);
+  if (!ski)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  switch (canon_pk_algo (pk_algo))
+    {
+    case GCRY_PK_RSA:
+      if (!is_RSA (pk->pubkey_algo))
+        goto bad_pubkey_algo;
+      err = gcry_sexp_extract_param (key, NULL, "ne",
+                                     &pub_params[0],
+                                     &pub_params[1],
+                                     NULL);
+      for (idx=0; idx < 2 && !err; idx++)
+        if (gcry_mpi_cmp(pk->pkey[idx], pub_params[idx]))
+          err = gpg_error (GPG_ERR_BAD_PUBKEY);
+      if (!err)
+        err = gcry_sexp_extract_param (key, NULL, "dpqu",
+                                       &pk->pkey[2],
+                                       &pk->pkey[3],
+                                       &pk->pkey[4],
+                                       &pk->pkey[5],
+                                       NULL);
+      if (!err)
+        for (idx = 2; idx < 6; idx++)
+          ski->csum += checksum_mpi (pk->pkey[idx]);
+      break;
+
+    case GCRY_PK_DSA:
+      if (!is_DSA (pk->pubkey_algo))
+        goto bad_pubkey_algo;
+      err = gcry_sexp_extract_param (key, NULL, "pqgy",
+                                     &pub_params[0],
+                                     &pub_params[1],
+                                     &pub_params[2],
+                                     &pub_params[3],
+                                     NULL);
+      for (idx=0; idx < 4 && !err; idx++)
+        if (gcry_mpi_cmp(pk->pkey[idx], pub_params[idx]))
+          err = gpg_error (GPG_ERR_BAD_PUBKEY);
+      if (!err)
+        err = gcry_sexp_extract_param (key, NULL, "x",
+                                       &pk->pkey[4],
+                                       NULL);
+      if (!err)
+        ski->csum += checksum_mpi (pk->pkey[4]);
+      break;
+
+    case GCRY_PK_ELG:
+      if (!is_ELGAMAL (pk->pubkey_algo))
+        goto bad_pubkey_algo;
+      err = gcry_sexp_extract_param (key, NULL, "pgy",
+                                     &pub_params[0],
+                                     &pub_params[1],
+                                     &pub_params[2],
+                                     NULL);
+      for (idx=0; idx < 3 && !err; idx++)
+        if (gcry_mpi_cmp(pk->pkey[idx], pub_params[idx]))
+          err = gpg_error (GPG_ERR_BAD_PUBKEY);
+      if (!err)
+        err = gcry_sexp_extract_param (key, NULL, "x",
+                                       &pk->pkey[3],
+                                       NULL);
+      if (!err)
+        ski->csum += checksum_mpi (pk->pkey[3]);
+      break;
+
+    case GCRY_PK_ECC:
+      err = match_curve_skey_pk (key, pk);
+      if (err)
+        goto leave;
+      if (!err)
+        err = gcry_sexp_extract_param (key, NULL, "q",
+                                       &pub_params[0],
+                                       NULL);
+      if (!err && (gcry_mpi_cmp(pk->pkey[1], pub_params[0])))
+        err = gpg_error (GPG_ERR_BAD_PUBKEY);
+
+      sec_start = 2;
+      if (pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+        sec_start += 1;
+      if (!err)
+        err = gcry_sexp_extract_param (key, NULL, "d",
+                                       &pk->pkey[sec_start],
+                                       NULL);
+
+      if (!err)
+        ski->csum += checksum_mpi (pk->pkey[sec_start]);
+      break;
+
+    default:
+      pk->seckey_info = NULL;
+      free (ski);
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
+ leave:
+  gcry_sexp_release (top_list);
+  gcry_sexp_release (key);
+  gcry_free (key_type);
+
+  for (idx=0; idx < DIM(pub_params); idx++)
+    gcry_mpi_release (pub_params[idx]);
+  return err;
+
+ bad_pubkey_algo:
+  err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+  goto leave;
+
+ bad_seckey:
+  err = gpg_error (GPG_ERR_BAD_SECKEY);
+  goto leave;
+}
 
 /* Use the key transfer format given in S_PGP to create the secinfo
    structure in PK and change the parameter array in PK to include the
@@ -833,10 +1042,15 @@ print_status_exported (PKT_public_key *pk)
  * Then, parse the decrypted key data in transfer format, and put
  * secret parameters into PK.
  *
+ * if CLEARTEXT is 0, store the secret key material
+ * passphrase-protected.  otherwise, store secret key material in the
+ * clear.
+ *
  * CACHE_NONCE_ADDR is used to share nonce for multple key retrievals.
  */
 gpg_error_t
 receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
+                           int cleartext,
                            char **cache_nonce_addr, const char *hexgrip,
                            PKT_public_key *pk)
 {
@@ -852,7 +1066,7 @@ receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
     log_info ("key %s: asking agent for the secret parts\n", hexgrip);
 
   prompt = gpg_format_keydesc (pk, FORMAT_KEYDESC_EXPORT,1);
-  err = agent_export_key (ctrl, hexgrip, prompt, 1, cache_nonce_addr,
+  err = agent_export_key (ctrl, hexgrip, prompt, !cleartext, cache_nonce_addr,
                           &wrappedkey, &wrappedkeylen);
   xfree (prompt);
 
@@ -880,7 +1094,10 @@ receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
   err = gcry_sexp_sscan (&s_skey, NULL, key, realkeylen);
   if (!err)
     {
-      err = transfer_format_to_openpgp (s_skey, pk);
+      if (cleartext)
+        err = cleartext_secret_key_to_openpgp (s_skey, pk);
+      else
+        err = transfer_format_to_openpgp (s_skey, pk);
       gcry_sexp_release (s_skey);
     }
 
@@ -1276,7 +1493,8 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                 }
               else if (!err)
                 {
-                  err = receive_seckey_from_agent (ctrl, cipherhd, &cache_nonce,
+                  err = receive_seckey_from_agent (ctrl, cipherhd,
+                                                   0, &cache_nonce,
                                                    hexgrip, pk);
                   if (err)
                     {
