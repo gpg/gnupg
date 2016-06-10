@@ -1141,6 +1141,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   gcry_cipher_hd_t cipherhd = NULL;
   char *cache_nonce = NULL;
   struct export_stats_s dummystats;
+  int cleartext = 0;
 
   if (!stats)
     stats = &dummystats;
@@ -1445,7 +1446,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                   serialno = NULL;
                 }
               else
-                err = agent_get_keyinfo (ctrl, hexgrip, &serialno, NULL);
+                err = agent_get_keyinfo (ctrl, hexgrip, &serialno, &cleartext);
 
               if ((!err && serialno)
                   && secret == 2 && node->pkt->pkttype == PKT_PUBLIC_KEY)
@@ -1494,7 +1495,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
               else if (!err)
                 {
                   err = receive_seckey_from_agent (ctrl, cipherhd,
-                                                   0, &cache_nonce,
+                                                   cleartext, &cache_nonce,
                                                    hexgrip, pk);
                   if (err)
                     {
