@@ -1692,7 +1692,7 @@ change_passphrase (ctrl_t ctrl, kbnode_t keyblock)
           err = hexkeygrip_from_pk (pk, &hexgrip);
           if (err)
             goto leave;
-          err = agent_get_keyinfo (ctrl, hexgrip, &serialno);
+          err = agent_get_keyinfo (ctrl, hexgrip, &serialno, NULL);
           if (!err && serialno)
             ; /* Key on card.  */
           else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
@@ -3766,7 +3766,7 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
                 have_seckey = 0;
               }
             else
-              have_seckey = !agent_get_keyinfo (ctrl, hexgrip, &serialno);
+              have_seckey = !agent_get_keyinfo (ctrl, hexgrip, &serialno, NULL);
             xfree (hexgrip);
           }
 

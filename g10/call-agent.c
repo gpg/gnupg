@@ -1671,26 +1671,42 @@ agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
 
 
 
+struct keyinfo_data {
+  char *serialno;
+  int cleartext;
+};
+
 static gpg_error_t
 keyinfo_status_cb (void *opaque, const char *line)
 {
-  char **serialno = opaque;
+  struct keyinfo_data *data = opaque;
+  int is_smartcard;
   const char *s, *s2;
 
-  if ((s = has_leading_keyword (line, "KEYINFO")) && !*serialno)
+  if ((s = has_leading_keyword (line, "KEYINFO")) && data)
     {
       s = strchr (s, ' ');
-      if (s && s[1] == 'T' && s[2] == ' ' && s[3])
+      if (s)
         {
-          s += 3;
-          s2 = strchr (s, ' ');
-          if ( s2 > s )
+          is_smartcard = (s[1] == 'T');
+          if ( s[2] == ' ' && s[3] )
             {
-              *serialno = xtrymalloc ((s2 - s)+1);
-              if (*serialno)
+              s += 3;
+              s2 = strchr (s, ' ');
+              if ( s2 > s )
                 {
-                  memcpy (*serialno, s, s2 - s);
-                  (*serialno)[s2 - s] = 0;
+                  if (is_smartcard && !data->serialno)
+                    {
+                      data->serialno = xtrymalloc ((s2 - s)+1);
+                      if (data->serialno)
+                        {
+                          memcpy (data->serialno, s, s2 - s);
+                          (data->serialno)[s2 - s] = 0;
+                        }
+                    }
+                  if (s2 = strchr (s2 + 1, ' '), s2) /* skip IDSTR (can IDSTR contain a space?) */
+                    if (s2 = strchr (s2 + 1, ' '), s2) /* skip CACHED */
+                      data->cleartext = (s2[1] == 'C'); /* 'P' for protected, 'C' for clear */
                 }
             }
         }
@@ -1701,13 +1717,18 @@ keyinfo_status_cb (void *opaque, const char *line)
 
 /* Return the serial number for a secret key.  If the returned serial
    number is NULL, the key is not stored on a smartcard.  Caller needs
-   to free R_SERIALNO.  */
+   to free R_SERIALNO.
+
+   if r_cleartext is not NULL, the referenced int will be set to 1 if
+   the agent's copy of the key is stored in the clear, or 0 otherwise
+*/
 gpg_error_t
-agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
+agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
+                   char **r_serialno, int *r_cleartext)
 {
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
-  char *serialno = NULL;
+  struct keyinfo_data keyinfo = { .serialno = NULL, .cleartext = 0 };
 
   *r_serialno = NULL;
 
@@ -1722,17 +1743,21 @@ agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
   line[DIM(line)-1] = 0;
 
   err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
-                         keyinfo_status_cb, &serialno);
-  if (!err && serialno)
+                         keyinfo_status_cb, &keyinfo);
+  if (!err && keyinfo.serialno)
     {
       /* Sanity check for bad characters.  */
-      if (strpbrk (serialno, ":\n\r"))
+      if (strpbrk (keyinfo.serialno, ":\n\r"))
         err = GPG_ERR_INV_VALUE;
     }
   if (err)
-    xfree (serialno);
+    xfree (keyinfo.serialno);
   else
-    *r_serialno = serialno;
+    {
+      *r_serialno = keyinfo.serialno;
+      if (r_cleartext)
+        *r_cleartext = keyinfo.cleartext;
+    }
   return err;
 }
 

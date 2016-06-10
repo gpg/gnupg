@@ -153,7 +153,7 @@ gpg_error_t agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock);
 
 /* Return infos about the secret key with HEXKEYGRIP.  */
 gpg_error_t agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
-                               char **r_serialno);
+                               char **r_serialno, int *r_cleartext);
 
 /* Generate a new key.  */
 gpg_error_t agent_genkey (ctrl_t ctrl,

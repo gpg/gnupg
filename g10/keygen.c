@@ -4571,7 +4571,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
   err = hexkeygrip_from_pk (pri_psk, &hexgrip);
   if (err)
     goto leave;
-  if (agent_get_keyinfo (NULL, hexgrip, &serialno))
+  if (agent_get_keyinfo (NULL, hexgrip, &serialno, NULL))
     {
       if (interactive)
         tty_printf (_("Secret parts of primary key are not available.\n"));

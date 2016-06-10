@@ -247,7 +247,7 @@ print_card_key_info (estream_t fp, kbnode_t keyblock)
               log_error ("error computing a keygrip: %s\n", gpg_strerror (rc));
               s2k_char = '?';
             }
-          else if (!agent_get_keyinfo (NULL, hexgrip, &serialno))
+          else if (!agent_get_keyinfo (NULL, hexgrip, &serialno, NULL))
             s2k_char = serialno? '>':' ';
           else
             s2k_char = '#';  /* Key not found.  */
@@ -1046,7 +1046,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
   if (secret)
     {
       /* Encode some info about the secret key in SECRET.  */
-      if (!agent_get_keyinfo (NULL, hexgrip, &serialno))
+      if (!agent_get_keyinfo (NULL, hexgrip, &serialno, NULL))
         secret = serialno? 3 : 1;
       else
         secret = 2;  /* Key not found.  */
@@ -1160,7 +1160,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
             }
           if (secret)
             {
-              if (!agent_get_keyinfo (NULL, hexgrip, &serialno))
+              if (!agent_get_keyinfo (NULL, hexgrip, &serialno, NULL))
                 secret = serialno? 3 : 1;
               else
                 secret = '2';  /* Key not found.  */
@@ -1354,7 +1354,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
         log_error ("error computing a keygrip: %s\n", gpg_strerror (rc));
     }
   stubkey = 0;
-  if ((secret||has_secret) && agent_get_keyinfo (NULL, hexgrip, &serialno))
+  if ((secret||has_secret) && agent_get_keyinfo (NULL, hexgrip, &serialno, NULL))
     stubkey = 1;  /* Key not found.  */
 
   keyid_from_pk (pk, keyid);
@@ -1501,7 +1501,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
             }
           stubkey = 0;
           if ((secret||has_secret)
-              && agent_get_keyinfo (NULL, hexgrip, &serialno))
+              && agent_get_keyinfo (NULL, hexgrip, &serialno, NULL))
             stubkey = 1;  /* Key not found.  */
 
 	  keyid_from_pk (pk2, keyid2);

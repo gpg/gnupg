@@ -346,7 +346,7 @@ openpgp_card_v1_p (PKT_public_key *pk)
         }
 
       xfree (pk->serialno);
-      agent_get_keyinfo (NULL, hexgrip, &pk->serialno);
+      agent_get_keyinfo (NULL, hexgrip, &pk->serialno, NULL);
       xfree (hexgrip);
       pk->flags.serialno_valid = 1;
     }

@@ -1228,7 +1228,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                   serialno = NULL;
                 }
               else
-                err = agent_get_keyinfo (ctrl, hexgrip, &serialno);
+                err = agent_get_keyinfo (ctrl, hexgrip, &serialno, NULL);
 
               if ((!err && serialno)
                   && secret == 2 && node->pkt->pkttype == PKT_PUBLIC_KEY)

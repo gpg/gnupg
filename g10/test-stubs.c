@@ -415,10 +415,12 @@ agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
 }
 
 gpg_error_t
-agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
+agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
+                   char **r_serialno, int *r_cleartext)
 {
   (void)ctrl;
   (void)hexkeygrip;
+  (void)r_cleartext;
   *r_serialno = NULL;
   return gpg_error (GPG_ERR_NO_SECKEY);
 }
