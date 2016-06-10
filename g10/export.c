@@ -852,7 +852,7 @@ receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
     log_info ("key %s: asking agent for the secret parts\n", hexgrip);
 
   prompt = gpg_format_keydesc (pk, FORMAT_KEYDESC_EXPORT,1);
-  err = agent_export_key (ctrl, hexgrip, prompt, cache_nonce_addr,
+  err = agent_export_key (ctrl, hexgrip, prompt, 1, cache_nonce_addr,
                           &wrappedkey, &wrappedkeylen);
   xfree (prompt);
 

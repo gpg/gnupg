@@ -2315,13 +2315,15 @@ agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
 
 /* Receive a secret key from the agent.  HEXKEYGRIP is the hexified
    keygrip, DESC a prompt to be displayed with the agent's passphrase
-   question (needs to be plus+percent escaped).  If CACHE_NONCE_ADDR
-   is not NULL the agent is advised to first try a passphrase
-   associated with that nonce.  On success the key is stored as a
-   canonical S-expression at R_RESULT and R_RESULTLEN.  */
+   question (needs to be plus+percent escaped).  if OPENPGP_PROTECTED
+   is not zero, ensure that the key material is returned in RFC
+   4880-compatible passphrased-protected form.  If CACHE_NONCE_ADDR is
+   not NULL the agent is advised to first try a passphrase associated
+   with that nonce.  On success the key is stored as a canonical
+   S-expression at R_RESULT and R_RESULTLEN.  */
 gpg_error_t
 agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
-                  char **cache_nonce_addr,
+                  int openpgp_protected, char **cache_nonce_addr,
                   unsigned char **r_result, size_t *r_resultlen)
 {
   gpg_error_t err;
@@ -2351,7 +2353,8 @@ agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
         return err;
     }
 
-  snprintf (line, DIM(line)-1, "EXPORT_KEY --openpgp %s%s %s",
+  snprintf (line, DIM(line)-1, "EXPORT_KEY %s%s%s %s",
+            openpgp_protected ? "--openpgp ":"",
             cache_nonce_addr && *cache_nonce_addr? "--cache-nonce=":"",
             cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"",
             hexkeygrip);

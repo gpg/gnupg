@@ -2210,7 +2210,12 @@ static const char hlp_export_key[] =
   "Export a secret key from the key store.  The key will be encrypted\n"
   "using the current session's key wrapping key (cf. command KEYWRAP_KEY)\n"
   "using the AESWRAP-128 algorithm.  The caller needs to retrieve that key\n"
-  "prior to using this command.  The function takes the keygrip as argument.\n";
+  "prior to using this command.  The function takes the keygrip as argument.\n"
+  "\n"
+  "If --openpgp is used, the secret key material will be exported in RFC 4880\n"
+  "compatible passphrase-protected form.  Without --openpgp, the secret key\n"
+  "material will be exported in the clear (after prompting the user to unlock\n"
+  "it, if needed).\n";
 static gpg_error_t
 cmd_export_key (assuan_context_t ctx, char *line)
 {

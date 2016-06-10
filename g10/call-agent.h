@@ -192,7 +192,8 @@ gpg_error_t agent_import_key (ctrl_t ctrl, const char *desc,
 
 /* Receive a key from the agent.  */
 gpg_error_t agent_export_key (ctrl_t ctrl, const char *keygrip,
-                              const char *desc, char **cache_nonce_addr,
+                              const char *desc, int openpgp_protected,
+                              char **cache_nonce_addr,
                               unsigned char **r_result, size_t *r_resultlen);
 
 /* Delete a key from the agent.  */
