@@ -1329,6 +1329,44 @@ strtokenize (const char *string, const char *delim)
 }
 
 
+/* Split a string into space delimited fields and remove leading and
+ * trailing spaces from each field.  A pointer to each field is stored
+ * in ARRAY.  Stop splitting at ARRAYSIZE fields.  The function
+ * modifies STRING.  The number of parsed fields is returned.
+ * Example:
+ *
+ *   char *fields[2];
+ *   if (split_fields (string, fields, DIM (fields)) < 2)
+ *     return  // Not enough args.
+ *   foo (fields[0]);
+ *   foo (fields[1]);
+ */
+int
+split_fields (char *string, char **array, int arraysize)
+{
+  int n = 0;
+  char *p, *pend;
+
+  for (p = string; *p == ' '; p++)
+    ;
+  do
+    {
+      if (n == arraysize)
+        break;
+      array[n++] = p;
+      pend = strchr (p, ' ');
+      if (!pend)
+        break;
+      *pend++ = 0;
+      for (p = pend; *p == ' '; p++)
+        ;
+    }
+  while (*p);
+
+  return n;
+}
+
+
 
 /* Version number parsing.  */
 

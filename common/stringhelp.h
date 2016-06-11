@@ -148,6 +148,10 @@ char **strsplit (char *string, char delim, char replacement, int *count);
 /* Tokenize STRING using the set of delimiters in DELIM.  */
 char **strtokenize (const char *string, const char *delim);
 
+/* Split STRING into space delimited fields and store them in the
+ * provided ARRAY.  */
+int split_fields (char *string, char **array, int arraysize);
+
 /* Return True if MYVERSION is greater or equal than REQ_VERSION.  */
 int compare_version_strings (const char *my_version, const char *req_version);
 
