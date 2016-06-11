@@ -579,6 +579,7 @@ Section "GnuPG" SEC_gnupg
   File "bin/gpgconf.exe"
   File "bin/gpg-connect-agent.exe"
   File "bin/gpgtar.exe"
+  File "bin/gpg-preset-passphrase.exe"
 
   ClearErrors
   SetOverwrite try
