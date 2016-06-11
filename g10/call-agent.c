@@ -1671,44 +1671,35 @@ agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
 
 
 
-struct keyinfo_data {
+struct keyinfo_data_parm_s
+{
   char *serialno;
   int cleartext;
 };
 
+
 static gpg_error_t
 keyinfo_status_cb (void *opaque, const char *line)
 {
-  struct keyinfo_data *data = opaque;
+  struct keyinfo_data_parm_s *data = opaque;
   int is_smartcard;
-  const char *s, *s2;
+  char *s;
 
   if ((s = has_leading_keyword (line, "KEYINFO")) && data)
     {
-      s = strchr (s, ' ');
-      if (s)
+      /* Parse the arguments:
+       *      0        1        2        3       4          5
+       *   <keygrip> <type> <serialno> <idstr> <cached> <protection>
+       */
+      char *fields[6];
+
+      if (split_fields (s, fields, DIM (fields)) == 6)
         {
-          is_smartcard = (s[1] == 'T');
-          if ( s[2] == ' ' && s[3] )
-            {
-              s += 3;
-              s2 = strchr (s, ' ');
-              if ( s2 > s )
-                {
-                  if (is_smartcard && !data->serialno)
-                    {
-                      data->serialno = xtrymalloc ((s2 - s)+1);
-                      if (data->serialno)
-                        {
-                          memcpy (data->serialno, s, s2 - s);
-                          (data->serialno)[s2 - s] = 0;
-                        }
-                    }
-                  if (s2 = strchr (s2 + 1, ' '), s2) /* skip IDSTR (can IDSTR contain a space?) */
-                    if (s2 = strchr (s2 + 1, ' '), s2) /* skip CACHED */
-                      data->cleartext = (s2[1] == 'C'); /* 'P' for protected, 'C' for clear */
-                }
-            }
+          is_smartcard = (fields[1][0] == 'T');
+          if (is_smartcard && !data->serialno && strcmp (fields[2], "-"))
+            data->serialno = xtrystrdup (fields[2]);
+          /* 'P' for protected, 'C' for clear */
+          data->cleartext = (fields[5][0] == 'C');
         }
     }
   return 0;
@@ -1728,7 +1719,9 @@ agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
 {
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
-  struct keyinfo_data keyinfo = { .serialno = NULL, .cleartext = 0 };
+  struct keyinfo_data_parm_s keyinfo;
+
+  memset (&keyinfo, 0,sizeof keyinfo);
 
   *r_serialno = NULL;
 

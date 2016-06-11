@@ -1354,7 +1354,8 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
         log_error ("error computing a keygrip: %s\n", gpg_strerror (rc));
     }
   stubkey = 0;
-  if ((secret||has_secret) && agent_get_keyinfo (NULL, hexgrip, &serialno, NULL))
+  if ((secret || has_secret)
+      && agent_get_keyinfo (NULL, hexgrip, &serialno, NULL))
     stubkey = 1;  /* Key not found.  */
 
   keyid_from_pk (pk, keyid);

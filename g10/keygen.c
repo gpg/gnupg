@@ -4066,19 +4066,23 @@ card_store_key_with_backup (ctrl_t ctrl, PKT_public_key *sub_psk,
       goto leave;
     }
 
-  err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128, GCRY_CIPHER_MODE_AESWRAP, 0);
+  err = gcry_cipher_open (&cipherhd, GCRY_CIPHER_AES128,
+                          GCRY_CIPHER_MODE_AESWRAP, 0);
   if (!err)
     err = gcry_cipher_setkey (cipherhd, kek, keklen);
   if (err)
     {
-      log_error ("error setting up an encryption context: %s\n", gpg_strerror (err));
+      log_error ("error setting up an encryption context: %s\n",
+                 gpg_strerror (err));
       goto leave;
     }
 
-  err = receive_seckey_from_agent (ctrl, cipherhd, 0, &cache_nonce, hexgrip, sk);
+  err = receive_seckey_from_agent (ctrl, cipherhd, 0,
+                                   &cache_nonce, hexgrip, sk);
   if (err)
     {
-      log_error ("error getting secret key from agent: %s\n", gpg_strerror (err));
+      log_error ("error getting secret key from agent: %s\n",
+                 gpg_strerror (err));
       goto leave;
     }
 
