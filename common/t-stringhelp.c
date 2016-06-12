@@ -733,7 +733,7 @@ test_split_fields (void)
       if (field_count != field_count_expected)
         {
           printf ("%s: tidx %d: expected %d, got %d\n",
-                  __func__, tidx, i, field_count_expected, field_count);
+                  __func__, tidx, field_count_expected, field_count);
           fail (tidx * 1000);
         }
       else
