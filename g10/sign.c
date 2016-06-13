@@ -59,92 +59,91 @@ static void
 mk_notation_policy_etc (PKT_signature *sig,
 			PKT_public_key *pk, PKT_public_key *pksk)
 {
-    const char *string;
-    char *s=NULL;
-    strlist_t pu=NULL;
-    struct notation *nd=NULL;
-    struct expando_args args;
+  const char *string;
+  char *p = NULL;
+  strlist_t pu = NULL;
+  struct notation *nd = NULL;
+  struct expando_args args;
 
-    log_assert(sig->version>=4);
+  log_assert (sig->version >= 4);
 
-    memset(&args,0,sizeof(args));
-    args.pk=pk;
-    args.pksk=pksk;
+  memset (&args, 0, sizeof(args));
+  args.pk = pk;
+  args.pksk = pksk;
 
-    /* notation data */
-    if(IS_SIG(sig) && opt.sig_notations)
-      nd=opt.sig_notations;
-    else if( IS_CERT(sig) && opt.cert_notations )
-      nd=opt.cert_notations;
+  /* Notation data. */
+  if (IS_SIG(sig) && opt.sig_notations)
+    nd = opt.sig_notations;
+  else if (IS_CERT(sig) && opt.cert_notations)
+    nd = opt.cert_notations;
 
-    if(nd)
-      {
-	struct notation *i;
+  if (nd)
+    {
+      struct notation *item;
 
-	for(i=nd;i;i=i->next)
-	  {
-	    i->altvalue=pct_expando(i->value,&args);
-	    if(!i->altvalue)
-	      log_error(_("WARNING: unable to %%-expand notation "
-			  "(too large).  Using unexpanded.\n"));
-	  }
+      for (item = nd; item; item = item->next)
+        {
+          item->altvalue = pct_expando (item->value,&args);
+          if (!item->altvalue)
+            log_error (_("WARNING: unable to %%-expand notation "
+                         "(too large).  Using unexpanded.\n"));
+        }
 
-	keygen_add_notations(sig,nd);
+      keygen_add_notations (sig, nd);
 
-	for(i=nd;i;i=i->next)
-	  {
-	    xfree(i->altvalue);
-	    i->altvalue=NULL;
-	  }
-      }
+      for (item = nd; item; item = item->next)
+        {
+          xfree (item->altvalue);
+          item->altvalue = NULL;
+        }
+    }
 
-    /* set policy URL */
-    if( IS_SIG(sig) && opt.sig_policy_url )
-      pu=opt.sig_policy_url;
-    else if( IS_CERT(sig) && opt.cert_policy_url )
-      pu=opt.cert_policy_url;
+  /* Set policy URL. */
+  if (IS_SIG(sig) && opt.sig_policy_url)
+    pu = opt.sig_policy_url;
+  else if (IS_CERT(sig) && opt.cert_policy_url)
+    pu = opt.cert_policy_url;
 
-    for(;pu;pu=pu->next)
-      {
-        string = pu->d;
+  for (; pu; pu = pu->next)
+    {
+      string = pu->d;
 
-	s=pct_expando(string,&args);
-	if(!s)
-	  {
-	    log_error(_("WARNING: unable to %%-expand policy URL "
-			"(too large).  Using unexpanded.\n"));
-	    s=xstrdup(string);
-	  }
+      p = pct_expando (string, &args);
+      if (!p)
+        {
+          log_error(_("WARNING: unable to %%-expand policy URL "
+                      "(too large).  Using unexpanded.\n"));
+          p = xstrdup(string);
+        }
 
-	build_sig_subpkt(sig,SIGSUBPKT_POLICY|
-			 ((pu->flags & 1)?SIGSUBPKT_FLAG_CRITICAL:0),
-			 s,strlen(s));
+      build_sig_subpkt (sig, (SIGSUBPKT_POLICY
+                              | ((pu->flags & 1)?SIGSUBPKT_FLAG_CRITICAL:0)),
+                        p, strlen (p));
 
-	xfree(s);
-      }
+      xfree (p);
+    }
 
-    /* preferred keyserver URL */
-    if( IS_SIG(sig) && opt.sig_keyserver_url )
-      pu=opt.sig_keyserver_url;
+  /* Preferred keyserver URL. */
+  if (IS_SIG(sig) && opt.sig_keyserver_url)
+    pu = opt.sig_keyserver_url;
 
-    for(;pu;pu=pu->next)
-      {
-        string = pu->d;
+  for (; pu; pu = pu->next)
+    {
+      string = pu->d;
 
-	s=pct_expando(string,&args);
-	if(!s)
-	  {
-	    log_error(_("WARNING: unable to %%-expand preferred keyserver URL"
-			" (too large).  Using unexpanded.\n"));
-	    s=xstrdup(string);
-	  }
+      p = pct_expando (string, &args);
+      if (!p)
+        {
+          log_error (_("WARNING: unable to %%-expand preferred keyserver URL"
+                       " (too large).  Using unexpanded.\n"));
+          p = xstrdup (string);
+        }
 
-	build_sig_subpkt(sig,SIGSUBPKT_PREF_KS|
-			 ((pu->flags & 1)?SIGSUBPKT_FLAG_CRITICAL:0),
-			 s,strlen(s));
-
-	xfree(s);
-      }
+      build_sig_subpkt (sig, (SIGSUBPKT_PREF_KS
+                              | ((pu->flags & 1)?SIGSUBPKT_FLAG_CRITICAL:0)),
+                        p, strlen (p));
+      xfree (p);
+    }
 }
 
 
