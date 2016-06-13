@@ -1276,6 +1276,7 @@ Section "-un.gnupg"
   Delete "$INSTDIR\bin\gpgconf.exe"
   Delete "$INSTDIR\bin\gpg-connect-agent.exe"
   Delete "$INSTDIR\bin\gpgtar.exe"
+  Delete "$INSTDIR\bin\gpg-preset-passphrase.exe"
 
   Delete "$INSTDIR\share\gnupg\dirmngr-conf.skel"
   Delete "$INSTDIR\share\gnupg\distsigkey.gpg"
