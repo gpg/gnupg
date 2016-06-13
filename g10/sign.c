@@ -40,7 +40,7 @@
 #include "pkglue.h"
 #include "sysutils.h"
 #include "call-agent.h"
-
+#include "mbox-util.h"
 
 #ifdef HAVE_DOSISH_SYSTEM
 #define LF "\r\n"
@@ -143,6 +143,20 @@ mk_notation_policy_etc (PKT_signature *sig,
                               | ((pu->flags & 1)?SIGSUBPKT_FLAG_CRITICAL:0)),
                         p, strlen (p));
       xfree (p);
+    }
+
+  /* Set signer's user id.  */
+  if (IS_SIG (sig) && !opt.flags.disable_signer_uid)
+    {
+      char *mbox;
+
+      /* For now we use the uid which was used to locate the key.  */
+      if (pksk->user_id && (mbox = mailbox_from_userid (pksk->user_id->name)))
+        {
+          if (DBG_LOOKUP)
+            log_debug ("setting Signer's UID to '%s'\n", mbox);
+          build_sig_subpkt (sig, SIGSUBPKT_SIGNERS_UID, mbox, strlen (mbox));
+        }
     }
 }
 

@@ -234,6 +234,7 @@ struct
     unsigned int allow_multiple_messages:1;
     unsigned int allow_weak_digest_algos:1;
     unsigned int large_rsa:1;
+    unsigned int disable_signer_uid:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local
@@ -290,7 +291,7 @@ struct {
 #define DBG_IPC_VALUE     1024  /* debug assuan communication */
 #define DBG_CARD_IO_VALUE 2048  /* debug smart card I/O.  */
 #define DBG_CLOCK_VALUE   4096
-#define DBG_LOOKUP_VALUE  8192	/* debug the kety lookup */
+#define DBG_LOOKUP_VALUE  8192	/* debug the key lookup */
 #define DBG_EXTPROG_VALUE 16384 /* debug external program calls */
 
 /* Tests for the debugging flags.  */

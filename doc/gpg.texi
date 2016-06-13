@@ -1740,13 +1740,17 @@ are available for all keyserver types, some common options are:
   @item auto-key-retrieve
   This option enables the automatic retrieving of keys from a keyserver
   when verifying signatures made by keys that are not on the local
-  keyring.
+  keyring.  If the method "wkd" is included in the list of methods
+  given to @option{auto-key-locate}, the Signer's User ID is part of
+  the signature, and the option @option{--disable-signer-uid} is not used,
+  the "wkd" method may also be used to retrieve a key.
 
   Note that this option makes a "web bug" like behavior possible.
-  Keyserver operators can see which keys you request, so by sending you
-  a message signed by a brand new key (which you naturally will not have
-  on your local keyring), the operator can tell both your IP address and
-  the time when you verified the signature.
+  Keyserver or Web Key Directory operators can see which keys you
+  request, so by sending you a message signed by a brand new key (which
+  you naturally will not have on your local keyring), the operator can
+  tell both your IP address and the time when you verified the
+  signature.
 
   @item honor-keyserver-url
   When using @option{--refresh-keys}, if the key in question has a preferred
@@ -2343,6 +2347,14 @@ their feature flags.
 Disable the use of the modification detection code. Note that by
 using this option, the encrypted message becomes vulnerable to a
 message modification attack.
+
+@item --disable-signer-uid
+@opindex disable-signer-uid
+By default the user ID of the signing key is embedded in the data
+signature.  As of now this is only done if the signing key has been
+specified with @option{local-user} using a mail address.  This
+information can be helpful for verifier to locate the key; see
+@option{--auto-key-retrieve}.
 
 @item --personal-cipher-preferences @code{string}
 @opindex personal-cipher-preferences

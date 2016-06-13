@@ -396,6 +396,7 @@ enum cmd_and_opt_values
     oWeakDigest,
     oUnwrap,
     oOnlySignTextIDs,
+    oDisableSignerUID,
 
     oNoop
   };
@@ -549,6 +550,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoForceMDC, "no-force-mdc", "@"),
   ARGPARSE_s_n (oDisableMDC, "disable-mdc", "@"),
   ARGPARSE_s_n (oNoDisableMDC, "no-disable-mdc", "@"),
+
+  ARGPARSE_s_n (oDisableSignerUID, "disable-signer-uid", "@"),
 
   ARGPARSE_s_n (oDryRun, "dry-run", N_("do not make any changes")),
   ARGPARSE_s_n (oInteractive, "interactive", N_("prompt before overwriting")),
@@ -2799,6 +2802,9 @@ main (int argc, char **argv)
 	  case oNoForceMDC: opt.force_mdc = 0; break;
 	  case oDisableMDC: opt.disable_mdc = 1; break;
 	  case oNoDisableMDC: opt.disable_mdc = 0; break;
+
+          case oDisableSignerUID: opt.flags.disable_signer_uid = 1; break;
+
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
 	  case oS2KDigest: s2k_digest_string = xstrdup(pargs.r.ret_str); break;
 	  case oS2KCipher: s2k_cipher_string = xstrdup(pargs.r.ret_str); break;

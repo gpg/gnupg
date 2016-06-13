@@ -1823,6 +1823,7 @@ check_sig_and_print (CTX c, kbnode_t node)
    * key from the WKD. */
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
       && (opt.keyserver_options.options & KEYSERVER_AUTO_KEY_RETRIEVE)
+      && !opt.flags.disable_signer_uid
       && akl_has_wkd_method ()
       && sig->signers_uid)
     {
