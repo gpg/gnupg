@@ -1292,8 +1292,8 @@ the opposite meaning. The options are:
   Enable PKA lookups to verify sender addresses. Note that PKA is based
   on DNS, and so enabling this option may disclose information on when
   and what signatures are verified or to whom data is encrypted. This
-  is similar to the "web bug" described for the auto-key-retrieve
-  feature.
+  is similar to the "web bug" described for the @option{--auto-key-retrieve}
+  option.
 
   @item pka-trust-increase
   @opindex verify-options:pka-trust-increase
@@ -1680,6 +1680,26 @@ mechanisms, in the order they are to be tried:
 
 @end table
 
+@item --auto-key-retrieve
+@itemx --no-auto-key-retrieve
+@opindex auto-key-retrieve
+@opindex no-auto-key-retrieve
+This option enables the automatic retrieving of keys from a keyserver
+when verifying signatures made by keys that are not on the local
+keyring.
+
+If the method "wkd" is included in the list of methods given to
+@option{auto-key-locate}, the Signer's User ID is part of the
+signature, and the option @option{--disable-signer-uid} is not used,
+the "wkd" method may also be used to retrieve a key.
+
+Note that this option makes a "web bug" like behavior possible.
+Keyserver or Web Key Directory operators can see which keys you
+request, so by sending you a message signed by a brand new key (which
+you naturally will not have on your local keyring), the operator can
+tell both your IP address and the time when you verified the
+signature.
+
 @item --keyid-format @code{none|short|0xshort|long|0xlong}
 @opindex keyid-format
 Select how to display key IDs.  "none" does not show the key ID at all
@@ -1738,19 +1758,7 @@ are available for all keyserver types, some common options are:
   used with HKP keyservers.
 
   @item auto-key-retrieve
-  This option enables the automatic retrieving of keys from a keyserver
-  when verifying signatures made by keys that are not on the local
-  keyring.  If the method "wkd" is included in the list of methods
-  given to @option{auto-key-locate}, the Signer's User ID is part of
-  the signature, and the option @option{--disable-signer-uid} is not used,
-  the "wkd" method may also be used to retrieve a key.
-
-  Note that this option makes a "web bug" like behavior possible.
-  Keyserver or Web Key Directory operators can see which keys you
-  request, so by sending you a message signed by a brand new key (which
-  you naturally will not have on your local keyring), the operator can
-  tell both your IP address and the time when you verified the
-  signature.
+  This is the same as the option @option{auto-key-retrieve}.
 
   @item honor-keyserver-url
   When using @option{--refresh-keys}, if the key in question has a preferred
@@ -1762,9 +1770,9 @@ are available for all keyserver types, some common options are:
   refreshed.  Thus this option is not enabled by default.
 
   @item honor-pka-record
-  If auto-key-retrieve is set, and the signature being verified has a
-  PKA record, then use the PKA information to fetch the key. Defaults
-  to "yes".
+  If @option{--auto-key-retrieve} is used, and the signature being
+  verified has a PKA record, then use the PKA information to fetch
+  the key. Defaults to "yes".
 
   @item include-subkeys
   When receiving a key, include subkeys as potential targets. Note that
@@ -2354,7 +2362,7 @@ By default the user ID of the signing key is embedded in the data
 signature.  As of now this is only done if the signing key has been
 specified with @option{local-user} using a mail address.  This
 information can be helpful for verifier to locate the key; see
-@option{--auto-key-retrieve}.
+option @option{--auto-key-retrieve}.
 
 @item --personal-cipher-preferences @code{string}
 @opindex personal-cipher-preferences

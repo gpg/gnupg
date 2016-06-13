@@ -3150,12 +3150,6 @@ main (int argc, char **argv)
 		  opt.keyserver_options.options|=KEYSERVER_AUTO_KEY_RETRIEVE;
 		else
 		  opt.keyserver_options.options&=~KEYSERVER_AUTO_KEY_RETRIEVE;
-
-		deprecated_warning(configname,configlineno,
-			   pargs.r_opt==oAutoKeyRetrieve?"--auto-key-retrieve":
-			       "--no-auto-key-retrieve","--keyserver-options ",
-			   pargs.r_opt==oAutoKeyRetrieve?"auto-key-retrieve":
-			       "no-auto-key-retrieve");
 		break;
 	  case oShowSessionKey: opt.show_session_key = 1; break;
 	  case oOverrideSessionKey:
