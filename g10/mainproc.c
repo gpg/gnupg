@@ -1541,6 +1541,19 @@ pka_uri_from_sig (CTX c, PKT_signature *sig)
 }
 
 
+/* Return true if the AKL has the WKD method specified.  */
+static int
+akl_has_wkd_method (void)
+{
+  struct akl *akl;
+
+  for (akl = opt.auto_key_locate; akl; akl = akl->next)
+    if (akl->type == AKL_WKD)
+      return 1;
+  return 0;
+}
+
+
 static void
 print_good_bad_signature (int statno, const char *keyid_str, kbnode_t un,
                           PKT_signature *sig, int rc)
@@ -1697,7 +1710,11 @@ check_sig_and_print (CTX c, kbnode_t node)
       }
   }
 
-  write_status_text (STATUS_NEWSIG, NULL);
+  if (sig->signers_uid)
+    write_status_buffer (STATUS_NEWSIG,
+                         sig->signers_uid, strlen (sig->signers_uid), 0);
+  else
+    write_status_text (STATUS_NEWSIG, NULL);
 
   astr = openpgp_pk_algo_name ( sig->pubkey_algo );
   if (keystrlen () > 8)
@@ -1713,8 +1730,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 
   rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );
 
-  /* If the key isn't found, check for a preferred keyserver */
-
+  /* If the key isn't found, check for a preferred keyserver.  */
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY && sig->flags.pref_ks)
     {
       const byte *p;
@@ -1755,8 +1771,8 @@ check_sig_and_print (CTX c, kbnode_t node)
         }
     }
 
-  /* If the preferred keyserver thing above didn't work, our second
-     try is to use the URI from a DNS PKA record. */
+  /* If the avove methods didn't work, our next try is to use the URI
+   * from a DNS PKA record.  */
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
       && (opt.keyserver_options.options & KEYSERVER_AUTO_KEY_RETRIEVE)
       && (opt.keyserver_options.options & KEYSERVER_HONOR_PKA_RECORD))
@@ -1775,17 +1791,54 @@ check_sig_and_print (CTX c, kbnode_t node)
             {
               glo_ctrl.in_auto_key_retrieve++;
               res = keyserver_import_keyid (c->ctrl, sig->keyid, spec);
-                glo_ctrl.in_auto_key_retrieve--;
-                free_keyserver_spec (spec);
-                if (!res)
-                  rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );
+              glo_ctrl.in_auto_key_retrieve--;
+              free_keyserver_spec (spec);
+              if (!res)
+                rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );
             }
         }
     }
 
-  /* If the preferred keyserver thing above didn't work and we got
-       no information from the DNS PKA, this is a third try. */
+  /* If the above methods didn't work, our next try is to use locate
+   * the key via its fingerprint from a keyserver.  This requires
+   * that the signers fingerprint is encoded in the signature.  We
+   * favor this over the WKD method (to be tried next), because an
+   * arbitrary keyserver is less subject to web bug like
+   * monitoring.  */
+  /* if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY */
+  /*     && signature_hash_full_fingerprint (sig) */
+  /*     && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE) */
+  /*     && keyserver_any_configured (c->ctrl)) */
+  /*   { */
+  /*     int res; */
 
+  /*     glo_ctrl.in_auto_key_retrieve++; */
+  /*     res = keyserver_import_keyid (c->ctrl, sig->keyid, opt.keyserver ); */
+  /*     glo_ctrl.in_auto_key_retrieve--; */
+  /*     if (!res) */
+  /*       rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey ); */
+  /*   } */
+
+  /* If the above methods didn't work, our next try is to retrieve the
+   * key from the WKD. */
+  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
+      && (opt.keyserver_options.options & KEYSERVER_AUTO_KEY_RETRIEVE)
+      && akl_has_wkd_method ()
+      && sig->signers_uid)
+    {
+      int res;
+
+      glo_ctrl.in_auto_key_retrieve++;
+      res = keyserver_import_wkd (c->ctrl, sig->signers_uid, NULL, NULL);
+      glo_ctrl.in_auto_key_retrieve--;
+      /* Fixme: If the fingerprint is embedded in the signature,
+       * compare it to the fingerprint of the returned key.  */
+      if (!res)
+        rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );
+    }
+
+  /* If the above methods did't work, our next try is to use a
+   * keyserver.  */
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
       && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE)
       && keyserver_any_configured (c->ctrl))
@@ -1793,7 +1846,7 @@ check_sig_and_print (CTX c, kbnode_t node)
       int res;
 
       glo_ctrl.in_auto_key_retrieve++;
-      res=keyserver_import_keyid (c->ctrl, sig->keyid, opt.keyserver );
+      res = keyserver_import_keyid (c->ctrl, sig->keyid, opt.keyserver );
       glo_ctrl.in_auto_key_retrieve--;
       if (!res)
         rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );

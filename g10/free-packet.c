@@ -82,6 +82,7 @@ free_seckey_enc( PKT_signature *sig )
       xfree (sig->pka_info->uri);
       xfree (sig->pka_info);
     }
+  xfree (sig->signers_uid);
 
   xfree(sig);
 }
@@ -258,6 +259,8 @@ copy_signature( PKT_signature *d, PKT_signature *s )
     d->pka_info = s->pka_info? cp_pka_info (s->pka_info) : NULL;
     d->hashed = cp_subpktarea (s->hashed);
     d->unhashed = cp_subpktarea (s->unhashed);
+    if (s->signers_uid)
+      d->signers_uid = xstrdup (s->signers_uid);
     if(s->numrevkeys)
       {
 	d->revkey=NULL;
