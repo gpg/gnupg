@@ -344,7 +344,7 @@ msgstr ""
 
 #, fuzzy
 msgid "use a log file for the server"
-msgstr "cari kunci di key server"
+msgstr "cari kunci di keyserver"
 
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr ""
@@ -1955,14 +1955,14 @@ msgstr "ubah passphrase"
 msgid "export keys"
 msgstr "ekspor kunci"
 
-msgid "export keys to a key server"
-msgstr "ekspor kunci ke key server"
+msgid "export keys to a keyserver"
+msgstr "ekspor kunci ke keyserver"
 
-msgid "import keys from a key server"
-msgstr "impor kunci dari key server"
+msgid "import keys from a keyserver"
+msgstr "impor kunci dari keyserver"
 
-msgid "search for keys on a key server"
-msgstr "cari kunci di key server"
+msgid "search for keys on a keyserver"
+msgstr "cari kunci di keyserver"
 
 msgid "update all keys from a keyserver"
 msgstr "update semua kunci dari keyserver"

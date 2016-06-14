@@ -1964,13 +1964,13 @@ msgstr "cambia-lo contrasinal"
 msgid "export keys"
 msgstr "exportar chaves"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "exportar chaves a un servidor de chaves"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "importar chaves dun servidor de chaves"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "buscar chaves nun servidor de chaves"
 
 msgid "update all keys from a keyserver"

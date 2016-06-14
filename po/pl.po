@@ -1970,13 +1970,13 @@ msgstr "zmiana has³a"
 msgid "export keys"
 msgstr "eksport kluczy do pliku"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "eksport kluczy do serwera kluczy"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "import kluczy z serwera kluczy"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "szukanie kluczy na serwerze"
 
 msgid "update all keys from a keyserver"

@@ -106,7 +106,7 @@ typedef enum
     SIGSUBPKT_PREF_HASH     = 21, /* Preferred hash algorithms. */
     SIGSUBPKT_PREF_COMPR    = 22, /* Preferred compression algorithms. */
     SIGSUBPKT_KS_FLAGS	    = 23, /* Key server preferences. */
-    SIGSUBPKT_PREF_KS	    = 24, /* Preferred key server. */
+    SIGSUBPKT_PREF_KS	    = 24, /* Preferred keyserver. */
     SIGSUBPKT_PRIMARY_UID   = 25, /* Primary user id. */
     SIGSUBPKT_POLICY	    = 26, /* Policy URL. */
     SIGSUBPKT_KEY_FLAGS     = 27, /* Key flags. */

@@ -1915,13 +1915,13 @@ msgstr "endre passfrasen"
 msgid "export keys"
 msgstr "eksportere nøkler"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "eksportere nøkler til en nøkkelserver"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "importere nøkler fra en nøkkelserver"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "søke etter nøkler på en nøkkelserver"
 
 msgid "update all keys from a keyserver"

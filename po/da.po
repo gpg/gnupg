@@ -1985,13 +1985,13 @@ msgstr "ændr en adgangsfrase"
 msgid "export keys"
 msgstr "eksporter nøgler"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "eksporter nøgler til en nøgletjener"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "importer nøgler fra en nøgleserver"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "søg efter nøgler på en nøgleserver"
 
 msgid "update all keys from a keyserver"

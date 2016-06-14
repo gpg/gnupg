@@ -1869,13 +1869,13 @@ msgstr "změnit heslo"
 msgid "export keys"
 msgstr "exportovat klíče"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "exportovat klíče na server klíčů"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "importovat klíče ze serveru klíčů"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "vyhledat klíče na serveru klíčů"
 
 msgid "update all keys from a keyserver"

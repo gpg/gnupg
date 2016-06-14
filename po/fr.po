@@ -1898,13 +1898,13 @@ msgstr "modifier une phrase secrète"
 msgid "export keys"
 msgstr "exporter les clefs"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "exporter les clefs vers un serveur de clefs"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "importer les clefs d'un serveur de clefs"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "chercher les clefs avec un serveur de clefs"
 
 msgid "update all keys from a keyserver"

@@ -211,8 +211,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aKeygen, "gen-key", N_("generate a new key pair")),
   ARGPARSE_c (aDeleteKey, "delete-keys",
               N_("remove keys from the public keyring")),
-/*ARGPARSE_c (aSendKeys, "send-keys", N_("export keys to a key server")),*/
-/*ARGPARSE_c (aRecvKeys, "recv-keys", N_("import keys from a key server")),*/
+/*ARGPARSE_c (aSendKeys, "send-keys", N_("export keys to a keyserver")),*/
+/*ARGPARSE_c (aRecvKeys, "recv-keys", N_("import keys from a keyserver")),*/
   ARGPARSE_c (aImport, "import", N_("import certificates")),
   ARGPARSE_c (aExport, "export", N_("export certificates")),
 

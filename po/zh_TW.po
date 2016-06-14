@@ -1823,13 +1823,13 @@ msgstr "更改密語"
 msgid "export keys"
 msgstr "匯出金鑰"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "把金鑰匯出至金鑰伺服器"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "從金鑰伺服器匯入金鑰"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "在金鑰伺服器上搜尋金鑰"
 
 msgid "update all keys from a keyserver"

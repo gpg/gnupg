@@ -2004,13 +2004,13 @@ msgstr "cambia una frase contraseña"
 msgid "export keys"
 msgstr "exporta claves"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "exporta claves a un servidor de claves"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "importa claves desde un servidor de claves"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "busca claves en un servidor de claves"
 
 msgid "update all keys from a keyserver"

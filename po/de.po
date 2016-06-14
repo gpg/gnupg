@@ -1861,13 +1861,13 @@ msgstr "Die Passphrase ändern"
 msgid "export keys"
 msgstr "Schlüssel exportieren"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "Schlüssel zu einem Schlü.server exportieren"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "Schlüssel von einem Schlü.server importieren"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "Schlüssel auf einem Schlü.server suchen"
 
 msgid "update all keys from a keyserver"

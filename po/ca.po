@@ -2033,13 +2033,13 @@ msgstr "canvia la contrasenya"
 msgid "export keys"
 msgstr "exporta claus"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "exporta claus a un servidor de claus"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "importa claus d'un servidor de claus"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "cerca claus en un servidor de claus"
 
 msgid "update all keys from a keyserver"

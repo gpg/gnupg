@@ -1924,13 +1924,13 @@ msgstr "更改密码"
 msgid "export keys"
 msgstr "导出密钥"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "把密钥导出到某个公钥服务器上"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "从公钥服务器上导入密钥"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "在公钥服务器上搜寻密钥"
 
 msgid "update all keys from a keyserver"

@@ -1956,13 +1956,13 @@ msgstr "muuda parooli"
 msgid "export keys"
 msgstr "ekspordi võtmed"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "ekspordi võtmed võtmeserverisse"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "impordi võtmed võtmeserverist"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "otsi võtmeid võtmeserverist"
 
 msgid "update all keys from a keyserver"

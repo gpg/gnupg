@@ -1971,13 +1971,13 @@ msgstr "muuta salasanaa"
 msgid "export keys"
 msgstr "vie avaimia"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "vie avaimia palvelimelle"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "nouda avaimia avainpalvelimelta"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "etsi avaimia avainpalvelimelta"
 
 msgid "update all keys from a keyserver"

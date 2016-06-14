@@ -2019,13 +2019,13 @@ msgstr "ändra en lösenfras"
 msgid "export keys"
 msgstr "exportera nycklar"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "exportera nycklar till en nyckelserver"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "importera nycklar från en nyckelserver"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "sök efter nycklar hos en nyckelserver"
 
 msgid "update all keys from a keyserver"

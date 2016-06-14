@@ -1964,13 +1964,13 @@ msgstr "anahtar parolası değiştirir"
 msgid "export keys"
 msgstr "anahtarları gönderir"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "anahtarları bir anahtar sunucusuna gönderir"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "anahtarları bir anahtar sunucusundan indirir"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "bir anahtar sunucusunda anahtarları arar"
 
 msgid "update all keys from a keyserver"

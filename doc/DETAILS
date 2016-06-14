@@ -1266,7 +1266,7 @@ Status codes are:
       /pks/lookup/<gnupg_formatierte_user_id>?op=<operation>
 
    This can be implemented using Hurd's translator mechanism.
-   However, I think the whole key server stuff has to be re-thought;
+   However, I think the whole keyserver stuff has to be re-thought;
    I have some ideas and probably create a white paper.
 ** Algorithm names for the "keygen.algo" prompt
 

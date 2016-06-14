@@ -1509,10 +1509,10 @@ static struct option sig_options[] = {
     "that VALUE is a file to read the data from.  "
     "(RFC 4880, Section 5.2.3.16)" },
   { "--key-server-preferences", sig_big_endian_arg,
-    "Big-endian number encoding the key server preferences. "
+    "Big-endian number encoding the keyserver preferences. "
     "(RFC 4880, Section 5.2.3.17)" },
   { "--key-server", sig_string_arg,
-    "The preferred key server.  (RFC 4880, Section 5.2.3.18)" },
+    "The preferred keyserver.  (RFC 4880, Section 5.2.3.18)" },
   { "--primary-user-id", sig_flag,
     "Sets the primary user id flag.  (RFC 4880, Section 5.2.3.19)" },
   { "--policy-uri", sig_string_arg,

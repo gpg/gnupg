@@ -339,7 +339,7 @@ msgstr ""
 
 #, fuzzy
 msgid "use a log file for the server"
-msgstr "cerca delle chiavi su un key server"
+msgstr "cerca delle chiavi su un keyserver"
 
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr ""
@@ -1962,17 +1962,17 @@ msgstr "cambia la passphrase"
 msgid "export keys"
 msgstr "esporta delle chiavi"
 
-msgid "export keys to a key server"
-msgstr "esporta le chiavi a un key server"
+msgid "export keys to a keyserver"
+msgstr "esporta le chiavi a un keyserver"
 
-msgid "import keys from a key server"
-msgstr "importa le chiavi da un key server"
+msgid "import keys from a keyserver"
+msgstr "importa le chiavi da un keyserver"
 
-msgid "search for keys on a key server"
-msgstr "cerca delle chiavi su un key server"
+msgid "search for keys on a keyserver"
+msgstr "cerca delle chiavi su un keyserver"
 
 msgid "update all keys from a keyserver"
-msgstr "aggiorna tutte le chiavi da un key server"
+msgstr "aggiorna tutte le chiavi da un keyserver"
 
 msgid "import/merge keys"
 msgstr "importa/aggiungi delle chiavi"

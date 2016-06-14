@@ -937,7 +937,7 @@ http_wait_response (http_t hd)
 
   /* Shutdown one end of the socket is desired.  As per HTTP/1.0 this
      is not required but some very old servers (e.g. the original pksd
-     key server didn't worked without it.  */
+     keyserver didn't worked without it.  */
   if ((hd->flags & HTTP_FLAG_SHUTDOWN))
     shutdown (hd->sock->fd, 1);
   hd->in_data = 0;

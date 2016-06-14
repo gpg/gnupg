@@ -1963,13 +1963,13 @@ msgstr "αλλαγή της φράσης κλειδί"
 msgid "export keys"
 msgstr "εξαγωγή κλειδιών"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "εξαγωγή κλειδιών σε ένα διακομιστή κλειδιών"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "εισαγωγή κλειδιών από ένα διακομιστή κλειδιών"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "αναζήτηση κλειδιών σε ένα διακομιστή κλειδιών"
 
 msgid "update all keys from a keyserver"

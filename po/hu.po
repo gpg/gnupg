@@ -1952,13 +1952,13 @@ msgstr "jelszóváltoztatás"
 msgid "export keys"
 msgstr "kulcsok exportálása"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "kulcsok exportálása kulcsszerverre"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "kulcsok importálása kulcsszerverrõl"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "kulcsok keresése kulcsszerveren"
 
 msgid "update all keys from a keyserver"

@@ -1949,13 +1949,13 @@ msgstr "þanøi la pasfrazon"
 msgid "export keys"
 msgstr "eksporti þlosilojn"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "eksporti þlosilojn al þlosilservilo"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "importi þlosilojn de þlosilservilo"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "seræi þlosilojn æe þlosilservilo"
 
 msgid "update all keys from a keyserver"

@@ -1374,12 +1374,12 @@ dump_sig_subpkt (int hashed, int type, int critical,
 	es_fprintf (listfp, " %d", buffer[i]);
       break;
     case SIGSUBPKT_KS_FLAGS:
-      es_fputs ("key server preferences:", listfp);
+      es_fputs ("keyserver preferences:", listfp);
       for (i = 0; i < length; i++)
 	es_fprintf (listfp, " %02X", buffer[i]);
       break;
     case SIGSUBPKT_PREF_KS:
-      es_fputs ("preferred key server: ", listfp);
+      es_fputs ("preferred keyserver: ", listfp);
       es_write_sanitized (listfp, buffer, length, ")", NULL);
       break;
     case SIGSUBPKT_PRIMARY_UID:

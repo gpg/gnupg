@@ -1954,13 +1954,13 @@ msgstr "muda a frase secreta"
 msgid "export keys"
 msgstr "exportar chaves"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "exportar chaves para um servidor de chaves"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "importar chaves de um servidor de chaves"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "procurar chaves num servidor de chaves"
 
 msgid "update all keys from a keyserver"

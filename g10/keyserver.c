@@ -1841,7 +1841,7 @@ keyserver_put (ctrl_t ctrl, strlist_t keyspecs)
 
 
 /* Loop over all URLs in STRLIST and fetch the key at that URL.  Note
-   that the fetch operation ignores the configured key servers and
+   that the fetch operation ignores the configured keyservers and
    instead directly retrieves the keys.  */
 int
 keyserver_fetch (ctrl_t ctrl, strlist_t urilist)

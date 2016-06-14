@@ -1960,13 +1960,13 @@ msgstr "zmeni» heslo"
 msgid "export keys"
 msgstr "exportova» kµúèe"
 
-msgid "export keys to a key server"
+msgid "export keys to a keyserver"
 msgstr "exportova» kµúèe na server kµúèov"
 
-msgid "import keys from a key server"
+msgid "import keys from a keyserver"
 msgstr "importova» kµúèe zo servera kµúèov"
 
-msgid "search for keys on a key server"
+msgid "search for keys on a keyserver"
 msgstr "vyhµada» kµúèe na serveri kµúèov"
 
 msgid "update all keys from a keyserver"
