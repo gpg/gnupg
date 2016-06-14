@@ -1542,11 +1542,11 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
             }
           es_putc (':', es_stdout);	/* End of field 15. */
           es_putc (':', es_stdout);	/* End of field 16. */
-          if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
-              || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
-              || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+          if (pk2->pubkey_algo == PUBKEY_ALGO_ECDSA
+              || pk2->pubkey_algo == PUBKEY_ALGO_EDDSA
+              || pk2->pubkey_algo == PUBKEY_ALGO_ECDH)
             {
-              char *curve = openpgp_oid_to_str (pk->pkey[0]);
+              char *curve = openpgp_oid_to_str (pk2->pkey[0]);
               const char *name = openpgp_oid_to_curve (curve, 0);
               if (!name)
                 name = curve;
