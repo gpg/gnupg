@@ -1602,6 +1602,411 @@ get_policy (tofu_dbs_t dbs, const char *fingerprint, const char *email,
   return policy;
 }
 
+
+/* Format the first part of a conflict message and return that as a
+ * malloced string.  */
+static char *
+format_conflict_msg_part1 (int policy, const char *conflict,
+                           const char *fingerprint, const char *email)
+{
+  estream_t fp;
+  char *binding;
+  int binding_shown = 0;
+  char *tmpstr, *text;
+
+  binding = xasprintf ("<%s, %s>", fingerprint, email);
+
+  fp = es_fopenmem (0, "rw,samethread");
+  if (!fp)
+    log_fatal ("error creating memory stream: %s\n",
+               gpg_strerror (gpg_error_from_syserror()));
+
+  if (policy == TOFU_POLICY_NONE)
+    {
+      es_fprintf (fp, _("The binding %s is NOT known."), binding);
+      es_fputs ("  ", fp);
+      binding_shown = 1;
+    }
+  else if (policy == TOFU_POLICY_ASK
+           /* If there the conflict is with itself, then don't
+            * display this message.  */
+           && conflict && strcmp (conflict, fingerprint))
+    {
+      es_fprintf (fp,
+                  _("The key with fingerprint %s raised a conflict "
+                    "with the binding %s."
+                    "  Since this binding's policy was 'auto', it was "
+                    "changed to 'ask'."),
+                  conflict, binding);
+      es_fputs ("  ", fp);
+      binding_shown = 1;
+    }
+
+  /* TRANSLATORS: The %s%s is replaced by either a fingerprint and a
+     blank or by two empty strings.  */
+  es_fprintf (fp,
+              _("Please indicate whether you believe the binding %s%s"
+                "is legitimate (the key belongs to the stated owner) "
+                "or a forgery (bad)."),
+              binding_shown ? "" : binding,
+              binding_shown ? "" : " ");
+  es_fputc ('\n', fp);
+
+  xfree (binding);
+
+  es_fputc (0, fp);
+  if (es_fclose_snatch (fp, (void **)&tmpstr, NULL))
+    log_fatal ("error snatching memory stream\n");
+  text = format_text (tmpstr, 0, 72, 80);
+  es_free (tmpstr);
+
+  return text;
+}
+
+
+/* Ask the user about the binding.  There are three ways we could end
+ * up here:
+ *
+ *   - This is a new binding and there is a conflict
+ *     (policy == TOFU_POLICY_NONE && bindings_with_this_email_count > 0),
+ *
+ *   - This is a new binding and opt.tofu_default_policy is set to
+ *     ask.  (policy == TOFU_POLICY_NONE && opt.tofu_default_policy ==
+ *     TOFU_POLICY_ASK), or,
+ *
+ *   - The policy is ask (the user deferred last time) (policy ==
+ *     TOFU_POLICY_ASK).
+ */
+static void
+ask_about_binding (tofu_dbs_t dbs,
+                   struct db *db,
+                   enum tofu_policy *policy,
+                   int *trust_level,
+                   int bindings_with_this_email_count,
+                   strlist_t bindings_with_this_email,
+                   char *conflict,
+                   const char *fingerprint,
+                   const char *email,
+                   const char *user_id)
+{
+  char *sqerr = NULL;
+  int rc;
+  estream_t fp;
+  strlist_t other_user_ids = NULL;
+  struct signature_stats *stats = NULL;
+  struct signature_stats *stats_iter = NULL;
+  char *prompt;
+  char *choices;
+  struct db *db_key;
+
+  fp = es_fopenmem (0, "rw,samethread");
+  if (!fp)
+    log_fatal ("error creating memory stream: %s\n",
+               gpg_strerror (gpg_error_from_syserror()));
+
+  {
+    char *text = format_conflict_msg_part1 (*policy, conflict,
+                                            fingerprint, email);
+    es_fputs (text, fp);
+    es_fputc ('\n', fp);
+    xfree (text);
+  }
+
+  /* Find other user ids associated with this key and whether the
+   * bindings are marked as good or bad.  */
+  if (opt.tofu_db_format == TOFU_DB_SPLIT)
+    {
+      /* In the split format, we need to search in the fingerprint DB
+       * for all the emails associated with this key, not the email DB.  */
+      db_key = getdb (dbs, fingerprint, DB_KEY);
+    }
+  else
+    db_key = db;
+
+  if (db_key)
+    {
+      rc = gpgsql_stepx
+        (db_key->db, &db_key->s.get_trust_gather_other_user_ids,
+         strings_collect_cb2, &other_user_ids, &sqerr,
+         opt.tofu_db_format == TOFU_DB_SPLIT
+         ? "select user_id, email from bindings where fingerprint = ?;"
+         : "select user_id, policy from bindings where fingerprint = ?;",
+         SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_END);
+      if (rc)
+        {
+          log_error (_("error gathering other user IDs: %s\n"), sqerr);
+          sqlite3_free (sqerr);
+          sqerr = NULL;
+        }
+    }
+
+  if (other_user_ids)
+    {
+      strlist_t strlist_iter;
+
+      es_fprintf (fp, _("Known user IDs associated with this key:\n"));
+      for (strlist_iter = other_user_ids;
+           strlist_iter;
+           strlist_iter = strlist_iter->next)
+        {
+          char *other_user_id = strlist_iter->d;
+          char *other_thing;
+          enum tofu_policy other_policy;
+
+          log_assert (strlist_iter->next);
+          strlist_iter = strlist_iter->next;
+          other_thing = strlist_iter->d;
+
+          if (opt.tofu_db_format == TOFU_DB_SPLIT)
+            other_policy = get_policy (dbs, fingerprint, other_thing, NULL);
+          else
+            other_policy = atoi (other_thing);
+
+          es_fprintf (fp, "  %s (", other_user_id);
+          es_fprintf (fp, _("policy: %s"), tofu_policy_str (other_policy));
+          es_fprintf (fp, ")\n");
+        }
+      es_fprintf (fp, "\n");
+
+      free_strlist (other_user_ids);
+    }
+
+  /* Find other keys associated with this email address.  */
+  /* FIXME: When generating the statistics, do we want the time
+     embedded in the signature (column 'sig_time') or the time that
+     we first verified the signature (column 'time').  */
+  rc = gpgsql_stepx
+    (db->db, &db->s.get_trust_gather_other_keys,
+     signature_stats_collect_cb, &stats, &sqerr,
+     "select fingerprint, policy, time_ago, count(*)\n"
+     " from (select bindings.*,\n"
+     "        case\n"
+     /* From the future (but if its just a couple of hours in the
+      * future don't turn it into a warning)?  Or should we use
+      * small, medium or large units?  (Note: whatever we do, we
+      * keep the value in seconds.  Then when we group, everything
+      * that rounds to the same number of seconds is grouped.)  */
+     "         when delta < -("STRINGIFY (TIME_AGO_FUTURE_IGNORE)") then -1\n"
+     "         when delta < ("STRINGIFY (TIME_AGO_MEDIUM_THRESHOLD)")\n"
+     "          then max(0,\n"
+     "                   round(delta / ("STRINGIFY (TIME_AGO_UNIT_SMALL)"))\n"
+     "               * ("STRINGIFY (TIME_AGO_UNIT_SMALL)"))\n"
+     "         when delta < ("STRINGIFY (TIME_AGO_LARGE_THRESHOLD)")\n"
+     "          then round(delta / ("STRINGIFY (TIME_AGO_UNIT_MEDIUM)"))\n"
+     "               * ("STRINGIFY (TIME_AGO_UNIT_MEDIUM)")\n"
+     "         else round(delta / ("STRINGIFY (TIME_AGO_UNIT_LARGE)"))\n"
+     "              * ("STRINGIFY (TIME_AGO_UNIT_LARGE)")\n"
+     "        end time_ago,\n"
+     "        delta time_ago_raw\n"
+     "       from bindings\n"
+     "       left join\n"
+     "         (select *,\n"
+     "            cast(strftime('%s','now') - sig_time as real) delta\n"
+     "           from signatures) ss\n"
+     "        on ss.binding = bindings.oid)\n"
+     " where email = ?\n"
+     " group by fingerprint, time_ago\n"
+     /* Make sure the current key is first.  */
+     " order by fingerprint = ? asc, fingerprint desc, time_ago desc;\n",
+     SQLITE_ARG_STRING, email, SQLITE_ARG_STRING, fingerprint,
+     SQLITE_ARG_END);
+  if (rc)
+    {
+      strlist_t strlist_iter;
+
+      log_error (_("error gathering signature stats: %s\n"), sqerr);
+      sqlite3_free (sqerr);
+      sqerr = NULL;
+
+      es_fprintf (fp, ngettext("The email address \"%s\" is"
+                               " associated with %d key:\n",
+                               "The email address \"%s\" is"
+                               " associated with %d keys:\n",
+                               bindings_with_this_email_count),
+                  email, bindings_with_this_email_count);
+      for (strlist_iter = bindings_with_this_email;
+           strlist_iter;
+           strlist_iter = strlist_iter->next)
+        es_fprintf (fp, "  %s\n", strlist_iter->d);
+    }
+  else
+    {
+      char *key = NULL;
+
+      if (! stats || strcmp (stats->fingerprint, fingerprint))
+        {
+          /* If we have already added this key to the DB, then it will
+           * be first (see the above select).  Since the first key on
+           * the list is not this key, we must not yet have verified any
+           * messages signed by this key.  Add a dummy entry.  */
+          signature_stats_prepend (&stats, fingerprint, TOFU_POLICY_AUTO, 0, 0);
+        }
+
+      es_fprintf (fp, _("Statistics for keys with the email address \"%s\":\n"),
+                  email);
+      for (stats_iter = stats; stats_iter; stats_iter = stats_iter->next)
+        {
+          if (! key || strcmp (key, stats_iter->fingerprint))
+            {
+              int this_key;
+              char *key_pp;
+
+              key = stats_iter->fingerprint;
+              this_key = strcmp (key, fingerprint) == 0;
+              key_pp = format_hexfingerprint (key, NULL, 0);
+              es_fprintf (fp, "  %s (", key_pp);
+              if (this_key)
+                es_fprintf (fp, _("this key"));
+              else
+                es_fprintf (fp, _("policy: %s"),
+                            tofu_policy_str (stats_iter->policy));
+              es_fputs ("):\n", fp);
+              xfree (key_pp);
+            }
+
+          es_fputs ("    ", fp);
+          if (stats_iter->time_ago == -1)
+            es_fprintf (fp, ngettext("%ld message signed in the future.",
+                                     "%ld messages signed in the future.",
+                                     stats_iter->count), stats_iter->count);
+          else
+            {
+              long t_scaled = time_ago_scale (stats_iter->time_ago);
+
+              /* TANSLATORS: This string is concatenated with one of
+               * the day/week/month strings to form one sentence.  */
+              es_fprintf (fp, ngettext("%ld message signed",
+                                       "%ld messages signed",
+                                       stats_iter->count), stats_iter->count);
+              if (!stats_iter->count)
+                es_fputs (".", fp);
+              else if (stats_iter->time_ago < TIME_AGO_UNIT_MEDIUM)
+                es_fprintf (fp, ngettext(" over the past %ld day.",
+                                         " over the past %ld days.",
+                                         t_scaled), t_scaled);
+              else if (stats_iter->time_ago < TIME_AGO_UNIT_LARGE)
+                es_fprintf (fp, ngettext(" over the past %ld week.",
+                                         " over the past %ld weeks.",
+                                         t_scaled), t_scaled);
+              else
+                es_fprintf (fp, ngettext(" over the past %ld month.",
+                                         " over the past %ld months.",
+                                         t_scaled), t_scaled);
+            }
+          es_fputs ("\n", fp);
+        }
+    }
+
+
+  if ((*policy == TOFU_POLICY_NONE && bindings_with_this_email_count > 0)
+      || (*policy == TOFU_POLICY_ASK && conflict))
+    {
+      /* This is a conflict.  */
+
+      /* TRANSLATORS: Please translate the text found in the source
+       * file below.  We don't directly internationalize that text so
+       * that we can tweak it without breaking translations.  */
+      char *text = _("TOFU detected a binding conflict");
+      char *textbuf;
+      if (!strcmp (text, "TOFU detected a binding conflict"))
+        {
+          /* No translation.  Use the English text.  */
+          text =
+            "Normally, there is only a single key associated with an email "
+            "address.  However, people sometimes generate a new key if "
+            "their key is too old or they think it might be compromised.  "
+            "Alternatively, a new key may indicate a man-in-the-middle "
+            "attack!  Before accepting this key, you should talk to or "
+            "call the person to make sure this new key is legitimate.";
+        }
+      textbuf = format_text (text, 0, 72, 80);
+      es_fprintf (fp, "\n%s\n", text);
+      xfree (textbuf);
+    }
+
+  es_fputc ('\n', fp);
+
+  /* Add a NUL terminator.  */
+  es_fputc (0, fp);
+  if (es_fclose_snatch (fp, (void **) &prompt, NULL))
+    log_fatal ("error snatching memory stream\n");
+
+  /* I think showing the large message once is sufficient.  If we
+   * would move it right before the cpr_get many lines will scroll
+   * away and the user might not realize that he merely entered a
+   * wrong choise (because he does not see that either).  As a small
+   * benefit we allow C-L to redisplay everything.  */
+  tty_printf ("%s", prompt);
+  while (1)
+    {
+      char *response;
+
+      /* TRANSLATORS: Two letters (normally the lower and upper case
+       * version of the hotkey) for each of the five choices.  If
+       * there is only one choice in your language, repeat it.  */
+      choices = _("gG" "aA" "uU" "rR" "bB");
+      if (strlen (choices) != 10)
+        log_bug ("Bad TOFU conflict translation!  Please report.");
+
+      response = cpr_get
+        ("tofu.conflict",
+         _("(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "));
+      trim_spaces (response);
+      cpr_kill_prompt ();
+      if (*response == CONTROL_L)
+        tty_printf ("%s", prompt);
+      else if (strlen (response) == 1)
+        {
+          char *choice = strchr (choices, *response);
+          if (choice)
+            {
+              int c = ((size_t) choice - (size_t) choices) / 2;
+
+              switch (c)
+                {
+                case 0: /* Good.  */
+                  *policy = TOFU_POLICY_GOOD;
+                  *trust_level = tofu_policy_to_trust_level (*policy);
+                  break;
+                case 1: /* Accept once.  */
+                  *policy = TOFU_POLICY_ASK;
+                  *trust_level = tofu_policy_to_trust_level (TOFU_POLICY_GOOD);
+                  break;
+                case 2: /* Unknown.  */
+                  *policy = TOFU_POLICY_UNKNOWN;
+                  *trust_level = tofu_policy_to_trust_level (*policy);
+                  break;
+                case 3: /* Reject once.  */
+                  *policy = TOFU_POLICY_ASK;
+                  *trust_level = tofu_policy_to_trust_level (TOFU_POLICY_BAD);
+                  break;
+                case 4: /* Bad.  */
+                  *policy = TOFU_POLICY_BAD;
+                  *trust_level = tofu_policy_to_trust_level (*policy);
+                  break;
+                default:
+                  log_bug ("c should be between 0 and 4 but it is %d!", c);
+                }
+
+              if (record_binding (dbs, fingerprint, email, user_id,
+                                  *policy, 0))
+                {
+                  /* If there's an error registering the
+                   * binding, don't save the signature.  */
+                  *trust_level = _tofu_GET_TRUST_ERROR;
+                }
+              break;
+            }
+        }
+      xfree (response);
+    }
+
+  xfree (prompt);
+
+  signature_stats_free (stats);
+}
+
+
 /* Return the trust level (TRUST_NEVER, etc.) for the binding
  * <FINGERPRINT, EMAIL> (email is already normalized).  If no policy
  * is registered, returns TOFU_POLICY_NONE.  If an error occurs,
@@ -1621,12 +2026,11 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
            const char *fingerprint, const char *email,
 	   const char *user_id, int may_ask)
 {
-  char *fingerprint_pp;
   struct db *db;
   enum tofu_policy policy;
   char *conflict = NULL;
   int rc;
-  char *err = NULL;
+  char *sqerr = NULL;
   strlist_t bindings_with_this_email = NULL;
   int bindings_with_this_email_count;
   int change_conflicting_to_ask = 0;
@@ -1648,8 +2052,6 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
   db = getdb (dbs, email, DB_EMAIL);
   if (! db)
     return _tofu_GET_TRUST_ERROR;
-
-  fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
 
   policy = get_policy (dbs, fingerprint, email, &conflict);
   if (policy == TOFU_POLICY_AUTO || policy == TOFU_POLICY_NONE)
@@ -1692,7 +2094,7 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
     case TOFU_POLICY_UNKNOWN:
     case TOFU_POLICY_BAD:
       /* The saved judgement is auto -> auto, good, unknown or bad.
-	 We don't need to ask the user anything.  */
+       * We don't need to ask the user anything.  */
       if (DBG_TRUST)
 	log_debug ("TOFU: Known binding <%s, %s>'s policy: %s\n",
 		   fingerprint, email, tofu_policy_str (policy));
@@ -1711,7 +2113,7 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
 
     case TOFU_POLICY_NONE:
       /* The binding is new, we need to check for conflicts.  Case #3
-	 below.  */
+       * below.  */
       break;
 
     case _tofu_GET_POLICY_ERROR:
@@ -1724,49 +2126,51 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
 
 
   /* We get here if:
-
-       1. The saved policy is auto and the default policy is ask
-          (get_policy() == TOFU_POLICY_AUTO
-           && opt.tofu_default_policy == TOFU_POLICY_ASK)
-
-       2. The saved policy is ask (either last time the user selected
-          accept once or reject once or there was a conflict and this
-          binding's policy was changed from auto to ask)
-	  (policy == TOFU_POLICY_ASK), or,
-
-       3. We don't have a saved policy (policy == TOFU_POLICY_NONE)
-          (need to check for a conflict).
+   *
+   *   1. The saved policy is auto and the default policy is ask
+   *      (get_policy() == TOFU_POLICY_AUTO
+   *       && opt.tofu_default_policy == TOFU_POLICY_ASK)
+   *
+   *   2. The saved policy is ask (either last time the user selected
+   *      accept once or reject once or there was a conflict and this
+   *      binding's policy was changed from auto to ask)
+   *      (policy == TOFU_POLICY_ASK), or,
+   *
+   *   3. We don't have a saved policy (policy == TOFU_POLICY_NONE)
+   *      (need to check for a conflict).
    */
 
   /* Look for conflicts.  This is needed in all 3 cases.
-
-     Get the fingerprints of any bindings that share the email
-     address.  Note: if the binding in question is in the DB, it will
-     also be returned.  Thus, if the result set is empty, then this is
-     a new binding.  */
+   *
+   * Get the fingerprints of any bindings that share the email
+   * address.  Note: if the binding in question is in the DB, it will
+   * also be returned.  Thus, if the result set is empty, then this is
+   * a new binding.  */
   rc = gpgsql_stepx
     (db->db, &db->s.get_trust_bindings_with_this_email,
-     strings_collect_cb2, &bindings_with_this_email, &err,
+     strings_collect_cb2, &bindings_with_this_email, &sqerr,
      "select distinct fingerprint from bindings where email = ?;",
      SQLITE_ARG_STRING, email, SQLITE_ARG_END);
   if (rc)
     {
-      log_error (_("error reading TOFU database: %s\n"), err);
+      log_error (_("error reading TOFU database: %s\n"), sqerr);
       print_further_info ("listing fingerprints");
-      sqlite3_free (err);
+      sqlite3_free (sqerr);
       goto out;
     }
 
   bindings_with_this_email_count = strlist_length (bindings_with_this_email);
   if (bindings_with_this_email_count == 0
       && opt.tofu_default_policy != TOFU_POLICY_ASK)
-    /* New binding with no conflict and a concrete default policy.
-
-       We've never observed a binding with this email address
-       (BINDINGS_WITH_THIS_EMAIL_COUNT is 0 and the above query would return
-       the current binding if it were in the DB) and we have a default
-       policy, which is not to ask the user.  */
     {
+      /* New binding with no conflict and a concrete default policy.
+       *
+       * We've never observed a binding with this email address
+       * BINDINGS_WITH_THIS_EMAIL_COUNT is 0 and the above query would
+       * return the current binding if it were in the DB) and we have
+       * a default policy, which is not to ask the user.
+       */
+
       /* If we've seen this binding, then we've seen this email and
 	 policy couldn't possibly be TOFU_POLICY_NONE.  */
       log_assert (policy == TOFU_POLICY_NONE);
@@ -1789,18 +2193,20 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
     }
 
   if (policy == TOFU_POLICY_NONE)
-    /* This is a new binding and we have a conflict.  Mark any
-       conflicting bindings that have an automatic policy as now
-       requiring confirmation.  Note: we delay this until after we ask
-       for confirmation so that when the current policy is printed, it
-       is correct.  */
-    change_conflicting_to_ask = 1;
+    {
+      /* This is a new binding and we have a conflict.  Mark any
+       * conflicting bindings that have an automatic policy as now
+       * requiring confirmation.  Note: we delay this until after we
+       * ask for confirmation so that when the current policy is
+       * printed, it is correct.  */
+      change_conflicting_to_ask = 1;
+    }
 
   if (! may_ask)
-    /* We can only get here in the third case (no saved policy) and if
-       there is a conflict.  (If the policy was ask (cases #1 and #2)
-       and we weren't allowed to ask, we'd have already exited).  */
     {
+      /* We can only get here in the third case (no saved policy) and
+       * if there is a conflict.  (If the policy was ask (cases #1 and
+       * #2) and we weren't allowed to ask, we'd have already exited).  */
       log_assert (policy == TOFU_POLICY_NONE);
 
       if (record_binding (dbs, fingerprint, email, user_id,
@@ -1812,412 +2218,52 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
       goto out;
     }
 
-  /* If we get here, we need to ask the user about the binding.  There
-     are three ways we could end up here:
-
-       - This is a new binding and there is a conflict
-         (policy == TOFU_POLICY_NONE && bindings_with_this_email_count > 0),
-
-       - This is a new binding and opt.tofu_default_policy is set to
-         ask.  (policy == TOFU_POLICY_NONE && opt.tofu_default_policy ==
-         TOFU_POLICY_ASK), or,
-
-       - The policy is ask (the user deferred last time) (policy ==
-         TOFU_POLICY_ASK).
-   */
-  {
-    int is_conflict =
-      ((policy == TOFU_POLICY_NONE && bindings_with_this_email_count > 0)
-       || (policy == TOFU_POLICY_ASK && conflict));
-    estream_t fp;
-    strlist_t other_user_ids = NULL;
-    struct signature_stats *stats = NULL;
-    struct signature_stats *stats_iter = NULL;
-    char *prompt;
-    char *choices;
-
-    fp = es_fopenmem (0, "rw,samethread");
-    if (! fp)
-      log_fatal ("error creating memory stream: %s\n",
-                 gpg_strerror (gpg_error_from_syserror()));
-
-    /* Format the first part of the message.  */
-    {
-      estream_t fp1;
-      char *binding = xasprintf ("<%s, %s>", fingerprint, email);
-      int binding_shown = 0;
-      char *tmpstr, *text;
-
-      fp1 = es_fopenmem (0, "rw,samethread");
-      if (!fp1)
-        log_fatal ("error creating memory stream: %s\n",
-                   gpg_strerror (gpg_error_from_syserror()));
-
-      if (policy == TOFU_POLICY_NONE)
-        {
-          es_fprintf (fp1, _("The binding %s is NOT known."), binding);
-          es_fputs ("  ", fp1);
-          binding_shown = 1;
-        }
-      else if (policy == TOFU_POLICY_ASK
-               /* If there the conflict is with itself, then don't
-                  display this message.  */
-               && conflict && strcmp (conflict, fingerprint) != 0)
-        {
-          es_fprintf (fp1,
-                      _("The key with fingerprint %s raised a conflict "
-                        "with the binding %s."
-                        "  Since this binding's policy was 'auto', it was "
-                        "changed to 'ask'."),
-                      conflict, binding);
-          es_fputs ("  ", fp1);
-          binding_shown = 1;
-        }
-
-      /* TRANSLATORS: The %s%s is replaced by either a fingerprint and a
-         blank or by two empty strings.  */
-      es_fprintf (fp1,
-                  _("Please indicate whether you believe the binding %s%s"
-                    "is legitimate (the key belongs to the stated owner) "
-                    "or a forgery (bad)."),
-                  binding_shown ? "" : binding,
-                  binding_shown ? "" : " ");
-      es_fputc ('\n', fp1);
-
-      xfree (binding);
-
-      es_fputc (0, fp1);
-      if (es_fclose_snatch (fp1, (void **)&tmpstr, NULL))
-        log_fatal ("error snatching memory stream\n");
-      text = format_text (tmpstr, 0, 72, 80);
-      es_free (tmpstr);
-
-      es_fputs (text, fp);
-      xfree (text);
-    }
-
-    es_fputc ('\n', fp);
-
-    /* Find other user ids associated with this key and whether the
-       bindings are marked as good or bad.  */
-    {
-      struct db *db_key;
-
-      if (opt.tofu_db_format == TOFU_DB_SPLIT)
-	/* In the split format, we need to search in the fingerprint
-	   DB for all the emails associated with this key, not the
-	   email DB.  */
-	db_key = getdb (dbs, fingerprint, DB_KEY);
-      else
-	db_key = db;
-
-      if (db_key)
-	{
-	  rc = gpgsql_stepx
-	    (db_key->db, &db_key->s.get_trust_gather_other_user_ids,
-             strings_collect_cb2, &other_user_ids, &err,
-             opt.tofu_db_format == TOFU_DB_SPLIT
-	     ? "select user_id, email from bindings where fingerprint = ?;"
-	     : "select user_id, policy from bindings where fingerprint = ?;",
-	     SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_END);
-	  if (rc)
-	    {
-	      log_error (_("error gathering other user IDs: %s\n"), err);
-	      sqlite3_free (err);
-	      err = NULL;
-	    }
-	}
-    }
-
-    if (other_user_ids)
-      {
-	strlist_t strlist_iter;
-
-	es_fprintf (fp, _("Known user IDs associated with this key:\n"));
-	for (strlist_iter = other_user_ids;
-	     strlist_iter;
-	     strlist_iter = strlist_iter->next)
-	  {
-	    char *other_user_id = strlist_iter->d;
-	    char *other_thing;
-	    enum tofu_policy other_policy;
-
-	    log_assert (strlist_iter->next);
-	    strlist_iter = strlist_iter->next;
-	    other_thing = strlist_iter->d;
-
-	    if (opt.tofu_db_format == TOFU_DB_SPLIT)
-	      other_policy = get_policy (dbs, fingerprint, other_thing, NULL);
-	    else
-	      other_policy = atoi (other_thing);
-
-	    es_fprintf (fp, "  %s (", other_user_id);
-	    es_fprintf (fp, _("policy: %s"), tofu_policy_str (other_policy));
-	    es_fprintf (fp, ")\n");
-          }
-	es_fprintf (fp, "\n");
-
-	free_strlist (other_user_ids);
-      }
-
-    /* Find other keys associated with this email address.  */
-    /* XXX: When generating the statistics, do we want the time
-       embedded in the signature (column 'sig_time') or the time that
-       we first verified the signature (column 'time').  */
-    rc = gpgsql_stepx
-      (db->db, &db->s.get_trust_gather_other_keys,
-       signature_stats_collect_cb, &stats, &err,
-       "select fingerprint, policy, time_ago, count(*)\n"
-       " from (select bindings.*,\n"
-       "        case\n"
-       /* From the future (but if its just a couple of hours in the
-	  future don't turn it into a warning)?  Or should we use
-	  small, medium or large units?  (Note: whatever we do, we
-	  keep the value in seconds.  Then when we group, everything
-	  that rounds to the same number of seconds is grouped.)  */
-       "         when delta < -("STRINGIFY (TIME_AGO_FUTURE_IGNORE)") then -1\n"
-       "         when delta < ("STRINGIFY (TIME_AGO_MEDIUM_THRESHOLD)")\n"
-       "          then max(0,\n"
-       "                   round(delta / ("STRINGIFY (TIME_AGO_UNIT_SMALL)"))\n"
-       "               * ("STRINGIFY (TIME_AGO_UNIT_SMALL)"))\n"
-       "         when delta < ("STRINGIFY (TIME_AGO_LARGE_THRESHOLD)")\n"
-       "          then round(delta / ("STRINGIFY (TIME_AGO_UNIT_MEDIUM)"))\n"
-       "               * ("STRINGIFY (TIME_AGO_UNIT_MEDIUM)")\n"
-       "         else round(delta / ("STRINGIFY (TIME_AGO_UNIT_LARGE)"))\n"
-       "              * ("STRINGIFY (TIME_AGO_UNIT_LARGE)")\n"
-       "        end time_ago,\n"
-       "        delta time_ago_raw\n"
-       "       from bindings\n"
-       "       left join\n"
-       "         (select *,\n"
-       "            cast(strftime('%s','now') - sig_time as real) delta\n"
-       "           from signatures) ss\n"
-       "        on ss.binding = bindings.oid)\n"
-       " where email = ?\n"
-       " group by fingerprint, time_ago\n"
-       /* Make sure the current key is first.  */
-       " order by fingerprint = ? asc, fingerprint desc, time_ago desc;\n",
-       SQLITE_ARG_STRING, email, SQLITE_ARG_STRING, fingerprint,
-       SQLITE_ARG_END);
-    if (rc)
-      {
-	strlist_t strlist_iter;
-
-	log_error (_("error gathering signature stats: %s\n"), err);
-	sqlite3_free (err);
-	err = NULL;
-
-	es_fprintf (fp, ngettext("The email address \"%s\" is"
-                                 " associated with %d key:\n",
-                                 "The email address \"%s\" is"
-                                 " associated with %d keys:\n",
-                                 bindings_with_this_email_count),
-                    email, bindings_with_this_email_count);
-	for (strlist_iter = bindings_with_this_email;
-	     strlist_iter;
-	     strlist_iter = strlist_iter->next)
-	  es_fprintf (fp, "  %s\n", strlist_iter->d);
-      }
-    else
-      {
-	char *key = NULL;
-
-	if (! stats || strcmp (stats->fingerprint, fingerprint) != 0)
-	  /* If we have already added this key to the DB, then it will
-	     be first (see the above select).  Since the first key on
-	     the list is not this key, we must not yet have verified
-	     any messages signed by this key.  Add a dummy entry.  */
-	  signature_stats_prepend (&stats, fingerprint, TOFU_POLICY_AUTO, 0, 0);
-
-	es_fprintf
-          (fp, _("Statistics for keys with the email address \"%s\":\n"),
-           email);
-	for (stats_iter = stats; stats_iter; stats_iter = stats_iter->next)
-	  {
-	    if (! key || strcmp (key, stats_iter->fingerprint) != 0)
-	      {
-		int this_key;
-                char *key_pp;
-		key = stats_iter->fingerprint;
-		this_key = strcmp (key, fingerprint) == 0;
-                key_pp = format_hexfingerprint (key, NULL, 0);
-                es_fprintf (fp, "  %s (", key_pp);
-		if (this_key)
-		  es_fprintf (fp, _("this key"));
-		else
-		  es_fprintf (fp, _("policy: %s"),
-			      tofu_policy_str (stats_iter->policy));
-                es_fputs ("):\n", fp);
-                xfree (key_pp);
-	      }
-
-            es_fputs ("    ", fp);
-	    if (stats_iter->time_ago == -1)
-	      es_fprintf (fp, ngettext("%ld message signed in the future.",
-                                       "%ld messages signed in the future.",
-                                       stats_iter->count), stats_iter->count);
-	    else
-              {
-                long t_scaled = time_ago_scale (stats_iter->time_ago);
-
-                /* TANSLATORS: This string is concatenated with one of
-                 * the day/week/month strings to form one sentence.  */
-                es_fprintf (fp, ngettext("%ld message signed",
-                                         "%ld messages signed",
-                                         stats_iter->count), stats_iter->count);
-                if (!stats_iter->count)
-                  es_fputs (".", fp);
-                else if (stats_iter->time_ago < TIME_AGO_UNIT_MEDIUM)
-                  es_fprintf (fp, ngettext(" over the past %ld day.",
-                                           " over the past %ld days.",
-                                           t_scaled), t_scaled);
-                else if (stats_iter->time_ago < TIME_AGO_UNIT_LARGE)
-                  es_fprintf (fp, ngettext(" over the past %ld week.",
-                                           " over the past %ld weeks.",
-                                           t_scaled), t_scaled);
-                else
-                  es_fprintf (fp, ngettext(" over the past %ld month.",
-                                           " over the past %ld months.",
-                                           t_scaled), t_scaled);
-              }
-            es_fputs ("\n", fp);
-	  }
-      }
-
-    if (is_conflict)
-      {
-	/* TRANSLATORS: Please translate the text found in the source
-	   file below.  We don't directly internationalize that text
-	   so that we can tweak it without breaking translations.  */
-	char *text = _("TOFU detected a binding conflict");
-        char *textbuf;
-	if (strcmp (text, "TOFU detected a binding conflict") == 0)
-	  /* No translation.  Use the English text.  */
-	  text =
-	    "Normally, there is only a single key associated with an email "
-	    "address.  However, people sometimes generate a new key if "
-	    "their key is too old or they think it might be compromised.  "
-	    "Alternatively, a new key may indicate a man-in-the-middle "
-	    "attack!  Before accepting this key, you should talk to or "
-	    "call the person to make sure this new key is legitimate.";
-        textbuf = format_text (text, 0, 72, 80);
-	es_fprintf (fp, "\n%s\n", text);
-        xfree (textbuf);
-      }
-
-    es_fputc ('\n', fp);
-
-    /* Add a NUL terminator.  */
-    es_fputc (0, fp);
-    if (es_fclose_snatch (fp, (void **) &prompt, NULL))
-      log_fatal ("error snatching memory stream\n");
-
-    /* I think showing the large message once is sufficient.  If we
-       would move it right before the cpr_get many lines will scroll
-       away and the user might not realize that he merely entered a
-       wrong choise (because he does not see that either).  As a small
-       benefit we allow C-L to redisplay everything.  */
-    tty_printf ("%s", prompt);
-    while (1)
-      {
-	char *response;
-
-        /* TRANSLATORS: Two letters (normally the lower and upper case
-           version of the hotkey) for each of the five choices.  If
-           there is only one choice in your language, repeat it.  */
-        choices = _("gG" "aA" "uU" "rR" "bB");
-	if (strlen (choices) != 10)
-	  log_bug ("Bad TOFU conflict translation!  Please report.");
-
-	response = cpr_get
-          ("tofu.conflict",
-           _("(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "));
-	trim_spaces (response);
-	cpr_kill_prompt ();
-        if (*response == CONTROL_L)
-          tty_printf ("%s", prompt);
-	else if (strlen (response) == 1)
-	  {
-	    char *choice = strchr (choices, *response);
-	    if (choice)
-	      {
-		int c = ((size_t) choice - (size_t) choices) / 2;
-
-		switch (c)
-		  {
-		  case 0: /* Good.  */
-		    policy = TOFU_POLICY_GOOD;
-		    trust_level = tofu_policy_to_trust_level (policy);
-		    break;
-		  case 1: /* Accept once.  */
-		    policy = TOFU_POLICY_ASK;
-		    trust_level =
-		      tofu_policy_to_trust_level (TOFU_POLICY_GOOD);
-		    break;
-		  case 2: /* Unknown.  */
-		    policy = TOFU_POLICY_UNKNOWN;
-		    trust_level = tofu_policy_to_trust_level (policy);
-		    break;
-		  case 3: /* Reject once.  */
-		    policy = TOFU_POLICY_ASK;
-		    trust_level =
-		      tofu_policy_to_trust_level (TOFU_POLICY_BAD);
-		    break;
-		  case 4: /* Bad.  */
-		    policy = TOFU_POLICY_BAD;
-		    trust_level = tofu_policy_to_trust_level (policy);
-		    break;
-		  default:
-		    log_bug ("c should be between 0 and 4 but it is %d!", c);
-		  }
-
-		if (record_binding (dbs, fingerprint, email, user_id,
-				    policy, 0) != 0)
-		  /* If there's an error registering the
-		     binding, don't save the signature.  */
-		  trust_level = _tofu_GET_TRUST_ERROR;
-
-		break;
-	      }
-	  }
-	xfree (response);
-      }
-
-    xfree (prompt);
-
-    signature_stats_free (stats);
-  }
+  /* If we get here, we need to ask the user about the binding.  */
+  ask_about_binding (dbs, db,
+                     &policy,
+                     &trust_level,
+                     bindings_with_this_email_count,
+                     bindings_with_this_email,
+                     conflict,
+                     fingerprint,
+                     email,
+                     user_id);
 
  out:
   if (change_conflicting_to_ask)
     {
       if (! may_ask)
-	/* If we weren't allowed to ask, also update this key as
-	   conflicting with itself.  */
-	rc = gpgsql_exec_printf
-	  (db->db, NULL, NULL, &err,
-	   "update bindings set policy = %d, conflict = %Q"
-	   " where email = %Q"
-	   "  and (policy = %d or (policy = %d and fingerprint = %Q));",
-	   TOFU_POLICY_ASK, fingerprint, email, TOFU_POLICY_AUTO,
-	   TOFU_POLICY_ASK, fingerprint);
+        {
+          /* If we weren't allowed to ask, also update this key as
+             conflicting with itself.  */
+          rc = gpgsql_exec_printf
+            (db->db, NULL, NULL, &sqerr,
+             "update bindings set policy = %d, conflict = %Q"
+             " where email = %Q"
+             "  and (policy = %d or (policy = %d and fingerprint = %Q));",
+             TOFU_POLICY_ASK, fingerprint, email, TOFU_POLICY_AUTO,
+             TOFU_POLICY_ASK, fingerprint);
+        }
       else
-	rc = gpgsql_exec_printf
-	  (db->db, NULL, NULL, &err,
-	   "update bindings set policy = %d, conflict = %Q"
-	   " where email = %Q and fingerprint != %Q and policy = %d;",
-	   TOFU_POLICY_ASK, fingerprint, email, fingerprint, TOFU_POLICY_AUTO);
+        {
+          rc = gpgsql_exec_printf
+            (db->db, NULL, NULL, &sqerr,
+             "update bindings set policy = %d, conflict = %Q"
+             " where email = %Q and fingerprint != %Q and policy = %d;",
+             TOFU_POLICY_ASK, fingerprint, email, fingerprint,
+             TOFU_POLICY_AUTO);
+        }
+
       if (rc)
 	{
-	  log_error (_("error changing TOFU policy: %s\n"), err);
-	  sqlite3_free (err);
-	  goto out;
+	  log_error (_("error changing TOFU policy: %s\n"), sqerr);
+	  sqlite3_free (sqerr);
+	  goto out;  /* FIXME */
 	}
     }
 
   xfree (conflict);
   free_strlist (bindings_with_this_email);
-  xfree (fingerprint_pp);
 
   return trust_level;
 }
