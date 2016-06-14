@@ -2258,7 +2258,7 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
 	{
 	  log_error (_("error changing TOFU policy: %s\n"), sqerr);
 	  sqlite3_free (sqerr);
-	  goto out;  /* FIXME */
+          sqerr = NULL;
 	}
     }
 
