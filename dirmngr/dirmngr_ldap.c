@@ -644,7 +644,7 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
   if (ret)
     {
       log_error (_("binding to '%s:%d' failed: %s\n"),
-                 host, port, strerror (errno));
+                 host, port, ldap_err2string (ret));
       ldap_unbind (ld);
       return -1;
     }
