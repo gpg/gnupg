@@ -85,6 +85,7 @@ gpg-connect-agent /bye
 @end example
 
 @noindent
+@efindex GPG_TTY
 You should always add the following lines to your @code{.bashrc} or
 whatever initialization file is used for all shell invocations:
 
@@ -295,6 +296,7 @@ debugging.
 @itemx --csh
 @opindex sh
 @opindex csh
+@efindex SHELL
 Format the info output in daemon mode for use with the standard Bourne
 shell or the C-shell respectively.  The default is to guess it based on
 the environment variable @code{SHELL} which is correct in almost all
@@ -309,6 +311,7 @@ should in general not be used to avoid X-sniffing attacks.
 @anchor{option --log-file}
 @item --log-file @var{file}
 @opindex log-file
+@efindex HKCU\Software\GNU\GnuPG:DefaultLogFile
 Append all logging output to @var{file}.  This is very helpful in seeing
 what the agent actually does.  If neither a log file nor a log file
 descriptor has been set on a Windows platform, the Registry entry
@@ -613,7 +616,7 @@ agent. By default they may all be found in the current home directory
 @table @file
 
 @item gpg-agent.conf
-@cindex gpg-agent.conf
+@efindex gpg-agent.conf
   This is the standard configuration file read by @command{gpg-agent} on
   startup.  It may contain any valid long option; the leading
   two dashes may not be entered and the option may not be abbreviated.
@@ -623,6 +626,7 @@ agent. By default they may all be found in the current home directory
   You should backup this file.
 
 @item trustlist.txt
+@efindex trustlist.txt
   This is the list of trusted keys.  You should backup this file.
 
   Comment lines, indicated by a leading hash mark, as well as empty
@@ -684,7 +688,7 @@ fails, try again using the chain validation model.
 
 
 @item sshcontrol
-@cindex sshcontrol
+@efindex sshcontrol
 This file is used when support for the secure shell agent protocol has
 been enabled (@pxref{option --enable-ssh-support}). Only keys present in
 this file are used in the SSH protocol.  You should backup this file.
@@ -718,6 +722,7 @@ implicitly added to this list; i.e. there is no need to list them.
 @end cartouche
 
 @item private-keys-v1.d/
+@efindex private-keys-v1.d
 
   This is the directory where gpg-agent stores the private keys.  Each
   key is stored in a file with the name made up of the keygrip and the
@@ -794,7 +799,7 @@ This signal is used for internal purposes.
 @node Agent Examples
 @section Examples
 
-It is important to set the GPG_TTY environment variable in
+It is important to set the environment variable @code{GPG_TTY} in
 your login shell, for example in the @file{~/.bashrc} init script:
 
 @cartouche

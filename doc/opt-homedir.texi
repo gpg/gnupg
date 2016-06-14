@@ -1,6 +1,8 @@
 @c This option is included at several places.
 @item --homedir @var{dir}
 @opindex homedir
+@efindex GNUPGHOME
+@efindex HKCU\Software\GNU\GnuPG:HomeDir
 Set the name of the home directory to @var{dir}. If this option is not
 used, the home directory defaults to @file{~/.gnupg}.  It is only
 recognized when given on the command line.  It also overrides any home
@@ -12,6 +14,7 @@ On Windows systems it is possible to install GnuPG as a portable
 application.  In this case only this command line option is
 considered, all other ways to set a home directory are ignored.
 
+@efindex gpgconf.ctl
 To install GnuPG as a portable application under Windows, create an
 empty file name @file{gpgconf.ctl} in the same directory as the tool
 @file{gpgconf.exe}.  The root of the installation is than that

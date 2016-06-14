@@ -357,9 +357,7 @@ suite hack and may thus not be used in the file name.
 @item --dirmngr-program @var{file}
 @opindex dirmngr-program
 Specify a dirmngr program to be used for @acronym{CRL} checks.  The
-default value is @file{@value{BINDIR}/dirmngr}.  This is only used as a
-fallback when the environment variable @code{DIRMNGR_INFO} is not set or
-a running dirmngr cannot be connected.
+default value is @file{@value{BINDIR}/dirmngr}.
 
 @item --prefer-system-dirmngr
 @opindex prefer-system-dirmngr
@@ -800,7 +798,7 @@ current home directory (@pxref{option --homedir}).
 @table @file
 
 @item gpgsm.conf
-@cindex gpgsm.conf
+@efindex gpgsm.conf
 This is the standard configuration file read by @command{gpgsm} on
 startup.  It may contain any valid long option; the leading two dashes
 may not be entered and the option may not be abbreviated.  This default
@@ -809,7 +807,7 @@ You should backup this file.
 
 
 @item policies.txt
-@cindex policies.txt
+@efindex policies.txt
 This is a list of allowed CA policies.  This file should list the
 object identifiers of the policies line by line.  Empty lines and
 lines starting with a hash mark are ignored.  Policies missing in this
@@ -829,7 +827,7 @@ like this:
 @c man:.RE
 
 @item qualified.txt
-@cindex qualified.txt
+@efindex qualified.txt
 This is the list of root certificates used for qualified certificates.
 They are defined as certificates capable of creating legally binding
 signatures in the same way as handwritten signatures are.  Comments
@@ -865,7 +863,7 @@ Because this software has not yet been approved for use with such
 certificates, appropriate notices will be shown to indicate this fact.
 
 @item help.txt
-@cindex help.txt
+@efindex help.txt
 This is plain text file with a few help entries used with
 @command{pinentry} as well as a large list of help items for
 @command{gpg} and @command{gpgsm}.  The standard file has English help
@@ -879,7 +877,7 @@ For a reference of the help file's syntax, please see the installed
 
 
 @item com-certs.pem
-@cindex com-certs.pem
+@efindex com-certs.pem
 This file is a collection of common certificates used to populated a
 newly created @file{pubring.kbx}.  An administrator may replace this
 file with a custom one.  The format is a concatenation of PEM encoded
@@ -901,20 +899,20 @@ they all live in in the current home directory (@pxref{option
 
 @table @file
 @item pubring.kbx
-@cindex pubring.kbx
+@efindex pubring.kbx
 This a database file storing the certificates as well as meta
 information.  For debugging purposes the tool @command{kbxutil} may be
 used to show the internal structure of this file.  You should backup
 this file.
 
 @item random_seed
-@cindex random_seed
+@efindex random_seed
 This content of this file is used to maintain the internal state of the
 random number generator across invocations.  The same file is used by
 other programs of this software too.
 
 @item S.gpg-agent
-@cindex S.gpg-agent
+@efindex S.gpg-agent
 If this file exists
 @command{gpgsm} will first try to connect to this socket for
 accessing @command{gpg-agent} before starting a new @command{gpg-agent}
@@ -1535,18 +1533,25 @@ set to the empty string, and if @code{<STRING>} is given it is set to
 that string.
 
 @item display
+@efindex DISPLAY
 Set the session environment variable @code{DISPLAY} is set to @var{value}.
 @item ttyname
+@efindex GPG_TTY
 Set the session environment variable @code{GPG_TTY} is set to @var{value}.
 @item ttytype
+@efindex TERM
 Set the session environment variable @code{TERM} is set to @var{value}.
 @item lc-ctype
+@efindex LC_CTYPE
 Set the session environment variable @code{LC_CTYPE} is set to @var{value}.
 @item lc-messages
+@efindex LC_MESSAGES
 Set the session environment variable @code{LC_MESSAGES} is set to @var{value}.
 @item xauthority
+@efindex XAUTHORITY
 Set the session environment variable @code{XAUTHORITY} is set to @var{value}.
 @item pinentry-user-data
+@efindex PINENTRY_USER_DATA
 Set the session environment variable @code{PINENTRY_USER_DATA} is set
 to @var{value}.
 

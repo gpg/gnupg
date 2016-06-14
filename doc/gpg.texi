@@ -1341,9 +1341,10 @@ executing it from GnuPG does not make it secure.
 
 @item --exec-path @code{string}
 @opindex exec-path
+@efindex PATH
 Sets a list of directories to search for photo viewers and keyserver
 helpers. If not provided, keyserver helpers use the compiled-in
-default directory, and photo viewers use the $PATH environment
+default directory, and photo viewers use the @code{PATH} environment
 variable.
 Note, that on W32 system this value is ignored when searching for
 keyserver helpers.
@@ -1886,9 +1887,7 @@ file name.
 @item --dirmngr-program @var{file}
 @opindex dirmngr-program
 Specify a dirmngr program to be used for keyserver access.  The
-default value is @file{@value{BINDIR}/dirmngr}.  This is only used as a
-fallback when the environment variable @code{DIRMNGR_INFO} is not set or
-a running dirmngr cannot be connected.
+default value is @file{@value{BINDIR}/dirmngr}.
 
 @item --no-autostart
 @opindex no-autostart
@@ -3162,7 +3161,7 @@ current home directory (@pxref{option --homedir}).
 @table @file
 
   @item gpg.conf
-  @cindex gpg.conf
+  @efindex gpg.conf
   This is the standard configuration file read by @command{@gpgname} on
   startup.  It may contain any valid long option; the leading two dashes
   may not be entered and the option may not be abbreviated.  This default
@@ -3184,13 +3183,21 @@ files; They all live in in the current home directory (@pxref{option
 
 
 @table @file
+  @item ~/.gnupg
+  @efindex ~/.gnupg
+  This is the default home directory which is used if neither the
+  environment variable @code{GNUPGHOME} nor the option
+  @option{--homedir} is given.
+
   @item ~/.gnupg/pubring.gpg
+  @efindex pubring.gpg
   The public keyring.  You should backup this file.
 
   @item ~/.gnupg/pubring.gpg.lock
   The lock file for the public keyring.
 
   @item ~/.gnupg/pubring.kbx
+  @efindex pubring.kbx
   The public keyring using a different format.  This file is sharred
   with @command{gpgsm}.  You should backup this file.
 
@@ -3198,13 +3205,19 @@ files; They all live in in the current home directory (@pxref{option
   The lock file for @file{pubring.kbx}.
 
   @item ~/.gnupg/secring.gpg
+  @efindex secring.gpg
   A secret keyring as used by GnuPG versions before 2.1.  It is not
   used by GnuPG 2.1 and later.
 
+  @item ~/.gnupg/secring.gpg.lock
+  The lock file for the secret keyring.
+
   @item ~/.gnupg/.gpg-v21-migrated
+  @efindex .gpg-v21-migrated
   File indicating that a migration to GnuPG 2.1 has been done.
 
   @item ~/.gnupg/trustdb.gpg
+  @efindex trustdb.gpg
   The trust database.  There is no need to backup this file; it is better
   to backup the ownertrust values (@pxref{option --export-ownertrust}).
 
@@ -3212,12 +3225,11 @@ files; They all live in in the current home directory (@pxref{option
   The lock file for the trust database.
 
   @item ~/.gnupg/random_seed
+  @efindex random_seed
   A file used to preserve the state of the internal random pool.
 
-  @item ~/.gnupg/secring.gpg.lock
-  The lock file for the secret keyring.
-
   @item ~/.gnupg/openpgp-revocs.d/
+  @efindex openpgp-revocs.d
   This is the directory where gpg stores pre-generated revocation
   certificates.  The file name corresponds to the OpenPGP fingerprint of
   the respective key.  It is suggested to backup those certificates and
@@ -3228,10 +3240,8 @@ files; They all live in in the current home directory (@pxref{option
   this backup closed away.
 
   @item @value{DATADIR}/options.skel
+  @efindex options.skel
   The skeleton options file.
-
-  @item @value{LIBDIR}/
-  Default location for extensions.
 
 @end table
 
@@ -3241,24 +3251,29 @@ Operation is further controlled by a few environment variables:
 @table @asis
 
   @item HOME
+  @efindex HOME
   Used to locate the default home directory.
 
   @item GNUPGHOME
+  @efindex GNUPGHOME
   If set directory used instead of "~/.gnupg".
 
   @item GPG_AGENT_INFO
-  This variable was used by GnuPG versions before 2.1
+  This variable is obsolete; it was used by GnuPG versions before 2.1.
 
   @item PINENTRY_USER_DATA
+  @efindex PINENTRY_USER_DATA
   This value is passed via gpg-agent to pinentry.  It is useful to convey
   extra information to a custom pinentry.
 
   @item COLUMNS
   @itemx LINES
+  @efindex COLUMNS
+  @efindex LINES
   Used to size some displays to the full size of the screen.
 
-
   @item LANGUAGE
+  @efindex LANGUAGE
   Apart from its use by GNU, it is used in the W32 version to override the
   language selection done through the Registry.  If used and set to a
   valid and available language name (@var{langid}), the file with the

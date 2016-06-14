@@ -15,13 +15,22 @@
 @macro mancont
 @end macro
 
+
+
 @c Create a separate index for command line options.
 @defcodeindex op
-@c Merge the standard indexes into a single one.
+@c Create an index vor environment variables and files.
+@defcodeindex ef
+
+@c Merge the function index into the concept index.
 @syncodeindex fn cp
+@c Merge the variable index into the concept index.
 @syncodeindex vr cp
+@c Merge the keystroke index into the concept index.
 @syncodeindex ky cp
+@c Merge the program index into the concept index.
 @syncodeindex pg cp
+@c Merge the data type index into the concept index.
 @syncodeindex tp cp
 @c %**end of header
 @copying
@@ -144,6 +153,7 @@ the administration and the architecture.
 
 * Glossary::            Short description of terms used.
 * Option Index::        Index to command line options.
+* Environment Index::   Index to environment variables and files.
 * Index::	        Index of concepts and symbol names.
 @end menu
 
@@ -191,6 +201,11 @@ the administration and the architecture.
 @unnumbered Option Index
 
 @printindex op
+
+@node Environment Index
+@unnumbered Environment Variable and File Index
+
+@printindex ef
 
 @node Index
 @unnumbered Index
