@@ -644,10 +644,11 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
 #ifdef LDAP_VERSION3
   if (ret == LDAP_PROTOCOL_ERROR)
     {
+      /* Protocol error could mean that the server only supports v3. */
       int version = LDAP_VERSION3;
-      /* Protocol error could mean that the server only supports v3 */
+      if (myopt->verbose)
+        log_info ("protocol error; retrying bind with v3 protocol\n");
       npth_unprotect ();
-      log_debug ("Protocol error, retrying bind with V3 Protocol. \n");
       ldap_set_option (ld, LDAP_OPT_PROTOCOL_VERSION, &version);
       ret = my_ldap_simple_bind_s (ld, myopt->user, myopt->pass);
       npth_protect ();
