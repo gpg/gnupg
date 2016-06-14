@@ -93,6 +93,7 @@ static int in_transaction;
 
 static void open_db(void);
 static void migrate_from_v2 (void);
+static void create_hashtable (TRUSTREC *vr, int type);
 
 static int
 take_write_lock (void)
@@ -469,6 +470,10 @@ create_version_record (void)
   rc = tdbio_write_record( &rec );
   if( !rc )
     tdbio_sync();
+
+  if (!rc)
+    create_hashtable (&rec, 0);
+
   return rc;
 }
 
@@ -760,8 +765,6 @@ get_trusthashrec(void)
 	if( rc )
 	    log_fatal( _("%s: error reading version record: %s\n"),
 					    db_name, g10_errstr(rc) );
-	if( !vr.r.ver.trusthashtbl )
-	    create_hashtable( &vr, 0 );
 
 	trusthashtbl = vr.r.ver.trusthashtbl;
     }
