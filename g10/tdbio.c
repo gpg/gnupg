@@ -119,6 +119,7 @@ static int in_transaction;
 
 
 static void open_db (void);
+static void create_hashtable (TRUSTREC *vr, int type);
 
 
 
@@ -582,8 +583,13 @@ create_version_record (void)
   rec.rectype = RECTYPE_VER;
   rec.recnum = 0;
   rc = tdbio_write_record (&rec);
+
   if (!rc)
     tdbio_sync ();
+
+  if (!rc)
+    create_hashtable (&rec, 0);
+
   return rc;
 }
 
@@ -957,8 +963,6 @@ get_trusthashrec(void)
       if (rc)
         log_fatal (_("%s: error reading version record: %s\n"),
                    db_name, gpg_strerror (rc) );
-      if (!vr.r.ver.trusthashtbl)
-        create_hashtable (&vr, 0);
 
       trusthashtbl = vr.r.ver.trusthashtbl;
     }
