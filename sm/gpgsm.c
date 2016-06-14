@@ -1559,6 +1559,8 @@ main ( int argc, char **argv)
   else if (!strcmp (opt.def_cipher_algoid, "AES")
            || !strcmp (opt.def_cipher_algoid, "AES128"))
     opt.def_cipher_algoid = "2.16.840.1.101.3.4.1.2";
+  else if (!strcmp (opt.def_cipher_algoid, "AES192") )
+    opt.def_cipher_algoid = "2.16.840.1.101.3.4.1.22";
   else if (!strcmp (opt.def_cipher_algoid, "AES256") )
     opt.def_cipher_algoid = "2.16.840.1.101.3.4.1.42";
   else if (!strcmp (opt.def_cipher_algoid, "SERPENT")
@@ -1566,7 +1568,7 @@ main ( int argc, char **argv)
     opt.def_cipher_algoid = "1.3.6.1.4.1.11591.13.2.2";
   else if (!strcmp (opt.def_cipher_algoid, "SERPENT192") )
     opt.def_cipher_algoid = "1.3.6.1.4.1.11591.13.2.22";
-  else if (!strcmp (opt.def_cipher_algoid, "SERPENT192") )
+  else if (!strcmp (opt.def_cipher_algoid, "SERPENT256") )
     opt.def_cipher_algoid = "1.3.6.1.4.1.11591.13.2.42";
   else if (!strcmp (opt.def_cipher_algoid, "SEED") )
     opt.def_cipher_algoid = "1.2.410.200004.1.4";
