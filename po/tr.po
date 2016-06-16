@@ -483,6 +483,11 @@ msgstr "soket için tuz alınırken hata\n"
 msgid "error binding socket to '%s': %s\n"
 msgstr "soket `%s'e bağlanırken hata: %s\n"
 
+#, fuzzy, c-format
+#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
+msgid "can't set permissions of '%s': %s\n"
+msgstr "UYARI: %s üzerinde izinler güvensiz: \"%s\"\n"
+
 #, c-format
 msgid "listen() failed: %s\n"
 msgstr "soket dinleme başarısız: %s\n"
@@ -501,11 +506,6 @@ msgstr "`%s' dizini oluşturulamıyor: %s\n"
 #| msgid "directory `%s' created\n"
 msgid "directory '%s' created\n"
 msgstr "dizin `%s' oluşturuldu\n"
-
-#, fuzzy, c-format
-#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
-msgid "can't set permissions of '%s': %s\n"
-msgstr "UYARI: %s üzerinde izinler güvensiz: \"%s\"\n"
 
 #, fuzzy, c-format
 #| msgid "stat() failed for `%s': %s\n"
@@ -2580,6 +2580,9 @@ msgstr "zaman damgası çelişkilerini uyarı olarak bildirir"
 msgid "|FD|write status info to this FD"
 msgstr "|FD|durum bilgisini bu FD'ye yazar"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Kullanımı: gpgv [seçenekler] [dosyalar] (yardım için -h)"
 
@@ -4083,6 +4086,11 @@ msgstr ""
 msgid "No key with this keygrip\n"
 msgstr "%d indisli bir yardımcı anahtar yok\n"
 
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "%u bite yuvarlandı\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "%s anahtarları %u bit ile %u bit arasında olmalı.\n"
@@ -4098,11 +4106,6 @@ msgstr "İstediğiniz anahtar uzunluğu nedir? (%u) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "İstenen anahtar uzunluğu: %u bit\n"
-
-#, fuzzy, c-format
-#| msgid "rounded up to %u bits\n"
-msgid "rounded to %u bits\n"
-msgstr "%u bite yuvarlandı\n"
 
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
@@ -5808,15 +5811,6 @@ msgid "error updating TOFU database: %s\n"
 msgstr "%s komutu gönderilirken hata: %s\n"
 
 #, c-format
-msgid "public key %s not found: %s\n"
-msgstr "genel anahtar %s yok: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error storing flags: %s\n"
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "bayraklar saklanırken hata: %s\n"
-
-#, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
 
@@ -5897,19 +5891,24 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error storing flags: %s\n"
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "bayraklar saklanırken hata: %s\n"
 
 #, fuzzy, c-format
 #| msgid "error creating a pipe: %s\n"
@@ -6072,6 +6071,10 @@ msgstr "`%s' güvence modelli güvence veritabanı sınaması için gereksiz\n"
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "`%s' güvence modelli güvence veritabanı güncellemesi için gereksiz\n"
 
+#, c-format
+msgid "public key %s not found: %s\n"
+msgstr "genel anahtar %s yok: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "lütfen bir --check-trustdb yapın\n"
 
@@ -6150,6 +6153,11 @@ msgstr "[    bilinmeyen   ]"
 
 msgid "[  undef ]"
 msgstr "[     tanımsız    ]"
+
+#, fuzzy
+#| msgid "never"
+msgid "[  never ]"
+msgstr "asla    "
 
 msgid "[marginal]"
 msgstr "[   şöyle böyle   ]"

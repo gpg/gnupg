@@ -460,6 +460,10 @@ msgid "error binding socket to '%s': %s\n"
 msgstr "Hiba %s-ra/-re küldéskor: %s\n"
 
 #, fuzzy, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "FIGYELEM: nem biztonságos engedélyek: %s \"%s\"\n"
+
+#, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "Frissítés sikertelen: %s.\n"
 
@@ -475,10 +479,6 @@ msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
 #, fuzzy, c-format
 msgid "directory '%s' created\n"
 msgstr "%s: Könyvtárat létrehoztam.\n"
-
-#, fuzzy, c-format
-msgid "can't set permissions of '%s': %s\n"
-msgstr "FIGYELEM: nem biztonságos engedélyek: %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -2553,6 +2553,9 @@ msgstr "idõbélyeg-konfliktus esetén csak figyelmeztessen"
 msgid "|FD|write status info to this FD"
 msgstr "|ÁL|állapotinformációk írása ÁL állományleíróra"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Használat: gpgv [opciók] [fájlok] (-h a súgóhoz)"
 
@@ -4033,6 +4036,11 @@ msgstr ""
 msgid "No key with this keygrip\n"
 msgstr "Nincs %d indexû felhasználóazonosító!\n"
 
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "Felkerekítve %u bitre.\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr ""
@@ -4048,11 +4056,6 @@ msgstr "Milyen kulcsméretet szeretne? (1024) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "A kívánt kulcsméret %u bit.\n"
-
-#, fuzzy, c-format
-#| msgid "rounded up to %u bits\n"
-msgid "rounded to %u bits\n"
-msgstr "Felkerekítve %u bitre.\n"
 
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
@@ -5734,14 +5737,6 @@ msgstr ""
 msgid "error updating TOFU database: %s\n"
 msgstr "Hiba %s-ra/-re küldéskor: %s\n"
 
-#, fuzzy, c-format
-msgid "public key %s not found: %s\n"
-msgstr "A(z) %08lX nyilvános kulcsot nem találom: %s.\n"
-
-#, fuzzy, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "Hiba \"%s\" olvasásakor: %s\n"
-
 #, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
@@ -5820,19 +5815,23 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -5989,6 +5988,10 @@ msgstr "Nincs szükség a bizalmi adatbázis ellenõrzésére.\n"
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "Nincs szükség a bizalmi adatbázis ellenõrzésére.\n"
 
+#, fuzzy, c-format
+msgid "public key %s not found: %s\n"
+msgstr "A(z) %08lX nyilvános kulcsot nem találom: %s.\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "Kérem, hajtson végre egy --check-trustdb parancsot!\n"
 
@@ -6065,6 +6068,10 @@ msgstr "Ismeretlen módú"
 
 msgid "[  undef ]"
 msgstr ""
+
+#, fuzzy
+msgid "[  never ]"
+msgstr "soha      "
 
 msgid "[marginal]"
 msgstr ""

@@ -461,6 +461,11 @@ msgstr "erreur de lecture du « nonce » de la socket\n"
 msgid "error binding socket to '%s': %s\n"
 msgstr "erreur de lien de la socket à « %s » : %s\n"
 
+#, fuzzy, c-format
+#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
+msgid "can't set permissions of '%s': %s\n"
+msgstr "Avertissement : les droits de %s ne sont pas sûrs « %s »\n"
+
 #, c-format
 msgid "listen() failed: %s\n"
 msgstr "échec de listen() : %s\n"
@@ -476,11 +481,6 @@ msgstr "impossible de créer le répertoire « %s » : %s\n"
 #, c-format
 msgid "directory '%s' created\n"
 msgstr "répertoire « %s » créé\n"
-
-#, fuzzy, c-format
-#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
-msgid "can't set permissions of '%s': %s\n"
-msgstr "Avertissement : les droits de %s ne sont pas sûrs « %s »\n"
 
 #, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -2496,6 +2496,9 @@ msgstr "convertir les conflits de date en avertissements"
 msgid "|FD|write status info to this FD"
 msgstr "|FD|écrire l'état sur ce descripteur"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Utilisation : gpgv [options] [fichiers] (-h pour l'aide)"
 
@@ -3930,6 +3933,10 @@ msgid "No key with this keygrip\n"
 msgstr "Pas de clef avec ce keygrip\n"
 
 #, c-format
+msgid "rounded to %u bits\n"
+msgstr "arrondie à %u bits\n"
+
+#, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "les clefs %s peuvent faire une taille comprise entre %u et %u bits.\n"
 
@@ -3944,10 +3951,6 @@ msgstr "Quelle taille de clef désirez-vous ? (%u) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "La taille demandée est %u bits\n"
-
-#, c-format
-msgid "rounded to %u bits\n"
-msgstr "arrondie à %u bits\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "Sélectionnez le type de courbe elliptique désiré :\n"
@@ -5669,15 +5672,6 @@ msgid "error updating TOFU database: %s\n"
 msgstr "erreur d'envoi de données : %s\n"
 
 #, c-format
-msgid "public key %s not found: %s\n"
-msgstr "clef publique %s introuvable : %s\n"
-
-#, fuzzy, c-format
-#| msgid "error setting OCSP target: %s\n"
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "erreur de configuration de la cible OCSP : %s\n"
-
-#, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
 
@@ -5758,19 +5752,24 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error setting OCSP target: %s\n"
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "erreur de configuration de la cible OCSP : %s\n"
 
 #, fuzzy, c-format
 #| msgid "error creating a pipe: %s\n"
@@ -5936,6 +5935,10 @@ msgstr ""
 "inutile de mettre à jour la base de confiance avec le modèle de\n"
 "     confiance « %s »\n"
 
+#, c-format
+msgid "public key %s not found: %s\n"
+msgstr "clef publique %s introuvable : %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "veuillez faire un --check-trustdb\n"
 
@@ -6013,6 +6016,11 @@ msgstr "[ inconnue]"
 
 msgid "[  undef ]"
 msgstr "[indéfinie]"
+
+#, fuzzy
+#| msgid "never"
+msgid "[  never ]"
+msgstr "jamais"
 
 msgid "[marginal]"
 msgstr "[marginale]"

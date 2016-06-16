@@ -477,6 +477,10 @@ msgid "error binding socket to '%s': %s\n"
 msgstr "virhe lähettäessä kohteeseen \"%s\": %s\n"
 
 #, fuzzy, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "VAROITUS: oikeudet kohteessa %s \"%s\" eivät ole turvallisia\"\n"
+
+#, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "päivitys epäonnistui: %s\n"
 
@@ -492,10 +496,6 @@ msgstr "hakemiston \"%s\" luominen ei onnistu: %s\n"
 #, fuzzy, c-format
 msgid "directory '%s' created\n"
 msgstr "%s: hakemisto luotu\n"
-
-#, fuzzy, c-format
-msgid "can't set permissions of '%s': %s\n"
-msgstr "VAROITUS: oikeudet kohteessa %s \"%s\" eivät ole turvallisia\"\n"
 
 #, fuzzy, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -2571,6 +2571,9 @@ msgstr "käsittele aikaleimakonfliktit pelkkinä varoituksina"
 msgid "|FD|write status info to this FD"
 msgstr "|FD|tilatiedot kirjoitetaan FD:iin"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Käyttö: gpgv [valitsimet] [tiedostot] (-h näyttää ohjeen)"
 
@@ -4057,6 +4060,11 @@ msgstr ""
 msgid "No key with this keygrip\n"
 msgstr "Indeksillä %d ei löydy käyttäjätunnusta\n"
 
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "pyöristetty %u bittiin\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr ""
@@ -4072,11 +4080,6 @@ msgstr "Minkä kokoisen avaimen haluat? (1024) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Halutun avaimen koko on %u bittiä\n"
-
-#, fuzzy, c-format
-#| msgid "rounded up to %u bits\n"
-msgid "rounded to %u bits\n"
-msgstr "pyöristetty %u bittiin\n"
 
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
@@ -5761,14 +5764,6 @@ msgstr ""
 msgid "error updating TOFU database: %s\n"
 msgstr "virhe lähettäessä kohteeseen \"%s\": %s\n"
 
-#, fuzzy, c-format
-msgid "public key %s not found: %s\n"
-msgstr "julkista avainta %08lX ei löydy: %s\n"
-
-#, fuzzy, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
-
 #, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
@@ -5847,19 +5842,23 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -6016,6 +6015,10 @@ msgstr "trustdb:n tarkistusta ei tarvita\n"
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "trustdb:n tarkistusta ei tarvita\n"
 
+#, fuzzy, c-format
+msgid "public key %s not found: %s\n"
+msgstr "julkista avainta %08lX ei löydy: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "tee --check-trustdb, kiitos\n"
 
@@ -6092,6 +6095,10 @@ msgstr "tuntematon "
 
 msgid "[  undef ]"
 msgstr ""
+
+#, fuzzy
+msgid "[  never ]"
+msgstr "ei koskaan"
 
 msgid "[marginal]"
 msgstr ""

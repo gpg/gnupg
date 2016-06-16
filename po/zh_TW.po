@@ -440,6 +440,11 @@ msgstr "為 socket 取得 nonce 時出錯\n"
 msgid "error binding socket to '%s': %s\n"
 msgstr "綁定 socket 至 '%s' 時出錯: %s\n"
 
+#, fuzzy, c-format
+#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
+msgid "can't set permissions of '%s': %s\n"
+msgstr "警告: %s 的權限 \"%s\" 並不安全\n"
+
 #, c-format
 msgid "listen() failed: %s\n"
 msgstr "listen() 失敗: %s\n"
@@ -455,11 +460,6 @@ msgstr "無法建立目錄 '%s': %s\n"
 #, c-format
 msgid "directory '%s' created\n"
 msgstr "目錄 '%s' 已建立\n"
-
-#, fuzzy, c-format
-#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
-msgid "can't set permissions of '%s': %s\n"
-msgstr "警告: %s 的權限 \"%s\" 並不安全\n"
 
 #, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -2388,6 +2388,9 @@ msgstr "僅把時間戳印矛盾視為警告"
 msgid "|FD|write status info to this FD"
 msgstr "|檔案描述|把狀態資訊寫入此指定檔案描述"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "用法: gpgv [選項] [檔案] (或用 -h 求助)"
 
@@ -3774,6 +3777,10 @@ msgid "No key with this keygrip\n"
 msgstr "沒有金鑰有此金鑰鑰柄\n"
 
 #, c-format
+msgid "rounded to %u bits\n"
+msgstr "加大到 %u 位元\n"
+
+#, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "%s 金鑰的長度可能介於 %u 位元和 %u 位元之間.\n"
 
@@ -3788,10 +3795,6 @@ msgstr "你想要用多大的金鑰尺寸? (%u) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "你所要求的金鑰尺寸是 %u 位元\n"
-
-#, c-format
-msgid "rounded to %u bits\n"
-msgstr "加大到 %u 位元\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "請選擇你要使用的橢圓曲線:\n"
@@ -5390,15 +5393,6 @@ msgid "error updating TOFU database: %s\n"
 msgstr "送出資料時出錯: %s\n"
 
 #, c-format
-msgid "public key %s not found: %s\n"
-msgstr "找不到公鑰 %s: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error setting OCSP target: %s\n"
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "設定 OCSP 目標時出錯: %s\n"
-
-#, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
 
@@ -5473,19 +5467,24 @@ msgid_plural " over the past %ld months."
 msgstr[0] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error setting OCSP target: %s\n"
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "設定 OCSP 目標時出錯: %s\n"
 
 #, fuzzy, c-format
 #| msgid "error creating a pipe: %s\n"
@@ -5635,6 +5634,10 @@ msgstr "在 '%s' 信任模型中並不需要檢查信任資料庫\n"
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "在 '%s' 信任模型中並不需要更新信任資料庫\n"
 
+#, c-format
+msgid "public key %s not found: %s\n"
+msgstr "找不到公鑰 %s: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "請做一次 --check-trustdb\n"
 
@@ -5714,6 +5717,11 @@ msgstr "未知"
 
 msgid "[  undef ]"
 msgstr ""
+
+#, fuzzy
+#| msgid "never     "
+msgid "[  never ]"
+msgstr "永遠不過期"
 
 msgid "[marginal]"
 msgstr ""

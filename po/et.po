@@ -460,6 +460,10 @@ msgid "error binding socket to '%s': %s\n"
 msgstr "viga teate saatmisel serverile `%s': %s\n"
 
 #, fuzzy, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "HOIATUS: ebaturvalised õigused %s \"%s\"\n"
+
+#, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "uuendamine ebaõnnestus: %s\n"
 
@@ -475,10 +479,6 @@ msgstr "kataloogi `%s' ei õnnestu luua: %s\n"
 #, fuzzy, c-format
 msgid "directory '%s' created\n"
 msgstr "%s: kataloog on loodud\n"
-
-#, fuzzy, c-format
-msgid "can't set permissions of '%s': %s\n"
-msgstr "HOIATUS: ebaturvalised õigused %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -2555,6 +2555,9 @@ msgstr "teata ajatemplite konfliktist ainult hoiatusega"
 msgid "|FD|write status info to this FD"
 msgstr "|FP|kirjuta olekuinfo sellesse failipidemesse"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Kasuta: gpgv [võtmed] [failid] (-h näitab abiinfot)"
 
@@ -4031,6 +4034,11 @@ msgstr ""
 msgid "No key with this keygrip\n"
 msgstr "Kasutaja ID numbriga %d puudub\n"
 
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "ümardatud üles %u bitini\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr ""
@@ -4046,11 +4054,6 @@ msgstr "Millist võtmepikkust te soovite? (1024) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Soovitud võtmepikkus on %u bitti\n"
-
-#, fuzzy, c-format
-#| msgid "rounded up to %u bits\n"
-msgid "rounded to %u bits\n"
-msgstr "ümardatud üles %u bitini\n"
 
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
@@ -5703,14 +5706,6 @@ msgstr ""
 msgid "error updating TOFU database: %s\n"
 msgstr "viga teate saatmisel serverile `%s': %s\n"
 
-#, fuzzy, c-format
-msgid "public key %s not found: %s\n"
-msgstr "ei leia avalikku võtit %08lX: %s\n"
-
-#, fuzzy, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "viga `%s' lugemisel: %s\n"
-
 #, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
@@ -5789,19 +5784,23 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "viga `%s' lugemisel: %s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -5957,6 +5956,10 @@ msgstr "trustdb kontrolliks puudub vajadus\n"
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "trustdb kontrolliks puudub vajadus\n"
 
+#, fuzzy, c-format
+msgid "public key %s not found: %s\n"
+msgstr "ei leia avalikku võtit %08lX: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "palun tehke --check-trustdb\n"
 
@@ -6033,6 +6036,10 @@ msgstr "tundmatu"
 
 msgid "[  undef ]"
 msgstr ""
+
+#, fuzzy
+msgid "[  never ]"
+msgstr "mitte kunagi"
 
 msgid "[marginal]"
 msgstr ""

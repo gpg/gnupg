@@ -464,6 +464,12 @@ msgstr "chyba při získávání soli pro socket\n"
 msgid "error binding socket to '%s': %s\n"
 msgstr "chyba při přilepování socketu na „%s“: %s\n"
 
+# TODO: i18n of first %s
+#, fuzzy, c-format
+#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
+msgid "can't set permissions of '%s': %s\n"
+msgstr "Varování: přístupová práva %s „%s“ nejsou bezpečná\n"
+
 #, c-format
 msgid "listen() failed: %s\n"
 msgstr "volání listen() selhalo: %s\n"
@@ -479,12 +485,6 @@ msgstr "nelze vytvořit adresář „%s“: %s\n"
 #, c-format
 msgid "directory '%s' created\n"
 msgstr "adresář „%s“ vytvořen\n"
-
-# TODO: i18n of first %s
-#, fuzzy, c-format
-#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
-msgid "can't set permissions of '%s': %s\n"
-msgstr "Varování: přístupová práva %s „%s“ nejsou bezpečná\n"
 
 #, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -2453,6 +2453,9 @@ msgstr "pouze varování při konfliktu časového razítka"
 msgid "|FD|write status info to this FD"
 msgstr "|FD|zapsat informace o stavu do tohoto FD"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Použití: gpg [volby] [soubory] (-h pro pomoc)"
 
@@ -3853,6 +3856,10 @@ msgid "No key with this keygrip\n"
 msgstr "Klíč s takovým keygripem neexistuje\n"
 
 #, c-format
+msgid "rounded to %u bits\n"
+msgstr "zaokrouhleno na %u bitů\n"
+
+#, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "klíč %s může mít délku v intervalu %u až %u bitů.\n"
 
@@ -3867,10 +3874,6 @@ msgstr "Jakou délku klíče si přejete? (%u) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Požadovaná délka klíče je %u bitů.\n"
-
-#, c-format
-msgid "rounded to %u bits\n"
-msgstr "zaokrouhleno na %u bitů\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "Prosím, vyberte, kterou eliptickou křivku chcete:\n"
@@ -5533,15 +5536,6 @@ msgid "error updating TOFU database: %s\n"
 msgstr "chyba při odesílání dat: %s\n"
 
 #, c-format
-msgid "public key %s not found: %s\n"
-msgstr "veřejný klíč %s nebyl nalezen: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error setting OCSP target: %s\n"
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "chyba při nastavování cíle OCSP: %s\n"
-
-#, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
 
@@ -5628,19 +5622,24 @@ msgstr[1] ""
 msgstr[2] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error setting OCSP target: %s\n"
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "chyba při nastavování cíle OCSP: %s\n"
 
 #, fuzzy, c-format
 #| msgid "error creating a pipe: %s\n"
@@ -5807,6 +5806,10 @@ msgstr "není nutné kontrolovat databázi důvěry s modelem „%s“\n"
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "není nutné aktualizovat databázi důvěry s modelem „%s“\n"
 
+#, c-format
+msgid "public key %s not found: %s\n"
+msgstr "veřejný klíč %s nebyl nalezen: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "prosím proveďte --check-trustdb\n"
 
@@ -5885,6 +5888,11 @@ msgstr "[  neznámá   ]"
 
 msgid "[  undef ]"
 msgstr "[nedefinovaná]"
+
+#, fuzzy
+#| msgid "never"
+msgid "[  never ]"
+msgstr "žádná"
 
 msgid "[marginal]"
 msgstr "[  částečná  ]"

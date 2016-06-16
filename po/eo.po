@@ -463,6 +463,10 @@ msgid "error binding socket to '%s': %s\n"
 msgstr "eraro dum sendo al '%s': %s\n"
 
 #, fuzzy, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "Averto: malsekuraj permesoj sur %s \"%s\"\n"
+
+#, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "aktualigo malsukcesis: %s\n"
 
@@ -477,10 +481,6 @@ msgstr "%s: ne povas krei dosierujon: %s\n"
 #, fuzzy, c-format
 msgid "directory '%s' created\n"
 msgstr "%s: dosierujo kreita\n"
-
-#, fuzzy, c-format
-msgid "can't set permissions of '%s': %s\n"
-msgstr "Averto: malsekuraj permesoj sur %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -2556,6 +2556,9 @@ msgstr "malkongruo de tempostampoj"
 msgid "|FD|write status info to this FD"
 msgstr "|FD|skribi statusinformojn al FD (dosierpriskribilo)"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 #, fuzzy
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
@@ -4046,6 +4049,11 @@ msgstr ""
 msgid "No key with this keygrip\n"
 msgstr "Mankas uzantidentigilo kun indekso %d\n"
 
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "rondigita øis %u bitoj\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr ""
@@ -4061,11 +4069,6 @@ msgstr "Kiun þlosilgrandon vi deziras? (1024) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Petita þlosilgrando estas %u bitoj\n"
-
-#, fuzzy, c-format
-#| msgid "rounded up to %u bits\n"
-msgid "rounded to %u bits\n"
-msgstr "rondigita øis %u bitoj\n"
 
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
@@ -5724,14 +5727,6 @@ msgstr ""
 msgid "error updating TOFU database: %s\n"
 msgstr "eraro dum sendo al '%s': %s\n"
 
-#, fuzzy, c-format
-msgid "public key %s not found: %s\n"
-msgstr "publika þlosilo %08lX ne trovita: %s\n"
-
-#, fuzzy, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "eraro dum legado de '%s': %s\n"
-
 #, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
@@ -5810,19 +5805,23 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -5978,6 +5977,10 @@ msgstr "kontrolo de fido-datenaro ne estas bezonata\n"
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "kontrolo de fido-datenaro ne estas bezonata\n"
 
+#, fuzzy, c-format
+msgid "public key %s not found: %s\n"
+msgstr "publika þlosilo %08lX ne trovita: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr ""
 
@@ -6052,6 +6055,9 @@ msgid "[ unknown]"
 msgstr "nekonata versio"
 
 msgid "[  undef ]"
+msgstr ""
+
+msgid "[  never ]"
 msgstr ""
 
 msgid "[marginal]"

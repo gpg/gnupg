@@ -515,6 +515,11 @@ msgstr "error obteniendo valor único para el socket\n"
 msgid "error binding socket to '%s': %s\n"
 msgstr "error enlazando el socket con `%s': %s\n"
 
+#, fuzzy, c-format
+#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
+msgid "can't set permissions of '%s': %s\n"
+msgstr "Aviso: permisos inseguros en %s \"%s\"\n"
+
 #, c-format
 msgid "listen() failed: %s\n"
 msgstr "listen() falló: %s\n"
@@ -533,11 +538,6 @@ msgstr "no se puede crear el directorio `%s': %s\n"
 #| msgid "directory `%s' created\n"
 msgid "directory '%s' created\n"
 msgstr "directorio `%s' creado\n"
-
-#, fuzzy, c-format
-#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
-msgid "can't set permissions of '%s': %s\n"
-msgstr "Aviso: permisos inseguros en %s \"%s\"\n"
 
 #, fuzzy, c-format
 #| msgid "stat() failed for `%s': %s\n"
@@ -2622,6 +2622,9 @@ msgstr "hacer que los conflictos de fecha-hora sean sólo un aviso"
 msgid "|FD|write status info to this FD"
 msgstr "|DF|escribe información de estado en este descriptor de fichero"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Uso: gpgv [opciones] [ficheros] (-h para ayuda)"
 
@@ -4066,6 +4069,11 @@ msgstr "No es un keygrip válido (se esperaban 40 dígitos hex)\n"
 msgid "No key with this keygrip\n"
 msgstr "No hay claves con ese keygrip\n"
 
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "redondeados a %u bits\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "las claves %s pueden tener entre %u y %u bits de longitud.\n"
@@ -4081,11 +4089,6 @@ msgstr "¿De qué tamaño quiere la clave? (%u) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "El tamaño requerido es de %u bits\n"
-
-#, fuzzy, c-format
-#| msgid "rounded up to %u bits\n"
-msgid "rounded to %u bits\n"
-msgstr "redondeados a %u bits\n"
 
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
@@ -5776,15 +5779,6 @@ msgid "error updating TOFU database: %s\n"
 msgstr "error enviando orden %s: %s\n"
 
 #, c-format
-msgid "public key %s not found: %s\n"
-msgstr "clave pública %s no encontrada: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error storing flags: %s\n"
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "error almacenando parámetros: %s\n"
-
-#, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
 
@@ -5865,19 +5859,24 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error storing flags: %s\n"
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "error almacenando parámetros: %s\n"
 
 #, fuzzy, c-format
 #| msgid "error creating a pipe: %s\n"
@@ -6044,6 +6043,10 @@ msgstr ""
 "no es necesario comprobar la base de datos de confianza\n"
 "con el modelo `%s'\n"
 
+#, c-format
+msgid "public key %s not found: %s\n"
+msgstr "clave pública %s no encontrada: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "por favor haga un --check-trustdb\n"
 
@@ -6123,6 +6126,11 @@ msgstr "[desconocida]"
 
 msgid "[  undef ]"
 msgstr "[no definida]"
+
+#, fuzzy
+#| msgid "never"
+msgid "[  never ]"
+msgstr "nunca"
 
 msgid "[marginal]"
 msgstr "[   dudosa  ]"

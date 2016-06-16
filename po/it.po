@@ -460,6 +460,10 @@ msgid "error binding socket to '%s': %s\n"
 msgstr "errore leggendo `%s': %s\n"
 
 #, fuzzy, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "ATTENZIONE: i permessi \"%s\" di %s sono insicuri\n"
+
+#, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "aggiornamento fallito: %s\n"
 
@@ -475,10 +479,6 @@ msgstr "impossibile creare la directory `%s': %s\n"
 #, fuzzy, c-format
 msgid "directory '%s' created\n"
 msgstr "%s: directory creata\n"
-
-#, fuzzy, c-format
-msgid "can't set permissions of '%s': %s\n"
-msgstr "ATTENZIONE: i permessi \"%s\" di %s sono insicuri\n"
 
 #, fuzzy, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -2564,6 +2564,9 @@ msgstr "segnala i conflitti di data solo con un avvertimento"
 msgid "|FD|write status info to this FD"
 msgstr "|FD|scrivi le informazioni di stato sul FD"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Uso: gpgv [opzioni] [file] (-h per l'aiuto)"
 
@@ -4057,6 +4060,11 @@ msgstr ""
 msgid "No key with this keygrip\n"
 msgstr "Nessun user ID con l'indice %d\n"
 
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "arrotondate a %u bit\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr ""
@@ -4072,11 +4080,6 @@ msgstr "Di che dimensioni vuoi la chiave? (1024) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "La dimensione richiesta della chiave è %u bit\n"
-
-#, fuzzy, c-format
-#| msgid "rounded up to %u bits\n"
-msgid "rounded to %u bits\n"
-msgstr "arrotondate a %u bit\n"
 
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
@@ -5765,14 +5768,6 @@ msgstr ""
 msgid "error updating TOFU database: %s\n"
 msgstr "errore leggendo `%s': %s\n"
 
-#, fuzzy, c-format
-msgid "public key %s not found: %s\n"
-msgstr "chiave pubblica %08lX non trovata: %s\n"
-
-#, fuzzy, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "errore leggendo `%s': %s\n"
-
 #, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
@@ -5851,19 +5846,23 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "errore leggendo `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -6020,6 +6019,10 @@ msgstr "non è necessario un controllo del trustdb\n"
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "non è necessario un controllo del trustdb\n"
 
+#, fuzzy, c-format
+msgid "public key %s not found: %s\n"
+msgstr "chiave pubblica %08lX non trovata: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "per favore usa --check-trustdb\n"
 
@@ -6096,6 +6099,10 @@ msgstr "sconosciuto"
 
 msgid "[  undef ]"
 msgstr ""
+
+#, fuzzy
+msgid "[  never ]"
+msgstr "mai       "
 
 msgid "[marginal]"
 msgstr ""

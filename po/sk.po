@@ -465,6 +465,10 @@ msgid "error binding socket to '%s': %s\n"
 msgstr "chyba pri posielaní na `%s': %s\n"
 
 #, fuzzy, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "VAROVANIE: prístupové práva pre %s nie sú nastavené bezpeène \"%s\"\n"
+
+#, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "aktualizácia zlyhala: %s\n"
 
@@ -480,10 +484,6 @@ msgstr "nemô¾em vytvori» adresár `%s': %s\n"
 #, fuzzy, c-format
 msgid "directory '%s' created\n"
 msgstr "%s: adresár vytvorený\n"
-
-#, fuzzy, c-format
-msgid "can't set permissions of '%s': %s\n"
-msgstr "VAROVANIE: prístupové práva pre %s nie sú nastavené bezpeène \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -2571,6 +2571,9 @@ msgstr "konflikt èasového razítka"
 msgid "|FD|write status info to this FD"
 msgstr "|FD|zapísa» informácie o stave do tohto FD"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Pou¾itie: gpgv [mo¾nosti] [súbory] (-h pre pomoc)"
 
@@ -4053,6 +4056,11 @@ msgstr ""
 msgid "No key with this keygrip\n"
 msgstr "Neexistuje identifikátor u¾ívateµa s indexom %d\n"
 
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "zaokrúhlené na %u bitov\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr ""
@@ -4068,11 +4076,6 @@ msgstr "Akú veµkos» kµúèa si prajete? (1024) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Po¾adovaná då¾ka kµúèa je %u bitov.\n"
-
-#, fuzzy, c-format
-#| msgid "rounded up to %u bits\n"
-msgid "rounded to %u bits\n"
-msgstr "zaokrúhlené na %u bitov\n"
 
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
@@ -5749,14 +5752,6 @@ msgstr ""
 msgid "error updating TOFU database: %s\n"
 msgstr "chyba pri posielaní na `%s': %s\n"
 
-#, fuzzy, c-format
-msgid "public key %s not found: %s\n"
-msgstr "verejný kµúè %08lX nebol nájdený: %s\n"
-
-#, fuzzy, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "chyba pri èítaní `%s': %s\n"
-
 #, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
@@ -5835,19 +5830,23 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "chyba pri èítaní `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -6004,6 +6003,10 @@ msgstr "nie je nutné kontrolova» databázu dôvery\n"
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "nie je nutné kontrolova» databázu dôvery\n"
 
+#, fuzzy, c-format
+msgid "public key %s not found: %s\n"
+msgstr "verejný kµúè %08lX nebol nájdený: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "prosím vykonajte --check-trustdb\n"
 
@@ -6080,6 +6083,10 @@ msgstr "neznáme"
 
 msgid "[  undef ]"
 msgstr ""
+
+#, fuzzy
+msgid "[  never ]"
+msgstr "nikdy     "
 
 msgid "[marginal]"
 msgstr ""

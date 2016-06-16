@@ -516,6 +516,12 @@ msgstr "fel vid hämtning av nonce för uttaget\n"
 msgid "error binding socket to '%s': %s\n"
 msgstr "fel när \"%s\" bands till uttag: %s\n"
 
+# Extension är vad? FIXME
+#, fuzzy, c-format
+#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
+msgid "can't set permissions of '%s': %s\n"
+msgstr "Varning: osäkra rättigheter på %s \"%s\"\n"
+
 #, c-format
 msgid "listen() failed: %s\n"
 msgstr "listen() misslyckades: %s\n"
@@ -534,12 +540,6 @@ msgstr "%s: kan inte skapa katalog: %s\n"
 #| msgid "directory `%s' created\n"
 msgid "directory '%s' created\n"
 msgstr "katalogen \"%s\" skapades\n"
-
-# Extension är vad? FIXME
-#, fuzzy, c-format
-#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
-msgid "can't set permissions of '%s': %s\n"
-msgstr "Varning: osäkra rättigheter på %s \"%s\"\n"
 
 #, fuzzy, c-format
 #| msgid "stat() failed for `%s': %s\n"
@@ -2652,6 +2652,9 @@ msgstr "utfärda enbart en varning när tidsstämpeln är orimlig"
 msgid "|FD|write status info to this FD"
 msgstr "|FD|skriv statusinformation till denna FD"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Användning: gpgv [flaggor] [filer] (-h för hjälp)"
 
@@ -4129,6 +4132,11 @@ msgstr "Inte en giltig nyckelhash (förväntade 40 hexadecimala siffror)\n"
 msgid "No key with this keygrip\n"
 msgstr "Ingen nyckel med denna nyckelhash\n"
 
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "avrundade uppåt till %u bitar\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "%s-nycklar kan vara mellan %u och %u bitar långa.\n"
@@ -4144,11 +4152,6 @@ msgstr "Vilken nyckelstorlek vill du ha? (%u) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Den efterfrågade nyckelstorleken är %u bitar\n"
-
-#, fuzzy, c-format
-#| msgid "rounded up to %u bits\n"
-msgid "rounded to %u bits\n"
-msgstr "avrundade uppåt till %u bitar\n"
 
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
@@ -5882,15 +5885,6 @@ msgid "error updating TOFU database: %s\n"
 msgstr "fel vid sändning av %s-kommando: %s\n"
 
 #, c-format
-msgid "public key %s not found: %s\n"
-msgstr "publika nyckeln %s hittades inte: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error storing flags: %s\n"
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "fel vid lagring av flaggor: %s\n"
-
-#, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
 
@@ -5971,19 +5965,24 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error storing flags: %s\n"
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "fel vid lagring av flaggor: %s\n"
 
 #, fuzzy, c-format
 #| msgid "error creating a pipe: %s\n"
@@ -6151,6 +6150,10 @@ msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr ""
 "det behövs ingen uppdatering av tillitsdatabasen med tillitsmodellen \"%s\"\n"
 
+#, c-format
+msgid "public key %s not found: %s\n"
+msgstr "publika nyckeln %s hittades inte: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "gör en kontroll av tillitsdatabasen --check-trustdb\n"
 
@@ -6240,6 +6243,11 @@ msgstr "[    okänt    ]"
 
 msgid "[  undef ]"
 msgstr "[ odefinierad ]"
+
+#, fuzzy
+#| msgid "never"
+msgid "[  never ]"
+msgstr "aldrig"
 
 msgid "[marginal]"
 msgstr "[  marginell  ]"

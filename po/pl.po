@@ -488,6 +488,11 @@ msgstr "b³±d podczas pobierania nonce z gniazda\n"
 msgid "error binding socket to '%s': %s\n"
 msgstr "b³±d podczas przypisywania gniazda do ,,%s'': %s\n"
 
+#, fuzzy, c-format
+#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
+msgid "can't set permissions of '%s': %s\n"
+msgstr "Ostrze¿enie: niebezpieczne prawa dostêpu do %s ,,%s''\n"
+
 #, c-format
 msgid "listen() failed: %s\n"
 msgstr "listen() nie powiod³o siê: %s\n"
@@ -506,11 +511,6 @@ msgstr "nie mo¿na utworzyæ katalogu ,,%s'': %s\n"
 #| msgid "directory `%s' created\n"
 msgid "directory '%s' created\n"
 msgstr "katalog ,,%s'' utworzony\n"
-
-#, fuzzy, c-format
-#| msgid "Warning: unsafe permissions on %s \"%s\"\n"
-msgid "can't set permissions of '%s': %s\n"
-msgstr "Ostrze¿enie: niebezpieczne prawa dostêpu do %s ,,%s''\n"
 
 #, fuzzy, c-format
 #| msgid "stat() failed for `%s': %s\n"
@@ -2601,6 +2601,9 @@ msgstr "nie traktowaæ konfliktu datowników jako b³êdu"
 msgid "|FD|write status info to this FD"
 msgstr "|FD|pisanie opisu stanu do deskryptora FD"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Wywo³anie: gpgv [opcje] [pliki] (-h podaje pomoc)"
 
@@ -4077,6 +4080,11 @@ msgstr "Nieprawid³owy uchwyt klucza (oczekiwano 40 cyfr szesnastkowych)\n"
 msgid "No key with this keygrip\n"
 msgstr "Brak klucza o tym uchwycie\n"
 
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "zaokr±glono do %u bitów\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "Klucze %s bêd± mia³y od %u do %u bitów d³ugo¶ci.\n"
@@ -4092,11 +4100,6 @@ msgstr "Jakiej d³ugo¶ci klucz wygenerowaæ? (%u) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "¯±dana d³ugo¶æ klucza to %u bitów.\n"
-
-#, fuzzy, c-format
-#| msgid "rounded up to %u bits\n"
-msgid "rounded to %u bits\n"
-msgstr "zaokr±glono do %u bitów\n"
 
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
@@ -5825,15 +5828,6 @@ msgid "error updating TOFU database: %s\n"
 msgstr "b³±d wysy³ania polecenia %s: %s\n"
 
 #, c-format
-msgid "public key %s not found: %s\n"
-msgstr "klucz publiczny %s nie odnaleziony: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error storing flags: %s\n"
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "b³±d zapisywania flag: %s\n"
-
-#, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
 
@@ -5920,19 +5914,24 @@ msgstr[1] ""
 msgstr[2] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error storing flags: %s\n"
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "b³±d zapisywania flag: %s\n"
 
 #, fuzzy, c-format
 #| msgid "error creating a pipe: %s\n"
@@ -6102,6 +6101,10 @@ msgstr "sprawdzanie bazy jest niepotrzebne przy modelu zaufania ,,%s''\n"
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "aktualizacja bazy jest niepotrzebna przy modelu zaufania ,,%s''\n"
 
+#, c-format
+msgid "public key %s not found: %s\n"
+msgstr "klucz publiczny %s nie odnaleziony: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "nale¿y uruchomiæ gpg z opcj± ,,--check-trustdb''\n"
 
@@ -6183,6 +6186,11 @@ msgstr "[    nieznane   ]"
 
 msgid "[  undef ]"
 msgstr "[  nieokre¶lone ]"
+
+#, fuzzy
+#| msgid "never"
+msgid "[  never ]"
+msgstr "nigdy"
 
 msgid "[marginal]"
 msgstr "[   marginalne  ]"

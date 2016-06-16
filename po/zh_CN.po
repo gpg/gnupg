@@ -473,6 +473,10 @@ msgid "error binding socket to '%s': %s\n"
 msgstr "在‘%s’中寻找信任度记录时出错：%s\n"
 
 #, fuzzy, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "警告：扩展模块‘%s’权限不安全\n"
+
+#, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "更新失败：%s\n"
 
@@ -489,10 +493,6 @@ msgstr "无法建立目录‘%s’：%s\n"
 #| msgid "directory `%s' created\n"
 msgid "directory '%s' created\n"
 msgstr "已创建目录‘%s’\n"
-
-#, fuzzy, c-format
-msgid "can't set permissions of '%s': %s\n"
-msgstr "警告：扩展模块‘%s’权限不安全\n"
 
 #, fuzzy, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -2531,6 +2531,9 @@ msgstr "把时间戳矛盾仅视为警告"
 msgid "|FD|write status info to this FD"
 msgstr "|FD|把状态信息写入文件描述符 FD"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "用法：gpgv [选项] [文件] (用 -h 求助)"
 
@@ -3948,6 +3951,11 @@ msgstr ""
 msgid "No key with this keygrip\n"
 msgstr "没有索引为 %d 的子钥\n"
 
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "舍入到 %u 位\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "%s 密钥长度应在 %u 位与 %u 位之间。\n"
@@ -3963,11 +3971,6 @@ msgstr "您想要用多大的密钥尺寸？(%u)"
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "您所要求的密钥尺寸是 %u 位\n"
-
-#, fuzzy, c-format
-#| msgid "rounded up to %u bits\n"
-msgid "rounded to %u bits\n"
-msgstr "舍入到 %u 位\n"
 
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
@@ -5599,14 +5602,6 @@ msgid "error updating TOFU database: %s\n"
 msgstr "读取‘%s’时出错：%s\n"
 
 #, c-format
-msgid "public key %s not found: %s\n"
-msgstr "找不到公钥 %s：%s\n"
-
-#, fuzzy, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "读取‘%s’时出错：%s\n"
-
-#, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
 
@@ -5685,19 +5680,23 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "读取‘%s’时出错：%s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -5855,6 +5854,10 @@ msgstr "使用‘%s’信任模型时不需要检查信任度数据库\n"
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "使用‘%s’信任模型时不需要更新信任度数据库\n"
 
+#, c-format
+msgid "public key %s not found: %s\n"
+msgstr "找不到公钥 %s：%s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "请执行一次 --check-trustdb\n"
 
@@ -5931,6 +5934,11 @@ msgstr "[ 未知 ]"
 
 msgid "[  undef ]"
 msgstr "[未定义]"
+
+#, fuzzy
+#| msgid "never"
+msgid "[  never ]"
+msgstr "从不"
 
 msgid "[marginal]"
 msgstr "[ 勉强 ]"

@@ -466,6 +466,10 @@ msgid "error binding socket to '%s': %s\n"
 msgstr "feil ved søking etter tillitspost i «%s»: %s\n"
 
 #, fuzzy, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "ADVARSEL: utrygge rettigheter på utvidelsen «%s»\n"
+
+#, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "oppdatering mislyktes: %s\n"
 
@@ -482,10 +486,6 @@ msgstr "kan ikke opprette katalogen «%s»: %s\n"
 #| msgid "directory `%s' created\n"
 msgid "directory '%s' created\n"
 msgstr "katalogen «%s» ble opprettet\n"
-
-#, fuzzy, c-format
-msgid "can't set permissions of '%s': %s\n"
-msgstr "ADVARSEL: utrygge rettigheter på utvidelsen «%s»\n"
 
 #, fuzzy, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -2533,6 +2533,9 @@ msgstr "la konflikter mellom tidsstempler bare være en advarsel"
 msgid "|FD|write status info to this FD"
 msgstr "|FD|skrive statusinfo til denne FD"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Bruksmåte: gpgv [valg] [filer] (-h for hjelp)"
 
@@ -3933,6 +3936,11 @@ msgstr ""
 msgid "No key with this keygrip\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "rundet opp til %u bits\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr ""
@@ -3948,11 +3956,6 @@ msgstr "Hvilken nøkkelstørrelse vil du ha? (%u) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Ønsket nøkkelstørrelse er %u bits\n"
-
-#, fuzzy, c-format
-#| msgid "rounded up to %u bits\n"
-msgid "rounded to %u bits\n"
-msgstr "rundet opp til %u bits\n"
 
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
@@ -5604,14 +5607,6 @@ msgid "error updating TOFU database: %s\n"
 msgstr "feil ved lesing av «%s»: %s\n"
 
 #, c-format
-msgid "public key %s not found: %s\n"
-msgstr "fant ikke offentlig nøkkel %s: %s\n"
-
-#, fuzzy, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "feil ved lesing av «%s»: %s\n"
-
-#, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
 
@@ -5690,19 +5685,23 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "feil ved lesing av «%s»: %s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -5858,6 +5857,10 @@ msgstr ""
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr ""
 
+#, c-format
+msgid "public key %s not found: %s\n"
+msgstr "fant ikke offentlig nøkkel %s: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr ""
 
@@ -5930,6 +5933,9 @@ msgstr "[ ukjent]"
 
 msgid "[  undef ]"
 msgstr "[ udef ]"
+
+msgid "[  never ]"
+msgstr ""
 
 msgid "[marginal]"
 msgstr ""

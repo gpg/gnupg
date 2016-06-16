@@ -465,6 +465,10 @@ msgid "error binding socket to '%s': %s\n"
 msgstr "kesalahan mengirim ke `%s': %s\n"
 
 #, fuzzy, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "Peringatan: permisi tidak aman pada %s \"%s\"\n"
+
+#, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "gagal memperbarui: %s\n"
 
@@ -480,10 +484,6 @@ msgstr "tidak dapat membuat direktori `%s': %s\n"
 #, fuzzy, c-format
 msgid "directory '%s' created\n"
 msgstr "%s: direktori tercipta\n"
-
-#, fuzzy, c-format
-msgid "can't set permissions of '%s': %s\n"
-msgstr "Peringatan: permisi tidak aman pada %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -2558,6 +2558,9 @@ msgstr "buat timestamp konflik hanya sebagai peringatan"
 msgid "|FD|write status info to this FD"
 msgstr "|FD|tulis info status ke FD ini"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Pemakaian: gpgv [opsi] [file] (-h untuk bantuan)"
 
@@ -4042,6 +4045,11 @@ msgstr ""
 msgid "No key with this keygrip\n"
 msgstr "Tidak ada ID user dengan index %d\n"
 
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "dibulatkan hingga %u bit\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr ""
@@ -4057,11 +4065,6 @@ msgstr "Keysize yang anda inginkan? (1024) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Keysize yang diminta adalah %u bit\n"
-
-#, fuzzy, c-format
-#| msgid "rounded up to %u bits\n"
-msgid "rounded to %u bits\n"
-msgstr "dibulatkan hingga %u bit\n"
 
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
@@ -5724,14 +5727,6 @@ msgstr ""
 msgid "error updating TOFU database: %s\n"
 msgstr "kesalahan mengirim ke `%s': %s\n"
 
-#, fuzzy, c-format
-msgid "public key %s not found: %s\n"
-msgstr "kunci publik %08lX tidak ditemukan: %s\n"
-
-#, fuzzy, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "kesalahan membaca `%s': %s\n"
-
 #, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
@@ -5810,19 +5805,23 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "kesalahan membaca `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -5978,6 +5977,10 @@ msgstr "tidak perlu memeriksa trustdb\n"
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "tidak perlu memeriksa trustdb\n"
 
+#, fuzzy, c-format
+msgid "public key %s not found: %s\n"
+msgstr "kunci publik %08lX tidak ditemukan: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "lakukanlah --check-trustdb\n"
 
@@ -6054,6 +6057,10 @@ msgstr "tidak dikenal"
 
 msgid "[  undef ]"
 msgstr ""
+
+#, fuzzy
+msgid "[  never ]"
+msgstr "tidak pernah..."
 
 msgid "[marginal]"
 msgstr ""

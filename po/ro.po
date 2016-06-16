@@ -475,6 +475,10 @@ msgid "error binding socket to '%s': %s\n"
 msgstr "eroare trimitere la `%s': %s\n"
 
 #, fuzzy, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "AVERTISMENT: permisiuni nesigure (unsafe) pentru extensia `%s'\n"
+
+#, fuzzy, c-format
 msgid "listen() failed: %s\n"
 msgstr "actualizarea a eºuat: %s\n"
 
@@ -491,10 +495,6 @@ msgstr "nu pot crea directorul `%s': %s\n"
 #| msgid "directory `%s' created\n"
 msgid "directory '%s' created\n"
 msgstr "director `%s' creat\n"
-
-#, fuzzy, c-format
-msgid "can't set permissions of '%s': %s\n"
-msgstr "AVERTISMENT: permisiuni nesigure (unsafe) pentru extensia `%s'\n"
 
 #, fuzzy, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -2586,6 +2586,9 @@ msgstr "dã numai un avertisment la conflicte de timestamp"
 msgid "|FD|write status info to this FD"
 msgstr "|FD|scrie informaþii de stare în acest FD"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr ""
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Folosire: gpgv [opþiuni] [fiºiere] (-h pentru ajutor)"
 
@@ -4043,6 +4046,11 @@ msgstr ""
 msgid "No key with this keygrip\n"
 msgstr "Nici o subcheie cu indicele %d\n"
 
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "rotunjitã prin adaos la %u biþi\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "cheile %s pot avea lungimea între %u ºi %u biþi.\n"
@@ -4058,11 +4066,6 @@ msgstr "Ce lungime de cheie doriþi? (%u) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Lungimea cheii necesarã este %u biþi\n"
-
-#, fuzzy, c-format
-#| msgid "rounded up to %u bits\n"
-msgid "rounded to %u bits\n"
-msgstr "rotunjitã prin adaos la %u biþi\n"
 
 #, fuzzy
 #| msgid "Please select what kind of key you want:\n"
@@ -5754,14 +5757,6 @@ msgid "error updating TOFU database: %s\n"
 msgstr "eroare trimitere la `%s': %s\n"
 
 #, c-format
-msgid "public key %s not found: %s\n"
-msgstr "cheia publicã %s nu a fost gãsitã: %s\n"
-
-#, fuzzy, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "eroare la citire `%s': %s\n"
-
-#, c-format
 msgid "The binding %s is NOT known."
 msgstr ""
 
@@ -5840,19 +5835,23 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "eroare la citire `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -6011,6 +6010,10 @@ msgstr "nu e nevoie de o verificare trustdb cu modelul de încredere `%s'\n"
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "nu e nevoie de o actualizare trustdb cu modelul de încredere `%s'\n"
 
+#, c-format
+msgid "public key %s not found: %s\n"
+msgstr "cheia publicã %s nu a fost gãsitã: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "vã rugãm faceþi un --check-trustdb\n"
 
@@ -6088,6 +6091,11 @@ msgstr "[necunoscutã]"
 
 msgid "[  undef ]"
 msgstr "[  nedef ]"
+
+#, fuzzy
+#| msgid "never"
+msgid "[  never ]"
+msgstr "niciodatã"
 
 msgid "[marginal]"
 msgstr "[marginal]"
