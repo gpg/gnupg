@@ -289,6 +289,8 @@ void keyedit_quick_adduid (ctrl_t ctrl, const char *username,
                            const char *newuid);
 void keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
                            const char *usagestr, const char *expirestr);
+void keyedit_quick_revuid (ctrl_t ctrl, const char *username,
+                           const char *uidtorev);
 void keyedit_quick_sign (ctrl_t ctrl, const char *fpr,
                          strlist_t uids, strlist_t locusr, int local);
 void show_basic_key_info (KBNODE keyblock);
@@ -407,6 +409,7 @@ int gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr);
 int revocation_reason_build_cb( PKT_signature *sig, void *opaque );
 struct revocation_reason_info *
 		ask_revocation_reason( int key_rev, int cert_rev, int hint );
+struct revocation_reason_info * get_default_uid_revocation_reason(void);
 void release_revocation_reason_info( struct revocation_reason_info *reason );
 
 /*-- keylist.c --*/

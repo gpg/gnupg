@@ -1041,6 +1041,15 @@ the interactive sub-command @code{adduid} of @option{--edit-key} the
 white space removed, it is expected to be UTF-8 encoded, and no checks
 on its form are applied.
 
+@item --quick-revuid  @var{user-id} @var{user-id-to-revoke}
+@opindex quick-revuid
+This command revokes a User ID on an existing key.  It cannot be used
+to revoke the last User ID on key (some non-revoked User ID must
+remain), with revocation reason ``User ID is no longer valid''.  If
+you want to specify a different revocation reason, or to supply
+supplementary revocation text, you should use the interactive
+sub-command @code{revuid} of @option{--edit-key}.
+
 @item --passwd @var{user_id}
 @opindex passwd
 Change the passphrase of the secret key belonging to the certificate

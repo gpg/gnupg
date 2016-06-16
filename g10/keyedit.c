@@ -87,6 +87,9 @@ static int real_uids_left (KBNODE keyblock);
 static int count_selected_keys (KBNODE keyblock);
 static int menu_revsig (KBNODE keyblock);
 static int menu_revuid (ctrl_t ctrl, kbnode_t keyblock);
+static int core_revuid (ctrl_t ctrl, kbnode_t keyblock, KBNODE node,
+                        const struct revocation_reason_info *reason,
+                        int *modified);
 static int menu_revkey (KBNODE pub_keyblock);
 static int menu_revsubkey (KBNODE pub_keyblock);
 #ifndef NO_TRUST_MODELS
@@ -2933,6 +2936,110 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
 
  leave:
   xfree (uidstring);
+  release_kbnode (keyblock);
+  keydb_release (kdbhd);
+}
+
+/* Unattended revokation of a keyid.  USERNAME specifies the
+   key. UIDTOREV is the user id revoke from the key.  */
+void
+keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
+{
+  gpg_error_t err;
+  KEYDB_HANDLE kdbhd = NULL;
+  KEYDB_SEARCH_DESC desc;
+  kbnode_t keyblock = NULL;
+  kbnode_t node;
+  int modified = 0;
+  size_t revlen;
+
+#ifdef HAVE_W32_SYSTEM
+  /* See keyedit_menu for why we need this.  */
+  check_trustdb_stale ();
+#endif
+
+  /* Search the key; we don't want the whole getkey stuff here.  */
+  kdbhd = keydb_new ();
+  if (!kdbhd)
+    {
+      /* Note that keydb_new has already used log_error.  */
+      goto leave;
+    }
+
+  err = classify_user_id (username, &desc, 1);
+  if (!err)
+    err = keydb_search (kdbhd, &desc, 1, NULL);
+  if (!err)
+    {
+      err = keydb_get_keyblock (kdbhd, &keyblock);
+      if (err)
+        {
+          log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));
+          goto leave;
+        }
+      /* Now with the keyblock retrieved, search again to detect an
+         ambiguous specification.  We need to save the found state so
+         that we can do an update later.  */
+      keydb_push_found_state (kdbhd);
+      err = keydb_search (kdbhd, &desc, 1, NULL);
+      if (!err)
+        err = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
+      else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+        err = 0;
+      keydb_pop_found_state (kdbhd);
+
+      if (!err)
+        {
+          /* We require the secret primary key to revoke a UID.  */
+          node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
+          if (!node)
+            BUG ();
+          err = agent_probe_secret_key (ctrl, node->pkt->pkt.public_key);
+        }
+    }
+  if (err)
+    {
+      log_error (_("secret key \"%s\" not found: %s\n"),
+                 username, gpg_strerror (err));
+      goto leave;
+    }
+
+  fix_keyblock (&keyblock);
+  setup_main_keyids (keyblock);
+
+  revlen = strlen (uidtorev);
+  /* find the right UID */
+  for (node = keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_USER_ID
+          && revlen == node->pkt->pkt.user_id->len
+          && !memcmp (node->pkt->pkt.user_id->name, uidtorev, revlen))
+        {
+          struct revocation_reason_info *reason;
+
+          reason = get_default_uid_revocation_reason ();
+          err = core_revuid (ctrl, keyblock, node, reason, &modified);
+          release_revocation_reason_info (reason);
+          if (err)
+            {
+              log_error (_("User ID revocation failed: %s\n"),
+                         gpg_strerror (err));
+              goto leave;
+            }
+          err = keydb_update_keyblock (kdbhd, keyblock);
+          if (err)
+            {
+              log_error (_("update failed: %s\n"), gpg_strerror (err));
+              goto leave;
+            }
+
+          if (update_trust)
+            revalidation_mark ();
+          goto leave;
+        }
+    }
+
+ leave:
   release_kbnode (keyblock);
   keydb_release (kdbhd);
 }
@@ -6106,6 +6213,95 @@ reloop:			/* (must use this, because we are modifing the list) */
 }
 
 
+/* return 0 if revocation of NODE (which must be a User ID) was
+   successful, non-zero if there was an error.  *modified will be set
+   to 1 if a change was made. */
+static int
+core_revuid (ctrl_t ctrl, kbnode_t keyblock, KBNODE node,
+             const struct revocation_reason_info *reason, int *modified)
+{
+  PKT_public_key *pk = keyblock->pkt->pkt.public_key;
+  gpg_error_t rc;
+
+  if (node->pkt->pkttype != PKT_USER_ID)
+    {
+      rc = gpg_error (GPG_ERR_NO_USER_ID);
+      write_status_error ("keysig", rc);
+      log_error (_("tried to revoke a non-user ID: %s\n"), gpg_strerror (rc));
+      return 1;
+    }
+  else
+    {
+      PKT_user_id *uid = node->pkt->pkt.user_id;
+
+      if (uid->is_revoked)
+        {
+          char *user = utf8_to_native (uid->name, uid->len, 0);
+          log_info (_("user ID \"%s\" is already revoked\n"), user);
+          xfree (user);
+        }
+      else
+        {
+          PACKET *pkt;
+          PKT_signature *sig;
+          struct sign_attrib attrib;
+          u32 timestamp = make_timestamp ();
+
+          if (uid->created >= timestamp)
+            {
+              /* Okay, this is a problem.  The user ID selfsig was
+                 created in the future, so we need to warn the user and
+                 set our revocation timestamp one second after that so
+                 everything comes out clean. */
+
+              log_info (_("WARNING: a user ID signature is dated %d"
+                          " seconds in the future\n"),
+                        uid->created - timestamp);
+
+              timestamp = uid->created + 1;
+            }
+
+          memset (&attrib, 0, sizeof attrib);
+          /* should not need to cast away const here; but
+             revocation_reason_build_cb needs to take a non-const
+             void* in order to meet the function signtuare for the
+             mksubpkt argument to make_keysig_packet */
+          attrib.reason = (struct revocation_reason_info *)reason;
+
+          rc = make_keysig_packet (&sig, pk, uid, NULL, pk, 0x30, 0,
+                                   timestamp, 0,
+                                   sign_mk_attrib, &attrib, NULL);
+          if (rc)
+            {
+              write_status_error ("keysig", rc);
+              log_error (_("signing failed: %s\n"), gpg_strerror (rc));
+              return 1;
+            }
+          else
+            {
+              pkt = xmalloc_clear (sizeof *pkt);
+              pkt->pkttype = PKT_SIGNATURE;
+              pkt->pkt.signature = sig;
+              insert_kbnode (node, new_kbnode (pkt), 0);
+
+#ifndef NO_TRUST_MODELS
+              /* If the trustdb has an entry for this key+uid then the
+                 trustdb needs an update. */
+              if (!update_trust
+                  && ((get_validity (ctrl, pk, uid, NULL, 0) & TRUST_MASK)
+                      >= TRUST_UNDEFINED))
+                update_trust = 1;
+#endif /*!NO_TRUST_MODELS*/
+
+              node->pkt->pkt.user_id->is_revoked = 1;
+              if (modified)
+                *modified = 1;
+            }
+        }
+      return 0;
+    }
+}
+
 /* Revoke a user ID (i.e. revoke a user ID selfsig).  Return true if
    keyblock changed.  */
 static int
@@ -6132,75 +6328,20 @@ menu_revuid (ctrl_t ctrl, kbnode_t pub_keyblock)
 	  goto leave;
       }
 
- reloop: /* (better this way because we are modifing the keyring) */
+ reloop: /* (better this way because we are modifying the keyring) */
   for (node = pub_keyblock; node; node = node->next)
     if (node->pkt->pkttype == PKT_USER_ID && (node->flag & NODFLG_SELUID))
       {
-	PKT_user_id *uid = node->pkt->pkt.user_id;
-
-	if (uid->is_revoked)
-	  {
-	    char *user = utf8_to_native (uid->name, uid->len, 0);
-	    log_info (_("user ID \"%s\" is already revoked\n"), user);
-	    xfree (user);
-	  }
-	else
-	  {
-	    PACKET *pkt;
-	    PKT_signature *sig;
-	    struct sign_attrib attrib;
-	    u32 timestamp = make_timestamp ();
-
-	    if (uid->created >= timestamp)
-	      {
-		/* Okay, this is a problem.  The user ID selfsig was
-		   created in the future, so we need to warn the user and
-		   set our revocation timestamp one second after that so
-		   everything comes out clean. */
-
-		log_info (_("WARNING: a user ID signature is dated %d"
-			    " seconds in the future\n"),
-			  uid->created - timestamp);
-
-		timestamp = uid->created + 1;
-	      }
-
-	    memset (&attrib, 0, sizeof attrib);
-	    attrib.reason = reason;
-
+        int modified = 0;
+        rc = core_revuid (ctrl, pub_keyblock, node, reason, &modified);
+        if (rc)
+          goto leave;
+        if (modified)
+          {
 	    node->flag &= ~NODFLG_SELUID;
-
-	    rc = make_keysig_packet (&sig, pk, uid, NULL, pk, 0x30, 0,
-				     timestamp, 0,
-				     sign_mk_attrib, &attrib, NULL);
-	    if (rc)
-	      {
-                write_status_error ("keysig", rc);
-		log_error (_("signing failed: %s\n"), gpg_strerror (rc));
-		goto leave;
-	      }
-	    else
-	      {
-		pkt = xmalloc_clear (sizeof *pkt);
-		pkt->pkttype = PKT_SIGNATURE;
-		pkt->pkt.signature = sig;
-		insert_kbnode (node, new_kbnode (pkt), 0);
-
-#ifndef NO_TRUST_MODELS
-		/* If the trustdb has an entry for this key+uid then the
-		   trustdb needs an update. */
-		if (!update_trust
-		    && (get_validity (ctrl, pk, uid, NULL, 0) & TRUST_MASK) >=
-		    TRUST_UNDEFINED)
-		  update_trust = 1;
-#endif /*!NO_TRUST_MODELS*/
-
-		changed = 1;
-		node->pkt->pkt.user_id->is_revoked = 1;
-
-		goto reloop;
-	      }
-	  }
+            changed = 1;
+            goto reloop;
+          }
       }
 
   if (changed)

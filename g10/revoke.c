@@ -862,6 +862,16 @@ ask_revocation_reason( int key_rev, int cert_rev, int hint )
     return reason;
 }
 
+struct revocation_reason_info *
+get_default_uid_revocation_reason(void)
+{
+  struct revocation_reason_info *reason;
+  reason = xmalloc( sizeof *reason );
+  reason->code = 0x20; /* uid is no longer valid */
+  reason->desc = strdup(""); /* no text */
+  return reason;
+}
+
 void
 release_revocation_reason_info( struct revocation_reason_info *reason )
 {

@@ -118,6 +118,7 @@ enum cmd_and_opt_values
     aQuickLSignKey,
     aQuickAddUid,
     aQuickAddKey,
+    aQuickRevUid,
     aListConfig,
     aListGcryptConfig,
     aGPGConfList,
@@ -431,6 +432,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aQuickAddUid,  "quick-adduid",
               N_("quickly add a new user-id")),
   ARGPARSE_c (aQuickAddKey,  "quick-addkey", "@"),
+  ARGPARSE_c (aQuickRevUid,  "quick-revuid",
+              N_("quickly revoke a user-id")),
   ARGPARSE_c (aFullKeygen,  "full-gen-key" ,
               N_("full featured key pair generation")),
   ARGPARSE_c (aGenRevoke, "gen-revoke",N_("generate a revocation certificate")),
@@ -2434,6 +2437,7 @@ main (int argc, char **argv)
 	  case aQuickKeygen:
 	  case aQuickAddUid:
 	  case aQuickAddKey:
+	  case aQuickRevUid:
 	  case aExportOwnerTrust:
 	  case aImportOwnerTrust:
           case aRebuildKeydbCaches:
@@ -3785,6 +3789,7 @@ main (int argc, char **argv)
       case aQuickKeygen:
       case aQuickAddUid:
       case aQuickAddKey:
+      case aQuickRevUid:
       case aFullKeygen:
       case aKeygen:
       case aImport:
@@ -4201,6 +4206,18 @@ main (int argc, char **argv)
                 }
             }
           keyedit_quick_addkey (ctrl, x_fpr, x_algo, x_usage, x_expire);
+        }
+	break;
+
+      case aQuickRevUid:
+        {
+          const char *uid, *uidtorev;
+
+          if (argc != 2)
+            wrong_args ("--quick-revuid USER-ID USER-ID-TO-REVOKE");
+          uid = *argv++; argc--;
+          uidtorev = *argv++; argc--;
+          keyedit_quick_revuid (ctrl, uid, uidtorev);
         }
 	break;
 
