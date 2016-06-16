@@ -281,9 +281,10 @@ List all keys from the public keyrings, or just the keys given on the
 command line.
 
 Avoid using the output of this command in scripts or other programs as
-it is likely to change as GnuPG changes. See @option{--with-colons} for a
-machine-parseable key listing command that is appropriate for use in
-scripts and other programs.
+it is likely to change as GnuPG changes.  See @option{--with-colons}
+for a machine-parseable key listing command that is appropriate for
+use in scripts and other programs.  Never use the regular output for
+scripts - it is only for human consumption.
 
 @item --list-secret-keys
 @itemx -K
@@ -291,7 +292,7 @@ scripts and other programs.
 List all keys from the secret keyrings, or just the ones given on the
 command line. A @code{#} after the letters @code{sec} means that the
 secret key is not usable (for example, if it was created via
-@option{--export-secret-subkeys}).
+@option{--export-secret-subkeys}).  See also @option{--list-keys}.
 
 @item --list-sigs
 @opindex list-sigs
