@@ -1,5 +1,51 @@
-Noteworthy changes in version 2.1.13 (unreleased)
+Noteworthy changes in version 2.1.13 (2016-06-16)
 -------------------------------------------------
+
+ * gpg: New command --quick-addkey.  Extend the --quick-gen-key
+   command.
+
+ * gpg: New --keyid-format "none" which is now also the default.
+
+ * gpg: New option --with-subkey-fingerprint.
+
+ * gpg: Include Signer's UID subpacket in signatures if the secret key
+   has been specified using a mail address and the new option
+   --disable-signer-uid is not used.
+
+ * gpg: Allow unattended deletion of a secret key.
+
+ * gpg: Allow export of non-passphrase protected secret keys.
+
+ * gpg: New status lines KEY_CONSIDERED and NOTATION_FLAGS.
+
+ * gpg: Change status line TOFU_STATS_LONG to use '~' as
+   a non-breaking-space character.
+
+ * gpg: Speedup key listings in Tofu mode.
+
+ * gpg: Make sure that the current and total values of a PROGRESS
+   status line are small enough.
+
+ * gpgsm: Allow the use of AES192 and SERPENT ciphers.
+
+ * dirmngr: Adjust WKD lookup to current specs.
+
+ * dirmngr: Fallback to LDAP v3 if v2 is is not supported.
+
+ * gpgconf: New commands --create-socketdir and --remove-socketdir,
+   new option --homedir.
+
+ * If a /run/user/$UID directory exists, that directory is now used
+   for IPC sockets instead of the GNUPGHOME directory.  This fixes
+   problems with NFS and too long socket names and thus avoids the
+   need for redirection files.
+
+ * The Speedo build systems now uses the new versions.gnupg.org server
+   to retrieve the default package versions.
+
+ * Fix detection of libusb on FreeBSD.
+
+ * Speedup fd closing after a fork.
 
 
 Noteworthy changes in version 2.1.12 (2016-05-04)
