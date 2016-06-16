@@ -124,7 +124,8 @@ CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     *.test.log gpg_dearmor gpg.conf gpg-agent.conf S.gpg-agent \
 	     pubring.gpg pubring.gpg~ pubring.kbx pubring.kbx~ \
 	     secring.gpg pubring.pkr secring.skr \
-	     gnupg-test.stop random_seed gpg-agent.log tofu.db
+	     gnupg-test.stop random_seed gpg-agent.log tofu.db \
+	     passphrases
 
 clean-local:
 	-rm -rf private-keys-v1.d openpgp-revocs.d tofu.d gpgtar.d
