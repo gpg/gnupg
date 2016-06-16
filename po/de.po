@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-05-04 11:03+0200\n"
+"PO-Revision-Date: 2016-06-16 17:04+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -451,6 +451,10 @@ msgid "error binding socket to '%s': %s\n"
 msgstr "Der Socket kann nicht an `%s' gebunden werden: %s\n"
 
 #, c-format
+msgid "can't set permissions of '%s': %s\n"
+msgstr "Zugriffsrechte für '%s' können nicht gesetzt werden: %s\n"
+
+#, c-format
 msgid "listen() failed: %s\n"
 msgstr "Der listen()-Aufruf ist fehlgeschlagen: %s\n"
 
@@ -465,10 +469,6 @@ msgstr "Verzeichnis `%s' kann nicht erzeugt werden: %s\n"
 #, c-format
 msgid "directory '%s' created\n"
 msgstr "Verzeichnis `%s' erzeugt\n"
-
-#, c-format
-msgid "can't set permissions of '%s': %s\n"
-msgstr "Zugriffsrechte für '%s' können nicht gesetzt werden: %s\n"
 
 #, c-format
 msgid "stat() failed for '%s': %s\n"
@@ -2446,6 +2446,9 @@ msgstr "differierende Zeitangaben sind kein Fehler"
 msgid "|FD|write status info to this FD"
 msgstr "|FD|Statusinfo auf FD (Dateihandle) ausgeben"
 
+msgid "|ALGO|reject signatures made with ALGO"
+msgstr "|ALGO|Weise mit ALGO erstellte Signaturen zurück"
+
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Aufruf: gpgv [Optionen] [Dateien] (-h für Hilfe)"
 
@@ -3871,6 +3874,10 @@ msgid "No key with this keygrip\n"
 msgstr "Kein Schlüssel mit diesem \"Keygrip\"\n"
 
 #, c-format
+msgid "rounded to %u bits\n"
+msgstr "gerundet auf %u Bit\n"
+
+#, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "%s-Schlüssel können zwischen %u und %u Bit lang sein.\n"
 
@@ -3885,10 +3892,6 @@ msgstr "Welche Schlüssellänge wünschen Sie? (%u) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Die verlangte Schlüssellänge beträgt %u Bit\n"
-
-#, c-format
-msgid "rounded to %u bits\n"
-msgstr "gerundet auf %u Bit\n"
 
 msgid "Please select which elliptic curve you want:\n"
 msgstr "Bitte wählen Sie, welche elliptische Kurve Sie möchten:\n"
@@ -5553,14 +5556,6 @@ msgid "error updating TOFU database: %s\n"
 msgstr "Fehler beim Schreiben der TOFU Datenbank: %s\n"
 
 #, c-format
-msgid "public key %s not found: %s\n"
-msgstr "Öffentlicher Schlüssel %s nicht gefunden: %s\n"
-
-#, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "Fehler beim Setzen der TOFU Binding Vertrauensstufe auf %s\n"
-
-#, c-format
 msgid "The binding %s is NOT known."
 msgstr "Die Bindung %s ist NICHT bekannt."
 
@@ -5641,8 +5636,8 @@ msgstr[0] " innerhalb des letzten Monats."
 msgstr[1] " innerhalb der letzten %ld Monate."
 
 #. TRANSLATORS: Please translate the text found in the source
-#. file below.  We don't directly internationalize that text
-#. so that we can tweak it without breaking translations.
+#. * file below.  We don't directly internationalize that text so
+#. * that we can tweak it without breaking translations.
 msgid "TOFU detected a binding conflict"
 msgstr ""
 "Normalerweise ist lediglich ein Schlüssel mit einer Email-Adresse "
@@ -5654,13 +5649,17 @@ msgstr ""
 "ob der neue Schlüssel legitim ist."
 
 #. TRANSLATORS: Two letters (normally the lower and upper case
-#. version of the hotkey) for each of the five choices.  If
-#. there is only one choice in your language, repeat it.
+#. * version of the hotkey) for each of the five choices.  If
+#. * there is only one choice in your language, repeat it.
 msgid "gGaAuUrRbB"
 msgstr "gGaAuUlLfF"
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr "(G)ut, einmal (A)kzeptieren, (U)nbekannt, einmal ab(L)ehnen, (F)alsch?"
+
+#, c-format
+msgid "error setting TOFU binding's trust level to %s\n"
+msgstr "Fehler beim Setzen der TOFU Binding Vertrauensstufe auf %s\n"
 
 #, c-format
 msgid "error changing TOFU policy: %s\n"
@@ -5843,6 +5842,10 @@ msgstr "\"Trust-DB\"-Überprüfung ist beim `%s'-Vertrauensmodell nicht nötig\n
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "\"Trust-DB\"-Änderung ist beim `%s'-Vertrauensmodell nicht nötig\n"
 
+#, c-format
+msgid "public key %s not found: %s\n"
+msgstr "Öffentlicher Schlüssel %s nicht gefunden: %s\n"
+
 msgid "please do a --check-trustdb\n"
 msgstr "Bitte ein --check-trustdb durchführen\n"
 
@@ -5912,22 +5915,25 @@ msgid "[ revoked]"
 msgstr "[ widerrufen]"
 
 msgid "[ expired]"
-msgstr "[  verfallen]"
+msgstr "[ verfallen ]"
 
 msgid "[ unknown]"
-msgstr "[  unbekannt]"
+msgstr "[ unbekannt ]"
 
 msgid "[  undef ]"
 msgstr "[undefiniert]"
 
+msgid "[  never ]"
+msgstr "[  niemals  ]"
+
 msgid "[marginal]"
-msgstr "[   marginal]"
+msgstr "[  marginal ]"
 
 msgid "[  full  ]"
 msgstr "[vollständig]"
 
 msgid "[ultimate]"
-msgstr "[  ultimativ]"
+msgstr "[ ultimativ ]"
 
 msgid ""
 "the signature could not be verified.\n"
