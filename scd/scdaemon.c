@@ -150,6 +150,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oDisableApplication, "disable-application", "@"),
   ARGPARSE_s_n (oEnablePinpadVarlen, "enable-pinpad-varlen",
                 N_("use variable length input for pinpad")),
+  ARGPARSE_s_s (oHomedir,    "homedir",      "@"),
 
   ARGPARSE_end ()
 };
