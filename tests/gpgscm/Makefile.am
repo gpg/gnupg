@@ -18,11 +18,12 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 EXTRA_DIST = \
-	COPYING \
+	LICENSE.TinySCHEME \
 	Manual.txt \
 	ffi.scm \
 	init.scm \
 	lib.scm \
+	repl.scm \
 	t-child.scm \
 	tests.scm
 
@@ -30,6 +31,8 @@ AM_CPPFLAGS = -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS =
+
+CLEANFILES =
 
 bin_PROGRAMS = gpgscm
 noinst_PROGRAMS = t-child
@@ -51,7 +54,6 @@ t_child_SOURCES = t-child.c
 # important for things like make -j2.
 $(PROGRAMS): $(common_libs)
 
-.PHONY: check
-check: gpgscm$(EXEEXT) t-child$(EXEEXT)
+check-local: gpgscm$(EXEEXT) t-child$(EXEEXT)
 	EXEEXT=$(EXEEXT) GPGSCM_PATH=$(srcdir) \
 		./gpgscm$(EXEEXT) $(srcdir)/t-child.scm

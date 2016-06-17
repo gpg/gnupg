@@ -37,7 +37,7 @@ fake_pinentry_SOURCES = fake-pinentry.c
 TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) GPG_AGENT_INFO= LC_ALL=C \
 	EXEEXT=$(EXEEXT) \
 	PATH=../gpgscm:$(PATH) \
-	objdir=$(shell readlink -f ../..) \
+	objdir=$(abs_top_builddir) \
 	GPGSCM_PATH=$(top_srcdir)/tests/gpgscm:$(top_srcdir)/tests/openpgp
 
 if SQLITE3
@@ -142,8 +142,9 @@ sample_keys = samplekeys/ecc-sample-1-pub.asc \
 	      samplekeys/e2e-p256-1-prt.asc \
 	      samplekeys/E657FB607BB4F21C90BB6651BC067AF28BC90111.asc
 
-EXTRA_DIST = defs.inc pinentry.sh $(TESTS) $(TEST_FILES) ChangeLog-2011 \
-	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)
+EXTRA_DIST = defs.inc defs.scm pinentry.sh $(TESTS) $(TEST_FILES) \
+	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
+	     ChangeLog-2011
 
 CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     plain-1 plain-2 plain-3 trustdb.gpg *.lock .\#lk* \
