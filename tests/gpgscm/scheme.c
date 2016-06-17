@@ -958,11 +958,11 @@ INTERFACE pointer mk_character(scheme *sc, int c) {
 }
 
 /* get number atom (integer) */
-INTERFACE pointer mk_integer(scheme *sc, long num) {
+INTERFACE pointer mk_integer(scheme *sc, long n) {
   pointer x = get_cell(sc,sc->NIL, sc->NIL);
 
   typeflag(x) = (T_NUMBER | T_ATOM);
-  ivalue_unchecked(x)= num;
+  ivalue_unchecked(x)= n;
   set_num_integer(x);
   return (x);
 }
@@ -1028,8 +1028,8 @@ INTERFACE static pointer mk_vector(scheme *sc, int len)
 
 INTERFACE static void fill_vector(pointer vec, pointer obj) {
      int i;
-     int num=ivalue(vec)/2+ivalue(vec)%2;
-     for(i=0; i<num; i++) {
+     int n = ivalue(vec)/2+ivalue(vec)%2;
+     for(i=0; i < n; i++) {
           typeflag(vec+1+i) = T_PAIR;
           setimmutable(vec+1+i);
           car(vec+1+i)=obj;
@@ -1240,8 +1240,8 @@ static void mark(pointer a) {
 E2:  setmark(p);
      if(is_vector(p)) {
           int i;
-          int num=ivalue_unchecked(p)/2+ivalue_unchecked(p)%2;
-          for(i=0; i<num; i++) {
+          int n = ivalue_unchecked(p)/2+ivalue_unchecked(p)%2;
+          for(i=0; i < n; i++) {
                /* Vector cells will be treated like ordinary cells */
                mark(p+1+i);
           }
@@ -2327,6 +2327,7 @@ static INLINE void new_slot_in_env(scheme *sc, pointer variable, pointer value)
 
 static INLINE void set_slot_in_env(scheme *sc, pointer slot, pointer value)
 {
+  (void)sc;
   cdr(slot) = value;
 }
 
@@ -4387,7 +4388,11 @@ static pointer opexe_6(scheme *sc, enum scheme_opcodes op) {
 typedef pointer (*dispatch_func)(scheme *, enum scheme_opcodes);
 
 typedef int (*test_predicate)(pointer);
-static int is_any(pointer p) { return 1;}
+
+static int is_any(pointer p) {
+   (void)p;
+   return 1;
+}
 
 static int is_nonneg(pointer p) {
   return ivalue(p)>=0 && is_integer(p);
