@@ -30,7 +30,7 @@ List of Copyright holders
   Copyright (C) 1999-2003 Symas Corporation.
   Copyright (C) 1998-2003 Hallvard B. Furuseth.
   Copyright (C) 1992-1996 Regents of the University of Michigan.
-
+  Copyright (C) 2000 Dimitrios Souflis
 
 
 Authors with a FSF copyright assignment
@@ -210,6 +210,10 @@ Alexandre Julliard.
 
 The gpg-zip documentation is based on the manpage for gpg-zip, written
 by Colin Tuckley and Daniel Leidert for the GNU/Debian distribution.
+
+The test driver is based on TinySCHEME by Dimitrios Souflis and
+available under a permissive license.  For the terms see the file
+tests/gpgscm/LICENSE.TinySCHEME.
 
 
 Copyright
