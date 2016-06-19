@@ -1013,7 +1013,7 @@ parse_ccid_descriptor (ccid_driver_t handle,
       handle->max_ifsd = 48;
     }
 
-  if (handle->id_vendor == VENDOR_GEMPC && handle->id_product == GEMPC_CT30)
+  if (handle->id_vendor == VENDOR_GEMPC)
     {
       DEBUGOUT ("enabling product quirk: disable non-null NAD\n");
       handle->nonnull_nad = 0;
