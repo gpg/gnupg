@@ -216,6 +216,7 @@ enum cmd_and_opt_values
     oGnuPG,
     oRFC2440,
     oRFC4880,
+    oRFC4880bis,
     oOpenPGP,
     oPGP6,
     oPGP7,
@@ -599,6 +600,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oGnuPG, "no-pgp8", "@"),
   ARGPARSE_s_n (oRFC2440, "rfc2440", "@"),
   ARGPARSE_s_n (oRFC4880, "rfc4880", "@"),
+  ARGPARSE_s_n (oRFC4880bis, "rfc4880bis", "@"),
   ARGPARSE_s_n (oOpenPGP, "openpgp", N_("use strict OpenPGP behavior")),
   ARGPARSE_s_n (oPGP6, "pgp6", "@"),
   ARGPARSE_s_n (oPGP7, "pgp7", "@"),
@@ -2686,6 +2688,9 @@ main (int argc, char **argv)
             /* Dummy so that gpg 1.4 conf files can work. Should
                eventually be removed.  */
 	    break;
+          case oRFC4880bis:
+            opt.flags.rfc4880bis = 1;
+            /* fall thru.  */
 	  case oOpenPGP:
 	  case oRFC4880:
 	    /* This is effectively the same as RFC2440, but with
@@ -3398,6 +3403,9 @@ main (int argc, char **argv)
 
     if( may_coredump && !opt.quiet )
 	log_info(_("WARNING: program may create a core file!\n"));
+
+    if (opt.flags.rfc4880bis)
+	log_info ("WARNING: using experimental features from RFC4880bis!\n");
 
     if (eyes_only) {
       if (opt.set_filename)

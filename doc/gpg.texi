@@ -2464,6 +2464,13 @@ Reset all packet, cipher and digest options to strict RFC-4880
 behavior. Note that this is currently the same thing as
 @option{--openpgp}.
 
+@item --rfc4880bis
+@opindex rfc4880bis
+Enable experimental features from proposed updates to RFC-4880.  This
+option can be used in addition to the other compliance options.
+Warning: The behavior may change with any GnuPG release and created
+keys or data may not be usable with future GnuPG versions.
+
 @item --rfc2440
 @opindex rfc2440
 Reset all packet, cipher and digest options to strict RFC-2440

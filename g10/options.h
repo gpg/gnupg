@@ -235,6 +235,8 @@ struct
     unsigned int allow_weak_digest_algos:1;
     unsigned int large_rsa:1;
     unsigned int disable_signer_uid:1;
+    /* Flag to enbale experimental features from RFC4880bis.  */
+    unsigned int rfc4880bis:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local
