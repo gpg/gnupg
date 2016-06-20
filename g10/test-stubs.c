@@ -177,6 +177,17 @@ keyserver_import_keyid (u32 *keyid, void *dummy)
 }
 
 int
+keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
+			 struct keyserver_spec *keyserver)
+{
+  (void)ctrl;
+  (void)fprint;
+  (void)fprint_len;
+  (void)keyserver;
+  return -1;
+}
+
+int
 keyserver_import_cert (const char *name)
 {
   (void)name;

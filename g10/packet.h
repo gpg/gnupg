@@ -764,7 +764,7 @@ gpg_error_t gpg_mpi_write_nohdr (iobuf_t out, gcry_mpi_t a);
 u32 calc_packet_length( PACKET *pkt );
 void build_sig_subpkt( PKT_signature *sig, sigsubpkttype_t type,
 			const byte *buffer, size_t buflen );
-void build_sig_subpkt_from_sig( PKT_signature *sig );
+void build_sig_subpkt_from_sig (PKT_signature *sig, PKT_public_key *pksk);
 int  delete_sig_subpkt(subpktarea_t *buffer, sigsubpkttype_t type );
 void build_attribute_subpkt(PKT_user_id *uid,byte type,
 			    const void *buf,u32 buflen,

@@ -690,7 +690,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
 
       if (sig->version >= 4)
         {
-          build_sig_subpkt_from_sig (sig);
+          build_sig_subpkt_from_sig (sig, pk);
           mk_notation_policy_etc (sig, NULL, pk);
         }
 
@@ -1456,7 +1456,7 @@ make_keysig_packet (PKT_signature **ret_sig, PKT_public_key *pk,
       sig->expiredate=sig->timestamp+duration;
     sig->sig_class = sigclass;
 
-    build_sig_subpkt_from_sig( sig );
+    build_sig_subpkt_from_sig (sig, pksk);
     mk_notation_policy_etc (sig, pk, pksk);
 
     /* Crucial that the call to mksubpkt comes LAST before the calls
@@ -1559,7 +1559,7 @@ update_keysig_packet( PKT_signature **ret_sig,
        automagically lower any sig expiration dates to correctly
        correspond to the differences in the timestamps (i.e. the
        duration will shrink).  */
-    build_sig_subpkt_from_sig( sig );
+    build_sig_subpkt_from_sig (sig, pksk);
 
     if (mksubpkt)
       rc = (*mksubpkt)(sig, opaque);

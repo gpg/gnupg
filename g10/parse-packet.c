@@ -1335,6 +1335,19 @@ dump_sig_subpkt (int hashed, int type, int critical,
                     (ulong) buf32_to_u32 (buffer),
                     (ulong) buf32_to_u32 (buffer + 4));
       break;
+    case SIGSUBPKT_ISSUER_FPR:
+      if (length >= 21)
+        {
+          char *tmp;
+          es_fprintf (listfp, "issuer fpr v%d ", buffer[0]);
+          tmp = bin2hex (buffer+1, length-1, NULL);
+          if (tmp)
+            {
+              es_fputs (tmp, listfp);
+              xfree (tmp);
+            }
+        }
+      break;
     case SIGSUBPKT_NOTATION:
       {
 	es_fputs ("notation: ", listfp);
@@ -1485,6 +1498,10 @@ parse_one_sig_subpkt (const byte * buffer, size_t n, int type)
       if (n < 8)
 	break;
       return 0;
+    case SIGSUBPKT_ISSUER_FPR:	/* issuer key ID */
+      if (n < 21)
+	break;
+      return 0;
     case SIGSUBPKT_NOTATION:
       /* minimum length needed, and the subpacket must be well-formed
          where the name length and value length all fit inside the
@@ -1543,6 +1560,7 @@ can_handle_critical (const byte * buffer, size_t n, int type)
     case SIGSUBPKT_REVOCABLE:
     case SIGSUBPKT_REV_KEY:
     case SIGSUBPKT_ISSUER:	/* issuer key ID */
+    case SIGSUBPKT_ISSUER_FPR:	/* issuer fingerprint */
     case SIGSUBPKT_PREF_SYM:
     case SIGSUBPKT_PREF_HASH:
     case SIGSUBPKT_PREF_COMPR:

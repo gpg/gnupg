@@ -972,28 +972,49 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
 	sig->unhashed = newarea;
 }
 
-/****************
+/*
  * Put all the required stuff from SIG into subpackets of sig.
+ * PKSK is the signing key.
  * Hmmm, should we delete those subpackets which are in a wrong area?
  */
 void
-build_sig_subpkt_from_sig( PKT_signature *sig )
+build_sig_subpkt_from_sig (PKT_signature *sig, PKT_public_key *pksk)
 {
     u32  u;
-    byte buf[8];
+    byte buf[1+MAX_FINGERPRINT_LEN];
+    size_t fprlen;
 
-    u = sig->keyid[0];
-    buf[0] = (u >> 24) & 0xff;
-    buf[1] = (u >> 16) & 0xff;
-    buf[2] = (u >>  8) & 0xff;
-    buf[3] = u & 0xff;
-    u = sig->keyid[1];
-    buf[4] = (u >> 24) & 0xff;
-    buf[5] = (u >> 16) & 0xff;
-    buf[6] = (u >>  8) & 0xff;
-    buf[7] = u & 0xff;
-    build_sig_subpkt( sig, SIGSUBPKT_ISSUER, buf, 8 );
+    /* For v4 keys we need to write the ISSUER subpacket.  We do not
+     * want that for a future v5 format.  */
+    if (pksk->version < 5)
+      {
+        u = sig->keyid[0];
+        buf[0] = (u >> 24) & 0xff;
+        buf[1] = (u >> 16) & 0xff;
+        buf[2] = (u >>  8) & 0xff;
+        buf[3] = u & 0xff;
+        u = sig->keyid[1];
+        buf[4] = (u >> 24) & 0xff;
+        buf[5] = (u >> 16) & 0xff;
+        buf[6] = (u >>  8) & 0xff;
+        buf[7] = u & 0xff;
+        build_sig_subpkt (sig, SIGSUBPKT_ISSUER, buf, 8);
+      }
 
+    /* For a future v5 keys we write the ISSUER_FPR subpacket.  We
+     * also write that for a v4 key is experimental support for
+     * RFC4880bis is requested.  */
+    if (pksk->version > 4 || opt.flags.rfc4880bis)
+      {
+        fingerprint_from_pk (pksk, buf+1, &fprlen);
+        if (fprlen == 20)
+          {
+            buf[0] = pksk->version;
+            build_sig_subpkt (sig, SIGSUBPKT_ISSUER_FPR, buf, 21);
+          }
+      }
+
+    /* Write the timestamp.  */
     u = sig->timestamp;
     buf[0] = (u >> 24) & 0xff;
     buf[1] = (u >> 16) & 0xff;
