@@ -1905,6 +1905,7 @@ doc/Makefile
 tests/Makefile
 tests/gpgscm/Makefile
 tests/openpgp/Makefile
+tests/migrations/Makefile
 tests/pkits/Makefile
 g10/gpg.w32-manifest
 ])

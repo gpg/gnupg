@@ -26,10 +26,12 @@ include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS =
 
-TESTS_ENVIRONMENT = GPG_AGENT_INFO= LC_ALL=C
+TESTS_ENVIRONMENT = GPG_AGENT_INFO= LC_ALL=C \
+	PATH=../gpgscm:$(PATH) \
+	GPGSCM_PATH=$(top_srcdir)/tests/gpgscm:$(top_srcdir)/tests/migrations
 
-TESTS = from-classic.test \
-	extended-private-key-format.test
+TESTS = from-classic.scm \
+	extended-private-key-format.scm
 
 TEST_FILES = from-classic.gpghome/pubring.gpg.asc \
 	     from-classic.gpghome/secring.gpg.asc \
