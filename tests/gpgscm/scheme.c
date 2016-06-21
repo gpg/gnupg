@@ -4529,7 +4529,7 @@ static void Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
     }
     if(sc->no_memory) {
       fprintf(stderr,"No memory!\n");
-      return;
+      exit(1);
     }
   }
 }
