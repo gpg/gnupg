@@ -129,6 +129,30 @@ enum scheme_types {
   T_LAST_SYSTEM_TYPE=15
 };
 
+static const char *
+type_to_string (enum scheme_types typ)
+{
+     switch (typ)
+     {
+     case T_STRING: return "string";
+     case T_NUMBER: return "number";
+     case T_SYMBOL: return "symbol";
+     case T_PROC: return "proc";
+     case T_PAIR: return "pair";
+     case T_CLOSURE: return "closure";
+     case T_CONTINUATION: return "configuration";
+     case T_FOREIGN: return "foreign";
+     case T_CHARACTER: return "character";
+     case T_PORT: return "port";
+     case T_VECTOR: return "vector";
+     case T_MACRO: return "macro";
+     case T_PROMISE: return "promise";
+     case T_ENVIRONMENT: return "environment";
+     case T_FOREIGN_OBJECT: return "foreign object";
+     }
+     assert (! "not reached");
+}
+
 /* ADJ is enough slack to align cells in a TYPE_BITS-bit boundary */
 #define ADJ 32
 #define TYPE_BITS 5
@@ -4509,10 +4533,11 @@ static void Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
           } while(i<n);
           if(i<n) {
             ok=0;
-            snprintf(msg, STRBUFFSIZE, "%s: argument %d must be: %s",
+            snprintf(msg, STRBUFFSIZE, "%s: argument %d must be: %s, got: %s",
                 pcd->name,
                 i+1,
-                tests[j].kind);
+		tests[j].kind,
+		type_to_string(type(car(arglist))));
           }
         }
       }
