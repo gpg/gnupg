@@ -939,6 +939,72 @@ do_splice (scheme *sc, pointer args)
   FFI_RETURN (sc);
 }
 
+static pointer
+do_string_index (scheme *sc, pointer args)
+{
+  FFI_PROLOG ();
+  char *haystack;
+  char needle;
+  ssize_t offset = 0;
+  char *position;
+  FFI_ARG_OR_RETURN (sc, char *, haystack, string, args);
+  FFI_ARG_OR_RETURN (sc, char, needle, character, args);
+  if (args != sc->NIL)
+    {
+      FFI_ARG_OR_RETURN (sc, ssize_t, offset, number, args);
+      if (offset < 0)
+        return ffi_sprintf (sc, "offset must be positive");
+      if (offset > strlen (haystack))
+        return ffi_sprintf (sc, "offset exceeds haystack");
+    }
+  FFI_ARGS_DONE_OR_RETURN (sc, args);
+
+  position = strchr (haystack+offset, needle);
+  if (position)
+    FFI_RETURN_INT (sc, position - haystack);
+  else
+    FFI_RETURN_POINTER (sc, sc->F);
+}
+
+static pointer
+do_string_rindex (scheme *sc, pointer args)
+{
+  FFI_PROLOG ();
+  char *haystack;
+  char needle;
+  ssize_t offset = 0;
+  char *position;
+  FFI_ARG_OR_RETURN (sc, char *, haystack, string, args);
+  FFI_ARG_OR_RETURN (sc, char, needle, character, args);
+  if (args != sc->NIL)
+    {
+      FFI_ARG_OR_RETURN (sc, ssize_t, offset, number, args);
+      if (offset < 0)
+        return ffi_sprintf (sc, "offset must be positive");
+      if (offset > strlen (haystack))
+        return ffi_sprintf (sc, "offset exceeds haystack");
+    }
+  FFI_ARGS_DONE_OR_RETURN (sc, args);
+
+  position = strrchr (haystack+offset, needle);
+  if (position)
+    FFI_RETURN_INT (sc, position - haystack);
+  else
+    FFI_RETURN_POINTER (sc, sc->F);
+}
+
+static pointer
+do_string_contains (scheme *sc, pointer args)
+{
+  FFI_PROLOG ();
+  char *haystack;
+  char *needle;
+  FFI_ARG_OR_RETURN (sc, char *, haystack, string, args);
+  FFI_ARG_OR_RETURN (sc, char *, needle, string, args);
+  FFI_ARGS_DONE_OR_RETURN (sc, args);
+  FFI_RETURN_POINTER (sc, strstr (haystack, needle) ? sc->T : sc->F);
+}
+
 
 gpg_error_t
 ffi_list2argv (scheme *sc, pointer list, char ***argv, size_t *len)
@@ -1134,6 +1200,9 @@ ffi_init (scheme *sc, const char *argv0, int argc, const char **argv)
   /* Test helper functions.  */
   ffi_define_function (sc, file_equal);
   ffi_define_function (sc, splice);
+  ffi_define_function (sc, string_index);
+  ffi_define_function (sc, string_rindex);
+  ffi_define_function_name (sc, "string-contains?", string_contains);
 
   /* User interface.  */
   ffi_define_function (sc, flush_stdio);

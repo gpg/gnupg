@@ -33,6 +33,7 @@ int ffi_bool_value (scheme *sc, pointer p);
 
 #define CONVERSION_number(SC, X) (SC)->vptr->ivalue (X)
 #define CONVERSION_string(SC, X) (SC)->vptr->string_value (X)
+#define CONVERSION_character(SC, X) (SC)->vptr->charvalue (X)
 #define CONVERSION_list(SC, X)	(X)
 #define CONVERSION_bool(SC, X)	ffi_bool_value ((SC), (X))
 #define CONVERSION_path(SC, X)	(((SC)->vptr->is_string (X)	  \
@@ -41,6 +42,7 @@ int ffi_bool_value (scheme *sc, pointer p);
 
 #define IS_A_number(SC, X)	(SC)->vptr->is_number (X)
 #define IS_A_string(SC, X)	(SC)->vptr->is_string (X)
+#define IS_A_character(SC, X)	(SC)->vptr->is_character (X)
 #define IS_A_list(SC, X)	(SC)->vptr->is_list ((SC), X)
 #define IS_A_bool(SC, X)	((X) == (SC)->F || (X) == (SC)->T)
 #define IS_A_path(SC, X)	((SC)->vptr->is_string (X)	\

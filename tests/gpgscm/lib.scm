@@ -55,48 +55,50 @@
 				   (string-length s)))))
 (assert (string-suffix? "Scheme" "eme"))
 
-;; Locate the first occurrence of needle in haystack.
-(define (string-index haystack needle)
-  (define (index i haystack needle)
-    (if (= (length haystack) 0)
-        #f
-        (if (char=? (car haystack) needle)
-            i
-            (index (+ i 1) (cdr haystack) needle))))
-  (index 0 (string->list haystack) needle))
+;; Locate the first occurrence of needle in haystack starting at offset.
+(ffi-define (string-index haystack needle [offset]))
+(assert (= 2 (string-index "Hallo" #\l)))
+(assert (= 3 (string-index "Hallo" #\l 3)))
+(assert (equal? #f (string-index "Hallo" #\.)))
 
-;; Locate the last occurrence of needle in haystack.
-(define (string-rindex haystack needle)
-  (let ((rindex (string-index (list->string (reverse (string->list haystack)))
-			      needle)))
-    (if rindex (- (string-length haystack) rindex 1) #f)))
+;; Locate the last occurrence of needle in haystack starting at offset.
+(ffi-define (string-rindex haystack needle [offset]))
+(assert (= 3 (string-rindex "Hallo" #\l)))
+(assert (equal? #f (string-rindex "Hallo" #\a 2)))
+(assert (equal? #f (string-rindex "Hallo" #\.)))
 
 ;; Split haystack at delimiter at most n times.
 (define (string-splitn haystack delimiter n)
-  (define (split acc haystack delimiter n)
-    (if (= (string-length haystack) 0)
-        (reverse acc)
-        (let ((i (string-index haystack delimiter)))
-          (if (not (or (eq? i #f) (= 0 n)))
-              (split (cons (substring haystack 0 i) acc)
-                     (substring haystack (+ i 1) (string-length haystack))
-                     delimiter (- n 1))
-              (split (cons haystack acc) "" delimiter 0)
-              ))))
-  (split '() haystack delimiter n))
+  (let ((length (string-length haystack)))
+    (define (split acc delimiter offset n)
+      (if (>= offset length)
+	  (reverse acc)
+	  (let ((i (string-index haystack delimiter offset)))
+	    (if (or (eq? i #f) (= 0 n))
+		(reverse (cons (substring haystack offset length) acc))
+		(split (cons (substring haystack offset i) acc)
+		       delimiter (+ i 1) (- n 1))))))
+    (split '() delimiter 0 n)))
+(assert (= 2 (length (string-splitn "foo:bar:baz" #\: 1))))
+(assert (string=? "foo" (car (string-splitn "foo:bar:baz" #\: 1))))
+(assert (string=? "bar:baz" (cadr (string-splitn "foo:bar:baz" #\: 1))))
 
 ;; Split haystack at delimiter.
 (define (string-split haystack delimiter)
   (string-splitn haystack delimiter -1))
+(assert (= 3 (length (string-split "foo:bar:baz" #\:))))
+(assert (string=? "foo" (car (string-split "foo:bar:baz" #\:))))
+(assert (string=? "bar" (cadr (string-split "foo:bar:baz" #\:))))
+(assert (string=? "baz" (caddr (string-split "foo:bar:baz" #\:))))
 
 ;; Trim the prefix of S containing only characters that make PREDICATE
-;; true.  For example (string-ltrim char-whitespace? "  foo") =>
-;; "foo".
+;; true.
 (define (string-ltrim predicate s)
   (let loop ((s' (string->list s)))
     (if (predicate (car s'))
 	(loop (cdr s'))
 	(list->string s'))))
+(assert (string=? "foo" (string-ltrim char-whitespace? "  foo")))
 
 ;; Trim the suffix of S containing only characters that make PREDICATE
 ;; true.
@@ -105,20 +107,18 @@
     (if (predicate (car s'))
 	(loop (cdr s'))
 	(list->string (reverse s')))))
+(assert (string=? "foo" (string-rtrim char-whitespace? "foo 	")))
 
 ;; Trim both the prefix and suffix of S containing only characters
 ;; that make PREDICATE true.
 (define (string-trim predicate s)
   (string-ltrim predicate (string-rtrim predicate s)))
+(assert (string=? "foo" (string-trim char-whitespace? " 	foo 	")))
 
-(define (string-contains? s contained)
-  (let loop ((offset 0))
-    (if (<= (+ offset (string-length contained)) (string-length s))
-	(if (string=? (substring s offset (+ offset (string-length contained)))
-		      contained)
-	    #t
-	    (loop (+ 1 offset)))
-	#f)))
+;; Check if needle is contained in haystack.
+(ffi-define (string-contains? haystack needle))
+(assert (string-contains? "Hallo" "llo"))
+(assert (not (string-contains? "Hallo" "olla")))
 
 (define (echo . msg)
   (for-each (lambda (x) (display x) (display " ")) msg)
@@ -154,10 +154,10 @@
 
 ;; Read everything from port P.
 (define (read-all . p)
-  (list->string
-   (let f ()
-     (let ((c (apply peek-char p)))
-       (cond
-	((eof-object? c) '())
-	(else (apply read-char p)
-	 (cons c (f))))))))
+  (let loop ((acc (open-output-string)))
+    (let ((c (apply peek-char p)))
+      (cond
+       ((eof-object? c) (get-output-string acc))
+       (else
+	(write-char (apply read-char p) acc)
+	(loop acc))))))

@@ -38,3 +38,7 @@
     (write (cons (string->symbol name) args) args')
     (throw (string-append
 	    (get-output-string args') ": " message))))
+
+;; Pseudo-definitions for foreign functions.  Evaluates to no code,
+;; but serves as documentation.
+(macro (ffi-define form))
