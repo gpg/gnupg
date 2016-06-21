@@ -120,10 +120,6 @@
 (assert (string-contains? "Hallo" "llo"))
 (assert (not (string-contains? "Hallo" "olla")))
 
-(define (echo . msg)
-  (for-each (lambda (x) (display x) (display " ")) msg)
-  (newline))
-
 ;; Read a word from port P.
 (define (read-word . p)
   (list->string

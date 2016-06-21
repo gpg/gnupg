@@ -30,17 +30,20 @@
     (get-output-string p)))
 
 ;; Reporting.
-(define (info msg)
-  (display msg)
-  (newline)
+(define (echo . msg)
+  (for-each (lambda (x) (display x) (display " ")) msg)
+  (newline))
+
+(define (info . msg)
+  (apply echo msg)
   (flush-stdio))
 
-(define (error msg)
-  (info msg)
+(define (error . msg)
+  (apply info msg)
   (exit 1))
 
-(define (skip msg)
-  (info msg)
+(define (skip . msg)
+  (apply info msg)
   (exit 77))
 
 (define (make-counter)
@@ -136,6 +139,9 @@
 ;;
 ;; File management.
 ;;
+(define (file-exists? name)
+  (call-with-input-file name (lambda (port) #t)))
+
 (define (file=? a b)
   (file-equal a b #t))
 
@@ -361,6 +367,8 @@
 
 (define (tr:spawn input command)
   (lambda (tmpfiles source)
+    (if (and (member '**in** command) (not source))
+	(error (string-append (stringify cmd) " needs an input")))
     (let* ((t (make-temporary-file))
 	   (cmd (map (lambda (x)
 		       (cond
@@ -368,6 +376,8 @@
 			((equal? '**out** x) t)
 			(else x))) command)))
       (call-popen cmd input)
+      (if (and (member '**out** command) (not (file-exists? t)))
+	  (error (string-append (stringify cmd) " did not produce '" t "'.")))
       (list (cons t tmpfiles) t))))
 
 (define (tr:write-to pathname)
@@ -396,7 +406,7 @@
 	(error "mismatch"))
     (list tmpfiles source)))
 
-(define (tr:call-with-content function)
+(define (tr:call-with-content function . args)
   (lambda (tmpfiles source)
-    (function (call-with-input-file source read-all))
+    (apply function `(,(call-with-input-file source read-all) ,@args))
     (list tmpfiles source)))
