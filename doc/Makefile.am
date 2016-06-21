@@ -32,7 +32,7 @@ helpfiles = help.txt help.be.txt help.ca.txt help.cs.txt		\
             help.pt_BR.txt help.ro.txt help.ru.txt help.sk.txt		\
             help.sv.txt help.tr.txt help.zh_CN.txt help.zh_TW.txt
 
-EXTRA_DIST = samplekeys.asc mksamplekeys \
+EXTRA_DIST = samplekeys.asc mksamplekeys com-certs.pem qualified.txt \
 	     gnupg-logo.eps gnupg-logo.pdf gnupg-logo.png gnupg-logo-tr.png \
 	     gnupg-module-overview.png gnupg-module-overview.pdf \
              gnupg-card-architecture.png gnupg-card-architecture.pdf \
@@ -46,7 +46,7 @@ BUILT_SOURCES = gnupg-module-overview.png gnupg-module-overview.pdf \
 
 info_TEXINFOS = gnupg.texi
 
-dist_pkgdata_DATA = qualified.txt com-certs.pem $(helpfiles)
+dist_pkgdata_DATA =  $(helpfiles)
 
 nobase_dist_doc_DATA = FAQ DETAILS HACKING DCO TRANSLATE OpenPGP KEYSERVER \
                        $(examples)
