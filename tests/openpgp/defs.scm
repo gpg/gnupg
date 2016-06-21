@@ -82,12 +82,13 @@
 (define (pipe:gpg args)
   (pipe:spawn `(,@GPG --output - ,@args -)))
 
+(define (gpg-with-colons args)
+  (let ((s (call-popen `(,@GPG --with-colons ,@args) "")))
+    (map (lambda (line) (string-split line #\:))
+	 (string-split s #\newline))))
+
 (define (get-config what)
-  (let* ((config-string
-	  (call-popen `(,@GPG --with-colons --list-config ,what) ""))
-	 (config (string-splitn
-		  (string-rtrim char-whitespace? config-string) #\: 2)))
-    (string-split (caddr config) #\;)))
+  (string-split (caddar (gpg-with-colons `(--list-config ,what))) #\;))
 
 (define all-pubkey-algos (get-config "pubkeyname"))
 (define all-hash-algos (get-config "digestname"))

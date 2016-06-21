@@ -40,12 +40,6 @@ TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) GPG_AGENT_INFO= LC_ALL=C \
 	objdir=$(abs_top_builddir) \
 	GPGSCM_PATH=$(top_srcdir)/tests/gpgscm:$(top_srcdir)/tests/openpgp
 
-if SQLITE3
-sqlite3_dependent_tests = tofu.test
-else
-sqlite3_dependent_tests =
-endif
-
 # Note: setup.scm needs to be the first test to run and finish.scm
 # the last one
 TESTS = setup.scm \
@@ -79,11 +73,11 @@ TESTS = setup.scm \
 	import.scm \
 	ecc.scm \
 	4gb-packet.scm \
-	$(sqlite3_dependent_tests) \
+	tofu.scm \
 	gpgtar.scm \
 	use-exact-key.scm \
 	default-key.scm \
-	export.test \
+	export.scm \
 	finish.scm
 
 
