@@ -185,6 +185,12 @@
 	path
 	(basename (substring path (+ 1 i) (string-length path))))))
 
+(define (basename-suffix path suffix)
+  (basename
+   (if (string-suffix? path suffix)
+       (substring path 0 (- (string-length path) (string-length suffix)))
+       path)))
+
 ;; Helper for (pipe).
 (define :read-end car)
 (define :write-end cadr)
