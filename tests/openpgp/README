@@ -1,4 +1,4 @@
-Emacs, this is an -*- org -*- file.
+#                                   Emacs, this is an -*- org -*- file.
 
 * How to run the test suite
 ** using the legacy driver
@@ -158,3 +158,4 @@ exception if the command does not return 0.
 (call-popen cmdline input) calls a command, writes input to its stdin,
 and returns any output from stdout, or raises an exception containing
 stderr on failure.
+* Sample messages
