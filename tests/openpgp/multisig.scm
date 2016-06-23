@@ -156,17 +156,13 @@ cnksIEkgY2FuJ3QgZG8gdGhhdAo=
 (for-each-p
  "Checking that an invalid signature is verified as such"
  (lambda (armored-file)
-   (tr:do
-    (tr:pipe-do
-     (pipe:echo (eval armored-file (current-environment)))
-     (pipe:spawn `(,@GPG --dearmor)))
-    ;; XXX: this is ugly
-    (lambda args
-      (if (catch #f ;; verifikation failed, this is what we want
-		 (apply (tr:spawn "" `(,@GPG --verify **in**)) args)
-		 ;; verification succeded, this is an error.
-		 #t)
-	  (error "invalid signature is valid")
-	  args))))
+   (lettmp (file)
+     (pipe:do
+      (pipe:echo (eval armored-file (current-environment)))
+      (pipe:spawn `(,@GPG --dearmor))
+      (pipe:write-to file (logior O_WRONLY O_CREAT O_BINARY) #o600))
+
+     (if (= 0 (call `(,@GPG --verify ,file)))
+	 (error "Bad signature verified ok")))
  '(sig-1ls1ls-valid sig-ls-valid sig-1lsls-invalid
 		    sig-lsls-invalid sig-lss-invalid sig-slsl-invalid))

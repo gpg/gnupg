@@ -56,9 +56,12 @@
   '(500 9000 32000 80000))
 
 (define (dearmor source-name sink-name)
-  (letfd ((source (open source-name (logior O_RDONLY O_BINARY)))
-	    (sink (open sink-name (logior O_WRONLY O_CREAT O_BINARY) #o600)))
-	   (call-with-fds `(,@GPG --dearmor) source sink STDERR_FILENO)))
+  (pipe:do
+   (pipe:open source-name (logior O_RDONLY O_BINARY))
+   (pipe:spawn `(,@GPG --dearmor))
+   (pipe:write-to sink-name
+		  (logior O_WRONLY O_CREAT O_BINARY)
+		  #o600)))
 
 (for-each-p "Unpacking samples"
   (lambda (name)
