@@ -4778,6 +4778,9 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   /* init F */
   typeflag(sc->F) = (T_ATOM | MARK);
   car(sc->F) = cdr(sc->F) = sc->F;
+  /* init EOF_OBJ */
+  typeflag(sc->EOF_OBJ) = (T_ATOM | MARK);
+  car(sc->EOF_OBJ) = cdr(sc->EOF_OBJ) = sc->EOF_OBJ;
   /* init sink */
   typeflag(sc->sink) = (T_PAIR | MARK);
   car(sc->sink) = sc->NIL;
