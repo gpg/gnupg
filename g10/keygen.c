@@ -4340,11 +4340,15 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
           gen_standard_revoke (pk, cache_nonce);
 
+          /* Get rid of the first empty packet.  */
+          commit_kbnode (&pub_root);
+
           if (!opt.batch)
             {
               tty_printf (_("public and secret key created and signed.\n") );
               tty_printf ("\n");
-              list_keyblock_direct (ctrl, pub_root, 0, 1, 1);
+              merge_keys_and_selfsig (pub_root);
+              list_keyblock_direct (ctrl, pub_root, 0, 1, 1, 1);
             }
 
 
