@@ -40,10 +40,14 @@ typedef struct name_value_entry *nve_t;
 
 /* Memory management, and dealing with entries.  */
 
-/* Allocate a private key container structure.  */
+/* Allocate a name value container structure.  */
 nvc_t nvc_new (void);
 
-/* Release a private key container structure.  */
+/* Allocate a name value container structure for use with the extended
+ * private key format.  */
+nvc_t nvc_new_private_key (void);
+
+/* Release a name value container structure.  */
 void nvc_release (nvc_t pk);
 
 /* Get the name.  */
@@ -102,6 +106,13 @@ gpg_error_t nvc_set_private_key (nvc_t pk, gcry_sexp_t sexp);
    structure in RESULT.  If ERRLINEP is given, the line number the
    parser was last considering is stored there.  */
 gpg_error_t nvc_parse (nvc_t *result, int *errlinep, estream_t stream);
+
+/* Parse STREAM and return a newly allocated name value container
+   structure in RESULT - assuming the extended private key format.  If
+   ERRLINEP is given, the line number the parser was last considering
+   is stored there.  */
+gpg_error_t nvc_parse_private_key (nvc_t *result, int *errlinep,
+                                   estream_t stream);
 
 /* Write a representation of PK to STREAM.  */
 gpg_error_t nvc_write (nvc_t pk, estream_t stream);

@@ -47,6 +47,7 @@ struct name_value_container
 {
   struct name_value_entry *first;
   struct name_value_entry *last;
+  unsigned int private_key_mode:1;
 };
 
 
@@ -75,6 +76,13 @@ my_error_from_syserror (void)
 }
 
 
+static inline gpg_error_t
+my_error (gpg_err_code_t ec)
+{
+  return gpg_err_make (default_errsource, ec);
+}
+
+
 
 
 /* Allocation and deallocation.  */
@@ -87,17 +95,31 @@ nvc_new (void)
 }
 
 
+/* Allocate a private key container structure for use with private keys.  */
+nvc_t
+nvc_new_private_key (void)
+{
+  nvc_t nvc = nvc_new ();
+  if (nvc)
+    nvc->private_key_mode = 1;
+  return nvc;
+}
+
+
 static void
-nve_release (nve_t entry)
+nve_release (nve_t entry, int private_key_mode)
 {
   if (entry == NULL)
     return;
 
   xfree (entry->name);
-  if (entry->value)
+  if (entry->value && private_key_mode)
     wipememory (entry->value, strlen (entry->value));
   xfree (entry->value);
-  free_strlist_wipe (entry->raw_value);
+  if (private_key_mode)
+    free_strlist_wipe (entry->raw_value);
+  else
+    free_strlist (entry->raw_value);
   xfree (entry);
 }
 
@@ -114,7 +136,7 @@ nvc_release (nvc_t pk)
   for (e = pk->first; e; e = next)
     {
       next = e->next;
-      nve_release (e);
+      nve_release (e, pk->private_key_mode);
     }
 
   xfree (pk);
@@ -336,13 +358,16 @@ _nvc_add (nvc_t pk, char *name, char *value, strlist_t raw_value,
 
   if (name && ! valid_name (name))
     {
-      err = gpg_error (GPG_ERR_INV_NAME);
+      err = my_error (GPG_ERR_INV_NAME);
       goto leave;
     }
 
-  if (name && ascii_strcasecmp (name, "Key:") == 0 && nvc_lookup (pk, "Key:"))
+  if (name
+      && pk->private_key_mode
+      && !ascii_strcasecmp (name, "Key:")
+      && nvc_lookup (pk, "Key:"))
     {
-      err = gpg_error (GPG_ERR_INV_NAME);
+      err = my_error (GPG_ERR_INV_NAME);
       goto leave;
     }
 
@@ -486,7 +511,7 @@ nvc_delete (nvc_t pk, nve_t entry)
   else
     pk->last = entry->prev;
 
-  nve_release (entry);
+  nve_release (entry, pk->private_key_mode);
 }
 
 
@@ -549,9 +574,9 @@ nvc_get_private_key (nvc_t pk, gcry_sexp_t *retsexp)
   gpg_error_t err;
   nve_t e;
 
-  e = nvc_lookup (pk, "Key:");
+  e = pk->private_key_mode? nvc_lookup (pk, "Key:") : NULL;
   if (e == NULL)
-    return gpg_error (GPG_ERR_MISSING_KEY);
+    return my_error (GPG_ERR_MISSING_KEY);
 
   err = assert_value (e);
   if (err)
@@ -568,6 +593,9 @@ nvc_set_private_key (nvc_t pk, gcry_sexp_t sexp)
   gpg_error_t err;
   char *raw, *clean, *p;
   size_t len, i;
+
+  if (!pk->private_key_mode)
+    return my_error (GPG_ERR_MISSING_KEY);
 
   len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, NULL, 0);
 
@@ -620,11 +648,9 @@ nvc_set_private_key (nvc_t pk, gcry_sexp_t sexp)
 
 /* Parsing and serialization.  */
 
-/* Parse STREAM and return a newly allocated private key container
-   structure in RESULT.  If ERRLINEP is given, the line number the
-   parser was last considering is stored there.  */
-gpg_error_t
-nvc_parse (nvc_t *result, int *errlinep, estream_t stream)
+static gpg_error_t
+do_nvc_parse (nvc_t *result, int *errlinep, estream_t stream,
+              int for_private_key)
 {
   gpg_error_t err = 0;
   gpgrt_ssize_t len;
@@ -633,8 +659,7 @@ nvc_parse (nvc_t *result, int *errlinep, estream_t stream)
   char *name = NULL;
   strlist_t raw_value = NULL;
 
-
-  *result = nvc_new ();
+  *result = for_private_key? nvc_new_private_key () : nvc_new ();
   if (*result == NULL)
     return my_error_from_syserror ();
 
@@ -680,7 +705,7 @@ nvc_parse (nvc_t *result, int *errlinep, estream_t stream)
 	  colon = strchr (buf, ':');
 	  if (colon == NULL)
 	    {
-	      err = gpg_error (GPG_ERR_INV_VALUE);
+	      err = my_error (GPG_ERR_INV_VALUE);
 	      goto leave;
 	    }
 
@@ -724,6 +749,27 @@ nvc_parse (nvc_t *result, int *errlinep, estream_t stream)
     }
 
   return err;
+}
+
+
+/* Parse STREAM and return a newly allocated name value container
+   structure in RESULT.  If ERRLINEP is given, the line number the
+   parser was last considering is stored there.  */
+gpg_error_t
+nvc_parse (nvc_t *result, int *errlinep, estream_t stream)
+{
+  return do_nvc_parse (result, errlinep, stream, 0);
+}
+
+
+/* Parse STREAM and return a newly allocated name value container
+   structure in RESULT - assuming the extended private key format.  If
+   ERRLINEP is given, the line number the parser was last considering
+   is stored there.  */
+gpg_error_t
+nvc_parse_private_key (nvc_t *result, int *errlinep, estream_t stream)
+{
+  return do_nvc_parse (result, errlinep, stream, 1);
 }
 
 

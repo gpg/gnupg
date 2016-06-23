@@ -62,7 +62,7 @@ write_extended_private_key (char *fname, estream_t fp,
   int remove = 0;
   int line;
 
-  err = nvc_parse (&pk, &line, fp);
+  err = nvc_parse_private_key (&pk, &line, fp);
   if (err)
     {
       log_error ("error parsing '%s' line %d: %s\n",
@@ -690,7 +690,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
       nvc_t pk;
       int line;
 
-      rc = nvc_parse (&pk, &line, fp);
+      rc = nvc_parse_private_key (&pk, &line, fp);
       es_fclose (fp);
 
       if (rc)

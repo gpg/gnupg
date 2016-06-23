@@ -29,6 +29,18 @@
 #include "name-value.h"
 
 static int verbose;
+static int private_key_mode;
+
+
+static nvc_t
+my_nvc_new (void)
+{
+  if (private_key_mode)
+    return nvc_new_private_key ();
+  else
+    return nvc_new ();
+}
+
 
 void
 test_getting_values (nvc_t pk)
@@ -55,14 +67,22 @@ test_key_extraction (nvc_t pk)
   gpg_error_t err;
   gcry_sexp_t key;
 
-  err = nvc_get_private_key (pk, &key);
-  assert (err == 0);
-  assert (key);
+  if (private_key_mode)
+    {
+      err = nvc_get_private_key (pk, &key);
+      assert (err == 0);
+      assert (key);
 
-  if (verbose)
-    gcry_sexp_dump (key);
+      if (verbose)
+        gcry_sexp_dump (key);
 
-  gcry_sexp_release (key);
+      gcry_sexp_release (key);
+    }
+  else
+    {
+      err = nvc_get_private_key (pk, &key);
+      assert (gpg_err_code (err) == GPG_ERR_MISSING_KEY);
+    }
 }
 
 
@@ -240,7 +260,10 @@ run_tests (void)
 			 0, dummy_realloc, dummy_free, "r");
       assert (source);
 
-      err = nvc_parse (&pk, NULL, source);
+      if (private_key_mode)
+        err = nvc_parse_private_key (&pk, NULL, source);
+      else
+        err = nvc_parse (&pk, NULL, source);
       assert (err == 0);
       assert (pk);
 
@@ -272,7 +295,7 @@ run_modification_tests (void)
   gcry_sexp_t key;
   char *buf;
 
-  pk = nvc_new ();
+  pk = my_nvc_new ();
   assert (pk);
 
   nvc_set (pk, "Foo:", "Bar");
@@ -354,20 +377,29 @@ run_modification_tests (void)
   xfree (buf);
   nvc_release (pk);
 
-  pk = nvc_new ();
+  pk = my_nvc_new ();
   assert (pk);
 
   err = gcry_sexp_build (&key, NULL, "(hello world)");
   assert (err == 0);
   assert (key);
 
-  err = nvc_set_private_key (pk, key);
-  gcry_sexp_release (key);
-  assert (err == 0);
-  buf = nvc_to_string (pk);
-  assert (strcmp (buf, "Key: (hello world)\n") == 0);
-  xfree (buf);
-  nvc_release (pk);
+  if (private_key_mode)
+    {
+      err = nvc_set_private_key (pk, key);
+      gcry_sexp_release (key);
+      assert (err == 0);
+
+      buf = nvc_to_string (pk);
+      assert (strcmp (buf, "Key: (hello world)\n") == 0);
+      xfree (buf);
+      nvc_release (pk);
+    }
+  else
+    {
+      err = nvc_set_private_key (pk, key);
+      assert (gpg_err_code (err) == GPG_ERR_MISSING_KEY);
+    }
 }
 
 
@@ -403,7 +435,7 @@ convert (const char *fname)
       exit (1);
     }
 
-  pk = nvc_new ();
+  pk = my_nvc_new ();
   assert (pk);
 
   err = nvc_set_private_key (pk, key);
@@ -437,7 +469,10 @@ parse (const char *fname)
       exit (1);
     }
 
-  err = nvc_parse (&pk_a, &line, source);
+  if (private_key_mode)
+    err = nvc_parse_private_key (&pk_a, &line, source);
+  else
+    err = nvc_parse (&pk_a, &line, source);
   if (err)
     {
       fprintf (stderr, "failed to parse %s line %d: %s\n",
@@ -448,14 +483,14 @@ parse (const char *fname)
   buf = nvc_to_string (pk_a);
   xfree (buf);
 
-  pk_b = nvc_new ();
+  pk_b = my_nvc_new ();
   assert (pk_b);
 
   for (e = nvc_first (pk_a); e; e = nve_next (e))
     {
       gcry_sexp_t key = NULL;
 
-      if (strcasecmp (nve_name (e), "Key:") == 0)
+      if (private_key_mode && !strcasecmp (nve_name (e), "Key:"))
 	{
 	  err = nvc_get_private_key (pk_a, &key);
 	  if (err)
@@ -487,7 +522,8 @@ print_usage (void)
   fprintf (stderr,
 	   "usage: t-private-keys [--verbose]"
 	   " [--convert <private-key-file>"
-	   " || --parse <extended-private-key-file>]\n");
+	   " || --parse-key <extended-private-key-file>"
+           " || --parse <file> ]\n");
   exit (2);
 }
 
@@ -495,7 +531,7 @@ print_usage (void)
 int
 main (int argc, char **argv)
 {
-  enum { TEST, CONVERT, PARSE } command = TEST;
+  enum { TEST, CONVERT, PARSE, PARSEKEY } command = TEST;
 
   if (argc)
     { argc--; argv++; }
@@ -508,6 +544,14 @@ main (int argc, char **argv)
   if (argc && !strcmp (argv[0], "--convert"))
     {
       command = CONVERT;
+      argc--; argv++;
+      if (argc != 1)
+	print_usage ();
+    }
+
+  if (argc && !strcmp (argv[0], "--parse-key"))
+    {
+      command = PARSEKEY;
       argc--; argv++;
       if (argc != 1)
 	print_usage ();
@@ -526,10 +570,18 @@ main (int argc, char **argv)
     case TEST:
       run_tests ();
       run_modification_tests ();
+      private_key_mode = 1;
+      run_tests ();
+      run_modification_tests ();
       break;
 
     case CONVERT:
       convert (*argv);
+      break;
+
+    case PARSEKEY:
+      private_key_mode = 1;
+      parse (*argv);
       break;
 
     case PARSE:
