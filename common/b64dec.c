@@ -61,7 +61,7 @@ static unsigned char const asctobin[128] =
 
 enum decoder_states
   {
-    s_init, s_idle, s_lfseen, s_begin,
+    s_init, s_idle, s_lfseen, s_beginseen, s_waitheader, s_waitblank, s_begin,
     s_b64_0, s_b64_1, s_b64_2, s_b64_3,
     s_waitendtitle, s_waitend
   };
@@ -71,26 +71,18 @@ enum decoder_states
 /* Initialize the context for the base64 decoder.  If TITLE is NULL a
    plain base64 decoding is done.  If it is the empty string the
    decoder will skip everything until a "-----BEGIN " line has been
-   seen, decoding ends at a "----END " line.
-
-   Not yet implemented: If TITLE is either "PGP" or begins with "PGP "
-   the PGP armor lines are skipped as well.  */
+   seen, decoding ends at a "----END " line.  */
 gpg_error_t
 b64dec_start (struct b64state *state, const char *title)
 {
   memset (state, 0, sizeof *state);
   if (title)
     {
-      if (!strncmp (title, "PGP", 3) && (!title[3] || title[3] == ' '))
-        state->lasterr = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      state->title = xtrystrdup (title);
+      if (!state->title)
+        state->lasterr = gpg_error_from_syserror ();
       else
-        {
-          state->title = xtrystrdup (title);
-          if (!state->title)
-            state->lasterr = gpg_error_from_syserror ();
-          else
-            state->idx = s_init;
-        }
+        state->idx = s_init;
     }
   else
     state->idx = s_b64_0;
@@ -123,6 +115,7 @@ b64dec_proc (struct b64state *state, void *buffer, size_t length,
 
   for (s=d=buffer; length && !state->stop_seen; length--, s++)
     {
+    again:
       switch (ds)
         {
         case s_idle:
@@ -136,11 +129,41 @@ b64dec_proc (struct b64state *state, void *buffer, size_t length,
           ds = s_lfseen;
         case s_lfseen:
           if (*s != "-----BEGIN "[pos])
-            ds = s_idle;
+            {
+              ds = s_idle;
+              goto again;
+            }
           else if (pos == 10)
-            ds = s_begin;
+            {
+              pos = 0;
+              ds = s_beginseen;
+            }
           else
             pos++;
+          break;
+        case s_beginseen:
+          if (*s != "PGP "[pos])
+            ds = s_begin; /* Not a PGP armor.  */
+          else if (pos == 3)
+            ds = s_waitheader;
+          else
+            pos++;
+          break;
+        case s_waitheader:
+          if (*s == '\n')
+            ds = s_waitblank;
+          break;
+        case s_waitblank:
+          if (*s == '\n')
+            ds = s_b64_0; /* blank line found.  */
+          else if (*s == ' ' || *s == '\r' || *s == '\t')
+            ; /* Ignore spaces. */
+          else
+            {
+              /* Armor header line.  Note that we don't care that our
+               * FSM accepts a header prefixed with spaces.  */
+              ds = s_waitheader; /* Wait for next header.  */
+            }
           break;
         case s_begin:
           if (*s == '\n')
