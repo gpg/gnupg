@@ -126,7 +126,11 @@ enum scheme_types {
   T_PROMISE=13,
   T_ENVIRONMENT=14,
   T_FOREIGN_OBJECT=15,
-  T_LAST_SYSTEM_TYPE=15
+  T_BOOLEAN=16,
+  T_NIL=17,
+  T_EOF_OBJ=18,
+  T_SINK=19,
+  T_LAST_SYSTEM_TYPE=19
 };
 
 static const char *
@@ -149,6 +153,10 @@ type_to_string (enum scheme_types typ)
      case T_PROMISE: return "promise";
      case T_ENVIRONMENT: return "environment";
      case T_FOREIGN_OBJECT: return "foreign object";
+     case T_BOOLEAN: return "boolean";
+     case T_NIL: return "nil";
+     case T_EOF_OBJ: return "eof object";
+     case T_SINK: return "sink";
      }
      assert (! "not reached");
 }
@@ -4770,19 +4778,19 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   sc->tracing=0;
 
   /* init sc->NIL */
-  typeflag(sc->NIL) = (T_ATOM | MARK);
+  typeflag(sc->NIL) = (T_NIL | T_ATOM | MARK);
   car(sc->NIL) = cdr(sc->NIL) = sc->NIL;
   /* init T */
-  typeflag(sc->T) = (T_ATOM | MARK);
+  typeflag(sc->T) = (T_BOOLEAN | T_ATOM | MARK);
   car(sc->T) = cdr(sc->T) = sc->T;
   /* init F */
-  typeflag(sc->F) = (T_ATOM | MARK);
+  typeflag(sc->F) = (T_BOOLEAN | T_ATOM | MARK);
   car(sc->F) = cdr(sc->F) = sc->F;
   /* init EOF_OBJ */
-  typeflag(sc->EOF_OBJ) = (T_ATOM | MARK);
+  typeflag(sc->EOF_OBJ) = (T_EOF_OBJ | T_ATOM | MARK);
   car(sc->EOF_OBJ) = cdr(sc->EOF_OBJ) = sc->EOF_OBJ;
   /* init sink */
-  typeflag(sc->sink) = (T_PAIR | MARK);
+  typeflag(sc->sink) = (T_SINK | T_PAIR | MARK);
   car(sc->sink) = sc->NIL;
   /* init c_nest */
   sc->c_nest = sc->NIL;
