@@ -233,7 +233,7 @@ read from STDIN.  If only a one argument is given, it is expected to
 be a complete signature.
 
 With more than 1 argument, the first should be a detached signature
-and the remaining files ake up the the signed data. To read the signed
+and the remaining files make up the the signed data. To read the signed
 data from STDIN, use @samp{-} as the second filename.  For security
 reasons a detached signature cannot read the signed material from
 STDIN without denoting it in the above way.
@@ -2179,6 +2179,11 @@ opposite meaning. The options are:
   is removed by the keyserver, but it does at least give you back one
   subkey. Defaults to no for regular @option{--import} and to yes for
   keyserver @option{--recv-keys}.
+
+  @item import-show
+  Show a listing of the key as imported right before it is stored.
+  This can be combined with the option @option{--dry-run} to only look
+  at keys.
 
   @item merge-only
   During import, allow key updates to existing keys, but do not allow

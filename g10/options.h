@@ -334,6 +334,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define IMPORT_LOCAL_SIGS                (1<<0)
 #define IMPORT_REPAIR_PKS_SUBKEY_BUG     (1<<1)
 #define IMPORT_FAST                      (1<<2)
+#define IMPORT_SHOW                      (1<<3)
 #define IMPORT_MERGE_ONLY                (1<<4)
 #define IMPORT_MINIMAL                   (1<<5)
 #define IMPORT_CLEAN                     (1<<6)

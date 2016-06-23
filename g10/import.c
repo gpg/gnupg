@@ -112,6 +112,9 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"fast-import",IMPORT_FAST,NULL,
        N_("do not update the trustdb after import")},
 
+      {"import-show",IMPORT_SHOW,NULL,
+       N_("show key during import")},
+
       {"merge-only",IMPORT_MERGE_ONLY,NULL,
        N_("only accept updates to existing keys")},
 
@@ -936,7 +939,7 @@ import_one (ctrl_t ctrl,
             import_screener_t screener, void *screener_arg)
 {
   PKT_public_key *pk;
-  PKT_public_key *pk_orig;
+  PKT_public_key *pk_orig = NULL;
   kbnode_t node, uidnode;
   kbnode_t keyblock_orig = NULL;
   byte fpr2[MAX_FINGERPRINT_LEN];
@@ -1049,6 +1052,22 @@ import_one (ctrl_t ctrl,
       stats->no_user_id++;
       return 0;
     }
+
+  /* Get rid of deleted nodes.  */
+  commit_kbnode (&keyblock);
+
+  /* Show the key in the form it is merged or inserted. */
+  if ((options & IMPORT_SHOW))
+    {
+      merge_keys_and_selfsig (keyblock);
+      /* Note that we do not want to show the validity because the key
+       * has not yet imported.  */
+      list_keyblock_direct (ctrl, keyblock, 0, 0, 1, 1);
+      es_fflush (es_stdout);
+    }
+
+  if (opt.dry_run)
+    goto leave;
 
   /* Do we have this key already in one of our pubrings ? */
   pk_orig = xmalloc_clear( sizeof *pk_orig );
@@ -1258,7 +1277,7 @@ import_one (ctrl_t ctrl,
       keydb_release (hd); hd = NULL;
     }
 
-  leave:
+ leave:
   if (mod_key || new_key || same_key)
     {
       /* A little explanation for this: we fill in the fingerprint
