@@ -31,31 +31,31 @@
 static int verbose;
 
 void
-test_getting_values (pkc_t pk)
+test_getting_values (nvc_t pk)
 {
-  pke_t e;
+  nve_t e;
 
-  e = pkc_lookup (pk, "Comment:");
+  e = nvc_lookup (pk, "Comment:");
   assert (e);
 
   /* Names are case-insensitive.  */
-  e = pkc_lookup (pk, "comment:");
+  e = nvc_lookup (pk, "comment:");
   assert (e);
-  e = pkc_lookup (pk, "COMMENT:");
+  e = nvc_lookup (pk, "COMMENT:");
   assert (e);
 
-  e = pkc_lookup (pk, "SomeOtherName:");
+  e = nvc_lookup (pk, "SomeOtherName:");
   assert (e);
 }
 
 
 void
-test_key_extraction (pkc_t pk)
+test_key_extraction (nvc_t pk)
 {
   gpg_error_t err;
   gcry_sexp_t key;
 
-  err = pkc_get_private_key (pk, &key);
+  err = nvc_get_private_key (pk, &key);
   assert (err == 0);
   assert (key);
 
@@ -67,41 +67,41 @@ test_key_extraction (pkc_t pk)
 
 
 void
-test_iteration (pkc_t pk)
+test_iteration (nvc_t pk)
 {
   int i;
-  pke_t e;
+  nve_t e;
 
   i = 0;
-  for (e = pkc_first (pk); e; e = pke_next (e))
+  for (e = nvc_first (pk); e; e = nve_next (e))
     i++;
   assert (i == 4);
 
   i = 0;
-  for (e = pkc_lookup (pk, "Comment:");
+  for (e = nvc_lookup (pk, "Comment:");
        e;
-       e = pke_next_value (e, "Comment:"))
+       e = nve_next_value (e, "Comment:"))
     i++;
   assert (i == 3);
 }
 
 
 void
-test_whitespace (pkc_t pk)
+test_whitespace (nvc_t pk)
 {
-  pke_t e;
+  nve_t e;
 
-  e = pkc_lookup (pk, "One:");
+  e = nvc_lookup (pk, "One:");
   assert (e);
-  assert (strcmp (pke_value (e), "WithoutWhitespace") == 0);
+  assert (strcmp (nve_value (e), "WithoutWhitespace") == 0);
 
-  e = pkc_lookup (pk, "Two:");
+  e = nvc_lookup (pk, "Two:");
   assert (e);
-  assert (strcmp (pke_value (e), "With Whitespace") == 0);
+  assert (strcmp (nve_value (e), "With Whitespace") == 0);
 
-  e = pkc_lookup (pk, "Three:");
+  e = nvc_lookup (pk, "Three:");
   assert (e);
-  assert (strcmp (pke_value (e),
+  assert (strcmp (nve_value (e),
                   "Blank lines in continuations encode newlines.\n"
                   "Next paragraph.") == 0);
 }
@@ -110,7 +110,7 @@ test_whitespace (pkc_t pk)
 struct
 {
   char *value;
-  void (*test_func) (pkc_t);
+  void (*test_func) (nvc_t);
 } tests[] =
   {
     {
@@ -193,7 +193,7 @@ struct
 
 
 static char *
-pkc_to_string (pkc_t pk)
+nvc_to_string (nvc_t pk)
 {
   gpg_error_t err;
   char *buf;
@@ -203,7 +203,7 @@ pkc_to_string (pkc_t pk)
   sink = es_fopenmem (0, "rw");
   assert (sink);
 
-  err = pkc_write (pk, sink);
+  err = nvc_write (pk, sink);
   assert (err == 0);
 
   len = es_ftell (sink);
@@ -226,7 +226,7 @@ void
 run_tests (void)
 {
   gpg_error_t err;
-  pkc_t pk;
+  nvc_t pk;
 
   int i;
   for (i = 0; i < DIM (tests); i++)
@@ -240,17 +240,17 @@ run_tests (void)
 			 0, dummy_realloc, dummy_free, "r");
       assert (source);
 
-      err = pkc_parse (&pk, NULL, source);
+      err = nvc_parse (&pk, NULL, source);
       assert (err == 0);
       assert (pk);
 
       if (verbose)
 	{
-	  err = pkc_write (pk, es_stderr);
+	  err = nvc_write (pk, es_stderr);
 	  assert (err == 0);
 	}
 
-      buf = pkc_to_string (pk);
+      buf = nvc_to_string (pk);
       assert (memcmp (tests[i].value, buf, len) == 0);
 
       es_fclose (source);
@@ -259,7 +259,7 @@ run_tests (void)
       if (tests[i].test_func)
 	tests[i].test_func (pk);
 
-      pkc_release (pk);
+      nvc_release (pk);
     }
 }
 
@@ -268,106 +268,106 @@ void
 run_modification_tests (void)
 {
   gpg_error_t err;
-  pkc_t pk;
+  nvc_t pk;
   gcry_sexp_t key;
   char *buf;
 
-  pk = pkc_new ();
+  pk = nvc_new ();
   assert (pk);
 
-  pkc_set (pk, "Foo:", "Bar");
-  buf = pkc_to_string (pk);
+  nvc_set (pk, "Foo:", "Bar");
+  buf = nvc_to_string (pk);
   assert (strcmp (buf, "Foo: Bar\n") == 0);
   xfree (buf);
 
-  pkc_set (pk, "Foo:", "Baz");
-  buf = pkc_to_string (pk);
+  nvc_set (pk, "Foo:", "Baz");
+  buf = nvc_to_string (pk);
   assert (strcmp (buf, "Foo: Baz\n") == 0);
   xfree (buf);
 
-  pkc_set (pk, "Bar:", "Bazzel");
-  buf = pkc_to_string (pk);
+  nvc_set (pk, "Bar:", "Bazzel");
+  buf = nvc_to_string (pk);
   assert (strcmp (buf, "Foo: Baz\nBar: Bazzel\n") == 0);
   xfree (buf);
 
-  pkc_add (pk, "Foo:", "Bar");
-  buf = pkc_to_string (pk);
+  nvc_add (pk, "Foo:", "Bar");
+  buf = nvc_to_string (pk);
   assert (strcmp (buf, "Foo: Baz\nFoo: Bar\nBar: Bazzel\n") == 0);
   xfree (buf);
 
-  pkc_add (pk, "DontExistYet:", "Bar");
-  buf = pkc_to_string (pk);
+  nvc_add (pk, "DontExistYet:", "Bar");
+  buf = nvc_to_string (pk);
   assert (strcmp (buf, "Foo: Baz\nFoo: Bar\nBar: Bazzel\nDontExistYet: Bar\n")
 	  == 0);
   xfree (buf);
 
-  pkc_delete (pk, pkc_lookup (pk, "DontExistYet:"));
-  buf = pkc_to_string (pk);
+  nvc_delete (pk, nvc_lookup (pk, "DontExistYet:"));
+  buf = nvc_to_string (pk);
   assert (strcmp (buf, "Foo: Baz\nFoo: Bar\nBar: Bazzel\n") == 0);
   xfree (buf);
 
-  pkc_delete (pk, pke_next_value (pkc_lookup (pk, "Foo:"), "Foo:"));
-  buf = pkc_to_string (pk);
+  nvc_delete (pk, nve_next_value (nvc_lookup (pk, "Foo:"), "Foo:"));
+  buf = nvc_to_string (pk);
   assert (strcmp (buf, "Foo: Baz\nBar: Bazzel\n") == 0);
   xfree (buf);
 
-  pkc_delete (pk, pkc_lookup (pk, "Foo:"));
-  buf = pkc_to_string (pk);
+  nvc_delete (pk, nvc_lookup (pk, "Foo:"));
+  buf = nvc_to_string (pk);
   assert (strcmp (buf, "Bar: Bazzel\n") == 0);
   xfree (buf);
 
-  pkc_delete (pk, pkc_first (pk));
-  buf = pkc_to_string (pk);
+  nvc_delete (pk, nvc_first (pk));
+  buf = nvc_to_string (pk);
   assert (strcmp (buf, "") == 0);
   xfree (buf);
 
-  pkc_set (pk, "Foo:", "A really long value spanning across multiple lines"
+  nvc_set (pk, "Foo:", "A really long value spanning across multiple lines"
 	   " that has to be wrapped at a convenient space.");
-  buf = pkc_to_string (pk);
+  buf = nvc_to_string (pk);
   assert (strcmp (buf, "Foo: A really long value spanning across multiple"
 		  " lines that has to be\n  wrapped at a convenient space.\n")
 	  == 0);
   xfree (buf);
 
-  pkc_set (pk, "Foo:", "XA really long value spanning across multiple lines"
+  nvc_set (pk, "Foo:", "XA really long value spanning across multiple lines"
 	   " that has to be wrapped at a convenient space.");
-  buf = pkc_to_string (pk);
+  buf = nvc_to_string (pk);
   assert (strcmp (buf, "Foo: XA really long value spanning across multiple"
 		  " lines that has to\n  be wrapped at a convenient space.\n")
 	  == 0);
   xfree (buf);
 
-  pkc_set (pk, "Foo:", "XXXXA really long value spanning across multiple lines"
+  nvc_set (pk, "Foo:", "XXXXA really long value spanning across multiple lines"
 	   " that has to be wrapped at a convenient space.");
-  buf = pkc_to_string (pk);
+  buf = nvc_to_string (pk);
   assert (strcmp (buf, "Foo: XXXXA really long value spanning across multiple"
 		  " lines that has\n  to be wrapped at a convenient space.\n")
 	  == 0);
   xfree (buf);
 
-  pkc_set (pk, "Foo:", "Areallylongvaluespanningacrossmultiplelines"
+  nvc_set (pk, "Foo:", "Areallylongvaluespanningacrossmultiplelines"
 	   "thathastobewrappedataconvenientspacethatisnotthere.");
-  buf = pkc_to_string (pk);
+  buf = nvc_to_string (pk);
   assert (strcmp (buf, "Foo: Areallylongvaluespanningacrossmultiplelinesthat"
 		  "hastobewrappedataco\n nvenientspacethatisnotthere.\n")
 	  == 0);
   xfree (buf);
-  pkc_release (pk);
+  nvc_release (pk);
 
-  pk = pkc_new ();
+  pk = nvc_new ();
   assert (pk);
 
   err = gcry_sexp_build (&key, NULL, "(hello world)");
   assert (err == 0);
   assert (key);
 
-  err = pkc_set_private_key (pk, key);
+  err = nvc_set_private_key (pk, key);
   gcry_sexp_release (key);
   assert (err == 0);
-  buf = pkc_to_string (pk);
+  buf = nvc_to_string (pk);
   assert (strcmp (buf, "Key: (hello world)\n") == 0);
   xfree (buf);
-  pkc_release (pk);
+  nvc_release (pk);
 }
 
 
@@ -380,7 +380,7 @@ convert (const char *fname)
   char *buf;
   size_t buflen;
   struct stat st;
-  pkc_t pk;
+  nvc_t pk;
 
   source = es_fopen (fname, "rb");
   if (source == NULL)
@@ -403,13 +403,13 @@ convert (const char *fname)
       exit (1);
     }
 
-  pk = pkc_new ();
+  pk = nvc_new ();
   assert (pk);
 
-  err = pkc_set_private_key (pk, key);
+  err = nvc_set_private_key (pk, key);
   assert (err == 0);
 
-  err = pkc_write (pk, es_stdout);
+  err = nvc_write (pk, es_stdout);
   assert (err == 0);
 
   return;
@@ -426,8 +426,8 @@ parse (const char *fname)
   gpg_error_t err;
   estream_t source;
   char *buf;
-  pkc_t pk_a, pk_b;
-  pke_t e;
+  nvc_t pk_a, pk_b;
+  nve_t e;
   int line;
 
   source = es_fopen (fname, "rb");
@@ -437,7 +437,7 @@ parse (const char *fname)
       exit (1);
     }
 
-  err = pkc_parse (&pk_a, &line, source);
+  err = nvc_parse (&pk_a, &line, source);
   if (err)
     {
       fprintf (stderr, "failed to parse %s line %d: %s\n",
@@ -445,36 +445,36 @@ parse (const char *fname)
       exit (1);
     }
 
-  buf = pkc_to_string (pk_a);
+  buf = nvc_to_string (pk_a);
   xfree (buf);
 
-  pk_b = pkc_new ();
+  pk_b = nvc_new ();
   assert (pk_b);
 
-  for (e = pkc_first (pk_a); e; e = pke_next (e))
+  for (e = nvc_first (pk_a); e; e = nve_next (e))
     {
       gcry_sexp_t key = NULL;
 
-      if (strcasecmp (pke_name (e), "Key:") == 0)
+      if (strcasecmp (nve_name (e), "Key:") == 0)
 	{
-	  err = pkc_get_private_key (pk_a, &key);
+	  err = nvc_get_private_key (pk_a, &key);
 	  if (err)
 	    key = NULL;
 	}
 
       if (key)
 	{
-	  err = pkc_set_private_key (pk_b, key);
+	  err = nvc_set_private_key (pk_b, key);
 	  assert (err == 0);
 	}
       else
 	{
-	  err = pkc_add (pk_b, pke_name (e), pke_value (e));
+	  err = nvc_add (pk_b, nve_name (e), nve_value (e));
 	  assert (err == 0);
 	}
     }
 
-    buf = pkc_to_string (pk_b);
+    buf = nvc_to_string (pk_b);
     if (verbose)
       fprintf (stdout, "%s", buf);
     xfree (buf);

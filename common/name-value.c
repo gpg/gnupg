@@ -43,17 +43,17 @@
 #include "util.h"
 #include "name-value.h"
 
-struct private_key_container
+struct name_value_container
 {
-  struct private_key_entry *first;
-  struct private_key_entry *last;
+  struct name_value_entry *first;
+  struct name_value_entry *last;
 };
 
 
-struct private_key_entry
+struct name_value_entry
 {
-  struct private_key_entry *prev;
-  struct private_key_entry *next;
+  struct name_value_entry *prev;
+  struct name_value_entry *next;
 
   /* The name.  Comments and blank lines have NAME set to NULL.  */
   char *name;
@@ -80,15 +80,15 @@ my_error_from_syserror (void)
 /* Allocation and deallocation.  */
 
 /* Allocate a private key container structure.  */
-pkc_t
-pkc_new (void)
+nvc_t
+nvc_new (void)
 {
-  return xtrycalloc (1, sizeof (struct private_key_container));
+  return xtrycalloc (1, sizeof (struct name_value_container));
 }
 
 
 static void
-pke_release (pke_t entry)
+nve_release (nve_t entry)
 {
   if (entry == NULL)
     return;
@@ -104,9 +104,9 @@ pke_release (pke_t entry)
 
 /* Release a private key container structure.  */
 void
-pkc_release (pkc_t pk)
+nvc_release (nvc_t pk)
 {
-  pke_t e, next;
+  nve_t e, next;
 
   if (pk == NULL)
     return;
@@ -114,7 +114,7 @@ pkc_release (pkc_t pk)
   for (e = pk->first; e; e = next)
     {
       next = e->next;
-      pke_release (e);
+      nve_release (e);
     }
 
   xfree (pk);
@@ -145,7 +145,7 @@ valid_name (const char *name)
 
 /* Makes sure that ENTRY has a RAW_VALUE.  */
 static gpg_error_t
-assert_raw_value (pke_t entry)
+assert_raw_value (nve_t entry)
 {
   gpg_error_t err = 0;
   size_t len, offset;
@@ -261,7 +261,7 @@ continuation_length (const char *s, int *swallow_ws, const char **start)
 
 /* Makes sure that ENTRY has a VALUE.  */
 static gpg_error_t
-assert_value (pke_t entry)
+assert_value (nve_t entry)
 {
   size_t len;
   int swallow_ws;
@@ -302,7 +302,7 @@ assert_value (pke_t entry)
 
 /* Get the name.  */
 char *
-pke_name (pke_t pke)
+nve_name (nve_t pke)
 {
   return pke->name;
 }
@@ -310,7 +310,7 @@ pke_name (pke_t pke)
 
 /* Get the value.  */
 char *
-pke_value (pke_t pke)
+nve_value (nve_t pke)
 {
   if (assert_value (pke))
     return NULL;
@@ -326,11 +326,11 @@ pke_value (pke_t pke)
    given.  If PRESERVE_ORDER is not given, entries with the same name
    are grouped.  NAME, VALUE and RAW_VALUE is consumed.  */
 static gpg_error_t
-_pkc_add (pkc_t pk, char *name, char *value, strlist_t raw_value,
+_nvc_add (nvc_t pk, char *name, char *value, strlist_t raw_value,
 	  int preserve_order)
 {
   gpg_error_t err = 0;
-  pke_t e;
+  nve_t e;
 
   assert (value || raw_value);
 
@@ -340,7 +340,7 @@ _pkc_add (pkc_t pk, char *name, char *value, strlist_t raw_value,
       goto leave;
     }
 
-  if (name && ascii_strcasecmp (name, "Key:") == 0 && pkc_lookup (pk, "Key:"))
+  if (name && ascii_strcasecmp (name, "Key:") == 0 && nvc_lookup (pk, "Key:"))
     {
       err = gpg_error (GPG_ERR_INV_NAME);
       goto leave;
@@ -359,21 +359,21 @@ _pkc_add (pkc_t pk, char *name, char *value, strlist_t raw_value,
 
   if (pk->first)
     {
-      pke_t last;
+      nve_t last;
 
       if (preserve_order || name == NULL)
 	last = pk->last;
       else
 	{
 	  /* See if there is already an entry with NAME.  */
-	  last = pkc_lookup (pk, name);
+	  last = nvc_lookup (pk, name);
 
 	  /* If so, find the last in that block.  */
 	  if (last)
             {
               while (last->next)
                 {
-                  pke_t next = last->next;
+                  nve_t next = last->next;
 
                   if (next->name && ascii_strcasecmp (next->name, name) == 0)
                     last = next;
@@ -419,7 +419,7 @@ _pkc_add (pkc_t pk, char *name, char *value, strlist_t raw_value,
 /* Add (NAME, VALUE) to PK.  If an entry with NAME already exists, it
    is not updated but the new entry is appended.  */
 gpg_error_t
-pkc_add (pkc_t pk, const char *name, const char *value)
+nvc_add (nvc_t pk, const char *name, const char *value)
 {
   char *k, *v;
 
@@ -434,7 +434,7 @@ pkc_add (pkc_t pk, const char *name, const char *value)
       return my_error_from_syserror ();
     }
 
-  return _pkc_add (pk, k, v, NULL, 0);
+  return _nvc_add (pk, k, v, NULL, 0);
 }
 
 
@@ -442,14 +442,14 @@ pkc_add (pkc_t pk, const char *name, const char *value)
    is updated with VALUE.  If multiple entries with NAME exist, the
    first entry is updated.  */
 gpg_error_t
-pkc_set (pkc_t pk, const char *name, const char *value)
+nvc_set (nvc_t pk, const char *name, const char *value)
 {
-  pke_t e;
+  nve_t e;
 
   if (! valid_name (name))
     return GPG_ERR_INV_NAME;
 
-  e = pkc_lookup (pk, name);
+  e = nvc_lookup (pk, name);
   if (e)
     {
       char *v;
@@ -468,13 +468,13 @@ pkc_set (pkc_t pk, const char *name, const char *value)
       return 0;
     }
   else
-    return pkc_add (pk, name, value);
+    return nvc_add (pk, name, value);
 }
 
 
 /* Delete the given entry from PK.  */
 void
-pkc_delete (pkc_t pk, pke_t entry)
+nvc_delete (nvc_t pk, nve_t entry)
 {
   if (entry->prev)
     entry->prev->next = entry->next;
@@ -486,7 +486,7 @@ pkc_delete (pkc_t pk, pke_t entry)
   else
     pk->last = entry->prev;
 
-  pke_release (entry);
+  nve_release (entry);
 }
 
 
@@ -494,10 +494,10 @@ pkc_delete (pkc_t pk, pke_t entry)
 /* Lookup and iteration.  */
 
 /* Get the first non-comment entry.  */
-pke_t
-pkc_first (pkc_t pk)
+nve_t
+nvc_first (nvc_t pk)
 {
-  pke_t entry;
+  nve_t entry;
   for (entry = pk->first; entry; entry = entry->next)
     if (entry->name)
       return entry;
@@ -506,10 +506,10 @@ pkc_first (pkc_t pk)
 
 
 /* Get the first entry with the given name.  */
-pke_t
-pkc_lookup (pkc_t pk, const char *name)
+nve_t
+nvc_lookup (nvc_t pk, const char *name)
 {
-  pke_t entry;
+  nve_t entry;
   for (entry = pk->first; entry; entry = entry->next)
     if (entry->name && ascii_strcasecmp (entry->name, name) == 0)
       return entry;
@@ -518,8 +518,8 @@ pkc_lookup (pkc_t pk, const char *name)
 
 
 /* Get the next non-comment entry.  */
-pke_t
-pke_next (pke_t entry)
+nve_t
+nve_next (nve_t entry)
 {
   for (entry = entry->next; entry; entry = entry->next)
     if (entry->name)
@@ -529,8 +529,8 @@ pke_next (pke_t entry)
 
 
 /* Get the next entry with the given name.  */
-pke_t
-pke_next_value (pke_t entry, const char *name)
+nve_t
+nve_next_value (nve_t entry, const char *name)
 {
   for (entry = entry->next; entry; entry = entry->next)
     if (entry->name && ascii_strcasecmp (entry->name, name) == 0)
@@ -544,12 +544,12 @@ pke_next_value (pke_t entry, const char *name)
 
 /* Get the private key.  */
 gpg_error_t
-pkc_get_private_key (pkc_t pk, gcry_sexp_t *retsexp)
+nvc_get_private_key (nvc_t pk, gcry_sexp_t *retsexp)
 {
   gpg_error_t err;
-  pke_t e;
+  nve_t e;
 
-  e = pkc_lookup (pk, "Key:");
+  e = nvc_lookup (pk, "Key:");
   if (e == NULL)
     return gpg_error (GPG_ERR_MISSING_KEY);
 
@@ -563,7 +563,7 @@ pkc_get_private_key (pkc_t pk, gcry_sexp_t *retsexp)
 
 /* Set the private key.  */
 gpg_error_t
-pkc_set_private_key (pkc_t pk, gcry_sexp_t sexp)
+nvc_set_private_key (nvc_t pk, gcry_sexp_t sexp)
 {
   gpg_error_t err;
   char *raw, *clean, *p;
@@ -610,7 +610,7 @@ pkc_set_private_key (pkc_t pk, gcry_sexp_t sexp)
     }
   *p = 0;
 
-  err = pkc_set (pk, "Key:", clean);
+  err = nvc_set (pk, "Key:", clean);
   xfree (raw);
   xfree (clean);
   return err;
@@ -624,7 +624,7 @@ pkc_set_private_key (pkc_t pk, gcry_sexp_t sexp)
    structure in RESULT.  If ERRLINEP is given, the line number the
    parser was last considering is stored there.  */
 gpg_error_t
-pkc_parse (pkc_t *result, int *errlinep, estream_t stream)
+nvc_parse (nvc_t *result, int *errlinep, estream_t stream)
 {
   gpg_error_t err = 0;
   gpgrt_ssize_t len;
@@ -634,7 +634,7 @@ pkc_parse (pkc_t *result, int *errlinep, estream_t stream)
   strlist_t raw_value = NULL;
 
 
-  *result = pkc_new ();
+  *result = nvc_new ();
   if (*result == NULL)
     return my_error_from_syserror ();
 
@@ -664,7 +664,7 @@ pkc_parse (pkc_t *result, int *errlinep, estream_t stream)
       /* No continuation.  Add the current entry if any.  */
       if (raw_value)
 	{
-	  err = _pkc_add (*result, name, NULL, raw_value, 1);
+	  err = _nvc_add (*result, name, NULL, raw_value, 1);
 	  if (err)
 	    goto leave;
 	}
@@ -713,13 +713,13 @@ pkc_parse (pkc_t *result, int *errlinep, estream_t stream)
 
   /* Add the final entry.  */
   if (raw_value)
-    err = _pkc_add (*result, name, NULL, raw_value, 1);
+    err = _nvc_add (*result, name, NULL, raw_value, 1);
 
  leave:
   gpgrt_free (buf);
   if (err)
     {
-      pkc_release (*result);
+      nvc_release (*result);
       *result = NULL;
     }
 
@@ -729,10 +729,10 @@ pkc_parse (pkc_t *result, int *errlinep, estream_t stream)
 
 /* Write a representation of PK to STREAM.  */
 gpg_error_t
-pkc_write (pkc_t pk, estream_t stream)
+nvc_write (nvc_t pk, estream_t stream)
 {
   gpg_error_t err;
-  pke_t entry;
+  nve_t entry;
   strlist_t s;
 
   for (entry = pk->first; entry; entry = entry->next)
