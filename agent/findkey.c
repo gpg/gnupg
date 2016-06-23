@@ -35,7 +35,7 @@
 #include "agent.h"
 #include "i18n.h"
 #include "../common/ssh-utils.h"
-#include "../common/private-keys.h"
+#include "../common/name-value.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0

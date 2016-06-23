@@ -1,4 +1,4 @@
-/* t-private-keys.c - Module test for private-keys.c
+/* t-name-value.c - Module test for name-value.c
  *	Copyright (C) 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
@@ -26,7 +26,7 @@
 #include <sys/stat.h>
 
 #include "util.h"
-#include "private-keys.h"
+#include "name-value.h"
 
 static int verbose;
 

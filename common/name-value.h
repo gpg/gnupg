@@ -1,4 +1,4 @@
-/* private-keys.h - Parser and writer for the extended private key format.
+/* name-value.h - Parser and writer for a name-value format.
  *	Copyright (C) 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
@@ -27,8 +27,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GNUPG_COMMON_PRIVATE_KEYS_H
-#define GNUPG_COMMON_PRIVATE_KEYS_H
+#ifndef GNUPG_COMMON_NAME_VALUE_H
+#define GNUPG_COMMON_NAME_VALUE_H
 
 struct private_key_container;
 typedef struct private_key_container *pkc_t;
@@ -106,4 +106,4 @@ gpg_error_t pkc_parse (pkc_t *result, int *errlinep, estream_t stream);
 /* Write a representation of PK to STREAM.  */
 gpg_error_t pkc_write (pkc_t pk, estream_t stream);
 
-#endif /* GNUPG_COMMON_PRIVATE_KEYS_H */
+#endif /* GNUPG_COMMON_NAME_VALUE_H */

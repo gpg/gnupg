@@ -1,4 +1,4 @@
-/* private-keys.c - Parser and writer for the extended private key format.
+/* name-value.c - Parser and writer for a name-value format.
  *	Copyright (C) 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
@@ -27,16 +27,21 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * This module aso provides features for the extended private key
+ * format of gpg-agent.
+ */
+
 #include <config.h>
 #include <assert.h>
 #include <gcrypt.h>
 #include <gpg-error.h>
 #include <string.h>
 
-#include "private-keys.h"
 #include "mischelp.h"
 #include "strlist.h"
 #include "util.h"
+#include "name-value.h"
 
 struct private_key_container
 {
