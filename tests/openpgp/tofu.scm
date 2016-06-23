@@ -19,7 +19,9 @@
 
 (load (with-path "defs.scm"))
 
-(define GPG `(,(tool 'gpg) --no-permission-warning)) ;; w/o --always-trust
+ ;; Redefine GPG without --always-trust and a fixed time.
+(define GPG `(,(tool 'gpg) --no-permission-warning
+	      --faked-system-time=1466684990))
 (define GNUPGHOME (getenv "GNUPGHOME"))
 (if (string=? "" GNUPGHOME)
     (error "GNUPGHOME not set"))
