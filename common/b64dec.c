@@ -243,10 +243,11 @@ b64dec_proc (struct b64state *state, void *buffer, size_t length,
 gpg_error_t
 b64dec_finish (struct b64state *state)
 {
+  xfree (state->title);
+  state->title = NULL;
+
   if (state->lasterr)
     return state->lasterr;
 
-  xfree (state->title);
-  state->title = NULL;
   return state->invalid_encoding? gpg_error(GPG_ERR_BAD_DATA): 0;
 }
