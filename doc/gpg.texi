@@ -2185,6 +2185,11 @@ opposite meaning. The options are:
   This can be combined with the option @option{--dry-run} to only look
   at keys.
 
+  @item import-export
+  Run the entire import code but instead of storing the key to the
+  local keyring write it to the output.  This option can be used to
+  remove all invalid parts from a key without the need to store it.
+
   @item merge-only
   During import, allow key updates to existing keys, but do not allow
   any new keys to be imported. Defaults to no.

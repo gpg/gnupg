@@ -124,6 +124,9 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"import-minimal",IMPORT_MINIMAL|IMPORT_CLEAN,NULL,
        N_("remove as much as possible from key after import")},
 
+      {"import-export", IMPORT_EXPORT, NULL,
+       N_("run import filters and export key immediately")},
+
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL,NULL},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL,NULL},
@@ -764,6 +767,62 @@ fix_bad_direct_key_sigs (kbnode_t keyblock, u32 *keyid)
 }
 
 
+/* Write the keyblock either to stdin or to the file set with
+ * the --output option.  */
+static gpg_error_t
+write_keyblock_to_output (kbnode_t keyblock)
+{
+  gpg_error_t err;
+  const char *fname;
+  iobuf_t out;
+  kbnode_t node;
+  armor_filter_context_t *afx = NULL;
+
+  fname = opt.outfile? opt.outfile : "-";
+  if (is_secured_filename (fname) )
+    return gpg_error (GPG_ERR_EPERM);
+
+  out = iobuf_create (fname, 0);
+  if (!out)
+    {
+      err = gpg_error_from_syserror ();
+      log_error(_("can't create '%s': %s\n"), fname, gpg_strerror (err));
+      return err;
+    }
+  if (opt.verbose)
+    log_info (_("writing to '%s'\n"), iobuf_get_fname_nonnull (out));
+
+  if (opt.armor)
+    {
+      afx = new_armor_context ();
+      afx->what = 1;
+      push_armor_filter (afx, out);
+    }
+
+  for (node = keyblock; node; node = node->next)
+    {
+      if (!is_deleted_kbnode (node))
+	{
+	  err = build_packet (out, node->pkt);
+	  if (err)
+	    {
+	      log_error ("build_packet(%d) failed: %s\n",
+			 node->pkt->pkttype, gpg_strerror (err) );
+	      goto leave;
+	    }
+	}
+    }
+
+ leave:
+  if (err)
+    iobuf_cancel (out);
+  else
+    iobuf_close (out);
+  release_armor_context (afx);
+  return err;
+}
+
+
 static void
 print_import_ok (PKT_public_key *pk, unsigned int reason)
 {
@@ -952,6 +1011,7 @@ import_one (ctrl_t ctrl,
   int non_self = 0;
   size_t an;
   char pkstrbuf[PUBKEY_STRING_SIZE];
+  int merge_keys_done = 0;
 
   /* Get the key and print some info about it. */
   node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
@@ -1056,14 +1116,30 @@ import_one (ctrl_t ctrl,
   /* Get rid of deleted nodes.  */
   commit_kbnode (&keyblock);
 
-  /* Show the key in the form it is merged or inserted. */
-  if ((options & IMPORT_SHOW))
+  /* Show the key in the form it is merged or inserted.  We skip this
+   * if "import-export" is also active without --armor or the output
+   * file has explicily been given. */
+  if ((options & IMPORT_SHOW)
+      && !((options & IMPORT_EXPORT) && !opt.armor && !opt.outfile))
     {
       merge_keys_and_selfsig (keyblock);
+      merge_keys_done = 1;
       /* Note that we do not want to show the validity because the key
        * has not yet imported.  */
       list_keyblock_direct (ctrl, keyblock, 0, 0, 1, 1);
       es_fflush (es_stdout);
+    }
+
+  /* Write the keyblock to the output and do not actually import.  */
+  if ((options & IMPORT_EXPORT))
+    {
+      if (!merge_keys_done)
+        {
+          merge_keys_and_selfsig (keyblock);
+          merge_keys_done = 1;
+        }
+      rc = write_keyblock_to_output (keyblock);
+      goto leave;
     }
 
   if (opt.dry_run)
