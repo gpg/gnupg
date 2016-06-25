@@ -1,5 +1,5 @@
 /* yat2m.c - Yet Another Texi 2 Man converter
- *	Copyright (C) 2005, 2013, 2015 g10 Code GmbH
+ *	Copyright (C) 2005, 2013, 2015, 2016 g10 Code GmbH
  *      Copyright (C) 2006, 2008, 2011 Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ * along with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
 /*
@@ -102,6 +102,29 @@
 #include <assert.h>
 #include <ctype.h>
 #include <time.h>
+
+
+#if __GNUC__
+# define MY_GCC_VERSION (__GNUC__ * 10000 \
+                         + __GNUC_MINOR__ * 100         \
+                         + __GNUC_PATCHLEVEL__)
+#else
+# define MY_GCC_VERSION 0
+#endif
+
+#if MY_GCC_VERSION >= 20500
+# define ATTR_PRINTF(f, a) __attribute__ ((format(printf,f,a)))
+# define ATTR_NR_PRINTF(f, a) __attribute__ ((noreturn, format(printf,f,a)))
+#else
+# define ATTR_PRINTF(f, a)
+# define ATTR_NR_PRINTF(f, a)
+#endif
+#if MY_GCC_VERSION >= 30200
+# define ATTR_MALLOC  __attribute__ ((__malloc__))
+#else
+# define ATTR_MALLOC
+#endif
+
 
 
 #define PGM "yat2m"
@@ -214,7 +237,15 @@ static const char * const standard_sections[] =
 static void proc_texi_buffer (FILE *fp, const char *line, size_t len,
                               int *table_level, int *eol_action);
 
+static void die (const char *format, ...) ATTR_NR_PRINTF(1,2);
+static void err (const char *format, ...) ATTR_PRINTF(1,2);
+static void inf (const char *format, ...) ATTR_PRINTF(1,2);
+static void *xmalloc (size_t n) ATTR_MALLOC;
+static void *xcalloc (size_t n, size_t m) ATTR_MALLOC;
 
+
+
+/*-- Functions --*/
 
 /* Print diagnostic message and exit with failure. */
 static void
@@ -558,7 +589,7 @@ get_section_buffer (const char *name)
   for (i=0; i < thepage.n_sections; i++)
     if (!thepage.sections[i].name)
       break;
-  if (i < thepage.n_sections)
+  if (thepage.n_sections && i < thepage.n_sections)
     sect = thepage.sections + i;
   else
     {
@@ -853,7 +884,7 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
         }
       else
         inf ("texinfo command '%s' not supported (%.*s)", command,
-             ((s = memchr (rest, '\n', len)), (s? (s-rest) : len)), rest);
+             (int)((s = memchr (rest, '\n', len)), (s? (s-rest) : len)), rest);
     }
 
   if (*rest == '{')
@@ -965,7 +996,7 @@ proc_texi_buffer (FILE *fp, const char *line, size_t len,
       assert (n <= len);
       s += n; len -= n;
       s--; len++;
-      in_cmd = 0;
+      /* in_cmd = 0; -- doc only */
     }
 }
 
