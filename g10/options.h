@@ -61,7 +61,7 @@ struct
   int fingerprint; /* list fingerprints */
   int list_sigs;   /* list signatures */
   int no_armor;
-  int list_packets; /* list-packets mode: 1=normal, 2=invoked by command*/
+  int list_packets; /* Option --list-packets active.  */
   int def_cipher_algo;
   int force_v3_sigs;
   int force_v4_certs;

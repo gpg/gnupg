@@ -3953,7 +3953,6 @@ main (int argc, char **argv )
 	break;
 
       case aListPackets:
-	opt.list_packets=2;
       default:
 	if( argc > 1 )
 	    wrong_args(_("[filename]"));
@@ -3980,8 +3979,8 @@ main (int argc, char **argv )
 		}
 	    }
 	    if( cmd == aListPackets ) {
-		set_packet_list_mode(1);
 		opt.list_packets=1;
+		set_packet_list_mode(1);
 	    }
 	    rc = proc_packets(NULL, a );
 	    if( rc )
