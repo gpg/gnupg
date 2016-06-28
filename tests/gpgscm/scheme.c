@@ -4938,6 +4938,11 @@ void scheme_load_named_file(scheme *sc, FILE *fin, const char *filename) {
   if(sc->retcode==0) {
     sc->retcode=sc->nesting!=0;
   }
+
+#if SHOW_ERROR_LINE
+  sc->free(sc->load_stack[0].rep.stdio.filename);
+  sc->load_stack[0].rep.stdio.filename = NULL;
+#endif
 }
 
 void scheme_load_string(scheme *sc, const char *cmd) {
