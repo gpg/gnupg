@@ -59,4 +59,6 @@ do_test (int argc, char *argv[])
 
   rc = keydb_get_keyblock (hd1, &kb1);
   TEST_P ("", ! rc);
+
+  keydb_release (hd1);
 }

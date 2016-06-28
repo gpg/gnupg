@@ -1387,11 +1387,8 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
                 hd->keyblock_cache.pk_no     = pk_no;
                 hd->keyblock_cache.uid_no    = uid_no;
               }
-            else
-              {
-                xfree (sigstatus);
-                iobuf_close (iobuf);
-              }
+            xfree (sigstatus);
+            iobuf_close (iobuf);
           }
       }
       break;
