@@ -207,7 +207,7 @@ set_packet_list_mode( int mode )
        whether using log_stream() would be better.  Perhaps we should
        enable the list mdoe only with a special option. */
     if (!listfp)
-        listfp = opt.list_packets == 2 ? stdout : stderr;
+        listfp = opt.list_packets ? stdout : stderr;
     return old;
 }
 
