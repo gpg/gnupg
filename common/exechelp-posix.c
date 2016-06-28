@@ -523,6 +523,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     {
       /* This is the child. */
       gcry_control (GCRYCTL_TERM_SECMEM);
+      es_fclose (infp);
       es_fclose (outfp);
       es_fclose (errfp);
       do_exec (pgmname, argv, inpipe[0], outpipe[1], errpipe[1],
