@@ -776,6 +776,9 @@ do_wait_processes (scheme *sc, pointer args)
                                               (long) retcodes[count-1-i]),
                         retcodes_list);
 
+  xfree (names);
+  xfree (pids);
+  xfree (retcodes);
   FFI_RETURN_POINTER (sc, retcodes_list);
 }
 
@@ -1098,7 +1101,7 @@ ffi_list2intv (scheme *sc, pointer list, int **intv, size_t *len)
 }
 
 
-const char *
+char *
 ffi_schemify_name (const char *s, int macro)
 {
   char *n = strdup (s), *p;

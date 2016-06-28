@@ -282,5 +282,6 @@ main (int argc, char **argv)
     }
 
   scheme_deinit (sc);
+  xfree (sc);
   return EXIT_SUCCESS;
 }

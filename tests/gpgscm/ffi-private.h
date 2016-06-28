@@ -84,7 +84,7 @@ int ffi_bool_value (scheme *sc, pointer p);
 #define FFI_RETURN_STRING(SC, X)			\
   FFI_RETURN_POINTER ((SC), mk_string ((SC), (X)))
 
-const char *ffi_schemify_name (const char *s, int macro);
+char *ffi_schemify_name (const char *s, int macro);
 
 void ffi_scheme_eval (scheme *sc, const char *format, ...)
   GPGRT_ATTR_PRINTF (2, 3);
@@ -93,32 +93,46 @@ pointer ffi_sprintf (scheme *sc, const char *format, ...)
 
 #define ffi_define_function_name(SC, NAME, F)				\
   do {									\
+    char *_fname = ffi_schemify_name ("_" #F, 0);                        \
     scheme_define ((SC),						\
 		   (SC)->global_env,					\
-		   mk_symbol ((SC), ffi_schemify_name ("_" #F, 0)),	\
+		   mk_symbol ((SC), _fname),                            \
 		   mk_foreign_func ((SC), (do_##F)));			\
     ffi_scheme_eval ((SC),						\
 		     "(define (%s . a) (ffi-apply \"%s\" %s a))",	\
-		     (NAME), (NAME), ffi_schemify_name ("_" #F, 0));	\
+		     (NAME), (NAME), _fname);                           \
+    free (_fname);                                                      \
   } while (0)
 
-#define ffi_define_function(SC, F)				\
-  ffi_define_function_name ((SC), ffi_schemify_name (#F, 0), F)
+#define ffi_define_function(SC, F)                                      \
+  do {									\
+    char *_name = ffi_schemify_name (#F, 0);                            \
+    ffi_define_function_name ((SC), _name, F);                          \
+    free (_name);                                                       \
+  } while (0)
 
 #define ffi_define_constant(SC, C)					\
-  scheme_define ((SC),							\
-		 (SC)->global_env,					\
-		 mk_symbol ((SC), ffi_schemify_name (#C, 1)),		\
-		 mk_integer ((SC), (C)))
+  do {									\
+    char *_name = ffi_schemify_name (#C, 1);                            \
+    scheme_define ((SC),                                                \
+                   (SC)->global_env,					\
+                   mk_symbol ((SC), _name),                             \
+                   mk_integer ((SC), (C)));                             \
+    free (_name);                                                       \
+  } while (0)
 
 #define ffi_define(SC, SYM, EXP)					\
   scheme_define ((SC), (SC)->global_env, mk_symbol ((SC), (SYM)), EXP)
 
 #define ffi_define_variable_pointer(SC, C, P)				\
-  scheme_define ((SC),							\
-		 (SC)->global_env,					\
-		 mk_symbol ((SC), ffi_schemify_name (#C, 0)),		\
-		 (P))
+  do {									\
+    char *_name = ffi_schemify_name (#C, 0);                            \
+    scheme_define ((SC),                                                \
+                   (SC)->global_env,					\
+                   mk_symbol ((SC), _name),                             \
+                   (P));                                                \
+    free (_name);                                                       \
+  } while (0)
 
 #define ffi_define_variable_integer(SC, C)				\
   ffi_define_variable_pointer ((SC), C, (SC)->vptr->mk_integer ((SC), C))
