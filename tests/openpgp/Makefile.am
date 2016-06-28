@@ -124,7 +124,8 @@ priv_keys = privkeys/50B2D4FA4122C212611048BC5FC31BD44393626E.asc \
 	    privkeys/C6A6390E9388CDBAD71EAEA698233FE5E04F001E.asc \
 	    privkeys/D69102E0F5AC6B6DB8E4D16DA8E18CF46D88CAE3.asc
 
-sample_keys = samplekeys/ecc-sample-1-pub.asc \
+sample_keys = samplekeys/README \
+              samplekeys/ecc-sample-1-pub.asc \
               samplekeys/ecc-sample-2-pub.asc \
               samplekeys/ecc-sample-3-pub.asc \
               samplekeys/ecc-sample-1-sec.asc \
@@ -139,7 +140,8 @@ sample_keys = samplekeys/ecc-sample-1-pub.asc \
 	      samplekeys/e2e-p256-1-prt.asc \
 	      samplekeys/E657FB607BB4F21C90BB6651BC067AF28BC90111.asc \
               samplekeys/rsa-rsa-sample-1.asc \
-              samplekeys/ed25519-cv25519-sample-1.asc
+              samplekeys/ed25519-cv25519-sample-1.asc \
+	      samplekeys/silent-running.asc
 
 EXTRA_DIST = defs.inc defs.scm pinentry.sh $(TESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
