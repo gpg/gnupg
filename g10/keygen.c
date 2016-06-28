@@ -3610,7 +3610,13 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
       }
   }
 
-  if (*algostr || *usagestr || *expirestr)
+
+  if (!strcmp (algostr, "test-default"))
+    {
+      para = quickgen_set_para (para, 0, PUBKEY_ALGO_EDDSA, 0, "Ed25519", 0);
+      para = quickgen_set_para (para, 1, PUBKEY_ALGO_ECDH,  0, "Curve25519", 0);
+    }
+  else if (*algostr || *usagestr || *expirestr)
     {
       /* Extended unattended mode.  Creates only the primary key. */
       int algo;
