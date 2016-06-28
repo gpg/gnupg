@@ -234,6 +234,7 @@ test_bin2hex (void)
     fail (0);
   else if (strcmp (p, hexstuff))
     fail (0);
+  xfree (p);
 
   p = bin2hex (stuff, (size_t)(-1), NULL);
   if (p)
@@ -266,6 +267,7 @@ test_bin2hexcolon (void)
     fail (0);
   else if (strcmp (p, hexstuff))
     fail (0);
+  xfree (p);
 
   p = bin2hexcolon (stuff, (size_t)(-1), NULL);
   if (p)

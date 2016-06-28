@@ -387,19 +387,19 @@ run_modification_tests (void)
   if (private_key_mode)
     {
       err = nvc_set_private_key (pk, key);
-      gcry_sexp_release (key);
       assert (err == 0);
 
       buf = nvc_to_string (pk);
       assert (strcmp (buf, "Key: (hello world)\n") == 0);
       xfree (buf);
-      nvc_release (pk);
     }
   else
     {
       err = nvc_set_private_key (pk, key);
       assert (gpg_err_code (err) == GPG_ERR_MISSING_KEY);
     }
+  gcry_sexp_release (key);
+  nvc_release (pk);
 }
 
 

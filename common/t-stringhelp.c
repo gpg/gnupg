@@ -223,6 +223,7 @@ test_strconcat (void)
     fail (0);
   else if (errno != EINVAL)
     fail (0);
+  xfree (out);
 
 #if __GNUC__ < 4 /* gcc 4.0 has a sentinel attribute.  */
   out = strconcat (NULL);
@@ -232,6 +233,8 @@ test_strconcat (void)
   out = strconcat (NULL, NULL);
   if (!out || *out)
     fail (1);
+  xfree (out);
+
   out = strconcat ("", NULL);
   if (!out || *out)
     fail (1);
@@ -283,6 +286,7 @@ test_xstrconcat (void)
                    "1", "2", "3", "4", "5", "6", "7", NULL);
   if (!out)
     fail (0);
+  xfree (out);
 
 #if __GNUC__ < 4 /* gcc 4.0 has a sentinel attribute.  */
   out = xstrconcat (NULL);
@@ -292,6 +296,8 @@ test_xstrconcat (void)
   out = xstrconcat (NULL, NULL);
   if (!out)
     fail (1);
+  xfree (out);
+
   out = xstrconcat ("", NULL);
   if (!out || *out)
     fail (1);
@@ -534,6 +540,7 @@ test_strsplit (void)
             fail (tidx * 1000 + i + 1);
           }
 
+      xfree (fields);
       xfree (s2);
     }
 }
