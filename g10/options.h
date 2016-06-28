@@ -80,7 +80,7 @@ struct
   int print_pka_records;
   int print_dane_records;
   int no_armor;
-  int list_packets; /* list-packets mode: 1=normal, 2=invoked by command*/
+  int list_packets; /* Option --list-packets active.  */
   int def_cipher_algo;
   int force_mdc;
   int disable_mdc;

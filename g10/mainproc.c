@@ -1328,7 +1328,7 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
           /* Stop processing when an invalid packet has been encountered
            * but don't do so when we are doing a --list-packets.  */
           if (gpg_err_code (rc) == GPG_ERR_INV_PACKET
-              && opt.list_packets != 2 )
+              && opt.list_packets == 0)
             break;
           continue;
 	}

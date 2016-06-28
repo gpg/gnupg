@@ -211,7 +211,7 @@ set_packet_list_mode (int mode)
      enable the list mode only with a special option. */
   if (!listfp)
     {
-      if (opt.list_packets == 2)
+      if (opt.list_packets)
         {
           listfp = es_stdout;
           if (opt.verbose)
