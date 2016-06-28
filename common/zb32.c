@@ -35,7 +35,7 @@
 #include <assert.h>
 
 #include "util.h"
-
+#include "zb32.h"
 
 /* Zooko's base32 variant. See RFC-6189 and
    http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt
