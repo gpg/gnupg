@@ -799,9 +799,10 @@ cmd_dns_cert (assuan_context_t ctx, char *line)
 
 
 static const char hlp_wkd_get[] =
-  "WKD_GET <user_id>\n"
+  "WKD_GET [--submission-address] <user_id>\n"
   "\n"
-  "Return the key for <user_id> from a Web Key Directory.\n";
+  "Return the key or the submission address for <user_id>\n"
+  "from a Web Key Directory.";
 static gpg_error_t
 cmd_wkd_get (assuan_context_t ctx, char *line)
 {
@@ -812,7 +813,9 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
   char sha1buf[20];
   char *uri = NULL;
   char *encodedhash = NULL;
+  int opt_submission_addr;
 
+  opt_submission_addr = has_option (line, "--submission-address");
   line = skip_options (line);
 
   mbox = mailbox_from_userid (line);
@@ -831,11 +834,21 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
       goto leave;
     }
 
-  uri = strconcat ("https://",
-                   domain,
-                   "/.well-known/openpgpkey/hu/",
-                   encodedhash,
-                   NULL);
+  if (opt_submission_addr)
+    {
+      uri = strconcat ("https://",
+                       domain,
+                       "/.well-known/openpgpkey/submission-address",
+                       NULL);
+    }
+  else
+    {
+      uri = strconcat ("https://",
+                       domain,
+                       "/.well-known/openpgpkey/hu/",
+                       encodedhash,
+                       NULL);
+    }
   if (!uri)
     {
       err = gpg_error_from_syserror ();
@@ -848,7 +861,8 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
 
     outfp = es_fopencookie (ctx, "w", data_line_cookie_functions);
     if (!outfp)
-      err = set_error (GPG_ERR_ASS_GENERAL, "error setting up a data stream");
+      err = set_error (GPG_ERR_ASS_GENERAL,
+                       "error setting up a data stream");
     else
       {
         err = ks_action_fetch (ctrl, uri, outfp);
