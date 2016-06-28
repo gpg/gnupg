@@ -1026,7 +1026,8 @@ static char *store_string(scheme *sc, int len_str, const char *str, char fill) {
           return sc->strbuff;
      }
      if(str!=0) {
-          snprintf(q, len_str+1, "%s", str);
+	  memcpy (q, str, len_str);
+          q[len_str]=0;
      } else {
           memset(q, fill, len_str);
           q[len_str]=0;
