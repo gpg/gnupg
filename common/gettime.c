@@ -723,6 +723,39 @@ asctimestamp (u32 stamp)
 }
 
 
+/* Return the timestamp STAMP in RFC-2822 format.  This is always done
+ * in the C locale.  We return the gmtime to avoid computing the
+ * timezone. The caller must release the returned string.
+ *
+ * Example: "Mon, 27 Jun 2016 1:42:00 +0000".
+ */
+char *
+rfctimestamp (u32 stamp)
+{
+  time_t atime = stamp;
+  struct tm tmbuf, *tp;
+
+
+  if (IS_INVALID_TIME_T (atime))
+    {
+      gpg_err_set_errno (EINVAL);
+      return NULL;
+    }
+
+  tp = gnupg_gmtime (&atime, &tmbuf);
+  if (!tp)
+    return NULL;
+  return xtryasprintf ("%.3s, %02d %.3s %04d %02d:%02d:%02d +0000",
+                       ("SunMonTueWedThuFriSat" + (tp->tm_wday%7)*3),
+                       tp->tm_mday,
+                       ("JanFebMarAprMayJunJulAugSepOctNovDec"
+                        + (tp->tm_mon%12)*3),
+                       tp->tm_year + 1900,
+                       tp->tm_hour,
+                       tp->tm_min,
+                       tp->tm_sec);
+}
+
 
 static int
 days_per_year (int y)
