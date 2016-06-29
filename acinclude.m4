@@ -165,23 +165,25 @@ AC_DEFUN([GNUPG_CHECK_ENDIAN],
 # build_NAME and whether --enable-NAME or --disable-NAME is shown with
 # ./configure --help
 AC_DEFUN([GNUPG_BUILD_PROGRAM],
-  [build_$1=$2
+  [m4_define([my_build], [m4_bpatsubst(build_$1, [[^a-zA-Z0-9_]], [_])])
+   my_build=$2
    m4_if([$2],[yes],[
       AC_ARG_ENABLE([$1], AC_HELP_STRING([--disable-$1],
                                          [do not build the $1 program]),
-                           build_$1=$enableval, build_$1=$2)
+                           my_build=$enableval, my_build=$2)
     ],[
       AC_ARG_ENABLE([$1], AC_HELP_STRING([--enable-$1],
                                          [build the $1 program]),
-                           build_$1=$enableval, build_$1=$2)
+                           my_build=$enableval, my_build=$2)
     ])
-   case "$build_$1" in
+   case "$my_build" in
          no|yes)
            ;;
          *)
            AC_MSG_ERROR([only yes or no allowed for feature --enable-$1])
            ;;
    esac
+   m4_undefine([my_build])
   ])
 
 
