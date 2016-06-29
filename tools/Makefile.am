@@ -51,9 +51,17 @@ else
   gpgtar =
 endif
 
+if BUILD_WKS_TOOLS
+  gpg_wks_server = gpg-wks-server
+  gpg_wks_client = gpg-wks-client
+else
+  gpg_wks_server =
+  gpg_wks_client =
+endif
+
 bin_PROGRAMS = gpgconf gpg-connect-agent ${symcryptrun}
 if !HAVE_W32_SYSTEM
-bin_PROGRAMS += watchgnupg gpgparsemail
+bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server} ${gpg_wks_client}
 endif
 if !HAVE_W32CE_SYSTEM
 bin_PROGRAMS += ${gpgtar}
@@ -135,6 +143,30 @@ gpgtar_SOURCES = \
 gpgtar_CFLAGS = $(GPG_ERROR_CFLAGS)
 gpgtar_LDADD = $(libcommon) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
                $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS)
+
+gpg_wks_server_SOURCES = \
+	gpg-wks-server.c \
+	gpg-wks.h \
+	wks-receive.c \
+	rfc822parse.c rfc822parse.h \
+	mime-parser.c mime-parser.h \
+	mime-maker.h  mime-maker.c
+
+gpg_wks_server_CFLAGS = $(GPG_ERROR_CFLAGS)
+gpg_wks_server_LDADD = $(libcommon) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
+
+gpg_wks_client_SOURCES = \
+	gpg-wks-client.c \
+	gpg-wks.h \
+	wks-receive.c \
+	rfc822parse.c rfc822parse.h \
+	mime-parser.c mime-parser.h \
+	mime-maker.h  mime-maker.c \
+	call-dirmngr.c call-dirmngr.h
+
+gpg_wks_client_CFLAGS = $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
+gpg_wks_client_LDADD = $(libcommon) \
+	               $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
 
 
 # Make sure that all libs are build before we use them.  This is

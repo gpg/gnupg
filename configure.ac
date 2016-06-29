@@ -130,6 +130,7 @@ GNUPG_BUILD_PROGRAM(tools, yes)
 GNUPG_BUILD_PROGRAM(doc, yes)
 GNUPG_BUILD_PROGRAM(symcryptrun, no)
 GNUPG_BUILD_PROGRAM(gpgtar, yes)
+GNUPG_BUILD_PROGRAM(wks-tools, no)
 
 AC_SUBST(PACKAGE)
 AC_SUBST(PACKAGE_GT)
@@ -1670,6 +1671,7 @@ AM_CONDITIONAL(BUILD_TOOLS,       test "$build_tools" = "yes")
 AM_CONDITIONAL(BUILD_DOC,         test "$build_doc" = "yes")
 AM_CONDITIONAL(BUILD_SYMCRYPTRUN, test "$build_symcryptrun" = "yes")
 AM_CONDITIONAL(BUILD_GPGTAR,      test "$build_gpgtar" = "yes")
+AM_CONDITIONAL(BUILD_WKS_TOOLS,   test "$build_wks_tools" = "yes")
 
 AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
 AM_CONDITIONAL(NO_TRUST_MODELS,     test "$use_trust_models" = no)
@@ -1927,6 +1929,7 @@ echo "
         G13:       $build_g13
         Dirmngr:   $build_dirmngr
         Gpgtar:    $build_gpgtar
+        WKS tools: $build_wks_tools
 
         Protect tool:      $show_gnupg_protect_tool_pgm
         LDAP wrapper:      $show_gnupg_dirmngr_ldap_pgm
