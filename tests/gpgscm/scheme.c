@@ -1390,6 +1390,8 @@ static void finalize_cell(scheme *sc, pointer a) {
     if(a->_object._port->kind&port_file
        && a->_object._port->rep.stdio.closeit) {
       port_close(sc,a,port_input|port_output);
+    } else if (a->_object._port->kind & port_srfi6) {
+      sc->free(a->_object._port->rep.string.start);
     }
     sc->free(a->_object._port);
   } else if(is_foreign_object(a)) {
