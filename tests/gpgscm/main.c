@@ -39,6 +39,7 @@
 #include "../../common/logging.h"
 #include "../../common/strlist.h"
 #include "../../common/sysutils.h"
+#include "../../common/util.h"
 
 /* The TinyScheme banner.  Unfortunately, it isn't in the header
    file.  */
@@ -236,7 +237,7 @@ main (int argc, char **argv)
   if (log_get_errorcount (0))
     exit (2);
 
-  sc = scheme_init_new ();
+  sc = scheme_init_new_custom_alloc (gcry_malloc, gcry_free);
   if (! sc) {
     fprintf (stderr, "Could not initialize TinyScheme!\n");
     return 2;
