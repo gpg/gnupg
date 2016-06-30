@@ -3481,6 +3481,7 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
 	xfree( outctrl.pub.newfname );
     }
 
+    xfree (line);
     release_parameter_list( para );
     iobuf_close (fp);
     release_armor_context (outctrl.pub.afx);
