@@ -295,6 +295,10 @@ compress_filter( void *opaque, int control,
 static void
 release_context (compress_filter_context_t *ctx)
 {
+  xfree(ctx->inbuf);
+  ctx->inbuf = NULL;
+  xfree(ctx->outbuf);
+  ctx->outbuf = NULL;
   xfree (ctx);
 }
 
