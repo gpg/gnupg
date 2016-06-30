@@ -124,8 +124,6 @@ reset_literals_seen(void)
 static void
 release_list( CTX c )
 {
-  if (!c->list)
-    return;
   proc_tree (c, c->list);
   release_kbnode (c->list);
   while (c->pkenc_list)
