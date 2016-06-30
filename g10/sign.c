@@ -627,6 +627,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
             log_error ("build_packet(PLAINTEXT) failed: %s\n",
                        gpg_strerror (rc) );
         pt->buf = NULL;
+        free_packet (&pkt);
     }
     else {
         byte copy_buffer[4096];
