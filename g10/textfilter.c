@@ -240,5 +240,6 @@ copy_clearsig_text( IOBUF out, IOBUF inp, gcry_md_hd_t md,
     if( truncated )
 	log_info(_("input line longer than %d characters\n"), MAX_LINELEN );
 
+    xfree (buffer);
     return 0; /* okay */
 }
