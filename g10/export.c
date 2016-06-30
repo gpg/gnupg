@@ -1557,6 +1557,15 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
 
               xfree (pk->seckey_info);
               pk->seckey_info = NULL;
+              {
+                int i;
+                for (i = pubkey_get_npkey (pk->pubkey_algo);
+                     i < pubkey_get_nskey (pk->pubkey_algo); i++)
+                  {
+                    gcry_mpi_release (pk->pkey[i]);
+                    pk->pkey[i] = NULL;
+                  }
+              }
               xfree (hexgrip);
             }
           else
