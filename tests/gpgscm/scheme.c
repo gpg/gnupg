@@ -1620,12 +1620,13 @@ static void backchar(scheme *sc, int c) {
 static int realloc_port_string(scheme *sc, port *p)
 {
   char *start=p->rep.string.start;
+  size_t old_size = p->rep.string.past_the_end - start;
   size_t new_size=p->rep.string.past_the_end-start+1+BLOCK_SIZE;
   char *str=sc->malloc(new_size);
   if(str) {
     memset(str,' ',new_size-1);
     str[new_size-1]='\0';
-    strcpy(str,start);
+    memcpy(str, start, old_size);
     p->rep.string.start=str;
     p->rep.string.past_the_end=str+new_size-1;
     p->rep.string.curr-=start-str;
