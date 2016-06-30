@@ -2955,7 +2955,7 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
 
 #ifdef HAVE_W32_SYSTEM
   /* See keyedit_menu for why we need this.  */
-  check_trustdb_stale ();
+  check_trustdb_stale (ctrl);
 #endif
 
   /* Search the key; we don't want the whole getkey stuff here.  */
