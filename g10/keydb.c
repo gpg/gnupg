@@ -937,6 +937,7 @@ keydb_release (KEYDB_HANDLE hd)
         }
     }
 
+  keyblock_cache_clear (hd);
   xfree (hd);
 }
 
@@ -1387,8 +1388,11 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
                 hd->keyblock_cache.pk_no     = pk_no;
                 hd->keyblock_cache.uid_no    = uid_no;
               }
-            xfree (sigstatus);
-            iobuf_close (iobuf);
+            else
+              {
+                xfree (sigstatus);
+                iobuf_close (iobuf);
+              }
           }
       }
       break;

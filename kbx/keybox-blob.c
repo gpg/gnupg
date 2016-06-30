@@ -661,18 +661,24 @@ create_blob_finish (KEYBOXBLOB blob)
 
   /* do the fixups */
   if (blob->fixup_out_of_core)
-    return gpg_error (GPG_ERR_ENOMEM);
+    {
+      xfree (p);
+      return gpg_error (GPG_ERR_ENOMEM);
+    }
 
   {
-    struct fixup_list *fl;
-    for (fl = blob->fixups; fl; fl = fl->next)
+    struct fixup_list *fl, *next;
+    for (fl = blob->fixups; fl; fl = next)
       {
         assert (fl->off+4 <= n);
         p[fl->off+0] = fl->val >> 24;
         p[fl->off+1] = fl->val >> 16;
         p[fl->off+2] = fl->val >>  8;
         p[fl->off+3] = fl->val;
+        next = fl->next;
+        xfree (fl);
       }
+    blob->fixups = NULL;
   }
 
   /* Compute and store the SHA-1 checksum. */
@@ -680,8 +686,12 @@ create_blob_finish (KEYBOXBLOB blob)
 
   pp = xtrymalloc (n);
   if ( !pp )
-    return gpg_error_from_syserror ();
+    {
+      xfree (p);
+      return gpg_error_from_syserror ();
+    }
   memcpy (pp , p, n);
+  xfree (p);
   blob->blob = pp;
   blob->bloblen = n;
 
@@ -1000,7 +1010,11 @@ _keybox_release_blob (KEYBOXBLOB blob)
   int i;
   if (!blob)
     return;
-  /* hmmm: release membuf here?*/
+  if (blob->buf)
+    {
+      size_t len;
+      xfree (get_membuf (blob->buf, &len));
+    }
   xfree (blob->keys );
   xfree (blob->serialbuf);
   for (i=0; i < blob->nuids; i++)
