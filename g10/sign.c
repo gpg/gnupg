@@ -156,6 +156,7 @@ mk_notation_policy_etc (PKT_signature *sig,
           if (DBG_LOOKUP)
             log_debug ("setting Signer's UID to '%s'\n", mbox);
           build_sig_subpkt (sig, SIGSUBPKT_SIGNERS_UID, mbox, strlen (mbox));
+          xfree (mbox);
         }
     }
 }
