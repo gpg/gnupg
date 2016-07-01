@@ -34,18 +34,18 @@
 static int cleanup_registered;
 static KBNODE unused_nodes;
 
-#if USE_UNUSED_NODES
 static void
 release_unused_nodes (void)
 {
+#if USE_UNUSED_NODES
   while (unused_nodes)
     {
       kbnode_t next = unused_nodes->next;
       xfree (unused_nodes);
       unused_nodes = next;
     }
-}
 #endif /*USE_UNUSED_NODES*/
+}
 
 
 static kbnode_t
