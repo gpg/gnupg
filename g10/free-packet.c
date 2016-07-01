@@ -311,6 +311,7 @@ free_user_id (PKT_user_id *uid)
     free_attributes(uid);
     xfree (uid->prefs);
     xfree (uid->namehash);
+    xfree (uid->mbox);
     xfree (uid);
 }
 

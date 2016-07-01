@@ -291,6 +291,7 @@ typedef struct
     unsigned int ks_modify:1;
     unsigned int compacted:1;
   } flags;
+  char *mbox;   /* NULL or the result of mailbox_from_userid.  */
   /* The text contained in the user id packet, which is normally the
      name and email address of the key holder (See RFC 4880 5.11).
      (Serialized.). For convenience an extra Nul is always appended.  */
