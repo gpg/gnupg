@@ -300,6 +300,7 @@ enum cmd_and_opt_values
     oKeyServer,
     oKeyServerOptions,
     oImportOptions,
+    oImportFilter,
     oExportOptions,
     oListOptions,
     oVerifyOptions,
@@ -572,6 +573,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oKeyServer, "keyserver", "@"),
   ARGPARSE_s_s (oKeyServerOptions, "keyserver-options", "@"),
   ARGPARSE_s_s (oImportOptions, "import-options", "@"),
+  ARGPARSE_s_s (oImportFilter,  "import-filter", "@"),
   ARGPARSE_s_s (oExportOptions, "export-options", "@"),
   ARGPARSE_s_s (oListOptions,   "list-options", "@"),
   ARGPARSE_s_s (oVerifyOptions, "verify-options", "@"),
@@ -2033,6 +2035,7 @@ parse_tofu_db_format (const char *db_format)
     }
 }
 
+
 /* This function called to initialized a new control object.  It is
    assumed that this object has been zeroed out before calling this
    function. */
@@ -3030,6 +3033,11 @@ main (int argc, char **argv)
 		else
 		  log_error(_("invalid import options\n"));
 	      }
+	    break;
+	  case oImportFilter:
+	    rc = parse_and_set_import_filter (pargs.r.ret_str);
+	    if (rc)
+              log_error (_("invalid filter option: %s\n"), gpg_strerror (rc));
 	    break;
 	  case oExportOptions:
 	    if(!parse_export_options(pargs.r.ret_str,&opt.export_options,1))

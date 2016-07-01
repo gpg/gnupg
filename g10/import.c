@@ -1,6 +1,6 @@
 /* import.c - import a key into our key storage.
  * Copyright (C) 1998-2007, 2010-2011 Free Software Foundation, Inc.
- * Copyright (C) 2014  Werner Koch
+ * Copyright (C) 2014, 2016  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -35,9 +35,13 @@
 #include "i18n.h"
 #include "ttyio.h"
 #include "status.h"
+#include "recsel.h"
 #include "keyserver-internal.h"
 #include "call-agent.h"
 #include "../common/membuf.h"
+#include "../common/init.h"
+#include "../common/mbox-util.h"
+
 
 struct import_stats_s
 {
@@ -58,6 +62,16 @@ struct import_stats_s
   ulong n_uids_cleaned;
   ulong v3keys;   /* Number of V3 keys seen.  */
 };
+
+
+/* A global variable to store the selector created from
+ * --import-filter keep-uid=EXPR.
+ *
+ * FIXME: We should put this into the CTRL object but that requires a
+ * lot more changes right now.
+ */
+static recsel_expr_t import_keep_uid;
+
 
 
 static int import (ctrl_t ctrl,
@@ -94,6 +108,16 @@ static int merge_sigs (kbnode_t dst, kbnode_t src, int *n_sigs,
 			     const char *fname, u32 *keyid );
 static int merge_keysigs (kbnode_t dst, kbnode_t src, int *n_sigs,
 			     const char *fname, u32 *keyid );
+
+
+
+static void
+cleanup_import_globals (void)
+{
+  recsel_release (import_keep_uid);
+  import_keep_uid = NULL;
+}
+
 
 int
 parse_import_options(char *str,unsigned int *options,int noisy)
@@ -141,6 +165,39 @@ parse_import_options(char *str,unsigned int *options,int noisy)
 
   return parse_options(str,options,import_opts,noisy);
 }
+
+
+/* Parse and set an import filter from string.  STRING has the format
+ * "NAME=EXPR" with NAME being the name of the filter.  Spaces before
+ * and after NAME are not allowed.  If this function is all called
+ * several times all expressions for the same NAME are concatenated.
+ * Supported filter names are:
+ *
+ *  - keep-uid :: If the expression evaluates to true for a certain
+ *                user ID packet, that packet and all it dependencies
+ *                will be imported.  The expression may use these
+ *                variables:
+ *
+ *                - uid  :: The entire user ID.
+ *                - mbox :: The mail box part of the user ID.
+ *                - primary :: Evaluate to true for the primary user ID.
+ */
+gpg_error_t
+parse_and_set_import_filter (const char *string)
+{
+  gpg_error_t err;
+
+  /* Auto register the cleanup function.  */
+  register_mem_cleanup_func (cleanup_import_globals);
+
+  if (!strncmp (string, "keep-uid=", 9))
+    err = recsel_parse_expr (&import_keep_uid, string+9);
+  else
+    err = gpg_error (GPG_ERR_INV_NAME);
+
+  return err;
+}
+
 
 
 import_stats_t
@@ -983,6 +1040,74 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
 }
 
 
+/* Helper for apply_keep_uid_filter.  */
+static const char *
+filter_getval (void *cookie, const char *propname)
+{
+  kbnode_t node = cookie;
+  const char *result;
+
+  if (node->pkt->pkttype == PKT_USER_ID)
+    {
+      if (!strcmp (propname, "uid"))
+        result = node->pkt->pkt.user_id->name;
+      else if (!strcmp (propname, "mbox"))
+        {
+          if (!node->pkt->pkt.user_id->mbox)
+            {
+              node->pkt->pkt.user_id->mbox
+                = mailbox_from_userid (node->pkt->pkt.user_id->name);
+            }
+          return node->pkt->pkt.user_id->mbox;
+        }
+      else if (!strcmp (propname, "primary"))
+        result = node->pkt->pkt.user_id->is_primary? "1":"0";
+      else
+        result = NULL;
+    }
+  else
+    result = NULL;
+
+  return result;
+}
+
+/*
+ * Apply the keep-uid filter to the keyblock.  The deleted nodes are
+ * marked and thus the caller should call commit_kbnode afterwards.
+ * KEYBLOCK must not have any blocks marked as deleted.
+ */
+static void
+apply_keep_uid_filter (kbnode_t keyblock, recsel_expr_t selector)
+{
+  kbnode_t node;
+
+  for (node = keyblock->next; node; node = node->next )
+    {
+      if (node->pkt->pkttype == PKT_USER_ID)
+        {
+          if (!recsel_select (selector, filter_getval, node))
+            {
+
+              /* log_debug ("keep-uid: deleting '%s'\n", */
+              /*            node->pkt->pkt.user_id->name); */
+              /* The UID packet and all following packets up to the
+               * next UID or a subkey.  */
+              delete_kbnode (node);
+              for (; node->next
+                     && node->next->pkt->pkttype != PKT_USER_ID
+                     && node->next->pkt->pkttype != PKT_PUBLIC_SUBKEY
+                     && node->next->pkt->pkttype != PKT_SECRET_SUBKEY ;
+                   node = node->next)
+                delete_kbnode (node->next);
+	    }
+          /* else */
+          /*   log_debug ("keep-uid: keeping '%s'\n", */
+          /*              node->pkt->pkt.user_id->name); */
+        }
+    }
+}
+
+
 /*
  * Try to import one keyblock. Return an error only in serious cases,
  * but never for an invalid keyblock.  It uses log_error to increase
@@ -1115,6 +1240,14 @@ import_one (ctrl_t ctrl,
 
   /* Get rid of deleted nodes.  */
   commit_kbnode (&keyblock);
+
+  /* Apply import filter.  */
+  if (import_keep_uid)
+    {
+      apply_keep_uid_filter (keyblock, import_keep_uid);
+      commit_kbnode (&keyblock);
+    }
+
 
   /* Show the key in the form it is merged or inserted.  We skip this
    * if "import-export" is also active without --armor or the output
