@@ -1022,17 +1022,18 @@ tdb_get_validity_core (ctrl_t ctrl,
 #ifdef USE_TOFU
   if (opt.trust_model == TM_TOFU || opt.trust_model == TM_TOFU_PGP)
     {
-      kbnode_t user_id_node = NULL; /* Silence -Wmaybe-uninitialized.  */
+      kbnode_t user_id_node = NULL;
+      kbnode_t n = NULL;	/* Silence -Wmaybe-uninitialized.  */
       int user_ids = 0;
       int user_ids_expired = 0;
 
       /* If the caller didn't supply a user id then iterate over all
 	 uids.  */
       if (! uid)
-	user_id_node = get_pubkeyblock (main_pk->keyid);
+	user_id_node = n = get_pubkeyblock (main_pk->keyid);
 
       while (uid
-	     || (user_id_node = find_next_kbnode (user_id_node, PKT_USER_ID)))
+	     || (n = find_next_kbnode (n, PKT_USER_ID)))
 	{
 	  unsigned int tl;
 	  PKT_user_id *user_id;
@@ -1040,7 +1041,7 @@ tdb_get_validity_core (ctrl_t ctrl,
 	  if (uid)
 	    user_id = uid;
 	  else
-	    user_id = user_id_node->pkt->pkt.user_id;
+	    user_id = n->pkt->pkt.user_id;
 
           /* If the user id is revoked or expired, then skip it.  */
 	  if (user_id->is_revoked || user_id->is_expired)
@@ -1094,6 +1095,7 @@ tdb_get_validity_core (ctrl_t ctrl,
 	       now.  */
 	    break;
 	}
+      release_kbnode (user_id_node);
     }
 #endif /*USE_TOFU*/
 
