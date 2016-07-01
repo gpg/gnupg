@@ -202,7 +202,7 @@ write_uid( KBNODE root, const char *s )
     size_t n = strlen(s);
 
     pkt->pkttype = PKT_USER_ID;
-    pkt->pkt.user_id = xmalloc_clear( sizeof *pkt->pkt.user_id + n - 1 );
+    pkt->pkt.user_id = xmalloc_clear (sizeof *pkt->pkt.user_id + n);
     pkt->pkt.user_id->len = n;
     pkt->pkt.user_id->ref = 1;
     strcpy(pkt->pkt.user_id->name, s);

@@ -293,7 +293,7 @@ typedef struct
   } flags;
   /* The text contained in the user id packet, which is normally the
      name and email address of the key holder (See RFC 4880 5.11).
-     (Serialized.)  */
+     (Serialized.). For convenience an extra Nul is always appended.  */
   char name[1];
 } PKT_user_id;
 
