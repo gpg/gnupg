@@ -106,6 +106,10 @@ register_mem_cleanup_func (void (*func)(void))
 {
   mem_cleanup_item_t item;
 
+  for (item = mem_cleanup_list; item; item = item->next)
+    if (item->func == func)
+      return; /* Function has already been registered.  */
+
   item = malloc (sizeof *item);
   if (item)
     {
