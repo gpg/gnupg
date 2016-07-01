@@ -1524,6 +1524,7 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
           else
             {
               const char *curvename = openpgp_oid_to_curve (curvestr, 1);
+              gcry_sexp_release (curve);
               err = gcry_sexp_build (&curve, NULL, "(curve %s)",
                                      curvename?curvename:curvestr);
               xfree (curvestr);
