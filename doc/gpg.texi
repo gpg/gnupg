@@ -2219,12 +2219,14 @@ opposite meaning. The options are:
 @end table
 
 @item --import-filter @code{@var{name}=@var{expr}}
+@itemx --export-filter @code{@var{name}=@var{expr}}
 @opindex import-filter
-This option defines an import filter which is implied to the imported
-keyblock right before it will be stored.  @var{name} defines the type
-of filter to use, @var{expr} the expression to evaluate.  The option
-can be used several times which then appends more expression to the
-same @var{name}.
+@opindex export-filter
+These options define an import/export filter which are applied to the
+imported/exported keyblock right before it will be stored/written.
+@var{name} defines the type of filter to use, @var{expr} the
+expression to evaluate.  The option can be used several times which
+then appends more expression to the same @var{name}.
 
 @noindent
 The available filter types are:

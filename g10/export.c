@@ -35,6 +35,9 @@
 #include "i18n.h"
 #include "membuf.h"
 #include "host2net.h"
+#include "recsel.h"
+#include "mbox-util.h"
+#include "init.h"
 #include "trustdb.h"
 #include "call-agent.h"
 
@@ -56,6 +59,16 @@ struct export_stats_s
 };
 
 
+/* A global variable to store the selector created from
+ * --export-filter keep-uid=EXPR.
+ *
+ * FIXME: We should put this into the CTRL object but that requires a
+ * lot more changes right now.
+ */
+static recsel_expr_t export_keep_uid;
+
+
+
 /* Local prototypes.  */
 static int do_export (ctrl_t ctrl, strlist_t users, int secret,
                       unsigned int options, export_stats_t stats);
@@ -65,6 +78,12 @@ static int do_export_stream (ctrl_t ctrl, iobuf_t out,
 			     export_stats_t stats, int *any);
 
 
+static void
+cleanup_export_globals (void)
+{
+  recsel_release (export_keep_uid);
+  export_keep_uid = NULL;
+}
 
 
 /* Option parser for export options.  See parse_options fro
@@ -97,6 +116,38 @@ parse_export_options(char *str,unsigned int *options,int noisy)
     };
 
   return parse_options(str,options,export_opts,noisy);
+}
+
+
+/* Parse and set an export filter from string.  STRING has the format
+ * "NAME=EXPR" with NAME being the name of the filter.  Spaces before
+ * and after NAME are not allowed.  If this function is called several
+ * times all expressions for the same NAME are concatenated.
+ * Supported filter names are:
+ *
+ *  - keep-uid :: If the expression evaluates to true for a certain
+ *                user ID packet, that packet and all it dependencies
+ *                will be exported.  The expression may use these
+ *                variables:
+ *
+ *                - uid  :: The entire user ID.
+ *                - mbox :: The mail box part of the user ID.
+ *                - primary :: Evaluate to true for the primary user ID.
+ */
+gpg_error_t
+parse_and_set_export_filter (const char *string)
+{
+  gpg_error_t err;
+
+  /* Auto register the cleanup function.  */
+  register_mem_cleanup_func (cleanup_export_globals);
+
+  if (!strncmp (string, "keep-uid=", 9))
+    err = recsel_parse_expr (&export_keep_uid, string+9);
+  else
+    err = gpg_error (GPG_ERR_INV_NAME);
+
+  return err;
 }
 
 
@@ -1147,6 +1198,74 @@ receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
 }
 
 
+/* Helper for apply_keep_uid_filter.  */
+static const char *
+filter_getval (void *cookie, const char *propname)
+{
+  kbnode_t node = cookie;
+  const char *result;
+
+  if (node->pkt->pkttype == PKT_USER_ID)
+    {
+      if (!strcmp (propname, "uid"))
+        result = node->pkt->pkt.user_id->name;
+      else if (!strcmp (propname, "mbox"))
+        {
+          if (!node->pkt->pkt.user_id->mbox)
+            {
+              node->pkt->pkt.user_id->mbox
+                = mailbox_from_userid (node->pkt->pkt.user_id->name);
+            }
+          return node->pkt->pkt.user_id->mbox;
+        }
+      else if (!strcmp (propname, "primary"))
+        result = node->pkt->pkt.user_id->is_primary? "1":"0";
+      else
+        result = NULL;
+    }
+  else
+    result = NULL;
+
+  return result;
+}
+
+/*
+ * Apply the keep-uid filter to the keyblock.  The deleted nodes are
+ * marked and thus the caller should call commit_kbnode afterwards.
+ * KEYBLOCK must not have any blocks marked as deleted.
+ */
+static void
+apply_keep_uid_filter (kbnode_t keyblock, recsel_expr_t selector)
+{
+  kbnode_t node;
+
+  for (node = keyblock->next; node; node = node->next )
+    {
+      if (node->pkt->pkttype == PKT_USER_ID)
+        {
+          if (!recsel_select (selector, filter_getval, node))
+            {
+
+              log_debug ("keep-uid: deleting '%s'\n",
+                         node->pkt->pkt.user_id->name);
+              /* The UID packet and all following packets up to the
+               * next UID or a subkey.  */
+              delete_kbnode (node);
+              for (; node->next
+                     && node->next->pkt->pkttype != PKT_USER_ID
+                     && node->next->pkt->pkttype != PKT_PUBLIC_SUBKEY
+                     && node->next->pkt->pkttype != PKT_SECRET_SUBKEY ;
+                   node = node->next)
+                delete_kbnode (node->next);
+	    }
+          else
+            log_debug ("keep-uid: keeping '%s'\n",
+                       node->pkt->pkt.user_id->name);
+        }
+    }
+}
+
+
 /* Export the keys identified by the list of strings in USERS to the
    stream OUT.  If Secret is false public keys will be exported.  With
    secret true secret keys will be exported; in this case 1 means the
@@ -1325,6 +1444,13 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
          export-minimal set.  */
       if ((options & EXPORT_CLEAN))
         clean_key (keyblock, opt.verbose, (options&EXPORT_MINIMAL), NULL, NULL);
+
+      if (export_keep_uid)
+        {
+          commit_kbnode (&keyblock);
+          apply_keep_uid_filter (keyblock, export_keep_uid);
+          commit_kbnode (&keyblock);
+        }
 
       /* And write it. */
       xfree (cache_nonce);

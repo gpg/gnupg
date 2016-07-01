@@ -302,6 +302,7 @@ enum cmd_and_opt_values
     oImportOptions,
     oImportFilter,
     oExportOptions,
+    oExportFilter,
     oListOptions,
     oVerifyOptions,
     oTempDir,
@@ -575,6 +576,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oImportOptions, "import-options", "@"),
   ARGPARSE_s_s (oImportFilter,  "import-filter", "@"),
   ARGPARSE_s_s (oExportOptions, "export-options", "@"),
+  ARGPARSE_s_s (oExportFilter,  "export-filter", "@"),
   ARGPARSE_s_s (oListOptions,   "list-options", "@"),
   ARGPARSE_s_s (oVerifyOptions, "verify-options", "@"),
 
@@ -3048,6 +3050,11 @@ main (int argc, char **argv)
 		else
 		  log_error(_("invalid export options\n"));
 	      }
+	    break;
+	  case oExportFilter:
+	    rc = parse_and_set_export_filter (pargs.r.ret_str);
+	    if (rc)
+              log_error (_("invalid filter option: %s\n"), gpg_strerror (rc));
 	    break;
 	  case oListOptions:
 	    if(!parse_list_options(pargs.r.ret_str))
