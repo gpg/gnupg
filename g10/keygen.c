@@ -413,9 +413,9 @@ keygen_set_std_prefs (const char *string,int personal)
 
     if(strlen(string))
       {
-	char *tok,*prefstring;
+	char *dup, *tok, *prefstring;
 
-	prefstring=xstrdup(string); /* need a writable string! */
+	dup = prefstring = xstrdup (string); /* need a writable string! */
 
 	while((tok=strsep(&prefstring," ,")))
 	  {
@@ -449,7 +449,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	      }
 	  }
 
-	xfree(prefstring);
+	xfree (dup);
       }
 
     if(!rc)
