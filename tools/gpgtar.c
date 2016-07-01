@@ -275,7 +275,12 @@ shell_parse_argv (const char *s, int *r_argc, char ***r_argv)
     return 1;
 
   for (i = 0; list; i++)
-    (*r_argv)[i] = list->d, list = list->next;
+    {
+      gpgrt_annotate_leaked_object (list);
+      (*r_argv)[i] = list->d;
+      list = list->next;
+    }
+  gpgrt_annotate_leaked_object (*r_argv);
   return 0;
 }
 
