@@ -27,6 +27,11 @@
 #include "mime-maker.h"
 
 
+/* All valid charachters in a header name.  */
+#define HEADER_NAME_CHARS  ("abcdefghijklmnopqrstuvwxyz" \
+                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+                            "-01234567890")
+
 /* An object to store an header.  Also used for a list of headers.  */
 struct header_s
 {
@@ -294,12 +299,37 @@ add_header (part_t part, const char *name, const char *value)
 {
   gpg_error_t err;
   header_t hdr;
+  size_t namelen;
+  const char *s;
 
-  hdr = xtrymalloc (sizeof *hdr + strlen (name));
+  if (!value)
+    {
+      s = strchr (name, '=');
+      if (!s)
+        return gpg_error (GPG_ERR_INV_ARG);
+      namelen = s - name;
+      value = s+1;
+    }
+  else
+    namelen = strlen (name);
+
+  hdr = xtrymalloc (sizeof *hdr + namelen);
   if (!hdr)
     return gpg_error_from_syserror ();
   hdr->next = NULL;
-  strcpy (hdr->name, name);
+  memcpy (hdr->name, name, namelen);
+  hdr->name[namelen] = 0;
+
+  /* Check that the header name is valid.  We allow all lower and
+   * uppercase letters and, except for the first character, digits and
+   * the dash.  */
+  if (strspn (hdr->name, HEADER_NAME_CHARS) != namelen
+      || strchr ("-0123456789", *hdr->name))
+    {
+      xfree (hdr);
+      return gpg_error (GPG_ERR_INV_NAME);
+    }
+
   capitalize_header_name (hdr->name);
   hdr->value = xtrystrdup (value);
   if (!hdr->value)
@@ -308,27 +338,40 @@ add_header (part_t part, const char *name, const char *value)
       xfree (hdr);
       return err;
     }
-  *part->headers_tail = hdr;
-  part->headers_tail = &hdr->next;
+
+  if (part)
+    {
+      *part->headers_tail = hdr;
+      part->headers_tail = &hdr->next;
+    }
+  else
+    xfree (hdr);
 
   return 0;
 }
 
 
 /* Add a header with NAME and VALUE to the current mail.  A LF in the
- * VALUE will be handled automagically.  If no container has been
- * added, the header will be used for the regular mail headers and not
- * for a MIME part.  If the current part is in a container and a body
- * has been added, we append a new part to the current container.
- * Thus for a non-MIME mail the caller needs to call this function
- * followed by a call to add a body.  When adding a Content-Type the
- * boundary parameter must not be included.
+ * VALUE will be handled automagically.  If NULL is used for VALUE it
+ * is expected that the NAME has the format "NAME=VALUE" and VALUE is
+ * taken from there.
+ *
+ * If no container has been added, the header will be used for the
+ * regular mail headers and not for a MIME part.  If the current part
+ * is in a container and a body has been added, we append a new part
+ * to the current container.  Thus for a non-MIME mail the caller
+ * needs to call this function followed by a call to add a body.  When
+ * adding a Content-Type the boundary parameter must not be included.
  */
 gpg_error_t
 mime_maker_add_header (mime_maker_t ctx, const char *name, const char *value)
 {
   gpg_error_t err;
   part_t part, parent;
+
+  /* Hack to use this fucntion for a synacx check of NAME and VALUE.  */
+  if (!ctx)
+    return add_header (NULL, name, value);
 
   err = ensure_part (ctx, &parent);
   if (err)
