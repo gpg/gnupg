@@ -133,7 +133,7 @@ find_next_lc (char *string)
 }
 
 
-/* Parse an expression.  The expression symtax is:
+/* Parse an expression.  The expression syntax is:
  *
  *   [<lc>] {{<flag>} PROPNAME <op> VALUE [<lc>]}
  *
@@ -161,8 +161,8 @@ find_next_lc (char *string)
  *   >=  The numerical value of the field must be GE than the value.
  *   -n  True if value is not empty (no VALUE parameter allowed).
  *   -z  True if value is empty (no VALUE parameter allowed).
- *   -t  Alias for "NAME != 0" (no VALUE parameter allowed).
- *   -f  Alias for "NAME == 0" (no VALUE parameter allowed).
+ *   -t  Alias for "PROPNAME != 0" (no VALUE parameter allowed).
+ *   -f  Alias for "PROPNAME == 0" (no VALUE parameter allowed).
  *
  * Values for <flag> must be space separated and any of:
  *
