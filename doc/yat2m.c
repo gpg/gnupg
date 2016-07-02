@@ -746,7 +746,7 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     { "subsection", 6, "\n.SS " },
     { "chapheading", 0},
     { "item",    2, ".TP\n.B " },
-    { "itemx",   2, ".TP\n.B " },
+    { "itemx",   2, ".TQ\n.B " },
     { "table",   3 },
     { "itemize",   3 },
     { "bullet",  0, "* " },
@@ -793,6 +793,8 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
             {
               if ((*table_level)-- > 1)
                 fputs (".RE\n", fp);
+              else
+                fputs (".P\n", fp);
             }
           else if (n >= 7 && !memcmp (s, "example", 7)
               && (!n || s[7] == ' ' || s[7] == '\t' || s[7] == '\n'))
