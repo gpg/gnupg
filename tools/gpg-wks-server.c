@@ -40,6 +40,7 @@
 #include "mbox-util.h"
 #include "name-value.h"
 #include "mime-maker.h"
+#include "send-mail.h"
 #include "gpg-wks.h"
 
 
@@ -50,6 +51,7 @@ enum cmd_and_opt_values
 
     oQuiet      = 'q',
     oVerbose	= 'v',
+    oOutput     = 'o',
 
     oDebug      = 500,
 
@@ -57,6 +59,7 @@ enum cmd_and_opt_values
     aCron,
 
     oGpgProgram,
+    oSend,
     oFrom,
     oHeader,
 
@@ -79,7 +82,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oQuiet,	"quiet",  ("be somewhat more quiet")),
   ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_s (oGpgProgram, "gpg", "@"),
-  ARGPARSE_s_s (oFrom, "from" , "|ADDR|use ADDR as the default sender"),
+  ARGPARSE_s_n (oSend, "send", "send the mail using sendmail"),
+  ARGPARSE_s_s (oOutput, "output", "|FILE|write the mail to FILE"),
+  ARGPARSE_s_s (oFrom, "from", "|ADDR|use ADDR as the default sender"),
   ARGPARSE_s_s (oHeader, "header" ,
                 "|NAME=VALUE|add \"NAME: VALUE\" as header to all mails"),
 
@@ -181,6 +186,12 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
           break;
         case oHeader:
           append_to_strlist (&opt.extra_headers, pargs->r.ret_str);
+          break;
+        case oSend:
+          opt.use_sendmail = 1;
+          break;
+        case oOutput:
+          opt.output = pargs->r.ret_str;
           break;
 
 	case aReceive:
@@ -831,7 +842,7 @@ send_confirmation_request (server_ctx_t ctx,
   if (err)
     goto leave;
 
-  err = mime_maker_make (mime, es_stdout);
+  err = wks_send_mime (mime);
 
  leave:
   mime_maker_release (mime);
@@ -922,6 +933,14 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
   const char *domain;
   const char *s;
   strlist_t sl;
+
+  /* FIXME: There is a bug in name-value.c which adds white space for
+   * the last pair and thus we strip the nonce here until this has
+   * been fixed.  */
+  char *nonce2 = xstrdup (nonce);
+  trim_trailing_spaces (nonce2);
+  nonce = nonce2;
+
 
   domain = strchr (address, '@');
   log_assert (domain && domain[1]);
@@ -1027,6 +1046,7 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
   xfree (hash);
   xfree (fnewname);
   xfree (fname);
+  xfree (nonce2);
   return err;
 }
 

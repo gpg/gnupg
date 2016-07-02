@@ -34,6 +34,7 @@
 #include "name-value.h"
 #include "call-dirmngr.h"
 #include "mime-maker.h"
+#include "send-mail.h"
 #include "gpg-wks.h"
 
 
@@ -44,13 +45,15 @@ enum cmd_and_opt_values
 
     oQuiet      = 'q',
     oVerbose	= 'v',
+    oOutput     = 'o',
 
     oDebug      = 500,
 
-    aSend,
+    aCreate,
     aReceive,
 
     oGpgProgram,
+    oSend,
 
     oDummy
   };
@@ -60,8 +63,8 @@ enum cmd_and_opt_values
 static ARGPARSE_OPTS opts[] = {
   ARGPARSE_group (300, ("@Commands:\n ")),
 
-  ARGPARSE_c (aSend,   "send",
-              ("send a publication request")),
+  ARGPARSE_c (aCreate,   "create",
+              ("create a publication request")),
   ARGPARSE_c (aReceive,   "receive",
               ("receive a confirmation request")),
 
@@ -71,6 +74,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oQuiet,	"quiet",  ("be somewhat more quiet")),
   ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_s (oGpgProgram, "gpg", "@"),
+  ARGPARSE_s_n (oSend, "send", "send the mail using sendmail"),
+  ARGPARSE_s_s (oOutput, "output", "|FILE|write the mail to FILE"),
 
 
   ARGPARSE_end ()
@@ -112,10 +117,10 @@ my_strusage( int level )
 
     case 1:
     case 40:
-      p = ("Usage: gpg-wks-client --send|--receive [args] (-h for help)");
+      p = ("Usage: gpg-wks-client [command] [options] [args] (-h for help)");
       break;
     case 41:
-      p = ("Syntax: gpg-wks-client --send|--receive [args]\n"
+      p = ("Syntax: gpg-wks-client [command] [options] [args]\n"
            "Client for the Web Key Service\n");
       break;
 
@@ -158,8 +163,14 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case oGpgProgram:
           opt.gpg_program = pargs->r.ret_str;
           break;
+        case oSend:
+          opt.use_sendmail = 1;
+          break;
+        case oOutput:
+          opt.output = pargs->r.ret_str;
+          break;
 
-	case aSend:
+	case aCreate:
 	case aReceive:
           cmd = pargs->r_opt;
           break;
@@ -221,12 +232,12 @@ main (int argc, char **argv)
   /* Run the selected command.  */
   switch (cmd)
     {
-    case aSend:
+    case aCreate:
       if (argc != 2)
-        wrong_args ("--send FINGERPRINT USER-ID");
+        wrong_args ("--create FINGERPRINT USER-ID");
       err = command_send (argv[0], argv[1]);
       if (err)
-        log_error ("sending key failed: %s\n", gpg_strerror (err));
+        log_error ("creating request failed: %s\n", gpg_strerror (err));
       break;
 
     case aReceive:
@@ -234,7 +245,7 @@ main (int argc, char **argv)
         wrong_args ("--receive");
       err = wks_receive (es_stdin, command_receive_cb, NULL);
       if (err)
-        log_error ("reading mail failed: %s\n", gpg_strerror (err));
+        log_error ("processing mail failed: %s\n", gpg_strerror (err));
       break;
 
     default:
@@ -407,7 +418,7 @@ command_send (const char *fingerprint, char *userid)
   if (err)
     goto leave;
 
-  err = mime_maker_make (mime, es_stdout);
+  err = wks_send_mime (mime);
 
  leave:
   mime_maker_release (mime);
@@ -502,7 +513,7 @@ send_confirmation_response (const char *sender, const char *address,
   if (err)
     goto leave;
 
-  err = mime_maker_make (mime, es_stdout);
+  err = wks_send_mime (mime);
 
  leave:
   mime_maker_release (mime);

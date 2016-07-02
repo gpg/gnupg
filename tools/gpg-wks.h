@@ -22,6 +22,7 @@
 
 #include "../common/util.h"
 #include "../common/strlist.h"
+#include "mime-maker.h"
 
 /* We keep all global options in the structure OPT.  */
 struct
@@ -29,6 +30,8 @@ struct
   int verbose;
   unsigned int debug;
   int quiet;
+  int use_sendmail;
+  const char *output;
   const char *gpg_program;
   const char *directory;
   const char *default_from;
@@ -42,6 +45,9 @@ struct
 #define DBG_IPC_VALUE      1024 /* Debug assuan communication.  */
 #define DBG_EXTPROG_VALUE 16384 /* debug external program calls */
 
+
+/*-- wks-util.c --*/
+gpg_error_t wks_send_mime (mime_maker_t mime);
 
 /*-- wks-receive.c --*/
 gpg_error_t wks_receive (estream_t fp,

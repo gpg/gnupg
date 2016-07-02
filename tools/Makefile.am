@@ -147,21 +147,25 @@ gpgtar_LDADD = $(libcommon) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 gpg_wks_server_SOURCES = \
 	gpg-wks-server.c \
 	gpg-wks.h \
+	wks-util.c \
 	wks-receive.c \
 	rfc822parse.c rfc822parse.h \
 	mime-parser.c mime-parser.h \
-	mime-maker.h  mime-maker.c
+	mime-maker.c  mime-maker.h  \
+	send-mail.c   send-mail.h
 
 gpg_wks_server_CFLAGS = $(GPG_ERROR_CFLAGS)
 gpg_wks_server_LDADD = $(libcommon) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
 
 gpg_wks_client_SOURCES = \
 	gpg-wks-client.c \
-	gpg-wks.h \
+	gpg-wks.h  \
+	wks-util.c \
 	wks-receive.c \
 	rfc822parse.c rfc822parse.h \
 	mime-parser.c mime-parser.h \
-	mime-maker.h  mime-maker.c \
+	mime-maker.h  mime-maker.c  \
+	send-mail.c   send-mail.h   \
 	call-dirmngr.c call-dirmngr.h
 
 gpg_wks_client_CFLAGS = $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
