@@ -31,6 +31,8 @@ struct
   int quiet;
   const char *gpg_program;
   const char *directory;
+  const char *default_from;
+  strlist_t extra_headers;
 } opt;
 
 /* Debug values and macros.  */

@@ -57,6 +57,8 @@ enum cmd_and_opt_values
     aCron,
 
     oGpgProgram,
+    oFrom,
+    oHeader,
 
     oDummy
   };
@@ -77,7 +79,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oQuiet,	"quiet",  ("be somewhat more quiet")),
   ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_s (oGpgProgram, "gpg", "@"),
-
+  ARGPARSE_s_s (oFrom, "from" , "|ADDR|use ADDR as the default sender"),
+  ARGPARSE_s_s (oHeader, "header" ,
+                "|NAME=VALUE|add \"NAME: VALUE\" as header to all mails"),
 
   ARGPARSE_end ()
 };
@@ -172,6 +176,12 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case oGpgProgram:
           opt.gpg_program = pargs->r.ret_str;
           break;
+        case oFrom:
+          opt.default_from = pargs->r.ret_str;
+          break;
+        case oHeader:
+          append_to_strlist (&opt.extra_headers, pargs->r.ret_str);
+          break;
 
 	case aReceive:
         case aCron:
@@ -228,6 +238,24 @@ main (int argc, char **argv)
   if (!opt.directory)
     opt.directory = "/var/lib/gnupg/wks";
 
+  /* Check for syntax errors in the --header option to avoid later
+   * error messages with a not easy to find cause */
+  if (opt.extra_headers)
+    {
+      strlist_t sl;
+
+      for (sl = opt.extra_headers; sl; sl = sl->next)
+        {
+          err = mime_maker_add_header (NULL, sl->d, NULL);
+          if (err)
+            log_error ("syntax error in \"--header %s\": %s\n",
+                       sl->d, gpg_strerror (err));
+        }
+    }
+
+  if (log_get_errorcount (0))
+    exit (2);
+
 
   /* Check that we have a working directory.  */
 #if defined(HAVE_STAT)
@@ -271,7 +299,7 @@ main (int argc, char **argv)
         wrong_args ("--receive");
       err = wks_receive (es_stdin, command_receive_cb, NULL);
       if (err)
-        log_error ("reading mail failed: %s\n", gpg_strerror (err));
+        log_error ("processing mail failed: %s\n", gpg_strerror (err));
       break;
 
     case aCron:
@@ -523,6 +551,74 @@ encrypt_stream (estream_t *r_output, estream_t input, const char *fingerprint)
 }
 
 
+/* Get the submission address for address MBOX.  Caller must free the
+ * value.  If no address can be found NULL is returned.  */
+static char *
+get_submission_address (const char *mbox)
+{
+  gpg_error_t err;
+  const char *domain;
+  char *fname, *line, *p;
+  size_t n;
+  estream_t fp;
+
+  domain = strchr (mbox, '@');
+  if (!domain)
+    return NULL;
+  domain++;
+
+  fname = make_filename_try (opt.directory, domain, "submission-address", NULL);
+  if (!fname)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("make_filename failed in %s: %s\n",
+                 __func__, gpg_strerror (err));
+      return NULL;
+    }
+
+  fp = es_fopen (fname, "r");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      if (gpg_err_code (err) == GPG_ERR_ENOENT)
+        log_info ("Note: no specific submission address configured"
+                  " for domain '%s'\n", domain);
+      else
+        log_error ("error reading '%s': %s\n", fname, gpg_strerror (err));
+      xfree (fname);
+      return NULL;
+    }
+
+  line = NULL;
+  n = 0;
+  if (es_getline (&line, &n, fp) < 0)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error reading '%s': %s\n", fname, gpg_strerror (err));
+      xfree (line);
+      es_fclose (fp);
+      xfree (fname);
+      return NULL;
+    }
+  es_fclose (fp);
+  xfree (fname);
+
+  p = strchr (line, '\n');
+  if (p)
+    *p = 0;
+  trim_spaces (line);
+  if (!is_valid_mailbox (line))
+    {
+      log_error ("invalid submission address for domain '%s' detected\n",
+                 domain);
+      xfree (line);
+      return NULL;
+    }
+
+  return line;
+}
+
+
 /* We store the key under the name of the nonce we will then send to
  * the user.  On success the nonce is stored at R_NONCE.  */
 static gpg_error_t
@@ -631,20 +727,40 @@ store_key_as_pending (const char *dir, estream_t key, char **r_nonce)
 }
 
 
+/* Send a confirmation rewqyest.  DIR is the directory used for the
+ * address MBOX.  NONCE is the nonce we want to see in the response to
+ * this mail.  */
 static gpg_error_t
-send_confirmation_request (server_ctx_t ctx, const char *mbox, const char *nonce)
+send_confirmation_request (server_ctx_t ctx,
+                           const char *mbox, const char *nonce)
 {
   gpg_error_t err;
   estream_t body = NULL;
   estream_t bodyenc = NULL;
   mime_maker_t mime = NULL;
+  char *from_buffer = NULL;
+  const char *from;
+  strlist_t sl;
+
+  from = from_buffer = get_submission_address (mbox);
+  if (!from)
+    {
+      from = opt.default_from;
+      if (!from)
+        {
+          log_error ("no sender address found for '%s'\n", mbox);
+          err = gpg_error (GPG_ERR_CONFIGURATION);
+          goto leave;
+        }
+      log_info ("Note: using default sender address '%s'\n", from);
+    }
 
   body = es_fopenmem (0, "w+b");
   if (!body)
     {
       err = gpg_error_from_syserror ();
       log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
-      return err;
+      goto leave;
     }
   /* It is fine to use 8 bit encosind because that is encrypted and
    * only our client will see it.  */
@@ -658,7 +774,7 @@ send_confirmation_request (server_ctx_t ctx, const char *mbox, const char *nonce
                      "address: %s\n"
                      "fingerprint: %s\n"
                      "nonce: %s\n"),
-              "sender@example.org",
+              from,
               mbox,
               ctx->fpr,
               nonce);
@@ -674,12 +790,21 @@ send_confirmation_request (server_ctx_t ctx, const char *mbox, const char *nonce
   err = mime_maker_new (&mime, NULL);
   if (err)
     goto leave;
+  err = mime_maker_add_header (mime, "From", from);
+  if (err)
+    goto leave;
   err = mime_maker_add_header (mime, "To", mbox);
   if (err)
     goto leave;
-  err = mime_maker_add_header (mime, "Subject", "confirm key publication");
+  err = mime_maker_add_header (mime, "Subject", "Confirm your key publication");
   if (err)
     goto leave;
+  for (sl = opt.extra_headers; sl; sl = sl->next)
+    {
+      err = mime_maker_add_header (mime, sl->d, NULL);
+      if (err)
+        goto leave;
+    }
 
   err = mime_maker_add_header (mime, "Content-Type",
                                "multipart/encrypted; "
@@ -712,6 +837,7 @@ send_confirmation_request (server_ctx_t ctx, const char *mbox, const char *nonce
   mime_maker_release (mime);
   xfree (bodyenc);
   xfree (body);
+  xfree (from_buffer);
   return err;
 }
 
@@ -779,7 +905,7 @@ process_new_key (server_ctx_t ctx, estream_t key)
     wipememory (nonce, strlen (nonce));
   xfree (nonce);
   xfree (dname);
-  return 0;
+  return err;
 }
 
 
