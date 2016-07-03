@@ -46,6 +46,8 @@ are
  - scd     :: The scdaemon component
  - ccid    :: The CCID driver in scdaemon
  - dirmngr :: The dirmngr component
+ - wks     :: The web key service tools
+ - tools   :: Other code in tools
  - w32     :: Windows related code
  - po      :: Translations
  - build   :: Changes to the build system

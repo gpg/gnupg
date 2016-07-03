@@ -291,11 +291,10 @@ get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
 {
   gpg_error_t err;
   ccparray_t ccp;
-  const char **argv;
-  estream_t key;
+  const char **argv = NULL;
+  estream_t key = NULL;
   struct get_key_status_parm_s parm;
-
-  (void)addrspec;  /* FIXME - need to use it.  */
+  char *filterexp = NULL;
 
   memset (&parm, 0, sizeof parm);
 
@@ -306,7 +305,15 @@ get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
     {
       err = gpg_error_from_syserror ();
       log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
-      return err;
+      goto leave;
+    }
+
+  filterexp = es_bsprintf ("keep-uid=mbox = %s", addrspec);
+  if (!filterexp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      goto leave;
     }
 
   ccparray_init (&ccp, 0);
@@ -321,6 +328,8 @@ get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
   ccparray_put (&ccp, "--always-trust");
   ccparray_put (&ccp, "--armor");
   ccparray_put (&ccp, "--export-options=export-minimal");
+  ccparray_put (&ccp, "--export-filter");
+  ccparray_put (&ccp, filterexp);
   ccparray_put (&ccp, "--export");
   ccparray_put (&ccp, "--");
   ccparray_put (&ccp, fingerprint);
@@ -353,6 +362,7 @@ get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
  leave:
   es_fclose (key);
   xfree (argv);
+  xfree (filterexp);
   return err;
 }
 
@@ -388,7 +398,6 @@ command_send (const char *fingerprint, char *userid)
   err = get_key (&key, fingerprint, addrspec);
   if (err)
     goto leave;
-  log_debug ("fixme: Check that the key has the requested user-id.\n");
 
   /* Get the submission address.  */
   err = wkd_get_submission_address (addrspec, &submission_to);
