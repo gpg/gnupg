@@ -869,6 +869,7 @@ write_keyblock_to_output (kbnode_t keyblock)
 	    }
 	}
     }
+  err = 0;
 
  leave:
   if (err)
