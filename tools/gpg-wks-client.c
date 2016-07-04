@@ -51,6 +51,7 @@ enum cmd_and_opt_values
 
     aCreate,
     aReceive,
+    aRead,
 
     oGpgProgram,
     oSend,
@@ -66,7 +67,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aCreate,   "create",
               ("create a publication request")),
   ARGPARSE_c (aReceive,   "receive",
-              ("receive a confirmation request")),
+              ("receive a MIME confirmation request")),
+  ARGPARSE_c (aRead,      "read",
+              ("receive a plain text confirmation request")),
 
   ARGPARSE_group (301, ("@\nOptions:\n ")),
 
@@ -96,6 +99,7 @@ static struct debug_flags_s debug_flags [] =
 
 static void wrong_args (const char *text) GPGRT_ATTR_NORETURN;
 static gpg_error_t command_send (const char *fingerprint, char *userid);
+static gpg_error_t process_confirmation_request (estream_t msg);
 static gpg_error_t command_receive_cb (void *opaque,
                                        const char *mediatype, estream_t fp);
 
@@ -172,6 +176,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
 
 	case aCreate:
 	case aReceive:
+	case aRead:
           cmd = pargs->r_opt;
           break;
 
@@ -242,8 +247,16 @@ main (int argc, char **argv)
 
     case aReceive:
       if (argc)
-        wrong_args ("--receive");
+        wrong_args ("--receive < MIME-DATA");
       err = wks_receive (es_stdin, command_receive_cb, NULL);
+      if (err)
+        log_error ("processing mail failed: %s\n", gpg_strerror (err));
+      break;
+
+    case aRead:
+      if (argc)
+        wrong_args ("--read < WKS-DATA");
+      err = process_confirmation_request (es_stdin);
       if (err)
         log_error ("processing mail failed: %s\n", gpg_strerror (err));
       break;
