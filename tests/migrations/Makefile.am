@@ -26,8 +26,11 @@ include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS =
 
+TMP ?= /tmp
+
 TESTS_ENVIRONMENT = GPG_AGENT_INFO= LC_ALL=C \
 	PATH=../gpgscm:$(PATH) \
+	TMP=$(TMP) \
 	GPGSCM_PATH=$(top_srcdir)/tests/gpgscm:$(top_srcdir)/tests/migrations
 
 TESTS = from-classic.scm \

@@ -160,6 +160,18 @@
 	  (sink (open to (logior O_WRONLY O_CREAT) #o600)))
     (splice source sink)))
 
+(define (path-join . components)
+  (let loop ((acc #f) (rest (filter (lambda (s)
+				      (not (string=? "" s))) components)))
+    (if (null? rest)
+	acc
+	(loop (if (string? acc)
+		  (string-append acc "/" (car rest))
+		  (car rest))
+	      (cdr rest)))))
+(assert (string=? (path-join "foo" "bar" "baz") "foo/bar/baz"))
+(assert (string=? (path-join "" "bar" "baz") "bar/baz"))
+
 (define (canonical-path path)
   (if (char=? #\/ (string-ref path 0))
       path
@@ -222,7 +234,7 @@
 (macro (with-temporary-working-directory form)
   (let ((result-sym (gensym)) (cwd-sym (gensym)) (tmp-sym (gensym)))
     `(let* ((,cwd-sym (getcwd))
-	    (,tmp-sym (mkdtemp "gpgscm-XXXXXX"))
+	    (,tmp-sym (mkdtemp (path-join (getenv "TMP") "gpgscm-XXXXXX")))
 	    (_ (chdir ,tmp-sym))
 	    (,result-sym (begin ,@(cdr form))))
        (chdir ,cwd-sym)
@@ -230,9 +242,9 @@
        ,result-sym)))
 
 (define (make-temporary-file . args)
-  (canonical-path (string-append (mkdtemp "gpgscm-XXXXXX")
-				 "/"
-				 (if (null? args) "a" (car args)))))
+  (canonical-path (path-join
+		   (mkdtemp (path-join (getenv "TMP") "gpgscm-XXXXXX"))
+		   (if (null? args) "a" (car args)))))
 
 (define (remove-temporary-file filename)
   (catch '()
