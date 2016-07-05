@@ -30,11 +30,10 @@
 	      --no-secmem-warning --batch
 	      ,(string-append "--agent-program=" GPG-AGENT
 			      "|--debug-quick-random")))
+(define GPGTAR (qualify (string-append (getcwd) "/../../tools/gpgtar")))
 
-(define (dearmor source-name sink-name)
+(define (untar-armored source-name)
   (pipe:do
    (pipe:open source-name (logior O_RDONLY O_BINARY))
    (pipe:spawn `(,@GPG --dearmor))
-   (pipe:write-to sink-name
-		  (logior O_WRONLY O_CREAT O_BINARY)
-		  #o600)))
+   (pipe:spawn `(,GPGTAR --extract --directory=. -))))

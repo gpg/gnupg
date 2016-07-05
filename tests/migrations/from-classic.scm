@@ -19,14 +19,10 @@
 
 (load (with-path "common.scm"))
 
-(define src-gpghome (in-srcdir "from-classic.gpghome"))
+(define src-tarball (in-srcdir "from-classic.tar.asc"))
 
 (define (setup)
-  (for-each-p'
-   "Preparing home directory"
-   (lambda (f) (dearmor f (basename-suffix f ".asc")))
-   (lambda (f) (basename-suffix f ".asc"))
-   (glob (string-append src-gpghome "/*.asc")))
+  (untar-armored src-tarball)
   (setenv "GNUPGHOME" (getcwd) #t))
 
 (define (trigger-migration)

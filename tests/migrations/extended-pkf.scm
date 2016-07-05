@@ -19,23 +19,10 @@
 
 (load (with-path "common.scm"))
 
-(define src-gpghome (in-srcdir "extended-private-key-format.gpghome"))
+(define src-tarball (in-srcdir "extended-pkf.tar.asc"))
 
 (define (setup)
-  (for-each-p'
-   "Preparing home directory"
-   (lambda (f) (dearmor f (basename-suffix f ".asc")))
-   (lambda (f) (basename-suffix f ".asc"))
-   (glob (string-append src-gpghome "/*.asc")))
-
-  (mkdir "private-keys-v1.d" "-rwx")
-  (for-each-p'
-   "Preparing private-keys-v1.d directory"
-   (lambda (f) (dearmor f (string-append "private-keys-v1.d/"
-					 (basename-suffix f ".asc"))))
-   (lambda (f) (basename-suffix f ".asc"))
-   (glob (string-append src-gpghome "/private-keys-v1.d/*.asc")))
-
+  (untar-armored src-tarball)
   (setenv "GNUPGHOME" (getcwd) #t))
 
 (define (trigger-migration)
