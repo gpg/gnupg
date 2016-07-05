@@ -219,9 +219,11 @@ do_getenv (scheme *sc, pointer args)
 {
   FFI_PROLOG ();
   char *name;
+  char *value;
   FFI_ARG_OR_RETURN (sc, char *, name, string, args);
   FFI_ARGS_DONE_OR_RETURN (sc, args);
-  FFI_RETURN_STRING (sc, getenv (name) ?: "");
+  value = getenv (name);
+  FFI_RETURN_STRING (sc, value ? value : "");
 }
 
 static pointer
@@ -313,6 +315,7 @@ do_mkdtemp (scheme *sc, pointer args)
   FFI_PROLOG ();
   char *template;
   char buffer[128];
+  char *name;
   FFI_ARG_OR_RETURN (sc, char *, template, string, args);
   FFI_ARGS_DONE_OR_RETURN (sc, args);
 
@@ -320,7 +323,10 @@ do_mkdtemp (scheme *sc, pointer args)
     FFI_RETURN_ERR (sc, EINVAL);
   strncpy (buffer, template, sizeof buffer);
 
-  FFI_RETURN_STRING (sc, gnupg_mkdtemp (buffer));
+  name = gnupg_mkdtemp (buffer);
+  if (name == NULL)
+    FFI_RETURN_ERR (sc, gpg_error_from_syserror ());
+  FFI_RETURN_STRING (sc, name);
 }
 
 static pointer
