@@ -274,15 +274,17 @@ is_armored( const byte *buf )
 int
 use_armor_filter( IOBUF a )
 {
-    byte buf[1];
+    byte buf[2];
     int n;
 
     /* fixme: there might be a problem with iobuf_peek */
-    n = iobuf_peek(a, buf, 1 );
+    n = iobuf_peek (a, buf, 2);
     if( n == -1 )
 	return 0; /* EOF, doesn't matter whether armored or not */
     if( !n )
 	return 1; /* can't check it: try armored */
+    if (n != 2)
+	return 0; /* short buffer */
     return is_armored(buf);
 }
 
