@@ -48,6 +48,8 @@
 enum cmd_and_opt_values
   {
     aNull = 0,
+    aCreate = 600,
+    aExtract,
     aEncrypt    = 'e',
     aDecrypt    = 'd',
     aSign       = 's',
@@ -84,8 +86,10 @@ enum cmd_and_opt_values
 static ARGPARSE_OPTS opts[] = {
   ARGPARSE_group (300, N_("@Commands:\n ")),
 
-  ARGPARSE_c (aEncrypt,   "encrypt", N_("create an archive")),
-  ARGPARSE_c (aDecrypt,   "decrypt", N_("extract an archive")),
+  ARGPARSE_c (aCreate,    "create",  N_("create an archive")),
+  ARGPARSE_c (aExtract,   "extract", N_("extract an archive")),
+  ARGPARSE_c (aEncrypt,   "encrypt", N_("create an encrypted archive")),
+  ARGPARSE_c (aDecrypt,   "decrypt", N_("extract an encrypted archive")),
   ARGPARSE_c (aSign,      "sign",    N_("create a signed archive")),
   ARGPARSE_c (aList,      "list-archive", N_("list an archive")),
 
@@ -316,6 +320,16 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case aSign:
           set_cmd (&cmd, pargs->r_opt);
 	  break;
+
+        case aCreate:
+          set_cmd (&cmd, aEncrypt);
+          skip_crypto = 1;
+          break;
+
+        case aExtract:
+          set_cmd (&cmd, aDecrypt);
+          skip_crypto = 1;
+          break;
 
         case oRecipient:
           add_to_strlist (&opt.recipients, pargs->r.ret_str);

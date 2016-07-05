@@ -47,7 +47,6 @@
     (with-temporary-working-directory
      (call-check `(,(tool 'gpgtar) --gpg ,(tool 'gpg) --gpg-args ,gpgargs
 		   --tar-args --directory=.
-		   --decrypt
 		   ,@extract-flags
 		   ,archive))
 
@@ -57,17 +56,21 @@
       testfiles))))
 
 (info "Checking gpgtar without encryption")
-(do-test `(--skip-crypto --encrypt) '(--skip-crypto) '(--skip-crypto))
+(do-test '(--skip-crypto --encrypt) '(--skip-crypto)
+	 '(--skip-crypto --decrypt))
+
+(info "Checking gpgtar without encryption with nicer actions")
+(do-test '(--create) '(--skip-crypto) '(--extract))
 
 (info "Checking gpgtar with asymmetric encryption")
-(do-test `(--encrypt --recipient ,usrname2) '() '())
+(do-test `(--encrypt --recipient ,usrname2) '() '(--decrypt))
 
 (info "Checking gpgtar with asymmetric encryption and signature")
 (do-test `(--encrypt --recipient ,usrname2 --sign --local-user ,usrname3)
-	 '() '())
+	 '() '(--decrypt))
 
 (info "Checking gpgtar with signature")
-(do-test `(--sign --local-user ,usrname3) '() '())
+(do-test `(--sign --local-user ,usrname3) '() '(--decrypt))
 
 (lettmp (passphrasefile)
   (letfd ((fd (open passphrasefile (logior O_WRONLY O_CREAT O_BINARY) #o600)))
@@ -76,13 +79,14 @@
   (let ((ppflags `(--gpg-args ,(string-append "--passphrase-file="
 					      passphrasefile))))
     (info "Checking gpgtar with symmetric encryption")
-    (do-test `(,@ppflags --symmetric) ppflags ppflags)
+    (do-test `(,@ppflags --symmetric) ppflags (cons '--decrypt ppflags))
 
     (info "Checking gpgtar with symmetric encryption and chosen cipher")
     (do-test `(,@ppflags --symmetric --gpg-args
 			 ,(string-append "--cipher=" (car all-cipher-algos)))
-	     ppflags ppflags)
+	     ppflags (cons '--decrypt ppflags))
 
     (info "Checking gpgtar with both symmetric and asymmetric encryption")
     (do-test `(,@ppflags --symmetric --encrypt --recipient ,usrname2
-			 --sign --local-user ,usrname3) ppflags ppflags)))
+			 --sign --local-user ,usrname3)
+	     ppflags (cons '--decrypt ppflags))))
