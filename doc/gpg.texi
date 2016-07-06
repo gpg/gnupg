@@ -1371,6 +1371,10 @@ Note that this adds a keyring to the current list. If the intent is to
 use the specified keyring alone, use @option{--keyring} along with
 @option{--no-default-keyring}.
 
+If the the option @option{--no-keyring} has been used no keyrings will
+be used at all.
+
+
 @item --secret-keyring @code{file}
 @opindex secret-keyring
 This is an obsolete option and ignored.  All secret keys are stored in
@@ -3007,6 +3011,10 @@ GnuPG will not operate without any keyrings, so if you use this option
 and do not provide alternate keyrings via @option{--keyring} or
 @option{--secret-keyring}, then GnuPG will still use the default public or
 secret keyrings.
+
+@item --no-keyring
+@opindex no-keyring
+Do not add use any keyrings even if specified as options.
 
 @item --skip-verify
 @opindex skip-verify

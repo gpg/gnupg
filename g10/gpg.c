@@ -248,6 +248,7 @@ enum cmd_and_opt_values
     oNoMDCWarn,
     oNoArmor,
     oNoDefKeyring,
+    oNoKeyring,
     oNoGreeting,
     oNoTTY,
     oNoOptions,
@@ -681,6 +682,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoArmor, "no-armor", "@"),
   ARGPARSE_s_n (oNoArmor, "no-armour", "@"),
   ARGPARSE_s_n (oNoDefKeyring, "no-default-keyring", "@"),
+  ARGPARSE_s_n (oNoKeyring, "no-keyring", "@"),
   ARGPARSE_s_n (oNoGreeting, "no-greeting", "@"),
   ARGPARSE_s_n (oNoOptions, "no-options", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
@@ -2609,7 +2611,15 @@ main (int argc, char **argv)
 	    }
 	    break;
 	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
-	  case oNoDefKeyring: default_keyring = 0; break;
+
+	  case oNoDefKeyring:
+            if (default_keyring > 0)
+              default_keyring = 0;
+            break;
+	  case oNoKeyring:
+            default_keyring = -1;
+            break;
+
 	  case oNoGreeting: nogreeting = 1; break;
 	  case oNoVerbose:
             opt.verbose = 0;
@@ -3703,14 +3713,15 @@ main (int argc, char **argv)
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
 
-    /* Add the keyrings, but not for some special commands.
-       We always need to add the keyrings if we are running under
-       SELinux, this is so that the rings are added to the list of
-       secured files. */
-    if( ALWAYS_ADD_KEYRINGS
-        || (cmd != aDeArmor && cmd != aEnArmor && cmd != aGPGConfTest) )
+    /* Add the keyrings, but not for some special commands.  We always
+     * need to add the keyrings if we are running under SELinux, this
+     * is so that the rings are added to the list of secured files.
+     * We do not add any keyring if --no-keyring has been used.  */
+    if (default_keyring >= 0
+        && (ALWAYS_ADD_KEYRINGS
+            || (cmd != aDeArmor && cmd != aEnArmor && cmd != aGPGConfTest)))
       {
-	if (!nrings || default_keyring)  /* Add default ring. */
+	if (!nrings || default_keyring > 0)  /* Add default ring. */
 	    keydb_add_resource ("pubring" EXTSEP_S GPGEXT_GPG,
                                 KEYDB_RESOURCE_FLAG_DEFAULT);
 	for (sl = nrings; sl; sl = sl->next )
