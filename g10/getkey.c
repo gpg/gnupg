@@ -1,7 +1,7 @@
 /* getkey.c -  Get a key from the database
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
  *               2007, 2008, 2010  Free Software Foundation, Inc.
- * Copyright (C) 2015 g10 Code GmbH
+ * Copyright (C) 2015, 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -143,6 +143,11 @@ static void merge_selfsigs (kbnode_t keyblock);
 static int lookup (getkey_ctx_t ctx,
 		   kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
 		   int want_secret);
+static kbnode_t finish_lookup (kbnode_t keyblock,
+                               unsigned int req_usage, int want_exact,
+                               unsigned int *r_flags);
+static void print_status_key_considered (kbnode_t keyblock, unsigned int flags);
+
 
 #if 0
 static void
@@ -1451,6 +1456,53 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
     free_strlist (namelist);
 
   return rc;
+}
+
+
+/* Get a public key from a file.
+ *
+ * PK is the buffer to store the key.  The caller needs to make sure
+ * that PK->REQ_USAGE is valid.  PK->REQ_USAGE is passed through to
+ * the lookup function and is a mask of PUBKEY_USAGE_SIG,
+ * PUBKEY_USAGE_ENC and PUBKEY_USAGE_CERT.  If this is non-zero, only
+ * keys with the specified usage will be returned.
+ *
+ * FNAME is the file name.  That file should contain exactly one
+ * keyblock.
+ *
+ * This function returns 0 on success.  Otherwise, an error code is
+ * returned.  In particular, GPG_ERR_NO_PUBKEY is returned if the key
+ * is not found.
+ *
+ * The self-signed data has already been merged into the public key
+ * using merge_selfsigs.  The caller must release the content of PK by
+ * calling release_public_key_parts (or, if PK was malloced, using
+ * free_public_key).
+ */
+gpg_error_t
+get_pubkey_fromfile (ctrl_t ctrl, PKT_public_key *pk, const char *fname)
+{
+  gpg_error_t err;
+  kbnode_t keyblock;
+  kbnode_t found_key;
+  unsigned int infoflags;
+
+  err = read_key_from_file (ctrl, fname, &keyblock);
+  if (!err)
+    {
+      /* Warning: node flag bits 0 and 1 should be preserved by
+       * merge_selfsigs.  FIXME: Check whether this still holds. */
+      merge_selfsigs (keyblock);
+      found_key = finish_lookup (keyblock, pk->req_usage, 0, &infoflags);
+      print_status_key_considered (keyblock, infoflags);
+      if (found_key)
+        pk_from_block (pk, keyblock, found_key);
+      else
+        err = gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
+    }
+
+  release_kbnode (keyblock);
+  return err;
 }
 
 

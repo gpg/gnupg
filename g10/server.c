@@ -177,6 +177,7 @@ output_notify (assuan_context_t ctx, char *line)
 
 
 /*  RECIPIENT [--hidden] <userID>
+    RECIPIENT [--hidden] --file <filename>
 
    Set the recipient for the encryption.  <userID> should be the
    internal representation of the key; the server may accept any other
@@ -192,9 +193,10 @@ cmd_recipient (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
-  int hidden;
+  int hidden, file;
 
   hidden = has_option (line,"--hidden");
+  file = has_option (line,"--file");
   line = skip_options (line);
 
   /* FIXME: Expand groups
@@ -204,7 +206,7 @@ cmd_recipient (assuan_context_t ctx, char *line)
     remusr = rcpts;
   */
 
-  err = find_and_check_key (ctrl, line, PUBKEY_USAGE_ENC, hidden,
+  err = find_and_check_key (ctrl, line, PUBKEY_USAGE_ENC, hidden, file,
                             &ctrl->server_local->recplist);
 
   if (err)

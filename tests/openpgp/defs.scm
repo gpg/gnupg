@@ -35,6 +35,9 @@
 ;; first and then search for the encryption subkey.)
 (define dsa-usrname2 "0xCB879DE9")
 
+(define key-file1 "samplekeys/rsa-rsa-sample-1.asc")
+(define key-file2 "samplekeys/ed25519-cv25519-sample-1.asc")
+
 (define plain-files '("plain-1" "plain-2" "plain-3"))
 (define data-files '("data-500" "data-9000" "data-32000" "data-80000"))
 (define exp-files '())

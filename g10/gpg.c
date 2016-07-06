@@ -81,6 +81,8 @@ enum cmd_and_opt_values
     aSym	  = 'c',
     aDecrypt	  = 'd',
     aEncr	  = 'e',
+    oRecipientFile       = 'f',
+    oHiddenRecipientFile = 'F',
     oInteractive  = 'i',
     aListKeys	  = 'k',
     oDryRun	  = 'n',
@@ -506,6 +508,8 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_s (oRecipient, "recipient", N_("|USER-ID|encrypt for USER-ID")),
   ARGPARSE_s_s (oHiddenRecipient, "hidden-recipient", "@"),
+  ARGPARSE_s_s (oRecipientFile, "recipient-file", "@"),
+  ARGPARSE_s_s (oHiddenRecipientFile, "hidden-recipient-file", "@"),
   ARGPARSE_s_s (oRecipient, "remote-user", "@"),  /* (old option name) */
   ARGPARSE_s_s (oDefRecipient, "default-recipient", "@"),
   ARGPARSE_s_n (oDefRecipientSelf,  "default-recipient-self", "@"),
@@ -2838,37 +2842,45 @@ main (int argc, char **argv)
             else
               opt.s2k_count = 0;  /* Auto-calibrate when needed.  */
 	    break;
-	  case oNoEncryptTo: opt.no_encrypt_to = 1; break;
-	  case oEncryptTo: /* store the recipient in the second list */
-	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
-	    sl->flags = ((pargs.r_opt << PK_LIST_SHIFT) | PK_LIST_ENCRYPT_TO);
-            if (configfp)
-              sl->flags |= PK_LIST_CONFIG;
-	    break;
-	  case oHiddenEncryptTo: /* store the recipient in the second list */
-	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
-	    sl->flags = ((pargs.r_opt << PK_LIST_SHIFT)
-                         | PK_LIST_ENCRYPT_TO|PK_LIST_HIDDEN);
-            if (configfp)
-              sl->flags |= PK_LIST_CONFIG;
-	    break;
-          case oEncryptToDefaultKey:
-            opt.encrypt_to_default_key = configfp ? 2 : 1;
-            break;
-	  case oRecipient: /* store the recipient */
+
+	  case oRecipient:
+	  case oHiddenRecipient:
+	  case oRecipientFile:
+	  case oHiddenRecipientFile:
+            /* Store the recipient.  Note that we also store the
+             * option as private data in the flags.  This is achieved
+             * by shifting the option value to the left so to keep
+             * enough space for the flags.  */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
 	    sl->flags = (pargs.r_opt << PK_LIST_SHIFT);
             if (configfp)
               sl->flags |= PK_LIST_CONFIG;
+            if (pargs.r_opt == oHiddenRecipient
+                || pargs.r_opt == oHiddenRecipientFile)
+              sl->flags |= PK_LIST_HIDDEN;
+            if (pargs.r_opt == oRecipientFile
+                || pargs.r_opt == oHiddenRecipientFile)
+              sl->flags |= PK_LIST_FROM_FILE;
             any_explicit_recipient = 1;
 	    break;
-	  case oHiddenRecipient: /* store the recipient with a flag */
+
+	  case oEncryptTo:
+	  case oHiddenEncryptTo:
+            /* Store an additional recipient.  */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
-	    sl->flags = ((pargs.r_opt << PK_LIST_SHIFT) | PK_LIST_HIDDEN);
+	    sl->flags = ((pargs.r_opt << PK_LIST_SHIFT) | PK_LIST_ENCRYPT_TO);
             if (configfp)
               sl->flags |= PK_LIST_CONFIG;
-            any_explicit_recipient = 1;
+            if (pargs.r_opt == oHiddenEncryptTo)
+              sl->flags |= PK_LIST_HIDDEN;
 	    break;
+
+	  case oNoEncryptTo:
+            opt.no_encrypt_to = 1;
+            break;
+          case oEncryptToDefaultKey:
+            opt.encrypt_to_default_key = configfp ? 2 : 1;
+            break;
 
 	  case oTrySecretKey:
 	    add_to_strlist2 (&opt.secret_keys_to_try,

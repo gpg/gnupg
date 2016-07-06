@@ -220,6 +220,113 @@ import_release_stats_handle (import_stats_t p)
 }
 
 
+/* Read a key from a file.  Only the first key in the file is
+ * considered and stored at R_KEYBLOCK.  FNAME is the name of the
+ * file.
+ */
+gpg_error_t
+read_key_from_file (ctrl_t ctrl, const char *fname, kbnode_t *r_keyblock)
+{
+  gpg_error_t err;
+  iobuf_t inp;
+  PACKET *pending_pkt = NULL;
+  kbnode_t keyblock = NULL;
+  u32 keyid[2];
+  int v3keys;   /* Dummy */
+  int non_self; /* Dummy */
+
+  (void)ctrl;
+
+  *r_keyblock = NULL;
+
+  inp = iobuf_open (fname);
+  if (!inp)
+    err = gpg_error_from_syserror ();
+  else if (is_secured_file (iobuf_get_fd (inp)))
+    {
+      iobuf_close (inp);
+      inp = NULL;
+      err = gpg_error (GPG_ERR_EPERM);
+    }
+  else
+    err = 0;
+  if (err)
+    {
+      log_error (_("can't open '%s': %s\n"),
+                 iobuf_is_pipe_filename (fname)? "[stdin]": fname,
+                 gpg_strerror (err));
+      if (gpg_err_code (err) == GPG_ERR_ENOENT)
+        err = gpg_error (GPG_ERR_NO_PUBKEY);
+      goto leave;
+    }
+
+  /* Push the armor filter.  */
+  {
+    armor_filter_context_t *afx;
+    afx = new_armor_context ();
+    afx->only_keyblocks = 1;
+    push_armor_filter (afx, inp);
+    release_armor_context (afx);
+  }
+
+  /* Read the first non-v3 keyblock.  */
+  while (!(err = read_block (inp, &pending_pkt, &keyblock, &v3keys)))
+    {
+      if (keyblock->pkt->pkttype == PKT_PUBLIC_KEY)
+        break;
+      log_info (_("skipping block of type %d\n"), keyblock->pkt->pkttype);
+      release_kbnode (keyblock);
+      keyblock = NULL;
+    }
+  if (err)
+    {
+      if (gpg_err_code (err) != GPG_ERR_INV_KEYRING)
+        log_error (_("error reading '%s': %s\n"),
+                   iobuf_is_pipe_filename (fname)? "[stdin]": fname,
+                   gpg_strerror (err));
+      goto leave;
+    }
+
+  keyid_from_pk (keyblock->pkt->pkt.public_key, keyid);
+
+  if (!find_next_kbnode (keyblock, PKT_USER_ID))
+    {
+      err = gpg_error (GPG_ERR_NO_USER_ID);
+      goto leave;
+    }
+
+  collapse_uids (&keyblock);
+
+  clear_kbnode_flags (keyblock);
+  if (chk_self_sigs (keyblock, keyid, &non_self))
+    {
+      err = gpg_error (GPG_ERR_INV_KEYRING);
+      goto leave;
+    }
+
+  if (!delete_inv_parts (keyblock, keyid, 0) )
+    {
+      err = gpg_error (GPG_ERR_NO_USER_ID);
+      goto leave;
+    }
+
+  *r_keyblock = keyblock;
+  keyblock = NULL;
+
+ leave:
+  if (inp)
+    {
+      iobuf_close (inp);
+      /* Must invalidate that ugly cache to actually close the file. */
+      iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname);
+    }
+  release_kbnode (keyblock);
+  /* FIXME: Do we need to free PENDING_PKT ? */
+  return err;
+}
+
+
+
 /*
  * Import the public keys from the given filename. Input may be armored.
  * This function rejects all keys which are not validly self signed on at

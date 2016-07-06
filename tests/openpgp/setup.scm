@@ -91,12 +91,17 @@
     "1DF48228FEFF3EC2481B106E0ACA8C465C662CC5"
     "A2832820DC9F40751BDCD375BB0945BA33EC6B4C"
     "ADE710D74409777B7729A7653373D820F67892E0"
-    "CEFC51AF91F68A2904FBFF62C4F075A4785B803F"))
+    "CEFC51AF91F68A2904FBFF62C4F075A4785B803F"
+    "1E28F20E41B54C2D1234D896096495FF57E08D18"
+    "EB33B687EB8581AB64D04852A54453E85F3DF62D"
+    "C6A6390E9388CDBAD71EAEA698233FE5E04F001E"
+    "D69102E0F5AC6B6DB8E4D16DA8E18CF46D88CAE3"))
 
 (info "Importing public demo and test keys")
 (call-check `(,@GPG --yes --import
 		    ,(in-srcdir "pubdemo.asc")
-		    ,(in-srcdir "pubring.asc")))
+		    ,(in-srcdir "pubring.asc")
+                    ,(in-srcdir key-file1)))
 ;; (letfd ((source (open (in-srcdir "pubring.pkr.asc") O_RDONLY)))
 ;;        ((gpg-pipe '(--dearmor) '(--yes --import) STDERR_FILENO)
 ;; 	source CLOSED_FD))

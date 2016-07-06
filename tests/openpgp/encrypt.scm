@@ -43,3 +43,18 @@
        (tr:assert-identity source)))
     (append plain-files data-files)))
  all-cipher-algos)
+
+
+;; We encrypt to two keys and we have also put the first key into our
+;; pubring, so that decryption will work.
+(for-each-p
+ "Checking encryption using a key from file"
+ (lambda (source)
+   (tr:do
+    (tr:open source)
+    (tr:gpg "" `(--yes -v --no-keyring --encrypt
+                 --recipient-file ,(in-srcdir key-file1)
+                 --hidden-recipient-file ,(in-srcdir key-file2)))
+    (tr:gpg "" '(--yes))
+    (tr:assert-identity source)))
+ plain-files)

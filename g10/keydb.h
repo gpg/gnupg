@@ -70,15 +70,16 @@ enum resource_type {
 /* Bit flags used with build_pk_list.  */
 enum
   {
-    PK_LIST_ENCRYPT_TO=1,   /* This is an encrypt-to recipient.  */
-    PK_LIST_HIDDEN=2,       /* This is a hidden recipient.       */
-    PK_LIST_CONFIG=4        /* Specified via config file.        */
+    PK_LIST_ENCRYPT_TO = 1, /* This is an encrypt-to recipient.    */
+    PK_LIST_HIDDEN     = 2, /* This is a hidden recipient.         */
+    PK_LIST_CONFIG     = 4, /* Specified via config file.          */
+    PK_LIST_FROM_FILE  = 8  /* Take key from file with that name.  */
   };
-/* To store private data in the flags they must be left shifted by
-   this value.  */
+/* To store private data in the flags the private data must be left
+   shifted by this value.  */
 enum
   {
-    PK_LIST_SHIFT=3
+    PK_LIST_SHIFT = 4
   };
 
 /****************
@@ -104,7 +105,7 @@ struct pk_list
 {
   PK_LIST next;
   PKT_public_key *pk;
-  int flags; /* flag bit 1==throw_keyid */
+  int flags;           /* See PK_LIST_ constants. */
 };
 
 /* Structure to hold a list of secret key certificates.  */
@@ -228,7 +229,8 @@ void release_pk_list (PK_LIST pk_list);
 int  build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list);
 gpg_error_t find_and_check_key (ctrl_t ctrl,
                                 const char *name, unsigned int use,
-                                int mark_hidden, pk_list_t *pk_list_addr);
+                                int mark_hidden, int from_file,
+                                pk_list_t *pk_list_addr);
 
 int  algo_available( preftype_t preftype, int algo,
 		     const union pref_hint *hint );
@@ -321,6 +323,10 @@ int get_pubkey_byname (ctrl_t ctrl,
 		       const char *name,
                        KBNODE *ret_keyblock, KEYDB_HANDLE *ret_kdbhd,
 		       int include_unusable, int no_akl );
+
+/* Get a public key directly from file FNAME.  */
+gpg_error_t get_pubkey_fromfile (ctrl_t ctrl,
+                                 PKT_public_key *pk, const char *fname);
 
 /* Return the public key with the key id KEYID iff the secret key is
  * available and store it at PK.  */

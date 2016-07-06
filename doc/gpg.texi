@@ -2037,6 +2037,22 @@ limited countermeasure against traffic analysis. If this option or
 @option{--recipient} is not specified, GnuPG asks for the user ID unless
 @option{--default-recipient} is given.
 
+@item --recipient-file @var{file}
+@itemx -f
+@opindex recipient-file
+This option is similar to @option{--recipient} except that it
+encrypts to a key stored in the given file.  @var{file} must be the
+name of a file containing exactly one key.  @command{gpg} assumes that
+the key in this file is fully valid.
+
+@item --hidden-recipient-file @var{file}
+@itemx -F
+@opindex hidden-recipient-file
+This option is similar to @option{--hidden-recipient} except that it
+encrypts to a key stored in the given file.  @var{file} must be the
+name of a file containing exactly one key.  @command{gpg} assumes that
+the key in this file is fully valid.
+
 @item --encrypt-to @code{name}
 @opindex encrypt-to
 Same as @option{--recipient} but this one is intended for use in the
@@ -2054,11 +2070,6 @@ options file and may be used with your own user-id as a hidden
 recipients given either by use of @option{--recipient} or by the asked user id.
 No trust checking is performed for these user ids and even disabled
 keys can be used.
-
-@item --encrypt-to-default-key
-@opindex encrypt-to-default-key
-If the default secret key is taken from @option{--default-key}, then
-also encrypt to that key.
 
 @item --no-encrypt-to
 @opindex no-encrypt-to

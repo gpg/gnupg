@@ -350,6 +350,8 @@ typedef gpg_error_t (*import_screener_t)(kbnode_t keyblock, void *arg);
 
 int parse_import_options(char *str,unsigned int *options,int noisy);
 gpg_error_t parse_and_set_import_filter (const char *string);
+gpg_error_t read_key_from_file (ctrl_t ctrl, const char *fname,
+                                kbnode_t *r_keyblock);
 void import_keys (ctrl_t ctrl, char **fnames, int nnames,
 		  import_stats_t stats_hd, unsigned int options);
 int import_keys_stream (ctrl_t ctrl, iobuf_t inp, import_stats_t stats_hd,

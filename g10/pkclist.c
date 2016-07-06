@@ -775,14 +775,16 @@ expand_id(const char *id,strlist_t *into,unsigned int flags)
 }
 
 /* For simplicity, and to avoid potential loops, we only expand once -
-   you can't make an alias that points to an alias. */
+ * you can't make an alias that points to an alias.  */
 static strlist_t
-expand_group(strlist_t input)
+expand_group (strlist_t input)
 {
-  strlist_t sl,output=NULL,rover;
+  strlist_t output = NULL;
+  strlist_t sl, rover;
 
-  for(rover=input;rover;rover=rover->next)
-    if(expand_id(rover->d,&output,rover->flags)==0)
+  for (rover = input; rover; rover = rover->next)
+    if (!(rover->flags & PK_LIST_FROM_FILE)
+        && !expand_id(rover->d,&output,rover->flags))
       {
 	/* Didn't find any groups, so use the existing string */
 	sl=add_to_strlist(&output,rover->d);
@@ -794,17 +796,18 @@ expand_group(strlist_t input)
 
 
 /* Helper for build_pk_list to find and check one key.  This helper is
-   also used directly in server mode by the RECIPIENTS command.  On
-   success the new key is added to PK_LIST_ADDR.  NAME is the user id
-   of the key. USE the requested usage and a set MARK_HIDDEN will mark
-   the key in the updated list as a hidden recipient. */
+ * also used directly in server mode by the RECIPIENTS command.  On
+ * success the new key is added to PK_LIST_ADDR.  NAME is the user id
+ * of the key.  USE the requested usage and a set MARK_HIDDEN will
+ * mark the key in the updated list as a hidden recipient.  If
+ * FROM_FILE is true, NAME is is not a user ID but the name of a file
+ * holding a key. */
 gpg_error_t
 find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
-                    int mark_hidden, pk_list_t *pk_list_addr)
+                    int mark_hidden, int from_file, pk_list_t *pk_list_addr)
 {
   int rc;
   PKT_public_key *pk;
-  int trustlevel;
 
   if (!name || !*name)
     return gpg_error (GPG_ERR_INV_USER_ID);
@@ -814,7 +817,10 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
     return gpg_error_from_syserror ();
   pk->req_usage = use;
 
-  rc = get_pubkey_byname (ctrl, NULL, pk, name, NULL, NULL, 0, 0);
+  if (from_file)
+    rc = get_pubkey_fromfile (ctrl, pk, name);
+  else
+    rc = get_pubkey_byname (ctrl, NULL, pk, name, NULL, NULL, 0, 0);
   if (rc)
     {
       int code;
@@ -844,24 +850,28 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
     }
 
   /* Key found and usable.  Check validity. */
-  trustlevel = get_validity (ctrl, pk, pk->user_id, NULL, 1);
-  if ( (trustlevel & TRUST_FLAG_DISABLED) )
+  if (!from_file)
     {
-      /* Key has been disabled. */
-      send_status_inv_recp (13, name);
-      log_info (_("%s: skipped: public key is disabled\n"), name);
-      free_public_key (pk);
-      return GPG_ERR_UNUSABLE_PUBKEY;
-    }
+      int trustlevel;
 
-  if ( !do_we_trust_pre (pk, trustlevel) )
-    {
-      /* We don't trust this key.  */
-      send_status_inv_recp (10, name);
-      free_public_key (pk);
-      return GPG_ERR_UNUSABLE_PUBKEY;
+      trustlevel = get_validity (ctrl, pk, pk->user_id, NULL, 1);
+      if ( (trustlevel & TRUST_FLAG_DISABLED) )
+        {
+          /* Key has been disabled. */
+          send_status_inv_recp (13, name);
+          log_info (_("%s: skipped: public key is disabled\n"), name);
+          free_public_key (pk);
+          return GPG_ERR_UNUSABLE_PUBKEY;
+        }
+
+      if ( !do_we_trust_pre (pk, trustlevel) )
+        {
+          /* We don't trust this key.  */
+          send_status_inv_recp (10, name);
+          free_public_key (pk);
+          return GPG_ERR_UNUSABLE_PUBKEY;
+        }
     }
-  /* Note: do_we_trust may have changed the trustlevel. */
 
   /* Skip the actual key if the key is already present in the
      list.  */
@@ -894,22 +904,24 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
 
 
 /* This is the central function to collect the keys for recipients.
-   It is thus used to prepare a public key encryption. encrypt-to
-   keys, default keys and the keys for the actual recipients are all
-   collected here.  When not in batch mode and no recipient has been
-   passed on the commandline, the function will also ask for
-   recipients.
-
-   RCPTS is a string list with the recipients; NULL is an allowed
-   value but not very useful.  Group expansion is done on these names;
-   they may be in any of the user Id formats we can handle.  The flags
-   bits for each string in the string list are used for:
-     Bit 0 (PK_LIST_ENCRYPT_TO): This is an encrypt-to recipient.
-     Bit 1 (PK_LIST_HIDDEN)    : This is a hidden recipient.
-
-   On success a list of keys is stored at the address RET_PK_LIST; the
-   caller must free this list.  On error the value at this address is
-   not changed.
+ * It is thus used to prepare a public key encryption. encrypt-to
+ * keys, default keys and the keys for the actual recipients are all
+ * collected here.  When not in batch mode and no recipient has been
+ * passed on the commandline, the function will also ask for
+ * recipients.
+ *
+ * RCPTS is a string list with the recipients; NULL is an allowed
+ * value but not very useful.  Group expansion is done on these names;
+ * they may be in any of the user Id formats we can handle.  The flags
+ * bits for each string in the string list are used for:
+ *
+ * - PK_LIST_ENCRYPT_TO :: This is an encrypt-to recipient.
+ * - PK_LIST_HIDDEN     :: This is a hidden recipient.
+ * - PK_LIST_FROM_FILE  :: The argument is a file with a key.
+ *
+ * On success a list of keys is stored at the address RET_PK_LIST; the
+ * caller must free this list.  On error the value at this address is
+ * not changed.
  */
 int
 build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
@@ -1269,6 +1281,7 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
 
           rc = find_and_check_key (ctrl, remusr->d, PUBKEY_USAGE_ENC,
                                    !!(remusr->flags&PK_LIST_HIDDEN),
+                                   !!(remusr->flags&PK_LIST_FROM_FILE),
                                    &pk_list);
           if (rc)
             goto fail;
