@@ -500,9 +500,9 @@ encrypt_stream_status_cb (void *opaque, const char *keyword, char *args)
 
 
 /* Encrypt the INPUT stream to a new stream which is stored at success
- * at R_OUTPUT.  Encryption is done for the key with FINGERPRINT.  */
+ * at R_OUTPUT.  Encryption is done for the key in file KEYFIL.  */
 static gpg_error_t
-encrypt_stream (estream_t *r_output, estream_t input, const char *fingerprint)
+encrypt_stream (estream_t *r_output, estream_t input, const char *keyfile)
 {
   gpg_error_t err;
   ccparray_t ccp;
@@ -529,9 +529,10 @@ encrypt_stream (estream_t *r_output, estream_t input, const char *fingerprint)
   ccparray_put (&ccp, "--batch");
   ccparray_put (&ccp, "--status-fd=2");
   ccparray_put (&ccp, "--always-trust");
+  ccparray_put (&ccp, "--no-keyring");
   ccparray_put (&ccp, "--armor");
-  ccparray_put (&ccp, "--recipient");
-  ccparray_put (&ccp, fingerprint);
+  ccparray_put (&ccp, "--recipient-file");
+  ccparray_put (&ccp, keyfile);
   ccparray_put (&ccp, "--encrypt");
   ccparray_put (&ccp, "--");
 
@@ -631,9 +632,11 @@ get_submission_address (const char *mbox)
 
 
 /* We store the key under the name of the nonce we will then send to
- * the user.  On success the nonce is stored at R_NONCE.  */
+ * the user.  On success the nonce is stored at R_NONCE and the file
+ * name at R_FNAME.  */
 static gpg_error_t
-store_key_as_pending (const char *dir, estream_t key, char **r_nonce)
+store_key_as_pending (const char *dir, estream_t key,
+                      char **r_nonce, char **r_fname)
 {
   gpg_error_t err;
   char *dname = NULL;
@@ -644,6 +647,7 @@ store_key_as_pending (const char *dir, estream_t key, char **r_nonce)
   size_t nbytes, nwritten;
 
   *r_nonce = NULL;
+  *r_fname = NULL;
 
   dname = make_filename_try (dir, "pending", NULL);
   if (!dname)
@@ -728,11 +732,15 @@ store_key_as_pending (const char *dir, estream_t key, char **r_nonce)
     }
 
   if (!err)
-    *r_nonce = nonce;
+    {
+      *r_nonce = nonce;
+      *r_fname = fname;
+    }
   else
-    xfree (nonce);
-
-  xfree (fname);
+    {
+      xfree (nonce);
+      xfree (fname);
+    }
   xfree (dname);
   return err;
 }
@@ -740,10 +748,11 @@ store_key_as_pending (const char *dir, estream_t key, char **r_nonce)
 
 /* Send a confirmation rewqyest.  DIR is the directory used for the
  * address MBOX.  NONCE is the nonce we want to see in the response to
- * this mail.  */
+ * this mail.  FNAME the name of the file with the key.  */
 static gpg_error_t
 send_confirmation_request (server_ctx_t ctx,
-                           const char *mbox, const char *nonce)
+                           const char *mbox, const char *nonce,
+                           const char *keyfile)
 {
   gpg_error_t err;
   estream_t body = NULL;
@@ -791,7 +800,7 @@ send_confirmation_request (server_ctx_t ctx,
               nonce);
 
   es_rewind (body);
-  err = encrypt_stream (&bodyenc, body, ctx->fpr);
+  err = encrypt_stream (&bodyenc, body, keyfile);
   if (err)
     goto leave;
   es_fclose (body);
@@ -863,6 +872,7 @@ process_new_key (server_ctx_t ctx, estream_t key)
   const char *s;
   char *dname = NULL;
   char *nonce = NULL;
+  char *fname = NULL;
 
   /* First figure out the user id from the key.  */
   err = list_key (ctx, key);
@@ -902,11 +912,12 @@ process_new_key (server_ctx_t ctx, estream_t key)
       log_info ("storing address '%s'\n", sl->d);
 
       xfree (nonce);
-      err = store_key_as_pending (dname, key, &nonce);
+      xfree (fname);
+      err = store_key_as_pending (dname, key, &nonce, &fname);
       if (err)
         goto leave;
 
-      err = send_confirmation_request (ctx, sl->d, nonce);
+      err = send_confirmation_request (ctx, sl->d, nonce, fname);
       if (err)
         goto leave;
     }
@@ -915,6 +926,7 @@ process_new_key (server_ctx_t ctx, estream_t key)
   if (nonce)
     wipememory (nonce, strlen (nonce));
   xfree (nonce);
+  xfree (fname);
   xfree (dname);
   return err;
 }
