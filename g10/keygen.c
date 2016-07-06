@@ -1802,8 +1802,8 @@ ask_keysize (int algo, unsigned int primary_keysize)
   int for_subkey = !!primary_keysize;
   int autocomp = 0;
 
-  if(opt.expert)
-    min=512;
+  if(opt.expert && algo == PUBKEY_ALGO_DSA)
+    min=768;
   else
     min=1024;
 
