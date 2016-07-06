@@ -659,12 +659,9 @@ get_pubkeys (ctrl_t ctrl,
 
 
 static void
-pk_from_block (GETKEY_CTX ctx, PKT_public_key * pk, KBNODE keyblock,
-	       KBNODE found_key)
+pk_from_block (PKT_public_key *pk, kbnode_t keyblock, kbnode_t found_key)
 {
-  KBNODE a = found_key ? found_key : keyblock;
-
-  (void) ctx;
+  kbnode_t a = found_key ? found_key : keyblock;
 
   log_assert (a->pkt->pkttype == PKT_PUBLIC_KEY
               || a->pkt->pkttype == PKT_PUBLIC_SUBKEY);
@@ -749,7 +746,7 @@ get_pubkey (PKT_public_key * pk, u32 * keyid)
     rc = lookup (&ctx, &kb, &found_key, 0);
     if (!rc)
       {
-	pk_from_block (&ctx, pk, kb, found_key);
+	pk_from_block (pk, kb, found_key);
       }
     getkey_end (&ctx);
     release_kbnode (kb);
@@ -912,7 +909,7 @@ get_seckey (PKT_public_key *pk, u32 *keyid)
   err = lookup (&ctx, &keyblock, &found_key, 1);
   if (!err)
     {
-      pk_from_block (&ctx, pk, keyblock, found_key);
+      pk_from_block (pk, keyblock, found_key);
     }
   getkey_end (&ctx);
   release_kbnode (keyblock);
@@ -1118,7 +1115,7 @@ key_byname (GETKEY_CTX *retctx, strlist_t namelist,
   rc = lookup (ctx, ret_kb, &found_key, want_secret);
   if (!rc && pk)
     {
-      pk_from_block (ctx, pk, *ret_kb, found_key);
+      pk_from_block (pk, *ret_kb, found_key);
     }
 
   release_kbnode (help_kb);
@@ -1513,7 +1510,7 @@ get_pubkey_byfprint (PKT_public_key *pk, kbnode_t *r_keyblock,
       memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
       rc = lookup (&ctx, &kb, &found_key, 0);
       if (!rc && pk)
-	pk_from_block (&ctx, pk, kb, found_key);
+	pk_from_block (pk, kb, found_key);
       if (!rc && r_keyblock)
 	{
 	  *r_keyblock = kb;
@@ -1903,7 +1900,7 @@ getkey_next (getkey_ctx_t ctx, PKT_public_key *pk, kbnode_t *ret_keyblock)
 
   rc = lookup (ctx, ret_keyblock, &found_key, ctx->want_secret);
   if (!rc && pk && ret_keyblock)
-    pk_from_block (ctx, pk, *ret_keyblock, found_key);
+    pk_from_block (pk, *ret_keyblock, found_key);
 
   return rc;
 }
