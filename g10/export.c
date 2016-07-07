@@ -35,6 +35,7 @@
 #include "i18n.h"
 #include "membuf.h"
 #include "host2net.h"
+#include "zb32.h"
 #include "recsel.h"
 #include "mbox-util.h"
 #include "init.h"
@@ -103,6 +104,10 @@ parse_export_options(char *str,unsigned int *options,int noisy)
        N_("remove unusable parts from key during export")},
       {"export-minimal",EXPORT_MINIMAL|EXPORT_CLEAN,NULL,
        N_("remove as much as possible from key during export")},
+
+      {"export-pka", EXPORT_PKA_FORMAT, NULL, NULL },
+      {"export-dane", EXPORT_DANE_FORMAT, NULL, NULL },
+
       /* Aliases for backward compatibility */
       {"include-local-sigs",EXPORT_LOCAL_SIGS,NULL,NULL},
       {"include-attributes",EXPORT_ATTRIBUTES,NULL,NULL},
@@ -316,7 +321,7 @@ do_export (ctrl_t ctrl, strlist_t users, int secret, unsigned int options,
   if (rc)
     return rc;
 
-  if ( opt.armor )
+  if ( opt.armor && !(options & (EXPORT_PKA_FORMAT|EXPORT_DANE_FORMAT)) )
     {
       afx = new_armor_context ();
       afx->what = secret? 5 : 1;
@@ -1245,9 +1250,8 @@ apply_keep_uid_filter (kbnode_t keyblock, recsel_expr_t selector)
         {
           if (!recsel_select (selector, filter_getval, node))
             {
-
-              log_debug ("keep-uid: deleting '%s'\n",
-                         node->pkt->pkt.user_id->name);
+              /* log_debug ("keep-uid: deleting '%s'\n", */
+              /*            node->pkt->pkt.user_id->name); */
               /* The UID packet and all following packets up to the
                * next UID or a subkey.  */
               delete_kbnode (node);
@@ -1258,11 +1262,98 @@ apply_keep_uid_filter (kbnode_t keyblock, recsel_expr_t selector)
                    node = node->next)
                 delete_kbnode (node->next);
 	    }
-          else
-            log_debug ("keep-uid: keeping '%s'\n",
-                       node->pkt->pkt.user_id->name);
+          /* else */
+          /*   log_debug ("keep-uid: keeping '%s'\n", */
+          /*              node->pkt->pkt.user_id->name); */
         }
     }
+}
+
+
+/* Print DANE or PKA records for all user IDs in KEYBLOCK to the
+ * stream FP.  The data for the record is taken from HEXDATA.  HEXFPR
+ * is the fingerprint of the primary key.  */
+static gpg_error_t
+print_pka_or_dane_records (kbnode_t keyblock, const char *hexdata,
+                           const char *hexfpr, estream_t fp,
+                           int print_pka, int print_dane)
+{
+  gpg_error_t err = 0;
+  kbnode_t kbctx, node;
+  PKT_user_id *uid;
+  char *mbox = NULL;
+  char hashbuf[32];
+  char *hash = NULL;
+  char *domain;
+  const char *s;
+  unsigned int len;
+
+  for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
+    {
+      if (node->pkt->pkttype != PKT_USER_ID)
+        continue;
+      uid = node->pkt->pkt.user_id;
+
+      if (uid->is_expired || uid->is_revoked)
+        continue;
+
+      xfree (mbox);
+      mbox = mailbox_from_userid (uid->name);
+      if (!mbox)
+        continue;
+
+      domain = strchr (mbox, '@');
+      *domain++ = 0;
+
+      if (print_pka)
+        {
+          es_fprintf (fp, "$ORIGIN _pka.%s.\n; %s\n; ", domain, hexfpr);
+          print_utf8_buffer (fp, uid->name, uid->len);
+          es_putc ('\n', fp);
+          gcry_md_hash_buffer (GCRY_MD_SHA1, hashbuf, mbox, strlen (mbox));
+          xfree (hash);
+          hash = zb32_encode (hashbuf, 8*20);
+          if (!hash)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          len = strlen (hexfpr)/2;
+          es_fprintf (fp, "%s TYPE37 \\# %u 0006 0000 00 %02X %s\n\n",
+                      hash, 6 + len, len, hexfpr);
+        }
+
+      if (print_dane && hexdata)
+        {
+          es_fprintf (fp, "$ORIGIN _openpgpkey.%s.\n; %s\n; ", domain, hexfpr);
+          print_utf8_buffer (fp, uid->name, uid->len);
+          es_putc ('\n', fp);
+          gcry_md_hash_buffer (GCRY_MD_SHA256, hashbuf, mbox, strlen (mbox));
+          xfree (hash);
+          hash = bin2hex (hashbuf, 28, NULL);
+          if (!hash)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          ascii_strlwr (hash);
+          len = strlen (hexdata)/2;
+          es_fprintf (fp, "%s TYPE61 \\# %u (\n", hash, len);
+          for (s = hexdata; ;)
+            {
+              es_fprintf (fp, "\t%.64s\n", s);
+              if (strlen (s) < 64)
+                break;
+              s += 64;
+            }
+          es_fputs ("\t)\n\n", fp);
+        }
+    }
+
+ leave:
+  xfree (hash);
+  xfree (mbox);
+  return err;
 }
 
 
@@ -1572,6 +1663,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   strlist_t sl;
   gcry_cipher_hd_t cipherhd = NULL;
   struct export_stats_s dummystats;
+  iobuf_t out_help = NULL;
 
   if (!stats)
     stats = &dummystats;
@@ -1581,10 +1673,14 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   if (!kdbhd)
     return gpg_error_from_syserror ();
 
-  /* For the DANE format override the options.  */
-  if ((options & EXPORT_DANE_FORMAT))
-    options = (EXPORT_DANE_FORMAT | EXPORT_MINIMAL | EXPORT_CLEAN);
-
+  /* For the PKA and DANE format open a helper iobuf and for DANE
+   * enforce some options.  */
+  if ((options & (EXPORT_PKA_FORMAT | EXPORT_DANE_FORMAT)))
+    {
+      out_help = iobuf_temp ();
+      if ((options & EXPORT_DANE_FORMAT))
+        options |= EXPORT_MINIMAL | EXPORT_CLEAN;
+    }
 
   if (!users)
     {
@@ -1731,8 +1827,9 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
         }
 
       /* And write it. */
-      err = do_export_one_keyblock (ctrl, keyblock, keyid, out, secret,
-                                    options, stats, any,
+      err = do_export_one_keyblock (ctrl, keyblock, keyid,
+                                    out_help? out_help : out,
+                                    secret, options, stats, any,
                                     desc, ndesc, descindex, cipherhd);
       if (err)
         break;
@@ -1742,11 +1839,65 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
           *keyblock_out = keyblock;
           break;
         }
+
+      if (out_help)
+        {
+          /* We want to write PKA or DANE records.  OUT_HELP has the
+           * keyblock and we print a record for each uid to OUT. */
+          char *hexdata;
+          const void *data;
+          void *vp;
+          size_t datalen;
+          estream_t fp;
+
+          iobuf_flush_temp (out_help);
+          data = iobuf_get_temp_buffer (out_help);
+          datalen = iobuf_get_temp_length (out_help);
+          hexdata = bin2hex (data, datalen, NULL);
+          if (!hexdata)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          iobuf_close (out_help);
+          out_help = iobuf_temp ();
+          ascii_strlwr (hexdata);
+          fp = es_fopenmem (0, "rw,samethread");
+          if (!fp)
+            {
+              err = gpg_error_from_syserror ();
+              xfree (hexdata);
+              goto leave;
+            }
+
+          {
+            char *hexfpr = hexfingerprint (pk, NULL, 0);
+            err = print_pka_or_dane_records (keyblock, hexdata, hexfpr, fp,
+                                             (options & EXPORT_PKA_FORMAT),
+                                             (options & EXPORT_DANE_FORMAT));
+            xfree (hexfpr);
+          }
+          xfree (hexdata);
+          if (err)
+            {
+              es_fclose (fp);
+              goto leave;
+            }
+          es_fputc (0, fp);
+          if (es_fclose_snatch (fp, &vp, NULL))
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          iobuf_writestr (out, vp);
+        }
+
     }
   if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     err = 0;
 
  leave:
+  iobuf_cancel (out_help);
   gcry_cipher_close (cipherhd);
   xfree(desc);
   keydb_release (kdbhd);

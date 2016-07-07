@@ -2320,6 +2320,18 @@ opposite meaning. The options are:
   most recent self-signature on each user ID. This option is the same as
   running the @option{--edit-key} command "minimize" before export except
   that the local copy of the key is not modified. Defaults to no.
+
+  @item export-pka
+  Instead of outputting the key material output PKA records suitable
+  to put into DNS zone files.  An ORIGIN line is printed before each
+  record to allow diverting the records to the corresponding zone file.
+
+  @item export-dane
+  Instead of outputting the key material output OpenPGP DANE records
+  suitable to put into DNS zone files.  An ORIGIN line is printed before
+  each record to allow diverting the records to the corresponding zone
+  file.
+
 @end table
 
 @item --with-colons

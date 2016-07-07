@@ -921,7 +921,7 @@ list_keyblock_pka (ctrl_t ctrl, kbnode_t keyblock)
       /* We do not have an export function which allows to pass a
          keyblock, thus we need to search the key again.  */
       err = export_pubkey_buffer (ctrl, hexfpr,
-                                  EXPORT_DANE_FORMAT, NULL,
+                                  (EXPORT_MINIMAL | EXPORT_CLEAN), NULL,
                                   &dummy_keyblock, &data, &datalen);
       release_kbnode (dummy_keyblock);
       if (!err)
