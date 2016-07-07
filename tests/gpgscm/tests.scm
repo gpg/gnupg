@@ -94,9 +94,6 @@
 		 CLOSED_FD
 		 (if (< *verbose* 0) STDOUT_FILENO CLOSED_FD)
 		 (if (< *verbose* 0) STDERR_FILENO CLOSED_FD)))
-(define (call-check what)
-  (if (not (= 0 (call what)))
-      (throw (list what "failed"))))
 
 ;; Accessor functions for the results of 'spawn-process'.
 (define :stdin car)
@@ -118,6 +115,12 @@
 ;; Accessor function for the results of 'call-with-io'.  ':stdout' and
 ;; ':stderr' can also be used.
 (define :retcode car)
+
+(define (call-check what)
+  (let ((result (call-with-io what "")))
+    (if (= 0 (:retcode result))
+	(:stdout result)
+	(throw (list what "failed:" (:stderr result))))))
 
 (define (call-popen command input-string)
   (let ((result (call-with-io command input-string)))
