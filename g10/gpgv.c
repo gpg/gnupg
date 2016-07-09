@@ -144,6 +144,8 @@ main( int argc, char **argv )
     opt.pgp2_workarounds = 1;
     opt.keyserver_options.options|=KEYSERVER_AUTO_KEY_RETRIEVE;
     opt.trust_model = TM_ALWAYS;
+    opt.no_sig_cache = 1;
+    opt.flags.require_cross_cert = 1;
     opt.batch = 1;
     opt.weak_digests = NULL;
 
