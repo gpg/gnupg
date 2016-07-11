@@ -280,7 +280,7 @@ Check the options for the component @var{component}.
 Update all configuration files with values taken from the global
 configuration file (usually @file{/etc/gnupg/gpgconf.conf}).
 
-@item --list-dirs
+@item --list-dirs [@var{names}]
 Lists the directories used by @command{gpgconf}.  One directory is
 listed per line, and each line consists of a colon-separated list where
 the first field names the directory type (for example @code{sysconfdir})
@@ -288,7 +288,9 @@ and the second field contains the percent-escaped directory.  Although
 they are not directories, the socket file names used by
 @command{gpg-agent} and @command{dirmngr} are printed as well.  Note
 that the socket file names and the @code{homedir} lines are the default
-names and they may be overridden by command line switches.
+names and they may be overridden by command line switches.  If
+@var{names} are given only the directories or file names specified by
+the list names are printed without any escaping.
 
 @item --list-config [@var{filename}]
 List the global configuration file in a colon separated format.  If
