@@ -489,6 +489,55 @@ list_key (server_ctx_t ctx, estream_t key)
 }
 
 
+/* Take the key in KEYFILE and write it to DANEFILE using the DANE
+ * output format. */
+static gpg_error_t
+copy_key_as_dane (const char *keyfile, const char *danefile)
+{
+  gpg_error_t err;
+  ccparray_t ccp;
+  const char **argv;
+
+  ccparray_init (&ccp, 0);
+
+  ccparray_put (&ccp, "--no-options");
+  if (!opt.verbose)
+    ccparray_put (&ccp, "--quiet");
+  else if (opt.verbose > 1)
+    ccparray_put (&ccp, "--verbose");
+  ccparray_put (&ccp, "--batch");
+  ccparray_put (&ccp, "--yes");
+  ccparray_put (&ccp, "--always-trust");
+  ccparray_put (&ccp, "--no-keyring");
+  ccparray_put (&ccp, "--output");
+  ccparray_put (&ccp, danefile);
+  ccparray_put (&ccp, "--export-options=export-dane");
+  ccparray_put (&ccp, "--import-options=import-export");
+  ccparray_put (&ccp, "--import");
+  ccparray_put (&ccp, "--");
+  ccparray_put (&ccp, keyfile);
+
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gnupg_exec_tool_stream (opt.gpg_program, argv, NULL,
+                                NULL, NULL, NULL, NULL);
+  if (err)
+    {
+      log_error ("%s failed: %s\n", __func__, gpg_strerror (err));
+      goto leave;
+    }
+
+ leave:
+  xfree (argv);
+  return err;
+}
+
+
 static void
 encrypt_stream_status_cb (void *opaque, const char *keyword, char *args)
 {
@@ -782,7 +831,7 @@ send_confirmation_request (server_ctx_t ctx,
       log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
       goto leave;
     }
-  /* It is fine to use 8 bit encosind because that is encrypted and
+  /* It is fine to use 8 bit encoding because that is encrypted and
    * only our client will see it.  */
   es_fputs ("Content-Type: application/vnd.gnupg.wks\n"
             "Content-Transfer-Encoding: 8bit\n"
@@ -945,6 +994,7 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
   const char *domain;
   const char *s;
   strlist_t sl;
+  char shaxbuf[32]; /* Used for SHA-1 and SHA-256 */
 
   /* FIXME: There is a bug in name-value.c which adds white space for
    * the last pair and thus we strip the nonce here until this has
@@ -1011,11 +1061,8 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
   /* Hash user ID and create filename.  */
   s = strchr (address, '@');
   log_assert (s);
-  {
-    char sha1buf[20];
-    gcry_md_hash_buffer (GCRY_MD_SHA1, sha1buf, address, s - address);
-    hash = zb32_encode (sha1buf, 8*20);
-  }
+  gcry_md_hash_buffer (GCRY_MD_SHA1, shaxbuf, address, s - address);
+  hash = zb32_encode (shaxbuf, 8*20);
   if (!hash)
     {
       err = gpg_error_from_syserror ();
@@ -1032,7 +1079,7 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
         goto leave;
     }
     if (!gnupg_mkdir (fnewname, "-rwxr-xr-x"))
-      log_info ("directory '%s' created\n", fname);
+      log_info ("directory '%s' created\n", fnewname);
     xfree (fnewname);
   }
   fnewname = make_filename_try (opt.directory, domain, "hu", hash, NULL);
@@ -1052,6 +1099,43 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
     }
 
   log_info ("key %s published for '%s'\n", ctx->fpr, address);
+
+
+  /* Try to publish as DANE record if the DANE directory exists.  */
+  xfree (fname);
+  fname = fnewname;
+  fnewname = make_filename_try (opt.directory, domain, "dane", NULL);
+  if (!fnewname)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  if (!access (fnewname, W_OK))
+    {
+      /* Yes, we have a dane directory.  */
+      s = strchr (address, '@');
+      log_assert (s);
+      gcry_md_hash_buffer (GCRY_MD_SHA256, shaxbuf, address, s - address);
+      xfree (hash);
+      hash = bin2hex (shaxbuf, 28, NULL);
+      if (!hash)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      xfree (fnewname);
+      fnewname = make_filename_try (opt.directory, domain, "dane", hash, NULL);
+      if (!fnewname)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      err = copy_key_as_dane (fname, fnewname);
+      if (err)
+        goto leave;
+      log_info ("key %s published for '%s' (DANE record)\n", ctx->fpr, address);
+    }
+
 
  leave:
   es_fclose (key);
