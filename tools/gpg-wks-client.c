@@ -452,14 +452,104 @@ command_send (const char *fingerprint, char *userid)
 
 
 
+static void
+encrypt_response_status_cb (void *opaque, const char *keyword, char *args)
+{
+  gpg_error_t *failure = opaque;
+  char *fields[2];
+
+  if (opt.debug)
+    log_debug ("%s: %s\n", keyword, args);
+
+  if (!strcmp (keyword, "FAILURE"))
+    {
+      if (split_fields (args, fields, DIM (fields)) >= 2
+          && !strcmp (fields[0], "encrypt"))
+        *failure = strtoul (fields[1], NULL, 10);
+    }
+
+}
+
+
+/* Encrypt the INPUT stream to a new stream which is stored at success
+ * at R_OUTPUT.  Encryption is done for ADDRSPEC.  We currently
+ * retrieve that key from the WKD, DANE, or from "local".  "local" is
+ * last to prefer the latest key version but use a local copy in case
+ * we are working offline.  It might be useful for the server to send
+ * the fingerprint of its encryption key - or even the entire key
+ * back.  */
+static gpg_error_t
+encrypt_response (estream_t *r_output, estream_t input, const char *addrspec)
+{
+  gpg_error_t err;
+  ccparray_t ccp;
+  const char **argv;
+  estream_t output;
+  gpg_error_t gpg_err = 0;
+
+  *r_output = NULL;
+
+  output = es_fopenmem (0, "w+b");
+  if (!output)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  ccparray_init (&ccp, 0);
+
+  ccparray_put (&ccp, "--no-options");
+  if (!opt.verbose)
+    ccparray_put (&ccp, "--quiet");
+  else if (opt.verbose > 1)
+    ccparray_put (&ccp, "--verbose");
+  ccparray_put (&ccp, "--batch");
+  ccparray_put (&ccp, "--status-fd=2");
+  ccparray_put (&ccp, "--always-trust");
+  ccparray_put (&ccp, "--armor");
+  ccparray_put (&ccp, "--auto-key-locate=clear,wkd,dane,local");
+  ccparray_put (&ccp, "--recipient");
+  ccparray_put (&ccp, addrspec);
+  ccparray_put (&ccp, "--encrypt");
+  ccparray_put (&ccp, "--");
+
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gnupg_exec_tool_stream (opt.gpg_program, argv, input,
+                                NULL, output,
+                                encrypt_response_status_cb, &gpg_err);
+  if (err)
+    {
+      if (gpg_err)
+        err = gpg_err;
+      log_error ("encryption failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  es_rewind (output);
+  *r_output = output;
+  output = NULL;
+
+ leave:
+  es_fclose (output);
+  xfree (argv);
+  return err;
+}
+
+
 static gpg_error_t
 send_confirmation_response (const char *sender, const char *address,
-                            const char *nonce)
+                            const char *nonce, int encrypt)
 {
   gpg_error_t err;
   estream_t body = NULL;
-  /* FIXME: Encrypt and sign the response.  */
-  /* estream_t bodyenc = NULL; */
+  estream_t bodyenc = NULL;
   mime_maker_t mime = NULL;
 
   body = es_fopenmem (0, "w+b");
@@ -469,12 +559,16 @@ send_confirmation_response (const char *sender, const char *address,
       log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
       return err;
     }
-  /* It is fine to use 8 bit encosind because that is encrypted and
+
+  /* It is fine to use 8 bit encoding because that is encrypted and
    * only our client will see it.  */
-  /* es_fputs ("Content-Type: application/vnd.gnupg.wks\n" */
-  /*           "Content-Transfer-Encoding: 8bit\n" */
-  /*           "\n", */
-  /*           body); */
+  if (encrypt)
+    {
+      es_fputs ("Content-Type: application/vnd.gnupg.wks\n"
+                "Content-Transfer-Encoding: 8bit\n"
+                "\n",
+                body);
+    }
 
   es_fprintf (body, ("type: confirmation-response\n"
                      "sender: %s\n"
@@ -485,12 +579,14 @@ send_confirmation_response (const char *sender, const char *address,
               nonce);
 
   es_rewind (body);
-  /* err = encrypt_stream (&bodyenc, body, ctx->fpr); */
-  /* if (err) */
-  /*   goto leave; */
-  /* es_fclose (body); */
-  /* body = NULL; */
-
+  if (encrypt)
+    {
+      err = encrypt_response (&bodyenc, body, address);
+      if (err)
+        goto leave;
+      es_fclose (body);
+      body = NULL;
+    }
 
   err = mime_maker_new (&mime, NULL);
   if (err)
@@ -505,42 +601,50 @@ send_confirmation_response (const char *sender, const char *address,
   if (err)
     goto leave;
 
-  /* err = mime_maker_add_header (mime, "Content-Type", */
-  /*                              "multipart/encrypted; " */
-  /*                              "protocol=\"application/pgp-encrypted\""); */
-  /* if (err) */
-  /*   goto leave; */
-  /* err = mime_maker_add_container (mime, "multipart/encrypted"); */
-  /* if (err) */
-  /*   goto leave; */
+  if (encrypt)
+    {
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "multipart/encrypted; "
+                                   "protocol=\"application/pgp-encrypted\"");
+      if (err)
+        goto leave;
+      err = mime_maker_add_container (mime, "multipart/encrypted");
+      if (err)
+        goto leave;
 
-  /* err = mime_maker_add_header (mime, "Content-Type", */
-  /*                              "application/pgp-encrypted"); */
-  /* if (err) */
-  /*   goto leave; */
-  /* err = mime_maker_add_body (mime, "Version: 1\n"); */
-  /* if (err) */
-  /*   goto leave; */
-  /* err = mime_maker_add_header (mime, "Content-Type", */
-  /*                              "application/octet-stream"); */
-  /* if (err) */
-  /*   goto leave; */
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "application/pgp-encrypted");
+      if (err)
+        goto leave;
+      err = mime_maker_add_body (mime, "Version: 1\n");
+      if (err)
+        goto leave;
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "application/octet-stream");
+      if (err)
+        goto leave;
 
-  err = mime_maker_add_header (mime, "Content-Type",
-                               "application/vnd.gnupg.wks");
-  if (err)
-    goto leave;
-
-  err = mime_maker_add_stream (mime, &body);
-  if (err)
-    goto leave;
+      err = mime_maker_add_stream (mime, &bodyenc);
+      if (err)
+        goto leave;
+    }
+  else
+    {
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "application/vnd.gnupg.wks");
+      if (err)
+        goto leave;
+      err = mime_maker_add_stream (mime, &body);
+      if (err)
+        goto leave;
+    }
 
   err = wks_send_mime (mime);
 
  leave:
   mime_maker_release (mime);
-  /* xfree (bodyenc); */
-  xfree (body);
+  es_fclose (bodyenc);
+  es_fclose (body);
   return err;
 }
 
@@ -619,8 +723,14 @@ process_confirmation_request (estream_t msg)
     }
   nonce = value;
 
-  err = send_confirmation_response (sender, address, nonce);
-
+  /* Send the confirmation.  If no key was found, try again without
+   * encryption.  */
+  err = send_confirmation_response (sender, address, nonce, 1);
+  if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY)
+    {
+      log_info ("no encryption key found - sending response in the clear\n");
+      err = send_confirmation_response (sender, address, nonce, 0);
+    }
 
  leave:
   nvc_release (nvc);

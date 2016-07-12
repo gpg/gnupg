@@ -904,8 +904,8 @@ send_confirmation_request (server_ctx_t ctx,
 
  leave:
   mime_maker_release (mime);
-  xfree (bodyenc);
-  xfree (body);
+  es_fclose (bodyenc);
+  es_fclose (body);
   xfree (from_buffer);
   return err;
 }
