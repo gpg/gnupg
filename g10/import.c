@@ -937,63 +937,6 @@ fix_bad_direct_key_sigs (kbnode_t keyblock, u32 *keyid)
 }
 
 
-/* Write the keyblock either to stdin or to the file set with
- * the --output option.  */
-static gpg_error_t
-write_keyblock_to_output (kbnode_t keyblock)
-{
-  gpg_error_t err;
-  const char *fname;
-  iobuf_t out;
-  kbnode_t node;
-  armor_filter_context_t *afx = NULL;
-
-  fname = opt.outfile? opt.outfile : "-";
-  if (is_secured_filename (fname) )
-    return gpg_error (GPG_ERR_EPERM);
-
-  out = iobuf_create (fname, 0);
-  if (!out)
-    {
-      err = gpg_error_from_syserror ();
-      log_error(_("can't create '%s': %s\n"), fname, gpg_strerror (err));
-      return err;
-    }
-  if (opt.verbose)
-    log_info (_("writing to '%s'\n"), iobuf_get_fname_nonnull (out));
-
-  if (opt.armor)
-    {
-      afx = new_armor_context ();
-      afx->what = 1;
-      push_armor_filter (afx, out);
-    }
-
-  for (node = keyblock; node; node = node->next)
-    {
-      if (!is_deleted_kbnode (node))
-	{
-	  err = build_packet (out, node->pkt);
-	  if (err)
-	    {
-	      log_error ("build_packet(%d) failed: %s\n",
-			 node->pkt->pkttype, gpg_strerror (err) );
-	      goto leave;
-	    }
-	}
-    }
-  err = 0;
-
- leave:
-  if (err)
-    iobuf_cancel (out);
-  else
-    iobuf_close (out);
-  release_armor_context (afx);
-  return err;
-}
-
-
 static void
 print_import_ok (PKT_public_key *pk, unsigned int reason)
 {
@@ -1387,7 +1330,7 @@ import_one (ctrl_t ctrl,
           merge_keys_and_selfsig (keyblock);
           merge_keys_done = 1;
         }
-      rc = write_keyblock_to_output (keyblock);
+      rc = write_keyblock_to_output (keyblock, opt.armor);
       goto leave;
     }
 

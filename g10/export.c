@@ -1203,6 +1203,63 @@ receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
 }
 
 
+/* Write KEYBLOCK either to stdout or to the file set with the
+ * --output option.  */
+gpg_error_t
+write_keyblock_to_output (kbnode_t keyblock, int with_armor)
+{
+  gpg_error_t err;
+  const char *fname;
+  iobuf_t out;
+  kbnode_t node;
+  armor_filter_context_t *afx = NULL;
+
+  fname = opt.outfile? opt.outfile : "-";
+  if (is_secured_filename (fname) )
+    return gpg_error (GPG_ERR_EPERM);
+
+  out = iobuf_create (fname, 0);
+  if (!out)
+    {
+      err = gpg_error_from_syserror ();
+      log_error(_("can't create '%s': %s\n"), fname, gpg_strerror (err));
+      return err;
+    }
+  if (opt.verbose)
+    log_info (_("writing to '%s'\n"), iobuf_get_fname_nonnull (out));
+
+  if (with_armor)
+    {
+      afx = new_armor_context ();
+      afx->what = 1;
+      push_armor_filter (afx, out);
+    }
+
+  for (node = keyblock; node; node = node->next)
+    {
+      if (!is_deleted_kbnode (node) && node->pkt->pkttype != PKT_RING_TRUST)
+	{
+	  err = build_packet (out, node->pkt);
+	  if (err)
+	    {
+	      log_error ("build_packet(%d) failed: %s\n",
+			 node->pkt->pkttype, gpg_strerror (err) );
+	      goto leave;
+	    }
+	}
+    }
+  err = 0;
+
+ leave:
+  if (err)
+    iobuf_cancel (out);
+  else
+    iobuf_close (out);
+  release_armor_context (afx);
+  return err;
+}
+
+
 /* Helper for apply_keep_uid_filter.  */
 static const char *
 filter_getval (void *cookie, const char *propname)
