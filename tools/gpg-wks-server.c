@@ -27,9 +27,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#ifdef HAVE_STAT
-# include <sys/stat.h>
-#endif
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
 
 #include "util.h"
 #include "init.h"
@@ -42,6 +42,10 @@
 #include "mime-maker.h"
 #include "send-mail.h"
 #include "gpg-wks.h"
+
+
+/* The time we wait for a confirmation response.  */
+#define PENDING_TTL (86400 * 3)  /* 3 days.  */
 
 
 /* Constants to identify the commands and options. */
@@ -116,6 +120,7 @@ typedef struct server_ctx_s *server_ctx_t;
 
 static gpg_error_t command_receive_cb (void *opaque,
                                        const char *mediatype, estream_t fp);
+static gpg_error_t command_cron (void);
 
 
 
@@ -316,6 +321,9 @@ main (int argc, char **argv)
     case aCron:
       if (argc)
         wrong_args ("--cron");
+      err = command_cron ();
+      if (err)
+        log_error ("running --cron failed: %s\n", gpg_strerror (err));
       break;
 
     default:
@@ -1251,4 +1259,155 @@ command_receive_cb (void *opaque, const char *mediatype, estream_t msg)
   free_strlist (ctx.mboxes);
 
   return err;
+}
+
+
+
+static gpg_error_t
+expire_one_domain (const char *top_dirname, const char *domain)
+{
+  gpg_error_t err;
+  char *dirname;
+  char *fname = NULL;
+  DIR *dir = NULL;
+  struct dirent *dentry;
+  struct stat sb;
+  time_t now = gnupg_get_time ();
+
+  dirname = make_filename_try (top_dirname, "pending", NULL);
+  if (!dirname)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("make_filename failed in %s: %s\n",
+                 __func__, gpg_strerror (err));
+      goto leave;
+    }
+
+  dir = opendir (dirname);
+  if (!dir)
+    {
+      err = gpg_error_from_syserror ();
+      log_error (("can't access directory '%s': %s\n"),
+                 dirname, gpg_strerror (err));
+      goto leave;
+    }
+
+  while ((dentry = readdir (dir)))
+    {
+      if (*dentry->d_name == '.')
+        continue;
+      xfree (fname);
+      fname = make_filename_try (dirname, dentry->d_name, NULL);
+      if (!fname)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("make_filename failed in %s: %s\n",
+                     __func__, gpg_strerror (err));
+          goto leave;
+        }
+      if (strlen (dentry->d_name) != 32)
+        {
+          log_info ("garbage file '%s' ignored\n", fname);
+          continue;
+        }
+      if (stat (fname, &sb))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error accessing '%s': %s\n", fname, gpg_strerror (err));
+          continue;
+        }
+      if (S_ISDIR(sb.st_mode))
+        {
+          log_info ("garbage directory '%s' ignored\n", fname);
+          continue;
+        }
+      if (sb.st_mtime + PENDING_TTL < now)
+        {
+          if (opt.verbose)
+            log_info ("domain %s: removing pending key '%s'\n",
+                      domain, dentry->d_name);
+          if (remove (fname))
+            {
+              err = gpg_error_from_syserror ();
+              /* In case the file has just been renamed or another
+               * processes is cleaning up, we don't print a diagnostic
+               * for ENOENT.  */
+              if (gpg_err_code (err) != GPG_ERR_ENOENT)
+                log_error ("error removing '%s': %s\n",
+                           fname, gpg_strerror (err));
+            }
+        }
+    }
+  err = 0;
+
+ leave:
+  if (dir)
+    closedir (dir);
+  xfree (dirname);
+  xfree (fname);
+  return err;
+
+}
+
+
+/* Scan spool directories and expire too old pending keys.  */
+static gpg_error_t
+expire_pending_confirmations (void)
+{
+  gpg_error_t err;
+  DIR *dir = NULL;
+  char *fname = NULL;
+  struct dirent *dentry;
+  struct stat sb;
+
+  dir = opendir (opt.directory);
+  if (!dir)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  while ((dentry = readdir (dir)))
+    {
+      if (*dentry->d_name == '.')
+        continue;
+      if (!strchr (dentry->d_name, '.'))
+        continue; /* No dot - can't be a domain subdir.  */
+
+      xfree (fname);
+      fname = make_filename_try (opt.directory, dentry->d_name, NULL);
+      if (!fname)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("make_filename failed in %s: %s\n",
+                     __func__, gpg_strerror (err));
+          goto leave;
+        }
+
+      if (stat (fname, &sb))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error accessing '%s': %s\n", fname, gpg_strerror (err));
+          continue;
+        }
+      if (!S_ISDIR(sb.st_mode))
+        continue;
+
+      expire_one_domain (fname, dentry->d_name);
+    }
+  err = 0;
+
+ leave:
+  if (dir)
+    closedir (dir);
+  xfree (fname);
+  return err;
+}
+
+
+/* Run regular maintenance jobs.  */
+static gpg_error_t
+command_cron (void)
+{
+  return expire_pending_confirmations ();
 }
