@@ -114,7 +114,7 @@ create_tupledesc (tupledesc_t *r_desc, void *data, size_t datalen)
   (*r_desc)->data = data;
   (*r_desc)->datalen = datalen;
   (*r_desc)->pos = 0;
-  (*r_desc)->refcount++;
+  (*r_desc)->refcount = 1;
   return 0;
 }
 
