@@ -77,6 +77,10 @@ static int do_export_stream (ctrl_t ctrl, iobuf_t out,
                              strlist_t users, int secret,
                              kbnode_t *keyblock_out, unsigned int options,
 			     export_stats_t stats, int *any);
+static gpg_error_t print_pka_or_dane_records
+/**/                 (iobuf_t out, kbnode_t keyblock, PKT_public_key *pk,
+                      const void *data, size_t datalen,
+                      int print_pka, int print_dane);
 
 
 static void
@@ -1204,15 +1208,19 @@ receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
 
 
 /* Write KEYBLOCK either to stdout or to the file set with the
- * --output option.  */
+ * --output option.  This is a simplified version of do_export_stream
+ * which supports only a few export options.  */
 gpg_error_t
-write_keyblock_to_output (kbnode_t keyblock, int with_armor)
+write_keyblock_to_output (kbnode_t keyblock, int with_armor,
+                          unsigned int options)
 {
   gpg_error_t err;
   const char *fname;
   iobuf_t out;
   kbnode_t node;
   armor_filter_context_t *afx = NULL;
+  iobuf_t out_help = NULL;
+  PKT_public_key *pk = NULL;
 
   fname = opt.outfile? opt.outfile : "-";
   if (is_secured_filename (fname) )
@@ -1228,6 +1236,12 @@ write_keyblock_to_output (kbnode_t keyblock, int with_armor)
   if (opt.verbose)
     log_info (_("writing to '%s'\n"), iobuf_get_fname_nonnull (out));
 
+  if ((options & (EXPORT_PKA_FORMAT|EXPORT_DANE_FORMAT)))
+    {
+      with_armor = 0;
+      out_help = iobuf_temp ();
+    }
+
   if (with_armor)
     {
       afx = new_armor_context ();
@@ -1237,24 +1251,43 @@ write_keyblock_to_output (kbnode_t keyblock, int with_armor)
 
   for (node = keyblock; node; node = node->next)
     {
-      if (!is_deleted_kbnode (node) && node->pkt->pkttype != PKT_RING_TRUST)
-	{
-	  err = build_packet (out, node->pkt);
-	  if (err)
-	    {
-	      log_error ("build_packet(%d) failed: %s\n",
-			 node->pkt->pkttype, gpg_strerror (err) );
-	      goto leave;
-	    }
-	}
+      if (is_deleted_kbnode (node) || node->pkt->pkttype == PKT_RING_TRUST)
+        continue;
+      if (!pk && (node->pkt->pkttype == PKT_PUBLIC_KEY
+                  || node->pkt->pkttype == PKT_SECRET_KEY))
+        pk = node->pkt->pkt.public_key;
+
+      err = build_packet (out_help? out_help : out, node->pkt);
+      if (err)
+        {
+          log_error ("build_packet(%d) failed: %s\n",
+                     node->pkt->pkttype, gpg_strerror (err) );
+          goto leave;
+        }
     }
   err = 0;
+
+  if (out_help && pk)
+    {
+      const void *data;
+      size_t datalen;
+
+      iobuf_flush_temp (out_help);
+      data = iobuf_get_temp_buffer (out_help);
+      datalen = iobuf_get_temp_length (out_help);
+
+      err = print_pka_or_dane_records (out,
+                                       keyblock, pk, data, datalen,
+                                       (options & EXPORT_PKA_FORMAT),
+                                       (options & EXPORT_DANE_FORMAT));
+    }
 
  leave:
   if (err)
     iobuf_cancel (out);
   else
     iobuf_close (out);
+  iobuf_cancel (out_help);
   release_armor_context (afx);
   return err;
 }
@@ -1327,12 +1360,12 @@ apply_keep_uid_filter (kbnode_t keyblock, recsel_expr_t selector)
 }
 
 
-/* Print DANE or PKA records for all user IDs in KEYBLOCK to the
- * stream FP.  The data for the record is taken from HEXDATA.  HEXFPR
- * is the fingerprint of the primary key.  */
+/* Print DANE or PKA records for all user IDs in KEYBLOCK to OUT.  The
+ * data for the record is taken from (DATA,DATELEN).  PK is the public
+ * key packet with the primary key. */
 static gpg_error_t
-print_pka_or_dane_records (kbnode_t keyblock, const char *hexdata,
-                           const char *hexfpr, estream_t fp,
+print_pka_or_dane_records (iobuf_t out, kbnode_t keyblock, PKT_public_key *pk,
+                           const void *data, size_t datalen,
                            int print_pka, int print_dane)
 {
   gpg_error_t err = 0;
@@ -1344,6 +1377,24 @@ print_pka_or_dane_records (kbnode_t keyblock, const char *hexdata,
   char *domain;
   const char *s;
   unsigned int len;
+  estream_t fp = NULL;
+  char *hexdata = NULL;
+  char *hexfpr;
+
+  hexfpr = hexfingerprint (pk, NULL, 0);
+  hexdata = bin2hex (data, datalen, NULL);
+  if (!hexdata)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  ascii_strlwr (hexdata);
+  fp = es_fopenmem (0, "rw,samethread");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
 
   for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
     {
@@ -1407,9 +1458,28 @@ print_pka_or_dane_records (kbnode_t keyblock, const char *hexdata,
         }
     }
 
+  /* Make sure it is a string and write it.  */
+  es_fputc (0, fp);
+  {
+    void *vp;
+
+    if (es_fclose_snatch (fp, &vp, NULL))
+      {
+        err = gpg_error_from_syserror ();
+        goto leave;
+      }
+    fp = NULL;
+    iobuf_writestr (out, vp);
+    es_free (vp);
+  }
+  err = 0;
+
  leave:
   xfree (hash);
   xfree (mbox);
+  es_fclose (fp);
+  xfree (hexdata);
+  xfree (hexfpr);
   return err;
 }
 
@@ -1901,52 +1971,22 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
         {
           /* We want to write PKA or DANE records.  OUT_HELP has the
            * keyblock and we print a record for each uid to OUT. */
-          char *hexdata;
           const void *data;
-          void *vp;
           size_t datalen;
-          estream_t fp;
 
           iobuf_flush_temp (out_help);
           data = iobuf_get_temp_buffer (out_help);
           datalen = iobuf_get_temp_length (out_help);
-          hexdata = bin2hex (data, datalen, NULL);
-          if (!hexdata)
-            {
-              err = gpg_error_from_syserror ();
-              goto leave;
-            }
+
+          err = print_pka_or_dane_records (out,
+                                           keyblock, pk, data, datalen,
+                                           (options & EXPORT_PKA_FORMAT),
+                                           (options & EXPORT_DANE_FORMAT));
+          if (err)
+            goto leave;
+
           iobuf_close (out_help);
           out_help = iobuf_temp ();
-          ascii_strlwr (hexdata);
-          fp = es_fopenmem (0, "rw,samethread");
-          if (!fp)
-            {
-              err = gpg_error_from_syserror ();
-              xfree (hexdata);
-              goto leave;
-            }
-
-          {
-            char *hexfpr = hexfingerprint (pk, NULL, 0);
-            err = print_pka_or_dane_records (keyblock, hexdata, hexfpr, fp,
-                                             (options & EXPORT_PKA_FORMAT),
-                                             (options & EXPORT_DANE_FORMAT));
-            xfree (hexfpr);
-          }
-          xfree (hexdata);
-          if (err)
-            {
-              es_fclose (fp);
-              goto leave;
-            }
-          es_fputc (0, fp);
-          if (es_fclose_snatch (fp, &vp, NULL))
-            {
-              err = gpg_error_from_syserror ();
-              goto leave;
-            }
-          iobuf_writestr (out, vp);
         }
 
     }

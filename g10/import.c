@@ -1330,7 +1330,7 @@ import_one (ctrl_t ctrl,
           merge_keys_and_selfsig (keyblock);
           merge_keys_done = 1;
         }
-      rc = write_keyblock_to_output (keyblock, opt.armor);
+      rc = write_keyblock_to_output (keyblock, opt.armor, opt.export_options);
       goto leave;
     }
 
