@@ -534,8 +534,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oBZ2DecompressLowmem, "bzip2-decompress-lowmem", "@"),
 
   ARGPARSE_s_n (oMimemode, "mimemode", "@"),
-  ARGPARSE_s_n (oTextmode,      "textmode", N_("use canonical text mode")),
-  ARGPARSE_s_n (oTextmode,      "textmode", N_("use canonical text mode")),
+  ARGPARSE_s_n (oTextmodeShort, NULL, "@"),
+  ARGPARSE_s_n (oTextmode,   "textmode", N_("use canonical text mode")),
   ARGPARSE_s_n (oNoTextmode, "no-textmode", "@"),
 
   ARGPARSE_s_n (oExpert,      "expert", "@"),
