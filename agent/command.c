@@ -2663,14 +2663,13 @@ static const char hlp_updatestartuptty[] =
 static gpg_error_t
 cmd_updatestartuptty (assuan_context_t ctx, char *line)
 {
-  static const char *names[] =
-    { "GPG_TTY", "DISPLAY", "TERM", "XAUTHORITY", "PINENTRY_USER_DATA", NULL };
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
   session_env_t se;
-  int idx;
   char *lc_ctype = NULL;
   char *lc_messages = NULL;
+  int iterator;
+  const char *name;
 
   (void)line;
 
@@ -2681,11 +2680,12 @@ cmd_updatestartuptty (assuan_context_t ctx, char *line)
   if (!se)
     err = gpg_error_from_syserror ();
 
-  for (idx=0; !err && names[idx]; idx++)
+  iterator = 0;
+  while (!err && (name = session_env_list_stdenvnames (&iterator, NULL)))
     {
-      const char *value = session_env_getenv (ctrl->session_env, names[idx]);
+      const char *value = session_env_getenv (ctrl->session_env, name);
       if (value)
-        err = session_env_setenv (se, names[idx], value);
+        err = session_env_setenv (se, name, value);
     }
 
   if (!err && ctrl->lc_ctype)
