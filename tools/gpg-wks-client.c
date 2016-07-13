@@ -581,7 +581,7 @@ send_confirmation_response (const char *sender, const char *address,
   es_rewind (body);
   if (encrypt)
     {
-      err = encrypt_response (&bodyenc, body, address);
+      err = encrypt_response (&bodyenc, body, sender);
       if (err)
         goto leave;
       es_fclose (body);
