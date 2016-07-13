@@ -347,11 +347,7 @@ format_keyid (u32 *keyid, int format, char *buffer, int len)
       break;
 
     case KF_LONG:
-      if (keyid[0])
-	snprintf (buffer, len, "%08lX%08lX",
-                  (ulong)keyid[0], (ulong)keyid[1]);
-      else
-	snprintf (buffer, len, "%08lX", (ulong)keyid[1]);
+      snprintf (buffer, len, "%08lX%08lX", (ulong)keyid[0], (ulong)keyid[1]);
       break;
 
     case KF_0xSHORT:
@@ -359,11 +355,7 @@ format_keyid (u32 *keyid, int format, char *buffer, int len)
       break;
 
     case KF_0xLONG:
-      if(keyid[0])
-	snprintf (buffer, len, "0x%08lX%08lX",
-                  (ulong)keyid[0],(ulong)keyid[1]);
-      else
-	snprintf (buffer, len, "0x%08lX", (ulong)keyid[1]);
+      snprintf (buffer, len, "0x%08lX%08lX", (ulong)keyid[0],(ulong)keyid[1]);
       break;
 
     default:
