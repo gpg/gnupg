@@ -635,6 +635,7 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
 
     write_header(out, ctb, calc_plaintext( pt ) );
     log_assert (pt->mode == 'b' || pt->mode == 't' || pt->mode == 'u'
+                || pt->mode == 'm'
                 || pt->mode == 'l' || pt->mode == '1');
     iobuf_put(out, pt->mode );
     iobuf_put(out, pt->namelen );

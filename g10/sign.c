@@ -605,7 +605,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
          * data, it is not possible to know the used length
          * without a double read of the file - to avoid that
          * we simple use partial length packets. */
-        if ( ptmode == 't' )
+        if ( ptmode == 't' || ptmode == 'u' || ptmode == 'm')
 	  filesize = 0;
       }
     else
@@ -1033,7 +1033,8 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
     }
     else {
         rc = write_plaintext_packet (out, inp, fname,
-                                     opt.textmode && !outfile ? 't':'b');
+                                     opt.textmode && !outfile ?
+                                     (opt.mimemode? 'm':'t'):'b');
     }
 
     /* catch errors from above */
@@ -1337,7 +1338,8 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
 
     /* Pipe data through all filters; i.e. write the signed stuff */
     /*(current filters: zip - encrypt - armor)*/
-    rc = write_plaintext_packet (out, inp, fname, opt.textmode ? 't':'b');
+    rc = write_plaintext_packet (out, inp, fname,
+                                 opt.textmode ? (opt.mimemode?'m':'t'):'b');
     if (rc)
 	goto leave;
 

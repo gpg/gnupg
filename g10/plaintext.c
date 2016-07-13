@@ -217,10 +217,15 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
   static off_t count = 0;
   int err = 0;
   int c;
-  int convert = (pt->mode == 't' || pt->mode == 'u');
+  int convert;
 #ifdef __riscos__
   int filetype = 0xfff;
 #endif
+
+  if (pt->mode == 't' || pt->mode == 'u' || pt->mode == 'm')
+    convert = pt->mode;
+  else
+    convert = 0;
 
   /* Let people know what the plaintext info is. This allows the
      receiving program to try and do something different based on the
@@ -279,8 +284,10 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	      if (mfx->md)
 		gcry_md_putc (mfx->md, c);
 #ifndef HAVE_DOSISH_SYSTEM
-	      if (c == '\r')	/* convert to native line ending */
-		continue;	/* fixme: this hack might be too simple */
+              /* Convert to native line ending. */
+              /* fixme: this hack might be too simple */
+	      if (c == '\r' && convert != 'm')
+		continue;
 #endif
 	      if (fp)
 		{
@@ -354,7 +361,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	      if (mfx->md)
 		gcry_md_putc (mfx->md, c);
 #ifndef HAVE_DOSISH_SYSTEM
-	      if (convert && c == '\r')
+	      if (c == '\r' && convert != 'm')
 		continue;	/* fixme: this hack might be too simple */
 #endif
 	      if (fp)

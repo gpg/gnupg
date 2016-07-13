@@ -169,6 +169,7 @@ enum cmd_and_opt_values
     aServer,
     aTOFUPolicy,
 
+    oMimemode,
     oTextmode,
     oNoTextmode,
     oExpert,
@@ -532,7 +533,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oBZ2CompressLevel, "bzip2-compress-level", "@"),
   ARGPARSE_s_n (oBZ2DecompressLowmem, "bzip2-decompress-lowmem", "@"),
 
-  ARGPARSE_s_n (oTextmodeShort, NULL, "@"),
+  ARGPARSE_s_n (oMimemode, "mimemode", "@"),
+  ARGPARSE_s_n (oTextmode,      "textmode", N_("use canonical text mode")),
   ARGPARSE_s_n (oTextmode,      "textmode", N_("use canonical text mode")),
   ARGPARSE_s_n (oNoTextmode, "no-textmode", "@"),
 
@@ -2887,9 +2889,11 @@ main (int argc, char **argv)
                              pargs.r.ret_str, utf8_strings);
 	    break;
 
+          case oMimemode: opt.mimemode = opt.textmode = 1; break;
 	  case oTextmodeShort: opt.textmode = 2; break;
 	  case oTextmode: opt.textmode=1;  break;
-	  case oNoTextmode: opt.textmode=0;  break;
+	  case oNoTextmode: opt.textmode=opt.mimemode=0;  break;
+
 	  case oExpert: opt.expert = 1; break;
 	  case oNoExpert: opt.expert = 0; break;
 	  case oDefSigExpire:
@@ -3447,6 +3451,10 @@ main (int argc, char **argv)
 
     if (opt.flags.rfc4880bis)
 	log_info ("WARNING: using experimental features from RFC4880bis!\n");
+    else
+      {
+        opt.mimemode = 0; /* This will use text mode instead.  */
+      }
 
     if (eyes_only) {
       if (opt.set_filename)

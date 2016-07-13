@@ -57,6 +57,7 @@ struct
   int dry_run;
   int autostart;
   int list_only;
+  int mimemode;
   int textmode;
   int expert;
   const char *def_sig_expire;
