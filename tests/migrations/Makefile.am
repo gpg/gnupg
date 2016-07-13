@@ -26,21 +26,20 @@ include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS =
 
-TESTS_ENVIRONMENT = GPG_AGENT_INFO= LC_ALL=C
+TMP ?= /tmp
 
-TESTS = from-classic.test \
-	extended-private-key-format.test
+TESTS_ENVIRONMENT = GPG_AGENT_INFO= LC_ALL=C \
+	PATH=../gpgscm:$(PATH) \
+	TMP=$(TMP) \
+	GPGSCM_PATH=$(top_srcdir)/tests/gpgscm:$(top_srcdir)/tests/migrations
 
-TEST_FILES = from-classic.gpghome/pubring.gpg.asc \
-	     from-classic.gpghome/secring.gpg.asc \
-	     from-classic.gpghome/trustdb.gpg.asc \
-	     extended-private-key-format.gpghome/trustdb.gpg.asc \
-	     extended-private-key-format.gpghome/pubring.kbx.asc \
-	     extended-private-key-format.gpghome/private-keys-v1.d/13FDB8809B17C5547779F9D205C45F47CE0217CE.key.asc \
-	     extended-private-key-format.gpghome/private-keys-v1.d/343D8AF79796EE107D645A2787A9D9252F924E6F.key.asc \
-	     extended-private-key-format.gpghome/private-keys-v1.d/8B5ABF3EF9EB8D96B91A0B8C2C4401C91C834C34.key.asc
+TESTS = from-classic.scm \
+	extended-pkf.scm
 
-EXTRA_DIST = $(TESTS) $(TEST_FILES)
+TEST_FILES = from-classic.tar.asc \
+	     extended-pkf.tar.asc
+
+EXTRA_DIST = common.scm $(TESTS) $(TEST_FILES)
 
 CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     plain-1 plain-2 plain-3 trustdb.gpg *.lock .\#lk* \

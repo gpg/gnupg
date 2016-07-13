@@ -222,6 +222,8 @@ check_ldap_escape_filter (int test_count, struct test_ldap_escape_filter *test)
 	      test->filter, result, test->result);
       fail (test_count * 1000);
     }
+
+  xfree (result);
 }
 
 static void

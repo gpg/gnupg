@@ -4,6 +4,9 @@
 
 # set -x
 
+# Redefine GPG with a fixed time.
+GPG="$GPG --faked-system-time=1466684990"
+
 KEYS="2183839A BC15C85A EE37CF96"
 
 # Make sure $srcdir is set.

@@ -114,6 +114,7 @@ ccparray_put (ccparray_t *cpa, const char *value)
         }
       for (n=0; n < cpa->size; n++)
         newarray[n] = cpa->array[n];
+      xfree (cpa->array);
       cpa->array = newarray;
       cpa->size = newsize;
 

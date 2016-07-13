@@ -282,7 +282,7 @@ gpgtar_list (const char *filename, int decrypt)
   if (filename)
     {
       if (!strcmp (filename, "-"))
-        stream = es_stdout;
+        stream = es_stdin;
       else
         stream = es_fopen (filename, "rb");
       if (!stream)

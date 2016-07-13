@@ -335,7 +335,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
     {
       /* Note that PT has been initialized above in !no_literal mode.  */
       pt->timestamp = make_timestamp();
-      pt->mode = opt.textmode? 't' : 'b';
+      pt->mode = opt.mimemode? 'm' : opt.textmode? 't' : 'b';
       pt->len = filesize;
       pt->new_ctb = !pt->len;
       pt->buf = inp;
@@ -674,7 +674,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   if (!opt.no_literal)
     {
       pt->timestamp = make_timestamp();
-      pt->mode = opt.textmode ? 't' : 'b';
+      pt->mode = opt.mimemode? 'm' : opt.textmode ? 't' : 'b';
       pt->len = filesize;
       pt->new_ctb = !pt->len;
       pt->buf = inp;

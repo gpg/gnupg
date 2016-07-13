@@ -538,6 +538,7 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
               home_buffer = xtrymalloc (n);
               if (!home_buffer)
                 {
+                  xfree (home);
                   xfree (name);
                   return NULL;
                 }
@@ -556,6 +557,7 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
           else
             strcpy (stpcpy (stpcpy (p, home), "/"), name);
 
+          xfree (home);
           xfree (name);
           name = home_buffer;
           /* Let's do a simple compression to catch the most common

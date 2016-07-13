@@ -124,8 +124,6 @@ reset_literals_seen(void)
 static void
 release_list( CTX c )
 {
-  if (!c->list)
-    return;
   proc_tree (c, c->list);
   release_kbnode (c->list);
   while (c->pkenc_list)
@@ -1328,7 +1326,7 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
           /* Stop processing when an invalid packet has been encountered
            * but don't do so when we are doing a --list-packets.  */
           if (gpg_err_code (rc) == GPG_ERR_INV_PACKET
-              && opt.list_packets != 2 )
+              && opt.list_packets == 0)
             break;
           continue;
 	}
@@ -1805,19 +1803,26 @@ check_sig_and_print (CTX c, kbnode_t node)
    * favor this over the WKD method (to be tried next), because an
    * arbitrary keyserver is less subject to web bug like
    * monitoring.  */
-  /* if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY */
-  /*     && signature_hash_full_fingerprint (sig) */
-  /*     && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE) */
-  /*     && keyserver_any_configured (c->ctrl)) */
-  /*   { */
-  /*     int res; */
+  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
+      && opt.flags.rfc4880bis
+      && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE)
+      && keyserver_any_configured (c->ctrl))
+    {
+      int res;
+      const byte *p;
+      size_t n;
 
-  /*     glo_ctrl.in_auto_key_retrieve++; */
-  /*     res = keyserver_import_keyid (c->ctrl, sig->keyid, opt.keyserver ); */
-  /*     glo_ctrl.in_auto_key_retrieve--; */
-  /*     if (!res) */
-  /*       rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey ); */
-  /*   } */
+      p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_ISSUER_FPR, &n);
+      if (p && n == 21 && p[0] == 4)
+        {
+          /* v4 packet with a SHA-1 fingerprint.  */
+          glo_ctrl.in_auto_key_retrieve++;
+          res = keyserver_import_fprint (c->ctrl, p+1, n-1, opt.keyserver);
+          glo_ctrl.in_auto_key_retrieve--;
+          if (!res)
+            rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );
+        }
+    }
 
   /* If the above methods didn't work, our next try is to retrieve the
    * key from the WKD. */

@@ -1,0 +1,70 @@
+#!/bin/sh
+# Copyright 2016 Free Software Foundation, Inc.
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.  This file is
+# distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY, to the extent permitted by law; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+. $srcdir/defs.inc || exit 3
+
+export PINENTRY_USER_DATA=test
+
+alpha="Alpha <alpha@example.net>"
+bravo="Bravo <bravo@example.net>"
+
+$GPG --with-colons --with-fingerprint --list-secret-keys ="$alpha" &&
+    error "User ID '$alpha'exists when it should not!"
+$GPG --with-colons --with-fingerprint --list-secret-keys ="$bravo" &&
+    error "User ID '$bravo' exists when it should not!"
+
+#info verify that key creation works
+$GPG --quick-gen-key "$alpha"  || \
+        error "failed to generate key"
+
+fpr=$($GPG --with-colons --with-fingerprint --list-secret-keys ="$alpha" | \
+             grep '^fpr:' | cut -f10 -d: | head -n1)
+
+$GPG --check-trustdb
+
+cleanup() {
+    $GPG --batch --yes --delete-secret-key "0x$fpr"
+    $GPG --batch --yes --delete-key "0x$fpr"
+}
+
+count_uids_of_secret() {
+    if ! [ $($GPG --with-colons --list-secret-keys ="$1" | \
+                    grep -c '^uid:u:') = "$2" ] ; then
+        cleanup
+        error "wrong number of user IDs for '$1' after $3"
+    fi
+}
+
+count_uids_of_secret "$alpha" 1 "key generation"
+
+#info verify that we can add a user ID
+if ! $GPG --quick-adduid ="$alpha" "$bravo" ; then
+    cleanup
+    error "failed to add user id"
+fi
+
+$GPG --check-trustdb
+
+count_uids_of_secret "$alpha" 2 "adding User ID"
+count_uids_of_secret "$bravo" 2 "adding User ID"
+
+#info verify that we can revoke a user ID
+if ! $GPG --quick-revuid ="$bravo" "$alpha"; then
+    cleanup
+    error "failed to revoke user id"
+fi
+
+$GPG --check-trustdb
+
+count_uids_of_secret "$bravo" 1 "revoking user ID"
+
+cleanup
+
+! $GPG --with-colons --list-secret-keys ="$bravo" ||
+    error "key still exists when it should not!"

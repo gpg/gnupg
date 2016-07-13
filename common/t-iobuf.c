@@ -190,6 +190,8 @@ main (int argc, char *argv[])
 	n ++;
       }
     assert (n == 10 + (strlen (content) - 10) / 2);
+
+    iobuf_close (iobuf);
   }
 
 
@@ -266,6 +268,8 @@ main (int argc, char *argv[])
     /* The string should have been truncated (max_len == 0).  */
     assert (max_len == 0);
     free (buffer);
+
+    iobuf_close (iobuf);
   }
 
   {
@@ -279,10 +283,12 @@ main (int argc, char *argv[])
     int c;
     int n;
     int lastc = 0;
+    struct content_filter_state *state;
 
     iobuf = iobuf_temp_with_content (content, strlen(content));
     rc = iobuf_push_filter (iobuf,
-			    content_filter, content_filter_new (content2));
+			    content_filter,
+                            state=content_filter_new (content2));
     assert (rc == 0);
 
     n = 0;
@@ -309,6 +315,9 @@ main (int argc, char *argv[])
 	    /* printf ("%d: '%c' (%d)\n", n, c, c); */
 	  }
       }
+
+    iobuf_close (iobuf);
+    free (state);
   }
 
   /* Write some data to a temporary filter.  Push a new filter.  The
@@ -346,6 +355,8 @@ main (int argc, char *argv[])
 
     assert (n == strlen (content) + 2 * (strlen (content2) + 1));
     assert (strcmp (buffer, "0123456789aabbcc") == 0);
+
+    iobuf_close (iobuf);
   }
 
   {
@@ -373,6 +384,8 @@ main (int argc, char *argv[])
     assert (n == 2);
     assert (buffer[0] == '3');
     assert (buffer[1] == '7');
+
+    iobuf_close (iobuf);
   }
 
   return 0;

@@ -22,7 +22,8 @@
 # Programs required before we can run these tests.
 required_pgms = ../../g10/gpg$(EXEEXT) ../../agent/gpg-agent$(EXEEXT) \
                 ../../tools/gpg-connect-agent$(EXEEXT) \
-		../../tools/mk-tdata$(EXEEXT)
+		../../tools/mk-tdata$(EXEEXT) \
+		../gpgscm/gpgscm$(EXEEXT)
 
 AM_CPPFLAGS = -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am
@@ -33,32 +34,54 @@ noinst_PROGRAMS = fake-pinentry
 
 fake_pinentry_SOURCES = fake-pinentry.c
 
-TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) GPG_AGENT_INFO= LC_ALL=C
+TMP ?= /tmp
 
-if SQLITE3
-sqlite3_dependent_tests = tofu.test
-else
-sqlite3_dependent_tests =
-endif
+TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) GPG_AGENT_INFO= LC_ALL=C \
+	EXEEXT=$(EXEEXT) \
+	PATH=../gpgscm:$(PATH) \
+	TMP=$(TMP) \
+	objdir=$(abs_top_builddir) \
+	GPGSCM_PATH=$(top_srcdir)/tests/gpgscm:$(top_srcdir)/tests/openpgp
 
-# Note: version.test needs to be the first test to run and finish.test
+# Note: setup.scm needs to be the first test to run and finish.scm
 # the last one
-TESTS = version.test mds.test \
-	decrypt.test decrypt-dsa.test \
-	sigs.test sigs-dsa.test \
-	encrypt.test encrypt-dsa.test  \
-	seat.test clearsig.test encryptp.test detach.test \
-	armsigs.test armencrypt.test armencryptp.test \
-	signencrypt.test signencrypt-dsa.test \
-	armsignencrypt.test armdetach.test \
-	armdetachm.test detachm.test genkey1024.test \
-	conventional.test conventional-mdc.test \
-	multisig.test verify.test armor.test \
-	import.test ecc.test 4gb-packet.test \
-	$(sqlite3_dependent_tests) \
-	gpgtar.test use-exact-key.test default-key.test \
-	export.test \
-	finish.test
+TESTS = setup.scm \
+	version.scm \
+	mds.scm \
+	decrypt.scm \
+	decrypt-dsa.scm \
+	sigs.scm \
+	sigs-dsa.scm \
+	encrypt.scm \
+	encrypt-dsa.scm \
+	seat.scm \
+	clearsig.scm \
+	encryptp.scm \
+	detach.scm \
+	detachm.scm \
+	armsigs.scm \
+	armencrypt.scm \
+	armencryptp.scm \
+	signencrypt.scm \
+	signencrypt-dsa.scm \
+	armsignencrypt.scm \
+	armdetach.scm \
+	armdetachm.scm \
+	genkey1024.scm \
+	conventional.scm \
+	conventional-mdc.scm \
+	multisig.scm \
+	verify.scm \
+	armor.scm \
+	import.scm \
+	ecc.scm \
+	4gb-packet.scm \
+	tofu.scm \
+	gpgtar.scm \
+	use-exact-key.scm \
+	default-key.scm \
+	export.scm \
+	finish.scm
 
 
 TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
@@ -98,10 +121,14 @@ priv_keys = privkeys/50B2D4FA4122C212611048BC5FC31BD44393626E.asc \
 	    privkeys/1DF48228FEFF3EC2481B106E0ACA8C465C662CC5.asc \
 	    privkeys/A2832820DC9F40751BDCD375BB0945BA33EC6B4C.asc \
 	    privkeys/ADE710D74409777B7729A7653373D820F67892E0.asc \
-	    privkeys/CEFC51AF91F68A2904FBFF62C4F075A4785B803F.asc
+	    privkeys/CEFC51AF91F68A2904FBFF62C4F075A4785B803F.asc \
+            privkeys/1E28F20E41B54C2D1234D896096495FF57E08D18.asc \
+            privkeys/EB33B687EB8581AB64D04852A54453E85F3DF62D.asc \
+	    privkeys/C6A6390E9388CDBAD71EAEA698233FE5E04F001E.asc \
+	    privkeys/D69102E0F5AC6B6DB8E4D16DA8E18CF46D88CAE3.asc
 
-
-sample_keys = samplekeys/ecc-sample-1-pub.asc \
+sample_keys = samplekeys/README \
+              samplekeys/ecc-sample-1-pub.asc \
               samplekeys/ecc-sample-2-pub.asc \
               samplekeys/ecc-sample-3-pub.asc \
               samplekeys/ecc-sample-1-sec.asc \
@@ -114,10 +141,14 @@ sample_keys = samplekeys/ecc-sample-1-pub.asc \
 	      samplekeys/whats-new-in-2.1.asc \
 	      samplekeys/e2e-p256-1-clr.asc \
 	      samplekeys/e2e-p256-1-prt.asc \
-	      samplekeys/E657FB607BB4F21C90BB6651BC067AF28BC90111.asc
+	      samplekeys/E657FB607BB4F21C90BB6651BC067AF28BC90111.asc \
+              samplekeys/rsa-rsa-sample-1.asc \
+              samplekeys/ed25519-cv25519-sample-1.asc \
+	      samplekeys/silent-running.asc
 
-EXTRA_DIST = defs.inc pinentry.sh $(TESTS) $(TEST_FILES) ChangeLog-2011 \
-	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)
+EXTRA_DIST = defs.inc defs.scm pinentry.sh $(TESTS) $(TEST_FILES) \
+	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
+	     ChangeLog-2011
 
 CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     plain-1 plain-2 plain-3 trustdb.gpg *.lock .\#lk* \

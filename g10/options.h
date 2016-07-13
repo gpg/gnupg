@@ -57,6 +57,7 @@ struct
   int dry_run;
   int autostart;
   int list_only;
+  int mimemode;
   int textmode;
   int expert;
   const char *def_sig_expire;
@@ -80,7 +81,7 @@ struct
   int print_pka_records;
   int print_dane_records;
   int no_armor;
-  int list_packets; /* list-packets mode: 1=normal, 2=invoked by command*/
+  int list_packets; /* Option --list-packets active.  */
   int def_cipher_algo;
   int force_mdc;
   int disable_mdc;
@@ -235,6 +236,8 @@ struct
     unsigned int allow_weak_digest_algos:1;
     unsigned int large_rsa:1;
     unsigned int disable_signer_uid:1;
+    /* Flag to enbale experimental features from RFC4880bis.  */
+    unsigned int rfc4880bis:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local
@@ -332,11 +335,13 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define IMPORT_LOCAL_SIGS                (1<<0)
 #define IMPORT_REPAIR_PKS_SUBKEY_BUG     (1<<1)
 #define IMPORT_FAST                      (1<<2)
+#define IMPORT_SHOW                      (1<<3)
 #define IMPORT_MERGE_ONLY                (1<<4)
 #define IMPORT_MINIMAL                   (1<<5)
 #define IMPORT_CLEAN                     (1<<6)
 #define IMPORT_NO_SECKEY                 (1<<7)
 #define IMPORT_KEEP_OWNERTTRUST          (1<<8)
+#define IMPORT_EXPORT                    (1<<9)
 
 #define EXPORT_LOCAL_SIGS                (1<<0)
 #define EXPORT_ATTRIBUTES                (1<<1)
@@ -344,7 +349,8 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define EXPORT_RESET_SUBKEY_PASSWD       (1<<3)
 #define EXPORT_MINIMAL                   (1<<4)
 #define EXPORT_CLEAN                     (1<<5)
-#define EXPORT_DANE_FORMAT               (1<<6)
+#define EXPORT_PKA_FORMAT                (1<<6)
+#define EXPORT_DANE_FORMAT               (1<<7)
 
 #define LIST_SHOW_PHOTOS                 (1<<0)
 #define LIST_SHOW_POLICY_URLS            (1<<1)

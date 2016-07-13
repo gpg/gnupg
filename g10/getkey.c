@@ -1,7 +1,7 @@
 /* getkey.c -  Get a key from the database
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
  *               2007, 2008, 2010  Free Software Foundation, Inc.
- * Copyright (C) 2015 g10 Code GmbH
+ * Copyright (C) 2015, 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -143,6 +143,11 @@ static void merge_selfsigs (kbnode_t keyblock);
 static int lookup (getkey_ctx_t ctx,
 		   kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
 		   int want_secret);
+static kbnode_t finish_lookup (kbnode_t keyblock,
+                               unsigned int req_usage, int want_exact,
+                               unsigned int *r_flags);
+static void print_status_key_considered (kbnode_t keyblock, unsigned int flags);
+
 
 #if 0
 static void
@@ -659,12 +664,9 @@ get_pubkeys (ctrl_t ctrl,
 
 
 static void
-pk_from_block (GETKEY_CTX ctx, PKT_public_key * pk, KBNODE keyblock,
-	       KBNODE found_key)
+pk_from_block (PKT_public_key *pk, kbnode_t keyblock, kbnode_t found_key)
 {
-  KBNODE a = found_key ? found_key : keyblock;
-
-  (void) ctx;
+  kbnode_t a = found_key ? found_key : keyblock;
 
   log_assert (a->pkt->pkttype == PKT_PUBLIC_KEY
               || a->pkt->pkttype == PKT_PUBLIC_SUBKEY);
@@ -749,7 +751,7 @@ get_pubkey (PKT_public_key * pk, u32 * keyid)
     rc = lookup (&ctx, &kb, &found_key, 0);
     if (!rc)
       {
-	pk_from_block (&ctx, pk, kb, found_key);
+	pk_from_block (pk, kb, found_key);
       }
     getkey_end (&ctx);
     release_kbnode (kb);
@@ -912,7 +914,7 @@ get_seckey (PKT_public_key *pk, u32 *keyid)
   err = lookup (&ctx, &keyblock, &found_key, 1);
   if (!err)
     {
-      pk_from_block (&ctx, pk, keyblock, found_key);
+      pk_from_block (pk, keyblock, found_key);
     }
   getkey_end (&ctx);
   release_kbnode (keyblock);
@@ -1118,7 +1120,7 @@ key_byname (GETKEY_CTX *retctx, strlist_t namelist,
   rc = lookup (ctx, ret_kb, &found_key, want_secret);
   if (!rc && pk)
     {
-      pk_from_block (ctx, pk, *ret_kb, found_key);
+      pk_from_block (pk, *ret_kb, found_key);
     }
 
   release_kbnode (help_kb);
@@ -1457,6 +1459,53 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 }
 
 
+/* Get a public key from a file.
+ *
+ * PK is the buffer to store the key.  The caller needs to make sure
+ * that PK->REQ_USAGE is valid.  PK->REQ_USAGE is passed through to
+ * the lookup function and is a mask of PUBKEY_USAGE_SIG,
+ * PUBKEY_USAGE_ENC and PUBKEY_USAGE_CERT.  If this is non-zero, only
+ * keys with the specified usage will be returned.
+ *
+ * FNAME is the file name.  That file should contain exactly one
+ * keyblock.
+ *
+ * This function returns 0 on success.  Otherwise, an error code is
+ * returned.  In particular, GPG_ERR_NO_PUBKEY is returned if the key
+ * is not found.
+ *
+ * The self-signed data has already been merged into the public key
+ * using merge_selfsigs.  The caller must release the content of PK by
+ * calling release_public_key_parts (or, if PK was malloced, using
+ * free_public_key).
+ */
+gpg_error_t
+get_pubkey_fromfile (ctrl_t ctrl, PKT_public_key *pk, const char *fname)
+{
+  gpg_error_t err;
+  kbnode_t keyblock;
+  kbnode_t found_key;
+  unsigned int infoflags;
+
+  err = read_key_from_file (ctrl, fname, &keyblock);
+  if (!err)
+    {
+      /* Warning: node flag bits 0 and 1 should be preserved by
+       * merge_selfsigs.  FIXME: Check whether this still holds. */
+      merge_selfsigs (keyblock);
+      found_key = finish_lookup (keyblock, pk->req_usage, 0, &infoflags);
+      print_status_key_considered (keyblock, infoflags);
+      if (found_key)
+        pk_from_block (pk, keyblock, found_key);
+      else
+        err = gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
+    }
+
+  release_kbnode (keyblock);
+  return err;
+}
+
+
 /* Lookup a key with the specified fingerprint.
  *
  * If PK is not NULL, the public key of the first result is returned
@@ -1513,7 +1562,7 @@ get_pubkey_byfprint (PKT_public_key *pk, kbnode_t *r_keyblock,
       memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
       rc = lookup (&ctx, &kb, &found_key, 0);
       if (!rc && pk)
-	pk_from_block (&ctx, pk, kb, found_key);
+	pk_from_block (pk, kb, found_key);
       if (!rc && r_keyblock)
 	{
 	  *r_keyblock = kb;
@@ -1903,7 +1952,7 @@ getkey_next (getkey_ctx_t ctx, PKT_public_key *pk, kbnode_t *ret_keyblock)
 
   rc = lookup (ctx, ret_keyblock, &found_key, ctx->want_secret);
   if (!rc && pk && ret_keyblock)
-    pk_from_block (ctx, pk, *ret_keyblock, found_key);
+    pk_from_block (pk, *ret_keyblock, found_key);
 
   return rc;
 }
@@ -3053,31 +3102,33 @@ merge_selfsigs (KBNODE keyblock)
 
 
 /* See whether the key satisfies any additional requirements specified
- * in CTX.  If so, return 1 and set CTX->FOUND_KEY to an appropriate
- * key or subkey.  Otherwise, return 0 if there was no appropriate
- * key.
+ * in CTX.  If so, return the node of an appropriate key or subkey.
+ * Otherwise, return NULL if there was no appropriate key.
  *
  * In case the primary key is not required, select a suitable subkey.
- * We need the primary key if PUBKEY_USAGE_CERT is set in
- * CTX->REQ_USAGE or we are in PGP6 or PGP7 mode and PUBKEY_USAGE_SIG
- * is set in CTX->REQ_USAGE.
+ * We need the primary key if PUBKEY_USAGE_CERT is set in REQ_USAGE or
+ * we are in PGP6 or PGP7 mode and PUBKEY_USAGE_SIG is set in
+ * REQ_USAGE.
  *
  * If any of PUBKEY_USAGE_SIG, PUBKEY_USAGE_ENC and PUBKEY_USAGE_CERT
- * are set in CTX->REQ_USAGE, we filter by the key's function.
- * Concretely, if PUBKEY_USAGE_SIG and PUBKEY_USAGE_CERT are set, then
- * we only return a key if it is (at least) either a signing or a
+ * are set in REQ_USAGE, we filter by the key's function.  Concretely,
+ * if PUBKEY_USAGE_SIG and PUBKEY_USAGE_CERT are set, then we only
+ * return a key if it is (at least) either a signing or a
  * certification key.
  *
- * If CTX->REQ_USAGE is set, then we reject any keys that are not good
+ * If REQ_USAGE is set, then we reject any keys that are not good
  * (i.e., valid, not revoked, not expired, etc.).  This allows the
  * getkey functions to be used for plain key listings.
  *
  * Sets the matched key's user id field (pk->user_id) to the user id
- * that matched the low-level search criteria or NULL.  If R_FLAGS is
- * not NULL set certain flags for more detailed error reporting.  Used
- * flags are:
+ * that matched the low-level search criteria or NULL.
+ *
+ * If R_FLAGS is not NULL set certain flags for more detailed error
+ * reporting.  Used flags are:
+ *
  * - LOOKUP_ALL_SUBKEYS_EXPIRED :: All Subkeys are expired or have
  *                                 been revoked.
+ * - LOOKUP_NOT_SELECTED :: No suitable key found
  *
  * This function needs to handle several different cases:
  *
@@ -3094,40 +3145,41 @@ merge_selfsigs (KBNODE keyblock)
  *
  */
 static kbnode_t
-finish_lookup (getkey_ctx_t ctx, kbnode_t keyblock, unsigned int *r_flags)
+finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
+               unsigned int *r_flags)
 {
   kbnode_t k;
 
-  /* If CTX->EXACT is set, the key or subkey that actually matched the
+  /* If WANT_EXACT is set, the key or subkey that actually matched the
      low-level search criteria.  */
   kbnode_t foundk = NULL;
   /* The user id (if any) that matched the low-level search criteria.  */
   PKT_user_id *foundu = NULL;
 
-#define USAGE_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC|PUBKEY_USAGE_CERT)
-  unsigned int req_usage = (ctx->req_usage & USAGE_MASK);
-
-  /* Request the primary if we're certifying another key, and also
-     if signing data while --pgp6 or --pgp7 is on since pgp 6 and 7
-     do not understand signatures made by a signing subkey.  PGP 8
-     does. */
-  int req_prim = ((ctx->req_usage & PUBKEY_USAGE_CERT)
-                  || ((PGP6 || PGP7) && (ctx->req_usage & PUBKEY_USAGE_SIG)));
-
-  u32 curtime = make_timestamp ();
-
   u32 latest_date;
   kbnode_t latest_key;
   PKT_public_key *pk;
-
-  log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+  int req_prim;
+  u32 curtime = make_timestamp ();
 
   if (r_flags)
     *r_flags = 0;
 
+#define USAGE_MASK  (PUBKEY_USAGE_SIG|PUBKEY_USAGE_ENC|PUBKEY_USAGE_CERT)
+  req_usage &= USAGE_MASK;
+
+  /* Request the primary if we're certifying another key, and also if
+   * signing data while --pgp6 or --pgp7 is on since pgp 6 and 7 do
+   * not understand signatures made by a signing subkey.  PGP 8 does. */
+  req_prim = ((req_usage & PUBKEY_USAGE_CERT)
+              || ((PGP6 || PGP7) && (req_usage & PUBKEY_USAGE_SIG)));
+
+
+  log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+
   /* For an exact match mark the primary or subkey that matched the
      low-level search criteria.  */
-  if (ctx->exact)
+  if (want_exact)
     {
       for (k = keyblock; k; k = k->next)
 	{
@@ -3262,7 +3314,7 @@ finish_lookup (getkey_ctx_t ctx, kbnode_t keyblock, unsigned int *r_flags)
    *     primary key, or,
    *
    *   - we're just considering the primary key.  */
-  if ((!latest_key && !ctx->exact) || foundk == keyblock || req_prim)
+  if ((!latest_key && !want_exact) || foundk == keyblock || req_prim)
     {
       if (DBG_LOOKUP && !foundk && !req_prim)
 	log_debug ("\tno suitable subkeys found - trying primary\n");
@@ -3300,10 +3352,12 @@ finish_lookup (getkey_ctx_t ctx, kbnode_t keyblock, unsigned int *r_flags)
     {
       if (DBG_LOOKUP)
 	log_debug ("\tno suitable key found -  giving up\n");
+      if (r_flags)
+        *r_flags |= LOOKUP_NOT_SELECTED;
       return NULL; /* Not found.  */
     }
 
-found:
+ found:
   if (DBG_LOOKUP)
     log_debug ("\tusing key %08lX\n",
 	       (ulong) keyid_from_pk (latest_key->pkt->pkt.public_key, NULL));
@@ -3408,12 +3462,10 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
         goto skip; /* No secret key available.  */
 
       /* Warning: node flag bits 0 and 1 should be preserved by
-       * merge_selfsigs.  For secret keys, premerge transferred the
-       * keys to the keyblock.  */
+       * merge_selfsigs.  */
       merge_selfsigs (keyblock);
-      found_key = finish_lookup (ctx, keyblock, &infoflags);
-      if (!found_key)
-        infoflags |= LOOKUP_NOT_SELECTED;
+      found_key = finish_lookup (keyblock, ctx->req_usage, ctx->exact,
+                                 &infoflags);
       print_status_key_considered (keyblock, infoflags);
       if (found_key)
 	{

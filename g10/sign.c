@@ -156,6 +156,7 @@ mk_notation_policy_etc (PKT_signature *sig,
           if (DBG_LOOKUP)
             log_debug ("setting Signer's UID to '%s'\n", mbox);
           build_sig_subpkt (sig, SIGSUBPKT_SIGNERS_UID, mbox, strlen (mbox));
+          xfree (mbox);
         }
     }
 }
@@ -604,7 +605,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
          * data, it is not possible to know the used length
          * without a double read of the file - to avoid that
          * we simple use partial length packets. */
-        if ( ptmode == 't' )
+        if ( ptmode == 't' || ptmode == 'u' || ptmode == 'm')
 	  filesize = 0;
       }
     else
@@ -627,6 +628,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
             log_error ("build_packet(PLAINTEXT) failed: %s\n",
                        gpg_strerror (rc) );
         pt->buf = NULL;
+        free_packet (&pkt);
     }
     else {
         byte copy_buffer[4096];
@@ -690,7 +692,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
 
       if (sig->version >= 4)
         {
-          build_sig_subpkt_from_sig (sig);
+          build_sig_subpkt_from_sig (sig, pk);
           mk_notation_policy_etc (sig, NULL, pk);
         }
 
@@ -1031,7 +1033,8 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
     }
     else {
         rc = write_plaintext_packet (out, inp, fname,
-                                     opt.textmode && !outfile ? 't':'b');
+                                     opt.textmode && !outfile ?
+                                     (opt.mimemode? 'm':'t'):'b');
     }
 
     /* catch errors from above */
@@ -1335,7 +1338,8 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
 
     /* Pipe data through all filters; i.e. write the signed stuff */
     /*(current filters: zip - encrypt - armor)*/
-    rc = write_plaintext_packet (out, inp, fname, opt.textmode ? 't':'b');
+    rc = write_plaintext_packet (out, inp, fname,
+                                 opt.textmode ? (opt.mimemode?'m':'t'):'b');
     if (rc)
 	goto leave;
 
@@ -1456,7 +1460,7 @@ make_keysig_packet (PKT_signature **ret_sig, PKT_public_key *pk,
       sig->expiredate=sig->timestamp+duration;
     sig->sig_class = sigclass;
 
-    build_sig_subpkt_from_sig( sig );
+    build_sig_subpkt_from_sig (sig, pksk);
     mk_notation_policy_etc (sig, pk, pksk);
 
     /* Crucial that the call to mksubpkt comes LAST before the calls
@@ -1559,7 +1563,7 @@ update_keysig_packet( PKT_signature **ret_sig,
        automagically lower any sig expiration dates to correctly
        correspond to the differences in the timestamps (i.e. the
        duration will shrink).  */
-    build_sig_subpkt_from_sig( sig );
+    build_sig_subpkt_from_sig (sig, pksk);
 
     if (mksubpkt)
       rc = (*mksubpkt)(sig, opaque);

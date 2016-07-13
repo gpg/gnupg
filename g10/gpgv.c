@@ -167,6 +167,8 @@ main( int argc, char **argv )
   opt.command_fd = -1; /* no command fd */
   opt.keyserver_options.options |= KEYSERVER_AUTO_KEY_RETRIEVE;
   opt.trust_model = TM_ALWAYS;
+  opt.no_sig_cache = 1;
+  opt.flags.require_cross_cert = 1;
   opt.batch = 1;
 
   opt.weak_digests = NULL;
@@ -365,6 +367,17 @@ keyserver_import_keyid (u32 *keyid, void *dummy)
 }
 
 int
+keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
+			 struct keyserver_spec *keyserver)
+{
+  (void)ctrl;
+  (void)fprint;
+  (void)fprint_len;
+  (void)keyserver;
+  return -1;
+}
+
+int
 keyserver_import_cert (const char *name)
 {
   (void)name;
@@ -404,6 +417,17 @@ keyserver_import_ldap (const char *name)
   (void)name;
   return -1;
 }
+
+
+gpg_error_t
+read_key_from_file (ctrl_t ctrl, const char *fname, kbnode_t *r_keyblock)
+{
+  (void)ctrl;
+  (void)fname;
+  (void)r_keyblock;
+  return -1;
+}
+
 
 /* Stub:
  * No encryption here but mainproc links to these functions.

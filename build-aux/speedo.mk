@@ -109,6 +109,10 @@ w32-release: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release    WITH_GUI=0 SELFCHECK=0 \
                                                    installer-from-source
 
+w32-release-offline: check-tools
+	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release    WITH_GUI=0 SELFCHECK=0 \
+	  CUSTOM_SWDB=1 pkgrep=${HOME}/b pkg10rep=${HOME}/b  \
+	  installer-from-source
 
 
 # Set this to "git" to build from git,

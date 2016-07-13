@@ -233,7 +233,7 @@ read from STDIN.  If only a one argument is given, it is expected to
 be a complete signature.
 
 With more than 1 argument, the first should be a detached signature
-and the remaining files ake up the the signed data. To read the signed
+and the remaining files make up the the signed data. To read the signed
 data from STDIN, use @samp{-} as the second filename.  For security
 reasons a detached signature cannot read the signed material from
 STDIN without denoting it in the above way.
@@ -281,9 +281,10 @@ List all keys from the public keyrings, or just the keys given on the
 command line.
 
 Avoid using the output of this command in scripts or other programs as
-it is likely to change as GnuPG changes. See @option{--with-colons} for a
-machine-parseable key listing command that is appropriate for use in
-scripts and other programs.
+it is likely to change as GnuPG changes.  See @option{--with-colons}
+for a machine-parseable key listing command that is appropriate for
+use in scripts and other programs.  Never use the regular output for
+scripts - it is only for human consumption.
 
 @item --list-secret-keys
 @itemx -K
@@ -291,7 +292,7 @@ scripts and other programs.
 List all keys from the secret keyrings, or just the ones given on the
 command line. A @code{#} after the letters @code{sec} means that the
 secret key is not usable (for example, if it was created via
-@option{--export-secret-subkeys}).
+@option{--export-secret-subkeys}).  See also @option{--list-keys}.
 
 @item --list-sigs
 @opindex list-sigs
@@ -569,7 +570,7 @@ Use the source, Luke :-). The output format is still subject to change.
 
 
 @item --enarmor
-@item --dearmor
+@itemx --dearmor
 @opindex enarmor
 @opindex dearmor
 Pack or unpack an arbitrary input into/from an OpenPGP ASCII armor.
@@ -1040,6 +1041,15 @@ the interactive sub-command @code{adduid} of @option{--edit-key} the
 white space removed, it is expected to be UTF-8 encoded, and no checks
 on its form are applied.
 
+@item --quick-revuid  @var{user-id} @var{user-id-to-revoke}
+@opindex quick-revuid
+This command revokes a User ID on an existing key.  It cannot be used
+to revoke the last User ID on key (some non-revoked User ID must
+remain), with revocation reason ``User ID is no longer valid''.  If
+you want to specify a different revocation reason, or to supply
+supplementary revocation text, you should use the interactive
+sub-command @code{revuid} of @option{--edit-key}.
+
 @item --passwd @var{user_id}
 @opindex passwd
 Change the passphrase of the secret key belonging to the certificate
@@ -1360,6 +1370,10 @@ used).
 Note that this adds a keyring to the current list. If the intent is to
 use the specified keyring alone, use @option{--keyring} along with
 @option{--no-default-keyring}.
+
+If the the option @option{--no-keyring} has been used no keyrings will
+be used at all.
+
 
 @item --secret-keyring @code{file}
 @opindex secret-keyring
@@ -2023,6 +2037,22 @@ limited countermeasure against traffic analysis. If this option or
 @option{--recipient} is not specified, GnuPG asks for the user ID unless
 @option{--default-recipient} is given.
 
+@item --recipient-file @var{file}
+@itemx -f
+@opindex recipient-file
+This option is similar to @option{--recipient} except that it
+encrypts to a key stored in the given file.  @var{file} must be the
+name of a file containing exactly one key.  @command{gpg} assumes that
+the key in this file is fully valid.
+
+@item --hidden-recipient-file @var{file}
+@itemx -F
+@opindex hidden-recipient-file
+This option is similar to @option{--hidden-recipient} except that it
+encrypts to a key stored in the given file.  @var{file} must be the
+name of a file containing exactly one key.  @command{gpg} assumes that
+the key in this file is fully valid.
+
 @item --encrypt-to @code{name}
 @opindex encrypt-to
 Same as @option{--recipient} but this one is intended for use in the
@@ -2040,11 +2070,6 @@ options file and may be used with your own user-id as a hidden
 recipients given either by use of @option{--recipient} or by the asked user id.
 No trust checking is performed for these user ids and even disabled
 keys can be used.
-
-@item --encrypt-to-default-key
-@opindex encrypt-to-default-key
-If the default secret key is taken from @option{--default-key}, then
-also encrypt to that key.
 
 @item --no-encrypt-to
 @opindex no-encrypt-to
@@ -2179,6 +2204,18 @@ opposite meaning. The options are:
   subkey. Defaults to no for regular @option{--import} and to yes for
   keyserver @option{--recv-keys}.
 
+  @item import-show
+  Show a listing of the key as imported right before it is stored.
+  This can be combined with the option @option{--dry-run} to only look
+  at keys.
+
+  @item import-export
+  Run the entire import code but instead of storing the key to the
+  local keyring write it to the output.  The export options
+  @option{export-pka} and @option{export-dane} affect the output.  This
+  option can be used to remove all invalid parts from a key without the
+  need to store it.
+
   @item merge-only
   During import, allow key updates to existing keys, but do not allow
   any new keys to be imported. Defaults to no.
@@ -2196,6 +2233,47 @@ opposite meaning. The options are:
   the most recent self-signature on each user ID. This option is the
   same as running the @option{--edit-key} command "minimize" after import.
   Defaults to no.
+@end table
+
+@item --import-filter @code{@var{name}=@var{expr}}
+@itemx --export-filter @code{@var{name}=@var{expr}}
+@opindex import-filter
+@opindex export-filter
+These options define an import/export filter which are applied to the
+imported/exported keyblock right before it will be stored/written.
+@var{name} defines the type of filter to use, @var{expr} the
+expression to evaluate.  The option can be used several times which
+then appends more expression to the same @var{name}.
+
+@noindent
+The available filter types are:
+
+@table @asis
+
+  @item keep-uid
+  This filter will keep a user id packet and its dependent packets in
+  the keyblock if the expression evaluates to true.
+
+@end table
+
+For the syntax of the expression see the chapter "FILTER EXPRESSIONS".
+The property names for the expressions depend on the actual filter
+type and are indicated in the following table.
+
+The available properties are:
+
+@table @asis
+
+  @item uid
+  A string with the user id.  (keep-uid)
+
+  @item mbox
+  The addr-spec part of a user id with mailbox or the empty string.
+  (keep-uid)
+
+  @item primary
+  Boolean indicating whether the user id is the primary one.  (keep-uid)
+
 @end table
 
 @item --export-options @code{parameters}
@@ -2244,6 +2322,18 @@ opposite meaning. The options are:
   most recent self-signature on each user ID. This option is the same as
   running the @option{--edit-key} command "minimize" before export except
   that the local copy of the key is not modified. Defaults to no.
+
+  @item export-pka
+  Instead of outputting the key material output PKA records suitable
+  to put into DNS zone files.  An ORIGIN line is printed before each
+  record to allow diverting the records to the corresponding zone file.
+
+  @item export-dane
+  Instead of outputting the key material output OpenPGP DANE records
+  suitable to put into DNS zone files.  An ORIGIN line is printed before
+  each record to allow diverting the records to the corresponding zone
+  file.
+
 @end table
 
 @item --with-colons
@@ -2462,6 +2552,13 @@ workarounds are disabled.
 Reset all packet, cipher and digest options to strict RFC-4880
 behavior. Note that this is currently the same thing as
 @option{--openpgp}.
+
+@item --rfc4880bis
+@opindex rfc4880bis
+Enable experimental features from proposed updates to RFC-4880.  This
+option can be used in addition to the other compliance options.
+Warning: The behavior may change with any GnuPG release and created
+keys or data may not be usable with future GnuPG versions.
 
 @item --rfc2440
 @opindex rfc2440
@@ -2940,6 +3037,10 @@ and do not provide alternate keyrings via @option{--keyring} or
 @option{--secret-keyring}, then GnuPG will still use the default public or
 secret keyrings.
 
+@item --no-keyring
+@opindex no-keyring
+Do not add use any keyrings even if specified as options.
+
 @item --skip-verify
 @opindex skip-verify
 Skip the signature verification step. This may be
@@ -3170,7 +3271,6 @@ current home directory (@pxref{option --homedir}).
 
 @end table
 
-@c man:.RE
 Note that on larger installations, it is useful to put predefined files
 into the directory @file{@value{SYSCONFSKELDIR}} so that
 newly created users start up with a working configuration.
@@ -3245,7 +3345,6 @@ files; They all live in in the current home directory (@pxref{option
 
 @end table
 
-@c man:.RE
 Operation is further controlled by a few environment variables:
 
 @table @asis
@@ -3337,6 +3436,123 @@ user for the filename.
 @ifset isman
 @include specify-user-id.texi
 @end ifset
+
+@mansect filter expressions
+@chapheading FILTER EXPRESSIONS
+
+The options @option{--import-filter} and @option{--export-filter} use
+expressions with this syntax (square brackets indicate an optional
+part and curly braces a repetition, white space between the elements
+are allowed):
+
+@c man:.RS
+@example
+  [lc] @{[@{flag@}] PROPNAME op VALUE [lc]@}
+@end example
+@c man:.RE
+
+The name of a property (@var{PROPNAME}) may only consist of letters,
+digits and underscores.  The description for the filter type
+describes which properties are defined.  If an undefined property is
+used it evaluates to the empty string.  Unless otherwise noted, the
+@var{VALUE} must always be given and may not be the empty string.  No
+quoting is defined for the value, thus the value may not contain the
+strings @code{&&} or @code{||}, which are used as logical connection
+operators.  The flag @code{--} can be used to remove this restriction.
+
+Numerical values are computed as long int; standard C notation
+applies.  @var{lc} is the logical connection operator; either
+@code{&&} for a conjunction or @code{||} for a disjunction.  A
+conjunction is assumed at the begin of an expression.  Conjunctions
+have higher precedence than disjunctions.  If @var{VALUE} starts with
+one of the characters used in any @var{op} a space after the
+@var{op} is required.
+
+@noindent
+The supported operators (@var{op}) are:
+
+@table @asis
+
+  @item =~
+  Substring must match.
+
+  @item  !~
+  Substring must not match.
+
+  @item  =
+  The full string must match.
+
+  @item  <>
+  The full string must not match.
+
+  @item  ==
+  The numerical value must match.
+
+  @item  !=
+  The numerical value must not match.
+
+  @item  <=
+  The numerical value of the field must be LE than the value.
+
+  @item  <
+  The numerical value of the field must be LT than the value.
+
+  @item  >=
+  The numerical value of the field must be GT than the value.
+
+  @item  >=
+  The numerical value of the field must be GE than the value.
+
+  @item  -n
+  True if value is not empty (no value allowed).
+
+  @item  -z
+  True if value is empty (no value allowed).
+
+  @item  -t
+  Alias for "PROPNAME != 0" (no value allowed).
+
+  @item  -f
+  Alias for "PROPNAME == 0" (no value allowed).
+
+@end table
+
+@noindent
+Values for @var{flag} must be space separated.  The supported flags
+are:
+
+@table @asis
+  @item --
+  @var{VALUE} spans to the end of the expression.
+  @item -c
+  The string match in this part is done case-sensitive.
+@end table
+
+The filter options concatenate several specifications for a filter of
+the same type.  For example the four options in this example:
+
+@c man:.RS
+@example
+ --import-option keep-uid="uid =~ Alfa"
+ --import-option keep-uid="&& uid !~ Test"
+ --import-option keep-uid="|| uid =~ Alpha"
+ --import-option keep-uid="uid !~ Test"
+@end example
+@c man:.RE
+
+@noindent
+which is equivalent to
+
+@c man:.RS
+@example
+ --import-option \
+  keep-uid="uid =~ Alfa" && uid !~ Test" || uid =~ Alpha" && "uid !~ Test"
+@end example
+@c man:.RE
+
+imports only the user ids of a key containing the strings "Alfa"
+or "Alpha" but not the string "test".
+
 
 @mansect return value
 @chapheading RETURN VALUE

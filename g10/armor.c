@@ -190,13 +190,18 @@ initialize(void)
     is_initialized=1;
 }
 
-/****************
- * Check whether this is an armored file or not See also
+
+/*
+ * Check whether this is an armored file.  See also
  * parse-packet.c for details on this code.
+ *
+ * Note that the buffer BUF needs to be at least 2 bytes long.  If in
+ * doubt that the second byte to 0.
+ *
  * Returns: True if it seems to be armored
  */
 static int
-is_armored( const byte *buf )
+is_armored (const byte *buf)
 {
   int ctb, pkttype;
   int indeterminate_length_allowed;
@@ -274,15 +279,17 @@ is_armored( const byte *buf )
 int
 use_armor_filter( IOBUF a )
 {
-    byte buf[1];
+    byte buf[2];
     int n;
 
     /* fixme: there might be a problem with iobuf_peek */
-    n = iobuf_peek(a, buf, 1 );
+    n = iobuf_peek (a, buf, 2);
     if( n == -1 )
 	return 0; /* EOF, doesn't matter whether armored or not */
     if( !n )
 	return 1; /* can't check it: try armored */
+    if (n != 2)
+	return 0; /* short buffer */
     return is_armored(buf);
 }
 
@@ -530,7 +537,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
     /* (the line is always a C string but maybe longer) */
     if( *line == '\n' || ( len && (*line == '\r' && line[1]=='\n') ) )
 	;
-    else if( !is_armored( line ) ) {
+    else if (len >= 2 && !is_armored (line)) {
 	afx->inp_checked = 1;
 	afx->inp_bypass = 1;
 	return 0;
@@ -1409,8 +1416,9 @@ unarmor_pump (UnarmorPump x, int c)
     switch (x->state) {
       case STA_init:
         {
-            byte tmp[1];
+            byte tmp[2];
             tmp[0] = c;
+            tmp[1] = 0;
             if ( is_armored (tmp) )
                 x->state = c == '-'? STA_first_dash : STA_wait_newline;
             else {

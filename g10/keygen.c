@@ -202,7 +202,7 @@ write_uid( KBNODE root, const char *s )
     size_t n = strlen(s);
 
     pkt->pkttype = PKT_USER_ID;
-    pkt->pkt.user_id = xmalloc_clear( sizeof *pkt->pkt.user_id + n - 1 );
+    pkt->pkt.user_id = xmalloc_clear (sizeof *pkt->pkt.user_id + n);
     pkt->pkt.user_id->len = n;
     pkt->pkt.user_id->ref = 1;
     strcpy(pkt->pkt.user_id->name, s);
@@ -413,9 +413,9 @@ keygen_set_std_prefs (const char *string,int personal)
 
     if(strlen(string))
       {
-	char *tok,*prefstring;
+	char *dup, *tok, *prefstring;
 
-	prefstring=xstrdup(string); /* need a writable string! */
+	dup = prefstring = xstrdup (string); /* need a writable string! */
 
 	while((tok=strsep(&prefstring," ,")))
 	  {
@@ -449,7 +449,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	      }
 	  }
 
-	xfree(prefstring);
+	xfree (dup);
       }
 
     if(!rc)
@@ -3481,6 +3481,7 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
 	xfree( outctrl.pub.newfname );
     }
 
+    xfree (line);
     release_parameter_list( para );
     iobuf_close (fp);
     release_armor_context (outctrl.pub.afx);
@@ -3610,7 +3611,13 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
       }
   }
 
-  if (*algostr || *usagestr || *expirestr)
+
+  if (!strcmp (algostr, "test-default"))
+    {
+      para = quickgen_set_para (para, 0, PUBKEY_ALGO_EDDSA, 0, "Ed25519", 0);
+      para = quickgen_set_para (para, 1, PUBKEY_ALGO_ECDH,  0, "Curve25519", 0);
+    }
+  else if (*algostr || *usagestr || *expirestr)
     {
       /* Extended unattended mode.  Creates only the primary key. */
       int algo;
@@ -4340,11 +4347,15 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
           gen_standard_revoke (pk, cache_nonce);
 
+          /* Get rid of the first empty packet.  */
+          commit_kbnode (&pub_root);
+
           if (!opt.batch)
             {
               tty_printf (_("public and secret key created and signed.\n") );
               tty_printf ("\n");
-              list_keyblock_direct (ctrl, pub_root, 0, 1, 1);
+              merge_keys_and_selfsig (pub_root);
+              list_keyblock_direct (ctrl, pub_root, 0, 1, 1, 1);
             }
 
 

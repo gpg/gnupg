@@ -224,7 +224,7 @@ static gpg_error_t
 copy_buffer_do_copy (struct copy_buffer *c, estream_t source, estream_t sink)
 {
   gpg_error_t err;
-  size_t nwritten;
+  size_t nwritten = 0;
 
   if (c->nread == 0)
     {
@@ -390,7 +390,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   /* Now read as long as we have something to poll.  We continue
      reading even after EOF or error on stdout so that we get the
      other error messages or remaining outut.  */
-  while (!fds[1].ignore && !fds[2].ignore)
+  while (! (fds[1].ignore && fds[2].ignore))
     {
       count = es_poll (fds, DIM(fds), -1);
       if (count == -1)
@@ -465,18 +465,23 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
                          pgmname, gpg_strerror (err));
               goto leave;
             }
+
+          if (es_feof (fds[1].stream))
+            {
+              err = copy_buffer_flush (&cpbuf_out, output);
+              if (err)
+                {
+                  log_error ("error reading data from '%s': %s\n",
+                             pgmname, gpg_strerror (err));
+                  goto leave;
+                }
+
+              fds[1].ignore = 1; /* ready.  */
+            }
         }
 
       if (fds[2].got_read)
         read_and_log_stderr (&fderrstate, fds + 2);
-    }
-
-  err = copy_buffer_flush (&cpbuf_out, output);
-  if (err)
-    {
-      log_error ("error reading data from '%s': %s\n",
-                 pgmname, gpg_strerror (err));
-      goto leave;
     }
 
   read_and_log_stderr (&fderrstate, NULL); /* Flush.  */

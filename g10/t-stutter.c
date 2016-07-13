@@ -606,5 +606,6 @@ main (int argc, char *argv[])
       log_fatal ("Message is too short, nothing to test.\n");
   }
 
+  xfree (filename);
   return failed;
 }

@@ -240,13 +240,13 @@ parse_keyserver_uri (const char *string,int require_scheme)
   struct keyserver_spec *keyserver;
   const char *idx;
   int count;
-  char *uri,*options;
+  char *uri, *duped_uri, *options;
 
   log_assert (string);
 
   keyserver=xmalloc_clear(sizeof(struct keyserver_spec));
 
-  uri=xstrdup(string);
+  duped_uri = uri = xstrdup (string);
 
   options=strchr(uri,' ');
   if(options)
@@ -434,11 +434,13 @@ parse_keyserver_uri (const char *string,int require_scheme)
       goto fail;
     }
 
+  xfree (duped_uri);
   return keyserver;
 
  fail:
   free_keyserver_spec(keyserver);
 
+  xfree (duped_uri);
   return NULL;
 }
 

@@ -289,6 +289,8 @@ void keyedit_quick_adduid (ctrl_t ctrl, const char *username,
                            const char *newuid);
 void keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
                            const char *usagestr, const char *expirestr);
+void keyedit_quick_revuid (ctrl_t ctrl, const char *username,
+                           const char *uidtorev);
 void keyedit_quick_sign (ctrl_t ctrl, const char *fpr,
                          strlist_t uids, strlist_t locusr, int local);
 void show_basic_key_info (KBNODE keyblock);
@@ -347,6 +349,9 @@ typedef struct import_stats_s *import_stats_t;
 typedef gpg_error_t (*import_screener_t)(kbnode_t keyblock, void *arg);
 
 int parse_import_options(char *str,unsigned int *options,int noisy);
+gpg_error_t parse_and_set_import_filter (const char *string);
+gpg_error_t read_key_from_file (ctrl_t ctrl, const char *fname,
+                                kbnode_t *r_keyblock);
 void import_keys (ctrl_t ctrl, char **fnames, int nnames,
 		  import_stats_t stats_hd, unsigned int options);
 int import_keys_stream (ctrl_t ctrl, iobuf_t inp, import_stats_t stats_hd,
@@ -376,6 +381,7 @@ void export_release_stats (export_stats_t stats);
 void export_print_stats (export_stats_t stats);
 
 int parse_export_options(char *str,unsigned int *options,int noisy);
+gpg_error_t parse_and_set_export_filter (const char *string);
 
 int export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options,
                     export_stats_t stats);
@@ -390,8 +396,12 @@ gpg_error_t export_pubkey_buffer (ctrl_t ctrl, const char *keyspec,
 
 gpg_error_t receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
                                        int cleartext,
-                                       char **cache_nonce_addr, const char *hexgrip,
+                                       char **cache_nonce_addr,
+                                       const char *hexgrip,
                                        PKT_public_key *pk);
+
+gpg_error_t write_keyblock_to_output (kbnode_t keyblock,
+                                      int with_armor, unsigned int options);
 
 gpg_error_t export_ssh_key (ctrl_t ctrl, const char *userid);
 
@@ -407,6 +417,7 @@ int gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr);
 int revocation_reason_build_cb( PKT_signature *sig, void *opaque );
 struct revocation_reason_info *
 		ask_revocation_reason( int key_rev, int cert_rev, int hint );
+struct revocation_reason_info * get_default_uid_revocation_reason(void);
 void release_revocation_reason_info( struct revocation_reason_info *reason );
 
 /*-- keylist.c --*/
@@ -415,7 +426,7 @@ void secret_key_list (ctrl_t ctrl, strlist_t list );
 void print_subpackets_colon(PKT_signature *sig);
 void reorder_keyblock (KBNODE keyblock);
 void list_keyblock_direct (ctrl_t ctrl, kbnode_t keyblock, int secret,
-                           int has_secret, int fpr);
+                           int has_secret, int fpr, int no_validity);
 void print_fingerprint (estream_t fp, PKT_public_key *pk, int mode);
 void print_revokers (estream_t fp, PKT_public_key *pk);
 void show_policy_url(PKT_signature *sig,int indent,int mode);

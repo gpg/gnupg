@@ -147,6 +147,64 @@ get_outfp (estream_t *fp)
 }
 
 
+static void
+list_dirs (estream_t fp, char **names)
+{
+  static struct {
+    const char *name;
+    const char *(*fnc)(void);
+    const char *extra;
+    int special;
+  } list[] = {
+    { "sysconfdir",         gnupg_sysconfdir, NULL },
+    { "bindir",             gnupg_bindir,     NULL },
+    { "libexecdir",         gnupg_libexecdir, NULL },
+    { "libdir",             gnupg_libdir,     NULL },
+    { "datadir",            gnupg_datadir,    NULL },
+    { "localedir",          gnupg_localedir,  NULL },
+    { "dirmngr-socket",     dirmngr_user_socket_name, NULL, 1 },
+    { "dirmngr-socket",     dirmngr_sys_socket_name,  NULL, 2 },
+    { "dirmngr-sys-socket", dirmngr_sys_socket_name,  NULL, 1 },
+    { "agent-ssh-socket",   gnupg_socketdir,  GPG_AGENT_SSH_SOCK_NAME },
+    { "agent-socket",       gnupg_socketdir,  GPG_AGENT_SOCK_NAME },
+    { "homedir",            gnupg_homedir,    NULL }
+  };
+  int idx, j;
+  char *tmp;
+  const char *s;
+
+
+  for (idx = 0; idx < DIM (list); idx++)
+    {
+      if (list[idx].special == 1 && dirmngr_user_socket_name ())
+        ;
+      else if (list[idx].special == 2 && !dirmngr_user_socket_name ())
+        ;
+      else if (list[idx].special == 1 || list[idx].special == 2)
+        continue;
+
+      s = list[idx].fnc ();
+      if (list[idx].extra)
+        {
+          tmp = make_filename (s, list[idx].extra, NULL);
+          s = tmp;
+        }
+      else
+        tmp = NULL;
+      if (!names)
+        es_fprintf (fp, "%s:%s\n", list[idx].name, gc_percent_escape (s));
+      else
+        {
+          for (j=0; names[j]; j++)
+            if (!strcmp (names[j], list[idx].name))
+              es_fprintf (fp, "%s\n", s);
+        }
+
+      xfree (tmp);
+    }
+}
+
+
 /* gpgconf main. */
 int
 main (int argc, char **argv)
@@ -357,43 +415,7 @@ main (int argc, char **argv)
     case aListDirs:
       /* Show the system configuration directories for gpgconf.  */
       get_outfp (&outfp);
-      es_fprintf (outfp, "sysconfdir:%s\n",
-                  gc_percent_escape (gnupg_sysconfdir ()));
-      es_fprintf (outfp, "bindir:%s\n",
-                  gc_percent_escape (gnupg_bindir ()));
-      es_fprintf (outfp, "libexecdir:%s\n",
-                  gc_percent_escape (gnupg_libexecdir ()));
-      es_fprintf (outfp, "libdir:%s\n",
-                  gc_percent_escape (gnupg_libdir ()));
-      es_fprintf (outfp, "datadir:%s\n",
-                  gc_percent_escape (gnupg_datadir ()));
-      es_fprintf (outfp, "localedir:%s\n",
-                  gc_percent_escape (gnupg_localedir ()));
-
-      if (dirmngr_user_socket_name ())
-        {
-          es_fprintf (outfp, "dirmngr-socket:%s\n",
-                      gc_percent_escape (dirmngr_user_socket_name ()));
-          es_fprintf (outfp, "dirmngr-sys-socket:%s\n",
-                      gc_percent_escape (dirmngr_sys_socket_name ()));
-        }
-      else
-        {
-          es_fprintf (outfp, "dirmngr-socket:%s\n",
-                      gc_percent_escape (dirmngr_sys_socket_name ()));
-        }
-
-      {
-        char *tmp = make_filename (gnupg_socketdir (),
-                                   GPG_AGENT_SOCK_NAME, NULL);
-        es_fprintf (outfp, "agent-socket:%s\n", gc_percent_escape (tmp));
-        xfree (tmp);
-      }
-      {
-        char *tmp = xstrdup (gnupg_homedir ());
-        es_fprintf (outfp, "homedir:%s\n", gc_percent_escape (tmp));
-        xfree (tmp);
-      }
+      list_dirs (outfp, argc? argv : NULL);
       break;
 
     case aCreateSocketDir:

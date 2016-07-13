@@ -699,6 +699,8 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
                         }
                       if (!set_opt_arg (arg, opts[idx].flags, p))
                         xfree (buffer);
+                      else
+                        gpgrt_annotate_leaked_object (buffer);
                     }
                 }
               break;

@@ -67,6 +67,8 @@ test_strlist_rev (void)
     fail (2);
   if (s->next->next->next)
     fail (2);
+
+  free_strlist (s);
 }
 
 

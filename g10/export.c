@@ -35,6 +35,10 @@
 #include "i18n.h"
 #include "membuf.h"
 #include "host2net.h"
+#include "zb32.h"
+#include "recsel.h"
+#include "mbox-util.h"
+#include "init.h"
 #include "trustdb.h"
 #include "call-agent.h"
 
@@ -56,6 +60,16 @@ struct export_stats_s
 };
 
 
+/* A global variable to store the selector created from
+ * --export-filter keep-uid=EXPR.
+ *
+ * FIXME: We should put this into the CTRL object but that requires a
+ * lot more changes right now.
+ */
+static recsel_expr_t export_keep_uid;
+
+
+
 /* Local prototypes.  */
 static int do_export (ctrl_t ctrl, strlist_t users, int secret,
                       unsigned int options, export_stats_t stats);
@@ -63,8 +77,18 @@ static int do_export_stream (ctrl_t ctrl, iobuf_t out,
                              strlist_t users, int secret,
                              kbnode_t *keyblock_out, unsigned int options,
 			     export_stats_t stats, int *any);
+static gpg_error_t print_pka_or_dane_records
+/**/                 (iobuf_t out, kbnode_t keyblock, PKT_public_key *pk,
+                      const void *data, size_t datalen,
+                      int print_pka, int print_dane);
 
 
+static void
+cleanup_export_globals (void)
+{
+  recsel_release (export_keep_uid);
+  export_keep_uid = NULL;
+}
 
 
 /* Option parser for export options.  See parse_options fro
@@ -84,6 +108,10 @@ parse_export_options(char *str,unsigned int *options,int noisy)
        N_("remove unusable parts from key during export")},
       {"export-minimal",EXPORT_MINIMAL|EXPORT_CLEAN,NULL,
        N_("remove as much as possible from key during export")},
+
+      {"export-pka", EXPORT_PKA_FORMAT, NULL, NULL },
+      {"export-dane", EXPORT_DANE_FORMAT, NULL, NULL },
+
       /* Aliases for backward compatibility */
       {"include-local-sigs",EXPORT_LOCAL_SIGS,NULL,NULL},
       {"include-attributes",EXPORT_ATTRIBUTES,NULL,NULL},
@@ -97,6 +125,38 @@ parse_export_options(char *str,unsigned int *options,int noisy)
     };
 
   return parse_options(str,options,export_opts,noisy);
+}
+
+
+/* Parse and set an export filter from string.  STRING has the format
+ * "NAME=EXPR" with NAME being the name of the filter.  Spaces before
+ * and after NAME are not allowed.  If this function is called several
+ * times all expressions for the same NAME are concatenated.
+ * Supported filter names are:
+ *
+ *  - keep-uid :: If the expression evaluates to true for a certain
+ *                user ID packet, that packet and all it dependencies
+ *                will be exported.  The expression may use these
+ *                variables:
+ *
+ *                - uid  :: The entire user ID.
+ *                - mbox :: The mail box part of the user ID.
+ *                - primary :: Evaluate to true for the primary user ID.
+ */
+gpg_error_t
+parse_and_set_export_filter (const char *string)
+{
+  gpg_error_t err;
+
+  /* Auto register the cleanup function.  */
+  register_mem_cleanup_func (cleanup_export_globals);
+
+  if (!strncmp (string, "keep-uid=", 9))
+    err = recsel_parse_expr (&export_keep_uid, string+9);
+  else
+    err = gpg_error (GPG_ERR_INV_NAME);
+
+  return err;
 }
 
 
@@ -265,7 +325,7 @@ do_export (ctrl_t ctrl, strlist_t users, int secret, unsigned int options,
   if (rc)
     return rc;
 
-  if ( opt.armor )
+  if ( opt.armor && !(options & (EXPORT_PKA_FORMAT|EXPORT_DANE_FORMAT)) )
     {
       afx = new_armor_context ();
       afx->what = secret? 5 : 1;
@@ -1147,8 +1207,567 @@ receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
 }
 
 
+/* Write KEYBLOCK either to stdout or to the file set with the
+ * --output option.  This is a simplified version of do_export_stream
+ * which supports only a few export options.  */
+gpg_error_t
+write_keyblock_to_output (kbnode_t keyblock, int with_armor,
+                          unsigned int options)
+{
+  gpg_error_t err;
+  const char *fname;
+  iobuf_t out;
+  kbnode_t node;
+  armor_filter_context_t *afx = NULL;
+  iobuf_t out_help = NULL;
+  PKT_public_key *pk = NULL;
+
+  fname = opt.outfile? opt.outfile : "-";
+  if (is_secured_filename (fname) )
+    return gpg_error (GPG_ERR_EPERM);
+
+  out = iobuf_create (fname, 0);
+  if (!out)
+    {
+      err = gpg_error_from_syserror ();
+      log_error(_("can't create '%s': %s\n"), fname, gpg_strerror (err));
+      return err;
+    }
+  if (opt.verbose)
+    log_info (_("writing to '%s'\n"), iobuf_get_fname_nonnull (out));
+
+  if ((options & (EXPORT_PKA_FORMAT|EXPORT_DANE_FORMAT)))
+    {
+      with_armor = 0;
+      out_help = iobuf_temp ();
+    }
+
+  if (with_armor)
+    {
+      afx = new_armor_context ();
+      afx->what = 1;
+      push_armor_filter (afx, out);
+    }
+
+  for (node = keyblock; node; node = node->next)
+    {
+      if (is_deleted_kbnode (node) || node->pkt->pkttype == PKT_RING_TRUST)
+        continue;
+      if (!pk && (node->pkt->pkttype == PKT_PUBLIC_KEY
+                  || node->pkt->pkttype == PKT_SECRET_KEY))
+        pk = node->pkt->pkt.public_key;
+
+      err = build_packet (out_help? out_help : out, node->pkt);
+      if (err)
+        {
+          log_error ("build_packet(%d) failed: %s\n",
+                     node->pkt->pkttype, gpg_strerror (err) );
+          goto leave;
+        }
+    }
+  err = 0;
+
+  if (out_help && pk)
+    {
+      const void *data;
+      size_t datalen;
+
+      iobuf_flush_temp (out_help);
+      data = iobuf_get_temp_buffer (out_help);
+      datalen = iobuf_get_temp_length (out_help);
+
+      err = print_pka_or_dane_records (out,
+                                       keyblock, pk, data, datalen,
+                                       (options & EXPORT_PKA_FORMAT),
+                                       (options & EXPORT_DANE_FORMAT));
+    }
+
+ leave:
+  if (err)
+    iobuf_cancel (out);
+  else
+    iobuf_close (out);
+  iobuf_cancel (out_help);
+  release_armor_context (afx);
+  return err;
+}
+
+
+/* Helper for apply_keep_uid_filter.  */
+static const char *
+filter_getval (void *cookie, const char *propname)
+{
+  kbnode_t node = cookie;
+  const char *result;
+
+  if (node->pkt->pkttype == PKT_USER_ID)
+    {
+      if (!strcmp (propname, "uid"))
+        result = node->pkt->pkt.user_id->name;
+      else if (!strcmp (propname, "mbox"))
+        {
+          if (!node->pkt->pkt.user_id->mbox)
+            {
+              node->pkt->pkt.user_id->mbox
+                = mailbox_from_userid (node->pkt->pkt.user_id->name);
+            }
+          return node->pkt->pkt.user_id->mbox;
+        }
+      else if (!strcmp (propname, "primary"))
+        result = node->pkt->pkt.user_id->is_primary? "1":"0";
+      else
+        result = NULL;
+    }
+  else
+    result = NULL;
+
+  return result;
+}
+
+/*
+ * Apply the keep-uid filter to the keyblock.  The deleted nodes are
+ * marked and thus the caller should call commit_kbnode afterwards.
+ * KEYBLOCK must not have any blocks marked as deleted.
+ */
+static void
+apply_keep_uid_filter (kbnode_t keyblock, recsel_expr_t selector)
+{
+  kbnode_t node;
+
+  for (node = keyblock->next; node; node = node->next )
+    {
+      if (node->pkt->pkttype == PKT_USER_ID)
+        {
+          if (!recsel_select (selector, filter_getval, node))
+            {
+              /* log_debug ("keep-uid: deleting '%s'\n", */
+              /*            node->pkt->pkt.user_id->name); */
+              /* The UID packet and all following packets up to the
+               * next UID or a subkey.  */
+              delete_kbnode (node);
+              for (; node->next
+                     && node->next->pkt->pkttype != PKT_USER_ID
+                     && node->next->pkt->pkttype != PKT_PUBLIC_SUBKEY
+                     && node->next->pkt->pkttype != PKT_SECRET_SUBKEY ;
+                   node = node->next)
+                delete_kbnode (node->next);
+	    }
+          /* else */
+          /*   log_debug ("keep-uid: keeping '%s'\n", */
+          /*              node->pkt->pkt.user_id->name); */
+        }
+    }
+}
+
+
+/* Print DANE or PKA records for all user IDs in KEYBLOCK to OUT.  The
+ * data for the record is taken from (DATA,DATELEN).  PK is the public
+ * key packet with the primary key. */
+static gpg_error_t
+print_pka_or_dane_records (iobuf_t out, kbnode_t keyblock, PKT_public_key *pk,
+                           const void *data, size_t datalen,
+                           int print_pka, int print_dane)
+{
+  gpg_error_t err = 0;
+  kbnode_t kbctx, node;
+  PKT_user_id *uid;
+  char *mbox = NULL;
+  char hashbuf[32];
+  char *hash = NULL;
+  char *domain;
+  const char *s;
+  unsigned int len;
+  estream_t fp = NULL;
+  char *hexdata = NULL;
+  char *hexfpr;
+
+  hexfpr = hexfingerprint (pk, NULL, 0);
+  hexdata = bin2hex (data, datalen, NULL);
+  if (!hexdata)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  ascii_strlwr (hexdata);
+  fp = es_fopenmem (0, "rw,samethread");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
+    {
+      if (node->pkt->pkttype != PKT_USER_ID)
+        continue;
+      uid = node->pkt->pkt.user_id;
+
+      if (uid->is_expired || uid->is_revoked)
+        continue;
+
+      xfree (mbox);
+      mbox = mailbox_from_userid (uid->name);
+      if (!mbox)
+        continue;
+
+      domain = strchr (mbox, '@');
+      *domain++ = 0;
+
+      if (print_pka)
+        {
+          es_fprintf (fp, "$ORIGIN _pka.%s.\n; %s\n; ", domain, hexfpr);
+          print_utf8_buffer (fp, uid->name, uid->len);
+          es_putc ('\n', fp);
+          gcry_md_hash_buffer (GCRY_MD_SHA1, hashbuf, mbox, strlen (mbox));
+          xfree (hash);
+          hash = zb32_encode (hashbuf, 8*20);
+          if (!hash)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          len = strlen (hexfpr)/2;
+          es_fprintf (fp, "%s TYPE37 \\# %u 0006 0000 00 %02X %s\n\n",
+                      hash, 6 + len, len, hexfpr);
+        }
+
+      if (print_dane && hexdata)
+        {
+          es_fprintf (fp, "$ORIGIN _openpgpkey.%s.\n; %s\n; ", domain, hexfpr);
+          print_utf8_buffer (fp, uid->name, uid->len);
+          es_putc ('\n', fp);
+          gcry_md_hash_buffer (GCRY_MD_SHA256, hashbuf, mbox, strlen (mbox));
+          xfree (hash);
+          hash = bin2hex (hashbuf, 28, NULL);
+          if (!hash)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          ascii_strlwr (hash);
+          len = strlen (hexdata)/2;
+          es_fprintf (fp, "%s TYPE61 \\# %u (\n", hash, len);
+          for (s = hexdata; ;)
+            {
+              es_fprintf (fp, "\t%.64s\n", s);
+              if (strlen (s) < 64)
+                break;
+              s += 64;
+            }
+          es_fputs ("\t)\n\n", fp);
+        }
+    }
+
+  /* Make sure it is a string and write it.  */
+  es_fputc (0, fp);
+  {
+    void *vp;
+
+    if (es_fclose_snatch (fp, &vp, NULL))
+      {
+        err = gpg_error_from_syserror ();
+        goto leave;
+      }
+    fp = NULL;
+    iobuf_writestr (out, vp);
+    es_free (vp);
+  }
+  err = 0;
+
+ leave:
+  xfree (hash);
+  xfree (mbox);
+  es_fclose (fp);
+  xfree (hexdata);
+  xfree (hexfpr);
+  return err;
+}
+
+
+/* Helper for do_export_stream which writes one keyblock to OUT.  */
+static gpg_error_t
+do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
+                        iobuf_t out, int secret, unsigned int options,
+                        export_stats_t stats, int *any,
+                        KEYDB_SEARCH_DESC *desc, size_t ndesc,
+                        size_t descindex, gcry_cipher_hd_t cipherhd)
+{
+  gpg_error_t err;
+  char *cache_nonce = NULL;
+  subkey_list_t subkey_list = NULL;  /* Track already processed subkeys. */
+  int skip_until_subkey = 0;
+  int cleartext = 0;
+  char *hexgrip = NULL;
+  char *serialno = NULL;
+  PKT_public_key *pk;
+  u32 subkidbuf[2], *subkid;
+  kbnode_t kbctx, node;
+
+  for (kbctx=NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); )
+    {
+      if (skip_until_subkey)
+        {
+          if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+            skip_until_subkey = 0;
+          else
+            continue;
+        }
+
+      /* We used to use comment packets, but not any longer.  In
+       * case we still have comments on a key, strip them here
+       * before we call build_packet(). */
+      if (node->pkt->pkttype == PKT_COMMENT)
+        continue;
+
+      /* Make sure that ring_trust packets never get exported. */
+      if (node->pkt->pkttype == PKT_RING_TRUST)
+        continue;
+
+      /* If exact is set, then we only export what was requested
+       * (plus the primary key, if the user didn't specifically
+       * request it). */
+      if (desc[descindex].exact && node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        {
+          if (!exact_subkey_match_p (desc+descindex, node))
+            {
+              /* Before skipping this subkey, check whether any
+               * other description wants an exact match on a
+               * subkey and include that subkey into the output
+               * too.  Need to add this subkey to a list so that
+               * it won't get processed a second time.
+               *
+               * So the first step here is to check that list and
+               * skip in any case if the key is in that list.
+               *
+               * We need this whole mess because the import
+               * function of GnuPG < 2.1 is not able to merge
+               * secret keys and thus it is useless to output them
+               * as two separate keys and have import merge them.
+               */
+              if (subkey_in_list_p (subkey_list, node))
+                skip_until_subkey = 1; /* Already processed this one. */
+              else
+                {
+                  size_t j;
+
+                  for (j=0; j < ndesc; j++)
+                    if (j != descindex && desc[j].exact
+                        && exact_subkey_match_p (desc+j, node))
+                      break;
+                  if (!(j < ndesc))
+                    skip_until_subkey = 1; /* No other one matching. */
+                }
+            }
+
+          if (skip_until_subkey)
+            continue;
+
+          /* Mark this one as processed. */
+          {
+            subkey_list_t tmp = new_subkey_list_item (node);
+            tmp->next = subkey_list;
+            subkey_list = tmp;
+          }
+        }
+
+      if (node->pkt->pkttype == PKT_SIGNATURE)
+        {
+          /* Do not export packets which are marked as not
+           * exportable.  */
+          if (!(options & EXPORT_LOCAL_SIGS)
+              && !node->pkt->pkt.signature->flags.exportable)
+            continue; /* not exportable */
+
+          /* Do not export packets with a "sensitive" revocation key
+           * unless the user wants us to.  Note that we do export
+           * these when issuing the actual revocation (see revoke.c). */
+          if (!(options & EXPORT_SENSITIVE_REVKEYS)
+              && node->pkt->pkt.signature->revkey)
+            {
+              int i;
+
+              for (i = 0; i < node->pkt->pkt.signature->numrevkeys; i++)
+                if ((node->pkt->pkt.signature->revkey[i].class & 0x40))
+                  break;
+              if (i < node->pkt->pkt.signature->numrevkeys)
+                continue;
+            }
+        }
+
+      /* Don't export attribs? */
+      if (!(options & EXPORT_ATTRIBUTES)
+          && node->pkt->pkttype == PKT_USER_ID
+          && node->pkt->pkt.user_id->attrib_data)
+        {
+          /* Skip until we get to something that is not an attrib or a
+           * signature on an attrib.  */
+          while (kbctx->next && kbctx->next->pkt->pkttype == PKT_SIGNATURE)
+            kbctx = kbctx->next;
+
+          continue;
+        }
+
+      if (secret && (node->pkt->pkttype == PKT_PUBLIC_KEY
+                     || node->pkt->pkttype == PKT_PUBLIC_SUBKEY))
+        {
+          pk = node->pkt->pkt.public_key;
+          if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+            subkid = NULL;
+          else
+            {
+              keyid_from_pk (pk, subkidbuf);
+              subkid = subkidbuf;
+            }
+
+          if (pk->seckey_info)
+            {
+              log_error ("key %s: oops: seckey_info already set"
+                         " - skipped\n", keystr_with_sub (keyid, subkid));
+              skip_until_subkey = 1;
+              continue;
+            }
+
+          xfree (hexgrip);
+          err = hexkeygrip_from_pk (pk, &hexgrip);
+          if (err)
+            {
+              log_error ("key %s: error computing keygrip: %s"
+                         " - skipped\n", keystr_with_sub (keyid, subkid),
+                         gpg_strerror (err));
+              skip_until_subkey = 1;
+              err = 0;
+              continue;
+            }
+
+          xfree (serialno);
+          serialno = NULL;
+          if (secret == 2 && node->pkt->pkttype == PKT_PUBLIC_KEY)
+            {
+              /* We are asked not to export the secret parts of the
+               * primary key.  Make up an error code to create the
+               * stub.  */
+              err = GPG_ERR_NOT_FOUND;
+            }
+          else
+            err = agent_get_keyinfo (ctrl, hexgrip, &serialno, &cleartext);
+
+          if ((!err && serialno)
+              && secret == 2 && node->pkt->pkttype == PKT_PUBLIC_KEY)
+            {
+              /* It does not make sense to export a key with its
+               * primary key on card using a non-key stub.  Thus we
+               * skip those keys when used with --export-secret-subkeys. */
+              log_info (_("key %s: key material on-card - skipped\n"),
+                        keystr_with_sub (keyid, subkid));
+              skip_until_subkey = 1;
+            }
+          else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND
+                   || (!err && serialno))
+            {
+              /* Create a key stub.  */
+              struct seckey_info *ski;
+              const char *s;
+
+              pk->seckey_info = ski = xtrycalloc (1, sizeof *ski);
+              if (!ski)
+                {
+                  err = gpg_error_from_syserror ();
+                  goto leave;
+                }
+
+              ski->is_protected = 1;
+              if (err)
+                ski->s2k.mode = 1001; /* GNU dummy (no secret key).  */
+              else
+                {
+                  ski->s2k.mode = 1002; /* GNU-divert-to-card.  */
+                  for (s=serialno; sizeof (ski->ivlen) && *s && s[1];
+                       ski->ivlen++, s += 2)
+                    ski->iv[ski->ivlen] = xtoi_2 (s);
+                }
+
+              err = build_packet (out, node->pkt);
+              if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
+                {
+                  stats->exported++;
+                  print_status_exported (node->pkt->pkt.public_key);
+                }
+            }
+          else if (!err)
+            {
+              err = receive_seckey_from_agent (ctrl, cipherhd,
+                                               cleartext, &cache_nonce,
+                                               hexgrip, pk);
+              if (err)
+                {
+                  if (gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
+                    goto leave;
+                  skip_until_subkey = 1;
+                  err = 0;
+                }
+              else
+                {
+                  err = build_packet (out, node->pkt);
+                  if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+                    {
+                      stats->exported++;
+                      print_status_exported (node->pkt->pkt.public_key);
+                    }
+                }
+            }
+          else
+            {
+              log_error ("key %s: error getting keyinfo from agent: %s"
+                         " - skipped\n", keystr_with_sub (keyid, subkid),
+                             gpg_strerror (err));
+              skip_until_subkey = 1;
+              err = 0;
+            }
+
+          xfree (pk->seckey_info);
+          pk->seckey_info = NULL;
+          {
+            int i;
+            for (i = pubkey_get_npkey (pk->pubkey_algo);
+                 i < pubkey_get_nskey (pk->pubkey_algo); i++)
+              {
+                gcry_mpi_release (pk->pkey[i]);
+                pk->pkey[i] = NULL;
+              }
+          }
+        }
+      else /* Not secret or common packets.  */
+        {
+          err = build_packet (out, node->pkt);
+          if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
+            {
+              stats->exported++;
+              print_status_exported (node->pkt->pkt.public_key);
+            }
+        }
+
+      if (err)
+        {
+          log_error ("build_packet(%d) failed: %s\n",
+                     node->pkt->pkttype, gpg_strerror (err));
+          goto leave;
+        }
+
+      if (!skip_until_subkey)
+        *any = 1;
+    }
+
+ leave:
+  release_subkey_list (subkey_list);
+  xfree (serialno);
+  xfree (hexgrip);
+  xfree (cache_nonce);
+  return err;
+}
+
+
 /* Export the keys identified by the list of strings in USERS to the
-   stream OUT.  If Secret is false public keys will be exported.  With
+   stream OUT.  If SECRET is false public keys will be exported.  With
    secret true secret keys will be exported; in this case 1 means the
    entire secret keyblock and 2 only the subkeys.  OPTIONS are the
    export options to apply.  If KEYBLOCK_OUT is not NULL, AND the exit
@@ -1163,17 +1782,15 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
 {
   gpg_error_t err = 0;
   PACKET pkt;
-  KBNODE keyblock = NULL;
-  KBNODE kbctx, node;
+  kbnode_t keyblock = NULL;
+  kbnode_t node;
   size_t ndesc, descindex;
   KEYDB_SEARCH_DESC *desc = NULL;
-  subkey_list_t subkey_list = NULL;  /* Track already processed subkeys. */
   KEYDB_HANDLE kdbhd;
   strlist_t sl;
   gcry_cipher_hd_t cipherhd = NULL;
-  char *cache_nonce = NULL;
   struct export_stats_s dummystats;
-  int cleartext = 0;
+  iobuf_t out_help = NULL;
 
   if (!stats)
     stats = &dummystats;
@@ -1183,10 +1800,14 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   if (!kdbhd)
     return gpg_error_from_syserror ();
 
-  /* For the DANE format override the options.  */
-  if ((options & EXPORT_DANE_FORMAT))
-    options = (EXPORT_DANE_FORMAT | EXPORT_MINIMAL | EXPORT_CLEAN);
-
+  /* For the PKA and DANE format open a helper iobuf and for DANE
+   * enforce some options.  */
+  if ((options & (EXPORT_PKA_FORMAT | EXPORT_DANE_FORMAT)))
+    {
+      out_help = iobuf_temp ();
+      if ((options & EXPORT_DANE_FORMAT))
+        options |= EXPORT_MINIMAL | EXPORT_CLEAN;
+    }
 
   if (!users)
     {
@@ -1258,7 +1879,6 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
 
   for (;;)
     {
-      int skip_until_subkey = 0;
       u32 keyid[2];
       PKT_public_key *pk;
 
@@ -1326,278 +1946,60 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
       if ((options & EXPORT_CLEAN))
         clean_key (keyblock, opt.verbose, (options&EXPORT_MINIMAL), NULL, NULL);
 
-      /* And write it. */
-      xfree (cache_nonce);
-      cache_nonce = NULL;
-      for (kbctx=NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); )
+      if (export_keep_uid)
         {
-          if (skip_until_subkey)
-            {
-              if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-                skip_until_subkey = 0;
-              else
-                continue;
-            }
+          commit_kbnode (&keyblock);
+          apply_keep_uid_filter (keyblock, export_keep_uid);
+          commit_kbnode (&keyblock);
+        }
 
-          /* We used to use comment packets, but not any longer.  In
-             case we still have comments on a key, strip them here
-             before we call build_packet(). */
-          if (node->pkt->pkttype == PKT_COMMENT)
-            continue;
-
-          /* Make sure that ring_trust packets never get exported. */
-          if (node->pkt->pkttype == PKT_RING_TRUST)
-            continue;
-
-          /* If exact is set, then we only export what was requested
-             (plus the primary key, if the user didn't specifically
-             request it). */
-          if (desc[descindex].exact
-              && node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-            {
-              if (!exact_subkey_match_p (desc+descindex, node))
-                {
-                  /* Before skipping this subkey, check whether any
-                     other description wants an exact match on a
-                     subkey and include that subkey into the output
-                     too.  Need to add this subkey to a list so that
-                     it won't get processed a second time.
-
-                     So the first step here is to check that list and
-                     skip in any case if the key is in that list.
-
-                     We need this whole mess because the import
-                     function of GnuPG < 2.1 is not able to merge
-                     secret keys and thus it is useless to output them
-                     as two separate keys and have import merge them.  */
-                  if (subkey_in_list_p (subkey_list, node))
-                    skip_until_subkey = 1; /* Already processed this one. */
-                  else
-                    {
-                      size_t j;
-
-                      for (j=0; j < ndesc; j++)
-                        if (j != descindex && desc[j].exact
-                            && exact_subkey_match_p (desc+j, node))
-                          break;
-                      if (!(j < ndesc))
-                        skip_until_subkey = 1; /* No other one matching. */
-                    }
-                }
-
-              if(skip_until_subkey)
-                continue;
-
-              /* Mark this one as processed. */
-              {
-                subkey_list_t tmp = new_subkey_list_item (node);
-                tmp->next = subkey_list;
-                subkey_list = tmp;
-              }
-            }
-
-          if (node->pkt->pkttype == PKT_SIGNATURE)
-            {
-              /* Do not export packets which are marked as not
-                 exportable.  */
-              if (!(options&EXPORT_LOCAL_SIGS)
-                  && !node->pkt->pkt.signature->flags.exportable)
-                continue; /* not exportable */
-
-              /* Do not export packets with a "sensitive" revocation
-                 key unless the user wants us to.  Note that we do
-                 export these when issuing the actual revocation
-                 (see revoke.c). */
-              if (!(options&EXPORT_SENSITIVE_REVKEYS)
-                  && node->pkt->pkt.signature->revkey)
-                {
-                  int i;
-
-                  for (i=0;i<node->pkt->pkt.signature->numrevkeys;i++)
-                    if ( (node->pkt->pkt.signature->revkey[i].class & 0x40))
-                      break;
-
-                  if (i < node->pkt->pkt.signature->numrevkeys)
-                    continue;
-                }
-            }
-
-          /* Don't export attribs? */
-          if (!(options&EXPORT_ATTRIBUTES)
-              && node->pkt->pkttype == PKT_USER_ID
-              && node->pkt->pkt.user_id->attrib_data )
-            {
-	      /* Skip until we get to something that is not an attrib
-		 or a signature on an attrib */
-	      while (kbctx->next && kbctx->next->pkt->pkttype==PKT_SIGNATURE)
-                kbctx = kbctx->next;
-
-	      continue;
-	    }
-
-          if (secret && (node->pkt->pkttype == PKT_PUBLIC_KEY
-                         || node->pkt->pkttype == PKT_PUBLIC_SUBKEY))
-            {
-              u32 subkidbuf[2], *subkid;
-              char *hexgrip, *serialno;
-
-              pk = node->pkt->pkt.public_key;
-              if (node->pkt->pkttype == PKT_PUBLIC_KEY)
-                subkid = NULL;
-              else
-                {
-                  keyid_from_pk (pk, subkidbuf);
-                  subkid = subkidbuf;
-                }
-
-              if (pk->seckey_info)
-                {
-                  log_error ("key %s: oops: seckey_info already set"
-                             " - skipped\n", keystr_with_sub (keyid, subkid));
-                  skip_until_subkey = 1;
-                  continue;
-                }
-
-              err = hexkeygrip_from_pk (pk, &hexgrip);
-              if (err)
-                {
-                  log_error ("key %s: error computing keygrip: %s"
-                             " - skipped\n", keystr_with_sub (keyid, subkid),
-                             gpg_strerror (err));
-                  skip_until_subkey = 1;
-                  err = 0;
-                  continue;
-                }
-
-              if (secret == 2 && node->pkt->pkttype == PKT_PUBLIC_KEY)
-                {
-                  /* We are asked not to export the secret parts of
-                     the primary key.  Make up an error code to create
-                     the stub.  */
-                  err = GPG_ERR_NOT_FOUND;
-                  serialno = NULL;
-                }
-              else
-                err = agent_get_keyinfo (ctrl, hexgrip, &serialno, &cleartext);
-
-              if ((!err && serialno)
-                  && secret == 2 && node->pkt->pkttype == PKT_PUBLIC_KEY)
-                {
-                  /* It does not make sense to export a key with its
-                     primary key on card using a non-key stub.  Thus
-                     we skip those keys when used with
-                     --export-secret-subkeys. */
-                  log_info (_("key %s: key material on-card - skipped\n"),
-                            keystr_with_sub (keyid, subkid));
-                  skip_until_subkey = 1;
-                }
-              else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND
-                       || (!err && serialno))
-                {
-                  /* Create a key stub.  */
-                  struct seckey_info *ski;
-                  const char *s;
-
-                  pk->seckey_info = ski = xtrycalloc (1, sizeof *ski);
-                  if (!ski)
-                    {
-                      err = gpg_error_from_syserror ();
-                      xfree (hexgrip);
-                      goto leave;
-                    }
-
-                  ski->is_protected = 1;
-                  if (err)
-                    ski->s2k.mode = 1001; /* GNU dummy (no secret key).  */
-                  else
-                    {
-                      ski->s2k.mode = 1002; /* GNU-divert-to-card.  */
-                      for (s=serialno; sizeof (ski->ivlen) && *s && s[1];
-                           ski->ivlen++, s += 2)
-                        ski->iv[ski->ivlen] = xtoi_2 (s);
-                    }
-
-                  err = build_packet (out, node->pkt);
-                  if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
-                    {
-                      stats->exported++;
-                      print_status_exported (node->pkt->pkt.public_key);
-                    }
-                }
-              else if (!err)
-                {
-                  err = receive_seckey_from_agent (ctrl, cipherhd,
-                                                   cleartext, &cache_nonce,
-                                                   hexgrip, pk);
-                  if (err)
-                    {
-                      if (gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
-                        goto leave;
-                      skip_until_subkey = 1;
-                      err = 0;
-                    }
-                  else
-                    {
-                      err = build_packet (out, node->pkt);
-                      if (node->pkt->pkttype == PKT_PUBLIC_KEY)
-                        {
-                          stats->exported++;
-                          print_status_exported (node->pkt->pkt.public_key);
-                        }
-                    }
-                }
-              else
-                {
-                  log_error ("key %s: error getting keyinfo from agent: %s"
-                             " - skipped\n", keystr_with_sub (keyid, subkid),
-                             gpg_strerror (err));
-                  skip_until_subkey = 1;
-                  err = 0;
-                }
-
-              xfree (pk->seckey_info);
-              pk->seckey_info = NULL;
-              xfree (hexgrip);
-            }
-          else
-            {
-              err = build_packet (out, node->pkt);
-              if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
-                {
-                  stats->exported++;
-                  print_status_exported (node->pkt->pkt.public_key);
-                }
-            }
-
-
-          if (err)
-            {
-              log_error ("build_packet(%d) failed: %s\n",
-                         node->pkt->pkttype, gpg_strerror (err));
-              goto leave;
-	    }
-
-          if (!skip_until_subkey)
-            *any = 1;
-	}
+      /* And write it. */
+      err = do_export_one_keyblock (ctrl, keyblock, keyid,
+                                    out_help? out_help : out,
+                                    secret, options, stats, any,
+                                    desc, ndesc, descindex, cipherhd);
+      if (err)
+        break;
 
       if (keyblock_out)
         {
           *keyblock_out = keyblock;
           break;
         }
+
+      if (out_help)
+        {
+          /* We want to write PKA or DANE records.  OUT_HELP has the
+           * keyblock and we print a record for each uid to OUT. */
+          const void *data;
+          size_t datalen;
+
+          iobuf_flush_temp (out_help);
+          data = iobuf_get_temp_buffer (out_help);
+          datalen = iobuf_get_temp_length (out_help);
+
+          err = print_pka_or_dane_records (out,
+                                           keyblock, pk, data, datalen,
+                                           (options & EXPORT_PKA_FORMAT),
+                                           (options & EXPORT_DANE_FORMAT));
+          if (err)
+            goto leave;
+
+          iobuf_close (out_help);
+          out_help = iobuf_temp ();
+        }
+
     }
   if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     err = 0;
 
  leave:
+  iobuf_cancel (out_help);
   gcry_cipher_close (cipherhd);
-  release_subkey_list (subkey_list);
   xfree(desc);
   keydb_release (kdbhd);
   if (err || !keyblock_out)
     release_kbnode( keyblock );
-  xfree (cache_nonce);
   if( !*any )
     log_info(_("WARNING: nothing exported\n"));
   return err;

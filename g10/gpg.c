@@ -81,6 +81,8 @@ enum cmd_and_opt_values
     aSym	  = 'c',
     aDecrypt	  = 'd',
     aEncr	  = 'e',
+    oRecipientFile       = 'f',
+    oHiddenRecipientFile = 'F',
     oInteractive  = 'i',
     aListKeys	  = 'k',
     oDryRun	  = 'n',
@@ -118,6 +120,7 @@ enum cmd_and_opt_values
     aQuickLSignKey,
     aQuickAddUid,
     aQuickAddKey,
+    aQuickRevUid,
     aListConfig,
     aListGcryptConfig,
     aGPGConfList,
@@ -166,6 +169,7 @@ enum cmd_and_opt_values
     aServer,
     aTOFUPolicy,
 
+    oMimemode,
     oTextmode,
     oNoTextmode,
     oExpert,
@@ -216,6 +220,7 @@ enum cmd_and_opt_values
     oGnuPG,
     oRFC2440,
     oRFC4880,
+    oRFC4880bis,
     oOpenPGP,
     oPGP6,
     oPGP7,
@@ -246,6 +251,7 @@ enum cmd_and_opt_values
     oNoMDCWarn,
     oNoArmor,
     oNoDefKeyring,
+    oNoKeyring,
     oNoGreeting,
     oNoTTY,
     oNoOptions,
@@ -298,7 +304,9 @@ enum cmd_and_opt_values
     oKeyServer,
     oKeyServerOptions,
     oImportOptions,
+    oImportFilter,
     oExportOptions,
+    oExportFilter,
     oListOptions,
     oVerifyOptions,
     oTempDir,
@@ -430,6 +438,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aQuickAddUid,  "quick-adduid",
               N_("quickly add a new user-id")),
   ARGPARSE_c (aQuickAddKey,  "quick-addkey", "@"),
+  ARGPARSE_c (aQuickRevUid,  "quick-revuid",
+              N_("quickly revoke a user-id")),
   ARGPARSE_c (aFullKeygen,  "full-gen-key" ,
               N_("full featured key pair generation")),
   ARGPARSE_c (aGenRevoke, "gen-revoke",N_("generate a revocation certificate")),
@@ -499,6 +509,8 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_s (oRecipient, "recipient", N_("|USER-ID|encrypt for USER-ID")),
   ARGPARSE_s_s (oHiddenRecipient, "hidden-recipient", "@"),
+  ARGPARSE_s_s (oRecipientFile, "recipient-file", "@"),
+  ARGPARSE_s_s (oHiddenRecipientFile, "hidden-recipient-file", "@"),
   ARGPARSE_s_s (oRecipient, "remote-user", "@"),  /* (old option name) */
   ARGPARSE_s_s (oDefRecipient, "default-recipient", "@"),
   ARGPARSE_s_n (oDefRecipientSelf,  "default-recipient-self", "@"),
@@ -521,7 +533,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oBZ2CompressLevel, "bzip2-compress-level", "@"),
   ARGPARSE_s_n (oBZ2DecompressLowmem, "bzip2-decompress-lowmem", "@"),
 
-  ARGPARSE_s_n (oTextmodeShort, NULL, "@"),
+  ARGPARSE_s_n (oMimemode, "mimemode", "@"),
+  ARGPARSE_s_n (oTextmode,      "textmode", N_("use canonical text mode")),
   ARGPARSE_s_n (oTextmode,      "textmode", N_("use canonical text mode")),
   ARGPARSE_s_n (oNoTextmode, "no-textmode", "@"),
 
@@ -568,7 +581,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oKeyServer, "keyserver", "@"),
   ARGPARSE_s_s (oKeyServerOptions, "keyserver-options", "@"),
   ARGPARSE_s_s (oImportOptions, "import-options", "@"),
+  ARGPARSE_s_s (oImportFilter,  "import-filter", "@"),
   ARGPARSE_s_s (oExportOptions, "export-options", "@"),
+  ARGPARSE_s_s (oExportFilter,  "export-filter", "@"),
   ARGPARSE_s_s (oListOptions,   "list-options", "@"),
   ARGPARSE_s_s (oVerifyOptions, "verify-options", "@"),
 
@@ -599,6 +614,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oGnuPG, "no-pgp8", "@"),
   ARGPARSE_s_n (oRFC2440, "rfc2440", "@"),
   ARGPARSE_s_n (oRFC4880, "rfc4880", "@"),
+  ARGPARSE_s_n (oRFC4880bis, "rfc4880bis", "@"),
   ARGPARSE_s_n (oOpenPGP, "openpgp", N_("use strict OpenPGP behavior")),
   ARGPARSE_s_n (oPGP6, "pgp6", "@"),
   ARGPARSE_s_n (oPGP7, "pgp7", "@"),
@@ -672,6 +688,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoArmor, "no-armor", "@"),
   ARGPARSE_s_n (oNoArmor, "no-armour", "@"),
   ARGPARSE_s_n (oNoDefKeyring, "no-default-keyring", "@"),
+  ARGPARSE_s_n (oNoKeyring, "no-keyring", "@"),
   ARGPARSE_s_n (oNoGreeting, "no-greeting", "@"),
   ARGPARSE_s_n (oNoOptions, "no-options", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
@@ -2028,6 +2045,7 @@ parse_tofu_db_format (const char *db_format)
     }
 }
 
+
 /* This function called to initialized a new control object.  It is
    assumed that this object has been zeroed out before calling this
    function. */
@@ -2432,6 +2450,7 @@ main (int argc, char **argv)
 	  case aQuickKeygen:
 	  case aQuickAddUid:
 	  case aQuickAddKey:
+	  case aQuickRevUid:
 	  case aExportOwnerTrust:
 	  case aImportOwnerTrust:
           case aRebuildKeydbCaches:
@@ -2598,7 +2617,15 @@ main (int argc, char **argv)
 	    }
 	    break;
 	  case oNoArmor: opt.no_armor=1; opt.armor=0; break;
-	  case oNoDefKeyring: default_keyring = 0; break;
+
+	  case oNoDefKeyring:
+            if (default_keyring > 0)
+              default_keyring = 0;
+            break;
+	  case oNoKeyring:
+            default_keyring = -1;
+            break;
+
 	  case oNoGreeting: nogreeting = 1; break;
 	  case oNoVerbose:
             opt.verbose = 0;
@@ -2686,6 +2713,9 @@ main (int argc, char **argv)
             /* Dummy so that gpg 1.4 conf files can work. Should
                eventually be removed.  */
 	    break;
+          case oRFC4880bis:
+            opt.flags.rfc4880bis = 1;
+            /* fall thru.  */
 	  case oOpenPGP:
 	  case oRFC4880:
 	    /* This is effectively the same as RFC2440, but with
@@ -2814,46 +2844,56 @@ main (int argc, char **argv)
             else
               opt.s2k_count = 0;  /* Auto-calibrate when needed.  */
 	    break;
-	  case oNoEncryptTo: opt.no_encrypt_to = 1; break;
-	  case oEncryptTo: /* store the recipient in the second list */
-	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
-	    sl->flags = ((pargs.r_opt << PK_LIST_SHIFT) | PK_LIST_ENCRYPT_TO);
-            if (configfp)
-              sl->flags |= PK_LIST_CONFIG;
-	    break;
-	  case oHiddenEncryptTo: /* store the recipient in the second list */
-	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
-	    sl->flags = ((pargs.r_opt << PK_LIST_SHIFT)
-                         | PK_LIST_ENCRYPT_TO|PK_LIST_HIDDEN);
-            if (configfp)
-              sl->flags |= PK_LIST_CONFIG;
-	    break;
-          case oEncryptToDefaultKey:
-            opt.encrypt_to_default_key = configfp ? 2 : 1;
-            break;
-	  case oRecipient: /* store the recipient */
+
+	  case oRecipient:
+	  case oHiddenRecipient:
+	  case oRecipientFile:
+	  case oHiddenRecipientFile:
+            /* Store the recipient.  Note that we also store the
+             * option as private data in the flags.  This is achieved
+             * by shifting the option value to the left so to keep
+             * enough space for the flags.  */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
 	    sl->flags = (pargs.r_opt << PK_LIST_SHIFT);
             if (configfp)
               sl->flags |= PK_LIST_CONFIG;
+            if (pargs.r_opt == oHiddenRecipient
+                || pargs.r_opt == oHiddenRecipientFile)
+              sl->flags |= PK_LIST_HIDDEN;
+            if (pargs.r_opt == oRecipientFile
+                || pargs.r_opt == oHiddenRecipientFile)
+              sl->flags |= PK_LIST_FROM_FILE;
             any_explicit_recipient = 1;
 	    break;
-	  case oHiddenRecipient: /* store the recipient with a flag */
+
+	  case oEncryptTo:
+	  case oHiddenEncryptTo:
+            /* Store an additional recipient.  */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
-	    sl->flags = ((pargs.r_opt << PK_LIST_SHIFT) | PK_LIST_HIDDEN);
+	    sl->flags = ((pargs.r_opt << PK_LIST_SHIFT) | PK_LIST_ENCRYPT_TO);
             if (configfp)
               sl->flags |= PK_LIST_CONFIG;
-            any_explicit_recipient = 1;
+            if (pargs.r_opt == oHiddenEncryptTo)
+              sl->flags |= PK_LIST_HIDDEN;
 	    break;
+
+	  case oNoEncryptTo:
+            opt.no_encrypt_to = 1;
+            break;
+          case oEncryptToDefaultKey:
+            opt.encrypt_to_default_key = configfp ? 2 : 1;
+            break;
 
 	  case oTrySecretKey:
 	    add_to_strlist2 (&opt.secret_keys_to_try,
                              pargs.r.ret_str, utf8_strings);
 	    break;
 
+          case oMimemode: opt.mimemode = opt.textmode = 1; break;
 	  case oTextmodeShort: opt.textmode = 2; break;
 	  case oTextmode: opt.textmode=1;  break;
-	  case oNoTextmode: opt.textmode=0;  break;
+	  case oNoTextmode: opt.textmode=opt.mimemode=0;  break;
+
 	  case oExpert: opt.expert = 1; break;
 	  case oNoExpert: opt.expert = 0; break;
 	  case oDefSigExpire:
@@ -3022,6 +3062,11 @@ main (int argc, char **argv)
 		  log_error(_("invalid import options\n"));
 	      }
 	    break;
+	  case oImportFilter:
+	    rc = parse_and_set_import_filter (pargs.r.ret_str);
+	    if (rc)
+              log_error (_("invalid filter option: %s\n"), gpg_strerror (rc));
+	    break;
 	  case oExportOptions:
 	    if(!parse_export_options(pargs.r.ret_str,&opt.export_options,1))
 	      {
@@ -3031,6 +3076,11 @@ main (int argc, char **argv)
 		else
 		  log_error(_("invalid export options\n"));
 	      }
+	    break;
+	  case oExportFilter:
+	    rc = parse_and_set_export_filter (pargs.r.ret_str);
+	    if (rc)
+              log_error (_("invalid filter option: %s\n"), gpg_strerror (rc));
 	    break;
 	  case oListOptions:
 	    if(!parse_list_options(pargs.r.ret_str))
@@ -3399,6 +3449,13 @@ main (int argc, char **argv)
     if( may_coredump && !opt.quiet )
 	log_info(_("WARNING: program may create a core file!\n"));
 
+    if (opt.flags.rfc4880bis)
+	log_info ("WARNING: using experimental features from RFC4880bis!\n");
+    else
+      {
+        opt.mimemode = 0; /* This will use text mode instead.  */
+      }
+
     if (eyes_only) {
       if (opt.set_filename)
 	  log_info(_("WARNING: %s overrides %s\n"),
@@ -3676,14 +3733,15 @@ main (int argc, char **argv)
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
 
-    /* Add the keyrings, but not for some special commands.
-       We always need to add the keyrings if we are running under
-       SELinux, this is so that the rings are added to the list of
-       secured files. */
-    if( ALWAYS_ADD_KEYRINGS
-        || (cmd != aDeArmor && cmd != aEnArmor && cmd != aGPGConfTest) )
+    /* Add the keyrings, but not for some special commands.  We always
+     * need to add the keyrings if we are running under SELinux, this
+     * is so that the rings are added to the list of secured files.
+     * We do not add any keyring if --no-keyring has been used.  */
+    if (default_keyring >= 0
+        && (ALWAYS_ADD_KEYRINGS
+            || (cmd != aDeArmor && cmd != aEnArmor && cmd != aGPGConfTest)))
       {
-	if (!nrings || default_keyring)  /* Add default ring. */
+	if (!nrings || default_keyring > 0)  /* Add default ring. */
 	    keydb_add_resource ("pubring" EXTSEP_S GPGEXT_GPG,
                                 KEYDB_RESOURCE_FLAG_DEFAULT);
 	for (sl = nrings; sl; sl = sl->next )
@@ -3777,6 +3835,7 @@ main (int argc, char **argv)
       case aQuickKeygen:
       case aQuickAddUid:
       case aQuickAddKey:
+      case aQuickRevUid:
       case aFullKeygen:
       case aKeygen:
       case aImport:
@@ -4193,6 +4252,18 @@ main (int argc, char **argv)
                 }
             }
           keyedit_quick_addkey (ctrl, x_fpr, x_algo, x_usage, x_expire);
+        }
+	break;
+
+      case aQuickRevUid:
+        {
+          const char *uid, *uidtorev;
+
+          if (argc != 2)
+            wrong_args ("--quick-revuid USER-ID USER-ID-TO-REVOKE");
+          uid = *argv++; argc--;
+          uidtorev = *argv++; argc--;
+          keyedit_quick_revuid (ctrl, uid, uidtorev);
         }
 	break;
 
@@ -4648,7 +4719,6 @@ main (int argc, char **argv)
 	break;
 
       case aListPackets:
-	opt.list_packets=2;
       default:
 	if( argc > 1 )
 	    wrong_args(_("[filename]"));
@@ -4677,8 +4747,8 @@ main (int argc, char **argv)
 		}
 	    }
 	    if( cmd == aListPackets ) {
-		set_packet_list_mode(1);
 		opt.list_packets=1;
+		set_packet_list_mode(1);
 	    }
 	    rc = proc_packets (ctrl, NULL, a );
 	    if( rc )

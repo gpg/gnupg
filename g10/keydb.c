@@ -937,6 +937,7 @@ keydb_release (KEYDB_HANDLE hd)
         }
     }
 
+  keyblock_cache_clear (hd);
   xfree (hd);
 }
 

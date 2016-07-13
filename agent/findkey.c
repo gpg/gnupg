@@ -35,7 +35,7 @@
 #include "agent.h"
 #include "i18n.h"
 #include "../common/ssh-utils.h"
-#include "../common/private-keys.h"
+#include "../common/name-value.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -57,12 +57,12 @@ write_extended_private_key (char *fname, estream_t fp,
                             const void *buf, size_t len)
 {
   gpg_error_t err;
-  pkc_t pk = NULL;
+  nvc_t pk = NULL;
   gcry_sexp_t key = NULL;
   int remove = 0;
   int line;
 
-  err = pkc_parse (&pk, &line, fp);
+  err = nvc_parse_private_key (&pk, &line, fp);
   if (err)
     {
       log_error ("error parsing '%s' line %d: %s\n",
@@ -74,7 +74,7 @@ write_extended_private_key (char *fname, estream_t fp,
   if (err)
     goto leave;
 
-  err = pkc_set_private_key (pk, key);
+  err = nvc_set_private_key (pk, key);
   if (err)
     goto leave;
 
@@ -82,7 +82,7 @@ write_extended_private_key (char *fname, estream_t fp,
   if (err)
     goto leave;
 
-  err = pkc_write (pk, fp);
+  err = nvc_write (pk, fp);
   if (err)
     {
       log_error ("error writing '%s': %s\n", fname, gpg_strerror (err));
@@ -117,7 +117,7 @@ write_extended_private_key (char *fname, estream_t fp,
     gnupg_remove (fname);
   xfree (fname);
   gcry_sexp_release (key);
-  pkc_release (pk);
+  nvc_release (pk);
   return err;
 }
 
@@ -687,10 +687,10 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   if (first != '(')
     {
       /* Key is in extended format.  */
-      pkc_t pk;
+      nvc_t pk;
       int line;
 
-      rc = pkc_parse (&pk, &line, fp);
+      rc = nvc_parse_private_key (&pk, &line, fp);
       es_fclose (fp);
 
       if (rc)
@@ -698,8 +698,8 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
                    fname, line, gpg_strerror (rc));
       else
         {
-          rc = pkc_get_private_key (pk, result);
-          pkc_release (pk);
+          rc = nvc_get_private_key (pk, result);
+          nvc_release (pk);
           if (rc)
             log_error ("error getting private key from '%s': %s\n",
                        fname, gpg_strerror (rc));

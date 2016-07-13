@@ -1879,6 +1879,16 @@ main (int argc, char **argv)
   if (opt.verbose)
     log_info ("closing connection to agent\n");
 
+  /* XXX: We would like to release the context here, but libassuan
+     nicely says good bye to the server, which results in a SIGPIPE if
+     the server died.  Unfortunately, libassuan does not ignore
+     SIGPIPE when used with UNIX sockets, hence we simply leak the
+     context here.  */
+  if (0)
+    assuan_release (ctx);
+  else
+    gpgrt_annotate_leaked_object (ctx);
+  xfree (line);
   return 0;
 }
 

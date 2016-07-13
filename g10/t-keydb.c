@@ -27,7 +27,7 @@ do_test (int argc, char *argv[])
   int rc;
   KEYDB_HANDLE hd1, hd2;
   KEYDB_SEARCH_DESC desc1, desc2;
-  KBNODE kb1, kb2;
+  KBNODE kb1, kb2, p;
   char *uid1;
   char *uid2;
   char *fname;
@@ -75,17 +75,19 @@ do_test (int argc, char *argv[])
   if (rc)
     ABORT ("Failed to get keyblock for DBFC6AD9");
 
-  while (kb1 && kb1->pkt->pkttype != PKT_USER_ID)
-    kb1 = kb1->next;
-  if (! kb1)
+  p = kb1;
+  while (p && p->pkt->pkttype != PKT_USER_ID)
+    p = p->next;
+  if (! p)
     ABORT ("DBFC6AD9 has no user id packet");
-  uid1 = kb1->pkt->pkt.user_id->name;
+  uid1 = p->pkt->pkt.user_id->name;
 
-  while (kb2 && kb2->pkt->pkttype != PKT_USER_ID)
-    kb2 = kb2->next;
-  if (! kb2)
+  p = kb2;
+  while (p && p->pkt->pkttype != PKT_USER_ID)
+    p = p->next;
+  if (! p)
     ABORT ("1E42B367 has no user id packet");
-  uid2 = kb2->pkt->pkt.user_id->name;
+  uid2 = p->pkt->pkt.user_id->name;
 
   if (verbose)
     {
@@ -94,4 +96,9 @@ do_test (int argc, char *argv[])
     }
 
   TEST_P ("cache consistency", strcmp (uid1, uid2) != 0);
+
+  release_kbnode (kb1);
+  release_kbnode (kb2);
+  keydb_release (hd1);
+  keydb_release (hd2);
 }

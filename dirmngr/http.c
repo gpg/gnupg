@@ -744,7 +744,7 @@ http_session_set_log_cb (http_session_t sess,
 
 /* Start a HTTP retrieval and on success store at R_HD a context
    pointer for completing the request and to wait for the response.
-   If HTTPHOST is not NULL it is used hor the Host header instead of a
+   If HTTPHOST is not NULL it is used for the Host header instead of a
    Host header derived from the URL. */
 gpg_error_t
 http_open (http_t *r_hd, http_req_t reqtype, const char *url,

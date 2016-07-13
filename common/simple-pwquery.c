@@ -340,6 +340,7 @@ agent_open (int *rfd)
   if ( !(p = strchr ( infostr, PATHSEP_C)) || p == infostr
        || (p-infostr)+1 >= sizeof client_addr.sun_path )
     {
+      spwq_free (infostr);
       return SPWQ_NO_AGENT;
     }
   *p++ = 0;
@@ -357,12 +358,14 @@ agent_open (int *rfd)
 #ifdef SPWQ_USE_LOGGING
       log_error ("can't create socket: %s\n", strerror(errno) );
 #endif
+      spwq_free (infostr);
       return SPWQ_SYS_ERROR;
     }
 
   memset (&client_addr, 0, sizeof client_addr);
   client_addr.sun_family = AF_UNIX;
   strcpy (client_addr.sun_path, infostr);
+  spwq_free (infostr);
   len = SUN_LEN (&client_addr);
 
 #ifdef HAVE_W32_SYSTEM
@@ -373,7 +376,8 @@ agent_open (int *rfd)
   if (rc == -1)
     {
 #ifdef SPWQ_USE_LOGGING
-      log_error ( _("can't connect to '%s': %s\n"), infostr, strerror (errno));
+      log_error (_("can't connect to '%s': %s\n"),
+                 client_addr.sun_path, strerror (errno));
 #endif
       close (fd );
       return SPWQ_IO_ERROR;

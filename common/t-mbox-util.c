@@ -87,6 +87,8 @@ run_test (void)
         fail (idx);
       else if (strcmp (mbox, testtbl[idx].mbox))
         fail (idx);
+
+      xfree (mbox);
     }
 }
 

@@ -59,6 +59,7 @@ struct keylist_context
   int inv_sigs;    /* Counter used if CHECK_SIGS is set.  */
   int no_key;      /* Counter used if CHECK_SIGS is set.  */
   int oth_err;     /* Counter used if CHECK_SIGS is set.  */
+  int no_validity; /* Do not show validity.  */
 };
 
 
@@ -920,7 +921,7 @@ list_keyblock_pka (ctrl_t ctrl, kbnode_t keyblock)
       /* We do not have an export function which allows to pass a
          keyblock, thus we need to search the key again.  */
       err = export_pubkey_buffer (ctrl, hexfpr,
-                                  EXPORT_DANE_FORMAT, NULL,
+                                  (EXPORT_MINIMAL | EXPORT_CLEAN), NULL,
                                   &dummy_keyblock, &data, &datalen);
       release_kbnode (dummy_keyblock);
       if (!err)
@@ -1052,7 +1053,8 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
         secret = 2;  /* Key not found.  */
     }
 
-  check_trustdb_stale (ctrl);
+  if (!listctx->no_validity)
+    check_trustdb_stale (ctrl);
 
   /* Print the "pub" line and in KF_NONE mode the fingerprint.  */
   print_key_line (es_stdout, pk, secret);
@@ -1090,7 +1092,8 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 	    dump_attribs (uid, pk);
 
 	  if ((uid->is_revoked || uid->is_expired)
-	      || (opt.list_options & LIST_SHOW_UID_VALIDITY))
+	      || ((opt.list_options & LIST_SHOW_UID_VALIDITY)
+                  && !listctx->no_validity))
 	    {
 	      const char *validity;
 
@@ -1755,14 +1758,17 @@ list_keyblock (ctrl_t ctrl,
 }
 
 
-/* Public function used by keygen to list a keyblock.  */
+/* Public function used by keygen to list a keyblock.  If NO_VALIDITY
+ * is set the validity of a key is never shown.  */
 void
 list_keyblock_direct (ctrl_t ctrl,
-                      kbnode_t keyblock, int secret, int has_secret, int fpr)
+                      kbnode_t keyblock, int secret, int has_secret, int fpr,
+                      int no_validity)
 {
   struct keylist_context listctx;
 
   memset (&listctx, 0, sizeof (listctx));
+  listctx.no_validity = !!no_validity;
   list_keyblock (ctrl, keyblock, secret, has_secret, fpr, &listctx);
   keylist_context_release (&listctx);
 }

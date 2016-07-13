@@ -1,6 +1,6 @@
 /* rfc822parse.h - Simple mail and MIME parser
  *	Copyright (C) 1999 Werner Koch, Duesseldorf
- *      Copyright (C) 2003, g10 Code GmbH
+ *      Copyright (C) 2003 g10 Code GmbH
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License

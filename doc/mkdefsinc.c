@@ -140,6 +140,27 @@ get_date_from_files (char **files)
 }
 
 
+/* We need to escape file names for Texinfo.  */
+static void
+print_filename (const char *prefix, const char *name)
+{
+  const char *s;
+
+  fputs (prefix, stdout);
+  for (s=name; *s; s++)
+    switch (*s)
+      {
+      case '@': fputs ("@atchar{}",        stdout); break;
+      case '{': fputs ("@lbracechar{}",    stdout); break;
+      case '}': fputs ("@rbracechar{}",    stdout); break;
+      case ',': fputs ("@comma{}",         stdout); break;
+      case '\\':fputs ("@backslashchar{}", stdout); break;
+      case '#': fputs ("@hashchar{}",      stdout); break;
+      default: putchar (*s); break;
+      }
+  putchar('\n');
+}
+
 
 int
 main (int argc, char **argv)
@@ -288,17 +309,16 @@ main (int argc, char **argv)
 
   fputs ("\n@c Directories\n\n", stdout);
 
-  fputs ("@set BINDIR         " GNUPG_BINDIR        "\n"
-         "@set LIBEXECDIR     " GNUPG_LIBEXECDIR    "\n"
-         "@set LIBDIR         " GNUPG_LIBDIR        "\n"
-         "@set DATADIR        " GNUPG_DATADIR       "\n"
-         "@set SYSCONFDIR     " GNUPG_SYSCONFDIR    "\n"
-         "@set LOCALSTATEDIR  " GNUPG_LOCALSTATEDIR "\n"
-         "@set LOCALCACHEDIR  " GNUPG_LOCALSTATEDIR
-         /*                  */ "/cache/" PACKAGE_NAME "\n"
-         "@set LOCALRUNDIR    " GNUPG_LOCALSTATEDIR
-         /*                  */ "/run/"  PACKAGE_NAME "\n"
-         , stdout);
+  print_filename ("@set BINDIR         ", GNUPG_BINDIR );
+  print_filename ("@set LIBEXECDIR     ", GNUPG_LIBEXECDIR );
+  print_filename ("@set LIBDIR         ", GNUPG_LIBDIR );
+  print_filename ("@set DATADIR        ", GNUPG_DATADIR );
+  print_filename ("@set SYSCONFDIR     ", GNUPG_SYSCONFDIR );
+  print_filename ("@set LOCALSTATEDIR  ", GNUPG_LOCALSTATEDIR );
+  print_filename ("@set LOCALCACHEDIR  ", (GNUPG_LOCALSTATEDIR
+                                           "/cache/" PACKAGE_NAME));
+  print_filename ("@set LOCALRUNDIR    ", (GNUPG_LOCALSTATEDIR
+                                           "/run/"   PACKAGE_NAME));
 
   p = xstrdup (GNUPG_SYSCONFDIR);
   pend = strrchr (p, '/');

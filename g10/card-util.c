@@ -733,28 +733,18 @@ fetch_url (ctrl_t ctrl)
     log_error("error retrieving URL from card: %s\n",gpg_strerror(rc));
   else
     {
-      struct keyserver_spec *spec=NULL;
-
       rc=agent_scd_getattr("KEY-FPR",&info);
       if(rc)
 	log_error("error retrieving key fingerprint from card: %s\n",
 		  gpg_strerror(rc));
       else if (info.pubkey_url && *info.pubkey_url)
-	{
-	  spec = parse_keyserver_uri (info.pubkey_url, 1);
-	  if(spec && info.fpr1valid)
-	    {
-	      /* This is not perfectly right.  Currently, all card
-		 fingerprints are 20 digits, but what about
-		 fingerprints for a future v5 key?  We should get the
-		 length from somewhere lower in the code.  In any
-		 event, the fpr/keyid is not meaningful for straight
-		 HTTP fetches, but using it allows the card to point
-		 to HKP and LDAP servers as well. */
-	      rc = keyserver_import_fprint (ctrl, info.fpr1, 20, spec);
-	      free_keyserver_spec(spec);
-	    }
-	}
+        {
+          strlist_t sl = NULL;
+
+          add_to_strlist (&sl, info.pubkey_url);
+          rc = keyserver_fetch (ctrl, sl);
+          free_strlist (sl);
+        }
       else if (info.fpr1valid)
 	{
           rc = keyserver_import_fprint (ctrl, info.fpr1, 20, opt.keyserver);

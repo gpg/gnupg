@@ -2530,9 +2530,6 @@ iobuf_get_fname_nonnull (iobuf_t a)
 void
 iobuf_set_partial_body_length_mode (iobuf_t a, size_t len)
 {
-  block_filter_ctx_t *ctx = xcalloc (1, sizeof *ctx);
-
-  ctx->use = a->use;
   if (!len)
     /* Disable partial body length mode.  */
     {
@@ -2546,6 +2543,8 @@ iobuf_set_partial_body_length_mode (iobuf_t a, size_t len)
   else
     /* Enabled partial body length mode.  */
     {
+      block_filter_ctx_t *ctx = xcalloc (1, sizeof *ctx);
+      ctx->use = a->use;
       ctx->partial = 1;
       ctx->size = 0;
       ctx->first_c = len;

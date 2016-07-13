@@ -59,6 +59,8 @@ doc/faq.raw.xref
 doc/gnupg-card-architecture.eps
 doc/gnupg-card-architecture.pdf
 doc/gnupg-card-architecture.png
+doc/gnupg-module-overview.pdf
+doc/gnupg-module-overview.png
 doc/gnupg.7
 doc/gpg-agent.1
 doc/gpg-connect-agent.1
