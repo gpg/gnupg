@@ -61,6 +61,7 @@ enum cmd_and_opt_values
 
     aReceive,
     aCron,
+    aListDomains,
 
     oGpgProgram,
     oSend,
@@ -79,6 +80,8 @@ static ARGPARSE_OPTS opts[] = {
               ("receive a submission or confirmation")),
   ARGPARSE_c (aCron,      "cron",
               ("run regular jobs")),
+  ARGPARSE_c (aListDomains, "list-domains",
+              ("list configured domains")),
 
   ARGPARSE_group (301, ("@\nOptions:\n ")),
 
@@ -116,10 +119,12 @@ struct server_ctx_s
 };
 typedef struct server_ctx_s *server_ctx_t;
 
-
+/* Prototypes.  */
+static gpg_error_t get_domain_list (strlist_t *r_list);
 
 static gpg_error_t command_receive_cb (void *opaque,
                                        const char *mediatype, estream_t fp);
+static gpg_error_t command_list_domains (void);
 static gpg_error_t command_cron (void);
 
 
@@ -201,6 +206,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
 
 	case aReceive:
         case aCron:
+        case aListDomains:
           cmd = pargs->r_opt;
           break;
 
@@ -314,23 +320,26 @@ main (int argc, char **argv)
       if (argc)
         wrong_args ("--receive");
       err = wks_receive (es_stdin, command_receive_cb, NULL);
-      if (err)
-        log_error ("processing mail failed: %s\n", gpg_strerror (err));
       break;
 
     case aCron:
       if (argc)
         wrong_args ("--cron");
       err = command_cron ();
-      if (err)
-        log_error ("running --cron failed: %s\n", gpg_strerror (err));
+      break;
+
+    case aListDomains:
+      err = command_list_domains ();
       break;
 
     default:
       usage (1);
+      err = gpg_error (GPG_ERR_BUG);
       break;
     }
 
+  if (err)
+    log_error ("command failed: %s\n", gpg_strerror (err));
   return log_get_errorcount (0)? 1:0;
 }
 
@@ -713,9 +722,6 @@ store_key_as_pending (const char *dir, estream_t key,
       goto leave;
     }
 
-  if (!gnupg_mkdir (dname, "-rwx"))
-    log_info ("directory '%s' created\n", dname);
-
   /* Create the nonce.  We use 20 bytes so that we don't waste a
    * character in our zBase-32 encoding.  Using the gcrypt's nonce
    * function is faster than using the strong random function; this is
@@ -1077,19 +1083,6 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
       goto leave;
     }
 
-  {
-    /*FIXME: This is a hack to make installation easier.  It is better
-     * to let --cron create the required directories.  */
-    fnewname = make_filename_try (opt.directory, domain, "hu", NULL);
-    if (!fnewname)
-      {
-        err = gpg_error_from_syserror ();
-        goto leave;
-    }
-    if (!gnupg_mkdir (fnewname, "-rwxr-xr-x"))
-      log_info ("directory '%s' created\n", fnewname);
-    xfree (fnewname);
-  }
   fnewname = make_filename_try (opt.directory, domain, "hu", hash, NULL);
   if (!fnewname)
     {
@@ -1263,6 +1256,76 @@ command_receive_cb (void *opaque, const char *mediatype, estream_t msg)
 
 
 
+/* Return a list of all configured domains.  ECh list element is the
+ * top directory for for the domain.  To figure out the actual domain
+ * name strrchr(name, '/') can be used.  */
+static gpg_error_t
+get_domain_list (strlist_t *r_list)
+{
+  gpg_error_t err;
+  DIR *dir = NULL;
+  char *fname = NULL;
+  struct dirent *dentry;
+  struct stat sb;
+  strlist_t list = NULL;
+
+  *r_list = NULL;
+
+  dir = opendir (opt.directory);
+  if (!dir)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  while ((dentry = readdir (dir)))
+    {
+      if (*dentry->d_name == '.')
+        continue;
+      if (!strchr (dentry->d_name, '.'))
+        continue; /* No dot - can't be a domain subdir.  */
+
+      xfree (fname);
+      fname = make_filename_try (opt.directory, dentry->d_name, NULL);
+      if (!fname)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("make_filename failed in %s: %s\n",
+                     __func__, gpg_strerror (err));
+          goto leave;
+        }
+
+      if (stat (fname, &sb))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error accessing '%s': %s\n", fname, gpg_strerror (err));
+          continue;
+        }
+      if (!S_ISDIR(sb.st_mode))
+        continue;
+
+      if (!add_to_strlist_try (&list, fname))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("add_to_strlist failed in %s: %s\n",
+                     __func__, gpg_strerror (err));
+          goto leave;
+        }
+    }
+  err = 0;
+  *r_list = list;
+  list = NULL;
+
+ leave:
+  free_strlist (list);
+  if (dir)
+    closedir (dir);
+  xfree (fname);
+  return err;
+}
+
+
+
 static gpg_error_t
 expire_one_domain (const char *top_dirname, const char *domain)
 {
@@ -1352,55 +1415,114 @@ expire_one_domain (const char *top_dirname, const char *domain)
 
 /* Scan spool directories and expire too old pending keys.  */
 static gpg_error_t
-expire_pending_confirmations (void)
+expire_pending_confirmations (strlist_t domaindirs)
 {
-  gpg_error_t err;
-  DIR *dir = NULL;
-  char *fname = NULL;
-  struct dirent *dentry;
-  struct stat sb;
+  gpg_error_t err = 0;
+  strlist_t sl;
+  const char *domain;
 
-  dir = opendir (opt.directory);
-  if (!dir)
+  for (sl = domaindirs; sl; sl = sl->next)
     {
-      err = gpg_error_from_syserror ();
-      goto leave;
+      domain = strrchr (sl->d, '/');
+      log_assert (domain);
+      domain++;
+
+      expire_one_domain (sl->d, domain);
     }
 
-  while ((dentry = readdir (dir)))
-    {
-      if (*dentry->d_name == '.')
-        continue;
-      if (!strchr (dentry->d_name, '.'))
-        continue; /* No dot - can't be a domain subdir.  */
+  return err;
+}
 
+
+/* List all configured domains.  */
+static gpg_error_t
+command_list_domains (void)
+{
+  static struct {
+    const char *name;
+    const char *perm;
+  } requireddirs[] = {
+    { "pending", "-rwx" },
+    { "hu",      "-rwxr-xr-x" }
+  };
+
+  gpg_error_t err;
+  strlist_t domaindirs;
+  strlist_t sl;
+  const char *domain;
+  char *fname = NULL;
+  int i;
+
+  err = get_domain_list (&domaindirs);
+  if (err)
+    {
+      log_error ("error reading list of domains: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  for (sl = domaindirs; sl; sl = sl->next)
+    {
+      domain = strrchr (sl->d, '/');
+      log_assert (domain);
+      domain++;
+      es_printf ("%s\n", domain);
+
+      /* Check that the required directories are there.  */
+      for (i=0; i < DIM (requireddirs); i++)
+        {
+          xfree (fname);
+          fname = make_filename_try (sl->d, requireddirs[i].name, NULL);
+          if (!fname)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          if (access (fname, W_OK))
+            {
+              err = gpg_error_from_syserror ();
+              if (gpg_err_code (err) == GPG_ERR_ENOENT)
+                {
+                  if (gnupg_mkdir (fname, requireddirs[i].perm))
+                    {
+                      err = gpg_error_from_syserror ();
+                      log_error ("domain %s: error creating subdir '%s': %s\n",
+                                 domain, requireddirs[i].name,
+                                 gpg_strerror (err));
+                    }
+                  else
+                    log_info ("domain %s: subdir '%s' created\n",
+                              domain, requireddirs[i].name);
+                }
+              else if (err)
+                log_error ("domain %s: problem with subdir '%s': %s\n",
+                           domain, requireddirs[i].name, gpg_strerror (err));
+            }
+        }
+
+      /* Print a warning if the sumbission address is not configured.  */
       xfree (fname);
-      fname = make_filename_try (opt.directory, dentry->d_name, NULL);
+      fname = make_filename_try (sl->d, "submission-address", NULL);
       if (!fname)
         {
           err = gpg_error_from_syserror ();
-          log_error ("make_filename failed in %s: %s\n",
-                     __func__, gpg_strerror (err));
           goto leave;
         }
-
-      if (stat (fname, &sb))
+      if (access (fname, F_OK))
         {
           err = gpg_error_from_syserror ();
-          log_error ("error accessing '%s': %s\n", fname, gpg_strerror (err));
-          continue;
+          if (gpg_err_code (err) == GPG_ERR_ENOENT)
+            log_error ("domain %s: submission address not configured\n",
+                       domain);
+          else
+            log_error ("domain %s: problem with '%s': %s\n",
+                       domain, fname, gpg_strerror (err));
         }
-      if (!S_ISDIR(sb.st_mode))
-        continue;
-
-      expire_one_domain (fname, dentry->d_name);
     }
   err = 0;
 
  leave:
-  if (dir)
-    closedir (dir);
   xfree (fname);
+  free_strlist (domaindirs);
   return err;
 }
 
@@ -1409,5 +1531,18 @@ expire_pending_confirmations (void)
 static gpg_error_t
 command_cron (void)
 {
-  return expire_pending_confirmations ();
+  gpg_error_t err;
+  strlist_t domaindirs;
+
+  err = get_domain_list (&domaindirs);
+  if (err)
+    {
+      log_error ("error reading list of domains: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  err = expire_pending_confirmations (domaindirs);
+
+  free_strlist (domaindirs);
+  return err;
 }
