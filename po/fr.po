@@ -1737,16 +1737,20 @@ msgstr "supprimer autant que possible de la clef pendant l'exportation"
 msgid " - skipped"
 msgstr " — ignoré"
 
+#, c-format
+msgid "writing to '%s'\n"
+msgstr "écriture de « %s »\n"
+
+#, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "clef %s : matériel de clef sur la carte — ignorée\n"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "il est interdit d'exporter les clefs secrètes\n"
 
 #, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "clef %s : clef de type PGP 2.x — ignorée\n"
-
-#, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "clef %s : matériel de clef sur la carte — ignorée\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "Attention : rien n'a été exporté\n"
@@ -1863,6 +1867,11 @@ msgstr "générer rapidement une nouvelle paire de clefs"
 #, fuzzy
 #| msgid "quickly generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "générer rapidement une nouvelle paire de clefs"
+
+#, fuzzy
+#| msgid "quickly generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "générer rapidement une nouvelle paire de clefs"
 
 msgid "full featured key pair generation"
@@ -2206,6 +2215,11 @@ msgstr "%s : %d : options d'importation incorrectes\n"
 msgid "invalid import options\n"
 msgstr "options d'importation incorrectes\n"
 
+#, fuzzy, c-format
+#| msgid "invalid list options\n"
+msgid "invalid filter option: %s\n"
+msgstr "options de liste incorrectes\n"
+
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s : %d : options d'exportation incorrectes\n"
@@ -2530,6 +2544,11 @@ msgstr "ne pas mettre à jour la base de confiance après l'importation"
 msgid "do not update the trustdb after import"
 msgstr "ne pas mettre à jour la base de confiance après l'importation"
 
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "show key during import"
+msgstr "afficher l'empreinte de la clef"
+
 msgid "only accept updates to existing keys"
 msgstr "n'accepter que les mises à jour des clefs existantes"
 
@@ -2538,6 +2557,9 @@ msgstr "nettoyer les parties inutilisables de la clef après l'importation"
 
 msgid "remove as much as possible from key after import"
 msgstr "supprimer autant que possible de la clef après l'importation"
+
+msgid "run import filters and export key immediately"
+msgstr ""
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2681,10 +2703,6 @@ msgstr "clef %s : nouvelle clef — ignorée\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "aucun porte-clefs accessible en écriture n'a été trouvé : %s\n"
-
-#, c-format
-msgid "writing to '%s'\n"
-msgstr "écriture de « %s »\n"
 
 #, c-format
 msgid "error writing keyring '%s': %s\n"
@@ -3434,6 +3452,11 @@ msgstr "échec de la mise à jour : %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "La clef n'a pas été modifiée donc la mise à jour est inutile.\n"
 
+#, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Échec de génération de la clef : %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "« %s » n’est pas une empreinte\n"
@@ -3753,6 +3776,10 @@ msgstr "Faut-il vraiment créer les certificats de révocation ? (o/N) "
 
 msgid "no secret key\n"
 msgstr "pas de clef secrète\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4276,10 +4303,6 @@ msgstr[1] "Attention : %lu clefs ignorées en raison de leur grande taille\n"
 msgid "Keyring"
 msgstr "Porte-clefs"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "« %s » a été ignorée : %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Empreinte de clef principale :"
 
@@ -4401,6 +4424,10 @@ msgstr "requête de la clef %s sur %s\n"
 #| msgid "no keyserver action!\n"
 msgid "no keyserver known\n"
 msgstr "pas d'action pour le serveur de clefs.\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "« %s » a été ignorée : %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"

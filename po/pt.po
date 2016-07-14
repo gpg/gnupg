@@ -1785,6 +1785,15 @@ msgstr ""
 msgid " - skipped"
 msgstr "%s: ignorado: %s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "a escrever para `%s'\n"
+
+#, fuzzy, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "chave %08lX: assintura da subchave no local errado - ignorado\n"
+
 #, fuzzy
 msgid "exporting secret keys not allowed\n"
 msgstr "a escrever chave privada para `%s'\n"
@@ -1792,10 +1801,6 @@ msgstr "a escrever chave privada para `%s'\n"
 #, fuzzy, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "chave %08lX: tipo PGP 2.x - ignorada\n"
-
-#, fuzzy, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "chave %08lX: assintura da subchave no local errado - ignorado\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "AVISO: nada exportado\n"
@@ -1914,6 +1919,11 @@ msgstr "gerar um novo par de chaves"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "gerar um novo par de chaves"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "gerar um novo par de chaves"
 
 msgid "full featured key pair generation"
@@ -2256,6 +2266,10 @@ msgstr "%s:%d: opções de importação inválidas\n"
 msgid "invalid import options\n"
 msgstr "opções de importação inválidas\n"
 
+#, fuzzy, c-format
+msgid "invalid filter option: %s\n"
+msgstr "opções de importação inválidas\n"
+
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: opções de exportação inválidas\n"
@@ -2595,6 +2609,10 @@ msgstr "actualizar a base de dados de confiança"
 msgid "do not update the trustdb after import"
 msgstr "actualizar a base de dados de confiança"
 
+#, fuzzy
+msgid "show key during import"
+msgstr "mostra impressão digital"
+
 msgid "only accept updates to existing keys"
 msgstr ""
 
@@ -2603,6 +2621,9 @@ msgid "remove unusable parts from key after import"
 msgstr "chave secreta não utilizável"
 
 msgid "remove as much as possible from key after import"
+msgstr ""
+
+msgid "run import filters and export key immediately"
 msgstr ""
 
 #, c-format
@@ -2743,11 +2764,6 @@ msgstr "chave %08lX: chave nova - ignorada\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "não foi encontrada nenhum porta-chaves onde escrever: %s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "a escrever para `%s'\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3544,6 +3560,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Chave não alterada, nenhuma actualização é necessária.\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "A geração de chaves falhou: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "%s: versão de ficheiro inválida %d\n"
 
@@ -3864,6 +3885,10 @@ msgstr "Realmente criar os certificados de revogação? (s/N) "
 
 msgid "no secret key\n"
 msgstr "nenhuma chave secreta\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4397,10 +4422,6 @@ msgstr[1] ""
 msgid "Keyring"
 msgstr "Porta-chaves"
 
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "ignorado `%s': %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Impressão da chave primária:"
 
@@ -4518,6 +4539,10 @@ msgstr "a pedir a chave %08lX de %s\n"
 #, fuzzy
 msgid "no keyserver known\n"
 msgstr "opções de exportação inválidas\n"
+
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "ignorado `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"

@@ -1786,6 +1786,15 @@ msgstr ""
 msgid " - skipped"
 msgstr "%s: dilewati: %s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "menulis ke `%s'\n"
+
+#, fuzzy, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "kunci %08lX: signature subkey di tempat yang salah - dilewati\n"
+
 #, fuzzy
 msgid "exporting secret keys not allowed\n"
 msgstr "menulis kunci rahasia ke `%s'\n"
@@ -1793,10 +1802,6 @@ msgstr "menulis kunci rahasia ke `%s'\n"
 #, fuzzy, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "kunci %08lX: kunci gaya PGP 2.x - dilewati\n"
-
-#, fuzzy, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "kunci %08lX: signature subkey di tempat yang salah - dilewati\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "PERINGATAN: tidak ada yang diekspor\n"
@@ -1915,6 +1920,11 @@ msgstr "buat sepasang kunci baru"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "buat sepasang kunci baru"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "buat sepasang kunci baru"
 
 msgid "full featured key pair generation"
@@ -2251,6 +2261,10 @@ msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: opsi impor tidak valid\n"
 
 msgid "invalid import options\n"
+msgstr "opsi impor tidak valid\n"
+
+#, fuzzy, c-format
+msgid "invalid filter option: %s\n"
 msgstr "opsi impor tidak valid\n"
 
 #, c-format
@@ -2594,6 +2608,10 @@ msgstr "perbarui database trust"
 msgid "do not update the trustdb after import"
 msgstr "perbarui database trust"
 
+#, fuzzy
+msgid "show key during import"
+msgstr "tampilkan fingerprint"
+
 msgid "only accept updates to existing keys"
 msgstr ""
 
@@ -2602,6 +2620,9 @@ msgid "remove unusable parts from key after import"
 msgstr "kunci rahasia tidak dapat dipakai"
 
 msgid "remove as much as possible from key after import"
+msgstr ""
+
+msgid "run import filters and export key immediately"
 msgstr ""
 
 #, c-format
@@ -2742,11 +2763,6 @@ msgstr "kunci %08lX: kunci baru - dilewati\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "tidak ditemukan keyring yang dapat ditulisi: %s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "menulis ke `%s'\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3536,6 +3552,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Kunci tidak berubah sehingga tidak perlu pembaharuan.\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Pembuatan kunci gagal: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "kesalahan: fingerprint tidak valid\n"
 
@@ -3865,6 +3886,10 @@ msgstr "Ingin membuat sertifikat pembatalan? (y/T)"
 
 msgid "no secret key\n"
 msgstr "tidak ada kunci rahasia\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4390,10 +4415,6 @@ msgstr[1] ""
 msgid "Keyring"
 msgstr "Keyring"
 
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "melewati `%s': %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Fingerprint kunci primer:"
 
@@ -4511,6 +4532,10 @@ msgstr "meminta kunci %08lX dari %s\n"
 #, fuzzy
 msgid "no keyserver known\n"
 msgstr "opsi ekspor tidak valid\n"
+
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "melewati `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"

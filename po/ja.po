@@ -1652,16 +1652,20 @@ msgstr "エクスポートの際、できるだけ除去する"
 msgid " - skipped"
 msgstr " - スキップされました"
 
+#, c-format
+msgid "writing to '%s'\n"
+msgstr "'%s'への書き込み\n"
+
+#, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "鍵%s: 鍵はカード上にあります - スキップします\n"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "秘密鍵のエクスポートは認められません\n"
 
 #, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "鍵%s: PGP 2.x形式の鍵です - スキップします\n"
-
-#, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "鍵%s: 鍵はカード上にあります - スキップします\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "*警告*: 何もエクスポートされていません\n"
@@ -1767,6 +1771,11 @@ msgid "quickly generate a new key pair"
 msgstr "すばやく新しい鍵ペアを生成"
 
 msgid "quickly add a new user-id"
+msgstr "すばやく新しいユーザIDを追加"
+
+#, fuzzy
+#| msgid "quickly add a new user-id"
+msgid "quickly revoke a user-id"
 msgstr "すばやく新しいユーザIDを追加"
 
 msgid "full featured key pair generation"
@@ -2079,6 +2088,11 @@ msgstr "%s:%d: 無効なインポート・オプションです\n"
 
 msgid "invalid import options\n"
 msgstr "無効なインポート・オプションです\n"
+
+#, fuzzy, c-format
+#| msgid "invalid list options\n"
+msgid "invalid filter option: %s\n"
+msgstr "無効な一覧オプションです\n"
 
 #, c-format
 msgid "%s:%d: invalid export options\n"
@@ -2395,6 +2409,11 @@ msgstr "インポートの際、所有者信用の値をクリアしない"
 msgid "do not update the trustdb after import"
 msgstr "インポート後、信用データベースを更新しない"
 
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "show key during import"
+msgstr "鍵のフィンガープリントを表示"
+
 msgid "only accept updates to existing keys"
 msgstr "既存の鍵に対する更新のみ認めます"
 
@@ -2403,6 +2422,9 @@ msgstr "インポート後、利用できない部分を鍵から除去します
 
 msgid "remove as much as possible from key after import"
 msgstr "インポート後、できるだけ除去します"
+
+msgid "run import filters and export key immediately"
+msgstr ""
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2543,10 +2565,6 @@ msgstr "鍵%s: 新しい鍵です - スキップします\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "書き込み可能な鍵リングが見つかりません: %s\n"
-
-#, c-format
-msgid "writing to '%s'\n"
-msgstr "'%s'への書き込み\n"
 
 #, c-format
 msgid "error writing keyring '%s': %s\n"
@@ -3258,6 +3276,11 @@ msgstr "更新に失敗しました: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "鍵は無変更なので更新は不要です。\n"
 
+#, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "鍵の生成に失敗しました: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\"はフィンガープリントではありません\n"
@@ -3557,6 +3580,10 @@ msgstr "失効証明書を本当に作成しますか? (y/N) "
 
 msgid "no secret key\n"
 msgstr "秘密鍵がありません\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4051,10 +4078,6 @@ msgstr[0] "*警告*: %lu個の鍵がその大きさのためスキップされ�
 msgid "Keyring"
 msgstr "鍵リング"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "\"%s\"をスキップしました: %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr " 主鍵フィンガープリント:"
 
@@ -4162,6 +4185,10 @@ msgstr "鍵%sを%sに要求\n"
 
 msgid "no keyserver known\n"
 msgstr "鍵サーバがわかりません\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "\"%s\"をスキップしました: %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"

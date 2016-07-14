@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-05-10 18:21+0300\n"
+"PO-Revision-Date: 2016-07-10 15:11+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <kde-i18n-uk@kde.org>\n"
 "Language: uk\n"
@@ -322,7 +322,7 @@ msgid "csh-style command output"
 msgstr "виведення команд у форматі csh"
 
 msgid "|FILE|read options from FILE"
-msgstr "прочитати параметри з вказаного файла"
+msgstr "|FILE|прочитати параметри з вказаного файла"
 
 msgid "do not detach from the console"
 msgstr "не від’єднувати від консолі"
@@ -334,16 +334,16 @@ msgid "use a log file for the server"
 msgstr "використовувати файл журналу для сервера"
 
 msgid "|PGM|use PGM as the PIN-Entry program"
-msgstr "використовувати вказану програму пінзаписів"
+msgstr "|PGM|використовувати вказану програму пінзаписів"
 
 msgid "|PGM|use PGM as the SCdaemon program"
-msgstr "використовувати вказану програму SCdaemon"
+msgstr "|PGM|використовувати вказану програму SCdaemon"
 
 msgid "do not use the SCdaemon"
 msgstr "не використовувати SCdaemon"
 
 msgid "|NAME|accept some commands via NAME"
-msgstr "приймати певні команди через NAME"
+msgstr "|NAME|приймати певні команди через NAME"
 
 msgid "ignore requests to change the TTY"
 msgstr "ігнорувати запити щодо зміни TTY"
@@ -352,7 +352,7 @@ msgid "ignore requests to change the X display"
 msgstr "ігнорувати запити щодо зміни графічного дисплея"
 
 msgid "|N|expire cached PINs after N seconds"
-msgstr "вважати кешовані пінкоди за вказану кількість секунд"
+msgstr "|N|вважати кешовані пінкоди за вказану кількість секунд"
 
 msgid "do not use the PIN cache when signing"
 msgstr "не використовувати кеш пін-кодів для підписування"
@@ -1683,16 +1683,20 @@ msgstr "вилучити максимум частин з ключа під ча
 msgid " - skipped"
 msgstr " - пропущено"
 
+#, c-format
+msgid "writing to '%s'\n"
+msgstr "записуємо до «%s»\n"
+
+#, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "ключ %s: матеріал ключа на карті — пропущено\n"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "експортування закритих ключів заборонено\n"
 
 #, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "ключ %s: ключ у стилі PGP 2.x — пропущено\n"
-
-#, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "ключ %s: матеріал ключа на карті — пропущено\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "УВАГА: нічого не експортовано\n"
@@ -1802,6 +1806,9 @@ msgstr "швидке створення пари ключів"
 
 msgid "quickly add a new user-id"
 msgstr "швидке додавання нового ідентифікатора користувача"
+
+msgid "quickly revoke a user-id"
+msgstr "швидке відкликання ідентифікатора користувача"
 
 msgid "full featured key pair generation"
 msgstr "повноцінне створення пари ключів"
@@ -2133,6 +2140,10 @@ msgid "invalid import options\n"
 msgstr "некоректні параметри імпортування\n"
 
 #, c-format
+msgid "invalid filter option: %s\n"
+msgstr "некоректний параметр фільтрування: %s\n"
+
+#, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: некоректні параметри експортування\n"
 
@@ -2426,16 +2437,16 @@ msgid "the given preferred keyserver URL is invalid\n"
 msgstr "вказана адреса основного сервера ключів є некоректною\n"
 
 msgid "|FILE|take the keys from the keyring FILE"
-msgstr "визначити ключі з файла сховища ключів ФАЙЛ"
+msgstr "|FILE|визначити ключі з файла сховища ключів ФАЙЛ"
 
 msgid "make timestamp conflicts only a warning"
 msgstr "супроводжувати конфлікти часових позначок лише попередженнями"
 
 msgid "|FD|write status info to this FD"
-msgstr "записувати до дескриптора файла дані щодо стану"
+msgstr "|FD|записувати до дескриптора файла дані щодо стану"
 
 msgid "|ALGO|reject signatures made with ALGO"
-msgstr ""
+msgstr "|ALGO|відкидати підписи, створені за допомогою алгоритму ALGO"
 
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Використання: gpgv [параметри] [файли] (-h — довідка)"
@@ -2466,6 +2477,9 @@ msgstr "не вилучати значень власної довіри під 
 msgid "do not update the trustdb after import"
 msgstr "не оновлювати базу даних довіри після імпортування"
 
+msgid "show key during import"
+msgstr "показувати ключ під час імпортування"
+
 msgid "only accept updates to existing keys"
 msgstr "приймати оновлення лише вже створених ключів"
 
@@ -2474,6 +2488,9 @@ msgstr "вилучити невикористані частини ключа п
 
 msgid "remove as much as possible from key after import"
 msgstr "вилучити максимум частин з ключа після імпортування"
+
+msgid "run import filters and export key immediately"
+msgstr "запустити фільтри імпортування та експортувати ключ негайно"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2617,10 +2634,6 @@ msgstr "ключ %s: новий ключ — пропущено\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "не виявлено придатного до запису сховища ключів: %s\n"
-
-#, c-format
-msgid "writing to '%s'\n"
-msgstr "записуємо до «%s»\n"
 
 #, c-format
 msgid "error writing keyring '%s': %s\n"
@@ -3368,6 +3381,10 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Ключ не змінено, отже оновлення непотрібне.\n"
 
 #, c-format
+msgid "User ID revocation failed: %s\n"
+msgstr "Спроба відкликання ідентифікатор користувача зазнала невдачі: %s\n"
+
+#, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "«%s» не є відбитком\n"
 
@@ -3680,6 +3697,10 @@ msgstr "Справді створити сертифікати відклика�
 
 msgid "no secret key\n"
 msgstr "немає закритого ключа\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr "спроба відкликати ідентифікатор, який не належить користувачеві: %s\n"
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4197,10 +4218,6 @@ msgstr[2] ""
 msgid "Keyring"
 msgstr "Сховище ключів"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "пропущено «%s»: %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Основний відбиток ключа:"
 
@@ -4318,6 +4335,10 @@ msgstr "надсилаємо запит щодо ключа %s з %s\n"
 
 msgid "no keyserver known\n"
 msgstr "немає відомих серверів ключів\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "пропущено «%s»: %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"
@@ -5914,10 +5935,8 @@ msgstr "[невідома]"
 msgid "[  undef ]"
 msgstr "[не визн.]"
 
-#, fuzzy
-#| msgid "never"
 msgid "[  never ]"
-msgstr "ніколи"
+msgstr "[ ніколи ]"
 
 msgid "[marginal]"
 msgstr "[неповна ]"
@@ -6766,7 +6785,7 @@ msgid "|N|number of certificates to include"
 msgstr "кількість сертифікатів, які слід включити"
 
 msgid "|FILE|take policy information from FILE"
-msgstr "взяти дані щодо правил з вказаного файла"
+msgstr "|FILE|взяти дані щодо правил з вказаного файла"
 
 msgid "do not check certificate policies"
 msgstr "не перевіряти правила сертифікатів"
@@ -6778,10 +6797,10 @@ msgid "don't use the terminal at all"
 msgstr "взагалі не використовувати термінал"
 
 msgid "|FILE|write a server mode log to FILE"
-msgstr "записувати журнал режиму сервера до файла"
+msgstr "|FILE|записувати журнал режиму сервера до файла"
 
 msgid "|FILE|write an audit log to FILE"
-msgstr "записувати журнал перевірки до файла"
+msgstr "|FILE|записувати журнал перевірки до файла"
 
 msgid "batch mode: never ask"
 msgstr "пакетний режим: нічого не запитувати"
@@ -6793,7 +6812,7 @@ msgid "assume no on most questions"
 msgstr "вважати відповіддю на більшість питань «ні»"
 
 msgid "|FILE|add keyring to the list of keyrings"
-msgstr "додати сховище ключів до списку сховищ ключів"
+msgstr "|FILE|додати сховище ключів до списку сховищ ключів"
 
 msgid "|USER-ID|use USER-ID as default secret key"
 msgstr ""
@@ -7680,7 +7699,7 @@ msgid "|N|do not return more than N items in one query"
 msgstr "|N|повертати не більше за вказану кількість записів на запит"
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr "|ФАЙЛ|використовувати сертифікати CA з файла ФАЙЛ для HKP крізь TLS"
+msgstr "|FILE|використовувати сертифікати CA з файла для HKP крізь TLS"
 
 msgid "route all network traffic via Tor"
 msgstr "маршрутизувати увесь обмін даними з мережею через Tor"

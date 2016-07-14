@@ -1788,16 +1788,21 @@ msgstr ""
 msgid " - skipped"
 msgstr "%s: sãritã: %s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "scriu în `%s'\n"
+
+#, fuzzy, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "cheia %s: semnãturã subcheie într-un loc greºit - sãritã\n"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "exportul cheilor secrete nu este permis\n"
 
 #, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "cheia %s: cheie stil PGP 2.x - sãritã\n"
-
-#, fuzzy, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "cheia %s: semnãturã subcheie într-un loc greºit - sãritã\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "AVERTISMENT: nimic exportat\n"
@@ -1914,6 +1919,11 @@ msgstr "genereazã o nouã perechi de chei"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "genereazã o nouã perechi de chei"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "genereazã o nouã perechi de chei"
 
 msgid "full featured key pair generation"
@@ -2287,6 +2297,11 @@ msgstr "%s:%d: opþiuni import invalide\n"
 msgid "invalid import options\n"
 msgstr "opþiuni import invalide\n"
 
+#, fuzzy, c-format
+#| msgid "invalid list options\n"
+msgid "invalid filter option: %s\n"
+msgstr "opþiuni enumerare invalide\n"
+
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: opþiuni export invalide\n"
@@ -2622,6 +2637,11 @@ msgstr "actualizeazã baza de date de încredere"
 msgid "do not update the trustdb after import"
 msgstr "actualizeazã baza de date de încredere"
 
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "show key during import"
+msgstr "afiºeazã amprenta cheii"
+
 msgid "only accept updates to existing keys"
 msgstr ""
 
@@ -2630,6 +2650,9 @@ msgid "remove unusable parts from key after import"
 msgstr "cheie secretã de nefolosit"
 
 msgid "remove as much as possible from key after import"
+msgstr ""
+
+msgid "run import filters and export key immediately"
 msgstr ""
 
 #, c-format
@@ -2774,11 +2797,6 @@ msgstr "cheia %s: cheie nouã - sãritã\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "n-am gãsit nici un inel de chei ce poate fi scris: %s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "scriu în `%s'\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3542,6 +3560,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Cheia nu a fost schimbatã aºa cã nici o actualizare a fost necesarã.\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Generarea cheii a eºuat: %s\n"
+
+#, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "amprentã invalidã"
@@ -3867,6 +3890,11 @@ msgstr "Doriþi într-adevãr sã creaþi certificatele de revocare? (d/N) "
 
 msgid "no secret key\n"
 msgstr "nici o cheie secretã\n"
+
+#, fuzzy, c-format
+#| msgid "revoke a user ID"
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr "revocã un ID utilizator"
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4393,10 +4421,6 @@ msgstr[1] ""
 msgid "Keyring"
 msgstr "Inel de chei"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "sãritã \"%s\": %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Amprentã cheie primarã:"
 
@@ -4515,6 +4539,10 @@ msgstr "cer cheia %s de la %s\n"
 #| msgid "no keyserver action!\n"
 msgid "no keyserver known\n"
 msgstr "nici o acþiune pentru serverul de chei!\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "sãritã \"%s\": %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"
@@ -10305,9 +10333,6 @@ msgstr ""
 
 #~ msgid "revuid"
 #~ msgstr "revuid"
-
-#~ msgid "revoke a user ID"
-#~ msgstr "revocã un ID utilizator"
 
 #~ msgid "revkey"
 #~ msgstr "revkey"

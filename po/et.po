@@ -1785,6 +1785,15 @@ msgstr ""
 msgid " - skipped"
 msgstr "%s: jätsin vahele: %s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "kirjutan faili `%s'\n"
+
+#, fuzzy, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "võti %08lX: alamvõtme allkiri on vales kohas - jätan vahele\n"
+
 #, fuzzy
 msgid "exporting secret keys not allowed\n"
 msgstr "kirjutan salajase võtme faili `%s'\n"
@@ -1792,10 +1801,6 @@ msgstr "kirjutan salajase võtme faili `%s'\n"
 #, fuzzy, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "võti %08lX: PGP 2.x stiilis võti - jätsin vahele\n"
-
-#, fuzzy, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "võti %08lX: alamvõtme allkiri on vales kohas - jätan vahele\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "HOIATUS: midagi ei eksporditud\n"
@@ -1916,6 +1921,11 @@ msgstr "genereeri uus võtmepaar"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "genereeri uus võtmepaar"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "genereeri uus võtmepaar"
 
 msgid "full featured key pair generation"
@@ -2252,6 +2262,10 @@ msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: vigased impordi võtmed\n"
 
 msgid "invalid import options\n"
+msgstr "vigased impordi võtmed\n"
+
+#, fuzzy, c-format
+msgid "invalid filter option: %s\n"
 msgstr "vigased impordi võtmed\n"
 
 #, c-format
@@ -2591,6 +2605,10 @@ msgstr "uuenda usalduse andmebaasi"
 msgid "do not update the trustdb after import"
 msgstr "uuenda usalduse andmebaasi"
 
+#, fuzzy
+msgid "show key during import"
+msgstr "näita sõrmejälge"
+
 msgid "only accept updates to existing keys"
 msgstr ""
 
@@ -2599,6 +2617,9 @@ msgid "remove unusable parts from key after import"
 msgstr "mittekasutatav salajane võti"
 
 msgid "remove as much as possible from key after import"
+msgstr ""
+
+msgid "run import filters and export key immediately"
 msgstr ""
 
 #, c-format
@@ -2740,11 +2761,6 @@ msgstr "võti %08lX: uus võti - jätsin vahele\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "ei leia kirjutatavat võtmehoidlat: %s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "kirjutan faili `%s'\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3532,6 +3548,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Võtit ei muudetud, seega pole uuendamist vaja.\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Võtme genereerimine ebaõnnestus: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "viga: vigane sõrmejälg\n"
 
@@ -3854,6 +3875,10 @@ msgstr "Kas tõesti loon tühistamise sertifikaadid? (j/E) "
 
 msgid "no secret key\n"
 msgstr "salajast võtit pole\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4376,10 +4401,6 @@ msgstr[1] ""
 msgid "Keyring"
 msgstr "Võtmehoidla"
 
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "`%s' jätsin vahele: %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Primaarse võtme sõrmejälg:"
 
@@ -4497,6 +4518,10 @@ msgstr "küsin võtit %08lX võtmeserverist %s\n"
 #, fuzzy
 msgid "no keyserver known\n"
 msgstr "vigased ekspordi võtmed\n"
+
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "`%s' jätsin vahele: %s\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"

@@ -1851,16 +1851,21 @@ msgstr "ta bort så mycket som möjligt från nyckeln under exportering"
 msgid " - skipped"
 msgstr "%s: hoppade över: %s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "skriver till \"%s\"\n"
+
+#, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "nyckeln %s: nyckelmaterial på kortet - hoppade över\n"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "export av hemliga nycklar tillåts inte\n"
 
 #, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "nyckeln %s: nyckel av PGP 2.x-typ - hoppade över\n"
-
-#, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "nyckeln %s: nyckelmaterial på kortet - hoppade över\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "VARNING: ingenting exporterat\n"
@@ -1980,6 +1985,11 @@ msgstr "generera ett nytt nyckelpar"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "generera ett nytt nyckelpar"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "generera ett nytt nyckelpar"
 
 msgid "full featured key pair generation"
@@ -2344,6 +2354,11 @@ msgstr "%s:%d: ogiltiga importeringsflaggor\n"
 msgid "invalid import options\n"
 msgstr "ogiltiga importflaggor\n"
 
+#, fuzzy, c-format
+#| msgid "invalid list options\n"
+msgid "invalid filter option: %s\n"
+msgstr "ogiltiga listflaggor\n"
+
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: ogiltiga exportflaggor\n"
@@ -2687,6 +2702,11 @@ msgstr "uppdatera inte tillitsdatabasen efter importering"
 msgid "do not update the trustdb after import"
 msgstr "uppdatera inte tillitsdatabasen efter importering"
 
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "show key during import"
+msgstr "visa nyckelns fingeravtryck"
+
 msgid "only accept updates to existing keys"
 msgstr "acceptera endast uppdateringar till befintliga nycklar"
 
@@ -2695,6 +2715,9 @@ msgstr "ta bort oanvändbara delar från nyckeln efter importering"
 
 msgid "remove as much as possible from key after import"
 msgstr "ta bort så mycket som möjligt från nyckeln efter importering"
+
+msgid "run import filters and export key immediately"
+msgstr ""
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2842,11 +2865,6 @@ msgstr "nyckel %s: ny nyckel - hoppade över\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "hittade ingen nyckelring som gick att skriva till: %s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "skriver till \"%s\"\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3620,6 +3638,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Nyckeln är oförändrad så det behövs ingen uppdatering.\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Nyckelgenereringen misslyckades: %s\n"
+
+#, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "ogiltigt fingeravtryck"
@@ -3946,6 +3969,10 @@ msgstr "Vill du verkligen skapa spärrcertifikatet? (j/N) "
 
 msgid "no secret key\n"
 msgstr "ingen hemlig nyckel\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4488,10 +4515,6 @@ msgstr[1] ""
 msgid "Keyring"
 msgstr "Nyckelring"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "hoppade över \"%s\": %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Primära nyckelns fingeravtryck:"
 
@@ -4609,6 +4632,10 @@ msgstr "begär nyckeln %s från %s\n"
 #| msgid "no keyserver action!\n"
 msgid "no keyserver known\n"
 msgstr "ingen nyckelserveråtgärd!\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "hoppade över \"%s\": %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"

@@ -3555,6 +3555,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
 {
   gpg_error_t err = 0;
   const char *name;
+  kbnode_t keyblock;
   struct
   {
     int eof;
@@ -3562,6 +3563,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
     strlist_t sl;
     kbnode_t keyblock;
     kbnode_t node;
+    getkey_ctx_t ctx;
   } *c = *context;
 
   if (!c)
@@ -3577,6 +3579,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
     {
       /* Free the context.  */
       release_kbnode (c->keyblock);
+      getkey_end (c->ctx);
       xfree (c);
       *context = NULL;
       return 0;
@@ -3594,6 +3597,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
           do
             {
               name = NULL;
+              keyblock = NULL;
               switch (c->state)
                 {
                 case 0: /* First try to use the --default-key.  */
@@ -3616,24 +3620,60 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                     c->state++;
                   break;
 
+                case 3: /* Init search context to try all keys.  */
+                  if (opt.try_all_secrets)
+                    {
+                      err = getkey_bynames (&c->ctx, NULL, NULL, 1, &keyblock);
+                      if (err)
+                        {
+                          release_kbnode (keyblock);
+                          keyblock = NULL;
+                          getkey_end (c->ctx);
+                          c->ctx = NULL;
+                        }
+                    }
+                  c->state++;
+                  break;
+
+                case 4: /* Get next item from the context.  */
+                  if (c->ctx)
+                    {
+                      err = getkey_next (c->ctx, NULL, &keyblock);
+                      if (err)
+                        {
+                          release_kbnode (keyblock);
+                          keyblock = NULL;
+                          getkey_end (c->ctx);
+                          c->ctx = NULL;
+                        }
+                    }
+                  else
+                    c->state++;
+                  break;
+
                 default: /* No more names to check - stop.  */
                   c->eof = 1;
                   return gpg_error (GPG_ERR_EOF);
                 }
             }
-          while (!name || !*name);
+          while ((!name || !*name) && !keyblock);
 
-          err = getkey_byname (ctrl, NULL, NULL, name, 1, &c->keyblock);
-          if (err)
-            {
-              /* getkey_byname might return a keyblock even in the
-                 error case - I have not checked.  Thus better release
-                 it.  */
-              release_kbnode (c->keyblock);
-              c->keyblock = NULL;
-            }
+          if (keyblock)
+            c->node = c->keyblock = keyblock;
           else
-            c->node = c->keyblock;
+            {
+              err = getkey_byname (ctrl, NULL, NULL, name, 1, &c->keyblock);
+              if (err)
+                {
+                  /* getkey_byname might return a keyblock even in the
+                     error case - I have not checked.  Thus better release
+                     it.  */
+                  release_kbnode (c->keyblock);
+                  c->keyblock = NULL;
+                }
+              else
+                c->node = c->keyblock;
+            }
         }
 
       /* Get the next key from the current keyblock.  */

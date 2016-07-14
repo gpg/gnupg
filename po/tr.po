@@ -1797,16 +1797,21 @@ msgstr "ihraç sırasında anahtardan mümkün olduğunca çok şey kaldırılı
 msgid " - skipped"
 msgstr "%s: atlandı: %s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "\"%s\"e yazıyor\n"
+
+#, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "anahtar %s: anahtar malzemesi kartta - atlandı\n"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "gizli anahtarların ihracına izin verilmez\n"
 
 #, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "anahtar %s: PGP 2.x tarzı bir anahtar - atlandı\n"
-
-#, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "anahtar %s: anahtar malzemesi kartta - atlandı\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "UYARI: hiçbir şey dışarı aktarılmadı\n"
@@ -1925,6 +1930,11 @@ msgstr "yeni bir anahtar çifti üretir"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "yeni bir anahtar çifti üretir"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "yeni bir anahtar çifti üretir"
 
 msgid "full featured key pair generation"
@@ -2282,6 +2292,11 @@ msgstr "%s:%d: geçersiz içselleştirme seçenekleri\n"
 msgid "invalid import options\n"
 msgstr "içselleştirme seçenekleri geçersiz\n"
 
+#, fuzzy, c-format
+#| msgid "invalid list options\n"
+msgid "invalid filter option: %s\n"
+msgstr "liste seçenekleri geçersiz\n"
+
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d geçersiz dışsallaştırma seçenekleri\n"
@@ -2616,6 +2631,11 @@ msgstr "ithalat sonrası güvence veritabanını güncellemez"
 msgid "do not update the trustdb after import"
 msgstr "ithalat sonrası güvence veritabanını güncellemez"
 
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "show key during import"
+msgstr "parmakizini gösterir"
+
 msgid "only accept updates to existing keys"
 msgstr "güncellemeleri sadece mevcut anahtarlar için kabul eder"
 
@@ -2624,6 +2644,9 @@ msgstr "ithalat sonrası anahtardan kullanışsız parçaları kaldırır"
 
 msgid "remove as much as possible from key after import"
 msgstr "ithalat sonrası anahtardan mümkün olduğunca çok şey kaldırır"
+
+msgid "run import filters and export key immediately"
+msgstr ""
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2771,11 +2794,6 @@ msgstr "anahtar %s: yeni anahtar - atlandı\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "yazılabilir bir anahtar zinciri yok: %s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "\"%s\"e yazıyor\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3566,6 +3584,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Güncelleme gereği olmadığından anahtar değişmedi.\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Anahtar üretimi başarısızlığa uğradı: %s\n"
+
+#, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "parmakizi geçersiz"
@@ -3903,6 +3926,10 @@ msgstr ""
 
 msgid "no secret key\n"
 msgstr "gizli anahtar yok\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4438,10 +4465,6 @@ msgstr[1] ""
 msgid "Keyring"
 msgstr "Anahtar zinciri"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "\"%s\" atlandı: %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Birincil anahtar parmak izi:"
 
@@ -4560,6 +4583,10 @@ msgstr "%s anahtarı %s adresinden isteniyor\n"
 #| msgid "no keyserver action!\n"
 msgid "no keyserver known\n"
 msgstr "bir anahtar sunucusu eylemi yok!\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "\"%s\" atlandı: %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"

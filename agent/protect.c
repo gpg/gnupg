@@ -42,12 +42,6 @@
 #include "sexp-parse.h"
 
 
-#if GCRYPT_VERSION_NUMBER < 0x010700
-# define OCB_MODE_SUPPORTED 0
-#else
-# define OCB_MODE_SUPPORTED 1
-#endif
-
 /* To use the openpgp-s2k3-ocb-aes scheme by default set the value of
  * this macro to 1.  Note that the caller of agent_protect may
  * override this default.  */
@@ -353,16 +347,11 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
   *resultlen = 0;
   *result = NULL;
 
-  if (use_ocb && !OCB_MODE_SUPPORTED)
-    return gpg_error (GPG_ERR_UNSUPPORTED_PROTECTION);
-
   modestr = (use_ocb? "openpgp-s2k3-ocb-aes"
              /*   */: "openpgp-s2k3-sha1-" PROT_CIPHER_STRING "-cbc");
 
   rc = gcry_cipher_open (&hd, PROT_CIPHER,
-#if OCB_MODE_SUPPORTED
                          use_ocb? GCRY_CIPHER_MODE_OCB :
-#endif
                          GCRY_CIPHER_MODE_CBC,
                          GCRY_CIPHER_SECURE);
   if (rc)
@@ -500,7 +489,6 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
           p += blklen;
         }
       assert ( p - outbuf == outlen);
-#if OCB_MODE_SUPPORTED
       if (use_ocb)
         {
           gcry_cipher_final (hd);
@@ -512,7 +500,6 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
             }
         }
       else
-#endif /*OCB_MODE_SUPPORTED*/
         {
           rc = gcry_cipher_encrypt (hd, outbuf, enclen, NULL, 0);
         }
@@ -755,9 +742,6 @@ do_decryption (const unsigned char *aad_begin, size_t aad_len,
   unsigned char *outbuf;
   size_t reallen;
 
-  if (is_ocb && !OCB_MODE_SUPPORTED)
-    return gpg_error (GPG_ERR_UNSUPPORTED_PROTECTION);
-
   blklen = gcry_cipher_get_algo_blklen (prot_cipher);
   if (is_ocb)
     {
@@ -774,9 +758,7 @@ do_decryption (const unsigned char *aad_begin, size_t aad_len,
     }
 
   rc = gcry_cipher_open (&hd, prot_cipher,
-#if OCB_MODE_SUPPORTED
                          is_ocb? GCRY_CIPHER_MODE_OCB :
-#endif
                          GCRY_CIPHER_MODE_CBC,
                          GCRY_CIPHER_SECURE);
   if (rc)
@@ -813,7 +795,6 @@ do_decryption (const unsigned char *aad_begin, size_t aad_len,
   /* Decrypt.  */
   if (!rc)
     {
-#if OCB_MODE_SUPPORTED
       if (is_ocb)
         {
           rc = gcry_cipher_authenticate (hd, aad_begin,
@@ -833,7 +814,6 @@ do_decryption (const unsigned char *aad_begin, size_t aad_len,
             rc = gcry_cipher_checktag (hd, protected + protectedlen - 16, 16);
         }
       else
-#endif /*OCB_MODE_SUPPORTED*/
         {
           rc = gcry_cipher_decrypt (hd, outbuf, protectedlen,
                                     protected, protectedlen);
@@ -1177,8 +1157,7 @@ agent_unprotect (ctrl_t ctrl,
         is_ocb = algotable[i].is_ocb;
         break;
       }
-  if (i == DIM (algotable)
-      || (is_ocb && !OCB_MODE_SUPPORTED))
+  if (i == DIM (algotable))
     return gpg_error (GPG_ERR_UNSUPPORTED_PROTECTION);
 
   if (!prot_cipher)  /* This is "openpgp-native".  */

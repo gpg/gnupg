@@ -1838,16 +1838,21 @@ msgstr "borrar tanto como sea posible de la clave al exportar"
 msgid " - skipped"
 msgstr "%s: omitido: %s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "escribiendo en `%s'\n"
+
+#, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "clave %s: material de la clave en la tarjeta - omitida\n"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "no se permite exportar claves secretas\n"
 
 #, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "clave %s: clave estilo PGP 2.x - omitida\n"
-
-#, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "clave %s: material de la clave en la tarjeta - omitida\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "ATENCIÓN: no se ha exportado nada\n"
@@ -1965,6 +1970,11 @@ msgstr "genera un nuevo par de claves"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "genera un nuevo par de claves"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "genera un nuevo par de claves"
 
 msgid "full featured key pair generation"
@@ -2326,6 +2336,11 @@ msgstr "%s:%d: opciones de importación inválidas\n"
 msgid "invalid import options\n"
 msgstr "opciones de importación inválidas\n"
 
+#, fuzzy, c-format
+#| msgid "invalid list options\n"
+msgid "invalid filter option: %s\n"
+msgstr "lista de opciones inválida\n"
+
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: opciones de exportación inválidas\n"
@@ -2657,6 +2672,11 @@ msgstr "no actualiza la base de datos de confianza después de importar"
 msgid "do not update the trustdb after import"
 msgstr "no actualiza la base de datos de confianza después de importar"
 
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "show key during import"
+msgstr "muestra huella dactilar de la clave"
+
 msgid "only accept updates to existing keys"
 msgstr "sólo aceptar actualizaciones de claves ya existentes"
 
@@ -2665,6 +2685,9 @@ msgstr "borrar partes inútiles de la clave después de importar"
 
 msgid "remove as much as possible from key after import"
 msgstr "borrar tanto como sea posible de la clave tras importar"
+
+msgid "run import filters and export key immediately"
+msgstr ""
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2810,11 +2833,6 @@ msgstr "clave %s: clave nueva - omitida\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "anillo de claves no escribible encontrado: %s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "escribiendo en `%s'\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3573,6 +3591,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Clave sin cambios, no se necesita actualización.\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Creación de la clave fallida: %s\n"
+
+#, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "huella dactilar no válida"
@@ -3889,6 +3912,11 @@ msgstr "¿Crear los certificados de revocación realmente? (s/N) "
 
 msgid "no secret key\n"
 msgstr "no hay clave secreta\n"
+
+#, fuzzy, c-format
+#| msgid "revoke a user ID"
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr "revocar un identificador de usuario"
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4415,10 +4443,6 @@ msgstr[1] ""
 msgid "Keyring"
 msgstr "Anillo de claves"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "omitido \"%s\": %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Huellas dactilares de la clave primaria:"
 
@@ -4537,6 +4561,10 @@ msgstr "solicitando clave %s de %s\n"
 #| msgid "no keyserver action!\n"
 msgid "no keyserver known\n"
 msgstr "¡no se solicita ninguna acción al servidor de claves!\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "omitido \"%s\": %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"
@@ -10623,9 +10651,6 @@ msgstr ""
 
 #~ msgid "revuid"
 #~ msgstr "revidu"
-
-#~ msgid "revoke a user ID"
-#~ msgstr "revocar un identificador de usuario"
 
 #~ msgid "revkey"
 #~ msgstr "revcla"

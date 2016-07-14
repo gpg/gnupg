@@ -1110,9 +1110,13 @@ ffi_list2intv (scheme *sc, pointer list, int **intv, size_t *len)
 char *
 ffi_schemify_name (const char *s, int macro)
 {
-  char *n = strdup (s), *p;
-  if (n == NULL)
-    return s;
+  /* Fixme: We should use xtrystrdup and return NULL.  However, this
+   * requires a lot more changes.  Simply returning S as done
+   * originally is not an option.  */
+  char *n = xstrdup (s), *p;
+  /* if (n == NULL) */
+  /*   return s; */
+
   for (p = n; *p; p++)
     {
       *p = (char) tolower (*p);

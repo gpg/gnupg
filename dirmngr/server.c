@@ -274,14 +274,12 @@ strcpy_escaped_plus (char *d, const unsigned char *s)
 }
 
 
-/* This fucntion returns true if a Tor server is running.  The sattus
+/* This function returns true if a Tor server is running.  The sattus
    is cached for the current conenction.  */
 static int
 is_tor_running (ctrl_t ctrl)
 {
-#if ASSUAN_VERSION_NUMBER >= 0x020402
-  /* Check whether we can connect to the proxy.  We use a
-     special feature introduced with libassuan 2.4.2.  */
+  /* Check whether we can connect to the proxy.  */
 
   if (!ctrl || !ctrl->server_local)
     return 0; /* Ooops.  */
@@ -300,9 +298,6 @@ is_tor_running (ctrl_t ctrl)
         }
     }
   return (ctrl->server_local->tor_state > 0);
-#else /* Libassuan < 2.4.2 */
-  return 0;  /* We don't know.  */
-#endif
 }
 
 

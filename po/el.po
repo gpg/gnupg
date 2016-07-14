@@ -1792,6 +1792,16 @@ msgstr ""
 msgid " - skipped"
 msgstr "%s: παραλείφθηκε: %s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "εγγραφή στο  `%s'\n"
+
+#, fuzzy, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr ""
+"κλειδί %08lX: η υπογραφή του υποκλειδιού σε λάθος σημείο - παραλείφθηκε\n"
+
 #, fuzzy
 msgid "exporting secret keys not allowed\n"
 msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
@@ -1799,11 +1809,6 @@ msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
 #, fuzzy, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "κλειδί %08lX:  κλειδί τύπου PGP 2.x - παραλείφθηκε\n"
-
-#, fuzzy, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr ""
-"κλειδί %08lX: η υπογραφή του υποκλειδιού σε λάθος σημείο - παραλείφθηκε\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: δεν έγινε καμμία εξαγωγή\n"
@@ -1923,6 +1928,11 @@ msgstr "δημιουργία ενός νέου ζεύγους κλειδιών"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "δημιουργία ενός νέου ζεύγους κλειδιών"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "δημιουργία ενός νέου ζεύγους κλειδιών"
 
 msgid "full featured key pair generation"
@@ -2262,6 +2272,10 @@ msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: μη έγκυρες επιλογές ειγαγωγής\n"
 
 msgid "invalid import options\n"
+msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
+
+#, fuzzy, c-format
+msgid "invalid filter option: %s\n"
 msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
 
 #, c-format
@@ -2606,6 +2620,10 @@ msgstr "ανανέωση της βάσης δεδομένων εμπιστοσύνης"
 msgid "do not update the trustdb after import"
 msgstr "ανανέωση της βάσης δεδομένων εμπιστοσύνης"
 
+#, fuzzy
+msgid "show key during import"
+msgstr "απεικόνιση του fingerprint"
+
 msgid "only accept updates to existing keys"
 msgstr ""
 
@@ -2614,6 +2632,9 @@ msgid "remove unusable parts from key after import"
 msgstr "μη χρησιμοποιήσιμο μυστικό κλειδί"
 
 msgid "remove as much as possible from key after import"
+msgstr ""
+
+msgid "run import filters and export key immediately"
 msgstr ""
 
 #, c-format
@@ -2754,11 +2775,6 @@ msgstr "κλειδί %08lX:  νέο κλειδί - παραλείφθηκε\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "δεν βρεθηκε εγγράψιμη κλειδοθήκη: %s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "εγγραφή στο  `%s'\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3559,6 +3575,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Το κλειδί δεν άλλαξε οπότε δεν χρειάζεται ενημέρωση.\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Η δημιουργία κλειδιού απέτυχε: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
 
@@ -3892,6 +3913,10 @@ msgstr "Σίγουρα να δημιουργηθούν τα πιστοποιητικά ανάκλησης; (y/N)"
 
 msgid "no secret key\n"
 msgstr "κανένα μυστικό κλειδί\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4423,10 +4448,6 @@ msgstr[1] ""
 msgid "Keyring"
 msgstr "Κλειδοθήκη"
 
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "παραλείφθηκε `%s': %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Αποτύπωμα πρωτεύων κλειδιού:"
 
@@ -4544,6 +4565,10 @@ msgstr "αίτηση κλειδιού %08lX από το %s\n"
 #, fuzzy
 msgid "no keyserver known\n"
 msgstr "μη έγκυρες επιλογές εξαγωγής\n"
+
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "παραλείφθηκε `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"

@@ -1859,6 +1859,17 @@ msgstr ""
 msgid " - skipped"
 msgstr "%s: es descarta: %s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "s'està escrivint en «%s»\n"
+
+#, fuzzy, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr ""
+"clau %08lX: la signatura de la subclau és en el lloc equivocat - es "
+"descarta\n"
+
 #, fuzzy
 msgid "exporting secret keys not allowed\n"
 msgstr "s'està escrivint la clau secreta a «%s»\n"
@@ -1866,12 +1877,6 @@ msgstr "s'està escrivint la clau secreta a «%s»\n"
 #, fuzzy, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "clau %08lX: clau d'estil PGP 2.x - es descarta\n"
-
-#, fuzzy, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr ""
-"clau %08lX: la signatura de la subclau és en el lloc equivocat - es "
-"descarta\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "AVÍS: no s'ha exportat res\n"
@@ -1993,6 +1998,11 @@ msgstr "genera un nou parell de claus"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "genera un nou parell de claus"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "genera un nou parell de claus"
 
 msgid "full featured key pair generation"
@@ -2343,6 +2353,10 @@ msgstr "%s:%d: opcions d'importanció no vàlides\n"
 msgid "invalid import options\n"
 msgstr "opcions d'importació no vàlides\n"
 
+#, fuzzy, c-format
+msgid "invalid filter option: %s\n"
+msgstr "opcions d'importació no vàlides\n"
+
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d opcions d'exportació no vàlides\n"
@@ -2685,6 +2699,10 @@ msgstr "actualitza la base de dades de confiança"
 msgid "do not update the trustdb after import"
 msgstr "actualitza la base de dades de confiança"
 
+#, fuzzy
+msgid "show key during import"
+msgstr "mostra empremta"
+
 msgid "only accept updates to existing keys"
 msgstr ""
 
@@ -2693,6 +2711,9 @@ msgid "remove unusable parts from key after import"
 msgstr "la clau secreta és inusable"
 
 msgid "remove as much as possible from key after import"
+msgstr ""
+
+msgid "run import filters and export key immediately"
 msgstr ""
 
 #, c-format
@@ -2833,11 +2854,6 @@ msgstr "clau %08lX: clau nova - es descarta \n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "no s'ha trobat cap anell escrivible: %s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "s'està escrivint en «%s»\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3653,6 +3669,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "La clau no ha canviat, per tant no cal actualització.\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "La generació de claus ha fallat: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "error: l'empremta digital és invàlida\n"
 
@@ -3990,6 +4011,10 @@ msgstr "Realment voleu crear els certificats de revocació? (s/N) "
 
 msgid "no secret key\n"
 msgstr "ho hi ha clau secreta\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4526,10 +4551,6 @@ msgstr[1] ""
 msgid "Keyring"
 msgstr "Anell"
 
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "es descarta «%s»: %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Empremtes digital de la clau primària:"
 
@@ -4651,6 +4672,10 @@ msgstr "s'està sol·licitant la clau %08lX de %s\n"
 #, fuzzy
 msgid "no keyserver known\n"
 msgstr "error de servidor de claus"
+
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "es descarta «%s»: %s\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"
