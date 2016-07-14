@@ -1,5 +1,59 @@
-Noteworthy changes in version 2.1.14 (unreleased)
+Noteworthy changes in version 2.1.14 (2016-07-14)
 -------------------------------------------------
+
+ * gpg: Removed options --print-dane-records and --print-pka-records.
+   The new export options "export-pka" and "export-dane" can instead
+   be used with the export command.
+
+ * gpg: New options --import-filter and --export-filter.
+
+ * gpg: New import options "import-show" and "import-export".
+
+ * gpg: New option --no-keyring.
+
+ * gpg: New command --quick-revuid.
+
+ * gpg: New options -f/--recipient-file and -F/--hidden-recipient-file
+   to directly specify encryption keys.
+
+ * gpg: New option --mimemode to indicate that the content is a MIME
+   part.  Does only enable --textmode right now.
+
+ * gpg: New option --rfc4880bis to allow experiments with proposed
+   changes to the current OpenPGP specs.
+
+ * gpg: Fix regression in the "fetch" sub-command of --card-edit.
+
+ * gpg: Fix regression since 2.1 in option --try-all-secrets.
+
+ * gpgv: Change default options for extra security.
+
+ * gpgsm: No more root certificates are installed by default.
+
+ * agent: "updatestartuptty" does now affect more environment
+   variables.
+
+ * scd: The option --homedir does now work with scdaemon.
+
+ * scd: Support some more GEMPlus card readers.
+
+ * gpgtar: Fix handling of '-' as file name.
+
+ * gpgtar: New commands --create and --extract.
+
+ * gpgconf: Tweak for --list-dirs to better support shell scripts.
+
+ * tools: Add programs gpg-wks-client and gpg-wks-server to implement
+   a Web Key Service.  The configure option --enable-wks-tools is
+   required to build them; they should be considered Beta software.
+
+ * tests: Complete rework of the openpgp part of the test suite.  The
+   test scripts have been changed from Bourne shell scripts to Scheme
+   programs.  A customized scheme interpreter (gpgscm) is included.
+   This change was triggered by the need to run the test suite on
+   non-Unix platforms.
+
+ * The rendering of the man pages has been improved.
 
 
 Noteworthy changes in version 2.1.13 (2016-06-16)
@@ -218,7 +272,8 @@ Noteworthy changes in version 2.1.9 (2015-10-09)
 ------------------------------------------------
 
  * gpg: Allow fetching keys via OpenPGP DANE (--auto-key-locate).  New
-   option --print-dane-records.
+   option --print-dane-records.  [Update: --print-dane-records replaced
+   in 2.1.4.]
 
  * gpg: Fix for a problem with PGP-2 keys in a keyring.
 
@@ -372,7 +427,8 @@ Noteworthy changes in version 2.1.3 (2015-04-11)
  * gpg: New option --with-icao-spelling.
 
  * gpg: New option --print-pka-records.  Changed the PKA method to use
-   CERT records and hashed names.
+   CERT records and hashed names.  [Update: --print-pka-records
+   replaced in 2.1.4.]
 
  * gpg: New command --list-gcrypt-config.  New parameter "curve"
    for --list-config.
