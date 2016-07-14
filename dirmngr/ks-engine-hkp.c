@@ -1207,12 +1207,16 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
       pattern = fprbuf;
       break;
     case KEYDB_SEARCH_MODE_FPR16:
-      bin2hex (desc.u.fpr, 16, fprbuf);
+      fprbuf[0] = '0';
+      fprbuf[1] = 'x';
+      bin2hex (desc.u.fpr, 16, fprbuf+2);
       pattern = fprbuf;
       break;
     case KEYDB_SEARCH_MODE_FPR20:
     case KEYDB_SEARCH_MODE_FPR:
-      bin2hex (desc.u.fpr, 20, fprbuf);
+      fprbuf[0] = '0';
+      fprbuf[1] = 'x';
+      bin2hex (desc.u.fpr, 20, fprbuf+2);
       pattern = fprbuf;
       break;
     default:
