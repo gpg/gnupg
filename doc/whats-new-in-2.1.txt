@@ -6,7 +6,7 @@
                       ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-                               2016-01-14
+                               2016-07-14
 
 
 Table of Contents
@@ -27,10 +27,12 @@ Table of Contents
 .. 1.12 Auto-generated revocation certificates
 .. 1.13 Improved card support
 .. 1.14 New format for key listings
-.. 1.15 Support for Putty
-.. 1.16 Export of SSH public keys
-.. 1.17 Improved X.509 certificate creation
-.. 1.18 Scripts to create a Windows installer
+.. 1.15 Recipient key from file
+.. 1.16 Using gpg as a filter
+.. 1.17 Support for Putty
+.. 1.18 Export of SSH public keys
+.. 1.19 Improved X.509 certificate creation
+.. 1.20 Scripts to create a Windows installer
 
 
 A possibly revised version of this article can be found at:
@@ -84,6 +86,10 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   • The format of the key listing has been changed to better identify
     the properties of a key.
 
+  • A file with the recipient’s key may now be used directly.
+
+  • Gpg can be used to filter out parts of a key.
+
   • The gpg-agent may now be used on Windows as /pageant/ replacement
     for /putty/ in the same way it is used for years on Unix as
     /ssh-agent/ replacement.
@@ -96,7 +102,9 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 
   • The scripts to create a Windows installer are now part of GnuPG.
 
-  Now for the detailed description of these new features:
+  Now for the detailed description of these new features.  Note that the
+  examples assume that that /gpg/ is installed as /gpg/.  Your
+  installation may have it installed under the name /gpg2/.
 
 
 1.1 Removal of the secret keyring
@@ -176,7 +184,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   This is best shown with an example:
 
   ┌────
-  │ $ gpg2 --gen-key
+  │ $ gpg --gen-key
   │ gpg (GnuPG) 2.1.0; Copyright (C) 2014 Free Software Foundation, Inc.
   │ This is free software: you are free to change and redistribute it.
   │ There is NO WARRANTY, to the extent permitted by law.
@@ -219,7 +227,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   `--expert' is the enabler:
 
   ┌────
-  │ $ gpg2 --expert --full-gen-key
+  │ $ gpg --expert --full-gen-key
   │ gpg (GnuPG) 2.1.0; Copyright (C) 2014 Free Software Foundation, Inc.
   │ This is free software: you are free to change and redistribute it.
   │ There is NO WARRANTY, to the extent permitted by law.
@@ -288,7 +296,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   any time.  If you want to create a signing key you may do it this way:
 
   ┌────
-  │ $ gpg2 --expert --full-gen-key
+  │ $ gpg --expert --full-gen-key
   │ gpg (GnuPG) 2.1.0; Copyright (C) 2014 Free Software Foundation, Inc.
   │ This is free software: you are free to change and redistribute it.
   │ There is NO WARRANTY, to the extent permitted by law.
@@ -359,7 +367,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   a key.  This can now be accomplished with a few new commands:
 
   ┌────
-  │ $ gpg2 --batch --quick-gen-key 'Daniel Ellsberg <ellsberg@example.org>'
+  │ $ gpg --batch --quick-gen-key 'Daniel Ellsberg <ellsberg@example.org>'
   │ gpg: key 911B90A9 marked as ultimately trusted
   └────
 
@@ -369,7 +377,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   confirmation and show the resulting key:
 
   ┌────
-  │ $ gpg2 --quick-gen-key 'Daniel Ellsberg <ellsberg@example.org>'
+  │ $ gpg --quick-gen-key 'Daniel Ellsberg <ellsberg@example.org>'
   │ About to create a key for:
   │     "Daniel Ellsberg <ellsberg@example.org>"
   │
@@ -389,7 +397,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   key:
 
   ┌────
-  │ $ gpg2 --quick-sign-key  '15CB 723E 2000 A1A8 2505  F3B7 CC00 B501 BD19 AC1C'
+  │ $ gpg --quick-sign-key  '15CB 723E 2000 A1A8 2505  F3B7 CC00 B501 BD19 AC1C'
   │
   │ pub  rsa2048/BD19AC1C
   │      created: 2014-11-04  expires: never       usage: SC
@@ -401,10 +409,10 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 
   In case the key has already been signed, the command prints a note and
   exits with success.  In case you want to check that it really worked,
-  use `=--check-sigs' as usual:
+  use `--check-sigs' as usual:
 
   ┌────
-  │ $ gpg2 --check-sigs  '15CB 723E 2000 A1A8 2505  F3B7 CC00 B501 BD19 AC1C'
+  │ $ gpg --check-sigs  '15CB 723E 2000 A1A8 2505  F3B7 CC00 B501 BD19 AC1C'
   │ gpg: checking the trustdb
   │ gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
   │ gpg: depth: 0  valid:   6  signed:   1  trust: 0-, 0q, 0n, 0m, 0f, 6u
@@ -427,14 +435,46 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   existing key:
 
   ┌────
-  │ $ gpg2 -k 8CFDE12197965A9A
+  │ $ gpg -k 8CFDE12197965A9A
   │ pub   ed25519/8CFDE12197965A9A 2014-08-19
   │ uid               [ unknown] EdDSA sample key 1
-  │ $ gpg2 --quick-adduid 8CFDE12197965A9A 'Sample 2 <me@example.org>'
-  │ $ gpg2 -k 8CFDE12197965A9A
+  │ $ gpg --quick-adduid 8CFDE12197965A9A 'Sample 2 <me@example.org>'
+  │ $ gpg -k 8CFDE12197965A9A
   │ pub   ed25519/8CFDE12197965A9A 2014-08-19
   │ uid               [ unknown] Sample 2 <me@example.org>
   │ uid               [ unknown] EdDSA sample key 1
+  └────
+
+  Since version 2.1.13 another subkey can directly be added to an
+  existing key:
+
+  ┌────
+  │ $ gpg --quick-addkey 15CB723E2000A1A82505F3B7CC00B501BD19AC1C - - 2016-12-31
+  │ $ gpg -k 15CB723E2000A1A82505F3B7CC00B501BD19AC1C
+  │ pub   rsa2048 2014-11-04 [SC]
+  │       15CB723E2000A1A82505F3B7CC00B501BD19AC1C
+  │ uid           [ unknown] Daniel Ellsberg <ellsberg@example.org>
+  │ sub   rsa2048 2014-11-04 [E]
+  │ sub   rsa2048 2016-06-06 [E] [expires: 2016-12-31]
+  └────
+
+  Here we created another encryption subkey with an expiration date.
+  The key listing also shows the default key listing format introduced
+  with 2.1.13.  There are a lot of other options to the `--quick-addkey'
+  command which are described in the manual.
+
+  Since version 2.1.14 it possible to revoke a user id on an existing
+  key:
+
+  ┌────
+  │ $ gpg -k 8CFDE12197965A9A
+  │ pub   ed25519/8CFDE12197965A9A 2014-08-19
+  │ uid               [ unknown] Sample 2 <me@example.org>
+  │ uid               [ unknown] EdDSA sample key 1
+  │ $ gpg --quick-revuid 8CFDE12197965A9A 'EdDSA sample key 1'
+  │ $ gpg -k 8CFDE12197965A9A
+  │ pub   ed25519/8CFDE12197965A9A 2014-08-19
+  │ uid               [ unknown] Sample 2 <me@example.org>
   └────
 
 
@@ -493,7 +533,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 ───────────────────────────────
 
   A deficit of the OpenPGP protocol is that signatures carry only a
-  limited indication on which public has been used to create a
+  limited indication on which public key has been used to create a
   signature.  Thus a verification engine may only use this “long key id”
   to look up the the key in its own store or from a public keyserver.
   Unfortunately it has now become possible to create a key with a long
@@ -533,19 +573,19 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   enable instant round-robin DNS assignment of random keyservers.  A
   problem with that approach is that the DNS resolver is not aware of
   the state of the keyserver.  If a keyserver has gone down or a routing
-  problems occurs, /gpg/ and its keyserver helpers were not ware of it
+  problems occurs, /gpg/ and its keyserver helpers were not aware of it
   and would try over and over to use the same, dead, keyserver up until
   the DNS information expires and a the DNS resolver assigned a new
   server from the pool.
 
   The new /dirmngr/ in GnuPG does not use the implicit round-robin of
-  the DNS resolver but uses its own DNS look up and keeps an internal
+  the DNS resolver but uses its own DNS lookup and keeps an internal
   table of all hosts from the pool along with the encountered aliveness
   state.  Thus after a failure (timeout) of a request, /dirmngr/ flags a
   host as dead and randomly selects another one from the pool.  After a
   few hours the flag is removed so that the host will be tried again.
-  It is also possible to mark a specif host from a pool explicitly as
-  dead so that it won’t be used in future.  To interact with the
+  It is also possible to mark a specific host from a pool explicitly as
+  dead so that it won’t be used in the future.  To interact with the
   /dirmngr/ the `gpg-connect-agent' tool is used:
 
   ┌────
@@ -572,11 +612,11 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   public keys (certificates) which we call a /keybox/. That file format
   carries meta information about the stored keys and thus allows
   searching without actually parsing the key and computing fingerprints
-  and such.  The /keybox/ format has been designed protocol independent
-  and with 2.1 support for OpenPGP keys has been added.  Random access
-  to the keys is now really fast and keyrings with 30000 keys and more
-  are now easily possible.  That change also enables us to easily
-  introduce other storage methods
+  and such.  The /keybox/ format has been designed to be protocol
+  independent and with 2.1 support for OpenPGP keys has been added.
+  Random access to the keys is now really fast and keyrings with 30000
+  keys and more are now easily possible.  That change also enables us to
+  easily introduce other storage methods
 
   If no `pubring.gpg' is found, /gpg/ defaults to the new /keybox/
   format and creates a `pubring.kbx' keybox file.  If such a keybox file
@@ -596,8 +636,8 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   │ $ cd ~/.gnupg
   │ $ gpg --export-ownertrust >otrust.lst
   │ $ mv pubring.gpg publickeys
-  │ $ gpg2 --import-options import-local-sigs --import publickeys
-  │ $ gpg2 --import-ownertrust otrust.lst
+  │ $ gpg --import-options import-local-sigs --import publickeys
+  │ $ gpg --import-ownertrust otrust.lst
   └────
 
   You may then rename the `publickeys' file back so that it can be used
@@ -621,12 +661,12 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 ──────────────────────────
 
   The /scdaemon/, which is responsible for accessing smardcards and
-  other tokens, has received many updates.  In particular plugable USB
+  other tokens, has received many updates.  In particular pluggable USB
   readers with a fixed card now work smoothless and similar to standard
   readers.  The latest features of the [gnuk] token are supported.  Code
   for the SmartCard-HSM has been added.  More card readers with a PIN
   pad are supported.  The internal CCID driver does now also work with
-  certain non-auto configuration equipped readers.
+  certain non-auto-configuration equipped readers.
 
 
   [gnuk] http://www.fsij.org/doc-gnuk/
@@ -645,13 +685,21 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 
   ┌────
   │ pub   2048D/1E42B367 2007-12-31 [expires: 2018-12-31]
-  │ pub   dsa2048/1E42B367 2007-12-31 [expires: 2018-12-31]
-  │ pub   ed25519/0AA914C9 2014-10-18
+  │
+  │ pub   dsa2048 2007-12-31 [SC] [expires: 2018-12-31]
+  │       80615870F5BAD690333686D0F2AD85AC1E42B367
+  │
+  │ pub   ed25519 2014-10-18 [SC]
+  │       0B7F0C1D690BC440D5AFF9B56902F00A0AA914C9
   └────
 
-  The first two lines show the same key in the old format and in the new
-  format.  The third line shows an example of an ECC key using the
-  ed25519 curve.
+  The first two "pub"-items show the same key in the old format and in
+  the new format.  The third "pub"-item shows an example of an ECC key
+  using an ed25519 curve.  Note that since version 2.1.13 the key id is
+  not anymore shown.  Instead the full fingerprint is shown in a compact
+  format; by using the option `--with-fingerprint' the non-compact
+  format is used.  The `--keyid-format' option can be used to switch
+  back to the discouraged format which prints only the key id.
 
   As a further change the validity of a key is now shown by default;
   that is `show-uid-validity' is implicitly used for the
@@ -659,7 +707,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 
   The annotated key listing produced by the `--with-colons' options did
   not change.  However a couple of new fields have been added, for
-  example if the new option `--with-secret-' is used the “S/N of a token
+  example if the new option `--with-secret' is used the “S/N of a token
   field” indicates the presence of a secret key even in a public key
   listing.  This option is supported by recent [GPGME] versions and
   makes writing of key manager software easier.
@@ -668,7 +716,54 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   [GPGME] https://gnupg.org/related_software/gpgme/
 
 
-1.15 Support for Putty
+1.15 Recipient key from file
+────────────────────────────
+
+  Since version 2.1.14 it is possible to specify the recipient’s key by
+  providing a file with that key.  This done with the new options
+  `--recipient-file' (or short `-f') and `--hidden-recipient-file' (or
+  short `-F').  The file must containing exactly one key in binary or
+  armored format.  All keys specified with those options are always
+  considered fully valid.  These option may be mixed with the regular
+  options to specify a key.  Along with the new convenience option
+  `--no-keyring' it is now possible to encrypt data without maintaining
+  a local keyring.
+
+
+1.16 Using gpg as a filter
+──────────────────────────
+
+  Since version 2.1.14 the export and import options have been enhanced
+  to allow the use of /gpg/ to modify a key without first stroing it in
+  the keyring.  For example:
+
+  ┌────
+  │ $ gpg --import-options import-minimal,import-export \
+  │       --output smallkey.gpg --import key.gpg
+  └────
+
+  copies the keys in `keys.gpg' to `smallkey.gpg' while also removing
+  all key signatures except for the latest self-signatures.  This can
+  even be further restricted to copy only a specific user ID to the
+  output file:
+
+  ┌────
+  │ $ gpg --import-options import-minimal,import-export \
+  │       --import-filter keepuid='mbox = foo@example.org' \
+  │       --output smallkey.gpg --import key.gpg
+  └────
+
+  Here the new `--import-filter' option is used to remove all user IDs
+  except for those which have the mail address “foo@example.org”.  The
+  same is also possible while exporting a key:
+
+  ┌────
+  │ $ gpg --export-filter keepuid='mbox = me@example.org' \
+  │       --armor --export 8CFDE12197965A9A >smallkey.asc
+  └────
+
+
+1.17 Support for Putty
 ──────────────────────
 
   On Windows the new option `--enable-putty-support' allows gpg-agent to
@@ -680,7 +775,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   [Putty] http://www.chiark.greenend.org.uk/~sgtatham/putty/
 
 
-1.16 Export of SSH public keys
+1.18 Export of SSH public keys
 ──────────────────────────────
 
   The new command `--export-ssh-key' makes it easy to export an /ssh/
@@ -691,7 +786,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   utility /gpgkey2ssh/.
 
 
-1.17 Improved X.509 certificate creation
+1.19 Improved X.509 certificate creation
 ────────────────────────────────────────
 
   In addition to an improved certificate signing request menu, it is now
@@ -701,7 +796,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   In batch mode the certificate creation dialog can now be controlled by
   a parameter file with several new keywords.  Such a parameter file
   allows the creation of arbitrary X.509 certificates similar to what
-  can be done with /openssl/.  It may this be used as the base for a CA
+  can be done with /openssl/.  It may thus be used as the base for a CA
   software.  For details see the “CSR and certificate creation” section
   in the manual.
 
@@ -711,7 +806,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   and directly exported in a format suitable for OpenSSL based servers.
 
 
-1.18 Scripts to create a Windows installer
+1.20 Scripts to create a Windows installer
 ──────────────────────────────────────────
 
   GnuPG now comes with the /speedo/ build system which may be used to
@@ -739,7 +834,6 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   Support for keyserver access over TLS is currently not available but
   will be added with one of the next point releases.
 
-  [Wiki] https://wiki.gnupg.org/Build2.1_Windows
 
 
   # Copyright 2014--2016 The GnuPG Project.
@@ -751,3 +845,6 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   #
   # The canonical source for this article can be found in the gnupg-doc
   # git repository as web/faq/whats-new-in-2.1.org.
+
+
+  [Wiki] https://wiki.gnupg.org/Build2.1_Windows
