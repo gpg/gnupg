@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-06-16 17:04+0200\n"
+"PO-Revision-Date: 2016-07-14 15:55+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -1707,16 +1707,20 @@ msgstr "Während des Exports soviel wie möglich vom Schlüssel entfernen"
 msgid " - skipped"
 msgstr " - übersprungen"
 
+#, c-format
+msgid "writing to '%s'\n"
+msgstr "Schreiben nach '%s'\n"
+
+#, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "Schlüssel %s: Schlüsselmaterial ist auf einer Karte - übersprungen\n"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "Exportieren geheimer Schlüssel ist nicht erlaubt\n"
 
 #, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "Schlüssel %s: PGP 2.x-artiger Schlüssel - übersprungen\n"
-
-#, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "Schlüssel %s: Schlüsselmaterial ist auf einer Karte - übersprungen\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "WARNUNG: Nichts exportiert\n"
@@ -1827,6 +1831,9 @@ msgstr "Schnell ein neues Schlüsselpaar erzeugen"
 
 msgid "quickly add a new user-id"
 msgstr "Schnell eine neue User-ID anfügen"
+
+msgid "quickly revoke a user-id"
+msgstr "Schnell eine User-ID widerrufen"
 
 msgid "full featured key pair generation"
 msgstr "Ein neues Schlüsselpaar erzeugen (alle Optionen)"
@@ -2150,6 +2157,10 @@ msgstr "%s:%d: ungültige Import-Option\n"
 
 msgid "invalid import options\n"
 msgstr "Ungültige Import-Option\n"
+
+#, c-format
+msgid "invalid filter option: %s\n"
+msgstr "Ungültige Filter-Option: %s\n"
 
 #, c-format
 msgid "%s:%d: invalid export options\n"
@@ -2478,6 +2489,9 @@ msgstr "die \"Ownertrust\" Werte beim Import nicht löschen"
 msgid "do not update the trustdb after import"
 msgstr "ändern Sie die \"Trust\"-Datenbank nach dem Import nicht"
 
+msgid "show key during import"
+msgstr "Schlüssel beim Import anzeigen"
+
 msgid "only accept updates to existing keys"
 msgstr "Nur Änderungen bereits existierender Schlüssel vornehmen"
 
@@ -2486,6 +2500,9 @@ msgstr "entferne nach dem Import unbrauchbare Teile des Schlüssels"
 
 msgid "remove as much as possible from key after import"
 msgstr "nach dem Import soviel wie möglich aus dem Schlüssel entfernen"
+
+msgid "run import filters and export key immediately"
+msgstr "Import-Filter anwenden und Schlüssel direkt exportieren"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2630,10 +2647,6 @@ msgstr "Schlüssel %s: neuer Schlüssel - übersprungen\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "kein schreibbarer Schlüsselbund gefunden: %s\n"
-
-#, c-format
-msgid "writing to '%s'\n"
-msgstr "Schreiben nach '%s'\n"
 
 #, c-format
 msgid "error writing keyring '%s': %s\n"
@@ -3387,6 +3400,10 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Schlüssel ist nicht geändert worden, also ist kein Speichern nötig.\n"
 
 #, c-format
+msgid "User ID revocation failed: %s\n"
+msgstr "Widerufen der User-ID fehlgeschlagen: %s\n"
+
+#, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" ist kein Fingerabdruck\n"
 
@@ -3699,6 +3716,10 @@ msgstr "Wirklich ein Signatur-Widerrufszertifikat erzeugen? (j/N) "
 
 msgid "no secret key\n"
 msgstr "Kein geheimer Schlüssel\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr "Versuch eine nicht-User-ID zu widerrufen: %s\n"
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4202,10 +4223,6 @@ msgstr[1] "WARNUNG: %lu Schlüssel übersprungen, da sie zu groß sind\n"
 msgid "Keyring"
 msgstr "Schlüsselbund"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "übersprungen \"%s\": %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Haupt-Fingerabdruck  ="
 
@@ -4318,6 +4335,10 @@ msgstr "fordere Schlüssel %s von %s an\n"
 
 msgid "no keyserver known\n"
 msgstr "Kein Schlüsselserver bekannt\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "übersprungen \"%s\": %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"
