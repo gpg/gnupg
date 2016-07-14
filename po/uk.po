@@ -1684,6 +1684,10 @@ msgid " - skipped"
 msgstr " - пропущено"
 
 #, c-format
+msgid "writing to '%s'\n"
+msgstr "записуємо до «%s»\n"
+
+#, c-format
 msgid "key %s: key material on-card - skipped\n"
 msgstr "ключ %s: матеріал ключа на карті — пропущено\n"
 
@@ -2559,10 +2563,6 @@ msgstr "    вилучених підписів: %lu\n"
 #, c-format
 msgid "      user IDs cleaned: %lu\n"
 msgstr " вилучених ід. корист.: %lu\n"
-
-#, c-format
-msgid "writing to '%s'\n"
-msgstr "записуємо до «%s»\n"
 
 #, c-format
 msgid ""
@@ -4218,10 +4218,6 @@ msgstr[2] ""
 msgid "Keyring"
 msgstr "Сховище ключів"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "пропущено «%s»: %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Основний відбиток ключа:"
 
@@ -4339,6 +4335,10 @@ msgstr "надсилаємо запит щодо ключа %s з %s\n"
 
 msgid "no keyserver known\n"
 msgstr "немає відомих серверів ключів\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "пропущено «%s»: %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"

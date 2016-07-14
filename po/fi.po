@@ -1800,6 +1800,15 @@ msgstr ""
 msgid " - skipped"
 msgstr "%s: ohitettu: %s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "kirjoitetaan kohteeseen \"%s\"\n"
+
+#, fuzzy, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "avain %08lX: aliavaimen allekirjoitus väärässä paikassa - ohitetaan\n"
+
 #, fuzzy
 msgid "exporting secret keys not allowed\n"
 msgstr "kirjoitan salaisen avaimen kohteeseen \"%s\"\n"
@@ -1807,10 +1816,6 @@ msgstr "kirjoitan salaisen avaimen kohteeseen \"%s\"\n"
 #, fuzzy, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "avain %08lX: PGP 2.x -muodon avain - ohitetaan\n"
-
-#, fuzzy, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "avain %08lX: aliavaimen allekirjoitus väärässä paikassa - ohitetaan\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "VAROITUS: mitään ei viety\n"
@@ -1931,6 +1936,11 @@ msgstr "luo uusi avainpari"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "luo uusi avainpari"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "luo uusi avainpari"
 
 msgid "full featured key pair generation"
@@ -2267,6 +2277,10 @@ msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: virheelliset tuontivalitsimet\n"
 
 msgid "invalid import options\n"
+msgstr "virheelliset tuontivalitsimet\n"
+
+#, fuzzy, c-format
+msgid "invalid filter option: %s\n"
 msgstr "virheelliset tuontivalitsimet\n"
 
 #, c-format
@@ -2607,6 +2621,10 @@ msgstr "päivitä luottamustietokanta"
 msgid "do not update the trustdb after import"
 msgstr "päivitä luottamustietokanta"
 
+#, fuzzy
+msgid "show key during import"
+msgstr "näytä sormenjälki"
+
 msgid "only accept updates to existing keys"
 msgstr ""
 
@@ -2615,6 +2633,9 @@ msgid "remove unusable parts from key after import"
 msgstr "salaista avainta ei voi käyttää"
 
 msgid "remove as much as possible from key after import"
+msgstr ""
+
+msgid "run import filters and export key immediately"
 msgstr ""
 
 #, c-format
@@ -2757,11 +2778,6 @@ msgstr "avain %08lX: uusi avain - ohitetaan\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "kirjoitettavissa olevaa avainrengasta ei löydy: %s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "kirjoitetaan kohteeseen \"%s\"\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3553,6 +3569,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Päivitystä ei tarvita, koska avain ei ole muuttunut.\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Avaimen luonti epäonnistui: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "virhe: sormenjälki on väärä\n"
 
@@ -3876,6 +3897,10 @@ msgstr "Varmastiko luo mitätöintivarmenteet? (k/E) "
 
 msgid "no secret key\n"
 msgstr "salainen avain ei ole saatavilla\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4407,10 +4432,6 @@ msgstr[1] ""
 msgid "Keyring"
 msgstr "Avainrengas"
 
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "ohitetaan \"%s\": %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Ensisijaisen avaimen sormenjälki:"
 
@@ -4528,6 +4549,10 @@ msgstr "pyydetään avainta %08lX kohteesta %s\n"
 #, fuzzy
 msgid "no keyserver known\n"
 msgstr "virheelliset vientivalitsimet\n"
+
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "ohitetaan \"%s\": %s\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"

@@ -1666,16 +1666,20 @@ msgstr "匯出時盡可能地從金鑰中移除"
 msgid " - skipped"
 msgstr " - 已跳過"
 
+#, c-format
+msgid "writing to '%s'\n"
+msgstr "正在寫入 '%s'\n"
+
+#, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "金鑰 %s: 金鑰資料在卡片上 - 已跳過\n"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "不允許匯出私鑰\n"
 
 #, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "金鑰 %s: PGP 2.x 型態的金鑰 - 已跳過\n"
-
-#, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "金鑰 %s: 金鑰資料在卡片上 - 已跳過\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "警告: 沒有匯出任何東西\n"
@@ -1788,6 +1792,11 @@ msgstr "快速產生新的金鑰對"
 #, fuzzy
 #| msgid "quickly generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "快速產生新的金鑰對"
+
+#, fuzzy
+#| msgid "quickly generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "快速產生新的金鑰對"
 
 msgid "full featured key pair generation"
@@ -2102,6 +2111,11 @@ msgstr "%s:%d: 無效的匯入選項\n"
 
 msgid "invalid import options\n"
 msgstr "無效的匯入選項\n"
+
+#, fuzzy, c-format
+#| msgid "invalid list options\n"
+msgid "invalid filter option: %s\n"
+msgstr "無效的清單選項\n"
 
 #, c-format
 msgid "%s:%d: invalid export options\n"
@@ -2422,6 +2436,11 @@ msgstr "匯入後不要更新信任資料庫"
 msgid "do not update the trustdb after import"
 msgstr "匯入後不要更新信任資料庫"
 
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "show key during import"
+msgstr "顯示金鑰指紋"
+
 msgid "only accept updates to existing keys"
 msgstr "祇接受既有金鑰的更新"
 
@@ -2430,6 +2449,9 @@ msgstr "匯入後從金鑰中移除無法使用的部分"
 
 msgid "remove as much as possible from key after import"
 msgstr "匯入後盡可能地從金鑰中移除"
+
+msgid "run import filters and export key immediately"
+msgstr ""
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2569,10 +2591,6 @@ msgstr "金鑰 %s: 新的金鑰 - 已跳過\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "找不到可寫入的鑰匙圈: %s\n"
-
-#, c-format
-msgid "writing to '%s'\n"
-msgstr "正在寫入 '%s'\n"
 
 #, c-format
 msgid "error writing keyring '%s': %s\n"
@@ -3296,6 +3314,11 @@ msgstr "更新失敗: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "金鑰沒有變更所以不需要更新.\n"
 
+#, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "產生金鑰失敗: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" 不是指紋\n"
@@ -3605,6 +3628,10 @@ msgstr "真的要建立撤銷憑證嗎? (y/N) "
 
 msgid "no secret key\n"
 msgstr "沒有私鑰\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4099,10 +4126,6 @@ msgstr[0] "警告: %lu 把金鑰因尺寸太大已跳過\n"
 msgid "Keyring"
 msgstr "鑰匙圈"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "已跳過 \"%s\": %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "               主鑰指紋:"
 
@@ -4217,6 +4240,10 @@ msgstr "正在請求金鑰 %s 自 %s\n"
 #| msgid "invalid keyserver options\n"
 msgid "no keyserver known\n"
 msgstr "無效的金鑰伺服器選項\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "已跳過 \"%s\": %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"

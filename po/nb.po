@@ -1662,16 +1662,20 @@ msgstr "fjern så mye som mulig fra nøkkelen under eksportering"
 msgid " - skipped"
 msgstr ". Hoppet over"
 
+#, c-format
+msgid "writing to '%s'\n"
+msgstr "skriver til «%s»\n"
+
+#, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "nøkkel %s: nøkkelmateriell på kort - hoppet over\n"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "eksportering av hemmelige nøkler er ikke tillatt\n"
 
 #, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "nøkkel %s: PGP 2.x-aktig nøkkel - hoppet over\n"
-
-#, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "nøkkel %s: nøkkelmateriell på kort - hoppet over\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "ADVARSEL: ingenting eksportert\n"
@@ -1777,6 +1781,11 @@ msgid "quickly generate a new key pair"
 msgstr "lag nytt nøkkelpar raskt"
 
 msgid "quickly add a new user-id"
+msgstr "legg til en ny bruker-ID raskt"
+
+#, fuzzy
+#| msgid "quickly add a new user-id"
+msgid "quickly revoke a user-id"
 msgstr "legg til en ny bruker-ID raskt"
 
 msgid "full featured key pair generation"
@@ -2087,6 +2096,11 @@ msgstr "%s:%d: ugyldige importeringsvalg\n"
 
 msgid "invalid import options\n"
 msgstr "ugyldige importeringsvalg\n"
+
+#, fuzzy, c-format
+#| msgid "invalid list options\n"
+msgid "invalid filter option: %s\n"
+msgstr "ugyldige listevalg\n"
 
 #, c-format
 msgid "%s:%d: invalid export options\n"
@@ -2406,6 +2420,11 @@ msgstr "ikke tøm «ownertrust»-verdier under importering"
 msgid "do not update the trustdb after import"
 msgstr "ikke oppdater tillitsdatabase etter importering"
 
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "show key during import"
+msgstr "vise nøkkelens fingeravtrykk"
+
 msgid "only accept updates to existing keys"
 msgstr "bare godta oppdateringer av nøkler som finnes allerede"
 
@@ -2414,6 +2433,9 @@ msgstr "fjern ubrukelige deler av nøkkel etter importering"
 
 msgid "remove as much as possible from key after import"
 msgstr "fjern så mye som mulig fra nøkkel etter importering"
+
+msgid "run import filters and export key immediately"
+msgstr ""
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2557,10 +2579,6 @@ msgstr "nøkkel %s: ny nøkkel. Hoppet over\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "fant ikke skrivbart nøkkelknippe. %s\n"
-
-#, c-format
-msgid "writing to '%s'\n"
-msgstr "skriver til «%s»\n"
 
 #, c-format
 msgid "error writing keyring '%s': %s\n"
@@ -3296,6 +3314,11 @@ msgstr "oppdatering mislyktes: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Nøkkelen ble ikke endret, så ingen oppdatering er nødvendig.\n"
 
+#, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Nøkkelgenerering mislyktes: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "«%s» er ikke et fingeravtrykk\n"
@@ -3600,6 +3623,10 @@ msgstr "Er du sikker på at du vil lage opphevelsessertifikatene? (j/N) "
 
 msgid "no secret key\n"
 msgstr "ingen hemmelig nøkkel\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4109,10 +4136,6 @@ msgstr[1] "Advarsel: hoppet over %lu nøkler pga. for høy størrelse\n"
 msgid "Keyring"
 msgstr "Nøkkelknippe"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "hoppet over «%s»: %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Fingeravtrykk for primærnøkkel:"
 
@@ -4224,6 +4247,10 @@ msgstr "ber om nøkkelen %s fra %s\n"
 
 msgid "no keyserver known\n"
 msgstr "ingen kjent nøkkeltjener\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "hoppet over «%s»: %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"

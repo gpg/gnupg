@@ -1794,6 +1794,15 @@ msgstr ""
 msgid " - skipped"
 msgstr "%s: omitido: %s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "escribindo a `%s'\n"
+
+#, fuzzy, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "chave %08lX: sinatura da sub-chave nun lugar incorrecto - omitida\n"
+
 #, fuzzy
 msgid "exporting secret keys not allowed\n"
 msgstr "gravando a chave secreta en `%s'\n"
@@ -1801,10 +1810,6 @@ msgstr "gravando a chave secreta en `%s'\n"
 #, fuzzy, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "chave %08lX: chave estilo PGP 2.x - omitida\n"
-
-#, fuzzy, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "chave %08lX: sinatura da sub-chave nun lugar incorrecto - omitida\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "AVISO: non se exportou nada\n"
@@ -1924,6 +1929,11 @@ msgstr "xerar un novo par de chaves"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "xerar un novo par de chaves"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "xerar un novo par de chaves"
 
 msgid "full featured key pair generation"
@@ -2260,6 +2270,10 @@ msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: opcións de importación non válidas\n"
 
 msgid "invalid import options\n"
+msgstr "opcións de importación non válidas\n"
+
+#, fuzzy, c-format
+msgid "invalid filter option: %s\n"
 msgstr "opcións de importación non válidas\n"
 
 #, c-format
@@ -2601,6 +2615,10 @@ msgstr "actualiza-la base de datos de confianza"
 msgid "do not update the trustdb after import"
 msgstr "actualiza-la base de datos de confianza"
 
+#, fuzzy
+msgid "show key during import"
+msgstr "amosar fingerprint"
+
 msgid "only accept updates to existing keys"
 msgstr ""
 
@@ -2609,6 +2627,9 @@ msgid "remove unusable parts from key after import"
 msgstr "chave secreta non utilizable"
 
 msgid "remove as much as possible from key after import"
+msgstr ""
+
+msgid "run import filters and export key immediately"
 msgstr ""
 
 #, c-format
@@ -2749,11 +2770,6 @@ msgstr "chave %08lX: nova chave - omitida\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "non se atopou un chaveiro no que se poida escribir: %s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "escribindo a `%s'\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3558,6 +3574,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "A chave non cambiou, polo que non fai falla actualizar.\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "A xeración da chave fallou: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "erro: pegada dactilar non válida\n"
 
@@ -3889,6 +3910,10 @@ msgstr "¿Realmente desexa crea-los certificados de revocación? (s/N) "
 
 msgid "no secret key\n"
 msgstr "non hai chave secreta\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4421,10 +4446,6 @@ msgstr[1] ""
 msgid "Keyring"
 msgstr "Chaveiro"
 
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "omítese `%s': %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Pegada dactilar da chave primaria:"
 
@@ -4544,6 +4565,10 @@ msgstr "solicitando a chave %08lX de %s\n"
 #, fuzzy
 msgid "no keyserver known\n"
 msgstr "opcións de exportación non válidas\n"
+
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "omítese `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"

@@ -1781,6 +1781,15 @@ msgstr ""
 msgid " - skipped"
 msgstr "%s: kihagyva: %s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "Írok a \"%s\" állományba.\n"
+
+#, fuzzy, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "%08lX kulcs: Alkulcsaláírás rossz helyen - kihagytam.\n"
+
 #, fuzzy
 msgid "exporting secret keys not allowed\n"
 msgstr "Írom a titkos kulcsot a %s állományba.\n"
@@ -1788,10 +1797,6 @@ msgstr "Írom a titkos kulcsot a %s állományba.\n"
 #, fuzzy, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "%08lX kulcs: PGP 2.x stílusú kulcs - kihagytam.\n"
-
-#, fuzzy, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "%08lX kulcs: Alkulcsaláírás rossz helyen - kihagytam.\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "FIGYELEM: Semmit sem exportáltam.\n"
@@ -1912,6 +1917,11 @@ msgstr "új kulcspár létrehozása"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "új kulcspár létrehozása"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "új kulcspár létrehozása"
 
 msgid "full featured key pair generation"
@@ -2248,6 +2258,10 @@ msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: Érvénytelen import opciók!\n"
 
 msgid "invalid import options\n"
+msgstr "Érvénytelen import opciók!\n"
+
+#, fuzzy, c-format
+msgid "invalid filter option: %s\n"
 msgstr "Érvénytelen import opciók!\n"
 
 #, c-format
@@ -2589,6 +2603,10 @@ msgstr "bizalmi adatbázis frissítése"
 msgid "do not update the trustdb after import"
 msgstr "bizalmi adatbázis frissítése"
 
+#, fuzzy
+msgid "show key during import"
+msgstr "megmutatja az ujjlenyomatot"
+
 msgid "only accept updates to existing keys"
 msgstr ""
 
@@ -2597,6 +2615,9 @@ msgid "remove unusable parts from key after import"
 msgstr "használhatatlan titkos kulcs"
 
 msgid "remove as much as possible from key after import"
+msgstr ""
+
+msgid "run import filters and export key immediately"
 msgstr ""
 
 #, c-format
@@ -2737,11 +2758,6 @@ msgstr "%08lX kulcs: új kulcs - kihagytam.\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "Nem írható kulcskarikát találtam: %s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "Írok a \"%s\" állományba.\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3531,6 +3547,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "A kulcs nem változott, nincs szükség frissítésre.\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Kulcsgenerálás sikertelen: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
 
@@ -3855,6 +3876,10 @@ msgstr "Valóban létrehozzam a visszavonó igazolást? (i/N) "
 
 msgid "no secret key\n"
 msgstr "Nincs titkos kulcs.\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4386,10 +4411,6 @@ msgstr[1] ""
 msgid "Keyring"
 msgstr "Kulcskarika"
 
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "Kihagytam \"%s\"-t: %s.\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Elsõdlegeskulcs-ujjlenyomat:"
 
@@ -4508,6 +4529,10 @@ msgstr "Lekérem a %08lX kulcsot a %s kulcsszerverrõl.\n"
 #, fuzzy
 msgid "no keyserver known\n"
 msgstr "Érvénytelen export opciók!\n"
+
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "Kihagytam \"%s\"-t: %s.\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"

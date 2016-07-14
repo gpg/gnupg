@@ -1803,16 +1803,21 @@ msgstr "usuniêcie jak najwiêkszej czê¶ci klucza przy eksporcie"
 msgid " - skipped"
 msgstr "%s: pominiêty: %s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "zapis do ,,%s''\n"
+
+#, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "klucz %s: zawarto¶æ klucza na karcie - pominiêto\n"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "eksport kluczy tajnych nie jest dozwolony\n"
 
 #, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "klucz %s: klucz PGP 2.x - pominiêty\n"
-
-#, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "klucz %s: zawarto¶æ klucza na karcie - pominiêto\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "OSTRZE¯ENIE: nic nie zosta³o wyeksportowane!\n"
@@ -1931,6 +1936,11 @@ msgstr "generacja nowej pary kluczy"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "generacja nowej pary kluczy"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "generacja nowej pary kluczy"
 
 msgid "full featured key pair generation"
@@ -2304,6 +2314,11 @@ msgstr "%s:%d: niepoprawne opcje wczytania kluczy\n"
 msgid "invalid import options\n"
 msgstr "niepoprawne opcje wczytania kluczy\n"
 
+#, fuzzy, c-format
+#| msgid "invalid list options\n"
+msgid "invalid filter option: %s\n"
+msgstr "niepoprawne opcje wypisywania\n"
+
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d niepoprawne opcje eksportu kluczy\n"
@@ -2636,6 +2651,11 @@ msgstr "nie uaktualnianie bazy zaufania po imporcie"
 msgid "do not update the trustdb after import"
 msgstr "nie uaktualnianie bazy zaufania po imporcie"
 
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "show key during import"
+msgstr "okazanie odcisku klucza"
+
 msgid "only accept updates to existing keys"
 msgstr "przyjmowanie tylko uaktualnieñ istniej±cych kluczy"
 
@@ -2644,6 +2664,9 @@ msgstr "usuwanie bezu¿ytecznych czê¶ci kluczy po imporcie"
 
 msgid "remove as much as possible from key after import"
 msgstr "usuwanie jak najwiêkszej czê¶ci kluczy po imporcie"
+
+msgid "run import filters and export key immediately"
+msgstr ""
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2787,11 +2810,6 @@ msgstr "klucz %s: nowy klucz - pominiêty\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "brak zapisywalnego zbioru kluczy: %s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "zapis do ,,%s''\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3577,6 +3595,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Klucz nie zosta³ zmieniony wiêc zapis zmian nie jest konieczny.\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Generacja klucza nie powiod³a siê: %s\n"
+
+#, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "niew³a¶ciwy odcisk"
@@ -3896,6 +3919,10 @@ msgstr "Na pewno utworzyæ certyfikaty uniewa¿nienia ? (t/N) "
 
 msgid "no secret key\n"
 msgstr "brak klucza tajnego\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4441,10 +4468,6 @@ msgstr[2] ""
 msgid "Keyring"
 msgstr "Zbiór kluczy"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "pominiêty ,,%s'': %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Odcisk klucza g³ównego:"
 
@@ -4566,6 +4589,10 @@ msgstr "zapytanie o klucz %s z %s\n"
 #| msgid "no keyserver action!\n"
 msgid "no keyserver known\n"
 msgstr "brak akcji serwera kluczy!\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "pominiêty ,,%s'': %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"

@@ -1709,16 +1709,21 @@ msgstr "odstranit při exportu z klíče vše, co lze"
 msgid " - skipped"
 msgstr " – přeskočeno"
 
+# g10/import.c:766 g10/openfile.c:261#, c-format
+#, c-format
+msgid "writing to '%s'\n"
+msgstr "zapisuje se do „%s“\n"
+
+#, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "klíč %s: tělo klíče je na kartě – přeskočeno\n"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "exportování tajného klíče není povoleno\n"
 
 #, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "klíč %s: PGP 2.x klíč – přeskočeno\n"
-
-#, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "klíč %s: tělo klíče je na kartě – přeskočeno\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "VAROVÁNÍ: nebylo nic vyexportováno\n"
@@ -1834,6 +1839,11 @@ msgid "quickly generate a new key pair"
 msgstr "rychle vytvořit nový pár klíčů"
 
 msgid "quickly add a new user-id"
+msgstr "rychle přidat novou identitu uživatele"
+
+#, fuzzy
+#| msgid "quickly add a new user-id"
+msgid "quickly revoke a user-id"
 msgstr "rychle přidat novou identitu uživatele"
 
 msgid "full featured key pair generation"
@@ -2164,6 +2174,11 @@ msgstr "%s:%d: neplatný parametr pro import\n"
 msgid "invalid import options\n"
 msgstr "neplatný parametr pro import\n"
 
+#, fuzzy, c-format
+#| msgid "invalid list options\n"
+msgid "invalid filter option: %s\n"
+msgstr "neplatný parametr pro výpis\n"
+
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: neplatný parametr pro export\n"
@@ -2485,6 +2500,11 @@ msgstr "nemazat údaje o důvěře během importu"
 msgid "do not update the trustdb after import"
 msgstr "neaktualizovat databázi důvěry po importu"
 
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "show key during import"
+msgstr "vypsat otisk klíče"
+
 msgid "only accept updates to existing keys"
 msgstr "přijímat aktualizace pouze u existujících klíčů"
 
@@ -2493,6 +2513,9 @@ msgstr "odstranit z klíče po importu nepoužitelné části"
 
 msgid "remove as much as possible from key after import"
 msgstr "odstranit po importu z klíče vše, co lze"
+
+msgid "run import filters and export key immediately"
+msgstr ""
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2635,11 +2658,6 @@ msgstr "klíč %s: nový klíč - přeskočen\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "nenalezen zapisovatelný soubor klíčů (keyring): %s\n"
-
-# g10/import.c:766 g10/openfile.c:261#, c-format
-#, c-format
-msgid "writing to '%s'\n"
-msgstr "zapisuje se do „%s“\n"
 
 #, c-format
 msgid "error writing keyring '%s': %s\n"
@@ -3376,6 +3394,11 @@ msgstr "aktualizace selhala: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Klíč nebyl změněn, takže není potřeba jej aktualizovat.\n"
 
+#, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Vytvoření klíče se nepodařilo: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "„%s“ není otisk\n"
@@ -3682,6 +3705,10 @@ msgstr "Opravdu vytvořit revokační certifikáty? (a/N) "
 
 msgid "no secret key\n"
 msgstr "neexistuje tajný klíč\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4194,10 +4221,6 @@ msgstr[2] "Pozor: %lu klíč(ů) přeskočen(o) kvůli jejich přílišné velik
 msgid "Keyring"
 msgstr "Soubor klíčů (keyring)"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "přeskočen „%s“: %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Otisk primárního klíče:"
 
@@ -4319,6 +4342,10 @@ msgstr "požaduji klíč %s z %s\n"
 #| msgid "no keyserver action!\n"
 msgid "no keyserver known\n"
 msgstr "žádná operace se serverem klíčů!\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "přeskočen „%s“: %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"

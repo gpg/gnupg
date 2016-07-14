@@ -1666,16 +1666,20 @@ msgstr "при экспорте удалить из ключа как можно
 msgid " - skipped"
 msgstr " - пропущено"
 
+#, c-format
+msgid "writing to '%s'\n"
+msgstr "сохраняю в '%s'\n"
+
+#, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "ключ %s: материал ключа на карте - пропущен\n"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "экспорт секретных ключей не разрешен\n"
 
 #, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "ключ %s: ключ типа PGP 2.x - пропущен\n"
-
-#, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "ключ %s: материал ключа на карте - пропущен\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "Внимание: нечего экспортировать\n"
@@ -1786,6 +1790,11 @@ msgid "quickly generate a new key pair"
 msgstr "быстро создать новую пару ключей"
 
 msgid "quickly add a new user-id"
+msgstr "быстро добавить новый ID пользователя"
+
+#, fuzzy
+#| msgid "quickly add a new user-id"
+msgid "quickly revoke a user-id"
 msgstr "быстро добавить новый ID пользователя"
 
 msgid "full featured key pair generation"
@@ -2107,6 +2116,11 @@ msgstr "%s:%d: недопустимые параметры импорта\n"
 msgid "invalid import options\n"
 msgstr "недопустимые параметры импорта\n"
 
+#, fuzzy, c-format
+#| msgid "invalid list options\n"
+msgid "invalid filter option: %s\n"
+msgstr "недопустимые параметры списка\n"
+
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: недопустимые параметры экспорта\n"
@@ -2426,6 +2440,11 @@ msgstr "не сбрасывать уровни доверия владельца
 msgid "do not update the trustdb after import"
 msgstr "не обновлять таблицу доверия после импорта"
 
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "show key during import"
+msgstr "показать отпечаток ключа"
+
 msgid "only accept updates to existing keys"
 msgstr "обновлять только существующие ключи"
 
@@ -2434,6 +2453,9 @@ msgstr "удалить после импорта непригодные част
 
 msgid "remove as much as possible from key after import"
 msgstr "удалить после импорта из ключа как можно больше"
+
+msgid "run import filters and export key immediately"
+msgstr ""
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2576,10 +2598,6 @@ msgstr "ключ %s: новый ключ - пропущен\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "нет доступной для записи таблицы ключей: %s\n"
-
-#, c-format
-msgid "writing to '%s'\n"
-msgstr "сохраняю в '%s'\n"
 
 #, c-format
 msgid "error writing keyring '%s': %s\n"
@@ -3310,6 +3328,11 @@ msgstr "сбой при обновлении: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Ключ не изменялся - обновление не нужно.\n"
 
+#, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Сбой при создании ключа: %s\n"
+
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" - не отпечаток\n"
@@ -3618,6 +3641,10 @@ msgstr "Действительно создать сертификат отзы�
 
 msgid "no secret key\n"
 msgstr "нет секретного ключа\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4126,10 +4153,6 @@ msgstr[2] "Внимание: %lu ключей пропущено из-за бо�
 msgid "Keyring"
 msgstr "Таблица ключей"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "пропущено \"%s\": %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Отпечаток первичного ключа:"
 
@@ -4245,6 +4268,10 @@ msgstr "получение ключа %s с %s\n"
 
 msgid "no keyserver known\n"
 msgstr "ни один сервер ключей не известен\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "пропущено \"%s\": %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"

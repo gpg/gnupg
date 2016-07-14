@@ -1757,16 +1757,21 @@ msgstr "导出时尽可能清除密钥中的可选部分"
 msgid " - skipped"
 msgstr "%s：已跳过：%s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "正在写入‘%s’\n"
+
+#, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "密钥 %s：密钥在卡上——已跳过\n"
+
 msgid "exporting secret keys not allowed\n"
 msgstr "不允许导出私钥\n"
 
 #, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "密钥 %s：PGP 2.x 样式的密钥――已跳过\n"
-
-#, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "密钥 %s：密钥在卡上——已跳过\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "警告：没有导出任何东西\n"
@@ -1884,6 +1889,11 @@ msgstr "生成一副新的密钥对"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "生成一副新的密钥对"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "生成一副新的密钥对"
 
 msgid "full featured key pair generation"
@@ -2237,6 +2247,11 @@ msgstr "%s：%d：无效的导入选项\n"
 msgid "invalid import options\n"
 msgstr "无效的导入选项\n"
 
+#, fuzzy, c-format
+#| msgid "invalid list options\n"
+msgid "invalid filter option: %s\n"
+msgstr "无效的列表选项\n"
+
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s：%d：无效的导出选项\n"
@@ -2567,6 +2582,11 @@ msgstr "导入后不更新信任度数据库"
 msgid "do not update the trustdb after import"
 msgstr "导入后不更新信任度数据库"
 
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "show key during import"
+msgstr "显示密钥指纹"
+
 msgid "only accept updates to existing keys"
 msgstr "只接受对已有密钥的更新"
 
@@ -2575,6 +2595,9 @@ msgstr "导入后清除密钥中无用的部分"
 
 msgid "remove as much as possible from key after import"
 msgstr "导入后尽可能清除密钥中的可选部分"
+
+msgid "run import filters and export key immediately"
+msgstr ""
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2715,11 +2738,6 @@ msgstr "密钥 %s：新密钥――已跳过\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "找不到可写的钥匙环：%s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "正在写入‘%s’\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3459,6 +3477,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "密钥没有变动所以不需要更新。\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "生成密钥失败：%s\n"
+
+#, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "指纹无效"
@@ -3773,6 +3796,10 @@ msgstr "真的要生成吊销证书吗？(y/N)"
 
 msgid "no secret key\n"
 msgstr "没有私钥\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4289,10 +4316,6 @@ msgstr[1] ""
 msgid "Keyring"
 msgstr "钥匙环"
 
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "“%s”已跳过：%s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "主钥指纹："
 
@@ -4411,6 +4434,10 @@ msgstr "下载密钥 %s，从 %s\n"
 #| msgid "no keyserver action!\n"
 msgid "no keyserver known\n"
 msgstr "公钥服务器无动作！\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "“%s”已跳过：%s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"

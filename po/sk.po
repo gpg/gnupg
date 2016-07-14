@@ -1789,6 +1789,15 @@ msgstr ""
 msgid " - skipped"
 msgstr "%s: preskoèené: %s\n"
 
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
+msgstr "zapisujem do '%s'\n"
+
+#, fuzzy, c-format
+msgid "key %s: key material on-card - skipped\n"
+msgstr "kµúè %08lX: podpis subkµúèa na zlom mieste - preskoèené \n"
+
 #, fuzzy
 msgid "exporting secret keys not allowed\n"
 msgstr "zapisujem tajný kµúè do `%s'\n"
@@ -1796,10 +1805,6 @@ msgstr "zapisujem tajný kµúè do `%s'\n"
 #, fuzzy, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "kµúè %08lX: PGP 2.x kµúè - preskoèené\n"
-
-#, fuzzy, c-format
-msgid "key %s: key material on-card - skipped\n"
-msgstr "kµúè %08lX: podpis subkµúèa na zlom mieste - preskoèené \n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "VAROVANIE: niè nebolo vyexportované\n"
@@ -1920,6 +1925,11 @@ msgstr "vytvori» nový pár kµúèov"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly add a new user-id"
+msgstr "vytvori» nový pár kµúèov"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly revoke a user-id"
 msgstr "vytvori» nový pár kµúèov"
 
 msgid "full featured key pair generation"
@@ -2266,6 +2276,10 @@ msgstr "%s:%d: neplatný parameter pre import\n"
 msgid "invalid import options\n"
 msgstr "neplatný parameter pre import\n"
 
+#, fuzzy, c-format
+msgid "invalid filter option: %s\n"
+msgstr "neplatný parameter pre import\n"
+
 #, c-format
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: neplatný parameter pre export\n"
@@ -2607,6 +2621,10 @@ msgstr "aktualizova» databázu dôvery"
 msgid "do not update the trustdb after import"
 msgstr "aktualizova» databázu dôvery"
 
+#, fuzzy
+msgid "show key during import"
+msgstr "vypísa» fingerprint"
+
 msgid "only accept updates to existing keys"
 msgstr ""
 
@@ -2615,6 +2633,9 @@ msgid "remove unusable parts from key after import"
 msgstr "nepou¾iteµný tajný kµúè"
 
 msgid "remove as much as possible from key after import"
+msgstr ""
+
+msgid "run import filters and export key immediately"
 msgstr ""
 
 #, c-format
@@ -2757,11 +2778,6 @@ msgstr "kµúè %08lX: nový kµúè - preskoèený\n"
 #, c-format
 msgid "no writable keyring found: %s\n"
 msgstr "nenájdený zapisovateµný súbor kµúèov (keyring): %s\n"
-
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
-msgid "writing to '%s'\n"
-msgstr "zapisujem do '%s'\n"
 
 #, fuzzy, c-format
 #| msgid "error writing keyring `%s': %s\n"
@@ -3555,6 +3571,11 @@ msgid "Key not changed so no update needed.\n"
 msgstr "kµúè nebol zmenený, tak¾e nie je potrebné ho aktualizova».\n"
 
 #, fuzzy, c-format
+#| msgid "Key generation failed: %s\n"
+msgid "User ID revocation failed: %s\n"
+msgstr "Vytvorenie kµúèa sa nepodarilo: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "chyba: neplatný odtlaèok\n"
 
@@ -3875,6 +3896,10 @@ msgstr "Skutoène vytvori» revokaèné certifikáty? (a/N) "
 
 msgid "no secret key\n"
 msgstr "neexistuje tajný kµúè\n"
+
+#, c-format
+msgid "tried to revoke a non-user ID: %s\n"
+msgstr ""
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -4402,10 +4427,6 @@ msgstr[1] ""
 msgid "Keyring"
 msgstr "súbor kµúèov (keyring)"
 
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "preskoèený `%s': %s\n"
-
 msgid "Primary key fingerprint:"
 msgstr "Primárny fingerprint kµúèa:"
 
@@ -4523,6 +4544,10 @@ msgstr "po¾adujem kµúè %08lX z %s\n"
 #, fuzzy
 msgid "no keyserver known\n"
 msgstr "neplatný parameter pre export\n"
+
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "preskoèený `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s\n"
