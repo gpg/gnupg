@@ -2345,20 +2345,6 @@ as it is easily machine parsed. The details of this format are
 documented in the file @file{doc/DETAILS}, which is included in the GnuPG
 source distribution.
 
-
-@item --print-pka-records
-@opindex print-pka-records
-Modify the output of the list commands to print PKA records suitable
-to put into DNS zone files.  An ORIGIN line is printed before each
-record to allow diverting the records to the corresponding zone file.
-
-@item --print-dane-records
-@opindex print-dane-records
-Modify the output of the list commands to print OpenPGP DANE records
-suitable to put into DNS zone files.  An ORIGIN line is printed before
-each record to allow diverting the records to the corresponding zone
-file.
-
 @item --fixed-list-mode
 @opindex fixed-list-mode
 Do not merge primary user ID and primary key in @option{--with-colon}

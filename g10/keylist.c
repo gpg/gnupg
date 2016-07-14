@@ -864,156 +864,6 @@ dump_attribs (const PKT_user_id *uid, PKT_public_key *pk)
 }
 
 
-/* Print IPGP cert records instead of a standard key listing.  */
-static void
-list_keyblock_pka (ctrl_t ctrl, kbnode_t keyblock)
-{
-  kbnode_t kbctx;
-  kbnode_t node;
-  PKT_public_key *pk;
-  char pkstrbuf[PUBKEY_STRING_SIZE];
-  char *hexfpr;
-  char *hexkeyblock = NULL;
-  unsigned int hexkeyblocklen = 0;  /* Init to avoid -Wmaybe-uninitialized. */
-  const char *s;
-
-  /* Get the keyid from the keyblock.  */
-  node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
-  if (!node)
-    {
-      log_error ("Oops; key lost!\n");
-      dump_kbnode (keyblock);
-      return;
-    }
-
-  pk = node->pkt->pkt.public_key;
-
-  /* First print an overview of the key with all userids.  */
-  es_fprintf (es_stdout, ";; pub  %s/%s %s\n;;",
-              pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
-              keystr_from_pk (pk), datestr_from_pk (pk));
-  print_fingerprint (NULL, pk, 10);
-  for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
-    {
-      if (node->pkt->pkttype == PKT_USER_ID)
-	{
-	  PKT_user_id *uid = node->pkt->pkt.user_id;
-
-	  if (pk && (uid->is_expired || uid->is_revoked)
-	      && !(opt.list_options & LIST_SHOW_UNUSABLE_UIDS))
-            continue;
-
-          es_fputs (";; uid  ", es_stdout);
-          print_utf8_buffer (es_stdout, uid->name, uid->len);
-          es_putc ('\n', es_stdout);
-        }
-    }
-
-
-  hexfpr = hexfingerprint (pk, NULL, 0);
-  if (opt.print_dane_records)
-    {
-      kbnode_t dummy_keyblock;
-      void *data;
-      size_t datalen;
-      gpg_error_t err;
-
-      /* We do not have an export function which allows to pass a
-         keyblock, thus we need to search the key again.  */
-      err = export_pubkey_buffer (ctrl, hexfpr,
-                                  (EXPORT_MINIMAL | EXPORT_CLEAN), NULL,
-                                  &dummy_keyblock, &data, &datalen);
-      release_kbnode (dummy_keyblock);
-      if (!err)
-        {
-          hexkeyblocklen = datalen;
-          hexkeyblock = bin2hex (data, datalen, NULL);
-          if (!hexkeyblock)
-            err = gpg_error_from_syserror ();
-          xfree (data);
-          ascii_strlwr (hexkeyblock);
-        }
-      if (err)
-        log_error (_("skipped \"%s\": %s\n"), hexfpr, gpg_strerror (err));
-
-    }
-
-  for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
-    {
-      if (node->pkt->pkttype == PKT_USER_ID)
-	{
-	  PKT_user_id *uid = node->pkt->pkt.user_id;
-          char *mbox;
-          char *p;
-
-	  if (pk && (uid->is_expired || uid->is_revoked)
-	      && !(opt.list_options & LIST_SHOW_UNUSABLE_UIDS))
-            continue;
-
-          mbox = mailbox_from_userid (uid->name);
-          if (mbox && (p = strchr (mbox, '@')))
-            {
-              char hashbuf[32];
-              char *hash;
-              unsigned int len;
-
-              *p++ = 0;
-              if (opt.print_pka_records)
-                {
-                  es_fprintf (es_stdout, "$ORIGIN _pka.%s.\n; %s\n; ",
-                              p, hexfpr);
-                  print_utf8_buffer (es_stdout, uid->name, uid->len);
-                  es_putc ('\n', es_stdout);
-                  gcry_md_hash_buffer (GCRY_MD_SHA1, hashbuf,
-                                       mbox, strlen (mbox));
-                  hash = zb32_encode (hashbuf, 8*20);
-                  if (hash)
-                    {
-                      len = strlen (hexfpr)/2;
-                      es_fprintf (es_stdout,
-                                  "%s TYPE37 \\# %u 0006 0000 00 %02X %s\n",
-                                  hash, 6 + len, len, hexfpr);
-                      xfree (hash);
-                    }
-                }
-              if (opt.print_dane_records && hexkeyblock)
-                {
-                  es_fprintf (es_stdout, "$ORIGIN _openpgpkey.%s.\n; %s\n; ",
-                              p, hexfpr);
-                  print_utf8_buffer (es_stdout, uid->name, uid->len);
-                  es_putc ('\n', es_stdout);
-                  gcry_md_hash_buffer (GCRY_MD_SHA256, hashbuf,
-                                       mbox, strlen (mbox));
-                  hash = bin2hex (hashbuf, 28, NULL);
-                  if (hash)
-                    {
-                      ascii_strlwr (hash);
-                      es_fprintf (es_stdout, "%s TYPE61 \\# %u (\n",
-                                  hash, hexkeyblocklen);
-                      xfree (hash);
-                      s = hexkeyblock;
-                      for (;;)
-                        {
-                          es_fprintf (es_stdout, "\t%.64s\n", s);
-                          if (strlen (s) < 64)
-                            break;
-                          s += 64;
-                        }
-                      es_fputs ("\t)\n", es_stdout);
-                    }
-                }
-            }
-          xfree (mbox);
-	}
-
-    }
-  es_putc ('\n', es_stdout);
-
-  xfree (hexkeyblock);
-  xfree (hexfpr);
-}
-
-
 static void
 list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
                      struct keylist_context *listctx)
@@ -1747,12 +1597,12 @@ list_keyblock (ctrl_t ctrl,
                struct keylist_context *listctx)
 {
   reorder_keyblock (keyblock);
-  if (opt.print_pka_records || opt.print_dane_records)
-    list_keyblock_pka (ctrl, keyblock);
-  else if (opt.with_colons)
+
+  if (opt.with_colons)
     list_keyblock_colon (ctrl, keyblock, secret, has_secret, fpr);
   else
     list_keyblock_print (ctrl, keyblock, secret, fpr, listctx);
+
   if (secret)
     es_fflush (es_stdout);
 }

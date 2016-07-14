@@ -2173,14 +2173,18 @@ main (int argc, char **argv)
     int pwfd = -1;
     int fpr_maybe_cmd = 0; /* --fingerprint maybe a command.  */
     int any_explicit_recipient = 0;
-    int require_secmem=0,got_secmem=0;
+    int require_secmem = 0;
+    int got_secmem = 0;
     struct assuan_malloc_hooks malloc_hooks;
     ctrl_t ctrl;
+
+    static int print_dane_records;
+    static int print_pka_records;
+
 
 #ifdef __riscos__
     opt.lock_once = 1;
 #endif /* __riscos__ */
-
 
     /* Please note that we may running SUID(ROOT), so be very CAREFUL
        when adding any stuff between here and the call to
@@ -3186,8 +3190,8 @@ main (int argc, char **argv)
 	  case oFastListMode: opt.fast_list_mode = 1; break;
 	  case oFixedListMode: /* Dummy */ break;
           case oLegacyListMode: opt.legacy_list_mode = 1; break;
-	  case oPrintPKARecords: opt.print_pka_records = 1; break;
-	  case oPrintDANERecords: opt.print_dane_records = 1; break;
+	  case oPrintPKARecords: print_pka_records = 1; break;
+	  case oPrintDANERecords: print_dane_records = 1; break;
 	  case oListOnly: opt.list_only=1; break;
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
 	  case oIgnoreValidFrom: opt.ignore_valid_from = 1; break;
@@ -3409,6 +3413,18 @@ main (int argc, char **argv)
       }
     xfree (save_configname);
     xfree (default_configname);
+
+    if (print_dane_records)
+      log_error ("invalid option \"%s\"; use \"%s\" instead\n",
+                 "--print-dane-records",
+                 "--export-options export-dane");
+    if (print_pka_records)
+      log_error ("invalid option \"%s\"; use \"%s\" instead\n",
+                 "--print-pks-records",
+                 "--export-options export-pka");
+    if (log_get_errorcount (0))
+      g10_exit(2);
+
 
     if( nogreeting )
 	greeting = 0;
