@@ -45,7 +45,7 @@ gpgscm_CFLAGS = -imacros scheme-config.h \
 gpgscm_SOURCES = main.c private.h ffi.c ffi.h ffi-private.h \
 	scheme-config.h opdefines.h scheme.c scheme.h scheme-private.h
 gpgscm_LDADD = $(LDADD) $(common_libs) \
-	$(NETLIBS) $(LIBICONV) $(LIBREADLINE) \
+	$(NETLIBS) $(LIBICONV) $(LIBREADLINE) $(LIBINTL) \
 	$(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
 
 t_child_SOURCES = t-child.c
