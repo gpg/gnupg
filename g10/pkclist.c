@@ -508,6 +508,9 @@ do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
 static void
 write_trust_status (int statuscode, int trustlevel)
 {
+#ifdef NO_TRUST_MODELS
+  write_status (statuscode);
+#else /* NO_TRUST_MODELS */
   int tm;
 
   /* For the combined tofu+pgp method, we return the trust model which
@@ -517,6 +520,7 @@ write_trust_status (int statuscode, int trustlevel)
   else
     tm = opt.trust_model;
   write_status_strings (statuscode, "0 ", trust_model_string (tm), NULL);
+#endif /* NO_TRUST_MODELS */
 }
 
 
