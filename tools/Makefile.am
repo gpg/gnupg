@@ -45,12 +45,6 @@ else
   symcryptrun =
 endif
 
-if BUILD_GPGTAR
-  gpgtar = gpgtar
-else
-  gpgtar =
-endif
-
 if BUILD_WKS_TOOLS
   gpg_wks_server = gpg-wks-server
   gpg_wks_client = gpg-wks-client
@@ -63,9 +57,6 @@ bin_PROGRAMS = gpgconf gpg-connect-agent ${symcryptrun}
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server} ${gpg_wks_client}
 endif
-if !HAVE_W32CE_SYSTEM
-bin_PROGRAMS += ${gpgtar}
-endif
 
 if !DISABLE_REGEX
 libexec_PROGRAMS = gpg-check-pattern
@@ -73,6 +64,14 @@ endif
 
 if !HAVE_W32CE_SYSTEM
 noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert gpgsplit
+endif
+
+if !HAVE_W32CE_SYSTEM
+if BUILD_GPGTAR
+  bin_PROGRAMS += gpgtar
+else
+  noinst_PROGRAMS += gpgtar
+endif
 endif
 
 common_libs = $(libcommon)

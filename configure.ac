@@ -128,6 +128,8 @@ GNUPG_BUILD_PROGRAM(dirmngr, yes)
 GNUPG_BUILD_PROGRAM(tools, yes)
 GNUPG_BUILD_PROGRAM(doc, yes)
 GNUPG_BUILD_PROGRAM(symcryptrun, no)
+# We use gpgtar to unpack test data, hence we always build it.  If the
+# user opts out, we simply don't install it.
 GNUPG_BUILD_PROGRAM(gpgtar, yes)
 GNUPG_BUILD_PROGRAM(wks-tools, no)
 

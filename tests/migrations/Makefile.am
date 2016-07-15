@@ -19,7 +19,8 @@
 
 
 # Programs required before we can run these tests.
-required_pgms = ../../g10/gpg$(EXEEXT) ../../agent/gpg-agent$(EXEEXT)
+required_pgms = ../../g10/gpg$(EXEEXT) ../../agent/gpg-agent$(EXEEXT) \
+	../../tools/gpgtar$(EXEEXT)
 
 AM_CPPFLAGS = -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am
