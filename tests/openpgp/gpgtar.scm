@@ -19,8 +19,8 @@
 
 (load (with-path "defs.scm"))
 
-(unless (= 0 (call `(,(tool 'gpgtar) --help)))
-	(skip "gpgtar not installed"))
+(catch (skip "gpgtar not built")
+       (call-check `(,(tool 'gpgtar) --help)))
 
 (define testfiles (append plain-files data-files))
 (define gpgargs

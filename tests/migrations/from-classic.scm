@@ -19,6 +19,9 @@
 
 (load (with-path "common.scm"))
 
+(catch (skip "gpgtar not built")
+       (call-check `(,GPGTAR --help)))
+
 (define src-tarball (in-srcdir "from-classic.tar.asc"))
 
 (define (setup)
