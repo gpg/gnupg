@@ -698,7 +698,10 @@ process_confirmation_request (estream_t msg)
     }
   address = value;
   /* FIXME: Check that the "address" matches the User ID we want to
-   * publish.  */
+   * publish.  Also get the "fingerprint" and compare that to our to
+   * be published key.  Further we should make sure that we actually
+   * decrypted using that fingerprint (which is a bit problematic if
+   * --read is used). */
 
   /* Get the sender.  */
   if (!((item = nvc_lookup (nvc, "sender:")) && (value = nve_value (item))

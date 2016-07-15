@@ -506,6 +506,75 @@ list_key (server_ctx_t ctx, estream_t key)
 }
 
 
+/* Take the key in KEYFILE and write it to OUTFILE in binary encoding.
+ * If ADDRSPEC is given only matching user IDs are included in the
+ * output.  */
+static gpg_error_t
+copy_key_as_binary (const char *keyfile, const char *outfile,
+                    const char *addrspec)
+{
+  gpg_error_t err;
+  ccparray_t ccp;
+  const char **argv;
+  char *filterexp = NULL;
+
+  if (addrspec)
+    {
+      filterexp = es_bsprintf ("keep-uid=mbox = %s", addrspec);
+      if (!filterexp)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error allocating memory buffer: %s\n",
+                     gpg_strerror (err));
+          goto leave;
+        }
+    }
+
+  ccparray_init (&ccp, 0);
+
+  ccparray_put (&ccp, "--no-options");
+  if (!opt.verbose)
+    ccparray_put (&ccp, "--quiet");
+  else if (opt.verbose > 1)
+    ccparray_put (&ccp, "--verbose");
+  ccparray_put (&ccp, "--batch");
+  ccparray_put (&ccp, "--yes");
+  ccparray_put (&ccp, "--always-trust");
+  ccparray_put (&ccp, "--no-keyring");
+  ccparray_put (&ccp, "--output");
+  ccparray_put (&ccp, outfile);
+  ccparray_put (&ccp, "--import-options=import-export");
+  if (filterexp)
+    {
+      ccparray_put (&ccp, "--import-filter");
+      ccparray_put (&ccp, filterexp);
+    }
+  ccparray_put (&ccp, "--import");
+  ccparray_put (&ccp, "--");
+  ccparray_put (&ccp, keyfile);
+
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gnupg_exec_tool_stream (opt.gpg_program, argv, NULL,
+                                NULL, NULL, NULL, NULL);
+  if (err)
+    {
+      log_error ("%s failed: %s\n", __func__, gpg_strerror (err));
+      goto leave;
+    }
+
+ leave:
+  xfree (filterexp);
+  xfree (argv);
+  return err;
+}
+
+
 /* Take the key in KEYFILE and write it to DANEFILE using the DANE
  * output format. */
 static gpg_error_t
@@ -1091,10 +1160,11 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
     }
 
   /* Publish.  */
-  if (rename (fname, fnewname))
+  err = copy_key_as_binary (fname, fnewname, address);
+  if (err)
     {
       err = gpg_error_from_syserror ();
-      log_error ("renaming '%s' to '%s' failed: %s\n",
+      log_error ("copying '%s' to '%s' failed: %s\n",
                  fname, fnewname, gpg_strerror (err));
       goto leave;
     }
