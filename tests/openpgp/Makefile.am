@@ -81,6 +81,7 @@ TESTS = setup.scm \
 	use-exact-key.scm \
 	default-key.scm \
 	export.scm \
+	issue2015.scm \
 	finish.scm
 
 

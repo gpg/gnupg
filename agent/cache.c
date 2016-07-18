@@ -299,6 +299,15 @@ agent_flush_cache (void)
 }
 
 
+/* Compare two cache modes.  */
+static int
+cache_mode_equal (cache_mode_t a, cache_mode_t b)
+{
+  /* CACHE_MODE_ANY matches any mode other than CACHE_MODE_IGNORE.  */
+  return ((a == CACHE_MODE_ANY && b != CACHE_MODE_IGNORE)
+          || (b == CACHE_MODE_ANY && a != CACHE_MODE_IGNORE) || a == b);
+}
+
 
 /* Store the string DATA in the cache under KEY and mark it with a
    maximum lifetime of TTL seconds.  If there is already data under
@@ -333,7 +342,7 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
     {
       if (((cache_mode != CACHE_MODE_USER
             && cache_mode != CACHE_MODE_NONCE)
-           || r->cache_mode == cache_mode)
+           || cache_mode_equal (r->cache_mode, cache_mode))
           && !strcmp (r->key, key))
         break;
     }
@@ -416,7 +425,7 @@ agent_get_cache (const char *key, cache_mode_t cache_mode)
       if (r->pw
           && ((cache_mode != CACHE_MODE_USER
                && cache_mode != CACHE_MODE_NONCE)
-              || r->cache_mode == cache_mode)
+              || cache_mode_equal (r->cache_mode, cache_mode))
           && !strcmp (r->key, key))
         {
           /* Note: To avoid races KEY may not be accessed anymore below.  */
