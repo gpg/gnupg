@@ -219,7 +219,11 @@ main (int argc, char **argv)
         *p = 0;
     }
   else
-    passphrase = skip_options (args);
+    {
+      passphrase = skip_options (args);
+      if (*passphrase == 0)
+        passphrase = "no PINENTRY_USER_DATA -- using default passphrase";
+    }
 
   reply ("# fake-pinentry started.  Passphrase='%s'.\n", passphrase);
   reply ("OK - what's up?\n");

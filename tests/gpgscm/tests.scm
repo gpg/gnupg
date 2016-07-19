@@ -183,16 +183,24 @@
 (define (in-srcdir what)
   (canonical-path (string-append (getenv "srcdir") "/" what)))
 
-(define (with-path name)
-  (let loop ((path (string-split (getenv "GPGSCM_PATH") #\:)))
+;; Try to find NAME in PATHS.  Returns the full path name on success,
+;; or raises an error.
+(define (path-expand name paths)
+  (let loop ((path paths))
     (if (null? path)
-	name
+	(throw "Could not find" name "in" paths)
 	(let* ((qualified-name (string-append (car path) "/" name))
 	       (file-exists (call-with-input-file qualified-name
 			      (lambda (x) #t))))
 	  (if file-exists
 	      qualified-name
 	      (loop (cdr path)))))))
+
+;; Expand NAME using the gpgscm load path.  Use like this:
+;;   (load (with-path "library.scm"))
+(define (with-path name)
+  (catch name
+	 (path-expand name (string-split (getenv "GPGSCM_PATH") *pathsep*))))
 
 (define (basename path)
   (let ((i (string-index path #\/)))

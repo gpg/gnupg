@@ -81,6 +81,7 @@ TESTS = setup.scm \
 	use-exact-key.scm \
 	default-key.scm \
 	export.scm \
+	ssh.scm \
 	issue2015.scm \
 	finish.scm
 
@@ -145,7 +146,11 @@ sample_keys = samplekeys/README \
 	      samplekeys/E657FB607BB4F21C90BB6651BC067AF28BC90111.asc \
               samplekeys/rsa-rsa-sample-1.asc \
               samplekeys/ed25519-cv25519-sample-1.asc \
-	      samplekeys/silent-running.asc
+	      samplekeys/silent-running.asc \
+	      samplekeys/ssh-dsa.key \
+	      samplekeys/ssh-ecdsa.key \
+	      samplekeys/ssh-ed25519.key \
+	      samplekeys/ssh-rsa.key
 
 EXTRA_DIST = defs.inc defs.scm pinentry.sh $(TESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
@@ -157,7 +162,7 @@ CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     pubring.gpg pubring.gpg~ pubring.kbx pubring.kbx~ \
 	     secring.gpg pubring.pkr secring.skr \
 	     gnupg-test.stop random_seed gpg-agent.log tofu.db \
-	     passphrases
+	     passphrases sshcontrol S.gpg-agent.ssh
 
 clean-local:
 	-rm -rf private-keys-v1.d openpgp-revocs.d tofu.d gpgtar.d
