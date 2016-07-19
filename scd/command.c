@@ -283,6 +283,7 @@ static void
 do_reset (ctrl_t ctrl, int send_reset)
 {
   int slot = ctrl->reader_slot;
+  struct app_ctx_s *app = ctrl->app_ctx;
 
   if (!(slot == -1 || (slot >= 0 && slot < DIM(slot_table))))
     BUG ();
@@ -290,10 +291,10 @@ do_reset (ctrl_t ctrl, int send_reset)
   /* If there is an active application, release it.  Tell all other
      sessions using the same application to release the
      application.  */
-  if (ctrl->app_ctx)
+  if (app)
     {
-      release_application (ctrl->app_ctx);
       ctrl->app_ctx = NULL;
+      release_application (app);
       if (send_reset)
         {
           struct server_local_s *sl;
@@ -1744,13 +1745,14 @@ static gpg_error_t
 cmd_restart (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
+  struct app_ctx_s *app = ctrl->app_ctx;
 
   (void)line;
 
-  if (ctrl->app_ctx)
+  if (app)
     {
-      release_application (ctrl->app_ctx);
       ctrl->app_ctx = NULL;
+      release_application (app);
     }
   if (locked_session && ctrl->server_local == locked_session)
     {
