@@ -3152,8 +3152,8 @@ reenter_compare_cb (struct pin_entry_info_s *pi)
 /* Store the ssh KEY into our local key storage and protect it after
    asking for a passphrase.  Cache that passphrase.  TTL is the
    maximum caching time for that key.  If the key already exists in
-   our key storage, don't do anything.  When entering a new key also
-   add an entry to the sshcontrol file.  */
+   our key storage, don't do anything.  When entering a key also add
+   an entry to the sshcontrol file.  */
 static gpg_error_t
 ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
                        gcry_sexp_t key, int ttl, int confirm)
@@ -3175,14 +3175,16 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
   if (err)
     goto out;
 
-  /* Check whether the key is already in our key storage.  Don't do
-     anything then.  */
-  if ( !agent_key_available (key_grip_raw) )
-    goto out; /* Yes, key is available.  */
+  bin2hex (key_grip_raw, 20, key_grip);
 
   err = ssh_get_fingerprint_string (key, &key_fpr);
   if (err)
     goto out;
+
+  /* Check whether the key is already in our key storage.  Don't do
+     anything then besides (re-)adding it to sshcontrol.  */
+  if ( !agent_key_available (key_grip_raw) )
+    goto key_exists; /* Yes, key is available.  */
 
   err = ssh_key_extract_comment (key, &comment);
   if (err)
@@ -3249,11 +3251,11 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
     goto out;
 
   /* Cache this passphrase. */
-  bin2hex (key_grip_raw, 20, key_grip);
   err = agent_put_cache (key_grip, CACHE_MODE_SSH, pi->pin, ttl);
   if (err)
     goto out;
 
+ key_exists:
   /* And add an entry to the sshcontrol file.  */
   err = add_control_entry (ctrl, spec, key_grip, key_fpr, ttl, confirm);
 
