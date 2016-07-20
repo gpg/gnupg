@@ -118,10 +118,6 @@ struct server_local_s
      continue operation. */
   int card_removed;
 
-  /* Flag indicating that the application context needs to be released
-     at the next opportunity.  */
-  int app_ctx_marked_for_release;
-
   /* A disconnect command has been sent.  */
   int disconnect_allowed;
 
@@ -185,14 +181,28 @@ update_card_removed (int slot, int value)
     return;
 
   for (sl=session_list; sl; sl = sl->next_session)
-    if (sl->ctrl_backlink
-        && sl->ctrl_backlink->reader_slot == slot)
-      {
-        sl->card_removed = value;
-      }
+    {
+      ctrl_t ctrl = sl->ctrl_backlink;
+
+      if (ctrl && ctrl->reader_slot == slot)
+        {
+          sl->card_removed = value;
+          if (value)
+            {
+              struct app_ctx_s *app = ctrl->app_ctx;
+              ctrl->app_ctx = NULL;
+              release_application (app);
+            }
+        }
+    }
+
   /* Let the card application layer know about the removal.  */
   if (value)
-    application_notify_card_reset (slot);
+    {
+      log_debug ("Removal of a card: %d\n", slot);
+      application_notify_card_reset (slot);
+      slot_table[slot].slot = -1;
+    }
 }
 
 
@@ -288,23 +298,31 @@ do_reset (ctrl_t ctrl, int send_reset)
   if (!(slot == -1 || (slot >= 0 && slot < DIM(slot_table))))
     BUG ();
 
-  /* If there is an active application, release it.  Tell all other
-     sessions using the same application to release the
-     application.  */
+  /* If there is an active application, release it. */
   if (app)
     {
       ctrl->app_ctx = NULL;
       release_application (app);
-      if (send_reset)
-        {
-          struct server_local_s *sl;
+    }
 
-          for (sl=session_list; sl; sl = sl->next_session)
-            if (sl->ctrl_backlink
-                && sl->ctrl_backlink->reader_slot == slot)
-              {
-                sl->app_ctx_marked_for_release = 1;
-              }
+  /* Release the same application which is used by other sessions.  */
+  if (send_reset)
+    {
+      struct server_local_s *sl;
+
+      for (sl=session_list; sl; sl = sl->next_session)
+        {
+          ctrl_t c = sl->ctrl_backlink;
+
+          if (c && c != ctrl && c->reader_slot == slot)
+            {
+              struct app_ctx_s *app0 = c->app_ctx;
+              if (app0)
+                {
+                  c->app_ctx = NULL;
+                  release_application (app0);
+                }
+            }
         }
     }
 
@@ -443,16 +461,6 @@ open_card (ctrl_t ctrl, const char *apptype)
 
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
-
-  /* If the application has been marked for release do it now.  We
-     can't do it immediately in do_reset because the application may
-     still be in use.  */
-  if (ctrl->server_local->app_ctx_marked_for_release)
-    {
-      ctrl->server_local->app_ctx_marked_for_release = 0;
-      release_application (ctrl->app_ctx);
-      ctrl->app_ctx = NULL;
-    }
 
   /* If we are already initialized for one specific application we
      need to check that the client didn't requested a specific
@@ -2009,10 +2017,7 @@ scd_command_handler (ctrl_t ctrl, int fd)
 
   /* We open the reader right at startup so that the ticker is able to
      update the status file. */
-  if (ctrl->reader_slot == -1)
-    {
-      ctrl->reader_slot = get_reader_slot ();
-    }
+  ctrl->reader_slot = get_reader_slot ();
 
   /* Command processing loop. */
   for (;;)
@@ -2230,9 +2235,7 @@ update_reader_status_file (int set_card_removed_flag)
       if (sw_apdu == SW_HOST_NO_READER)
         {
           /* Most likely the _reader_ has been unplugged.  */
-	  application_notify_card_reset (ss->slot);
 	  apdu_close_reader (ss->slot);
-	  ss->valid = 0;
           status = 0;
           changed = ss->changed;
         }

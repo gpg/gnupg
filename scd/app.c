@@ -183,8 +183,12 @@ application_notify_card_reset (int slot)
   /* Release the APP, as it's not reusable any more.  */
   if (lock_table[slot].app)
     {
+      if (lock_table[slot].app->ref_count)
+        log_bug ("trying to release active context\n");
+
       deallocate_app (lock_table[slot].app);
       lock_table[slot].app = NULL;
+      log_debug ("application has been released\n");
     }
 
   unlock_reader (slot);
