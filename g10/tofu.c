@@ -2504,12 +2504,12 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
         }
       else
 	{
-          string_to_long (&first_seen_ago, strlist->next->d, 0, __LINE__);
-	  string_to_long (&most_recent_seen_ago, strlist->next->next->d, 0,
+          string_to_long (&first_seen_ago, strlist->next->d, -1, __LINE__);
+	  string_to_long (&most_recent_seen_ago, strlist->next->next->d, -1,
                           __LINE__);
 	}
 
-      if (messages == -1 || first_seen_ago == 0)
+      if (messages == -1 || first_seen_ago == -1)
         {
           write_stats_status (0, TOFU_POLICY_NONE, -1, -1);
           log_info (_("Failed to collect signature statistics for \"%s\"\n"
