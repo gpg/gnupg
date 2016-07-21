@@ -1104,8 +1104,14 @@ tofu_closedbs (ctrl_t ctrl)
              is easy to skip the first COUNT entries since we still
              have a handle on the old head.  */
           int skip = DB_CACHE_ENTRIES - count;
-          while (-- skip > 0)
-            old_head = old_head->next;
+          if (skip < 0)
+            for (old_head = db_cache, skip = DB_CACHE_ENTRIES;
+                 skip > 0;
+                 old_head = old_head->next, skip--)
+              { /* Do nothing.  */ }
+          else
+            while (-- skip > 0)
+              old_head = old_head->next;
 
           *old_head->prevp = NULL;
 
@@ -1116,6 +1122,8 @@ tofu_closedbs (ctrl_t ctrl)
               old_head = db;
               db_cache_count --;
             }
+
+          log_assert (db_cache_count == DB_CACHE_ENTRIES);
         }
     }
 
