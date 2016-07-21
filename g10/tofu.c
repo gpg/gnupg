@@ -1199,6 +1199,7 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
        only place where we start two transaction and we always start
        transaction on the DB_KEY DB first, thus deadlock is not
        possible.  */
+    /* We only need a transaction for the split format.  */
     {
       db_key = getdb (dbs, fingerprint, DB_KEY);
       if (! db_key)
@@ -1215,13 +1216,6 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
       if (rc)
         goto out_revert_one;
     }
-  else
-    {
-      rc = begin_transaction (db_email, 1);
-      if (rc)
-        goto leave;
-    }
-
 
   if (show_old)
     /* Get the old policy.  Since this is just for informational
