@@ -2743,7 +2743,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                for (x = car(closure_code(sc->code)), y = sc->args;
                     is_pair(x); x = cdr(x), y = cdr(y)) {
                     if (y == sc->NIL) {
-                         Error_0(sc,"not enough arguments");
+                         Error_1(sc, "not enough arguments, missing:", x);
                     } else {
                          new_slot_in_env(sc, car(x), car(y));
                     }
