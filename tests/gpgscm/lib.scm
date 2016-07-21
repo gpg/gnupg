@@ -20,7 +20,8 @@
 (macro (assert form)
   `(if (not ,(cadr form))
        (begin
-	 (display (list "Assertion failed:" (quote ,(cadr form))))
+	 (display "Assertion failed: ")
+	 (write (quote ,(cadr form)))
 	 (newline)
 	 (exit 1))))
 (assert #t)
