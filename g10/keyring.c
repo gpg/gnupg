@@ -1455,7 +1455,7 @@ keyring_rebuild_cache (void *token,int noisy)
 
   for (;;)
     {
-      rc = keyring_search (hd, &desc, 1, NULL, 0);
+      rc = keyring_search (hd, &desc, 1, NULL, 1 /* ignore_legacy */);
       if (rc)
         break;  /* ready.  */
 
@@ -1491,9 +1491,6 @@ keyring_rebuild_cache (void *token,int noisy)
           if (rc)
             goto leave;
         }
-
-      if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
-        continue;
 
       release_kbnode (keyblock);
       rc = keyring_get_keyblock (hd, &keyblock);

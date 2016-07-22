@@ -35,10 +35,12 @@ TESTS_ENVIRONMENT = GPG_AGENT_INFO= LC_ALL=C \
 	GPGSCM_PATH=$(top_srcdir)/tests/gpgscm:$(top_srcdir)/tests/migrations
 
 TESTS = from-classic.scm \
-	extended-pkf.scm
+	extended-pkf.scm \
+	issue2276.scm
 
 TEST_FILES = from-classic.tar.asc \
-	     extended-pkf.tar.asc
+	     extended-pkf.tar.asc \
+	     issue2276.tar.asc
 
 EXTRA_DIST = common.scm $(TESTS) $(TEST_FILES)
 

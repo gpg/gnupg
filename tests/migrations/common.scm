@@ -30,6 +30,9 @@
 	      --no-secmem-warning --batch
 	      ,(string-append "--agent-program=" GPG-AGENT
 			      "|--debug-quick-random")))
+(define GPG-no-batch
+  (filter (lambda (arg) (not (equal? arg '--batch))) GPG))
+
 (define GPGTAR (qualify (string-append (getcwd) "/../../tools/gpgtar")))
 
 (define (untar-armored source-name)
@@ -37,3 +40,13 @@
    (pipe:open source-name (logior O_RDONLY O_BINARY))
    (pipe:spawn `(,@GPG --dearmor))
    (pipe:spawn `(,GPGTAR --extract --directory=. -))))
+
+(define (run-test message src-tarball test)
+  (catch (skip "gpgtar not built")
+	 (call-check `(,GPGTAR --help)))
+
+  (with-temporary-working-directory
+   (info message)
+   (untar-armored src-tarball)
+   (setenv "GNUPGHOME" (getcwd) #t)
+   (test (getcwd))))
