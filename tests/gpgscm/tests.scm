@@ -180,8 +180,8 @@
       path
       (string-append (getcwd) "/" path)))
 
-(define (in-srcdir what)
-  (canonical-path (string-append (getenv "srcdir") "/" what)))
+(define (in-srcdir . names)
+  (canonical-path (apply path-join (cons (getenv "srcdir") names))))
 
 ;; Try to find NAME in PATHS.  Returns the full path name on success,
 ;; or raises an error.
