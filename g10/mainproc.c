@@ -39,6 +39,8 @@
 #include "photoid.h"
 #include "mbox-util.h"
 #include "call-dirmngr.h"
+#include "call-agent.h"
+#include "../common/shareddefs.h"
 
 /* Put an upper limit on nested packets.  The 32 is an arbitrary
    value, a much lower should actually be sufficient.  */
@@ -1174,13 +1176,19 @@ int
 proc_packets (ctrl_t ctrl, void *anchor, iobuf_t a )
 {
   int rc;
+  int old_mode;
   CTX c = xmalloc_clear (sizeof *c);
 
   c->ctrl = ctrl;
   c->anchor = anchor;
-  rc = do_proc_packets (ctrl, c, a);
-  xfree (c);
 
+  agent_set_pinentry_mode (PINENTRY_MODE_CANCEL, &old_mode);
+  rc = do_proc_packets (ctrl, c, a);
+  agent_set_pinentry_mode (old_mode, NULL);
+  if (rc)
+    rc = do_proc_packets (ctrl, c, a);
+
+  xfree (c);
   return rc;
 }
 
@@ -1272,12 +1280,19 @@ int
 proc_encryption_packets (ctrl_t ctrl, void *anchor, iobuf_t a )
 {
   CTX c = xmalloc_clear (sizeof *c);
+  int old_mode;
   int rc;
 
   c->ctrl = ctrl;
   c->anchor = anchor;
   c->encrypt_only = 1;
+
+  agent_set_pinentry_mode (PINENTRY_MODE_CANCEL, &old_mode);
   rc = do_proc_packets (ctrl, c, a);
+  agent_set_pinentry_mode (old_mode, NULL);
+  if (rc)
+    rc = do_proc_packets (ctrl, c, a);
+
   xfree (c);
   return rc;
 }

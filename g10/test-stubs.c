@@ -505,3 +505,8 @@ void
 tofu_end_batch_update (void)
 {
 }
+
+int
+agent_set_pinentry_mode (int pinentry_mode, int *old_mode)
+{
+}

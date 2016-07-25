@@ -123,6 +123,8 @@ int agent_scd_checkpin  (const char *serialno);
 /* Dummy function, only implemented by gpg 1.4. */
 void agent_clear_pin_cache (const char *sn);
 
+/* XXX */
+int agent_set_pinentry_mode (int pinentry_mode, int *old_mode);
 
 /* Send the GET_PASSPHRASE command to the agent.  */
 gpg_error_t agent_get_passphrase (const char *cache_id,

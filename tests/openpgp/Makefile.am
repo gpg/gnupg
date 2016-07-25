@@ -82,6 +82,7 @@ TESTS = setup.scm \
 	default-key.scm \
 	export.scm \
 	ssh.scm \
+	issue1955.scm \
 	issue2015.scm \
 	finish.scm
 

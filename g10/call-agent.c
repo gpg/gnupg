@@ -285,6 +285,44 @@ warn_version_mismatch (assuan_context_t ctx, const char *servername, int mode)
   return err;
 }
 
+int
+agent_set_pinentry_mode (int pinentry_mode, int *old_mode)
+{
+  int rc;
+  char *tmp;
+
+  if (agent_ctx == NULL)
+    {
+      if (old_mode)
+        *old_mode = opt.pinentry_mode;
+
+      opt.pinentry_mode = pinentry_mode;
+      return 0;
+    }
+
+  tmp = xasprintf ("OPTION pinentry-mode=%s",
+                   str_pinentry_mode (pinentry_mode));
+  rc = assuan_transact (agent_ctx, tmp,
+                        NULL, NULL, NULL, NULL, NULL, NULL);
+  xfree (tmp);
+  if (rc)
+    {
+      log_error ("setting pinentry mode '%s' failed: %s\n",
+                 str_pinentry_mode (pinentry_mode),
+                 gpg_strerror (rc));
+      write_status_error ("set_pinentry_mode", rc);
+    }
+  else
+    {
+      if (old_mode)
+        *old_mode = opt.pinentry_mode;
+
+      opt.pinentry_mode = pinentry_mode;
+    }
+
+  return rc;
+}
+
 
 /* Try to connect to the agent via socket or fork it off and work by
    pipes.  Handle the server's initial greeting */
@@ -332,21 +370,7 @@ start_agent (ctrl_t ctrl, int for_card)
                            NULL, NULL, NULL, NULL, NULL, NULL);
           /* Pass on the pinentry mode.  */
           if (opt.pinentry_mode)
-            {
-              char *tmp = xasprintf ("OPTION pinentry-mode=%s",
-                                     str_pinentry_mode (opt.pinentry_mode));
-              rc = assuan_transact (agent_ctx, tmp,
-                               NULL, NULL, NULL, NULL, NULL, NULL);
-              xfree (tmp);
-              if (rc)
-                {
-                  log_error ("setting pinentry mode '%s' failed: %s\n",
-                             str_pinentry_mode (opt.pinentry_mode),
-                             gpg_strerror (rc));
-                  write_status_error ("set_pinentry_mode", rc);
-                }
-            }
-
+            agent_set_pinentry_mode (opt.pinentry_mode, NULL);
           check_hijacking (agent_ctx);
         }
     }
