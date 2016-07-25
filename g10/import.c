@@ -2067,8 +2067,11 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
             {
               gpg_error_t err;
 
-	      nr_prev = stats->secret_imported;
-              err = transfer_secret_keys (ctrl, stats, keyblock, batch, 0);
+              /* transfer_secret_keys collects subkey stats.  */
+              struct import_stats_s subkey_stats = {0};
+
+              err = transfer_secret_keys (ctrl, &subkey_stats, keyblock,
+                                          batch, 0);
               if (gpg_err_code (err) == GPG_ERR_NOT_PROCESSED)
                 {
                   /* TRANSLATORS: For smartcard, each private key on
@@ -2091,8 +2094,14 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
                   if (!opt.quiet)
                     log_info (_("key %s: secret key imported\n"),
                               keystr_from_pk (pk));
-		  if (stats->secret_imported > nr_prev)
-		    status |= 1;
+		  if (subkey_stats.secret_imported)
+                    {
+                      status |= 1;
+                      stats->secret_imported += 1;
+                    }
+		  if (subkey_stats.secret_dups)
+                    stats->secret_dups += 1;
+
                   if (is_status_enabled ())
                     print_import_ok (pk, status);
                   check_prefs (ctrl, node);

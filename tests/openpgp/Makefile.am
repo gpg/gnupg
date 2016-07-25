@@ -83,6 +83,7 @@ TESTS = setup.scm \
 	export.scm \
 	ssh.scm \
 	issue2015.scm \
+	issue2346.scm \
 	finish.scm
 
 
