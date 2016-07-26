@@ -214,6 +214,8 @@ copy_buffer_init (struct copy_buffer *c)
 static void
 copy_buffer_shred (struct copy_buffer *c)
 {
+  if (c == NULL)
+    return;
   wipememory (c->buffer, sizeof c->buffer);
   c->writep = NULL;
   c->nread = ~0U;
@@ -316,13 +318,34 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   int argsaveidx;
   int count;
   read_and_log_buffer_t fderrstate;
-  struct copy_buffer cpbuf_in, cpbuf_out, cpbuf_extra; /* Fixme: malloc them. */
+  struct copy_buffer *cpbuf_in = NULL, *cpbuf_out = NULL, *cpbuf_extra = NULL;
 
   memset (fds, 0, sizeof fds);
   memset (&fderrstate, 0, sizeof fderrstate);
-  copy_buffer_init (&cpbuf_in);
-  copy_buffer_init (&cpbuf_out);
-  copy_buffer_init (&cpbuf_extra);
+
+  cpbuf_in = xtrymalloc (sizeof *cpbuf_in);
+  if (cpbuf_in == NULL)
+    {
+      err = my_error_from_syserror ();
+      goto leave;
+    }
+  copy_buffer_init (cpbuf_in);
+
+  cpbuf_out = xtrymalloc (sizeof *cpbuf_out);
+  if (cpbuf_out == NULL)
+    {
+      err = my_error_from_syserror ();
+      goto leave;
+    }
+  copy_buffer_init (cpbuf_out);
+
+  cpbuf_extra = xtrymalloc (sizeof *cpbuf_extra);
+  if (cpbuf_extra == NULL)
+    {
+      err = my_error_from_syserror ();
+      goto leave;
+    }
+  copy_buffer_init (cpbuf_extra);
 
   fderrstate.pgmname = pgmname;
   fderrstate.status_cb = status_cb;
@@ -408,7 +431,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
 
       if (fds[0].got_write)
         {
-          err = copy_buffer_do_copy (&cpbuf_in, input, fds[0].stream);
+          err = copy_buffer_do_copy (cpbuf_in, input, fds[0].stream);
           if (err)
             {
               log_error ("error feeding data to '%s': %s\n",
@@ -418,7 +441,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
 
           if (es_feof (input))
             {
-              err = copy_buffer_flush (&cpbuf_in, fds[0].stream);
+              err = copy_buffer_flush (cpbuf_in, fds[0].stream);
               if (err)
                 {
                   log_error ("error feeding data to '%s': %s\n",
@@ -434,7 +457,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
       if (fds[3].got_write)
         {
           log_assert (inextra);
-          err = copy_buffer_do_copy (&cpbuf_extra, inextra, fds[3].stream);
+          err = copy_buffer_do_copy (cpbuf_extra, inextra, fds[3].stream);
           if (err)
             {
               log_error ("error feeding data to '%s': %s\n",
@@ -444,7 +467,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
 
           if (es_feof (inextra))
             {
-              err = copy_buffer_flush (&cpbuf_extra, fds[3].stream);
+              err = copy_buffer_flush (cpbuf_extra, fds[3].stream);
               if (err)
                 {
                   log_error ("error feeding data to '%s': %s\n",
@@ -459,7 +482,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
 
       if (fds[1].got_read)
         {
-          err = copy_buffer_do_copy (&cpbuf_out, fds[1].stream, output);
+          err = copy_buffer_do_copy (cpbuf_out, fds[1].stream, output);
           if (err)
             {
               log_error ("error reading data from '%s': %s\n",
@@ -469,7 +492,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
 
           if (es_feof (fds[1].stream))
             {
-              err = copy_buffer_flush (&cpbuf_out, output);
+              err = copy_buffer_flush (cpbuf_out, output);
               if (err)
                 {
                   log_error ("error reading data from '%s': %s\n",
@@ -506,10 +529,12 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
     gnupg_wait_process (pgmname, pid, 1, NULL);
   gnupg_release_process (pid);
 
-  copy_buffer_shred (&cpbuf_in);
-  copy_buffer_shred (&cpbuf_out);
-  if (inextra)
-    copy_buffer_shred (&cpbuf_extra);
+  copy_buffer_shred (cpbuf_in);
+  xfree (cpbuf_in);
+  copy_buffer_shred (cpbuf_out);
+  xfree (cpbuf_out);
+  copy_buffer_shred (cpbuf_extra);
+  xfree (cpbuf_extra);
   xfree (fderrstate.buffer);
   return err;
 }
