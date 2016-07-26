@@ -160,7 +160,7 @@ module_tests = t-stringhelp t-timestuff \
 	       t-mapstrings t-zb32 t-mbox-util t-iobuf t-strlist \
 	       t-name-value t-ccparray t-recsel
 if !HAVE_W32CE_SYSTEM
-module_tests += t-exechelp
+module_tests += t-exechelp t-exectool
 endif
 if HAVE_W32_SYSTEM
 module_tests += t-w32-reg
@@ -196,6 +196,7 @@ t_helpfile_LDADD = $(t_common_ldadd)
 t_sexputil_LDADD = $(t_common_ldadd)
 t_b64_LDADD = $(t_common_ldadd)
 t_exechelp_LDADD = $(t_common_ldadd)
+t_exectool_LDADD = $(t_common_ldadd)
 t_session_env_LDADD = $(t_common_ldadd)
 t_openpgp_oid_LDADD = $(t_common_ldadd)
 t_ssh_utils_LDADD = $(t_common_ldadd)
