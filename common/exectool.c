@@ -1,5 +1,6 @@
 /* exectool.c - Utility functions to execute a helper tool
  * Copyright (C) 2015 Werner Koch
+ * Copyright (C) 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -303,10 +304,10 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
                         void *status_cb_value)
 {
   gpg_error_t err;
-  pid_t pid;
+  pid_t pid = (pid_t) -1;
   estream_t infp = NULL;
   estream_t extrafp = NULL;
-  estream_t outfp, errfp;
+  estream_t outfp = NULL, errfp = NULL;
   es_poll_t fds[4];
   int exceptclose[2];
   int extrapipe[2] = {-1, -1};
@@ -329,7 +330,10 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   fderrstate.buffer_size = 256;
   fderrstate.buffer = xtrymalloc (fderrstate.buffer_size);
   if (!fderrstate.buffer)
-    return my_error_from_syserror ();
+    {
+      err = my_error_from_syserror ();
+      goto leave;
+    }
 
   if (inextra)
     {
@@ -338,8 +342,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
         {
           log_error ("error running outbound pipe for extra fp: %s\n",
                      gpg_strerror (err));
-          xfree (fderrstate.buffer);
-          return err;
+          goto leave;
         }
       exceptclose[0] = extrapipe[0]; /* Do not close in child. */
       exceptclose[1] = -1;
@@ -369,9 +372,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   if (err)
     {
       log_error ("error running '%s': %s\n", pgmname, gpg_strerror (err));
-      es_fclose (extrafp);
-      xfree (fderrstate.buffer);
-      return err;
+      goto leave;
     }
 
   fds[0].stream = infp;
@@ -494,7 +495,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
   pid = (pid_t)(-1);
 
  leave:
-  if (err)
+  if (err && pid != (pid_t) -1)
     gnupg_kill_process (pid);
 
   es_fclose (infp);
