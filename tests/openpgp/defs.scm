@@ -133,6 +133,13 @@
    (string-split
     (call-popen `(,@GPG --with-colons ,@args) input) #\newline)))
 
+;; Dearmor a file.
+(define (dearmor source-name sink-name)
+  (pipe:do
+   (pipe:open source-name (logior O_RDONLY O_BINARY))
+   (pipe:spawn `(,@GPG --dearmor))
+   (pipe:write-to sink-name (logior O_WRONLY O_CREAT O_BINARY) #o600)))
+
 (let ((verbose (string->number (getenv "verbose"))))
   (if (number? verbose)
       (*set-verbose!* verbose)))

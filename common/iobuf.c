@@ -162,6 +162,7 @@ static int special_names_enabled;
 
 /* Local prototypes.  */
 static int underflow (iobuf_t a, int clear_pending_eof);
+static int underflow_target (iobuf_t a, int clear_pending_eof, size_t target);
 static int translate_file_handle (int fd, int for_write);
 
 /* Sends any pending data to the filter's FILTER function.  Note: this
@@ -1769,11 +1770,22 @@ iobuf_pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
 
 
 /****************
- * read underflow: read more bytes into the buffer and return
+ * read underflow: read at least one byte into the buffer and return
  * the first byte or -1 on EOF.
  */
 static int
 underflow (iobuf_t a, int clear_pending_eof)
+{
+  return underflow_target (a, clear_pending_eof, 1);
+}
+
+
+/****************
+ * read underflow: read TARGET bytes into the buffer and return
+ * the first byte or -1 on EOF.
+ */
+static int
+underflow_target (iobuf_t a, int clear_pending_eof, size_t target)
 {
   size_t len;
   int rc;
@@ -1799,7 +1811,7 @@ underflow (iobuf_t a, int clear_pending_eof)
   memmove (a->d.buf, &a->d.buf[a->d.start], a->d.len);
   a->d.start = 0;
 
-  if (a->d.len == 0 && a->filter_eof)
+  if (a->d.len < target && a->filter_eof)
     /* The last time we tried to read from this filter, we got an EOF.
        We couldn't return the EOF, because there was buffered data.
        Since there is no longer any buffered data, return the
@@ -2090,7 +2102,7 @@ iobuf_peek (iobuf_t a, byte * buf, unsigned buflen)
      request.  */
   while (buflen > a->d.len - a->d.start)
     {
-      if (underflow (a, 0) == -1)
+      if (underflow_target (a, 0, buflen) == -1)
 	/* EOF.  We can't read any more.  */
 	break;
 
