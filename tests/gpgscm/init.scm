@@ -572,8 +572,8 @@
 
 (macro (catch form)
      (let ((label (gensym)))
-          `(call/cc (lambda (exit)
-               (push-handler (lambda (*error*) (exit ,(cadr form))))
+          `(call/cc (lambda (**exit**)
+               (push-handler (lambda (*error*) (**exit** ,(cadr form))))
                (let ((,label (begin ,@(cddr form))))
                     (pop-handler)
                     ,label)))))
