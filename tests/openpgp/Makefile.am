@@ -151,7 +151,8 @@ sample_keys = samplekeys/README \
 	      samplekeys/ssh-dsa.key \
 	      samplekeys/ssh-ecdsa.key \
 	      samplekeys/ssh-ed25519.key \
-	      samplekeys/ssh-rsa.key
+	      samplekeys/ssh-rsa.key \
+	      samplekeys/issue2346.gpg
 
 EXTRA_DIST = defs.inc defs.scm pinentry.sh $(TESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
