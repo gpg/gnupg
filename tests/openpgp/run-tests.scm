@@ -72,7 +72,7 @@
 (define test
   (package
    (define (scm name . args)
-     (new name #f `(,*argv0* ,@(verbosity *verbose*) ,@args
+     (new name #f `(,*argv0* ,@(verbosity (*verbose*)) ,@args
 			     ,(in-srcdir name)) #f #f))
    (define (new name directory command pid retcode)
      (package

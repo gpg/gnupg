@@ -92,8 +92,8 @@
 (define (call what)
   (call-with-fds what
 		 CLOSED_FD
-		 (if (< *verbose* 0) STDOUT_FILENO CLOSED_FD)
-		 (if (< *verbose* 0) STDERR_FILENO CLOSED_FD)))
+		 (if (< (*verbose*) 0) STDOUT_FILENO CLOSED_FD)
+		 (if (< (*verbose*) 0) STDERR_FILENO CLOSED_FD)))
 
 ;; Accessor functions for the results of 'spawn-process'.
 (define :stdin car)
@@ -110,6 +110,11 @@
 	   (result (wait-process (car what) (:pid h) #t)))
       (es-fclose (:stdout h))
       (es-fclose (:stderr h))
+      (if (> (*verbose*) 2)
+	  (begin
+	    (echo (stringify what) "returned:" result)
+	    (echo (stringify what) "wrote to stdout:" out)
+	    (echo (stringify what) "wrote to stderr:" err)))
       (list result out err))))
 
 ;; Accessor function for the results of 'call-with-io'.  ':stdout' and
@@ -360,7 +365,7 @@
   (lambda (M)
     (define (do-spawn M new-source)
       (let ((pid (spawn-process-fd command M::source M::sink
-				   (if (> *verbose* 0)
+				   (if (> (*verbose*) 0)
 				       STDERR_FILENO CLOSED_FD)))
 	    (M' (M::set-source new-source)))
 	(M'::add-proc command pid)))

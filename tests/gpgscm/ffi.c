@@ -1052,6 +1052,30 @@ do_glob (scheme *sc, pointer args)
 }
 
 
+
+static pointer
+do_get_verbose (scheme *sc, pointer args)
+{
+  FFI_PROLOG ();
+  FFI_ARGS_DONE_OR_RETURN (sc, args);
+  FFI_RETURN_INT (sc, verbose);
+}
+
+static pointer
+do_set_verbose (scheme *sc, pointer args)
+{
+  FFI_PROLOG ();
+  int new_verbosity, old;
+  FFI_ARG_OR_RETURN (sc, int, new_verbosity, number, args);
+  FFI_ARGS_DONE_OR_RETURN (sc, args);
+
+  old = verbose;
+  verbose = new_verbosity;
+
+  FFI_RETURN_INT (sc, old);
+}
+
+
 gpg_error_t
 ffi_list2argv (scheme *sc, pointer list, char ***argv, size_t *len)
 {
@@ -1260,7 +1284,8 @@ ffi_init (scheme *sc, const char *argv0, int argc, const char **argv)
   ffi_define_function (sc, prompt);
 
   /* Configuration.  */
-  ffi_define (sc, "*verbose*", sc->vptr->mk_integer (sc, verbose));
+  ffi_define_function_name (sc, "*verbose*", get_verbose);
+  ffi_define_function_name (sc, "*set-verbose!*", set_verbose);
 
   ffi_define (sc, "*argv0*", sc->vptr->mk_string (sc, argv0));
   for (i = argc - 1; i >= 0; i--)

@@ -132,3 +132,7 @@
        (list (string->number (cadr p)) (caddr p))))
    (string-split
     (call-popen `(,@GPG --with-colons ,@args) input) #\newline)))
+
+(let ((verbose (string->number (getenv "verbose"))))
+  (if (number? verbose)
+      (*set-verbose!* verbose)))
