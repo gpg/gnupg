@@ -697,7 +697,7 @@ case "${host}" in
         ;;
     m68k-atari-mint)
         ;;
-    *-linux-androideabi)
+    *-linux-android*)
         have_android_system=yes
         # Android is fully utf-8 and we do not want to use iconv to
         # keeps things simple
