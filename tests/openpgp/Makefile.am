@@ -159,7 +159,7 @@ sample_msgs = samplemsgs/issue2419.asc
 
 EXTRA_DIST = defs.inc defs.scm pinentry.sh $(TESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
-	     $(sample_msgs) ChangeLog-2011
+	     $(sample_msgs) ChangeLog-2011 run-tests.scm
 
 CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     plain-1 plain-2 plain-3 trustdb.gpg *.lock .\#lk* \
