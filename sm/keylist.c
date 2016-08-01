@@ -494,7 +494,6 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   es_putc (':', fp);
   /* Field 12, capabilities: */
   print_capabilities (cert, fp);
-  es_putc (':', fp);
   /* Field 13, not used: */
   es_putc (':', fp);
   if (have_secret || ctrl->with_secret)
