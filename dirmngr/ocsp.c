@@ -716,7 +716,7 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
                   reason == KSBA_CRLREASON_CA_COMPROMISE?   "CA compromise":
                   reason == KSBA_CRLREASON_AFFILIATION_CHANGED?
                                                       "affiliation changed":
-                  reason == KSBA_CRLREASON_SUPERSEDED?   "superseeded":
+                  reason == KSBA_CRLREASON_SUPERSEDED?   "superseded":
                   reason == KSBA_CRLREASON_CESSATION_OF_OPERATION?
                                                   "cessation of operation":
                   reason == KSBA_CRLREASON_CERTIFICATE_HOLD?

@@ -2361,7 +2361,7 @@ list_one_crl_entry (crl_cache_t cache, crl_cache_entry_t e, estream_t fp)
       if (reason & KSBA_CRLREASON_AFFILIATION_CHANGED )
         es_fputs( "affiliation_changed ", fp ), any = 1;
       if (reason & KSBA_CRLREASON_SUPERSEDED )
-        es_fputs( "superseeded", fp ), any = 1;
+        es_fputs( "superseded", fp ), any = 1;
       if (reason & KSBA_CRLREASON_CESSATION_OF_OPERATION )
         es_fputs( "cessation_of_operation", fp ), any = 1;
       if (reason & KSBA_CRLREASON_CERTIFICATE_HOLD )
