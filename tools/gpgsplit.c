@@ -577,7 +577,7 @@ write_part (FILE *fpin, unsigned long pktlen,
       len = public_key_length (blob, pktlen);
       if (!len)
         {
-          log_error ("error calcualting public key length\n");
+          log_error ("error calculating public key length\n");
           g10_exit (1);
         }
       if ( (hdr[0] & 0x40) )

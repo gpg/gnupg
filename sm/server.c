@@ -1039,7 +1039,7 @@ static const char hlp_getauditlog[] =
   "If --data is used, the output is send using D-lines and not to the\n"
   "file descriptor given by an OUTPUT command.\n"
   "\n"
-  "If --html is used the output is formated as an XHTML block. This is\n"
+  "If --html is used the output is formatted as an XHTML block. This is\n"
   "designed to be incorporated into a HTML document.";
 static gpg_error_t
 cmd_getauditlog (assuan_context_t ctx, char *line)

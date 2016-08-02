@@ -1749,7 +1749,7 @@ The possible exit status codes of @command{symcryptrun} are:
 @item 0
         Success.
 @item 1
-        Some error occured.
+        Some error occurred.
 @item 2
         No valid passphrase was provided.
 @item 3

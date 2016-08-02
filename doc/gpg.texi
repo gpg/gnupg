@@ -1678,7 +1678,7 @@ mechanisms, in the order they are to be tried:
   may be used here to query that particular keyserver.
 
   @item local
-  Locate the key using the local keyrings.  This mechanism allows to
+  Locate the key using the local keyrings.  This mechanism allows the user to
   select the order a local key lookup is done.  Thus using
   @samp{--auto-key-locate local} is identical to
   @option{--no-auto-key-locate}.
@@ -2110,7 +2110,7 @@ Use @var{name} as the key to sign with. Note that this option overrides
 @opindex try-secret-key
 For hidden recipients GPG needs to know the keys to use for trial
 decryption.  The key set with @option{--default-key} is always tried
-first, but this is often not sufficient.  This option allows to set more
+first, but this is often not sufficient.  This option allows setting more
 keys to be used for trial decryption.  Although any valid user-id
 specification may be used for @var{name} it makes sense to use at least
 the long keyid to avoid ambiguities.  Note that gpg-agent might pop up a
@@ -2791,7 +2791,7 @@ to display the message. This option overrides @option{--set-filename}.
 @itemx --no-use-embedded-filename
 @opindex use-embedded-filename
 Try to create a file with a name as embedded in the data. This can be
-a dangerous option as it allows to overwrite files. Defaults to no.
+a dangerous option as it enables overwriting files. Defaults to no.
 
 @item --cipher-algo @code{name}
 @opindex cipher-algo

@@ -321,9 +321,9 @@ whether @option{--honor-http-proxy} has been set.
 @item --ldap-proxy @var{host}[:@var{port}]
 @opindex ldap-proxy
 Use @var{host} and @var{port} to connect to LDAP servers.  If @var{port}
-is ommitted, port 389 (standard LDAP port) is used.  This overrides any
+is omitted, port 389 (standard LDAP port) is used.  This overrides any
 specified host and port part in a LDAP URL and will also be used if host
-and port have been ommitted from the URL.
+and port have been omitted from the URL.
 
 @item --only-ldap-proxy
 @opindex only-ldap-proxy
@@ -346,12 +346,12 @@ This server list file contains one LDAP server per line in the format
 Lines starting with a  @samp{#} are comments.
 
 Note that as usual all strings entered are expected to be UTF-8 encoded.
-Obviously this will lead to problems if the password has orginally been
+Obviously this will lead to problems if the password has originally been
 encoded as Latin-1.  There is no other solution here than to put such a
 password in the binary encoding into the file (i.e. non-ascii characters
 won't show up readable).@footnote{The @command{gpgconf} tool might be
-helpful for frontends as it allows to edit this configuration file using
-percent escaped strings.}
+helpful for frontends as it enables editing this configuration file using
+percent-escaped strings.}
 
 
 @item --ldaptimeout @var{secs}
@@ -474,7 +474,7 @@ In the deprecated system daemon mode the second directory is used instead.
 
 @item /etc/gnupg/trusted-certs
 This directory should be filled with certificates of Root CAs you
-are trusting in checking the CRLs and signing OCSP Reponses.
+are trusting in checking the CRLs and signing OCSP Responses.
 
 Usually these are the same certificates you use with the applications
 making use of dirmngr.  It is expected that each of these certificate
@@ -496,7 +496,7 @@ This directory may contain extra certificates which are preloaded
 into the interal cache on startup. Applications using dirmngr (e.g. gpgsm)
 can request cached certificates to complete a trust chain.
 This is convenient in cases you have a couple intermediate CA certificates
-or certificates ususally used to sign OCSP reponses.
+or certificates ususally used to sign OCSP responses.
 These certificates are first tried before going
 out to the net to look for them.  These certificates must also be
 @acronym{DER} encoded and suffixed with @file{.crt} or @file{.der}.

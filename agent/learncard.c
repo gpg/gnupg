@@ -133,7 +133,7 @@ kpinfo_cb (void *opaque, const char *line)
   char *p;
 
   if (parm->error)
-    return; /* no need to gather data after an error coccured */
+    return; /* no need to gather data after an error occurred */
 
   if ((parm->error = agent_write_status (parm->ctrl, "PROGRESS",
                                          "learncard", "k", "0", "0", NULL)))
@@ -190,7 +190,7 @@ certinfo_cb (void *opaque, const char *line)
   char *p, *pend;
 
   if (parm->error)
-    return; /* no need to gather data after an error coccured */
+    return; /* no need to gather data after an error occurred */
 
   if ((parm->error = agent_write_status (parm->ctrl, "PROGRESS",
                                          "learncard", "c", "0", "0", NULL)))
@@ -232,7 +232,7 @@ sinfo_cb (void *opaque, const char *keyword, size_t keywordlen,
   SINFO item;
 
   if (sparm->error)
-    return; /* no need to gather data after an error coccured */
+    return; /* no need to gather data after an error occurred */
 
   item = xtrycalloc (1, sizeof *item + keywordlen + 1 + strlen (data));
   if (!item)

@@ -540,8 +540,8 @@ Also listen on native gpg-agent connections on the given socket.  The
 intended use for this extra socket is to setup a Unix domain socket
 forwarding from a remote machine to this socket on the local machine.
 A @command{gpg} running on the remote machine may then connect to the
-local gpg-agent and use its private keys.  This allows to decrypt or
-sign data on a remote machine without exposing the private keys to the
+local gpg-agent and use its private keys.  This enables decrypting or
+signing data on a remote machine without exposing the private keys to the
 remote machine.
 
 
@@ -633,7 +633,7 @@ agent. By default they may all be found in the current home directory
   lines are ignored.  To mark a key as trusted you need to enter its
   fingerprint followed by a space and a capital letter @code{S}.  Colons
   may optionally be used to separate the bytes of a fingerprint; this
-  allows to cut and paste the fingerprint from a key listing output.  If
+  enables cutting and pasting the fingerprint from a key listing output.  If
   the line is prefixed with a @code{!} the key is explicitly marked as
   not trusted.
 
@@ -1041,8 +1041,8 @@ Here is an example session:
 @subsection Generating a Key
 
 This is used to create a new keypair and store the secret key inside the
-active PSE --- which is in most cases a Soft-PSE.  An not yet defined
-option allows to choose the storage location.  To get the secret key out
+active PSE --- which is in most cases a Soft-PSE.  A not-yet-defined
+option allows choosing the storage location.  To get the secret key out
 of the PSE, a special export tool has to be used.
 
 @example

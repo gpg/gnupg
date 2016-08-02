@@ -1317,7 +1317,7 @@ sig_notation (const char *option, int argc, char *argv[], void *cookie)
   else
     notation = string_to_notation (p, 1);
   if (! notation)
-    log_fatal ("creating notation: an unknown error occured.\n");
+    log_fatal ("creating notation: an unknown error occurred.\n");
   notation->next = si->notations;
   si->notations = notation;
 
