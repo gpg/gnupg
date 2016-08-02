@@ -499,7 +499,7 @@ static const char hlp_serialno[] =
   "error is returned if the application is not supported or available.\n"
   "The default is to auto-select the application using a hardwired\n"
   "preference system.  Note, that a future extension to this function\n"
-  "may allow to specify a list and order of applications to try.\n"
+  "may enable specifying a list and order of applications to try.\n"
   "\n"
   "This function is special in that it can be used to reset the card.\n"
   "Most other functions will return an error when a card change has\n"

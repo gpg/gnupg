@@ -3043,7 +3043,7 @@ io_monitor (assuan_context_t ctx, void *hook, int direction,
 
   (void) hook;
 
-  /* Note that we only check for the uppercase name.  This allows to
+  /* Note that we only check for the uppercase name.  This allows the user to
      see the logging for debugging if using a non-upercase command
      name. */
   if (ctx && direction == ASSUAN_IO_FROM_PEER

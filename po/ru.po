@@ -8195,7 +8195,7 @@ msgstr "|N|установить максимальный срок действи
 msgid "Options enforcing a passphrase policy"
 msgstr "Параметры, обеспечивающие правила для фраз-паролей"
 
-msgid "do not allow to bypass the passphrase policy"
+msgid "do not allow bypassing the passphrase policy"
 msgstr "не позволять обходить правила для фраз-паролей"
 
 msgid "|N|set minimal required length for new passphrases to N"

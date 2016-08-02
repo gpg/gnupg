@@ -8819,7 +8819,7 @@ msgstr "|N|azami SSH anahtarı ömrü N saniyeye ayarlanır"
 msgid "Options enforcing a passphrase policy"
 msgstr "Bir anahtar parolası kuralını zorlayan seçenekler"
 
-msgid "do not allow to bypass the passphrase policy"
+msgid "do not allow bypassing the passphrase policy"
 msgstr "anahtar parolası kuralının atlanmasına izin verilmez"
 
 msgid "|N|set minimal required length for new passphrases to N"

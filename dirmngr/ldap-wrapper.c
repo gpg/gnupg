@@ -545,8 +545,8 @@ reader_callback (void *cb_value, char *buffer, size_t count,  size_t *nread)
   if (!buffer && !count && !nread)
     return -1; /* Rewind is not supported. */
 
-  /* If we ever encountered a read error don't allow to continue and
-     possible overwrite the last error cause.  Bail out also if the
+  /* If we ever encountered a read error, don't continue (we don't want to
+     possibly overwrite the last error cause).  Bail out also if the
      file descriptor has been closed. */
   if (ctx->fd_error || ctx->fd == -1)
     {

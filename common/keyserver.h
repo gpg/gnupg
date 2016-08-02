@@ -48,8 +48,8 @@
 /* Must be 127 due to shell internal magic. */
 #define KEYSERVER_SCHEME_NOT_FOUND 127
 
-/* Object to hold information pertaining to a keyserver; it further
-   allows to build a list of keyservers.  Note that g10/options.h has
+/* Object to hold information pertaining to a keyserver; it also
+   allows building a list of keyservers.  Note that g10/options.h has
    a typedef for this.  FIXME: We should make use of the
    parse_uri_t. */
 struct keyserver_spec

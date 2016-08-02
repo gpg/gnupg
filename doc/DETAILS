@@ -913,8 +913,8 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 
 *** FAILURE <location> <error_code>
     This is the counterpart to SUCCESS and used to indicate a program
-    failure.  It is used similar to ISO-C's EXIT_FAILURE but allows to
-    convey more information, in particular an gpg-error error code.
+    failure.  It is used similar to ISO-C's EXIT_FAILURE but allows
+    conveying more information, in particular a gpg-error error code.
     That numerical error code may optionally have a suffix made of an
     underscore and a string with an error symbol like "151011327_EOF".
     A dash may be used instead of <location>.

@@ -7974,7 +7974,7 @@ msgstr "|N|最大SSH鍵存続時間をN秒とする"
 msgid "Options enforcing a passphrase policy"
 msgstr "パスワード・ポリシーの強制オプション"
 
-msgid "do not allow to bypass the passphrase policy"
+msgid "do not allow bypassing the passphrase policy"
 msgstr "パスワード・ポリシーを迂回することを認めない"
 
 msgid "|N|set minimal required length for new passphrases to N"

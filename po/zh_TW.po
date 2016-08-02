@@ -8039,7 +8039,7 @@ msgstr "|N|把 SSH 金鑰最大生存時間設成 N 秒"
 msgid "Options enforcing a passphrase policy"
 msgstr "強制執行密語原則的選項"
 
-msgid "do not allow to bypass the passphrase policy"
+msgid "do not allow bypassing the passphrase policy"
 msgstr "不允許略過密語原則"
 
 msgid "|N|set minimal required length for new passphrases to N"

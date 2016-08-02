@@ -8299,7 +8299,7 @@ msgstr "|N|встановити максимальний строк дії кл�
 msgid "Options enforcing a passphrase policy"
 msgstr "Параметри примусового використання правил паролів"
 
-msgid "do not allow to bypass the passphrase policy"
+msgid "do not allow bypassing the passphrase policy"
 msgstr "не дозволяти обхід правил паролів"
 
 msgid "|N|set minimal required length for new passphrases to N"

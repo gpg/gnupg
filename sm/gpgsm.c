@@ -1681,7 +1681,7 @@ main ( int argc, char **argv)
 
       /* Build the recipient list.  We first add the regular ones and then
          the encrypt-to ones because the underlying function will silently
-         ignore duplicates and we can't allow to keep a duplicate which is
+         ignore duplicates and we can't allow keeping a duplicate which is
          flagged as encrypt-to as the actually encrypt function would then
          complain about no (regular) recipients. */
       for (sl = remusr; sl; sl = sl->next)
@@ -1785,7 +1785,7 @@ main ( int argc, char **argv)
       {
         estream_t fp = open_es_fwrite (opt.outfile?opt.outfile:"-");
 
-        /* Fixme: We should also allow to concatenate multiple files for
+        /* Fixme: We should also allow concatenation of multiple files for
            signing because that is what gpg does.*/
         set_binary (stdin);
         if (!argc) /* Create from stdin. */

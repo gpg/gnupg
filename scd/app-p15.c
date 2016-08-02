@@ -2935,8 +2935,8 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
 
   /* Due to the fact that the non-repudiation signature on a BELPIC
      card requires a verify immediately before the DSO we set the
-     MSE before we do the verification.  Other cards might allow to do
-     this also but I don't want to break anything, thus we do it only
+     MSE before we do the verification.  Other cards might also allow
+     this but I don't want to break anything, thus we do it only
      for the BELPIC card here. */
   if (app->app_local->card_type == CARD_TYPE_BELPIC)
     {

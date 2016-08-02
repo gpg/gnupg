@@ -8801,7 +8801,7 @@ msgstr "|N|establecer vida máxima de la clave SSH en N segundos"
 msgid "Options enforcing a passphrase policy"
 msgstr "Opciones que fuerzan una política de frases contraseña"
 
-msgid "do not allow to bypass the passphrase policy"
+msgid "do not allow bypassing the passphrase policy"
 msgstr "no permitir evitar la política de frases contraseña"
 
 msgid "|N|set minimal required length for new passphrases to N"

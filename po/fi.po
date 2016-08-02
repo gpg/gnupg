@@ -8552,7 +8552,7 @@ msgstr ""
 msgid "Options enforcing a passphrase policy"
 msgstr ""
 
-msgid "do not allow to bypass the passphrase policy"
+msgid "do not allow bypassing the passphrase policy"
 msgstr ""
 
 msgid "|N|set minimal required length for new passphrases to N"

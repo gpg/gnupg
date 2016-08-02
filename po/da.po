@@ -8774,7 +8774,7 @@ msgstr "|N|angive maksimal livsforløb for SSH-nøgle til N sekunder"
 msgid "Options enforcing a passphrase policy"
 msgstr "Tilvalg der fremtvinger en adgangsfrasepolitik"
 
-msgid "do not allow to bypass the passphrase policy"
+msgid "do not allow bypassing the passphrase policy"
 msgstr "tillad ikke omgåelse af adgangsfrasepolitikken"
 
 msgid "|N|set minimal required length for new passphrases to N"

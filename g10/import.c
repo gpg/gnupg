@@ -2020,7 +2020,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
 #ifdef ENABLE_SELINUX_HACKS
   if (1)
     {
-      /* We don't allow to import secret keys because that may be used
+      /* We don't allow importing secret keys because that may be used
          to put a secret key into the keyring and the user might later
          be tricked into signing stuff with that key.  */
       log_error (_("importing secret keys not allowed\n"));

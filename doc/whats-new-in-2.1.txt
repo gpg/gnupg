@@ -540,7 +540,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   key id matching the key id of another key.  Importing a key with a
   long key id already used by another key in gpg’s local key store was
   not possible due to checks done on import.  Now, if the “wrong” key
-  has been imported first /gpg/ would not allow to later import the
+  has been imported first /gpg/ would not allow later import of the
   second “correct” key.  This problem has been fixed in 2.1 by allowing
   the import and by doing trial verification against all matching keys.
 

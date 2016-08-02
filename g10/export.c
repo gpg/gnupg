@@ -1925,7 +1925,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
               continue;
             }
 
-          /* The agent does not yet allow to export v3 packets.  It is
+          /* The agent does not yet allow export of v3 packets.  It is
              actually questionable whether we should allow them at
              all.  */
           if (pk->version == 3)

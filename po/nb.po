@@ -8090,7 +8090,7 @@ msgstr "|N|endre maksimal livstid for SSH-nøkler til N antall sekunder"
 msgid "Options enforcing a passphrase policy"
 msgstr "Valg som håndhever passordfrase-regler"
 
-msgid "do not allow to bypass the passphrase policy"
+msgid "do not allow bypassing the passphrase policy"
 msgstr "ikke tillat overstyring av passordfrase-regler"
 
 msgid "|N|set minimal required length for new passphrases to N"

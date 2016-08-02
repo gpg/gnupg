@@ -6,13 +6,13 @@ new release: Version 2.1.0.
 The GNU Privacy Guard (GnuPG) is a complete and free implementation of
 the OpenPGP standard as defined by RFC-4880 and better known as PGP.
 
-GnuPG, also known as GPG, allows to encrypt and sign data and
+GnuPG, also known as GPG, enables encryption and signing of data and
 communication, features a versatile key management system as well as
 access modules for public key directories.  GnuPG itself is a command
 line tool with features for easy integration with other applications.
-A wealth of frontend applications and libraries making use of GnuPG
-are available.  Since version 2 GnuPG provides support for S/MIME and
-Secure Shell in addition to OpenPGP.
+A wealth of frontend applications and libraries are available that
+make use of GnuPG.  Since version 2 GnuPG provides support for S/MIME
+and Secure Shell in addition to OpenPGP.
 
 GnuPG is Free Software (meaning that it respects your freedom). It can
 be freely used, modified and distributed under the terms of the GNU

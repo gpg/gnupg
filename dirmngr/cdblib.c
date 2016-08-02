@@ -296,7 +296,7 @@ cdb_find(struct cdb *cdbp, const void *key, cdbi_t klen)
 
 /* Sequential-find routines that used separate structure.  It is
    possible to have many than one record with the same key in a
-   database, and these routines allows to enumerate all them.
+   database, and these routines allow enumeration of all of them.
    cdb_findinit() initializes search structure pointed to by cdbfp.
    It will return negative value on error or 0 on success.  cdb_find­
    next() attempts to find next matching key, setting value position

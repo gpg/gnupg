@@ -234,7 +234,7 @@ commit the changes.
 
 @command{gpgconf} provides the backend of a configuration editor.  The
 configuration editor would usually be a graphical user interface
-program, that allows to display the current options, their default
+program that displays the current options, their default
 values, and allows the user to make changes to the options.  These
 changes can then be made active with @command{gpgconf} again.  Such a
 program that uses @command{gpgconf} in this way will be called GUI
@@ -999,9 +999,9 @@ This script is a wrapper around @command{gpgconf} to run it with the
 command @code{--apply-defaults} for all real users with an existing
 GnuPG home directory.  Admins might want to use this script to update he
 GnuPG configuration files for all users after
-@file{/etc/gnupg/gpgconf.conf} has been changed.  This allows to enforce
-certain policies for all users.  Note, that this is not a bulletproof of
-forcing a user to use certain options.  A user may always directly edit
+@file{/etc/gnupg/gpgconf.conf} has been changed.  This allows enforcing
+certain policies for all users.  Note, that this is not a bulletproof way to
+force a user to use certain options.  A user may always directly edit
 the configuration files and bypass gpgconf.
 
 @noindent

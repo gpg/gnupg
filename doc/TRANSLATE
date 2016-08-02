@@ -23,8 +23,8 @@ Help files
 
 GnuPG provides a little help feature (entering a ? on a prompt).  This
 help used to be translated the usual way with gettext but it turned
-out that this is too inflexible and does for example not allow to
-correct little mistakes in the English text.  For some newer features
+out that this is too inflexible and does for example not allow
+correcting little mistakes in the English text.  For some newer features
 we require editable help files anyway and thus the existing help
 strings have been moved to plain text files names "help.LL.txt".  We
 distribute these files and allow overriding them by files of that name

@@ -1198,7 +1198,7 @@ iobuf_cancel (iobuf_t a)
 #if defined(HAVE_W32_SYSTEM) || defined(__riscos__)
   if (remove_name)
     {
-      /* Argg, MSDOS does not allow to remove open files.  So
+      /* Argg, MSDOS does not allow removing open files.  So
        * we have to do it here */
 #ifdef HAVE_W32CE_SYSTEM
       wchar_t *wtmp = utf8_to_wchar (remove_name);

@@ -103,7 +103,7 @@ struct tar_header_s
   unsigned long long mtime; /* Modification time since Epoch.  Note
                                that we don't use time_t here but a
                                type which is more likely to be larger
-                               that 32 bit and thus allows to track
+                               that 32 bit and thus allows tracking
                                times beyond 2106.  */
   typeflag_t typeflag;      /* The type of the file.  */
   

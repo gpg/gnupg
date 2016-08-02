@@ -8257,7 +8257,7 @@ msgstr "|N| nastavit maximální životnost klíčů SSH na N sekund"
 msgid "Options enforcing a passphrase policy"
 msgstr "Volby vynucující politiku hesel"
 
-msgid "do not allow to bypass the passphrase policy"
+msgid "do not allow bypassing the passphrase policy"
 msgstr "nedovolit obejít politiku hesel"
 
 msgid "|N|set minimal required length for new passphrases to N"

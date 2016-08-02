@@ -9,15 +9,16 @@
 * INTRODUCTION
 
   GnuPG is a complete and free implementation of the OpenPGP standard
-  as defined by RFC4880 (also known as PGP).  GnuPG allows to encrypt
-  and sign data and communication, features a versatile key management
-  system as well as access modules for public key directories.
+  as defined by RFC4880 (also known as PGP).  GnuPG enables encryption
+  and signing of data and communication, and features a versatile key
+  management system as well as access modules for public key
+  directories.
 
   GnuPG, also known as GPG, is a command line tool with features for
   easy integration with other applications.  A wealth of frontend
-  applications and libraries making use of GnuPG are available.  Since
-  version 2 GnuPG provides support for S/MIME and Secure Shell in
-  addition to OpenPGP.
+  applications and libraries are available that make use of GnuPG.
+  Since version 2 GnuPG provides support for S/MIME and Secure Shell
+  in addition to OpenPGP.
 
   GnuPG is Free Software (meaning that it respects your freedom). It
   can be freely used, modified and distributed under the terms of the

@@ -156,9 +156,9 @@ i18n_utf8 (const char *string)
 }
 
 
-/* A variant of gettext which allows to specify the local to use for
-   translating the message.  The function assumes that utf-8 is used
-   for the encoding.  */
+/* A variant of gettext which allows the programmer to specify the
+   locale to use for translating the message.  The function assumes
+   that utf-8 is used for the encoding.  */
 const char *
 i18n_localegettext (const char *lc_messages, const char *string)
 {

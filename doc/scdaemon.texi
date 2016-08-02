@@ -258,7 +258,7 @@ deprecated; it may be removed in future releases.
 @item --disable-ccid
 @opindex disable-ccid
 Disable the integrated support for CCID compliant readers.  This
-allows to fall back to one of the other drivers even if the internal
+allows falling back to one of the other drivers even if the internal
 CCID driver can handle the reader.  Note, that CCID support is only
 available if libusb was available at build time.
 
@@ -284,10 +284,10 @@ To get a list of available CCID readers you may use this command:
 If @var{n} is not 0 and no client is actively using the card, the card
 will be powered down after @var{n} seconds.  Powering down the card
 avoids a potential risk of damaging a card when used with certain
-cheap readers.  This also allows non Scdaemon aware applications to
-access the card.  The disadvantage of using a card timeout is that
-accessing the card takes longer and that the user needs to enter the
-PIN again after the next power up.
+cheap readers.  This also allows applications that are not aware of
+Scdaemon to access the card.  The disadvantage of using a card timeout
+is that accessing the card takes longer and that the user needs to
+enter the PIN again after the next power up.
 
 Note that with the current version of Scdaemon the card is powered
 down immediately at the next timer tick for any value of @var{n} other

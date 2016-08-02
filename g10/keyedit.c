@@ -1338,7 +1338,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 		    }
 
 		  /* Fixme: see whether there is a revocation in which
-		   * case we should allow to sign it again. */
+		   * case we should allow signing it again. */
 		  if (!node->pkt->pkt.signature->flags.exportable && local)
 		    tty_fprintf ( fp,
                        _("\"%s\" was already locally signed by key %s\n"),

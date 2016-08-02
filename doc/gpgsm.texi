@@ -636,7 +636,7 @@ algorithm than actually used.  @command{gpgsm} uses a one-pass data
 processing model and thus needs to rely on the announced digest
 algorithms to properly hash the data.  As a workaround this option may
 be used to tell gpg to also hash the data using the algorithm
-@var{name}; this slows processing down a little bit but allows to verify
+@var{name}; this slows processing down a little bit but allows verification of
 such broken signatures.  If @command{gpgsm} prints an error like
 ``digest algo 8 has not been enabled'' you may want to try this option,
 with @samp{SHA256} for @var{name}.
@@ -1479,7 +1479,7 @@ GETAUDITLOG [--data] [--html]
 
 If @option{--data} is used, the audit log is send using D-lines
 instead of being sent to the file descriptor given by an OUTPUT
-command.  If @option{--html} is used, the output is formated as an
+command.  If @option{--html} is used, the output is formatted as an
 XHTML block. This is designed to be incorporated into a HTML
 document.
 

@@ -8322,7 +8322,7 @@ msgstr "|N|setze die maximale Lebenszeit von SSH Schlüsseln auf N Sekunden"
 msgid "Options enforcing a passphrase policy"
 msgstr "Optionen für eine Passphrase-Policy"
 
-msgid "do not allow to bypass the passphrase policy"
+msgid "do not allow bypassing the passphrase policy"
 msgstr "Einhaltung der Passphrase-Policy erzwingen"
 
 msgid "|N|set minimal required length for new passphrases to N"

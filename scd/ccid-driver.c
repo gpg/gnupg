@@ -2980,7 +2980,7 @@ ccid_transceive (ccid_driver_t handle,
     nresp = &dummy_nresp;
   *nresp = 0;
 
-  /* Smarter readers allow to send APDUs directly; divert here. */
+  /* Smarter readers allow sending APDUs directly; divert here. */
   if (handle->apdu_level)
     {
       /* We employ a hack for Omnikey readers which are able to send

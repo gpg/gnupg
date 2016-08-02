@@ -8490,7 +8490,7 @@ msgstr "|N|définir la durée maximale du cache de clef SSH à N secondes"
 msgid "Options enforcing a passphrase policy"
 msgstr "Options d'application d'une politique de phrase secrète"
 
-msgid "do not allow to bypass the passphrase policy"
+msgid "do not allow bypassing the passphrase policy"
 msgstr "pas de contournement de politique de phrase secrète"
 
 msgid "|N|set minimal required length for new passphrases to N"

@@ -2514,7 +2514,7 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 	      else if ((IS_UID_SIG (sig) || IS_UID_REV (sig))
 		       && sig->timestamp >= sigdate)
 		{
-		  /* Note: we allow to invalidate cert revocations
+		  /* Note: we allow invalidation of cert revocations
 		   * by a newer signature.  An attacker can't use this
 		   * because a key should be revoked with a key revocation.
 		   * The reason why we have to allow for that is that at

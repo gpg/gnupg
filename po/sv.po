@@ -8917,7 +8917,7 @@ msgstr "|N|ställ in maximal livstid för SSH-nyckel till N sekunder"
 msgid "Options enforcing a passphrase policy"
 msgstr "Flaggor som tvingar igenom en lösenfraspolicy"
 
-msgid "do not allow to bypass the passphrase policy"
+msgid "do not allow bypassing the passphrase policy"
 msgstr "tillåt inte att gå förbi lösenfraspolicyn"
 
 msgid "|N|set minimal required length for new passphrases to N"

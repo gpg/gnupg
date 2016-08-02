@@ -109,7 +109,7 @@ hash_and_copy_data (int fd, gcry_md_hd_t md, ksba_writer_t writer)
   es_fclose (fp);
   if (!any)
     {
-      /* We can't allow to sign an empty message because it does not
+      /* We can't allow signing an empty message because it does not
          make much sense and more seriously, ksba_cms_build has
          already written the tag for data and now expects an octet
          string and an octet string of size 0 is illegal.  */

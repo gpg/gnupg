@@ -324,7 +324,7 @@ similar to the private-key storage format.  This is a master
 passphrase format where each file may protect several secrets under
 one master passphrase.  It is possible to have several of those files
 each protected by a dedicated master passphrase.  Clear text keywords
-allow to list the available protected passphrases.
+allow listing the available protected passphrases.
 
 The name of the files with these protected secrets have this form:
 pw-<string>.dat.  STRING may be an arbitrary string, as a default name

@@ -2357,7 +2357,7 @@ obsolete; it does not harm to use it though.
 Revert to the pre-2.1 public key list mode.  This only affects the
 human readable output and not the machine interface
 (i.e. @code{--with-colons}).  Note that the legacy format does not
-allow to convey suitable information for elliptic curves.
+convey suitable information for elliptic curves.
 
 @item --with-fingerprint
 @opindex with-fingerprint

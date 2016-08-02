@@ -560,7 +560,7 @@ static gc_option_t gc_options_gpg_agent[] =
      "gnupg", N_("Options enforcing a passphrase policy") },
    { "enforce-passphrase-constraints", GC_OPT_FLAG_RUNTIME,
      GC_LEVEL_EXPERT, "gnupg",
-     N_("do not allow to bypass the passphrase policy"),
+     N_("do not allow bypassing the passphrase policy"),
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG_AGENT },
    { "min-passphrase-len", GC_OPT_FLAG_RUNTIME,
      GC_LEVEL_ADVANCED, "gnupg",
@@ -3736,7 +3736,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
 
           if (defaults)
             {
-              /* Here we explicitly allow to update the value again.  */
+              /* Here we explicitly allow updating the value again.  */
               if (newflags)
                 {
                   option_info->new_flags = 0;
