@@ -11,8 +11,8 @@ communication, features a versatile key management system as well as
 access modules for public key directories.  GnuPG itself is a command
 line tool with features for easy integration with other applications.
 A wealth of frontend applications and libraries are available that
-make use of GnuPG.  Since version 2 GnuPG provides support for S/MIME
-and Secure Shell in addition to OpenPGP.
+make use of GnuPG.  Starting with version 2 GnuPG provides support for
+S/MIME and Secure Shell in addition to OpenPGP.
 
 GnuPG is Free Software (meaning that it respects your freedom). It can
 be freely used, modified and distributed under the terms of the GNU
