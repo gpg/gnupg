@@ -29,6 +29,7 @@
 #include "keybox-defs.h"
 #include "../common/sysutils.h"
 #include "../common/host2net.h"
+#include "../common/utilproto.h"
 
 #define EXTSEP_S "."
 
