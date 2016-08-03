@@ -1338,6 +1338,7 @@ static int
 rename_tmp_file (const char *bakfname, const char *tmpfname, const char *fname)
 {
   int rc = 0;
+  int block = 0;
 
   /* Invalidate close caches.  */
   if (iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)tmpfname ))
@@ -1349,12 +1350,18 @@ rename_tmp_file (const char *bakfname, const char *tmpfname, const char *fname)
   iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname );
 
   /* First make a backup file. */
-  rc = keybox_file_rename (fname, bakfname);
+  block = 1;
+  rc = keybox_file_rename (fname, bakfname, &block);
   if (rc)
     goto fail;
 
   /* then rename the file */
-  rc = keybox_file_rename (tmpfname, fname);
+  rc = keybox_file_rename (tmpfname, fname, NULL);
+  if (block)
+    {
+      gnupg_unblock_all_signals ();
+      block = 0;
+    }
   if (rc)
     {
       register_secured_file (fname);
@@ -1379,6 +1386,8 @@ rename_tmp_file (const char *bakfname, const char *tmpfname, const char *fname)
   return 0;
 
  fail:
+  if (block)
+    gnupg_unblock_all_signals ();
   return rc;
 }
 

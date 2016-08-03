@@ -27,6 +27,7 @@
 #endif
 
 #include "keybox-defs.h"
+#include "utilproto.h"
 
 
 static void *(*alloc_func)(size_t n) = malloc;
@@ -147,54 +148,69 @@ keybox_tmp_names (const char *filename, int for_keyring,
 }
 
 
-/* Wrapper for rename(2) to handle Windows peculiarities.  */
+/* Wrapper for rename(2) to handle Windows peculiarities.  If
+ * BLOCK_SIGNALS is not NULL and points to a variable set to true, all
+ * signals will be blocked by calling gnupg_block_all_signals; the
+ * caller needs to call gnupg_unblock_all_signals if that variable is
+ * still set to true on return. */
 gpg_error_t
-keybox_file_rename (const char *oldname, const char *newname)
+keybox_file_rename (const char *oldname, const char *newname,
+                    int *block_signals)
 {
   gpg_error_t err = 0;
 
+  if (block_signals && *block_signals)
+    gnupg_block_all_signals ();
+
 #ifdef HAVE_DOSISH_SYSTEM
-  int wtime = 0;
+  {
+    int wtime = 0;
 
-  gnupg_remove (newname);
- again:
-  if (rename (oldname, newname))
-    {
-      if (GetLastError () == ERROR_SHARING_VIOLATION)
-        {
-          /* Another process has the file open.  We do not use a lock
-           * for read but instead we wait until the other process has
-           * closed the file.  This may take long but that would also
-           * be the case with a dotlock approach for read and write.
-           * Note that we don't need this on Unix due to the inode
-           * concept.
-           *
-           * So let's wait until the rename has worked.  The retry
-           * intervals are 50, 100, 200, 400, 800, 50ms, ...  */
-          if (!wtime || wtime >= 800)
-            wtime = 50;
-          else
-            wtime *= 2;
+    gnupg_remove (newname);
+  again:
+    if (rename (oldname, newname))
+      {
+        if (GetLastError () == ERROR_SHARING_VIOLATION)
+          {
+            /* Another process has the file open.  We do not use a
+             * lock for read but instead we wait until the other
+             * process has closed the file.  This may take long but
+             * that would also be the case with a dotlock approach for
+             * read and write.  Note that we don't need this on Unix
+             * due to the inode concept.
+             *
+             * So let's wait until the rename has worked.  The retry
+             * intervals are 50, 100, 200, 400, 800, 50ms, ...  */
+            if (!wtime || wtime >= 800)
+              wtime = 50;
+            else
+              wtime *= 2;
 
-          if (wtime >= 800)
-            log_info ("waiting for file '%s' to become accessible ...\n",
-                      oldname);
+            if (wtime >= 800)
+              log_info ("waiting for file '%s' to become accessible ...\n",
+                        oldname);
 
-          Sleep (wtime);
-          goto again;
-        }
-      err = gpg_error_from_syserror ();
-    }
-
+            Sleep (wtime);
+            goto again;
+          }
+        err = gpg_error_from_syserror ();
+      }
+  }
 #else /* Unix */
-
+  {
 #ifdef __riscos__
-  gnupg_remove (newname);
+    gnupg_remove (newname);
 #endif
-  if (rename (oldname, newname) )
-    err = gpg_error_from_syserror ();
-
+    if (rename (oldname, newname) )
+      err = gpg_error_from_syserror ();
+  }
 #endif /* Unix */
+
+  if (block_signals && *block_signals && err)
+    {
+      gnupg_unblock_all_signals ();
+      *block_signals = 0;
+    }
 
   if (err)
     log_error ("renaming '%s' to '%s' failed: %s\n",

@@ -97,6 +97,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
                  const char *fname, int secret )
 {
   int rc=0;
+  int block = 0;
 
   /* restrict the permissions for secret keyboxs */
 #ifndef HAVE_DOSISH_SYSTEM
@@ -119,27 +120,35 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
   /* First make a backup file except for secret keyboxes. */
   if (!secret)
     {
-      rc = keybox_file_rename (fname, bakfname);
+      block = 1;
+      rc = keybox_file_rename (fname, bakfname, &block);
       if (rc)
-        return rc;
+        goto leave;
     }
 
   /* Then rename the file. */
-  rc = keybox_file_rename (tmpfname, fname);
-  if (rc)
+  rc = keybox_file_rename (tmpfname, fname, NULL);
+  if (block)
     {
-      if (secret)
-        {
-/*            log_info ("WARNING: 2 files with confidential" */
-/*                       " information exists.\n"); */
-/*            log_info ("%s is the unchanged one\n", fname ); */
-/*            log_info ("%s is the new one\n", tmpfname ); */
-/*            log_info ("Please fix this possible security flaw\n"); */
-	}
-      return rc;
+      gnupg_unblock_all_signals ();
+      block = 0;
     }
+  /* if (rc) */
+  /*   { */
+  /*     if (secret) */
+  /*       { */
+  /*         log_info ("WARNING: 2 files with confidential" */
+  /*                   " information exists.\n"); */
+  /*         log_info ("%s is the unchanged one\n", fname ); */
+  /*         log_info ("%s is the new one\n", tmpfname ); */
+  /*         log_info ("Please fix this possible security flaw\n"); */
+  /*       } */
+  /*   } */
 
-  return 0;
+ leave:
+  if (block)
+    gnupg_unblock_all_signals ();
+  return rc;
 }
 
 
