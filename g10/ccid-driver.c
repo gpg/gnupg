@@ -2264,7 +2264,7 @@ ccid_poll (ccid_driver_t handle)
     }
   else if (msg[0] == RDR_to_PC_HardwareError)    
     {
-      DEBUGOUT ("hardware error occured\n");
+      DEBUGOUT ("hardware error occurred\n");
     }
   else
     {

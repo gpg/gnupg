@@ -793,7 +793,7 @@ re_node_set_merge (dest, src)
 
 /* Insert the new element ELEM to the re_node_set* SET.
    return 0 if SET already has ELEM,
-   return -1 if an error is occured, return 1 otherwise.  */
+   return -1 if an error is occurred, return 1 otherwise.  */
 
 static int
 re_node_set_insert (set, elem)
@@ -909,7 +909,7 @@ re_node_set_remove_at (set, idx)
 
 
 /* Add the token TOKEN to dfa->nodes, and return the index of the token.
-   Or return -1, if an error will be occured.  */
+   Or return -1, if an error will be occurred.  */
 
 static int
 re_dfa_add_node (dfa, token, mode)

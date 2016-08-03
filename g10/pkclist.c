@@ -952,7 +952,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
             }
 
           /* Do group expand here too.  The trick here is to continue
-             the loop if any expansion occured.  The code above will
+             the loop if any expansion occurred.  The code above will
              then list all expanded keys. */
           if (expand_id(answer,&backlog,0))
             continue;

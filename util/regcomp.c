@@ -1764,7 +1764,7 @@ peek_token_bracket (token, input, syntax)
 
 /* Entry point of the parser.
    Parse the regular expression REGEXP and return the structure tree.
-   If an error is occured, ERR is set by error code, and return NULL.
+   If an error is occurred, ERR is set by error code, and return NULL.
    This function build the following tree, from regular expression <reg_exp>:
            CAT
            / \
@@ -3349,7 +3349,7 @@ build_word_op (dfa, not, err)
 /* This is intended for the expressions like "a{1,3}".
    Fetch a number from `input', and return the number.
    Return -1, if the number field is empty like "{,1}".
-   Return -2, If an error is occured.  */
+   Return -2, If an error is occurred.  */
 
 static int
 fetch_number (input, token, syntax)
