@@ -1,5 +1,5 @@
-/* fwddecl.h - Forward declarations
- * Copyright (C) 2015 Werner Koch
+/* utilproto.h - Some prototypes for inclusion by util.h
+ * Copyright (C) 2016 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -27,13 +27,18 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GNUPG_COMMON_FWDDECL_H
-#define GNUPG_COMMON_FWDDECL_H
+/* This file is in general included via util.h but sometimes we do not
+ * want all stuff from util.h and instead use this file with its
+ * simple prototypes.  */
+
+#ifndef GNUPG_COMMON_UTILPROTO_H
+#define GNUPG_COMMON_UTILPROTO_H
+
+/*-- signal.c --*/
+void gnupg_init_signals (int mode, void (*fast_cleanup)(void));
+void gnupg_block_all_signals (void);
+void gnupg_unblock_all_signals (void);
 
 
-/*-- Forward declaration of the commonly used server control structure.  */
-struct server_control_s;
-typedef struct server_control_s *ctrl_t;
 
-
-#endif /*GNUPG_COMMON_FWDDECL_H*/
+#endif /*GNUPG_COMMON_UTILPROTO_H*/

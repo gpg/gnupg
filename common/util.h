@@ -54,6 +54,7 @@
 #include "../common/utf8conv.h"
 #include "../common/dynload.h"
 #include "../common/fwddecl.h"
+#include "../common/utilproto.h"
 
 #include "gettime.h"
 
@@ -113,11 +114,6 @@ out_of_core (void)
   return gpg_error_from_syserror ();
 }
 
-
-/*-- signal.c --*/
-void gnupg_init_signals (int mode, void (*fast_cleanup)(void));
-void gnupg_block_all_signals (void);
-void gnupg_unblock_all_signals (void);
 
 /*-- yesno.c --*/
 int answer_is_yes (const char *s);
