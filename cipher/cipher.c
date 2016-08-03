@@ -586,7 +586,7 @@ do_cfb_encrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
 
   /* Now we can process complete blocks.  We use a loop as long as we
      have at least 2 blocks and use conditions for the rest.  This
-     also allows to use a bulk encryption function if available.  */
+     also allows use of a bulk encryption function if available.  */
 #ifdef USE_AES
   if (nbytes >= blocksize_x_2 
       && (c->algo == CIPHER_ALGO_AES
@@ -677,7 +677,7 @@ do_cfb_decrypt( CIPHER_HANDLE c, byte *outbuf, byte *inbuf, unsigned nbytes )
   
   /* Now we can process complete blocks.  We use a loop as long as we
      have at least 2 blocks and use conditions for the rest.  This
-     also allows to use a bulk encryption function if available.  */
+     also allows use of a bulk encryption function if available.  */
 #ifdef USE_AES
   if (nbytes >= blocksize_x_2 
       && (c->algo == CIPHER_ALGO_AES

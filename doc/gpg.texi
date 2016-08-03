@@ -1211,7 +1211,7 @@ Use @code{file} to access the smartcard reader. The current default is
 @item --disable-ccid
 @opindex disable-ccid
 Disable the integrated support for CCID compliant readers. This
-allows to fall back to one of the other drivers even if the internal
+allows falling back to one of the other drivers even if the internal
 CCID driver can handle the reader. Note, that CCID support is only
 available if libusb was available at build time.
 
@@ -1438,7 +1438,7 @@ mechanisms, in the order they are to be tried:
   may be used here to query that particular keyserver.
 
   @item local
-  Locate the key using the local keyrings.  This mechanism allows to
+  Locate the key using the local keyrings.  This mechanism allows the user to
   select the order a local key lookup is done.  Thus using
   @samp{--auto-key-locate local} is identical to
   @option{--no-auto-key-locate}.
@@ -2416,7 +2416,7 @@ to display the message. This option overrides @option{--set-filename}.
 @itemx --no-use-embedded-filename
 @opindex use-embedded-filename
 Try to create a file with a name as embedded in the data. This can be
-a dangerous option as it allows to overwrite files. Defaults to no.
+a dangerous option as it enables overwriting files. Defaults to no.
 
 @item --cipher-algo @code{name}
 @opindex cipher-algo

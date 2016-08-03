@@ -276,7 +276,7 @@ check_pubkey_algo2( int algo, unsigned use )
     int i;
 
     /* Map type 20 Elgamal algorithm to type 16 if it is used for
-       decryption.  This allows to use legacy type 20 Elgamal keys for
+       decryption.  This allows use of legacy type 20 Elgamal keys for
        decryption.  */
     if (algo == PUBKEY_ALGO_ELGAMAL && use == PUBKEY_USAGE_ENC)
       algo = PUBKEY_ALGO_ELGAMAL_E;

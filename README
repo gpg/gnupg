@@ -632,7 +632,7 @@
                     is in general the preferable solution.  However
                     the code is new and under some cirumstances it may
                     give different output than with the limited old
-                    support.  This option allows to explicity disable
+                    support.  This option explicitly disables
                     the use of iconv.  Note, that iconv is also
                     disabled if gettext has been disabled.
 
