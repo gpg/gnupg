@@ -60,7 +60,8 @@
 			   "agent/gpg-preset-passphrase")
     (mktdata "MKTDATA" "tools/mk-tdata")
     (gpgtar "GPGTAR" "tools/gpgtar")
-    (gpg-zip "GPGZIP" "tools/gpg-zip")))
+    (gpg-zip "GPGZIP" "tools/gpg-zip")
+    (pinentry "PINENTRY" "tests/openpgp/fake-pinentry")))
 
 (define (tool which)
   (let ((t (assoc which tools))
@@ -77,7 +78,7 @@
 
 (define GPG `(,(tool 'gpg) --no-permission-warning
 	      ,@(if have-opt-always-trust '(--always-trust) '())))
-(define PINENTRY (string-append (getcwd) "/" (qualify "fake-pinentry")))
+(define PINENTRY (tool 'pinentry))
 
 (define (tr:gpg input args)
   (tr:spawn input `(,@GPG --output **out** ,@args **in**)))
