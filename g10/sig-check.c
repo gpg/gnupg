@@ -82,9 +82,9 @@ signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
       }
     else if( get_pubkey( pk, sig->keyid ) )
 	rc = G10ERR_NO_PUBKEY;
-    else if(!pk->is_valid && !pk->is_primary)
+    else if(!pk->is_valid)
         rc=G10ERR_BAD_PUBKEY; /* you cannot have a good sig from an
-				 invalid subkey */
+				 invalid key */
     else
       {
         if(r_expiredate)
