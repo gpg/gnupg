@@ -40,6 +40,7 @@ enum cmd_and_opt_values
     oVerbose	= 'v',
     oRuntime    = 'r',
     oComponent  = 'c',
+    oNull       = '0',
     oNoVerbose	= 500,
     oHomedir,
 
@@ -93,6 +94,7 @@ static ARGPARSE_OPTS opts[] =
     { oRuntime, "runtime",  0, N_("activate changes at runtime, if possible") },
     /* hidden options */
     { oHomedir, "homedir", 2, "@" },
+    { oNull, "null", 0, "@" },
     { oNoVerbose, "no-verbose",  0, "@"},
     {0}
   };
@@ -197,7 +199,10 @@ list_dirs (estream_t fp, char **names)
         {
           for (j=0; names[j]; j++)
             if (!strcmp (names[j], list[idx].name))
-              es_fprintf (fp, "%s\n", s);
+              {
+                es_fputs (s, fp);
+                es_putc (opt.null? '\0':'\n', fp);
+              }
         }
 
       xfree (tmp);
@@ -241,6 +246,7 @@ main (int argc, char **argv)
         case oVerbose:   opt.verbose++; break;
         case oNoVerbose: opt.verbose = 0; break;
         case oHomedir:   gnupg_set_homedir (pargs.r.ret_str); break;
+        case oNull:      opt.null = 1; break;
 
 	case aListDirs:
         case aListComponents:

@@ -29,6 +29,7 @@ struct
   int quiet;		/* Be extra quiet.  */
   int dry_run;		/* Don't change any persistent data.  */
   int runtime;		/* Make changes active at runtime.  */
+  int null;             /* Option -0 active.  */
   char *outfile;	/* Name of output file.  */
 
   int component;	/* The active component.  */
