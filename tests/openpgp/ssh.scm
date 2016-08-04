@@ -23,7 +23,9 @@
 (if (string=? "" GNUPGHOME)
     (error "GNUPGHOME not set"))
 
-(setenv "SSH_AUTH_SOCK" (path-join GNUPGHOME "S.gpg-agent.ssh") #t)
+(setenv "SSH_AUTH_SOCK"
+        (call-check `(,(tool 'gpgconf) --null --list-dirs agent-ssh-socket))
+        #t)
 
 (define SSH-ADD #f)
 (catch (skip "ssh-add not found")
