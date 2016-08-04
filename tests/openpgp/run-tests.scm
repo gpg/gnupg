@@ -192,9 +192,15 @@
     "import.scm"
     "ecc.scm"
     "4gb-packet.scm"
+    "tofu.scm"
     "gpgtar.scm"
     "use-exact-key.scm"
-    "default-key.scm"))
+    "default-key.scm"
+    "export.scm"
+    "ssh.scm"
+    "issue2015.scm"
+    "issue2346.scm"
+    "issue2419.scm"))
 
 (let* ((runner (if (member "--parallel" *args*)
 		  (if (member "--shared" *args*)
