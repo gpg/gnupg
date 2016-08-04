@@ -118,9 +118,9 @@ check_signature2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
       }
     else if( get_pubkey( pk, sig->keyid ) )
 	rc = GPG_ERR_NO_PUBKEY;
-    else if(!pk->flags.valid && !pk->flags.primary)
+    else if(!pk->flags.valid)
       {
-        /* You cannot have a good sig from an invalid subkey.  */
+        /* You cannot have a good sig from an invalid key.  */
         rc = GPG_ERR_BAD_PUBKEY;
       }
     else
