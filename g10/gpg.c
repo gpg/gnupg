@@ -2269,7 +2269,7 @@ main (int argc, char **argv)
     opt.def_cert_expire = "0";
     gnupg_set_homedir (NULL);
     opt.passphrase_repeat = 1;
-    opt.emit_version = 1; /* Limit to the major number.  */
+    opt.emit_version = 0;
     opt.weak_digests = NULL;
     additional_weak_digest("MD5");
 

@@ -2713,9 +2713,9 @@ protected by the signature.
 @opindex emit-version
 Force inclusion of the version string in ASCII armored output.  If
 given once only the name of the program and the major number is
-emitted (default), given twice the minor is also emitted, given triple
+emitted, given twice the minor is also emitted, given triple
 the micro is added, and given quad an operating system identification
-is also emitted.  @option{--no-emit-version} disables the version
+is also emitted.  @option{--no-emit-version} (default) disables the version
 line.
 
 @item --sig-notation @code{name=value}
