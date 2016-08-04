@@ -2378,7 +2378,8 @@ Print the ICAO spelling of the fingerprint in addition to the hex digits.
 
 @item --with-keygrip
 @opindex with-keygrip
-Include the keygrip in the key listings.
+Include the keygrip in the key listings.  In @code{--with-colons} mode
+this is implicitly enable for secret keys.
 
 @item --with-wkd-hash
 @opindex with-wkd-hash

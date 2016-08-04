@@ -1175,7 +1175,7 @@ print_revokers (estream_t fp, PKT_public_key * pk)
    secret key is available even if SECRET is not set.  */
 static void
 list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
-                     int secret, int has_secret, int fpr)
+                     int secret, int has_secret)
 {
   int rc;
   KBNODE kbctx;
@@ -1271,15 +1271,11 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
   es_putc ('\n', es_stdout);
 
   print_revokers (es_stdout, pk);
-  if (fpr)
-    print_fingerprint (NULL, pk, 0);
-  if (opt.with_key_data || opt.with_keygrip)
-    {
-      if (hexgrip)
-        es_fprintf (es_stdout, "grp:::::::::%s:\n", hexgrip);
-      if (opt.with_key_data)
-        print_key_data (pk);
-    }
+  print_fingerprint (NULL, pk, 0);
+  if (hexgrip)
+    es_fprintf (es_stdout, "grp:::::::::%s:\n", hexgrip);
+  if (opt.with_key_data)
+    print_key_data (pk);
 
   for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
     {
@@ -1408,15 +1404,11 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
             }
           es_putc (':', es_stdout);	/* End of field 17. */
 	  es_putc ('\n', es_stdout);
-	  if (fpr > 1)
-	    print_fingerprint (NULL, pk2, 0);
-	  if (opt.with_key_data || opt.with_keygrip)
-            {
-              if (hexgrip)
-                es_fprintf (es_stdout, "grp:::::::::%s:\n", hexgrip);
-              if (opt.with_key_data)
-                print_key_data (pk2);
-            }
+          print_fingerprint (NULL, pk2, 0);
+          if (hexgrip)
+            es_fprintf (es_stdout, "grp:::::::::%s:\n", hexgrip);
+          if (opt.with_key_data)
+            print_key_data (pk2);
 	}
       else if (opt.list_sigs && node->pkt->pkttype == PKT_SIGNATURE)
 	{
@@ -1599,7 +1591,7 @@ list_keyblock (ctrl_t ctrl,
   reorder_keyblock (keyblock);
 
   if (opt.with_colons)
-    list_keyblock_colon (ctrl, keyblock, secret, has_secret, fpr);
+    list_keyblock_colon (ctrl, keyblock, secret, has_secret);
   else
     list_keyblock_print (ctrl, keyblock, secret, fpr, listctx);
 
