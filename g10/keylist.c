@@ -1186,7 +1186,8 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
   int ulti_hack = 0;
   int i;
   char *p;
-  char *hexgrip = NULL;
+  char *hexgrip_buffer = NULL;
+  const char *hexgrip = NULL;
   char *serialno = NULL;
   int stubkey;
 
@@ -1202,9 +1203,13 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
   pk = node->pkt->pkt.public_key;
   if (secret || has_secret || opt.with_keygrip || opt.with_key_data)
     {
-      rc = hexkeygrip_from_pk (pk, &hexgrip);
+      rc = hexkeygrip_from_pk (pk, &hexgrip_buffer);
       if (rc)
         log_error ("error computing a keygrip: %s\n", gpg_strerror (rc));
+      /* In the error case we print an empty string so that we have a
+       * "grp" record for each and subkey - even if it is empty.  This
+       * may help to prevent sync problems.  */
+      hexgrip = hexgrip_buffer? hexgrip_buffer : "";
     }
   stubkey = 0;
   if ((secret || has_secret)
@@ -1338,16 +1343,19 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	{
 	  u32 keyid2[2];
 	  PKT_public_key *pk2;
+          int need_hexgrip = !!hexgrip;
 
           pk2 = node->pkt->pkt.public_key;
-          xfree (hexgrip); hexgrip = NULL;
+          xfree (hexgrip_buffer); hexgrip_buffer = NULL; hexgrip = NULL;
           xfree (serialno); serialno = NULL;
-          if (secret || has_secret || opt.with_keygrip || opt.with_key_data)
+          if (need_hexgrip
+              || secret || has_secret || opt.with_keygrip || opt.with_key_data)
             {
-              rc = hexkeygrip_from_pk (pk2, &hexgrip);
+              rc = hexkeygrip_from_pk (pk2, &hexgrip_buffer);
               if (rc)
                 log_error ("error computing a keygrip: %s\n",
                            gpg_strerror (rc));
+              hexgrip = hexgrip_buffer? hexgrip_buffer : "";
             }
           stubkey = 0;
           if ((secret||has_secret)
@@ -1523,7 +1531,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	}
     }
 
-  xfree (hexgrip);
+  xfree (hexgrip_buffer);
   xfree (serialno);
 }
 
