@@ -2018,7 +2018,7 @@ main (int argc, char **argv)
     opt.def_cert_expire="0";
     set_homedir ( default_homedir () );
     opt.passphrase_repeat=1;
-    opt.emit_version = 1; /* Limit to the major number.  */
+    opt.emit_version = 0;
 
     opt.list_options   |= LIST_SHOW_UID_VALIDITY;
     opt.verify_options |= LIST_SHOW_UID_VALIDITY;
