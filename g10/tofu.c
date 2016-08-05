@@ -55,46 +55,14 @@
 #define FULL_TRUST_THRESHOLD  100
 
 
-#define DEBUG_TOFU_CACHE 0
-#if DEBUG_TOFU_CACHE
-static int prepares_saved;
-static int queries;
-#endif
-
-/* The TOFU data can be saved in two different formats: either in a
-   single combined database (opt.tofu_db_format == TOFU_DB_FLAT) or in
-   a split file format (opt.tofu_db_format == TOFU_DB_SPLIT).  In the
-   split format, there is one database per normalized email address
-   (DB_EMAIL) and one per key (DB_KEY).  */
-enum db_type
-  {
-    DB_COMBINED,
-    DB_EMAIL,
-    DB_KEY
-  };
-
-/* A list of open DBs.
-
-   In the flat format, this consists of a single element with the type
-   DB_COMBINED and whose name is the empty string.
-
-   In the split format, the first element is a dummy element (DB is
-   NULL) whose type is DB_COMBINED and whose name is the empty string.
-   Any following elements describe either DB_EMAIL or DB_KEY DBs.  In
-   theis case, NAME is either the normalized email address or the
-   fingerprint.
+/* An struct with data pertaining to the tofu DB.
 
    To initialize this data structure, call opendbs().  Cleanup is done
    when the CTRL object is released.  To get a handle to a database,
    use the getdb() function.  This will either return an existing
    handle or open a new DB connection, as appropriate.  */
-struct db
+struct tofu_dbs_s
 {
-  struct db *next;
-  struct db **prevp;
-
-  enum db_type type;
-
   sqlite3 *db;
 
   struct
@@ -116,34 +84,9 @@ struct db
     sqlite3_stmt *register_insert;
   } s;
 
-#if DEBUG_TOFU_CACHE
-  int hits;
-#endif
-
   int batch_update;
-
-  /* If TYPE is DB_COMBINED, this is "".  Otherwise, it is either the
-     fingerprint (type == DB_KEY) or the normalized email address
-     (type == DB_EMAIL).  */
-  char name[1];
 };
 
-static struct db *db_cache;
-static int db_cache_count;
-#define DB_CACHE_ENTRIES 16
-
-static void tofu_cache_dump (struct db *db) GPGRT_ATTR_USED;
-
-static void
-tofu_cache_dump (struct db *db)
-{
-  log_info ("Connection %p:\n", db);
-  for (; db; db = db->next)
-    log_info ("  %s: %sbatch mode\n", db->name, db->batch_update ? "" : "NOT ");
-  log_info ("Cache:\n");
-  for (db = db_cache; db; db = db->next)
-    log_info ("  %s: %sbatch mode\n", db->name, db->batch_update ? "" : "NOT ");
-}
 
 #define STRINGIFY(s) STRINGIFY2(s)
 #define STRINGIFY2(s) #s
@@ -167,8 +110,11 @@ tofu_cache_dump (struct db *db)
 #  define TIME_AGO_UNIT_LARGE (30 * 24 * 60 * 60)
 #endif
 
-
+/* Local prototypes.  */
+static gpg_error_t end_transaction (ctrl_t ctrl, int only_batch);
 
+
+
 const char *
 tofu_policy_str (enum tofu_policy policy)
 {
@@ -213,83 +159,63 @@ tofu_policy_to_trust_level (enum tofu_policy policy)
       return 0;
     }
 }
+
+
 
-static int batch_update;
-static time_t batch_update_started;
-
-static gpg_error_t end_transaction (struct db *db, int only_batch);
-
 /* Start a transaction on DB.  */
 static gpg_error_t
-begin_transaction (struct db *db, int only_batch)
+begin_transaction (ctrl_t ctrl, int only_batch)
 {
+  tofu_dbs_t dbs = ctrl->tofu.dbs;
   int rc;
   char *err = NULL;
 
-  if (batch_update && batch_update_started != gnupg_get_time ())
-    /* We've been in batch update mode for a while (on average, more
-       than 500 ms).  To prevent starving other gpg processes, we drop
-       and retake the batch lock.
+  log_assert (dbs);
 
-       Note: if we wanted higher resolution, we could use
-       npth_clock_gettime.  */
+  if (ctrl->tofu.batch_update_ref
+      && ctrl->tofu.batch_update_started != gnupg_get_time ())
     {
-      struct db *t;
+      /* We've been in batch update mode for a while (on average, more
+       * than 500 ms).  To prevent starving other gpg processes, we
+       * drop and retake the batch lock.
+       *
+       * Note: if we wanted higher resolution, we could use
+       * npth_clock_gettime.  */
+      if (dbs->batch_update)
+        end_transaction (ctrl, 1);
 
-      for (t = db_cache; t; t = t->next)
-        if (t->batch_update)
-          end_transaction (t, 1);
-      for (t = db; t; t = t->next)
-        if (t->batch_update)
-          end_transaction (t, 1);
-
-      batch_update_started = gnupg_get_time ();
+      ctrl->tofu.batch_update_started = gnupg_get_time ();
 
       /* Yield to allow another process a chance to run.  */
       gpgrt_yield ();
     }
 
-  /* XXX: In split mode, this can end in deadlock.
-
-     Consider: we have two gpg processes running simultaneously and
-     they each want to lock DB A and B, but in different orders.  This
-     will be automatically resolved by causing one of them to return
-     EBUSY and aborting.
-
-     A more intelligent approach would be to commit and retake the
-     batch transaction.  This requires a list of all DBs that are
-     currently in batch mode.  */
-
-  if (batch_update && ! db->batch_update)
+  if (ctrl->tofu.batch_update_ref && !dbs->batch_update)
     {
-      rc = gpgsql_stepx (db->db, &db->s.savepoint_batch,
+      rc = gpgsql_stepx (dbs->db, &dbs->s.savepoint_batch,
                           NULL, NULL, &err,
                           "savepoint batch;", SQLITE_ARG_END);
       if (rc)
         {
           log_error (_("error beginning transaction on TOFU database: %s\n"),
                      err);
-          print_further_info ("batch, database '%s'",
-                              *db->name ? db->name : "[combined]");
           sqlite3_free (err);
           return gpg_error (GPG_ERR_GENERAL);
         }
 
-      db->batch_update = 1;
+      dbs->batch_update = 1;
     }
 
   if (only_batch)
     return 0;
 
-  rc = gpgsql_stepx (db->db, &db->s.savepoint_inner,
+  rc = gpgsql_stepx (dbs->db, &dbs->s.savepoint_inner,
                       NULL, NULL, &err,
                       "savepoint inner;", SQLITE_ARG_END);
   if (rc)
     {
       log_error (_("error beginning transaction on TOFU database: %s\n"),
                  err);
-      print_further_info ("inner, database '%s'",
-                          *db->name ? db->name : "[combined]");
       sqlite3_free (err);
       return gpg_error (GPG_ERR_GENERAL);
     }
@@ -297,34 +223,34 @@ begin_transaction (struct db *db, int only_batch)
   return 0;
 }
 
+
 /* Commit a transaction.  If ONLY_BATCH is 1, then this only ends the
-   batch transaction if we have left batch mode.  If ONLY_BATCH is 2,
-   this ends any open batch transaction even if we are still in batch
-   mode.  */
+ * batch transaction if we have left batch mode.  If ONLY_BATCH is 2,
+ * this ends any open batch transaction even if we are still in batch
+ * mode.  */
 static gpg_error_t
-end_transaction (struct db *db, int only_batch)
+end_transaction (ctrl_t ctrl, int only_batch)
 {
+  tofu_dbs_t dbs = ctrl->tofu.dbs;
   int rc;
   char *err = NULL;
 
-  if (!db)
+  if (!dbs)
     return 0;  /* Shortcut to allow for easier cleanup code.  */
 
-  if ((! batch_update || only_batch == 2) && db->batch_update)
-    /* The batch transaction is still in open, but we left batch
-       mode.  */
+  if ((!ctrl->tofu.batch_update_ref || only_batch == 2) && dbs->batch_update)
     {
-      db->batch_update = 0;
+      /* The batch transaction is still in open, but we left batch
+       * mode.  */
+      dbs->batch_update = 0;
 
-      rc = gpgsql_stepx (db->db, &db->s.savepoint_batch_commit,
+      rc = gpgsql_stepx (dbs->db, &dbs->s.savepoint_batch_commit,
                           NULL, NULL, &err,
                           "release batch;", SQLITE_ARG_END);
       if (rc)
         {
           log_error (_("error committing transaction on TOFU database: %s\n"),
                      err);
-          print_further_info ("batch, database '%s'",
-                              *db->name ? db->name : "[combined]");
           sqlite3_free (err);
           return gpg_error (GPG_ERR_GENERAL);
         }
@@ -337,15 +263,13 @@ end_transaction (struct db *db, int only_batch)
   if (only_batch)
     return 0;
 
-  rc = gpgsql_stepx (db->db, &db->s.savepoint_inner_commit,
+  rc = gpgsql_stepx (dbs->db, &dbs->s.savepoint_inner_commit,
                       NULL, NULL, &err,
                       "release inner;", SQLITE_ARG_END);
   if (rc)
     {
       log_error (_("error committing transaction on TOFU database: %s\n"),
                  err);
-      print_further_info ("inner, database '%s'",
-                          *db->name ? db->name : "[combined]");
       sqlite3_free (err);
       return gpg_error (GPG_ERR_GENERAL);
     }
@@ -353,29 +277,33 @@ end_transaction (struct db *db, int only_batch)
   return 0;
 }
 
+
 static gpg_error_t
-rollback_transaction (struct db *db)
+rollback_transaction (ctrl_t ctrl)
 {
+  tofu_dbs_t dbs = ctrl->tofu.dbs;
   int rc;
   char *err = NULL;
 
-  if (!db)
+  if (!dbs)
     return 0;  /* Shortcut to allow for easier cleanup code.  */
 
-  if (db->batch_update)
-    /* Just undo the most recent update; don't revert any progress
-       made by the batch transaction.  */
-    rc = sqlite3_exec (db->db, "rollback to inner;", NULL, NULL, &err);
+  if (dbs->batch_update)
+    {
+      /* Just undo the most recent update; don't revert any progress
+         made by the batch transaction.  */
+      rc = sqlite3_exec (dbs->db, "rollback to inner;", NULL, NULL, &err);
+    }
   else
-    /* Rollback the whole she-bang.  */
-    rc = sqlite3_exec (db->db, "rollback;", NULL, NULL, &err);
+    {
+      /* Rollback the whole she-bang.  */
+      rc = sqlite3_exec (dbs->db, "rollback;", NULL, NULL, &err);
+    }
 
   if (rc)
     {
       log_error (_("error rolling back transaction on TOFU database: %s\n"),
                  err);
-      print_further_info ("inner, database '%s'",
-                          *db->name ? db->name : "[combined]");
       sqlite3_free (err);
       return gpg_error (GPG_ERR_GENERAL);
     }
@@ -384,27 +312,22 @@ rollback_transaction (struct db *db)
 }
 
 void
-tofu_begin_batch_update (void)
+tofu_begin_batch_update (ctrl_t ctrl)
 {
-  if (! batch_update)
-    batch_update_started = gnupg_get_time ();
+  if (!ctrl->tofu.batch_update_ref)
+    ctrl->tofu.batch_update_started = gnupg_get_time ();
 
-  batch_update ++;
+  ctrl->tofu.batch_update_ref ++;
 }
 
 void
-tofu_end_batch_update (void)
+tofu_end_batch_update (ctrl_t ctrl)
 {
-  log_assert (batch_update > 0);
-  batch_update --;
+  log_assert (ctrl->tofu.batch_update_ref > 0);
+  ctrl->tofu.batch_update_ref --;
 
-  if (batch_update == 0)
-    {
-      struct db *db;
-
-      for (db = db_cache; db; db = db->next)
-        end_transaction (db, 1);
-    }
+  if (!ctrl->tofu.batch_update_ref)
+    end_transaction (ctrl, 1);
 }
 
 
@@ -523,7 +446,7 @@ version_check_cb (void *cookie, int argc, char **argv, char **azColName)
 
    Return 0 if the database is okay and 1 otherwise.  */
 static int
-initdb (sqlite3 *db, enum db_type type)
+initdb (sqlite3 *db)
 {
   char *err = NULL;
   int rc;
@@ -639,8 +562,7 @@ initdb (sqlite3 *db, enum db_type type)
    *    the old binding's policy to ask if it was auto.  So that we
    *     know why this occurred, we also set conflict to 0xbaddecaf.
    */
-  if (type == DB_EMAIL || type == DB_COMBINED)
-    rc = gpgsql_exec_printf
+  rc = gpgsql_exec_printf
       (db, NULL, NULL, &err,
        "create table bindings\n"
        " (oid INTEGER PRIMARY KEY AUTOINCREMENT,\n"
@@ -653,20 +575,6 @@ initdb (sqlite3 *db, enum db_type type)
        "create index bindings_email on bindings (email);\n",
        TOFU_POLICY_AUTO, TOFU_POLICY_GOOD, TOFU_POLICY_UNKNOWN,
        TOFU_POLICY_BAD, TOFU_POLICY_ASK);
-  else
-    /* In the split DB case, the fingerprint DB only contains a subset
-       of the fields.  This reduces the amount of duplicated data.
-
-       Note: since the data is split on the email address, there is no
-       need to index the email column.  */
-    rc = gpgsql_exec_printf
-      (db, NULL, NULL, &err,
-       "create table bindings\n"
-       " (oid INTEGER PRIMARY KEY AUTOINCREMENT,\n"
-       "  fingerprint TEXT, email TEXT, user_id,\n"
-       "  unique (fingerprint, email));\n"
-       "create index bindings_fingerprint\n"
-       " on bindings (fingerprint);\n");
   if (rc)
     {
       log_error (_("error initializing TOFU database: %s\n"), err);
@@ -675,35 +583,32 @@ initdb (sqlite3 *db, enum db_type type)
       goto out;
     }
 
-  if (type != DB_KEY)
-    {
-      /* The signatures that we have observed.
-
-	 BINDING refers to a record in the bindings table, which
-         describes the binding (i.e., this is a foreign key that
-         references bindings.oid).
-
-	 SIG_DIGEST is the digest stored in the signature.
-
-	 SIG_TIME is the timestamp stored in the signature.
-
-	 ORIGIN is a free-form string that describes who fed this
-         signature to GnuPG (e.g., email:claws).
-
-	 TIME is the time this signature was registered.  */
-      rc = sqlite3_exec (db,
+  /* The signatures that we have observed.
+   *
+   * BINDING refers to a record in the bindings table, which
+   * describes the binding (i.e., this is a foreign key that
+   * references bindings.oid).
+   *
+   * SIG_DIGEST is the digest stored in the signature.
+   *
+   * SIG_TIME is the timestamp stored in the signature.
+   *
+   * ORIGIN is a free-form string that describes who fed this
+   * signature to GnuPG (e.g., email:claws).
+   *
+   * TIME is the time this signature was registered.  */
+  rc = sqlite3_exec (db,
 			 "create table signatures "
 			 " (binding INTEGER NOT NULL, sig_digest TEXT,"
 			 "  origin TEXT, sig_time INTEGER, time INTEGER,"
 			 "  primary key (binding, sig_digest, origin));",
 			 NULL, NULL, &err);
-      if (rc)
-	{
-          log_error (_("error initializing TOFU database: %s\n"), err);
-          print_further_info ("create signatures");
-	  sqlite3_free (err);
-	  goto out;
-	}
+  if (rc)
+    {
+      log_error (_("error initializing TOFU database: %s\n"), err);
+      print_further_info ("create signatures");
+      sqlite3_free (err);
+      goto out;
     }
 
  out:
@@ -732,408 +637,79 @@ initdb (sqlite3 *db, enum db_type type)
     }
 }
 
-/* Open and initialize a low-level TOFU database.  Returns NULL on
-   failure.  This function should not normally be directly called to
-   get a database handle.  Instead, use getdb().  */
-static sqlite3 *
-opendb (char *filename, enum db_type type)
-{
-  sqlite3 *db;
-  int filename_free = 0;
-  int rc;
 
-  if (opt.tofu_db_format == TOFU_DB_FLAT)
-    {
-      log_assert (! filename);
-      log_assert (type == DB_COMBINED);
-
-      filename = make_filename (gnupg_homedir (), "tofu.db", NULL);
-      filename_free = 1;
-    }
-  else
-    log_assert (type == DB_EMAIL || type == DB_KEY);
-
-  log_assert (filename);
-
-  rc = sqlite3_open (filename, &db);
-  if (rc)
-    {
-      log_error (_("error opening TOFU database '%s': %s\n"),
-                 filename, sqlite3_errmsg (db));
-      /* Even if an error occurs, DB is guaranteed to be valid.  */
-      sqlite3_close (db);
-      db = NULL;
-    }
-
-  /* If a DB is locked wait up to 5 seconds for the lock to be cleared
-     before failing.  */
-  if (db)
-    sqlite3_busy_timeout (db, 5 * 1000);
-
-  if (filename_free)
-    xfree (filename);
-
-  if (db && initdb (db, type))
-    {
-      sqlite3_close (db);
-      db = NULL;
-    }
-
-  return db;
-}
-
-/* Definition of the Tofu dabase meta handle.  */
-struct tofu_dbs_s
-{
-  struct db *db;
-};
-
-static void
-unlink_db (struct db *db)
-{
-  *db->prevp = db->next;
-  if (db->next)
-    db->next->prevp = db->prevp;
-}
-
-static void
-link_db (struct db **head, struct db *db)
-{
-  db->next = *head;
-  if (db->next)
-    db->next->prevp = &db->next;
-  db->prevp = head;
-  *head = db;
-}
-
-/* Return a database handle.  <type, name> describes the required
-   database.  If there is a cached handle in DBS, that handle is
-   returned.  Otherwise, the database is opened and cached in DBS.
-
-   NAME is the name of the DB and may not be NULL.
-
-   TYPE must be either DB_MAIL or DB_KEY.  In the combined format, the
-   combined DB is always returned.  */
-static struct db *
-getdb (tofu_dbs_t dbs, const char *name, enum db_type type)
-{
-  struct db *t = NULL;
-  char *name_sanitized = NULL;
-  int count;
-  char *filename = NULL;
-  int need_link = 1;
-  sqlite3 *sqlitedb = NULL;
-  gpg_error_t rc;
-
-  log_assert (dbs);
-  log_assert (name);
-  log_assert (type == DB_EMAIL || type == DB_KEY);
-
-  if (opt.tofu_db_format == TOFU_DB_FLAT)
-    /* When using the flat format, we only have a single DB, the
-       combined DB.  */
-    {
-      if (dbs->db)
-        {
-          log_assert (dbs->db->type == DB_COMBINED);
-          log_assert (! dbs->db->next);
-          return dbs->db;
-        }
-
-      type = DB_COMBINED;
-    }
-
-  if (type != DB_COMBINED)
-    /* Only allow alpha-numeric characters in the name.  */
-    {
-      int i;
-
-      name_sanitized = xstrdup (name);
-      for (i = 0; name[i]; i ++)
-        {
-          char c = name_sanitized[i];
-          if (! (('a' <= c && c <= 'z')
-                 || ('A' <= c && c <= 'Z')
-                 || ('0' <= c && c <= '9')))
-            name_sanitized[i] = '_';
-        }
-    }
-
-  /* See if the DB is cached.  */
-  for (t = dbs->db; t; t = t->next)
-    if (t->type == type
-        && (type == DB_COMBINED || strcmp (t->name, name_sanitized) == 0))
-      {
-        need_link = 0;
-        goto out;
-      }
-
-  for (t = db_cache, count = 0; t; t = t->next, count ++)
-    if (type == t->type
-        && (type == DB_COMBINED || strcmp (t->name, name_sanitized) == 0))
-      {
-        unlink_db (t);
-        db_cache_count --;
-        goto out;
-      }
-
-  log_assert (db_cache_count == count);
-
-  if (type == DB_COMBINED)
-    filename = NULL;
-  else
-    {
-      /* Open the DB.  The filename has the form:
-
-         tofu.d/TYPE/PREFIX/NAME.db
-
-         We use a short prefix to try to avoid having many files in a
-         single directory.  */
-      {
-        char *type_str = type == DB_EMAIL ? "email" : "key";
-        char prefix[3] = { name_sanitized[0], name_sanitized[1], 0 };
-        char *name_db;
-
-        /* Make the directory.  */
-        rc = gnupg_mkdir_p (gnupg_homedir (), "tofu.d", type_str, prefix, NULL);
-        if (rc)
-          {
-            name_db = xstrconcat (gnupg_homedir (), "tofu.d",
-                                  type_str, prefix, NULL);
-            log_error (_("can't create directory '%s': %s\n"),
-                       name_db, gpg_strerror (rc));
-            xfree (name_db);
-            goto out;
-          }
-
-        name_db = xstrconcat (name_sanitized, ".db", NULL);
-        filename = make_filename
-          (gnupg_homedir (), "tofu.d", type_str, prefix, name_db, NULL);
-        xfree (name_db);
-      }
-    }
-
-  sqlitedb = opendb (filename, type);
-  if (! sqlitedb)
-    goto out;
-
-  t = xmalloc_clear (sizeof (struct db)
-                     + (name_sanitized ? strlen (name_sanitized) : 0));
-  t->type = type;
-  t->db = sqlitedb;
-  if (name_sanitized)
-    strcpy (t->name, name_sanitized);
-
- out:
-  if (t && need_link)
-    link_db (&dbs->db, t);
-
-#if DEBUG_TOFU_CACHE
-  if (t)
-    t->hits ++;
-#endif
-
-  xfree (filename);
-  xfree (name_sanitized);
-  return t;
-}
-
-static void
-closedb (struct db *db)
-{
-  sqlite3_stmt **statements;
-
-  if (opt.tofu_db_format == TOFU_DB_FLAT)
-    /* If we are using the flat format, then there is only ever the
-       combined DB.  */
-    log_assert (! db->next);
-
-  if (db->type == DB_COMBINED)
-    {
-      log_assert (opt.tofu_db_format == TOFU_DB_FLAT);
-      log_assert (! db->name[0]);
-    }
-  else
-    {
-      log_assert (opt.tofu_db_format == TOFU_DB_SPLIT);
-      log_assert (db->type != DB_COMBINED);
-      log_assert (db->name[0]);
-    }
-
-  if (db->batch_update)
-    end_transaction (db, 2);
-
-  for (statements = (void *) &db->s;
-       (void *) statements < (void *) &(&db->s)[1];
-       statements ++)
-    sqlite3_finalize (*statements);
-
-  sqlite3_close (db->db);
-
-#if DEBUG_TOFU_CACHE
-  log_debug ("Freeing db.  Used %d times.\n", db->hits);
-#endif
-
-  xfree (db);
-}
-
-
-/* Create a new DB meta-handle.  Returns NULL on error.  */
+/* Create a new DB handle.  Returns NULL on error.  */
 /* FIXME: Change to return an error code for better reporting by the
    caller.  */
 static tofu_dbs_t
 opendbs (ctrl_t ctrl)
 {
-  if (ctrl->tofu.dbs)
-    return ctrl->tofu.dbs;
+  char *filename;
+  sqlite3 *db;
+  int rc;
 
-  if (opt.tofu_db_format == TOFU_DB_AUTO)
+  if (!ctrl->tofu.dbs)
     {
-      char *filename = make_filename (gnupg_homedir (), "tofu.db", NULL);
-      struct stat s;
-      int have_tofu_db = 0;
-      int have_tofu_d = 0;
+      filename = make_filename (gnupg_homedir (), "tofu.db", NULL);
 
-      if (stat (filename, &s) == 0)
-	{
-	  have_tofu_db = 1;
-	  if (DBG_TRUST)
-	    log_debug ("%s exists.\n", filename);
-	}
-      else
-	{
-	  if (DBG_TRUST)
-	    log_debug ("%s does not exist.\n", filename);
-	}
-
-      /* We now have tofu.d.  */
-      filename[strlen (filename) - 1] = '\0';
-      if (stat (filename, &s) == 0)
-	{
-	  have_tofu_d = 1;
-	  if (DBG_TRUST)
-	    log_debug ("%s exists.\n", filename);
-	}
-      else
-	{
-	  if (DBG_TRUST)
-	    log_debug ("%s does not exist.\n", filename);
-	}
-
+      rc = sqlite3_open (filename, &db);
+      if (rc)
+        {
+          log_error (_("error opening TOFU database '%s': %s\n"),
+                     filename, sqlite3_errmsg (db));
+          /* Even if an error occurs, DB is guaranteed to be valid.  */
+          sqlite3_close (db);
+          db = NULL;
+        }
       xfree (filename);
 
-      if (have_tofu_db && have_tofu_d)
-	{
-	  log_info (_("Warning: Home directory contains both tofu.db"
-                      " and tofu.d.\n"));
-          log_info (_("Using split format for TOFU database\n"));
-	  opt.tofu_db_format = TOFU_DB_SPLIT;
-	}
-      else if (have_tofu_db)
-	{
-	  opt.tofu_db_format = TOFU_DB_FLAT;
-	  if (DBG_TRUST)
-	    log_debug ("Using flat format for TOFU database.\n");
-	}
-      else if (have_tofu_d)
-	{
-	  opt.tofu_db_format = TOFU_DB_SPLIT;
-	  if (DBG_TRUST)
-	    log_debug ("Using split format for TOFU database.\n");
-	}
-      else
-	{
-	  opt.tofu_db_format = TOFU_DB_FLAT;
-	  if (DBG_TRUST)
-	    log_debug ("Using flat format for TOFU database.\n");
-	}
-    }
+      /* If a DB is locked wait up to 5 seconds for the lock to be cleared
+         before failing.  */
+      if (db)
+        sqlite3_busy_timeout (db, 5 * 1000);
 
-  ctrl->tofu.dbs = xmalloc_clear (sizeof (struct tofu_dbs_s));
+      if (db && initdb (db))
+        {
+          sqlite3_close (db);
+          db = NULL;
+        }
+
+      if (db)
+        {
+          ctrl->tofu.dbs = xmalloc_clear (sizeof *ctrl->tofu.dbs);
+          ctrl->tofu.dbs->db = db;
+        }
+    }
+  else
+    log_assert (ctrl->tofu.dbs->db);
+
   return ctrl->tofu.dbs;
 }
 
 
-/* Release all of the resources associated with a DB meta-handle.  */
+/* Release all of the resources associated with the DB handle.  */
 void
 tofu_closedbs (ctrl_t ctrl)
 {
-  tofu_dbs_t dbs = ctrl->tofu.dbs;
+  tofu_dbs_t dbs;
+  sqlite3_stmt **statements;
 
+  dbs = ctrl->tofu.dbs;
   if (!dbs)
     return;  /* Not initialized.  */
 
-  if (dbs->db && dbs->db->type == DB_COMBINED)
-    {
-      log_assert (!dbs->db->next);
-      closedb (dbs->db);
-    }
-  else if (dbs->db)
-    {
-      struct db *old_head = db_cache;
-      struct db *db;
-      int count;
+  if (dbs->batch_update)
+    end_transaction (ctrl, 2);
 
-      /* Find the last DB.  */
-      for (db = dbs->db, count = 1; db->next; db = db->next, count ++)
-        {
-          /* When we leave batch mode we leave batch mode on any
-             cached connections.  */
-          if (! batch_update)
-            log_assert (! db->batch_update);
-        }
-      if (! batch_update)
-        log_assert (! db->batch_update);
+  /* Arghh, that is asurprising use of the struct.  */
+  for (statements = (void *) &dbs->s;
+       (void *) statements < (void *) &(&dbs->s)[1];
+       statements ++)
+    sqlite3_finalize (*statements);
 
-      /* Join the two lists.  */
-      db->next = db_cache;
-      if (db_cache)
-        db_cache->prevp = &db->next;
-
-      /* Update the (new) first element.  */
-      db_cache = dbs->db;
-      dbs->db->prevp = &db_cache;
-
-      db_cache_count += count;
-
-      /* Make sure that we don't have too many DBs on DB_CACHE.  If
-         so, free some.  */
-      if (db_cache_count > DB_CACHE_ENTRIES)
-        {
-          /* We need to find the (DB_CACHE_ENTRIES + 1)th entry.  It
-             is easy to skip the first COUNT entries since we still
-             have a handle on the old head.  */
-          int skip = DB_CACHE_ENTRIES - count;
-          if (skip < 0)
-            for (old_head = db_cache, skip = DB_CACHE_ENTRIES;
-                 skip > 0;
-                 old_head = old_head->next, skip--)
-              { /* Do nothing.  */ }
-          else
-            while (-- skip > 0)
-              old_head = old_head->next;
-
-          *old_head->prevp = NULL;
-
-          while (old_head)
-            {
-              db = old_head->next;
-              closedb (old_head);
-              old_head = db;
-              db_cache_count --;
-            }
-
-          log_assert (db_cache_count == DB_CACHE_ENTRIES);
-        }
-    }
-
-  xfree (ctrl->tofu.dbs);
+  sqlite3_close (dbs->db);
+  xfree (dbs);
   ctrl->tofu.dbs = NULL;
-
-#if DEBUG_TOFU_CACHE
-  log_debug ("Queries: %d (prepares saved: %d)\n",
-             queries, prepares_saved);
-#endif
 }
 
 
@@ -1171,7 +747,6 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 		const char *user_id, enum tofu_policy policy, int show_old)
 {
   char *fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
-  struct db *db_email = NULL, *db_key = NULL;
   gpg_error_t rc;
   char *err = NULL;
   /* policy_old needs to be a long and not an enum tofu_policy,
@@ -1186,44 +761,14 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 	 || policy == TOFU_POLICY_ASK))
     log_bug ("%s: Bad value for policy (%d)!\n", __func__, policy);
 
-  db_email = getdb (dbs, email, DB_EMAIL);
-  if (! db_email)
-    {
-      rc = gpg_error (GPG_ERR_GENERAL);
-      goto leave;
-    }
-
-  if (opt.tofu_db_format == TOFU_DB_SPLIT)
-    /* In the split format, we need to update two DBs.  To keep them
-       consistent, we start a transaction on each.  Note: this is the
-       only place where we start two transaction and we always start
-       transaction on the DB_KEY DB first, thus deadlock is not
-       possible.  */
-    /* We only need a transaction for the split format.  */
-    {
-      db_key = getdb (dbs, fingerprint, DB_KEY);
-      if (! db_key)
-        {
-          rc = gpg_error (GPG_ERR_GENERAL);
-          goto leave;
-        }
-
-      rc = begin_transaction (db_email, 0);
-      if (rc)
-        goto leave;
-
-      rc = begin_transaction (db_key, 0);
-      if (rc)
-        goto out_revert_one;
-    }
 
   if (show_old)
-    /* Get the old policy.  Since this is just for informational
-       purposes, there is no need to start a transaction or to die if
-       there is a failure.  */
     {
+      /* Get the old policy.  Since this is just for informational
+       * purposes, there is no need to start a transaction or to die
+       * if there is a failure.  */
       rc = gpgsql_stepx
-	(db_email->db, &db_email->s.record_binding_get_old_policy,
+	(dbs->db, &dbs->s.record_binding_get_old_policy,
          get_single_long_cb2, &policy_old, &err,
 	 "select policy from bindings where fingerprint = ? and email = ?",
 	 SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
@@ -1252,17 +797,20 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
     }
 
   if (policy_old == policy)
-    /* Nothing to do.  */
-    goto out;
+    {
+      rc = 0;
+      goto leave; /* Nothing to do.  */
+    }
 
   if (opt.dry_run)
     {
       log_info ("TOFU database update skipped due to --dry-run\n");
-      goto out;
+      rc = 0;
+      goto leave;
     }
 
   rc = gpgsql_stepx
-    (db_email->db, &db_email->s.record_binding_update, NULL, NULL, &err,
+    (dbs->db, &dbs->s.record_binding_update, NULL, NULL, &err,
      "insert or replace into bindings\n"
      " (oid, fingerprint, email, user_id, time, policy)\n"
      " values (\n"
@@ -1281,64 +829,11 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
       print_further_info (" insert bindings <%s, %s> = %s",
                           fingerprint, email, tofu_policy_str (policy));
       sqlite3_free (err);
-      goto out;
-    }
-
-  if (db_key)
-    /* We also need to update the key DB.  */
-    {
-      log_assert (opt.tofu_db_format == TOFU_DB_SPLIT);
-
-      rc = gpgsql_stepx
-	(db_key->db, &db_key->s.record_binding_update2, NULL, NULL, &err,
-	 "insert or replace into bindings\n"
-	 " (oid, fingerprint, email, user_id)\n"
-	 " values (\n"
-	 /* If we don't explicitly reuse the OID, then SQLite will
-	    reallocate a new one.  We just need to search for the OID
-	    based on the fingerprint and email since they are unique.  */
-	 "  (select oid from bindings where fingerprint = ? and email = ?),\n"
-	 "  ?, ?, ?);",
-	 SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
-         SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
-         SQLITE_ARG_STRING, user_id, SQLITE_ARG_END);
-      if (rc)
-	{
-	  log_error (_("error updating TOFU database: %s\n"), err);
-          print_further_info ("insert bindings <%s, %s>",
-                              fingerprint, email);
-	  sqlite3_free (err);
-	  goto out;
-	}
-    }
-  else
-    log_assert (opt.tofu_db_format == TOFU_DB_FLAT);
-
- out:
-  if (opt.tofu_db_format == TOFU_DB_SPLIT)
-    /* We only need a transaction for the split format.  */
-    {
-      gpg_error_t rc2;
-
-      if (rc)
-        rc2 = rollback_transaction (db_key);
-      else
-        rc2 = end_transaction (db_key, 0);
-      if (rc2)
-        sqlite3_free (err);
-
-    out_revert_one:
-      if (rc)
-        rc2 = rollback_transaction (db_email);
-      else
-        rc2 = end_transaction (db_email, 0);
-      if (rc2)
-        sqlite3_free (err);
+      goto leave;
     }
 
  leave:
   xfree (fingerprint_pp);
-
   return rc;
 }
 
@@ -1507,22 +1002,17 @@ static enum tofu_policy
 get_policy (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 	    char **conflict)
 {
-  struct db *db;
   int rc;
   char *err = NULL;
   strlist_t strlist = NULL;
   enum tofu_policy policy = _tofu_GET_POLICY_ERROR;
   long along;
 
-  db = getdb (dbs, email, DB_EMAIL);
-  if (! db)
-    return _tofu_GET_POLICY_ERROR;
-
   /* Check if the <FINGERPRINT, EMAIL> binding is known
      (TOFU_POLICY_NONE cannot appear in the DB.  Thus, if POLICY is
      still TOFU_POLICY_NONE after executing the query, then the
      result set was empty.)  */
-  rc = gpgsql_stepx (db->db, &db->s.get_policy_select_policy_and_conflict,
+  rc = gpgsql_stepx (dbs->db, &dbs->s.get_policy_select_policy_and_conflict,
                       strings_collect_cb2, &strlist, &err,
                       "select policy, conflict from bindings\n"
                       " where fingerprint = ? and email = ?",
@@ -1681,7 +1171,6 @@ format_conflict_msg_part1 (int policy, const char *conflict,
  */
 static void
 ask_about_binding (tofu_dbs_t dbs,
-                   struct db *db,
                    enum tofu_policy *policy,
                    int *trust_level,
                    int bindings_with_this_email_count,
@@ -1699,7 +1188,6 @@ ask_about_binding (tofu_dbs_t dbs,
   struct signature_stats *stats_iter = NULL;
   char *prompt;
   char *choices;
-  struct db *db_key;
 
   fp = es_fopenmem (0, "rw,samethread");
   if (!fp)
@@ -1716,30 +1204,16 @@ ask_about_binding (tofu_dbs_t dbs,
 
   /* Find other user ids associated with this key and whether the
    * bindings are marked as good or bad.  */
-  if (opt.tofu_db_format == TOFU_DB_SPLIT)
+  rc = gpgsql_stepx
+    (dbs->db, &dbs->s.get_trust_gather_other_user_ids,
+     strings_collect_cb2, &other_user_ids, &sqerr,
+     "select user_id, policy from bindings where fingerprint = ?;",
+     SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_END);
+  if (rc)
     {
-      /* In the split format, we need to search in the fingerprint DB
-       * for all the emails associated with this key, not the email DB.  */
-      db_key = getdb (dbs, fingerprint, DB_KEY);
-    }
-  else
-    db_key = db;
-
-  if (db_key)
-    {
-      rc = gpgsql_stepx
-        (db_key->db, &db_key->s.get_trust_gather_other_user_ids,
-         strings_collect_cb2, &other_user_ids, &sqerr,
-         opt.tofu_db_format == TOFU_DB_SPLIT
-         ? "select user_id, email from bindings where fingerprint = ?;"
-         : "select user_id, policy from bindings where fingerprint = ?;",
-         SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_END);
-      if (rc)
-        {
-          log_error (_("error gathering other user IDs: %s\n"), sqerr);
-          sqlite3_free (sqerr);
-          sqerr = NULL;
-        }
+      log_error (_("error gathering other user IDs: %s\n"), sqerr);
+      sqlite3_free (sqerr);
+      sqerr = NULL;
     }
 
   if (other_user_ids)
@@ -1759,10 +1233,7 @@ ask_about_binding (tofu_dbs_t dbs,
           strlist_iter = strlist_iter->next;
           other_thing = strlist_iter->d;
 
-          if (opt.tofu_db_format == TOFU_DB_SPLIT)
-            other_policy = get_policy (dbs, fingerprint, other_thing, NULL);
-          else
-            other_policy = atoi (other_thing);
+          other_policy = atoi (other_thing);
 
           es_fprintf (fp, "  %s (", other_user_id);
           es_fprintf (fp, _("policy: %s"), tofu_policy_str (other_policy));
@@ -1778,7 +1249,7 @@ ask_about_binding (tofu_dbs_t dbs,
      embedded in the signature (column 'sig_time') or the time that
      we first verified the signature (column 'time').  */
   rc = gpgsql_stepx
-    (db->db, &db->s.get_trust_gather_other_keys,
+    (dbs->db, &dbs->s.get_trust_gather_other_keys,
      signature_stats_collect_cb, &stats, &sqerr,
      "select fingerprint, policy, time_ago, count(*)\n"
      " from (select bindings.*,\n"
@@ -2028,7 +1499,6 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
            const char *fingerprint, const char *email,
 	   const char *user_id, int may_ask)
 {
-  struct db *db;
   enum tofu_policy policy;
   char *conflict = NULL;
   int rc;
@@ -2050,10 +1520,6 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
               && _tofu_GET_TRUST_ERROR != TRUST_MARGINAL
               && _tofu_GET_TRUST_ERROR != TRUST_FULLY
               && _tofu_GET_TRUST_ERROR != TRUST_ULTIMATE);
-
-  db = getdb (dbs, email, DB_EMAIL);
-  if (! db)
-    return _tofu_GET_TRUST_ERROR;
 
   policy = get_policy (dbs, fingerprint, email, &conflict);
   if (policy == TOFU_POLICY_AUTO || policy == TOFU_POLICY_NONE)
@@ -2149,7 +1615,7 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
    * also be returned.  Thus, if the result set is empty, then this is
    * a new binding.  */
   rc = gpgsql_stepx
-    (db->db, &db->s.get_trust_bindings_with_this_email,
+    (dbs->db, &dbs->s.get_trust_bindings_with_this_email,
      strings_collect_cb2, &bindings_with_this_email, &sqerr,
      "select distinct fingerprint from bindings where email = ?;",
      SQLITE_ARG_STRING, email, SQLITE_ARG_END);
@@ -2221,7 +1687,7 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
     }
 
   /* If we get here, we need to ask the user about the binding.  */
-  ask_about_binding (dbs, db,
+  ask_about_binding (dbs,
                      &policy,
                      &trust_level,
                      bindings_with_this_email_count,
@@ -2239,7 +1705,7 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
           /* If we weren't allowed to ask, also update this key as
              conflicting with itself.  */
           rc = gpgsql_exec_printf
-            (db->db, NULL, NULL, &sqerr,
+            (dbs->db, NULL, NULL, &sqerr,
              "update bindings set policy = %d, conflict = %Q"
              " where email = %Q"
              "  and (policy = %d or (policy = %d and fingerprint = %Q));",
@@ -2249,7 +1715,7 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
       else
         {
           rc = gpgsql_exec_printf
-            (db->db, NULL, NULL, &sqerr,
+            (dbs->db, NULL, NULL, &sqerr,
              "update bindings set policy = %d, conflict = %Q"
              " where email = %Q and fingerprint != %Q and policy = %d;",
              TOFU_POLICY_ASK, fingerprint, email, fingerprint,
@@ -2445,20 +1911,15 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 		 const char *email, const char *user_id,
 		 const char *sig_exclude)
 {
-  struct db *db;
   char *fingerprint_pp;
   int rc;
   strlist_t strlist = NULL;
   char *err = NULL;
 
-  db = getdb (dbs, email, DB_EMAIL);
-  if (! db)
-    return;
-
   fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
 
   rc = gpgsql_exec_printf
-    (db->db, strings_collect_cb, &strlist, &err,
+    (dbs->db, strings_collect_cb, &strlist, &err,
      "select count (*), strftime('%%s','now') - min (signatures.time),\n"
      "  strftime('%%s','now') - max (signatures.time)\n"
      " from signatures\n"
@@ -2687,7 +2148,6 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
 	       time_t sig_time, const char *origin, int may_ask)
 {
   tofu_dbs_t dbs;
-  struct db *db;
   char *fingerprint = NULL;
   char *email = NULL;
   char *err = NULL;
@@ -2731,25 +2191,16 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
       goto die;
     }
 
-  /* Save the observed signature in the DB.  */
-  db = getdb (dbs, email, DB_EMAIL);
-  if (! db)
-    {
-      log_error (_("error opening TOFU database: %s\n"),
-                 gpg_strerror (GPG_ERR_GENERAL));
-      goto die;
-    }
-
   /* We do a query and then an insert.  Make sure they are atomic
      by wrapping them in a transaction.  */
-  rc = begin_transaction (db, 0);
+  rc = begin_transaction (ctrl, 0);
   if (rc)
     goto die;
 
   /* If we've already seen this signature before, then don't add
      it again.  */
   rc = gpgsql_stepx
-    (db->db, &db->s.register_already_seen,
+    (dbs->db, &dbs->s.register_already_seen,
      get_single_unsigned_long_cb2, &c, &err,
      "select count (*)\n"
      " from signatures left join bindings\n"
@@ -2799,7 +2250,7 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
       log_assert (c == 0);
 
       rc = gpgsql_stepx
-	(db->db, &db->s.register_insert, NULL, NULL, &err,
+	(dbs->db, &dbs->s.register_insert, NULL, NULL, &err,
 	 "insert into signatures\n"
 	 " (binding, sig_digest, origin, sig_time, time)\n"
 	 " values\n"
@@ -2821,9 +2272,9 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
   /* It only matters whether we abort or commit the transaction
      (so long as we do something) if we execute the insert.  */
   if (rc)
-    rc = rollback_transaction (db);
+    rc = rollback_transaction (ctrl);
   else
-    rc = end_transaction (db, 0);
+    rc = end_transaction (ctrl, 0);
   if (rc)
     {
       sqlite3_free (err);

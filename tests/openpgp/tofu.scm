@@ -164,4 +164,4 @@
    (checkpolicy "BC15C85A" format "ask")
    (checkpolicy "2183839A" format "bad")
    (checkpolicy "EE37CF96" format "ask"))
- '("split" "flat"))
+ '("flat"))

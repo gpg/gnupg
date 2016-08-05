@@ -493,11 +493,13 @@ tofu_policy_str (enum tofu_policy policy)
 }
 
 void
-tofu_begin_batch_update (void)
+tofu_begin_batch_update (ctrl_t ctrl)
 {
+  (void)ctrl;
 }
 
 void
-tofu_end_batch_update (void)
+tofu_end_batch_update (ctrl_t ctrl)
 {
+  (void)ctrl;
 }

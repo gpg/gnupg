@@ -1144,6 +1144,55 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
               stored in the version info record.
 
 
+* Database scheme for the TOFU info
+
+#+begin_src sql
+--
+-- The VERSION table holds the version of our TOFU data structures.
+--
+CREATE TABLE version (
+  version integer -- As of now this is always 1
+);
+
+--
+-- The BINDINGS table associates mail addresses with keys.
+--
+CREATE TABLE bindings (
+  oid integer primary key autoincrement,
+  fingerprint text, -- The key's fingerprint in hex
+  email text,       -- The normalized mail address destilled from user_id
+  user_id text,     -- The unmodified user id
+  time integer,     -- The time this binding was first observed.
+  policy boolean check
+       (policy in (1, 2, 3, 4, 5)), -- The trust policy with the values:
+                                    --   1 := Auto
+                                    --   2 := Good
+                                    --   3 := Unknown
+                                    --   4 := Bad
+                                    --   5 := Ask
+  conflict string,  -- NULL or a hex formatted fingerprint.
+  unique (fingerprint, email)
+);
+
+CREATE INDEX bindings_fingerprint_email on bindings (fingerprint, email);
+CREATE INDEX bindings_email on bindings (email);
+
+--
+-- The SIGNATURES table records all data signatures we verified
+--
+CREATE TABLE signatures (
+  binding integer not null, -- Link to bindings table,
+                            -- references bindings.oid.
+  sig_digest text,          -- The digest of the signed message.
+  origin text,              -- String describing who initially fed
+                            -- the signature to gpg (e.g. "email:claws").
+  sig_time integer,         -- Timestamp from the signature.
+  time integer,             -- Time this record was created.
+  primary key (binding, sig_digest, origin)
+);
+#+end_src
+
+
 * GNU extensions to the S2K algorithm
 
   1 octet  - S2K Usage: either 254 or 255.
@@ -1168,6 +1217,9 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 
 
 * Keyserver helper message format
+
+  *This information is obsolete*
+  (Keyserver helpers have been replaced by dirmngr)
 
   The keyserver may be contacted by a Unix Domain socket or via TCP.
 

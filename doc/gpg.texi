@@ -1840,25 +1840,6 @@ key signer (defaults to 3)
 The default TOFU policy (defaults to @code{auto}).  For more
 information about the meaning of this option, @xref{trust-model-tofu}.
 
-@item --tofu-db-format @code{auto|split|flat}
-@opindex tofu-default-policy
-The format for the TOFU DB.
-
-The split file format splits the data across many DBs under the
-@code{tofu.d} directory (one per email address and one per key).  This
-makes it easier to automatically synchronize the data using a tool
-such as Unison (@url{https://www.cis.upenn.edu/~bcpierce/unison/}),
-since the individual files change rarely.
-
-The flat file format keeps all of the data in the single file
-@code{tofu.db}.  This format results in better performance.
-
-If set to auto (which is the default), GnuPG will first check for the
-existence of @code{tofu.d} and @code{tofu.db}.  If one of these
-exists, the corresponding format is used.  If neither or both of these
-exist, then GnuPG defaults to the @code{split} format.  In the latter
-case, a warning is emitted.
-
 @item --max-cert-depth @code{n}
 @opindex max-cert-depth
 Maximum depth of a certification chain (default is 5).

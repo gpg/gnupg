@@ -134,7 +134,7 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
   check_trustdb_stale (ctrl);
 
 #ifdef USE_TOFU
-  tofu_begin_batch_update ();
+  tofu_begin_batch_update (ctrl);
 #endif
 
   if (locate_mode)
@@ -145,7 +145,7 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
     list_one (ctrl, list, 0, opt.with_secret);
 
 #ifdef USE_TOFU
-  tofu_end_batch_update ();
+  tofu_end_batch_update (ctrl);
 #endif
 }
 

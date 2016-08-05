@@ -112,8 +112,8 @@ gpg_error_t tofu_get_policy (ctrl_t ctrl,
 /* When doing a lot of DB activities (in particular, when listing
    keys), this causes the DB to enter batch mode, which can
    significantly speed up operations.  */
-void tofu_begin_batch_update (void);
-void tofu_end_batch_update (void);
+void tofu_begin_batch_update (ctrl_t ctrl);
+void tofu_end_batch_update (ctrl_t ctrl);
 
 /* Release all of the resources associated with a DB meta-handle.  */
 void tofu_closedbs (ctrl_t ctrl);

@@ -709,7 +709,6 @@ static ARGPARSE_OPTS opts[] = {
 #endif
   ARGPARSE_s_s (oTrustModel, "trust-model", "@"),
   ARGPARSE_s_s (oTOFUDefaultPolicy, "tofu-default-policy", "@"),
-  ARGPARSE_s_s (oTOFUDBFormat, "tofu-db-format", "@"),
   ARGPARSE_s_s (oSetFilename, "set-filename", "@"),
   ARGPARSE_s_n (oForYourEyesOnly, "for-your-eyes-only", "@"),
   ARGPARSE_s_n (oNoForYourEyesOnly, "no-for-your-eyes-only", "@"),
@@ -851,6 +850,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (opcscDriver, "pcsc-driver", "@"),
   ARGPARSE_s_n (oDisableCCID, "disable-ccid", "@"),
   ARGPARSE_s_n (oHonorHttpProxy, "honor-http-proxy", "@"),
+  ARGPARSE_s_s (oTOFUDBFormat, "tofu-db-format", "@"),
 
   /* Dummy options.  */
   ARGPARSE_s_n (oNoop, "sk-comments", "@"),
@@ -2020,32 +2020,6 @@ parse_tofu_policy (const char *policystr)
   g10_exit (1);
 }
 
-static int
-parse_tofu_db_format (const char *db_format)
-{
-#ifdef USE_TOFU
-  if (ascii_strcasecmp (db_format, "auto") == 0)
-    return TOFU_DB_AUTO;
-  else if (ascii_strcasecmp (db_format, "split") == 0)
-    return TOFU_DB_SPLIT;
-  else if (ascii_strcasecmp (db_format, "flat") == 0)
-    return TOFU_DB_FLAT;
-  else if (ascii_strcasecmp (db_format, "help") == 0)
-    {
-      log_info ("available TOFU DB fomats: auto, split, flat\n");
-      g10_exit (1);
-    }
-  else
-#endif /*USE_TOFU*/
-    {
-      log_error (_("unknown TOFU DB format '%s'\n"), db_format);
-      if (!opt.quiet)
-        log_info (_("(use \"help\" to list choices)\n"));
-      g10_exit (1);
-    }
-}
-
-
 /* This function called to initialized a new control object.  It is
    assumed that this object has been zeroed out before calling this
    function. */
@@ -2252,7 +2226,6 @@ main (int argc, char **argv)
     opt.trust_model = TM_AUTO;
 #endif
     opt.tofu_default_policy = TOFU_POLICY_AUTO;
-    opt.tofu_db_format = TOFU_DB_AUTO;
     opt.mangle_dos_filenames = 0;
     opt.min_cert_level = 2;
     set_screen_dimensions ();
@@ -2692,7 +2665,7 @@ main (int argc, char **argv)
 	    opt.tofu_default_policy = parse_tofu_policy (pargs.r.ret_str);
 	    break;
 	  case oTOFUDBFormat:
-	    opt.tofu_db_format = parse_tofu_db_format (pargs.r.ret_str);
+	    obsolete_option (configname, configlineno, "tofu-db-format");
 	    break;
 
 	  case oForceOwnertrust:

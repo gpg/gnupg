@@ -116,17 +116,13 @@ struct
   int skip_verify;
   int skip_hidden_recipients;
 
-  /* TM_CLASSIC must be zero to accommodate trustdbs generated before
+  /* TM_CLASSIC must be zero to accommodate trustdbsg generated before
      we started storing the trust model inside the trustdb. */
   enum
     {
       TM_CLASSIC=0, TM_PGP=1, TM_EXTERNAL=2,
       TM_ALWAYS, TM_DIRECT, TM_AUTO, TM_TOFU, TM_TOFU_PGP
     } trust_model;
-  enum
-    {
-      TOFU_DB_AUTO=0, TOFU_DB_SPLIT, TOFU_DB_FLAT
-    } tofu_db_format;
   enum tofu_policy tofu_default_policy;
   int force_ownertrust;
   enum
