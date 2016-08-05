@@ -1911,7 +1911,7 @@ main (int argc, char **argv )
     opt.def_cert_expire="0";
     set_homedir ( default_homedir () );
     opt.passwd_repeat=1;
-    opt.emit_version = 1; /* Limit to the major number.  */
+    opt.emit_version = 0;
 
 #ifdef ENABLE_CARD_SUPPORT
 #if defined(_WIN32) || defined(__CYGWIN__)
