@@ -814,67 +814,6 @@ stream_copy (estream_t dst, estream_t src)
 
   return err;
 }
-
-
-/* Read the content of the file specified by FILENAME into a newly
-   create buffer, which is to be stored in BUFFER; store length of
-   buffer in BUFFER_N.  */
-static gpg_error_t
-file_to_buffer (const char *filename, unsigned char **buffer, size_t *buffer_n)
-{
-  unsigned char *buffer_new;
-  struct stat statbuf;
-  estream_t stream;
-  gpg_error_t err;
-  int ret;
-
-  *buffer = NULL;
-  *buffer_n = 0;
-
-  buffer_new = NULL;
-  err = 0;
-
-  stream = es_fopen (filename, "rb");
-  if (! stream)
-    {
-      err = gpg_error_from_syserror ();
-      goto out;
-    }
-
-  ret = fstat (es_fileno (stream), &statbuf);
-  if (ret)
-    {
-      err = gpg_error_from_syserror ();
-      goto out;
-    }
-
-  buffer_new = xtrymalloc (statbuf.st_size);
-  if (! buffer_new)
-    {
-      err = gpg_error_from_syserror ();
-      goto out;
-    }
-
-  err = stream_read_data (stream, buffer_new, statbuf.st_size);
-  if (err)
-    goto out;
-
-  *buffer = buffer_new;
-  *buffer_n = statbuf.st_size;
-
- out:
-
-  if (stream)
-    es_fclose (stream);
-
-  if (err)
-    xfree (buffer_new);
-
-  return err;
-}
-
-
-
 
 /* Open the ssh control file and create it if not available.  With
    APPEND passed as true the file will be opened in append mode,
@@ -2683,12 +2622,8 @@ static gpg_error_t
 ssh_handler_request_identities (ctrl_t ctrl,
                                 estream_t request, estream_t response)
 {
-  ssh_key_type_spec_t spec;
-  char *key_fname = NULL;
-  char *fnameptr;
   u32 key_counter;
   estream_t key_blobs;
-  gcry_sexp_t key_secret;
   gcry_sexp_t key_public;
   gpg_error_t err;
   int ret;
@@ -2700,7 +2635,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
   /* Prepare buffer stream.  */
 
-  key_secret = NULL;
   key_public = NULL;
   key_counter = 0;
   err = 0;
@@ -2729,29 +2663,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
       key_counter++;
     }
 
-
-  /* Prepare buffer for key name construction.  */
-  {
-    char *dname;
-
-    dname = make_filename (gnupg_homedir (), GNUPG_PRIVATE_KEYS_DIR, NULL);
-    if (!dname)
-      {
-        err = gpg_err_code_from_syserror ();
-        goto out;
-      }
-
-    key_fname = xtrymalloc (strlen (dname) + 1 + 40 + 4 + 1);
-    if (!key_fname)
-      {
-        err = gpg_err_code_from_syserror ();
-        xfree (dname);
-        goto out;
-      }
-    fnameptr = stpcpy (stpcpy (key_fname, dname), "/");
-    xfree (dname);
-  }
-
   /* Then look at all the registered and non-disabled keys. */
   err = open_control_file (&cf, 0);
   if (err)
@@ -2759,52 +2670,27 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
   while (!read_control_file_item (cf))
     {
+      unsigned char grip[20];
+
       if (!cf->item.valid)
         continue; /* Should not happen.  */
       if (cf->item.disabled)
         continue;
       assert (strlen (cf->item.hexgrip) == 40);
+      hex2bin (cf->item.hexgrip, grip, sizeof (grip));
 
-      stpcpy (stpcpy (fnameptr, cf->item.hexgrip), ".key");
-
-      /* Read file content.  */
-      {
-        unsigned char *buffer;
-        size_t buffer_n;
-
-        err = file_to_buffer (key_fname, &buffer, &buffer_n);
-        if (err)
-          {
-            log_error ("%s:%d: key '%s' skipped: %s\n",
-                       cf->fname, cf->lnr, cf->item.hexgrip,
-                       gpg_strerror (err));
-            continue;
-          }
-
-        err = gcry_sexp_sscan (&key_secret, NULL, (char*)buffer, buffer_n);
-        xfree (buffer);
-        if (err)
+      err = agent_public_key_from_file (ctrl, grip, &key_public);
+      if (err)
+        {
+          log_error ("failed to read the public key\n");
           goto out;
-      }
+        }
 
-      {
-        char *key_type = NULL;
-
-        err = sexp_extract_identifier (key_secret, &key_type);
-        if (err)
-          goto out;
-
-        err = ssh_key_type_lookup (NULL, key_type, &spec);
-        xfree (key_type);
-        if (err)
-          goto out;
-      }
-
-      err = ssh_send_key_public (key_blobs, key_secret, NULL);
+      err = ssh_send_key_public (key_blobs, key_public, NULL);
       if (err)
         goto out;
-      gcry_sexp_release (key_secret);
-      key_secret = NULL;
+      gcry_sexp_release (key_public);
+      key_public = NULL;
 
       key_counter++;
     }
@@ -2820,7 +2706,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
  out:
   /* Send response.  */
 
-  gcry_sexp_release (key_secret);
   gcry_sexp_release (key_public);
 
   if (!err)
@@ -2838,7 +2723,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
   es_fclose (key_blobs);
   close_control_file (cf);
-  xfree (key_fname);
 
   return ret_err;
 }
