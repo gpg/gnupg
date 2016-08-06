@@ -341,6 +341,7 @@ void agent_set_progress_cb (void (*cb)(ctrl_t ctrl, const char *what,
 gpg_error_t agent_copy_startup_env (ctrl_t ctrl);
 const char *get_agent_socket_name (void);
 const char *get_agent_ssh_socket_name (void);
+int get_agent_active_connection_count (void);
 #ifdef HAVE_W32_SYSTEM
 void *get_agent_scd_notify_event (void);
 #endif

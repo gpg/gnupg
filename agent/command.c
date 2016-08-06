@@ -2775,6 +2775,7 @@ static const char hlp_getinfo[] =
   "  std_startup_env - List the standard startup environment.\n"
   "  cmd_has_option\n"
   "              - Returns OK if the command CMD implements the option OPT.\n"
+  "  connections - Return number of active connections.\n"
   "  restricted  - Returns OK if the connection is in restricted mode.\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
@@ -2906,6 +2907,14 @@ cmd_getinfo (assuan_context_t ctx, char *line)
                 break;
             }
         }
+    }
+  else if (!strcmp (line, "connections"))
+    {
+      char numbuf[20];
+
+      snprintf (numbuf, sizeof numbuf, "%d",
+                get_agent_active_connection_count ());
+      rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
     }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");

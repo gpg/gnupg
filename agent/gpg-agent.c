@@ -1694,6 +1694,14 @@ get_agent_ssh_socket_name (void)
 }
 
 
+/* Return the number of active connections. */
+int
+get_agent_active_connection_count (void)
+{
+  return active_connections;
+}
+
+
 /* Under W32, this function returns the handle of the scdaemon
    notification event.  Calling it the first time creates that
    event.  */
@@ -2302,6 +2310,7 @@ putty_message_thread (void *arg)
 static void *
 do_start_connection_thread (ctrl_t ctrl)
 {
+  active_connections++;
   agent_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("handler 0x%lx for fd %d started\n"),
@@ -2314,6 +2323,7 @@ do_start_connection_thread (ctrl_t ctrl)
 
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);
+  active_connections--;
   return NULL;
 }
 
@@ -2380,6 +2390,7 @@ start_connection_thread_ssh (void *arg)
   if (check_nonce (ctrl, &socket_nonce_ssh))
     return NULL;
 
+  active_connections++;
   agent_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d started\n"),
@@ -2392,6 +2403,7 @@ start_connection_thread_ssh (void *arg)
 
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);
+  active_connections--;
   return NULL;
 }
 
