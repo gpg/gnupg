@@ -58,7 +58,6 @@
 #include "gc-opt-flags.h"
 #include "exechelp.h"
 #include "asshelp.h"
-#include "openpgpdefs.h"  /* for PUBKEY_ALGO_ECDSA, PUBKEY_ALGO_ECDH */
 #include "../common/init.h"
 
 

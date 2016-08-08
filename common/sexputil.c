@@ -45,6 +45,7 @@
 #include "util.h"
 #include "tlv.h"
 #include "sexp-parse.h"
+#include "openpgpdefs.h"  /* for pubkey_algo_t */
 
 
 /* Return a malloced string with the S-expression CANON in advanced
@@ -555,4 +556,53 @@ get_pk_algo_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
 
   return 0;
+}
+
+
+/* Return the algo of a public KEY of SEXP. */
+int
+get_pk_algo_from_key (gcry_sexp_t key)
+{
+  gcry_sexp_t list;
+  const char *s;
+  size_t n;
+  char algoname[6];
+  int algo = 0;
+
+  list = gcry_sexp_nth (key, 1);
+  if (!list)
+    goto out;
+  s = gcry_sexp_nth_data (list, 0, &n);
+  if (!s)
+    goto out;
+  if (n >= sizeof (algoname))
+    goto out;
+  memcpy (algoname, s, n);
+  algoname[n] = 0;
+
+  algo = gcry_pk_map_name (algoname);
+  if (algo == GCRY_PK_ECC)
+    {
+      gcry_sexp_t l1 = gcry_sexp_find_token (list, "flags", 0);
+      int i;
+
+      for (i = l1 ? gcry_sexp_length (l1)-1 : 0; i > 0; i--)
+	{
+	  s = gcry_sexp_nth_data (l1, i, &n);
+	  if (!s)
+	    continue; /* Not a data element. */
+
+	  if (n == 5 && !memcmp (s, "eddsa", 5))
+	    {
+	      algo = GCRY_PK_EDDSA;
+	      break;
+	    }
+	}
+      gcry_sexp_release (l1);
+    }
+
+ out:
+  gcry_sexp_release (list);
+
+  return algo;
 }

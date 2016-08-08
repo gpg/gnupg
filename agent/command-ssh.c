@@ -44,7 +44,8 @@
 #include "agent.h"
 
 #include "i18n.h"
-#include "../common/ssh-utils.h"
+#include "util.h"
+#include "ssh-utils.h"
 
 
 
@@ -153,7 +154,7 @@ struct ssh_key_type_spec
   const char *name;
 
   /* Algorithm identifier as used by GnuPG.  */
-  const char *identifier;
+  int algo;
 
   /* List of MPI names for secret keys; order matches the one of the
      agent protocol.  */
@@ -275,68 +276,68 @@ static ssh_request_spec_t request_specs[] =
 static ssh_key_type_spec_t ssh_key_types[] =
   {
     {
-      "ssh-ed25519", "Ed25519", "ecc", "qd",  "q", "rs", "qd",
+      "ssh-ed25519", "Ed25519", GCRY_PK_EDDSA, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_eddsa,
       "Ed25519", 0,               SPEC_FLAG_IS_EdDSA
     },
     {
-      "ssh-rsa", "RSA", "rsa", "nedupq", "en",   "s",  "nedpqu",
+      "ssh-rsa", "RSA", GCRY_PK_RSA, "nedupq", "en",   "s",  "nedpqu",
       ssh_key_modifier_rsa, ssh_signature_encoder_rsa,
       NULL, 0,                    SPEC_FLAG_USE_PKCS1V2
     },
     {
-      "ssh-dss", "DSA", "dsa", "pqgyx",  "pqgy", "rs", "pqgyx",
+      "ssh-dss", "DSA", GCRY_PK_DSA, "pqgyx",  "pqgy", "rs", "pqgyx",
       NULL,                 ssh_signature_encoder_dsa,
       NULL, 0, 0
     },
     {
-      "ecdsa-sha2-nistp256", "ECDSA", "ecdsa", "qd",  "q", "rs", "qd",
+      "ecdsa-sha2-nistp256", "ECDSA", GCRY_PK_ECC, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
       "nistp256", GCRY_MD_SHA256, SPEC_FLAG_IS_ECDSA
     },
     {
-      "ecdsa-sha2-nistp384", "ECDSA", "ecdsa", "qd",  "q", "rs", "qd",
+      "ecdsa-sha2-nistp384", "ECDSA", GCRY_PK_ECC, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
       "nistp384", GCRY_MD_SHA384, SPEC_FLAG_IS_ECDSA
     },
     {
-      "ecdsa-sha2-nistp521", "ECDSA", "ecdsa", "qd",  "q", "rs", "qd",
+      "ecdsa-sha2-nistp521", "ECDSA", GCRY_PK_ECC, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
       "nistp521", GCRY_MD_SHA512, SPEC_FLAG_IS_ECDSA
     },
     {
       "ssh-ed25519-cert-v01@openssh.com", "Ed25519",
-      "ecc", "qd",  "q", "rs", "qd",
+      GCRY_PK_EDDSA, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_eddsa,
       "Ed25519", 0, SPEC_FLAG_IS_EdDSA | SPEC_FLAG_WITH_CERT
     },
     {
       "ssh-rsa-cert-v01@openssh.com", "RSA",
-      "rsa", "nedupq", "en",   "s",  "nedpqu",
+      GCRY_PK_RSA, "nedupq", "en",   "s",  "nedpqu",
       ssh_key_modifier_rsa, ssh_signature_encoder_rsa,
       NULL, 0, SPEC_FLAG_USE_PKCS1V2 | SPEC_FLAG_WITH_CERT
     },
     {
       "ssh-dss-cert-v01@openssh.com", "DSA",
-      "dsa", "pqgyx",  "pqgy", "rs", "pqgyx",
+      GCRY_PK_DSA, "pqgyx",  "pqgy", "rs", "pqgyx",
       NULL,                 ssh_signature_encoder_dsa,
       NULL, 0, SPEC_FLAG_WITH_CERT | SPEC_FLAG_WITH_CERT
     },
     {
       "ecdsa-sha2-nistp256-cert-v01@openssh.com", "ECDSA",
-      "ecdsa", "qd",  "q", "rs", "qd",
+      GCRY_PK_ECC, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
       "nistp256", GCRY_MD_SHA256, SPEC_FLAG_IS_ECDSA | SPEC_FLAG_WITH_CERT
     },
     {
       "ecdsa-sha2-nistp384-cert-v01@openssh.com", "ECDSA",
-      "ecdsa", "qd",  "q", "rs", "qd",
+      GCRY_PK_ECC, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
       "nistp384", GCRY_MD_SHA384, SPEC_FLAG_IS_ECDSA | SPEC_FLAG_WITH_CERT
     },
     {
       "ecdsa-sha2-nistp521-cert-v01@openssh.com", "ECDSA",
-      "ecdsa", "qd",  "q", "rs", "qd",
+      GCRY_PK_ECC, "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
       "nistp521", GCRY_MD_SHA512, SPEC_FLAG_IS_ECDSA | SPEC_FLAG_WITH_CERT
     }
@@ -367,23 +368,6 @@ realloc_secure (void *a, size_t n)
   return p;
 }
 
-
-/* Create and return a new C-string from DATA/DATA_N (i.e.: add
-   NUL-termination); return NULL on OOM.  */
-static char *
-make_cstring (const char *data, size_t data_n)
-{
-  char *s;
-
-  s = xtrymalloc (data_n + 1);
-  if (s)
-    {
-      memcpy (s, data, data_n);
-      s[data_n] = 0;
-    }
-
-  return s;
-}
 
 /* Lookup the ssh-identifier for the ECC curve CURVE_NAME.  Returns
    NULL if not found.  */
@@ -1739,6 +1723,7 @@ sexp_key_construct (gcry_sexp_t *r_sexp,
       const char *elems;
       size_t elems_n;
       unsigned int i, j;
+      const char *algo_name;
 
       if (secret)
         elems = key_spec.elems_sexp_order;
@@ -1765,7 +1750,8 @@ sexp_key_construct (gcry_sexp_t *r_sexp,
 
       es_fputs ("(%s(%s", format);
       arg_list[arg_idx++] = &key_identifier[secret];
-      arg_list[arg_idx++] = &key_spec.identifier;
+      algo_name = gcry_pk_algo_name (key_spec.algo);
+      arg_list[arg_idx++] = &algo_name;
       if (curve_name)
         {
           es_fputs ("(curve%s)", format);
@@ -1868,8 +1854,8 @@ ssh_key_to_blob (gcry_sexp_t sexp, int with_secret,
       goto out;
     }
 
-  /* Get the algorithm identifier.  */
-  value_list = gcry_sexp_find_token (sexp, key_spec.identifier, 0);
+  /* Get key value list.  */
+  value_list = gcry_sexp_cadr (sexp);
   if (!value_list)
     {
       err = gpg_error (GPG_ERR_INV_SEXP);
@@ -2009,51 +1995,6 @@ ssh_key_to_blob (gcry_sexp_t sexp, int with_secret,
 
   return err;
 }
-
-/* Extract the car from SEXP, and create a newly created C-string
-   which is to be stored in IDENTIFIER.  */
-static gpg_error_t
-sexp_extract_identifier (gcry_sexp_t sexp, char **identifier)
-{
-  char *identifier_new;
-  gcry_sexp_t sublist;
-  const char *data;
-  size_t data_n;
-  gpg_error_t err;
-
-  identifier_new = NULL;
-  err = 0;
-
-  sublist = gcry_sexp_nth (sexp, 1);
-  if (! sublist)
-    {
-      err = gpg_error (GPG_ERR_INV_SEXP);
-      goto out;
-    }
-
-  data = gcry_sexp_nth_data (sublist, 0, &data_n);
-  if (! data)
-    {
-      err = gpg_error (GPG_ERR_INV_SEXP);
-      goto out;
-    }
-
-  identifier_new = make_cstring (data, data_n);
-  if (! identifier_new)
-    {
-      err = gpg_err_code_from_errno (errno);
-      goto out;
-    }
-
-  *identifier = identifier_new;
-
- out:
-
-  gcry_sexp_release (sublist);
-
-  return err;
-}
-
 
 
 /*
@@ -2064,23 +2005,18 @@ sexp_extract_identifier (gcry_sexp_t sexp, char **identifier)
 
 /* Search for a key specification entry.  If SSH_NAME is not NULL,
    search for an entry whose "ssh_name" is equal to SSH_NAME;
-   otherwise, search for an entry whose "name" is equal to NAME.
+   otherwise, search for an entry whose algorithm is equal to ALGO.
    Store found entry in SPEC on success, return error otherwise.  */
 static gpg_error_t
-ssh_key_type_lookup (const char *ssh_name, const char *name,
+ssh_key_type_lookup (const char *ssh_name, int algo,
 		     ssh_key_type_spec_t *spec)
 {
   gpg_error_t err;
   unsigned int i;
 
-  /* FIXME: Although this sees to work, it not be correct if the
-     lookup is done via name which might be "ecc" but actually it need
-     to check the flags to see whether it is eddsa or ecdsa.  Maybe
-     the entire parameter controlled logic is too complicated and we
-     would do better by just switching on the ssh_name.  */
   for (i = 0; i < DIM (ssh_key_types); i++)
     if ((ssh_name && (! strcmp (ssh_name, ssh_key_types[i].ssh_identifier)))
-	|| (name && (! strcmp (name, ssh_key_types[i].identifier))))
+	|| algo == ssh_key_types[i].algo)
       break;
 
   if (i == DIM (ssh_key_types))
@@ -2119,7 +2055,7 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
   if (err)
     goto out;
 
-  err = ssh_key_type_lookup (key_type, NULL, &spec);
+  err = ssh_key_type_lookup (key_type, 0, &spec);
   if (err)
     goto out;
 
@@ -2346,17 +2282,17 @@ ssh_send_key_public (estream_t stream, gcry_sexp_t key,
                      const char *override_comment)
 {
   ssh_key_type_spec_t spec;
-  char *key_type = NULL;
+  int algo;
   char *comment = NULL;
   void *blob = NULL;
   size_t bloblen;
-  gpg_error_t err;
+  gpg_error_t err = 0;
 
-  err = sexp_extract_identifier (key, &key_type);
-  if (err)
+  algo = get_pk_algo_from_key (key);
+  if (algo == 0)
     goto out;
 
-  err = ssh_key_type_lookup (NULL, key_type, &spec);
+  err = ssh_key_type_lookup (NULL, algo, &spec);
   if (err)
     goto out;
 
@@ -2382,7 +2318,6 @@ ssh_send_key_public (estream_t stream, gcry_sexp_t key,
     goto out;
 
  out:
-  xfree (key_type);
   xfree (comment);
   es_free (blob);
 
