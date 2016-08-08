@@ -72,6 +72,7 @@ TESTS = setup.scm \
 	conventional-mdc.scm \
 	multisig.scm \
 	verify.scm \
+	gpgv-forged-keyring.scm \
 	armor.scm \
 	import.scm \
 	ecc.scm \

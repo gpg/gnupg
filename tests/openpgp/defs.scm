@@ -53,6 +53,7 @@
 
 (define tools
   '((gpg "GPG" "g10/gpg")
+    (gpgv "GPGV" "g10/gpgv")
     (gpg-agent "GPG_AGENT" "agent/gpg-agent")
     (gpg-connect-agent "GPG_CONNECT_AGENT" "tools/gpg-connect-agent")
     (gpgconf "GPGCONF" "tools/gpgconf")
@@ -78,6 +79,7 @@
 
 (define GPG `(,(tool 'gpg) --no-permission-warning
 	      ,@(if have-opt-always-trust '(--always-trust) '())))
+(define GPGV `(,(tool 'gpgv)))
 (define PINENTRY (tool 'pinentry))
 
 (define (tr:gpg input args)
