@@ -218,10 +218,8 @@ read_passphrase_from_fd( int fd )
  * computed, this will be used as the cacheid.
  */
 static char *
-passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
-                 const char *tryagain_text,
-                 const char *custom_description,
-                 const char *custom_prompt, int *canceled)
+passphrase_get (u32 *keyid, int mode, const char *cacheid, int repeat,
+                const char *tryagain_text, int *canceled)
 {
   int rc;
   char *atext = NULL;
@@ -230,7 +228,6 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
   byte fpr[MAX_FINGERPRINT_LEN];
   int have_fpr = 0;
   char *orig_codeset;
-  char *my_prompt;
   char hexfprbuf[20*2+1];
   const char *my_cacheid;
   int check = (mode == 1);
@@ -251,9 +248,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
 
   orig_codeset = i18n_switchto_utf8 ();
 
-  if (custom_description)
-    atext = native_to_utf8 (custom_description);
-  else if ( !mode && pk && keyid )
+  if ( !mode && pk && keyid )
     {
       char *uid;
       size_t uidlen;
@@ -306,12 +301,8 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
   if (tryagain_text)
     tryagain_text = _(tryagain_text);
 
-  my_prompt = custom_prompt ? native_to_utf8 (custom_prompt): NULL;
-
-  rc = agent_get_passphrase (my_cacheid, tryagain_text, my_prompt, atext,
+  rc = agent_get_passphrase (my_cacheid, tryagain_text, NULL, atext,
                              repeat, check, &pw);
-
-  xfree (my_prompt);
   xfree (atext); atext = NULL;
 
   i18n_switchback (orig_codeset);
@@ -406,17 +397,17 @@ passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
         4:  Ditto, but create a new key
 */
 DEK *
-passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
-                       int cipher_algo, STRING2KEY *s2k, int mode,
-                       const char *tryagain_text,
-                       const char *custdesc, const char *custprompt,
-                       int *canceled)
+passphrase_to_dek (u32 *keyid, int pubkey_algo,
+                   int cipher_algo, STRING2KEY *s2k, int mode,
+                   const char *tryagain_text,
+                   int *canceled)
 {
   char *pw = NULL;
   DEK *dek;
   STRING2KEY help_s2k;
   int dummy_canceled;
-  char s2k_cacheidbuf[1+16+1], *s2k_cacheid = NULL;
+  char s2k_cacheidbuf[1+16+1];
+  char *s2k_cacheid = NULL;
 
   if (!canceled)
     canceled = &dummy_canceled;
@@ -543,7 +534,7 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
       /* Divert to the gpg-agent. */
       pw = passphrase_get (keyid, mode == 2, s2k_cacheid,
                            (mode == 2 || mode == 4)? opt.passphrase_repeat : 0,
-                           tryagain_text, custdesc, custprompt, canceled);
+                           tryagain_text, canceled);
       if (*canceled)
         {
           xfree (pw);
@@ -590,17 +581,6 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
   xfree(last_pw);
   last_pw = pw;
   return dek;
-}
-
-
-DEK *
-passphrase_to_dek (u32 *keyid, int pubkey_algo,
-		   int cipher_algo, STRING2KEY *s2k, int mode,
-                   const char *tryagain_text, int *canceled)
-{
-  return passphrase_to_dek_ext (keyid, pubkey_algo, cipher_algo,
-                                s2k, mode, tryagain_text, NULL, NULL,
-                                canceled);
 }
 
 
