@@ -294,15 +294,13 @@ check_secret_key (PKT_public_key *pk, int n)
  * No secret key, so no passphrase needed
  */
 DEK *
-passphrase_to_dek (u32 *keyid, int pubkey_algo,
-                   int cipher_algo, STRING2KEY *s2k, int mode,
+passphrase_to_dek (int cipher_algo, STRING2KEY *s2k, int create, int nocache,
                    const char *tmp, int *canceled)
 {
-  (void)keyid;
-  (void)pubkey_algo;
   (void)cipher_algo;
   (void)s2k;
-  (void)mode;
+  (void)create;
+  (void)nocache;
   (void)tmp;
 
   if (canceled)
@@ -311,11 +309,9 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
 }
 
 void
-passphrase_clear_cache (u32 *keyid, const char *cacheid, int algo)
+passphrase_clear_cache (const char *cacheid)
 {
-  (void)keyid;
   (void)cacheid;
-  (void)algo;
 }
 
 struct keyserver_spec *

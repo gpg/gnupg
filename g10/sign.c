@@ -1270,7 +1270,7 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
     if (!opt.quiet || !opt.batch)
         log_info (_("%s encryption will be used\n"),
                   openpgp_cipher_algo_name (algo) );
-    cfx.dek = passphrase_to_dek( NULL, 0, algo, s2k, 2, NULL, &canceled);
+    cfx.dek = passphrase_to_dek (algo, s2k, 1, 1, NULL, &canceled);
 
     if (!cfx.dek || !cfx.dek->keylen) {
         rc = gpg_error (canceled?GPG_ERR_CANCELED:GPG_ERR_BAD_PASSPHRASE);

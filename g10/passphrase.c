@@ -207,9 +207,7 @@ read_passphrase_from_fd( int fd )
 
 /*
  * Ask the GPG Agent for the passphrase.
- * Mode 0:  Allow cached passphrase
- *      1:  No cached passphrase; that is we are asking for a new passphrase
- *          FIXME: Only partially implemented
+ * If NOCACHE is set the symmetric passpharse caching will not be used.
  *
  * Note that TRYAGAIN_TEXT must not be translated.  If CANCELED is not
  * NULL, the function does set it to 1 if the user canceled the
@@ -218,92 +216,30 @@ read_passphrase_from_fd( int fd )
  * computed, this will be used as the cacheid.
  */
 static char *
-passphrase_get (u32 *keyid, int mode, const char *cacheid, int repeat,
+passphrase_get (int nocache, const char *cacheid, int repeat,
                 const char *tryagain_text, int *canceled)
 {
   int rc;
-  char *atext = NULL;
   char *pw = NULL;
-  PKT_public_key *pk = xmalloc_clear( sizeof *pk );
-  byte fpr[MAX_FINGERPRINT_LEN];
-  int have_fpr = 0;
   char *orig_codeset;
-  char hexfprbuf[20*2+1];
   const char *my_cacheid;
-  int check = (mode == 1);
 
   if (canceled)
     *canceled = 0;
 
-#if MAX_FINGERPRINT_LEN < 20
-#error agent needs a 20 byte fingerprint
-#endif
-
-  memset (fpr, 0, MAX_FINGERPRINT_LEN );
-  if( keyid && get_pubkey( pk, keyid ) )
-    {
-      free_public_key (pk);
-      pk = NULL; /* oops: no key for some reason */
-    }
-
   orig_codeset = i18n_switchto_utf8 ();
 
-  if ( !mode && pk && keyid )
-    {
-      char *uid;
-      size_t uidlen;
-      const char *algo_name = openpgp_pk_algo_name ( pk->pubkey_algo );
-      const char *timestr;
-      char *maink;
-
-      if ( !algo_name )
-        algo_name = "?";
-
-      if (keyid[2] && keyid[3]
-          && keyid[0] != keyid[2]
-          && keyid[1] != keyid[3] )
-        maink = xasprintf (_(" (main key ID %s)"), keystr (&keyid[2]));
-      else
-        maink = xstrdup ("");
-
-      uid = get_user_id ( keyid, &uidlen );
-      timestr = strtimestamp (pk->timestamp);
-
-      atext = xasprintf (_("Please enter the passphrase to unlock the"
-                           " secret key for the OpenPGP certificate:\n"
-                           "\"%.*s\"\n"
-                           "%u-bit %s key, ID %s,\n"
-                           "created %s%s.\n"),
-                         (int)uidlen, uid,
-                         nbits_from_pk (pk), algo_name, keystr(&keyid[0]),
-                         timestr, maink);
-      xfree (uid);
-      xfree (maink);
-
-      {
-        size_t dummy;
-        fingerprint_from_pk( pk, fpr, &dummy );
-        have_fpr = 1;
-      }
-
-    }
-  else
-    atext = xstrdup ( _("Enter passphrase\n") );
-
-
-  if (!mode && cacheid)
+  if (!nocache && cacheid)
     my_cacheid = cacheid;
-  else if (!mode && have_fpr)
-    my_cacheid = bin2hex (fpr, 20, hexfprbuf);
   else
     my_cacheid = NULL;
 
   if (tryagain_text)
     tryagain_text = _(tryagain_text);
 
-  rc = agent_get_passphrase (my_cacheid, tryagain_text, NULL, atext,
-                             repeat, check, &pw);
-  xfree (atext); atext = NULL;
+  rc = agent_get_passphrase (my_cacheid, tryagain_text, NULL,
+                             _("Enter passphrase\n"),
+                             repeat, nocache, &pw);
 
   i18n_switchback (orig_codeset);
 
@@ -333,74 +269,39 @@ passphrase_get (u32 *keyid, int mode, const char *cacheid, int repeat,
       write_status_errcode ("get_passphrase", rc);
     }
 
-  free_public_key (pk);
   if (rc)
     {
       xfree (pw);
-      return NULL;
+      pw = NULL;
     }
   return pw;
 }
 
 
 /*
- * Clear the cached passphrase.  If CACHEID is not NULL, it will be
- * used instead of a cache ID derived from KEYID.
+ * Clear the cached passphrase with CACHEID.
  */
 void
-passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
+passphrase_clear_cache (const char *cacheid)
 {
   int rc;
 
-  (void)algo;
-
-  if (!cacheid)
-    {
-      PKT_public_key *pk;
-#     if MAX_FINGERPRINT_LEN < 20
-#       error agent needs a 20 byte fingerprint
-#     endif
-      byte fpr[MAX_FINGERPRINT_LEN];
-      char hexfprbuf[2*20+1];
-      size_t dummy;
-
-      pk = xcalloc (1, sizeof *pk);
-      if ( !keyid || get_pubkey( pk, keyid ) )
-        {
-          log_error ("key not found in passphrase_clear_cache\n");
-          free_public_key (pk);
-          return;
-        }
-      memset (fpr, 0, MAX_FINGERPRINT_LEN );
-      fingerprint_from_pk ( pk, fpr, &dummy );
-      bin2hex (fpr, 20, hexfprbuf);
-      rc = agent_clear_passphrase (hexfprbuf);
-      free_public_key ( pk );
-    }
-  else
-    rc = agent_clear_passphrase (cacheid);
-
+  rc = agent_clear_passphrase (cacheid);
   if (rc)
     log_error (_("problem with the agent: %s\n"), gpg_strerror (rc));
 }
 
 
-/* Return a new DEK object using the string-to-key specifier S2K.  Use
-   KEYID and PUBKEY_ALGO to prompt the user.  Returns NULL is the user
-   selected to cancel the passphrase entry and if CANCELED is not
-   NULL, sets it to true.
-
-   MODE 0:  Allow cached passphrase
-        1:  Ignore cached passphrase
-        2:  Ditto, but create a new key
-        3:  Allow cached passphrase; use the S2K salt as the cache ID
-        4:  Ditto, but create a new key
-*/
+/* Return a new DEK object using the string-to-key specifier S2K.
+ * Returns NULL if the user canceled the passphrase entry and if
+ * CANCELED is not NULL, sets it to true.
+ *
+ * If CREATE is true a new passphrase sll be created.  If NOCACHE is
+ * true the symmetric key caching will not be used.  */
 DEK *
-passphrase_to_dek (u32 *keyid, int pubkey_algo,
-                   int cipher_algo, STRING2KEY *s2k, int mode,
-                   const char *tryagain_text,
-                   int *canceled)
+passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
+                   int create, int nocache,
+                   const char *tryagain_text, int *canceled)
 {
   char *pw = NULL;
   DEK *dek;
@@ -415,7 +316,7 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
 
   if ( !s2k )
     {
-      log_assert (mode != 3 && mode != 4);
+      log_assert (create && !nocache);
       /* This is used for the old rfc1991 mode
        * Note: This must match the code in encode.c with opt.rfc1991 set */
       s2k = &help_s2k;
@@ -425,7 +326,7 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
 
   /* Create a new salt or what else to be filled into the s2k for a
      new key.  */
-  if ((mode == 2 || mode == 4) && (s2k->mode == 1 || s2k->mode == 3))
+  if (create && (s2k->mode == 1 || s2k->mode == 3))
     {
       gcry_randomize (s2k->salt, 8, GCRY_STRONG_RANDOM);
       if ( s2k->mode == 3 )
@@ -446,59 +347,9 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
     {
       char buf[50];
 
-      if ( keyid )
-        {
-          emit_status_need_passphrase (keyid,
-                                       keyid[2] && keyid[3]? keyid+2:NULL,
-                                       pubkey_algo);
-	}
-      else
-        {
-          snprintf (buf, sizeof buf -1, "%d %d %d",
-                    cipher_algo, s2k->mode, s2k->hash_algo );
-          write_status_text ( STATUS_NEED_PASSPHRASE_SYM, buf );
-	}
-    }
-
-  /* If we do have a keyID, we do not have a passphrase available in
-     NEXT_PW, we are not running in batch mode and we do not want to
-     ignore the passphrase cache (mode!=1), print a prompt with
-     information on that key. */
-  if ( keyid && !opt.batch && !next_pw && mode!=1 )
-    {
-      PKT_public_key *pk = xmalloc_clear( sizeof *pk );
-      char *p;
-
-      p = get_user_id_native(keyid);
-      tty_printf ("\n");
-      tty_printf (_("You need a passphrase to unlock the secret key for\n"
-                    "user: \"%s\"\n"),p);
-      xfree(p);
-
-      if ( !get_pubkey( pk, keyid ) )
-        {
-          const char *s = openpgp_pk_algo_name ( pk->pubkey_algo );
-
-          tty_printf (_("%u-bit %s key, ID %s, created %s"),
-                      nbits_from_pk( pk ), s?s:"?", keystr(keyid),
-                      strtimestamp(pk->timestamp) );
-          if ( keyid[2] && keyid[3]
-               && keyid[0] != keyid[2] && keyid[1] != keyid[3] )
-            {
-              if ( keystrlen () > 10 )
-                {
-                  tty_printf ("\n");
-                  tty_printf (_("         (subkey on main key ID %s)"),
-                              keystr(&keyid[2]) );
-                }
-              else
-                tty_printf ( _(" (main key ID %s)"), keystr(&keyid[2]) );
-            }
-          tty_printf("\n");
-	}
-
-      tty_printf("\n");
-      free_public_key (pk);
+      snprintf (buf, sizeof buf -1, "%d %d %d",
+                cipher_algo, s2k->mode, s2k->hash_algo );
+      write_status_text ( STATUS_NEED_PASSPHRASE_SYM, buf );
     }
 
   if ( next_pw )
@@ -515,7 +366,7 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
     }
   else
     {
-      if ((mode == 3 || mode == 4) && (s2k->mode == 1 || s2k->mode == 3))
+      if (!nocache && (s2k->mode == 1 || s2k->mode == 3))
 	{
 	  memset (s2k_cacheidbuf, 0, sizeof s2k_cacheidbuf);
 	  *s2k_cacheidbuf = 'S';
@@ -532,8 +383,8 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
         }
 
       /* Divert to the gpg-agent. */
-      pw = passphrase_get (keyid, mode == 2, s2k_cacheid,
-                           (mode == 2 || mode == 4)? opt.passphrase_repeat : 0,
+      pw = passphrase_get (create && nocache, s2k_cacheid,
+                           create? opt.passphrase_repeat : 0,
                            tryagain_text, canceled);
       if (*canceled)
         {
@@ -551,7 +402,7 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
      get_last_passphrase(). */
   dek = xmalloc_secure_clear ( sizeof *dek );
   dek->algo = cipher_algo;
-  if ( (!pw || !*pw) && (mode == 2 || mode == 4))
+  if ( (!pw || !*pw) && create)
     dek->keylen = 0;
   else
     {

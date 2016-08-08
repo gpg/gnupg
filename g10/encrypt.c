@@ -221,8 +221,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       s2k = xmalloc_clear( sizeof *s2k );
       s2k->mode = opt.s2k_mode;
       s2k->hash_algo = S2K_DIGEST_ALGO;
-      cfx.dek = passphrase_to_dek (NULL, 0,
-                                   default_cipher_algo(), s2k, 4,
+      cfx.dek = passphrase_to_dek (default_cipher_algo (), s2k, 1, 0,
                                    NULL, &canceled);
       if ( !cfx.dek || !cfx.dek->keylen )
         {
@@ -413,8 +412,8 @@ setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek)
   (*symkey_s2k)->mode = opt.s2k_mode;
   (*symkey_s2k)->hash_algo = S2K_DIGEST_ALGO;
 
-  *symkey_dek=passphrase_to_dek(NULL,0,opt.s2k_cipher_algo,
-				*symkey_s2k, 4, NULL, &canceled);
+  *symkey_dek = passphrase_to_dek (opt.s2k_cipher_algo,
+                                   *symkey_s2k, 1, 0, NULL, &canceled);
   if(!*symkey_dek || !(*symkey_dek)->keylen)
     {
       xfree(*symkey_dek);

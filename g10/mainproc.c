@@ -329,7 +329,7 @@ proc_symkey_enc (CTX c, PACKET *pkt)
         }
       else
         {
-          c->dek = passphrase_to_dek (NULL, 0, algo, &enc->s2k, 3, NULL, NULL);
+          c->dek = passphrase_to_dek (algo, &enc->s2k, 0, 0, NULL, NULL);
           if (c->dek)
             {
               c->dek->symmetric = 1;
@@ -587,7 +587,7 @@ proc_encrypted (CTX c, PACKET *pkt)
               log_info (_("assuming %s encrypted data\n"), "IDEA");
             }
 
-          c->dek = passphrase_to_dek ( NULL, 0, algo, s2k, 3, NULL, &canceled);
+          c->dek = passphrase_to_dek (algo, s2k, 0, 0, NULL, &canceled);
           if (c->dek)
             c->dek->algo_info_printed = 1;
           else if (canceled)
@@ -646,7 +646,7 @@ proc_encrypted (CTX c, PACKET *pkt)
           if (opt.debug)
             log_debug ("cleared passphrase cached with ID: %s\n",
                        c->dek->s2k_cacheid);
-          passphrase_clear_cache (NULL, c->dek->s2k_cacheid, 0);
+          passphrase_clear_cache (c->dek->s2k_cacheid);
         }
       glo_ctrl.lasterr = result;
       write_status (STATUS_DECRYPTION_FAILED);
