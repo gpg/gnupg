@@ -47,7 +47,9 @@
 # include <assuan.h> /* For _assuan_w32ce_finish_pipe. */
 #endif
 
+#include <gcrypt.h>
 #include "util.h"
+#include "i18n.h"
 
 /* This object is used to register memory cleanup functions.
    Technically they are not needed but they can avoid frequent
@@ -185,6 +187,12 @@ _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
      particular es_stdout.  */
   atexit (sleep_on_exit);
 #endif
+
+  if (!gcry_check_version (NEED_LIBGCRYPT_VERSION))
+    {
+      log_fatal (_("%s is too old (need %s, have %s)\n"), "libgcrypt",
+                 NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL));
+    }
 
   /* Initialize the Estream library. */
   gpgrt_init ();

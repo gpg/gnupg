@@ -998,11 +998,6 @@ main (int argc, char **argv)
     log_set_file (logfile);
 
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
-  if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
-    {
-      log_fatal (_("%s is too old (need %s, have %s)\n"), "libgcrypt",
-                 NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
-    }
   setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
 

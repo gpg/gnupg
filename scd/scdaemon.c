@@ -424,14 +424,6 @@ main (int argc, char **argv )
 
   npth_init ();
 
-  /* Check that the libraries are suitable.  Do it here because
-     the option parsing may need services of the library */
-  if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
-    {
-      log_fatal (_("%s is too old (need %s, have %s)\n"), "libgcrypt",
-                 NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
-    }
-
   ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
 
   malloc_hooks.malloc = gcry_malloc;

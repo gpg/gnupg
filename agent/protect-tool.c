@@ -566,15 +566,8 @@ main (int argc, char **argv )
   i18n_init ();
   init_common_subsystems (&argc, &argv);
 
-  if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
-    {
-      log_fatal( _("%s is too old (need %s, have %s)\n"), "libgcrypt",
-                 NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
-    }
-
   setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
-
 
   pargs.argc = &argc;
   pargs.argv = &argv;

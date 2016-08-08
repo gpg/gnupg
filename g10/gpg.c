@@ -2201,14 +2201,6 @@ main (int argc, char **argv)
     i18n_init();
     init_common_subsystems (&argc, &argv);
 
-    /* Check that the libraries are suitable.  Do it right here because the
-       option parsing may need services of the library.  */
-    if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
-      {
-        log_fatal ( _("libgcrypt is too old (need %s, have %s)\n"),
-                    NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
-      }
-
     /* Use our own logging handler for Libcgrypt.  */
     setup_libgcrypt_logging ();
 

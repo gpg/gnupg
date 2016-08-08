@@ -250,11 +250,6 @@ main ( int argc, char **argv)
   i18n_init ();
   init_common_subsystems (&argc, &argv);
 
-  /* Check that the Libgcrypt is suitable.  */
-  if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
-    log_fatal (_("%s is too old (need %s, have %s)\n"), "libgcrypt",
-               NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
-
   /* Take extra care of the random pool.  */
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
 
