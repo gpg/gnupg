@@ -75,7 +75,9 @@ static void
 write_status_progress (const char *what,
                        unsigned long current, unsigned long total)
 {
-  char buffer[50];
+  char buffer[60];
+  char units[] = "BKMGTPEZY?";
+  int unitidx = 0;
 
   /* Although we use an unsigned long for the values, 32 bit
    * applications using GPGME will use an "int" and thus are limited
@@ -98,6 +100,7 @@ write_status_progress (const char *what,
         {
           total /= 1024;
           current /= 1024;
+          unitidx++;
         }
     }
   else
@@ -105,11 +108,17 @@ write_status_progress (const char *what,
       while (current > 1024*1024)
         {
           current /= 1024;
+          unitidx++;
         }
     }
 
-  snprintf (buffer, sizeof buffer, "%.20s ? %lu %lu",
-            what? what : "?", current, total);
+  if (unitidx > 9)
+    unitidx = 9;
+
+  snprintf (buffer, sizeof buffer, "%.20s ? %lu %lu %c%s",
+            what? what : "?", current, total,
+            units[unitidx],
+            unitidx? "iB" : "");
   write_status_text (STATUS_PROGRESS, buffer);
 }
 
