@@ -1685,7 +1685,7 @@ sexp_key_construct (gcry_sexp_t *r_sexp,
   void *formatbuf = NULL;
   void **arg_list = NULL;
   estream_t format = NULL;
-
+  char *algo_name = NULL;
 
   if ((key_spec.flags & SPEC_FLAG_IS_EdDSA))
     {
@@ -1723,7 +1723,6 @@ sexp_key_construct (gcry_sexp_t *r_sexp,
       const char *elems;
       size_t elems_n;
       unsigned int i, j;
-      const char *algo_name;
 
       if (secret)
         elems = key_spec.elems_sexp_order;
@@ -1750,7 +1749,13 @@ sexp_key_construct (gcry_sexp_t *r_sexp,
 
       es_fputs ("(%s(%s", format);
       arg_list[arg_idx++] = &key_identifier[secret];
-      algo_name = gcry_pk_algo_name (key_spec.algo);
+      algo_name = xtrystrdup (gcry_pk_algo_name (key_spec.algo));
+      if (!algo_name)
+        {
+          err = gpg_error_from_syserror ();
+          goto out;
+        }
+      strlwr (algo_name);
       arg_list[arg_idx++] = &algo_name;
       if (curve_name)
         {
@@ -1798,6 +1803,7 @@ sexp_key_construct (gcry_sexp_t *r_sexp,
   es_fclose (format);
   xfree (arg_list);
   xfree (formatbuf);
+  xfree (algo_name);
 
   return err;
 }
