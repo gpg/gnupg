@@ -2618,7 +2618,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
       if (err)
         {
           log_error ("failed to read the public key\n");
-          goto out;
+          continue;
         }
 
       err = ssh_send_key_public (key_blobs, key_public, NULL);

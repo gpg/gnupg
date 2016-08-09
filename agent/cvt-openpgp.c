@@ -1271,7 +1271,7 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
                                      array+0, array+1, array+2, array+3,
                                      array+4, NULL);
     }
-  else if (!strcmp (name, "ecc"))
+  else if (!strcmp (name, "ecc") || !strcmp (name, "ecdsa"))
     {
       algoname = "ecc";
       format = "qd?";
