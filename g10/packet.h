@@ -231,7 +231,8 @@ typedef struct
   pka_info_t *pka_info;      /* Malloced PKA data or NULL if not
                                 available.  See also flags.pka_tried. */
   char *signers_uid;         /* Malloced value of the SIGNERS_UID
-                              * subpacket.  */
+                              * subpacket or NULL.  This string has
+                              * already been sanitized.  */
   subpktarea_t *hashed;      /* All subpackets with hashed data (v4 only). */
   subpktarea_t *unhashed;    /* Ditto for unhashed data. */
   /* First 2 bytes of the digest.  (Serialized.  Note: this is not

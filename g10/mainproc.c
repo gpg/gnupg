@@ -1552,6 +1552,21 @@ akl_has_wkd_method (void)
 }
 
 
+/* Return the ISSUER fingerprint string in human readbale format if
+ * available.  Caller must release the string.  */
+static char *
+issuer_fpr_string (PKT_signature *sig)
+{
+  const byte *p;
+  size_t n;
+
+  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_ISSUER_FPR, &n);
+  if (p && n == 21 && p[0] == 4)
+    return bin2hex (p+1, n-1, NULL);
+  return NULL;
+}
+
+
 static void
 print_good_bad_signature (int statno, const char *keyid_str, kbnode_t un,
                           PKT_signature *sig, int rc)
@@ -1589,6 +1604,7 @@ check_sig_and_print (CTX c, kbnode_t node)
   int is_expkey = 0;
   int is_revkey = 0;
   char pkstrbuf[PUBKEY_STRING_SIZE];
+  char *issuer_fpr;
 
   *pkstrbuf = 0;
 
@@ -1715,16 +1731,28 @@ check_sig_and_print (CTX c, kbnode_t node)
     write_status_text (STATUS_NEWSIG, NULL);
 
   astr = openpgp_pk_algo_name ( sig->pubkey_algo );
-  if (keystrlen () > 8)
+  if (opt.flags.rfc4880bis && (issuer_fpr = issuer_fpr_string (sig)))
+    {
+      log_info (_("Signature made %s\n"), asctimestamp(sig->timestamp));
+      log_info (_("               using %s key %s\n"),
+                astr? astr: "?", issuer_fpr);
+
+      xfree (issuer_fpr);
+    }
+  else if (!keystrlen () || keystrlen () > 8)
     {
       log_info (_("Signature made %s\n"), asctimestamp(sig->timestamp));
       log_info (_("               using %s key %s\n"),
                 astr? astr: "?", keystr(sig->keyid));
     }
-  else
+  else /* Legacy format.  */
     log_info (_("Signature made %s using %s key ID %s\n"),
               asctimestamp(sig->timestamp), astr? astr: "?",
               keystr(sig->keyid));
+
+  /* In verbose mode print the signers UID.  */
+  if (sig->signers_uid)
+    log_info (_("               issuer \"%s\"\n"), sig->signers_uid);
 
   rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );
 

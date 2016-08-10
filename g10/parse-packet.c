@@ -1936,15 +1936,12 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIGNERS_UID, &len);
       if (p && len)
         {
-          sig->signers_uid = xtrymalloc (len+1);
+          sig->signers_uid = try_make_printable_string (p, len, 0);
           if (!sig->signers_uid)
             {
               rc = gpg_error_from_syserror ();
               goto leave;
             }
-          /* Note that we don't care about binary zeroes in the value.  */
-          memcpy (sig->signers_uid, p, len);
-          sig->signers_uid[len] = 0;
         }
 
       p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_NOTATION, NULL);
