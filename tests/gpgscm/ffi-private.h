@@ -93,7 +93,7 @@ pointer ffi_sprintf (scheme *sc, const char *format, ...)
 
 #define ffi_define_function_name(SC, NAME, F)				\
   do {									\
-    char *_fname = ffi_schemify_name ("_" #F, 0);                        \
+    char *_fname = ffi_schemify_name ("__" #F, 0);                      \
     scheme_define ((SC),						\
 		   (SC)->global_env,					\
 		   mk_symbol ((SC), _fname),                            \
