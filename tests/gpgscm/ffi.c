@@ -1248,7 +1248,7 @@ ffi_init (scheme *sc, const char *argv0, int argc, const char **argv)
   ffi_define_function (sc, open);
   ffi_define_function (sc, fdopen);
   ffi_define_function (sc, close);
-  ffi_define_function (sc, mkdtemp);
+  ffi_define_function_name (sc, "_mkdtemp", mkdtemp);
   ffi_define_function (sc, unlink);
   ffi_define_function (sc, unlink_recursively);
   ffi_define_function (sc, rename);

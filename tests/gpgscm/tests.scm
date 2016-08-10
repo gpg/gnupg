@@ -247,10 +247,19 @@
        (chdir ,cwd-sym)
        ,result-sym)))
 
+;; Make a temporary directory.  If arguments are given, they are
+;; joined using path-join, and must end in a component ending in
+;; "XXXXXX".  If no arguments are given, a suitable location and
+;; generic name is used.
+(define (mkdtemp . components)
+  (_mkdtemp (if (null? components)
+		(path-join (getenv "TMP") "gpgscm-XXXXXX")
+		(apply path-join components))))
+
 (macro (with-temporary-working-directory form)
   (let ((result-sym (gensym)) (cwd-sym (gensym)) (tmp-sym (gensym)))
     `(let* ((,cwd-sym (getcwd))
-	    (,tmp-sym (mkdtemp (path-join (getenv "TMP") "gpgscm-XXXXXX")))
+	    (,tmp-sym (mkdtemp))
 	    (_ (chdir ,tmp-sym))
 	    (,result-sym (begin ,@(cdr form))))
        (chdir ,cwd-sym)
@@ -259,7 +268,7 @@
 
 (define (make-temporary-file . args)
   (canonical-path (path-join
-		   (mkdtemp (path-join (getenv "TMP") "gpgscm-XXXXXX"))
+		   (mkdtemp)
 		   (if (null? args) "a" (car args)))))
 
 (define (remove-temporary-file filename)
