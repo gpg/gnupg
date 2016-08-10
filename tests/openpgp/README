@@ -8,7 +8,7 @@ On POSIX you can just use
 
 or
 
-  $ make -C tests/openpgp check TESTS="setup.scm your-test.scm finish.scm"
+  $ make -C tests/openpgp check XTESTS="setup.scm your-test.scm finish.scm"
 
 as before.
 ** using the Scheme driver

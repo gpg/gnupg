@@ -36,16 +36,15 @@ fake_pinentry_SOURCES = fake-pinentry.c
 
 TMP ?= /tmp
 
-TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) GPG_AGENT_INFO= LC_ALL=C \
+TESTS_ENVIRONMENT = LC_ALL=C \
 	EXEEXT=$(EXEEXT) \
 	PATH=../gpgscm:$(PATH) \
 	TMP=$(TMP) \
+	srcdir=$(abs_srcdir) \
 	objdir=$(abs_top_builddir) \
-	GPGSCM_PATH=$(top_srcdir)/tests/gpgscm:$(top_srcdir)/tests/openpgp
+	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm:$(abs_top_srcdir)/tests/openpgp
 
-# Note: setup.scm needs to be the first test to run and finish.scm
-# the last one
-TESTS = setup.scm \
+XTESTS = \
 	version.scm \
 	mds.scm \
 	decrypt.scm \
@@ -85,9 +84,20 @@ TESTS = setup.scm \
 	ssh.scm \
 	issue2015.scm \
 	issue2346.scm \
-	issue2419.scm \
-	finish.scm
+	issue2419.scm
 
+# XXX: Currently, one cannot override automake's 'check' target.  As a
+# workaround, we avoid defining 'TESTS', thus automake will not emit
+# the 'check' target.  For extra robustness, we merely define a
+# dependency on 'xcheck', so this hack should also work even if
+# automake would emit the 'check' target, as adding dependencies to
+# targets is okay.
+check: xcheck
+
+.PHONY: xcheck
+xcheck:
+	$(TESTS_ENVIRONMENT) $(abs_top_builddir)/tests/gpgscm/gpgscm \
+	  run-tests.scm $(XTESTS)
 
 TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     plain-1.asc plain-2.asc plain-3.asc plain-1-pgp.asc \
@@ -158,7 +168,7 @@ sample_keys = samplekeys/README \
 
 sample_msgs = samplemsgs/issue2419.asc
 
-EXTRA_DIST = defs.inc defs.scm pinentry.sh $(TESTS) $(TEST_FILES) \
+EXTRA_DIST = defs.inc defs.scm pinentry.sh $(XTESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
 	     $(sample_msgs) ChangeLog-2011 run-tests.scm
 
