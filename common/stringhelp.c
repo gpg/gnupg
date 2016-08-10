@@ -687,65 +687,6 @@ hextobyte (const char *s)
   return c;
 }
 
-
-/* Create a string from the buffer P_ARG of length N which is suitable
-   for printing.  Caller must release the created string using xfree.
-   This function terminates the process on memory shortage.  */
-char *
-sanitize_buffer (const void *p_arg, size_t n, int delim)
-{
-  const unsigned char *p = p_arg;
-  size_t save_n, buflen;
-  const unsigned char *save_p;
-  char *buffer, *d;
-
-  /* First count length. */
-  for (save_n = n, save_p = p, buflen=1 ; n; n--, p++ )
-    {
-      if ( *p < 0x20 || *p == 0x7f || *p == delim  || (delim && *p=='\\'))
-        {
-          if ( *p=='\n' || *p=='\r' || *p=='\f'
-               || *p=='\v' || *p=='\b' || !*p )
-            buflen += 2;
-          else
-            buflen += 5;
-	}
-      else
-        buflen++;
-    }
-  p = save_p;
-  n = save_n;
-  /* And now make the string */
-  d = buffer = xmalloc( buflen );
-  for ( ; n; n--, p++ )
-    {
-      if (*p < 0x20 || *p == 0x7f || *p == delim || (delim && *p=='\\')) {
-        *d++ = '\\';
-        if( *p == '\n' )
-          *d++ = 'n';
-        else if( *p == '\r' )
-          *d++ = 'r';
-        else if( *p == '\f' )
-          *d++ = 'f';
-        else if( *p == '\v' )
-          *d++ = 'v';
-        else if( *p == '\b' )
-          *d++ = 'b';
-        else if( !*p )
-          *d++ = '0';
-        else {
-          sprintf(d, "x%02x", *p );
-          d += 3;
-        }
-      }
-      else
-        *d++ = *p;
-    }
-  *d = 0;
-  return buffer;
-}
-
-
 /* Given a string containing an UTF-8 encoded text, return the number
    of characters in this string.  It differs from strlen in that it
    only counts complete UTF-8 characters.  SIZE is the maximum length

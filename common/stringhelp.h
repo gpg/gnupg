@@ -61,9 +61,6 @@ int compare_filenames( const char *a, const char *b );
 
 int hextobyte (const char *s);
 
-char *sanitize_buffer (const void *p, size_t n, int delim);
-
-
 size_t utf8_charcount (const char *s, int len);
 
 

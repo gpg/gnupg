@@ -287,6 +287,7 @@ void print_utf8_buffer2 (estream_t fp, const void *p, size_t n, int delim);
 void print_utf8_buffer (estream_t fp, const void *p, size_t n);
 void print_hexstring (FILE *fp, const void *buffer, size_t length,
                       int reserved);
+char *try_make_printable_string (const void *p, size_t n, int delim);
 char *make_printable_string (const void *p, size_t n, int delim);
 
 int is_file_compressed (const char *s, int *ret_rc);

@@ -246,12 +246,76 @@ print_hexstring (FILE *fp, const void *buffer, size_t length, int reserved)
 #undef tohex
 }
 
+
+/* Create a string from the buffer P_ARG of length N which is suitable
+ * for printing.  Caller must release the created string using xfree.
+ * On error ERRNO is set and NULL returned.  Errors are only possible
+ * due to malloc failure.  */
+char *
+try_make_printable_string (const void *p_arg, size_t n, int delim)
+{
+  const unsigned char *p = p_arg;
+  size_t save_n, buflen;
+  const unsigned char *save_p;
+  char *buffer, *d;
+
+  /* First count length. */
+  for (save_n = n, save_p = p, buflen=1 ; n; n--, p++ )
+    {
+      if ( *p < 0x20 || *p == 0x7f || *p == delim  || (delim && *p=='\\'))
+        {
+          if ( *p=='\n' || *p=='\r' || *p=='\f'
+               || *p=='\v' || *p=='\b' || !*p )
+            buflen += 2;
+          else
+            buflen += 5;
+	}
+      else
+        buflen++;
+    }
+  p = save_p;
+  n = save_n;
+  /* And now make the string */
+  d = buffer = xtrymalloc (buflen);
+  for ( ; n; n--, p++ )
+    {
+      if (*p < 0x20 || *p == 0x7f || *p == delim || (delim && *p=='\\')) {
+        *d++ = '\\';
+        if( *p == '\n' )
+          *d++ = 'n';
+        else if( *p == '\r' )
+          *d++ = 'r';
+        else if( *p == '\f' )
+          *d++ = 'f';
+        else if( *p == '\v' )
+          *d++ = 'v';
+        else if( *p == '\b' )
+          *d++ = 'b';
+        else if( !*p )
+          *d++ = '0';
+        else {
+          sprintf(d, "x%02x", *p );
+          d += 3;
+        }
+      }
+      else
+        *d++ = *p;
+    }
+  *d = 0;
+  return buffer;
+}
+
+
+/* Same as try_make_printable_string but terminates the process on
+ * memory shortage.  */
 char *
 make_printable_string (const void *p, size_t n, int delim )
 {
-  return sanitize_buffer (p, n, delim);
+  char *string = try_make_printable_string (p, n, delim);
+  if (!string)
+    xoutofcore ();
+  return string;
 }
-
 
 
 /*
