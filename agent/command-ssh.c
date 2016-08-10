@@ -2623,7 +2623,9 @@ ssh_handler_request_identities (ctrl_t ctrl,
       err = agent_public_key_from_file (ctrl, grip, &key_public);
       if (err)
         {
-          log_error ("failed to read the public key\n");
+          log_error ("%s:%d: key '%s' skipped: %s\n",
+                     cf->fname, cf->lnr, cf->item.hexgrip,
+                     gpg_strerror (err));
           continue;
         }
 
