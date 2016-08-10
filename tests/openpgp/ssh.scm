@@ -33,10 +33,10 @@
 	     (path-expand "ssh-add" (string-split (getenv "PATH") *pathsep*))))
 
 (define keys
-  '(("dsa" "MD5:9a:e1:f1:5f:46:ea:a5:06:e1:e2:f8:38:8e:06:54:58")
-    ("rsa" "MD5:c9:85:b5:55:00:84:a9:82:5a:df:d6:62:1b:5a:28:22")
-    ("ecdsa" "MD5:93:37:30:a6:4e:e7:6a:22:79:77:8e:bf:ed:14:e9:8e")
-    ("ed25519" "MD5:08:df:be:af:d2:f5:32:20:3a:1c:56:06:be:31:0f:bf")))
+  '(("dsa" "9a:e1:f1:5f:46:ea:a5:06:e1:e2:f8:38:8e:06:54:58")
+    ("rsa" "c9:85:b5:55:00:84:a9:82:5a:df:d6:62:1b:5a:28:22")
+    ("ecdsa" "93:37:30:a6:4e:e7:6a:22:79:77:8e:bf:ed:14:e9:8e")
+    ("ed25519" "08:df:be:af:d2:f5:32:20:3a:1c:56:06:be:31:0f:bf")))
 
 (for-each-p'
  "Importing ssh keys..."
@@ -62,5 +62,5 @@
  (pipe:spawn `(,SSH-ADD -)))
 (unless
  (string-contains? (call-popen `(,SSH-ADD -l "-E" md5) "")
-		   "MD5:c9:85:b5:55:00:84:a9:82:5a:df:d6:62:1b:5a:28:22")
+		   "c9:85:b5:55:00:84:a9:82:5a:df:d6:62:1b:5a:28:22")
  (error "known private key not (re-)added to sshcontrol"))
