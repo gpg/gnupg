@@ -685,7 +685,7 @@ tdbio_set_dbname (const char *new_dbname, int create, int *r_nofile)
 
   take_write_lock ();
 
-  if (access (fname, R_OK))
+  if (access (fname, R_OK) || stat (fname, &statbuf) || statbuf.st_size == 0)
     {
       FILE *fp;
       TRUSTREC rec;
@@ -699,7 +699,7 @@ tdbio_set_dbname (const char *new_dbname, int create, int *r_nofile)
       else
         gpg_err_set_errno (EIO);
 #endif /*HAVE_W32CE_SYSTEM*/
-      if (errno != ENOENT)
+      if (errno && errno != ENOENT)
         log_fatal ( _("can't access '%s': %s\n"), fname, strerror (errno));
 
       oldmask = umask (077);

@@ -84,6 +84,7 @@ XTESTS = \
 	ssh.scm \
 	issue2015.scm \
 	issue2346.scm \
+	issue2417.scm \
 	issue2419.scm
 
 # XXX: Currently, one cannot override automake's 'check' target.  As a
