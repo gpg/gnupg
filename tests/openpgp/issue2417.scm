@@ -19,6 +19,8 @@
 
 (load (with-path "defs.scm"))
 
+(define old-home (getenv "GNUPGHOME"))
+
 (define (touch file-name)
   (close (open file-name (logior O_WRONLY O_BINARY O_CREAT) #o600)))
 
@@ -32,6 +34,8 @@
   (pipe:write-to keyfile (logior O_WRONLY O_BINARY O_CREAT) #o600))
 
  (with-temporary-working-directory
+  (file-copy (path-join old-home "gpg.conf") "gpg.conf")
+  (file-copy (path-join old-home "gpg-agent.conf") "gpg-agent.conf")
   (setenv "GNUPGHOME" "." #t)
   (touch "trustdb.gpg")
   (touch "pubring.gpg")
