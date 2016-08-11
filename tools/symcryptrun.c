@@ -238,9 +238,6 @@ my_strusage (int level)
        __result; }))
 #endif
 
-/* Include the implementation of map_spwq_error.  */
-MAP_SPWQ_ERROR_IMPL
-
 /* Unlink a file, and shred it if SHRED is true.  */
 int
 remove_file (char *name, int shred)
@@ -441,7 +438,6 @@ confucius_get_pass (const char *cacheid, int again, int *canceled)
   pw = simple_pwquery (cacheid,
                        again ? _("does not match - try again"):NULL,
                        _("Passphrase:"), NULL, 0, &err);
-  err = map_spwq_error (err);
   i18n_switchback (orig_codeset);
 
   if (!pw)

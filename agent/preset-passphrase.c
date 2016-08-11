@@ -111,10 +111,6 @@ my_strusage (int level)
 
 
 
-/* Include the implementation of map_spwq_error.  */
-MAP_SPWQ_ERROR_IMPL
-
-
 static void
 preset_passphrase (const char *keygrip)
 {
@@ -170,7 +166,7 @@ preset_passphrase (const char *keygrip)
   if (!opt_passphrase)
     wipememory (passphrase, sizeof (passphrase));
 
-  rc = map_spwq_error (simple_query (line));
+  rc = simple_query (line);
   if (rc)
     {
       log_error ("caching passphrase failed: %s\n", gpg_strerror (rc));
@@ -192,7 +188,7 @@ forget_passphrase (const char *keygrip)
   if (rc < 0)
     rc = gpg_error_from_syserror ();
   else
-    rc = map_spwq_error (simple_query (line));
+    rc = simple_query (line);
   if (rc)
     {
       log_error ("clearing passphrase failed: %s\n", gpg_strerror (rc));

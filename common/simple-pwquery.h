@@ -67,47 +67,4 @@ int simple_query (const char *query);
    to be called before any other function.  Returns 0 on success.  */
 int simple_pw_set_socket (const char *name);
 
-#define SPWQ_OUT_OF_CORE 1
-#define SPWQ_IO_ERROR 2
-#define SPWQ_PROTOCOL_ERROR 3
-#define SPWQ_ERR_RESPONSE 4
-#define SPWQ_NO_AGENT 5
-#define SPWQ_SYS_ERROR 6
-#define SPWQ_GENERAL_ERROR 7
-#define SPWQ_NO_PIN_ENTRY 8
-
-
-/* We often need to map error codes to gpg-error style error codes.
-   To have a consistent mapping this macro may be used to implemt the
-   mapping function.  */
-#define MAP_SPWQ_ERROR_IMPL                                 \
-       static gpg_error_t                                   \
-       map_spwq_error (int err)                             \
-       {                                                    \
-         switch (err)                                       \
-           {                                                \
-           case 0:                                          \
-             return 0;                                      \
-           case SPWQ_OUT_OF_CORE:                           \
-             return gpg_error_from_errno (ENOMEM);          \
-           case SPWQ_IO_ERROR:                              \
-             return gpg_error_from_errno (EIO);             \
-           case SPWQ_PROTOCOL_ERROR:                        \
-             return gpg_error (GPG_ERR_PROTOCOL_VIOLATION); \
-           case SPWQ_ERR_RESPONSE:                          \
-             return gpg_error (GPG_ERR_INV_RESPONSE);       \
-           case SPWQ_NO_AGENT:                              \
-             return gpg_error (GPG_ERR_NO_AGENT);           \
-           case SPWQ_SYS_ERROR:                             \
-             return gpg_error_from_syserror ();             \
-           case SPWQ_NO_PIN_ENTRY:                          \
-             return gpg_error (GPG_ERR_NO_PIN_ENTRY);       \
-           case SPWQ_GENERAL_ERROR:                         \
-           default:                                         \
-             return gpg_error (GPG_ERR_GENERAL);            \
-           }                                                \
-       }
-/* End of MAP_SPWQ_ERROR_IMPL.  */
-
-
 #endif /*SIMPLE_PWQUERY_H*/

@@ -50,6 +50,15 @@
 #define SIMPLE_PWQUERY_IMPLEMENTATION 1
 #include "simple-pwquery.h"
 
+#define SPWQ_OUT_OF_CORE	gpg_error_from_errno (ENOMEM)
+#define SPWQ_IO_ERROR		gpg_error_from_errno (EIO)
+#define SPWQ_PROTOCOL_ERROR	gpg_error (GPG_ERR_PROTOCOL_VIOLATION)
+#define SPWQ_ERR_RESPONSE	gpg_error (GPG_ERR_INV_RESPONSE)
+#define SPWQ_NO_AGENT		gpg_error (GPG_ERR_NO_AGENT)
+#define SPWQ_SYS_ERROR		gpg_error_from_syserror ()
+#define SPWQ_GENERAL_ERROR	gpg_error (GPG_ERR_GENERAL)
+#define SPWQ_NO_PIN_ENTRY	gpg_error (GPG_ERR_NO_PIN_ENTRY)
+
 #ifndef _
 #define _(a) (a)
 #endif
