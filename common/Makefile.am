@@ -95,7 +95,7 @@ common_sources = \
 	recsel.c recsel.h
 
 if HAVE_W32_SYSTEM
-common_sources += w32-reg.c w32-afunix.c w32-afunix.h
+common_sources += w32-reg.c
 endif
 
 # To make the code easier to read we have split home some code into
