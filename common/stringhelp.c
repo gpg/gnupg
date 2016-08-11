@@ -58,6 +58,7 @@
 
 #define tohex_lower(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'a'))
 
+
 /* Sometimes we want to avoid mixing slashes and backslashes on W32
    and prefer backslashes.  There is usual no problem with mixing
    them, however a very few W32 API calls can't grok plain slashes.
@@ -657,6 +658,25 @@ compare_filenames (const char *a, const char *b)
 #else
     return strcmp(a,b);
 #endif
+}
+
+
+/* Convert a base-10 number in STRING into a 64 bit unsigned int
+ * value.  Leading white spaces are skipped but no error checking is
+ * done.  Thus it is similar to atoi(). */
+uint64_t
+string_to_u64 (const char *string)
+{
+  uint64_t val = 0;
+
+  while (spacep (string))
+    string++;
+  for (; digitp (string); string++)
+    {
+      val *= 10;
+      val += *string - '0';
+    }
+  return val;
 }
 
 

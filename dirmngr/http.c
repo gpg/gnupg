@@ -130,15 +130,6 @@
                         "01234567890@"                 \
                         "!\"#$%&'()*+,-./:;<=>?[\\]^_{|}~"
 
-/* A long counter type.  */
-#ifdef HAVE_STRTOULL
-typedef unsigned long long longcounter_t;
-# define counter_strtoul(a) strtoull ((a), NULL, 10)
-#else
-typedef unsigned long longcounter_t;
-# define counter_strtoul(a) strtoul ((a), NULL, 10)
-#endif
-
 #if HTTP_USE_NTBTLS
 typedef ntbtls_t         tls_session_t;
 # define USE_TLS 1
@@ -206,7 +197,7 @@ struct cookie_s
 
   /* The remaining content length and a flag telling whether to use
      the content length.  */
-  longcounter_t content_length;
+  uint64_t content_length;
   unsigned int content_length_valid:1;
 };
 typedef struct cookie_s *cookie_t;
@@ -2170,7 +2161,7 @@ parse_response (http_t hd)
       if (s)
         {
           cookie->content_length_valid = 1;
-          cookie->content_length = counter_strtoul (s);
+          cookie->content_length = string_to_u64 (s);
         }
     }
 

@@ -33,6 +33,7 @@
 #ifndef GNUPG_COMMON_STRINGHELP_H
 #define GNUPG_COMMON_STRINGHELP_H
 
+#include <stdint.h>
 #include "types.h"
 
 /*-- stringhelp.c --*/
@@ -59,6 +60,7 @@ char *make_absfilename_try (const char *first_part,
                             ...) GPGRT_ATTR_SENTINEL(0);
 int compare_filenames( const char *a, const char *b );
 
+uint64_t string_to_u64 (const char *string);
 int hextobyte (const char *s);
 
 size_t utf8_charcount (const char *s, int len);
