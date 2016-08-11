@@ -99,6 +99,7 @@ enum cmd_and_opt_values
     aListSecretKeys = 'K',
     oBatch	  = 500,
     oMaxOutput,
+    oInputSizeHint,
     oSigNotation,
     oCertNotation,
     oShowNotation,
@@ -554,6 +555,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_s (oOutput, "output", N_("|FILE|write output to FILE")),
   ARGPARSE_p_u (oMaxOutput, "max-output", "@"),
+  ARGPARSE_s_s (oInputSizeHint, "input-size-hint", "@"),
 
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
   ARGPARSE_s_n (oQuiet,	  "quiet",   "@"),
@@ -2459,7 +2461,13 @@ main (int argc, char **argv)
 
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
+
 	  case oMaxOutput: opt.max_output = pargs.r.ret_ulong; break;
+
+          case oInputSizeHint:
+            opt.input_size_hint = string_to_u64 (pargs.r.ret_str);
+            break;
+
 	  case oQuiet: opt.quiet = 1; break;
 	  case oNoTTY: tty_no_terminal(1); break;
 	  case oDryRun: opt.dry_run = 1; break;

@@ -73,11 +73,12 @@ release_progress_context (progress_filter_context_t *pfx)
 
 static void
 write_status_progress (const char *what,
-                       unsigned long current, unsigned long total)
+                       unsigned long current, unsigned long total_arg)
 {
   char buffer[60];
   char units[] = "BKMGTPEZY?";
   int unitidx = 0;
+  uint64_t total = total_arg;
 
   /* Although we use an unsigned long for the values, 32 bit
    * applications using GPGME will use an "int" and thus are limited
@@ -91,6 +92,10 @@ write_status_progress (const char *what,
    * thus scaling CURRENT and TOTAL down before they get to large,
    * should not have a noticeable effect except for rounding
    * imprecision. */
+
+  if (!total && opt.input_size_hint)
+    total = opt.input_size_hint;
+
   if (total)
     {
       if (current > total)
@@ -116,7 +121,7 @@ write_status_progress (const char *what,
     unitidx = 9;
 
   snprintf (buffer, sizeof buffer, "%.20s ? %lu %lu %c%s",
-            what? what : "?", current, total,
+            what? what : "?", current, (unsigned long)total,
             units[unitidx],
             unitidx? "iB" : "");
   write_status_text (STATUS_PROGRESS, buffer);

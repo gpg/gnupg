@@ -23,6 +23,7 @@
 
 #include <sys/types.h>
 #include <types.h>
+#include <stdint.h>
 #include "main.h"
 #include "packet.h"
 #include "tofu.h"
@@ -54,6 +55,12 @@ struct
   char *outfile;
   estream_t outfp;  /* Hack, sometimes used in place of outfile.  */
   off_t max_output;
+
+  /* If > 0 a hint with the expected number of input data bytes.  This
+   * is not necessary an exact number but intended to be used for
+   * progress info and to decide on how to allocate buffers.  */
+  uint64_t input_size_hint;
+
   int dry_run;
   int autostart;
   int list_only;

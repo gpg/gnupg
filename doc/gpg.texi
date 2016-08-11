@@ -2155,6 +2155,15 @@ works properly with such messages, there is often a desire to set a
 maximum file size that will be generated before processing is forced to
 stop by the OS limits. Defaults to 0, which means "no limit".
 
+@item --input-size-hint @var{n}
+@opindex input-size-hint
+This option can be used to tell GPG the size of the input data in
+bytes.  @var{n} must be a positive base-10 number.  This option is
+only useful if the input is not taken from a file.  GPG may use thos
+hint to optimize its buffer allocation strategy.  It is also used by
+the @option{--status-fd} line ``PROGRESS'' to provide a value for
+``total'' if that is not available by other means.
+
 @item --import-options @code{parameters}
 @opindex import-options
 This is a space or comma delimited string that gives options for
