@@ -17,10 +17,10 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-/* This module is intended as a standalone client implementation to
-   gpg-agent's GET_PASSPHRASE command.  In particular it does not use
-   the Assuan library and can only cope with an already running
-   gpg-agent.  Some stuff is configurable in the header file. */
+/* This module is intended as a simple client implementation to
+   gpg-agent's GET_PASSPHRASE command.  It can only cope with an
+   already running gpg-agent.  Some stuff is configurable in the
+   header file. */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -30,6 +30,7 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <assuan.h>
 #ifdef HAVE_W32_SYSTEM
 #include <winsock2.h>
 #else
@@ -42,9 +43,8 @@
 
 #define GNUPG_COMMON_NEED_AFLOCAL
 #include "../common/mischelp.h"
-#ifdef HAVE_W32_SYSTEM
-#include "../common/w32-afunix.h"
-#endif
+#include "sysutils.h"
+#include "membuf.h"
 
 
 #define SIMPLE_PWQUERY_IMPLEMENTATION 1
@@ -96,88 +96,11 @@ my_stpcpy(char *a,const char *b)
 #endif
 
 
-
-/* Write NBYTES of BUF to file descriptor FD. */
-static int
-writen (int fd, const void *buf, size_t nbytes)
-{
-  size_t nleft = nbytes;
-  int nwritten;
-
-  while (nleft > 0)
-    {
-#ifdef HAVE_W32_SYSTEM
-      nwritten = send (fd, buf, nleft, 0);
-#else
-      nwritten = write (fd, buf, nleft);
-#endif
-      if (nwritten < 0)
-        {
-          if (errno == EINTR)
-            nwritten = 0;
-          else {
-#ifdef SPWQ_USE_LOGGING
-            log_error ("write failed: %s\n", strerror (errno));
-#endif
-            return SPWQ_IO_ERROR;
-          }
-        }
-      nleft -= nwritten;
-      buf = (const char*)buf + nwritten;
-    }
-
-  return 0;
-}
-
-
-/* Read an entire line and return number of bytes read. */
-static int
-readline (int fd, char *buf, size_t buflen)
-{
-  size_t nleft = buflen;
-  char *p;
-  int nread = 0;
-
-  while (nleft > 0)
-    {
-#ifdef HAVE_W32_SYSTEM
-      int n = recv (fd, buf, nleft, 0);
-#else
-      int n = read (fd, buf, nleft);
-#endif
-      if (n < 0)
-        {
-          if (errno == EINTR)
-            continue;
-          return -(SPWQ_IO_ERROR);
-        }
-      else if (!n)
-        {
-          return -(SPWQ_PROTOCOL_ERROR); /* incomplete line */
-        }
-      p = buf;
-      nleft -= n;
-      buf += n;
-      nread += n;
-
-      for (; n && *p != '\n'; n--, p++)
-        ;
-      if (n)
-        {
-          break; /* At least one full line available - that's enough.
-                    This function is just a simple implementation, so
-                    it is okay to forget about pending bytes.  */
-        }
-    }
-
-  return nread;
-}
-
-
 /* Send an option to the agent */
 static int
-agent_send_option (int fd, const char *name, const char *value)
+agent_send_option (assuan_context_t ctx, const char *name, const char *value)
 {
+  int err;
   char buf[200];
   int nread;
   char *line;
@@ -188,28 +111,17 @@ agent_send_option (int fd, const char *name, const char *value)
     return SPWQ_OUT_OF_CORE;
   strcpy (stpcpy (stpcpy (stpcpy (
                      stpcpy (line, "OPTION "), name), "="), value), "\n");
-  i = writen (fd, line, strlen (line));
+
+  err = assuan_transact (ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+
   spwq_free (line);
-  if (i)
-    return i;
-
-  /* get response */
-  nread = readline (fd, buf, DIM(buf)-1);
-  if (nread < 0)
-    return -nread;
-  if (nread < 3)
-    return SPWQ_PROTOCOL_ERROR;
-
-  if (buf[0] == 'O' && buf[1] == 'K' && (buf[2] == ' ' || buf[2] == '\n'))
-    return 0; /* okay */
-
-  return SPWQ_ERR_RESPONSE;
+  return err;
 }
 
 
 /* Send all available options to the agent. */
 static int
-agent_send_all_options (int fd)
+agent_send_all_options (assuan_context_t ctx)
 {
   char *dft_display = NULL;
   char *dft_ttyname = NULL;
@@ -221,7 +133,7 @@ agent_send_all_options (int fd)
   dft_display = getenv ("DISPLAY");
   if (dft_display)
     {
-      if ((rc = agent_send_option (fd, "display", dft_display)))
+      if ((rc = agent_send_option (ctx, "display", dft_display)))
         return rc;
     }
 
@@ -232,14 +144,14 @@ agent_send_all_options (int fd)
 #endif
   if (dft_ttyname && *dft_ttyname)
     {
-      if ((rc=agent_send_option (fd, "ttyname", dft_ttyname)))
+      if ((rc=agent_send_option (ctx, "ttyname", dft_ttyname)))
         return rc;
     }
 
   dft_ttytype = getenv ("TERM");
   if (dft_ttyname && dft_ttytype)
     {
-      if ((rc = agent_send_option (fd, "ttytype", dft_ttytype)))
+      if ((rc = agent_send_option (ctx, "ttytype", dft_ttytype)))
         return rc;
     }
 
@@ -260,7 +172,7 @@ agent_send_all_options (int fd)
       }
     dft_lc = setlocale (LC_CTYPE, "");
     if (dft_ttyname && dft_lc)
-      rc = agent_send_option (fd, "lc-ctype", dft_lc);
+      rc = agent_send_option (ctx, "lc-ctype", dft_lc);
     if (old_lc)
       {
         setlocale (LC_CTYPE, old_lc);
@@ -282,7 +194,7 @@ agent_send_all_options (int fd)
       }
     dft_lc = setlocale (LC_MESSAGES, "");
     if (dft_ttyname && dft_lc)
-      rc = agent_send_option (fd, "lc-messages", dft_lc);
+      rc = agent_send_option (ctx, "lc-messages", dft_lc);
     if (old_lc)
       {
         setlocale (LC_MESSAGES, old_lc);
@@ -300,7 +212,7 @@ agent_send_all_options (int fd)
     {
       /* We ignore errors here because older gpg-agents don't support
          this option.  */
-      agent_send_option (fd, "xauthority", dft_xauthority);
+      agent_send_option (ctx, "xauthority", dft_xauthority);
     }
 
   /* Send the PINENTRY_USER_DATA variable.  */
@@ -309,8 +221,13 @@ agent_send_all_options (int fd)
     {
       /* We ignore errors here because older gpg-agents don't support
          this option.  */
-      agent_send_option (fd, "pinentry-user-data", dft_pinentry_user_data);
+      agent_send_option (ctx, "pinentry-user-data", dft_pinentry_user_data);
     }
+
+  /* Tell the agent that we support Pinentry notifications.  No
+     error checking so that it will work with older agents.  */
+  assuan_transact (ctx, "OPTION allow-pinentry-notify",
+                   NULL, NULL, NULL, NULL, NULL, NULL);
 
   return 0;
 }
@@ -321,7 +238,7 @@ agent_send_all_options (int fd)
    the file descriptor for the connection.  Return -1 in case of
    error. */
 static int
-agent_open (int *rfd)
+agent_open (assuan_context_t *ctx)
 {
   int rc;
   int fd;
@@ -331,7 +248,6 @@ agent_open (int *rfd)
   char line[200];
   int nread;
 
-  *rfd = -1;
   infostr = default_gpg_agent_info;
   if ( !infostr || !*infostr )
     {
@@ -340,81 +256,35 @@ agent_open (int *rfd)
 #endif
       return SPWQ_NO_AGENT;
     }
-  p = spwq_malloc (strlen (infostr)+1);
-  if (!p)
-    return SPWQ_OUT_OF_CORE;
-  strcpy (p, infostr);
-  infostr = p;
 
-  if ( !(p = strchr ( infostr, PATHSEP_C)) || p == infostr
-       || (p-infostr)+1 >= sizeof client_addr.sun_path )
-    {
-      spwq_free (infostr);
-      return SPWQ_NO_AGENT;
-    }
-  *p++ = 0;
+  rc = assuan_new (ctx);
+  if (rc)
+    return rc;
 
-  while (*p && *p != PATHSEP_C)
-    p++;
-
-#ifdef HAVE_W32_SYSTEM
-  fd = _w32_sock_new (AF_UNIX, SOCK_STREAM, 0);
-#else
-  fd = socket (AF_UNIX, SOCK_STREAM, 0);
-#endif
-  if (fd == -1)
-    {
-#ifdef SPWQ_USE_LOGGING
-      log_error ("can't create socket: %s\n", strerror(errno) );
-#endif
-      spwq_free (infostr);
-      return SPWQ_SYS_ERROR;
-    }
-
-  memset (&client_addr, 0, sizeof client_addr);
-  client_addr.sun_family = AF_UNIX;
-  strcpy (client_addr.sun_path, infostr);
-  spwq_free (infostr);
-  len = SUN_LEN (&client_addr);
-
-#ifdef HAVE_W32_SYSTEM
-  rc = _w32_sock_connect (fd, (struct sockaddr*)&client_addr, len );
-#else
-  rc = connect (fd, (struct sockaddr*)&client_addr, len );
-#endif
-  if (rc == -1)
+  rc = assuan_socket_connect (*ctx, infostr, 0, 0);
+  if (rc)
     {
 #ifdef SPWQ_USE_LOGGING
       log_error (_("can't connect to '%s': %s\n"),
-                 client_addr.sun_path, strerror (errno));
+                 infostr, gpg_strerror (rc));
 #endif
-      close (fd );
-      return SPWQ_IO_ERROR;
+      goto errout;
     }
 
-  nread = readline (fd, line, DIM(line));
-  if (nread < 3 || !(line[0] == 'O' && line[1] == 'K'
-                     && (line[2] == '\n' || line[2] == ' ')) )
-    {
-#ifdef SPWQ_USE_LOGGING
-      log_error ( _("communication problem with gpg-agent\n"));
-#endif
-      close (fd );
-      return SPWQ_PROTOCOL_ERROR;
-    }
-
-  rc = agent_send_all_options (fd);
+  rc = agent_send_all_options (*ctx);
   if (rc)
     {
 #ifdef SPWQ_USE_LOGGING
       log_error (_("problem setting the gpg-agent options\n"));
 #endif
-      close (fd);
-      return rc;
+      goto errout;
     }
 
-  *rfd = fd;
   return 0;
+
+ errout:
+  assuan_release (*ctx);
+  *ctx = NULL;
 }
 
 
@@ -451,17 +321,37 @@ int
 simple_pw_set_socket (const char *name)
 {
   spwq_free (default_gpg_agent_info);
+  default_gpg_agent_info = NULL;
   if (name)
     {
-      default_gpg_agent_info = spwq_malloc (strlen (name) + 4 + 1);
+      default_gpg_agent_info = spwq_malloc (strlen (name) + 1);
       if (!default_gpg_agent_info)
         return SPWQ_OUT_OF_CORE;
-      /* We don't know the PID thus we use 0.  */
-      strcpy (stpcpy (default_gpg_agent_info, name),
-              PATHSEP_S "0" PATHSEP_S "1");
+      strcpy (default_gpg_agent_info, name);
+    }
+
+  return 0;
+}
+
+
+/* This is the default inquiry callback.  It merely handles the
+   Pinentry notification.  */
+static gpg_error_t
+default_inq_cb (void *opaque, const char *line)
+{
+  (void)opaque;
+
+  if (!strncmp (line, "PINENTRY_LAUNCHED", 17) && (line[17]==' '||!line[17]))
+    {
+      gnupg_allow_set_foregound_window ((pid_t)strtoul (line+17, NULL, 10));
+      /* We do not return errors to avoid breaking other code.  */
     }
   else
-    default_gpg_agent_info = NULL;
+    {
+#ifdef SPWQ_USE_LOGGING
+      log_debug ("ignoring gpg-agent inquiry '%s'\n", line);
+#endif
+    }
 
   return 0;
 }
@@ -483,14 +373,15 @@ simple_pwquery (const char *cacheid,
                 int opt_check,
                 int *errorcode)
 {
-  int fd = -1;
+  assuan_context_t ctx;
+  membuf_t data;
   int nread;
   char *result = NULL;
   char *pw = NULL;
   char *p;
   int rc, i;
 
-  rc = agent_open (&fd);
+  rc = agent_open (&ctx);
   if (rc)
     goto leave;
 
@@ -530,73 +421,43 @@ simple_pwquery (const char *cacheid,
     *p++ = ' ';
     p = copy_and_escape (p, description);
     *p++ = '\n';
-    rc = writen (fd, line, p - line);
+
+    init_membuf_secure (&data, 64);
+
+    rc = assuan_transact (ctx, line, put_membuf_cb, &data,
+                          default_inq_cb, NULL, NULL, NULL);
     spwq_free (line);
+
+    /* Older Pinentries return the old assuan error code for canceled
+       which gets translated by libassuan to GPG_ERR_ASS_CANCELED and
+       not to the code for a user cancel.  Fix this here. */
+    if (rc && gpg_err_source (rc)
+        && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
+      rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
+
     if (rc)
-      goto leave;
+      {
+        void *p;
+        size_t n;
+
+        p = get_membuf (&data, &n);
+        if (p)
+          wipememory (p, n);
+        spwq_free (p);
+      }
+    else
+      {
+        put_membuf (&data, "", 1);
+        result = get_membuf (&data, NULL);
+        if (pw == NULL)
+          rc = gpg_error_from_syserror ();
+      }
   }
-
-  /* get response */
-  pw = spwq_secure_malloc (500);
-  nread = readline (fd, pw, 499);
-  if (nread < 0)
-    {
-      rc = -nread;
-      goto leave;
-    }
-  if (nread < 3)
-    {
-      rc = SPWQ_PROTOCOL_ERROR;
-      goto leave;
-    }
-
-  if (pw[0] == 'O' && pw[1] == 'K' && pw[2] == ' ')
-    { /* we got a passphrase - convert it back from hex */
-      size_t pwlen = 0;
-
-      for (i=3; i < nread && hexdigitp (pw+i); i+=2)
-        pw[pwlen++] = xtoi_2 (pw+i);
-      pw[pwlen] = 0; /* make a C String */
-      result = pw;
-      pw = NULL;
-    }
-  else if ((nread > 7 && !memcmp (pw, "ERR 111", 7)
-            && (pw[7] == ' ' || pw[7] == '\n') )
-           || ((nread > 4 && !memcmp (pw, "ERR ", 4)
-                && (strtoul (pw+4, NULL, 0) & 0xffff) == 99)) )
-    {
-      /* 111 is the old Assuan code for canceled which might still
-         be in use by old installations. 99 is GPG_ERR_CANCELED as
-         used by modern gpg-agents; 0xffff is used to mask out the
-         error source.  */
-#ifdef SPWQ_USE_LOGGING
-      log_info (_("canceled by user\n") );
-#endif
-      *errorcode = 0; /* Special error code to indicate Cancel. */
-    }
-  else if (nread > 4 && !memcmp (pw, "ERR ", 4))
-    {
-      switch ( (strtoul (pw+4, NULL, 0) & 0xffff) )
-        {
-        case 85: rc = SPWQ_NO_PIN_ENTRY;  break;
-        default: rc = SPWQ_GENERAL_ERROR; break;
-        }
-    }
-  else
-    {
-#ifdef SPWQ_USE_LOGGING
-      log_error (_("problem with the agent\n"));
-#endif
-      rc = SPWQ_ERR_RESPONSE;
-    }
 
  leave:
   if (errorcode)
     *errorcode = rc;
-  if (fd != -1)
-    close (fd);
-  if (pw)
-    spwq_secure_free (pw);
+  assuan_release (ctx);
   return result;
 }
 
@@ -628,96 +489,17 @@ simple_pwclear (const char *cacheid)
 int
 simple_query (const char *query)
 {
-  int fd = -1;
-  int nread;
+  assuan_context_t ctx;
   char response[500];
   int have = 0;
   int rc;
 
-  rc = agent_open (&fd);
+  rc = agent_open (&ctx);
   if (rc)
-    goto leave;
+    return rc;
 
-  rc = writen (fd, query, strlen (query));
-  if (rc)
-    goto leave;
+  rc = assuan_transact (ctx, query, NULL, NULL, NULL, NULL, NULL, NULL);
 
-  while (1)
-    {
-      if (! have || ! strchr (response, '\n'))
-        /* get response */
-        {
-          nread = readline (fd, &response[have],
-                            sizeof (response) - 1 /* NUL */ - have);
-          if (nread < 0)
-            {
-              rc = -nread;
-              goto leave;
-            }
-          have += nread;
-          if (have < 3)
-            {
-              rc = SPWQ_PROTOCOL_ERROR;
-              goto leave;
-            }
-          response[have] = 0;
-        }
-
-      if (response[0] == 'O' && response[1] == 'K')
-        /* OK, do nothing.  */;
-      else if ((nread > 7 && !memcmp (response, "ERR 111", 7)
-                && (response[7] == ' ' || response[7] == '\n') )
-               || ((nread > 4 && !memcmp (response, "ERR ", 4)
-                    && (strtoul (response+4, NULL, 0) & 0xffff) == 99)) )
-        {
-          /* 111 is the old Assuan code for canceled which might still
-             be in use by old installations. 99 is GPG_ERR_CANCELED as
-             used by modern gpg-agents; 0xffff is used to mask out the
-             error source.  */
-#ifdef SPWQ_USE_LOGGING
-          log_info (_("canceled by user\n") );
-#endif
-        }
-      else if (response[0] == 'S' && response[1] == ' ')
-        {
-          char *nextline;
-          int consumed;
-
-          nextline = strchr (response, '\n');
-          if (! nextline)
-            /* Point to the NUL.  */
-            nextline = &response[have];
-          else
-            /* Move past the \n.  */
-            nextline ++;
-
-          consumed = (size_t) nextline - (size_t) response;
-
-          /* Skip any additional newlines.  */
-          while (consumed < have && response[consumed] == '\n')
-            consumed ++;
-
-          have -= consumed;
-
-          if (have)
-            memmove (response, &response[consumed], have + 1);
-
-          continue;
-        }
-      else
-        {
-#ifdef SPWQ_USE_LOGGING
-          log_error (_("problem with the agent (unexpected response \"%s\")\n"),
-                     response);
-#endif
-          rc = SPWQ_ERR_RESPONSE;
-        }
-
-      break;
-    }
-
- leave:
-  if (fd != -1)
-    close (fd);
+  assuan_release (ctx);
   return rc;
 }

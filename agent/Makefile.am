@@ -85,7 +85,7 @@ gpg_preset_passphrase_SOURCES = \
 
 # Needs $(NETLIBS) for libsimple-pwquery.la.
 gpg_preset_passphrase_LDADD = \
-         $(pwquery_libs) $(common_libs) \
+         $(pwquery_libs) $(common_libs) $(LIBASSUAN_LIBS) \
 	 $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
 

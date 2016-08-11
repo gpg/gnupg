@@ -113,7 +113,7 @@ gpgparsemail_LDADD =
 symcryptrun_SOURCES = symcryptrun.c
 symcryptrun_LDADD = $(LIBUTIL_LIBS) $(common_libs) $(pwquery_libs) \
                     $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) \
-                    $(LIBICONV) $(NETLIBS) $(W32SOCKLIBS)
+                    $(LIBICONV) $(NETLIBS) $(W32SOCKLIBS) $(LIBASSUAN_LIBS)
 
 watchgnupg_SOURCES = watchgnupg.c
 watchgnupg_LDADD = $(NETLIBS)
