@@ -158,6 +158,18 @@ As an alternative you may create a new process as a child of
 gpg-agent: @code{gpg-agent --daemon /bin/sh}.  This way you get a new
 shell with the environment setup properly; after you exit from this
 shell, gpg-agent terminates within a few seconds.
+
+@item --supervised
+@opindex supervised
+Run in the foreground, sending logs by default to stderr, and
+listening on provided file descriptors, which must already be bound to
+listening sockets.  This command is useful when running under systemd
+or other similar process supervision schemes.
+
+In --supervised mode, different file descriptors can be provided for
+use as different socket types (e.g. ssh, extra) as long as they are
+identified in the environment variable $LISTEN_FDNAMES (see
+sd_listen_fds(3) for more information on this convention).
 @end table
 
 @mansect options
