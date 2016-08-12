@@ -687,14 +687,15 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
           else
             es_fprintf_unlocked (logstream, "[%u]", (unsigned int)getpid ());
         }
-      if (!with_time || force_prefixes)
+      if ((!with_time && (with_prefix || with_pid)) || force_prefixes)
         es_putc_unlocked (':', logstream);
       /* A leading backspace suppresses the extra space so that we can
          correctly output, programname, filename and linenumber. */
       if (fmt && *fmt == '\b')
         fmt++;
       else
-        es_putc_unlocked (' ', logstream);
+        if (with_time || with_prefix || with_pid || force_prefixes)
+          es_putc_unlocked (' ', logstream);
     }
 
   switch (level)
