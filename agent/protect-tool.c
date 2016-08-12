@@ -560,7 +560,7 @@ main (int argc, char **argv )
   early_system_init ();
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
-  log_set_prefix ("gpg-protect-tool", 1);
+  log_set_prefix ("gpg-protect-tool", GPGRT_LOG_WITH_PREFIX);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();

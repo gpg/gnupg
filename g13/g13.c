@@ -364,7 +364,7 @@ main ( int argc, char **argv)
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
 
-  log_set_prefix (G13_NAME, 1);
+  log_set_prefix (G13_NAME, GPGRT_LOG_WITH_PREFIX);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -655,7 +655,7 @@ main ( int argc, char **argv)
   if (logfile)
     {
       log_set_file (logfile);
-      log_set_prefix (NULL, 1|2|4);
+      log_set_prefix (NULL, GPGRT_LOG_WITH_PREFIX | GPGRT_LOG_WITH_TIME | GPGRT_LOG_WITH_PID);
     }
 
   if (gnupg_faked_time_p ())

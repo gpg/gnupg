@@ -223,7 +223,7 @@ main (int argc, char **argv)
   early_system_init ();
   gnupg_reopen_std (GPGCONF_NAME);
   set_strusage (my_strusage);
-  log_set_prefix (GPGCONF_NAME, 1);
+  log_set_prefix (GPGCONF_NAME, GPGRT_LOG_WITH_PREFIX);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init();

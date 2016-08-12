@@ -416,7 +416,7 @@ main (int argc, char **argv)
 
   gnupg_reopen_std (GPGTAR_NAME);
   set_strusage (my_strusage);
-  log_set_prefix (GPGTAR_NAME, 1);
+  log_set_prefix (GPGTAR_NAME, GPGRT_LOG_WITH_PREFIX);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init();

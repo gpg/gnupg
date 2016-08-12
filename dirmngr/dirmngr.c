@@ -743,7 +743,7 @@ main (int argc, char **argv)
 #endif /*USE_W32_SERVICE*/
 
   set_strusage (my_strusage);
-  log_set_prefix (DIRMNGR_NAME, 1|4);
+  log_set_prefix (DIRMNGR_NAME, GPGRT_LOG_WITH_PREFIX | GPGRT_LOG_WITH_PID);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -1073,7 +1073,7 @@ main (int argc, char **argv)
       if (logfile)
         {
           log_set_file (logfile);
-          log_set_prefix (NULL, 2|4);
+          log_set_prefix (NULL, GPGRT_LOG_WITH_TIME | GPGRT_LOG_WITH_PID);
         }
 
       if (debug_wait)

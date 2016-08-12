@@ -154,7 +154,7 @@ main (int argc, char **argv)
   http_session_t session = NULL;
 
   gpgrt_init ();
-  log_set_prefix (PGM, 1 | 4);
+  log_set_prefix (PGM, GPGRT_LOG_WITH_PREFIX | GPGRT_LOG_WITH_PID);
   if (argc)
     { argc--; argv++; }
   while (argc && last_argc != argc )

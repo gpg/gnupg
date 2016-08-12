@@ -216,7 +216,7 @@ main (int argc, char **argv)
       *p = 0, scmpath_len++;
 
   set_strusage (my_strusage);
-  log_set_prefix ("gpgscm", 1);
+  log_set_prefix ("gpgscm", GPGRT_LOG_WITH_PREFIX);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();

@@ -2171,7 +2171,7 @@ main (int argc, char **argv)
     gnupg_rl_initialize ();
     set_strusage (my_strusage);
     gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
-    log_set_prefix (GPG_NAME, 1);
+    log_set_prefix (GPG_NAME, GPGRT_LOG_WITH_PREFIX);
 
     /* Make sure that our subsystems are ready.  */
     i18n_init();
@@ -3429,7 +3429,7 @@ main (int argc, char **argv)
     if (logfile && opt.batch)
       {
         log_set_file (logfile);
-        log_set_prefix (NULL, 1|2|4);
+        log_set_prefix (NULL, GPGRT_LOG_WITH_PREFIX | GPGRT_LOG_WITH_TIME | GPGRT_LOG_WITH_PID);
       }
 
     if (opt.verbose > 2)

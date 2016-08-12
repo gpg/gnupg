@@ -930,7 +930,7 @@ main ( int argc, char **argv)
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
      when adding any stuff between here and the call to secmem_init()
      somewhere after the option parsing */
-  log_set_prefix (GPGSM_NAME, 1);
+  log_set_prefix (GPGSM_NAME, GPGRT_LOG_WITH_PREFIX);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -1507,7 +1507,7 @@ main ( int argc, char **argv)
   if (logfile && cmd == aServer)
     {
       log_set_file (logfile);
-      log_set_prefix (NULL, 1|2|4);
+      log_set_prefix (NULL, GPGRT_LOG_WITH_PREFIX | GPGRT_LOG_WITH_TIME | GPGRT_LOG_WITH_PID);
     }
 
   if (gnupg_faked_time_p ())
