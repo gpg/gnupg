@@ -38,6 +38,7 @@
 #include "host2net.h"
 #include "server.h"  /*(g13_keyblob_decrypt)*/
 #include "../common/sysutils.h"
+#include "call-syshelp.h"
 
 
 /* Mount the container with name FILENAME at MOUNTPOINT.  */
@@ -46,7 +47,7 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
 {
   gpg_error_t err;
   dotlock_t lock;
-  int needs_syshelp;
+  int needs_syshelp = 0;
   void *enckeyblob = NULL;
   size_t enckeybloblen;
   void *keyblob = NULL;
@@ -57,16 +58,28 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   int conttype;
   unsigned int rid;
   char *mountpoint_buffer = NULL;
+  char *blockdev_buffer = NULL;
 
   /* A quick check to see whether the container exists.  */
-  if (access (filename, R_OK))
+  if (access (filename, F_OK))
     return gpg_error_from_syserror ();
 
   /* Decide whether we need to use the g13-syshelp because we can't
      use lock files for them.  This is most likely the case for device
      files; thus we test for this.  FIXME: The correct solution would
      be to call g13-syshelp to match the file against the g13tab.  */
-  needs_syshelp = !strncmp (filename, "/dev/", 5);
+  err = call_syshelp_find_device (ctrl, filename, &blockdev_buffer);
+  if (!err)
+    {
+      needs_syshelp = 1;
+      filename = blockdev_buffer;
+    }
+  else if (gpg_err_code (err) != GPG_ERR_NOT_FOUND)
+    {
+      log_error ("error finding device '%s': %s <%s>\n",
+                 filename, gpg_strerror (err), gpg_strsource (err));
+      return err;
+    }
 
   if (!mountpoint)
     {
@@ -105,20 +118,27 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
     }
 
   /* Check again that the file exists.  */
-  {
-    struct stat sb;
+  if (!needs_syshelp)
+    {
+      struct stat sb;
 
-    if (stat (filename, &sb))
-      {
-        err = gpg_error_from_syserror ();
-        goto leave;
-      }
-  }
+      if (stat (filename, &sb))
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
 
   /* Read the encrypted keyblob.  */
-  /* Fixme: Should we move this to syshelp for dm-crypt or do we
-     assume that the encrypted device is world readable?  */
-  err = g13_keyblob_read (filename, &enckeyblob, &enckeybloblen);
+  if (needs_syshelp)
+    {
+      err = call_syshelp_set_device (ctrl, filename);
+      if (err)
+        goto leave;
+      err = call_syshelp_get_keyblob (ctrl, &enckeyblob, &enckeybloblen);
+    }
+  else
+    err = g13_keyblob_read (filename, &enckeyblob, &enckeybloblen);
   if (err)
     goto leave;
 
@@ -186,6 +206,7 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   xfree (enckeyblob);
   dotlock_destroy (lock);
   xfree (mountpoint_buffer);
+  xfree (blockdev_buffer);
   return err;
 }
 
@@ -203,6 +224,7 @@ g13_umount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
 
   if (!filename && !mountpoint)
     return gpg_error (GPG_ERR_ENOENT);
+
   err = mountinfo_find_mount (filename, mountpoint, &rid);
   if (err)
     return err;

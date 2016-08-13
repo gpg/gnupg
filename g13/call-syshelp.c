@@ -235,6 +235,52 @@ call_syshelp_find_device (ctrl_t ctrl, const char *name, char **r_blockdev)
 
 
 
+static gpg_error_t
+getkeyblob_data_cb (void *opaque, const void *data, size_t datalen)
+{
+  membuf_t *mb = opaque;
+
+  if (data)
+    put_membuf (mb, data, datalen);
+
+  return 0;
+}
+
+
+/* Send the GTEKEYBLOB command to the syshelper.  On success the
+ * encrypted keyblpob is stored at (R_ENCKEYBLOB,R_ENCKEYBLOBLEN).  */
+gpg_error_t
+call_syshelp_get_keyblob (ctrl_t ctrl,
+                          void **r_enckeyblob, size_t *r_enckeybloblen)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  membuf_t mb;
+
+  *r_enckeyblob = NULL;
+  *r_enckeybloblen = 0;
+  init_membuf (&mb, 512);
+
+  err = start_syshelp (ctrl, &ctx);
+  if (err)
+    goto leave;
+
+  err = assuan_transact (ctx, "GETKEYBLOB",
+                         getkeyblob_data_cb, &mb,
+                         NULL, NULL, NULL, NULL);
+  if (err)
+    goto leave;
+  *r_enckeyblob = get_membuf (&mb, r_enckeybloblen);
+  if (!*r_enckeyblob)
+    err = gpg_error_from_syserror ();
+
+ leave:
+  xfree (get_membuf (&mb, NULL));
+  return err;
+}
+
+
+
 /* Send the DEVICE command to the syshelper.  FNAME is the name of the
    device.  */
 gpg_error_t

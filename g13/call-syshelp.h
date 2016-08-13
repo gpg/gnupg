@@ -25,6 +25,9 @@
 void call_syshelp_release (ctrl_t ctrl);
 gpg_error_t call_syshelp_find_device (ctrl_t ctrl,
                                       const char *name, char **r_blockdev);
+gpg_error_t call_syshelp_get_keyblob (ctrl_t ctrl,
+                                      void **r_enckeyblob,
+                                      size_t *r_enckeybloblen);
 gpg_error_t call_syshelp_set_device (ctrl_t ctrl, const char *fname);
 gpg_error_t call_syshelp_run_create (ctrl_t ctrl, int conttype);
 gpg_error_t call_syshelp_run_mount (ctrl_t ctrl, int conttype,

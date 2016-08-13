@@ -383,6 +383,52 @@ cmd_create (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_getkeyblob[] =
+  "GETKEYBLOB\n"
+  "\n"
+  "Return the encrypted keyblob of the current device.";
+static gpg_error_t
+cmd_getkeyblob (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  void *enckeyblob = NULL;
+  size_t enckeybloblen;
+
+  line = skip_options (line);
+
+  if (!ctrl->server_local->devicename
+      || !ctrl->server_local->devicefp
+      || !ctrl->devti)
+    {
+      err = set_error (GPG_ERR_ENOENT, "No device has been set");
+      goto leave;
+    }
+
+  err = sh_is_empty_partition (ctrl->server_local->devicename);
+  if (!err)
+    {
+      err = gpg_error (GPG_ERR_ENODEV);
+      assuan_set_error (ctx, err, "Partition is empty");
+      goto leave;
+    }
+  err = 0;
+
+  err = g13_keyblob_read (ctrl->server_local->devicename,
+                          &enckeyblob, &enckeybloblen);
+  if (err)
+    goto leave;
+
+  err = assuan_send_data (ctx, enckeyblob, enckeybloblen);
+  if (!err)
+    err = assuan_send_data (ctx, NULL, 0); /* Flush  */
+
+ leave:
+  xfree (enckeyblob);
+  return leave_cmd (ctx, err);
+}
+
+
 static const char hlp_mount[] =
   "MOUNT <type>\n"
   "\n"
@@ -667,6 +713,7 @@ register_commands (assuan_context_t ctx, int fail_all)
     { "FINDDEVICE",    cmd_finddevice, hlp_finddevice },
     { "DEVICE",        cmd_device, hlp_device },
     { "CREATE",        cmd_create, hlp_create },
+    { "GETKEYBLOB",    cmd_getkeyblob,  hlp_getkeyblob },
     { "MOUNT",         cmd_mount,  hlp_mount  },
     { "SUSPEND",       cmd_suspend,hlp_suspend},
     { "RESUME",        cmd_resume, hlp_resume },
