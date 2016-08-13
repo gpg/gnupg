@@ -33,6 +33,7 @@
 #include "keyblob.h"
 #include "membuf.h"
 #include "create.h"
+#include "call-syshelp.h"
 
 
 /* Local data for this module.  A pointer to this is stored in the
@@ -172,6 +173,68 @@ call_syshelp_release (ctrl_t ctrl)
 }
 
 
+
+/* Staus callback for call_syshelp_find_device.  */
+static gpg_error_t
+finddevice_status_cb (void *opaque, const char *line)
+{
+  char **r_blockdev = opaque;
+  char *p;
+
+  if ((p = has_leading_keyword (line, "BLOCKDEV")) && *p && !*r_blockdev)
+    {
+      *r_blockdev = xtrystrdup (p);
+      if (!*r_blockdev)
+        return gpg_error_from_syserror ();
+    }
+
+  return 0;
+}
+
+
+/* Send the FINDDEVICE command to the syshelper.  On success the name
+ * of the block device is stored at R_BLOCKDEV. */
+gpg_error_t
+call_syshelp_find_device (ctrl_t ctrl, const char *name, char **r_blockdev)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  char *line = NULL;
+  char *blockdev = NULL;  /* The result.  */
+
+  *r_blockdev = NULL;
+
+  err = start_syshelp (ctrl, &ctx);
+  if (err)
+    goto leave;
+
+  line = xtryasprintf ("FINDDEVICE %s", name);
+  if (!line)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = assuan_transact (ctx, line, NULL, NULL, NULL, NULL,
+                         finddevice_status_cb, &blockdev);
+  if (err)
+    goto leave;
+  if (!blockdev)
+    {
+      log_error ("status line for successful FINDDEVICE missing\n");
+      err = gpg_error (GPG_ERR_UNEXPECTED);
+      goto leave;
+    }
+  *r_blockdev = blockdev;
+  blockdev = NULL;
+
+ leave:
+  xfree (blockdev);
+  xfree (line);
+  return err;
+}
+
+
+
 /* Send the DEVICE command to the syshelper.  FNAME is the name of the
    device.  */
 gpg_error_t

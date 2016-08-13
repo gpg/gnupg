@@ -62,6 +62,7 @@ enum cmd_and_opt_values {
   aSuspend,
   aResume,
   aServer,
+  aFindDevice,
 
   oOptions,
   oDebug,
@@ -115,6 +116,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aSuspend, "suspend", N_("Suspend a file system container") ),
   ARGPARSE_c (aResume,  "resume",  N_("Resume a file system container") ),
   ARGPARSE_c (aServer, "server", N_("Run in server mode")),
+  ARGPARSE_c (aFindDevice, "find-device", "@"),
 
   ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
   ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
@@ -491,6 +493,7 @@ main ( int argc, char **argv)
         case aSuspend:
         case aResume:
         case aCreate:
+        case aFindDevice:
           set_cmd (&cmd, pargs.r_opt);
           break;
 
@@ -741,6 +744,22 @@ main ( int argc, char **argv)
                      gpg_strerror (err), gpg_strsource (err));
         else
           g13_request_shutdown ();
+      }
+      break;
+
+    case aFindDevice:
+      {
+        char *blockdev;
+
+        if (argc != 1)
+          wrong_args ("--find-device name");
+
+        err = call_syshelp_find_device (&ctrl, argv[0], &blockdev);
+        if (err)
+          log_error ("error finding device '%s': %s <%s>\n",
+                     argv[0], gpg_strerror (err), gpg_strsource (err));
+        else
+          puts (blockdev);
       }
       break;
 

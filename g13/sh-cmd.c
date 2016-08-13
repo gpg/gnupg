@@ -157,6 +157,82 @@ reset_notify (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_finddevice[] =
+  "FINDDEVICE <name>\n"
+  "\n"
+  "Find the device matching NAME.  NAME be any identifier from\n"
+  "g13tab permissable for the user.  The corresponding block\n"
+  "device is retruned using a status line.";
+static gpg_error_t
+cmd_finddevice (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+  tab_item_t ti;
+  const char *s;
+  const char *name;
+
+  name = skip_options (line);
+
+  /* Are we allowed to use the given device?  We check several names:
+   *  1. The full block device
+   *  2. The label
+   *  3. The final part of the block device if NAME does not have a slash.
+   *  4. The mountpoint
+   */
+  for (ti=ctrl->client.tab; ti; ti = ti->next)
+    if (!strcmp (name, ti->blockdev))
+      break;
+  if (!ti)
+    {
+      for (ti=ctrl->client.tab; ti; ti = ti->next)
+        if (ti->label && !strcmp (name, ti->label))
+          break;
+    }
+  if (!ti && !strchr (name, '/'))
+    {
+      for (ti=ctrl->client.tab; ti; ti = ti->next)
+        {
+          s = strrchr (ti->blockdev, '/');
+          if (s && s[1] && !strcmp (name, s+1))
+            break;
+        }
+    }
+  if (!ti)
+    {
+      for (ti=ctrl->client.tab; ti; ti = ti->next)
+        if (ti->mountpoint && !strcmp (name, ti->mountpoint))
+          break;
+    }
+
+  if (!ti)
+    {
+      err = set_error (GPG_ERR_NOT_FOUND, "device not configured for user");
+      goto leave;
+    }
+
+  /* Check whether we have permissions to open the device.  */
+  {
+    estream_t fp = es_fopen (ti->blockdev, "rb");
+    if (!fp)
+      {
+        err = gpg_error_from_syserror ();
+        log_error ("error opening '%s': %s\n",
+                   ti->blockdev, gpg_strerror (err));
+        goto leave;
+      }
+    es_fclose (fp);
+  }
+
+  err = g13_status (ctrl, STATUS_BLOCKDEV, ti->blockdev, NULL);
+  if (err)
+    return err;
+
+ leave:
+  return leave_cmd (ctx, err);
+}
+
+
 static const char hlp_device[] =
   "DEVICE <name>\n"
   "\n"
@@ -588,6 +664,7 @@ register_commands (assuan_context_t ctx, int fail_all)
     assuan_handler_t handler;
     const char * const help;
   } table[] =  {
+    { "FINDDEVICE",    cmd_finddevice, hlp_finddevice },
     { "DEVICE",        cmd_device, hlp_device },
     { "CREATE",        cmd_create, hlp_create },
     { "MOUNT",         cmd_mount,  hlp_mount  },
