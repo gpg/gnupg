@@ -495,7 +495,6 @@ cmd_mount (assuan_context_t ctx, char *line)
                                     tuples);
 
  leave:
-  xfree (tuples);
   destroy_tupledesc (tuples);
   return leave_cmd (ctx, err);
 }
@@ -610,7 +609,6 @@ cmd_resume (assuan_context_t ctx, char *line)
                                      tuples);
 
  leave:
-  xfree (tuples);
   destroy_tupledesc (tuples);
   return leave_cmd (ctx, err);
 }
