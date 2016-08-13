@@ -57,7 +57,7 @@ g13_LDADD = $(libcommonpth) \
 g13_syshelp_SOURCES = \
 	g13-syshelp.c g13-syshelp.h \
 	g13-common.c g13-common.h \
-	keyblob.h \
+	keyblob.c keyblob.h \
 	g13tuple.c g13tuple.h \
 	sh-cmd.c \
 	sh-blockdev.c \

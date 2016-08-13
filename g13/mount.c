@@ -36,6 +36,7 @@
 #include "mountinfo.h"
 #include "runner.h"
 #include "host2net.h"
+#include "server.h"  /*(g13_keyblob_decrypt)*/
 #include "../common/sysutils.h"
 
 

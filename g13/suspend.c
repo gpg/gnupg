@@ -33,6 +33,7 @@
 #include "keyblob.h"
 #include "backend.h"
 #include "g13tuple.h"
+#include "server.h"  /*(g13_keyblob_decrypt)*/
 
 
 

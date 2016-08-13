@@ -25,4 +25,8 @@ gpg_error_t g13_server (ctrl_t ctrl);
 
 gpg_error_t g13_proxy_pinentry_notify (ctrl_t ctrl, const unsigned char *line);
 
+gpg_error_t g13_keyblob_decrypt (ctrl_t ctrl,
+                                 const void *enckeyblob, size_t enckeybloblen,
+                                 void **r_keyblob, size_t *r_keybloblen);
+
 #endif /*G13_SERVER_H*/

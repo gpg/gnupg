@@ -157,9 +157,6 @@
 gpg_error_t g13_is_container (ctrl_t ctrl, const char *filename);
 gpg_error_t g13_keyblob_read (const char *filename,
                               void **r_enckeyblob, size_t *r_enckeybloblen);
-gpg_error_t g13_keyblob_decrypt (ctrl_t ctrl,
-                                 const void *enckeyblob, size_t enckeybloblen,
-                                 void **r_keyblob, size_t *r_keybloblen);
 
 
 #endif /*G13_KEYBLOB_H*/

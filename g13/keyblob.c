@@ -28,12 +28,10 @@
 #include <assert.h>
 
 #include "g13.h"
-#include "i18n.h"
 #include "mount.h"
 
 #include "keyblob.h"
 #include "../common/sysutils.h"
-#include "../common/call-gpg.h"
 #include "host2net.h"
 
 
@@ -204,26 +202,6 @@ g13_keyblob_read (const char *filename,
  leave:
   xfree (msg);
   es_fclose (fp);
-
-  return err;
-}
-
-
-/*
- * Decrypt the keyblob (ENCKEYBLOB,ENCKEYBLOBLEN) and store the result
- * at (R_KEYBLOB, R_KEYBLOBLEN).  Returns 0 on success or an error
- * code.  On error R_KEYBLOB is set to NULL.
- */
-gpg_error_t
-g13_keyblob_decrypt (ctrl_t ctrl, const void *enckeyblob, size_t enckeybloblen,
-                     void **r_keyblob, size_t *r_keybloblen)
-{
-  gpg_error_t err;
-
-  /* FIXME:  For now we only implement OpenPGP.  */
-  err = gpg_decrypt_blob (ctrl, opt.gpg_program, opt.gpg_arguments,
-                          enckeyblob, enckeybloblen,
-                          r_keyblob, r_keybloblen);
 
   return err;
 }

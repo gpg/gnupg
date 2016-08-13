@@ -34,6 +34,8 @@
 #include "mount.h"
 #include "suspend.h"
 #include "../common/server-help.h"
+#include "../common/call-gpg.h"
+
 
 /* The filepointer for status message used in non-server mode */
 static FILE *statusfp;
@@ -768,4 +770,29 @@ g13_proxy_pinentry_notify (ctrl_t ctrl, const unsigned char *line)
   if (!ctrl || !ctrl->server_local)
     return 0;
   return assuan_inquire (ctrl->server_local->assuan_ctx, line, NULL, NULL, 0);
+}
+
+
+/*
+ * Decrypt the keyblob (ENCKEYBLOB,ENCKEYBLOBLEN) and store the result
+ * at (R_KEYBLOB, R_KEYBLOBLEN).  Returns 0 on success or an error
+ * code.  On error R_KEYBLOB is set to NULL.
+ *
+ * This actually does not belong here but for that simple wrapper it
+ * does not make sense to add another source file.  Note that we do
+ * not want to have this in keyblob.c, because that code is also used
+ * by the syshelp.
+ */
+gpg_error_t
+g13_keyblob_decrypt (ctrl_t ctrl, const void *enckeyblob, size_t enckeybloblen,
+                     void **r_keyblob, size_t *r_keybloblen)
+{
+  gpg_error_t err;
+
+  /* FIXME:  For now we only implement OpenPGP.  */
+  err = gpg_decrypt_blob (ctrl, opt.gpg_program, opt.gpg_arguments,
+                          enckeyblob, enckeybloblen,
+                          r_keyblob, r_keybloblen);
+
+  return err;
 }
