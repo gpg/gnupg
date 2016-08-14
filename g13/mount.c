@@ -60,10 +60,6 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   char *mountpoint_buffer = NULL;
   char *blockdev_buffer = NULL;
 
-  /* A quick check to see whether the container exists.  */
-  if (access (filename, F_OK))
-    return gpg_error_from_syserror ();
-
   /* Decide whether we need to use the g13-syshelp.  */
   err = call_syshelp_find_device (ctrl, filename, &blockdev_buffer);
   if (!err)
@@ -76,6 +72,12 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
       log_error ("error finding device '%s': %s <%s>\n",
                  filename, gpg_strerror (err), gpg_strsource (err));
       return err;
+    }
+  else
+    {
+      /* A quick check to see whether we can the container exists.  */
+      if (access (filename, R_OK))
+        return gpg_error_from_syserror ();
     }
 
   if (!mountpoint)
