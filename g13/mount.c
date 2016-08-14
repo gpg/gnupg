@@ -64,10 +64,7 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   if (access (filename, F_OK))
     return gpg_error_from_syserror ();
 
-  /* Decide whether we need to use the g13-syshelp because we can't
-     use lock files for them.  This is most likely the case for device
-     files; thus we test for this.  FIXME: The correct solution would
-     be to call g13-syshelp to match the file against the g13tab.  */
+  /* Decide whether we need to use the g13-syshelp.  */
   err = call_syshelp_find_device (ctrl, filename, &blockdev_buffer);
   if (!err)
     {
@@ -217,27 +214,50 @@ gpg_error_t
 g13_umount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
 {
   gpg_error_t err;
-  unsigned int rid;
-  runner_t runner;
-
-  (void)ctrl;
+  char *blockdev;
 
   if (!filename && !mountpoint)
     return gpg_error (GPG_ERR_ENOENT);
 
-  err = mountinfo_find_mount (filename, mountpoint, &rid);
-  if (err)
-    return err;
-
-  runner = runner_find_by_rid (rid);
-  if (!runner)
+  /* Decide whether we need to use the g13-syshelp.  */
+  err = call_syshelp_find_device (ctrl, filename, &blockdev);
+  if (!err)
     {
-      log_error ("runner %u not found\n", rid);
-      return gpg_error (GPG_ERR_NOT_FOUND);
+      /* Need to employ the syshelper to umount the file system.  */
+      /* FIXME: We should get the CONTTYPE from the blockdev.  */
+      err = be_umount_container (ctrl, CONTTYPE_DM_CRYPT, blockdev);
+      if (!err)
+        {
+          /* if (conttype == CONTTYPE_DM_CRYPT) */
+          g13_request_shutdown ();
+        }
+    }
+  else if (gpg_err_code (err) != GPG_ERR_NOT_FOUND)
+    {
+      log_error ("error finding device '%s': %s <%s>\n",
+                 filename, gpg_strerror (err), gpg_strsource (err));
+    }
+  else
+    {
+      /* Not in g13tab - kill the runner process for this mount.  */
+      unsigned int rid;
+      runner_t runner;
+
+      err = mountinfo_find_mount (filename, mountpoint, &rid);
+      if (err)
+        return err;
+
+      runner = runner_find_by_rid (rid);
+      if (!runner)
+        {
+          log_error ("runner %u not found\n", rid);
+          return gpg_error (GPG_ERR_NOT_FOUND);
+        }
+
+      runner_cancel (runner);
+      runner_release (runner);
     }
 
-  runner_cancel (runner);
-  runner_release (runner);
-
-  return 0;
+  xfree (blockdev);
+  return err;
 }

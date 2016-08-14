@@ -723,6 +723,99 @@ sh_dmcrypt_mount_container (ctrl_t ctrl, const char *devname,
 }
 
 
+/* Unmount a DM-Crypt container on device DEVNAME and wipe the keys.  */
+gpg_error_t
+sh_dmcrypt_umount_container (ctrl_t ctrl, const char *devname)
+{
+  gpg_error_t err;
+  char *targetname_abs = NULL;
+  char *result = NULL;
+
+  if (!ctrl->devti)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  g13_syshelp_i_know_what_i_am_doing ();
+
+  /* Check that the device is used by device mapper. */
+  err = check_blockdev (devname, 1);
+  if (gpg_err_code (err) != GPG_ERR_EBUSY)
+    {
+      log_error ("device '%s' is not used by the device mapper: %s\n",
+                 devname, gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Fixme: Check that this is really a g13 partition.  */
+
+  /* Device mapper needs a name for the device: Take it from the label
+     or use "0".  */
+  targetname_abs = strconcat ("/dev/mapper/",
+                              "g13-", ctrl->client.uname, "-",
+                              ctrl->devti->label? ctrl->devti->label : "0",
+                              NULL);
+  if (!targetname_abs)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  /* Run the regular umount command.  */
+  {
+    const char *argv[2];
+
+    argv[0] = targetname_abs;
+    argv[1] = NULL;
+    log_debug ("now running \"umount %s\"\n", targetname_abs);
+    err = gnupg_exec_tool ("/bin/umount", argv, NULL, &result, NULL);
+  }
+  if (err)
+    {
+      log_error ("error running umount: %s\n", gpg_strerror (err));
+      if (1)
+        {
+          /* Try to show some info about processes using the partition. */
+          const char *argv[3];
+
+          argv[0] = "-mv";
+          argv[1] = targetname_abs;
+          argv[2] = NULL;
+          gnupg_exec_tool ("/bin/fuser", argv, NULL, &result, NULL);
+        }
+      goto leave;
+    }
+  if (result && *result)  /* (We should not see output to stdout).  */
+    log_info ("WARNING: umount returned data on stdout! (%s)\n", result);
+  xfree (result);
+  result = NULL;
+
+  /* Run the dmsetup remove command.  */
+  {
+    const char *argv[3];
+
+    argv[0] = "remove";
+    argv[1] = targetname_abs;
+    argv[2] = NULL;
+    log_debug ("now running \"dmsetup remove %s\"\n", targetname_abs);
+    err = gnupg_exec_tool ("/sbin/dmsetup", argv, NULL, &result, NULL);
+  }
+  if (err)
+    {
+      log_error ("error running \"dmsetup remove %s\": %s\n",
+                 targetname_abs, gpg_strerror (err));
+      goto leave;
+    }
+  if (result && *result)
+    log_debug ("dmsetup result: %s\n", result);
+  xfree (result);
+  result = NULL;
+
+ leave:
+  xfree (targetname_abs);
+  xfree (result);
+  return err;
+}
+
+
 /* Suspend a DM-Crypt container on device DEVNAME and wipe the keys.  */
 gpg_error_t
 sh_dmcrypt_suspend_container (ctrl_t ctrl, const char *devname)

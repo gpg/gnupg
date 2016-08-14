@@ -27,6 +27,7 @@ gpg_error_t be_dmcrypt_mount_container (ctrl_t ctrl,
                                         const char *fname,
                                         const char *mountpoint,
                                         tupledesc_t tuples);
+gpg_error_t be_dmcrypt_umount_container (ctrl_t ctrl, const char *fname);
 gpg_error_t be_dmcrypt_suspend_container (ctrl_t ctrl, const char *fname);
 gpg_error_t be_dmcrypt_resume_container (ctrl_t ctrl, const char *fname,
                                          tupledesc_t tuples);

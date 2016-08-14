@@ -500,6 +500,40 @@ cmd_mount (assuan_context_t ctx, char *line)
 }
 
 
+static const char hlp_umount[] =
+  "UMOUNT <type>\n"
+  "\n"
+  "Unmount an encrypted partition and wipe the key.\n"
+  "<type> must be \"dm-crypt\" for now.";
+static gpg_error_t
+cmd_umount (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+
+  line = skip_options (line);
+
+  if (strcmp (line, "dm-crypt"))
+    {
+      err = set_error (GPG_ERR_INV_ARG, "Type must be \"dm-crypt\"");
+      goto leave;
+    }
+
+  if (!ctrl->server_local->devicename
+      || !ctrl->server_local->devicefp
+      || !ctrl->devti)
+    {
+      err = set_error (GPG_ERR_ENOENT, "No device has been set");
+      goto leave;
+    }
+
+  err = sh_dmcrypt_umount_container (ctrl, ctrl->server_local->devicename);
+
+ leave:
+  return leave_cmd (ctx, err);
+}
+
+
 static const char hlp_suspend[] =
   "SUSPEND <type>\n"
   "\n"
@@ -713,6 +747,7 @@ register_commands (assuan_context_t ctx, int fail_all)
     { "CREATE",        cmd_create, hlp_create },
     { "GETKEYBLOB",    cmd_getkeyblob,  hlp_getkeyblob },
     { "MOUNT",         cmd_mount,  hlp_mount  },
+    { "UMOUNT",        cmd_umount, hlp_umount  },
     { "SUSPEND",       cmd_suspend,hlp_suspend},
     { "RESUME",        cmd_resume, hlp_resume },
     { "INPUT",         NULL },

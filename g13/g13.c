@@ -793,9 +793,10 @@ main ( int argc, char **argv)
       {
         if (argc != 1)
           wrong_args ("--umount filename");
-        err = GPG_ERR_NOT_IMPLEMENTED;
-        log_error ("error unmounting container '%s': %s <%s>\n",
-                   *argv, gpg_strerror (err), gpg_strsource (err));
+        err = g13_umount_container (&ctrl, argv[0], NULL);
+        if (err)
+          log_error ("error unmounting container '%s': %s <%s>\n",
+                     *argv, gpg_strerror (err), gpg_strsource (err));
       }
       break;
 

@@ -64,6 +64,23 @@ be_dmcrypt_mount_container (ctrl_t ctrl,
 }
 
 
+/* Unmount the container described by the filename FNAME.  */
+gpg_error_t
+be_dmcrypt_umount_container (ctrl_t ctrl, const char *fname)
+{
+  gpg_error_t err;
+
+  err = call_syshelp_set_device (ctrl, fname);
+  if (err)
+    goto leave;
+
+  err = call_syshelp_run_umount (ctrl, CONTTYPE_DM_CRYPT);
+
+ leave:
+  return err;
+}
+
+
 /* Suspend the container described by the filename FNAME.  */
 gpg_error_t
 be_dmcrypt_suspend_container (ctrl_t ctrl, const char *fname)

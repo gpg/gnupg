@@ -240,6 +240,24 @@ be_mount_container (ctrl_t ctrl, int conttype,
 }
 
 
+/* Dispatcher to the backend's umount function.  */
+gpg_error_t
+be_umount_container (ctrl_t ctrl, int conttype, const char *fname)
+{
+  switch (conttype)
+    {
+    case CONTTYPE_ENCFS:
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+    case CONTTYPE_DM_CRYPT:
+      return be_dmcrypt_umount_container (ctrl, fname);
+
+    default:
+      return no_such_backend (conttype);
+    }
+}
+
+
 /* Dispatcher to the backend's suspend function.  */
 gpg_error_t
 be_suspend_container (ctrl_t ctrl, int conttype, const char *fname)

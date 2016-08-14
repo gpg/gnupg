@@ -522,6 +522,40 @@ call_syshelp_run_mount (ctrl_t ctrl, int conttype, const char *mountpoint,
 
 
 /*
+ * Run the UMOUNT command on the current device.  CONTTYPES gives the
+ * content type of the container (fixme: Do we really need this?).
+ */
+gpg_error_t
+call_syshelp_run_umount (ctrl_t ctrl, int conttype)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+
+  err = start_syshelp (ctrl, &ctx);
+  if (err)
+    goto leave;
+
+  if (conttype == CONTTYPE_DM_CRYPT)
+    {
+      err = assuan_transact (ctx, "UMOUNT dm-crypt",
+                             NULL, NULL,
+                             NULL, NULL,
+                             NULL, NULL);
+    }
+  else
+    {
+      log_error ("invalid backend type %d given\n", conttype);
+      err = GPG_ERR_INTERNAL;
+      goto leave;
+    }
+
+ leave:
+  return err;
+}
+
+
+
+/*
  * Run the SUSPEND command on the current device.  CONTTYPES gives the
  * requested content type for the new container.
  */
