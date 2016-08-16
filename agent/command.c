@@ -49,7 +49,7 @@
 /* Maximum allowed size of the key parameters.  */
 #define MAXLEN_KEYPARAM 1024
 /* Maximum allowed size of key data as used in inquiries (bytes). */
-#define MAXLEN_KEYDATA 4096
+#define MAXLEN_KEYDATA 8192
 /* The size of the import/export KEK key (in bytes).  */
 #define KEYWRAP_KEYSIZE (128/8)
 
