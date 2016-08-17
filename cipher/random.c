@@ -365,7 +365,7 @@ mix_pool(byte *pool)
     memcpy(hashbuf, pend - DIGESTLEN, DIGESTLEN );
     memcpy(hashbuf+DIGESTLEN, pool, BLOCKLEN-DIGESTLEN);
     rmd160_mixblock( &md, hashbuf);
-    memcpy(pool, hashbuf, 20 );
+    memcpy(pool, hashbuf, DIGESTLEN);
 
     p = pool;
     for( n=1; n < POOLBLOCKS; n++ ) {
@@ -384,7 +384,7 @@ mix_pool(byte *pool)
 	}
 
 	rmd160_mixblock( &md, hashbuf);
-	memcpy(p, hashbuf, 20 );
+	memcpy(p, hashbuf, DIGESTLEN);
     }
     burn_stack (384); /* for the rmd160_mixblock() */
 }
