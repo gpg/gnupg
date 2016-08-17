@@ -4794,13 +4794,13 @@ msgstr "trustdb rec %lu: write failed (n=%d): %s\n"
 msgid "trustdb transaction too large\n"
 msgstr "transaksi trustdb terlalu besar\n"
 
-#, fuzzy, c-format
-msgid "can't access `%s': %s\n"
-msgstr "tidak dapat menutup `%s': %s\n"
-
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: direktori tidak ada!\n"
+
+#, fuzzy, c-format
+msgid "can't access `%s': %s\n"
+msgstr "tidak dapat menutup `%s': %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

@@ -4654,12 +4654,12 @@ msgid "trustdb transaction too large\n"
 msgstr "transaktion for trustdb er for stor\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
-msgstr "kan ikke tilgå »%s«: %s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: mappe findes ikke!\n"
+
+#, c-format
+msgid "can't access `%s': %s\n"
+msgstr "kan ikke tilgå »%s«: %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

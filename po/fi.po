@@ -4827,13 +4827,13 @@ msgstr "trustdb rec %lu: kirjoittaminen epäonnistuin (n=%d): %s\n"
 msgid "trustdb transaction too large\n"
 msgstr "trustdb-tapahtuma on liian suuri\n"
 
-#, fuzzy, c-format
-msgid "can't access `%s': %s\n"
-msgstr "tiedostoa \"%s\" ei voi sulkea: %s\n"
-
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: hakemistoa ei ole olemassa!\n"
+
+#, fuzzy, c-format
+msgid "can't access `%s': %s\n"
+msgstr "tiedostoa \"%s\" ei voi sulkea: %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

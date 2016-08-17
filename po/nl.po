@@ -4843,12 +4843,12 @@ msgid "trustdb transaction too large\n"
 msgstr "betrouwbaarheidsdatabank (trustdb): transactie is te groot\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
-msgstr "krijg geen toegang tot `%s': %s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: map bestaat niet!\n"
+
+#, c-format
+msgid "can't access `%s': %s\n"
+msgstr "krijg geen toegang tot `%s': %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

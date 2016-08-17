@@ -4526,12 +4526,12 @@ msgid "trustdb transaction too large\n"
 msgstr "信任資料庫更動量過大\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
-msgstr "無法存取 `%s': %s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: 目錄不存在!\n"
+
+#, c-format
+msgid "can't access `%s': %s\n"
+msgstr "無法存取 `%s': %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

@@ -4780,13 +4780,13 @@ msgstr "fido-datenaro loko %lu: skribo malsukcesis (n=%d): %s\n"
 msgid "trustdb transaction too large\n"
 msgstr "fido-datenaro-transakcio tro granda\n"
 
-#, fuzzy, c-format
-msgid "can't access `%s': %s\n"
-msgstr "ne povas fermi '%s': %s\n"
-
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: dosierujo ne ekzistas!\n"
+
+#, fuzzy, c-format
+msgid "can't access `%s': %s\n"
+msgstr "ne povas fermi '%s': %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

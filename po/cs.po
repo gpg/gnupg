@@ -4642,12 +4642,12 @@ msgid "trustdb transaction too large\n"
 msgstr "transakce s databází důvěry je příliš dlouhá\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
-msgstr "nemohu otevřít `%s': %s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: adresář neexistuje!\n"
+
+#, c-format
+msgid "can't access `%s': %s\n"
+msgstr "nemohu otevřít `%s': %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

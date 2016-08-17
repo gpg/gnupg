@@ -4410,13 +4410,13 @@ msgstr ""
 msgid "trustdb transaction too large\n"
 msgstr ""
 
-#, fuzzy, c-format
-msgid "can't access `%s': %s\n"
-msgstr "немагчыма адкрыць %s: %s\n"
-
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "can't access `%s': %s\n"
+msgstr "немагчыма адкрыць %s: %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

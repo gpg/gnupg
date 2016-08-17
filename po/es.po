@@ -4692,12 +4692,12 @@ msgid "trustdb transaction too large\n"
 msgstr "transacción en la base de datos de confianza demasiado grande\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
-msgstr "no se puede acceder a `%s': %s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ¡el directorio no existe!\n"
+
+#, c-format
+msgid "can't access `%s': %s\n"
+msgstr "no se puede acceder a `%s': %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

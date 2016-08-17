@@ -4663,12 +4663,12 @@ msgid "trustdb transaction too large\n"
 msgstr "zbyt duże zlecenie dla bazy zaufania\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
-msgstr "nie ma dostępu do ,,%s'': %s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: katalog nie istnieje!\n"
+
+#, c-format
+msgid "can't access `%s': %s\n"
+msgstr "nie ma dostępu do ,,%s'': %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

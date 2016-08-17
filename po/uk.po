@@ -4719,12 +4719,12 @@ msgid "trustdb transaction too large\n"
 msgstr "занадто велика операція trustdb\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
-msgstr "немає доступу до «%s»: %s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: каталогу не існує!\n"
+
+#, c-format
+msgid "can't access `%s': %s\n"
+msgstr "немає доступу до «%s»: %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

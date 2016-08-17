@@ -3717,7 +3717,8 @@ msgstr "未知の"
 
 #, c-format
 msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
-msgstr "*警告*: 分遣署名ではありません。ファイル「%s」は検証され*ませんでした*!\n"
+msgstr ""
+"*警告*: 分遣署名ではありません。ファイル「%s」は検証され*ませんでした*!\n"
 
 #, c-format
 msgid "Can't check signature: %s\n"
@@ -4531,12 +4532,12 @@ msgid "trustdb transaction too large\n"
 msgstr "信用データベースのトランザクションが大きすぎます\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
-msgstr "「%s」にアクセスできません: %s\n"
-
-#, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ディレクトリがありません!\n"
+
+#, c-format
+msgid "can't access `%s': %s\n"
+msgstr "「%s」にアクセスできません: %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
