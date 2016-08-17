@@ -742,6 +742,11 @@ static ARGPARSE_OPTS opts[] = {
     { oNoRequireCrossCert, "no-require-cross-certification", 0, "@"},
     { oAutoKeyLocate, "auto-key-locate", 2, "@"},
     { oNoAutoKeyLocate, "no-auto-key-locate", 0, "@"},
+
+    /* Options from later gpg versions which we ignore.  */
+    { oNoop,  "with-subkey-fingerprint", 0, "@" },
+
+
     {0,NULL,0,NULL}
 };
 
