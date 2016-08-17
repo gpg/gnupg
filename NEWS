@@ -1,5 +1,14 @@
-Noteworthy changes in version 1.4.21 (unreleased)
+Noteworthy changes in version 1.4.21 (2016-08-17)
 -------------------------------------------------
+
+ * Fix critical security bug in the RNG [CVE-2016-6313].  An attacker
+   who obtains 580 bytes from the standard RNG can trivially predict
+   the next 20 bytes of output.  Problem detected by Felix Dörre and
+   Vladimir Klebanov, KIT.
+
+ * Tweak default options for gpgv.
+
+ * By default do not anymore emit the GnuPG version with --armor.
 
 
 Noteworthy changes in version 1.4.20 (2015-12-20)

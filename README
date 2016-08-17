@@ -307,6 +307,12 @@
     card.  To see the fingerprints of the secondary keys, you can
     give the command twice; but this is normally not needed.
 
+    NEVER use the keyid to verify a key - always use the complete
+    fingerprint.  The keyid is just a convenience handle to identify a
+    key by a short semi-unique name which is trivial to spoof.  You
+    may want to put the line "keyid-format long" into your gpg.conf to
+    tell gpg to print the long keyid (which is still spoof-able).
+
     If you don't know the owner of the public key you are in trouble.
     Suppose however that friend of yours knows someone who knows someone
     who has met the owner of the public key at some computer conference.
@@ -403,20 +409,6 @@
 
     There are several ways to specify a user ID, here are some examples.
 
-    * Only by the short keyid (prepend a zero if it begins with A..F):
-
-	"234567C4"
-	"0F34E556E"
-	"01347A56A"
-	"0xAB123456
-
-    * By a complete keyid:
-
-	"234AABBCC34567C4"
-	"0F323456784E56EAB"
-	"01AB3FED1347A5612"
-	"0x234AABBCC34567C4"
-
     * By a fingerprint:
 
 	"1234343434343434C434343434343434"
@@ -425,6 +417,20 @@
 
       The first one is a short fingerprint for PGP 2.x style keys.
       The others are long fingerprints for OpenPGP keys.
+
+    * By a complete keyid (prepend a zero if it begins with A..F):
+
+	"234AABBCC34567C4"
+	"0F323456784E56EAB"
+	"01AB3FED1347A5612"
+	"0x234AABBCC34567C4"
+
+    * By the short keyid:
+
+	"234567C4"
+	"0F34E556E"
+	"01347A56A"
+	"0xAB123456
 
     * By an exact string:
 
