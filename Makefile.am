@@ -77,6 +77,19 @@ dist-hook: gen-ChangeLog
 	    > $(distdir)/gnupg.spec
 	echo "$(VERSION)" > $(distdir)/VERSION
 
+distcheck-hook:
+	set -e; ( \
+	pref="#+macro: gnupg1_" ;\
+	reldate="$$(date -u +%Y-%m-%d)" ;\
+        echo "$${pref}ver  $(PACKAGE_VERSION)"  ;\
+        echo "$${pref}date $${reldate}" ;\
+        list='$(DIST_ARCHIVES)'; for i in $$list; do \
+	  case "$$i" in *.tar.bz2) \
+            echo "$${pref}size $$(wc -c <$$i|awk '{print int($$1/1024)}')k" ;\
+	    echo "$${pref}sha1 $$(sha1sum <$$i|cut -d' ' -f1)" ;\
+	    echo "$${pref}sha2 $$(sha256sum <$$i|cut -d' ' -f1)" ;;\
+	  esac;\
+	done ) | tee $(distdir).swdb
 
 gen_start_date = 2011-12-01T06:00:00
 .PHONY: gen-ChangeLog
