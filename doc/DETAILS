@@ -31,10 +31,17 @@ sub:r:1536:20:5CE086B5B5A18FF4:899817788:1025961788:::::esc:
 fpr:::::::::AB059359A3B81F410FCFF97F5CE086B5B5A18FF4:
 #+end_example
 
+Note that new version of GnuPG or the use of certain options may add
+new fields to the output.  Parsers should not assume a limit on the
+number of fields per line.  Some fields are not yet used or only used
+with certain record types; parsers should ignore fields they are not
+aware of.
+
 The double =--with-fingerprint= prints the fingerprint for the subkeys
 too.  Old versions of gpg used a slightly different format and required
 the use of the option =--fixed-list-mode= to conform to the format
 described here.
+
 
 ** Description of the fields
 *** Field 1 - Type of record
@@ -337,8 +344,8 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 
   Every line is prefixed with "[GNUPG:] ", followed by a keyword with
   the type of the status line and some arguments depending on the type
-  (maybe none); an application should always be prepared to see more
-  arguments in future versions.
+  (maybe none); an application should always be prepared to see new
+  keyworkds or more arguments in future versions.
 
 ** General status codes
 *** NEWSIG [<signers_uid>]

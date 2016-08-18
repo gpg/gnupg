@@ -348,9 +348,10 @@ if the keyid format has been set to "none".
 
 @item --list-packets
 @opindex list-packets
-List only the sequence of packets. This is mainly useful for
+List only the sequence of packets.  This command is only useful for
 debugging.  When used with option @option{--verbose} the actual MPI
-values are dumped and not only their lengths.
+values are dumped and not only their lengths.  Note that the output of
+this command may change with new releases.
 
 
 @item --card-edit
