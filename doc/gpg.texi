@@ -2087,6 +2087,15 @@ Remove all entries from the @option{--group} list.
 Use @var{name} as the key to sign with. Note that this option overrides
 @option{--default-key}.
 
+@item --sender @var{mbox}
+@opindex sender
+This option has two purposes.  @var{mbox} must either be a complete
+user id with a proper mail address or just a mail address.  When
+creating a signature this option tells gpg the user id of a key used
+to make a signature if the key was not directly specified by a user
+id.  When verifying a signature the @var{mbox} is used to restrict the
+information printed by the TOFU code to matching user ids.
+
 @item --try-secret-key @var{name}
 @opindex try-secret-key
 For hidden recipients GPG needs to know the keys to use for trial

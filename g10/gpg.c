@@ -60,6 +60,7 @@
 #include "call-dirmngr.h"
 #include "tofu.h"
 #include "../common/init.h"
+#include "../common/mbox-util.h"
 #include "../common/shareddefs.h"
 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
@@ -406,6 +407,7 @@ enum cmd_and_opt_values
     oUnwrap,
     oOnlySignTextIDs,
     oDisableSignerUID,
+    oSender,
 
     oNoop
   };
@@ -525,6 +527,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oEncryptToDefaultKey, "encrypt-to-default-key", "@"),
   ARGPARSE_s_s (oLocalUser, "local-user",
                 N_("|USER-ID|use USER-ID to sign or decrypt")),
+  ARGPARSE_s_s (oSender, "sender", "@"),
 
   ARGPARSE_s_s (oTrySecretKey, "try-secret-key", "@"),
 
@@ -2906,6 +2909,19 @@ main (int argc, char **argv)
             sl->flags = (pargs.r_opt << PK_LIST_SHIFT);
             if (configfp)
               sl->flags |= PK_LIST_CONFIG;
+	    break;
+	  case oSender:
+            {
+              char *mbox = mailbox_from_userid (pargs.r.ret_str);
+              if (!mbox)
+                log_error (_("\"%s\" is not a proper mail address\n"),
+                           pargs.r.ret_str);
+              else
+                {
+                  add_to_strlist (&opt.sender_list, mbox);
+                  xfree (mbox);
+                }
+            }
 	    break;
 	  case oCompress:
 	    /* this is the -z command line option */

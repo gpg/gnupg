@@ -158,6 +158,21 @@ mk_notation_policy_etc (PKT_signature *sig,
           build_sig_subpkt (sig, SIGSUBPKT_SIGNERS_UID, mbox, strlen (mbox));
           xfree (mbox);
         }
+      else if (opt.sender_list)
+        {
+          /* If a list of --sender was given we scan that list and use
+           * the first one matching a user id of the current key.  */
+
+          /* FIXME: We need to get the list of user ids for the PKSK
+           * packet.  That requires either a function to look it up
+           * again or we need to extend the key packet struct to link
+           * to the primary key which in turn could link to the user
+           * ids.  Too much of a change right now.  Let's take just
+           * one from the supplied list and hope that the caller
+           * passed a matching one.  */
+          build_sig_subpkt (sig, SIGSUBPKT_SIGNERS_UID,
+                            opt.sender_list->d, strlen (opt.sender_list->d));
+        }
     }
 }
 

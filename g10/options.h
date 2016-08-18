@@ -101,6 +101,10 @@ struct
   int def_recipient_self;
   strlist_t secret_keys_to_try;
 
+  /* A list of mail addresses (addr-spec) provided by the user with
+   * the option --sender.  */
+  strlist_t sender_list;
+
   int def_cert_level;
   int min_cert_level;
   int ask_cert_level;
