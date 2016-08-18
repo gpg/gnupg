@@ -1,5 +1,52 @@
-Noteworthy changes in version 2.1.15 (unreleased)
+Noteworthy changes in version 2.1.15 (2016-08-18)
 -------------------------------------------------
+
+ * gpg: Remove the --tofu-db-format option and support for the split
+   TOFU database.
+
+ * gpg: Add option --sender to prepare for coming features.
+
+ * gpg: Add option --input-size-hint to help progress indicators.
+
+ * gpg: Extend the PROGRESS status line with the counted unit.
+
+ * gpg: Avoid publishing the GnuPG version by default with --armor.
+
+ * gpg: Properly ignore legacy keys in the keyring cache.
+
+ * gpg: Always print fingerprint records in --with-colons mode.
+
+ * gpg: Make sure that keygrips are printed for each subkey in
+   --with-colons mode.
+
+ * gpg: New import filter "drop-sig".
+
+ * gpgsm: Fix a bug in the machine-readable key listing.
+
+ * gpg,gpgsm: Block signals during keyring updates to limits the
+   effects of a Ctrl-C at the wrong time.
+
+ * g13: Add command --umount and other fixes for dm-crypt.
+
+ * agent: Fix regression in SIGTERM handling.
+
+ * agent: Cleanup of the ssh-agent code.
+
+ * agent: Allow import of overly long keys.
+
+ * scd: Fix problems with card removal.
+
+ * dirmngr: Remove all code for running as a system service.
+
+ * tools: Make gpg-wks-client conforming to the specs.
+
+ * tests: Improve the output of the new regression test tool.
+
+ * tests: Distribute the standalone test runner.
+
+ * tests: Run each test in a clean environment.
+
+ * Spelling and grammar fixes.
 
 
 Noteworthy changes in version 2.1.14 (2016-07-14)
