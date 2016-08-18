@@ -439,10 +439,6 @@ msgstr ""
 msgid "invalid debug-level '%s' given\n"
 msgstr "belirtilen hata seviyesi `%s' geçersiz\n"
 
-#, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr "%s çok eski (gereken %s, sizinki %s)\n"
-
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
 msgid "Note: no default option file '%s'\n"
@@ -815,22 +811,8 @@ msgstr "süreç %d sonlanacak diye beklerken başarısızlık: %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "\"%s\" sunucusuna bağlanılamadı: %s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr "gpg-agent ile haberleşme problemi\n"
-
 msgid "problem setting the gpg-agent options\n"
 msgstr "gpg-agent seçenekleri ayarlanırken sorun çıktı\n"
-
-msgid "canceled by user\n"
-msgstr "kullanıcı tarafından iptal edildi\n"
-
-msgid "problem with the agent\n"
-msgstr "aracı ile sorun var\n"
-
-#, fuzzy, c-format
-#| msgid "problem with the agent: %s\n"
-msgid "problem with the agent (unexpected response \"%s\")\n"
-msgstr "aracı ile sorun var: %s\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -1191,6 +1173,10 @@ msgstr "kilit `%s' yapılmadı: %s\n"
 #, c-format
 msgid "waiting for lock %s...\n"
 msgstr "%s kilidi için bekleniyor...\n"
+
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr "%s çok eski (gereken %s, sizinki %s)\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -2242,18 +2228,9 @@ msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
 #, fuzzy, c-format
-#| msgid "unknown command `%s'\n"
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "komut `%s' bilinmiyor\n"
-
-#, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "BİLGİ: eski öntanımlı seçenekler dosyası `%s' yoksayıldı\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr "libgcrypt çok eski (%s lazım, sizinki %s)\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
@@ -2264,6 +2241,11 @@ msgstr "BİLGİ: %s normal kullanım için değil!\n"
 #| msgid "`%s' is not a valid signature expiration\n"
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "'%s' geçerli bir imza zamanaşımı değil\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: not a valid email address\n"
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "%d. satır: geçerli bir eposta adresi değil\n"
 
 #, fuzzy, c-format
 #| msgid "invalid country code in `%s', line %d\n"
@@ -4716,6 +4698,11 @@ msgstr "               %s kullanılarak anahtar %s ile yapılmış\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "%s imzası, %s anahtarı ve %s kullanıcı kimliği ile yapılmış\n"
 
+#, fuzzy, c-format
+#| msgid "                aka \"%s\""
+msgid "               issuer \"%s\"\n"
+msgstr "                nam-ı diğer \"%s\""
+
 msgid "Key available at: "
 msgstr "Anahtar burada:"
 
@@ -4928,23 +4915,6 @@ msgstr "%d tipi alt paket kritik bit kümesine sahip\n"
 msgid "problem with the agent: %s\n"
 msgstr "aracı ile sorun var: %s\n"
 
-#, c-format
-msgid " (main key ID %s)"
-msgstr " (asıl anahtar kimliği %s)"
-
-#, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"OpenPGP sertifikası için gizli anahtarı açacak anahtar parolasını giriniz:\n"
-"\"%.*s\"\n"
-"%u bitlik %s anahtarı, kimlik %s,\n"
-"oluşturma tarihi %s%s.\n"
-
 msgid "Enter passphrase\n"
 msgstr "Anahtar parolasını giriniz\n"
 
@@ -4952,20 +4922,8 @@ msgid "cancelled by user\n"
 msgstr "kullanıcı tarafından durduruldu\n"
 
 #, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr ""
-"Gizli anahtarın kilidini açmak için bir anahtar parolasına ihtiyacınız var.\n"
-"Anahtarın sahibi: \"%s\"\n"
-
-#, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "%u bitlik %s anahtarı, %s kimliği ile %s tarihinde üretilmiş"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr "         (asıl anahtar kimliği %s üzerinde yardımcı anahtar)"
+msgid " (main key ID %s)"
+msgstr " (asıl anahtar kimliği %s)"
 
 #, fuzzy
 #| msgid "Please enter the passphrase to unprotect the PKCS#12 object."
@@ -5825,12 +5783,6 @@ msgstr "%s: dizin kaydını yazma hatası: %s\n"
 #| msgid "error opening `%s': %s\n"
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "'%s' açılırken hata: %s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr ""
-
-msgid "Using split format for TOFU database\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "error sending %s command: %s\n"
@@ -7330,11 +7282,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr "Dirmngr önbelleğinde sertifikacıyı arar\n"
 
 #, fuzzy, c-format
-#| msgid "can't create directory `%s': %s\n"
-msgid "can't access directory '%s': %s\n"
-msgstr "`%s' dizini oluşturulamıyor: %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't create `%s': %s\n"
 msgid "can't parse certificate '%s': %s\n"
 msgstr "\"%s\" oluşturulamıyor: %s\n"
@@ -8021,11 +7968,6 @@ msgstr ""
 msgid "looking up '%s'\n"
 msgstr ""
 
-#, fuzzy
-#| msgid "run in daemon mode (background)"
-msgid "run as windows service (background)"
-msgstr "artalan süreci olarak çalışır"
-
 msgid "list the contents of the CRL cache"
 msgstr ""
 
@@ -8688,9 +8630,6 @@ msgstr ""
 msgid "checking CRL for"
 msgstr "CRL sınaması başarısız: %s"
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr ""
-
 #, fuzzy
 #| msgid "self-signed certificate has a BAD signature"
 msgid "selfsigned certificate has a BAD signature"
@@ -9154,6 +9093,65 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid "communication problem with gpg-agent\n"
+#~ msgstr "gpg-agent ile haberleşme problemi\n"
+
+#~ msgid "canceled by user\n"
+#~ msgstr "kullanıcı tarafından iptal edildi\n"
+
+#~ msgid "problem with the agent\n"
+#~ msgstr "aracı ile sorun var\n"
+
+#, fuzzy
+#~| msgid "problem with the agent: %s\n"
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "aracı ile sorun var: %s\n"
+
+#, fuzzy
+#~| msgid "unknown command `%s'\n"
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "komut `%s' bilinmiyor\n"
+
+#~ msgid "libgcrypt is too old (need %s, have %s)\n"
+#~ msgstr "libgcrypt çok eski (%s lazım, sizinki %s)\n"
+
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "OpenPGP sertifikası için gizli anahtarı açacak anahtar parolasını "
+#~ "giriniz:\n"
+#~ "\"%.*s\"\n"
+#~ "%u bitlik %s anahtarı, kimlik %s,\n"
+#~ "oluşturma tarihi %s%s.\n"
+
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr ""
+#~ "Gizli anahtarın kilidini açmak için bir anahtar parolasına ihtiyacınız "
+#~ "var.\n"
+#~ "Anahtarın sahibi: \"%s\"\n"
+
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "%u bitlik %s anahtarı, %s kimliği ile %s tarihinde üretilmiş"
+
+#~ msgid "         (subkey on main key ID %s)"
+#~ msgstr "         (asıl anahtar kimliği %s üzerinde yardımcı anahtar)"
+
+#, fuzzy
+#~| msgid "can't create directory `%s': %s\n"
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "`%s' dizini oluşturulamıyor: %s\n"
+
+#, fuzzy
+#~| msgid "run in daemon mode (background)"
+#~ msgid "run as windows service (background)"
+#~ msgstr "artalan süreci olarak çalışır"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "bir yazılım hatası buldunuz ... (%s:%d)\n"

@@ -415,10 +415,6 @@ msgstr ""
 msgid "invalid debug-level '%s' given\n"
 msgstr ""
 
-#, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr ""
-
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
 msgid "Note: no default option file '%s'\n"
@@ -762,23 +758,8 @@ msgstr ""
 msgid "can't connect to '%s': %s\n"
 msgstr "ei õnnestu luua ühendust serveriga `%s': %s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr "probleem gpg-agent programmiga suhtlemisel\n"
-
 #, fuzzy
 msgid "problem setting the gpg-agent options\n"
-msgstr "probleem agendiga: agent tagastas 0x%lx\n"
-
-#, fuzzy
-msgid "canceled by user\n"
-msgstr "katkestatud kasutaja poolt\n"
-
-#, fuzzy
-msgid "problem with the agent\n"
-msgstr "probleem agendiga: agent tagastas 0x%lx\n"
-
-#, fuzzy, c-format
-msgid "problem with the agent (unexpected response \"%s\")\n"
 msgstr "probleem agendiga: agent tagastas 0x%lx\n"
 
 #, c-format
@@ -1155,6 +1136,10 @@ msgstr "ei leia avalikku võtit %08lX: %s\n"
 #, fuzzy, c-format
 msgid "waiting for lock %s...\n"
 msgstr "kirjutan salajase võtme faili `%s'\n"
+
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr ""
 
 #, c-format
 msgid "armor: %s\n"
@@ -2216,17 +2201,9 @@ msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "tundmatu vaikimisi saaja `%s'\n"
-
-#, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "MÄRKUS: ignoreerin vana vaikimisi võtmete faili `%s'\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
@@ -2236,6 +2213,10 @@ msgstr "MÄRKUS: %s ei ole tavapäraseks kasutamiseks!\n"
 #, fuzzy, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "%s ei ole lubatud kooditabel\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "Selline e-posti aadress ei ole lubatud\n"
 
 #, fuzzy, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -4650,6 +4631,10 @@ msgstr "                 ka \""
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Allkirja lõi %.*s kasutades %s võtit ID %08lX\n"
 
+#, fuzzy, c-format
+msgid "               issuer \"%s\"\n"
+msgstr "                 ka \""
+
 msgid "Key available at: "
 msgstr "Võtme leiate: "
 
@@ -4858,22 +4843,6 @@ msgstr "alampaketil tüübiga %d on kriitiline bitt seatud\n"
 msgid "problem with the agent: %s\n"
 msgstr "probleem agendiga: agent tagastas 0x%lx\n"
 
-#, fuzzy, c-format
-msgid " (main key ID %s)"
-msgstr " (peamise võtme ID %08lX)"
-
-#, fuzzy, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"Te vajate kasutaja salajase võtme lahtilukustamiseks parooli:\n"
-"\"%.*s\"\n"
-"%u-bitti %s võti, ID %08lX, loodud %s%s\n"
-
 msgid "Enter passphrase\n"
 msgstr "Sisestage parool\n"
 
@@ -4881,21 +4850,8 @@ msgid "cancelled by user\n"
 msgstr "katkestatud kasutaja poolt\n"
 
 #, fuzzy, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr ""
-"\n"
-"Te vajate kasutaja salajase võtme lahtilukustamiseks\n"
-"parooli: \""
-
-#, fuzzy, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "%u-bitine %s võti, ID %08lX, loodud %s"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr ""
+msgid " (main key ID %s)"
+msgstr " (peamise võtme ID %08lX)"
 
 #, fuzzy
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
@@ -5720,12 +5676,6 @@ msgstr "%s: viga kataloogikirje kirjutamisel: %s\n"
 #, fuzzy, c-format
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "viga `%s' lugemisel: %s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr ""
-
-msgid "Using split format for TOFU database\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "error updating TOFU database: %s\n"
@@ -7172,11 +7122,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr ""
 
 #, fuzzy, c-format
-#| msgid "can't create directory `%s': %s\n"
-msgid "can't access directory '%s': %s\n"
-msgstr "kataloogi `%s' ei õnnestu luua: %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't create `%s': %s\n"
 msgid "can't parse certificate '%s': %s\n"
 msgstr "`%s' ei õnnestu luua: %s\n"
@@ -7785,9 +7730,6 @@ msgstr ""
 msgid "looking up '%s'\n"
 msgstr ""
 
-msgid "run as windows service (background)"
-msgstr ""
-
 msgid "list the contents of the CRL cache"
 msgstr ""
 
@@ -8372,9 +8314,6 @@ msgstr ""
 msgid "checking CRL for"
 msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr ""
-
 #, fuzzy
 msgid "selfsigned certificate has a BAD signature"
 msgstr "kontrolli allkirja"
@@ -8807,6 +8746,55 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "communication problem with gpg-agent\n"
+#~ msgstr "probleem gpg-agent programmiga suhtlemisel\n"
+
+#, fuzzy
+#~ msgid "canceled by user\n"
+#~ msgstr "katkestatud kasutaja poolt\n"
+
+#, fuzzy
+#~ msgid "problem with the agent\n"
+#~ msgstr "probleem agendiga: agent tagastas 0x%lx\n"
+
+#, fuzzy
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "probleem agendiga: agent tagastas 0x%lx\n"
+
+#, fuzzy
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "tundmatu vaikimisi saaja `%s'\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "Te vajate kasutaja salajase võtme lahtilukustamiseks parooli:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bitti %s võti, ID %08lX, loodud %s%s\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Te vajate kasutaja salajase võtme lahtilukustamiseks\n"
+#~ "parooli: \""
+
+#, fuzzy
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "%u-bitine %s võti, ID %08lX, loodud %s"
+
+#, fuzzy
+#~| msgid "can't create directory `%s': %s\n"
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "kataloogi `%s' ei õnnestu luua: %s\n"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "te leidsite vea ... (%s:%d)\n"

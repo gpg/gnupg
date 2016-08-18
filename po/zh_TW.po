@@ -403,10 +403,6 @@ msgid "invalid debug-level '%s' given\n"
 msgstr "給定的除錯等級 '%s' 無效\n"
 
 #, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr "%s 太舊了 (需要 %s, 但是祇有 %s)\n"
-
-#, c-format
 msgid "Note: no default option file '%s'\n"
 msgstr "請注意: 沒有預設選項檔 '%s'\n"
 
@@ -739,22 +735,8 @@ msgstr "等候 %d 處理程序終止時失敗: %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "無法連接至 '%s': %s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr "與 gpg-agent 的溝通問題\n"
-
 msgid "problem setting the gpg-agent options\n"
 msgstr "設定 gpg-agent 選項時發生問題\n"
-
-msgid "canceled by user\n"
-msgstr "由使用者取消\n"
-
-msgid "problem with the agent\n"
-msgstr "代理程式的問題\n"
-
-#, fuzzy, c-format
-#| msgid "problem with the agent: %s\n"
-msgid "problem with the agent (unexpected response \"%s\")\n"
-msgstr "代理程式的問題: %s\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -1093,6 +1075,10 @@ msgstr "未鎖定 '%s': %s\n"
 #, c-format
 msgid "waiting for lock %s...\n"
 msgstr "正在等候 `%s' 鎖定...\n"
+
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr "%s 太舊了 (需要 %s, 但是祇有 %s)\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -2066,18 +2052,9 @@ msgstr "未知的選項 '%s'\n"
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
-#, fuzzy, c-format
-#| msgid "unknown command '%s'\n"
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "未知的指令 '%s'\n"
-
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "請注意: 已忽略舊有的預設選項檔 '%s'\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr "libgcrypt 太舊了 (需要 %s, 但是祇有 %s)\n"
 
 #, c-format
 msgid "Note: %s is not for normal use!\n"
@@ -2086,6 +2063,11 @@ msgstr "請注意: 一般情況下不採用 %s!\n"
 #, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "'%s' 不是有效的簽章使用期限\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: not a valid email address\n"
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "第 %d 列: 不是有效的電子郵件地址\n"
 
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -4366,6 +4348,11 @@ msgstr "               使用 %s 金鑰 %s\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "由 %s 建立的簽章, 使用 %s 金鑰 ID %s\n"
 
+#, fuzzy, c-format
+#| msgid "                aka \"%s\""
+msgid "               issuer \"%s\"\n"
+msgstr "                亦即 \"%s\""
+
 msgid "Key available at: "
 msgstr "可用的金鑰於: "
 
@@ -4562,23 +4549,6 @@ msgstr "%d 類別的子封包設定了關鍵位元\n"
 msgid "problem with the agent: %s\n"
 msgstr "代理程式的問題: %s\n"
 
-#, c-format
-msgid " (main key ID %s)"
-msgstr " (主要金鑰 ID %s)"
-
-#, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"請輸入密語來解開 OpenPGP 憑證所需的私鑰:\n"
-"\"%.*s\"\n"
-"%u 位元長的 %s 金鑰, ID %s,\n"
-"建立於 %s%s.\n"
-
 msgid "Enter passphrase\n"
 msgstr "請輸入密語\n"
 
@@ -4586,20 +4556,8 @@ msgid "cancelled by user\n"
 msgstr "由使用者所取消\n"
 
 #, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr ""
-"你需要用密語來解開下列使用者的\n"
-"私鑰: \"%s\"\n"
-
-#, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "%u 位元長的 %s 金鑰, ID %s, 建立於 %s"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr "         (在主鑰 ID %s 上的子鑰)"
+msgid " (main key ID %s)"
+msgstr " (主要金鑰 ID %s)"
 
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
 msgstr "請輸入密語來解鎖 OpenPGP 私鑰:"
@@ -5407,12 +5365,6 @@ msgstr "啟始讀取程式物件時出錯: %s\n"
 #| msgid "error opening '%s': %s\n"
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "開啟 '%s' 時出錯: %s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr ""
-
-msgid "Using split format for TOFU database\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "error sending data: %s\n"
@@ -6792,10 +6744,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr "正在從快取中拋棄 %u 份憑證\n"
 
 #, c-format
-msgid "can't access directory '%s': %s\n"
-msgstr "無法存取目錄 '%s': %s\n"
-
-#, c-format
 msgid "can't parse certificate '%s': %s\n"
 msgstr "無法剖析憑證 '%s': %s\n"
 
@@ -7371,9 +7319,6 @@ msgstr "應該要有絕對檔名\n"
 msgid "looking up '%s'\n"
 msgstr "正在查找 '%s'\n"
 
-msgid "run as windows service (background)"
-msgstr "以視窗服務模式執行 (背景)"
-
 msgid "list the contents of the CRL cache"
 msgstr "列出 CRL 快取的內容"
 
@@ -7926,9 +7871,6 @@ msgstr "不對此檢查 CRL:"
 msgid "checking CRL for"
 msgstr "檢查 CRL: "
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr "正在以相容模式執行 - 憑證鏈未檢查!\n"
-
 msgid "selfsigned certificate has a BAD signature"
 msgstr "自簽憑證有 不良 簽章"
 
@@ -8350,6 +8292,62 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "communication problem with gpg-agent\n"
+#~ msgstr "與 gpg-agent 的溝通問題\n"
+
+#~ msgid "canceled by user\n"
+#~ msgstr "由使用者取消\n"
+
+#~ msgid "problem with the agent\n"
+#~ msgstr "代理程式的問題\n"
+
+#, fuzzy
+#~| msgid "problem with the agent: %s\n"
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "代理程式的問題: %s\n"
+
+#, fuzzy
+#~| msgid "unknown command '%s'\n"
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "未知的指令 '%s'\n"
+
+#~ msgid "libgcrypt is too old (need %s, have %s)\n"
+#~ msgstr "libgcrypt 太舊了 (需要 %s, 但是祇有 %s)\n"
+
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "請輸入密語來解開 OpenPGP 憑證所需的私鑰:\n"
+#~ "\"%.*s\"\n"
+#~ "%u 位元長的 %s 金鑰, ID %s,\n"
+#~ "建立於 %s%s.\n"
+
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr ""
+#~ "你需要用密語來解開下列使用者的\n"
+#~ "私鑰: \"%s\"\n"
+
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "%u 位元長的 %s 金鑰, ID %s, 建立於 %s"
+
+#~ msgid "         (subkey on main key ID %s)"
+#~ msgstr "         (在主鑰 ID %s 上的子鑰)"
+
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "無法存取目錄 '%s': %s\n"
+
+#~ msgid "run as windows service (background)"
+#~ msgstr "以視窗服務模式執行 (背景)"
+
+#~ msgid "running in compatibility mode - certificate chain not checked!\n"
+#~ msgstr "正在以相容模式執行 - 憑證鏈未檢查!\n"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "你找到一個瑕疵了 ... (%s:%d)\n"

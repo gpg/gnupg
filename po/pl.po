@@ -444,10 +444,6 @@ msgstr ""
 msgid "invalid debug-level '%s' given\n"
 msgstr "podano b³êdny poziom diagnostyki ,,%s''\n"
 
-#, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr "biblioteka %s jest zbyt stara (potrzebna %s, zainstalowana %s)\n"
-
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
 msgid "Note: no default option file '%s'\n"
@@ -816,22 +812,8 @@ msgstr "oczekiwanie na zakoñczenie procesu %d nie powiod³o siê: %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "nie mo¿na siê po³±czyæ z ,,%s'': %s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr "problem z komunikacj± z gpg-agentem\n"
-
 msgid "problem setting the gpg-agent options\n"
 msgstr "problem z ustawieniem opcji gpg-agenta\n"
-
-msgid "canceled by user\n"
-msgstr "anulowano przez u¿ytkownika\n"
-
-msgid "problem with the agent\n"
-msgstr "problem z agentem\n"
-
-#, fuzzy, c-format
-#| msgid "problem with the agent: %s\n"
-msgid "problem with the agent (unexpected response \"%s\")\n"
-msgstr "problem z agentem: %s\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -1186,6 +1168,10 @@ msgstr "blokada ,,%s'' nie za³o¿ona: %s\n"
 #, c-format
 msgid "waiting for lock %s...\n"
 msgstr "oczekiwanie na blokadê %s...\n"
+
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr "biblioteka %s jest zbyt stara (potrzebna %s, zainstalowana %s)\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -2263,19 +2249,9 @@ msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
 #, fuzzy, c-format
-#| msgid "unknown command `%s'\n"
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "nieznane polecenie ,,%s''\n"
-
-#, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "UWAGA: stary domy¶lny plik opcji ,,%s'' zosta³ zignorowany\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr ""
-"biblioteka libgcrypt jest zbyt stara (potrzebna %s, zainstalowana %s)\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
@@ -2286,6 +2262,11 @@ msgstr "UWAGA: %s nie jest do normalnego u¿ytku!\n"
 #| msgid "`%s' is not a valid signature expiration\n"
 msgid "'%s' is not a valid signature expiration\n"
 msgstr ",,%s'' nie jest poprawnym czasem wyga¶niêcia podpisu\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: not a valid email address\n"
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "linia %d: niepoprawny adres e-mail\n"
 
 #, fuzzy, c-format
 #| msgid "invalid country code in `%s', line %d\n"
@@ -4720,6 +4701,11 @@ msgstr "               przy u¿yciu klucza %s %s\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Podpisano w %s kluczem %s o numerze %s\n"
 
+#, fuzzy, c-format
+#| msgid "                aka \"%s\""
+msgid "               issuer \"%s\"\n"
+msgstr "                        alias ,,%s''"
+
 msgid "Key available at: "
 msgstr "Klucz dostêpny w: "
 
@@ -4937,23 +4923,6 @@ msgstr "podpakiet typu %d ma ustawiony krytyczny bit\n"
 msgid "problem with the agent: %s\n"
 msgstr "problem z agentem: %s\n"
 
-#, c-format
-msgid " (main key ID %s)"
-msgstr " (ID g³ównego klucza %s)"
-
-#, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"Musisz podaæ has³o, aby odbezpieczyæ klucz tajny certyfikatu OpenPGP:\n"
-",,%.*s''.\n"
-"Klucz o d³ugo¶ci %u bitów, typ %s, ID %s,\n"
-"stworzony %s%s.\n"
-
 msgid "Enter passphrase\n"
 msgstr "Has³o\n"
 
@@ -4961,20 +4930,8 @@ msgid "cancelled by user\n"
 msgstr "anulowano przez u¿ytkownika\n"
 
 #, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr ""
-"Musisz podaæ has³o aby odbezpieczyæ klucz prywatny u¿ytkownika:\n"
-",,%s''\n"
-
-#, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "d³ugo¶æ %u bitów, typ %s, numer %s, stworzony %s"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr "         (podklucz dla g³ównego klucza o ID %s)"
+msgid " (main key ID %s)"
+msgstr " (ID g³ównego klucza %s)"
 
 #, fuzzy
 #| msgid "Please enter the passphrase to unprotect the PKCS#12 object."
@@ -5842,12 +5799,6 @@ msgstr "%s: b³±d zapisu wpisu katalogowego: %s\n"
 #| msgid "error opening `%s': %s\n"
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "b³±d podczas otwierania ,,%s'': %s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr ""
-
-msgid "Using split format for TOFU database\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "error sending %s command: %s\n"
@@ -7346,11 +7297,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr "poszukiwanie wystawcy w pamiêci podrêcznej Dirmngr\n"
 
 #, fuzzy, c-format
-#| msgid "can't create directory `%s': %s\n"
-msgid "can't access directory '%s': %s\n"
-msgstr "nie mo¿na utworzyæ katalogu ,,%s'': %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't create `%s': %s\n"
 msgid "can't parse certificate '%s': %s\n"
 msgstr "nie mo¿na utworzyæ ,,%s'': %s\n"
@@ -8037,11 +7983,6 @@ msgstr ""
 msgid "looking up '%s'\n"
 msgstr ""
 
-#, fuzzy
-#| msgid "run in daemon mode (background)"
-msgid "run as windows service (background)"
-msgstr "uruchomienie w trybie demona (w tle)"
-
 msgid "list the contents of the CRL cache"
 msgstr ""
 
@@ -8705,9 +8646,6 @@ msgstr ""
 msgid "checking CRL for"
 msgstr "sprawdzenie CRL nie powiod³o siê: %s"
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr ""
-
 #, fuzzy
 #| msgid "self-signed certificate has a BAD signature"
 msgid "selfsigned certificate has a BAD signature"
@@ -9170,6 +9108,64 @@ msgid ""
 msgstr ""
 "Sk³adnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie has³a ze standardowego wej¶cia wzglêdem pliku wzorców\n"
+
+#~ msgid "communication problem with gpg-agent\n"
+#~ msgstr "problem z komunikacj± z gpg-agentem\n"
+
+#~ msgid "canceled by user\n"
+#~ msgstr "anulowano przez u¿ytkownika\n"
+
+#~ msgid "problem with the agent\n"
+#~ msgstr "problem z agentem\n"
+
+#, fuzzy
+#~| msgid "problem with the agent: %s\n"
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "problem z agentem: %s\n"
+
+#, fuzzy
+#~| msgid "unknown command `%s'\n"
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "nieznane polecenie ,,%s''\n"
+
+#~ msgid "libgcrypt is too old (need %s, have %s)\n"
+#~ msgstr ""
+#~ "biblioteka libgcrypt jest zbyt stara (potrzebna %s, zainstalowana %s)\n"
+
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "Musisz podaæ has³o, aby odbezpieczyæ klucz tajny certyfikatu OpenPGP:\n"
+#~ ",,%.*s''.\n"
+#~ "Klucz o d³ugo¶ci %u bitów, typ %s, ID %s,\n"
+#~ "stworzony %s%s.\n"
+
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr ""
+#~ "Musisz podaæ has³o aby odbezpieczyæ klucz prywatny u¿ytkownika:\n"
+#~ ",,%s''\n"
+
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "d³ugo¶æ %u bitów, typ %s, numer %s, stworzony %s"
+
+#~ msgid "         (subkey on main key ID %s)"
+#~ msgstr "         (podklucz dla g³ównego klucza o ID %s)"
+
+#, fuzzy
+#~| msgid "can't create directory `%s': %s\n"
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "nie mo¿na utworzyæ katalogu ,,%s'': %s\n"
+
+#, fuzzy
+#~| msgid "run in daemon mode (background)"
+#~ msgid "run as windows service (background)"
+#~ msgstr "uruchomienie w trybie demona (w tle)"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "znalaz³e¶(a¶) b³±d w programie ... (%s:%d)\n"

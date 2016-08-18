@@ -420,10 +420,6 @@ msgstr ""
 msgid "invalid debug-level '%s' given\n"
 msgstr ""
 
-#, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr ""
-
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
 msgid "Note: no default option file '%s'\n"
@@ -767,23 +763,8 @@ msgstr ""
 msgid "can't connect to '%s': %s\n"
 msgstr "nemô¾em sa pripoji» k `%s': %s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr "problém v komunikácii s gpg-agentom\n"
-
 #, fuzzy
 msgid "problem setting the gpg-agent options\n"
-msgstr "problém s agentom: agent vracia 0x%lx\n"
-
-#, fuzzy
-msgid "canceled by user\n"
-msgstr "zru¹ené u¾ívateµom\n"
-
-#, fuzzy
-msgid "problem with the agent\n"
-msgstr "problém s agentom: agent vracia 0x%lx\n"
-
-#, fuzzy, c-format
-msgid "problem with the agent (unexpected response \"%s\")\n"
 msgstr "problém s agentom: agent vracia 0x%lx\n"
 
 #, c-format
@@ -1160,6 +1141,10 @@ msgstr "verejný kµúè %08lX nebol nájdený: %s\n"
 #, fuzzy, c-format
 msgid "waiting for lock %s...\n"
 msgstr "zapisujem tajný kµúè do `%s'\n"
+
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr ""
 
 #, c-format
 msgid "armor: %s\n"
@@ -2228,17 +2213,9 @@ msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "neznámy implicitný adresát `%s'\n"
-
-#, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "POZNÁMKA: starý implicitný súbor s mo¾nos»ami `%s ignorovaný'\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
@@ -2248,6 +2225,10 @@ msgstr "POZNÁMKA: %s nie je pre normálne pou¾itie!\n"
 #, fuzzy, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "%s nie je platná znaková sada\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "Neplatná e-mailová adresa\n"
 
 #, fuzzy, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -4683,6 +4664,10 @@ msgstr "                alias \""
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Podpis vytvorený %.*s pomocou %s kµúèa ID %08lX\n"
 
+#, fuzzy, c-format
+msgid "               issuer \"%s\"\n"
+msgstr "                alias \""
+
 msgid "Key available at: "
 msgstr "Kµúè k dispozícii na: "
 
@@ -4890,22 +4875,6 @@ msgstr "podpaket typu %d má nastavený kritický bit\n"
 msgid "problem with the agent: %s\n"
 msgstr "problém s agentom: agent vracia 0x%lx\n"
 
-#, fuzzy, c-format
-msgid " (main key ID %s)"
-msgstr " (hlavné ID kµúèa %08lX)"
-
-#, fuzzy, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"Potrebujete heslo, aby ste odomkli tajný kµúè pre u¾ívateµa:\n"
-"\"%.*s\"\n"
-"kµúè s då¾kou %u bitov, typ %s, ID %08lX, vytvorený %s%s\n"
-
 msgid "Enter passphrase\n"
 msgstr "Vlo¾i» heslo\n"
 
@@ -4913,21 +4882,8 @@ msgid "cancelled by user\n"
 msgstr "zru¹ené u¾ívateµom\n"
 
 #, fuzzy, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr ""
-"\n"
-"Musíte pozna» heslo, aby ste odomkli tajný kµúè pre\n"
-"u¾ívateµa: \""
-
-#, fuzzy, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "då¾ka %u bitov, typ %s, ID %08lX, vytvorený %s"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr ""
+msgid " (main key ID %s)"
+msgstr " (hlavné ID kµúèa %08lX)"
 
 #, fuzzy
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
@@ -5766,12 +5722,6 @@ msgstr "%s: chyba pri zápise adresárového záznamu: %s\n"
 #, fuzzy, c-format
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "chyba pri èítaní `%s': %s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr ""
-
-msgid "Using split format for TOFU database\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "error updating TOFU database: %s\n"
@@ -7223,11 +7173,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr ""
 
 #, fuzzy, c-format
-#| msgid "can't create directory `%s': %s\n"
-msgid "can't access directory '%s': %s\n"
-msgstr "nemô¾em vytvori» adresár `%s': %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't create `%s': %s\n"
 msgid "can't parse certificate '%s': %s\n"
 msgstr "nemô¾em vytvori» `%s': %s\n"
@@ -7836,9 +7781,6 @@ msgstr ""
 msgid "looking up '%s'\n"
 msgstr ""
 
-msgid "run as windows service (background)"
-msgstr ""
-
 msgid "list the contents of the CRL cache"
 msgstr ""
 
@@ -8424,9 +8366,6 @@ msgstr ""
 msgid "checking CRL for"
 msgstr "kontrola vytvoreného podpisu sa nepodarila: %s\n"
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr ""
-
 #, fuzzy
 msgid "selfsigned certificate has a BAD signature"
 msgstr "verifikova» podpis"
@@ -8859,6 +8798,55 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "communication problem with gpg-agent\n"
+#~ msgstr "problém v komunikácii s gpg-agentom\n"
+
+#, fuzzy
+#~ msgid "canceled by user\n"
+#~ msgstr "zru¹ené u¾ívateµom\n"
+
+#, fuzzy
+#~ msgid "problem with the agent\n"
+#~ msgstr "problém s agentom: agent vracia 0x%lx\n"
+
+#, fuzzy
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "problém s agentom: agent vracia 0x%lx\n"
+
+#, fuzzy
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "neznámy implicitný adresát `%s'\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "Potrebujete heslo, aby ste odomkli tajný kµúè pre u¾ívateµa:\n"
+#~ "\"%.*s\"\n"
+#~ "kµúè s då¾kou %u bitov, typ %s, ID %08lX, vytvorený %s%s\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Musíte pozna» heslo, aby ste odomkli tajný kµúè pre\n"
+#~ "u¾ívateµa: \""
+
+#, fuzzy
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "då¾ka %u bitov, typ %s, ID %08lX, vytvorený %s"
+
+#, fuzzy
+#~| msgid "can't create directory `%s': %s\n"
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "nemô¾em vytvori» adresár `%s': %s\n"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "nájdená chyba v programe ... (%s:%d)\n"

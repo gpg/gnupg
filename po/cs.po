@@ -425,11 +425,6 @@ msgstr ""
 msgid "invalid debug-level '%s' given\n"
 msgstr "zadána neplatná úroveň ladění „%s“\n"
 
-# První argument je název knihovny
-#, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr "%s je příliš stará (potřeba %s, přítomna %s)\n"
-
 #, c-format
 msgid "Note: no default option file '%s'\n"
 msgstr "Poznámka: neexistuje implicitní soubor s možnostmi „%s“\n"
@@ -769,22 +764,8 @@ msgstr "čekání na konec procesu %d se nezdařilo: %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "nelze se připojit k „%s“: %s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr "problémy v komunikaci s gpg-agentem\n"
-
 msgid "problem setting the gpg-agent options\n"
 msgstr "problém v nastavování voleb gpg-agenta\n"
-
-msgid "canceled by user\n"
-msgstr "zrušeno uživatelem\n"
-
-msgid "problem with the agent\n"
-msgstr "problém s agentem\n"
-
-#, fuzzy, c-format
-#| msgid "problem with the agent: %s\n"
-msgid "problem with the agent (unexpected response \"%s\")\n"
-msgstr "problém s agentem: %s\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -1124,6 +1105,11 @@ msgstr "zámek „%s“ nebyl vytvořen: %s\n"
 #, c-format
 msgid "waiting for lock %s...\n"
 msgstr "čekám na zámek %s…\n"
+
+# První argument je název knihovny
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr "%s je příliš stará (potřeba %s, přítomna %s)\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -2130,16 +2116,8 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(možnosti lze vypsat příkazem „help“)\n"
 
 #, c-format
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "neznámý formát „%s“ databáze TOFU\n"
-
-#, c-format
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "Poznámka: starý implicitní soubor s možnostmi „%s“ ignorován\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr "libgcrypt je příliš stará (potřebuji %s, mám %s)\n"
 
 #, c-format
 msgid "Note: %s is not for normal use!\n"
@@ -2148,6 +2126,11 @@ msgstr "Poznámka: %s není pro normální použití!\n"
 #, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "„%s“ není platná doba expirace podpisu\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: not a valid email address\n"
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "řádek %d: neplatná e-mailová adresa\n"
 
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -4476,6 +4459,11 @@ msgstr "               použití %s klíče %s\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Podpis vytvořen %s pomocí klíče %s s ID uživatele %s\n"
 
+#, fuzzy, c-format
+#| msgid "                aka \"%s\""
+msgid "               issuer \"%s\"\n"
+msgstr "                alias „%s“"
+
 msgid "Key available at: "
 msgstr "Klíč k dispozici na: "
 
@@ -4673,24 +4661,6 @@ msgstr "podpacket typu %d má nastavený kritický bit\n"
 msgid "problem with the agent: %s\n"
 msgstr "problém s agentem: %s\n"
 
-#, c-format
-msgid " (main key ID %s)"
-msgstr " (hlavní ID klíče %s)"
-
-#, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"Prosím, zadejte heslo, abyste odemkli tajný klíč příslušející OpenPGP "
-"certifikátu:\n"
-"„%.*s“\n"
-"Klíč o délce %u bitů, typ %s, ID %s\n"
-"vytvořený %s%s.\n"
-
 msgid "Enter passphrase\n"
 msgstr "Vložit heslo\n"
 
@@ -4698,20 +4668,8 @@ msgid "cancelled by user\n"
 msgstr "zrušeno uživatelem\n"
 
 #, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr ""
-"Musíte znát heslo, abyste odemkli tajný klíč pro\n"
-"uživatele: „%s“\n"
-
-#, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "délka %u bitů, typ %s, klíč %s, vytvořený %s"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr "         (podklíč na hlavním klíči ID %s)"
+msgid " (main key ID %s)"
+msgstr " (hlavní ID klíče %s)"
 
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
 msgstr "Prosím, zadejte heslo, abyste odemkli tajný klíč OpenPGP:"
@@ -5550,12 +5508,6 @@ msgstr "chyba při inicializaci čtecího objektu: %s\n"
 #| msgid "error opening '%s': %s\n"
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "chyba při otevírání „%s“: %s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr ""
-
-msgid "Using split format for TOFU database\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "error sending data: %s\n"
@@ -6991,10 +6943,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr "%u certifikátů bude z keše vyřazeno\n"
 
 #, c-format
-msgid "can't access directory '%s': %s\n"
-msgstr "k adresáři „%s“ nelze přistoupit: %s\n"
-
-#, c-format
 msgid "can't parse certificate '%s': %s\n"
 msgstr "certifikát „%s“ nelze rozebrat: %s\n"
 
@@ -7589,9 +7537,6 @@ msgstr "očekáván absolutní název souboru\n"
 msgid "looking up '%s'\n"
 msgstr "hledá se „%s“\n"
 
-msgid "run as windows service (background)"
-msgstr "poběží jako služba Windows (na pozadí)"
-
 msgid "list the contents of the CRL cache"
 msgstr "vypíše obsah CRL keše"
 
@@ -8144,9 +8089,6 @@ msgstr "nekontroluje se CRL pro"
 msgid "checking CRL for"
 msgstr "kontroluje se CRL pro"
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr "provoz v režimu kompatibility – řetěz certifikátů nezkontrolován!\n"
-
 msgid "selfsigned certificate has a BAD signature"
 msgstr "sám sebou podepsaný certifikát má CHYBNÝ podpis"
 
@@ -8566,6 +8508,61 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "communication problem with gpg-agent\n"
+#~ msgstr "problémy v komunikaci s gpg-agentem\n"
+
+#~ msgid "canceled by user\n"
+#~ msgstr "zrušeno uživatelem\n"
+
+#~ msgid "problem with the agent\n"
+#~ msgstr "problém s agentem\n"
+
+#, fuzzy
+#~| msgid "problem with the agent: %s\n"
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "problém s agentem: %s\n"
+
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "neznámý formát „%s“ databáze TOFU\n"
+
+#~ msgid "libgcrypt is too old (need %s, have %s)\n"
+#~ msgstr "libgcrypt je příliš stará (potřebuji %s, mám %s)\n"
+
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "Prosím, zadejte heslo, abyste odemkli tajný klíč příslušející OpenPGP "
+#~ "certifikátu:\n"
+#~ "„%.*s“\n"
+#~ "Klíč o délce %u bitů, typ %s, ID %s\n"
+#~ "vytvořený %s%s.\n"
+
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr ""
+#~ "Musíte znát heslo, abyste odemkli tajný klíč pro\n"
+#~ "uživatele: „%s“\n"
+
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "délka %u bitů, typ %s, klíč %s, vytvořený %s"
+
+#~ msgid "         (subkey on main key ID %s)"
+#~ msgstr "         (podklíč na hlavním klíči ID %s)"
+
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "k adresáři „%s“ nelze přistoupit: %s\n"
+
+#~ msgid "run as windows service (background)"
+#~ msgstr "poběží jako služba Windows (na pozadí)"
+
+#~ msgid "running in compatibility mode - certificate chain not checked!\n"
+#~ msgstr "provoz v režimu kompatibility – řetěz certifikátů nezkontrolován!\n"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "našli jste chybu… (%s:%d)\n"

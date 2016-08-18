@@ -447,10 +447,6 @@ msgstr ""
 msgid "invalid debug-level '%s' given\n"
 msgstr ""
 
-#, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr ""
-
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
 msgid "Note: no default option file '%s'\n"
@@ -796,23 +792,8 @@ msgstr ""
 msgid "can't connect to '%s': %s\n"
 msgstr "no s'ha pogut connectar amb «%s»: %s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr "hi ha un problema de comunicació amb el gpg-agent\n"
-
 #, fuzzy
 msgid "problem setting the gpg-agent options\n"
-msgstr "hi ha un problema amb l'agent: l'agent ha tornat 0x%lx\n"
-
-#, fuzzy
-msgid "canceled by user\n"
-msgstr "s'ha cancel·lat per l'usuari\n"
-
-#, fuzzy
-msgid "problem with the agent\n"
-msgstr "hi ha un problema amb l'agent: l'agent ha tornat 0x%lx\n"
-
-#, fuzzy, c-format
-msgid "problem with the agent (unexpected response \"%s\")\n"
 msgstr "hi ha un problema amb l'agent: l'agent ha tornat 0x%lx\n"
 
 # bolcats de memòria?  ivb
@@ -1215,6 +1196,10 @@ msgstr "no s'ha trobat la clau pública %08lX: %s\n"
 #, fuzzy, c-format
 msgid "waiting for lock %s...\n"
 msgstr "s'està escrivint la clau secreta a «%s»\n"
+
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr ""
 
 #, c-format
 msgid "armor: %s\n"
@@ -2305,17 +2290,9 @@ msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "el destinatari predeterminat és desconegut «%s»\n"
-
-#, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "NOTA: es descarta el fitxer d'opcions predeterminades antic «%s»\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
@@ -2325,6 +2302,10 @@ msgstr "NOTA: %s no és per a ús normal!\n"
 #, fuzzy, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "%s no és un joc de caràcters vàlid\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "No és una adreça vàlida\n"
 
 #, fuzzy, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -4809,6 +4790,10 @@ msgstr "              alias \""
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Signatura creada el %.*s usant una clau %s ID %08lX\n"
 
+#, fuzzy, c-format
+msgid "               issuer \"%s\"\n"
+msgstr "              alias \""
+
 msgid "Key available at: "
 msgstr "La clau és disponible en: "
 
@@ -5023,33 +5008,6 @@ msgstr "el subpaquet de tipus %d té el bit crític activat\n"
 msgid "problem with the agent: %s\n"
 msgstr "hi ha un problema amb l'agent: l'agent ha tornat 0x%lx\n"
 
-#, fuzzy, c-format
-msgid " (main key ID %s)"
-msgstr " (ID de la clau principal %08lX)"
-
-# Com es canvia l'ordre dels arguments? jm
-# Ah, bingo! jm
-# Uh, ara torna a donar error. FIXME
-# La idea és ficar:
-# "Necessiteu la contrasenya per desblocar la clau secreta de l'usuari:\n"
-# "«%1$.*s»\n"
-# "clau %3$s de %2$u bits, ID %4$08lX, creada en %5$s%6$s\n"
-# jm
-# Se't passava l'argument «*».  printf(3), hieroglyph(7).  ivb
-# Ah!  Prova-ho, no casque alguna cosa :P  ivb
-# Ah, ja veig! Moltes gràcies! Aquest msgstr ha quedat curiós :) jm
-#, fuzzy, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"Necessiteu la contrasenya per desblocar la clau secreta de l'usuari:\n"
-"«%2$.*1$s»\n"
-"clau %4$s de %3$u bits, ID %5$08lX, creada en %6$s%7$s\n"
-
 msgid "Enter passphrase\n"
 msgstr "Introduïu la contrasenya\n"
 
@@ -5057,21 +5015,8 @@ msgid "cancelled by user\n"
 msgstr "s'ha cancel·lat per l'usuari\n"
 
 #, fuzzy, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr ""
-"\n"
-"Necessiteu la contrasenya per desblocar la clau secreta de\n"
-"l'usuari: \""
-
-#, fuzzy, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "clau %2$s de %1$u bits, ID %3$08lX, creada en %4$s"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr ""
+msgid " (main key ID %s)"
+msgstr " (ID de la clau principal %08lX)"
 
 #, fuzzy
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
@@ -5930,12 +5875,6 @@ msgstr "%s: error en escriure el registre de directoris: %s\n"
 #, fuzzy, c-format
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "error en la lectura de «%s»: %s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr ""
-
-msgid "Using split format for TOFU database\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "error updating TOFU database: %s\n"
@@ -7421,11 +7360,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr ""
 
 #, fuzzy, c-format
-#| msgid "can't create directory `%s': %s\n"
-msgid "can't access directory '%s': %s\n"
-msgstr "no es pot crear el directori «%s»: %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't create `%s': %s\n"
 msgid "can't parse certificate '%s': %s\n"
 msgstr "no s'ha pogut crear «%s»: %s\n"
@@ -8046,9 +7980,6 @@ msgstr ""
 msgid "looking up '%s'\n"
 msgstr ""
 
-msgid "run as windows service (background)"
-msgstr ""
-
 msgid "list the contents of the CRL cache"
 msgstr ""
 
@@ -8639,9 +8570,6 @@ msgstr ""
 msgid "checking CRL for"
 msgstr "no s'ha pogut comprovar la signatura creada: %s\n"
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr ""
-
 #, fuzzy
 msgid "selfsigned certificate has a BAD signature"
 msgstr "verifica una signatura"
@@ -9074,6 +9002,66 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "communication problem with gpg-agent\n"
+#~ msgstr "hi ha un problema de comunicació amb el gpg-agent\n"
+
+#, fuzzy
+#~ msgid "canceled by user\n"
+#~ msgstr "s'ha cancel·lat per l'usuari\n"
+
+#, fuzzy
+#~ msgid "problem with the agent\n"
+#~ msgstr "hi ha un problema amb l'agent: l'agent ha tornat 0x%lx\n"
+
+#, fuzzy
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "hi ha un problema amb l'agent: l'agent ha tornat 0x%lx\n"
+
+#, fuzzy
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "el destinatari predeterminat és desconegut «%s»\n"
+
+# Com es canvia l'ordre dels arguments? jm
+# Ah, bingo! jm
+# Uh, ara torna a donar error. FIXME
+# La idea és ficar:
+# "Necessiteu la contrasenya per desblocar la clau secreta de l'usuari:\n"
+# "«%1$.*s»\n"
+# "clau %3$s de %2$u bits, ID %4$08lX, creada en %5$s%6$s\n"
+# jm
+# Se't passava l'argument «*».  printf(3), hieroglyph(7).  ivb
+# Ah!  Prova-ho, no casque alguna cosa :P  ivb
+# Ah, ja veig! Moltes gràcies! Aquest msgstr ha quedat curiós :) jm
+#, fuzzy
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "Necessiteu la contrasenya per desblocar la clau secreta de l'usuari:\n"
+#~ "«%2$.*1$s»\n"
+#~ "clau %4$s de %3$u bits, ID %5$08lX, creada en %6$s%7$s\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Necessiteu la contrasenya per desblocar la clau secreta de\n"
+#~ "l'usuari: \""
+
+#, fuzzy
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "clau %2$s de %1$u bits, ID %3$08lX, creada en %4$s"
+
+#, fuzzy
+#~| msgid "can't create directory `%s': %s\n"
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "no es pot crear el directori «%s»: %s\n"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "heu trobat un bug... (%s:%d)\n"

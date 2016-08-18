@@ -428,10 +428,6 @@ msgstr ""
 msgid "invalid debug-level '%s' given\n"
 msgstr ""
 
-#, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr ""
-
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
 msgid "Note: no default option file '%s'\n"
@@ -778,23 +774,8 @@ msgstr ""
 msgid "can't connect to '%s': %s\n"
 msgstr "无法连接至‘%s’：%s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr ""
-
 msgid "problem setting the gpg-agent options\n"
 msgstr ""
-
-#, fuzzy
-msgid "canceled by user\n"
-msgstr "用户取消\n"
-
-#, fuzzy
-msgid "problem with the agent\n"
-msgstr "代理程序有问题――正在停用代理程序\n"
-
-#, fuzzy, c-format
-msgid "problem with the agent (unexpected response \"%s\")\n"
-msgstr "代理程序有问题――正在停用代理程序\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -1171,6 +1152,10 @@ msgstr "找不到公钥 %s：%s\n"
 #, fuzzy, c-format
 msgid "waiting for lock %s...\n"
 msgstr "等待‘%s’上的锁\n"
+
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr ""
 
 #, c-format
 msgid "armor: %s\n"
@@ -2199,17 +2184,9 @@ msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "未知的选项 '%s'\n"
-
-#, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "注意：旧式的默认配置文件‘%s’已被忽略\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
@@ -2220,6 +2197,10 @@ msgstr "注意：一般情况下不会用到 %s！\n"
 #| msgid "`%s' is not a valid signature expiration\n"
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "‘%s’不是一个有效的签名过期日期\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "电子邮件地址无效\n"
 
 #, fuzzy, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -4563,6 +4544,11 @@ msgstr "              使用 %s 密钥 %s\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "于 %s 创建的签名，使用 %s，钥匙号 %s\n"
 
+#, fuzzy, c-format
+#| msgid "                aka \"%s\""
+msgid "               issuer \"%s\"\n"
+msgstr "              亦即“%s”"
+
 msgid "Key available at: "
 msgstr "可用的密钥在："
 
@@ -4773,22 +4759,6 @@ msgstr "%d 类别的子包设定了关键位\n"
 msgid "problem with the agent: %s\n"
 msgstr "代理程序有问题――正在停用代理程序\n"
 
-#, c-format
-msgid " (main key ID %s)"
-msgstr " (主钥匙号 %s)"
-
-#, fuzzy, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"您需要这个用户的密码来解开私钥：\n"
-"“%.*s”\n"
-"%u 位的 %s 密钥，钥匙号 %s，建立于 %s%s\n"
-
 msgid "Enter passphrase\n"
 msgstr "请输入密码\n"
 
@@ -4796,18 +4766,8 @@ msgid "cancelled by user\n"
 msgstr "用户取消\n"
 
 #, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr "您需要输入密码，才能解开这个用户的私钥：“%s”\n"
-
-#, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "%u 位的 %s 密钥，钥匙号 %s，建立于 %s"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr "         (主钥 %s 的子钥)"
+msgid " (main key ID %s)"
+msgstr " (主钥匙号 %s)"
 
 #, fuzzy
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
@@ -5617,12 +5577,6 @@ msgstr "%s：写入目录记录时出错：%s\n"
 #, fuzzy, c-format
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "‘%s’中出错：%s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr ""
-
-msgid "Using split format for TOFU database\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "error updating TOFU database: %s\n"
@@ -7072,11 +7026,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr ""
 
 #, fuzzy, c-format
-#| msgid "can't create directory `%s': %s\n"
-msgid "can't access directory '%s': %s\n"
-msgstr "无法建立目录‘%s’：%s\n"
-
-#, fuzzy, c-format
 #| msgid "can't create `%s': %s\n"
 msgid "can't parse certificate '%s': %s\n"
 msgstr "无法建立‘%s’：%s\n"
@@ -7692,9 +7641,6 @@ msgstr ""
 msgid "looking up '%s'\n"
 msgstr ""
 
-msgid "run as windows service (background)"
-msgstr ""
-
 msgid "list the contents of the CRL cache"
 msgstr ""
 
@@ -8293,9 +8239,6 @@ msgstr ""
 msgid "checking CRL for"
 msgstr "检查已建立的签名时发生错误： %s\n"
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr ""
-
 #, fuzzy
 msgid "selfsigned certificate has a BAD signature"
 msgstr "验证签名"
@@ -8727,6 +8670,50 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "canceled by user\n"
+#~ msgstr "用户取消\n"
+
+#, fuzzy
+#~ msgid "problem with the agent\n"
+#~ msgstr "代理程序有问题――正在停用代理程序\n"
+
+#, fuzzy
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "代理程序有问题――正在停用代理程序\n"
+
+#, fuzzy
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "未知的选项 '%s'\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "您需要这个用户的密码来解开私钥：\n"
+#~ "“%.*s”\n"
+#~ "%u 位的 %s 密钥，钥匙号 %s，建立于 %s%s\n"
+
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr "您需要输入密码，才能解开这个用户的私钥：“%s”\n"
+
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "%u 位的 %s 密钥，钥匙号 %s，建立于 %s"
+
+#~ msgid "         (subkey on main key ID %s)"
+#~ msgstr "         (主钥 %s 的子钥)"
+
+#, fuzzy
+#~| msgid "can't create directory `%s': %s\n"
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "无法建立目录‘%s’：%s\n"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "您找到一个程序缺陷了……(%s:%d)\n"

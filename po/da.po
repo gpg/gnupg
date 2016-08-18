@@ -455,10 +455,6 @@ msgstr ""
 msgid "invalid debug-level '%s' given\n"
 msgstr "ugyldigt fejlsøgningsniveau »%s« angivet\n"
 
-#, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr "%s er for gammel (kræver %s, har %s)\n"
-
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
 msgid "Note: no default option file '%s'\n"
@@ -830,22 +826,8 @@ msgstr "ventning på at proces %d skulle terminere mislykkedes: %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "kan ikke forbinde til »%s«: %s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr "kommunikationsproblem med gpg-agent\n"
-
 msgid "problem setting the gpg-agent options\n"
 msgstr "problem ved angivelse af indstillinger for gpg-agent\n"
-
-msgid "canceled by user\n"
-msgstr "afbrudt af brugeren\n"
-
-msgid "problem with the agent\n"
-msgstr "problem med agenten\n"
-
-#, fuzzy, c-format
-#| msgid "problem with the agent: %s\n"
-msgid "problem with the agent (unexpected response \"%s\")\n"
-msgstr "problem med agenten: %s\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -1200,6 +1182,10 @@ msgstr "lås »%s« er ikke udført: %s\n"
 #, c-format
 msgid "waiting for lock %s...\n"
 msgstr "venter på lås %s ...\n"
+
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr "%s er for gammel (kræver %s, har %s)\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -2260,18 +2246,9 @@ msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
 #, fuzzy, c-format
-#| msgid "unknown command `%s'\n"
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "ukendt kommando »%s«\n"
-
-#, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "BEMÆRK: Gammel standardfil for tilvalg »%s« blev ignoreret\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr "libgcrypt er for gammel (kræver %s, har %s)\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
@@ -2282,6 +2259,11 @@ msgstr "BEMÆRK: %s er ikke til normal brug!\n"
 #| msgid "`%s' is not a valid signature expiration\n"
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "»%s« er ikke et gyldigt underskriftudløb\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: not a valid email address\n"
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "linje %d: ikke en gyldig e-post-adresse\n"
 
 #, fuzzy, c-format
 #| msgid "invalid country code in `%s', line %d\n"
@@ -4690,6 +4672,11 @@ msgstr "               bruger %s nøgle %s\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Underskrift lavet %s med %s nøgle-id %s\n"
 
+#, fuzzy, c-format
+#| msgid "                aka \"%s\""
+msgid "               issuer \"%s\"\n"
+msgstr "       også kendt som »%s«"
+
 msgid "Key available at: "
 msgstr "Nøgle tilgængelig på: "
 
@@ -4904,24 +4891,6 @@ msgstr "underpakke af typen %d har kritiske bitsæt\n"
 msgid "problem with the agent: %s\n"
 msgstr "problem med agenten: %s\n"
 
-#, c-format
-msgid " (main key ID %s)"
-msgstr " (hovednøgle-id %s)"
-
-#, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"Indtast venligst adgangsfrasen til at åbne den hemmelige nøgle for OpenPGP-"
-"certifikatet:\n"
-"\"%.*s\"\n"
-"%u-bit %s nøgle, id %s,\n"
-"oprettet %s%s.\n"
-
 msgid "Enter passphrase\n"
 msgstr "Indtast adgangsfrase\n"
 
@@ -4929,20 +4898,8 @@ msgid "cancelled by user\n"
 msgstr "afbrudt af bruger\n"
 
 #, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr ""
-"Du skal bruge en adgangsfrase til at åbne den hemmelige\n"
-"nøgle for bruger: »%s«\n"
-
-#, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "%u-bit %s nøgle, id %s, oprettet %s"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr "         (undernøgle på hovednøgle-id %s)"
+msgid " (main key ID %s)"
+msgstr " (hovednøgle-id %s)"
 
 #, fuzzy
 #| msgid "Please enter the passphrase to unprotect the PKCS#12 object."
@@ -5800,12 +5757,6 @@ msgstr "%s: fejl ved skrivning af mappepost: %s\n"
 #| msgid "error opening `%s': %s\n"
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "fejl ved åbning af »%s«: %s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr ""
-
-msgid "Using split format for TOFU database\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "error sending %s command: %s\n"
@@ -7285,11 +7236,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr "slår udsteder op fra Dirmngr-mellemlageret\n"
 
 #, fuzzy, c-format
-#| msgid "can't create directory `%s': %s\n"
-msgid "can't access directory '%s': %s\n"
-msgstr "kan ikke oprette mappe »%s«: %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't create `%s': %s\n"
 msgid "can't parse certificate '%s': %s\n"
 msgstr "kan ikke oprette »%s«: %s\n"
@@ -7976,11 +7922,6 @@ msgstr ""
 msgid "looking up '%s'\n"
 msgstr ""
 
-#, fuzzy
-#| msgid "run in daemon mode (background)"
-msgid "run as windows service (background)"
-msgstr "kør i dæmontilstand (baggrunden)"
-
 msgid "list the contents of the CRL cache"
 msgstr ""
 
@@ -8643,9 +8584,6 @@ msgstr ""
 msgid "checking CRL for"
 msgstr "kontrol af CRL'en mislykkedes: %s"
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr ""
-
 #, fuzzy
 #| msgid "self-signed certificate has a BAD signature"
 msgid "selfsigned certificate has a BAD signature"
@@ -9104,6 +9042,64 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#~ msgid "communication problem with gpg-agent\n"
+#~ msgstr "kommunikationsproblem med gpg-agent\n"
+
+#~ msgid "canceled by user\n"
+#~ msgstr "afbrudt af brugeren\n"
+
+#~ msgid "problem with the agent\n"
+#~ msgstr "problem med agenten\n"
+
+#, fuzzy
+#~| msgid "problem with the agent: %s\n"
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "problem med agenten: %s\n"
+
+#, fuzzy
+#~| msgid "unknown command `%s'\n"
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "ukendt kommando »%s«\n"
+
+#~ msgid "libgcrypt is too old (need %s, have %s)\n"
+#~ msgstr "libgcrypt er for gammel (kræver %s, har %s)\n"
+
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "Indtast venligst adgangsfrasen til at åbne den hemmelige nøgle for "
+#~ "OpenPGP-certifikatet:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s nøgle, id %s,\n"
+#~ "oprettet %s%s.\n"
+
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr ""
+#~ "Du skal bruge en adgangsfrase til at åbne den hemmelige\n"
+#~ "nøgle for bruger: »%s«\n"
+
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "%u-bit %s nøgle, id %s, oprettet %s"
+
+#~ msgid "         (subkey on main key ID %s)"
+#~ msgstr "         (undernøgle på hovednøgle-id %s)"
+
+#, fuzzy
+#~| msgid "can't create directory `%s': %s\n"
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "kan ikke oprette mappe »%s«: %s\n"
+
+#, fuzzy
+#~| msgid "run in daemon mode (background)"
+#~ msgid "run as windows service (background)"
+#~ msgstr "kør i dæmontilstand (baggrunden)"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "du fandt en fejl ... (%s:%d)\n"

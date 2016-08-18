@@ -420,10 +420,6 @@ msgstr ""
 msgid "invalid debug-level '%s' given\n"
 msgstr ""
 
-#, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr ""
-
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
 msgid "Note: no default option file '%s'\n"
@@ -766,23 +762,8 @@ msgstr ""
 msgid "can't connect to '%s': %s\n"
 msgstr "impossível ligar a `%s': %s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr "problemas na comunicação com o gpg-agent\n"
-
 #, fuzzy
 msgid "problem setting the gpg-agent options\n"
-msgstr "problema com o agente: o agente returnou 0x%lx\n"
-
-#, fuzzy
-msgid "canceled by user\n"
-msgstr "cancelado pelo utilizador\n"
-
-#, fuzzy
-msgid "problem with the agent\n"
-msgstr "problema com o agente: o agente returnou 0x%lx\n"
-
-#, fuzzy, c-format
-msgid "problem with the agent (unexpected response \"%s\")\n"
 msgstr "problema com o agente: o agente returnou 0x%lx\n"
 
 #, c-format
@@ -1160,6 +1141,10 @@ msgstr "chave pública %08lX não encontrada: %s\n"
 #, fuzzy, c-format
 msgid "waiting for lock %s...\n"
 msgstr "a escrever chave privada para `%s'\n"
+
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr ""
 
 #, c-format
 msgid "armor: %s\n"
@@ -2218,17 +2203,9 @@ msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "destinatário por omissão desconhecido `%s'\n"
-
-#, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "NOTA: o ficheiro antigo de opções por omissão `%s' foi ignorado\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "NOTE: %s is not for normal use!\n"
@@ -2238,6 +2215,10 @@ msgstr "NOTA: %s não é para uso normal!\n"
 #, fuzzy, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "%s não é um conjunto de caracteres válido\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "Endereço eletrónico inválido\n"
 
 #, fuzzy, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -4672,6 +4653,10 @@ msgstr "                   ou \""
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Assinatura feita em %.*s usando %s, ID da chave %08lX\n"
 
+#, fuzzy, c-format
+msgid "               issuer \"%s\"\n"
+msgstr "                   ou \""
+
 #, fuzzy
 msgid "Key available at: "
 msgstr "Nenhuma ajuda disponível"
@@ -4883,24 +4868,6 @@ msgstr "subpacote do tipo %d tem bit crítico ligado\n"
 msgid "problem with the agent: %s\n"
 msgstr "problema com o agente: o agente returnou 0x%lx\n"
 
-#, fuzzy, c-format
-msgid " (main key ID %s)"
-msgstr " (ID principal da chave %08lX)"
-
-#, fuzzy, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"Precisa de uma frase secreta para desbloquear a chave secreta do "
-"utilizador:\n"
-"\n"
-"\"%.*s\"\n"
-"chave %u bits %s, ID %08lx, criada %s%s\n"
-
 msgid "Enter passphrase\n"
 msgstr "Insira a frase secreta\n"
 
@@ -4908,21 +4875,8 @@ msgid "cancelled by user\n"
 msgstr "cancelado pelo utilizador\n"
 
 #, fuzzy, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr ""
-"\n"
-"Você precisa de uma frase secreta para desbloquear a chave secreta do\n"
-"utilizador: \""
-
-#, fuzzy, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "chave de %u-bit/%s, ID %08lX, criada em %s"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr ""
+msgid " (main key ID %s)"
+msgstr " (ID principal da chave %08lX)"
 
 #, fuzzy
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
@@ -5751,12 +5705,6 @@ msgstr "%s: erro ao escrever registo de diretório: %s\n"
 #, fuzzy, c-format
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "erro na leitura de `%s': %s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr ""
-
-msgid "Using split format for TOFU database\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "error updating TOFU database: %s\n"
@@ -7209,10 +7157,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "can't access directory '%s': %s\n"
-msgstr "%s: impossível criar directoria: %s\n"
-
-#, fuzzy, c-format
 #| msgid "can't create `%s': %s\n"
 msgid "can't parse certificate '%s': %s\n"
 msgstr "impossível criar `%s': %s\n"
@@ -7819,9 +7763,6 @@ msgstr ""
 msgid "looking up '%s'\n"
 msgstr ""
 
-msgid "run as windows service (background)"
-msgstr ""
-
 msgid "list the contents of the CRL cache"
 msgstr ""
 
@@ -8407,9 +8348,6 @@ msgstr ""
 msgid "checking CRL for"
 msgstr "verificação da assinatura criada falhou: %s\n"
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr ""
-
 #, fuzzy
 msgid "selfsigned certificate has a BAD signature"
 msgstr "verificar uma assinatura"
@@ -8843,6 +8781,56 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "communication problem with gpg-agent\n"
+#~ msgstr "problemas na comunicação com o gpg-agent\n"
+
+#, fuzzy
+#~ msgid "canceled by user\n"
+#~ msgstr "cancelado pelo utilizador\n"
+
+#, fuzzy
+#~ msgid "problem with the agent\n"
+#~ msgstr "problema com o agente: o agente returnou 0x%lx\n"
+
+#, fuzzy
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "problema com o agente: o agente returnou 0x%lx\n"
+
+#, fuzzy
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "destinatário por omissão desconhecido `%s'\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "Precisa de uma frase secreta para desbloquear a chave secreta do "
+#~ "utilizador:\n"
+#~ "\n"
+#~ "\"%.*s\"\n"
+#~ "chave %u bits %s, ID %08lx, criada %s%s\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Você precisa de uma frase secreta para desbloquear a chave secreta do\n"
+#~ "utilizador: \""
+
+#, fuzzy
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "chave de %u-bit/%s, ID %08lX, criada em %s"
+
+#, fuzzy
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "%s: impossível criar directoria: %s\n"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "você encontrou um bug ... (%s:%d)\n"

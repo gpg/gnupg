@@ -405,10 +405,6 @@ msgid "invalid debug-level '%s' given\n"
 msgstr "запрошен недопустимый уровень отладки '%s'\n"
 
 #, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr "слишком старая версия %s (нужно %s, есть %s)\n"
-
-#, c-format
 msgid "Note: no default option file '%s'\n"
 msgstr "Замечание: основной файл параметров '%s' не обнаружен\n"
 
@@ -745,21 +741,8 @@ msgstr "сбой при ожидании завершения процесса %
 msgid "can't connect to '%s': %s\n"
 msgstr "не могу подключиться к '%s': %s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr "проблема связи с агентом gpg\n"
-
 msgid "problem setting the gpg-agent options\n"
 msgstr "проблема задания параметров агента gpg\n"
-
-msgid "canceled by user\n"
-msgstr "прервано пользователем\n"
-
-msgid "problem with the agent\n"
-msgstr "проблема с агентом\n"
-
-#, c-format
-msgid "problem with the agent (unexpected response \"%s\")\n"
-msgstr "проблема с агентом (неожиданный ответ \"%s\")\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -1096,6 +1079,10 @@ msgstr "блокировка '%s' не выполнена: %s\n"
 #, c-format
 msgid "waiting for lock %s...\n"
 msgstr "ожидаю снятия блокировки %s...\n"
+
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr "слишком старая версия %s (нужно %s, есть %s)\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -2070,16 +2057,8 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(\"help\" выведет список вариантов)\n"
 
 #, c-format
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "неизвестный формат базы данных TOFU '%s'\n"
-
-#, c-format
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "Замечание: старый основной файл параметров '%s' проигнорирован\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr "слишком старая версия libcrypt (нужно %s, есть %s)\n"
 
 #, c-format
 msgid "Note: %s is not for normal use!\n"
@@ -2088,6 +2067,11 @@ msgstr "Замечание: %s не предназначен для нормал
 #, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "'%s' - не допустимый срок действия подписи\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: not a valid email address\n"
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "строка %d: нет допустимого адреса электронной почты\n"
 
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -4388,6 +4372,11 @@ msgstr "               ключом %s с ID %s\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Подпись сделана %s ключом %s с ID %s\n"
 
+#, fuzzy, c-format
+#| msgid "                aka \"%s\""
+msgid "               issuer \"%s\"\n"
+msgstr "                или \"%s\""
+
 msgid "Key available at: "
 msgstr "Ключ доступен на: "
 
@@ -4589,23 +4578,6 @@ msgstr "в подпакете типа %d установлен критичес�
 msgid "problem with the agent: %s\n"
 msgstr "проблема с агентом: %s\n"
 
-#, c-format
-msgid " (main key ID %s)"
-msgstr " (ID главного ключа %s)"
-
-#, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"Введите фразу-пароль для доступа к секретному ключу сертификата OpenPGP:\n"
-"\"%.*s\"\n"
-"%u-битный ключ %s, ID %s,\n"
-"создан %s%s.\n"
-
 msgid "Enter passphrase\n"
 msgstr "Введите фразу-пароль\n"
 
@@ -4613,19 +4585,8 @@ msgid "cancelled by user\n"
 msgstr "прервано пользователем\n"
 
 #, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr ""
-"Необходима фраза-пароль для доступа к секретному ключу пользователя: \"%s\"\n"
-
-#, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "%u-битный ключ %s, ID %s, создан %s"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr "         (подключ на главном ключе %s)"
+msgid " (main key ID %s)"
+msgstr " (ID главного ключа %s)"
 
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
 msgstr "Введите фразу-пароль для разблокировки секретного ключа OpenPGP:"
@@ -5442,12 +5403,6 @@ msgstr "ошибка инициализации базы данных TOFU: %s\n
 #, c-format
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "ошибка открытия базы данных TOFU '%s': %s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr "Внимание: Домашний каталог содержит как tofu.db, так и tofu.d\n"
-
-msgid "Using split format for TOFU database\n"
-msgstr "Используется разделенный формат базы данных TOFU\n"
 
 #, c-format
 msgid "error updating TOFU database: %s\n"
@@ -6902,10 +6857,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr "опускается %u сертификатов из буфера\n"
 
 #, c-format
-msgid "can't access directory '%s': %s\n"
-msgstr "не могу получить доступ к каталогу '%s': %s\n"
-
-#, c-format
 msgid "can't parse certificate '%s': %s\n"
 msgstr "не могу интерпретировать сертификат '%s': %s\n"
 
@@ -7514,9 +7465,6 @@ msgstr "нужно абсолютное имя файла\n"
 msgid "looking up '%s'\n"
 msgstr "поиск '%s'\n"
 
-msgid "run as windows service (background)"
-msgstr "запустить как службу окон (фоновый режим)"
-
 msgid "list the contents of the CRL cache"
 msgstr "вывести содержание буфера списков отозванных сертификатов"
 
@@ -8074,9 +8022,6 @@ msgstr "не проверяю список отозванных сертифик
 msgid "checking CRL for"
 msgstr "проверка списка отозванных сертификатов для"
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr "работа в совместимом режиме - цепочка сертификатов не проверена!\n"
-
 msgid "selfsigned certificate has a BAD signature"
 msgstr "у самозаверенного сертификата ПЛОХАЯ подпись"
 
@@ -8499,3 +8444,61 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
+
+#~ msgid "communication problem with gpg-agent\n"
+#~ msgstr "проблема связи с агентом gpg\n"
+
+#~ msgid "canceled by user\n"
+#~ msgstr "прервано пользователем\n"
+
+#~ msgid "problem with the agent\n"
+#~ msgstr "проблема с агентом\n"
+
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "проблема с агентом (неожиданный ответ \"%s\")\n"
+
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "неизвестный формат базы данных TOFU '%s'\n"
+
+#~ msgid "libgcrypt is too old (need %s, have %s)\n"
+#~ msgstr "слишком старая версия libcrypt (нужно %s, есть %s)\n"
+
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "Введите фразу-пароль для доступа к секретному ключу сертификата OpenPGP:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-битный ключ %s, ID %s,\n"
+#~ "создан %s%s.\n"
+
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr ""
+#~ "Необходима фраза-пароль для доступа к секретному ключу пользователя: \"%s"
+#~ "\"\n"
+
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "%u-битный ключ %s, ID %s, создан %s"
+
+#~ msgid "         (subkey on main key ID %s)"
+#~ msgstr "         (подключ на главном ключе %s)"
+
+#~ msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
+#~ msgstr "Внимание: Домашний каталог содержит как tofu.db, так и tofu.d\n"
+
+#~ msgid "Using split format for TOFU database\n"
+#~ msgstr "Используется разделенный формат базы данных TOFU\n"
+
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "не могу получить доступ к каталогу '%s': %s\n"
+
+#~ msgid "run as windows service (background)"
+#~ msgstr "запустить как службу окон (фоновый режим)"
+
+#~ msgid "running in compatibility mode - certificate chain not checked!\n"
+#~ msgstr "работа в совместимом режиме - цепочка сертификатов не проверена!\n"

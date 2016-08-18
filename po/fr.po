@@ -422,10 +422,6 @@ msgid "invalid debug-level '%s' given\n"
 msgstr "niveau de débogage « %s » incorrect\n"
 
 #, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr "%s est trop ancien (nécessaire : %s, utilisé : %s)\n"
-
-#, c-format
 msgid "Note: no default option file '%s'\n"
 msgstr "Remarque : pas de fichier d'options par défaut « %s »\n"
 
@@ -777,22 +773,8 @@ msgstr "échec d'attente de fin du processus %d : %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "impossible de se connecter à « %s » : %s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr "problème de communication avec gpg-agent\n"
-
 msgid "problem setting the gpg-agent options\n"
 msgstr "problème de configuration des options de gpg-agent\n"
-
-msgid "canceled by user\n"
-msgstr "annulé par l'utilisateur\n"
-
-msgid "problem with the agent\n"
-msgstr "problème avec l'agent\n"
-
-#, fuzzy, c-format
-#| msgid "problem with the agent: %s\n"
-msgid "problem with the agent (unexpected response \"%s\")\n"
-msgstr "problème avec l'agent : %s\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -1132,6 +1114,10 @@ msgstr "verrou « %s » non effectif : %s\n"
 #, c-format
 msgid "waiting for lock %s...\n"
 msgstr "attente du verrou %s…\n"
+
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr "%s est trop ancien (nécessaire : %s, utilisé : %s)\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -2169,18 +2155,9 @@ msgstr "option « %s » inconnue\n"
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
-#, fuzzy, c-format
-#| msgid "unknown command '%s'\n"
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "commande « %s » inconnue\n"
-
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "Remarque : l'ancien fichier d'options par défaut « %s » a été ignoré\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr "libgcrypt est trop ancienne (nécessaire : %s, utilisé : %s)\n"
 
 #, c-format
 msgid "Note: %s is not for normal use!\n"
@@ -2189,6 +2166,11 @@ msgstr "Remarque : %s n'est pas pour une utilisation normale.\n"
 #, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "« %s » n'est pas une date d'expiration de signature valable\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: not a valid email address\n"
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "ligne %d : ce n'est pas une adresse électronique valable\n"
 
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -4554,6 +4536,11 @@ msgstr "               avec la clef %s %s\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Signature faite le %s avec la clef %s d'identifiant %s\n"
 
+#, fuzzy, c-format
+#| msgid "                aka \"%s\""
+msgid "               issuer \"%s\"\n"
+msgstr "                alias « %s »"
+
 msgid "Key available at: "
 msgstr "Clef disponible sur : "
 
@@ -4765,25 +4752,6 @@ msgstr "un sous-paquet de type %d possède un bit critique\n"
 msgid "problem with the agent: %s\n"
 msgstr "problème avec l'agent : %s\n"
 
-#, c-format
-msgid " (main key ID %s)"
-msgstr " (identifiant de clef principale %s)"
-
-#, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"Veuillez entrer la phrase secrète pour déverrouiller la clef secrète pour "
-"le\n"
-"certificat OpenPGP :\n"
-"« %2$.*1$s »\n"
-"clef %4$s de %3$u bits, identifiant %5$s,\n"
-"créée le %6$s%7$s.\n"
-
 msgid "Enter passphrase\n"
 msgstr "Entrez la phrase secrète\n"
 
@@ -4791,20 +4759,8 @@ msgid "cancelled by user\n"
 msgstr "annulé par l'utilisateur\n"
 
 #, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr ""
-"Une phrase secrète est nécessaire pour déverrouiller la clef secrète de\n"
-"l'utilisateur : « %s »\n"
-
-#, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "clef %2$s de %1$u bits, identifiant %3$s, créée le %4$s"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr "        (sous-clef de la clef principale d'identifiant %s)"
+msgid " (main key ID %s)"
+msgstr " (identifiant de clef principale %s)"
 
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
 msgstr ""
@@ -5686,12 +5642,6 @@ msgstr "erreur d'initialisation de l'objet lecteur : %s\n"
 #| msgid "error opening '%s': %s\n"
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "erreur d'ouverture de « %s » : %s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr ""
-
-msgid "Using split format for TOFU database\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "error sending data: %s\n"
@@ -7163,10 +7113,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr "abandon de %u certificats du cache\n"
 
 #, c-format
-msgid "can't access directory '%s': %s\n"
-msgstr "impossible d'accéder au répertoire « %s » : %s\n"
-
-#, c-format
 msgid "can't parse certificate '%s': %s\n"
 msgstr "impossible d'analyser le certificat « %s » : %s\n"
 
@@ -7800,9 +7746,6 @@ msgstr "nom de fichier absolu attendu\n"
 msgid "looking up '%s'\n"
 msgstr "recherche de « %s »\n"
 
-msgid "run as windows service (background)"
-msgstr "exécuter en service Windows (arrière-plan)"
-
 msgid "list the contents of the CRL cache"
 msgstr "afficher le contenu du cache de la liste de révocations de certificat"
 
@@ -8373,10 +8316,6 @@ msgstr "pas de vérification de liste de révocations de certificat pour"
 msgid "checking CRL for"
 msgstr "vérification de liste de révocations de certificat pour"
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr ""
-"exécution en mode de compatibilité — chaîne de certificats non vérifiée\n"
-
 msgid "selfsigned certificate has a BAD signature"
 msgstr "certificat autosigné avec une mauvaise signature"
 
@@ -8806,6 +8745,65 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "communication problem with gpg-agent\n"
+#~ msgstr "problème de communication avec gpg-agent\n"
+
+#~ msgid "canceled by user\n"
+#~ msgstr "annulé par l'utilisateur\n"
+
+#~ msgid "problem with the agent\n"
+#~ msgstr "problème avec l'agent\n"
+
+#, fuzzy
+#~| msgid "problem with the agent: %s\n"
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "problème avec l'agent : %s\n"
+
+#, fuzzy
+#~| msgid "unknown command '%s'\n"
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "commande « %s » inconnue\n"
+
+#~ msgid "libgcrypt is too old (need %s, have %s)\n"
+#~ msgstr "libgcrypt est trop ancienne (nécessaire : %s, utilisé : %s)\n"
+
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "Veuillez entrer la phrase secrète pour déverrouiller la clef secrète pour "
+#~ "le\n"
+#~ "certificat OpenPGP :\n"
+#~ "« %2$.*1$s »\n"
+#~ "clef %4$s de %3$u bits, identifiant %5$s,\n"
+#~ "créée le %6$s%7$s.\n"
+
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr ""
+#~ "Une phrase secrète est nécessaire pour déverrouiller la clef secrète de\n"
+#~ "l'utilisateur : « %s »\n"
+
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "clef %2$s de %1$u bits, identifiant %3$s, créée le %4$s"
+
+#~ msgid "         (subkey on main key ID %s)"
+#~ msgstr "        (sous-clef de la clef principale d'identifiant %s)"
+
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "impossible d'accéder au répertoire « %s » : %s\n"
+
+#~ msgid "run as windows service (background)"
+#~ msgstr "exécuter en service Windows (arrière-plan)"
+
+#~ msgid "running in compatibility mode - certificate chain not checked!\n"
+#~ msgstr ""
+#~ "exécution en mode de compatibilité — chaîne de certificats non vérifiée\n"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "vous avez trouvé un bogue… (%s : %d)\n"

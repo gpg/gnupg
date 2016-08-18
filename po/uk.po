@@ -399,10 +399,6 @@ msgid "invalid debug-level '%s' given\n"
 msgstr "вказано некоректне значення рівня діагностики «%s»\n"
 
 #, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr "%s є занадто застарілою (потрібно %s, маємо %s)\n"
-
-#, c-format
 msgid "Note: no default option file '%s'\n"
 msgstr "ЗАУВАЖЕННЯ: не виявлено файла типових параметрів «%s»\n"
 
@@ -747,21 +743,8 @@ msgstr "не вдалося дочекатися завершення проце
 msgid "can't connect to '%s': %s\n"
 msgstr "не вдалося встановити з’єднання з «%s»: %s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr "проблема під час спроби обміну даними з gpg-agent\n"
-
 msgid "problem setting the gpg-agent options\n"
 msgstr "проблема під час спроби встановлення параметрів gpg-agent\n"
-
-msgid "canceled by user\n"
-msgstr "скасовано користувачем\n"
-
-msgid "problem with the agent\n"
-msgstr "проблема з агентом\n"
-
-#, c-format
-msgid "problem with the agent (unexpected response \"%s\")\n"
-msgstr "проблема із агентом (неочікувана відповідь «%s»)\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -1099,6 +1082,10 @@ msgstr "блокування «%s» не виконано: %s\n"
 #, c-format
 msgid "waiting for lock %s...\n"
 msgstr "очікування на блокування %s…\n"
+
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr "%s є занадто застарілою (потрібно %s, маємо %s)\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -2095,16 +2082,8 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(команда «help» виводить список можливих варіантів)\n"
 
 #, c-format
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "невідомий формат бази даних TOFU «%s»\n"
-
-#, c-format
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "ЗАУВАЖЕННЯ: застарілий файл типових параметрів «%s» проігноровано\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr "libgcrypt занадто стара (потрібна — %s, маємо %s)\n"
 
 #, c-format
 msgid "Note: %s is not for normal use!\n"
@@ -2113,6 +2092,11 @@ msgstr "ЗАУВАЖЕННЯ: %s не призначено для звичайн
 #, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "«%s» не є коректним записом завершення строку дії підпису\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: not a valid email address\n"
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "рядок %d: некоректна адреса електронної пошти\n"
 
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -4466,6 +4450,11 @@ msgstr "               за допомогою %s ключа %s\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Підпис створено %s ключем %s з ідентифікатором %s\n"
 
+#, fuzzy, c-format
+#| msgid "                aka \"%s\""
+msgid "               issuer \"%s\"\n"
+msgstr "                або «%s»"
+
 msgid "Key available at: "
 msgstr "Ключ доступний на: "
 
@@ -4668,23 +4657,6 @@ msgstr "підпакет типу %d містить критичний набі�
 msgid "problem with the agent: %s\n"
 msgstr "проблема з агентом: %s\n"
 
-#, c-format
-msgid " (main key ID %s)"
-msgstr " (ідентифікатор основного ключа %s)"
-
-#, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"Вкажіть пароль для розблокування закритого ключа для сертифіката OpenPGP:\n"
-"«%.*s»\n"
-"%u-бітовий ключ %s, ідентифікатор %s,\n"
-"створено %s%s.\n"
-
 msgid "Enter passphrase\n"
 msgstr "Вкажіть пароль\n"
 
@@ -4692,20 +4664,8 @@ msgid "cancelled by user\n"
 msgstr "скасовано користувачем\n"
 
 #, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr ""
-"Вам потрібен пароль для розблокування закритого ключа\n"
-"для користувача: «%s»\n"
-
-#, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "%u-бітовий ключ %s, ідентифікатор %s, створено %s"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr "         (підключ у ідентифікаторі основного ключа %s)"
+msgid " (main key ID %s)"
+msgstr " (ідентифікатор основного ключа %s)"
 
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
 msgstr "Вкажіть пароль для розблокування закритого ключа OpenPGP:"
@@ -5540,13 +5500,6 @@ msgstr "помилка під час спроби ініціалізації б�
 #, c-format
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "помилка під час спроби відкрити бази даних TOFU «%s»: %s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr ""
-"Попередження: у домашньому каталозі містяться як tofu.db, так і tofu.d.\n"
-
-msgid "Using split format for TOFU database\n"
-msgstr "Використовуємо розділений формат для бази даних TOFU\n"
 
 #, c-format
 msgid "error updating TOFU database: %s\n"
@@ -7028,10 +6981,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr "викидання %u сертифікатів з кешу\n"
 
 #, c-format
-msgid "can't access directory '%s': %s\n"
-msgstr "не вдалося отримати доступ до каталогу «%s»: %s\n"
-
-#, c-format
 msgid "can't parse certificate '%s': %s\n"
 msgstr "не вдалося обробити сертифікат «%s»: %s\n"
 
@@ -7626,9 +7575,6 @@ msgstr "мало бути вказано абсолютний шлях до фа
 msgid "looking up '%s'\n"
 msgstr "пошук «%s»\n"
 
-msgid "run as windows service (background)"
-msgstr "запустити як службу windows (у фоновому режимі)"
-
 msgid "list the contents of the CRL cache"
 msgstr "показати вміст кешу CRL"
 
@@ -8183,9 +8129,6 @@ msgstr "не перевіряємо CRL щодо"
 msgid "checking CRL for"
 msgstr "перевіряємо CRL щодо"
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr "працюємо у режимі сумісності — ланцюжок сертифікації не перевірено!\n"
-
 msgid "selfsigned certificate has a BAD signature"
 msgstr "самопідписаний сертифікат має ПОМИЛКОВИЙ підпис"
 
@@ -8608,6 +8551,67 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "communication problem with gpg-agent\n"
+#~ msgstr "проблема під час спроби обміну даними з gpg-agent\n"
+
+#~ msgid "canceled by user\n"
+#~ msgstr "скасовано користувачем\n"
+
+#~ msgid "problem with the agent\n"
+#~ msgstr "проблема з агентом\n"
+
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "проблема із агентом (неочікувана відповідь «%s»)\n"
+
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "невідомий формат бази даних TOFU «%s»\n"
+
+#~ msgid "libgcrypt is too old (need %s, have %s)\n"
+#~ msgstr "libgcrypt занадто стара (потрібна — %s, маємо %s)\n"
+
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "Вкажіть пароль для розблокування закритого ключа для сертифіката "
+#~ "OpenPGP:\n"
+#~ "«%.*s»\n"
+#~ "%u-бітовий ключ %s, ідентифікатор %s,\n"
+#~ "створено %s%s.\n"
+
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr ""
+#~ "Вам потрібен пароль для розблокування закритого ключа\n"
+#~ "для користувача: «%s»\n"
+
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "%u-бітовий ключ %s, ідентифікатор %s, створено %s"
+
+#~ msgid "         (subkey on main key ID %s)"
+#~ msgstr "         (підключ у ідентифікаторі основного ключа %s)"
+
+#~ msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
+#~ msgstr ""
+#~ "Попередження: у домашньому каталозі містяться як tofu.db, так і tofu.d.\n"
+
+#~ msgid "Using split format for TOFU database\n"
+#~ msgstr "Використовуємо розділений формат для бази даних TOFU\n"
+
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "не вдалося отримати доступ до каталогу «%s»: %s\n"
+
+#~ msgid "run as windows service (background)"
+#~ msgstr "запустити як службу windows (у фоновому режимі)"
+
+#~ msgid "running in compatibility mode - certificate chain not checked!\n"
+#~ msgstr ""
+#~ "працюємо у режимі сумісності — ланцюжок сертифікації не перевірено!\n"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "ви виявили ваду… (%s:%d)\n"

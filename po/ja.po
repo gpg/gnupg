@@ -394,10 +394,6 @@ msgid "invalid debug-level '%s' given\n"
 msgstr "無効なdebug-level '%s'が与えられました\n"
 
 #, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr "%s が古すぎます (%s が必要、現在 %s)\n"
-
-#, c-format
 msgid "Note: no default option file '%s'\n"
 msgstr "*注意*: デフォルトのオプション・ファイル '%s' がありません\n"
 
@@ -734,21 +730,8 @@ msgstr "プロセス%dの終了待ちが失敗: %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "'%s'へ接続できません: %s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr "gpg-agentとの通信障害\n"
-
 msgid "problem setting the gpg-agent options\n"
 msgstr "gpg-agentオプションの設定の問題\n"
-
-msgid "canceled by user\n"
-msgstr "ユーザによる取消し\n"
-
-msgid "problem with the agent\n"
-msgstr "エージェントに障害\n"
-
-#, c-format
-msgid "problem with the agent (unexpected response \"%s\")\n"
-msgstr "エージェントに問題 (予期しない応答 \"%s\")\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -1087,6 +1070,10 @@ msgstr "lock '%s' は作成されませんでした: %s\n"
 #, c-format
 msgid "waiting for lock %s...\n"
 msgstr "lock %s を待ちます...\n"
+
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr "%s が古すぎます (%s が必要、現在 %s)\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -2043,16 +2030,8 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(選択肢の一覧には\"help\"を使ってください)\n"
 
 #, c-format
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "不明のTOFU DBフォーマット'%s'\n"
-
-#, c-format
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "*注意*: 以前デフォルトだったオプション・ファイル'%s'は、無視されます\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr "libgcrypt が古すぎます (必要 %s, 現在 %s)\n"
 
 #, c-format
 msgid "Note: %s is not for normal use!\n"
@@ -2061,6 +2040,11 @@ msgstr "*注意*: 普通%sは使いません!\n"
 #, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "'%s'は、有効な署名表現ではありません\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: not a valid email address\n"
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "行 %d: 有効な電子メール・アドレスではありません\n"
 
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -4305,6 +4289,11 @@ msgstr "               %s鍵%sを使用\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "%sに%s鍵ID %sで施された署名\n"
 
+#, fuzzy, c-format
+#| msgid "                aka \"%s\""
+msgid "               issuer \"%s\"\n"
+msgstr "                別名\"%s\""
+
 msgid "Key available at: "
 msgstr "以下に鍵があります: "
 
@@ -4503,24 +4492,6 @@ msgstr "型%dの下位パケットにクリティカル・ビットを発見\n"
 msgid "problem with the agent: %s\n"
 msgstr "エージェントに問題: %s\n"
 
-#, c-format
-msgid " (main key ID %s)"
-msgstr " (主鍵ID %s)"
-
-#, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"OpenPGP証明書の秘密鍵のロックを解除するためにパスフレーズを入力してくださ"
-"い:\n"
-"\"%.*s\"\n"
-"%uビット %s 鍵, ID %s,\n"
-"作成日付 %s%s。\n"
-
 msgid "Enter passphrase\n"
 msgstr "パスフレーズを入力\n"
 
@@ -4528,20 +4499,8 @@ msgid "cancelled by user\n"
 msgstr "ユーザによる取消し\n"
 
 #, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr ""
-"次のユーザの秘密鍵のロックを解除するには\n"
-"パスフレーズがいります:\"%s\"\n"
-
-#, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "%uビット%s鍵, ID %s作成日付は%s"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr "         (主鍵ID %s の副鍵)"
+msgid " (main key ID %s)"
+msgstr " (主鍵ID %s)"
 
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
 msgstr "OpenPGPの秘密鍵のロックを解除するためにパスフレーズを入力してください:"
@@ -5327,12 +5286,6 @@ msgstr "TOFUデータベースの初期化エラー: %s\n"
 #, c-format
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "TOFUデータベースのオープンでエラー '%s': %s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr "警告: tofu.db と tofu.d の両方がホームディレクトリにあります。\n"
-
-msgid "Using split format for TOFU database\n"
-msgstr "TOFUデータベースに分割フォーマットを使用\n"
 
 #, c-format
 msgid "error updating TOFU database: %s\n"
@@ -6717,10 +6670,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr "%uの証明書をキャッシュからはずします\n"
 
 #, c-format
-msgid "can't access directory '%s': %s\n"
-msgstr "ディレクトリ'%s'が作成できません: %s\n"
-
-#, c-format
 msgid "can't parse certificate '%s': %s\n"
 msgstr "証明書'%s'が解析できません: %s\n"
 
@@ -7302,9 +7251,6 @@ msgstr "絶対ファイル名がきます\n"
 msgid "looking up '%s'\n"
 msgstr "'%s'を検索します\n"
 
-msgid "run as windows service (background)"
-msgstr "ウィンドウズ・サービスとして実行 (バックグラウンド)"
-
 msgid "list the contents of the CRL cache"
 msgstr "CRLキャッシュの内容をリストします"
 
@@ -7855,9 +7801,6 @@ msgstr "CRL を確認しません"
 msgid "checking CRL for"
 msgstr "CRLの検査をしています"
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr "コンパチ・モードで実行します - 証明書チェインは確認しません!\n"
-
 msgid "selfsigned certificate has a BAD signature"
 msgstr "自己署名証明書に*不正な*署名があります"
 
@@ -8276,6 +8219,65 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "communication problem with gpg-agent\n"
+#~ msgstr "gpg-agentとの通信障害\n"
+
+#~ msgid "canceled by user\n"
+#~ msgstr "ユーザによる取消し\n"
+
+#~ msgid "problem with the agent\n"
+#~ msgstr "エージェントに障害\n"
+
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "エージェントに問題 (予期しない応答 \"%s\")\n"
+
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "不明のTOFU DBフォーマット'%s'\n"
+
+#~ msgid "libgcrypt is too old (need %s, have %s)\n"
+#~ msgstr "libgcrypt が古すぎます (必要 %s, 現在 %s)\n"
+
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "OpenPGP証明書の秘密鍵のロックを解除するためにパスフレーズを入力してくださ"
+#~ "い:\n"
+#~ "\"%.*s\"\n"
+#~ "%uビット %s 鍵, ID %s,\n"
+#~ "作成日付 %s%s。\n"
+
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr ""
+#~ "次のユーザの秘密鍵のロックを解除するには\n"
+#~ "パスフレーズがいります:\"%s\"\n"
+
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "%uビット%s鍵, ID %s作成日付は%s"
+
+#~ msgid "         (subkey on main key ID %s)"
+#~ msgstr "         (主鍵ID %s の副鍵)"
+
+#~ msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
+#~ msgstr "警告: tofu.db と tofu.d の両方がホームディレクトリにあります。\n"
+
+#~ msgid "Using split format for TOFU database\n"
+#~ msgstr "TOFUデータベースに分割フォーマットを使用\n"
+
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "ディレクトリ'%s'が作成できません: %s\n"
+
+#~ msgid "run as windows service (background)"
+#~ msgstr "ウィンドウズ・サービスとして実行 (バックグラウンド)"
+
+#~ msgid "running in compatibility mode - certificate chain not checked!\n"
+#~ msgstr "コンパチ・モードで実行します - 証明書チェインは確認しません!\n"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "あなたはバグを発見しました ... (%s:%d)\n"
