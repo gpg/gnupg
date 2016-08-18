@@ -2254,6 +2254,11 @@ The available filter types are:
   This filter will keep a user id packet and its dependent packets in
   the keyblock if the expression evaluates to true.
 
+  @item drop-sig
+  This filter drops the selected key signatures on user ids.
+  Self-signatures are not consideres.
+  Currently only implemented for --import-filter.
+
 @end table
 
 For the syntax of the expression see the chapter "FILTER EXPRESSIONS".
@@ -2273,6 +2278,18 @@ The available properties are:
 
   @item primary
   Boolean indicating whether the user id is the primary one.  (keep-uid)
+
+  @item sig_created
+  @itemx sig_created_d
+  The first is the timestamp a signature packet was created.  The
+  second is the same but given as an ISO string,
+  e.g. "2016-08-17". (drop-sig)
+
+  @item sig_algo
+  A number with the public key algorithm of a signature packet. (drop-sig)
+
+  @item sig_digest_algo
+  A number with the digest algorithm of a signature packet. (drop-sig)
 
 @end table
 

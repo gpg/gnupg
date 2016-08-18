@@ -76,13 +76,15 @@ struct import_stats_s
 #define NODE_FLAG_A  8
 
 
-/* A global variable to store the selector created from
+/* Global variables to store selector created from
  * --import-filter keep-uid=EXPR.
+ * --import-filter drop-sig=EXPR.
  *
  * FIXME: We should put this into the CTRL object but that requires a
  * lot more changes right now.
  */
 static recsel_expr_t import_keep_uid;
+static recsel_expr_t import_drop_sig;
 
 
 
@@ -122,6 +124,8 @@ cleanup_import_globals (void)
 {
   recsel_release (import_keep_uid);
   import_keep_uid = NULL;
+  recsel_release (import_drop_sig);
+  import_drop_sig = NULL;
 }
 
 
@@ -198,6 +202,8 @@ parse_and_set_import_filter (const char *string)
 
   if (!strncmp (string, "keep-uid=", 9))
     err = recsel_parse_expr (&import_keep_uid, string+9);
+  else if (!strncmp (string, "drop-sig=", 9))
+    err = recsel_parse_expr (&import_drop_sig, string+9);
   else
     err = gpg_error (GPG_ERR_INV_NAME);
 
@@ -1097,11 +1103,13 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
 }
 
 
-/* Helper for apply_keep_uid_filter.  */
+/* Helper for apply_keep_uid_filter and apply_drop_sig_filter.  */
 static const char *
 filter_getval (void *cookie, const char *propname)
 {
+  /* FIXME: Malloc our static buffers and access them via the cookie.  */
   kbnode_t node = cookie;
+  static char numbuf[20];
   const char *result;
 
   if (node->pkt->pkttype == PKT_USER_ID)
@@ -1115,10 +1123,37 @@ filter_getval (void *cookie, const char *propname)
               node->pkt->pkt.user_id->mbox
                 = mailbox_from_userid (node->pkt->pkt.user_id->name);
             }
-          return node->pkt->pkt.user_id->mbox;
+          result = node->pkt->pkt.user_id->mbox;
         }
       else if (!strcmp (propname, "primary"))
         result = node->pkt->pkt.user_id->is_primary? "1":"0";
+      else
+        result = NULL;
+    }
+  else if (node->pkt->pkttype == PKT_SIGNATURE
+           || node->pkt->pkttype == PKT_ATTRIBUTE)
+    {
+      PKT_signature *sig = node->pkt->pkt.signature;
+
+      if (!strcmp (propname, "sig_created"))
+        {
+          snprintf (numbuf, sizeof numbuf, "%lu", (ulong)sig->timestamp);
+          result = numbuf;
+        }
+      else if (!strcmp (propname, "sig_created_d"))
+        {
+          result = datestr_from_sig (sig);
+        }
+      else if (!strcmp (propname, "sig_algo"))
+        {
+          snprintf (numbuf, sizeof numbuf, "%d", sig->pubkey_algo);
+          result = numbuf;
+        }
+      else if (!strcmp (propname, "sig_digest_algo"))
+        {
+          snprintf (numbuf, sizeof numbuf, "%d", sig->digest_algo);
+          result = numbuf;
+        }
       else
         result = NULL;
     }
@@ -1127,6 +1162,7 @@ filter_getval (void *cookie, const char *propname)
 
   return result;
 }
+
 
 /*
  * Apply the keep-uid filter to the keyblock.  The deleted nodes are
@@ -1160,6 +1196,49 @@ apply_keep_uid_filter (kbnode_t keyblock, recsel_expr_t selector)
           /* else */
           /*   log_debug ("keep-uid: keeping '%s'\n", */
           /*              node->pkt->pkt.user_id->name); */
+        }
+    }
+}
+
+
+/*
+ * Apply the drop-sig filter to the keyblock.  The deleted nodes are
+ * marked and thus the caller should call commit_kbnode afterwards.
+ * KEYBLOCK must not have any blocks marked as deleted.
+ */
+static void
+apply_drop_sig_filter (kbnode_t keyblock, recsel_expr_t selector)
+{
+  kbnode_t node;
+  int active = 0;
+  u32 main_keyid[2];
+  PKT_signature *sig;
+
+  keyid_from_pk (keyblock->pkt->pkt.public_key, main_keyid);
+
+  /* Loop over all signatures for user id and attribute packets which
+   * are not self signatures.  */
+  for (node = keyblock->next; node; node = node->next )
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+          || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+        break; /* ready.  */
+      if (node->pkt->pkttype == PKT_USER_ID)
+        active = 1;
+      if (!active)
+        continue;
+      if (node->pkt->pkttype != PKT_SIGNATURE
+          && node->pkt->pkttype != PKT_ATTRIBUTE)
+        continue;
+
+      sig = node->pkt->pkt.signature;
+      if (main_keyid[0] == sig->keyid[0] || main_keyid[1] == sig->keyid[1])
+        continue;  /* Skip self-signatures.  */
+
+      if (IS_UID_SIG(sig) || IS_UID_REV(sig))
+        {
+          if (recsel_select (selector, filter_getval, node))
+            delete_kbnode (node);
         }
     }
 }
@@ -1304,6 +1383,11 @@ import_one (ctrl_t ctrl,
   if (import_keep_uid)
     {
       apply_keep_uid_filter (keyblock, import_keep_uid);
+      commit_kbnode (&keyblock);
+    }
+  if (import_drop_sig)
+    {
+      apply_drop_sig_filter (keyblock, import_drop_sig);
       commit_kbnode (&keyblock);
     }
 
