@@ -9,10 +9,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU gnupg 2.1.13\n"
+"Project-Id-Version: GNU gnupg 2.1.14\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-07-09 22:31+0100\n"
-"Last-Translator: Åka Sikrom <a4@hush.com>\n"
+"PO-Revision-Date: 2016-07-15 10:27+0100\n"
+"Last-Translator: Åka Sikrom <a4 æt hush dåt com>\n"
 "Language-Team: Norwegian Bokmål <i18n-nb@lister.ping.uio.no>\n"
 "Language: nb\n"
 "MIME-Version: 1.0\n"
@@ -71,22 +71,13 @@ msgstr "Kvalitet:"
 #. translate this entry, a default english text (see source)
 #. will be used.
 msgid "pinentry.qualitybar.tooltip"
-msgstr ""
-"Kvaliteten på teksten overfor. Spør administrator for mer informasjon om "
-"hvordan kvaliteten vurderes."
+msgstr "Kvaliteten på teksten overfor. Spør administrator for mer informasjon om hvordan kvaliteten vurderes."
 
-msgid ""
-"Please enter your PIN, so that the secret key can be unlocked for this "
-"session"
-msgstr ""
-"Skriv inn PIN-kode slik at hemmelig nøkkel kan låses opp for denne økta"
+msgid "Please enter your PIN, so that the secret key can be unlocked for this session"
+msgstr "Skriv inn PIN-kode slik at hemmelig nøkkel kan låses opp for denne økta"
 
-msgid ""
-"Please enter your passphrase, so that the secret key can be unlocked for "
-"this session"
-msgstr ""
-"Skriv inn passordfrasen din, slik at hemmelig nøkkel kan låses opp for "
-"gjeldende økt"
+msgid "Please enter your passphrase, so that the secret key can be unlocked for this session"
+msgstr "Skriv inn passordfrasen din, slik at hemmelig nøkkel kan låses opp for gjeldende økt"
 
 msgid "PIN:"
 msgstr "PIN:"
@@ -162,12 +153,8 @@ msgid "error writing key: %s\n"
 msgstr "feil under skriving av nøkkel: %s\n"
 
 #, c-format
-msgid ""
-"An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
-"allow this?"
-msgstr ""
-"En ssh-prosess ber om tillatelse til å brukt nøkkel%%0A  %s%%0A  (%s)%%0AVil "
-"du tillate dette?"
+msgid "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to allow this?"
+msgstr "En ssh-prosess ber om tillatelse til å brukt nøkkel%%0A  %s%%0A  (%s)%%0AVil du tillate dette?"
 
 msgid "Allow"
 msgstr "Tillat"
@@ -183,12 +170,8 @@ msgid "Please re-enter this passphrase"
 msgstr "Skriv inn denne passordfrasen på nytt"
 
 #, c-format
-msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
-"%s%%0Awithin gpg-agent's key storage"
-msgstr ""
-"Skriv inn passordfrase som skal brukes til å beskytte mottatt hemmelig nøkkel"
-"%%0A   %s%%0A   %s%%0Ai nøkkellageret for gpg-agent"
+msgid "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %s%%0Awithin gpg-agent's key storage"
+msgstr "Skriv inn passordfrase som skal brukes til å beskytte mottatt hemmelig nøkkel%%0A   %s%%0A   %s%%0Ai nøkkellageret for gpg-agent"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -252,18 +235,12 @@ msgid "Take this one anyway"
 msgstr "Bruk denne likevel"
 
 #, c-format
-msgid ""
-"You have not entered a passphrase!%0AAn empty passphrase is not allowed."
-msgstr ""
-"Du har ikke skrevet inn en passordfrase.%0ATom passordfrase er ikke tillatt."
+msgid "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
+msgstr "Du har ikke skrevet inn en passordfrase.%0ATom passordfrase er ikke tillatt."
 
 #, c-format
-msgid ""
-"You have not entered a passphrase - this is in general a bad idea!%0APlease "
-"confirm that you do not want to have any protection on your key."
-msgstr ""
-"Du har ikke skrevet inn en passordfrase. Dette er generelt ikke lurt."
-"%0ABekreft at du ikke vil beskytte nøkkelen."
+msgid "You have not entered a passphrase - this is in general a bad idea!%0APlease confirm that you do not want to have any protection on your key."
+msgstr "Du har ikke skrevet inn en passordfrase. Dette er generelt ikke lurt.%0ABekreft at du ikke vil beskytte nøkkelen."
 
 msgid "Yes, protection is not needed"
 msgstr "Ja, beskyttelse er unødvendig"
@@ -276,8 +253,7 @@ msgstr[1] "Passordfraser skal bestå av minst %u tegn."
 
 #, c-format
 msgid "A passphrase should contain at least %u digit or%%0Aspecial character."
-msgid_plural ""
-"A passphrase should contain at least %u digits or%%0Aspecial characters."
+msgid_plural "A passphrase should contain at least %u digits or%%0Aspecial characters."
 msgstr[0] "Passordfraser bør inneholde minst %u siffer eller%%0Aspesialtegn."
 msgstr[1] "Passordfraser bør inneholde minst %u sifre eller%%0Aspesialtegn."
 
@@ -536,18 +512,15 @@ msgstr "Skriv inn passordfrase for å låse opp PKCS#12-objekt."
 msgid "Please enter the passphrase to protect the new PKCS#12 object."
 msgstr "Skriv inn passordfrase for å låse nytt PKCS#12-objekt."
 
-msgid ""
-"Please enter the passphrase to protect the imported object within the GnuPG "
-"system."
-msgstr ""
-"Skriv inn passordfrase for å låse nytt importert objekt i GnuPG-systemet."
+msgid "Please enter the passphrase to protect the imported object within the GnuPG system."
+msgstr "Skriv inn passordfrase for å låse nytt importert objekt i GnuPG-systemet."
 
 msgid ""
 "Please enter the passphrase or the PIN\n"
 "needed to complete this operation."
 msgstr ""
 "Skriv inn passordfrase eller PIN-kode som\n"
-"\vkreves for å fullføre gjeldende handling."
+"kreves for å fullføre gjeldende handling."
 
 msgid "cancelled\n"
 msgstr "avbrutt\n"
@@ -596,12 +569,8 @@ msgstr "feil under lesing av liste over tillitsmerkede rotsertifikater\n"
 #. "%s" gets replaced by the name as stored in the
 #. certificate.
 #, c-format
-msgid ""
-"Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
-"certificates?"
-msgstr ""
-"Stoler du fullstendig på at%%0A  «%s»%%0Asertifiserer brukersertifikater "
-"korrekt?"
+msgid "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user certificates?"
+msgstr "Stoler du fullstendig på at%%0A  «%s»%%0Asertifiserer brukersertifikater korrekt?"
 
 msgid "Yes"
 msgstr "Ja"
@@ -618,9 +587,7 @@ msgstr "Nei"
 #. fingerprint string whereas the first one receives the name
 #. as stored in the certificate.
 #, c-format
-msgid ""
-"Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
-"fingerprint:%%0A  %s"
+msgid "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the fingerprint:%%0A  %s"
 msgstr "Kontroller at sertifikatet%%0A  «%s»%%0Ahar fingeravtrykket%%0A  %s"
 
 #. TRANSLATORS: "Correct" is the label of a button and intended
@@ -634,16 +601,11 @@ msgstr "Feil"
 
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
-msgstr ""
-"Merk: denne passordfrasen har aldri blitt endret.%0AEndre den umiddelbart."
+msgstr "Merk: denne passordfrasen har aldri blitt endret.%0AEndre den umiddelbart."
 
 #, c-format
-msgid ""
-"This passphrase has not been changed%%0Asince %.4s-%.2s-%.2s.  Please change "
-"it now."
-msgstr ""
-"Denne passordfrasen har ikke blitt endret%%0Asiden %.4s-%.2s-%.2s. Endre den "
-"umiddelbart."
+msgid "This passphrase has not been changed%%0Asince %.4s-%.2s-%.2s.  Please change it now."
+msgstr "Denne passordfrasen har ikke blitt endret%%0Asiden %.4s-%.2s-%.2s. Endre den umiddelbart."
 
 msgid "Change passphrase"
 msgstr "Endre passordfrase"
@@ -652,11 +614,8 @@ msgid "I'll change it later"
 msgstr "Jeg endrer senere"
 
 #, c-format
-msgid ""
-"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
-"%%0A?"
-msgstr ""
-"Er du sikker på at du vil slette nøkkel med nøkkelgrep%%0A  %s%%0A  %%C%%0A?"
+msgid "Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C%%0A?"
+msgstr "Er du sikker på at du vil slette nøkkel med nøkkelgrep%%0A  %s%%0A  %%C%%0A?"
 
 msgid "Delete key"
 msgstr "Slett nøkkel"
@@ -666,8 +625,7 @@ msgid ""
 "Deleting the key might remove your ability to access remote machines."
 msgstr ""
 "Advarsel: denne nøkkelen brukes også som SSH-nøkkel.\n"
-"Hvis du sletter nøkkelen, kan du miste tilgang til én eller flere eksterne "
-"maskiner."
+"Hvis du sletter nøkkelen, kan du miste tilgang til én eller flere eksterne maskiner."
 
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr "DSA krever at kontrollsummen er multipliserbar med 8 bit\n"
@@ -682,7 +640,7 @@ msgstr "kontrollsum på %zu bit er ugyldig for %u-bits %s-nøkler\n"
 
 #, c-format
 msgid "checking created signature failed: %s\n"
-msgstr "kontroll av opprettet signatur mislyktes. %s\n"
+msgstr "kontroll av opprettet signatur mislyktes: %s\n"
 
 msgid "secret key parts are not available\n"
 msgstr "hemmelige nøkkeldeler er ikke tilgjenglig\n"
@@ -717,8 +675,7 @@ msgstr "venting på avslutning av prosesser mislyktes: %s\n"
 
 #, c-format
 msgid "error running '%s': probably not installed\n"
-msgstr ""
-"feil under kjøring av «%s». Programmet er sannsynligvis ikke installert\n"
+msgstr "feil under kjøring av «%s». Programmet er sannsynligvis ikke installert\n"
 
 #, c-format
 msgid "error running '%s': exit status %d\n"
@@ -730,11 +687,11 @@ msgstr "feil under kjøring av «%s». Avsluttet\n"
 
 #, c-format
 msgid "error getting exit code of process %d: %s\n"
-msgstr "feil under henting av avslutningskode for prosess %d: %s\n"
+msgstr "feil under henting av prosess-avslutningskode %d: %s\n"
 
 #, c-format
 msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "prosessen %d avsluttet ikke i tide. %s\n"
+msgstr "prosess %d avsluttet ikke i tide: %s\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -813,7 +770,7 @@ msgstr "kjernen ble full under tildeling av %lu byte"
 
 #, c-format
 msgid "error allocating enough memory: %s\n"
-msgstr "feil under tildeling av minne. %s\n"
+msgstr "feil under tildeling av minne: %s\n"
 
 #, c-format
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
@@ -1147,22 +1104,15 @@ msgstr "fant ingen gyldig OpenPGP-data.\n"
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "ugyldig armor: linje lengre enn %d tegn\n"
 
-msgid ""
-"quoted printable character in armor - probably a buggy MTA has been used\n"
-msgstr ""
-"anført utskrivbart tegn i armor. Noen har antakeligvis brukt en feiloppsatt "
-"e-posttjener\n"
+msgid "quoted printable character in armor - probably a buggy MTA has been used\n"
+msgstr "anført utskrivbart tegn i armor. Noen har antakeligvis brukt en feiloppsatt e-posttjener\n"
 
 #, c-format
 msgid "[ not human readable (%zu bytes: %s%s) ]"
 msgstr "[ ikke menneskevennlig (%zu byte: %s%s) ]"
 
-msgid ""
-"a notation name must have only printable characters or spaces, and end with "
-"an '='\n"
-msgstr ""
-"notatnavn kan bare inneholde utskrivbare tegn og mellomrom, og må slutte med "
-"«=»\n"
+msgid "a notation name must have only printable characters or spaces, and end with an '='\n"
+msgstr "notatnavn kan bare inneholde utskrivbare tegn og mellomrom, og må slutte med «=»\n"
 
 msgid "a user notation name must contain the '@' character\n"
 msgstr "bruker-notatnavn må inneholde tegnet «@»\n"
@@ -1203,11 +1153,11 @@ msgstr "ADVARSEL: %s\n"
 
 #, c-format
 msgid "OpenPGP card not available: %s\n"
-msgstr "OpenPGP-kort er ikke tilgjengelig. %s\n"
+msgstr "OpenPGP-kort er ikke tilgjengelig: %s\n"
 
 #, c-format
 msgid "OpenPGP card no. %s detected\n"
-msgstr "OpenPGP-kortnummer %s oppdaget\n"
+msgstr "Oppdaget OpenPGP-kortnummer %s\n"
 
 msgid "can't do this in batch mode\n"
 msgstr "du kan ikke gjøres dette i buntmodus\n"
@@ -1310,14 +1260,14 @@ msgstr "Feil: feilformatert fingeravtrykk.\n"
 
 #, c-format
 msgid "key operation not possible: %s\n"
-msgstr "nøkkelhåndtering er umulig. %s\n"
+msgstr "klarte ikke å utføre nøkkelhandling: %s\n"
 
 msgid "not an OpenPGP card"
 msgstr "ikke et OpenPGP-kort"
 
 #, c-format
 msgid "error getting current key info: %s\n"
-msgstr "feil under henting av info om gjeldende nøkkel. %s\n"
+msgstr "feil under henting av nøkkelinfo: %s\n"
 
 msgid "Replace existing key? (y/N) "
 msgstr "Erstatte eksisterende nøkkel? (j/N) "
@@ -1357,7 +1307,7 @@ msgstr "Kortet blir nå satt opp på nytt for å lage nøkkel på %u bit\n"
 
 #, c-format
 msgid "error changing size of key %d to %u bits: %s\n"
-msgstr "feil under endring av størrelse på nøkkel %d til %u bit. %s\n"
+msgstr "feil under endring av størrelse på nøkkel %d til %u bit: %s\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Lage sikkerhetskopi av krypteringsnøkler utenfor kortet? (J/n) "
@@ -1487,11 +1437,11 @@ msgstr "klarte ikke å åpne «%s»\n"
 
 #, c-format
 msgid "key \"%s\" not found: %s\n"
-msgstr "fant ikke nøkkelen «%s». %s\n"
+msgstr "fant ikke nøkkelen «%s»: %s\n"
 
 #, c-format
 msgid "error reading keyblock: %s\n"
-msgstr "feil under lesing av nøkkelblokk. %s\n"
+msgstr "feil under lesing av nøkkelblokk: %s\n"
 
 #, c-format
 msgid "key \"%s\" not found\n"
@@ -1507,8 +1457,7 @@ msgid "Delete this key from the keyring? (y/N) "
 msgstr "Vil du slette denne nøkkelen fra nøkkelknippet? (j/N) "
 
 msgid "This is a secret key! - really delete? (y/N) "
-msgstr ""
-"Dette er en hemmelig nøkkel. Er du sikker på at du vil slette den? (j/N) "
+msgstr "Dette er en hemmelig nøkkel. Er du sikker på at du vil slette den? (j/N) "
 
 #, c-format
 msgid "deleting secret %s failed: %s\n"
@@ -1536,7 +1485,7 @@ msgstr "bruk valget «--delete-secret-keys» for å slette den først.\n"
 
 #, c-format
 msgid "error creating passphrase: %s\n"
-msgstr "feil under opprettelse av passordfrase. %s\n"
+msgstr "feil under opprettelse av passordfrase: %s\n"
 
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
 msgstr "klarte ikke å bruke symmetrisk ESK-pakke på grunn av S2K-modus\n"
@@ -1558,19 +1507,12 @@ msgid "reading from '%s'\n"
 msgstr "leser fra «%s»\n"
 
 #, c-format
-msgid ""
-"WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
-msgstr ""
-"ADVARSEL: tvungen bruk av symmetrisk krypt.metode %s (%d) bryter med "
-"mottakers oppsett\n"
+msgid "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
+msgstr "ADVARSEL: tvungen bruk av symmetrisk krypt.metode %s (%d) bryter med mottakers oppsett\n"
 
 #, c-format
-msgid ""
-"WARNING: forcing compression algorithm %s (%d) violates recipient "
-"preferences\n"
-msgstr ""
-"ADVARSEL: tvungen bruk av komprimeringsalgoritme %s (%d) bryter med "
-"mottakers oppsett\n"
+msgid "WARNING: forcing compression algorithm %s (%d) violates recipient preferences\n"
+msgstr "ADVARSEL: tvungen bruk av komprimeringsalgoritme %s (%d) bryter med mottakers oppsett\n"
 
 #, c-format
 msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
@@ -1592,11 +1534,8 @@ msgstr "%s krypterte data\n"
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "kryptert med en ukjent algoritme %d\n"
 
-msgid ""
-"WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
-msgstr ""
-"ADVARSEL: meldinga ble kryptert med svak nøkkel for symmetrisk "
-"krypteringsmetode.\n"
+msgid "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
+msgstr "ADVARSEL: meldinga ble kryptert med svak nøkkel for symmetrisk krypteringsmetode.\n"
 
 msgid "problem handling encrypted packet\n"
 msgstr "problem ved håndtering av kryptert pakke\n"
@@ -1604,15 +1543,11 @@ msgstr "problem ved håndtering av kryptert pakke\n"
 msgid "no remote program execution supported\n"
 msgstr "fjernutføring av programmer er ikke støttet\n"
 
-msgid ""
-"external program calls are disabled due to unsafe options file permissions\n"
-msgstr ""
-"eksterne programkall er slått av på grunn av utrygge tillatelser til "
-"oppsettsfil\n"
+msgid "external program calls are disabled due to unsafe options file permissions\n"
+msgstr "eksterne programkall er slått av på grunn av utrygge tillatelser til oppsettsfil\n"
 
 msgid "this platform requires temporary files when calling external programs\n"
-msgstr ""
-"denne plattformen krever midlertidige filer ved kall på eksterne programmer\n"
+msgstr "denne plattformen krever midlertidige filer ved kall på eksterne programmer\n"
 
 #, c-format
 msgid "unable to execute program '%s': %s\n"
@@ -1716,7 +1651,7 @@ msgstr "Ingen fingeravtrykk"
 
 #, c-format
 msgid "secret key \"%s\" not found: %s\n"
-msgstr "fant ikke hemmelig nøkkel «%s». %s\n"
+msgstr "fant ikke hemmelig nøkkel «%s»: %s\n"
 
 #, c-format
 msgid "Warning: not using '%s' as default key: %s\n"
@@ -1783,10 +1718,9 @@ msgstr "lag nytt nøkkelpar raskt"
 msgid "quickly add a new user-id"
 msgstr "legg til en ny bruker-ID raskt"
 
-#, fuzzy
 #| msgid "quickly add a new user-id"
 msgid "quickly revoke a user-id"
-msgstr "legg til en ny bruker-ID raskt"
+msgstr "opphev bruker-ID raskt"
 
 msgid "full featured key pair generation"
 msgstr "fullverdig generering av nøkkelpar"
@@ -1981,8 +1915,7 @@ msgid "WARNING: unsafe enclosing directory ownership on homedir '%s'\n"
 msgstr "ADVARSEL: utrgt eierskap til foreldermapper av hjemmemappe «%s»\n"
 
 #, c-format
-msgid ""
-"WARNING: unsafe enclosing directory ownership on configuration file '%s'\n"
+msgid "WARNING: unsafe enclosing directory ownership on configuration file '%s'\n"
 msgstr "ADVARSEL: utrgt eierskap til foreldermapper av oppsettsfil «%s»\n"
 
 #, c-format
@@ -1994,8 +1927,7 @@ msgid "WARNING: unsafe enclosing directory permissions on homedir '%s'\n"
 msgstr "ADVARSEL: utrygge tillatelser til foreldermapper av hjemmemappe «%s»\n"
 
 #, c-format
-msgid ""
-"WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
+msgid "WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
 msgstr "ADVARSEL: utrygge tillatelser til foreldermapper av oppsettsfil «%s»\n"
 
 #, c-format
@@ -2097,10 +2029,10 @@ msgstr "%s:%d: ugyldige importeringsvalg\n"
 msgid "invalid import options\n"
 msgstr "ugyldige importeringsvalg\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "invalid list options\n"
 msgid "invalid filter option: %s\n"
-msgstr "ugyldige listevalg\n"
+msgstr "filtervalget %s er ugyldig\n"
 
 #, c-format
 msgid "%s:%d: invalid export options\n"
@@ -2187,7 +2119,7 @@ msgstr "ADVARSEL: kjører med falsk systemtid: "
 
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
-msgstr "lar være å kjøre med usikret minne pga. %s\n"
+msgstr "lar være å kjøre med usikret minne på grunn av %s\n"
 
 msgid "selected cipher algorithm is invalid\n"
 msgstr "valgt krypteringsalgoritme er ugyldig\n"
@@ -2290,8 +2222,7 @@ msgid "--symmetric --sign --encrypt [filename]"
 msgstr "--symmetric --sign --encrypt [filnavn]"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
-msgstr ""
-"du kan ikke bruke «--symmetric --sign --encrypt» og «--s2k-mode 0» samtidig\n"
+msgstr "du kan ikke bruke «--symmetric --sign --encrypt» og «--s2k-mode 0» samtidig\n"
 
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
@@ -2360,9 +2291,7 @@ msgstr "feil under tolking av nøkkelspesifikasjon «%s»: %s\n"
 
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
-msgstr ""
-"«%s» ser hverken ut til å være en gyldig nøkkel-ID, fingeravtrykk eller "
-"nøkkelgrep\n"
+msgstr "«%s» ser hverken ut til å være en gyldig nøkkel-ID, fingeravtrykk eller nøkkelgrep\n"
 
 msgid "[filename]"
 msgstr "[filnavn]"
@@ -2420,10 +2349,9 @@ msgstr "ikke tøm «ownertrust»-verdier under importering"
 msgid "do not update the trustdb after import"
 msgstr "ikke oppdater tillitsdatabase etter importering"
 
-#, fuzzy
 #| msgid "show key fingerprint"
 msgid "show key during import"
-msgstr "vise nøkkelens fingeravtrykk"
+msgstr "vis nøkkel under importering"
 
 msgid "only accept updates to existing keys"
 msgstr "bare godta oppdateringer av nøkler som finnes allerede"
@@ -2435,7 +2363,7 @@ msgid "remove as much as possible from key after import"
 msgstr "fjern så mye som mulig fra nøkkel etter importering"
 
 msgid "run import filters and export key immediately"
-msgstr ""
+msgstr "kjør importeringsfiltre og eksporter nøkkel umiddelbart"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2533,14 +2461,11 @@ msgid "it is strongly suggested that you update your preferences and\n"
 msgstr "du anbefales på det sterkeste å endre oppsett og\n"
 
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
-msgstr ""
-"dele ut denne nøkkelen på nytt for å unngå potensielle problemer med "
-"algoritme-samsvar\n"
+msgstr "dele ut denne nøkkelen på nytt for å unngå potensielle problemer med algoritme-samsvar\n"
 
 #, c-format
 msgid "you can update your preferences with: gpg --edit-key %s updpref save\n"
-msgstr ""
-"oppdater oppsettet med følgende kommando: gpg --edit-key %s updpref save\n"
+msgstr "oppdater oppsettet med følgende kommando: gpg --edit-key %s updpref save\n"
 
 #, c-format
 msgid "key %s: no user ID\n"
@@ -2570,7 +2495,7 @@ msgstr "dette kan skyldes manglende selvsignatur\n"
 
 #, c-format
 msgid "key %s: public key not found: %s\n"
-msgstr "nøkkel %s: fant ikke offentlig nøkkel. %s\n"
+msgstr "nøkkel %s: fant ikke offentlig nøkkel: %s\n"
 
 #, c-format
 msgid "key %s: new key - skipped\n"
@@ -2578,7 +2503,7 @@ msgstr "nøkkel %s: ny nøkkel. Hoppet over\n"
 
 #, c-format
 msgid "no writable keyring found: %s\n"
-msgstr "fant ikke skrivbart nøkkelknippe. %s\n"
+msgstr "fant ikke skrivbart nøkkelknippe: %s\n"
 
 #, c-format
 msgid "error writing keyring '%s': %s\n"
@@ -2598,7 +2523,7 @@ msgstr "nøkkel %s: finner ikke original nøkkelblokk: %s\n"
 
 #, c-format
 msgid "key %s: can't read original keyblock: %s\n"
-msgstr "nøkkel %s: klarte ikke å lese opprinnelig nøkkelblokk. %s\n"
+msgstr "nøkkel %s: klarte ikke å lese opprinnelig nøkkelblokk: %s\n"
 
 #, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
@@ -2665,8 +2590,7 @@ msgstr "importering av hemmelig nøkkel er ikke tillatt\n"
 
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
-msgstr ""
-"nøkkel %s: hemmelig nøkkel med ugyldig krypteringsmetode %d - hoppet over\n"
+msgstr "nøkkel %s: hemmelig nøkkel med ugyldig krypteringsmetode %d - hoppet over\n"
 
 #. TRANSLATORS: For smartcard, each private key on
 #. host has a reference (stub) to a smartcard and
@@ -2684,9 +2608,7 @@ msgstr "Kjør følgende kommando for å flytte «%s»: %s\n"
 
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
-msgstr ""
-"nøkkel %s: offentlig nøkkel mangler. Klarte ikke å bruke "
-"opphevelsessertifikat\n"
+msgstr "nøkkel %s: offentlig nøkkel mangler. Klarte ikke å bruke opphevelsessertifikat\n"
 
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -2702,8 +2624,7 @@ msgstr "nøkkel %s: ingen bruker-ID for signatur\n"
 
 #, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
-msgstr ""
-"nøkkel %s: offentlig nøkkelalgoritme for bruker-ID («%s») støttes ikke\n"
+msgstr "nøkkel %s: offentlig nøkkelalgoritme for bruker-ID («%s») støttes ikke\n"
 
 #, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
@@ -2779,8 +2700,7 @@ msgstr "ADVARSEL: nøkkel %s kan være opphevet: henter opphevingsnøkkel %s\n"
 
 #, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
-msgstr ""
-"ADVARSEL: nøkkel %s kan være opphevet: opphevingsnøkkel %s ikke tilstede.\n"
+msgstr "ADVARSEL: nøkkel %s kan være opphevet: opphevingsnøkkel %s ikke tilstede.\n"
 
 #, c-format
 msgid "key %s: \"%s\" revocation certificate added\n"
@@ -2816,7 +2736,7 @@ msgstr "feil under åpning av nøkkeldatabase: %s\n"
 
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
-msgstr "klarte ikke å bygge hurtiglager for nøkkelknippe på nytt. %s\n"
+msgstr "klarte ikke å bygge hurtiglager for nøkkelknippe på nytt: %s\n"
 
 msgid "[revocation]"
 msgstr "[oppheving]"
@@ -2826,16 +2746,11 @@ msgstr "[selvsignatur]"
 
 #, c-format
 msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr ""
-"klarte ikke å kontrollere signatur på grunn av ustøttet algoritme for "
-"offentlig nøkkel (%d): %s.\n"
+msgstr "klarte ikke å kontrollere signatur på grunn av ustøttet algoritme for offentlig nøkkel (%d): %s.\n"
 
 #, c-format
-msgid ""
-"can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr ""
-"klarte ikke å kontrollere signatur på grunn av ustøttet algoritme for "
-"meldingssum (%d): %s.\n"
+msgid "can't check signature with unsupported message-digest algorithm %d: %s.\n"
+msgstr "klarte ikke å kontrollere signatur på grunn av ustøttet algoritme for meldingssum (%d): %s.\n"
 
 msgid " (reordered signatures follow)"
 msgstr " (omsorterte signaturer følger)"
@@ -2869,18 +2784,12 @@ msgstr[0] "%d signatur omsortert\n"
 msgstr[1] "%d signaturer omsortert\n"
 
 #, c-format
-msgid ""
-"Warning: errors found and only checked self-signatures, run '%s' to check "
-"all signatures.\n"
-msgstr ""
-"Advarsel: fant feil og kontrollerte bare selvsignaturer. Kjør «%s» for å "
-"kontrollere alle signaturer.\n"
+msgid "Warning: errors found and only checked self-signatures, run '%s' to check all signatures.\n"
+msgstr "Advarsel: fant feil og kontrollerte bare selvsignaturer. Kjør «%s» for å kontrollere alle signaturer.\n"
 
 msgid ""
-"Please decide how far you trust this user to correctly verify other users' "
-"keys\n"
-"(by looking at passports, checking fingerprints from different sources, "
-"etc.)\n"
+"Please decide how far you trust this user to correctly verify other users' keys\n"
+"(by looking at passports, checking fingerprints from different sources, etc.)\n"
 msgstr ""
 "Velg hvor mye du stoler på at denne brukeren kan bekrefte\n"
 "andre brukeres nøkler (ved å se på pass, sjekke fingeravtrykk fra\n"
@@ -2904,9 +2813,7 @@ msgstr ""
 "lager tillitssignaturer på dine vegne.\n"
 
 msgid "Please enter a domain to restrict this signature, or enter for none.\n"
-msgstr ""
-"Skriv inn et domene som denne signaturen skal begrenses til, eller trykk "
-"enter hvis ingen.\n"
+msgstr "Skriv inn et domene som denne signaturen skal begrenses til, eller trykk enter hvis ingen.\n"
 
 #, c-format
 msgid "Skipping user ID \"%s\", which is not a text ID.\n"
@@ -2996,8 +2903,7 @@ msgid "Do you want your signature to expire at the same time? (Y/n) "
 msgstr "Vil du at signaturen skal utgå på samme tidspunkt? (J/n) "
 
 msgid ""
-"How carefully have you verified the key you are about to sign actually "
-"belongs\n"
+"How carefully have you verified the key you are about to sign actually belongs\n"
 "to the person named above?  If you don't know what to answer, enter \"0\".\n"
 msgstr ""
 "Hvor nøyaktig har du bekreftet at nøkkelen du skal signere faktisk\n"
@@ -3063,9 +2969,7 @@ msgid "signing failed: %s\n"
 msgstr "signering mislyktes: %s\n"
 
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
-msgstr ""
-"Nøkkelen har bare stubbe- eller kortnøkkel-elementer. Ingen passordfrase å "
-"endre.\n"
+msgstr "Nøkkelen har bare stubbe- eller kortnøkkel-elementer. Ingen passordfrase å endre.\n"
 
 #, c-format
 msgid "key %s: error changing passphrase: %s\n"
@@ -3102,8 +3006,7 @@ msgid "sign selected user IDs with a trust signature"
 msgstr "signer valgte bruker-id-er med tillitssignatur"
 
 msgid "sign selected user IDs with a non-revocable signature"
-msgstr ""
-"signer valgte bruker-id-er med en signatur som ikke kan trekkes tilbake"
+msgstr "signer valgte bruker-id-er med en signatur som ikke kan trekkes tilbake"
 
 msgid "add a user ID"
 msgstr "legg til bruker-ID"
@@ -3181,13 +3084,10 @@ msgid "show selected photo IDs"
 msgstr "vis valgte foto-id-er"
 
 msgid "compact unusable user IDs and remove unusable signatures from key"
-msgstr ""
-"pakkk sammen ubrukelige bruker-id-er og fjern ubrukelige signaturer fra "
-"nøkkel"
+msgstr "pakkk sammen ubrukelige bruker-id-er og fjern ubrukelige signaturer fra nøkkel"
 
 msgid "compact unusable user IDs and remove all signatures from key"
-msgstr ""
-"pakkk sammen ubrukelige bruker-id-er og fjern alle signaturer fra nøkkel"
+msgstr "pakkk sammen ubrukelige bruker-id-er og fjern alle signaturer fra nøkkel"
 
 msgid "Secret key is available.\n"
 msgstr "Hemmelig nøkkel er tilgjengelig.\n"
@@ -3196,17 +3096,13 @@ msgid "Need the secret key to do this.\n"
 msgstr "Du trenger tilhørende hemmelig nøkkel for å gjøre dette.\n"
 
 msgid ""
-"* The 'sign' command may be prefixed with an 'l' for local signatures "
-"(lsign),\n"
+"* The 'sign' command may be prefixed with an 'l' for local signatures (lsign),\n"
 "  a 't' for trust signatures (tsign), an 'nr' for non-revocable signatures\n"
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
-"* Kommandoen «sign» kan brukes med prefiks «l» for lokale signaturer "
-"(lsign),\n"
-"  «t» for tillitssignaturer (tsign), «nr» for signaturer som ikke kan "
-"oppheves\n"
-"  (nrsign), eller hvilken som helst kombinasjon av disse (ltsign, tnrsign, "
-"osv.).\n"
+"* Kommandoen «sign» kan brukes med prefiks «l» for lokale signaturer (lsign),\n"
+"  «t» for tillitssignaturer (tsign), «nr» for signaturer som ikke kan oppheves\n"
+"  (nrsign), eller hvilken som helst kombinasjon av disse (ltsign, tnrsign, osv.).\n"
 
 msgid "Key is revoked."
 msgstr "Nøkkelen er opphevet."
@@ -3288,15 +3184,13 @@ msgid "Do you really want to revoke this subkey? (y/N) "
 msgstr "Er du sikker på at du vil oppheve denne undernøkkelen? (j/N) "
 
 msgid "Owner trust may not be set while using a user provided trust database\n"
-msgstr ""
-"Du kan ikke justere eiertillit når du bruker selvvalgt tillitsdatabase\n"
+msgstr "Du kan ikke justere eiertillit når du bruker selvvalgt tillitsdatabase\n"
 
 msgid "Set preference list to:\n"
 msgstr "Bytt oppsettsliste til:\n"
 
 msgid "Really update the preferences for the selected user IDs? (y/N) "
-msgstr ""
-"Er du sikker på at du vil oppdatere oppsett for valgte bruker-id-er? (j/N) "
+msgstr "Er du sikker på at du vil oppdatere oppsett for valgte bruker-id-er? (j/N) "
 
 msgid "Really update the preferences? (y/N) "
 msgstr "Er du sikker på at du vil oppdatere oppsett? (j/N) "
@@ -3314,10 +3208,10 @@ msgstr "oppdatering mislyktes: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Nøkkelen ble ikke endret, så ingen oppdatering er nødvendig.\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "Key generation failed: %s\n"
 msgid "User ID revocation failed: %s\n"
-msgstr "Nøkkelgenerering mislyktes: %s\n"
+msgstr "oppheving av bruker-ID mislyktes: %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3427,12 +3321,10 @@ msgid "You may want to change its expiration date too.\n"
 msgstr "Du bør vurdere å endre utløpsdato samtidig.\n"
 
 msgid ""
-"WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
-"versions\n"
+"WARNING: This is a PGP2-style key.  Adding a photo ID may cause some versions\n"
 "         of PGP to reject this key.\n"
 msgstr ""
-"ADVARSEL: Dette er en PGP2-nøkkel. Hvis du legger til et foto-ID, kan det "
-"føre til at\n"
+"ADVARSEL: Dette er en PGP2-nøkkel. Hvis du legger til et foto-ID, kan det føre til at\n"
 "         enkelte PGP-versjoner avviser nøkkelen.\n"
 
 msgid "Are you sure you still want to add it? (y/N) "
@@ -3487,13 +3379,11 @@ msgid "User ID \"%s\": already clean\n"
 msgstr "Bruker-ID «%s»: allerede renset\n"
 
 msgid ""
-"WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may "
-"cause\n"
+"WARNING: This is a PGP 2.x-style key.  Adding a designated revoker may cause\n"
 "         some versions of PGP to reject this key.\n"
 msgstr ""
 "ADVARSEL: Dette er en PGP 2.x-nøkkel. Hvis du legger til en opphever,\n"
-"         kan dette føre til at enkelte PGP-versjoner ikke vil kunne bruke "
-"nøkkelen.\n"
+"         kan dette føre til at enkelte PGP-versjoner ikke vil kunne bruke nøkkelen.\n"
 
 msgid "You may not add a designated revoker to a PGP 2.x-style key.\n"
 msgstr "Du kan ikke knytte opphevere til PGP 2.x-nøkler.\n"
@@ -3511,18 +3401,13 @@ msgid "this key has already been designated as a revoker\n"
 msgstr "denne nøkkelen er allerede i bruk som opphevelsesnøkkel\n"
 
 msgid "WARNING: appointing a key as a designated revoker cannot be undone!\n"
-msgstr ""
-"ADVARSEL: du kan ikke angre tildeling av opphevelsesrolle til en nøkkel.\n"
+msgstr "ADVARSEL: du kan ikke angre tildeling av opphevelsesrolle til en nøkkel.\n"
 
-msgid ""
-"Are you sure you want to appoint this key as a designated revoker? (y/N) "
+msgid "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Er du sikker på at du vil gjøre denne nøkkelen til en opphever? (j/N) "
 
-msgid ""
-"Are you sure you want to change the expiration time for multiple subkeys? (y/"
-"N) "
-msgstr ""
-"Er du sikker på at du vil endre utløpstid for flere undernøkler? (j/N) "
+msgid "Are you sure you want to change the expiration time for multiple subkeys? (y/N) "
+msgstr "Er du sikker på at du vil endre utløpstid for flere undernøkler? (j/N) "
 
 msgid "Changing expiration time for a subkey.\n"
 msgstr "Endrer utløpstid for undernøkkel.\n"
@@ -3539,8 +3424,7 @@ msgstr "signerings-undernøkkel %s er allerede kryssertifisert\n"
 
 #, c-format
 msgid "subkey %s does not sign and so does not need to be cross-certified\n"
-msgstr ""
-"undernøkkel %s signerer ikke, og behøver derfor ikke å bli kryssertifisert\n"
+msgstr "undernøkkel %s signerer ikke, og behøver derfor ikke å bli kryssertifisert\n"
 
 msgid "Please select exactly one user ID.\n"
 msgstr "Velg én bruker-ID.\n"
@@ -3626,7 +3510,7 @@ msgstr "ingen hemmelig nøkkel\n"
 
 #, c-format
 msgid "tried to revoke a non-user ID: %s\n"
-msgstr ""
+msgstr "prøvde å oppheve ID som ikke tilhørte en bruker: %s\n"
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
@@ -3682,11 +3566,8 @@ msgstr "ugyldig nøkkelstørrelse. Bruker %u bit\n"
 msgid "keysize rounded up to %u bits\n"
 msgstr "nøkkelstørrelse rundet opp til %u bit\n"
 
-msgid ""
-"WARNING: some OpenPGP programs can't handle a DSA key with this digest size\n"
-msgstr ""
-"ADVARSEL: noen OpenPGP-programmer klarer ikke å behandle DSA-nøkler med "
-"denne kontrollsum-størrelsen\n"
+msgid "WARNING: some OpenPGP programs can't handle a DSA key with this digest size\n"
+msgstr "ADVARSEL: noen OpenPGP-programmer klarer ikke å behandle DSA-nøkler med denne kontrollsum-størrelsen\n"
 
 msgid "Sign"
 msgstr "Signere"
@@ -3906,8 +3787,7 @@ msgstr ""
 #. be used.
 msgid ""
 "\n"
-"You need a user ID to identify your key; the software constructs the user "
-"ID\n"
+"You need a user ID to identify your key; the software constructs the user ID\n"
 "from the Real Name, Comment and Email Address in this form:\n"
 "    \"Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>\"\n"
 "\n"
@@ -4033,8 +3913,7 @@ msgstr "lager likevel\n"
 
 #, c-format
 msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
-msgstr ""
-"Merk: Bruk «%s %s» for å se et fullverdig dialogvindu for nøkkelgenerering.\n"
+msgstr "Merk: Bruk «%s %s» for å se et fullverdig dialogvindu for nøkkelgenerering.\n"
 
 msgid "Key generation canceled.\n"
 msgstr "Nøkkelgenerering ble avbrutt.\n"
@@ -4053,7 +3932,7 @@ msgstr "skriver offentlig nøkkel til «%s»\n"
 
 #, c-format
 msgid "no writable public keyring found: %s\n"
-msgstr "fant ikke skrivbart offentlig nøkkelknippe. %s\n"
+msgstr "fant ikke skrivbart offentlig nøkkelknippe: %s\n"
 
 #, c-format
 msgid "error writing public keyring '%s': %s\n"
@@ -4071,22 +3950,15 @@ msgstr ""
 "undernøkkel til dette formålet.\n"
 
 #, c-format
-msgid ""
-"key has been created %lu second in future (time warp or clock problem)\n"
-msgstr ""
-"nøkkel har blitt opprettet %lu sekund i fremtiden (time warp- eller "
-"klokkeproblem)\n"
+msgid "key has been created %lu second in future (time warp or clock problem)\n"
+msgstr "nøkkel har blitt opprettet %lu sekund i fremtiden (time warp- eller klokkeproblem)\n"
 
 #, c-format
-msgid ""
-"key has been created %lu seconds in future (time warp or clock problem)\n"
-msgstr ""
-"nøkkel har blitt opprettet %lu sekunder i fremtiden (time warp- eller "
-"klokkeproblem)\n"
+msgid "key has been created %lu seconds in future (time warp or clock problem)\n"
+msgstr "nøkkel har blitt opprettet %lu sekunder i fremtiden (time warp- eller klokkeproblem)\n"
 
 msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
-msgstr ""
-"Merk: det strider med OpenPGP-standarden å lage undernøkler for v3-nøkler\n"
+msgstr "Merk: det strider med OpenPGP-standarden å lage undernøkler for v3-nøkler\n"
 
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Hemmelige deler av primærnøkkelen er ikke tilgjengelig.\n"
@@ -4420,8 +4292,7 @@ msgstr "Klarte ikke å kontrollere signatur: %s\n"
 msgid "not a detached signature\n"
 msgstr "ikke en separat signatur\n"
 
-msgid ""
-"WARNING: multiple signatures detected.  Only the first will be checked.\n"
+msgid "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr "ADVARSEL: fant flere signaturer. Kontrollerer bare den første.\n"
 
 #, c-format
@@ -4494,8 +4365,7 @@ msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
 msgstr "%s:%u: «%s» er utgått i denne fila, og påvirker bare %s\n"
 
 #, c-format
-msgid ""
-"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "ADVARSEL: valget «%s%s» er utgått, og påvirker bare %s\n"
 
 msgid "Uncompressed"
@@ -4518,8 +4388,7 @@ msgid "unknown option '%s'\n"
 msgstr "«%s» er et ukjent valg\n"
 
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
-msgstr ""
-"Offentlig ECDSA-nøkler forventes i SEC-koding som kan ganges med 8 bit\n"
+msgstr "Offentlig ECDSA-nøkler forventes i SEC-koding som kan ganges med 8 bit\n"
 
 #, c-format
 msgid "unknown weak digest '%s'\n"
@@ -4575,14 +4444,12 @@ msgstr " (hovednøkkelid %s)"
 
 #, c-format
 msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
+"Please enter the passphrase to unlock the secret key for the OpenPGP certificate:\n"
 "\"%.*s\"\n"
 "%u-bit %s key, ID %s,\n"
 "created %s%s.\n"
 msgstr ""
-"Skriv inn passordfrase for å låse opp hemmelig nøkkel til OpenPGP-"
-"sertifikat:\n"
+"Skriv inn passordfrase for å låse opp hemmelig nøkkel til OpenPGP-sertifikat:\n"
 "«%.*s»\n"
 "%u-bit %s-nøkkel, ID %s,\n"
 "opprettet %s%s.\n"
@@ -4622,8 +4489,7 @@ msgid "Please enter the passphrase to export the OpenPGP secret key:"
 msgstr "Skriv inn passordfrase for å eksportere hemmelig OpenPGP-nøkkel:"
 
 msgid "Do you really want to permanently delete the OpenPGP secret subkey key:"
-msgstr ""
-"Er du sikker på at du vil slette følgende hemmelige OpenPGP-undernøkkel:"
+msgstr "Er du sikker på at du vil slette følgende hemmelige OpenPGP-undernøkkel:"
 
 msgid "Do you really want to permanently delete the OpenPGP secret key:"
 msgstr "Er du sikker på at du vil slette følgende hemmelige OpenPGP-nøkkel:"
@@ -4720,10 +4586,8 @@ msgstr "Ingen tillitsverdi tilordnet til:\n"
 msgid "  aka \"%s\"\n"
 msgstr "  aka «%s»\n"
 
-msgid ""
-"How much do you trust that this key actually belongs to the named user?\n"
-msgstr ""
-"Hvor mye stoler du på at denne nøkkelen faktisk tilhører navngitt bruker?\n"
+msgid "How much do you trust that this key actually belongs to the named user?\n"
+msgstr "Hvor mye stoler du på at denne nøkkelen faktisk tilhører navngitt bruker?\n"
 
 #, c-format
 msgid "  %d = I don't know or won't say\n"
@@ -4765,15 +4629,11 @@ msgstr "Sertifikater som fører til en fullstendig betrodd nøkkel:\n"
 
 #, c-format
 msgid "%s: There is no assurance this key belongs to the named user\n"
-msgstr ""
-"%s: Det finnes ingen indikasjon på at denne nøkkelen faktisk tilhører "
-"navngitt bruker\n"
+msgstr "%s: Det finnes ingen indikasjon på at denne nøkkelen faktisk tilhører navngitt bruker\n"
 
 #, c-format
 msgid "%s: There is limited assurance this key belongs to the named user\n"
-msgstr ""
-"%s: Det er begrenset indikasjon på at denne nøkkelen faktisk tilhører "
-"navngitt bruker\n"
+msgstr "%s: Det er begrenset indikasjon på at denne nøkkelen faktisk tilhører navngitt bruker\n"
 
 msgid "This key probably belongs to the named user\n"
 msgstr "Denne nøkkelen tilhører sannsynligvis navngitt bruker\n"
@@ -4797,8 +4657,7 @@ msgid "WARNING: Using untrusted key!\n"
 msgstr "ADVARSEL: du bruker en upålitelig nøkkel.\n"
 
 msgid "WARNING: this key might be revoked (revocation key not present)\n"
-msgstr ""
-"ADVARSEL: nøkkel %s kan være opphevet: opphevingsnøkkel %s ikke tilstede.\n"
+msgstr "ADVARSEL: nøkkel %s kan være opphevet: opphevingsnøkkel %s ikke tilstede.\n"
 
 msgid "WARNING: This key has been revoked by its designated revoker!\n"
 msgstr "ADVARSEL: denne nøkkelen er opphevet.\n"
@@ -4833,11 +4692,9 @@ msgid "Note: This key has expired!\n"
 msgstr "Merk: denne nøkkelen er utgått.\n"
 
 msgid "WARNING: This key is not certified with a trusted signature!\n"
-msgstr ""
-"ADVARSEL: denne nøkkelen er ikke sertifisert med en tillitsverdig signatur.\n"
+msgstr "ADVARSEL: denne nøkkelen er ikke sertifisert med en tillitsverdig signatur.\n"
 
-msgid ""
-"         There is no indication that the signature belongs to the owner.\n"
+msgid "         There is no indication that the signature belongs to the owner.\n"
 msgstr "         Det er ingen indikasjon på at signaturen tilhører eieren.\n"
 
 msgid "WARNING: We do NOT trust this key!\n"
@@ -4846,11 +4703,8 @@ msgstr "ADVARSEL: vi stoler IKKE på denne nøkkelen.\n"
 msgid "         The signature is probably a FORGERY.\n"
 msgstr "         Signaturen er sannsynligvis et FALSKNERI.\n"
 
-msgid ""
-"WARNING: This key is not certified with sufficiently trusted signatures!\n"
-msgstr ""
-"ADVARSEL: denne nøkkelen er ikke sertifisert med tilstrekkelig "
-"tillitsverdige signaturer.\n"
+msgid "WARNING: This key is not certified with sufficiently trusted signatures!\n"
+msgstr "ADVARSEL: denne nøkkelen er ikke sertifisert med tilstrekkelig tillitsverdige signaturer.\n"
 
 msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr "         Det er ikke sikkert at signaturen tilhører brukeren.\n"
@@ -4969,7 +4823,7 @@ msgstr "Merk: nøkkelen er opphevet"
 
 #, c-format
 msgid "build_packet failed: %s\n"
-msgstr "build_packet mislyktes. %s\n"
+msgstr "build_packet mislyktes: %s\n"
 
 #, c-format
 msgid "key %s has no user IDs\n"
@@ -5010,7 +4864,7 @@ msgid ""
 "to retract such a revocation certificate once it has been published."
 msgstr ""
 "Et opphevelsessertifikat er en slags nødknapp som lar deg\n"
-"\verklære offentlig at en nøkkel ikke skal brukes mer. Det er ikke mulig\n"
+"erklære offentlig at en nøkkel ikke skal brukes mer. Det er ikke mulig\n"
 "å trekke tilbake en oppheving straks den er blitt publisert."
 
 msgid ""
@@ -5023,8 +4877,8 @@ msgstr ""
 "Bruk det for å oppheve denne nøkkelen hvis den blir kompromittert\n"
 "eller hvis du mister den hemmelige nøkkelen. Hvis du fremdeles har\n"
 "tilgang til den hemmelige nøkkelen, er det lurt å heller lage et nytt\n"
-"\vopphevelsessertifikat og oppgi en grunn til opphevelsen.\n"
-"\vSe beskrivelse av kommandoen «--gen-revoke» i GnuPG-\n"
+"opphevelsessertifikat og oppgi en grunn til opphevelsen.\n"
+"Se beskrivelse av kommandoen «--gen-revoke» i GnuPG-\n"
 "bruksanvisninga for detaljer."
 
 msgid ""
@@ -5069,12 +4923,9 @@ msgid ""
 msgstr ""
 "Opphevelsessertifikat opprettet.\n"
 "\n"
-"Flytt dette til et medium du kan holde utenfor andres rekkevidde. Hvis "
-"Mallory\n"
-"får tak i dette sertifikatet, kan han bruke det til å gjøre nøkkelen din "
-"ubrukelig.\n"
-"Det er lurt å skrive ut dette sertifikatet fysisk og sette det på et lager i "
-"tilfelle\n"
+"Flytt dette til et medium du kan holde utenfor andres rekkevidde. Hvis Mallory\n"
+"får tak i dette sertifikatet, kan han bruke det til å gjøre nøkkelen din ubrukelig.\n"
+"Det er lurt å skrive ut dette sertifikatet fysisk og sette det på et lager i tilfelle\n"
 "datalagringsmediet blir uleselig. Men vær forsiktig. Datamaskinens\n"
 "utskriftssystem kan være satt opp til å lagre utskriftsdata og dermed gjøre\n"
 "det mulig for andre å lese sertifikatet.\n"
@@ -5107,9 +4958,7 @@ msgstr "nøkkelen ble svak. Prøver på nytt\n"
 
 #, c-format
 msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
-msgstr ""
-"klarte ikke å unngå svak nøkkel for symmetrisk krypteringsalgorime. Prøvde "
-"%d ganger.\n"
+msgstr "klarte ikke å unngå svak nøkkel for symmetrisk krypteringsalgorime. Prøvde %d ganger.\n"
 
 #, c-format
 msgid "%s key %s uses an unsafe (%zu bit) hash\n"
@@ -5117,8 +4966,7 @@ msgstr "%s-nøkkel %s bruker usikker kontrollsum (%zu bit)\n"
 
 #, c-format
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
-msgstr ""
-"%s-nøkkel %s krever kontrollsum på %zu eller flere bit (gjeldende sum: %s)\n"
+msgstr "%s-nøkkel %s krever kontrollsum på %zu eller flere bit (gjeldende sum: %s)\n"
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "ADVARSEL: konflikt med signatur-kontrollsum i melding\n"
@@ -5133,9 +4981,7 @@ msgstr "se %s for mer informasjon\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s has an invalid cross-certification\n"
-msgstr ""
-"ADVARSEL: undernøkkel %s for signering er kryssertifisert på ugyldig "
-"grunnlag\n"
+msgstr "ADVARSEL: undernøkkel %s for signering er kryssertifisert på ugyldig grunnlag\n"
 
 #, c-format
 msgid "public key %s is %lu second newer than the signature\n"
@@ -5150,27 +4996,16 @@ msgstr[0] "offentlig nøkkel %s er %lu dag nyere enn signaturen\n"
 msgstr[1] "offentlig nøkkel %s er %lu dager nyere enn signaturen\n"
 
 #, c-format
-msgid ""
-"key %s was created %lu second in the future (time warp or clock problem)\n"
-msgid_plural ""
-"key %s was created %lu seconds in the future (time warp or clock problem)\n"
-msgstr[0] ""
-"nøkkel %s ble opprettet %lu sekund i fremtiden (tidsforskyvnings- eller "
-"klokkeproblem)\n"
-msgstr[1] ""
-"nøkkel %s ble opprettet %lu sekunder i fremtiden (tidsforskyvnings- eller "
-"klokkeproblem)\n"
+msgid "key %s was created %lu second in the future (time warp or clock problem)\n"
+msgid_plural "key %s was created %lu seconds in the future (time warp or clock problem)\n"
+msgstr[0] "nøkkel %s ble opprettet %lu sekund i fremtiden (tidsforskyvnings- eller klokkeproblem)\n"
+msgstr[1] "nøkkel %s ble opprettet %lu sekunder i fremtiden (tidsforskyvnings- eller klokkeproblem)\n"
 
 #, c-format
 msgid "key %s was created %lu day in the future (time warp or clock problem)\n"
-msgid_plural ""
-"key %s was created %lu days in the future (time warp or clock problem)\n"
-msgstr[0] ""
-"nøkkel %s ble opprettet %lu dag i fremtiden (tidsforskyvnings- eller "
-"klokkeproblem)\n"
-msgstr[1] ""
-"nøkkel %s ble opprettet %lu dager i fremtiden (tidsforskyvnings- eller "
-"klokkeproblem)\n"
+msgid_plural "key %s was created %lu days in the future (time warp or clock problem)\n"
+msgstr[0] "nøkkel %s ble opprettet %lu dag i fremtiden (tidsforskyvnings- eller klokkeproblem)\n"
+msgstr[1] "nøkkel %s ble opprettet %lu dager i fremtiden (tidsforskyvnings- eller klokkeproblem)\n"
 
 #, c-format
 msgid "Note: signature key %s expired %s\n"
@@ -5197,25 +5032,19 @@ msgid "WARNING: unable to %%-expand notation (too large).  Using unexpanded.\n"
 msgstr "ADVARSEL: klarte ikke å %%-utvide notasjon (for lang).\n"
 
 #, c-format
-msgid ""
-"WARNING: unable to %%-expand policy URL (too large).  Using unexpanded.\n"
+msgid "WARNING: unable to %%-expand policy URL (too large).  Using unexpanded.\n"
 msgstr "ADVARSEL: klarte ikke å %%-utvide regelverkadresse (for lang).\n"
 
 #, c-format
-msgid ""
-"WARNING: unable to %%-expand preferred keyserver URL (too large).  Using "
-"unexpanded.\n"
-msgstr ""
-"ADVARSEL: klarte ikke å %%-utvide foretrukket nøkkeltjener-adresse (for "
-"lang).\n"
+msgid "WARNING: unable to %%-expand preferred keyserver URL (too large).  Using unexpanded.\n"
+msgstr "ADVARSEL: klarte ikke å %%-utvide foretrukket nøkkeltjener-adresse (for lang).\n"
 
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s/%s-signatur fra: «%s»\n"
 
 #, c-format
-msgid ""
-"WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
+msgid "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
 msgstr "ADVARSEL: tvungen bruk av %s (%d) bryter med mottakerens oppsett\n"
 
 msgid "signing:"
@@ -5236,12 +5065,11 @@ msgid "skipped: secret key already present\n"
 msgstr "hoppet over, fordi hemmelig nøkkel allerede er tilstede\n"
 
 msgid "this is a PGP generated Elgamal key which is not secure for signatures!"
-msgstr ""
-"dette er en PGP-generelt Elgamal-nøkkel, og egner seg ikke til signering."
+msgstr "dette er en PGP-generelt Elgamal-nøkkel, og egner seg ikke til signering."
 
 #, c-format
 msgid "trust record %lu, type %d: write failed: %s\n"
-msgstr "tillitsoppføring %lu, type %d: skriving mislyktes. %s\n"
+msgstr "tillitsoppføring %lu, type %d: skriving mislyktes: %s\n"
 
 #, c-format
 msgid ""
@@ -5277,7 +5105,7 @@ msgstr "lesefeil i «%s»: %s\n"
 
 #, c-format
 msgid "trustdb: sync failed: %s\n"
-msgstr "trustdb: synk mislyktes. %s\n"
+msgstr "trustdb: synk mislyktes: %s\n"
 
 #, c-format
 msgid "can't create lock for '%s'\n"
@@ -5289,11 +5117,11 @@ msgstr "klarte ikke å låse «%s»\n"
 
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
-msgstr "trustdb-oppf. %lu: lseek mislyktes. %s\n"
+msgstr "trustdb-oppf. %lu: lseek mislyktes: %s\n"
 
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
-msgstr "trustdb-oppf. %lu: skriving mislyktes (n=%d). %s\n"
+msgstr "trustdb-oppf. %lu: skriving mislyktes (n=%d): %s\n"
 
 msgid "trustdb transaction too large\n"
 msgstr "trustdb-transaksjon er for stor\n"
@@ -5308,7 +5136,7 @@ msgstr "fikk ikke tilgang til «%s»: %s\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
-msgstr "%s: klarte ikke å lage versjonsoppføring. %s"
+msgstr "%s: klarte ikke å lage versjonsoppføring: %s"
 
 #, c-format
 msgid "%s: invalid trustdb created\n"
@@ -5327,27 +5155,27 @@ msgstr "%s: ugyldig trustdb\n"
 
 #, c-format
 msgid "%s: failed to create hashtable: %s\n"
-msgstr "%s: klarte ikke å lage kontrollsum-tabell. %s\n"
+msgstr "%s: klarte ikke å lage kontrollsum-tabell: %s\n"
 
 #, c-format
 msgid "%s: error updating version record: %s\n"
-msgstr "%s: feil under oppdatering av versjonsoppføring. %s\n"
+msgstr "%s: feil under oppdatering av versjonsoppføring: %s\n"
 
 #, c-format
 msgid "%s: error reading version record: %s\n"
-msgstr "%s: feil under lesing av versjonsoppføring. %s\n"
+msgstr "%s: feil under lesing av versjonsoppføring: %s\n"
 
 #, c-format
 msgid "%s: error writing version record: %s\n"
-msgstr "%s: feil under skriving av versjonsoppføring. %s\n"
+msgstr "%s: feil under skriving av versjonsoppføring: %s\n"
 
 #, c-format
 msgid "trustdb: lseek failed: %s\n"
-msgstr "trustdb: lseek mislyktes. %s\n"
+msgstr "trustdb: lseek mislyktes: %s\n"
 
 #, c-format
 msgid "trustdb: read failed (n=%d): %s\n"
-msgstr "trustdb: lesing mislyktes (n=%d). %s\n"
+msgstr "trustdb: lesing mislyktes (n=%d): %s\n"
 
 #, c-format
 msgid "%s: not a trustdb file\n"
@@ -5363,19 +5191,19 @@ msgstr "%s: %d er en ugyldig filversjon\n"
 
 #, c-format
 msgid "%s: error reading free record: %s\n"
-msgstr "%s: feil under lesing av «free»-oppføring. %s\n"
+msgstr "%s: feil under lesing av «free»-oppføring: %s\n"
 
 #, c-format
 msgid "%s: error writing dir record: %s\n"
-msgstr "%s: feil under skriving av «dir»-oppføring. %s\n"
+msgstr "%s: feil under skriving av «dir»-oppføring: %s\n"
 
 #, c-format
 msgid "%s: failed to zero a record: %s\n"
-msgstr "%s: klarte ikke å nullstille oppføring. %s\n"
+msgstr "%s: klarte ikke å nullstille oppføring: %s\n"
 
 #, c-format
 msgid "%s: failed to append a record: %s\n"
-msgstr "%s: klarte ikke å legge til oppføring. %s\n"
+msgstr "%s: klarte ikke å legge til oppføring: %s\n"
 
 msgid "Error: The trustdb is corrupted.\n"
 msgstr "Error: trustdb er skadet.\n"
@@ -5435,20 +5263,12 @@ msgid "The binding %s is NOT known."
 msgstr "Tilknytning %s er ukjent."
 
 #, c-format
-msgid ""
-"The key with fingerprint %s raised a conflict with the binding %s.  Since "
-"this binding's policy was 'auto', it was changed to 'ask'."
-msgstr ""
-"Nøkkel med fingeravtrykk %s forårsaket konflikt med tilknytning %s. Siden "
-"regelen var «auto» er den nå endret til «ask» (spør)."
+msgid "The key with fingerprint %s raised a conflict with the binding %s.  Since this binding's policy was 'auto', it was changed to 'ask'."
+msgstr "Nøkkel med fingeravtrykk %s forårsaket konflikt med tilknytning %s. Siden regelen var «auto» er den nå endret til «ask» (spør)."
 
 #, c-format
-msgid ""
-"Please indicate whether you believe the binding %s%sis legitimate (the key "
-"belongs to the stated owner) or a forgery (bad)."
-msgstr ""
-"Oppgi hvorvidt du tror tilknytninga %s%ser sannferdig (dvs.: at nøkkelen "
-"tilhører personen som hevder å eie den) eller falsk."
+msgid "Please indicate whether you believe the binding %s%sis legitimate (the key belongs to the stated owner) or a forgery (bad)."
+msgstr "Oppgi hvorvidt du tror tilknytninga %s%ser sannferdig (dvs.: at nøkkelen tilhører personen som hevder å eie den) eller falsk."
 
 #, c-format
 msgid "error gathering other user IDs: %s\n"
@@ -5604,37 +5424,26 @@ msgid "The most recent message was verified %s ago."
 msgstr "Nyeste melding ble bekreftet for %s siden."
 
 msgid "Warning: we've have yet to see a message signed by this key!\n"
-msgstr ""
-"Advarsel: vi har enda ikke sett en melding som er signert av denne "
-"nøkkelen.\n"
+msgstr "Advarsel: vi har enda ikke sett en melding som er signert av denne nøkkelen.\n"
 
 msgid "Warning: we've only seen a single message signed by this key!\n"
-msgstr ""
-"Advarsel: vi har bare sett én melding som er signert av denne nøkkelen.\n"
+msgstr "Advarsel: vi har bare sett én melding som er signert av denne nøkkelen.\n"
 
 #, c-format
 msgid ""
-"Warning: if you think you've seen more than %ld message signed by this key, "
-"then this key might be a forgery!  Carefully examine the email address for "
-"small variations.  If the key is suspect, then use\n"
+"Warning: if you think you've seen more than %ld message signed by this key, then this key might be a forgery!  Carefully examine the email address for small variations.  If the key is suspect, then use\n"
 "  %s\n"
 "to mark it as being bad.\n"
 msgid_plural ""
-"Warning: if you think you've seen more than %ld messages signed by this key, "
-"then this key might be a forgery!  Carefully examine the email address for "
-"small variations.  If the key is suspect, then use\n"
+"Warning: if you think you've seen more than %ld messages signed by this key, then this key might be a forgery!  Carefully examine the email address for small variations.  If the key is suspect, then use\n"
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[0] ""
-"Warning: if you think you've seen more than %ld message signed by this key, "
-"then this key might be a forgery!  Carefully examine the email address for "
-"small variations.  If the key is suspect, then use\n"
+"Warning: if you think you've seen more than %ld message signed by this key, then this key might be a forgery!  Carefully examine the email address for small variations.  If the key is suspect, then use\n"
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[1] ""
-"Advarsel: hvis du tror du har sett flere enn %ld meldinger som er signert av "
-"denne nøkkelen, kan det bety at den er forfalsket!  Undersøk e-postadressen "
-"nøye og se etter små variasjoner i navnet.\n"
+"Advarsel: hvis du tror du har sett flere enn %ld meldinger som er signert av denne nøkkelen, kan det bety at den er forfalsket!  Undersøk e-postadressen nøye og se etter små variasjoner i navnet.\n"
 "Bruk %s \n"
 "for å markere nøkkelen som ugyldig hvis den virker mistenkelig.\n"
 
@@ -5664,23 +5473,21 @@ msgstr "nøkkel %s markert som endelig betrodd.\n"
 
 #, c-format
 msgid "trust record %lu, req type %d: read failed: %s\n"
-msgstr "tillitsoppføring %lu, foresp.type %d: lesing mislyktes. %s\n"
+msgstr "tillitsoppføring %lu, foresp.type %d: lesing mislyktes: %s\n"
 
 #, c-format
 msgid "trust record %lu is not of requested type %d\n"
 msgstr "tillitsoppføring %lu er ikke av forespurt type (%d)\n"
 
 msgid "You may try to re-create the trustdb using the commands:\n"
-msgstr ""
-"Du kan prøve å gjenskape trustdb ved å skrive inn følgende kommandoer:\n"
+msgstr "Du kan prøve å gjenskape trustdb ved å skrive inn følgende kommandoer:\n"
 
 msgid "If that does not work, please consult the manual\n"
 msgstr "Se bruksanvisning hvis dette ikke hjelper\n"
 
 #, c-format
 msgid "unable to use unknown trust model (%d) - assuming %s trust model\n"
-msgstr ""
-"Klarte ikke å bruke ukjent tillitsmodell (%d). Prøver tillitsmodell %s\n"
+msgstr "Klarte ikke å bruke ukjent tillitsmodell (%d). Prøver tillitsmodell %s\n"
 
 #, c-format
 msgid "using %s trust model\n"
@@ -5731,15 +5538,12 @@ msgid "public key of ultimately trusted key %s not found\n"
 msgstr "fant ikke offentlig nøkkel for absolutt pålitelig nøkkel %s\n"
 
 #, c-format
-msgid ""
-"depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
-msgstr ""
-"dybde: %d  gyldig: %3d  signert: %3d  tillit: %d-, %dq, %dn, %dm, %df, %du\n"
+msgid "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
+msgstr "dybde: %d  gyldig: %3d  signert: %3d  tillit: %d-, %dq, %dn, %dm, %df, %du\n"
 
 #, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
-msgstr ""
-"klarte ikke å oppdatere trustdb-versjonsoppføring. Skriving mislyktes. %s\n"
+msgstr "klarte ikke å oppdatere trustdb-versjonsoppføring. Skriving mislyktes: %s\n"
 
 msgid "undefined"
 msgstr "udefinert"
@@ -5857,15 +5661,10 @@ msgstr "|N|Skriv inn ny PIN for å la nøkkelen lage kvalifiserte signaturer."
 msgid "||Please enter the PIN for the key to create qualified signatures."
 msgstr "||Skriv inn PIN for å la nøkkelen lage kvalifiserte signaturer."
 
-msgid ""
-"|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create "
-"qualified signatures."
-msgstr ""
-"|NP|Skriv inn ny PUK-kode for å la nøkkelen lage kvalifiserte signaturer."
+msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create qualified signatures."
+msgstr "|NP|Skriv inn ny PUK-kode for å la nøkkelen lage kvalifiserte signaturer."
 
-msgid ""
-"|P|Please enter the PIN Unblocking Code (PUK) for the key to create "
-"qualified signatures."
+msgid "|P|Please enter the PIN Unblocking Code (PUK) for the key to create qualified signatures."
 msgstr "|P|Skriv inn PUK-kode for å la nøkkelen lage kvalifiserte signaturer."
 
 #, c-format
@@ -5902,9 +5701,7 @@ msgstr "bruker forvalgt PIN som %s\n"
 
 #, c-format
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
-msgstr ""
-"klarte ikke å bruke forvalgt PIN som %s. %s. Lar være å bruke forvalgt PIN "
-"senere\n"
+msgstr "klarte ikke å bruke forvalgt PIN som %s: %s. Lar være å bruke forvalgt PIN senere\n"
 
 #, c-format
 msgid "||Please enter the PIN%%0A[sigs done: %lu]"
@@ -5929,8 +5726,7 @@ msgstr "kortet er låst for godt.\n"
 
 #, c-format
 msgid "%d Admin PIN attempt remaining before card is permanently locked\n"
-msgid_plural ""
-"%d Admin PIN attempts remaining before card is permanently locked\n"
+msgid_plural "%d Admin PIN attempts remaining before card is permanently locked\n"
 msgstr[0] "%d Admin-PIN-forsøk gjenstår før kortet blir låst permanent\n"
 msgstr[1] "%d Admin-PIN-forsøk gjenstår før kortet blir låst permanent\n"
 
@@ -5998,7 +5794,7 @@ msgstr "RSA-primtall %s mangler eller er av annen størrelse enn %d bit\n"
 
 #, c-format
 msgid "failed to store the key: %s\n"
-msgstr "klarte ikke å lagre nøkkel. %s\n"
+msgstr "klarte ikke å lagre nøkkel: %s\n"
 
 msgid "unsupported curve\n"
 msgstr "ustøttet kurve\n"
@@ -6029,8 +5825,7 @@ msgstr "kortet støtter ikke kontrollsum-algoritme %s\n"
 msgid "signatures created so far: %lu\n"
 msgstr "signaturer opprettet så langt: %lu\n"
 
-msgid ""
-"verification of Admin PIN is currently prohibited through this command\n"
+msgid "verification of Admin PIN is currently prohibited through this command\n"
 msgstr "bekrefting av Admin PIN er foreløpig nektet gjennom denne kommandoen\n"
 
 #, c-format
@@ -6235,8 +6030,7 @@ msgid "interactive marking as trusted disabled for this session\n"
 msgstr "interaktiv tillitsmarkering er slått av for gjeldende økt\n"
 
 msgid "WARNING: creation time of signature not known - assuming current time"
-msgstr ""
-"ADVARSEL: opprettelsestid for signatur er ukjent. Antar gjeldende tidspunkt"
+msgstr "ADVARSEL: opprettelsestid for signatur er ukjent. Antar gjeldende tidspunkt"
 
 msgid "no issuer found in certificate"
 msgstr "fant ingen utsteder i sertifikat"
@@ -6307,14 +6101,12 @@ msgstr "[feil - ugyldig DN]"
 
 #, c-format
 msgid ""
-"Please enter the passphrase to unlock the secret key for the X.509 "
-"certificate:\n"
+"Please enter the passphrase to unlock the secret key for the X.509 certificate:\n"
 "\"%s\"\n"
 "S/N %s, ID 0x%08lX,\n"
 "created %s, expires %s.\n"
 msgstr ""
-"Skriv inn passordfrase for å låse opp hemmelig nøkkel til følgende X.509-"
-"sertifikat:\n"
+"Skriv inn passordfrase for å låse opp hemmelig nøkkel til følgende X.509-sertifikat:\n"
 "«%s»\n"
 "S/N %s, ID 0x%08lX,\n"
 "opprettet %s, utgår %s.\n"
@@ -6386,8 +6178,7 @@ msgstr "linje %d: ugyldig dato\n"
 
 #, c-format
 msgid "line %d: error getting signing key by keygrip '%s': %s\n"
-msgstr ""
-"linje %d: feil under henting av signeringsnøkkel ved nøkkelgrep «%s»: %s\n"
+msgstr "linje %d: feil under henting av signeringsnøkkel ved nøkkelgrep «%s»: %s\n"
 
 #, c-format
 msgid "line %d: invalid hash algorithm given\n"
@@ -6417,12 +6208,8 @@ msgstr "linje %d: feil under henting av nøkkel av nøkkelgrep «%s»: %s\n"
 msgid "line %d: key generation failed: %s <%s>\n"
 msgstr "linje %d: nøkkelgenerering mislyktes: %s <%s>\n"
 
-msgid ""
-"To complete this certificate request please enter the passphrase for the key "
-"you just created once more.\n"
-msgstr ""
-"Skriv inn passordfrasen for nøkkelen én gang til for å fullføre denne "
-"sertifikat-forespørselen.\n"
+msgid "To complete this certificate request please enter the passphrase for the key you just created once more.\n"
+msgstr "Skriv inn passordfrasen for nøkkelen én gang til for å fullføre denne sertifikat-forespørselen.\n"
 
 #, c-format
 msgid "   (%d) RSA\n"
@@ -6519,9 +6306,7 @@ msgid "Ready.\n"
 msgstr "Ferdig.\n"
 
 msgid "Ready.  You should now send this request to your CA.\n"
-msgstr ""
-"Ferdig. Du kan nå sende denne forespørselen til aktuell sertifikatutsteder "
-"(CA).\n"
+msgstr "Ferdig. Du kan nå sende denne forespørselen til aktuell sertifikatutsteder (CA).\n"
 
 msgid "resource problem: out of core\n"
 msgstr "ressursproblem: oppbrukt kjerne\n"
@@ -6653,7 +6438,7 @@ msgstr ""
 
 #, c-format
 msgid "Note: won't be able to encrypt to '%s': %s\n"
-msgstr "Merk: det er ikke mulig å kryptere til «%s». %s\n"
+msgstr "Merk: det er ikke mulig å kryptere til «%s»: %s\n"
 
 #, c-format
 msgid "unknown validation model '%s'\n"
@@ -6748,24 +6533,18 @@ msgstr "ugyldig landskode i «%s», linje %d\n"
 msgid ""
 "You are about to create a signature using your certificate:\n"
 "\"%s\"\n"
-"This will create a qualified signature by law equated to a handwritten "
-"signature.\n"
+"This will create a qualified signature by law equated to a handwritten signature.\n"
 "\n"
 "%s%sAre you really sure that you want to do this?"
 msgstr ""
 "Du er i ferd med å lage en signatur med følgende sertifikat:\n"
 "«%s»\n"
-"Dette fører til en signatur som lovmessig kan tilsvare håndskrevede "
-"signaturer.\n"
+"Dette fører til en signatur som lovmessig kan tilsvare håndskrevede signaturer.\n"
 "\n"
 "%s%sEr du sikker på at du vil gjøre dette?"
 
-msgid ""
-"Note, that this software is not officially approved to create or verify such "
-"signatures.\n"
-msgstr ""
-"Merk: dette programmet er ikke offisielt godkjent for å lage eller bekrefte "
-"slike signaturer.\n"
+msgid "Note, that this software is not officially approved to create or verify such signatures.\n"
+msgstr "Merk: dette programmet er ikke offisielt godkjent for å lage eller bekrefte slike signaturer.\n"
 
 #, c-format
 msgid ""
@@ -6779,8 +6558,7 @@ msgstr ""
 
 #, c-format
 msgid "hash algorithm %d (%s) for signer %d not supported; using %s\n"
-msgstr ""
-"kontrollsum-algoritme %d (%s) for undertegnet %d støttes ikke. Bruker %s\n"
+msgstr "kontrollsum-algoritme %d (%s) for undertegnet %d støttes ikke. Bruker %s\n"
 
 #, c-format
 msgid "hash algorithm used for signer %d: %s (%s)\n"
@@ -6800,11 +6578,8 @@ msgstr "[dato ikke oppgitt]"
 msgid " using certificate ID 0x%08lX\n"
 msgstr " ved bruk av sertifikat-ID 0x%08lX\n"
 
-msgid ""
-"invalid signature: message digest attribute does not match computed one\n"
-msgstr ""
-"ugyldig signatur. Kontrollsum-attributt for melding samsvarer ikke med "
-"attributt for utregnet sum\n"
+msgid "invalid signature: message digest attribute does not match computed one\n"
+msgstr "ugyldig signatur. Kontrollsum-attributt for melding samsvarer ikke med attributt for utregnet sum\n"
 
 msgid "Good signature from"
 msgstr "Gyldig signatur fra"
@@ -6817,19 +6592,19 @@ msgstr "Dette er en godkjent signatur\n"
 
 #, c-format
 msgid "can't initialize certificate cache lock: %s\n"
-msgstr "klarte ikke å starte låsing av sertifikat-hurtiglager. %s\n"
+msgstr "klarte ikke å starte låsing av sertifikat-hurtiglager: %s\n"
 
 #, c-format
 msgid "can't acquire read lock on the certificate cache: %s\n"
-msgstr "klarte ikke å sperre sertifikat-hurtiglager for lesing. %s\n"
+msgstr "klarte ikke å sperre sertifikat-hurtiglager for lesing: %s\n"
 
 #, c-format
 msgid "can't acquire write lock on the certificate cache: %s\n"
-msgstr "klarte ikke å sperre sertifikat-hurtiglager for skriving. %s\n"
+msgstr "klarte ikke å sperre sertifikat-hurtiglager for skriving: %s\n"
 
 #, c-format
 msgid "can't release lock on the certificate cache: %s\n"
-msgstr "klarte ikke å låse opp sertifikat-hurtiglager. %s\n"
+msgstr "klarte ikke å låse opp sertifikat-hurtiglager: %s\n"
 
 #, c-format
 msgid "dropping %u certificates from the cache\n"
@@ -7047,7 +6822,7 @@ msgstr "feil under åpning av hurtiglager-fil «%s»: %s\n"
 
 #, c-format
 msgid "error initializing cache file '%s' for reading: %s\n"
-msgstr "feil under åpning av hurtiglager-fil «%s» for lesing. %s\n"
+msgstr "feil under åpning av hurtiglager-fil «%s» for lesing: %s\n"
 
 msgid "calling unlock_db_file on a closed file\n"
 msgstr "utfører «unlock_db_file» på en lukket fil\n"
@@ -7068,17 +6843,12 @@ msgid "cached CRL for issuer id %s too old; update required\n"
 msgstr "hurtiglagret CRL for utsteder-ID %s er for gammel, og må oppdateres\n"
 
 #, c-format
-msgid ""
-"force-crl-refresh active and %d minutes passed for issuer id %s; update "
-"required\n"
-msgstr ""
-"«force-crl-refresh» er slått på og %d minutter er gått for utsteder-ID %s. "
-"Oppdater hurtiglager.\n"
+msgid "force-crl-refresh active and %d minutes passed for issuer id %s; update required\n"
+msgstr "«force-crl-refresh» er slått på og %d minutter er gått for utsteder-ID %s. Oppdater hurtiglager.\n"
 
 #, c-format
 msgid "force-crl-refresh active for issuer id %s; update required\n"
-msgstr ""
-"«force-crl-refresh» er slått på for utsteder-ID %s. Oppdater hurtiglager.\n"
+msgstr "«force-crl-refresh» er slått på for utsteder-ID %s. Oppdater hurtiglager.\n"
 
 #, c-format
 msgid "available CRL for issuer ID %s can't be used\n"
@@ -7086,8 +6856,7 @@ msgstr "tilgjengelig CRL for utsteder-ID %s kan ikke brukes\n"
 
 #, c-format
 msgid "cached CRL for issuer id %s tampered; we need to update\n"
-msgstr ""
-"hurtiglagret CRL for utsteder-ID %s er endret. Hurtiglager må oppdateres\n"
+msgstr "hurtiglagret CRL for utsteder-ID %s er endret. Hurtiglager må oppdateres\n"
 
 msgid "WARNING: invalid cache record length for S/N "
 msgstr "ADVARSEL: ugyldig S/N-lengde på oppføring i hurtiglager"
@@ -7114,7 +6883,7 @@ msgstr "«%s» er en ugyldig summeringsalgoritme\n"
 
 #, c-format
 msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr "«gcry_md_open» for algoritme %d mislyktes. %s\n"
+msgstr "«gcry_md_open» for algoritme %d mislyktes: %s\n"
 
 msgid "got an invalid S-expression from libksba\n"
 msgstr "fikk ugyldig S-uttrykk fra libksba\n"
@@ -7199,8 +6968,7 @@ msgstr "feil under lukking av midlertidig hurtiglager-fil «%s»: %s\n"
 
 #, c-format
 msgid "WARNING: new CRL still too old; it expired on %s - loading anyway\n"
-msgstr ""
-"ADVARSEL: ny CRL er fremdeles for gammel (utgått %s). Laster inn likevel\n"
+msgstr "ADVARSEL: ny CRL er fremdeles for gammel (utgått %s). Laster inn likevel\n"
 
 #, c-format
 msgid "new CRL still too old; it expired on %s\n"
@@ -7222,26 +6990,17 @@ msgstr "lager hurtiglager-fil «%s»\n"
 msgid "problem renaming '%s' to '%s': %s\n"
 msgstr "klarte ikke å endre navn på «%s» til «%s»: %s\n"
 
-msgid ""
-"updating the DIR file failed - cache entry will get lost with the next "
-"program start\n"
-msgstr ""
-"oppdatering av DIR-fil mislyktes. Hurtiglager-oppføring går tapt neste gang "
-"programmet starter\n"
+msgid "updating the DIR file failed - cache entry will get lost with the next program start\n"
+msgstr "oppdatering av DIR-fil mislyktes. Hurtiglager-oppføring går tapt neste gang programmet starter\n"
 
 #, c-format
 msgid "Begin CRL dump (retrieved via %s)\n"
 msgstr "Start CRL-utskrift (hentet via %s)\n"
 
-msgid ""
-" ERROR: The CRL will not be used because it was still too old after an "
-"update!\n"
-msgstr ""
-" FEIL: CRL blir ikke brukt fordi den fremdeles var for gammel etter "
-"oppdatering.\n"
+msgid " ERROR: The CRL will not be used because it was still too old after an update!\n"
+msgstr " FEIL: CRL blir ikke brukt fordi den fremdeles var for gammel etter oppdatering.\n"
 
-msgid ""
-" ERROR: The CRL will not be used due to an unknown critical extension!\n"
+msgid " ERROR: The CRL will not be used due to an unknown critical extension!\n"
 msgstr " FEIL: CRL blir ikke brukt fordi en kritisk utvidelse er ukjent.\n"
 
 msgid " ERROR: The CRL will not be used\n"
@@ -7480,8 +7239,7 @@ msgid "|FILE|read LDAP server list from FILE"
 msgstr "|FIL|les LDAP-tjenerliste fra valgt FIL"
 
 msgid "add new servers discovered in CRL distribution points to serverlist"
-msgstr ""
-"legg til tjenere i tjenerliste som blir oppdaget via CRL-distribusjonspunkter"
+msgstr "legg til tjenere i tjenerliste som blir oppdaget via CRL-distribusjonspunkter"
 
 msgid "|N|set LDAP timeout to N seconds"
 msgstr "|N|endre LDAP-tidsavbrudd til N antall sekunder"
@@ -7503,8 +7261,7 @@ msgstr "kjør all nettverkstrafikk gjennom Tor"
 
 msgid ""
 "@\n"
-"(See the \"info\" manual for a complete listing of all commands and "
-"options)\n"
+"(See the \"info\" manual for a complete listing of all commands and options)\n"
 msgstr ""
 "@\n"
 "Se «info»-bruksanvisning for fullstendig liste over alle kommandoer og valg\n"
@@ -7708,7 +7465,7 @@ msgstr "«%s» er en ugyldig LDAP-adresse\n"
 
 #, c-format
 msgid "error allocating memory: %s\n"
-msgstr "feil under tildeling av minne. %s\n"
+msgstr "feil under minnetildeling: %s\n"
 
 #, c-format
 msgid "error printing log line: %s\n"
@@ -8081,8 +7838,7 @@ msgid "|N|expire SSH keys after N seconds"
 msgstr "|N|SSH-nøkler utgår etter N antall sekunder"
 
 msgid "|N|set maximum PIN cache lifetime to N seconds"
-msgstr ""
-"|N|endre maksimal livstid for PIN-koder i hurtiglager til N antall sekunder"
+msgstr "|N|endre maksimal livstid for PIN-koder i hurtiglager til N antall sekunder"
 
 msgid "|N|set maximum SSH key lifetime to N seconds"
 msgstr "|N|endre maksimal livstid for SSH-nøkler til N antall sekunder"
@@ -8090,7 +7846,7 @@ msgstr "|N|endre maksimal livstid for SSH-nøkler til N antall sekunder"
 msgid "Options enforcing a passphrase policy"
 msgstr "Valg som håndhever passordfrase-regler"
 
-msgid "do not allow bypassing the passphrase policy"
+msgid "do not allow to bypass the passphrase policy"
 msgstr "ikke tillat overstyring av passordfrase-regler"
 
 msgid "|N|set minimal required length for new passphrases to N"
@@ -8285,12 +8041,10 @@ msgid "Usage: symcryptrun [options] (-h for help)"
 msgstr "Bruk: symcryptrun [valg] (-h for hjelp)"
 
 msgid ""
-"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
-"[options...] COMMAND [inputfile]\n"
+"Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE [options...] COMMAND [inputfile]\n"
 "Call a simple symmetric encryption tool\n"
 msgstr ""
-"Syntaks: symcryptrun --class KLASSE --program PROGRAM --keyfile NØKKELFIL "
-"[valg …] KOMMANDO [inndatafil]\n"
+"Syntaks: symcryptrun --class KLASSE --program PROGRAM --keyfile NØKKELFIL [valg …] KOMMANDO [inndatafil]\n"
 "Bruk et enkelt symmetrisk krypteringsverktøy\n"
 
 #, c-format
@@ -8402,6 +8156,7 @@ msgstr ""
 #~ msgstr "du fant en feil … (%s:%d)\n"
 
 #~ msgid "%d user ID without valid self-signature detected\n"
+
 #~ msgid_plural "%d user IDs without valid self-signatures detected\n"
 #~ msgstr[0] "oppdaget %d bruker-ID uten gyldig selvsignatur\n"
 #~ msgstr[1] "oppdaget %d bruker-id-er uten gyldige selvsignaturer\n"
@@ -8410,11 +8165,13 @@ msgstr ""
 #~ msgstr "flytter en nøkkelsignatur til den rette plassen\n"
 
 #~ msgid "%d day"
+
 #~ msgid_plural "%d days"
 #~ msgstr[0] "%d dag"
 #~ msgstr[1] "%d dager"
 
 #~ msgid "TOFU: few signatures %d message %s"
+
 #~ msgid_plural "TOFU: few signatures %d messages %s"
 #~ msgstr[0] "TOFU: få signaturer %d melding %s"
 #~ msgstr[1] "TOFU: få signaturer %d meldinger %s"
@@ -8429,7 +8186,7 @@ msgstr ""
 #~ msgstr "fant ingen innsamlingsmodul for vilkårlighetsdata\n"
 
 #~ msgid "can't lock `%s': %s\n"
-#~ msgstr "klarte ikke å låse «%s». %s\n"
+#~ msgstr "klarte ikke å låse «%s»: %s\n"
 
 #~ msgid "`%s' is not a regular file - ignored\n"
 #~ msgstr "«%s» er ikke en vanlig fil, og blir ignorert\n"
@@ -8438,16 +8195,16 @@ msgstr ""
 #~ msgstr "merk: random_seed-fila er tom\n"
 
 #~ msgid "can't read `%s': %s\n"
-#~ msgstr "klarte ikke å lese «%s». %s\n"
+#~ msgstr "klarte ikke å lese «%s»: %s\n"
 
 #~ msgid "note: random_seed file not updated\n"
 #~ msgstr "merk: random_seed-fila ble ikke oppdatert\n"
 
 #~ msgid "can't write `%s': %s\n"
-#~ msgstr "klarte ikke å skrive «%s». %s\n"
+#~ msgstr "klarte ikke å skrive «%s»: %s\n"
 
 #~ msgid "can't close `%s': %s\n"
-#~ msgstr "klarte ikke å lukke «%s». %s\n"
+#~ msgstr "klarte ikke å lukke «%s»: %s\n"
 
 #~ msgid "WARNING: using insecure random number generator!!\n"
 #~ msgstr "ADVARSEL: bruker usikker vikårlighetsgenerator.\n"
@@ -8733,8 +8490,8 @@ msgstr ""
 #~ "\n"
 #~ "«3» betyr at du har kontrollert nøkkelen grundig, for eksempel ved at    "
 #~ "du og nøkkeleieren personlig har bekreftet nøkkelens fingeravtrykk,\n"
-#~ "\v    nøkkelens bruker-ID mot et dokument med med bilde og navn som er\n"
-#~ "\v    vanskelig å forfalske. og at e-postadressen i nøkkelen tilhører "
+#~ "    nøkkelens bruker-ID mot et dokument med med bilde og navn som er\n"
+#~ "    vanskelig å forfalske. og at e-postadressen i nøkkelen tilhører "
 #~ "nøkkeleieren.\n"
 #~ "\n"
 #~ "Vær obs på at eksemplene gitt over for nivåene 2 og 3 *bare* er\n"
@@ -8929,7 +8686,7 @@ msgstr ""
 #~ msgstr "veksle mellom hemmelig og offentlig nøkkellisting"
 
 #~ msgid "error reading secret keyblock \"%s\": %s\n"
-#~ msgstr "feil under lesing av hemmelig nøkkelblokk «%s». %s\n"
+#~ msgstr "feil under lesing av hemmelig nøkkelblokk «%s»: %s\n"
 
 #~ msgid "Please use the command \"toggle\" first.\n"
 #~ msgstr "Bruk kommandoen «toggle» først.\n"
@@ -9240,7 +8997,7 @@ msgstr ""
 #~ "please see http://www.gnupg.org/documentation/faqs.html for more "
 #~ "information\n"
 #~ msgstr ""
-#~ "se http://www.gnupg.org/documentation/faq.html for mer informasjon\n"
+#~ "se http://www.gnupg.org/documentation/faqs.html for mer informasjon\n"
 
 #~ msgid "operation is not possible without initialized secure memory\n"
 #~ msgstr "handlinga kan ikke utføres uten sikkert minne\n"
