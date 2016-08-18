@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-06-20 17:17+0000\n"
+"PO-Revision-Date: 2016-07-17 17:17+0000\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -1792,10 +1792,8 @@ msgstr "быстро создать новую пару ключей"
 msgid "quickly add a new user-id"
 msgstr "быстро добавить новый ID пользователя"
 
-#, fuzzy
-#| msgid "quickly add a new user-id"
 msgid "quickly revoke a user-id"
-msgstr "быстро добавить новый ID пользователя"
+msgstr "быстро отозвать ID пользователя"
 
 msgid "full featured key pair generation"
 msgstr "создание полноценной пары ключей"
@@ -2116,10 +2114,9 @@ msgstr "%s:%d: недопустимые параметры импорта\n"
 msgid "invalid import options\n"
 msgstr "недопустимые параметры импорта\n"
 
-#, fuzzy, c-format
-#| msgid "invalid list options\n"
+#, c-format
 msgid "invalid filter option: %s\n"
-msgstr "недопустимые параметры списка\n"
+msgstr "недопустимый параметр фильтра: %s\n"
 
 #, c-format
 msgid "%s:%d: invalid export options\n"
@@ -2440,10 +2437,8 @@ msgstr "не сбрасывать уровни доверия владельца
 msgid "do not update the trustdb after import"
 msgstr "не обновлять таблицу доверия после импорта"
 
-#, fuzzy
-#| msgid "show key fingerprint"
 msgid "show key during import"
-msgstr "показать отпечаток ключа"
+msgstr "показывать ключ во время импорта"
 
 msgid "only accept updates to existing keys"
 msgstr "обновлять только существующие ключи"
@@ -2455,7 +2450,7 @@ msgid "remove as much as possible from key after import"
 msgstr "удалить после импорта из ключа как можно больше"
 
 msgid "run import filters and export key immediately"
-msgstr ""
+msgstr "применить фильтры импорта и немедленно экспортировать ключ"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -3328,10 +3323,9 @@ msgstr "сбой при обновлении: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Ключ не изменялся - обновление не нужно.\n"
 
-#, fuzzy, c-format
-#| msgid "Key generation failed: %s\n"
+#, c-format
 msgid "User ID revocation failed: %s\n"
-msgstr "Сбой при создании ключа: %s\n"
+msgstr "Сбой при отзыве идентификатора: %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3644,7 +3638,7 @@ msgstr "нет секретного ключа\n"
 
 #, c-format
 msgid "tried to revoke a non-user ID: %s\n"
-msgstr ""
+msgstr "попытка отзыва непользовательского идентификатора: %s\n"
 
 #, c-format
 msgid "user ID \"%s\" is already revoked\n"
