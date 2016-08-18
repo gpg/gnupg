@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-07-14 15:55+0200\n"
+"PO-Revision-Date: 2016-08-18 16:52+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -413,10 +413,6 @@ msgid "invalid debug-level '%s' given\n"
 msgstr "ungültige Debugebene `%s' angegeben\n"
 
 #, c-format
-msgid "%s is too old (need %s, have %s)\n"
-msgstr "Die Bibliothek %s ist nicht aktuell (benötige %s, habe %s)\n"
-
-#, c-format
 msgid "Note: no default option file '%s'\n"
 msgstr "Hinweis: Keine voreingestellte Optionendatei '%s' vorhanden\n"
 
@@ -765,21 +761,8 @@ msgstr "Das Warten auf die Beendigung des Prozesses %d schlug fehl: %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "Verbindung zu '%s' kann nicht aufgebaut werden: %s\n"
 
-msgid "communication problem with gpg-agent\n"
-msgstr "Kommunikationsproblem mit GPG-Agent\n"
-
 msgid "problem setting the gpg-agent options\n"
 msgstr "Beim Setzen der gpg-agent Optionen ist ein Problem aufgetreten\n"
-
-msgid "canceled by user\n"
-msgstr "Vom Benutzer abgebrochen\n"
-
-msgid "problem with the agent\n"
-msgstr "Problem mit dem Agenten\n"
-
-#, c-format
-msgid "problem with the agent (unexpected response \"%s\")\n"
-msgstr "Problem mit dem Agenten (unerwartete Antwort \"%s\")\n"
 
 #, c-format
 msgid "can't disable core dumps: %s\n"
@@ -1117,6 +1100,10 @@ msgstr "Dateisperre %s konnte nicht eingerichtet werden: %s\n"
 #, c-format
 msgid "waiting for lock %s...\n"
 msgstr "Warten auf die Freigabe der Dateisperre `%s' ...\n"
+
+#, c-format
+msgid "%s is too old (need %s, have %s)\n"
+msgstr "Die Bibliothek %s ist nicht aktuell (benötige %s, habe %s)\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -2112,18 +2099,8 @@ msgid "(use \"help\" to list choices)\n"
 msgstr "(\"help\" um mögliche Werte anzuzeigen)\n"
 
 #, c-format
-msgid "unknown TOFU DB format '%s'\n"
-msgstr "Unbekanntes TOFU DB Format '%s'\n"
-
-#, c-format
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "Hinweis: Alte voreingestellte Optionendatei '%s' wurde ignoriert\n"
-
-#, c-format
-msgid "libgcrypt is too old (need %s, have %s)\n"
-msgstr ""
-"Die Bibliothek \"libgcrypt\" ist zu alt (benötigt wird %s, vorhanden ist "
-"%s)\n"
 
 #, c-format
 msgid "Note: %s is not for normal use!\n"
@@ -2132,6 +2109,10 @@ msgstr "Hinweis: %s ist nicht für den üblichen Gebrauch gedacht!\n"
 #, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "`%s' ist kein gültiges Signaturablaufdatum\n"
+
+#, c-format
+msgid "\"%s\" is not a proper mail address\n"
+msgstr "\"%s\" ist keine gültige E-Mailadresse\n"
 
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -4467,6 +4448,10 @@ msgstr "               mittels %s-Schlüssel %s\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Signatur vom %s mittels %s-Schlüssel ID %s\n"
 
+#, c-format
+msgid "               issuer \"%s\"\n"
+msgstr "               Aussteller \"%s\"\n"
+
 msgid "Key available at: "
 msgstr "Schlüssel erhältlich bei: "
 
@@ -4673,23 +4658,6 @@ msgstr "Im Unterpaket des Typs %d ist das \"critical bit\" gesetzt\n"
 msgid "problem with the agent: %s\n"
 msgstr "Problem mit dem Agenten: %s\n"
 
-#, c-format
-msgid " (main key ID %s)"
-msgstr " (Hauptschlüssel-ID %s)"
-
-#, c-format
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:\n"
-"\"%.*s\"\n"
-"%u-bit %s key, ID %s,\n"
-"created %s%s.\n"
-msgstr ""
-"Sie benötigen eine Passphrase, um den geheimen OpenPGP Schlüssel zu "
-"entsperren.\n"
-"Benutzer: \"%.*s\"\n"
-"%u-bit %s Schlüssel, ID %s, erzeugt %s%s\n"
-
 msgid "Enter passphrase\n"
 msgstr "Geben Sie die Passphrase ein\n"
 
@@ -4697,20 +4665,8 @@ msgid "cancelled by user\n"
 msgstr "Abbruch durch Benutzer\n"
 
 #, c-format
-msgid ""
-"You need a passphrase to unlock the secret key for\n"
-"user: \"%s\"\n"
-msgstr ""
-"Sie benötigen eine Passphrase, um den geheimen Schlüssel zu entsperren.\n"
-"Benutzer: \"%s\"\n"
-
-#, c-format
-msgid "%u-bit %s key, ID %s, created %s"
-msgstr "%u-Bit %s Schlüssel, ID %s, erzeugt %s"
-
-#, c-format
-msgid "         (subkey on main key ID %s)"
-msgstr "         (Unterschlüssel aus Hauptschlüssel-ID %s)"
+msgid " (main key ID %s)"
+msgstr " (Hauptschlüssel-ID %s)"
 
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
 msgstr ""
@@ -5564,13 +5520,6 @@ msgstr "Fehler beim Initialisieren der TOFU Datenbank: %s\n"
 #, c-format
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "Fehler beim Öffner der TOFU Datenbank '%s': %s\n"
-
-msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-msgstr ""
-"WARNUNG: Das Home-Verzeichnis hat sowohl 'tofu.db' als auch 'tofu.d'.\n"
-
-msgid "Using split format for TOFU database\n"
-msgstr "Das \"Split\" Format wird für die TOFU Datenbank benutzt\n"
 
 #, c-format
 msgid "error updating TOFU database: %s\n"
@@ -7037,10 +6986,6 @@ msgid "dropping %u certificates from the cache\n"
 msgstr "%u Zertifikate werden aus dem Zertifikatzwischenspeicher entfernt\n"
 
 #, c-format
-msgid "can't access directory '%s': %s\n"
-msgstr "Fehler beim Zugriff auf das Verzeichnis `%s': %s\n"
-
-#, c-format
 msgid "can't parse certificate '%s': %s\n"
 msgstr "Zertifikat `%s' kann nicht zerlegt werden: %s\n"
 
@@ -7649,9 +7594,6 @@ msgstr "Absoluter Dateiname erwartet\n"
 msgid "looking up '%s'\n"
 msgstr "Auffinden von `%s'\n"
 
-msgid "run as windows service (background)"
-msgstr "Als Windows-Service ausführen (Hintergrund)"
-
 msgid "list the contents of the CRL cache"
 msgstr "Den Inhalt des CRL Zwischenspeichers anzeigen"
 
@@ -8207,9 +8149,6 @@ msgstr "keine Prüfung der CRL für"
 msgid "checking CRL for"
 msgstr "Prüfen der CRL für"
 
-msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr "Kompatibilitätsmodus - Zertifikatkette nicht geprüft!\n"
-
 msgid "selfsigned certificate has a BAD signature"
 msgstr "Das eigenbeglaubigte Zertifikat hat eine FALSCHE Signatur"
 
@@ -8631,6 +8570,67 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "communication problem with gpg-agent\n"
+#~ msgstr "Kommunikationsproblem mit GPG-Agent\n"
+
+#~ msgid "canceled by user\n"
+#~ msgstr "Vom Benutzer abgebrochen\n"
+
+#~ msgid "problem with the agent\n"
+#~ msgstr "Problem mit dem Agenten\n"
+
+#~ msgid "problem with the agent (unexpected response \"%s\")\n"
+#~ msgstr "Problem mit dem Agenten (unerwartete Antwort \"%s\")\n"
+
+#~ msgid "unknown TOFU DB format '%s'\n"
+#~ msgstr "Unbekanntes TOFU DB Format '%s'\n"
+
+#~ msgid "libgcrypt is too old (need %s, have %s)\n"
+#~ msgstr ""
+#~ "Die Bibliothek \"libgcrypt\" ist zu alt (benötigt wird %s, vorhanden ist "
+#~ "%s)\n"
+
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "Sie benötigen eine Passphrase, um den geheimen OpenPGP Schlüssel zu "
+#~ "entsperren.\n"
+#~ "Benutzer: \"%.*s\"\n"
+#~ "%u-bit %s Schlüssel, ID %s, erzeugt %s%s\n"
+
+#~ msgid ""
+#~ "You need a passphrase to unlock the secret key for\n"
+#~ "user: \"%s\"\n"
+#~ msgstr ""
+#~ "Sie benötigen eine Passphrase, um den geheimen Schlüssel zu entsperren.\n"
+#~ "Benutzer: \"%s\"\n"
+
+#~ msgid "%u-bit %s key, ID %s, created %s"
+#~ msgstr "%u-Bit %s Schlüssel, ID %s, erzeugt %s"
+
+#~ msgid "         (subkey on main key ID %s)"
+#~ msgstr "         (Unterschlüssel aus Hauptschlüssel-ID %s)"
+
+#~ msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
+#~ msgstr ""
+#~ "WARNUNG: Das Home-Verzeichnis hat sowohl 'tofu.db' als auch 'tofu.d'.\n"
+
+#~ msgid "Using split format for TOFU database\n"
+#~ msgstr "Das \"Split\" Format wird für die TOFU Datenbank benutzt\n"
+
+#~ msgid "can't access directory '%s': %s\n"
+#~ msgstr "Fehler beim Zugriff auf das Verzeichnis `%s': %s\n"
+
+#~ msgid "run as windows service (background)"
+#~ msgstr "Als Windows-Service ausführen (Hintergrund)"
+
+#~ msgid "running in compatibility mode - certificate chain not checked!\n"
+#~ msgstr "Kompatibilitätsmodus - Zertifikatkette nicht geprüft!\n"
 
 #~ msgid "you found a bug ... (%s:%d)\n"
 #~ msgstr "Sie haben einen Bug (Programmfehler) gefunden ... (%s:%d)\n"
