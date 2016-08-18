@@ -70,15 +70,6 @@
 #include "gc-opt-flags.h"
 #include "dns-stuff.h"
 
-/* The plain Windows version uses the windows service system.  For
-   example to start the service you may use "sc start dirmngr".
-   WindowsCE does not support this; the service system over there is
-   based on a single process with all services being DLLs - we can't
-   support this easily.  */
-#if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
-# define USE_W32_SERVICE 1
-#endif
-
 #ifndef ENAMETOOLONG
 # define ENAMETOOLONG EINVAL
 #endif
@@ -94,7 +85,6 @@ enum cmd_and_opt_values {
 
   aServer,
   aDaemon,
-  aService,
   aListCRLs,
   aLoadCRL,
   aFetchCRL,
@@ -155,9 +145,6 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_c (aServer,   "server",  N_("run in server mode (foreground)") ),
   ARGPARSE_c (aDaemon,   "daemon",  N_("run in daemon mode (background)") ),
-#ifdef USE_W32_SERVICE
-  ARGPARSE_c (aService,  "service", N_("run as windows service (background)")),
-#endif
   ARGPARSE_c (aListCRLs, "list-crls", N_("list the contents of the CRL cache")),
   ARGPARSE_c (aLoadCRL,  "load-crl",  N_("|FILE|load CRL from FILE into cache")),
   ARGPARSE_c (aFetchCRL, "fetch-crl", N_("|URL|fetch a CRL from URL")),
@@ -635,42 +622,6 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 }
 
 
-#ifdef USE_W32_SERVICE
-/* The global status of our service.  */
-SERVICE_STATUS_HANDLE service_handle;
-SERVICE_STATUS service_status;
-
-DWORD WINAPI
-w32_service_control (DWORD control, DWORD event_type, LPVOID event_data,
-		     LPVOID context)
-{
-  (void)event_type;
-  (void)event_data;
-  (void)context;
-
-  /* event_type and event_data are not used here.  */
-  switch (control)
-    {
-    case SERVICE_CONTROL_SHUTDOWN:
-      /* For shutdown we will try to force termination.  */
-      service_status.dwCurrentState = SERVICE_STOP_PENDING;
-      SetServiceStatus (service_handle, &service_status);
-      shutdown_pending = 3;
-      break;
-
-    case SERVICE_CONTROL_STOP:
-      service_status.dwCurrentState = SERVICE_STOP_PENDING;
-      SetServiceStatus (service_handle, &service_status);
-      shutdown_pending = 1;
-      break;
-
-    default:
-      break;
-    }
-  return 0;
-}
-#endif /*USE_W32_SERVICE*/
-
 #ifndef HAVE_W32_SYSTEM
 static int
 pid_suffix_callback (unsigned long *r_suffix)
@@ -685,15 +636,9 @@ pid_suffix_callback (unsigned long *r_suffix)
 #endif /*!HAVE_W32_SYSTEM*/
 
 
-#ifdef USE_W32_SERVICE
-# define main real_main
-#endif
 int
 main (int argc, char **argv)
 {
-#ifdef USE_W32_SERVICE
-# undef main
-#endif
   enum cmd_and_opt_values cmd = 0;
   ARGPARSE_ARGS pargs;
   int orig_argc;
@@ -714,34 +659,9 @@ main (int argc, char **argv)
 #endif /*USE_LDAP*/
   int debug_wait = 0;
   int rc;
-  int homedir_seen = 0;
   struct assuan_malloc_hooks malloc_hooks;
 
   early_system_init ();
-
-#ifdef USE_W32_SERVICE
-  /* The option will be set by main() below if we should run as a
-     system daemon.  */
-  if (opt.system_service)
-    {
-      service_handle
-	= RegisterServiceCtrlHandlerEx ("DirMngr",
-					&w32_service_control, NULL /*FIXME*/);
-      if (service_handle == 0)
-	log_error ("failed to register service control handler: ec=%d",
-		   (int) GetLastError ());
-      service_status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
-      service_status.dwCurrentState = SERVICE_START_PENDING;
-      service_status.dwControlsAccepted
-	= SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN;
-      service_status.dwWin32ExitCode = NO_ERROR;
-      service_status.dwServiceSpecificExitCode = NO_ERROR;
-      service_status.dwCheckPoint = 0;
-      service_status.dwWaitHint = 10000; /* 10 seconds timeout.  */
-      SetServiceStatus (service_handle, &service_status);
-    }
-#endif /*USE_W32_SERVICE*/
-
   set_strusage (my_strusage);
   log_set_prefix (DIRMNGR_NAME, GPGRT_LOG_WITH_PREFIX | GPGRT_LOG_WITH_PID);
 
@@ -830,44 +750,10 @@ main (int argc, char **argv)
       else if (pargs.r_opt == oHomedir)
         {
           gnupg_set_homedir (pargs.r.ret_str);
-          homedir_seen = 1;
         }
-      else if (pargs.r_opt == aDaemon)
-        opt.system_daemon = 1;
-      else if (pargs.r_opt == aService)
-        {
-	  /* Redundant.  The main function takes care of it.  */
-	  opt.system_service = 1;
-	  opt.system_daemon = 1;
-	}
-#ifdef HAVE_W32_SYSTEM
-      else if (pargs.r_opt == aGPGConfList || pargs.r_opt == aGPGConfTest)
-	/* We set this so we switch to the system configuration
-	   directory below.  This is a crutch to solve the problem
-	   that the user configuration is never used on Windows.  Also
-	   see below at aGPGConfList.  */
-        opt.system_daemon = 1;
-#endif
     }
 
-  /* If --daemon has been given on the command line but not --homedir,
-     we switch to /etc/gnupg as default home directory.  Note, that
-     this also overrides the GNUPGHOME environment variable.  */
-  if (opt.system_daemon && !homedir_seen)
-    {
-#ifdef HAVE_W32CE_SYSTEM
-      gnupg_set_homedir (DIRSEP_S "gnupg");
-#else
-      gnupg_set_homedir (gnupg_sysconfdir ());
-#endif
-      opt.homedir_cache = gnupg_cachedir ();
-      socket_name = dirmngr_sys_socket_name ();
-    }
-  else if (dirmngr_user_socket_name ())
-    socket_name = dirmngr_user_socket_name ();
-  else
-    socket_name = dirmngr_sys_socket_name ();
-
+  socket_name = dirmngr_socket_name ();
   if (default_config)
     configname = make_filename (gnupg_homedir (), DIRMNGR_NAME".conf", NULL );
 
@@ -911,7 +797,6 @@ main (int argc, char **argv)
         {
         case aServer:
         case aDaemon:
-        case aService:
         case aShutdown:
         case aFlush:
 	case aListCRLs:
@@ -1039,8 +924,7 @@ main (int argc, char **argv)
   if (!ldapfile)
     {
       ldapfile = make_filename (gnupg_homedir (),
-                                opt.system_daemon?
-                                "ldapservers.conf":"dirmngr_ldapservers.conf",
+                                "dirmngr_ldapservers.conf",
                                 NULL);
       opt.ldapservers = parse_ldapserver_file (ldapfile);
       xfree (ldapfile);
@@ -1058,9 +942,7 @@ main (int argc, char **argv)
 #endif
 
   /* Ready.  Now to our duties. */
-  if (!cmd && opt.system_service)
-    cmd = aDaemon;
-  else if (!cmd)
+  if (!cmd)
     cmd = aServer;
   rc = 0;
 
@@ -1288,23 +1170,9 @@ main (int argc, char **argv)
 
       cert_cache_init ();
       crl_cache_init ();
-#ifdef USE_W32_SERVICE
-      if (opt.system_service)
-	{
-	  service_status.dwCurrentState = SERVICE_RUNNING;
-	  SetServiceStatus (service_handle, &service_status);
-	}
-#endif
       handle_connections (fd);
       assuan_sock_close (fd);
       shutdown_reaper ();
-#ifdef USE_W32_SERVICE
-      if (opt.system_service)
-	{
-	  service_status.dwCurrentState = SERVICE_STOPPED;
-	  SetServiceStatus (service_handle, &service_status);
-	}
-#endif
     }
   else if (cmd == aListCRLs)
     {
@@ -1416,8 +1284,7 @@ main (int argc, char **argv)
          also only usable on the command line.  --batch is unused.  */
 
       filename = make_filename (gnupg_homedir (),
-                                opt.system_daemon?
-                                "ldapservers.conf":"dirmngr_ldapservers.conf",
+                                "dirmngr_ldapservers.conf",
                                 NULL);
       filename_esc = percent_escape (filename, NULL);
       es_printf ("ldapserverlist-file:%lu:\"%s\n", flags | GC_OPT_FLAG_DEFAULT,
@@ -1455,45 +1322,6 @@ main (int argc, char **argv)
   cleanup ();
   return !!rc;
 }
-
-
-#ifdef USE_W32_SERVICE
-static void WINAPI
-call_real_main (DWORD argc, LPSTR *argv)
-{
-  real_main (argc, argv);
-}
-
-int
-main (int argc, char *argv[])
-{
-  int i;
-
-  /* Find out if we run in daemon mode or on the command line.  */
-  for (i = 1; i < argc; i++)
-    if (!strcmp (argv[i], "--service"))
-      {
-	opt.system_service = 1;
-	opt.system_daemon = 1;
-	break;
-      }
-
-  if (!opt.system_service)
-    return real_main (argc, argv);
-  else
-    {
-      SERVICE_TABLE_ENTRY DispatchTable [] =
-	{
-	  { "DirMngr", &call_real_main },
-	  { NULL, NULL }
-	};
-
-      if (!StartServiceCtrlDispatcher (DispatchTable))
-        return 1;
-      return 0;
-    }
-}
-#endif /*USE_W32_SERVICE*/
 
 
 static void

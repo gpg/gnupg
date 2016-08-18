@@ -34,11 +34,6 @@ providing access to OCSP providers.  Dirmngr is invoked internally by
 @command{gpg}, @command{gpgsm}, or via the @command{gpg-connect-agent}
 tool.
 
-For historical reasons it is also possible to start @command{dirmngr}
-in a system daemon mode which uses a different directory layout.
-However, this mode is deprecated and may eventually be removed.
-
-
 @manpause
 @noindent
 @xref{Option Index},for an index to @command{DIRMNGR}'s commands and
@@ -468,9 +463,7 @@ Dirmngr makes use of several directories when running in daemon mode:
 @table @file
 
 @item ~/.gnupg
-@itemx /etc/gnupg
-The first is the standard home directory for all configuration files.
-In the deprecated system daemon mode the second directory is used instead.
+This is the standard home directory for all configuration files.
 
 @item /etc/gnupg/trusted-certs
 This directory should be filled with certificates of Root CAs you
@@ -501,20 +494,10 @@ These certificates are first tried before going
 out to the net to look for them.  These certificates must also be
 @acronym{DER} encoded and suffixed with @file{.crt} or @file{.der}.
 
-@item @value{LOCALRUNDIR}
-This directory is only used in the deprecated system daemon mode.  It
-keeps the socket file for accessing @command{dirmngr} services.  The
-name of the socket file will be @file{S.dirmngr}.  Make sure that this
-directory has the proper permissions to let @command{dirmngr} create
-the socket file and that eligible users may read and write to that
-socket.
-
 @item ~/.gnupg/crls.d
-@itemx @value{LOCALCACHEDIR}/crls.d
-The first directory is used to store cached CRLs.  The @file{crls.d}
+This directory is used to store cached CRLs.  The @file{crls.d}
 part will be created by dirmngr if it does not exists but you need to
-make sure that the upper directory exists.  The second directory is
-used instead in the deprecated systems daemon mode.
+make sure that the upper directory exists.
 
 @end table
 @manpause
@@ -1039,10 +1022,6 @@ as a binary blob.
 @c We describe here how the internal function @code{validate_cert_chain}
 @c works. Note that mainly testing purposes this functionality may be
 @c called directly using @cmd{dirmngr-client --validate @file{foo.crt}}.
-@c
-@c For backward compatibility this function returns success if Dirmngr is
-@c not used as a system daemon.  Thus not validating the certicates at
-@c all. FIXME:  This is definitely not correct and should be fixed ASAP.
 @c
 @c The function takes the target certificate and a mode argument as
 @c parameters and returns an error code and optionally the closes

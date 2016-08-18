@@ -354,6 +354,10 @@ is_root_cert (ksba_cert_t cert, const char *issuerdn, const char *subjectdn)
    return the closest expiration time in R_EXPTIME (this is useful for
    caching issues).  MODE is one of the VALIDATE_MODE_* constants.
 
+   Note that VALIDATE_MODE_OCSP is not used due to the removal of the
+   system service in 2.1.15.  Instead only the callback to gpgsm to
+   validate a certificate is used.
+
    If R_TRUST_ANCHOR is not NULL and the validation would fail only
    because the root certificate is not trusted, the hexified
    fingerprint of that root certificate is stored at R_TRUST_ANCHOR
@@ -381,14 +385,6 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
 
   if (r_trust_anchor)
     *r_trust_anchor = NULL;
-
-  if (!opt.system_daemon)
-    {
-      /* For backward compatibility we only do this in daemon mode.  */
-      log_info (_("running in compatibility mode - "
-                  "certificate chain not checked!\n"));
-      return 0; /* Okay. */
-    }
 
   if (DBG_X509)
     dump_cert ("subject", cert);

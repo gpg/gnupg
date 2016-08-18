@@ -1318,9 +1318,7 @@ gpgsm_server (certlist_t default_recplist)
                     "%s",
                     gnupg_homedir (),
                     opt.config_filename,
-                    (dirmngr_user_socket_name ()
-                     ? dirmngr_user_socket_name ()
-                     : dirmngr_sys_socket_name ()),
+                    dirmngr_socket_name (),
                     hello) > 0)
         {
           assuan_set_hello_line (ctx, tmp);

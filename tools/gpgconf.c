@@ -156,7 +156,6 @@ list_dirs (estream_t fp, char **names)
     const char *name;
     const char *(*fnc)(void);
     const char *extra;
-    int special;
   } list[] = {
     { "sysconfdir",         gnupg_sysconfdir, NULL },
     { "bindir",             gnupg_bindir,     NULL },
@@ -164,9 +163,7 @@ list_dirs (estream_t fp, char **names)
     { "libdir",             gnupg_libdir,     NULL },
     { "datadir",            gnupg_datadir,    NULL },
     { "localedir",          gnupg_localedir,  NULL },
-    { "dirmngr-socket",     dirmngr_user_socket_name, NULL, 1 },
-    { "dirmngr-socket",     dirmngr_sys_socket_name,  NULL, 2 },
-    { "dirmngr-sys-socket", dirmngr_sys_socket_name,  NULL, 1 },
+    { "dirmngr-socket",     dirmngr_socket_name, NULL,},
     { "agent-ssh-socket",   gnupg_socketdir,  GPG_AGENT_SSH_SOCK_NAME },
     { "agent-socket",       gnupg_socketdir,  GPG_AGENT_SOCK_NAME },
     { "homedir",            gnupg_homedir,    NULL }
@@ -178,13 +175,6 @@ list_dirs (estream_t fp, char **names)
 
   for (idx = 0; idx < DIM (list); idx++)
     {
-      if (list[idx].special == 1 && dirmngr_user_socket_name ())
-        ;
-      else if (list[idx].special == 2 && !dirmngr_user_socket_name ())
-        ;
-      else if (list[idx].special == 1 || list[idx].special == 2)
-        continue;
-
       s = list[idx].fnc ();
       if (list[idx].extra)
         {

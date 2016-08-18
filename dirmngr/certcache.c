@@ -348,9 +348,6 @@ load_certs_from_dir (const char *dirname, int are_trusted)
   dir = opendir (dirname);
   if (!dir)
     {
-      if (opt.system_daemon)
-        log_info (_("can't access directory '%s': %s\n"),
-                  dirname, strerror (errno));
       return 0; /* We do not consider this a severe error.  */
     }
 

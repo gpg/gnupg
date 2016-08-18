@@ -115,7 +115,7 @@
 #include "cdb.h"
 
 /* Change this whenever the format changes */
-#define DBDIR_D (opt.system_daemon? "crls.d" : "dirmngr-cache.d")
+#define DBDIR_D "crls.d"
 #define DBDIRFILE "DIR.txt"
 #define DBDIRVERSION 1
 

@@ -812,55 +812,9 @@ gnupg_cachedir (void)
 }
 
 
-/* Return the system socket name used by DirMngr.  */
+/* Return the user socket name used by DirMngr.  */
 const char *
-dirmngr_sys_socket_name (void)
-{
-#ifdef HAVE_W32_SYSTEM
-  static char *name;
-
-  if (!name)
-    {
-      char *p;
-# ifdef HAVE_W32CE_SYSTEM
-      const char *s1, *s2;
-
-      s1 = default_homedir ();
-# else
-      char s1buf[MAX_PATH];
-      const char *s1, *s2;
-
-      s1 = default_homedir ();
-      if (!w32_portable_app)
-        {
-          /* We need something akin CSIDL_COMMON_PROGRAMS, but local
-             (non-roaming).  This is because the file needs to be on
-             the local machine and makes only sense on that machine.
-             CSIDL_WINDOWS seems to be the only location which
-             guarantees that. */
-          if (w32_shgetfolderpath (NULL, CSIDL_WINDOWS, NULL, 0, s1buf) < 0)
-            strcpy (s1buf, "C:\\WINDOWS");
-          s1 = s1buf;
-        }
-# endif
-      s2 = DIRSEP_S DIRMNGR_SOCK_NAME;
-      name = xmalloc (strlen (s1) + strlen (s2) + 1);
-      strcpy (stpcpy (name, s1), s2);
-      for (p=name; *p; p++)
-        if (*p == '/')
-          *p = '\\';
-    }
-  return name;
-#else /*!HAVE_W32_SYSTEM*/
-  return GNUPG_LOCALSTATEDIR "/run/" PACKAGE_NAME "/"DIRMNGR_SOCK_NAME;
-#endif /*!HAVE_W32_SYSTEM*/
-}
-
-
-/* Return the user socket name used by DirMngr.  If a user specific
-   dirmngr installation is not supported, NULL is returned.  */
-const char *
-dirmngr_user_socket_name (void)
+dirmngr_socket_name (void)
 {
   static char *name;
 

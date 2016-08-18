@@ -330,10 +330,6 @@ validate_responder_cert (ctrl_t ctrl, ksba_cert_t cert,
         }
       xfree (fpr);
     }
-  else if (opt.system_daemon)
-    {
-      err = validate_cert_chain (ctrl, cert, NULL, VALIDATE_MODE_OCSP, NULL);
-    }
   else
     {
       /* We avoid duplicating the entire certificate validation code

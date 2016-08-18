@@ -2217,15 +2217,8 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "socket_name"))
     {
-      const char *s = dirmngr_user_socket_name ();
-
-      if (!s)
-        s = dirmngr_sys_socket_name ();
-
-      if (s)
-        err = assuan_send_data (ctx, s, strlen (s));
-      else
-        err = gpg_error (GPG_ERR_NO_DATA);
+      const char *s = dirmngr_socket_name ();
+      err = assuan_send_data (ctx, s, strlen (s));
     }
   else if (!strcmp (line, "tor"))
     {
@@ -2269,29 +2262,12 @@ static gpg_error_t
 cmd_killdirmngr (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  gpg_error_t err;
 
   (void)line;
 
-  if (opt.system_daemon)
-    {
-      if (opt.system_service)
-        err = set_error (GPG_ERR_NOT_SUPPORTED,
-                         "can't do that whilst running as system service");
-      else
-        err = check_owner_permission (ctx,
-                                      "no permission to kill this process");
-    }
-  else
-    err = 0;
-
-  if (!err)
-    {
-      ctrl->server_local->stopme = 1;
-      assuan_set_flag (ctx, ASSUAN_FORCE_CLOSE, 1);
-      err = gpg_error (GPG_ERR_EOF);
-    }
-  return err;
+  ctrl->server_local->stopme = 1;
+  assuan_set_flag (ctx, ASSUAN_FORCE_CLOSE, 1);
+  return gpg_error (GPG_ERR_EOF);
 }
 
 
@@ -2305,20 +2281,6 @@ cmd_reloaddirmngr (assuan_context_t ctx, char *line)
 {
   (void)ctx;
   (void)line;
-
- if (opt.system_daemon)
-    {
-#ifndef HAVE_W32_SYSTEM
-      {
-        gpg_error_t err;
-
-        err = check_owner_permission (ctx,
-                                      "no permission to reload this process");
-        if (err)
-          return err;
-      }
-#endif
-    }
 
   dirmngr_sighup_action ();
   return 0;

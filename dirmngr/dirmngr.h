@@ -89,8 +89,6 @@ struct
   char *http_wrapper_program; /* Override value for the HTTP wrapper
                                  program.  */
 
-  int system_service;   /* We are running as W32 service (implies daemon).  */
-  int system_daemon;    /* We are running in system daemon mode.  */
   int running_detached; /* We are running in detached mode.  */
   int use_tor;          /* Tor mode has been enabled.  */
 
