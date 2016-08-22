@@ -101,10 +101,7 @@ static int
 agent_send_option (assuan_context_t ctx, const char *name, const char *value)
 {
   int err;
-  char buf[200];
-  int nread;
   char *line;
-  int i;
 
   line = spwq_malloc (7 + strlen (name) + 1 + strlen (value) + 2);
   if (!line)
@@ -241,12 +238,7 @@ static int
 agent_open (assuan_context_t *ctx)
 {
   int rc;
-  int fd;
-  char *infostr, *p;
-  struct sockaddr_un client_addr;
-  size_t len;
-  char line[200];
-  int nread;
+  char *infostr;
 
   infostr = default_gpg_agent_info;
   if ( !infostr || !*infostr )
@@ -285,6 +277,7 @@ agent_open (assuan_context_t *ctx)
  errout:
   assuan_release (*ctx);
   *ctx = NULL;
+  return rc;
 }
 
 
@@ -373,13 +366,14 @@ simple_pwquery (const char *cacheid,
                 int opt_check,
                 int *errorcode)
 {
+  int rc;
   assuan_context_t ctx;
   membuf_t data;
-  int nread;
   char *result = NULL;
   char *pw = NULL;
   char *p;
-  int rc, i;
+  size_t n;
+
 
   rc = agent_open (&ctx);
   if (rc)
@@ -437,9 +431,6 @@ simple_pwquery (const char *cacheid,
 
     if (rc)
       {
-        void *p;
-        size_t n;
-
         p = get_membuf (&data, &n);
         if (p)
           wipememory (p, n);
@@ -490,8 +481,6 @@ int
 simple_query (const char *query)
 {
   assuan_context_t ctx;
-  char response[500];
-  int have = 0;
   int rc;
 
   rc = agent_open (&ctx);
