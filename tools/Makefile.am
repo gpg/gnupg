@@ -53,13 +53,16 @@ else
   gpg_wks_client =
 endif
 
+libexec_PROGRAMS =
+
 bin_PROGRAMS = gpgconf gpg-connect-agent ${symcryptrun}
 if !HAVE_W32_SYSTEM
-bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server} ${gpg_wks_client}
+bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server}
+libexec_PROGRAMS += ${gpg_wks_client}
 endif
 
 if !DISABLE_REGEX
-libexec_PROGRAMS = gpg-check-pattern
+libexec_PROGRAMS += gpg-check-pattern
 endif
 
 if !HAVE_W32CE_SYSTEM
