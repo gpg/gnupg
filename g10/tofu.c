@@ -1872,14 +1872,13 @@ time_ago_str (long long int t)
 }
 
 
-/* Write TOFU_STATS status line.  */
+/* If FP is NULL, write TOFU_STATS status line.  If FP is not NULL
+ * write a "tfs" record to that stream. */
 static void
-write_stats_status (long messages, enum tofu_policy policy,
-                    long first_seen_ago, long most_recent_seen_ago)
+write_stats_status (estream_t fp, long messages, enum tofu_policy policy,
+                    unsigned long first_seen,
+                    unsigned long most_recent_seen)
 {
-  char numbuf1[35];
-  char numbuf2[35];
-  char numbuf3[35];
   const char *validity;
 
   if (messages < 1)
@@ -1891,19 +1890,33 @@ write_stats_status (long messages, enum tofu_policy policy,
   else
     validity = "4"; /* Key with a lot of history.  */
 
-  snprintf (numbuf1, sizeof numbuf1, " %ld", messages);
-  *numbuf2 = *numbuf3 = 0;
-  if (first_seen_ago >= 0 && most_recent_seen_ago >= 0)
+  if (fp)
     {
-      snprintf (numbuf2, sizeof numbuf2, " %ld", first_seen_ago);
-      snprintf (numbuf3, sizeof numbuf3, " %ld", most_recent_seen_ago);
+      es_fprintf (fp, "tfs:1:%s:%ld:0:%s:%lu:%lu:\n",
+                  validity, messages,
+                  tofu_policy_str (policy),
+                  first_seen, most_recent_seen);
     }
+  else
+    {
+      char numbuf1[35];
+      char numbuf2[35];
+      char numbuf3[35];
 
-  write_status_strings (STATUS_TOFU_STATS,
-                        validity, numbuf1, " 0",
-                        " ", tofu_policy_str (policy),
-                        numbuf2, numbuf3,
-                        NULL);
+      snprintf (numbuf1, sizeof numbuf1, " %ld", messages);
+      *numbuf2 = *numbuf3 = 0;
+      if (first_seen && most_recent_seen)
+        {
+          snprintf (numbuf2, sizeof numbuf2, " %lu", first_seen);
+          snprintf (numbuf3, sizeof numbuf3, " %lu", most_recent_seen);
+        }
+
+      write_status_strings (STATUS_TOFU_STATS,
+                            validity, numbuf1, " 0",
+                            " ", tofu_policy_str (policy),
+                            numbuf2, numbuf3,
+                            NULL);
+    }
 }
 
 static void
@@ -1920,8 +1933,7 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 
   rc = gpgsql_exec_printf
     (dbs->db, strings_collect_cb, &strlist, &err,
-     "select count (*), strftime('%%s','now') - min (signatures.time),\n"
-     "  strftime('%%s','now') - max (signatures.time)\n"
+     "select count (*), min (signatures.time), max (signatures.time)\n"
      " from signatures\n"
      " left join bindings on signatures.binding = bindings.oid\n"
      " where fingerprint = %Q and email = %Q and sig_digest %s%s%s;",
@@ -1939,6 +1951,7 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
       goto out;
     }
 
+
   write_status_text_and_buffer (STATUS_TOFU_USER, fingerprint,
                                 email, strlen (email), 0);
 
@@ -1946,13 +1959,14 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
     {
       log_info (_("Have never verified a message signed by key %s!\n"),
                 fingerprint_pp);
-      write_stats_status (0,  TOFU_POLICY_NONE, -1, -1);
+      write_stats_status (NULL, 0, TOFU_POLICY_NONE, 0, 0);
     }
   else
     {
+      unsigned long now = gnupg_get_time ();
       signed long messages;
-      signed long first_seen_ago;
-      signed long most_recent_seen_ago;
+      unsigned long first_seen;
+      unsigned long most_recent_seen;
 
       log_assert (strlist_length (strlist) == 3);
 
@@ -1960,19 +1974,32 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 
       if (messages == 0 && *strlist->next->d == '\0')
         { /* min(NULL) => NULL => "".  */
-          first_seen_ago = -1;
-          most_recent_seen_ago = -1;
+          first_seen = 0;
+          most_recent_seen = 0;
         }
       else
 	{
-          string_to_long (&first_seen_ago, strlist->next->d, -1, __LINE__);
-	  string_to_long (&most_recent_seen_ago, strlist->next->next->d, -1,
-                          __LINE__);
+          string_to_ulong (&first_seen, strlist->next->d, -1, __LINE__);
+          if (first_seen > now)
+            {
+              log_debug ("time-warp - tofu DB has a future value (%lu, %lu)\n",
+                         first_seen, now);
+              first_seen = now;
+            }
+	  string_to_ulong (&most_recent_seen, strlist->next->next->d, -1,
+                           __LINE__);
+          if (most_recent_seen > now)
+            {
+              log_debug ("time-warp - tofu DB has a future value (%lu, %lu)\n",
+                         most_recent_seen, now);
+              most_recent_seen = now;
+            }
+
 	}
 
-      if (messages == -1 || first_seen_ago == -1)
+      if (messages == -1 || !first_seen)
         {
-          write_stats_status (0, TOFU_POLICY_NONE, -1, -1);
+          write_stats_status (NULL, 0, TOFU_POLICY_NONE, 0, 0);
           log_info (_("Failed to collect signature statistics for \"%s\"\n"
                       "(key %s)\n"),
                     user_id, fingerprint_pp);
@@ -1983,8 +2010,8 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 	  estream_t fp;
 	  char *msg;
 
-          write_stats_status (messages, policy,
-                              first_seen_ago, most_recent_seen_ago);
+          write_stats_status (NULL, messages, policy,
+                              first_seen, most_recent_seen);
 
 	  fp = es_fopenmem (0, "rw,samethread");
 	  if (! fp)
@@ -1999,7 +2026,7 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
             }
 	  else
 	    {
-              char *first_seen_ago_str = time_ago_str (first_seen_ago);
+              char *first_seen_ago_str = time_ago_str (now - first_seen);
 
               /* TRANSLATORS: The final %s is replaced by a string like
                  "7 months, 1 day, 5 minutes, 0 seconds". */
@@ -2013,7 +2040,7 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 
               if (messages > 1)
                 {
-                  char *tmpstr = time_ago_str (most_recent_seen_ago);
+                  char *tmpstr = time_ago_str (now - most_recent_seen);
                   es_fputs ("  ", fp);
                   es_fprintf (fp, _("The most recent message was"
                                     " verified %s ago."), tmpstr);

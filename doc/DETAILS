@@ -60,6 +60,7 @@ described here.
     - pkd :: Public key data [*]
     - grp :: Keygrip
     - rvk :: Revocation key
+    - tfs :: TOFU statistics [*]
     - tru :: Trust database information [*]
     - spk :: Signature subpacket [*]
     - cfg :: Configuration data [*]
@@ -229,6 +230,20 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     !  !------ for information number of bits in the value
     !--------- index (eg. DSA goes from 0 to 3: p,q,g,y)
 #+end_example
+
+*** TFS - TOFU statistics
+
+    This field may follows a UID record to convey information about
+    the TOFU database.  The information is similar to a TOFU_STATS
+    status line.
+
+    - Field 2 :: tfs record version (must be 1)
+    - Field 3 :: validity -  A number with validity code.
+    - Field 4 :: signcount - The number of signatures seen.
+    - Field 5 :: encrcount - The number of encryptions done.
+    - Field 6 :: policy - A string with the policy
+    - Field 7 :: first-seen - a timestamp or 0 if not known.
+    - Field 8 :: most-recent-seen - a timestamp or 0 if not known.
 
 *** TRU - Trust database information
     Example for a "tru" trust base record:
@@ -723,9 +738,9 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     - ask     :: Policy is "ask"
     - unknown :: Policy is not known.
 
-    TM1 gives the number of seconds since the the first messages was
-    verified.  TM2 gives the number of seconds since the most recent
-    message was verified.
+    TM1 ist the time the first messages was verified.  TM2 is the time
+    the most recent message was verified.  Both may either be seconds
+    since Epoch or an ISO time string (yyyymmddThhmmss).
 
 *** TOFU_STATS_SHORT <long_string>
 
