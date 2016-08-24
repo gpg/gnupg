@@ -49,6 +49,7 @@ enum cmd_and_opt_values
 
     oDebug      = 500,
 
+    aSupported,
     aCreate,
     aReceive,
     aRead,
@@ -64,6 +65,8 @@ enum cmd_and_opt_values
 static ARGPARSE_OPTS opts[] = {
   ARGPARSE_group (300, ("@Commands:\n ")),
 
+  ARGPARSE_c (aSupported, "supported",
+              ("check whether provider supports WKS")),
   ARGPARSE_c (aCreate,   "create",
               ("create a publication request")),
   ARGPARSE_c (aReceive,   "receive",
@@ -98,6 +101,7 @@ static struct debug_flags_s debug_flags [] =
 
 
 static void wrong_args (const char *text) GPGRT_ATTR_NORETURN;
+static gpg_error_t command_supported (char *userid);
 static gpg_error_t command_send (const char *fingerprint, char *userid);
 static gpg_error_t process_confirmation_request (estream_t msg);
 static gpg_error_t command_receive_cb (void *opaque,
@@ -174,6 +178,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
           opt.output = pargs->r.ret_str;
           break;
 
+	case aSupported:
 	case aCreate:
 	case aReceive:
 	case aRead:
@@ -237,6 +242,14 @@ main (int argc, char **argv)
   /* Run the selected command.  */
   switch (cmd)
     {
+    case aSupported:
+      if (argc != 1)
+        wrong_args ("--supported USER-ID");
+      err = command_supported (argv[0]);
+      if (err && gpg_err_code (err) != GPG_ERR_FALSE)
+        log_error ("checking support failed: %s\n", gpg_strerror (err));
+      break;
+
     case aCreate:
       if (argc != 2)
         wrong_args ("--create FINGERPRINT USER-ID");
@@ -376,6 +389,48 @@ get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
   es_fclose (key);
   xfree (argv);
   xfree (filterexp);
+  return err;
+}
+
+
+
+/* Check whether the  provider supports the WKS protocol.  */
+static gpg_error_t
+command_supported (char *userid)
+{
+  gpg_error_t err;
+  char *addrspec = NULL;
+  char *submission_to = NULL;
+
+  addrspec = mailbox_from_userid (userid);
+  if (!addrspec)
+    {
+      log_error (_("\"%s\" is not a proper mail address\n"), userid);
+      err = gpg_error (GPG_ERR_INV_USER_ID);
+      goto leave;
+    }
+
+  /* Get the submission address.  */
+  err = wkd_get_submission_address (addrspec, &submission_to);
+  if (err)
+    {
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA
+          || gpg_err_code (err) == GPG_ERR_UNKNOWN_HOST)
+        {
+          if (opt.verbose)
+            log_info ("provider for '%s' does NOT support WKS (%s)\n",
+                      addrspec, gpg_strerror (err));
+          err = gpg_error (GPG_ERR_FALSE);
+          log_inc_errorcount ();
+        }
+      goto leave;
+    }
+  if (opt.verbose)
+    log_info ("provider for '%s' supports WKS\n", addrspec);
+
+ leave:
+  xfree (submission_to);
+  xfree (addrspec);
   return err;
 }
 
