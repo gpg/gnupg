@@ -60,6 +60,9 @@ time_t
 gnupg_get_time ()
 {
   time_t current = time (NULL);
+  if (current == (time_t)(-1))
+    log_fatal ("time() failed\n");
+
   if (timemode == NORMAL)
     return current;
   else if (timemode == FROZEN)
@@ -99,22 +102,16 @@ void
 gnupg_get_isotime (gnupg_isotime_t timebuf)
 {
   time_t atime = gnupg_get_time ();
+  struct tm *tp;
+  struct tm tmbuf;
 
-  if (atime == (time_t)(-1))
+  tp = gnupg_gmtime (&atime, &tmbuf);
+  if (!tp)
     *timebuf = 0;
   else
-    {
-      struct tm *tp;
-      struct tm tmbuf;
-
-      tp = gnupg_gmtime (&atime, &tmbuf);
-      if (!tp)
-        *timebuf = 0;
-      else
-        snprintf (timebuf, 16, "%04d%02d%02dT%02d%02d%02d",
-                  1900 + tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-                  tp->tm_hour, tp->tm_min, tp->tm_sec);
-    }
+    snprintf (timebuf, 16, "%04d%02d%02dT%02d%02d%02d",
+              1900 + tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+              tp->tm_hour, tp->tm_min, tp->tm_sec);
 }
 
 
@@ -164,9 +161,6 @@ u32
 make_timestamp (void)
 {
   time_t t = gnupg_get_time ();
-
-  if (t == (time_t)-1)
-    log_fatal ("gnupg_get_time() failed\n");
   return (u32)t;
 }
 
