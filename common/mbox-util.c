@@ -18,6 +18,10 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+/* NB: GPGME uses the same code to reflect our idea on how to extract
+ * a mail address from a user id.
+ */
+
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
