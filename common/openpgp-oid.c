@@ -68,7 +68,7 @@ static const char oid_ed25519[] =
   { 0x09, 0x2b, 0x06, 0x01, 0x04, 0x01, 0xda, 0x47, 0x0f, 0x01 };
 
 /* The OID for Curve25519 in OpenPGP format.  */
-static const char oid_crv25519[] =
+static const char oid_cv25519[] =
   { 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x97, 0x55, 0x01, 0x05, 0x01 };
 
 
@@ -298,7 +298,7 @@ openpgp_oid_is_ed25519 (gcry_mpi_t a)
 
 
 int
-openpgp_oid_is_crv25519 (gcry_mpi_t a)
+openpgp_oid_is_cv25519 (gcry_mpi_t a)
 {
   const unsigned char *buf;
   unsigned int nbits;
@@ -309,8 +309,8 @@ openpgp_oid_is_crv25519 (gcry_mpi_t a)
 
   buf = gcry_mpi_get_opaque (a, &nbits);
   n = (nbits+7)/8;
-  return (n == DIM (oid_crv25519)
-          && !memcmp (buf, oid_crv25519, DIM (oid_crv25519)));
+  return (n == DIM (oid_cv25519)
+          && !memcmp (buf, oid_cv25519, DIM (oid_cv25519)));
 }
 
 

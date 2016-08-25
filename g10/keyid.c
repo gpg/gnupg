@@ -919,7 +919,7 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
                                    pk->pubkey_algo == PUBKEY_ALGO_EDDSA?
                                    "(public-key(ecc(curve%s)(flags eddsa)(q%m)))":
                                    (pk->pubkey_algo == PUBKEY_ALGO_ECDH
-                                    && openpgp_oid_is_crv25519 (pk->pkey[0]))?
+                                    && openpgp_oid_is_cv25519 (pk->pkey[0]))?
                                    "(public-key(ecc(curve%s)(flags djb-tweak)(q%m)))":
                                    "(public-key(ecc(curve%s)(q%m)))",
                                    curve, pk->pkey[1]);

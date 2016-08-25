@@ -227,7 +227,7 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
             rc = gpg_error_from_syserror ();
           else
             {
-              int with_djb_tweak_flag = openpgp_oid_is_crv25519 (pkey[0]);
+              int with_djb_tweak_flag = openpgp_oid_is_cv25519 (pkey[0]);
 
               /* Now use the ephemeral secret to compute the shared point.  */
               rc = gcry_sexp_build (&s_pkey, NULL,
