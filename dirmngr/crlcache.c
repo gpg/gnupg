@@ -2408,7 +2408,7 @@ crl_cache_load (ctrl_t ctrl, const char *filename)
   estream_t fp;
   ksba_reader_t reader;
 
-  fp = es_fopen (filename, "r");
+  fp = es_fopen (filename, "rb");
   if (!fp)
     {
       err = gpg_error_from_errno (errno);
