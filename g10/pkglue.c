@@ -58,6 +58,7 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
 {
   gcry_sexp_t s_sig, s_hash, s_pkey;
   int rc;
+  unsigned int neededfixedlen = 0;
 
   /* Make a sexp from pkey.  */
   if (pkalgo == PUBKEY_ALGO_DSA)
@@ -103,6 +104,9 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
                                 curve, pkey[1]);
           xfree (curve);
         }
+
+      if (openpgp_oid_is_ed25519 (pkey[0]))
+        neededfixedlen = 256 / 8;
     }
   else
     return GPG_ERR_PUBKEY_ALGO;
@@ -144,11 +148,59 @@ pk_verify (pubkey_algo_t pkalgo, gcry_mpi_t hash,
     }
   else if (pkalgo == PUBKEY_ALGO_EDDSA)
     {
-      if (!data[0] || !data[1])
+      gcry_mpi_t r = data[0];
+      gcry_mpi_t s = data[1];
+      size_t rlen, slen, n;  /* (bytes) */
+      char buf[64];
+
+      log_assert (neededfixedlen <= sizeof buf);
+
+      if (!r || !s)
+        rc = gpg_error (GPG_ERR_BAD_MPI);
+      else if ((rlen = (gcry_mpi_get_nbits (r)+7)/8) > neededfixedlen || !rlen)
+        rc = gpg_error (GPG_ERR_BAD_MPI);
+      else if ((slen = (gcry_mpi_get_nbits (s)+7)/8) > neededfixedlen || !slen)
         rc = gpg_error (GPG_ERR_BAD_MPI);
       else
-        rc = gcry_sexp_build (&s_sig, NULL,
-                              "(sig-val(eddsa(r%M)(s%M)))", data[0], data[1]);
+        {
+          /* We need to fixup the length in case of leading zeroes.
+           * OpenPGP does not allow leading zeroes and the parser for
+           * the signature packet has no information on the use curve,
+           * thus we need to do it here.  We won't do it for opaque
+           * MPIs under the assumption that they are known to be fine;
+           * we won't see them here anyway but the check is anyway
+           * required.  Fixme: A nifty feature for gcry_sexp_build
+           * would be a format to left pad the value (e.g. "%*M"). */
+          rc = 0;
+
+          if (rlen < neededfixedlen
+              && !gcry_mpi_get_flag (r, GCRYMPI_FLAG_OPAQUE)
+              && !(rc=gcry_mpi_print (GCRYMPI_FMT_USG, buf, sizeof buf, &n, r)))
+            {
+              log_assert (n < neededfixedlen);
+              memmove (buf + (neededfixedlen - n), buf, n);
+              memset (buf, 0, neededfixedlen - n);
+              r = gcry_mpi_set_opaque_copy (NULL, buf, neededfixedlen * 8);
+            }
+          if (slen < neededfixedlen
+              && !gcry_mpi_get_flag (s, GCRYMPI_FLAG_OPAQUE)
+              && !(rc=gcry_mpi_print (GCRYMPI_FMT_USG, buf, sizeof buf, &n, s)))
+            {
+              log_assert (n < neededfixedlen);
+              memmove (buf + (neededfixedlen - n), buf, n);
+              memset (buf, 0, neededfixedlen - n);
+              s = gcry_mpi_set_opaque_copy (NULL, buf, neededfixedlen * 8);
+            }
+
+          if (!rc)
+            rc = gcry_sexp_build (&s_sig, NULL,
+                                  "(sig-val(eddsa(r%M)(s%M)))", r, s);
+
+          if (r != data[0])
+            gcry_mpi_release (r);
+          if (s != data[1])
+            gcry_mpi_release (s);
+        }
     }
   else if (pkalgo == PUBKEY_ALGO_ELGAMAL || pkalgo == PUBKEY_ALGO_ELGAMAL_E)
     {

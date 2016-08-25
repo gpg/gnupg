@@ -236,6 +236,67 @@ FWIAQUplk7JWbyRKAJ92ZJyJpWfzb0yc1s7MY65r2qEHrg==
 ;; Two clear text signatures in a row
 (define msg_clsclss_asc_multiple (string-append msg_cls_asc msg_clss_asc))
 
+
+;; An Ed25519 cleartext message with an R parameter of only 247 bits
+;; so that the code to re-insert the stripped zero byte kicks in.  The
+;; S parameter has 253 bits but that does not strip a full byte.
+(define msg_ed25519_rshort "
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+Dear Emily:
+	I'm still confused as to what groups articles should be posted
+to.  How about an example?
+		-- Still Confused
+
+Dear Still:
+	Ok.  Let's say you want to report that Gretzky has been traded from
+the Oilers to the Kings.  Now right away you might think rec.sport.hockey
+would be enough.  WRONG.  Many more people might be interested.  This is a
+big trade!  Since it's a NEWS article, it belongs in the news.* hierarchy
+as well.  If you are a news admin, or there is one on your machine, try
+news.admin.  If not, use news.misc.
+	The Oilers are probably interested in geology, so try sci.physics.
+He is a big star, so post to sci.astro, and sci.space because they are also
+interested in stars.  Next, his name is Polish sounding.  So post to
+soc.culture.polish.  But that group doesn't exist, so cross-post to
+news.groups suggesting it should be created.  With this many groups of
+interest, your article will be quite bizarre, so post to talk.bizarre as
+well.  (And post to comp.std.mumps, since they hardly get any articles
+there, and a \"comp\" group will propagate your article further.)
+	You may also find it is more fun to post the article once in each
+group.  If you list all the newsgroups in the same article, some newsreaders
+will only show the the article to the reader once!  Don't tolerate this.
+		-- Emily Postnews Answers Your Questions on Netiquette
+-----BEGIN PGP SIGNATURE-----
+
+iJEEARYIADoWIQSyHeq0+HX7PaQvHR0TlWNoKgINCgUCV772DhwccGF0cmljZS5s
+dW11bWJhQGV4YW1wbGUubmV0AAoJEBOVY2gqAg0KMAIA90EtUwAja0iJGpO91wyz
+GLh9pS5v495V0r94yU6uUyUA/RT/StyPWe1wbnEZuacZnLbUV6Yy/aTXCVAlxf0r
+TusO
+=vQ3f
+-----END PGP SIGNATURE-----
+")
+
+;; An Ed25519 cleartext message with an S parameter of only 248 bits
+;; so that the code to re-insert the stripped zero byte kicks in.
+(define msg_ed25519_sshort "
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+All articles that coruscate with resplendence are not truly auriferous.
+-----BEGIN PGP SIGNATURE-----
+
+iJEEARYIADoWIQSyHeq0+HX7PaQvHR0TlWNoKgINCgUCV771QhwccGF0cmljZS5s
+dW11bWJhQGV4YW1wbGUubmV0AAoJEBOVY2gqAg0KHVEBAI66OPDYXKWO3r6SaFT+
+uxmh8x4ZerW41vMA9gkJ4AEKAPjoe/Z7fDqo1lCptIFutFAGbfNxcm/53prfx2fT
+GisM
+=L7sk
+-----END PGP SIGNATURE-----
+")
+
+
+
 ;; Fixme:  We need more tests with manipulated cleartext signatures.
 
 ;;
@@ -272,3 +333,15 @@ FWIAQUplk7JWbyRKAJ92ZJyJpWfzb0yc1s7MY65r2qEHrg==
 	   (pipe:spawn `(,@GPG --verify)))
 	  (error "verification succeded but should not")))
  '(bad_ls_asc bad_fols_asc bad_olsf_asc bad_ools_asc))
+
+
+;;; Need to import the ed25519 sample key used for
+;;; the next two tests.
+(call-check `(,@GPG --quiet --yes --import ,(in-srcdir key-file2)))
+(for-each-p
+ "Checking that a valid Ed25519 signature is verified as such"
+ (lambda (armored-file)
+   (pipe:do
+    (pipe:echo (eval armored-file (current-environment)))
+    (pipe:spawn `(,@GPG --verify))))
+ '(msg_ed25519_rshort msg_ed25519_sshort))
