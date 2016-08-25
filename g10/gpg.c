@@ -193,6 +193,11 @@ enum cmd_and_opt_values
     oWithKeygrip,
     oWithSecret,
     oWithWKDHash,
+    oWithColons,
+    oWithKeyData,
+    oWithTofuInfo,
+    oWithSigList,
+    oWithSigCheck,
     oAnswerYes,
     oAnswerNo,
     oKeyring,
@@ -259,10 +264,6 @@ enum cmd_and_opt_values
     oNoOptions,
     oNoBatch,
     oHomedir,
-    oWithColons,
-    oWithKeyData,
-    oWithSigList,
-    oWithSigCheck,
     oSkipVerify,
     oSkipHiddenRecipients,
     oNoSkipHiddenRecipients,
@@ -699,6 +700,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
   ARGPARSE_s_n (oNoBatch, "no-batch", "@"),
   ARGPARSE_s_n (oWithColons, "with-colons", "@"),
+  ARGPARSE_s_n (oWithTofuInfo,"with-tofu-info", "@"),
   ARGPARSE_s_n (oWithKeyData,"with-key-data", "@"),
   ARGPARSE_s_n (oWithSigList,"with-sig-list", "@"),
   ARGPARSE_s_n (oWithSigCheck,"with-sig-check", "@"),
@@ -2649,6 +2651,8 @@ main (int argc, char **argv)
 	  case oNoOptions: opt.no_homedir_creation = 1; break; /* no-options */
 	  case oHomedir: break;
 	  case oNoBatch: opt.batch = 0; break;
+
+          case oWithTofuInfo: opt.with_tofu_info = 1; break;
 
 	  case oWithKeyData: opt.with_key_data=1; /*FALLTHRU*/
 	  case oWithColons: opt.with_colons=':'; break;

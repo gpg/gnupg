@@ -52,7 +52,7 @@ described here.
     - sub :: Subkey (secondary key)
     - sec :: Secret key
     - ssb :: Secret subkey (secondary key)
-    - uid :: User id (only field 10 is used).
+    - uid :: User id
     - uat :: User attribute (same as user id except for field 10).
     - sig :: Signature
     - rev :: Revocation signature
@@ -214,10 +214,6 @@ described here.
 
     For pub, sub, sec, and ssb records this field is used for the ECC
     curve name.
-*** Field 18 - TOFU Policy
-
-    This is the TOFU policy.  It is either good, bad, unknown, ask or
-    auto.  This is only shows for uid records.
 
 ** Special fields
 

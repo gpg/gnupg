@@ -1289,8 +1289,8 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	  char *str;
 	  PKT_user_id *uid = node->pkt->pkt.user_id;
 
-	  if (attrib_fp && node->pkt->pkt.user_id->attrib_data != NULL)
-	    dump_attribs (node->pkt->pkt.user_id, pk);
+	  if (attrib_fp && uid->attrib_data != NULL)
+	    dump_attribs (uid, pk);
 	  /*
 	   * Fixme: We need a valid flag here too
 	   */
@@ -1326,18 +1326,16 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	    es_fprintf (es_stdout, "%u %lu", uid->numattribs, uid->attrib_len);
 	  else
 	    es_write_sanitized (es_stdout, uid->name, uid->len, ":", NULL);
-	  es_fprintf (es_stdout, "::::::::");
-	  if (opt.trust_model == TM_TOFU || opt.trust_model == TM_TOFU_PGP)
-	    {
-#ifdef USE_TOFU
-	      enum tofu_policy policy;
-	      if (! tofu_get_policy (ctrl, pk, uid, &policy)
-		  && policy != TOFU_POLICY_NONE)
-		es_fprintf (es_stdout, "%s", tofu_policy_str (policy));
-#endif /*USE_TOFU*/
-	    }
 	  es_putc (':', es_stdout);
 	  es_putc ('\n', es_stdout);
+#ifdef USE_TOFU
+	  if (!uid->attrib_data && opt.with_tofu_info
+              && (opt.trust_model == TM_TOFU || opt.trust_model == TM_TOFU_PGP))
+	    {
+              /* Print a "tfs" record.  */
+              tofu_write_tfs_record (ctrl, es_stdout, pk, uid->name);
+	    }
+#endif /*USE_TOFU*/
 	}
       else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{

@@ -88,6 +88,10 @@ int tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
    interest when the trust model is tofu+pgp (TM_TOFU_PGP).  */
 int tofu_wot_trust_combine (int tofu, int wot);
 
+/* Write a "tfs" record for a --with-colons listing.  */
+gpg_error_t tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
+                                   PKT_public_key *pk, const char *user_id);
+
 /* Determine the validity (TRUST_NEVER, etc.) of the binding
    <PK, USER_ID>.  If MAY_ASK is 1, then this function may
    interact with the user.  If not, TRUST_UNKNOWN is returned.  If an

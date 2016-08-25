@@ -661,6 +661,17 @@ export_pubkey_buffer (ctrl_t ctrl, const char *keyspec, unsigned int options,
 }
 
 gpg_error_t
+tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
+                       PKT_public_key *pk, const char *user_id)
+{
+  (void)ctrl;
+  (void)fp;
+  (void)pk;
+  (void)user_id;
+  return gpg_error (GPG_ERR_GENERAL);
+}
+
+gpg_error_t
 tofu_get_policy (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *user_id,
 		 enum tofu_policy *policy)
 {

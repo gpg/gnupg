@@ -46,11 +46,11 @@
 ;; This function only supports keys with a single user id.
 (define (getpolicy keyid format . args)
   (let ((policy
-	 (list-ref (assoc "uid" (gpg-with-colons
+	 (list-ref (assoc "tfs" (gpg-with-colons
 				 `(--tofu-db-format ,format
-				   --trust-model=tofu
+				   --trust-model=tofu --with-tofu-info
 				   ,@args
-				   --list-keys ,keyid))) 17)))
+				   --list-keys ,keyid))) 5)))
     (unless (member policy '("auto" "good" "unknown" "bad" "ask"))
 	    (error "Bad policy:" policy))
     policy))

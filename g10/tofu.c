@@ -1919,10 +1919,13 @@ write_stats_status (estream_t fp, long messages, enum tofu_policy policy,
     }
 }
 
+
+/* Note: If OUTFP is not NULL, this function merely prints a "tfs" record
+ * to OUTFP.  In this case USER_ID is not required.  */
 static void
 show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 		 const char *email, const char *user_id,
-		 const char *sig_exclude)
+		 const char *sig_exclude, estream_t outfp)
 {
   char *fingerprint_pp;
   int rc;
@@ -1951,15 +1954,16 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
       goto out;
     }
 
-
-  write_status_text_and_buffer (STATUS_TOFU_USER, fingerprint,
-                                email, strlen (email), 0);
+  if (!outfp)
+    write_status_text_and_buffer (STATUS_TOFU_USER, fingerprint,
+                                  email, strlen (email), 0);
 
   if (! strlist)
     {
-      log_info (_("Have never verified a message signed by key %s!\n"),
-                fingerprint_pp);
-      write_stats_status (NULL, 0, TOFU_POLICY_NONE, 0, 0);
+      if (!outfp)
+        log_info (_("Have never verified a message signed by key %s!\n"),
+                  fingerprint_pp);
+      write_stats_status (outfp, 0, TOFU_POLICY_NONE, 0, 0);
     }
   else
     {
@@ -1999,10 +2003,17 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 
       if (messages == -1 || !first_seen)
         {
-          write_stats_status (NULL, 0, TOFU_POLICY_NONE, 0, 0);
-          log_info (_("Failed to collect signature statistics for \"%s\"\n"
-                      "(key %s)\n"),
-                    user_id, fingerprint_pp);
+          write_stats_status (outfp, 0, TOFU_POLICY_NONE, 0, 0);
+          if (!outfp)
+            log_info (_("Failed to collect signature statistics for \"%s\"\n"
+                        "(key %s)\n"),
+                      user_id, fingerprint_pp);
+        }
+      else if (outfp)
+        {
+          write_stats_status (outfp, messages,
+                              get_policy (dbs, fingerprint, email, NULL),
+                              first_seen, most_recent_seen);
         }
       else
 	{
@@ -2010,7 +2021,8 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 	  estream_t fp;
 	  char *msg;
 
-          write_stats_status (NULL, messages, policy,
+          write_stats_status (NULL, messages,
+                              policy,
                               first_seen, most_recent_seen);
 
 	  fp = es_fopenmem (0, "rw,samethread");
@@ -2313,7 +2325,7 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
     /* It's only appropriate to show the statistics in an interactive
        context.  */
     show_statistics (dbs, fingerprint, email, user_id,
-		     already_verified ? NULL : sig_digest);
+		     already_verified ? NULL : sig_digest, NULL);
 
   xfree (email);
   xfree (fingerprint);
@@ -2385,6 +2397,38 @@ tofu_wot_trust_combine (int tofu_base, int wot_base)
 }
 
 
+/* Write a "tfs" record for a --with-colons listing.  */
+gpg_error_t
+tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
+                       PKT_public_key *pk, const char *user_id)
+{
+  gpg_error_t err;
+  tofu_dbs_t dbs;
+  char *fingerprint;
+  char *email;
+
+  if (!*user_id)
+    return 0;  /* No TOFU stats possible for an empty ID.  */
+
+  dbs = opendbs (ctrl);
+  if (!dbs)
+    {
+      err = gpg_error (GPG_ERR_GENERAL);
+      log_error (_("error opening TOFU database: %s\n"), gpg_strerror (err));
+      return err;
+    }
+
+  fingerprint = hexfingerprint (pk, NULL, 0);
+  email = email_from_user_id (user_id);
+
+  show_statistics (dbs, fingerprint, email, user_id, NULL, fp);
+
+  xfree (email);
+  xfree (fingerprint);
+  return 0;
+}
+
+
 /* Return the validity (TRUST_NEVER, etc.) of the binding
    <FINGERPRINT, USER_ID>.
 
@@ -2429,7 +2473,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
     trust_level = TRUST_UNDEFINED;
 
   if (may_ask && trust_level != TRUST_ULTIMATE)
-    show_statistics (dbs, fingerprint, email, user_id, NULL);
+    show_statistics (dbs, fingerprint, email, user_id, NULL, NULL);
 
  die:
   xfree (email);
