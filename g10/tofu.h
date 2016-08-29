@@ -59,7 +59,7 @@ enum tofu_policy
     TOFU_POLICY_ASK = 5,
 
 
-    /* Privat evalue used only within tofu.c.  */
+    /* Private value used only within tofu.c.  */
     _tofu_GET_POLICY_ERROR = 100
   };
 
@@ -72,16 +72,19 @@ const char *tofu_policy_str (enum tofu_policy policy);
    (e.g., TRUST_BAD) in light of the current configuration.  */
 int tofu_policy_to_trust_level (enum tofu_policy policy);
 
-/* Register the binding <PK, USER_ID> and the signature
-   described by SIGS_DIGEST and SIG_TIME, which it generated.  Origin
-   describes where the signed data came from, e.g., "email:claws"
-   (default: "unknown").  If MAY_ASK is 1, then this function may
-   interact with the user in the case of a conflict or if the
-   binding's policy is ask.  This function returns the binding's trust
-   level.  If an error occurs, it returns TRUST_UNKNOWN.  */
-int tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
-		   const byte *sigs_digest, int sigs_digest_len,
-		   time_t sig_time, const char *origin, int may_ask);
+/* Register the bindings <PK, USER_ID>, for each USER_ID in
+   USER_ID_LIST, and the signature described by SIGS_DIGEST and
+   SIG_TIME, which it generated.  Origin describes where the signed
+   data came from, e.g., "email:claws" (default: "unknown").  Note:
+   this function does not interact with the user, If there is a
+   conflict, or if the binding's policy is ask, the actual interaction
+   is deferred until tofu_get_validity is called..  Set the string
+   list FLAG to indicate that a specified user id is expired.  This
+   function returns 0 on success and an error code on failure.  */
+gpg_error_t tofu_register (ctrl_t ctrl, PKT_public_key *pk,
+                           strlist_t user_id_list,
+                           const byte *sigs_digest, int sigs_digest_len,
+                           time_t sig_time, const char *origin);
 
 /* Combine a trust level returned from the TOFU trust model with a
    trust level returned by the PGP trust model.  This is primarily of
@@ -92,12 +95,15 @@ int tofu_wot_trust_combine (int tofu, int wot);
 gpg_error_t tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
                                    PKT_public_key *pk, const char *user_id);
 
-/* Determine the validity (TRUST_NEVER, etc.) of the binding
-   <PK, USER_ID>.  If MAY_ASK is 1, then this function may
-   interact with the user.  If not, TRUST_UNKNOWN is returned.  If an
-   error occurs, TRUST_UNDEFINED is returned.  */
+/* Determine the validity (TRUST_NEVER, etc.) of the binding <PK,
+   USER_ID>.  If MAY_ASK is 1, then this function may interact with
+   the user.  If not, TRUST_UNKNOWN is returned if an interaction is
+   required.  Set the string list FLAGS to indicate that a specified
+   user id is expired.  If an error occurs, TRUST_UNDEFINED is
+   returned.  */
 int tofu_get_validity (ctrl_t ctrl,
-                       PKT_public_key *pk, const char *user_id, int may_ask);
+                       PKT_public_key *pk, strlist_t user_id_list,
+                       int may_ask);
 
 /* Set the policy for all non-revoked user ids in the keyblock KB to
    POLICY.  */

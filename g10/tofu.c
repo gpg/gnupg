@@ -2164,8 +2164,9 @@ email_from_user_id (const char *user_id)
   return email;
 }
 
-/* Register the signature with the binding <fingerprint, USER_ID>.
-   The fingerprint is taken from the primary key packet PK.
+/* Register the signature with the bindings <fingerprint, USER_ID>,
+   for each USER_ID in USER_ID_LIST.  The fingerprint is taken from
+   the primary key packet PK.
 
    SIG_DIGEST_BIN is the binary representation of the message's
    digest.  SIG_DIGEST_BIN_LEN is its length.
@@ -2181,159 +2182,152 @@ email_from_user_id (const char *user_id)
    This is necessary if there is a conflict or the binding's policy is
    TOFU_POLICY_ASK.
 
-   This function returns the binding's trust level on return.  If an
-   error occurs, this function returns TRUST_UNKNOWN.  */
-int
-tofu_register (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
+   This function returns 0 on success and an error code if an error
+   occured.  */
+gpg_error_t
+tofu_register (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 	       const byte *sig_digest_bin, int sig_digest_bin_len,
-	       time_t sig_time, const char *origin, int may_ask)
+	       time_t sig_time, const char *origin)
 {
+  gpg_error_t rc;
   tofu_dbs_t dbs;
   char *fingerprint = NULL;
+  strlist_t user_id;
   char *email = NULL;
   char *err = NULL;
-  int rc;
-  int trust_level = TRUST_UNKNOWN;
   char *sig_digest;
   unsigned long c;
-  int already_verified = 0;
-
-  sig_digest = make_radix64_string (sig_digest_bin, sig_digest_bin_len);
 
   dbs = opendbs (ctrl);
   if (! dbs)
     {
+      rc = gpg_error (GPG_ERR_GENERAL);
       log_error (_("error opening TOFU database: %s\n"),
-                 gpg_strerror (GPG_ERR_GENERAL));
-      goto die;
-    }
-
-  fingerprint = hexfingerprint (pk, NULL, 0);
-
-  if (! *user_id)
-    {
-      log_debug ("TOFU: user id is empty.  Can't continue.\n");
-      goto die;
-    }
-
-  email = email_from_user_id (user_id);
-
-  if (! origin)
-    /* The default origin is simply "unknown".  */
-    origin = "unknown";
-
-  /* It's necessary to get the trust so that we are certain that the
-     binding has been registered.  */
-  trust_level = get_trust (dbs, pk, fingerprint, email, user_id, may_ask);
-  if (trust_level == _tofu_GET_TRUST_ERROR)
-    /* An error.  */
-    {
-      trust_level = TRUST_UNKNOWN;
-      goto die;
+                 gpg_strerror (rc));
+      return rc;
     }
 
   /* We do a query and then an insert.  Make sure they are atomic
      by wrapping them in a transaction.  */
   rc = begin_transaction (ctrl, 0);
   if (rc)
-    goto die;
+    return rc;
 
-  /* If we've already seen this signature before, then don't add
-     it again.  */
-  rc = gpgsql_stepx
-    (dbs->db, &dbs->s.register_already_seen,
-     get_single_unsigned_long_cb2, &c, &err,
-     "select count (*)\n"
-     " from signatures left join bindings\n"
-     "  on signatures.binding = bindings.oid\n"
-     " where fingerprint = ? and email = ? and sig_time = ?\n"
-     "  and sig_digest = ?",
-     SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
-     SQLITE_ARG_LONG_LONG, (long long) sig_time,
-     SQLITE_ARG_STRING, sig_digest,
-     SQLITE_ARG_END);
-  if (rc)
+  sig_digest = make_radix64_string (sig_digest_bin, sig_digest_bin_len);
+  fingerprint = hexfingerprint (pk, NULL, 0);
+
+  if (! origin)
+    /* The default origin is simply "unknown".  */
+    origin = "unknown";
+
+  for (user_id = user_id_list; user_id; user_id = user_id->next)
     {
-      log_error (_("error reading TOFU database: %s\n"), err);
-      print_further_info ("checking existence");
-      sqlite3_free (err);
-    }
-  else if (c > 1)
-    /* Duplicates!  This should not happen.  In particular,
-       because <fingerprint, email, sig_time, sig_digest> is the
-       primary key!  */
-    log_debug ("SIGNATURES DB contains duplicate records"
-	       " <%s, %s, 0x%lx, %s, %s>."
-	       "  Please report.\n",
-	       fingerprint, email, (unsigned long) sig_time,
-	       sig_digest, origin);
-  else if (c == 1)
-    {
-      already_verified = 1;
+      email = email_from_user_id (user_id->d);
+
       if (DBG_TRUST)
-	log_debug ("Already observed the signature"
-		   " <%s, %s, 0x%lx, %s, %s>\n",
-		   fingerprint, email, (unsigned long) sig_time,
-		   sig_digest, origin);
-    }
-  else if (opt.dry_run)
-    {
-      log_info ("TOFU database update skipped due to --dry-run\n");
-    }
-  else
-    /* This is the first time that we've seen this signature.
-       Record it.  */
-    {
-      if (DBG_TRUST)
-	log_debug ("TOFU: Saving signature <%s, %s, %s>\n",
-		   fingerprint, email, sig_digest);
+	log_debug ("TOFU: Registering signature %s with binding"
+                   " <key: %s, user id: %s>\n",
+		   sig_digest, fingerprint, email);
 
-      log_assert (c == 0);
+      /* Make sure the binding exists and record any TOFU
+         conflicts.  */
+      if (get_trust (dbs, pk, fingerprint, email, user_id->d, 0)
+          == _tofu_GET_TRUST_ERROR)
+        {
+          rc = gpg_error (GPG_ERR_GENERAL);
+          xfree (email);
+          break;
+        }
 
+      /* If we've already seen this signature before, then don't add
+         it again.  */
       rc = gpgsql_stepx
-	(dbs->db, &dbs->s.register_insert, NULL, NULL, &err,
-	 "insert into signatures\n"
-	 " (binding, sig_digest, origin, sig_time, time)\n"
-	 " values\n"
-	 " ((select oid from bindings\n"
-	 "    where fingerprint = ? and email = ?),\n"
-	 "  ?, ?, ?, strftime('%s', 'now'));",
-	 SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
-         SQLITE_ARG_STRING, sig_digest, SQLITE_ARG_STRING, origin,
+        (dbs->db, &dbs->s.register_already_seen,
+         get_single_unsigned_long_cb2, &c, &err,
+         "select count (*)\n"
+         " from signatures left join bindings\n"
+         "  on signatures.binding = bindings.oid\n"
+         " where fingerprint = ? and email = ? and sig_time = ?\n"
+         "  and sig_digest = ?",
+         SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
          SQLITE_ARG_LONG_LONG, (long long) sig_time,
+         SQLITE_ARG_STRING, sig_digest,
          SQLITE_ARG_END);
       if (rc)
-	{
-	  log_error (_("error updating TOFU database: %s\n"), err);
-          print_further_info ("insert signatures");
-	  sqlite3_free (err);
-	}
+        {
+          log_error (_("error reading TOFU database: %s\n"), err);
+          print_further_info ("checking existence");
+          sqlite3_free (err);
+        }
+      else if (c > 1)
+        /* Duplicates!  This should not happen.  In particular,
+           because <fingerprint, email, sig_time, sig_digest> is the
+           primary key!  */
+        log_debug ("SIGNATURES DB contains duplicate records"
+                   " <key: %s, fingerprint: %s, time: 0x%lx, sig: %s,"
+                   " origin: %s>."
+                   "  Please report.\n",
+                   fingerprint, email, (unsigned long) sig_time,
+                   sig_digest, origin);
+      else if (c == 1)
+        {
+          if (DBG_TRUST)
+            log_debug ("Already observed the signature and binding"
+                       " <key: %s, user id: %s, time: 0x%lx, sig: %s,"
+                       " origin: %s>\n",
+                       fingerprint, email, (unsigned long) sig_time,
+                       sig_digest, origin);
+        }
+      else if (opt.dry_run)
+        {
+          log_info ("TOFU database update skipped due to --dry-run\n");
+        }
+      else
+        /* This is the first time that we've seen this signature and
+           binding.  Record it.  */
+        {
+          if (DBG_TRUST)
+            log_debug ("TOFU: Saving signature"
+                       " <key: %s, user id: %s, sig: %s>\n",
+                       fingerprint, email, sig_digest);
+
+          log_assert (c == 0);
+
+          rc = gpgsql_stepx
+            (dbs->db, &dbs->s.register_insert, NULL, NULL, &err,
+             "insert into signatures\n"
+             " (binding, sig_digest, origin, sig_time, time)\n"
+             " values\n"
+             " ((select oid from bindings\n"
+             "    where fingerprint = ? and email = ?),\n"
+             "  ?, ?, ?, strftime('%s', 'now'));",
+             SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
+             SQLITE_ARG_STRING, sig_digest, SQLITE_ARG_STRING, origin,
+             SQLITE_ARG_LONG_LONG, (long long) sig_time,
+             SQLITE_ARG_END);
+          if (rc)
+            {
+              log_error (_("error updating TOFU database: %s\n"), err);
+              print_further_info ("insert signatures");
+              sqlite3_free (err);
+            }
+        }
+
+      xfree (email);
+
+      if (rc)
+        break;
     }
 
-  /* It only matters whether we abort or commit the transaction
-     (so long as we do something) if we execute the insert.  */
   if (rc)
-    rc = rollback_transaction (ctrl);
+    rollback_transaction (ctrl);
   else
     rc = end_transaction (ctrl, 0);
-  if (rc)
-    {
-      sqlite3_free (err);
-      goto die;
-    }
 
- die:
-  if (may_ask && trust_level != TRUST_ULTIMATE)
-    /* It's only appropriate to show the statistics in an interactive
-       context.  */
-    show_statistics (dbs, fingerprint, email, user_id,
-		     already_verified ? NULL : sig_digest, NULL);
-
-  xfree (email);
   xfree (fingerprint);
   xfree (sig_digest);
 
-  return trust_level;
+  return rc;
 }
 
 /* Combine a trust level returned from the TOFU trust model with a
@@ -2431,8 +2425,9 @@ tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
 }
 
 
-/* Return the validity (TRUST_NEVER, etc.) of the binding
-   <FINGERPRINT, USER_ID>.
+/* Return the validity (TRUST_NEVER, etc.) of the bindings
+   <FINGERPRINT, USER_ID>, for each USER_ID in USER_ID_LIST.  If
+   USER_ID_LIST->FLAG is set, then the id is considered to be expired.
 
    PK is the primary key packet.
 
@@ -2442,43 +2437,80 @@ tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
 
    Returns TRUST_UNDEFINED if an error occurs.  */
 int
-tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, const char *user_id,
+tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 		   int may_ask)
 {
   tofu_dbs_t dbs;
   char *fingerprint = NULL;
-  char *email = NULL;
-  int trust_level = TRUST_UNDEFINED;
+  strlist_t user_id;
+  int trust_level = TRUST_UNKNOWN;
 
   dbs = opendbs (ctrl);
   if (! dbs)
     {
       log_error (_("error opening TOFU database: %s\n"),
                  gpg_strerror (GPG_ERR_GENERAL));
-      goto die;
+      return TRUST_UNDEFINED;
     }
 
   fingerprint = hexfingerprint (pk, NULL, 0);
 
-  if (! *user_id)
+  begin_transaction (ctrl, 0);
+
+  for (user_id = user_id_list; user_id; user_id = user_id->next)
     {
-      log_debug ("user id is empty."
-                 "  Can't get TOFU validity for this binding.\n");
-      goto die;
+      char *email = email_from_user_id (user_id->d);
+
+      /* Always call get_trust to make sure the binding is
+         registered.  */
+      int tl = get_trust (dbs, pk, fingerprint, email, user_id->d, may_ask);
+      if (tl == _tofu_GET_TRUST_ERROR)
+        {
+          /* An error.  */
+          trust_level = TRUST_UNDEFINED;
+          xfree (email);
+          goto die;
+        }
+
+      if (DBG_TRUST)
+	log_debug ("TOFU: validity for <key: %s, user id: %s>: %s%s.\n",
+		   fingerprint, email,
+                   trust_value_to_string (tl),
+                   user_id->flags ? " (but expired)" : "");
+
+      if (user_id->flags)
+        tl = TRUST_EXPIRED;
+
+      if (may_ask && tl != TRUST_ULTIMATE && tl != TRUST_EXPIRED)
+        show_statistics (dbs, fingerprint, email, user_id->d, NULL, NULL);
+
+      if (tl == TRUST_NEVER)
+        trust_level = TRUST_NEVER;
+      else if (tl == TRUST_EXPIRED)
+        /* Ignore expired bindings in the trust calculation.  */
+        ;
+      else if (tl > trust_level)
+        {
+          /* The expected values: */
+          log_assert (tl == TRUST_UNKNOWN || tl == TRUST_UNDEFINED
+                      || tl == TRUST_MARGINAL || tl == TRUST_FULLY
+                      || tl == TRUST_ULTIMATE);
+
+          /* We assume the following ordering:  */
+          log_assert (TRUST_UNKNOWN < TRUST_UNDEFINED);
+          log_assert (TRUST_UNDEFINED < TRUST_MARGINAL);
+          log_assert (TRUST_MARGINAL < TRUST_FULLY);
+          log_assert (TRUST_FULLY < TRUST_ULTIMATE);
+
+          trust_level = tl;
+        }
+
+      xfree (email);
     }
 
-  email = email_from_user_id (user_id);
-
-  trust_level = get_trust (dbs, pk, fingerprint, email, user_id, may_ask);
-  if (trust_level == _tofu_GET_TRUST_ERROR)
-    /* An error.  */
-    trust_level = TRUST_UNDEFINED;
-
-  if (may_ask && trust_level != TRUST_ULTIMATE)
-    show_statistics (dbs, fingerprint, email, user_id, NULL, NULL);
-
  die:
-  xfree (email);
+  end_transaction (ctrl, 0);
+
   xfree (fingerprint);
   return trust_level;
 }

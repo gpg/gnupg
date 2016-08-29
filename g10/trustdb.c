@@ -988,7 +988,7 @@ tdb_get_validity_core (ctrl_t ctrl,
 		       int may_ask)
 {
   TRUSTREC trec, vrec;
-  gpg_error_t err;
+  gpg_error_t err = 0;
   ulong recno;
 #ifdef USE_TOFU
   unsigned int tofu_validity = TRUST_UNKNOWN;
@@ -1022,21 +1022,18 @@ tdb_get_validity_core (ctrl_t ctrl,
 #ifdef USE_TOFU
   if (opt.trust_model == TM_TOFU || opt.trust_model == TM_TOFU_PGP)
     {
-      kbnode_t user_id_node = NULL;
-      kbnode_t n = NULL;	/* Silence -Wmaybe-uninitialized.  */
-      int user_ids = 0;
-      int user_ids_expired = 0;
+      kbnode_t kb = NULL;
+      kbnode_t n = NULL;
+      strlist_t user_id_list = NULL;
 
-      /* If the caller didn't supply a user id then iterate over all
-	 uids.  */
+      /* If the caller didn't supply a user id then use all uids.  */
       if (! uid)
-	user_id_node = n = get_pubkeyblock (main_pk->keyid);
+	kb = n = get_pubkeyblock (main_pk->keyid);
 
-      while (uid
-	     || (n = find_next_kbnode (n, PKT_USER_ID)))
+      while (uid || (n = find_next_kbnode (n, PKT_USER_ID)))
 	{
-	  unsigned int tl;
 	  PKT_user_id *user_id;
+          int expired = 0;
 
 	  if (uid)
 	    user_id = uid;
@@ -1044,8 +1041,8 @@ tdb_get_validity_core (ctrl_t ctrl,
 	    user_id = n->pkt->pkt.user_id;
 
           /* If the user id is revoked or expired, then skip it.  */
-	  if (user_id->is_revoked || user_id->is_expired)
-	    {
+          if (user_id->is_revoked || user_id->is_expired)
+            {
               if (DBG_TRUST)
                 {
                   char *s;
@@ -1060,42 +1057,48 @@ tdb_get_validity_core (ctrl_t ctrl,
                              s, user_id->name);
                 }
 
-	      continue;
-	    }
+              if (user_id->is_revoked)
+                continue;
 
-	  user_ids ++;
+              expired = 1;
+            }
 
-	  if (sig)
-	    tl = tofu_register (ctrl, main_pk, user_id->name,
-				sig->digest, sig->digest_len,
-				sig->timestamp, "unknown",
-				may_ask);
-	  else
-	    tl = tofu_get_validity (ctrl, main_pk, user_id->name, may_ask);
+          add_to_strlist (&user_id_list, user_id->name);
+          user_id_list->flags = expired;
 
-	  if (tl == TRUST_EXPIRED)
-	    user_ids_expired ++;
-	  else if (tl == TRUST_UNDEFINED || tl == TRUST_UNKNOWN)
-	    ;
-	  else if (tl == TRUST_NEVER)
-	    tofu_validity = TRUST_NEVER;
-	  else
-	    {
-	      log_assert (tl == TRUST_MARGINAL
-                          || tl == TRUST_FULLY
-                          || tl == TRUST_ULTIMATE);
+          if (uid)
+            /* If the caller specified a user id, then we stop
+               now.  */
+            break;
+        }
 
-	      if (tl > tofu_validity)
-		/* XXX: We we really want the max?  */
-		tofu_validity = tl;
-	    }
+      /* Process the user ids in the order they appear in the key
+         block.  */
+      strlist_rev (&user_id_list);
 
-	  if (uid)
-	    /* If the caller specified a user id, then we stop
-	       now.  */
-	    break;
-	}
-      release_kbnode (user_id_node);
+      /* It only makes sense to observe any signature before getting
+         the validity.  This is because if the current signature
+         results in a conflict, then we damn well want to take that
+         into account.  */
+      if (sig)
+        {
+          err = tofu_register (ctrl, main_pk, user_id_list,
+                               sig->digest, sig->digest_len,
+                               sig->timestamp, "unknown");
+          if (err)
+            {
+              log_error ("TOFU: error registering signature: %s\n",
+                         gpg_strerror (err));
+
+              tofu_validity = TRUST_UNKNOWN;
+            }
+        }
+      if (! err)
+        tofu_validity = tofu_get_validity (ctrl, main_pk, user_id_list,
+                                           may_ask);
+
+      free_strlist (user_id_list);
+      release_kbnode (kb);
     }
 #endif /*USE_TOFU*/
 
