@@ -163,6 +163,7 @@ list_dirs (estream_t fp, char **names)
     { "libdir",             gnupg_libdir,     NULL },
     { "datadir",            gnupg_datadir,    NULL },
     { "localedir",          gnupg_localedir,  NULL },
+    { "socketdir",          gnupg_socketdir,  NULL },
     { "dirmngr-socket",     dirmngr_socket_name, NULL,},
     { "agent-ssh-socket",   gnupg_socketdir,  GPG_AGENT_SSH_SOCK_NAME },
     { "agent-socket",       gnupg_socketdir,  GPG_AGENT_SOCK_NAME },
