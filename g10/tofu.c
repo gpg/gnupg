@@ -70,9 +70,6 @@ struct tofu_dbs_s
     sqlite3_stmt *savepoint_batch;
     sqlite3_stmt *savepoint_batch_commit;
 
-    sqlite3_stmt *savepoint_inner;
-    sqlite3_stmt *savepoint_inner_commit;
-
     sqlite3_stmt *record_binding_get_old_policy;
     sqlite3_stmt *record_binding_update;
     sqlite3_stmt *record_binding_update2;
@@ -209,9 +206,12 @@ begin_transaction (ctrl_t ctrl, int only_batch)
   if (only_batch)
     return 0;
 
-  rc = gpgsql_stepx (dbs->db, &dbs->s.savepoint_inner,
-                      NULL, NULL, &err,
-                      "savepoint inner;", SQLITE_ARG_END);
+  log_assert(ctrl->tofu.in_transaction >= 0);
+  ctrl->tofu.in_transaction ++;
+
+  rc = gpgsql_exec_printf (dbs->db, NULL, NULL, &err,
+                           "savepoint inner%d;",
+                           ctrl->tofu.in_transaction);
   if (rc)
     {
       log_error (_("error beginning transaction on TOFU database: %s\n"),
@@ -263,9 +263,9 @@ end_transaction (ctrl_t ctrl, int only_batch)
   if (only_batch)
     return 0;
 
-  rc = gpgsql_stepx (dbs->db, &dbs->s.savepoint_inner_commit,
-                      NULL, NULL, &err,
-                      "release inner;", SQLITE_ARG_END);
+  log_assert (ctrl->tofu.in_transaction > 0);
+  rc = gpgsql_exec_printf (dbs->db, NULL, NULL, &err,
+                           "release inner%d;", ctrl->tofu.in_transaction);
   if (rc)
     {
       log_error (_("error committing transaction on TOFU database: %s\n"),
@@ -273,6 +273,8 @@ end_transaction (ctrl_t ctrl, int only_batch)
       sqlite3_free (err);
       return gpg_error (GPG_ERR_GENERAL);
     }
+
+  ctrl->tofu.in_transaction --;
 
   return 0;
 }
@@ -287,18 +289,15 @@ rollback_transaction (ctrl_t ctrl)
 
   if (!dbs)
     return 0;  /* Shortcut to allow for easier cleanup code.  */
+  log_assert (ctrl->tofu.in_transaction > 0);
 
-  if (dbs->batch_update)
-    {
-      /* Just undo the most recent update; don't revert any progress
-         made by the batch transaction.  */
-      rc = sqlite3_exec (dbs->db, "rollback to inner;", NULL, NULL, &err);
-    }
-  else
-    {
-      /* Rollback the whole she-bang.  */
-      rc = sqlite3_exec (dbs->db, "rollback;", NULL, NULL, &err);
-    }
+  /* Be careful to not any progress made by closed transactions in
+     batch mode.  */
+  rc = gpgsql_exec_printf (dbs->db, NULL, NULL, &err,
+                           "rollback to inner%d;",
+                           ctrl->tofu.in_transaction);
+
+  ctrl->tofu.in_transaction --;
 
   if (rc)
     {
@@ -693,6 +692,8 @@ tofu_closedbs (ctrl_t ctrl)
 {
   tofu_dbs_t dbs;
   sqlite3_stmt **statements;
+
+  log_assert(ctrl->tofu.in_transaction == 0);
 
   dbs = ctrl->tofu.dbs;
   if (!dbs)
