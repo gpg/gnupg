@@ -219,8 +219,8 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
       struct sockaddr_in srvr_addr_in;
 #ifndef HAVE_W32_SYSTEM
       struct sockaddr_un srvr_addr_un;
-      const char *name_for_err = "";
 #endif
+      const char *name_for_err = "";
       size_t addrlen;
       struct sockaddr *srvr_addr = NULL;
       unsigned short port = 0;
