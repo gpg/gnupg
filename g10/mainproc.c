@@ -1943,7 +1943,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 	     does not print a LF we need to compute the validity
 	     before calling that function.  */
           if ((opt.verify_options & VERIFY_SHOW_UID_VALIDITY))
-            valid = get_validity (c->ctrl, pk, un->pkt->pkt.user_id, NULL, 0);
+            valid = get_validity (c->ctrl, pk, un->pkt->pkt.user_id, sig, 0);
           else
             valid = 0; /* Not used.  */
 
