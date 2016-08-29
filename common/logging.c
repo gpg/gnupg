@@ -104,6 +104,7 @@ static int with_pid;
 static int no_registry;
 #endif
 static int (*get_pid_suffix_cb)(unsigned long *r_value);
+static const char * (*socket_dir_cb)(void);
 static int running_detached;
 static int force_prefixes;
 
@@ -218,6 +219,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
       struct sockaddr_in srvr_addr_in;
 #ifndef HAVE_W32_SYSTEM
       struct sockaddr_un srvr_addr_un;
+      const char *name_for_err = "";
 #endif
       size_t addrlen;
       struct sockaddr *srvr_addr = NULL;
@@ -237,23 +239,41 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
           pf = PF_INET;
         }
 #ifndef HAVE_W32_SYSTEM
-      else if (!strncmp (name, "socket://", 9) && name[9])
+      else if (!strncmp (name, "socket://", 9))
         name += 9;
 #endif
 
       if (af == AF_LOCAL)
         {
-#ifdef HAVE_W32_SYSTEM
           addrlen = 0;
-#else
+#ifndef HAVE_W32_SYSTEM
           memset (&srvr_addr, 0, sizeof srvr_addr);
           srvr_addr_un.sun_family = af;
-          strncpy (srvr_addr_un.sun_path,
-                   name, sizeof (srvr_addr_un.sun_path)-1);
-          srvr_addr_un.sun_path[sizeof (srvr_addr_un.sun_path)-1] = 0;
-          srvr_addr = (struct sockaddr *)&srvr_addr_un;
-          addrlen = SUN_LEN (&srvr_addr_un);
-#endif
+          if (!*name && (name = socket_dir_cb ()) && *name)
+            {
+              if (strlen (name) + 7 < sizeof (srvr_addr_un.sun_path)-1)
+                {
+                  strncpy (srvr_addr_un.sun_path,
+                           name, sizeof (srvr_addr_un.sun_path)-1);
+                  strcat (srvr_addr_un.sun_path, "/S.log");
+                  srvr_addr_un.sun_path[sizeof (srvr_addr_un.sun_path)-1] = 0;
+                  srvr_addr = (struct sockaddr *)&srvr_addr_un;
+                  addrlen = SUN_LEN (&srvr_addr_un);
+                  name_for_err = srvr_addr_un.sun_path;
+                }
+            }
+          else
+            {
+              if (*name && strlen (name) < sizeof (srvr_addr_un.sun_path)-1)
+                {
+                  strncpy (srvr_addr_un.sun_path,
+                           name, sizeof (srvr_addr_un.sun_path)-1);
+                  srvr_addr_un.sun_path[sizeof (srvr_addr_un.sun_path)-1] = 0;
+                  srvr_addr = (struct sockaddr *)&srvr_addr_un;
+                  addrlen = SUN_LEN (&srvr_addr_un);
+                }
+            }
+#endif /*!HAVE_W32SYSTEM*/
         }
       else
         {
@@ -352,8 +372,8 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
             {
               if (!cookie->quiet && !running_detached
                   && isatty (es_fileno (es_stderr)))
-                es_fprintf (es_stderr, "can't connect to '%s': %s\n",
-                            cookie->name, strerror(errno));
+                es_fprintf (es_stderr, "can't connect to '%s%s': %s\n",
+                            cookie->name, name_for_err, strerror(errno));
               sock_close (cookie->fd);
               cookie->fd = -1;
             }
@@ -462,7 +482,7 @@ set_file_fd (const char *name, int fd)
   if (name && !strncmp (name, "tcp://", 6) && name[6])
     want_socket = 1;
 #ifndef HAVE_W32_SYSTEM
-  else if (name && !strncmp (name, "socket://", 9) && name[9])
+  else if (name && !strncmp (name, "socket://", 9))
     want_socket = 2;
 #endif /*HAVE_W32_SYSTEM*/
 #ifdef HAVE_W32CE_SYSTEM
@@ -551,6 +571,15 @@ void
 log_set_fd (int fd)
 {
   set_file_fd (NULL, fd);
+}
+
+
+/* Set a function to retrieve the directory name of a socket if
+ * only "socket://" has been given to log_set_file.  */
+void
+log_set_socket_dir_cb (const char *(*fnc)(void))
+{
+  socket_dir_cb = fnc;
 }
 
 

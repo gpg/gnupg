@@ -2697,9 +2697,8 @@ Write log output to file descriptor @code{n} and not to STDERR.
 @item --log-file @code{file}
 @itemx --logger-file @code{file}
 @opindex log-file
-Same as @option{--logger-fd}, except the logger data is written to file
-@code{file}.  Note that @option{--log-file} is only implemented for
-GnuPG-2.
+Same as @option{--logger-fd}, except the logger data is written to
+file @code{file}.  Use @file{socket://} to log to socket.
 
 @item --attribute-fd @code{n}
 @opindex attribute-fd

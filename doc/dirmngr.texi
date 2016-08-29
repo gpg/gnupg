@@ -163,7 +163,8 @@ verbose commands to @sc{dirmngr}, such as @option{-vv}.
 @item --log-file @var{file}
 @opindex log-file
 Append all logging output to @var{file}.  This is very helpful in
-seeing what the agent actually does.
+seeing what the agent actually does.  Use @file{socket://} to log to
+socket.
 
 @item --debug-level @var{level}
 @opindex debug-level

@@ -239,7 +239,8 @@ debugging.
 @item --log-file @var{file}
 @opindex log-file
 Append all logging output to @var{file}.  This is very helpful in
-seeing what the agent actually does.
+seeing what the agent actually does.  Use @file{socket://} to log to
+socket.
 
 
 @item --pcsc-driver @var{library}

@@ -312,11 +312,12 @@ should in general not be used to avoid X-sniffing attacks.
 @item --log-file @var{file}
 @opindex log-file
 @efindex HKCU\Software\GNU\GnuPG:DefaultLogFile
-Append all logging output to @var{file}.  This is very helpful in seeing
-what the agent actually does.  If neither a log file nor a log file
-descriptor has been set on a Windows platform, the Registry entry
-@code{HKCU\Software\GNU\GnuPG:DefaultLogFile}, if set, is used to specify
-the logging output.
+Append all logging output to @var{file}.  This is very helpful in
+seeing what the agent actually does. Use @file{socket://} to log to
+socket.  If neither a log file nor a log file descriptor has been set
+on a Windows platform, the Registry entry
+@code{HKCU\Software\GNU\GnuPG:DefaultLogFile}, if set, is used to
+specify the logging output.
 
 
 @anchor{option --no-allow-mark-trusted}

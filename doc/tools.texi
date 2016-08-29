@@ -103,12 +103,14 @@ This waits for connections on the local socket
 @file{/home/foo/.gnupg/S.log} and shows all log entries.  To make this
 work the option @option{log-file} needs to be used with all modules
 which logs are to be shown.  The value for that option must be given
-with a special prefix (e.g. in the conf file):
+with a special prefix (e.g. in the conf files):
 
 @example
 log-file socket:///home/foo/.gnupg/S.log
 @end example
 
+If only @code{socket://} is used a default socket file named
+@file{S.log} in the standard socket directory is used.
 For debugging purposes it is also possible to do remote logging.  Take
 care if you use this feature because the information is send in the
 clear over the network.  Use this syntax in the conf files:
@@ -1737,8 +1739,8 @@ Try to be as quiet as possible.
 
 @item --log-file @var{file}
 @opindex log-file
-Append all logging output to @var{file}.  Default is to write logging
-information to STDERR.
+Append all logging output to @var{file}.  Use @file{socket://} to log
+to socket.  Default is to write logging information to STDERR.
 
 @end table
 

@@ -384,6 +384,7 @@ Do not print a warning when the so called "secure memory" cannot be used.
 @item --log-file @var{file}
 @opindex log-file
 When running in server mode, append all logging output to @var{file}.
+Use @file{socket://} to log to socket.
 
 @end table
 

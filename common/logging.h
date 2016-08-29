@@ -42,6 +42,7 @@ int  log_get_errorcount (int clear);
 void log_inc_errorcount (void);
 void log_set_file( const char *name );
 void log_set_fd (int fd);
+void log_set_socket_dir_cb (const char *(*fnc)(void));
 void log_set_pid_suffix_cb (int (*cb)(unsigned long *r_value));
 void log_set_prefix (const char *text, unsigned int flags);
 const char *log_get_prefix (unsigned int *flags);
