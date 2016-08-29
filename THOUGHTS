@@ -90,7 +90,7 @@ extension mechanisms in GPG should be enough to try various ways later on.
 
 1) pass an argument string to loadable extension modules (maybe
     gpg --load-extension foofish=arg1,arg2,arg3 ?)
-    --> could also be achived by S-Exps
+    --> could also be achieved by S-Exps
 
 2) allow multiple instances of the same extension module (presumably with
    different arguments)
