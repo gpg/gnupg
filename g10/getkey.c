@@ -3620,17 +3620,14 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                     c->state++;
                   break;
 
-                case 3: /* Init search context to try all keys.  */
-                  if (opt.try_all_secrets)
+                case 3: /* Init search context to enum all secret keys.  */
+                  err = getkey_bynames (&c->ctx, NULL, NULL, 1, &keyblock);
+                  if (err)
                     {
-                      err = getkey_bynames (&c->ctx, NULL, NULL, 1, &keyblock);
-                      if (err)
-                        {
-                          release_kbnode (keyblock);
-                          keyblock = NULL;
-                          getkey_end (c->ctx);
-                          c->ctx = NULL;
-                        }
+                      release_kbnode (keyblock);
+                      keyblock = NULL;
+                      getkey_end (c->ctx);
+                      c->ctx = NULL;
                     }
                   c->state++;
                   break;
