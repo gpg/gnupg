@@ -702,7 +702,7 @@ tofu_closedbs (ctrl_t ctrl)
   if (dbs->batch_update)
     end_transaction (ctrl, 2);
 
-  /* Arghh, that is asurprising use of the struct.  */
+  /* Arghh, that is a surprising use of the struct.  */
   for (statements = (void *) &dbs->s;
        (void *) statements < (void *) &(&dbs->s)[1];
        statements ++)
@@ -777,24 +777,25 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
       if (rc)
 	{
 	  log_debug ("TOFU: Error reading from binding database"
-		     " (reading policy for <%s, %s>): %s\n",
+		     " (reading policy for <key: %s, user id: %s>): %s\n",
 		     fingerprint, email, err);
 	  sqlite3_free (err);
 	}
-    }
 
-  if (DBG_TRUST)
-    {
-      if (policy_old != TOFU_POLICY_NONE)
-	log_debug ("Changing TOFU trust policy for binding <%s, %s>"
-		   " from %s to %s.\n",
-		   fingerprint, email,
-		   tofu_policy_str (policy_old),
-		   tofu_policy_str (policy));
-      else
-	log_debug ("Set TOFU trust policy for binding <%s, %s> to %s.\n",
-		   fingerprint, email,
-		   tofu_policy_str (policy));
+      if (DBG_TRUST)
+        {
+          if (policy_old != TOFU_POLICY_NONE)
+            log_debug ("Changing TOFU trust policy for binding"
+                       " <key: %s, user id: %s> from %s to %s.\n",
+                       fingerprint, email,
+                       tofu_policy_str (policy_old),
+                       tofu_policy_str (policy));
+          else
+            log_debug ("Setting TOFU trust policy for new binding"
+                       " <key: %s, user id: %s> to %s.\n",
+                       fingerprint, email,
+                       tofu_policy_str (policy));
+        }
     }
 
   if (policy_old == policy)
@@ -827,7 +828,7 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
   if (rc)
     {
       log_error (_("error updating TOFU database: %s\n"), err);
-      print_further_info (" insert bindings <%s, %s> = %s",
+      print_further_info (" insert bindings <key: %s, user id: %s> = %s",
                           fingerprint, email, tofu_policy_str (policy));
       sqlite3_free (err);
       goto leave;
@@ -1072,7 +1073,7 @@ get_policy (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 
   /* If CONFLICT is set, then policy should be TOFU_POLICY_ASK.  But,
      just in case, we do the check again here and ignore the conflict
-     is POLICY is not TOFU_POLICY_ASK.  */
+     if POLICY is not TOFU_POLICY_ASK.  */
   if (conflict)
     {
       if (policy == TOFU_POLICY_ASK && *strlist->next->d)
@@ -1553,7 +1554,8 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
     {
       policy = opt.tofu_default_policy;
       if (DBG_TRUST)
-	log_debug ("TOFU: binding <%s, %s>'s policy is auto (default: %s).\n",
+	log_debug ("TOFU: binding <key: %s, user id: %s>'s policy is "
+                   " auto (default: %s).\n",
 		   fingerprint, email,
 		   tofu_policy_str (opt.tofu_default_policy));
     }
@@ -1566,7 +1568,7 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
       /* The saved judgement is auto -> auto, good, unknown or bad.
        * We don't need to ask the user anything.  */
       if (DBG_TRUST)
-	log_debug ("TOFU: Known binding <%s, %s>'s policy: %s\n",
+	log_debug ("TOFU: Known binding <key: %s, user id: %s>'s policy: %s\n",
 		   fingerprint, email, tofu_policy_str (policy));
       trust_level = tofu_policy_to_trust_level (policy);
       goto out;
@@ -1646,8 +1648,8 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
       log_assert (policy == TOFU_POLICY_NONE);
 
       if (DBG_TRUST)
-	log_debug ("TOFU: New binding <%s, %s>, no conflict.\n",
-		   email, fingerprint);
+	log_debug ("TOFU: New binding <key: %s, user id: %s>, no conflict.\n",
+		   fingerprint, email);
 
       if (record_binding (dbs, fingerprint, email, user_id,
 			  TOFU_POLICY_AUTO, 0) != 0)
