@@ -2444,6 +2444,8 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
   char *fingerprint = NULL;
   strlist_t user_id;
   int trust_level = TRUST_UNKNOWN;
+  int bindings = 0;
+  int bindings_valid = 0;
 
   dbs = opendbs (ctrl);
   if (! dbs)
@@ -2457,7 +2459,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 
   begin_transaction (ctrl, 0);
 
-  for (user_id = user_id_list; user_id; user_id = user_id->next)
+  for (user_id = user_id_list; user_id; user_id = user_id->next, bindings ++)
     {
       char *email = email_from_user_id (user_id->d);
 
@@ -2480,6 +2482,9 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 
       if (user_id->flags)
         tl = TRUST_EXPIRED;
+
+      if (tl != TRUST_EXPIRED)
+        bindings_valid ++;
 
       if (may_ask && tl != TRUST_ULTIMATE && tl != TRUST_EXPIRED)
         show_statistics (dbs, fingerprint, email, user_id->d, NULL, NULL);
@@ -2512,6 +2517,16 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
   end_transaction (ctrl, 0);
 
   xfree (fingerprint);
+
+  if (bindings_valid == 0)
+    {
+      if (DBG_TRUST)
+        log_debug ("no (of %d) valid bindings."
+                   "  Can't get TOFU validity for this set of user ids.\n",
+                   bindings);
+      return TRUST_NEVER;
+    }
+
   return trust_level;
 }
 
