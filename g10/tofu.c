@@ -1372,7 +1372,8 @@ ask_about_binding (tofu_dbs_t dbs,
 
 
   if ((*policy == TOFU_POLICY_NONE && bindings_with_this_email_count > 0)
-      || (*policy == TOFU_POLICY_ASK && conflict))
+      || (*policy == TOFU_POLICY_ASK
+          && (conflict || bindings_with_this_email_count > 0)))
     {
       /* This is a conflict.  */
 
