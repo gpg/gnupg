@@ -1393,7 +1393,7 @@ ask_about_binding (tofu_dbs_t dbs,
             "call the person to make sure this new key is legitimate.";
         }
       textbuf = format_text (text, 0, 72, 80);
-      es_fprintf (fp, "\n%s\n", text);
+      es_fprintf (fp, "\n%s\n", textbuf);
       xfree (textbuf);
     }
 
