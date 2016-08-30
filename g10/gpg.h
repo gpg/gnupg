@@ -83,7 +83,7 @@ struct server_control_s
   struct {
     tofu_dbs_t dbs;
     int    in_transaction;
-    int    batch_update_ref;
+    int    batch_updated_wanted;
     time_t batch_update_started;
   } tofu;
 
