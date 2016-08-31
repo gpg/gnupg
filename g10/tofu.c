@@ -767,10 +767,6 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
   char *fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
   gpg_error_t rc;
   char *err = NULL;
-  /* policy_old needs to be a long and not an enum tofu_policy,
-     because we pass it by reference to get_single_long_cb2, which
-     expects a long.  */
-  long policy_old = TOFU_POLICY_NONE;
 
   if (! (policy == TOFU_POLICY_AUTO
 	 || policy == TOFU_POLICY_GOOD
@@ -780,11 +776,17 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
     log_bug ("%s: Bad value for policy (%d)!\n", __func__, policy);
 
 
-  if (show_old)
+  if (DBG_TRUST || show_old)
     {
       /* Get the old policy.  Since this is just for informational
        * purposes, there is no need to start a transaction or to die
        * if there is a failure.  */
+
+      /* policy_old needs to be a long and not an enum tofu_policy,
+         because we pass it by reference to get_single_long_cb2, which
+         expects a long.  */
+      long policy_old = TOFU_POLICY_NONE;
+
       rc = gpgsql_stepx
 	(dbs->db, &dbs->s.record_binding_get_old_policy,
          get_single_long_cb2, &policy_old, &err,
@@ -799,26 +801,25 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 	  sqlite3_free (err);
 	}
 
-      if (DBG_TRUST)
-        {
-          if (policy_old != TOFU_POLICY_NONE)
-            log_debug ("Changing TOFU trust policy for binding"
-                       " <key: %s, user id: %s> from %s to %s.\n",
-                       fingerprint, email,
-                       tofu_policy_str (policy_old),
-                       tofu_policy_str (policy));
-          else
-            log_debug ("Setting TOFU trust policy for new binding"
-                       " <key: %s, user id: %s> to %s.\n",
-                       fingerprint, email,
-                       tofu_policy_str (policy));
-        }
-    }
+      if (policy_old != TOFU_POLICY_NONE)
+        (show_old ? log_info : log_debug)
+          ("Changing TOFU trust policy for binding"
+           " <key: %s, user id: %s> from %s to %s.\n",
+           fingerprint, show_old ? user_id : email,
+           tofu_policy_str (policy_old),
+           tofu_policy_str (policy));
+      else
+        (show_old ? log_info : log_debug)
+          ("Setting TOFU trust policy for new binding"
+           " <key: %s, user id: %s> to %s.\n",
+           fingerprint, show_old ? user_id : email,
+           tofu_policy_str (policy));
 
-  if (policy_old == policy)
-    {
-      rc = 0;
-      goto leave; /* Nothing to do.  */
+      if (policy_old == policy)
+        {
+          rc = 0;
+          goto leave; /* Nothing to do.  */
+        }
     }
 
   if (opt.dry_run)
