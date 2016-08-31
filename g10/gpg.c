@@ -4664,6 +4664,8 @@ main (int argc, char **argv)
 	  if (! hd)
             g10_exit (1);
 
+          tofu_begin_batch_update (ctrl);
+
 	  for (i = 1; i < argc; i ++)
 	    {
 	      KEYDB_SEARCH_DESC desc;
@@ -4721,8 +4723,9 @@ main (int argc, char **argv)
 		g10_exit (1);
 	    }
 
-	  keydb_release (hd);
+          tofu_end_batch_update (ctrl);
 
+	  keydb_release (hd);
 	}
 #endif /*USE_TOFU*/
 	break;

@@ -2584,6 +2584,8 @@ tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
 
   fingerprint = hexfingerprint (pk, NULL, 0);
 
+  begin_transaction (ctrl);
+
   for (; kb; kb = kb->next)
     {
       PKT_user_id *user_id;
@@ -2604,6 +2606,8 @@ tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
 
       xfree (email);
     }
+
+  end_transaction (ctrl, 0);
 
   xfree (fingerprint);
   return 0;
