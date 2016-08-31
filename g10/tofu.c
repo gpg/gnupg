@@ -204,7 +204,7 @@ begin_transaction (ctrl_t ctrl, int only_batch)
 
       rc = gpgsql_stepx (dbs->db, &dbs->s.savepoint_batch,
                           NULL, NULL, &err,
-                          "savepoint batch;", SQLITE_ARG_END);
+                          "savepoint batch;", GPGSQL_ARG_END);
       if (rc)
         {
           log_error (_("error beginning transaction on TOFU database: %s\n"),
@@ -269,7 +269,7 @@ end_transaction (ctrl_t ctrl, int only_batch)
 
           rc = gpgsql_stepx (dbs->db, &dbs->s.savepoint_batch_commit,
                              NULL, NULL, &err,
-                             "release batch;", SQLITE_ARG_END);
+                             "release batch;", GPGSQL_ARG_END);
           if (rc)
             {
               log_error (_("error committing transaction on TOFU database: %s\n"),
@@ -790,8 +790,8 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 	(dbs->db, &dbs->s.record_binding_get_old_policy,
          get_single_long_cb2, &policy_old, &err,
 	 "select policy from bindings where fingerprint = ? and email = ?",
-	 SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
-         SQLITE_ARG_END);
+	 GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
+         GPGSQL_ARG_END);
       if (rc)
 	{
 	  log_debug ("TOFU: Error reading from binding database"
@@ -839,10 +839,10 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 	based on the fingerprint and email since they are unique.  */
      "  (select oid from bindings where fingerprint = ? and email = ?),\n"
      "  ?, ?, ?, strftime('%s','now'), ?);",
-     SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
-     SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
-     SQLITE_ARG_STRING, user_id, SQLITE_ARG_INT, (int) policy,
-     SQLITE_ARG_END);
+     GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
+     GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
+     GPGSQL_ARG_STRING, user_id, GPGSQL_ARG_INT, (int) policy,
+     GPGSQL_ARG_END);
   if (rc)
     {
       log_error (_("error updating TOFU database: %s\n"), err);
@@ -1036,9 +1036,9 @@ get_policy (tofu_dbs_t dbs, const char *fingerprint, const char *email,
                       strings_collect_cb2, &strlist, &err,
                       "select policy, conflict from bindings\n"
                       " where fingerprint = ? and email = ?",
-                      SQLITE_ARG_STRING, fingerprint,
-                      SQLITE_ARG_STRING, email,
-                      SQLITE_ARG_END);
+                      GPGSQL_ARG_STRING, fingerprint,
+                      GPGSQL_ARG_STRING, email,
+                      GPGSQL_ARG_END);
   if (rc)
     {
       log_error (_("error reading TOFU database: %s\n"), err);
@@ -1228,7 +1228,7 @@ ask_about_binding (tofu_dbs_t dbs,
     (dbs->db, &dbs->s.get_trust_gather_other_user_ids,
      strings_collect_cb2, &other_user_ids, &sqerr,
      "select user_id, policy from bindings where fingerprint = ?;",
-     SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_END);
+     GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_END);
   if (rc)
     {
       log_error (_("error gathering other user IDs: %s\n"), sqerr);
@@ -1301,8 +1301,8 @@ ask_about_binding (tofu_dbs_t dbs,
      " group by fingerprint, time_ago\n"
      /* Make sure the current key is first.  */
      " order by fingerprint = ? asc, fingerprint desc, time_ago desc;\n",
-     SQLITE_ARG_STRING, email, SQLITE_ARG_STRING, fingerprint,
-     SQLITE_ARG_END);
+     GPGSQL_ARG_STRING, email, GPGSQL_ARG_STRING, fingerprint,
+     GPGSQL_ARG_END);
   if (rc)
     {
       strlist_t strlist_iter;
@@ -1640,7 +1640,7 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
     (dbs->db, &dbs->s.get_trust_bindings_with_this_email,
      strings_collect_cb2, &bindings_with_this_email, &sqerr,
      "select distinct fingerprint from bindings where email = ?;",
-     SQLITE_ARG_STRING, email, SQLITE_ARG_END);
+     GPGSQL_ARG_STRING, email, GPGSQL_ARG_END);
   if (rc)
     {
       log_error (_("error reading TOFU database: %s\n"), sqerr);
@@ -2269,10 +2269,10 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
          "  on signatures.binding = bindings.oid\n"
          " where fingerprint = ? and email = ? and sig_time = ?\n"
          "  and sig_digest = ?",
-         SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
-         SQLITE_ARG_LONG_LONG, (long long) sig_time,
-         SQLITE_ARG_STRING, sig_digest,
-         SQLITE_ARG_END);
+         GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
+         GPGSQL_ARG_LONG_LONG, (long long) sig_time,
+         GPGSQL_ARG_STRING, sig_digest,
+         GPGSQL_ARG_END);
       if (rc)
         {
           log_error (_("error reading TOFU database: %s\n"), err);
@@ -2321,10 +2321,10 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
              " ((select oid from bindings\n"
              "    where fingerprint = ? and email = ?),\n"
              "  ?, ?, ?, strftime('%s', 'now'));",
-             SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
-             SQLITE_ARG_STRING, sig_digest, SQLITE_ARG_STRING, origin,
-             SQLITE_ARG_LONG_LONG, (long long) sig_time,
-             SQLITE_ARG_END);
+             GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
+             GPGSQL_ARG_STRING, sig_digest, GPGSQL_ARG_STRING, origin,
+             GPGSQL_ARG_LONG_LONG, (long long) sig_time,
+             GPGSQL_ARG_END);
           if (rc)
             {
               log_error (_("error updating TOFU database: %s\n"), err);

@@ -131,25 +131,25 @@ gpgsql_stepx (sqlite3 *db,
           t = va_arg (va, enum gpgsql_arg_type);
           switch (t)
             {
-            case SQLITE_ARG_INT:
+            case GPGSQL_ARG_INT:
               {
                 int value = va_arg (va, int);
                 err = sqlite3_bind_int (stmt, i, value);
                 break;
               }
-            case SQLITE_ARG_LONG_LONG:
+            case GPGSQL_ARG_LONG_LONG:
               {
                 long long value = va_arg (va, long long);
                 err = sqlite3_bind_int64 (stmt, i, value);
                 break;
               }
-            case SQLITE_ARG_STRING:
+            case GPGSQL_ARG_STRING:
               {
                 char *text = va_arg (va, char *);
                 err = sqlite3_bind_text (stmt, i, text, -1, SQLITE_STATIC);
                 break;
               }
-            case SQLITE_ARG_BLOB:
+            case GPGSQL_ARG_BLOB:
               {
                 char *blob = va_arg (va, void *);
                 long long length = va_arg (va, long long);
@@ -170,7 +170,7 @@ gpgsql_stepx (sqlite3 *db,
 
     }
   t = va_arg (va, enum gpgsql_arg_type);
-  log_assert (t == SQLITE_ARG_END);
+  log_assert (t == GPGSQL_ARG_END);
   va_end (va);
 
   for (;;)

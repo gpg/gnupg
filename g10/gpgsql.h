@@ -24,19 +24,19 @@
 
 enum gpgsql_arg_type
   {
-    SQLITE_ARG_END = 0xdead001,
-    SQLITE_ARG_INT,
-    SQLITE_ARG_LONG_LONG,
-    SQLITE_ARG_STRING,
+    GPGSQL_ARG_END = 0xdead001,
+    GPGSQL_ARG_INT,
+    GPGSQL_ARG_LONG_LONG,
+    GPGSQL_ARG_STRING,
     /* This takes two arguments: the blob as a void * and the length
        of the blob as a long long.  */
-    SQLITE_ARG_BLOB
+    GPGSQL_ARG_BLOB
   };
 
 int gpgsql_exec_printf (sqlite3 *db,
-                     int (*callback)(void*,int,char**,char**), void *cookie,
-                     char **errmsg,
-                     const char *sql, ...);
+                        int (*callback)(void*,int,char**,char**), void *cookie,
+                        char **errmsg,
+                        const char *sql, ...);
 
 typedef int (*gpgsql_stepx_callback) (void *cookie,
                                       /* number of columns.  */
