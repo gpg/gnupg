@@ -111,6 +111,7 @@ struct tofu_dbs_s
 
 /* Local prototypes.  */
 static gpg_error_t end_transaction (ctrl_t ctrl, int only_batch);
+static char *email_from_user_id (const char *user_id);
 
 
 
@@ -913,6 +914,10 @@ struct signature_stats
   /* Number of signatures during this time.  */
   unsigned long count;
 
+  /* If the corresponding key/user id has been expired / revoked.  */
+  int is_expired;
+  int is_revoked;
+
   /* The key that generated this signature.  */
   char fingerprint[1];
 };
@@ -936,7 +941,7 @@ signature_stats_prepend (struct signature_stats **statsp,
 			 unsigned long count)
 {
   struct signature_stats *stats =
-    xmalloc (sizeof (*stats) + strlen (fingerprint));
+    xmalloc_clear (sizeof (*stats) + strlen (fingerprint));
 
   stats->next = *statsp;
   *statsp = stats;
@@ -1324,6 +1329,7 @@ ask_about_binding (tofu_dbs_t dbs,
     }
   else
     {
+      KEYDB_HANDLE hd;
       char *key = NULL;
 
       if (! stats || strcmp (stats->fingerprint, fingerprint))
@@ -1334,6 +1340,93 @@ ask_about_binding (tofu_dbs_t dbs,
            * messages signed by this key.  Add a dummy entry.  */
           signature_stats_prepend (&stats, fingerprint, TOFU_POLICY_AUTO, 0, 0);
         }
+
+      /* Figure out which user ids are revoked or expired.  */
+      hd = keydb_new ();
+      for (stats_iter = stats; stats_iter; stats_iter = stats_iter->next)
+        {
+          KEYDB_SEARCH_DESC desc;
+          kbnode_t kb;
+          PKT_public_key *pk;
+          kbnode_t n;
+          int found_user_id;
+
+          rc = keydb_search_reset (hd);
+          if (rc)
+            {
+              log_error (_("resetting keydb: %s\n"),
+                         gpg_strerror (rc));
+              continue;
+            }
+
+          rc = classify_user_id (stats_iter->fingerprint, &desc, 0);
+          if (rc)
+            {
+              log_error (_("error parsing key specification '%s': %s\n"),
+                         stats_iter->fingerprint, gpg_strerror (rc));
+              continue;
+            }
+
+          rc = keydb_search (hd, &desc, 1, NULL);
+          if (rc)
+            {
+              log_error (_("key \"%s\" not found: %s\n"),
+                         stats_iter->fingerprint,
+                         gpg_strerror (rc));
+              continue;
+            }
+
+          rc = keydb_get_keyblock (hd, &kb);
+          if (rc)
+            {
+              log_error (_("error reading keyblock: %s\n"),
+                         gpg_strerror (rc));
+              print_further_info ("fingerprint: %s", stats_iter->fingerprint);
+              continue;
+            }
+
+          merge_keys_and_selfsig (kb);
+
+          log_assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
+          pk = kb->pkt->pkt.public_key;
+
+          if (pk->has_expired)
+            stats_iter->is_expired = 1;
+          if (pk->flags.revoked)
+            stats_iter->is_revoked = 1;
+
+          n = kb;
+          found_user_id = 0;
+          while ((n = find_next_kbnode (n, PKT_USER_ID)) && ! found_user_id)
+            {
+              PKT_user_id *user_id2 = n->pkt->pkt.user_id;
+              char *email2;
+
+              if (user_id2->attrib_data)
+                continue;
+
+              email2 = email_from_user_id (user_id2->name);
+
+              if (strcmp (email, email2) == 0)
+                {
+                  found_user_id = 1;
+
+                  if (user_id2->is_revoked)
+                    stats_iter->is_revoked = 1;
+                  if (user_id2->is_expired)
+                    stats_iter->is_expired = 1;
+                }
+
+              xfree (email2);
+            }
+          release_kbnode (kb);
+
+          if (! found_user_id)
+            log_info (_("TOFU db may be corrupted: user id (%s)"
+                        " not on key block (%s)\n"),
+                      email, fingerprint);
+        }
+      keydb_release (hd);
 
       es_fprintf (fp, _("Statistics for keys with the email address \"%s\":\n"),
                   email);
@@ -1348,6 +1441,18 @@ ask_about_binding (tofu_dbs_t dbs,
               this_key = strcmp (key, fingerprint) == 0;
               key_pp = format_hexfingerprint (key, NULL, 0);
               es_fprintf (fp, "  %s (", key_pp);
+
+              if (stats_iter->is_revoked)
+                {
+                  es_fprintf (fp, _("revoked"));
+                  es_fprintf (fp, _(", "));
+                }
+              else if (stats_iter->is_expired)
+                {
+                  es_fprintf (fp, _("expired"));
+                  es_fprintf (fp, _(", "));
+                }
+
               if (this_key)
                 es_fprintf (fp, _("this key"));
               else
