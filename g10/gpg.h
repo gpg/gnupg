@@ -82,9 +82,7 @@ struct server_control_s
   /* Local data for tofu.c  */
   struct {
     tofu_dbs_t dbs;
-    int    in_transaction;
-    int    batch_updated_wanted;
-    time_t batch_update_started;
+    int batch_updated_wanted;
   } tofu;
 
 };

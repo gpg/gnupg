@@ -82,6 +82,8 @@ struct tofu_dbs_s
   } s;
 
   int in_batch_transaction;
+  int in_transaction;
+  time_t batch_update_started;
 };
 
 
@@ -176,11 +178,11 @@ begin_transaction (ctrl_t ctrl, int only_batch)
    * Note: if we wanted higher resolution, we could use
    * npth_clock_gettime.  */
   if (/* No real transactions.  */
-      ctrl->tofu.in_transaction == 0
+      dbs->in_transaction == 0
       /* There is an open batch transaction.  */
       && dbs->in_batch_transaction
       /* And some time has gone by since it was started.  */
-      && ctrl->tofu.batch_update_started != gnupg_get_time ())
+      && dbs->batch_update_started != gnupg_get_time ())
     {
       /* If we are in a batch update, then batch updates better have
          been enabled.  */
@@ -200,7 +202,7 @@ begin_transaction (ctrl_t ctrl, int only_batch)
       /* We are in batch mode, but we don't have an open batch
        * transaction.  Since the batch save point must be the outer
        * save point, it must be taken before the inner save point.  */
-      log_assert (ctrl->tofu.in_transaction == 0);
+      log_assert (dbs->in_transaction == 0);
 
       rc = gpgsql_stepx (dbs->db, &dbs->s.savepoint_batch,
                           NULL, NULL, &err,
@@ -214,18 +216,18 @@ begin_transaction (ctrl_t ctrl, int only_batch)
         }
 
       dbs->in_batch_transaction = 1;
-      ctrl->tofu.batch_update_started = gnupg_get_time ();
+      dbs->batch_update_started = gnupg_get_time ();
     }
 
   if (only_batch)
     return 0;
 
-  log_assert(ctrl->tofu.in_transaction >= 0);
-  ctrl->tofu.in_transaction ++;
+  log_assert(dbs->in_transaction >= 0);
+  dbs->in_transaction ++;
 
   rc = gpgsql_exec_printf (dbs->db, NULL, NULL, &err,
                            "savepoint inner%d;",
-                           ctrl->tofu.in_transaction);
+                           dbs->in_transaction);
   if (rc)
     {
       log_error (_("error beginning transaction on TOFU database: %s\n"),
@@ -256,7 +258,7 @@ end_transaction (ctrl_t ctrl, int only_batch)
 
       /* If we are releasing the batch transaction, then we better not
          be in a normal transaction.  */
-      log_assert (ctrl->tofu.in_transaction == 0);
+      log_assert (dbs->in_transaction == 0);
 
       if (/* Batch mode disabled?  */
           (!ctrl->tofu.batch_updated_wanted || only_batch == 2)
@@ -285,10 +287,10 @@ end_transaction (ctrl_t ctrl, int only_batch)
     }
 
   log_assert (dbs);
-  log_assert (ctrl->tofu.in_transaction > 0);
+  log_assert (dbs->in_transaction > 0);
 
   rc = gpgsql_exec_printf (dbs->db, NULL, NULL, &err,
-                           "release inner%d;", ctrl->tofu.in_transaction);
+                           "release inner%d;", dbs->in_transaction);
   if (rc)
     {
       log_error (_("error committing transaction on TOFU database: %s\n"),
@@ -297,7 +299,7 @@ end_transaction (ctrl_t ctrl, int only_batch)
       return gpg_error (GPG_ERR_GENERAL);
     }
 
-  ctrl->tofu.in_transaction --;
+  dbs->in_transaction --;
 
   return 0;
 }
@@ -311,15 +313,15 @@ rollback_transaction (ctrl_t ctrl)
   char *err = NULL;
 
   log_assert (dbs);
-  log_assert (ctrl->tofu.in_transaction > 0);
+  log_assert (dbs->in_transaction > 0);
 
   /* Be careful to not any progress made by closed transactions in
      batch mode.  */
   rc = gpgsql_exec_printf (dbs->db, NULL, NULL, &err,
                            "rollback to inner%d;",
-                           ctrl->tofu.in_transaction);
+                           dbs->in_transaction);
 
-  ctrl->tofu.in_transaction --;
+  dbs->in_transaction --;
 
   if (rc)
     {
@@ -712,11 +714,11 @@ tofu_closedbs (ctrl_t ctrl)
   tofu_dbs_t dbs;
   sqlite3_stmt **statements;
 
-  log_assert (ctrl->tofu.in_transaction == 0);
-
   dbs = ctrl->tofu.dbs;
   if (!dbs)
     return;  /* Not initialized.  */
+
+  log_assert (dbs->in_transaction == 0);
 
   end_transaction (ctrl, 2);
 
