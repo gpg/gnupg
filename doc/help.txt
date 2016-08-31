@@ -358,8 +358,19 @@ revocation certificate.  Please keep this text concise.
 An empty line ends the text.
 .
 
-
-
+.gpg.tofu.conflict
+# tofu.c
+TOFU has detected another key with the same (or a very similar) email
+address.  It might be that the user created a new key.  In this case,
+you can safely trust the new key (but, confirm this by asking the
+person).  However, it could also be that the key is a forgery or there
+is an active Man-in-the-Middle (MitM) attack.  In this case, you
+should mark the key as being bad, so that it is untrusted.  Marking a
+key as being untrusted means that any signatures will be considered
+bad and attempts to encrypt to the key will be flagged.  If you are
+unsure and can't currently check, you should select either accept once
+or reject once.
+.
 
 .gpgsm.root-cert-not-trusted
 # This text gets displayed by the audit log if
