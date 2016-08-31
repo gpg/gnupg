@@ -1065,6 +1065,124 @@ process_new_key (server_ctx_t ctx, estream_t key)
 
 
 
+/* Send a message to tell the user at MBOX that their key has been
+ * published.  FNAME the name of the file with the key.  */
+static gpg_error_t
+send_congratulation_message (const char *mbox, const char *keyfile)
+{
+  gpg_error_t err;
+  estream_t body = NULL;
+  estream_t bodyenc = NULL;
+  mime_maker_t mime = NULL;
+  char *from_buffer = NULL;
+  const char *from;
+  strlist_t sl;
+
+  from = from_buffer = get_submission_address (mbox);
+  if (!from)
+    {
+      from = opt.default_from;
+      if (!from)
+        {
+          log_error ("no sender address found for '%s'\n", mbox);
+          err = gpg_error (GPG_ERR_CONFIGURATION);
+          goto leave;
+        }
+      log_info ("Note: using default sender address '%s'\n", from);
+    }
+
+  body = es_fopenmem (0, "w+b");
+  if (!body)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+  /* It is fine to use 8 bit encoding because that is encrypted and
+   * only our client will see it.  */
+  es_fputs ("Content-Type: text/plain; charset=utf-8\n"
+            "Content-Transfer-Encoding: 8bit\n"
+            "\n",
+            body);
+
+  es_fprintf (body,
+              "Hello!\n\n"
+              "The key for your address '%s' has been published\n"
+              "and can now be retrieved from the Web Key Directory.\n"
+              "\n"
+              "For more information on this system see:\n"
+              "\n"
+              "  https://gnupg.org/faq/wkd.html\n"
+              "\n"
+              "Best regards\n"
+              "\n"
+              "  Gnu Key Publisher\n\n\n"
+              "-- \n"
+              "The GnuPG Project welcomes donations: %s\n",
+              mbox, "https://gnupg.org/donate");
+
+  es_rewind (body);
+  err = encrypt_stream (&bodyenc, body, keyfile);
+  if (err)
+    goto leave;
+  es_fclose (body);
+  body = NULL;
+
+  err = mime_maker_new (&mime, NULL);
+  if (err)
+    goto leave;
+  err = mime_maker_add_header (mime, "From", from);
+  if (err)
+    goto leave;
+  err = mime_maker_add_header (mime, "To", mbox);
+  if (err)
+    goto leave;
+  err = mime_maker_add_header (mime, "Subject", "Your key has been published");
+  if (err)
+    goto leave;
+  for (sl = opt.extra_headers; sl; sl = sl->next)
+    {
+      err = mime_maker_add_header (mime, sl->d, NULL);
+      if (err)
+        goto leave;
+    }
+
+  err = mime_maker_add_header (mime, "Content-Type",
+                               "multipart/encrypted; "
+                               "protocol=\"application/pgp-encrypted\"");
+  if (err)
+    goto leave;
+  err = mime_maker_add_container (mime, "multipart/encrypted");
+  if (err)
+    goto leave;
+
+  err = mime_maker_add_header (mime, "Content-Type",
+                               "application/pgp-encrypted");
+  if (err)
+    goto leave;
+  err = mime_maker_add_body (mime, "Version: 1\n");
+  if (err)
+    goto leave;
+  err = mime_maker_add_header (mime, "Content-Type",
+                               "application/octet-stream");
+  if (err)
+    goto leave;
+
+  err = mime_maker_add_stream (mime, &bodyenc);
+  if (err)
+    goto leave;
+
+  err = wks_send_mime (mime);
+
+ leave:
+  mime_maker_release (mime);
+  es_fclose (bodyenc);
+  es_fclose (body);
+  xfree (from_buffer);
+  return err;
+}
+
+
 /* Check that we have send a request with NONCE and publish the key.  */
 static gpg_error_t
 check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
@@ -1170,7 +1288,7 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
     }
 
   log_info ("key %s published for '%s'\n", ctx->fpr, address);
-
+  send_congratulation_message (address, fnewname);
 
   /* Try to publish as DANE record if the DANE directory exists.  */
   xfree (fname);
@@ -1206,7 +1324,6 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
         goto leave;
       log_info ("key %s published for '%s' (DANE record)\n", ctx->fpr, address);
     }
-
 
  leave:
   es_fclose (key);
