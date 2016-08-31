@@ -1543,30 +1543,30 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
               && _tofu_GET_TRUST_ERROR != TRUST_ULTIMATE);
 
   policy = get_policy (dbs, fingerprint, email, &conflict);
-  if (policy == TOFU_POLICY_AUTO || policy == TOFU_POLICY_NONE)
-    { /* See if the key is ultimately trusted.  If so, we're done.  */
-      u32 kid[2];
+  {
+    /* See if the key is ultimately trusted.  If so, we're done.  */
+    u32 kid[2];
 
-      keyid_from_pk (pk, kid);
+    keyid_from_pk (pk, kid);
 
-      if (tdb_keyid_is_utk (kid))
-        {
-          if (policy == TOFU_POLICY_NONE)
-            {
-              if (record_binding (dbs, fingerprint, email, user_id,
-                                  TOFU_POLICY_AUTO, 0) != 0)
-                {
-                  log_error (_("error setting TOFU binding's trust level"
-                               " to %s\n"), "auto");
-                  trust_level = _tofu_GET_TRUST_ERROR;
-                  goto out;
-                }
-            }
+    if (tdb_keyid_is_utk (kid))
+      {
+        if (policy == TOFU_POLICY_NONE)
+          {
+            if (record_binding (dbs, fingerprint, email, user_id,
+                                TOFU_POLICY_AUTO, 0) != 0)
+              {
+                log_error (_("error setting TOFU binding's trust level"
+                             " to %s\n"), "auto");
+                trust_level = _tofu_GET_TRUST_ERROR;
+                goto out;
+              }
+          }
 
-          trust_level = TRUST_ULTIMATE;
-          goto out;
-        }
-    }
+        trust_level = TRUST_ULTIMATE;
+        goto out;
+      }
+  }
 
   if (policy == TOFU_POLICY_AUTO)
     {
