@@ -17,7 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-/* The Web Key Service I-D defines an update protocol to stpre a
+/* The Web Key Service I-D defines an update protocol to store a
  * public key in the Web Key Directory.  The current specification is
  * draft-koch-openpgp-webkey-service-01.txt.
  */
@@ -302,7 +302,7 @@ main (int argc, char **argv)
         log_error ("directory '%s' not owned by user\n", opt.directory);
         exit (2);
       }
-    if ((sb.st_mode & S_IRWXO))
+    if ((sb.st_mode & (S_IROTH|S_IWOTH)))
       {
         log_error ("directory '%s' has too relaxed permissions\n",
                    opt.directory);
@@ -878,7 +878,7 @@ store_key_as_pending (const char *dir, estream_t key,
 }
 
 
-/* Send a confirmation rewqyest.  DIR is the directory used for the
+/* Send a confirmation request.  DIR is the directory used for the
  * address MBOX.  NONCE is the nonce we want to see in the response to
  * this mail.  FNAME the name of the file with the key.  */
 static gpg_error_t
