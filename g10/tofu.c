@@ -163,7 +163,7 @@ tofu_policy_to_trust_level (enum tofu_policy policy)
 
 /* Start a transaction on DB.  */
 static gpg_error_t
-begin_transaction (ctrl_t ctrl, int only_batch)
+begin_transaction (ctrl_t ctrl)
 {
   tofu_dbs_t dbs = ctrl->tofu.dbs;
   int rc;
@@ -218,9 +218,6 @@ begin_transaction (ctrl_t ctrl, int only_batch)
       dbs->in_batch_transaction = 1;
       dbs->batch_update_started = gnupg_get_time ();
     }
-
-  if (only_batch)
-    return 0;
 
   log_assert(dbs->in_transaction >= 0);
   dbs->in_transaction ++;
@@ -2231,7 +2228,7 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 
   /* We do a query and then an insert.  Make sure they are atomic
      by wrapping them in a transaction.  */
-  rc = begin_transaction (ctrl, 0);
+  rc = begin_transaction (ctrl);
   if (rc)
     return rc;
 
@@ -2479,7 +2476,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 
   fingerprint = hexfingerprint (pk, NULL, 0);
 
-  begin_transaction (ctrl, 0);
+  begin_transaction (ctrl);
 
   for (user_id = user_id_list; user_id; user_id = user_id->next, bindings ++)
     {
