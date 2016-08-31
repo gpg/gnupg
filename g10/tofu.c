@@ -2023,7 +2023,7 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 
 	}
 
-      if (messages == -1 || !first_seen)
+      if (messages == -1 || first_seen == -1)
         {
           write_stats_status (outfp, 0, TOFU_POLICY_NONE, 0, 0);
           if (!outfp)
