@@ -28,8 +28,8 @@ if USE_LDAPWRAPPER
 libexec_PROGRAMS = dirmngr_ldap
 endif
 
-noinst_PROGRAMS = $(module_tests) $(module_maint_tests)
-TESTS = $(module_tests)
+noinst_PROGRAMS = $(module_tests) $(module_net_tests) $(module_maint_tests)
+TESTS = $(module_tests) $(module_net_tests)
 
 AM_CPPFLAGS = -I$(top_srcdir)/common
 
@@ -114,12 +114,20 @@ t_common_ldadd = $(libcommon) $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
                  $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) \
                  $(DNSLIBS) $(LIBINTL) $(LIBICONV)
 
-module_tests = t-dns-stuff
+module_tests =
 
 if USE_LDAP
 module_tests += t-ldap-parse-uri
 endif
 
+# Test which need a network connections are only used in maintainer mode.
+if MAINTAINER_MODE
+module_net_tests = t-dns-stuff
+else
+module_net_tests =
+endif
+
+# Tests which are only for manually testing are only build in maintainer-mode.
 if MAINTAINER_MODE
 module_maint_tests = t-http
 else
