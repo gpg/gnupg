@@ -162,9 +162,11 @@ tofu_policy_to_trust_level (enum tofu_policy policy)
 
 
 
-/* Start a transaction on DB.  */
+/* Start a transaction on DB.  If ONLY_BATCH is set, then this will
+   start a batch transaction if we haven't started a batch transaction
+   and one has been requested.  */
 static gpg_error_t
-begin_transaction (ctrl_t ctrl)
+begin_transaction (ctrl_t ctrl, int only_batch)
 {
   tofu_dbs_t dbs = ctrl->tofu.dbs;
   int rc;
@@ -219,6 +221,9 @@ begin_transaction (ctrl_t ctrl)
       dbs->in_batch_transaction = 1;
       dbs->batch_update_started = gnupg_get_time ();
     }
+
+  if (only_batch)
+    return 0;
 
   log_assert(dbs->in_transaction >= 0);
   dbs->in_transaction ++;
@@ -289,6 +294,9 @@ end_transaction (ctrl_t ctrl, int only_batch)
 
   rc = gpgsql_exec_printf (dbs->db, NULL, NULL, &err,
                            "release inner%d;", dbs->in_transaction);
+
+  dbs->in_transaction --;
+
   if (rc)
     {
       log_error (_("error committing transaction on TOFU database: %s\n"),
@@ -296,8 +304,6 @@ end_transaction (ctrl_t ctrl, int only_batch)
       sqlite3_free (err);
       return gpg_error (GPG_ERR_GENERAL);
     }
-
-  dbs->in_transaction --;
 
   return 0;
 }
@@ -343,11 +349,28 @@ tofu_end_batch_update (ctrl_t ctrl)
 {
   log_assert (ctrl->tofu.batch_updated_wanted > 0);
   ctrl->tofu.batch_updated_wanted --;
-
-  if (!ctrl->tofu.batch_updated_wanted)
-    end_transaction (ctrl, 1);
+  end_transaction (ctrl, 1);
 }
 
+/* Suspend any extant batch transaction (it is safe to call this even
+   no batch transaction has been started).  Note: you cannot suspend a
+   batch transaction if you are in a normal transaction.  The batch
+   transaction can be resumed explicitly by calling
+   tofu_resume_batch_transaction or implicitly by starting a normal
+   transaction.  */
+static void
+tofu_suspend_batch_transaction (ctrl_t ctrl)
+{
+  end_transaction (ctrl, 2);
+}
+
+/* Resume a batch transaction if there is no extant batch transaction
+   and one has been requested using tofu_begin_batch_transaction.  */
+static void
+tofu_resume_batch_transaction (ctrl_t ctrl)
+{
+  begin_transaction (ctrl, 1);
+}
 
 
 
@@ -1193,9 +1216,11 @@ format_conflict_msg_part1 (int policy, const char *conflict,
  *
  *   - The policy is ask (the user deferred last time) (policy ==
  *     TOFU_POLICY_ASK).
+ *
+ * Note: this function must not be called while in a transaction!
  */
 static void
-ask_about_binding (tofu_dbs_t dbs,
+ask_about_binding (ctrl_t ctrl,
                    enum tofu_policy *policy,
                    int *trust_level,
                    int bindings_with_this_email_count,
@@ -1205,6 +1230,7 @@ ask_about_binding (tofu_dbs_t dbs,
                    const char *email,
                    const char *user_id)
 {
+  tofu_dbs_t dbs;
   char *sqerr = NULL;
   int rc;
   estream_t fp;
@@ -1213,6 +1239,10 @@ ask_about_binding (tofu_dbs_t dbs,
   struct signature_stats *stats_iter = NULL;
   char *prompt;
   char *choices;
+
+  dbs = ctrl->tofu.dbs;
+  log_assert (dbs);
+  log_assert (dbs->in_transaction == 0);
 
   fp = es_fopenmem (0, "rw,samethread");
   if (!fp)
@@ -1226,6 +1256,8 @@ ask_about_binding (tofu_dbs_t dbs,
     es_fputc ('\n', fp);
     xfree (text);
   }
+
+  begin_transaction (ctrl, 0);
 
   /* Find other user ids associated with this key and whether the
    * bindings are marked as good or bad.  */
@@ -1495,6 +1527,7 @@ ask_about_binding (tofu_dbs_t dbs,
         }
     }
 
+  end_transaction (ctrl, 0);
 
   if ((*policy == TOFU_POLICY_NONE && bindings_with_this_email_count > 0)
       || (*policy == TOFU_POLICY_ASK
@@ -1536,6 +1569,10 @@ ask_about_binding (tofu_dbs_t dbs,
    * wrong choise (because he does not see that either).  As a small
    * benefit we allow C-L to redisplay everything.  */
   tty_printf ("%s", prompt);
+
+  /* Suspend any transaction: it could take a while until the user
+     responds.  */
+  tofu_suspend_batch_transaction (ctrl);
   while (1)
     {
       char *response;
@@ -1599,6 +1636,7 @@ ask_about_binding (tofu_dbs_t dbs,
         }
       xfree (response);
     }
+  tofu_resume_batch_transaction (ctrl);
 
   xfree (prompt);
 
@@ -1619,12 +1657,15 @@ ask_about_binding (tofu_dbs_t dbs,
  * necessary if there is a conflict or the binding's policy is
  * TOFU_POLICY_ASK.  In the case of a conflict, we set the new
  * conflicting binding's policy to TOFU_POLICY_ASK.  In either case,
- * we return TRUST_UNDEFINED.  */
+ * we return TRUST_UNDEFINED.  Note: if MAY_ASK is set, then this
+ * function must not be called while in a transaction!  */
 static enum tofu_policy
-get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
+get_trust (ctrl_t ctrl, PKT_public_key *pk,
            const char *fingerprint, const char *email,
 	   const char *user_id, int may_ask)
 {
+  tofu_dbs_t dbs = ctrl->tofu.dbs;
+  int in_transaction = 0;
   enum tofu_policy policy;
   char *conflict = NULL;
   int rc;
@@ -1633,6 +1674,11 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
   int bindings_with_this_email_count;
   int change_conflicting_to_ask = 0;
   int trust_level = TRUST_UNKNOWN;
+
+  log_assert (dbs);
+
+  if (may_ask)
+    log_assert (dbs->in_transaction == 0);
 
   if (opt.batch)
     may_ask = 0;
@@ -1646,6 +1692,9 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
               && _tofu_GET_TRUST_ERROR != TRUST_MARGINAL
               && _tofu_GET_TRUST_ERROR != TRUST_FULLY
               && _tofu_GET_TRUST_ERROR != TRUST_ULTIMATE);
+
+  begin_transaction (ctrl, 0);
+  in_transaction = 1;
 
   policy = get_policy (dbs, fingerprint, email, &conflict);
   {
@@ -1813,8 +1862,12 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
       goto out;
     }
 
+  /* We can't be in a normal transaction in ask_about_binding.  */
+  end_transaction (ctrl, 0);
+  in_transaction = 0;
+
   /* If we get here, we need to ask the user about the binding.  */
-  ask_about_binding (dbs,
+  ask_about_binding (ctrl,
                      &policy,
                      &trust_level,
                      bindings_with_this_email_count,
@@ -1825,6 +1878,9 @@ get_trust (tofu_dbs_t dbs, PKT_public_key *pk,
                      user_id);
 
  out:
+  if (in_transaction)
+    end_transaction (ctrl, 0);
+
   if (change_conflicting_to_ask)
     {
       if (! may_ask)
@@ -2334,7 +2390,7 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 
   /* We do a query and then an insert.  Make sure they are atomic
      by wrapping them in a transaction.  */
-  rc = begin_transaction (ctrl);
+  rc = begin_transaction (ctrl, 0);
   if (rc)
     return rc;
 
@@ -2356,7 +2412,7 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 
       /* Make sure the binding exists and record any TOFU
          conflicts.  */
-      if (get_trust (dbs, pk, fingerprint, email, user_id->d, 0)
+      if (get_trust (ctrl, pk, fingerprint, email, user_id->d, 0)
           == _tofu_GET_TRUST_ERROR)
         {
           rc = gpg_error (GPG_ERR_GENERAL);
@@ -2557,8 +2613,8 @@ tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
    PK is the primary key packet.
 
    If MAY_ASK is 1 and the policy is TOFU_POLICY_ASK, then the user
-   will be prompted to choose a different policy.  If MAY_ASK is 0 and
-   the policy is TOFU_POLICY_ASK, then TRUST_UNKNOWN is returned.
+   will be prompted to choose a policy.  If MAY_ASK is 0 and the
+   policy is TOFU_POLICY_ASK, then TRUST_UNKNOWN is returned.
 
    Returns TRUST_UNDEFINED if an error occurs.  */
 int
@@ -2582,7 +2638,8 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 
   fingerprint = hexfingerprint (pk, NULL, 0);
 
-  begin_transaction (ctrl);
+  tofu_begin_batch_update (ctrl);
+  tofu_resume_batch_transaction (ctrl);
 
   for (user_id = user_id_list; user_id; user_id = user_id->next, bindings ++)
     {
@@ -2590,7 +2647,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 
       /* Always call get_trust to make sure the binding is
          registered.  */
-      int tl = get_trust (dbs, pk, fingerprint, email, user_id->d, may_ask);
+      int tl = get_trust (ctrl, pk, fingerprint, email, user_id->d, may_ask);
       if (tl == _tofu_GET_TRUST_ERROR)
         {
           /* An error.  */
@@ -2639,7 +2696,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
     }
 
  die:
-  end_transaction (ctrl, 0);
+  tofu_end_batch_update (ctrl);
 
   xfree (fingerprint);
 
@@ -2689,7 +2746,7 @@ tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
 
   fingerprint = hexfingerprint (pk, NULL, 0);
 
-  begin_transaction (ctrl);
+  begin_transaction (ctrl, 0);
 
   for (; kb; kb = kb->next)
     {
