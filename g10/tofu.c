@@ -1591,9 +1591,17 @@ ask_about_binding (ctrl_t ctrl,
       cpr_kill_prompt ();
       if (*response == CONTROL_L)
         tty_printf ("%s", prompt);
-      else if (strlen (response) == 1)
+      else if (!response[0])
+        /* Default to unknown.  Don't save it.  */
+        {
+          tty_printf (_("Defaulting to unknown."));
+          *policy = TOFU_POLICY_UNKNOWN;
+          break;
+        }
+      else if (!response[1])
         {
           char *choice = strchr (choices, *response);
+
           if (choice)
             {
               int c = ((size_t) choice - (size_t) choices) / 2;
