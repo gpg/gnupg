@@ -1414,6 +1414,7 @@ ask_about_binding (ctrl_t ctrl,
      " order by fingerprint = ? asc, fingerprint desc, time_ago desc;\n",
      GPGSQL_ARG_STRING, email, GPGSQL_ARG_STRING, fingerprint,
      GPGSQL_ARG_END);
+  end_transaction (ctrl, 0);
   if (rc)
     {
       strlist_t strlist_iter;
@@ -1679,8 +1680,6 @@ ask_about_binding (ctrl_t ctrl,
           es_fputs ("\n", fp);
         }
     }
-
-  end_transaction (ctrl, 0);
 
   if ((*policy == TOFU_POLICY_NONE && bindings_with_this_email_count > 0)
       || (*policy == TOFU_POLICY_ASK
