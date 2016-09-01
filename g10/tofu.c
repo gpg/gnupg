@@ -2288,7 +2288,7 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
               char *tmpmsg;
 
 	      if (messages == 0)
-		log_info (_("Warning: we've have yet to see"
+		log_info (_("Warning: we have yet to see"
                             " a message signed by this key and user id!\n"));
 	      else if (messages == 1)
 		log_info (_("Warning: we've only seen a single message"
