@@ -84,23 +84,29 @@ check_signature (PKT_signature *sig, gcry_md_hd_t digest)
  * revoked (0 otherwise).  Note: PK being revoked does not cause this
  * function to fail.
  *
- * If PK is not NULL, the public key is saved in *PK on success.
+ * If R_PK is not NULL, the public key is stored at that address if it
+ * was found; other wise NULL is stored.
  *
  * Returns 0 on success.  An error code otherwise.  */
-int
+gpg_error_t
 check_signature2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
-		  int *r_expired, int *r_revoked, PKT_public_key *pk )
+		  int *r_expired, int *r_revoked, PKT_public_key **r_pk)
 {
     int rc=0;
-    int pk_internal;
+    PKT_public_key *pk;
 
-    if (pk)
-      pk_internal = 0;
-    else
-      {
-	pk_internal = 1;
-	pk = xmalloc_clear( sizeof *pk );
-      }
+    if (r_expiredate)
+      *r_expiredate = 0;
+    if (r_expired)
+      *r_expired = 0;
+    if (r_revoked)
+      *r_revoked = 0;
+    if (r_pk)
+      *r_pk = NULL;
+
+    pk = xtrycalloc (1, sizeof *pk);
+    if (!pk)
+      return gpg_error_from_syserror ();
 
     if ( (rc=openpgp_md_test_algo(sig->digest_algo)) )
       ; /* We don't have this digest. */
@@ -114,14 +120,14 @@ check_signature2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 	   header is missing or does not match the actual sig. */
 
         log_info(_("WARNING: signature digest conflict in message\n"));
-	rc = GPG_ERR_GENERAL;
+	rc = gpg_error (GPG_ERR_GENERAL);
       }
     else if( get_pubkey( pk, sig->keyid ) )
-	rc = GPG_ERR_NO_PUBKEY;
+      rc = gpg_error (GPG_ERR_NO_PUBKEY);
     else if(!pk->flags.valid)
       {
         /* You cannot have a good sig from an invalid key.  */
-        rc = GPG_ERR_BAD_PUBKEY;
+        rc = gpg_error (GPG_ERR_BAD_PUBKEY);
       }
     else
       {
@@ -136,7 +142,7 @@ check_signature2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 	   them as their own.  The attacker couldn't actually use the
 	   subkey, but they could try and claim ownership of any
 	   signatures issued by it. */
-	if(rc==0 && !pk->flags.primary && pk->flags.backsig < 2)
+	if (!rc && !pk->flags.primary && pk->flags.backsig < 2)
 	  {
 	    if (!pk->flags.backsig)
 	      {
@@ -148,25 +154,15 @@ check_signature2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
                      error.  TODO: change the default to require this
                      after more keys have backsigs. */
 		if(opt.flags.require_cross_cert)
-		  rc = GPG_ERR_GENERAL;
+		  rc = gpg_error (GPG_ERR_GENERAL);
 	      }
 	    else if(pk->flags.backsig == 1)
 	      {
 		log_info(_("WARNING: signing subkey %s has an invalid"
 			   " cross-certification\n"),keystr_from_pk(pk));
-		rc = GPG_ERR_GENERAL;
+		rc = gpg_error (GPG_ERR_GENERAL);
 	      }
 	  }
-      }
-
-    if (pk_internal || rc)
-      {
-	release_public_key_parts (pk);
-	if (pk_internal)
-	  xfree (pk);
-	else
-	  /* Be very sure that the caller doesn't try to use *PK.  */
-	  memset (pk, 0, sizeof (*pk));
       }
 
     if( !rc && sig->sig_class < 2 && is_status_enabled() ) {
@@ -234,6 +230,14 @@ check_signature2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 	write_status_text (STATUS_SIG_ID, buffer);
 	xfree (buffer);
     }
+
+    if (r_pk)
+      *r_pk = pk;
+    else
+      {
+	release_public_key_parts (pk);
+        xfree (pk);
+      }
 
     return rc;
 }

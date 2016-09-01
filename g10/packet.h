@@ -802,13 +802,13 @@ int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 int check_signature (PKT_signature *sig, gcry_md_hd_t digest);
 
 /* Check a signature.  Looks up the public key from the key db.  (If
-   RET_PK is not NULL, it is returned in *RET_PK.)  DIGEST contains a
-   valid hash context that already includes the signed data.  This
-   function adds the relevant meta-data to the hash before finalizing
-   it and verifying the signature.  */
-int check_signature2 (PKT_signature *sig, gcry_md_hd_t digest,
-		      u32 *r_expiredate, int *r_expired, int *r_revoked,
-		      PKT_public_key *ret_pk);
+ * R_PK is not NULL, it is stored at RET_PK.)  DIGEST contains a
+ * valid hash context that already includes the signed data.  This
+ * function adds the relevant meta-data to the hash before finalizing
+ * it and verifying the signature.  */
+gpg_error_t check_signature2 (PKT_signature *sig, gcry_md_hd_t digest,
+                              u32 *r_expiredate, int *r_expired, int *r_revoked,
+                              PKT_public_key **r_pk);
 
 
 /*-- pubkey-enc.c --*/

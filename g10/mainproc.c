@@ -839,18 +839,22 @@ proc_compressed (CTX c, PACKET *pkt)
 
 
 /*
- * check the signature
- * Returns: 0 = valid signature or an error code
+ * Check the signature.  If R_PK is not NULL a copy of the public key
+ * used to verify the signature will be stored tehre, or NULL if not
+ * found.  Returns: 0 = valid signature or an error code
  */
 static int
 do_check_sig (CTX c, kbnode_t node, int *is_selfsig,
-	      int *is_expkey, int *is_revkey)
+	      int *is_expkey, int *is_revkey, PKT_public_key **r_pk)
 {
   PKT_signature *sig;
   gcry_md_hd_t md = NULL;
   gcry_md_hd_t md2 = NULL;
   gcry_md_hd_t md_good = NULL;
   int algo, rc;
+
+  if (r_pk)
+    *r_pk = NULL;
 
   log_assert (node->pkt->pkttype == PKT_SIGNATURE);
   if (is_selfsig)
@@ -926,14 +930,24 @@ do_check_sig (CTX c, kbnode_t node, int *is_selfsig,
 
   /* We only get here if we are checking the signature of a binary
      (0x00) or text document (0x01).  */
-  rc = check_signature2 (sig, md, NULL, is_expkey, is_revkey, NULL);
+  rc = check_signature2 (sig, md, NULL, is_expkey, is_revkey, r_pk);
   if (! rc)
     md_good = md;
   else if (gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE && md2)
     {
-      rc = check_signature2 (sig, md2, NULL, is_expkey, is_revkey, NULL);
-      if (! rc)
-	md_good = md2;
+      PKT_public_key *pk2;
+
+      rc = check_signature2 (sig, md2, NULL, is_expkey, is_revkey,
+                             r_pk? &pk2 : NULL);
+      if (!rc)
+        {
+          md_good = md2;
+          if (r_pk)
+            {
+              free_public_key (*r_pk);
+              *r_pk = pk2;
+            }
+        }
     }
 
   if (md_good)
@@ -1096,7 +1110,7 @@ list_node (CTX c, kbnode_t node)
       if (opt.check_sigs)
         {
           fflush (stdout);
-          rc2 = do_check_sig (c, node, &is_selfsig, NULL, NULL);
+          rc2 = do_check_sig (c, node, &is_selfsig, NULL, NULL, NULL);
           switch (gpg_err_code (rc2))
             {
             case 0:		          sigrc = '!'; break;
@@ -1603,10 +1617,8 @@ check_sig_and_print (CTX c, kbnode_t node)
   int rc;
   int is_expkey = 0;
   int is_revkey = 0;
-  char pkstrbuf[PUBKEY_STRING_SIZE];
   char *issuer_fpr;
-
-  *pkstrbuf = 0;
+  PKT_public_key *pk = NULL;  /* The public key for the signature or NULL. */
 
   if (opt.skip_verify)
     {
@@ -1754,7 +1766,7 @@ check_sig_and_print (CTX c, kbnode_t node)
   if (sig->signers_uid)
     log_info (_("               issuer \"%s\"\n"), sig->signers_uid);
 
-  rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );
+  rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey, &pk);
 
   /* If the key isn't found, check for a preferred keyserver.  */
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY && sig->flags.pref_ks)
@@ -1783,11 +1795,14 @@ check_sig_and_print (CTX c, kbnode_t node)
                 {
                   int res;
 
+                  free_public_key (pk);
+                  pk = NULL;
                   glo_ctrl.in_auto_key_retrieve++;
                   res = keyserver_import_keyid (c->ctrl, sig->keyid,spec);
                   glo_ctrl.in_auto_key_retrieve--;
                   if (!res)
-                    rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
+                    rc = do_check_sig (c, node, NULL,
+                                       &is_expkey, &is_revkey, &pk);
                   free_keyserver_spec (spec);
 
                   if (!rc)
@@ -1815,12 +1830,14 @@ check_sig_and_print (CTX c, kbnode_t node)
           spec = parse_keyserver_uri (uri, 1);
           if (spec)
             {
+              free_public_key (pk);
+              pk = NULL;
               glo_ctrl.in_auto_key_retrieve++;
               res = keyserver_import_keyid (c->ctrl, sig->keyid, spec);
               glo_ctrl.in_auto_key_retrieve--;
               free_keyserver_spec (spec);
               if (!res)
-                rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );
+                rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey, &pk);
             }
         }
     }
@@ -1844,11 +1861,13 @@ check_sig_and_print (CTX c, kbnode_t node)
       if (p && n == 21 && p[0] == 4)
         {
           /* v4 packet with a SHA-1 fingerprint.  */
+          free_public_key (pk);
+          pk = NULL;
           glo_ctrl.in_auto_key_retrieve++;
           res = keyserver_import_fprint (c->ctrl, p+1, n-1, opt.keyserver);
           glo_ctrl.in_auto_key_retrieve--;
           if (!res)
-            rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );
+            rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey, &pk);
         }
     }
 
@@ -1862,13 +1881,15 @@ check_sig_and_print (CTX c, kbnode_t node)
     {
       int res;
 
+      free_public_key (pk);
+      pk = NULL;
       glo_ctrl.in_auto_key_retrieve++;
       res = keyserver_import_wkd (c->ctrl, sig->signers_uid, NULL, NULL);
       glo_ctrl.in_auto_key_retrieve--;
       /* Fixme: If the fingerprint is embedded in the signature,
        * compare it to the fingerprint of the returned key.  */
       if (!res)
-        rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );
+        rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey, &pk);
     }
 
   /* If the above methods did't work, our next try is to use a
@@ -1879,11 +1900,13 @@ check_sig_and_print (CTX c, kbnode_t node)
     {
       int res;
 
+      free_public_key (pk);
+      pk = NULL;
       glo_ctrl.in_auto_key_retrieve++;
       res = keyserver_import_keyid (c->ctrl, sig->keyid, opt.keyserver );
       glo_ctrl.in_auto_key_retrieve--;
       if (!res)
-        rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );
+        rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey, &pk);
     }
 
   if (!rc || gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE)
@@ -1892,7 +1915,7 @@ check_sig_and_print (CTX c, kbnode_t node)
       int count = 0;
       int statno;
       char keyid_str[50];
-      PKT_public_key *pk = NULL;
+      PKT_public_key *mainpk = NULL;
 
       if (rc)
         statno = STATUS_BADSIG;
@@ -1905,6 +1928,10 @@ check_sig_and_print (CTX c, kbnode_t node)
       else
         statno = STATUS_GOODSIG;
 
+      /* FIXME: We should have the public key in PK and thus the
+       * keyboock has already been fetched.  Thus we could use the
+       * fingerprint or PK itself to lookup the entire keyblock.  That
+       * would best be done with a cache.  */
       keyblock = get_pubkeyblock (sig->keyid);
 
       snprintf (keyid_str, sizeof keyid_str, "%08lX%08lX [uncertain] ",
@@ -1918,7 +1945,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 
           if (un->pkt->pkttype==PKT_PUBLIC_KEY)
             {
-              pk=un->pkt->pkt.public_key;
+              mainpk = un->pkt->pkt.public_key;
               continue;
             }
           if (un->pkt->pkttype != PKT_USER_ID)
@@ -1935,7 +1962,7 @@ check_sig_and_print (CTX c, kbnode_t node)
           if (un->pkt->pkt.user_id->attrib_data)
             continue;
 
-          log_assert (pk);
+          log_assert (mainpk);
 
 	  /* Since this is just informational, don't actually ask the
 	     user to update any trust information.  (Note: we register
@@ -1943,7 +1970,8 @@ check_sig_and_print (CTX c, kbnode_t node)
 	     does not print a LF we need to compute the validity
 	     before calling that function.  */
           if ((opt.verify_options & VERIFY_SHOW_UID_VALIDITY))
-            valid = get_validity (c->ctrl, pk, un->pkt->pkt.user_id, sig, 0);
+            valid = get_validity (c->ctrl, mainpk, un->pkt->pkt.user_id,
+                                  sig, 0);
           else
             valid = 0; /* Not used.  */
 
@@ -1956,12 +1984,10 @@ check_sig_and_print (CTX c, kbnode_t node)
           else
             log_printf ("\n");
 
-          /* Get a string description of the algo for informational
-             output we want to print later.  It is convenient to do it
-             here because we already have the right public key. */
-          pubkey_string (pk, pkstrbuf, sizeof pkstrbuf);
           count++;
 	}
+
+      log_assert (mainpk);
 
       /* In case we did not found a valid valid textual userid above
          we print the first user id packet or a "[?]" instead along
@@ -2019,13 +2045,13 @@ check_sig_and_print (CTX c, kbnode_t node)
               /* If this user id has attribute data, print that.  */
               if (un->pkt->pkt.user_id->attrib_data)
                 {
-                  dump_attribs (un->pkt->pkt.user_id, pk);
+                  dump_attribs (un->pkt->pkt.user_id, mainpk);
 
                   if (opt.verify_options&VERIFY_SHOW_PHOTOS)
                     show_photos (c->ctrl,
                                  un->pkt->pkt.user_id->attribs,
                                  un->pkt->pkt.user_id->numattribs,
-                                 pk ,un->pkt->pkt.user_id);
+                                 mainpk ,un->pkt->pkt.user_id);
                 }
 
               p = utf8_to_native (un->pkt->pkt.user_id->name,
@@ -2046,7 +2072,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 		       actually ask the user to update any trust
 		       information.  */
                     valid = (trust_value_to_string
-                             (get_validity (c->ctrl, pk,
+                             (get_validity (c->ctrl, mainpk,
                                             un->pkt->pkt.user_id, sig, 0)));
                   log_printf (" [%s]\n",valid);
                 }
@@ -2054,7 +2080,6 @@ check_sig_and_print (CTX c, kbnode_t node)
                 log_printf ("\n");
             }
 	}
-      release_kbnode( keyblock );
 
       /* For good signatures print notation data.  */
       if (!rc)
@@ -2081,16 +2106,14 @@ check_sig_and_print (CTX c, kbnode_t node)
       /* For good signatures print the VALIDSIG status line.  */
       if (!rc && is_status_enabled ())
         {
-          PKT_public_key *vpk = xmalloc_clear (sizeof *vpk);
-
-          if (!get_pubkey (vpk, sig->keyid))
+          if (pk)
             {
               byte array[MAX_FINGERPRINT_LEN], *p;
               char buf[MAX_FINGERPRINT_LEN*4+90], *bufp;
               size_t i, n;
 
               bufp = buf;
-              fingerprint_from_pk (vpk, array, &n);
+              fingerprint_from_pk (pk, array, &n);
               p = array;
               for(i=0; i < n ; i++, p++, bufp += 2)
                 sprintf (bufp, "%02X", *p );
@@ -2103,29 +2126,13 @@ check_sig_and_print (CTX c, kbnode_t node)
                        sig->version,sig->pubkey_algo,sig->digest_algo,
                        sig->sig_class);
               bufp = bufp + strlen (bufp);
-              if (!vpk->flags.primary)
-                {
-                  u32 akid[2];
-
-                  akid[0] = vpk->main_keyid[0];
-                  akid[1] = vpk->main_keyid[1];
-                  free_public_key (vpk);
-                  vpk = xmalloc_clear (sizeof *vpk);
-                  if (get_pubkey (vpk, akid))
-                    {
-                      /* Impossible error, we simply return a zeroed out fpr */
-                      n = MAX_FINGERPRINT_LEN < 20? MAX_FINGERPRINT_LEN : 20;
-                      memset (array, 0, n);
-                    }
-                  else
-                    fingerprint_from_pk( vpk, array, &n );
-                }
+              if (!pk->flags.primary)
+                fingerprint_from_pk (mainpk, array, &n);
               p = array;
               for (i=0; i < n ; i++, p++, bufp += 2)
                 sprintf(bufp, "%02X", *p );
               write_status_text (STATUS_VALIDSIG, buf);
 	    }
-          free_public_key (vpk);
 	}
 
       /* For good signatures compute and print the trust information.
@@ -2148,12 +2155,20 @@ check_sig_and_print (CTX c, kbnode_t node)
         log_info (_("Signature expires %s\n"), asctimestamp(sig->expiredate));
 
       if (opt.verbose)
-        log_info (_("%s signature, digest algorithm %s%s%s\n"),
-                  sig->sig_class==0x00?_("binary"):
-                  sig->sig_class==0x01?_("textmode"):_("unknown"),
-                  gcry_md_algo_name (sig->digest_algo),
-                  *pkstrbuf?_(", key algorithm "):"",
-                  pkstrbuf);
+        {
+          char pkstrbuf[PUBKEY_STRING_SIZE];
+
+          if (pk)
+            pubkey_string (pk, pkstrbuf, sizeof pkstrbuf);
+          else
+            *pkstrbuf = 0;
+
+          log_info (_("%s signature, digest algorithm %s%s%s\n"),
+                    sig->sig_class==0x00?_("binary"):
+                    sig->sig_class==0x01?_("textmode"):_("unknown"),
+                    gcry_md_algo_name (sig->digest_algo),
+                    *pkstrbuf?_(", key algorithm "):"", pkstrbuf);
+        }
 
       /* Print final warnings.  */
       if (!rc && !c->signed_data.used)
@@ -2194,6 +2209,7 @@ check_sig_and_print (CTX c, kbnode_t node)
             }
         }
 
+      release_kbnode( keyblock );
       if (rc)
         g10_errors_seen = 1;
       if (opt.batch && rc)
