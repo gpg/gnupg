@@ -183,6 +183,33 @@ write_status_text (int no, const char *text)
   write_status_strings (no, text, NULL);
 }
 
+
+/* Write a status line with code NO followed by the outout of the
+ * printf style FORMAT.  The caller needs to make sure that LFs and
+ * CRs are not printed.  */
+void
+write_status_printf (int no, const char *format, ...)
+{
+  va_list arg_ptr;
+
+  if (!statusfp || !status_currently_allowed (no) )
+    return;  /* Not enabled or allowed. */
+
+  es_fputs ("[GNUPG:] ", statusfp);
+  es_fputs (get_status_string (no), statusfp);
+  if (format)
+    {
+      es_putc ( ' ', statusfp);
+      va_start (arg_ptr, format);
+      es_vfprintf (statusfp, format, arg_ptr);
+      va_end (arg_ptr);
+    }
+  es_putc ('\n', statusfp);
+  if (es_fflush (statusfp) && opt.exit_on_status_write_error)
+    g10_exit (0);
+}
+
+
 /* Write an ERROR status line using a full gpg-error error value.  */
 void
 write_status_error (const char *where, gpg_error_t err)

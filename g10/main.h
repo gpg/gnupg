@@ -191,6 +191,8 @@ void write_status_error (const char *where, gpg_error_t err);
 void write_status_errcode (const char *where, int errcode);
 void write_status_failure (const char *where, gpg_error_t err);
 void write_status_text ( int no, const char *text );
+void write_status_printf (int no, const char *format,
+                          ...) GPGRT_ATTR_PRINTF(2,3);
 void write_status_strings (int no, const char *text,
                            ...) GPGRT_ATTR_SENTINEL(0);
 void write_status_buffer ( int no,
