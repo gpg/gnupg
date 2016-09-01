@@ -938,7 +938,7 @@ do_check_sig (CTX c, kbnode_t node, int *is_selfsig,
 
   if (md_good)
     {
-      unsigned char *buffer = gcry_md_read (md_good, 0);
+      unsigned char *buffer = gcry_md_read (md_good, sig->digest_algo);
       sig->digest_len = gcry_md_get_algo_dlen (map_md_openpgp_to_gcry (algo));
       memcpy (sig->digest, buffer, sig->digest_len);
     }
