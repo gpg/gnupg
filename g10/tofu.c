@@ -2281,10 +2281,10 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 
 	      if (messages == 0)
 		log_info (_("Warning: we've have yet to see"
-                            " a message signed by this key!\n"));
+                            " a message signed by this key and user id!\n"));
 	      else if (messages == 1)
-		log_info (_("Warning: we've only seen a"
-                            " single message signed by this key!\n"));
+		log_info (_("Warning: we've only seen a single message"
+                            " signed by this key and user id!\n"));
 
 	      set_policy_command =
 		xasprintf ("gpg --tofu-policy bad %s", fingerprint);
@@ -2292,8 +2292,8 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
               tmpmsg = xasprintf
                 (ngettext
                  ("Warning: if you think you've seen more than %ld message "
-                  "signed by this key, then this key might be a forgery!  "
-                  "Carefully examine the email address for small "
+                  "signed by this key and user id, then this key might be a "
+                  "forgery!  Carefully examine the email address for small "
                   "variations.  If the key is suspect, then use\n"
                   "  %s\n"
                   "to mark it as being bad.\n",
