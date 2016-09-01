@@ -2377,11 +2377,16 @@ main (int argc, char **argv)
       {
 	switch( pargs.r_opt )
 	  {
-	  case aCheckKeys:
 	  case aListConfig:
 	  case aListGcryptConfig:
           case aGPGConfList:
           case aGPGConfTest:
+            set_cmd (&cmd, pargs.r_opt);
+            /* Do not register a keyring for these commands.  */
+            default_keyring = -1;
+            break;
+
+	  case aCheckKeys:
 	  case aListPackets:
 	  case aImport:
 	  case aFastImport:
@@ -3789,6 +3794,8 @@ main (int argc, char **argv)
       case aGenRandom:
       case aDeArmor:
       case aEnArmor:
+      case aListConfig:
+      case aListGcryptConfig:
 	break;
       case aFixTrustDB:
       case aExportOwnerTrust:
