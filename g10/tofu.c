@@ -2108,7 +2108,7 @@ write_stats_status (estream_t fp, long messages, enum tofu_policy policy,
 static void
 show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 		 const char *email, const char *user_id,
-		 const char *sig_exclude, estream_t outfp)
+		 estream_t outfp)
 {
   char *fingerprint_pp;
   int rc;
@@ -2122,13 +2122,8 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
      "select count (*), min (signatures.time), max (signatures.time)\n"
      " from signatures\n"
      " left join bindings on signatures.binding = bindings.oid\n"
-     " where fingerprint = %Q and email = %Q and sig_digest %s%s%s;",
-     fingerprint, email,
-     /* We want either: sig_digest != 'SIG_EXCLUDE' or sig_digest is
-	not NULL.  */
-     sig_exclude ? "!= '" : "is not NULL",
-     sig_exclude ? sig_exclude : "",
-     sig_exclude ? "'" : "");
+     " where fingerprint = %Q and email = %Q;",
+     fingerprint, email);
   if (rc)
     {
       log_error (_("error reading TOFU database: %s\n"), err);
@@ -2598,7 +2593,7 @@ tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
   fingerprint = hexfingerprint (pk, NULL, 0);
   email = email_from_user_id (user_id);
 
-  show_statistics (dbs, fingerprint, email, user_id, NULL, fp);
+  show_statistics (dbs, fingerprint, email, user_id, fp);
 
   xfree (email);
   xfree (fingerprint);
@@ -2669,7 +2664,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
         bindings_valid ++;
 
       if (may_ask && tl != TRUST_ULTIMATE && tl != TRUST_EXPIRED)
-        show_statistics (dbs, fingerprint, email, user_id->d, NULL, NULL);
+        show_statistics (dbs, fingerprint, email, user_id->d, NULL);
 
       if (tl == TRUST_NEVER)
         trust_level = TRUST_NEVER;
