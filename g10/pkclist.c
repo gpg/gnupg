@@ -449,6 +449,13 @@ do_we_trust( PKT_public_key *pk, unsigned int trustlevel )
       if( opt.verbose )
 	log_info(_("This key belongs to us\n"));
       return 1; /* yes */
+
+    case TRUST_NEVER:
+      /* This is retruned can be returned by TOFU, which can return
+         negative assertions.  */
+      log_info(_("%s: This key is bad!  It has been marked as untrusted!\n"),
+               keystr_from_pk(pk));
+      return 0; /* no */
     }
 
   return 1; /*NOTREACHED*/
@@ -472,10 +479,16 @@ do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
       print_fingerprint (NULL, pk, 2);
       tty_printf("\n");
 
-      tty_printf(
-	       _("It is NOT certain that the key belongs to the person named\n"
-		 "in the user ID.  If you *really* know what you are doing,\n"
-		 "you may answer the next question with yes.\n"));
+      if ((trustlevel & TRUST_MASK) == TRUST_NEVER)
+        tty_printf(
+          _("This key has is bad!  It has been marked as untrusted!  If you\n"
+            "*really* know what you are doing, you may answer the next\n"
+            "question with yes.\n"));
+      else
+        tty_printf(
+          _("It is NOT certain that the key belongs to the person named\n"
+            "in the user ID.  If you *really* know what you are doing,\n"
+            "you may answer the next question with yes.\n"));
 
       tty_printf("\n");
 
@@ -654,7 +667,8 @@ check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
       break;
 
     case TRUST_NEVER:
-      /* currently we won't get that status */
+      /* This level can be returned by TOFU, which supports negative
+       * assertions.  */
       write_trust_status (STATUS_TRUST_NEVER, trustlevel);
       log_info(_("WARNING: We do NOT trust this key!\n"));
       log_info(_("         The signature is probably a FORGERY.\n"));
