@@ -2104,35 +2104,26 @@ check_sig_and_print (CTX c, kbnode_t node)
         }
 
       /* For good signatures print the VALIDSIG status line.  */
-      if (!rc && is_status_enabled ())
+      if (!rc && is_status_enabled () && pk)
         {
-          if (pk)
-            {
-              byte array[MAX_FINGERPRINT_LEN], *p;
-              char buf[MAX_FINGERPRINT_LEN*4+90], *bufp;
-              size_t i, n;
+          char pkhex[MAX_FINGERPRINT_LEN*2+1];
+          char mainpkhex[MAX_FINGERPRINT_LEN*2+1];
 
-              bufp = buf;
-              fingerprint_from_pk (pk, array, &n);
-              p = array;
-              for(i=0; i < n ; i++, p++, bufp += 2)
-                sprintf (bufp, "%02X", *p );
-              /* TODO: Replace the reserved '0' in the field below
-                 with bits for status flags (policy url, notation,
-                 etc.).  Remember to make the buffer larger to match! */
-              sprintf (bufp, " %s %lu %lu %d 0 %d %d %02X ",
-                       strtimestamp( sig->timestamp ),
-                       (ulong)sig->timestamp,(ulong)sig->expiredate,
-                       sig->version,sig->pubkey_algo,sig->digest_algo,
-                       sig->sig_class);
-              bufp = bufp + strlen (bufp);
-              if (!pk->flags.primary)
-                fingerprint_from_pk (mainpk, array, &n);
-              p = array;
-              for (i=0; i < n ; i++, p++, bufp += 2)
-                sprintf(bufp, "%02X", *p );
-              write_status_text (STATUS_VALIDSIG, buf);
-	    }
+          hexfingerprint (pk, pkhex, sizeof pkhex);
+          hexfingerprint (mainpk, mainpkhex, sizeof mainpkhex);
+
+          /* TODO: Replace the reserved '0' in the field below with
+             bits for status flags (policy url, notation, etc.).  */
+          write_status_printf (STATUS_VALIDSIG,
+                               "%s %s %lu %lu %d 0 %d %d %02X %s",
+                               pkhex,
+                               strtimestamp (sig->timestamp),
+                               (ulong)sig->timestamp,
+                               (ulong)sig->expiredate,
+                               sig->version, sig->pubkey_algo,
+                               sig->digest_algo,
+                               sig->sig_class,
+                               mainpkhex);
 	}
 
       /* For good signatures compute and print the trust information.
