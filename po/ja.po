@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.1.15\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-09-02 10:06+0900\n"
+"PO-Revision-Date: 2016-09-02 16:58+0200\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -4290,7 +4290,7 @@ msgstr "%sに%s鍵ID %sで施された署名\n"
 
 #, c-format
 msgid "               issuer \"%s\"\n"
-msgstr "               発行者\"%s\""
+msgstr "               発行者\"%s\"\n"
 
 msgid "Key available at: "
 msgstr "以下に鍵があります: "
