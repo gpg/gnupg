@@ -665,7 +665,7 @@ do_nvc_parse (nvc_t *result, int *errlinep, estream_t stream,
 
   if (errlinep)
     *errlinep = 0;
-  while ((len = es_read_line (stream, &buf, &buf_len, NULL)))
+  while ((len = es_read_line (stream, &buf, &buf_len, NULL)) > 0)
     {
       char *p;
       if (errlinep)
@@ -734,6 +734,11 @@ do_nvc_parse (nvc_t *result, int *errlinep, estream_t stream,
 	  err = my_error_from_syserror ();
 	  goto leave;
 	}
+    }
+  if (len < 0)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
     }
 
   /* Add the final entry.  */
