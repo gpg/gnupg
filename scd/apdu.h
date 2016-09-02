@@ -96,7 +96,6 @@ int apdu_open_remote_reader (const char *portstr,
                              void *writefnc_value,
                              void (*closefnc) (void *opaque),
                              void *closefnc_value);
-int apdu_shutdown_reader (int slot);
 int apdu_close_reader (int slot);
 void apdu_prepare_exit (void);
 int apdu_enum_reader (int slot, int *used);
