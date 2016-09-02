@@ -794,10 +794,10 @@ cmd_dns_cert (assuan_context_t ctx, char *line)
 
 
 static const char hlp_wkd_get[] =
-  "WKD_GET [--submission-address] <user_id>\n"
+  "WKD_GET [--submission-address|--policy-flags] <user_id>\n"
   "\n"
-  "Return the key or the submission address for <user_id>\n"
-  "from a Web Key Directory.";
+  "Return the key or other info for <user_id>\n"
+  "from the Web Key Directory.";
 static gpg_error_t
 cmd_wkd_get (assuan_context_t ctx, char *line)
 {
@@ -809,8 +809,10 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
   char *uri = NULL;
   char *encodedhash = NULL;
   int opt_submission_addr;
+  int opt_policy_flags;
 
   opt_submission_addr = has_option (line, "--submission-address");
+  opt_policy_flags = has_option (line, "--policy-flags");
   line = skip_options (line);
 
   mbox = mailbox_from_userid (line);
@@ -834,6 +836,13 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
       uri = strconcat ("https://",
                        domain,
                        "/.well-known/openpgpkey/submission-address",
+                       NULL);
+    }
+  else if (opt_policy_flags)
+    {
+      uri = strconcat ("https://",
+                       domain,
+                       "/.well-known/openpgpkey/policy",
                        NULL);
     }
   else
