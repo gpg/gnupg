@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.1.15\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-08-04 17:30+0900\n"
+"PO-Revision-Date: 2016-09-02 10:06+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -2041,10 +2041,9 @@ msgstr "*注意*: 普通%sは使いません!\n"
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "'%s'は、有効な署名表現ではありません\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: not a valid email address\n"
+#, c-format
 msgid "\"%s\" is not a proper mail address\n"
-msgstr "行 %d: 有効な電子メール・アドレスではありません\n"
+msgstr "\"%s\"は正しいメール・アドレスではありません\n"
 
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -4289,10 +4288,9 @@ msgstr "               %s鍵%sを使用\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "%sに%s鍵ID %sで施された署名\n"
 
-#, fuzzy, c-format
-#| msgid "                aka \"%s\""
+#, c-format
 msgid "               issuer \"%s\"\n"
-msgstr "                別名\"%s\""
+msgstr "               発行者\"%s\""
 
 msgid "Key available at: "
 msgstr "以下に鍵があります: "
