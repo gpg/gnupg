@@ -195,10 +195,11 @@ start_scd (ctrl_t ctrl)
   gpg_error_t err = 0;
   const char *pgmname;
   assuan_context_t ctx = NULL;
-  const char *argv[3];
+  const char *argv[5];
   assuan_fd_t no_close_list[3];
   int i;
   int rc;
+  char *abs_homedir = NULL;
 
   if (opt.disable_scdaemon)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
@@ -313,7 +314,22 @@ start_scd (ctrl_t ctrl)
 
   argv[0] = pgmname;
   argv[1] = "--multi-server";
-  argv[2] = NULL;
+  if (gnupg_default_homedir_p ())
+    argv[2] = NULL;
+  else
+    {
+      abs_homedir = make_absfilename_try (gnupg_homedir (), NULL);
+      if (!abs_homedir)
+        {
+          log_error ("error building filename: %s\n",
+                     gpg_strerror (gpg_error_from_syserror ()));
+          goto leave;
+        }
+
+      argv[2] = "--homedir";
+      argv[3] = abs_homedir;
+      argv[4] = NULL;
+    }
 
   i=0;
   if (!opt.running_detached)
@@ -393,6 +409,7 @@ start_scd (ctrl_t ctrl)
   primary_scd_ctx_reusable = 0;
 
  leave:
+  xfree (abs_homedir);
   if (err)
     {
       unlock_scd (ctrl, err);
