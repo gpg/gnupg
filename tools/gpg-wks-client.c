@@ -447,6 +447,9 @@ command_send (const char *fingerprint, char *userid)
   estream_t key = NULL;
   char *submission_to = NULL;
   mime_maker_t mime = NULL;
+  struct policy_flags_s policy;
+
+  memset (&policy, 0, sizeof policy);
 
   if (classify_user_id (fingerprint, &desc, 1)
       || !(desc.mode == KEYDB_SEARCH_MODE_FPR
@@ -472,6 +475,29 @@ command_send (const char *fingerprint, char *userid)
   if (err)
     goto leave;
   log_info ("submitting request to '%s'\n", submission_to);
+
+  /* Get the policy flags.  */
+  {
+    estream_t mbuf;
+
+    err = wkd_get_policy_flags (addrspec, &mbuf);
+    if (err)
+      {
+        log_error ("error reading policy flags for '%s': %s\n",
+                   submission_to, gpg_strerror (err));
+        goto leave;
+      }
+    if (mbuf)
+      {
+        err = wks_parse_policy (&policy, mbuf, 1);
+        es_fclose (mbuf);
+        if (err)
+          goto leave;
+      }
+  }
+
+  if (policy.auth_submit)
+    log_info ("no confirmation required for '%s'\n", addrspec);
 
   /* Send the key.  */
   err = mime_maker_new (&mime, NULL);

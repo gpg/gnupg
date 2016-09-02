@@ -203,3 +203,58 @@ wkd_get_submission_address (const char *addrspec, char **r_addrspec)
   assuan_release (ctx);
   return err;
 }
+
+
+/* Ask the dirmngr for the policy flags and return them as an estream
+ * memory stream.  If no policy flags are set, NULL is stored at
+ * R_BUFFER.  */
+gpg_error_t
+wkd_get_policy_flags (const char *addrspec, estream_t *r_buffer)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  struct wkd_get_parm_s parm;
+  char *line = NULL;
+  char *buffer = NULL;
+
+  memset (&parm, 0, sizeof parm);
+  *r_buffer = NULL;
+
+  err = connect_dirmngr (&ctx);
+  if (err)
+    return err;
+
+  line = es_bsprintf ("WKD_GET --policy-flags -- %s", addrspec);
+  if (!line)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  if (strlen (line) + 2 >= ASSUAN_LINELENGTH)
+    {
+      err = gpg_error (GPG_ERR_TOO_LARGE);
+      goto leave;
+    }
+
+  parm.memfp = es_fopenmem (0, "rwb");
+  if (!parm.memfp)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = assuan_transact (ctx, line, wkd_get_data_cb, &parm,
+                         NULL, NULL, wkd_get_status_cb, &parm);
+  if (err)
+    goto leave;
+
+  es_rewind (parm.memfp);
+  *r_buffer = parm.memfp;
+  parm.memfp = 0;
+
+ leave:
+  es_free (buffer);
+  es_fclose (parm.memfp);
+  xfree (line);
+  assuan_release (ctx);
+  return err;
+}

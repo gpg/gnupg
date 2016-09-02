@@ -766,6 +766,50 @@ get_submission_address (const char *mbox)
 }
 
 
+/* Get the policy flags for address MBOX and store them in POLICY.  */
+static gpg_error_t
+get_policy_flags (policy_flags_t policy, const char *mbox)
+{
+  gpg_error_t err;
+  const char *domain;
+  char *fname;
+  estream_t fp;
+
+  memset (policy, 0, sizeof *policy);
+
+  domain = strchr (mbox, '@');
+  if (!domain)
+    return gpg_error (GPG_ERR_INV_USER_ID);
+  domain++;
+
+  fname = make_filename_try (opt.directory, domain, "policy", NULL);
+  if (!fname)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("make_filename failed in %s: %s\n",
+                 __func__, gpg_strerror (err));
+      return err;
+    }
+
+  fp = es_fopen (fname, "r");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      if (gpg_err_code (err) == GPG_ERR_ENOENT)
+        err = 0;
+      else
+        log_error ("error reading '%s': %s\n", fname, gpg_strerror (err));
+      xfree (fname);
+      return err;
+    }
+
+  err = wks_parse_policy (policy, fp, 0);
+  es_fclose (fp);
+  xfree (fname);
+  return err;
+}
+
+
 /* We store the key under the name of the nonce we will then send to
  * the user.  On success the nonce is stored at R_NONCE and the file
  * name at R_FNAME.  */
@@ -1005,6 +1049,7 @@ process_new_key (server_ctx_t ctx, estream_t key)
   char *dname = NULL;
   char *nonce = NULL;
   char *fname = NULL;
+  struct policy_flags_s policybuf;
 
   /* First figure out the user id from the key.  */
   err = list_key (ctx, key);
@@ -1035,23 +1080,40 @@ process_new_key (server_ctx_t ctx, estream_t key)
           err = gpg_error_from_syserror ();
           goto leave;
         }
-      /* Fixme: check for proper directory permissions.  */
+
       if (access (dname, W_OK))
         {
           log_info ("skipping address '%s': Domain not configured\n", sl->d);
           continue;
         }
-      log_info ("storing address '%s'\n", sl->d);
+      if (get_policy_flags (&policybuf, sl->d))
+        {
+          log_info ("skipping address '%s': Bad policy flags\n", sl->d);
+          continue;
+        }
 
-      xfree (nonce);
-      xfree (fname);
-      err = store_key_as_pending (dname, key, &nonce, &fname);
-      if (err)
-        goto leave;
+      if (policybuf.auth_submit)
+        {
+          /* Bypass the confirmation stuff and publish the the key as is.  */
+          log_info ("publishing address '%s'\n", sl->d);
+          /* FIXME: We need to make sure that we do this only for the
+           * address in the mail.  */
+          log_debug ("auth-submit not yet working!\n");
+        }
+      else
+        {
+          log_info ("storing address '%s'\n", sl->d);
 
-      err = send_confirmation_request (ctx, sl->d, nonce, fname);
-      if (err)
-        goto leave;
+          xfree (nonce);
+          xfree (fname);
+          err = store_key_as_pending (dname, key, &nonce, &fname);
+          if (err)
+            goto leave;
+
+          err = send_confirmation_request (ctx, sl->d, nonce, fname);
+          if (err)
+            goto leave;
+        }
     }
 
  leave:
@@ -1639,6 +1701,7 @@ command_list_domains (void)
   const char *domain;
   char *fname = NULL;
   int i;
+  estream_t fp;
 
   err = get_domain_list (&domaindirs);
   if (err)
@@ -1686,7 +1749,7 @@ command_list_domains (void)
             }
         }
 
-      /* Print a warning if the sumbission address is not configured.  */
+      /* Print a warning if the submission address is not configured.  */
       xfree (fname);
       fname = make_filename_try (sl->d, "submission-address", NULL);
       if (!fname)
@@ -1704,6 +1767,38 @@ command_list_domains (void)
             log_error ("domain %s: problem with '%s': %s\n",
                        domain, fname, gpg_strerror (err));
         }
+
+      /* Check the syntax of the optional policy file.  */
+      xfree (fname);
+      fname = make_filename_try (sl->d, "policy", NULL);
+      if (!fname)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      fp = es_fopen (fname, "r");
+      if (!fp)
+        {
+          err = gpg_error_from_syserror ();
+          if (gpg_err_code (err) != GPG_ERR_ENOENT)
+            log_error ("domain %s: error in policy file: %s\n",
+                       domain, gpg_strerror (err));
+        }
+      else
+        {
+          struct policy_flags_s policy;
+          err = wks_parse_policy (&policy, fp, 0);
+          es_fclose (fp);
+          if (!err)
+            {
+              struct policy_flags_s empty_policy;
+              memset (&empty_policy, 0, sizeof empty_policy);
+              if (!memcmp (&empty_policy, &policy, sizeof policy))
+                log_error ("domain %s: empty policy file\n", domain);
+            }
+        }
+
+
     }
   err = 0;
 

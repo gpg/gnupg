@@ -46,8 +46,22 @@ struct
 #define DBG_EXTPROG_VALUE 16384 /* debug external program calls */
 
 
+/* The parsed policy flags. */
+struct policy_flags_s
+{
+  unsigned int mailbox_only : 1;
+  unsigned int dane_only : 1;
+  unsigned int auth_submit : 1;
+  unsigned int max_pending;      /* Seconds to wait for a confirmation.  */
+};
+typedef struct policy_flags_s *policy_flags_t;
+
+
+
 /*-- wks-util.c --*/
 gpg_error_t wks_send_mime (mime_maker_t mime);
+gpg_error_t wks_parse_policy (policy_flags_t flags, estream_t stream,
+                              int ignore_unknown);
 
 /*-- wks-receive.c --*/
 gpg_error_t wks_receive (estream_t fp,
