@@ -1146,14 +1146,18 @@ get_policy (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 /* Format the first part of a conflict message and return that as a
  * malloced string.  */
 static char *
-format_conflict_msg_part1 (int policy, const char *conflict,
-                           const char *fingerprint, const char *email)
+format_conflict_msg_part1 (int policy, strlist_t conflict_set,
+                           const char *email)
 {
   estream_t fp;
+  char *fingerprint;
   char *binding;
   int binding_shown = 0;
   char *tmpstr, *text;
 
+  log_assert (conflict_set);
+
+  fingerprint = conflict_set->d;
   binding = xasprintf ("<%s, %s>", fingerprint, email);
 
   fp = es_fopenmem (0, "rw,samethread");
@@ -1167,17 +1171,18 @@ format_conflict_msg_part1 (int policy, const char *conflict,
       es_fputs ("  ", fp);
       binding_shown = 1;
     }
-  else if (policy == TOFU_POLICY_ASK
-           /* If there the conflict is with itself, then don't
-            * display this message.  */
-           && conflict && strcmp (conflict, fingerprint))
+  else if (policy == TOFU_POLICY_ASK && conflict_set->next)
     {
+      int conflicts = strlist_length (conflict_set) - 1;
       es_fprintf (fp,
-                  _("The key with fingerprint %s raised a conflict "
-                    "with the binding %s."
-                    "  Since this binding's policy was 'auto', it was "
-                    "changed to 'ask'."),
-                  conflict, binding);
+                  ngettext("The binding <key: %s, user id: %s> raised a "
+                           "conflict with %d other binding.",
+                           "The binding <key: %s, user id: %s> raised a "
+                           "conflict with %d other bindings.", conflicts),
+                  fingerprint, email, conflicts);
+      es_fprintf (fp,
+                  _("  Since this binding's policy was 'auto', it has been "
+                    "changed to 'ask'."));
       es_fputs ("  ", fp);
       binding_shown = 1;
     }
@@ -1219,9 +1224,9 @@ cross_sigs (kbnode_t a, kbnode_t b)
   if (DBG_TRUST)
     {
       format_keyid (pk_main_keyid (a_pk),
-                    KF_DEFAULT, a_keyid, sizeof (a_keyid));
+                    KF_LONG, a_keyid, sizeof (a_keyid));
       format_keyid (pk_main_keyid (b_pk),
-                    KF_DEFAULT, b_keyid, sizeof (b_keyid));
+                    KF_LONG, b_keyid, sizeof (b_keyid));
     }
 
   for (i = 0; i < 2; i ++)
@@ -1263,26 +1268,35 @@ cross_sigs (kbnode_t a, kbnode_t b)
         /* We didn't find a signature from signer over signee.  */
         {
           if (DBG_TRUST)
-            log_info ("No cross sig between %s and %s\n",
-                      a_keyid, b_keyid);
+            log_debug ("No cross sig between %s and %s\n",
+                       a_keyid, b_keyid);
           return 0;
         }
     }
 
   /* A signed B and B signed A.  */
   if (DBG_TRUST)
-    log_info ("Cross sig between %s and %s\n",
-              a_keyid, b_keyid);
+    log_debug ("Cross sig between %s and %s\n",
+               a_keyid, b_keyid);
 
   return 1;
 }
+
+
+enum
+  {
+    BINDING_NEW = 1 << 0,
+    BINDING_CONFLICT = 1 << 1,
+    BINDING_EXPIRED = 1 << 2,
+    BINDING_REVOKED = 1 << 3
+  };
 
 
 /* Ask the user about the binding.  There are three ways we could end
  * up here:
  *
  *   - This is a new binding and there is a conflict
- *     (policy == TOFU_POLICY_NONE && bindings_with_this_email_count > 0),
+ *     (policy == TOFU_POLICY_NONE && conflict_set_count > 1),
  *
  *   - This is a new binding and opt.tofu_default_policy is set to
  *     ask.  (policy == TOFU_POLICY_NONE && opt.tofu_default_policy ==
@@ -1292,19 +1306,23 @@ cross_sigs (kbnode_t a, kbnode_t b)
  *     TOFU_POLICY_ASK).
  *
  * Note: this function must not be called while in a transaction!
+ *
+ * CONFLICT_SET includes all of the conflicting bindings
+ * with FINGERPRINT first.  FLAGS is a bit-wise or of
+ * BINDING_NEW, etc.
  */
 static void
 ask_about_binding (ctrl_t ctrl,
                    enum tofu_policy *policy,
                    int *trust_level,
-                   int bindings_with_this_email_count,
-                   strlist_t bindings_with_this_email,
-                   char *conflict,
+                   strlist_t conflict_set,
                    const char *fingerprint,
                    const char *email,
                    const char *user_id)
 {
   tofu_dbs_t dbs;
+  strlist_t iter;
+  int conflict_set_count = strlist_length (conflict_set);
   char *sqerr = NULL;
   int rc;
   estream_t fp;
@@ -1324,8 +1342,7 @@ ask_about_binding (ctrl_t ctrl,
                gpg_strerror (gpg_error_from_syserror()));
 
   {
-    char *text = format_conflict_msg_part1 (*policy, conflict,
-                                            fingerprint, email);
+    char *text = format_conflict_msg_part1 (*policy, conflict_set, email);
     es_fputs (text, fp);
     es_fputc ('\n', fp);
     xfree (text);
@@ -1375,46 +1392,59 @@ ask_about_binding (ctrl_t ctrl,
       free_strlist (other_user_ids);
     }
 
-  /* Find other keys associated with this email address.  */
+  /* Get the stats for all the keys in CONFLICT_SET.  */
   /* FIXME: When generating the statistics, do we want the time
      embedded in the signature (column 'sig_time') or the time that
      we first verified the signature (column 'time').  */
-  rc = gpgsql_stepx
-    (dbs->db, &dbs->s.get_trust_gather_other_keys,
-     signature_stats_collect_cb, &stats, &sqerr,
-     "select fingerprint, policy, time_ago, count(*)\n"
-     " from (select bindings.*,\n"
-     "        case\n"
-     /* From the future (but if its just a couple of hours in the
-      * future don't turn it into a warning)?  Or should we use
-      * small, medium or large units?  (Note: whatever we do, we
-      * keep the value in seconds.  Then when we group, everything
-      * that rounds to the same number of seconds is grouped.)  */
-     "         when delta < -("STRINGIFY (TIME_AGO_FUTURE_IGNORE)") then -1\n"
-     "         when delta < ("STRINGIFY (TIME_AGO_MEDIUM_THRESHOLD)")\n"
-     "          then max(0,\n"
-     "                   round(delta / ("STRINGIFY (TIME_AGO_UNIT_SMALL)"))\n"
-     "               * ("STRINGIFY (TIME_AGO_UNIT_SMALL)"))\n"
-     "         when delta < ("STRINGIFY (TIME_AGO_LARGE_THRESHOLD)")\n"
-     "          then round(delta / ("STRINGIFY (TIME_AGO_UNIT_MEDIUM)"))\n"
-     "               * ("STRINGIFY (TIME_AGO_UNIT_MEDIUM)")\n"
-     "         else round(delta / ("STRINGIFY (TIME_AGO_UNIT_LARGE)"))\n"
-     "              * ("STRINGIFY (TIME_AGO_UNIT_LARGE)")\n"
-     "        end time_ago,\n"
-     "        delta time_ago_raw\n"
-     "       from bindings\n"
-     "       left join\n"
-     "         (select *,\n"
-     "            cast(strftime('%s','now') - sig_time as real) delta\n"
-     "           from signatures) ss\n"
-     "        on ss.binding = bindings.oid)\n"
-     " where email = ?\n"
-     " group by fingerprint, time_ago\n"
-     /* Make sure the current key is first.  */
-     " order by fingerprint = ? asc, fingerprint desc, time_ago desc;\n",
-     GPGSQL_ARG_STRING, email, GPGSQL_ARG_STRING, fingerprint,
-     GPGSQL_ARG_END);
+  strlist_rev (&conflict_set);
+  for (iter = conflict_set; iter && ! rc; iter = iter->next)
+    {
+      rc = gpgsql_stepx
+        (dbs->db, &dbs->s.get_trust_gather_other_keys,
+         signature_stats_collect_cb, &stats, &sqerr,
+         "select fingerprint, policy, time_ago, count(*)\n"
+         " from\n"
+         "  (select bindings.*,\n"
+         "     case\n"
+         /* From the future (but if its just a couple of hours in the
+          * future don't turn it into a warning)?  Or should we use
+          * small, medium or large units?  (Note: whatever we do, we
+          * keep the value in seconds.  Then when we group, everything
+          * that rounds to the same number of seconds is grouped.)  */
+         "      when delta < -("STRINGIFY (TIME_AGO_FUTURE_IGNORE)") then -1\n"
+         "      when delta < ("STRINGIFY (TIME_AGO_MEDIUM_THRESHOLD)")\n"
+         "       then max(0,\n"
+         "                round(delta / ("STRINGIFY (TIME_AGO_UNIT_SMALL)"))\n"
+         "            * ("STRINGIFY (TIME_AGO_UNIT_SMALL)"))\n"
+         "      when delta < ("STRINGIFY (TIME_AGO_LARGE_THRESHOLD)")\n"
+         "       then round(delta / ("STRINGIFY (TIME_AGO_UNIT_MEDIUM)"))\n"
+         "            * ("STRINGIFY (TIME_AGO_UNIT_MEDIUM)")\n"
+         "      else round(delta / ("STRINGIFY (TIME_AGO_UNIT_LARGE)"))\n"
+         "           * ("STRINGIFY (TIME_AGO_UNIT_LARGE)")\n"
+         "     end time_ago,\n"
+         "    delta time_ago_raw\n"
+         "   from bindings\n"
+         "   left join\n"
+         "     (select *,\n"
+         "        cast(strftime('%s','now') - sig_time as real) delta\n"
+         "       from signatures) ss\n"
+         "    on ss.binding = bindings.oid)\n"
+         " where email = ? and fingerprint = ?\n"
+         " group by time_ago\n"
+         /* Make sure the current key is first.  */
+         " order by time_ago desc;\n",
+         GPGSQL_ARG_STRING, email,
+         GPGSQL_ARG_STRING, iter->d,
+         GPGSQL_ARG_END);
+      if (rc)
+        break;
+
+      if (!stats || strcmp (iter->d, stats->fingerprint) != 0)
+        /* No stats for this binding.  Add a dummy entry.  */
+        signature_stats_prepend (&stats, iter->d, TOFU_POLICY_AUTO, 0, 0);
+    }
   end_transaction (ctrl, 0);
+  strlist_rev (&conflict_set);
   if (rc)
     {
       strlist_t strlist_iter;
@@ -1427,193 +1457,19 @@ ask_about_binding (ctrl_t ctrl,
                                " associated with %d key:\n",
                                "The email address \"%s\" is"
                                " associated with %d keys:\n",
-                               bindings_with_this_email_count),
-                  email, bindings_with_this_email_count);
-      for (strlist_iter = bindings_with_this_email;
+                               conflict_set_count),
+                  email, conflict_set_count);
+      for (strlist_iter = conflict_set;
            strlist_iter;
            strlist_iter = strlist_iter->next)
         es_fprintf (fp, "  %s\n", strlist_iter->d);
     }
   else
     {
-      int stats_count = 0;
-      kbnode_t *kb_all;
-      KEYDB_HANDLE hd;
-      int i;
       char *key = NULL;
+      strlist_t binding;
 
-      /* Get the keyblock for each key.  */
-      for (stats_iter = stats; stats_iter; stats_iter = stats_iter->next)
-        stats_count ++;
-      kb_all = xcalloc (sizeof (kb_all[0]), stats_count);
-
-      if (! stats || strcmp (stats->fingerprint, fingerprint))
-        {
-          /* If we have already added this key to the DB, then it will
-           * be first (see the above select).  Since the first key on
-           * the list is not this key, we must not yet have verified any
-           * messages signed by this key.  Add a dummy entry.  */
-          signature_stats_prepend (&stats, fingerprint, TOFU_POLICY_AUTO, 0, 0);
-        }
-
-      /* Figure out which user ids are revoked or expired.  */
-      hd = keydb_new ();
-      for (stats_iter = stats, i = 0;
-           stats_iter;
-           stats_iter = stats_iter->next, i ++)
-        {
-          KEYDB_SEARCH_DESC desc;
-          kbnode_t kb;
-          PKT_public_key *pk;
-          kbnode_t n;
-          int found_user_id;
-
-          rc = keydb_search_reset (hd);
-          if (rc)
-            {
-              log_error (_("resetting keydb: %s\n"),
-                         gpg_strerror (rc));
-              continue;
-            }
-
-          rc = classify_user_id (stats_iter->fingerprint, &desc, 0);
-          if (rc)
-            {
-              log_error (_("error parsing key specification '%s': %s\n"),
-                         stats_iter->fingerprint, gpg_strerror (rc));
-              continue;
-            }
-
-          rc = keydb_search (hd, &desc, 1, NULL);
-          if (rc)
-            {
-              log_error (_("key \"%s\" not found: %s\n"),
-                         stats_iter->fingerprint,
-                         gpg_strerror (rc));
-              continue;
-            }
-
-          rc = keydb_get_keyblock (hd, &kb);
-          if (rc)
-            {
-              log_error (_("error reading keyblock: %s\n"),
-                         gpg_strerror (rc));
-              print_further_info ("fingerprint: %s", stats_iter->fingerprint);
-              continue;
-            }
-
-          merge_keys_and_selfsig (kb);
-
-          log_assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
-
-          kb_all[i] = kb;
-
-          pk = kb->pkt->pkt.public_key;
-
-          if (pk->has_expired)
-            stats_iter->is_expired = 1;
-          if (pk->flags.revoked)
-            stats_iter->is_revoked = 1;
-
-          n = kb;
-          found_user_id = 0;
-          while ((n = find_next_kbnode (n, PKT_USER_ID)) && ! found_user_id)
-            {
-              PKT_user_id *user_id2 = n->pkt->pkt.user_id;
-              char *email2;
-
-              if (user_id2->attrib_data)
-                continue;
-
-              email2 = email_from_user_id (user_id2->name);
-
-              if (strcmp (email, email2) == 0)
-                {
-                  found_user_id = 1;
-
-                  if (user_id2->is_revoked)
-                    stats_iter->is_revoked = 1;
-                  if (user_id2->is_expired)
-                    stats_iter->is_expired = 1;
-                }
-
-              xfree (email2);
-            }
-
-          if (! found_user_id)
-            log_info (_("TOFU db may be corrupted: user id (%s)"
-                        " not on key block (%s)\n"),
-                      email, fingerprint);
-        }
-      keydb_release (hd);
-
-      {
-        int j;
-        struct signature_stats **stats_prevp;
-        struct signature_stats *stats_iter_next;
-        int die[stats_count];
-
-        memset (die, 0, sizeof (die));
-
-        for (i = 0; i < stats_count; i ++)
-          {
-            /* i or a key that has cross sigs with i (possible
-               indirectly)?  */
-            if (! (i == 0 || die[i]))
-              continue;
-
-            for (j = i + 1; j < stats_count; j ++)
-              if (cross_sigs (kb_all[i], kb_all[j]))
-                die[j] = 1;
-          }
-
-        /* Free the dead stat structures.  */
-        for (stats_iter = stats, stats_prevp = &stats, i = 0;
-             stats_iter;
-             stats_iter = stats_iter_next, i ++)
-          {
-            stats_iter_next = stats_iter->next;
-
-            release_kbnode (kb_all[i]);
-
-            if (die[i])
-              {
-                *stats_prevp = stats_iter_next;
-                stats_iter->next = NULL;
-                signature_stats_free (stats_iter);
-
-                bindings_with_this_email_count --;
-              }
-            else
-              {
-                stats_prevp = &stats_iter->next;
-              }
-          }
-      }
-
-      log_assert (stats);
-      log_assert (bindings_with_this_email_count >= 1);
-
-      if ((*policy == TOFU_POLICY_NONE && bindings_with_this_email_count == 1)
-          || (*policy == TOFU_POLICY_ASK && conflict))
-      if (bindings_with_this_email_count == 1)
-        {
-          /* All "conflicts" were not really conflicts.  */
-          log_assert (! stats->next);
-
-          if (DBG_TRUST)
-            log_debug ("%s: all apparent TOFU conflicts are legitimate "
-                       "(cross sigs), setting policy to auto.\n",
-                       stats_iter->fingerprint);
-
-          *policy = TOFU_POLICY_AUTO;
-          record_binding (dbs, fingerprint, email, user_id, *policy, 0);
-          *trust_level = tofu_policy_to_trust_level (*policy);
-
-          goto out;
-        }
-
-      es_fprintf (fp, _("Statistics for potentially conflicting keys"
+      es_fprintf (fp, _("Statistics for keys"
                         " with the email address \"%s\":\n"),
                   email);
       for (stats_iter = stats; stats_iter; stats_iter = stats_iter->next)
@@ -1628,12 +1484,20 @@ ask_about_binding (ctrl_t ctrl,
               key_pp = format_hexfingerprint (key, NULL, 0);
               es_fprintf (fp, "  %s (", key_pp);
 
-              if (stats_iter->is_revoked)
+              /* Find the associated binding.  */
+              for (binding = conflict_set;
+                   binding;
+                   binding = binding->next)
+                if (strcmp (key, binding->d) == 0)
+                  break;
+              log_assert (binding);
+
+              if ((binding->flags & BINDING_REVOKED))
                 {
                   es_fprintf (fp, _("revoked"));
                   es_fprintf (fp, _(", "));
                 }
-              else if (stats_iter->is_expired)
+              else if ((binding->flags & BINDING_EXPIRED))
                 {
                   es_fprintf (fp, _("expired"));
                   es_fprintf (fp, _(", "));
@@ -1681,9 +1545,7 @@ ask_about_binding (ctrl_t ctrl,
         }
     }
 
-  if ((*policy == TOFU_POLICY_NONE && bindings_with_this_email_count > 0)
-      || (*policy == TOFU_POLICY_ASK
-          && (conflict || bindings_with_this_email_count > 0)))
+  if (conflict_set_count > 1 || (conflict_set->flags & BINDING_CONFLICT))
     {
       /* This is a conflict.  */
 
@@ -1796,12 +1658,264 @@ ask_about_binding (ctrl_t ctrl,
         }
       xfree (response);
     }
- out:
+
   tofu_resume_batch_transaction (ctrl);
 
   xfree (prompt);
 
   signature_stats_free (stats);
+}
+
+/* Return the set of keys that conflict with the binding <fingerprint,
+   email> (including the binding itself, which will be first in the
+   list).  For each returned key also sets BINDING_NEW, etc.  */
+static strlist_t
+build_conflict_set (tofu_dbs_t dbs, const char *fingerprint, const char *email)
+{
+  gpg_error_t rc;
+  char *sqerr;
+  strlist_t conflict_set = NULL;
+  int conflict_set_count;
+  strlist_t iter;
+  kbnode_t *kb_all;
+  KEYDB_HANDLE hd;
+  int i;
+
+  /* Get the fingerprints of any bindings that share the email address
+   * and whether the bindings have a known conflict.
+   *
+   * Note: if the binding in question is in the DB, it will also be
+   * returned.  Thus, if the result set is empty, then <email,
+   * fingerprint> is a new binding.  */
+  rc = gpgsql_stepx
+    (dbs->db, &dbs->s.get_trust_bindings_with_this_email,
+     strings_collect_cb2, &conflict_set, &sqerr,
+     "select"
+     /* A binding should only appear once, but try not to break in the
+      * case of corruption.  */
+     "  fingerprint || case sum(conflict ISNULL) when 0 then '' else '!' end"
+     " from bindings where email = ?"
+     "  group by fingerprint"
+     /* Make sure the current key comes first in the result list (if
+        it is present).  */
+     "  order by fingerprint = ? asc, fingerprint desc;",
+     GPGSQL_ARG_STRING, email,
+     GPGSQL_ARG_STRING, fingerprint,
+     GPGSQL_ARG_END);
+  if (rc)
+    {
+      log_error (_("error reading TOFU database: %s\n"), sqerr);
+      print_further_info ("listing fingerprints");
+      sqlite3_free (sqerr);
+      return NULL;
+    }
+
+  /* If the current binding has not yet been recorded, add it to the
+   * list.  (The order by above ensures that if it is present, it will
+   * be first.)  */
+  if (! (conflict_set && strcmp (conflict_set->d, fingerprint) == 0))
+    {
+      add_to_strlist (&conflict_set, fingerprint);
+      conflict_set->flags |= BINDING_NEW;
+    }
+
+  /* Set BINDING_CONFLICT if the binding has a known conflict.  This
+   * allows us to distinguish between bindings where the user
+   * explicitly set the policy to ask and bindings where we set the
+   * policy to ask due to a conflict.  */
+  for (iter = conflict_set; iter; iter = iter->next)
+    {
+      int l = strlen (iter->d);
+      if (!(l == 2 * MAX_FINGERPRINT_LEN
+            || l == 2 * MAX_FINGERPRINT_LEN + 1))
+        {
+          log_error (_("TOFU db corruption detected.\n"));
+          print_further_info ("fingerprint '%s' is not %d characters long",
+                              iter->d, 2 * MAX_FINGERPRINT_LEN);
+        }
+
+      if (l >= 1 && iter->d[l - 1] == '!')
+        {
+          iter->flags |= BINDING_CONFLICT;
+          /* Remove the !.  */
+          iter->d[l - 1] = 0;
+        }
+    }
+
+  conflict_set_count = strlist_length (conflict_set);
+
+  /* Eliminate false conflicts.  */
+
+  /* If two keys have cross signatures, then they are controlled by
+   * the same person and thus are not in conflict.  */
+  kb_all = xcalloc (sizeof (kb_all[0]), conflict_set_count);
+  hd = keydb_new ();
+  for (i = 0, iter = conflict_set;
+       i < conflict_set_count;
+       i ++, iter = iter->next)
+    {
+      char *fp = iter->d;
+      KEYDB_SEARCH_DESC desc;
+      kbnode_t kb;
+      PKT_public_key *binding_pk;
+      kbnode_t n;
+      int found_user_id;
+
+      rc = keydb_search_reset (hd);
+      if (rc)
+        {
+          log_error (_("resetting keydb: %s\n"),
+                     gpg_strerror (rc));
+          continue;
+        }
+
+      rc = classify_user_id (fp, &desc, 0);
+      if (rc)
+        {
+          log_error (_("error parsing key specification '%s': %s\n"),
+                     fp, gpg_strerror (rc));
+          continue;
+        }
+
+      rc = keydb_search (hd, &desc, 1, NULL);
+      if (rc)
+        {
+          /* Note: it is entirely possible that we don't have the key
+             corresponding to an entry in the TOFU DB.  This can
+             happen if we merge two TOFU DBs, but not the key
+             rings.  */
+          log_info (_("key \"%s\" not found: %s\n"),
+                    fp, gpg_strerror (rc));
+          continue;
+        }
+
+      rc = keydb_get_keyblock (hd, &kb);
+      if (rc)
+        {
+          log_error (_("error reading keyblock: %s\n"),
+                     gpg_strerror (rc));
+          print_further_info ("fingerprint: %s", fp);
+          continue;
+        }
+
+      merge_keys_and_selfsig (kb);
+
+      log_assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
+
+      kb_all[i] = kb;
+
+      /* Since we have the key block, use this opportunity to figure
+       * out if the binding is expired or revoked.  */
+      binding_pk = kb->pkt->pkt.public_key;
+
+      /* The binding is always expired/revoked if the key is
+       * expired/revoked.  */
+      if (binding_pk->has_expired)
+        iter->flags &= BINDING_EXPIRED;
+      if (binding_pk->flags.revoked)
+        iter->flags &= BINDING_REVOKED;
+
+      /* The binding is also expired/revoked if the user id is
+       * expired/revoked.  */
+      n = kb;
+      found_user_id = 0;
+      while ((n = find_next_kbnode (n, PKT_USER_ID)) && ! found_user_id)
+        {
+          PKT_user_id *user_id2 = n->pkt->pkt.user_id;
+          char *email2;
+
+          if (user_id2->attrib_data)
+            continue;
+
+          email2 = email_from_user_id (user_id2->name);
+
+          if (strcmp (email, email2) == 0)
+            {
+              found_user_id = 1;
+
+              if (user_id2->is_revoked)
+                iter->flags &= BINDING_REVOKED;
+              if (user_id2->is_expired)
+                iter->flags &= BINDING_EXPIRED;
+            }
+
+          xfree (email2);
+        }
+
+      if (! found_user_id)
+        {
+          log_info (_("TOFU db corruption detected.\n"));
+          print_further_info ("user id '%s' not on key block '%s'",
+                              email, fingerprint);
+        }
+    }
+  keydb_release (hd);
+
+  /* Now that we have the key blocks, check for cross sigs.  */
+  {
+    int j;
+    strlist_t *prevp;
+    strlist_t iter_next;
+    int die[conflict_set_count];
+
+    memset (die, 0, sizeof (die));
+
+    for (i = 0; i < conflict_set_count; i ++)
+      {
+        /* Look for cross sigs between this key (i == 0) or a key
+         * that has cross sigs with i == 0 (i.e., transitively) */
+        if (! (i == 0 || die[i]))
+          continue;
+
+        for (j = i + 1; j < conflict_set_count; j ++)
+          /* Be careful: we might not have a key block for a key.  */
+          if (kb_all[i] && kb_all[j] && cross_sigs (kb_all[i], kb_all[j]))
+            die[j] = 1;
+      }
+
+    /* Free unconflicting bindings (and all of the key blocks).  */
+    for (iter = conflict_set, prevp = &conflict_set, i = 0;
+         iter;
+         iter = iter_next, i ++)
+      {
+        iter_next = iter->next;
+
+        release_kbnode (kb_all[i]);
+
+        if (die[i])
+          {
+            *prevp = iter_next;
+            iter->next = NULL;
+            free_strlist (iter);
+            conflict_set_count --;
+          }
+        else
+          {
+            prevp = &iter->next;
+          }
+      }
+
+    /* We shouldn't have removed the head.  */
+    log_assert (conflict_set);
+    log_assert (conflict_set_count >= 1);
+  }
+
+  if (DBG_TRUST)
+    {
+      log_debug ("binding <key: %s, email: %s> conflicts:\n",
+                 fingerprint, email);
+      for (iter = conflict_set; iter; iter = iter->next)
+        {
+          log_debug ("  %s:%s%s%s%s\n",
+                     iter->d,
+                     (iter->flags & BINDING_NEW) ? " new" : "",
+                     (iter->flags & BINDING_CONFLICT) ? " known_conflict" : "",
+                     (iter->flags & BINDING_EXPIRED) ? " expired" : "",
+                     (iter->flags & BINDING_REVOKED) ? " revoked" : "");
+        }
+    }
+
+  return conflict_set;
 }
 
 
@@ -1828,13 +1942,13 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
   tofu_dbs_t dbs = ctrl->tofu.dbs;
   int in_transaction = 0;
   enum tofu_policy policy;
-  char *conflict = NULL;
   int rc;
   char *sqerr = NULL;
-  strlist_t bindings_with_this_email = NULL;
-  int bindings_with_this_email_count;
   int change_conflicting_to_ask = 0;
+  strlist_t conflict_set = NULL;
+  int conflict_set_count;
   int trust_level = TRUST_UNKNOWN;
+  strlist_t iter;
 
   log_assert (dbs);
 
@@ -1857,7 +1971,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
   begin_transaction (ctrl, 0);
   in_transaction = 1;
 
-  policy = get_policy (dbs, fingerprint, email, &conflict);
+  policy = get_policy (dbs, fingerprint, email, NULL);
   {
     /* See if the key is ultimately trusted.  If so, we're done.  */
     u32 kid[2];
@@ -1887,7 +2001,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
     {
       policy = opt.tofu_default_policy;
       if (DBG_TRUST)
-	log_debug ("TOFU: binding <key: %s, user id: %s>'s policy is "
+	log_debug ("TOFU: binding <key: %s, user id: %s>'s policy is"
                    " auto (default: %s).\n",
 		   fingerprint, email,
 		   tofu_policy_str (opt.tofu_default_policy));
@@ -1943,41 +2057,29 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
    *
    *   3. We don't have a saved policy (policy == TOFU_POLICY_NONE)
    *      (need to check for a conflict).
+   *
+   * In summary: POLICY is ask or none.
    */
 
-  /* Look for conflicts.  This is needed in all 3 cases.
-   *
-   * Get the fingerprints of any bindings that share the email
-   * address.  Note: if the binding in question is in the DB, it will
-   * also be returned.  Thus, if the result set is empty, then this is
-   * a new binding.  */
-  rc = gpgsql_stepx
-    (dbs->db, &dbs->s.get_trust_bindings_with_this_email,
-     strings_collect_cb2, &bindings_with_this_email, &sqerr,
-     "select distinct fingerprint from bindings where email = ?;",
-     GPGSQL_ARG_STRING, email, GPGSQL_ARG_END);
-  if (rc)
+  /* Look for conflicts.  This is needed in all 3 cases.  */
+  conflict_set = build_conflict_set (dbs, fingerprint, email);
+  conflict_set_count = strlist_length (conflict_set);
+  if (conflict_set_count == 0)
     {
-      log_error (_("error reading TOFU database: %s\n"), sqerr);
-      print_further_info ("listing fingerprints");
-      sqlite3_free (sqerr);
+      /* We should always at least have the current binding.  */
+      trust_level = _tofu_GET_TRUST_ERROR;
       goto out;
     }
 
-  bindings_with_this_email_count = strlist_length (bindings_with_this_email);
-  if (bindings_with_this_email_count == 0
+  if (conflict_set_count == 1
+      && (conflict_set->flags & BINDING_NEW)
       && opt.tofu_default_policy != TOFU_POLICY_ASK)
     {
-      /* New binding with no conflict and a concrete default policy.
-       *
-       * We've never observed a binding with this email address
-       * BINDINGS_WITH_THIS_EMAIL_COUNT is 0 and the above query would
-       * return the current binding if it were in the DB) and we have
-       * a default policy, which is not to ask the user.
-       */
+      /* We've never observed a binding with this email address and we
+       * have a default policy, which is not to ask the user.  */
 
       /* If we've seen this binding, then we've seen this email and
-	 policy couldn't possibly be TOFU_POLICY_NONE.  */
+       * policy couldn't possibly be TOFU_POLICY_NONE.  */
       log_assert (policy == TOFU_POLICY_NONE);
 
       if (DBG_TRUST)
@@ -1997,15 +2099,36 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
       goto out;
     }
 
-  if (policy == TOFU_POLICY_NONE)
+  if (conflict_set_count == 1
+      && (conflict_set->flags & BINDING_CONFLICT))
     {
-      /* This is a new binding and we have a conflict.  Mark any
-       * conflicting bindings that have an automatic policy as now
-       * requiring confirmation.  Note: we delay this until after we
-       * ask for confirmation so that when the current policy is
-       * printed, it is correct.  */
-      change_conflicting_to_ask = 1;
+      /* No known conflicts now, but there was a conflict.  This means
+       * at somepoint, there was a conflict and we changed this
+       * binding's policy to ask and set the conflicting key.  The
+       * conflict can go away if there is not a cross sig between the
+       * two keys.  In this case, just silently clear the conflict and
+       * reset the policy to auto.  */
+
+      log_assert (policy == TOFU_POLICY_ASK);
+
+      if (DBG_TRUST)
+        log_debug ("TOFU: binding <key: %s, user id: %s> had a conflict, but it's been resolved (probably via  cross sig).\n",
+                   fingerprint, email);
+
+      if (record_binding (dbs, fingerprint, email, user_id,
+			  TOFU_POLICY_AUTO, 0) != 0)
+	log_error (_("error setting TOFU binding's trust level to %s\n"),
+		   "auto");
+
+      trust_level = tofu_policy_to_trust_level (TOFU_POLICY_AUTO);
+      goto out;
     }
+
+  /* We have a conflict.  Mark any conflicting bindings that have an
+   * automatic policy as now requiring confirmation.  Note: we delay
+   * this until after we ask for confirmation so that when the current
+   * policy is printed, it is correct.  */
+  change_conflicting_to_ask = 1;
 
   if (! may_ask)
     {
@@ -2031,51 +2154,53 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
   ask_about_binding (ctrl,
                      &policy,
                      &trust_level,
-                     bindings_with_this_email_count,
-                     bindings_with_this_email,
-                     conflict,
+                     conflict_set,
                      fingerprint,
                      email,
                      user_id);
 
  out:
-  if (in_transaction)
-    end_transaction (ctrl, 0);
 
   if (change_conflicting_to_ask)
     {
-      if (! may_ask)
+      /* Mark any conflicting bindings that have an automatic policy as
+       * now requiring confirmation.  */
+
+      if (! in_transaction)
         {
-          /* If we weren't allowed to ask, also update this key as
-             conflicting with itself.  */
-          rc = gpgsql_exec_printf
-            (dbs->db, NULL, NULL, &sqerr,
-             "update bindings set policy = %d, conflict = %Q"
-             " where email = %Q"
-             "  and (policy = %d or (policy = %d and fingerprint = %Q));",
-             TOFU_POLICY_ASK, fingerprint, email, TOFU_POLICY_AUTO,
-             TOFU_POLICY_ASK, fingerprint);
-        }
-      else
-        {
-          rc = gpgsql_exec_printf
-            (dbs->db, NULL, NULL, &sqerr,
-             "update bindings set policy = %d, conflict = %Q"
-             " where email = %Q and fingerprint != %Q and policy = %d;",
-             TOFU_POLICY_ASK, fingerprint, email, fingerprint,
-             TOFU_POLICY_AUTO);
+          begin_transaction (ctrl, 0);
+          in_transaction = 1;
         }
 
-      if (rc)
-	{
-	  log_error (_("error changing TOFU policy: %s\n"), sqerr);
-	  sqlite3_free (sqerr);
-          sqerr = NULL;
-	}
+      /* If we weren't allowed to ask, also update this key as
+       * conflicting with itself.  */
+      for (iter = may_ask ? conflict_set->next : conflict_set;
+           iter; iter = iter->next)
+        {
+          rc = gpgsql_exec_printf
+            (dbs->db, NULL, NULL, &sqerr,
+             "update bindings set policy = %d, conflict = %Q"
+             " where email = %Q and fingerprint = %Q and policy = %d;",
+             TOFU_POLICY_ASK, fingerprint,
+             email, iter->d, TOFU_POLICY_AUTO);
+          if (rc)
+            {
+              log_error (_("error changing TOFU policy: %s\n"), sqerr);
+              print_further_info ("binding: <key: %s, user id: %s>",
+                                  fingerprint, user_id);
+              sqlite3_free (sqerr);
+              sqerr = NULL;
+            }
+          else if (DBG_TRUST)
+            log_debug ("Set %s to conflict with %s\n",
+                       iter->d, fingerprint);
+        }
     }
 
-  xfree (conflict);
-  free_strlist (bindings_with_this_email);
+  if (in_transaction)
+    end_transaction (ctrl, 0);
+
+  free_strlist (conflict_set);
 
   return trust_level;
 }
