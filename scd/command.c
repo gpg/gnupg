@@ -2315,7 +2315,10 @@ update_reader_status_file (int set_card_removed_flag)
 
           /* Set the card removed flag for all current sessions.  */
           if (ss->any && ss->status == 0 && set_card_removed_flag)
-            update_card_removed (idx, 1);
+	    {
+              apdu_close_reader (ss->slot);
+              update_card_removed (ss->slot, 1);
+	    }
 
           ss->any = 1;
 
