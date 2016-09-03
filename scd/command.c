@@ -200,6 +200,7 @@ update_card_removed (int slot, int value)
   if (value)
     {
       log_debug ("Removal of a card: %d\n", slot);
+      apdu_close_reader (slot);
       application_notify_card_reset (slot);
       slot_table[slot].slot = -1;
     }
@@ -2315,10 +2316,7 @@ update_reader_status_file (int set_card_removed_flag)
 
           /* Set the card removed flag for all current sessions.  */
           if (ss->any && ss->status == 0 && set_card_removed_flag)
-	    {
-              apdu_close_reader (ss->slot);
-              update_card_removed (ss->slot, 1);
-	    }
+            update_card_removed (ss->slot, 1);
 
           ss->any = 1;
 
