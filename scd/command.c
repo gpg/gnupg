@@ -223,8 +223,11 @@ update_card_removed (int vrdr, int value)
   /* Let the card application layer know about the removal.  */
   if (value)
     {
+      int slot = vreader_slot (vrdr);
+
       log_debug ("Removal of a card: %d\n", vrdr);
-      application_notify_card_reset (vreader_slot (vrdr));
+      apdu_close_reader (slot);
+      application_notify_card_reset (slot);
       vreader_table[vrdr].slot = -1;
     }
 }
@@ -2340,10 +2343,7 @@ update_reader_status_file (int set_card_removed_flag)
 
           /* Set the card removed flag for all current sessions.  */
           if (vr->any && vr->status == 0 && set_card_removed_flag)
-	    {
-              apdu_close_reader (vr->slot);
-              update_card_removed (idx, 1);
-	    }
+            update_card_removed (idx, 1);
 
           vr->any = 1;
 
