@@ -76,8 +76,15 @@ struct server_local_s
      takes precedence over this flag.  */
   unsigned int use_cache_for_signing : 1;
 
-  /* Flags to suppress I/O logging during a command.  */
+  /* Flag to suppress I/O logging during a command.  */
   unsigned int pause_io_logging : 1;
+
+  /* Flag indicating that the connection is from ourselves.  */
+  unsigned int connect_from_self : 1;
+
+  /* Helper flag for io_monitor to allow suppressing of our own
+   * greeting in some cases.  See io_monitor for details.  */
+  unsigned int greeting_seen : 1;
 
   /* If this flag is set to true the agent will be terminated after
      the end of the current session.  */
@@ -3052,6 +3059,29 @@ io_monitor (assuan_context_t ctx, void *hook, int direction,
 
   (void) hook;
 
+  /* We want to suppress all Assuan log messages for connections from
+   * self.  However, assuan_get_pid works only after
+   * assuan_accept. Now, assuan_accept already logs a line ending with
+   * the process id.  We use this hack here to get the peers pid so
+   * that we can compare it to our pid.  We should add an assuan
+   * function to return the pid for a file descriptor and use that to
+   * detect connections to self.  */
+  if (ctx && !ctrl->server_local->greeting_seen
+      && direction == ASSUAN_IO_TO_PEER)
+    {
+      ctrl->server_local->greeting_seen = 1;
+      if (linelen > 32
+          && !strncmp (line, "OK Pleased to meet you, process ", 32)
+          && strtoul (line+32, NULL, 10) == getpid ())
+        return ASSUAN_IO_MONITOR_NOLOG;
+    }
+
+
+  /* Do not log self-connections.  This makes the log cleaner because
+   * we won't see the check-our-own-socket calls.  */
+  if (ctx && ctrl->server_local->connect_from_self)
+    return ASSUAN_IO_MONITOR_NOLOG;
+
   /* Note that we only check for the uppercase name.  This allows the user to
      see the logging for debugging if using a non-upercase command
      name. */
@@ -3202,6 +3232,7 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
   ctrl->server_local = xcalloc (1, sizeof *ctrl->server_local);
   ctrl->server_local->assuan_ctx = ctx;
   ctrl->server_local->use_cache_for_signing = 1;
+
   ctrl->digest.raw_value = 0;
 
   assuan_set_io_monitor (ctx, io_monitor, NULL);
@@ -3219,6 +3250,8 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
           log_info ("Assuan accept problem: %s\n", gpg_strerror (rc));
           break;
         }
+
+      ctrl->server_local->connect_from_self = (assuan_get_pid (ctx)==getpid ());
 
       rc = assuan_process (ctx);
       if (rc)

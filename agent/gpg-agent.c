@@ -2303,12 +2303,12 @@ do_start_connection_thread (ctrl_t ctrl)
 {
   active_connections++;
   agent_init_default_ctrl (ctrl);
-  if (opt.verbose)
+  if (opt.verbose && !DBG_IPC)
     log_info (_("handler 0x%lx for fd %d started\n"),
               (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
 
   start_command_handler (ctrl, GNUPG_INVALID_FD, ctrl->thread_startup.fd);
-  if (opt.verbose)
+  if (opt.verbose && !DBG_IPC)
     log_info (_("handler 0x%lx for fd %d terminated\n"),
               (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
 
@@ -2657,6 +2657,7 @@ check_own_socket_thread (void *arg)
       log_error ("can't allocate assuan context: %s\n", gpg_strerror (rc));
       goto leave;
     }
+  assuan_set_flag (ctx, ASSUAN_NO_LOGGING, 1);
 
   rc = assuan_socket_connect (ctx, sockname, (pid_t)(-1), 0);
   if (rc)
