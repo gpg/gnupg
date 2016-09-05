@@ -203,7 +203,7 @@ gnupg_get_passphrase (const char *cache_id,
                          default_inq_cb, NULL, NULL, NULL);
 
   /* Older Pinentries return the old assuan error code for canceled
-     which gets translated bt libassuan to GPG_ERR_ASS_CANCELED and
+     which gets translated by libassuan to GPG_ERR_ASS_CANCELED and
      not to the code for a user cancel.  Fix this here. */
   if (err && gpg_err_source (err)
       && gpg_err_code (err) == GPG_ERR_ASS_CANCELED)
