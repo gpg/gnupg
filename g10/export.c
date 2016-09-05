@@ -1293,37 +1293,6 @@ write_keyblock_to_output (kbnode_t keyblock, int with_armor,
 }
 
 
-/* Helper for apply_keep_uid_filter.  */
-static const char *
-filter_getval (void *cookie, const char *propname)
-{
-  kbnode_t node = cookie;
-  const char *result;
-
-  if (node->pkt->pkttype == PKT_USER_ID)
-    {
-      if (!strcmp (propname, "uid"))
-        result = node->pkt->pkt.user_id->name;
-      else if (!strcmp (propname, "mbox"))
-        {
-          if (!node->pkt->pkt.user_id->mbox)
-            {
-              node->pkt->pkt.user_id->mbox
-                = mailbox_from_userid (node->pkt->pkt.user_id->name);
-            }
-          return node->pkt->pkt.user_id->mbox;
-        }
-      else if (!strcmp (propname, "primary"))
-        result = node->pkt->pkt.user_id->is_primary? "1":"0";
-      else
-        result = NULL;
-    }
-  else
-    result = NULL;
-
-  return result;
-}
-
 /*
  * Apply the keep-uid filter to the keyblock.  The deleted nodes are
  * marked and thus the caller should call commit_kbnode afterwards.
@@ -1338,7 +1307,7 @@ apply_keep_uid_filter (kbnode_t keyblock, recsel_expr_t selector)
     {
       if (node->pkt->pkttype == PKT_USER_ID)
         {
-          if (!recsel_select (selector, filter_getval, node))
+          if (!recsel_select (selector, impex_filter_getval, node))
             {
               /* log_debug ("keep-uid: deleting '%s'\n", */
               /*            node->pkt->pkt.user_id->name); */

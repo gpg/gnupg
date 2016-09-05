@@ -368,6 +368,7 @@ gpg_error_t import_old_secring (ctrl_t ctrl, const char *fname);
 import_stats_t import_new_stats_handle (void);
 void import_release_stats_handle (import_stats_t hd);
 void import_print_stats (import_stats_t hd);
+const char *impex_filter_getval (void *cookie, const char *propname);
 gpg_error_t transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
                                   kbnode_t sec_keyblock, int batch, int force);
 

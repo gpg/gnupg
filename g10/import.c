@@ -1103,9 +1103,9 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
 }
 
 
-/* Helper for apply_keep_uid_filter and apply_drop_sig_filter.  */
-static const char *
-filter_getval (void *cookie, const char *propname)
+/* Helper for apply_*_filter in im,port.c and export.c.  */
+const char *
+impex_filter_getval (void *cookie, const char *propname)
 {
   /* FIXME: Malloc our static buffers and access them via the cookie.  */
   kbnode_t node = cookie;
@@ -1178,7 +1178,7 @@ apply_keep_uid_filter (kbnode_t keyblock, recsel_expr_t selector)
     {
       if (node->pkt->pkttype == PKT_USER_ID)
         {
-          if (!recsel_select (selector, filter_getval, node))
+          if (!recsel_select (selector, impex_filter_getval, node))
             {
 
               /* log_debug ("keep-uid: deleting '%s'\n", */
@@ -1237,7 +1237,7 @@ apply_drop_sig_filter (kbnode_t keyblock, recsel_expr_t selector)
 
       if (IS_UID_SIG(sig) || IS_UID_REV(sig))
         {
-          if (recsel_select (selector, filter_getval, node))
+          if (recsel_select (selector, impex_filter_getval, node))
             delete_kbnode (node);
         }
     }
