@@ -1,22 +1,36 @@
 #                                   Emacs, this is an -*- org -*- file.
 
 * How to run the test suite
-** using the legacy driver
-On POSIX you can just use
+From your build directory, run
 
-  $ make -C tests/openpgp check
+  obj $ make -C tests/openpgp check
 
-or
+to run all tests or
 
-  $ make -C tests/openpgp check XTESTS="setup.scm your-test.scm finish.scm"
+  obj $ make -C tests/openpgp check XTESTS=your-test.scm
 
-as before.
-** using the Scheme driver
+to run a specific test (or any number of tests separated by spaces).
+
+If you want to debug a test, add verbose=1 to see messages printed by
+spawned programs to their standard error stream, verbose=2 to see what
+programs are executed, or verbose=3 to see even more program output
+and exit codes.
+
+** Passing options to the test driver
+
+You can set TESTFLAGS to pass flags to 'run-tests.scm'.  For example,
+to speed up the test suite when bisecting, do
+
+  obj $ make -C tests/openpgp check TESTFLAGS=--parallel
+
+See below for the arguments supported by the driver.
+
+** Calling the test driver directly
 This is a bit tricky because one needs to manually set some
 environment variables.  We should make that easier.  See discussion
 below.  From your build directory, do:
 
-  obj $ srcdir=<path to>/tests/openpgp \
+  obj $ TMP=/tmp srcdir=<path to>/tests/openpgp \
         GPGSCM_PATH=<path to>/tests/gpgscm:<path to>/tests/openpgp \
         $(pwd)/tests/gpgscm/gpgscm [gpgscm args] \
         run-tests.scm [test suite runner args]
