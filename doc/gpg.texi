@@ -2254,6 +2254,10 @@ The available filter types are:
   This filter will keep a user id packet and its dependent packets in
   the keyblock if the expression evaluates to true.
 
+  @item drop-subkey
+  This filter drops the selected subkeys.
+  Currently only implemented for --export-filter.
+
   @item drop-sig
   This filter drops the selected key signatures on user ids.
   Self-signatures are not consideres.
@@ -2276,8 +2280,22 @@ The available properties are:
   The addr-spec part of a user id with mailbox or the empty string.
   (keep-uid)
 
+  @item key_algo
+  A number with the public key algorithm of a key or subkey packet.
+  (drop-subkey)
+
+  @item key_created
+  @itemx key_created_d
+  The first is the timestamp a public key or subkey packet was
+  created.  The second is the same but given as an ISO string,
+  e.g. "2016-08-17". (drop-subkey)
+
   @item primary
   Boolean indicating whether the user id is the primary one.  (keep-uid)
+
+  @item secret
+  Boolean indicating whether a key or subkey is a secret one.
+  drop-subkey)
 
   @item sig_created
   @itemx sig_created_d

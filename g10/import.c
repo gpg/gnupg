@@ -1157,6 +1157,35 @@ impex_filter_getval (void *cookie, const char *propname)
       else
         result = NULL;
     }
+  else if (node->pkt->pkttype == PKT_PUBLIC_KEY
+           || node->pkt->pkttype == PKT_SECRET_KEY
+           || node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+           || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+    {
+      PKT_public_key *pk = node->pkt->pkt.public_key;
+
+      if (!strcmp (propname, "secret"))
+        {
+          result = (node->pkt->pkttype == PKT_SECRET_KEY
+                    || node->pkt->pkttype == PKT_SECRET_SUBKEY)? "1":"0";
+        }
+      else if (!strcmp (propname, "key_algo"))
+        {
+          snprintf (numbuf, sizeof numbuf, "%d", pk->pubkey_algo);
+          result = numbuf;
+        }
+      if (!strcmp (propname, "key_created"))
+        {
+          snprintf (numbuf, sizeof numbuf, "%lu", (ulong)pk->timestamp);
+          result = numbuf;
+        }
+      else if (!strcmp (propname, "key_created_d"))
+        {
+          result = datestr_from_pk (pk);
+        }
+      else
+        result = NULL;
+    }
   else
     result = NULL;
 

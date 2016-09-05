@@ -62,11 +62,13 @@ struct export_stats_s
 
 /* A global variable to store the selector created from
  * --export-filter keep-uid=EXPR.
+ * --export-filter drop-subkey=EXPR.
  *
  * FIXME: We should put this into the CTRL object but that requires a
  * lot more changes right now.
  */
 static recsel_expr_t export_keep_uid;
+static recsel_expr_t export_drop_subkey;
 
 
 
@@ -88,6 +90,8 @@ cleanup_export_globals (void)
 {
   recsel_release (export_keep_uid);
   export_keep_uid = NULL;
+  recsel_release (export_drop_subkey);
+  export_drop_subkey = NULL;
 }
 
 
@@ -142,6 +146,14 @@ parse_export_options(char *str,unsigned int *options,int noisy)
  *                - uid  :: The entire user ID.
  *                - mbox :: The mail box part of the user ID.
  *                - primary :: Evaluate to true for the primary user ID.
+ *
+ *  - drop-subkey :: If the expression evaluates to true for a subkey
+ *                packet that subkey and all it dependencies will be
+ *                remove from the keyblock.  The expression may use these
+ *                variables:
+ *
+ *                - secret   :: 1 for a secret subkey, else 0.
+ *                - key_algo :: Public key algorithm id
  */
 gpg_error_t
 parse_and_set_export_filter (const char *string)
@@ -153,6 +165,8 @@ parse_and_set_export_filter (const char *string)
 
   if (!strncmp (string, "keep-uid=", 9))
     err = recsel_parse_expr (&export_keep_uid, string+9);
+  else if (!strncmp (string, "drop-subkey=", 12))
+    err = recsel_parse_expr (&export_drop_subkey, string+12);
   else
     err = gpg_error (GPG_ERR_INV_NAME);
 
@@ -1329,6 +1343,38 @@ apply_keep_uid_filter (kbnode_t keyblock, recsel_expr_t selector)
 }
 
 
+/*
+ * Apply the drop-subkey filter to the keyblock.  The deleted nodes are
+ * marked and thus the caller should call commit_kbnode afterwards.
+ * KEYBLOCK must not have any blocks marked as deleted.
+ */
+static void
+apply_drop_subkey_filter (kbnode_t keyblock, recsel_expr_t selector)
+{
+  kbnode_t node;
+
+  for (node = keyblock->next; node; node = node->next )
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+          || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+        {
+          if (recsel_select (selector, impex_filter_getval, node))
+            {
+              log_debug ("drop-subkey: deleting a key\n");
+              /* The subkey packet and all following packets up to the
+               * next subkey.  */
+              delete_kbnode (node);
+              for (; node->next
+                     && node->next->pkt->pkttype != PKT_PUBLIC_SUBKEY
+                     && node->next->pkt->pkttype != PKT_SECRET_SUBKEY ;
+                   node = node->next)
+                delete_kbnode (node->next);
+	    }
+        }
+    }
+}
+
+
 /* Print DANE or PKA records for all user IDs in KEYBLOCK to OUT.  The
  * data for the record is taken from (DATA,DATELEN).  PK is the public
  * key packet with the primary key. */
@@ -1919,6 +1965,13 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
         {
           commit_kbnode (&keyblock);
           apply_keep_uid_filter (keyblock, export_keep_uid);
+          commit_kbnode (&keyblock);
+        }
+
+      if (export_drop_subkey)
+        {
+          commit_kbnode (&keyblock);
+          apply_drop_subkey_filter (keyblock, export_drop_subkey);
           commit_kbnode (&keyblock);
         }
 
