@@ -583,6 +583,66 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
 }
 
 
+
+
+/* Waiting for child processes.
+
+   waitpid(2) may return information about terminated children that we
+   did not yet request, and there is no portable way to wait for a
+   specific set of children.
+
+   As a workaround, we store the results of children for later use.
+
+   XXX: This assumes that PIDs are not reused too quickly.  */
+
+struct terminated_child
+{
+  pid_t pid;
+  int exitcode;
+  struct terminated_child *next;
+};
+
+struct terminated_child *terminated_children;
+
+
+static gpg_error_t
+store_result (pid_t pid, int exitcode)
+{
+  struct terminated_child *c;
+
+  c = xmalloc (sizeof *c);
+  if (c == NULL)
+    return gpg_err_code_from_syserror ();
+
+  c->pid = pid;
+  c->exitcode = exitcode;
+  c->next = terminated_children;
+  terminated_children = c;
+
+  return 0;
+}
+
+
+static int
+get_result (pid_t pid, int *r_exitcode)
+{
+  struct terminated_child *c, **prevp;
+
+  for (prevp = &terminated_children, c = terminated_children;
+       c;
+       prevp = &c->next, c = c->next)
+    if (c->pid == pid)
+      {
+        *prevp = c->next;
+        *r_exitcode = c->exitcode;
+        xfree (c);
+        return 1;
+      }
+
+  return 0;
+}
+
+
 /* See exechelp.h for a description.  */
 gpg_error_t
 gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *r_exitcode)
@@ -597,17 +657,25 @@ gnupg_wait_processes (const char **pgmnames, pid_t *pids, size_t count,
 {
   gpg_err_code_t ec = 0;
   size_t i, left;
+  int *dummy = NULL;
 
-  for (i = 0; i < count; i++)
+  if (r_exitcodes == NULL)
+    dummy = r_exitcodes = xmalloc (sizeof *r_exitcodes * count);
+
+  for (i = 0, left = count; i < count; i++)
     {
-      if (r_exitcodes)
-        r_exitcodes[i] = -1;
+      int status = -1;
 
       if (pids[i] == (pid_t)(-1))
         return my_error (GPG_ERR_INV_VALUE);
+
+      /* See if there was a previously stored result for this pid.  */
+      if (get_result (pids[i], &status))
+        left -= 1;
+
+      r_exitcodes[i] = status;
     }
 
-  left = count;
   while (left > 0)
     {
       pid_t pid;
@@ -639,43 +707,57 @@ gnupg_wait_processes (const char **pgmnames, pid_t *pids, size_t count,
               break;
 
           if (i == count)
-            /* No match, ignore this pid.  */
-            continue;
+            {
+              /* No match, store this result.  */
+              ec = store_result (pid, status);
+              if (ec)
+                break;
+              continue;
+            }
 
           /* Process PIDS[i] died.  */
-          left -= 1;
+          if (r_exitcodes[i] != (pid_t) -1)
+            {
+              log_error ("PID %d was reused", pid);
+              ec = GPG_ERR_GENERAL;
+              break;
+            }
 
-          if (WIFEXITED (status) && WEXITSTATUS (status) == 127)
-            {
-              log_error (_("error running '%s': probably not installed\n"),
-                         pgmnames[i]);
-              ec = GPG_ERR_CONFIGURATION;
-            }
-          else if (WIFEXITED (status) && WEXITSTATUS (status))
-            {
-              if (!r_exitcodes)
-                log_error (_("error running '%s': exit status %d\n"),
-                           pgmnames[i], WEXITSTATUS (status));
-              else
-                r_exitcodes[i] = WEXITSTATUS (status);
-              ec = GPG_ERR_GENERAL;
-            }
-          else if (!WIFEXITED (status))
-            {
-              log_error (_("error running '%s': terminated\n"), pgmnames[i]);
-              ec = GPG_ERR_GENERAL;
-            }
-          else
-            {
-              if (r_exitcodes)
-                r_exitcodes[i] = 0;
-            }
+          left -= 1;
+          r_exitcodes[i] = status;
         }
     }
 
+  if (ec == 0)
+    for (i = 0; i < count; i++)
+      {
+        if (WIFEXITED (r_exitcodes[i]) && WEXITSTATUS (r_exitcodes[i]) == 127)
+          {
+            log_error (_("error running '%s': probably not installed\n"),
+                       pgmnames[i]);
+            ec = GPG_ERR_CONFIGURATION;
+          }
+        else if (WIFEXITED (r_exitcodes[i]) && WEXITSTATUS (r_exitcodes[i]))
+          {
+            if (dummy)
+              log_error (_("error running '%s': exit status %d\n"),
+                         pgmnames[i], WEXITSTATUS (r_exitcodes[i]));
+            else
+              r_exitcodes[i] = WEXITSTATUS (r_exitcodes[i]);
+            ec = GPG_ERR_GENERAL;
+          }
+        else if (!WIFEXITED (r_exitcodes[i]))
+          {
+            log_error (_("error running '%s': terminated\n"), pgmnames[i]);
+            ec = GPG_ERR_GENERAL;
+          }
+      }
+
+  xfree (dummy);
   return gpg_err_make (GPG_ERR_SOURCE_DEFAULT, ec);
 }
 
+
 
 void
 gnupg_release_process (pid_t pid)
