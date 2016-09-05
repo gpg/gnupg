@@ -647,7 +647,59 @@ get_result (pid_t pid, int *r_exitcode)
 gpg_error_t
 gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *r_exitcode)
 {
-  return gnupg_wait_processes (&pgmname, &pid, 1, hang, r_exitcode);
+  gpg_err_code_t ec;
+  int i, status;
+
+  if (r_exitcode)
+    *r_exitcode = -1;
+
+  if (pid == (pid_t)(-1))
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+#ifdef USE_NPTH
+  i = npth_waitpid (pid, &status, hang? 0:WNOHANG);
+#else
+  while ((i=waitpid (pid, &status, hang? 0:WNOHANG)) == (pid_t)(-1)
+	 && errno == EINTR);
+#endif
+
+  if (i == (pid_t)(-1))
+    {
+      ec = gpg_err_code_from_errno (errno);
+      log_error (_("waiting for process %d to terminate failed: %s\n"),
+                 (int)pid, strerror (errno));
+    }
+  else if (!i)
+    {
+      ec = GPG_ERR_TIMEOUT; /* Still running.  */
+    }
+  else if (WIFEXITED (status) && WEXITSTATUS (status) == 127)
+    {
+      log_error (_("error running '%s': probably not installed\n"), pgmname);
+      ec = GPG_ERR_CONFIGURATION;
+    }
+  else if (WIFEXITED (status) && WEXITSTATUS (status))
+    {
+      if (!r_exitcode)
+        log_error (_("error running '%s': exit status %d\n"), pgmname,
+                   WEXITSTATUS (status));
+      else
+        *r_exitcode = WEXITSTATUS (status);
+      ec = GPG_ERR_GENERAL;
+    }
+  else if (!WIFEXITED (status))
+    {
+      log_error (_("error running '%s': terminated\n"), pgmname);
+      ec = GPG_ERR_GENERAL;
+    }
+  else
+    {
+      if (r_exitcode)
+        *r_exitcode = 0;
+      ec = 0;
+    }
+
+  return gpg_err_make (GPG_ERR_SOURCE_DEFAULT, ec);
 }
 
 /* See exechelp.h for a description.  */
