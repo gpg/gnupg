@@ -95,6 +95,13 @@ struct server_local_s
 
   /* State variable private to is_tor_running.  */
   int tor_state;
+
+  /* If the first both flags are set the assuan logging of data lines
+   * is suppressed.  The count variable is used to show the number of
+   * non-logged bytes.  */
+  size_t inhibit_data_logging_count;
+  unsigned int inhibit_data_logging : 1;
+  unsigned int inhibit_data_logging_now : 1;
 };
 
 
@@ -175,8 +182,13 @@ leave_cmd (assuan_context_t ctx, gpg_error_t err)
 static gpg_error_t
 data_line_write (assuan_context_t ctx, const void *buffer_arg, size_t size)
 {
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   const char *buffer = buffer_arg;
   gpg_error_t err;
+
+  /* If we do not want logging, enable it it here.  */
+  if (ctrl && ctrl->server_local && ctrl->server_local->inhibit_data_logging)
+    ctrl->server_local->inhibit_data_logging_now = 1;
 
   if (opt.verbose && buffer && size)
     {
@@ -193,14 +205,14 @@ data_line_write (assuan_context_t ctx, const void *buffer_arg, size_t size)
           if (err)
             {
               gpg_err_set_errno (EIO);
-              return err;
+              goto leave;
             }
           buffer += n;
           nbytes -= n;
           if (nbytes && (err=assuan_send_data (ctx, NULL, 0))) /* Flush line. */
             {
               gpg_err_set_errno (EIO);
-              return err;
+              goto leave;
             }
         }
       while (nbytes);
@@ -211,11 +223,18 @@ data_line_write (assuan_context_t ctx, const void *buffer_arg, size_t size)
       if (err)
         {
           gpg_err_set_errno (EIO);  /* For use by data_line_cookie_write.  */
-          return err;
+          goto leave;
         }
     }
 
-  return 0;
+ leave:
+  if (ctrl && ctrl->server_local && ctrl->server_local->inhibit_data_logging)
+    {
+      ctrl->server_local->inhibit_data_logging_now = 0;
+      ctrl->server_local->inhibit_data_logging_count += size;
+    }
+
+  return err;
 }
 
 
@@ -237,6 +256,16 @@ data_line_cookie_close (void *cookie)
 {
   assuan_context_t ctx = cookie;
 
+  if (DBG_IPC)
+    {
+      ctrl_t ctrl = assuan_get_pointer (ctx);
+
+      if (ctrl && ctrl->server_local
+          && ctrl->server_local->inhibit_data_logging
+          && ctrl->server_local->inhibit_data_logging_count)
+        log_debug ("(%zu bytes sent via D lines not shown)\n",
+                   ctrl->server_local->inhibit_data_logging_count);
+    }
   if (assuan_send_data (ctx, NULL, 0))
     {
       gpg_err_set_errno (EIO);
@@ -810,6 +839,7 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
   char *encodedhash = NULL;
   int opt_submission_addr;
   int opt_policy_flags;
+  int no_log = 0;
 
   opt_submission_addr = has_option (line, "--submission-address");
   opt_policy_flags = has_option (line, "--policy-flags");
@@ -852,6 +882,7 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
                        "/.well-known/openpgpkey/hu/",
                        encodedhash,
                        NULL);
+      no_log = 1;
     }
   if (!uri)
     {
@@ -869,8 +900,13 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
                        "error setting up a data stream");
     else
       {
+        if (no_log)
+          ctrl->server_local->inhibit_data_logging = 1;
+        ctrl->server_local->inhibit_data_logging_now = 0;
+        ctrl->server_local->inhibit_data_logging_count = 0;
         err = ks_action_fetch (ctrl, uri, outfp);
         es_fclose (outfp);
+        ctrl->server_local->inhibit_data_logging = 0;
       }
   }
 
@@ -2079,8 +2115,12 @@ cmd_ks_get (assuan_context_t ctx, char *line)
     err = set_error (GPG_ERR_ASS_GENERAL, "error setting up a data stream");
   else
     {
+      ctrl->server_local->inhibit_data_logging = 1;
+      ctrl->server_local->inhibit_data_logging_now = 0;
+      ctrl->server_local->inhibit_data_logging_count = 0;
       err = ks_action_get (ctrl, ctrl->server_local->keyservers, list, outfp);
       es_fclose (outfp);
+      ctrl->server_local->inhibit_data_logging = 0;
     }
 
  leave:
@@ -2113,8 +2153,12 @@ cmd_ks_fetch (assuan_context_t ctx, char *line)
     err = set_error (GPG_ERR_ASS_GENERAL, "error setting up a data stream");
   else
     {
+      ctrl->server_local->inhibit_data_logging = 1;
+      ctrl->server_local->inhibit_data_logging_now = 0;
+      ctrl->server_local->inhibit_data_logging_count = 0;
       err = ks_action_fetch (ctrl, line, outfp);
       es_fclose (outfp);
+      ctrl->server_local->inhibit_data_logging = 0;
     }
 
  leave:
@@ -2353,6 +2397,30 @@ reset_notify (assuan_context_t ctx, char *line)
 #endif /*USE_LDAP*/
   ctrl->server_local->ldapservers = NULL;
   return 0;
+}
+
+
+/* This function is called by our assuan log handler to test whether a
+ * log message shall really be printed.  The function must return
+ * false to inhibit the logging of MSG.  CAT gives the requested log
+ * category.  MSG might be NULL. */
+int
+dirmngr_assuan_log_monitor (assuan_context_t ctx, unsigned int cat,
+                            const char *msg)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  (void)cat;
+  (void)msg;
+
+  if (!ctrl || !ctrl->server_local)
+    return 1; /* Can't decide - allow logging.  */
+
+  if (!ctrl->server_local->inhibit_data_logging)
+    return 1; /* Not requested - allow logging.  */
+
+  /* Disallow logging if *_now is true.  */
+  return !ctrl->server_local->inhibit_data_logging_now;
 }
 
 
