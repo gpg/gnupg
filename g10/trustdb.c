@@ -1040,6 +1040,14 @@ tdb_get_validity_core (ctrl_t ctrl,
 	  else
 	    user_id = n->pkt->pkt.user_id;
 
+          if (user_id->attrib_data)
+            {
+              /* Skip user attributes.  */
+              if (uid)
+                break;
+              continue;
+            }
+
           /* If the user id is revoked or expired, then skip it.  */
           if (user_id->is_revoked || user_id->is_expired)
             {
