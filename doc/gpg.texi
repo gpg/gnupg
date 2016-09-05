@@ -3500,11 +3500,23 @@ The supported operators (@var{op}) are:
   @item  <
   The numerical value of the field must be LT than the value.
 
-  @item  >=
+  @item  >
   The numerical value of the field must be GT than the value.
 
   @item  >=
   The numerical value of the field must be GE than the value.
+
+  @item  -le
+  The string value of the field must be less or equal than the value.
+
+  @item  -lt
+  The string value of the field must be less than the value.
+
+  @item  -gt
+  The string value of the field must be greater than the value.
+
+  @item  -ge
+  The string value of the field must be greater or equal than the value.
 
   @item  -n
   True if value is not empty (no value allowed).

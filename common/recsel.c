@@ -48,7 +48,11 @@ typedef enum
     SELECT_LE,
     SELECT_GE,
     SELECT_LT,
-    SELECT_GT
+    SELECT_GT,
+    SELECT_STRLE, /* String is less or equal.  */
+    SELECT_STRGE,
+    SELECT_STRLT,
+    SELECT_STRGT
   } select_op_t;
 
 
@@ -347,6 +351,26 @@ recsel_parse_expr (recsel_expr_t *selector, const char *expression)
       se->op = SELECT_ISTRUE;
       s += 2;
     }
+  else if (!strncmp (s, "-le", 3))
+    {
+      se->op = SELECT_STRLE;
+      s += 3;
+    }
+  else if (!strncmp (s, "-ge", 3))
+    {
+      se->op = SELECT_STRGE;
+      s += 3;
+    }
+  else if (!strncmp (s, "-lt", 3))
+    {
+      se->op = SELECT_STRLT;
+      s += 3;
+    }
+  else if (!strncmp (s, "-gt", 3))
+    {
+      se->op = SELECT_STRGT;
+      s += 3;
+    }
   else
     {
       log_error ("invalid operator in expression\n");
@@ -467,7 +491,12 @@ recsel_dump (recsel_expr_t selector)
                  se->op == SELECT_LT?      "< ":
                  se->op == SELECT_LE?      "<=":
                  se->op == SELECT_GT?      "> ":
-                 se->op == SELECT_GE?      ">=":"[oops]",
+                 se->op == SELECT_GE?      ">=":
+                 se->op == SELECT_STRLT?   "-lt":
+                 se->op == SELECT_STRLE?   "-le":
+                 se->op == SELECT_STRGT?   "-gt":
+                 se->op == SELECT_STRGE?   "-ge":
+                 /**/                      "[oops]",
                  se->value);
     }
   log_debug ("--- End selectors ---\n");
@@ -540,6 +569,30 @@ recsel_select (recsel_expr_t selector,
               break;
             case SELECT_LE:
               result = (numvalue <= se->numvalue);
+              break;
+            case SELECT_STRGT:
+              if (se->xcase)
+                result = strcmp (value, se->value) > 0;
+              else
+                result = strcasecmp (value, se->value) > 0;
+              break;
+            case SELECT_STRGE:
+              if (se->xcase)
+                result = strcmp (value, se->value) >= 0;
+              else
+                result = strcasecmp (value, se->value) >= 0;
+              break;
+            case SELECT_STRLT:
+              if (se->xcase)
+                result = strcmp (value, se->value) < 0;
+              else
+                result = strcasecmp (value, se->value) < 0;
+              break;
+            case SELECT_STRLE:
+              if (se->xcase)
+                result = strcmp (value, se->value) <= 0;
+              else
+                result = strcasecmp (value, se->value) <= 0;
               break;
             }
         }

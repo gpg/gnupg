@@ -171,6 +171,8 @@ test_2_getval (void *cookie, const char *name)
     return "    ";
   else if (!strcmp (name, "letters"))
     return "abcde";
+  else if (!strcmp (name, "str1"))
+    return "aaa";
   else
     return cookie;
 }
@@ -260,6 +262,37 @@ run_test_2 (void)
   FREEEXPR();
   ADDEXPR ("keyid < 0x12345678");
   if (recsel_select (se, test_2_getval, NULL))
+    fail (0, 0);
+
+
+  FREEEXPR();
+  ADDEXPR ("str1 -gt aa");
+  if (!recsel_select (se, test_2_getval, NULL))
+    fail (0, 0);
+  FREEEXPR();
+  ADDEXPR ("str1 -gt aaa");
+  if (recsel_select (se, test_2_getval, NULL))
+    fail (0, 0);
+  FREEEXPR();
+  ADDEXPR ("str1 -ge aaa");
+  if (!recsel_select (se, test_2_getval, NULL))
+    fail (0, 0);
+  FREEEXPR();
+  ADDEXPR ("str1 -lt aab");
+  if (!recsel_select (se, test_2_getval, NULL))
+    fail (0, 0);
+  FREEEXPR();
+  ADDEXPR ("str1 -le aaa");
+  if (!recsel_select (se, test_2_getval, NULL))
+    fail (0, 0);
+
+  FREEEXPR();
+  ADDEXPR ("-c str1 -lt AAB");
+  if (recsel_select (se, test_2_getval, NULL))
+    fail (0, 0);
+  FREEEXPR();
+  ADDEXPR ("str1 -lt AAB");
+  if (!recsel_select (se, test_2_getval, NULL))
     fail (0, 0);
 
 
