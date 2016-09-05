@@ -38,7 +38,10 @@
 
 /*-- asshelp.c --*/
 
-void setup_libassuan_logging (unsigned int *debug_var_address);
+void setup_libassuan_logging (unsigned int *debug_var_address,
+                              int (*log_monitor)(assuan_context_t ctx,
+                                                 unsigned int cat,
+                                                 const char *msg));
 void set_libassuan_log_cats (unsigned int newcats);
 
 

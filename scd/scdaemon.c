@@ -433,7 +433,7 @@ main (int argc, char **argv )
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
   assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
   assuan_sock_init ();
-  setup_libassuan_logging (&opt.debug);
+  setup_libassuan_logging (&opt.debug, NULL);
 
   setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);

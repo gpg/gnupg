@@ -69,6 +69,12 @@
 static int log_cats;
 #define TEST_LOG_CAT(x) (!! (log_cats & (1 << (x - 1))))
 
+/* The assuan log monitor used to temporary inhibit log messages from
+ * assuan.  */
+static int (*my_log_monitor) (assuan_context_t ctx,
+                              unsigned int cat,
+                              const char *msg);
+
 
 static int
 my_libassuan_log_handler (assuan_context_t ctx, void *hook,
@@ -76,14 +82,15 @@ my_libassuan_log_handler (assuan_context_t ctx, void *hook,
 {
   unsigned int dbgval;
 
-  (void)ctx;
-
   if (! TEST_LOG_CAT (cat))
     return 0;
 
   dbgval = hook? *(unsigned int*)hook : 0;
   if (!(dbgval & 1024))
     return 0; /* Assuan debugging is not enabled.  */
+
+  if (ctx && my_log_monitor && !my_log_monitor (ctx, cat, msg))
+    return 0; /* Temporary disabled.  */
 
   if (msg)
     log_string (GPGRT_LOG_DEBUG, msg);
@@ -95,7 +102,10 @@ my_libassuan_log_handler (assuan_context_t ctx, void *hook,
 /* Setup libassuan to use our own logging functions.  Should be used
    early at startup.  */
 void
-setup_libassuan_logging (unsigned int *debug_var_address)
+setup_libassuan_logging (unsigned int *debug_var_address,
+                         int (*log_monitor)(assuan_context_t ctx,
+                                            unsigned int cat,
+                                            const char *msg))
 {
   char *flagstr;
 
@@ -104,8 +114,10 @@ setup_libassuan_logging (unsigned int *debug_var_address)
     log_cats = atoi (flagstr);
   else /* Default to log the control channel.  */
     log_cats = (1 << (ASSUAN_LOG_CONTROL - 1));
+  my_log_monitor = log_monitor;
   assuan_set_log_cb (my_libassuan_log_handler, debug_var_address);
 }
+
 
 /* Change the Libassuan log categories to those given by NEWCATS.
    NEWCATS is 0 the default category of ASSUAN_LOG_CONTROL is

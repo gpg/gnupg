@@ -1006,7 +1006,7 @@ main ( int argc, char **argv)
   malloc_hooks.free = gcry_free;
   assuan_set_malloc_hooks (&malloc_hooks);
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
-  setup_libassuan_logging (&opt.debug);
+  setup_libassuan_logging (&opt.debug, NULL);
 
   keybox_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
 
