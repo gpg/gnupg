@@ -610,7 +610,7 @@ store_result (pid_t pid, int exitcode)
 {
   struct terminated_child *c;
 
-  c = xmalloc (sizeof *c);
+  c = xtrymalloc (sizeof *c);
   if (c == NULL)
     return gpg_err_code_from_syserror ();
 
@@ -660,7 +660,11 @@ gnupg_wait_processes (const char **pgmnames, pid_t *pids, size_t count,
   int *dummy = NULL;
 
   if (r_exitcodes == NULL)
-    dummy = r_exitcodes = xmalloc (sizeof *r_exitcodes * count);
+    {
+      dummy = r_exitcodes = xtrymalloc (sizeof *r_exitcodes * count);
+      if (dummy == NULL)
+        return gpg_err_code_from_syserror ();
+    }
 
   for (i = 0, left = count; i < count; i++)
     {
