@@ -98,7 +98,7 @@ check: xcheck
 .PHONY: xcheck
 xcheck:
 	$(TESTS_ENVIRONMENT) $(abs_top_builddir)/tests/gpgscm/gpgscm \
-	  run-tests.scm $(XTESTS)
+	  run-tests.scm $(TESTFLAGS) $(XTESTS)
 
 TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     plain-1.asc plain-2.asc plain-3.asc plain-1-pgp.asc \
