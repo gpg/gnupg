@@ -74,21 +74,21 @@ struct server_local_s
      operations.  It defaults to true but may be set on a per
      connection base.  The global option opt.ignore_cache_for_signing
      takes precedence over this flag.  */
-  int use_cache_for_signing;
+  unsigned int use_cache_for_signing : 1;
+
+  /* Flags to suppress I/O logging during a command.  */
+  unsigned int pause_io_logging : 1;
+
+  /* If this flag is set to true the agent will be terminated after
+     the end of the current session.  */
+  unsigned int stopme : 1;
+
+  /* Flag indicating whether pinentry notifications shall be done. */
+  unsigned int allow_pinentry_notify : 1;
 
   /* An allocated description for the next key operation.  This is
      used if a pinnetry needs to be popped up.  */
   char *keydesc;
-
-  /* Flags to suppress I/O logging during a command.  */
-  int pause_io_logging;
-
-  /* If this flags is set to true the agent will be terminated after
-     the end of the current session.  */
-  int stopme;
-
-  /* Flag indicating whether pinentry notifications shall be done. */
-  int allow_pinentry_notify;
 
   /* Malloced KEK (Key-Encryption-Key) for the import_key command.  */
   void *import_key;
@@ -2992,7 +2992,7 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       err = session_env_setenv (ctrl->session_env, "PINENTRY_USER_DATA", value);
     }
   else if (!strcmp (key, "use-cache-for-signing"))
-    ctrl->server_local->use_cache_for_signing = *value? atoi (value) : 0;
+    ctrl->server_local->use_cache_for_signing = *value? !!atoi (value) : 0;
   else if (!strcmp (key, "allow-pinentry-notify"))
     ctrl->server_local->allow_pinentry_notify = 1;
   else if (!strcmp (key, "pinentry-mode"))
