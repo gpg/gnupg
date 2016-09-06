@@ -1090,9 +1090,9 @@ tdb_get_validity_core (ctrl_t ctrl,
          into account.  */
       if (sig)
         {
-          err = tofu_register (ctrl, main_pk, user_id_list,
-                               sig->digest, sig->digest_len,
-                               sig->timestamp, "unknown");
+          err = tofu_register_signature (ctrl, main_pk, user_id_list,
+                                         sig->digest, sig->digest_len,
+                                         sig->timestamp, "unknown");
           if (err)
             {
               log_error ("TOFU: error registering signature: %s\n",

@@ -1314,6 +1314,29 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
       rc = GPG_ERR_NO_USER_ID;
     }
 
+#ifdef USE_TOFU
+  if (! rc && (opt.trust_model == TM_TOFU_PGP || opt.trust_model == TM_TOFU))
+    {
+      PK_LIST iter;
+      for (iter = pk_list; iter; iter = iter->next)
+        {
+          int rc2;
+
+          /* Note: we already resolved any conflict when looking up
+             the key.  Don't annoy the user again if she selected
+             accept once.  */
+          rc2 = tofu_register_encryption (ctrl, iter->pk, NULL, 0);
+          if (rc2)
+            log_info ("WARNING: Failed to register encryption to %s"
+                      " with TOFU engine\n",
+                      keystr (pk_main_keyid (iter->pk)));
+          else if (DBG_TRUST)
+            log_debug ("Registered encryption to %s with TOFU DB.\n",
+                      keystr (pk_main_keyid (iter->pk)));
+        }
+    }
+#endif /*USE_TOFU*/
+
  fail:
 
   if ( rc )

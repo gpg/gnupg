@@ -41,6 +41,7 @@
 #include "mkdir_p.h"
 #include "gpgsql.h"
 #include "status.h"
+#include "sqrtu32.h"
 
 #include "tofu.h"
 
@@ -76,7 +77,8 @@ struct tofu_dbs_s
     sqlite3_stmt *get_policy_select_policy_and_conflict;
     sqlite3_stmt *get_trust_bindings_with_this_email;
     sqlite3_stmt *get_trust_gather_other_user_ids;
-    sqlite3_stmt *get_trust_gather_other_keys;
+    sqlite3_stmt *get_trust_gather_signature_stats;
+    sqlite3_stmt *get_trust_gather_encryption_stats;
     sqlite3_stmt *register_already_seen;
     sqlite3_stmt *register_insert;
   } s;
@@ -649,6 +651,19 @@ initdb (sqlite3 *db)
     }
 
  out:
+  if (! rc)
+    {
+      /* Early version of the v1 format did not include the encryption
+         table.  Add it.  */
+      sqlite3_exec (db,
+                    "create table if not exists encryptions"
+                    " (binding INTEGER NOT NULL,"
+                    "  time INTEGER);"
+                    "create index if not exists encryptions_binding"
+                    " on encryptions (binding);\n",
+                    NULL, NULL, &err);
+    }
+
   if (rc)
     {
       rc = sqlite3_exec (db, "rollback;", NULL, NULL, &err);
@@ -1384,39 +1399,42 @@ ask_about_binding (ctrl_t ctrl,
   strlist_rev (&conflict_set);
   for (iter = conflict_set; iter && ! rc; iter = iter->next)
     {
+#define STATS_SQL(table, time, sign)                         \
+         "select fingerprint, policy, time_ago, count(*)\n" \
+         " from\n" \
+         "  (select bindings.*,\n" \
+         "     "sign" case\n" \
+         "       when delta ISNULL then 1\n" \
+         /* From the future (but if its just a couple of hours in the \
+          * future don't turn it into a warning)?  Or should we use \
+          * small, medium or large units?  (Note: whatever we do, we \
+          * keep the value in seconds.  Then when we group, everything \
+          * that rounds to the same number of seconds is grouped.)  */ \
+         "      when delta < -("STRINGIFY (TIME_AGO_FUTURE_IGNORE)") then 2\n" \
+         "      when delta < ("STRINGIFY (TIME_AGO_SMALL_THRESHOLD)")\n" \
+         "       then 3\n" \
+         "      when delta < ("STRINGIFY (TIME_AGO_MEDIUM_THRESHOLD)")\n" \
+         "       then 4\n" \
+         "      when delta < ("STRINGIFY (TIME_AGO_LARGE_THRESHOLD)")\n" \
+         "       then 5\n" \
+         "      else 6\n" \
+         "     end time_ago,\n" \
+         "    delta time_ago_raw\n" \
+         "   from bindings\n" \
+         "   left join\n" \
+         "     (select *,\n" \
+         "        cast(strftime('%s','now') - " time " as real) delta\n" \
+         "       from " table ") ss\n" \
+         "    on ss.binding = bindings.oid)\n" \
+         " where email = ? and fingerprint = ?\n" \
+         " group by time_ago\n" \
+         /* Make sure the current key is first.  */ \
+         " order by time_ago desc;\n"
+
       rc = gpgsql_stepx
-        (dbs->db, &dbs->s.get_trust_gather_other_keys,
+        (dbs->db, &dbs->s.get_trust_gather_signature_stats,
          signature_stats_collect_cb, &stats, &sqerr,
-         "select fingerprint, policy, time_ago, count(*)\n"
-         " from\n"
-         "  (select bindings.*,\n"
-         "     case\n"
-         "       when delta ISNULL then 1\n"
-         /* From the future (but if its just a couple of hours in the
-          * future don't turn it into a warning)?  Or should we use
-          * small, medium or large units?  (Note: whatever we do, we
-          * keep the value in seconds.  Then when we group, everything
-          * that rounds to the same number of seconds is grouped.)  */
-         "      when delta < -("STRINGIFY (TIME_AGO_FUTURE_IGNORE)") then 2\n"
-         "      when delta < ("STRINGIFY (TIME_AGO_SMALL_THRESHOLD)")\n"
-         "       then 3\n"
-         "      when delta < ("STRINGIFY (TIME_AGO_MEDIUM_THRESHOLD)")\n"
-         "       then 4\n"
-         "      when delta < ("STRINGIFY (TIME_AGO_LARGE_THRESHOLD)")\n"
-         "       then 5\n"
-         "      else 6\n"
-         "     end time_ago,\n"
-         "    delta time_ago_raw\n"
-         "   from bindings\n"
-         "   left join\n"
-         "     (select *,\n"
-         "        cast(strftime('%s','now') - sig_time as real) delta\n"
-         "       from signatures) ss\n"
-         "    on ss.binding = bindings.oid)\n"
-         " where email = ? and fingerprint = ?\n"
-         " group by time_ago\n"
-         /* Make sure the current key is first.  */
-         " order by time_ago desc;\n",
+         STATS_SQL ("signatures", "sig_time", ""),
          GPGSQL_ARG_STRING, email,
          GPGSQL_ARG_STRING, iter->d,
          GPGSQL_ARG_END);
@@ -1426,6 +1444,23 @@ ask_about_binding (ctrl_t ctrl,
       if (!stats || strcmp (iter->d, stats->fingerprint) != 0)
         /* No stats for this binding.  Add a dummy entry.  */
         signature_stats_prepend (&stats, iter->d, TOFU_POLICY_AUTO, 1, 1);
+
+      rc = gpgsql_stepx
+        (dbs->db, &dbs->s.get_trust_gather_encryption_stats,
+         signature_stats_collect_cb, &stats, &sqerr,
+         STATS_SQL ("encryptions", "time", "-"),
+         GPGSQL_ARG_STRING, email,
+         GPGSQL_ARG_STRING, iter->d,
+         GPGSQL_ARG_END);
+      if (rc)
+        break;
+
+#undef STATS_SQL
+
+      if (!stats || strcmp (iter->d, stats->fingerprint) != 0
+          || stats->time_ago > 0)
+        /* No stats for this binding.  Add a dummy entry.  */
+        signature_stats_prepend (&stats, iter->d, TOFU_POLICY_AUTO, -1, 1);
     }
   end_transaction (ctrl, 0);
   strlist_rev (&conflict_set);
@@ -1459,6 +1494,13 @@ ask_about_binding (ctrl_t ctrl,
                   email);
       for (stats_iter = stats; stats_iter; stats_iter = stats_iter->next)
         {
+#if 0
+          log_debug ("%s: time_ago: %ld; count: %ld\n",
+                     stats_iter->fingerprint,
+                     stats_iter->time_ago,
+                     stats_iter->count);
+#endif
+
           if (! key || strcmp (key, stats_iter->fingerprint))
             {
               int this_key;
@@ -1499,7 +1541,7 @@ ask_about_binding (ctrl_t ctrl,
               seen_in_past = 0;
             }
 
-          if (stats_iter->time_ago == 1)
+          if (abs(stats_iter->time_ago) == 1)
             {
               /* The 1 in this case is the NULL entry.  */
               log_assert (stats_iter->count == 1);
@@ -1510,12 +1552,18 @@ ask_about_binding (ctrl_t ctrl,
           es_fputs ("    ", fp);
           /* TANSLATORS: This string is concatenated with one of
            * the day/week/month strings to form one sentence.  */
-          es_fprintf (fp, ngettext("Verified %d message",
-                                   "Verified %d messages",
-                                   seen_in_past), seen_in_past);
+          if (stats_iter->time_ago > 0)
+            es_fprintf (fp, ngettext("Verified %d message",
+                                     "Verified %d messages",
+                                     seen_in_past), seen_in_past);
+          else
+            es_fprintf (fp, ngettext("Encrypted %d message",
+                                     "Encrypted %d messages",
+                                     seen_in_past), seen_in_past);
+
           if (!stats_iter->count)
             es_fputs (".", fp);
-          else if (stats_iter->time_ago == 2)
+          else if (abs(stats_iter->time_ago) == 2)
             {
               es_fprintf (fp, "in the future.");
               /* Reset it.  */
@@ -1523,25 +1571,25 @@ ask_about_binding (ctrl_t ctrl,
             }
           else
             {
-              if (stats_iter->time_ago == 3)
+              if (abs(stats_iter->time_ago) == 3)
                 es_fprintf (fp, ngettext(" over the past days.",
                                          " over the past %d days.",
                                          seen_in_past),
                             TIME_AGO_SMALL_THRESHOLD
                             / TIME_AGO_UNIT_SMALL);
-              else if (stats_iter->time_ago == 4)
+              else if (abs(stats_iter->time_ago) == 4)
                 es_fprintf (fp, ngettext(" over the past month.",
                                          " over the past %d months.",
                                          seen_in_past),
                             TIME_AGO_MEDIUM_THRESHOLD
                             / TIME_AGO_UNIT_MEDIUM);
-              else if (stats_iter->time_ago == 5)
+              else if (abs(stats_iter->time_ago) == 5)
                 es_fprintf (fp, ngettext(" over the past year.",
                                          " over the past %d years.",
                                          seen_in_past),
                             TIME_AGO_LARGE_THRESHOLD
                             / TIME_AGO_UNIT_LARGE);
-              else if (stats_iter->time_ago == 6)
+              else if (abs(stats_iter->time_ago) == 6)
                 es_fprintf (fp, _(" in the past."));
               else
                 log_assert (! "Broken SQL.\n");
@@ -2349,46 +2397,59 @@ time_ago_str (long long int t)
 /* If FP is NULL, write TOFU_STATS status line.  If FP is not NULL
  * write a "tfs" record to that stream. */
 static void
-write_stats_status (estream_t fp, long messages, enum tofu_policy policy,
-                    unsigned long first_seen,
-                    unsigned long most_recent_seen)
+write_stats_status (estream_t fp,
+                    enum tofu_policy policy,
+                    unsigned long signature_count,
+                    unsigned long signature_first_seen,
+                    unsigned long signature_most_recent,
+                    unsigned long encryption_count,
+                    unsigned long encryption_first_done,
+                    unsigned long encryption_most_recent)
 {
   const char *validity;
 
+  /* Use the euclidean distance rather then the sum of the magnitudes
+     to ensure a balance between verified signatures and encrypted
+     messages.  */
+  float messages = sqrtu32 (signature_count) + sqrtu32 (encryption_count);
+
   if (messages < 1)
     validity = "1"; /* Key without history.  */
-  else if (messages < BASIC_TRUST_THRESHOLD)
+  else if (messages < sqrtu32 (2 * BASIC_TRUST_THRESHOLD))
     validity = "2"; /* Key with too little history.  */
-  else if (messages < FULL_TRUST_THRESHOLD)
+  else if (messages < sqrtu32 (2 * FULL_TRUST_THRESHOLD))
     validity = "3"; /* Key with enough history for basic trust.  */
   else
     validity = "4"; /* Key with a lot of history.  */
 
   if (fp)
     {
-      es_fprintf (fp, "tfs:1:%s:%ld:0:%s:%lu:%lu:\n",
-                  validity, messages,
+      es_fprintf (fp, "tfs:1:%s:%ld:%ld:%s:%lu:%lu:%lu:%lu:\n",
+                  validity, signature_count, encryption_count,
                   tofu_policy_str (policy),
-                  first_seen, most_recent_seen);
+                  signature_first_seen, signature_most_recent,
+                  encryption_first_done, encryption_most_recent);
     }
   else
     {
       char numbuf1[35];
       char numbuf2[35];
       char numbuf3[35];
+      char numbuf4[35];
+      char numbuf5[35];
+      char numbuf6[35];
 
-      snprintf (numbuf1, sizeof numbuf1, " %ld", messages);
-      *numbuf2 = *numbuf3 = 0;
-      if (first_seen && most_recent_seen)
-        {
-          snprintf (numbuf2, sizeof numbuf2, " %lu", first_seen);
-          snprintf (numbuf3, sizeof numbuf3, " %lu", most_recent_seen);
-        }
+      snprintf (numbuf1, sizeof numbuf1, " %ld", signature_count);
+      snprintf (numbuf2, sizeof numbuf2, " %ld", encryption_count);
+      snprintf (numbuf3, sizeof numbuf3, " %lu", signature_first_seen);
+      snprintf (numbuf4, sizeof numbuf4, " %lu", signature_most_recent);
+      snprintf (numbuf5, sizeof numbuf5, " %lu", encryption_first_done);
+      snprintf (numbuf6, sizeof numbuf6, " %lu", encryption_most_recent);
 
       write_status_strings (STATUS_TOFU_STATS,
-                            validity, numbuf1, " 0",
+                            validity, numbuf1, numbuf2,
                             " ", tofu_policy_str (policy),
-                            numbuf2, numbuf3,
+                            numbuf3, numbuf4, numbuf5, numbuf6,
                             NULL);
     }
 }
@@ -2401,13 +2462,24 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 		 const char *email, const char *user_id,
 		 estream_t outfp)
 {
+  unsigned long now = gnupg_get_time ();
+  enum tofu_policy policy = get_policy (dbs, fingerprint, email, NULL);
+
   char *fingerprint_pp;
   int rc;
   strlist_t strlist = NULL;
   char *err = NULL;
 
+  unsigned long signature_first_seen = 0;
+  unsigned long signature_most_recent = 0;
+  unsigned long signature_count = 0;
+  unsigned long encryption_first_done = 0;
+  unsigned long encryption_most_recent = 0;
+  unsigned long encryption_count = 0;
+
   fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
 
+  /* Get the signature stats.  */
   rc = gpgsql_exec_printf
     (dbs->db, strings_collect_cb, &strlist, &err,
      "select count (*), min (signatures.time), max (signatures.time)\n"
@@ -2423,191 +2495,217 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
       goto out;
     }
 
+  if (strlist)
+    {
+      log_assert (strlist->next);
+      log_assert (strlist->next->next);
+      log_assert (! strlist->next->next->next);
+
+      string_to_long (&signature_count, strlist->d, -1, __LINE__);
+      string_to_long (&signature_first_seen, strlist->next->d, -1, __LINE__);
+      string_to_long (&signature_most_recent,
+                      strlist->next->next->d, -1, __LINE__);
+
+      free_strlist (strlist);
+      strlist = NULL;
+    }
+
+  /* Get the encryption stats.  */
+  rc = gpgsql_exec_printf
+    (dbs->db, strings_collect_cb, &strlist, &err,
+     "select count (*), min (encryptions.time), max (encryptions.time)\n"
+     " from encryptions\n"
+     " left join bindings on encryptions.binding = bindings.oid\n"
+     " where fingerprint = %Q and email = %Q;",
+     fingerprint, email);
+  if (rc)
+    {
+      log_error (_("error reading TOFU database: %s\n"), err);
+      print_further_info ("getting statistics");
+      sqlite3_free (err);
+      goto out;
+    }
+
+  if (strlist)
+    {
+      log_assert (strlist->next);
+      log_assert (strlist->next->next);
+      log_assert (! strlist->next->next->next);
+
+      string_to_long (&encryption_count, strlist->d, -1, __LINE__);
+      string_to_long (&encryption_first_done, strlist->next->d, -1, __LINE__);
+      string_to_long (&encryption_most_recent,
+                      strlist->next->next->d, -1, __LINE__);
+
+      free_strlist (strlist);
+      strlist = NULL;
+    }
+
   if (!outfp)
     write_status_text_and_buffer (STATUS_TOFU_USER, fingerprint,
                                   email, strlen (email), 0);
 
-  if (! strlist)
+  write_stats_status (outfp, policy,
+                      signature_count,
+                      signature_first_seen,
+                      signature_most_recent,
+                      encryption_count,
+                      encryption_first_done,
+                      encryption_most_recent);
+
+  if (!outfp)
     {
-      if (!outfp)
-        log_info (_("Have never verified a message signed by key %s!\n"),
-                  fingerprint_pp);
-      write_stats_status (outfp, 0, TOFU_POLICY_NONE, 0, 0);
-    }
-  else
-    {
-      unsigned long now = gnupg_get_time ();
-      signed long messages;
-      unsigned long first_seen;
-      unsigned long most_recent_seen;
+      estream_t fp;
+      char *msg;
 
-      log_assert (strlist_length (strlist) == 3);
+      fp = es_fopenmem (0, "rw,samethread");
+      if (! fp)
+        log_fatal ("error creating memory stream: %s\n",
+                   gpg_strerror (gpg_error_from_syserror()));
 
-      string_to_long (&messages, strlist->d, -1, __LINE__);
-
-      if (messages == 0 && *strlist->next->d == '\0')
-        { /* min(NULL) => NULL => "".  */
-          first_seen = 0;
-          most_recent_seen = 0;
+      if (signature_count == 0)
+        {
+          es_fprintf (fp, _("Verified %ld messages signed by \"%s\"."),
+                      0L, user_id);
+          es_fputc ('\n', fp);
         }
       else
-	{
-          string_to_ulong (&first_seen, strlist->next->d, -1, __LINE__);
-          if (first_seen > now)
-            {
-              log_debug ("time-warp - tofu DB has a future value (%lu, %lu)\n",
-                         first_seen, now);
-              first_seen = now;
-            }
-	  string_to_ulong (&most_recent_seen, strlist->next->next->d, -1,
-                           __LINE__);
-          if (most_recent_seen > now)
-            {
-              log_debug ("time-warp - tofu DB has a future value (%lu, %lu)\n",
-                         most_recent_seen, now);
-              most_recent_seen = now;
-            }
-
-	}
-
-      if (messages == -1 || first_seen == -1)
         {
-          write_stats_status (outfp, 0, TOFU_POLICY_NONE, 0, 0);
-          if (!outfp)
-            log_info (_("Failed to collect signature statistics for \"%s\"\n"
-                        "(key %s)\n"),
-                      user_id, fingerprint_pp);
+          char *first_seen_ago_str = time_ago_str (now - signature_first_seen);
+
+          /* TRANSLATORS: The final %s is replaced by a string like
+             "7 months, 1 day, 5 minutes, 0 seconds". */
+          es_fprintf (fp,
+                      ngettext("Verified %ld message signed by \"%s\"\n"
+                               "in the past %s.",
+                               "Verified %ld messages signed by \"%s\"\n"
+                               "in the past %s.",
+                               signature_count),
+                      signature_count, user_id, first_seen_ago_str);
+
+          if (signature_count > 1)
+            {
+              char *tmpstr = time_ago_str (now - signature_most_recent);
+              es_fputs ("  ", fp);
+              es_fprintf (fp, _("The most recent message was"
+                                " verified %s ago."), tmpstr);
+              xfree (tmpstr);
+            }
+          xfree (first_seen_ago_str);
         }
-      else if (outfp)
+
+      es_fprintf (fp, "  ");
+
+      if (encryption_count == 0)
         {
-          write_stats_status (outfp, messages,
-                              get_policy (dbs, fingerprint, email, NULL),
-                              first_seen, most_recent_seen);
+          es_fprintf (fp, _("Encrypted %ld messages to \"%s\"."),
+                      0L, user_id);
+          es_fputc ('\n', fp);
         }
       else
-	{
-	  enum tofu_policy policy = get_policy (dbs, fingerprint, email, NULL);
-	  estream_t fp;
-	  char *msg;
+        {
+          char *first_done_ago_str = time_ago_str (now - encryption_first_done);
 
-          write_stats_status (NULL, messages,
-                              policy,
-                              first_seen, most_recent_seen);
+          /* TRANSLATORS: The final %s is replaced by a string like
+             "7 months, 1 day, 5 minutes, 0 seconds". */
+          es_fprintf (fp,
+                      ngettext("Encrypted %ld message to \"%s\"\n"
+                               "in the past %s.",
+                               "Encrypted %ld messages to \"%s\"\n"
+                               "in the past %s.",
+                               encryption_count),
+                      encryption_count, user_id, first_done_ago_str);
 
-	  fp = es_fopenmem (0, "rw,samethread");
-	  if (! fp)
-            log_fatal ("error creating memory stream: %s\n",
-                       gpg_strerror (gpg_error_from_syserror()));
-
-	  if (messages == 0)
+          if (encryption_count > 1)
             {
-              es_fprintf (fp, _("Verified %ld messages signed by \"%s\"."),
-                          0L, user_id);
-              es_fputc ('\n', fp);
+              char *tmpstr = time_ago_str (now - encryption_most_recent);
+              es_fputs ("  ", fp);
+              es_fprintf (fp, _("The most recent message was"
+                                " verified %s ago."), tmpstr);
+              xfree (tmpstr);
             }
-	  else
-	    {
-              char *first_seen_ago_str = time_ago_str (now - first_seen);
+          xfree (first_done_ago_str);
+        }
 
-              /* TRANSLATORS: The final %s is replaced by a string like
-                 "7 months, 1 day, 5 minutes, 0 seconds". */
-	      es_fprintf (fp,
-                          ngettext("Verified %ld message signed by \"%s\"\n"
-                                   "in the past %s.",
-                                   "Verified %ld messages signed by \"%s\"\n"
-                                   "in the past %s.",
-                                   messages),
-			  messages, user_id, first_seen_ago_str);
+      if (opt.verbose)
+        {
+          es_fputs ("  ", fp);
+          es_fputc ('(', fp);
+          es_fprintf (fp, _("policy: %s"), tofu_policy_str (policy));
+          es_fputs (")\n", fp);
+        }
+      else
+        es_fputs ("\n", fp);
 
-              if (messages > 1)
-                {
-                  char *tmpstr = time_ago_str (now - most_recent_seen);
-                  es_fputs ("  ", fp);
-                  es_fprintf (fp, _("The most recent message was"
-                                    " verified %s ago."), tmpstr);
-                  xfree (tmpstr);
-                }
-              xfree (first_seen_ago_str);
 
-              if (opt.verbose)
-                {
-                  es_fputs ("  ", fp);
-                  es_fputc ('(', fp);
-                  es_fprintf (fp, _("policy: %s"), tofu_policy_str (policy));
-                  es_fputs (")\n", fp);
-                }
-              else
-                es_fputs ("\n", fp);
-            }
+      {
+        char *tmpmsg, *p;
+        es_fputc (0, fp);
+        if (es_fclose_snatch (fp, (void **) &tmpmsg, NULL))
+          log_fatal ("error snatching memory stream\n");
+        msg = format_text (tmpmsg, 0, 72, 80);
+        es_free (tmpmsg);
 
-          {
-            char *tmpmsg, *p;
-            es_fputc (0, fp);
-            if (es_fclose_snatch (fp, (void **) &tmpmsg, NULL))
-              log_fatal ("error snatching memory stream\n");
-            msg = format_text (tmpmsg, 0, 72, 80);
-            es_free (tmpmsg);
+        /* Print a status line but suppress the trailing LF.
+         * Spaces are not percent escaped. */
+        if (*msg)
+          write_status_buffer (STATUS_TOFU_STATS_LONG,
+                               msg, strlen (msg)-1, -1);
 
-            /* Print a status line but suppress the trailing LF.
-             * Spaces are not percent escaped. */
-            if (*msg)
-              write_status_buffer (STATUS_TOFU_STATS_LONG,
-                                   msg, strlen (msg)-1, -1);
+        /* Remove the non-breaking space markers.  */
+        for (p=msg; *p; p++)
+          if (*p == '~')
+            *p = ' ';
+      }
 
-            /* Remove the non-breaking space markers.  */
-            for (p=msg; *p; p++)
-              if (*p == '~')
-                *p = ' ';
+      log_string (GPGRT_LOG_INFO, msg);
+      xfree (msg);
 
-          }
+      if (policy == TOFU_POLICY_AUTO
+          /* Cf. write_stats_status  */
+          && (sqrtu32 (encryption_count) + sqrtu32 (signature_count)
+              < sqrtu32 (2 * BASIC_TRUST_THRESHOLD)))
+        {
+          char *set_policy_command;
+          char *text;
+          char *tmpmsg;
 
-	  log_string (GPGRT_LOG_INFO, msg);
-          xfree (msg);
+          if (signature_count == 0)
+            log_info (_("Warning: we have yet to see"
+                        " a message signed by this key and user id!\n"));
+          else if (signature_count == 1)
+            log_info (_("Warning: we've only seen a single message"
+                        " signed by this key and user id!\n"));
 
-	  if (policy == TOFU_POLICY_AUTO && messages < BASIC_TRUST_THRESHOLD)
-	    {
-	      char *set_policy_command;
-	      char *text;
-              char *tmpmsg;
+          set_policy_command =
+            xasprintf ("gpg --tofu-policy bad %s", fingerprint);
 
-	      if (messages == 0)
-		log_info (_("Warning: we have yet to see"
-                            " a message signed by this key and user id!\n"));
-	      else if (messages == 1)
-		log_info (_("Warning: we've only seen a single message"
-                            " signed by this key and user id!\n"));
+          tmpmsg = xasprintf
+            (ngettext
+             ("Warning: if you think you've seen more than %ld message "
+              "signed by this key and user id, then this key might be a "
+              "forgery!  Carefully examine the email address for small "
+              "variations.  If the key is suspect, then use\n"
+              "  %s\n"
+              "to mark it as being bad.\n",
+              "Warning: if you think you've seen more than %ld messages "
+              "signed by this key, then this key might be a forgery!  "
+              "Carefully examine the email address for small "
+              "variations.  If the key is suspect, then use\n"
+              "  %s\n"
+              "to mark it as being bad.\n",
+              signature_count),
+             signature_count, set_policy_command);
+          text = format_text (tmpmsg, 0, 72, 80);
+          xfree (tmpmsg);
+          log_string (GPGRT_LOG_INFO, text);
+          xfree (text);
 
-	      set_policy_command =
-		xasprintf ("gpg --tofu-policy bad %s", fingerprint);
-
-              tmpmsg = xasprintf
-                (ngettext
-                 ("Warning: if you think you've seen more than %ld message "
-                  "signed by this key and user id, then this key might be a "
-                  "forgery!  Carefully examine the email address for small "
-                  "variations.  If the key is suspect, then use\n"
-                  "  %s\n"
-                  "to mark it as being bad.\n",
-                  "Warning: if you think you've seen more than %ld messages "
-                  "signed by this key, then this key might be a forgery!  "
-                      "Carefully examine the email address for small "
-                  "variations.  If the key is suspect, then use\n"
-                  "  %s\n"
-                  "to mark it as being bad.\n",
-                  messages),
-                  messages, set_policy_command);
-              text = format_text (tmpmsg, 0, 72, 80);
-              xfree (tmpmsg);
-	      log_string (GPGRT_LOG_INFO, text);
-              xfree (text);
-
-	      es_free (set_policy_command);
-	    }
-	}
+          es_free (set_policy_command);
+        }
     }
 
  out:
-  free_strlist (strlist);
   xfree (fingerprint_pp);
 
   return;
@@ -2652,9 +2750,10 @@ email_from_user_id (const char *user_id)
    This function returns 0 on success and an error code if an error
    occured.  */
 gpg_error_t
-tofu_register (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
-	       const byte *sig_digest_bin, int sig_digest_bin_len,
-	       time_t sig_time, const char *origin)
+tofu_register_signature (ctrl_t ctrl,
+                         PKT_public_key *pk, strlist_t user_id_list,
+                         const byte *sig_digest_bin, int sig_digest_bin_len,
+                         time_t sig_time, const char *origin)
 {
   gpg_error_t rc;
   tofu_dbs_t dbs;
@@ -2796,6 +2895,114 @@ tofu_register (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 
   return rc;
 }
+
+gpg_error_t
+tofu_register_encryption (ctrl_t ctrl,
+                          PKT_public_key *pk, strlist_t user_id_list,
+                          int may_ask)
+{
+  gpg_error_t rc = 0;
+  tofu_dbs_t dbs;
+  kbnode_t kb = NULL;
+  int free_user_id_list = 0;
+  char *fingerprint = NULL;
+  strlist_t user_id;
+  char *err = NULL;
+
+  dbs = opendbs (ctrl);
+  if (! dbs)
+    {
+      rc = gpg_error (GPG_ERR_GENERAL);
+      log_error (_("error opening TOFU database: %s\n"),
+                 gpg_strerror (rc));
+      return rc;
+    }
+
+  /* Make sure PK is a primary key.  */
+  if (keyid_cmp (pk_keyid (pk), pk->main_keyid) != 0
+      || user_id_list)
+    kb = get_pubkeyblock (pk->keyid);
+
+  if (keyid_cmp (pk_keyid (pk), pk->main_keyid) != 0)
+    pk = kb->pkt->pkt.public_key;
+
+  if (! user_id_list)
+    {
+      /* Use all non-revoked user ids.  Do use expired user ids.  */
+      kbnode_t n = kb;
+
+      while ((n = find_next_kbnode (n, PKT_USER_ID)))
+        {
+	  PKT_user_id *uid = n->pkt->pkt.user_id;
+
+          if (uid->is_revoked)
+            continue;
+
+          add_to_strlist (&user_id_list, uid->name);
+        }
+
+      free_user_id_list = 1;
+
+      if (! user_id_list)
+        log_info ("WARNING: Encrypting to %s, which has no"
+                  "non-revoked user ids.\n",
+                  keystr (pk->keyid));
+    }
+
+  fingerprint = hexfingerprint (pk, NULL, 0);
+
+  tofu_begin_batch_update (ctrl);
+  tofu_resume_batch_transaction (ctrl);
+
+  for (user_id = user_id_list; user_id; user_id = user_id->next)
+    {
+      char *email = email_from_user_id (user_id->d);
+
+      /* Make sure the binding exists and that we recognize any
+         conflicts.  */
+      int tl = get_trust (ctrl, pk, fingerprint, email, user_id->d,
+                          may_ask);
+      if (tl == _tofu_GET_TRUST_ERROR)
+        {
+          /* An error.  */
+          xfree (email);
+          goto die;
+        }
+
+      rc = gpgsql_stepx
+        (dbs->db, &dbs->s.register_insert, NULL, NULL, &err,
+         "insert into encryptions\n"
+         " (binding, time)\n"
+         " values\n"
+         " ((select oid from bindings\n"
+         "    where fingerprint = ? and email = ?),\n"
+         "  strftime('%s', 'now'));",
+         GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
+         GPGSQL_ARG_END);
+      if (rc)
+        {
+          log_error (_("error updating TOFU database: %s\n"), err);
+          print_further_info ("insert encryption");
+          sqlite3_free (err);
+        }
+
+      xfree (email);
+    }
+
+ die:
+  tofu_end_batch_update (ctrl);
+
+  if (kb)
+    release_kbnode (kb);
+
+  if (free_user_id_list)
+    free_strlist (user_id_list);
+
+  xfree (fingerprint);
+
+  return rc;
+}
+
 
 /* Combine a trust level returned from the TOFU trust model with a
    trust level returned by the PGP trust model.  This is primarily of

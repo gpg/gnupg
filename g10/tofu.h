@@ -78,13 +78,24 @@ int tofu_policy_to_trust_level (enum tofu_policy policy);
    data came from, e.g., "email:claws" (default: "unknown").  Note:
    this function does not interact with the user, If there is a
    conflict, or if the binding's policy is ask, the actual interaction
-   is deferred until tofu_get_validity is called..  Set the string
+   is deferred until tofu_get_validity is called.  Set the string
    list FLAG to indicate that a specified user id is expired.  This
    function returns 0 on success and an error code on failure.  */
-gpg_error_t tofu_register (ctrl_t ctrl, PKT_public_key *pk,
-                           strlist_t user_id_list,
-                           const byte *sigs_digest, int sigs_digest_len,
-                           time_t sig_time, const char *origin);
+gpg_error_t tofu_register_signature (ctrl_t ctrl, PKT_public_key *pk,
+                                     strlist_t user_id_list,
+                                     const byte *sigs_digest,
+                                     int sigs_digest_len,
+                                     time_t sig_time, const char *origin);
+
+/* Note that an encrypted mail was sent to <PK, USER_ID>, for each
+   USER_ID in USER_ID_LIST.  (If USER_ID_LIST is NULL, then all
+   non-revoked user ids associated with PK are used.)  If MAY_ASK is
+   set, then may interact with the user to resolve a TOFU
+   conflict.  */
+gpg_error_t tofu_register_encryption (ctrl_t ctrl,
+                                      PKT_public_key *pk,
+                                      strlist_t user_id_list,
+                                      int may_ask);
 
 /* Combine a trust level returned from the TOFU trust model with a
    trust level returned by the PGP trust model.  This is primarily of
