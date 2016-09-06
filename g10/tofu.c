@@ -2011,6 +2011,8 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
   if (opt.batch)
     may_ask = 0;
 
+  log_assert (keyid_cmp (pk_keyid (pk), pk->main_keyid) == 0);
+
   /* Make sure _tofu_GET_TRUST_ERROR isn't equal to any of the trust
      levels.  */
   log_assert (_tofu_GET_TRUST_ERROR != TRUST_UNKNOWN
@@ -2777,6 +2779,8 @@ tofu_register_signature (ctrl_t ctrl,
   rc = begin_transaction (ctrl, 0);
   if (rc)
     return rc;
+
+  log_assert (keyid_cmp (pk_keyid (pk), pk->main_keyid) == 0);
 
   sig_digest = make_radix64_string (sig_digest_bin, sig_digest_bin_len);
   fingerprint = hexfingerprint (pk, NULL, 0);
