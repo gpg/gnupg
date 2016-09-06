@@ -2454,10 +2454,13 @@ write_stats_status (estream_t fp,
     }
 }
 
-
 /* Note: If OUTFP is not NULL, this function merely prints a "tfs" record
- * to OUTFP.  In this case USER_ID is not required.  */
-static void
+ * to OUTFP.  In this case USER_ID is not required.
+ *
+ * Returns whether the caller should call show_warning after iterating
+ * over all user ids.
+ */
+static int
 show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 		 const char *email, const char *user_id,
 		 estream_t outfp)
@@ -2476,6 +2479,8 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
   unsigned long encryption_first_done = 0;
   unsigned long encryption_most_recent = 0;
   unsigned long encryption_count = 0;
+
+  int show_warning = 0;
 
   fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
 
@@ -2666,50 +2671,58 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
           && (sqrtu32 (encryption_count) + sqrtu32 (signature_count)
               < sqrtu32 (2 * BASIC_TRUST_THRESHOLD)))
         {
-          char *set_policy_command;
-          char *text;
-          char *tmpmsg;
-
           if (signature_count == 0)
             log_info (_("Warning: we have yet to see"
-                        " a message signed by this key and user id!\n"));
+                        " a message signed using this key and user id!\n"));
           else if (signature_count == 1)
             log_info (_("Warning: we've only seen a single message"
-                        " signed by this key and user id!\n"));
+                        " signed using this key and user id!\n"));
 
-          set_policy_command =
-            xasprintf ("gpg --tofu-policy bad %s", fingerprint);
-
-          tmpmsg = xasprintf
-            (ngettext
-             ("Warning: if you think you've seen more than %ld message "
-              "signed by this key and user id, then this key might be a "
-              "forgery!  Carefully examine the email address for small "
-              "variations.  If the key is suspect, then use\n"
-              "  %s\n"
-              "to mark it as being bad.\n",
-              "Warning: if you think you've seen more than %ld messages "
-              "signed by this key, then this key might be a forgery!  "
-              "Carefully examine the email address for small "
-              "variations.  If the key is suspect, then use\n"
-              "  %s\n"
-              "to mark it as being bad.\n",
-              signature_count),
-             signature_count, set_policy_command);
-          text = format_text (tmpmsg, 0, 72, 80);
-          xfree (tmpmsg);
-          log_string (GPGRT_LOG_INFO, text);
-          xfree (text);
-
-          es_free (set_policy_command);
+          show_warning = 1;
         }
     }
 
  out:
   xfree (fingerprint_pp);
 
-  return;
+  return show_warning;
 }
+
+static void
+show_warning (const char *fingerprint, strlist_t user_id_list)
+{
+  char *set_policy_command;
+  char *text;
+  char *tmpmsg;
+
+  set_policy_command =
+    xasprintf ("gpg --tofu-policy bad %s", fingerprint);
+
+  tmpmsg = xasprintf
+    (ngettext
+     ("Warning: if you think you've seen more signatures "
+      "by this key and user id, then this key might be a "
+      "forgery!  Carefully examine the email address for small "
+      "variations.  If the key is suspect, then use\n"
+      "  %s\n"
+      "to mark it as being bad.\n",
+      "Warning: if you think you've seen more signatures "
+      "by this key and these user ids, then this key might be a "
+      "forgery!  Carefully examine the email addresses for small "
+      "variations.  If the key is suspect, then use\n"
+      "  %s\n"
+      "to mark it as being bad.\n",
+      strlist_length (user_id_list)),
+     set_policy_command);
+
+  text = format_text (tmpmsg, 0, 72, 80);
+  xfree (tmpmsg);
+  log_string (GPGRT_LOG_INFO, text);
+  xfree (text);
+
+  es_free (set_policy_command);
+}
+
 
 /* Extract the email address from a user id and normalize it.  If the
    user id doesn't contain an email address, then we use the whole
@@ -3120,6 +3133,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
   int trust_level = TRUST_UNKNOWN;
   int bindings = 0;
   int bindings_valid = 0;
+  int need_warning = 0;
 
   dbs = opendbs (ctrl);
   if (! dbs)
@@ -3162,7 +3176,8 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
         bindings_valid ++;
 
       if (may_ask && tl != TRUST_ULTIMATE && tl != TRUST_EXPIRED)
-        show_statistics (dbs, fingerprint, email, user_id->d, NULL);
+        need_warning |=
+          show_statistics (dbs, fingerprint, email, user_id->d, NULL);
 
       if (tl == TRUST_NEVER)
         trust_level = TRUST_NEVER;
@@ -3187,6 +3202,9 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 
       xfree (email);
     }
+
+  if (need_warning)
+    show_warning (fingerprint, user_id_list);
 
  die:
   tofu_end_batch_update (ctrl);
