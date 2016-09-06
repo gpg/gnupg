@@ -95,19 +95,15 @@ struct tofu_dbs_s
 /* If a message is signed a couple of hours in the future, just assume
    some clock skew.  */
 #define TIME_AGO_FUTURE_IGNORE (2 * 60 * 60)
-#if 0
-#  define TIME_AGO_UNIT_SMALL 60
-#  define TIME_AGO_MEDIUM_THRESHOLD (60 * TIME_AGO_UNIT_SMALL)
-#  define TIME_AGO_UNIT_MEDIUM (60 * 60)
-#  define TIME_AGO_LARGE_THRESHOLD (24 * 60 * TIME_AGO_UNIT_SMALL)
-#  define TIME_AGO_UNIT_LARGE (24 * 60 * 60)
-#else
-#  define TIME_AGO_UNIT_SMALL (24 * 60 * 60)
-#  define TIME_AGO_MEDIUM_THRESHOLD (4 * TIME_AGO_UNIT_SMALL)
-#  define TIME_AGO_UNIT_MEDIUM (7 * 24 * 60 * 60)
-#  define TIME_AGO_LARGE_THRESHOLD (28 * TIME_AGO_UNIT_SMALL)
-#  define TIME_AGO_UNIT_LARGE (30 * 24 * 60 * 60)
-#endif
+/* Days.  */
+#define TIME_AGO_UNIT_SMALL (24 * 60 * 60)
+#define TIME_AGO_SMALL_THRESHOLD (7 * TIME_AGO_UNIT_SMALL)
+/* Months.  */
+#define TIME_AGO_UNIT_MEDIUM (30 * 24 * 60 * 60)
+#define TIME_AGO_MEDIUM_THRESHOLD (2 * TIME_AGO_UNIT_MEDIUM)
+/* Years.  */
+#define TIME_AGO_UNIT_LARGE (365 * 24 * 60 * 60)
+#define TIME_AGO_LARGE_THRESHOLD (2 * TIME_AGO_UNIT_LARGE)
 
 /* Local prototypes.  */
 static gpg_error_t end_transaction (ctrl_t ctrl, int only_batch);
@@ -1151,14 +1147,10 @@ format_conflict_msg_part1 (int policy, strlist_t conflict_set,
 {
   estream_t fp;
   char *fingerprint;
-  char *binding;
-  int binding_shown = 0;
   char *tmpstr, *text;
 
   log_assert (conflict_set);
-
   fingerprint = conflict_set->d;
-  binding = xasprintf ("<%s, %s>", fingerprint, email);
 
   fp = es_fopenmem (0, "rw,samethread");
   if (!fp)
@@ -1167,37 +1159,30 @@ format_conflict_msg_part1 (int policy, strlist_t conflict_set,
 
   if (policy == TOFU_POLICY_NONE)
     {
-      es_fprintf (fp, _("The binding %s is NOT known."), binding);
+      es_fprintf (fp,
+                  _("This is the first time the email address \"%s\" is "
+                    "being used with key %s."),
+                  email, fingerprint);
       es_fputs ("  ", fp);
-      binding_shown = 1;
     }
   else if (policy == TOFU_POLICY_ASK && conflict_set->next)
     {
-      int conflicts = strlist_length (conflict_set) - 1;
-      es_fprintf (fp,
-                  ngettext("The binding <key: %s, user id: %s> raised a "
-                           "conflict with %d other binding.",
-                           "The binding <key: %s, user id: %s> raised a "
-                           "conflict with %d other bindings.", conflicts),
-                  fingerprint, email, conflicts);
-      es_fprintf (fp,
-                  _("  Since this binding's policy was 'auto', it has been "
-                    "changed to 'ask'."));
+      int conflicts = strlist_length (conflict_set);
+      es_fprintf (fp, _("The email address \"%s\" is associated with %d keys!"),
+                  email, conflicts);
+      if (opt.verbose)
+        es_fprintf (fp,
+                    _("  Since this binding's policy was 'auto', it has been "
+                      "changed to 'ask'."));
       es_fputs ("  ", fp);
-      binding_shown = 1;
     }
 
-  /* TRANSLATORS: The %s%s is replaced by either a fingerprint and a
-     blank or by two empty strings.  */
   es_fprintf (fp,
-              _("Please indicate whether you believe the binding %s%s"
-                "is legitimate (the key belongs to the stated owner) "
-                "or a forgery (bad)."),
-              binding_shown ? "" : binding,
-              binding_shown ? "" : " ");
+              _("Please indicate whether this email address should"
+                " be associated with key %s or whether you think someone"
+                " is impersonating \"%s\"."),
+              fingerprint, email);
   es_fputc ('\n', fp);
-
-  xfree (binding);
 
   es_fputc (0, fp);
   if (es_fclose_snatch (fp, (void **)&tmpstr, NULL))
@@ -1368,7 +1353,7 @@ ask_about_binding (ctrl_t ctrl,
     {
       strlist_t strlist_iter;
 
-      es_fprintf (fp, _("Known user IDs associated with this key:\n"));
+      es_fprintf (fp, _("This key's user IDs:\n"));
       for (strlist_iter = other_user_ids;
            strlist_iter;
            strlist_iter = strlist_iter->next)
@@ -1406,21 +1391,20 @@ ask_about_binding (ctrl_t ctrl,
          " from\n"
          "  (select bindings.*,\n"
          "     case\n"
+         "       when delta ISNULL then 1\n"
          /* From the future (but if its just a couple of hours in the
           * future don't turn it into a warning)?  Or should we use
           * small, medium or large units?  (Note: whatever we do, we
           * keep the value in seconds.  Then when we group, everything
           * that rounds to the same number of seconds is grouped.)  */
-         "      when delta < -("STRINGIFY (TIME_AGO_FUTURE_IGNORE)") then -1\n"
+         "      when delta < -("STRINGIFY (TIME_AGO_FUTURE_IGNORE)") then 2\n"
+         "      when delta < ("STRINGIFY (TIME_AGO_SMALL_THRESHOLD)")\n"
+         "       then 3\n"
          "      when delta < ("STRINGIFY (TIME_AGO_MEDIUM_THRESHOLD)")\n"
-         "       then max(0,\n"
-         "                round(delta / ("STRINGIFY (TIME_AGO_UNIT_SMALL)"))\n"
-         "            * ("STRINGIFY (TIME_AGO_UNIT_SMALL)"))\n"
+         "       then 4\n"
          "      when delta < ("STRINGIFY (TIME_AGO_LARGE_THRESHOLD)")\n"
-         "       then round(delta / ("STRINGIFY (TIME_AGO_UNIT_MEDIUM)"))\n"
-         "            * ("STRINGIFY (TIME_AGO_UNIT_MEDIUM)")\n"
-         "      else round(delta / ("STRINGIFY (TIME_AGO_UNIT_LARGE)"))\n"
-         "           * ("STRINGIFY (TIME_AGO_UNIT_LARGE)")\n"
+         "       then 5\n"
+         "      else 6\n"
          "     end time_ago,\n"
          "    delta time_ago_raw\n"
          "   from bindings\n"
@@ -1441,7 +1425,7 @@ ask_about_binding (ctrl_t ctrl,
 
       if (!stats || strcmp (iter->d, stats->fingerprint) != 0)
         /* No stats for this binding.  Add a dummy entry.  */
-        signature_stats_prepend (&stats, iter->d, TOFU_POLICY_AUTO, 0, 0);
+        signature_stats_prepend (&stats, iter->d, TOFU_POLICY_AUTO, 1, 1);
     }
   end_transaction (ctrl, 0);
   strlist_rev (&conflict_set);
@@ -1468,6 +1452,7 @@ ask_about_binding (ctrl_t ctrl,
     {
       char *key = NULL;
       strlist_t binding;
+      int seen_in_past = 0;
 
       es_fprintf (fp, _("Statistics for keys"
                         " with the email address \"%s\":\n"),
@@ -1510,36 +1495,56 @@ ask_about_binding (ctrl_t ctrl,
                             tofu_policy_str (stats_iter->policy));
               es_fputs ("):\n", fp);
               xfree (key_pp);
+
+              seen_in_past = 0;
             }
 
+          if (stats_iter->time_ago == 1)
+            {
+              /* The 1 in this case is the NULL entry.  */
+              log_assert (stats_iter->count == 1);
+              stats_iter->count = 0;
+            }
+          seen_in_past += stats_iter->count;
+
           es_fputs ("    ", fp);
-          if (stats_iter->time_ago == -1)
-            es_fprintf (fp, ngettext("%ld message signed in the future.",
-                                     "%ld messages signed in the future.",
-                                     stats_iter->count), stats_iter->count);
+          /* TANSLATORS: This string is concatenated with one of
+           * the day/week/month strings to form one sentence.  */
+          es_fprintf (fp, ngettext("Verified %d message",
+                                   "Verified %d messages",
+                                   seen_in_past), seen_in_past);
+          if (!stats_iter->count)
+            es_fputs (".", fp);
+          else if (stats_iter->time_ago == 2)
+            {
+              es_fprintf (fp, "in the future.");
+              /* Reset it.  */
+              seen_in_past = 0;
+            }
           else
             {
-              long t_scaled = time_ago_scale (stats_iter->time_ago);
-
-              /* TANSLATORS: This string is concatenated with one of
-               * the day/week/month strings to form one sentence.  */
-              es_fprintf (fp, ngettext("%ld message signed",
-                                       "%ld messages signed",
-                                       stats_iter->count), stats_iter->count);
-              if (!stats_iter->count)
-                es_fputs (".", fp);
-              else if (stats_iter->time_ago < TIME_AGO_UNIT_MEDIUM)
-                es_fprintf (fp, ngettext(" over the past %ld day.",
-                                         " over the past %ld days.",
-                                         t_scaled), t_scaled);
-              else if (stats_iter->time_ago < TIME_AGO_UNIT_LARGE)
-                es_fprintf (fp, ngettext(" over the past %ld week.",
-                                         " over the past %ld weeks.",
-                                         t_scaled), t_scaled);
+              if (stats_iter->time_ago == 3)
+                es_fprintf (fp, ngettext(" over the past days.",
+                                         " over the past %d days.",
+                                         seen_in_past),
+                            TIME_AGO_SMALL_THRESHOLD
+                            / TIME_AGO_UNIT_SMALL);
+              else if (stats_iter->time_ago == 4)
+                es_fprintf (fp, ngettext(" over the past month.",
+                                         " over the past %d months.",
+                                         seen_in_past),
+                            TIME_AGO_MEDIUM_THRESHOLD
+                            / TIME_AGO_UNIT_MEDIUM);
+              else if (stats_iter->time_ago == 5)
+                es_fprintf (fp, ngettext(" over the past year.",
+                                         " over the past %d years.",
+                                         seen_in_past),
+                            TIME_AGO_LARGE_THRESHOLD
+                            / TIME_AGO_UNIT_LARGE);
+              else if (stats_iter->time_ago == 6)
+                es_fprintf (fp, _(" in the past."));
               else
-                es_fprintf (fp, ngettext(" over the past %ld month.",
-                                         " over the past %ld months.",
-                                         t_scaled), t_scaled);
+                log_assert (! "Broken SQL.\n");
             }
           es_fputs ("\n", fp);
         }
@@ -1558,11 +1563,11 @@ ask_about_binding (ctrl_t ctrl,
         {
           /* No translation.  Use the English text.  */
           text =
-            "Normally, there is only a single key associated with an email "
-            "address.  However, people sometimes generate a new key if "
+            "Normally, an email address is associated with a single key.  "
+            "However, people sometimes generate a new key if "
             "their key is too old or they think it might be compromised.  "
             "Alternatively, a new key may indicate a man-in-the-middle "
-            "attack!  Before accepting this key, you should talk to or "
+            "attack!  Before accepting this association, you should talk to or "
             "call the person to make sure this new key is legitimate.";
         }
       textbuf = format_text (text, 0, 72, 80);
