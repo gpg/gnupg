@@ -2343,7 +2343,7 @@ time_ago_str (long long int t)
       first = i;
     }
   i ++;
-  if ((first == -1 || i - first <= 3) && months)
+  if ((first == -1 || i - first <= 3) && count <= 0 && months)
     {
       if (count)
         es_fprintf (fp, ", ");
@@ -2352,7 +2352,7 @@ time_ago_str (long long int t)
       first = i;
     }
   i ++;
-  if ((first == -1 || i - first <= 3) && count < 2 && days)
+  if ((first == -1 || i - first <= 3) && count <= 0 && days)
     {
       if (count)
         es_fprintf (fp, ", ");
@@ -2361,7 +2361,7 @@ time_ago_str (long long int t)
       first = i;
     }
   i ++;
-  if ((first == -1 || i - first <= 3) && count < 2 && hours)
+  if ((first == -1 || i - first <= 3) && count <= 0 && hours)
     {
       if (count)
         es_fprintf (fp, ", ");
@@ -2370,7 +2370,7 @@ time_ago_str (long long int t)
       first = i;
     }
   i ++;
-  if ((first == -1 || i - first <= 3) && count < 2 && minutes)
+  if ((first == -1 || i - first <= 3) && count <= 0 && minutes)
     {
       if (count)
         es_fprintf (fp, ", ");
@@ -2379,7 +2379,7 @@ time_ago_str (long long int t)
       first = i;
     }
   i ++;
-  if ((first == -1 || i - first <= 3) && count < 2)
+  if ((first == -1 || i - first <= 3) && count <= 0)
     {
       if (count)
         es_fprintf (fp, ", ");
@@ -2482,6 +2482,8 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 
   int show_warning = 0;
 
+  (void) user_id;
+
   fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
 
   /* Get the signature stats.  */
@@ -2568,10 +2570,11 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
         log_fatal ("error creating memory stream: %s\n",
                    gpg_strerror (gpg_error_from_syserror()));
 
+      es_fprintf (fp, _("%s: "), email);
+
       if (signature_count == 0)
         {
-          es_fprintf (fp, _("Verified %ld messages signed by \"%s\"."),
-                      0L, user_id);
+          es_fprintf (fp, _("Verified %ld signatures"), 0L);
           es_fputc ('\n', fp);
         }
       else
@@ -2581,31 +2584,17 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
           /* TRANSLATORS: The final %s is replaced by a string like
              "7 months, 1 day, 5 minutes, 0 seconds". */
           es_fprintf (fp,
-                      ngettext("Verified %ld message signed by \"%s\"\n"
-                               "in the past %s.",
-                               "Verified %ld messages signed by \"%s\"\n"
-                               "in the past %s.",
+                      ngettext("Verified %ld signature in the past %s",
+                               "Verified %ld signatures in the past %s",
                                signature_count),
-                      signature_count, user_id, first_seen_ago_str);
+                      signature_count, first_seen_ago_str);
 
-          if (signature_count > 1)
-            {
-              char *tmpstr = time_ago_str (now - signature_most_recent);
-              es_fputs ("  ", fp);
-              es_fprintf (fp, _("The most recent message was"
-                                " verified %s ago."), tmpstr);
-              xfree (tmpstr);
-            }
           xfree (first_seen_ago_str);
         }
 
-      es_fprintf (fp, "  ");
-
       if (encryption_count == 0)
         {
-          es_fprintf (fp, _("Encrypted %ld messages to \"%s\"."),
-                      0L, user_id);
-          es_fputc ('\n', fp);
+          es_fprintf (fp, _(", and encrypted %ld messages"), 0L);
         }
       else
         {
@@ -2614,21 +2603,11 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
           /* TRANSLATORS: The final %s is replaced by a string like
              "7 months, 1 day, 5 minutes, 0 seconds". */
           es_fprintf (fp,
-                      ngettext("Encrypted %ld message to \"%s\"\n"
-                               "in the past %s.",
-                               "Encrypted %ld messages to \"%s\"\n"
-                               "in the past %s.",
+                      ngettext(", and encrypted %ld message in the past %s",
+                               ", and encrypted %ld messages in the past %s",
                                encryption_count),
-                      encryption_count, user_id, first_done_ago_str);
+                      encryption_count, first_done_ago_str);
 
-          if (encryption_count > 1)
-            {
-              char *tmpstr = time_ago_str (now - encryption_most_recent);
-              es_fputs ("  ", fp);
-              es_fprintf (fp, _("The most recent message was"
-                                " verified %s ago."), tmpstr);
-              xfree (tmpstr);
-            }
           xfree (first_done_ago_str);
         }
 
@@ -2637,10 +2616,10 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
           es_fputs ("  ", fp);
           es_fputc ('(', fp);
           es_fprintf (fp, _("policy: %s"), tofu_policy_str (policy));
-          es_fputs (")\n", fp);
+          es_fputs (").\n", fp);
         }
       else
-        es_fputs ("\n", fp);
+        es_fputs (".\n", fp);
 
 
       {
@@ -2666,19 +2645,26 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
       log_string (GPGRT_LOG_INFO, msg);
       xfree (msg);
 
-      if (policy == TOFU_POLICY_AUTO
-          /* Cf. write_stats_status  */
-          && (sqrtu32 (encryption_count) + sqrtu32 (signature_count)
-              < sqrtu32 (2 * BASIC_TRUST_THRESHOLD)))
+      if (policy == TOFU_POLICY_AUTO)
         {
           if (signature_count == 0)
             log_info (_("Warning: we have yet to see"
                         " a message signed using this key and user id!\n"));
           else if (signature_count == 1)
-            log_info (_("Warning: we've only seen a single message"
+            log_info (_("Warning: we've only seen one message"
                         " signed using this key and user id!\n"));
 
-          show_warning = 1;
+          if (encryption_count == 0)
+            log_info (_("Warning: you have yet to encrypt"
+                        " a message to this key and user id!\n"));
+          else if (encryption_count == 1)
+            log_info (_("Warning: you have only encrypted"
+                        "  one message to this key and user id!\n"));
+
+          /* Cf. write_stats_status  */
+          if (sqrtu32 (encryption_count) + sqrtu32 (signature_count)
+              < sqrtu32 (2 * BASIC_TRUST_THRESHOLD))
+            show_warning = 1;
         }
     }
 
