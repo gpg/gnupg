@@ -47,6 +47,9 @@
 #ifdef HAVE_SIGNAL_H
 # include <signal.h>
 #endif
+#ifdef HAVE_INOTIFY_INIT
+# include <sys/inotify.h>
+#endif /*HAVE_INOTIFY_INIT*/
 #include <npth.h>
 
 #define GNUPG_COMMON_NEED_AFLOCAL
@@ -2399,6 +2402,31 @@ start_connection_thread_ssh (void *arg)
 }
 
 
+#ifdef HAVE_INOTIFY_INIT
+/* Read an inotify event and return true if it matches NAME.  */
+static int
+my_inotify_is_name (int fd, const char *name)
+{
+  union {
+    struct inotify_event ev;
+    char _buf[sizeof (struct inotify_event) + 100 + 1];
+  } buf;
+  int n;
+
+  n = npth_read (fd, &buf, sizeof buf);
+  if (n < sizeof (struct inotify_event))
+    return 0;
+  if (buf.ev.len < strlen (name)+1)
+    return 0;
+  if (strcmp (buf.ev.name, name))
+    return 0; /* Not the desired file.  */
+
+  return 1; /* Found.  */
+}
+#endif /*HAVE_INOTIFY_INIT*/
+
+
+
 /* Connection handler loop.  Wait for connection requests and spawn a
    thread after accepting a connection.  */
 static void
@@ -2422,6 +2450,9 @@ handle_connections (gnupg_fd_t listen_fd,
   HANDLE events[2];
   unsigned int events_set;
 #endif
+#ifdef HAVE_INOTIFY_INIT
+  int my_inotify_fd;
+#endif /*HAVE_INOTIFY_INIT*/
   struct {
     const char *name;
     void *(*func) (void *arg);
@@ -2458,6 +2489,28 @@ handle_connections (gnupg_fd_t listen_fd,
   events[1] = INVALID_HANDLE_VALUE;
 # endif
 #endif
+
+#ifdef HAVE_INOTIFY_INIT
+  if (disable_check_own_socket)
+    my_inotify_fd = -1;
+  else if ((my_inotify_fd = inotify_init ()) == -1)
+    log_info ("error enabling fast daemon termination: %s\n",
+              strerror (errno));
+  else
+    {
+      /* We need to watch the directory for the file becuase there
+       * won't be an IN_DELETE_SELF for a socket file.  */
+      char *slash = strrchr (socket_name, '/');
+      log_assert (slash && slash[1]);
+      *slash = 0;
+      if (inotify_add_watch (my_inotify_fd, socket_name, IN_DELETE) == -1)
+        {
+          close (my_inotify_fd);
+          my_inotify_fd = -1;
+        }
+      *slash = '/';
+    }
+#endif /*HAVE_INOTIFY_INIT*/
 
   /* On Windows we need to fire up a separate thread to listen for
      requests from Putty (an SSH client), so we can replace Putty's
@@ -2500,6 +2553,14 @@ handle_connections (gnupg_fd_t listen_fd,
       if (FD2INT (listen_fd_ssh) > nfd)
         nfd = FD2INT (listen_fd_ssh);
     }
+#ifdef HAVE_INOTIFY_INIT
+  if (my_inotify_fd != -1)
+    {
+      FD_SET (my_inotify_fd, &fdset);
+      if (my_inotify_fd > nfd)
+        nfd = my_inotify_fd;
+    }
+#endif /*HAVE_INOTIFY_INIT*/
 
   listentbl[0].l_fd = listen_fd;
   listentbl[1].l_fd = listen_fd_extra;
@@ -2574,6 +2635,15 @@ handle_connections (gnupg_fd_t listen_fd,
           ctrl_t ctrl;
           npth_t thread;
 
+#ifdef HAVE_INOTIFY_INIT
+          if (my_inotify_fd != -1 && FD_ISSET (my_inotify_fd, &read_fdset)
+              && my_inotify_is_name (my_inotify_fd, GPG_AGENT_SOCK_NAME))
+            {
+              shutdown_pending = 1;
+              log_info ("socket file has been removed - shutting down\n");
+            }
+#endif /*HAVE_INOTIFY_INIT*/
+
           for (idx=0; idx < DIM(listentbl); idx++)
             {
               if (listentbl[idx].l_fd == GNUPG_INVALID_FD)
@@ -2620,6 +2690,10 @@ handle_connections (gnupg_fd_t listen_fd,
         }
     }
 
+#ifdef HAVE_INOTIFY_INIT
+  if (my_inotify_fd != -1)
+    close (my_inotify_fd);
+#endif /*HAVE_INOTIFY_INIT*/
   cleanup ();
   log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
   npth_attr_destroy (&tattr);

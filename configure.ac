@@ -1388,6 +1388,14 @@ AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol \
                 flockfile funlockfile getpwnam getpwuid \
                 getenv inet_pton strpbrk])
 
+# See whether libc supports the Linux inotify interface
+case "${host}" in
+    *-*-linux*)
+        AC_CHECK_FUNCS([inotify_init])
+        ;;
+esac
+
+
 if test "$have_android_system" = yes; then
    # On Android ttyname is a stub but prints an error message.
    AC_DEFINE(HAVE_BROKEN_TTYNAME,1,
