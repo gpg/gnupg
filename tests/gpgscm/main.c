@@ -32,6 +32,7 @@
 
 #include "private.h"
 #include "scheme.h"
+#include "scheme-private.h"
 #include "ffi.h"
 #include "i18n.h"
 #include "../../common/argparse.h"
@@ -175,6 +176,13 @@ load (scheme *sc, char *file_name,
     fprintf (stderr, "Loading %s...\n", qualified_name);
   scheme_load_named_file (sc, h, qualified_name);
   fclose (h);
+
+  if (sc->retcode)
+    {
+      if (sc->nesting)
+        fprintf (stderr, "%s: Unbalanced parenthesis\n", qualified_name);
+      return gpg_error (GPG_ERR_GENERAL);
+    }
 
   if (file_name != qualified_name)
     free (qualified_name);

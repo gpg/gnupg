@@ -2592,6 +2592,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
        if(sc->file_i == 0)
          {
            sc->args=sc->NIL;
+           sc->nesting = sc->nesting_stack[0];
            s_goto(sc,OP_QUIT);
          }
        else
