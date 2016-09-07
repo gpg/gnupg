@@ -39,6 +39,9 @@
 #ifdef HAVE_SIGNAL_H
 # include <signal.h>
 #endif
+#ifdef HAVE_INOTIFY_INIT
+# include <sys/inotify.h>
+#endif /*HAVE_INOTIFY_INIT*/
 #include <npth.h>
 
 #include "dirmngr-err.h"
@@ -134,6 +137,7 @@ enum cmd_and_opt_values {
   oUseTor,
   oKeyServer,
   oNameServer,
+  oDisableCheckOwnSocket,
   aTest
 };
 
@@ -218,6 +222,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oGnutlsDebug, "gnutls-debug", "@"),
   ARGPARSE_s_i (oGnutlsDebug, "tls-debug", "@"),
   ARGPARSE_s_i (oDebugWait, "debug-wait", "@"),
+  ARGPARSE_s_n (oDisableCheckOwnSocket, "disable-check-own-socket", "@"),
   ARGPARSE_s_n (oNoGreeting, "no-greeting", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
   ARGPARSE_s_s (oLDAPWrapperProgram, "ldap-wrapper-program", "@"),
@@ -273,6 +278,9 @@ static int opt_gnutls_debug = -1;
 
 /* Flag indicating that a shutdown has been requested.  */
 static volatile int shutdown_pending;
+
+/* Flags to indicate that we shall not watch our own socket. */
+static int disable_check_own_socket;
 
 /* Counter for the active connections.  */
 static int active_connections;
@@ -528,6 +536,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       http_register_tls_ca (NULL);
       FREE_STRLIST (opt.keyserver);
       /* Note: We do not allow resetting of opt.use_tor at runtime.  */
+      disable_check_own_socket = 0;
       return 1;
     }
 
@@ -553,6 +562,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
           current_logfile = xtrystrdup (pargs->r.ret_str);
         }
       break;
+
+    case oDisableCheckOwnSocket: disable_check_own_socket = 1; break;
 
     case oLDAPWrapperProgram:
       opt.ldap_wrapper_program = pargs->r.ret_str;
@@ -1840,6 +1851,35 @@ start_connection_thread (void *arg)
 }
 
 
+#ifdef HAVE_INOTIFY_INIT
+/* Read an inotify event and return true if it matches NAME.  */
+static int
+my_inotify_is_name (int fd, const char *name)
+{
+  union {
+    struct inotify_event ev;
+    char _buf[sizeof (struct inotify_event) + 100 + 1];
+  } buf;
+  int n;
+  const char *s;
+
+  s = strrchr (name, '/');
+  if (s && s[1])
+    name = s + 1;
+
+  n = npth_read (fd, &buf, sizeof buf);
+  if (n < sizeof (struct inotify_event))
+    return 0;
+  if (buf.ev.len < strlen (name)+1)
+    return 0;
+  if (strcmp (buf.ev.name, name))
+    return 0; /* Not the desired file.  */
+
+  return 1; /* Found.  */
+}
+#endif /*HAVE_INOTIFY_INIT*/
+
+
 /* Main loop in daemon mode. */
 static void
 handle_connections (assuan_fd_t listen_fd)
@@ -1857,6 +1897,9 @@ handle_connections (assuan_fd_t listen_fd)
   struct timespec curtime;
   struct timespec timeout;
   int saved_errno;
+#ifdef HAVE_INOTIFY_INIT
+  int my_inotify_fd;
+#endif /*HAVE_INOTIFY_INIT*/
 
   npth_attr_init (&tattr);
   npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
@@ -1871,12 +1914,43 @@ handle_connections (assuan_fd_t listen_fd)
   npth_sigev_fini ();
 #endif
 
+#ifdef HAVE_INOTIFY_INIT
+  if (disable_check_own_socket)
+    my_inotify_fd = -1;
+  else if ((my_inotify_fd = inotify_init ()) == -1)
+    log_info ("error enabling fast daemon termination: %s\n",
+              strerror (errno));
+  else
+    {
+      /* We need to watch the directory for the file because there
+       * won't be an IN_DELETE_SELF for a socket file.  */
+      char *slash = strrchr (socket_name, '/');
+      log_assert (slash && slash[1]);
+      *slash = 0;
+      if (inotify_add_watch (my_inotify_fd, socket_name, IN_DELETE) == -1)
+        {
+          close (my_inotify_fd);
+          my_inotify_fd = -1;
+        }
+      *slash = '/';
+    }
+#endif /*HAVE_INOTIFY_INIT*/
+
+
   /* Setup the fdset.  It has only one member.  This is because we use
      pth_select instead of pth_accept to properly sync timeouts with
      to full second.  */
   FD_ZERO (&fdset);
   FD_SET (FD2INT (listen_fd), &fdset);
   nfd = FD2INT (listen_fd);
+#ifdef HAVE_INOTIFY_INIT
+  if (my_inotify_fd != -1)
+    {
+      FD_SET (my_inotify_fd, &fdset);
+      if (my_inotify_fd > nfd)
+        nfd = my_inotify_fd;
+    }
+#endif /*HAVE_INOTIFY_INIT*/
 
   npth_clock_gettime (&abstime);
   abstime.tv_sec += TIMERTICK_INTERVAL;
@@ -1928,11 +2002,28 @@ handle_connections (assuan_fd_t listen_fd)
 	}
 
       if (ret <= 0)
-	/* Interrupt or timeout.  Will be handled when calculating the
-	   next timeout.  */
-	continue;
+        {
+          /* Interrupt or timeout.  Will be handled when calculating the
+             next timeout.  */
+          continue;
+        }
 
-      if (!shutdown_pending && FD_ISSET (FD2INT (listen_fd), &read_fdset))
+      if (shutdown_pending)
+        {
+          /* Do not anymore accept connections.  */
+          continue;
+        }
+
+#ifdef HAVE_INOTIFY_INIT
+      if (my_inotify_fd != -1 && FD_ISSET (my_inotify_fd, &read_fdset)
+          && my_inotify_is_name (my_inotify_fd, socket_name))
+        {
+          shutdown_pending = 1;
+          log_info ("socket file has been removed - shutting down\n");
+        }
+#endif /*HAVE_INOTIFY_INIT*/
+
+      if (FD_ISSET (FD2INT (listen_fd), &read_fdset))
 	{
           plen = sizeof paddr;
 	  fd = INT2FD (npth_accept (FD2INT(listen_fd),
@@ -1967,6 +2058,10 @@ handle_connections (assuan_fd_t listen_fd)
 	}
     }
 
+#ifdef HAVE_INOTIFY_INIT
+  if (my_inotify_fd != -1)
+    close (my_inotify_fd);
+#endif /*HAVE_INOTIFY_INIT*/
   npth_attr_destroy (&tattr);
   cleanup ();
   log_info ("%s %s stopped\n", strusage(11), strusage(13));

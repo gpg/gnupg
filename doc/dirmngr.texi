@@ -214,6 +214,12 @@ When running in server mode, wait @var{n} seconds before entering the
 actual processing loop and print the pid.  This gives time to attach a
 debugger.
 
+@item --disable-check-own-socket
+@opindex disable-check-own-socket
+On some platforms @command{dirmngr} is able to detect the removal of
+its socket file and shutdown itself.  This option disable this
+self-test for debugging purposes.
+
 @item -s
 @itemx --sh
 @itemx -c
