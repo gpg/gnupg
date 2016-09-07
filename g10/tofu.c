@@ -1769,15 +1769,6 @@ build_conflict_set (tofu_dbs_t dbs, const char *fingerprint, const char *email)
       return NULL;
     }
 
-  /* If the current binding has not yet been recorded, add it to the
-   * list.  (The order by above ensures that if it is present, it will
-   * be first.)  */
-  if (! (conflict_set && strcmp (conflict_set->d, fingerprint) == 0))
-    {
-      add_to_strlist (&conflict_set, fingerprint);
-      conflict_set->flags |= BINDING_NEW;
-    }
-
   /* Set BINDING_CONFLICT if the binding has a known conflict.  This
    * allows us to distinguish between bindings where the user
    * explicitly set the policy to ask and bindings where we set the
@@ -1799,6 +1790,15 @@ build_conflict_set (tofu_dbs_t dbs, const char *fingerprint, const char *email)
           /* Remove the !.  */
           iter->d[l - 1] = 0;
         }
+    }
+
+  /* If the current binding has not yet been recorded, add it to the
+   * list.  (The order by above ensures that if it is present, it will
+   * be first.)  */
+  if (! (conflict_set && strcmp (conflict_set->d, fingerprint) == 0))
+    {
+      add_to_strlist (&conflict_set, fingerprint);
+      conflict_set->flags |= BINDING_NEW;
     }
 
   conflict_set_count = strlist_length (conflict_set);
