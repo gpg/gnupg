@@ -2411,11 +2411,12 @@ write_stats_status (estream_t fp,
                     unsigned long encryption_most_recent)
 {
   const char *validity;
+  unsigned long messages;
 
   /* Use the euclidean distance rather then the sum of the magnitudes
      to ensure a balance between verified signatures and encrypted
      messages.  */
-  float messages = sqrtu32 (signature_count) + sqrtu32 (encryption_count);
+  messages = sqrtu32 (signature_count) + sqrtu32 (encryption_count);
 
   if (messages < 1)
     validity = "1"; /* Key without history.  */
@@ -2428,7 +2429,7 @@ write_stats_status (estream_t fp,
 
   if (fp)
     {
-      es_fprintf (fp, "tfs:1:%s:%ld:%ld:%s:%lu:%lu:%lu:%lu:\n",
+      es_fprintf (fp, "tfs:1:%s:%lu:%lu:%s:%lu:%lu:%lu:%lu:\n",
                   validity, signature_count, encryption_count,
                   tofu_policy_str (policy),
                   signature_first_seen, signature_most_recent,
@@ -2436,25 +2437,16 @@ write_stats_status (estream_t fp,
     }
   else
     {
-      char numbuf1[35];
-      char numbuf2[35];
-      char numbuf3[35];
-      char numbuf4[35];
-      char numbuf5[35];
-      char numbuf6[35];
-
-      snprintf (numbuf1, sizeof numbuf1, " %ld", signature_count);
-      snprintf (numbuf2, sizeof numbuf2, " %ld", encryption_count);
-      snprintf (numbuf3, sizeof numbuf3, " %lu", signature_first_seen);
-      snprintf (numbuf4, sizeof numbuf4, " %lu", signature_most_recent);
-      snprintf (numbuf5, sizeof numbuf5, " %lu", encryption_first_done);
-      snprintf (numbuf6, sizeof numbuf6, " %lu", encryption_most_recent);
-
-      write_status_strings (STATUS_TOFU_STATS,
-                            validity, numbuf1, numbuf2,
-                            " ", tofu_policy_str (policy),
-                            numbuf3, numbuf4, numbuf5, numbuf6,
-                            NULL);
+      write_status_printf (STATUS_TOFU_STATS,
+                           "%s %lu %lu %s %lu %lu %lu %lu",
+                           validity,
+                           signature_count,
+                           encryption_count,
+                           tofu_policy_str (policy),
+                           signature_first_seen,
+                           signature_most_recent,
+                           encryption_first_done,
+                           encryption_most_recent);
     }
 }
 
