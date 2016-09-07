@@ -44,11 +44,10 @@
 ;; passed to GPG.
 ;;
 ;; This function only supports keys with a single user id.
-(define (getpolicy keyid format . args)
+(define (getpolicy keyid . args)
   (let ((policy
 	 (list-ref (assoc "tfs" (gpg-with-colons
-				 `(--tofu-db-format ,format
-				   --trust-model=tofu --with-tofu-info
+				 `(--trust-model=tofu --with-tofu-info
 				   ,@args
 				   --list-keys ,keyid))) 5)))
     (unless (member policy '("auto" "good" "unknown" "bad" "ask"))
@@ -59,8 +58,8 @@
 ;; remaining arguments are simply passed to GPG.
 ;;
 ;; This function only supports keys with a single user id.
-(define (checkpolicy keyid format expected-policy . args)
-  (let ((policy (apply getpolicy `(,keyid ,format ,@args))))
+(define (checkpolicy keyid expected-policy . args)
+  (let ((policy (apply getpolicy `(,keyid ,@args))))
     (unless (string=? policy expected-policy)
 	    (error keyid ": Expected policy to be" expected-policy
 		   "but got" policy))))
@@ -69,11 +68,10 @@
 ;; passed to GPG.
 ;;
 ;; This function only supports keys with a single user id.
-(define (gettrust keyid format . args)
+(define (gettrust keyid . args)
   (let ((trust
 	 (list-ref (assoc "pub" (gpg-with-colons
-				 `(--tofu-db-format ,format
-				   --trust-model=tofu
+				 `(--trust-model=tofu
 				   ,@args
 				   --list-keys ,keyid))) 1)))
     (unless (and (= 1 (string-length trust))
@@ -85,41 +83,40 @@
 ;; remaining arguments are simply passed to GPG.
 ;;
 ;; This function only supports keys with a single user id.
-(define (checktrust keyid format expected-trust . args)
-  (let ((trust (apply gettrust `(,keyid ,format ,@args))))
+(define (checktrust keyid expected-trust . args)
+  (let ((trust (apply gettrust `(,keyid ,@args))))
     (unless (string=? trust expected-trust)
 	    (error keyid ": Expected trust to be" expected-trust
 		   "but got" trust))))
 
 ;; Set key KEYID's policy to POLICY.  Any remaining arguments are
 ;; passed as options to gpg.
-(define (setpolicy keyid format policy . args)
-  (call-check `(,@GPG --tofu-db-format ,format
-		      --trust-model=tofu ,@args
+(define (setpolicy keyid policy . args)
+  (call-check `(,@GPG --trust-model=tofu ,@args
 		      --tofu-policy ,policy ,keyid)))
 
 (for-each-p
- "Testing tofu db formats"
- (lambda (format)
+ "Testing tofu db"
+ (lambda (1)
    ;; Carefully remove the TOFU db.
    (catch '() (unlink (string-append GNUPGHOME "/tofu.db")))
    (catch '() (unlink-recursively (string-append GNUPGHOME "/tofu.d")))
 
    ;; Verify a message.  There should be no conflict and the trust
    ;; policy should be set to auto.
-   (call-check `(,@GPG --tofu-db-format ,format --trust-model=tofu
+   (call-check `(,@GPG --trust-model=tofu
 		       --verify ,(in-srcdir "tofu-2183839A-1.txt")))
 
-   (checkpolicy "2183839A" format "auto")
+   (checkpolicy "2183839A" "auto")
    ;; Check default trust.
-   (checktrust "2183839A" format "m")
+   (checktrust "2183839A" "m")
 
    ;; Trust should be derived lazily.  Thus, if the policy is set to
    ;; auto and we change --tofu-default-policy, then the trust should
    ;; change as well.  Try it.
-   (checktrust "2183839A" format "f" '--tofu-default-policy=good)
-   (checktrust "2183839A" format "-" '--tofu-default-policy=unknown)
-   (checktrust "2183839A" format "n" '--tofu-default-policy=bad)
+   (checktrust "2183839A" "f" '--tofu-default-policy=good)
+   (checktrust "2183839A" "-" '--tofu-default-policy=unknown)
+   (checktrust "2183839A" "n" '--tofu-default-policy=bad)
 
    ;; Change the policy to something other than auto and make sure the
    ;; policy and the trust are correct.
@@ -131,16 +128,16 @@
 	      ((string=? "good" policy) "f")
 	      ((string=? "unknown" policy) "-")
 	      (else "n"))))
-	(setpolicy "2183839A" format policy)
+	(setpolicy "2183839A" policy)
 
 	;; Since we have a fixed policy, the trust level shouldn't
 	;; change if we change the default policy.
 	(for-each-p
 	 ""
 	 (lambda (default-policy)
-	   (checkpolicy "2183839A" format policy
+	   (checkpolicy "2183839A" policy
 			'--tofu-default-policy default-policy)
-	   (checktrust "2183839A" format expected-trust
+	   (checktrust "2183839A" expected-trust
 		       '--tofu-default-policy default-policy))
 	 '("auto" "good" "unknown" "bad" "ask"))))
     '("good" "unknown" "bad"))
@@ -148,20 +145,20 @@
    ;; BC15C85A conflicts with 2183839A.  On conflict, this will set
    ;; BC15C85A to ask.  If 2183839A is auto (it's not, it's bad), then
    ;; it will be set to ask.
-   (call-check `(,@GPG --tofu-db-format ,format --trust-model=tofu
+   (call-check `(,@GPG --trust-model=tofu
 		       --verify ,(in-srcdir "tofu-BC15C85A-1.txt")))
-   (checkpolicy "BC15C85A" format "ask")
-   (checkpolicy "2183839A" format "bad")
+   (checkpolicy "BC15C85A" "ask")
+   (checkpolicy "2183839A" "bad")
 
    ;; EE37CF96 conflicts with 2183839A and BC15C85A.  We change
    ;; BC15C85A's policy to auto and leave 2183839A's policy at bad.
    ;; This conflict should cause BC15C85A's policy to be changed to
    ;; ask (since it is auto), but not affect 2183839A's policy.
-   (setpolicy "BC15C85A" format "auto")
-   (checkpolicy "BC15C85A" format "auto")
-   (call-check `(,@GPG --tofu-db-format ,format --trust-model=tofu
+   (setpolicy "BC15C85A" "auto")
+   (checkpolicy "BC15C85A" "auto")
+   (call-check `(,@GPG --trust-model=tofu
 		       --verify ,(in-srcdir "tofu-EE37CF96-1.txt")))
-   (checkpolicy "BC15C85A" format "ask")
-   (checkpolicy "2183839A" format "bad")
-   (checkpolicy "EE37CF96" format "ask"))
+   (checkpolicy "BC15C85A" "ask")
+   (checkpolicy "2183839A" "bad")
+   (checkpolicy "EE37CF96" "ask"))
  '("flat"))
