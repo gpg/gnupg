@@ -797,7 +797,8 @@ get_single_long_cb2 (void *cookie, int argc, char **argv, char **azColName,
    If SHOW_OLD is set, the binding's old policy is displayed.  */
 static gpg_error_t
 record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
-		const char *user_id, enum tofu_policy policy, int show_old)
+		const char *user_id, enum tofu_policy policy, int show_old,
+                time_t now)
 {
   char *fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
   gpg_error_t rc;
@@ -873,10 +874,12 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 	reallocate a new one.  We just need to search for the OID
 	based on the fingerprint and email since they are unique.  */
      "  (select oid from bindings where fingerprint = ? and email = ?),\n"
-     "  ?, ?, ?, strftime('%s','now'), ?);",
+     "  ?, ?, ?, ?, ?);",
      GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
      GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
-     GPGSQL_ARG_STRING, user_id, GPGSQL_ARG_INT, (int) policy,
+     GPGSQL_ARG_STRING, user_id,
+     GPGSQL_ARG_LONG_LONG, (long long) now,
+     GPGSQL_ARG_INT, (int) policy,
      GPGSQL_ARG_END);
   if (rc)
     {
@@ -1318,7 +1321,8 @@ ask_about_binding (ctrl_t ctrl,
                    strlist_t conflict_set,
                    const char *fingerprint,
                    const char *email,
-                   const char *user_id)
+                   const char *user_id,
+                   time_t now)
 {
   tofu_dbs_t dbs;
   strlist_t iter;
@@ -1423,7 +1427,7 @@ ask_about_binding (ctrl_t ctrl,
          "   from bindings\n" \
          "   left join\n" \
          "     (select *,\n" \
-         "        cast(strftime('%s','now') - " time " as real) delta\n" \
+         "        cast(? - " time " as real) delta\n" \
          "       from " table ") ss\n" \
          "    on ss.binding = bindings.oid)\n" \
          " where email = ? and fingerprint = ?\n" \
@@ -1435,6 +1439,7 @@ ask_about_binding (ctrl_t ctrl,
         (dbs->db, &dbs->s.get_trust_gather_signature_stats,
          signature_stats_collect_cb, &stats, &sqerr,
          STATS_SQL ("signatures", "sig_time", ""),
+         GPGSQL_ARG_LONG_LONG, (long long) now,
          GPGSQL_ARG_STRING, email,
          GPGSQL_ARG_STRING, iter->d,
          GPGSQL_ARG_END);
@@ -1449,6 +1454,7 @@ ask_about_binding (ctrl_t ctrl,
         (dbs->db, &dbs->s.get_trust_gather_encryption_stats,
          signature_stats_collect_cb, &stats, &sqerr,
          STATS_SQL ("encryptions", "time", "-"),
+         GPGSQL_ARG_LONG_LONG, (long long) now,
          GPGSQL_ARG_STRING, email,
          GPGSQL_ARG_STRING, iter->d,
          GPGSQL_ARG_END);
@@ -1700,7 +1706,7 @@ ask_about_binding (ctrl_t ctrl,
                 }
 
               if (record_binding (dbs, fingerprint, email, user_id,
-                                  *policy, 0))
+                                  *policy, 0, now))
                 {
                   /* If there's an error registering the
                    * binding, don't save the signature.  */
@@ -1990,7 +1996,7 @@ build_conflict_set (tofu_dbs_t dbs, const char *fingerprint, const char *email)
 static enum tofu_policy
 get_trust (ctrl_t ctrl, PKT_public_key *pk,
            const char *fingerprint, const char *email,
-	   const char *user_id, int may_ask)
+	   const char *user_id, int may_ask, time_t now)
 {
   tofu_dbs_t dbs = ctrl->tofu.dbs;
   int in_transaction = 0;
@@ -2038,7 +2044,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
         if (policy == TOFU_POLICY_NONE)
           {
             if (record_binding (dbs, fingerprint, email, user_id,
-                                TOFU_POLICY_AUTO, 0) != 0)
+                                TOFU_POLICY_AUTO, 0, now) != 0)
               {
                 log_error (_("error setting TOFU binding's trust level"
                              " to %s\n"), "auto");
@@ -2142,7 +2148,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
 		   fingerprint, email);
 
       if (record_binding (dbs, fingerprint, email, user_id,
-			  TOFU_POLICY_AUTO, 0) != 0)
+			  TOFU_POLICY_AUTO, 0, now) != 0)
 	{
 	  log_error (_("error setting TOFU binding's trust level to %s\n"),
 		       "auto");
@@ -2171,7 +2177,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
                    fingerprint, email);
 
       if (record_binding (dbs, fingerprint, email, user_id,
-			  TOFU_POLICY_AUTO, 0) != 0)
+			  TOFU_POLICY_AUTO, 0, now) != 0)
 	log_error (_("error setting TOFU binding's trust level to %s\n"),
 		   "auto");
 
@@ -2193,7 +2199,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
       log_assert (policy == TOFU_POLICY_NONE);
 
       if (record_binding (dbs, fingerprint, email, user_id,
-			  TOFU_POLICY_ASK, 0) != 0)
+			  TOFU_POLICY_ASK, 0, now) != 0)
 	log_error (_("error setting TOFU binding's trust level to %s\n"),
 		   "ask");
 
@@ -2212,7 +2218,8 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
                      conflict_set,
                      fingerprint,
                      email,
-                     user_id);
+                     user_id,
+                     now);
 
  out:
 
@@ -2457,9 +2464,8 @@ write_stats_status (estream_t fp,
 static int
 show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 		 const char *email, const char *user_id,
-		 estream_t outfp)
+		 estream_t outfp, time_t now)
 {
-  unsigned long now = gnupg_get_time ();
   enum tofu_policy policy = get_policy (dbs, fingerprint, email, NULL);
 
   char *fingerprint_pp;
@@ -2748,6 +2754,7 @@ tofu_register_signature (ctrl_t ctrl,
                          const byte *sig_digest_bin, int sig_digest_bin_len,
                          time_t sig_time, const char *origin)
 {
+  time_t now = gnupg_get_time ();
   gpg_error_t rc;
   tofu_dbs_t dbs;
   char *fingerprint = NULL;
@@ -2792,7 +2799,7 @@ tofu_register_signature (ctrl_t ctrl,
 
       /* Make sure the binding exists and record any TOFU
          conflicts.  */
-      if (get_trust (ctrl, pk, fingerprint, email, user_id->d, 0)
+      if (get_trust (ctrl, pk, fingerprint, email, user_id->d, 0, now)
           == _tofu_GET_TRUST_ERROR)
         {
           rc = gpg_error (GPG_ERR_GENERAL);
@@ -2861,10 +2868,11 @@ tofu_register_signature (ctrl_t ctrl,
              " values\n"
              " ((select oid from bindings\n"
              "    where fingerprint = ? and email = ?),\n"
-             "  ?, ?, ?, strftime('%s', 'now'));",
+             "  ?, ?, ?, ?);",
              GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
              GPGSQL_ARG_STRING, sig_digest, GPGSQL_ARG_STRING, origin,
              GPGSQL_ARG_LONG_LONG, (long long) sig_time,
+             GPGSQL_ARG_LONG_LONG, (long long) now,
              GPGSQL_ARG_END);
           if (rc)
             {
@@ -2896,6 +2904,7 @@ tofu_register_encryption (ctrl_t ctrl,
                           PKT_public_key *pk, strlist_t user_id_list,
                           int may_ask)
 {
+  time_t now = gnupg_get_time ();
   gpg_error_t rc = 0;
   tofu_dbs_t dbs;
   kbnode_t kb = NULL;
@@ -2956,7 +2965,7 @@ tofu_register_encryption (ctrl_t ctrl,
       /* Make sure the binding exists and that we recognize any
          conflicts.  */
       int tl = get_trust (ctrl, pk, fingerprint, email, user_id->d,
-                          may_ask);
+                          may_ask, now);
       if (tl == _tofu_GET_TRUST_ERROR)
         {
           /* An error.  */
@@ -2971,8 +2980,9 @@ tofu_register_encryption (ctrl_t ctrl,
          " values\n"
          " ((select oid from bindings\n"
          "    where fingerprint = ? and email = ?),\n"
-         "  strftime('%s', 'now'));",
+         "  ?);",
          GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
+         GPGSQL_ARG_LONG_LONG, (long long) now,
          GPGSQL_ARG_END);
       if (rc)
         {
@@ -3067,6 +3077,7 @@ gpg_error_t
 tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
                        PKT_public_key *pk, const char *user_id)
 {
+  time_t now = gnupg_get_time ();
   gpg_error_t err;
   tofu_dbs_t dbs;
   char *fingerprint;
@@ -3086,7 +3097,7 @@ tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
   fingerprint = hexfingerprint (pk, NULL, 0);
   email = email_from_user_id (user_id);
 
-  show_statistics (dbs, fingerprint, email, user_id, fp);
+  show_statistics (dbs, fingerprint, email, user_id, fp, now);
 
   xfree (email);
   xfree (fingerprint);
@@ -3109,6 +3120,7 @@ int
 tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 		   int may_ask)
 {
+  time_t now = gnupg_get_time ();
   tofu_dbs_t dbs;
   char *fingerprint = NULL;
   strlist_t user_id;
@@ -3136,7 +3148,8 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 
       /* Always call get_trust to make sure the binding is
          registered.  */
-      int tl = get_trust (ctrl, pk, fingerprint, email, user_id->d, may_ask);
+      int tl = get_trust (ctrl, pk, fingerprint, email, user_id->d,
+                          may_ask, now);
       if (tl == _tofu_GET_TRUST_ERROR)
         {
           /* An error.  */
@@ -3159,7 +3172,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 
       if (may_ask && tl != TRUST_ULTIMATE && tl != TRUST_EXPIRED)
         need_warning |=
-          show_statistics (dbs, fingerprint, email, user_id->d, NULL);
+          show_statistics (dbs, fingerprint, email, user_id->d, NULL, now);
 
       if (tl == TRUST_NEVER)
         trust_level = TRUST_NEVER;
@@ -3215,6 +3228,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 gpg_error_t
 tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
 {
+  time_t now = gnupg_get_time ();
   tofu_dbs_t dbs;
   PKT_public_key *pk;
   char *fingerprint = NULL;
@@ -3257,7 +3271,7 @@ tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
 
       email = email_from_user_id (user_id->name);
 
-      record_binding (dbs, fingerprint, email, user_id->name, policy, 1);
+      record_binding (dbs, fingerprint, email, user_id->name, policy, 1, now);
 
       xfree (email);
     }
