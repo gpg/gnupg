@@ -757,7 +757,12 @@ proc_plaintext( CTX c, PACKET *pkt )
 
   if (!rc)
     {
-      rc = handle_plaintext (pt, &c->mfx, c->sigs_only, clearsig);
+      /* It we are in --verify mode, we do not want to output the
+       * signed text.  However, if --output is also used we do what
+       * has been requested and write out the signed data.  */
+      rc = handle_plaintext (pt, &c->mfx,
+                             (opt.outfp || opt.outfile)? 0 :  c->sigs_only,
+                             clearsig);
       if (gpg_err_code (rc) == GPG_ERR_EACCES && !c->sigs_only)
         {
           /* Can't write output but we hash it anyway to check the
