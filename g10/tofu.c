@@ -2502,10 +2502,10 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
       log_assert (strlist->next->next);
       log_assert (! strlist->next->next->next);
 
-      string_to_long (&signature_count, strlist->d, -1, __LINE__);
-      string_to_long (&signature_first_seen, strlist->next->d, -1, __LINE__);
-      string_to_long (&signature_most_recent,
-                      strlist->next->next->d, -1, __LINE__);
+      string_to_ulong (&signature_count, strlist->d, -1, __LINE__);
+      string_to_ulong (&signature_first_seen, strlist->next->d, -1, __LINE__);
+      string_to_ulong (&signature_most_recent,
+                       strlist->next->next->d, -1, __LINE__);
 
       free_strlist (strlist);
       strlist = NULL;
@@ -2533,10 +2533,10 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
       log_assert (strlist->next->next);
       log_assert (! strlist->next->next->next);
 
-      string_to_long (&encryption_count, strlist->d, -1, __LINE__);
-      string_to_long (&encryption_first_done, strlist->next->d, -1, __LINE__);
-      string_to_long (&encryption_most_recent,
-                      strlist->next->next->d, -1, __LINE__);
+      string_to_ulong (&encryption_count, strlist->d, -1, __LINE__);
+      string_to_ulong (&encryption_first_done, strlist->next->d, -1, __LINE__);
+      string_to_ulong (&encryption_most_recent,
+                       strlist->next->next->d, -1, __LINE__);
 
       free_strlist (strlist);
       strlist = NULL;
