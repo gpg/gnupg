@@ -1397,9 +1397,6 @@ ask_about_binding (ctrl_t ctrl,
     }
 
   /* Get the stats for all the keys in CONFLICT_SET.  */
-  /* FIXME: When generating the statistics, do we want the time
-     embedded in the signature (column 'sig_time') or the time that
-     we first verified the signature (column 'time').  */
   strlist_rev (&conflict_set);
   for (iter = conflict_set; iter && ! rc; iter = iter->next)
     {
@@ -1435,10 +1432,12 @@ ask_about_binding (ctrl_t ctrl,
          /* Make sure the current key is first.  */ \
          " order by time_ago desc;\n"
 
+      /* Use the time when we saw the signature, not when the
+         signature was created as that can be forged.  */
       rc = gpgsql_stepx
         (dbs->db, &dbs->s.get_trust_gather_signature_stats,
          signature_stats_collect_cb, &stats, &sqerr,
-         STATS_SQL ("signatures", "sig_time", ""),
+         STATS_SQL ("signatures", "time", ""),
          GPGSQL_ARG_LONG_LONG, (long long) now,
          GPGSQL_ARG_STRING, email,
          GPGSQL_ARG_STRING, iter->d,
