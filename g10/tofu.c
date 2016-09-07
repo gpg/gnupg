@@ -41,9 +41,7 @@
 #include "mkdir_p.h"
 #include "gpgsql.h"
 #include "status.h"
-/* #include "sqrtu32.h" */
-#define sqrtu32(a)  (a)  /* TEMP hack due to missing commit.  */
-
+#include "sqrtu32.h"
 
 #include "tofu.h"
 
