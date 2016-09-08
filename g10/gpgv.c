@@ -63,8 +63,6 @@ enum cmd_and_opt_values {
   oLoggerFD,
   oHomedir,
   oWeakDigest,
-  oAnswerYes,
-  oAnswerNo,
   aTest
 };
 
@@ -85,7 +83,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
   ARGPARSE_s_s (oWeakDigest, "weak-digest",
                 N_("|ALGO|reject signatures made with ALGO")),
-  ARGPARSE_s_n (oAnswerYes, "yes", "@"),
 
   ARGPARSE_end ()
 };
@@ -170,6 +167,7 @@ main( int argc, char **argv )
   opt.no_sig_cache = 1;
   opt.flags.require_cross_cert = 1;
   opt.batch = 1;
+  opt.answer_yes = 1;
 
   opt.weak_digests = NULL;
 
@@ -194,7 +192,6 @@ main( int argc, char **argv )
           break;
         case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
         case oOutput: opt.outfile = pargs.r.ret_str; break;
-        case oAnswerYes: opt.answer_yes = 1; break;
         case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
         case oLoggerFD:
           log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
