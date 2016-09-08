@@ -55,6 +55,7 @@ enum cmd_and_opt_values {
   aNull = 0,
   oQuiet	  = 'q',
   oVerbose	  = 'v',
+  oOutput	  = 'o',
   oBatch	  = 500,
   oKeyring,
   oIgnoreTimeConflict,
@@ -62,6 +63,8 @@ enum cmd_and_opt_values {
   oLoggerFD,
   oHomedir,
   oWeakDigest,
+  oAnswerYes,
+  oAnswerNo,
   aTest
 };
 
@@ -73,6 +76,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oQuiet,   "quiet",   N_("be somewhat more quiet")),
   ARGPARSE_s_s (oKeyring, "keyring",
                 N_("|FILE|take the keys from the keyring FILE")),
+  ARGPARSE_s_s (oOutput, "output", N_("|FILE|write output to FILE")),
   ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict",
                 N_("make timestamp conflicts only a warning")),
   ARGPARSE_s_i (oStatusFD, "status-fd",
@@ -81,6 +85,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
   ARGPARSE_s_s (oWeakDigest, "weak-digest",
                 N_("|ALGO|reject signatures made with ALGO")),
+  ARGPARSE_s_n (oAnswerYes, "yes", "@"),
 
   ARGPARSE_end ()
 };
@@ -188,6 +193,8 @@ main( int argc, char **argv )
           gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
           break;
         case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
+        case oOutput: opt.outfile = pargs.r.ret_str; break;
+        case oAnswerYes: opt.answer_yes = 1; break;
         case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
         case oLoggerFD:
           log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));

@@ -92,6 +92,16 @@ are replaced by the HOME directory. If the filename
 does not contain a slash, it is assumed to be in the
 home-directory ("~/.gnupg" if --homedir is not used).
 
+@item --output @var{file}
+@itemx -o @var{file}
+@opindex output
+Write output to @var{file}.  This option can be used to get the signed
+text from a cleartext or binary signature; it also works for detached
+signatures, but in that case this option is in general not
+useful. Unless you write to stdout (using @code{-} for @var{file}) you
+should also use the option @option{--yes} to force overwriting an
+existing file.
+
 @item --status-fd @var{n}
 @opindex status-fd
 Write special status strings to the file descriptor @var{n}.  See the

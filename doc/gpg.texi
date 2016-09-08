@@ -2153,7 +2153,8 @@ Assume the input data is not in ASCII armored format.
 @item --output @var{file}
 @itemx -o @var{file}
 @opindex output
-Write output to @var{file}.
+Write output to @var{file}.  To write to stdout use @code{-} as the
+filename.
 
 @item --max-output @code{n}
 @opindex max-output
