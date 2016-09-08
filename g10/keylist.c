@@ -1677,7 +1677,7 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
     }
 
   if (!opt.fingerprint && !opt.with_fingerprint
-      && opt.with_subkey_fingerprint && opt.keyid_format == KF_NONE)
+      && opt.with_subkey_fingerprint)
     compact = 1;
 
   if (pk->main_keyid[0] == pk->keyid[0]
@@ -1869,7 +1869,10 @@ print_key_line (estream_t fp, PKT_public_key *pk, int secret)
 
   tty_fprintf (fp, "\n");
 
-  if (pk->flags.primary && opt.keyid_format == KF_NONE)
+  /* if the user hasn't explicitly asked for human-readable
+     fingerprints, show compact fpr of primary key: */
+  if (pk->flags.primary &&
+      !opt.fingerprint && !opt.with_fingerprint)
     print_fingerprint (fp, pk, 20);
 }
 
