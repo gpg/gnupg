@@ -61,6 +61,7 @@ kbxutil_SOURCES = kbxutil.c $(common_sources)
 kbxutil_CFLAGS = $(AM_CFLAGS) -DKEYBOX_WITH_X509=1
 kbxutil_LDADD   = ../common/libcommon.a \
                   $(KSBA_LIBS) $(LIBGCRYPT_LIBS) $(extra_libs) \
-                  $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
+                  $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS) \
+		  $(NETLIBS)
 
 $(PROGRAMS) : ../common/libcommon.a

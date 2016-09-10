@@ -95,7 +95,7 @@ dirmngr_ldap_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBGCRYPT_CFLAGS)
 dirmngr_ldap_LDFLAGS =
 dirmngr_ldap_LDADD = $(libcommon) no-libgcrypt.o \
 		     $(GPG_ERROR_LIBS) $(LIBGCRYPT_LIBS) $(LDAPLIBS) \
-		     $(LBER_LIBS) $(LIBINTL) $(LIBICONV)
+		     $(LBER_LIBS) $(LIBINTL) $(LIBICONV) $(NETLIBS)
 endif
 
 dirmngr_client_SOURCES = dirmngr-client.c
