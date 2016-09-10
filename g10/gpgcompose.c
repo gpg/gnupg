@@ -710,7 +710,7 @@ public_key (const char *option, int argc, char *argv[], void *cookie)
   return processed;
 }
 
-struct siginfo
+struct signinfo
 {
   /* Key with which to sign.  */
   kbnode_t issuer_kb;
@@ -789,7 +789,7 @@ sig_issuer (const char *option, int argc, char *argv[], void *cookie)
   gpg_error_t err;
   KEYDB_HANDLE hd;
   KEYDB_SEARCH_DESC desc;
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
 
   if (argc == 0)
     log_fatal ("Usage: %s KEYID\n", option);
@@ -824,7 +824,7 @@ sig_issuer_keyid (const char *option, int argc, char *argv[], void *cookie)
 {
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
 
   if (argc == 0)
     log_fatal ("Usage: %s KEYID|self\n", option);
@@ -853,7 +853,7 @@ sig_issuer_keyid (const char *option, int argc, char *argv[], void *cookie)
 static int
 sig_pk (const char *option, int argc, char *argv[], void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   int i;
   char *tail = NULL;
 
@@ -893,7 +893,7 @@ sig_pk (const char *option, int argc, char *argv[], void *cookie)
 static int
 sig_user_id (const char *option, int argc, char *argv[], void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   int i;
   char *tail = NULL;
 
@@ -922,7 +922,7 @@ sig_user_id (const char *option, int argc, char *argv[], void *cookie)
 static int
 sig_class (const char *option, int argc, char *argv[], void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   int i;
   char *tail = NULL;
 
@@ -942,7 +942,7 @@ sig_class (const char *option, int argc, char *argv[], void *cookie)
 static int
 sig_digest (const char *option, int argc, char *argv[], void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   int i;
   char *tail = NULL;
 
@@ -962,7 +962,7 @@ sig_digest (const char *option, int argc, char *argv[], void *cookie)
 static int
 sig_timestamp (const char *option, int argc, char *argv[], void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   char *tail = NULL;
 
   if (argc == 0)
@@ -979,7 +979,7 @@ sig_timestamp (const char *option, int argc, char *argv[], void *cookie)
 static int
 sig_expiration (const char *option, int argc, char *argv[], void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   int is_expiration = strcmp (option, "--expiration") == 0;
   u32 *i = is_expiration ? &si->expiration : &si->key_expiration;
 
@@ -999,7 +999,7 @@ sig_expiration (const char *option, int argc, char *argv[], void *cookie)
 static int
 sig_int_list (const char *option, int argc, char *argv[], void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   int nvalues = 1;
   char *values = xmalloc (nvalues * sizeof (values[0]));
   char *tail = argv[0];
@@ -1069,7 +1069,7 @@ sig_int_list (const char *option, int argc, char *argv[], void *cookie)
 static int
 sig_flag (const char *option, int argc, char *argv[], void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   int range[2] = {0, 255};
   char *tail;
   int v;
@@ -1115,7 +1115,7 @@ sig_flag (const char *option, int argc, char *argv[], void *cookie)
 static int
 sig_trust_level (const char *option, int argc, char *argv[], void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   int i;
   char *tail;
 
@@ -1143,7 +1143,7 @@ sig_trust_level (const char *option, int argc, char *argv[], void *cookie)
 static int
 sig_string_arg (const char *option, int argc, char *argv[], void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   char *p = argv[0];
   char **s;
 
@@ -1173,7 +1173,7 @@ static int
 sig_revocation_key (const char *option, int argc, char *argv[], void *cookie)
 {
   gpg_error_t err;
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   int v;
   char *tail;
   PKT_public_key pk;
@@ -1213,7 +1213,7 @@ sig_revocation_key (const char *option, int argc, char *argv[], void *cookie)
 static int
 sig_notation (const char *option, int argc, char *argv[], void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   int is_blob = strcmp (option, "--notation") != 0;
   struct notation *notation;
   char *p = argv[0];
@@ -1330,7 +1330,7 @@ sig_notation (const char *option, int argc, char *argv[], void *cookie)
 static int
 sig_big_endian_arg (const char *option, int argc, char *argv[], void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   char *p = argv[0];
   int i;
   int l;
@@ -1385,7 +1385,7 @@ sig_big_endian_arg (const char *option, int argc, char *argv[], void *cookie)
 static int
 sig_reason_for_revocation (const char *option, int argc, char *argv[], void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   int v;
   char *tail;
 
@@ -1410,7 +1410,7 @@ sig_reason_for_revocation (const char *option, int argc, char *argv[], void *coo
 static int
 sig_corrupt (const char *option, int argc, char *argv[], void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
 
   (void) option;
   (void) argc;
@@ -1560,7 +1560,7 @@ static struct option sig_options[] = {
 static int
 mksubpkt_callback (PKT_signature *sig, void *cookie)
 {
-  struct siginfo *si = cookie;
+  struct signinfo *si = cookie;
   int i;
 
   if (si->key_expiration)
@@ -1675,7 +1675,7 @@ signature (const char *option, int argc, char *argv[], void *cookie)
 {
   gpg_error_t err;
   iobuf_t out = cookie;
-  struct siginfo si;
+  struct signinfo si;
   int processed;
   PKT_public_key *pk;
   PKT_signature *sig;
