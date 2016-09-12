@@ -95,70 +95,68 @@
   (call-check `(,@GPG --trust-model=tofu ,@args
 		      --tofu-policy ,policy ,keyid)))
 
+(info "Checking tofu policies and trust...")
+
+;; Carefully remove the TOFU db.
+(catch '() (unlink (string-append GNUPGHOME "/tofu.db")))
+(catch '() (unlink-recursively (string-append GNUPGHOME "/tofu.d")))
+
+;; Verify a message.  There should be no conflict and the trust
+;; policy should be set to auto.
+(call-check `(,@GPG --trust-model=tofu
+		    --verify ,(in-srcdir "tofu-2183839A-1.txt")))
+
+(checkpolicy "2183839A" "auto")
+;; Check default trust.
+(checktrust "2183839A" "m")
+
+;; Trust should be derived lazily.  Thus, if the policy is set to
+;; auto and we change --tofu-default-policy, then the trust should
+;; change as well.  Try it.
+(checktrust "2183839A" "f" '--tofu-default-policy=good)
+(checktrust "2183839A" "-" '--tofu-default-policy=unknown)
+(checktrust "2183839A" "n" '--tofu-default-policy=bad)
+
+;; Change the policy to something other than auto and make sure the
+;; policy and the trust are correct.
 (for-each-p
- "Testing tofu db"
- (lambda (1)
-   ;; Carefully remove the TOFU db.
-   (catch '() (unlink (string-append GNUPGHOME "/tofu.db")))
-   (catch '() (unlink-recursively (string-append GNUPGHOME "/tofu.d")))
+ "Setting a fixed policy..."
+ (lambda (policy)
+   (let ((expected-trust
+	  (cond
+	   ((string=? "good" policy) "f")
+	   ((string=? "unknown" policy) "-")
+	   (else "n"))))
+     (setpolicy "2183839A" policy)
 
-   ;; Verify a message.  There should be no conflict and the trust
-   ;; policy should be set to auto.
-   (call-check `(,@GPG --trust-model=tofu
-		       --verify ,(in-srcdir "tofu-2183839A-1.txt")))
+     ;; Since we have a fixed policy, the trust level shouldn't
+     ;; change if we change the default policy.
+     (for-each-p
+      ""
+      (lambda (default-policy)
+	(checkpolicy "2183839A" policy
+		     '--tofu-default-policy default-policy)
+	(checktrust "2183839A" expected-trust
+		    '--tofu-default-policy default-policy))
+      '("auto" "good" "unknown" "bad" "ask"))))
+ '("good" "unknown" "bad"))
 
-   (checkpolicy "2183839A" "auto")
-   ;; Check default trust.
-   (checktrust "2183839A" "m")
+;; BC15C85A conflicts with 2183839A.  On conflict, this will set
+;; BC15C85A to ask.  If 2183839A is auto (it's not, it's bad), then
+;; it will be set to ask.
+(call-check `(,@GPG --trust-model=tofu
+		    --verify ,(in-srcdir "tofu-BC15C85A-1.txt")))
+(checkpolicy "BC15C85A" "ask")
+(checkpolicy "2183839A" "bad")
 
-   ;; Trust should be derived lazily.  Thus, if the policy is set to
-   ;; auto and we change --tofu-default-policy, then the trust should
-   ;; change as well.  Try it.
-   (checktrust "2183839A" "f" '--tofu-default-policy=good)
-   (checktrust "2183839A" "-" '--tofu-default-policy=unknown)
-   (checktrust "2183839A" "n" '--tofu-default-policy=bad)
-
-   ;; Change the policy to something other than auto and make sure the
-   ;; policy and the trust are correct.
-   (for-each-p
-    ""
-    (lambda (policy)
-      (let ((expected-trust
-	     (cond
-	      ((string=? "good" policy) "f")
-	      ((string=? "unknown" policy) "-")
-	      (else "n"))))
-	(setpolicy "2183839A" policy)
-
-	;; Since we have a fixed policy, the trust level shouldn't
-	;; change if we change the default policy.
-	(for-each-p
-	 ""
-	 (lambda (default-policy)
-	   (checkpolicy "2183839A" policy
-			'--tofu-default-policy default-policy)
-	   (checktrust "2183839A" expected-trust
-		       '--tofu-default-policy default-policy))
-	 '("auto" "good" "unknown" "bad" "ask"))))
-    '("good" "unknown" "bad"))
-
-   ;; BC15C85A conflicts with 2183839A.  On conflict, this will set
-   ;; BC15C85A to ask.  If 2183839A is auto (it's not, it's bad), then
-   ;; it will be set to ask.
-   (call-check `(,@GPG --trust-model=tofu
-		       --verify ,(in-srcdir "tofu-BC15C85A-1.txt")))
-   (checkpolicy "BC15C85A" "ask")
-   (checkpolicy "2183839A" "bad")
-
-   ;; EE37CF96 conflicts with 2183839A and BC15C85A.  We change
-   ;; BC15C85A's policy to auto and leave 2183839A's policy at bad.
-   ;; This conflict should cause BC15C85A's policy to be changed to
-   ;; ask (since it is auto), but not affect 2183839A's policy.
-   (setpolicy "BC15C85A" "auto")
-   (checkpolicy "BC15C85A" "auto")
-   (call-check `(,@GPG --trust-model=tofu
-		       --verify ,(in-srcdir "tofu-EE37CF96-1.txt")))
-   (checkpolicy "BC15C85A" "ask")
-   (checkpolicy "2183839A" "bad")
-   (checkpolicy "EE37CF96" "ask"))
- '("flat"))
+;; EE37CF96 conflicts with 2183839A and BC15C85A.  We change
+;; BC15C85A's policy to auto and leave 2183839A's policy at bad.
+;; This conflict should cause BC15C85A's policy to be changed to
+;; ask (since it is auto), but not affect 2183839A's policy.
+(setpolicy "BC15C85A" "auto")
+(checkpolicy "BC15C85A" "auto")
+(call-check `(,@GPG --trust-model=tofu
+		    --verify ,(in-srcdir "tofu-EE37CF96-1.txt")))
+(checkpolicy "BC15C85A" "ask")
+(checkpolicy "2183839A" "bad")
+(checkpolicy "EE37CF96" "ask")
