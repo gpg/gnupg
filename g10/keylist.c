@@ -1183,9 +1183,10 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
   PKT_public_key *pk;
   u32 keyid[2];
   int trustletter = 0;
+  int trustletter_print;
+  int ownertrust_print;
   int ulti_hack = 0;
   int i;
-  char *p;
   char *hexgrip_buffer = NULL;
   const char *hexgrip = NULL;
   char *serialno = NULL;
@@ -1217,31 +1218,38 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
     stubkey = 1;  /* Key not found.  */
 
   keyid_from_pk (pk, keyid);
-  es_fputs (secret? "sec:":"pub:", es_stdout);
   if (!pk->flags.valid)
-    es_putc ('i', es_stdout);
+    trustletter_print = 'i';
   else if (pk->flags.revoked)
-    es_putc ('r', es_stdout);
+    trustletter_print = 'r';
   else if (pk->has_expired)
-    es_putc ('e', es_stdout);
+    trustletter_print = 'e';
   else if (opt.fast_list_mode || opt.no_expensive_trust_checks)
-    ;
+    trustletter_print = 0;
   else
     {
       trustletter = get_validity_info (ctrl, pk, NULL);
       if (trustletter == 'u')
         ulti_hack = 1;
-      es_putc (trustletter, es_stdout);
+      trustletter_print = trustletter;
     }
 
+  if (!opt.fast_list_mode && !opt.no_expensive_trust_checks)
+    ownertrust_print = get_ownertrust_info (pk);
+  else
+    ownertrust_print = 0;
+
+  es_fputs (secret? "sec:":"pub:", es_stdout);
+  if (trustletter_print)
+    es_putc (trustletter_print, es_stdout);
   es_fprintf (es_stdout, ":%u:%d:%08lX%08lX:%s:%s::",
           nbits_from_pk (pk),
           pk->pubkey_algo,
           (ulong) keyid[0], (ulong) keyid[1],
           colon_datestr_from_pk (pk), colon_strtime (pk->expiredate));
 
-  if (!opt.fast_list_mode && !opt.no_expensive_trust_checks)
-    es_putc (get_ownertrust_info (pk), es_stdout);
+  if (ownertrust_print)
+    es_putc (ownertrust_print, es_stdout);
   es_putc (':', es_stdout);
 
   es_putc (':', es_stdout);
@@ -1286,31 +1294,27 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
     {
       if (node->pkt->pkttype == PKT_USER_ID)
 	{
-	  char *str;
 	  PKT_user_id *uid = node->pkt->pkt.user_id;
+          int uid_validity;
 
 	  if (attrib_fp && uid->attrib_data != NULL)
 	    dump_attribs (uid, pk);
-	  /*
-	   * Fixme: We need a valid flag here too
-	   */
-	  str = uid->attrib_data ? "uat" : "uid";
-	  if (uid->is_revoked)
-	    es_fprintf (es_stdout, "%s:r::::", str);
-	  else if (uid->is_expired)
-	    es_fprintf (es_stdout, "%s:e::::", str);
-	  else if (opt.no_expensive_trust_checks)
-	    es_fprintf (es_stdout, "%s:::::", str);
-	  else
-	    {
-	      int uid_validity;
 
-	      if (!ulti_hack)
-		uid_validity = get_validity_info (ctrl, pk, uid);
-	      else
-		uid_validity = 'u';
-	      es_fprintf (es_stdout, "%s:%c::::", str, uid_validity);
-	    }
+	  if (uid->is_revoked)
+	    uid_validity = 'r';
+	  else if (uid->is_expired)
+	    uid_validity = 'e';
+	  else if (opt.no_expensive_trust_checks)
+	    uid_validity = 0;
+	  else if (ulti_hack)
+            uid_validity = 'u';
+          else
+            uid_validity = get_validity_info (ctrl, pk, uid);
+
+          es_fputs (uid->attrib_data? "uat:":"uid:", es_stdout);
+          if (uid_validity)
+            es_putc (uid_validity, es_stdout);
+          es_fputs ("::::", es_stdout);
 
 	  es_fprintf (es_stdout, "%s:", colon_strtime (uid->created));
 	  es_fprintf (es_stdout, "%s:", colon_strtime (uid->expiredate));
@@ -1423,6 +1427,8 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	  char *sigstr;
 	  size_t fplen;
 	  byte fparray[MAX_FINGERPRINT_LEN];
+          char *siguid;
+          size_t siguidlen;
 
 	  if (sig->sig_class == 0x20 || sig->sig_class == 0x28
 	      || sig->sig_class == 0x30)
@@ -1482,6 +1488,16 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	      rc = 0;
 	      sigrc = ' ';
 	    }
+
+	  if (sigrc != '%' && sigrc != '?' && !opt.fast_list_mode)
+            siguid = get_user_id (sig->keyid, &siguidlen);
+          else
+            {
+              siguid = NULL;
+              siguidlen = 0;
+            }
+
+
 	  es_fputs (sigstr, es_stdout);
 	  es_putc (':', es_stdout);
 	  if (sigrc != ' ')
@@ -1502,17 +1518,11 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 
 	  if (sigrc == '%')
 	    es_fprintf (es_stdout, "[%s] ", gpg_strerror (rc));
-	  else if (sigrc == '?')
-	    ;
-	  else if (!opt.fast_list_mode)
-	    {
-	      size_t n;
-	      p = get_user_id (sig->keyid, &n);
-	      es_write_sanitized (es_stdout, p, n, ":", NULL);
-	      xfree (p);
-	    }
+	  else if (siguid)
+            es_write_sanitized (es_stdout, siguid, siguidlen, ":", NULL);
+
 	  es_fprintf (es_stdout, ":%02x%c::", sig->sig_class,
-		  sig->flags.exportable ? 'x' : 'l');
+                      sig->flags.exportable ? 'x' : 'l');
 
 	  if (opt.no_sig_cache && opt.check_sigs && fprokay)
 	    {
@@ -1526,6 +1536,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	    print_subpackets_colon (sig);
 
 	  /* fixme: check or list other sigs here */
+          xfree (siguid);
 	}
     }
 
