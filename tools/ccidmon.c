@@ -45,6 +45,9 @@
 # define PACKAGE_BUGREPORT "devnull@example.org"
 #endif
 #define PGM "ccidmon"
+#ifndef GNUPG_NAME
+# define GNUPG_NAME "GnuPG"
+#endif
 
 /* Option flags. */
 static int verbose;
@@ -94,10 +97,10 @@ enum {
 };
 
 
-#define digitp(p)   ((p) >= '0' && (p) <= '9')
+#define digitp(p)   (*(p) >= '0' && *(p) <= '9')
 #define hexdigitp(a) (digitp (a)                     \
-                      || ((a) >= 'A' && (a) <= 'F')  \
-                      || ((a) >= 'a' && (a) <= 'f'))
+                      || (*(a) >= 'A' && *(a) <= 'F')  \
+                      || (*(a) >= 'a' && *(a) <= 'f'))
 #define ascii_isspace(a) ((a)==' ' || (a)=='\n' || (a)=='\r' || (a)=='\t')
 #define xtoi_1(p)   ((p) <= '9'? ((p)- '0'): \
                      (p) <= 'F'? ((p)-'A'+10):((p)-'a'+10))
@@ -172,7 +175,7 @@ print_pr_data (const unsigned char *data, size_t datalen, size_t off)
         {
           if (needlf)
             putchar ('\n');
-          printf ("  [%04d] ", off);
+          printf ("  [%04lu] ", (unsigned long)off);
         }
       printf (" %02X", data[off]);
       needlf = 1;
@@ -608,14 +611,14 @@ collect_data (char *hexdata, const char *address, unsigned int lineno)
     {
       if (ascii_isspace (*s))
         continue;
-      if (!hexdigitp (*s))
+      if (!hexdigitp (s))
         {
           err ("invalid hex digit in line %u - line skipped", lineno);
           break;
         }
       value = xtoi_1 (*s) * 16;
       s++;
-      if (!hexdigitp (*s))
+      if (!hexdigitp (s))
         {
           err ("invalid hex digit in line %u - line skipped", lineno);
           break;
@@ -712,8 +715,8 @@ parse_line_sniffusb (char *line, unsigned int lineno)
   if (!p)
     return;
 
-  if (hexdigitp (p[0]) && hexdigitp (p[1])
-      && hexdigitp (p[2]) && hexdigitp (p[3])
+  if (hexdigitp (p+0) && hexdigitp (p+1)
+      && hexdigitp (p+2) && hexdigitp (p+3)
       && p[4] == ':' && !p[5])
     {
       size_t length;
@@ -722,7 +725,7 @@ parse_line_sniffusb (char *line, unsigned int lineno)
       length = databuffer.count;
       while ((p=strtok (NULL, " \t")))
         {
-          if (!hexdigitp (p[0]) || !hexdigitp (p[1]))
+          if (!hexdigitp (p+0) || !hexdigitp (p+1))
             {
               err ("invalid hex digit in line %u (%s)", lineno,p);
               break;
@@ -810,7 +813,7 @@ main (int argc, char **argv)
         }
       else if (!strcmp (*argv, "--version"))
         {
-          fputs (PGM " ("GNUPG_NAME") " PACKAGE_VERSION "\n", stdout);
+          fputs (PGM " (" GNUPG_NAME ") " PACKAGE_VERSION "\n", stdout);
           exit (0);
         }
       else if (!strcmp (*argv, "--help"))
