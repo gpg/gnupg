@@ -3304,7 +3304,7 @@ keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
       goto leave;
     }
 
-  /* Create the subkey.  Noet that the called function already prints
+  /* Create the subkey.  Note that the called function already prints
    * an error message. */
   if (!generate_subkeypair (ctrl, keyblock, algostr, usagestr, expirestr))
     modified = 1;

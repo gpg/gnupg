@@ -58,6 +58,15 @@
 #define DEFAULT_STD_SUBKEYUSE  PUBKEY_USAGE_ENC
 #define DEFAULT_STD_SUBCURVE   NULL
 
+#define FUTURE_STD_ALGO        PUBKEY_ALGO_EDDSA
+#define FUTURE_STD_KEYSIZE     0
+#define FUTURE_STD_KEYUSE      (PUBKEY_USAGE_CERT|PUBKEY_USAGE_SIG)
+#define FUTURE_STD_CURVE       "Ed25519"
+#define FUTURE_STD_SUBALGO     PUBKEY_ALGO_ECDH
+#define FUTURE_STD_SUBKEYSIZE  0
+#define FUTURE_STD_SUBKEYUSE   PUBKEY_USAGE_ENC
+#define FUTURE_STD_SUBCURVE    "Curve25519"
+
 /* Flag bits used during key generation.  */
 #define KEYGEN_FLAG_NO_PROTECTION 1
 #define KEYGEN_FLAG_TRANSIENT_KEY 2
@@ -2330,7 +2339,8 @@ parse_expire_string( const char *string )
   u32 curtime = make_timestamp ();
   time_t tt;
 
-  if (!*string)
+  if (!string || !*string || !strcmp (string, "none")
+      || !strcmp (string, "never") || !strcmp (string, "-"))
     seconds = 0;
   else if (!strncmp (string, "seconds=", 8))
     seconds = atoi (string+8);
@@ -2347,7 +2357,7 @@ parse_expire_string( const char *string )
   return seconds;
 }
 
-/* Parsean Creation-Date string which is either "1986-04-26" or
+/* Parse a Creation-Date string which is either "1986-04-26" or
    "19860426T042640".  Returns 0 on error. */
 static u32
 parse_creation_string (const char *string)
@@ -3612,12 +3622,49 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
   }
 
 
-  if (!strcmp (algostr, "test-default"))
+  if ((!*algostr || !strcmp (algostr, "default")
+       || !strcmp (algostr, "future-default"))
+      && (!*usagestr || !strcmp (usagestr, "default")
+          || !strcmp (usagestr, "-")))
     {
-      para = quickgen_set_para (para, 0, PUBKEY_ALGO_EDDSA, 0, "Ed25519", 0);
-      para = quickgen_set_para (para, 1, PUBKEY_ALGO_ECDH,  0, "Curve25519", 0);
+      if (!strcmp (algostr, "future-default"))
+        {
+          para = quickgen_set_para (para, 0,
+                                    FUTURE_STD_ALGO, FUTURE_STD_KEYSIZE,
+                                    FUTURE_STD_CURVE, 0);
+          para = quickgen_set_para (para, 1,
+                                    FUTURE_STD_SUBALGO,  FUTURE_STD_SUBKEYSIZE,
+                                    FUTURE_STD_SUBCURVE, 0);
+        }
+      else
+        {
+          para = quickgen_set_para (para, 0,
+                                    DEFAULT_STD_ALGO, DEFAULT_STD_KEYSIZE,
+                                    DEFAULT_STD_CURVE, 0);
+          para = quickgen_set_para (para, 1,
+                                    DEFAULT_STD_SUBALGO, DEFAULT_STD_SUBKEYSIZE,
+                                    DEFAULT_STD_SUBCURVE, 0);
+        }
+
+      if (*expirestr)
+        {
+          u32 expire;
+
+          expire = parse_expire_string (expirestr);
+          if (expire == (u32)-1 )
+            {
+              err = gpg_error (GPG_ERR_INV_VALUE);
+              log_error (_("Key generation failed: %s\n"), gpg_strerror (err));
+              goto leave;
+            }
+          r = xmalloc_clear (sizeof *r + 20);
+          r->key = pKEYEXPIRE;
+          r->u.expire = expire;
+          r->next = para;
+          para = r;
+        }
     }
-  else if (*algostr || *usagestr || *expirestr)
+  else
     {
       /* Extended unattended mode.  Creates only the primary key. */
       int algo;
@@ -3640,15 +3687,6 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
       r->u.expire = expire;
       r->next = para;
       para = r;
-    }
-  else
-    {
-      para = quickgen_set_para (para, 0,
-                                DEFAULT_STD_ALGO, DEFAULT_STD_KEYSIZE,
-                                DEFAULT_STD_CURVE, 0);
-      para = quickgen_set_para (para, 1,
-                                DEFAULT_STD_SUBALGO, DEFAULT_STD_SUBKEYSIZE,
-                                DEFAULT_STD_SUBCURVE, 0);
     }
 
   /* If the pinentry loopback mode is not and we have a static
@@ -4416,9 +4454,15 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
   if (!algostr || !*algostr
       || !strcmp (algostr, "default") || !strcmp (algostr, "-"))
     {
-      algo = for_subkey? DEFAULT_STD_SUBALGO : DEFAULT_STD_ALGO;
-      use = for_subkey?  DEFAULT_STD_SUBKEYUSE : DEFAULT_STD_KEYUSE;
-      nbits = for_subkey?DEFAULT_STD_SUBKEYSIZE : DEFAULT_STD_KEYSIZE;
+      algo  = for_subkey? DEFAULT_STD_SUBALGO    : DEFAULT_STD_ALGO;
+      use   = for_subkey? DEFAULT_STD_SUBKEYUSE  : DEFAULT_STD_KEYUSE;
+      nbits = for_subkey? DEFAULT_STD_SUBKEYSIZE : DEFAULT_STD_KEYSIZE;
+    }
+  else if (!strcmp (algostr, "future-default"))
+    {
+      algo  = for_subkey? FUTURE_STD_SUBALGO    : FUTURE_STD_ALGO;
+      use   = for_subkey? FUTURE_STD_SUBKEYUSE  : FUTURE_STD_KEYUSE;
+      nbits = for_subkey? FUTURE_STD_SUBKEYSIZE : FUTURE_STD_KEYSIZE;
     }
   else if (*algostr == '&' && strlen (algostr) == 41)
     {
@@ -4490,11 +4534,7 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
     return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
 
   /* Parse the expire string.  */
-  if (!expirestr || !*expirestr || !strcmp (expirestr, "none")
-      || !strcmp (expirestr, "never") || !strcmp (expirestr, "-"))
-    expire = 0;
-  else
-    expire = parse_expire_string (expirestr);
+  expire = parse_expire_string (expirestr);
   if (expire == (u32)-1 )
     return gpg_error (GPG_ERR_INV_VALUE);
 

@@ -615,12 +615,14 @@ answer to a ``Continue?'' style confirmation prompt is required.  In
 case the user id already exists in the key ring a second prompt to
 force the creation of the key will show up.
 
-If any of the optional arguments are given, only the primary key is
-created and no prompts are shown.  For a description of these optional
-arguments see the command @code{--quick-addkey}.  The @code{usage}
-accepts also the value ``cert'' which can be used to create a
-certification only primary key; the default is to a create
-certification and signing key.
+If @code{algo} or @code{usage} are given, only the primary key is
+created and no prompts are shown.  To specify an expiration date but
+still create a primary and subkey use ``default'' or
+``future-default'' for @code{algo} and ``default'' for @code{usage}.
+For a description of these optional arguments see the command
+@code{--quick-addkey}.  The @code{usage} accepts also the value
+``cert'' which can be used to create a certification only primary key;
+the default is to a create certification and signing key.
 
 If this command is used with @option{--batch},
 @option{--pinentry-mode} has been set to @code{loopback}, and one of
@@ -637,13 +639,15 @@ Directly add a subkey to the key identified by the fingerprint
 added.  If any of the arguments are given a more specific subkey is
 added.
 
-@code{algo} may be any of the supported algorithms or curve names given
-in the format as used by key listings.  To use the default algorithm
-the string ``default'' or ``-'' can be used. Supported algorithms are
-``rsa'', ``dsa'', ``elg'', ``ed25519'', ``cv25519'', and other ECC
-curves.  For example the string ``rsa'' adds an RSA key with the
-default key length; a string ``rsa4096'' requests that the key length
-is 4096 bits.
+@code{algo} may be any of the supported algorithms or curve names
+given in the format as used by key listings.  To use the default
+algorithm the string ``default'' or ``-'' can be used.  Supported
+algorithms are ``rsa'', ``dsa'', ``elg'', ``ed25519'', ``cv25519'',
+and other ECC curves.  For example the string ``rsa'' adds an RSA key
+with the default key length; a string ``rsa4096'' requests that the
+key length is 4096 bits.  The string ``future-default'' is an alias
+for the algorithm which will likely be used as default algorithm in
+future versions of gpg.
 
 Depending on the given @code{algo} the subkey may either be an
 encryption subkey or a signing subkey.  If an algorithm is capable of
