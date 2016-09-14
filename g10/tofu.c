@@ -2085,10 +2085,10 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
         if (policy == TOFU_POLICY_NONE)
           {
             if (record_binding (dbs, fingerprint, email, user_id,
-                                TOFU_POLICY_AUTO, 0, now) != 0)
+                                TOFU_POLICY_GOOD, 0, now) != 0)
               {
                 log_error (_("error setting TOFU binding's trust level"
-                             " to %s\n"), "auto");
+                             " to %s\n"), "good");
                 trust_level = _tofu_GET_TRUST_ERROR;
                 goto out;
               }
