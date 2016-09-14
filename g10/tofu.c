@@ -1213,7 +1213,7 @@ format_conflict_msg_part1 (int policy, strlist_t conflict_set,
 
 
 /* Return 1 if A signed B and B signed A.  */
-int
+static int
 cross_sigs (kbnode_t a, kbnode_t b)
 {
   int i;
