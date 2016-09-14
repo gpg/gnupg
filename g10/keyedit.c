@@ -4308,7 +4308,10 @@ menu_adduid (ctrl_t ctrl, kbnode_t pub_keyblock,
   if (!uid)
     {
       if (uidstring)
-        log_error ("%s", _("Such a user ID already exists on this key!\n"));
+        {
+          write_status_error ("adduid", gpg_error (304));
+          log_error ("%s", _("Such a user ID already exists on this key!\n"));
+        }
       return 0;
     }
 
