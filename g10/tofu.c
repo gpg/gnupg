@@ -2756,7 +2756,7 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
                         " a message to this key and user id!\n"));
           else if (encryption_count == 1)
             log_info (_("Warning: you have only encrypted"
-                        "  one message to this key and user id!\n"));
+                        " one message to this key and user id!\n"));
 
           /* Cf. write_stats_status  */
           if (sqrtu32 (encryption_count * encryption_count
