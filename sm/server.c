@@ -1099,7 +1099,7 @@ static const char hlp_getinfo[] =
   "  agent-check - Return success if the agent is running.\n"
   "  cmd_has_option CMD OPT\n"
   "              - Returns OK if the command CMD implements the option OPT.\n"
-  "  offline     - Returns OK if the conenction is in offline mode.";
+  "  offline     - Returns OK if the connection is in offline mode.";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
