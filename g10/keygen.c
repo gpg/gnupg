@@ -3614,6 +3614,7 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
                  || !cpr_get_answer_is_yes_def ("quick_keygen.force",
                                                 _("Create anyway? (y/N) "), 0))
           {
+            write_status_error ("genkey", gpg_error (304));
             log_inc_errorcount ();  /* we used log_info */
             goto leave;
           }
@@ -4457,12 +4458,14 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
       algo  = for_subkey? DEFAULT_STD_SUBALGO    : DEFAULT_STD_ALGO;
       use   = for_subkey? DEFAULT_STD_SUBKEYUSE  : DEFAULT_STD_KEYUSE;
       nbits = for_subkey? DEFAULT_STD_SUBKEYSIZE : DEFAULT_STD_KEYSIZE;
+      curve = for_subkey? DEFAULT_STD_SUBCURVE   : DEFAULT_STD_CURVE;
     }
   else if (!strcmp (algostr, "future-default"))
     {
       algo  = for_subkey? FUTURE_STD_SUBALGO    : FUTURE_STD_ALGO;
       use   = for_subkey? FUTURE_STD_SUBKEYUSE  : FUTURE_STD_KEYUSE;
       nbits = for_subkey? FUTURE_STD_SUBKEYSIZE : FUTURE_STD_KEYSIZE;
+      curve = for_subkey? FUTURE_STD_SUBCURVE   : FUTURE_STD_CURVE;
     }
   else if (*algostr == '&' && strlen (algostr) == 41)
     {
