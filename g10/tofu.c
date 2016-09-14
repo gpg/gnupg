@@ -2514,16 +2514,17 @@ write_stats_status (estream_t fp,
   const char *validity;
   unsigned long messages;
 
-  /* Use the euclidean distance rather then the sum of the magnitudes
-     to ensure a balance between verified signatures and encrypted
-     messages.  */
-  messages = sqrtu32 (signature_count) + sqrtu32 (encryption_count);
+  /* Use the euclidean distance (m = sqrt(a^2 + b^2)) rather then the
+     sum of the magnitudes (m = a + b) to ensure a balance between
+     verified signatures and encrypted messages.  */
+  messages = sqrtu32 (signature_count * signature_count
+                      + encryption_count * encryption_count);
 
   if (messages < 1)
     validity = "1"; /* Key without history.  */
-  else if (messages < sqrtu32 (2 * BASIC_TRUST_THRESHOLD))
+  else if (messages < 2 * BASIC_TRUST_THRESHOLD)
     validity = "2"; /* Key with too little history.  */
-  else if (messages < sqrtu32 (2 * FULL_TRUST_THRESHOLD))
+  else if (messages < 2 * FULL_TRUST_THRESHOLD)
     validity = "3"; /* Key with enough history for basic trust.  */
   else
     validity = "4"; /* Key with a lot of history.  */
@@ -2758,8 +2759,9 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
                         "  one message to this key and user id!\n"));
 
           /* Cf. write_stats_status  */
-          if (sqrtu32 (encryption_count) + sqrtu32 (signature_count)
-              < sqrtu32 (2 * BASIC_TRUST_THRESHOLD))
+          if (sqrtu32 (encryption_count * encryption_count
+                       + signature_count * signature_count)
+              < 2 * BASIC_TRUST_THRESHOLD)
             show_warning = 1;
         }
     }
