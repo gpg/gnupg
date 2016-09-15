@@ -36,6 +36,7 @@
 #include "options.h"
 #include "packet.h"
 #include "main.h"
+#include "mbox-util.h"
 #include "i18n.h"
 #include "tdbio.h"
 #include "trustdb.h"
