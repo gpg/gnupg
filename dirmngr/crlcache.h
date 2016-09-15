@@ -1,5 +1,5 @@
 /* crlcache.h - LDAP access
- *      Copyright (C) 2002 Klar‰lvdalens Datakonsult AB
+ *      Copyright (C) 2002 Klar√§lvdalens Datakonsult AB
  *
  * This file is part of DirMngr.
  *

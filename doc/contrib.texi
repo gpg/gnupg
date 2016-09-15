@@ -13,10 +13,10 @@ the maintainer if you have been left out or some of your contributions
 are not listed.
 
 David Shaw, Matthew Skala, Michael Roth, Niklas Hernaeus, Nils
-Ellmenreich, Rémi Guyomarch, Stefan Bellon, Timo Schulz and Werner
+Ellmenreich, RÃ©mi Guyomarch, Stefan Bellon, Timo Schulz and Werner
 Koch wrote the code.  Birger Langkjer, Daniel Resare, Dokianakis
-Theofanis, Edmund GRIMLEY EVANS, Gaël Quéri, Gregory Steuck, Nagy
-Ferenc László, Ivo Timmermans, Jacobo Tarri'o Barreiro, Janusz
+Theofanis, Edmund GRIMLEY EVANS, GaÃ«l QuÃ©ri, Gregory Steuck, Nagy
+Ferenc LÃ¡szlÃ³, Ivo Timmermans, Jacobo Tarri'o Barreiro, Janusz
 Aleksander Urbanowicz, Jedi Lin, Jouni Hiltunen, Laurentiu Buzdugan,
 Magda Procha'zkova', Michael Anckaert, Michal Majer, Marco d'Itri,
 Nilgun Belma Buguner, Pedro Morais, Tedi Heriyanto, Thiago Jung
@@ -26,7 +26,7 @@ and maintains the GNU Privacy Handbook. David Scribner is the current
 FAQ editor.  Lorenzo Cappelletti maintains the web site.
 
 The new modularized architecture of gnupg 1.9 as well as the X.509/CMS
-part has been developed as part of the Ägypten project.  Direct
+part has been developed as part of the Ã„gypten project.  Direct
 contributors to this project are: Bernhard Herzog, who did extensive
 testing and tracked down a lot of bugs.  Bernhard Reiter, who made sure
 that we met the specifications and the deadlines. He did extensive
@@ -57,8 +57,8 @@ Lannert, Dimitri, Dirk Lattermann, Dirk Meyer, Disastry, Douglas
 Calvert, Ed Boraas, Edmund GRIMLEY EVANS, Edwin Woudt, Enzo
 Michelangeli, Ernst Molitor, Fabio Coatti, Felix von Leitner, fish
 stiqz, Florian Weimer, Francesco Potorti, Frank Donahoe, Frank
-Heckenbach, Frank Stajano, Frank Tobin, Gabriel Rosenkoetter, Gaël
-Quéri, Gene Carter, Geoff Keating, Georg Schwarz, Giampaolo Tomassoni,
+Heckenbach, Frank Stajano, Frank Tobin, Gabriel Rosenkoetter, GaÃ«l
+QuÃ©ri, Gene Carter, Geoff Keating, Georg Schwarz, Giampaolo Tomassoni,
 Gilbert Fernandes, Greg Louis, Greg Troxel, Gregory Steuck, Gregery
 Barton, Harald Denker, Holger Baust, Hendrik Buschkamp, Holger
 Schurig, Holger Smolinski, Holger Trapp, Hugh Daniel, Huy Le, Ian
@@ -66,7 +66,7 @@ McKellar, Ivo Timmermans, Jan Krueger, Jan Niehusmann, Janusz
 A. Urbanowicz, James Troup, Jean-loup Gailly, Jeff Long, Jeffery Von
 Ronne, Jens Bachem, Jeroen C. van Gelderen, J Horacio MG, J. Michael
 Ashley, Jim Bauer, Jim Small, Joachim Backes, Joe Rhett, John
-A. Martin, Johnny Teveßen, Jörg Schilling, Jos Backus, Joseph Walton,
+A. Martin, Johnny TeveÃŸen, JÃ¶rg Schilling, Jos Backus, Joseph Walton,
 Juan F. Codagnone, Jun Kuriyama, Kahil D. Jallad, Karl Fogel, Karsten
 Thygesen, Katsuhiro Kondou, Kazu Yamamoto, Keith Clayton, Kevin Ryde,
 Klaus Singvogel, Kurt Garloff, Lars Kellogg-Stedman, L. Sassaman, M
@@ -77,10 +77,10 @@ Skala, Matthew Wilcox, Matthias Urlichs, Max Valianskiy, Michael
 Engels, Michael Fischer v. Mollard, Michael Roth, Michael Sobolev,
 Michael Tokarev, Nicolas Graner, Mike McEwan, Neal H Walfield, Nelson
 H. F. Beebe, NIIBE Yutaka, Niklas Hernaeus, Nimrod Zimerman, N J Doye,
-Oliver Haakert, Oskari Jääskeläinen, Pascal Scheffers, Paul D. Smith,
+Oliver Haakert, Oskari JÃ¤Ã¤skelÃ¤inen, Pascal Scheffers, Paul D. Smith,
 Per Cederqvist, Phil Blundell, Philippe Laliberte, Peter Fales, Peter
 Gutmann, Peter Marschall, Peter Valchev, Piotr Krukowiecki, QingLong,
-Ralph Gillen, Rat, Reinhard Wobst, Rémi Guyomarch, Reuben Sumner,
+Ralph Gillen, Rat, Reinhard Wobst, RÃ©mi Guyomarch, Reuben Sumner,
 Richard Outerbridge, Robert Joop, Roddy Strachan, Roger Sondermann,
 Roland Rosenfeld, Roman Pavlik, Ross Golder, Ryan Malayter, Sam
 Roberts, Sami Tolvanen, Sean MacLennan, Sebastian Klemke, Serge
@@ -89,7 +89,7 @@ Stefan Keller, Steffen Ullrich, Steffen Zahn, Steven Bakker, Steven
 Murdoch, Susanne Schultz, Ted Cabeen, Thiago Jung Bauermann, Thijmen
 Klok, Thomas Roessler, Tim Mooney, Timo Schulz, Todd Vierling, TOGAWA
 Satoshi, Tom Spindler, Tom Zerucha, Tomas Fasth, Tommi Komulainen,
-Thomas Klausner, Tomasz Kozlowski, Thomas Mikkelsen, Ulf Möller, Urko
+Thomas Klausner, Tomasz Kozlowski, Thomas Mikkelsen, Ulf MÃ¶ller, Urko
 Lusa, Vincent P. Broman, Volker Quetschke, W Lewis, Walter Hofmann,
 Walter Koch, Wayne Chapeskie, Wim Vandeputte, Winona Brown, Yosiaki
 IIDA, Yoshihiro Kajiki and Gerlinde Klaes.

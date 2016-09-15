@@ -298,16 +298,15 @@ cdb_find(struct cdb *cdbp, const void *key, cdbi_t klen)
    possible to have many than one record with the same key in a
    database, and these routines allow enumeration of all of them.
    cdb_findinit() initializes search structure pointed to by cdbfp.
-   It will return negative value on error or 0 on success.  cdb_find­
-   next() attempts to find next matching key, setting value position
-   and length in cdbfp structure.  It will return positive value if
-   given key was found, 0 if there is no more such key(s), or negative
-   value on error.  To access value position and length after
+   It will return negative value on error or 0 on success.
+   cdb_findnext() attempts to find next matching key, setting value
+   position and length in cdbfp structure.  It will return positive
+   value if given key was found, 0 if there is no more such key(s), or
+   negative value on error.  To access value position and length after
    successeful call to cdb_findnext() (when it returned positive
    result), use cdb_datapos() and cdb_datalen() macros with cdbp
    pointer.  It is error to use cdb_findnext() after it returned 0 or
-   error condition.  These routines is a bit slower than
-   cdb_find().
+   error condition.  These routines is a bit slower than cdb_find().
 
    Setting KEY to NULL will start a sequential search through the
    entire DB.
