@@ -1753,6 +1753,10 @@ AC_DEFINE_UNQUOTED(GPGTAR_NAME, "gpgtar", [The name of the gpgtar tool])
 
 AC_DEFINE_UNQUOTED(GPG_AGENT_SOCK_NAME, "S.gpg-agent",
                    [The name of the agent socket])
+AC_DEFINE_UNQUOTED(GPG_AGENT_EXTRA_SOCK_NAME, "S.gpg-agent.rstrd",
+                   [The name of the agent socket for remote access])
+AC_DEFINE_UNQUOTED(GPG_AGENT_BROWSER_SOCK_NAME, "S.gpg-agent.brwsr",
+                   [The name of the agent socket for browsers])
 AC_DEFINE_UNQUOTED(GPG_AGENT_SSH_SOCK_NAME, "S.gpg-agent.ssh",
                    [The name of the agent socket for ssh])
 AC_DEFINE_UNQUOTED(DIRMNGR_INFO_NAME, "DIRMNGR_INFO",

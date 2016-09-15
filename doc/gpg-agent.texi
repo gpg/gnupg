@@ -537,6 +537,9 @@ pinentry to pop up at the @code{tty} or display you started the agent.
 @anchor{option --extra-socket}
 @item --extra-socket @var{name}
 @opindex extra-socket
+The extra socket is always created, you may use this option to change
+the name of the socket.
+
 Also listen on native gpg-agent connections on the given socket.  The
 intended use for this extra socket is to setup a Unix domain socket
 forwarding from a remote machine to this socket on the local machine.
@@ -552,7 +555,8 @@ remote machine.
 @opindex enable-ssh-support
 @opindex enable-putty-support
 
-Enable the OpenSSH Agent protocol.
+The OpenSSH Agent protocol is always enabled, but @command{gpg-agent}
+will only set the @code{SSH_AUTH_SOCK} variable if this flag is given.
 
 In this mode of operation, the agent does not only implement the
 gpg-agent protocol, but also the agent protocol used by OpenSSH

@@ -1045,6 +1045,18 @@ main (int argc, char **argv )
       agent_exit (0);
     }
 
+  if (! opt.extra_socket)
+    {
+      opt.extra_socket = 1;  /* (1 = points into r/o section)  */
+      socket_name_extra = GPG_AGENT_EXTRA_SOCK_NAME;
+    }
+
+  if (! opt.browser_socket)
+    {
+      opt.browser_socket = 1;  /* (1 = points into r/o section)  */
+      socket_name_browser = GPG_AGENT_BROWSER_SOCK_NAME;
+    }
+
   set_debug ();
 
   if (atexit (cleanup))
@@ -1241,13 +1253,10 @@ main (int argc, char **argv )
                                              &socket_nonce_browser);
         }
 
-      if (ssh_support)
-        {
-          socket_name_ssh = create_socket_name (GPG_AGENT_SSH_SOCK_NAME, 1);
-          fd_ssh = create_server_socket (socket_name_ssh, 0, 1,
-                                         &redir_socket_name_ssh,
-                                         &socket_nonce_ssh);
-        }
+      socket_name_ssh = create_socket_name (GPG_AGENT_SSH_SOCK_NAME, 1);
+      fd_ssh = create_server_socket (socket_name_ssh, 0, 1,
+                                     &redir_socket_name_ssh,
+                                     &socket_nonce_ssh);
 
       /* If we are going to exec a program in the parent, we record
          the PID, so that the child may check whether the program is
@@ -1313,8 +1322,7 @@ main (int argc, char **argv )
 	    *socket_name_extra = 0;
 	  if (opt.browser_socket)
 	    *socket_name_browser = 0;
-	  if (ssh_support)
-	    *socket_name_ssh = 0;
+          *socket_name_ssh = 0;
 
           if (argc)
             { /* Run the program given on the commandline.  */
