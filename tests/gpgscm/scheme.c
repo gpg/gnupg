@@ -602,7 +602,7 @@ static int alloc_cellseg(scheme *sc, int n) {
      pointer newp;
      pointer last;
      pointer p;
-     char *cp;
+     void *cp;
      long i;
      int k;
      int adj=ADJ;
@@ -614,14 +614,14 @@ static int alloc_cellseg(scheme *sc, int n) {
      for (k = 0; k < n; k++) {
          if (sc->last_cell_seg >= CELL_NSEGMENT - 1)
               return k;
-         cp = (char*) sc->malloc(CELL_SEGSIZE * sizeof(struct cell)+adj);
+         cp = sc->malloc(CELL_SEGSIZE * sizeof(struct cell)+adj);
          if (cp == 0)
               return k;
          i = ++sc->last_cell_seg ;
          sc->alloc_seg[i] = cp;
          /* adjust in TYPE_BITS-bit boundary */
          if(((unsigned long)cp)%adj!=0) {
-           cp=(char*)(adj*((unsigned long)cp/adj+1));
+           cp=(void *)(adj*((unsigned long)cp/adj+1));
          }
          /* insert new segment in address order */
          newp=(pointer)cp;

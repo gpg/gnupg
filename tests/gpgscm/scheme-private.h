@@ -78,7 +78,7 @@ int tracing;
 #ifndef CELL_NSEGMENT
 #define CELL_NSEGMENT   10    /* # of segments for cells */
 #endif
-char *alloc_seg[CELL_NSEGMENT];
+void *alloc_seg[CELL_NSEGMENT];
 pointer cell_seg[CELL_NSEGMENT];
 int     last_cell_seg;
 
