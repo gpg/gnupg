@@ -1976,7 +1976,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 	     before calling that function.  */
           if ((opt.verify_options & VERIFY_SHOW_UID_VALIDITY))
             valid = get_validity (c->ctrl, mainpk, un->pkt->pkt.user_id,
-                                  sig, 0);
+                                  NULL, 0);
           else
             valid = 0; /* Not used.  */
 
@@ -2078,7 +2078,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 		       information.  */
                     valid = (trust_value_to_string
                              (get_validity (c->ctrl, mainpk,
-                                            un->pkt->pkt.user_id, sig, 0)));
+                                            un->pkt->pkt.user_id, NULL, 0)));
                   log_printf (" [%s]\n",valid);
                 }
               else
