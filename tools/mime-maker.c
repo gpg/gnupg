@@ -27,7 +27,7 @@
 #include "mime-maker.h"
 
 
-/* All valid charachters in a header name.  */
+/* All valid characters in a header name.  */
 #define HEADER_NAME_CHARS  ("abcdefghijklmnopqrstuvwxyz" \
                             "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
                             "-01234567890")
@@ -203,7 +203,7 @@ find_parent (part_t root, part_t needle)
 
 /* Create a boundary string.  Outr codes is aware of the general
  * structure of that string (gebins with "=-=") so that
- * it can protect against accidently used boundaries within the
+ * it can protect against accidentally-used boundaries within the
  * content.   */
 static char *
 generate_boundary (mime_maker_t ctx)
@@ -369,7 +369,7 @@ mime_maker_add_header (mime_maker_t ctx, const char *name, const char *value)
   gpg_error_t err;
   part_t part, parent;
 
-  /* Hack to use this fucntion for a synacx check of NAME and VALUE.  */
+  /* Hack to use this function for a syntax check of NAME and VALUE.  */
   if (!ctx)
     return add_header (NULL, name, value);
 

@@ -63,7 +63,7 @@ ${cat_passwd} \
   | while IFS=: read -r user dmy_a uid dmy_c dmy_d home shell dmy_rest; do
     # Process only entries with a valid login shell
     grep </etc/shells "^$shell" 2>/dev/null >/dev/null || continue
-    # and with an existant gnupg home directory
+    # and with an pre-existing gnupg home directory
     [ -d "$home/.gnupg" ] || continue
     # but not root
     [ "${uid:-0}" -eq 0 ] && continue

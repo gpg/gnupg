@@ -55,7 +55,7 @@
 
 /* The length in blocks of the space we put at the start and at the
    end of the device.  This space is used to store N copies of the
-   setup area for the actual encrypted container inbetween.  */
+   setup area for the actual encrypted container in between.  */
 #define HEADER_SECTORS (SETUP_AREA_SECTORS * HEADER_SETUP_AREA_COPIES)
 #define FOOTER_SECTORS (SETUP_AREA_SECTORS * FOOTER_SETUP_AREA_COPIES)
 

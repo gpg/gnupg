@@ -1,4 +1,4 @@
-/* keybox-init.c - Initalization of the library
+/* keybox-init.c - Initialization of the library
  *	Copyright (C) 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.

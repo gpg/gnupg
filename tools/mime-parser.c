@@ -123,7 +123,7 @@ show_message_parser_event (rfc822parse_event_t event)
 /* Do in-place decoding of quoted-printable data of LENGTH in BUFFER.
    Returns the new length of the buffer and stores true at R_SLBRK if
    the line ended with a soft line break; false is stored if not.
-   This fucntion asssumes that a complete line is passed in
+   This function asssumes that a complete line is passed in
    buffer.  */
 static size_t
 qp_decode (char *buffer, size_t length, int *r_slbrk)

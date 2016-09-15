@@ -611,7 +611,7 @@ recsel_select (recsel_expr_t selector,
       else
         {
           /* This expression evaluated to false and thus the
-           * conjuction evaluates to false.  We skip over the
+           * conjunction evaluates to false.  We skip over the
            * remaining expressions of this conjunction and continue
            * with the next disjunction if any.  */
           do

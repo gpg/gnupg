@@ -2604,7 +2604,7 @@ Noteworthy changes in version 0.4.2 (1998-10-18)
       prime product.
 
     * --import now only looks for KEYBLOCK headers, so you can now simply
-      remove the "- " in front of such a header if someone accidently signed
+      remove the "- " in front of such a header if someone accidentally signed
       such a message or the keyblock is part of a cleartext signed message.
 
     * --with-colons now lists the key expiration time and not anymore

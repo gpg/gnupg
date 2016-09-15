@@ -2704,7 +2704,7 @@ main (int argc, char **argv)
 	    break;
           case oRFC4880bis:
             opt.flags.rfc4880bis = 1;
-            /* fall thru.  */
+            /* fall through.  */
 	  case oOpenPGP:
 	  case oRFC4880:
 	    /* This is effectively the same as RFC2440, but with

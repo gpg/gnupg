@@ -1253,7 +1253,7 @@ ssh_receive_mpint_list (estream_t stream, int secret,
   elems_n = strlen (elems);
   elems_public = spec->elems_key_public;
 
-  /* Check that either noth, CERT and the WITH_CERT flag, are given or
+  /* Check that either both, CERT and the WITH_CERT flag, are given or
      none of them.  */
   if (!(!!(spec->flags & SPEC_FLAG_WITH_CERT) ^ !cert))
     {

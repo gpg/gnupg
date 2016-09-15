@@ -73,7 +73,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     item to note is that starting with GnuPG version 1.1.92 the file
     containing user options and settings has been renamed from "options"
     to "gpg.conf". Information in the FAQ that relates to the options
-    file may be interchangable with the newer gpg.conf file in many
+    file may be interchangeable with the newer gpg.conf file in many
     instances. See question
     [[#gnupg-no-longer-installs-a-options-file-is-it-missing][GnuPG no longer installs a ~/.gnupg/options file. Is it missing?]]
     for details.
@@ -491,7 +491,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
    On a secure machine:
 
    1. If you want to do automatic signing, create a signing subkey for
-      your key.  Use the interactive key editing menu by issueing the
+      your key.  Use the interactive key editing menu by issuing the
       command
       : gpg --edit-key keyID
       enter "addkey" and select the DSA key type).
@@ -651,7 +651,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
    :CUSTOM_ID: how-do-i-verify-signed-packages
    :END:
 
-   must first have the vendor, organisation, or issueing person's key
+   must first have the vendor, organisation, or issuing person's key
    Before you can verify the signature that accompanies a package, you
    imported into your public keyring. To prevent GnuPG warning
    messages the key should also be validated (or locally signed).
@@ -1278,7 +1278,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     and where it is easy to exchange the passphrases (e.g. with your boy
     friend or your wife). The advantage is that you can change the
     passphrase from time to time and decrease the risk, that many old
-    messages may be decrypted by people who accidently got your passphrase.
+    messages may be decrypted by people who accidentally got your passphrase.
 
     You can add and copy keys to and from your keyring with the 'gpg
     --import' and 'gpg --export' command. 'gpg --export-secret-keys' will

@@ -113,7 +113,7 @@ AC_DEFUN([GNUPG_CHECK_ENDIAN],
             ;;
       esac
     fi
-    AC_MSG_CHECKING(endianess)
+    AC_MSG_CHECKING(endianness)
     AC_CACHE_VAL(gnupg_cv_c_endian,
       [ gnupg_cv_c_endian=unknown
         # See if sys/param.h defines the BYTE_ORDER macro.

@@ -2498,7 +2498,7 @@ handle_connections (gnupg_fd_t listen_fd,
               strerror (errno));
   else
     {
-      /* We need to watch the directory for the file becuase there
+      /* We need to watch the directory for the file because there
        * won't be an IN_DELETE_SELF for a socket file.  */
       char *slash = strrchr (socket_name, '/');
       log_assert (slash && slash[1]);

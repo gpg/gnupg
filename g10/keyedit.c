@@ -2767,7 +2767,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		goto leave;
 	      break;
 	    }
-	  /* fall thru */
+	  /* fall through */
 	case cmdSAVE:
 	  if (modified)
 	    {

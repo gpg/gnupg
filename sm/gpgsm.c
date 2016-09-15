@@ -1279,9 +1279,9 @@ main ( int argc, char **argv)
         case oStatusFD: ctrl.status_fd = pargs.r.ret_int; break;
         case oLoggerFD: log_set_fd (pargs.r.ret_int ); break;
         case oWithMD5Fingerprint:
-          opt.with_md5_fingerprint=1; /*fall thru*/
+          opt.with_md5_fingerprint=1; /*fall through*/
         case oWithFingerprint:
-          with_fpr=1; /*fall thru*/
+          with_fpr=1; /*fall through*/
         case aFingerprint:
           opt.fingerprint++;
           break;
@@ -1360,7 +1360,7 @@ main ( int argc, char **argv)
           opt.def_recipient_self = 0;
           break;
 
-        case oWithKeyData: opt.with_key_data=1; /* fall thru */
+        case oWithKeyData: opt.with_key_data=1; /* fall through */
         case oWithColons: ctrl.with_colons = 1; break;
         case oWithSecret: ctrl.with_secret = 1; break;
         case oWithValidation: ctrl.with_validation=1; break;

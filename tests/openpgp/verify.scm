@@ -321,7 +321,7 @@ GisM
 	   (pipe:defer (lambda (sink)
 			 (display armored-file (fdopen sink "w"))))
 	   (pipe:spawn `(,@GPG --verify)))
-	  (error "verification succeded but should not")))
+	  (error "verification succeeded but should not")))
  '(msg_olsols_asc_multiple msg_clsclss_asc_multiple))
 
 (for-each-p
@@ -331,7 +331,7 @@ GisM
 	  (pipe:do
 	   (pipe:echo (eval armored-file (current-environment)))
 	   (pipe:spawn `(,@GPG --verify)))
-	  (error "verification succeded but should not")))
+	  (error "verification succeeded but should not")))
  '(bad_ls_asc bad_fols_asc bad_olsf_asc bad_ools_asc))
 
 

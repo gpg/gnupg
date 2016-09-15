@@ -363,8 +363,8 @@ optional.  The oder of the "key" lists and the order of the "value"
 lists mut match, that is the first "key"-list is associated with the
 first "value" list in the encrypted_octet_string.
 
-The protection mode etc. is indentical to the protection mode as
-decribed for the private key format.
+The protection mode etc. is identical to the protection mode as
+described for the private key format.
 
 list of the secret key parameters.  The protected-at expression is
 optional; the isotimestamp is 15 bytes long (e.g. "19610711T172000").

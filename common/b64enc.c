@@ -169,7 +169,7 @@ enc_start (struct b64state *state, FILE *fp, estream_t stream,
    the armor lines, with TITLE being an empty string, we don't write
    the header lines and furthermore even don't write any linefeeds.
    If TITLE starts with "PGP " the OpenPGP CRC checksum will be
-   written as well.  With TITLE beeing NULL, we merely don't write
+   written as well.  With TITLE being NULL, we merely don't write
    header but make sure that lines are not too long. Note, that we
    don't write any output unless at least one byte get written using
    b64enc_write. */

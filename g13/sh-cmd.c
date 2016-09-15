@@ -161,7 +161,7 @@ static const char hlp_finddevice[] =
   "FINDDEVICE <name>\n"
   "\n"
   "Find the device matching NAME.  NAME be any identifier from\n"
-  "g13tab permissable for the user.  The corresponding block\n"
+  "g13tab permissible for the user.  The corresponding block\n"
   "device is retruned using a status line.";
 static gpg_error_t
 cmd_finddevice (assuan_context_t ctx, char *line)

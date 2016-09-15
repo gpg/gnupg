@@ -689,7 +689,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
    0 is returned and R_VERSION receives a malloced string with the
    version which must be freed by the caller.  On error NULL is stored
    at R_VERSION and an error code returned.  Mode is in general 0 but
-   certian values may be used to modify the used version command:
+   certain values may be used to modify the used version command:
 
       MODE == 0 = Use "GETINFO version"
       MODE == 2 - Use "SCD GETINFO version"

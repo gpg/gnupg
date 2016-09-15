@@ -428,7 +428,7 @@ do_we_trust( PKT_public_key *pk, unsigned int trustlevel )
     default:
       log_error ("invalid trustlevel %u returned from validation layer\n",
 		 trustlevel);
-      /* fall thru */
+      /* fall through */
     case TRUST_UNKNOWN:
     case TRUST_UNDEFINED:
       log_info(_("%s: There is no assurance this key belongs"
@@ -655,7 +655,7 @@ check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
     default:
       log_error ("invalid trustlevel %u returned from validation layer\n",
                  trustlevel);
-      /* fall thru */
+      /* fall through */
     case TRUST_UNKNOWN:
     case TRUST_UNDEFINED:
       write_trust_status (STATUS_TRUST_UNDEFINED, trustlevel);

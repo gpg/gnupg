@@ -2848,7 +2848,7 @@ email_from_user_id (const char *user_id)
    TOFU_POLICY_ASK.
 
    This function returns 0 on success and an error code if an error
-   occured.  */
+   occurred.  */
 gpg_error_t
 tofu_register_signature (ctrl_t ctrl,
                          PKT_public_key *pk, strlist_t user_id_list,

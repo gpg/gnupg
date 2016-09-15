@@ -15,6 +15,8 @@ This is the DETAILS file for GnuPG which specifies some internals and
 parts of the external API for GPG and GPGSM.
 
 * Format of the colon listings
+
+* 
   The format is a based on colon separated record, each recods starts
   with a tag string and extends to the end of the line.  Here is an
   example:
@@ -91,7 +93,7 @@ described here.
            ultimately valid.
     - w :: The key has a well known private part.
     - s :: The key has special validity.  This means that it might be
-           self-signed and expected to be used in the STEED sytem.
+           self-signed and expected to be used in the STEED system.
 
     If the validity information is given for a UID or UAT record, it
     describes the validity calculated based on this user ID.  If given
@@ -120,7 +122,7 @@ described here.
 
     The creation date of the key is given in UTC.  For UID and UAT
     records, this is used for the self-signature date.  Note that the
-    date is usally printed in seconds since epoch, however, we are
+    date is usually printed in seconds since epoch, however, we are
     migrating to an ISO 8601 format (e.g. "19660205T091500").  This is
     currently only relevant for X.509.  A simple way to detect the new
     format is to scan for the 'T'.  Note that old versions of gpg
@@ -136,7 +138,7 @@ described here.
     Used for serial number in crt records.  For UID and UAT records,
     this is a hash of the user ID contents used to represent that
     exact user ID.  For trust signatures, this is the trust depth
-    seperated by the trust value by a space.
+    separated by the trust value by a space.
 
 *** Field 9 -  Ownertrust
 
@@ -715,7 +717,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     Tofu information.  The fingerprint is the fingerprint of the
     primary key and the mbox is in general the addr-spec part of the
     userid encoded in UTF-8 and percent escaped.  The fingerprint is
-    indentical for all TOFU_USER lines up to a NEWSIG line.
+    identical for all TOFU_USER lines up to a NEWSIG line.
 
 *** TOFU_STATS <validity> <sign-count> 0 [<policy> [<tm1> <tm2> <tm3> <tm4>]]
 
@@ -930,7 +932,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     commencing with a letter or such a string prefixed with a
     numerical error code and an underscore; e.g.: "151011327_EOF".
 *** SUCCESS [<location>]
-    Postive confirmation that an operation succeeded.  It is used
+    Positive confirmation that an operation succeeded.  It is used
     similar to ISO-C's EXIT_SUCCESS.  <location> is optional but if
     given should not contain spaces.  Used only with a few commands.
 
@@ -987,7 +989,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     <name> is a percent-plus escaped filename describing the
     mountpoint for the current operation (e.g. used by "g13 --mount").
     This may either be the specified mountpoint or one randomly
-    choosen by g13.
+    chosen by g13.
 
 *** PINENTRY_LAUNCHED <pid>
     This status line is emitted by gpg to notify a client that a

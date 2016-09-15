@@ -2777,7 +2777,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 #if 1
      case OP_LAMBDA:     /* lambda */
           /* If the hook is defined, apply it to sc->code, otherwise
-             set sc->value fall thru */
+             set sc->value fall through */
           {
                pointer f=find_slot_in_env(sc,sc->envir,sc->COMPILE_HOOK,1);
                if(f==sc->NIL) {

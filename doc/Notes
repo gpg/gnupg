@@ -7,7 +7,7 @@ There are two ways:
 
   1. Let gpg-agent do this for you.  Since version 1.9.9 you need to
      add the option --allow-mark-trusted  gpg-agent.conf or when
-     invoking gpg-agent.  Everytime gpgsm notices an untrusted root
+     invoking gpg-agent.  Every time gpgsm notices an untrusted root
      certificate gpg-agent will pop up a dialog to ask whether this
      certificate should be trusted.  This is similar to whatmost
      browsers do.
@@ -22,7 +22,7 @@ There are two ways:
      the fingerprints of the trusted root certificates. There are
      comments on the top explaining the simple format.  The current
      CVS version allows for colons in the fingerprint, so you can
-     easily cut and paste it from whereever you know that this is the
+     easily cut and paste it from wherever you know that this is the
      correct fingerprint.
 
 An example for an entry in the trustlist.txt is:
@@ -199,12 +199,12 @@ dirmngr
         libgcrypt
         libksba
         libassuan [statically linked]
-        libldap [system libary]
-        liblber [system libary]
-        libsasl [system libary, required by libldap]
-        libdb2  [system libary, required by libsasl]
-        libcrypt [system libary, required by libsasl - OOPS]
-        libpam  [system libary, required by libsasl]
+        libldap [system library]
+        liblber [system library]
+        libsasl [system library, required by libldap]
+        libdb2  [system library, required by libsasl]
+        libcrypt [system library, required by libsasl - OOPS]
+        libpam  [system library, required by libsasl]
         [Standard system libraries]
 
 pinentry-curses 

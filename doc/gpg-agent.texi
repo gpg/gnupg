@@ -76,7 +76,7 @@ the included Secure Shell Agent you may start the agent using:
 @c   interface that the owner has access to, but the supplicant does not).
 @c
 @c   The rationale for this separation is that it allows access to the
-@c   secret key to be tightly controled and audited, and it doesn't permit
+@c   secret key to be tightly controlled and audited, and it doesn't permit
 @c   the the supplicant to either copy the key or to override the owner's
 @c   intentions.
 

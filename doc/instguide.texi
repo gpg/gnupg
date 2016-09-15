@@ -17,7 +17,7 @@ get that whole thing up and running.
 
 ** Building the software
 
-Building the software is decribed in the file @file{INSTALL}.  Given
+Building the software is described in the file @file{INSTALL}.  Given
 that you are already reading this documentation we can only give some
 extra hints
 
@@ -62,7 +62,7 @@ user installation this can be done once for all users on a machine.
 Specific changes on a per-user base are also possible.
 @end itemize
 
-@c decribe how to maintain trustlist.txt and /etc/gnupg/trustlist.txt.
+@c describe how to maintain trustlist.txt and /etc/gnupg/trustlist.txt.
 
 
 @c ** How to get the ssh support running

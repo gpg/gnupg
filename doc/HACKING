@@ -326,7 +326,7 @@ Note that such a comment will be removed if the git commit option
                       and related constants
   - g10/openfile.c :: Create/Open Files
   - g10/keyserver.h :: Keyserver access dispatcher.
-  - g10/packet.h   :: Defintion of OpenPGP structures.
+  - g10/packet.h   :: Definition of OpenPGP structures.
   - g10/passphrase.c :: Passphrase handling code
 
   - g10/pubkey-enc.c :: Process a public key encoded packet.

@@ -8,9 +8,9 @@ strings can accept multiple values that mean essentially the same
 thing.
 
 For example, the string "yes" in English is "sí" in Spanish.  However,
-some users will type "si" (without the accent).  To accomodate both
+some users will type "si" (without the accent).  To accommodate both
 users, you can translate the string "yes" as "sí|si".  You can have
-any number of alternate matches seperated by the | character like
+any number of alternate matches separated by the | character like
 "sí|si|seguro".
 
 The strings that can be handled in this way are of the form "yes|yes",

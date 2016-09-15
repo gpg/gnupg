@@ -63,5 +63,5 @@ N1Glbw1OJfP1q+QFPMPKoCsTYmZpuugq2b5gV/eH0Abvk2pG4Fo/YTDPHhec7Jk=
 	  (pipe:do
 	   (pipe:echo (eval armored-file (current-environment)))
 	   (pipe:spawn `(,@GPGV --keyring ,(in-srcdir "forged-keyring.gpg"))))
-	  (error "verification succeded but should not")))
+	  (error "verification succeeded but should not")))
  '(msg_signed_asc))

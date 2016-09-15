@@ -5,7 +5,7 @@ These are tests based on NIST's Public Key Interoperability Test Suite
 http://csrc.nist.gov/pki/testing/x509paths.html .
 
 README             - this file.
-PKITS_data.tar.bz2 - the orginal ZIP file, repackaged as a tarball.
+PKITS_data.tar.bz2 - the original ZIP file, repackaged as a tarball.
 Makefile.am        - Part of our build system.
 import-all-certs   - Run a simple import test on all certifcates
 validate-all-certs - Run an import and validate test on all certificates

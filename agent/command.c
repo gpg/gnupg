@@ -3176,7 +3176,7 @@ register_commands (assuan_context_t ctx)
 /* Startup the server.  If LISTEN_FD and FD is given as -1, this is a
    simple piper server, otherwise it is a regular server.  CTRL is the
    control structure for this connection; it has only the basic
-   intialization. */
+   initialization. */
 void
 start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
 {

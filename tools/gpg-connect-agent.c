@@ -413,7 +413,7 @@ get_var (const char *name)
 }
 
 
-/* Perform some simple arithmentic operations.  Caller must release
+/* Perform some simple arithmetic operations.  Caller must release
    the return value.  On error the return value is NULL.  */
 static char *
 arithmetic_op (int operator, const char *operands)

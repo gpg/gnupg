@@ -2265,7 +2265,7 @@ The available filter types are:
 
   @item drop-sig
   This filter drops the selected key signatures on user ids.
-  Self-signatures are not consideres.
+  Self-signatures are not considered.
   Currently only implemented for --import-filter.
 
 @end table
@@ -2423,7 +2423,7 @@ this is implicitly enable for secret keys.
 
 @item --with-wkd-hash
 @opindex with-wkd-hash
-Print a Web Key Directory indentifier along with each user ID in key
+Print a Web Key Directory identifier along with each user ID in key
 listings.  This is an experimental feature and semantics may change.
 
 @item --with-secret

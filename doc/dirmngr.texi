@@ -496,7 +496,7 @@ This directory may contain extra certificates which are preloaded
 into the interal cache on startup. Applications using dirmngr (e.g. gpgsm)
 can request cached certificates to complete a trust chain.
 This is convenient in cases you have a couple intermediate CA certificates
-or certificates ususally used to sign OCSP responses.
+or certificates usually used to sign OCSP responses.
 These certificates are first tried before going
 out to the net to look for them.  These certificates must also be
 @acronym{DER} encoded and suffixed with @file{.crt} or @file{.der}.
@@ -784,7 +784,7 @@ revoked or one of the usual error codes from libgpg-error.
 @end example
 
 Check whether the certificate with @var{fingerprint} (the SHA-1 hash of
-the entire X.509 certificate blob) is valid by consulting the appropiate
+the entire X.509 certificate blob) is valid by consulting the appropriate
 OCSP responder.  If the fingerprint has not been given or the
 certificate is not known by Dirmngr, the function inquires the
 certificate using:
@@ -816,7 +816,7 @@ revoked or one of the usual error codes from libgpg-error.
 
 Put a certificate into the internal cache.  This command might be
 useful if a client knows in advance certificates required for a test and
-wnats to make sure they get added to the internal cache.  It is also
+wants to make sure they get added to the internal cache.  It is also
 helpful for debugging.  To get the actual certificate, this command
 immediately inquires it using
 
@@ -831,7 +831,7 @@ as a binary blob.
 
 @noindent
 The return code is 0 for success; i.e. the certificate has not been
-succesfully cached or one of the usual error codes from libgpg-error.
+successfully cached or one of the usual error codes from libgpg-error.
 
 @node Dirmngr VALIDATE
 @subsection Validate a certificate for debugging
@@ -883,7 +883,7 @@ as a binary blob.
 @c @var{fingerprint} is optional and expected to be the SHA-1 has of the
 @c DER encoding of the certificate under question.  It is to be HEX
 @c encoded.  The rationale for sending the fingerprint is that it allows
-@c dirmngr to reply immediatly if it has already cached such a request.  If
+@c dirmngr to reply immediately if it has already cached such a request.  If
 @c this is not the case and no certificate has been found in dirmngr's
 @c internal certificate storage, dirmngr will request the certificate using
 @c the Assuan inquiry
@@ -905,7 +905,7 @@ as a binary blob.
 @c available for the certificate and the certificate itself is not listed
 @c in this CRL, @code{GPG_ERR_CERT_REVOKED} to indicate that the certificate is
 @c listed in the CRL or @code{GPG_ERR_NO_CRL_KNOWN} in cases where no CRL or no
-@c information is available.  The first two codes are immediatly returned to
+@c information is available.  The first two codes are immediately returned to
 @c the caller and the processing of this request has been done.
 @c
 @c Only the @code{GPG_ERR_NO_CRL_KNOWN} needs more attention: Dirmngr now
@@ -941,7 +941,7 @@ as a binary blob.
 @c     * Try to load a CRL from all configured servers (ldapservers.conf)
 @c       in turn.  The first server returning a CRL is used.
 @c     * @code(crl_cache_insert) is then used to actually insert the CRL
-@c       into the cache.  If this failed we give up immediatley without
+@c       into the cache.  If this failed we give up immediately without
 @c       checking the rest of the servers from the first step.
 @c * Ready.
 @c
@@ -1013,7 +1013,7 @@ as a binary blob.
 @c sure that @code{validate_cert_chain} does not try to lookup the CRL we
 @c are currently processing. This would be a catch-22 and may indicate a
 @c broken PKI.  However, due to overlapping expiring times and imprecise
-@c clocks thsi may actually happen.
+@c clocks this may actually happen.
 @c
 @c For historical reasons the Assuan command ISVALID is a bit different
 @c to CHECKCRL but this is mainly due to different calling conventions.
@@ -1072,8 +1072,8 @@ as a binary blob.
 @c If the issuer's certificate has been found, the signature of the
 @c actual certificate is checked and in case this fails the error
 @c #code{GPG_ERR_BAD_CERT_CHAIN} is returned.  If the signature checks out, the
-@c maximum cahin length of the issueing certificate is checked as well as
-@c the capiblity of the certificate (i.e. whether he may be used for
+@c maximum chain length of the issuing certificate is checked as well as
+@c the capability of the certificate (i.e. whether he may be used for
 @c certificate signing).  Then the certificate is prepended to our list
 @c representing the certificate chain.  Finally the loop is continued now
 @c with the issuer's certificate as the current certificate.

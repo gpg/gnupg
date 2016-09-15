@@ -852,7 +852,7 @@ updated; new distributions of this software should come with an updated
 list but it is still the responsibility of the Administrator to check
 that this list is correct.
 
-Everytime @command{gpgsm} uses a certificate for signing or verification
+Every time @command{gpgsm} uses a certificate for signing or verification
 this file will be consulted to check whether the certificate under
 question has ultimately been issued by one of these CAs.  If this is the
 case the user will be informed that the verified signature represents a
@@ -1110,7 +1110,7 @@ certificate signing request):
 @item Serial: @var{sn}
 If this parameter is given an X.509 certificate will be generated.
 @var{sn} is expected to be a hex string representing an unsigned
-integer of arbitary length.  The special value @samp{random} can be
+integer of arbitrary length.  The special value @samp{random} can be
 used to create a 64 bit random serial number.
 
 @item Issuer-DN: @var{issuer-name}

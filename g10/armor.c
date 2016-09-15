@@ -1436,7 +1436,7 @@ unarmor_pump (UnarmorPump x, int c)
       case STA_wait_dash:
         x->state = c == '-'? STA_first_dash : STA_wait_newline;
         break;
-      case STA_first_dash: /* just need for initalization */
+      case STA_first_dash: /* just need for initialization */
         x->pos = 0;
         x->state = STA_compare_header;
       case STA_compare_header:
