@@ -1025,27 +1025,50 @@ tdb_get_validity_core (ctrl_t ctrl,
       kbnode_t kb = NULL;
       kbnode_t n = NULL;
       strlist_t user_id_list = NULL;
+      int done = 0;
 
       /* If the caller didn't supply a user id then use all uids.  */
       if (! uid)
 	kb = n = get_pubkeyblock (main_pk->keyid);
 
-      while (uid || (n = find_next_kbnode (n, PKT_USER_ID)))
+      if (DBG_TRUST && sig && sig->signers_uid)
+        log_debug ("TOFU: only considering user id: '%s'\n",
+                   sig->signers_uid);
+
+      while (!done && (uid || (n = find_next_kbnode (n, PKT_USER_ID))))
 	{
 	  PKT_user_id *user_id;
           int expired = 0;
 
 	  if (uid)
-	    user_id = uid;
+            {
+              user_id = uid;
+              /* If the caller specified a user id, then we only
+                 process the specified user id and are done after the
+                 first iteration.  */
+              done = 1;
+            }
 	  else
 	    user_id = n->pkt->pkt.user_id;
 
           if (user_id->attrib_data)
+            /* Skip user attributes.  */
+            continue;
+
+          if (sig && sig->signers_uid)
+            /* Make sure the UID matches.  */
             {
-              /* Skip user attributes.  */
-              if (uid)
-                break;
-              continue;
+              char *email = mailbox_from_userid (user_id->name);
+              if (!email || !*email || strcmp (sig->signers_uid, email) != 0)
+                {
+                  if (DBG_TRUST)
+                    log_debug ("TOFU: skipping user id '%s', which does"
+                               " not match the signer's email ('%s')\n",
+                               email, sig->signers_uid);
+                  xfree (email);
+                  continue;
+                }
+              xfree (email);
             }
 
           /* If the user id is revoked or expired, then skip it.  */
@@ -1073,11 +1096,6 @@ tdb_get_validity_core (ctrl_t ctrl,
 
           add_to_strlist (&user_id_list, user_id->name);
           user_id_list->flags = expired;
-
-          if (uid)
-            /* If the caller specified a user id, then we stop
-               now.  */
-            break;
         }
 
       /* Process the user ids in the order they appear in the key
