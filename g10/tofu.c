@@ -3328,6 +3328,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 gpg_error_t
 tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
 {
+  gpg_error_t err;
   time_t now = gnupg_get_time ();
   tofu_dbs_t dbs;
   PKT_public_key *pk;
@@ -3370,15 +3371,26 @@ tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
 
       email = email_from_user_id (user_id->name);
 
-      record_binding (dbs, fingerprint, email, user_id->name, policy, 1, now);
+      err = record_binding (dbs, fingerprint, email, user_id->name,
+                            policy, 1, now);
+      if (err)
+        {
+          log_error (_("error setting policy for key %s, user id \"%s\": %s"),
+                     fingerprint, email, gpg_strerror (err));
+          xfree (email);
+          break;
+        }
 
       xfree (email);
     }
 
-  end_transaction (ctrl, 0);
+  if (err)
+    rollback_transaction (ctrl);
+  else
+    end_transaction (ctrl, 0);
 
   xfree (fingerprint);
-  return 0;
+  return err;
 }
 
 /* Set the TOFU policy for all non-revoked user ids in the KEY with
