@@ -2083,6 +2083,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
     if (tdb_keyid_is_utk (kid))
       {
         if (policy == TOFU_POLICY_NONE)
+          /* New binding.  */
           {
             if (record_binding (dbs, fingerprint, email, user_id,
                                 TOFU_POLICY_GOOD, 0, now) != 0)
@@ -2164,7 +2165,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
    */
 
   /* Before continuing, see if the key is signed by an ultimately
-     trusted key.  */
+   * trusted key.  */
   {
     int fingerprint_raw_len = strlen (fingerprint) / 2;
     char fingerprint_raw[fingerprint_raw_len];
@@ -2594,13 +2595,14 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
   if (rc)
     {
       log_error (_("error reading TOFU database: %s\n"), err);
-      print_further_info ("getting statistics");
+      print_further_info ("getting signature statistics");
       sqlite3_free (err);
       goto out;
     }
 
   if (strlist)
     {
+      /* We expect exactly 3 elements.  */
       log_assert (strlist->next);
       log_assert (strlist->next->next);
       log_assert (! strlist->next->next->next);
@@ -2625,13 +2627,14 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
   if (rc)
     {
       log_error (_("error reading TOFU database: %s\n"), err);
-      print_further_info ("getting statistics");
+      print_further_info ("getting encryption statistics");
       sqlite3_free (err);
       goto out;
     }
 
   if (strlist)
     {
+      /* We expect exactly 3 elements.  */
       log_assert (strlist->next);
       log_assert (strlist->next->next);
       log_assert (! strlist->next->next->next);
@@ -2753,10 +2756,10 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
 
           if (encryption_count == 0)
             log_info (_("Warning: you have yet to encrypt"
-                        " a message to this key and user id!\n"));
+                        " a message to this key!\n"));
           else if (encryption_count == 1)
             log_info (_("Warning: you have only encrypted"
-                        " one message to this key and user id!\n"));
+                        " one message to this key!\n"));
 
           /* Cf. write_stats_status  */
           if (sqrtu32 (encryption_count * encryption_count
@@ -2930,7 +2933,7 @@ tofu_register_signature (ctrl_t ctrl,
            because <fingerprint, email, sig_time, sig_digest> is the
            primary key!  */
         log_debug ("SIGNATURES DB contains duplicate records"
-                   " <key: %s, fingerprint: %s, time: 0x%lx, sig: %s,"
+                   " <key: %s, email: %s, time: 0x%lx, sig: %s,"
                    " origin: %s>."
                    "  Please report.\n",
                    fingerprint, email, (unsigned long) sig_time,
@@ -2939,7 +2942,7 @@ tofu_register_signature (ctrl_t ctrl,
         {
           if (DBG_TRUST)
             log_debug ("Already observed the signature and binding"
-                       " <key: %s, user id: %s, time: 0x%lx, sig: %s,"
+                       " <key: %s, email: %s, time: 0x%lx, sig: %s,"
                        " origin: %s>\n",
                        fingerprint, email, (unsigned long) sig_time,
                        sig_digest, origin);
@@ -3048,8 +3051,8 @@ tofu_register_encryption (ctrl_t ctrl,
       free_user_id_list = 1;
 
       if (! user_id_list)
-        log_info ("WARNING: Encrypting to %s, which has no"
-                  "non-revoked user ids.\n",
+        log_info (_("WARNING: Encrypting to %s, which has no"
+                    "non-revoked user ids.\n"),
                   keystr (pk->keyid));
     }
 
@@ -3240,6 +3243,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
   fingerprint = hexfingerprint (pk, NULL, 0);
 
   tofu_begin_batch_update (ctrl);
+  /* Start the batch transaction now.  */
   tofu_resume_batch_transaction (ctrl);
 
   for (user_id = user_id_list; user_id; user_id = user_id->next, bindings ++)
