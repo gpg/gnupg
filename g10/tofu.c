@@ -3023,7 +3023,7 @@ tofu_register_encryption (ctrl_t ctrl,
   if (/* We need the key block to find the primary key.  */
       keyid_cmp (pk_keyid (pk), pk_main_keyid (pk)) != 0
       /* We need the key block to find all user ids.  */
-      || user_id_list)
+      || ! user_id_list)
     kb = get_pubkeyblock (pk->keyid);
 
   /* Make sure PK is a primary key.  */
