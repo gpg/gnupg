@@ -3072,6 +3072,7 @@ tofu_register_encryption (ctrl_t ctrl,
       if (tl == _tofu_GET_TRUST_ERROR)
         {
           /* An error.  */
+          rc = gpg_error (GPG_ERR_GENERAL);
           xfree (email);
           goto die;
         }
