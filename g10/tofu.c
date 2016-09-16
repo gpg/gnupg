@@ -2058,7 +2058,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
   if (opt.batch)
     may_ask = 0;
 
-  log_assert (keyid_cmp (pk_keyid (pk), pk->main_keyid) == 0);
+  log_assert (keyid_cmp (pk_keyid (pk), pk_main_keyid (pk)) == 0);
 
   /* Make sure _tofu_GET_TRUST_ERROR isn't equal to any of the trust
      levels.  */
@@ -2877,7 +2877,7 @@ tofu_register_signature (ctrl_t ctrl,
   if (rc)
     return rc;
 
-  log_assert (keyid_cmp (pk_keyid (pk), pk->main_keyid) == 0);
+  log_assert (keyid_cmp (pk_keyid (pk), pk_main_keyid (pk)) == 0);
 
   sig_digest = make_radix64_string (sig_digest_bin, sig_digest_bin_len);
   fingerprint = hexfingerprint (pk, NULL, 0);
@@ -3020,12 +3020,14 @@ tofu_register_encryption (ctrl_t ctrl,
       return rc;
     }
 
-  /* Make sure PK is a primary key.  */
-  if (keyid_cmp (pk_keyid (pk), pk->main_keyid) != 0
+  if (/* We need the key block to find the primary key.  */
+      keyid_cmp (pk_keyid (pk), pk_main_keyid (pk)) != 0
+      /* We need the key block to find all user ids.  */
       || user_id_list)
     kb = get_pubkeyblock (pk->keyid);
 
-  if (keyid_cmp (pk_keyid (pk), pk->main_keyid) != 0)
+  /* Make sure PK is a primary key.  */
+  if (keyid_cmp (pk_keyid (pk), pk_main_keyid (pk)) != 0)
     pk = kb->pkt->pkt.public_key;
 
   if (! user_id_list)
@@ -3345,8 +3347,7 @@ tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
   if (DBG_TRUST)
     log_debug ("Setting TOFU policy for %s to %s\n",
 	       keystr (pk->keyid), tofu_policy_str (policy));
-  if (! (pk->main_keyid[0] == pk->keyid[0]
-	 && pk->main_keyid[1] == pk->keyid[1]))
+  if (keyid_cmp (pk_main_keyid (pk), pk_keyid (pk)) != 0)
     log_bug ("%s: Passed a subkey, but expecting a primary key.\n", __func__);
 
   fingerprint = hexfingerprint (pk, NULL, 0);
