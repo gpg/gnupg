@@ -236,6 +236,7 @@ struct app_local_s {
 };
 
 #define ECC_FLAG_DJB_TWEAK (1 << 0)
+#define ECC_FLAG_PUBKEY    (1 << 1)
 
 
 /***** Local prototypes  *****/
@@ -910,7 +911,7 @@ send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int keyno)
       snprintf (buffer, sizeof buffer, "%d %d %s",
                 keyno+1,
                 keyno==1? PUBKEY_ALGO_ECDH :
-                app->app_local->keyattr[keyno].ecc.flags?
+                (app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK)?
                 PUBKEY_ALGO_EDDSA : PUBKEY_ALGO_ECDSA,
                 openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid, 0));
     }
@@ -1387,7 +1388,7 @@ get_public_key (app_t app, int keyno)
 
   if ((app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA
        || (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC
-           && !app->app_local->keyattr[keyno].ecc.flags))
+           && !(app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK)))
       && mlen && (*m & 0x80))
     {               /* Prepend numbers with a 0 if needed for MPI.  */
       *mbuf = 0;
@@ -1395,7 +1396,7 @@ get_public_key (app_t app, int keyno)
       mlen++;
     }
   else if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC
-           && app->app_local->keyattr[keyno].ecc.flags)
+           && (app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK))
     {               /* Prepend 0x40 prefix.  */
       *mbuf = 0x40;
       memcpy (mbuf+1, m, mlen);
@@ -1429,7 +1430,7 @@ get_public_key (app_t app, int keyno)
     {
       char *format;
 
-      if (!app->app_local->keyattr[keyno].ecc.flags)
+      if (!(app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK))
         format = "(public-key(ecc(curve%s)(q%b)))";
       else if (keyno == 1)
         format = "(public-key(ecc(curve%s)(flags djb-tweak)(q%b)))";
@@ -2633,9 +2634,10 @@ build_privkey_template (app_t app, int keyno,
 static gpg_error_t
 build_ecc_privkey_template (app_t app, int keyno,
                             const unsigned char *ecc_d, size_t ecc_d_len,
+                            const unsigned char *ecc_q, size_t ecc_q_len,
                             unsigned char **result, size_t *resultlen)
 {
-  unsigned char privkey[2];
+  unsigned char privkey[2+2];
   size_t privkey_len;
   unsigned char exthdr[2+2+1];
   size_t exthdr_len;
@@ -2645,8 +2647,10 @@ build_ecc_privkey_template (app_t app, int keyno,
   size_t datalen;
   unsigned char *template;
   size_t template_size;
+  int pubkey_required;
 
-  (void)app;
+  pubkey_required = !!(app->app_local->keyattr[keyno].ecc.flags
+                       & ECC_FLAG_PUBKEY);
 
   *result = NULL;
   *resultlen = 0;
@@ -2658,7 +2662,14 @@ build_ecc_privkey_template (app_t app, int keyno,
   tp += add_tlv (tp, 0x92, ecc_d_len);
   datalen += ecc_d_len;
 
+  if (pubkey_required)
+    {
+      tp += add_tlv (tp, 0x99, ecc_q_len);
+      datalen += ecc_q_len;
+    }
+
   privkey_len = tp - privkey;
+
 
   /* Build the extended header list without the private key template.  */
   tp = exthdr;
@@ -2692,6 +2703,12 @@ build_ecc_privkey_template (app_t app, int keyno,
 
   memcpy (tp, ecc_d, ecc_d_len);
   tp += ecc_d_len;
+
+  if (pubkey_required)
+    {
+      memcpy (tp, ecc_q, ecc_q_len);
+      tp += ecc_q_len;
+    }
 
   assert (tp - template == template_size);
 
@@ -3348,7 +3365,8 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
 
   if (app->app_local->keyattr[keyno].key_type != KEY_TYPE_ECC
       || app->app_local->keyattr[keyno].ecc.oid != oidstr
-      || app->app_local->keyattr[keyno].ecc.flags != flag_djb_tweak)
+      || (flag_djb_tweak !=
+          (app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK)))
     {
       if (app->app_local->extcap.algo_attr_change)
         {
@@ -3387,6 +3405,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
 
       err = build_ecc_privkey_template (app, keyno,
                                         ecc_d, ecc_d_len,
+                                        ecc_q, ecc_q_len,
                                         &template, &template_len);
       if (err)
         goto leave;
@@ -3991,7 +4010,7 @@ do_auth (app_t app, const char *keyidstr,
 
   if (app->app_local->keyattr[2].key_type == KEY_TYPE_ECC)
     {
-      if (!app->app_local->keyattr[2].ecc.flags
+      if (!(app->app_local->keyattr[2].ecc.flags & ECC_FLAG_DJB_TWEAK)
           && (indatalen == 51 || indatalen == 67 || indatalen == 83))
         {
           const char *p = (const char *)indata + 19;
@@ -4190,7 +4209,7 @@ do_decipher (app_t app, const char *keyidstr,
     {
       int old_format_len = 0;
 
-      if (app->app_local->keyattr[1].ecc.flags)
+      if ((app->app_local->keyattr[1].ecc.flags & ECC_FLAG_DJB_TWEAK))
         {
           if (indatalen > 32 && (indatalen % 2))
             { /*
@@ -4258,7 +4277,7 @@ do_decipher (app_t app, const char *keyidstr,
                          outdata, outdatalen);
   xfree (fixbuf);
   if (app->app_local->keyattr[1].key_type == KEY_TYPE_ECC
-      && app->app_local->keyattr[1].ecc.flags)
+      && (app->app_local->keyattr[1].ecc.flags & ECC_FLAG_DJB_TWEAK))
     { /* Add the prefix 0x40 */
       fixbuf = xtrymalloc (*outdatalen + 1);
       if (!fixbuf)
@@ -4550,7 +4569,19 @@ parse_algorithm_attribute (app_t app, int keyno)
   else if (*buffer == PUBKEY_ALGO_ECDH || *buffer == PUBKEY_ALGO_ECDSA
            || *buffer == PUBKEY_ALGO_EDDSA)
     {
-      const char *oid = ecc_oid (buffer + 1, buflen - 1);
+      const char *oid;
+      int oidlen = buflen - 1;
+
+      app->app_local->keyattr[keyno].ecc.flags = 0;
+
+      if (buffer[buflen-1] == 0x00 || buffer[buflen-1] == 0xff)
+        { /* Found "pubkey required"-byte for private key template.  */
+          oidlen--;
+          if (buffer[buflen-1] == 0xff)
+            app->app_local->keyattr[keyno].ecc.flags |= ECC_FLAG_PUBKEY;
+        }
+
+      oid = ecc_oid (buffer + 1, oidlen);
 
       if (!oid)
         log_printhex ("Curve with OID not supported: ", buffer+1, buflen-1);
@@ -4562,14 +4593,12 @@ parse_algorithm_attribute (app_t app, int keyno)
               || (*buffer == PUBKEY_ALGO_ECDH
                   && !strcmp (app->app_local->keyattr[keyno].ecc.oid,
                               "1.3.6.1.4.1.3029.1.5.1")))
-            app->app_local->keyattr[keyno].ecc.flags = ECC_FLAG_DJB_TWEAK;
-          else
-            app->app_local->keyattr[keyno].ecc.flags = 0;
+            app->app_local->keyattr[keyno].ecc.flags |= ECC_FLAG_DJB_TWEAK;
           if (opt.verbose)
             log_printf
               ("ECC, curve=%s%s\n", app->app_local->keyattr[keyno].ecc.oid,
-               !app->app_local->keyattr[keyno].ecc.flags ? "":
-               keyno==1? " (djb-tweak)": " (eddsa)");
+               !(app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK)?
+               "": keyno==1? " (djb-tweak)": " (eddsa)");
         }
     }
   else if (opt.verbose)
