@@ -11,7 +11,7 @@
 # Check that gpg verifies only signatures where there is no ambiguity
 # in the order of packets.  Needs the Demo Keys Lima and Mike.
 
-# Note: We do son't support multiple signaturess anymore thus this test is 
+# Note: We do son't support multiple signatures anymore thus this test is
 # not really needed because verify could do the same.  We keep it anyway.
 
 . $srcdir/defs.inc || exit 3

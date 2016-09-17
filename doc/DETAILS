@@ -16,7 +16,6 @@ parts of the external API for GPG and GPGSM.
 
 * Format of the colon listings
 
-* 
   The format is a based on colon separated record, each recods starts
   with a tag string and extends to the end of the line.  Here is an
   example:

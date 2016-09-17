@@ -611,7 +611,7 @@ main (int argc, char **argv )
   else if (argc > 1)
     usage (1);
 
-  /* Allocate an CTRL object.  An empty object should sufficient.  */
+  /* Allocate an CTRL object.  An empty object should be sufficient.  */
   ctrl = xtrycalloc (1, sizeof *ctrl);
   if (!ctrl)
     {
