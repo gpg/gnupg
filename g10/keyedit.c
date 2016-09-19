@@ -408,20 +408,31 @@ check_all_keysigs (KBNODE kb, int only_selected, int only_selfsigs)
 
   /* First we look for duplicates.  */
   {
-    int nsigs = 0;
-    KBNODE *sigs;
+    int nsigs;
+    kbnode_t *sigs;
     int i;
     int last_i;
 
     /* Count the sigs.  */
-    for (n = kb; n; n = n->next)
-      if (is_deleted_kbnode (n))
-        continue;
-      else if (n->pkt->pkttype == PKT_SIGNATURE)
-        nsigs ++;
+    for (nsigs = 0, n = kb; n; n = n->next)
+      {
+        if (is_deleted_kbnode (n))
+          continue;
+        else if (n->pkt->pkttype == PKT_SIGNATURE)
+          nsigs ++;
+      }
+
+    if (!nsigs)
+      return 0; /* No signatures at all.  */
 
     /* Add them all to the SIGS array.  */
-    sigs = xmalloc_clear (sizeof (*sigs) * nsigs);
+    sigs = xtrycalloc (nsigs, sizeof *sigs);
+    if (!sigs)
+      {
+        log_error (_("error allocating memory: %s\n"),
+                   gpg_strerror (gpg_error_from_syserror ()));
+        return 0;
+      }
 
     i = 0;
     for (n = kb; n; n = n->next)
