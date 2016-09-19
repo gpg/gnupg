@@ -11,8 +11,9 @@ different languages, with the intent of making them available to
 developers who have different languages available.
 
 They are all licensed Creative Commons Zero (CC0-1.0-Universal, see
-the COPYING file in this directory), so they should be reusable by any
-project.  Feel free to copy them into your own project's test suite.
+the COPYING.CC0 file in GnuPG's top directory), so they should be
+reusable by any project.  Feel free to copy them into your own
+project's test suite.
 
 Rationale
 ---------
