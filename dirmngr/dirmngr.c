@@ -1715,12 +1715,12 @@ housekeeping_thread (void *arg)
       return NULL;
     }
   sentinel++;
-  if (opt.verbose)
+  if (opt.verbose > 1)
     log_info ("starting housekeeping\n");
 
   ks_hkp_housekeeping (curtime);
 
-  if (opt.verbose)
+  if (opt.verbose > 1)
     log_info ("ready with housekeeping\n");
   sentinel--;
   return NULL;
