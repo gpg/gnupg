@@ -1999,6 +1999,7 @@ build_conflict_set (tofu_dbs_t dbs, const char *fingerprint, const char *email)
     log_assert (conflict_set);
     log_assert (conflict_set_count >= 1);
   }
+  xfree (kb_all);
 
   if (DBG_TRUST)
     {
