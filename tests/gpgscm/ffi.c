@@ -460,6 +460,16 @@ do_rmdir (scheme *sc, pointer args)
   FFI_RETURN (sc);
 }
 
+static pointer
+do_get_isotime (scheme *sc, pointer args)
+{
+  FFI_PROLOG ();
+  gnupg_isotime_t timebuf;
+  FFI_ARGS_DONE_OR_RETURN (sc, args);
+  gnupg_get_isotime (timebuf);
+  FFI_RETURN_STRING (sc, timebuf);
+}
+
 
 
 /* estream functions.  */
@@ -1209,7 +1219,8 @@ ffi_scheme_eval (scheme *sc, const char *format, ...)
 }
 
 gpg_error_t
-ffi_init (scheme *sc, const char *argv0, int argc, const char **argv)
+ffi_init (scheme *sc, const char *argv0, const char *scriptname,
+          int argc, const char **argv)
 {
   int i;
   pointer args = sc->NIL;
@@ -1255,6 +1266,7 @@ ffi_init (scheme *sc, const char *argv0, int argc, const char **argv)
   ffi_define_function (sc, getcwd);
   ffi_define_function (sc, mkdir);
   ffi_define_function (sc, rmdir);
+  ffi_define_function (sc, get_isotime);
 
   /* Process management.  */
   ffi_define_function (sc, spawn_process);
@@ -1288,6 +1300,7 @@ ffi_init (scheme *sc, const char *argv0, int argc, const char **argv)
   ffi_define_function_name (sc, "*set-verbose!*", set_verbose);
 
   ffi_define (sc, "*argv0*", sc->vptr->mk_string (sc, argv0));
+  ffi_define (sc, "*scriptname*", sc->vptr->mk_string (sc, scriptname));
   for (i = argc - 1; i >= 0; i--)
     {
       pointer value = sc->vptr->mk_string (sc, argv[i]);

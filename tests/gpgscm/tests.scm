@@ -253,7 +253,10 @@
 ;; generic name is used.
 (define (mkdtemp . components)
   (_mkdtemp (if (null? components)
-		(path-join (getenv "TMP") "gpgscm-XXXXXX")
+		(path-join (getenv "TMP")
+			   (string-append "gpgscm-" (get-isotime) "-"
+					  (basename-suffix *scriptname* ".scm")
+					  "-XXXXXX"))
 		(apply path-join components))))
 
 (macro (with-temporary-working-directory form)

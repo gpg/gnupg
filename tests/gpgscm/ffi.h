@@ -24,7 +24,7 @@
 #include <gpg-error.h>
 #include "scheme.h"
 
-gpg_error_t ffi_init (scheme *sc, const char *argv0,
+gpg_error_t ffi_init (scheme *sc, const char *argv0, const char *scriptname,
 		      int argc, const char **argv);
 
 #endif /* GPGSCM_FFI_H */

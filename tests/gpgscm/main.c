@@ -263,7 +263,8 @@ main (int argc, char **argv)
   if (! err)
     err = load (sc, "ffi.scm", 0, 1);
   if (! err)
-    err = ffi_init (sc, argv0, argc, (const char **) argv);
+    err = ffi_init (sc, argv0, script ? script : "interactive",
+                    argc, (const char **) argv);
   if (! err)
     err = load (sc, "lib.scm", 0, 1);
   if (! err)
