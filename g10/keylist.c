@@ -909,7 +909,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
   /* Print the "pub" line and in KF_NONE mode the fingerprint.  */
   print_key_line (es_stdout, pk, secret);
 
-  if (fpr && opt.keyid_format != KF_NONE)
+  if (fpr)
     print_fingerprint (NULL, pk, 0);
 
   if (opt.with_keygrip && hexgrip)
