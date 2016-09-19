@@ -1255,7 +1255,7 @@ ffi_init (scheme *sc, const char *argv0, const char *scriptname,
   ffi_define_function (sc, strerror);
   ffi_define_function (sc, getenv);
   ffi_define_function (sc, setenv);
-  ffi_define_function (sc, exit);
+  ffi_define_function_name (sc, "_exit", exit);
   ffi_define_function (sc, open);
   ffi_define_function (sc, fdopen);
   ffi_define_function (sc, close);

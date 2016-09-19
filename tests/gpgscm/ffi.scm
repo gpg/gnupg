@@ -42,3 +42,25 @@
 ;; Pseudo-definitions for foreign functions.  Evaluates to no code,
 ;; but serves as documentation.
 (macro (ffi-define form))
+
+;; Runtime support.
+
+;; Low-level mechanism to terminate the process.
+(ffi-define (_exit status))
+
+;; High-level mechanism to terminate the process is to throw an error
+;; of the form (*interpreter-exit* status).  This gives automatic
+;; resource management a chance to clean up.
+(define *interpreter-exit* (gensym))
+(define (throw . x)
+  (cond
+   ((more-handlers?)
+    (apply (pop-handler) x))
+   ((and (= 2 (length x)) (equal? *interpreter-exit* (car x)))
+    (_exit (cadr x)))
+   (else
+    (apply error x))))
+
+;; Terminate the process returning STATUS to the parent.
+(define (exit status)
+  (throw *interpreter-exit* status))
