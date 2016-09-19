@@ -20,25 +20,24 @@
 ;; Interactive repl using 'prompt' function.  P must be a function
 ;; that given the current entered prefix returns the prompt to
 ;; display.
-(define (repl p)
-  (let ((repl-environment (make-environment)))
-    (call/cc
-     (lambda (exit)
-       (let loop ((prefix ""))
-	 (let ((line (prompt (p prefix))))
-	   (if (and (not (eof-object? line)) (= 0 (string-length line)))
-	       (exit (loop prefix)))
-	   (if (not (eof-object? line))
-	       (let* ((next (string-append prefix line))
-		      (c (catch (begin (echo "Parse error:" *error*)
-				       (loop prefix))
-				(read (open-input-string next)))))
-		 (if (not (eof-object? c))
-		     (begin
-		       (catch (echo "Error:" *error*)
-			      (echo "    ===>" (eval c repl-environment)))
-		       (exit (loop ""))))
-		 (exit (loop next))))))))))
+(define (repl p environment)
+  (call/cc
+   (lambda (exit)
+     (let loop ((prefix ""))
+       (let ((line (prompt (p prefix))))
+	 (if (and (not (eof-object? line)) (= 0 (string-length line)))
+	     (exit (loop prefix)))
+	 (if (not (eof-object? line))
+	     (let* ((next (string-append prefix line))
+		    (c (catch (begin (echo "Parse error:" *error*)
+				     (loop prefix))
+			      (read (open-input-string next)))))
+	       (if (not (eof-object? c))
+		   (begin
+		     (catch (echo "Error:" *error*)
+			    (echo "    ===>" (eval c environment)))
+		     (exit (loop ""))))
+	       (exit (loop next)))))))))
 
 (define (prompt-append-prefix prompt prefix)
   (string-append prompt (if (> (string-length prefix) 0)
@@ -46,5 +45,6 @@
 			    "> ")))
 
 ;; Default repl run by main.c.
-(define (interactive-repl)
-  (repl (lambda (p) (prompt-append-prefix "gpgscm " p))))
+(define (interactive-repl . environment)
+  (repl (lambda (p) (prompt-append-prefix "gpgscm " p))
+	(if (null? environment) (interaction-environment) (car environment))))
