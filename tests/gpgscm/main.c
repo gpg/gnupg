@@ -230,7 +230,7 @@ main (int argc, char **argv)
   i18n_init ();
   init_common_subsystems (&argc, &argv);
 
-  if (!gcry_check_version (GCRYPT_VERSION))
+  if (!gcry_check_version (NEED_LIBGCRYPT_VERSION))
     {
       fputs ("libgcrypt version mismatch\n", stderr);
       exit (2);
