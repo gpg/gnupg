@@ -23,6 +23,6 @@
 (lettmp
  (onebyte)
  (dearmor (in-srcdir "samplemsgs/issue2419.asc") onebyte)
- (catch (assert (string-contains? *error* "invalid packet"))
+ (catch (assert (string-contains? (car *error*) "invalid packet"))
 	(call-popen `(,@GPG --list-packets ,onebyte) "")
 	(error "Expected an error but got none")))

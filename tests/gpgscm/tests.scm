@@ -411,7 +411,7 @@
 	  (if error
 	      (begin
 		(for-each remove-temporary-file tmpfiles')
-		(throw error)))
+		(apply throw error)))
 	  (loop tmpfiles' sink (cdr cmds))))))
 
 (define (tr:open pathname)

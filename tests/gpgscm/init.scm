@@ -544,13 +544,14 @@
 ;
 ;    "Catch" establishes a scope spanning multiple call-frames until
 ;    another "catch" is encountered.  Within the recovery expression
-;    the thrown exception is bound to *error*.
+;    the thrown exception is bound to *error*.  Errors can be rethrown
+;    using (apply throw *error*).
 ;
 ;    Exceptions are thrown with:
 ;
 ;         (throw "message")
 ;
-;    If used outside a (catch ...), reverts to (error "message)
+;    If used outside a (catch ...), reverts to (error "message")
 
 (define *handlers* (list))
 
@@ -573,13 +574,12 @@
 (macro (catch form)
      (let ((label (gensym)))
           `(call/cc (lambda (**exit**)
-               (push-handler (lambda (*error*) (**exit** ,(cadr form))))
+               (push-handler (lambda *error* (**exit** ,(cadr form))))
                (let ((,label (begin ,@(cddr form))))
                     (pop-handler)
                     ,label)))))
 
-(define (*error-hook* . args)
-  (throw args))
+(define *error-hook* throw)
 
 
 ;;;;; Definition of MAKE-ENVIRONMENT, to be used with two-argument EVAL
