@@ -170,7 +170,7 @@ sample_keys = samplekeys/README \
 
 sample_msgs = samplemsgs/issue2419.asc
 
-EXTRA_DIST = defs.inc defs.scm pinentry.sh $(XTESTS) $(TEST_FILES) \
+EXTRA_DIST = defs.scm $(XTESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
 	     $(sample_msgs) ChangeLog-2011 run-tests.scm \
 	     setup.scm finish.scm
