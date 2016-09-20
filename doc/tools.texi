@@ -1542,7 +1542,7 @@ abbreviate this command.
 @item --help, -h
 @opindex help
 Print a usage message summarizing the most useful command-line options.
-Note that you can abbreviate this command.
+Note that you cannot abbreviate this command.
 
 @item --quiet, -q
 @opindex quiet
