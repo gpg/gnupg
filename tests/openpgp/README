@@ -89,6 +89,50 @@ element of list while displaying the progress appropriately.
 for-each-p' is similar, but accepts another callback before the 'list'
 argument to format each item.  for-each-p can be safely nested, and
 the inner progress indicator will be abbreviated using '.'.
+** Debugging tests
+
+Say you are working on a new test called 'your-test.scm', you can run
+it on its own using
+
+  obj $ make -C tests/openpgp check XTESTS=your-test.scm
+
+but something isn't working as expected.  There are several little
+gadgets that might help.  The first one is 'trace', a function that
+prints the value given to it and evaluates to it.  E.g.
+
+  (trace (+ 2 3))
+
+prints '5' and evaluates to 5.  Also, there is an 'assert' macro that
+aborts the execution if its argument does not evaluate to a trueish
+value.  Feel free to express invariants with it.
+
+You can also get an interactive repl by dropping
+
+  (interactive-repl (current-environment))
+
+anywhere you like.
+
+** Interfacing with gpg
+
+defs.scm defines several convenience functions.  Say you want to parse
+the colon output from gpg, there is gpg-with-colons that splits the
+result at newlines and colons, so you can use the result like this:
+
+ (define (fpr some-key)
+   (list-ref (assoc "fpr" (gpg-with-colons
+			   `(--with-fingerprint
+			     --list-secret-keys ,some-key)))
+	     9))
+
+Or if you want to count all non-revoked uids for a given key, do
+
+ (define (count-uids-of-secret-key some-key)
+   (length (filter (lambda (x) (and (string=? "uid" (car x))
+				    (string=? "u" (cadr x))))
+		   (gpg-with-colons
+		    `(--with-fingerprint
+		      --list-secret-keys ,some-key)))))
+
 ** Temporary files
 (lettmp <bindings> <body>) will create and delete temporary files that
 you can use in <body>.  (with-temporary-working-directory <body>) will

@@ -85,7 +85,7 @@
       (define (run-sync . args)
 	(with-working-directory directory
 	  (let* ((p (inbound-pipe))
-		 (pid (spawn-process-fd (append command args) CLOSED_FD
+		 (pid (spawn-process-fd (append command args) 0
 					(:write-end p) (:write-end p))))
 	    (close (:write-end p))
 	    (splice (:read-end p) STDERR_FILENO)
