@@ -82,6 +82,7 @@ XTESTS = \
 	default-key.scm \
 	export.scm \
 	ssh.scm \
+	quick-key-manipulation.scm \
 	issue2015.scm \
 	issue2346.scm \
 	issue2417.scm \
