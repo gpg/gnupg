@@ -990,7 +990,7 @@ get_dns_cert (const char *name, int want_certtype,
   if (r_key)
     *r_key = NULL;
   if (r_keylen)
-    *r_keylen = NULL;
+    *r_keylen = 0;
   *r_fpr = NULL;
   *r_fprlen = 0;
   *r_url = NULL;
