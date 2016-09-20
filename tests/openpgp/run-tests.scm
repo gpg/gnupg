@@ -169,47 +169,6 @@
 	    (setup'::run-sync-quiet '--unpack-tarball gpghome-tar)
 	    (loop (pool::add (test'::run-sync)) (cdr tests')))))))
 
-(define all-tests
-  '("version.scm"
-    "mds.scm"
-    "decrypt.scm"
-    "decrypt-dsa.scm"
-    "sigs.scm"
-    "sigs-dsa.scm"
-    "encrypt.scm"
-    "encrypt-dsa.scm"
-    "seat.scm"
-    "clearsig.scm"
-    "encryptp.scm"
-    "detach.scm"
-    "detachm.scm"
-    "armsigs.scm"
-    "armencrypt.scm"
-    "armencryptp.scm"
-    "signencrypt.scm"
-    "signencrypt-dsa.scm"
-    "armsignencrypt.scm"
-    "armdetach.scm"
-    "armdetachm.scm"
-    "genkey1024.scm"
-    "conventional.scm"
-    "conventional-mdc.scm"
-    "multisig.scm"
-    "verify.scm"
-    "armor.scm"
-    "import.scm"
-    "ecc.scm"
-    "4gb-packet.scm"
-    "tofu.scm"
-    "gpgtar.scm"
-    "use-exact-key.scm"
-    "default-key.scm"
-    "export.scm"
-    "ssh.scm"
-    "issue2015.scm"
-    "issue2346.scm"
-    "issue2419.scm"))
-
 (let* ((runner (if (member "--parallel" *args*)
 		  (if (member "--shared" *args*)
 		      run-tests-parallel-shared
@@ -217,7 +176,6 @@
 		  (if (member "--shared" *args*)
 		      run-tests-sequential-shared
 		      run-tests-sequential-isolated)))
-       (tests' (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*))
-       (tests (if (null? tests') all-tests tests')))
+       (tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*)))
   (apply runner (append (list (test::scm "setup.scm") (test::scm "finish.scm"))
 			(map test::scm tests))))
