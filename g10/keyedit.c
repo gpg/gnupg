@@ -2932,6 +2932,8 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
 
   fix_keyblock (&keyblock);
 
+  merge_keys_and_selfsig (keyblock);
+
   if (menu_adduid (ctrl, keyblock, 0, NULL, uidstring))
     {
       err = keydb_update_keyblock (kdbhd, keyblock);

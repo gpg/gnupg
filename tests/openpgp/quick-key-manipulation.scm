@@ -37,6 +37,11 @@
 (define alpha "Alpha <alpha@example.net>")
 (define bravo "Bravo <bravo@example.net>")
 
+(define (key-data key)
+  (filter (lambda (x) (or (string=? (car x) "pub")
+                          (string=? (car x) "sub")))
+          (gpg-with-colons `(-k ,key))))
+
 (with-temporary-working-directory
  (file-copy (path-join old-home "gpg.conf") "gpg.conf")
  (file-copy (path-join old-home "gpg-agent.conf") "gpg-agent.conf")
@@ -51,7 +56,23 @@
  (assert (= 1 (count-uids-of-secret-key alpha)))
 
  (info "Checking that we can add a user ID...")
- (call-check `(,@GPG --quick-adduid ,(exact alpha) ,bravo))
+
+ ;; Make sure the key capabilities don't change when we add a user id.
+ ;; (See bug #2697.)
+ (let ((pre (key-data (exact alpha)))
+       (result (call-check `(,@GPG --quick-adduid ,(exact alpha) ,bravo)))
+       (post (key-data (exact alpha))))
+   (if (not (equal? pre post))
+       (begin
+         (display "Key capabilities changed when adding a user id:")
+         (newline)
+         (display "  Pre: ")
+         (display pre)
+         (newline)
+         (display " Post: ")
+         (display post)
+         (newline)
+         (exit 1))))
 
  (call-check `(,@GPG --check-trustdb)) ; XXX why?
 
