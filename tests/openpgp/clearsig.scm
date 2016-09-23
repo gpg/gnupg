@@ -36,7 +36,7 @@
 	;; Otherwise, we do check that we recover the original file.
 	check-identity)
     source
-    (check-signing '(--passphrase-fd "0" --clearsign) usrpass1)))
+    (check-signing '(--passphrase-fd "0" --clear-sign) usrpass1)))
  (append plain-files '("plain-large")))
 
 ;; The test vectors are lists of length three, containing
@@ -101,7 +101,7 @@ there is a blank line after this
        (with-output-to-file tmp (lambda () (display (:string vec))))
        ((if (:check-equality vec) check-identity check-execution)
 	tmp
-	(check-signing `(--passphrase-fd "0" --clearsign ,@(:options vec))
+	(check-signing `(--passphrase-fd "0" --clear-sign ,@(:options vec))
 		       usrpass1))))
    (lambda (vec) (counter))
    vectors))

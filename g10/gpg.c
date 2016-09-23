@@ -419,7 +419,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_group (300, N_("@Commands:\n ")),
 
   ARGPARSE_c (aSign, "sign", N_("make a signature")),
-  ARGPARSE_c (aClearsign, "clearsign", N_("make a clear text signature")),
+  ARGPARSE_c (aClearsign, "clear-sign", N_("make a clear text signature")),
+  ARGPARSE_c (aClearsign, "clearsign", "@")),
   ARGPARSE_c (aDetachedSign, "detach-sign", N_("make a detached signature")),
   ARGPARSE_c (aEncr, "encrypt",   N_("encrypt data")),
   ARGPARSE_c (aEncrFiles, "encrypt-files", "@"),
@@ -653,7 +654,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_group (303, N_("@\nExamples:\n\n"
     " -se -r Bob [file]          sign and encrypt for user Bob\n"
-    " --clearsign [file]         make a clear text signature\n"
+    " --clear-sign [file]         make a clear text signature\n"
     " --detach-sign [file]       make a detached signature\n"
     " --list-keys [names]        show keys\n"
     " --fingerprint [names]      show fingerprints\n")),
@@ -3639,7 +3640,7 @@ main (int argc, char **argv)
 	    cmdname="--sign --encrypt";
 	    break;
 	  case aClearsign:
-	    cmdname="--clearsign";
+	    cmdname="--clear-sign";
 	    break;
 	  case aDetachedSign:
 	    cmdname="--detach-sign";
@@ -4023,11 +4024,11 @@ main (int argc, char **argv)
 
       case aClearsign: /* make a clearsig */
 	if( argc > 1 )
-	    wrong_args(_("--clearsign [filename]"));
+	    wrong_args(_("--clear-sign [filename]"));
 	if( (rc = clearsign_file (ctrl, fname, locusr, NULL)) )
           {
             write_status_failure ("sign", rc);
-	    log_error("%s: clearsign failed: %s\n",
+	    log_error("%s: clear-sign failed: %s\n",
                       print_fname_stdin(fname), gpg_strerror (rc) );
           }
 	break;

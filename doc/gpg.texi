@@ -174,8 +174,8 @@ decrypted via a secret key or a passphrase).  The key to be used for
 signing is chosen by default or can be set with the
 @option{--local-user} and @option{--default-key} options.
 
-@item --clearsign
-@opindex clearsign
+@item --clear-sign
+@opindex clear-sign
 Make a clear text signature.  The content in a clear text signature is
 readable without any special software. OpenPGP software is only needed
 to verify the signature.  Clear text signatures may modify end-of-line
@@ -2499,7 +2499,7 @@ to safely override the algorithm chosen by the recipient key
 preferences, as GPG will only select an algorithm that is usable by
 all recipients.  The most highly ranked digest algorithm in this list
 is also used when signing without encryption
-(e.g. @option{--clearsign} or @option{--sign}).
+(e.g. @option{--clear-sign} or @option{--sign}).
 
 @item --personal-compress-preferences @code{string}
 @opindex personal-compress-preferences
@@ -3425,7 +3425,7 @@ Operation is further controlled by a few environment variables:
 @item gpg -se -r @code{Bob} @code{file}
 sign and encrypt for user Bob
 
-@item gpg --clearsign @code{file}
+@item gpg --clear-sign @code{file}
 make a clear text signature
 
 @item gpg -sb @code{file}
