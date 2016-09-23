@@ -464,8 +464,8 @@ Most notable here is the @option{--import-options merge-only} option
 which does not insert new keys but does only the merging of new
 signatures, user-IDs and subkeys.
 
-@item --recv-keys @code{key IDs}
-@opindex recv-keys
+@item --receive-keys @code{key IDs}
+@opindex receive-keys
 Import the keys with the given key IDs from a keyserver. Option
 @option{--keyserver} must be used to give the name of this keyserver.
 
@@ -1757,7 +1757,7 @@ This option is deprecated - please use the @option{--keyserver} in
 @file{dirmngr.conf} instead.
 
 Use @code{name} as your keyserver. This is the server that
-@option{--recv-keys}, @option{--send-keys}, and @option{--search-keys}
+@option{--receive-keys}, @option{--send-keys}, and @option{--search-keys}
 will communicate with to receive keys from, send keys to, and search for
 keys on. The format of the @code{name} is a URI:
 `scheme:[//]keyservername[:port]' The scheme is the type of keyserver:
@@ -1825,9 +1825,9 @@ are available for all keyserver types, some common options are:
   Tell the keyserver helper program how long (in seconds) to try and
   perform a keyserver action before giving up. Note that performing
   multiple actions at the same time uses this timeout value per action.
-  For example, when retrieving multiple keys via @option{--recv-keys}, the
+  For example, when retrieving multiple keys via @option{--receive-keys}, the
   timeout applies separately to each key retrieval, and not to the
-  @option{--recv-keys} command as a whole. Defaults to 30 seconds.
+  @option{--receive-keys} command as a whole. Defaults to 30 seconds.
 
   @item http-proxy=@code{value}
   This option is deprecated.
@@ -2229,7 +2229,7 @@ opposite meaning. The options are:
   that this cannot completely repair the damaged key as some crucial data
   is removed by the keyserver, but it does at least give you back one
   subkey. Defaults to no for regular @option{--import} and to yes for
-  keyserver @option{--recv-keys}.
+  keyserver @option{--receive-keys}.
 
   @item import-show
   Show a listing of the key as imported right before it is stored.
