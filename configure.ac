@@ -1074,8 +1074,15 @@ if test x"$use_dns_srv" = xyes || test x"$use_dns_cert" = xyes; then
                    AC_SEARCH_LIBS(__res_query,resolv bind,,have_resolver=no))
     AC_SEARCH_LIBS(dn_expand,resolv bind,,
                    AC_SEARCH_LIBS(__dn_expand,resolv bind,,have_resolver=no))
-    AC_SEARCH_LIBS(dn_skipname,resolv bind,,
-                   AC_SEARCH_LIBS(__dn_skipname,resolv bind,,have_resolver=no))
+
+    # macOS renames dn_skipname into res_9_dn_skipname in <resolv.h>,
+    # and for some reason fools us into believing we don't need
+    # -lresolv even if we do.  Since the test program checking for the
+    # symbol does not include <resolv.h>, we need to check for the
+    # renamed symbol explicitly.
+    AC_SEARCH_LIBS(res_9_dn_skipname,resolv bind,,
+        AC_SEARCH_LIBS(dn_skipname,resolv bind,,
+            AC_SEARCH_LIBS(__dn_skipname,resolv bind,,have_resolver=no)))
 
     if test x"$have_resolver" != xno ; then
 
