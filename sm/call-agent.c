@@ -228,12 +228,13 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
   char *p, line[ASSUAN_LINELENGTH];
   membuf_t data;
   size_t len;
-  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
+  struct default_inq_parm_s inq_parm;
 
   *r_buf = NULL;
   rc = start_agent (ctrl);
   if (rc)
     return rc;
+  inq_parm.ctx = agent_ctx;
 
   if (digestlen*2 + 50 > DIM(line))
     return gpg_error (GPG_ERR_GENERAL);
@@ -301,7 +302,7 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
   const char *hashopt;
   unsigned char *sigbuf;
   size_t sigbuflen;
-  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
+  struct default_inq_parm_s inq_parm;
 
   (void)desc;
 
@@ -320,6 +321,7 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
   rc = start_agent (ctrl);
   if (rc)
     return rc;
+  inq_parm.ctx = agent_ctx;
 
   if (digestlen*2 + 50 > DIM(line))
     return gpg_error (GPG_ERR_GENERAL);
@@ -580,12 +582,13 @@ gpgsm_agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
   size_t len;
   unsigned char *buf;
   char line[ASSUAN_LINELENGTH];
-  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
+  struct default_inq_parm_s inq_parm;
 
   *r_pubkey = NULL;
   rc = start_agent (ctrl);
   if (rc)
     return rc;
+  inq_parm.ctx = agent_ctx;
 
   rc = assuan_transact (agent_ctx, "RESET",NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
@@ -668,12 +671,14 @@ gpgsm_agent_scd_serialno (ctrl_t ctrl, char **r_serialno)
 {
   int rc;
   char *serialno = NULL;
-  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
+  struct default_inq_parm_s inq_parm;
 
   *r_serialno = NULL;
   rc = start_agent (ctrl);
   if (rc)
     return rc;
+  inq_parm.ctrl = ctrl;
+  inq_parm.ctx = agent_ctx;
 
   rc = assuan_transact (agent_ctx, "SCD SERIALNO",
                         NULL, NULL,
@@ -738,12 +743,14 @@ gpgsm_agent_scd_keypairinfo (ctrl_t ctrl, strlist_t *r_list)
 {
   int rc;
   strlist_t list = NULL;
-  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
+  struct default_inq_parm_s inq_parm;
 
   *r_list = NULL;
   rc = start_agent (ctrl);
   if (rc)
     return rc;
+  inq_parm.ctrl = ctrl;
+  inq_parm.ctx = agent_ctx;
 
   rc = assuan_transact (agent_ctx, "SCD LEARN --force",
                         NULL, NULL,
@@ -836,11 +843,13 @@ gpgsm_agent_marktrusted (ctrl_t ctrl, ksba_cert_t cert)
   int rc;
   char *fpr, *dn, *dnfmt;
   char line[ASSUAN_LINELENGTH];
-  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
+  struct default_inq_parm_s inq_parm;
 
   rc = start_agent (ctrl);
   if (rc)
     return rc;
+  inq_parm.ctrl = ctrl;
+  inq_parm.ctx = agent_ctx;
 
   fpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
   if (!fpr)
@@ -1023,11 +1032,13 @@ gpgsm_agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
-  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
+  struct default_inq_parm_s inq_parm;
 
   rc = start_agent (ctrl);
   if (rc)
     return rc;
+  inq_parm.ctrl = ctrl;
+  inq_parm.ctx = agent_ctx;
 
   if (!hexkeygrip || strlen (hexkeygrip) != 40)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1059,11 +1070,13 @@ gpgsm_agent_get_confirmation (ctrl_t ctrl, const char *desc)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
-  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
+  struct default_inq_parm_s inq_parm;
 
   rc = start_agent (ctrl);
   if (rc)
     return rc;
+  inq_parm.ctrl = ctrl;
+  inq_parm.ctx = agent_ctx;
 
   snprintf (line, DIM(line)-1, "GET_CONFIRMATION %s", desc);
   line[DIM(line)-1] = 0;
@@ -1170,13 +1183,15 @@ gpgsm_agent_ask_passphrase (ctrl_t ctrl, const char *desc_msg, int repeat,
   char line[ASSUAN_LINELENGTH];
   char *arg4 = NULL;
   membuf_t data;
-  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
+  struct default_inq_parm_s inq_parm;
 
   *r_passphrase = NULL;
 
   err = start_agent (ctrl);
   if (err)
     return err;
+  inq_parm.ctrl = ctrl;
+  inq_parm.ctx = agent_ctx;
 
   if (desc_msg && *desc_msg && !(arg4 = percent_plus_escape (desc_msg)))
     return gpg_error_from_syserror ();
@@ -1217,12 +1232,14 @@ gpgsm_agent_keywrap_key (ctrl_t ctrl, int forexport,
   size_t len;
   unsigned char *buf;
   char line[ASSUAN_LINELENGTH];
-  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
+  struct default_inq_parm_s inq_parm;
 
   *r_kek = NULL;
   err = start_agent (ctrl);
   if (err)
     return err;
+  inq_parm.ctrl = ctrl;
+  inq_parm.ctx = agent_ctx;
 
   snprintf (line, DIM(line)-1, "KEYWRAP_KEY %s",
             forexport? "--export":"--import");
@@ -1306,13 +1323,15 @@ gpgsm_agent_export_key (ctrl_t ctrl, const char *keygrip, const char *desc,
   size_t len;
   unsigned char *buf;
   char line[ASSUAN_LINELENGTH];
-  struct default_inq_parm_s inq_parm = { ctrl, agent_ctx };
+  struct default_inq_parm_s inq_parm;
 
   *r_result = NULL;
 
   err = start_agent (ctrl);
   if (err)
     return err;
+  inq_parm.ctrl = ctrl;
+  inq_parm.ctx = agent_ctx;
 
   if (desc)
     {
