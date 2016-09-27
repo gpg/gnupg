@@ -88,7 +88,6 @@ common_sources = \
 	helpfile.c \
 	mkdir_p.c mkdir_p.h \
 	strlist.c strlist.h \
-	call-gpg.c call-gpg.h \
 	exectool.c exectool.h \
 	server-help.c server-help.h \
 	name-value.c name-value.h \
@@ -114,11 +113,14 @@ endif
 without_npth_sources = \
         get-passphrase.c get-passphrase.h
 
+# Sources only useful with NPTH.
+with_npth_sources = \
+        call-gpg.c call-gpg.h
 
 libcommon_a_SOURCES = $(common_sources) $(without_npth_sources)
 libcommon_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) -DWITHOUT_NPTH=1
 
-libcommonpth_a_SOURCES = $(common_sources)
+libcommonpth_a_SOURCES = $(common_sources) $(with_npth_sources)
 libcommonpth_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS)
 
 if !HAVE_W32CE_SYSTEM
