@@ -189,25 +189,21 @@ do_encode_dsa (const byte *md, size_t mdlen, int pkalgo, gcry_sexp_t pkey,
       return gpg_error (GPG_ERR_INV_LENGTH);
     }
 
+  /* ECDSA 521 is special has it is larger than the largest hash
+     we have (SHA-512).  Thus we chnage the size for further
+     processing to 512.  */
+  if (pkalgo == GCRY_PK_ECDSA && qbits > 512)
+    qbits = 512;
+
   /* Check if we're too short.  Too long is safe as we'll
-   * automatically left-truncate.
-   *
-   * This check would require the use of SHA512 with ECDSA 512. I
-   * think this is overkill to fail in this case.  Therefore, relax
-   * the check, but only for ECDSA keys.  We may need to adjust it
-   * later for general case.  (Note that the check is really a bug for
-   * ECDSA 521 as the only hash that matches it is SHA 512, but 512 <
-   * 521 ).
-   */
-  if (mdlen < ((pkalgo==GCRY_PK_ECDSA && qbits > 521) ? 512 : qbits)/8)
+     automatically left-truncate.  */
+  if (mdlen < qbits/8)
     {
       log_error (_("a %zu bit hash is not valid for a %u bit %s key\n"),
                  mdlen*8,
                  gcry_pk_get_nbits (pkey),
                  gcry_pk_algo_name (pkalgo));
-      /* FIXME: we need to check the requirements for ECDSA.  */
-      if (mdlen < 20 || pkalgo == GCRY_PK_DSA)
-        return gpg_error (GPG_ERR_INV_LENGTH);
+      return gpg_error (GPG_ERR_INV_LENGTH);
     }
 
   /* Truncate.  */
