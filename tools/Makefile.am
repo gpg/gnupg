@@ -122,10 +122,9 @@ watchgnupg_SOURCES = watchgnupg.c
 watchgnupg_LDADD = $(NETLIBS)
 
 gpg_connect_agent_SOURCES = gpg-connect-agent.c
-# FIXME: remove NPTH_LIBS (why do we need them at all?)
 gpg_connect_agent_LDADD = ../common/libgpgrl.a $(common_libs) \
 	                  $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
-                          $(NPTH_LIBS) $(GPG_ERROR_LIBS) \
+                          $(GPG_ERROR_LIBS) \
                           $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
                           $(resource_objs)
 
