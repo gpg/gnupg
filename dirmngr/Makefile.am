@@ -40,10 +40,6 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)	\
             $(LIBGNUTLS_CFLAGS)
 
 
-BUILT_SOURCES = no-libgcrypt.c
-
-CLEANFILES = no-libgcrypt.c
-
 if HAVE_W32_SYSTEM
 ldap_url = ldap-url.h ldap-url.c
 else
@@ -93,7 +89,7 @@ if USE_LDAPWRAPPER
 dirmngr_ldap_SOURCES = dirmngr_ldap.c $(ldap_url)
 dirmngr_ldap_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBGCRYPT_CFLAGS)
 dirmngr_ldap_LDFLAGS =
-dirmngr_ldap_LDADD = $(libcommon) no-libgcrypt.o \
+dirmngr_ldap_LDADD = $(libcommon) \
 		     $(GPG_ERROR_LIBS) $(LIBGCRYPT_LIBS) $(LDAPLIBS) \
 		     $(LBER_LIBS) $(LIBINTL) $(LIBICONV) $(NETLIBS)
 endif
@@ -103,9 +99,6 @@ dirmngr_client_LDADD = $(libcommon) \
                        $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
                        $(LIBGCRYPT_LIBS) $(NETLIBS) $(LIBINTL) $(LIBICONV)
 dirmngr_client_LDFLAGS = $(extra_bin_ldflags)
-
-no-libgcrypt.c : $(top_srcdir)/tools/no-libgcrypt.c
-	cat $(top_srcdir)/tools/no-libgcrypt.c > no-libgcrypt.c
 
 
 t_common_src = t-support.h
