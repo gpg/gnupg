@@ -41,6 +41,7 @@
 #include "keyserver-internal.h"
 #include "util.h"
 #include "membuf.h"
+#include "mbox-util.h"
 #include "call-dirmngr.h"
 
 #ifdef HAVE_W32_SYSTEM
@@ -2011,29 +2012,55 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name,
                       unsigned char **fpr, size_t *fpr_len)
 {
   gpg_error_t err;
+  char *mbox;
   estream_t key;
 
-  err = gpg_dirmngr_wkd_get (ctrl, name, &key);
+  /* We want to work on the mbox.  That is what dirmngr will do anyway
+   * and we need the mbox for the import filter anyway.  */
+  mbox = mailbox_from_userid (name);
+  if (!mbox)
+    {
+      err = gpg_error_from_syserror ();
+      if (gpg_err_code (err) == GPG_ERR_EINVAL)
+        err = gpg_error (GPG_ERR_INV_USER_ID);
+      return err;
+    }
+
+  err = gpg_dirmngr_wkd_get (ctrl, mbox, &key);
   if (err)
     ;
   else if (key)
     {
       int armor_status = opt.no_armor;
+      import_filter_t save_filt;
 
       /* Keys returned via WKD are in binary format. */
       opt.no_armor = 1;
+      save_filt = save_and_clear_import_filter ();
+      if (!save_filt)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          char *filtstr = es_bsprintf ("keep-uid=mbox = %s", mbox);
+          err = filtstr? 0 : gpg_error_from_syserror ();
+          if (!err)
+            err = parse_and_set_import_filter (filtstr);
+          xfree (filtstr);
+          if (!err)
+            err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
+                                         IMPORT_NO_SECKEY,
+                                         NULL, NULL);
 
-      err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
-                                   (opt.keyserver_options.import_options
-                                    | IMPORT_NO_SECKEY),
-                                   NULL, NULL);
+        }
 
+      restore_import_filter (save_filt);
       opt.no_armor = armor_status;
 
       es_fclose (key);
       key = NULL;
     }
 
+  xfree (mbox);
   return err;
 }
 
