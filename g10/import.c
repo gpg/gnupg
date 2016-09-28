@@ -115,6 +115,7 @@ static int import_revoke_cert (kbnode_t node, struct import_stats_s *stats);
 static int chk_self_sigs (kbnode_t keyblock, u32 *keyid, int *non_self);
 static int delete_inv_parts (kbnode_t keyblock,
                              u32 *keyid, unsigned int options);
+static int any_uid_left (kbnode_t keyblock);
 static int merge_blocks (kbnode_t keyblock_orig,
 			 kbnode_t keyblock, u32 *keyid,
 			 int *n_uids, int *n_sigs, int *n_subk );
@@ -1344,6 +1345,7 @@ import_one (ctrl_t ctrl,
   size_t an;
   char pkstrbuf[PUBKEY_STRING_SIZE];
   int merge_keys_done = 0;
+  int any_filter = 0;
 
   /* Get the key and print some info about it. */
   node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
@@ -1455,13 +1457,25 @@ import_one (ctrl_t ctrl,
     {
       apply_keep_uid_filter (keyblock, import_filter.keep_uid);
       commit_kbnode (&keyblock);
+      any_filter = 1;
     }
   if (import_filter.drop_sig)
     {
       apply_drop_sig_filter (keyblock, import_filter.drop_sig);
       commit_kbnode (&keyblock);
+      any_filter = 1;
     }
 
+  /* If we ran any filter we need to check that at least one user id
+   * is left in the keyring.  Note that we do not use log_error in
+   * this case. */
+  if (any_filter && !any_uid_left (keyblock))
+    {
+      if (!opt.quiet )
+        log_info ( _("key %s: no valid user IDs\n"), keystr_from_pk (pk));
+      stats->no_user_id++;
+      return 0;
+    }
 
   /* Show the key in the form it is merged or inserted.  We skip this
    * if "import-export" is also active without --armor or the output
@@ -2742,6 +2756,19 @@ delete_inv_parts (kbnode_t keyblock, u32 *keyid, unsigned int options)
   commit_kbnode( &keyblock );
   return nvalid;
 }
+
+/* This function returns true if any UID is left in the keyring.  */
+static int
+any_uid_left (kbnode_t keyblock)
+{
+  kbnode_t node;
+
+  for (node=keyblock->next; node; node = node->next)
+    if (node->pkt->pkttype == PKT_USER_ID)
+      return 1;
+  return 0;
+}
+
 
 
 /****************
