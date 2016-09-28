@@ -76,16 +76,22 @@ struct import_stats_s
 #define NODE_FLAG_A  8
 
 
-/* Global variables to store selector created from
+/* A an object and a global instance to store selectors created from
  * --import-filter keep-uid=EXPR.
  * --import-filter drop-sig=EXPR.
  *
  * FIXME: We should put this into the CTRL object but that requires a
- * lot more changes right now.
+ * lot more changes right now.  For now we use save and restore
+ * fucntion to temporary change them.
  */
-static recsel_expr_t import_keep_uid;
-static recsel_expr_t import_drop_sig;
-
+/* Definition of the import filters.  */
+struct import_filter_s
+{
+  recsel_expr_t keep_uid;
+  recsel_expr_t drop_sig;
+};
+/* The current instance.  */
+struct import_filter_s import_filter;
 
 
 static int import (ctrl_t ctrl,
@@ -120,12 +126,18 @@ static int merge_keysigs (kbnode_t dst, kbnode_t src, int *n_sigs);
 
 
 static void
+release_import_filter (import_filter_t filt)
+{
+  recsel_release (filt->keep_uid);
+  filt->keep_uid = NULL;
+  recsel_release (filt->drop_sig);
+  filt->drop_sig = NULL;
+}
+
+static void
 cleanup_import_globals (void)
 {
-  recsel_release (import_keep_uid);
-  import_keep_uid = NULL;
-  recsel_release (import_drop_sig);
-  import_drop_sig = NULL;
+  release_import_filter (&import_filter);
 }
 
 
@@ -201,15 +213,45 @@ parse_and_set_import_filter (const char *string)
   register_mem_cleanup_func (cleanup_import_globals);
 
   if (!strncmp (string, "keep-uid=", 9))
-    err = recsel_parse_expr (&import_keep_uid, string+9);
+    err = recsel_parse_expr (&import_filter.keep_uid, string+9);
   else if (!strncmp (string, "drop-sig=", 9))
-    err = recsel_parse_expr (&import_drop_sig, string+9);
+    err = recsel_parse_expr (&import_filter.drop_sig, string+9);
   else
     err = gpg_error (GPG_ERR_INV_NAME);
 
   return err;
 }
 
+
+/* Save the current import filters, return them, and clear the current
+ * filters.  Returns NULL on error and sets ERRNO.  */
+import_filter_t
+save_and_clear_import_filter (void)
+{
+  import_filter_t filt;
+
+  filt = xtrycalloc (1, sizeof *filt);
+  if (!filt)
+    return NULL;
+  *filt = import_filter;
+  memset (&import_filter, 0, sizeof import_filter);
+
+  return filt;
+}
+
+
+/* Release the current import filters and restore them from NEWFILT.
+ * Ownership of NEWFILT is moved to this function.  */
+void
+restore_import_filter (import_filter_t filt)
+{
+  if (filt)
+    {
+      release_import_filter (&import_filter);
+      import_filter = *filt;
+      xfree (filt);
+    }
+}
 
 
 import_stats_t
@@ -1409,14 +1451,14 @@ import_one (ctrl_t ctrl,
   commit_kbnode (&keyblock);
 
   /* Apply import filter.  */
-  if (import_keep_uid)
+  if (import_filter.keep_uid)
     {
-      apply_keep_uid_filter (keyblock, import_keep_uid);
+      apply_keep_uid_filter (keyblock, import_filter.keep_uid);
       commit_kbnode (&keyblock);
     }
-  if (import_drop_sig)
+  if (import_filter.drop_sig)
     {
-      apply_drop_sig_filter (keyblock, import_drop_sig);
+      apply_drop_sig_filter (keyblock, import_filter.drop_sig);
       commit_kbnode (&keyblock);
     }
 

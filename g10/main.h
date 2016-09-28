@@ -348,10 +348,16 @@ gcry_mpi_t encode_md_value (PKT_public_key *pk,
 /*-- import.c --*/
 struct import_stats_s;
 typedef struct import_stats_s *import_stats_t;
+struct import_filter_s;
+typedef struct import_filter_s *import_filter_t;
 typedef gpg_error_t (*import_screener_t)(kbnode_t keyblock, void *arg);
 
 int parse_import_options(char *str,unsigned int *options,int noisy);
+
 gpg_error_t parse_and_set_import_filter (const char *string);
+import_filter_t save_and_clear_import_filter (void);
+void            restore_import_filter (import_filter_t filt);
+
 gpg_error_t read_key_from_file (ctrl_t ctrl, const char *fname,
                                 kbnode_t *r_keyblock);
 void import_keys (ctrl_t ctrl, char **fnames, int nnames,
