@@ -513,7 +513,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 #endif /* LDAP_OPT_X_TLS_CACERTFILE && HAVE_LDAP_SET_OPTION */
 #endif
 
-#ifndef HAVE_LDAP_START_TLS_S
+#ifdef HAVE_LDAP_START_TLS_S
   if (uri->use_tls)
     {
       /* XXX: We need an option to determine whether to abort if the
