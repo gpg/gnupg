@@ -91,6 +91,8 @@ static ARGPARSE_OPTS opts[] = {
 /* The list of supported debug flags.  */
 static struct debug_flags_s debug_flags [] =
   {
+    { DBG_MIME_VALUE   , "mime"    },
+    { DBG_PARSER_VALUE , "parser"  },
     { DBG_CRYPTO_VALUE , "crypto"  },
     { DBG_MEMORY_VALUE , "memory"  },
     { DBG_MEMSTAT_VALUE, "memstat" },
@@ -103,9 +105,10 @@ static struct debug_flags_s debug_flags [] =
 static void wrong_args (const char *text) GPGRT_ATTR_NORETURN;
 static gpg_error_t command_supported (char *userid);
 static gpg_error_t command_send (const char *fingerprint, char *userid);
-static gpg_error_t process_confirmation_request (estream_t msg);
+static gpg_error_t read_confirmation_request (estream_t msg);
 static gpg_error_t command_receive_cb (void *opaque,
-                                       const char *mediatype, estream_t fp);
+                                       const char *mediatype, estream_t fp,
+                                       unsigned int flags);
 
 
 
@@ -269,7 +272,7 @@ main (int argc, char **argv)
     case aRead:
       if (argc)
         wrong_args ("--read < WKS-DATA");
-      err = process_confirmation_request (es_stdin);
+      err = read_confirmation_request (es_stdin);
       if (err)
         log_error ("processing mail failed: %s\n", gpg_strerror (err));
       break;
@@ -391,6 +394,83 @@ get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
   xfree (filterexp);
   return err;
 }
+
+
+
+static void
+decrypt_stream_status_cb (void *opaque, const char *keyword, char *args)
+{
+  (void)opaque;
+
+  if (DBG_CRYPTO)
+    log_debug ("gpg status: %s %s\n", keyword, args);
+}
+
+
+/* Decrypt the INPUT stream to a new stream which is stored at success
+ * at R_OUTPUT.  */
+static gpg_error_t
+decrypt_stream (estream_t *r_output, estream_t input)
+{
+  gpg_error_t err;
+  ccparray_t ccp;
+  const char **argv;
+  estream_t output;
+
+  *r_output = NULL;
+
+  output = es_fopenmem (0, "w+b");
+  if (!output)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  ccparray_init (&ccp, 0);
+
+  ccparray_put (&ccp, "--no-options");
+  /* We limit the output to 64 KiB to avoid DoS using compression
+   * tricks.  A regular client will anyway only send a minimal key;
+   * that is one w/o key signatures and attribute packets.  */
+  ccparray_put (&ccp, "--max-output=0x10000");
+  if (!opt.verbose)
+    ccparray_put (&ccp, "--quiet");
+  else if (opt.verbose > 1)
+    ccparray_put (&ccp, "--verbose");
+  ccparray_put (&ccp, "--batch");
+  ccparray_put (&ccp, "--status-fd=2");
+  ccparray_put (&ccp, "--decrypt");
+  ccparray_put (&ccp, "--");
+
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gnupg_exec_tool_stream (opt.gpg_program, argv, input,
+                                NULL, output,
+                                decrypt_stream_status_cb, NULL);
+  if (err)
+    {
+      log_error ("decryption failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+  else if (opt.verbose)
+    log_info ("decryption succeeded\n");
+
+  es_rewind (output);
+  *r_output = output;
+  output = NULL;
+
+ leave:
+  es_fclose (output);
+  xfree (argv);
+  return err;
+}
+
 
 
 
@@ -517,6 +597,11 @@ command_send (const char *fingerprint, char *userid)
   if (err)
     goto leave;
 
+  /* Tell server that we support draft version 3.  */
+  err = mime_maker_add_header (mime, "Wks-Draft-Version", "3");
+  if (err)
+    goto leave;
+
   err = mime_maker_add_stream (mime, &key);
   if (err)
     goto leave;
@@ -539,8 +624,8 @@ encrypt_response_status_cb (void *opaque, const char *keyword, char *args)
   gpg_error_t *failure = opaque;
   char *fields[2];
 
-  if (opt.debug)
-    log_debug ("%s: %s\n", keyword, args);
+  if (DBG_CRYPTO)
+    log_debug ("gpg status: %s %s\n", keyword, args);
 
   if (!strcmp (keyword, "FAILURE"))
     {
@@ -747,7 +832,7 @@ process_confirmation_request (estream_t msg)
       goto leave;
     }
 
-  if (opt.debug)
+  if (DBG_MIME)
     {
       log_debug ("request follows:\n");
       nvc_write (nvc, log_get_stream ());
@@ -822,16 +907,62 @@ process_confirmation_request (estream_t msg)
 }
 
 
+/* Read a confirmation request and decrypt it if needed.  This
+ * function may not be used with a mail or MIME message but only with
+ * the actual encrypted or plaintext WKS data.  */
+static gpg_error_t
+read_confirmation_request (estream_t msg)
+{
+  gpg_error_t err;
+  int c;
+  estream_t plaintext = NULL;
+
+  /* We take a really simple approach to check whether MSG is
+   * encrypted: We know that an encrypted message is always armored
+   * and thus starts with a few dashes.  It is even sufficient to
+   * check for a single dash, because that can never be a proper first
+   * WKS data octet.  We need to skip leading spaces, though. */
+  while ((c = es_fgetc (msg)) == ' ' || c == '\t' || c == '\r' || c == '\n')
+    ;
+  if (c == EOF)
+    {
+      log_error ("can't process an empty message\n");
+      return gpg_error (GPG_ERR_INV_DATA);
+    }
+  if (es_ungetc (c, msg) != c)
+    {
+      log_error ("error ungetting octet from message\n");
+      return gpg_error (GPG_ERR_INTERNAL);
+    }
+
+  if (c != '-')
+    err = process_confirmation_request (msg);
+  else
+    {
+      err = decrypt_stream (&plaintext, msg);
+      if (err)
+        log_error ("decryption failed: %s\n", gpg_strerror (err));
+      else
+        err = process_confirmation_request (plaintext);
+    }
+
+  es_fclose (plaintext);
+  return err;
+}
+
+
 /* Called from the MIME receiver to process the plain text data in MSG.  */
 static gpg_error_t
-command_receive_cb (void *opaque, const char *mediatype, estream_t msg)
+command_receive_cb (void *opaque, const char *mediatype,
+                    estream_t msg, unsigned int flags)
 {
   gpg_error_t err;
 
   (void)opaque;
+  (void)flags;
 
   if (!strcmp (mediatype, "application/vnd.gnupg.wks"))
-    err = process_confirmation_request (msg);
+    err = read_confirmation_request (msg);
   else
     {
       log_info ("ignoring unexpected message of type '%s'\n", mediatype);

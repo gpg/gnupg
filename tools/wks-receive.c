@@ -26,6 +26,7 @@
 #include "ccparray.h"
 #include "exectool.h"
 #include "gpg-wks.h"
+#include "rfc822parse.h"
 #include "mime-parser.h"
 
 
@@ -41,6 +42,7 @@
 /* Data for a received object.  */
 struct receive_ctx_s
 {
+  mime_parser_t parser;
   estream_t encrypted;
   estream_t plaintext;
   estream_t signeddata;
@@ -49,6 +51,8 @@ struct receive_ctx_s
   estream_t wkd_data;
   unsigned int collect_key_data:1;
   unsigned int collect_wkd_data:1;
+  unsigned int draft_version_2:1;  /* This is a draft version 2 request.  */
+  unsigned int multipart_mixed_seen:1;
 };
 typedef struct receive_ctx_s *receive_ctx_t;
 
@@ -59,7 +63,8 @@ decrypt_data_status_cb (void *opaque, const char *keyword, char *args)
 {
   receive_ctx_t ctx = opaque;
   (void)ctx;
-  log_debug ("%s: %s\n", keyword, args);
+  if (DBG_CRYPTO)
+    log_debug ("gpg status: %s %s\n", keyword, args);
 }
 
 
@@ -86,6 +91,7 @@ decrypt_data (receive_ctx_t ctx)
 
   ccparray_init (&ccp, 0);
 
+  ccparray_put (&ccp, "--no-options");
   /* We limit the output to 64 KiB to avoid DoS using compression
    * tricks.  A regular client will anyway only send a minimal key;
    * that is one w/o key signatures and attribute packets.  */
@@ -113,7 +119,7 @@ decrypt_data (receive_ctx_t ctx)
       goto leave;
     }
 
-  if (opt.debug)
+  if (DBG_CRYPTO)
     {
       es_rewind (ctx->plaintext);
       log_debug ("plaintext: '");
@@ -133,7 +139,8 @@ verify_signature_status_cb (void *opaque, const char *keyword, char *args)
 {
   receive_ctx_t ctx = opaque;
   (void)ctx;
-  log_debug ("%s: %s\n", keyword, args);
+  if (DBG_CRYPTO)
+    log_debug ("gpg status: %s %s\n", keyword, args);
 }
 
 /* Verify the signed data.  */
@@ -151,6 +158,7 @@ verify_signature (receive_ctx_t ctx)
 
   ccparray_init (&ccp, 0);
 
+  ccparray_put (&ccp, "--no-options");
   ccparray_put (&ccp, "--batch");
   if (opt.verbose)
     ccparray_put (&ccp, "--verbose");
@@ -176,6 +184,8 @@ verify_signature (receive_ctx_t ctx)
       log_error ("verification failed: %s\n", gpg_strerror (err));
       goto leave;
     }
+
+  log_debug ("Fixme: Verification result is not used\n");
 
  leave:
   xfree (argv);
@@ -264,6 +274,22 @@ new_part (void *cookie, const char *mediatype, const char *mediasubtype)
         }
       else
         {
+          rfc822parse_t msg = mime_parser_rfc822parser (ctx->parser);
+          if (msg)
+            {
+              char *value;
+              size_t valueoff;
+
+              value = rfc822parse_get_field (msg, "Wks-Draft-Version",
+                                             -1, &valueoff);
+              if (value)
+                {
+                  if (atoi(value+valueoff) >= 2 )
+                    ctx->draft_version_2 = 1;
+                  free (value);
+                }
+            }
+
           ctx->key_data = es_fopenmem (0, "w+b");
           if (!ctx->key_data)
             {
@@ -303,6 +329,19 @@ new_part (void *cookie, const char *mediatype, const char *mediasubtype)
             }
         }
     }
+  else if (!strcmp (mediatype, "multipart")
+           && !strcmp (mediasubtype, "mixed"))
+    {
+      ctx->multipart_mixed_seen = 1;
+    }
+  else if (!strcmp (mediatype, "text"))
+    {
+      /* Check that we receive a text part only after a
+       * application/mixed.  This is actually a too simple test and we
+       * should eventually employ a strict MIME structure check.  */
+      if (!ctx->multipart_mixed_seen)
+        err = gpg_error (GPG_ERR_UNEXPECTED_MSG);
+    }
   else
     {
       log_error ("unexpected '%s/%s' message part\n", mediatype, mediasubtype);
@@ -320,7 +359,7 @@ part_data (void *cookie, const void *data, size_t datalen)
 
   if (data)
     {
-      if (opt.debug)
+      if (DBG_MIME)
         log_debug ("part_data: '%.*s'\n", (int)datalen, (const char*)data);
       if (ctx->collect_key_data)
         {
@@ -337,7 +376,7 @@ part_data (void *cookie, const void *data, size_t datalen)
     }
   else
     {
-      if (opt.debug)
+      if (DBG_MIME)
         log_debug ("part_data: finished\n");
       ctx->collect_key_data = 0;
       ctx->collect_wkd_data = 0;
@@ -353,7 +392,8 @@ gpg_error_t
 wks_receive (estream_t fp,
              gpg_error_t (*result_cb)(void *opaque,
                                       const char *mediatype,
-                                      estream_t data),
+                                      estream_t data,
+                                      unsigned int flags),
              void *cb_data)
 {
   gpg_error_t err;
@@ -361,6 +401,7 @@ wks_receive (estream_t fp,
   mime_parser_t parser;
   estream_t plaintext = NULL;
   int c;
+  unsigned int flags = 0;
 
   ctx = xtrycalloc (1, sizeof *ctx);
   if (!ctx)
@@ -369,13 +410,15 @@ wks_receive (estream_t fp,
   err = mime_parser_new (&parser, ctx);
   if (err)
     goto leave;
-  if (opt.verbose > 1 || opt.debug)
-    mime_parser_set_verbose (parser, opt.debug? 10: 1);
+  if (DBG_PARSER)
+    mime_parser_set_verbose (parser, 1);
   mime_parser_set_new_part (parser, new_part);
   mime_parser_set_part_data (parser, part_data);
   mime_parser_set_collect_encrypted (parser, collect_encrypted);
   mime_parser_set_collect_signeddata (parser, collect_signeddata);
   mime_parser_set_collect_signature (parser, collect_signature);
+
+  ctx->parser = parser;
 
   err = mime_parser_parse (parser, fp);
   if (err)
@@ -385,6 +428,11 @@ wks_receive (estream_t fp,
     log_info ("key data found\n");
   if (ctx->wkd_data)
     log_info ("wkd data found\n");
+  if (ctx->draft_version_2)
+    {
+      log_info ("draft version 2 requested\n");
+      flags |= WKS_RECEIVE_DRAFT2;
+    }
 
   if (ctx->plaintext)
     {
@@ -412,7 +460,7 @@ wks_receive (estream_t fp,
 
   if (ctx->key_data)
     {
-      if (opt.debug)
+      if (DBG_MIME)
         {
           es_rewind (ctx->key_data);
           log_debug ("Key: '");
@@ -424,14 +472,15 @@ wks_receive (estream_t fp,
       if (result_cb)
         {
           es_rewind (ctx->key_data);
-          err = result_cb (cb_data, "application/pgp-keys", ctx->key_data);
+          err = result_cb (cb_data, "application/pgp-keys",
+                           ctx->key_data, flags);
           if (err)
             goto leave;
         }
     }
   if (ctx->wkd_data)
     {
-      if (opt.debug)
+      if (DBG_MIME)
         {
           es_rewind (ctx->wkd_data);
           log_debug ("WKD: '");
@@ -443,7 +492,8 @@ wks_receive (estream_t fp,
       if (result_cb)
         {
           es_rewind (ctx->wkd_data);
-          err = result_cb (cb_data, "application/vnd.gnupg.wks", ctx->wkd_data);
+          err = result_cb (cb_data, "application/vnd.gnupg.wks",
+                           ctx->wkd_data, flags);
           if (err)
             goto leave;
         }
@@ -453,6 +503,7 @@ wks_receive (estream_t fp,
  leave:
   es_fclose (plaintext);
   mime_parser_release (parser);
+  ctx->parser = NULL;
   es_fclose (ctx->encrypted);
   es_fclose (ctx->plaintext);
   es_fclose (ctx->signeddata);

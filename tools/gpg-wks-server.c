@@ -102,6 +102,8 @@ static ARGPARSE_OPTS opts[] = {
 /* The list of supported debug flags.  */
 static struct debug_flags_s debug_flags [] =
   {
+    { DBG_MIME_VALUE   , "mime"    },
+    { DBG_PARSER_VALUE , "parser"  },
     { DBG_CRYPTO_VALUE , "crypto"  },
     { DBG_MEMORY_VALUE , "memory"  },
     { DBG_MEMSTAT_VALUE, "memstat" },
@@ -116,6 +118,7 @@ struct server_ctx_s
 {
   char *fpr;
   strlist_t mboxes;  /* List of addr-specs taken from the UIDs.  */
+  unsigned int draft_version_2:1; /* Client supports the draft 2.  */
 };
 typedef struct server_ctx_s *server_ctx_t;
 
@@ -123,7 +126,8 @@ typedef struct server_ctx_s *server_ctx_t;
 static gpg_error_t get_domain_list (strlist_t *r_list);
 
 static gpg_error_t command_receive_cb (void *opaque,
-                                       const char *mediatype, estream_t fp);
+                                       const char *mediatype, estream_t fp,
+                                       unsigned int flags);
 static gpg_error_t command_list_domains (void);
 static gpg_error_t command_cron (void);
 
@@ -350,8 +354,8 @@ list_key_status_cb (void *opaque, const char *keyword, char *args)
 {
   server_ctx_t ctx = opaque;
   (void)ctx;
-  if (opt.debug)
-    log_debug ("%s: %s\n", keyword, args);
+  if (DBG_CRYPTO)
+    log_debug ("gpg status: %s %s\n", keyword, args);
 }
 
 
@@ -629,8 +633,8 @@ encrypt_stream_status_cb (void *opaque, const char *keyword, char *args)
 {
   (void)opaque;
 
-  if (opt.debug)
-    log_debug ("%s: %s\n", keyword, args);
+  if (DBG_CRYPTO)
+    log_debug ("gpg status: %s %s\n", keyword, args);
 }
 
 
@@ -684,6 +688,78 @@ encrypt_stream (estream_t *r_output, estream_t input, const char *keyfile)
   if (err)
     {
       log_error ("encryption failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  es_rewind (output);
+  *r_output = output;
+  output = NULL;
+
+ leave:
+  es_fclose (output);
+  xfree (argv);
+  return err;
+}
+
+
+static void
+sign_stream_status_cb (void *opaque, const char *keyword, char *args)
+{
+  (void)opaque;
+
+  if (DBG_CRYPTO)
+    log_debug ("gpg status: %s %s\n", keyword, args);
+}
+
+/* Sign the INPUT stream to a new stream which is stored at success at
+ * R_OUTPUT.  A detached signature is created using the key specified
+ * by USERID.  */
+static gpg_error_t
+sign_stream (estream_t *r_output, estream_t input, const char *userid)
+{
+  gpg_error_t err;
+  ccparray_t ccp;
+  const char **argv;
+  estream_t output;
+
+  *r_output = NULL;
+
+  output = es_fopenmem (0, "w+b");
+  if (!output)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  ccparray_init (&ccp, 0);
+
+  ccparray_put (&ccp, "--no-options");
+  if (!opt.verbose)
+    ccparray_put (&ccp, "--quiet");
+  else if (opt.verbose > 1)
+    ccparray_put (&ccp, "--verbose");
+  ccparray_put (&ccp, "--batch");
+  ccparray_put (&ccp, "--status-fd=2");
+  ccparray_put (&ccp, "--armor");
+  ccparray_put (&ccp, "--local-user");
+  ccparray_put (&ccp, userid);
+  ccparray_put (&ccp, "--detach-sign");
+  ccparray_put (&ccp, "--");
+
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gnupg_exec_tool_stream (opt.gpg_program, argv, input,
+                                NULL, output,
+                                sign_stream_status_cb, NULL);
+  if (err)
+    {
+      log_error ("signing failed: %s\n", gpg_strerror (err));
       goto leave;
     }
 
@@ -933,6 +1009,8 @@ send_confirmation_request (server_ctx_t ctx,
   gpg_error_t err;
   estream_t body = NULL;
   estream_t bodyenc = NULL;
+  estream_t signeddata = NULL;
+  estream_t signature = NULL;
   mime_maker_t mime = NULL;
   char *from_buffer = NULL;
   const char *from;
@@ -958,12 +1036,16 @@ send_confirmation_request (server_ctx_t ctx,
       log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
       goto leave;
     }
-  /* It is fine to use 8 bit encoding because that is encrypted and
-   * only our client will see it.  */
-  es_fputs ("Content-Type: application/vnd.gnupg.wks\n"
-            "Content-Transfer-Encoding: 8bit\n"
-            "\n",
-            body);
+
+  if (!ctx->draft_version_2)
+    {
+      /* It is fine to use 8 bit encoding because that is encrypted and
+       * only our client will see it.  */
+      es_fputs ("Content-Type: application/vnd.gnupg.wks\n"
+                "Content-Transfer-Encoding: 8bit\n"
+                "\n",
+                body);
+    }
 
   es_fprintf (body, ("type: confirmation-request\n"
                      "sender: %s\n"
@@ -1002,35 +1084,117 @@ send_confirmation_request (server_ctx_t ctx,
         goto leave;
     }
 
-  err = mime_maker_add_header (mime, "Content-Type",
-                               "multipart/encrypted; "
-                               "protocol=\"application/pgp-encrypted\"");
-  if (err)
-    goto leave;
-  err = mime_maker_add_container (mime);
-  if (err)
-    goto leave;
+  if (!ctx->draft_version_2)
+    {
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "multipart/encrypted; "
+                                   "protocol=\"application/pgp-encrypted\"");
+      if (err)
+        goto leave;
+      err = mime_maker_add_container (mime);
+      if (err)
+        goto leave;
 
-  err = mime_maker_add_header (mime, "Content-Type",
-                               "application/pgp-encrypted");
-  if (err)
-    goto leave;
-  err = mime_maker_add_body (mime, "Version: 1\n");
-  if (err)
-    goto leave;
-  err = mime_maker_add_header (mime, "Content-Type",
-                               "application/octet-stream");
-  if (err)
-    goto leave;
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "application/pgp-encrypted");
+      if (err)
+        goto leave;
+      err = mime_maker_add_body (mime, "Version: 1\n");
+      if (err)
+        goto leave;
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "application/octet-stream");
+      if (err)
+        goto leave;
 
-  err = mime_maker_add_stream (mime, &bodyenc);
-  if (err)
-    goto leave;
+      err = mime_maker_add_stream (mime, &bodyenc);
+      if (err)
+        goto leave;
+
+    }
+  else
+    {
+      unsigned int partid;
+
+      /* FIXME: Add micalg.  */
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "multipart/signed; "
+                                   "protocol=\"application/pgp-signature\"");
+      if (err)
+        goto leave;
+      err = mime_maker_add_container (mime);
+      if (err)
+        goto leave;
+
+      err = mime_maker_add_header (mime, "Content-Type", "multipart/mixed");
+      if (err)
+        goto leave;
+
+      err = mime_maker_add_container (mime);
+      if (err)
+        goto leave;
+      partid = mime_maker_get_partid (mime);
+
+      err = mime_maker_add_header (mime, "Content-Type", "text/plain");
+      if (err)
+        goto leave;
+
+      err = mime_maker_add_body
+        (mime,
+         "This message has been send to confirm your request\n"
+         "to publish your key.  If you did not request a key\n"
+         "publication, simply ignore this message.\n"
+         "\n"
+         "Most mail software can handle this kind of message\n"
+         "automatically and thus you would not have seen this\n"
+         "message.  It seems that your client does not fully\n"
+         "support this service.  The web page\n"
+         "\n"
+         "       https://gnupg.org/faq/wkd.html\n"
+         "\n"
+         "explains how you can process this message anyway in\n"
+         "a few manual steps.\n");
+      if (err)
+        goto leave;
+
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "application/vnd.gnupg.wks");
+      if (err)
+        goto leave;
+
+      err = mime_maker_add_stream (mime, &bodyenc);
+      if (err)
+        goto leave;
+
+      err = mime_maker_end_container (mime);
+      if (err)
+        goto leave;
+
+      mime_maker_dump_tree (mime);
+      err = mime_maker_get_part (mime, partid, &signeddata);
+      if (err)
+        goto leave;
+
+      err = sign_stream (&signature, signeddata, from);
+      if (err)
+        goto leave;
+
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "application/pgp-signature");
+      if (err)
+        goto leave;
+
+      err = mime_maker_add_stream (mime, &signature);
+      if (err)
+        goto leave;
+    }
 
   err = wks_send_mime (mime);
 
  leave:
   mime_maker_release (mime);
+  es_fclose (signature);
+  es_fclose (signeddata);
   es_fclose (bodyenc);
   es_fclose (body);
   xfree (from_buffer);
@@ -1478,14 +1642,17 @@ process_confirmation_response (server_ctx_t ctx, estream_t msg)
 
 /* Called from the MIME receiver to process the plain text data in MSG .  */
 static gpg_error_t
-command_receive_cb (void *opaque, const char *mediatype, estream_t msg)
+command_receive_cb (void *opaque, const char *mediatype,
+                    estream_t msg, unsigned int flags)
 {
   gpg_error_t err;
   struct server_ctx_s ctx;
 
-  memset (&ctx, 0, sizeof ctx);
-
   (void)opaque;
+
+  memset (&ctx, 0, sizeof ctx);
+  if ((flags & WKS_RECEIVE_DRAFT2))
+    ctx.draft_version_2 = 1;
 
   if (!strcmp (mediatype, "application/pgp-keys"))
     err = process_new_key (&ctx, msg);

@@ -39,11 +39,17 @@ struct
 } opt;
 
 /* Debug values and macros.  */
+#define DBG_MIME_VALUE        1 /* Debug the MIME structure.  */
+#define DBG_PARSER_VALUE      2 /* Debug the Mail parser.  */
 #define DBG_CRYPTO_VALUE      4	/* Debug low level crypto.  */
 #define DBG_MEMORY_VALUE     32	/* Debug memory allocation stuff.  */
 #define DBG_MEMSTAT_VALUE   128	/* Show memory statistics.  */
 #define DBG_IPC_VALUE      1024 /* Debug assuan communication.  */
 #define DBG_EXTPROG_VALUE 16384 /* debug external program calls */
+
+#define DBG_MIME     (opt.debug & DBG_MIME_VALUE)
+#define DBG_PARSER   (opt.debug & DBG_PARSER_VALUE)
+#define DBG_CRYPTO   (opt.debug & DBG_CRYPTO_VALUE)
 
 
 /* The parsed policy flags. */
@@ -64,10 +70,15 @@ gpg_error_t wks_parse_policy (policy_flags_t flags, estream_t stream,
                               int ignore_unknown);
 
 /*-- wks-receive.c --*/
+
+/* Flag values for the receive callback.  */
+#define WKS_RECEIVE_DRAFT2 1
+
 gpg_error_t wks_receive (estream_t fp,
                          gpg_error_t (*result_cb)(void *opaque,
                                                   const char *mediatype,
-                                                  estream_t data),
+                                                  estream_t data,
+                                                  unsigned int flags),
                          void *cb_data);
 
 
