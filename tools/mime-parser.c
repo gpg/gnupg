@@ -64,6 +64,9 @@ struct mime_parser_context_s
   /* The callback to collect a signature.  */
   gpg_error_t (*collect_signature) (void *cookie, const char *data);
 
+  /* The RFC822 parser context is stored here during callbacks.  */
+  rfc822parse_t msg;
+
   /* Helper to convey error codes from user callbacks.  */
   gpg_error_t err;
 
@@ -188,6 +191,9 @@ parse_message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
   mime_parser_t ctx = opaque;
   const char *s;
   int rc = 0;
+
+  /* Make the RFC822 parser context availabale for callbacks.  */
+  ctx->msg = msg;
 
   if (ctx->debug)
     show_message_parser_event (event);
@@ -475,6 +481,8 @@ parse_message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
         }
     }
 
+  ctx->msg = NULL;
+
   return rc;
 }
 
@@ -596,6 +604,15 @@ mime_parser_set_collect_signature (mime_parser_t ctx,
                                                        const char *data))
 {
   ctx->collect_signature = fnc;
+}
+
+
+/* Return the RFC888 parser context.  This is only available inside a
+ * callback.  */
+rfc822parse_t
+mime_parser_rfc822parser (mime_parser_t ctx)
+{
+  return ctx->msg;
 }
 
 
