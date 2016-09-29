@@ -54,6 +54,7 @@ struct part_s
   size_t bodylen;       /* Length of BODY.   */
   char *body;           /* Malloced buffer with the body.  This is the
                          * non-encoded value.  */
+  unsigned int partid;   /* The part ID.  */
 };
 typedef struct part_s *part_t;
 
@@ -69,6 +70,8 @@ struct mime_maker_context_s
 
   part_t mail;                 /* The MIME tree.  */
   part_t current_part;
+
+  unsigned int partid_counter; /* Counter assign part ids.  */
 
   int boundary_counter;  /* Used to create easy to read boundaries.  */
   char *boundary_suffix; /* Random string used in the boundaries.  */
@@ -159,7 +162,7 @@ dump_parts (part_t part, int level)
 
   for (; part; part = part->next)
     {
-      log_debug ("%*s[part]\n", level*2, "");
+      log_debug ("%*s[part %u]\n", level*2, "", part->partid);
       for (hdr = part->headers; hdr; hdr = hdr->next)
         {
           log_debug ("%*s%s: %s\n", level*2, "", hdr->name, hdr->value);
@@ -300,6 +303,7 @@ add_header (part_t part, const char *name, const char *value)
   header_t hdr;
   size_t namelen;
   const char *s;
+  char *p;
 
   if (!value)
     {
@@ -336,6 +340,18 @@ add_header (part_t part, const char *name, const char *value)
       err = gpg_error_from_syserror ();
       xfree (hdr);
       return err;
+    }
+
+  for (p = hdr->value + strlen (hdr->value) - 1;
+       (p >= hdr->value
+        && (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r'));
+       p--)
+    *p = 0;
+  if (!(p >= hdr->value))
+    {
+      xfree (hdr->value);
+      xfree (hdr);
+      return gpg_error (GPG_ERR_INV_VALUE);  /* Only spaces.  */
     }
 
   if (part)
@@ -390,6 +406,7 @@ mime_maker_add_header (mime_maker_t ctx, const char *name, const char *value)
       part = xtrycalloc (1, sizeof *part);
       if (!part)
         return gpg_error_from_syserror ();
+      part->partid = ++ctx->partid_counter;
       part->headers_tail = &part->headers;
       log_assert (!ctx->current_part->next);
       ctx->current_part->next = part;
@@ -507,6 +524,7 @@ mime_maker_add_container (mime_maker_t ctx)
     }
 
   part = part->child;
+  part->partid = ++ctx->partid_counter;
   ctx->current_part = part;
 
   return 0;
@@ -532,31 +550,79 @@ mime_maker_end_container (mime_maker_t ctx)
 }
 
 
-/* Write the Content-Type header with the boundary value.  */
+/* Return the part-ID of the current part. */
+unsigned int
+mime_maker_get_partid (mime_maker_t ctx)
+{
+  if (ensure_part (ctx, NULL))
+    return 0; /* Ooops.  */
+  return ctx->current_part->partid;
+}
+
+
+/* Write a header and handle emdedded LFs.  If BOUNDARY is not NULL it
+ * is appended to the value.  */
+/* Fixme: Add automatic line wrapping.  */
 static gpg_error_t
-write_ct_with_boundary (mime_maker_t ctx,
-                        const char *value, const char *boundary)
+write_header (mime_maker_t ctx, const char *name, const char *value,
+              const char *boundary)
 {
   const char *s;
 
-  if (!*value)
-    return gpg_error (GPG_ERR_INV_VALUE);  /* Empty string.  */
+  es_fprintf (ctx->outfp, "%s: ", name);
 
-  for (s=value + strlen (value) - 1;
-       (s >= value
-        && (*s == ' ' || *s == '\t' || *s == '\n'));
-       s--)
-    ;
-  if (!(s >= value))
-    return gpg_error (GPG_ERR_INV_VALUE);  /* Only spaces.  */
+  /* Note that add_header made sure that VALUE does not end with a LF.
+   * Thus we can assume that a LF is followed by non-whitespace.  */
+  for (s = value; *s; s++)
+    {
+      if (*s == '\n')
+        es_fputs ("\r\n\t", ctx->outfp);
+      else
+        es_fputc (*s, ctx->outfp);
+    }
+  if (boundary)
+    {
+      if (s > value && s[-1] != ';')
+        es_fputc (';', ctx->outfp);
+      es_fprintf (ctx->outfp, "\r\n\tboundary=\"%s\"", boundary);
+    }
 
-  /* Fixme: We should use a dedicated header write functions which
-   * properly wraps the header.  */
-  es_fprintf (ctx->outfp, "Content-Type: %s%s\n\tboundary=\"%s\"\n",
-              value,
-              (*s == ';')? "":";",
-              boundary);
-  return 0;
+  es_fputs ("\r\n", ctx->outfp);
+
+  return es_ferror (ctx->outfp)? gpg_error_from_syserror () : 0;
+}
+
+
+static gpg_error_t
+write_gap (mime_maker_t ctx)
+{
+  es_fputs ("\r\n", ctx->outfp);
+  return es_ferror (ctx->outfp)? gpg_error_from_syserror () : 0;
+}
+
+
+static gpg_error_t
+write_boundary (mime_maker_t ctx, const char *boundary, int last)
+{
+  es_fprintf (ctx->outfp, "\r\n--%s%s\r\n", boundary, last?"--":"");
+  return es_ferror (ctx->outfp)? gpg_error_from_syserror () : 0;
+}
+
+
+/* Fixme: Apply required encoding.  */
+static gpg_error_t
+write_body (mime_maker_t ctx, const void *body, size_t bodylen)
+{
+  const char *s;
+
+  for (s = body; bodylen; s++, bodylen--)
+    {
+      if (*s == '\n' && !(s > (const char *)body && s[-1] == '\r'))
+        es_fputc ('\r', ctx->outfp);
+      es_fputc (*s, ctx->outfp);
+    }
+
+  return es_ferror (ctx->outfp)? gpg_error_from_syserror () : 0;
 }
 
 
@@ -572,33 +638,39 @@ write_tree (mime_maker_t ctx, part_t parent, part_t part)
       for (hdr = part->headers; hdr; hdr = hdr->next)
         {
           if (part->child && !strcmp (hdr->name, "Content-Type"))
-            write_ct_with_boundary (ctx, hdr->value, part->boundary);
+            err = write_header (ctx, hdr->name, hdr->value, part->boundary);
           else
-            es_fprintf (ctx->outfp, "%s: %s\n", hdr->name, hdr->value);
+            err = write_header (ctx, hdr->name, hdr->value, NULL);
+          if (err)
+            return err;
         }
-      es_fputc ('\n', ctx->outfp);
+      err = write_gap (ctx);
+      if (err)
+        return err;
       if (part->body)
         {
-          if (es_write (ctx->outfp, part->body, part->bodylen, NULL))
-            return gpg_error_from_syserror ();
+          err = write_body (ctx, part->body, part->bodylen);
+          if (err)
+            return err;
         }
       if (part->child)
         {
           log_assert (part->boundary);
-          if (es_fprintf (ctx->outfp, "\n--%s\n", part->boundary) < 0)
-            return gpg_error_from_syserror ();
-          err = write_tree (ctx, part, part->child);
+          err = write_boundary (ctx, part->boundary, 0);
+          if (!err)
+            err = write_tree (ctx, part, part->child);
+          if (!err)
+            err = write_boundary (ctx, part->boundary, 1);
           if (err)
             return err;
-          if (es_fprintf (ctx->outfp, "\n--%s--\n", part->boundary) < 0)
-            return gpg_error_from_syserror ();
         }
 
       if (part->next)
         {
           log_assert (parent && parent->boundary);
-          if (es_fprintf (ctx->outfp, "\n--%s\n", parent->boundary) < 0)
-            return gpg_error_from_syserror ();
+          err = write_boundary (ctx, parent->boundary, 0);
+          if (err)
+            return err;
         }
     }
   return 0;

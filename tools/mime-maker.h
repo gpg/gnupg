@@ -36,6 +36,7 @@ gpg_error_t mime_maker_add_body (mime_maker_t ctx, const char *string);
 gpg_error_t mime_maker_add_stream (mime_maker_t ctx, estream_t *stream_addr);
 gpg_error_t mime_maker_add_container (mime_maker_t ctx);
 gpg_error_t mime_maker_end_container (mime_maker_t ctx);
+unsigned int mime_maker_get_partid (mime_maker_t ctx);
 
 gpg_error_t mime_maker_make (mime_maker_t ctx, estream_t fp);
 
