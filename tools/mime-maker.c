@@ -48,7 +48,6 @@ struct part_s
 {
   struct part_s *next;  /* Next part in the current container.  */
   struct part_s *child; /* Child container.  */
-  char *mediatype;      /* Mediatype of the container (malloced). */
   char *boundary;       /* Malloced boundary string.  */
   header_t headers;     /* List of headers.  */
   header_t *headers_tail;/* Address of last header in chain.  */
@@ -114,7 +113,6 @@ release_parts (part_t part)
           part->headers = hdrnext;
         }
       release_parts (part->child);
-      xfree (part->mediatype);
       xfree (part->boundary);
       xfree (part->body);
       xfree (part);
@@ -166,7 +164,8 @@ dump_parts (part_t part, int level)
         {
           log_debug ("%*s%s: %s\n", level*2, "", hdr->name, hdr->value);
         }
-      log_debug ("%*s[body %zu bytes]\n", level*2, "", part->bodylen);
+      if (part->body)
+        log_debug ("%*s[body %zu bytes]\n", level*2, "", part->bodylen);
       if (part->child)
         {
           log_debug ("%*s[container]\n", level*2, "");
@@ -378,13 +377,13 @@ mime_maker_add_header (mime_maker_t ctx, const char *name, const char *value)
     return err;
   part = ctx->current_part;
 
-  if (part->body && !parent)
+  if ((part->body || part->child) && !parent)
     {
       /* We already have a body but no parent.  Adding another part is
        * thus not possible.  */
       return gpg_error (GPG_ERR_CONFLICT);
     }
-  if (part->body)
+  if (part->body || part->child)
     {
       /* We already have a body and there is a parent.  We now append
        * a new part to the current container.  */
@@ -474,37 +473,23 @@ mime_maker_add_stream (mime_maker_t ctx, estream_t *stream_addr)
 }
 
 
-/* Add a new MIME container.  The caller needs to provide the media
- * and media-subtype in MEDIATYPE.  If MEDIATYPE is NULL
- * "multipart/mixed" is assumed.  This function will then add a
- * Content-Type header with that media type and an approriate boundary
- * string to the parent part.  */
+/* Add a new MIME container.  A container can be used instead of a
+ * body.  */
 gpg_error_t
-mime_maker_add_container (mime_maker_t ctx, const char *mediatype)
+mime_maker_add_container (mime_maker_t ctx)
 {
   gpg_error_t err;
   part_t part;
-
-  if (!mediatype)
-    mediatype = "multipart/mixed";
 
   err = ensure_part (ctx, NULL);
   if (err)
     return err;
   part = ctx->current_part;
+
   if (part->body)
     return gpg_error (GPG_ERR_CONFLICT); /* There is already a body. */
-  if (part->child || part->mediatype || part->boundary)
+  if (part->child || part->boundary)
     return gpg_error (GPG_ERR_CONFLICT); /* There is already a container. */
-
-  /* If a content type has not yet been set, do it now.  The boundary
-   * will be added while writing the headers.  */
-  if (!have_header (ctx->mail, "Content-Type"))
-    {
-      err = add_header (ctx->mail, "Content-Type", mediatype);
-      if (err)
-        return err;
-    }
 
   /* Create a child node.  */
   part->child = xtrycalloc (1, sizeof *part->child);
@@ -512,29 +497,37 @@ mime_maker_add_container (mime_maker_t ctx, const char *mediatype)
     return gpg_error_from_syserror ();
   part->child->headers_tail = &part->child->headers;
 
-  part->mediatype = xtrystrdup (mediatype);
-  if (!part->mediatype)
-    {
-      err = gpg_error_from_syserror ();
-      xfree (part->child);
-      part->child = NULL;
-      return err;
-    }
-
   part->boundary = generate_boundary (ctx);
   if (!part->boundary)
     {
       err = gpg_error_from_syserror ();
       xfree (part->child);
       part->child = NULL;
-      xfree (part->mediatype);
-      part->mediatype = NULL;
       return err;
     }
 
   part = part->child;
   ctx->current_part = part;
 
+  return 0;
+}
+
+
+/* Finish the current container.  */
+gpg_error_t
+mime_maker_end_container (mime_maker_t ctx)
+{
+  gpg_error_t err;
+  part_t parent;
+
+  err = ensure_part (ctx, &parent);
+  if (err)
+    return err;
+  if (!parent)
+    return gpg_error (GPG_ERR_CONFLICT); /* No container.  */
+  while (parent->next)
+    parent = parent->next;
+  ctx->current_part = parent;
   return 0;
 }
 
@@ -647,7 +640,7 @@ add_missing_headers (mime_maker_t ctx)
 }
 
 
-/* Create message from the tree MIME and write it to FP.  Noet that
+/* Create message from the tree MIME and write it to FP.  Note that
  * the output uses only a LF and a later called sendmail(1) is
  * expected to convert them to network line endings.  */
 gpg_error_t

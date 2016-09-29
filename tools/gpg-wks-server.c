@@ -1007,7 +1007,7 @@ send_confirmation_request (server_ctx_t ctx,
                                "protocol=\"application/pgp-encrypted\"");
   if (err)
     goto leave;
-  err = mime_maker_add_container (mime, "multipart/encrypted");
+  err = mime_maker_add_container (mime);
   if (err)
     goto leave;
 
@@ -1214,7 +1214,7 @@ send_congratulation_message (const char *mbox, const char *keyfile)
                                "protocol=\"application/pgp-encrypted\"");
   if (err)
     goto leave;
-  err = mime_maker_add_container (mime, "multipart/encrypted");
+  err = mime_maker_add_container (mime);
   if (err)
     goto leave;
 
