@@ -202,6 +202,22 @@ find_parent (part_t root, part_t needle)
   return NULL;
 }
 
+/* Find the part node from the PARTID.  */
+static part_t
+find_part (part_t root, unsigned int partid)
+{
+  part_t node, n;
+
+  for (node = root->child; node; node = node->next)
+    {
+      if (node->partid == partid)
+        return root;
+      if ((n = find_part (node, partid)))
+        return n;
+    }
+  return NULL;
+}
+
 
 /* Create a boundary string.  Outr codes is aware of the general
  * structure of that string (gebins with "=-=") so that
@@ -728,5 +744,56 @@ mime_maker_make (mime_maker_t ctx, estream_t fp)
   err = write_tree (ctx, NULL, ctx->mail);
 
   ctx->outfp = NULL;
+  return err;
+}
+
+
+/* Create a stream object from the MIME part identified by PARTID and
+ * store it at R_STREAM.  If PARTID identifies a container the entire
+ * tree is returned. Using that function may read stream objects
+ * which have been added as MIME bodies.  The caller must close the
+ * stream object. */
+gpg_error_t
+mime_maker_get_part (mime_maker_t ctx, unsigned int partid, estream_t *r_stream)
+{
+  gpg_error_t err;
+  part_t part;
+  estream_t fp;
+
+  *r_stream = NULL;
+
+  /* When the entire tree is requested, we make sure that all missing
+   * headers are applied.  We don't do that if only a part is
+   * requested because the additional headers (like Date:) will only
+   * be added to part 0 headers anyway. */
+  if (!partid)
+    {
+       err = add_missing_headers (ctx);
+       if (err)
+         return err;
+       part = ctx->mail;
+    }
+  else
+    part = find_part (ctx->mail, partid);
+
+  /* For now we use a memory stream object; however it would also be
+   * possible to create an object created on the fly while the caller
+   * is reading the returned stream.  */
+  fp = es_fopenmem (0, "w+b");
+  if (!fp)
+    return gpg_error_from_syserror ();
+
+  ctx->outfp = fp;
+  err = write_tree (ctx, NULL, part);
+  ctx->outfp = NULL;
+
+  if (!err)
+    {
+      es_rewind (fp);
+      *r_stream = fp;
+    }
+  else
+    es_fclose (fp);
+
   return err;
 }
