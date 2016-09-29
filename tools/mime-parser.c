@@ -616,6 +616,35 @@ mime_parser_rfc822parser (mime_parser_t ctx)
 }
 
 
+/* Helper for mime_parser_parse.  */
+static gpg_error_t
+process_part_data (mime_parser_t ctx, char *line, size_t *length)
+{
+  gpg_error_t err;
+  size_t nbytes;
+
+  if (!ctx->want_part)
+    return 0;
+  if (!ctx->part_data)
+    return 0;
+
+  if (ctx->decode_part == 1)
+    {
+      *length = qp_decode (line, *length, NULL);
+    }
+  else if (ctx->decode_part == 2)
+    {
+      log_assert (ctx->b64state);
+      err = b64dec_proc (ctx->b64state, line, *length, &nbytes);
+      if (err)
+        return err;
+      *length = nbytes;
+    }
+
+  return ctx->part_data (ctx->cookie, line, *length);
+}
+
+
 /* Read and parse a message from FP and call the appropriate
  * callbacks.  */
 gpg_error_t
@@ -624,7 +653,7 @@ mime_parser_parse (mime_parser_t ctx, estream_t fp)
   gpg_error_t err;
   rfc822parse_t msg = NULL;
   unsigned int lineno = 0;
-  size_t length, nbytes;
+  size_t length;
   char *line;
 
   line = ctx->line;
@@ -741,6 +770,10 @@ mime_parser_parse (mime_parser_t ctx, estream_t fp)
               ctx->collect_signeddata (ctx->cookie, line);
             }
           ctx->delay_hashing = 1;
+
+          err = process_part_data (ctx, line, &length);
+          if (err)
+            goto leave;
         }
       else if (ctx->pgpmime == PGPMIME_IN_SIGNATURE)
         {
@@ -756,26 +789,11 @@ mime_parser_parse (mime_parser_t ctx, estream_t fp)
           if (ctx->collect_signeddata)
             ctx->collect_signature (ctx->cookie, NULL);
         }
-      else if (ctx->want_part)
+      else
         {
-          if (ctx->part_data)
-            {
-              if (ctx->decode_part == 1)
-                {
-                  length = qp_decode (line, length, NULL);
-                }
-              else if (ctx->decode_part == 2)
-                {
-                  log_assert (ctx->b64state);
-                  err = b64dec_proc (ctx->b64state, line, length, &nbytes);
-                  if (err)
-                    goto leave;
-                  length = nbytes;
-                }
-              err = ctx->part_data (ctx->cookie, line, length);
-              if (err)
-                goto leave;
-            }
+          err = process_part_data (ctx, line, &length);
+          if (err)
+            goto leave;
         }
     }
 
