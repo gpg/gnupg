@@ -164,6 +164,7 @@ verify_signature (receive_ctx_t ctx)
     ccparray_put (&ccp, "--verbose");
   ccparray_put (&ccp, "--enable-special-filenames");
   ccparray_put (&ccp, "--status-fd=2");
+  ccparray_put (&ccp, "--always-trust"); /* To avoid trustdb checks.  */
   ccparray_put (&ccp, "--verify");
   ccparray_put (&ccp, "--");
   ccparray_put (&ccp, "-&@INEXTRA@");
