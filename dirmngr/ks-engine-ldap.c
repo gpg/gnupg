@@ -519,6 +519,7 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
       /* XXX: We need an option to determine whether to abort if the
 	 certificate is bad or not.  Right now we conservatively
 	 default to checking the certificate and aborting.  */
+#ifndef HAVE_W32_SYSTEM
       int check_cert = LDAP_OPT_X_TLS_HARD; /* LDAP_OPT_X_TLS_NEVER */
 
       err = ldap_set_option (ldap_conn,
@@ -528,8 +529,21 @@ my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 	  log_error ("Failed to set TLS option on LDAP connection.\n");
 	  goto out;
 	}
+#else
+      /* On Windows, the certificates are checked by default.  If the
+	 option to disable checking mentioned above is ever
+	 implemented, the way to do that on Windows is to install a
+	 callback routine using ldap_set_option (..,
+	 LDAP_OPT_SERVER_CERTIFICATE, ..); */
+#endif
 
-      err = ldap_start_tls_s (ldap_conn, NULL, NULL);
+      err = ldap_start_tls_s (ldap_conn,
+#ifdef HAVE_W32_SYSTEM
+			      /* ServerReturnValue, result */
+			      NULL, NULL,
+#endif
+			      /* ServerControls, ClientControls */
+			      NULL, NULL);
       if (err)
 	{
 	  log_error ("Failed to connect to LDAP server with TLS.\n");
