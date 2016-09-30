@@ -90,15 +90,9 @@ else
 doc =
 endif
 
-if RUN_TESTS
-tests = tests
-else
-tests =
-endif
-
 SUBDIRS = m4 common kbx \
           ${gpg} ${sm} ${agent} ${scd} ${g13} ${dirmngr} \
-          ${tools} po ${doc} ${tests}
+          ${tools} po ${doc} tests
 
 dist_doc_DATA = README
 

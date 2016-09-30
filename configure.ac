@@ -626,7 +626,6 @@ have_dosish_system=no
 have_w32_system=no
 have_w32ce_system=no
 have_android_system=no
-run_tests=yes
 use_simple_gettext=no
 use_ldapwrapper=yes
 mmap_needed=yes
@@ -643,7 +642,6 @@ case "${host}" in
         have_dosish_system=yes
         have_w32_system=yes
         require_iconv=no
-        run_tests=no
         use_ldapwrapper=no  # Fixme: Do this only for CE.
         case "${host}" in
           *-mingw32ce*)
@@ -702,7 +700,6 @@ case "${host}" in
         # Android is fully utf-8 and we do not want to use iconv to
         # keeps things simple
         require_iconv=no
-        run_tests=no
         ;;
     *)
        ;;
@@ -732,11 +729,6 @@ if test "$have_android_system" = yes; then
    AC_DEFINE(HAVE_ANDROID_SYSTEM,1, [Defined if we build for an Android system])
 fi
 AM_CONDITIONAL(HAVE_ANDROID_SYSTEM, test "$have_android_system" = yes)
-
-if test "$run_tests" = yes; then
-   AC_DEFINE(RUN_TESTS,1, [Defined if we should run the tests])
-fi
-AM_CONDITIONAL(RUN_TESTS, test "$run_tests" = yes)
 
 
 # (These need to go after AC_PROG_CC so that $EXEEXT is defined)
@@ -1692,9 +1684,6 @@ AM_CONDITIONAL(BUILD_WKS_TOOLS,   test "$build_wks_tools" = "yes")
 AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
 AM_CONDITIONAL(NO_TRUST_MODELS,     test "$use_trust_models" = no)
 AM_CONDITIONAL(USE_TOFU,            test "$use_tofu" = yes)
-
-AM_CONDITIONAL(RUN_GPG_TESTS,
-               test x$cross_compiling = xno -a "$build_gpg" = yes )
 
 #
 # Set some defines for use gpgconf.

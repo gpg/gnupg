@@ -18,14 +18,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-
-if RUN_GPG_TESTS
-openpgp = openpgp
-else
-openpgp =
-endif
-
-SUBDIRS = gpgscm ${openpgp} . migrations pkits
+SUBDIRS = gpgscm openpgp migrations pkits .
 
 GPGSM = ../sm/gpgsm
 
@@ -66,7 +59,9 @@ CLEANFILES = inittests.stamp x y y z out err \
 
 DISTCLEANFILES = pubring.kbx~ random_seed
 
+if !HAVE_W32_SYSTEM
 noinst_PROGRAMS = asschk
+endif
 
 asschk_SOURCES = asschk.c
 
