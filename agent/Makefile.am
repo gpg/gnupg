@@ -64,7 +64,8 @@ pwquery_libs = ../common/libsimple-pwquery.a
 endif
 
 
-gpg_agent_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS)
+gpg_agent_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS) \
+		$(INCICONV)
 gpg_agent_LDADD = $(commonpth_libs) \
                 $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
 	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
@@ -76,7 +77,8 @@ gpg_protect_tool_SOURCES = \
 	protect-tool.c \
 	protect.c cvt-openpgp.c
 
-gpg_protect_tool_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS)
+gpg_protect_tool_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) \
+	$(INCICONV)
 gpg_protect_tool_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) \
          $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 

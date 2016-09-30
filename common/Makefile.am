@@ -177,7 +177,7 @@ endif
 t_extra_src = t-support.h
 
 t_common_cflags = $(KSBA_CFLAGS) $(LIBGCRYPT_CFLAGS) \
-                  $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
+                  $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
 t_common_ldadd = libcommon.a \
                  $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 	         $(LIBINTL) $(LIBICONV)

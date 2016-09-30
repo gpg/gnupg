@@ -131,9 +131,10 @@ gpg_connect_agent_LDADD = ../common/libgpgrl.a $(common_libs) \
 
 if !DISABLE_REGEX
 gpg_check_pattern_SOURCES = gpg-check-pattern.c
-gpg_check_pattern_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
+gpg_check_pattern_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_check_pattern_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
-                          $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS)
+			  $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS) \
+			  $(LIBICONV)
 endif
 
 gpgtar_SOURCES = \
@@ -155,8 +156,9 @@ gpg_wks_server_SOURCES = \
 	mime-maker.c  mime-maker.h  \
 	send-mail.c   send-mail.h
 
-gpg_wks_server_CFLAGS = $(GPG_ERROR_CFLAGS)
-gpg_wks_server_LDADD = $(libcommon) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
+gpg_wks_server_CFLAGS = $(GPG_ERROR_CFLAGS) $(INCICONV)
+gpg_wks_server_LDADD = $(libcommon) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
+		       $(LIBICONV)
 
 gpg_wks_client_SOURCES = \
 	gpg-wks-client.c \
@@ -169,9 +171,10 @@ gpg_wks_client_SOURCES = \
 	send-mail.c   send-mail.h   \
 	call-dirmngr.c call-dirmngr.h
 
-gpg_wks_client_CFLAGS = $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
+gpg_wks_client_CFLAGS = $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_wks_client_LDADD = $(libcommon) \
-	               $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
+		       $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
+		       $(LIBICONV)
 
 
 # Make sure that all libs are build before we use them.  This is
