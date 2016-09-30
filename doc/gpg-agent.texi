@@ -537,8 +537,9 @@ pinentry to pop up at the @code{tty} or display you started the agent.
 @anchor{option --extra-socket}
 @item --extra-socket @var{name}
 @opindex extra-socket
-The extra socket is always created, you may use this option to change
-the name of the socket.
+The extra socket is created by default, you may use this option to
+change the name of the socket.  To disable the creation of the socket
+use ``none'' or ``/dev/null'' for @var{name}.
 
 Also listen on native gpg-agent connections on the given socket.  The
 intended use for this extra socket is to setup a Unix domain socket

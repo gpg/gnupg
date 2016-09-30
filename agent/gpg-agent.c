@@ -1050,11 +1050,27 @@ main (int argc, char **argv )
       opt.extra_socket = 1;  /* (1 = points into r/o section)  */
       socket_name_extra = GPG_AGENT_EXTRA_SOCK_NAME;
     }
+  else if (socket_name_extra
+           && (!strcmp (socket_name_extra, "none")
+               || !strcmp (socket_name_extra, "/dev/null")))
+    {
+      /* User requested not to create this socket.  */
+      opt.extra_socket = 0;
+      socket_name_extra = NULL;
+    }
 
   if (! opt.browser_socket)
     {
       opt.browser_socket = 1;  /* (1 = points into r/o section)  */
       socket_name_browser = GPG_AGENT_BROWSER_SOCK_NAME;
+    }
+  else if (socket_name_browser
+           && (!strcmp (socket_name_browser, "none")
+               || !strcmp (socket_name_browser, "/dev/null")))
+    {
+      /* User requested not to create this socket.  */
+      opt.browser_socket = 0;
+      socket_name_browser = NULL;
     }
 
   set_debug ();
