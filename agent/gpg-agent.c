@@ -1047,8 +1047,7 @@ main (int argc, char **argv )
 
   if (! opt.extra_socket)
     {
-      opt.extra_socket = 1;  /* (1 = points into r/o section)  */
-      socket_name_extra = GPG_AGENT_EXTRA_SOCK_NAME;
+      opt.extra_socket = 1;
     }
   else if (socket_name_extra
            && (!strcmp (socket_name_extra, "none")
@@ -1061,8 +1060,7 @@ main (int argc, char **argv )
 
   if (! opt.browser_socket)
     {
-      opt.browser_socket = 1;  /* (1 = points into r/o section)  */
-      socket_name_browser = GPG_AGENT_BROWSER_SOCK_NAME;
+      opt.browser_socket = 1;
     }
   else if (socket_name_browser
            && (!strcmp (socket_name_browser, "none")
@@ -1253,7 +1251,11 @@ main (int argc, char **argv )
 
       if (opt.extra_socket)
         {
-          socket_name_extra = create_socket_name (socket_name_extra, 0);
+          if (socket_name_extra)
+            socket_name_extra = create_socket_name (socket_name_extra, 0);
+          else
+            socket_name_extra = create_socket_name
+              /**/                (GPG_AGENT_EXTRA_SOCK_NAME, 1);
           opt.extra_socket = 2; /* Indicate that it has been malloced.  */
           fd_extra = create_server_socket (socket_name_extra, 0, 0,
                                            &redir_socket_name_extra,
@@ -1262,7 +1264,11 @@ main (int argc, char **argv )
 
       if (opt.browser_socket)
         {
-          socket_name_browser = create_socket_name (socket_name_browser, 0);
+          if (socket_name_browser)
+            socket_name_browser = create_socket_name (socket_name_browser, 0);
+          else
+            socket_name_browser= create_socket_name
+              /**/                 (GPG_AGENT_BROWSER_SOCK_NAME, 1);
           opt.browser_socket = 2; /* Indicate that it has been malloced.  */
           fd_browser = create_server_socket (socket_name_browser, 0, 0,
                                              &redir_socket_name_browser,

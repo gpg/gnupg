@@ -166,6 +166,8 @@ list_dirs (estream_t fp, char **names)
     { "socketdir",          gnupg_socketdir,  NULL },
     { "dirmngr-socket",     dirmngr_socket_name, NULL,},
     { "agent-ssh-socket",   gnupg_socketdir,  GPG_AGENT_SSH_SOCK_NAME },
+    { "agent-extra-socket", gnupg_socketdir,  GPG_AGENT_EXTRA_SOCK_NAME },
+    { "agent-browser-socket",gnupg_socketdir, GPG_AGENT_BROWSER_SOCK_NAME },
     { "agent-socket",       gnupg_socketdir,  GPG_AGENT_SOCK_NAME },
     { "homedir",            gnupg_homedir,    NULL }
   };
