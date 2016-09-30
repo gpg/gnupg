@@ -189,69 +189,6 @@ default_inq_cb (void *opaque, const char *line)
 }
 
 
-/* Check whether gnome-keyring hijacked the gpg-agent.  */
-static void
-check_hijacking (assuan_context_t ctx)
-{
-  membuf_t mb;
-  char *string;
-
-  init_membuf (&mb, 64);
-
-  /* AGENT_ID is a command implemented by gnome-keyring-daemon.  It
-     does not return any data but an OK line with a remark.  */
-  if (assuan_transact (ctx, "AGENT_ID",
-                       put_membuf_cb, &mb, NULL, NULL, NULL, NULL))
-    {
-      xfree (get_membuf (&mb, NULL));
-      return; /* Error - Probably not hijacked.  */
-    }
-  put_membuf (&mb, "", 1);
-  string = get_membuf (&mb, NULL);
-  if (!string || !*string)
-    {
-      /* Definitely hijacked - show a warning prompt.  */
-      static int shown;
-      const char warn1[] =
-        "The GNOME keyring manager hijacked the GnuPG agent.";
-      const char warn2[] =
-        "GnuPG will not work properly - please configure that "
-        "tool to not interfere with the GnuPG system!";
-      log_info ("WARNING: %s\n", warn1);
-      log_info ("WARNING: %s\n", warn2);
-      /*                 (GPG_ERR_SOURCRE_GPG, GPG_ERR_NO_AGENT) */
-      write_status_text (STATUS_ERROR, "check_hijacking 33554509");
-      xfree (string);
-      string = strconcat (warn1, "\n\n", warn2, NULL);
-      if (string && !shown && !opt.batch)
-        {
-          /* NB: The Pinentry based prompt will only work if a
-             gnome-keyring manager passes invalid commands on to the
-             original gpg-agent.  */
-          char *cmd, *cmdargs;
-
-          cmdargs = percent_plus_escape (string);
-          cmd = strconcat ("GET_CONFIRMATION ", cmdargs, NULL);
-          xfree (cmdargs);
-          if (cmd)
-            {
-              struct default_inq_parm_s dfltparm;
-
-              memset (&dfltparm, 0, sizeof dfltparm);
-              dfltparm.ctx = ctx;
-              assuan_transact (ctx, cmd, NULL, NULL,
-                               default_inq_cb, &dfltparm,
-                               NULL, NULL);
-              xfree (cmd);
-              shown = 1;
-            }
-        }
-    }
-  xfree (string);
-}
-
-
-
 /* Print a warning if the server's version number is less than our
    version number.  Returns an error code on a connection problem.  */
 static gpg_error_t
@@ -346,8 +283,6 @@ start_agent (ctrl_t ctrl, int for_card)
                   write_status_error ("set_pinentry_mode", rc);
                 }
             }
-
-          check_hijacking (agent_ctx);
         }
     }
 
