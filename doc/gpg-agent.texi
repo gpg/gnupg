@@ -164,12 +164,14 @@ shell, gpg-agent terminates within a few seconds.
 Run in the foreground, sending logs by default to stderr, and
 listening on provided file descriptors, which must already be bound to
 listening sockets.  This command is useful when running under systemd
-or other similar process supervision schemes.
+or other similar process supervision schemes.  This option is not
+supported on Windows.
 
 In --supervised mode, different file descriptors can be provided for
 use as different socket types (e.g. ssh, extra) as long as they are
-identified in the environment variable $LISTEN_FDNAMES (see
-sd_listen_fds(3) for more information on this convention).
+identified in the environment variable @code{LISTEN_FDNAMES} (see
+sd_listen_fds(3) on some Linux distributions for more information on
+this convention).
 @end table
 
 @mansect options

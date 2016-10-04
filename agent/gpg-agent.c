@@ -576,6 +576,208 @@ remove_socket (char *name, char *redir_name)
 }
 
 
+/* Return a malloc'ed string that is the path to the passed
+ * unix-domain socket (or return NULL if this is not a valid
+ * unix-domain socket).  We use a plain int here because it is only
+ * used on Linux.
+ *
+ * FIXME: This function needs to be moved to libassuan.  */
+#ifndef HAVE_W32_SYSTEM
+static char *
+get_socket_name (int fd)
+{
+  struct sockaddr_un un;
+  socklen_t len = sizeof(un);
+  char *name = NULL;
+
+  if (getsockname (fd, (struct sockaddr*)&un, &len) != 0)
+    log_error ("could not getsockname(%d): %s\n", fd,
+               gpg_strerror (gpg_error_from_syserror ()));
+  else if (un.sun_family != AF_UNIX)
+    log_error ("file descriptor %d is not a unix-domain socket\n", fd);
+  else if (len <= offsetof (struct sockaddr_un, sun_path))
+    log_error ("socket name not present for file descriptor %d\n", fd);
+  else if (len > sizeof(un))
+    log_error ("socket name for file descriptor %d was truncated "
+               "(passed %lu bytes, wanted %u)\n", fd, sizeof(un), len);
+  else
+    {
+      log_debug ("file descriptor %d has path %s (%lu octets)\n", fd,
+                 un.sun_path, len - offsetof (struct sockaddr_un, sun_path));
+      name = xtrymalloc (len - offsetof (struct sockaddr_un, sun_path) + 1);
+      if (!name)
+        log_error ("failed to allocate memory for name of fd %d: %s\n",
+                   fd, gpg_strerror (gpg_error_from_syserror ()));
+      else
+        {
+          memcpy (name, un.sun_path, len);
+          name[len] = 0;
+        }
+    }
+
+  return name;
+}
+#endif /*!HAVE_W32_SYSTEM*/
+
+
+/* Discover which inherited file descriptors correspond to which
+ * services/sockets offered by gpg-agent, using the LISTEN_FDS and
+ * LISTEN_FDNAMES convention.  The understood labels are "ssh",
+ * "extra", and "browser".  "std" or other labels will be interpreted
+ * as the standard socket.
+ *
+ * This function is designed to log errors when the expected file
+ * descriptors don't make sense, but to do its best to continue to
+ * work even in the face of minor misconfigurations.
+ *
+ * For more information on the LISTEN_FDS convention, see
+ * sd_listen_fds(3) on certain Linux distributions.
+ */
+#ifndef HAVE_W32_SYSTEM
+static void
+map_supervised_sockets (gnupg_fd_t *r_fd,
+                        gnupg_fd_t *r_fd_extra,
+                        gnupg_fd_t *r_fd_browser,
+                        gnupg_fd_t *r_fd_ssh)
+{
+  struct {
+    const char *label;
+    int **fdaddr;
+    char **nameaddr;
+  } tbl[] = {
+    { "ssh",     &r_fd_ssh,     &socket_name_ssh },
+    { "browser", &r_fd_browser, &socket_name_browser },
+    { "extra",   &r_fd_extra,   &socket_name_extra },
+    { "std",     &r_fd,         &socket_name }  /* (Must be the last item.)  */
+  };
+  const char *envvar;
+  char **fdnames;
+  int nfdnames;
+  int fd_count;
+
+  *r_fd = *r_fd_extra = *r_fd_browser = *r_fd_ssh = -1;
+
+  /* Print a warning if LISTEN_PID does not match outr pid.  */
+  envvar = getenv ("LISTEN_PID");
+  if (!envvar)
+    log_error ("no LISTEN_PID environment variable found in "
+               "--supervised mode (ignoring)\n");
+  else if (strtoul (envvar, NULL, 10) != (unsigned long)getpid ())
+    log_error ("environment variable LISTEN_PID (%lu) does not match"
+               " our pid (%lu) in --supervised mode (ignoring)\n",
+               (unsigned long)strtoul (envvar, NULL, 10),
+               (unsigned long)getpid ());
+
+  /* Parse LISTEN_FDNAMES into the array FDNAMES.  */
+  envvar = getenv ("LISTEN_FDNAMES");
+  if (envvar)
+    {
+      fdnames = strtokenize (envvar, ":");
+      if (!fdnames)
+        {
+          log_error ("strtokenize failed: %s\n",
+                     gpg_strerror (gpg_error_from_syserror ()));
+          agent_exit (1);
+        }
+      for (nfdnames=0; fdnames[nfdnames]; nfdnames++)
+        ;
+    }
+  else
+    {
+      fdnames = NULL;
+      nfdnames = 0;
+    }
+
+  /* Parse LISTEN_FDS into fd_count or provide a replacement.  */
+  envvar = getenv ("LISTEN_FDS");
+  if (envvar)
+    fd_count = atoi (envvar);
+  else if (fdnames)
+    {
+      log_error ("no LISTEN_FDS environment variable found in --supervised"
+                 " mode (relying on LISTEN_FDNAMES instead)\n");
+      fd_count = nfdnames;
+    }
+  else
+    {
+      log_error ("no LISTEN_FDS or LISTEN_FDNAMES environment variables "
+                "found in --supervised mode"
+                " (assuming 1 active descriptor)\n");
+      fd_count = 1;
+    }
+
+  if (fd_count < 1)
+    {
+      log_error ("--supervised mode expects at least one file descriptor"
+                 " (was told %d, carrying on as though it were 1)\n",
+                 fd_count);
+      fd_count = 1;
+    }
+
+  /* Assign the descriptors to the return values.  */
+  if (!fdnames)
+    {
+      if (fd_count != 1)
+        log_error ("no LISTEN_FDNAMES and LISTEN_FDS (%d) != 1"
+                   " in --supervised mode."
+                   " (ignoring all sockets but the first one)\n",
+                   fd_count);
+      *r_fd = 3;
+    }
+  else if (fd_count != nfdnames)
+    {
+      log_fatal ("number of items in LISTEN_FDNAMES (%d) does not match "
+                 "LISTEN_FDS (%d) in --supervised mode\n",
+                 nfdnames, fd_count);
+    }
+  else
+    {
+      int i, j, fd;
+      char *name;
+
+      for (i = 0; i < nfdnames; i++)
+        {
+          for (j = 0; j < DIM (tbl); j++)
+            {
+              log_debug ("i=%d j=%d fdname=%s check=%s\n", i, j,
+                         fdnames[i], tbl[j].label);
+              if (!strcmp (fdnames[i], tbl[j].label) || j == DIM(tbl)-1)
+                {
+                  if (**tbl[j].fdaddr == -1)
+                    {
+                      fd = 3 + i;
+                      name = get_socket_name (fd);
+                      if (name)
+                        {
+                          **tbl[j].fdaddr = fd;
+                          *tbl[j].nameaddr = name;
+                          log_info ("using fd %d for %s socket (%s)\n",
+                                    fd, tbl[j].label, name);
+                        }
+                      else
+                        {
+                          log_error ("cannot listen on fd %d for %s socket\n",
+                                     fd, tbl[j].label);
+                          close (i);
+                        }
+                    }
+                  else
+                    {
+                      log_error ("cannot listen on more than one %s socket\n",
+                                 tbl[j].label);
+                      close (i);
+                    }
+                  break;
+                }
+            }
+        }
+    }
+
+  xfree (fdnames);
+}
+#endif /*!HAVE_W32_SYSTEM*/
+
+
 /* Cleanup code for this program.  This is either called has an atexit
    handler or directly.  */
 static void
@@ -753,180 +955,6 @@ initialize_modules (void)
   initialize_module_call_pinentry ();
   initialize_module_call_scd ();
   initialize_module_trustlist ();
-}
-
-
-/* return a malloc'ed string that is the path to the passed unix-domain socket
-   (or return NULL if this is not a valid unix-domain socket) */
-static char *
-get_socket_path (gnupg_fd_t fd)
-{
-#ifdef HAVE_W32_SYSTEM
-  return NULL;
-#else
-  struct sockaddr_un un;
-  socklen_t len = sizeof(un);
-  char *ret = NULL;
-
-  if (fd == GNUPG_INVALID_FD)
-    return NULL;
-
-  if (getsockname (fd, (struct sockaddr*)&un, &len) != 0)
-    log_error ("could not getsockname(%d) -- error %d (%s)\n", fd,
-               errno, strerror(errno));
-  else if (un.sun_family != AF_UNIX)
-    log_error ("file descriptor %d is not a unix-domain socket\n", fd);
-  else if (len <= offsetof (struct sockaddr_un, sun_path))
-    log_error ("socket path not present for file descriptor %d\n", fd);
-  else if (len > sizeof(un))
-    log_error ("socket path for file descriptor %d was truncated "
-               "(passed %lu bytes, wanted %u)\n", fd, sizeof(un), len);
-  else
-    {
-      log_debug ("file descriptor %d has path %s (%lu octets)\n", fd,
-                 un.sun_path, len - offsetof (struct sockaddr_un, sun_path));
-      ret = malloc(len - offsetof (struct sockaddr_un, sun_path));
-      if (ret == NULL)
-        log_error ("failed to allocate memory for path to file "
-                   "descriptor %d\n", fd);
-      else
-        memcpy (ret, un.sun_path, len);
-    }
-  return ret;
-#endif /* HAVE_W32_SYSTEM */
-}
-
-
-/* Discover which inherited file descriptors correspond to which
-   services/sockets offered by gpg-agent, using the LISTEN_FDS and
-   LISTEN_FDNAMES convention.  The understood labels are "ssh",
-   "extra", and "browser".  Any other label will be interpreted as the
-   standard socket.
-
-   This function is designed to log errors when the expected file
-   descriptors don't make sense, but to do its best to continue to
-   work even in the face of minor misconfigurations.
-
-   For more information on the LISTEN_FDS convention, see
-   sd_listen_fds(3).
- */
-static void
-map_supervised_sockets (gnupg_fd_t *fd,
-                        gnupg_fd_t *fd_extra,
-                        gnupg_fd_t *fd_browser,
-                        gnupg_fd_t *fd_ssh)
-{
-  const char *listen_pid = NULL;
-  const char *listen_fds = NULL;
-  const char *listen_fdnames = NULL;
-  int listen_fd_count = -1;
-  int listen_fdnames_colons = 0;
-  const char *fdnamep = NULL;
-
-  listen_pid = getenv ("LISTEN_PID");
-  listen_fds = getenv ("LISTEN_FDS");
-  listen_fdnames = getenv ("LISTEN_FDNAMES");
-
-  if (!listen_pid)
-    log_error ("no $LISTEN_PID environment variable found in "
-               "--supervised mode (ignoring).\n");
-  else if (atoi (listen_pid) != getpid ())
-    log_error ("$LISTEN_PID (%d) does not match process ID (%d) "
-               "in --supervised mode (ignoring).\n",
-               atoi (listen_pid), getpid ());
-  else
-    log_debug ("$LISTEN_PID matches process ID (%d)\n",
-               getpid());
-
-  if (listen_fdnames)
-    for (fdnamep = listen_fdnames; *fdnamep; fdnamep++)
-      if (*fdnamep == ':')
-        listen_fdnames_colons++;
-  log_debug ("%d colon(s) in $LISTEN_FDNAMES: (%s)\n", listen_fdnames_colons, listen_fdnames);
-
-  if (!listen_fds)
-    {
-      if (!listen_fdnames)
-        {
-          log_error ("no LISTEN_FDS or LISTEN_FDNAMES environment variables "
-                     "found in --supervised mode (assuming 1 active descriptor).\n");
-          listen_fd_count = 1;
-        }
-      else
-        {
-          log_error ("no LISTEN_FDS environment variable found in --supervised "
-                     " mode (relying on colons in LISTEN_FDNAMES instead)\n");
-          listen_fd_count = listen_fdnames_colons + 1;
-        }
-    }
-  else
-    listen_fd_count = atoi (listen_fds);
-
-  if (listen_fd_count < 1)
-    {
-      log_error ("--supervised mode expects at least one file descriptor (was told %d) "
-                 "(carrying on as though it were 1)\n", listen_fd_count);
-      listen_fd_count = 1;
-    }
-
-  if (!listen_fdnames)
-    {
-      if (listen_fd_count != 1)
-        log_error ("no LISTEN_FDNAMES and LISTEN_FDS (%d) != 1 in --supervised mode. "
-                   "(ignoring all sockets but the first one)\n", listen_fd_count);
-      *fd = 3;
-    }
-  else
-    {
-      int i;
-      if (listen_fd_count != listen_fdnames_colons + 1)
-        {
-          log_fatal ("number of items in LISTEN_FDNAMES (%d) does not match "
-                     "LISTEN_FDS (%d) in --supervised mode\n",
-                     listen_fdnames_colons + 1, listen_fd_count);
-          exit (1);
-        }
-
-      for (i = 3; i < 3 + listen_fd_count; i++)
-        {
-          int found = 0;
-          char *next = strchrnul(listen_fdnames, ':');
-          *next = '\0';
-#define match_socket(var) if (!found && strcmp (listen_fdnames, #var) == 0) \
-            {                                                           \
-              found = 1;                                                \
-              if (*fd_ ## var == GNUPG_INVALID_FD)                      \
-                {                                                       \
-                  *fd_ ## var = i;                                      \
-                  log_info (#var " socket on fd %d\n", i);              \
-                }                                                       \
-              else                                                      \
-                {                                                       \
-                  log_error ("cannot listen on more than one " #var " socket. (closing fd %d)\n", i); \
-                  close (i);                                            \
-                }                                                       \
-            }
-          match_socket(ssh);
-          match_socket(browser);
-          match_socket(extra);
-#undef match_socket
-          if (!found)
-            {
-              if (*fd == GNUPG_INVALID_FD)
-                {
-                  *fd = i;
-                  log_info ("standard socket (\"%s\") on fd %d\n",
-                            listen_fdnames, i);
-                }
-              else
-                {
-                  log_error ("cannot listen on more than one standard socket. (closing fd %d)\n", i);
-                  close (i);
-                }
-            }
-          listen_fdnames = next + 1;
-        }
-    }
 }
 
 
@@ -1425,10 +1453,8 @@ main (int argc, char **argv )
     }
   else if (is_supervised)
     {
-      gnupg_fd_t fd = GNUPG_INVALID_FD;
-      gnupg_fd_t fd_extra = GNUPG_INVALID_FD;
-      gnupg_fd_t fd_browser = GNUPG_INVALID_FD;
-      gnupg_fd_t fd_ssh = GNUPG_INVALID_FD;
+#ifndef HAVE_W32_SYSTEM
+      gnupg_fd_t fd, fd_extra, fd_browser, fd_ssh;
 
       /* when supervised and sending logs to stderr, the process
          supervisor should handle log entry metadata (pid, name,
@@ -1439,29 +1465,17 @@ main (int argc, char **argv )
       log_info ("%s %s starting in supervised mode.\n",
                 strusage(11), strusage(13) );
 
-      /* See below on why we remove certain envvars.  */
-#ifndef HAVE_W32_SYSTEM
+      /* See below in "regular server mode" on why we remove certain
+       * envvars.  */
       if (!opt.keep_display)
         gnupg_unsetenv ("DISPLAY");
-#endif
       gnupg_unsetenv ("INSIDE_EMACS");
 
-      /* Virtually create the sockets.  */
+      /* Virtually create the sockets.  Note that we use -1 here
+       * because the whole thing works only on Unix. */
       map_supervised_sockets (&fd, &fd_extra, &fd_browser, &fd_ssh);
-      if (fd == GNUPG_INVALID_FD)
-        {
-          log_error ("no standard socket provided\n");
-          agent_exit (1);
-        }
-      /* record socket names where possible: */
-      socket_name = get_socket_path (fd);
-      socket_name_extra = get_socket_path (fd_extra);
-      if (socket_name_extra)
-        opt.extra_socket = 2;
-      socket_name_browser = get_socket_path (fd_browser);
-      if (socket_name_browser)
-        opt.browser_socket = 2;
-      socket_name_ssh = get_socket_path (fd_ssh);
+      if (fd == -1)
+        log_fatal ("no standard socket provided\n");
 
 #ifdef HAVE_SIGPROCMASK
       if (startup_signal_mask_valid)
@@ -1477,7 +1491,7 @@ main (int argc, char **argv )
       log_info ("listening on: std=%d extra=%d browser=%d ssh=%d\n",
                 fd, fd_extra, fd_browser, fd_ssh);
       handle_connections (fd, fd_extra, fd_browser, fd_ssh);
-      assuan_sock_close (fd);
+#endif /*!HAVE_W32_SYSTEM*/
     }
   else if (!is_daemon)
     ; /* NOTREACHED */
