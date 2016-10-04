@@ -25,7 +25,6 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <glob.h>
 #include <gpg-error.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -1025,42 +1024,6 @@ do_string_contains (scheme *sc, pointer args)
   FFI_RETURN_POINTER (sc, strstr (haystack, needle) ? sc->T : sc->F);
 }
 
-static pointer
-do_glob (scheme *sc, pointer args)
-{
-  FFI_PROLOG ();
-  pointer result = sc->NIL;
-  size_t i;
-  char *pattern;
-  glob_t pglob;
-  FFI_ARG_OR_RETURN (sc, char *, pattern, string, args);
-  FFI_ARGS_DONE_OR_RETURN (sc, args);
-
-  switch (glob (pattern, 0, NULL, &pglob))
-    {
-    case 0:
-      for (i = 0; i < pglob.gl_pathc; i++)
-        result =
-          (sc->vptr->cons) (sc,
-                            sc->vptr->mk_string (sc, pglob.gl_pathv[i]),
-                            result);
-      globfree (&pglob);
-      break;
-
-    case GLOB_NOMATCH:
-      /* Return the empty list.  */
-      break;
-
-    case GLOB_NOSPACE:
-      return ffi_sprintf (sc, "out of memory");
-    case GLOB_ABORTED:
-      return ffi_sprintf (sc, "read error");
-    default:
-      assert (! "not reached");
-    }
-  FFI_RETURN_POINTER (sc, result);
-}
-
 
 
 static pointer
@@ -1289,7 +1252,6 @@ ffi_init (scheme *sc, const char *argv0, const char *scriptname,
   ffi_define_function (sc, string_index);
   ffi_define_function (sc, string_rindex);
   ffi_define_function_name (sc, "string-contains?", string_contains);
-  ffi_define_function (sc, glob);
 
   /* User interface.  */
   ffi_define_function (sc, flush_stdio);
