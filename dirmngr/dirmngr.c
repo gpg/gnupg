@@ -647,6 +647,22 @@ pid_suffix_callback (unsigned long *r_suffix)
 #endif /*!HAVE_W32_SYSTEM*/
 
 
+static void
+thread_init (void)
+{
+  npth_init ();
+
+  /* Now with NPth running we can set the logging callback.  Our
+     windows implementation does not yet feature the NPth TLS
+     functions.  */
+#ifndef HAVE_W32_SYSTEM
+  if (npth_key_create (&my_tlskey_current_fd, NULL) == 0)
+    if (npth_setspecific (my_tlskey_current_fd, NULL) == 0)
+      log_set_pid_suffix_cb (pid_suffix_callback);
+#endif /*!HAVE_W32_SYSTEM*/
+}
+
+
 int
 main (int argc, char **argv)
 {
@@ -679,8 +695,6 @@ main (int argc, char **argv)
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
   init_common_subsystems (&argc, &argv);
-
-  npth_init ();
 
   gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
 
@@ -721,15 +735,6 @@ main (int argc, char **argv)
   shell = getenv ("SHELL");
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
     csh_style = 1;
-
-    /* Now with NPth running we can set the logging callback.  Our
-     windows implementation does not yet feature the NPth TLS
-     functions.  */
-#ifndef HAVE_W32_SYSTEM
-  if (npth_key_create (&my_tlskey_current_fd, NULL) == 0)
-    if (npth_setspecific (my_tlskey_current_fd, NULL) == 0)
-      log_set_pid_suffix_cb (pid_suffix_callback);
-#endif /*!HAVE_W32_SYSTEM*/
 
   /* Reset rereadable options to default values. */
   parse_rereadable_options (NULL, 0);
@@ -981,6 +986,7 @@ main (int argc, char **argv)
       ldap_wrapper_launch_thread ();
 #endif /*USE_LDAP*/
 
+      thread_init ();
       cert_cache_init ();
       crl_cache_init ();
       start_command_handler (ASSUAN_INVALID_FD);
@@ -1179,6 +1185,7 @@ main (int argc, char **argv)
       ldap_wrapper_launch_thread ();
 #endif /*USE_LDAP*/
 
+      thread_init ();
       cert_cache_init ();
       crl_cache_init ();
       handle_connections (fd);
@@ -1206,6 +1213,7 @@ main (int argc, char **argv)
 #if USE_LDAP
       ldap_wrapper_launch_thread ();
 #endif /*USE_LDAP*/
+      thread_init ();
       cert_cache_init ();
       crl_cache_init ();
       if (!argc)
@@ -1231,6 +1239,7 @@ main (int argc, char **argv)
 #if USE_LDAP
       ldap_wrapper_launch_thread ();
 #endif /*USE_LDAP*/
+      thread_init ();
       cert_cache_init ();
       crl_cache_init ();
       rc = crl_fetch (&ctrlbuf, argv[0], &reader);

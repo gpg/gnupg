@@ -422,8 +422,6 @@ main (int argc, char **argv )
   i18n_init ();
   init_common_subsystems (&argc, &argv);
 
-  npth_init ();
-
   ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
 
   malloc_hooks.malloc = gcry_malloc;
@@ -724,6 +722,8 @@ main (int argc, char **argv )
       }
 #endif
 
+      npth_init ();
+
       /* If --debug-allow-core-dump has been given we also need to
          switch the working directory to a place where we can actually
          write. */
@@ -860,6 +860,8 @@ main (int argc, char **argv )
         } /* end parent */
 
       /* This is the child. */
+
+      npth_init ();
 
       /* Detach from tty and put process into a new session. */
       if (!nodetach )

@@ -718,6 +718,29 @@ finalize_rereadable_options (void)
 }
 
 
+static void
+thread_init_once (void)
+{
+  static int npth_initialized = 0;
+
+  if (!npth_initialized)
+    {
+      npth_initialized++;
+      npth_init ();
+    }
+}
+
+static void
+initialize_modules (void)
+{
+  thread_init_once ();
+  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
+  initialize_module_cache ();
+  initialize_module_call_pinentry ();
+  initialize_module_call_scd ();
+  initialize_module_trustlist ();
+}
+
 
 /* The main entry point.  */
 int
@@ -765,14 +788,11 @@ main (int argc, char **argv )
   i18n_init ();
   init_common_subsystems (&argc, &argv);
 
-  npth_init ();
-
   malloc_hooks.malloc = gcry_malloc;
   malloc_hooks.realloc = gcry_realloc;
   malloc_hooks.free = gcry_free;
   assuan_set_malloc_hooks (&malloc_hooks);
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
-  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
   assuan_sock_init ();
   setup_libassuan_logging (&opt.debug, NULL);
 
@@ -1080,16 +1100,12 @@ main (int argc, char **argv )
       exit (1);
     }
 
-  initialize_module_cache ();
-  initialize_module_call_pinentry ();
-  initialize_module_call_scd ();
-  initialize_module_trustlist ();
-
   /* Try to create missing directories. */
   create_directories ();
 
   if (debug_wait && pipe_server)
     {
+      thread_init_once ();
       log_debug ("waiting for debugger - my pid is %u .....\n",
                  (unsigned int)getpid());
       gnupg_sleep (debug_wait);
@@ -1195,6 +1211,8 @@ main (int argc, char **argv )
     {
       /* This is the simple pipe based server */
       ctrl_t ctrl;
+
+      initialize_modules ();
 
       ctrl = xtrycalloc (1, sizeof *ctrl);
       if (!ctrl)
@@ -1402,6 +1420,8 @@ main (int argc, char **argv )
       /*
          This is the child
        */
+
+      initialize_modules ();
 
       /* Detach from tty and put process into a new session */
       if (!nodetach )
