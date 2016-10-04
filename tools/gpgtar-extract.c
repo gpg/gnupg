@@ -122,11 +122,15 @@ extract_directory (const char *dirname, tar_header_t hdr)
   if (fname[strlen (fname)-1] == '/')
     fname[strlen (fname)-1] = 0;
 
- /* Note that we don't need to care about EEXIST because we always
-     extract into a new hierarchy.  */
   if (! opt.dry_run && gnupg_mkdir (fname, "-rwx------"))
     {
       err = gpg_error_from_syserror ();
+      if (gpg_err_code (err) == GPG_ERR_EEXIST)
+        {
+          /* Ignore existing directories while extracting.  */
+          err = 0;
+        }
+
       if (gpg_err_code (err) == GPG_ERR_ENOENT)
         {
           /* Try to create the directory with parents but keep the
