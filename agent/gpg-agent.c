@@ -153,7 +153,9 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_n (oDaemon,  "daemon", N_("run in daemon mode (background)")),
   ARGPARSE_s_n (oServer,  "server", N_("run in server mode (foreground)")),
-  ARGPARSE_s_n (oSupervised,  "supervised", N_("run supervised (e.g., systemd)")),
+#ifndef HAVE_W32_SYSTEM
+  ARGPARSE_s_n (oSupervised,  "supervised", N_("run in supervised mode")),
+#endif
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
   ARGPARSE_s_n (oQuiet,	  "quiet",     N_("be somewhat more quiet")),
   ARGPARSE_s_n (oSh,	  "sh",        N_("sh-style command output")),
@@ -322,6 +324,12 @@ static int check_own_socket_running;
 
 /* Flags to indicate that check_own_socket shall not be called.  */
 static int disable_check_own_socket;
+
+/* Flag indicating that we are in supervised mode.  */
+static int is_supervised;
+
+/* Flag to inhibit socket removal in cleanup.  */
+static int inhibit_socket_removal;
 
 /* It is possible that we are currently running under setuid permissions */
 static int maybe_setuid = 1;
@@ -579,12 +587,15 @@ cleanup (void)
     return;
   done = 1;
   deinitialize_module_cache ();
-  remove_socket (socket_name, redir_socket_name);
-  if (opt.extra_socket > 1)
-    remove_socket (socket_name_extra, redir_socket_name_extra);
-  if (opt.browser_socket > 1)
-    remove_socket (socket_name_browser, redir_socket_name_browser);
-  remove_socket (socket_name_ssh, redir_socket_name_ssh);
+  if (!is_supervised && !inhibit_socket_removal)
+    {
+      remove_socket (socket_name, redir_socket_name);
+      if (opt.extra_socket > 1)
+        remove_socket (socket_name_extra, redir_socket_name_extra);
+      if (opt.browser_socket > 1)
+        remove_socket (socket_name_browser, redir_socket_name_browser);
+      remove_socket (socket_name_ssh, redir_socket_name_ssh);
+    }
 }
 
 
@@ -934,7 +945,6 @@ main (int argc, char **argv )
   int default_config =1;
   int pipe_server = 0;
   int is_daemon = 0;
-  int is_supervised = 0;
   int nodetach = 0;
   int csh_style = 0;
   char *logfile = NULL;
@@ -3055,11 +3065,8 @@ check_own_socket_thread (void *arg)
   if (rc)
     {
       /* We may not remove the socket as it is now in use by another
-         server.  Setting the name to empty does this.  */
-      if (socket_name)
-        *socket_name = 0;
-      if (socket_name_ssh)
-        *socket_name_ssh = 0;
+         server. */
+      inhibit_socket_removal = 1;
       shutdown_pending = 2;
       log_info ("this process is useless - shutting down\n");
     }
