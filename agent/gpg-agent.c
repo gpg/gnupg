@@ -1244,10 +1244,10 @@ main (int argc, char **argv )
       agent_exit (0);
     }
 
-  if (! opt.extra_socket)
-    {
-      opt.extra_socket = 1;
-    }
+  if (is_supervised)
+    ;
+  else if (!opt.extra_socket)
+    opt.extra_socket = 1;
   else if (socket_name_extra
            && (!strcmp (socket_name_extra, "none")
                || !strcmp (socket_name_extra, "/dev/null")))
@@ -1257,10 +1257,10 @@ main (int argc, char **argv )
       socket_name_extra = NULL;
     }
 
-  if (! opt.browser_socket)
-    {
-      opt.browser_socket = 1;
-    }
+  if (is_supervised)
+    ;
+  else if (!opt.browser_socket)
+    opt.browser_socket = 1;
   else if (socket_name_browser
            && (!strcmp (socket_name_browser, "none")
                || !strcmp (socket_name_browser, "/dev/null")))
@@ -1429,11 +1429,19 @@ main (int argc, char **argv )
       log_info ("%s %s starting in supervised mode.\n",
                 strusage(11), strusage(13) );
 
+      /* See below on why we remove certain envvars.  */
+#ifndef HAVE_W32_SYSTEM
+      if (!opt.keep_display)
+        gnupg_unsetenv ("DISPLAY");
+#endif
+      gnupg_unsetenv ("INSIDE_EMACS");
+
+      /* Virtually create the sockets.  */
       map_supervised_sockets (&fd, &fd_extra, &fd_browser, &fd_ssh);
       if (fd == GNUPG_INVALID_FD)
         {
-          log_fatal ("no standard socket provided\n");
-          exit (1);
+          log_error ("no standard socket provided\n");
+          agent_exit (1);
         }
       /* record socket names where possible: */
       socket_name = get_socket_path (fd);
@@ -1456,8 +1464,8 @@ main (int argc, char **argv )
         log_info ("no saved signal mask\n");
 #endif /*HAVE_SIGPROCMASK*/
 
-      log_debug ("FDs: std: %d extra: %d browser: %d ssh: %d\n",
-                 fd, fd_extra, fd_browser, fd_ssh);
+      log_info ("listening on: std=%d extra=%d browser=%d ssh=%d\n",
+                fd, fd_extra, fd_browser, fd_ssh);
       handle_connections (fd, fd_extra, fd_browser, fd_ssh);
       assuan_sock_close (fd);
     }
