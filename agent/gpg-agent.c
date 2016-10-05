@@ -758,14 +758,14 @@ map_supervised_sockets (gnupg_fd_t *r_fd,
                         {
                           log_error ("cannot listen on fd %d for %s socket\n",
                                      fd, tbl[j].label);
-                          close (i);
+                          close (fd);
                         }
                     }
                   else
                     {
                       log_error ("cannot listen on more than one %s socket\n",
                                  tbl[j].label);
-                      close (i);
+                      close (fd);
                     }
                   break;
                 }
