@@ -112,6 +112,8 @@ const char *fake_submission_addr;
 static void wrong_args (const char *text) GPGRT_ATTR_NORETURN;
 static gpg_error_t command_supported (char *userid);
 static gpg_error_t command_send (const char *fingerprint, char *userid);
+static gpg_error_t encrypt_response (estream_t *r_output, estream_t input,
+                                     const char *addrspec);
 static gpg_error_t read_confirmation_request (estream_t msg);
 static gpg_error_t command_receive_cb (void *opaque,
                                        const char *mediatype, estream_t fp,
@@ -346,6 +348,9 @@ get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
       log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
       goto leave;
     }
+  /* Prefix the key with the MIME content type.  */
+  es_fputs ("Content-Type: application/pgp-keys\n"
+            "\n", key);
 
   filterexp = es_bsprintf ("keep-uid=mbox = %s", addrspec);
   if (!filterexp)
@@ -535,6 +540,7 @@ command_send (const char *fingerprint, char *userid)
   KEYDB_SEARCH_DESC desc;
   char *addrspec = NULL;
   estream_t key = NULL;
+  estream_t keyenc = NULL;
   char *submission_to = NULL;
   mime_maker_t mime = NULL;
   struct policy_flags_s policy;
@@ -596,6 +602,15 @@ command_send (const char *fingerprint, char *userid)
   if (policy.auth_submit)
     log_info ("no confirmation required for '%s'\n", addrspec);
 
+  /* Encrypt the key part.  */
+  es_rewind (key);
+  err = encrypt_response (&keyenc, key, submission_to);
+  if (err)
+    goto leave;
+  es_fclose (key);
+  key = NULL;
+
+
   /* Send the key.  */
   err = mime_maker_new (&mime, NULL);
   if (err)
@@ -610,16 +625,33 @@ command_send (const char *fingerprint, char *userid)
   if (err)
     goto leave;
 
-  err = mime_maker_add_header (mime, "Content-type", "application/pgp-keys");
-  if (err)
-    goto leave;
-
   /* Tell server that we support draft version 3.  */
   err = mime_maker_add_header (mime, "Wks-Draft-Version", "3");
   if (err)
     goto leave;
 
-  err = mime_maker_add_stream (mime, &key);
+  err = mime_maker_add_header (mime, "Content-Type",
+                               "multipart/encrypted; "
+                               "protocol=\"application/pgp-encrypted\"");
+  if (err)
+    goto leave;
+  err = mime_maker_add_container (mime);
+  if (err)
+    goto leave;
+
+  err = mime_maker_add_header (mime, "Content-Type",
+                               "application/pgp-encrypted");
+  if (err)
+    goto leave;
+  err = mime_maker_add_body (mime, "Version: 1\n");
+  if (err)
+    goto leave;
+  err = mime_maker_add_header (mime, "Content-Type",
+                               "application/octet-stream");
+  if (err)
+    goto leave;
+
+  err = mime_maker_add_stream (mime, &keyenc);
   if (err)
     goto leave;
 
@@ -628,6 +660,7 @@ command_send (const char *fingerprint, char *userid)
  leave:
   mime_maker_release (mime);
   xfree (submission_to);
+  es_fclose (keyenc);
   es_fclose (key);
   xfree (addrspec);
   return err;
@@ -691,7 +724,10 @@ encrypt_response (estream_t *r_output, estream_t input, const char *addrspec)
   ccparray_put (&ccp, "--status-fd=2");
   ccparray_put (&ccp, "--always-trust");
   ccparray_put (&ccp, "--armor");
-  ccparray_put (&ccp, "--auto-key-locate=clear,wkd,dane,local");
+  if (fake_submission_addr)
+    ccparray_put (&ccp, "--auto-key-locate=clear,local");
+  else
+    ccparray_put (&ccp, "--auto-key-locate=clear,wkd,dane,local");
   ccparray_put (&ccp, "--recipient");
   ccparray_put (&ccp, addrspec);
   ccparray_put (&ccp, "--encrypt");
