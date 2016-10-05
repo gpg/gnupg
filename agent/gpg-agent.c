@@ -1456,6 +1456,8 @@ main (int argc, char **argv )
 #ifndef HAVE_W32_SYSTEM
       gnupg_fd_t fd, fd_extra, fd_browser, fd_ssh;
 
+      initialize_modules ();
+
       /* when supervised and sending logs to stderr, the process
          supervisor should handle log entry metadata (pid, name,
          timestamp) */
