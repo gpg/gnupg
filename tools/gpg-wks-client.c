@@ -56,6 +56,7 @@ enum cmd_and_opt_values
 
     oGpgProgram,
     oSend,
+    oFakeSubmissionAddr,
 
     oDummy
   };
@@ -83,6 +84,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oSend, "send", "send the mail using sendmail"),
   ARGPARSE_s_s (oOutput, "output", "|FILE|write the mail to FILE"),
 
+  ARGPARSE_s_s (oFakeSubmissionAddr, "fake-submission-addr", "@"),
 
   ARGPARSE_end ()
 };
@@ -100,6 +102,11 @@ static struct debug_flags_s debug_flags [] =
     { DBG_EXTPROG_VALUE, "extprog" },
     { 0, NULL }
   };
+
+
+
+/* Value of the option --fake-submission-addr.  */
+const char *fake_submission_addr;
 
 
 static void wrong_args (const char *text) GPGRT_ATTR_NORETURN;
@@ -179,6 +186,9 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
           break;
         case oOutput:
           opt.output = pargs->r.ret_str;
+          break;
+        case oFakeSubmissionAddr:
+          fake_submission_addr = pargs->r.ret_str;
           break;
 
 	case aSupported:
@@ -551,30 +561,37 @@ command_send (const char *fingerprint, char *userid)
     goto leave;
 
   /* Get the submission address.  */
-  err = wkd_get_submission_address (addrspec, &submission_to);
+  if (fake_submission_addr)
+    {
+      submission_to = xstrdup (fake_submission_addr);
+      err = 0;
+    }
+  else
+    err = wkd_get_submission_address (addrspec, &submission_to);
   if (err)
     goto leave;
   log_info ("submitting request to '%s'\n", submission_to);
 
   /* Get the policy flags.  */
-  {
-    estream_t mbuf;
+  if (!fake_submission_addr)
+    {
+      estream_t mbuf;
 
-    err = wkd_get_policy_flags (addrspec, &mbuf);
-    if (err)
-      {
-        log_error ("error reading policy flags for '%s': %s\n",
-                   submission_to, gpg_strerror (err));
-        goto leave;
-      }
-    if (mbuf)
-      {
-        err = wks_parse_policy (&policy, mbuf, 1);
-        es_fclose (mbuf);
-        if (err)
+      err = wkd_get_policy_flags (addrspec, &mbuf);
+      if (err)
+        {
+          log_error ("error reading policy flags for '%s': %s\n",
+                     submission_to, gpg_strerror (err));
           goto leave;
       }
-  }
+      if (mbuf)
+        {
+          err = wks_parse_policy (&policy, mbuf, 1);
+          es_fclose (mbuf);
+          if (err)
+            goto leave;
+        }
+    }
 
   if (policy.auth_submit)
     log_info ("no confirmation required for '%s'\n", addrspec);
