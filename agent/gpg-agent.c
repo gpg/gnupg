@@ -739,13 +739,11 @@ map_supervised_sockets (gnupg_fd_t *r_fd,
         {
           for (j = 0; j < DIM (tbl); j++)
             {
-              log_debug ("i=%d j=%d fdname=%s check=%s\n", i, j,
-                         fdnames[i], tbl[j].label);
               if (!strcmp (fdnames[i], tbl[j].label) || j == DIM(tbl)-1)
                 {
+                  fd = 3 + i;
                   if (**tbl[j].fdaddr == -1)
                     {
-                      fd = 3 + i;
                       name = get_socket_name (fd);
                       if (name)
                         {
