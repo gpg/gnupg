@@ -653,7 +653,7 @@ do_spawn_process (scheme *sc, pointer args)
     }
 
   err = gnupg_spawn_process (argv[0], (const char **) &argv[1],
-                             GPG_ERR_SOURCE_DEFAULT,
+                             NULL,
                              NULL,
                              flags,
                              &infp, &outfp, &errfp, &pid);
