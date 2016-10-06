@@ -519,7 +519,7 @@ copy_key_as_binary (const char *keyfile, const char *outfile,
 {
   gpg_error_t err;
   ccparray_t ccp;
-  const char **argv;
+  const char **argv = NULL;
   char *filterexp = NULL;
 
   if (addrspec)
