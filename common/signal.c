@@ -134,7 +134,7 @@ got_fatal_signal (int sig)
             {
               if (value >= i || ((any || i==1) && !(value/i)))
                 {
-                  (void)write (2, "0123456789"+(value/i), 1);
+                  (void)write (2, &"0123456789"[value/i], 1);
                   if ((value/i))
                     any = 1;
                   value %= i;
