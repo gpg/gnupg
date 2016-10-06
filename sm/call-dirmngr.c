@@ -559,7 +559,6 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                         isvalid_status_cb, &stparm);
   if (opt.verbose > 1)
     log_info ("response of dirmngr: %s\n", rc? gpg_strerror (rc): "okay");
-  rc = rc;
 
   if (!rc && stparm.seen)
     {
