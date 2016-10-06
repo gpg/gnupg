@@ -1588,7 +1588,7 @@ ask_about_binding (ctrl_t ctrl,
               seen_in_past = 0;
             }
 
-          if (abs(stats_iter->time_ago) == 1)
+          if (labs(stats_iter->time_ago) == 1)
             {
               /* The 1 in this case is the NULL entry.  */
               log_assert (stats_iter->count == 1);
@@ -1610,7 +1610,7 @@ ask_about_binding (ctrl_t ctrl,
 
           if (!stats_iter->count)
             es_fputs (".", fp);
-          else if (abs(stats_iter->time_ago) == 2)
+          else if (labs(stats_iter->time_ago) == 2)
             {
               es_fprintf (fp, "in the future.");
               /* Reset it.  */
@@ -1618,25 +1618,25 @@ ask_about_binding (ctrl_t ctrl,
             }
           else
             {
-              if (abs(stats_iter->time_ago) == 3)
+              if (labs(stats_iter->time_ago) == 3)
                 es_fprintf (fp, ngettext(" over the past days.",
                                          " over the past %d days.",
                                          seen_in_past),
                             TIME_AGO_SMALL_THRESHOLD
                             / TIME_AGO_UNIT_SMALL);
-              else if (abs(stats_iter->time_ago) == 4)
+              else if (labs(stats_iter->time_ago) == 4)
                 es_fprintf (fp, ngettext(" over the past month.",
                                          " over the past %d months.",
                                          seen_in_past),
                             TIME_AGO_MEDIUM_THRESHOLD
                             / TIME_AGO_UNIT_MEDIUM);
-              else if (abs(stats_iter->time_ago) == 5)
+              else if (labs(stats_iter->time_ago) == 5)
                 es_fprintf (fp, ngettext(" over the past year.",
                                          " over the past %d years.",
                                          seen_in_past),
                             TIME_AGO_LARGE_THRESHOLD
                             / TIME_AGO_UNIT_LARGE);
-              else if (abs(stats_iter->time_ago) == 6)
+              else if (labs(stats_iter->time_ago) == 6)
                 es_fprintf (fp, _(" in the past."));
               else
                 log_assert (! "Broken SQL.\n");
