@@ -651,6 +651,7 @@ static void
 thread_init (void)
 {
   npth_init ();
+  gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 
   /* Now with NPth running we can set the logging callback.  Our
      windows implementation does not yet feature the NPth TLS

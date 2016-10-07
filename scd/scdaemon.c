@@ -723,6 +723,7 @@ main (int argc, char **argv )
 #endif
 
       npth_init ();
+      gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 
       /* If --debug-allow-core-dump has been given we also need to
          switch the working directory to a place where we can actually
@@ -862,6 +863,7 @@ main (int argc, char **argv )
       /* This is the child. */
 
       npth_init ();
+      gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 
       /* Detach from tty and put process into a new session. */
       if (!nodetach )

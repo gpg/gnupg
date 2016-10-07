@@ -941,6 +941,7 @@ thread_init_once (void)
       npth_initialized++;
       npth_init ();
     }
+  gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 }
 
 

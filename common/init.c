@@ -29,19 +29,11 @@
 
 #include <config.h>
 
-#ifdef WITHOUT_NPTH /* Give the Makefile a chance to build without Pth.  */
-#undef HAVE_NPTH
-#undef USE_NPTH
-#endif
-
 #ifdef HAVE_W32_SYSTEM
 # ifdef HAVE_WINSOCK2_H
 #  include <winsock2.h>
 # endif
 # include <windows.h>
-#endif
-#ifdef HAVE_NPTH
-# include <npth.h>
 #endif
 #ifdef HAVE_W32CE_SYSTEM
 # include <assuan.h> /* For _assuan_w32ce_finish_pipe. */
@@ -197,9 +189,6 @@ _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
   /* Initialize the Estream library. */
   gpgrt_init ();
   gpgrt_set_alloc_func (gcry_realloc);
-#ifdef USE_NPTH
-  gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
-#endif
 
   /* Special hack for Windows CE: We extract some options from arg
      to setup the standard handles.  */
