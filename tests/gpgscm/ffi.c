@@ -1276,6 +1276,15 @@ ffi_init (scheme *sc, const char *argv0, const char *scriptname,
   ffi_define (sc, "*pathsep*", sc->vptr->mk_character (sc, ':'));
 #endif
 
+  ffi_define (sc, "*win32*",
+#if _WIN32
+              sc->T
+#else
+              sc->F
+#endif
+              );
+
+
   ffi_define (sc, "*stdin*",
               sc->vptr->mk_port_from_file (sc, stdin, port_input));
   ffi_define (sc, "*stdout*",

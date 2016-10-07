@@ -181,9 +181,15 @@
 (assert (string=? (path-join "" "bar" "baz") "bar/baz"))
 
 (define (canonical-path path)
-  (if (char=? #\/ (string-ref path 0))
+  (if (or (char=? #\/ (string-ref path 0))
+	  (and *win32* (char=? #\\ (string-ref path 0)))
+	  (and *win32*
+	       (char-alphabetic? (string-ref path 0))
+	       (char=? #\: (string-ref path 1))
+	       (or (char=? #\/ (string-ref path 2))
+		   (char=? #\\ (string-ref path 2)))))
       path
-      (string-append (getcwd) "/" path)))
+      (path-join (getcwd) path)))
 
 (define (in-srcdir . names)
   (canonical-path (apply path-join (cons (getenv "srcdir") names))))
@@ -194,7 +200,7 @@
   (let loop ((path paths))
     (if (null? path)
 	(throw "Could not find" name "in" paths)
-	(let* ((qualified-name (string-append (car path) "/" name))
+	(let* ((qualified-name (path-join (car path) name))
 	       (file-exists (call-with-input-file qualified-name
 			      (lambda (x) #t))))
 	  (if file-exists
