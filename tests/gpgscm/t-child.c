@@ -30,6 +30,8 @@
 int
 main (int argc, char **argv)
 {
+  char buffer[4096];
+  memset (buffer, 'A', sizeof buffer);
 #if _WIN32
   if (! setmode (stdin, O_BINARY))
     return 23;
@@ -49,10 +51,16 @@ main (int argc, char **argv)
     fprintf (stdout, "hello");
   else if (strcmp (argv[1], "hello_stderr") == 0)
     fprintf (stderr, "hello");
+  else if (strcmp (argv[1], "stdout4096") == 0)
+    fwrite (buffer, 1, sizeof buffer, stdout);
+  else if (strcmp (argv[1], "stdout8192") == 0)
+    {
+      fwrite (buffer, 1, sizeof buffer, stdout);
+      fwrite (buffer, 1, sizeof buffer, stdout);
+    }
   else if (strcmp (argv[1], "cat") == 0)
     while (! feof (stdin))
       {
-        char buffer[4096];
         size_t bytes_read;
         bytes_read = fread (buffer, 1, sizeof buffer, stdin);
         fwrite (buffer, 1, bytes_read, stdout);

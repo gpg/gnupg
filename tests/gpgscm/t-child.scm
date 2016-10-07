@@ -22,6 +22,8 @@
 (define (qualify executable)
   (string-append executable (getenv "EXEEXT")))
 
+(define child (qualify "t-child"))
+
 (assert (= 0 (call `(,(qualify "t-child") "return0"))))
 (assert (= 1 (call `(,(qualify "t-child") "return1"))))
 (assert (= 77 (call `(,(qualify "t-child") "return77"))))
@@ -50,6 +52,16 @@
   (assert (= 0 (:retcode r)))
   (assert (string=? "" (:stdout r)))
   (assert (string=? "hello" (:stderr r))))
+
+(let ((r (call-with-io `(,(qualify "t-child") "stdout4096") "")))
+  (assert (= 0 (:retcode r)))
+  (assert (= 4096 (string-length (:stdout r))))
+  (assert (string=? "" (:stderr r))))
+
+(let ((r (call-with-io `(,(qualify "t-child") "stdout8192") "")))
+  (assert (= 0 (:retcode r)))
+  (assert (= 8192 (string-length (:stdout r))))
+  (assert (string=? "" (:stderr r))))
 
 (let ((r (call-with-io `(,(qualify "t-child") "cat") "hellohello")))
   (assert (= 0 (:retcode r)))
@@ -89,5 +101,18 @@
    (equal? '(0 0)
 	   (wait-processes '("child0" "child1") (list pid0 pid1) #t))))
 (echo " world.")
+
+(tr:do
+ (tr:pipe-do
+  (pipe:spawn `(,child stdout4096))
+  (pipe:spawn `(,child cat)))
+ (tr:call-with-content (lambda (c)
+			 (assert (= 4096 (length c))))))
+(tr:do
+ (tr:pipe-do
+  (pipe:spawn `(,child stdout8192))
+  (pipe:spawn `(,child cat)))
+ (tr:call-with-content (lambda (c)
+			 (assert (= 8192 (length c))))))
 
 (echo "All good.")
