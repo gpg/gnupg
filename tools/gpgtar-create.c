@@ -853,8 +853,6 @@ gpgtar_create (char **inpattern, int encrypt, int sign)
       if (!outstream)
         {
           err = gpg_error_from_syserror ();
-          log_error (_("can't create '%s': %s\n"),
-                     opt.outfile, gpg_strerror (err));
           goto leave;
         }
     }
@@ -958,7 +956,7 @@ gpgtar_create (char **inpattern, int encrypt, int sign)
   if (err)
     {
       log_error ("creating tarball '%s' failed: %s\n",
-                 es_fname_get (outstream), gpg_strerror (err));
+                 opt.outfile ? opt.outfile : "-", gpg_strerror (err));
       if (outstream && outstream != es_stdout)
         es_fclose (outstream);
       if (cipher_stream && cipher_stream != es_stdout)
