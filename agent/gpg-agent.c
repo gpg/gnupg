@@ -599,19 +599,21 @@ get_socket_name (int fd)
     log_error ("socket name not present for file descriptor %d\n", fd);
   else if (len > sizeof(un))
     log_error ("socket name for file descriptor %d was truncated "
-               "(passed %lu bytes, wanted %u)\n", fd, sizeof(un), len);
+               "(passed %zu bytes, wanted %u)\n", fd, sizeof(un), len);
   else
     {
-      log_debug ("file descriptor %d has path %s (%lu octets)\n", fd,
-                 un.sun_path, len - offsetof (struct sockaddr_un, sun_path));
-      name = xtrymalloc (len - offsetof (struct sockaddr_un, sun_path) + 1);
+      size_t namelen = len - offsetof (struct sockaddr_un, sun_path);
+
+      log_debug ("file descriptor %d has path %s (%zu octets)\n", fd,
+                 un.sun_path, namelen);
+      name = xtrymalloc (namelen + 1);
       if (!name)
         log_error ("failed to allocate memory for name of fd %d: %s\n",
                    fd, gpg_strerror (gpg_error_from_syserror ()));
       else
         {
-          memcpy (name, un.sun_path, len);
-          name[len] = 0;
+          memcpy (name, un.sun_path, namelen);
+          name[namelen] = 0;
         }
     }
 
