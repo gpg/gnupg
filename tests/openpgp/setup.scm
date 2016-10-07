@@ -84,11 +84,12 @@
 		 "C6A6390E9388CDBAD71EAEA698233FE5E04F001E"
 		 "D69102E0F5AC6B6DB8E4D16DA8E18CF46D88CAE3"))
 
-  (info "Importing public demo and test keys")
-  (call-check `(,@GPG --yes --import
-		      ,(in-srcdir "pubdemo.asc")
-		      ,(in-srcdir "pubring.asc")
-		      ,(in-srcdir key-file1)))
+  (for-each-p
+   "Importing public demo and test keys"
+   (lambda (file)
+     (call-check `(,@GPG --yes --import ,(in-srcdir file))))
+   (list "pubdemo.asc" "pubring.asc" key-file1))
+
   (pipe:do
    (pipe:open (in-srcdir "pubring.pkr.asc") (logior O_RDONLY O_BINARY))
    (pipe:spawn `(,@GPG --dearmor))
