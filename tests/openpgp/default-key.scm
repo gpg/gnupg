@@ -71,6 +71,6 @@
 	(unless (any (lambda (line)
 		       (and (string-prefix? line ":pubkey enc packet:")
 			    (string-suffix? line "45117079")))
-		     (string-split c #\newline))
+		     (string-split-newlines c))
 	    (exit 1))))))
  '("8BC90111" "3E880CFF" "F5F77B83" "45117079" "1EA97479"))

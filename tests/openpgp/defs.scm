@@ -91,7 +91,7 @@
 (define (gpg-with-colons args)
   (let ((s (call-popen `(,@GPG --with-colons ,@args) "")))
     (map (lambda (line) (string-split line #\:))
-	 (string-split s #\newline))))
+	 (string-split-newlines s))))
 
 (define (get-config what)
   (string-split (caddar (gpg-with-colons `(--list-config ,what))) #\;))
@@ -133,8 +133,8 @@
    (lambda (line)
      (let ((p (string-split line #\:)))
        (list (string->number (cadr p)) (caddr p))))
-   (string-split
-    (call-popen `(,@GPG --with-colons ,@args) input) #\newline)))
+   (string-split-newlines
+    (call-popen `(,@GPG --with-colons ,@args) input))))
 
 ;; Dearmor a file.
 (define (dearmor source-name sink-name)

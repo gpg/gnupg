@@ -36,7 +36,7 @@
     (unless (any (lambda (line)
 		   (and (string-prefix? line "rvk:")
 			(string-contains? line ":0EE5BE979282D80B9F7540F1CCD2ED94D21739E9:")))
-		 (string-split c #\newline))
+		 (string-split-newlines c))
 	    (exit 1)))))
 
 (define fpr1 "9E669861368BCA0BE42DAF7DDDA252EBB8EBE1AF")
@@ -55,6 +55,6 @@
 		 (lambda (line)
 		   (and (string-prefix? line "pub:")
 			(string-contains? line ":4096:1:DDA252EBB8EBE1AF:")))
-		 (string-split c #\newline))))
+		 (string-split-newlines c))))
       (unless (= 2 (length keys))
 	      (error "Importing keys with long id collision failed"))))))

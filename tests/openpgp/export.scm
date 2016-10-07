@@ -37,13 +37,13 @@
 		    "Signature packet not found"))
 
 (define (check-exported-public-key packet-dump keyid)
-  (let ((dump (string-split packet-dump #\newline)))
+  (let ((dump (string-split-newlines packet-dump)))
     (check-for (lambda (l) (string-prefix? l ":public key packet:")) dump
 	       "Public key packet not found")
     (check-exported-key dump keyid)))
 
 (define (check-exported-private-key packet-dump keyid)
-  (let ((dump (string-split packet-dump #\newline)))
+  (let ((dump (string-split-newlines packet-dump)))
     (check-for (lambda (l) (string-prefix? l ":secret key packet:")) dump
 	       "Secret key packet not found")
     (check-exported-key dump keyid)))

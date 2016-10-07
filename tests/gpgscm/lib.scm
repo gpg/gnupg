@@ -92,6 +92,15 @@
 (assert (string=? "bar" (cadr (string-split "foo:bar:baz" #\:))))
 (assert (string=? "baz" (caddr (string-split "foo:bar:baz" #\:))))
 
+;; Split haystack at newlines.
+(define (string-split-newlines haystack)
+  (if *win32*
+      (map (lambda (line) (if (string-suffix? line "\r")
+			      (substring line 0 (- (string-length line) 1))
+			      line))
+	   (string-split haystack #\newline))
+      (string-split haystack #\newline)))
+
 ;; Trim the prefix of S containing only characters that make PREDICATE
 ;; true.
 (define (string-ltrim predicate s)
