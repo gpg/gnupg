@@ -220,7 +220,7 @@ set_packet_list_mode (int mode)
       else
         listfp = es_stderr;
 
-      if (opt.debug & DBG_MPI_VALUE)
+      if (DBG_MPI)
         mpi_print_mode = 1;
     }
   return old;

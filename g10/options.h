@@ -305,6 +305,7 @@ struct {
 
 /* Tests for the debugging flags.  */
 #define DBG_PACKET (opt.debug & DBG_PACKET_VALUE)
+#define DBG_MPI    (opt.debug & DBG_MPI_VALUE)
 #define DBG_CRYPTO (opt.debug & DBG_CRYPTO_VALUE)
 #define DBG_FILTER (opt.debug & DBG_FILTER_VALUE)
 #define DBG_CACHE  (opt.debug & DBG_CACHE_VALUE)
@@ -317,7 +318,7 @@ struct {
 #define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
 #define DBG_EXTPROG (opt.debug & DBG_EXTPROG_VALUE)
 
-/* FIXME: We need to check whey we did not put this into opt. */
+/* FIXME: We need to check why we did not put this into opt. */
 #define DBG_MEMORY    memory_debug_mode
 #define DBG_MEMSTAT   memory_stat_debug_mode
 

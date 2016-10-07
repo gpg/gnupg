@@ -1190,15 +1190,15 @@ set_debug (const char *level)
       g10_exit (2);
     }
 
-  if (opt.debug & DBG_MEMORY_VALUE )
+  if ((opt.debug & DBG_MEMORY_VALUE))
     memory_debug_mode = 1;
-  if (opt.debug & DBG_MEMSTAT_VALUE )
+  if ((opt.debug & DBG_MEMSTAT_VALUE))
     memory_stat_debug_mode = 1;
-  if (opt.debug & DBG_MPI_VALUE)
+  if (DBG_MPI)
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 2);
-  if (opt.debug & DBG_CRYPTO_VALUE )
+  if (DBG_CRYPTO)
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
-  if (opt.debug & DBG_IOBUF_VALUE )
+  if ((opt.debug & DBG_IOBUF_VALUE))
     iobuf_debug_mode = 1;
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 

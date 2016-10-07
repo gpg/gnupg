@@ -174,6 +174,8 @@ Note that such a comment will be removed if the git commit option
     indicate a problem with the code.
   - Never init static or file local variables to 0 to make sure they
     end up in BSS.
+  - But extra parenthesis around terms with binary operators to make
+    it clear that the binary operator was indeed intended.
   - Use --enable-maintainer-mode with configure so that all suitable
     warnings are enabled.
 
