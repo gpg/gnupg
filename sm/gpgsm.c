@@ -406,7 +406,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aListKeys, "list-key", "@"),
   ARGPARSE_c (aListChain, "list-signatures", "@"),
   ARGPARSE_c (aListChain, "list-sigs", "@"),
-  ARGPARSE_c (aListChain, "check-sig", "@"),
+  ARGPARSE_c (aListChain, "check-signatures", "@"),
   ARGPARSE_c (aListChain, "check-sigs", "@"),
   ARGPARSE_c (aDeleteKey, "delete-key", "@"),
 

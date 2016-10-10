@@ -320,8 +320,8 @@ notation (see @option{--cert-notation}), "X" for an eXpired signature
 above to indicate trust signature levels (see the @option{--edit-key}
 command "tsign").
 
-@item --check-sigs
-@opindex check-sigs
+@item --check-signatures
+@opindex check-signatures
 Same as @option{--list-signatures}, but the signatures are verified.  Note
 that for performance reasons the revocation status of a signing key is
 not shown.
@@ -348,7 +348,7 @@ be used to locate a key.  Only public keys are listed.
 List all keys (or the specified ones) along with their
 fingerprints. This is the same output as @option{--list-keys} but with
 the additional output of a line with the fingerprint. May also be
-combined with @option{--list-signatures} or @option{--check-sigs}.  If this
+combined with @option{--list-signatures} or @option{--check-signatures}.  If this
 command is given twice, the fingerprints of all secondary keys are
 listed too.  This command also forces pretty printing of fingerprints
 if the keyid format has been set to "none".
@@ -1227,7 +1227,7 @@ give the opposite meaning.  The options are:
 
   @item show-policy-urls
   @opindex list-options:show-policy-urls
-  Show policy URLs in the @option{--list-signatures} or @option{--check-sigs}
+  Show policy URLs in the @option{--list-signatures} or @option{--check-signatures}
   listings.  Defaults to no.
 
   @item show-notations
@@ -1237,12 +1237,12 @@ give the opposite meaning.  The options are:
   @opindex list-options:show-std-notations
   @opindex list-options:show-user-notations
   Show all, IETF standard, or user-defined signature notations in the
-  @option{--list-signatures} or @option{--check-sigs} listings. Defaults to no.
+  @option{--list-signatures} or @option{--check-signatures} listings. Defaults to no.
 
   @item show-keyserver-urls
   @opindex list-options:show-keyserver-urls
   Show any preferred keyserver URL in the @option{--list-signatures} or
-  @option{--check-sigs} listings. Defaults to no.
+  @option{--check-signatures} listings. Defaults to no.
 
   @item show-uid-validity
   @opindex list-options:show-uid-validity
@@ -1265,7 +1265,7 @@ give the opposite meaning.  The options are:
   @item show-sig-expire
   @opindex list-options:show-sig-expire
   Show signature expiration dates (if any) during @option{--list-signatures} or
-  @option{--check-sigs} listings. Defaults to no.
+  @option{--check-signatures} listings. Defaults to no.
 
   @item show-sig-subpackets
   @opindex list-options:show-sig-subpackets
@@ -1273,7 +1273,7 @@ give the opposite meaning.  The options are:
   optional argument list of the subpackets to list. If no argument is
   passed, list all subpackets. Defaults to no. This option is only
   meaningful when using @option{--with-colons} along with
-  @option{--list-signatures} or @option{--check-sigs}.
+  @option{--list-signatures} or @option{--check-signatures}.
 
 @end table
 
@@ -3293,7 +3293,7 @@ Identical to @option{--trust-model always}. This option is deprecated.
 @item --show-notation
 @itemx --no-show-notation
 @opindex show-notation
-Show signature notations in the @option{--list-signatures} or @option{--check-sigs} listings
+Show signature notations in the @option{--list-signatures} or @option{--check-signatures} listings
 as well as when verifying a signature with a notation in it. These
 options are deprecated. Use @option{--list-options [no-]show-notation}
 and/or @option{--verify-options [no-]show-notation} instead.
@@ -3301,7 +3301,7 @@ and/or @option{--verify-options [no-]show-notation} instead.
 @item --show-policy-url
 @itemx --no-show-policy-url
 @opindex show-policy-url
-Show policy URLs in the @option{--list-signatures} or @option{--check-sigs}
+Show policy URLs in the @option{--list-signatures} or @option{--check-signatures}
 listings as well as when verifying a signature with a policy URL in
 it. These options are deprecated. Use @option{--list-options
 [no-]show-policy-url} and/or @option{--verify-options
