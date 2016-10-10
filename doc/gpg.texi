@@ -301,8 +301,8 @@ means that the secret key is not usable (for example, if it was
 exported using @option{--export-secret-subkeys}).  See also
 @option{--list-keys}.
 
-@item --list-sigs
-@opindex list-sigs
+@item --list-signatures
+@opindex list-signatures
 Same as @option{--list-keys}, but the signatures are listed too.
 This command has the same effect as
 using @option{--list-keys} with @option{--with-sig-list}.
@@ -322,7 +322,7 @@ command "tsign").
 
 @item --check-sigs
 @opindex check-sigs
-Same as @option{--list-sigs}, but the signatures are verified.  Note
+Same as @option{--list-signatures}, but the signatures are verified.  Note
 that for performance reasons the revocation status of a signing key is
 not shown.
 This command has the same effect as
@@ -330,7 +330,7 @@ using @option{--list-keys} with @option{--with-sig-check}.
 
 The status of the verification is indicated by a flag directly following
 the "sig" tag (and thus before the flags described above for
-@option{--list-sigs}).  A "!" indicates that the signature has been
+@option{--list-signatures}).  A "!" indicates that the signature has been
 successfully verified, a "-" denotes a bad signature and a "%" is used
 if an error occurred while checking the signature (e.g. a non supported
 algorithm).
@@ -348,7 +348,7 @@ be used to locate a key.  Only public keys are listed.
 List all keys (or the specified ones) along with their
 fingerprints. This is the same output as @option{--list-keys} but with
 the additional output of a line with the fingerprint. May also be
-combined with @option{--list-sigs} or @option{--check-sigs}.  If this
+combined with @option{--list-signatures} or @option{--check-sigs}.  If this
 command is given twice, the fingerprints of all secondary keys are
 listed too.  This command also forces pretty printing of fingerprints
 if the keyid format has been set to "none".
@@ -1202,7 +1202,7 @@ Assume "no" on most questions.
 @opindex list-options
 This is a space or comma delimited string that gives options used when
 listing keys and signatures (that is, @option{--list-keys},
-@option{--list-sigs}, @option{--list-public-keys},
+@option{--list-signatures}, @option{--list-public-keys},
 @option{--list-secret-keys}, and the @option{--edit-key} functions).
 Options can be prepended with a @option{no-} (after the two dashes) to
 give the opposite meaning.  The options are:
@@ -1211,7 +1211,7 @@ give the opposite meaning.  The options are:
 
   @item show-photos
   @opindex list-options:show-photos
-  Causes @option{--list-keys}, @option{--list-sigs},
+  Causes @option{--list-keys}, @option{--list-signatures},
   @option{--list-public-keys}, and @option{--list-secret-keys} to
   display any photo IDs attached to the key.  Defaults to no. See also
   @option{--photo-viewer}.  Does not work with @option{--with-colons}:
@@ -1227,7 +1227,7 @@ give the opposite meaning.  The options are:
 
   @item show-policy-urls
   @opindex list-options:show-policy-urls
-  Show policy URLs in the @option{--list-sigs} or @option{--check-sigs}
+  Show policy URLs in the @option{--list-signatures} or @option{--check-sigs}
   listings.  Defaults to no.
 
   @item show-notations
@@ -1237,11 +1237,11 @@ give the opposite meaning.  The options are:
   @opindex list-options:show-std-notations
   @opindex list-options:show-user-notations
   Show all, IETF standard, or user-defined signature notations in the
-  @option{--list-sigs} or @option{--check-sigs} listings. Defaults to no.
+  @option{--list-signatures} or @option{--check-sigs} listings. Defaults to no.
 
   @item show-keyserver-urls
   @opindex list-options:show-keyserver-urls
-  Show any preferred keyserver URL in the @option{--list-sigs} or
+  Show any preferred keyserver URL in the @option{--list-signatures} or
   @option{--check-sigs} listings. Defaults to no.
 
   @item show-uid-validity
@@ -1264,7 +1264,7 @@ give the opposite meaning.  The options are:
 
   @item show-sig-expire
   @opindex list-options:show-sig-expire
-  Show signature expiration dates (if any) during @option{--list-sigs} or
+  Show signature expiration dates (if any) during @option{--list-signatures} or
   @option{--check-sigs} listings. Defaults to no.
 
   @item show-sig-subpackets
@@ -1273,7 +1273,7 @@ give the opposite meaning.  The options are:
   optional argument list of the subpackets to list. If no argument is
   passed, list all subpackets. Defaults to no. This option is only
   meaningful when using @option{--with-colons} along with
-  @option{--list-sigs} or @option{--check-sigs}.
+  @option{--list-signatures} or @option{--check-sigs}.
 
 @end table
 
@@ -3273,7 +3273,7 @@ on the configuration file.
 @item --show-photos
 @itemx --no-show-photos
 @opindex show-photos
-Causes @option{--list-keys}, @option{--list-sigs},
+Causes @option{--list-keys}, @option{--list-signatures},
 @option{--list-public-keys}, @option{--list-secret-keys}, and verifying
 a signature to also display the photo ID attached to the key, if
 any. See also @option{--photo-viewer}. These options are deprecated. Use
@@ -3293,7 +3293,7 @@ Identical to @option{--trust-model always}. This option is deprecated.
 @item --show-notation
 @itemx --no-show-notation
 @opindex show-notation
-Show signature notations in the @option{--list-sigs} or @option{--check-sigs} listings
+Show signature notations in the @option{--list-signatures} or @option{--check-sigs} listings
 as well as when verifying a signature with a notation in it. These
 options are deprecated. Use @option{--list-options [no-]show-notation}
 and/or @option{--verify-options [no-]show-notation} instead.
@@ -3301,7 +3301,7 @@ and/or @option{--verify-options [no-]show-notation} instead.
 @item --show-policy-url
 @itemx --no-show-policy-url
 @opindex show-policy-url
-Show policy URLs in the @option{--list-sigs} or @option{--check-sigs}
+Show policy URLs in the @option{--list-signatures} or @option{--check-sigs}
 listings as well as when verifying a signature with a policy URL in
 it. These options are deprecated. Use @option{--list-options
 [no-]show-policy-url} and/or @option{--verify-options
