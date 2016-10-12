@@ -797,8 +797,9 @@ get_single_long_cb2 (void *cookie, int argc, char **argv, char **azColName,
    If SHOW_OLD is set, the binding's old policy is displayed.  */
 static gpg_error_t
 record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
-		const char *user_id, enum tofu_policy policy, int show_old,
-                time_t now)
+		const char *user_id, enum tofu_policy policy,
+                const char *conflict,
+                int show_old, time_t now)
 {
   char *fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
   gpg_error_t rc;
@@ -850,12 +851,6 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
            " <key: %s, user id: %s> to %s.\n",
            fingerprint, show_old ? user_id : email,
            tofu_policy_str (policy));
-
-      if (policy_old == policy)
-        {
-          rc = 0;
-          goto leave; /* Nothing to do.  */
-        }
     }
 
   if (opt.dry_run)
@@ -868,18 +863,19 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
   rc = gpgsql_stepx
     (dbs->db, &dbs->s.record_binding_update, NULL, NULL, &err,
      "insert or replace into bindings\n"
-     " (oid, fingerprint, email, user_id, time, policy)\n"
+     " (oid, fingerprint, email, user_id, time, policy, conflict)\n"
      " values (\n"
      /* If we don't explicitly reuse the OID, then SQLite will
 	reallocate a new one.  We just need to search for the OID
 	based on the fingerprint and email since they are unique.  */
      "  (select oid from bindings where fingerprint = ? and email = ?),\n"
-     "  ?, ?, ?, ?, ?);",
+     "  ?, ?, ?, ?, ?, ?);",
      GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
      GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
      GPGSQL_ARG_STRING, user_id,
      GPGSQL_ARG_LONG_LONG, (long long) now,
      GPGSQL_ARG_INT, (int) policy,
+     GPGSQL_ARG_STRING, conflict ? conflict : "",
      GPGSQL_ARG_END);
   if (rc)
     {
@@ -1747,7 +1743,7 @@ ask_about_binding (ctrl_t ctrl,
                 }
 
               if (record_binding (dbs, fingerprint, email, user_id,
-                                  *policy, 0, now))
+                                  *policy, NULL, 0, now))
                 {
                   /* If there's an error registering the
                    * binding, don't save the signature.  */
@@ -2087,7 +2083,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
           /* New binding.  */
           {
             if (record_binding (dbs, fingerprint, email, user_id,
-                                TOFU_POLICY_GOOD, 0, now) != 0)
+                                TOFU_POLICY_GOOD, NULL, 0, now) != 0)
               {
                 log_error (_("error setting TOFU binding's trust level"
                              " to %s\n"), "good");
@@ -2206,7 +2202,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
     if (is_signed_by_utk)
       {
         if (record_binding (dbs, fingerprint, email, user_id,
-                            TOFU_POLICY_GOOD, 0, now) != 0)
+                            TOFU_POLICY_GOOD, NULL, 0, now) != 0)
           {
             log_error (_("error setting TOFU binding's trust level"
                          " to %s\n"), "good");
@@ -2246,7 +2242,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
 		   fingerprint, email);
 
       if (record_binding (dbs, fingerprint, email, user_id,
-			  TOFU_POLICY_AUTO, 0, now) != 0)
+			  TOFU_POLICY_AUTO, NULL, 0, now) != 0)
 	{
 	  log_error (_("error setting TOFU binding's trust level to %s\n"),
 		       "auto");
@@ -2275,7 +2271,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
                    fingerprint, email);
 
       if (record_binding (dbs, fingerprint, email, user_id,
-			  TOFU_POLICY_AUTO, 0, now) != 0)
+			  TOFU_POLICY_AUTO, NULL, 0, now) != 0)
 	log_error (_("error setting TOFU binding's trust level to %s\n"),
 		   "auto");
 
@@ -2297,7 +2293,10 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
       log_assert (policy == TOFU_POLICY_NONE);
 
       if (record_binding (dbs, fingerprint, email, user_id,
-			  TOFU_POLICY_ASK, 0, now) != 0)
+			  TOFU_POLICY_ASK,
+                          conflict_set && conflict_set->next
+                          ? conflict_set->next->d : NULL,
+                          0, now) != 0)
 	log_error (_("error setting TOFU binding's trust level to %s\n"),
 		   "ask");
 
@@ -3378,7 +3377,7 @@ tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
       email = email_from_user_id (user_id->name);
 
       err = record_binding (dbs, fingerprint, email, user_id->name,
-                            policy, 1, now);
+                            policy, NULL, 1, now);
       if (err)
         {
           log_error (_("error setting policy for key %s, user id \"%s\": %s"),
