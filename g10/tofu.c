@@ -606,7 +606,7 @@ initdb (sqlite3 *db)
        "create table bindings\n"
        " (oid INTEGER PRIMARY KEY AUTOINCREMENT,\n"
        "  fingerprint TEXT, email TEXT, user_id TEXT, time INTEGER,\n"
-       "  policy BOOLEAN CHECK (policy in (%d, %d, %d, %d, %d)),\n"
+       "  policy INTEGER CHECK (policy in (%d, %d, %d, %d, %d)),\n"
        "  conflict STRING,\n"
        "  unique (fingerprint, email));\n"
        "create index bindings_fingerprint_email\n"
