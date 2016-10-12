@@ -1793,7 +1793,7 @@ build_conflict_set (tofu_dbs_t dbs, const char *fingerprint, const char *email)
      "select"
      /* A binding should only appear once, but try not to break in the
       * case of corruption.  */
-     "  fingerprint || case sum(conflict ISNULL) when 0 then '' else '!' end"
+     "  fingerprint || case sum(conflict NOTNULL) when 0 then '' else '!' end"
      " from bindings where email = ?"
      "  group by fingerprint"
      /* Make sure the current key comes first in the result list (if
