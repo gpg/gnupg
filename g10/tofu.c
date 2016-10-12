@@ -1619,7 +1619,7 @@ ask_about_binding (ctrl_t ctrl,
           else
             {
               if (labs(stats_iter->time_ago) == 3)
-                es_fprintf (fp, ngettext(" over the past days.",
+                es_fprintf (fp, ngettext(" over the past day.",
                                          " over the past %d days.",
                                          seen_in_past),
                             TIME_AGO_SMALL_THRESHOLD
