@@ -54,6 +54,7 @@
 #include "mbox-util.h"
 #include "zb32.h"
 #include "server-help.h"
+#include "../common/exectool.h"
 
 /* To avoid DoS attacks we limit the size of a certificate to
    something reasonable.  The DoS was actually only an issue back when
@@ -2340,6 +2341,231 @@ cmd_reloaddirmngr (assuan_context_t ctx, char *line)
 }
 
 
+
+/* Returns -1 if version a is less than b, 0 if the versions are equal and 1 otherwise.
+ * Versions are compared as period-separated tuples starting at the front. Elements are
+ * interpreted as decimals first. If this fails strcmp is used. Comparison continues
+ * until two elements are found the be unequal of the end is reached. */
+static int
+cmp_version(const char* a, const char* b)
+{
+  char *a_dup, *b_dup, *strtok_internal_a = NULL, *strtok_internal_b = NULL, *a_comp, *b_comp;
+  int ret = 0;
+
+  assert (a && b);
+
+  a_dup = xstrdup (a);
+  b_dup = xstrdup (b);
+  a_comp = strtok_r (a_dup, ".", &strtok_internal_a);
+  b_comp = strtok_r (b_dup, ".", &strtok_internal_b);
+
+  while (a_comp || b_comp)
+    {
+      if (a_comp && *a_comp && b_comp && *b_comp)
+        {
+          char* a_end;
+          char* b_end;
+          int a_ver = strtol (a_comp, &a_end, 10);
+          int b_ver = strtol (b_comp, &b_end, 10);
+
+          if (!*a_end && !*b_end)
+            {
+              if (a_ver != b_ver)
+                {
+                  ret = a_ver - b_ver;
+                  break;
+                }
+            }
+          else
+            {
+              int r = strcmp (a_comp, b_comp);
+              if (r != 0)
+                {
+                  ret = r;
+                  break;
+                }
+            }
+        }
+      else
+        {
+          if ((!a_comp || !*a_comp) && b_comp && *b_comp)
+            ret = -1;
+          else if (a_comp && *a_comp && (!b_comp || !*b_comp))
+            ret = 1;
+          else
+            ret = 0;
+          break;
+        }
+
+      a_comp = strtok_r (NULL, ".", &strtok_internal_a);
+      b_comp = strtok_r (NULL, ".", &strtok_internal_b);
+    }
+
+  xfree (a_dup);
+  xfree (b_dup);
+  return ret;
+}
+
+static int
+fetch_into_tmpfile(const char* url, ctrl_t ctrl, estream_t* strm_out, char** path)
+{
+  gpg_error_t err = 0;
+  char* filename = xmalloc (128);
+  int fd = -1;
+  estream_t file;
+  estream_t strm;
+  size_t len = 0;
+  char buf[1024];
+
+  if (!strm_out)
+    {
+      err = (GPG_ERR_INV_ARG);
+      goto leave;
+    }
+
+  snprintf (filename ,128 ,"%s%s%s" ,P_tmpdir ,DIRSEP_S ,"dirmngr_fetch_XXXXXX");
+
+  if ((fd = mkstemp (filename)) < 0)
+    {
+      err = gpg_err_code_from_syserror ();
+      goto leave;
+    }
+
+  file = es_fdopen (fd, "w+");
+
+  if ((err = ks_http_fetch (ctrl, url, &strm)))
+    goto leave;
+
+  while (!es_read (strm, buf, 1024, &len))
+    {
+      if (!len)
+        break;
+      if ((err = es_write (file, buf, len, NULL)))
+        {
+          log_error ("error writing message to pipe: %s\n", gpg_strerror (err));
+          es_free (strm);
+          goto leave;
+        }
+    }
+
+  es_rewind (file);
+  es_fclose (strm);
+  *strm_out = file;
+
+  if (path)
+    {
+    *path = filename;
+    filename = NULL;
+    }
+
+leave:
+  if (filename)
+    xfree (filename);
+  return err;
+}
+
+static const char hlp_versioncheck[] =
+  "VERSIONCHECK <name> <version>"
+  "\n"
+  "Checks the internet to find whenever a new program version is available."
+  "\n"
+  "<name> program name i.e. \"gnupg\""
+  "<version> current version of the program i.e. \"2.0.2\"";
+static gpg_error_t
+cmd_versioncheck (assuan_context_t ctx, char *line)
+{
+  gpg_error_t err;
+  char* strtok_internal = NULL;
+  char* name = strtok_r (line, " ", &strtok_internal);
+  char* version = strtok_r (NULL, " ", &strtok_internal);
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  estream_t swdb;
+  estream_t swdb_sig;
+  char* swdb_path = NULL;
+  char* swdb_sig_path = NULL;
+  char* buf = NULL;
+  size_t len = 0;
+  const size_t name_len = (name ? strlen (name) : 0);
+  const size_t version_len = (version ? strlen (version) : 0);
+  const char *argv[8];
+  char keyring_path[128];
+
+  if (!name || name_len == 0)
+    {
+      err = set_error (GPG_ERR_ASS_PARAMETER, "No program name given");
+      goto out;
+    }
+
+  if (!version || version_len == 0)
+    {
+      err = set_error (GPG_ERR_ASS_PARAMETER, "No program version given");
+      goto out;
+    }
+
+  if ((err = fetch_into_tmpfile ("https://versions.gnupg.org/swdb.lst", ctrl, &swdb, &swdb_path)))
+    goto out;
+
+  if ((err = fetch_into_tmpfile ("https://versions.gnupg.org/swdb.lst.sig", ctrl, &swdb_sig, &swdb_sig_path)))
+    goto out;
+
+  snprintf(keyring_path, 128, "%s%s%s", gnupg_datadir (), DIRSEP_S, "distsigkey.gpg");
+
+  argv[0] = "--batch";
+  argv[1] = "--no-default-keyring";
+  argv[2] = "--keyring";
+  argv[3] = keyring_path;
+  argv[4] = "--verify";
+  argv[5] = swdb_sig_path;
+  argv[6] = "-";
+  argv[7] = NULL;
+
+  if ((err = gnupg_exec_tool_stream(gnupg_module_name (GNUPG_MODULE_NAME_GPG),
+                                    argv, swdb, NULL, NULL, NULL, NULL)))
+    goto out;
+
+  es_fseek (swdb, 0, SEEK_SET);
+
+  while (es_getline (&buf, &len, swdb) > 0)
+    {
+      if (len > name_len + 5 &&
+          strncmp (buf, name, name_len) == 0 &&
+          strncmp (buf + name_len, "_ver ", 5) == 0)
+        {
+          const char* this_ver_start = buf + name_len + 5;
+          char* this_ver_end = strchr (this_ver_start, '\n');
+          int cmp;
+
+          if (this_ver_end)
+            *this_ver_end = 0;
+
+          err = assuan_write_status (ctx, "LINE", buf);
+
+          cmp = cmp_version(this_ver_start,version);
+
+          if (cmp < 0)
+            err = assuan_send_data (ctx, "ROLLBACK", strlen ("ROLLBACK"));
+          else if (cmp == 0)
+            err = assuan_send_data (ctx, "CURRENT", strlen ("CURRENT"));
+          else
+            err = assuan_send_data (ctx, "UPDATE", strlen ("UPDATE"));
+
+          goto out;
+        }
+    }
+
+  err = assuan_send_data (ctx, "NOT_FOUND", strlen ("NOT_FOUND"));
+
+  out:
+  es_fclose (swdb);
+  es_fclose (swdb_sig);
+  xfree(buf);
+  unlink(swdb_path);
+  unlink(swdb_sig_path);
+  xfree(swdb_path);
+  xfree(swdb_sig_path);
+  return leave_cmd (ctx, err);
+}
+
 
 
 /* Tell the assuan library about our commands. */
@@ -2370,6 +2596,7 @@ register_commands (assuan_context_t ctx)
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
     { "KILLDIRMNGR",cmd_killdirmngr,hlp_killdirmngr },
     { "RELOADDIRMNGR",cmd_reloaddirmngr,hlp_reloaddirmngr },
+    { "VERSIONCHECK",cmd_versioncheck,hlp_versioncheck },
     { NULL, NULL }
   };
   int i, j, rc;
