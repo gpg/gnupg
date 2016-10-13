@@ -179,6 +179,8 @@
 ;; The test keys.
 (define KEYA "1938C3A0E4674B6C217AC0B987DB2814EC38277E")
 (define KEYB "DC463A16E42F03240D76E8BA8B48C6BD871C2247")
+(define KEYIDA (substring KEYA (- (string-length KEYA) 8)))
+(define KEYIDB (substring KEYB (- (string-length KEYB) 8)))
 
 (define (verify-messages)
   (for-each
@@ -188,12 +190,12 @@
         (let ((fn (in-srcdir DIR (string-append key "-" i ".txt"))))
           (call-check `(,@GPG --trust-model=tofu --verify ,fn))))
       (list "1" "2")))
-   (list KEYA KEYB)))
+   (list KEYIDA KEYIDB)))
 
 ;; Import the public keys.
 (display "    > Two keys. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYA "-1.gpg"))))
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-1.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDA "-1.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-1.gpg"))))
 ;; Make sure the tofu engine registers the keys.
 (verify-messages)
 (display "<\n")
@@ -204,8 +206,8 @@
 
 ;; Import the cross sigs.
 (display "    > Adding cross signatures. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYA "-2.gpg"))))
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-2.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDA "-2.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-2.gpg"))))
 (verify-messages)
 (display "<\n")
 
@@ -215,9 +217,7 @@
 
 ;; Import the conflicting user id.
 (display "    > Adding conflicting user id. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-3.gpg"))))
-(call-check `(,@GPG --trust-model=tofu
-		    --verify ,(in-srcdir DIR (string-append KEYB "-1.txt"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-3.gpg"))))
 (verify-messages)
 (display "<\n")
 
@@ -226,7 +226,7 @@
 
 ;; Import Alice's signature on the conflicting user id.
 (display "    > Adding cross signature on user id. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-4.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-4.gpg"))))
 (verify-messages)
 (display "<\n")
 
@@ -255,6 +255,8 @@
 ;; The test keys.
 (define KEYA "1938C3A0E4674B6C217AC0B987DB2814EC38277E")
 (define KEYB "DC463A16E42F03240D76E8BA8B48C6BD871C2247")
+(define KEYIDA (substring KEYA (- (string-length KEYA) 8)))
+(define KEYIDB (substring KEYB (- (string-length KEYB) 8)))
 
 (define (verify-messages)
   (for-each
@@ -264,18 +266,18 @@
         (let ((fn (in-srcdir DIR (string-append key "-" i ".txt"))))
           (call-check `(,@GPG --trust-model=tofu --verify ,fn))))
       (list "1" "2")))
-   (list KEYA KEYB)))
+   (list KEYIDA KEYIDB)))
 
 ;; Import the public keys.
 (display "    > Two keys. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYA "-1.gpg"))))
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-1.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDA "-1.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-1.gpg"))))
 (display "<\n")
 
 ;; Import the cross sigs.
 (display "    > Adding cross signatures. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYA "-2.gpg"))))
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-2.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDA "-2.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-2.gpg"))))
 (display "<\n")
 
 ;; Make KEYA ultimately trusted.
@@ -293,9 +295,7 @@
 
 ;; Import the conflicting user id.
 (display "    > Adding conflicting user id. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-3.gpg"))))
-(call-check `(,@GPG --trust-model=tofu
-		    --verify ,(in-srcdir DIR (string-append KEYB "-1.txt"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-3.gpg"))))
 (verify-messages)
 (display "<\n")
 
@@ -304,7 +304,7 @@
 
 ;; Import Alice's signature on the conflicting user id.
 (display "    > Adding cross signature on user id. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-4.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-4.gpg"))))
 (verify-messages)
 (display "<\n")
 

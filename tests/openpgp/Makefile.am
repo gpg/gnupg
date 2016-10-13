@@ -110,20 +110,20 @@ TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     bug1223-good.asc bug1223-bogus.asc 4gb-packet.asc \
 	     tofu-keys.asc tofu-keys-secret.asc \
 	     tofu-2183839A-1.txt tofu-BC15C85A-1.txt tofu-EE37CF96-1.txt \
-	     tofu/cross-sigs/1938C3A0E4674B6C217AC0B987DB2814EC38277E-secret.gpg \
-	     tofu/cross-sigs/1938C3A0E4674B6C217AC0B987DB2814EC38277E-1.gpg \
-	     tofu/cross-sigs/1938C3A0E4674B6C217AC0B987DB2814EC38277E-1.txt \
-	     tofu/cross-sigs/1938C3A0E4674B6C217AC0B987DB2814EC38277E-2.gpg \
-	     tofu/cross-sigs/1938C3A0E4674B6C217AC0B987DB2814EC38277E-2.txt \
-	     tofu/cross-sigs/1938C3A0E4674B6C217AC0B987DB2814EC38277E-3.txt \
-	     tofu/cross-sigs/DC463A16E42F03240D76E8BA8B48C6BD871C2247-secret.gpg \
-	     tofu/cross-sigs/DC463A16E42F03240D76E8BA8B48C6BD871C2247-1.gpg \
-	     tofu/cross-sigs/DC463A16E42F03240D76E8BA8B48C6BD871C2247-1.txt \
-	     tofu/cross-sigs/DC463A16E42F03240D76E8BA8B48C6BD871C2247-2.gpg \
-	     tofu/cross-sigs/DC463A16E42F03240D76E8BA8B48C6BD871C2247-2.txt \
-	     tofu/cross-sigs/DC463A16E42F03240D76E8BA8B48C6BD871C2247-3.gpg \
-	     tofu/cross-sigs/DC463A16E42F03240D76E8BA8B48C6BD871C2247-3.txt \
-	     tofu/cross-sigs/DC463A16E42F03240D76E8BA8B48C6BD871C2247-4.gpg \
+	     tofu/cross-sigs/EC38277E-secret.gpg \
+	     tofu/cross-sigs/EC38277E-1.gpg \
+	     tofu/cross-sigs/EC38277E-1.txt \
+	     tofu/cross-sigs/EC38277E-2.gpg \
+	     tofu/cross-sigs/EC38277E-2.txt \
+	     tofu/cross-sigs/EC38277E-3.txt \
+	     tofu/cross-sigs/871C2247-secret.gpg \
+	     tofu/cross-sigs/871C2247-1.gpg \
+	     tofu/cross-sigs/871C2247-1.txt \
+	     tofu/cross-sigs/871C2247-2.gpg \
+	     tofu/cross-sigs/871C2247-2.txt \
+	     tofu/cross-sigs/871C2247-3.gpg \
+	     tofu/cross-sigs/871C2247-3.txt \
+	     tofu/cross-sigs/871C2247-4.gpg \
 	     tofu/cross-sigs/README
 
 data_files = data-500 data-9000 data-32000 data-80000 plain-large
