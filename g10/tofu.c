@@ -2131,12 +2131,6 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
 
     case TOFU_POLICY_ASK:
       /* We need to ask the user what to do.  Case #1 or #2 below.  */
-      if (! may_ask)
-	{
-	  trust_level = TRUST_UNDEFINED;
-	  goto out;
-	}
-
       break;
 
     case TOFU_POLICY_NONE:
@@ -2296,18 +2290,19 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
 
   if (! may_ask)
     {
-      /* We can only get here in the third case (no saved policy) and
-       * if there is a conflict.  (If the policy was ask (cases #1 and
-       * #2) and we weren't allowed to ask, we'd have already exited).  */
-      log_assert (policy == TOFU_POLICY_NONE);
-
-      if (record_binding (dbs, fingerprint, email, user_id,
-			  TOFU_POLICY_ASK,
-                          conflict_set && conflict_set->next
-                          ? conflict_set->next->d : NULL,
-                          0, now) != 0)
-	log_error (_("error setting TOFU binding's trust level to %s\n"),
-		   "ask");
+      log_assert (policy == TOFU_POLICY_NONE || policy == TOFU_POLICY_ASK);
+      if (policy == TOFU_POLICY_NONE)
+        {
+          /* We get here in the third case (no saved policy) and if
+           * there is a conflict.  */
+          if (record_binding (dbs, fingerprint, email, user_id,
+                              TOFU_POLICY_ASK,
+                              conflict_set && conflict_set->next
+                              ? conflict_set->next->d : NULL,
+                              0, now) != 0)
+            log_error (_("error setting TOFU binding's trust level to %s\n"),
+                       "ask");
+        }
 
       trust_level = TRUST_UNDEFINED;
       goto out;
