@@ -99,7 +99,6 @@
 
 ;; Carefully remove the TOFU db.
 (catch '() (unlink (string-append GNUPGHOME "/tofu.db")))
-(catch '() (unlink-recursively (string-append GNUPGHOME "/tofu.d")))
 
 ;; Verify a message.  There should be no conflict and the trust
 ;; policy should be set to auto.
