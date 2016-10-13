@@ -198,7 +198,7 @@
 (verify-messages)
 (display "<\n")
 
-;; Since their is no conflict, the policy should be auto.
+;; Since there is no conflict, the policy should be auto.
 (checkpolicy KEYA "auto")
 (checkpolicy KEYB "auto")
 
@@ -232,3 +232,85 @@
 
 (checkpolicy KEYA "auto")
 (checkpolicy KEYB "auto")
+
+;; Remove the keys.
+(call-check `(,@GPG --delete-key ,KEYA))
+(call-check `(,@GPG --delete-key ,KEYB))
+
+
+;; Check that we detect the following attack:
+;;
+;; Alice has an ultimately trusted key and she signs Bob's key.  Then
+;; Bob adds a new user id, "Alice".  TOFU should now detect a
+;; conflict, because Alice only signed Bob's "Bob" user id.
+
+(display "Checking UTK sigs...\n")
+(define GPG `(,(tool 'gpg) --no-permission-warning
+	      --faked-system-time=1476304861))
+
+;; Carefully remove the TOFU db.
+(catch '() (unlink (string-append GNUPGHOME "/tofu.db")))
+
+(define DIR "tofu/cross-sigs")
+;; The test keys.
+(define KEYA "1938C3A0E4674B6C217AC0B987DB2814EC38277E")
+(define KEYB "DC463A16E42F03240D76E8BA8B48C6BD871C2247")
+
+(define (verify-messages)
+  (for-each
+   (lambda (key)
+     (for-each
+      (lambda (i)
+        (let ((fn (in-srcdir DIR (string-append key "-" i ".txt"))))
+          (call-check `(,@GPG --trust-model=tofu --verify ,fn))))
+      (list "1" "2")))
+   (list KEYA KEYB)))
+
+;; Import the public keys.
+(display "    > Two keys. ")
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYA "-1.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-1.gpg"))))
+(display "<\n")
+
+;; Import the cross sigs.
+(display "    > Adding cross signatures. ")
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYA "-2.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-2.gpg"))))
+(display "<\n")
+
+;; Make KEYA ultimately trusted.
+(display (string-append "    > Marking " KEYA " as ultimately trusted. "))
+(pipe:do
+ (pipe:echo (string-append KEYA ":6:\n"))
+ (pipe:gpg `(--import-ownertrust)))
+(display "<\n")
+
+;; An ultimately trusted key's policy is good.
+(checkpolicy KEYA "good")
+;; A key signed by a UTK for which there is no policy gets the default
+;; policy of good.
+(checkpolicy KEYB "good")
+
+;; Import the conflicting user id.
+(display "    > Adding conflicting user id. ")
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-3.gpg"))))
+(call-check `(,@GPG --trust-model=tofu
+		    --verify ,(in-srcdir DIR (string-append KEYB "-1.txt"))))
+(verify-messages)
+(display "<\n")
+
+(checkpolicy KEYA "good")
+(checkpolicy KEYB "ask")
+
+;; Import Alice's signature on the conflicting user id.
+(display "    > Adding cross signature on user id. ")
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-4.gpg"))))
+(verify-messages)
+(display "<\n")
+
+(checkpolicy KEYA "good")
+(checkpolicy KEYB "good")
+
+;; Remove the keys.
+(call-check `(,@GPG --delete-key ,KEYA))
+(call-check `(,@GPG --delete-key ,KEYB))

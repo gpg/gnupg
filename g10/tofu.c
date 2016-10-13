@@ -1308,13 +1308,36 @@ cross_sigs (const char *email, kbnode_t a, kbnode_t b)
 
 /* Return whether the key was signed by an ultimately trusted key.  */
 static int
-signed_by_utk (kbnode_t a)
+signed_by_utk (const char *email, kbnode_t a)
 {
   kbnode_t n;
+  int saw_email = 0;
 
   for (n = a; n; n = n->next)
     {
       PKT_signature *sig;
+
+      if (n->pkt->pkttype == PKT_USER_ID)
+        {
+          if (saw_email)
+            /* We're done: we've processed all signatures on the
+               user id.  */
+            break;
+          else
+            {
+              /* See if this is the matching user id.  */
+              PKT_user_id *user_id = n->pkt->pkt.user_id;
+              char *email2 = email_from_user_id (user_id->name);
+
+              if (strcmp (email, email2) == 0)
+                saw_email = 1;
+
+              xfree (email2);
+            }
+        }
+
+      if (! saw_email)
+        continue;
 
       if (n->pkt->pkttype != PKT_SIGNATURE)
         continue;
@@ -2221,7 +2244,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
           }
         else
           {
-            is_signed_by_utk = signed_by_utk (kb);
+            is_signed_by_utk = signed_by_utk (email, kb);
             release_kbnode (kb);
           }
       }
