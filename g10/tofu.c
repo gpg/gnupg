@@ -1211,7 +1211,7 @@ format_conflict_msg_part1 (int policy, strlist_t conflict_set,
 
 /* Return 1 if A signed B and B signed A.  */
 static int
-cross_sigs (kbnode_t a, kbnode_t b)
+cross_sigs (const char *email, kbnode_t a, kbnode_t b)
 {
   int i;
 
@@ -1240,11 +1240,35 @@ cross_sigs (kbnode_t a, kbnode_t b)
       u32 *signer_kid = pk_main_keyid (signer_pk);
       kbnode_t n;
 
+      int saw_email = 0;
+
       /* Iterate over SIGNEE's keyblock and see if there is a valid
          signature from SIGNER.  */
       for (n = signee; n; n = n->next)
         {
           PKT_signature *sig;
+
+          if (n->pkt->pkttype == PKT_USER_ID)
+            {
+              if (saw_email)
+                /* We're done: we've processed all signatures on the
+                   user id.  */
+                break;
+              else
+                {
+                  /* See if this is the matching user id.  */
+                  PKT_user_id *user_id = n->pkt->pkt.user_id;
+                  char *email2 = email_from_user_id (user_id->name);
+
+                  if (strcmp (email, email2) == 0)
+                    saw_email = 1;
+
+                  xfree (email2);
+                }
+            }
+
+          if (! saw_email)
+            continue;
 
           if (n->pkt->pkttype != PKT_SIGNATURE)
             continue;
@@ -1974,7 +1998,7 @@ build_conflict_set (tofu_dbs_t dbs, const char *fingerprint, const char *email)
 
         for (j = i + 1; j < conflict_set_count; j ++)
           /* Be careful: we might not have a key block for a key.  */
-          if (kb_all[i] && kb_all[j] && cross_sigs (kb_all[i], kb_all[j]))
+          if (kb_all[i] && kb_all[j] && cross_sigs (email, kb_all[i], kb_all[j]))
             die[j] = 1;
       }
 

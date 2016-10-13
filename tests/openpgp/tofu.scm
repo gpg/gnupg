@@ -159,3 +159,76 @@
 (checkpolicy "BC15C85A" "ask")
 (checkpolicy "2183839A" "bad")
 (checkpolicy "EE37CF96" "ask")
+
+
+
+;; Check that we detect the following attack:
+;;
+;; Alice and Bob each have a key and cross sign them.  Bob then adds a
+;; new user id, "Alice".  TOFU should now detect a conflict, because
+;; Alice only signed Bob's "Bob" user id.
+
+(display "Checking cross sigs...\n")
+(define GPG `(,(tool 'gpg) --no-permission-warning
+	      --faked-system-time=1476304861))
+
+;; Carefully remove the TOFU db.
+(catch '() (unlink (string-append GNUPGHOME "/tofu.db")))
+
+(define DIR "tofu/cross-sigs")
+;; The test keys.
+(define KEYA "1938C3A0E4674B6C217AC0B987DB2814EC38277E")
+(define KEYB "DC463A16E42F03240D76E8BA8B48C6BD871C2247")
+
+(define (verify-messages)
+  (for-each
+   (lambda (key)
+     (for-each
+      (lambda (i)
+        (let ((fn (in-srcdir DIR (string-append key "-" i ".txt"))))
+          (call-check `(,@GPG --trust-model=tofu --verify ,fn))))
+      (list "1" "2")))
+   (list KEYA KEYB)))
+
+;; Import the public keys.
+(display "    > Two keys. ")
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYA "-1.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-1.gpg"))))
+;; Make sure the tofu engine registers the keys.
+(verify-messages)
+(display "<\n")
+
+;; Since their is no conflict, the policy should be auto.
+(checkpolicy KEYA "auto")
+(checkpolicy KEYB "auto")
+
+;; Import the cross sigs.
+(display "    > Adding cross signatures. ")
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYA "-2.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-2.gpg"))))
+(verify-messages)
+(display "<\n")
+
+;; There is still no conflict, so the policy shouldn't have changed.
+(checkpolicy KEYA "auto")
+(checkpolicy KEYB "auto")
+
+;; Import the conflicting user id.
+(display "    > Adding conflicting user id. ")
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-3.gpg"))))
+(call-check `(,@GPG --trust-model=tofu
+		    --verify ,(in-srcdir DIR (string-append KEYB "-1.txt"))))
+(verify-messages)
+(display "<\n")
+
+(checkpolicy KEYA "ask")
+(checkpolicy KEYB "ask")
+
+;; Import Alice's signature on the conflicting user id.
+(display "    > Adding cross signature on user id. ")
+(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYB "-4.gpg"))))
+(verify-messages)
+(display "<\n")
+
+(checkpolicy KEYA "auto")
+(checkpolicy KEYB "auto")
