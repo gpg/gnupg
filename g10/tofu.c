@@ -1082,6 +1082,7 @@ get_policy (tofu_dbs_t dbs, const char *fingerprint, const char *email,
       log_error (_("error reading TOFU database: %s\n"), err);
       print_further_info ("checking for existing bad bindings");
       sqlite3_free (err);
+      rc = gpg_error (GPG_ERR_GENERAL);
       goto out;
     }
 
@@ -1404,6 +1405,7 @@ ask_about_binding (ctrl_t ctrl,
       log_error (_("error gathering other user IDs: %s\n"), sqerr);
       sqlite3_free (sqerr);
       sqerr = NULL;
+      rc = gpg_error (GPG_ERR_GENERAL);
     }
 
   if (other_user_ids)
@@ -1481,7 +1483,10 @@ ask_about_binding (ctrl_t ctrl,
          GPGSQL_ARG_STRING, iter->d,
          GPGSQL_ARG_END);
       if (rc)
-        break;
+        {
+          rc = gpg_error (GPG_ERR_GENERAL);
+          break;
+        }
 
       if (!stats || strcmp (iter->d, stats->fingerprint) != 0)
         /* No stats for this binding.  Add a dummy entry.  */
@@ -1496,7 +1501,10 @@ ask_about_binding (ctrl_t ctrl,
          GPGSQL_ARG_STRING, iter->d,
          GPGSQL_ARG_END);
       if (rc)
-        break;
+        {
+          rc = gpg_error (GPG_ERR_GENERAL);
+          break;
+        }
 
 #undef STATS_SQL
 
@@ -1803,6 +1811,7 @@ build_conflict_set (tofu_dbs_t dbs, const char *fingerprint, const char *email)
       log_error (_("error reading TOFU database: %s\n"), sqerr);
       print_further_info ("listing fingerprints");
       sqlite3_free (sqerr);
+      rc = gpg_error (GPG_ERR_GENERAL);
       return NULL;
     }
 
@@ -2349,6 +2358,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
                                   fingerprint, user_id);
               sqlite3_free (sqerr);
               sqerr = NULL;
+              rc = gpg_error (GPG_ERR_GENERAL);
             }
           else if (DBG_TRUST)
             log_debug ("Set %s to conflict with %s\n",
@@ -2597,6 +2607,7 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
       log_error (_("error reading TOFU database: %s\n"), err);
       print_further_info ("getting signature statistics");
       sqlite3_free (err);
+      rc = gpg_error (GPG_ERR_GENERAL);
       goto out;
     }
 
@@ -2629,6 +2640,7 @@ show_statistics (tofu_dbs_t dbs, const char *fingerprint,
       log_error (_("error reading TOFU database: %s\n"), err);
       print_further_info ("getting encryption statistics");
       sqlite3_free (err);
+      rc = gpg_error (GPG_ERR_GENERAL);
       goto out;
     }
 
@@ -2927,6 +2939,7 @@ tofu_register_signature (ctrl_t ctrl,
           log_error (_("error reading TOFU database: %s\n"), err);
           print_further_info ("checking existence");
           sqlite3_free (err);
+          rc = gpg_error (GPG_ERR_GENERAL);
         }
       else if (c > 1)
         /* Duplicates!  This should not happen.  In particular,
@@ -2980,6 +2993,7 @@ tofu_register_signature (ctrl_t ctrl,
               log_error (_("error updating TOFU database: %s\n"), err);
               print_further_info ("insert signatures");
               sqlite3_free (err);
+              rc = gpg_error (GPG_ERR_GENERAL);
             }
         }
 
@@ -3093,6 +3107,7 @@ tofu_register_encryption (ctrl_t ctrl,
           log_error (_("error updating TOFU database: %s\n"), err);
           print_further_info ("insert encryption");
           sqlite3_free (err);
+          rc = gpg_error (GPG_ERR_GENERAL);
         }
 
       xfree (email);
