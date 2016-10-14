@@ -2407,11 +2407,11 @@ cmp_version(const char* a, const char* b)
 }
 
 static int
-fetch_into_tmpfile(const char* url, ctrl_t ctrl, estream_t* strm_out, char** path)
+fetch_into_tmpdir(const char* url, ctrl_t ctrl, estream_t* strm_out, char** path)
 {
   gpg_error_t err = 0;
-  char* filename = xmalloc (128);
-  int fd = -1;
+  char filename[128];
+  char* dirname = xmalloc (128);
   estream_t file;
   estream_t strm;
   size_t len = 0;
@@ -2423,15 +2423,16 @@ fetch_into_tmpfile(const char* url, ctrl_t ctrl, estream_t* strm_out, char** pat
       goto leave;
     }
 
-  snprintf (filename ,128 ,"%s%s%s" ,P_tmpdir ,DIRSEP_S ,"dirmngr_fetch_XXXXXX");
+  snprintf (dirname ,128 ,"%s%s%s" ,P_tmpdir ,DIRSEP_S ,"dirmngr_fetch_XXXXXX");
 
-  if ((fd = mkstemp (filename)) < 0)
+  if (!gnupg_mkdtemp (dirname))
     {
-      err = gpg_err_code_from_syserror ();
+      err = gpg_error_from_syserror ();
       goto leave;
     }
 
-  file = es_fdopen (fd, "w+");
+  snprintf (filename ,128 ,"%s%s%s" ,dirname ,DIRSEP_S ,"file");
+  file = es_fopen (filename, "w+");
 
   if ((err = ks_http_fetch (ctrl, url, &strm)))
     goto leave;
@@ -2454,13 +2455,13 @@ fetch_into_tmpfile(const char* url, ctrl_t ctrl, estream_t* strm_out, char** pat
 
   if (path)
     {
-    *path = filename;
-    filename = NULL;
+    *path = dirname;
+    dirname = NULL;
     }
 
 leave:
-  if (filename)
-    xfree (filename);
+  if (dirname)
+    xfree (dirname);
   return err;
 }
 
@@ -2481,14 +2482,19 @@ cmd_versioncheck (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   estream_t swdb;
   estream_t swdb_sig;
-  char* swdb_path = NULL;
-  char* swdb_sig_path = NULL;
+  char* swdb_dir = NULL;
+  char* swdb_sig_dir = NULL;
   char* buf = NULL;
   size_t len = 0;
   const size_t name_len = (name ? strlen (name) : 0);
   const size_t version_len = (version ? strlen (version) : 0);
   const char *argv[8];
   char keyring_path[128];
+  char swdb_path[128];
+  char swdb_sig_path[128];
+
+  swdb_path[0] = 0;
+  swdb_sig_path[0] = 0;
 
   if (!name || name_len == 0)
     {
@@ -2502,13 +2508,16 @@ cmd_versioncheck (assuan_context_t ctx, char *line)
       goto out;
     }
 
-  if ((err = fetch_into_tmpfile ("https://versions.gnupg.org/swdb.lst", ctrl, &swdb, &swdb_path)))
+  if ((err = fetch_into_tmpdir ("https://versions.gnupg.org/swdb.lst", ctrl, &swdb, &swdb_dir)))
     goto out;
 
-  if ((err = fetch_into_tmpfile ("https://versions.gnupg.org/swdb.lst.sig", ctrl, &swdb_sig, &swdb_sig_path)))
+  snprintf(swdb_path, 128, "%s%s%s", swdb_dir, DIRSEP_S, "file");
+
+  if ((err = fetch_into_tmpdir ("https://versions.gnupg.org/swdb.lst.sig", ctrl, &swdb_sig, &swdb_sig_dir)))
     goto out;
 
   snprintf(keyring_path, 128, "%s%s%s", gnupg_datadir (), DIRSEP_S, "distsigkey.gpg");
+  snprintf(swdb_sig_path, 128, "%s%s%s", swdb_sig_dir, DIRSEP_S, "file");
 
   argv[0] = "--batch";
   argv[1] = "--no-default-keyring";
@@ -2558,11 +2567,26 @@ cmd_versioncheck (assuan_context_t ctx, char *line)
   out:
   es_fclose (swdb);
   es_fclose (swdb_sig);
-  xfree(buf);
-  unlink(swdb_path);
-  unlink(swdb_sig_path);
-  xfree(swdb_path);
-  xfree(swdb_sig_path);
+
+  if (buf)
+    xfree(buf);
+
+  if (strlen (swdb_path) > 0)
+    unlink(swdb_path);
+  if (swdb_dir)
+    {
+      rmdir(swdb_dir);
+      xfree(swdb_dir);
+    }
+
+  if (strlen (swdb_sig_path) > 0)
+    unlink(swdb_sig_path);
+  if (swdb_sig_dir)
+    {
+      rmdir(swdb_sig_dir);
+      xfree(swdb_sig_dir);
+    }
+
   return leave_cmd (ctx, err);
 }
 
