@@ -4765,6 +4765,7 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   sc->save_inport=sc->NIL;
   sc->loadport=sc->NIL;
   sc->nesting=0;
+  memset (sc->nesting_stack, 0, sizeof sc->nesting_stack);
   sc->interactive_repl=0;
   sc->strbuff = sc->malloc(STRBUFFSIZE);
   if (sc->strbuff == 0) {
