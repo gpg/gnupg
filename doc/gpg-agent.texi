@@ -85,6 +85,14 @@ gpg-connect-agent /bye
 @end example
 
 @noindent
+If you want to manually terminate the currently-running agent, you can
+safely do so with:
+
+@example
+gpgconf --kill gpg-agent
+@end example
+
+@noindent
 @efindex GPG_TTY
 You should always add the following lines to your @code{.bashrc} or
 whatever initialization file is used for all shell invocations:
@@ -1518,6 +1526,7 @@ much slower or faster than the actual box.
 @ifset isman
 @command{@gpgname}(1),
 @command{gpgsm}(1),
+@command{gpgconf}(1),
 @command{gpg-connect-agent}(1),
 @command{scdaemon}(1)
 @end ifset
