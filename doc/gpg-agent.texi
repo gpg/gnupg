@@ -1516,7 +1516,7 @@ much slower or faster than the actual box.
 
 @mansect see also
 @ifset isman
-@command{gpg2}(1),
+@command{@gpgname}(1),
 @command{gpgsm}(1),
 @command{gpg-connect-agent}(1),
 @command{scdaemon}(1)
