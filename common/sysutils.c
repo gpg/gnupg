@@ -63,6 +63,9 @@
 # endif
 # include <windows.h>
 #endif
+#ifdef HAVE_INOTIFY_INIT
+# include <sys/inotify.h>
+#endif /*HAVE_INOTIFY_INIT*/
 #ifdef HAVE_NPTH
 # include <npth.h>
 #endif
@@ -76,6 +79,20 @@
 #include "sysutils.h"
 
 #define tohex(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'A'))
+
+
+static GPGRT_INLINE gpg_error_t
+my_error_from_syserror (void)
+{
+  return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+}
+
+static GPGRT_INLINE gpg_error_t
+my_error (int e)
+{
+  return gpg_err_make (default_errsource, (e));
+}
+
 
 
 #if defined(__linux__) && defined(__alpha__) && __GLIBC__ < 2
@@ -929,3 +946,113 @@ w32_get_user_sid (void)
   return sid;
 }
 #endif /*HAVE_W32_SYSTEM*/
+
+
+
+/* Support for inotify under Linux.  */
+
+/* Store a new inotify file handle for SOCKET_NAME at R_FD or return
+ * an error code. */
+gpg_error_t
+gnupg_inotify_watch_socket (int *r_fd, const char *socket_name)
+{
+#if HAVE_INOTIFY_INIT
+  gpg_error_t err;
+  char *fname;
+  int fd;
+  char *p;
+
+  *r_fd = -1;
+
+  fname = xtrystrdup (socket_name);
+  if (!fname)
+    return my_error_from_syserror ();
+
+  fd = inotify_init ();
+  if (fd == -1)
+    {
+      err = my_error_from_syserror ();
+      xfree (fname);
+      return err;
+    }
+
+  /* We need to watch the directory for the file because there won't
+   * be an IN_DELETE_SELF for a socket file.  To handle a removal of
+   * the directory we also watch the directory itself. */
+  p = strrchr (fname, '/');
+  if (p)
+    *p = 0;
+  if (inotify_add_watch (fd, fname,
+                         (IN_DELETE|IN_DELETE_SELF|IN_EXCL_UNLINK)) == -1)
+    {
+      err = my_error_from_syserror ();
+      close (fd);
+      xfree (fname);
+      return err;
+    }
+
+  xfree (fname);
+
+  *r_fd = fd;
+  return 0;
+#else /*!HAVE_INOTIFY_INIT*/
+
+  (void)socket_name;
+  *r_fd = -1;
+  return my_error (GPG_ERR_NOT_SUPPORTED);
+
+#endif /*!HAVE_INOTIFY_INIT*/
+}
+
+
+/* Read an inotify event and return true if it matches NAME or if it
+ * sees an IN_DELETE_SELF event for the directory of NAME.  */
+int
+gnupg_inotify_has_name (int fd, const char *name)
+{
+#if USE_NPTH && HAVE_INOTIFY_INIT
+  union {
+    struct inotify_event ev;
+    char _buf[sizeof (struct inotify_event) + 255 + 1];
+  } buf;
+  struct inotify_event *evp;
+  int n;
+
+  n = npth_read (fd, &buf, sizeof buf);
+  /* log_debug ("notify read: n=%d\n", n); */
+  evp = &buf.ev;
+  while (n >= sizeof (struct inotify_event))
+    {
+      /* log_debug ("             mask=%x len=%u name=(%s)\n", */
+      /*        evp->mask, (unsigned int)evp->len, evp->len? evp->name:""); */
+      if ((evp->mask & IN_UNMOUNT))
+        {
+          /* log_debug ("             found (dir unmounted)\n"); */
+          return 3; /* Directory was unmounted.  */
+        }
+      if ((evp->mask & IN_DELETE_SELF))
+        {
+          /* log_debug ("             found (dir removed)\n"); */
+          return 2; /* Directory was removed.  */
+        }
+      if ((evp->mask & IN_DELETE))
+        {
+          if (evp->len >= strlen (name) && !strcmp (evp->name, name))
+            {
+              /* log_debug ("             found (file removed)\n"); */
+              return 1; /* File was removed.  */
+            }
+        }
+      n -= sizeof (*evp) + evp->len;
+      evp = (struct inotify_event *)((char*)evp + sizeof (*evp) + evp->len);
+    }
+
+#else /*!(USE_NPTH && HAVE_INOTIFY_INIT)*/
+
+  (void)fd;
+  (void)name;
+
+#endif  /*!(USE_NPTH && HAVE_INOTIFY_INIT)*/
+
+  return 0; /* Not found.  */
+}
