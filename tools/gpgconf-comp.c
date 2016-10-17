@@ -1088,33 +1088,48 @@ struct error_line_s
 static void
 gpg_agent_runtime_change (int killflag)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   const char *pgmname;
-  const char *argv[3];
+  const char *argv[5];
   pid_t pid;
+  char *abs_homedir = NULL;
+  int i = 0;
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
-  argv[0] = "--no-autostart";
-  argv[1] = killflag? "KILLAGENT" : "RELOADAGENT";
-  argv[2] = NULL;
+  if (!gnupg_default_homedir_p ())
+    {
+      abs_homedir = make_absfilename_try (gnupg_homedir (), NULL);
+      if (!abs_homedir)
+        err = gpg_error_from_syserror ();
 
-  err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+      argv[i++] = "--homedir";
+      argv[i++] = abs_homedir;
+    }
+  argv[i++] = "--no-autostart";
+  argv[i++] = killflag? "KILLAGENT" : "RELOADAGENT";
+  argv[i++] = NULL;
+
+  if (!err)
+    err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
   if (!err)
     err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[1], gpg_strerror (err));
   gnupg_release_process (pid);
+  xfree (abs_homedir);
 }
 
 
 static void
 scdaemon_runtime_change (int killflag)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   const char *pgmname;
-  const char *argv[7];
+  const char *argv[9];
   pid_t pid;
+  char *abs_homedir = NULL;
+  int i = 0;
 
   (void)killflag;  /* For scdaemon kill and reload are synonyms.  */
 
@@ -1124,45 +1139,70 @@ scdaemon_runtime_change (int killflag)
      obviously a race condition but that should not harm too much.  */
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
-  argv[0] = "-s";
-  argv[1] = "--no-autostart";
-  argv[2] = "GETINFO scd_running";
-  argv[3] = "/if ${! $?}";
-  argv[4] = "scd killscd";
-  argv[5] = "/end";
-  argv[6] = NULL;
+  if (!gnupg_default_homedir_p ())
+    {
+      abs_homedir = make_absfilename_try (gnupg_homedir (), NULL);
+      if (!abs_homedir)
+        err = gpg_error_from_syserror ();
 
-  err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+      argv[i++] = "--homedir";
+      argv[i++] = abs_homedir;
+    }
+  argv[i++] = "-s";
+  argv[i++] = "--no-autostart";
+  argv[i++] = "GETINFO scd_running";
+  argv[i++] = "/if ${! $?}";
+  argv[i++] = "scd killscd";
+  argv[i++] = "/end";
+  argv[i++] = NULL;
+
+  if (!err)
+    err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
   if (!err)
     err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[4], gpg_strerror (err));
   gnupg_release_process (pid);
+  xfree (abs_homedir);
 }
 
 
 static void
 dirmngr_runtime_change (int killflag)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   const char *pgmname;
-  const char *argv[4];
+  const char *argv[6];
   pid_t pid;
+  char *abs_homedir = NULL;
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
   argv[0] = "--no-autostart";
   argv[1] = "--dirmngr";
   argv[2] = killflag? "KILLDIRMNGR" : "RELOADDIRMNGR";
-  argv[3] = NULL;
+  if (gnupg_default_homedir_p ())
+    argv[3] = NULL;
+  else
+    {
+      abs_homedir = make_absfilename_try (gnupg_homedir (), NULL);
+      if (!abs_homedir)
+        err = gpg_error_from_syserror ();
 
-  err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+      argv[3] = "--homedir";
+      argv[4] = abs_homedir;
+      argv[5] = NULL;
+    }
+
+  if (!err)
+    err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
   if (!err)
     err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
     gc_error (0, 0, "error running '%s %s': %s",
               pgmname, argv[2], gpg_strerror (err));
   gnupg_release_process (pid);
+  xfree (abs_homedir);
 }
 
 
