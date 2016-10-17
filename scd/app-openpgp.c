@@ -2689,6 +2689,8 @@ build_ecc_privkey_template (app_t app, int keyno,
                    + privkey_len
                    + suffix_len
                    + datalen);
+  if (exthdr_len + privkey_len + suffix_len + datalen >= 128)
+    template_size++;
   tp = template = xtrymalloc_secure (template_size);
   if (!template)
     return gpg_error_from_syserror ();
