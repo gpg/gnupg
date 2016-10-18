@@ -248,7 +248,14 @@ copy_buffer_do_copy (struct copy_buffer *c, estream_t source, estream_t sink)
     return 0;	/* Done copying.  */
 
 
+  nwritten = 0;
   err = sink? es_write (sink, c->writep, c->nread, &nwritten) : 0;
+
+  assert (nwritten <= c->nread);
+  c->writep += nwritten;
+  c->nread -= nwritten;
+  assert (c->writep - c->buffer <= sizeof c->buffer);
+
   if (err)
     {
       if (errno == EAGAIN)
@@ -256,11 +263,6 @@ copy_buffer_do_copy (struct copy_buffer *c, estream_t source, estream_t sink)
 
       return my_error_from_syserror ();
     }
-
-  assert (nwritten <= c->nread);
-  c->writep += nwritten;
-  c->nread -= nwritten;
-  assert (c->writep - c->buffer <= sizeof c->buffer);
 
   if (sink && es_fflush (sink) && errno != EAGAIN)
     err = my_error_from_syserror ();
