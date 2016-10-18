@@ -418,6 +418,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   int i;
   es_syshd_t syshd;
   gpg_err_source_t errsource = default_errsource;
+  int nonblock = !!(flags & GNUPG_SPAWN_NONBLOCK);
 
   (void)except; /* Not yet used.  */
 
@@ -440,7 +441,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
       syshd.type = ES_SYSHD_HANDLE;
       syshd.u.handle = inpipe[1];
-      infp = es_sysopen (&syshd, "w");
+      infp = es_sysopen (&syshd, nonblock? "w,nonblock" : "w");
       if (!infp)
         {
           err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
@@ -464,7 +465,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
       syshd.type = ES_SYSHD_HANDLE;
       syshd.u.handle = outpipe[0];
-      outfp = es_sysopen (&syshd, "r");
+      outfp = es_sysopen (&syshd, nonblock? "r,nonblock" : "r");
       if (!outfp)
         {
           err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
@@ -494,7 +495,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
       syshd.type = ES_SYSHD_HANDLE;
       syshd.u.handle = errpipe[0];
-      errfp = es_sysopen (&syshd, "r");
+      errfp = es_sysopen (&syshd, nonblock? "r,nonblock" : "r");
       if (!errfp)
         {
           err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
