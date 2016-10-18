@@ -603,9 +603,8 @@ iso7816_internal_authenticate (int slot, int extended_mode,
    returned.  In that case a value of -1 uses a large default
    (e.g. 4096 bytes), a value larger 256 used that value.  */
 static gpg_error_t
-do_generate_keypair (int slot, int extended_mode, int readonly,
-                     const unsigned char *data, size_t datalen,
-                     int le, 
+do_generate_keypair (int slot, int extended_mode, int read_only,
+                     const char *data, size_t datalen, int le,
                      unsigned char **result, size_t *resultlen)
 {
   int sw;
@@ -616,8 +615,8 @@ do_generate_keypair (int slot, int extended_mode, int readonly,
   *resultlen = 0;
 
   sw = apdu_send_le (slot, extended_mode,
-                     0x00, CMD_GENERATE_KEYPAIR, readonly? 0x81:0x80, 0,
-                     datalen, (const char*)data,
+                     0x00, CMD_GENERATE_KEYPAIR, read_only? 0x81:0x80, 0,
+                     datalen, data,
                      le >= 0 && le < 256? 256:le,
                      result, resultlen);
   if (sw != SW_SUCCESS)
@@ -635,8 +634,8 @@ do_generate_keypair (int slot, int extended_mode, int readonly,
 
 gpg_error_t
 iso7816_generate_keypair (int slot, int extended_mode,
-                          const unsigned char *data, size_t datalen,
-                          int le, 
+                          const char *data, size_t datalen,
+                          int le,
                           unsigned char **result, size_t *resultlen)
 {
   return do_generate_keypair (slot, extended_mode, 0,
@@ -646,8 +645,8 @@ iso7816_generate_keypair (int slot, int extended_mode,
 
 gpg_error_t
 iso7816_read_public_key (int slot, int extended_mode,
-                         const unsigned char *data, size_t datalen,
-                         int le, 
+                         const char *data, size_t datalen,
+                         int le,
                          unsigned char **result, size_t *resultlen)
 {
   return do_generate_keypair (slot, extended_mode, 1,
