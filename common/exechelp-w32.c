@@ -301,7 +301,8 @@ w32_open_null (int for_write)
 
 
 static gpg_error_t
-do_create_pipe (int filedes[2], int flags)
+create_pipe_and_estream (int filedes[2], int flags,
+                         estream_t *r_fp, int outbound, int nonblock)
 {
   gpg_error_t err = 0;
   HANDLE fds[2];
@@ -330,6 +331,25 @@ do_create_pipe (int filedes[2], int flags)
             err = 0;
         }
     }
+
+  if (! err && r_fp)
+    {
+      if (!outbound)
+        *r_fp = es_fdopen (filedes[0], nonblock? "r,nonblock" : "r");
+      else
+        *r_fp = es_fdopen (filedes[1], nonblock? "w,nonblock" : "w");
+      if (!*r_fp)
+        {
+          err = my_error_from_syserror ();
+          log_error (_("error creating a stream for a pipe: %s\n"),
+                     gpg_strerror (err));
+          close (filedes[0]);
+          close (filedes[1]);
+          filedes[0] = filedes[1] = -1;
+          return err;
+        }
+    }
+
   return err;
 }
 
@@ -339,10 +359,8 @@ do_create_pipe (int filedes[2], int flags)
 gpg_error_t
 gnupg_create_inbound_pipe (int filedes[2], estream_t *r_fp, int nonblock)
 {
-  if (r_fp)
-    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-  else
-    return do_create_pipe (filedes, INHERIT_WRITE);
+  return create_pipe_and_estream (filedes, INHERIT_WRITE,
+                                  r_fp, 0, nonblock);
 }
 
 
@@ -352,10 +370,8 @@ gnupg_create_inbound_pipe (int filedes[2], estream_t *r_fp, int nonblock)
 gpg_error_t
 gnupg_create_outbound_pipe (int filedes[2], estream_t *r_fp, int nonblock)
 {
-  if (r_fp)
-    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-  else
-    return do_create_pipe (filedes, INHERIT_READ);
+  return create_pipe_and_estream (filedes, INHERIT_READ,
+                                  r_fp, 1, nonblock);
 }
 
 
@@ -364,7 +380,8 @@ gnupg_create_outbound_pipe (int filedes[2], estream_t *r_fp, int nonblock)
 gpg_error_t
 gnupg_create_pipe (int filedes[2])
 {
-  return do_create_pipe (filedes, INHERIT_BOTH);
+  return create_pipe_and_estream (filedes, INHERIT_BOTH,
+                                  NULL, 0, 0);
 }
 
 
