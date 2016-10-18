@@ -1276,12 +1276,10 @@ get_public_key (app_t app, int keyno)
           le_value = 256; /* Use legacy value. */
         }
 
-      err = iso7816_read_public_key
-        (app->slot, exmode,
-         (const unsigned char*)(keyno == 0? "\xB6" :
-                                keyno == 1? "\xB8" : "\xA4"), 2,
-         le_value,
-         &buffer, &buflen);
+      err = iso7816_read_public_key (app->slot, exmode,
+                                     (keyno == 0? "\xB6" :
+                                      keyno == 1? "\xB8" : "\xA4"),
+                                     2, le_value, &buffer, &buflen);
       if (err)
         {
           log_error (_("reading public key failed: %s\n"), gpg_strerror (err));
@@ -3534,13 +3532,13 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
            gpg_error_t (*pincb)(void*, const char *, char **),
            void *pincb_arg)
 {
-  int rc;
+  gpg_error_t err;
   char numbuf[30];
   unsigned char fprbuf[20];
   const unsigned char *keydata, *m, *e;
   unsigned char *buffer = NULL;
   size_t buflen, keydatalen, mlen, elen;
-  time_t created_at;
+  u32 created_at;
   int keyno = atoi (keynostr) - 1;
   int force = (flags & 1);
   time_t start_at;
@@ -3562,9 +3560,9 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   app->app_local->pk[keyno].read_done = 0;
 
   /* Check whether a key already exists.  */
-  rc = does_key_exist (app, keyno, 1, force);
-  if (rc)
-    return rc;
+  err = does_key_exist (app, keyno, 1, force);
+  if (err)
+    return err;
 
   /* Because we send the key parameter back via status lines we need
      to put a limit on the max. allowed keysize.  2048 bit will
@@ -3575,8 +3573,8 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
     return gpg_error (GPG_ERR_TOO_LARGE);
 
   /* Prepare for key generation by verifying the Admin PIN.  */
-  rc = verify_chv3 (app, pincb, pincb_arg);
-  if (rc)
+  err = verify_chv3 (app, pincb, pincb_arg);
+  if (err)
     goto leave;
 
   /* Test whether we will need extended length mode.  (1900 is an
@@ -3597,17 +3595,13 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
 
   log_info (_("please wait while key is being generated ...\n"));
   start_at = time (NULL);
-  rc = iso7816_generate_keypair
-/* # warning key generation temporary replaced by reading an existing key. */
-/*   rc = iso7816_read_public_key */
-    (app->slot, exmode,
-     (const unsigned char*)(keyno == 0? "\xB6" :
-                            keyno == 1? "\xB8" : "\xA4"), 2,
-     le_value,
-     &buffer, &buflen);
-  if (rc)
+  err = iso7816_generate_keypair (app->slot, exmode,
+                                  (keyno == 0? "\xB6" :
+                                   keyno == 1? "\xB8" : "\xA4"),
+                                  2, le_value, &buffer, &buflen);
+  if (err)
     {
-      rc = gpg_error (GPG_ERR_CARD);
+      err = gpg_error (GPG_ERR_CARD);
       log_error (_("generating key failed\n"));
       goto leave;
     }
@@ -3622,7 +3616,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
   if (!keydata)
     {
-      rc = gpg_error (GPG_ERR_CARD);
+      err = gpg_error (GPG_ERR_CARD);
       log_error (_("response does not contain the public key data\n"));
       goto leave;
     }
@@ -3630,7 +3624,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   m = find_tlv (keydata, keydatalen, 0x0081, &mlen);
   if (!m)
     {
-      rc = gpg_error (GPG_ERR_CARD);
+      err = gpg_error (GPG_ERR_CARD);
       log_error (_("response does not contain the RSA modulus\n"));
       goto leave;
     }
@@ -3640,15 +3634,15 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   e = find_tlv (keydata, keydatalen, 0x0082, &elen);
   if (!e)
     {
-      rc = gpg_error (GPG_ERR_CARD);
+      err = gpg_error (GPG_ERR_CARD);
       log_error (_("response does not contain the RSA public exponent\n"));
       goto leave;
     }
   /* log_printhex ("RSA e:", e, elen); */
   send_key_data (ctrl, "e", e, elen);
 
-  created_at = createtime? createtime : gnupg_get_time ();
-  sprintf (numbuf, "%lu", (unsigned long)created_at);
+  created_at = (u32)(createtime? createtime : gnupg_get_time ());
+  sprintf (numbuf, "%u", created_at);
   send_status_info (ctrl, "KEY-CREATED-AT",
                     numbuf, (size_t)strlen(numbuf), NULL, 0);
 
@@ -3657,16 +3651,16 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   for (; elen && !*e; elen--, e++) /* strip leading zeroes */
     ;
 
-  rc = store_fpr (app, keyno, (u32)created_at, fprbuf, PUBKEY_ALGO_RSA,
-                  m, mlen, e, elen);
-  if (rc)
+  err = store_fpr (app, keyno, created_at, fprbuf, PUBKEY_ALGO_RSA,
+                   m, mlen, e, elen);
+  if (err)
     goto leave;
   send_fpr_if_not_null (ctrl, "KEY-FPR", -1, fprbuf);
 
 
  leave:
   xfree (buffer);
-  return rc;
+  return err;
 }
 
 
