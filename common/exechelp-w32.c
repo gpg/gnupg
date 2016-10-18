@@ -84,6 +84,20 @@
 # define handle_to_pid(a) ((int)(a))
 
 
+/* Helper */
+static inline gpg_error_t
+my_error_from_syserror (void)
+{
+  return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+}
+
+static inline gpg_error_t
+my_error (int errcode)
+{
+  return gpg_err_make (default_errsource, errcode);
+}
+
+
 /* Return the maximum number of currently allowed open file
    descriptors.  Only useful on POSIX systems but returns a value on
    other systems too.  */
@@ -219,7 +233,7 @@ build_w32_commandline (const char *pgmname, const char * const *argv,
 
   buf = p = xtrymalloc (n);
   if (!buf)
-    return gpg_error_from_syserror ();
+    return my_error_from_syserror ();
 
   p = build_w32_commandline_copy (p, pgmname);
   for (i=0; argv[i]; i++)
@@ -293,7 +307,7 @@ do_create_pipe (int filedes[2], int flags)
   HANDLE fds[2];
 
   filedes[0] = filedes[1] = -1;
-  err = gpg_error (GPG_ERR_GENERAL);
+  err = my_error (GPG_ERR_GENERAL);
   if (!create_inheritable_pipe (fds, flags))
     {
       filedes[0] = _open_osfhandle (handle_to_fd (fds[0]), O_RDONLY);
@@ -662,7 +676,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
                       ))
     {
       log_error ("CreateProcess failed: %s\n", w32_strerror (-1));
-      err = gpg_error (GPG_ERR_GENERAL);
+      err = my_error (GPG_ERR_GENERAL);
     }
   else
     err = 0;
@@ -707,7 +721,7 @@ gnupg_wait_processes (const char **pgmnames, pid_t *pids, size_t count,
 
   procs = xtrycalloc (count, sizeof *procs);
   if (procs == NULL)
-    return gpg_error_from_syserror ();
+    return my_error_from_syserror ();
 
   for (i = 0; i < count; i++)
     {
@@ -715,7 +729,7 @@ gnupg_wait_processes (const char **pgmnames, pid_t *pids, size_t count,
         r_exitcodes[i] = -1;
 
       if (pids[i] == (pid_t)(-1))
-        return gpg_error (GPG_ERR_INV_VALUE);
+        return my_error (GPG_ERR_INV_VALUE);
 
       procs[i] = fd_to_handle (pids[i]);
     }
@@ -818,7 +832,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   (void)envp;
 
   if (access (pgmname, X_OK))
-    return gpg_error_from_syserror ();
+    return my_error_from_syserror ();
 
   /* Prepare security attributes.  */
   memset (&sec_attr, 0, sizeof sec_attr );
@@ -856,7 +870,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
     {
       log_error ("CreateProcess(detached) failed: %s\n", w32_strerror (-1));
       xfree (cmdline);
-      return gpg_error (GPG_ERR_GENERAL);
+      return my_error (GPG_ERR_GENERAL);
     }
   xfree (cmdline);
   cmdline = NULL;
