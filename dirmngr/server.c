@@ -2342,102 +2342,134 @@ cmd_reloaddirmngr (assuan_context_t ctx, char *line)
 
 
 
-/* Returns -1 if version a is less than b, 0 if the versions are equal and 1 otherwise.
- * Versions are compared as period-separated tuples starting at the front. Elements are
- * interpreted as decimals first. If this fails strcmp is used. Comparison continues
- * until two elements are found the be unequal of the end is reached. */
-static int
-cmp_version(const char* a, const char* b)
+static const char*
+parse_version_number (const char *s, int *number)
 {
-  char *a_dup, *b_dup, *strtok_internal_a = NULL, *strtok_internal_b = NULL, *a_comp, *b_comp;
-  int ret = 0;
+  int val = 0;
 
-  assert (a && b);
-
-  a_dup = xstrdup (a);
-  b_dup = xstrdup (b);
-  a_comp = strtok_r (a_dup, ".", &strtok_internal_a);
-  b_comp = strtok_r (b_dup, ".", &strtok_internal_b);
-
-  while (a_comp || b_comp)
+  if (*s == '0' && digitp (&s[1]))
+    return NULL;  /* Leading zeros are not allowed.  */
+  for (; digitp (s); s++)
     {
-      if (a_comp && *a_comp && b_comp && *b_comp)
-        {
-          char* a_end;
-          char* b_end;
-          int a_ver = strtol (a_comp, &a_end, 10);
-          int b_ver = strtol (b_comp, &b_end, 10);
-
-          if (!*a_end && !*b_end)
-            {
-              if (a_ver != b_ver)
-                {
-                  ret = a_ver - b_ver;
-                  break;
-                }
-            }
-          else
-            {
-              int r = strcmp (a_comp, b_comp);
-              if (r != 0)
-                {
-                  ret = r;
-                  break;
-                }
-            }
-        }
-      else
-        {
-          if ((!a_comp || !*a_comp) && b_comp && *b_comp)
-            ret = -1;
-          else if (a_comp && *a_comp && (!b_comp || !*b_comp))
-            ret = 1;
-          else
-            ret = 0;
-          break;
-        }
-
-      a_comp = strtok_r (NULL, ".", &strtok_internal_a);
-      b_comp = strtok_r (NULL, ".", &strtok_internal_b);
+      val *= 10;
+      val += *s - '0';
     }
-
-  xfree (a_dup);
-  xfree (b_dup);
-  return ret;
+  *number = val;
+  return val < 0 ? NULL : s;
 }
 
-static int
-fetch_into_tmpdir(const char* url, ctrl_t ctrl, estream_t* strm_out, char** path)
+
+static const char *
+parse_version_string (const char *s, int *major, int *minor)
 {
-  gpg_error_t err = 0;
-  char filename[128];
-  char* dirname = xmalloc (128);
+  s = parse_version_number (s, major);
+  if (!s || *s != '.')
+    return NULL;
+  s++;
+  s = parse_version_number (s, minor);
+  if (!s)
+    return NULL;
+  return s;  /* Patchlevel.  */
+}
+
+/* Class Confucius.
+
+   "Don't worry that other people don't know you;
+   worry that you don't know other people."            Analects--1.16.  */
+
+/* Create temporary directory with mode 0700.  Returns a dynamically
+   allocated string with the filename of the directory.  */
+static char *
+confucius_mktmpdir (void)
+{
+  char *name, *p;
+
+  p = getenv ("TMPDIR");
+  if (!p || !*p)
+    p = "/tmp";
+  if (p[strlen (p) - 1] == '/')
+    name = xstrconcat (p, "gpg-XXXXXX", NULL);
+  else
+    name = xstrconcat (p, "/", "gpg-XXXXXX", NULL);
+  if (!name || !gnupg_mkdtemp (name))
+    {
+      log_error (_("can't create temporary directory '%s': %s\n"),
+                 name?name:"", strerror (errno));
+      return NULL;
+    }
+
+  return name;
+}
+
+/* Sets result to -1 if version a is less than b, 0 if the versions are equal
+ * and 1 otherwise. Patch levels are compared as strings.  */
+static gpg_error_t
+cmp_version (const char *a, const char *b, int *result)
+{
+  int a_major, b_major;
+  int a_minor, b_minor;
+  const char *a_patch, *b_patch;
+
+  if (!a || !b || !result)
+    return GPG_ERR_EINVAL;
+
+  a_patch = parse_version_string (a, &a_major, &a_minor);
+  b_patch = parse_version_string (b, &b_major, &b_minor);
+
+  if (!a_patch || !b_patch)
+    return GPG_ERR_EINVAL;
+
+  if (a_major == b_major)
+    {
+      if (a_minor == b_minor)
+        *result = strcmp (a_patch, b_patch);
+      else
+        *result = a_minor - b_minor;
+    }
+  else
+    *result = a_major - b_major;
+
+  return 0;
+}
+
+static gpg_error_t
+fetch_into_tmpdir (ctrl_t ctrl, const char* url, estream_t* strm_out,
+                   char** path)
+{
+  gpg_error_t err;
+  char* filename = NULL;
+  char* dirname = NULL;
   estream_t file;
   estream_t strm;
   size_t len = 0;
   char buf[1024];
 
-  if (!strm_out)
+  if (!strm_out || !path || !url)
     {
       err = (GPG_ERR_INV_ARG);
       goto leave;
     }
 
-  snprintf (dirname ,128 ,"%s%s%s" ,P_tmpdir ,DIRSEP_S ,"dirmngr_fetch_XXXXXX");
-
-  if (!gnupg_mkdtemp (dirname))
+  dirname = confucius_mktmpdir ();
+  if (!dirname)
     {
       err = gpg_error_from_syserror ();
       goto leave;
     }
 
-  snprintf (filename ,128 ,"%s%s%s" ,dirname ,DIRSEP_S ,"file");
+  filename = strconcat (dirname, DIRSEP_S, "file", NULL);
+  if (!filename)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
   file = es_fopen (filename, "w+");
 
   if ((err = ks_http_fetch (ctrl, url, &strm)))
     goto leave;
 
-  while (!es_read (strm, buf, 1024, &len))
+  while (!es_read (strm, buf, sizeof buf, &len))
     {
       if (!len)
         break;
@@ -2452,6 +2484,7 @@ fetch_into_tmpdir(const char* url, ctrl_t ctrl, estream_t* strm_out, char** path
   es_rewind (file);
   es_fclose (strm);
   *strm_out = file;
+  err = 0;
 
   if (path)
     {
@@ -2460,8 +2493,8 @@ fetch_into_tmpdir(const char* url, ctrl_t ctrl, estream_t* strm_out, char** path
     }
 
 leave:
-  if (dirname)
-    xfree (dirname);
+  xfree (dirname);
+  xfree (filename);
   return err;
 }
 
@@ -2476,18 +2509,19 @@ static gpg_error_t
 cmd_versioncheck (assuan_context_t ctx, char *line)
 {
   gpg_error_t err;
-  char* strtok_internal = NULL;
-  char* name = strtok_r (line, " ", &strtok_internal);
-  char* version = strtok_r (NULL, " ", &strtok_internal);
-  ctrl_t ctrl = assuan_get_pointer (ctx);
+
+  char* name;
+  char* version;
+  size_t name_len;
+  char *cmd_fields[2];
+
+  ctrl_t ctrl;
   estream_t swdb;
   estream_t swdb_sig;
   char* swdb_dir = NULL;
   char* swdb_sig_dir = NULL;
   char* buf = NULL;
   size_t len = 0;
-  const size_t name_len = (name ? strlen (name) : 0);
-  const size_t version_len = (version ? strlen (version) : 0);
   const char *argv[8];
   char keyring_path[128];
   char swdb_path[128];
@@ -2495,29 +2529,33 @@ cmd_versioncheck (assuan_context_t ctx, char *line)
 
   swdb_path[0] = 0;
   swdb_sig_path[0] = 0;
+  ctrl = assuan_get_pointer (ctx);
 
-  if (!name || name_len == 0)
+  if (split_fields (line, &cmd_fields, 2) != 2)
     {
-      err = set_error (GPG_ERR_ASS_PARAMETER, "No program name given");
+      err = set_error (GPG_ERR_ASS_PARAMETER,
+                       "No program name and/or version given");
       goto out;
     }
 
-  if (!version || version_len == 0)
-    {
-      err = set_error (GPG_ERR_ASS_PARAMETER, "No program version given");
-      goto out;
-    }
+  name = cmd_fields[0];
+  name_len = strlen (name);
+  version = cmd_fields[1];
 
-  if ((err = fetch_into_tmpdir ("https://versions.gnupg.org/swdb.lst", ctrl, &swdb, &swdb_dir)))
+  if ((err = fetch_into_tmpdir (ctrl, "https://versions.gnupg.org/swdb.lst",
+                                &swdb, &swdb_dir)))
     goto out;
 
-  snprintf(swdb_path, 128, "%s%s%s", swdb_dir, DIRSEP_S, "file");
+  snprintf (swdb_path, sizeof swdb_path, "%s%s%s", swdb_dir, DIRSEP_S, "file");
 
-  if ((err = fetch_into_tmpdir ("https://versions.gnupg.org/swdb.lst.sig", ctrl, &swdb_sig, &swdb_sig_dir)))
+  if ((err = fetch_into_tmpdir (ctrl, "https://versions.gnupg.org/swdb.lst.sig",
+                                &swdb_sig, &swdb_sig_dir)))
     goto out;
 
-  snprintf(keyring_path, 128, "%s%s%s", gnupg_datadir (), DIRSEP_S, "distsigkey.gpg");
-  snprintf(swdb_sig_path, 128, "%s%s%s", swdb_sig_dir, DIRSEP_S, "file");
+  snprintf (keyring_path, sizeof keyring_path, "%s%s%s", gnupg_datadir (),
+           DIRSEP_S, "distsigkey.gpg");
+  snprintf (swdb_sig_path, sizeof swdb_sig_path, "%s%s%s", swdb_sig_dir,
+           DIRSEP_S, "file");
 
   argv[0] = "--batch";
   argv[1] = "--no-default-keyring";
@@ -2528,8 +2566,8 @@ cmd_versioncheck (assuan_context_t ctx, char *line)
   argv[6] = "-";
   argv[7] = NULL;
 
-  if ((err = gnupg_exec_tool_stream(gnupg_module_name (GNUPG_MODULE_NAME_GPG),
-                                    argv, swdb, NULL, NULL, NULL, NULL)))
+  if ((err = gnupg_exec_tool_stream (gnupg_module_name (GNUPG_MODULE_NAME_GPG),
+                                     argv, swdb, NULL, NULL, NULL, NULL)))
     goto out;
 
   es_fseek (swdb, 0, SEEK_SET);
@@ -2549,7 +2587,9 @@ cmd_versioncheck (assuan_context_t ctx, char *line)
 
           err = assuan_write_status (ctx, "LINE", buf);
 
-          cmp = cmp_version(this_ver_start,version);
+          err = cmp_version (this_ver_start, version, &cmp);
+          if (err > 0)
+            goto out;
 
           if (cmp < 0)
             err = assuan_send_data (ctx, "ROLLBACK", strlen ("ROLLBACK"));
@@ -2567,25 +2607,19 @@ cmd_versioncheck (assuan_context_t ctx, char *line)
   out:
   es_fclose (swdb);
   es_fclose (swdb_sig);
-
-  if (buf)
-    xfree(buf);
+  xfree (buf);
 
   if (strlen (swdb_path) > 0)
-    unlink(swdb_path);
+    unlink (swdb_path);
   if (swdb_dir)
-    {
-      rmdir(swdb_dir);
-      xfree(swdb_dir);
-    }
+    rmdir (swdb_dir);
+  xfree (swdb_dir);
 
   if (strlen (swdb_sig_path) > 0)
-    unlink(swdb_sig_path);
+    unlink (swdb_sig_path);
   if (swdb_sig_dir)
-    {
-      rmdir(swdb_sig_dir);
-      xfree(swdb_sig_dir);
-    }
+    rmdir (swdb_sig_dir);
+  xfree (swdb_sig_dir);
 
   return leave_cmd (ctx, err);
 }
