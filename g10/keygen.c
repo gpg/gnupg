@@ -4876,7 +4876,7 @@ gen_card_key (int algo, int keyno, int is_primary, kbnode_t pub_root,
   unsigned char *public;
   gcry_sexp_t s_key;
 
-  snprintf (keyid, DIM(keyid)-1, "OPENPGP.%d", keyno);
+  snprintf (keyid, DIM(keyid), "OPENPGP.%d", keyno);
   keyid[DIM(keyid)-1] = 0;
 
   if (algo != PUBKEY_ALGO_RSA)
