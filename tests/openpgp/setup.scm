@@ -95,13 +95,7 @@
    (pipe:spawn `(,@GPG --dearmor))
    (pipe:spawn `(,@GPG --yes --import))))
 
-(define (start-agent)
-  (echo "Starting gpg-agent...")
-  (call-check `(,(tool 'gpg-connect-agent) --verbose
-		,(string-append "--agent-program=" (tool 'gpg-agent)
-				"|--debug-quick-random")
-		/bye))
-
+(define (preset-passphrases)
   (info "Preset passphrases")
   ;; one@example.com
   (call-check `(,(tool 'gpg-preset-passphrase)
@@ -119,19 +113,18 @@
 		"A0747D5F9425E6664F4FFBEED20FBCA79FDED2BD"))
   (echo "All set up."))
 
-(define (kill-agent)
-  (call-check `(,(tool 'gpg-connect-agent) --verbose killagent /bye)))
-
 (cond
  ((member "--create-tarball" *args*)
   (with-temporary-working-directory
    (setenv "GNUPGHOME" (getcwd) #t)
    (create-gpghome)
-   (kill-agent)
+   (stop-agent)
    (call-check `(,(tool 'gpgtar) --create --output ,(cadr *args*) "."))))
  ((member "--unpack-tarball" *args*)
   (call-check `(,(tool 'gpgtar) --extract --directory=. ,(cadr *args*)))
-  (start-agent))
+  (start-agent)
+  (preset-passphrases))
  (else
   (create-gpghome)
-  (start-agent)))
+  (start-agent)
+  (preset-passphrases)))

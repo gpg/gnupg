@@ -146,3 +146,20 @@
 (let ((verbose (string->number (getenv "verbose"))))
   (if (number? verbose)
       (*set-verbose!* verbose)))
+
+;; Create the socket dir and start the agent.
+(define (start-agent)
+  (echo "Starting gpg-agent...")
+  (catch (echo "Warning: Creating socket directory failed:" (car *error*))
+	 (call-popen `(,(tool 'gpgconf) --create-socketdir) ""))
+  (call-check `(,(tool 'gpg-connect-agent) --verbose
+		,(string-append "--agent-program=" (tool 'gpg-agent)
+				"|--debug-quick-random")
+		/bye)))
+
+;; Stop the agent and remove the socket dir.
+(define (stop-agent)
+  (echo "Stopping gpg-agent...")
+  (catch (echo "Warning: Removing socket directory failed.")
+	 (call-popen `(,(tool 'gpgconf) --remove-socketdir) ""))
+  (call-check `(,(tool 'gpg-connect-agent) --verbose killagent /bye)))
