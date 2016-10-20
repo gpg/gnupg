@@ -25,5 +25,6 @@
 
 (let ((response (call-popen `(,(tool 'gpg-connect-agent))
 			    "GET_PASSPHRASE --no-ask some_id X X X")))
-  (unless (string=? response "OK 736F6D655F70617373706872617365\n")
+  (unless (string=? (string-rtrim char-whitespace? response)
+		    "OK 736F6D655F70617373706872617365")
 	  (error "Could not retrieve passphrase from cache:" response)))
