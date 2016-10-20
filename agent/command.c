@@ -988,8 +988,10 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
 static const char hlp_readkey[] =
   "READKEY <hexstring_with_keygrip>\n"
+  "        --card <keyid>\n"
   "\n"
-  "Return the public key for the given keygrip.";
+  "Return the public key for the given keygrip or keyid.\n"
+  "With --card, private key file with card information will be created.";
 static gpg_error_t
 cmd_readkey (assuan_context_t ctx, char *line)
 {
@@ -997,9 +999,56 @@ cmd_readkey (assuan_context_t ctx, char *line)
   int rc;
   unsigned char grip[20];
   gcry_sexp_t s_pkey = NULL;
+  unsigned char *pkbuf = NULL;
+  size_t pkbuflen;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
+
+  if (has_option_name (line, "--card"))
+    {
+      const char *keyid;
+      char *serialno = NULL;
+
+      keyid = skip_options (line);
+
+      rc = agent_card_getattr (ctrl, "SERIALNO", &serialno);
+      if (rc)
+        {
+          log_error (_("error getting serial number of card: %s\n"),
+                     gpg_strerror (rc));
+          goto leave;
+        }
+
+      pkbuflen = gcry_sexp_canon_len (pkbuf, 0, NULL, NULL);
+      rc = agent_card_readkey (ctrl, keyid, &pkbuf);
+      if (rc)
+        goto leave;
+      rc = gcry_sexp_sscan (&s_pkey, NULL, (char*)pkbuf, pkbuflen);
+      if (rc)
+        goto leave;
+
+      if (!gcry_pk_get_keygrip (s_pkey, grip))
+        {
+          rc = gcry_pk_testkey (s_pkey);
+          if (rc == 0)
+            rc = gpg_error (GPG_ERR_INTERNAL);
+
+          goto leave;
+        }
+
+      rc = agent_write_shadow_key (grip, serialno, keyid, pkbuf, 0);
+      if (rc)
+        goto leave;
+
+      rc = assuan_send_data (ctx, pkbuf, pkbuflen);
+
+ leave:
+      xfree (serialno);
+      xfree (pkbuf);
+      gcry_sexp_release (s_pkey);
+      return leave_cmd (ctx, rc);
+    }
 
   rc = parse_keygrip (ctx, line, grip);
   if (rc)
@@ -1008,20 +1057,16 @@ cmd_readkey (assuan_context_t ctx, char *line)
   rc = agent_public_key_from_file (ctrl, grip, &s_pkey);
   if (!rc)
     {
-      size_t len;
-      unsigned char *buf;
-
-      len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
-      assert (len);
-      buf = xtrymalloc (len);
-      if (!buf)
+      pkbuflen = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
+      assert (pkbuflen);
+      pkbuf = xtrymalloc (pkbuflen);
+      if (!pkbuf)
         rc = gpg_error_from_syserror ();
       else
         {
-          len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, buf, len);
-          assert (len);
-          rc = assuan_send_data (ctx, buf, len);
-          xfree (buf);
+          gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, pkbuf, pkbuflen);
+          rc = assuan_send_data (ctx, pkbuf, pkbuflen);
+          xfree (pkbuf);
         }
       gcry_sexp_release (s_pkey);
     }

@@ -381,8 +381,7 @@ agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
 
   for (item = parm.info; item; item = item->next)
     {
-      unsigned char *pubkey, *shdkey;
-      size_t n;
+      unsigned char *pubkey;
 
       if (opt.verbose)
         log_info ("          id: %s    (grip=%s)\n", item->id, item->hexgrip);
@@ -410,33 +409,10 @@ agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
           goto leave;
         }
 
-      {
-        unsigned char *shadow_info = make_shadow_info (serialno, item->id);
-        if (!shadow_info)
-          {
-            rc = gpg_error (GPG_ERR_ENOMEM);
-            xfree (pubkey);
-            goto leave;
-          }
-        rc = agent_shadow_key (pubkey, shadow_info, &shdkey);
-        xfree (shadow_info);
-      }
+      rc = agent_write_shadow_key (grip, serialno, item->id, pubkey, force);
       xfree (pubkey);
       if (rc)
-        {
-          log_error ("shadowing the key failed: %s\n", gpg_strerror (rc));
-          goto leave;
-        }
-      n = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
-      assert (n);
-
-      rc = agent_write_private_key (grip, shdkey, n, force);
-      xfree (shdkey);
-      if (rc)
-        {
-          log_error ("error writing key: %s\n", gpg_strerror (rc));
-          goto leave;
-        }
+        goto leave;
 
       if (opt.verbose)
         log_info ("          id: %s - shadow key created\n", item->id);

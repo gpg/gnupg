@@ -2474,39 +2474,9 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
   if ( agent_key_available (grip) )
     {
       /* (Shadow)-key is not available in our key storage.  */
-      unsigned char *shadow_info;
-      unsigned char *tmp;
-
-      shadow_info = make_shadow_info (serialno, authkeyid);
-      if (!shadow_info)
-        {
-          err = gpg_error_from_syserror ();
-          xfree (pkbuf);
-          gcry_sexp_release (s_pk);
-          xfree (serialno);
-          xfree (authkeyid);
-          return err;
-        }
-      err = agent_shadow_key (pkbuf, shadow_info, &tmp);
-      xfree (shadow_info);
+      err = agent_write_shadow_key (grip, serialno, authkeyid, pkbuf, 0);
       if (err)
         {
-          log_error (_("shadowing the key failed: %s\n"), gpg_strerror (err));
-          xfree (pkbuf);
-          gcry_sexp_release (s_pk);
-          xfree (serialno);
-          xfree (authkeyid);
-          return err;
-        }
-      xfree (pkbuf);
-      pkbuf = tmp;
-      pkbuflen = gcry_sexp_canon_len (pkbuf, 0, NULL, NULL);
-      assert (pkbuflen);
-
-      err = agent_write_private_key (grip, pkbuf, pkbuflen, 0);
-      if (err)
-        {
-          log_error (_("error writing key: %s\n"), gpg_strerror (err));
           xfree (pkbuf);
           gcry_sexp_release (s_pk);
           xfree (serialno);

@@ -1492,3 +1492,39 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
   gcry_sexp_release (s_skey);
   return err;
 }
+
+
+/* Write an S-expression formatted shadow key to our key storage.
+   Shadow key is created by an S-expression public key in PKBUF and
+   card's SERIALNO and the IDSTRING.  With FORCE passed as true an
+   existing key with the given GRIP will get overwritten.  */
+gpg_error_t
+agent_write_shadow_key (const unsigned char *grip,
+                        const char *serialno, const char *keyid,
+                        const unsigned char *pkbuf, int force)
+{
+  gpg_error_t err;
+  unsigned char *shadow_info;
+  unsigned char *shdkey;
+  size_t len;
+
+  shadow_info = make_shadow_info (serialno, keyid);
+  if (!shadow_info)
+    return gpg_error_from_syserror ();
+
+  err = agent_shadow_key (pkbuf, shadow_info, &shdkey);
+  xfree (shadow_info);
+  if (err)
+    {
+      log_error ("shadowing the key failed: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  len = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
+  err = agent_write_private_key (grip, shdkey, len, force);
+  xfree (shdkey);
+  if (err)
+    log_error ("error writing key: %s\n", gpg_strerror (err));
+
+  return err;
+}
