@@ -754,38 +754,51 @@ gnupg_setenv (const char *name, const char *value, int overwrite)
   (void)value;
   (void)overwrite;
   return 0;
-#elif defined(HAVE_W32_SYSTEM)
-  if (!overwrite)
-    {
-      char tmpbuf[10];
-      if (GetEnvironmentVariable (name, tmpbuf, sizeof tmpbuf))
-        return 0; /* Exists but overwrite was not requested.  */
-    }
-  if (!SetEnvironmentVariable (name, value))
-    {
-      gpg_err_set_errno (EINVAL); /* (Might also be ENOMEM.) */
-      return -1;
-    }
-  return 0;
-#elif defined(HAVE_SETENV)
+#else
+#if defined(HAVE_W32_SYSTEM)
+  /*  Windows maintains (at least) two sets of environment variables.
+      One set can be accessed by GetEnvironmentVariable and
+      SetEnvironmentVariable.  This set is inherited by the children.
+      The other set is maintained in the C runtime, and is accessed
+      using getenv and putenv.  We try to keep them in sync by
+      modifying both sets.  */
+  {
+    int exists;
+    char tmpbuf[10];
+    exists = GetEnvironmentVariable (name, tmpbuf, sizeof tmpbuf);
+
+    if ((! exists || overwrite) && !SetEnvironmentVariable (name, value))
+      {
+        gpg_err_set_errno (EINVAL); /* (Might also be ENOMEM.) */
+        return -1;
+      }
+  }
+#endif
+
+#if defined(HAVE_SETENV)
   return setenv (name, value, overwrite);
 #else
-  char *buf;
-
-  (void)overwrite;
-  if (!name || !value)
+  if (! getenv (name) || overwrite)
     {
-      gpg_err_set_errno (EINVAL);
-      return -1;
-    }
-  buf = xtrymalloc (strlen (name) + 1 + strlen (value) + 1);
-  if (!buf)
-    return -1;
-  strcpy (stpcpy (stpcpy (buf, name), "="), value);
+      char *buf;
+
+      (void)overwrite;
+      if (!name || !value)
+        {
+          gpg_err_set_errno (EINVAL);
+          return -1;
+        }
+      buf = xtrymalloc (strlen (name) + 1 + strlen (value) + 1);
+      if (!buf)
+        return -1;
+      strcpy (stpcpy (stpcpy (buf, name), "="), value);
 #if __GNUC__
 # warning no setenv - using putenv but leaking memory.
 #endif
-  return putenv (buf);
+      return putenv (buf);
+    }
+  return 0;
+#endif
 #endif
 }
 
@@ -796,30 +809,40 @@ gnupg_unsetenv (const char *name)
 #ifdef HAVE_W32CE_SYSTEM
   (void)name;
   return 0;
-#elif defined(HAVE_W32_SYSTEM)
+#else
+#if defined(HAVE_W32_SYSTEM)
+  /*  Windows maintains (at least) two sets of environment variables.
+      One set can be accessed by GetEnvironmentVariable and
+      SetEnvironmentVariable.  This set is inherited by the children.
+      The other set is maintained in the C runtime, and is accessed
+      using getenv and putenv.  We try to keep them in sync by
+      modifying both sets.  */
   if (!SetEnvironmentVariable (name, NULL))
     {
       gpg_err_set_errno (EINVAL); /* (Might also be ENOMEM.) */
       return -1;
     }
-  return 0;
-#elif defined(HAVE_UNSETENV)
+#endif
+#if defined(HAVE_UNSETENV)
   return unsetenv (name);
 #else
-  char *buf;
+  {
+    char *buf;
 
-  if (!name)
-    {
-      gpg_err_set_errno (EINVAL);
+    if (!name)
+      {
+        gpg_err_set_errno (EINVAL);
+        return -1;
+      }
+    buf = xtrystrdup (name);
+    if (!buf)
       return -1;
-    }
-  buf = xtrystrdup (name);
-  if (!buf)
-    return -1;
 #if __GNUC__
 # warning no unsetenv - trying putenv but leaking memory.
 #endif
-  return putenv (buf);
+    return putenv (buf);
+  }
+#endif
 #endif
 }
 

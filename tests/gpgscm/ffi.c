@@ -236,7 +236,9 @@ do_setenv (scheme *sc, pointer args)
   FFI_ARG_OR_RETURN (sc, char *, value, string, args);
   FFI_ARG_OR_RETURN (sc, int, overwrite, bool, args);
   FFI_ARGS_DONE_OR_RETURN (sc, args);
-  FFI_RETURN_ERR (sc, gnupg_setenv (name, value, overwrite));
+  if (gnupg_setenv (name, value, overwrite))
+    FFI_RETURN_ERR (sc, gpg_error_from_syserror ());
+  FFI_RETURN (sc);
 }
 
 static pointer
