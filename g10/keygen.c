@@ -4870,9 +4870,14 @@ gen_card_key (int algo, int keyno, int is_primary, kbnode_t pub_root,
 {
 #ifdef ENABLE_CARD_SUPPORT
   gpg_error_t err;
-  struct agent_card_genkey_s info;
   PACKET *pkt;
   PKT_public_key *pk;
+  char keyid[10];
+  unsigned char *public;
+  gcry_sexp_t s_key;
+
+  snprintf (keyid, DIM(keyid)-1, "OPENPGP.%d", keyno);
+  keyid[DIM(keyid)-1] = 0;
 
   if (algo != PUBKEY_ALGO_RSA)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
@@ -4888,7 +4893,7 @@ gen_card_key (int algo, int keyno, int is_primary, kbnode_t pub_root,
     }
 
   /* Note: SCD knows the serialnumber, thus there is no point in passing it.  */
-  err = agent_scd_genkey (&info, keyno, 1, NULL, *timestamp);
+  err = agent_scd_genkey (keyno, 1, timestamp);
   /*  The code below is not used because we force creation of
    *  the a card key (3rd arg).
    * if (gpg_err_code (rc) == GPG_ERR_EEXIST)
@@ -4898,16 +4903,9 @@ gen_card_key (int algo, int keyno, int is_primary, kbnode_t pub_root,
    *     tty_printf ("\n");
    *     if ( cpr_get_answer_is_yes( "keygen.card.replace_key",
    *                                 _("Replace existing key? ")))
-   *       rc = agent_scd_genkey (&info, keyno, 1);
+   *       rc = agent_scd_genkey (keyno, 1, timestamp);
    *   }
   */
-  if (!err && (!info.n || !info.e))
-    {
-      log_error ("communication error with SCD\n");
-      gcry_mpi_release (info.n);
-      gcry_mpi_release (info.e);
-      err =  gpg_error (GPG_ERR_GENERAL);
-    }
   if (err)
     {
       log_error ("key generation failed: %s\n", gpg_strerror (err));
@@ -4916,30 +4914,40 @@ gen_card_key (int algo, int keyno, int is_primary, kbnode_t pub_root,
       return err;
     }
 
-  /* Send the learn command so that the agent creates a shadow key for
+  /* Send the READKEY command so that the agent creates a shadow key for
      card key.  We need to do that now so that we are able to create
      the self-signatures. */
-  err = agent_scd_learn (NULL, 0);
+  err = agent_readkey (NULL, 1, keyid, &public);
+  if (err)
+    return err;
+  err = gcry_sexp_sscan (&s_key, NULL, public,
+                         gcry_sexp_canon_len (public, 0, NULL, NULL));
+  xfree (public);
+  if (err)
+    return err;
+
+  if (algo == PUBKEY_ALGO_RSA)
+    err = key_from_sexp (pk->pkey, s_key, "public-key", "ne");
+  else if (algo == PUBKEY_ALGO_ECDSA
+	   || algo == PUBKEY_ALGO_EDDSA
+	   || algo == PUBKEY_ALGO_ECDH )
+    err = ecckey_from_sexp (pk->pkey, s_key, algo);
+  else
+    err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+  gcry_sexp_release (s_key);
+
   if (err)
     {
-      /* Oops: Card removed during generation.  */
-      log_error (_("OpenPGP card not available: %s\n"), gpg_strerror (err));
-      xfree (pkt);
-      xfree (pk);
+      log_error ("key_from_sexp failed: %s\n", gpg_strerror (err) );
+      free_public_key (pk);
       return err;
     }
 
-  if (*timestamp != info.created_at)
-    log_info ("NOTE: the key does not use the suggested creation date\n");
-  *timestamp = info.created_at;
-
-  pk->timestamp = info.created_at;
+  pk->timestamp = *timestamp;
   pk->version = 4;
   if (expireval)
     pk->expiredate = pk->timestamp + expireval;
   pk->pubkey_algo = algo;
-  pk->pkey[0] = info.n;
-  pk->pkey[1] = info.e;
 
   pkt->pkttype = is_primary ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;
   pkt->pkt.public_key = pk;

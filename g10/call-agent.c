@@ -103,13 +103,6 @@ struct cache_nonce_parm_s
 };
 
 
-struct scd_genkey_parm_s
-{
-  struct agent_card_genkey_s *cgk;
-  char *savedbytes;     /* Malloced space to save key parameter chunks.  */
-};
-
-
 static gpg_error_t learn_status_cb (void *opaque, const char *line);
 
 
@@ -979,133 +972,50 @@ agent_scd_writekey (int keyno, const char *serialno,
 
 
 
-static gpg_error_t
-scd_genkey_cb_append_savedbytes (struct scd_genkey_parm_s *parm,
-                                 const char *line)
-{
-  gpg_error_t err = 0;
-  char *p;
-
-  if (!parm->savedbytes)
-    {
-      parm->savedbytes = xtrystrdup (line);
-      if (!parm->savedbytes)
-        err = gpg_error_from_syserror ();
-    }
-  else
-    {
-      p = xtrymalloc (strlen (parm->savedbytes) + strlen (line) + 1);
-      if (!p)
-        err = gpg_error_from_syserror ();
-      else
-        {
-          strcpy (stpcpy (p, parm->savedbytes), line);
-          xfree (parm->savedbytes);
-          parm->savedbytes = p;
-        }
-    }
-
-  return err;
-}
-
 /* Status callback for the SCD GENKEY command. */
 static gpg_error_t
 scd_genkey_cb (void *opaque, const char *line)
 {
-  struct scd_genkey_parm_s *parm = opaque;
+  u32 *createtime = opaque;
   const char *keyword = line;
   int keywordlen;
-  gpg_error_t rc = 0;
 
   for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
     ;
   while (spacep (line))
     line++;
 
-  if (keywordlen == 7 && !memcmp (keyword, "KEY-FPR", keywordlen))
+ if (keywordlen == 14 && !memcmp (keyword,"KEY-CREATED-AT", keywordlen))
     {
-      parm->cgk->fprvalid = unhexify_fpr (line, parm->cgk->fpr);
-    }
-  else if (keywordlen == 8 && !memcmp (keyword, "KEY-DATA", keywordlen))
-    {
-      gcry_mpi_t a;
-      const char *name = line;
-
-      while (*line && !spacep (line))
-        line++;
-      while (spacep (line))
-        line++;
-
-      if (*name == '-' && spacep (name+1))
-        rc = scd_genkey_cb_append_savedbytes (parm, line);
-      else
-        {
-          if (parm->savedbytes)
-            {
-              rc = scd_genkey_cb_append_savedbytes (parm, line);
-              if (!rc)
-                rc = gcry_mpi_scan (&a, GCRYMPI_FMT_HEX,
-                                    parm->savedbytes, 0, NULL);
-            }
-          else
-            rc = gcry_mpi_scan (&a, GCRYMPI_FMT_HEX, line, 0, NULL);
-          if (rc)
-            log_error ("error parsing received key data: %s\n",
-                       gpg_strerror (rc));
-          else if (*name == 'n' && spacep (name+1))
-            parm->cgk->n = a;
-          else if (*name == 'e' && spacep (name+1))
-            parm->cgk->e = a;
-          else
-            {
-              log_info ("unknown parameter name in received key data\n");
-              gcry_mpi_release (a);
-              rc = gpg_error (GPG_ERR_INV_PARAMETER);
-            }
-
-          xfree (parm->savedbytes);
-          parm->savedbytes = NULL;
-        }
-    }
-  else if (keywordlen == 14 && !memcmp (keyword,"KEY-CREATED-AT", keywordlen))
-    {
-      parm->cgk->created_at = (u32)strtoul (line, NULL, 10);
+      *createtime = (u32)strtoul (line, NULL, 10);
     }
   else if (keywordlen == 8 && !memcmp (keyword, "PROGRESS", keywordlen))
     {
       write_status_text (STATUS_PROGRESS, line);
     }
 
-  return rc;
+  return 0;
 }
 
-/* Send a GENKEY command to the SCdaemon.  SERIALNO is not used in
-   this implementation.  If CREATEDATE is not 0, it will be passed to
-   SCDAEMON so that the key is created with this timestamp.  INFO will
-   receive information about the generated key.  */
+/* Send a GENKEY command to the SCdaemon.  If CREATETIME is not 0, it
+  will be passed to SCDAEMON so that the key is created with this
+  timestamp.  On success, creation time  is stored back to CREATETIME.  */
 int
-agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
-                  const char *serialno, u32 createtime)
+agent_scd_genkey (int keyno, int force, u32 *createtime)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
   gnupg_isotime_t tbuf;
-  struct scd_genkey_parm_s parms;
   struct default_inq_parm_s dfltparm;
 
   memset (&dfltparm, 0, sizeof dfltparm);
-
-  (void)serialno;
-
-  memset (&parms, 0, sizeof parms);
-  parms.cgk = info;
 
   rc = start_agent (NULL, 1);
   if (rc)
     return rc;
 
-  if (createtime)
-    epoch2isotime (tbuf, createtime);
+  if (*createtime)
+    epoch2isotime (tbuf, *createtime);
   else
     *tbuf = 0;
 
@@ -1116,12 +1026,9 @@ agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
   line[DIM(line)-1] = 0;
 
   dfltparm.ctx = agent_ctx;
-  memset (info, 0, sizeof *info);
   rc = assuan_transact (agent_ctx, line,
                         NULL, NULL, default_inq_cb, &dfltparm,
-                        scd_genkey_cb, &parms);
-
-  xfree (parms.savedbytes);
+                        scd_genkey_cb, createtime);
 
   status_sc_op_failure (rc);
   return rc;
@@ -1854,7 +1761,8 @@ agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
   if (err)
     return err;
 
-  snprintf (line, DIM(line)-1, "%sREADKEY %s", fromcard? "SCD ":"", hexkeygrip);
+  snprintf (line, DIM(line)-1, "READKEY %s%s", fromcard? "--card ":"",
+            hexkeygrip);
 
   init_membuf (&data, 1024);
   err = assuan_transact (agent_ctx, line,

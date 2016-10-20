@@ -68,13 +68,6 @@ struct agent_card_info_s
   unsigned int status_indicator;
 };
 
-struct agent_card_genkey_s {
-  char fprvalid;
-  char fpr[20];
-  u32  created_at;
-  gcry_mpi_t n;
-  gcry_mpi_t e;
-};
 
 
 /* Release the card info structure. */
@@ -107,8 +100,7 @@ int agent_scd_writekey (int keyno, const char *serialno,
                         const unsigned char *keydata, size_t keydatalen);
 
 /* Send a GENKEY command to the SCdaemon. */
-int agent_scd_genkey (struct agent_card_genkey_s *info, int keyno, int force,
-                      const char *serialno, u32 createtime);
+int agent_scd_genkey (int keyno, int force, u32 *createtime);
 
 /* Send a READKEY command to the SCdaemon. */
 int agent_scd_readcert (const char *certidstr,
