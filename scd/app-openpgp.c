@@ -1221,6 +1221,246 @@ retrieve_key_material (FILE *fp, const char *hexkeyid,
 #endif /*GNUPG_MAJOR_VERSION > 1*/
 
 
+static gpg_error_t
+rsa_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at,  int keyno,
+                 const unsigned char *data, size_t datalen, gcry_sexp_t *r_sexp)
+{
+  gpg_error_t err;
+  const unsigned char *m, *e;
+  size_t mlen, elen;
+  unsigned char *mbuf = NULL, *ebuf = NULL;
+
+  m = find_tlv (data, datalen, 0x0081, &mlen);
+  if (!m)
+    {
+      log_error (_("response does not contain the RSA modulus\n"));
+      return gpg_error (GPG_ERR_CARD);
+    }
+
+  e = find_tlv (data, datalen, 0x0082, &elen);
+  if (!e)
+    {
+      log_error (_("response does not contain the RSA public exponent\n"));
+      return gpg_error (GPG_ERR_CARD);
+    }
+
+  if (ctrl)
+    {
+      send_key_data (ctrl, "n", m, mlen);
+      send_key_data (ctrl, "e", e, elen);
+    }
+
+  for (; mlen && !*m; mlen--, m++) /* strip leading zeroes */
+    ;
+  for (; elen && !*e; elen--, e++) /* strip leading zeroes */
+    ;
+
+  if (ctrl)
+    {
+      unsigned char fprbuf[20];
+
+      err = store_fpr (app, keyno, created_at, fprbuf, PUBKEY_ALGO_RSA,
+                       m, mlen, e, elen);
+      if (err)
+        return err;
+
+      send_fpr_if_not_null (ctrl, "KEY-FPR", -1, fprbuf);
+    }
+
+  mbuf = xtrymalloc (mlen + 1);
+  if (!mbuf)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  /* Prepend numbers with a 0 if needed.  */
+  if (mlen && (*m & 0x80))
+    {
+      *mbuf = 0;
+      memcpy (mbuf+1, m, mlen);
+      mlen++;
+    }
+  else
+    memcpy (mbuf, m, mlen);
+
+  ebuf = xtrymalloc (elen + 1);
+  if (!ebuf)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  /* Prepend numbers with a 0 if needed.  */
+  if (elen && (*e & 0x80))
+    {
+      *ebuf = 0;
+      memcpy (ebuf+1, e, elen);
+      elen++;
+    }
+  else
+    memcpy (ebuf, e, elen);
+
+  err = gcry_sexp_build (r_sexp, NULL, "(public-key(rsa(n%b)(e%b)))",
+                         (int)mlen, mbuf, (int)elen, ebuf);
+ leave:
+  xfree (mbuf);
+  xfree (ebuf);
+  return err;
+}
+
+static gpg_error_t
+ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
+                 const unsigned char *data, size_t datalen, gcry_sexp_t *r_sexp)
+{
+  gpg_error_t err;
+  unsigned char *qbuf;
+  const unsigned char *ecc_q;
+  size_t ecc_q_len;
+  gcry_mpi_t oid;
+  int n;
+  const unsigned char *oidbuf;
+  size_t oid_len;
+  int algo;
+  const char *format;
+  const char *curve;
+
+  ecc_q = find_tlv (data, datalen, 0x0086, &ecc_q_len);
+  if (!ecc_q)
+    {
+      log_error (_("response does not contain the EC public key\n"));
+      return gpg_error (GPG_ERR_CARD);
+    }
+
+  err = openpgp_oid_from_str (app->app_local->keyattr[keyno].ecc.oid, &oid);
+  if (err)
+    return err;
+
+  oidbuf = gcry_mpi_get_opaque (oid, &n);
+  if (!oidbuf)
+    {
+      err = gpg_error_from_syserror ();
+      gcry_mpi_release (oid);
+      return err;
+    }
+  gcry_mpi_release (oid);
+  oid_len = (n+7)/8;
+
+  qbuf = xtrymalloc (ecc_q_len + 1);
+  if (!qbuf)
+    return gpg_error_from_syserror ();
+
+  if ((app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK))
+    {               /* Prepend 0x40 prefix.  */
+      *qbuf = 0x40;
+      memcpy (qbuf+1, ecc_q, ecc_q_len);
+      ecc_q_len++;
+    }
+  else
+    memcpy (qbuf, ecc_q, ecc_q_len);
+
+  if (ctrl)
+    {
+      send_key_data (ctrl, "q", ecc_q, ecc_q_len);
+      send_key_data (ctrl, "curve", oidbuf, oid_len);
+    }
+
+  if (keyno == 1)
+    {
+      if (ctrl)
+        send_key_data (ctrl, "kdf", "\x03\x01\x08\x07", (size_t)4);
+      algo = PUBKEY_ALGO_ECDH;
+    }
+  else
+    {
+      if ((app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK))
+        algo = PUBKEY_ALGO_EDDSA;
+      else
+        algo = PUBKEY_ALGO_ECDSA;
+    }
+
+  if (ctrl)
+    {
+      unsigned char fprbuf[20];
+
+      err = store_fpr (app, keyno, created_at, fprbuf, algo, oidbuf, oid_len,
+                       qbuf, ecc_q_len, "\x03\x01\x08\x07", (size_t)4);
+      if (err)
+        goto leave;
+
+      send_fpr_if_not_null (ctrl, "KEY-FPR", -1, fprbuf);
+    }
+
+  if (!(app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK))
+    format = "(public-key(ecc(curve%s)(q%b)))";
+  else if (keyno == 1)
+    format = "(public-key(ecc(curve%s)(flags djb-tweak)(q%b)))";
+  else
+    format = "(public-key(ecc(curve%s)(flags eddsa)(q%b)))";
+
+  curve = openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid, 1);
+  err = gcry_sexp_build (r_sexp, NULL, format, curve, (int)ecc_q_len, qbuf);
+ leave:
+  xfree (qbuf);
+  return err;
+}
+
+
+/* Parse tag-length-value data for public key in BUFFER of BUFLEN
+   length.  Key of KEYNO in APP is updated with an S-expression of
+   public key.  When CTRL is not NULL, fingerprint is computed with
+   CREATED_AT, and fingerprint is written to the card, and key data
+   and fingerprint are send back to the client side.
+ */
+static gpg_error_t
+read_public_key (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
+                 const unsigned char *buffer, size_t buflen)
+{
+  gpg_error_t err;
+  const unsigned char *data;
+  size_t datalen;
+  gcry_sexp_t s_pkey = NULL;
+
+  data = find_tlv (buffer, buflen, 0x7F49, &datalen);
+  if (!data)
+    {
+      log_error (_("response does not contain the public key data\n"));
+      return gpg_error (GPG_ERR_CARD);
+    }
+
+  if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
+    err = rsa_read_pubkey (app, ctrl, created_at, keyno,
+                           data, datalen, &s_pkey);
+  else if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC)
+    err = ecc_read_pubkey (app, ctrl, created_at, keyno,
+                           data, datalen, &s_pkey);
+  else
+    err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  if (!err)
+    {
+      unsigned char *keybuf;
+      size_t len;
+
+      len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
+      keybuf = xtrymalloc (len);
+      if (!data)
+        {
+          err = gpg_error_from_syserror ();
+          gcry_sexp_release (s_pkey);
+          return err;
+        }
+
+      gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, keybuf, len);
+      gcry_sexp_release (s_pkey);
+
+      app->app_local->pk[keyno].key = keybuf;
+      /* Decrement for trailing '\0' */
+      app->app_local->pk[keyno].keylen = len - 1;
+    }
+
+  return err;
+}
+
+
 /* Get the public key for KEYNO and store it as an S-expresion with
    the APP handle.  On error that field gets cleared.  If we already
    know about the public key we will just return.  Note that this does
@@ -1237,12 +1477,10 @@ get_public_key (app_t app, int keyno)
 {
   gpg_error_t err = 0;
   unsigned char *buffer;
-  const unsigned char *keydata, *m, *e;
-  size_t buflen, keydatalen;
+  const unsigned char *m, *e;
+  size_t buflen;
   size_t mlen = 0;
   size_t elen = 0;
-  unsigned char *mbuf = NULL;
-  unsigned char *ebuf = NULL;
   char *keybuf = NULL;
   gcry_sexp_t s_pkey;
   size_t len;
@@ -1286,42 +1524,7 @@ get_public_key (app_t app, int keyno)
           goto leave;
         }
 
-      keydata = find_tlv (buffer, buflen, 0x7F49, &keydatalen);
-      if (!keydata)
-        {
-          err = gpg_error (GPG_ERR_CARD);
-          log_error (_("response does not contain the public key data\n"));
-          goto leave;
-        }
-
-      if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
-        {
-          m = find_tlv (keydata, keydatalen, 0x0081, &mlen);
-          if (!m)
-            {
-              err = gpg_error (GPG_ERR_CARD);
-              log_error (_("response does not contain the RSA modulus\n"));
-              goto leave;
-            }
-
-          e = find_tlv (keydata, keydatalen, 0x0082, &elen);
-          if (!e)
-            {
-              err = gpg_error (GPG_ERR_CARD);
-              log_error (_("response does not contain the RSA public exponent\n"));
-              goto leave;
-            }
-        }
-      else
-        {
-          m = find_tlv (keydata, keydatalen, 0x0086, &mlen);
-          if (!m)
-            {
-              err = gpg_error (GPG_ERR_CARD);
-              log_error (_("response does not contain the EC public key\n"));
-              goto leave;
-            }
-        }
+      err = read_public_key (app, NULL, 0U, keyno, buffer, buflen);
     }
   else
     {
@@ -1375,98 +1578,35 @@ get_public_key (app_t app, int keyno)
                      gpg_strerror (err));
 	  goto leave;
 	}
-    }
-
-  mbuf = xtrymalloc (mlen + 1);
-  if (!mbuf)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-
-  if ((app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA
-       || (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC
-           && !(app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK)))
-      && mlen && (*m & 0x80))
-    {               /* Prepend numbers with a 0 if needed for MPI.  */
-      *mbuf = 0;
-      memcpy (mbuf+1, m, mlen);
-      mlen++;
-    }
-  else if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC
-           && (app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK))
-    {               /* Prepend 0x40 prefix.  */
-      *mbuf = 0x40;
-      memcpy (mbuf+1, m, mlen);
-      mlen++;
-    }
-  else
-    memcpy (mbuf, m, mlen);
-
-  if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
-    {
-      ebuf = xtrymalloc (elen + 1);
-      if (!ebuf)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-      /* Prepend numbers with a 0 if needed.  */
-      if (elen && (*e & 0x80))
-        {
-          *ebuf = 0;
-          memcpy (ebuf+1, e, elen);
-          elen++;
-        }
-      else
-        memcpy (ebuf, e, elen);
 
       err = gcry_sexp_build (&s_pkey, NULL, "(public-key(rsa(n%b)(e%b)))",
-                             (int)mlen, mbuf, (int)elen, ebuf);
-    }
-  else if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC)
-    {
-      char *format;
+                             (int)mlen, m, (int)elen, e);
+      if (err)
+        goto leave;
 
-      if (!(app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK))
-        format = "(public-key(ecc(curve%s)(q%b)))";
-      else if (keyno == 1)
-        format = "(public-key(ecc(curve%s)(flags djb-tweak)(q%b)))";
-      else
-        format = "(public-key(ecc(curve%s)(flags eddsa)(q%b)))";
+      len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
 
-      err = gcry_sexp_build (&s_pkey, NULL, format,
-                openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid, 1),
-                             (int)mlen, mbuf);
-    }
-  else
-    err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      keybuf = xtrymalloc (len);
+      if (!keybuf)
+        {
+          err = gpg_error_from_syserror ();
+          gcry_sexp_release (s_pkey);
+          goto leave;
+        }
 
-  if (err)
-    goto leave;
-
-  len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
-
-  keybuf = xtrymalloc (len);
-  if (!keybuf)
-    {
+      gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, keybuf, len);
       gcry_sexp_release (s_pkey);
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-  gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, keybuf, len);
-  gcry_sexp_release (s_pkey);
 
-  app->app_local->pk[keyno].key = (unsigned char*)keybuf;
-  app->app_local->pk[keyno].keylen = len - 1; /* Decrement for trailing '\0' */
+      app->app_local->pk[keyno].key = (unsigned char*)keybuf;
+      /* Decrement for trailing '\0' */
+      app->app_local->pk[keyno].keylen = len - 1;
+    }
 
  leave:
   /* Set a flag to indicate that we tried to read the key.  */
   app->app_local->pk[keyno].read_done = 1;
 
   xfree (buffer);
-  xfree (mbuf);
-  xfree (ebuf);
   return err;
 }
 #endif /* GNUPG_MAJOR_VERSION > 1 */
@@ -3533,7 +3673,6 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
 {
   gpg_error_t err;
   char numbuf[30];
-  unsigned char fprbuf[20];
   unsigned char *buffer = NULL;
   const unsigned char *keydata;
   size_t buflen, keydatalen;
@@ -3623,117 +3762,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   send_status_info (ctrl, "KEY-CREATED-AT",
                     numbuf, (size_t)strlen(numbuf), NULL, 0);
 
-  if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
-    {
-      const unsigned char *m, *e;
-      size_t mlen, elen;
-
-      m = find_tlv (keydata, keydatalen, 0x0081, &mlen);
-      if (!m)
-        {
-          err = gpg_error (GPG_ERR_CARD);
-          log_error (_("response does not contain the RSA modulus\n"));
-          goto leave;
-        }
-      /* log_printhex ("RSA n:", m, mlen); */
-      send_key_data (ctrl, "n", m, mlen);
-
-      e = find_tlv (keydata, keydatalen, 0x0082, &elen);
-      if (!e)
-        {
-          err = gpg_error (GPG_ERR_CARD);
-          log_error (_("response does not contain the RSA public exponent\n"));
-          goto leave;
-        }
-      /* log_printhex ("RSA e:", e, elen); */
-      send_key_data (ctrl, "e", e, elen);
-
-      for (; mlen && !*m; mlen--, m++) /* strip leading zeroes */
-        ;
-      for (; elen && !*e; elen--, e++) /* strip leading zeroes */
-        ;
-
-      err = store_fpr (app, keyno, created_at, fprbuf, PUBKEY_ALGO_RSA,
-                       m, mlen, e, elen);
-    }
-  else if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC)
-    {
-      const unsigned char *ecc_q;
-      size_t ecc_q_len;
-      gcry_mpi_t oid;
-      int n;
-      const unsigned char *oidbuf;
-      size_t oid_len;
-      int algo;
-
-      ecc_q = find_tlv (keydata, keydatalen, 0x0086, &ecc_q_len);
-      if (!ecc_q)
-        {
-          err = gpg_error (GPG_ERR_CARD);
-          log_error (_("response does not contain the EC public key\n"));
-          goto leave;
-        }
-
-      err = openpgp_oid_from_str (app->app_local->keyattr[keyno].ecc.oid, &oid);
-      if (err)
-        goto leave;
-
-      oidbuf = gcry_mpi_get_opaque (oid, &n);
-      if (!oidbuf)
-        {
-          err = gpg_error_from_syserror ();
-          gcry_mpi_release (oid);
-          goto leave;
-        }
-      gcry_mpi_release (oid);
-      oid_len = (n+7)/8;
-
-      if ((app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK))
-        {               /* Prepend 0x40 prefix.  */
-          unsigned char *q = xtrymalloc (ecc_q_len + 1);
-
-          if (!q)
-            {
-              err = gpg_error_from_syserror ();
-              goto leave;
-            }
-          *q = 0x40;
-          memcpy (q+1, ecc_q, ecc_q_len);
-          send_key_data (ctrl, "q", q, ecc_q_len + 1);
-          xfree (q);
-        }
-      else
-        {
-          /* strip leading zeroes */
-          for (; ecc_q_len && !*ecc_q; ecc_q_len--, ecc_q++)
-            ;
-          send_key_data (ctrl, "q", ecc_q, ecc_q_len);
-        }
-
-      send_key_data (ctrl, "curve", oidbuf, oid_len);
-
-      if (keyno == 1)
-        {
-          send_key_data (ctrl, "kdf", "\x03\x01\x08\x07", (size_t)4);
-          algo = PUBKEY_ALGO_ECDH;
-        }
-      else
-        {
-          if ((app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK))
-            algo = PUBKEY_ALGO_EDDSA;
-          else
-            algo = PUBKEY_ALGO_ECDSA;
-        }
-
-      err = store_fpr (app, keyno, created_at, fprbuf, algo, oidbuf, oid_len,
-                       ecc_q, ecc_q_len, "\x03\x01\x08\x07", (size_t)4);
-    }
-
-  if (err)
-    goto leave;
-  send_fpr_if_not_null (ctrl, "KEY-FPR", -1, fprbuf);
-
-
+  err = read_public_key (app, ctrl, created_at, keyno, buffer, buflen);
  leave:
   xfree (buffer);
   return err;
