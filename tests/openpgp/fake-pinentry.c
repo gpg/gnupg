@@ -42,6 +42,7 @@ reply (const char *fmt, ...)
   result = vprintf (fmt, ap);
   va_end (ap);
 
+  fflush (stdout);
   return result;
 }
 
