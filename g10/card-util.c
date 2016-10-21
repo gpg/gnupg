@@ -476,7 +476,7 @@ card_status (estream_t fp, char *serialno, size_t serialnobuflen)
 
       es_fprintf (fp, "forcepin:%d:::\n", !info.chv1_cached);
       for (i=0; i < DIM (info.key_attr); i++)
-        if (info.key_attr[0].algo == PUBKEY_ALGO_RSA)
+        if (info.key_attr[i].algo == PUBKEY_ALGO_RSA)
           es_fprintf (fp, "keyattr:%d:%d:%u:\n", i+1,
                       info.key_attr[i].algo, info.key_attr[i].nbits);
         else if (info.key_attr[i].algo == PUBKEY_ALGO_ECDH
@@ -1277,7 +1277,7 @@ show_keysize_warning (void)
    select the prompt.  Returns 0 to use the default size (i.e. NBITS)
    or the selected size.  */
 static unsigned int
-ask_card_keysize (int keyno, unsigned int nbits)
+ask_card_rsa_keysize (int keyno, unsigned int nbits)
 {
   unsigned int min_nbits = 1024;
   unsigned int max_nbits = 4096;
@@ -1327,7 +1327,7 @@ ask_card_keysize (int keyno, unsigned int nbits)
 /* Change the size of key KEYNO (0..2) to NBITS and show an error
    message if that fails.  */
 static gpg_error_t
-do_change_keysize (int keyno, unsigned int nbits)
+do_change_rsa_keysize (int keyno, unsigned int nbits)
 {
   gpg_error_t err;
   char args[100];
@@ -1406,15 +1406,18 @@ generate_card_keys (ctrl_t ctrl)
 
       for (keyno = 0; keyno < DIM (info.key_attr); keyno++)
         {
-          nbits = ask_card_keysize (keyno, info.key_attr[keyno].nbits);
-          if (nbits && do_change_keysize (keyno, nbits))
+          if (info.key_attr[keyno].algo == PUBKEY_ALGO_RSA)
             {
-              /* Error: Better read the default key size again.  */
-              agent_release_card_info (&info);
-              if (get_info_for_key_operation (&info))
-                goto leave;
-              /* Ask again for this key size. */
-              keyno--;
+              nbits = ask_card_rsa_keysize (keyno, info.key_attr[keyno].nbits);
+              if (nbits && do_change_rsa_keysize (keyno, nbits))
+                {
+                  /* Error: Better read the default key size again.  */
+                  agent_release_card_info (&info);
+                  if (get_info_for_key_operation (&info))
+                    goto leave;
+                  /* Ask again for this key size. */
+                  keyno--;
+                }
             }
         }
       /* Note that INFO has not be synced.  However we will only use
@@ -1483,18 +1486,21 @@ card_generate_subkey (KBNODE pub_keyblock)
      key size.  */
   if (info.is_v2 && info.extcap.aac)
     {
-      unsigned int nbits;
-
-    ask_again:
-      nbits = ask_card_keysize (keyno-1, info.key_attr[keyno-1].nbits);
-      if (nbits && do_change_keysize (keyno-1, nbits))
+      if (info.key_attr[keyno-1].algo == PUBKEY_ALGO_RSA)
         {
-          /* Error: Better read the default key size again.  */
-          agent_release_card_info (&info);
-          err = get_info_for_key_operation (&info);
-          if (err)
-            goto leave;
-          goto ask_again;
+          unsigned int nbits;
+
+        ask_again:
+          nbits = ask_card_rsa_keysize (keyno-1, info.key_attr[keyno-1].nbits);
+          if (nbits && do_change_rsa_keysize (keyno-1, nbits))
+            {
+              /* Error: Better read the default key size again.  */
+              agent_release_card_info (&info);
+              err = get_info_for_key_operation (&info);
+              if (err)
+                goto leave;
+              goto ask_again;
+            }
         }
       /* Note that INFO has not be synced.  However we will only use
          the serialnumber and thus it won't harm.  */
