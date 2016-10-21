@@ -154,8 +154,7 @@ static gpg_error_t parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
 static void do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 				 struct output_control_s *outctrl, int card );
 static int write_keyblock (iobuf_t out, kbnode_t node);
-static gpg_error_t gen_card_key (int algo, int keyno, int is_primary,
-                                 kbnode_t pub_root,
+static gpg_error_t gen_card_key (int keyno, int is_primary, kbnode_t pub_root,
                                  u32 *timestamp, u32 expireval);
 
 
@@ -4238,8 +4237,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                      get_parameter_passphrase (para),
                      &cache_nonce, NULL);
   else
-    err = gen_card_key (PUBKEY_ALGO_RSA, 1, 1, pub_root,
-                        &timestamp,
+    err = gen_card_key (1, 1, pub_root, &timestamp,
                         get_parameter_u32 (para, pKEYEXPIRE));
 
   /* Get the pointer to the generated public key packet.  */
@@ -4277,8 +4275,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
   if (!err && card && get_parameter (para, pAUTHKEYTYPE))
     {
-      err = gen_card_key (PUBKEY_ALGO_RSA, 3, 0, pub_root,
-                          &timestamp,
+      err = gen_card_key (3, 0, pub_root, &timestamp,
                           get_parameter_u32 (para, pKEYEXPIRE));
       if (!err)
         err = write_keybinding (pub_root, pri_psk, NULL,
@@ -4317,7 +4314,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
         }
       else
         {
-          err = gen_card_key (PUBKEY_ALGO_RSA, 2, 0, pub_root, &timestamp,
+          err = gen_card_key (2, 0, pub_root, &timestamp,
                               get_parameter_u32 (para, pKEYEXPIRE));
         }
 
@@ -4749,7 +4746,6 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
   gpg_error_t err = 0;
   kbnode_t node;
   PKT_public_key *pri_pk = NULL;
-  int algo;
   unsigned int use;
   u32 expire;
   u32 cur_time;
@@ -4800,7 +4796,6 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
       goto leave;
     }
 
-  algo = PUBKEY_ALGO_RSA;
   expire = ask_expire_interval (0, NULL);
   if (keyno == 1)
     use = PUBKEY_USAGE_SIG;
@@ -4817,7 +4812,7 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
 
   /* Note, that depending on the backend, the card key generation may
      update CUR_TIME.  */
-  err = gen_card_key (algo, keyno, 0, pub_keyblock, &cur_time, expire);
+  err = gen_card_key (keyno, 0, pub_keyblock, &cur_time, expire);
   /* Get the pointer to the generated public subkey packet.  */
   if (!err)
     {
@@ -4865,21 +4860,29 @@ write_keyblock( IOBUF out, KBNODE node )
 
 /* Note that timestamp is an in/out arg. */
 static gpg_error_t
-gen_card_key (int algo, int keyno, int is_primary, kbnode_t pub_root,
+gen_card_key (int keyno, int is_primary, kbnode_t pub_root,
               u32 *timestamp, u32 expireval)
 {
 #ifdef ENABLE_CARD_SUPPORT
   gpg_error_t err;
+  struct agent_card_info_s info;
+  int algo;
   PACKET *pkt;
   PKT_public_key *pk;
   char keyid[10];
   unsigned char *public;
   gcry_sexp_t s_key;
 
-  snprintf (keyid, DIM(keyid), "OPENPGP.%d", keyno);
+  err = agent_scd_getattr ("KEY-ATTR", &info);
+  if (err)
+    {
+      log_error (_("error getting current key info: %s\n"), gpg_strerror (err));
+      return err;
+    }
 
-  if (algo != PUBKEY_ALGO_RSA)
-    return gpg_error (GPG_ERR_PUBKEY_ALGO);
+  algo = info.key_attr[keyno-1].algo;
+
+  snprintf (keyid, DIM(keyid), "OPENPGP.%d", keyno);
 
   pk = xtrycalloc (1, sizeof *pk );
   if (!pk)
@@ -4954,7 +4957,6 @@ gen_card_key (int algo, int keyno, int is_primary, kbnode_t pub_root,
 
   return 0;
 #else
-  (void)algo;
   (void)keyno;
   (void)is_primary;
   (void)pub_root;
