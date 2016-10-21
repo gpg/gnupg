@@ -152,10 +152,11 @@ static gpg_error_t parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
                                      u32 *r_expire,
                                      unsigned int *r_nbits, char **r_curve);
 static void do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
-				 struct output_control_s *outctrl, int card );
+                                 struct output_control_s *outctrl, int card );
 static int write_keyblock (iobuf_t out, kbnode_t node);
-static gpg_error_t gen_card_key (int keyno, int is_primary, kbnode_t pub_root,
-                                 u32 *timestamp, u32 expireval);
+static gpg_error_t gen_card_key (int keyno, int algo, int is_primary,
+                                 kbnode_t pub_root, u32 *timestamp,
+                                 u32 expireval);
 
 
 static void
@@ -255,7 +256,7 @@ keygen_add_key_expire (PKT_signature *sig, void *opaque)
 
       buf[0] = (u >> 24) & 0xff;
       buf[1] = (u >> 16) & 0xff;
-      buf[2] = (u >>	8) & 0xff;
+      buf[2] = (u >>  8) & 0xff;
       buf[3] = u & 0xff;
       build_sig_subpkt (sig, SIGSUBPKT_KEY_EXPIRE, buf, 4);
     }
@@ -3783,24 +3784,6 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
       strcpy (r->u.value, "sign");
       r->next = para;
       para = r;
-      if (info.key_attr[0].algo == PUBKEY_ALGO_RSA)
-        {
-          r = xcalloc (1, sizeof *r + 20 );
-          r->key = pKEYLENGTH;
-          sprintf( r->u.value, "%u", info.key_attr[0].nbits);
-          r->next = para;
-          para = r;
-        }
-      else if (info.key_attr[0].algo == PUBKEY_ALGO_ECDSA
-               || info.key_attr[0].algo == PUBKEY_ALGO_EDDSA
-               || info.key_attr[0].algo == PUBKEY_ALGO_ECDH)
-        {
-          r = xcalloc (1, sizeof *r + strlen (info.key_attr[0].curve));
-          r->key = pKEYCURVE;
-          strcpy (r->u.value, info.key_attr[0].curve);
-          r->next = para;
-          para = r;
-        }
 
       r = xcalloc (1, sizeof *r + 20 );
       r->key = pSUBKEYTYPE;
@@ -4282,7 +4265,8 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                      get_parameter_passphrase (para),
                      &cache_nonce, NULL);
   else
-    err = gen_card_key (1, 1, pub_root, &timestamp,
+    err = gen_card_key (1, get_parameter_algo( para, pKEYTYPE, NULL ),
+                        1, pub_root, &timestamp,
                         get_parameter_u32 (para, pKEYEXPIRE));
 
   /* Get the pointer to the generated public key packet.  */
@@ -4320,7 +4304,8 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
   if (!err && card && get_parameter (para, pAUTHKEYTYPE))
     {
-      err = gen_card_key (3, 0, pub_root, &timestamp,
+      err = gen_card_key (3, get_parameter_algo( para, pAUTHKEYTYPE, NULL ),
+                          0, pub_root, &timestamp,
                           get_parameter_u32 (para, pKEYEXPIRE));
       if (!err)
         err = write_keybinding (pub_root, pri_psk, NULL,
@@ -4359,7 +4344,8 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
         }
       else
         {
-          err = gen_card_key (2, 0, pub_root, &timestamp,
+          err = gen_card_key (2, 0, get_parameter_algo (para, pSUBKEYTYPE, NULL),
+                              pub_root, &timestamp,
                               get_parameter_u32 (para, pKEYEXPIRE));
         }
 
@@ -4796,8 +4782,19 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
   u32 cur_time;
   struct para_data_s *para = NULL;
   PKT_public_key *sub_pk = NULL;
+  int algo;
+  struct agent_card_info_s info;
 
   log_assert (keyno >= 1 && keyno <= 3);
+
+  memset (&info, 0, sizeof (info));
+  err = agent_scd_getattr ("KEY-ATTR", &info);
+  if (err)
+    {
+      log_error (_("error getting current key info: %s\n"), gpg_strerror (err));
+      return err;
+    }
+  algo = info.key_attr[keyno-1].algo;
 
   para = xtrycalloc (1, sizeof *para + strlen (serialno) );
   if (!para)
@@ -4857,7 +4854,7 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
 
   /* Note, that depending on the backend, the card key generation may
      update CUR_TIME.  */
-  err = gen_card_key (keyno, 0, pub_keyblock, &cur_time, expire);
+  err = gen_card_key (keyno, algo, 0, pub_keyblock, &cur_time, expire);
   /* Get the pointer to the generated public subkey packet.  */
   if (!err)
     {
@@ -4905,28 +4902,16 @@ write_keyblock( IOBUF out, KBNODE node )
 
 /* Note that timestamp is an in/out arg. */
 static gpg_error_t
-gen_card_key (int keyno, int is_primary, kbnode_t pub_root,
+gen_card_key (int keyno, int algo, int is_primary, kbnode_t pub_root,
               u32 *timestamp, u32 expireval)
 {
 #ifdef ENABLE_CARD_SUPPORT
   gpg_error_t err;
-  struct agent_card_info_s info;
-  int algo;
   PACKET *pkt;
   PKT_public_key *pk;
   char keyid[10];
   unsigned char *public;
   gcry_sexp_t s_key;
-
-  memset (&info, 0, sizeof (info));
-  err = agent_scd_getattr ("KEY-ATTR", &info);
-  if (err)
-    {
-      log_error (_("error getting current key info: %s\n"), gpg_strerror (err));
-      return err;
-    }
-
-  algo = info.key_attr[keyno-1].algo;
 
   snprintf (keyid, DIM(keyid), "OPENPGP.%d", keyno);
 
