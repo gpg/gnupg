@@ -3756,17 +3756,26 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
   if (card_serialno)
     {
 #ifdef ENABLE_CARD_SUPPORT
+      gpg_error_t err;
+      struct agent_card_info_s info;
+
+      memset (&info, 0, sizeof (info));
+      err = agent_scd_getattr ("KEY-ATTR", &info);
+      if (err)
+        {
+          log_error (_("error getting current key info: %s\n"), gpg_strerror (err));
+          return;
+        }
+
       r = xcalloc (1, sizeof *r + strlen (card_serialno) );
       r->key = pSERIALNO;
       strcpy( r->u.value, card_serialno);
       r->next = para;
       para = r;
 
-      algo = PUBKEY_ALGO_RSA;
-
       r = xcalloc (1, sizeof *r + 20 );
       r->key = pKEYTYPE;
-      sprintf( r->u.value, "%d", algo );
+      sprintf( r->u.value, "%d", info.key_attr[0].algo );
       r->next = para;
       para = r;
       r = xcalloc (1, sizeof *r + 20 );
@@ -3774,10 +3783,28 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
       strcpy (r->u.value, "sign");
       r->next = para;
       para = r;
+      if (info.key_attr[0].algo == PUBKEY_ALGO_RSA)
+        {
+          r = xcalloc (1, sizeof *r + 20 );
+          r->key = pKEYLENGTH;
+          sprintf( r->u.value, "%u", info.key_attr[0].nbits);
+          r->next = para;
+          para = r;
+        }
+      else if (info.key_attr[0].algo == PUBKEY_ALGO_ECDSA
+               || info.key_attr[0].algo == PUBKEY_ALGO_EDDSA
+               || info.key_attr[0].algo == PUBKEY_ALGO_ECDH)
+        {
+          r = xcalloc (1, sizeof *r + strlen (info.key_attr[0].curve));
+          r->key = pKEYCURVE;
+          strcpy (r->u.value, info.key_attr[0].curve);
+          r->next = para;
+          para = r;
+        }
 
       r = xcalloc (1, sizeof *r + 20 );
       r->key = pSUBKEYTYPE;
-      sprintf( r->u.value, "%d", algo );
+      sprintf( r->u.value, "%d", info.key_attr[1].algo );
       r->next = para;
       para = r;
       r = xcalloc (1, sizeof *r + 20 );
@@ -3785,10 +3812,28 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
       strcpy (r->u.value, "encrypt");
       r->next = para;
       para = r;
+      if (info.key_attr[1].algo == PUBKEY_ALGO_RSA)
+        {
+          r = xcalloc (1, sizeof *r + 20 );
+          r->key = pSUBKEYLENGTH;
+          sprintf( r->u.value, "%u", info.key_attr[1].nbits);
+          r->next = para;
+          para = r;
+        }
+      else if (info.key_attr[1].algo == PUBKEY_ALGO_ECDSA
+               || info.key_attr[1].algo == PUBKEY_ALGO_EDDSA
+               || info.key_attr[1].algo == PUBKEY_ALGO_ECDH)
+        {
+          r = xcalloc (1, sizeof *r + strlen (info.key_attr[1].curve));
+          r->key = pSUBKEYCURVE;
+          strcpy (r->u.value, info.key_attr[1].curve);
+          r->next = para;
+          para = r;
+        }
 
       r = xcalloc (1, sizeof *r + 20 );
       r->key = pAUTHKEYTYPE;
-      sprintf( r->u.value, "%d", algo );
+      sprintf( r->u.value, "%d", info.key_attr[2].algo );
       r->next = para;
       para = r;
 
@@ -4873,6 +4918,7 @@ gen_card_key (int keyno, int is_primary, kbnode_t pub_root,
   unsigned char *public;
   gcry_sexp_t s_key;
 
+  memset (&info, 0, sizeof (info));
   err = agent_scd_getattr ("KEY-ATTR", &info);
   if (err)
     {
@@ -4931,8 +4977,8 @@ gen_card_key (int keyno, int is_primary, kbnode_t pub_root,
   if (algo == PUBKEY_ALGO_RSA)
     err = key_from_sexp (pk->pkey, s_key, "public-key", "ne");
   else if (algo == PUBKEY_ALGO_ECDSA
-	   || algo == PUBKEY_ALGO_EDDSA
-	   || algo == PUBKEY_ALGO_ECDH )
+           || algo == PUBKEY_ALGO_EDDSA
+           || algo == PUBKEY_ALGO_ECDH )
     err = ecckey_from_sexp (pk->pkey, s_key, algo);
   else
     err = gpg_error (GPG_ERR_PUBKEY_ALGO);

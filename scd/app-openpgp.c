@@ -1312,10 +1312,10 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
                  const unsigned char *data, size_t datalen, gcry_sexp_t *r_sexp)
 {
   gpg_error_t err;
-  unsigned char *qbuf;
+  unsigned char *qbuf = NULL;
   const unsigned char *ecc_q;
   size_t ecc_q_len;
-  gcry_mpi_t oid;
+  gcry_mpi_t oid = NULL;
   int n;
   const unsigned char *oidbuf;
   size_t oid_len;
@@ -1338,15 +1338,16 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
   if (!oidbuf)
     {
       err = gpg_error_from_syserror ();
-      gcry_mpi_release (oid);
-      return err;
+      goto leave;
     }
-  gcry_mpi_release (oid);
   oid_len = (n+7)/8;
 
   qbuf = xtrymalloc (ecc_q_len + 1);
   if (!qbuf)
-    return gpg_error_from_syserror ();
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
 
   if ((app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK))
     {               /* Prepend 0x40 prefix.  */
@@ -1359,7 +1360,7 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
 
   if (ctrl)
     {
-      send_key_data (ctrl, "q", ecc_q, ecc_q_len);
+      send_key_data (ctrl, "q", qbuf, ecc_q_len);
       send_key_data (ctrl, "curve", oidbuf, oid_len);
     }
 
@@ -1399,6 +1400,7 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
   curve = openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid, 1);
   err = gcry_sexp_build (r_sexp, NULL, format, curve, (int)ecc_q_len, qbuf);
  leave:
+  gcry_mpi_release (oid);
   xfree (qbuf);
   return err;
 }
@@ -3344,8 +3346,8 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   const char *oidstr = NULL;
   int flag_djb_tweak = 0;
   int algo;
-  gcry_mpi_t oid;
-  const unsigned char *oidbuf = NULL;
+  gcry_mpi_t oid = NULL;
+  const unsigned char *oidbuf;
   unsigned int n;
   size_t oid_len;
   unsigned char fprbuf[20];
@@ -3498,10 +3500,8 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   if (!oidbuf)
     {
       err = gpg_error_from_syserror ();
-      gcry_mpi_release (oid);
       goto leave;
     }
-  gcry_mpi_release (oid);
   oid_len = (n+7)/8;
 
   if (app->app_local->keyattr[keyno].key_type != KEY_TYPE_ECC
@@ -3583,6 +3583,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
                    ecc_q, ecc_q_len, "\x03\x01\x08\x07", (size_t)4);
 
  leave:
+  gcry_mpi_release (oid);
   return err;
 }
 
