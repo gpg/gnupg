@@ -152,17 +152,30 @@ agent_write_private_key (const unsigned char *grip,
   if (!fp)
     {
       gpg_error_t tmperr = gpg_error_from_syserror ();
-      log_error ("can't create '%s': %s\n", fname, gpg_strerror (tmperr));
-      xfree (fname);
-      return tmperr;
-    }
 
-  /* See if an existing key is in extended format.  */
-  if (force)
+      if (force && gpg_err_code (tmperr) == GPG_ERR_ENOENT)
+        {
+          fp = es_fopen (fname, "wbx,mode=-rw");
+          if (!fp)
+            {
+              tmperr = gpg_error_from_syserror ();
+              goto error;
+            }
+        }
+      else
+        {
+        error:
+          log_error ("can't create '%s': %s\n", fname, gpg_strerror (tmperr));
+          xfree (fname);
+          return tmperr;
+        }
+    }
+  else if (force)
     {
       gpg_error_t rc;
       char first;
 
+      /* See if an existing key is in extended format.  */
       if (es_fread (&first, 1, 1, fp) != 1)
         {
           rc = gpg_error_from_syserror ();
