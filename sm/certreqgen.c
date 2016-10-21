@@ -719,7 +719,7 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
   else if (!outctrl->dryrun) /* Generate new key.  */
     {
       sprintf (numbuf, "%u", nbits);
-      snprintf ((char*)keyparms, DIM (keyparms)-1,
+      snprintf ((char*)keyparms, DIM (keyparms),
                 "(6:genkey(3:rsa(5:nbits%d:%s)))",
                 (int)strlen (numbuf), numbuf);
       rc = gpgsm_agent_genkey (ctrl, keyparms, &public);

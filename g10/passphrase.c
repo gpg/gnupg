@@ -347,7 +347,7 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
     {
       char buf[50];
 
-      snprintf (buf, sizeof buf -1, "%d %d %d",
+      snprintf (buf, sizeof buf, "%d %d %d",
                 cipher_algo, s2k->mode, s2k->hash_algo );
       write_status_text ( STATUS_NEED_PASSPHRASE_SYM, buf );
     }
@@ -447,7 +447,7 @@ emit_status_need_passphrase (u32 *keyid, u32 *mainkeyid, int pubkey_algo)
   write_status_text (STATUS_USERID_HINT, us);
   xfree (us);
 
-  snprintf (buf, sizeof buf -1, "%08lX%08lX %08lX%08lX %d 0",
+  snprintf (buf, sizeof buf, "%08lX%08lX %08lX%08lX %d 0",
             (ulong)keyid[0],
             (ulong)keyid[1],
             (ulong)(mainkeyid? mainkeyid[0]:keyid[0]),

@@ -1292,8 +1292,7 @@ handle_connections (int listen_fd)
               char threadname[50];
 	      npth_t thread;
 
-              snprintf (threadname, sizeof threadname-1, "conn fd=%d", fd);
-              threadname[sizeof threadname -1] = 0;
+              snprintf (threadname, sizeof threadname, "conn fd=%d", fd);
               ctrl->thread_startup.fd = INT2FD (fd);
               ret = npth_create (&thread, &tattr, start_connection_thread, ctrl);
 	      if (ret)

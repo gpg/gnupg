@@ -946,8 +946,7 @@ agent_card_pkdecrypt (ctrl_t ctrl,
   inqparm.getpin_cb_arg = getpin_cb_arg;
   inqparm.passthru = 0;
   inqparm.any_inq_seen = 0;
-  snprintf (line, DIM(line)-1, "PKDECRYPT %s", keyid);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "PKDECRYPT %s", keyid);
   rc = assuan_transact (ctrl->scd_local->ctx, line,
                         put_membuf_cb, &data,
                         inq_needpin, &inqparm,
@@ -986,8 +985,7 @@ agent_card_readcert (ctrl_t ctrl,
     return rc;
 
   init_membuf (&data, 1024);
-  snprintf (line, DIM(line)-1, "READCERT %s", id);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "READCERT %s", id);
   rc = assuan_transact (ctrl->scd_local->ctx, line,
                         put_membuf_cb, &data,
                         NULL, NULL,
@@ -1022,8 +1020,7 @@ agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf)
     return rc;
 
   init_membuf (&data, 1024);
-  snprintf (line, DIM(line)-1, "READKEY %s", id);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "READKEY %s", id);
   rc = assuan_transact (ctrl->scd_local->ctx, line,
                         put_membuf_cb, &data,
                         NULL, NULL,
@@ -1088,8 +1085,7 @@ agent_card_writekey (ctrl_t ctrl,  int force, const char *serialno,
   if (rc)
     return rc;
 
-  snprintf (line, DIM(line)-1, "WRITEKEY %s%s", force ? "--force " : "", id);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "WRITEKEY %s%s", force ? "--force " : "", id);
   parms.ctx = ctrl->scd_local->ctx;
   parms.getpin_cb = getpin_cb;
   parms.getpin_cb_arg = getpin_cb_arg;

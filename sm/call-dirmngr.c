@@ -215,9 +215,8 @@ prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
       char *pass = server->pass ? server->pass : "";
       char *base = server->base ? server->base : "";
 
-      snprintf (line, DIM (line) - 1, "LDAPSERVER %s:%i:%s:%s:%s",
+      snprintf (line, DIM (line), "LDAPSERVER %s:%i:%s:%s:%s",
 		server->host, server->port, user, pass, base);
-      line[DIM (line) - 1] = 0;
 
       assuan_transact (ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
       /* The code below is not required because we don't return an error.  */
@@ -548,10 +547,9 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                          NULL, NULL, NULL, NULL, NULL, NULL);
       did_options = 1;
     }
-  snprintf (line, DIM(line)-1, "ISVALID%s %s",
+  snprintf (line, DIM(line), "ISVALID%s %s",
             use_ocsp == 2? " --only-ocsp --force-default-responder":"",
             certid);
-  line[DIM(line)-1] = 0;
   xfree (certid);
 
   rc = assuan_transact (dirmngr_ctx, line, NULL, NULL,
@@ -803,9 +801,8 @@ gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, int cache_only,
 
       return out_of_core ();
     }
-  snprintf (line, DIM(line)-1, "LOOKUP%s %s",
+  snprintf (line, DIM(line), "LOOKUP%s %s",
             cache_only? " --cache-only":"", pattern);
-  line[DIM(line)-1] = 0;
   xfree (pattern);
 
   parm.ctrl = ctrl;
@@ -861,7 +858,7 @@ get_cached_cert (assuan_context_t ctx,
   *r_cert = NULL;
 
   bin2hex (fpr, 20, hexfpr);
-  snprintf (line, DIM(line)-1, "LOOKUP --single --cache-only 0x%s", hexfpr);
+  snprintf (line, DIM(line), "LOOKUP --single --cache-only 0x%s", hexfpr);
 
   init_membuf (&mb, 4096);
   err = assuan_transact (ctx, line, get_cached_cert_data_cb, &mb,

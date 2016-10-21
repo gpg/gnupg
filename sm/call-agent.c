@@ -243,16 +243,14 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
   if (rc)
     return rc;
 
-  snprintf (line, DIM(line)-1, "SIGKEY %s", keygrip);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "SIGKEY %s", keygrip);
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return rc;
 
   if (desc)
     {
-      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
-      line[DIM(line)-1] = 0;
+      snprintf (line, DIM(line), "SETKEYDESC %s", desc);
       rc = assuan_transact (agent_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
@@ -335,8 +333,7 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
 
   init_membuf (&data, 1024);
 
-  snprintf (line, DIM(line)-1, "SCD PKSIGN %s %s", hashopt, keyid);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "SCD PKSIGN %s %s", hashopt, keyid);
   rc = assuan_transact (agent_ctx, line,
                         put_membuf_cb, &data, default_inq_cb, &inq_parm,
                         NULL, NULL);
@@ -429,16 +426,14 @@ gpgsm_agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
     return rc;
 
   assert ( DIM(line) >= 50 );
-  snprintf (line, DIM(line)-1, "SETKEY %s", keygrip);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "SETKEY %s", keygrip);
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return rc;
 
   if (desc)
     {
-      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
-      line[DIM(line)-1] = 0;
+      snprintf (line, DIM(line), "SETKEYDESC %s", desc);
       rc = assuan_transact (agent_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
@@ -594,9 +589,8 @@ gpgsm_agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
   if (rc)
     return rc;
 
-  snprintf (line, DIM(line)-1, "%sREADKEY %s",
+  snprintf (line, DIM(line), "%sREADKEY %s",
             fromcard? "SCD ":"", hexkeygrip);
-  line[DIM(line)-1] = 0;
 
   init_membuf (&data, 1024);
   rc = assuan_transact (agent_ctx, line,
@@ -810,8 +804,7 @@ gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert, const char *hexfpr,
 
   if (hexfpr)
     {
-      snprintf (line, DIM(line)-1, "ISTRUSTED %s", hexfpr);
-      line[DIM(line)-1] = 0;
+      snprintf (line, DIM(line), "ISTRUSTED %s", hexfpr);
     }
   else
     {
@@ -824,8 +817,7 @@ gpgsm_agent_istrusted (ctrl_t ctrl, ksba_cert_t cert, const char *hexfpr,
           return gpg_error (GPG_ERR_GENERAL);
         }
 
-      snprintf (line, DIM(line)-1, "ISTRUSTED %s", fpr);
-      line[DIM(line)-1] = 0;
+      snprintf (line, DIM(line), "ISTRUSTED %s", fpr);
       xfree (fpr);
     }
 
@@ -868,8 +860,7 @@ gpgsm_agent_marktrusted (ctrl_t ctrl, ksba_cert_t cert)
   xfree (dn);
   if (!dnfmt)
     return gpg_error_from_syserror ();
-  snprintf (line, DIM(line)-1, "MARKTRUSTED %s S %s", fpr, dnfmt);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "MARKTRUSTED %s S %s", fpr, dnfmt);
   ksba_free (dnfmt);
   xfree (fpr);
 
@@ -895,8 +886,7 @@ gpgsm_agent_havekey (ctrl_t ctrl, const char *hexkeygrip)
   if (!hexkeygrip || strlen (hexkeygrip) != 40)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  snprintf (line, DIM(line)-1, "HAVEKEY %s", hexkeygrip);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "HAVEKEY %s", hexkeygrip);
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   return rc;
@@ -1045,16 +1035,14 @@ gpgsm_agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc)
 
   if (desc)
     {
-      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
-      line[DIM(line)-1] = 0;
+      snprintf (line, DIM(line), "SETKEYDESC %s", desc);
       rc = assuan_transact (agent_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
         return rc;
     }
 
-  snprintf (line, DIM(line)-1, "PASSWD %s", hexkeygrip);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "PASSWD %s", hexkeygrip);
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL,
                         default_inq_cb, &inq_parm, NULL, NULL);
@@ -1078,8 +1066,7 @@ gpgsm_agent_get_confirmation (ctrl_t ctrl, const char *desc)
   inq_parm.ctrl = ctrl;
   inq_parm.ctx = agent_ctx;
 
-  snprintf (line, DIM(line)-1, "GET_CONFIRMATION %s", desc);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "GET_CONFIRMATION %s", desc);
 
   rc = assuan_transact (agent_ctx, line, NULL, NULL,
                         default_inq_cb, &inq_parm, NULL, NULL);
@@ -1150,8 +1137,7 @@ gpgsm_agent_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
   if (!hexkeygrip || strlen (hexkeygrip) != 40)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  snprintf (line, DIM(line)-1, "KEYINFO %s", hexkeygrip);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "KEYINFO %s", hexkeygrip);
 
   err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
                          keyinfo_status_cb, &serialno);
@@ -1196,7 +1182,7 @@ gpgsm_agent_ask_passphrase (ctrl_t ctrl, const char *desc_msg, int repeat,
   if (desc_msg && *desc_msg && !(arg4 = percent_plus_escape (desc_msg)))
     return gpg_error_from_syserror ();
 
-  snprintf (line, DIM(line)-1, "GET_PASSPHRASE --data%s -- X X X %s",
+  snprintf (line, DIM(line), "GET_PASSPHRASE --data%s -- X X X %s",
             repeat? " --repeat=1 --check --qualitybar":"",
             arg4);
   xfree (arg4);
@@ -1241,7 +1227,7 @@ gpgsm_agent_keywrap_key (ctrl_t ctrl, int forexport,
   inq_parm.ctrl = ctrl;
   inq_parm.ctx = agent_ctx;
 
-  snprintf (line, DIM(line)-1, "KEYWRAP_KEY %s",
+  snprintf (line, DIM(line), "KEYWRAP_KEY %s",
             forexport? "--export":"--import");
 
   init_membuf_secure (&data, 64);
@@ -1335,14 +1321,14 @@ gpgsm_agent_export_key (ctrl_t ctrl, const char *keygrip, const char *desc,
 
   if (desc)
     {
-      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
+      snprintf (line, DIM(line), "SETKEYDESC %s", desc);
       err = assuan_transact (agent_ctx, line,
                              NULL, NULL, NULL, NULL, NULL, NULL);
       if (err)
         return err;
     }
 
-  snprintf (line, DIM(line)-1, "EXPORT_KEY %s", keygrip);
+  snprintf (line, DIM(line), "EXPORT_KEY %s", keygrip);
 
   init_membuf_secure (&data, 1024);
   err = assuan_transact (agent_ctx, line,

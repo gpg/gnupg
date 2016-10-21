@@ -148,9 +148,9 @@ ask_outfile_name( const char *name, size_t namelen )
   n = strlen(s) + (defname?strlen (defname):0) + 10;
   prompt = xmalloc (n);
   if (defname)
-    snprintf (prompt, n-1, "%s [%s]: ", s, defname );
+    snprintf (prompt, n, "%s [%s]: ", s, defname );
   else
-    snprintf (prompt, n-1, "%s: ", s );
+    snprintf (prompt, n, "%s: ", s );
   tty_enable_completion(NULL);
   fname = cpr_get ("openfile.askoutname", prompt );
   cpr_kill_prompt ();

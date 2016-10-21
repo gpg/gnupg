@@ -53,9 +53,9 @@ progress_cb (void *ctx, const char *what, int printchar,
   (void)ctx;
 
   if ( printchar == '\n' && !strcmp (what, "primegen") )
-    snprintf (buf, sizeof buf -1, "%.20s X 100 100", what );
+    snprintf (buf, sizeof buf, "%.20s X 100 100", what );
   else
-    snprintf (buf, sizeof buf -1, "%.20s %c %d %d",
+    snprintf (buf, sizeof buf, "%.20s %c %d %d",
               what, printchar=='\n'?'X':printchar, current, total );
   write_status_text (STATUS_PROGRESS, buf);
 }
@@ -356,7 +356,7 @@ write_status_begin_signing (gcry_md_hd_t md)
           ga = map_md_openpgp_to_gcry (i);
           if (ga && gcry_md_is_enabled (md, ga) && buflen+10 < DIM(buf))
             {
-              snprintf (buf+buflen, DIM(buf) - buflen - 1,
+              snprintf (buf+buflen, DIM(buf) - buflen,
                         "%sH%d", buflen? " ":"",i);
               buflen += strlen (buf+buflen);
             }

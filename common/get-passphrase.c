@@ -181,7 +181,7 @@ gnupg_get_passphrase (const char *cache_id,
     if (!(arg4 = percent_plus_escape (desc_msg)))
       goto no_mem;
 
-  snprintf (line, DIM(line)-1,
+  snprintf (line, DIM(line),
             "GET_PASSPHRASE --data %s--repeat=%d -- %s %s %s %s",
             check_quality? "--check ":"",
             repeat,
@@ -189,7 +189,6 @@ gnupg_get_passphrase (const char *cache_id,
             arg2? arg2:"X",
             arg3? arg3:"X",
             arg4? arg4:"X");
-  line[DIM(line)-1] = 0;
   xfree (arg2);
   xfree (arg3);
   xfree (arg4);
@@ -250,8 +249,7 @@ gnupg_clear_passphrase (const char *cache_id)
   if (err)
     return err;
 
-  snprintf (line, DIM(line)-1, "CLEAR_PASSPHRASE %s", cache_id);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "CLEAR_PASSPHRASE %s", cache_id);
   return assuan_transact (agent_ctx, line, NULL, NULL,
                           default_inq_cb, NULL, NULL, NULL);
 }

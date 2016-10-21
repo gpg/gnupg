@@ -369,7 +369,7 @@ agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid)
   if (!ctrl || !ctrl->server_local
       || !ctrl->server_local->allow_pinentry_notify)
     return 0;
-  snprintf (line, DIM(line)-1, "PINENTRY_LAUNCHED %lu", pid);
+  snprintf (line, DIM(line), "PINENTRY_LAUNCHED %lu", pid);
   return assuan_inquire (ctrl->server_local->assuan_ctx, line, NULL, NULL, 0);
 }
 

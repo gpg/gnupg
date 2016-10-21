@@ -1872,7 +1872,7 @@ verify_a_chv (app_t app,
       prompt_buffer = xtrymalloc (promptsize);
       if (!prompt_buffer)
         return gpg_error_from_syserror ();
-      snprintf (prompt_buffer, promptsize-1, PROMPTSTRING, sigcount);
+      snprintf (prompt_buffer, promptsize, PROMPTSTRING, sigcount);
       prompt = prompt_buffer;
 #undef PROMPTSTRING
     }

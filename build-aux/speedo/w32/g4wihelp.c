@@ -70,12 +70,12 @@ dummy (HWND hwndParent, int string_size, char *variables,
   // do your stuff here
   {
     char buf[1024];
-    snprintf (buf, sizeof buf - 1, "$R0=%s\r\n$R1=%s\r\n",
+    snprintf (buf, sizeof buf, "$R0=%s\r\n$R1=%s\r\n",
               getuservariable(INST_R0),
               getuservariable(INST_R1));
     MessageBox (g_hwndParent,buf,0,MB_OK);
 
-    snprintf (buf, sizeof buf - 1,
+    snprintf (buf, sizeof buf,
              "autoclose    =%d\r\n"
              "all_user_var =%d\r\n"
              "exec_error   =%d\r\n"
@@ -278,7 +278,7 @@ void
 service_error (const char *str)
 {
   char buf[1024];
-  snprintf (buf, sizeof (buf) - 1, "error: %s: ec=%d\r\n", str,
+  snprintf (buf, sizeof (buf), "error: %s: ec=%d\r\n", str,
 	    GetLastError ());
   MessageBox(g_hwndParent, buf, 0, MB_OK);
 
@@ -575,7 +575,7 @@ service_stop (HWND hwndParent, int string_size, char *variables,
       if (GetTickCount () - start_time > timeout)
 	{
 	  char buf[1024];
-	  snprintf (buf, sizeof (buf) - 1,
+	  snprintf (buf, sizeof (buf),
 		    "time out waiting for service %s to stop\r\n",
 		    service_name);
 	  MessageBox (g_hwndParent, buf, 0, MB_OK);

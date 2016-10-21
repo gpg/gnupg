@@ -2050,9 +2050,8 @@ handle_connections (assuan_fd_t listen_fd)
 
               memset (&argval, 0, sizeof argval);
               argval.afd = fd;
-              snprintf (threadname, sizeof threadname-1,
+              snprintf (threadname, sizeof threadname,
                         "conn fd=%d", FD2INT(fd));
-              threadname[sizeof threadname -1] = 0;
 
               ret = npth_create (&thread, &tattr,
                                  start_connection_thread, argval.aptr);

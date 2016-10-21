@@ -734,8 +734,7 @@ setup_qualitybar (ctrl_t ctrl)
   /* TRANSLATORS: This string is displayed by Pinentry as the label
      for the quality bar.  */
   tmpstr = try_percent_escape (L_("Quality:"), "\t\r\n\f\v");
-  snprintf (line, DIM(line)-1, "SETQUALITYBAR %s", tmpstr? tmpstr:"");
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "SETQUALITYBAR %s", tmpstr? tmpstr:"");
   xfree (tmpstr);
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc == 103 /*(Old assuan error code)*/
@@ -763,8 +762,7 @@ setup_qualitybar (ctrl_t ctrl)
     }
   tmpstr = try_percent_escape (tooltip, "\t\r\n\f\v");
   xfree (tmpstr2);
-  snprintf (line, DIM(line)-1, "SETQUALITYBAR_TT %s", tmpstr? tmpstr:"");
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "SETQUALITYBAR_TT %s", tmpstr? tmpstr:"");
   xfree (tmpstr);
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc == 103 /*(Old assuan error code)*/
@@ -887,27 +885,25 @@ agent_askpin (ctrl_t ctrl,
   if (keyinfo && (cache_mode == CACHE_MODE_NORMAL
                   || cache_mode == CACHE_MODE_USER
                   || cache_mode == CACHE_MODE_SSH))
-    snprintf (line, DIM(line)-1, "SETKEYINFO %c/%s",
+    snprintf (line, DIM(line), "SETKEYINFO %c/%s",
 	      cache_mode == CACHE_MODE_USER? 'u' :
 	      cache_mode == CACHE_MODE_SSH? 's' : 'n',
 	      keyinfo);
   else
-    snprintf (line, DIM(line)-1, "SETKEYINFO --clear");
+    snprintf (line, DIM(line), "SETKEYINFO --clear");
 
   rc = assuan_transact (entry_ctx, line,
 			NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc && gpg_err_code (rc) != GPG_ERR_ASS_UNKNOWN_CMD)
     return unlock_pinentry (rc);
 
-  snprintf (line, DIM(line)-1, "SETDESC %s", desc_text);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "SETDESC %s", desc_text);
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return unlock_pinentry (rc);
 
-  snprintf (line, DIM(line)-1, "SETPROMPT %s",
+  snprintf (line, DIM(line), "SETPROMPT %s",
             prompt_text? prompt_text : is_pin? L_("PIN:") : L_("Passphrase:"));
-  line[DIM(line)-1] = 0;
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return unlock_pinentry (rc);
@@ -924,8 +920,7 @@ agent_askpin (ctrl_t ctrl,
 
   if (initial_errtext)
     {
-      snprintf (line, DIM(line)-1, "SETERROR %s", initial_errtext);
-      line[DIM(line)-1] = 0;
+      snprintf (line, DIM(line), "SETERROR %s", initial_errtext);
       rc = assuan_transact (entry_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
@@ -934,9 +929,8 @@ agent_askpin (ctrl_t ctrl,
 
   if (pininfo->with_repeat)
     {
-      snprintf (line, DIM(line)-1, "SETREPEATERROR %s",
+      snprintf (line, DIM(line), "SETREPEATERROR %s",
                 L_("does not match - try again"));
-      line[DIM(line)-1] = 0;
       rc = assuan_transact (entry_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
@@ -956,9 +950,8 @@ agent_askpin (ctrl_t ctrl,
           /* TRANSLATORS: The string is appended to an error message in
              the pinentry.  The %s is the actual error message, the
              two %d give the current and maximum number of tries. */
-          snprintf (line, DIM(line)-1, L_("SETERROR %s (try %d of %d)"),
+          snprintf (line, DIM(line), L_("SETERROR %s (try %d of %d)"),
                     errtext, pininfo->failed_tries+1, pininfo->max_tries);
-          line[DIM(line)-1] = 0;
           rc = assuan_transact (entry_ctx, line,
                                 NULL, NULL, NULL, NULL, NULL, NULL);
           if (rc)
@@ -968,8 +961,7 @@ agent_askpin (ctrl_t ctrl,
 
       if (pininfo->with_repeat)
         {
-          snprintf (line, DIM(line)-1, "SETREPEAT %s", L_("Repeat:"));
-          line[DIM(line)-1] = 0;
+          snprintf (line, DIM(line), "SETREPEAT %s", L_("Repeat:"));
           rc = assuan_transact (entry_ctx, line,
                                 NULL, NULL, NULL, NULL, NULL, NULL);
           if (rc)
@@ -1100,12 +1092,12 @@ agent_get_passphrase (ctrl_t ctrl,
   if (keyinfo && (cache_mode == CACHE_MODE_NORMAL
                   || cache_mode == CACHE_MODE_USER
                   || cache_mode == CACHE_MODE_SSH))
-    snprintf (line, DIM(line)-1, "SETKEYINFO %c/%s",
+    snprintf (line, DIM(line), "SETKEYINFO %c/%s",
 	      cache_mode == CACHE_MODE_USER? 'u' :
 	      cache_mode == CACHE_MODE_SSH? 's' : 'n',
 	      keyinfo);
   else
-    snprintf (line, DIM(line)-1, "SETKEYINFO --clear");
+    snprintf (line, DIM(line), "SETKEYINFO --clear");
 
   rc = assuan_transact (entry_ctx, line,
 			NULL, NULL, NULL, NULL, NULL, NULL);
@@ -1114,16 +1106,14 @@ agent_get_passphrase (ctrl_t ctrl,
 
 
   if (desc)
-    snprintf (line, DIM(line)-1, "SETDESC %s", desc);
+    snprintf (line, DIM(line), "SETDESC %s", desc);
   else
-    snprintf (line, DIM(line)-1, "RESET");
-  line[DIM(line)-1] = 0;
+    snprintf (line, DIM(line), "RESET");
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return unlock_pinentry (rc);
 
-  snprintf (line, DIM(line)-1, "SETPROMPT %s", prompt);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "SETPROMPT %s", prompt);
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return unlock_pinentry (rc);
@@ -1137,8 +1127,7 @@ agent_get_passphrase (ctrl_t ctrl,
 
   if (errtext)
     {
-      snprintf (line, DIM(line)-1, "SETERROR %s", errtext);
-      line[DIM(line)-1] = 0;
+      snprintf (line, DIM(line), "SETERROR %s", errtext);
       rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
         return unlock_pinentry (rc);
@@ -1205,10 +1194,9 @@ agent_get_confirmation (ctrl_t ctrl,
     return rc;
 
   if (desc)
-    snprintf (line, DIM(line)-1, "SETDESC %s", desc);
+    snprintf (line, DIM(line), "SETDESC %s", desc);
   else
-    snprintf (line, DIM(line)-1, "RESET");
-  line[DIM(line)-1] = 0;
+    snprintf (line, DIM(line), "RESET");
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   /* Most pinentries out in the wild return the old Assuan error code
      for canceled which gets translated to an assuan Cancel error and
@@ -1221,8 +1209,7 @@ agent_get_confirmation (ctrl_t ctrl,
 
   if (ok)
     {
-      snprintf (line, DIM(line)-1, "SETOK %s", ok);
-      line[DIM(line)-1] = 0;
+      snprintf (line, DIM(line), "SETOK %s", ok);
       rc = assuan_transact (entry_ctx,
                             line, NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
@@ -1235,8 +1222,7 @@ agent_get_confirmation (ctrl_t ctrl,
          the standard cancel.  */
       if (with_cancel)
         {
-          snprintf (line, DIM(line)-1, "SETNOTOK %s", notok);
-          line[DIM(line)-1] = 0;
+          snprintf (line, DIM(line), "SETNOTOK %s", notok);
           rc = assuan_transact (entry_ctx,
                                 line, NULL, NULL, NULL, NULL, NULL, NULL);
         }
@@ -1245,8 +1231,7 @@ agent_get_confirmation (ctrl_t ctrl,
 
       if (gpg_err_code (rc) == GPG_ERR_ASS_UNKNOWN_CMD)
 	{
-	  snprintf (line, DIM(line)-1, "SETCANCEL %s", notok);
-	  line[DIM(line)-1] = 0;
+	  snprintf (line, DIM(line), "SETCANCEL %s", notok);
 	  rc = assuan_transact (entry_ctx, line,
                                 NULL, NULL, NULL, NULL, NULL, NULL);
 	}
@@ -1282,10 +1267,9 @@ agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn)
     return rc;
 
   if (desc)
-    snprintf (line, DIM(line)-1, "SETDESC %s", desc);
+    snprintf (line, DIM(line), "SETDESC %s", desc);
   else
-    snprintf (line, DIM(line)-1, "RESET");
-  line[DIM(line)-1] = 0;
+    snprintf (line, DIM(line), "RESET");
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   /* Most pinentries out in the wild return the old Assuan error code
      for canceled which gets translated to an assuan Cancel error and
@@ -1298,8 +1282,7 @@ agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn)
 
   if (ok_btn)
     {
-      snprintf (line, DIM(line)-1, "SETOK %s", ok_btn);
-      line[DIM(line)-1] = 0;
+      snprintf (line, DIM(line), "SETOK %s", ok_btn);
       rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL,
                             NULL, NULL, NULL);
       if (rc)
@@ -1354,18 +1337,16 @@ agent_popup_message_start (ctrl_t ctrl, const char *desc, const char *ok_btn)
     return rc;
 
   if (desc)
-    snprintf (line, DIM(line)-1, "SETDESC %s", desc);
+    snprintf (line, DIM(line), "SETDESC %s", desc);
   else
-    snprintf (line, DIM(line)-1, "RESET");
-  line[DIM(line)-1] = 0;
+    snprintf (line, DIM(line), "RESET");
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return unlock_pinentry (rc);
 
   if (ok_btn)
     {
-      snprintf (line, DIM(line)-1, "SETOK %s", ok_btn);
-      line[DIM(line)-1] = 0;
+      snprintf (line, DIM(line), "SETOK %s", ok_btn);
       rc = assuan_transact (entry_ctx, line, NULL,NULL,NULL,NULL,NULL,NULL);
       if (rc)
         return unlock_pinentry (rc);
@@ -1465,7 +1446,7 @@ agent_clear_passphrase (ctrl_t ctrl,
   if (rc)
     return rc;
 
-  snprintf (line, DIM(line)-1, "CLEARPASSPHRASE %c/%s",
+  snprintf (line, DIM(line), "CLEARPASSPHRASE %c/%s",
 	    cache_mode == CACHE_MODE_USER? 'u' :
 	    cache_mode == CACHE_MODE_SSH? 's' : 'n',
 	    keyinfo);

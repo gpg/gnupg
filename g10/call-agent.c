@@ -726,7 +726,7 @@ agent_scd_apdu (const char *hexapdu, unsigned int *r_sw)
 
       init_membuf (&mb, 256);
 
-      snprintf (line, DIM(line)-1, "SCD APDU %s", hexapdu);
+      snprintf (line, DIM(line), "SCD APDU %s", hexapdu);
       err = assuan_transact (agent_ctx, line,
                              put_membuf_cb, &mb, NULL, NULL, NULL, NULL);
       if (!err)
@@ -758,9 +758,8 @@ agent_keytocard (const char *hexgrip, int keyno, int force,
 
   memset (&parm, 0, sizeof parm);
 
-  snprintf (line, DIM(line)-1, "KEYTOCARD %s%s %s OPENPGP.%d %s",
+  snprintf (line, DIM(line), "KEYTOCARD %s%s %s OPENPGP.%d %s",
             force?"--force ": "", hexgrip, serialno, keyno, timestamp);
-  line[DIM(line)-1] = 0;
 
   rc = start_agent (NULL, 1);
   if (rc)
@@ -902,8 +901,7 @@ agent_scd_writecert (const char *certidstr,
 
   memset (&parms, 0, sizeof parms);
 
-  snprintf (line, DIM(line)-1, "SCD WRITECERT %s", certidstr);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "SCD WRITECERT %s", certidstr);
   dfltparm.ctx = agent_ctx;
   parms.dflt = &dfltparm;
   parms.certdata = certdata;
@@ -956,8 +954,7 @@ agent_scd_writekey (int keyno, const char *serialno,
 
   memset (&parms, 0, sizeof parms);
 
-  snprintf (line, DIM(line)-1, "SCD WRITEKEY --force OPENPGP.%d", keyno);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "SCD WRITEKEY --force OPENPGP.%d", keyno);
   dfltparm.ctx = agent_ctx;
   parms.dflt = &dfltparm;
   parms.keydata = keydata;
@@ -1019,11 +1016,10 @@ agent_scd_genkey (int keyno, int force, u32 *createtime)
   else
     *tbuf = 0;
 
-  snprintf (line, DIM(line)-1, "SCD GENKEY %s%s %s %d",
+  snprintf (line, DIM(line), "SCD GENKEY %s%s %s %d",
             *tbuf? "--timestamp=":"", tbuf,
             force? "--force":"",
             keyno);
-  line[DIM(line)-1] = 0;
 
   dfltparm.ctx = agent_ctx;
   rc = assuan_transact (agent_ctx, line,
@@ -1151,8 +1147,7 @@ agent_scd_readcert (const char *certidstr,
 
   init_membuf (&data, 2048);
 
-  snprintf (line, DIM(line)-1, "SCD READCERT %s", certidstr);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "SCD READCERT %s", certidstr);
   rc = assuan_transact (agent_ctx, line,
                         put_membuf_cb, &data,
                         default_inq_cb, &dfltparm,
@@ -1202,8 +1197,7 @@ agent_scd_change_pin (int chvno, const char *serialno)
     return rc;
   dfltparm.ctx = agent_ctx;
 
-  snprintf (line, DIM(line)-1, "SCD PASSWD %s %d", reset, chvno);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "SCD PASSWD %s %d", reset, chvno);
   rc = assuan_transact (agent_ctx, line,
                         NULL, NULL,
                         default_inq_cb, &dfltparm,
@@ -1230,8 +1224,7 @@ agent_scd_checkpin  (const char *serialno)
     return rc;
   dfltparm.ctx = agent_ctx;
 
-  snprintf (line, DIM(line)-1, "SCD CHECKPIN %s", serialno);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "SCD CHECKPIN %s", serialno);
   rc = assuan_transact (agent_ctx, line,
                         NULL, NULL,
                         default_inq_cb, &dfltparm,
@@ -1301,7 +1294,7 @@ agent_get_passphrase (const char *cache_id,
     if (!(arg4 = percent_plus_escape (desc_msg)))
       goto no_mem;
 
-  snprintf (line, DIM(line)-1,
+  snprintf (line, DIM(line),
             "GET_PASSPHRASE --data --repeat=%d%s -- %s %s %s %s",
             repeat,
             check? " --check --qualitybar":"",
@@ -1309,7 +1302,6 @@ agent_get_passphrase (const char *cache_id,
             arg2? arg2:"X",
             arg3? arg3:"X",
             arg4? arg4:"X");
-  line[DIM(line)-1] = 0;
   xfree (arg1);
   xfree (arg2);
   xfree (arg3);
@@ -1358,8 +1350,7 @@ agent_clear_passphrase (const char *cache_id)
     return rc;
   dfltparm.ctx = agent_ctx;
 
-  snprintf (line, DIM(line)-1, "CLEAR_PASSPHRASE %s", cache_id);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "CLEAR_PASSPHRASE %s", cache_id);
   return assuan_transact (agent_ctx, line,
                           NULL, NULL,
                           default_inq_cb, &dfltparm,
@@ -1387,8 +1378,7 @@ gpg_agent_get_confirmation (const char *desc)
   tmp = percent_plus_escape (desc);
   if (!tmp)
     return gpg_error_from_syserror ();
-  snprintf (line, DIM(line)-1, "GET_CONFIRMATION %s", tmp);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "GET_CONFIRMATION %s", tmp);
   xfree (tmp);
 
   rc = assuan_transact (agent_ctx, line,
@@ -1574,8 +1564,7 @@ agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
   if (!hexkeygrip || strlen (hexkeygrip) != 40)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  snprintf (line, DIM(line)-1, "KEYINFO %s", hexkeygrip);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "KEYINFO %s", hexkeygrip);
 
   err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL,
                          keyinfo_status_cb, &keyinfo);
@@ -1761,7 +1750,7 @@ agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
   if (err)
     return err;
 
-  snprintf (line, DIM(line)-1, "READKEY %s%s", fromcard? "--card ":"",
+  snprintf (line, DIM(line), "READKEY %s%s", fromcard? "--card ":"",
             hexkeygrip);
 
   init_membuf (&data, 1024);
@@ -1826,16 +1815,14 @@ agent_pksign (ctrl_t ctrl, const char *cache_nonce,
   if (err)
     return err;
 
-  snprintf (line, DIM(line)-1, "SIGKEY %s", keygrip);
-  line[DIM(line)-1] = 0;
+  snprintf (line, DIM(line), "SIGKEY %s", keygrip);
   err = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (err)
     return err;
 
   if (desc)
     {
-      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
-      line[DIM(line)-1] = 0;
+      snprintf (line, DIM(line), "SETKEYDESC %s", desc);
       err = assuan_transact (agent_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (err)
@@ -1966,8 +1953,7 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
 
   if (desc)
     {
-      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
-      line[DIM(line)-1] = 0;
+      snprintf (line, DIM(line), "SETKEYDESC %s", desc);
       err = assuan_transact (agent_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (err)
@@ -2059,7 +2045,7 @@ agent_keywrap_key (ctrl_t ctrl, int forexport, void **r_kek, size_t *r_keklen)
     return err;
   dfltparm.ctx = agent_ctx;
 
-  snprintf (line, DIM(line)-1, "KEYWRAP_KEY %s",
+  snprintf (line, DIM(line), "KEYWRAP_KEY %s",
             forexport? "--export":"--import");
 
   init_membuf_secure (&data, 64);
@@ -2121,8 +2107,7 @@ agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
 
   if (desc)
     {
-      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
-      line[DIM(line)-1] = 0;
+      snprintf (line, DIM(line), "SETKEYDESC %s", desc);
       err = assuan_transact (agent_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (err)
@@ -2182,14 +2167,14 @@ agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
 
   if (desc)
     {
-      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
+      snprintf (line, DIM(line), "SETKEYDESC %s", desc);
       err = assuan_transact (agent_ctx, line,
                              NULL, NULL, NULL, NULL, NULL, NULL);
       if (err)
         return err;
     }
 
-  snprintf (line, DIM(line)-1, "EXPORT_KEY %s%s%s %s",
+  snprintf (line, DIM(line), "EXPORT_KEY %s%s%s %s",
             openpgp_protected ? "--openpgp ":"",
             cache_nonce_addr && *cache_nonce_addr? "--cache-nonce=":"",
             cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"",
@@ -2241,14 +2226,14 @@ agent_delete_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
 
   if (desc)
     {
-      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
+      snprintf (line, DIM(line), "SETKEYDESC %s", desc);
       err = assuan_transact (agent_ctx, line,
                              NULL, NULL, NULL, NULL, NULL, NULL);
       if (err)
         return err;
     }
 
-  snprintf (line, DIM(line)-1, "DELETE_KEY%s %s",
+  snprintf (line, DIM(line), "DELETE_KEY%s %s",
             force? " --force":"", hexkeygrip);
   err = assuan_transact (agent_ctx, line, NULL, NULL,
                          default_inq_cb, &dfltparm,
@@ -2287,7 +2272,7 @@ agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc, int verify,
 
   if (desc)
     {
-      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
+      snprintf (line, DIM(line), "SETKEYDESC %s", desc);
       err = assuan_transact (agent_ctx, line,
                              NULL, NULL, NULL, NULL, NULL, NULL);
       if (err)
@@ -2295,12 +2280,12 @@ agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc, int verify,
     }
 
   if (verify)
-    snprintf (line, DIM(line)-1, "PASSWD %s%s --verify %s",
+    snprintf (line, DIM(line), "PASSWD %s%s --verify %s",
               cache_nonce_addr && *cache_nonce_addr? "--cache-nonce=":"",
               cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"",
               hexkeygrip);
   else
-    snprintf (line, DIM(line)-1, "PASSWD %s%s %s%s %s",
+    snprintf (line, DIM(line), "PASSWD %s%s %s%s %s",
               cache_nonce_addr && *cache_nonce_addr? "--cache-nonce=":"",
               cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"",
               passwd_nonce_addr && *passwd_nonce_addr? "--passwd-nonce=":"",
