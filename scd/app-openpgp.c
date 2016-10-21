@@ -2987,7 +2987,6 @@ change_keyattr_from_string (app_t app,
       size_t oid_len;
 
       oidstr = openpgp_curve_to_oid (string+n, NULL);
-      gcry_mpi_release (oid);
       if (!oidstr)
         {
           err = gpg_error (GPG_ERR_INV_DATA);
@@ -3005,6 +3004,7 @@ change_keyattr_from_string (app_t app,
       string[0] = algo;
       memcpy (string+1, oidbuf+1, oid_len-1);
       err = change_keyattr (app, keyno, string, oid_len, pincb, pincb_arg);
+      gcry_mpi_release (oid);
     }
   else
     err = gpg_error (GPG_ERR_PUBKEY_ALGO);
