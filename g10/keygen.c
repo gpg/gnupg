@@ -4344,8 +4344,8 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
         }
       else
         {
-          err = gen_card_key (2, 0, get_parameter_algo (para, pSUBKEYTYPE, NULL),
-                              pub_root, &timestamp,
+          err = gen_card_key (2, get_parameter_algo (para, pSUBKEYTYPE, NULL),
+                              0, pub_root, &timestamp,
                               get_parameter_u32 (para, pKEYEXPIRE));
         }
 
