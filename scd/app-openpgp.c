@@ -228,7 +228,7 @@ struct app_local_s {
         rsa_key_format_t format;
       } rsa;
       struct {
-        const char *oid;
+        const char *curve;
         int flags;
       } ecc;
     };
@@ -913,7 +913,7 @@ send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int keyno)
                 keyno==1? PUBKEY_ALGO_ECDH :
                 (app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK)?
                 PUBKEY_ALGO_EDDSA : PUBKEY_ALGO_ECDSA,
-                openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid, 0));
+                app->app_local->keyattr[keyno].ecc.curve);
     }
   else
     snprintf (buffer, sizeof buffer, "%d 0 0 UNKNOWN", keyno+1);
@@ -1307,6 +1307,29 @@ rsa_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at,  int keyno,
   return err;
 }
 
+
+/* Determine KDF hash algorithm and KEK encryption algorithm by CURVE.  */
+static const unsigned char*
+ecdh_params (const char *curve)
+{
+  unsigned int nbits;
+
+  openpgp_curve_to_oid (curve, &nbits);
+
+  /* See RFC-6637 for those constants.
+         0x03: Number of bytes
+         0x01: Version for this parameter format
+         KDF algo
+        KEK algo
+  */
+  if (nbits <= 256)
+    return (const unsigned char*)"\x03\x01\x08\x07";
+  else if (nbits <= 384)
+    return (const unsigned char*)"\x03\x01\x09\x08";
+  else
+    return (const unsigned char*)"\x03\x01\x0a\x09";
+}
+
 static gpg_error_t
 ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
                  const unsigned char *data, size_t datalen, gcry_sexp_t *r_sexp)
@@ -1317,11 +1340,12 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
   size_t ecc_q_len;
   gcry_mpi_t oid = NULL;
   int n;
+  const char *curve;
+  const char *oidstr;
   const unsigned char *oidbuf;
   size_t oid_len;
   int algo;
   const char *format;
-  const char *curve;
 
   ecc_q = find_tlv (data, datalen, 0x0086, &ecc_q_len);
   if (!ecc_q)
@@ -1330,10 +1354,11 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
       return gpg_error (GPG_ERR_CARD);
     }
 
-  err = openpgp_oid_from_str (app->app_local->keyattr[keyno].ecc.oid, &oid);
+  curve = app->app_local->keyattr[keyno].ecc.curve;
+  oidstr = openpgp_curve_to_oid (curve, NULL);
+  err = openpgp_oid_from_str (oidstr, &oid);
   if (err)
     return err;
-
   oidbuf = gcry_mpi_get_opaque (oid, &n);
   if (!oidbuf)
     {
@@ -1367,7 +1392,7 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
   if (keyno == 1)
     {
       if (ctrl)
-        send_key_data (ctrl, "kdf", "\x03\x01\x08\x07", (size_t)4);
+        send_key_data (ctrl, "kdf/kek", ecdh_params (curve), (size_t)4);
       algo = PUBKEY_ALGO_ECDH;
     }
   else
@@ -1383,7 +1408,7 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
       unsigned char fprbuf[20];
 
       err = store_fpr (app, keyno, created_at, fprbuf, algo, oidbuf, oid_len,
-                       qbuf, ecc_q_len, "\x03\x01\x08\x07", (size_t)4);
+                       qbuf, ecc_q_len, ecdh_params (curve), (size_t)4);
       if (err)
         goto leave;
 
@@ -1397,8 +1422,9 @@ ecc_read_pubkey (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
   else
     format = "(public-key(ecc(curve%s)(flags eddsa)(q%b)))";
 
-  curve = openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid, 1);
-  err = gcry_sexp_build (r_sexp, NULL, format, curve, (int)ecc_q_len, qbuf);
+  err = gcry_sexp_build (r_sexp, NULL, format,
+                         app->app_local->keyattr[keyno].ecc.curve,
+                         (int)ecc_q_len, qbuf);
  leave:
   gcry_mpi_release (oid);
   xfree (qbuf);
@@ -3342,8 +3368,9 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   const unsigned char *ecc_q = NULL;
   const unsigned char *ecc_d = NULL;
   size_t ecc_q_len, ecc_d_len;
+  const char *curve = NULL;
   u32 created_at = 0;
-  const char *oidstr = NULL;
+  const char *oidstr;
   int flag_djb_tweak = 0;
   int algo;
   gcry_mpi_t oid = NULL;
@@ -3372,22 +3399,22 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
 
       if (tok && toklen == 5 && !memcmp (tok, "curve", 5))
         {
-          unsigned char *curve;
+          char *curve_name;
 
           if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
             goto leave;
 
-          curve = xtrymalloc (toklen+1);
-          if (!curve)
+          curve_name = xtrymalloc (toklen+1);
+          if (!curve_name)
             {
               err = gpg_error_from_syserror ();
               goto leave;
             }
 
-          memcpy (curve, tok, toklen);
-          curve[toklen] = 0;
-          oidstr = openpgp_curve_to_oid (curve, NULL);
-          xfree (curve);
+          memcpy (curve_name, tok, toklen);
+          curve_name[toklen] = 0;
+          curve = openpgp_is_curve_supported (curve_name, NULL);
+          xfree (curve_name);
         }
       else if (tok && toklen == 5 && !memcmp (tok, "flags", 5))
         {
@@ -3474,7 +3501,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
 
   /* Check that we have all parameters and that they match the card
      description. */
-  if (!oidstr)
+  if (!curve)
     {
       log_error (_("unsupported curve\n"));
       err = gpg_error (GPG_ERR_INV_VALUE);
@@ -3493,6 +3520,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   else
     algo = PUBKEY_ALGO_ECDSA;
 
+  oidstr = openpgp_curve_to_oid (curve, NULL);
   err = openpgp_oid_from_str (oidstr, &oid);
   if (err)
     goto leave;
@@ -3505,7 +3533,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   oid_len = (n+7)/8;
 
   if (app->app_local->keyattr[keyno].key_type != KEY_TYPE_ECC
-      || app->app_local->keyattr[keyno].ecc.oid != oidstr
+      || app->app_local->keyattr[keyno].ecc.curve != curve
       || (flag_djb_tweak !=
           (app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK)))
     {
@@ -3580,7 +3608,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
     }
 
   err = store_fpr (app, keyno, created_at, fprbuf, algo, oidbuf, oid_len,
-                   ecc_q, ecc_q_len, "\x03\x01\x08\x07", (size_t)4);
+                   ecc_q, ecc_q_len, ecdh_params (curve), (size_t)4);
 
  leave:
   gcry_mpi_release (oid);
@@ -4578,12 +4606,11 @@ parse_historical (struct app_local_s *apploc,
 
 /*
  * Check if the OID in an DER encoding is available by GnuPG/libgcrypt,
- * and return the constant string in dotted decimal form.
- * Return NULL if not available.
+ * and return the curve name.  Return NULL if not available.
  * The constant string is not allocated dynamically, never free it.
  */
 static const char *
-ecc_oid (unsigned char *buf, size_t buflen)
+ecc_curve (unsigned char *buf, size_t buflen)
 {
   gcry_mpi_t oid;
   char *oidstr;
@@ -4608,7 +4635,7 @@ ecc_oid (unsigned char *buf, size_t buflen)
   if (!oidstr)
     return NULL;
 
-  result = openpgp_curve_to_oid (oidstr, NULL);
+  result = openpgp_oid_to_curve (oidstr, 1);
   xfree (oidstr);
   return result;
 }
@@ -4671,7 +4698,7 @@ parse_algorithm_attribute (app_t app, int keyno)
   else if (*buffer == PUBKEY_ALGO_ECDH || *buffer == PUBKEY_ALGO_ECDSA
            || *buffer == PUBKEY_ALGO_EDDSA)
     {
-      const char *oid;
+      const char *curve;
       int oidlen = buflen - 1;
 
       app->app_local->keyattr[keyno].ecc.flags = 0;
@@ -4683,22 +4710,22 @@ parse_algorithm_attribute (app_t app, int keyno)
             app->app_local->keyattr[keyno].ecc.flags |= ECC_FLAG_PUBKEY;
         }
 
-      oid = ecc_oid (buffer + 1, oidlen);
+      curve = ecc_curve (buffer + 1, oidlen);
 
-      if (!oid)
+      if (!curve)
         log_printhex ("Curve with OID not supported: ", buffer+1, buflen-1);
       else
         {
           app->app_local->keyattr[keyno].key_type = KEY_TYPE_ECC;
-          app->app_local->keyattr[keyno].ecc.oid = oid;
+          app->app_local->keyattr[keyno].ecc.curve = curve;
           if (*buffer == PUBKEY_ALGO_EDDSA
               || (*buffer == PUBKEY_ALGO_ECDH
-                  && !strcmp (app->app_local->keyattr[keyno].ecc.oid,
-                              "1.3.6.1.4.1.3029.1.5.1")))
+                  && !strcmp (app->app_local->keyattr[keyno].ecc.curve,
+                              "Curve25519")))
             app->app_local->keyattr[keyno].ecc.flags |= ECC_FLAG_DJB_TWEAK;
           if (opt.verbose)
             log_printf
-              ("ECC, curve=%s%s\n", app->app_local->keyattr[keyno].ecc.oid,
+              ("ECC, curve=%s%s\n", app->app_local->keyattr[keyno].ecc.curve,
                !(app->app_local->keyattr[keyno].ecc.flags & ECC_FLAG_DJB_TWEAK)?
                "": keyno==1? " (djb-tweak)": " (eddsa)");
         }

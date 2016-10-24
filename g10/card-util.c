@@ -568,7 +568,18 @@ card_status (estream_t fp, char *serialno, size_t serialnobuflen)
             else if (info.key_attr[i].algo == PUBKEY_ALGO_ECDH
                      || info.key_attr[i].algo == PUBKEY_ALGO_ECDSA
                      || info.key_attr[i].algo == PUBKEY_ALGO_EDDSA)
-              tty_fprintf (fp, " %s", info.key_attr[i].curve);
+              {
+                const char *curve_for_print = "?";
+
+                if (info.key_attr[i].curve)
+                  {
+                    const char *oid;
+                    oid = openpgp_curve_to_oid (info.key_attr[i].curve, NULL);
+                    if (oid)
+                      curve_for_print = openpgp_oid_to_curve (oid, 0);
+                  }
+                tty_fprintf (fp, " %s", curve_for_print);
+              }
           tty_fprintf (fp, "\n");
         }
       tty_fprintf (fp,    "Max. PIN lengths .: %d %d %d\n",

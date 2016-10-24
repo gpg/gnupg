@@ -624,15 +624,7 @@ learn_status_cb (void *opaque, const char *line)
         parm->key_attr[keyno].nbits = strtoul (line+n+3, NULL, 10);
       else if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA
                || algo == PUBKEY_ALGO_EDDSA)
-        {
-          const char *curve;
-
-          for (i = 0; (curve = openpgp_enum_curves (&i));)
-            if (!strcmp (curve, line+n))
-              break;
-
-          parm->key_attr[keyno].curve = curve;
-        }
+        parm->key_attr[keyno].curve = openpgp_is_curve_supported (line+n, NULL);
     }
   else if (keywordlen == 12 && !memcmp (keyword, "PRIVATE-DO-", 11)
            && strchr("1234", keyword[11]))
