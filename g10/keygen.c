@@ -180,8 +180,9 @@ print_status_key_created (int letter, PKT_public_key *pk, const char *handle)
           *p++ = ' ';
           fingerprint_from_pk (pk, array, &n);
           s = array;
+          /* Fixme: Use bin2hex */
           for (i=0; i < n ; i++, s++, p += 2)
-            sprintf (p, "%02X", *s);
+            snprintf (p, 3, "%02X", *s);
         }
     }
   if (*handle)
@@ -2428,13 +2429,7 @@ ask_expire_interval(int object,const char *def_expire)
 	  {
 	    char *prompt;
 
-#define PROMPTSTRING _("Signature is valid for? (%s) ")
-	    /* This will actually end up larger than necessary because
-	       of the 2 bytes for '%s' */
-	    prompt=xmalloc(strlen(PROMPTSTRING)+strlen(def_expire)+1);
-	    sprintf(prompt,PROMPTSTRING,def_expire);
-#undef PROMPTSTRING
-
+	    prompt = xasprintf (_("Signature is valid for? (%s) "), def_expire);
 	    answer = cpr_get("siggen.valid",prompt);
 	    xfree(prompt);
 
