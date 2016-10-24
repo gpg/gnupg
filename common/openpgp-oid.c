@@ -424,8 +424,8 @@ openpgp_is_curve_supported (const char *name, int *r_algo)
     *r_algo = 0;
   for (idx = 0; idx < DIM (oidtable) && oidtable[idx].name; idx++)
     {
-      if (!strcmp (name, (oidtable[idx].alias? oidtable[idx].alias
-                          /**/               : oidtable[idx].name))
+      if ((!strcmp (name, oidtable[idx].name)
+           || (oidtable[idx].alias && !strcmp (name, (oidtable[idx].alias))))
           && curve_supported_p (oidtable[idx].name))
         {
           if (r_algo)
