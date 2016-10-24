@@ -2516,8 +2516,8 @@ cmd_versioncheck (assuan_context_t ctx, char *line)
   char *cmd_fields[2];
 
   ctrl_t ctrl;
-  estream_t swdb;
-  estream_t swdb_sig;
+  estream_t swdb = NULL;
+  estream_t swdb_sig = NULL;
   char* swdb_dir = NULL;
   char* swdb_sig_dir = NULL;
   char* buf = NULL;
