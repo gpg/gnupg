@@ -391,7 +391,9 @@ progress_cb (ctrl_t ctrl, const char *what, int printchar,
 }
 
 
-/* Helper to print a message while leaving a command.  */
+/* Helper to print a message while leaving a command.  Note that this
+ * function does not call assuan_set_error; the caller may do this
+ * prior to calling us.  */
 static gpg_error_t
 leave_cmd (assuan_context_t ctx, gpg_error_t err)
 {
@@ -1000,17 +1002,19 @@ cmd_readkey (assuan_context_t ctx, char *line)
   unsigned char grip[20];
   gcry_sexp_t s_pkey = NULL;
   unsigned char *pkbuf = NULL;
+  char *serialno = NULL;
   size_t pkbuflen;
+  const char *opt_card;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
-  if (has_option_name (line, "--card"))
-    {
-      const char *keyid;
-      char *serialno = NULL;
+  opt_card = has_option_name (line, "--card");
+  line = skip_options (line);
 
-      keyid = skip_options (line);
+  if (opt_card)
+    {
+      const char *keyid = opt_card;
 
       rc = agent_card_getattr (ctrl, "SERIALNO", &serialno);
       if (rc)
@@ -1042,35 +1046,33 @@ cmd_readkey (assuan_context_t ctx, char *line)
         goto leave;
 
       rc = assuan_send_data (ctx, pkbuf, pkbuflen);
+    }
+  else
+    {
+      rc = parse_keygrip (ctx, line, grip);
+      if (rc)
+        goto leave;
+
+      rc = agent_public_key_from_file (ctrl, grip, &s_pkey);
+      if (!rc)
+        {
+          pkbuflen = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
+          log_assert (pkbuflen);
+          pkbuf = xtrymalloc (pkbuflen);
+          if (!pkbuf)
+            rc = gpg_error_from_syserror ();
+          else
+            {
+              gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, pkbuf, pkbuflen);
+              rc = assuan_send_data (ctx, pkbuf, pkbuflen);
+            }
+        }
+    }
 
  leave:
-      xfree (serialno);
-      xfree (pkbuf);
-      gcry_sexp_release (s_pkey);
-      return leave_cmd (ctx, rc);
-    }
-
-  rc = parse_keygrip (ctx, line, grip);
-  if (rc)
-    return rc; /* Return immediately as this is already an Assuan error code.*/
-
-  rc = agent_public_key_from_file (ctrl, grip, &s_pkey);
-  if (!rc)
-    {
-      pkbuflen = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
-      assert (pkbuflen);
-      pkbuf = xtrymalloc (pkbuflen);
-      if (!pkbuf)
-        rc = gpg_error_from_syserror ();
-      else
-        {
-          gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, pkbuf, pkbuflen);
-          rc = assuan_send_data (ctx, pkbuf, pkbuflen);
-          xfree (pkbuf);
-        }
-      gcry_sexp_release (s_pkey);
-    }
-
+  xfree (serialno);
+  xfree (pkbuf);
+  gcry_sexp_release (s_pkey);
   return leave_cmd (ctx, rc);
 }
 
