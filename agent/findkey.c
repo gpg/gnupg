@@ -157,14 +157,10 @@ agent_write_private_key (const unsigned char *grip,
         {
           fp = es_fopen (fname, "wbx,mode=-rw");
           if (!fp)
-            {
-              tmperr = gpg_error_from_syserror ();
-              goto error;
-            }
+            tmperr = gpg_error_from_syserror ();
         }
-      else
+      if (!fp)
         {
-        error:
           log_error ("can't create '%s': %s\n", fname, gpg_strerror (tmperr));
           xfree (fname);
           return tmperr;
