@@ -162,4 +162,5 @@
   (echo "Stopping gpg-agent...")
   (catch (echo "Warning: Removing socket directory failed.")
 	 (call-popen `(,(tool 'gpgconf) --remove-socketdir) ""))
-  (call-check `(,(tool 'gpg-connect-agent) --verbose killagent /bye)))
+  (call-check `(,(tool 'gpg-connect-agent) --verbose --no-autostart
+		killagent /bye)))
