@@ -132,14 +132,30 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
         return err;
       }
 
+    /* Expected size of the x component */
     secret_x_size = (nbits+7)/8;
-    log_assert (nbytes >= secret_x_size);
-    if ((nbytes & 1))
-      /* Remove the "04" prefix of non-compressed format.  */
-      memmove (secret_x, secret_x+1, secret_x_size);
-    if (nbytes - secret_x_size)
-      memset (secret_x+secret_x_size, 0, nbytes-secret_x_size);
 
+    if (nbytes > secret_x_size)
+      {
+        /* Uncompressed format expected, so it must start with 04 */
+        if (secret_x[0] != (byte)0x04)
+          {
+            return gpg_error (GPG_ERR_BAD_DATA);
+          }
+
+        /* Remove the "04" prefix of non-compressed format.  */
+        memmove (secret_x, secret_x+1, secret_x_size);
+
+        /* Zeroize the y component following */
+        if (nbytes > secret_x_size)
+          memset (secret_x+secret_x_size, 0, nbytes-secret_x_size);
+      }
+    else if (nbytes < secret_x_size)
+      {
+        /* Raw share secret (x coordinate), without leading zeros */
+        memmove (secret_x+(secret_x_size - nbytes), secret_x, nbytes);
+        memset (secret_x, 0, secret_x_size - nbytes);
+      }
     if (DBG_CRYPTO)
       log_printhex ("ECDH shared secret X is:", secret_x, secret_x_size );
   }
@@ -235,8 +251,8 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
         return err;
       }
     gcry_md_write(h, "\x00\x00\x00\x01", 4);      /* counter = 1 */
-    gcry_md_write(h, secret_x, secret_x_size);	  /* x of the point X */
-    gcry_md_write(h, message, message_size);/* KDF parameters */
+    gcry_md_write(h, secret_x, secret_x_size);    /* x of the point X */
+    gcry_md_write(h, message, message_size);      /* KDF parameters */
 
     gcry_md_final (h);
 
