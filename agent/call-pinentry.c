@@ -354,6 +354,19 @@ start_pinentry (ctrl_t ctrl)
   if (DBG_IPC)
     log_debug ("connection to PIN entry established\n");
 
+  value = session_env_getenv (ctrl->session_env, "PINENTRY_USER_DATA");
+  if (value != NULL)
+    {
+      char *optstr;
+      if (asprintf (&optstr, "OPTION pinentry-user-data=%s", value) < 0 )
+	return unlock_pinentry (out_of_core ());
+      rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+			    NULL);
+      xfree (optstr);
+      if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
+        return unlock_pinentry (rc);
+    }
+
   rc = assuan_transact (entry_ctx,
                         opt.no_grab? "OPTION no-grab":"OPTION grab",
                         NULL, NULL, NULL, NULL, NULL, NULL);
