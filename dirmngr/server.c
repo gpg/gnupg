@@ -2342,6 +2342,10 @@ cmd_reloaddirmngr (assuan_context_t ctx, char *line)
 
 
 
+/* This function parses the first portion of the version number S and
+ * stores it in *NUMBER.  On success, this function returns a pointer
+ * into S starting with the first character, which is not part of the
+ * initial number portion; on failure, NULL is returned.  */
 static const char*
 parse_version_number (const char *s, int *number)
 {
@@ -2359,8 +2363,16 @@ parse_version_number (const char *s, int *number)
 }
 
 
+/* This function breaks up the complete string-representation of the
+ * version number S, which is of the following struture: <major
+ * number>.<minor number>[.<micro number>]<patch level>.  The major,
+ * minor and micro number components will be stored in *MAJOR, *MINOR
+ * and *MICRO.  If MICRO is not given 0 is used instead.
+ *
+ * On success, the last component, the patch level, will be returned;
+ * on failure, NULL will be returned.  */
 static const char *
-parse_version_string (const char *s, int *major, int *minor)
+parse_version_string (const char *s, int *major, int *minor, int *micro)
 {
   s = parse_version_number (s, major);
   if (!s || *s != '.')
@@ -2369,18 +2381,23 @@ parse_version_string (const char *s, int *major, int *minor)
   s = parse_version_number (s, minor);
   if (!s)
     return NULL;
+  if (*s == '.')
+    {
+      s++;
+      s = parse_version_number (s, micro);
+      if (!s)
+        return NULL;
+    }
+  else
+    micro = 0;
   return s;  /* Patchlevel.  */
 }
 
-/* Class Confucius.
-
-   "Don't worry that other people don't know you;
-   worry that you don't know other people."            Analects--1.16.  */
 
 /* Create temporary directory with mode 0700.  Returns a dynamically
-   allocated string with the filename of the directory.  */
+ * allocated string with the filename of the directory.  */
 static char *
-confucius_mktmpdir (void)
+my_mktmpdir (void)
 {
   char *name, *p;
 
@@ -2388,18 +2405,21 @@ confucius_mktmpdir (void)
   if (!p || !*p)
     p = "/tmp";
   if (p[strlen (p) - 1] == '/')
-    name = xstrconcat (p, "gpg-XXXXXX", NULL);
+    name = strconcat (p, "gpg-XXXXXX", NULL);
   else
-    name = xstrconcat (p, "/", "gpg-XXXXXX", NULL);
+    name = strconcat (p, "/", "gpg-XXXXXX", NULL);
   if (!name || !gnupg_mkdtemp (name))
     {
+      int saveerr = errno;
       log_error (_("can't create temporary directory '%s': %s\n"),
-                 name?name:"", strerror (errno));
+                 name, strerror (saveerr));
+      gpg_err_set_errno (saveerr);
       return NULL;
     }
 
   return name;
 }
+
 
 /* Sets result to -1 if version a is less than b, 0 if the versions are equal
  * and 1 otherwise. Patch levels are compared as strings.  */
@@ -2408,21 +2428,27 @@ cmp_version (const char *a, const char *b, int *result)
 {
   int a_major, b_major;
   int a_minor, b_minor;
+  int a_micro, b_micro;
   const char *a_patch, *b_patch;
 
   if (!a || !b || !result)
-    return GPG_ERR_EINVAL;
+    return gpg_error (GPG_ERR_EINVAL);
 
-  a_patch = parse_version_string (a, &a_major, &a_minor);
-  b_patch = parse_version_string (b, &b_major, &b_minor);
+  a_patch = parse_version_string (a, &a_major, &a_minor, &a_micro);
+  b_patch = parse_version_string (b, &b_major, &b_minor, &b_micro);
 
   if (!a_patch || !b_patch)
-    return GPG_ERR_EINVAL;
+    return gpg_error (GPG_ERR_EINVAL);
 
   if (a_major == b_major)
     {
       if (a_minor == b_minor)
-        *result = strcmp (a_patch, b_patch);
+        {
+          if (a_micro == b_micro)
+            *result = strcmp (a_patch, b_patch);
+          else
+            *result = a_micro - b_minor;
+        }
       else
         *result = a_minor - b_minor;
     }
@@ -2432,25 +2458,26 @@ cmp_version (const char *a, const char *b, int *result)
   return 0;
 }
 
+
 static gpg_error_t
-fetch_into_tmpdir (ctrl_t ctrl, const char* url, estream_t* strm_out,
-                   char** path)
+fetch_into_tmpdir (ctrl_t ctrl, const char *url, estream_t *strm_out,
+                   char **path)
 {
   gpg_error_t err;
-  char* filename = NULL;
-  char* dirname = NULL;
-  estream_t file;
-  estream_t strm;
-  size_t len = 0;
+  char *filename = NULL;
+  char *dirname = NULL;
+  estream_t file = NULL;
+  estream_t strm = NULL;
+  size_t len, nwritten;
   char buf[1024];
 
   if (!strm_out || !path || !url)
     {
-      err = (GPG_ERR_INV_ARG);
+      err = gpg_error (GPG_ERR_INV_ARG);
       goto leave;
     }
 
-  dirname = confucius_mktmpdir ();
+  dirname = my_mktmpdir ();
   if (!dirname)
     {
       err = gpg_error_from_syserror ();
@@ -2465,38 +2492,59 @@ fetch_into_tmpdir (ctrl_t ctrl, const char* url, estream_t* strm_out,
     }
 
   file = es_fopen (filename, "w+");
+  if (!file)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
 
   if ((err = ks_http_fetch (ctrl, url, &strm)))
     goto leave;
 
-  while (!es_read (strm, buf, sizeof buf, &len))
+  for (;;)
     {
+      if (es_read (strm, buf, sizeof buf, &len))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error reading '%s': %s\n",
+                     es_fname_get (strm), gpg_strerror (err));
+          goto leave;
+        }
+
       if (!len)
         break;
-      if ((err = es_write (file, buf, len, NULL)))
+      if (es_write (file, buf, len, &nwritten))
         {
-          log_error ("error writing message to pipe: %s\n", gpg_strerror (err));
-          es_free (strm);
+          err = gpg_error_from_syserror ();
+          log_error ("error writing '%s': %s\n", filename, gpg_strerror (err));
+          goto leave;
+        }
+      else if (len != nwritten)
+        {
+          err = gpg_error (GPG_ERR_EIO);
+          log_error ("error writing '%s': %s\n", filename, "short write");
           goto leave;
         }
     }
 
   es_rewind (file);
-  es_fclose (strm);
   *strm_out = file;
-  err = 0;
+  file = NULL;
 
   if (path)
     {
-    *path = dirname;
-    dirname = NULL;
+      *path = dirname;
+      dirname = NULL;
     }
 
-leave:
+ leave:
+  es_fclose (file);
+  es_fclose (strm);
   xfree (dirname);
   xfree (filename);
   return err;
 }
+
 
 static const char hlp_versioncheck[] =
   "VERSIONCHECK <name> <version>"
@@ -2510,8 +2558,8 @@ cmd_versioncheck (assuan_context_t ctx, char *line)
 {
   gpg_error_t err;
 
-  char* name;
-  char* version;
+  char *name;
+  char *version;
   size_t name_len;
   char *cmd_fields[2];
 
