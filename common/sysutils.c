@@ -754,8 +754,8 @@ gnupg_setenv (const char *name, const char *value, int overwrite)
   (void)value;
   (void)overwrite;
   return 0;
-#else
-#if defined(HAVE_W32_SYSTEM)
+#else /*!W32CE*/
+# ifdef HAVE_W32_SYSTEM
   /*  Windows maintains (at least) two sets of environment variables.
       One set can be accessed by GetEnvironmentVariable and
       SetEnvironmentVariable.  This set is inherited by the children.
@@ -773,11 +773,11 @@ gnupg_setenv (const char *name, const char *value, int overwrite)
         return -1;
       }
   }
-#endif
+# endif /*W32*/
 
-#if defined(HAVE_SETENV)
+# ifdef HAVE_SETENV
   return setenv (name, value, overwrite);
-#else
+# else /*!HAVE_SETENV*/
   if (! getenv (name) || overwrite)
     {
       char *buf;
@@ -788,18 +788,17 @@ gnupg_setenv (const char *name, const char *value, int overwrite)
           gpg_err_set_errno (EINVAL);
           return -1;
         }
-      buf = xtrymalloc (strlen (name) + 1 + strlen (value) + 1);
+      buf = strconcat (name, "=", value, NULL);
       if (!buf)
         return -1;
-      strcpy (stpcpy (stpcpy (buf, name), "="), value);
-#if __GNUC__
-# warning no setenv - using putenv but leaking memory.
-#endif
+# if __GNUC__
+#  warning no setenv - using putenv but leaking memory.
+# endif
       return putenv (buf);
     }
   return 0;
-#endif
-#endif
+# endif /*!HAVE_SETENV*/
+#endif /*!W32CE*/
 }
 
 
@@ -809,8 +808,8 @@ gnupg_unsetenv (const char *name)
 #ifdef HAVE_W32CE_SYSTEM
   (void)name;
   return 0;
-#else
-#if defined(HAVE_W32_SYSTEM)
+#else /*!W32CE*/
+# ifdef HAVE_W32_SYSTEM
   /*  Windows maintains (at least) two sets of environment variables.
       One set can be accessed by GetEnvironmentVariable and
       SetEnvironmentVariable.  This set is inherited by the children.
@@ -822,10 +821,11 @@ gnupg_unsetenv (const char *name)
       gpg_err_set_errno (EINVAL); /* (Might also be ENOMEM.) */
       return -1;
     }
-#endif
-#if defined(HAVE_UNSETENV)
+# endif /*W32*/
+
+# ifdef HAVE_UNSETENV
   return unsetenv (name);
-#else
+# else /*!HAVE_UNSETENV*/
   {
     char *buf;
 
@@ -837,13 +837,13 @@ gnupg_unsetenv (const char *name)
     buf = xtrystrdup (name);
     if (!buf)
       return -1;
-#if __GNUC__
-# warning no unsetenv - trying putenv but leaking memory.
-#endif
+#  if __GNUC__
+#   warning no unsetenv - trying putenv but leaking memory.
+#  endif
     return putenv (buf);
   }
-#endif
-#endif
+# endif /*!HAVE_UNSETENV*/
+#endif /*!W32CE*/
 }
 
 
