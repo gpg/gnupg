@@ -717,18 +717,17 @@ map_supervised_sockets (gnupg_fd_t *r_fd,
   if (!fdnames)
     {
       struct stat statbuf;
+
       if (fd_count != 1)
         log_error ("no LISTEN_FDNAMES and LISTEN_FDS (%d) != 1"
                    " in --supervised mode."
                    " (ignoring all sockets but the first one)\n",
                    fd_count);
       if (fstat (3, &statbuf) == -1 && errno ==EBADF)
-        log_fatal ("file descriptor 3 must be valid in --supervised mode (as the "
-                   "agent's standard socket) if LISTEN_FDNAMES is not set\n");
+        log_fatal ("file descriptor 3 must be valid in --supervised mode"
+                   " if LISTEN_FDNAMES is not set\n");
       *r_fd = 3;
       socket_name = get_socket_name (3);
-      if (!socket_name)
-          log_error ("cannot learn socket name for fd 3\n");
     }
   else if (fd_count != nfdnames)
     {
