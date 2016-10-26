@@ -573,52 +573,6 @@ remove_socket (char *name, char *redir_name)
 }
 
 
-/* Return a malloc'ed string that is the path to the passed
- * unix-domain socket (or return NULL if this is not a valid
- * unix-domain socket).  We use a plain int here because it is only
- * used on Linux.
- *
- * FIXME: This function needs to be moved to libassuan.  */
-#ifndef HAVE_W32_SYSTEM
-static char *
-get_socket_name (int fd)
-{
-  struct sockaddr_un un;
-  socklen_t len = sizeof(un);
-  char *name = NULL;
-
-  if (getsockname (fd, (struct sockaddr*)&un, &len) != 0)
-    log_error ("could not getsockname(%d): %s\n", fd,
-               gpg_strerror (gpg_error_from_syserror ()));
-  else if (un.sun_family != AF_UNIX)
-    log_error ("file descriptor %d is not a unix-domain socket\n", fd);
-  else if (len <= offsetof (struct sockaddr_un, sun_path))
-    log_error ("socket name not present for file descriptor %d\n", fd);
-  else if (len > sizeof(un))
-    log_error ("socket name for file descriptor %d was truncated "
-               "(passed %zu bytes, wanted %u)\n", fd, sizeof(un), len);
-  else
-    {
-      size_t namelen = len - offsetof (struct sockaddr_un, sun_path);
-
-      log_debug ("file descriptor %d has path %s (%zu octets)\n", fd,
-                 un.sun_path, namelen);
-      name = xtrymalloc (namelen + 1);
-      if (!name)
-        log_error ("failed to allocate memory for name of fd %d: %s\n",
-                   fd, gpg_strerror (gpg_error_from_syserror ()));
-      else
-        {
-          memcpy (name, un.sun_path, namelen);
-          name[namelen] = 0;
-        }
-    }
-
-  return name;
-}
-#endif /*!HAVE_W32_SYSTEM*/
-
-
 /* Discover which inherited file descriptors correspond to which
  * services/sockets offered by gpg-agent, using the LISTEN_FDS and
  * LISTEN_FDNAMES convention.  The understood labels are "ssh",
@@ -727,7 +681,7 @@ map_supervised_sockets (gnupg_fd_t *r_fd,
         log_fatal ("file descriptor 3 must be valid in --supervised mode"
                    " if LISTEN_FDNAMES is not set\n");
       *r_fd = 3;
-      socket_name = get_socket_name (3);
+      socket_name = gnupg_get_socket_name (3);
     }
   else if (fd_count != nfdnames)
     {
@@ -749,7 +703,7 @@ map_supervised_sockets (gnupg_fd_t *r_fd,
                   fd = 3 + i;
                   if (**tbl[j].fdaddr == -1)
                     {
-                      name = get_socket_name (fd);
+                      name = gnupg_get_socket_name (fd);
                       if (name)
                         {
                           **tbl[j].fdaddr = fd;
