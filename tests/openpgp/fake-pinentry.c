@@ -25,9 +25,10 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-FILE *log_stream;
+static FILE *log_stream;
 
-int
+
+static int
 reply (const char *fmt, ...)
 {
   int result;
@@ -48,8 +49,9 @@ reply (const char *fmt, ...)
   return result;
 }
 
+
 /* Return the first line from FNAME, removing it from the file.  */
-char *
+static char *
 get_passphrase (const char *fname)
 {
   char *passphrase = NULL;
@@ -111,7 +113,7 @@ get_passphrase (const char *fname)
 
   fclose (source);
   fclose (sink);
-  if (unlink (fname))
+  if (remove (fname))
     {
       fprintf (stderr, "Failed to remove %s: %s",
                fname, strerror (errno));
@@ -128,17 +130,19 @@ get_passphrase (const char *fname)
 }
 
 
-#define spacep(p)   (*(p) == ' ' || *(p) == '\t' \
-                     || *(p) == '\r' || *(p) == '\n')
+#define whitespacep(p)   (*(p) == ' ' || *(p) == '\t' \
+                          || *(p) == '\r' || *(p) == '\n')
 
 /* rstrip line.  */
-void
+static void
 rstrip (char *buffer)
 {
   char *p;
+  if (!*buffer)
+    return; /* This is to avoid p = buffer - 1 */
   for (p = buffer + strlen (buffer) - 1; p >= buffer; p--)
     {
-      if (! spacep (p))
+      if (! whitespacep (p))
         break;
       *p = 0;
     }
@@ -155,13 +159,13 @@ rstrip (char *buffer)
 char *
 skip_options (const char *line)
 {
-  while (spacep (line))
+  while (whitespacep (line))
     line++;
   while (*line == '-' && line[1] == '-')
     {
-      while (*line && !spacep (line))
+      while (*line && !whitespacep (line))
         line++;
-      while (spacep (line))
+      while (whitespacep (line))
         line++;
     }
   return (char*) line;
@@ -179,12 +183,12 @@ option_value (const char *line, const char *name)
   s = strstr (line, name);
   if (s && s >= skip_options (line))
     return NULL;
-  if (s && (s == line || spacep (s-1))
-      && s[n] && (spacep (s+n) || s[n] == '='))
+  if (s && (s == line || whitespacep (s-1))
+      && s[n] && (whitespacep (s+n) || s[n] == '='))
     {
       s += n + 1;
       s += strspn (s, " ");
-      if (*s && !spacep(s))
+      if (*s && !whitespacep(s))
         return s;
     }
   return NULL;
@@ -207,7 +211,7 @@ main (int argc, char **argv)
   setvbuf (stdout, NULL, _IOLBF, BUFSIZ);
 
   args = getenv ("PINENTRY_USER_DATA");
-  got_environment_user_data = args != NULL;
+  got_environment_user_data = !!args;
   if (! args)
     args = "";
 
@@ -216,7 +220,7 @@ main (int argc, char **argv)
   if (logfile)
     {
       char *p = logfile, more;
-      while (*p && ! spacep (p))
+      while (*p && ! whitespacep (p))
         p++;
       more = !! *p;
       *p = 0;
@@ -234,7 +238,7 @@ main (int argc, char **argv)
   if (passphrasefile)
     {
       char *p = passphrasefile, more;
-      while (*p && ! spacep (p))
+      while (*p && ! whitespacep (p))
         p++;
       more = !! *p;
       *p = 0;
@@ -257,13 +261,13 @@ main (int argc, char **argv)
         passphrase = "no PINENTRY_USER_DATA -- using default passphrase";
     }
 
-  reply ("# fake-pinentry(%d) started.  Passphrase='%s'.\n",
-         getpid (), passphrase);
+  reply ("# fake-pinentry(%u) started.  Passphrase='%s'.\n",
+         (unsigned int)getpid (), passphrase);
   reply ("OK - what's up?\n");
 
   while (! feof (stdin))
     {
-      char buffer[1024], *p;
+      char buffer[1024];
 
       if (fgets (buffer, sizeof buffer, stdin) == NULL)
 	break;
@@ -273,6 +277,8 @@ main (int argc, char **argv)
 
       rstrip (buffer);
 
+#define OPT_USER_DATA	"OPTION pinentry-user-data="
+
       if (strncmp (buffer, "GETPIN", 6) == 0)
         reply ("D %s\n", passphrase);
       else if (strncmp (buffer, "BYE", 3) == 0)
@@ -280,7 +286,6 @@ main (int argc, char **argv)
 	  reply ("OK\n");
 	  break;
 	}
-#define OPT_USER_DATA	"OPTION pinentry-user-data="
       else if (strncmp (buffer, OPT_USER_DATA, strlen (OPT_USER_DATA)) == 0)
         {
           if (got_environment_user_data)
@@ -299,6 +304,8 @@ main (int argc, char **argv)
 
       reply ("OK\n");
     }
+
+#undef OPT_USER_DATA
 
   reply ("# Connection terminated.\n");
   if (log_stream)
