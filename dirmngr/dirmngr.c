@@ -2074,3 +2074,12 @@ handle_connections (assuan_fd_t listen_fd)
   cleanup ();
   log_info ("%s %s stopped\n", strusage(11), strusage(13));
 }
+
+const char*
+dirmngr_get_current_socket_name (void)
+{
+  if (socket_name)
+    return socket_name;
+  else
+    return dirmngr_socket_name ();
+}

@@ -184,6 +184,7 @@ void dirmngr_exit( int );  /* Wrapper for exit() */
 void dirmngr_init_default_ctrl (ctrl_t ctrl);
 void dirmngr_deinit_default_ctrl (ctrl_t ctrl);
 void dirmngr_sighup_action (void);
+const char* dirmngr_get_current_socket_name (void);
 
 
 /*-- Various housekeeping functions.  --*/
