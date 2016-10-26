@@ -85,6 +85,13 @@ Run in background daemon mode and listen for commands on a socket.
 Note that this also changes the default home directory and enables the
 internal certificate validation code.  This mode is deprecated.
 
+@item --supervised
+@opindex supervised
+Run in the foreground, sending logs to stderr, and listening on file
+descriptor 3, which must already be bound to a listening socket.  This
+is useful when running under systemd or other similar process
+supervision schemes.
+
 @item --list-crls
 @opindex list-crls
 List the contents of the CRL cache on @code{stdout}. This is probably

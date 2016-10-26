@@ -88,6 +88,7 @@ enum cmd_and_opt_values {
 
   aServer,
   aDaemon,
+  aSupervised,
   aListCRLs,
   aLoadCRL,
   aFetchCRL,
@@ -149,6 +150,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_c (aServer,   "server",  N_("run in server mode (foreground)") ),
   ARGPARSE_c (aDaemon,   "daemon",  N_("run in daemon mode (background)") ),
+  ARGPARSE_c (aSupervised, "supervised", N_("run under supervision (e.g. systemd)")),
   ARGPARSE_c (aListCRLs, "list-crls", N_("list the contents of the CRL cache")),
   ARGPARSE_c (aLoadCRL,  "load-crl",  N_("|FILE|load CRL from FILE into cache")),
   ARGPARSE_c (aFetchCRL, "fetch-crl", N_("|URL|fetch a CRL from URL")),
@@ -814,6 +816,7 @@ main (int argc, char **argv)
         {
         case aServer:
         case aDaemon:
+        case aSupervised:
         case aShutdown:
         case aFlush:
 	case aListCRLs:
@@ -991,6 +994,43 @@ main (int argc, char **argv)
       ldap_wrapper_launch_thread ();
 #endif /*USE_LDAP*/
       start_command_handler (ASSUAN_INVALID_FD);
+      shutdown_reaper ();
+    }
+  else if (cmd == aSupervised)
+    {
+      /* In supervised mode, we expect file descriptor 3 to be an
+         already opened, listening socket.
+
+         We will also not detach from the controlling process or close
+         stderr; the supervisor should handle all of that.  */
+      struct stat statbuf;
+      if (fstat (3, &statbuf) == -1 && errno ==EBADF)
+        {
+          log_error ("file descriptor 3 must be already open in --supervised mode\n");
+          dirmngr_exit (1);
+        }
+      socket_name = gnupg_get_socket_name (3);
+
+      /* Now start with logging to a file if this is desired. */
+      if (logfile)
+        {
+          log_set_file (logfile);
+          log_set_prefix (NULL, (GPGRT_LOG_WITH_PREFIX
+                                 |GPGRT_LOG_WITH_TIME
+                                 |GPGRT_LOG_WITH_PID));
+          current_logfile = xstrdup (logfile);
+        }
+      else
+        log_set_prefix (NULL, 0);
+
+      thread_init ();
+      cert_cache_init ();
+      crl_cache_init ();
+#if USE_LDAP
+      ldap_wrapper_launch_thread ();
+#endif /*USE_LDAP*/
+      handle_connections (3);
+      assuan_sock_close (3);
       shutdown_reaper ();
     }
   else if (cmd == aDaemon)
