@@ -988,7 +988,7 @@ gnupg_inotify_watch_socket (int *r_fd, const char *socket_name)
   *r_fd = -1;
 
   if (!socket_name)
-    return gpg_error (GPG_ERR_EINVAL);
+    return my_error (GPG_ERR_INV_VALUE);
 
   fname = xtrystrdup (socket_name);
   if (!fname)
