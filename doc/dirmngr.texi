@@ -493,7 +493,7 @@ Note that for OCSP responses the certificate specified using the option
 
 @item /etc/gnupg/extra-certs
 This directory may contain extra certificates which are preloaded
-into the interal cache on startup. Applications using dirmngr (e.g. gpgsm)
+into the internal cache on startup. Applications using dirmngr (e.g. gpgsm)
 can request cached certificates to complete a trust chain.
 This is convenient in cases you have a couple intermediate CA certificates
 or certificates usually used to sign OCSP responses.
