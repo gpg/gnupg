@@ -983,13 +983,13 @@ main (int argc, char **argv)
           log_debug ("... okay\n");
         }
 
-#if USE_LDAP
-      ldap_wrapper_launch_thread ();
-#endif /*USE_LDAP*/
 
       thread_init ();
       cert_cache_init ();
       crl_cache_init ();
+#if USE_LDAP
+      ldap_wrapper_launch_thread ();
+#endif /*USE_LDAP*/
       start_command_handler (ASSUAN_INVALID_FD);
       shutdown_reaper ();
     }
@@ -1182,13 +1182,12 @@ main (int argc, char **argv)
         }
 #endif
 
-#if USE_LDAP
-      ldap_wrapper_launch_thread ();
-#endif /*USE_LDAP*/
-
       thread_init ();
       cert_cache_init ();
       crl_cache_init ();
+#if USE_LDAP
+      ldap_wrapper_launch_thread ();
+#endif /*USE_LDAP*/
       handle_connections (fd);
       assuan_sock_close (fd);
       shutdown_reaper ();
@@ -1211,12 +1210,12 @@ main (int argc, char **argv)
       memset (&ctrlbuf, 0, sizeof ctrlbuf);
       dirmngr_init_default_ctrl (&ctrlbuf);
 
-#if USE_LDAP
-      ldap_wrapper_launch_thread ();
-#endif /*USE_LDAP*/
       thread_init ();
       cert_cache_init ();
       crl_cache_init ();
+#if USE_LDAP
+      ldap_wrapper_launch_thread ();
+#endif /*USE_LDAP*/
       if (!argc)
         rc = crl_cache_load (&ctrlbuf, NULL);
       else
@@ -1237,12 +1236,12 @@ main (int argc, char **argv)
       memset (&ctrlbuf, 0, sizeof ctrlbuf);
       dirmngr_init_default_ctrl (&ctrlbuf);
 
-#if USE_LDAP
-      ldap_wrapper_launch_thread ();
-#endif /*USE_LDAP*/
       thread_init ();
       cert_cache_init ();
       crl_cache_init ();
+#if USE_LDAP
+      ldap_wrapper_launch_thread ();
+#endif /*USE_LDAP*/
       rc = crl_fetch (&ctrlbuf, argv[0], &reader);
       if (rc)
         log_error (_("fetching CRL from '%s' failed: %s\n"),
