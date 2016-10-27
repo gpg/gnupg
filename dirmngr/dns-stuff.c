@@ -682,8 +682,8 @@ get_dns_cert (const char *name, int want_certtype,
   my_protect ();
   if (ret)
     {
-      err = gpg_error_from_syserror ();
-      /* log_error ("DNS query failed: %s\n", strerror (errno)); */
+      err = ret;
+      /* log_error ("DNS query failed: %s\n", strerror (err)); */
       adns_finish (state);
       return err;
     }
@@ -1036,7 +1036,7 @@ getsrv (const char *name,struct srventry **list)
     my_protect ();
     if (rc)
       {
-        log_error ("DNS query failed: %s\n", strerror (errno));
+        log_error ("DNS query failed: %s\n", strerror (rc));
         adns_finish (state);
         return -1;
       }
@@ -1281,7 +1281,7 @@ get_dns_cname (const char *name, char **r_cname)
     my_protect ();
     if (rc)
       {
-        err = gpg_error_from_syserror ();
+        err = rc;
         log_error ("DNS query failed: %s\n", gpg_strerror (err));
         adns_finish (state);
         return err;
