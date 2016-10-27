@@ -4406,20 +4406,29 @@ do_decipher (app_t app, const char *keyidstr,
                          indata, indatalen, le_value, padind,
                          outdata, outdatalen);
   xfree (fixbuf);
-  if (app->app_local->keyattr[1].key_type == KEY_TYPE_ECC
-      && (app->app_local->keyattr[1].ecc.flags & ECC_FLAG_DJB_TWEAK))
-    { /* Add the prefix 0x40 */
-      fixbuf = xtrymalloc (*outdatalen + 1);
-      if (!fixbuf)
-        {
+  if (app->app_local->keyattr[1].key_type == KEY_TYPE_ECC)
+    {
+      unsigned char prefix = 0;
+
+      if (app->app_local->keyattr[1].ecc.flags & ECC_FLAG_DJB_TWEAK)
+        prefix = 0x40;
+      else if ((*outdatalen % 2) == 0) /* No 0x04 -> x-coordinate only */
+        prefix = 0x41;
+
+      if (prefix)
+        { /* Add the prefix */
+          fixbuf = xtrymalloc (*outdatalen + 1);
+          if (!fixbuf)
+            {
+              xfree (*outdata);
+              return gpg_error_from_syserror ();
+            }
+          fixbuf[0] = prefix;
+          memcpy (fixbuf+1, *outdata, *outdatalen);
           xfree (*outdata);
-          return gpg_error_from_syserror ();
+          *outdata = fixbuf;
+          *outdatalen = *outdatalen + 1;
         }
-      fixbuf[0] = 0x40;
-      memcpy (fixbuf+1, *outdata, *outdatalen);
-      xfree (*outdata);
-      *outdata = fixbuf;
-      *outdatalen = *outdatalen + 1;
     }
 
   if (gpg_err_code (rc) == GPG_ERR_CARD /* actual SW is 0x640a */
