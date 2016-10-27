@@ -1810,7 +1810,11 @@ ensure_keyserver (ctrl_t ctrl)
   if (ctrl->server_local->keyservers)
     return 0; /* Already set for this session.  */
   if (!opt.keyserver)
-    return 0; /* No global option set.  */
+    {
+      /* No global option set.  Fall back to default:  */
+      return make_keyserver_item (DIRMNGR_DEFAULT_KEYSERVER,
+                                  &ctrl->server_local->keyservers);
+    }
 
   for (sl = opt.keyserver; sl; sl = sl->next)
     {
