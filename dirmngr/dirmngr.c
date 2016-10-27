@@ -611,15 +611,9 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       {
         char *tmpname;
 
-        /* Do tilde expansion and print a warning if the file can't be
-           accessed.  */
-        tmpname = make_absfilename_try (pargs->r.ret_str, NULL);
-        if (!tmpname || access (tmpname, F_OK))
-          log_info (_("can't access '%s': %s\n"),
-                    tmpname? tmpname : pargs->r.ret_str,
-                    gpg_strerror (gpg_error_from_syserror()));
-        else
-          http_register_tls_ca (tmpname);
+        /* Do tilde expansion and make path absolute.  */
+        tmpname = make_absfilename (pargs->r.ret_str, NULL);
+        http_register_tls_ca (tmpname);
         xfree (tmpname);
       }
       break;

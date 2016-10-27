@@ -495,6 +495,11 @@ http_register_tls_ca (const char *fname)
     }
   else
     {
+      /* Warn if we can't access right now, but register it anyway in
+         case it becomes accessible later */
+      if (access (fname, F_OK))
+        log_info (_("can't access '%s': %s\n"), fname,
+                  gpg_strerror (gpg_error_from_syserror()));
       sl = add_to_strlist (&tls_ca_certlist, fname);
       if (*sl->d && !strcmp (sl->d + strlen (sl->d) - 4, ".pem"))
         sl->flags = 1;
