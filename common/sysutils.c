@@ -1105,7 +1105,7 @@ gnupg_get_socket_name (int fd)
 
   if (getsockname (fd, (struct sockaddr*)&un, &len) != 0)
     log_error ("could not getsockname(%d): %s\n", fd,
-               gpg_strerror (gpg_error_from_syserror ()));
+               gpg_strerror (my_error_from_syserror ()));
   else if (un.sun_family != AF_UNIX)
     log_error ("file descriptor %d is not a unix-domain socket\n", fd);
   else if (len <= offsetof (struct sockaddr_un, sun_path))
@@ -1117,12 +1117,12 @@ gnupg_get_socket_name (int fd)
     {
       size_t namelen = len - offsetof (struct sockaddr_un, sun_path);
 
-      log_debug ("file descriptor %d has path %s (%zu octets)\n", fd,
-                 un.sun_path, namelen);
+      /* log_debug ("file descriptor %d has path %s (%zu octets)\n", fd, */
+      /*            un.sun_path, namelen); */
       name = xtrymalloc (namelen + 1);
       if (!name)
         log_error ("failed to allocate memory for name of fd %d: %s\n",
-                   fd, gpg_strerror (gpg_error_from_syserror ()));
+                   fd, gpg_strerror (my_error_from_syserror ()));
       else
         {
           memcpy (name, un.sun_path, namelen);
