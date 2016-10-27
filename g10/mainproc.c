@@ -1803,7 +1803,7 @@ check_sig_and_print (CTX c, kbnode_t node)
                   free_public_key (pk);
                   pk = NULL;
                   glo_ctrl.in_auto_key_retrieve++;
-                  res = keyserver_import_keyid (c->ctrl, sig->keyid,spec);
+                  res = keyserver_import_keyid (c->ctrl, sig->keyid,spec, 1);
                   glo_ctrl.in_auto_key_retrieve--;
                   if (!res)
                     rc = do_check_sig (c, node, NULL,
@@ -1838,7 +1838,7 @@ check_sig_and_print (CTX c, kbnode_t node)
               free_public_key (pk);
               pk = NULL;
               glo_ctrl.in_auto_key_retrieve++;
-              res = keyserver_import_keyid (c->ctrl, sig->keyid, spec);
+              res = keyserver_import_keyid (c->ctrl, sig->keyid, spec, 1);
               glo_ctrl.in_auto_key_retrieve--;
               free_keyserver_spec (spec);
               if (!res)
@@ -1847,12 +1847,11 @@ check_sig_and_print (CTX c, kbnode_t node)
         }
     }
 
-  /* If the above methods didn't work, our next try is to use locate
+  /* If the above methods didn't work, our next try is to locate
    * the key via its fingerprint from a keyserver.  This requires
    * that the signers fingerprint is encoded in the signature.  We
    * favor this over the WKD method (to be tried next), because an
-   * arbitrary keyserver is less subject to web bug like
-   * monitoring.  */
+   * arbitrary keyserver is less subject to web bug like monitoring.  */
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
       && opt.flags.rfc4880bis
       && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE)
@@ -1869,7 +1868,7 @@ check_sig_and_print (CTX c, kbnode_t node)
           free_public_key (pk);
           pk = NULL;
           glo_ctrl.in_auto_key_retrieve++;
-          res = keyserver_import_fprint (c->ctrl, p+1, n-1, opt.keyserver);
+          res = keyserver_import_fprint (c->ctrl, p+1, n-1, opt.keyserver, 1);
           glo_ctrl.in_auto_key_retrieve--;
           if (!res)
             rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey, &pk);
@@ -1889,7 +1888,7 @@ check_sig_and_print (CTX c, kbnode_t node)
       free_public_key (pk);
       pk = NULL;
       glo_ctrl.in_auto_key_retrieve++;
-      res = keyserver_import_wkd (c->ctrl, sig->signers_uid, NULL, NULL);
+      res = keyserver_import_wkd (c->ctrl, sig->signers_uid, 1, NULL, NULL);
       glo_ctrl.in_auto_key_retrieve--;
       /* Fixme: If the fingerprint is embedded in the signature,
        * compare it to the fingerprint of the returned key.  */
@@ -1908,7 +1907,7 @@ check_sig_and_print (CTX c, kbnode_t node)
       free_public_key (pk);
       pk = NULL;
       glo_ctrl.in_auto_key_retrieve++;
-      res = keyserver_import_keyid (c->ctrl, sig->keyid, opt.keyserver );
+      res = keyserver_import_keyid (c->ctrl, sig->keyid, opt.keyserver, 1);
       glo_ctrl.in_auto_key_retrieve--;
       if (!res)
         rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey, &pk);

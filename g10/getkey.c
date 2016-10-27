@@ -1333,7 +1333,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	    case AKL_WKD:
 	      mechanism = "WKD";
 	      glo_ctrl.in_auto_key_retrieve++;
-	      rc = keyserver_import_wkd (ctrl, name, &fpr, &fpr_len);
+	      rc = keyserver_import_wkd (ctrl, name, 0, &fpr, &fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 	      break;
 

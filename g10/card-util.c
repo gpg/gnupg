@@ -758,7 +758,7 @@ fetch_url (ctrl_t ctrl)
         }
       else if (info.fpr1valid)
 	{
-          rc = keyserver_import_fprint (ctrl, info.fpr1, 20, opt.keyserver);
+          rc = keyserver_import_fprint (ctrl, info.fpr1, 20, opt.keyserver, 0);
 	}
     }
 

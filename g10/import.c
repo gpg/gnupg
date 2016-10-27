@@ -2954,7 +2954,7 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
 			      keyserver_import_fprint (ctrl,
                                                        sig->revkey[idx].fpr,
                                                        MAX_FINGERPRINT_LEN,
-                                                       opt.keyserver);
+                                                       opt.keyserver, 0);
 
 			      /* Do we have it now? */
 			      rc=get_pubkey_byfprint_fast (NULL,
