@@ -135,27 +135,29 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     /* Expected size of the x component */
     secret_x_size = (nbits+7)/8;
 
-    if (nbytes > secret_x_size)
-      {
-        /* Uncompressed format expected, so it must start with 04 */
-        if (secret_x[0] != (byte)0x04)
-          {
-            return gpg_error (GPG_ERR_BAD_DATA);
-          }
+    /* Extract X from the result.  It must be in the format of:
+           04 || X || Y
+           40 || X
+           41 || X
 
-        /* Remove the "04" prefix of non-compressed format.  */
-        memmove (secret_x, secret_x+1, secret_x_size);
-
-        /* Zeroize the y component following */
-        if (nbytes > secret_x_size)
-          memset (secret_x+secret_x_size, 0, nbytes-secret_x_size);
-      }
-    else if (nbytes < secret_x_size)
+       Since it always comes with the prefix, it's larger than X.  In
+       old experimental version of libgcrypt, there is a case where it
+       returns X with no prefix of 40, so, nbytes == secret_x_size
+       is allowed.  */
+    if (nbytes < secret_x_size)
       {
-        /* Raw share secret (x coordinate), without leading zeros */
-        memmove (secret_x+(secret_x_size - nbytes), secret_x, nbytes);
-        memset (secret_x, 0, secret_x_size - nbytes);
+        xfree (secret_x);
+        return gpg_error (GPG_ERR_BAD_DATA);
       }
+
+    /* Remove the prefix.  */
+    if ((nbytes & 1))
+      memmove (secret_x, secret_x+1, secret_x_size);
+
+    /* Clear the rest of data.  */
+    if (nbytes - secret_x_size)
+      memset (secret_x+secret_x_size, 0, nbytes-secret_x_size);
+
     if (DBG_CRYPTO)
       log_printhex ("ECDH shared secret X is:", secret_x, secret_x_size );
   }
