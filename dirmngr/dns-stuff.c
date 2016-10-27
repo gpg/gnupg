@@ -278,7 +278,7 @@ resolve_name_adns (const char *name, unsigned short port,
   my_protect ();
   if (ret)
     {
-      err = ret;
+      err = gpg_error (gpg_err_code_from_errno (ret));
       log_error ("DNS query failed: %s\n", gpg_strerror (err));
       goto leave;
     }
@@ -682,8 +682,8 @@ get_dns_cert (const char *name, int want_certtype,
   my_protect ();
   if (ret)
     {
-      err = ret;
-      /* log_error ("DNS query failed: %s\n", strerror (err)); */
+      err = gpg_error (gpg_err_code_from_errno (ret));
+      /* log_error ("DNS query failed: %s\n", gpg_strerror (err)); */
       adns_finish (state);
       return err;
     }
@@ -1281,7 +1281,7 @@ get_dns_cname (const char *name, char **r_cname)
     my_protect ();
     if (rc)
       {
-        err = rc;
+        err = gpg_error (gpg_err_code_from_errno (rc));
         log_error ("DNS query failed: %s\n", gpg_strerror (err));
         adns_finish (state);
         return err;
