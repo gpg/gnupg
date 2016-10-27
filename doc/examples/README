@@ -3,7 +3,9 @@ Files in this directory:
 
 scd-event       A handler script used with scdaemon
 
-trustlist.txt   A list of trustworthy root certificates 
+trustlist.txt   A list of trustworthy root certificates
                 (Please check yourself whether you actually trust them)
 
 gpgconf.conf    A sample configuration file for gpgconf.
+
+systemd-user    Sample files for a Linux-only init system.

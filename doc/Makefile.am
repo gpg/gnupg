@@ -21,7 +21,14 @@ AM_CPPFLAGS =
 
 include $(top_srcdir)/am/cmacros.am
 
-examples = examples/README examples/scd-event examples/trustlist.txt \
+examples = examples/README examples/scd-event examples/trustlist.txt	\
+	   examples/systemd-user/README 				\
+	   examples/systemd-user/dirmngr.service 			\
+	   examples/systemd-user/dirmngr.socket				\
+	   examples/systemd-user/gpg-agent.service 			\
+	   examples/systemd-user/gpg-agent.socket 			\
+	   examples/systemd-user/gpg-agent-ssh.socket 			\
+	   examples/systemd-user/gpg-agent-extra.socket 		\
 	   examples/gpgconf.conf examples/pwpattern.list
 
 helpfiles = help.txt help.be.txt help.ca.txt help.cs.txt		\
