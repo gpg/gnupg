@@ -1037,40 +1037,48 @@ int
 gnupg_inotify_has_name (int fd, const char *name)
 {
 #if USE_NPTH && HAVE_INOTIFY_INIT
-  union {
-    struct inotify_event ev;
-    char _buf[sizeof (struct inotify_event) + 255 + 1];
-  } buf;
-  struct inotify_event *evp;
+#define BUFSIZE_FOR_INOTIFY (sizeof (struct inotify_event) + 255 + 1)
+  char buf[BUFSIZE_FOR_INOTIFY];
+  char *p;
   int n;
 
-  n = npth_read (fd, &buf, sizeof buf);
+  n = npth_read (fd, buf, sizeof buf);
+  p = buf;
   /* log_debug ("notify read: n=%d\n", n); */
-  evp = &buf.ev;
   while (n >= sizeof (struct inotify_event))
     {
+      struct inotify_event ev;
+      const char *ev_name;
+
+      memcpy (&ev, p, sizeof (struct inotify_event));
+
+      if (ev.len > 255 + 1) /* Something goes wrong, skip this data.  */
+        break;
+
+      ev_name = p + sizeof (struct inotify_event);
+      p += sizeof (struct inotify_event) + ev.len;
+      n -= sizeof (struct inotify_event) + ev.len;
+
       /* log_debug ("             mask=%x len=%u name=(%s)\n", */
-      /*        evp->mask, (unsigned int)evp->len, evp->len? evp->name:""); */
-      if ((evp->mask & IN_UNMOUNT))
+      /*        ev.mask, (unsigned int)ev.len, ev.len? ev.name:""); */
+      if ((ev.mask & IN_UNMOUNT))
         {
           /* log_debug ("             found (dir unmounted)\n"); */
           return 3; /* Directory was unmounted.  */
         }
-      if ((evp->mask & IN_DELETE_SELF))
+      if ((ev.mask & IN_DELETE_SELF))
         {
           /* log_debug ("             found (dir removed)\n"); */
           return 2; /* Directory was removed.  */
         }
-      if ((evp->mask & IN_DELETE))
+      if ((ev.mask & IN_DELETE))
         {
-          if (evp->len >= strlen (name) && !strcmp (evp->name, name))
+          if (ev.len >= strlen (name) && !strcmp (ev_name, name))
             {
               /* log_debug ("             found (file removed)\n"); */
               return 1; /* File was removed.  */
             }
         }
-      n -= sizeof (*evp) + evp->len;
-      evp = (struct inotify_event *)((char*)evp + sizeof (*evp) + evp->len);
     }
 
 #else /*!(USE_NPTH && HAVE_INOTIFY_INIT)*/
