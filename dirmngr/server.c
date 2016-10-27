@@ -54,6 +54,7 @@
 #include "mbox-util.h"
 #include "zb32.h"
 #include "server-help.h"
+#include "ccparray.h"
 #include "../common/exectool.h"
 
 /* To avoid DoS attacks we limit the size of a certificate to
@@ -2546,6 +2547,29 @@ fetch_into_tmpdir (ctrl_t ctrl, const char *url, estream_t *strm_out,
 }
 
 
+struct verify_swdb_parm_s
+{
+  time_t sigtime;
+  int anyvalid;
+};
+
+static void
+verify_swdb_status_cb (void *opaque, const char *keyword, char *args)
+{
+  struct verify_swdb_parm_s *parm = opaque;
+
+  /* We care only about the first valid signature.  */
+  if (!strcmp (keyword, "VALIDSIG") && !parm->anyvalid)
+    {
+      char *fields[3];
+
+      parm->anyvalid = 1;
+      if (split_fields (args, fields, DIM (fields)) >= 3)
+        parm->sigtime = parse_timestamp (fields[2], NULL);
+    }
+}
+
+
 static const char hlp_versioncheck[] =
   "VERSIONCHECK <name> <version>"
   "\n"
@@ -2570,13 +2594,17 @@ cmd_versioncheck (assuan_context_t ctx, char *line)
   char* swdb_sig_dir = NULL;
   char* buf = NULL;
   size_t len = 0;
-  const char *argv[8];
-  char keyring_path[128];
-  char swdb_path[128];
-  char swdb_sig_path[128];
+  ccparray_t ccp;
+  const char **argv = NULL;
+  char keyring_name[128];
+  char swdb_name[128];
+  char swdb_sig_name[128];
 
-  swdb_path[0] = 0;
-  swdb_sig_path[0] = 0;
+  struct verify_swdb_parm_s verify_swdb_parm = { (time_t)(-1), 0 };
+
+
+  swdb_name[0] = 0;
+  swdb_sig_name[0] = 0;
   ctrl = assuan_get_pointer (ctx);
 
   if (split_fields (line, cmd_fields, 2) != 2)
@@ -2594,29 +2622,51 @@ cmd_versioncheck (assuan_context_t ctx, char *line)
                                 &swdb, &swdb_dir)))
     goto out;
 
-  snprintf (swdb_path, sizeof swdb_path, "%s%s%s", swdb_dir, DIRSEP_S, "file");
+  snprintf (swdb_name, sizeof swdb_name, "%s%s%s", swdb_dir, DIRSEP_S, "file");
 
   if ((err = fetch_into_tmpdir (ctrl, "https://versions.gnupg.org/swdb.lst.sig",
                                 &swdb_sig, &swdb_sig_dir)))
     goto out;
 
-  snprintf (keyring_path, sizeof keyring_path, "%s%s%s", gnupg_datadir (),
+  snprintf (keyring_name, sizeof keyring_name, "%s%s%s", gnupg_datadir (),
            DIRSEP_S, "distsigkey.gpg");
-  snprintf (swdb_sig_path, sizeof swdb_sig_path, "%s%s%s", swdb_sig_dir,
+  snprintf (swdb_sig_name, sizeof swdb_sig_name, "%s%s%s", swdb_sig_dir,
            DIRSEP_S, "file");
 
-  argv[0] = "--batch";
-  argv[1] = "--no-default-keyring";
-  argv[2] = "--keyring";
-  argv[3] = keyring_path;
-  argv[4] = "--verify";
-  argv[5] = swdb_sig_path;
-  argv[6] = "-";
-  argv[7] = NULL;
+  ccparray_init (&ccp, 0);
+  ccparray_put (&ccp, "--status-fd=2");
+  ccparray_put (&ccp, "--keyring");
+  ccparray_put (&ccp, keyring_name);
+  ccparray_put (&ccp, "--");
+  ccparray_put (&ccp, swdb_sig_name);
+  ccparray_put (&ccp, "-");
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto out;
+    }
 
-  if ((err = gnupg_exec_tool_stream (gnupg_module_name (GNUPG_MODULE_NAME_GPG),
-                                     argv, swdb, NULL, NULL, NULL, NULL)))
+  if ((err = gnupg_exec_tool_stream (gnupg_module_name (GNUPG_MODULE_NAME_GPGV),
+                                     argv, swdb, NULL, NULL,
+                                     verify_swdb_status_cb, &verify_swdb_parm)))
     goto out;
+  if (verify_swdb_parm.sigtime == (time_t)(-1))
+    {
+      if (verify_swdb_parm.anyvalid)
+        err = gpg_error (GPG_ERR_BAD_SIGNATURE);
+      else
+        err = gpg_error (GPG_ERR_INV_TIME);
+      goto out;
+    }
+
+  {
+    gnupg_isotime_t tbuf;
+
+    epoch2isotime (tbuf, verify_swdb_parm.sigtime);
+    log_debug ("swdb created: %s\n", tbuf);
+  }
 
   es_fseek (swdb, 0, SEEK_SET);
 
@@ -2652,22 +2702,23 @@ cmd_versioncheck (assuan_context_t ctx, char *line)
 
   err = assuan_send_data (ctx, "NOT_FOUND", strlen ("NOT_FOUND"));
 
-  out:
+ out:
   es_fclose (swdb);
   es_fclose (swdb_sig);
   xfree (buf);
 
-  if (strlen (swdb_path) > 0)
-    unlink (swdb_path);
+  if (strlen (swdb_name) > 0)
+    remove (swdb_name);
   if (swdb_dir)
     rmdir (swdb_dir);
   xfree (swdb_dir);
 
-  if (strlen (swdb_sig_path) > 0)
-    unlink (swdb_sig_path);
+  if (strlen (swdb_sig_name) > 0)
+    remove (swdb_sig_name);
   if (swdb_sig_dir)
     rmdir (swdb_sig_dir);
   xfree (swdb_sig_dir);
+  xfree (argv);
 
   return leave_cmd (ctx, err);
 }
