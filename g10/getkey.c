@@ -1930,7 +1930,7 @@ getkey_byname (ctrl_t ctrl, getkey_ctx_t *retctx, PKT_public_key *pk,
  * If PK is not NULL, the public key of the next result is returned in
  * *PK.  Note: The self-signed data has already been merged into the
  * public key using merge_selfsigs.  Free *PK by calling
- * release_public_key_parts (or, if PK was allocated using xfree, you
+ * release_public_key_parts (or, if PK was allocated using xmalloc, you
  * can use free_public_key, which calls release_public_key_parts(PK)
  * and then xfree(PK)).
  *
@@ -1954,8 +1954,11 @@ getkey_next (getkey_ctx_t ctx, PKT_public_key *pk, kbnode_t *ret_keyblock)
   keydb_disable_caching (ctx->kr_handle);
 
   rc = lookup (ctx, ret_keyblock, &found_key, ctx->want_secret);
-  if (!rc && pk && ret_keyblock)
-    pk_from_block (pk, *ret_keyblock, found_key);
+  if (!rc && pk)
+    {
+      log_assert (found_key);
+      pk_from_block (pk, NULL, found_key);
+    }
 
   return rc;
 }
