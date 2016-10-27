@@ -83,6 +83,7 @@ XTESTS = \
 	export.scm \
 	ssh.scm \
 	quick-key-manipulation.scm \
+	key-selection.scm \
 	issue2015.scm \
 	issue2346.scm \
 	issue2417.scm \
@@ -124,7 +125,12 @@ TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     tofu/cross-sigs/871C2247-3.gpg \
 	     tofu/cross-sigs/871C2247-3.txt \
 	     tofu/cross-sigs/871C2247-4.gpg \
-	     tofu/cross-sigs/README
+	     tofu/cross-sigs/README \
+	     key-selection/0.asc \
+	     key-selection/1.asc \
+	     key-selection/2.asc \
+	     key-selection/3.asc \
+	     key-selection/4.asc
 
 data_files = data-500 data-9000 data-32000 data-80000 plain-large
 

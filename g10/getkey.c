@@ -1461,6 +1461,211 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
   return rc;
 }
 
+
+
+/* Comparison machinery for get_best_pubkey_byname.  */
+
+/* First we have a struct to cache computed information about the key
+ * in question.  */
+struct pubkey_cmp_cookie
+{
+  int valid;			/* Is this cookie valid?  */
+  PKT_public_key key;		/* The key.  */
+  PKT_user_id *uid;		/* The matching UID packet.  */
+  unsigned int validity;	/* Computed validity of (KEY, UID).  */
+  u32 creation_time;		/* Creation time of the newest subkey
+                                   capable of encryption.  */
+};
+
+/* Then we have a series of helper functions.  */
+static int
+key_is_ok (const PKT_public_key *key)
+{
+  return ! key->has_expired && ! key->flags.revoked
+    && key->flags.valid && ! key->flags.disabled;
+}
+
+static int
+uid_is_ok (const PKT_public_key *key, const PKT_user_id *uid)
+{
+  return key_is_ok (key) && ! uid->is_revoked;
+}
+
+static int
+subkey_is_ok (const PKT_public_key *sub)
+{
+  return ! sub->flags.revoked && sub->flags.valid && ! sub->flags.disabled;
+}
+
+/* Finally this function compares a NEW key to the former candidate
+ * OLD.  Returns < 0 if the old key is worse, > 0 if the old key is
+ * better, == 0 if it is a tie.  */
+static int
+pubkey_cmp (ctrl_t ctrl, const char *name, struct pubkey_cmp_cookie *old,
+            struct pubkey_cmp_cookie *new, KBNODE new_keyblock)
+{
+  KBNODE n;
+
+  new->creation_time = 0;
+  for (n = find_next_kbnode (new_keyblock, PKT_PUBLIC_SUBKEY);
+       n; n = find_next_kbnode (n, PKT_PUBLIC_SUBKEY))
+    {
+      PKT_public_key *sub = n->pkt->pkt.public_key;
+
+      if ((sub->pubkey_usage & PUBKEY_USAGE_ENC) == 0)
+        continue;
+
+      if (! subkey_is_ok (sub))
+        continue;
+
+      if (sub->timestamp > new->creation_time)
+        new->creation_time = sub->timestamp;
+    }
+
+  for (n = find_next_kbnode (new_keyblock, PKT_USER_ID);
+       n; n = find_next_kbnode (n, PKT_USER_ID))
+    {
+      PKT_user_id *uid = n->pkt->pkt.user_id;
+      char *mbox = mailbox_from_userid (uid->name);
+      int match = mbox ? strcasecmp (name, mbox) == 0 : 0;
+
+      xfree (mbox);
+      if (! match)
+        continue;
+
+      new->uid = uid;
+      new->validity =
+        get_validity (ctrl, &new->key, uid, NULL, 0) & TRUST_MASK;
+      new->valid = 1;
+
+      if (! old->valid)
+        return -1;	/* No OLD key.  */
+
+      if (! uid_is_ok (&old->key, old->uid) && uid_is_ok (&new->key, uid))
+        return -1;	/* Validity of the NEW key is better.  */
+
+      if (old->validity < new->validity)
+        return -1;	/* Validity of the NEW key is better.  */
+
+      if (old->validity == new->validity && uid_is_ok (&new->key, uid)
+          && old->creation_time < new->creation_time)
+        return -1;	/* Both keys are of the same validity, but the
+                           NEW key is newer.  */
+    }
+
+  /* Stick with the OLD key.  */
+  return 1;
+}
+
+
+/* This function works like get_pubkey_byname, but if the name
+ * resembles a mail address, the results are ranked and only the best
+ * result is returned.  */
+int
+get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
+                        const char *name, KBNODE *ret_keyblock,
+                        int include_unusable, int no_akl)
+{
+  int rc;
+  struct getkey_ctx_s *ctx = NULL;
+
+  rc = get_pubkey_byname (ctrl, &ctx, pk, name, ret_keyblock,
+                          NULL, include_unusable, no_akl);
+  if (rc)
+    {
+      if (ctx)
+        getkey_end (ctx);
+      if (retctx)
+        *retctx = NULL;
+      return rc;
+    }
+
+  if (is_valid_mailbox (name))
+    {
+      /* Rank results and return only the most relevant key.  */
+      struct pubkey_cmp_cookie best = { 0 }, new;
+      while (getkey_next (ctx, &new.key, NULL) == 0)
+        {
+          KBNODE new_keyblock = get_pubkeyblock (pk_keyid (&new.key));
+          int diff = pubkey_cmp (ctrl, name, &best, &new, new_keyblock);
+          release_kbnode (new_keyblock);
+          if (diff < 0)
+            {
+              /* New key is better.  */
+              release_public_key_parts (&best.key);
+              best = new;
+            }
+          else if (diff > 0)
+            {
+              /* Old key is better.  */
+              release_public_key_parts (&new.key);
+            }
+          else
+            {
+              /* A tie.  Keep the old key.  */
+              release_public_key_parts (&new.key);
+            }
+        }
+      getkey_end (ctx);
+      ctx = NULL;
+
+      if (best.valid)
+        {
+          if (retctx || ret_keyblock)
+            {
+              ctx = xtrycalloc (1, sizeof **retctx);
+              if (! ctx)
+                rc = gpg_error_from_syserror ();
+              else
+                {
+                  ctx->kr_handle = keydb_new ();
+                  if (! ctx->kr_handle)
+                    {
+                      xfree (ctx);
+                      *retctx = NULL;
+                      rc = gpg_error_from_syserror ();
+                    }
+                  else
+                    {
+                      u32 *keyid = pk_keyid (&best.key);
+                      ctx->exact = 1;
+                      ctx->nitems = 1;
+                      ctx->items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
+                      ctx->items[0].u.kid[0] = keyid[0];
+                      ctx->items[0].u.kid[1] = keyid[1];
+
+                      if (ret_keyblock)
+                        {
+                          release_kbnode (*ret_keyblock);
+                          *ret_keyblock = NULL;
+                          rc = getkey_next (ctx, NULL, ret_keyblock);
+                        }
+                    }
+                }
+            }
+
+          if (pk)
+            *pk = best.key;
+          else
+            release_public_key_parts (&best.key);
+        }
+    }
+
+  if (rc && ctx)
+    {
+      getkey_end (ctx);
+      ctx = NULL;
+    }
+
+  if (retctx && ctx)
+    *retctx = ctx;
+  else
+    getkey_end (ctx);
+
+  return rc;
+}
+
+
 
 /* Get a public key from a file.
  *
