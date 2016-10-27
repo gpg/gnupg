@@ -278,7 +278,7 @@ resolve_name_adns (const char *name, unsigned short port,
   my_protect ();
   if (ret)
     {
-      err = gpg_error_from_syserror ();
+      err = ret;
       log_error ("DNS query failed: %s\n", gpg_strerror (err));
       goto leave;
     }
