@@ -1203,6 +1203,9 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
   int nodefault = 0;
   int anylocalfirst = 0;
 
+  /* If RETCTX is not NULL, then RET_KDBHD must be NULL.  */
+  log_assert (retctx == NULL || ret_kdbhd == NULL);
+
   if (retctx)
     *retctx = NULL;
 
