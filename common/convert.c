@@ -176,7 +176,7 @@ bin2hexcolon (const void *buffer, size_t length, char *stringbuf)
    store that at BUFFER.  HEXSTRING is either delimited by end of
    string or a white space character.  The function makes sure that
    the resulting string in BUFFER is terminated by a Nul byte.  Note
-   that the retruned string may include embedded Nul bytes; the extra
+   that the returned string may include embedded Nul bytes; the extra
    Nul byte at the end is used to make sure tha the result can always
    be used as a C-string.
 

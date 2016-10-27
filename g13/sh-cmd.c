@@ -162,7 +162,7 @@ static const char hlp_finddevice[] =
   "\n"
   "Find the device matching NAME.  NAME be any identifier from\n"
   "g13tab permissible for the user.  The corresponding block\n"
-  "device is retruned using a status line.";
+  "device is returned using a status line.";
 static gpg_error_t
 cmd_finddevice (assuan_context_t ctx, char *line)
 {

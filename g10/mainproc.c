@@ -2246,7 +2246,7 @@ proc_tree (CTX c, kbnode_t node)
 
   /* We must skip our special plaintext marker packets here because
      they may be the root packet.  These packets are only used in
-     addtional checks and skipping them here doesn't matter.  */
+     additional checks and skipping them here doesn't matter.  */
   while (node
          && node->pkt->pkttype == PKT_GPG_CONTROL
           && node->pkt->pkt.gpg_control->control == CTRLPKT_PLAINTEXT_MARK)

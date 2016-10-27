@@ -1127,7 +1127,7 @@ confirm_flag_from_sshcontrol (const char *hexgrip)
 
 /* Open the ssh control file for reading.  This is a public version of
    open_control_file.  The caller must use ssh_close_control_file to
-   release the retruned handle.  */
+   release the returned handle.  */
 ssh_control_file_t
 ssh_open_control_file (void)
 {

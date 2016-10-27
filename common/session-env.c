@@ -372,7 +372,7 @@ session_env_getenv_or_default (session_env_t se, const char *name,
 
 /* List the entire environment stored in SE.  The caller initially
    needs to set the value of ITERATOR to 0 and then call this function
-   until it returns NULL.  The value is retruned at R_VALUE.  If
+   until it returns NULL.  The value is returned at R_VALUE.  If
    R_DEFAULT is not NULL, the default flag is stored on return.  The
    default flag indicates that the value has been taken from the
    process' environment.  The caller must not change the returned

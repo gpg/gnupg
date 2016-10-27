@@ -23,7 +23,7 @@
  * 3. This notice may not be removed or altered from any source
  *    distribution.
  ************************************************************
- * 2005-11-14 wk  Applied license text to orginal exdll.h file from
+ * 2005-11-14 wk  Applied license text to original exdll.h file from
  *                NSIS 2.0.4 and did some formatting changes.
  */
 

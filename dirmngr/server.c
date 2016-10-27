@@ -1367,7 +1367,7 @@ lookup_cert_by_pattern (assuan_context_t ctx, char *line,
         }
     }
 
-  /* First look through the internal cache.  The certifcates retruned
+  /* First look through the internal cache.  The certifcates returned
      here are not counted towards the truncation limit.  */
   if (single && !cache_only)
     ; /* Do not read from the local cache in this case.  */

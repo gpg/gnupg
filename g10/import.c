@@ -82,7 +82,7 @@ struct import_stats_s
  *
  * FIXME: We should put this into the CTRL object but that requires a
  * lot more changes right now.  For now we use save and restore
- * fucntion to temporary change them.
+ * function to temporary change them.
  */
 /* Definition of the import filters.  */
 struct import_filter_s

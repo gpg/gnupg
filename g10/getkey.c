@@ -1935,7 +1935,7 @@ getkey_byname (ctrl_t ctrl, getkey_ctx_t *retctx, PKT_public_key *pk,
  * and then xfree(PK)).
  *
  * RET_KEYBLOCK can be given as NULL; if it is not NULL it the entire
- * found keyblock wis retruned hich must be released with
+ * found keyblock is returned which must be released with
  * release_kbnode.  If the function returns an error NULL is stored at
  * RET_KEYBLOCK.
  *

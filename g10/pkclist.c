@@ -451,8 +451,8 @@ do_we_trust( PKT_public_key *pk, unsigned int trustlevel )
       return 1; /* yes */
 
     case TRUST_NEVER:
-      /* This is retruned can be returned by TOFU, which can return
-         negative assertions.  */
+      /* This can be returned by TOFU, which can return negative
+         assertions.  */
       log_info(_("%s: This key is bad!  It has been marked as untrusted!\n"),
                keystr_from_pk(pk));
       return 0; /* no */

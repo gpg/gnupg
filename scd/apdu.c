@@ -692,7 +692,7 @@ ct_get_status (int slot, unsigned int *status)
 }
 
 /* Actually send the APDU of length APDULEN to SLOT and return a
-   maximum of *BUFLEN data in BUFFER, the actual retruned size will be
+   maximum of *BUFLEN data in BUFFER, the actual returned size will be
    set to BUFLEN.  Returns: CT API error code. */
 static int
 ct_send_apdu (int slot, unsigned char *apdu, size_t apdulen,

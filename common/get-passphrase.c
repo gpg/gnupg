@@ -136,7 +136,7 @@ default_inq_cb (void *opaque, const char *line)
    PROMPT is the prompt string to label the entry box, it may be NULL
    for a default one.  DESC_MSG is a longer description to be
    displayed above the entry box, if may be NULL for a default one.
-   If USE_SECMEM is true, the returned passphrase is retruned in
+   If USE_SECMEM is true, the returned passphrase is returned in
    secure memory.  The length of all these strings is limited; they
    need to fit in their encoded form into a standard Assuan line (i.e
    less then about 950 characters).  All strings shall be UTF-8.  */
