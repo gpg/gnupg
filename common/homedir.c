@@ -953,6 +953,13 @@ gnupg_module_name (int which)
       X(bindir, GPG_NAME);
 #endif
 
+    case GNUPG_MODULE_NAME_GPGV:
+#if USE_GPG2_HACK
+      X(bindir, GPG_NAME "v2");
+#else
+      X(bindir, GPG_NAME "v");
+#endif
+
     case GNUPG_MODULE_NAME_CONNECT_AGENT:
       X(bindir, "gpg-connect-agent");
 

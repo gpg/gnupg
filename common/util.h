@@ -244,6 +244,7 @@ char *_gnupg_socketdir_internal (int skip_checks, unsigned *r_info);
 #define GNUPG_MODULE_NAME_CONNECT_AGENT 9
 #define GNUPG_MODULE_NAME_GPGCONF       10
 #define GNUPG_MODULE_NAME_DIRMNGR_LDAP  11
+#define GNUPG_MODULE_NAME_GPGV          12
 const char *gnupg_module_name (int which);
 void gnupg_module_name_flush_some (void);
 
