@@ -613,6 +613,8 @@ http_session_new (http_session_t *r_session, const char *tls_priority,
     const char *errpos;
     int rc;
     strlist_t sl;
+    int add_system_cas = !!(flags & HTTP_FLAG_TRUST_SYS);
+    int is_hkps_pool;
 
     rc = gnutls_certificate_allocate_credentials (&sess->certcred);
     if (rc < 0)
@@ -623,13 +625,14 @@ http_session_new (http_session_t *r_session, const char *tls_priority,
         goto leave;
       }
 
+    is_hkps_pool = (intended_hostname
+                    && !ascii_strcasecmp (intended_hostname,
+                                          "hkps.pool.sks-keyservers.net"));
+
     /* If the user has not specified a CA list, and they are looking
      * for the hkps pool from sks-keyservers.net, then default to
      * Kristian's certificate authority:  */
-    if (!tls_ca_certlist
-        && intended_hostname
-        && !ascii_strcasecmp (intended_hostname,
-                              "hkps.pool.sks-keyservers.net"))
+    if (!tls_ca_certlist && is_hkps_pool)
       {
         char *pemname = make_filename_try (gnupg_datadir (),
                                            "sks-keyservers.netCA.pem", NULL);
@@ -662,10 +665,12 @@ http_session_new (http_session_t *r_session, const char *tls_priority,
               log_info ("setting CA from file '%s' failed: %s\n",
                         sl->d, gnutls_strerror (rc));
           }
+        if (!tls_ca_certlist && !is_hkps_pool)
+          add_system_cas = 1;
       }
 
     /* Add system certificates to the session.  */
-    if ((flags & HTTP_FLAG_TRUST_SYS))
+    if (add_system_cas)
       {
 #if GNUTLS_VERSION_NUMBER >= 0x030014
         static int shown;
