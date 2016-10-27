@@ -2551,7 +2551,7 @@ static const char hlp_versioncheck[] =
   "\n"
   "Checks the internet to find whenever a new program version is available."
   "\n"
-  "<name> program name i.e. \"gnupg\""
+  "<name> program name i.e. \"gnupg\"\n"
   "<version> current version of the program i.e. \"2.0.2\"";
 static gpg_error_t
 cmd_versioncheck (assuan_context_t ctx, char *line)
@@ -2579,7 +2579,7 @@ cmd_versioncheck (assuan_context_t ctx, char *line)
   swdb_sig_path[0] = 0;
   ctrl = assuan_get_pointer (ctx);
 
-  if (split_fields (line, &cmd_fields, 2) != 2)
+  if (split_fields (line, cmd_fields, 2) != 2)
     {
       err = set_error (GPG_ERR_ASS_PARAMETER,
                        "No program name and/or version given");
