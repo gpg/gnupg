@@ -2359,11 +2359,16 @@ proc_tree (CTX c, kbnode_t node)
           for (; n1; (n1 = find_next_kbnode(n1, PKT_SIGNATURE)))
             {
               /* We can't currently handle multiple signatures of
-                 different classes or digests (we'd pretty much have
-                 to run a different hash context for each), but if
-                 they are all the same, make an exception. */
+               * different classes (we'd pretty much have to run a
+               * different hash context for each), but if they are all
+               * the same and it is detached signature, we make an
+               * exception.  Note that the old code also disallowed
+               * multiple signatures if the digest algorithms are
+               * different.  We softened this restriction only for
+               * detached signatures, to be on the safe side. */
               if (n1->pkt->pkt.signature->sig_class != class
-                  || n1->pkt->pkt.signature->digest_algo != hash)
+                  || (c->any.data
+                      && n1->pkt->pkt.signature->digest_algo != hash))
                 {
                   multiple_ok = 0;
                   log_info (_("WARNING: multiple signatures detected.  "
@@ -2385,6 +2390,17 @@ proc_tree (CTX c, kbnode_t node)
           if (rc)
             goto detached_hash_err;
 
+          if (multiple_ok)
+            {
+              /* If we have and want to handle multiple signatures we
+               * need to enable all hash algorithms for the context.  */
+              for (n1 = node; (n1 = find_next_kbnode (n1, PKT_SIGNATURE)); )
+                if (!openpgp_md_test_algo (n1->pkt->pkt.signature->digest_algo))
+                  gcry_md_enable (c->mfx.md,
+                                  map_md_openpgp_to_gcry
+                                  (n1->pkt->pkt.signature->digest_algo));
+            }
+
           if (RFC2440 || RFC4880)
             ; /* Strict RFC mode.  */
           else if (sig->digest_algo == DIGEST_ALGO_SHA1
@@ -2392,7 +2408,9 @@ proc_tree (CTX c, kbnode_t node)
                    && sig->sig_class == 0x01)
             {
               /* Enable a workaround for a pgp5 bug when the detached
-               * signature has been created in textmode.  */
+               * signature has been created in textmode.  Note that we
+               * do not implement this for multiple signatures with
+               * different hash algorithms. */
               rc = gcry_md_open (&c->mfx.md2, sig->digest_algo, 0);
               if (rc)
                 goto detached_hash_err;
