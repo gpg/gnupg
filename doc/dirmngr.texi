@@ -90,7 +90,7 @@ internal certificate validation code.  This mode is deprecated.
 Run in the foreground, sending logs to stderr, and listening on file
 descriptor 3, which must already be bound to a listening socket.  This
 is useful when running under systemd or other similar process
-supervision schemes.
+supervision schemes.  This option is not supported on Windows.
 
 @item --list-crls
 @opindex list-crls

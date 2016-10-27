@@ -150,7 +150,9 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_c (aServer,   "server",  N_("run in server mode (foreground)") ),
   ARGPARSE_c (aDaemon,   "daemon",  N_("run in daemon mode (background)") ),
-  ARGPARSE_c (aSupervised, "supervised", N_("run under supervision (e.g. systemd)")),
+#ifndef HAVE_W32_SYSTEM
+  ARGPARSE_c (aSupervised,  "supervised", N_("run in supervised mode")),
+#endif
   ARGPARSE_c (aListCRLs, "list-crls", N_("list the contents of the CRL cache")),
   ARGPARSE_c (aLoadCRL,  "load-crl",  N_("|FILE|load CRL from FILE into cache")),
   ARGPARSE_c (aFetchCRL, "fetch-crl", N_("|URL|fetch a CRL from URL")),
@@ -996,6 +998,7 @@ main (int argc, char **argv)
       start_command_handler (ASSUAN_INVALID_FD);
       shutdown_reaper ();
     }
+#ifndef HAVE_W32_SYSTEM
   else if (cmd == aSupervised)
     {
       /* In supervised mode, we expect file descriptor 3 to be an
@@ -1004,9 +1007,9 @@ main (int argc, char **argv)
          We will also not detach from the controlling process or close
          stderr; the supervisor should handle all of that.  */
       struct stat statbuf;
-      if (fstat (3, &statbuf) == -1 && errno ==EBADF)
+      if (fstat (3, &statbuf) == -1 && errno == EBADF)
         {
-          log_error ("file descriptor 3 must be already open in --supervised mode\n");
+          log_error ("file descriptor 3 must be validin --supervised mode\n");
           dirmngr_exit (1);
         }
       socket_name = gnupg_get_socket_name (3);
@@ -1033,6 +1036,7 @@ main (int argc, char **argv)
       assuan_sock_close (3);
       shutdown_reaper ();
     }
+#endif /*HAVE_W32_SYSTEM*/
   else if (cmd == aDaemon)
     {
       assuan_fd_t fd;
