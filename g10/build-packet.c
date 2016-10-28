@@ -1002,17 +1002,12 @@ build_sig_subpkt_from_sig (PKT_signature *sig, PKT_public_key *pksk)
         build_sig_subpkt (sig, SIGSUBPKT_ISSUER, buf, 8);
       }
 
-    /* For a future v5 keys we write the ISSUER_FPR subpacket.  We
-     * also write that for a v4 key is experimental support for
-     * RFC4880bis is requested.  */
-    if (pksk->version > 4 || opt.flags.rfc4880bis)
+    /* Write the new ISSUER_FPR subpacket.  */
+    fingerprint_from_pk (pksk, buf+1, &fprlen);
+    if (fprlen == 20)
       {
-        fingerprint_from_pk (pksk, buf+1, &fprlen);
-        if (fprlen == 20)
-          {
-            buf[0] = pksk->version;
-            build_sig_subpkt (sig, SIGSUBPKT_ISSUER_FPR, buf, 21);
-          }
+        buf[0] = pksk->version;
+        build_sig_subpkt (sig, SIGSUBPKT_ISSUER_FPR, buf, 21);
       }
 
     /* Write the timestamp.  */

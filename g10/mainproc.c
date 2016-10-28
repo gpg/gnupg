@@ -1748,7 +1748,7 @@ check_sig_and_print (CTX c, kbnode_t node)
     write_status_text (STATUS_NEWSIG, NULL);
 
   astr = openpgp_pk_algo_name ( sig->pubkey_algo );
-  if (opt.flags.rfc4880bis && (issuer_fpr = issuer_fpr_string (sig)))
+  if ((issuer_fpr = issuer_fpr_string (sig)))
     {
       log_info (_("Signature made %s\n"), asctimestamp(sig->timestamp));
       log_info (_("               using %s key %s\n"),
@@ -1853,7 +1853,6 @@ check_sig_and_print (CTX c, kbnode_t node)
    * favor this over the WKD method (to be tried next), because an
    * arbitrary keyserver is less subject to web bug like monitoring.  */
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
-      && opt.flags.rfc4880bis
       && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE)
       && keyserver_any_configured (c->ctrl))
     {
