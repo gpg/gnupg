@@ -122,7 +122,7 @@ struct
 
   /* If set, a passphrase history will be written and checked at each
      passphrase change.  */
-  int enable_passhrase_history;
+  int enable_passphrase_history;
 
   int running_detached; /* We are running detached from the tty. */
 

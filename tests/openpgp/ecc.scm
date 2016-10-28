@@ -187,7 +187,7 @@ Rg==
 ;;
 ;; Now check that we can encrypt and decrypt our own messages.
 ;;
-;; Note that we don't need to provide a passppharse because we already
+;; Note that we don't need to provide a passphrase because we already
 ;; preset the passphrase into the gpg-agent.
 ;;
 (for-each-p

@@ -9548,7 +9548,7 @@ msgstr ""
 #~ "tartozó preferenciákat az aktuális preferenciákra. Minden érintett\n"
 #~ "önaláírás időpontját egy másodperccel növeli.\n"
 
-#~ msgid "Please enter the passhrase; this is a secret sentence \n"
+#~ msgid "Please enter the passphrase; this is a secret sentence \n"
 #~ msgstr "Kérem, adja meg a jelszót! Ezt egy titkos mondat. \n"
 
 #~ msgid ""

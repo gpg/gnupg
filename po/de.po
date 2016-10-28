@@ -9616,7 +9616,7 @@ msgstr ""
 #~ "betroffenen\n"
 #~ "Eigenbeglaubigungen werden um eine Sekunde vorgestellt.\n"
 
-#~ msgid "Please enter the passhrase; this is a secret sentence \n"
+#~ msgid "Please enter the passphrase; this is a secret sentence \n"
 #~ msgstr "Bitte geben Sie die Passphrase ein. Dies ist ein geheimer Satz \n"
 
 #~ msgid ""

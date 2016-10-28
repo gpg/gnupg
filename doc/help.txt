@@ -312,7 +312,7 @@ self-signatures will be advanced by one second.
 .gpg.passphrase.enter
 # (keep a leading empty line)
 
-Please enter the passhrase; this is a secret sentence.
+Please enter the passphrase; this is a secret sentence.
 .
 
 

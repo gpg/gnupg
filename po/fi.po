@@ -9584,7 +9584,7 @@ msgstr ""
 #~ "nykyiseen luetteloon valinnoista.  Kaikkien muutettujen\n"
 #~ "oma-allekirjoitusten aikaleima siirretään yhdellä sekunnilla eteenpäin.\n"
 
-#~ msgid "Please enter the passhrase; this is a secret sentence \n"
+#~ msgid "Please enter the passphrase; this is a secret sentence \n"
 #~ msgstr "Ole hyvä ja syötä salasana, tämän on salainen lause \n"
 
 #~ msgid ""

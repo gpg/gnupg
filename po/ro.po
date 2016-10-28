@@ -9639,7 +9639,7 @@ msgstr ""
 #~ "cele selectate) conform cu lista curentă de preferinţe.  Timestamp-urile\n"
 #~ "tuturor auto-semnăturilor afectate vor fi avansate cu o secundă.\n"
 
-#~ msgid "Please enter the passhrase; this is a secret sentence \n"
+#~ msgid "Please enter the passphrase; this is a secret sentence \n"
 #~ msgstr ""
 #~ "Vă rugăm introduceţi fraza-parolă; aceasta este o propoziţie secretă \n"
 

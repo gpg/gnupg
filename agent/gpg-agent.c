@@ -789,7 +789,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.min_passphrase_nonalpha = MIN_PASSPHRASE_NONALPHA;
       opt.check_passphrase_pattern = NULL;
       opt.max_passphrase_days = MAX_PASSPHRASE_DAYS;
-      opt.enable_passhrase_history = 0;
+      opt.enable_passphrase_history = 0;
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 1;
       opt.allow_external_cache = 1;
@@ -856,7 +856,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.max_passphrase_days = pargs->r.ret_ulong;
       break;
     case oEnablePassphraseHistory:
-      opt.enable_passhrase_history = 1;
+      opt.enable_passphrase_history = 1;
       break;
 
     case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;

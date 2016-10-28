@@ -9540,7 +9540,7 @@ msgstr ""
 #~ "ke daftar preferensi saat ini.  Timestamp seluruh self-signature\n"
 #~ "yang terpengaruh akan bertambah satu detik.\n"
 
-#~ msgid "Please enter the passhrase; this is a secret sentence \n"
+#~ msgid "Please enter the passphrase; this is a secret sentence \n"
 #~ msgstr "Silakan masukkan passphrase; ini kalimat rahasia\n"
 
 #~ msgid ""

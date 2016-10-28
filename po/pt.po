@@ -9532,7 +9532,7 @@ msgstr ""
 #~ "O 'timestamp' de todas as auto-assinaturas afectuadas será avançado\n"
 #~ "em um segundo.\n"
 
-#~ msgid "Please enter the passhrase; this is a secret sentence \n"
+#~ msgid "Please enter the passphrase; this is a secret sentence \n"
 #~ msgstr "Por favor digite a frase secreta \n"
 
 #~ msgid ""

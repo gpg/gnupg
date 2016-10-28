@@ -343,7 +343,7 @@ Noteworthy changes in version 2.1.9 (2015-10-09)
 
  * agent: Fix ssh fingerprint computation for nistp384 and EdDSA.
 
- * agent: Fix crash during passprase entry on some platforms.
+ * agent: Fix crash during passphrase entry on some platforms.
 
  * scd: Change timeout to fix problems with some 2.1 cards.
 

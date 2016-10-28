@@ -9798,7 +9798,7 @@ msgstr ""
 #~ "a la llista actual de preferències. Les marques de temps de totes les\n"
 #~ "autosignatures afectades s'avançaran un segon.\n"
 
-#~ msgid "Please enter the passhrase; this is a secret sentence \n"
+#~ msgid "Please enter the passphrase; this is a secret sentence \n"
 #~ msgstr "Introduïu la contrasenya; aquesta ha de ser una frase secreta \n"
 
 #~ msgid ""

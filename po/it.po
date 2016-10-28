@@ -9599,7 +9599,7 @@ msgstr ""
 #~ "coinvolte\n"
 #~ "sarà aumentato di un secondo.\n"
 
-#~ msgid "Please enter the passhrase; this is a secret sentence \n"
+#~ msgid "Please enter the passphrase; this is a secret sentence \n"
 #~ msgstr "Inserisci la passphrase, cioè una frase segreta \n"
 
 #~ msgid ""

@@ -9488,7 +9488,7 @@ msgstr ""
 #~ "al la aktuala listo de preferoj. La dato de ĉiuj trafitaj\n"
 #~ "mem-subskriboj estos antaŭenigitaj je unu sekundo.\n"
 
-#~ msgid "Please enter the passhrase; this is a secret sentence \n"
+#~ msgid "Please enter the passphrase; this is a secret sentence \n"
 #~ msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
 
 #~ msgid ""

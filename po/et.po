@@ -9492,7 +9492,7 @@ msgstr ""
 #~ "vastavaks hetkel määratud seadetele. Kõikide asjasse puutuvate\n"
 #~ "ise loodud allkirjade ajatempleid suurendatakse ühe sekundi võrra.\n"
 
-#~ msgid "Please enter the passhrase; this is a secret sentence \n"
+#~ msgid "Please enter the passphrase; this is a secret sentence \n"
 #~ msgstr "Palun sisestage parool; see on salajane tekst \n"
 
 #~ msgid ""

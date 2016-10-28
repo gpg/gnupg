@@ -228,7 +228,7 @@ self-signatures will be advanced by one second.
 
 .#gpg.passphrase.enter
 # fixme: Please translate and remove the hash mark from the key line.
-Please enter the passhrase; this is a secret sentence 
+Please enter the passphrase; this is a secret sentence
 
 .
 

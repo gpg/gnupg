@@ -1068,7 +1068,7 @@ do_decipher (app_t app, const char *keyidstr,
 
 
 /* Parse a password ID string.  Returns NULL on error or a string
-   suitable as passpahrse prompt on success.  On success stores the
+   suitable as passphrase prompt on success.  On success stores the
    reference value for the password at R_PWID and a flag indicating
    that the SigG application is to be used at R_SIGG.  If NEW_MODE is
    true, the returned description is suitable for a new Password.

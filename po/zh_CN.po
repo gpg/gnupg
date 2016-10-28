@@ -9408,7 +9408,7 @@ msgstr ""
 #~ "用现有的首选项更新所有(或选定的)用户标识的首选项。所有受影响的自身签\n"
 #~ "字的时间戳都会增加一秒钟。\n"
 
-#~ msgid "Please enter the passhrase; this is a secret sentence \n"
+#~ msgid "Please enter the passphrase; this is a secret sentence \n"
 #~ msgstr "请输入密码：这是一个秘密的句子 \n"
 
 #~ msgid ""

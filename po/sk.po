@@ -9564,7 +9564,7 @@ msgstr ""
 #~ "podpisov\n"
 #~ "kľúčov nimi samotnými budú posunuté o jednu sekundu dopredu.\n"
 
-#~ msgid "Please enter the passhrase; this is a secret sentence \n"
+#~ msgid "Please enter the passphrase; this is a secret sentence \n"
 #~ msgstr "Prosím, vložte heslo; toto je tajná veta \n"
 
 #~ msgid ""

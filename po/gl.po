@@ -9605,7 +9605,7 @@ msgstr ""
 #~ "sinaturas\n"
 #~ "afectadas ha avanzar un segundo.\n"
 
-#~ msgid "Please enter the passhrase; this is a secret sentence \n"
+#~ msgid "Please enter the passphrase; this is a secret sentence \n"
 #~ msgstr "Por favor, introduza o contrasinal; esta é unha frase secreta \n"
 
 #~ msgid ""

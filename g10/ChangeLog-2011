@@ -8210,7 +8210,7 @@
 	to all foo-fd options.
 	* gpgv.c, openfile.c, ringedit.c, tdbio.c: Minor fixes.  Mainly
 	replaced hardcoded path	separators with EXTSEP_S like macros.
-	* passprase.c [__riscos__]: Disabled agent stuff
+	* passphrase.c [__riscos__]: Disabled agent stuff
 	* trustdb.c (check_trust): Changed r_trustlevel to signed int to
 	avoid mismatch problems in pkclist.c
 	* pkclist.c (add_ownertrust): Ditto.
@@ -11583,7 +11583,7 @@ Mon May  4 09:35:53 1998  Werner Koch  (wk@isil.d.shuttle.de)
 	changed all callers.
 
 	* passphrase.c (make_dek_from_passphrase): Removed
-	* (get_passhrase_hash): Changed name to passphrase_to_dek, add arg,
+	* (get_passphrase_hash): Changed name to passphrase_to_dek, add arg,
 	changed all callers.
 
 	* all: Introduced the new ELG identifier and added support for the
