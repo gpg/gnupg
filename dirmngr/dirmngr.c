@@ -1938,12 +1938,10 @@ static void *
 housekeeping_thread (void *arg)
 {
   static int sentinel;
-  time_t curtime;
   struct server_control_s ctrlbuf;
 
   (void)arg;
 
-  curtime = gnupg_get_time ();
   if (sentinel)
     {
       log_info ("housekeeping is already going on\n");
@@ -1956,7 +1954,6 @@ housekeeping_thread (void *arg)
   memset (&ctrlbuf, 0, sizeof ctrlbuf);
   dirmngr_init_default_ctrl (&ctrlbuf);
 
-  ks_hkp_housekeeping (curtime);
   if (network_activity_seen)
     {
       network_activity_seen = 0;

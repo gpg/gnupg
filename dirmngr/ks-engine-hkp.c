@@ -218,6 +218,24 @@ host_in_pool_p (hostinfo_t hi, int tblidx)
   return 0;
 }
 
+static int
+host_is_alive (hostinfo_t hi, time_t curtime)
+{
+  if (!hi)
+    return 0;
+  if (!hi->dead)
+    return 1;
+  if (!hi->died_at)
+    return 0; /* manually marked dead */
+  if (hi->died_at + RESURRECT_INTERVAL <= curtime
+      || hi->died_at > curtime)
+    {
+      hi->dead = 0;
+      log_info ("resurrected host '%s'", hi->name);
+      return 1;
+    }
+  return 0;
+}
 
 /* Select a random host.  Consult HI->pool which indices into the global
    hosttable.  Returns index into HI->pool or -1 if no host could be
@@ -228,13 +246,15 @@ select_random_host (hostinfo_t hi)
   int *tbl = NULL;
   size_t tblsize = 0;
   int pidx, idx;
+  time_t curtime;
 
+  curtime = gnupg_get_time ();
   /* We create a new table so that we randomly select only from
      currently alive hosts.  */
   for (idx = 0;
        idx < hi->pool_len && (pidx = hi->pool[idx]) != -1;
        idx++)
-    if (hosttable[pidx] && !hosttable[pidx]->dead)
+    if (hosttable[pidx] && host_is_alive (hosttable[pidx], curtime))
       {
         tblsize++;
         tbl = xtryrealloc(tbl, tblsize * sizeof *tbl);
@@ -462,6 +482,7 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
   int is_pool;
   int new_hosts = 0;
   char *cname;
+  time_t curtime;
 
   *r_host = NULL;
   if (r_httpflags)
@@ -488,6 +509,7 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
     }
   else
     hi = hosttable[idx];
+  curtime = gnupg_get_time ();
 
   is_pool = hi->pool != NULL;
 
@@ -594,7 +616,7 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
       if (force_reselect)
         hi->poolidx = -1;
       else if (hi->poolidx >= 0 && hi->poolidx < hosttable_size
-               && hosttable[hi->poolidx] && hosttable[hi->poolidx]->dead)
+               && hosttable[hi->poolidx] && !host_is_alive (hosttable[hi->poolidx], curtime))
         hi->poolidx = -1;
 
       /* Select a host if needed.  */
@@ -646,7 +668,7 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
       free_dns_addrinfo (aibuf);
     }
 
-  if (hi->dead)
+  if (!host_is_alive (hi, curtime))
     {
       log_error ("host '%s' marked as dead\n", hi->name);
       if (r_httphost)
@@ -751,7 +773,8 @@ ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive)
 {
   gpg_error_t err = 0;
   hostinfo_t hi, hi2;
-  int idx, idx2, idx3, n;
+  int idx, idx2, idx3, n, is_alive;
+  time_t curtime;
 
   if (!name || !*name || !strcmp (name, "localhost"))
     return 0;
@@ -760,13 +783,15 @@ ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive)
   if (idx == -1)
     return gpg_error (GPG_ERR_NOT_FOUND);
 
+  curtime = gnupg_get_time ();
   hi = hosttable[idx];
-  if (alive && hi->dead)
+  is_alive = host_is_alive (hi, curtime);
+  if (alive && !is_alive)
     {
       hi->dead = 0;
       err = ks_printf_help (ctrl, "marking '%s' as alive", name);
     }
-  else if (!alive && !hi->dead)
+  else if (!alive && is_alive)
     {
       hi->dead = 1;
       hi->died_at = 0; /* Manually set dead.  */
@@ -800,14 +825,15 @@ ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive)
 
           hi2 = hosttable[n];
           if (!hi2)
-            ;
-          else if (alive && hi2->dead)
+            continue;
+          is_alive = host_is_alive (hi2, curtime);
+          if (alive && !is_alive)
             {
               hi2->dead = 0;
               err = ks_printf_help (ctrl, "marking '%s' as alive",
                                     hi2->name);
             }
-          else if (!alive && !hi2->dead)
+          else if (!alive && is_alive)
             {
               hi2->dead = 1;
               hi2->died_at = 0; /* Manually set dead. */
@@ -1090,34 +1116,6 @@ ks_hkp_resolve (ctrl_t ctrl, parsed_uri_t uri)
       xfree (hostport);
     }
   return err;
-}
-
-
-/* Housekeeping function called from the housekeeping thread.  It is
-   used to mark dead hosts alive so that they may be tried again after
-   some time.  */
-void
-ks_hkp_housekeeping (time_t curtime)
-{
-  int idx;
-  hostinfo_t hi;
-
-  for (idx=0; idx < hosttable_size; idx++)
-    {
-      hi = hosttable[idx];
-      if (!hi)
-        continue;
-      if (!hi->dead)
-        continue;
-      if (!hi->died_at)
-        continue; /* Do not resurrect manually shot hosts.  */
-      if (hi->died_at + RESURRECT_INTERVAL <= curtime
-          || hi->died_at > curtime)
-        {
-          hi->dead = 0;
-          log_info ("resurrected host '%s'", hi->name);
-        }
-    }
 }
 
 
