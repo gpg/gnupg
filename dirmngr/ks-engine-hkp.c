@@ -221,28 +221,25 @@ host_in_pool_p (hostinfo_t hi, int tblidx)
 static int
 select_random_host (hostinfo_t hi)
 {
-  int *tbl;
-  size_t tblsize;
+  int *tbl = NULL;
+  size_t tblsize = 0;
   int pidx, idx;
 
   /* We create a new table so that we randomly select only from
      currently alive hosts.  */
-  for (idx = 0, tblsize = 0;
+  for (idx = 0;
        idx < hi->pool_len && (pidx = hi->pool[idx]) != -1;
        idx++)
     if (hosttable[pidx] && !hosttable[pidx]->dead)
-      tblsize++;
+      {
+        tblsize++;
+        tbl = xtryrealloc(tbl, tblsize * sizeof *tbl);
+        if (!tbl)
+          return -1; /* memory allocation failed! */
+        tbl[tblsize-1] = pidx;
+      }
   if (!tblsize)
     return -1; /* No hosts.  */
-
-  tbl = xtrymalloc (tblsize * sizeof *tbl);
-  if (!tbl)
-    return -1;
-  for (idx = 0, tblsize = 0;
-       idx < hi->pool_len && (pidx = hi->pool[idx]) != -1;
-       idx++)
-    if (hosttable[pidx] && !hosttable[pidx]->dead)
-      tbl[tblsize++] = pidx;
 
   if (tblsize == 1)  /* Save a get_uint_nonce.  */
     pidx = tbl[0];
