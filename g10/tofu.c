@@ -1821,7 +1821,9 @@ ask_about_binding (ctrl_t ctrl,
    email> (including the binding itself, which will be first in the
    list).  For each returned key also sets BINDING_NEW, etc.  */
 static strlist_t
-build_conflict_set (tofu_dbs_t dbs, const char *fingerprint, const char *email)
+build_conflict_set (tofu_dbs_t dbs,
+                    PKT_public_key *pk, const char *fingerprint,
+                    const char *email)
 {
   gpg_error_t rc;
   char *sqerr;
@@ -1897,6 +1899,18 @@ build_conflict_set (tofu_dbs_t dbs, const char *fingerprint, const char *email)
   conflict_set_count = strlist_length (conflict_set);
 
   /* Eliminate false conflicts.  */
+
+  if (conflict_set_count == 1)
+    /* We only have a single key.  There are no false conflicts to
+       eliminate.  But, we do need to set the flags.  */
+    {
+      if (pk->has_expired)
+        conflict_set->flags |= BINDING_EXPIRED;
+      if (pk->flags.revoked)
+        conflict_set->flags |= BINDING_REVOKED;
+
+      return conflict_set;
+    }
 
   /* If two keys have cross signatures, then they are controlled by
    * the same person and thus are not in conflict.  */
@@ -2267,7 +2281,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
 
 
   /* Look for conflicts.  This is needed in all 3 cases.  */
-  conflict_set = build_conflict_set (dbs, fingerprint, email);
+  conflict_set = build_conflict_set (dbs, pk, fingerprint, email);
   conflict_set_count = strlist_length (conflict_set);
   if (conflict_set_count == 0)
     {
