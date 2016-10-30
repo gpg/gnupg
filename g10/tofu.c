@@ -1963,9 +1963,9 @@ build_conflict_set (tofu_dbs_t dbs, const char *fingerprint, const char *email)
       /* The binding is always expired/revoked if the key is
        * expired/revoked.  */
       if (binding_pk->has_expired)
-        iter->flags &= BINDING_EXPIRED;
+        iter->flags |= BINDING_EXPIRED;
       if (binding_pk->flags.revoked)
-        iter->flags &= BINDING_REVOKED;
+        iter->flags |= BINDING_REVOKED;
 
       /* The binding is also expired/revoked if the user id is
        * expired/revoked.  */
@@ -1986,9 +1986,9 @@ build_conflict_set (tofu_dbs_t dbs, const char *fingerprint, const char *email)
               found_user_id = 1;
 
               if (user_id2->is_revoked)
-                iter->flags &= BINDING_REVOKED;
+                iter->flags |= BINDING_REVOKED;
               if (user_id2->is_expired)
-                iter->flags &= BINDING_EXPIRED;
+                iter->flags |= BINDING_EXPIRED;
             }
 
           xfree (email2);
