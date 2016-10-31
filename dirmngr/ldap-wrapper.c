@@ -654,8 +654,9 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
      only viable solutions are either to have another thread
      responsible for logging the messages or to add an option to the
      wrapper module to do the logging on its own.  Given that we anyway
-     need a way to rip the child process and this is best done using a
-     general ripping thread, that thread can do the logging too. */
+     need a way to reap the child process and this is best done using a
+     general reaping thread, that thread can do the logging too. */
+  ldap_wrapper_launch_thread ();
 
   *reader = NULL;
 

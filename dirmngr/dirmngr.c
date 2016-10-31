@@ -989,9 +989,6 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init ();
       crl_cache_init ();
-#if USE_LDAP
-      ldap_wrapper_launch_thread ();
-#endif /*USE_LDAP*/
       http_register_netactivity_cb (netactivity_action);
       start_command_handler (ASSUAN_INVALID_FD);
       shutdown_reaper ();
@@ -1027,9 +1024,6 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init ();
       crl_cache_init ();
-#if USE_LDAP
-      ldap_wrapper_launch_thread ();
-#endif /*USE_LDAP*/
       http_register_netactivity_cb (netactivity_action);
       handle_connections (3);
       assuan_sock_close (3);
@@ -1238,9 +1232,6 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init ();
       crl_cache_init ();
-#if USE_LDAP
-      ldap_wrapper_launch_thread ();
-#endif /*USE_LDAP*/
       http_register_netactivity_cb (netactivity_action);
       handle_connections (fd);
       assuan_sock_close (fd);
@@ -1251,9 +1242,6 @@ main (int argc, char **argv)
       /* Just list the CRL cache and exit. */
       if (argc)
         wrong_args ("--list-crls");
-#if USE_LDAP
-      ldap_wrapper_launch_thread ();
-#endif /*USE_LDAP*/
       crl_cache_init ();
       crl_cache_list (es_stdout);
     }
@@ -1267,9 +1255,6 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init ();
       crl_cache_init ();
-#if USE_LDAP
-      ldap_wrapper_launch_thread ();
-#endif /*USE_LDAP*/
       if (!argc)
         rc = crl_cache_load (&ctrlbuf, NULL);
       else
@@ -1293,9 +1278,6 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init ();
       crl_cache_init ();
-#if USE_LDAP
-      ldap_wrapper_launch_thread ();
-#endif /*USE_LDAP*/
       rc = crl_fetch (&ctrlbuf, argv[0], &reader);
       if (rc)
         log_error (_("fetching CRL from '%s' failed: %s\n"),
