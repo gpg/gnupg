@@ -28,6 +28,10 @@
 #include <sys/stat.h>
 #include <stdarg.h>
 #include <sqlite3.h>
+#include <time.h>
+#include <utime.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include "gpg.h"
 #include "types.h"
@@ -65,6 +69,8 @@
 struct tofu_dbs_s
 {
   sqlite3 *db;
+  char *want_lock_file;
+  time_t want_lock_file_ctime;
 
   struct
   {
@@ -185,21 +191,39 @@ begin_transaction (ctrl_t ctrl, int only_batch)
       /* And some time has gone by since it was started.  */
       && dbs->batch_update_started != gnupg_get_time ())
     {
+      struct stat statbuf;
+      struct timespec ts;
+
       /* If we are in a batch update, then batch updates better have
          been enabled.  */
       log_assert (ctrl->tofu.batch_updated_wanted);
 
-      end_transaction (ctrl, 2);
+      /* Check if another process wants to run.  (We just ignore any
+       * stat failure.  A waiter might have to wait a bit longer, but
+       * otherwise there should be no impact.)  */
+      if (stat (dbs->want_lock_file, &statbuf) == 0
+          && statbuf.st_ctime != dbs->want_lock_file_ctime)
+        {
+          end_transaction (ctrl, 2);
 
-      /* Yield to allow another process a chance to run.  */
-      gpgrt_yield ();
+          /* Yield to allow another process a chance to run.  Note:
+           * testing suggests that anything less than a 100ms tends to
+           * not result in the other process getting the lock.  */
+          memset (&ts, 0, sizeof (ts));
+          ts.tv_nsec = 100 * 1000 * 1000;
+          nanosleep (&ts, &ts);
+        }
+      else
+        dbs->batch_update_started = gnupg_get_time ();
     }
 
-  if (/* Batch mode is enabled.  */
-      ctrl->tofu.batch_updated_wanted
-      /* But we don't have an open batch transaction.  */
-      && !dbs->in_batch_transaction)
+  if (/* We don't have an open batch transaction.  */
+      !dbs->in_batch_transaction
+      && (/* Batch mode is enabled or we are starting a new transaction.  */
+          ctrl->tofu.batch_updated_wanted || dbs->in_transaction == 0))
     {
+      struct stat statbuf;
+
       /* We are in batch mode, but we don't have an open batch
        * transaction.  Since the batch save point must be the outer
        * save point, it must be taken before the inner save point.  */
@@ -207,7 +231,7 @@ begin_transaction (ctrl_t ctrl, int only_batch)
 
       rc = gpgsql_stepx (dbs->db, &dbs->s.savepoint_batch,
                           NULL, NULL, &err,
-                          "savepoint batch;", GPGSQL_ARG_END);
+                          "begin immediate transaction;", GPGSQL_ARG_END);
       if (rc)
         {
           log_error (_("error beginning transaction on TOFU database: %s\n"),
@@ -218,12 +242,15 @@ begin_transaction (ctrl_t ctrl, int only_batch)
 
       dbs->in_batch_transaction = 1;
       dbs->batch_update_started = gnupg_get_time ();
+
+      if (stat (dbs->want_lock_file, &statbuf) == 0)
+        dbs->want_lock_file_ctime = statbuf.st_ctime;
     }
 
   if (only_batch)
     return 0;
 
-  log_assert(dbs->in_transaction >= 0);
+  log_assert (dbs->in_transaction >= 0);
   dbs->in_transaction ++;
 
   rc = gpgsql_exec_printf (dbs->db, NULL, NULL, &err,
@@ -252,14 +279,15 @@ end_transaction (ctrl_t ctrl, int only_batch)
   int rc;
   char *err = NULL;
 
-  if (only_batch)
+  if (only_batch || (! only_batch && dbs->in_transaction == 1))
     {
       if (!dbs)
         return 0;  /* Shortcut to allow for easier cleanup code.  */
 
       /* If we are releasing the batch transaction, then we better not
          be in a normal transaction.  */
-      log_assert (dbs->in_transaction == 0);
+      if (only_batch)
+        log_assert (dbs->in_transaction == 0);
 
       if (/* Batch mode disabled?  */
           (!ctrl->tofu.batch_updated_wanted || only_batch == 2)
@@ -269,10 +297,11 @@ end_transaction (ctrl_t ctrl, int only_batch)
           /* The batch transaction is still in open, but we've left
            * batch mode.  */
           dbs->in_batch_transaction = 0;
+          dbs->in_transaction = 0;
 
           rc = gpgsql_stepx (dbs->db, &dbs->s.savepoint_batch_commit,
                              NULL, NULL, &err,
-                             "release batch;", GPGSQL_ARG_END);
+                             "commit transaction;", GPGSQL_ARG_END);
           if (rc)
             {
               log_error (_("error committing transaction on TOFU database: %s\n"),
@@ -284,7 +313,8 @@ end_transaction (ctrl_t ctrl, int only_batch)
           return 0;
         }
 
-      return 0;
+      if (only_batch)
+        return 0;
     }
 
   log_assert (dbs);
@@ -689,6 +719,36 @@ initdb (sqlite3 *db)
     }
 }
 
+static int
+busy_handler (void *cookie, int call_count)
+{
+  ctrl_t ctrl = cookie;
+  tofu_dbs_t dbs = ctrl->tofu.dbs;
+
+  (void) call_count;
+
+  /* Update the lock file time stamp so that the current owner knows
+     that we want the lock.  */
+  if (dbs)
+    {
+      /* Note: we don't fail if we can't create the lock file: this
+         process will have to wait a bit longer, but otherwise nothing
+         horrible should happen.  */
+
+      int fd = open (dbs->want_lock_file, O_CREAT);
+      if (fd == -1)
+        log_debug ("TOFU: Error opening '%s': %s\n",
+                   dbs->want_lock_file, strerror (errno));
+      else
+        {
+          utime (dbs->want_lock_file, NULL);
+          close (fd);
+        }
+    }
+
+  /* Call again.  */
+  return 1;
+}
 
 /* Create a new DB handle.  Returns NULL on error.  */
 /* FIXME: Change to return an error code for better reporting by the
@@ -713,12 +773,14 @@ opendbs (ctrl_t ctrl)
           sqlite3_close (db);
           db = NULL;
         }
-      xfree (filename);
 
       /* If a DB is locked wait up to 5 seconds for the lock to be cleared
          before failing.  */
       if (db)
-        sqlite3_busy_timeout (db, 5 * 1000);
+        {
+          sqlite3_busy_timeout (db, 5 * 1000);
+          sqlite3_busy_handler (db, busy_handler, ctrl);
+        }
 
       if (db && initdb (db))
         {
@@ -730,7 +792,10 @@ opendbs (ctrl_t ctrl)
         {
           ctrl->tofu.dbs = xmalloc_clear (sizeof *ctrl->tofu.dbs);
           ctrl->tofu.dbs->db = db;
+          ctrl->tofu.dbs->want_lock_file = xasprintf ("%s-want-lock", filename);
         }
+
+      xfree (filename);
     }
   else
     log_assert (ctrl->tofu.dbs->db);
@@ -761,6 +826,7 @@ tofu_closedbs (ctrl_t ctrl)
     sqlite3_finalize (*statements);
 
   sqlite3_close (dbs->db);
+  xfree (dbs->want_lock_file);
   xfree (dbs);
   ctrl->tofu.dbs = NULL;
 }
