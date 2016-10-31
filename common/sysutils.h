@@ -54,6 +54,7 @@ const unsigned char *get_session_marker (size_t *rlen);
 unsigned int get_uint_nonce (void);
 /*int check_permissions (const char *path,int extension,int checkonly);*/
 void gnupg_sleep (unsigned int seconds);
+void gnupg_usleep (unsigned int usecs);
 int translate_sys2libc_fd (gnupg_fd_t fd, int for_write);
 int translate_sys2libc_fd_int (int fd, int for_write);
 FILE *gnupg_tmpfile (void);

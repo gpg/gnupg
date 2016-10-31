@@ -1387,6 +1387,16 @@ AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol \
                 flockfile funlockfile getpwnam getpwuid \
                 getenv inet_pton strpbrk])
 
+# On some systems (e.g. Solaris) nanosleep requires linking to librl.
+# Given that we use nanosleep only as an optimization over a select
+# based wait function we want it only if it is available in libc.
+_save_libs="$LIBS"
+AC_SEARCH_LIBS([nanosleep], [],
+               [AC_DEFINE(HAVE_NANOSLEEP,1,
+                [Define to 1 if you have the `nanosleep' function in libc.])])
+LIBS="$_save_libs"
+
+
 # See whether libc supports the Linux inotify interface
 case "${host}" in
     *-*-linux*)

@@ -49,8 +49,8 @@
 # include <asm/sysinfo.h>
 # include <asm/unistd.h>
 #endif
+#include <time.h>
 #ifdef HAVE_SETRLIMIT
-# include <time.h>
 # include <sys/time.h>
 # include <sys/resource.h>
 #endif
@@ -303,6 +303,50 @@ gnupg_sleep (unsigned int seconds)
 # else
   sleep (seconds);
 # endif
+#endif
+}
+
+
+/* Wrapper around the platforms usleep function.  This one won't wake
+ * up before the sleep time has really elapsed.  When build with nPth
+ * it merely calls npth_usleep and thus suspends only the current
+ * thread. */
+void
+gnupg_usleep (unsigned int usecs)
+{
+#if defined(USE_NPTH)
+
+  npth_usleep (usecs);
+
+#elif defined(HAVE_W32_SYSTEM)
+
+  Sleep ((usecs + 999) / 1000);
+
+#elif defined(HAVE_NANOSLEEP)
+
+  if (usecs)
+    {
+      struct timespec req;
+      struct timespec rem;
+
+      req.tv_sec = 0;
+      req.tv_nsec = usecs * 1000;
+
+      while (nanosleep (&req, &rem) < 0 && errno == EINTR)
+        req = rem;
+    }
+
+#else /*Standard Unix*/
+
+  if (usecs)
+    {
+      struct timeval tv;
+
+      tv.tv_sec  = usecs / 1000000;
+      tv.tv_usec = usecs % 1000000;
+      select (0, NULL, NULL, NULL, &tv);
+    }
+
 #endif
 }
 
