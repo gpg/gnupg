@@ -417,6 +417,9 @@ static int have_homedir_inotify;
  * works reliable.  */
 static int reliable_homedir_inotify;
 
+/* Record the pid of the main thread, for easier signalling */
+static pid_t main_thread_pid = (pid_t)(-1);
+
 /* Number of active connections.  */
 static int active_connections;
 
@@ -2472,6 +2475,10 @@ handle_signal (int signo)
       agent_sigusr2_action ();
       break;
 
+      /* nothing to do here, just take an extra cycle on the select loop */
+    case SIGCONT:
+      break;
+
     case SIGTERM:
       if (!shutdown_pending)
         log_info ("SIGTERM received - shutting down ...\n");
@@ -2810,6 +2817,13 @@ start_connection_thread_ssh (void *arg)
 }
 
 
+void interrupt_main_thread_loop (void)
+{
+#ifndef HAVE_W32_SYSTEM
+  kill (main_thread_pid, SIGCONT);
+#endif
+}
+
 /* helper function for readability: test whether a given struct
    timespec is set to all-zeros */
 static inline int
@@ -2879,8 +2893,10 @@ handle_connections (gnupg_fd_t listen_fd,
   npth_sigev_add (SIGUSR1);
   npth_sigev_add (SIGUSR2);
   npth_sigev_add (SIGINT);
+  npth_sigev_add (SIGCONT);
   npth_sigev_add (SIGTERM);
   npth_sigev_fini ();
+  main_thread_pid = getpid ();
 #else
 # ifdef HAVE_W32CE_SYSTEM
   /* Use a dummy event. */
