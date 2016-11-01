@@ -2379,11 +2379,7 @@ create_directories (void)
 static void
 handle_tick (void)
 {
-  static time_t last_minute;
   struct stat statbuf;
-
-  if (!last_minute)
-    last_minute = time (NULL);
 
   /* Check whether the scdaemon has died and cleanup in this case. */
   agent_scd_check_aliveness ();
@@ -2403,15 +2399,6 @@ handle_tick (void)
         }
     }
 #endif /*HAVE_W32_SYSTEM*/
-
-  /* Code to be run from time to time.  */
-#if CHECK_OWN_SOCKET_INTERVAL > 0
-  if (last_minute + CHECK_OWN_SOCKET_INTERVAL <= time (NULL))
-    {
-      check_own_socket ();
-      last_minute = time (NULL);
-    }
-#endif
 
   /* Need to check for expired cache entries.  */
   agent_cache_housekeeping ();
@@ -2823,6 +2810,15 @@ start_connection_thread_ssh (void *arg)
 }
 
 
+/* helper function for readability: test whether a given struct
+   timespec is set to all-zeros */
+static inline int
+tv_is_set (struct timespec tv)
+{
+  return tv.tv_sec || tv.tv_nsec;
+}
+
+
 /* Connection handler loop.  Wait for connection requests and spawn a
    thread after accepting a connection.  */
 static void
@@ -2840,9 +2836,11 @@ handle_connections (gnupg_fd_t listen_fd,
   gnupg_fd_t fd;
   int nfd;
   int saved_errno;
+  int idx;
   struct timespec abstime;
   struct timespec curtime;
   struct timespec timeout;
+  struct timespec *select_timeout;
 #ifdef HAVE_W32_SYSTEM
   HANDLE events[2];
   unsigned int events_set;
@@ -2858,6 +2856,14 @@ handle_connections (gnupg_fd_t listen_fd,
     { "extra",   start_connection_thread_extra },
     { "browser", start_connection_thread_browser },
     { "ssh",    start_connection_thread_ssh   }
+  };
+  struct {
+    struct timespec interval;
+    void (*func) (void);
+    struct timespec next;
+  } timertbl[] = {
+    { { TIMERTICK_INTERVAL, 0 }, handle_tick },
+    { { CHECK_OWN_SOCKET_INTERVAL, 0 }, check_own_socket }
   };
 
 
@@ -2966,9 +2972,6 @@ handle_connections (gnupg_fd_t listen_fd,
   listentbl[2].l_fd = listen_fd_browser;
   listentbl[3].l_fd = listen_fd_ssh;
 
-  npth_clock_gettime (&abstime);
-  abstime.tv_sec += TIMERTICK_INTERVAL;
-
   for (;;)
     {
       /* Shutdown test.  */
@@ -3003,18 +3006,46 @@ handle_connections (gnupg_fd_t listen_fd,
          thus a simple assignment is fine to copy the entire set.  */
       read_fdset = fdset;
 
+      /* loop through all timers, fire any registered functions, and
+         plan next timer to trigger */
       npth_clock_gettime (&curtime);
-      if (!(npth_timercmp (&curtime, &abstime, <)))
-	{
-	  /* Timeout.  */
-	  handle_tick ();
-	  npth_clock_gettime (&abstime);
-	  abstime.tv_sec += TIMERTICK_INTERVAL;
-	}
-      npth_timersub (&abstime, &curtime, &timeout);
+      abstime.tv_sec = abstime.tv_nsec = 0;
+      for (idx=0; idx < DIM(timertbl); idx++)
+        {
+          /* schedule any unscheduled timers */
+          if ((!tv_is_set (timertbl[idx].next)) && tv_is_set (timertbl[idx].interval))
+            npth_timeradd (&timertbl[idx].interval, &curtime, &timertbl[idx].next);
+          /* if a timer is due, fire it ... */
+          if (tv_is_set (timertbl[idx].next))
+            {
+              if (!(npth_timercmp (&curtime, &timertbl[idx].next, <)))
+                {
+                  timertbl[idx].func ();
+                  npth_clock_gettime (&curtime);
+                  /* ...and reschedule it, if desired: */
+                  if (tv_is_set (timertbl[idx].interval))
+                    npth_timeradd (&timertbl[idx].interval, &curtime, &timertbl[idx].next);
+                  else
+                    timertbl[idx].next.tv_sec = timertbl[idx].next.tv_nsec = 0;
+                }
+            }
+          /* accumulate next timer to come due in abstime: */
+          if (tv_is_set (timertbl[idx].next) &&
+              ((!tv_is_set (abstime)) ||
+               (npth_timercmp (&abstime, &timertbl[idx].next, >))))
+            abstime = timertbl[idx].next;
+        }
+      /* choose a timeout for the select loop: */
+      if (tv_is_set (abstime))
+        {
+          npth_timersub (&abstime, &curtime, &timeout);
+          select_timeout = &timeout;
+        }
+      else
+          select_timeout = NULL;
 
 #ifndef HAVE_W32_SYSTEM
-      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, &timeout,
+      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, select_timeout,
                           npth_sigev_sigmask ());
       saved_errno = errno;
 
@@ -3024,7 +3055,7 @@ handle_connections (gnupg_fd_t listen_fd,
           handle_signal (signo);
       }
 #else
-      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, &timeout,
+      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, select_timeout,
                           events, &events_set);
       saved_errno = errno;
 
@@ -3069,7 +3100,6 @@ handle_connections (gnupg_fd_t listen_fd,
 
       if (!shutdown_pending)
         {
-          int idx;
           ctrl_t ctrl;
           npth_t thread;
 
