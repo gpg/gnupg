@@ -1842,20 +1842,6 @@ time_for_housekeeping_p (time_t curtime)
 static void
 handle_tick (void)
 {
-  /* Under Windows we don't use signals and need a way for the loop to
-     check for the shutdown flag.  */
-#ifdef HAVE_W32_SYSTEM
-  if (shutdown_pending)
-    log_info (_("SIGTERM received - shutting down ...\n"));
-  if (shutdown_pending > 2)
-    {
-      log_info (_("shutdown forced\n"));
-      log_info ("%s %s stopped\n", strusage(11), strusage(13) );
-      cleanup ();
-      dirmngr_exit (0);
-    }
-#endif /*HAVE_W32_SYSTEM*/
-
   if (time_for_housekeeping_p (gnupg_get_time ()))
     {
       npth_t thread;
