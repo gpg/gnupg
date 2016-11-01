@@ -3046,6 +3046,8 @@ handle_connections (gnupg_fd_t listen_fd,
 
       /* avoid a fine-grained timer if we don't need one: */
       timertbl[0].interval.tv_sec = need_tick () ? TIMERTICK_INTERVAL : 0;
+      /* avoid waking up to check sockets if we can count on inotify */
+      timertbl[1].interval.tv_sec = (sock_inotify_fd == -1) ? CHECK_OWN_SOCKET_INTERVAL : 0;
 
       /* loop through all timers, fire any registered functions, and
          plan next timer to trigger */
