@@ -414,6 +414,8 @@ start_scd (ctrl_t ctrl)
 
   primary_scd_ctx = ctx;
   primary_scd_ctx_reusable = 0;
+  /* notify the main loop that something has changed */
+  interrupt_main_thread_loop ();
 
  leave:
   xfree (abs_homedir);

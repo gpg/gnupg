@@ -2376,6 +2376,26 @@ create_directories (void)
 }
 
 
+static int
+need_tick (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  /* We do not know how to interrupt the select loop on Windows, so we
+     always need a short tick there. */
+  return 1;
+#else
+  /* if we were invoked like "gpg-agent cmd arg1 arg2" then we need to
+     watch our parent. */
+  if (parent_pid != (pid_t)(-1))
+    return 1;
+  /* if scdaemon is running, we need to check that it's alive */
+  if (agent_scd_check_running ())
+    return 1;
+  /* otherwise, nothing fine-grained to do. */
+  return 0;
+#endif /*HAVE_W32_SYSTEM*/
+}
+
 
 /* This is the worker for the ticker.  It is called every few seconds
    and may only do fast operations. */
@@ -2732,7 +2752,8 @@ do_start_connection_thread (ctrl_t ctrl)
 
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);
-  active_connections--;
+  if (--active_connections == 0)
+    interrupt_main_thread_loop();
   return NULL;
 }
 
@@ -2812,7 +2833,8 @@ start_connection_thread_ssh (void *arg)
 
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);
-  active_connections--;
+  if (--active_connections == 0)
+    interrupt_main_thread_loop();
   return NULL;
 }
 
@@ -3021,6 +3043,9 @@ handle_connections (gnupg_fd_t listen_fd,
       /* POSIX says that fd_set should be implemented as a structure,
          thus a simple assignment is fine to copy the entire set.  */
       read_fdset = fdset;
+
+      /* avoid a fine-grained timer if we don't need one: */
+      timertbl[0].interval.tv_sec = need_tick () ? TIMERTICK_INTERVAL : 0;
 
       /* loop through all timers, fire any registered functions, and
          plan next timer to trigger */
