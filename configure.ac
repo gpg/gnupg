@@ -200,7 +200,7 @@ test -n "$GNUPG_PROTECT_TOOL_PGM" \
       && show_gnupg_protect_tool_pgm="$GNUPG_PROTECT_TOOL_PGM"
 
 AC_ARG_WITH(dirmngr-ldap-pgm,
-    [  --with-dirmngr-ldap-pgm=PATH  Use PATH as the default for the dirmnge ldap wrapper)],
+    [  --with-dirmngr-ldap-pgm=PATH  Use PATH as the default for the dirmngr ldap wrapper)],
           GNUPG_DIRMNGR_LDAP_PGM="$withval", GNUPG_DIRMNGR_LDAP_PGM="" )
 AC_SUBST(GNUPG_DIRMNGR_LDAP_PGM)
 AM_CONDITIONAL(GNUPG_DIRMNGR_LDAP_PGM, test -n "$GNUPG_DIRMNGR_LDAP_PGM")
