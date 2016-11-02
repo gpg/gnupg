@@ -35,6 +35,7 @@
 #include <unistd.h>
 
 #if HAVE_LIBREADLINE
+#define GNUPG_LIBREADLINE_H_INCLUDED
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
