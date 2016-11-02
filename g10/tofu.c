@@ -192,7 +192,6 @@ begin_transaction (ctrl_t ctrl, int only_batch)
       && dbs->batch_update_started != gnupg_get_time ())
     {
       struct stat statbuf;
-      struct timespec ts;
 
       /* If we are in a batch update, then batch updates better have
          been enabled.  */
@@ -209,9 +208,7 @@ begin_transaction (ctrl_t ctrl, int only_batch)
           /* Yield to allow another process a chance to run.  Note:
            * testing suggests that anything less than a 100ms tends to
            * not result in the other process getting the lock.  */
-          memset (&ts, 0, sizeof (ts));
-          ts.tv_nsec = 100 * 1000 * 1000;
-          nanosleep (&ts, &ts);
+          gnupg_usleep (100000);
         }
       else
         dbs->batch_update_started = gnupg_get_time ();
