@@ -1,5 +1,6 @@
 /* gpgconf.c - Configuration utility for GnuPG
  * Copyright (C) 2003, 2007, 2009, 2011 Free Software Foundation, Inc.
+ * Copyright (C) 2016 g10 Code GmbH.
  *
  * This file is part of GnuPG.
  *
@@ -52,6 +53,7 @@ enum cmd_and_opt_values
     aApplyDefaults,
     aListConfig,
     aCheckConfig,
+    aQuerySWDB,
     aListDirs,
     aLaunch,
     aKill,
@@ -79,6 +81,8 @@ static ARGPARSE_OPTS opts[] =
       N_("list global configuration file") },
     { aCheckConfig,   "check-config", 256,
       N_("check global configuration file") },
+    { aQuerySWDB,     "query-swdb", 256,
+      N_("query the software version database") },
     { aReload,        "reload", 256, N_("reload all or a given component")},
     { aLaunch,        "launch", 256, N_("launch a given component")},
     { aKill,          "kill", 256,   N_("kill a given component")},
@@ -203,6 +207,235 @@ list_dirs (estream_t fp, char **names)
 }
 
 
+
+/* Check whether NAME is valid argument for query_swdb().  Valid names
+ * start with a letter and contain only alphanumeric characters or an
+ * underscore.  */
+static int
+valid_swdb_name_p (const char *name)
+{
+  if (!name || !*name || !alphap (name))
+    return 0;
+
+  for (name++; *name; name++)
+    if (!alnump (name) && *name != '_')
+      return 0;
+
+  return 1;
+}
+
+
+/* Query the SWDB file.  If necessary and possible this functions asks
+ * the dirmngr to load an updated version of that file.  The caller
+ * needs to provide the NAME to query (e.g. "gnupg", "libgcrypt") and
+ * optional the currently installed version in CURRENT_VERSION.  The
+ * output written to OUT is a colon delimited line with these fields:
+ *
+ * name   :: The name of the package
+ * status :: This value tells the status of the software package
+ *           '-' :: No information available
+ *                  (error or CURRENT_VERSION not given)
+ *           '?' :: Unknown NAME
+ *           'u' :: Update available
+ *           'c' :: The version is Current
+ *           'n' :: The current version is already Newer than the
+ *                  available one.
+ * urgency :: If the value is greater than zero an urgent update is required.
+ * error   :: 0 on success or an gpg_err_code_t
+ *            Common codes seen:
+ *            GPG_ERR_TOO_OLD :: The SWDB file is to old to be used.
+ *            GPG_ERR_ENOENT  :: The SWDB file is not available.
+ *            GPG_ERR_BAD_SIGNATURE :: Currupted SWDB file.
+ * filedate:: Date of the swdb file (yyyymmddThhmmss)
+ * verified:: Date we checked the validity of the file (yyyyymmddThhmmss)
+ * version :: The version string from the swdb.
+ * reldate :: Release date of that version (yyyymmddThhmmss)
+ * size    :: Size of the package in bytes.
+ * hash    :: SHA-2 hash of the package.
+ *
+ */
+static void
+query_swdb (estream_t out, const char *name, const char *current_version)
+{
+  gpg_error_t err;
+  const char *search_name;
+  char *fname = NULL;
+  estream_t fp = NULL;
+  char *line = NULL;
+  char *self_version = NULL;
+  size_t length_of_line = 0;
+  size_t  maxlen;
+  ssize_t len;
+  char *fields[2];
+  char *p;
+  gnupg_isotime_t filedate = {0};
+  gnupg_isotime_t verified = {0};
+  char *value_ver = NULL;
+  gnupg_isotime_t value_date = {0};
+  char *value_size = NULL;
+  char *value_sha2 = NULL;
+  unsigned long value_size_ul;
+  int status, i;
+
+
+  if (!valid_swdb_name_p (name))
+    {
+      log_error ("error in package name '%s': %s\n",
+                 name, gpg_strerror (GPG_ERR_INV_NAME));
+      goto leave;
+    }
+  if (!strcmp (name, "gnupg"))
+    search_name = "gnupg21";
+  else if (!strcmp (name, "gnupg1"))
+    search_name = "gnupg1";
+  else
+    search_name = name;
+
+  if (!current_version && !strcmp (name, "gnupg"))
+    {
+      /* Use our own version but string a possible beta string.  */
+      self_version = xstrdup (PACKAGE_VERSION);
+      p = strchr (self_version, '-');
+      if (p)
+        *p = 0;
+      current_version = self_version;
+    }
+
+  if (current_version && compare_version_strings (current_version, NULL))
+    {
+      log_error ("error in version string '%s': %s\n",
+                 current_version, gpg_strerror (GPG_ERR_INV_ARG));
+      goto leave;
+    }
+
+  fname = make_filename (gnupg_homedir (), "swdb.lst", NULL);
+  fp = es_fopen (fname, "r");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      es_fprintf (out, "%s:-::%u:::::::\n", name, gpg_err_code (err));
+      if (gpg_err_code (err) != GPG_ERR_ENOENT)
+        log_error (_("error opening '%s': %s\n"), fname, gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Note that the parser uses the first occurance of a matching
+   * values and ignores possible duplicated values.  */
+
+  maxlen = 2048; /* Set limit.  */
+  while ((len = es_read_line (fp, &line, &length_of_line, &maxlen)) > 0)
+    {
+      if (!maxlen)
+        {
+          err = gpg_error (GPG_ERR_LINE_TOO_LONG);
+          log_error (_("error reading '%s': %s\n"), fname, gpg_strerror (err));
+          goto leave;
+        }
+      /* Strip newline and carriage return, if present.  */
+      while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r'))
+	line[--len] = '\0';
+
+      if (split_fields (line, fields, DIM (fields)) < DIM(fields))
+        continue; /* Skip empty lines and names w/o a value.  */
+      if (*fields[0] == '#')
+        continue; /* Skip comments.  */
+
+      /* Record the meta data.  */
+      if (!*filedate && !strcmp (fields[0], ".filedate"))
+        {
+          string2isotime (filedate, fields[1]);
+          continue;
+        }
+      if (!*verified && !strcmp (fields[0], ".verified"))
+        {
+          string2isotime (verified, fields[1]);
+          continue;
+        }
+
+      /* Tokenize the name.  */
+      p = strrchr (fields[0], '_');
+      if (!p)
+        continue; /* Name w/o an underscore.  */
+      *p++ = 0;
+
+      /* Wait for the requested name.  */
+      if (!strcmp (fields[0], search_name))
+        {
+          if (!strcmp (p, "ver") && !value_ver)
+            value_ver = xstrdup (fields[1]);
+          else if (!strcmp (p, "date") && !*value_date)
+            string2isotime (value_date, fields[1]);
+          else if (!strcmp (p, "size") && !value_size)
+            value_size = xstrdup (fields[1]);
+          else if (!strcmp (p, "sha2") && !value_sha2)
+            value_sha2 = xstrdup (fields[1]);
+        }
+    }
+  if (len < 0 || es_ferror (fp))
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("error reading '%s': %s\n"), fname, gpg_strerror (err));
+      goto leave;
+    }
+
+  if (!*filedate || !*verified)
+    {
+      err = gpg_error (GPG_ERR_INV_TIME);
+      es_fprintf (out, "%s:-::%u:::::::\n", name, gpg_err_code (err));
+      goto leave;
+    }
+
+  if (!value_ver)
+    {
+      es_fprintf (out, "%s:?:::::::::\n", name);
+      goto leave;
+    }
+
+  if (value_size)
+    {
+      gpg_err_set_errno (0);
+      value_size_ul = strtoul (value_size, &p, 10);
+      if (errno)
+        value_size_ul = 0;
+      else if (*p == 'k')
+        value_size_ul *= 1024;
+    }
+
+  err = 0;
+  status = '-';
+  if (compare_version_strings (value_ver, NULL))
+    err = gpg_error (GPG_ERR_INV_VALUE);
+  else if (!current_version)
+    ;
+  else if (!(i = compare_version_strings (value_ver, current_version)))
+    status = 'c';
+  else if (i > 0)
+    status = 'u';
+  else
+    status = 'n';
+
+  es_fprintf (out, "%s:%c::%d:%s:%s:%s:%s:%lu:%s:\n",
+              name,
+              status,
+              err,
+              filedate,
+              verified,
+              value_ver,
+              value_date,
+              value_size_ul,
+              value_sha2? value_sha2 : "");
+
+ leave:
+  xfree (value_ver);
+  xfree (value_size);
+  xfree (value_sha2);
+  xfree (line);
+  es_fclose (fp);
+  xfree (fname);
+  xfree (self_version);
+}
+
+
 /* gpgconf main. */
 int
 main (int argc, char **argv)
@@ -250,6 +483,7 @@ main (int argc, char **argv)
         case aApplyDefaults:
         case aListConfig:
         case aCheckConfig:
+        case aQuerySWDB:
         case aReload:
         case aLaunch:
         case aKill:
@@ -415,6 +649,18 @@ main (int argc, char **argv)
       /* Show the system configuration directories for gpgconf.  */
       get_outfp (&outfp);
       list_dirs (outfp, argc? argv : NULL);
+      break;
+
+    case aQuerySWDB:
+      /* Query the software version database.  */
+      if (!fname || argc > 2)
+	{
+	  es_fprintf (es_stderr, "usage: %s --query-swdb NAME [VERSION]\n",
+                      GPGCONF_NAME);
+	  exit (2);
+	}
+      get_outfp (&outfp);
+      query_swdb (outfp, fname, argc > 1? argv[1] : NULL);
       break;
 
     case aCreateSocketDir:

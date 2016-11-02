@@ -250,6 +250,7 @@ throughout this section.
 * Listing options::        List all options of a component.
 * Changing options::       Changing options of a component.
 * Listing global options:: List all global options.
+* Querying versions::      Get and compare software versions.
 * Files used by gpgconf::  What files are used by gpgconf.
 @end menu
 
@@ -301,6 +302,13 @@ List the global configuration file in a colon separated format.  If
 @item --check-config [@var{filename}]
 Run a syntax check on the global configuration file.  If @var{filename}
 is given, check that file instead.
+
+
+@item --query-swdb @var{package_name} [@var{version_string}]
+Returns the current version for @var{package_name} and if
+@var{version_string} is given also an indicator on whether an update
+is available.
+
 
 @item --reload [@var{component}]
 @opindex reload
@@ -953,6 +961,80 @@ Unknown record types should be ignored.  Note that there is intentionally
 no feature to change the global option file through @command{gpgconf}.
 
 
+@node Querying versions
+@subsection Get and compare software versions.
+
+The GnuPG Project operates a server to query the current versions of
+software packages related to GnuPG.  @command{gpgconf} can be used to
+access this online database.  To allow for offline operations, this
+feature works by having @command{dirmngr} download a file from
+@code{https://versions.gnupg.org}, checking the signature of that file
+and storing the file in the GnuPG home directory.  If
+@command{gpgconf} is used and @command{dirmngr} is running, it may ask
+@command{dirmngr} to refresh that file before itself uses the file.
+
+The command @option{--query-swdb} returns information for the given
+package in a colon delimited format:
+
+@table @var
+
+@item name
+This is the name of the package as requested.  Note that "gnupg" is a
+special name which is replaced by the actual package implementing this
+version of GnuPG.  For this name it is also not required to specify a
+version because @command{gpgconf} takes its own version in this case.
+
+@item status
+The status of the software package according to this table:
+@table @code
+@item -
+No information available.  This is either because no current version
+has been specified or due to an error.
+@item ?
+The given name is not known in the online database.
+@item u
+An update of the software is available.
+@item c
+The specified version of the software is current.
+@item n
+The specified version is already newer than the released version.
+@end table
+
+@item urgency
+If the value (the empty string should be considered as zero) is
+greater than zero an important update is available.
+
+@item error
+This returns an @command{gpg-error} error code to distinguish between
+various failure modes.
+
+@item filedate
+This gives the date of the file with the version numbers in standard
+ISO format (@code{yyyymmddThhmmss}).  The date has been extracted by
+@command{dirmngr} from the signature of the file.
+
+@item verified
+This gives the date in ISO format the file was downloaded.  This value
+can be used to evaluate the freshness of the information.
+
+@item version
+This returns the version string for the requested software from the
+file.
+
+@item reldate
+This returns the release date in ISO format.
+
+@item size
+This returns the size of the package as decimal number of bytes.
+
+@item hash
+This returns a hexified SHA-2 hash of the package.
+
+@end table
+
+@noindent
+More fields may be added in future to the output.
+
 
 @mansect files
 @node Files used by gpgconf
@@ -965,6 +1047,12 @@ no feature to change the global option file through @command{gpgconf}.
   If this file exists, it is processed as a global configuration file.
   A commented example can be found in the @file{examples} directory of
   the distribution.
+
+@item @var{GNUPGHOME}/swdb.lst
+@cindex swdb.lst
+  A file with current software versions.  @command{dirmngr} creates
+  this file on demand from an online resource.
+
 @end table
 
 
