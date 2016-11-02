@@ -145,7 +145,7 @@ warn_version_mismatch (assuan_context_t ctx, const char *servername)
   if (err)
     log_error (_("error getting version from '%s': %s\n"),
                servername, gpg_strerror (err));
-  else if (!compare_version_strings (serverversion, myversion))
+  else if (compare_version_strings (serverversion, myversion) < 0)
     {
       char *warn;
 

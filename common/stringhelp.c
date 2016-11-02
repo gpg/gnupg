@@ -49,6 +49,7 @@
 # include <windows.h>
 #endif
 #include <assert.h>
+#include <limits.h>
 
 #include "util.h"
 #include "common-defs.h"
@@ -1356,9 +1357,9 @@ parse_version_number (const char *s, int *number)
 
 /* This function breaks up the complete string-representation of the
    version number S, which is of the following struture: <major
-   number>.<minor number>.<micro number><patch level>.  The major,
-   minor and micro number components will be stored in *MAJOR, *MINOR
-   and *MICRO.
+   number>.<minor number>[.<micro number>]<patch level>.  The major,
+   minor, and micro number components will be stored in *MAJOR, *MINOR
+   and *MICRO.  If MICRO is not given 0 is used instead.
 
    On success, the last component, the patch level, will be returned;
    in failure, NULL will be returned.  */
@@ -1385,32 +1386,50 @@ parse_version_string (const char *s, int *major, int *minor, int *micro)
 }
 
 
-/* Check that the version string MY_VERSION is greater or equal than
-   REQ_VERSION.  Returns true if the condition is satisfied or false
-   if not.  This works with 3 part and two part version strings; for a
-   two part version string the micor part is assumed to be 0.  */
+/* Compare the version string MY_VERSION to the version string
+ * REQ_VERSION.  Returns -1, 0, or 1 if MY_VERSION is found,
+ * respectively, to be less than, to match, or be greater than
+ * REQ_VERSION.  This function works for three and two part version
+ * strings; for a two part version string the micro part is assumed to
+ * be 0.  Patch levels are compared as strings.  If a version number
+ * is invalid INT_MIN is returned.  If REQ_VERSION is given as NULL
+ * the function returns 0 if MY_VERSION is parsable version string. */
 int
 compare_version_strings (const char *my_version, const char *req_version)
 {
   int my_major, my_minor, my_micro;
   int rq_major, rq_minor, rq_micro;
+  const char *my_patch, *rq_patch;
+  int result;
 
-  if (!my_version || !req_version)
-    return 0;
+  if (!my_version)
+    return INT_MIN;
 
-  if (!parse_version_string (my_version, &my_major, &my_minor, &my_micro))
-    return 0;
-  if (!parse_version_string(req_version, &rq_major, &rq_minor, &rq_micro))
-    return 0;
+  my_patch = parse_version_string (my_version, &my_major, &my_minor, &my_micro);
+  if (!my_patch)
+    return INT_MIN;
+  if (!req_version)
+    return 0; /* MY_VERSION can be parsed.  */
+  rq_patch = parse_version_string (req_version, &rq_major, &rq_minor,&rq_micro);
+  if (!rq_patch)
+    return INT_MIN;
 
-  if (my_major > rq_major
-      || (my_major == rq_major && my_minor > rq_minor)
-      || (my_major == rq_major && my_minor == rq_minor
-	  && my_micro >= rq_micro))
+  if (my_major == rq_major)
     {
-      return 1;
+      if (my_minor == rq_minor)
+        {
+          if (my_micro == rq_micro)
+            result = strcmp (my_patch, rq_patch);
+          else
+            result = my_micro - rq_micro;
+        }
+      else
+        result = my_minor - rq_minor;
     }
-  return 0;
+  else
+    result = my_major - rq_major;
+
+  return !result? 0 : result < 0 ? -1 : 1;
 }
 
 
