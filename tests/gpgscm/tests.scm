@@ -481,3 +481,11 @@
     (catch (list tmpfiles source *error*)
 	   (apply function `(,(call-with-input-file source read-all) ,@args)))
     (list tmpfiles source #f)))
+
+;;
+;; Developing and debugging tests.
+;;
+
+;; Spawn an os shell.
+(define (interactive-shell)
+  (call-with-fds `(,(getenv "SHELL")) 0 1 2))

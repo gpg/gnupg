@@ -110,7 +110,10 @@ You can also get an interactive repl by dropping
 
   (interactive-repl (current-environment))
 
-anywhere you like.
+anywhere you like.  Or, if you want to examine the environment from an
+operating system shell, use
+
+  (interactive-shell)
 
 ** Interfacing with gpg
 

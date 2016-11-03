@@ -42,6 +42,24 @@
         ((not (p (car l))) #f)
         (else (all p (cdr l)))))
 
+;; Return the first element of a list.
+(define first car)
+
+;; Return the last element of a list.
+(define (last lst)
+  (if (null? (cdr lst))
+      (car lst)
+      (last (cdr lst))))
+
+;; Compute the powerset of a list.
+(define (powerset set)
+  (if (null? set)
+      '(())
+      (let ((rst (powerset (cdr set))))
+        (append (map (lambda (x) (cons (car set) x))
+                     rst)
+                rst))))
+
 ;; Is PREFIX a prefix of S?
 (define (string-prefix? s prefix)
   (and (>= (string-length s) (string-length prefix))
