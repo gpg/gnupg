@@ -349,7 +349,8 @@ void agent_sighup_action (void);
 int map_pk_openpgp_to_gcry (int openpgp_algo);
 
 /*-- command.c --*/
-gpg_error_t agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid);
+gpg_error_t agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid,
+                                         const char *extra);
 gpg_error_t agent_write_status (ctrl_t ctrl, const char *keyword, ...)
      GPGRT_ATTR_SENTINEL(0);
 gpg_error_t agent_print_status (ctrl_t ctrl, const char *keyword,

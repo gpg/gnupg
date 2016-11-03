@@ -225,6 +225,7 @@ getinfo_pid_cb (void *opaque, const void *buffer, size_t length)
   return 0;
 }
 
+
 /* Fork off the pin entry if this has not already been done.  Note,
    that this function must always be used to acquire the lock for the
    pinentry - we will serialize _all_ pinentry calls.
@@ -243,6 +244,7 @@ start_pinentry (ctrl_t ctrl)
   unsigned long pinentry_pid;
   const char *value;
   struct timespec abstime;
+  char *flavor_version;
   int err;
 
   npth_clock_gettime (&abstime);
@@ -539,6 +541,25 @@ start_pinentry (ctrl_t ctrl)
     }
 
 
+  /* Ask the pinentry for its version and flavor and streo that as a
+   * string in MB.  This information is useful for helping users to
+   * figure out Pinentry problems.  */
+  {
+    membuf_t mb;
+
+    init_membuf (&mb, 256);
+    if (assuan_transact (entry_ctx, "GETINFO flavor",
+                         put_membuf_cb, &mb, NULL, NULL, NULL, NULL))
+      put_membuf_str (&mb, "unknown");
+    put_membuf_str (&mb, " ");
+    if (assuan_transact (entry_ctx, "GETINFO version",
+                         put_membuf_cb, &mb, NULL, NULL, NULL, NULL))
+      put_membuf_str (&mb, "unknown");
+    put_membuf (&mb, "", 1);
+    flavor_version = get_membuf (&mb, NULL);
+  }
+
+
   /* Now ask the Pinentry for its PID.  If the Pinentry is new enough
      it will send the pid back and we will use an inquire to notify
      our client.  The client may answer the inquiry either with END or
@@ -555,13 +576,15 @@ start_pinentry (ctrl_t ctrl)
     log_error ("pinentry did not return a PID\n");
   else
     {
-      rc = agent_inq_pinentry_launched (ctrl, pinentry_pid);
+      rc = agent_inq_pinentry_launched (ctrl, pinentry_pid, flavor_version);
       if (gpg_err_code (rc) == GPG_ERR_CANCELED
           || gpg_err_code (rc) == GPG_ERR_FULLY_CANCELED)
         return unlock_pinentry (gpg_err_make (GPG_ERR_SOURCE_DEFAULT,
                                               gpg_err_code (rc)));
       rc = 0;
     }
+
+  xfree (flavor_version);
 
   return 0;
 }

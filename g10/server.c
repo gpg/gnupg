@@ -770,6 +770,20 @@ gpg_server (ctrl_t ctrl)
 gpg_error_t
 gpg_proxy_pinentry_notify (ctrl_t ctrl, const unsigned char *line)
 {
+  if (opt.verbose)
+    {
+      char *linecopy = xtrystrdup (line);
+      char *fields[4];
+
+      if (linecopy
+          && split_fields (linecopy, fields, DIM (fields)) >= 4
+          && !strcmp (fields[0], "PINENTRY_LAUNCHED"))
+        log_info (_("pinentry launched (pid %s, flavor %s, version %s)\n"),
+                  fields[1], fields[2], fields[3]);
+
+      xfree (linecopy);
+    }
+
   if (!ctrl || !ctrl->server_local
       || !ctrl->server_local->allow_pinentry_notify)
     {

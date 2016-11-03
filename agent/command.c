@@ -362,14 +362,15 @@ agent_print_status (ctrl_t ctrl, const char *keyword, const char *format, ...)
    that might disturb some older clients, this is only done if enabled
    via an option.  Returns an gpg error code. */
 gpg_error_t
-agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid)
+agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid, const char *extra)
 {
-  char line[100];
+  char line[256];
 
   if (!ctrl || !ctrl->server_local
       || !ctrl->server_local->allow_pinentry_notify)
     return 0;
-  snprintf (line, DIM(line), "PINENTRY_LAUNCHED %lu", pid);
+  snprintf (line, DIM(line), "PINENTRY_LAUNCHED %lu%s%s",
+            pid, extra?" ":"", extra? extra:"");
   return assuan_inquire (ctrl->server_local->assuan_ctx, line, NULL, NULL, 0);
 }
 
