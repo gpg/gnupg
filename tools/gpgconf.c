@@ -232,6 +232,7 @@ valid_swdb_name_p (const char *name)
  * output written to OUT is a colon delimited line with these fields:
  *
  * name   :: The name of the package
+ * curvers:: The installed version if given.
  * status :: This value tells the status of the software package
  *           '-' :: No information available
  *                  (error or CURRENT_VERSION not given)
@@ -301,7 +302,8 @@ query_swdb (estream_t out, const char *name, const char *current_version)
       current_version = self_version;
     }
 
-  if (current_version && compare_version_strings (current_version, NULL))
+  if (current_version && (strchr (current_version, ':')
+                          || compare_version_strings (current_version, NULL)))
     {
       log_error ("error in version string '%s': %s\n",
                  current_version, gpg_strerror (GPG_ERR_INV_ARG));
@@ -313,7 +315,10 @@ query_swdb (estream_t out, const char *name, const char *current_version)
   if (!fp)
     {
       err = gpg_error_from_syserror ();
-      es_fprintf (out, "%s:-::%u:::::::\n", name, gpg_err_code (err));
+      es_fprintf (out, "%s:%s:-::%u:::::::\n",
+                  name,
+                  current_version? current_version : "",
+                  gpg_err_code (err));
       if (gpg_err_code (err) != GPG_ERR_ENOENT)
         log_error (_("error opening '%s': %s\n"), fname, gpg_strerror (err));
       goto leave;
@@ -381,13 +386,18 @@ query_swdb (estream_t out, const char *name, const char *current_version)
   if (!*filedate || !*verified)
     {
       err = gpg_error (GPG_ERR_INV_TIME);
-      es_fprintf (out, "%s:-::%u:::::::\n", name, gpg_err_code (err));
+      es_fprintf (out, "%s:%s:-::%u:::::::\n",
+                  name,
+                  current_version? current_version : "",
+                  gpg_err_code (err));
       goto leave;
     }
 
   if (!value_ver)
     {
-      es_fprintf (out, "%s:?:::::::::\n", name);
+      es_fprintf (out, "%s:%s:?:::::::::\n",
+                  name,
+                  current_version? current_version : "");
       goto leave;
     }
 
@@ -414,8 +424,9 @@ query_swdb (estream_t out, const char *name, const char *current_version)
   else
     status = 'n';
 
-  es_fprintf (out, "%s:%c::%d:%s:%s:%s:%s:%lu:%s:\n",
+  es_fprintf (out, "%s:%s:%c::%d:%s:%s:%s:%s:%lu:%s:\n",
               name,
+              current_version? current_version : "",
               status,
               err,
               filedate,

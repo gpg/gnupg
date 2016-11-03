@@ -984,6 +984,11 @@ special name which is replaced by the actual package implementing this
 version of GnuPG.  For this name it is also not required to specify a
 version because @command{gpgconf} takes its own version in this case.
 
+@item iversion
+The currently installed version or an empty string.  The value is
+taken from the command line argument but may be provided by gpg
+if not given.
+
 @item status
 The status of the software package according to this table:
 @table @code
@@ -995,9 +1000,9 @@ The given name is not known in the online database.
 @item u
 An update of the software is available.
 @item c
-The specified version of the software is current.
+The installed version of the software is current.
 @item n
-The specified version is already newer than the released version.
+The installed version is already newer than the released version.
 @end table
 
 @item urgency
