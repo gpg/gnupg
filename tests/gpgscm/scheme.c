@@ -2041,7 +2041,9 @@ static void atom2str(scheme *sc, pointer l, int f, char **pp, int *plen) {
           }
      } else if (is_string(l)) {
           if (!f) {
-               p = strvalue(l);
+               *pp = strvalue(l);
+	       *plen = strlength(l);
+	       return;
           } else { /* Hack, uses the fact that printing is needed */
                *pp=sc->strbuff;
                *plen=0;
