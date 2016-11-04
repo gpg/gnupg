@@ -72,7 +72,7 @@ struct app_ctx_s {
     gpg_error_t (*learn_status) (app_t app, ctrl_t ctrl, unsigned int flags);
     gpg_error_t (*readcert) (app_t app, const char *certid,
                      unsigned char **cert, size_t *certlen);
-    gpg_error_t (*readkey) (app_t app, const char *certid,
+    gpg_error_t (*readkey) (app_t app, int advanced, const char *certid,
                     unsigned char **pk, size_t *pklen);
     gpg_error_t (*getattr) (app_t app, ctrl_t ctrl, const char *name);
     gpg_error_t (*setattr) (app_t app, const char *name,
@@ -154,7 +154,7 @@ gpg_error_t app_write_learn_status (app_t app, ctrl_t ctrl,
                                     unsigned int flags);
 gpg_error_t app_readcert (app_t app, const char *certid,
                   unsigned char **cert, size_t *certlen);
-gpg_error_t app_readkey (app_t app, const char *keyid,
+gpg_error_t app_readkey (app_t app, int advanced, const char *keyid,
                  unsigned char **pk, size_t *pklen);
 gpg_error_t app_getattr (app_t app, ctrl_t ctrl, const char *name);
 gpg_error_t app_setattr (app_t app, const char *name,

@@ -612,7 +612,8 @@ app_readcert (app_t app, const char *certid,
 
    This function might not be supported by all applications.  */
 gpg_error_t
-app_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
+app_readkey (app_t app, int advanced, const char *keyid,
+             unsigned char **pk, size_t *pklen)
 {
   gpg_error_t err;
 
@@ -630,7 +631,7 @@ app_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
   err = lock_reader (app->slot, NULL /*FIXME*/);
   if (err)
     return err;
-  err= app->fnc.readkey (app, keyid, pk, pklen);
+  err= app->fnc.readkey (app, advanced, keyid, pk, pklen);
   unlock_reader (app->slot);
   return err;
 }

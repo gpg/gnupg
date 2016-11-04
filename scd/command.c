@@ -729,17 +729,19 @@ cmd_readcert (assuan_context_t ctx, char *line)
 
 
 static const char hlp_readkey[] =
-  "READKEY <keyid>\n"
+  "READKEY [--advanced] <keyid>\n"
   "\n"
   "Return the public key for the given cert or key ID as a standard\n"
   "S-expression.\n"
+  "In --advanced mode it returns the S-expression in advanced format.\n"
   "\n"
-  "Note, that this function may even be used on a locked card.";
+  "Note that this function may even be used on a locked card.";
 static gpg_error_t
 cmd_readkey (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
+  int advanced = 0;
   unsigned char *cert = NULL;
   size_t ncert, n;
   ksba_cert_t kc = NULL;
@@ -750,11 +752,16 @@ cmd_readkey (assuan_context_t ctx, char *line)
   if ((rc = open_card (ctrl, NULL)))
     return rc;
 
+  if (has_option (line, "--advanced"))
+    advanced = 1;
+
+  line = skip_options (line);
+
   line = xstrdup (line); /* Need a copy of the line. */
   /* If the application supports the READKEY function we use that.
      Otherwise we use the old way by extracting it from the
      certificate.  */
-  rc = app_readkey (ctrl->app_ctx, line, &pk, &pklen);
+  rc = app_readkey (ctrl->app_ctx, advanced, line, &pk, &pklen);
   if (!rc)
     { /* Yeah, got that key - send it back.  */
       rc = assuan_send_data (ctx, pk, pklen);

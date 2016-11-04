@@ -1115,8 +1115,8 @@ retrieve_fpr_from_card (app_t app, int keyno, char *fpr)
 #if GNUPG_MAJOR_VERSION > 1
 static gpg_error_t
 retrieve_key_material (FILE *fp, const char *hexkeyid,
-		       const unsigned char **m, size_t *mlen,
-		       const unsigned char **e, size_t *elen)
+                       const unsigned char **m, size_t *mlen,
+                       const unsigned char **e, size_t *elen)
 {
   gcry_error_t err = 0;
   char *line = NULL;    /* read_line() buffer. */
@@ -1146,10 +1146,10 @@ retrieve_key_material (FILE *fp, const char *hexkeyid,
       if (!i)
         break; /* EOF. */
       if (i < 0)
-	{
-	  err = gpg_error_from_syserror ();
-	  goto leave; /* Error. */
-	}
+        {
+          err = gpg_error_from_syserror ();
+          goto leave; /* Error. */
+        }
       if (!max_length)
         {
           err = gpg_error (GPG_ERR_TRUNCATED);
@@ -1173,7 +1173,7 @@ retrieve_key_material (FILE *fp, const char *hexkeyid,
                && nfields > 4 && !strcmp (fields[4], hexkeyid))
             found_key = 1;
           continue;
-      	}
+        }
 
       if ( !strcmp (fields[0], "sub") || !strcmp (fields[0], "pub") )
         break; /* Next key - stop.  */
@@ -1561,8 +1561,8 @@ get_public_key (app_t app, int keyno)
          Clearly that is not an option and thus we try to locate the
          key using an external helper.
 
-	 The helper we use here is gpg itself, which should know about
-	 the key in any case.  */
+         The helper we use here is gpg itself, which should know about
+         the key in any case.  */
 
       char fpr[41];
       char *hexkeyid;
@@ -1574,38 +1574,38 @@ get_public_key (app_t app, int keyno)
 
       err = retrieve_fpr_from_card (app, keyno, fpr);
       if (err)
-	{
-	  log_error ("error while retrieving fpr from card: %s\n",
-		     gpg_strerror (err));
-	  goto leave;
-	}
+        {
+          log_error ("error while retrieving fpr from card: %s\n",
+                     gpg_strerror (err));
+          goto leave;
+        }
       hexkeyid = fpr + 24;
 
       ret = gpgrt_asprintf
         (&command, "gpg --list-keys --with-colons --with-key-data '%s'", fpr);
       if (ret < 0)
-	{
-	  err = gpg_error_from_syserror ();
-	  goto leave;
-	}
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
 
       fp = popen (command, "r");
       xfree (command);
       if (!fp)
-	{
-	  err = gpg_error_from_syserror ();
-	  log_error ("running gpg failed: %s\n", gpg_strerror (err));
-	  goto leave;
-	}
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("running gpg failed: %s\n", gpg_strerror (err));
+          goto leave;
+        }
 
       err = retrieve_key_material (fp, hexkeyid, &m, &mlen, &e, &elen);
       pclose (fp);
       if (err)
-	{
-	  log_error ("error while retrieving key material through pipe: %s\n",
+        {
+          log_error ("error while retrieving key material through pipe: %s\n",
                      gpg_strerror (err));
-	  goto leave;
-	}
+          goto leave;
+        }
 
       err = gcry_sexp_build (&s_pkey, NULL, "(public-key(rsa(n%b)(e%b)))",
                              (int)mlen, m, (int)elen, e);
@@ -1726,7 +1726,8 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
    buffer. On error PK and PKLEN are not changed and an error code is
    returned.  */
 static gpg_error_t
-do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
+do_readkey (app_t app, int advanced, const char *keyid,
+            unsigned char **pk, size_t *pklen)
 {
 #if GNUPG_MAJOR_VERSION > 1
   gpg_error_t err;
@@ -1749,15 +1750,40 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
   buf = app->app_local->pk[keyno].key;
   if (!buf)
     return gpg_error (GPG_ERR_NO_PUBKEY);
-  *pklen = app->app_local->pk[keyno].keylen;;
-  *pk = xtrymalloc (*pklen);
-  if (!*pk)
+
+  if (advanced)
     {
-      err = gpg_error_from_syserror ();
-      *pklen = 0;
-      return err;
+      gcry_sexp_t s_key;
+
+      err = gcry_sexp_new (&s_key, buf, app->app_local->pk[keyno].keylen, 0);
+      if (err)
+        return err;
+
+      *pklen = gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, NULL, 0);
+      *pk = xtrymalloc (*pklen);
+      if (!*pk)
+        {
+          err = gpg_error_from_syserror ();
+          *pklen = 0;
+          return err;
+        }
+
+      gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, *pk, *pklen);
+      gcry_sexp_release (s_key);
     }
-  memcpy (*pk, buf, *pklen);
+  else
+    {
+      *pklen = app->app_local->pk[keyno].keylen;
+      *pk = xtrymalloc (*pklen);
+      if (!*pk)
+        {
+          err = gpg_error_from_syserror ();
+          *pklen = 0;
+          return err;
+        }
+      memcpy (*pk, buf, *pklen);
+    }
+
   return 0;
 #else
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
@@ -2366,7 +2392,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
         }
       else if (chvno == 1 || chvno == 3)
         {
-	  if (!use_pinpad)
+          if (!use_pinpad)
             {
               char *promptbuf = NULL;
               const char *prompt;
@@ -3990,23 +4016,23 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   else
     {
       for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
-	;
+        ;
       if (n != 32)
-	return gpg_error (GPG_ERR_INV_ID);
+        return gpg_error (GPG_ERR_INV_ID);
       else if (!*s)
-	; /* no fingerprint given: we allow this for now. */
+        ; /* no fingerprint given: we allow this for now. */
       else if (*s == '/')
-	fpr = s + 1;
+        fpr = s + 1;
       else
-	return gpg_error (GPG_ERR_INV_ID);
+        return gpg_error (GPG_ERR_INV_ID);
 
       for (s=keyidstr, n=0; n < 16; s += 2, n++)
-	tmp_sn[n] = xtoi_2 (s);
+        tmp_sn[n] = xtoi_2 (s);
 
       if (app->serialnolen != 16)
-	return gpg_error (GPG_ERR_INV_CARD);
+        return gpg_error (GPG_ERR_INV_CARD);
       if (memcmp (app->serialno, tmp_sn, 16))
-	return gpg_error (GPG_ERR_WRONG_CARD);
+        return gpg_error (GPG_ERR_WRONG_CARD);
     }
 
   /* If a fingerprint has been specified check it against the one on
@@ -4244,23 +4270,23 @@ do_decipher (app_t app, const char *keyidstr,
   else
     {
       for (s=keyidstr, n=0; hexdigitp (s); s++, n++)
-	;
+        ;
       if (n != 32)
-	return gpg_error (GPG_ERR_INV_ID);
+        return gpg_error (GPG_ERR_INV_ID);
       else if (!*s)
-	; /* no fingerprint given: we allow this for now. */
+        ; /* no fingerprint given: we allow this for now. */
       else if (*s == '/')
-	fpr = s + 1;
+        fpr = s + 1;
       else
-	return gpg_error (GPG_ERR_INV_ID);
+        return gpg_error (GPG_ERR_INV_ID);
 
       for (s=keyidstr, n=0; n < 16; s += 2, n++)
-	tmp_sn[n] = xtoi_2 (s);
+        tmp_sn[n] = xtoi_2 (s);
 
       if (app->serialnolen != 16)
-	return gpg_error (GPG_ERR_INV_CARD);
+        return gpg_error (GPG_ERR_INV_CARD);
       if (memcmp (app->serialno, tmp_sn, 16))
-	return gpg_error (GPG_ERR_WRONG_CARD);
+        return gpg_error (GPG_ERR_WRONG_CARD);
     }
 
   /* If a fingerprint has been specified check it against the one on
