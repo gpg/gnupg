@@ -291,6 +291,7 @@ main (int argc, char **argv)
         log_fatal ("%s: %s", script, gpg_strerror (err));
     }
 
+  scheme_load_string (sc, "(*run-atexit-handlers*)");
   scheme_deinit (sc);
   xfree (sc);
   return EXIT_SUCCESS;

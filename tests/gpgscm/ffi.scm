@@ -57,6 +57,7 @@
    ((more-handlers?)
     (apply (pop-handler) x))
    ((and (= 2 (length x)) (equal? *interpreter-exit* (car x)))
+    (*run-atexit-handlers*)
     (_exit (cadr x)))
    (else
     (apply error x))))
@@ -64,3 +65,20 @@
 ;; Terminate the process returning STATUS to the parent.
 (define (exit status)
   (throw *interpreter-exit* status))
+
+;; A list of functions run at interpreter shutdown.
+(define *atexit-handlers* (list))
+
+;; Execute all these functions.
+(define (*run-atexit-handlers*)
+  (unless (null? *atexit-handlers*)
+	  (let ((proc (car *atexit-handlers*)))
+	    ;; Drop proc from the list so that it will not get
+	    ;; executed again even if it raises an exception.
+	    (set! *atexit-handlers* (cdr *atexit-handlers*))
+	    (proc)
+	    (*run-atexit-handlers*))))
+
+;; Register a function to be run at interpreter shutdown.
+(define (atexit proc)
+  (set! *atexit-handlers* (cons proc *atexit-handlers*)))
