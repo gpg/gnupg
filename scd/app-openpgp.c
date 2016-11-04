@@ -1770,6 +1770,8 @@ do_readkey (app_t app, int advanced, const char *keyid,
 
       gcry_sexp_sprint (s_key, GCRYSEXP_FMT_ADVANCED, *pk, *pklen);
       gcry_sexp_release (s_key);
+      /* Decrement for trailing '\0' */
+      *pklen = *pklen - 1;
     }
   else
     {
