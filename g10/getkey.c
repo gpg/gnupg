@@ -1213,25 +1213,26 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
   is_mbox = is_valid_mailbox (name);
 
   /* The auto-key-locate feature works as follows: there are a number
-     of methods to look up keys.  By default, the local keyring is
-     tried first.  Then, each method listed in the --auto-key-locate is
-     tried in the order it appears.
-
-     This can be changed as follows:
-
-       - if nodefault appears anywhere in the list of options, then
-         the local keyring is not tried first, or,
-
-       - if local appears anywhere in the list of options, then the
-         local keyring is not tried first, but in the order in which
-         it was listed in the --auto-key-locate option.
-
-     Note: we only save the search context in RETCTX if the local
-     method is the first method tried (either explicitly or
-     implicitly).  */
+   * of methods to look up keys.  By default, the local keyring is
+   * tried first.  Then, each method listed in the --auto-key-locate is
+   * tried in the order it appears.
+   *
+   * This can be changed as follows:
+   *
+   *   - if nodefault appears anywhere in the list of options, then
+   *     the local keyring is not tried first, or,
+   *
+   *   - if local appears anywhere in the list of options, then the
+   *     local keyring is not tried first, but in the order in which
+   *     it was listed in the --auto-key-locate option.
+   *
+   * Note: we only save the search context in RETCTX if the local
+   * method is the first method tried (either explicitly or
+   * implicitly).  */
   if (!no_akl)
-    /* auto-key-locate is enabled.  */
     {
+      /* auto-key-locate is enabled.  */
+
       /* nodefault is true if "nodefault" or "local" appear.  */
       for (akl = opt.auto_key_locate; akl; akl = akl->next)
 	if (akl->type == AKL_NODEFAULT || akl->type == AKL_LOCAL)
@@ -1251,24 +1252,26 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
     }
 
   if (!nodefault)
-    /* "nodefault" didn't occur.  Thus, "local" is implicitly the
-       first method to try.  */
-    anylocalfirst = 1;
+    {
+      /* "nodefault" didn't occur.  Thus, "local" is implicitly the
+       *  first method to try.  */
+      anylocalfirst = 1;
+    }
 
   if (nodefault && is_mbox)
-    /* Either "nodefault" or "local" (explicitly) appeared in the auto
-       key locate list and NAME appears to be an email address.  Don't
-       try the local keyring.  */
     {
+      /* Either "nodefault" or "local" (explicitly) appeared in the
+       * auto key locate list and NAME appears to be an email address.
+       * Don't try the local keyring.  */
       rc = GPG_ERR_NO_PUBKEY;
     }
   else
-    /* Either "nodefault" and "local" don't appear in the auto key
-       locate list (in which case we try the local keyring first) or
-       NAME does not appear to be an email address (in which case we
-       only try the local keyring).  In this case, lookup NAME in the
-       local keyring.  */
     {
+      /* Either "nodefault" and "local" don't appear in the auto key
+       * locate list (in which case we try the local keyring first) or
+       * NAME does not appear to be an email address (in which case we
+       * only try the local keyring).  In this case, lookup NAME in
+       * the local keyring.  */
       add_to_strlist (&namelist, name);
       rc = key_byname (retctx, namelist, pk, 0,
 		       include_unusable, ret_keyblock, ret_kdbhd);
@@ -1277,11 +1280,11 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
   /* If the requested name resembles a valid mailbox and automatic
      retrieval has been enabled, we try to import the key. */
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY && !no_akl && is_mbox)
-    /* NAME wasn't present in the local keyring (or we didn't try the
-       local keyring).  Since the auto key locate feature is enabled
-       and NAME appears to be an email address, try the auto locate
-       feature.  */
     {
+      /* NAME wasn't present in the local keyring (or we didn't try
+       * the local keyring).  Since the auto key locate feature is
+       * enabled and NAME appears to be an email address, try the auto
+       * locate feature.  */
       for (akl = opt.auto_key_locate; akl; akl = akl->next)
 	{
 	  unsigned char *fpr = NULL;
@@ -1349,9 +1352,9 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 
 	    case AKL_KEYSERVER:
 	      /* Strictly speaking, we don't need to only use a valid
-	         mailbox for the getname search, but it helps cut down
-	         on the problem of searching for something like "john"
-	         and getting a whole lot of keys back. */
+	       * mailbox for the getname search, but it helps cut down
+	       * on the problem of searching for something like "john"
+	       * and getting a whole lot of keys back. */
 	      if (keyserver_any_configured (ctrl))
 		{
 		  mechanism = "keyserver";
@@ -1382,12 +1385,12 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	    }
 
 	  /* Use the fingerprint of the key that we actually fetched.
-	     This helps prevent problems where the key that we fetched
-	     doesn't have the same name that we used to fetch it.  In
-	     the case of CERT and PKA, this is an actual security
-	     requirement as the URL might point to a key put in by an
-	     attacker.  By forcing the use of the fingerprint, we
-	     won't use the attacker's key here. */
+	   * This helps prevent problems where the key that we fetched
+	   * doesn't have the same name that we used to fetch it.  In
+	   * the case of CERT and PKA, this is an actual security
+	   * requirement as the URL might point to a key put in by an
+	   * attacker.  By forcing the use of the fingerprint, we
+	   * won't use the attacker's key here. */
 	  if (!rc && fpr)
 	    {
 	      char fpr_string[MAX_FINGERPRINT_LEN * 2 + 1];
@@ -1407,7 +1410,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	    }
 	  else if (!rc && !fpr && !did_akl_local)
             { /* The acquisition method said no failure occurred, but
-                 it didn't return a fingerprint.  That's a failure.  */
+               * it didn't return a fingerprint.  That's a failure.  */
               no_fingerprint = 1;
 	      rc = GPG_ERR_NO_PUBKEY;
 	    }
@@ -1416,9 +1419,9 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 
 	  if (!rc && !did_akl_local)
             { /* There was no error and we didn't do a local lookup.
-	         This means that we imported a key into the local
-	         keyring.  Try to read the imported key from the
-	         keyring.  */
+	       * This means that we imported a key into the local
+	       * keyring.  Try to read the imported key from the
+	       * keyring.  */
 	      if (retctx)
 		{
 		  getkey_end (*retctx);
@@ -1461,6 +1464,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
   return rc;
 }
 
+
 
 
 /* Comparison machinery for get_best_pubkey_byname.  */
@@ -1477,13 +1481,15 @@ struct pubkey_cmp_cookie
                                    capable of encryption.  */
 };
 
+
 /* Then we have a series of helper functions.  */
 static int
 key_is_ok (const PKT_public_key *key)
 {
-  return ! key->has_expired && ! key->flags.revoked
-    && key->flags.valid && ! key->flags.disabled;
+  return (! key->has_expired && ! key->flags.revoked
+          && key->flags.valid && ! key->flags.disabled);
 }
+
 
 static int
 uid_is_ok (const PKT_public_key *key, const PKT_user_id *uid)
@@ -1491,11 +1497,13 @@ uid_is_ok (const PKT_public_key *key, const PKT_user_id *uid)
   return key_is_ok (key) && ! uid->is_revoked;
 }
 
+
 static int
 subkey_is_ok (const PKT_public_key *sub)
 {
   return ! sub->flags.revoked && sub->flags.valid && ! sub->flags.disabled;
 }
+
 
 /* Finally this function compares a NEW key to the former candidate
  * OLD.  Returns < 0 if the old key is worse, > 0 if the old key is
@@ -1504,7 +1512,7 @@ static int
 pubkey_cmp (ctrl_t ctrl, const char *name, struct pubkey_cmp_cookie *old,
             struct pubkey_cmp_cookie *new, KBNODE new_keyblock)
 {
-  KBNODE n;
+  kbnode_t n;
 
   new->creation_time = 0;
   for (n = find_next_kbnode (new_keyblock, PKT_PUBLIC_SUBKEY);
