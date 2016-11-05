@@ -23,7 +23,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ * License along with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 /* Written by Ulrich Drepper <drepper@gnu.org>, 1995.  */
 /* Win32 code written by Tor Lillqvist <tml@iki.fi>.  */

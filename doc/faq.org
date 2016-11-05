@@ -14,7 +14,7 @@
 #        org-mode format for easier maintenance.
 
 #+begin_html
-<a href="/"><img src="http://gnupg.org/share/logo-gnupg-light-purple-bg.png" class="logo-link" /></a>
+<a href="/"><img src="https://gnupg.org/share/logo-gnupg-light-purple-bg.png" class="logo-link" /></a>
 #+end_html
 
 *WARNING: This FAQ is heavily outdated*.  Mentioned versions of GnuPG
