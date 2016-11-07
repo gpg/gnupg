@@ -83,16 +83,18 @@
       (define (set-pid x)
 	(new name directory command x retcode))
       (define (run-sync . args)
-	(with-working-directory directory
-	  (let* ((p (inbound-pipe))
-		 (pid (spawn-process-fd (append command args) 0
-					(:write-end p) (:write-end p))))
-	    (close (:write-end p))
-	    (splice (:read-end p) STDERR_FILENO)
-	    (close (:read-end p))
-	    (let ((t' (set-retcode (wait-process name pid #t))))
-	      (t'::report)
-	      t'))))
+	(letfd ((log (open (string-append name ".log")
+			   (logior O_WRONLY O_BINARY O_CREAT) #o600)))
+	  (with-working-directory directory
+	    (let* ((p (inbound-pipe))
+		   (pid (spawn-process-fd (append command args) 0
+					  (:write-end p) (:write-end p))))
+	      (close (:write-end p))
+	      (splice (:read-end p) STDERR_FILENO log)
+	      (close (:read-end p))
+	      (let ((t' (set-retcode (wait-process name pid #t))))
+		(t'::report)
+		t')))))
       (define (run-sync-quiet . args)
 	(with-working-directory directory
 	  (set-retcode

@@ -197,7 +197,7 @@ EXTRA_DIST = defs.scm $(XTESTS) $(TEST_FILES) \
 
 CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     plain-1 plain-2 plain-3 trustdb.gpg *.lock .\#lk* \
-	     *.test.log gpg_dearmor gpg.conf gpg-agent.conf S.gpg-agent \
+	     *.log gpg_dearmor gpg.conf gpg-agent.conf S.gpg-agent \
 	     pubring.gpg pubring.gpg~ pubring.kbx pubring.kbx~ \
 	     secring.gpg pubring.pkr secring.skr \
 	     gnupg-test.stop random_seed gpg-agent.log tofu.db \
