@@ -1001,29 +1001,20 @@ do_splice (scheme *sc, pointer args)
   FFI_PROLOG ();
   int source;
   int sink;
-  ssize_t len = -1;
   char buffer[1024];
   ssize_t bytes_read;
   FFI_ARG_OR_RETURN (sc, int, source, number, args);
   FFI_ARG_OR_RETURN (sc, int, sink, number, args);
-  if (args != sc->NIL)
-    FFI_ARG_OR_RETURN (sc, ssize_t, len, number, args);
   FFI_ARGS_DONE_OR_RETURN (sc, args);
-  while (len == -1 || len > 0)
+  while (1)
     {
-      size_t want = sizeof buffer;
-      if (len > 0 && (ssize_t) want > len)
-        want = (size_t) len;
-
-      bytes_read = read (source, buffer, want);
+      bytes_read = read (source, buffer, sizeof buffer);
       if (bytes_read == 0)
         break;
       if (bytes_read < 0)
         FFI_RETURN_ERR (sc, gpg_error_from_syserror ());
       if (write (sink, buffer, bytes_read) != bytes_read)
         FFI_RETURN_ERR (sc, gpg_error_from_syserror ());
-      if (len != -1)
-        len -= bytes_read;
     }
   FFI_RETURN (sc);
 }
