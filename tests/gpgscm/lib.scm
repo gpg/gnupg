@@ -207,8 +207,9 @@
 ;; Get our process id.
 (ffi-define (getpid))
 
-;; Copy data from file descriptor SOURCE to SINK.
-(ffi-define (splice source sink))
+;; Copy data from file descriptor SOURCE to every file descriptor in
+;; SINKS.
+(ffi-define (splice source . sinks))
 
 ;;
 ;; Random numbers.

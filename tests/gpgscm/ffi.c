@@ -995,17 +995,36 @@ do_file_equal (scheme *sc, pointer args)
   goto out;
 }
 
+static const char *
+ordinal_suffix (int n)
+{
+  switch (n)
+    {
+    case 1: return "st";
+    case 2: return "nd";
+    case 3: return "rd";
+    default: return "th";
+    }
+  assert (! "reached");
+}
+
 static pointer
 do_splice (scheme *sc, pointer args)
 {
   FFI_PROLOG ();
   int source;
-  int sink;
   char buffer[1024];
   ssize_t bytes_read;
+  pointer sinks, sink;
   FFI_ARG_OR_RETURN (sc, int, source, number, args);
-  FFI_ARG_OR_RETURN (sc, int, sink, number, args);
-  FFI_ARGS_DONE_OR_RETURN (sc, args);
+  sinks = args;
+  if (sinks == sc->NIL)
+    return ffi_sprintf (sc, "need at least one sink");
+  for (sink = sinks; sink != sc->NIL; sink = pair_cdr (sink), ffi_arg_index++)
+    if (! sc->vptr->is_number (pair_car (sink)))
+      return ffi_sprintf (sc, "%d%s argument is not a number",
+                          ffi_arg_index, ordinal_suffix (ffi_arg_index));
+
   while (1)
     {
       bytes_read = read (source, buffer, sizeof buffer);
@@ -1013,8 +1032,23 @@ do_splice (scheme *sc, pointer args)
         break;
       if (bytes_read < 0)
         FFI_RETURN_ERR (sc, gpg_error_from_syserror ());
-      if (write (sink, buffer, bytes_read) != bytes_read)
-        FFI_RETURN_ERR (sc, gpg_error_from_syserror ());
+
+      for (sink = sinks; sink != sc->NIL; sink = pair_cdr (sink))
+        {
+          int fd = sc->vptr->ivalue (pair_car (sink));
+          char *p = buffer;
+          ssize_t left = bytes_read;
+
+          while (left)
+            {
+              ssize_t written = write (fd, p, left);
+              if (written < 0)
+                FFI_RETURN_ERR (sc, gpg_error_from_syserror ());
+              assert (written <= left);
+              left -= written;
+              p += written;
+            }
+        }
     }
   FFI_RETURN (sc);
 }
