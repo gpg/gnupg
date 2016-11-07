@@ -113,7 +113,8 @@ static void wrong_args (const char *text) GPGRT_ATTR_NORETURN;
 static gpg_error_t command_supported (char *userid);
 static gpg_error_t command_send (const char *fingerprint, char *userid);
 static gpg_error_t encrypt_response (estream_t *r_output, estream_t input,
-                                     const char *addrspec);
+                                     const char *addrspec,
+                                     const char *fingerprint);
 static gpg_error_t read_confirmation_request (estream_t msg);
 static gpg_error_t command_receive_cb (void *opaque,
                                        const char *mediatype, estream_t fp,
@@ -604,7 +605,7 @@ command_send (const char *fingerprint, char *userid)
 
   /* Encrypt the key part.  */
   es_rewind (key);
-  err = encrypt_response (&keyenc, key, submission_to);
+  err = encrypt_response (&keyenc, key, submission_to, fingerprint);
   if (err)
     goto leave;
   es_fclose (key);
@@ -688,14 +689,16 @@ encrypt_response_status_cb (void *opaque, const char *keyword, char *args)
 
 
 /* Encrypt the INPUT stream to a new stream which is stored at success
- * at R_OUTPUT.  Encryption is done for ADDRSPEC.  We currently
- * retrieve that key from the WKD, DANE, or from "local".  "local" is
- * last to prefer the latest key version but use a local copy in case
- * we are working offline.  It might be useful for the server to send
- * the fingerprint of its encryption key - or even the entire key
- * back.  */
+ * at R_OUTPUT.  Encryption is done for ADDRSPEC and for FINGERPRINT
+ * (so that the sent message may later be inspected by the user).  We
+ * currently retrieve that key from the WKD, DANE, or from "local".
+ * "local" is last to prefer the latest key version but use a local
+ * copy in case we are working offline.  It might be useful for the
+ * server to send the fingerprint of its encryption key - or even the
+ * entire key back.  */
 static gpg_error_t
-encrypt_response (estream_t *r_output, estream_t input, const char *addrspec)
+encrypt_response (estream_t *r_output, estream_t input, const char *addrspec,
+                  const char *fingerprint)
 {
   gpg_error_t err;
   ccparray_t ccp;
@@ -730,6 +733,8 @@ encrypt_response (estream_t *r_output, estream_t input, const char *addrspec)
     ccparray_put (&ccp, "--auto-key-locate=clear,wkd,dane,local");
   ccparray_put (&ccp, "--recipient");
   ccparray_put (&ccp, addrspec);
+  ccparray_put (&ccp, "--recipient");
+  ccparray_put (&ccp, fingerprint);
   ccparray_put (&ccp, "--encrypt");
   ccparray_put (&ccp, "--");
 
@@ -764,7 +769,8 @@ encrypt_response (estream_t *r_output, estream_t input, const char *addrspec)
 
 static gpg_error_t
 send_confirmation_response (const char *sender, const char *address,
-                            const char *nonce, int encrypt)
+                            const char *nonce, int encrypt,
+                            const char *fingerprint)
 {
   gpg_error_t err;
   estream_t body = NULL;
@@ -800,7 +806,7 @@ send_confirmation_response (const char *sender, const char *address,
   es_rewind (body);
   if (encrypt)
     {
-      err = encrypt_response (&bodyenc, body, sender);
+      err = encrypt_response (&bodyenc, body, sender, fingerprint);
       if (err)
         goto leave;
       es_fclose (body);
@@ -876,7 +882,7 @@ process_confirmation_request (estream_t msg)
   gpg_error_t err;
   nvc_t nvc;
   nve_t item;
-  const char *value, *sender, *address, *nonce;
+  const char *value, *sender, *address, *fingerprint, *nonce;
 
   err = nvc_parse (&nvc, NULL, msg);
   if (err)
@@ -902,6 +908,18 @@ process_confirmation_request (estream_t msg)
       err = gpg_error (GPG_ERR_UNEXPECTED_MSG);
       goto leave;
     }
+
+  /* Get the fingerprint.  */
+  if (!((item = nvc_lookup (nvc, "fingerprint:"))
+        && (value = nve_value (item))
+        && strlen (value) >= 40))
+    {
+      log_error ("received invalid wks message: %s\n",
+                 "'fingerprint' missing or invalid");
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
+  fingerprint = value;
 
   /* FIXME: Check that the fingerprint matches the key used to decrypt the
    * message.  */
@@ -947,11 +965,11 @@ process_confirmation_request (estream_t msg)
 
   /* Send the confirmation.  If no key was found, try again without
    * encryption.  */
-  err = send_confirmation_response (sender, address, nonce, 1);
+  err = send_confirmation_response (sender, address, nonce, 1, fingerprint);
   if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY)
     {
       log_info ("no encryption key found - sending response in the clear\n");
-      err = send_confirmation_response (sender, address, nonce, 0);
+      err = send_confirmation_response (sender, address, nonce, 0, NULL);
     }
 
  leave:
