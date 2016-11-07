@@ -36,18 +36,13 @@ below.  From your build directory, do:
         run-tests.scm [test suite runner args]
 
 *** Arguments supported by the test suite runner
-The test suite runner supports four modes of operation,
-{sequential,parallel}x{isolated,shared}.  You can select the mode of
-operation using a combination of the flags --parallel, --sequential,
---shared, and --isolated.
-
-By default the tests are run in sequential order, each one in a clean
-environment.
+The test suite runner supports two modes of operation, '--sequential'
+and '--parallel'.  By default the tests are run in sequential order,
+each one in a clean environment.
 
 You can specify the tests to run as positional arguments relative to
-srcdir (e.g. just 'version.scm').  By default all tests listed in
-run-tests.scm are executed.  Note that you do not have to specify
-setup.scm and finish.scm, they are executed implicitly.
+srcdir (e.g. just 'version.scm').  Note that you do not have to
+specify setup.scm and finish.scm, they are executed implicitly.
 
 The test suite runner can be executed in any location that the current
 user can write to.  It will create temporary files and directories,

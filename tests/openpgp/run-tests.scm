@@ -109,18 +109,7 @@
       (define (report)
 	(echo (string-append (status retcode) ":") name))))))
 
-(define (run-tests-parallel-shared setup teardown . tests)
-  (setup::run-sync)
-  (let loop ((pool (test-pool::new '())) (tests' tests))
-    (if (null? tests')
-	(let ((results (pool::wait)))
-	  (for-each (lambda (t) (t::report)) results::procs)
-	  (teardown::run-sync)
-	  (exit (results::report)))
-	(let ((test (car tests')))
-	  (loop (pool::add (test::run-async)) (cdr tests'))))))
-
-(define (run-tests-parallel-isolated setup teardown . tests)
+(define (run-tests-parallel setup teardown . tests)
   (lettmp (gpghome-tar)
     (setup::run-sync '--create-tarball gpghome-tar)
     (let loop ((pool (test-pool::new '())) (tests' tests))
@@ -140,16 +129,7 @@
 	    (setup'::run-sync-quiet '--unpack-tarball gpghome-tar)
 	    (loop (pool::add (test'::run-async)) (cdr tests')))))))
 
-(define (run-tests-sequential-shared setup teardown . tests)
-  (let loop ((pool (test-pool::new '()))
-	     (tests' `(,setup ,@tests ,teardown)))
-    (if (null? tests')
-	(let ((results (pool::wait)))
-	  (exit (results::report)))
-	(let ((test (car tests')))
-	  (loop (pool::add (test::run-sync)) (cdr tests'))))))
-
-(define (run-tests-sequential-isolated setup teardown . tests)
+(define (run-tests-sequential setup teardown . tests)
   (lettmp (gpghome-tar)
     (setup::run-sync '--create-tarball gpghome-tar)
     (let loop ((pool (test-pool::new '())) (tests' tests))
@@ -170,12 +150,8 @@
 	    (loop (pool::add (test'::run-sync)) (cdr tests')))))))
 
 (let* ((runner (if (member "--parallel" *args*)
-		  (if (member "--shared" *args*)
-		      run-tests-parallel-shared
-		      run-tests-parallel-isolated)
-		  (if (member "--shared" *args*)
-		      run-tests-sequential-shared
-		      run-tests-sequential-isolated)))
+		   run-tests-parallel
+		   run-tests-sequential))
        (tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*)))
   (apply runner (append (list (test::scm "setup.scm") (test::scm "finish.scm"))
 			(map test::scm tests))))
