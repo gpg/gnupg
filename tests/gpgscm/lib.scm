@@ -187,6 +187,20 @@
 	(loop acc))))))
 
 ;;
+;; Windows support.
+;;
+
+;; Like call-with-input-file but opens the file in 'binary' mode.
+(define (call-with-binary-input-file filename proc)
+  (letfd ((fd (open filename (logior O_RDONLY O_BINARY))))
+	 (proc (fdopen fd "rb"))))
+
+;; Like call-with-output-file but opens the file in 'binary' mode.
+(define (call-with-binary-output-file filename proc)
+  (letfd ((fd (open filename (logior O_WRONLY O_CREAT O_BINARY) #o600)))
+	 (proc (fdopen fd "wb"))))
+
+;;
 ;; Libc functions.
 ;;
 
