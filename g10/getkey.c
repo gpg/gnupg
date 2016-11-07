@@ -1577,18 +1577,19 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
   int rc;
   struct getkey_ctx_s *ctx = NULL;
 
+  if (retctx)
+    *retctx = NULL;
+
   rc = get_pubkey_byname (ctrl, &ctx, pk, name, ret_keyblock,
                           NULL, include_unusable, no_akl);
   if (rc)
     {
       if (ctx)
         getkey_end (ctx);
-      if (retctx)
-        *retctx = NULL;
       return rc;
     }
 
-  if (is_valid_mailbox (name))
+  if (is_valid_mailbox (name) && ctx)
     {
       /* Rank results and return only the most relevant key.  */
       struct pubkey_cmp_cookie best = { 0 }, new;
