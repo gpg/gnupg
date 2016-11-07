@@ -22,7 +22,6 @@
 # Programs required before we can run these tests.
 required_pgms = ../../g10/gpg$(EXEEXT) ../../agent/gpg-agent$(EXEEXT) \
                 ../../tools/gpg-connect-agent$(EXEEXT) \
-		../../tools/mk-tdata$(EXEEXT) \
 		../gpgscm/gpgscm$(EXEEXT)
 
 AM_CPPFLAGS = -I$(top_srcdir)/common
