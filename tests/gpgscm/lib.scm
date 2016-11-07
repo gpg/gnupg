@@ -185,3 +185,24 @@
        (else
 	(write-char (apply read-char p) acc)
 	(loop acc))))))
+
+;;
+;; Libc functions.
+;;
+
+;; Get our process id.
+(ffi-define (getpid))
+
+;;
+;; Random numbers.
+;;
+
+;; Seed the random number generator.
+(ffi-define (srandom seed))
+
+;; Get a pseudo-random number between 0 (inclusive) and SCALE
+;; (exclusive).
+(ffi-define (random scale))
+
+;; Create a string of the given SIZE containing pseudo-random data.
+(ffi-define (make-random-string size))

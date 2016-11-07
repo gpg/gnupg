@@ -472,6 +472,73 @@ do_get_isotime (scheme *sc, pointer args)
   FFI_RETURN_STRING (sc, timebuf);
 }
 
+static pointer
+do_getpid (scheme *sc, pointer args)
+{
+  FFI_PROLOG ();
+  FFI_ARGS_DONE_OR_RETURN (sc, args);
+  FFI_RETURN_INT (sc, getpid ());
+}
+
+static pointer
+do_srandom (scheme *sc, pointer args)
+{
+  FFI_PROLOG ();
+  int seed;
+  FFI_ARG_OR_RETURN (sc, int, seed, number, args);
+  FFI_ARGS_DONE_OR_RETURN (sc, args);
+  srand (seed);
+  FFI_RETURN (sc);
+}
+
+static int
+random_scaled (int scale)
+{
+  int v;
+#ifdef HAVE_RAND
+  v = rand ();
+#else
+  v = random ();
+#endif
+
+#ifndef RAND_MAX   /* for SunOS */
+#define RAND_MAX 32767
+#endif
+
+  return ((int) (1 + (int) ((float) scale * v / (RAND_MAX + 1.0))) - 1);
+}
+
+static pointer
+do_random (scheme *sc, pointer args)
+{
+  FFI_PROLOG ();
+  int scale;
+  FFI_ARG_OR_RETURN (sc, int, scale, number, args);
+  FFI_ARGS_DONE_OR_RETURN (sc, args);
+  FFI_RETURN_INT (sc, random_scaled (scale));
+}
+
+static pointer
+do_make_random_string (scheme *sc, pointer args)
+{
+  FFI_PROLOG ();
+  int size;
+  pointer chunk;
+  char *p;
+  FFI_ARG_OR_RETURN (sc, int, size, number, args);
+  FFI_ARGS_DONE_OR_RETURN (sc, args);
+  if (size < 0)
+    return ffi_sprintf (sc, "size must be positive");
+
+  chunk = sc->vptr->mk_counted_string (sc, NULL, size);
+  if (sc->no_memory)
+    FFI_RETURN_ERR (sc, ENOMEM);
+
+  for (p = sc->vptr->string_value (chunk); size; p++, size--)
+    *p = (char) random_scaled (256);
+  FFI_RETURN_POINTER (sc, chunk);
+}
+
 
 
 /* estream functions.  */
@@ -1233,6 +1300,12 @@ ffi_init (scheme *sc, const char *argv0, const char *scriptname,
   ffi_define_function (sc, mkdir);
   ffi_define_function (sc, rmdir);
   ffi_define_function (sc, get_isotime);
+  ffi_define_function (sc, getpid);
+
+  /* Random numbers.  */
+  ffi_define_function (sc, srandom);
+  ffi_define_function (sc, random);
+  ffi_define_function (sc, make_random_string);
 
   /* Process management.  */
   ffi_define_function (sc, spawn_process);
