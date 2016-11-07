@@ -66,7 +66,7 @@ libexec_PROGRAMS += gpg-check-pattern
 endif
 
 if !HAVE_W32CE_SYSTEM
-noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert gpgsplit
+noinst_PROGRAMS = clean-sat make-dns-cert gpgsplit
 endif
 
 if !HAVE_W32CE_SYSTEM

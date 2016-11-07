@@ -26,12 +26,14 @@
  "Checking bogus signature"
  (lambda (char)
    (lettmp (x)
-     (pipe:do
-      (pipe:spawn `(,(tool 'mktdata) --char ,char "64"))
-      (pipe:write-to x (logior O_WRONLY O_CREAT O_BINARY) #o600))
+     (call-with-binary-output-file
+      x
+      (lambda (port)
+	(display (make-string 64 (integer->char (string->number char)))
+		 port)))
      (if (= 0 (call `(,@GPG --verify ,x data-500)))
 	 (error "no error code from verify"))))
- '("0x2d" "0xca"))
+ '("#x2d" "#xca"))
 
 ;; A plain signed message created using
 ;;  echo abc | gpg --homedir . --passphrase-fd 0 -u Alpha -z0 -sa msg

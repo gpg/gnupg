@@ -59,7 +59,6 @@
     (gpgconf "GPGCONF" "tools/gpgconf")
     (gpg-preset-passphrase "GPG_PRESET_PASSPHRASE"
 			   "agent/gpg-preset-passphrase")
-    (mktdata "MKTDATA" "tools/mk-tdata")
     (gpgtar "GPGTAR" "tools/gpgtar")
     (gpg-zip "GPGZIP" "tools/gpg-zip")
     (pinentry "PINENTRY" "tests/openpgp/fake-pinentry")))

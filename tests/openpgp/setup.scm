@@ -19,11 +19,17 @@
 
 (load (with-path "defs.scm"))
 
+(define (make-test-data filename size)
+  (call-with-binary-output-file
+   filename
+   (lambda (port)
+     (display (make-random-string size) port))))
+
 (define (create-gpghome)
   (echo "Creating test environment...")
 
-  (letfd ((fd (open "random_seed" (logior O_WRONLY O_CREAT O_BINARY) #o600)))
-	 (call-with-fds (list (tool 'mktdata) "600") CLOSED_FD fd STDERR_FILENO))
+  (srandom (getpid))
+  (make-test-data "random_seed" 600)
 
   (for-each-p
    "Creating configuration files"
@@ -44,10 +50,8 @@
 
   (for-each-p "Creating sample data files"
 	      (lambda (size)
-		(letfd ((fd (open (string-append "data-" (number->string size))
-				  (logior O_WRONLY O_CREAT O_BINARY) #o600)))
-		       (call-with-fds (list (tool 'mktdata) (number->string size))
-				      CLOSED_FD fd STDERR_FILENO)))
+		(make-test-data (string-append "data-" (number->string size))
+				size))
 	      '(500 9000 32000 80000))
 
   (for-each-p "Unpacking samples"
