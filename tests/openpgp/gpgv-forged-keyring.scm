@@ -18,6 +18,7 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
+(setup-legacy-environment)
 
 (define msg_signed_asc "
 -----BEGIN PGP SIGNED MESSAGE-----

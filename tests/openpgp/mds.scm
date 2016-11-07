@@ -18,6 +18,7 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
+(setup-environment)
 
 (define empty-string-hashes
   `((1 "D41D8CD98F00B204E9800998ECF8427E" "MD5")

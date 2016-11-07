@@ -21,6 +21,7 @@
 ;; 2^32-1 as invalid and exit with status code 2.
 
 (load (with-path "defs.scm"))
+(setup-environment)
 
 (if (= 0 (call `(,@GPG --list-packets ,(in-srcdir "4gb-packet.asc"))))
   (info "Can parse 4GB packets.")

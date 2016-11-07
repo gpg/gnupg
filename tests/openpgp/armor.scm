@@ -18,6 +18,7 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
+(setup-legacy-environment)
 
 (define armored_key_8192 "-----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: SKS 1.0.9

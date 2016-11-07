@@ -18,6 +18,7 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
+(setup-environment)
 
 ;; This is not a test, but can be used to inspect the test
 ;; environment.  Simply execute

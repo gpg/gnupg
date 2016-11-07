@@ -18,6 +18,7 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
+(setup-legacy-environment)
 
 (define (check-for predicate lines message)
   (unless (any predicate lines)

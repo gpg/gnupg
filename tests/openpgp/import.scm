@@ -18,6 +18,7 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
+(setup-environment)
 
 (info "Checking bug 894: segv importing certain keys.")
 (call-check `(,(tool 'gpg) --import ,(in-srcdir "bug894-test.asc")))

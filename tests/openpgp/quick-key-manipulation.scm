@@ -18,6 +18,7 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
+(setup-environment)
 
  ;; XXX because of --always-trust, the trustdb is not created.
  ;; Therefore, we redefine GPG without --always-trust.

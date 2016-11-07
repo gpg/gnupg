@@ -18,6 +18,7 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
+(setup-environment)
 
 (info "Printing the GPG version")
 (assert (string-contains? (call-check `(,@GPG --version))

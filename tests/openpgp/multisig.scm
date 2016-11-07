@@ -24,6 +24,7 @@
 ;; not really needed because verify could do the same.  We keep it anyway.
 
 (load (with-path "defs.scm"))
+(setup-legacy-environment)
 
 (define sig-1ls1ls-valid "
 -----BEGIN PGP ARMORED FILE-----

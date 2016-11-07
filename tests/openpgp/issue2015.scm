@@ -18,6 +18,7 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
+(setup-environment)
 
 (info "Checking passphrase cache (issue2015)...")
 (call-check `(,(tool 'gpg-preset-passphrase)

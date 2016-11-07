@@ -18,6 +18,7 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
+(setup-legacy-environment)
 
 (catch (skip "gpgtar not built")
        (call-check `(,(tool 'gpgtar) --help)))

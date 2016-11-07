@@ -193,7 +193,7 @@ sample_msgs = samplemsgs/issue2419.asc
 EXTRA_DIST = defs.scm $(XTESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
 	     $(sample_msgs) ChangeLog-2011 run-tests.scm \
-	     setup.scm finish.scm shell.scm
+	     setup.scm shell.scm
 
 CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     plain-1 plain-2 plain-3 trustdb.gpg *.lock .\#lk* \

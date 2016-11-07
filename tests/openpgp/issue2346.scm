@@ -18,16 +18,11 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
+(setup-environment)
 
 (define key (in-srcdir "samplekeys/issue2346.gpg"))
-(define old-home (getenv "GNUPGHOME"))
 
-(with-temporary-working-directory
- (file-copy (path-join old-home "gpg.conf") "gpg.conf")
- (file-copy (path-join old-home "gpg-agent.conf") "gpg-agent.conf")
- (setenv "GNUPGHOME" "." #t)
-
- (info "Checking import statistics (issue2346)...")
- (let ((status (call-popen `(,@GPG --status-fd=1 --import ,key) "")))
-   (unless (string-contains? status "IMPORT_RES 1 0 1 0 0 0 0 0 0 1 1 0 0 0 0")
-	   (error "Unexpected number of keys imported" status))))
+(info "Checking import statistics (issue2346)...")
+(let ((status (call-popen `(,@GPG --status-fd=1 --import ,key) "")))
+  (unless (string-contains? status "IMPORT_RES 1 0 1 0 0 0 0 0 0 1 1 0 0 0 0")
+	  (error "Unexpected number of keys imported" status)))

@@ -38,6 +38,10 @@
   (apply echo msg)
   (flush-stdio))
 
+(define (log . msg)
+  (if (> (*verbose*) 0)
+      (apply info msg)))
+
 (define (error . msg)
   (apply info msg)
   (exit 1))

@@ -18,6 +18,7 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
+(setup-legacy-environment)
 
 (define keygrips '("8E06A180EFFE4C65B812150CAF19BF30C0689A4C"
 		   "E4403F3FD7A443FAC29FEF288FA0D20AC212851E"
