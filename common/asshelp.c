@@ -267,48 +267,7 @@ static gpg_error_t
 lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name,
                int verbose)
 {
-#ifdef HAVE_W32_SYSTEM
-  int waitrc;
-  int timeout = (!strcmp (name, "agent")
-                 ? SECS_TO_WAIT_FOR_AGENT
-                 : SECS_TO_WAIT_FOR_DIRMNGR);
-
-  (void)homedir; /* Not required. */
-
-  *lock = CreateMutexW
-    (NULL, FALSE,
-     !strcmp (name, "agent")?   L"spawn_"GNUPG_NAME"_agent_sentinel":
-     !strcmp (name, "dirmngr")? L"spawn_"GNUPG_NAME"_dirmngr_sentinel":
-     /*                    */   L"spawn_"GNUPG_NAME"_unknown_sentinel");
-  if (!*lock)
-    {
-      log_error ("failed to create the spawn_%s mutex: %s\n",
-                 name, w32_strerror (-1));
-      return gpg_error (GPG_ERR_GENERAL);
-    }
-
- retry:
-  waitrc = WaitForSingleObject (*lock, 1000);
-  if (waitrc == WAIT_OBJECT_0)
-    return 0;
-
-  if (waitrc == WAIT_TIMEOUT && timeout)
-    {
-      timeout--;
-      if (verbose)
-        log_info ("another process is trying to start the %s ... (%ds)\n",
-                  name, timeout);
-      goto retry;
-    }
-  if (waitrc == WAIT_TIMEOUT)
-    log_info ("error waiting for the spawn_%s mutex: timeout\n", name);
-  else
-    log_info ("error waiting for the spawn_%s mutex: (code=%d) %s\n",
-              name, waitrc, w32_strerror (-1));
-  return gpg_error (GPG_ERR_GENERAL);
-#else /*!HAVE_W32_SYSTEM*/
   char *fname;
-
   (void)verbose;
 
   *lock = NULL;
@@ -333,7 +292,6 @@ lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name,
     return gpg_error_from_syserror ();
 
   return 0;
-#endif /*!HAVE_W32_SYSTEM*/
 }
 
 
@@ -343,15 +301,8 @@ unlock_spawning (lock_spawn_t *lock, const char *name)
 {
   if (*lock)
     {
-#ifdef HAVE_W32_SYSTEM
-      if (!ReleaseMutex (*lock))
-        log_error ("failed to release the spawn_%s mutex: %s\n",
-                   name, w32_strerror (-1));
-      CloseHandle (*lock);
-#else /*!HAVE_W32_SYSTEM*/
       (void)name;
       dotlock_destroy (*lock);
-#endif /*!HAVE_W32_SYSTEM*/
       *lock = NULL;
     }
 }
