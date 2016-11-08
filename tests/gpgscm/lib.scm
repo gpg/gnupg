@@ -204,6 +204,14 @@
 ;; Libc functions.
 ;;
 
+;; Change the read/write offset.
+(ffi-define (seek fd offset whence))
+
+;; Constants for WHENCE.
+(ffi-define SEEK_SET)
+(ffi-define SEEK_CUR)
+(ffi-define SEEK_END)
+
 ;; Get our process id.
 (ffi-define (getpid))
 

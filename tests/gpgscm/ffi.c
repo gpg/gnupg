@@ -326,6 +326,21 @@ do_close (scheme *sc, pointer args)
 }
 
 static pointer
+do_seek (scheme *sc, pointer args)
+{
+  FFI_PROLOG ();
+  int fd;
+  off_t offset;
+  int whence;
+  FFI_ARG_OR_RETURN (sc, int, fd, number, args);
+  FFI_ARG_OR_RETURN (sc, off_t, offset, number, args);
+  FFI_ARG_OR_RETURN (sc, int, whence, number, args);
+  FFI_ARGS_DONE_OR_RETURN (sc, args);
+  FFI_RETURN_ERR (sc, lseek (fd, offset, whence) == (off_t) -1
+                  ? gpg_error_from_syserror () : 0);
+}
+
+static pointer
 do_mkdtemp (scheme *sc, pointer args)
 {
   FFI_PROLOG ();
@@ -1309,6 +1324,9 @@ ffi_init (scheme *sc, const char *argv0, const char *scriptname,
   ffi_define_constant (sc, STDIN_FILENO);
   ffi_define_constant (sc, STDOUT_FILENO);
   ffi_define_constant (sc, STDERR_FILENO);
+  ffi_define_constant (sc, SEEK_SET);
+  ffi_define_constant (sc, SEEK_CUR);
+  ffi_define_constant (sc, SEEK_END);
 
   ffi_define_function (sc, sleep);
   ffi_define_function (sc, usleep);
@@ -1320,6 +1338,7 @@ ffi_init (scheme *sc, const char *argv0, const char *scriptname,
   ffi_define_function (sc, open);
   ffi_define_function (sc, fdopen);
   ffi_define_function (sc, close);
+  ffi_define_function (sc, seek);
   ffi_define_function_name (sc, "_mkdtemp", mkdtemp);
   ffi_define_function (sc, unlink);
   ffi_define_function (sc, unlink_recursively);
