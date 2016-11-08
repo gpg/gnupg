@@ -73,18 +73,23 @@
   (package
    (define (scm name . args)
      (new name #f `(,*argv0* ,@(verbosity (*verbose*)) ,@args
-			     ,(in-srcdir name)) #f #f))
-   (define (new name directory command pid retcode)
+			     ,(in-srcdir name)) #f #f CLOSED_FD))
+   (define (new name directory command pid retcode logfd)
      (package
       (define (set-directory x)
-	(new name x command pid retcode))
+	(new name x command pid retcode logfd))
       (define (set-retcode x)
-	(new name directory command pid x))
+	(new name directory command pid x logfd))
       (define (set-pid x)
-	(new name directory command x retcode))
+	(new name directory command x retcode logfd))
+      (define (set-logfd x)
+	(new name directory command pid retcode x))
+      (define (open-log-file)
+	(let ((filename (string-append name ".log")))
+	  (catch '() (unlink filename))
+	  (open filename (logior O_RDWR O_BINARY O_CREAT) #o600)))
       (define (run-sync . args)
-	(letfd ((log (open (string-append name ".log")
-			   (logior O_WRONLY O_BINARY O_CREAT) #o600)))
+	(letfd ((log (open-log-file)))
 	  (with-working-directory directory
 	    (let* ((p (inbound-pipe))
 		   (pid (spawn-process-fd (append command args) 0
@@ -102,13 +107,19 @@
 	    name (spawn-process-fd (append command args)
 				   CLOSED_FD CLOSED_FD CLOSED_FD) #t))))
       (define (run-async . args)
-	(with-working-directory directory
-	  (set-pid (spawn-process-fd (append command args)
-				     CLOSED_FD CLOSED_FD CLOSED_FD))))
+	(let ((log (open-log-file)))
+	  (with-working-directory directory
+	    (new name directory command
+		 (spawn-process-fd (append command args) CLOSED_FD log log)
+		 retcode log))))
       (define (status)
 	(let ((t (assoc retcode '((0 "PASS") (77 "SKIP") (99 "ERROR")))))
 	  (if (not t) "FAIL" (cadr t))))
       (define (report)
+	(unless (= logfd CLOSED_FD)
+		(seek logfd 0 SEEK_SET)
+		(splice logfd STDERR_FILENO)
+		(close logfd))
 	(echo (string-append (status retcode) ":") name))))))
 
 (define (run-tests-parallel setup tests)
@@ -120,7 +131,7 @@
 	    (for-each (lambda (t)
 			(catch (echo "Removing" t::directory "failed:" *error*)
 			       (unlink-recursively t::directory))
-			(t::report)) results::procs)
+			(t::report)) (reverse results::procs))
 	    (exit (results::report)))
 	  (let* ((wd (mkdtemp))
 		 (test (car tests'))
