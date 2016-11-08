@@ -256,13 +256,12 @@
 ;; Initialize the test environment, install appropriate configuration
 ;; and start the agent, with the keys from the legacy test suite.
 (define (setup-legacy-environment)
-  (setup-environment)
+  (create-gpghome)
   (if (member "--unpack-tarball" *args*)
       (begin
 	(call-check `(,(tool 'gpgtar) --extract --directory=. ,(cadr *args*)))
 	(start-agent))
       (begin
-	(create-gpghome)
 	(start-agent)
 	(create-legacy-gpghome)))
   (preset-passphrases))
