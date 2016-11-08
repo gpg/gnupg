@@ -48,6 +48,20 @@
 #include "ffi.h"
 #include "ffi-private.h"
 
+/* For use in nice error messages.  */
+static const char *
+ordinal_suffix (int n)
+{
+  switch (n)
+    {
+    case 1: return "st";
+    case 2: return "nd";
+    case 3: return "rd";
+    default: return "th";
+    }
+  assert (! "reached");
+}
+
 
 
 int
@@ -827,17 +841,19 @@ do_wait_processes (scheme *sc, pointer args)
 
   err = ffi_list2argv (sc, list_names, &names, &count);
   if (err == gpg_error (GPG_ERR_INV_VALUE))
-    return ffi_sprintf (sc, "%luth element of first argument is "
+    return ffi_sprintf (sc, "%lu%s element of first argument is "
                         "neither string nor symbol",
-                        (unsigned long) count);
+                        (unsigned long) count,
+                        ordinal_suffix ((int) count));
   if (err)
     FFI_RETURN_ERR (sc, err);
 
   err = ffi_list2intv (sc, list_pids, (int **) &pids, &count);
   if (err == gpg_error (GPG_ERR_INV_VALUE))
-    return ffi_sprintf (sc, "%luth element of second argument is "
-                        "neither string nor symbol",
-                        (unsigned long) count);
+    return ffi_sprintf (sc, "%lu%s element of second argument is "
+                        "not a number",
+                        (unsigned long) count,
+                        ordinal_suffix ((int) count));
   if (err)
     FFI_RETURN_ERR (sc, err);
 
@@ -993,19 +1009,6 @@ do_file_equal (scheme *sc, pointer args)
  errout:
   err = gpg_error_from_syserror ();
   goto out;
-}
-
-static const char *
-ordinal_suffix (int n)
-{
-  switch (n)
-    {
-    case 1: return "st";
-    case 2: return "nd";
-    case 3: return "rd";
-    default: return "th";
-    }
-  assert (! "reached");
 }
 
 static pointer
