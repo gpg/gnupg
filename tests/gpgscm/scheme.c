@@ -4056,17 +4056,6 @@ static pointer opexe_5(scheme *sc, enum scheme_opcodes op) {
           case TOK_EOF:
                s_return(sc,sc->EOF_OBJ);
           /* NOTREACHED */
-/*
- * Commented out because we now skip comments in the scanner
- *
-          case TOK_COMMENT: {
-               int c;
-               while ((c=inchar(sc)) != '\n' && c!=EOF)
-                    ;
-               sc->tok = token(sc);
-               s_goto(sc,OP_RDSEXPR);
-          }
-*/
           case TOK_VEC:
                s_save(sc,OP_RDVEC,sc->NIL,sc->NIL);
                /* fall through */
@@ -4135,14 +4124,6 @@ static pointer opexe_5(scheme *sc, enum scheme_opcodes op) {
      case OP_RDLIST: {
           sc->args = cons(sc, sc->value, sc->args);
           sc->tok = token(sc);
-/* We now skip comments in the scanner
-          while (sc->tok == TOK_COMMENT) {
-               int c;
-               while ((c=inchar(sc)) != '\n' && c!=EOF)
-                    ;
-               sc->tok = token(sc);
-          }
-*/
           if (sc->tok == TOK_EOF)
                { s_return(sc,sc->EOF_OBJ); }
           else if (sc->tok == TOK_RPAREN) {
