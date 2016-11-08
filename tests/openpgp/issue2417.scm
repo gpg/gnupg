@@ -18,27 +18,15 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
-(setup-legacy-environment)
+(setup-environment)
 
-(define old-home (getenv "GNUPGHOME"))
+(define keyfile (in-srcdir "samplekeys" "rsa-rsa-sample-1.asc"))
 
 (define (touch file-name)
   (close (open file-name (logior O_WRONLY O_BINARY O_CREAT) #o600)))
 
 (info "Checking robustness wrt empty databases in gnupghome (issue2417)...")
-
-(lettmp
- ;; Prepare some random key to import later.
- (keyfile)
- (pipe:do
-  (pipe:gpg '(--export alpha))
-  (pipe:write-to keyfile (logior O_WRONLY O_BINARY O_CREAT) #o600))
-
- (with-temporary-working-directory
-  (file-copy (path-join old-home "gpg.conf") "gpg.conf")
-  (file-copy (path-join old-home "gpg-agent.conf") "gpg-agent.conf")
-  (setenv "GNUPGHOME" "." #t)
-  (touch "trustdb.gpg")
-  (touch "pubring.gpg")
-  (touch "pubring.kbx")
-  (call-check `(,(tool 'GPG) --import ,keyfile))))
+(touch "trustdb.gpg")
+(touch "pubring.gpg")
+(touch "pubring.kbx")
+(call-check `(,(tool 'GPG) --import ,keyfile))
