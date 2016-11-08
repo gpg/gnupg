@@ -2442,93 +2442,6 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
 
 #define s_return(sc,a) return _s_return(sc,a)
 
-#ifndef USE_SCHEME_STACK
-
-/* this structure holds all the interpreter's registers */
-struct dump_stack_frame {
-  enum scheme_opcodes op;
-  pointer args;
-  pointer envir;
-  pointer code;
-};
-
-#define STACK_GROWTH 3
-
-static void s_save(scheme *sc, enum scheme_opcodes op, pointer args, pointer code)
-{
-  int nframes = (int)sc->dump;
-  struct dump_stack_frame *next_frame;
-
-  /* enough room for the next frame? */
-  if (nframes >= sc->dump_size) {
-    sc->dump_size += STACK_GROWTH;
-    /* alas there is no sc->realloc */
-    sc->dump_base = realloc(sc->dump_base,
-                            sizeof(struct dump_stack_frame) * sc->dump_size);
-  }
-  next_frame = (struct dump_stack_frame *)sc->dump_base + nframes;
-  next_frame->op = op;
-  next_frame->args = args;
-  next_frame->envir = sc->envir;
-  next_frame->code = code;
-  sc->dump = (pointer)(nframes+1);
-}
-
-static pointer _s_return(scheme *sc, pointer a)
-{
-  int nframes = (int)sc->dump;
-  struct dump_stack_frame *frame;
-
-  sc->value = (a);
-  if (nframes <= 0) {
-    return sc->NIL;
-  }
-  nframes--;
-  frame = (struct dump_stack_frame *)sc->dump_base + nframes;
-  sc->op = frame->op;
-  sc->args = frame->args;
-  sc->envir = frame->envir;
-  sc->code = frame->code;
-  sc->dump = (pointer)nframes;
-  return sc->T;
-}
-
-static INLINE void dump_stack_reset(scheme *sc)
-{
-  /* in this implementation, sc->dump is the number of frames on the stack */
-  sc->dump = (pointer)0;
-}
-
-static INLINE void dump_stack_initialize(scheme *sc)
-{
-  sc->dump_size = 0;
-  sc->dump_base = NULL;
-  dump_stack_reset(sc);
-}
-
-static void dump_stack_free(scheme *sc)
-{
-  free(sc->dump_base);
-  sc->dump_base = NULL;
-  sc->dump = (pointer)0;
-  sc->dump_size = 0;
-}
-
-static INLINE void dump_stack_mark(scheme *sc)
-{
-  int nframes = (int)sc->dump;
-  int i;
-  for(i=0; i<nframes; i++) {
-    struct dump_stack_frame *frame;
-    frame = (struct dump_stack_frame *)sc->dump_base + i;
-    mark(frame->args);
-    mark(frame->envir);
-    mark(frame->code);
-  }
-}
-
-#else
-
 static INLINE void dump_stack_reset(scheme *sc)
 {
   sc->dump = sc->NIL;
@@ -2565,7 +2478,6 @@ static INLINE void dump_stack_mark(scheme *sc)
 {
   mark(sc->dump);
 }
-#endif
 
 #define s_retbool(tf)    s_return(sc,(tf) ? sc->T : sc->F)
 
