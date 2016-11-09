@@ -2688,7 +2688,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           sc->code = sc->value;
           s_goto(sc,OP_EVAL);
 
-#if 1
+#if USE_COMPILE_HOOK
      case OP_LAMBDA:     /* lambda */
           /* If the hook is defined, apply it to sc->code, otherwise
              set sc->value fall through */
@@ -4737,7 +4737,9 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   sc->COLON_HOOK = mk_symbol(sc,"*colon-hook*");
   sc->ERROR_HOOK = mk_symbol(sc, "*error-hook*");
   sc->SHARP_HOOK = mk_symbol(sc, "*sharp-hook*");
+#if USE_COMPILE_HOOK
   sc->COMPILE_HOOK = mk_symbol(sc, "*compile-hook*");
+#endif
 
   return !sc->no_memory;
 }

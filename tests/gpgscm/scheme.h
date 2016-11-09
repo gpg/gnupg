@@ -40,6 +40,7 @@ extern "C" {
 # define USE_ERROR_HOOK 0
 # define USE_TRACING 0
 # define USE_COLON_HOOK 0
+# define USE_COMPILE_HOOK 0
 # define USE_DL 0
 # define USE_PLIST 0
 #endif
@@ -81,6 +82,12 @@ extern "C" {
 
 #ifndef USE_COLON_HOOK   /* Enable qualified qualifier */
 # define USE_COLON_HOOK 1
+#endif
+
+/* Compile functions using *compile-hook*.  The default hook expands
+ * macros.  */
+#ifndef USE_COMPILE_HOOK
+# define USE_COMPILE_HOOK 1
 #endif
 
 #ifndef USE_STRCASECMP   /* stricmp for Unix */

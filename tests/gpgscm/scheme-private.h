@@ -115,7 +115,9 @@ pointer FEED_TO;         /* => */
 pointer COLON_HOOK;      /* *colon-hook* */
 pointer ERROR_HOOK;      /* *error-hook* */
 pointer SHARP_HOOK;  /* *sharp-hook* */
+#if USE_COMPILE_HOOK
 pointer COMPILE_HOOK;  /* *compile-hook* */
+#endif
 
 pointer free_cell;       /* pointer to top of free cells */
 long    fcells;          /* # of free cells */
