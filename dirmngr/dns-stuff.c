@@ -195,6 +195,21 @@ map_eai_to_gpg_error (int ec)
   return err;
 }
 
+#ifdef USE_ADNS
+static gpg_error_t
+map_adns_status_to_gpg_error (adns_status status)
+{
+  gpg_err_code_t ec;
+
+  switch (status)
+    {
+    /* case adns_s_netunreach: ec = GPG_ERR_ENETUNREACH; break; */
+    default: ec = GPG_ERR_GENERAL; break;
+    }
+  return gpg_error (ec);
+}
+#endif /*USE_ADNS*/
+
 
 #ifdef USE_ADNS
 /* Init ADNS and store the new state at R_STATE.  Returns 0 on
@@ -286,6 +301,9 @@ resolve_name_adns (const char *name, unsigned short port,
   err = gpg_error (GPG_ERR_NOT_FOUND);
   if (answer->status != adns_s_ok || answer->type != adns_r_addr)
     {
+      err = map_adns_status_to_gpg_error (answer->status);
+      if (gpg_err_code (err) == GPG_ERR_GENERAL)
+        err = gpg_error (GPG_ERR_NOT_FOUND);
       log_error ("DNS query returned an error: %s (%s)\n",
                  adns_strerror (answer->status),
                  adns_errabbrev (answer->status));
@@ -692,7 +710,9 @@ get_dns_cert (const char *name, int want_certtype,
       /* log_error ("DNS query returned an error: %s (%s)\n", */
       /*            adns_strerror (answer->status), */
       /*            adns_errabbrev (answer->status)); */
-      err = gpg_error (GPG_ERR_NOT_FOUND);
+      err = map_adns_status_to_gpg_error (answer->status);
+      if (gpg_err_code (err) == GPG_ERR_GENERAL)
+        err = gpg_error (GPG_ERR_NOT_FOUND);
       goto leave;
     }
 
@@ -1095,7 +1115,9 @@ getsrv (const char *name,struct srventry **list)
     if (tor_mode)
       return -1;
 
+    my_unprotect ();
     r = res_query (name, C_IN, T_SRV, answer, sizeof answer);
+    my_protect ();
     if (r < sizeof (HEADER) || r > sizeof answer
         || header->rcode != NOERROR || !(count=ntohs (header->ancount)))
       return 0; /* Error or no record found.  */
@@ -1289,7 +1311,7 @@ get_dns_cname (const char *name, char **r_cname)
     if (answer->status != adns_s_ok
         || answer->type != adns_r_cname || answer->nrrs != 1)
       {
-        err = gpg_error (GPG_ERR_GENERAL);
+        err = map_adns_status_to_gpg_error (answer->status);
         log_error ("DNS query returned an error or no records: %s (%s)\n",
                    adns_strerror (answer->status),
                    adns_errabbrev (answer->status));

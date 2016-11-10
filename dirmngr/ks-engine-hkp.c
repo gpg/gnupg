@@ -447,45 +447,48 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
         }
       hi = hosttable[idx];
 
-#ifdef	USE_DNS_SRV
-      /* Check for SRV records.  */
-      srvrecord = xtryasprintf ("_hkp._tcp.%s", name);
-      if (srvrecord == NULL)
+#ifdef USE_DNS_SRV
+      if (!is_ip_address (name))
         {
-          err = gpg_error_from_syserror ();
-          xfree (reftbl);
-          return err;
-        }
-
-      srvscount = getsrv (srvrecord, &srvs);
-      xfree (srvrecord);
-      if (srvscount < 0)
-        {
-          err = gpg_error_from_syserror ();
-          xfree (reftbl);
-          return err;
-        }
-
-      if (srvscount > 0)
-        {
-          int i;
-          is_pool = srvscount > 1;
-
-          for (i = 0; i < srvscount; i++)
+          /* Check for SRV records.  */
+          srvrecord = xtryasprintf ("_hkp._tcp.%s", name);
+          if (srvrecord == NULL)
             {
-              err = resolve_dns_name (srvs[i].target, 0,
-                                      AF_UNSPEC, SOCK_STREAM,
-                                      &ai, &cname);
-              if (err)
-                continue;
-              dirmngr_tick (ctrl);
-              add_host (name, is_pool, ai, srvs[i].port,
-                        reftbl, reftblsize, &refidx);
+              err = gpg_error_from_syserror ();
+              xfree (reftbl);
+              return err;
             }
 
-          xfree (srvs);
+          srvscount = getsrv (srvrecord, &srvs);
+          xfree (srvrecord);
+          if (srvscount < 0)
+            {
+              err = gpg_error_from_syserror ();
+              xfree (reftbl);
+              return err;
+            }
+
+          if (srvscount > 0)
+            {
+              int i;
+              is_pool = srvscount > 1;
+
+              for (i = 0; i < srvscount; i++)
+                {
+                  err = resolve_dns_name (srvs[i].target, 0,
+                                          AF_UNSPEC, SOCK_STREAM,
+                                          &ai, &cname);
+                  if (err)
+                    continue;
+                  dirmngr_tick (ctrl);
+                  add_host (name, is_pool, ai, srvs[i].port,
+                            reftbl, reftblsize, &refidx);
+                }
+
+              xfree (srvs);
+            }
         }
-#endif	/* USE_DNS_SRV */
+#endif /* USE_DNS_SRV */
 
       /* Find all A records for this entry and put them into the pool
          list - if any.  */
