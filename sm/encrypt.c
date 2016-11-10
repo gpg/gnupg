@@ -336,7 +336,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
     count++;
   audit_log_i (ctrl->audit, AUDIT_GOT_RECIPIENTS, count);
 
-  kh = keydb_new (0);
+  kh = keydb_new ();
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));

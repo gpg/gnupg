@@ -319,7 +319,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
   rc = classify_user_id (name, &desc, 0);
   if (!rc)
     {
-      kh = keydb_new (0);
+      kh = keydb_new ();
       if (!kh)
         rc = gpg_error (GPG_ERR_ENOMEM);
       else
@@ -498,7 +498,7 @@ gpgsm_find_cert (const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert)
   rc = classify_user_id (name, &desc, 0);
   if (!rc)
     {
-      kh = keydb_new (0);
+      kh = keydb_new ();
       if (!kh)
         rc = gpg_error (GPG_ERR_ENOMEM);
       else

@@ -1329,7 +1329,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
   int have_secret;
   int want_ephemeral = ctrl->with_ephemeral_keys;
 
-  hd = keydb_new (0);
+  hd = keydb_new ();
   if (!hd)
     {
       log_error ("keydb_new failed\n");

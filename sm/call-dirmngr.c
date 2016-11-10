@@ -576,7 +576,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                  from the dirmngr.  Try our own cert store now.  */
               KEYDB_HANDLE kh;
 
-              kh = keydb_new (0);
+              kh = keydb_new ();
               if (!kh)
                 rc = gpg_error (GPG_ERR_ENOMEM);
               if (!rc)

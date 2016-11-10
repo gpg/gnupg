@@ -47,7 +47,6 @@ struct resource_item {
     KEYBOX_HANDLE kr;
   } u;
   void *token;
-  int secret;
   dotlock_t lockhandle;
 };
 
@@ -250,9 +249,9 @@ maybe_create_keybox (char *filename, int force, int *r_created)
  * if the function has created a new keybox.
  */
 gpg_error_t
-keydb_add_resource (const char *url, int force, int secret, int *auto_created)
+keydb_add_resource (const char *url, int force, int *auto_created)
 {
-  static int any_secret, any_public;
+  static int any_public;
   const char *resname = url;
   char *filename = NULL;
   gpg_error_t err = 0;
@@ -293,7 +292,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
     filename = xstrdup (resname);
 
   if (!force)
-    force = secret? !any_secret : !any_public;
+    force = !any_public;
 
   /* see whether we can determine the filetype */
   if (rt == KEYDB_RESOURCE_TYPE_NONE)
@@ -335,7 +334,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
       {
         void *token;
 
-        err = keybox_register_file (filename, secret, &token);
+        err = keybox_register_file (filename, 0, &token);
         if (gpg_err_code (err) == GPG_ERR_EEXIST)
           ; /* Already registered - ignore.  */
         else if (err)
@@ -347,7 +346,6 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
             all_resources[used_resources].type = rt;
             all_resources[used_resources].u.kr = NULL; /* Not used here */
             all_resources[used_resources].token = token;
-            all_resources[used_resources].secret = secret;
 
             all_resources[used_resources].lockhandle
               = dotlock_create (filename, 0);
@@ -357,7 +355,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
             /* Do a compress run if needed and the file is not locked. */
             if (!dotlock_take (all_resources[used_resources].lockhandle, 0))
               {
-                KEYBOX_HANDLE kbxhd = keybox_new_x509 (token, secret);
+                KEYBOX_HANDLE kbxhd = keybox_new_x509 (token, 0);
 
                 if (kbxhd)
                   {
@@ -383,8 +381,6 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
  leave:
   if (err)
     log_error ("keyblock resource '%s': %s\n", filename, gpg_strerror (err));
-  else if (secret)
-    any_secret = 1;
   else
     any_public = 1;
   xfree (filename);
@@ -393,7 +389,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
 
 
 KEYDB_HANDLE
-keydb_new (int secret)
+keydb_new (void)
 {
   KEYDB_HANDLE hd;
   int i, j;
@@ -405,8 +401,6 @@ keydb_new (int secret)
   assert (used_resources <= MAX_KEYDB_RESOURCES);
   for (i=j=0; i < used_resources; i++)
     {
-      if (!all_resources[i].secret != !secret)
-        continue;
       switch (all_resources[i].type)
         {
         case KEYDB_RESOURCE_TYPE_NONE: /* ignore */
@@ -414,9 +408,8 @@ keydb_new (int secret)
         case KEYDB_RESOURCE_TYPE_KEYBOX:
           hd->active[j].type   = all_resources[i].type;
           hd->active[j].token  = all_resources[i].token;
-          hd->active[j].secret = all_resources[i].secret;
           hd->active[j].lockhandle = all_resources[i].lockhandle;
-          hd->active[j].u.kr = keybox_new_x509 (all_resources[i].token, secret);
+          hd->active[j].u.kr = keybox_new_x509 (all_resources[i].token, 0);
           if (!hd->active[j].u.kr)
             {
               xfree (hd);
@@ -919,8 +912,6 @@ keydb_rebuild_caches (void)
 
   for (i=0; i < used_resources; i++)
     {
-      if (all_resources[i].secret)
-        continue;
       switch (all_resources[i].type)
         {
         case KEYDB_RESOURCE_TYPE_NONE: /* ignore */
@@ -1121,7 +1112,7 @@ keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed)
       return gpg_error (GPG_ERR_GENERAL);
     }
 
-  kh = keydb_new (0);
+  kh = keydb_new ();
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));
@@ -1207,7 +1198,7 @@ keydb_set_cert_flags (ksba_cert_t cert, int ephemeral,
       return gpg_error (GPG_ERR_GENERAL);
     }
 
-  kh = keydb_new (0);
+  kh = keydb_new ();
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));
@@ -1278,7 +1269,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
 
   (void)ctrl;
 
-  hd = keydb_new (0);
+  hd = keydb_new ();
   if (!hd)
     {
       log_error ("keydb_new failed\n");

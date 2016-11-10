@@ -256,7 +256,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
 
   audit_set_type (ctrl->audit, AUDIT_TYPE_DECRYPT);
 
-  kh = keydb_new (0);
+  kh = keydb_new ();
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));

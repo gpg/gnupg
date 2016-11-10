@@ -1616,7 +1616,7 @@ main ( int argc, char **argv)
     {
       int created;
 
-      keydb_add_resource ("pubring.kbx", 0, 0, &created);
+      keydb_add_resource ("pubring.kbx", 0, &created);
       if (created && !no_common_certs_import)
         {
           /* Import the standard certificates for a new default keybox. */
@@ -1634,7 +1634,7 @@ main ( int argc, char **argv)
         }
     }
   for (sl = nrings; sl; sl = sl->next)
-    keydb_add_resource (sl->d, 0, 0, NULL);
+    keydb_add_resource (sl->d, 0, NULL);
   FREE_STRLIST(nrings);
 
 

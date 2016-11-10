@@ -108,7 +108,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
   audit_set_type (ctrl->audit, AUDIT_TYPE_VERIFY);
 
-  kh = keydb_new (0);
+  kh = keydb_new ();
   if (!kh)
     {
       log_error (_("failed to allocate keyDB handle\n"));
