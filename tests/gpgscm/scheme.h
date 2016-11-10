@@ -90,6 +90,11 @@ extern "C" {
 # define USE_COMPILE_HOOK 1
 #endif
 
+/* Enable faster opcode dispatch.  */
+#ifndef USE_THREADED_CODE
+# define USE_THREADED_CODE 1
+#endif
+
 #ifndef USE_STRCASECMP   /* stricmp for Unix */
 # define USE_STRCASECMP 0
 #endif
