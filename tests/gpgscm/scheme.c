@@ -773,6 +773,26 @@ static pointer find_consecutive_cells(scheme *sc, int n) {
   return sc->NIL;
 }
 
+/* Free a cell.  This is dangerous.  Only free cells that are not
+ * referenced.  */
+static INLINE void
+free_cell(scheme *sc, pointer a)
+{
+  cdr(a) = sc->free_cell;
+  sc->free_cell = a;
+  sc->fcells += 1;
+}
+
+/* Free a cell and retrieve its content.  This is dangerous.  Only
+ * free cells that are not referenced.  */
+static INLINE void
+free_cons(scheme *sc, pointer a, pointer *r_car, pointer *r_cdr)
+{
+  *r_car = car(a);
+  *r_cdr = cdr(a);
+  free_cell(sc, a);
+}
+
 /* To retain recent allocs before interpreter knows about them -
    Tehom */
 
@@ -2481,14 +2501,17 @@ static void dump_stack_free(scheme *sc)
 }
 
 static pointer _s_return(scheme *sc, pointer a) {
-    sc->value = (a);
-    if(sc->dump==sc->NIL) return sc->NIL;
-    sc->op = ivalue(car(sc->dump));
-    sc->args = cadr(sc->dump);
-    sc->envir = caddr(sc->dump);
-    sc->code = cadddr(sc->dump);
-    sc->dump = cddddr(sc->dump);
-    return sc->T;
+  pointer dump = sc->dump;
+  pointer op;
+  sc->value = (a);
+  if (dump == sc->NIL)
+    return sc->NIL;
+  free_cons(sc, dump, &op, &dump);
+  sc->op = ivalue(op);
+  free_cons(sc, dump, &sc->args, &dump);
+  free_cons(sc, dump, &sc->envir, &dump);
+  free_cons(sc, dump, &sc->code, &sc->dump);
+  return sc->T;
 }
 
 static void s_save(scheme *sc, enum scheme_opcodes op, pointer args, pointer code) {
