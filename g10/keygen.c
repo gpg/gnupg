@@ -4532,7 +4532,7 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
         use = PUBKEY_USAGE_ENC;
     }
   else
-    return gpg_error (GPG_ERR_INV_CURVE);
+    return gpg_error (GPG_ERR_UNKNOWN_CURVE);
 
   /* Parse the usage string.  */
   if (!usagestr || !*usagestr
