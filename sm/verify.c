@@ -270,7 +270,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
          we would avoid cluttering the DB with invalid
          certificates. */
       audit_log_cert (ctrl->audit, AUDIT_SAVE_CERT, cert,
-                      keydb_store_cert (cert, 0, NULL));
+                      keydb_store_cert (ctrl, cert, 0, NULL));
       ksba_cert_release (cert);
     }
 
@@ -417,7 +417,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
       /* Find the certificate of the signer */
       keydb_search_reset (kh);
-      rc = keydb_search_issuer_sn (kh, issuer, serial);
+      rc = keydb_search_issuer_sn (ctrl, kh, issuer, serial);
       if (rc)
         {
           if (rc == -1)

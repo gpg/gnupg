@@ -31,7 +31,8 @@ typedef struct keydb_handle *KEYDB_HANDLE;
 
 
 /*-- keydb.c --*/
-gpg_error_t keydb_add_resource (const char *url, int force, int *auto_created);
+gpg_error_t keydb_add_resource (ctrl_t ctrl, const char *url,
+                                int force, int *auto_created);
 KEYDB_HANDLE keydb_new (void);
 void keydb_release (KEYDB_HANDLE hd);
 int keydb_set_ephemeral (KEYDB_HANDLE hd, int yes);
@@ -54,18 +55,20 @@ int keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved);
 void keydb_rebuild_caches (void);
 
 gpg_error_t keydb_search_reset (KEYDB_HANDLE hd);
-int keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc);
-int keydb_search_first (KEYDB_HANDLE hd);
-int keydb_search_next (KEYDB_HANDLE hd);
-int keydb_search_kid (KEYDB_HANDLE hd, u32 *kid);
-int keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr);
-int keydb_search_issuer (KEYDB_HANDLE hd, const char *issuer);
-int keydb_search_issuer_sn (KEYDB_HANDLE hd,
+int keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
+                  KEYDB_SEARCH_DESC *desc, size_t ndesc);
+int keydb_search_first (ctrl_t ctrl, KEYDB_HANDLE hd);
+int keydb_search_next (ctrl_t ctrl, KEYDB_HANDLE hd);
+int keydb_search_kid (ctrl_t ctrl, KEYDB_HANDLE hd, u32 *kid);
+int keydb_search_fpr (ctrl_t ctrl, KEYDB_HANDLE hd, const byte *fpr);
+int keydb_search_issuer (ctrl_t ctrl, KEYDB_HANDLE hd, const char *issuer);
+int keydb_search_issuer_sn (ctrl_t ctrl, KEYDB_HANDLE hd,
                             const char *issuer, const unsigned char *serial);
-int keydb_search_subject (KEYDB_HANDLE hd, const char *issuer);
+int keydb_search_subject (ctrl_t ctrl, KEYDB_HANDLE hd, const char *issuer);
 
-int keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed);
-gpg_error_t keydb_set_cert_flags (ksba_cert_t cert, int ephemeral,
+int keydb_store_cert (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
+                      int *existed);
+gpg_error_t keydb_set_cert_flags (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
                                   int which, int idx,
                                   unsigned int mask, unsigned int value);
 

@@ -244,6 +244,8 @@ gpg_error_t gpgsm_status (ctrl_t ctrl, int no, const char *text);
 gpg_error_t gpgsm_status2 (ctrl_t ctrl, int no, ...) GPGRT_ATTR_SENTINEL(0);
 gpg_error_t gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text,
                                         gpg_err_code_t ec);
+gpg_error_t gpgsm_status_with_error (ctrl_t ctrl, int no, const char *text,
+                                     gpg_error_t err);
 gpg_error_t gpgsm_proxy_pinentry_notify (ctrl_t ctrl,
                                          const unsigned char *line);
 
@@ -339,7 +341,8 @@ int gpgsm_add_cert_to_certlist (ctrl_t ctrl, ksba_cert_t cert,
 int gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                            certlist_t *listaddr, int is_encrypt_to);
 void gpgsm_release_certlist (certlist_t list);
-int gpgsm_find_cert (const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert);
+int gpgsm_find_cert (ctrl_t ctrl, const char *name, ksba_sexp_t keyid,
+                     ksba_cert_t *r_cert);
 
 /*-- keylist.c --*/
 gpg_error_t gpgsm_list_keys (ctrl_t ctrl, strlist_t names,

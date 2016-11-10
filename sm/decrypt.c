@@ -400,7 +400,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                     }
 
                   keydb_search_reset (kh);
-                  rc = keydb_search_issuer_sn (kh, issuer, serial);
+                  rc = keydb_search_issuer_sn (ctrl, kh, issuer, serial);
                   if (rc)
                     {
                       log_error ("failed to find the certificate: %s\n",

@@ -144,7 +144,7 @@ gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert)
   hd = keydb_new ();
   if (!hd)
     return gpg_error (GPG_ERR_GENERAL);
-  rc = keydb_search_first (hd);
+  rc = keydb_search_first (ctrl, hd);
   if (rc)
     {
       keydb_release (hd);
@@ -180,7 +180,7 @@ gpgsm_get_default_cert (ctrl_t ctrl, ksba_cert_t *r_cert)
       ksba_cert_release (cert);
       cert = NULL;
     }
-  while (!(rc = keydb_search_next (hd)));
+  while (!(rc = keydb_search_next (ctrl, hd)));
   if (rc && rc != -1)
     log_error ("keydb_search_next failed: %s\n", gpg_strerror (rc));
 
@@ -222,7 +222,7 @@ get_default_signer (ctrl_t ctrl)
   if (!kh)
     return NULL;
 
-  rc = keydb_search (kh, &desc, 1);
+  rc = keydb_search (ctrl, kh, &desc, 1);
   if (rc)
     {
       log_debug ("failed to find default certificate: rc=%d\n", rc);

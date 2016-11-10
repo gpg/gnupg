@@ -199,7 +199,7 @@ check_and_store (ctrl_t ctrl, struct stats_s *stats,
     {
       int existed;
 
-      if (!keydb_store_cert (cert, 0, &existed))
+      if (!keydb_store_cert (ctrl, cert, 0, &existed))
         {
           ksba_cert_t next = NULL;
 
@@ -442,7 +442,7 @@ reimport_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
         }
 
       keydb_search_reset (kh);
-      err = keydb_search (kh, &desc, 1);
+      err = keydb_search (ctrl, kh, &desc, 1);
       if (err)
         {
           print_import_problem (ctrl, NULL, 0);
@@ -476,7 +476,7 @@ reimport_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
           continue;
         }
 
-      err = keydb_set_cert_flags (cert, 1, KEYBOX_FLAG_BLOB, 0,
+      err = keydb_set_cert_flags (ctrl, cert, 1, KEYBOX_FLAG_BLOB, 0,
                                   KEYBOX_FLAG_BLOB_EPHEMERAL, 0);
       if (err)
         {

@@ -1401,7 +1401,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
 
   /* Suppress duplicates at least when they follow each other.  */
   lastresname = NULL;
-  while (!(rc = keydb_search (hd, desc, ndesc)))
+  while (!(rc = keydb_search (ctrl, hd, desc, ndesc)))
     {
       unsigned int validity;
 
@@ -1462,8 +1462,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
             }
         }
 
-      if (!mode
-          || ((mode & 1) && !have_secret)
+      if (!mode          || ((mode & 1) && !have_secret)
           || ((mode & 2) && have_secret)  )
         {
           if (ctrl->with_colons)
@@ -1507,7 +1506,7 @@ list_external_cb (void *cb_value, ksba_cert_t cert)
 {
   struct list_external_parm_s *parm = cb_value;
 
-  if (keydb_store_cert (cert, 1, NULL))
+  if (keydb_store_cert (parm->ctrl, cert, 1, NULL))
     log_error ("error storing certificate as ephemeral\n");
 
   if (parm->print_header)

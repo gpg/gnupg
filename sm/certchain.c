@@ -438,7 +438,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
    for an issuer ISSUER with a subjectKeyIdentifier of KEYID.  Returns
    0 on success or -1 when not found. */
 static int
-find_up_search_by_keyid (KEYDB_HANDLE kh,
+find_up_search_by_keyid (ctrl_t ctrl, KEYDB_HANDLE kh,
                          const char *issuer, ksba_sexp_t keyid)
 {
   int rc;
@@ -448,7 +448,7 @@ find_up_search_by_keyid (KEYDB_HANDLE kh,
   ksba_isotime_t not_before, last_not_before;
 
   keydb_search_reset (kh);
-  while (!(rc = keydb_search_subject (kh, issuer)))
+  while (!(rc = keydb_search_subject (ctrl, kh, issuer)))
     {
       ksba_cert_release (cert); cert = NULL;
       rc = keydb_get_cert (kh, &cert);
@@ -499,12 +499,20 @@ find_up_search_by_keyid (KEYDB_HANDLE kh,
 }
 
 
+struct find_up_store_certs_s
+{
+  ctrl_t ctrl;
+  int count;
+};
+
 static void
 find_up_store_certs_cb (void *cb_value, ksba_cert_t cert)
 {
-  if (keydb_store_cert (cert, 1, NULL))
+  struct find_up_store_certs_s *parm = cb_value;
+
+  if (keydb_store_cert (parm->ctrl, cert, 1, NULL))
     log_error ("error storing issuer certificate as ephemeral\n");
-  ++*(int*)cb_value;
+  parm->count++;
 }
 
 
@@ -519,9 +527,12 @@ find_up_external (ctrl_t ctrl, KEYDB_HANDLE kh,
 {
   int rc;
   strlist_t names = NULL;
-  int count = 0;
+  struct find_up_store_certs_s find_up_store_certs_parm;
   char *pattern;
   const char *s;
+
+  find_up_store_certs_parm.ctrl = ctrl;
+  find_up_store_certs_parm.count = 0;
 
   if (opt.verbose)
     log_info (_("looking up issuer at external location\n"));
@@ -539,17 +550,19 @@ find_up_external (ctrl_t ctrl, KEYDB_HANDLE kh,
   add_to_strlist (&names, pattern);
   xfree (pattern);
 
-  rc = gpgsm_dirmngr_lookup (ctrl, names, 0, find_up_store_certs_cb, &count);
+  rc = gpgsm_dirmngr_lookup (ctrl, names, 0, find_up_store_certs_cb,
+                             &find_up_store_certs_parm);
   free_strlist (names);
 
   if (opt.verbose)
-    log_info (_("number of issuers matching: %d\n"), count);
+    log_info (_("number of issuers matching: %d\n"),
+              find_up_store_certs_parm.count);
   if (rc)
     {
       log_error ("external key lookup failed: %s\n", gpg_strerror (rc));
       rc = -1;
     }
-  else if (!count)
+  else if (!find_up_store_certs_parm.count)
     rc = -1;
   else
     {
@@ -558,11 +571,11 @@ find_up_external (ctrl_t ctrl, KEYDB_HANDLE kh,
          we temporary switch to ephemeral mode. */
       old = keydb_set_ephemeral (kh, 1);
       if (keyid)
-        rc = find_up_search_by_keyid (kh, issuer, keyid);
+        rc = find_up_search_by_keyid (ctrl, kh, issuer, keyid);
       else
         {
           keydb_search_reset (kh);
-          rc = keydb_search_subject (kh, issuer);
+          rc = keydb_search_subject (ctrl, kh, issuer);
         }
       keydb_set_ephemeral (kh, old);
     }
@@ -581,10 +594,13 @@ find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
 {
   int rc;
   strlist_t names = NULL;
-  int count = 0;
+  struct find_up_store_certs_s find_up_store_certs_parm;
   char *pattern;
 
   (void)kh;
+
+  find_up_store_certs_parm.ctrl = ctrl;
+  find_up_store_certs_parm.count = 0;
 
   if (opt.verbose)
     log_info (_("looking up issuer from the Dirmngr cache\n"));
@@ -607,15 +623,17 @@ find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
   add_to_strlist (&names, pattern);
   xfree (pattern);
 
-  rc = gpgsm_dirmngr_lookup (ctrl, names, 1, find_up_store_certs_cb, &count);
+  rc = gpgsm_dirmngr_lookup (ctrl, names, 1, find_up_store_certs_cb,
+                             &find_up_store_certs_parm);
   free_strlist (names);
 
   if (opt.verbose)
-    log_info (_("number of matching certificates: %d\n"), count);
+    log_info (_("number of matching certificates: %d\n"),
+              find_up_store_certs_parm.count);
   if (rc && !opt.quiet)
     log_info (_("dirmngr cache-only key lookup failed: %s\n"),
               gpg_strerror (rc));
-  return (!rc && count)? 0 : -1;
+  return (!rc && find_up_store_certs_parm.count)? 0 : -1;
 }
 
 
@@ -642,7 +660,7 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
       const char *s = ksba_name_enum (authid, 0);
       if (s && *authidno)
         {
-          rc = keydb_search_issuer_sn (kh, s, authidno);
+          rc = keydb_search_issuer_sn (ctrl, kh, s, authidno);
           if (rc)
             keydb_search_reset (kh);
 
@@ -665,7 +683,7 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
               int old = keydb_set_ephemeral (kh, 1);
               if (!old)
                 {
-                  rc = keydb_search_issuer_sn (kh, s, authidno);
+                  rc = keydb_search_issuer_sn (ctrl, kh, s, authidno);
                   if (rc)
                     keydb_search_reset (kh);
 
@@ -685,14 +703,14 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
              subject and stop for the one with a matching
              subjectKeyIdentifier. */
           /* Fixme: Should we also search in the dirmngr?  */
-          rc = find_up_search_by_keyid (kh, issuer, keyid);
+          rc = find_up_search_by_keyid (ctrl, kh, issuer, keyid);
           if (!rc && DBG_X509)
             log_debug ("  found via authid and keyid\n");
           if (rc)
             {
               int old = keydb_set_ephemeral (kh, 1);
               if (!old)
-                rc = find_up_search_by_keyid (kh, issuer, keyid);
+                rc = find_up_search_by_keyid (ctrl, kh, issuer, keyid);
               if (!rc && DBG_X509)
                 log_debug ("  found via authid and keyid (ephem)\n");
               keydb_set_ephemeral (kh, old);
@@ -709,11 +727,11 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
             {
               int old = keydb_set_ephemeral (kh, 1);
               if (keyid)
-                rc = find_up_search_by_keyid (kh, issuer, keyid);
+                rc = find_up_search_by_keyid (ctrl, kh, issuer, keyid);
               else
                 {
                   keydb_search_reset (kh);
-                  rc = keydb_search_subject (kh, issuer);
+                  rc = keydb_search_subject (ctrl, kh, issuer);
                 }
               keydb_set_ephemeral (kh, old);
             }
@@ -765,7 +783,7 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
     }
 
   if (rc) /* Not found via authorithyKeyIdentifier, try regular issuer name. */
-    rc = keydb_search_subject (kh, issuer);
+    rc = keydb_search_subject (ctrl, kh, issuer);
   if (rc == -1 && !find_next)
     {
       int old;
@@ -779,7 +797,7 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
       if (!old)
         {
           keydb_search_reset (kh);
-          rc = keydb_search_subject (kh, issuer);
+          rc = keydb_search_subject (ctrl, kh, issuer);
         }
       keydb_set_ephemeral (kh, old);
 
@@ -983,7 +1001,7 @@ is_cert_still_valid (ctrl_t ctrl, int force_ocsp, int lm, estream_t fp,
           /* Store that in the keybox so that key listings are able to
              return the revoked flag.  We don't care about error,
              though. */
-          keydb_set_cert_flags (subject_cert, 1, KEYBOX_FLAG_VALIDITY, 0,
+          keydb_set_cert_flags (ctrl, subject_cert, 1, KEYBOX_FLAG_VALIDITY, 0,
                                 ~0, VALIDITY_REVOKED);
           break;
 
@@ -1786,7 +1804,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
              been stored in the keybox and thus the flag can't be set.
              We ignore this error because it will later be stored
              anyway.  */
-          err = keydb_set_cert_flags (ci->cert, 1, KEYBOX_FLAG_BLOB, 0,
+          err = keydb_set_cert_flags (ctrl, ci->cert, 1, KEYBOX_FLAG_BLOB, 0,
                                       KEYBOX_FLAG_BLOB_EPHEMERAL, 0);
           if (!ci->next && gpg_err_code (err) == GPG_ERR_NOT_FOUND)
             ;

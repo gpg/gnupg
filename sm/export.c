@@ -206,7 +206,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
         keydb_set_ephemeral (hd, 1);
     }
 
-  while (!(rc = keydb_search (hd, desc, ndesc)))
+  while (!(rc = keydb_search (ctrl, hd, desc, ndesc)))
     {
       unsigned char fpr[20];
       int exists;
@@ -362,7 +362,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream, int rawmode)
     }
 
   /* Lookup the certificate and make sure that it is unique. */
-  err = keydb_search (hd, desc, 1);
+  err = keydb_search (ctrl, hd, desc, 1);
   if (!err)
     {
       err = keydb_get_cert (hd, &cert);
@@ -373,7 +373,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream, int rawmode)
         }
 
     next_ambiguous:
-      err = keydb_search (hd, desc, 1);
+      err = keydb_search (ctrl, hd, desc, 1);
       if (!err)
         {
           ksba_cert_t cert2 = NULL;

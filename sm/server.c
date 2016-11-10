@@ -1179,7 +1179,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
 
   line = skip_options (line);
 
-  err = gpgsm_find_cert (line, NULL, &cert);
+  err = gpgsm_find_cert (ctrl, line, NULL, &cert);
   if (err)
     ;
   else if (!(grip = gpgsm_get_keygrip_hexstring (cert)))
@@ -1463,6 +1463,19 @@ gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text,
   char buf[30];
 
   sprintf (buf, "%u", (unsigned int)ec);
+  if (text)
+    return gpgsm_status2 (ctrl, no, text, buf, NULL);
+  else
+    return gpgsm_status2 (ctrl, no, buf, NULL);
+}
+
+gpg_error_t
+gpgsm_status_with_error (ctrl_t ctrl, int no, const char *text,
+                         gpg_error_t err)
+{
+  char buf[30];
+
+  snprintf (buf, sizeof buf, "%u", err);
   if (text)
     return gpgsm_status2 (ctrl, no, text, buf, NULL);
   else

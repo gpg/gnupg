@@ -72,7 +72,7 @@ delete_one (ctrl_t ctrl, const char *username)
       keydb_set_ephemeral (kh, 1);
     }
 
-  rc = keydb_search (kh, &desc, 1);
+  rc = keydb_search (ctrl, kh, &desc, 1);
   if (!rc)
     rc = keydb_get_cert (kh, &cert);
   if (!rc && !is_ephem)
@@ -82,7 +82,7 @@ delete_one (ctrl_t ctrl, const char *username)
       gpgsm_get_fingerprint (cert, 0, fpr, NULL);
 
     next_ambigious:
-      rc = keydb_search (kh, &desc, 1);
+      rc = keydb_search (ctrl, kh, &desc, 1);
       if (rc == -1)
         rc = 0;
       else if (!rc)
@@ -126,7 +126,7 @@ delete_one (ctrl_t ctrl, const char *username)
   do
     {
       keydb_search_reset (kh);
-      rc = keydb_search (kh, &desc, 1);
+      rc = keydb_search (ctrl, kh, &desc, 1);
       if (rc)
         {
           log_error ("problem re-searching certificate: %s\n",

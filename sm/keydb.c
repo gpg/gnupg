@@ -53,6 +53,10 @@ struct resource_item {
 static struct resource_item all_resources[MAX_KEYDB_RESOURCES];
 static int used_resources;
 
+/* Whether we have successfully registered any resource.  */
+static int any_registered;
+
+
 struct keydb_handle {
   int locked;
   int found;
@@ -121,7 +125,7 @@ maybe_create_keybox (char *filename, int force, int *r_created)
 
   /* A quick test whether the filename already exists. */
   if (!access (filename, F_OK))
-    return 0;
+    return !access (filename, R_OK)? 0 : gpg_error (GPG_ERR_EACCES);
 
   /* If we don't want to create a new file at all, there is no need to
      go any further - bail out right here.  */
@@ -249,9 +253,8 @@ maybe_create_keybox (char *filename, int force, int *r_created)
  * if the function has created a new keybox.
  */
 gpg_error_t
-keydb_add_resource (const char *url, int force, int *auto_created)
+keydb_add_resource (ctrl_t ctrl, const char *url, int force, int *auto_created)
 {
-  static int any_public;
   const char *resname = url;
   char *filename = NULL;
   gpg_error_t err = 0;
@@ -292,7 +295,7 @@ keydb_add_resource (const char *url, int force, int *auto_created)
     filename = xstrdup (resname);
 
   if (!force)
-    force = !any_public;
+    force = !any_registered;
 
   /* see whether we can determine the filetype */
   if (rt == KEYDB_RESOURCE_TYPE_NONE)
@@ -380,9 +383,13 @@ keydb_add_resource (const char *url, int force, int *auto_created)
 
  leave:
   if (err)
-    log_error ("keyblock resource '%s': %s\n", filename, gpg_strerror (err));
+    {
+      log_error ("keyblock resource '%s': %s\n", filename, gpg_strerror (err));
+      gpgsm_status_with_error (ctrl, STATUS_ERROR,
+                               "add_keyblock_resource", err);
+    }
   else
-    any_public = 1;
+    any_registered = 1;
   xfree (filename);
   return err;
 }
@@ -962,13 +969,21 @@ keydb_search_reset (KEYDB_HANDLE hd)
  * for a keyblock which contains one of the keys described in the DESC array.
  */
 int
-keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
+keydb_search (ctrl_t ctrl, KEYDB_HANDLE hd,
+              KEYDB_SEARCH_DESC *desc, size_t ndesc)
 {
   int rc = -1;
   unsigned long skipped;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!any_registered)
+    {
+      gpgsm_status_with_error (ctrl, STATUS_ERROR, "keydb_search",
+                               gpg_error (GPG_ERR_KEYRING_OPEN));
+      return gpg_error (GPG_ERR_NOT_FOUND);
+    }
 
   while (rc == -1 && hd->current >= 0 && hd->current < hd->used)
     {
@@ -996,27 +1011,27 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
 
 
 int
-keydb_search_first (KEYDB_HANDLE hd)
+keydb_search_first (ctrl_t ctrl, KEYDB_HANDLE hd)
 {
   KEYDB_SEARCH_DESC desc;
 
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FIRST;
-  return keydb_search (hd, &desc, 1);
+  return keydb_search (ctrl, hd, &desc, 1);
 }
 
 int
-keydb_search_next (KEYDB_HANDLE hd)
+keydb_search_next (ctrl_t ctrl, KEYDB_HANDLE hd)
 {
   KEYDB_SEARCH_DESC desc;
 
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_NEXT;
-  return keydb_search (hd, &desc, 1);
+  return keydb_search (ctrl, hd, &desc, 1);
 }
 
 int
-keydb_search_kid (KEYDB_HANDLE hd, u32 *kid)
+keydb_search_kid (ctrl_t ctrl, KEYDB_HANDLE hd, u32 *kid)
 {
   KEYDB_SEARCH_DESC desc;
 
@@ -1026,22 +1041,22 @@ keydb_search_kid (KEYDB_HANDLE hd, u32 *kid)
   desc.mode = KEYDB_SEARCH_MODE_LONG_KID;
   desc.u.kid[0] = kid[0];
   desc.u.kid[1] = kid[1];
-  return keydb_search (hd, &desc, 1);
+  return keydb_search (ctrl, hd, &desc, 1);
 }
 
 int
-keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr)
+keydb_search_fpr (ctrl_t ctrl, KEYDB_HANDLE hd, const byte *fpr)
 {
   KEYDB_SEARCH_DESC desc;
 
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FPR;
   memcpy (desc.u.fpr, fpr, 20);
-  return keydb_search (hd, &desc, 1);
+  return keydb_search (ctrl, hd, &desc, 1);
 }
 
 int
-keydb_search_issuer (KEYDB_HANDLE hd, const char *issuer)
+keydb_search_issuer (ctrl_t ctrl, KEYDB_HANDLE hd, const char *issuer)
 {
   KEYDB_SEARCH_DESC desc;
   int rc;
@@ -1049,12 +1064,12 @@ keydb_search_issuer (KEYDB_HANDLE hd, const char *issuer)
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_ISSUER;
   desc.u.name = issuer;
-  rc = keydb_search (hd, &desc, 1);
+  rc = keydb_search (ctrl, hd, &desc, 1);
   return rc;
 }
 
 int
-keydb_search_issuer_sn (KEYDB_HANDLE hd,
+keydb_search_issuer_sn (ctrl_t ctrl, KEYDB_HANDLE hd,
                         const char *issuer, ksba_const_sexp_t serial)
 {
   KEYDB_SEARCH_DESC desc;
@@ -1073,12 +1088,12 @@ keydb_search_issuer_sn (KEYDB_HANDLE hd,
     return gpg_error (GPG_ERR_INV_VALUE);
   desc.sn = s+1;
   desc.u.name = issuer;
-  rc = keydb_search (hd, &desc, 1);
+  rc = keydb_search (ctrl, hd, &desc, 1);
   return rc;
 }
 
 int
-keydb_search_subject (KEYDB_HANDLE hd, const char *name)
+keydb_search_subject (ctrl_t ctrl, KEYDB_HANDLE hd, const char *name)
 {
   KEYDB_SEARCH_DESC desc;
   int rc;
@@ -1086,7 +1101,7 @@ keydb_search_subject (KEYDB_HANDLE hd, const char *name)
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_SUBJECT;
   desc.u.name = name;
-  rc = keydb_search (hd, &desc, 1);
+  rc = keydb_search (ctrl, hd, &desc, 1);
   return rc;
 }
 
@@ -1097,7 +1112,7 @@ keydb_search_subject (KEYDB_HANDLE hd, const char *name)
    If EXISTED is not NULL it will be set to true if the certificate
    was already in the DB. */
 int
-keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed)
+keydb_store_cert (ctrl_t ctrl, ksba_cert_t cert, int ephemeral, int *existed)
 {
   KEYDB_HANDLE kh;
   int rc;
@@ -1127,7 +1142,7 @@ keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed)
   if (rc)
     return rc;
 
-  rc = keydb_search_fpr (kh, fpr);
+  rc = keydb_search_fpr (ctrl, kh, fpr);
   if (rc != -1)
     {
       keydb_release (kh);
@@ -1139,7 +1154,7 @@ keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed)
             {
               /* Remove ephemeral flags from existing certificate to "store"
                  it permanently. */
-              rc = keydb_set_cert_flags (cert, 1, KEYBOX_FLAG_BLOB, 0,
+              rc = keydb_set_cert_flags (ctrl, cert, 1, KEYBOX_FLAG_BLOB, 0,
                                          KEYBOX_FLAG_BLOB_EPHEMERAL, 0);
               if (rc)
                 {
@@ -1183,7 +1198,7 @@ keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed)
    transaction by locating the certificate in the DB and updating the
    flags. */
 gpg_error_t
-keydb_set_cert_flags (ksba_cert_t cert, int ephemeral,
+keydb_set_cert_flags (ctrl_t ctrl, ksba_cert_t cert, int ephemeral,
                       int which, int idx,
                       unsigned int mask, unsigned int value)
 {
@@ -1216,7 +1231,7 @@ keydb_set_cert_flags (ksba_cert_t cert, int ephemeral,
       return err;
     }
 
-  err = keydb_search_fpr (kh, fpr);
+  err = keydb_search_fpr (ctrl, kh, fpr);
   if (err)
     {
       if (err == -1)
@@ -1313,7 +1328,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
       goto leave;
     }
 
-  while (!(rc = keydb_search (hd, desc, ndesc)))
+  while (!(rc = keydb_search (ctrl, hd, desc, ndesc)))
     {
       if (!names)
         desc[0].mode = KEYDB_SEARCH_MODE_NEXT;

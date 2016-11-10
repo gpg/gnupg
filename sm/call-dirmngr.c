@@ -78,6 +78,7 @@ struct lookup_parm_s {
 };
 
 struct run_command_parm_s {
+  ctrl_t ctrl;
   assuan_context_t ctx;
 };
 
@@ -407,7 +408,7 @@ inq_certificate (void *opaque, const char *line)
       ksba_cert_t cert;
 
 
-      err = gpgsm_find_cert (line, ski, &cert);
+      err = gpgsm_find_cert (parm->ctrl, line, ski, &cert);
       if (err)
         {
           log_error ("certificate not found: %s\n", gpg_strerror (err));
@@ -580,7 +581,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
               if (!kh)
                 rc = gpg_error (GPG_ERR_ENOMEM);
               if (!rc)
-                rc = keydb_search_fpr (kh, stparm.fpr);
+                rc = keydb_search_fpr (ctrl, kh, stparm.fpr);
               if (!rc)
                 rc = keydb_get_cert (kh, &rspcert);
               if (rc)
@@ -928,7 +929,7 @@ run_command_inq_cb (void *opaque, const char *line)
       if (!*line)
         return gpg_error (GPG_ERR_ASS_PARAMETER);
 
-      err = gpgsm_find_cert (line, NULL, &cert);
+      err = gpgsm_find_cert (parm->ctrl, line, NULL, &cert);
       if (err)
         {
           log_error ("certificate not found: %s\n", gpg_strerror (err));
@@ -1002,6 +1003,7 @@ gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
   if (rc)
     return rc;
 
+  parm.ctrl = ctrl;
   parm.ctx = dirmngr_ctx;
 
   len = strlen (command) + 1;

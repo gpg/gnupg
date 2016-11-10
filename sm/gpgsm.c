@@ -1616,7 +1616,7 @@ main ( int argc, char **argv)
     {
       int created;
 
-      keydb_add_resource ("pubring.kbx", 0, &created);
+      keydb_add_resource (&ctrl, "pubring.kbx", 0, &created);
       if (created && !no_common_certs_import)
         {
           /* Import the standard certificates for a new default keybox. */
@@ -1634,7 +1634,7 @@ main ( int argc, char **argv)
         }
     }
   for (sl = nrings; sl; sl = sl->next)
-    keydb_add_resource (sl->d, 0, NULL);
+    keydb_add_resource (&ctrl, sl->d, 0, NULL);
   FREE_STRLIST(nrings);
 
 
@@ -1996,7 +1996,7 @@ main ( int argc, char **argv)
           ksba_cert_t cert = NULL;
           char *grip = NULL;
 
-          rc = gpgsm_find_cert (*argv, NULL, &cert);
+          rc = gpgsm_find_cert (&ctrl, *argv, NULL, &cert);
           if (rc)
             ;
           else if (!(grip = gpgsm_get_keygrip_hexstring (cert)))

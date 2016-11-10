@@ -329,7 +329,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
           char *first_issuer = NULL;
 
         get_next:
-          rc = keydb_search (kh, &desc, 1);
+          rc = keydb_search (ctrl, kh, &desc, 1);
           if (!rc)
             rc = keydb_get_cert (kh, &cert);
           if (!rc)
@@ -376,7 +376,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
               certlist_t dup_certs = NULL;
 
             next_ambigious:
-              rc = keydb_search (kh, &desc, 1);
+              rc = keydb_search (ctrl, kh, &desc, 1);
               if (rc == -1)
                 rc = 0;
               else if (!rc)
@@ -488,7 +488,8 @@ gpgsm_release_certlist (certlist_t list)
    additional filter value which must match the
    subjectKeyIdentifier. */
 int
-gpgsm_find_cert (const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert)
+gpgsm_find_cert (ctrl_t ctrl,
+                 const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert)
 {
   int rc;
   KEYDB_SEARCH_DESC desc;
@@ -504,7 +505,7 @@ gpgsm_find_cert (const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert)
       else
         {
         nextone:
-          rc = keydb_search (kh, &desc, 1);
+          rc = keydb_search (ctrl, kh, &desc, 1);
           if (!rc)
             {
               rc = keydb_get_cert (kh, r_cert);
@@ -537,7 +538,7 @@ gpgsm_find_cert (const char *name, ksba_sexp_t keyid, ksba_cert_t *r_cert)
           if (!rc && !keyid)
             {
             next_ambiguous:
-              rc = keydb_search (kh, &desc, 1);
+              rc = keydb_search (ctrl, kh, &desc, 1);
               if (rc == -1)
                 rc = 0;
               else

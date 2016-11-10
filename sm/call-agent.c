@@ -967,7 +967,7 @@ learn_cb (void *opaque, const void *buffer, size_t length)
     {
       int existed;
 
-      if (!keydb_store_cert (cert, 0, &existed))
+      if (!keydb_store_cert (parm->ctrl, cert, 0, &existed))
         {
           if (opt.verbose > 1 && existed)
             log_info ("certificate already in DB\n");

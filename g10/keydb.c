@@ -64,6 +64,8 @@ static int used_resources;
    to the struct resource_item's TOKEN.  */
 static void *primary_keydb;
 
+/* Whether we have successfully registered any resource.  */
+static int any_registered;
 
 /* This is a simple cache used to return the last result of a
    successful fingerprint search.  This works only for keybox resources
@@ -277,7 +279,7 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
 
   /* A quick test whether the filename already exists. */
   if (!access (filename, F_OK))
-    return 0;
+    return !access (filename, R_OK)? 0 : gpg_error (GPG_ERR_EACCES);
 
   /* If we don't want to create a new file at all, there is no need to
      go any further - bail out right here.  */
@@ -616,8 +618,6 @@ keydb_search_desc_dump (struct keydb_search_desc *desc)
 gpg_error_t
 keydb_add_resource (const char *url, unsigned int flags)
 {
-  /* Whether we have successfully registered a resource.  */
-  static int any_registered;
   /* The file named by the URL (i.e., without the prototype).  */
   const char *resname = url;
 
@@ -819,7 +819,11 @@ keydb_add_resource (const char *url, unsigned int flags)
 
  leave:
   if (err)
-    log_error (_("keyblock resource '%s': %s\n"), filename, gpg_strerror (err));
+    {
+      log_error (_("keyblock resource '%s': %s\n"),
+                 filename, gpg_strerror (err));
+      write_status_error ("add_keyblock_resource", err);
+    }
   else
     any_registered = 1;
   xfree (filename);
@@ -1874,6 +1878,12 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
+
+  if (!any_registered)
+    {
+      write_status_error ("keydb_search", gpg_error (GPG_ERR_KEYRING_OPEN));
+      return gpg_error (GPG_ERR_NOT_FOUND);
+    }
 
   if (DBG_CLOCK)
     log_clock ("keydb_search enter");
