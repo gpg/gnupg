@@ -805,6 +805,17 @@ static void push_recent_alloc(scheme *sc, pointer recent, pointer extra)
   car(sc->sink) = holder;
 }
 
+static INLINE void ok_to_freely_gc(scheme *sc)
+{
+  pointer a = car(sc->sink), next;
+  car(sc->sink) = sc->NIL;
+  while (a != sc->NIL)
+    {
+      next = cdr(a);
+      free_cell(sc, a);
+      a = next;
+    }
+}
 
 static pointer get_cell(scheme *sc, pointer a, pointer b)
 {
@@ -831,12 +842,6 @@ static pointer get_vector_object(scheme *sc, int len, pointer init)
   push_recent_alloc(sc, cells, sc->NIL);
   return cells;
 }
-
-static INLINE void ok_to_freely_gc(scheme *sc)
-{
-  car(sc->sink) = sc->NIL;
-}
-
 
 #if defined TSGRIND
 static void check_cell_alloced(pointer p, int expect_alloced)
