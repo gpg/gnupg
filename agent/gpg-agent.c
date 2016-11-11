@@ -384,9 +384,9 @@ static pid_t parent_pid = (pid_t)(-1);
 static int active_connections;
 
 /* This object is used to dispatch progress messages from Libgcrypt to
- * the right thread.  Given that we won't have at max a few dozen
- * connections at the same time using a linked list is the easiest way
- * to handle this. */
+ * the right thread.  Given that we will have at max only a few dozen
+ * connections at a time, using a linked list is the easiest way to
+ * handle this. */
 struct progress_dispatch_s
 {
   struct progress_dispatch_s *next;
@@ -1747,6 +1747,17 @@ agent_libgcrypt_progress_cb (void *data, const char *what, int printchar,
       break;
   if (dispatch && dispatch->cb)
     dispatch->cb (dispatch->ctrl, what, printchar, current, total);
+
+  /* If Libgcrypt tells us that it needs more entropy, we better take
+   * a nap to give other threads a chance to run.  Note that Libgcrypt
+   * does not know about nPth and thus when it selects and reads from
+   * /dev/random this will block the process.  Maybe we should add a
+   * function similar to gpgrt_set_syscall_clamp to Libgcrypt or use
+   * those clamps directly.  For now sleeping for 100ms seems to be
+   * appropriate. */
+  if (what && !strcmp (what, "need_entropy"))
+    npth_usleep (100000);
+
 }
 
 
