@@ -261,6 +261,9 @@ static gpg_error_t (*tls_callback) (http_t, http_session_t, int);
 /* The list of files with trusted CA certificates.  */
 static strlist_t tls_ca_certlist;
 
+/* The global callback for net activity.  */
+static void (*netactivity_cb)(void);
+
 
 
 #if defined(HAVE_W32_SYSTEM) && !defined(HTTP_NO_WSASTARTUP)
@@ -497,6 +500,25 @@ http_register_tls_ca (const char *fname)
         sl->flags = 1;
     }
 }
+
+
+/* Register a callback which is called every time the HTTP mode has
+ * made a successful connection to some server.  */
+void
+http_register_netactivity_cb (void (*cb)(void))
+{
+  netactivity_cb = cb;
+}
+
+
+/* Call the netactivity callback if any.  */
+static void
+notify_netactivity (void)
+{
+  if (netactivity_cb)
+    netactivity_cb ();
+}
+
 
 
 #ifdef USE_TLS
@@ -2279,6 +2301,8 @@ connect_server (const char *server, unsigned short port,
             *r_host_not_found = 1;
           log_error ("can't connect to '%s': %s\n", server, strerror (errno));
         }
+      else
+        notify_netactivity ();
       return sock;
 
 #else /*!ASSUAN_SOCK_TOR*/
@@ -2371,7 +2395,10 @@ connect_server (const char *server, unsigned short port,
           if (ret)
             last_errno = errno;
           else
-            connected = 1;
+            {
+              connected = 1;
+              notify_netactivity ();
+            }
         }
       free_dns_addrinfo (aibuf);
     }

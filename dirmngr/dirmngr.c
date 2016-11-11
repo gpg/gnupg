@@ -328,6 +328,7 @@ static void cleanup (void);
 static ldap_server_t parse_ldapserver_file (const char* filename);
 #endif /*USE_LDAP*/
 static fingerprint_list_t parse_ocsp_signer (const char *string);
+static void netactivity_action (void);
 static void handle_connections (assuan_fd_t listen_fd);
 
 /* NPth wrapper function definitions. */
@@ -995,6 +996,7 @@ main (int argc, char **argv)
 #if USE_LDAP
       ldap_wrapper_launch_thread ();
 #endif /*USE_LDAP*/
+      http_register_netactivity_cb (netactivity_action);
       start_command_handler (ASSUAN_INVALID_FD);
       shutdown_reaper ();
     }
@@ -1032,6 +1034,7 @@ main (int argc, char **argv)
 #if USE_LDAP
       ldap_wrapper_launch_thread ();
 #endif /*USE_LDAP*/
+      http_register_netactivity_cb (netactivity_action);
       handle_connections (3);
       assuan_sock_close (3);
       shutdown_reaper ();
@@ -1232,6 +1235,7 @@ main (int argc, char **argv)
 #if USE_LDAP
       ldap_wrapper_launch_thread ();
 #endif /*USE_LDAP*/
+      http_register_netactivity_cb (netactivity_action);
       handle_connections (fd);
       assuan_sock_close (fd);
       shutdown_reaper ();
@@ -1701,6 +1705,16 @@ dirmngr_sighup_action (void)
   crl_cache_init ();
 }
 
+
+/* This function is called if some network activity was done.  At this
+ * point we know the we have a network and we can decide whether to
+ * run scheduled background tasks soon.  The function should return
+ * quickly and only trigger actions for another thread. */
+static void
+netactivity_action (void)
+{
+  log_debug ("network activity seen\n");
+}
 
 
 /* The signal handler. */
