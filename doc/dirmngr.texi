@@ -82,8 +82,9 @@ This is only used for testing.
 @item --daemon
 @opindex daemon
 Run in background daemon mode and listen for commands on a socket.
-Note that this also changes the default home directory and enables the
-internal certificate validation code.  This mode is deprecated.
+This is the way @command{dirmngr} is started on demand by the other
+GnuPG components.  To force starting @command{dirmngr} it is in
+general best to use @code{gpgconf --launch dirmngr}.
 
 @item --supervised
 @opindex supervised
@@ -141,21 +142,11 @@ per-user configuration file.  The default configuration file is named
 @item --homedir @var{dir}
 @opindex options
 Set the name of the home directory to @var{dir}.  This option is only
-effective when used on the command line.  The default depends on the
-running mode:
-
-@table @asis
-
-@item With @code{--daemon} given on the commandline
-the directory named @file{@value{SYSCONFDIR}} is used for configuration files
-and @file{@value{LOCALCACHEDIR}} for cached CRLs.
-
-@item Without @code{--daemon} given on the commandline
+effective when used on the command line.  The default os
 the directory named @file{.gnupg} directly below the home directory
 of the user unless the environment variable @code{GNUPGHOME} has been set
 in which case its value will be used.  All kind of data is stored below
 this directory.
-@end table
 
 
 @item -v
@@ -345,8 +336,7 @@ configured LDAP server if the connection using the "proxy" failed.
 @opindex ldapserverlist-file
 Read the list of LDAP servers to consult for CRLs and certificates from
 file instead of the default per-user ldap server list file. The default
-value for @var{file} is @file{dirmngr_ldapservers.conf} or
-@file{ldapservers.conf} when running in @option{--daemon} mode.
+value for @var{file} is @file{dirmngr_ldapservers.conf}.
 
 This server list file contains one LDAP server per line in the format
 
