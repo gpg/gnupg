@@ -901,6 +901,14 @@ thread_init_once (void)
       npth_init ();
     }
   gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
+  /* Now that we have set the syscall clamp we need to tell Libgcrypt
+   * that it should get them from libgpg-error.  Note that Libgcrypt
+   * has already been initialized but at that point nPth was not
+   * initialized and thus Libgcrypt could not set its system call
+   * clamp.  */
+#if GCRYPT_VERSION_NUMBER >= 0x010800 /* 1.8.0 */
+  gcry_control (GCRYCTL_REINIT_SYSCALL_CLAMP, 0, 0);
+#endif
 }
 
 
@@ -1748,16 +1756,14 @@ agent_libgcrypt_progress_cb (void *data, const char *what, int printchar,
   if (dispatch && dispatch->cb)
     dispatch->cb (dispatch->ctrl, what, printchar, current, total);
 
-  /* If Libgcrypt tells us that it needs more entropy, we better take
-   * a nap to give other threads a chance to run.  Note that Libgcrypt
-   * does not know about nPth and thus when it selects and reads from
-   * /dev/random this will block the process.  Maybe we should add a
-   * function similar to gpgrt_set_syscall_clamp to Libgcrypt or use
-   * those clamps directly.  For now sleeping for 100ms seems to be
-   * appropriate. */
+  /* Libgcrypt < 1.8 does not know about nPth and thus when it reads
+   * from /dev/random this will block the process.  To mitigate this
+   * problem we take a short nap when Libgcrypt tells us that it needs
+   * more entropy.  This way other threads have chance to run.  */
+#if GCRYPT_VERSION_NUMBER < 0x010800 /* 1.8.0 */
   if (what && !strcmp (what, "need_entropy"))
-    npth_usleep (100000);
-
+    npth_usleep (100000); /* 100ms */
+#endif
 }
 
 
