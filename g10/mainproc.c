@@ -2203,6 +2203,8 @@ check_sig_and_print (CTX c, kbnode_t node)
             }
         }
 
+      free_public_key (pk);
+      pk = NULL;
       release_kbnode( keyblock );
       if (rc)
         g10_errors_seen = 1;
