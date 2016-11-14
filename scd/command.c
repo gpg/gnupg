@@ -2103,7 +2103,8 @@ send_status_info (ctrl_t ctrl, const char *keyword, ...)
         }
       for ( ; valuelen && n < DIM (buf)-2; n++, valuelen--, value++)
         {
-          if (*value < ' ' || *value == '+')
+          if (*value == '+' || *value == '\"' || *value == '%'
+              || *value < ' ')
             {
               sprintf (p, "%%%02X", *value);
               p += 3;
