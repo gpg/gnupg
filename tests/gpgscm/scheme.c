@@ -653,13 +653,119 @@ static int alloc_cellseg(scheme *sc, int n) {
      return n;
 }
 
+
+
+/* Controlling the garbage collector.
+ *
+ * Every time a cell is allocated, the interpreter may run out of free
+ * cells and do a garbage collection.  This is problematic because it
+ * might garbage collect objects that have been allocated, but are not
+ * yet made available to the interpreter.
+ *
+ * Previously, we would plug such newly allocated cells into the list
+ * of newly allocated objects rooted at car(sc->sink), but that
+ * requires allocating yet another cell increasing pressure on the
+ * memory management system.
+ *
+ * A faster alternative is to preallocate the cells needed for an
+ * operation and make sure the garbage collection is not run until all
+ * allocated objects are plugged in.  This can be done with gc_disable
+ * and gc_enable.
+ */
+
+/* The garbage collector is enabled if the inhibit counter is
+ * zero.  */
+#define GC_ENABLED	0
+
+/* For now we provide a way to disable this optimization for
+ * benchmarking and because it produces slightly smaller code.  */
+#ifndef USE_GC_LOCKING
+# define USE_GC_LOCKING 1
+#endif
+
+/* To facilitate nested calls to gc_disable, functions that allocate
+ * more than one cell may define a macro, e.g. foo_allocates.  This
+ * macro can be used to compute the amount of preallocation at the
+ * call site with the help of this macro.  */
+#define gc_reservations(fn) fn ## _allocates
+
+#if USE_GC_LOCKING
+
+/* Report a shortage in reserved cells, and terminate the program.  */
+static void
+gc_reservation_failure(struct scheme *sc)
+{
+#ifdef NDEBUG
+  fprintf(stderr,
+	  "insufficient reservation\n")
+#else
+  fprintf(stderr,
+	  "insufficient reservation in line %d\n",
+	  sc->reserved_lineno);
+#endif
+  abort();
+}
+
+/* Disable the garbage collection and reserve the given number of
+ * cells.  gc_disable may be nested, but the enclosing reservation
+ * must include the reservations of all nested calls.  */
+static void
+_gc_disable(struct scheme *sc, size_t reserve, int lineno)
+{
+  if (sc->inhibit_gc == 0) {
+    reserve_cells(sc, (reserve));
+    sc->reserved_cells = (reserve);
+#ifndef NDEBUG
+    (void) lineno;
+#else
+    sc->reserved_lineno = lineno;
+#endif
+  } else if (sc->reserved_cells < (reserve))
+    gc_reservation_failure (sc);
+  sc->inhibit_gc += 1;
+}
+#define gc_disable(sc, reserve)			\
+     _gc_disable (sc, reserve, __LINE__)
+
+/* Enable the garbage collector.  */
+#define gc_enable(sc)				\
+     do {					\
+	  assert(sc->inhibit_gc);		\
+	  sc->inhibit_gc -= 1;			\
+     } while (0)
+
+/* Test whether the garbage collector is enabled.  */
+#define gc_enabled(sc)				\
+     (sc->inhibit_gc == GC_ENABLED)
+
+/* Consume a reserved cell.  */
+#define gc_consume(sc)							\
+     do {								\
+	  assert(! gc_enabled (sc));					\
+	  if (sc->reserved_cells == 0)					\
+	       gc_reservation_failure (sc);				\
+	  sc->reserved_cells -= 1;					\
+     } while (0)
+
+#else /* USE_GC_LOCKING */
+
+#define gc_disable(sc, reserve)	(void) 0
+#define gc_enable(sc)	(void) 0
+#define gc_enabled(sc)	1
+#define gc_consume(sc)	(void) 0
+
+#endif /* USE_GC_LOCKING */
+
 static INLINE pointer get_cell_x(scheme *sc, pointer a, pointer b) {
-  if (sc->free_cell != sc->NIL) {
+  if (! gc_enabled (sc) || sc->free_cell != sc->NIL) {
     pointer x = sc->free_cell;
+    if (! gc_enabled (sc))
+	 gc_consume (sc);
     sc->free_cell = cdr(x);
     --sc->fcells;
     return (x);
   }
+  assert (gc_enabled (sc));
   return _get_cell (sc, a, b);
 }
 
@@ -672,6 +778,7 @@ static pointer _get_cell(scheme *sc, pointer a, pointer b) {
     return sc->sink;
   }
 
+  assert (gc_enabled (sc));
   if (sc->free_cell == sc->NIL) {
     const int min_to_be_recovered = sc->last_cell_seg*8;
     gc(sc,a, b);
@@ -826,7 +933,8 @@ static pointer get_cell(scheme *sc, pointer a, pointer b)
   typeflag(cell) = T_PAIR;
   car(cell) = a;
   cdr(cell) = b;
-  push_recent_alloc(sc, cell, sc->NIL);
+  if (gc_enabled (sc))
+    push_recent_alloc(sc, cell, sc->NIL);
   return cell;
 }
 
@@ -839,7 +947,8 @@ static pointer get_vector_object(scheme *sc, int len, pointer init)
   ivalue_unchecked(cells)=len;
   set_num_integer(cells);
   fill_vector(cells,init);
-  push_recent_alloc(sc, cells, sc->NIL);
+  if (gc_enabled (sc))
+    push_recent_alloc(sc, cells, sc->NIL);
   return cells;
 }
 
@@ -896,9 +1005,11 @@ static pointer oblist_initial_value(scheme *sc)
 /* returns the new symbol */
 static pointer oblist_add_by_name(scheme *sc, const char *name)
 {
+#define oblist_add_by_name_allocates	3
   pointer x;
   int location;
 
+  gc_disable(sc, gc_reservations (oblist_add_by_name));
   x = immutable_cons(sc, mk_string(sc, name), sc->NIL);
   typeflag(x) = T_SYMBOL;
   setimmutable(car(x));
@@ -906,6 +1017,7 @@ static pointer oblist_add_by_name(scheme *sc, const char *name)
   location = hash_fn(name, ivalue_unchecked(sc->oblist));
   set_vector_elem(sc->oblist, location,
                   immutable_cons(sc, x, vector_elem(sc->oblist, location)));
+  gc_enable(sc);
   return x;
 }
 
@@ -1115,6 +1227,7 @@ INTERFACE static pointer set_vector_elem(pointer vec, int ielem, pointer a) {
 
 /* get new symbol */
 INTERFACE pointer mk_symbol(scheme *sc, const char *name) {
+#define mk_symbol_allocates	oblist_add_by_name_allocates
      pointer x;
 
      /* first check oblist */
@@ -1344,6 +1457,8 @@ E6:   /* up.  Undo the link switching from steps E4 and E5. */
 static void gc(scheme *sc, pointer a, pointer b) {
   pointer p;
   int i;
+
+  assert (gc_enabled (sc));
 
   if(sc->gc_verbose) {
     putstr(sc, "gc...");
@@ -2296,14 +2411,19 @@ static void new_frame_in_env(scheme *sc, pointer old_env)
     new_frame = sc->NIL;
   }
 
+  gc_disable(sc, 1);
   sc->envir = immutable_cons(sc, new_frame, old_env);
+  gc_enable(sc);
   setenvironment(sc->envir);
 }
 
 static INLINE void new_slot_spec_in_env(scheme *sc, pointer env,
                                         pointer variable, pointer value)
 {
-  pointer slot = immutable_cons(sc, variable, value);
+#define new_slot_spec_in_env_allocates	2
+  pointer slot;
+  gc_disable(sc, gc_reservations (new_slot_spec_in_env));
+  slot = immutable_cons(sc, variable, value);
 
   if (is_vector(car(env))) {
     int location = hash_fn(symname(variable), ivalue_unchecked(car(env)));
@@ -2313,6 +2433,7 @@ static INLINE void new_slot_spec_in_env(scheme *sc, pointer env,
   } else {
     car(env) = immutable_cons(sc, slot, car(env));
   }
+  gc_enable(sc);
 }
 
 static pointer find_slot_in_env(scheme *sc, pointer env, pointer hdl, int all)
@@ -2385,6 +2506,7 @@ static pointer find_slot_in_env(scheme *sc, pointer env, pointer hdl, int all)
 
 static INLINE void new_slot_in_env(scheme *sc, pointer variable, pointer value)
 {
+#define new_slot_in_env_allocates	new_slot_spec_in_env_allocates
   new_slot_spec_in_env(sc, sc->envir, variable, value);
 }
 
@@ -2488,7 +2610,13 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
 #define CASE(OP)		case OP
 #endif	/* USE_THREADED_CODE */
 
-#define s_return(sc,a) return _s_return(sc,a)
+/* Return to the previous frame on the dump stack, setting the current
+ * value to A.  */
+#define s_return(sc, a) return _s_return(sc, a, 0)
+
+/* Return to the previous frame on the dump stack, setting the current
+ * value to A, and re-enable the garbage collector.  */
+#define s_return_enable_gc(sc, a) return _s_return(sc, a, 1)
 
 static INLINE void dump_stack_reset(scheme *sc)
 {
@@ -2505,10 +2633,12 @@ static void dump_stack_free(scheme *sc)
   sc->dump = sc->NIL;
 }
 
-static pointer _s_return(scheme *sc, pointer a) {
+static pointer _s_return(scheme *sc, pointer a, int enable_gc) {
   pointer dump = sc->dump;
   pointer op;
   sc->value = (a);
+  if (enable_gc)
+       gc_enable(sc);
   if (dump == sc->NIL)
     return sc->NIL;
   free_cons(sc, dump, &op, &dump);
@@ -2520,9 +2650,13 @@ static pointer _s_return(scheme *sc, pointer a) {
 }
 
 static void s_save(scheme *sc, enum scheme_opcodes op, pointer args, pointer code) {
-    sc->dump = cons(sc, sc->envir, cons(sc, (code), sc->dump));
-    sc->dump = cons(sc, (args), sc->dump);
-    sc->dump = cons(sc, mk_integer(sc, (long)(op)), sc->dump);
+#define s_save_allocates	5
+    pointer dump;
+    gc_disable(sc, gc_reservations (s_save));
+    dump = cons(sc, sc->envir, cons(sc, (code), sc->dump));
+    dump = cons(sc, (args), dump);
+    sc->dump = cons(sc, mk_integer(sc, (long)(op)), dump);
+    gc_enable(sc);
 }
 
 static INLINE void dump_stack_mark(scheme *sc)
@@ -2650,8 +2784,10 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 
      CASE(OP_E0ARGS):     /* eval arguments */
           if (is_macro(sc->value)) {    /* macro expansion */
+	       gc_disable(sc, 1 + gc_reservations (s_save));
                s_save(sc,OP_DOMACRO, sc->NIL, sc->NIL);
                sc->args = cons(sc,sc->code, sc->NIL);
+	       gc_enable(sc);
                sc->code = sc->value;
                s_thread_to(sc,OP_APPLY);
           } else {
@@ -2660,7 +2796,9 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           }
 
      CASE(OP_E1ARGS):     /* eval arguments */
-          sc->args = cons(sc, sc->value, sc->args);
+	  gc_disable(sc, 1);
+	  sc->args = cons(sc, sc->value, sc->args);
+	  gc_enable(sc);
           if (is_pair(sc->code)) { /* continue */
                s_save(sc,OP_E1ARGS, sc->args, cdr(sc->code));
                sc->code = car(sc->code);
@@ -2677,7 +2815,8 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
      CASE(OP_TRACING): {
        int tr=sc->tracing;
        sc->tracing=ivalue(car(sc->args));
-       s_return(sc,mk_integer(sc,tr));
+       gc_disable(sc, 1);
+       s_return_enable_gc(sc, mk_integer(sc, tr));
      }
 #endif
 
@@ -2749,19 +2888,23 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                     sc->value = sc->code;
                     /* Fallthru */
                } else {
+		    gc_disable(sc, 1 + gc_reservations (s_save));
                     s_save(sc,OP_LAMBDA1,sc->args,sc->code);
                     sc->args=cons(sc,sc->code,sc->NIL);
+		    gc_enable(sc);
                     sc->code=slot_value_in_env(f);
                     s_thread_to(sc,OP_APPLY);
                }
           }
 
      CASE(OP_LAMBDA1):
-          s_return(sc,mk_closure(sc, sc->value, sc->envir));
+	  gc_disable(sc, 1);
+          s_return_enable_gc(sc, mk_closure(sc, sc->value, sc->envir));
 
 #else
      CASE(OP_LAMBDA):     /* lambda */
-          s_return(sc,mk_closure(sc, sc->code, sc->envir));
+	  gc_disable(sc, 1);
+          s_return_enable_gc(sc, mk_closure(sc, sc->code, sc->envir));
 
 #endif
 
@@ -2775,7 +2918,8 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
        } else {
          y=cadr(sc->args);
        }
-       s_return(sc,mk_closure(sc, x, y));
+       gc_disable(sc, 1);
+       s_return_enable_gc(sc, mk_closure(sc, x, y));
 
      CASE(OP_QUOTE):      /* quote */
           s_return(sc,car(sc->code));
@@ -2786,7 +2930,9 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 
           if (is_pair(car(sc->code))) {
                x = caar(sc->code);
+	       gc_disable(sc, 2);
                sc->code = cons(sc, sc->LAMBDA, cons(sc, cdar(sc->code), cdr(sc->code)));
+	       gc_enable(sc);
           } else {
                x = car(sc->code);
                sc->code = cadr(sc->code);
@@ -2861,6 +3007,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           s_thread_to(sc,OP_LET1);
 
      CASE(OP_LET1):       /* let (calculate parameters) */
+	  gc_disable(sc, 1 + (is_pair(sc->code) ? gc_reservations (s_save) : 0));
           sc->args = cons(sc, sc->value, sc->args);
           if (is_pair(sc->code)) { /* continue */
                if (!is_pair(car(sc->code)) || !is_pair(cdar(sc->code))) {
@@ -2868,10 +3015,12 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                             car(sc->code));
                }
                s_save(sc,OP_LET1, sc->args, cdr(sc->code));
+	       gc_enable(sc);
                sc->code = cadar(sc->code);
                sc->args = sc->NIL;
                s_thread_to(sc,OP_EVAL);
           } else {  /* end */
+	       gc_enable(sc);
                sc->args = reverse_in_place(sc, sc->NIL, sc->args);
                sc->code = car(sc->args);
                sc->args = cdr(sc->args);
@@ -2890,10 +3039,14 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                         Error_1(sc, "Bad syntax of binding in let :", x);
                     if (!is_list(sc, car(x)))
                         Error_1(sc, "Bad syntax of binding in let :", car(x));
+		    gc_disable(sc, 1);
                     sc->args = cons(sc, caar(x), sc->args);
+		    gc_enable(sc);
                }
+	       gc_disable(sc, 2 + gc_reservations (new_slot_in_env));
                x = mk_closure(sc, cons(sc, reverse_in_place(sc, sc->NIL, sc->args), cddr(sc->code)), sc->envir);
                new_slot_in_env(sc, car(sc->code), x);
+	       gc_enable(sc);
                sc->code = cddr(sc->code);
                sc->args = sc->NIL;
           } else {
@@ -2951,7 +3104,9 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
           s_thread_to(sc,OP_LET1REC);
 
      CASE(OP_LET1REC):    /* letrec (calculate parameters) */
+	  gc_disable(sc, 1);
           sc->args = cons(sc, sc->value, sc->args);
+	  gc_enable(sc);
           if (is_pair(sc->code)) { /* continue */
                if (!is_pair(car(sc->code)) || !is_pair(cdar(sc->code))) {
                     Error_1(sc, "Bad syntax of binding spec in letrec :",
@@ -2993,8 +3148,10 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
                     if(!is_pair(cdr(sc->code))) {
                          Error_0(sc,"syntax error in cond");
                     }
+		    gc_disable(sc, 4);
                     x=cons(sc, sc->QUOTE, cons(sc, sc->value, sc->NIL));
                     sc->code=cons(sc,cadr(sc->code),cons(sc,x,sc->NIL));
+		    gc_enable(sc);
                     s_goto(sc,OP_EVAL);
                }
                s_goto(sc,OP_BEGIN);
@@ -3009,9 +3166,10 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
           }
 
      CASE(OP_DELAY):      /* delay */
+	  gc_disable(sc, 2);
           x = mk_closure(sc, cons(sc, sc->NIL, sc->code), sc->envir);
           typeflag(x)=T_PROMISE;
-          s_return(sc,x);
+          s_return_enable_gc(sc,x);
 
      CASE(OP_AND0):       /* and */
           if (sc->code == sc->NIL) {
@@ -3058,14 +3216,17 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
 
      CASE(OP_C1STREAM):   /* cons-stream */
           sc->args = sc->value;  /* save sc->value to register sc->args for gc */
+	  gc_disable(sc, 3);
           x = mk_closure(sc, cons(sc, sc->NIL, sc->code), sc->envir);
           typeflag(x)=T_PROMISE;
-          s_return(sc,cons(sc, sc->args, x));
+          s_return_enable_gc(sc, cons(sc, sc->args, x));
 
      CASE(OP_MACRO0):     /* macro */
           if (is_pair(car(sc->code))) {
                x = caar(sc->code);
+	       gc_disable(sc, 2);
                sc->code = cons(sc, sc->LAMBDA, cons(sc, cdar(sc->code), cdr(sc->code)));
+	       gc_enable(sc);
           } else {
                x = car(sc->code);
                sc->code = cadr(sc->code);
@@ -3140,7 +3301,9 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
 
      CASE(OP_CONTINUATION):    /* call-with-current-continuation */
           sc->code = car(sc->args);
+	  gc_disable(sc, 2);
           sc->args = cons(sc, mk_continuation(sc, sc->dump), sc->NIL);
+	  gc_enable(sc);
           s_goto(sc,OP_APPLY);
 
      default:
@@ -3270,14 +3433,16 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
        for (x = sc->args; x != sc->NIL; x = cdr(x)) {
          v=num_add(v,nvalue(car(x)));
        }
-       s_return(sc,mk_number(sc, v));
+       gc_disable(sc, 1);
+       s_return_enable_gc(sc, mk_number(sc, v));
 
      CASE(OP_MUL):        /* * */
        v=num_one;
        for (x = sc->args; x != sc->NIL; x = cdr(x)) {
          v=num_mul(v,nvalue(car(x)));
        }
-       s_return(sc,mk_number(sc, v));
+       gc_disable(sc, 1);
+       s_return_enable_gc(sc, mk_number(sc, v));
 
      CASE(OP_SUB):        /* - */
        if(cdr(sc->args)==sc->NIL) {
@@ -3290,7 +3455,8 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
        for (; x != sc->NIL; x = cdr(x)) {
          v=num_sub(v,nvalue(car(x)));
        }
-       s_return(sc,mk_number(sc, v));
+       gc_disable(sc, 1);
+       s_return_enable_gc(sc, mk_number(sc, v));
 
      CASE(OP_DIV):        /* / */
        if(cdr(sc->args)==sc->NIL) {
@@ -3307,7 +3473,8 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
            Error_0(sc,"/: division by zero");
          }
        }
-       s_return(sc,mk_number(sc, v));
+       gc_disable(sc, 1);
+       s_return_enable_gc(sc, mk_number(sc, v));
 
      CASE(OP_INTDIV):        /* quotient */
           if(cdr(sc->args)==sc->NIL) {
@@ -3324,7 +3491,8 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
                     Error_0(sc,"quotient: division by zero");
                }
           }
-          s_return(sc,mk_number(sc, v));
+	  gc_disable(sc, 1);
+          s_return_enable_gc(sc, mk_number(sc, v));
 
      CASE(OP_REM):        /* remainder */
           v = nvalue(car(sc->args));
@@ -3333,7 +3501,8 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
           else {
                Error_0(sc,"remainder: division by zero");
           }
-          s_return(sc,mk_number(sc, v));
+	  gc_disable(sc, 1);
+          s_return_enable_gc(sc, mk_number(sc, v));
 
      CASE(OP_MOD):        /* modulo */
           v = nvalue(car(sc->args));
@@ -3342,7 +3511,8 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
           else {
                Error_0(sc,"modulo: division by zero");
           }
-          s_return(sc,mk_number(sc, v));
+	  gc_disable(sc, 1);
+          s_return_enable_gc(sc, mk_number(sc, v));
 
      CASE(OP_CAR):        /* car */
           s_return(sc,caar(sc->args));
@@ -3373,31 +3543,36 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
      CASE(OP_CHAR2INT): { /* char->integer */
           char c;
           c=(char)ivalue(car(sc->args));
-          s_return(sc,mk_integer(sc,(unsigned char)c));
+	  gc_disable(sc, 1);
+          s_return_enable_gc(sc, mk_integer(sc, (unsigned char) c));
      }
 
      CASE(OP_INT2CHAR): { /* integer->char */
           unsigned char c;
           c=(unsigned char)ivalue(car(sc->args));
-          s_return(sc,mk_character(sc,(char)c));
+	  gc_disable(sc, 1);
+          s_return_enable_gc(sc, mk_character(sc, (char) c));
      }
 
      CASE(OP_CHARUPCASE): {
           unsigned char c;
           c=(unsigned char)ivalue(car(sc->args));
           c=toupper(c);
-          s_return(sc,mk_character(sc,(char)c));
+	  gc_disable(sc, 1);
+          s_return_enable_gc(sc, mk_character(sc, (char) c));
      }
 
      CASE(OP_CHARDNCASE): {
           unsigned char c;
           c=(unsigned char)ivalue(car(sc->args));
           c=tolower(c);
-          s_return(sc,mk_character(sc,(char)c));
+	  gc_disable(sc, 1);
+          s_return_enable_gc(sc, mk_character(sc, (char) c));
      }
 
      CASE(OP_STR2SYM):  /* string->symbol */
-          s_return(sc,mk_symbol(sc,strvalue(car(sc->args))));
+          gc_disable(sc, gc_reservations (mk_symbol));
+          s_return_enable_gc(sc, mk_symbol(sc, strvalue(car(sc->args))));
 
      CASE(OP_STR2ATOM): /* string->atom */ {
           char *s=strvalue(car(sc->args));
@@ -3435,9 +3610,10 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
         }
 
      CASE(OP_SYM2STR): /* symbol->string */
+	  gc_disable(sc, 1);
           x=mk_string(sc,symname(car(sc->args)));
           setimmutable(x);
-          s_return(sc,x);
+          s_return_enable_gc(sc, x);
 
      CASE(OP_ATOM2STR): /* atom->string */ {
           long pf = 0;
@@ -3459,7 +3635,8 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
             char *p;
             int len;
             atom2str(sc,x,(int )pf,&p,&len);
-            s_return(sc,mk_counted_string(sc,p,len));
+	    gc_disable(sc, 1);
+            s_return_enable_gc(sc, mk_counted_string(sc, p, len));
           } else {
             Error_1(sc, "atom->string: not an atom:", x);
           }
@@ -3474,11 +3651,13 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
           if(cdr(sc->args)!=sc->NIL) {
                fill=charvalue(cadr(sc->args));
           }
-          s_return(sc,mk_empty_string(sc,len,(char)fill));
+	  gc_disable(sc, 1);
+          s_return_enable_gc(sc, mk_empty_string(sc, len, (char) fill));
      }
 
      CASE(OP_STRLEN):  /* string-length */
-          s_return(sc,mk_integer(sc,strlength(car(sc->args))));
+	  gc_disable(sc, 1);
+          s_return_enable_gc(sc, mk_integer(sc, strlength(car(sc->args))));
 
      CASE(OP_STRREF): { /* string-ref */
           char *str;
@@ -3492,7 +3671,9 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
                Error_1(sc,"string-ref: out of bounds:",cadr(sc->args));
           }
 
-          s_return(sc,mk_character(sc,((unsigned char*)str)[index]));
+	  gc_disable(sc, 1);
+          s_return_enable_gc(sc,
+			     mk_character(sc, ((unsigned char*) str)[index]));
      }
 
      CASE(OP_STRSET): { /* string-set! */
@@ -3526,13 +3707,14 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
        for (x = sc->args; x != sc->NIL; x = cdr(x)) {
           len += strlength(car(x));
        }
+       gc_disable(sc, 1);
        newstr = mk_empty_string(sc, len, ' ');
        /* store the contents of the argument strings into the new string */
        for (pos = strvalue(newstr), x = sc->args; x != sc->NIL;
            pos += strlength(car(x)), x = cdr(x)) {
            memcpy(pos, strvalue(car(x)), strlength(car(x)));
        }
-       s_return(sc, newstr);
+       s_return_enable_gc(sc, newstr);
      }
 
      CASE(OP_SUBSTR): { /* substring */
@@ -3559,11 +3741,12 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
           }
 
           len=index1-index0;
+	  gc_disable(sc, 1);
           x=mk_empty_string(sc,len,' ');
           memcpy(strvalue(x),str+index0,len);
           strvalue(x)[len]=0;
 
-          s_return(sc,x);
+          s_return_enable_gc(sc, x);
      }
 
      CASE(OP_VECTOR): {   /* vector */
@@ -3600,7 +3783,8 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
      }
 
      CASE(OP_VECLEN):  /* vector-length */
-          s_return(sc,mk_integer(sc,ivalue(car(sc->args))));
+	  gc_disable(sc, 1);
+          s_return_enable_gc(sc, mk_integer(sc, ivalue(car(sc->args))));
 
      CASE(OP_VECREF): { /* vector-ref */
           int index;
@@ -4173,7 +4357,9 @@ static pointer opexe_5(scheme *sc, enum scheme_opcodes op) {
           break;
 
      CASE(OP_RDLIST): {
+	  gc_disable(sc, 1);
           sc->args = cons(sc, sc->value, sc->args);
+	  gc_enable(sc);
           sc->tok = token(sc);
           if (sc->tok == TOK_EOF)
                { s_return(sc,sc->EOF_OBJ); }
@@ -4206,23 +4392,32 @@ static pointer opexe_5(scheme *sc, enum scheme_opcodes op) {
           }
 
      CASE(OP_RDQUOTE):
-          s_return(sc,cons(sc, sc->QUOTE, cons(sc, sc->value, sc->NIL)));
+	  gc_disable(sc, 2);
+          s_return_enable_gc(sc, cons(sc, sc->QUOTE,
+				      cons(sc, sc->value, sc->NIL)));
 
      CASE(OP_RDQQUOTE):
-          s_return(sc,cons(sc, sc->QQUOTE, cons(sc, sc->value, sc->NIL)));
+	  gc_disable(sc, 2);
+          s_return_enable_gc(sc, cons(sc, sc->QQUOTE,
+				      cons(sc, sc->value, sc->NIL)));
 
      CASE(OP_RDQQUOTEVEC):
-           s_return(sc,cons(sc, mk_symbol(sc,"apply"),
+	  gc_disable(sc, 5 + 2 * gc_reservations (mk_symbol));
+	  s_return_enable_gc(sc,cons(sc, mk_symbol(sc,"apply"),
            cons(sc, mk_symbol(sc,"vector"),
                  cons(sc,cons(sc, sc->QQUOTE,
                   cons(sc,sc->value,sc->NIL)),
                   sc->NIL))));
 
      CASE(OP_RDUNQUOTE):
-          s_return(sc,cons(sc, sc->UNQUOTE, cons(sc, sc->value, sc->NIL)));
+	  gc_disable(sc, 2);
+          s_return_enable_gc(sc, cons(sc, sc->UNQUOTE,
+				      cons(sc, sc->value, sc->NIL)));
 
      CASE(OP_RDUQTSP):
-          s_return(sc,cons(sc, sc->UNQUOTESP, cons(sc, sc->value, sc->NIL)));
+	  gc_disable(sc, 2);
+          s_return_enable_gc(sc, cons(sc, sc->UNQUOTESP,
+				      cons(sc, sc->value, sc->NIL)));
 
      CASE(OP_RDVEC):
           /*sc->code=cons(sc,mk_proc(sc,OP_VECTOR),sc->value);
@@ -4324,7 +4519,8 @@ static pointer opexe_6(scheme *sc, enum scheme_opcodes op) {
           if(v<0) {
                Error_1(sc,"length: not a list:",car(sc->args));
           }
-          s_return(sc,mk_integer(sc, v));
+	  gc_disable(sc, 1);
+          s_return_enable_gc(sc, mk_integer(sc, v));
 
      CASE(OP_ASSQ):       /* assq */     /* a.k */
           x = car(sc->args);
@@ -4347,9 +4543,13 @@ static pointer opexe_6(scheme *sc, enum scheme_opcodes op) {
           if (sc->args == sc->NIL) {
                s_return(sc,sc->F);
           } else if (is_closure(sc->args)) {
-               s_return(sc,cons(sc, sc->LAMBDA, closure_code(sc->value)));
+	       gc_disable(sc, 1);
+               s_return_enable_gc(sc, cons(sc, sc->LAMBDA,
+					   closure_code(sc->value)));
           } else if (is_macro(sc->args)) {
-               s_return(sc,cons(sc, sc->LAMBDA, closure_code(sc->value)));
+	       gc_disable(sc, 1);
+               s_return_enable_gc(sc, cons(sc, sc->LAMBDA,
+					   closure_code(sc->value)));
           } else {
                s_return(sc,sc->F);
           }
@@ -4705,6 +4905,9 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   sc->EOF_OBJ=&sc->_EOF_OBJ;
   sc->free_cell = &sc->_NIL;
   sc->fcells = 0;
+  sc->inhibit_gc = GC_ENABLED;
+  sc->reserved_cells = 0;
+  sc->reserved_lineno = 0;
   sc->no_memory=0;
   sc->inport=sc->NIL;
   sc->outport=sc->NIL;

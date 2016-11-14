@@ -121,6 +121,11 @@ pointer COMPILE_HOOK;  /* *compile-hook* */
 
 pointer free_cell;       /* pointer to top of free cells */
 long    fcells;          /* # of free cells */
+size_t  inhibit_gc;      /* nesting of gc_disable */
+size_t  reserved_cells;  /* # of reserved cells */
+#ifndef NDEBUG
+int     reserved_lineno;   /* location of last reservation */
+#endif
 
 pointer inport;
 pointer outport;
