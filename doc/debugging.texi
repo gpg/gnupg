@@ -235,7 +235,8 @@ gpg: fatal: WriteConsole failed: Access denied
 @noindent
 The solution is to use the command @command{wineconsole}.
 
-Some operations like gen-key really want to talk to the console directly
+Some operations like @option{--generate-key} really want to talk to
+the console directly
 for increased security (for example to prevent the passphrase from
 appearing on the screen).  So, you should use @command{wineconsole}
 instead of @command{wine}, which will launch a windows console that

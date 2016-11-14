@@ -165,8 +165,8 @@ use @samp{--help} to get a list of supported operations.
 @subsection How to manage the certificates and keys
 
 @table @gnupgtabopt
-@item --gen-key
-@opindex gen-key
+@item --generate-key
+@opindex generate-key
 This command allows the creation of a certificate signing request or a
 self-signed certificate.  It is commonly used along with the
 @option{--output} option to save the created CSR or certificate into a
@@ -1005,7 +1005,7 @@ this is a missing certificate.
 @node CSR and certificate creation
 @subsection CSR and certificate creation
 
-The command @option{--gen-key} may be used along with the option
+The command @option{--generate-key} may be used along with the option
 @option{--batch} to either create a certificate signing request (CSR)
 or an X.509 certificate.  This is controlled by a parameter file; the
 format of this file is as follows:

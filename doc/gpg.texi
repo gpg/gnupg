@@ -611,7 +611,7 @@ This section explains the main commands for key management.
 @item --quick-gen-key @code{user-id} [@code{algo} [@code{usage} [@code{expire}]]]
 @opindex quick-gen-key
 This is a simple command to generate a standard key with one user id.
-In contrast to @option{--gen-key} the key is generated directly
+In contrast to @option{--generate-key} the key is generated directly
 without the need to answer a bunch of prompts.  Unless the option
 @option{--yes} is given, the key creation will be canceled if the
 given user id already exists in the keyring.
@@ -681,8 +681,8 @@ for the subkey.  Several formats are supported; commonly the ISO
 YYYY-MM-DD format is used.  The values ``never'', ``none'', or ``-''
 can be used for no expiration date.
 
-@item --gen-key
-@opindex gen-key
+@item --generate-key
+@opindex generate-key
 Generate a new key pair using the current default parameters.  This is
 the standard command to create a new key.  In addition to the key a
 revocation certificate is created and stored in the
@@ -691,7 +691,7 @@ revocation certificate is created and stored in the
 @item --full-gen-key
 @opindex gen-key
 Generate a new key pair with dialogs for all options.  This is an
-extended version of @option{--gen-key}.
+extended version of @option{--generate-key}.
 
 There is also a feature which allows you to create keys in batch
 mode. See the manual section ``Unattended key generation'' on how
@@ -1342,7 +1342,7 @@ the opposite meaning. The options are:
 @itemx --disable-large-rsa
 @opindex enable-large-rsa
 @opindex disable-large-rsa
-With --gen-key and --batch, enable the creation of RSA secret keys as
+With --generate-key and --batch, enable the creation of RSA secret keys as
 large as 8192 bit.  Note: 8192 bit is more than is generally
 recommended.  These large keys don't significantly improve security,
 but they are more expensive to use, and their signatures and
@@ -3729,7 +3729,7 @@ are almost always required for this.
 @node Unattended GPG key generation
 @subsection Unattended key generation
 
-The command @option{--gen-key} may be used along with the option
+The command @option{--generate-key} may be used along with the option
 @option{--batch} for unattended key generation.  The parameters are
 either read from stdin or given as a file on the command line.
 The format of the parameter file is as follows:
@@ -3921,7 +3921,7 @@ $ cat >foo <<EOF
      %commit
      %echo done
 EOF
-$ @gpgname --batch --gen-key foo
+$ @gpgname --batch --generate-key foo
  [...]
 $ @gpgname --no-default-keyring --secret-keyring ./foo.sec \
        --keyring ./foo.pub --list-secret-keys

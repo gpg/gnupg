@@ -1243,7 +1243,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
 
     To generate a secret/public keypair, run:
 
-    : $ gpg --gen-key
+    : $ gpg --generate-key
 
     and choose the default values.
 

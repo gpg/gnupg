@@ -12,7 +12,7 @@ is no need for a configuration file, you may simply enter:
 
 @cartouche
 @example
-  $ gpgsm --gen-key >example.com.cert-req.pem
+  $ gpgsm --generate-key >example.com.cert-req.pem
   Please select what kind of key you want:
      (1) RSA
      (2) Existing key

@@ -210,7 +210,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aListSecretKeys, "list-secret-keys", N_("list secret keys")),
   ARGPARSE_c (aListChain,   "list-chain",  N_("list certificate chain")),
   ARGPARSE_c (aFingerprint, "fingerprint", N_("list keys and fingerprints")),
-  ARGPARSE_c (aKeygen, "gen-key", N_("generate a new key pair")),
+  ARGPARSE_c (aKeygen, "generate-key", N_("generate a new key pair")),
+  ARGPARSE_c (aKeygen, "gen-key", "@"),
   ARGPARSE_c (aDeleteKey, "delete-keys",
               N_("remove keys from the public keyring")),
 /*ARGPARSE_c (aSendKeys, "send-keys", N_("export keys to a keyserver")),*/
@@ -1904,7 +1905,7 @@ main ( int argc, char **argv)
             else if (argc == 1) /* From file. */
               fpin = open_es_fread (*argv, "r");
             else
-              wrong_args ("--gen-key --batch [parmfile]");
+              wrong_args ("--generate-key --batch [parmfile]");
           }
 
         fpout = open_es_fwrite (opt.outfile?opt.outfile:"-");

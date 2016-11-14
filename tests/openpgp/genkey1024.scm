@@ -23,7 +23,7 @@
 (define (genkey config)
   (pipe:do
    (pipe:echo config)
-   (pipe:spawn `(,(tool 'gpg) --quiet --batch --gen-key))))
+   (pipe:spawn `(,(tool 'gpg) --quiet --batch --generate-key))))
 
 (info "Checking batch key generation")
 (genkey "Key-Type: DSA

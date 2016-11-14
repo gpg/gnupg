@@ -444,8 +444,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aCheckKeys, "check-sigs", "@"),
   ARGPARSE_c (oFingerprint, "fingerprint", N_("list keys and fingerprints")),
   ARGPARSE_c (aListSecretKeys, "list-secret-keys", N_("list secret keys")),
-  ARGPARSE_c (aKeygen,	    "gen-key",
+  ARGPARSE_c (aKeygen,	    "generate-key",
               N_("generate a new key pair")),
+  ARGPARSE_c (aKeygen,	    "gen-key", "@"),
   ARGPARSE_c (aQuickKeygen, "quick-gen-key" ,
               N_("quickly generate a new key pair")),
   ARGPARSE_c (aQuickAddUid,  "quick-adduid",
@@ -4318,20 +4319,20 @@ main (int argc, char **argv)
       case aKeygen: /* generate a key */
 	if( opt.batch ) {
 	    if( argc > 1 )
-		wrong_args("--gen-key [parameterfile]");
+		wrong_args("--generate-key [parameterfile]");
 	    generate_keypair (ctrl, 0, argc? *argv : NULL, NULL, 0);
 	}
 	else {
             if (opt.command_fd != -1 && argc)
               {
                 if( argc > 1 )
-                  wrong_args("--gen-key [parameterfile]");
+                  wrong_args("--generate-key [parameterfile]");
 
                 opt.batch = 1;
                 generate_keypair (ctrl, 0, argc? *argv : NULL, NULL, 0);
               }
             else if (argc)
-              wrong_args ("--gen-key");
+              wrong_args ("--generate-key");
             else
               generate_keypair (ctrl, 0, NULL, NULL, 0);
 	}
