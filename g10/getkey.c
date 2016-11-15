@@ -3341,6 +3341,9 @@ merge_selfsigs (KBNODE keyblock)
  * in CTX.  If so, return the node of an appropriate key or subkey.
  * Otherwise, return NULL if there was no appropriate key.
  *
+ * Note that we do not return a reference, i.e. the result must not be
+ * freed using 'release_kbnode'.
+ *
  * In case the primary key is not required, select a suitable subkey.
  * We need the primary key if PUBKEY_USAGE_CERT is set in REQ_USAGE or
  * we are in PGP6 or PGP7 mode and PUBKEY_USAGE_SIG is set in
@@ -3660,7 +3663,12 @@ print_status_key_considered (kbnode_t keyblock, unsigned int flags)
    all of the self-signed data into the keys, subkeys and user id
    packets (see the merge_selfsigs for details).
 
-   On success the key's keyblock is stored at *RET_KEYBLOCK.  */
+   On success the key's keyblock is stored at *RET_KEYBLOCK, and the
+   specific subkey is stored at *RET_FOUND_KEY.  Note that we do not
+   return a reference in *RET_FOUND_KEY, i.e. the result must not be
+   freed using 'release_kbnode', and it is only valid until
+   *RET_KEYBLOCK is deallocated.  Therefore, if RET_FOUND_KEY is not
+   NULL, then RET_KEYBLOCK must not be NULL.  */
 static int
 lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
 	int want_secret)
@@ -3671,6 +3679,7 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
   KBNODE found_key = NULL;
   unsigned int infoflags;
 
+  log_assert (ret_found_key == NULL || ret_keyblock != NULL);
   if (ret_keyblock)
     *ret_keyblock = NULL;
 
@@ -3732,8 +3741,10 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
   if (!rc)
     {
       if (ret_keyblock)
-        *ret_keyblock = keyblock; /* Return the keyblock.  */
-      keyblock = NULL;
+        {
+          *ret_keyblock = keyblock; /* Return the keyblock.  */
+          keyblock = NULL;
+        }
     }
   else if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND && no_suitable_key)
     rc = want_secret? GPG_ERR_UNUSABLE_SECKEY : GPG_ERR_UNUSABLE_PUBKEY;
