@@ -133,6 +133,8 @@ enum cmd_and_opt_values {
   oNoArmor,
   oP12Charset,
 
+  oCompliance,
+
   oDisableCRLChecks,
   oEnableCRLChecks,
   oDisableTrustedCertCRLCheck,
@@ -361,6 +363,7 @@ static ARGPARSE_OPTS opts[] = {
     " --fingerprint [names]      show fingerprints\n"  )),
 
   /* Hidden options. */
+  ARGPARSE_s_s (oCompliance, "compliance",   "@"),
   ARGPARSE_s_n (oNoVerbose, "no-verbose", "@"),
   ARGPARSE_s_n (oEnableSpecialFilenames, "enable-special-filenames", "@"),
   ARGPARSE_s_n (oNoSecmemWarn, "no-secmem-warning", "@"),
@@ -1444,6 +1447,10 @@ main ( int argc, char **argv)
           break;
 
         case oNoAutostart: opt.autostart = 0; break;
+
+        case oCompliance:
+          /* Dummy option for now.  */
+          break;
 
         default:
           pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;
