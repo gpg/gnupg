@@ -63,6 +63,7 @@ enum cmd_and_opt_values {
   oLoggerFD,
   oHomedir,
   oWeakDigest,
+  oEnableSpecialFilenames,
   aTest
 };
 
@@ -83,6 +84,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
   ARGPARSE_s_s (oWeakDigest, "weak-digest",
                 N_("|ALGO|reject signatures made with ALGO")),
+  ARGPARSE_s_n (oEnableSpecialFilenames, "enable-special-filenames", "@"),
 
   ARGPARSE_end ()
 };
@@ -201,6 +203,9 @@ main( int argc, char **argv )
           additional_weak_digest(pargs.r.ret_str);
           break;
         case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
+        case oEnableSpecialFilenames:
+          iobuf_enable_special_filenames (1);
+          break;
         default : pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}
     }

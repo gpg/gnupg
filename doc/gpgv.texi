@@ -128,6 +128,12 @@ supplied multiple times if multiple algorithms should be considered
 weak.  MD5 is always considered weak, and does not need to be listed
 explicitly.
 
+@item --enable-special-filenames
+@opindex enable-special-filenames
+This option enables a mode in which filenames of the form
+@file{-&n}, where n is a non-negative decimal number,
+refer to the file descriptor n and not to a file with that name.
+
 @end table
 
 @mansect return value
