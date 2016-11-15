@@ -224,6 +224,7 @@ enum cmd_and_opt_values
     oMarginalsNeeded,
     oMaxCertDepth,
     oLoadExtension,
+    oCompliance,
     oGnuPG,
     oRFC2440,
     oRFC4880,
@@ -613,6 +614,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_s (oLoadExtension, "load-extension", "@"),  /* Dummy.  */
 
+  ARGPARSE_s_s (oCompliance, "compliance",   "@"),
   ARGPARSE_s_n (oGnuPG, "gnupg",   "@"),
   ARGPARSE_s_n (oGnuPG, "no-pgp2", "@"),
   ARGPARSE_s_n (oGnuPG, "no-pgp6", "@"),
@@ -2010,7 +2012,7 @@ parse_tofu_policy (const char *policystr)
 
   if (!ascii_strcasecmp (policystr, "help"))
     {
-      log_info (_("available TOFU policies:\n"));
+      log_info (_("valid values for option '%s':\n"), "--tofu-policy");
       for (i=0; i < DIM (list); i++)
         log_info ("  %s\n", list[i].keyword);
       g10_exit (1);
@@ -2026,6 +2028,105 @@ parse_tofu_policy (const char *policystr)
     log_info (_("(use \"help\" to list choices)\n"));
   g10_exit (1);
 }
+
+
+/* Parse the value of --compliance.  */
+static int
+parse_compliance_option (const char *string)
+{
+  struct { const char *keyword; enum cmd_and_opt_values option; } list[] = {
+    { "gnupg",      oGnuPG },
+    { "openpgp",    oOpenPGP },
+    { "rfc4880bis", oRFC4880bis },
+    { "rfc4880",    oRFC4880 },
+    { "rfc2440",    oRFC2440 },
+    { "pgp6",       oPGP6 },
+    { "pgp7",       oPGP7 },
+    { "pgp8",       oPGP8 }
+  };
+  int i;
+
+  if (!ascii_strcasecmp (string, "help"))
+    {
+      log_info (_("valid values for option '%s':\n"), "--compliance");
+      for (i=0; i < DIM (list); i++)
+        log_info ("  %s\n", list[i].keyword);
+      g10_exit (1);
+    }
+
+  for (i=0; i < DIM (list); i++)
+    if (!ascii_strcasecmp (string, list[i].keyword))
+      return list[i].option;
+
+  log_error (_("invalid value for option '%s'\n"), "--compliance");
+  if (!opt.quiet)
+    log_info (_("(use \"help\" to list choices)\n"));
+  g10_exit (1);
+}
+
+
+
+/* Helper to set compliance related options.  This is a separte
+ * function so that it can also be used by the --compliance option
+ * parser.  */
+static void
+set_compliance_option (enum cmd_and_opt_values option)
+{
+  switch (option)
+    {
+    case oRFC4880bis:
+      opt.flags.rfc4880bis = 1;
+      /* fall through.  */
+    case oOpenPGP:
+    case oRFC4880:
+      /* This is effectively the same as RFC2440, but with
+         "--enable-dsa2 --no-rfc2440-text --escape-from-lines
+         --require-cross-certification". */
+      opt.compliance = CO_RFC4880;
+      opt.flags.dsa2 = 1;
+      opt.flags.require_cross_cert = 1;
+      opt.rfc2440_text = 0;
+      opt.allow_non_selfsigned_uid = 1;
+      opt.allow_freeform_uid = 1;
+      opt.escape_from = 1;
+      opt.not_dash_escaped = 0;
+      opt.def_cipher_algo = 0;
+      opt.def_digest_algo = 0;
+      opt.cert_digest_algo = 0;
+      opt.compress_algo = -1;
+      opt.s2k_mode = 3; /* iterated+salted */
+      opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
+      opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
+      break;
+    case oRFC2440:
+      opt.compliance = CO_RFC2440;
+      opt.flags.dsa2 = 0;
+      opt.rfc2440_text = 1;
+      opt.allow_non_selfsigned_uid = 1;
+      opt.allow_freeform_uid = 1;
+      opt.escape_from = 0;
+      opt.not_dash_escaped = 0;
+      opt.def_cipher_algo = 0;
+      opt.def_digest_algo = 0;
+      opt.cert_digest_algo = 0;
+      opt.compress_algo = -1;
+      opt.s2k_mode = 3; /* iterated+salted */
+      opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
+      opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
+      break;
+    case oPGP6:  opt.compliance = CO_PGP6;  break;
+    case oPGP7:  opt.compliance = CO_PGP7;  break;
+    case oPGP8:  opt.compliance = CO_PGP8;  break;
+    case oGnuPG: opt.compliance = CO_GNUPG; break;
+    default:
+      BUG ();
+    }
+}
+
+
+
+
+
 
 /* This function called to initialized a new control object.  It is
    assumed that this object has been zeroed out before calling this
@@ -2702,52 +2803,24 @@ main (int argc, char **argv)
             /* Dummy so that gpg 1.4 conf files can work. Should
                eventually be removed.  */
 	    break;
+
+          case oCompliance:
+            set_compliance_option (parse_compliance_option (pargs.r.ret_str));
+            break;
+          case oOpenPGP:
+          case oRFC2440:
+          case oRFC4880:
           case oRFC4880bis:
-            opt.flags.rfc4880bis = 1;
-            /* fall through.  */
-	  case oOpenPGP:
-	  case oRFC4880:
-	    /* This is effectively the same as RFC2440, but with
-	       "--enable-dsa2 --no-rfc2440-text --escape-from-lines
-	       --require-cross-certification". */
-	    opt.compliance = CO_RFC4880;
-	    opt.flags.dsa2 = 1;
-	    opt.flags.require_cross_cert = 1;
-	    opt.rfc2440_text = 0;
-	    opt.allow_non_selfsigned_uid = 1;
-	    opt.allow_freeform_uid = 1;
-	    opt.escape_from = 1;
-	    opt.not_dash_escaped = 0;
-	    opt.def_cipher_algo = 0;
-	    opt.def_digest_algo = 0;
-	    opt.cert_digest_algo = 0;
-	    opt.compress_algo = -1;
-            opt.s2k_mode = 3; /* iterated+salted */
-	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
-	    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
-	    break;
-	  case oRFC2440:
-	    opt.compliance = CO_RFC2440;
-	    opt.flags.dsa2 = 0;
-	    opt.rfc2440_text = 1;
-	    opt.allow_non_selfsigned_uid = 1;
-	    opt.allow_freeform_uid = 1;
-	    opt.escape_from = 0;
-	    opt.not_dash_escaped = 0;
-	    opt.def_cipher_algo = 0;
-	    opt.def_digest_algo = 0;
-	    opt.cert_digest_algo = 0;
-	    opt.compress_algo = -1;
-            opt.s2k_mode = 3; /* iterated+salted */
-	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
-	    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
-	    break;
-	  case oPGP6:  opt.compliance = CO_PGP6;  break;
-	  case oPGP7:  opt.compliance = CO_PGP7;  break;
-	  case oPGP8:  opt.compliance = CO_PGP8;  break;
-	  case oGnuPG: opt.compliance = CO_GNUPG; break;
-	  case oRFC2440Text: opt.rfc2440_text=1; break;
-	  case oNoRFC2440Text: opt.rfc2440_text=0; break;
+          case oPGP6:
+          case oPGP7:
+          case oPGP8:
+          case oGnuPG:
+            set_compliance_option (pargs.r_opt);
+            break;
+
+          case oRFC2440Text: opt.rfc2440_text=1; break;
+          case oNoRFC2440Text: opt.rfc2440_text=0; break;
+
  	  case oSetFilename:
             if(utf8_strings)
               opt.set_filename = pargs.r.ret_str;
