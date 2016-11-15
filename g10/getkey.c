@@ -1541,7 +1541,7 @@ pubkey_cmp (ctrl_t ctrl, const char *name, struct pubkey_cmp_cookie *old,
       if (! match)
         continue;
 
-      new->uid = uid;
+      new->uid = scopy_user_id (uid);
       new->validity =
         get_validity (ctrl, &new->key, uid, NULL, 0) & TRUST_MASK;
       new->valid = 1;
@@ -1602,21 +1602,29 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
             {
               /* New key is better.  */
               release_public_key_parts (&best.key);
+              if (best.uid)
+                free_user_id (best.uid);
               best = new;
             }
           else if (diff > 0)
             {
               /* Old key is better.  */
               release_public_key_parts (&new.key);
+              if (new.uid)
+                free_user_id (new.uid);
             }
           else
             {
               /* A tie.  Keep the old key.  */
               release_public_key_parts (&new.key);
+              if (new.uid)
+                free_user_id (new.uid);
             }
         }
       getkey_end (ctx);
       ctx = NULL;
+      if (best.uid)
+        free_user_id (best.uid);
 
       if (best.valid)
         {
