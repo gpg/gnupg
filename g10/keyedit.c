@@ -4349,8 +4349,7 @@ menu_adduid (ctrl_t ctrl, kbnode_t pub_keyblock,
     add_kbnode (pub_keyblock, node);
   pkt = xmalloc_clear (sizeof *pkt);
   pkt->pkttype = PKT_SIGNATURE;
-  pkt->pkt.signature = copy_signature (NULL, sig);
-  free_seckey_enc (sig);
+  pkt->pkt.signature = sig;
   if (pub_where)
     insert_kbnode (node, new_kbnode (pkt), 0);
   else
