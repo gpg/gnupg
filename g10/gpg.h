@@ -60,7 +60,7 @@ struct dirmngr_local_s;
 typedef struct dirmngr_local_s *dirmngr_local_t;
 
 /* Object used to describe a keyblok node.  */
-typedef struct kbnode_struct *KBNODE;
+typedef struct kbnode_struct *KBNODE;   /* Deprecated use kbnode_t. */
 typedef struct kbnode_struct *kbnode_t;
 
 /* TOFU database meta object.  */
