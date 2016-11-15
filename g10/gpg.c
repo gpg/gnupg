@@ -233,6 +233,7 @@ enum cmd_and_opt_values
     oPGP6,
     oPGP7,
     oPGP8,
+    oDE_VS,
     oRFC2440Text,
     oNoRFC2440Text,
     oCipherAlgo,
@@ -2042,7 +2043,8 @@ parse_compliance_option (const char *string)
     { "rfc2440",    oRFC2440 },
     { "pgp6",       oPGP6 },
     { "pgp7",       oPGP7 },
-    { "pgp8",       oPGP8 }
+    { "pgp8",       oPGP8 },
+    { "de-vs",      oDE_VS }
   };
   int i;
 
@@ -2118,6 +2120,13 @@ set_compliance_option (enum cmd_and_opt_values option)
     case oPGP7:  opt.compliance = CO_PGP7;  break;
     case oPGP8:  opt.compliance = CO_PGP8;  break;
     case oGnuPG: opt.compliance = CO_GNUPG; break;
+
+    case oDE_VS:
+      set_compliance_option (oOpenPGP);
+      opt.compliance = CO_DE_VS;
+      /* Fixme: Change other options.  */
+      break;
+
     default:
       BUG ();
     }

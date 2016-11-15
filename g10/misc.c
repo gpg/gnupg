@@ -1252,6 +1252,7 @@ compliance_option_string(void)
     case CO_PGP6:    return "--pgp6";
     case CO_PGP7:    return "--pgp7";
     case CO_PGP8:    return "--pgp8";
+    case CO_DE_VS:   return "--compliance=de-vs";
     }
 
   return ver;
@@ -1286,6 +1287,10 @@ compliance_failure(void)
 
     case CO_PGP8:
       ver="PGP 8.x";
+      break;
+
+    case CO_DE_VS:
+      ver="DE-VS applications";
       break;
     }
 

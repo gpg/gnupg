@@ -1885,24 +1885,27 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
     tty_printf (_("   (%d) RSA and RSA (default)\n"), 1 );
 #endif
 
-  if (!addmode)
+  if (!addmode && opt.compliance != CO_DE_VS)
     tty_printf (_("   (%d) DSA and Elgamal\n"), 2 );
 
-  tty_printf (_("   (%d) DSA (sign only)\n"), 3 );
+  if (opt.compliance != CO_DE_VS)
+    tty_printf (_("   (%d) DSA (sign only)\n"), 3 );
 #if GPG_USE_RSA
   tty_printf (_("   (%d) RSA (sign only)\n"), 4 );
 #endif
 
   if (addmode)
     {
-      tty_printf (_("   (%d) Elgamal (encrypt only)\n"), 5 );
+      if (opt.compliance != CO_DE_VS)
+        tty_printf (_("   (%d) Elgamal (encrypt only)\n"), 5 );
 #if GPG_USE_RSA
       tty_printf (_("   (%d) RSA (encrypt only)\n"), 6 );
 #endif
     }
   if (opt.expert)
     {
-      tty_printf (_("   (%d) DSA (set your own capabilities)\n"), 7 );
+      if (opt.compliance != CO_DE_VS)
+        tty_printf (_("   (%d) DSA (set your own capabilities)\n"), 7 );
 #if GPG_USE_RSA
       tty_printf (_("   (%d) RSA (set your own capabilities)\n"), 8 );
 #endif
@@ -1930,7 +1933,13 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
       answer = cpr_get ("keygen.algo", _("Your selection? "));
       cpr_kill_prompt ();
       algo = *answer? atoi (answer) : 1;
-      if ((algo == 1 || !strcmp (answer, "rsa+rsa")) && !addmode)
+
+      if (opt.compliance == CO_DE_VS
+          && (algo == 2 || algo == 3 || algo == 5 || algo == 7))
+        {
+          tty_printf (_("Invalid selection.\n"));
+        }
+      else if ((algo == 1 || !strcmp (answer, "rsa+rsa")) && !addmode)
         {
           algo = PUBKEY_ALGO_RSA;
           *r_subkey_algo = PUBKEY_ALGO_RSA;
@@ -2051,7 +2060,7 @@ static void
 get_keysize_range (int algo,
                    unsigned int *min, unsigned int *def, unsigned int *max)
 {
-  *min = 1024;
+  *min = opt.compliance == CO_DE_VS ? 2048: 1024;
   *def = DEFAULT_STD_KEYSIZE;
   *max = 4096;
 
@@ -2197,26 +2206,27 @@ ask_curve (int *algo, int *subkey_algo)
      numbers in the menu regardless on how Gpg was configured.  */
   struct {
     const char *name;
-    int available;   /* Available in Libycrypt (runtime checked) */
-    int expert_only;
     const char* eddsa_curve; /* Corresponding EdDSA curve.  */
     const char *pretty_name;
-    int supported;   /* Supported by gpg.  */
+    unsigned int supported : 1;   /* Supported by gpg.     */
+    unsigned int de_vs : 1;       /* Allowed in CO_DE_VS.  */
+    unsigned int expert_only : 1; /* Only with --expert    */
+    unsigned int available : 1;   /* Available in Libycrypt (runtime checked) */
   } curves[] = {
 #if GPG_USE_ECDSA || GPG_USE_ECDH
 # define MY_USE_ECDSADH 1
 #else
 # define MY_USE_ECDSADH 0
 #endif
-    { "Curve25519",      0, 0, "Ed25519", "Curve 25519", GPG_USE_EDDSA  },
-    { "Curve448",        0, 1, "Ed448",   "Curve 448",   0/*reserved*/  },
-    { "NIST P-256",      0, 1, NULL, NULL,               MY_USE_ECDSADH },
-    { "NIST P-384",      0, 0, NULL, NULL,               MY_USE_ECDSADH },
-    { "NIST P-521",      0, 1, NULL, NULL,               MY_USE_ECDSADH },
-    { "brainpoolP256r1", 0, 1, NULL, "Brainpool P-256",  MY_USE_ECDSADH },
-    { "brainpoolP384r1", 0, 1, NULL, "Brainpool P-384",  MY_USE_ECDSADH },
-    { "brainpoolP512r1", 0, 1, NULL, "Brainpool P-512",  MY_USE_ECDSADH },
-    { "secp256k1",       0, 1, NULL, NULL,               MY_USE_ECDSADH },
+    { "Curve25519",      "Ed25519", "Curve 25519", !!GPG_USE_EDDSA, 0, 0, 0 },
+    { "Curve448",        "Ed448",   "Curve 448",   0/*reserved*/  , 0, 1, 0 },
+    { "NIST P-256",      NULL, NULL,               MY_USE_ECDSADH,  0, 1, 0 },
+    { "NIST P-384",      NULL, NULL,               MY_USE_ECDSADH,  0, 0, 0 },
+    { "NIST P-521",      NULL, NULL,               MY_USE_ECDSADH,  0, 1, 0 },
+    { "brainpoolP256r1", NULL, "Brainpool P-256",  MY_USE_ECDSADH,  1, 1, 0 },
+    { "brainpoolP384r1", NULL, "Brainpool P-384",  MY_USE_ECDSADH,  1, 1, 0 },
+    { "brainpoolP512r1", NULL, "Brainpool P-512",  MY_USE_ECDSADH,  1, 1, 0 },
+    { "secp256k1",       NULL, NULL,               MY_USE_ECDSADH,  0, 1, 0 },
   };
 #undef MY_USE_ECDSADH
   int idx;
@@ -2234,7 +2244,13 @@ ask_curve (int *algo, int *subkey_algo)
       curves[idx].available = 0;
       if (!curves[idx].supported)
         continue;
-      if (!opt.expert && curves[idx].expert_only)
+
+      if (opt.compliance==CO_DE_VS)
+        {
+          if (!curves[idx].de_vs)
+            continue; /* Not allowed.  */
+        }
+      else if (!opt.expert && curves[idx].expert_only)
         continue;
 
       /* We need to switch from the ECDH name of the curve to the

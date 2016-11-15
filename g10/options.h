@@ -140,7 +140,7 @@ struct
   enum
     {
       CO_GNUPG, CO_RFC4880, CO_RFC2440,
-      CO_PGP6, CO_PGP7, CO_PGP8
+      CO_PGP6, CO_PGP7, CO_PGP8, CO_DE_VS
     } compliance;
   enum
     {
@@ -327,7 +327,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 
 
 /* Compatibility flags.  */
-#define GNUPG   (opt.compliance==CO_GNUPG)
+#define GNUPG   (opt.compliance==CO_GNUPG || opt.compliance==CO_DE_VS)
 #define RFC2440 (opt.compliance==CO_RFC2440)
 #define RFC4880 (opt.compliance==CO_RFC4880)
 #define PGP6    (opt.compliance==CO_PGP6)
