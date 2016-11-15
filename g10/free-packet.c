@@ -114,11 +114,8 @@ release_public_key_parts (PKT_public_key *pk)
       xfree (pk->prefs);
       pk->prefs = NULL;
     }
-  if (pk->user_id)
-    {
-      free_user_id (pk->user_id);
-      pk->user_id = NULL;
-    }
+  free_user_id (pk->user_id);
+  pk->user_id = NULL;
   if (pk->revkey)
     {
       xfree(pk->revkey);
@@ -293,6 +290,9 @@ free_comment( PKT_comment *rem )
 void
 free_attributes(PKT_user_id *uid)
 {
+  if (!uid)
+    return;
+
   xfree(uid->attribs);
   xfree(uid->attrib_data);
 
@@ -304,70 +304,94 @@ free_attributes(PKT_user_id *uid)
 void
 free_user_id (PKT_user_id *uid)
 {
-    log_assert (uid->ref > 0);
-    if (--uid->ref)
-        return;
+  if (!uid)
+    return;
 
-    free_attributes(uid);
-    xfree (uid->prefs);
-    xfree (uid->namehash);
-    xfree (uid->mbox);
-    xfree (uid);
+  log_assert (uid->ref > 0);
+  if (--uid->ref)
+    return;
+
+  free_attributes(uid);
+  xfree (uid->prefs);
+  xfree (uid->namehash);
+  xfree (uid->mbox);
+  xfree (uid);
 }
 
 void
 free_compressed( PKT_compressed *zd )
 {
-    if( zd->buf ) { /* have to skip some bytes */
-	/* don't have any information about the length, so
-	 * we assume this is the last packet */
-	while( iobuf_read( zd->buf, NULL, 1<<30 ) != -1 )
-	    ;
+  if (!zd)
+    return;
+
+  if (zd->buf)
+    {
+      /* We need to skip some bytes.  Because don't have any
+       * information about the length, so we assume this is the last
+       * packet */
+      while (iobuf_read( zd->buf, NULL, 1<<30 ) != -1)
+        ;
     }
-    xfree(zd);
+  xfree(zd);
 }
 
 void
 free_encrypted( PKT_encrypted *ed )
 {
-    if( ed->buf ) { /* have to skip some bytes */
-	if( ed->is_partial ) {
-	    while( iobuf_read( ed->buf, NULL, 1<<30 ) != -1 )
-		;
+  if (!ed)
+    return;
+
+  if (ed->buf)
+    {
+      /* We need to skip some bytes. */
+      if (ed->is_partial)
+        {
+          while (iobuf_read( ed->buf, NULL, 1<<30 ) != -1)
+            ;
 	}
-	else {
-	   while( ed->len ) { /* skip the packet */
-	       int n = iobuf_read( ed->buf, NULL, ed->len );
-	       if( n == -1 )
-		   ed->len = 0;
-	       else
-		   ed->len -= n;
-	   }
+      else
+        {
+          while (ed->len)
+            {
+              /* Skip the packet. */
+              int n = iobuf_read( ed->buf, NULL, ed->len );
+              if (n == -1)
+                ed->len = 0;
+              else
+                ed->len -= n;
+            }
 	}
     }
-    xfree(ed);
+  xfree (ed);
 }
 
 
 void
 free_plaintext( PKT_plaintext *pt )
 {
-    if( pt->buf ) { /* have to skip some bytes */
-	if( pt->is_partial ) {
-	    while( iobuf_read( pt->buf, NULL, 1<<30 ) != -1 )
-		;
-	}
-	else {
-	   while( pt->len ) { /* skip the packet */
-	       int n = iobuf_read( pt->buf, NULL, pt->len );
-	       if( n == -1 )
-		   pt->len = 0;
-	       else
-		   pt->len -= n;
-	   }
+  if (!pt)
+    return;
+
+  if (pt->buf)
+    { /* We need to skip some bytes.  */
+      if (pt->is_partial)
+        {
+          while (iobuf_read( pt->buf, NULL, 1<<30 ) != -1)
+            ;
+        }
+      else
+        {
+          while( pt->len )
+            { /* Skip the packet.  */
+              int n = iobuf_read( pt->buf, NULL, pt->len );
+              if (n == -1)
+                pt->len = 0;
+              else
+                pt->len -= n;
+            }
 	}
     }
-    xfree(pt);
+  xfree (pt);
 }
 
 /****************

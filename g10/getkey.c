@@ -1602,29 +1602,25 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
             {
               /* New key is better.  */
               release_public_key_parts (&best.key);
-              if (best.uid)
-                free_user_id (best.uid);
+              free_user_id (best.uid);
               best = new;
             }
           else if (diff > 0)
             {
               /* Old key is better.  */
               release_public_key_parts (&new.key);
-              if (new.uid)
-                free_user_id (new.uid);
+              free_user_id (new.uid);
             }
           else
             {
               /* A tie.  Keep the old key.  */
               release_public_key_parts (&new.key);
-              if (new.uid)
-                free_user_id (new.uid);
+              free_user_id (new.uid);
             }
         }
       getkey_end (ctx);
       ctx = NULL;
-      if (best.uid)
-        free_user_id (best.uid);
+      free_user_id (best.uid);
 
       if (best.valid)
         {
@@ -3604,8 +3600,7 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
   if (latest_key)
     {
       pk = latest_key->pkt->pkt.public_key;
-      if (pk->user_id)
-	free_user_id (pk->user_id);
+      free_user_id (pk->user_id);
       pk->user_id = scopy_user_id (foundu);
     }
 
