@@ -2643,6 +2643,7 @@ static pointer _s_return(scheme *sc, pointer a, int enable_gc) {
     return sc->NIL;
   free_cons(sc, dump, &op, &dump);
   sc->op = ivalue(op);
+  free_cell(sc, op);
   free_cons(sc, dump, &sc->args, &dump);
   free_cons(sc, dump, &sc->envir, &dump);
   free_cons(sc, dump, &sc->code, &sc->dump);
