@@ -2167,6 +2167,7 @@ gpg_error_t
 getkey_next (getkey_ctx_t ctx, PKT_public_key *pk, kbnode_t *ret_keyblock)
 {
   int rc; /* Fixme:  Make sure this is proper gpg_error */
+  KBNODE keyblock = NULL;
   KBNODE found_key = NULL;
 
   /* We need to disable the caching so that for an exact key search we
@@ -2175,11 +2176,18 @@ getkey_next (getkey_ctx_t ctx, PKT_public_key *pk, kbnode_t *ret_keyblock)
      used without respecting the current file pointer!  */
   keydb_disable_caching (ctx->kr_handle);
 
+  /* FOUND_KEY is only valid as long as RET_KEYBLOCK is.  If the
+   * caller wants PK, but not RET_KEYBLOCK, we need hand in our own
+   * keyblock.  */
+  if (pk && ret_keyblock == NULL)
+      ret_keyblock = &keyblock;
+
   rc = lookup (ctx, ret_keyblock, &found_key, ctx->want_secret);
   if (!rc && pk)
     {
       log_assert (found_key);
       pk_from_block (pk, NULL, found_key);
+      release_kbnode (keyblock);
     }
 
   return rc;
