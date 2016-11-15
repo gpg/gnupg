@@ -165,6 +165,7 @@ type_to_string (enum scheme_types typ)
 #define ADJ 32
 #define TYPE_BITS 5
 #define T_MASKTYPE      31    /* 0000000000011111 */
+#define T_FINALIZE    2048    /* 0000100000000000 */
 #define T_SYNTAX      4096    /* 0001000000000000 */
 #define T_IMMUTABLE   8192    /* 0010000000000000 */
 #define T_ATOM       16384    /* 0100000000000000 */   /* only for gc */
@@ -1095,7 +1096,7 @@ static pointer oblist_all_symbols(scheme *sc)
 static pointer mk_port(scheme *sc, port *p) {
   pointer x = get_cell(sc, sc->NIL, sc->NIL);
 
-  typeflag(x) = T_PORT|T_ATOM;
+  typeflag(x) = T_PORT|T_ATOM|T_FINALIZE;
   x->_object._port=p;
   return (x);
 }
@@ -1111,7 +1112,7 @@ pointer mk_foreign_func(scheme *sc, foreign_func f) {
 pointer mk_foreign_object(scheme *sc, const foreign_object_vtable *vtable, void *data) {
   pointer x = get_cell(sc, sc->NIL, sc->NIL);
 
-  typeflag(x) = (T_FOREIGN_OBJECT | T_ATOM);
+  typeflag(x) = (T_FOREIGN_OBJECT | T_ATOM | T_FINALIZE);
   x->_object._foreign_object._vtable=vtable;
   x->_object._foreign_object._data = data;
   return (x);
@@ -1179,7 +1180,7 @@ INTERFACE pointer mk_string(scheme *sc, const char *str) {
 
 INTERFACE pointer mk_counted_string(scheme *sc, const char *str, int len) {
      pointer x = get_cell(sc, sc->NIL, sc->NIL);
-     typeflag(x) = (T_STRING | T_ATOM);
+     typeflag(x) = (T_STRING | T_ATOM | T_FINALIZE);
      strvalue(x) = store_string(sc,len,str,0);
      strlength(x) = len;
      return (x);
@@ -1187,7 +1188,7 @@ INTERFACE pointer mk_counted_string(scheme *sc, const char *str, int len) {
 
 INTERFACE pointer mk_empty_string(scheme *sc, int len, char fill) {
      pointer x = get_cell(sc, sc->NIL, sc->NIL);
-     typeflag(x) = (T_STRING | T_ATOM);
+     typeflag(x) = (T_STRING | T_ATOM | T_FINALIZE);
      strvalue(x) = store_string(sc,len,0,fill);
      strlength(x) = len;
      return (x);
@@ -1504,7 +1505,7 @@ static void gc(scheme *sc, pointer a, pointer b) {
     clrmark(p);
       } else {
     /* reclaim cell */
-        if (typeflag(p) != 0) {
+        if (typeflag(p) & T_FINALIZE) {
           finalize_cell(sc, p);
           typeflag(p) = 0;
           car(p) = sc->NIL;
