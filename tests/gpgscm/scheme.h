@@ -43,6 +43,7 @@ extern "C" {
 # define USE_COMPILE_HOOK 0
 # define USE_DL 0
 # define USE_PLIST 0
+# define USE_SMALL_INTEGERS 0
 #endif
 
 
@@ -93,6 +94,13 @@ extern "C" {
 /* Enable faster opcode dispatch.  */
 #ifndef USE_THREADED_CODE
 # define USE_THREADED_CODE 1
+#endif
+
+/* Use a static set of cells to represent small numbers.  This set
+ * notably includes all opcodes, and hence saves a cell reservation
+ * during 's_save'.  */
+#ifndef USE_SMALL_INTEGERS
+# define USE_SMALL_INTEGERS 1
 #endif
 
 #ifndef USE_STRCASECMP   /* stricmp for Unix */

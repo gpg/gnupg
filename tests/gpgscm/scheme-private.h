@@ -119,6 +119,12 @@ pointer SHARP_HOOK;  /* *sharp-hook* */
 pointer COMPILE_HOOK;  /* *compile-hook* */
 #endif
 
+#if USE_SMALL_INTEGERS
+/* A fixed allocation of small integers.  */
+void *integer_alloc;
+pointer integer_cells;
+#endif
+
 pointer free_cell;       /* pointer to top of free cells */
 long    fcells;          /* # of free cells */
 size_t  inhibit_gc;      /* nesting of gc_disable */

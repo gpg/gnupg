@@ -598,34 +598,47 @@ static long binary_decode(const char *s) {
  return x;
 }
 
+/* Allocate a new cell segment but do not make it available yet.  */
+static int
+_alloc_cellseg(scheme *sc, size_t len, void **alloc, pointer *cells)
+{
+  int adj = ADJ;
+  void *cp;
+
+  if (adj < sizeof(struct cell))
+    adj = sizeof(struct cell);
+
+  cp = sc->malloc(len * sizeof(struct cell) + adj);
+  if (cp == NULL)
+    return 1;
+
+  *alloc = cp;
+
+  /* adjust in TYPE_BITS-bit boundary */
+  if (((unsigned long) cp) % adj != 0)
+    cp = (void *) (adj * ((unsigned long) cp / adj + 1));
+
+  *cells = cp;
+  return 0;
+}
+
 /* allocate new cell segment */
 static int alloc_cellseg(scheme *sc, int n) {
      pointer newp;
      pointer last;
      pointer p;
-     void *cp;
      long i;
      int k;
-     int adj=ADJ;
-
-     if(adj<sizeof(struct cell)) {
-       adj=sizeof(struct cell);
-     }
 
      for (k = 0; k < n; k++) {
          if (sc->last_cell_seg >= CELL_NSEGMENT - 1)
               return k;
-         cp = sc->malloc(CELL_SEGSIZE * sizeof(struct cell)+adj);
-         if (cp == 0)
-              return k;
-         i = ++sc->last_cell_seg ;
-         sc->alloc_seg[i] = cp;
-         /* adjust in TYPE_BITS-bit boundary */
-         if(((unsigned long)cp)%adj!=0) {
-           cp=(void *)(adj*((unsigned long)cp/adj+1));
-         }
+	 i = ++sc->last_cell_seg;
+	 if (_alloc_cellseg(sc, CELL_SEGSIZE, &sc->alloc_seg[i], &newp)) {
+	      sc->last_cell_seg--;
+	      return k;
+	 }
          /* insert new segment in address order */
-         newp=(pointer)cp;
          sc->cell_seg[i] = newp;
          while (i > 0 && sc->cell_seg[i - 1] > sc->cell_seg[i]) {
              p = sc->cell_seg[i];
@@ -1128,15 +1141,63 @@ INTERFACE pointer mk_character(scheme *sc, int c) {
   return (x);
 }
 
+
+
+#if USE_SMALL_INTEGERS
+
+/* s_save assumes that all opcodes can be expressed as a small
+ * integer.  */
+#define MAX_SMALL_INTEGER	OP_MAXDEFINED
+
+static int
+initialize_small_integers(scheme *sc)
+{
+  int i;
+  if (_alloc_cellseg(sc, MAX_SMALL_INTEGER, &sc->integer_alloc,
+		     &sc->integer_cells))
+    return 1;
+
+  for (i = 0; i < MAX_SMALL_INTEGER; i++) {
+    pointer x = &sc->integer_cells[i];
+    typeflag(x) = T_NUMBER | T_ATOM | MARK;
+    ivalue_unchecked(x) = i;
+    set_num_integer(x);
+  }
+
+  return 0;
+}
+
+static INLINE pointer
+mk_small_integer(scheme *sc, long n)
+{
+#define mk_small_integer_allocates	0
+  assert(0 <= n && n < MAX_SMALL_INTEGER);
+  return &sc->integer_cells[n];
+}
+#else
+
+#define mk_small_integer_allocates	1
+#define mk_small_integer	mk_integer
+
+#endif
+
 /* get number atom (integer) */
 INTERFACE pointer mk_integer(scheme *sc, long n) {
-  pointer x = get_cell(sc,sc->NIL, sc->NIL);
+  pointer x;
 
+#if USE_SMALL_INTEGERS
+  if (0 <= n && n < MAX_SMALL_INTEGER)
+    return mk_small_integer(sc, n);
+#endif
+
+  x = get_cell(sc,sc->NIL, sc->NIL);
   typeflag(x) = (T_NUMBER | T_ATOM);
   ivalue_unchecked(x)= n;
   set_num_integer(x);
   return (x);
 }
+
+
 
 INTERFACE pointer mk_real(scheme *sc, double n) {
   pointer x = get_cell(sc,sc->NIL, sc->NIL);
@@ -2645,7 +2706,9 @@ static pointer _s_return(scheme *sc, pointer a, int enable_gc) {
     return sc->NIL;
   free_cons(sc, dump, &op, &dump);
   sc->op = ivalue(op);
+#ifndef USE_SMALL_INTEGERS
   free_cell(sc, op);
+#endif
   free_cons(sc, dump, &sc->args, &dump);
   free_cons(sc, dump, &sc->envir, &dump);
   free_cons(sc, dump, &sc->code, &sc->dump);
@@ -2653,12 +2716,12 @@ static pointer _s_return(scheme *sc, pointer a, int enable_gc) {
 }
 
 static void s_save(scheme *sc, enum scheme_opcodes op, pointer args, pointer code) {
-#define s_save_allocates	5
+#define s_save_allocates	(4 + mk_small_integer_allocates)
     pointer dump;
     gc_disable(sc, gc_reservations (s_save));
     dump = cons(sc, sc->envir, cons(sc, (code), sc->dump));
     dump = cons(sc, (args), dump);
-    sc->dump = cons(sc, mk_integer(sc, (long)(op)), dump);
+    sc->dump = cons(sc, mk_small_integer(sc, (long)(op)), dump);
     gc_enable(sc);
 }
 
@@ -4907,6 +4970,14 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   sc->T = &sc->_HASHT;
   sc->F = &sc->_HASHF;
   sc->EOF_OBJ=&sc->_EOF_OBJ;
+
+#if USE_SMALL_INTEGERS
+  if (initialize_small_integers(sc)) {
+    sc->no_memory=1;
+    return 0;
+  }
+#endif
+
   sc->free_cell = &sc->_NIL;
   sc->fcells = 0;
   sc->inhibit_gc = GC_ENABLED;
@@ -5051,6 +5122,10 @@ void scheme_deinit(scheme *sc) {
   sc->loadport=sc->NIL;
   sc->gc_verbose=0;
   gc(sc,sc->NIL,sc->NIL);
+
+#if USE_SMALL_INTEGERS
+  sc->free(sc->integer_alloc);
+#endif
 
   for(i=0; i<=sc->last_cell_seg; i++) {
     sc->free(sc->alloc_seg[i]);
