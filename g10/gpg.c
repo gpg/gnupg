@@ -343,6 +343,7 @@ enum cmd_and_opt_values
     oIgnoreMDCError,
     oShowSessionKey,
     oOverrideSessionKey,
+    oOverrideSessionKeyFD,
     oNoRandomSeedFile,
     oAutoKeyRetrieve,
     oNoAutoKeyRetrieve,
@@ -776,6 +777,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oIgnoreMDCError, "ignore-mdc-error", "@"),
   ARGPARSE_s_n (oShowSessionKey, "show-session-key", "@"),
   ARGPARSE_s_s (oOverrideSessionKey, "override-session-key", "@"),
+  ARGPARSE_s_i (oOverrideSessionKeyFD, "override-session-key-fd", "@"),
   ARGPARSE_s_n (oNoRandomSeedFile,  "no-random-seed-file", "@"),
   ARGPARSE_s_n (oAutoKeyRetrieve, "auto-key-retrieve", "@"),
   ARGPARSE_s_n (oNoAutoKeyRetrieve, "no-auto-key-retrieve", "@"),
@@ -919,6 +921,7 @@ static void add_notation_data( const char *string, int which );
 static void add_policy_url( const char *string, int which );
 static void add_keyserver_url( const char *string, int which );
 static void emergency_cleanup (void);
+static void read_sessionkey_from_fd (int fd);
 
 
 static char *
@@ -2262,6 +2265,7 @@ main (int argc, char **argv)
     int eyes_only=0;
     int multifile=0;
     int pwfd = -1;
+    int ovrseskeyfd = -1;
     int fpr_maybe_cmd = 0; /* --fingerprint maybe a command.  */
     int any_explicit_recipient = 0;
     int require_secmem = 0;
@@ -3289,6 +3293,9 @@ main (int argc, char **argv)
 	  case oOverrideSessionKey:
 		opt.override_session_key = pargs.r.ret_str;
 		break;
+	  case oOverrideSessionKeyFD:
+                ovrseskeyfd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);
+		break;
 	  case oMergeOnly:
 	        deprecated_warning(configname,configlineno,"--merge-only",
 				   "--import-options ","merge-only");
@@ -3856,8 +3863,11 @@ main (int argc, char **argv)
       g10_exit(0);
 
 
-    if( pwfd != -1 )  /* Read the passphrase now. */
-	read_passphrase_from_fd( pwfd );
+    if (pwfd != -1)  /* Read the passphrase now. */
+      read_passphrase_from_fd (pwfd);
+
+    if (ovrseskeyfd != -1 )  /* Read the sessionkey now. */
+      read_sessionkey_from_fd (ovrseskeyfd);
 
     fname = argc? *argv : NULL;
 
@@ -5211,4 +5221,35 @@ add_keyserver_url( const char *string, int which )
 
   if(critical)
     sl->flags |= 1;
+}
+
+
+static void
+read_sessionkey_from_fd (int fd)
+{
+  int i, len;
+  char *line;
+
+  for (line = NULL, i = len = 100; ; i++ )
+    {
+      if (i >= len-1 )
+        {
+          char *tmp = line;
+          len += 100;
+          line = xmalloc_secure (len);
+          if (tmp)
+            {
+              memcpy (line, tmp, i);
+              xfree (tmp);
+            }
+          else
+            i=0;
+	}
+      if (read (fd, line + i, 1) != 1 || line[i] == '\n')
+        break;
+    }
+  line[i] = 0;
+  log_debug ("seskey: %s\n", line);
+  gpgrt_annotate_leaked_object (line);
+  opt.override_session_key = line;
 }

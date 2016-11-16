@@ -3118,13 +3118,17 @@ inappropriate plaintext so they can take action against the offending
 user.
 
 @item --override-session-key @code{string}
+@itemx --override-session-key-fd @code{fd}
 @opindex override-session-key
-Don't use the public key but the session key @code{string}. The format
-of this string is the same as the one printed by
-@option{--show-session-key}. This option is normally not used but comes
-handy in case someone forces you to reveal the content of an encrypted
-message; using this option you can do this without handing out the
-secret key.
+Don't use the public key but the session key @code{string} respective
+the session key taken from the first line read from file descriptor
+@code{fd}.  The format of this string is the same as the one printed
+by @option{--show-session-key}. This option is normally not used but
+comes handy in case someone forces you to reveal the content of an
+encrypted message; using this option you can do this without handing
+out the secret key.  Note that using @option{--override-session-key}
+may reveal the session key to all local users via the global process
+table.
 
 @item --ask-sig-expire
 @itemx --no-ask-sig-expire
