@@ -134,8 +134,6 @@ void keybox_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
 
 gpg_error_t keybox_tmp_names (const char *filename, int for_keyring,
                               char **r_bakname, char **r_tmpname);
-gpg_error_t keybox_file_rename (const char *oldname, const char *newname,
-                                int *block_signals);
 
 
 #ifdef __cplusplus

@@ -1351,12 +1351,12 @@ rename_tmp_file (const char *bakfname, const char *tmpfname, const char *fname)
 
   /* First make a backup file. */
   block = 1;
-  rc = keybox_file_rename (fname, bakfname, &block);
+  rc = gnupg_rename_file (fname, bakfname, &block);
   if (rc)
     goto fail;
 
   /* then rename the file */
-  rc = keybox_file_rename (tmpfname, fname, NULL);
+  rc = gnupg_rename_file (tmpfname, fname, NULL);
   if (block)
     {
       gnupg_unblock_all_signals ();

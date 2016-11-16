@@ -618,6 +618,76 @@ gnupg_remove (const char *fname)
 }
 
 
+/* Wrapper for rename(2) to handle Windows peculiarities.  If
+ * BLOCK_SIGNALS is not NULL and points to a variable set to true, all
+ * signals will be blocked by calling gnupg_block_all_signals; the
+ * caller needs to call gnupg_unblock_all_signals if that variable is
+ * still set to true on return. */
+gpg_error_t
+gnupg_rename_file (const char *oldname, const char *newname, int *block_signals)
+{
+  gpg_error_t err = 0;
+
+  if (block_signals && *block_signals)
+    gnupg_block_all_signals ();
+
+#ifdef HAVE_DOSISH_SYSTEM
+  {
+    int wtime = 0;
+
+    gnupg_remove (newname);
+  again:
+    if (rename (oldname, newname))
+      {
+        if (GetLastError () == ERROR_SHARING_VIOLATION)
+          {
+            /* Another process has the file open.  We do not use a
+             * lock for read but instead we wait until the other
+             * process has closed the file.  This may take long but
+             * that would also be the case with a dotlock approach for
+             * read and write.  Note that we don't need this on Unix
+             * due to the inode concept.
+             *
+             * So let's wait until the rename has worked.  The retry
+             * intervals are 50, 100, 200, 400, 800, 50ms, ...  */
+            if (!wtime || wtime >= 800)
+              wtime = 50;
+            else
+              wtime *= 2;
+
+            if (wtime >= 800)
+              log_info (_("waiting for file '%s' to become accessible ...\n"),
+                        oldname);
+
+            Sleep (wtime);
+            goto again;
+          }
+        err = my_error_from_syserror ();
+      }
+  }
+#else /* Unix */
+  {
+#ifdef __riscos__
+    gnupg_remove (newname);
+#endif
+    if (rename (oldname, newname) )
+      err = my_error_from_syserror ();
+  }
+#endif /* Unix */
+
+  if (block_signals && *block_signals && err)
+    {
+      gnupg_unblock_all_signals ();
+      *block_signals = 0;
+    }
+
+  if (err)
+    log_error (_("renaming '%s' to '%s' failed: %s\n"),
+               oldname, newname, gpg_strerror (err));
+  return err;
+}
+
+
 #ifndef HAVE_W32_SYSTEM
 static mode_t
 modestr_to_mode (const char *modestr)
