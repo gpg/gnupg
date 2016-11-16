@@ -47,18 +47,15 @@ endif
 
 if BUILD_WKS_TOOLS
   gpg_wks_server = gpg-wks-server
-  gpg_wks_client = gpg-wks-client
 else
   gpg_wks_server =
-  gpg_wks_client =
 endif
 
-libexec_PROGRAMS =
+libexec_PROGRAMS = gpg-wks-client
 
 bin_PROGRAMS = gpgconf gpg-connect-agent ${symcryptrun}
 if !HAVE_W32_SYSTEM
 bin_PROGRAMS += watchgnupg gpgparsemail ${gpg_wks_server}
-libexec_PROGRAMS += ${gpg_wks_client}
 endif
 
 if !DISABLE_REGEX
