@@ -1209,8 +1209,18 @@ main (int argc, char **argv)
           for (i=0; i <= 2; i++)
             {
               if (!log_test_fd (i) && i != fd )
-                close (i);
+                {
+                  if ( !close (i)
+                       && open ("/dev/null", i? O_WRONLY : O_RDONLY) == -1)
+                    {
+                      log_error ("failed to open '%s': %s\n",
+                                 "/dev/null", strerror (errno));
+                      cleanup ();
+                      dirmngr_exit (1);
+                    }
+                }
             }
+
           if (setsid() == -1)
             {
               log_error ("setsid() failed: %s\n", strerror(errno) );
