@@ -206,5 +206,8 @@ gpg_error_t dirmngr_status_help (ctrl_t ctrl, const char *text);
 gpg_error_t dirmngr_tick (ctrl_t ctrl);
 
 
+/*-- loadswdb.c --*/
+gpg_error_t dirmngr_load_swdb (ctrl_t ctrl, int force);
+
 
 #endif /*DIRMNGR_H*/

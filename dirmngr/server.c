@@ -54,8 +54,6 @@
 #include "mbox-util.h"
 #include "zb32.h"
 #include "server-help.h"
-#include "ccparray.h"
-#include "../common/exectool.h"
 
 /* To avoid DoS attacks we limit the size of a certificate to
    something reasonable.  The DoS was actually only an issue back when
@@ -2239,6 +2237,22 @@ cmd_ks_put (assuan_context_t ctx, char *line)
 }
 
 
+
+static const char hlp_loadswdb[] =
+  "LOADSWDB [--force]\n"
+  "\n"
+  "Load and verify the swdb.lst from the Net.";
+static gpg_error_t
+cmd_loadswdb (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+
+  err = dirmngr_load_swdb (ctrl, has_option (line, "--force"));
+
+  return leave_cmd (ctx, err);
+}
+
 
 
 static const char hlp_getinfo[] =
@@ -2343,388 +2357,6 @@ cmd_reloaddirmngr (assuan_context_t ctx, char *line)
 
 
 
-/* This function parses the first portion of the version number S and
- * stores it in *NUMBER.  On success, this function returns a pointer
- * into S starting with the first character, which is not part of the
- * initial number portion; on failure, NULL is returned.  */
-static const char*
-parse_version_number (const char *s, int *number)
-{
-  int val = 0;
-
-  if (*s == '0' && digitp (&s[1]))
-    return NULL;  /* Leading zeros are not allowed.  */
-  for (; digitp (s); s++)
-    {
-      val *= 10;
-      val += *s - '0';
-    }
-  *number = val;
-  return val < 0 ? NULL : s;
-}
-
-
-/* This function breaks up the complete string-representation of the
- * version number S, which is of the following struture: <major
- * number>.<minor number>[.<micro number>]<patch level>.  The major,
- * minor and micro number components will be stored in *MAJOR, *MINOR
- * and *MICRO.  If MICRO is not given 0 is used instead.
- *
- * On success, the last component, the patch level, will be returned;
- * on failure, NULL will be returned.  */
-static const char *
-parse_version_string (const char *s, int *major, int *minor, int *micro)
-{
-  s = parse_version_number (s, major);
-  if (!s || *s != '.')
-    return NULL;
-  s++;
-  s = parse_version_number (s, minor);
-  if (!s)
-    return NULL;
-  if (*s == '.')
-    {
-      s++;
-      s = parse_version_number (s, micro);
-      if (!s)
-        return NULL;
-    }
-  else
-    micro = 0;
-  return s;  /* Patchlevel.  */
-}
-
-
-/* Create temporary directory with mode 0700.  Returns a dynamically
- * allocated string with the filename of the directory.  */
-static char *
-my_mktmpdir (void)
-{
-  char *name, *p;
-
-  p = getenv ("TMPDIR");
-  if (!p || !*p)
-    p = "/tmp";
-  if (p[strlen (p) - 1] == '/')
-    name = strconcat (p, "gpg-XXXXXX", NULL);
-  else
-    name = strconcat (p, "/", "gpg-XXXXXX", NULL);
-  if (!name || !gnupg_mkdtemp (name))
-    {
-      int saveerr = errno;
-      log_error (_("can't create temporary directory '%s': %s\n"),
-                 name, strerror (saveerr));
-      gpg_err_set_errno (saveerr);
-      return NULL;
-    }
-
-  return name;
-}
-
-
-/* Sets result to -1 if version a is less than b, 0 if the versions are equal
- * and 1 otherwise. Patch levels are compared as strings.  */
-static gpg_error_t
-cmp_version (const char *a, const char *b, int *result)
-{
-  int a_major, b_major;
-  int a_minor, b_minor;
-  int a_micro, b_micro;
-  const char *a_patch, *b_patch;
-
-  if (!a || !b || !result)
-    return gpg_error (GPG_ERR_EINVAL);
-
-  a_patch = parse_version_string (a, &a_major, &a_minor, &a_micro);
-  b_patch = parse_version_string (b, &b_major, &b_minor, &b_micro);
-
-  if (!a_patch || !b_patch)
-    return gpg_error (GPG_ERR_EINVAL);
-
-  if (a_major == b_major)
-    {
-      if (a_minor == b_minor)
-        {
-          if (a_micro == b_micro)
-            *result = strcmp (a_patch, b_patch);
-          else
-            *result = a_micro - b_minor;
-        }
-      else
-        *result = a_minor - b_minor;
-    }
-  else
-    *result = a_major - b_major;
-
-  return 0;
-}
-
-
-static gpg_error_t
-fetch_into_tmpdir (ctrl_t ctrl, const char *url, estream_t *strm_out,
-                   char **path)
-{
-  gpg_error_t err;
-  char *filename = NULL;
-  char *dirname = NULL;
-  estream_t file = NULL;
-  estream_t strm = NULL;
-  size_t len, nwritten;
-  char buf[1024];
-
-  if (!strm_out || !path || !url)
-    {
-      err = gpg_error (GPG_ERR_INV_ARG);
-      goto leave;
-    }
-
-  dirname = my_mktmpdir ();
-  if (!dirname)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-
-  filename = strconcat (dirname, DIRSEP_S, "file", NULL);
-  if (!filename)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-
-  file = es_fopen (filename, "w+");
-  if (!file)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-
-  if ((err = ks_http_fetch (ctrl, url, &strm)))
-    goto leave;
-
-  for (;;)
-    {
-      if (es_read (strm, buf, sizeof buf, &len))
-        {
-          err = gpg_error_from_syserror ();
-          log_error ("error reading '%s': %s\n",
-                     es_fname_get (strm), gpg_strerror (err));
-          goto leave;
-        }
-
-      if (!len)
-        break;
-      if (es_write (file, buf, len, &nwritten))
-        {
-          err = gpg_error_from_syserror ();
-          log_error ("error writing '%s': %s\n", filename, gpg_strerror (err));
-          goto leave;
-        }
-      else if (len != nwritten)
-        {
-          err = gpg_error (GPG_ERR_EIO);
-          log_error ("error writing '%s': %s\n", filename, "short write");
-          goto leave;
-        }
-    }
-
-  es_rewind (file);
-  *strm_out = file;
-  file = NULL;
-
-  if (path)
-    {
-      *path = dirname;
-      dirname = NULL;
-    }
-
- leave:
-  es_fclose (file);
-  es_fclose (strm);
-  xfree (dirname);
-  xfree (filename);
-  return err;
-}
-
-
-struct verify_swdb_parm_s
-{
-  time_t sigtime;
-  int anyvalid;
-};
-
-static void
-verify_swdb_status_cb (void *opaque, const char *keyword, char *args)
-{
-  struct verify_swdb_parm_s *parm = opaque;
-
-  /* We care only about the first valid signature.  */
-  if (!strcmp (keyword, "VALIDSIG") && !parm->anyvalid)
-    {
-      char *fields[3];
-
-      parm->anyvalid = 1;
-      if (split_fields (args, fields, DIM (fields)) >= 3)
-        parm->sigtime = parse_timestamp (fields[2], NULL);
-    }
-}
-
-
-static const char hlp_versioncheck[] =
-  "VERSIONCHECK <name> <version>"
-  "\n"
-  "Checks the internet to find whenever a new program version is available."
-  "\n"
-  "<name> program name i.e. \"gnupg\"\n"
-  "<version> current version of the program i.e. \"2.0.2\"";
-static gpg_error_t
-cmd_versioncheck (assuan_context_t ctx, char *line)
-{
-  gpg_error_t err;
-
-  char *name;
-  char *version;
-  size_t name_len;
-  char *cmd_fields[2];
-
-  ctrl_t ctrl;
-  estream_t swdb = NULL;
-  estream_t swdb_sig = NULL;
-  char* swdb_dir = NULL;
-  char* swdb_sig_dir = NULL;
-  char* buf = NULL;
-  size_t len = 0;
-  ccparray_t ccp;
-  const char **argv = NULL;
-  char keyring_name[128];
-  char swdb_name[128];
-  char swdb_sig_name[128];
-
-  struct verify_swdb_parm_s verify_swdb_parm = { (time_t)(-1), 0 };
-
-
-  swdb_name[0] = 0;
-  swdb_sig_name[0] = 0;
-  ctrl = assuan_get_pointer (ctx);
-
-  if (split_fields (line, cmd_fields, 2) != 2)
-    {
-      err = set_error (GPG_ERR_ASS_PARAMETER,
-                       "No program name and/or version given");
-      goto out;
-    }
-
-  name = cmd_fields[0];
-  name_len = strlen (name);
-  version = cmd_fields[1];
-
-  if ((err = fetch_into_tmpdir (ctrl, "https://versions.gnupg.org/swdb.lst",
-                                &swdb, &swdb_dir)))
-    goto out;
-
-  snprintf (swdb_name, sizeof swdb_name, "%s%s%s", swdb_dir, DIRSEP_S, "file");
-
-  if ((err = fetch_into_tmpdir (ctrl, "https://versions.gnupg.org/swdb.lst.sig",
-                                &swdb_sig, &swdb_sig_dir)))
-    goto out;
-
-  snprintf (keyring_name, sizeof keyring_name, "%s%s%s", gnupg_datadir (),
-           DIRSEP_S, "distsigkey.gpg");
-  snprintf (swdb_sig_name, sizeof swdb_sig_name, "%s%s%s", swdb_sig_dir,
-           DIRSEP_S, "file");
-
-  ccparray_init (&ccp, 0);
-  ccparray_put (&ccp, "--status-fd=2");
-  ccparray_put (&ccp, "--keyring");
-  ccparray_put (&ccp, keyring_name);
-  ccparray_put (&ccp, "--");
-  ccparray_put (&ccp, swdb_sig_name);
-  ccparray_put (&ccp, "-");
-  ccparray_put (&ccp, NULL);
-  argv = ccparray_get (&ccp, NULL);
-  if (!argv)
-    {
-      err = gpg_error_from_syserror ();
-      goto out;
-    }
-
-  if ((err = gnupg_exec_tool_stream (gnupg_module_name (GNUPG_MODULE_NAME_GPGV),
-                                     argv, swdb, NULL, NULL,
-                                     verify_swdb_status_cb, &verify_swdb_parm)))
-    goto out;
-  if (verify_swdb_parm.sigtime == (time_t)(-1))
-    {
-      if (verify_swdb_parm.anyvalid)
-        err = gpg_error (GPG_ERR_BAD_SIGNATURE);
-      else
-        err = gpg_error (GPG_ERR_INV_TIME);
-      goto out;
-    }
-
-  {
-    gnupg_isotime_t tbuf;
-
-    epoch2isotime (tbuf, verify_swdb_parm.sigtime);
-    log_debug ("swdb created: %s\n", tbuf);
-  }
-
-  es_fseek (swdb, 0, SEEK_SET);
-
-  while (es_getline (&buf, &len, swdb) > 0)
-    {
-      if (len > name_len + 5 &&
-          strncmp (buf, name, name_len) == 0 &&
-          strncmp (buf + name_len, "_ver ", 5) == 0)
-        {
-          const char* this_ver_start = buf + name_len + 5;
-          char* this_ver_end = strchr (this_ver_start, '\n');
-          int cmp;
-
-          if (this_ver_end)
-            *this_ver_end = 0;
-
-          err = assuan_write_status (ctx, "LINE", buf);
-
-          err = cmp_version (this_ver_start, version, &cmp);
-          if (err > 0)
-            goto out;
-
-          if (cmp < 0)
-            err = assuan_send_data (ctx, "ROLLBACK", strlen ("ROLLBACK"));
-          else if (cmp == 0)
-            err = assuan_send_data (ctx, "CURRENT", strlen ("CURRENT"));
-          else
-            err = assuan_send_data (ctx, "UPDATE", strlen ("UPDATE"));
-
-          goto out;
-        }
-    }
-
-  err = assuan_send_data (ctx, "NOT_FOUND", strlen ("NOT_FOUND"));
-
- out:
-  es_fclose (swdb);
-  es_fclose (swdb_sig);
-  xfree (buf);
-
-  if (strlen (swdb_name) > 0)
-    remove (swdb_name);
-  if (swdb_dir)
-    rmdir (swdb_dir);
-  xfree (swdb_dir);
-
-  if (strlen (swdb_sig_name) > 0)
-    remove (swdb_sig_name);
-  if (swdb_sig_dir)
-    rmdir (swdb_sig_dir);
-  xfree (swdb_sig_dir);
-  xfree (argv);
-
-  return leave_cmd (ctx, err);
-}
-
-
-
 /* Tell the assuan library about our commands. */
 static int
 register_commands (assuan_context_t ctx)
@@ -2751,9 +2383,9 @@ register_commands (assuan_context_t ctx)
     { "KS_FETCH",   cmd_ks_fetch,   hlp_ks_fetch },
     { "KS_PUT",     cmd_ks_put,     hlp_ks_put },
     { "GETINFO",    cmd_getinfo,    hlp_getinfo },
+    { "LOADSWDB",   cmd_loadswdb,   hlp_loadswdb },
     { "KILLDIRMNGR",cmd_killdirmngr,hlp_killdirmngr },
     { "RELOADDIRMNGR",cmd_reloaddirmngr,hlp_reloaddirmngr },
-    { "VERSIONCHECK",cmd_versioncheck,hlp_versioncheck },
     { NULL, NULL }
   };
   int i, j, rc;
