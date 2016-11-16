@@ -86,18 +86,47 @@
 (assert (equal? #f (string-rindex "Hallo" #\a 2)))
 (assert (equal? #f (string-rindex "Hallo" #\.)))
 
-;; Split haystack at delimiter at most n times.
-(define (string-splitn haystack delimiter n)
+;; Split HAYSTACK at each character that makes PREDICATE true at most
+;; N times.
+(define (string-split-pln haystack predicate lookahead n)
   (let ((length (string-length haystack)))
-    (define (split acc delimiter offset n)
+    (define (split acc offset n)
       (if (>= offset length)
 	  (reverse acc)
-	  (let ((i (string-index haystack delimiter offset)))
+	  (let ((i (lookahead haystack offset)))
 	    (if (or (eq? i #f) (= 0 n))
 		(reverse (cons (substring haystack offset length) acc))
 		(split (cons (substring haystack offset i) acc)
-		       delimiter (+ i 1) (- n 1))))))
-    (split '() delimiter 0 n)))
+		       (+ i 1) (- n 1))))))
+    (split '() 0 n)))
+
+(define (string-indexp haystack offset predicate)
+  (cond
+   ((= (string-length haystack) offset)
+    #f)
+   ((predicate (string-ref haystack offset))
+    offset)
+   (else
+    (string-indexp haystack (+ 1 offset) predicate))))
+
+;; Split HAYSTACK at each character that makes PREDICATE true at most
+;; N times.
+(define (string-splitp haystack predicate n)
+  (string-split-pln haystack predicate
+		    (lambda (haystack offset)
+		      (string-indexp haystack offset predicate))
+		    n))
+(assert (equal? '("a" "b") (string-splitp "a b" char-whitespace? -1)))
+(assert (equal? '("a" "b") (string-splitp "a\tb" char-whitespace? -1)))
+(assert (equal? '("a" "" "b") (string-splitp "a \tb" char-whitespace? -1)))
+
+;; Split haystack at delimiter at most n times.
+(define (string-splitn haystack delimiter n)
+  (string-split-pln haystack
+		    (lambda (c) (char=? c delimiter))
+		    (lambda (haystack offset)
+		      (string-index haystack delimiter offset))
+		    n))
 (assert (= 2 (length (string-splitn "foo:bar:baz" #\: 1))))
 (assert (string=? "foo" (car (string-splitn "foo:bar:baz" #\: 1))))
 (assert (string=? "bar:baz" (cadr (string-splitn "foo:bar:baz" #\: 1))))
@@ -122,25 +151,32 @@
 ;; Trim the prefix of S containing only characters that make PREDICATE
 ;; true.
 (define (string-ltrim predicate s)
-  (let loop ((s' (string->list s)))
-    (if (predicate (car s'))
-	(loop (cdr s'))
-	(list->string s'))))
+  (if (string=? s "")
+      ""
+      (let loop ((s' (string->list s)))
+	(if (predicate (car s'))
+	    (loop (cdr s'))
+	    (list->string s')))))
+(assert (string=? "" (string-ltrim char-whitespace? "")))
 (assert (string=? "foo" (string-ltrim char-whitespace? "  foo")))
 
 ;; Trim the suffix of S containing only characters that make PREDICATE
 ;; true.
 (define (string-rtrim predicate s)
-  (let loop ((s' (reverse (string->list s))))
-    (if (predicate (car s'))
-	(loop (cdr s'))
-	(list->string (reverse s')))))
+  (if (string=? s "")
+      ""
+      (let loop ((s' (reverse (string->list s))))
+	(if (predicate (car s'))
+	    (loop (cdr s'))
+	    (list->string (reverse s'))))))
+(assert (string=? "" (string-rtrim char-whitespace? "")))
 (assert (string=? "foo" (string-rtrim char-whitespace? "foo 	")))
 
 ;; Trim both the prefix and suffix of S containing only characters
 ;; that make PREDICATE true.
 (define (string-trim predicate s)
   (string-ltrim predicate (string-rtrim predicate s)))
+(assert (string=? "" (string-trim char-whitespace? "")))
 (assert (string=? "foo" (string-trim char-whitespace? " 	foo 	")))
 
 ;; Check if needle is contained in haystack.
@@ -162,19 +198,34 @@
 	 (apply read-char p)
 	 '()))))))
 
+(define (list->string-reversed lst)
+  (let* ((len (length lst))
+	 (str (make-string len)))
+    (let loop ((i (- len 1))
+	       (l lst))
+      (if (< i 0)
+	  (begin
+	    (assert (null? l))
+	    str)
+	  (begin
+	    (string-set! str i (car l))
+	    (loop (- i 1) (cdr l)))))))
+
 ;; Read a line from port P.
 (define (read-line . p)
-  (list->string
-   (let f ()
-     (let ((c (apply peek-char p)))
-       (cond
-	((eof-object? c) '())
-	((char=? c #\newline)
-	 (apply read-char p)
-	 '())
-	(else
-	 (apply read-char p)
-	 (cons c (f))))))))
+  (let loop ((acc '()))
+    (let ((c (apply peek-char p)))
+      (cond
+       ((eof-object? c)
+	(if (null? acc)
+	    c ;; #eof
+	    (list->string-reversed acc)))
+       ((char=? c #\newline)
+	(apply read-char p)
+	(list->string-reversed acc))
+       (else
+	(apply read-char p)
+	(loop (cons c acc)))))))
 
 ;; Read everything from port P.
 (define (read-all . p)

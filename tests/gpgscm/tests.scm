@@ -186,16 +186,19 @@
 (assert (string=? (path-join "foo" "bar" "baz") "foo/bar/baz"))
 (assert (string=? (path-join "" "bar" "baz") "bar/baz"))
 
+;; Is PATH an absolute path?
+(define (absolute-path? path)
+  (or (char=? #\/ (string-ref path 0))
+      (and *win32* (char=? #\\ (string-ref path 0)))
+      (and *win32*
+	   (char-alphabetic? (string-ref path 0))
+	   (char=? #\: (string-ref path 1))
+	   (or (char=? #\/ (string-ref path 2))
+	       (char=? #\\ (string-ref path 2))))))
+
+;; Make PATH absolute.
 (define (canonical-path path)
-  (if (or (char=? #\/ (string-ref path 0))
-	  (and *win32* (char=? #\\ (string-ref path 0)))
-	  (and *win32*
-	       (char-alphabetic? (string-ref path 0))
-	       (char=? #\: (string-ref path 1))
-	       (or (char=? #\/ (string-ref path 2))
-		   (char=? #\\ (string-ref path 2)))))
-      path
-      (path-join (getcwd) path)))
+  (if (absolute-path? path) path (path-join (getcwd) path)))
 
 (define (in-srcdir . names)
   (canonical-path (apply path-join (cons (getenv "srcdir") names))))
