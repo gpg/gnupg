@@ -36,12 +36,12 @@
 	(let ((unfinished (filter (lambda (t) (not t::retcode)) procs)))
 	  (if (null? unfinished)
 	      (package)
-	      (let* ((commands (map (lambda (t) t::command) unfinished))
+	      (let* ((names (map (lambda (t) t::name) unfinished))
 		     (pids (map (lambda (t) t::pid) unfinished))
 		     (results
 		      (map (lambda (pid retcode) (list pid retcode))
 			   pids
-			   (wait-processes (map stringify commands) pids #t))))
+			   (wait-processes (map stringify names) pids #t))))
 		(new
 		 (map (lambda (t)
 			(if t::retcode
@@ -69,31 +69,43 @@
 (define (verbosity n)
   (if (= 0 n) '() (cons '--verbose (verbosity (- n 1)))))
 
+(define (locate-test path)
+  (if (absolute-path? path) path (in-srcdir path)))
+
 (define test
   (package
-   (define (scm name . args)
-     (new name #f `(,*argv0* ,@(verbosity (*verbose*)) ,@args
-			     ,(in-srcdir name)) #f #f CLOSED_FD))
-   (define (new name directory command pid retcode logfd)
+   (define (scm path . args)
+     ;; Start the process.
+     (define (spawn-scm args in out err)
+       (spawn-process-fd `(,*argv0* ,@(verbosity (*verbose*))
+				    ,(locate-test path) ,@args) in out err))
+     (new (basename path) #f spawn-scm #f #f CLOSED_FD))
+
+   (define (binary path . args)
+     ;; Start the process.
+     (define (spawn-binary args in out err)
+       (spawn-process-fd `(path ,@args) in out err))
+     (new (basename path) #f spawn-binary #f #f CLOSED_FD))
+
+   (define (new name directory spawn pid retcode logfd)
      (package
       (define (set-directory x)
-	(new name x command pid retcode logfd))
+	(new name x spawn pid retcode logfd))
       (define (set-retcode x)
-	(new name directory command pid x logfd))
+	(new name directory spawn pid x logfd))
       (define (set-pid x)
-	(new name directory command x retcode logfd))
+	(new name directory spawn x retcode logfd))
       (define (set-logfd x)
-	(new name directory command pid retcode x))
+	(new name directory spawn pid retcode x))
       (define (open-log-file)
-	(let ((filename (string-append name ".log")))
+	(let ((filename (string-append (basename name) ".log")))
 	  (catch '() (unlink filename))
 	  (open filename (logior O_RDWR O_BINARY O_CREAT) #o600)))
       (define (run-sync . args)
 	(letfd ((log (open-log-file)))
 	  (with-working-directory directory
 	    (let* ((p (inbound-pipe))
-		   (pid (spawn-process-fd (append command args) 0
-					  (:write-end p) (:write-end p))))
+		   (pid (spawn args 0 (:write-end p) (:write-end p))))
 	      (close (:write-end p))
 	      (splice (:read-end p) STDERR_FILENO log)
 	      (close (:read-end p))
@@ -104,13 +116,12 @@
 	(with-working-directory directory
 	  (set-retcode
 	   (wait-process
-	    name (spawn-process-fd (append command args)
-				   CLOSED_FD CLOSED_FD CLOSED_FD) #t))))
+	    name (spawn args CLOSED_FD CLOSED_FD CLOSED_FD) #t))))
       (define (run-async . args)
 	(let ((log (open-log-file)))
 	  (with-working-directory directory
-	    (new name directory command
-		 (spawn-process-fd (append command args) CLOSED_FD log log)
+	    (new name directory spawn
+		 (spawn args CLOSED_FD log log)
 		 retcode log))))
       (define (status)
 	(let ((t (assoc retcode '((0 "PASS") (77 "SKIP") (99 "ERROR")))))
