@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-07-17 17:17+0000\n"
+"PO-Revision-Date: 2016-11-16 17:17+0000\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -149,14 +149,6 @@ msgstr "на карте нет основного аутентификацион
 #, c-format
 msgid "no suitable card key found: %s\n"
 msgstr "на карте не найдено подходящего ключа: %s\n"
-
-#, c-format
-msgid "shadowing the key failed: %s\n"
-msgstr "сбой при затенении ключа: %s\n"
-
-#, c-format
-msgid "error writing key: %s\n"
-msgstr "ошибка записи ключа: %s\n"
 
 #, c-format
 msgid ""
@@ -313,6 +305,9 @@ msgstr "запуск в режиме демона (фоновый режим)"
 
 msgid "run in server mode (foreground)"
 msgstr "запуск в режиме сервера (нефоновый режим)"
+
+msgid "run in supervised mode"
+msgstr "запуск в подконтрольном режиме"
 
 msgid "verbose"
 msgstr "подробно"
@@ -714,8 +709,8 @@ msgid "error forking process: %s\n"
 msgstr "ошибка при дублировании процесса: %s\n"
 
 #, c-format
-msgid "waiting for processes to terminate failed: %s\n"
-msgstr "сбой при ожидании завершения процесса: %s\n"
+msgid "waiting for process %d to terminate failed: %s\n"
+msgstr "сбой при ожидании завершения процесса %d: %s\n"
 
 #, c-format
 msgid "error running '%s': probably not installed\n"
@@ -730,12 +725,12 @@ msgid "error running '%s': terminated\n"
 msgstr "ошибка выполнения '%s': прервано\n"
 
 #, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "ошибка получения кода возврата процесса %d: %s\n"
+msgid "waiting for processes to terminate failed: %s\n"
+msgstr "сбой при ожидании завершения процесса: %s\n"
 
 #, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "сбой при ожидании завершения процесса %d: %s\n"
+msgid "error getting exit code of process %d: %s\n"
+msgstr "ошибка получения кода возврата процесса %d: %s\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -2046,8 +2041,9 @@ msgstr "показать в списке ключей название табл�
 msgid "show expiration dates during signature listings"
 msgstr "показать в списке подписей сроки действия"
 
-msgid "available TOFU policies:\n"
-msgstr "Доступные правила TOFU:\n"
+#, c-format
+msgid "valid values for option '%s':\n"
+msgstr "недопустимые значения для параметра \"%s\"\n"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -2055,6 +2051,10 @@ msgstr "неизвестные правила TOFU '%s'\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr "(\"help\" выведет список вариантов)\n"
+
+#, c-format
+msgid "invalid value for option '%s'\n"
+msgstr "недопустимое значения для параметра \"%s\"\n"
 
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
@@ -2068,10 +2068,9 @@ msgstr "Замечание: %s не предназначен для нормал
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "'%s' - не допустимый срок действия подписи\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: not a valid email address\n"
+#, c-format
 msgid "\"%s\" is not a proper mail address\n"
-msgstr "строка %d: нет допустимого адреса электронной почты\n"
+msgstr "\"%s\" не является адресом электронной почты\n"
 
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -2818,6 +2817,10 @@ msgstr "[отзыв]"
 
 msgid "[self-signature]"
 msgstr "[самоподпись]"
+
+#, c-format
+msgid "error allocating memory: %s\n"
+msgstr "ошибка выделения памяти: %s\n"
 
 #, c-format
 msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
@@ -4372,10 +4375,9 @@ msgstr "               ключом %s с ID %s\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Подпись сделана %s ключом %s с ID %s\n"
 
-#, fuzzy, c-format
-#| msgid "                aka \"%s\""
+#, c-format
 msgid "               issuer \"%s\"\n"
-msgstr "                или \"%s\""
+msgstr "                издатель \"%s\"\n"
 
 msgid "Key available at: "
 msgstr "Ключ доступен на: "
@@ -4758,6 +4760,18 @@ msgstr "Этот ключ, вероятно, принадлежит назван
 
 msgid "This key belongs to us\n"
 msgstr "Данный ключ принадлежит нам\n"
+
+#, c-format
+msgid "%s: This key is bad!  It has been marked as untrusted!\n"
+msgstr "%s: Некачественный ключ! Он помечен как недоверенный!\n"
+
+msgid ""
+"This key has is bad!  It has been marked as untrusted!  If you\n"
+"*really* know what you are doing, you may answer the next\n"
+"question with yes.\n"
+msgstr ""
+"Некачественный ключ! Он помечен как недоверенный! Если Вы ТОЧНО знаете,\n"
+"что делаете, можете ответить на следующий вопрос утвердительно.\n"
 
 msgid ""
 "It is NOT certain that the key belongs to the person named\n"
@@ -5409,31 +5423,34 @@ msgid "error updating TOFU database: %s\n"
 msgstr "ошибка обновления базы данных TOFU: %s\n"
 
 #, c-format
-msgid "The binding %s is NOT known."
-msgstr "Привязка %s неизвестна."
+msgid ""
+"This is the first time the email address \"%s\" is being used with key %s."
+msgstr ""
+"Адрес электронной почты \"%s\" используется с ключом %s впервые."
 
 #, c-format
-msgid ""
-"The key with fingerprint %s raised a conflict with the binding %s.  Since "
-"this binding's policy was 'auto', it was changed to 'ask'."
+msgid "The email address \"%s\" is associated with %d keys!"
+msgstr "Адрес электронной почты \"%s\" связан с %d ключами!"
+
+msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
 msgstr ""
-"Ключ с отпечатком %s противоречит этой привязке %s. Поскольку правило "
+" Поскольку правило "
 "привязки было 'автоматически', оно изменилось на 'спрашивать'."
 
 #, c-format
 msgid ""
-"Please indicate whether you believe the binding %s%sis legitimate (the key "
-"belongs to the stated owner) or a forgery (bad)."
+"Please indicate whether this email address should be associated with key %s "
+"or whether you think someone is impersonating \"%s\"."
 msgstr ""
-"Укажите, считаете ли Вы привязку %s%sправомерной (ключ принадлежит "
-"заявленному владельцу) или поддельной (плохой)."
+"Укажите, пожалуйста, следует ли связать этот адрес электронной почты с "
+"ключом %s или вы думаете, что кто-то выдает себя за \"%s\"."
 
 #, c-format
 msgid "error gathering other user IDs: %s\n"
 msgstr "ошибка при сборе ID других пользователей: %s\n"
 
-msgid "Known user IDs associated with this key:\n"
-msgstr "Известные ID пользователя, связанные с этим ключом:\n"
+msgid "This key's user IDs:\n"
+msgstr "Идентификаторы пользователя этого ключа:\n"
 
 #, c-format
 msgid "policy: %s"
@@ -5454,43 +5471,50 @@ msgstr[2] "Адрес электронной почты \"%s\" связан с %
 msgid "Statistics for keys with the email address \"%s\":\n"
 msgstr "Статистика ключей с адресом электронной почты \"%s\":\n"
 
+msgid ", "
+msgstr ", "
+
 msgid "this key"
 msgstr "этот ключ"
 
 #, c-format
-msgid "%ld message signed in the future."
-msgid_plural "%ld messages signed in the future."
-msgstr[0] "%ld сообщение подписано в будущем."
-msgstr[1] "%ld сообщения подписаны в будущем."
-msgstr[2] "%ld сообщений подписано в будущем."
+#| msgid "Verified %ld messages signed by \"%s\"."
+msgid "Verified %d message"
+msgid_plural "Verified %d messages"
+msgstr[0] "Проверено %d сообщение"
+msgstr[1] "Проверены %d сообщения"
+msgstr[2] "Проверено %d сообщений"
 
 #, c-format
-msgid "%ld message signed"
-msgid_plural "%ld messages signed"
-msgstr[0] "%ld сообщение подписано"
-msgstr[1] "%ld сообщения подписаны"
-msgstr[2] "%ld сообщений подписано"
+msgid "Encrypted %d message"
+msgid_plural "Encrypted %d messages"
+msgstr[0] "Зашифровано %d сообщение"
+msgstr[1] "Зашифрованы %d сообщения"
+msgstr[2] "Зашифровано %d сообщений"
 
 #, c-format
-msgid " over the past %ld day."
-msgid_plural " over the past %ld days."
-msgstr[0] " за %ld прошедший день."
-msgstr[1] " за %ld прошедших дня."
-msgstr[2] " за %ld прошедших дней."
+msgid " over the past day."
+msgid_plural " over the past %d days."
+msgstr[0] " за %d прошедший день."
+msgstr[1] " за %d прошедших дня."
+msgstr[2] " за %d прошедших дней."
 
 #, c-format
-msgid " over the past %ld week."
-msgid_plural " over the past %ld weeks."
-msgstr[0] " за %ld прошедшую неделю."
-msgstr[1] " за %ld прошедших недели."
-msgstr[2] " за %ld прошедших недель."
-
-#, c-format
-msgid " over the past %ld month."
-msgid_plural " over the past %ld months."
+msgid " over the past month."
+msgid_plural " over the past %d months."
 msgstr[0] " за %ld прошедший месяц."
 msgstr[1] " за %ld прошедших месяца."
 msgstr[2] " за %ld прошедших месяцев."
+
+#, c-format
+msgid " over the past year."
+msgid_plural " over the past %d years."
+msgstr[0] " за %d прошедший год."
+msgstr[1] " за %d прошедших дня."
+msgstr[2] " за %d прошедших дней."
+
+msgid " in the past."
+msgstr " в прошлом."
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5513,6 +5537,16 @@ msgstr "gGaAuUrRbB"
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
 "(G)Хороший, (A)Пока принять, (U)Неясно, (R)Пока отвергнуть, (B)Плохой? "
+
+msgid "Defaulting to unknown."
+msgstr "Принимается исходное значение (неясно)."
+
+msgid "TOFU db corruption detected.\n"
+msgstr "Обнаружено повреждение базы данных TOFU.\n"
+
+#, c-format
+msgid "resetting keydb: %s\n"
+msgstr "сброс базы данных ключей: %s\n"
 
 #, c-format
 msgid "error setting TOFU binding's trust level to %s\n"
@@ -5567,79 +5601,86 @@ msgstr[1] "%d~секунды"
 msgstr[2] "%d~секунд"
 
 #, c-format
-msgid "Have never verified a message signed by key %s!\n"
-msgstr "Сообщения, подписанные ключом %s, никогда не проверялись!\n"
+msgid "%s: "
+msgstr "%s: "
 
 #, c-format
-msgid ""
-"Failed to collect signature statistics for \"%s\"\n"
-"(key %s)\n"
-msgstr ""
-"Не удалось собрать статистику подписей для \"%s\"\n"
-"(ключ %s)\n"
+msgid "Verified %ld signatures"
+msgstr "Проверено %ld подписей"
 
 #, c-format
-msgid "Verified %ld messages signed by \"%s\"."
-msgstr "Проверено %ld сообщений, подписанных \"%s\"."
-
-#, c-format
-msgid ""
-"Verified %ld message signed by \"%s\"\n"
-"in the past %s."
-msgid_plural ""
-"Verified %ld messages signed by \"%s\"\n"
-"in the past %s."
+msgid "Verified %ld signature in the past %s"
+msgid_plural "Verified %ld signatures in the past %s"
 msgstr[0] ""
-"Проверено %ld сообщение, подписанное \"%s\"\n"
-" за %s."
+"Проверена %ld подпись за %s."
 msgstr[1] ""
-"Проверены %ld сообщения, подписанные \"%s\"\n"
-" за %s."
+"Проверены %ld прописи за %s."
 msgstr[2] ""
-"Проверено %ld сообщений, подписанных \"%s\"\n"
-" за %s."
+"Проверено %ld подписей за %s."
 
 #, c-format
-msgid "The most recent message was verified %s ago."
-msgstr "Последнее сообщение проверено %s назад."
+msgid ", and encrypted %ld messages"
+msgstr ", зашифровано %ld сообщений"
 
-msgid "Warning: we've have yet to see a message signed by this key!\n"
+#, c-format
+msgid ", and encrypted %ld message in the past %s"
+msgid_plural ", and encrypted %ld messages in the past %s"
+msgstr[0] ""
+", зашифровано %ld сообщение за %s."
+msgstr[1] ""
+", зашифрованы %ld сообщения за %s."
+msgstr[2] ""
+", зашифровано %ld сообщений за %s."
+
+msgid ""
+"Warning: we have yet to see a message signed using this key and user id!\n"
 msgstr ""
 "Внимание: мы до сих пор не видели ни одного сообщения, подписанного этим "
-"ключом!\n"
+"ключом и этим идентификатором пользователя!\n"
 
-msgid "Warning: we've only seen a single message signed by this key!\n"
+msgid ""
+"Warning: we've only seen one message signed using this key and user id!\n"
 msgstr ""
 "Внимание: мы до сих пор видели только одно сообщение, подписанное этим "
-"ключом!\n"
+"ключом и этим идентификатором пользователя!\n"
+
+msgid "Warning: you have yet to encrypt a message to this key!\n"
+msgstr ""
+"Внимание: мы до сих пор не зашифровали этим "
+"ключом ни одного сообщения!\n"
+
+msgid "Warning: you have only encrypted one message to this key!\n"
+msgstr ""
+"Внимание: мы до сих пор зашифровали этим "
+"ключом только одно сообщение!\n"
 
 #, c-format
 msgid ""
-"Warning: if you think you've seen more than %ld message signed by this key, "
+"Warning: if you think you've seen more signatures by this key and user id, "
 "then this key might be a forgery!  Carefully examine the email address for "
 "small variations.  If the key is suspect, then use\n"
 "  %s\n"
 "to mark it as being bad.\n"
 msgid_plural ""
-"Warning: if you think you've seen more than %ld messages signed by this key, "
-"then this key might be a forgery!  Carefully examine the email address for "
-"small variations.  If the key is suspect, then use\n"
+"Warning: if you think you've seen more signatures by this key and these user "
+"ids, then this key might be a forgery!  Carefully examine the email "
+"addresses for small variations.  If the key is suspect, then use\n"
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[0] ""
-"Внимание: если вы видели больше %ld сообщения, подписанного этим ключом, "
+"Внимание: если вы видели другие сообщения, подписанные этим ключом, "
 "этот ключ может быть подделкой! Внимательно проверьте, не внесены ли в адрес "
 "электронной почты небольшие изменения. В случае подозрений пометьте ключ как "
 "некачественный командой\n"
 "  %s\n"
 msgstr[1] ""
-"Внимание: если вы видели больше %ld сообщений, подписанных этим ключом, этот "
+"Внимание: если вы видели другие сообщения, подписанные этим ключом, этот "
 "ключ может быть подделкой! Внимательно проверьте, не внесены ли в адрес "
 "электронной почты небольшие изменения. В случае подозрений пометьте ключ как "
 "некачественный командой\n"
 "  %s\n"
 msgstr[2] ""
-"Внимание: если вы видели больше %ld сообщений, подписанных этим ключом, этот "
+"Внимание: если вы видели другие сообщения, подписанные этим ключом, этот "
 "ключ может быть подделкой! Внимательно проверьте, не внесены ли в адрес "
 "электронной почты небольшие изменения. В случае подозрений пометьте ключ как "
 "некачественный командой\n"
@@ -5648,6 +5689,16 @@ msgstr[2] ""
 #, c-format
 msgid "error opening TOFU database: %s\n"
 msgstr "ошибка при открытии базы данных TOFU: %s\n"
+
+#, c-format
+msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
+msgstr ""
+"ВНИМАНИЕ: Шифрование для ключа %s, у которого нет неотозванных идентификаторов пользователя.\n"
+
+#, c-format
+msgid "error setting policy for key %s, user id \"%s\": %s"
+msgstr ""
+"ошибка установки правил для ключа %s с идентификатором пользователя \"%s\": %s"
 
 #, c-format
 msgid "'%s' is not a valid long keyID\n"
@@ -5892,21 +5943,21 @@ msgstr "сбой при сохранении отпечатка: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "сбой при сохранении даты создания: %s\n"
 
-#, c-format
-msgid "reading public key failed: %s\n"
-msgstr "сбой при чтении открытого ключа: %s\n"
-
-msgid "response does not contain the public key data\n"
-msgstr "ответ не содержит данных открытого ключа\n"
-
 msgid "response does not contain the RSA modulus\n"
 msgstr "в ответе отсутствует модуль RSA\n"
 
 msgid "response does not contain the RSA public exponent\n"
 msgstr "в ответе отсутствует открытая экспонента RSA\n"
 
-msgid "response does not contain the EC public point\n"
-msgstr "в ответе отсутствует открытая точка эллиптической кривой\n"
+msgid "response does not contain the EC public key\n"
+msgstr "в ответе отсутствует открытый ключ эллиптической кривой\n"
+
+msgid "response does not contain the public key data\n"
+msgstr "ответ не содержит данных открытого ключа\n"
+
+#, c-format
+msgid "reading public key failed: %s\n"
+msgstr "сбой при чтении открытого ключа: %s\n"
 
 #, c-format
 msgid "using default PIN as %s\n"
@@ -7752,10 +7803,6 @@ msgid "'%s' is an invalid LDAP URL\n"
 msgstr "'%s' - недопустимый URL LDAP\n"
 
 #, c-format
-msgid "error allocating memory: %s\n"
-msgstr "ошибка выделения памяти: %s\n"
-
-#, c-format
 msgid "error printing log line: %s\n"
 msgstr "ошибка вывода строки журнала: %s\n"
 
@@ -7984,6 +8031,10 @@ msgstr "сбой fetch_next_cert: %s\n"
 #, c-format
 msgid "max_replies %d exceeded\n"
 msgstr "превышено max_replies %d\n"
+
+#, c-format
+msgid "can't create temporary directory '%s': %s\n"
+msgstr "не могу создать временный каталог '%s': %s\n"
 
 #, c-format
 msgid "can't allocate control structure: %s\n"
@@ -8266,6 +8317,9 @@ msgstr "указать глобальный файл настроек"
 msgid "check global configuration file"
 msgstr "проверить глобальный файл настроек"
 
+msgid "query the software version database"
+msgstr "запросить базу данных версий программ"
+
 msgid "reload all or a given component"
 msgstr "перезагрузить все или заданный компонент"
 
@@ -8346,10 +8400,6 @@ msgstr "%s над %s прервано, статус %i\n"
 #, c-format
 msgid "%s on %s failed with status %i\n"
 msgstr "сбой %s над %s, статус %i\n"
-
-#, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "не могу создать временный каталог '%s': %s\n"
 
 #, c-format
 msgid "could not open %s for writing: %s\n"
@@ -8444,61 +8494,3 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
-
-#~ msgid "communication problem with gpg-agent\n"
-#~ msgstr "проблема связи с агентом gpg\n"
-
-#~ msgid "canceled by user\n"
-#~ msgstr "прервано пользователем\n"
-
-#~ msgid "problem with the agent\n"
-#~ msgstr "проблема с агентом\n"
-
-#~ msgid "problem with the agent (unexpected response \"%s\")\n"
-#~ msgstr "проблема с агентом (неожиданный ответ \"%s\")\n"
-
-#~ msgid "unknown TOFU DB format '%s'\n"
-#~ msgstr "неизвестный формат базы данных TOFU '%s'\n"
-
-#~ msgid "libgcrypt is too old (need %s, have %s)\n"
-#~ msgstr "слишком старая версия libcrypt (нужно %s, есть %s)\n"
-
-#~ msgid ""
-#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
-#~ "certificate:\n"
-#~ "\"%.*s\"\n"
-#~ "%u-bit %s key, ID %s,\n"
-#~ "created %s%s.\n"
-#~ msgstr ""
-#~ "Введите фразу-пароль для доступа к секретному ключу сертификата OpenPGP:\n"
-#~ "\"%.*s\"\n"
-#~ "%u-битный ключ %s, ID %s,\n"
-#~ "создан %s%s.\n"
-
-#~ msgid ""
-#~ "You need a passphrase to unlock the secret key for\n"
-#~ "user: \"%s\"\n"
-#~ msgstr ""
-#~ "Необходима фраза-пароль для доступа к секретному ключу пользователя: \"%s"
-#~ "\"\n"
-
-#~ msgid "%u-bit %s key, ID %s, created %s"
-#~ msgstr "%u-битный ключ %s, ID %s, создан %s"
-
-#~ msgid "         (subkey on main key ID %s)"
-#~ msgstr "         (подключ на главном ключе %s)"
-
-#~ msgid "Warning: Home directory contains both tofu.db and tofu.d.\n"
-#~ msgstr "Внимание: Домашний каталог содержит как tofu.db, так и tofu.d\n"
-
-#~ msgid "Using split format for TOFU database\n"
-#~ msgstr "Используется разделенный формат базы данных TOFU\n"
-
-#~ msgid "can't access directory '%s': %s\n"
-#~ msgstr "не могу получить доступ к каталогу '%s': %s\n"
-
-#~ msgid "run as windows service (background)"
-#~ msgstr "запустить как службу окон (фоновый режим)"
-
-#~ msgid "running in compatibility mode - certificate chain not checked!\n"
-#~ msgstr "работа в совместимом режиме - цепочка сертификатов не проверена!\n"
