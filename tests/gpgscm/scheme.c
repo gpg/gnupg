@@ -144,7 +144,7 @@ type_to_string (enum scheme_types typ)
      case T_PROC: return "proc";
      case T_PAIR: return "pair";
      case T_CLOSURE: return "closure";
-     case T_CONTINUATION: return "configuration";
+     case T_CONTINUATION: return "continuation";
      case T_FOREIGN: return "foreign";
      case T_CHARACTER: return "character";
      case T_PORT: return "port";
