@@ -92,6 +92,7 @@ struct
 
   int running_detached; /* We are running in detached mode.  */
   int use_tor;          /* Tor mode has been enabled.  */
+  int allow_version_check; /* --allow-version-check is active.  */
 
   int force;          /* Force loading outdated CRLs. */
 

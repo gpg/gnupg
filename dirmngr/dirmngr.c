@@ -131,6 +131,7 @@ enum cmd_and_opt_values {
   oFakedSystemTime,
   oForce,
   oAllowOCSP,
+  oAllowVersionCheck,
   oSocketName,
   oLDAPWrapperProgram,
   oHTTPWrapperProgram,
@@ -176,6 +177,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oBatch,    "batch",       N_("run without asking a user")),
   ARGPARSE_s_n (oForce,    "force",       N_("force loading of outdated CRLs")),
   ARGPARSE_s_n (oAllowOCSP, "allow-ocsp", N_("allow sending OCSP requests")),
+  ARGPARSE_s_n (oAllowVersionCheck, "allow-version-check",
+                N_("allow online software version check")),
   ARGPARSE_s_n (oDisableHTTP, "disable-http", N_("inhibit the use of HTTP")),
   ARGPARSE_s_n (oDisableLDAP, "disable-ldap", N_("inhibit the use of LDAP")),
   ARGPARSE_s_n (oIgnoreHTTPDP,"ignore-http-dp",
@@ -288,6 +291,10 @@ static int disable_check_own_socket;
 
 /* Counter for the active connections.  */
 static int active_connections;
+
+/* This flag is set by any network access and used by the housekeeping
+ * thread to run background network tasks.  */
+static int network_activity_seen;
 
 /* The timer tick used for housekeeping stuff.  For Windows we use a
    longer period as the SetWaitableTimer seems to signal earlier than
@@ -526,6 +533,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.ignore_ldap_dp = 0;
       opt.ignore_ocsp_service_url = 0;
       opt.allow_ocsp = 0;
+      opt.allow_version_check = 0;
       opt.ocsp_responder = NULL;
       opt.ocsp_max_clock_skew = 10 * 60;      /* 10 minutes.  */
       opt.ocsp_max_period = 90 * 86400;       /* 90 days.  */
@@ -588,6 +596,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oIgnoreOCSPSvcUrl: opt.ignore_ocsp_service_url = 1; break;
 
     case oAllowOCSP: opt.allow_ocsp = 1; break;
+    case oAllowVersionCheck: opt.allow_version_check = 1; break;
     case oOCSPResponder: opt.ocsp_responder = pargs->r.ret_str; break;
     case oOCSPSigner:
       opt.ocsp_signer = parse_ocsp_signer (pargs->r.ret_str);
@@ -1329,15 +1338,6 @@ main (int argc, char **argv)
       char *filename;
       char *filename_esc;
 
-#ifdef HAVE_W32_SYSTEM
-      /* On Windows systems, dirmngr always runs as system daemon, and
-	 the per-user configuration is never used.  So we short-cut
-	 everything to use the global system configuration of dirmngr
-	 above, and here we set the no change flag to make these
-	 read-only.  */
-      flags |= GC_OPT_FLAG_NO_CHANGE;
-#endif
-
       /* First the configuration file.  This is not an option, but it
 	 is vital information for GPG Conf.  */
       if (!opt.config_filename)
@@ -1375,6 +1375,7 @@ main (int argc, char **argv)
       es_printf ("max-replies:%lu:%u\n",
               flags | GC_OPT_FLAG_DEFAULT, DEFAULT_MAX_REPLIES);
       es_printf ("allow-ocsp:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("allow-version-check:%lu:\n", flags | GC_OPT_FLAG_NONE);
       es_printf ("ocsp-responder:%lu:\n", flags | GC_OPT_FLAG_NONE);
       es_printf ("ocsp-signer:%lu:\n", flags | GC_OPT_FLAG_NONE);
 
@@ -1723,7 +1724,7 @@ dirmngr_sighup_action (void)
 static void
 netactivity_action (void)
 {
-  log_debug ("network activity seen\n");
+  network_activity_seen = 1;
 }
 
 
@@ -1782,6 +1783,7 @@ housekeeping_thread (void *arg)
 {
   static int sentinel;
   time_t curtime;
+  struct server_control_s ctrlbuf;
 
   (void)arg;
 
@@ -1795,7 +1797,18 @@ housekeeping_thread (void *arg)
   if (opt.verbose > 1)
     log_info ("starting housekeeping\n");
 
+  memset (&ctrlbuf, 0, sizeof ctrlbuf);
+  dirmngr_init_default_ctrl (&ctrlbuf);
+
   ks_hkp_housekeeping (curtime);
+  if (network_activity_seen)
+    {
+      network_activity_seen = 0;
+      if (opt.use_tor || opt.allow_version_check)
+        dirmngr_load_swdb (&ctrlbuf, 0);
+    }
+
+  dirmngr_deinit_default_ctrl (&ctrlbuf);
 
   if (opt.verbose > 1)
     log_info ("ready with housekeeping\n");
