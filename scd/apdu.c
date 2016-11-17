@@ -1896,8 +1896,12 @@ pcsc_vendor_specific_init (int slot)
       reader_table[slot].is_spr532 = 1;
       reader_table[slot].pinpad_varlen_supported = 1;
     }
-  else if (vendor == 0x046a && product == 0x003e) /* Cherry ST-2xxx */
+  else if (vendor == 0x046a)
     {
+      /* Cherry ST-2xxx (product == 0x003e) supports TPDU level
+       * exchange.  Other products which only support short APDU level
+       * exchange only work with shorter keys like RSA 1024.
+       */
       reader_table[slot].pcsc.pinmax = 15;
       reader_table[slot].pinpad_varlen_supported = 1;
     }
