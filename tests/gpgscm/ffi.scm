@@ -61,6 +61,7 @@
     (_exit (cadr x)))
    (else
     (apply error x))))
+(set! *error-hook* throw)
 
 ;; Terminate the process returning STATUS to the parent.
 (define (exit status)
