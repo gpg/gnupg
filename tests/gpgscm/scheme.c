@@ -250,7 +250,7 @@ INTERFACE pointer set_cdr(pointer p, pointer q) { return cdr(p)=q; }
 INTERFACE INLINE int is_symbol(pointer p)   { return (type(p)==T_SYMBOL); }
 INTERFACE INLINE char *symname(pointer p)   { return strvalue(car(p)); }
 #if USE_PLIST
-SCHEME_EXPORT INLINE int hasprop(pointer p)     { return (typeflag(p)&T_SYMBOL); }
+SCHEME_EXPORT INLINE int hasprop(pointer p)     { return (is_symbol(p)); }
 #define symprop(p)       cdr(p)
 #endif
 
@@ -3380,6 +3380,52 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
      return sc->T;
 }
 
+#if USE_PLIST
+static pointer
+get_property(scheme *sc, pointer obj, pointer key)
+{
+  pointer x;
+
+  assert (is_symbol(obj));
+  assert (is_symbol(key));
+
+  for (x = symprop(obj); x != sc->NIL; x = cdr(x)) {
+    if (caar(x) == key)
+      break;
+  }
+
+  if (x != sc->NIL)
+    return cdar(x);
+
+  return sc->NIL;
+}
+
+static pointer
+set_property(scheme *sc, pointer obj, pointer key, pointer value)
+{
+#define set_property_allocates	2
+  pointer x;
+
+  assert (is_symbol(obj));
+  assert (is_symbol(key));
+
+  for (x = symprop(obj); x != sc->NIL; x = cdr(x)) {
+    if (caar(x) == key)
+      break;
+  }
+
+  if (x != sc->NIL)
+    cdar(x) = value;
+  else {
+    gc_disable(sc, gc_reservations(set_property));
+    symprop(obj) = cons(sc, cons(sc, key, value), symprop(obj));
+    gc_enable(sc);
+  }
+
+  return sc->T;
+}
+#endif
+
 static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
      pointer x;
      num v;
@@ -4127,36 +4173,14 @@ static pointer opexe_4(scheme *sc, enum scheme_opcodes op) {
           s_return(sc, reverse_in_place(sc, car(y), x));
 
 #if USE_PLIST
-     CASE(OP_PUT):        /* put */
-          if (!hasprop(car(sc->args)) || !hasprop(cadr(sc->args))) {
-               Error_0(sc,"illegal use of put");
-          }
-          for (x = symprop(car(sc->args)), y = cadr(sc->args); x != sc->NIL; x = cdr(x)) {
-               if (caar(x) == y) {
-                    break;
-               }
-          }
-          if (x != sc->NIL)
-               cdar(x) = caddr(sc->args);
-          else
-               symprop(car(sc->args)) = cons(sc, cons(sc, y, caddr(sc->args)),
-                                symprop(car(sc->args)));
-          s_return(sc,sc->T);
+     CASE(OP_SET_SYMBOL_PROPERTY): /* set-symbol-property! */
+	  gc_disable(sc, gc_reservations(set_property));
+          s_return_enable_gc(sc,
+			     set_property(sc, car(sc->args),
+					  cadr(sc->args), caddr(sc->args)));
 
-     CASE(OP_GET):        /* get */
-          if (!hasprop(car(sc->args)) || !hasprop(cadr(sc->args))) {
-               Error_0(sc,"illegal use of get");
-          }
-          for (x = symprop(car(sc->args)), y = cadr(sc->args); x != sc->NIL; x = cdr(x)) {
-               if (caar(x) == y) {
-                    break;
-               }
-          }
-          if (x != sc->NIL) {
-               s_return(sc,cdar(x));
-          } else {
-               s_return(sc,sc->NIL);
-          }
+     CASE(OP_SYMBOL_PROPERTY):  /* symbol-property */
+	  s_return(sc, get_property(sc, car(sc->args), cadr(sc->args)));
 #endif /* USE_PLIST */
      CASE(OP_QUIT):       /* quit */
           if(is_pair(sc->args)) {
