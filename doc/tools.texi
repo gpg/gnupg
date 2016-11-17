@@ -307,7 +307,15 @@ is given, check that file instead.
 @item --query-swdb @var{package_name} [@var{version_string}]
 Returns the current version for @var{package_name} and if
 @var{version_string} is given also an indicator on whether an update
-is available.
+is available.  The actual file with the software version is
+automatically downloaded and checked by @command{dirmngr}.
+@command{dirmngr} uses a thresholds to avoid download the file too
+often and it does this by default only if it can be done via Tor.  To
+force an update of that file this command can be used:
+
+@example
+       gpg-connect-agent --dirmngr 'loadswdb --force' /bye
+@end example
 
 
 @item --reload [@var{component}]

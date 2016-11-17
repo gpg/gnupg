@@ -30,11 +30,11 @@
 #include "ks-engine.h"
 
 
-/* Get the time from the current swdb file and store it at R_TIME.  If
- * the file does not exist 0 is stored at R_TIME.  The function
- * returns 0 on sucess or an error code.  */
+/* Get the time from the current swdb file and store it at R_FILEDATE
+ * and R_VERIFIED.  If the file does not exist 0 is stored at there.
+ * The function returns 0 on sucess or an error code.  */
 static gpg_error_t
-time_of_saved_swdb (const char *fname, time_t *r_time)
+time_of_saved_swdb (const char *fname, time_t *r_filedate, time_t *r_verified)
 {
   gpg_error_t err;
   estream_t fp = NULL;
@@ -43,9 +43,12 @@ time_of_saved_swdb (const char *fname, time_t *r_time)
   size_t  maxlen;
   ssize_t len;
   char *fields[2];
-  time_t t = (time_t)(-1);
+  gnupg_isotime_t isot;
+  time_t filedate = (time_t)(-1);
+  time_t verified = (time_t)(-1);
 
-  *r_time = 0;
+  *r_filedate = 0;
+  *r_verified = 0;
 
   fp = es_fopen (fname, "r");
   err = fp? 0 : gpg_error_from_syserror ();
@@ -76,12 +79,15 @@ time_of_saved_swdb (const char *fname, time_t *r_time)
         continue; /* Skip comments.  */
 
       /* Record the meta data.  */
-      if (!strcmp (fields[0], ".filedate"))
+      if (filedate == (time_t)(-1) && !strcmp (fields[0], ".filedate"))
         {
-          gnupg_isotime_t isot;
-          if (string2isotime (isot, fields[1])
-              && (t = isotime2epoch (isot)) != (time_t)(-1))
-            break;  /* Got the time - stop reading.  */
+          if (string2isotime (isot, fields[1]))
+            filedate = isotime2epoch (isot);
+        }
+      else if (verified == (time_t)(-1) && !strcmp (fields[0], ".verified"))
+        {
+          if (string2isotime (isot, fields[1]))
+            verified = isotime2epoch (isot);
         }
     }
   if (len < 0 || es_ferror (fp))
@@ -89,13 +95,14 @@ time_of_saved_swdb (const char *fname, time_t *r_time)
       err = gpg_error_from_syserror ();
       goto leave;
     }
-  if (t == (time_t)(-1))
+  if (filedate == (time_t)(-1) || verified == (time_t)(-1))
     {
       err = gpg_error (GPG_ERR_INV_TIME);
       goto leave;
     }
 
-  *r_time = t;
+  *r_filedate = filedate;
+  *r_verified = verified;
 
  leave:
   if (err)
@@ -214,6 +221,8 @@ dirmngr_load_swdb (ctrl_t ctrl, int force)
   struct verify_status_parm_s verify_status_parm = { (time_t)(-1), 0 };
   estream_t outfp = NULL;
   time_t now = gnupg_get_time ();
+  time_t filedate = 0;  /* ".filedate" from our swdb.  */
+  time_t verified = 0;  /* ".verified" from our swdb.  */
   gnupg_isotime_t isotime;
 
 
@@ -227,15 +236,37 @@ dirmngr_load_swdb (ctrl_t ctrl, int force)
   /* Check whether there is a need to get an update.  */
   if (!force)
     {
-      time_t filetime;
+      static int not_older_than;
+      static time_t lastcheck;
 
-      err = time_of_saved_swdb (fname, &filetime);
+      if (!not_older_than)
+        {
+          /* To balance access to the server we use a random time from
+           * 5 to 7 days for update checks.  */
+          not_older_than = 5 * 86400;
+          not_older_than += (get_uint_nonce () % (2*86400));
+        }
+
+      if (now - lastcheck < 3600)
+        {
+          /* We checked our swdb file in the last hour - don't check
+           * again to avoid unnecessary disk access.  */
+          err = 0;
+          goto leave;
+        }
+      lastcheck = now;
+
+      err = time_of_saved_swdb (fname, &filedate, &verified);
+      if (gpg_err_code (err) == GPG_ERR_INV_TIME)
+        err = 0; /* Force reading. */
       if (err)
         goto leave;
-      if (filetime >= now)
+      if (filedate >= now)
         goto leave; /* Current or newer.  */
-      if (now - filetime < 3*86400)
-        goto leave; /* Not older than 3 days.  */
+      if (now - filedate < not_older_than)
+        goto leave; /* Our copy is pretty new (not older than 7 days).  */
+      if (verified > now && now - verified < 3*3600)
+        goto leave; /* We downloaded and verified in the last 3 hours.  */
     }
 
   /* Create the filename of the file with the keys. */
@@ -275,6 +306,11 @@ dirmngr_load_swdb (ctrl_t ctrl, int force)
     err = gpg_error (verify_status_parm.anyvalid? GPG_ERR_BAD_SIGNATURE
                      /**/                       : GPG_ERR_INV_TIME      );
   if (err)
+    goto leave;
+
+  /* If our swdb is not older than the downloaded one.  We don't
+   * bother to update.  */
+  if (!force && filedate >= verify_status_parm.sigtime)
     goto leave;
 
   /* Create a file name for a temporary file in the home directory.
