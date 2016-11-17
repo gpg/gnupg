@@ -538,11 +538,19 @@
 			   (= 99 p::retcode))))
 		procs))
       (define (report)
-	(echo (length procs) "tests run,"
-	      (length (passed)) "succeeded,"
-	      (length (failed)) "failed,"
-	      (length (skipped)) "skipped.")
-	(length (failed)))))))
+	(define (print-tests tests message)
+	  (unless (null? tests)
+		  (apply echo (cons message
+				    (map (lambda (t) t::name) tests)))))
+
+	(let ((failed' (failed)) (skipped' (skipped)))
+	  (echo (length procs) "tests run,"
+		(length (passed)) "succeeded,"
+		(length failed') "failed,"
+		(length skipped') "skipped.")
+	  (print-tests failed' "Failed tests:")
+	  (print-tests skipped' "Skipped tests:")
+	  (length failed')))))))
 
 (define (verbosity n)
   (if (= 0 n) '() (cons '--verbose (verbosity (- n 1)))))
