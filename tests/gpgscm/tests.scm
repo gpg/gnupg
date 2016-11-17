@@ -553,18 +553,19 @@
 ;; A single test.
 (define test
   (package
-   (define (scm path . args)
+   (define (scm name path . args)
      ;; Start the process.
-     (define (spawn-scm args in out err)
+     (define (spawn-scm args' in out err)
        (spawn-process-fd `(,*argv0* ,@(verbosity (*verbose*))
-				    ,(locate-test path) ,@args) in out err))
-     (new (basename path) #f spawn-scm #f #f CLOSED_FD))
+				    ,(locate-test path)
+				    ,@args' ,@args) in out err))
+     (new name #f spawn-scm #f #f CLOSED_FD))
 
-   (define (binary path . args)
+   (define (binary name path . args)
      ;; Start the process.
-     (define (spawn-binary args in out err)
-       (spawn-process-fd `(path ,@args) in out err))
-     (new (basename path) #f spawn-binary #f #f CLOSED_FD))
+     (define (spawn-binary args' in out err)
+       (spawn-process-fd `(,path ,@args' ,@args) in out err))
+     (new name #f spawn-binary #f #f CLOSED_FD))
 
    (define (new name directory spawn pid retcode logfd)
      (package

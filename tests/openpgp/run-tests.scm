@@ -30,4 +30,5 @@
 		   run-tests-parallel
 		   run-tests-sequential))
        (tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*)))
-  (runner (test::scm "setup.scm") (map test::scm tests)))
+  (runner (test::scm "setup.scm" "setup.scm")
+	  (map (lambda (t) (test::scm t t)) tests)))
