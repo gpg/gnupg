@@ -709,7 +709,8 @@ gc_reservation_failure(struct scheme *sc)
 
 /* Disable the garbage collection and reserve the given number of
  * cells.  gc_disable may be nested, but the enclosing reservation
- * must include the reservations of all nested calls.  */
+ * must include the reservations of all nested calls.  Note: You must
+ * re-enable the gc before calling Error_X.  */
 static void
 _gc_disable(struct scheme *sc, size_t reserve, int lineno)
 {
@@ -3013,6 +3014,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           sc->args = cons(sc, sc->value, sc->args);
           if (is_pair(sc->code)) { /* continue */
                if (!is_pair(car(sc->code)) || !is_pair(cdar(sc->code))) {
+		    gc_enable(sc);
                     Error_1(sc, "Bad syntax of binding spec in let :",
                             car(sc->code));
                }
