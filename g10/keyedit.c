@@ -2953,7 +2953,7 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
   keydb_release (kdbhd);
 }
 
-/* Unattended revokation of a keyid.  USERNAME specifies the
+/* Unattended revocation of a keyid.  USERNAME specifies the
    key. UIDTOREV is the user id revoke from the key.  */
 void
 keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)

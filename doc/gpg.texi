@@ -1853,7 +1853,7 @@ Maximum depth of a certification chain (default is 5).
 @opindex no-sig-cache
 Do not cache the verification status of key signatures.
 Caching gives a much better performance in key listings. However, if
-you suspect that your public keyring is not save against write
+you suspect that your public keyring is not safe against write
 modifications, you can use this option to disable the caching. It
 probably does not make sense to disable it because all kind of damage
 can be done if someone else has write access to your public keyring.
@@ -2758,8 +2758,8 @@ protected by the signature.
 @opindex emit-version
 Force inclusion of the version string in ASCII armored output.  If
 given once only the name of the program and the major number is
-emitted, given twice the minor is also emitted, given triple
-the micro is added, and given quad an operating system identification
+emitted, given twice the minor is also emitted, given thrice
+the micro is added, and given four times an operating system identification
 is also emitted.  @option{--no-emit-version} (default) disables the version
 line.
 
