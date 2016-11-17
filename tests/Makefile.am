@@ -18,7 +18,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = gpgscm openpgp migrations pkits .
+SUBDIRS = gpgscm openpgp migrations gpgme pkits .
 
 GPGSM = ../sm/gpgsm
 
