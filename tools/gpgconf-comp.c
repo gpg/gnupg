@@ -1060,12 +1060,12 @@ static struct
   gc_option_t *options;
 } gc_component[] =
   {
-    { "gpg",      "gnupg", N_("GPG for OpenPGP"), gc_options_gpg },
-    { "gpg-agent","gnupg", N_("GPG Agent"), gc_options_gpg_agent },
-    { "scdaemon", "gnupg", N_("Smartcard Daemon"), gc_options_scdaemon },
-    { "gpgsm",    "gnupg", N_("GPG for S/MIME"), gc_options_gpgsm },
-    { "dirmngr",  "gnupg", N_("Key Acquirer"), gc_options_dirmngr },
-    { "pinentry", "gnupg", N_("PIN and Passphrase Entry"), gc_options_pinentry }
+    { "gpg",      "gnupg", N_("OpenPGP"), gc_options_gpg },
+    { "gpg-agent","gnupg", N_("Private Keys"), gc_options_gpg_agent },
+    { "scdaemon", "gnupg", N_("Smartcards"), gc_options_scdaemon },
+    { "gpgsm",    "gnupg", N_("S/MIME"), gc_options_gpgsm },
+    { "dirmngr",  "gnupg", N_("Network"), gc_options_dirmngr },
+    { "pinentry", "gnupg", N_("Passphrase Entry"), gc_options_pinentry }
   };
 
 
