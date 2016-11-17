@@ -84,7 +84,8 @@
 
     (info "Checking gpgtar with symmetric encryption and chosen cipher")
     (do-test `(,@ppflags --symmetric --gpg-args
-			 ,(string-append "--cipher=" (car all-cipher-algos)))
+			 ,(string-append "--cipher="
+					 (car (force all-cipher-algos))))
 	     ppflags (cons '--decrypt ppflags))
 
     (info "Checking gpgtar with both symmetric and asymmetric encryption")

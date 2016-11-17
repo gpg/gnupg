@@ -48,4 +48,4 @@
 		`(--yes --sign --passphrase-fd "0" --digest-algo ,hash))
 	(tr:gpg "" '(--yes))
 	(tr:assert-identity (car plain-files)))))
- all-hash-algos)
+ (force all-hash-algos))

@@ -43,7 +43,7 @@
        (tr:gpg "" '(--yes))
        (tr:assert-identity source)))
     (append plain-files data-files)))
- all-cipher-algos)
+ (force all-cipher-algos))
 
 
 ;; We encrypt to two keys and we have also put the first key into our

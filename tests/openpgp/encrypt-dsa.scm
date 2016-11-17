@@ -43,4 +43,4 @@
        (tr:gpg "" '(--yes))
        (tr:assert-identity source)))
     (append plain-files data-files)))
- all-cipher-algos)
+ (force all-cipher-algos))

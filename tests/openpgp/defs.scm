@@ -42,6 +42,10 @@
 (define data-files '("data-500" "data-9000" "data-32000" "data-80000"))
 (define exp-files '())
 
+(let ((verbose (string->number (getenv "verbose"))))
+  (if (number? verbose)
+      (*set-verbose!* verbose)))
+
 (define (qualify executable)
   (string-append executable (getenv "EXEEXT")))
 
@@ -95,16 +99,16 @@
 (define (get-config what)
   (string-split (caddar (gpg-with-colons `(--list-config ,what))) #\;))
 
-(define all-pubkey-algos (get-config "pubkeyname"))
-(define all-hash-algos (get-config "digestname"))
-(define all-cipher-algos (get-config "ciphername"))
+(define all-pubkey-algos (delay (get-config "pubkeyname")))
+(define all-hash-algos (delay (get-config "digestname")))
+(define all-cipher-algos (delay (get-config "ciphername")))
 
 (define (have-pubkey-algo? x)
-  (not (not (member x all-pubkey-algos))))
+  (not (not (member x (force all-pubkey-algos)))))
 (define (have-hash-algo? x)
-  (not (not (member x all-hash-algos))))
+  (not (not (member x (force all-hash-algos)))))
 (define (have-cipher-algo? x)
-  (not (not (member x all-cipher-algos))))
+  (not (not (member x (force all-cipher-algos)))))
 
 (define (gpg-pipe args0 args1 errfd)
   (lambda (source sink)
@@ -141,10 +145,6 @@
    (pipe:open source-name (logior O_RDONLY O_BINARY))
    (pipe:spawn `(,@GPG --dearmor))
    (pipe:write-to sink-name (logior O_WRONLY O_CREAT O_BINARY) #o600)))
-
-(let ((verbose (string->number (getenv "verbose"))))
-  (if (number? verbose)
-      (*set-verbose!* verbose)))
 
 ;;
 ;; Support for test environment creation and teardown.

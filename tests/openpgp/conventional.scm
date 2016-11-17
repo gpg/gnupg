@@ -46,4 +46,4 @@
        (tr:gpg passphrase `(--yes --passphrase-fd "0" ,s2k))
        (tr:assert-identity source)))
     '("plain-1" "data-80000")))
- all-cipher-algos)
+ (force all-cipher-algos))
