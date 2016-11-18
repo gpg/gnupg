@@ -157,14 +157,6 @@ msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
 msgid "no suitable card key found: %s\n"
 msgstr "tidak ditemukan keyring rahasia yang dapat ditulisi: %s\n"
 
-#, fuzzy, c-format
-msgid "shadowing the key failed: %s\n"
-msgstr "gagal menghapus keyblok: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing key: %s\n"
-msgstr "kesalahan menulis keyring `%s': %s\n"
-
 #, c-format
 msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
@@ -319,6 +311,11 @@ msgstr ""
 
 msgid "run in server mode (foreground)"
 msgstr ""
+
+#, fuzzy
+#| msgid "Key is superseded"
+msgid "run in supervised mode"
+msgstr "Kunci dilampaui"
 
 msgid "verbose"
 msgstr "detil"
@@ -734,9 +731,9 @@ msgstr "kesalahan penciptaan passphrase: %s\n"
 msgid "error forking process: %s\n"
 msgstr "kesalahan membaca `%s': %s\n"
 
-#, fuzzy, c-format
-msgid "waiting for processes to terminate failed: %s\n"
-msgstr "gagal memperbarui: %s\n"
+#, c-format
+msgid "waiting for process %d to terminate failed: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "error running '%s': probably not installed\n"
@@ -751,12 +748,12 @@ msgid "error running '%s': terminated\n"
 msgstr "kesalahan membaca `%s': %s\n"
 
 #, fuzzy, c-format
+msgid "waiting for processes to terminate failed: %s\n"
+msgstr "gagal memperbarui: %s\n"
+
+#, fuzzy, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
@@ -778,6 +775,14 @@ msgstr "Peringatan: kepemilikan tidak aman pada %s \"%s\"\n"
 #, fuzzy, c-format
 msgid "Warning: unsafe permissions on %s \"%s\"\n"
 msgstr "Peringatan: permisi tidak aman pada %s \"%s\"\n"
+
+#, fuzzy, c-format
+msgid "waiting for file '%s' to become accessible ...\n"
+msgstr "gagal memperbarui: %s\n"
+
+#, fuzzy, c-format
+msgid "renaming '%s' to '%s' failed: %s\n"
+msgstr "gagal enarmoring: %s\n"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "yes"
@@ -2188,9 +2193,9 @@ msgstr "tampilkan keyring tempat kunci yang dipilih berada"
 msgid "show expiration dates during signature listings"
 msgstr "Tidak ada signature koresponden di ring rahasia\n"
 
-#, fuzzy
-msgid "available TOFU policies:\n"
-msgstr "tiadakan kunci"
+#, fuzzy, c-format
+msgid "valid values for option '%s':\n"
+msgstr "opsi impor tidak valid\n"
 
 #, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -2198,6 +2203,10 @@ msgstr "penerima baku tidak dikenal `%s'\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid value for option '%s'\n"
+msgstr "opsi impor tidak valid\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
@@ -2992,6 +3001,10 @@ msgstr "[pembatalan]"
 
 msgid "[self-signature]"
 msgstr "[self-signature]"
+
+#, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "kesalahan menulis keyring `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
@@ -5043,6 +5056,21 @@ msgstr "Kunci ini mungkin milik pemiliknya\n"
 msgid "This key belongs to us\n"
 msgstr "Kunci ini milik kita\n"
 
+#, c-format
+msgid "%s: This key is bad!  It has been marked as untrusted!\n"
+msgstr ""
+
+#, fuzzy
+msgid ""
+"This key has is bad!  It has been marked as untrusted!  If you\n"
+"*really* know what you are doing, you may answer the next\n"
+"question with yes.\n"
+msgstr ""
+"Tidak pasti bahwa kunci milik orang yang disebutkan\n"
+"Jika anda sangat tahu apa yang sedang anda lakukan, anda boleh menjawab\n"
+"pertanyaan berikut dengan ya\n"
+"\n"
+
 #, fuzzy
 msgid ""
 "It is NOT certain that the key belongs to the person named\n"
@@ -5703,27 +5731,31 @@ msgid "error updating TOFU database: %s\n"
 msgstr "kesalahan mengirim ke `%s': %s\n"
 
 #, c-format
-msgid "The binding %s is NOT known."
+msgid ""
+"This is the first time the email address \"%s\" is being used with key %s."
+msgstr ""
+
+#, c-format
+msgid "The email address \"%s\" is associated with %d keys!"
+msgstr ""
+
+msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
 msgstr ""
 
 #, c-format
 msgid ""
-"The key with fingerprint %s raised a conflict with the binding %s.  Since "
-"this binding's policy was 'auto', it was changed to 'ask'."
-msgstr ""
-
-#, c-format
-msgid ""
-"Please indicate whether you believe the binding %s%sis legitimate (the key "
-"belongs to the stated owner) or a forgery (bad)."
+"Please indicate whether this email address should be associated with key %s "
+"or whether you think someone is impersonating \"%s\"."
 msgstr ""
 
 #, fuzzy, c-format
 msgid "error gathering other user IDs: %s\n"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
-msgid "Known user IDs associated with this key:\n"
-msgstr ""
+#, fuzzy
+#| msgid "list key and user IDs"
+msgid "This key's user IDs:\n"
+msgstr "tampilkan kunci dan ID user"
 
 #, fuzzy, c-format
 #| msgid "Policy: "
@@ -5744,40 +5776,46 @@ msgstr[1] ""
 msgid "Statistics for keys with the email address \"%s\":\n"
 msgstr ""
 
+msgid ", "
+msgstr ""
+
 #, fuzzy
 #| msgid "list keys"
 msgid "this key"
 msgstr "tampilkan kunci"
 
-#, c-format
-msgid "%ld message signed in the future."
-msgid_plural "%ld messages signed in the future."
-msgstr[0] ""
-msgstr[1] ""
-
 #, fuzzy, c-format
-msgid "%ld message signed"
-msgid_plural "%ld messages signed"
+msgid "Verified %d message"
+msgid_plural "Verified %d messages"
 msgstr[0] "|algo [file]|cetak digest pesan"
 msgstr[1] "|algo [file]|cetak digest pesan"
 
 #, c-format
-msgid " over the past %ld day."
-msgid_plural " over the past %ld days."
+msgid "Encrypted %d message"
+msgid_plural "Encrypted %d messages"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past %ld week."
-msgid_plural " over the past %ld weeks."
+msgid " over the past day."
+msgid_plural " over the past %d days."
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past %ld month."
-msgid_plural " over the past %ld months."
+msgid " over the past month."
+msgid_plural " over the past %d months."
 msgstr[0] ""
 msgstr[1] ""
+
+#, c-format
+msgid " over the past year."
+msgid_plural " over the past %d years."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid " in the past."
+msgstr ""
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5793,6 +5831,16 @@ msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+msgid "Defaulting to unknown."
+msgstr ""
+
+msgid "TOFU db corruption detected.\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "resetting keydb: %s\n"
+msgstr "kesalahan menulis keyring `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error setting TOFU binding's trust level to %s\n"
@@ -5841,50 +5889,56 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "Have never verified a message signed by key %s!\n"
-msgstr ""
-
-#, c-format
-msgid ""
-"Failed to collect signature statistics for \"%s\"\n"
-"(key %s)\n"
+msgid "%s: "
 msgstr ""
 
 #, fuzzy, c-format
-msgid "Verified %ld messages signed by \"%s\"."
-msgstr "|algo [file]|cetak digest pesan"
+#| msgid "Deleted %d signatures.\n"
+msgid "Verified %ld signatures"
+msgstr "Menghapus %d signature.\n"
+
+#, fuzzy, c-format
+msgid "Verified %ld signature in the past %s"
+msgid_plural "Verified %ld signatures in the past %s"
+msgstr[0] "|algo [file]|cetak digest pesan"
+msgstr[1] "|algo [file]|cetak digest pesan"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %lu passphrases\n"
+msgid ", and encrypted %ld messages"
+msgstr "dienkripsi dengan passphrase %lu\n"
+
+#, fuzzy, c-format
+msgid ", and encrypted %ld message in the past %s"
+msgid_plural ", and encrypted %ld messages in the past %s"
+msgstr[0] "|algo [file]|cetak digest pesan"
+msgstr[1] "|algo [file]|cetak digest pesan"
+
+msgid ""
+"Warning: we have yet to see a message signed using this key and user id!\n"
+msgstr ""
+
+msgid ""
+"Warning: we've only seen one message signed using this key and user id!\n"
+msgstr ""
+
+msgid "Warning: you have yet to encrypt a message to this key!\n"
+msgstr ""
+
+msgid "Warning: you have only encrypted one message to this key!\n"
+msgstr ""
 
 #, c-format
 msgid ""
-"Verified %ld message signed by \"%s\"\n"
-"in the past %s."
-msgid_plural ""
-"Verified %ld messages signed by \"%s\"\n"
-"in the past %s."
-msgstr[0] ""
-msgstr[1] ""
-
-#, c-format
-msgid "The most recent message was verified %s ago."
-msgstr ""
-
-msgid "Warning: we've have yet to see a message signed by this key!\n"
-msgstr ""
-
-msgid "Warning: we've only seen a single message signed by this key!\n"
-msgstr ""
-
-#, c-format
-msgid ""
-"Warning: if you think you've seen more than %ld message signed by this key, "
+"Warning: if you think you've seen more signatures by this key and user id, "
 "then this key might be a forgery!  Carefully examine the email address for "
 "small variations.  If the key is suspect, then use\n"
 "  %s\n"
 "to mark it as being bad.\n"
 msgid_plural ""
-"Warning: if you think you've seen more than %ld messages signed by this key, "
-"then this key might be a forgery!  Carefully examine the email address for "
-"small variations.  If the key is suspect, then use\n"
+"Warning: if you think you've seen more signatures by this key and these user "
+"ids, then this key might be a forgery!  Carefully examine the email "
+"addresses for small variations.  If the key is suspect, then use\n"
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[0] ""
@@ -5893,6 +5947,15 @@ msgstr[1] ""
 #, fuzzy, c-format
 msgid "error opening TOFU database: %s\n"
 msgstr "kesalahan mengirim ke `%s': %s\n"
+
+#, c-format
+msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error writing public keyring `%s': %s\n"
+msgid "error setting policy for key %s, user id \"%s\": %s"
+msgstr "kesalahan menulis keyring publik `%s': %s\n"
 
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid long keyID\n"
@@ -6138,21 +6201,23 @@ msgstr "gagal inisialisasi TrustDB: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "gagal membuat kembali cache keyring: %s\n"
 
-#, fuzzy, c-format
-msgid "reading public key failed: %s\n"
-msgstr "gagal menghapus keyblok: %s\n"
-
-msgid "response does not contain the public key data\n"
-msgstr ""
-
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
-msgid "response does not contain the EC public point\n"
+#, fuzzy
+#| msgid "remove keys from the public keyring"
+msgid "response does not contain the EC public key\n"
+msgstr "hapus kunci dari keyring publik"
+
+msgid "response does not contain the public key data\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "reading public key failed: %s\n"
+msgstr "gagal menghapus keyblok: %s\n"
 
 #, c-format
 msgid "using default PIN as %s\n"
@@ -7781,6 +7846,9 @@ msgstr ""
 msgid "allow sending OCSP requests"
 msgstr ""
 
+msgid "allow online software version check"
+msgstr ""
+
 msgid "inhibit the use of HTTP"
 msgstr ""
 
@@ -8051,10 +8119,6 @@ msgstr "\"%s\" bukan sebuah file JPEG\n"
 #, c-format
 msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "kesalahan menulis keyring `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error printing log line: %s\n"
@@ -8530,23 +8594,25 @@ msgstr ""
 msgid "Configuration for OCSP"
 msgstr ""
 
-msgid "GPG for OpenPGP"
+msgid "OpenPGP"
 msgstr ""
 
-msgid "GPG Agent"
+msgid "Private Keys"
 msgstr ""
 
-msgid "Smartcard Daemon"
+msgid "Smartcards"
 msgstr ""
 
-msgid "GPG for S/MIME"
-msgstr ""
-
-msgid "Key Acquirer"
+msgid "S/MIME"
 msgstr ""
 
 #, fuzzy
-msgid "PIN and Passphrase Entry"
+#| msgid "network error"
+msgid "Network"
+msgstr "kesalahan jaringan"
+
+#, fuzzy
+msgid "Passphrase Entry"
 msgstr "passphrase yang buruk"
 
 #, fuzzy
@@ -8588,6 +8654,11 @@ msgstr "Item Konfigurasi tidak dikenal \"%s\"\n"
 #, fuzzy
 msgid "check global configuration file"
 msgstr "Item Konfigurasi tidak dikenal \"%s\"\n"
+
+#, fuzzy
+#| msgid "update the trust database"
+msgid "query the software version database"
+msgstr "perbarui database trust"
 
 msgid "reload all or a given component"
 msgstr ""
@@ -8769,6 +8840,20 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#, fuzzy
+#~ msgid "shadowing the key failed: %s\n"
+#~ msgstr "gagal menghapus keyblok: %s\n"
+
+#, fuzzy
+#~ msgid "available TOFU policies:\n"
+#~ msgstr "tiadakan kunci"
+
+#, fuzzy
+#~ msgid "%ld message signed"
+#~ msgid_plural "%ld messages signed"
+#~ msgstr[0] "|algo [file]|cetak digest pesan"
+#~ msgstr[1] "|algo [file]|cetak digest pesan"
+
 #~ msgid "communication problem with gpg-agent\n"
 #~ msgstr "masalah komunikasi dengan gpg-agent\n"
 
@@ -8840,9 +8925,6 @@ msgstr ""
 #~ msgid "1 user ID without valid self-signature detected\n"
 #~ msgstr "terdeteksi 1 ID user tanpa self-signature yang valid\n"
 
-#~ msgid "Deleted %d signatures.\n"
-#~ msgstr "Menghapus %d signature.\n"
-
 #, fuzzy
 #~ msgid "User ID \"%s\": %d signatures removed\n"
 #~ msgstr "User ID \"%s\" dibatalkan."
@@ -8886,10 +8968,6 @@ msgstr ""
 #~| msgid "1 bad signature\n"
 #~ msgid "1 good signature\n"
 #~ msgstr "1 signature yang buruk\n"
-
-#, fuzzy
-#~ msgid "renaming '%s' to '%s' failed: %s\n"
-#~ msgstr "gagal enarmoring: %s\n"
 
 #, fuzzy
 #~ msgid "%lu keys cached (%lu signatures)\n"
@@ -9831,9 +9909,6 @@ msgstr ""
 
 #~ msgid "bad URI"
 #~ msgstr "URI yang buruk"
-
-#~ msgid "network error"
-#~ msgstr "kesalahan jaringan"
 
 #~ msgid "not processed"
 #~ msgstr "tidak diproses"

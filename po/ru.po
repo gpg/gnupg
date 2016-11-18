@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-11-16 17:17+0000\n"
+"PO-Revision-Date: 2016-11-18 15:44+0100\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -750,6 +750,16 @@ msgstr "Внимание: небезопасный владелец %s \"%s\"\n"
 #, c-format
 msgid "Warning: unsafe permissions on %s \"%s\"\n"
 msgstr "Внимание: небезопасные права доступа %s \"%s\"\n"
+
+#, fuzzy, c-format
+#| msgid "waiting for the agent to come up ... (%ds)\n"
+msgid "waiting for file '%s' to become accessible ...\n"
+msgstr "ожидаю подключения агента ... (%iс)\n"
+
+#, fuzzy, c-format
+#| msgid "error renaming '%s' to '%s': %s\n"
+msgid "renaming '%s' to '%s' failed: %s\n"
+msgstr "ошибка переименования '%s' в '%s': %s\n"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "yes"
@@ -5425,8 +5435,7 @@ msgstr "ошибка обновления базы данных TOFU: %s\n"
 #, c-format
 msgid ""
 "This is the first time the email address \"%s\" is being used with key %s."
-msgstr ""
-"Адрес электронной почты \"%s\" используется с ключом %s впервые."
+msgstr "Адрес электронной почты \"%s\" используется с ключом %s впервые."
 
 #, c-format
 msgid "The email address \"%s\" is associated with %d keys!"
@@ -5434,8 +5443,8 @@ msgstr "Адрес электронной почты \"%s\" связан с %d �
 
 msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
 msgstr ""
-" Поскольку правило "
-"привязки было 'автоматически', оно изменилось на 'спрашивать'."
+" Поскольку правило привязки было 'автоматически', оно изменилось на "
+"'спрашивать'."
 
 #, c-format
 msgid ""
@@ -5478,7 +5487,6 @@ msgid "this key"
 msgstr "этот ключ"
 
 #, c-format
-#| msgid "Verified %ld messages signed by \"%s\"."
 msgid "Verified %d message"
 msgid_plural "Verified %d messages"
 msgstr[0] "Проверено %d сообщение"
@@ -5502,9 +5510,9 @@ msgstr[2] " за %d прошедших дней."
 #, c-format
 msgid " over the past month."
 msgid_plural " over the past %d months."
-msgstr[0] " за %ld прошедший месяц."
-msgstr[1] " за %ld прошедших месяца."
-msgstr[2] " за %ld прошедших месяцев."
+msgstr[0] " за %d прошедший месяц."
+msgstr[1] " за %d прошедших месяца."
+msgstr[2] " за %d прошедших месяцев."
 
 #, c-format
 msgid " over the past year."
@@ -5611,12 +5619,9 @@ msgstr "Проверено %ld подписей"
 #, c-format
 msgid "Verified %ld signature in the past %s"
 msgid_plural "Verified %ld signatures in the past %s"
-msgstr[0] ""
-"Проверена %ld подпись за %s."
-msgstr[1] ""
-"Проверены %ld прописи за %s."
-msgstr[2] ""
-"Проверено %ld подписей за %s."
+msgstr[0] "Проверена %ld подпись за %s."
+msgstr[1] "Проверены %ld прописи за %s."
+msgstr[2] "Проверено %ld подписей за %s."
 
 #, c-format
 msgid ", and encrypted %ld messages"
@@ -5625,12 +5630,9 @@ msgstr ", зашифровано %ld сообщений"
 #, c-format
 msgid ", and encrypted %ld message in the past %s"
 msgid_plural ", and encrypted %ld messages in the past %s"
-msgstr[0] ""
-", зашифровано %ld сообщение за %s."
-msgstr[1] ""
-", зашифрованы %ld сообщения за %s."
-msgstr[2] ""
-", зашифровано %ld сообщений за %s."
+msgstr[0] ", зашифровано %ld сообщение за %s."
+msgstr[1] ", зашифрованы %ld сообщения за %s."
+msgstr[2] ", зашифровано %ld сообщений за %s."
 
 msgid ""
 "Warning: we have yet to see a message signed using this key and user id!\n"
@@ -5646,13 +5648,11 @@ msgstr ""
 
 msgid "Warning: you have yet to encrypt a message to this key!\n"
 msgstr ""
-"Внимание: мы до сих пор не зашифровали этим "
-"ключом ни одного сообщения!\n"
+"Внимание: мы до сих пор не зашифровали этим ключом ни одного сообщения!\n"
 
 msgid "Warning: you have only encrypted one message to this key!\n"
 msgstr ""
-"Внимание: мы до сих пор зашифровали этим "
-"ключом только одно сообщение!\n"
+"Внимание: мы до сих пор зашифровали этим ключом только одно сообщение!\n"
 
 #, c-format
 msgid ""
@@ -5668,8 +5668,8 @@ msgid_plural ""
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[0] ""
-"Внимание: если вы видели другие сообщения, подписанные этим ключом, "
-"этот ключ может быть подделкой! Внимательно проверьте, не внесены ли в адрес "
+"Внимание: если вы видели другие сообщения, подписанные этим ключом, этот "
+"ключ может быть подделкой! Внимательно проверьте, не внесены ли в адрес "
 "электронной почты небольшие изменения. В случае подозрений пометьте ключ как "
 "некачественный командой\n"
 "  %s\n"
@@ -5693,12 +5693,14 @@ msgstr "ошибка при открытии базы данных TOFU: %s\n"
 #, c-format
 msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
 msgstr ""
-"ВНИМАНИЕ: Шифрование для ключа %s, у которого нет неотозванных идентификаторов пользователя.\n"
+"ВНИМАНИЕ: Шифрование для ключа %s, у которого нет неотозванных "
+"идентификаторов пользователя.\n"
 
 #, c-format
 msgid "error setting policy for key %s, user id \"%s\": %s"
 msgstr ""
-"ошибка установки правил для ключа %s с идентификатором пользователя \"%s\": %s"
+"ошибка установки правил для ключа %s с идентификатором пользователя \"%s\": "
+"%s"
 
 #, c-format
 msgid "'%s' is not a valid long keyID\n"
@@ -7543,6 +7545,11 @@ msgstr "принудительная загрузка устаревших сп�
 msgid "allow sending OCSP requests"
 msgstr "разрешить посылку запросов OCSP"
 
+#, fuzzy
+#| msgid "query the software version database"
+msgid "allow online software version check"
+msgstr "запросить базу данных версий программ"
+
 msgid "inhibit the use of HTTP"
 msgstr "запретить использование HTTP"
 
@@ -8033,10 +8040,6 @@ msgid "max_replies %d exceeded\n"
 msgstr "превышено max_replies %d\n"
 
 #, c-format
-msgid "can't create temporary directory '%s': %s\n"
-msgstr "не могу создать временный каталог '%s': %s\n"
-
-#, c-format
 msgid "can't allocate control structure: %s\n"
 msgstr "сбой при выделении памяти под управляющую структуру: %s\n"
 
@@ -8262,22 +8265,30 @@ msgstr "Список серверов LDAP"
 msgid "Configuration for OCSP"
 msgstr "Настройки OCSP"
 
-msgid "GPG for OpenPGP"
+#, fuzzy
+#| msgid "GPG for OpenPGP"
+msgid "OpenPGP"
 msgstr "GPG для OpenPGP"
 
-msgid "GPG Agent"
-msgstr "Агент GPG"
+msgid "Private Keys"
+msgstr ""
 
-msgid "Smartcard Daemon"
+#, fuzzy
+#| msgid "Smartcard Daemon"
+msgid "Smartcards"
 msgstr "Демон криптографических карт"
 
-msgid "GPG for S/MIME"
+#, fuzzy
+#| msgid "GPG for S/MIME"
+msgid "S/MIME"
 msgstr "GPG для S/MIME"
 
-msgid "Key Acquirer"
-msgstr "Диспетчер ключей"
+msgid "Network"
+msgstr ""
 
-msgid "PIN and Passphrase Entry"
+#, fuzzy
+#| msgid "PIN and Passphrase Entry"
+msgid "Passphrase Entry"
 msgstr "Ввод PIN и фраз-паролей"
 
 msgid "Component not suitable for launching"
@@ -8402,6 +8413,10 @@ msgid "%s on %s failed with status %i\n"
 msgstr "сбой %s над %s, статус %i\n"
 
 #, c-format
+msgid "can't create temporary directory '%s': %s\n"
+msgstr "не могу создать временный каталог '%s': %s\n"
+
+#, c-format
 msgid "could not open %s for writing: %s\n"
 msgstr "невозможно открыть %s на запись: %s\n"
 
@@ -8494,3 +8509,9 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
+
+#~ msgid "GPG Agent"
+#~ msgstr "Агент GPG"
+
+#~ msgid "Key Acquirer"
+#~ msgstr "Диспетчер ключей"

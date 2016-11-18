@@ -172,14 +172,6 @@ msgid "no suitable card key found: %s\n"
 msgstr "ingen egnet kortnøgle fundet: %s\n"
 
 #, c-format
-msgid "shadowing the key failed: %s\n"
-msgstr "skygge for nøgle mislykkedes: %s\n"
-
-#, c-format
-msgid "error writing key: %s\n"
-msgstr "fejl ved skrivning af nøgle: %s\n"
-
-#, c-format
 msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
 "allow this?"
@@ -350,6 +342,11 @@ msgstr "kør i dæmontilstand (baggrunden)"
 
 msgid "run in server mode (foreground)"
 msgstr "kør i servertilstand (forgrunden)"
+
+#, fuzzy
+#| msgid "run in server mode"
+msgid "run in supervised mode"
+msgstr "kør i servertilstand"
 
 msgid "verbose"
 msgstr "uddybende"
@@ -793,9 +790,8 @@ msgstr "fejl ved oprettelse af datakanal: %s\n"
 msgid "error forking process: %s\n"
 msgstr "fejl ved forgrening af proces: %s\n"
 
-#, fuzzy, c-format
-#| msgid "waiting for process %d to terminate failed: %s\n"
-msgid "waiting for processes to terminate failed: %s\n"
+#, c-format
+msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "ventning på at proces %d skulle terminere mislykkedes: %s\n"
 
 #, fuzzy, c-format
@@ -813,13 +809,14 @@ msgstr "fejl ved kørsel af »%s«: afslutningsstatus %d\n"
 msgid "error running '%s': terminated\n"
 msgstr "fejl ved kørsel af »%s«: termineret\n"
 
+#, fuzzy, c-format
+#| msgid "waiting for process %d to terminate failed: %s\n"
+msgid "waiting for processes to terminate failed: %s\n"
+msgstr "ventning på at proces %d skulle terminere mislykkedes: %s\n"
+
 #, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "fejl ved indhentelse af afslutningskode for proces %d: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "ventning på at proces %d skulle terminere mislykkedes: %s\n"
 
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
@@ -840,6 +837,16 @@ msgstr "Advarsel: usikker ejerskab på %s »%s«\n"
 #, c-format
 msgid "Warning: unsafe permissions on %s \"%s\"\n"
 msgstr "Advarsel: usikre rettigheder på %s »%s«\n"
+
+#, fuzzy, c-format
+#| msgid "waiting %d seconds for the agent to come up\n"
+msgid "waiting for file '%s' to become accessible ...\n"
+msgstr "venter %d sekunder på at agenten kommer frem\n"
+
+#, fuzzy, c-format
+#| msgid "renaming `%s' to `%s' failed: %s\n"
+msgid "renaming '%s' to '%s' failed: %s\n"
+msgstr "omdøbelse af »%s« til »%s« mislykkedes: %s\n"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "yes"
@@ -2232,10 +2239,10 @@ msgstr "vis nøgleringsnavnet i nøglevisninger"
 msgid "show expiration dates during signature listings"
 msgstr "vis udløbsdatoer under underskriftvisninger"
 
-#, fuzzy
-#| msgid "Available keys:\n"
-msgid "available TOFU policies:\n"
-msgstr "Tilgængelige nøgler:\n"
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "valid values for option '%s':\n"
+msgstr "manglende parameter for indstilling »%.50s«\n"
 
 #, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
@@ -2244,6 +2251,11 @@ msgstr "ukendt tilvalg »%s«\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid value for option '%s'\n"
+msgstr "manglende parameter for indstilling »%.50s«\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
@@ -3039,6 +3051,11 @@ msgstr "[tilbagekald]"
 
 msgid "[self-signature]"
 msgstr "[egenunderskrift]"
+
+#, fuzzy, c-format
+#| msgid "error allocating enough memory: %s\n"
+msgid "error allocating memory: %s\n"
+msgstr "fejl ved allokering af nok hukommelse: %s\n"
 
 #, fuzzy, c-format
 #| msgid "key %s: unsupported public key algorithm\n"
@@ -5085,6 +5102,25 @@ msgstr "Denne nøgle tilhører sikkert den navngivne bruger\n"
 msgid "This key belongs to us\n"
 msgstr "Denne nøgle tilhører os\n"
 
+#, fuzzy, c-format
+#| msgid "root certificate has now been marked as trusted\n"
+msgid "%s: This key is bad!  It has been marked as untrusted!\n"
+msgstr "rodcertifikat er nu blevet markeret som troværdig\n"
+
+#, fuzzy
+#| msgid ""
+#| "It is NOT certain that the key belongs to the person named\n"
+#| "in the user ID.  If you *really* know what you are doing,\n"
+#| "you may answer the next question with yes.\n"
+msgid ""
+"This key has is bad!  It has been marked as untrusted!  If you\n"
+"*really* know what you are doing, you may answer the next\n"
+"question with yes.\n"
+msgstr ""
+"Det er IKKE sikkert, at nøglen tilhører personen navngivet\n"
+"i bruger-id'et. Hvis du *virkelig* ved hvad du gør,\n"
+"så kan du besvare det næste spørgsmål med ja.\n"
+
 msgid ""
 "It is NOT certain that the key belongs to the person named\n"
 "in the user ID.  If you *really* know what you are doing,\n"
@@ -5764,19 +5800,21 @@ msgid "error updating TOFU database: %s\n"
 msgstr "fejl under afsendelse af %s-kommando: %s\n"
 
 #, c-format
-msgid "The binding %s is NOT known."
+msgid ""
+"This is the first time the email address \"%s\" is being used with key %s."
+msgstr ""
+
+#, c-format
+msgid "The email address \"%s\" is associated with %d keys!"
+msgstr ""
+
+msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
 msgstr ""
 
 #, c-format
 msgid ""
-"The key with fingerprint %s raised a conflict with the binding %s.  Since "
-"this binding's policy was 'auto', it was changed to 'ask'."
-msgstr ""
-
-#, c-format
-msgid ""
-"Please indicate whether you believe the binding %s%sis legitimate (the key "
-"belongs to the stated owner) or a forgery (bad)."
+"Please indicate whether this email address should be associated with key %s "
+"or whether you think someone is impersonating \"%s\"."
 msgstr ""
 
 #, fuzzy, c-format
@@ -5784,8 +5822,10 @@ msgstr ""
 msgid "error gathering other user IDs: %s\n"
 msgstr "fejl ved indhentelse af ny PIN: %s\n"
 
-msgid "Known user IDs associated with this key:\n"
-msgstr ""
+#, fuzzy
+#| msgid "list key and user IDs"
+msgid "This key's user IDs:\n"
+msgstr "vis nøgle og bruger-id'er"
 
 #, fuzzy, c-format
 #| msgid "validity: %s"
@@ -5807,41 +5847,47 @@ msgstr[1] ""
 msgid "Statistics for keys with the email address \"%s\":\n"
 msgstr ""
 
+msgid ", "
+msgstr ""
+
 #, fuzzy
 #| msgid "list keys"
 msgid "this key"
 msgstr "vis nøgler"
 
-#, c-format
-msgid "%ld message signed in the future."
-msgid_plural "%ld messages signed in the future."
-msgstr[0] ""
-msgstr[1] ""
-
 #, fuzzy, c-format
 #| msgid "print message digests"
-msgid "%ld message signed"
-msgid_plural "%ld messages signed"
+msgid "Verified %d message"
+msgid_plural "Verified %d messages"
 msgstr[0] "vis beskedsammendrag"
 msgstr[1] "vis beskedsammendrag"
 
 #, c-format
-msgid " over the past %ld day."
-msgid_plural " over the past %ld days."
+msgid "Encrypted %d message"
+msgid_plural "Encrypted %d messages"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past %ld week."
-msgid_plural " over the past %ld weeks."
+msgid " over the past day."
+msgid_plural " over the past %d days."
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past %ld month."
-msgid_plural " over the past %ld months."
+msgid " over the past month."
+msgid_plural " over the past %d months."
 msgstr[0] ""
 msgstr[1] ""
+
+#, c-format
+msgid " over the past year."
+msgid_plural " over the past %d years."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid " in the past."
+msgstr ""
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5857,6 +5903,17 @@ msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+msgid "Defaulting to unknown."
+msgstr ""
+
+msgid "TOFU db corruption detected.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error writing key: %s\n"
+msgid "resetting keydb: %s\n"
+msgstr "fejl ved skrivning af nøgle: %s\n"
 
 #, fuzzy, c-format
 #| msgid "error storing flags: %s\n"
@@ -5907,51 +5964,58 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "Have never verified a message signed by key %s!\n"
-msgstr ""
-
-#, c-format
-msgid ""
-"Failed to collect signature statistics for \"%s\"\n"
-"(key %s)\n"
+msgid "%s: "
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "Deleted %d signatures.\n"
+msgid "Verified %ld signatures"
+msgstr "Slettede %d underskrifter.\n"
+
+#, fuzzy, c-format
 #| msgid "print message digests"
-msgid "Verified %ld messages signed by \"%s\"."
-msgstr "vis beskedsammendrag"
+msgid "Verified %ld signature in the past %s"
+msgid_plural "Verified %ld signatures in the past %s"
+msgstr[0] "vis beskedsammendrag"
+msgstr[1] "vis beskedsammendrag"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %lu passphrases\n"
+msgid ", and encrypted %ld messages"
+msgstr "krypteret med %lu adgangsfraser\n"
+
+#, fuzzy, c-format
+#| msgid "print message digests"
+msgid ", and encrypted %ld message in the past %s"
+msgid_plural ", and encrypted %ld messages in the past %s"
+msgstr[0] "vis beskedsammendrag"
+msgstr[1] "vis beskedsammendrag"
+
+msgid ""
+"Warning: we have yet to see a message signed using this key and user id!\n"
+msgstr ""
+
+msgid ""
+"Warning: we've only seen one message signed using this key and user id!\n"
+msgstr ""
+
+msgid "Warning: you have yet to encrypt a message to this key!\n"
+msgstr ""
+
+msgid "Warning: you have only encrypted one message to this key!\n"
+msgstr ""
 
 #, c-format
 msgid ""
-"Verified %ld message signed by \"%s\"\n"
-"in the past %s."
-msgid_plural ""
-"Verified %ld messages signed by \"%s\"\n"
-"in the past %s."
-msgstr[0] ""
-msgstr[1] ""
-
-#, c-format
-msgid "The most recent message was verified %s ago."
-msgstr ""
-
-msgid "Warning: we've have yet to see a message signed by this key!\n"
-msgstr ""
-
-msgid "Warning: we've only seen a single message signed by this key!\n"
-msgstr ""
-
-#, c-format
-msgid ""
-"Warning: if you think you've seen more than %ld message signed by this key, "
+"Warning: if you think you've seen more signatures by this key and user id, "
 "then this key might be a forgery!  Carefully examine the email address for "
 "small variations.  If the key is suspect, then use\n"
 "  %s\n"
 "to mark it as being bad.\n"
 msgid_plural ""
-"Warning: if you think you've seen more than %ld messages signed by this key, "
-"then this key might be a forgery!  Carefully examine the email address for "
-"small variations.  If the key is suspect, then use\n"
+"Warning: if you think you've seen more signatures by this key and these user "
+"ids, then this key might be a forgery!  Carefully examine the email "
+"addresses for small variations.  If the key is suspect, then use\n"
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[0] ""
@@ -5961,6 +6025,15 @@ msgstr[1] ""
 #| msgid "error sending %s command: %s\n"
 msgid "error opening TOFU database: %s\n"
 msgstr "fejl under afsendelse af %s-kommando: %s\n"
+
+#, c-format
+msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error writing public keyring `%s': %s\n"
+msgid "error setting policy for key %s, user id \"%s\": %s"
+msgstr "fejl ved skrivning af offentlig nøglering »%s«: %s\n"
 
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid long keyID\n"
@@ -6218,13 +6291,6 @@ msgstr "kunne ikke gemme fingeraftrykket: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "kunne ikke gemme oprettelsesdatoen: %s\n"
 
-#, c-format
-msgid "reading public key failed: %s\n"
-msgstr "læsning af offentlig nøgle mislykkedes: %s\n"
-
-msgid "response does not contain the public key data\n"
-msgstr "svar indeholder ikke data for offentlig nøgle\n"
-
 msgid "response does not contain the RSA modulus\n"
 msgstr "svar indeholder ikke RSA modulus'erne\n"
 
@@ -6233,8 +6299,15 @@ msgstr "svar indeholder ikke den RSA-offentlige eksponent\n"
 
 #, fuzzy
 #| msgid "response does not contain the RSA public exponent\n"
-msgid "response does not contain the EC public point\n"
+msgid "response does not contain the EC public key\n"
 msgstr "svar indeholder ikke den RSA-offentlige eksponent\n"
+
+msgid "response does not contain the public key data\n"
+msgstr "svar indeholder ikke data for offentlig nøgle\n"
+
+#, c-format
+msgid "reading public key failed: %s\n"
+msgstr "læsning af offentlig nøgle mislykkedes: %s\n"
 
 #, c-format
 msgid "using default PIN as %s\n"
@@ -7957,6 +8030,9 @@ msgstr ""
 msgid "allow sending OCSP requests"
 msgstr "tillad PKA-opslag (DNS-forespørgsler)"
 
+msgid "allow online software version check"
+msgstr ""
+
 msgid "inhibit the use of HTTP"
 msgstr ""
 
@@ -8256,11 +8332,6 @@ msgstr "»%s« er ikke en JPEG-fil\n"
 #, c-format
 msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error allocating enough memory: %s\n"
-msgid "error allocating memory: %s\n"
-msgstr "fejl ved allokering af nok hukommelse: %s\n"
 
 #, fuzzy, c-format
 #| msgid "error writing to %s: %s\n"
@@ -8791,24 +8862,24 @@ msgstr "LDAP-serverliste"
 msgid "Configuration for OCSP"
 msgstr "Konfiguration for OCSP"
 
-msgid "GPG for OpenPGP"
+msgid "OpenPGP"
 msgstr ""
 
-msgid "GPG Agent"
+msgid "Private Keys"
 msgstr ""
 
-msgid "Smartcard Daemon"
+msgid "Smartcards"
 msgstr ""
 
-msgid "GPG for S/MIME"
+msgid "S/MIME"
 msgstr ""
 
-msgid "Key Acquirer"
+msgid "Network"
 msgstr ""
 
 #, fuzzy
 #| msgid "Bad Passphrase"
-msgid "PIN and Passphrase Entry"
+msgid "Passphrase Entry"
 msgstr "Ugyldig adgangsfrase"
 
 #, fuzzy
@@ -8851,6 +8922,11 @@ msgstr "vis global konfigurationsfil"
 
 msgid "check global configuration file"
 msgstr "kontroller global konfigurationsfil"
+
+#, fuzzy
+#| msgid "update the trust database"
+msgid "query the software version database"
+msgstr "opdater troværdighedsdatabasen"
 
 #, fuzzy
 #| msgid "list all components"
@@ -9043,6 +9119,21 @@ msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
 
+#~ msgid "shadowing the key failed: %s\n"
+#~ msgstr "skygge for nøgle mislykkedes: %s\n"
+
+#, fuzzy
+#~| msgid "Available keys:\n"
+#~ msgid "available TOFU policies:\n"
+#~ msgstr "Tilgængelige nøgler:\n"
+
+#, fuzzy
+#~| msgid "print message digests"
+#~ msgid "%ld message signed"
+#~ msgid_plural "%ld messages signed"
+#~ msgstr[0] "vis beskedsammendrag"
+#~ msgstr[1] "vis beskedsammendrag"
+
 #~ msgid "communication problem with gpg-agent\n"
 #~ msgstr "kommunikationsproblem med gpg-agent\n"
 
@@ -9129,9 +9220,6 @@ msgstr ""
 #~ msgid "1 user ID without valid self-signature detected\n"
 #~ msgstr "1 bruger-id uden gyldig egenunderskrift detekteret\n"
 
-#~ msgid "Deleted %d signatures.\n"
-#~ msgstr "Slettede %d underskrifter.\n"
-
 #~ msgid "User ID \"%s\": %d signatures removed\n"
 #~ msgstr "Bruger-id »%s«: %d underskrifter fjernet\n"
 
@@ -9173,11 +9261,6 @@ msgstr ""
 #~| msgid "1 bad signature\n"
 #~ msgid "1 good signature\n"
 #~ msgstr "1 ugyldig underskrift\n"
-
-#, fuzzy
-#~| msgid "renaming `%s' to `%s' failed: %s\n"
-#~ msgid "renaming '%s' to '%s' failed: %s\n"
-#~ msgstr "omdøbelse af »%s« til »%s« mislykkedes: %s\n"
 
 #~ msgid "%lu keys cached (%lu signatures)\n"
 #~ msgstr "%lu nøgler mellemlagret (%lu underskrifter)\n"

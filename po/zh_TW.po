@@ -159,14 +159,6 @@ msgid "no suitable card key found: %s\n"
 msgstr "找不到合適的卡片金鑰: %s\n"
 
 #, c-format
-msgid "shadowing the key failed: %s\n"
-msgstr "遮蔽金鑰時失敗: %s\n"
-
-#, c-format
-msgid "error writing key: %s\n"
-msgstr "寫入金鑰時出錯: %s\n"
-
-#, c-format
 msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
 "allow this?"
@@ -308,6 +300,11 @@ msgstr "以服務模式執行 (背景)"
 
 msgid "run in server mode (foreground)"
 msgstr "以伺服器模式執行 (前景)"
+
+#, fuzzy
+#| msgid "run in server mode"
+msgid "run in supervised mode"
+msgstr "以伺服器模式執行"
 
 msgid "verbose"
 msgstr "囉唆模式"
@@ -706,9 +703,8 @@ msgstr "建立管道串流時出錯: %s\n"
 msgid "error forking process: %s\n"
 msgstr "衍生執行程序時出錯: %s\n"
 
-#, fuzzy, c-format
-#| msgid "waiting for process %d to terminate failed: %s\n"
-msgid "waiting for processes to terminate failed: %s\n"
+#, c-format
+msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "等候 %d 處理程序終止時失敗: %s\n"
 
 #, c-format
@@ -723,13 +719,14 @@ msgstr "執行 '%s' 時出錯: 結束狀態 %d\n"
 msgid "error running '%s': terminated\n"
 msgstr "執行 '%s' 時出錯: 已終止\n"
 
+#, fuzzy, c-format
+#| msgid "waiting for process %d to terminate failed: %s\n"
+msgid "waiting for processes to terminate failed: %s\n"
+msgstr "等候 %d 處理程序終止時失敗: %s\n"
+
 #, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "取得 %d 執行程序結束碼時出錯: %s\n"
-
-#, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "等候 %d 處理程序終止時失敗: %s\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -749,6 +746,15 @@ msgstr "警告: %s 的所有權 \"%s\" 並不安全\n"
 #, c-format
 msgid "Warning: unsafe permissions on %s \"%s\"\n"
 msgstr "警告: %s 的權限 \"%s\" 並不安全\n"
+
+#, fuzzy, c-format
+#| msgid "waiting for the agent to come up ... (%ds)\n"
+msgid "waiting for file '%s' to become accessible ...\n"
+msgstr "正在等候代理程式出現 ... (%d 秒)\n"
+
+#, c-format
+msgid "renaming '%s' to '%s' failed: %s\n"
+msgstr "把 '%s' 重新新命成 '%s' 時失敗: %s\n"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "yes"
@@ -2039,10 +2045,10 @@ msgstr "在金鑰清單中顯示鑰匙圈名稱"
 msgid "show expiration dates during signature listings"
 msgstr "列出簽章時顯示有效期限"
 
-#, fuzzy
-#| msgid "Available keys:\n"
-msgid "available TOFU policies:\n"
-msgstr "可用金鑰:\n"
+#, fuzzy, c-format
+#| msgid "invalid argument for option \"%.50s\"\n"
+msgid "valid values for option '%s':\n"
+msgstr "選項 \"%.50s\" 的引數無效\n"
 
 #, fuzzy, c-format
 #| msgid "unknown option '%s'\n"
@@ -2051,6 +2057,11 @@ msgstr "未知的選項 '%s'\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "invalid argument for option \"%.50s\"\n"
+msgid "invalid value for option '%s'\n"
+msgstr "選項 \"%.50s\" 的引數無效\n"
 
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
@@ -2817,6 +2828,10 @@ msgstr "[撤銷]"
 
 msgid "[self-signature]"
 msgstr "[自我簽章]"
+
+#, c-format
+msgid "error allocating memory: %s\n"
+msgstr "配置記憶體時出錯: %s\n"
 
 #, fuzzy, c-format
 #| msgid "key %s: unsupported public key algorithm\n"
@@ -4726,6 +4741,25 @@ msgstr "這把金鑰很可能屬於叫這個名字的使用者\n"
 msgid "This key belongs to us\n"
 msgstr "這把金鑰是屬於我們自己的\n"
 
+#, fuzzy, c-format
+#| msgid "root certificate has now been marked as trusted\n"
+msgid "%s: This key is bad!  It has been marked as untrusted!\n"
+msgstr "根憑證現在已標記為已信任\n"
+
+#, fuzzy
+#| msgid ""
+#| "It is NOT certain that the key belongs to the person named\n"
+#| "in the user ID.  If you *really* know what you are doing,\n"
+#| "you may answer the next question with yes.\n"
+msgid ""
+"This key has is bad!  It has been marked as untrusted!  If you\n"
+"*really* know what you are doing, you may answer the next\n"
+"question with yes.\n"
+msgstr ""
+"這把金鑰並 *不* 確定屬於使用者 ID 裡的那個人.\n"
+"除非你 **真的** 知道自己在做甚麼,\n"
+"否則你最好在下一個問題回答 no\n"
+
 msgid ""
 "It is NOT certain that the key belongs to the person named\n"
 "in the user ID.  If you *really* know what you are doing,\n"
@@ -5372,19 +5406,21 @@ msgid "error updating TOFU database: %s\n"
 msgstr "送出資料時出錯: %s\n"
 
 #, c-format
-msgid "The binding %s is NOT known."
+msgid ""
+"This is the first time the email address \"%s\" is being used with key %s."
+msgstr ""
+
+#, c-format
+msgid "The email address \"%s\" is associated with %d keys!"
+msgstr ""
+
+msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
 msgstr ""
 
 #, c-format
 msgid ""
-"The key with fingerprint %s raised a conflict with the binding %s.  Since "
-"this binding's policy was 'auto', it was changed to 'ask'."
-msgstr ""
-
-#, c-format
-msgid ""
-"Please indicate whether you believe the binding %s%sis legitimate (the key "
-"belongs to the stated owner) or a forgery (bad)."
+"Please indicate whether this email address should be associated with key %s "
+"or whether you think someone is impersonating \"%s\"."
 msgstr ""
 
 #, fuzzy, c-format
@@ -5392,8 +5428,10 @@ msgstr ""
 msgid "error gathering other user IDs: %s\n"
 msgstr "取得回應程式 ID 時出錯: %s\n"
 
-msgid "Known user IDs associated with this key:\n"
-msgstr ""
+#, fuzzy
+#| msgid "list key and user IDs"
+msgid "This key's user IDs:\n"
+msgstr "列出金鑰和使用者 ID"
 
 #, fuzzy, c-format
 #| msgid "validity: %s"
@@ -5414,36 +5452,42 @@ msgstr[0] ""
 msgid "Statistics for keys with the email address \"%s\":\n"
 msgstr ""
 
+msgid ", "
+msgstr ""
+
 #, fuzzy
 #| msgid "list keys"
 msgid "this key"
 msgstr "列出金鑰"
 
-#, c-format
-msgid "%ld message signed in the future."
-msgid_plural "%ld messages signed in the future."
-msgstr[0] ""
-
 #, fuzzy, c-format
 #| msgid "print message digests"
-msgid "%ld message signed"
-msgid_plural "%ld messages signed"
+msgid "Verified %d message"
+msgid_plural "Verified %d messages"
 msgstr[0] "印出訊息摘要"
 
 #, c-format
-msgid " over the past %ld day."
-msgid_plural " over the past %ld days."
+msgid "Encrypted %d message"
+msgid_plural "Encrypted %d messages"
 msgstr[0] ""
 
 #, c-format
-msgid " over the past %ld week."
-msgid_plural " over the past %ld weeks."
+msgid " over the past day."
+msgid_plural " over the past %d days."
 msgstr[0] ""
 
 #, c-format
-msgid " over the past %ld month."
-msgid_plural " over the past %ld months."
+msgid " over the past month."
+msgid_plural " over the past %d months."
 msgstr[0] ""
+
+#, c-format
+msgid " over the past year."
+msgid_plural " over the past %d years."
+msgstr[0] ""
+
+msgid " in the past."
+msgstr ""
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5459,6 +5503,17 @@ msgstr ""
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
+
+msgid "Defaulting to unknown."
+msgstr ""
+
+msgid "TOFU db corruption detected.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error writing key: %s\n"
+msgid "resetting keydb: %s\n"
+msgstr "寫入金鑰時出錯: %s\n"
 
 #, fuzzy, c-format
 #| msgid "error setting OCSP target: %s\n"
@@ -5503,50 +5558,56 @@ msgid_plural "%d~seconds"
 msgstr[0] ""
 
 #, c-format
-msgid "Have never verified a message signed by key %s!\n"
-msgstr ""
-
-#, c-format
-msgid ""
-"Failed to collect signature statistics for \"%s\"\n"
-"(key %s)\n"
+msgid "%s: "
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "Deleted %d signatures.\n"
+msgid "Verified %ld signatures"
+msgstr "已經刪除了 %d 份簽章.\n"
+
+#, fuzzy, c-format
 #| msgid "print message digests"
-msgid "Verified %ld messages signed by \"%s\"."
-msgstr "印出訊息摘要"
+msgid "Verified %ld signature in the past %s"
+msgid_plural "Verified %ld signatures in the past %s"
+msgstr[0] "印出訊息摘要"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %lu passphrases\n"
+msgid ", and encrypted %ld messages"
+msgstr "已用 %lu 個密語加密了\n"
+
+#, fuzzy, c-format
+#| msgid "print message digests"
+msgid ", and encrypted %ld message in the past %s"
+msgid_plural ", and encrypted %ld messages in the past %s"
+msgstr[0] "印出訊息摘要"
+
+msgid ""
+"Warning: we have yet to see a message signed using this key and user id!\n"
+msgstr ""
+
+msgid ""
+"Warning: we've only seen one message signed using this key and user id!\n"
+msgstr ""
+
+msgid "Warning: you have yet to encrypt a message to this key!\n"
+msgstr ""
+
+msgid "Warning: you have only encrypted one message to this key!\n"
+msgstr ""
 
 #, c-format
 msgid ""
-"Verified %ld message signed by \"%s\"\n"
-"in the past %s."
-msgid_plural ""
-"Verified %ld messages signed by \"%s\"\n"
-"in the past %s."
-msgstr[0] ""
-
-#, c-format
-msgid "The most recent message was verified %s ago."
-msgstr ""
-
-msgid "Warning: we've have yet to see a message signed by this key!\n"
-msgstr ""
-
-msgid "Warning: we've only seen a single message signed by this key!\n"
-msgstr ""
-
-#, c-format
-msgid ""
-"Warning: if you think you've seen more than %ld message signed by this key, "
+"Warning: if you think you've seen more signatures by this key and user id, "
 "then this key might be a forgery!  Carefully examine the email address for "
 "small variations.  If the key is suspect, then use\n"
 "  %s\n"
 "to mark it as being bad.\n"
 msgid_plural ""
-"Warning: if you think you've seen more than %ld messages signed by this key, "
-"then this key might be a forgery!  Carefully examine the email address for "
-"small variations.  If the key is suspect, then use\n"
+"Warning: if you think you've seen more signatures by this key and these user "
+"ids, then this key might be a forgery!  Carefully examine the email "
+"addresses for small variations.  If the key is suspect, then use\n"
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[0] ""
@@ -5555,6 +5616,15 @@ msgstr[0] ""
 #| msgid "error sending data: %s\n"
 msgid "error opening TOFU database: %s\n"
 msgstr "送出資料時出錯: %s\n"
+
+#, c-format
+msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error writing public keyring '%s': %s\n"
+msgid "error setting policy for key %s, user id \"%s\": %s"
+msgstr "寫入公鑰鑰匙圈 '%s' 時出錯: %s\n"
 
 #, c-format
 msgid "'%s' is not a valid long keyID\n"
@@ -5799,21 +5869,23 @@ msgstr "存放指紋失敗: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "存放創生日期失敗: %s\n"
 
-#, c-format
-msgid "reading public key failed: %s\n"
-msgstr "讀取公鑰時失敗: %s\n"
-
-msgid "response does not contain the public key data\n"
-msgstr "回應中未包含公鑰資料\n"
-
 msgid "response does not contain the RSA modulus\n"
 msgstr "回應中未包含 RSA 系數\n"
 
 msgid "response does not contain the RSA public exponent\n"
 msgstr "回應中未包含 RSA 公用指數\n"
 
-msgid "response does not contain the EC public point\n"
+#, fuzzy
+#| msgid "response does not contain the EC public point\n"
+msgid "response does not contain the EC public key\n"
 msgstr "回應中未包含 EC 公用指數\n"
+
+msgid "response does not contain the public key data\n"
+msgstr "回應中未包含公鑰資料\n"
+
+#, c-format
+msgid "reading public key failed: %s\n"
+msgstr "讀取公鑰時失敗: %s\n"
 
 #, c-format
 msgid "using default PIN as %s\n"
@@ -7346,6 +7418,9 @@ msgstr "強迫載入過時的 CRL"
 msgid "allow sending OCSP requests"
 msgstr "允許送出 OCSP 請求"
 
+msgid "allow online software version check"
+msgstr ""
+
 msgid "inhibit the use of HTTP"
 msgstr "避免使用 HTTP"
 
@@ -7598,10 +7673,6 @@ msgstr "'%s' 不是一個 LDAP 位址\n"
 #, c-format
 msgid "'%s' is an invalid LDAP URL\n"
 msgstr "'%s' 是無效的 LDAP 網址\n"
-
-#, c-format
-msgid "error allocating memory: %s\n"
-msgstr "配置記憶體時出錯: %s\n"
 
 #, c-format
 msgid "error printing log line: %s\n"
@@ -8060,22 +8131,30 @@ msgstr "LDAP 伺服器清單"
 msgid "Configuration for OCSP"
 msgstr "OCSP 組態"
 
-msgid "GPG for OpenPGP"
+#, fuzzy
+#| msgid "GPG for OpenPGP"
+msgid "OpenPGP"
 msgstr "OpenPGP 版 GPG"
 
-msgid "GPG Agent"
-msgstr "GPG Agent"
-
-msgid "Smartcard Daemon"
-msgstr "智慧卡服務"
-
-msgid "GPG for S/MIME"
-msgstr "S/MIME 版 GPG"
-
-msgid "Key Acquirer"
+msgid "Private Keys"
 msgstr ""
 
-msgid "PIN and Passphrase Entry"
+#, fuzzy
+#| msgid "Smartcard Daemon"
+msgid "Smartcards"
+msgstr "智慧卡服務"
+
+#, fuzzy
+#| msgid "GPG for S/MIME"
+msgid "S/MIME"
+msgstr "S/MIME 版 GPG"
+
+msgid "Network"
+msgstr ""
+
+#, fuzzy
+#| msgid "PIN and Passphrase Entry"
+msgid "Passphrase Entry"
 msgstr "個人識別碼及密語項目"
 
 msgid "Component not suitable for launching"
@@ -8114,6 +8193,11 @@ msgstr "列出全域組態檔"
 
 msgid "check global configuration file"
 msgstr "檢查全域組態檔案"
+
+#, fuzzy
+#| msgid "update the trust database"
+msgid "query the software version database"
+msgstr "更新信任資料庫"
 
 msgid "reload all or a given component"
 msgstr "重新載入所有或給定的元件"
@@ -8293,6 +8377,23 @@ msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
 
+#~ msgid "shadowing the key failed: %s\n"
+#~ msgstr "遮蔽金鑰時失敗: %s\n"
+
+#, fuzzy
+#~| msgid "Available keys:\n"
+#~ msgid "available TOFU policies:\n"
+#~ msgstr "可用金鑰:\n"
+
+#, fuzzy
+#~| msgid "print message digests"
+#~ msgid "%ld message signed"
+#~ msgid_plural "%ld messages signed"
+#~ msgstr[0] "印出訊息摘要"
+
+#~ msgid "GPG Agent"
+#~ msgstr "GPG Agent"
+
 #~ msgid "communication problem with gpg-agent\n"
 #~ msgstr "與 gpg-agent 的溝通問題\n"
 
@@ -8375,9 +8476,6 @@ msgstr ""
 #~ msgid "1 user ID without valid self-signature detected\n"
 #~ msgstr "偵測到 1 個沒有有效自我簽章的使用者 ID\n"
 
-#~ msgid "Deleted %d signatures.\n"
-#~ msgstr "已經刪除了 %d 份簽章.\n"
-
 #~ msgid "User ID \"%s\": %d signatures removed\n"
 #~ msgstr "使用者 ID \"%s\": 已移除 %d 份簽章\n"
 
@@ -8417,9 +8515,6 @@ msgstr ""
 #~| msgid "1 bad signature\n"
 #~ msgid "1 good signature\n"
 #~ msgstr "1 份損壞的簽章\n"
-
-#~ msgid "renaming '%s' to '%s' failed: %s\n"
-#~ msgstr "把 '%s' 重新新命成 '%s' 時失敗: %s\n"
 
 #~ msgid "%lu keys cached (%lu signatures)\n"
 #~ msgstr "已檢查 %lu 把金鑰 (共 %lu 份簽章)\n"
