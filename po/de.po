@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-08-18 16:52+0200\n"
+"PO-Revision-Date: 2016-11-18 15:40+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -152,14 +152,6 @@ msgstr "Auf der Karte ist kein Authentisierungsschlüssel für SSH: %s\n"
 #, c-format
 msgid "no suitable card key found: %s\n"
 msgstr "keine passender Kartenschlüssel gefunden: %s\n"
-
-#, c-format
-msgid "shadowing the key failed: %s\n"
-msgstr "\"Shadowing\" des Schlüssels schlug fehl: %s\n"
-
-#, c-format
-msgid "error writing key: %s\n"
-msgstr "Fehler beim Schreiben des Schlüssels: %s\n"
 
 #, c-format
 msgid ""
@@ -320,6 +312,9 @@ msgstr "Im Daemon Modus ausführen"
 
 msgid "run in server mode (foreground)"
 msgstr "Im Server Modus ausführen"
+
+msgid "run in supervised mode"
+msgstr "Im \"Supervised\" Modus ausführen"
 
 msgid "verbose"
 msgstr "Detaillierte Informationen"
@@ -734,8 +729,8 @@ msgid "error forking process: %s\n"
 msgstr "Fehler beim \"Forken\" des Prozess: %s\n"
 
 #, c-format
-msgid "waiting for processes to terminate failed: %s\n"
-msgstr "Das Warten auf die Beendigung von Prozessen schlug fehl: %s\n"
+msgid "waiting for process %d to terminate failed: %s\n"
+msgstr "Das Warten auf die Beendigung des Prozesses %d schlug fehl: %s\n"
 
 #, c-format
 msgid "error running '%s': probably not installed\n"
@@ -750,12 +745,12 @@ msgid "error running '%s': terminated\n"
 msgstr "Fehler bei Ausführung von `%s': beendet\n"
 
 #, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "Fehler beim Holen des Exitwerte des Prozesses %d: %s\n"
+msgid "waiting for processes to terminate failed: %s\n"
+msgstr "Das Warten auf die Beendigung von Prozessen schlug fehl: %s\n"
 
 #, c-format
-msgid "waiting for process %d to terminate failed: %s\n"
-msgstr "Das Warten auf die Beendigung des Prozesses %d schlug fehl: %s\n"
+msgid "error getting exit code of process %d: %s\n"
+msgstr "Fehler beim Holen des Exitwerte des Prozesses %d: %s\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -775,6 +770,14 @@ msgstr "WARNUNG: Unsichere Besitzrechte für %s \"%s\"\n"
 #, c-format
 msgid "Warning: unsafe permissions on %s \"%s\"\n"
 msgstr "WARNUNG: Unsichere Zugriffsrechte für %s \"%s\"\n"
+
+#, c-format
+msgid "waiting for file '%s' to become accessible ...\n"
+msgstr "Warte bis auf die Datei '%s' zugegriffen werden kann ...\n"
+
+#, c-format
+msgid "renaming '%s' to '%s' failed: %s\n"
+msgstr "umbenennen von `%s' nach `%s' schlug fehl: %s\n"
 
 #. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "yes"
@@ -2088,8 +2091,9 @@ msgstr "Anzeigen des Schlüsselbundes, in dem ein Schlüssel drin ist"
 msgid "show expiration dates during signature listings"
 msgstr "Das Ablaufdatum mit den Signaturen anlisten"
 
-msgid "available TOFU policies:\n"
-msgstr "Vorhandene TOFU Regeln:\n"
+#, c-format
+msgid "valid values for option '%s':\n"
+msgstr "Gültige Argumente für Option '%s':\n"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -2097,6 +2101,10 @@ msgstr "Unbekannte TOFU Regel '%s'\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr "(\"help\" um mögliche Werte anzuzeigen)\n"
+
+#, c-format
+msgid "invalid value for option '%s'\n"
+msgstr "Ungültiges Argument für Option '%s'\n"
 
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
@@ -2878,6 +2886,10 @@ msgstr "[Widerruf]"
 
 msgid "[self-signature]"
 msgstr "[Eigenbeglaubigung]"
+
+#, c-format
+msgid "error allocating memory: %s\n"
+msgstr "Fehler beim Allozieren von Speicher: %s\n"
 
 #, c-format
 msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
@@ -4854,6 +4866,25 @@ msgstr ""
 "Dieser Schlüssel gehört uns (da wir nämlich den geheimen Schlüssel dazu "
 "haben)\n"
 
+#, fuzzy, c-format
+#| msgid "root certificate has now been marked as trusted\n"
+msgid "%s: This key is bad!  It has been marked as untrusted!\n"
+msgstr "Das Wurzelzertifikat wurde nun als vertrauenswürdig markiert\n"
+
+#, fuzzy
+#| msgid ""
+#| "It is NOT certain that the key belongs to the person named\n"
+#| "in the user ID.  If you *really* know what you are doing,\n"
+#| "you may answer the next question with yes.\n"
+msgid ""
+"This key has is bad!  It has been marked as untrusted!  If you\n"
+"*really* know what you are doing, you may answer the next\n"
+"question with yes.\n"
+msgstr ""
+"Es ist NICHT sicher, daß der Schlüssel zu dem in der User-ID\n"
+"Genannten gehört. Wenn Sie *wirklich* wissen, was Sie tun,\n"
+"können Sie die nächste Frage mit ja beantworten\n"
+
 msgid ""
 "It is NOT certain that the key belongs to the person named\n"
 "in the user ID.  If you *really* know what you are doing,\n"
@@ -5525,14 +5556,24 @@ msgstr "Fehler beim Öffner der TOFU Datenbank '%s': %s\n"
 msgid "error updating TOFU database: %s\n"
 msgstr "Fehler beim Schreiben der TOFU Datenbank: %s\n"
 
-#, c-format
-msgid "The binding %s is NOT known."
-msgstr "Die Bindung %s ist NICHT bekannt."
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "The email address \"%s\" is associated with %d key:\n"
+#| msgid_plural "The email address \"%s\" is associated with %d keys:\n"
 msgid ""
-"The key with fingerprint %s raised a conflict with the binding %s.  Since "
-"this binding's policy was 'auto', it was changed to 'ask'."
+"This is the first time the email address \"%s\" is being used with key %s."
+msgstr "Die Email-Adresse \"%s\" ist mit einem Schlüssel assoziert:\n"
+
+#, fuzzy, c-format
+#| msgid "The email address \"%s\" is associated with %d key:\n"
+#| msgid_plural "The email address \"%s\" is associated with %d keys:\n"
+msgid "The email address \"%s\" is associated with %d keys!"
+msgstr "Die Email-Adresse \"%s\" ist mit einem Schlüssel assoziert:\n"
+
+#, fuzzy
+#| msgid ""
+#| "The key with fingerprint %s raised a conflict with the binding %s.  Since "
+#| "this binding's policy was 'auto', it was changed to 'ask'."
+msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
 msgstr ""
 "Der Schlüssel mit dem Fingerabdruck %s steht im Konflikt mit der Bindung "
 "(%s).  Die Richtlinie dieser Bindung wurde deswegen von 'auto' auf 'ask' "
@@ -5540,19 +5581,18 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Please indicate whether you believe the binding %s%sis legitimate (the key "
-"belongs to the stated owner) or a forgery (bad)."
+"Please indicate whether this email address should be associated with key %s "
+"or whether you think someone is impersonating \"%s\"."
 msgstr ""
-"Bitte geben Sie Ihre Einschätzung, ob die Bindung %s%s legitim (der "
-"Schlüssel gehört dem angegebenen Besitzer) oder eine Fälschung (ungültig) "
-"ist."
 
 #, c-format
 msgid "error gathering other user IDs: %s\n"
 msgstr "Fehler beim Einsammeln der übrigen User-IDs: %s\n"
 
-msgid "Known user IDs associated with this key:\n"
-msgstr "Bekannte, mit diesem Schlüssel assozierte, User-IDs:\n"
+#, fuzzy
+#| msgid "list key and user IDs"
+msgid "This key's user IDs:\n"
+msgstr "Schlüssel und User-IDs auflisten"
 
 #, c-format
 msgid "policy: %s"
@@ -5572,38 +5612,54 @@ msgstr[1] "Die Email-Adresse \"%s\" ist mit %d Schlüsseln assoziert:\n"
 msgid "Statistics for keys with the email address \"%s\":\n"
 msgstr "Statistik für Schlüssel mit der Email-Adresse \"%s\":\n"
 
+msgid ", "
+msgstr ""
+
 msgid "this key"
 msgstr "dieser Schlüssel"
 
-#, c-format
-msgid "%ld message signed in the future."
-msgid_plural "%ld messages signed in the future."
-msgstr[0] "%ld Nachricht in der Zukunft signiert."
-msgstr[1] "%ld Nachrichten in der Zukunf signiert."
+#, fuzzy, c-format
+#| msgid "Verified %ld messages signed by \"%s\"."
+msgid "Verified %d message"
+msgid_plural "Verified %d messages"
+msgstr[0] "%ld überprüfte Nachrichten von \"%s\"."
+msgstr[1] "%ld überprüfte Nachrichten von \"%s\"."
 
 #, c-format
-msgid "%ld message signed"
-msgid_plural "%ld messages signed"
-msgstr[0] "%ld Nachricht signiert"
-msgstr[1] "%ld Nachrichten signiert"
+msgid "Encrypted %d message"
+msgid_plural "Encrypted %d messages"
+msgstr[0] ""
+msgstr[1] ""
 
-#, c-format
-msgid " over the past %ld day."
-msgid_plural " over the past %ld days."
+#, fuzzy, c-format
+#| msgid " over the past %ld day."
+#| msgid_plural " over the past %ld days."
+msgid " over the past day."
+msgid_plural " over the past %d days."
 msgstr[0] " innerhalb des letzten Tages."
 msgstr[1] " innerhalb der letzten %ld Tage."
 
-#, c-format
-msgid " over the past %ld week."
-msgid_plural " over the past %ld weeks."
-msgstr[0] " innerhalb der letzten Woche."
-msgstr[1] " innerhalb der letzten %ld Wochen."
-
-#, c-format
-msgid " over the past %ld month."
-msgid_plural " over the past %ld months."
+#, fuzzy, c-format
+#| msgid " over the past %ld month."
+#| msgid_plural " over the past %ld months."
+msgid " over the past month."
+msgid_plural " over the past %d months."
 msgstr[0] " innerhalb des letzten Monats."
 msgstr[1] " innerhalb der letzten %ld Monate."
+
+#, fuzzy, c-format
+#| msgid " over the past %ld day."
+#| msgid_plural " over the past %ld days."
+msgid " over the past year."
+msgid_plural " over the past %d years."
+msgstr[0] " innerhalb des letzten Tages."
+msgstr[1] " innerhalb der letzten %ld Tage."
+
+#, fuzzy
+#| msgid " over the past %ld day."
+#| msgid_plural " over the past %ld days."
+msgid " in the past."
+msgstr " innerhalb des letzten Tages."
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5626,6 +5682,17 @@ msgstr "gGaAuUlLfF"
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr "(G)ut, einmal (A)kzeptieren, (U)nbekannt, einmal ab(L)ehnen, (F)alsch?"
+
+msgid "Defaulting to unknown."
+msgstr ""
+
+msgid "TOFU db corruption detected.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error writing key: %s\n"
+msgid "resetting keydb: %s\n"
+msgstr "Fehler beim Schreiben des Schlüssels: %s\n"
 
 #, c-format
 msgid "error setting TOFU binding's trust level to %s\n"
@@ -5674,28 +5741,23 @@ msgstr[0] "%d~Sekunde"
 msgstr[1] "%d~Sekunden"
 
 #, c-format
-msgid "Have never verified a message signed by key %s!\n"
-msgstr "Es wurde noch keine Nachricht mit dem Schlüssel %s überprüft!\n"
-
-#, c-format
-msgid ""
-"Failed to collect signature statistics for \"%s\"\n"
-"(key %s)\n"
+msgid "%s: "
 msgstr ""
-"Signaturstatistiken für \"%s\" (Schlüssel %s) konnten nicht gesammelt "
-"werden\n"
 
-#, c-format
-msgid "Verified %ld messages signed by \"%s\"."
-msgstr "%ld überprüfte Nachrichten von \"%s\"."
+#, fuzzy, c-format
+#| msgid "Deleted %d signatures.\n"
+msgid "Verified %ld signatures"
+msgstr "%d Beglaubigungen entfernt.\n"
 
-#, c-format
-msgid ""
-"Verified %ld message signed by \"%s\"\n"
-"in the past %s."
-msgid_plural ""
-"Verified %ld messages signed by \"%s\"\n"
-"in the past %s."
+#, fuzzy, c-format
+#| msgid ""
+#| "Verified %ld message signed by \"%s\"\n"
+#| "in the past %s."
+#| msgid_plural ""
+#| "Verified %ld messages signed by \"%s\"\n"
+#| "in the past %s."
+msgid "Verified %ld signature in the past %s"
+msgid_plural "Verified %ld signatures in the past %s"
 msgstr[0] ""
 "%ld überprüfte Nachricht von \"%s\"\n"
 "in den letzten %s."
@@ -5703,31 +5765,80 @@ msgstr[1] ""
 "%ld überprüfte Nachrichten von \"%s\"\n"
 "in den letzten %s."
 
-#, c-format
-msgid "The most recent message was verified %s ago."
-msgstr "Die neueste Nachricht wurde vor %s überprüft."
+#, fuzzy, c-format
+#| msgid "encrypted with %lu passphrases\n"
+msgid ", and encrypted %ld messages"
+msgstr "Verschlüsselt mit %lu Passphrases\n"
 
-msgid "Warning: we've have yet to see a message signed by this key!\n"
+#, fuzzy, c-format
+#| msgid ""
+#| "Verified %ld message signed by \"%s\"\n"
+#| "in the past %s."
+#| msgid_plural ""
+#| "Verified %ld messages signed by \"%s\"\n"
+#| "in the past %s."
+msgid ", and encrypted %ld message in the past %s"
+msgid_plural ", and encrypted %ld messages in the past %s"
+msgstr[0] ""
+"%ld überprüfte Nachricht von \"%s\"\n"
+"in den letzten %s."
+msgstr[1] ""
+"%ld überprüfte Nachrichten von \"%s\"\n"
+"in den letzten %s."
+
+#, fuzzy
+#| msgid "Warning: we've have yet to see a message signed by this key!\n"
+msgid ""
+"Warning: we have yet to see a message signed using this key and user id!\n"
 msgstr ""
 "WARNUNG: Wir müssen noch eine mit diesem Schlüssel signierte Nachricht "
 "sehen.\n"
 
-msgid "Warning: we've only seen a single message signed by this key!\n"
+#, fuzzy
+#| msgid "Warning: we've only seen a single message signed by this key!\n"
+msgid ""
+"Warning: we've only seen one message signed using this key and user id!\n"
 msgstr ""
 "WARNUNG: Wir haben nur eine einzige mit diesem Schlüssel signierte Nachricht "
 "gesehen.\n"
 
-#, c-format
+#, fuzzy
+#| msgid "Warning: we've have yet to see a message signed by this key!\n"
+msgid "Warning: you have yet to encrypt a message to this key!\n"
+msgstr ""
+"WARNUNG: Wir müssen noch eine mit diesem Schlüssel signierte Nachricht "
+"sehen.\n"
+
+#, fuzzy
+#| msgid "Warning: we've only seen a single message signed by this key!\n"
+msgid "Warning: you have only encrypted one message to this key!\n"
+msgstr ""
+"WARNUNG: Wir haben nur eine einzige mit diesem Schlüssel signierte Nachricht "
+"gesehen.\n"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Warning: if you think you've seen more than %ld message signed by this "
+#| "key, then this key might be a forgery!  Carefully examine the email "
+#| "address for small variations.  If the key is suspect, then use\n"
+#| "  %s\n"
+#| "to mark it as being bad.\n"
+#| msgid_plural ""
+#| "Warning: if you think you've seen more than %ld messages signed by this "
+#| "key, then this key might be a forgery!  Carefully examine the email "
+#| "address for small variations.  If the key is suspect, then use\n"
+#| "  %s\n"
+#| "to mark it as being bad.\n"
 msgid ""
-"Warning: if you think you've seen more than %ld message signed by this key, "
+"Warning: if you think you've seen more signatures by this key and user id, "
 "then this key might be a forgery!  Carefully examine the email address for "
 "small variations.  If the key is suspect, then use\n"
 "  %s\n"
 "to mark it as being bad.\n"
 msgid_plural ""
-"Warning: if you think you've seen more than %ld messages signed by this key, "
-"then this key might be a forgery!  Carefully examine the email address for "
-"small variations.  If the key is suspect, then use\n"
+"Warning: if you think you've seen more signatures by this key and these user "
+"ids, then this key might be a forgery!  Carefully examine the email "
+"addresses for small variations.  If the key is suspect, then use\n"
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[0] ""
@@ -5748,6 +5859,15 @@ msgstr[1] ""
 #, c-format
 msgid "error opening TOFU database: %s\n"
 msgstr "Fehler beim Öffnen der TOFU Datenbank: %s\n"
+
+#, c-format
+msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error writing public keyring '%s': %s\n"
+msgid "error setting policy for key %s, user id \"%s\": %s"
+msgstr "Fehler beim Schreiben des öff. Schlüsselbundes `%s': %s\n"
 
 #, c-format
 msgid "'%s' is not a valid long keyID\n"
@@ -6004,21 +6124,21 @@ msgstr "Der Fingerabdruck kann nicht gespeichert werden: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "Das Erzeugungsdatum konnte nicht gespeichert werden: %s\n"
 
-#, c-format
-msgid "reading public key failed: %s\n"
-msgstr "Lesen des öffentlichen Schlüssels fehlgeschlagen: %s\n"
-
-msgid "response does not contain the public key data\n"
-msgstr "Die Antwort enthält keine öffentliche Schlüssel-Daten\n"
-
 msgid "response does not contain the RSA modulus\n"
 msgstr "Die Antwort enthält das RSA-Modulus nicht\n"
 
 msgid "response does not contain the RSA public exponent\n"
 msgstr "Antwort enthält den öffentlichen RSA-Exponenten nicht\n"
 
-msgid "response does not contain the EC public point\n"
-msgstr "Der öffentlichen EC Punkt fehlt in der Antwort\n"
+msgid "response does not contain the EC public key\n"
+msgstr "Der EC Schlüssel fehlt in der Antwort\n"
+
+msgid "response does not contain the public key data\n"
+msgstr "Die Antwort enthält keine öffentliche Schlüssel-Daten\n"
+
+#, c-format
+msgid "reading public key failed: %s\n"
+msgstr "Lesen des öffentlichen Schlüssels fehlgeschlagen: %s\n"
 
 #, c-format
 msgid "using default PIN as %s\n"
@@ -7621,6 +7741,9 @@ msgstr "Laden von abgelaufenen CRLs erzwingen"
 msgid "allow sending OCSP requests"
 msgstr "OCSP Anfragen erlauben"
 
+msgid "allow online software version check"
+msgstr "Online Softwareversionstest erlauben"
+
 msgid "inhibit the use of HTTP"
 msgstr "Sperre die Benutzung von HTTP"
 
@@ -7876,10 +7999,6 @@ msgstr "`%s' ist kein LDAP URL\n"
 #, c-format
 msgid "'%s' is an invalid LDAP URL\n"
 msgstr "`%s' ist ein ungültiger LDAP URL\n"
-
-#, c-format
-msgid "error allocating memory: %s\n"
-msgstr "Fehler beim Allozieren von Speicher: %s\n"
 
 #, c-format
 msgid "error printing log line: %s\n"
@@ -8338,23 +8457,23 @@ msgstr "Liste der LDAP Server"
 msgid "Configuration for OCSP"
 msgstr "Konfiguration zu OCSP"
 
-msgid "GPG for OpenPGP"
-msgstr "GPG für OpenPGP"
+msgid "OpenPGP"
+msgstr "OpenPGP"
 
-msgid "GPG Agent"
-msgstr "GPG Agent"
+msgid "Private Keys"
+msgstr "Geheime Schlüssel"
 
-msgid "Smartcard Daemon"
-msgstr "Smartcard Daemon"
+msgid "Smartcards"
+msgstr "Smartcard"
 
-msgid "GPG for S/MIME"
-msgstr "GPG für S/MIME"
+msgid "S/MIME"
+msgstr "S/MIME"
 
-msgid "Key Acquirer"
-msgstr "Schlüsselzugriff"
+msgid "Network"
+msgstr "Netz"
 
-msgid "PIN and Passphrase Entry"
-msgstr "PIN und Passphrase Eingabe"
+msgid "Passphrase Entry"
+msgstr "Passphrase Eingabe"
 
 msgid "Component not suitable for launching"
 msgstr "Komponente unterstützt kein direktes starten"
@@ -8392,6 +8511,9 @@ msgstr "Zeige die globale Konfigurationsdatei an"
 
 msgid "check global configuration file"
 msgstr "Prüfe die globale Konfigurationsdatei"
+
+msgid "query the software version database"
+msgstr "Abfrage der Datenbank mit Softwareversionen"
 
 msgid "reload all or a given component"
 msgstr "\"reload\" an alle oder eine Komponente senden"
@@ -8571,6 +8693,60 @@ msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
 
+#~ msgid "shadowing the key failed: %s\n"
+#~ msgstr "\"Shadowing\" des Schlüssels schlug fehl: %s\n"
+
+#~ msgid "available TOFU policies:\n"
+#~ msgstr "Vorhandene TOFU Regeln:\n"
+
+#~ msgid "The binding %s is NOT known."
+#~ msgstr "Die Bindung %s ist NICHT bekannt."
+
+#~ msgid ""
+#~ "Please indicate whether you believe the binding %s%sis legitimate (the "
+#~ "key belongs to the stated owner) or a forgery (bad)."
+#~ msgstr ""
+#~ "Bitte geben Sie Ihre Einschätzung, ob die Bindung %s%s legitim (der "
+#~ "Schlüssel gehört dem angegebenen Besitzer) oder eine Fälschung (ungültig) "
+#~ "ist."
+
+#~ msgid "Known user IDs associated with this key:\n"
+#~ msgstr "Bekannte, mit diesem Schlüssel assozierte, User-IDs:\n"
+
+#~ msgid "%ld message signed in the future."
+#~ msgid_plural "%ld messages signed in the future."
+#~ msgstr[0] "%ld Nachricht in der Zukunft signiert."
+#~ msgstr[1] "%ld Nachrichten in der Zukunf signiert."
+
+#~ msgid "%ld message signed"
+#~ msgid_plural "%ld messages signed"
+#~ msgstr[0] "%ld Nachricht signiert"
+#~ msgstr[1] "%ld Nachrichten signiert"
+
+#~ msgid " over the past %ld week."
+#~ msgid_plural " over the past %ld weeks."
+#~ msgstr[0] " innerhalb der letzten Woche."
+#~ msgstr[1] " innerhalb der letzten %ld Wochen."
+
+#~ msgid "Have never verified a message signed by key %s!\n"
+#~ msgstr "Es wurde noch keine Nachricht mit dem Schlüssel %s überprüft!\n"
+
+#~ msgid ""
+#~ "Failed to collect signature statistics for \"%s\"\n"
+#~ "(key %s)\n"
+#~ msgstr ""
+#~ "Signaturstatistiken für \"%s\" (Schlüssel %s) konnten nicht gesammelt "
+#~ "werden\n"
+
+#~ msgid "The most recent message was verified %s ago."
+#~ msgstr "Die neueste Nachricht wurde vor %s überprüft."
+
+#~ msgid "GPG Agent"
+#~ msgstr "GPG Agent"
+
+#~ msgid "Key Acquirer"
+#~ msgstr "Schlüsselzugriff"
+
 #~ msgid "communication problem with gpg-agent\n"
 #~ msgstr "Kommunikationsproblem mit GPG-Agent\n"
 
@@ -8742,9 +8918,6 @@ msgstr ""
 #~ msgid "1 user ID without valid self-signature detected\n"
 #~ msgstr "Eine User-ID ohne gültige Eigenbeglaubigung entdeckt\n"
 
-#~ msgid "Deleted %d signatures.\n"
-#~ msgstr "%d Beglaubigungen entfernt.\n"
-
 #~ msgid "User ID \"%s\": %d signatures removed\n"
 #~ msgstr "User-ID \"%s\": %d Signaturen entfernt\n"
 
@@ -8785,9 +8958,6 @@ msgstr ""
 
 #~ msgid "1 good signature\n"
 #~ msgstr "1 korrekte Signatur\n"
-
-#~ msgid "renaming '%s' to '%s' failed: %s\n"
-#~ msgstr "umbenennen von `%s' nach `%s' schlug fehl: %s\n"
 
 #~ msgid "%lu keys cached (%lu signatures)\n"
 #~ msgstr "%lu Schlüssel gepuffert (%lu Beglaubigungen)\n"
