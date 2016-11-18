@@ -2963,16 +2963,16 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                }
           }
 
+#else
+     CASE(OP_LAMBDA):     /* lambda */
+	  sc->value = sc->code;
+	  /* Fallthrough. */
+#endif
+
      CASE(OP_LAMBDA1):
 	  gc_disable(sc, 1);
           s_return_enable_gc(sc, mk_closure(sc, sc->value, sc->envir));
 
-#else
-     CASE(OP_LAMBDA):     /* lambda */
-	  gc_disable(sc, 1);
-          s_return_enable_gc(sc, mk_closure(sc, sc->code, sc->envir));
-
-#endif
 
      CASE(OP_MKCLOSURE): /* make-closure */
        x=car(sc->args);
