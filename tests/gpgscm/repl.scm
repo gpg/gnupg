@@ -34,7 +34,14 @@
 			      (read (open-input-string next)))))
 	       (if (not (eof-object? c))
 		   (begin
-		     (catch (echo "Error:" *error*)
+		     (catch (begin
+			      (display (car *error*))
+			      (when (and (cadr *error*)
+					 (not (null? (cadr *error*))))
+				    (display ": ")
+				    (write (cadr *error*)))
+			      (newline)
+			      (vm-history-print (caddr *error*)))
 			    (echo "    ===>" (eval c environment)))
 		     (exit (loop ""))))
 	       (exit (loop next)))))))))

@@ -2656,6 +2656,7 @@ static INLINE pointer slot_value_in_env(pointer slot)
 
 static pointer _Error_1(scheme *sc, const char *s, pointer a) {
      const char *str = s;
+     pointer history;
 #if USE_ERROR_HOOK
      pointer x;
      pointer hdl=sc->ERROR_HOOK;
@@ -2663,19 +2664,34 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
 
 #if SHOW_ERROR_LINE
      char sbuf[STRBUFFSIZE];
+#endif
 
+     history = history_flatten(sc);
+
+#if SHOW_ERROR_LINE
      /* make sure error is not in REPL */
      if (sc->load_stack[sc->file_i].kind & port_file &&
          sc->load_stack[sc->file_i].rep.stdio.file != stdin) {
-       int ln = sc->load_stack[sc->file_i].rep.stdio.curr_line;
-       const char *fname = sc->load_stack[sc->file_i].rep.stdio.filename;
+       pointer tag;
+       const char *fname;
+       int ln;
+
+       if (history != sc->NIL && has_tag(car(history))
+	   && (tag = get_tag(sc, car(history)))
+	   && is_string(car(tag)) && is_integer(cdr(tag))) {
+	 fname = string_value(car(tag));
+	 ln = ivalue_unchecked(cdr(tag));
+       } else {
+	 fname = sc->load_stack[sc->file_i].rep.stdio.filename;
+	 ln = sc->load_stack[sc->file_i].rep.stdio.curr_line;
+       }
 
        /* should never happen */
        if(!fname) fname = "<unknown>";
 
        /* we started from 0 */
        ln++;
-       snprintf(sbuf, STRBUFFSIZE, "(%s : %i) %s", fname, ln, s);
+       snprintf(sbuf, STRBUFFSIZE, "%s:%i: %s", fname, ln, s);
 
        str = (const char*)sbuf;
      }
@@ -2684,11 +2700,15 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
 #if USE_ERROR_HOOK
      x=find_slot_in_env(sc,sc->envir,hdl,1);
     if (x != sc->NIL) {
+	 sc->code = cons(sc, cons(sc, sc->QUOTE,
+				  cons(sc, history, sc->NIL)),
+			 sc->NIL);
          if(a!=0) {
-               sc->code = cons(sc, cons(sc, sc->QUOTE, cons(sc,(a), sc->NIL)), sc->NIL);
+	   sc->code = cons(sc, cons(sc, sc->QUOTE, cons(sc, a, sc->NIL)),
+	                   sc->code);
          } else {
-               sc->code = sc->NIL;
-         }
+	   sc->code = cons(sc, sc->F, sc->code);
+	 }
          sc->code = cons(sc, mk_string(sc, str), sc->code);
          setimmutable(car(sc->code));
          sc->code = cons(sc, slot_value_in_env(x), sc->code);
@@ -4808,6 +4828,19 @@ static pointer opexe_5(scheme *sc, enum scheme_opcodes op) {
                     Error_0(sc,"syntax error: illegal dot expression");
                } else {
                     sc->nesting_stack[sc->file_i]++;
+#if USE_TAGS && SHOW_ERROR_LINE
+		    {
+		      const char *filename =
+			sc->load_stack[sc->file_i].rep.stdio.filename;
+		      int lineno =
+			sc->load_stack[sc->file_i].rep.stdio.curr_line;
+
+		      s_save(sc, OP_TAG_VALUE,
+			     cons(sc, mk_string(sc, filename),
+				  cons(sc, mk_integer(sc, lineno), sc->NIL)),
+			     sc->NIL);
+		    }
+#endif
                     s_save(sc,OP_RDLIST, sc->NIL, sc->NIL);
                     s_thread_to(sc,OP_RDSEXPR);
                }

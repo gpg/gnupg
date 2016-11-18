@@ -567,7 +567,7 @@
 ;    "Catch" establishes a scope spanning multiple call-frames until
 ;    another "catch" is encountered.  Within the recovery expression
 ;    the thrown exception is bound to *error*.  Errors can be rethrown
-;    using (apply throw *error*).
+;    using (rethrow *error*).
 ;
 ;    Exceptions are thrown with:
 ;
@@ -588,10 +588,30 @@
 (define (more-handlers?)
      (pair? *handlers*))
 
-(define (throw . x)
-     (if (more-handlers?)
-          (apply (pop-handler) x)
-          (apply error x)))
+;; This throws an exception.
+(define (throw message . args)
+  (throw' message args (cdr (*vm-history*))))
+
+;; This is used by the vm to throw exceptions.
+(define (throw' message args history)
+  (cond
+   ((more-handlers?)
+    ((pop-handler) message args history))
+   ((and args (= 2 (length args)) (equal? *interpreter-exit* (car args)))
+    (*run-atexit-handlers*)
+    (quit (cadr args)))
+   (else
+    (display message)
+    (if args (begin
+	      (display ": ")
+	      (write args)))
+    (newline)
+    (vm-history-print history)
+    (quit 1))))
+
+;; Convenience function to rethrow the error.
+(define (rethrow e)
+  (apply throw' e))
 
 (macro (catch form)
      (let ((label (gensym)))
@@ -601,8 +621,38 @@
                     (pop-handler)
                     ,label)))))
 
-(define *error-hook* throw)
+;; Make the vm use throw'.
+(define *error-hook* throw')
 
+
+
+;; High-level mechanism to terminate the process is to throw an error
+;; of the form (*interpreter-exit* status).  This gives automatic
+;; resource management a chance to clean up.
+(define *interpreter-exit* (gensym))
+
+;; Terminate the process returning STATUS to the parent.
+(define (exit status)
+  (throw "interpreter exit" *interpreter-exit* status))
+
+;; A list of functions run at interpreter shutdown.
+(define *atexit-handlers* (list))
+
+;; Execute all these functions.
+(define (*run-atexit-handlers*)
+  (unless (null? *atexit-handlers*)
+	  (let ((proc (car *atexit-handlers*)))
+	    ;; Drop proc from the list so that it will not get
+	    ;; executed again even if it raises an exception.
+	    (set! *atexit-handlers* (cdr *atexit-handlers*))
+	    (proc)
+	    (*run-atexit-handlers*))))
+
+;; Register a function to be run at interpreter shutdown.
+(define (atexit proc)
+  (set! *atexit-handlers* (cons proc *atexit-handlers*)))
+
+
 
 ;;;;; Definition of MAKE-ENVIRONMENT, to be used with two-argument EVAL
 

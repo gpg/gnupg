@@ -150,7 +150,10 @@ load (scheme *sc, char *file_name,
 
         h = fopen (qualified_name, "r");
         if (h)
-          break;
+          {
+            err = 0;
+            break;
+          }
 
         if (n > 1)
           {
@@ -170,23 +173,23 @@ load (scheme *sc, char *file_name,
         fprintf (stderr,
                  "Consider using GPGSCM_PATH to specify the location "
                  "of the Scheme library.\n");
-      return err;
+      goto leave;
     }
   if (verbose > 1)
     fprintf (stderr, "Loading %s...\n", qualified_name);
   scheme_load_named_file (sc, h, qualified_name);
   fclose (h);
 
-  if (sc->retcode)
+  if (sc->retcode && sc->nesting)
     {
-      if (sc->nesting)
-        fprintf (stderr, "%s: Unbalanced parenthesis\n", qualified_name);
-      return gpg_error (GPG_ERR_GENERAL);
+      fprintf (stderr, "%s: Unbalanced parenthesis\n", qualified_name);
+      err = gpg_error (GPG_ERR_GENERAL);
     }
 
+ leave:
   if (file_name != qualified_name)
     free (qualified_name);
-  return 0;
+  return err;
 }
 
 
@@ -194,6 +197,7 @@ load (scheme *sc, char *file_name,
 int
 main (int argc, char **argv)
 {
+  int retcode;
   gpg_error_t err;
   char *argv0;
   ARGPARSE_ARGS pargs;
@@ -291,8 +295,9 @@ main (int argc, char **argv)
         log_fatal ("%s: %s", script, gpg_strerror (err));
     }
 
+  retcode = sc->retcode;
   scheme_load_string (sc, "(*run-atexit-handlers*)");
   scheme_deinit (sc);
   xfree (sc);
-  return EXIT_SUCCESS;
+  return retcode;
 }
