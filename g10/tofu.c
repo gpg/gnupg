@@ -732,16 +732,13 @@ busy_handler (void *cookie, int call_count)
          process will have to wait a bit longer, but otherwise nothing
          horrible should happen.  */
 
-      int fd = open (dbs->want_lock_file, O_CREAT,
+      int fd = open (dbs->want_lock_file, O_CREAT|O_WRONLY|O_TRUNC,
                      S_IRUSR|S_IRGRP|S_IROTH|S_IWUSR);
       if (fd == -1)
         log_debug ("TOFU: Error opening '%s': %s\n",
                    dbs->want_lock_file, strerror (errno));
       else
-        {
-          utime (dbs->want_lock_file, NULL);
-          close (fd);
-        }
+        close (fd);
     }
 
   /* Call again.  */
