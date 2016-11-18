@@ -296,17 +296,10 @@ static int active_connections;
  * thread to run background network tasks.  */
 static int network_activity_seen;
 
-/* The timer tick used for housekeeping stuff.  For Windows we use a
-   longer period as the SetWaitableTimer seems to signal earlier than
-   the 2 seconds.  All values are in seconds. */
-#if defined(HAVE_W32CE_SYSTEM)
-# define TIMERTICK_INTERVAL         (60)
-#elif defined(HAVE_W32_SYSTEM)
-# define TIMERTICK_INTERVAL          (4)
-#else
-# define TIMERTICK_INTERVAL          (2)
-#endif
+/* The timer tick used for housekeeping stuff.  */
+#define TIMERTICK_INTERVAL         (60)
 
+/* How oft to run the housekeeping.  */
 #define HOUSEKEEPING_INTERVAL      (600)
 
 
