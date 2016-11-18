@@ -166,6 +166,7 @@ type_to_string (enum scheme_types typ)
 #define ADJ 32
 #define TYPE_BITS 5
 #define T_MASKTYPE      31    /* 0000000000011111 */
+#define T_TAGGED      1024    /* 0000010000000000 */
 #define T_FINALIZE    2048    /* 0000100000000000 */
 #define T_SYNTAX      4096    /* 0001000000000000 */
 #define T_IMMUTABLE   8192    /* 0010000000000000 */
@@ -598,6 +599,59 @@ static long binary_decode(const char *s) {
 
  return x;
 }
+
+
+
+/* Tags are like property lists, but can be attached to arbitrary
+ * values.  */
+
+#if USE_TAGS
+
+static pointer
+mk_tagged_value(scheme *sc, pointer v, pointer tag_car, pointer tag_cdr)
+{
+  pointer r, t;
+
+  assert(! is_vector(v));
+
+  r = get_consecutive_cells(sc, 2);
+  if (r == sc->sink)
+    return sc->sink;
+
+  memcpy(r, v, sizeof *v);
+  typeflag(r) |= T_TAGGED;
+
+  t = r + 1;
+  typeflag(t) = T_PAIR;
+  car(t) = tag_car;
+  cdr(t) = tag_cdr;
+
+  return r;
+}
+
+static INLINE int
+has_tag(pointer v)
+{
+  return !! (typeflag(v) & T_TAGGED);
+}
+
+static INLINE pointer
+get_tag(scheme *sc, pointer v)
+{
+  if (has_tag(v))
+    return v + 1;
+  return sc->NIL;
+}
+
+#else
+
+#define mk_tagged_value(SC, X, A, B)	(X)
+#define has_tag(V)			0
+#define get_tag(SC, V)			(SC)->NIL
+
+#endif
+
+
 
 /* Allocate a new cell segment but do not make it available yet.  */
 static int
@@ -1481,6 +1535,9 @@ E2:  setmark(p);
                mark(p+1+i);
           }
      }
+     /* Mark tag if p has one.  */
+     if (has_tag(p))
+       mark(p + 1);
      if (is_atom(p))
           goto E6;
      /* E4: down car */
@@ -4183,6 +4240,29 @@ static pointer opexe_4(scheme *sc, enum scheme_opcodes op) {
      CASE(OP_SYMBOL_PROPERTY):  /* symbol-property */
 	  s_return(sc, get_property(sc, car(sc->args), cadr(sc->args)));
 #endif /* USE_PLIST */
+
+#if USE_TAGS
+     CASE(OP_TAG_VALUE): {      /* not exposed */
+	  /* This tags sc->value with car(sc->args).  Useful to tag
+	   * results of opcode evaluations.  */
+	  pointer a, b, c;
+	  free_cons(sc, sc->args, &a, &b);
+	  free_cons(sc, b, &b, &c);
+	  assert(c == sc->NIL);
+          s_return(sc, mk_tagged_value(sc, sc->value, a, b));
+	}
+
+     CASE(OP_MK_TAGGED):        /* make-tagged-value */
+	  if (is_vector(car(sc->args)))
+	       Error_0(sc, "cannot tag vector");
+          s_return(sc, mk_tagged_value(sc, car(sc->args),
+				       car(cadr(sc->args)),
+				       cdr(cadr(sc->args))));
+
+     CASE(OP_GET_TAG):        /* get-tag */
+	  s_return(sc, get_tag(sc, car(sc->args)));
+#endif /* USE_TAGS */
+
      CASE(OP_QUIT):       /* quit */
           if(is_pair(sc->args)) {
                sc->retcode=ivalue(car(sc->args));

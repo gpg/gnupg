@@ -149,6 +149,11 @@
     _OP_DEF(opexe_4, "set-symbol-property!",           3,  3,       TST_SYMBOL TST_SYMBOL TST_ANY,   OP_SET_SYMBOL_PROPERTY )
     _OP_DEF(opexe_4, "symbol-property",                2,  2,       TST_SYMBOL TST_SYMBOL,           OP_SYMBOL_PROPERTY  )
 #endif
+#if USE_TAGS
+    _OP_DEF(opexe_4, NULL,                             0,  0,       TST_NONE,                        OP_TAG_VALUE        )
+    _OP_DEF(opexe_4, "make-tagged-value",              2,  2,       TST_ANY TST_PAIR,                 OP_MK_TAGGED        )
+    _OP_DEF(opexe_4, "get-tag",                        1,  1,       TST_ANY,                         OP_GET_TAG          )
+#endif
     _OP_DEF(opexe_4, "quit",                           0,  1,       TST_NUMBER,                      OP_QUIT             )
     _OP_DEF(opexe_4, "gc",                             0,  0,       0,                               OP_GC               )
     _OP_DEF(opexe_4, "gc-verbose",                     0,  1,       TST_NONE,                        OP_GCVERB           )

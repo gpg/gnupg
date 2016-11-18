@@ -44,6 +44,7 @@ extern "C" {
 # define USE_DL 0
 # define USE_PLIST 0
 # define USE_SMALL_INTEGERS 0
+# define USE_TAGS 0
 #endif
 
 
@@ -74,6 +75,11 @@ extern "C" {
 
 #ifndef USE_PLIST
 # define USE_PLIST 0
+#endif
+
+/* If set, then every object can be tagged.  */
+#ifndef USE_TAGS
+# define USE_TAGS 1
 #endif
 
 /* To force system errors through user-defined error handling (see *error-hook*) */
