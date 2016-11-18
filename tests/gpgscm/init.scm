@@ -534,6 +534,28 @@
      `(define ,(cadr form)
           (call/cc (lambda (return) ,@(cddr form)))))
 
+;; Print the given history.
+(define (vm-history-print history)
+  (let loop ((n 0) (skip 0) (frames history))
+    (cond
+     ((null? frames)
+      #t)
+     ((> skip 0)
+      (loop 0 (- skip 1) (cdr frames)))
+     (else
+      (let ((f (car frames)))
+	(display n)
+	(display ": ")
+	(let ((tag (get-tag f)))
+	  (unless (null? tag)
+		  (display (basename (car tag)))
+		  (display ":")
+		  (display (+ 1 (cdr tag)))
+		  (display ": ")))
+	(write f))
+	(newline)
+	(loop (+ n 1) skip (cdr frames))))))
+
 ;;;; Simple exception handling
 ;
 ;    Exceptions are caught as follows:

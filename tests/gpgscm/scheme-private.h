@@ -62,6 +62,34 @@ struct cell {
   } _object;
 };
 
+#if USE_HISTORY
+/* The history is a two-dimensional ring buffer.  A donut-shaped data
+ * structure.  This data structure is inspired by MIT/GNU Scheme.  */
+struct history {
+  /* Number of calls to store.  Must be a power of two.  */
+  size_t N;
+
+  /* Number of tail-calls to store in each call frame.  Must be a
+   * power of two.  */
+  size_t M;
+
+  /* Masks for fast index calculations.  */
+  size_t mask_N;
+  size_t mask_M;
+
+  /* A vector of size N containing calls.  */
+  pointer callstack;
+
+  /* A vector of size N containing vectors of size M containing tail
+   * calls.  */
+  pointer tailstacks;
+
+  /* Our current position.  */
+  size_t n;
+  size_t *m;
+};
+#endif
+
 struct scheme {
 /* arrays for segments */
 func_alloc malloc;
@@ -87,6 +115,11 @@ pointer args;            /* register for arguments of function */
 pointer envir;           /* stack register for current environment */
 pointer code;            /* register for current code */
 pointer dump;            /* stack register for next evaluation */
+
+#if USE_HISTORY
+struct history history;  /* we keep track of the call history for
+                          * error messages */
+#endif
 
 int interactive_repl;    /* are we in an interactive REPL? */
 

@@ -308,6 +308,14 @@ INTERFACE INLINE void setimmutable(pointer p) { typeflag(p) |= T_IMMUTABLE; }
 #define cadddr(p)        car(cdr(cdr(cdr(p))))
 #define cddddr(p)        cdr(cdr(cdr(cdr(p))))
 
+#if USE_HISTORY
+static pointer history_flatten(scheme *sc);
+static void history_mark(scheme *sc);
+#else
+# define history_mark(SC)	(void) 0
+# define history_flatten(SC)	(SC)->NIL
+#endif
+
 #if USE_CHAR_CLASSIFIERS
 static INLINE int Cisalpha(int c) { return isascii(c) && isalpha(c); }
 static INLINE int Cisdigit(int c) { return isascii(c) && isdigit(c); }
@@ -1593,6 +1601,7 @@ static void gc(scheme *sc, pointer a, pointer b) {
   mark(sc->args);
   mark(sc->envir);
   mark(sc->code);
+  history_mark(sc);
   dump_stack_mark(sc);
   mark(sc->value);
   mark(sc->inport);
@@ -2830,10 +2839,236 @@ static INLINE void dump_stack_mark(scheme *sc)
   mark(sc->dump);
 }
 
+
+
+#if USE_HISTORY
+
+static void
+history_free(scheme *sc)
+{
+  sc->free(sc->history.m);
+  sc->history.tailstacks = sc->NIL;
+  sc->history.callstack = sc->NIL;
+}
+
+static pointer
+history_init(scheme *sc, size_t N, size_t M)
+{
+  size_t i;
+  struct history *h = &sc->history;
+
+  h->N = N;
+  h->mask_N = N - 1;
+  h->n = N - 1;
+  assert ((N & h->mask_N) == 0);
+
+  h->M = M;
+  h->mask_M = M - 1;
+  assert ((M & h->mask_M) == 0);
+
+  h->callstack = mk_vector(sc, N);
+  if (h->callstack == sc->sink)
+    goto fail;
+
+  h->tailstacks = mk_vector(sc, N);
+  for (i = 0; i < N; i++) {
+    pointer tailstack = mk_vector(sc, M);
+    if (tailstack == sc->sink)
+      goto fail;
+    set_vector_elem(h->tailstacks, i, tailstack);
+  }
+
+  h->m = sc->malloc(N * sizeof *h->m);
+  if (h->m == NULL)
+    goto fail;
+
+  for (i = 0; i < N; i++)
+    h->m[i] = 0;
+
+  return sc->T;
+
+fail:
+  history_free(sc);
+  return sc->F;
+}
+
+static void
+history_mark(scheme *sc)
+{
+  struct history *h = &sc->history;
+  mark(h->callstack);
+  mark(h->tailstacks);
+}
+
+#define add_mod(a, b, mask)	(((a) + (b)) & (mask))
+#define sub_mod(a, b, mask)	add_mod(a, (mask) + 1 - (b), mask)
+
+static INLINE void
+tailstack_clear(scheme *sc, pointer v)
+{
+  assert(is_vector(v));
+  /* XXX optimize */
+  fill_vector(v, sc->NIL);
+}
+
+static pointer
+callstack_pop(scheme *sc)
+{
+  struct history *h = &sc->history;
+  size_t n = h->n;
+  pointer item;
+
+  if (h->callstack == sc->NIL)
+    return sc->NIL;
+
+  item = vector_elem(h->callstack, n);
+  /* Clear our frame so that it can be gc'ed and we don't run into it
+   * when walking the history.  */
+  set_vector_elem(h->callstack, n, sc->NIL);
+  tailstack_clear(sc, vector_elem(h->tailstacks, n));
+
+  /* Exit from the frame.  */
+  h->n = sub_mod(h->n, 1, h->mask_N);
+
+  return item;
+}
+
+static void
+callstack_push(scheme *sc, pointer item)
+{
+  struct history *h = &sc->history;
+  size_t n = h->n;
+
+  if (h->callstack == sc->NIL)
+    return;
+
+  /* Enter a new frame.  */
+  n = h->n = add_mod(n, 1, h->mask_N);
+
+  /* Initialize tail stack.  */
+  tailstack_clear(sc, vector_elem(h->tailstacks, n));
+  h->m[n] = h->mask_M;
+
+  set_vector_elem(h->callstack, n, item);
+}
+
+static void
+tailstack_push(scheme *sc, pointer item)
+{
+  struct history *h = &sc->history;
+  size_t n = h->n;
+  size_t m = h->m[n];
+
+  if (h->callstack == sc->NIL)
+    return;
+
+  /* Enter a new tail frame.  */
+  m = h->m[n] = add_mod(m, 1, h->mask_M);
+  set_vector_elem(vector_elem(h->tailstacks, n), m, item);
+}
+
+static pointer
+tailstack_flatten(scheme *sc, pointer tailstack, size_t i, size_t n,
+		  pointer acc)
+{
+  struct history *h = &sc->history;
+  pointer frame;
+
+  assert(i <= h->M);
+  assert(n < h->M);
+
+  if (acc == sc->sink)
+    return sc->sink;
+
+  if (i == 0) {
+    /* We reached the end, but we did not see a unused frame.  Signal
+       this using '... .  */
+    return cons(sc, mk_symbol(sc, "..."), acc);
+  }
+
+  frame = vector_elem(tailstack, n);
+  if (frame == sc->NIL) {
+    /* A unused frame.  We reached the end of the history.  */
+    return acc;
+  }
+
+  /* Add us.  */
+  acc = cons(sc, frame, acc);
+
+  return tailstack_flatten(sc, tailstack, i - 1, sub_mod(n, 1, h->mask_M),
+			   acc);
+}
+
+static pointer
+callstack_flatten(scheme *sc, size_t i, size_t n, pointer acc)
+{
+  struct history *h = &sc->history;
+  pointer frame;
+
+  assert(i <= h->N);
+  assert(n < h->N);
+
+  if (acc == sc->sink)
+    return sc->sink;
+
+  if (i == 0) {
+    /* We reached the end, but we did not see a unused frame.  Signal
+       this using '... .  */
+    return cons(sc, mk_symbol(sc, "..."), acc);
+  }
+
+  frame = vector_elem(h->callstack, n);
+  if (frame == sc->NIL) {
+    /* A unused frame.  We reached the end of the history.  */
+    return acc;
+  }
+
+  /* First, emit the tail calls.  */
+  acc = tailstack_flatten(sc, vector_elem(h->tailstacks, n), h->M, h->m[n],
+			  acc);
+
+  /* Then us.  */
+  acc = cons(sc, frame, acc);
+
+  return callstack_flatten(sc, i - 1, sub_mod(n, 1, h->mask_N), acc);
+}
+
+static pointer
+history_flatten(scheme *sc)
+{
+  struct history *h = &sc->history;
+  pointer history;
+
+  if (h->callstack == sc->NIL)
+    return sc->NIL;
+
+  history = callstack_flatten(sc, h->N, h->n, sc->NIL);
+  if (history == sc->sink)
+    return sc->sink;
+
+  return reverse_in_place(sc, sc->NIL, history);
+}
+
+#undef add_mod
+#undef sub_mod
+
+#else	/* USE_HISTORY */
+
+#define history_init(SC, A, B)	(void) 0
+#define history_free(SC)	(void) 0
+#define callstack_pop(SC)	(void) 0
+#define callstack_push(SC, X)	(void) 0
+#define tailstack_push(SC, X)	(void) 0
+
+#endif	/* USE_HISTORY */
+
+
+
 #define s_retbool(tf)    s_return(sc,(tf) ? sc->T : sc->F)
 
 static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
      pointer x, y;
+     pointer callsite;
 
      switch (op) {
      CASE(OP_LOAD):       /* load */
@@ -2959,7 +3194,10 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 	       s_clear_flag(sc, TAIL_CONTEXT);
                s_thread_to(sc,OP_APPLY);
           } else {
-               sc->code = cdr(sc->code);
+	       gc_disable(sc, 1);
+	       sc->args = cons(sc, sc->code, sc->NIL);
+	       gc_enable(sc);
+	       sc->code = cdr(sc->code);
                s_thread_to(sc,OP_E1ARGS);
           }
 
@@ -2975,9 +3213,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                s_thread_to(sc,OP_EVAL);
           } else {  /* end */
                sc->args = reverse_in_place(sc, sc->NIL, sc->args);
-               sc->code = car(sc->args);
-               sc->args = cdr(sc->args);
-               s_thread_to(sc,OP_APPLY);
+               s_thread_to(sc,OP_APPLY_CODE);
           }
 
 #if USE_TRACING
@@ -2988,6 +3224,20 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
        s_return_enable_gc(sc, mk_integer(sc, tr));
      }
 #endif
+
+#if USE_HISTORY
+     CASE(OP_CALLSTACK_POP):      /* pop the call stack */
+	  callstack_pop(sc);
+	  s_return(sc, sc->value);
+#endif
+
+     CASE(OP_APPLY_CODE): /* apply 'cadr(args)' to 'cddr(args)',
+			   * record in the history as invoked from
+			   * 'car(args)' */
+	  free_cons(sc, sc->args, &callsite, &sc->args);
+	  sc->code = car(sc->args);
+	  sc->args = cdr(sc->args);
+	  /* Fallthrough.  */
 
      CASE(OP_APPLY):      /* apply 'code' to 'args' */
 #if USE_TRACING
@@ -3001,6 +3251,18 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
        /* fall through */
      CASE(OP_REAL_APPLY):
 #endif
+#if USE_HISTORY
+          if (op != OP_APPLY_CODE)
+            callsite = sc->code;
+          if (s_get_flag(sc, TAIL_CONTEXT)) {
+            /* We are evaluating a tail call.  */
+            tailstack_push(sc, callsite);
+          } else {
+            callstack_push(sc, callsite);
+            s_save(sc, OP_CALLSTACK_POP, sc->NIL, sc->NIL);
+          }
+#endif
+
           if (is_proc(sc->code)) {
                s_goto(sc,procnum(sc->code));   /* PROCEDURE */
           } else if (is_foreign(sc->code))
@@ -4805,6 +5067,8 @@ static pointer opexe_6(scheme *sc, enum scheme_opcodes op) {
           s_retbool(is_closure(car(sc->args)));
      CASE(OP_MACROP):          /* macro? */
           s_retbool(is_macro(car(sc->args)));
+     CASE(OP_VM_HISTORY):          /* *vm-history* */
+          s_return(sc, history_flatten(sc));
      default:
           snprintf(sc->strbuff,STRBUFFSIZE,"%d: illegal operator", sc->op);
           Error_0(sc,sc->strbuff);
@@ -5235,6 +5499,8 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
     }
   }
 
+  history_init(sc, 8, 8);
+
   /* initialization of global pointers to special symbols */
   sc->LAMBDA = mk_symbol(sc, "lambda");
   sc->QUOTE = mk_symbol(sc, "quote");
@@ -5284,6 +5550,7 @@ void scheme_deinit(scheme *sc) {
   dump_stack_free(sc);
   sc->envir=sc->NIL;
   sc->code=sc->NIL;
+  history_free(sc);
   sc->args=sc->NIL;
   sc->value=sc->NIL;
   if(is_port(sc->inport)) {
