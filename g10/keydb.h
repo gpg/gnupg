@@ -433,6 +433,13 @@ keyid_cmp (const u32 *a, const u32 *b)
   return 0;
 }
 
+/* Return whether PK is a primary key.  */
+static int GPGRT_ATTR_UNUSED
+pk_is_primary (PKT_public_key *pk)
+{
+  return keyid_cmp (pk_keyid (pk), pk_main_keyid (pk)) == 0;
+}
+
 /* Copy the keyid in SRC to DEST and return DEST.  */
 u32 *keyid_copy (u32 *dest, const u32 *src);
 
