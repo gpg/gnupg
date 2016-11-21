@@ -1733,19 +1733,22 @@ ask_about_binding (ctrl_t ctrl,
               if (labs(stats_iter->time_ago) == 3)
                 es_fprintf (fp, ngettext(" over the past day.",
                                          " over the past %d days.",
-                                         seen_in_past),
+                                         TIME_AGO_SMALL_THRESHOLD
+                                         / TIME_AGO_UNIT_SMALL),
                             TIME_AGO_SMALL_THRESHOLD
                             / TIME_AGO_UNIT_SMALL);
               else if (labs(stats_iter->time_ago) == 4)
                 es_fprintf (fp, ngettext(" over the past month.",
                                          " over the past %d months.",
-                                         seen_in_past),
+                                         TIME_AGO_MEDIUM_THRESHOLD
+                                         / TIME_AGO_UNIT_MEDIUM),
                             TIME_AGO_MEDIUM_THRESHOLD
                             / TIME_AGO_UNIT_MEDIUM);
               else if (labs(stats_iter->time_ago) == 5)
                 es_fprintf (fp, ngettext(" over the past year.",
                                          " over the past %d years.",
-                                         seen_in_past),
+                                         TIME_AGO_LARGE_THRESHOLD
+                                         / TIME_AGO_UNIT_LARGE),
                             TIME_AGO_LARGE_THRESHOLD
                             / TIME_AGO_UNIT_LARGE);
               else if (labs(stats_iter->time_ago) == 6)
