@@ -1957,8 +1957,6 @@ housekeeping_thread (void *arg)
   if (network_activity_seen)
     {
       network_activity_seen = 0;
-      if (opt.allow_version_check)
-        dirmngr_load_swdb (&ctrlbuf, 0);
       workqueue_run_global_tasks (&ctrlbuf, 1);
     }
   else

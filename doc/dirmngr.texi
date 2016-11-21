@@ -290,9 +290,10 @@ Set the size of the queue for pending connections.  The default is 64.
 @item --allow-version-check
 @opindex allow-version-check
 Allow Dirmngr to connect to @code{https://versions.gnupg.org} to get
-the list of current software versions.  If this option is enabled
-the list is retrieved in case the local
-copy does not exist or is older than 5 to 7 days.  See the option
+the list of current software versions.
+On debian-packaged versions, this option does nothing since software
+updates should be handled by the distribution.
+See the option
 @option{--query-swdb} of the command @command{gpgconf} for more
 details.  Note, that regardless of this option a version check can
 always be triggered using this command:
