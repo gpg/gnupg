@@ -79,14 +79,14 @@ struct tofu_dbs_s
 
     sqlite3_stmt *record_binding_get_old_policy;
     sqlite3_stmt *record_binding_update;
-    sqlite3_stmt *record_binding_update2;
     sqlite3_stmt *get_policy_select_policy_and_conflict;
     sqlite3_stmt *get_trust_bindings_with_this_email;
     sqlite3_stmt *get_trust_gather_other_user_ids;
     sqlite3_stmt *get_trust_gather_signature_stats;
     sqlite3_stmt *get_trust_gather_encryption_stats;
     sqlite3_stmt *register_already_seen;
-    sqlite3_stmt *register_insert;
+    sqlite3_stmt *register_signature;
+    sqlite3_stmt *register_encryption;
   } s;
 
   int in_batch_transaction;
@@ -3093,7 +3093,7 @@ tofu_register_signature (ctrl_t ctrl,
           log_assert (c == 0);
 
           rc = gpgsql_stepx
-            (dbs->db, &dbs->s.register_insert, NULL, NULL, &err,
+            (dbs->db, &dbs->s.register_signature, NULL, NULL, &err,
              "insert into signatures\n"
              " (binding, sig_digest, origin, sig_time, time)\n"
              " values\n"
@@ -3209,7 +3209,7 @@ tofu_register_encryption (ctrl_t ctrl,
         }
 
       rc = gpgsql_stepx
-        (dbs->db, &dbs->s.register_insert, NULL, NULL, &err,
+        (dbs->db, &dbs->s.register_encryption, NULL, NULL, &err,
          "insert into encryptions\n"
          " (binding, time)\n"
          " values\n"
