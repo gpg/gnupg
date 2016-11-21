@@ -28,6 +28,7 @@ examples = examples/README examples/scd-event examples/trustlist.txt	\
 	   examples/systemd-user/gpg-agent.service 			\
 	   examples/systemd-user/gpg-agent.socket 			\
 	   examples/systemd-user/gpg-agent-ssh.socket 			\
+	   examples/systemd-user/gpg-agent-browser.socket		\
 	   examples/systemd-user/gpg-agent-extra.socket 		\
 	   examples/gpgconf.conf examples/pwpattern.list
 
