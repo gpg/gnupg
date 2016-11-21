@@ -142,10 +142,10 @@ per-user configuration file.  The default configuration file is named
 @item --homedir @var{dir}
 @opindex options
 Set the name of the home directory to @var{dir}.  This option is only
-effective when used on the command line.  The default os
+effective when used on the command line.  The default is
 the directory named @file{.gnupg} directly below the home directory
 of the user unless the environment variable @code{GNUPGHOME} has been set
-in which case its value will be used.  All kind of data is stored below
+in which case its value will be used.  Many kinds of data are stored within
 this directory.
 
 
