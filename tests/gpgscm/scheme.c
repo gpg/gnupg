@@ -2715,6 +2715,12 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
 #define S_OP_MASK	0x000000ff
 #define S_FLAG_MASK	0xffffff00
 
+/* Set if the interpreter evaluates an expression in a tail context
+ * (see R5RS, section 3.5).  If a function, procedure, or continuation
+ * is invoked while this flag is set, the call is recorded as tail
+ * call in the history buffer.  */
+#define S_FLAG_TAIL_CONTEXT	0x00000100
+
 /* Set flag F.  */
 #define s_set_flag(sc, f)			\
 	   BEGIN				\
@@ -2936,6 +2942,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                     s_save(sc,OP_E0ARGS, sc->NIL, sc->code);
                     /* If no macros => s_save(sc,OP_E1ARGS, sc->NIL, cdr(sc->code));*/
                     sc->code = car(sc->code);
+		    s_clear_flag(sc, TAIL_CONTEXT);
                     s_thread_to(sc,OP_EVAL);
                }
           } else {
@@ -2949,6 +2956,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                sc->args = cons(sc,sc->code, sc->NIL);
 	       gc_enable(sc);
                sc->code = sc->value;
+	       s_clear_flag(sc, TAIL_CONTEXT);
                s_thread_to(sc,OP_APPLY);
           } else {
                sc->code = cdr(sc->code);
@@ -2963,6 +2971,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                s_save(sc,OP_E1ARGS, sc->args, cdr(sc->code));
                sc->code = car(sc->code);
                sc->args = sc->NIL;
+	       s_clear_flag(sc, TAIL_CONTEXT);
                s_thread_to(sc,OP_EVAL);
           } else {  /* end */
                sc->args = reverse_in_place(sc, sc->NIL, sc->args);
@@ -3026,6 +3035,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                }
                sc->code = cdr(closure_code(sc->code));
                sc->args = sc->NIL;
+	       s_set_flag(sc, TAIL_CONTEXT);
                s_thread_to(sc,OP_BEGIN);
           } else if (is_continuation(sc->code)) { /* CONTINUATION */
                sc->dump = cont_dump(sc->code);
@@ -3138,18 +3148,29 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 
 
      CASE(OP_BEGIN):      /* begin */
-          if (!is_pair(sc->code)) {
-               s_return(sc,sc->code);
-          }
-          if (cdr(sc->code) != sc->NIL) {
-               s_save(sc,OP_BEGIN, sc->NIL, cdr(sc->code));
-          }
-          sc->code = car(sc->code);
-          s_thread_to(sc,OP_EVAL);
+	  {
+	    int last;
+
+	    if (!is_pair(sc->code)) {
+	      s_return(sc,sc->code);
+	    }
+
+	    last = cdr(sc->code) == sc->NIL;
+	    if (!last) {
+	      s_save(sc,OP_BEGIN, sc->NIL, cdr(sc->code));
+	    }
+	    sc->code = car(sc->code);
+	    if (! last)
+	      /* This is not the end of the list.  This is not a tail
+	       * position.  */
+	      s_clear_flag(sc, TAIL_CONTEXT);
+	    s_thread_to(sc,OP_EVAL);
+	  }
 
      CASE(OP_IF0):        /* if */
           s_save(sc,OP_IF1, sc->NIL, cdr(sc->code));
           sc->code = car(sc->code);
+	  s_clear_flag(sc, TAIL_CONTEXT);
           s_thread_to(sc,OP_EVAL);
 
      CASE(OP_IF1):        /* if */
@@ -3179,6 +3200,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 	       gc_enable(sc);
                sc->code = cadar(sc->code);
                sc->args = sc->NIL;
+	       s_clear_flag(sc, TAIL_CONTEXT);
                s_thread_to(sc,OP_EVAL);
           } else {  /* end */
 	       gc_enable(sc);
@@ -3227,6 +3249,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           }
           s_save(sc,OP_LET1AST, cdr(sc->code), car(sc->code));
           sc->code = cadaar(sc->code);
+	  s_clear_flag(sc, TAIL_CONTEXT);
           s_thread_to(sc,OP_EVAL);
 
      CASE(OP_LET1AST):    /* let* (make new frame) */
@@ -3240,6 +3263,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                s_save(sc,OP_LET2AST, sc->args, sc->code);
                sc->code = cadar(sc->code);
                sc->args = sc->NIL;
+	       s_clear_flag(sc, TAIL_CONTEXT);
                s_thread_to(sc,OP_EVAL);
           } else {  /* end */
                sc->code = sc->args;
@@ -3276,6 +3300,7 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
                s_save(sc,OP_LET1REC, sc->args, cdr(sc->code));
                sc->code = cadar(sc->code);
                sc->args = sc->NIL;
+	       s_clear_flag(sc, TAIL_CONTEXT);
                s_goto(sc,OP_EVAL);
           } else {  /* end */
                sc->args = reverse_in_place(sc, sc->NIL, sc->args);
@@ -3298,6 +3323,7 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
           }
           s_save(sc,OP_COND1, sc->NIL, sc->code);
           sc->code = caar(sc->code);
+	  s_clear_flag(sc, TAIL_CONTEXT);
           s_goto(sc,OP_EVAL);
 
      CASE(OP_COND1):      /* cond */
@@ -3322,6 +3348,7 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
                } else {
                     s_save(sc,OP_COND1, sc->NIL, sc->code);
                     sc->code = caar(sc->code);
+		    s_clear_flag(sc, TAIL_CONTEXT);
                     s_goto(sc,OP_EVAL);
                }
           }
@@ -3337,6 +3364,8 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
                s_return(sc,sc->T);
           }
           s_save(sc,OP_AND1, sc->NIL, cdr(sc->code));
+	  if (cdr(sc->code) != sc->NIL)
+	       s_clear_flag(sc, TAIL_CONTEXT);
           sc->code = car(sc->code);
           s_goto(sc,OP_EVAL);
 
@@ -3347,6 +3376,8 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
                s_return(sc,sc->value);
           } else {
                s_save(sc,OP_AND1, sc->NIL, cdr(sc->code));
+	       if (cdr(sc->code) != sc->NIL)
+		    s_clear_flag(sc, TAIL_CONTEXT);
                sc->code = car(sc->code);
                s_goto(sc,OP_EVAL);
           }
@@ -3356,6 +3387,8 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
                s_return(sc,sc->F);
           }
           s_save(sc,OP_OR1, sc->NIL, cdr(sc->code));
+	  if (cdr(sc->code) != sc->NIL)
+	       s_clear_flag(sc, TAIL_CONTEXT);
           sc->code = car(sc->code);
           s_goto(sc,OP_EVAL);
 
@@ -3366,6 +3399,8 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
                s_return(sc,sc->value);
           } else {
                s_save(sc,OP_OR1, sc->NIL, cdr(sc->code));
+	       if (cdr(sc->code) != sc->NIL)
+		    s_clear_flag(sc, TAIL_CONTEXT);
                sc->code = car(sc->code);
                s_goto(sc,OP_EVAL);
           }
@@ -3411,6 +3446,7 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
      CASE(OP_CASE0):      /* case */
           s_save(sc,OP_CASE1, sc->NIL, cdr(sc->code));
           sc->code = car(sc->code);
+	  s_clear_flag(sc, TAIL_CONTEXT);
           s_goto(sc,OP_EVAL);
 
      CASE(OP_CASE1):      /* case */
