@@ -163,6 +163,7 @@ int tok;
 int print_flag;
 pointer value;
 int op;
+unsigned int flags;
 
 void *ext_data;     /* For the benefit of foreign functions */
 long gensym_cnt;

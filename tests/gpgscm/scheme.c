@@ -2705,6 +2705,34 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
 # define  BEGIN     do {
 # define  END  } while (0)
 
+
+
+/* Flags.  The interpreter has a flags field.  When the interpreter
+ * pushes a frame to the dump stack, it is encoded with the opcode.
+ * Therefore, we do not use the least significant byte.  */
+
+/* Masks used to encode and decode opcode and flags.  */
+#define S_OP_MASK	0x000000ff
+#define S_FLAG_MASK	0xffffff00
+
+/* Set flag F.  */
+#define s_set_flag(sc, f)			\
+	   BEGIN				\
+	   (sc)->flags |= S_FLAG_ ## f;		\
+	   END
+
+/* Clear flag F.  */
+#define s_clear_flag(sc, f)			\
+	   BEGIN				\
+	   (sc)->flags &= ~ S_FLAG_ ## f;	\
+	   END
+
+/* Check if flag F is set.  */
+#define s_get_flag(sc, f)			\
+	   !!((sc)->flags & S_FLAG_ ## f)
+
+
+
 /* Bounce back to Eval_Cycle and execute A.  */
 #define s_goto(sc,a) BEGIN                                  \
     sc->op = (int)(a);                                      \
@@ -2757,16 +2785,23 @@ static void dump_stack_free(scheme *sc)
 static pointer _s_return(scheme *sc, pointer a, int enable_gc) {
   pointer dump = sc->dump;
   pointer op;
+  unsigned long v;
   sc->value = (a);
   if (enable_gc)
        gc_enable(sc);
   if (dump == sc->NIL)
     return sc->NIL;
   free_cons(sc, dump, &op, &dump);
-  sc->op = ivalue(op);
-#ifndef USE_SMALL_INTEGERS
-  free_cell(sc, op);
+  v = (unsigned long) ivalue_unchecked(op);
+  sc->op = (int) (v & S_OP_MASK);
+  sc->flags = v & S_FLAG_MASK;
+#ifdef USE_SMALL_INTEGERS
+  if (v < MAX_SMALL_INTEGER) {
+    /* This is a small integer, we must not free it.  */
+  } else
+    /* Normal integer.  Recover the cell.  */
 #endif
+    free_cell(sc, op);
   free_cons(sc, dump, &sc->args, &dump);
   free_cons(sc, dump, &sc->envir, &dump);
   free_cons(sc, dump, &sc->code, &sc->dump);
@@ -2774,12 +2809,13 @@ static pointer _s_return(scheme *sc, pointer a, int enable_gc) {
 }
 
 static void s_save(scheme *sc, enum scheme_opcodes op, pointer args, pointer code) {
-#define s_save_allocates	(4 + mk_small_integer_allocates)
+#define s_save_allocates	5
     pointer dump;
+    unsigned long v = sc->flags | ((unsigned long) op);
     gc_disable(sc, gc_reservations (s_save));
     dump = cons(sc, sc->envir, cons(sc, (code), sc->dump));
     dump = cons(sc, (args), dump);
-    sc->dump = cons(sc, mk_small_integer(sc, (long)(op)), dump);
+    sc->dump = cons(sc, mk_integer(sc, (long) v), dump);
     gc_enable(sc);
 }
 
@@ -5111,6 +5147,8 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   dump_stack_initialize(sc);
   sc->code = sc->NIL;
   sc->tracing=0;
+  sc->op = -1;
+  sc->flags = 0;
 
   /* init sc->NIL */
   typeflag(sc->NIL) = (T_NIL | T_ATOM | MARK);
