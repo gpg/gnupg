@@ -517,3 +517,12 @@ tofu_end_batch_update (ctrl_t ctrl)
 {
   (void)ctrl;
 }
+
+gpg_error_t
+tofu_notice_key_changed (ctrl_t ctrl, kbnode_t kb)
+{
+  (void) ctrl;
+  (void) kb;
+
+  return 0;
+}

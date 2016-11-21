@@ -111,7 +111,8 @@ static int import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
                               struct import_stats_s *stats, int batch,
                               unsigned int options, int for_migration,
                               import_screener_t screener, void *screener_arg);
-static int import_revoke_cert (kbnode_t node, struct import_stats_s *stats);
+static int import_revoke_cert (ctrl_t ctrl,
+                               kbnode_t node, struct import_stats_s *stats);
 static int chk_self_sigs (kbnode_t keyblock, u32 *keyid, int *non_self);
 static int delete_inv_parts (kbnode_t keyblock,
                              u32 *keyid, unsigned int options);
@@ -562,7 +563,7 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
                                 screener, screener_arg);
       else if (keyblock->pkt->pkttype == PKT_SIGNATURE
                && keyblock->pkt->pkt.signature->sig_class == 0x20 )
-        rc = import_revoke_cert (keyblock, stats);
+        rc = import_revoke_cert (ctrl, keyblock, stats);
       else
         {
           log_info (_("skipping block of type %d\n"), keyblock->pkt->pkttype);
@@ -1642,7 +1643,7 @@ import_one (ctrl_t ctrl,
         {
           mod_key = 1;
           /* KEYBLOCK_ORIG has been updated; write */
-          rc = keydb_update_keyblock (hd, keyblock_orig);
+          rc = keydb_update_keyblock (ctrl, hd, keyblock_orig);
           if (rc)
             log_error (_("error writing keyring '%s': %s\n"),
                        keydb_get_resource_name (hd), gpg_strerror (rc) );
@@ -2288,7 +2289,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
  * Import a revocation certificate; this is a single signature packet.
  */
 static int
-import_revoke_cert (kbnode_t node, struct import_stats_s *stats)
+import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
 {
   PKT_public_key *pk = NULL;
   kbnode_t onode;
@@ -2379,7 +2380,7 @@ import_revoke_cert (kbnode_t node, struct import_stats_s *stats)
   insert_kbnode( keyblock, clone_kbnode(node), 0 );
 
   /* and write the keyblock back */
-  rc = keydb_update_keyblock (hd, keyblock );
+  rc = keydb_update_keyblock (ctrl, hd, keyblock );
   if (rc)
     log_error (_("error writing keyring '%s': %s\n"),
                keydb_get_resource_name (hd), gpg_strerror (rc) );

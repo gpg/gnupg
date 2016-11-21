@@ -139,4 +139,9 @@ void tofu_end_batch_update (ctrl_t ctrl);
 /* Release all of the resources associated with a DB meta-handle.  */
 void tofu_closedbs (ctrl_t ctrl);
 
+/* Whenever a key is modified (e.g., a user id is added or revoked, a
+ * new signature, etc.), this function should be called to cause TOFU
+ * to update its world view.  */
+gpg_error_t tofu_notice_key_changed (ctrl_t ctrl, kbnode_t kb);
+
 #endif /*G10_TOFU_H*/

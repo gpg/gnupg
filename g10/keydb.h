@@ -181,7 +181,7 @@ const char *keydb_get_resource_name (KEYDB_HANDLE hd);
 gpg_error_t keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb);
 
 /* Update the keyblock KB.  */
-gpg_error_t keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb);
+gpg_error_t keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb);
 
 /* Insert a keyblock into one of the underlying keyrings or keyboxes.  */
 gpg_error_t keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb);

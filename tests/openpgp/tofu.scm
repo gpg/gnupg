@@ -20,7 +20,7 @@
 (load (with-path "defs.scm"))
 (setup-environment)
 
- ;; Redefine GPG without --always-trust and a fixed time.
+;; Redefine GPG without --always-trust and a fixed time.
 (define GPG `(,(tool 'gpg) --no-permission-warning
 	      --faked-system-time=1466684990))
 (define GNUPGHOME (getenv "GNUPGHOME"))
@@ -141,20 +141,23 @@
       '("auto" "good" "unknown" "bad" "ask"))))
  '("good" "unknown" "bad"))
 
-;; BC15C85A conflicts with 2183839A.  On conflict, this will set
-;; BC15C85A to ask.  If 2183839A is auto (it's not, it's bad), then
-;; it will be set to ask.
-(call-check `(,@GPG --trust-model=tofu
-		    --verify ,(in-srcdir "tofu-BC15C85A-1.txt")))
+;; At the end, 2183839A's policy should be bad.
+(checkpolicy "2183839A" "bad")
+
+;; BC15C85A and 2183839A conflict.  A policy setting of "auto"
+;; (BC15C85A's state) will result in an effective policy of ask.  But,
+;; a policy setting of "bad" will result in an effective policy of
+;; bad.
+(setpolicy "BC15C85A" "auto")
 (checkpolicy "BC15C85A" "ask")
 (checkpolicy "2183839A" "bad")
 
-;; EE37CF96 conflicts with 2183839A and BC15C85A.  We change
-;; BC15C85A's policy to auto and leave 2183839A's policy at bad.
-;; This conflict should cause BC15C85A's policy to be changed to
-;; ask (since it is auto), but not affect 2183839A's policy.
+;; EE37CF96, 2183839A, and BC15C85A conflict.  We change BC15C85A's
+;; policy to auto and leave 2183839A's policy at bad.  This conflict
+;; should cause BC15C85A's policy to be changed to ask (since it is
+;; auto), but not affect 2183839A's policy.
 (setpolicy "BC15C85A" "auto")
-(checkpolicy "BC15C85A" "auto")
+(checkpolicy "BC15C85A" "ask")
 (call-check `(,@GPG --trust-model=tofu
 		    --verify ,(in-srcdir "tofu-EE37CF96-1.txt")))
 (checkpolicy "BC15C85A" "ask")
@@ -225,7 +228,8 @@
 (checkpolicy KEYA "ask")
 (checkpolicy KEYB "ask")
 
-;; Import Alice's signature on the conflicting user id.
+;; Import Alice's signature on the conflicting user id.  Since there
+;; is now a cross signature, we should revert to the default policy.
 (display "    > Adding cross signature on user id. ")
 (call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-4.gpg"))))
 (verify-messages)

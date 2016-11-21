@@ -2782,7 +2782,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	case cmdSAVE:
 	  if (modified)
 	    {
-              err = keydb_update_keyblock (kdbhd, keyblock);
+              err = keydb_update_keyblock (ctrl, kdbhd, keyblock);
               if (err)
                 {
                   log_error (_("update failed: %s\n"), gpg_strerror (err));
@@ -2936,7 +2936,7 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
 
   if (menu_adduid (ctrl, keyblock, 0, NULL, uidstring))
     {
-      err = keydb_update_keyblock (kdbhd, keyblock);
+      err = keydb_update_keyblock (ctrl, kdbhd, keyblock);
       if (err)
         {
           log_error (_("update failed: %s\n"), gpg_strerror (err));
@@ -3039,7 +3039,7 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
                          gpg_strerror (err));
               goto leave;
             }
-          err = keydb_update_keyblock (kdbhd, keyblock);
+          err = keydb_update_keyblock (ctrl, kdbhd, keyblock);
           if (err)
             {
               log_error (_("update failed: %s\n"), gpg_strerror (err));
@@ -3261,7 +3261,7 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
 
   if (modified)
     {
-      err = keydb_update_keyblock (kdbhd, keyblock);
+      err = keydb_update_keyblock (ctrl, kdbhd, keyblock);
       if (err)
         {
           log_error (_("update failed: %s\n"), gpg_strerror (err));
@@ -3326,7 +3326,7 @@ keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
   /* Store.  */
   if (modified)
     {
-      err = keydb_update_keyblock (kdbhd, keyblock);
+      err = keydb_update_keyblock (ctrl, kdbhd, keyblock);
       if (err)
         {
           log_error (_("update failed: %s\n"), gpg_strerror (err));

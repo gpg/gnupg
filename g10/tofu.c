@@ -682,13 +682,49 @@ initdb (sqlite3 *db)
     {
       /* Early version of the v1 format did not include the encryption
          table.  Add it.  */
-      sqlite3_exec (db,
-                    "create table if not exists encryptions"
-                    " (binding INTEGER NOT NULL,"
-                    "  time INTEGER);"
-                    "create index if not exists encryptions_binding"
-                    " on encryptions (binding);\n",
-                    NULL, NULL, &err);
+      rc = sqlite3_exec (db,
+                         "create table if not exists encryptions"
+                         " (binding INTEGER NOT NULL,"
+                         "  time INTEGER);"
+                         "create index if not exists encryptions_binding"
+                         " on encryptions (binding);\n",
+                         NULL, NULL, &err);
+      if (rc)
+        {
+	  log_error (_("error creating 'encryptions' TOFU table: %s\n"),
+		     err);
+          sqlite3_free (err);
+        }
+    }
+  if (! rc)
+    {
+      /* The effective policy for a binding.  If a key is ultimately
+       * trusted, then the effective policy of all of its bindings is
+       * good.  Likewise if a key is signed by an ultimately trusted
+       * key, etc.  If the effective policy is NONE, then we need to
+       * recompute the effective policy.  Otherwise, the effective
+       * policy is considered to be up to date, i.e., effective_policy
+       * is a cache of the computed policy.  */
+      rc = gpgsql_exec_printf
+        (db, NULL, NULL, &err,
+         "alter table bindings"
+         " add column effective_policy INTEGER"
+         " DEFAULT %d"
+         " CHECK (effective_policy in (%d, %d, %d, %d, %d, %d));",
+         TOFU_POLICY_NONE,
+         TOFU_POLICY_NONE, TOFU_POLICY_AUTO, TOFU_POLICY_GOOD,
+         TOFU_POLICY_UNKNOWN, TOFU_POLICY_BAD, TOFU_POLICY_ASK);
+      if (rc)
+	{
+          if (rc == SQLITE_ERROR)
+            /* Almost certainly "duplicate column name", which we can
+             * safely ignore.  */
+            rc = 0;
+          else
+            log_error (_("adding column effective_policy to bindings DB: %s\n"),
+                       err);
+	  sqlite3_free (err);
+	}
     }
 
   if (rc)
@@ -858,8 +894,9 @@ get_single_long_cb2 (void *cookie, int argc, char **argv, char **azColName,
    If SHOW_OLD is set, the binding's old policy is displayed.  */
 static gpg_error_t
 record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
-		const char *user_id, enum tofu_policy policy,
-                const char *conflict,
+		const char *user_id,
+                enum tofu_policy policy, enum tofu_policy effective_policy,
+                const char *conflict, int set_conflict,
                 int show_old, time_t now)
 {
   char *fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
@@ -924,19 +961,33 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
   rc = gpgsql_stepx
     (dbs->db, &dbs->s.record_binding_update, NULL, NULL, &err,
      "insert or replace into bindings\n"
-     " (oid, fingerprint, email, user_id, time, policy, conflict)\n"
+     " (oid, fingerprint, email, user_id, time,"
+     "  policy, conflict, effective_policy)\n"
      " values (\n"
      /* If we don't explicitly reuse the OID, then SQLite will
-	reallocate a new one.  We just need to search for the OID
-	based on the fingerprint and email since they are unique.  */
+      * reallocate a new one.  We just need to search for the OID
+      * based on the fingerprint and email since they are unique.  */
      "  (select oid from bindings where fingerprint = ? and email = ?),\n"
-     "  ?, ?, ?, ?, ?, ?);",
+     "  ?, ?, ?, ?, ?,"
+     /* If SET_CONFLICT is 0, then preserve conflict's current value.  */
+     "  case ?"
+     "    when 0 then"
+     "      (select conflict from bindings where fingerprint = ? and email = ?)"
+     "    else ?"
+     "  end,"
+     "  ?);",
+     /* oid subquery.  */
      GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
+     /* values 2 through 6.  */
      GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
      GPGSQL_ARG_STRING, user_id,
      GPGSQL_ARG_LONG_LONG, (long long) now,
      GPGSQL_ARG_INT, (int) policy,
+     /* conflict subquery.  */
+     GPGSQL_ARG_INT, set_conflict ? 1 : 0,
+     GPGSQL_ARG_STRING, fingerprint, GPGSQL_ARG_STRING, email,
      GPGSQL_ARG_STRING, conflict ? conflict : "",
+     GPGSQL_ARG_INT, (int) effective_policy,
      GPGSQL_ARG_END);
   if (rc)
     {
@@ -1110,108 +1161,6 @@ time_ago_scale (signed long t)
   if (t < TIME_AGO_UNIT_LARGE)
     return t / TIME_AGO_UNIT_MEDIUM;
   return t / TIME_AGO_UNIT_LARGE;
-}
-
-
-/* Return the policy for the binding <FINGERPRINT, EMAIL> (email has
-   already been normalized) and any conflict information in *CONFLICT
-   if CONFLICT is not NULL.  Returns _tofu_GET_POLICY_ERROR if an error
-   occurs.  */
-static enum tofu_policy
-get_policy (tofu_dbs_t dbs, const char *fingerprint, const char *email,
-	    char **conflict)
-{
-  int rc;
-  char *err = NULL;
-  strlist_t strlist = NULL;
-  enum tofu_policy policy = _tofu_GET_POLICY_ERROR;
-  long along;
-
-  /* Check if the <FINGERPRINT, EMAIL> binding is known
-     (TOFU_POLICY_NONE cannot appear in the DB.  Thus, if POLICY is
-     still TOFU_POLICY_NONE after executing the query, then the
-     result set was empty.)  */
-  rc = gpgsql_stepx (dbs->db, &dbs->s.get_policy_select_policy_and_conflict,
-                      strings_collect_cb2, &strlist, &err,
-                      "select policy, conflict from bindings\n"
-                      " where fingerprint = ? and email = ?",
-                      GPGSQL_ARG_STRING, fingerprint,
-                      GPGSQL_ARG_STRING, email,
-                      GPGSQL_ARG_END);
-  if (rc)
-    {
-      log_error (_("error reading TOFU database: %s\n"), err);
-      print_further_info ("checking for existing bad bindings");
-      sqlite3_free (err);
-      rc = gpg_error (GPG_ERR_GENERAL);
-      goto out;
-    }
-
-  if (strlist_length (strlist) == 0)
-    /* No results.  */
-    {
-      policy = TOFU_POLICY_NONE;
-      goto out;
-    }
-  else if (strlist_length (strlist) != 2)
-    /* The result has the wrong form.  */
-    {
-      log_error (_("error reading TOFU database: %s\n"),
-                 gpg_strerror (GPG_ERR_BAD_DATA));
-      print_further_info ("checking for existing bad bindings:"
-                          " expected 2 results, got %d\n",
-                          strlist_length (strlist));
-      goto out;
-    }
-
-  /* The result has the right form.  */
-
-  if (string_to_long (&along, strlist->d, 0, __LINE__))
-    {
-      log_error (_("error reading TOFU database: %s\n"),
-                 gpg_strerror (GPG_ERR_BAD_DATA));
-      print_further_info ("bad value for policy: %s", strlist->d);
-      goto out;
-    }
-  policy = along;
-
-  if (! (policy == TOFU_POLICY_AUTO
-	 || policy == TOFU_POLICY_GOOD
-	 || policy == TOFU_POLICY_UNKNOWN
-	 || policy == TOFU_POLICY_BAD
-	 || policy == TOFU_POLICY_ASK))
-    {
-      log_error (_("error reading TOFU database: %s\n"),
-                 gpg_strerror (GPG_ERR_DB_CORRUPTED));
-      print_further_info ("invalid value for policy (%d)", policy);
-      policy = _tofu_GET_POLICY_ERROR;
-      goto out;
-    }
-
-
-  /* If CONFLICT is set, then policy should be TOFU_POLICY_ASK.  But,
-     just in case, we do the check again here and ignore the conflict
-     if POLICY is not TOFU_POLICY_ASK.  */
-  if (conflict)
-    {
-      if (policy == TOFU_POLICY_ASK && *strlist->next->d)
-	*conflict = xstrdup (strlist->next->d);
-      else
-	*conflict = NULL;
-    }
-
- out:
-  log_assert (policy == _tofu_GET_POLICY_ERROR
-              || policy == TOFU_POLICY_NONE
-              || policy == TOFU_POLICY_AUTO
-              || policy == TOFU_POLICY_GOOD
-              || policy == TOFU_POLICY_UNKNOWN
-              || policy == TOFU_POLICY_BAD
-              || policy == TOFU_POLICY_ASK);
-
-  free_strlist (strlist);
-
-  return policy;
 }
 
 
@@ -1862,7 +1811,7 @@ ask_about_binding (ctrl_t ctrl,
                 }
 
               if (record_binding (dbs, fingerprint, email, user_id,
-                                  *policy, NULL, 0, now))
+                                  *policy, TOFU_POLICY_NONE, NULL, 0, 0, now))
                 {
                   /* If there's an error registering the
                    * binding, don't save the signature.  */
@@ -2150,152 +2099,162 @@ build_conflict_set (tofu_dbs_t dbs,
 }
 
 
-/* Return the trust level (TRUST_NEVER, etc.) for the binding
- * <FINGERPRINT, EMAIL> (email is already normalized).  If no policy
- * is registered, returns TOFU_POLICY_NONE.  If an error occurs,
- * returns _tofu_GET_TRUST_ERROR.
- *
- * PK is the public key object for FINGERPRINT.
- *
- * USER_ID is the unadulterated user id.
- *
- * If MAY_ASK is set, then we may interact with the user.  This is
- * necessary if there is a conflict or the binding's policy is
- * TOFU_POLICY_ASK.  In the case of a conflict, we set the new
- * conflicting binding's policy to TOFU_POLICY_ASK.  In either case,
- * we return TRUST_UNDEFINED.  Note: if MAY_ASK is set, then this
- * function must not be called while in a transaction!  */
+/* Return the effective policy for the binding <FINGERPRINT, EMAIL>
+ * (email has already been normalized) and any conflict information in
+ * *CONFLICT_SETP, if CONFLICT_SETP is not NULL.  Returns
+ * _tofu_GET_POLICY_ERROR if an error occurs.  */
 static enum tofu_policy
-get_trust (ctrl_t ctrl, PKT_public_key *pk,
-           const char *fingerprint, const char *email,
-	   const char *user_id, int may_ask, time_t now)
+get_policy (tofu_dbs_t dbs, PKT_public_key *pk,
+            const char *fingerprint, const char *user_id, const char *email,
+	    strlist_t *conflict_setp, time_t now)
 {
-  tofu_dbs_t dbs = ctrl->tofu.dbs;
-  int in_transaction = 0;
-  enum tofu_policy policy;
   int rc;
-  char *sqerr = NULL;
-  int change_conflicting_to_ask = 0;
+  char *err = NULL;
+  strlist_t results = NULL;
+  enum tofu_policy policy = _tofu_GET_POLICY_ERROR;
+  enum tofu_policy effective_policy_orig = TOFU_POLICY_NONE;
+  enum tofu_policy effective_policy = _tofu_GET_POLICY_ERROR;
+  long along;
+  char *conflict_orig = NULL;
+  char *conflict = NULL;
   strlist_t conflict_set = NULL;
   int conflict_set_count;
-  int trust_level = TRUST_UNKNOWN;
-  strlist_t iter;
 
-  log_assert (dbs);
+  /* Check if the <FINGERPRINT, EMAIL> binding is known
+     (TOFU_POLICY_NONE cannot appear in the DB.  Thus, if POLICY is
+     still TOFU_POLICY_NONE after executing the query, then the
+     result set was empty.)  */
+  rc = gpgsql_stepx (dbs->db, &dbs->s.get_policy_select_policy_and_conflict,
+                      strings_collect_cb2, &results, &err,
+                      "select policy, conflict, effective_policy from bindings\n"
+                      " where fingerprint = ? and email = ?",
+                      GPGSQL_ARG_STRING, fingerprint,
+                      GPGSQL_ARG_STRING, email,
+                      GPGSQL_ARG_END);
+  if (rc)
+    {
+      log_error (_("error reading TOFU database: %s\n"), err);
+      print_further_info ("reading the policy");
+      sqlite3_free (err);
+      rc = gpg_error (GPG_ERR_GENERAL);
+      goto out;
+    }
 
-  if (may_ask)
-    log_assert (dbs->in_transaction == 0);
+  if (strlist_length (results) == 0)
+    {
+      /* No results.  Use the defaults.  */
+      policy = TOFU_POLICY_NONE;
+      effective_policy = TOFU_POLICY_NONE;
+    }
+  else if (strlist_length (results) == 3)
+    {
+      /* Parse and sanity check the results.  */
 
-  if (opt.batch)
-    may_ask = 0;
+      if (string_to_long (&along, results->d, 0, __LINE__))
+        {
+          log_error (_("error reading TOFU database: %s\n"),
+                     gpg_strerror (GPG_ERR_BAD_DATA));
+          print_further_info ("bad value for policy: %s", results->d);
+          goto out;
+        }
+      policy = along;
 
-  log_assert (pk_is_primary (pk));
+      if (! (policy == TOFU_POLICY_AUTO
+             || policy == TOFU_POLICY_GOOD
+             || policy == TOFU_POLICY_UNKNOWN
+             || policy == TOFU_POLICY_BAD
+             || policy == TOFU_POLICY_ASK))
+        {
+          log_error (_("error reading TOFU database: %s\n"),
+                     gpg_strerror (GPG_ERR_DB_CORRUPTED));
+          print_further_info ("invalid value for policy (%d)", policy);
+          effective_policy = _tofu_GET_POLICY_ERROR;
+          goto out;
+        }
 
-  /* Make sure _tofu_GET_TRUST_ERROR isn't equal to any of the trust
-     levels.  */
-  log_assert (_tofu_GET_TRUST_ERROR != TRUST_UNKNOWN
-              && _tofu_GET_TRUST_ERROR != TRUST_EXPIRED
-              && _tofu_GET_TRUST_ERROR != TRUST_UNDEFINED
-              && _tofu_GET_TRUST_ERROR != TRUST_NEVER
-              && _tofu_GET_TRUST_ERROR != TRUST_MARGINAL
-              && _tofu_GET_TRUST_ERROR != TRUST_FULLY
-              && _tofu_GET_TRUST_ERROR != TRUST_ULTIMATE);
+      if (*results->next->d)
+        conflict = xstrdup (results->next->d);
 
-  begin_transaction (ctrl, 0);
-  in_transaction = 1;
+      if (string_to_long (&along, results->next->next->d, 0, __LINE__))
+        {
+          log_error (_("error reading TOFU database: %s\n"),
+                     gpg_strerror (GPG_ERR_BAD_DATA));
+          print_further_info ("bad value for effective policy: %s",
+                              results->next->next->d);
+          goto out;
+        }
+      effective_policy = along;
 
-  policy = get_policy (dbs, fingerprint, email, NULL);
+      if (! (effective_policy == TOFU_POLICY_NONE
+             || effective_policy == TOFU_POLICY_AUTO
+             || effective_policy == TOFU_POLICY_GOOD
+             || effective_policy == TOFU_POLICY_UNKNOWN
+             || effective_policy == TOFU_POLICY_BAD
+             || effective_policy == TOFU_POLICY_ASK))
+        {
+          log_error (_("error reading TOFU database: %s\n"),
+                     gpg_strerror (GPG_ERR_DB_CORRUPTED));
+          print_further_info ("invalid value for effective_policy (%d)",
+                              effective_policy);
+          effective_policy = _tofu_GET_POLICY_ERROR;
+          goto out;
+        }
+    }
+  else
+    {
+      /* The result has the wrong form.  */
+
+      log_error (_("error reading TOFU database: %s\n"),
+                 gpg_strerror (GPG_ERR_BAD_DATA));
+      print_further_info ("reading policy: expected 3 columns, got %d\n",
+                          strlist_length (results));
+      goto out;
+    }
+
+  /* Save the effective policy and conflict so we know if we changed
+   * them.  */
+  effective_policy_orig = effective_policy;
+  conflict_orig = conflict;
+
+  /* Unless there is a conflict, if the effective policy is cached,
+   * just return it.  The reason we don't do this when there is a
+   * conflict is because of the following scenario: assume A and B
+   * conflict and B has signed A's key.  Now, later we import A's
+   * signature on B.  We need to recheck A, but the signature was on
+   * B, i.e., when B changes, we invalidate B's effective policy, but
+   * we also need to invalidate A's effective policy.  Instead, we
+   * assume that conflicts are rare and don't optimize for them, which
+   * would complicate the code.  */
+  if (effective_policy != TOFU_POLICY_NONE && !conflict)
+    goto out;
+
+  /* If the user explicitly set the policy, then respect that.  */
+  if (policy != TOFU_POLICY_AUTO && policy != TOFU_POLICY_NONE)
+    {
+      effective_policy = policy;
+      goto out;
+    }
+
+  /* Unless proven wrong, assume the effective policy is 'auto'.  */
+  effective_policy = TOFU_POLICY_AUTO;
+
+  /* See if the key is ultimately trusted.  */
   {
-    /* See if the key is ultimately trusted.  If so, we're done.  */
     u32 kid[2];
 
     keyid_from_pk (pk, kid);
-
     if (tdb_keyid_is_utk (kid))
       {
-        if (policy == TOFU_POLICY_NONE)
-          /* New binding.  */
-          {
-            if (record_binding (dbs, fingerprint, email, user_id,
-                                TOFU_POLICY_GOOD, NULL, 0, now) != 0)
-              {
-                log_error (_("error setting TOFU binding's trust level"
-                             " to %s\n"), "good");
-                trust_level = _tofu_GET_TRUST_ERROR;
-                goto out;
-              }
-          }
-
-        trust_level = TRUST_ULTIMATE;
+        effective_policy = TOFU_POLICY_GOOD;
         goto out;
       }
   }
 
-  if (policy == TOFU_POLICY_AUTO)
-    {
-      policy = opt.tofu_default_policy;
-      if (DBG_TRUST)
-	log_debug ("TOFU: binding <key: %s, user id: %s>'s policy is"
-                   " auto (default: %s).\n",
-		   fingerprint, email,
-		   tofu_policy_str (opt.tofu_default_policy));
-    }
-  switch (policy)
-    {
-    case TOFU_POLICY_AUTO:
-    case TOFU_POLICY_GOOD:
-    case TOFU_POLICY_UNKNOWN:
-    case TOFU_POLICY_BAD:
-      /* The saved judgement is auto -> auto, good, unknown or bad.
-       * We don't need to ask the user anything.  */
-      if (DBG_TRUST)
-	log_debug ("TOFU: Known binding <key: %s, user id: %s>'s policy: %s\n",
-		   fingerprint, email, tofu_policy_str (policy));
-      trust_level = tofu_policy_to_trust_level (policy);
-      goto out;
-
-    case TOFU_POLICY_ASK:
-      /* We need to ask the user what to do.  Case #1 or #2 below.  */
-      break;
-
-    case TOFU_POLICY_NONE:
-      /* The binding is new, we need to check for conflicts.  Case #3
-       * below.  */
-      break;
-
-    case _tofu_GET_POLICY_ERROR:
-      trust_level = _tofu_GET_TRUST_ERROR;
-      goto out;
-
-    default:
-      log_bug ("%s: Impossible value for policy (%d)\n", __func__, policy);
-    }
-
-
-  /* We get here if:
-   *
-   *   1. The saved policy is auto and the default policy is ask
-   *      (get_policy() == TOFU_POLICY_AUTO
-   *       && opt.tofu_default_policy == TOFU_POLICY_ASK)
-   *
-   *   2. The saved policy is ask (either last time the user selected
-   *      accept once or reject once or there was a conflict and this
-   *      binding's policy was changed from auto to ask)
-   *      (policy == TOFU_POLICY_ASK), or,
-   *
-   *   3. We don't have a saved policy (policy == TOFU_POLICY_NONE)
-   *      (need to check for a conflict).
-   *
-   * In summary: POLICY is ask or none.
-   */
-
-  /* Before continuing, see if the key is signed by an ultimately
-   * trusted key.  */
+  /* See if the key is signed by an ultimately trusted key.  */
   {
     int fingerprint_raw_len = strlen (fingerprint) / 2;
     char fingerprint_raw[fingerprint_raw_len];
     int len = 0;
-    int is_signed_by_utk = 0;
 
     if (fingerprint_raw_len != 20
         || ((len = hex2bin (fingerprint,
@@ -2322,41 +2281,33 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
           }
         else
           {
-            is_signed_by_utk = signed_by_utk (email, kb);
+            int is_signed_by_utk = signed_by_utk (email, kb);
             release_kbnode (kb);
+            if (is_signed_by_utk)
+              {
+                effective_policy = TOFU_POLICY_GOOD;
+                goto out;
+              }
           }
-      }
-
-    if (is_signed_by_utk)
-      {
-        if (record_binding (dbs, fingerprint, email, user_id,
-                            TOFU_POLICY_GOOD, NULL, 0, now) != 0)
-          {
-            log_error (_("error setting TOFU binding's trust level"
-                         " to %s\n"), "good");
-            trust_level = _tofu_GET_TRUST_ERROR;
-          }
-        else
-          trust_level = TRUST_FULLY;
-
-        goto out;
       }
   }
 
+  /* Check for any conflicts / see if a previously discovered conflict
+   * disappeared.  The latter can happen if the conflicting bindings
+   * are now cross signed, for instance.  */
 
-  /* Look for conflicts.  This is needed in all 3 cases.  */
   conflict_set = build_conflict_set (dbs, pk, fingerprint, email);
   conflict_set_count = strlist_length (conflict_set);
   if (conflict_set_count == 0)
     {
-      /* We should always at least have the current binding.  */
-      trust_level = _tofu_GET_TRUST_ERROR;
+      /* build_conflict_set should always at least return the current
+         binding.  Something went wrong.  */
+      effective_policy = _tofu_GET_POLICY_ERROR;
       goto out;
     }
 
   if (conflict_set_count == 1
-      && (conflict_set->flags & BINDING_NEW)
-      && opt.tofu_default_policy != TOFU_POLICY_ASK)
+      && (conflict_set->flags & BINDING_NEW))
     {
       /* We've never observed a binding with this email address and we
        * have a default policy, which is not to ask the user.  */
@@ -2369,123 +2320,279 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
 	log_debug ("TOFU: New binding <key: %s, user id: %s>, no conflict.\n",
 		   fingerprint, email);
 
-      if (record_binding (dbs, fingerprint, email, user_id,
-			  TOFU_POLICY_AUTO, NULL, 0, now) != 0)
-	{
-	  log_error (_("error setting TOFU binding's trust level to %s\n"),
-		       "auto");
-	  trust_level = _tofu_GET_TRUST_ERROR;
-	  goto out;
-	}
-
-      trust_level = tofu_policy_to_trust_level (TOFU_POLICY_AUTO);
+      effective_policy = TOFU_POLICY_AUTO;
       goto out;
     }
 
   if (conflict_set_count == 1
       && (conflict_set->flags & BINDING_CONFLICT))
     {
-      /* No known conflicts now, but there was a conflict.  This means
-       * at somepoint, there was a conflict and we changed this
-       * binding's policy to ask and set the conflicting key.  The
-       * conflict can go away if there is not a cross sig between the
-       * two keys.  In this case, just silently clear the conflict and
-       * reset the policy to auto.  */
-
-      log_assert (policy == TOFU_POLICY_ASK);
+      /* No known conflicts now, but there was a conflict.  That is,
+       * at somepoint there was a conflict, but it went away.  A
+       * conflict can go away if there is now a cross sig between the
+       * two keys.  In this case, we just silently clear the
+       * conflict.  */
 
       if (DBG_TRUST)
         log_debug ("TOFU: binding <key: %s, user id: %s> had a conflict, but it's been resolved (probably via  cross sig).\n",
                    fingerprint, email);
 
-      if (record_binding (dbs, fingerprint, email, user_id,
-			  TOFU_POLICY_AUTO, NULL, 0, now) != 0)
-	log_error (_("error setting TOFU binding's trust level to %s\n"),
-		   "auto");
+      effective_policy = TOFU_POLICY_AUTO;
+      conflict = NULL;
 
-      trust_level = tofu_policy_to_trust_level (TOFU_POLICY_AUTO);
       goto out;
     }
 
-  /* We have a conflict.  Mark any conflicting bindings that have an
-   * automatic policy as now requiring confirmation.  Note: we delay
-   * this until after we ask for confirmation so that when the current
-   * policy is printed, it is correct.  */
-  change_conflicting_to_ask = 1;
-
-  if (! may_ask)
+  if (conflict_set_count == 1)
     {
-      log_assert (policy == TOFU_POLICY_NONE || policy == TOFU_POLICY_ASK);
-      if (policy == TOFU_POLICY_NONE)
-        {
-          /* We get here in the third case (no saved policy) and if
-           * there is a conflict.  */
-          if (record_binding (dbs, fingerprint, email, user_id,
-                              TOFU_POLICY_ASK,
-                              conflict_set && conflict_set->next
-                              ? conflict_set->next->d : NULL,
-                              0, now) != 0)
-            log_error (_("error setting TOFU binding's trust level to %s\n"),
-                       "ask");
-        }
+      /* No conflicts and never marked as conflicting.  */
 
-      trust_level = TRUST_UNDEFINED;
+      log_assert (!conflict);
+
+      effective_policy = TOFU_POLICY_AUTO;
+
       goto out;
     }
 
-  /* We can't be in a normal transaction in ask_about_binding.  */
-  end_transaction (ctrl, 0);
-  in_transaction = 0;
-
-  /* If we get here, we need to ask the user about the binding.  */
-  ask_about_binding (ctrl,
-                     &policy,
-                     &trust_level,
-                     conflict_set,
-                     fingerprint,
-                     email,
-                     user_id,
-                     now);
+  /* There is a conflicting key.  */
+  log_assert (conflict_set_count > 1);
+  effective_policy = TOFU_POLICY_ASK;
+  conflict = xstrdup (conflict_set->next->d);
 
  out:
+  log_assert (policy == _tofu_GET_POLICY_ERROR
+              || policy == TOFU_POLICY_NONE
+              || policy == TOFU_POLICY_AUTO
+              || policy == TOFU_POLICY_GOOD
+              || policy == TOFU_POLICY_UNKNOWN
+              || policy == TOFU_POLICY_BAD
+              || policy == TOFU_POLICY_ASK);
+  /* Everything but NONE.  */
+  log_assert (effective_policy == _tofu_GET_POLICY_ERROR
+              || effective_policy == TOFU_POLICY_AUTO
+              || effective_policy == TOFU_POLICY_GOOD
+              || effective_policy == TOFU_POLICY_UNKNOWN
+              || effective_policy == TOFU_POLICY_BAD
+              || effective_policy == TOFU_POLICY_ASK);
 
-  if (change_conflicting_to_ask)
+  if (effective_policy != TOFU_POLICY_ASK && conflict)
+    conflict = NULL;
+
+  /* If we don't have a record of this binding, its effective policy
+   * changed, or conflict changed, update the DB.  */
+  if (effective_policy != _tofu_GET_POLICY_ERROR
+      && (/* New binding.  */
+          policy == TOFU_POLICY_NONE
+          /* effective_policy changed.  */
+          || effective_policy != effective_policy_orig
+          /* conflict changed.  */
+          || (conflict != conflict_orig
+              && (!conflict || !conflict_orig
+                  || strcmp (conflict, conflict_orig) != 0))))
     {
-      /* Mark any conflicting bindings that have an automatic policy as
-       * now requiring confirmation.  */
-
-      if (! in_transaction)
-        {
-          begin_transaction (ctrl, 0);
-          in_transaction = 1;
-        }
-
-      /* If we weren't allowed to ask, also update this key as
-       * conflicting with itself.  */
-      for (iter = may_ask ? conflict_set->next : conflict_set;
-           iter; iter = iter->next)
-        {
-          rc = gpgsql_exec_printf
-            (dbs->db, NULL, NULL, &sqerr,
-             "update bindings set policy = %d, conflict = %Q"
-             " where email = %Q and fingerprint = %Q and policy = %d;",
-             TOFU_POLICY_ASK, fingerprint,
-             email, iter->d, TOFU_POLICY_AUTO);
-          if (rc)
-            {
-              log_error (_("error changing TOFU policy: %s\n"), sqerr);
-              print_further_info ("binding: <key: %s, user id: %s>",
-                                  fingerprint, user_id);
-              sqlite3_free (sqerr);
-              sqerr = NULL;
-              rc = gpg_error (GPG_ERR_GENERAL);
-            }
-          else if (DBG_TRUST)
-            log_debug ("Set %s to conflict with %s\n",
-                       iter->d, fingerprint);
-        }
+      if (record_binding (dbs, fingerprint, email, user_id,
+                          policy == TOFU_POLICY_NONE ? TOFU_POLICY_AUTO : policy,
+                          effective_policy, conflict, 1, 0, now) != 0)
+        log_error (_("error setting TOFU binding's policy"
+                     " to %s\n"), tofu_policy_str (policy));
     }
 
+  /* If the caller wants the set of conflicts, return it.  */
+  if (effective_policy == TOFU_POLICY_ASK && conflict_setp)
+    {
+      if (! conflict_set)
+        conflict_set = build_conflict_set (dbs, pk, fingerprint, email);
+      *conflict_setp = conflict_set;
+    }
+  else
+    {
+      free_strlist (conflict_set);
+
+      if (conflict_setp)
+        *conflict_setp = NULL;
+    }
+
+  xfree (conflict_orig);
+  if (conflict != conflict_orig)
+    xfree (conflict);
+  free_strlist (results);
+
+  return effective_policy;
+}
+
+
+/* Return the trust level (TRUST_NEVER, etc.) for the binding
+ * <FINGERPRINT, EMAIL> (email is already normalized).  If no policy
+ * is registered, returns TOFU_POLICY_NONE.  If an error occurs,
+ * returns _tofu_GET_TRUST_ERROR.
+ *
+ * PK is the public key object for FINGERPRINT.
+ *
+ * USER_ID is the unadulterated user id.
+ *
+ * If MAY_ASK is set, then we may interact with the user.  This is
+ * necessary if there is a conflict or the binding's policy is
+ * TOFU_POLICY_ASK.  In the case of a conflict, we set the new
+ * conflicting binding's policy to TOFU_POLICY_ASK.  In either case,
+ * we return TRUST_UNDEFINED.  Note: if MAY_ASK is set, then this
+ * function must not be called while in a transaction!  */
+static enum tofu_policy
+get_trust (ctrl_t ctrl, PKT_public_key *pk,
+           const char *fingerprint, const char *email,
+	   const char *user_id, int may_ask, time_t now)
+{
+  tofu_dbs_t dbs = ctrl->tofu.dbs;
+  int in_transaction = 0;
+  enum tofu_policy policy;
+  int rc;
+  char *sqerr = NULL;
+  strlist_t conflict_set = NULL;
+  int trust_level = TRUST_UNKNOWN;
+  strlist_t iter;
+
+  log_assert (dbs);
+
+  if (may_ask)
+    log_assert (dbs->in_transaction == 0);
+
+  if (opt.batch)
+    may_ask = 0;
+
+  log_assert (pk_is_primary (pk));
+
+  /* Make sure _tofu_GET_TRUST_ERROR isn't equal to any of the trust
+     levels.  */
+  log_assert (_tofu_GET_TRUST_ERROR != TRUST_UNKNOWN
+              && _tofu_GET_TRUST_ERROR != TRUST_EXPIRED
+              && _tofu_GET_TRUST_ERROR != TRUST_UNDEFINED
+              && _tofu_GET_TRUST_ERROR != TRUST_NEVER
+              && _tofu_GET_TRUST_ERROR != TRUST_MARGINAL
+              && _tofu_GET_TRUST_ERROR != TRUST_FULLY
+              && _tofu_GET_TRUST_ERROR != TRUST_ULTIMATE);
+
+  /* If the key is ultimately trusted, there is nothing to do.  */
+  {
+    u32 kid[2];
+
+    keyid_from_pk (pk, kid);
+    if (tdb_keyid_is_utk (kid))
+      {
+        trust_level = TRUST_ULTIMATE;
+        goto out;
+      }
+  }
+
+  begin_transaction (ctrl, 0);
+  in_transaction = 1;
+
+  policy = get_policy (dbs, pk, fingerprint, user_id, email, &conflict_set, now);
+  if (policy == TOFU_POLICY_AUTO)
+    {
+      policy = opt.tofu_default_policy;
+      if (DBG_TRUST)
+	log_debug ("TOFU: binding <key: %s, user id: %s>'s policy is"
+                   " auto (default: %s).\n",
+		   fingerprint, email,
+		   tofu_policy_str (opt.tofu_default_policy));
+    }
+  switch (policy)
+    {
+    case TOFU_POLICY_AUTO:
+    case TOFU_POLICY_GOOD:
+    case TOFU_POLICY_UNKNOWN:
+    case TOFU_POLICY_BAD:
+      /* The saved judgement is auto -> auto, good, unknown or bad.
+       * We don't need to ask the user anything.  */
+      if (DBG_TRUST)
+	log_debug ("TOFU: Known binding <key: %s, user id: %s>'s policy: %s\n",
+		   fingerprint, email, tofu_policy_str (policy));
+      trust_level = tofu_policy_to_trust_level (policy);
+      goto out;
+
+    case TOFU_POLICY_ASK:
+      /* We need to ask the user what to do.  */
+      break;
+
+    case _tofu_GET_POLICY_ERROR:
+      trust_level = _tofu_GET_TRUST_ERROR;
+      goto out;
+
+    default:
+      log_bug ("%s: Impossible value for policy (%d)\n", __func__, policy);
+    }
+
+
+  /* We get here if:
+   *
+   *   1. The saved policy is auto and the default policy is ask
+   *      (get_policy() == TOFU_POLICY_AUTO
+   *       && opt.tofu_default_policy == TOFU_POLICY_ASK)
+   *
+   *   2. The saved policy is ask (either last time the user selected
+   *      accept once or reject once or there was a conflict and this
+   *      binding's policy was changed from auto to ask)
+   *      (policy == TOFU_POLICY_ASK).
+   */
+  log_assert (policy == TOFU_POLICY_ASK);
+
+  if (may_ask)
+    {
+      /* We can't be in a normal transaction in ask_about_binding.  */
+      end_transaction (ctrl, 0);
+      in_transaction = 0;
+
+      /* If we get here, we need to ask the user about the binding.  */
+      ask_about_binding (ctrl,
+                         &policy,
+                         &trust_level,
+                         conflict_set,
+                         fingerprint,
+                         email,
+                         user_id,
+                         now);
+    }
+  else
+    trust_level = TRUST_UNDEFINED;
+
+  /* Mark any conflicting bindings that have an automatic policy as
+   * now requiring confirmation.  Note: we do this after we ask for
+   * confirmation so that when the current policy is printed, it is
+   * correct.  */
+  if (! in_transaction)
+    {
+      begin_transaction (ctrl, 0);
+      in_transaction = 1;
+    }
+
+  /* The conflict set should always contain at least one element:
+   * the current key.  */
+  log_assert (conflict_set);
+
+  for (iter = conflict_set->next; iter; iter = iter->next)
+    {
+      /* We don't immediately set the effective policy to 'ask,
+         because  */
+      rc = gpgsql_exec_printf
+        (dbs->db, NULL, NULL, &sqerr,
+         "update bindings set effective_policy = %d, conflict = %Q"
+         " where email = %Q and fingerprint = %Q and effective_policy != %d;",
+         TOFU_POLICY_NONE, fingerprint,
+         email, iter->d, TOFU_POLICY_ASK);
+      if (rc)
+        {
+          log_error (_("error changing TOFU policy: %s\n"), sqerr);
+          print_further_info ("binding: <key: %s, user id: %s>",
+                              fingerprint, user_id);
+          sqlite3_free (sqerr);
+          sqerr = NULL;
+          rc = gpg_error (GPG_ERR_GENERAL);
+        }
+      else if (DBG_TRUST)
+        log_debug ("Set %s to conflict with %s\n",
+                   iter->d, fingerprint);
+    }
+
+ out:
   if (in_transaction)
     end_transaction (ctrl, 0);
 
@@ -2684,17 +2791,18 @@ write_stats_status (estream_t fp,
 }
 
 /* Note: If OUTFP is not NULL, this function merely prints a "tfs" record
- * to OUTFP.  In this case USER_ID is not required.
+ * to OUTFP.
  *
  * Returns whether the caller should call show_warning after iterating
  * over all user ids.
  */
 static int
-show_statistics (tofu_dbs_t dbs, const char *fingerprint,
+show_statistics (tofu_dbs_t dbs, PKT_public_key *pk, const char *fingerprint,
 		 const char *email, const char *user_id,
 		 estream_t outfp, time_t now)
 {
-  enum tofu_policy policy = get_policy (dbs, fingerprint, email, NULL);
+  enum tofu_policy policy =
+    get_policy (dbs, pk, fingerprint, user_id, email, NULL, now);
 
   char *fingerprint_pp;
   int rc;
@@ -3336,7 +3444,7 @@ tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
   fingerprint = hexfingerprint (pk, NULL, 0);
   email = email_from_user_id (user_id);
 
-  show_statistics (dbs, fingerprint, email, user_id, fp, now);
+  show_statistics (dbs, pk, fingerprint, email, user_id, fp, now);
 
   xfree (email);
   xfree (fingerprint);
@@ -3412,7 +3520,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 
       if (may_ask && tl != TRUST_ULTIMATE && tl != TRUST_EXPIRED)
         need_warning |=
-          show_statistics (dbs, fingerprint, email, user_id->d, NULL, now);
+          show_statistics (dbs, pk, fingerprint, email, user_id->d, NULL, now);
 
       if (tl == TRUST_NEVER)
         trust_level = TRUST_NEVER;
@@ -3512,7 +3620,7 @@ tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
       email = email_from_user_id (user_id->name);
 
       err = record_binding (dbs, fingerprint, email, user_id->name,
-                            policy, NULL, 1, now);
+                            policy, TOFU_POLICY_NONE, NULL, 0, 1, now);
       if (err)
         {
           log_error (_("error setting policy for key %s, user id \"%s\": %s"),
@@ -3561,6 +3669,7 @@ gpg_error_t
 tofu_get_policy (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *user_id,
 		 enum tofu_policy *policy)
 {
+  time_t now = gnupg_get_time ();
   tofu_dbs_t dbs;
   char *fingerprint;
   char *email;
@@ -3580,11 +3689,50 @@ tofu_get_policy (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *user_id,
 
   email = email_from_user_id (user_id->name);
 
-  *policy = get_policy (dbs, fingerprint, email, NULL);
+  *policy = get_policy (dbs, pk, fingerprint, user_id->name, email, NULL, now);
 
   xfree (email);
   xfree (fingerprint);
   if (*policy == _tofu_GET_POLICY_ERROR)
+    return gpg_error (GPG_ERR_GENERAL);
+  return 0;
+}
+
+gpg_error_t
+tofu_notice_key_changed (ctrl_t ctrl, kbnode_t kb)
+{
+  tofu_dbs_t dbs;
+  PKT_public_key *pk;
+  char *fingerprint;
+  char *sqlerr = NULL;
+  int rc;
+
+  /* Make sure PK is a primary key.  */
+  setup_main_keyids (kb);
+  pk = kb->pkt->pkt.public_key;
+  log_assert (pk_is_primary (pk));
+
+  fingerprint = hexfingerprint (pk, NULL, 0);
+
+  dbs = opendbs (ctrl);
+  if (! dbs)
+    {
+      log_error (_("error opening TOFU database: %s\n"),
+                 gpg_strerror (GPG_ERR_GENERAL));
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+
+  fingerprint = hexfingerprint (pk, NULL, 0);
+
+  rc = gpgsql_stepx (dbs->db, NULL, NULL, NULL, &sqlerr,
+                     "update bindings set effective_policy = ?"
+                     " where fingerprint = ?;",
+                     GPGSQL_ARG_INT, (int) TOFU_POLICY_NONE,
+                     GPGSQL_ARG_STRING, fingerprint,
+                     GPGSQL_ARG_END);
+  xfree (fingerprint);
+
+  if (rc == _tofu_GET_POLICY_ERROR)
     return gpg_error (GPG_ERR_GENERAL);
   return 0;
 }

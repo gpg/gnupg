@@ -1518,7 +1518,7 @@ build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf, u32 **r_sigstatus)
  * you should use keydb_push_found_state and keydb_pop_found_state to
  * save and restore it.  */
 gpg_error_t
-keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
+keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb)
 {
   gpg_error_t err;
   PKT_public_key *pk;
@@ -1541,6 +1541,10 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
   err = lock_all (hd);
   if (err)
     return err;
+
+#ifdef USE_TOFU
+  tofu_notice_key_changed (ctrl, kb);
+#endif
 
   memset (&desc, 0, sizeof (desc));
   fingerprint_from_pk (pk, desc.u.fpr, &len);
