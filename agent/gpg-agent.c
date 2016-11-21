@@ -1473,8 +1473,6 @@ main (int argc, char **argv )
       pid_t pid;
 #endif
 
-      initialize_modules ();
-
       /* Remove the DISPLAY variable so that a pinentry does not
          default to a specific display.  There is still a default
          display when gpg-agent was started using --display or a
