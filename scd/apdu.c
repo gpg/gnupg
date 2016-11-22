@@ -3648,8 +3648,9 @@ send_le (int slot, int class, int ins, int p0, int p1,
 
   if (use_extended_length && (le > 256 || le < 0))
     {
-      result_buffer_size = le < 0? 4096 : le;
-      result_buffer = xtrymalloc (result_buffer_size + 10);
+      /* Two more bytes are needed for status bytes.  */
+      result_buffer_size = le < 0? 4096 : (le + 2);
+      result_buffer = xtrymalloc (result_buffer_size);
       if (!result_buffer)
         {
           xfree (apdu_buffer);
