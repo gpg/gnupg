@@ -29,9 +29,6 @@
 #include <stdarg.h>
 #include <sqlite3.h>
 #include <time.h>
-#include <utime.h>
-#include <fcntl.h>
-#include <unistd.h>
 
 #include "gpg.h"
 #include "types.h"
@@ -909,21 +906,23 @@ busy_handler (void *cookie, int call_count)
 
   (void) call_count;
 
-  /* Update the lock file time stamp so that the current owner knows
-     that we want the lock.  */
+  /* Update the want-lock-file time stamp (specifically, the ctime) so
+   * that the current owner knows that we (well, someone) want the
+   * lock.  */
   if (dbs)
     {
       /* Note: we don't fail if we can't create the lock file: this
-         process will have to wait a bit longer, but otherwise nothing
-         horrible should happen.  */
+       * process will have to wait a bit longer, but otherwise nothing
+       * horrible should happen.  */
 
-      int fd = open (dbs->want_lock_file, O_CREAT|O_WRONLY|O_TRUNC,
-                     S_IRUSR|S_IRGRP|S_IROTH|S_IWUSR);
-      if (fd == -1)
+      estream_t fp;
+
+      fp = es_fopen (dbs->want_lock_file, "w");
+      if (! fp)
         log_debug ("TOFU: Error opening '%s': %s\n",
                    dbs->want_lock_file, strerror (errno));
       else
-        close (fd);
+        es_fclose (fp);
     }
 
   /* Call again.  */
