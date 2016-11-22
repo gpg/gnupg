@@ -506,6 +506,152 @@ version_check_cb (void *cookie, int argc, char **argv, char **azColName)
   return 1;
 }
 
+static int
+check_utks (sqlite3 *db)
+{
+  int rc;
+  char *err = NULL;
+  struct key_item *utks;
+  struct key_item *ki;
+  int utk_count;
+  char *utks_string = NULL;
+  char keyid_str[16+1];
+  long utks_unchanged = 0;
+
+  /* An early version of the v1 format did not include the list of
+   * known ultimately trusted keys.
+   *
+   * This list is used to detect when the set of ultimately trusted
+   * keys changes.  We need to detect this to invalidate the effective
+   * policy, which can change if an ultimately trusted key is added or
+   * removed.  */
+  rc = sqlite3_exec (db,
+                     "create table if not exists ultimately_trusted_keys"
+                     " (keyid);\n",
+                     NULL, NULL, &err);
+  if (rc)
+    {
+      log_error (_("error creating 'ultimately_trusted_keys' TOFU table: %s\n"),
+                 err);
+      sqlite3_free (err);
+      goto out;
+    }
+
+
+  utks = tdb_utks ();
+  for (ki = utks, utk_count = 0; ki; ki = ki->next, utk_count ++)
+    ;
+
+  if (utk_count)
+    {
+      /* Build a list of keyids of the form "XXX","YYY","ZZZ".  */
+      int len = (1 + 16 + 1 + 1) * utk_count;
+      int o = 0;
+
+      utks_string = xmalloc (len);
+      *utks_string = 0;
+      for (ki = utks, utk_count = 0; ki; ki = ki->next, utk_count ++)
+        {
+          utks_string[o ++] = '\'';
+          format_keyid (ki->kid, KF_LONG,
+                        keyid_str, sizeof (keyid_str));
+          memcpy (&utks_string[o], keyid_str, 16);
+          o += 16;
+          utks_string[o ++] = '\'';
+          utks_string[o ++] = ',';
+        }
+      utks_string[o - 1] = 0;
+      log_assert (o == len);
+    }
+
+  rc = gpgsql_exec_printf
+    (db, get_single_unsigned_long_cb, &utks_unchanged, &err,
+     "select"
+     /* Removed UTKs?  (Known UTKs in current UTKs.)  */
+     "  ((select count(*) from ultimately_trusted_keys"
+     "     where (keyid in (%s))) == %d)"
+     " and"
+     /* New UTKs?  */
+     "  ((select count(*) from ultimately_trusted_keys"
+     "     where keyid not in (%s)) == 0);",
+     utks_string ? utks_string : "",
+     utk_count,
+     utks_string ? utks_string : "");
+  xfree (utks_string);
+  if (rc)
+    {
+      log_error (_("TOFU DB error"));
+      print_further_info ("checking if ultimately trusted keys changed: %s",
+                         err);
+      sqlite3_free (err);
+      goto out;
+    }
+
+  if (utks_unchanged)
+    goto out;
+
+  if (DBG_TRUST)
+    log_debug ("TOFU: ultimately trusted keys changed.\n");
+
+  /* Given that the set of ultimately trusted keys
+   * changed, clear any cached policies.  */
+  rc = gpgsql_exec_printf
+    (db, NULL, NULL, &err,
+     "update bindings set effective_policy = %d;",
+     TOFU_POLICY_NONE);
+  if (rc)
+    {
+      log_error (_("TOFU DB error"));
+      print_further_info ("clearing cached policies: %s", err);
+      sqlite3_free (err);
+      goto out;
+    }
+
+  /* Now, update the UTK table.  */
+  rc = sqlite3_exec (db,
+                     "drop table ultimately_trusted_keys;",
+                     NULL, NULL, &err);
+  if (rc)
+    {
+      log_error (_("TOFU DB error"));
+      print_further_info ("dropping ultimately_trusted_keys: %s", err);
+      sqlite3_free (err);
+      goto out;
+    }
+
+  rc = sqlite3_exec (db,
+                     "create table if not exists"
+                     " ultimately_trusted_keys (keyid);\n",
+                     NULL, NULL, &err);
+  if (rc)
+    {
+      log_error (_("TOFU DB error"));
+      print_further_info ("creating ultimately_trusted_keys: %s", err);
+      sqlite3_free (err);
+      goto out;
+    }
+
+  for (ki = utks; ki; ki = ki->next)
+    {
+      format_keyid (ki->kid, KF_LONG,
+                    keyid_str, sizeof (keyid_str));
+      rc = gpgsql_exec_printf
+        (db, NULL, NULL, &err,
+         "insert into ultimately_trusted_keys values ('%s');",
+         keyid_str);
+      if (rc)
+        {
+          log_error (_("TOFU DB error"));
+          print_further_info ("updating ultimately_trusted_keys: %s",
+                              err);
+          sqlite3_free (err);
+          goto out;
+        }
+    }
+
+ out:
+  return rc;
+}
 
 /* If the DB is new, initialize it.  Otherwise, check the DB's
    version.
@@ -726,6 +872,9 @@ initdb (sqlite3 *db)
 	  sqlite3_free (err);
 	}
     }
+
+  if (! rc)
+    rc = check_utks (db);
 
   if (rc)
     {

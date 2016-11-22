@@ -248,6 +248,21 @@
 ;; Alice has an ultimately trusted key and she signs Bob's key.  Then
 ;; Bob adds a new user id, "Alice".  TOFU should now detect a
 ;; conflict, because Alice only signed Bob's "Bob" user id.
+;;
+;;
+;; The Alice key:
+;;   pub   rsa2048 2016-10-11 [SC]
+;;         1938C3A0E4674B6C217AC0B987DB2814EC38277E
+;;   uid           [ultimate] Spy Cow <spy@cow.com>
+;;   sub   rsa2048 2016-10-11 [E]
+;;
+;; The Bob key:
+;;
+;;   pub   rsa2048 2016-10-11 [SC]
+;;         DC463A16E42F03240D76E8BA8B48C6BD871C2247
+;;   uid           [  full  ] Spy R. Cow <spy@cow.com>
+;;   uid           [  full  ] Spy R. Cow <spy@cow.de>
+;;   sub   rsa2048 2016-10-11 [E]
 
 (display "Checking UTK sigs...\n")
 (define GPG `(,(tool 'gpg) --no-permission-warning
@@ -279,11 +294,17 @@
 (call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-1.gpg"))))
 (display "<\n")
 
+(checkpolicy KEYA "auto")
+(checkpolicy KEYB "auto")
+
 ;; Import the cross sigs.
 (display "    > Adding cross signatures. ")
 (call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDA "-2.gpg"))))
 (call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-2.gpg"))))
 (display "<\n")
+
+(checkpolicy KEYA "auto")
+(checkpolicy KEYB "auto")
 
 ;; Make KEYA ultimately trusted.
 (display (string-append "    > Marking " KEYA " as ultimately trusted. "))

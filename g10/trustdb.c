@@ -324,6 +324,13 @@ tdb_keyid_is_utk (u32 *kid)
 
   return 0;
 }
+
+/* Return the list of ultimately trusted keys.  */
+struct key_item *
+tdb_utks (void)
+{
+  return utk_list;
+}
 
 /*********************************************
  *********** TrustDB stuff *******************
