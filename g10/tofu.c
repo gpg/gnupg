@@ -3712,8 +3712,6 @@ tofu_notice_key_changed (ctrl_t ctrl, kbnode_t kb)
   pk = kb->pkt->pkt.public_key;
   log_assert (pk_is_primary (pk));
 
-  fingerprint = hexfingerprint (pk, NULL, 0);
-
   dbs = opendbs (ctrl);
   if (! dbs)
     {
