@@ -1543,7 +1543,7 @@ pubkey_cmp (ctrl_t ctrl, const char *name, struct pubkey_cmp_cookie *old,
 
       new->uid = scopy_user_id (uid);
       new->validity =
-        get_validity (ctrl, &new->key, uid, NULL, 0) & TRUST_MASK;
+        get_validity (ctrl, new_keyblock, &new->key, uid, NULL, 0) & TRUST_MASK;
       new->valid = 1;
 
       if (! old->valid)

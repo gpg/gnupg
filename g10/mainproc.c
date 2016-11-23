@@ -1015,8 +1015,13 @@ list_node (CTX c, kbnode_t node)
 
           keyid_from_pk( pk, keyid );
           if (pk->flags.primary)
-            c->trustletter = (opt.fast_list_mode?
-                              0 : get_validity_info (c->ctrl, pk, NULL));
+            c->trustletter = (opt.fast_list_mode
+                              ? 0
+                              : get_validity_info
+                                  (c->ctrl,
+                                   node->pkt->pkttype == PKT_PUBLIC_KEY
+                                   ? node : NULL,
+                                   pk, NULL));
           es_printf ("%s:", pk->flags.primary? "pub":"sub" );
           if (c->trustletter)
             es_putc (c->trustletter, es_stdout);
@@ -1973,8 +1978,8 @@ check_sig_and_print (CTX c, kbnode_t node)
 	     does not print a LF we need to compute the validity
 	     before calling that function.  */
           if ((opt.verify_options & VERIFY_SHOW_UID_VALIDITY))
-            valid = get_validity (c->ctrl, mainpk, un->pkt->pkt.user_id,
-                                  NULL, 0);
+            valid = get_validity (c->ctrl, keyblock, mainpk,
+                                  un->pkt->pkt.user_id, NULL, 0);
           else
             valid = 0; /* Not used.  */
 
@@ -2075,7 +2080,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 		       actually ask the user to update any trust
 		       information.  */
                     valid = (trust_value_to_string
-                             (get_validity (c->ctrl, mainpk,
+                             (get_validity (c->ctrl, keyblock, mainpk,
                                             un->pkt->pkt.user_id, NULL, 0)));
                   log_printf (" [%s]\n",valid);
                 }

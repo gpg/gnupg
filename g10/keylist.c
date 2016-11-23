@@ -1228,7 +1228,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
     trustletter_print = 0;
   else
     {
-      trustletter = get_validity_info (ctrl, pk, NULL);
+      trustletter = get_validity_info (ctrl, keyblock, pk, NULL);
       if (trustletter == 'u')
         ulti_hack = 1;
       trustletter_print = trustletter;
@@ -1309,7 +1309,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	  else if (ulti_hack)
             uid_validity = 'u';
           else
-            uid_validity = get_validity_info (ctrl, pk, uid);
+            uid_validity = get_validity_info (ctrl, keyblock, pk, uid);
 
           es_fputs (uid->attrib_data? "uat:":"uid:", es_stdout);
           if (uid_validity)

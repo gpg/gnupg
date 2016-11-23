@@ -151,7 +151,7 @@ uid_trust_string_fixed (ctrl_t ctrl, PKT_public_key *key, PKT_user_id *uid)
     return                         _("[ expired]");
   else if(key)
     {
-      switch (get_validity (ctrl, key, uid, NULL, 0) & TRUST_MASK)
+      switch (get_validity (ctrl, NULL, key, uid, NULL, 0) & TRUST_MASK)
         {
         case TRUST_UNKNOWN:   return _("[ unknown]");
         case TRUST_EXPIRED:   return _("[ expired]");
@@ -297,18 +297,29 @@ check_or_update_trustdb (ctrl_t ctrl)
 
 
 /*
- * Return the validity information for PK.  If the namehash is not
- * NULL, the validity of the corresponding user ID is returned,
- * otherwise, a reasonable value for the entire key is returned.
+ * Return the validity information for KB/PK (at least one must be
+ * non-NULL).  If the namehash is not NULL, the validity of the
+ * corresponding user ID is returned, otherwise, a reasonable value
+ * for the entire key is returned.
  */
 unsigned int
-get_validity (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid,
+get_validity (ctrl_t ctrl, kbnode_t kb, PKT_public_key *pk, PKT_user_id *uid,
               PKT_signature *sig, int may_ask)
 {
   int rc;
   unsigned int validity;
   u32 kid[2];
   PKT_public_key *main_pk;
+
+  if (kb && pk)
+    log_assert (keyid_cmp (pk_main_keyid (pk),
+                           pk_main_keyid (kb->pkt->pkt.public_key)) == 0);
+
+  if (! pk)
+    {
+      log_assert (kb);
+      pk = kb->pkt->pkt.public_key;
+    }
 
   if (uid)
     namehash_from_uid (uid);
@@ -317,17 +328,22 @@ get_validity (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid,
   if (pk->main_keyid[0] != kid[0] || pk->main_keyid[1] != kid[1])
     {
       /* This is a subkey - get the mainkey. */
-      main_pk = xmalloc_clear (sizeof *main_pk);
-      rc = get_pubkey (main_pk, pk->main_keyid);
-      if (rc)
+      if (kb)
+        main_pk = kb->pkt->pkt.public_key;
+      else
         {
-	  char *tempkeystr = xstrdup (keystr (pk->main_keyid));
-          log_error ("error getting main key %s of subkey %s: %s\n",
-                     tempkeystr, keystr (kid), gpg_strerror (rc));
-	  xfree (tempkeystr);
-          validity = TRUST_UNKNOWN;
-          goto leave;
-	}
+          main_pk = xmalloc_clear (sizeof *main_pk);
+          rc = get_pubkey (main_pk, pk->main_keyid);
+          if (rc)
+            {
+              char *tempkeystr = xstrdup (keystr (pk->main_keyid));
+              log_error ("error getting main key %s of subkey %s: %s\n",
+                         tempkeystr, keystr (kid), gpg_strerror (rc));
+              xfree (tempkeystr);
+              validity = TRUST_UNKNOWN;
+              goto leave;
+            }
+        }
     }
   else
     main_pk = pk;
@@ -335,7 +351,7 @@ get_validity (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid,
 #ifdef NO_TRUST_MODELS
   validity = TRUST_UNKNOWN;
 #else
-  validity = tdb_get_validity_core (ctrl, pk, uid, main_pk, sig, may_ask);
+  validity = tdb_get_validity_core (ctrl, kb, pk, uid, main_pk, sig, may_ask);
 #endif
 
  leave:
@@ -350,21 +366,28 @@ get_validity (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid,
     validity = ((validity & (~TRUST_MASK | TRUST_FLAG_PENDING_CHECK))
                 | TRUST_EXPIRED);
 
-  if (main_pk != pk)
+  if (main_pk != pk && !kb)
     free_public_key (main_pk);
   return validity;
 }
 
 
 int
-get_validity_info (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid)
+get_validity_info (ctrl_t ctrl, kbnode_t kb, PKT_public_key *pk,
+                   PKT_user_id *uid)
 {
   int trustlevel;
 
+  if (kb && pk)
+    log_assert (keyid_cmp (pk_main_keyid (pk),
+                           pk_main_keyid (kb->pkt->pkt.public_key)) == 0);
+
+  if (! pk && kb)
+    pk = kb->pkt->pkt.public_key;
   if (!pk)
     return '?';  /* Just in case a NULL PK is passed.  */
 
-  trustlevel = get_validity (ctrl, pk, uid, NULL, 0);
+  trustlevel = get_validity (ctrl, kb, pk, uid, NULL, 0);
   if ((trustlevel & TRUST_FLAG_REVOKED))
     return 'r';
   return trust_letter (trustlevel);
@@ -379,7 +402,7 @@ get_validity_string (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid)
   if (!pk)
     return "err";  /* Just in case a NULL PK is passed.  */
 
-  trustlevel = get_validity (ctrl, pk, uid, NULL, 0);
+  trustlevel = get_validity (ctrl, NULL, pk, uid, NULL, 0);
   if ((trustlevel & TRUST_FLAG_REVOKED))
     return _("revoked");
   return trust_value_to_string (trustlevel);

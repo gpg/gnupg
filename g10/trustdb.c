@@ -983,13 +983,15 @@ tdb_check_trustdb_stale (ctrl_t ctrl)
 }
 
 /*
- * Return the validity information for PK.  This is the core of
- * get_validity.  If SIG is not NULL, then the trust is being
- * evaluated in the context of the provided signature.  This is used
- * by the TOFU code to record statistics.
+ * Return the validity information for KB/PK (at least one of them
+ * must be non-NULL).  This is the core of get_validity.  If SIG is
+ * not NULL, then the trust is being evaluated in the context of the
+ * provided signature.  This is used by the TOFU code to record
+ * statistics.
  */
 unsigned int
 tdb_get_validity_core (ctrl_t ctrl,
+                       kbnode_t kb,
                        PKT_public_key *pk, PKT_user_id *uid,
                        PKT_public_key *main_pk,
 		       PKT_signature *sig,
@@ -1002,6 +1004,17 @@ tdb_get_validity_core (ctrl_t ctrl,
   unsigned int tofu_validity = TRUST_UNKNOWN;
 #endif
   unsigned int validity = TRUST_UNKNOWN;
+  int free_kb = 0;
+
+  if (kb && pk)
+    log_assert (keyid_cmp (pk_main_keyid (pk),
+                           pk_main_keyid (kb->pkt->pkt.public_key)) == 0);
+
+  if (! pk)
+    {
+      log_assert (kb);
+      pk = kb->pkt->pkt.public_key;
+    }
 
 #ifndef USE_TOFU
   (void)sig;
@@ -1030,14 +1043,20 @@ tdb_get_validity_core (ctrl_t ctrl,
 #ifdef USE_TOFU
   if (opt.trust_model == TM_TOFU || opt.trust_model == TM_TOFU_PGP)
     {
-      kbnode_t kb = NULL;
       kbnode_t n = NULL;
       strlist_t user_id_list = NULL;
       int done = 0;
 
       /* If the caller didn't supply a user id then use all uids.  */
       if (! uid)
-	kb = n = get_pubkeyblock (main_pk->keyid);
+        {
+          if (! kb)
+            {
+              kb = get_pubkeyblock (main_pk->keyid);
+              free_kb = 1;
+            }
+          n = kb;
+        }
 
       if (DBG_TRUST && sig && sig->signers_uid)
         log_debug ("TOFU: only considering user id: '%s'\n",
@@ -1132,7 +1151,8 @@ tdb_get_validity_core (ctrl_t ctrl,
                                            may_ask);
 
       free_strlist (user_id_list);
-      release_kbnode (kb);
+      if (free_kb)
+        release_kbnode (kb);
     }
 #endif /*USE_TOFU*/
 

@@ -304,7 +304,7 @@ show_photos (ctrl_t ctrl, const struct user_attribute *attrs, int count,
 
   memset (&args, 0, sizeof(args));
   args.pk = pk;
-  args.validity_info = get_validity_info (ctrl, pk, uid);
+  args.validity_info = get_validity_info (ctrl, NULL, pk, uid);
   args.validity_string = get_validity_string (ctrl, pk, uid);
   namehash_from_uid (uid);
   args.namehash = uid->namehash;

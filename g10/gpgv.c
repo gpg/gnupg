@@ -292,19 +292,22 @@ check_trustdb_stale (ctrl_t ctrl)
 }
 
 int
-get_validity_info (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid)
+get_validity_info (ctrl_t ctrl, kbnode_t kb, PKT_public_key *pk,
+                   PKT_user_id *uid)
 {
   (void)ctrl;
+  (void)kb;
   (void)pk;
   (void)uid;
   return '?';
 }
 
 unsigned int
-get_validity (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid,
+get_validity (ctrl_t ctrl, kbnode_t kb, PKT_public_key *pk, PKT_user_id *uid,
               PKT_signature *sig, int may_ask)
 {
   (void)ctrl;
+  (void)kb;
   (void)pk;
   (void)uid;
   (void)sig;

@@ -569,7 +569,7 @@ check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
     log_info(_("WARNING: this key might be revoked (revocation key"
 	       " not present)\n"));
 
-  trustlevel = get_validity (ctrl, pk, NULL, sig, 1);
+  trustlevel = get_validity (ctrl, NULL, pk, NULL, sig, 1);
 
   if ( (trustlevel & TRUST_FLAG_REVOKED) )
     {
@@ -872,7 +872,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
     {
       int trustlevel;
 
-      trustlevel = get_validity (ctrl, pk, pk->user_id, NULL, 1);
+      trustlevel = get_validity (ctrl, NULL, pk, pk->user_id, NULL, 1);
       if ( (trustlevel & TRUST_FLAG_DISABLED) )
         {
           /* Key has been disabled. */
@@ -1212,7 +1212,8 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
                 { /* Check validity of this key. */
                   int trustlevel;
 
-                  trustlevel = get_validity (ctrl, pk, pk->user_id, NULL, 1);
+                  trustlevel =
+                    get_validity (ctrl, NULL, pk, pk->user_id, NULL, 1);
                   if ( (trustlevel & TRUST_FLAG_DISABLED) )
                     {
                       tty_printf (_("Public key is disabled.\n") );

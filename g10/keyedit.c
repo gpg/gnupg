@@ -3585,7 +3585,7 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 	    es_putc ('e', fp);
 	  else if (!(opt.fast_list_mode || opt.no_expensive_trust_checks))
 	    {
-	      int trust = get_validity_info (ctrl, pk, NULL);
+	      int trust = get_validity_info (ctrl, keyblock, pk, NULL);
 	      if (trust == 'u')
 		ulti_hack = 1;
 	      es_putc (trust, fp);
@@ -3644,7 +3644,7 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 	      int uid_validity;
 
 	      if (primary && !ulti_hack)
-		uid_validity = get_validity_info (ctrl, primary, uid);
+		uid_validity = get_validity_info (ctrl, keyblock, primary, uid);
 	      else
 		uid_validity = 'u';
 	      es_fprintf (fp, "%c::::::::", uid_validity);
@@ -3819,7 +3819,7 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
 
 	      /* Show a warning once */
 	      if (!did_warn
-		  && (get_validity (ctrl, pk, NULL, NULL, 0)
+		  && (get_validity (ctrl, keyblock, pk, NULL, NULL, 0)
 		      & TRUST_FLAG_PENDING_CHECK))
 		{
 		  did_warn = 1;
@@ -6304,7 +6304,8 @@ core_revuid (ctrl_t ctrl, kbnode_t keyblock, KBNODE node,
               /* If the trustdb has an entry for this key+uid then the
                  trustdb needs an update. */
               if (!update_trust
-                  && ((get_validity (ctrl, pk, uid, NULL, 0) & TRUST_MASK)
+                  && ((get_validity (ctrl, keyblock, pk, uid, NULL, 0)
+                       & TRUST_MASK)
                       >= TRUST_UNDEFINED))
                 update_trust = 1;
 #endif /*!NO_TRUST_MODELS*/

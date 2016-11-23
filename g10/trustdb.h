@@ -94,9 +94,11 @@ void revalidation_mark (void);
 void check_trustdb_stale (ctrl_t ctrl);
 void check_or_update_trustdb (ctrl_t ctrl);
 
-unsigned int get_validity (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid,
+unsigned int get_validity (ctrl_t ctrl, kbnode_t kb, PKT_public_key *pk,
+                           PKT_user_id *uid,
 			   PKT_signature *sig, int may_ask);
-int get_validity_info (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid);
+int get_validity_info (ctrl_t ctrl, kbnode_t kb, PKT_public_key *pk,
+                       PKT_user_id *uid);
 const char *get_validity_string (ctrl_t ctrl,
                                  PKT_public_key *pk, PKT_user_id *uid);
 
@@ -135,7 +137,7 @@ void tdb_check_or_update (ctrl_t ctrl);
 
 int tdb_cache_disabled_value (PKT_public_key *pk);
 
-unsigned int tdb_get_validity_core (ctrl_t ctrl,
+unsigned int tdb_get_validity_core (ctrl_t ctrl, kbnode_t kb,
                                     PKT_public_key *pk, PKT_user_id *uid,
                                     PKT_public_key *main_pk,
 				    PKT_signature *sig, int may_ask);
