@@ -1569,10 +1569,10 @@ static void gc(scheme *sc, pointer a, pointer b) {
     /* reclaim cell */
         if (typeflag(p) & T_FINALIZE) {
           finalize_cell(sc, p);
-          typeflag(p) = 0;
-          car(p) = sc->NIL;
         }
         ++sc->fcells;
+	typeflag(p) = 0;
+        car(p) = sc->NIL;
         cdr(p) = sc->free_cell;
         sc->free_cell = p;
       }
