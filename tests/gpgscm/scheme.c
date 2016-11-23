@@ -409,7 +409,7 @@ static void printatom(scheme *sc, pointer l, int f);
 static pointer mk_proc(scheme *sc, enum scheme_opcodes op);
 static pointer mk_closure(scheme *sc, pointer c, pointer e);
 static pointer mk_continuation(scheme *sc, pointer d);
-static pointer reverse(scheme *sc, pointer a);
+static pointer reverse(scheme *sc, pointer term, pointer list);
 static pointer reverse_in_place(scheme *sc, pointer term, pointer list);
 static pointer revappend(scheme *sc, pointer a, pointer b);
 static void dump_stack_mark(scheme *);
@@ -2356,9 +2356,9 @@ static pointer list_star(scheme *sc, pointer d) {
 }
 
 /* reverse list -- produce new list */
-static pointer reverse(scheme *sc, pointer a) {
+static pointer reverse(scheme *sc, pointer term, pointer list) {
 /* a must be checked by gc */
-     pointer p = sc->NIL;
+     pointer a = list, p = term;
 
      for ( ; is_pair(a); a = cdr(a)) {
           p = cons(sc, car(a), p);
@@ -4148,7 +4148,7 @@ static pointer opexe_4(scheme *sc, enum scheme_opcodes op) {
           }
 
      CASE(OP_REVERSE):   /* reverse */
-          s_return(sc,reverse(sc, car(sc->args)));
+          s_return(sc,reverse(sc, sc->NIL, car(sc->args)));
 
      CASE(OP_LIST_STAR): /* list* */
           s_return(sc,list_star(sc,sc->args));
