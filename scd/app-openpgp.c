@@ -197,8 +197,6 @@ struct app_local_s {
     unsigned int sm_algo:2;            /* Symmetric crypto algo for SM.  */
     unsigned int max_certlen_3:16;
     unsigned int max_get_challenge:16; /* Maximum size for get_challenge.  */
-    unsigned int max_cmd_data:16;      /* Maximum data size for a command.  */
-    unsigned int max_rsp_data:16;      /* Maximum size of a response.  */
   } extcap;
 
   /* Flags used to control the application.  */
@@ -325,7 +323,7 @@ get_cached_data (app_t app, int tag,
     }
 
   if (try_extlen && app->app_local->cardcap.ext_lc_le)
-    exmode = app->app_local->extcap.max_rsp_data;
+    exmode = app->app_local->extcap.max_certlen_3;
   else
     exmode = 0;
 
@@ -455,10 +453,7 @@ get_one_do (app_t app, int tag, unsigned char **result, size_t *nbytes,
 
   if (app->card_version > 0x0100 && data_objects[i].get_immediate_in_v11)
     {
-      if (data_objects[i].try_extlen && app->app_local->cardcap.ext_lc_le)
-        exmode = app->app_local->extcap.max_rsp_data;
-      else
-        exmode = 0;
+      exmode = 0;
       rc = iso7816_get_data (app->slot, exmode, tag, &buffer, &buflen);
       if (rc)
         {
@@ -919,6 +914,22 @@ send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int keyno)
     snprintf (buffer, sizeof buffer, "%d 0 0 UNKNOWN", keyno+1);
 
   send_status_direct (ctrl, keyword, buffer);
+}
+
+
+#define RSA_SMALL_SIZE_KEY 1952
+#define RSA_SMALL_SIZE_OP  2048
+
+static int
+determine_rsa_response (app_t app, int keyno)
+{
+  int size;
+
+  size = 2 + 3 /* header */
+    + 4 /* tag+len */ + app->app_local->keyattr[keyno].rsa.n_bits/8
+    + 2 /* tag+len */ + app->app_local->keyattr[keyno].rsa.e_bits/8;
+
+  return size;
 }
 
 
@@ -1531,10 +1542,12 @@ get_public_key (app_t app, int keyno)
       int exmode, le_value;
 
       /* We may simply read the public key out of these cards.  */
-      if (app->app_local->cardcap.ext_lc_le)
+      if (app->app_local->cardcap.ext_lc_le
+          && app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA
+          && app->app_local->keyattr[keyno].rsa.n_bits > RSA_SMALL_SIZE_KEY)
         {
           exmode = 1;    /* Use extended length.  */
-          le_value = app->app_local->extcap.max_rsp_data;
+          le_value = determine_rsa_response (app, keyno);
         }
       else
         {
@@ -3769,12 +3782,11 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
       if (keybits > 4096)
         return gpg_error (GPG_ERR_TOO_LARGE);
 
-      /* Test whether we will need extended length mode.  (1900 is an
-         arbitrary length which for sure fits into a short apdu.)  */
-      if (app->app_local->cardcap.ext_lc_le && keybits > 1900)
+      if (app->app_local->cardcap.ext_lc_le && keybits > RSA_SMALL_SIZE_KEY
+          && app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
         {
           exmode = 1;    /* Use extended length w/o a limit.  */
-          le_value = app->app_local->extcap.max_rsp_data;
+          le_value = determine_rsa_response (app, keyno);
           /* No need to check le_value because it comes from a 16 bit
              value and thus can't create an overflow on a 32 bit
              system.  */
@@ -4122,10 +4134,12 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     }
 
 
-  if (app->app_local->cardcap.ext_lc_le)
+  if (app->app_local->cardcap.ext_lc_le
+      && app->app_local->keyattr[0].key_type == KEY_TYPE_RSA
+      && app->app_local->keyattr[0].rsa.n_bits > RSA_SMALL_SIZE_OP)
     {
       exmode = 1;    /* Use extended length.  */
-      le_value = app->app_local->extcap.max_rsp_data;
+      le_value = app->app_local->keyattr[0].rsa.n_bits / 8;
     }
   else
     {
@@ -4225,10 +4239,12 @@ do_auth (app_t app, const char *keyidstr,
     {
       int exmode, le_value;
 
-      if (app->app_local->cardcap.ext_lc_le)
+      if (app->app_local->cardcap.ext_lc_le
+          && app->app_local->keyattr[2].key_type == KEY_TYPE_RSA
+          && app->app_local->keyattr[2].rsa.n_bits > RSA_SMALL_SIZE_OP)
         {
           exmode = 1;    /* Use extended length.  */
-          le_value = app->app_local->extcap.max_rsp_data;
+          le_value = app->app_local->keyattr[2].rsa.n_bits / 8;
         }
       else
         {
@@ -4417,10 +4433,13 @@ do_decipher (app_t app, const char *keyidstr,
   else
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if (app->app_local->cardcap.ext_lc_le && indatalen > 254 )
+  if (app->app_local->cardcap.ext_lc_le
+      && (indatalen > 254
+          || (app->app_local->keyattr[1].key_type == KEY_TYPE_RSA
+              && app->app_local->keyattr[1].rsa.n_bits > RSA_SMALL_SIZE_OP)))
     {
       exmode = 1;    /* Extended length w/o a limit.  */
-      le_value = app->app_local->extcap.max_rsp_data;
+      le_value = app->app_local->keyattr[1].rsa.n_bits / 8;
     }
   else if (app->app_local->cardcap.cmd_chaining && indatalen > 254)
     {
@@ -4578,8 +4597,6 @@ show_caps (struct app_local_s *s)
     log_printf (" (%s)", s->extcap.sm_algo==2? "3DES":
                 (s->extcap.sm_algo==2? "AES-128" : "AES-256"));
   log_info ("Max-Cert3-Len ..: %u\n", s->extcap.max_certlen_3);
-  log_info ("Max-Cmd-Data ...: %u\n", s->extcap.max_cmd_data);
-  log_info ("Max-Rsp-Data ...: %u\n", s->extcap.max_rsp_data);
   log_info ("Cmd-Chaining ...: %s\n", s->cardcap.cmd_chaining?"yes":"no");
   log_info ("Ext-Lc-Le ......: %s\n", s->cardcap.ext_lc_le?"yes":"no");
   log_info ("Status Indicator: %02X\n", s->status_indicator);
@@ -4883,8 +4900,6 @@ app_select_openpgp (app_t app)
           app->app_local->extcap.max_get_challenge
                                                = (buffer[2] << 8 | buffer[3]);
           app->app_local->extcap.max_certlen_3 = (buffer[4] << 8 | buffer[5]);
-          app->app_local->extcap.max_cmd_data  = (buffer[6] << 8 | buffer[7]);
-          app->app_local->extcap.max_rsp_data  = (buffer[8] << 8 | buffer[9]);
         }
       xfree (relptr);
 
