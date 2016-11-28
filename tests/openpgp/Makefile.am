@@ -80,7 +80,7 @@ XTESTS = \
 	use-exact-key.scm \
 	default-key.scm \
 	export.scm \
-	ssh.scm \
+	ssh-import.scm \
 	quick-key-manipulation.scm \
 	key-selection.scm \
 	issue2015.scm \
