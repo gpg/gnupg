@@ -2178,7 +2178,7 @@ getkey_next (getkey_ctx_t ctx, PKT_public_key *pk, kbnode_t *ret_keyblock)
   if (pk && ret_keyblock == NULL)
       ret_keyblock = &keyblock;
 
-  rc = lookup (ctx, ret_keyblock, &found_key, ctx->want_secret);
+  rc = lookup (ctx, ret_keyblock, pk ? &found_key : NULL, ctx->want_secret);
   if (!rc && pk)
     {
       log_assert (found_key);
