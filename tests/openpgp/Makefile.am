@@ -81,6 +81,7 @@ XTESTS = \
 	default-key.scm \
 	export.scm \
 	ssh-import.scm \
+	ssh-export.scm \
 	quick-key-manipulation.scm \
 	key-selection.scm \
 	issue2015.scm \
@@ -186,7 +187,9 @@ sample_keys = samplekeys/README \
 	      samplekeys/ssh-ecdsa.key \
 	      samplekeys/ssh-ed25519.key \
 	      samplekeys/ssh-rsa.key \
-	      samplekeys/issue2346.gpg
+	      samplekeys/issue2346.gpg \
+	      samplekeys/authenticate-only.pub.asc \
+	      samplekeys/authenticate-only.sec.asc
 
 sample_msgs = samplemsgs/issue2419.asc
 
