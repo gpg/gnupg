@@ -2831,6 +2831,12 @@ handle_connections (gnupg_fd_t listen_fd,
           /* Do not accept new connections but keep on running the
              loop to cope with the timer events.  */
           FD_ZERO (&fdset);
+          nfd = -1;
+          if (my_inotify_fd != -1)
+            {
+              FD_SET (my_inotify_fd, &fdset);
+              nfd = my_inotify_fd;
+            }
 	}
 
       /* POSIX says that fd_set should be implemented as a structure,

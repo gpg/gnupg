@@ -1942,9 +1942,7 @@ handle_connections (assuan_fd_t listen_fd)
   struct timespec curtime;
   struct timespec timeout;
   int saved_errno;
-#ifdef HAVE_INOTIFY_INIT
-  int my_inotify_fd;
-#endif /*HAVE_INOTIFY_INIT*/
+  int my_inotify_fd = -1;
 
   npth_attr_init (&tattr);
   npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
@@ -1988,14 +1986,12 @@ handle_connections (assuan_fd_t listen_fd)
   FD_ZERO (&fdset);
   FD_SET (FD2INT (listen_fd), &fdset);
   nfd = FD2INT (listen_fd);
-#ifdef HAVE_INOTIFY_INIT
   if (my_inotify_fd != -1)
     {
       FD_SET (my_inotify_fd, &fdset);
       if (my_inotify_fd > nfd)
         nfd = my_inotify_fd;
     }
-#endif /*HAVE_INOTIFY_INIT*/
 
   npth_clock_gettime (&abstime);
   abstime.tv_sec += TIMERTICK_INTERVAL;
@@ -2012,6 +2008,12 @@ handle_connections (assuan_fd_t listen_fd)
           /* Do not accept new connections but keep on running the
              loop to cope with the timer events.  */
           FD_ZERO (&fdset);
+          nfd = -1;
+          if (my_inotify_fd != -1)
+            {
+              FD_SET (my_inotify_fd, &fdset);
+              nfd = my_inotify_fd;
+            }
 	}
 
       /* Take a copy of the fdset.  */
