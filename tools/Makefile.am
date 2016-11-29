@@ -155,7 +155,7 @@ gpg_wks_server_SOURCES = \
 
 gpg_wks_server_CFLAGS = $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_wks_server_LDADD = $(libcommon) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
-		       $(LIBICONV)
+		       $(LIBINTL) $(LIBICONV)
 
 gpg_wks_client_SOURCES = \
 	gpg-wks-client.c \
@@ -171,7 +171,7 @@ gpg_wks_client_SOURCES = \
 gpg_wks_client_CFLAGS = $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_wks_client_LDADD = $(libcommon) \
 		       $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
-		       $(LIBICONV)
+		       $(LIBINTL) $(LIBICONV)
 
 
 # Make sure that all libs are build before we use them.  This is
