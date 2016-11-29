@@ -294,9 +294,8 @@ sub parse_amend_file($)
       $prev_date_line = $date_line;
       @prev_coauthors = @coauthors;
 
-      # Omit "Co-authored-by..." and "Signed-off-by..." lines.
-      @line = grep !/^Signed-off-by: .*>$/, @line;
-      @line = grep !/^Co-authored-by: /, @line;
+      # Omit keyword lines like "Signed-off-by:" or "GnuPG-bug-id:"
+      @line = grep !/^[A-Z][A-Za-z]+-[a-z-]+: /, @line;
 
       # Remove everything after a line with 2 dashes at the beginning.
       if ($tear_off)
