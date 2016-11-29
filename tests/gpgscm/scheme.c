@@ -29,6 +29,7 @@
 
 #include <assert.h>
 #include <limits.h>
+#include <stdint.h>
 #include <float.h>
 #include <ctype.h>
 
@@ -615,8 +616,8 @@ _alloc_cellseg(scheme *sc, size_t len, void **alloc, pointer *cells)
   *alloc = cp;
 
   /* adjust in TYPE_BITS-bit boundary */
-  if (((unsigned long) cp) % adj != 0)
-    cp = (void *) (adj * ((unsigned long) cp / adj + 1));
+  if (((uintptr_t) cp) % adj != 0)
+    cp = (void *) (adj * ((uintptr_t) cp / adj + 1));
 
   *cells = cp;
   return 0;
