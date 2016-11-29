@@ -1532,10 +1532,15 @@ main (int argc, char **argv )
         parent_pid = getpid ();
 
       fflush (NULL);
+
 #ifdef HAVE_W32_SYSTEM
+
       (void)csh_style;
       (void)nodetach;
+      initialize_modules ();
+
 #else /*!HAVE_W32_SYSTEM*/
+
       pid = fork ();
       if (pid == (pid_t)-1)
         {
