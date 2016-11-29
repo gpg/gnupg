@@ -47,6 +47,7 @@ XTESTS = \
 	version.scm \
 	mds.scm \
 	decrypt.scm \
+	decrypt-multifile.scm \
 	decrypt-dsa.scm \
 	sigs.scm \
 	sigs-dsa.scm \
