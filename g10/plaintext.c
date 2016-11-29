@@ -108,9 +108,25 @@ get_output_file (const byte *embedded_name, int embedded_namelen,
     }
   else if (iobuf_is_pipe_filename (fname) || !*fname)
     {
-      /* No filename or "-" given; write to stdout. */
-      fp = es_stdout;
-      es_set_binary (fp);
+      /* Special file name, no filename, or "-" given; write to the
+       * file descriptor or to stdout. */
+      int fd;
+      char xname[64];
+
+      fd = check_special_filename (fname, 1, 0);
+      if (fd == -1)
+        {
+          /* Not a special filename, thus we want stdout.  */
+          fp = es_stdout;
+          es_set_binary (fp);
+        }
+      else if (!(fp = es_fdopen_nc (fd, "wb")))
+        {
+          err = gpg_error_from_syserror ();
+          snprintf (xname, sizeof xname, "[fd %d]", fd);
+          log_error (_("can't open '%s': %s\n"), xname, gpg_strerror (err));
+          goto leave;
+        }
     }
   else
     {
