@@ -2897,7 +2897,8 @@ write_stats_status (estream_t fp,
                     unsigned long encryption_first_done,
                     unsigned long encryption_most_recent)
 {
-  const char *validity;
+  int summary;
+  int validity;
   unsigned long messages;
 
   /* Use the euclidean distance (m = sqrt(a^2 + b^2)) rather then the
@@ -2907,34 +2908,41 @@ write_stats_status (estream_t fp,
                       + encryption_count * encryption_count);
 
   if (messages < 1)
-    validity = "1"; /* Key without history.  */
+    validity = 1; /* Key without history.  */
   else if (messages < 2 * BASIC_TRUST_THRESHOLD)
-    validity = "2"; /* Key with too little history.  */
+    validity = 2; /* Key with too little history.  */
   else if (messages < 2 * FULL_TRUST_THRESHOLD)
-    validity = "3"; /* Key with enough history for basic trust.  */
+    validity = 3; /* Key with enough history for basic trust.  */
   else
-    validity = "4"; /* Key with a lot of history.  */
+    validity = 4; /* Key with a lot of history.  */
+
+  if (policy == TOFU_POLICY_ASK)
+    summary = 0; /* Key requires attention.  */
+  else
+    summary = validity;
 
   if (fp)
     {
-      es_fprintf (fp, "tfs:1:%s:%lu:%lu:%s:%lu:%lu:%lu:%lu:\n",
-                  validity, signature_count, encryption_count,
+      es_fprintf (fp, "tfs:1:%d:%lu:%lu:%s:%lu:%lu:%lu:%lu:%d:\n",
+                  summary, signature_count, encryption_count,
                   tofu_policy_str (policy),
                   signature_first_seen, signature_most_recent,
-                  encryption_first_done, encryption_most_recent);
+                  encryption_first_done, encryption_most_recent,
+                  validity);
     }
   else
     {
       write_status_printf (STATUS_TOFU_STATS,
-                           "%s %lu %lu %s %lu %lu %lu %lu",
-                           validity,
+                           "%d %lu %lu %s %lu %lu %lu %lu %d",
+                           summary,
                            signature_count,
                            encryption_count,
                            tofu_policy_str (policy),
                            signature_first_seen,
                            signature_most_recent,
                            encryption_first_done,
-                           encryption_most_recent);
+                           encryption_most_recent,
+                           validity);
     }
 }
 
