@@ -204,7 +204,7 @@ main( int argc, char **argv )
           break;
         case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
         case oEnableSpecialFilenames:
-          iobuf_enable_special_filenames (1);
+          enable_special_filenames ();
           break;
         default : pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}

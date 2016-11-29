@@ -155,11 +155,6 @@ typedef struct
 block_filter_ctx_t;
 
 
-/* Global flag to tell whether special file names are enabled.  See
-   gpg.c for an explanation of these file names.  FIXME: This does not
-   belong in the iobuf subsystem. */
-static int special_names_enabled;
-
 /* Local prototypes.  */
 static int underflow (iobuf_t a, int clear_pending_eof);
 static int underflow_target (iobuf_t a, int clear_pending_eof, size_t target);
@@ -1237,40 +1232,15 @@ iobuf_temp_with_content (const char *buffer, size_t length)
   return a;
 }
 
-void
-iobuf_enable_special_filenames (int yes)
-{
-  special_names_enabled = yes;
-}
-
-
-/* See whether the filename has the form "-&nnnn", where n is a
-   non-zero number.  Returns this number or -1 if it is not the
-   case.  */
-static int
-check_special_filename (const char *fname)
-{
-  if (special_names_enabled && fname && *fname == '-' && fname[1] == '&')
-    {
-      int i;
-
-      fname += 2;
-      for (i = 0; digitp (fname+i); i++)
-	;
-      if (!fname[i])
-	return atoi (fname);
-    }
-  return -1;
-}
-
 
 int
 iobuf_is_pipe_filename (const char *fname)
 {
   if (!fname || (*fname=='-' && !fname[1]) )
     return 1;
-  return check_special_filename (fname) != -1;
+  return check_special_filename (fname, 0, 1) != -1;
 }
+
 
 static iobuf_t
 do_open (const char *fname, int special_filenames,
@@ -1304,7 +1274,8 @@ do_open (const char *fname, int special_filenames,
     }
   else if (!fname)
     return NULL;
-  else if (special_filenames && (fd = check_special_filename (fname)) != -1)
+  else if (special_filenames
+           && (fd = check_special_filename (fname, 0, 1)) != -1)
     return iobuf_fdopen (translate_file_handle (fd, use == IOBUF_INPUT ? 0 : 1),
 			 opentype);
   else

@@ -3304,9 +3304,11 @@ main (int argc, char **argv)
           case oAllowSecretKeyImport: /* obsolete */ break;
 	  case oTryAllSecrets: opt.try_all_secrets = 1; break;
           case oTrustedKey: register_trusted_key( pargs.r.ret_str ); break;
+
           case oEnableSpecialFilenames:
-            iobuf_enable_special_filenames (1);
+            enable_special_filenames ();
             break;
+
           case oNoExpensiveTrustChecks: opt.no_expensive_trust_checks=1; break;
           case oAutoCheckTrustDB: opt.no_auto_check_trustdb=0; break;
           case oNoAutoCheckTrustDB: opt.no_auto_check_trustdb=1; break;

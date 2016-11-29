@@ -258,16 +258,10 @@ struct iobuf_struct
 #endif
 EXTERN_UNLESS_MAIN_MODULE int iobuf_debug_mode;
 
-/* Whether iobuf_open, iobuf_create and iobuf_is_pipefilename
-   recognize special filenames.  Special filenames are of the form
-   "-&nnnn" where n is a positive integer.  The integer corresponds to
-   a file descriptor.  Note: these functions always recognize the
-   special filename '-', which corresponds to standard input.  */
-void iobuf_enable_special_filenames (int yes);
 
 /* Returns whether the specified filename corresponds to a pipe.  In
    particular, this function checks if FNAME is "-" and, if special
-   filenames are enabled (see iobuf_enable_special_filenames), whether
+   filenames are enabled (see check_special_filename), whether
    FNAME is a special filename.  */
 int  iobuf_is_pipe_filename (const char *fname);
 

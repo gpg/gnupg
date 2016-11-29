@@ -1,7 +1,7 @@
 /* sysutils.c -  system helpers
  * Copyright (C) 1991-2001, 2003-2004,
  *               2006-2008  Free Software Foundation, Inc.
- * Copyright (C) 2013-2014 Werner Koch
+ * Copyright (C) 2013-2016 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -82,6 +82,10 @@
 #include "sysutils.h"
 
 #define tohex(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'A'))
+
+/* Flag to tell whether special file names are enabled.  See gpg.c for
+ * an explanation of these file names.  */
+static int allow_special_filenames;
 
 
 static GPGRT_INLINE gpg_error_t
@@ -167,6 +171,13 @@ enable_core_dumps (void)
 #endif
 }
 
+
+/* Allow the use of special "-&nnn" style file names.  */
+void
+enable_special_filenames (void)
+{
+  allow_special_filenames = 1;
+}
 
 
 /* Return a string which is used as a kind of process ID.  */
@@ -401,6 +412,29 @@ translate_sys2libc_fd_int (int fd, int for_write)
 #endif
 }
 
+
+/* Check whether FNAME has the form "-&nnnn", where N is a non-zero
+ * number.  Returns this number or -1 if it is not the case.  If the
+ * caller wants to use the file descriptor for writing FOR_WRITE shall
+ * be set to 1.  If NOTRANSLATE is set the Windows spefic mapping is
+ * not done. */
+int
+check_special_filename (const char *fname, int for_write, int notranslate)
+{
+  if (allow_special_filenames
+      && fname && *fname == '-' && fname[1] == '&')
+    {
+      int i;
+
+      fname += 2;
+      for (i=0; digitp (fname+i); i++ )
+        ;
+      if (!fname[i])
+        return notranslate? atoi (fname)
+          /**/            : translate_sys2libc_fd_int (atoi (fname), for_write);
+    }
+  return -1;
+}
 
 
 /* Replacement for tmpfile().  This is required because the tmpfile

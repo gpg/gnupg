@@ -439,9 +439,6 @@ static int maybe_setuid = 1;
 static const char *debug_level;
 static unsigned int debug_value;
 
-/* Option --enable-special-filenames */
-static int allow_special_filenames;
-
 /* Default value for include-certs.  We need an extra macro for
    gpgconf-list because the variable will be changed by the command
    line option.
@@ -468,7 +465,6 @@ static void set_cmd (enum cmd_and_opt_values *ret_cmd,
                      enum cmd_and_opt_values new_cmd );
 
 static void emergency_cleanup (void);
-static int check_special_filename (const char *fname, int for_write);
 static int open_read (const char *filename);
 static estream_t open_es_fread (const char *filename, const char *mode);
 static estream_t open_es_fwrite (const char *filename);
@@ -1420,7 +1416,9 @@ main ( int argc, char **argv)
         case oNoRandomSeedFile: use_random_seed = 0; break;
         case oNoCommonCertsImport: no_common_certs_import = 1; break;
 
-        case oEnableSpecialFilenames: allow_special_filenames =1; break;
+        case oEnableSpecialFilenames:
+          enable_special_filenames ();
+          break;
 
         case oValidationModel: parse_validation_model (pargs.r.ret_str); break;
 
@@ -2107,25 +2105,6 @@ gpgsm_parse_validation_model (const char *model)
 }
 
 
-/* Check whether the filename has the form "-&nnnn", where n is a
-   non-zero number.  Returns this number or -1 if it is not the case.  */
-static int
-check_special_filename (const char *fname, int for_write)
-{
-  if (allow_special_filenames
-      && fname && *fname == '-' && fname[1] == '&' ) {
-    int i;
-
-    fname += 2;
-    for (i=0; isdigit (fname[i]); i++ )
-      ;
-    if ( !fname[i] )
-      return translate_sys2libc_fd_int (atoi (fname), for_write);
-  }
-  return -1;
-}
-
-
 
 /* Open the FILENAME for read and return the file descriptor.  Stop
    with an error message in case of problems.  "-" denotes stdin and
@@ -2140,7 +2119,7 @@ open_read (const char *filename)
       set_binary (stdin);
       return 0; /* stdin */
     }
-  fd = check_special_filename (filename, 0);
+  fd = check_special_filename (filename, 0, 0);
   if (fd != -1)
     return fd;
   fd = open (filename, O_RDONLY | O_BINARY);
@@ -2162,7 +2141,7 @@ open_es_fread (const char *filename, const char *mode)
   if (filename[0] == '-' && !filename[1])
     fd = fileno (stdin);
   else
-    fd = check_special_filename (filename, 0);
+    fd = check_special_filename (filename, 0, 0);
   if (fd != -1)
     {
       fp = es_fdopen_nc (fd, mode);
@@ -2200,7 +2179,7 @@ open_es_fwrite (const char *filename)
       return fp;
     }
 
-  fd = check_special_filename (filename, 1);
+  fd = check_special_filename (filename, 1, 0);
   if (fd != -1)
     {
       fp = es_fdopen_nc (fd, "wb");

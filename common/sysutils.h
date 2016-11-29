@@ -50,6 +50,7 @@ typedef int gnupg_fd_t;
 void trap_unaligned (void);
 int  disable_core_dumps (void);
 int  enable_core_dumps (void);
+void enable_special_filenames (void);
 const unsigned char *get_session_marker (size_t *rlen);
 unsigned int get_uint_nonce (void);
 /*int check_permissions (const char *path,int extension,int checkonly);*/
@@ -57,6 +58,7 @@ void gnupg_sleep (unsigned int seconds);
 void gnupg_usleep (unsigned int usecs);
 int translate_sys2libc_fd (gnupg_fd_t fd, int for_write);
 int translate_sys2libc_fd_int (int fd, int for_write);
+int check_special_filename (const char *fname, int for_write, int notranslate);
 FILE *gnupg_tmpfile (void);
 void gnupg_reopen_std (const char *pgmname);
 void gnupg_allow_set_foregound_window (pid_t pid);
