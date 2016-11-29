@@ -180,7 +180,6 @@ void
 decrypt_messages (ctrl_t ctrl, int nfiles, char *files[])
 {
   IOBUF fp;
-  armor_filter_context_t *afx = NULL;
   progress_filter_context_t *pfx;
   char *p, *output = NULL;
   int rc=0,use_stdin=0;
@@ -254,8 +253,11 @@ decrypt_messages (ctrl_t ctrl, int nfiles, char *files[])
         {
           if (use_armor_filter(fp))
             {
-              afx = new_armor_context ();
-              push_armor_filter ( afx, fp );
+              armor_filter_context_t *afx = new_armor_context ();
+              rc = push_armor_filter (afx, fp);
+              if (rc)
+                log_error("failed to push armor filter");
+              release_armor_context (afx);
             }
         }
       rc = proc_packets (ctrl,NULL, fp);
@@ -275,6 +277,5 @@ decrypt_messages (ctrl_t ctrl, int nfiles, char *files[])
     }
 
   set_next_passphrase(NULL);
-  release_armor_context (afx);
   release_progress_context (pfx);
 }
