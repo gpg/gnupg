@@ -57,12 +57,11 @@
 #define FULL_TRUST_THRESHOLD  100
 
 
-/* An struct with data pertaining to the tofu DB.
-
-   To initialize this data structure, call opendbs().  Cleanup is done
-   when the CTRL object is released.  To get a handle to a database,
-   use the getdb() function.  This will either return an existing
-   handle or open a new DB connection, as appropriate.  */
+/* A struct with data pertaining to the tofu DB.  There is one such
+   struct per session and it is cached in session's ctrl structure.
+   To initialize this or get the current singleton, call opendbs().
+   There is no need to explicitly release it; cleanup is done when the
+   CTRL object is released.  */
 struct tofu_dbs_s
 {
   sqlite3 *db;
@@ -179,8 +178,8 @@ begin_transaction (ctrl_t ctrl, int only_batch)
    * than 500 ms), to prevent starving other gpg processes, we drop
    * and retake the batch lock.
    *
-   * Note: if we wanted higher resolution, we could use
-   * npth_clock_gettime.  */
+   * Note: gnupg_get_time has a one second resolution, if we wanted a
+   * higher resolution, we could use npth_clock_gettime.  */
   if (/* No real transactions.  */
       dbs->in_transaction == 0
       /* There is an open batch transaction.  */
@@ -264,8 +263,8 @@ begin_transaction (ctrl_t ctrl, int only_batch)
 
 /* Commit a transaction.  If ONLY_BATCH is 1, then this only ends the
  * batch transaction if we have left batch mode.  If ONLY_BATCH is 2,
- * this ends any open batch transaction even if we are still in batch
- * mode.  */
+ * this commits any open batch transaction even if we are still in
+ * batch mode.  */
 static gpg_error_t
 end_transaction (ctrl_t ctrl, int only_batch)
 {
@@ -341,7 +340,7 @@ rollback_transaction (ctrl_t ctrl)
   log_assert (dbs);
   log_assert (dbs->in_transaction > 0);
 
-  /* Be careful to not any progress made by closed transactions in
+  /* Be careful to not undo any progress made by closed transactions in
      batch mode.  */
   rc = gpgsql_exec_printf (dbs->db, NULL, NULL, &err,
                            "rollback to inner%d;",
@@ -1152,7 +1151,7 @@ record_binding (tofu_dbs_t dbs, const char *fingerprint, const char *email,
 }
 
 
-/* Collect the strings returned by a query in a simply string list.
+/* Collect the strings returned by a query in a simple string list.
    Any NULL values are converted to the empty string.
 
    If a result has 3 rows and each row contains two columns, then the
@@ -2475,11 +2474,12 @@ get_policy (tofu_dbs_t dbs, PKT_public_key *pk,
   if (conflict_set_count == 1
       && (conflict_set->flags & BINDING_CONFLICT))
     {
-      /* No known conflicts now, but there was a conflict.  That is,
-       * at somepoint there was a conflict, but it went away.  A
-       * conflict can go away if there is now a cross sig between the
-       * two keys.  In this case, we just silently clear the
-       * conflict.  */
+      /* No known conflicts now, but there was a conflict.  This means
+       * at some point, there was a conflict and we changed this
+       * binding's policy to ask and set the conflicting key.  The
+       * conflict can go away if there is not a cross sig between the
+       * two keys.  In this case, just silently clear the conflict and
+       * reset the policy to auto.  */
 
       if (DBG_TRUST)
         log_debug ("TOFU: binding <key: %s, user id: %s> had a conflict, but it's been resolved (probably via  cross sig).\n",

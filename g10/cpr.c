@@ -405,7 +405,7 @@ myread(int fd, void *buf, size_t count)
 
 /* Request a string from the client over the command-fd.  If GETBOOL
    is set the function returns a static string (do not free) if the
-   netered value was true or NULL if the entered value was false.  */
+   entered value was true or NULL if the entered value was false.  */
 static char *
 do_get_from_fd ( const char *keyword, int hidden, int getbool )
 {

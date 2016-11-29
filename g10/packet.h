@@ -95,7 +95,9 @@ typedef struct
 typedef struct {
   /* RFC 4880: this must be 4.  */
   byte version;
-  /* The cipher algorithm used.  */
+  /* The cipher algorithm used to encrypt the session key.  (This may
+     be different from the algorithm that is used to encrypt the SED
+     packet.)  */
   byte cipher_algo;
   /* The string-to-key specifier.  */
   STRING2KEY s2k;
@@ -269,7 +271,7 @@ typedef struct
   struct user_attribute *attribs;
   int numattribs;
   /* If this is not NULL, the packet is a user attribute rather than a
-     user id.  (Serialized.)  */
+     user id (See RFC 4880 5.12).  (Serialized.)  */
   byte *attrib_data;
   /* The length of ATTRIB_DATA.  */
   unsigned long attrib_len;

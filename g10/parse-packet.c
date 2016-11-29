@@ -809,8 +809,8 @@ dump_hex_line (int c, int *i)
    decoded values are given as PKGTYPE and PKTLEN.
 
    If the packet is a partial body length packet (RFC 4880, Section
-   4.2.2.4), then iobuf_set_partial_block_mode should already have
-   been called on INP and PARTIAL should be set.
+   4.2.2.4), then iobuf_set_partial_block_modeiobuf_set_partial_block_mode
+   should already have been called on INP and PARTIAL should be set.
 
    If PARTIAL is set or PKTLEN is 0 and PKTTYPE is PKT_COMPRESSED,
    copy until the first EOF is encountered on INP.

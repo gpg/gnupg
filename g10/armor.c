@@ -1026,17 +1026,20 @@ armor_filter( void *opaque, int control,
     if( control == IOBUFCTRL_UNDERFLOW && afx->inp_bypass ) {
 	n = 0;
 	if( afx->buffer_len ) {
+            /* Copy the data from AFX->BUFFER to BUF.  */
 	    for(; n < size && afx->buffer_pos < afx->buffer_len; n++ )
 		buf[n++] = afx->buffer[afx->buffer_pos++];
 	    if( afx->buffer_pos >= afx->buffer_len )
 		afx->buffer_len = 0;
 	}
+        /* If there is still space in BUF, read directly into it.  */
 	for(; n < size; n++ ) {
 	    if( (c=iobuf_get(a)) == -1 )
 		break;
 	    buf[n] = c & 0xff;
 	}
 	if( !n )
+            /* We didn't get any data.  EOF.  */
 	    rc = -1;
 	*ret_len = n;
     }

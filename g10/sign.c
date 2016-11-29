@@ -1386,14 +1386,30 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
 
 
 /****************
- * Create a signature packet for the given public key certificate and
- * the user id and return it in ret_sig. User signature class SIGCLASS
- * user-id is not used (and may be NULL if sigclass is 0x20) If
- * DIGEST_ALGO is 0 the function selects an appropriate one.
- * SIGVERSION gives the minimal required signature packet version;
- * this is needed so that special properties like local sign are not
- * applied (actually: dropped) when a v3 key is used.  TIMESTAMP is
- * the timestamp to use for the signature. 0 means "now" */
+ * Create a v4 signature in *RET_SIG.
+ *
+ * PK is the primary key to sign (required for all sigs)
+ * UID is the user id to sign (required for 0x10..0x13, 0x30)
+ * SUBPK is subkey to sign (required for 0x18, 0x19, 0x28)
+ *
+ * PKSK is the signing key
+ *
+ * SIGCLASS is the type of signature to create.
+ *
+ * DIGEST_ALGO is the digest algorithm.  If it is 0 the function
+ * selects an appropriate one.
+ *
+ * TIMESTAMP is the timestamp to use for the signature. 0 means "now"
+ *
+ * DURATION is the amount of time (in seconds) until the signature
+ * expires.
+ *
+ * This function creates the following subpackets: issuer, created,
+ * and expire (if duration is not 0).  Additional subpackets can be
+ * added using MKSUBPKT, which is called after these subpackets are
+ * added and before the signature is generated.  OPAQUE is passed to
+ * MKSUBPKT.
+ */
 int
 make_keysig_packet (PKT_signature **ret_sig, PKT_public_key *pk,
 		    PKT_user_id *uid, PKT_public_key *subpk,
