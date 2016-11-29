@@ -1026,7 +1026,6 @@ main (int argc, char **argv)
       crl_cache_init ();
       http_register_netactivity_cb (netactivity_action);
       handle_connections (3);
-      assuan_sock_close (3);
       shutdown_reaper ();
     }
 #endif /*HAVE_W32_SYSTEM*/
@@ -1234,7 +1233,6 @@ main (int argc, char **argv)
       crl_cache_init ();
       http_register_netactivity_cb (netactivity_action);
       handle_connections (fd);
-      assuan_sock_close (fd);
       shutdown_reaper ();
     }
   else if (cmd == aListCRLs)
@@ -1925,7 +1923,8 @@ my_inotify_is_name (int fd, const char *name)
 #endif /*HAVE_INOTIFY_INIT*/
 
 
-/* Main loop in daemon mode. */
+/* Main loop in daemon mode.  Note that LISTEN_FD will be owned by
+ * this function. */
 static void
 handle_connections (assuan_fd_t listen_fd)
 {
@@ -2006,7 +2005,14 @@ handle_connections (assuan_fd_t listen_fd)
             break; /* ready */
 
           /* Do not accept new connections but keep on running the
-             loop to cope with the timer events.  */
+           * loop to cope with the timer events.
+           *
+           * Note that we do not close the listening socket because a
+           * client trying to connect to that socket would instead
+           * restart a new dirmngr instance - which is unlikely the
+           * intention of a shutdown. */
+          /* assuan_sock_close (listen_fd); */
+          /* listen_fd = -1; */
           FD_ZERO (&fdset);
           nfd = -1;
           if (my_inotify_fd != -1)
@@ -2109,6 +2115,8 @@ handle_connections (assuan_fd_t listen_fd)
     close (my_inotify_fd);
 #endif /*HAVE_INOTIFY_INIT*/
   npth_attr_destroy (&tattr);
+  if (listen_fd != -1)
+    assuan_sock_close (fd);
   cleanup ();
   log_info ("%s %s stopped\n", strusage(11), strusage(13));
 }

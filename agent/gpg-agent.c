@@ -2829,7 +2829,12 @@ handle_connections (gnupg_fd_t listen_fd,
             break; /* ready */
 
           /* Do not accept new connections but keep on running the
-             loop to cope with the timer events.  */
+           * loop to cope with the timer events.
+           *
+           * Note that we do not close the listening socket because a
+           * client trying to connect to that socket would instead
+           * restart a new dirmngr instance - which is unlikely the
+           * intention of a shutdown. */
           FD_ZERO (&fdset);
           nfd = -1;
           if (my_inotify_fd != -1)
