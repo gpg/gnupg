@@ -52,6 +52,7 @@ XTESTS = \
 	sigs.scm \
 	sigs-dsa.scm \
 	encrypt.scm \
+	encrypt-multifile.scm \
 	encrypt-dsa.scm \
 	seat.scm \
 	clearsig.scm \
