@@ -4153,10 +4153,8 @@ parse_auto_key_locate (char *options)
 	akl->type = AKL_LDAP;
       else if (ascii_strcasecmp (tok, "keyserver") == 0)
 	akl->type = AKL_KEYSERVER;
-#ifdef USE_DNS_CERT
       else if (ascii_strcasecmp (tok, "cert") == 0)
 	akl->type = AKL_CERT;
-#endif
       else if (ascii_strcasecmp (tok, "pka") == 0)
 	akl->type = AKL_PKA;
       else if (ascii_strcasecmp (tok, "dane") == 0)

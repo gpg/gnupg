@@ -2084,11 +2084,9 @@ keyserver_import_ldap (ctrl_t ctrl,
   struct keyserver_spec *keyserver;
   strlist_t list=NULL;
   int rc,hostlen=1;
-#ifdef USE_DNS_SRV
   struct srventry *srvlist=NULL;
   int srvcount,i;
   char srvname[MAXDNAME];
-#endif
 
   /* Parse out the domain */
   domain=strrchr(name,'@');
@@ -2102,7 +2100,6 @@ keyserver_import_ldap (ctrl_t ctrl,
   keyserver->host=xmalloc(1);
   keyserver->host[0]='\0';
 
-#ifdef USE_DNS_SRV
   snprintf(srvname,MAXDNAME,"_pgpkey-ldap._tcp.%s",domain);
 
   FIXME("network related - move to dirmngr or drop the code");
@@ -2130,7 +2127,6 @@ keyserver_import_ldap (ctrl_t ctrl,
     }
 
   free(srvlist);
-#endif
 
   /* If all else fails, do the PGP Universal trick of
      ldap://keys.(domain) */
