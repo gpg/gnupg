@@ -140,6 +140,7 @@ enum cmd_and_opt_values {
   oKeyServer,
   oNameServer,
   oDisableCheckOwnSocket,
+  oStandardResolver,
   aTest
 };
 
@@ -236,6 +237,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oHTTPWrapperProgram, "http-wrapper-program", "@"),
   ARGPARSE_s_n (oHonorHTTPProxy, "honor-http-proxy", "@"),
   ARGPARSE_s_s (oIgnoreCertExtension,"ignore-cert-extension", "@"),
+  ARGPARSE_s_n (oStandardResolver, "standard-resolver", "@"),
 
   ARGPARSE_group (302,N_("@\n(See the \"info\" manual for a complete listing "
                          "of all commands and options)\n")),
@@ -543,6 +545,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       FREE_STRLIST (opt.keyserver);
       /* Note: We do not allow resetting of opt.use_tor at runtime.  */
       disable_check_own_socket = 0;
+      enable_standard_resolver (0);
       return 1;
     }
 
@@ -616,6 +619,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       break;
 
     case oUseTor: opt.use_tor = 1; break;
+
+    case oStandardResolver: enable_standard_resolver (1); break;
 
     case oKeyServer:
       if (*pargs->r.ret_str)

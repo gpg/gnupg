@@ -426,11 +426,9 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
       int refidx;
       int is_pool = 0;
       char *cname;
-#ifdef	USE_DNS_SRV
       char *srvrecord;
       struct srventry *srvs;
       int srvscount;
-#endif	/* USE_DNS_SRV */
 
       reftblsize = 100;
       reftbl = xtrymalloc (reftblsize * sizeof *reftbl);
@@ -447,7 +445,6 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
         }
       hi = hosttable[idx];
 
-#ifdef USE_DNS_SRV
       if (!is_ip_address (name))
         {
           /* Check for SRV records.  */
@@ -488,7 +485,6 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
               xfree (srvs);
             }
         }
-#endif /* USE_DNS_SRV */
 
       /* Find all A records for this entry and put them into the pool
          list - if any.  */

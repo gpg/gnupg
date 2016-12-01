@@ -2323,7 +2323,6 @@ connect_server (const char *server, unsigned short port,
 #endif /*!HASSUAN_SOCK_TOR*/
     }
 
-#ifdef USE_DNS_SRV
   /* Do the SRV thing */
   if (srvtag)
     {
@@ -2347,10 +2346,6 @@ connect_server (const char *server, unsigned short port,
             }
 	}
     }
-#else
-  (void)flags;
-  (void)srvtag;
-#endif /*USE_DNS_SRV*/
 
   if (!serverlist)
     {

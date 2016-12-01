@@ -64,14 +64,15 @@ main (int argc, char **argv)
         {
           fputs ("usage: " PGM " [HOST]\n"
                  "Options:\n"
-                 "  --verbose         print timings etc.\n"
-                 "  --debug           flyswatter\n"
-                 "  --use-tor         use Tor\n"
-                 "  --new-circuit     use a new Tor circuit\n"
-                 "  --bracket         enclose v6 addresses in brackets\n"
-                 "  --cert            lookup a CERT RR\n"
-                 "  --srv             lookup a SRV RR\n"
-                 "  --cname           lookup a CNAME RR\n"
+                 "  --verbose           print timings etc.\n"
+                 "  --debug             flyswatter\n"
+                 "  --standard-resolver use the system's resolver\n"
+                 "  --use-tor           use Tor\n"
+                 "  --new-circuit       use a new Tor circuit\n"
+                 "  --bracket           enclose v6 addresses in brackets\n"
+                 "  --cert              lookup a CERT RR\n"
+                 "  --srv               lookup a SRV RR\n"
+                 "  --cname             lookup a CNAME RR\n"
                  , stdout);
           exit (0);
         }
@@ -94,6 +95,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--new-circuit"))
         {
           opt_new_circuit = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--standard-resolver"))
+        {
+          enable_standard_resolver (1);
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--bracket"))

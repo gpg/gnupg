@@ -92,6 +92,14 @@ struct srventry
 };
 
 
+/* Calling this function with YES set to True forces the use of the
+ * standard resolver even if dirmngr has been built with support for
+ * an alternative resolver.  */
+void enable_standard_resolver (int yes);
+
+/* Return true if the standard resolver is used.  */
+int standard_resolver_p (void);
+
 /* Calling this function switches the DNS code into Tor mode if
    possibe.  Return 0 on success.  */
 gpg_error_t enable_dns_tormode (int new_circuit);

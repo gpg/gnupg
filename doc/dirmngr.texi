@@ -244,6 +244,13 @@ this still leaks the DNS queries; e.g. to lookup the hosts in a
 keyserver pool.  Certain other features are disabled if this mode is
 active.
 
+@item --standard-resolver
+@opindex standard-resolver
+This option forces the use of the system's standard DNS resolver code.
+This is mainly used for debugging.  Note that on Windows a standard
+resolver is not used and all DNS access will return the error ``Not
+Implemented'' if this function is used.
+
 @item --allow-version-check
 @opindex allow-version-check
 Allow Dirmngr to connect to @code{https://versions.gnupg.org} to get

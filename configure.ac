@@ -103,6 +103,7 @@ have_sqlite=no
 have_npth=no
 have_libusb=no
 have_adns=no
+have_system_resolver=no
 gnupg_have_ldap="n/a"
 
 use_zip=yes
@@ -1025,58 +1026,39 @@ fi
 CPPFLAGS=${_cppflags}
 LDFLAGS=${_ldflags}
 if test "$have_adns" = "yes"; then
-  ADNSLIBS="-ladns"
+  DNSLIBS="-ladns"
+  AC_DEFINE(USE_ADNS,1,[Use ADNS as resolver library.])
+else
+  DNSLIBS=""
 fi
 
 
 #
-# Now try for the resolver functions so we can use DNS for SRV, PA and CERT.
+# Check standard resolver functions.
 #
-AC_ARG_ENABLE(dns-srv,
-              AC_HELP_STRING([--disable-dns-srv],
-                             [disable the use of DNS SRV in HKP and HTTP]),
-              use_dns_srv=$enableval,use_dns_srv=yes)
-
-AC_ARG_ENABLE(dns-cert,
-   AC_HELP_STRING([--disable-dns-cert],
-	[disable the use of CERT records in DNS]),
-   use_dns_cert=$enableval,use_dns_cert=yes)
-
-if test x"$use_dns_srv" = xyes || test x"$use_dns_cert" = xyes; then
+if test "$build_dirmngr" = "yes"; then
   _dns_save_libs=$LIBS
   LIBS=""
 
-  if test x"$have_adns" = xyes ; then
-    # We prefer ADNS.
-    DNSLIBS="$ADNSLIBS"
-    AC_DEFINE(USE_ADNS,1,[Use ADNS as resolver library.])
+  # Find the system resolver which can always be enabled with
+  # the dirmngr option --standard-resolver.
 
-    if test x"$use_dns_srv" = xyes ; then
-        AC_DEFINE(USE_DNS_SRV,1)
-    fi
+  # the double underscore thing is a glibc-ism?
+  AC_SEARCH_LIBS(res_query,resolv bind,,
+                 AC_SEARCH_LIBS(__res_query,resolv bind,,have_resolver=no))
+  AC_SEARCH_LIBS(dn_expand,resolv bind,,
+                 AC_SEARCH_LIBS(__dn_expand,resolv bind,,have_resolver=no))
 
-    if test x"$use_dns_cert" = xyes ; then
-        AC_DEFINE(USE_DNS_CERT,1,[define to use DNS CERT])
-    fi
-  else
-    # With no ADNS find the system resolver.
+  # macOS renames dn_skipname into res_9_dn_skipname in <resolv.h>,
+  # and for some reason fools us into believing we don't need
+  # -lresolv even if we do.  Since the test program checking for the
+  # symbol does not include <resolv.h>, we need to check for the
+  # renamed symbol explicitly.
+  AC_SEARCH_LIBS(res_9_dn_skipname,resolv bind,,
+      AC_SEARCH_LIBS(dn_skipname,resolv bind,,
+          AC_SEARCH_LIBS(__dn_skipname,resolv bind,,have_resolver=no)))
 
-    # the double underscore thing is a glibc-ism?
-    AC_SEARCH_LIBS(res_query,resolv bind,,
-                   AC_SEARCH_LIBS(__res_query,resolv bind,,have_resolver=no))
-    AC_SEARCH_LIBS(dn_expand,resolv bind,,
-                   AC_SEARCH_LIBS(__dn_expand,resolv bind,,have_resolver=no))
-
-    # macOS renames dn_skipname into res_9_dn_skipname in <resolv.h>,
-    # and for some reason fools us into believing we don't need
-    # -lresolv even if we do.  Since the test program checking for the
-    # symbol does not include <resolv.h>, we need to check for the
-    # renamed symbol explicitly.
-    AC_SEARCH_LIBS(res_9_dn_skipname,resolv bind,,
-        AC_SEARCH_LIBS(dn_skipname,resolv bind,,
-            AC_SEARCH_LIBS(__dn_skipname,resolv bind,,have_resolver=no)))
-
-    if test x"$have_resolver" != xno ; then
+  if test x"$have_resolver" != xno ; then
 
       # Make sure that the BIND 4 resolver interface is workable before
       # enabling any code that calls it.  At some point I'll rewrite the
@@ -1084,8 +1066,8 @@ if test x"$use_dns_srv" = xyes || test x"$use_dns_cert" = xyes; then
       # We might also want to use adns instead.  Problem with ADNS is that
       # it does not support v6.
 
-      AC_MSG_CHECKING([whether the resolver is usable])
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
+    AC_MSG_CHECKING([whether the resolver is usable])
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h>
 #include <resolv.h>]],
@@ -1094,15 +1076,15 @@ if test x"$use_dns_srv" = xyes || test x"$use_dns_cert" = xyes; then
   dn_skipname(0,0);
   dn_expand(0,0,0,0,0);
 ]])],have_resolver=yes,have_resolver=no)
-      AC_MSG_RESULT($have_resolver)
+    AC_MSG_RESULT($have_resolver)
 
-      # This is Apple-specific and somewhat bizarre as they changed the
-      # define in bind 8 for some reason.
+    # This is Apple-specific and somewhat bizarre as they changed the
+    # define in bind 8 for some reason.
 
-      if test x"$have_resolver" != xyes ; then
-         AC_MSG_CHECKING(
-             [whether I can make the resolver usable with BIND_8_COMPAT])
-        AC_LINK_IFELSE([AC_LANG_PROGRAM([[#define BIND_8_COMPAT
+    if test x"$have_resolver" != xyes ; then
+      AC_MSG_CHECKING(
+           [whether I can make the resolver usable with BIND_8_COMPAT])
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#define BIND_8_COMPAT
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h>
@@ -1111,36 +1093,29 @@ if test x"$use_dns_srv" = xyes || test x"$use_dns_cert" = xyes; then
   res_query("foo.bar",C_IN,T_A,answer,PACKETSZ);
   dn_skipname(0,0); dn_expand(0,0,0,0,0);
 ]])],[have_resolver=yes ; need_compat=yes])
-         AC_MSG_RESULT($have_resolver)
-      fi
+      AC_MSG_RESULT($have_resolver)
     fi
+  fi
 
-    if test x"$have_resolver" = xyes ; then
-      DNSLIBS=$LIBS
-
-      if test x"$use_dns_srv" = xyes ; then
-         AC_DEFINE(USE_DNS_SRV,1,[define to use DNS SRV])
-      fi
-
-      if test x"$use_dns_cert" = xyes ; then
-        AC_DEFINE(USE_DNS_CERT,1,[define to use DNS CERT])
-      fi
-
-      if test x"$need_compat" = xyes ; then
-        AC_DEFINE(BIND_8_COMPAT,1,[an Apple OSXism])
-      fi
-    else
-      use_dns_srv=no
-      use_dns_cert=no
+  if test x"$have_resolver" = xyes ; then
+    AC_DEFINE(HAVE_SYSTEM_RESOLVER,1,[The system's resolver is usable.])
+    DNSLIBS="$DNSLIBS $LIBS"
+    if test x"$need_compat" = xyes ; then
+      AC_DEFINE(BIND_8_COMPAT,1,[an Apple OSXism])
     fi
+  else
+    AC_MSG_WARN([[
+***
+*** The system's DNS resolver is not usable.
+*** Dirmngr functionality is limited.
+***]])
+   show_tor_support="${show_tor_support} (no system resolver)"
   fi
 
   LIBS=$_dns_save_libs
 fi
 
 AC_SUBST(DNSLIBS)
-
-AM_CONDITIONAL(USE_DNS_SRV, test x"$use_dns_srv" = xyes)
 
 
 #
@@ -1963,7 +1938,6 @@ echo "
         Dirmngr auto start:  $dirmngr_auto_start
         Readline support:    $gnupg_cv_have_readline
         LDAP support:        $gnupg_have_ldap
-        DNS SRV support:     $use_dns_srv
         TLS support:         $use_tls_library
         TOFU support:        $use_tofu
         Tor support:         $show_tor_support
