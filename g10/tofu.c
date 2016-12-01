@@ -1296,21 +1296,6 @@ signature_stats_collect_cb (void *cookie, int argc, char **argv,
   return 0;
 }
 
-/* Convert from seconds to time units.
-
-   Note: T should already be a multiple of TIME_AGO_UNIT_SMALL or
-   TIME_AGO_UNIT_MEDIUM or TIME_AGO_UNIT_LARGE.  */
-signed long
-time_ago_scale (signed long t)
-{
-  if (t < TIME_AGO_UNIT_MEDIUM)
-    return t / TIME_AGO_UNIT_SMALL;
-  if (t < TIME_AGO_UNIT_LARGE)
-    return t / TIME_AGO_UNIT_MEDIUM;
-  return t / TIME_AGO_UNIT_LARGE;
-}
-
-
 /* Format the first part of a conflict message and return that as a
  * malloced string.  */
 static char *
@@ -1340,8 +1325,11 @@ format_conflict_msg_part1 (int policy, strlist_t conflict_set,
   else if (policy == TOFU_POLICY_ASK && conflict_set->next)
     {
       int conflicts = strlist_length (conflict_set);
-      es_fprintf (fp, _("The email address \"%s\" is associated with %d keys!"),
-                  email, conflicts);
+      es_fprintf
+        (fp, ngettext("The email address \"%s\" is associated with %d key!",
+                      "The email address \"%s\" is associated with %d keys!",
+                      conflicts),
+         email, conflicts);
       if (opt.verbose)
         es_fprintf (fp,
                     _("  Since this binding's policy was 'auto', it has been "
@@ -1743,6 +1731,7 @@ ask_about_binding (ctrl_t ctrl,
       char *key = NULL;
       strlist_t binding;
       int seen_in_past = 0;
+      int encrypted = 1;
 
       es_fprintf (fp, _("Statistics for keys"
                         " with the email address \"%s\":\n"),
@@ -1755,6 +1744,14 @@ ask_about_binding (ctrl_t ctrl,
                      stats_iter->time_ago,
                      stats_iter->count);
 #endif
+
+          if (stats_iter->time_ago > 0 && encrypted)
+            {
+              /* We've change from the encrypted stats to the verified
+               * stats.  Reset SEEN_IN_PAST.  */
+              encrypted = 0;
+              seen_in_past = 0;
+            }
 
           if (! key || strcmp (key, stats_iter->fingerprint))
             {
@@ -1805,50 +1802,92 @@ ask_about_binding (ctrl_t ctrl,
           seen_in_past += stats_iter->count;
 
           es_fputs ("    ", fp);
-          /* TANSLATORS: This string is concatenated with one of
-           * the day/week/month strings to form one sentence.  */
-          if (stats_iter->time_ago > 0)
-            es_fprintf (fp, ngettext("Verified %d message",
-                                     "Verified %d messages",
-                                     seen_in_past), seen_in_past);
-          else
-            es_fprintf (fp, ngettext("Encrypted %d message",
-                                     "Encrypted %d messages",
-                                     seen_in_past), seen_in_past);
 
           if (!stats_iter->count)
-            es_fputs (".", fp);
+            {
+              if (stats_iter->time_ago > 0)
+                es_fprintf (fp, ngettext("Verified %d message.",
+                                         "Verified %d messages.",
+                                         seen_in_past), seen_in_past);
+              else
+                es_fprintf (fp, ngettext("Encrypted %d message.",
+                                         "Encrypted %d messages.",
+                                         seen_in_past), seen_in_past);
+            }
           else if (labs(stats_iter->time_ago) == 2)
             {
-              es_fprintf (fp, "in the future.");
+              if (stats_iter->time_ago > 0)
+                es_fprintf (fp, ngettext("Verified %d message in the future.",
+                                         "Verified %d messages in the future.",
+                                         seen_in_past), seen_in_past);
+              else
+                es_fprintf (fp, ngettext("Encrypted %d message in the future.",
+                                         "Encrypted %d messages in the future.",
+                                         seen_in_past), seen_in_past);
               /* Reset it.  */
               seen_in_past = 0;
             }
           else
             {
               if (labs(stats_iter->time_ago) == 3)
-                es_fprintf (fp, ngettext(" over the past day.",
-                                         " over the past %d days.",
-                                         TIME_AGO_SMALL_THRESHOLD
-                                         / TIME_AGO_UNIT_SMALL),
-                            TIME_AGO_SMALL_THRESHOLD
-                            / TIME_AGO_UNIT_SMALL);
+                {
+                  int days = 1 + stats_iter->time_ago / TIME_AGO_UNIT_SMALL;
+                  if (stats_iter->time_ago > 0)
+                    es_fprintf
+                      (fp,
+                       ngettext("Messages verified over the past %d day: %d.",
+                                "Messages verified over the past %d days: %d.",
+                                days), days, seen_in_past);
+                  else
+                    es_fprintf
+                      (fp,
+                       ngettext("Messages encrypted over the past %d day: %d.",
+                                "Messages encrypted over the past %d days: %d.",
+                                days), days, seen_in_past);
+                }
               else if (labs(stats_iter->time_ago) == 4)
-                es_fprintf (fp, ngettext(" over the past month.",
-                                         " over the past %d months.",
-                                         TIME_AGO_MEDIUM_THRESHOLD
-                                         / TIME_AGO_UNIT_MEDIUM),
-                            TIME_AGO_MEDIUM_THRESHOLD
-                            / TIME_AGO_UNIT_MEDIUM);
+                {
+                  int months = 1 + stats_iter->time_ago / TIME_AGO_UNIT_MEDIUM;
+                  if (stats_iter->time_ago > 0)
+                    es_fprintf
+                      (fp,
+                       ngettext("Messages verified over the past %d month: %d.",
+                                "Messages verified over the past %d months: %d.",
+                                months), months, seen_in_past);
+                  else
+                    es_fprintf
+                      (fp,
+                       ngettext("Messages encrypted over the past %d month: %d.",
+                                "Messages encrypted over the past %d months: %d.",
+                                months), months, seen_in_past);
+                }
               else if (labs(stats_iter->time_ago) == 5)
-                es_fprintf (fp, ngettext(" over the past year.",
-                                         " over the past %d years.",
-                                         TIME_AGO_LARGE_THRESHOLD
-                                         / TIME_AGO_UNIT_LARGE),
-                            TIME_AGO_LARGE_THRESHOLD
-                            / TIME_AGO_UNIT_LARGE);
+                {
+                  int years = 1 + stats_iter->time_ago / TIME_AGO_UNIT_LARGE;
+                  if (stats_iter->time_ago > 0)
+                    es_fprintf
+                      (fp,
+                       ngettext("Messages verified over the past %d year: %d.",
+                                "Messages verified over the past %d years: %d.",
+                                years), years, seen_in_past);
+                  else
+                    es_fprintf
+                      (fp,
+                       ngettext("Messages encrypted over the past %d year: %d.",
+                                "Messages encrypted over the past %d years: %d.",
+                                years), years, seen_in_past);
+                }
               else if (labs(stats_iter->time_ago) == 6)
-                es_fprintf (fp, _(" in the past."));
+                {
+                  if (stats_iter->time_ago > 0)
+                    es_fprintf
+                      (fp, _("Messages verified in the past: %d."),
+                       seen_in_past);
+                  else
+                    es_fprintf
+                      (fp, _("Messages encrypted in the past: %d."),
+                       seen_in_past);
+                }
               else
                 log_assert (! "Broken SQL.\n");
             }
@@ -2751,7 +2790,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
 
 
 /* Return a malloced string of the form
- *    "7 months, 1 day, 5 minutes, 0 seconds"
+ *    "7~months"
  * The caller should replace all '~' in the returned string by a space
  * and also free the returned string.
  *
@@ -2761,127 +2800,46 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
 static char *
 time_ago_str (long long int t)
 {
-  estream_t fp;
-  int years = 0;
-  int months = 0;
-  int days = 0;
-  int hours = 0;
-  int minutes = 0;
-  int seconds = 0;
-
-  /* The number of units that we've printed so far.  */
-  int count = 0;
-  /* The first unit that we printed (year = 0, month = 1,
-     etc.).  */
-  int first = -1;
-  /* The current unit.  */
-  int i = 0;
-
-  char *str;
-
   /* It would be nice to use a macro to do this, but gettext
      works on the unpreprocessed code.  */
 #define MIN_SECS (60)
 #define HOUR_SECS (60 * MIN_SECS)
 #define DAY_SECS (24 * HOUR_SECS)
+#define WEEK_SECS (7 * DAY_SECS)
 #define MONTH_SECS (30 * DAY_SECS)
 #define YEAR_SECS (365 * DAY_SECS)
 
-  if (t > YEAR_SECS)
+  if (t > 2 * YEAR_SECS)
     {
-      years = t / YEAR_SECS;
-      t -= years * YEAR_SECS;
+      long long int c = t / YEAR_SECS;
+      return xtryasprintf (ngettext("%lld~year", "%lld~years", c), c);
     }
-  if (t > MONTH_SECS)
+  if (t > 2 * MONTH_SECS)
     {
-      months = t / MONTH_SECS;
-      t -= months * MONTH_SECS;
+      long long int c = t / MONTH_SECS;
+      return xtryasprintf (ngettext("%lld~month", "%lld~months", c), c);
     }
-  if (t > DAY_SECS)
+  if (t > 2 * WEEK_SECS)
     {
-      days = t / DAY_SECS;
-      t -= days * DAY_SECS;
+      long long int c = t / WEEK_SECS;
+      return xtryasprintf (ngettext("%lld~week", "%lld~weeks", c), c);
     }
-  if (t > HOUR_SECS)
+  if (t > 2 * DAY_SECS)
     {
-      hours = t / HOUR_SECS;
-      t -= hours * HOUR_SECS;
+      long long int c = t / DAY_SECS;
+      return xtryasprintf (ngettext("%lld~day", "%lld~days", c), c);
     }
-  if (t > MIN_SECS)
+  if (t > 2 * HOUR_SECS)
     {
-      minutes = t / MIN_SECS;
-      t -= minutes * MIN_SECS;
+      long long int c = t / HOUR_SECS;
+      return xtryasprintf (ngettext("%lld~hour", "%lld~hours", c), c);
     }
-  seconds = t;
-
-#undef MIN_SECS
-#undef HOUR_SECS
-#undef DAY_SECS
-#undef MONTH_SECS
-#undef YEAR_SECS
-
-  fp = es_fopenmem (0, "rw,samethread");
-  if (! fp)
-    log_fatal ("error creating memory stream: %s\n",
-               gpg_strerror (gpg_error_from_syserror()));
-
-  if (years)
+  if (t > 2 * MIN_SECS)
     {
-      /* TRANSLATORS: The tilde ('~') is used here to indicate a
-       * non-breakable space  */
-      es_fprintf (fp, ngettext("%d~year", "%d~years", years), years);
-      count ++;
-      first = i;
+      long long int c = t / MIN_SECS;
+      return xtryasprintf (ngettext("%lld~minute", "%lld~minutes", c), c);
     }
-  i ++;
-  if ((first == -1 || i - first <= 3) && count <= 0 && months)
-    {
-      if (count)
-        es_fprintf (fp, ", ");
-      es_fprintf (fp, ngettext("%d~month", "%d~months", months), months);
-      count ++;
-      first = i;
-    }
-  i ++;
-  if ((first == -1 || i - first <= 3) && count <= 0 && days)
-    {
-      if (count)
-        es_fprintf (fp, ", ");
-      es_fprintf (fp, ngettext("%d~day", "%d~days", days), days);
-      count ++;
-      first = i;
-    }
-  i ++;
-  if ((first == -1 || i - first <= 3) && count <= 0 && hours)
-    {
-      if (count)
-        es_fprintf (fp, ", ");
-      es_fprintf (fp, ngettext("%d~hour", "%d~hours", hours), hours);
-      count ++;
-      first = i;
-    }
-  i ++;
-  if ((first == -1 || i - first <= 3) && count <= 0 && minutes)
-    {
-      if (count)
-        es_fprintf (fp, ", ");
-      es_fprintf (fp, ngettext("%d~minute", "%d~minutes", minutes), minutes);
-      count ++;
-      first = i;
-    }
-  i ++;
-  if ((first == -1 || i - first <= 3) && count <= 0)
-    {
-      if (count)
-        es_fprintf (fp, ", ");
-      es_fprintf (fp, ngettext("%d~second", "%d~seconds", seconds), seconds);
-    }
-
-  es_fputc (0, fp);
-  if (es_fclose_snatch (fp, (void **) &str, NULL))
-    log_fatal ("error snatching memory stream\n");
-
-  return str;
+  return xtryasprintf (ngettext("%lld~second", "%lld~seconds", t), t);
 }
 
 
@@ -3066,56 +3024,55 @@ show_statistics (tofu_dbs_t dbs, PKT_public_key *pk, const char *fingerprint,
         log_fatal ("error creating memory stream: %s\n",
                    gpg_strerror (gpg_error_from_syserror()));
 
-      es_fprintf (fp, _("%s: "), email);
-
-      if (signature_count == 0)
+      if (signature_count == 0 && encryption_count == 0)
         {
-          es_fprintf (fp, _("Verified %ld signatures"), 0L);
-          es_fputc ('\n', fp);
+          es_fprintf (fp,
+                      _("%s: Verified 0~signatures and encrypted 0~messages."),
+                      email);
         }
       else
         {
-          char *first_seen_ago_str = time_ago_str (now - signature_first_seen);
+          if (signature_count == 0)
+            es_fprintf (fp, _("%s: Verified 0 signatures."), email);
+          else
+            {
+              /* TRANSLATORS: The final %s is replaced by a string like
+                 "7~months". */
+              char *ago_str = time_ago_str (now - signature_first_seen);
+              es_fprintf
+                (fp,
+                 ngettext("%s: Verified %ld~signature in the past %s.",
+                          "%s: Verified %ld~signatures in the past %s.",
+                          signature_count),
+                 email, signature_count, ago_str);
+              xfree (ago_str);
+            }
 
-          /* TRANSLATORS: The final %s is replaced by a string like
-             "7 months, 1 day, 5 minutes, 0 seconds". */
-          es_fprintf (fp,
-                      ngettext("Verified %ld signature in the past %s",
-                               "Verified %ld signatures in the past %s",
-                               signature_count),
-                      signature_count, first_seen_ago_str);
+          es_fputs ("  ", fp);
 
-          xfree (first_seen_ago_str);
-        }
+          if (encryption_count == 0)
+            es_fprintf (fp, _("Encrypted 0 messages."));
+          else
+            {
+              char *ago_str = time_ago_str (now - encryption_first_done);
 
-      if (encryption_count == 0)
-        {
-          es_fprintf (fp, _(", and encrypted %ld messages"), 0L);
-        }
-      else
-        {
-          char *first_done_ago_str = time_ago_str (now - encryption_first_done);
-
-          /* TRANSLATORS: The final %s is replaced by a string like
-             "7 months, 1 day, 5 minutes, 0 seconds". */
-          es_fprintf (fp,
-                      ngettext(", and encrypted %ld message in the past %s",
-                               ", and encrypted %ld messages in the past %s",
-                               encryption_count),
-                      encryption_count, first_done_ago_str);
-
-          xfree (first_done_ago_str);
+              /* TRANSLATORS: The final %s is replaced by a string like
+                 "7~months". */
+              es_fprintf (fp,
+                          ngettext("Encrypted %ld~message in the past %s.",
+                                   "Encrypted %ld~messages in the past %s.",
+                                   encryption_count),
+                          encryption_count, ago_str);
+              xfree (ago_str);
+            }
         }
 
       if (opt.verbose)
         {
           es_fputs ("  ", fp);
-          es_fputc ('(', fp);
-          es_fprintf (fp, _("policy: %s"), tofu_policy_str (policy));
-          es_fputs (").\n", fp);
+          es_fprintf (fp, _("(policy: %s)"), tofu_policy_str (policy));
         }
-      else
-        es_fputs (".\n", fp);
+      es_fputs ("\n", fp);
 
 
       {
