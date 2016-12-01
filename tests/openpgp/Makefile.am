@@ -72,6 +72,7 @@ XTESTS = \
 	conventional-mdc.scm \
 	multisig.scm \
 	verify.scm \
+	verify-multifile.scm \
 	gpgv-forged-keyring.scm \
 	armor.scm \
 	import.scm \
