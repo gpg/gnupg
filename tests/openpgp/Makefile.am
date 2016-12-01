@@ -194,7 +194,9 @@ sample_keys = samplekeys/README \
 	      samplekeys/authenticate-only.pub.asc \
 	      samplekeys/authenticate-only.sec.asc
 
-sample_msgs = samplemsgs/issue2419.asc
+sample_msgs = samplemsgs/issue2419.asc \
+	      samplemsgs/clearsig-1-key-1.asc \
+	      samplemsgs/signed-1-key-1.asc
 
 EXTRA_DIST = defs.scm $(XTESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
