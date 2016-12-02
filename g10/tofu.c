@@ -410,9 +410,12 @@ string_to_long (long *r_value, const char *string, long fallback, int line)
   if (errno || !(!strcmp (tail, ".0") || !*tail))
     {
       err = errno? gpg_error_from_errno (errno) : gpg_error (GPG_ERR_BAD_DATA);
-      log_debug ("%s:%d: "
-                 "strtol failed for DB returned string (tail=%.10s): %s\n",
-                 __FILE__, line, tail, gpg_strerror (err));
+      log_debug ("%s:%d: strtol failed for TOFU DB data; returned string"
+                 " (string='%.10s%s'; tail='%.10s%s'): %s\n",
+                 __FILE__, line,
+                 string, string && strlen(string) > 10 ? "..." : "",
+                 tail, tail && strlen(tail) > 10 ? "..." : "",
+                 gpg_strerror (err));
       *r_value = fallback;
     }
   else
@@ -438,9 +441,12 @@ string_to_ulong (unsigned long *r_value, const char *string,
   if (errno || !(!strcmp (tail, ".0") || !*tail))
     {
       err = errno? gpg_error_from_errno (errno) : gpg_error (GPG_ERR_BAD_DATA);
-      log_debug ("%s:%d: "
-                 "strtoul failed for DB returned string (tail=%.10s): %s\n",
-                 __FILE__, line, tail, gpg_strerror (err));
+      log_debug ("%s:%d: strtoul failed for TOFU DB data; returned string"
+                 " (string='%.10s%s'; tail='%.10s%s'): %s\n",
+                 __FILE__, line,
+                 string, string && strlen(string) > 10 ? "..." : "",
+                 tail, tail && strlen(tail) > 10 ? "..." : "",
+                 gpg_strerror (err));
       *r_value = fallback;
     }
   else
