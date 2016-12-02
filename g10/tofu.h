@@ -120,11 +120,6 @@ int tofu_get_validity (ctrl_t ctrl,
    POLICY.  */
 gpg_error_t tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy);
 
-/* Set the TOFU policy for all non-revoked users in the key with the
-   key id KEYID to POLICY.  */
-gpg_error_t tofu_set_policy_by_keyid (ctrl_t ctrl,
-                                      u32 *keyid, enum tofu_policy policy);
-
 /* Return the TOFU policy for the specified binding in *POLICY.  */
 gpg_error_t tofu_get_policy (ctrl_t ctrl,
                              PKT_public_key *pk, PKT_user_id *user_id,

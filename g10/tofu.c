@@ -3760,23 +3760,6 @@ tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
   return err;
 }
 
-/* Set the TOFU policy for all non-revoked user ids in the KEY with
-   the key id KEYID to POLICY.
-
-   If no key is available with the specified key id, then this
-   function returns GPG_ERR_NO_PUBKEY.
-
-   Returns 0 on success and an error code otherwise.  */
-gpg_error_t
-tofu_set_policy_by_keyid (ctrl_t ctrl, u32 *keyid, enum tofu_policy policy)
-{
-  kbnode_t keyblock = get_pubkeyblock (keyid);
-  if (! keyblock)
-    return gpg_error (GPG_ERR_NO_PUBKEY);
-
-  return tofu_set_policy (ctrl, keyblock, policy);
-}
-
 /* Return the TOFU policy for the specified binding in *POLICY.  If no
    policy has been set for the binding, sets *POLICY to
    TOFU_POLICY_NONE.
