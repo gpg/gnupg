@@ -411,17 +411,21 @@ openpgp_enum_curves (int *iterp)
 }
 
 
-/* Return the Libgcrypt name for for the gpg curve NAME if supported.
- * If R_ALGO is not NULL the required OpenPGP public key algo or 0 is
- * stored at that address.  NULL is returned if the curev is not
- * supported. */
+/* Return the Libgcrypt name for the gpg curve NAME if supported.  If
+ * R_ALGO is not NULL the required OpenPGP public key algo or 0 is
+ * stored at that address.  If R_NBITS is not NULL the nominal bitsize
+ * of the curves is stored there.  NULL is returned if the curve is
+ * not supported. */
 const char *
-openpgp_is_curve_supported (const char *name, int *r_algo)
+openpgp_is_curve_supported (const char *name, int *r_algo,
+                            unsigned int *r_nbits)
 {
   int idx;
 
   if (r_algo)
     *r_algo = 0;
+  if (r_nbits)
+    *r_nbits = 0;
   for (idx = 0; idx < DIM (oidtable) && oidtable[idx].name; idx++)
     {
       if ((!strcmp (name, oidtable[idx].name)
@@ -430,6 +434,8 @@ openpgp_is_curve_supported (const char *name, int *r_algo)
         {
           if (r_algo)
             *r_algo = oidtable[idx].pubkey_algo;
+          if (r_nbits)
+            *r_nbits = oidtable[idx].nbits;
           return oidtable[idx].name;
         }
     }

@@ -39,6 +39,9 @@
  * libgpg-error version.  Define them here.
  * Example: (#if GPG_ERROR_VERSION_NUMBER < 0x011500 // 1.21)
  */
+#if GPG_ERROR_VERSION_NUMBER < 0x011a00 /* 1.26 */
+# define GPG_ERR_UNKNOWN_FLAG 309
+#endif
 
 
 /* Hash function used with libksba. */
@@ -210,7 +213,8 @@ int openpgp_oid_is_cv25519 (gcry_mpi_t a);
 const char *openpgp_curve_to_oid (const char *name, unsigned int *r_nbits);
 const char *openpgp_oid_to_curve (const char *oid, int canon);
 const char *openpgp_enum_curves (int *idxp);
-const char *openpgp_is_curve_supported (const char *name, int *r_algo);
+const char *openpgp_is_curve_supported (const char *name,
+                                        int *r_algo, unsigned int *r_nbits);
 
 
 /*-- homedir.c --*/

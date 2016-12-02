@@ -1159,7 +1159,11 @@ filename given on the command line, gpg might still need to read from
 STDIN (in particular if gpg figures that the input is a
 detached signature and no data file has been specified).  Thus if you
 do not want to feed data via STDIN, you should connect STDIN to
-@file{/dev/null}.
+g@file{/dev/null}.
+
+It is highly recommended to use this option along with the options
+@option{--status-fd} and @option{--with-colons} for any unattended of
+@command{gpg}.
 
 @item --no-tty
 @opindex no-tty
@@ -3161,6 +3165,13 @@ Valid values are "0" for no expiration, a number followed by the
 letter d (for days), w (for weeks), m (for months), or y (for years)
 (for example "2m" for two months, or "5y" for five years), or an
 absolute date in the form YYYY-MM-DD. Defaults to "0".
+
+@item --default-new-key-algo @var{string}
+@opindex default-new-key-algo @var{string}
+This option can be used to change the default algorithms for key
+generation.  Note that the advanced key generation commands can always
+be used to specify a key algorithm directly.  Please consult the
+source code to learn the syntax of @var{string}.
 
 @item --allow-secret-key-import
 @opindex allow-secret-key-import

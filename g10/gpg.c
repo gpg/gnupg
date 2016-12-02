@@ -407,6 +407,7 @@ enum cmd_and_opt_values
     oPrintDANERecords,
     oTOFUDefaultPolicy,
     oTOFUDBFormat,
+    oDefaultNewKeyAlgo,
     oWeakDigest,
     oUnwrap,
     oOnlySignTextIDs,
@@ -835,6 +836,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oAllowMultipleMessages,      "allow-multiple-messages", "@"),
   ARGPARSE_s_n (oNoAllowMultipleMessages, "no-allow-multiple-messages", "@"),
   ARGPARSE_s_n (oAllowWeakDigestAlgos, "allow-weak-digest-algos", "@"),
+
+  ARGPARSE_s_s (oDefaultNewKeyAlgo, "default-new-key-algo", "@"),
 
   /* These two are aliases to help users of the PGP command line
      product use gpg with minimal pain.  Many commands are common
@@ -3468,6 +3471,10 @@ main (int argc, char **argv)
             break;
 
           case oNoAutostart: opt.autostart = 0; break;
+
+	  case oDefaultNewKeyAlgo:
+            opt.def_new_key_algo = pargs.r.ret_str;
+            break;
 
 	  case oNoop: break;
 

@@ -3454,7 +3454,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
 
           memcpy (curve_name, tok, toklen);
           curve_name[toklen] = 0;
-          curve = openpgp_is_curve_supported (curve_name, NULL);
+          curve = openpgp_is_curve_supported (curve_name, NULL, NULL);
           xfree (curve_name);
         }
       else if (tok && toklen == 5 && !memcmp (tok, "flags", 5))

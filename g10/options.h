@@ -120,6 +120,8 @@ struct
   const char *agent_program;
   const char *dirmngr_program;
 
+  const char *def_new_key_algo;
+
   /* Options to be passed to the gpg-agent */
   session_env_t session_env;
   char *lc_ctype;
