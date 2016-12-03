@@ -2223,7 +2223,7 @@ check_sig_and_print (CTX c, kbnode_t node)
       snprintf (buf, sizeof buf, "%08lX%08lX %d %d %02x %lu %d",
                 (ulong)sig->keyid[0], (ulong)sig->keyid[1],
                 sig->pubkey_algo, sig->digest_algo,
-                sig->sig_class, (ulong)sig->timestamp, rc);
+                sig->sig_class, (ulong)sig->timestamp, gpg_err_code (rc));
       write_status_text (STATUS_ERRSIG, buf);
       if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY)
         {
