@@ -46,6 +46,9 @@
 #include <string.h>
 #include <unistd.h>
 
+/* William Ahern's DNS library, included as a source copy.  */
+#include "dns.h"
+
 #ifdef WITHOUT_NPTH /* Give the Makefile a chance to build without Pth.  */
 # undef USE_NPTH
 #endif
@@ -125,6 +128,8 @@ standard_resolver_p (void)
 gpg_error_t
 enable_dns_tormode (int new_circuit)
 {
+  /* XXX: dns.c doesn't support SOCKS credentials.  */
+
   if (!*tor_credentials || new_circuit)
     {
       static unsigned int counter;
@@ -190,6 +195,191 @@ map_eai_to_gpg_error (int ec)
 #endif
     default:            err = gpg_error (GPG_ERR_UNKNOWN_ERRNO); break;
     }
+  return err;
+}
+
+struct
+{
+  struct dns_resolv_conf *resolv_conf;
+  struct dns_hosts *hosts;
+  struct dns_hints *hints;
+
+  struct sockaddr_storage socks_host;
+} libdns;
+
+static gpg_error_t
+libdns_error_to_gpg_error (int error)
+{
+  gpg_err_code_t ec;
+
+  switch (error)
+    {
+    case 0:
+      return 0;
+
+    default:
+      /* XXX */
+      fprintf (stderr, "libdns: %s\n", dns_strerror (error));
+      ec = GPG_ERR_GENERAL;
+      break;
+    }
+  return gpg_error (ec);
+}
+
+static gpg_error_t
+libdns_init (void)
+{
+  int error;
+
+  libdns.resolv_conf = dns_resconf_open (&error);
+  if (! libdns.resolv_conf)
+    goto leave;
+
+#if 0
+  error = dns_resconf_pton (&libdns.resolv_conf->nameserver[0],
+                            "[127.0.0.1]:53");
+  if (error)
+    goto leave;
+#else
+  error	= dns_resconf_loadpath (libdns.resolv_conf, "/etc/resolv.conf");
+  if (error)
+    goto leave;
+
+  error	= dns_nssconf_loadpath (libdns.resolv_conf, "/etc/nsswitch.conf");
+  if (error)
+    goto leave;
+#endif
+
+  libdns.hosts = dns_hosts_open (&error);
+  if (! libdns.hosts)
+    goto leave;
+
+  /* dns_hints_local for stub mode, dns_hints_root for recursive.  */
+  libdns.hints = dns_hints_local (libdns.resolv_conf, &error);
+  if (! libdns.hints)
+    goto leave;
+
+  /* XXX */
+ leave:
+  return libdns_error_to_gpg_error (error);
+}
+
+
+static gpg_error_t
+resolve_name_libdns (const char *name, unsigned short port,
+                     int want_family, int want_socktype,
+                     dns_addrinfo_t *r_dai, char **r_canonname)
+{
+  gpg_error_t err = 0;
+  dns_addrinfo_t daihead = NULL;
+  dns_addrinfo_t dai;
+  struct dns_resolver *res;
+  struct dns_addrinfo *ai = NULL;
+  struct addrinfo hints;
+  struct addrinfo *ent;
+  char portstr_[21];
+  char *portstr = portstr_;
+  int ret;
+
+  err = libdns_init ();
+  if (err)
+    return err;
+
+  *r_dai = NULL;
+  if (r_canonname)
+    *r_canonname = NULL;
+
+  memset (&hints, 0, sizeof hints);
+  hints.ai_family = want_family;
+  hints.ai_socktype = want_socktype;
+  hints.ai_flags = AI_ADDRCONFIG;
+  if (r_canonname)
+    hints.ai_flags |= AI_CANONNAME;
+
+  if (port)
+    snprintf (portstr_, sizeof portstr_, "%hu", port);
+  else
+    portstr = NULL;
+
+  res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
+                      dns_opts (/*.socks_host=&libdns.socks_host*/), &ret);
+  if (! res)
+    return libdns_error_to_gpg_error (ret);
+
+  ai = dns_ai_open (name, portstr, 0, &hints, res, &ret);
+  if (! ai)
+    goto leave;
+
+  /* XXX this is blocking.  */
+  do {
+    ret = dns_ai_nextent (&ent, ai);
+    switch (ret) {
+    case 0:
+      if (r_canonname && ! *r_canonname && ent && ent->ai_canonname)
+        {
+          *r_canonname = xtrystrdup (ent->ai_canonname);
+          if (!*r_canonname)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+        }
+
+      dai = xtrymalloc (sizeof *dai + ent->ai_addrlen - 1);
+      if (dai == NULL)
+        {
+          err = ENOMEM;
+          goto leave;
+        }
+
+      dai->family = ent->ai_family;
+      dai->socktype = ent->ai_socktype;
+      dai->protocol = ent->ai_protocol;
+      dai->addrlen = ent->ai_addrlen;
+      memcpy (dai->addr, ent->ai_addr, ent->ai_addrlen);
+      dai->next = daihead;
+      daihead = dai;
+
+      xfree (ent);
+      break;
+
+    case ENOENT:
+      break;
+
+    case EAGAIN:
+      if (dns_ai_elapsed (ai) > 30)
+        log_assert (! "XXX: query timed-out");
+
+      dns_ai_poll (ai, 1);
+      break;
+
+    default:
+      goto leave;
+    }
+  } while (ret != ENOENT);
+
+  if (ret == ENOENT && daihead != NULL)
+    ret = 0;	/* We got some results, we're good.  */
+
+ leave:
+  dns_ai_close (ai);
+  dns_res_close (res);
+
+  if (ret && ! err)
+    err = libdns_error_to_gpg_error (ret);
+
+  if (err)
+    {
+      if (r_canonname)
+        {
+          xfree (*r_canonname);
+          *r_canonname = NULL;
+        }
+      free_dns_addrinfo (daihead);
+    }
+  else
+    *r_dai = daihead;
+
   return err;
 }
 
@@ -376,11 +566,10 @@ resolve_dns_name (const char *name, unsigned short port,
                   int want_family, int want_socktype,
                   dns_addrinfo_t *r_ai, char **r_canonname)
 {
-#ifdef NOTYET
   if (!standard_resolver)
     return resolve_name_libdns (name, port, want_family, want_socktype,
                                 r_ai, r_canonname);
-#endif
+
   return resolve_name_standard (name, port, want_family, want_socktype,
                                 r_ai, r_canonname);
 }
@@ -472,6 +661,16 @@ is_onion_address (const char *name)
     return 0;
   /* Note that we require at least 2 characters before the suffix.  */
   return 1;  /* Yes.  */
+}
+
+
+/* libdns version of get_dns_cert.  */
+static gpg_error_t
+get_dns_cert_libdns (const char *name, int want_certtype,
+                     void **r_key, size_t *r_keylen,
+                     unsigned char **r_fpr, size_t *r_fprlen, char **r_url)
+{
+  return gpg_error (ENOTSUP);
 }
 
 
@@ -701,11 +900,10 @@ get_dns_cert (const char *name, int want_certtype,
   *r_fprlen = 0;
   *r_url = NULL;
 
-#ifdef NOTYET
   if (!standard_resolver)
     return get_dns_cert_libdns (name, want_certtype, r_key, r_keylen,
                                 r_fpr, r_fprlen, r_url);
-#endif
+
   return get_dns_cert_standard (name, want_certtype, r_key, r_keylen,
                                 r_fpr, r_fprlen, r_url);
 }
@@ -727,6 +925,14 @@ priosort(const void *a,const void *b)
 /* Standard resolver based helper for getsrv.  */
 static int
 getsrv_standard (const char *name, struct srventry **list)
+{
+  return gpg_error (ENOTSUP);
+}
+
+
+/* libdns based helper for getsrv.  */
+static int
+getsrv_libdns (const char *name, struct srventry **list)
 {
 #ifdef HAVE_SYSTEM_RESOLVER
   union {
@@ -850,12 +1056,8 @@ getsrv (const char *name, struct srventry **list)
 
   *list = NULL;
 
-  if (0)
-    ;
-#ifdef NOTYET
-  else if (!standard_resolver)
+  if (!standard_resolver)
     srvcount = getsrv_libdns (name, list);
-#endif
   else
     srvcount = getsrv_standard (name, list);
 
@@ -936,6 +1138,14 @@ getsrv (const char *name, struct srventry **list)
     }
 
   return srvcount;
+}
+
+
+/* libdns version of get_dns_cname.  */
+gpg_error_t
+get_dns_cname_libdns (const char *name, char **r_cname)
+{
+  return gpg_error (ENOTSUP);
 }
 
 
@@ -1022,10 +1232,8 @@ get_dns_cname (const char *name, char **r_cname)
 {
   *r_cname = NULL;
 
-#ifdef NOTYET
   if (!standard_resolver)
     return get_dns_cname_libdns (name, r_cname);
-#endif
 
   return get_dns_cname_standard (name, r_cname);
 }
