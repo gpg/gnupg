@@ -123,6 +123,7 @@ enum cmd_and_opt_values
     aQuickAddUid,
     aQuickAddKey,
     aQuickRevUid,
+    aQuickSetExpire,
     aListConfig,
     aListGcryptConfig,
     aGPGConfList,
@@ -448,6 +449,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aQuickAddKey,  "quick-addkey", "@"),
   ARGPARSE_c (aQuickRevUid,  "quick-revuid",
               N_("quickly revoke a user-id")),
+  ARGPARSE_c (aQuickSetExpire,  "quick-set-expire",
+              N_("quickly set a new expiration date")),
   ARGPARSE_c (aFullKeygen,  "full-gen-key" ,
               N_("full featured key pair generation")),
   ARGPARSE_c (aGenRevoke, "gen-revoke",N_("generate a revocation certificate")),
@@ -2549,6 +2552,7 @@ main (int argc, char **argv)
 	  case aQuickAddUid:
 	  case aQuickAddKey:
 	  case aQuickRevUid:
+	  case aQuickSetExpire:
 	  case aExportOwnerTrust:
 	  case aImportOwnerTrust:
           case aRebuildKeydbCaches:
@@ -4381,6 +4385,18 @@ main (int argc, char **argv)
           uid = *argv++; argc--;
           uidtorev = *argv++; argc--;
           keyedit_quick_revuid (ctrl, uid, uidtorev);
+        }
+	break;
+
+      case aQuickSetExpire:
+        {
+          const char *x_fpr, *x_expire;
+
+          if (argc != 2)
+            wrong_args ("--quick-set-exipre FINGERPRINT EXPIRE");
+          x_fpr = *argv++; argc--;
+          x_expire = *argv++; argc--;
+          keyedit_quick_set_expire (ctrl, x_fpr, x_expire);
         }
 	break;
 

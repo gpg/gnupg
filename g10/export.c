@@ -1144,9 +1144,9 @@ print_status_exported (PKT_public_key *pk)
 /*
  * Receive a secret key from agent specified by HEXGRIP.
  *
- * Since the key data from agant is encrypted, decrypt it by CIPHERHD.
- * Then, parse the decrypted key data in transfer format, and put
- * secret parameters into PK.
+ * Since the key data from the agent is encrypted, decrypt it using
+ * CIPHERHD context.  Then, parse the decrypted key data into transfer
+ * format, and put secret parameters into PK.
  *
  * If CLEARTEXT is 0, store the secret key material
  * passphrase-protected.  Otherwise, store secret key material in the

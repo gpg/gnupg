@@ -69,7 +69,8 @@ static int menu_delsig (KBNODE pub_keyblock);
 static int menu_clean (KBNODE keyblock, int self_only);
 static void menu_delkey (KBNODE pub_keyblock);
 static int menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive);
-static int menu_expire (KBNODE pub_keyblock);
+static gpg_error_t menu_expire (kbnode_t pub_keyblock,
+                                int force_mainkey, u32 newexpiration);
 static int menu_changeusage (kbnode_t keyblock);
 static int menu_backsign (KBNODE pub_keyblock);
 static int menu_set_primary_uid (KBNODE pub_keyblock);
@@ -2599,7 +2600,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  break;
 
 	case cmdEXPIRE:
-	  if (menu_expire (keyblock))
+	  if (gpg_err_code (menu_expire (keyblock, 0, 0)) == GPG_ERR_TRUE)
 	    {
 	      merge_keys_and_selfsig (keyblock);
               run_subkey_warnings = 1;
@@ -3339,6 +3340,86 @@ keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
  leave:
   release_kbnode (keyblock);
   keydb_release (kdbhd);
+}
+
+
+/* Unattended expiration setting function for the main key.
+ *
+ */
+void
+keyedit_quick_set_expire (ctrl_t ctrl, const char *fpr, const char *expirestr)
+{
+  gpg_error_t err;
+  kbnode_t keyblock;
+  KEYDB_HANDLE kdbhd;
+  int modified = 0;
+  PKT_public_key *pk;
+  u32 expire;
+
+#ifdef HAVE_W32_SYSTEM
+  /* See keyedit_menu for why we need this.  */
+  check_trustdb_stale (ctrl);
+#endif
+
+  /* We require a fingerprint because only this uniquely identifies a
+   * key and may thus be used to select a key for unattended
+   * expiration setting.  */
+  err = find_by_primary_fpr (ctrl, fpr, &keyblock, &kdbhd);
+  if (err)
+    goto leave;
+
+  if (fix_keyblock (&keyblock))
+    modified++;
+
+  pk = keyblock->pkt->pkt.public_key;
+  if (pk->flags.revoked)
+    {
+      if (!opt.verbose)
+        show_key_with_all_names (ctrl, es_stdout, keyblock, 0, 0, 0, 0, 0, 1);
+      log_error ("%s%s", _("Key is revoked."), "\n");
+      err = gpg_error (GPG_ERR_CERT_REVOKED);
+      goto leave;
+    }
+
+
+  expire = parse_expire_string (expirestr);
+  if (expire == (u32)-1 )
+    {
+      log_error (_("'%s' is not a valid expiration time\n"), expirestr);
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+  if (expire)
+    expire += make_timestamp ();
+
+  /* Set the new expiration date.  */
+  err = menu_expire (keyblock, 1, expire);
+  if (gpg_err_code (err) == GPG_ERR_TRUE)
+    modified = 1;
+  else if (err)
+    goto leave;
+  es_fflush (es_stdout);
+
+  /* Store.  */
+  if (modified)
+    {
+      err = keydb_update_keyblock (ctrl, kdbhd, keyblock);
+      if (err)
+        {
+          log_error (_("update failed: %s\n"), gpg_strerror (err));
+          goto leave;
+        }
+      if (update_trust)
+        revalidation_mark ();
+    }
+  else
+    log_info (_("Key not changed so no update needed.\n"));
+
+ leave:
+  release_kbnode (keyblock);
+  keydb_release (kdbhd);
+  if (err)
+    write_status_error ("set_expire", err);
 }
 
 
@@ -4736,36 +4817,50 @@ fail:
 }
 
 
-static int
-menu_expire (KBNODE pub_keyblock)
+/* With FORCE_MAINKEY cleared this function handles the interactive
+ * menu option "expire".  With FORCE_MAINKEY set this functions only
+ * sets the expiration date of the primary key to NEWEXPIRATION and
+ * avoid all interactivity.  Retirns 0 if nothing was done,
+ * GPG_ERR_TRUE if the key was modified, or any other error code. */
+static gpg_error_t
+menu_expire (kbnode_t pub_keyblock, int force_mainkey, u32 newexpiration)
 {
-  int n1, signumber, rc;
+  int signumber, rc;
   u32 expiredate;
   int mainkey = 0;
   PKT_public_key *main_pk, *sub_pk;
   PKT_user_id *uid;
-  KBNODE node;
+  kbnode_t node;
   u32 keyid[2];
 
-  n1 = count_selected_keys (pub_keyblock);
-  if (n1 > 1)
+  if (force_mainkey)
     {
-      if (!cpr_get_answer_is_yes
-          ("keyedit.expire_multiple_subkeys.okay",
-           _("Are you sure you want to change the"
-             " expiration time for multiple subkeys? (y/N) ")))
-	return 0;
+      mainkey = 1;
+      expiredate = newexpiration;
     }
-  else if (n1)
-    tty_printf (_("Changing expiration time for a subkey.\n"));
   else
     {
-      tty_printf (_("Changing expiration time for the primary key.\n"));
-      mainkey = 1;
-      no_primary_warning (pub_keyblock);
+      int n1 = count_selected_keys (pub_keyblock);
+      if (n1 > 1)
+        {
+          if (!cpr_get_answer_is_yes
+              ("keyedit.expire_multiple_subkeys.okay",
+               _("Are you sure you want to change the"
+                 " expiration time for multiple subkeys? (y/N) ")))
+            return gpg_error (GPG_ERR_CANCELED);;
+        }
+      else if (n1)
+        tty_printf (_("Changing expiration time for a subkey.\n"));
+      else
+        {
+          tty_printf (_("Changing expiration time for the primary key.\n"));
+          mainkey = 1;
+          no_primary_warning (pub_keyblock);
+        }
+
+      expiredate = ask_expiredate ();
     }
 
-  expiredate = ask_expiredate ();
 
   /* Now we can actually change the self-signature(s) */
   main_pk = sub_pk = NULL;
@@ -4781,7 +4876,7 @@ menu_expire (KBNODE pub_keyblock)
 	}
       else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
-          if (node->flag & NODFLG_SELKEY)
+          if ((node->flag & NODFLG_SELKEY) && !force_mainkey)
             {
               sub_pk = node->pkt->pkt.public_key;
               sub_pk->expiredate = expiredate;
@@ -4795,6 +4890,7 @@ menu_expire (KBNODE pub_keyblock)
 	       && (mainkey || sub_pk))
 	{
 	  PKT_signature *sig = node->pkt->pkt.signature;
+
 	  if (keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
 	      && ((mainkey && uid
 		   && uid->created && (sig->sig_class & ~3) == 0x10)
@@ -4812,7 +4908,7 @@ menu_expire (KBNODE pub_keyblock)
 		{
 		  log_info
                     (_("You can't change the expiration date of a v3 key\n"));
-		  return 0;
+		  return gpg_error (GPG_ERR_LEGACY_KEY);
 		}
 
 	      if (mainkey)
@@ -4827,7 +4923,9 @@ menu_expire (KBNODE pub_keyblock)
 		{
 		  log_error ("make_keysig_packet failed: %s\n",
 			     gpg_strerror (rc));
-		  return 0;
+                  if (gpg_err_code (rc) == GPG_ERR_TRUE)
+                    rc = GPG_ERR_GENERAL;
+		  return rc;
 		}
 
 	      /* Replace the packet.  */
@@ -4843,7 +4941,7 @@ menu_expire (KBNODE pub_keyblock)
     }
 
   update_trust = 1;
-  return 1;
+  return gpg_error (GPG_ERR_TRUE);
 }
 
 

@@ -632,6 +632,12 @@ supplied passphrase is used for the new key and the agent does not ask
 for it.  To create a key without any protection @code{--passphrase ''}
 may be used.
 
+@item --quick-set-expire @code{fpr} @code{expire}
+@opindex quick-set-expire
+Directly set the expiration time of the primary key to @code{expire}.
+To remove the expiration time @code{0} can be used.
+
+
 @item --quick-addkey @code{fpr} [@code{algo} [@code{usage} [@code{expire}]]]
 @opindex quick-addkey
 Directly add a subkey to the key identified by the fingerprint
