@@ -45,6 +45,7 @@ TESTS_ENVIRONMENT = LC_ALL=C \
 
 XTESTS = \
 	version.scm \
+	enarmor.scm \
 	mds.scm \
 	decrypt.scm \
 	decrypt-multifile.scm \
