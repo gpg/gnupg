@@ -59,6 +59,7 @@ dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
 	loadswdb.c \
 	cdb.h cdblib.c misc.c dirmngr-err.h  \
 	ocsp.c ocsp.h validate.c validate.h  \
+	dns.c dns.h \
 	dns-stuff.c dns-stuff.h \
 	http.c http.h \
 	ks-action.c ks-action.h ks-engine.h \
@@ -102,7 +103,7 @@ dirmngr_client_LDADD = $(libcommon) \
 dirmngr_client_LDFLAGS = $(extra_bin_ldflags)
 
 
-t_common_src = t-support.h
+t_common_src = t-support.h dns.c dns.h
 t_common_ldadd = $(libcommon) $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) \
                  $(GPG_ERROR_LIBS) $(NETLIBS) \
                  $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) \
@@ -130,7 +131,7 @@ endif
 
 
 # http tests
-t_http_SOURCES = t-http.c http.c dns-stuff.c
+t_http_SOURCES = $(t_common_src) t-http.c http.c dns-stuff.c
 t_http_CFLAGS  = -DWITHOUT_NPTH=1 \
 	         $(LIBGCRYPT_CFLAGS) $(NTBTLS_CFLAGS) $(LIBGNUTLS_CFLAGS) \
                  $(GPG_ERROR_CFLAGS)
@@ -147,7 +148,7 @@ t_ldap_parse_uri_LDADD = $(ldaplibs) $(t_common_ldadd) $(DNSLIBS)
 
 t_dns_stuff_CFLAGS = -DWITHOUT_NPTH=1 \
 		     $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
-t_dns_stuff_SOURCES = t-dns-stuff.c dns-stuff.c
+t_dns_stuff_SOURCES = $(t_common_src) t-dns-stuff.c dns-stuff.c
 t_dns_stuff_LDADD   = $(t_common_ldadd) $(DNSLIBS)
 
 $(PROGRAMS) : $(libcommon) $(libcommonpth)
