@@ -61,21 +61,24 @@
 @command{@gpgname} is the OpenPGP part of the GNU Privacy Guard (GnuPG). It
 is a tool to provide digital encryption and signing services using the
 OpenPGP standard. @command{@gpgname} features complete key management and
-all bells and whistles you can expect from a decent OpenPGP
+all the bells and whistles you would expect from a full OpenPGP
 implementation.
 
+There are two main versions of GnuPG: GnuPG 1.x and GnuPG 2.x.  GnuPG
+2.x supports modern encryption algorithms and thus should be preferred
+over GnuPG 1.x.  You only need to use GnuPG 1.x if your platform
+doesn't support GnuPG 2.x, or you need support for some features that
+GnuPG 2.x has deprecated, e.g., decrypting data created with PGP-2
+keys.
+
 @ifclear gpgtwohack
-Note that this version of GnuPG features all modern algorithms and
-should thus be preferred over older GnuPG versions.  If you are
-looking for version 1 of GnuPG, you may find that version installed
-under the name @command{gpg1}.
+If you are looking for version 1 of GnuPG, you may find that version
+installed under the name @command{gpg1}.
 @end ifclear
 @ifset gpgtwohack
-In contrast to the standalone command gpg from GnuPG 1.x, which
-might be better suited for server and embedded platforms, the 2.x
-version is commonly installed under the name @command{@gpgname} and
-targeted to the desktop as it requires several other modules to be
-installed.
+In contrast to the standalone command @command{gpg} from GnuPG 1.x,
+the 2.x version is commonly installed under the name
+@command{@gpgname}.
 @end ifset
 
 @manpause
@@ -106,16 +109,18 @@ Developer information:
 @section Commands
 
 Commands are not distinguished from options except for the fact that
-only one command is allowed.
+only one command is allowed.  Generally speaking, irrelevant options
+are silently ignored, and may not be checked for correctness.
 
-@command{@gpgname} may be run with no commands, in which case it will
+@command{@gpgname} may be run with no commands. In this case it will
 perform a reasonable action depending on the type of file it is given
 as input (an encrypted message is decrypted, a signature is verified,
-a file containing keys is listed).
+a file containing keys is listed, etc.).
 
-Please remember that option as well as command parsing stops as soon as
-a non-option is encountered, you can explicitly stop parsing by
-using the special option @option{--}.
+Please remember that option and command parsing stops as soon as a
+non-option is encountered.  Thus, options must precede the command.
+You can explicitly stop parsing by using the special option
+@option{--}.
 
 
 @menu
@@ -140,7 +145,7 @@ cannot abbreviate this command.
 @item --help
 @itemx -h
 @opindex help
-Print a usage message summarizing the most useful command line options.
+Print a usage message summarizing the most useful command-line options.
 Note that you cannot abbreviate this command.
 
 @item --warranty
@@ -166,22 +171,22 @@ abbreviate this command.
 @item --sign
 @itemx -s
 @opindex sign
-Make a signature. This command may be combined with @option{--encrypt}
-(for a signed and encrypted message), @option{--symmetric} (for a
-signed and symmetrically encrypted message), or @option{--encrypt} and
-@option{--symmetric} together (for a signed message that may be
-decrypted via a secret key or a passphrase).  The key to be used for
-signing is chosen by default or can be set with the
+Sign a message. This command may be combined with @option{--encrypt}
+(to sign and encrypt a message), @option{--symmetric} (to sign and
+symmetrically encrypt a message), or both @option{--encrypt} and
+@option{--symmetric} (to sign and encrypt a message that can be
+decrypted using a secret key or a passphrase).  The signing key is
+chosen by default or can be set explicitly using the
 @option{--local-user} and @option{--default-key} options.
 
 @item --clearsign
 @opindex clearsign
-Make a clear text signature.  The content in a clear text signature is
+Make a cleartext signature.  The content in a cleartext signature is
 readable without any special software. OpenPGP software is only needed
-to verify the signature.  Clear text signatures may modify end-of-line
+to verify the signature.  cleartext signatures may modify end-of-line
 whitespace for platform independence and are not intended to be
-reversible.  The key to be used for signing is chosen by default or
-can be set with the @option{--local-user} and @option{--default-key}
+reversible.  The signing key is chosen by default or can be set
+explicitly using the @option{--local-user} and @option{--default-key}
 options.
 
 
@@ -193,11 +198,11 @@ Make a detached signature.
 @item --encrypt
 @itemx -e
 @opindex encrypt
-Encrypt data. This command may be combined with @option{--sign} (for a
-signed and encrypted message), @option{--symmetric} (for a message that
-may be decrypted via a secret key or a passphrase), or @option{--sign}
-and @option{--symmetric} together (for a signed message that may be
-decrypted via a secret key or a passphrase).
+Encrypt data. This command may be combined with @option{--sign} (to
+sign and encrypt a message), @option{--symmetric} (to encrypt a
+message that can decrypted using a secret key or a passphrase), or
+@option{--sign} and @option{--symmetric} together (for a signed
+message that can be decrypted using a secret key or a passphrase).
 
 @item --symmetric
 @itemx -c
@@ -223,32 +228,33 @@ is specified) and write it to STDOUT (or the file specified with
 @option{--output}). If the decrypted file is signed, the signature is also
 verified. This command differs from the default operation, as it never
 writes to the filename which is included in the file and it rejects
-files which don't begin with an encrypted message.
+files that don't begin with an encrypted message.
 
 @item --verify
 @opindex verify
 Assume that the first argument is a signed file and verify it without
 generating any output.  With no arguments, the signature packet is
-read from STDIN.  If only a one argument is given, it is expected to
-be a complete signature.
+read from STDIN.  If only one argument is given, the specified file is
+expected to include a complete signature.
 
-With more than 1 argument, the first should be a detached signature
-and the remaining files make up the the signed data. To read the signed
-data from STDIN, use @samp{-} as the second filename.  For security
-reasons a detached signature cannot read the signed material from
-STDIN without denoting it in the above way.
+With more than one argument, the first argument should specify a file
+with a detached signature and the remaining files should contain the
+signed data. To read the signed data from STDIN, use @samp{-} as the
+second filename.  For security reasons, a detached signature will not
+read the signed material from STDIN if not explicitly specified.
 
 Note: If the option @option{--batch} is not used, @command{@gpgname}
-may assume that a single argument is a file with a detached signature
+may assume that a single argument is a file with a detached signature,
 and it will try to find a matching data file by stripping certain
 suffixes.  Using this historical feature to verify a detached
-signature is strongly discouraged; always specify the data file too.
+signature is strongly discouraged; you should always specify the data file
+explicitly.
 
-Note: When verifying a cleartext signature, @command{gpg} verifies
+Note: When verifying a cleartext signature, @command{@gpgname} verifies
 only what makes up the cleartext signed data and not any extra data
-outside of the cleartext signature or header lines following directly
+outside of the cleartext signature or the header lines directly following
 the dash marker line.  The option @code{--output} may be used to write
-out the actual signed data; but there are other pitfalls with this
+out the actual signed data, but there are other pitfalls with this
 format as well.  It is suggested to avoid cleartext signatures in
 favor of detached signatures.
 
@@ -277,22 +283,23 @@ Identical to @option{--multifile --decrypt}.
 @itemx -k
 @itemx --list-public-keys
 @opindex list-keys
-List all keys from the public keyrings, or just the keys given on the
-command line.
+List the specified keys.  If no keys are specified, then all keys from
+the configured public keyrings are listed.
 
-Avoid using the output of this command in scripts or other programs as
-it is likely to change as GnuPG changes.  See @option{--with-colons}
-for a machine-parseable key listing command that is appropriate for
-use in scripts and other programs.  Never use the regular output for
-scripts --- it is only for human consumption.
+Never use the output of this command in scripts or other programs.
+The output is intended only for humans and its format is likely to
+change.  The @option{--with-colons} option emits the output in a
+stable, machine-parseable format, which is intended for use by scripts
+and other programs.
 
 @item --list-secret-keys
 @itemx -K
 @opindex list-secret-keys
-List all keys from the secret keyrings, or just the ones given on the
-command line. A @code{#} after the letters @code{sec} means that the
-secret key is not usable (for example, if it was created via
-@option{--export-secret-subkeys}).  See also @option{--list-keys}.
+List the specified secret keys.  If no keys are specified, then all
+known secret keys are listed.  A @code{#} after the letters @code{sec}
+means that the secret key is not usable (for example, if it was
+exported using @option{--export-secret-subkeys}).  See also
+@option{--list-keys}.
 
 @item --list-sigs
 @opindex list-sigs
@@ -382,7 +389,7 @@ safeguard against accidental deletion of multiple keys.
 Remove key from the secret keyring. In batch mode the key must be
 specified by fingerprint.  The option @option{--yes} can be used to
 advice gpg-agent not to request a confirmation.  This extra
-pre-caution is done because @command{gpg} can't be sure that the
+pre-caution is done because @command{@gpgname} can't be sure that the
 secret key (as controlled by gpg-agent) is only used for the given
 OpenPGP public key.
 
@@ -408,7 +415,7 @@ Similar to @option{--export} but sends the keys to a keyserver.
 Fingerprints may be used instead of key IDs. Option @option{--keyserver}
 must be used to give the name of this keyserver. Don't send your
 complete keyring to a keyserver --- select only those keys which are new
-or changed by you.  If no key IDs are given, @command{gpg} does nothing.
+or changed by you.  If no key IDs are given, @command{@gpgname} does nothing.
 
 @item --export-secret-keys
 @itemx --export-secret-subkeys
@@ -417,21 +424,20 @@ or changed by you.  If no key IDs are given, @command{gpg} does nothing.
 Same as @option{--export}, but exports the secret keys instead.  The
 exported keys are written to STDOUT or to the file given with option
 @option{--output}.  This command is often used along with the option
-@option{--armor} to allow easy printing of the key for paper backup;
-however the external tool @command{paperkey} does a better job for
+@option{--armor} to allow for easy printing of the key for paper backup;
+however the external tool @command{paperkey} does a better job of
 creating backups on paper.  Note that exporting a secret key can be a
 security risk if the exported keys are sent over an insecure channel.
 
 The second form of the command has the special property to render the
 secret part of the primary key useless; this is a GNU extension to
 OpenPGP and other implementations can not be expected to successfully
-import such a key.  Its intended use is to generated a full key with
-an additional signing subkey on a dedicated machine and then using
-this command to export the key without the primary key to the main
-machine.
+import such a key.  Its intended use is in generating a full key with
+an additional signing subkey on a dedicated machine.  This command
+then exports the key without the primary key to the main machine.
 
 GnuPG may ask you to enter the passphrase for the key.  This is
-required because the internal protection method of the secret key is
+required, because the internal protection method of the secret key is
 different from the one specified by the OpenPGP protocol.
 
 @item --export-ssh-key
@@ -2038,7 +2044,7 @@ limited countermeasure against traffic analysis. If this option or
 @opindex recipient-file
 This option is similar to @option{--recipient} except that it
 encrypts to a key stored in the given file.  @var{file} must be the
-name of a file containing exactly one key.  @command{gpg} assumes that
+name of a file containing exactly one key.  @command{@gpgname} assumes that
 the key in this file is fully valid.
 
 @item --hidden-recipient-file @var{file}
@@ -2046,7 +2052,7 @@ the key in this file is fully valid.
 @opindex hidden-recipient-file
 This option is similar to @option{--hidden-recipient} except that it
 encrypts to a key stored in the given file.  @var{file} must be the
-name of a file containing exactly one key.  @command{gpg} assumes that
+name of a file containing exactly one key.  @command{@gpgname} assumes that
 the key in this file is fully valid.
 
 @item --encrypt-to @code{name}
@@ -2754,7 +2760,7 @@ file @code{file}.
 @item --comment @code{string}
 @itemx --no-comments
 @opindex comment
-Use @code{string} as a comment string in clear text signatures and ASCII
+Use @code{string} as a comment string in cleartext signatures and ASCII
 armored messages or keys (see @option{--armor}). The default behavior is
 not to use a comment string. @option{--comment} may be repeated multiple
 times to get multiple comment strings. @option{--no-comments} removes
@@ -3245,7 +3251,7 @@ internally used by the @command{gpgconf} tool.
 @opindex gpgconf-test
 This is more or less dummy action.  However it parses the configuration
 file and returns with failure if the configuration file would prevent
-@command{gpg} from startup.  Thus it may be used to run a syntax check
+@command{@gpgname} from startup.  Thus it may be used to run a syntax check
 on the configuration file.
 
 @end table
@@ -3453,7 +3459,7 @@ Operation is further controlled by a few environment variables:
 sign and encrypt for user Bob
 
 @item gpg --clearsign @code{file}
-make a clear text signature
+make a cleartext signature
 
 @item gpg -sb @code{file}
 make a detached signature
@@ -3704,7 +3710,7 @@ already been reported to our bug tracker at http://bugs.gnupg.org .
 @node Unattended Usage of GPG
 @section Unattended Usage
 
-@command{gpg} is often used as a backend engine by other software.  To help
+@command{@gpgname} is often used as a backend engine by other software.  To help
 with this a machine interface has been defined to have an unambiguous
 way to do this.  The options @option{--status-fd} and @option{--batch}
 are almost always required for this.
