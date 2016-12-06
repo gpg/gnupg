@@ -113,8 +113,27 @@ TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
              gpg.conf.tmpl gpg-agent.conf.tmpl \
 	     bug537-test.data.asc bug894-test.asc \
 	     bug1223-good.asc bug1223-bogus.asc 4gb-packet.asc \
-	     tofu-keys.asc tofu-keys-secret.asc \
-	     tofu-2183839A-1.txt tofu-BC15C85A-1.txt tofu-EE37CF96-1.txt \
+	     tofu/conflicting/1C005AF3.gpg \
+	     tofu/conflicting/1C005AF3-secret.gpg \
+	     tofu/conflicting/1C005AF3-1.txt \
+	     tofu/conflicting/1C005AF3-2.txt \
+	     tofu/conflicting/1C005AF3-3.txt \
+	     tofu/conflicting/1C005AF3-4.txt \
+	     tofu/conflicting/1C005AF3-5.txt \
+	     tofu/conflicting/B662E42F.gpg \
+	     tofu/conflicting/B662E42F-secret.gpg \
+	     tofu/conflicting/B662E42F-1.txt \
+	     tofu/conflicting/B662E42F-2.txt \
+	     tofu/conflicting/B662E42F-3.txt \
+	     tofu/conflicting/B662E42F-4.txt \
+	     tofu/conflicting/B662E42F-5.txt \
+	     tofu/conflicting/BE04EB2B.gpg \
+	     tofu/conflicting/BE04EB2B-secret.gpg \
+	     tofu/conflicting/BE04EB2B-1.txt \
+	     tofu/conflicting/BE04EB2B-2.txt \
+	     tofu/conflicting/BE04EB2B-3.txt \
+	     tofu/conflicting/BE04EB2B-4.txt \
+	     tofu/conflicting/BE04EB2B-5.txt \
 	     tofu/cross-sigs/EC38277E-secret.gpg \
 	     tofu/cross-sigs/EC38277E-1.gpg \
 	     tofu/cross-sigs/EC38277E-1.txt \
