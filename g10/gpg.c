@@ -4845,6 +4845,8 @@ main (int argc, char **argv)
 	      merge_keys_and_selfsig (kb);
 	      if (tofu_set_policy (ctrl, kb, policy))
 		g10_exit (1);
+
+              release_kbnode (kb);
 	    }
 
           tofu_end_batch_update (ctrl);
