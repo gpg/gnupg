@@ -164,6 +164,62 @@
 (checkpolicy "1C005AF3" "bad")
 (checkpolicy "B662E42F" "ask")
 
+;; Check that the stats are emitted correctly.
+
+(display "Checking TOFU stats...\n")
+
+(define (check-counts keyid expected-sigs expected-encs . args)
+  (let*
+      ((tfs (assoc "tfs"
+                   (gpg-with-colons
+                    `(--trust-model=tofu --with-tofu-info
+                                         ,@args --list-keys ,keyid))))
+       (sigs (string->number (list-ref tfs 3)))
+       (encs (string->number (list-ref tfs 4))))
+    (display tfs)
+    (unless (= sigs expected-sigs)
+            (error keyid ": # signatures (" sigs ") does not match expected"
+                   "# signatures (" expected-sigs ").\n"))
+    (unless (= encs expected-encs)
+            (error keyid ": # encryptions (" encs ") does not match expected"
+                   "# encryptions (" expected-encs ").\n"))
+    ))
+
+;; Carefully remove the TOFU db.
+(catch '() (unlink (string-append GNUPGHOME "/tofu.db")))
+
+(check-counts "1C005AF3" 0 0)
+(check-counts "BE04EB2B" 0 0)
+(check-counts "B662E42F" 0 0)
+
+;; Verify a message.  The signature count should increase by 1.
+(call-check `(,@GPG --trust-model=tofu
+		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-1.txt")))
+(check-counts "1C005AF3" 1 0)
+
+;; Verify the same message.  The signature count should remain the
+;; same.
+(call-check `(,@GPG --trust-model=tofu
+		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-1.txt")))
+(check-counts "1C005AF3" 1 0)
+
+;; Verify another message.
+(call-check `(,@GPG --trust-model=tofu
+		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-2.txt")))
+(check-counts "1C005AF3" 2 0)
+
+;; Verify another message.
+(call-check `(,@GPG --trust-model=tofu
+		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-3.txt")))
+(check-counts "1C005AF3" 3 0)
+
+;; Verify a message from a different sender.  The signature count
+;; should increase by 1 for that key.
+(call-check `(,@GPG --trust-model=tofu
+		    --verify ,(in-srcdir "tofu/conflicting/BE04EB2B-1.txt")))
+(check-counts "1C005AF3" 3 0)
+(check-counts "BE04EB2B" 1 0)
+(check-counts "B662E42F" 0 0)
 
 
 ;; Check that we detect the following attack:
