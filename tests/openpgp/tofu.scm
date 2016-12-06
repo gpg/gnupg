@@ -176,7 +176,6 @@
                                          ,@args --list-keys ,keyid))))
        (sigs (string->number (list-ref tfs 3)))
        (encs (string->number (list-ref tfs 4))))
-    (display tfs)
     (unless (= sigs expected-sigs)
             (error keyid ": # signatures (" sigs ") does not match expected"
                    "# signatures (" expected-sigs ").\n"))
