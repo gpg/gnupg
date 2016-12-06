@@ -492,4 +492,4 @@
 
 ;; Spawn an os shell.
 (define (interactive-shell)
-  (call-with-fds `(,(getenv "SHELL")) 0 1 2))
+  (call-with-fds `(,(getenv "SHELL") -i) 0 1 2))
