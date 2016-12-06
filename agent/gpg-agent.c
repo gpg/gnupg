@@ -1055,7 +1055,7 @@ main (int argc, char **argv )
     }
 
   /* Initialize the secure memory. */
-  gcry_control (GCRYCTL_INIT_SECMEM, 32768, 0);
+  gcry_control (GCRYCTL_INIT_SECMEM, SECMEM_BUFFER_SIZE, 0);
   maybe_setuid = 0;
 
   /*
