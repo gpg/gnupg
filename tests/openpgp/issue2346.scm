@@ -25,4 +25,4 @@
 (info "Checking import statistics (issue2346)...")
 (let ((status (call-popen `(,@GPG --status-fd=1 --import ,key) "")))
   (unless (string-contains? status "IMPORT_RES 1 0 1 0 0 0 0 0 0 1 1 0 0 0 0")
-	  (error "Unexpected number of keys imported" status)))
+	  (fail "Unexpected number of keys imported" status)))

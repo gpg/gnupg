@@ -49,7 +49,7 @@
 (define (test-hash hash ref)
   (unless (eq? #f ref)
 	  (if (not (string=? (:value hash) (:value ref)))
-	    (error "failed"))))
+	    (fail "failed"))))
 
 ;; Test whether the hashes computed over S match the REFERENCE set.
 (define (test-hashes msg s reference)

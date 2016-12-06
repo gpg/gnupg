@@ -43,7 +43,7 @@
      (tr:call-with-content
       (lambda (c)
 	(unless (all (lambda (f) (string-contains? c f)) testfiles)
-		(error "some file(s) are missing from archive")))))
+		(fail "some file(s) are missing from archive")))))
 
     (with-temporary-working-directory
      (call-check `(,(tool 'gpgtar) --gpg ,(tool 'gpg) --gpg-args ,gpgargs
@@ -53,7 +53,7 @@
 
      (for-each
       (lambda (f) (unless (call-with-input-file f (lambda (x) #t))
-			  (error (string-append "missing file: " f))))
+			  (fail (string-append "missing file: " f))))
       testfiles))))
 
 (info "Checking gpgtar without encryption")

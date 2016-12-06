@@ -33,7 +33,7 @@
 	(display (make-string 64 (integer->char (string->number char)))
 		 port)))
      (if (= 0 (call `(,@GPG --verify ,x data-500)))
-	 (error "no error code from verify"))))
+	 (fail "no error code from verify"))))
  '("#x2d" "#xca"))
 
 ;; A plain signed message created using
@@ -324,7 +324,7 @@ GisM
 	   (pipe:defer (lambda (sink)
 			 (display armored-file (fdopen sink "w"))))
 	   (pipe:spawn `(,@GPG --verify)))
-	  (error "verification succeeded but should not")))
+	  (fail "verification succeeded but should not")))
  '(msg_olsols_asc_multiple msg_clsclss_asc_multiple))
 
 (for-each-p
@@ -334,7 +334,7 @@ GisM
 	  (pipe:do
 	   (pipe:echo (eval armored-file (current-environment)))
 	   (pipe:spawn `(,@GPG --verify)))
-	  (error "verification succeeded but should not")))
+	  (fail "verification succeeded but should not")))
  '(bad_ls_asc bad_fols_asc bad_olsf_asc bad_ools_asc))
 
 

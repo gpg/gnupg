@@ -25,7 +25,7 @@
 	      --faked-system-time=1480943782))
 (define GNUPGHOME (getenv "GNUPGHOME"))
 (if (string=? "" GNUPGHOME)
-    (error "GNUPGHOME not set"))
+    (fail "GNUPGHOME not set"))
 
 (catch (skip "Tofu not supported")
        (call-check `(,@GPG --trust-model=tofu --list-config)))
@@ -37,7 +37,7 @@
             (call-check `(,@GPG --import
                                 ,(in-srcdir "tofu/conflicting/"
                                             (string-append keyid ".gpg"))))
-	    (catch (error "Missing key" keyid)
+	    (catch (fail "Missing key" keyid)
 		   (call-check `(,@GPG --list-keys ,keyid))))
 	  KEYS)
 
@@ -52,7 +52,7 @@
 				   ,@args
 				   --list-keys ,keyid))) 5)))
     (unless (member policy '("auto" "good" "unknown" "bad" "ask"))
-	    (error "Bad policy:" policy))
+	    (fail "Bad policy:" policy))
     policy))
 
 ;; Check that KEYID's tofu policy matches EXPECTED-POLICY.  Any
@@ -62,7 +62,7 @@
 (define (checkpolicy keyid expected-policy . args)
   (let ((policy (apply getpolicy `(,keyid ,@args))))
     (unless (string=? policy expected-policy)
-	    (error keyid ": Expected policy to be" expected-policy
+	    (fail keyid ": Expected policy to be" expected-policy
 		   "but got" policy))))
 
 ;; Get the trust level for KEYID.  Any remaining arguments are simply
@@ -77,7 +77,7 @@
 				   --list-keys ,keyid))) 1)))
     (unless (and (= 1 (string-length trust))
 		 (member (string-ref trust 0) (string->list "oidreqnmfuws-")))
-	    (error "Bad trust value:" trust))
+	    (fail "Bad trust value:" trust))
     trust))
 
 ;; Check that KEYID's trust level matches EXPECTED-TRUST.  Any
@@ -87,7 +87,7 @@
 (define (checktrust keyid expected-trust . args)
   (let ((trust (apply gettrust `(,keyid ,@args))))
     (unless (string=? trust expected-trust)
-	    (error keyid ": Expected trust to be" expected-trust
+	    (fail keyid ": Expected trust to be" expected-trust
 		   "but got" trust))))
 
 ;; Set key KEYID's policy to POLICY.  Any remaining arguments are
@@ -177,10 +177,10 @@
        (sigs (string->number (list-ref tfs 3)))
        (encs (string->number (list-ref tfs 4))))
     (unless (= sigs expected-sigs)
-            (error keyid ": # signatures (" sigs ") does not match expected"
+            (fail keyid ": # signatures (" sigs ") does not match expected"
                    "# signatures (" expected-sigs ").\n"))
     (unless (= encs expected-encs)
-            (error keyid ": # encryptions (" encs ") does not match expected"
+            (fail keyid ": # encryptions (" encs ") does not match expected"
                    "# encryptions (" expected-encs ").\n"))
     ))
 

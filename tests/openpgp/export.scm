@@ -22,7 +22,7 @@
 
 (define (check-for predicate lines message)
   (unless (any predicate lines)
-	  (error message)))
+	  (fail message)))
 
 (define (check-exported-key dump keyid)
   (check-for (lambda (l)
@@ -68,7 +68,7 @@
      (lambda (port)
        (unless
 	(eof-object? (peek-char port))
-	(error (string-append
+	(fail (string-append
 		"Expected all passphrases to be consumed, but found: "
 		(read-all port)))))))
 

@@ -37,4 +37,4 @@
 	      usrpass1)
   (if (not (string=? "4336AE2A528FAE091E73E59E325B588FEE795F9B"
 		     (cadar (gpg-hash-string `(--print-md SHA1 ,tmp) ""))))
-      (error "bug537-test.data.asc: mismatch (bug 537)")))
+      (fail "bug537-test.data.asc: mismatch (bug 537)")))

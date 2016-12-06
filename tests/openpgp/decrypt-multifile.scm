@@ -43,5 +43,5 @@
   "Verifying files:"
   (lambda (name)
     (unless (file=? (path-join my-wd name) name)
-	    (error "decrypted file differs")))
+	    (fail "decrypted file differs")))
   plain-files))

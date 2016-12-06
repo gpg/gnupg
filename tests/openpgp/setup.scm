@@ -20,7 +20,7 @@
 (load (with-path "defs.scm"))
 
 (unless (member "--create-tarball" *args*)
-	(error "Usage: setup.scm --create-tarball <file>"))
+	(fail "Usage: setup.scm --create-tarball <file>"))
 
 (with-temporary-working-directory
  (setenv "GNUPGHOME" (getcwd) #t)

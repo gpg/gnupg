@@ -58,4 +58,4 @@
 			(string-contains? line ":4096:1:DDA252EBB8EBE1AF:")))
 		 (string-split-newlines c))))
       (unless (= 2 (length keys))
-	      (error "Importing keys with long id collision failed"))))))
+	      (fail "Importing keys with long id collision failed"))))))

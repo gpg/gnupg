@@ -22,7 +22,7 @@
 
 (define GNUPGHOME (getenv "GNUPGHOME"))
 (if (string=? "" GNUPGHOME)
-    (error "GNUPGHOME not set"))
+    (fail "GNUPGHOME not set"))
 
 (setenv "SSH_AUTH_SOCK"
         (call-check `(,(tool 'gpgconf) --null --list-dirs agent-ssh-socket))
@@ -51,7 +51,7 @@
       (pipe:open file (logior O_RDONLY O_BINARY))
       (pipe:spawn `(,SSH-ADD -)))
      (unless (string-contains? (call-popen `(,SSH-ADD -l "-E" md5) "") hash)
-	     (error "key not added"))))
+	     (fail "key not added"))))
  car keys)
 
 (info "Checking for issue2316...")
@@ -64,4 +64,4 @@
 (unless
  (string-contains? (call-popen `(,SSH-ADD -l "-E" md5) "")
 		   "c9:85:b5:55:00:84:a9:82:5a:df:d6:62:1b:5a:28:22")
- (error "known private key not (re-)added to sshcontrol"))
+ (fail "known private key not (re-)added to sshcontrol"))

@@ -25,4 +25,4 @@
 
 (if (= 0 (call `(,@GPG --list-packets ,(in-srcdir "4gb-packet.asc"))))
   (info "Can parse 4GB packets.")
-  (error "Failed to parse 4GB packet."))
+  (fail "Failed to parse 4GB packet."))

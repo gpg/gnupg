@@ -164,6 +164,6 @@ cnksIEkgY2FuJ3QgZG8gdGhhdAo=
       (pipe:write-to file (logior O_WRONLY O_CREAT O_BINARY) #o600))
 
      (if (= 0 (call `(,@GPG --verify ,file)))
-	 (error "Bad signature verified ok"))))
+	 (fail "Bad signature verified ok"))))
  '(sig-1ls1ls-valid sig-ls-valid sig-1lsls-invalid
 		    sig-lsls-invalid sig-lss-invalid sig-slsl-invalid))

@@ -103,7 +103,7 @@ Ic1RdzgeCfosMF+l/zVRchcLKzenEQA=
 	   x (lambda (p) (display (eval test (current-environment)) p)))
        (call-check `(,(tool 'gpg) --verify ,x))
        (call-check `(,(tool 'gpg) --output ,y ,x))
-       (unless (file=? y z) (error "mismatch"))))
+       (unless (file=? y z) (fail "mismatch"))))
    '(msg_opaque_signed_256 msg_opaque_signed_384 msg_opaque_signed_521)))
 
 ;;
@@ -182,7 +182,7 @@ Rg==
        (call-with-output-file
 	   x (lambda (p) (display (eval test (current-environment)) p)))
        (call-check `(,@GPG --yes --output ,y ,x))
-       (unless (file=? y z) (error "mismatch"))))
+       (unless (file=? y z) (fail "mismatch"))))
    '(msg_encrypted_256 msg_encrypted_384 msg_encrypted_521)))
 
 ;;

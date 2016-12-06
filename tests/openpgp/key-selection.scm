@@ -76,7 +76,7 @@
 	     (display (call-popen `(,@gpg --locate-key ,mailbox) ""))
 	     (echo "This is the key we expected:")
 	     (display (call-popen `(,@gpg --list-keys ,expected) ""))
-	     (error "Expected" expected "but got" fpr)))
+	     (fail "Expected" expected "but got" fpr)))
    (delete-keys set))
  (lambda (set)
    (length set))

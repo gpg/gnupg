@@ -42,7 +42,7 @@
   (if (> (*verbose*) 0)
       (apply info msg)))
 
-(define (error . msg)
+(define (fail . msg)
   (apply info msg)
   (exit 1))
 
@@ -325,7 +325,7 @@
   (lettmp (sink)
 	  (transformer source sink)
 	  (if (not (file=? source sink))
-	      (error "mismatch"))))
+	      (fail "mismatch"))))
 
 ;;
 ;; Monadic pipe support.
@@ -440,7 +440,7 @@
 (define (tr:spawn input command)
   (lambda (tmpfiles source)
     (if (and (member '**in** command) (not source))
-	(error (string-append (stringify cmd) " needs an input")))
+	(fail (string-append (stringify cmd) " needs an input")))
     (let* ((t (make-temporary-file))
 	   (cmd (map (lambda (x)
 		       (cond
@@ -450,7 +450,7 @@
       (catch (list (cons t tmpfiles) t *error*)
 	     (call-popen cmd input)
 	     (if (and (member '**out** command) (not (file-exists? t)))
-		 (error (string-append (stringify cmd)
+		 (fail (string-append (stringify cmd)
 				       " did not produce '" t "'.")))
 	     (list (cons t tmpfiles) t #f)))))
 
@@ -471,13 +471,13 @@
 (define (tr:assert-identity reference)
   (lambda (tmpfiles source)
     (if (not (file=? source reference))
-	(error "mismatch"))
+	(fail "mismatch"))
     (list tmpfiles source #f)))
 
 (define (tr:assert-weak-identity reference)
   (lambda (tmpfiles source)
     (if (not (text-file=? source reference))
-	(error "mismatch"))
+	(fail "mismatch"))
     (list tmpfiles source #f)))
 
 (define (tr:call-with-content function . args)
