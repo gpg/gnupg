@@ -77,6 +77,7 @@ XTESTS = \
 	gpgv-forged-keyring.scm \
 	armor.scm \
 	import.scm \
+	import-revocation-certificate.scm \
 	ecc.scm \
 	4gb-packet.scm \
 	tofu.scm \
@@ -216,7 +217,8 @@ sample_keys = samplekeys/README \
 
 sample_msgs = samplemsgs/issue2419.asc \
 	      samplemsgs/clearsig-1-key-1.asc \
-	      samplemsgs/signed-1-key-1.asc
+	      samplemsgs/signed-1-key-1.asc \
+	      samplemsgs/revoke-2D727CC768697734.asc
 
 EXTRA_DIST = defs.scm $(XTESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
