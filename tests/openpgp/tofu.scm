@@ -22,7 +22,7 @@
 
 ;; Redefine GPG without --always-trust and a fixed time.
 (define GPG `(,(tool 'gpg) --no-permission-warning
-	      --faked-system-time=1466684990))
+	      --faked-system-time=1480943782))
 (define GNUPGHOME (getenv "GNUPGHOME"))
 (if (string=? "" GNUPGHOME)
     (error "GNUPGHOME not set"))
@@ -30,13 +30,13 @@
 (catch (skip "Tofu not supported")
        (call-check `(,@GPG --trust-model=tofu --list-config)))
 
-(define KEYS '("2183839A" "BC15C85A" "EE37CF96"))
+(define KEYS '("1C005AF3" "BE04EB2B" "B662E42F"))
 
 ;; Import the test keys.
-(call-check `(,@GPG --import ,(in-srcdir "tofu-keys.asc")))
-
-;; Make sure the keys are imported.
 (for-each (lambda (keyid)
+            (call-check `(,@GPG --import
+                                ,(in-srcdir "tofu/conflicting/"
+                                            (string-append keyid ".gpg"))))
 	    (catch (error "Missing key" keyid)
 		   (call-check `(,@GPG --list-keys ,keyid))))
 	  KEYS)
@@ -104,18 +104,18 @@
 ;; Verify a message.  There should be no conflict and the trust
 ;; policy should be set to auto.
 (call-check `(,@GPG --trust-model=tofu
-		    --verify ,(in-srcdir "tofu-2183839A-1.txt")))
+		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-1.txt")))
 
-(checkpolicy "2183839A" "auto")
+(checkpolicy "1C005AF3" "auto")
 ;; Check default trust.
-(checktrust "2183839A" "m")
+(checktrust "1C005AF3" "m")
 
 ;; Trust should be derived lazily.  Thus, if the policy is set to
 ;; auto and we change --tofu-default-policy, then the trust should
 ;; change as well.  Try it.
-(checktrust "2183839A" "f" '--tofu-default-policy=good)
-(checktrust "2183839A" "-" '--tofu-default-policy=unknown)
-(checktrust "2183839A" "n" '--tofu-default-policy=bad)
+(checktrust "1C005AF3" "f" '--tofu-default-policy=good)
+(checktrust "1C005AF3" "-" '--tofu-default-policy=unknown)
+(checktrust "1C005AF3" "n" '--tofu-default-policy=bad)
 
 ;; Change the policy to something other than auto and make sure the
 ;; policy and the trust are correct.
@@ -127,42 +127,42 @@
 	   ((string=? "good" policy) "f")
 	   ((string=? "unknown" policy) "-")
 	   (else "n"))))
-     (setpolicy "2183839A" policy)
+     (setpolicy "1C005AF3" policy)
 
      ;; Since we have a fixed policy, the trust level shouldn't
      ;; change if we change the default policy.
      (for-each-p
       ""
       (lambda (default-policy)
-	(checkpolicy "2183839A" policy
+	(checkpolicy "1C005AF3" policy
 		     '--tofu-default-policy default-policy)
-	(checktrust "2183839A" expected-trust
+	(checktrust "1C005AF3" expected-trust
 		    '--tofu-default-policy default-policy))
       '("auto" "good" "unknown" "bad" "ask"))))
  '("good" "unknown" "bad"))
 
-;; At the end, 2183839A's policy should be bad.
-(checkpolicy "2183839A" "bad")
+;; At the end, 1C005AF3's policy should be bad.
+(checkpolicy "1C005AF3" "bad")
 
-;; BC15C85A and 2183839A conflict.  A policy setting of "auto"
-;; (BC15C85A's state) will result in an effective policy of ask.  But,
+;; 1C005AF3 and BE04EB2B conflict.  A policy setting of "auto"
+;; (BE04EB2B's state) will result in an effective policy of ask.  But,
 ;; a policy setting of "bad" will result in an effective policy of
 ;; bad.
-(setpolicy "BC15C85A" "auto")
-(checkpolicy "BC15C85A" "ask")
-(checkpolicy "2183839A" "bad")
+(setpolicy "BE04EB2B" "auto")
+(checkpolicy "BE04EB2B" "ask")
+(checkpolicy "1C005AF3" "bad")
 
-;; EE37CF96, 2183839A, and BC15C85A conflict.  We change BC15C85A's
-;; policy to auto and leave 2183839A's policy at bad.  This conflict
-;; should cause BC15C85A's policy to be changed to ask (since it is
-;; auto), but not affect 2183839A's policy.
-(setpolicy "BC15C85A" "auto")
-(checkpolicy "BC15C85A" "ask")
+;; 1C005AF3, B662E42F, and BE04EB2B conflict.  We change BE04EB2B's
+;; policy to auto and leave 1C005AF3's policy at bad.  This conflict
+;; should cause BE04EB2B's effective policy to be ask (since it is
+;; auto), but not affect 1C005AF3's policy.
+(setpolicy "BE04EB2B" "auto")
+(checkpolicy "BE04EB2B" "ask")
 (call-check `(,@GPG --trust-model=tofu
-		    --verify ,(in-srcdir "tofu-EE37CF96-1.txt")))
-(checkpolicy "BC15C85A" "ask")
-(checkpolicy "2183839A" "bad")
-(checkpolicy "EE37CF96" "ask")
+		    --verify ,(in-srcdir "tofu/conflicting/B662E42F-1.txt")))
+(checkpolicy "BE04EB2B" "ask")
+(checkpolicy "1C005AF3" "bad")
+(checkpolicy "B662E42F" "ask")
 
 
 
