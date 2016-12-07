@@ -112,8 +112,10 @@ struct tofu_dbs_s
 /* Local prototypes.  */
 static gpg_error_t end_transaction (ctrl_t ctrl, int only_batch);
 static char *email_from_user_id (const char *user_id);
-
-
+static int show_statistics (tofu_dbs_t dbs,
+                            const char *fingerprint, const char *email,
+                            enum tofu_policy policy,
+                            estream_t outfp, int only_status_fd, time_t now);
 
 const char *
 tofu_policy_str (enum tofu_policy policy)
@@ -1797,6 +1799,9 @@ ask_about_binding (ctrl_t ctrl,
               xfree (key_pp);
 
               seen_in_past = 0;
+
+              show_statistics (dbs, stats_iter->fingerprint, email,
+                               TOFU_POLICY_ASK, NULL, 1, now);
             }
 
           if (labs(stats_iter->time_ago) == 1)
@@ -2752,7 +2757,13 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
                          now);
     }
   else
-    trust_level = TRUST_UNDEFINED;
+    {
+      for (iter = conflict_set; iter; iter = iter->next)
+        show_statistics (dbs, iter->d, email,
+                         TOFU_POLICY_ASK, NULL, 1, now);
+
+      trust_level = TRUST_UNDEFINED;
+    }
 
   /* Mark any conflicting bindings that have an automatic policy as
    * now requiring confirmation.  Note: we do this after we ask for
@@ -2920,17 +2931,18 @@ write_stats_status (estream_t fp,
 /* Note: If OUTFP is not NULL, this function merely prints a "tfs" record
  * to OUTFP.
  *
- * Returns whether the caller should call show_warning after iterating
- * over all user ids.
+ * POLICY is the key's policy (as returned by get_policy).
+ *
+ * Returns 0 if if ONLY_STATUS_FD is set.  Otherwise, returns whether
+ * the caller should call show_warning after iterating over all user
+ * ids.
  */
 static int
-show_statistics (tofu_dbs_t dbs, PKT_public_key *pk, const char *fingerprint,
-		 const char *email, const char *user_id,
-		 estream_t outfp, time_t now)
+show_statistics (tofu_dbs_t dbs,
+                 const char *fingerprint, const char *email,
+                 enum tofu_policy policy,
+		 estream_t outfp, int only_status_fd, time_t now)
 {
-  enum tofu_policy policy =
-    get_policy (dbs, pk, fingerprint, user_id, email, NULL, now);
-
   char *fingerprint_pp;
   int rc;
   strlist_t strlist = NULL;
@@ -2945,7 +2957,8 @@ show_statistics (tofu_dbs_t dbs, PKT_public_key *pk, const char *fingerprint,
 
   int show_warning = 0;
 
-  (void) user_id;
+  if (only_status_fd && ! is_status_enabled ())
+    return 0;
 
   fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
 
@@ -3027,7 +3040,7 @@ show_statistics (tofu_dbs_t dbs, PKT_public_key *pk, const char *fingerprint,
                       encryption_first_done,
                       encryption_most_recent);
 
-  if (!outfp)
+  if (!outfp && !only_status_fd)
     {
       estream_t fp;
       char *msg;
@@ -3555,6 +3568,7 @@ tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
   tofu_dbs_t dbs;
   char *fingerprint;
   char *email;
+  enum tofu_policy policy;
 
   if (!*user_id)
     return 0;  /* No TOFU stats possible for an empty ID.  */
@@ -3569,8 +3583,9 @@ tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
 
   fingerprint = hexfingerprint (pk, NULL, 0);
   email = email_from_user_id (user_id);
+  policy = get_policy (dbs, pk, fingerprint, user_id, email, NULL, now);
 
-  show_statistics (dbs, pk, fingerprint, email, user_id, fp, now);
+  show_statistics (dbs, fingerprint, email, policy, fp, 0, now);
 
   xfree (email);
   xfree (fingerprint);
@@ -3645,8 +3660,13 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
         bindings_valid ++;
 
       if (may_ask && tl != TRUST_ULTIMATE && tl != TRUST_EXPIRED)
-        need_warning |=
-          show_statistics (dbs, pk, fingerprint, email, user_id->d, NULL, now);
+        {
+          enum tofu_policy policy =
+            get_policy (dbs, pk, fingerprint, user_id->d, email, NULL, now);
+
+          need_warning |=
+            show_statistics (dbs, fingerprint, email, policy, NULL, 0, now);
+        }
 
       if (tl == TRUST_NEVER)
         trust_level = TRUST_NEVER;
