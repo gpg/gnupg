@@ -49,6 +49,9 @@
 
 (assert (= 1 (count-uids-of-secret-key alpha)))
 
+(define fpr (list-ref (assoc "fpr" (gpg-with-colons `(-k ,(exact alpha))))
+		      9))
+
 (info "Checking that we can add a user ID...")
 
 ;; Make sure the key capabilities don't change when we add a user id.
@@ -75,3 +78,22 @@
 (call-check `(,@GPG --quick-revuid ,(exact bravo) ,alpha))
 
 (assert (= 1 (count-uids-of-secret-key bravo)))
+
+(info "Checking that we can change the expiration time.")
+
+(define (expiration-time id)
+  (list-ref (assoc "pub" (gpg-with-colons `(-k ,id)))
+	    6))
+
+;; XXX This assumes that by default keys are created without
+;; expiration date.  See issue2701.
+(assert (equal? "" (expiration-time fpr)))
+
+;; Make the key expire in one year.
+(call-check `(,@gpg --quick-set-expire ,fpr "1y"))
+;; XXX It'd be nice to check that the value is right.
+(assert (not (equal? "" (expiration-time fpr))))
+
+;; And remove the expiration date.
+(call-check `(,@gpg --quick-set-expire ,fpr "0"))
+(assert (equal? "" (expiration-time fpr)))
