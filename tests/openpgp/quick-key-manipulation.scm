@@ -29,7 +29,7 @@
 
 (define (count-uids-of-secret-key id)
   (length (filter (lambda (x) (and (string=? "uid" (car x))
-				   (string=? "u" (cadr x))))
+				   (not (string=? "r" (cadr x)))))
 		  (gpg-with-colons
 		   `(--with-fingerprint
 		     --list-secret-keys ,(exact id))))))
@@ -46,8 +46,6 @@
 
 (info "Checking quick key generation...")
 (call-check `(,@GPG --quick-gen-key ,alpha))
-
-(call-check `(,@GPG --check-trustdb)) ; XXX why?
 
 (assert (= 1 (count-uids-of-secret-key alpha)))
 
@@ -70,14 +68,10 @@
 	(newline)
 	(exit 1))))
 
-(call-check `(,@GPG --check-trustdb)) ; XXX why?
-
 (assert (= 2 (count-uids-of-secret-key alpha)))
 (assert (= 2 (count-uids-of-secret-key bravo)))
 
 (info "Checking that we can revoke a user ID...")
 (call-check `(,@GPG --quick-revuid ,(exact bravo) ,alpha))
-
-(call-check `(,@GPG --check-trustdb)) ; XXX why?
 
 (assert (= 1 (count-uids-of-secret-key bravo)))
