@@ -568,17 +568,35 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
   char *buffer = NULL;
   size_t buflen = 0;
   int in_alias=0;
+  int unread_buf[3];  /* We use an int so that we can store EOF.  */
+  int unread_buf_count = 0;
 
   if (!fp) /* Divert to to arg_parse() in this case.  */
     return arg_parse (arg, opts);
 
   initialize (arg, filename, lineno);
 
+  /* If the LINENO is zero we assume that we are at the start of a
+   * file and we skip over a possible Byte Order Mark.  */
+  if (!*lineno)
+    {
+      unread_buf[0] = getc (fp);
+      unread_buf[1] = getc (fp);
+      unread_buf[2] = getc (fp);
+      if (unread_buf[0] != 0xef
+          || unread_buf[1] != 0xbb
+          || unread_buf[2] != 0xbf)
+        unread_buf_count = 3;
+    }
+
   /* Find the next keyword.  */
   state = i = 0;
   for (;;)
     {
-      c = getc (fp);
+      if (unread_buf_count)
+        c = unread_buf[3 - unread_buf_count--];
+      else
+        c = getc (fp);
       if (c == '\n' || c== EOF )
         {
           if ( c != EOF )
