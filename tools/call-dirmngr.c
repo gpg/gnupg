@@ -258,3 +258,55 @@ wkd_get_policy_flags (const char *addrspec, estream_t *r_buffer)
   assuan_release (ctx);
   return err;
 }
+
+
+/* Ask the dirmngr for the key for ADDRSPEC.  On success a stream with
+ * the key is stored at R_KEY.  */
+gpg_error_t
+wkd_get_key (const char *addrspec, estream_t *r_key)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  struct wkd_get_parm_s parm;
+  char *line = NULL;
+
+  memset (&parm, 0, sizeof parm);
+  *r_key = NULL;
+
+  err = connect_dirmngr (&ctx);
+  if (err)
+    return err;
+
+  line = es_bsprintf ("WKD_GET -- %s", addrspec);
+  if (!line)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  if (strlen (line) + 2 >= ASSUAN_LINELENGTH)
+    {
+      err = gpg_error (GPG_ERR_TOO_LARGE);
+      goto leave;
+    }
+
+  parm.memfp = es_fopenmem (0, "rwb");
+  if (!parm.memfp)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = assuan_transact (ctx, line, wkd_get_data_cb, &parm,
+                         NULL, NULL, wkd_get_status_cb, &parm);
+  if (err)
+    goto leave;
+
+  es_rewind (parm.memfp);
+  *r_key = parm.memfp;
+  parm.memfp = NULL;
+
+ leave:
+  es_fclose (parm.memfp);
+  xfree (line);
+  assuan_release (ctx);
+  return err;
+}

@@ -25,5 +25,7 @@ gpg_error_t wkd_get_submission_address (const char *addrspec,
                                         char **r_addrspec);
 gpg_error_t wkd_get_policy_flags (const char *addrspec, estream_t *r_buffer);
 
+gpg_error_t wkd_get_key (const char *addrspec, estream_t *r_key);
+
 
 #endif /*GNUPG_TOOLS_CALL_DIRMNGR_H*/

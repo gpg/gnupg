@@ -50,6 +50,7 @@ enum cmd_and_opt_values
     oDebug      = 500,
 
     aSupported,
+    aCheck,
     aCreate,
     aReceive,
     aRead,
@@ -68,6 +69,8 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_c (aSupported, "supported",
               ("check whether provider supports WKS")),
+  ARGPARSE_c (aCheck, "check",
+              ("check whether a key is available")),
   ARGPARSE_c (aCreate,   "create",
               ("create a publication request")),
   ARGPARSE_c (aReceive,   "receive",
@@ -111,6 +114,7 @@ const char *fake_submission_addr;
 
 static void wrong_args (const char *text) GPGRT_ATTR_NORETURN;
 static gpg_error_t command_supported (char *userid);
+static gpg_error_t command_check (char *userid);
 static gpg_error_t command_send (const char *fingerprint, char *userid);
 static gpg_error_t encrypt_response (estream_t *r_output, estream_t input,
                                      const char *addrspec,
@@ -198,6 +202,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
 	case aCreate:
 	case aReceive:
 	case aRead:
+        case aCheck:
           cmd = pargs->r_opt;
           break;
 
@@ -288,6 +293,12 @@ main (int argc, char **argv)
       err = read_confirmation_request (es_stdin);
       if (err)
         log_error ("processing mail failed: %s\n", gpg_strerror (err));
+      break;
+
+    case aCheck:
+      if (argc != 1)
+        wrong_args ("--check USER-ID");
+      command_check (argv[0]);
       break;
 
     default:
@@ -526,6 +537,96 @@ command_supported (char *userid)
 
  leave:
   xfree (submission_to);
+  xfree (addrspec);
+  return err;
+}
+
+
+
+/* Check whether the key for USERID is available in the WKD.  */
+static gpg_error_t
+command_check (char *userid)
+{
+  gpg_error_t err;
+  char *addrspec = NULL;
+  estream_t key = NULL;
+  char *fpr = NULL;
+  strlist_t mboxes = NULL;
+  strlist_t sl;
+  int found = 0;
+
+  addrspec = mailbox_from_userid (userid);
+  if (!addrspec)
+    {
+      log_error (_("\"%s\" is not a proper mail address\n"), userid);
+      err = gpg_error (GPG_ERR_INV_USER_ID);
+      goto leave;
+    }
+
+  /* Get the submission address.  */
+  err = wkd_get_key (addrspec, &key);
+  switch (gpg_err_code (err))
+    {
+    case 0:
+      if (opt.verbose)
+        log_info ("public key for '%s' found via WKD\n", addrspec);
+      /* Fixme: Check that the key contains the user id.  */
+      break;
+
+    case GPG_ERR_NO_DATA: /* No such key.  */
+      if (opt.verbose)
+        log_info ("public key for '%s' NOT found via WKD\n", addrspec);
+      err = gpg_error (GPG_ERR_NO_PUBKEY);
+      log_inc_errorcount ();
+      break;
+
+    case GPG_ERR_UNKNOWN_HOST:
+      if (opt.verbose)
+        log_info ("error looking up '%s' via WKD: %s\n",
+                  addrspec, gpg_strerror (err));
+      err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      break;
+
+    default:
+      log_error ("error looking up '%s' via WKD: %s\n",
+                 addrspec, gpg_strerror (err));
+      break;
+    }
+
+  if (err)
+    goto leave;
+
+  /* Look closer at the key.  */
+  err = wks_list_key (key, &fpr, &mboxes);
+  if (err || !fpr)
+    {
+      log_error ("error parsing key: %s\n",
+                 err? gpg_strerror (err) : "no fingerprint found");
+      err = gpg_error (GPG_ERR_NO_PUBKEY);
+      goto leave;
+    }
+
+  if (opt.verbose)
+    log_info ("fingerprint: %s\n", fpr);
+
+  for (sl = mboxes; sl; sl = sl->next)
+    {
+      if (!strcmp (sl->d, addrspec))
+        found = 1;
+      if (opt.verbose)
+        log_info ("  addr-spec: %s\n", sl->d);
+    }
+  if (!found)
+    {
+      log_error ("public key for '%s' has no user id with the mail address\n",
+                 addrspec);
+      err = gpg_error (GPG_ERR_CERT_REVOKED);
+    }
+
+ leave:
+  xfree (fpr);
+  free_strlist (mboxes);
+  es_fclose (key);
   xfree (addrspec);
   return err;
 }
