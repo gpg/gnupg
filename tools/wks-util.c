@@ -23,9 +23,188 @@
 #include <string.h>
 
 #include "util.h"
+#include "ccparray.h"
+#include "exectool.h"
+#include "mbox-util.h"
 #include "mime-maker.h"
 #include "send-mail.h"
 #include "gpg-wks.h"
+
+
+
+/* Helper for wks_list_key.  */
+static void
+list_key_status_cb (void *opaque, const char *keyword, char *args)
+{
+  (void)opaque;
+
+  if (DBG_CRYPTO)
+    log_debug ("gpg status: %s %s\n", keyword, args);
+}
+
+
+/* Run gpg on KEY and store the primary fingerprint at R_FPR and the
+ * list of mailboxes at R_MBOXES.  Returns 0 on success; on error NULL
+ * is stored at R_FPR and R_MBOXES and an error code is returned.  */
+gpg_error_t
+wks_list_key (estream_t key, char **r_fpr, strlist_t *r_mboxes)
+{
+  gpg_error_t err;
+  ccparray_t ccp;
+  const char **argv;
+  estream_t listing;
+  char *line = NULL;
+  size_t length_of_line = 0;
+  size_t  maxlen;
+  ssize_t len;
+  char **fields = NULL;
+  int nfields;
+  int lnr;
+  char *mbox = NULL;
+  char *fpr = NULL;
+  strlist_t mboxes = NULL;
+
+  *r_fpr = NULL;
+  *r_mboxes = NULL;
+
+  /* Open a memory stream.  */
+  listing = es_fopenmem (0, "w+b");
+  if (!listing)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  ccparray_init (&ccp, 0);
+
+  ccparray_put (&ccp, "--no-options");
+  if (!opt.verbose)
+    ccparray_put (&ccp, "--quiet");
+  else if (opt.verbose > 1)
+    ccparray_put (&ccp, "--verbose");
+  ccparray_put (&ccp, "--batch");
+  ccparray_put (&ccp, "--status-fd=2");
+  ccparray_put (&ccp, "--always-trust");
+  ccparray_put (&ccp, "--with-colons");
+  ccparray_put (&ccp, "--dry-run");
+  ccparray_put (&ccp, "--import-options=import-minimal,import-show");
+  ccparray_put (&ccp, "--import");
+
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gnupg_exec_tool_stream (opt.gpg_program, argv, key,
+                                NULL, listing,
+                                list_key_status_cb, NULL);
+  if (err)
+    {
+      log_error ("import failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  es_rewind (listing);
+  lnr = 0;
+  maxlen = 2048; /* Set limit.  */
+  while ((len = es_read_line (listing, &line, &length_of_line, &maxlen)) > 0)
+    {
+      lnr++;
+      if (!maxlen)
+        {
+          log_error ("received line too long\n");
+          err = gpg_error (GPG_ERR_LINE_TOO_LONG);
+          goto leave;
+        }
+      /* Strip newline and carriage return, if present.  */
+      while (len > 0
+	     && (line[len - 1] == '\n' || line[len - 1] == '\r'))
+	line[--len] = '\0';
+      /* log_debug ("line '%s'\n", line); */
+
+      xfree (fields);
+      fields = strtokenize (line, ":");
+      if (!fields)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("strtokenize failed: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+      for (nfields = 0; fields[nfields]; nfields++)
+        ;
+      if (!nfields)
+        {
+          err = gpg_error (GPG_ERR_INV_ENGINE);
+          goto leave;
+        }
+      if (!strcmp (fields[0], "sec"))
+        {
+          /* gpg may return "sec" as the first record - but we do not
+           * accept secret keys.  */
+          err = gpg_error (GPG_ERR_NO_PUBKEY);
+          goto leave;
+        }
+      if (lnr == 1 && strcmp (fields[0], "pub"))
+        {
+          /* First record is not a public key.  */
+          err = gpg_error (GPG_ERR_INV_ENGINE);
+          goto leave;
+        }
+      if (lnr > 1 && !strcmp (fields[0], "pub"))
+        {
+          /* More than one public key.  */
+          err = gpg_error (GPG_ERR_TOO_MANY);
+          goto leave;
+        }
+      if (!strcmp (fields[0], "sub") || !strcmp (fields[0], "ssb"))
+        break; /* We can stop parsing here.  */
+
+      if (!strcmp (fields[0], "fpr") && nfields > 9 && !fpr)
+        {
+          fpr = xtrystrdup (fields[9]);
+          if (!fpr)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+        }
+      else if (!strcmp (fields[0], "uid") && nfields > 9)
+        {
+          /* Fixme: Unescape fields[9] */
+          xfree (mbox);
+          mbox = mailbox_from_userid (fields[9]);
+          if (mbox && !append_to_strlist_try (&mboxes, mbox))
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+        }
+    }
+  if (len < 0 || es_ferror (listing))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error reading memory stream\n");
+      goto leave;
+    }
+
+  *r_fpr = fpr;
+  fpr = NULL;
+  *r_mboxes = mboxes;
+  mboxes = NULL;
+
+ leave:
+  xfree (fpr);
+  xfree (mboxes);
+  xfree (mbox);
+  xfree (fields);
+  es_free (line);
+  xfree (argv);
+  es_fclose (listing);
+  return err;
+}
 
 
 /* Helper to write mail to the output(s).  */

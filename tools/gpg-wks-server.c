@@ -348,168 +348,6 @@ main (int argc, char **argv)
 }
 
 
-
-static void
-list_key_status_cb (void *opaque, const char *keyword, char *args)
-{
-  server_ctx_t ctx = opaque;
-  (void)ctx;
-  if (DBG_CRYPTO)
-    log_debug ("gpg status: %s %s\n", keyword, args);
-}
-
-
-static gpg_error_t
-list_key (server_ctx_t ctx, estream_t key)
-{
-  gpg_error_t err;
-  ccparray_t ccp;
-  const char **argv;
-  estream_t listing;
-  char *line = NULL;
-  size_t length_of_line = 0;
-  size_t  maxlen;
-  ssize_t len;
-  char **fields = NULL;
-  int nfields;
-  int lnr;
-  char *mbox = NULL;
-
-  /* We store our results in the context - clear it first.  */
-  xfree (ctx->fpr);
-  ctx->fpr = NULL;
-  free_strlist (ctx->mboxes);
-  ctx->mboxes = NULL;
-
-  /* Open a memory stream.  */
-  listing = es_fopenmem (0, "w+b");
-  if (!listing)
-    {
-      err = gpg_error_from_syserror ();
-      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
-      return err;
-    }
-
-  ccparray_init (&ccp, 0);
-
-  ccparray_put (&ccp, "--no-options");
-  if (!opt.verbose)
-    ccparray_put (&ccp, "--quiet");
-  else if (opt.verbose > 1)
-    ccparray_put (&ccp, "--verbose");
-  ccparray_put (&ccp, "--batch");
-  ccparray_put (&ccp, "--status-fd=2");
-  ccparray_put (&ccp, "--always-trust");
-  ccparray_put (&ccp, "--with-colons");
-  ccparray_put (&ccp, "--dry-run");
-  ccparray_put (&ccp, "--import-options=import-minimal,import-show");
-  ccparray_put (&ccp, "--import");
-
-  ccparray_put (&ccp, NULL);
-  argv = ccparray_get (&ccp, NULL);
-  if (!argv)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-  err = gnupg_exec_tool_stream (opt.gpg_program, argv, key,
-                                NULL, listing,
-                                list_key_status_cb, ctx);
-  if (err)
-    {
-      log_error ("import failed: %s\n", gpg_strerror (err));
-      goto leave;
-    }
-
-  es_rewind (listing);
-  lnr = 0;
-  maxlen = 2048; /* Set limit.  */
-  while ((len = es_read_line (listing, &line, &length_of_line, &maxlen)) > 0)
-    {
-      lnr++;
-      if (!maxlen)
-        {
-          log_error ("received line too long\n");
-          err = gpg_error (GPG_ERR_LINE_TOO_LONG);
-          goto leave;
-        }
-      /* Strip newline and carriage return, if present.  */
-      while (len > 0
-	     && (line[len - 1] == '\n' || line[len - 1] == '\r'))
-	line[--len] = '\0';
-      /* log_debug ("line '%s'\n", line); */
-
-      xfree (fields);
-      fields = strtokenize (line, ":");
-      if (!fields)
-        {
-          err = gpg_error_from_syserror ();
-          log_error ("strtokenize failed: %s\n", gpg_strerror (err));
-          goto leave;
-        }
-      for (nfields = 0; fields[nfields]; nfields++)
-        ;
-      if (!nfields)
-        {
-          err = gpg_error (GPG_ERR_INV_ENGINE);
-          goto leave;
-        }
-      if (!strcmp (fields[0], "sec"))
-        {
-          /* gpg may return "sec" as the first record - but we do not
-           * accept secret keys.  */
-          err = gpg_error (GPG_ERR_NO_PUBKEY);
-          goto leave;
-        }
-      if (lnr == 1 && strcmp (fields[0], "pub"))
-        {
-          /* First record is not a public key.  */
-          err = gpg_error (GPG_ERR_INV_ENGINE);
-          goto leave;
-        }
-      if (lnr > 1 && !strcmp (fields[0], "pub"))
-        {
-          /* More than one public key.  */
-          err = gpg_error (GPG_ERR_TOO_MANY);
-          goto leave;
-        }
-      if (!strcmp (fields[0], "sub") || !strcmp (fields[0], "ssb"))
-        break; /* We can stop parsing here.  */
-
-      if (!strcmp (fields[0], "fpr") && nfields > 9 && !ctx->fpr)
-        {
-          ctx->fpr = xtrystrdup (fields[9]);
-          if (!ctx->fpr)
-            {
-              err = gpg_error_from_syserror ();
-              goto leave;
-            }
-        }
-      else if (!strcmp (fields[0], "uid") && nfields > 9)
-        {
-          /* Fixme: Unescape fields[9] */
-          xfree (mbox);
-          mbox = mailbox_from_userid (fields[9]);
-          if (mbox && !append_to_strlist_try (&ctx->mboxes, mbox))
-            {
-              err = gpg_error_from_syserror ();
-              goto leave;
-            }
-        }
-    }
-  if (len < 0 || es_ferror (listing))
-    log_error ("error reading memory stream\n");
-
- leave:
-  xfree (mbox);
-  xfree (fields);
-  es_free (line);
-  xfree (argv);
-  es_fclose (listing);
-  return err;
-}
-
-
 /* Take the key in KEYFILE and write it to OUTFILE in binary encoding.
  * If ADDRSPEC is given only matching user IDs are included in the
  * output.  */
@@ -1216,7 +1054,9 @@ process_new_key (server_ctx_t ctx, estream_t key)
   struct policy_flags_s policybuf;
 
   /* First figure out the user id from the key.  */
-  err = list_key (ctx, key);
+  xfree (ctx->fpr);
+  free_strlist (ctx->mboxes);
+  err = wks_list_key (key, &ctx->fpr, &ctx->mboxes);
   if (err)
     goto leave;
   if (!ctx->fpr)
@@ -1457,7 +1297,9 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
     }
 
   /* We need to get the fingerprint from the key.  */
-  err = list_key (ctx, key);
+  xfree (ctx->fpr);
+  free_strlist (ctx->mboxes);
+  err = wks_list_key (key, &ctx->fpr, &ctx->mboxes);
   if (err)
     goto leave;
   if (!ctx->fpr)
