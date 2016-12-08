@@ -45,13 +45,6 @@
 #endif
 #include <string.h>
 #include <unistd.h>
-#ifdef USE_ADNS
-# include <adns.h>
-#endif
-
-#if !defined(HAVE_GETADDRINFO) && !defined(USE_ADNS)
-# error Either getaddrinfo or the ADNS library is required.
-#endif
 
 #ifdef WITHOUT_NPTH /* Give the Makefile a chance to build without Pth.  */
 # undef USE_NPTH
@@ -82,11 +75,6 @@
 # define AI_ADDRCONFIG 0
 #endif
 
-/* Provide a replacement function for older ADNS versions.  */
-#ifndef HAVE_ADNS_FREE
-# define adns_free(a) free ((a))
-#endif
-
 /* Not every installation has gotten around to supporting SRVs or
    CERTs yet... */
 #ifndef T_SRV
@@ -96,11 +84,8 @@
 # define T_CERT 37
 #endif
 
-/* ADNS has no support for CERT yet. */
-#define my_adns_r_cert 37
 
-
-/* The default nameserver used with ADNS in Tor mode.  */
+/* The default nameserver used in Tor mode.  */
 #define DEFAULT_NAMESERVER "8.8.8.8"
 
 /* If set force the use of the standard resolver.  */
@@ -114,9 +99,7 @@ static int tor_mode;
 static char tor_nameserver[40+20];
 
 /* A string to hold the credentials presented to Tor.  */
-#ifdef USE_ADNS
 static char tor_credentials[50];
-#endif
 
 
 /* Calling this function with YES set to True forces the use of the
@@ -142,25 +125,17 @@ standard_resolver_p (void)
 gpg_error_t
 enable_dns_tormode (int new_circuit)
 {
-  (void) new_circuit;
+  if (!*tor_credentials || new_circuit)
+    {
+      static unsigned int counter;
 
-#ifdef USE_ADNS
-# if HAVE_ADNS_IF_TORMODE
-   if (!*tor_credentials || new_circuit)
-     {
-       static unsigned int counter;
-
-       gpgrt_snprintf (tor_credentials, sizeof tor_credentials,
-                       "dirmngr-%lu:p%u",
-                       (unsigned long)getpid (), counter);
-       counter++;
-     }
-   tor_mode = 1;
-   return 0;
-# endif
-#endif
-
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      gpgrt_snprintf (tor_credentials, sizeof tor_credentials,
+                      "dirmngr-%lu:p%u",
+                      (unsigned long)getpid (), counter);
+      counter++;
+    }
+  tor_mode = 1;
+  return 0;
 }
 
 
@@ -217,177 +192,6 @@ map_eai_to_gpg_error (int ec)
     }
   return err;
 }
-
-#ifdef USE_ADNS
-static gpg_error_t
-map_adns_status_to_gpg_error (adns_status status)
-{
-  gpg_err_code_t ec;
-
-  switch (status)
-    {
-    /* case adns_s_netunreach: ec = GPG_ERR_ENETUNREACH; break; */
-    default: ec = GPG_ERR_GENERAL; break;
-    }
-  return gpg_error (ec);
-}
-#endif /*USE_ADNS*/
-
-
-#ifdef USE_ADNS
-/* Init ADNS and store the new state at R_STATE.  Returns 0 on
-   success; prints an error message and returns an error code on
-   failure.  */
-static gpg_error_t
-my_adns_init (adns_state *r_state)
-{
-  gpg_error_t err = 0;
-  int ret;
-
-  if (tor_mode)
-    {
-      char *cfgstr;
-
-      if (!*tor_nameserver)
-        set_dns_nameserver (NULL);
-
-      cfgstr = xtryasprintf ("nameserver %s\n"
-                             "options adns_tormode adns_sockscred:%s",
-                             tor_nameserver, tor_credentials);
-      if (!cfgstr)
-        err = gpg_error_from_syserror ();
-      else
-        {
-          ret = adns_init_strcfg (r_state, adns_if_debug /*adns_if_noerrprint*/, NULL, cfgstr);
-          if (ret)
-            err = gpg_error_from_errno (ret);
-          xfree (cfgstr);
-        }
-    }
-  else
-    {
-      ret = adns_init (r_state, adns_if_noerrprint, NULL);
-      if (ret)
-        err = gpg_error_from_errno (ret);
-    }
-
-  if (err)
-    {
-      log_error ("error initializing adns: %s\n", gpg_strerror (err));
-      return err;
-    }
-  return 0;
-}
-#endif /*USE_ADNS*/
-
-
-#ifdef USE_ADNS
-/* Resolve a name using the ADNS library.  See resolve_dns_name for
-   the description.  */
-static gpg_error_t
-resolve_name_adns (const char *name, unsigned short port,
-                   int want_family, int want_socktype,
-                   dns_addrinfo_t *r_dai, char **r_canonname)
-{
-  gpg_error_t err = 0;
-  int ret;
-  dns_addrinfo_t daihead = NULL;
-  dns_addrinfo_t dai;
-  adns_state state;
-  adns_answer *answer = NULL;
-  int count;
-
-  (void)want_family;
-
-  *r_dai = NULL;
-  if (r_canonname)
-    *r_canonname = NULL;
-
-  if (want_socktype != SOCK_STREAM && want_socktype != SOCK_DGRAM)
-    return gpg_error (GPG_ERR_ESOCKTNOSUPPORT);
-
-  err = my_adns_init (&state);
-  if (err)
-    return err;
-
-  my_unprotect ();
-  ret = adns_synchronous (state, name, adns_r_addr,
-                          adns_qf_quoteok_query, &answer);
-  my_protect ();
-  if (ret)
-    {
-      err = gpg_error (gpg_err_code_from_errno (ret));
-      log_error ("DNS query failed: %s\n", gpg_strerror (err));
-      goto leave;
-    }
-
-  err = gpg_error (GPG_ERR_NOT_FOUND);
-  if (answer->status != adns_s_ok || answer->type != adns_r_addr)
-    {
-      err = map_adns_status_to_gpg_error (answer->status);
-      if (gpg_err_code (err) == GPG_ERR_GENERAL)
-        err = gpg_error (GPG_ERR_NOT_FOUND);
-      log_error ("DNS query returned an error: %s (%s)\n",
-                 adns_strerror (answer->status),
-                 adns_errabbrev (answer->status));
-      goto leave;
-    }
-
-  if (r_canonname && answer->cname)
-    {
-      *r_canonname = xtrystrdup (answer->cname);
-      if (!*r_canonname)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-    }
-
-  for (count = 0; count < answer->nrrs; count++)
-    {
-      int len;
-      adns_rr_addr *addr;
-
-      len  = answer->rrs.addr[count].len;
-      addr = &answer->rrs.addr[count];
-      if (addr->addr.sa.sa_family != AF_INET6
-          && addr->addr.sa.sa_family != AF_INET)
-        continue;
-
-      dai = xtrymalloc (sizeof *dai + len - 1);
-      if (!dai)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-      dai->family = addr->addr.sa.sa_family;
-      dai->socktype = want_socktype == SOCK_STREAM? SOCK_STREAM : SOCK_DGRAM;
-      dai->protocol = want_socktype == SOCK_STREAM? IPPROTO_TCP : IPPROTO_UDP;
-      dai->addrlen = len;
-      memcpy (dai->addr, &addr->addr.sa, len);
-      ((struct sockaddr_in *) dai->addr)->sin_port = htons (port);
-      dai->next = daihead;
-      daihead = dai;
-      err = 0;
-    }
-
- leave:
-  adns_free (answer);
-  adns_finish (state);
-  if (err)
-    {
-      if (r_canonname)
-        {
-          xfree (*r_canonname);
-          *r_canonname = NULL;
-        }
-      free_dns_addrinfo (daihead);
-    }
-  else
-    *r_dai = daihead;
-  return err;
-}
-#endif /*USE_ADNS*/
 
 
 /* Resolve a name using the standard system function.  */
@@ -572,10 +376,10 @@ resolve_dns_name (const char *name, unsigned short port,
                   int want_family, int want_socktype,
                   dns_addrinfo_t *r_ai, char **r_canonname)
 {
-#ifdef USE_ADNS
+#ifdef NOTYET
   if (!standard_resolver)
-    return resolve_name_adns (name, port, want_family, want_socktype,
-                              r_ai, r_canonname);
+    return resolve_name_libdns (name, port, want_family, want_socktype,
+                                r_ai, r_canonname);
 #endif
   return resolve_name_standard (name, port, want_family, want_socktype,
                                 r_ai, r_canonname);
@@ -669,150 +473,6 @@ is_onion_address (const char *name)
   /* Note that we require at least 2 characters before the suffix.  */
   return 1;  /* Yes.  */
 }
-
-
-#ifdef USE_ADNS
-/* ADNS version of get_dns_cert.  */
-static gpg_error_t
-get_dns_cert_adns (const char *name, int want_certtype,
-                   void **r_key, size_t *r_keylen,
-                   unsigned char **r_fpr, size_t *r_fprlen, char **r_url)
-{
-  gpg_error_t err;
-  int ret;
-  adns_state state;
-  adns_answer *answer = NULL;
-  unsigned int ctype;
-  int count;
-
-  err = my_adns_init (&state);
-  if (err)
-    return err;
-
-  my_unprotect ();
-  ret = adns_synchronous (state, name,
-                          (adns_r_unknown
-                           | (want_certtype < DNS_CERTTYPE_RRBASE
-                              ? my_adns_r_cert
-                              : (want_certtype - DNS_CERTTYPE_RRBASE))),
-                          adns_qf_quoteok_query, &answer);
-  my_protect ();
-  if (ret)
-    {
-      err = gpg_error (gpg_err_code_from_errno (ret));
-      /* log_error ("DNS query failed: %s\n", gpg_strerror (err)); */
-      adns_finish (state);
-      return err;
-    }
-  if (answer->status != adns_s_ok)
-    {
-      /* log_error ("DNS query returned an error: %s (%s)\n", */
-      /*            adns_strerror (answer->status), */
-      /*            adns_errabbrev (answer->status)); */
-      err = map_adns_status_to_gpg_error (answer->status);
-      if (gpg_err_code (err) == GPG_ERR_GENERAL)
-        err = gpg_error (GPG_ERR_NOT_FOUND);
-      goto leave;
-    }
-
-  err = gpg_error (GPG_ERR_NOT_FOUND);
-  for (count = 0; count < answer->nrrs; count++)
-    {
-      int datalen = answer->rrs.byteblock[count].len;
-      const unsigned char *data = answer->rrs.byteblock[count].data;
-
-      /* First check for our generic RR hack.  */
-      if (datalen
-          && want_certtype >= DNS_CERTTYPE_RRBASE
-          && ((want_certtype - DNS_CERTTYPE_RRBASE)
-              == (answer->type & ~adns_r_unknown)))
-        {
-          /* Found the requested record - return it.  */
-          *r_key = xtrymalloc (datalen);
-          if (!*r_key)
-            err = gpg_error_from_syserror ();
-          else
-            {
-              memcpy (*r_key, data, datalen);
-              *r_keylen = datalen;
-              err = 0;
-            }
-          goto leave;
-        }
-
-      if (datalen < 5)
-        continue;  /* Truncated CERT record - skip.  */
-
-      ctype = buf16_to_uint (data);
-      /* (key tag and algorithm fields are not required.) */
-      data += 5;
-      datalen -= 5;
-
-      if (want_certtype && want_certtype != ctype)
-        ; /* Not of the requested certtype.  */
-      else if (ctype == DNS_CERTTYPE_PGP && datalen >= 11 && r_key && r_keylen)
-        {
-          /* CERT type is PGP.  Gpg checks for a minimum length of 11,
-             thus we do the same.  */
-          *r_key = xtrymalloc (datalen);
-          if (!*r_key)
-            err = gpg_error_from_syserror ();
-          else
-            {
-              memcpy (*r_key, data, datalen);
-              *r_keylen = datalen;
-              err = 0;
-            }
-          goto leave;
-        }
-      else if (ctype == DNS_CERTTYPE_IPGP && datalen && datalen < 1023
-               && datalen >= data[0] + 1 && r_fpr && r_fprlen && r_url)
-        {
-          /* CERT type is IPGP.  We made sure that the data is
-             plausible and that the caller requested this
-             information.  */
-          *r_fprlen = data[0];
-          if (*r_fprlen)
-            {
-              *r_fpr = xtrymalloc (*r_fprlen);
-              if (!*r_fpr)
-                {
-                  err = gpg_error_from_syserror ();
-                  goto leave;
-                }
-              memcpy (*r_fpr, data + 1, *r_fprlen);
-            }
-          else
-            *r_fpr = NULL;
-
-          if (datalen > *r_fprlen + 1)
-            {
-              *r_url = xtrymalloc (datalen - (*r_fprlen + 1) + 1);
-              if (!*r_url)
-                {
-                  err = gpg_error_from_syserror ();
-                  xfree (*r_fpr);
-                  *r_fpr = NULL;
-                  goto leave;
-                }
-              memcpy (*r_url,
-                      data + (*r_fprlen + 1), datalen - (*r_fprlen + 1));
-              (*r_url)[datalen - (*r_fprlen + 1)] = '\0';
-            }
-          else
-            *r_url = NULL;
-
-          err = 0;
-          goto leave;
-        }
-    }
-
- leave:
-  adns_free (answer);
-  adns_finish (state);
-  return err;
-}
-#endif /*!USE_ADNS */
 
 
 /* Standard resolver version of get_dns_cert.  */
@@ -1041,11 +701,11 @@ get_dns_cert (const char *name, int want_certtype,
   *r_fprlen = 0;
   *r_url = NULL;
 
-#ifdef USE_ADNS
+#ifdef NOTYET
   if (!standard_resolver)
-    return get_dns_cert_adns (name, want_certtype, r_key, r_keylen,
-                              r_fpr, r_fprlen, r_url);
-#endif /*!USE_ADNS */
+    return get_dns_cert_libdns (name, want_certtype, r_key, r_keylen,
+                                r_fpr, r_fprlen, r_url);
+#endif
   return get_dns_cert_standard (name, want_certtype, r_key, r_keylen,
                                 r_fpr, r_fprlen, r_url);
 }
@@ -1062,78 +722,6 @@ priosort(const void *a,const void *b)
   else
     return 0;
 }
-
-
-#ifdef USE_ADNS
-/* ADNS based helper for getsrv.  */
-static int
-getsrv_adns (const char *name, struct srventry **list)
-{
-  int srvcount = 0;
-  u16 count;
-  int rc;
-  adns_state state;
-  adns_answer *answer = NULL;
-
-  if (my_adns_init (&state))
-    return -1;
-
-  my_unprotect ();
-  rc = adns_synchronous (state, name, adns_r_srv, adns_qf_quoteok_query,
-                         &answer);
-  my_protect ();
-  if (rc)
-    {
-      log_error ("DNS query failed: %s\n", strerror (rc));
-      adns_finish (state);
-      return -1;
-    }
-  if (answer->status != adns_s_ok
-      || answer->type != adns_r_srv || !answer->nrrs)
-    {
-        log_error ("DNS query returned an error or no records: %s (%s)\n",
-                   adns_strerror (answer->status),
-                   adns_errabbrev (answer->status));
-        adns_free (answer);
-        adns_finish (state);
-        return 0;
-    }
-
-  for (count = 0; count < answer->nrrs; count++)
-    {
-      struct srventry *srv = NULL;
-      struct srventry *newlist;
-
-      if (strlen (answer->rrs.srvha[count].ha.host) >= sizeof srv->target)
-        {
-          log_info ("hostname in SRV record too long - skipped\n");
-          continue;
-        }
-
-      newlist = xtryrealloc (*list, (srvcount+1)*sizeof(struct srventry));
-      if (!newlist)
-        {
-          xfree (*list);
-          *list = NULL;
-          return -1;
-        }
-      *list = newlist;
-      memset (&(*list)[srvcount], 0, sizeof(struct srventry));
-      srv = &(*list)[srvcount];
-      srvcount++;
-
-      srv->priority = answer->rrs.srvha[count].priority;
-      srv->weight   = answer->rrs.srvha[count].weight;
-      srv->port     = answer->rrs.srvha[count].port;
-      strcpy (srv->target, answer->rrs.srvha[count].ha.host);
-    }
-
-  adns_free (answer);
-  adns_finish (state);
-
-  return srvcount;
-}
-#endif /*USE_ADNS*/
 
 
 /* Standard resolver based helper for getsrv.  */
@@ -1264,10 +852,10 @@ getsrv (const char *name, struct srventry **list)
 
   if (0)
     ;
-#ifdef USE_ADNS
+#ifdef NOTYET
   else if (!standard_resolver)
-    srvcount = getsrv_adns (name, list);
-#endif /*!USE_ADNS*/
+    srvcount = getsrv_libdns (name, list);
+#endif
   else
     srvcount = getsrv_standard (name, list);
 
@@ -1349,54 +937,6 @@ getsrv (const char *name, struct srventry **list)
 
   return srvcount;
 }
-
-
-#ifdef USE_ADNS
-/* ADNS version of get_dns_cname.  */
-gpg_error_t
-get_dns_cname_adns (const char *name, char **r_cname)
-{
-  gpg_error_t err;
-  int rc;
-  adns_state state;
-  adns_answer *answer = NULL;
-
-  if (my_adns_init (&state))
-    return gpg_error (GPG_ERR_GENERAL);
-
-  my_unprotect ();
-  rc = adns_synchronous (state, name, adns_r_cname, adns_qf_quoteok_query,
-                         &answer);
-  my_protect ();
-  if (rc)
-    {
-      err = gpg_error (gpg_err_code_from_errno (rc));
-      log_error ("DNS query failed: %s\n", gpg_strerror (err));
-      adns_finish (state);
-      return err;
-    }
-  if (answer->status != adns_s_ok
-      || answer->type != adns_r_cname || answer->nrrs != 1)
-    {
-      err = map_adns_status_to_gpg_error (answer->status);
-      log_error ("DNS query returned an error or no records: %s (%s)\n",
-                 adns_strerror (answer->status),
-                 adns_errabbrev (answer->status));
-      adns_free (answer);
-      adns_finish (state);
-      return err;
-    }
-  *r_cname = xtrystrdup (answer->rrs.str[0]);
-  if (!*r_cname)
-    err = gpg_error_from_syserror ();
-  else
-    err = 0;
-
-  adns_free (answer);
-  adns_finish (state);
-  return err;
-}
-#endif /*USE_ADNS*/
 
 
 /* Standard resolver version of get_dns_cname.  */
@@ -1482,10 +1022,10 @@ get_dns_cname (const char *name, char **r_cname)
 {
   *r_cname = NULL;
 
-#ifdef USE_ADNS
+#ifdef NOTYET
   if (!standard_resolver)
-    return get_dns_cname_adns (name, r_cname);
-#endif /*!USE_ADNS*/
+    return get_dns_cname_libdns (name, r_cname);
+#endif
 
   return get_dns_cname_standard (name, r_cname);
 }

@@ -102,7 +102,6 @@ have_gnutls=no
 have_sqlite=no
 have_npth=no
 have_libusb=no
-have_adns=no
 have_system_resolver=no
 gnupg_have_ldap="n/a"
 
@@ -996,44 +995,6 @@ AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt,
 
 
 #
-# Check for ADNS.
-#
-_cppflags="${CPPFLAGS}"
-_ldflags="${LDFLAGS}"
-AC_ARG_WITH(adns,
-            AC_HELP_STRING([--with-adns=DIR],
-                           [look for the adns library in DIR]),
-            [if test -d "$withval"; then
-               CPPFLAGS="${CPPFLAGS} -I$withval/include"
-               LDFLAGS="${LDFLAGS} -L$withval/lib"
-             fi])
-if test "$with_adns" != "no"; then
-  AC_CHECK_HEADERS(adns.h,AC_CHECK_LIB(adns, adns_init_strcfg,[have_adns=yes]))
-  AC_CHECK_FUNCS(adns_free)
-  AC_MSG_CHECKING([if adns supports adns_if_tormode])
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-    #include <adns.h>
-    adns_initflags flags = adns_if_tormode;
-  ]],[])],[adns_if_tormode=yes],[adns_if_tormode=no])
-  AC_MSG_RESULT($adns_if_tormode)
-  if test x"$adns_if_tormode" = xyes; then
-    AC_DEFINE(HAVE_ADNS_IF_TORMODE,1,[define if adns_if_tormode is available])
-    if test "$show_tor_support" != "no"; then
-      show_tor_support=yes
-    fi
-  fi
-fi
-CPPFLAGS=${_cppflags}
-LDFLAGS=${_ldflags}
-if test "$have_adns" = "yes"; then
-  DNSLIBS="-ladns"
-  AC_DEFINE(USE_ADNS,1,[Use ADNS as resolver library.])
-else
-  DNSLIBS=""
-fi
-
-
-#
 # Check standard resolver functions.
 #
 if test "$build_dirmngr" = "yes"; then
@@ -1063,8 +1024,7 @@ if test "$build_dirmngr" = "yes"; then
       # Make sure that the BIND 4 resolver interface is workable before
       # enabling any code that calls it.  At some point I'll rewrite the
       # code to use the BIND 8 resolver API.
-      # We might also want to use adns instead.  Problem with ADNS is that
-      # it does not support v6.
+      # We might also want to use libdns instead.
 
     AC_MSG_CHECKING([whether the resolver is usable])
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>

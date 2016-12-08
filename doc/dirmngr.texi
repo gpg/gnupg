@@ -293,8 +293,7 @@ In ``Tor mode'' Dirmngr uses a public resolver via Tor to resolve DNS
 names.  If the default public resolver, which is @code{8.8.8.8}, shall
 not be used a different one can be given using this option.  Note that
 a numerical IP address must be given (IPv6 or IPv4) and that no error
-checking is done for @var{ipaddr}.  DNS queries in Tor mode do only
-work if GnuPG as been build with ADNS support.
+checking is done for @var{ipaddr}.
 
 @item --disable-ldap
 @opindex disable-ldap
