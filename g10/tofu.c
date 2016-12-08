@@ -2227,7 +2227,7 @@ build_conflict_set (tofu_dbs_t dbs,
     int j;
     strlist_t *prevp;
     strlist_t iter_next;
-    int *die;
+    char *die;
 
     log_assert (conflict_set_count > 0);
     die = xtrycalloc (1, conflict_set_count);
