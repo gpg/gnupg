@@ -77,17 +77,18 @@
 	(flush-stdio)))
   (set! *progress-nesting* (- *progress-nesting* 1)))
 
-(define (for-each-p msg proc lst)
-  (for-each-p' msg proc (lambda (x) x) lst))
+(define (for-each-p msg proc lst . lsts)
+  (apply for-each-p' `(,msg ,proc ,(lambda (x . xs) x) ,lst ,@lsts)))
 
-(define (for-each-p' msg proc fmt lst)
+(define (for-each-p' msg proc fmt lst . lsts)
   (call-with-progress
    msg
    (lambda (progress)
-     (for-each (lambda (a)
-		 (progress (fmt a))
-		 (proc a))
-	       lst))))
+     (apply for-each
+	    `(,(lambda args
+		 (progress (apply fmt args))
+		 (apply proc args))
+	      ,lst ,@lsts)))))
 
 ;; Process management.
 (define CLOSED_FD -1)
