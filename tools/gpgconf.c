@@ -691,6 +691,7 @@ main (int argc, char **argv)
             if (gnupg_mkdir (socketdir, "-rwx"))
               gc_error (1, errno, "error creating '%s'", socketdir);
             /* Try again.  */
+            xfree (socketdir);
             socketdir = _gnupg_socketdir_internal (1, &flags);
           }
 
