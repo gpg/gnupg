@@ -97,3 +97,68 @@
 ;; And remove the expiration date.
 (call-check `(,@gpg --quick-set-expire ,fpr "0"))
 (assert (equal? "" (expiration-time fpr)))
+
+
+;;
+;; Check --quick-addkey
+;;
+
+;; Get the subkeys.
+(define (get-subkeys)
+  (filter (lambda (x) (equal? "sub" (car x)))
+	  (gpg-with-colons `(-k ,fpr))))
+
+;; This keeps track of the number of subkeys.
+(define count (length (get-subkeys)))
+
+;; Convenient accessors for the colon output.
+(define (:length x) (string->number (list-ref x 2)))
+(define (:alg x) (string->number (list-ref x 3)))
+(define (:expire x) (list-ref x 6))
+(define (:cap x) (list-ref x 11))
+
+(for-each-p
+ "Checking that we can add subkeys..."
+ (lambda (args check)
+   (set! count (+ 1 count))
+   (call-check `(,@gpg --quick-addkey ,fpr ,@args))
+   (let ((subkeys (get-subkeys)))
+     (assert (= count (length subkeys)))
+     (if check (check (last subkeys)))))
+ ;; A bunch of arguments...
+ '(()
+   (- - -)
+   (default default never)
+   (rsa sign "2d")
+   (rsa1024 sign "2w")
+   (rsa2048 encr "2m")
+   (rsa4096 sign,auth "2y")
+   (future-default))
+ ;; ... with functions to check that the created key matches the
+ ;; expectations (or #f for no tests).
+ (list
+  #f
+  #f
+  (lambda (subkey)
+    (assert (equal? "" (:expire subkey))))
+  (lambda (subkey)
+    (assert (= 1 (:alg subkey)))
+    (assert (string-contains? (:cap subkey) "s"))
+    (assert (not (equal? "" (:expire subkey)))))
+  (lambda (subkey)
+    (assert (= 1 (:alg subkey)))
+    (assert (= 1024 (:length subkey)))
+    (assert (string-contains? (:cap subkey) "s"))
+    (assert (not (equal? "" (:expire subkey)))))
+  (lambda (subkey)
+    (assert (= 1 (:alg subkey)))
+    (assert (= 2048 (:length subkey)))
+    (assert (string-contains? (:cap subkey) "e"))
+    (assert (not (equal? "" (:expire subkey)))))
+  (lambda (subkey)
+    (assert (= 1 (:alg subkey)))
+    (assert (= 4096 (:length subkey)))
+    (assert (string-contains? (:cap subkey) "s"))
+    (assert (string-contains? (:cap subkey) "a"))
+    (assert (not (equal? "" (:expire subkey)))))
+  #f))
