@@ -319,8 +319,8 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
       log_assert (create && !nocache);
       /* This is used for the old rfc1991 mode
        * Note: This must match the code in encode.c with opt.rfc1991 set */
+      memset (&help_s2k, 0, sizeof (help_s2k));
       s2k = &help_s2k;
-      s2k->mode = 0;
       s2k->hash_algo = S2K_DIGEST_ALGO;
     }
 

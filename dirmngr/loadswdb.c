@@ -272,7 +272,10 @@ dirmngr_load_swdb (ctrl_t ctrl, int force)
   /* Create the filename of the file with the keys. */
   keyfile_fname = make_filename_try (gnupg_datadir (), "distsigkey.gpg", NULL);
   if (!keyfile_fname)
-    goto leave;
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
 
   /* Fetch the swdb from the web.  */
   err = fetch_file (ctrl, "https://versions.gnupg.org/swdb.lst", &swdb);
