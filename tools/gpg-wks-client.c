@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "util.h"
+#include "status.h"
 #include "i18n.h"
 #include "sysutils.h"
 #include "init.h"
@@ -58,6 +59,7 @@ enum cmd_and_opt_values
     oGpgProgram,
     oSend,
     oFakeSubmissionAddr,
+    oStatusFD,
 
     oDummy
   };
@@ -86,6 +88,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oGpgProgram, "gpg", "@"),
   ARGPARSE_s_n (oSend, "send", "send the mail using sendmail"),
   ARGPARSE_s_s (oOutput, "output", "|FILE|write the mail to FILE"),
+  ARGPARSE_s_i (oStatusFD, "status-fd", N_("|FD|write status info to this FD")),
 
   ARGPARSE_s_s (oFakeSubmissionAddr, "fake-submission-addr", "@"),
 
@@ -197,6 +200,9 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case oFakeSubmissionAddr:
           fake_submission_addr = pargs->r.ret_str;
           break;
+        case oStatusFD:
+          wks_set_status_fd (translate_sys2libc_fd_int (pargs->r.ret_int, 1));
+          break;
 
 	case aSupported:
 	case aCreate:
@@ -298,14 +304,21 @@ main (int argc, char **argv)
     case aCheck:
       if (argc != 1)
         wrong_args ("--check USER-ID");
-      command_check (argv[0]);
+      err = command_check (argv[0]);
       break;
 
     default:
       usage (1);
+      err = 0;
       break;
     }
 
+  if (err)
+    wks_write_status (STATUS_FAILURE, "- %u", err);
+  else if (log_get_errorcount (0))
+    wks_write_status (STATUS_FAILURE, "- %u", GPG_ERR_GENERAL);
+  else
+    wks_write_status (STATUS_SUCCESS, NULL);
   return log_get_errorcount (0)? 1:0;
 }
 
