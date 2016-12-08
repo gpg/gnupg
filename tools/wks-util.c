@@ -164,7 +164,8 @@ wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
 
   if (!err && !es_feof (stream))
     err = gpg_error_from_syserror ();
-    leave:
+
+ leave:
   if (err)
     log_error ("error reading '%s', line %d: %s\n",
                es_fname_get (stream), lnr, gpg_strerror (err));

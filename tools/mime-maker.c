@@ -251,7 +251,11 @@ ensure_part (mime_maker_t ctx, part_t *r_parent)
     {
       ctx->mail = xtrycalloc (1, sizeof *ctx->mail);
       if (!ctx->mail)
-        return gpg_error_from_syserror ();
+        {
+          if (r_parent)
+            *r_parent = NULL;
+          return gpg_error_from_syserror ();
+        }
       log_assert (!ctx->current_part);
       ctx->current_part = ctx->mail;
       ctx->current_part->headers_tail = &ctx->current_part->headers;
@@ -722,6 +726,7 @@ add_missing_headers (mime_maker_t ctx)
         goto leave;
     }
 
+  err = 0;
 
  leave:
   return err;
