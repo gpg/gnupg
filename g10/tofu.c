@@ -2227,9 +2227,15 @@ build_conflict_set (tofu_dbs_t dbs,
     int j;
     strlist_t *prevp;
     strlist_t iter_next;
-    int die[conflict_set_count];
+    int *die;
 
-    memset (die, 0, sizeof (die));
+    log_assert (conflict_set_count > 0);
+    die = xtrycalloc (1, conflict_set_count);
+    if (!die)
+      {
+        /*err = gpg_error_from_syserror ();*/
+        xoutofcore (); /* Fixme: Let the fucntion return an error.  */
+      }
 
     for (i = 0; i < conflict_set_count; i ++)
       {
@@ -2269,6 +2275,7 @@ build_conflict_set (tofu_dbs_t dbs,
     /* We shouldn't have removed the head.  */
     log_assert (conflict_set);
     log_assert (conflict_set_count >= 1);
+    xfree (die);
   }
   xfree (kb_all);
 
