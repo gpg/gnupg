@@ -22,7 +22,6 @@ case "$myhost" in
       --with-zlib=@SYSROOT@
       --with-regex=@SYSROOT@
       --with-npth-prefix=@SYSROOT@
-      --with-adns=@SYSROOT@
       --disable-g13
       "
     ;;

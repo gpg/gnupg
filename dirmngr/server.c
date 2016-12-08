@@ -2314,13 +2314,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
           (ctx, "- Forced use of System resolver (w/o Tor support)");
       else
         {
-#if USE_ADNS && HAVE_ADNS_IF_TORMODE
-          assuan_set_okay_line (ctx, "- ADNS with Tor support");
-#elif USE_ADNS
-          assuan_set_okay_line (ctx, "- ADNS w/o Tor support");
-#else
           assuan_set_okay_line (ctx, "- System resolver (w/o Tor support)");
-#endif
         }
       err = 0;
     }
