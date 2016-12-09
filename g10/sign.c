@@ -282,7 +282,9 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
   sig->digest_algo = mdalgo;
   sig->digest_start[0] = dp[0];
   sig->digest_start[1] = dp[1];
+  mpi_release (sig->data[0]);
   sig->data[0] = NULL;
+  mpi_release (sig->data[1]);
   sig->data[1] = NULL;
 
 
