@@ -55,6 +55,7 @@ XTESTS = \
 	encrypt.scm \
 	encrypt-multifile.scm \
 	encrypt-dsa.scm \
+	compression.scm \
 	seat.scm \
 	clearsig.scm \
 	encryptp.scm \

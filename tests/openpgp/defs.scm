@@ -102,6 +102,7 @@
 (define all-pubkey-algos (delay (get-config "pubkeyname")))
 (define all-hash-algos (delay (get-config "digestname")))
 (define all-cipher-algos (delay (get-config "ciphername")))
+(define all-compression-algos (delay (get-config "compressname")))
 
 (define (have-pubkey-algo? x)
   (not (not (member x (force all-pubkey-algos)))))
