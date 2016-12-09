@@ -688,7 +688,7 @@ the standard command to create a new key.  In addition to the key a
 revocation certificate is created and stored in the
 @file{openpgp-revocs.d} directory below the GnuPG home directory.
 
-@item --full-gen-key
+@item --full-generate-key
 @opindex gen-key
 Generate a new key pair with dialogs for all options.  This is an
 extended version of @option{--generate-key}.

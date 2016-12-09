@@ -456,8 +456,9 @@ static ARGPARSE_OPTS opts[] = {
               N_("quickly revoke a user-id")),
   ARGPARSE_c (aQuickSetExpire,  "quick-set-expire",
               N_("quickly set a new expiration date")),
-  ARGPARSE_c (aFullKeygen,  "full-gen-key" ,
+  ARGPARSE_c (aFullKeygen,  "full-generate-key" ,
               N_("full featured key pair generation")),
+  ARGPARSE_c (aFullKeygen,  "full-gen-key", "@"),
   ARGPARSE_c (aGenRevoke, "gen-revoke",N_("generate a revocation certificate")),
   ARGPARSE_c (aDeleteKeys,"delete-keys",
               N_("remove keys from the public keyring")),
@@ -4342,13 +4343,13 @@ main (int argc, char **argv)
 	if (opt.batch)
           {
 	    if (argc > 1)
-              wrong_args ("--full-gen-key [parameterfile]");
+              wrong_args ("--full-generate-key [parameterfile]");
 	    generate_keypair (ctrl, 1, argc? *argv : NULL, NULL, 0);
           }
 	else
           {
 	    if (argc)
-              wrong_args("--full-gen-key");
+              wrong_args("--full-generate-key");
 	    generate_keypair (ctrl, 1, NULL, NULL, 0);
 	}
 	break;

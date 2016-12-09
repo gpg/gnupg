@@ -4319,7 +4319,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
 #else
                    GPG_NAME
 #endif
-                   , "--full-gen-key" );
+                   , "--full-generate-key" );
 
       err = parse_key_parameter_string (NULL, -1,
                                         &algo, &size, &keyuse, &curve,
