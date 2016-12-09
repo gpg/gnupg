@@ -53,6 +53,10 @@
 #define DEFAULT_STD_KEY_PARAM  "rsa2048/cert,sign+rsa2048/encr"
 #define FUTURE_STD_KEY_PARAM   "ed25519/cert,sign+cv25519/encr"
 
+/* When generating keys using the streamlined key generation dialog,
+   use this as a default expiration interval.  */
+const char *default_expiration_interval = "2y";
+
 /* Flag bits used during key generation.  */
 #define KEYGEN_FLAG_NO_PROTECTION 1
 #define KEYGEN_FLAG_TRANSIENT_KEY 2
@@ -4306,7 +4310,8 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
     }
 
 
-  expire = full? ask_expire_interval (0, NULL) : 0;
+  expire = full? ask_expire_interval (0, NULL)
+               : parse_expire_string (default_expiration_interval);
   r = xcalloc (1, sizeof *r + 20);
   r->key = pKEYEXPIRE;
   r->u.expire = expire;
