@@ -1757,6 +1757,15 @@ list_config(char *items)
 	  any=1;
 	}
 
+      if(show_all || ascii_strcasecmp (name, "compressname") == 0)
+	{
+	  es_printf ("cfg:compressname:");
+	  print_algo_names (check_compress_algo,
+			    compress_algo_to_string);
+	  es_printf ("\n");
+	  any=1;
+	}
+
       if (show_all || !ascii_strcasecmp(name,"ccid-reader-id"))
 	{
           /* We ignore this for GnuPG 1.4 backward compatibility.  */
