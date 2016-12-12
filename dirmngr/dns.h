@@ -533,7 +533,7 @@ struct dns_rr_i {
 
 	int follow;
 
-	int (*sort)();
+	int (*sort)(struct dns_rr *, struct dns_rr *, struct dns_rr_i *, struct dns_packet *);
 	unsigned args[2];
 
 	struct {
@@ -1076,7 +1076,11 @@ struct dns_options {
 	} events;
 
 	/* Use this SOCKS server.  */
-	struct sockaddr_storage *socks_host;
+	const struct sockaddr_storage *socks_host;
+
+	/* Credentials for the SOCKS server (optional).  */
+	const char *socks_user;
+	const char *socks_password;
 }; /* struct dns_options */
 
 

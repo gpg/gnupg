@@ -4585,10 +4585,11 @@ dns_error_t dns_trace_fput(const struct dns_trace_event *te, const void *data, s
 }
 
 static void dns_trace_setcname(struct dns_trace *trace, const char *host, const struct sockaddr *addr) {
+	struct dns_trace_cname *cname;
 	if (!trace || !trace->fp)
 		return;
 
-	struct dns_trace_cname *cname = &trace->cnames.base[trace->cnames.p];
+	cname = &trace->cnames.base[trace->cnames.p];
 	dns_strlcpy(cname->host, host, sizeof cname->host);
 	memcpy(&cname->addr, addr, DNS_PP_MIN(dns_sa_len(addr), sizeof cname->addr));
 
@@ -4609,10 +4610,10 @@ static const char *dns_trace_cname(struct dns_trace *trace, const struct sockadd
 }
 
 static void dns_trace_res_submit(struct dns_trace *trace, const char *qname, enum dns_type qtype, enum dns_class qclass, int error) {
+	struct dns_trace_event te;
 	if (!trace || !trace->fp)
 		return;
 
-	struct dns_trace_event te;
 	dns_te_init(&te, DNS_TE_RES_SUBMIT);
 	dns_strlcpy(te.res_submit.qname, qname, sizeof te.res_submit.qname);
 	te.res_submit.qtype = qtype;
@@ -4622,25 +4623,27 @@ static void dns_trace_res_submit(struct dns_trace *trace, const char *qname, enu
 }
 
 static void dns_trace_res_fetch(struct dns_trace *trace, const struct dns_packet *packet, int error) {
+	struct dns_trace_event te;
+	const void *data;
+	size_t datasize;
 	if (!trace || !trace->fp)
 		return;
 
-	struct dns_trace_event te;
 	dns_te_init(&te, DNS_TE_RES_FETCH);
-	const void *data = (packet)? packet->data : NULL;
-	size_t datasize = (packet)? packet->end : 0;
+	data = (packet)? packet->data : NULL;
+	datasize = (packet)? packet->end : 0;
 	te.res_fetch.error = error;
 	dns_trace_tag_and_put(trace, &te, data, datasize);
 }
 
 static void dns_trace_so_submit(struct dns_trace *trace, const struct dns_packet *packet, const struct sockaddr *haddr, int error) {
+	struct dns_trace_event te;
+	const char *cname;
 	if (!trace || !trace->fp)
 		return;
 
-	struct dns_trace_event te;
 	dns_te_init(&te, DNS_TE_SO_SUBMIT);
 	memcpy(&te.so_submit.haddr, haddr, DNS_PP_MIN(dns_sa_len(haddr), sizeof te.so_submit.haddr));
-	const char *cname;
 	if ((cname = dns_trace_cname(trace, haddr)))
 		dns_strlcpy(te.so_submit.hname, cname, sizeof te.so_submit.hname);
 	te.so_submit.error = error;
@@ -4648,32 +4651,34 @@ static void dns_trace_so_submit(struct dns_trace *trace, const struct dns_packet
 }
 
 static void dns_trace_so_verify(struct dns_trace *trace, const struct dns_packet *packet, int error) {
+	struct dns_trace_event te;
 	if (!trace || !trace->fp)
 		return;
 
-	struct dns_trace_event te;
 	dns_te_init(&te, DNS_TE_SO_VERIFY);
 	te.so_verify.error = error;
 	dns_trace_tag_and_put(trace, &te, packet->data, packet->end);
 }
 
 static void dns_trace_so_fetch(struct dns_trace *trace, const struct dns_packet *packet, int error) {
+	struct dns_trace_event te;
+	const void *data;
+	size_t datasize;
 	if (!trace || !trace->fp)
 		return;
 
-	struct dns_trace_event te;
 	dns_te_init(&te, DNS_TE_SO_FETCH);
-	const void *data = (packet)? packet->data : NULL;
-	size_t datasize = (packet)? packet->end : 0;
+	data = (packet)? packet->data : NULL;
+	datasize = (packet)? packet->end : 0;
 	te.so_fetch.error = error;
 	dns_trace_tag_and_put(trace, &te, data, datasize);
 }
 
 static void dns_trace_sys_connect(struct dns_trace *trace, int fd, int socktype, const struct sockaddr *dst, int error) {
+	struct dns_trace_event te;
 	if (!trace || !trace->fp)
 		return;
 
-	struct dns_trace_event te;
 	dns_te_init(&te, DNS_TE_SYS_CONNECT);
 	dns_te_initname(&te.sys_connect.src, fd, &getsockname);
 	memcpy(&te.sys_connect.dst, dst, DNS_PP_MIN(dns_sa_len(dst), sizeof te.sys_connect.dst));
@@ -4683,10 +4688,10 @@ static void dns_trace_sys_connect(struct dns_trace *trace, int fd, int socktype,
 }
 
 static void dns_trace_sys_send(struct dns_trace *trace, int fd, int socktype, const void *data, size_t datasize, int error) {
+	struct dns_trace_event te;
 	if (!trace || !trace->fp)
 		return;
 
-	struct dns_trace_event te;
 	dns_te_init(&te, DNS_TE_SYS_SEND);
 	dns_te_initnames(&te.sys_send.src, &te.sys_send.dst, fd);
 	te.sys_send.socktype = socktype;
@@ -4695,10 +4700,10 @@ static void dns_trace_sys_send(struct dns_trace *trace, int fd, int socktype, co
 }
 
 static void dns_trace_sys_recv(struct dns_trace *trace, int fd, int socktype, const void *data, size_t datasize, int error) {
+	struct dns_trace_event te;
 	if (!trace || !trace->fp)
 		return;
 
-	struct dns_trace_event te;
 	dns_te_init(&te, DNS_TE_SYS_RECV);
 	dns_te_initnames(&te.sys_recv.dst, &te.sys_recv.src, fd);
 	te.sys_recv.socktype = socktype;
@@ -4710,6 +4715,9 @@ static dns_error_t dns_trace_dump_packet(struct dns_trace *trace, const char *pr
 	struct dns_packet *packet = NULL;
 	char *line = NULL, *p;
 	size_t size = 1, skip = 0;
+	struct dns_rr_i records;
+	struct dns_p_lines_i lines;
+	size_t len, count;
 	int error;
 
 	if (!(packet = dns_p_make(datasize, &error)))
@@ -4724,9 +4732,9 @@ resize:
 	line = p;
 	size *= 2;
 
-	struct dns_rr_i records = { 0 };
-	struct dns_p_lines_i lines = { 0 };
-	size_t len, count = 0;
+	memset(&records, 0, sizeof records);
+	memset(&lines, 0, sizeof lines);
+	count = 0;
 
 	while ((len = dns_p_lines(line, size, &error, packet, &records, &lines))) {
 		if (!(len < size)) {
@@ -4899,22 +4907,22 @@ dns_error_t dns_trace_dump(struct dns_trace *trace, FILE *fp) {
 
 			break;
 		case DNS_TE_SYS_CONNECT: {
+			int socktype = te->sys_connect.socktype;
 			fprintf(fp, "dns_sys_connect:\n");
 			dns_trace_dump_meta(trace, "  ", te, state.elapsed, fp);
 			dns_trace_dump_addr(trace, "  src: ", &te->sys_connect.src, fp);
 			dns_trace_dump_addr(trace, "  dst: ", &te->sys_connect.dst, fp);
-			int socktype = te->sys_connect.socktype;
 			fprintf(fp, "  socktype: %d (%s)\n", socktype, ((socktype == SOCK_STREAM)? "SOCK_STREAM" : (socktype == SOCK_DGRAM)? "SOCK_DGRAM" : "?"));
 			dns_trace_dump_error(trace, "  error: ", te->sys_connect.error, fp);
 
 			break;
 		}
 		case DNS_TE_SYS_SEND: {
+			int socktype = te->sys_send.socktype;
 			fprintf(fp, "dns_sys_send:\n");
 			dns_trace_dump_meta(trace, "  ", te, state.elapsed, fp);
 			dns_trace_dump_addr(trace, "  src: ", &te->sys_send.src, fp);
 			dns_trace_dump_addr(trace, "  dst: ", &te->sys_send.dst, fp);
-			int socktype = te->sys_send.socktype;
 			fprintf(fp, "  socktype: %d (%s)\n", socktype, ((socktype == SOCK_STREAM)? "SOCK_STREAM" : (socktype == SOCK_DGRAM)? "SOCK_DGRAM" : "?"));
 			dns_trace_dump_error(trace, "  error: ", te->sys_send.error, fp);
 
@@ -4927,11 +4935,11 @@ dns_error_t dns_trace_dump(struct dns_trace *trace, FILE *fp) {
 			break;
 		}
 		case DNS_TE_SYS_RECV: {
+			int socktype = te->sys_recv.socktype;
 			fprintf(fp, "dns_sys_recv:\n");
 			dns_trace_dump_meta(trace, "  ", te, state.elapsed, fp);
 			dns_trace_dump_addr(trace, "  src: ", &te->sys_recv.src, fp);
 			dns_trace_dump_addr(trace, "  dst: ", &te->sys_recv.dst, fp);
-			int socktype = te->sys_recv.socktype;
 			fprintf(fp, "  socktype: %d (%s)\n", socktype, ((socktype == SOCK_STREAM)? "SOCK_STREAM" : (socktype == SOCK_DGRAM)? "SOCK_DGRAM" : "?"));
 			dns_trace_dump_error(trace, "  error: ", te->sys_recv.error, fp);
 
@@ -7118,8 +7126,11 @@ enum {
 
 	DNS_SO_SOCKS_INIT,
 	DNS_SO_SOCKS_CONN,
+	DNS_SO_SOCKS_HELLO_SEND,
+	DNS_SO_SOCKS_HELLO_RECV,
 	DNS_SO_SOCKS_AUTH_SEND,
 	DNS_SO_SOCKS_AUTH_RECV,
+	DNS_SO_SOCKS_REQUEST_PREPARE,
 	DNS_SO_SOCKS_REQUEST_SEND,
 	DNS_SO_SOCKS_REQUEST_RECV,
 	DNS_SO_SOCKS_REQUEST_RECV_V6,
@@ -7424,6 +7435,30 @@ static _Bool dns_so_tcp_keep(struct dns_socket *so) {
 } /* dns_so_tcp_keep() */
 
 
+/* Convenience functions for sending non-DNS data.  */
+
+/* Set up everything for sending LENGTH octets.  Returns the buffer
+   for the data.  */
+static unsigned char *dns_so_tcp_send_buffer(struct dns_socket *so, size_t length) {
+	/* Skip the length octets, we are not doing DNS.  */
+	so->qout = 2;
+	so->query->end = length;
+	return so->query->data;
+}
+
+/* Set up everything for receiving LENGTH octets.  */
+static void dns_so_tcp_recv_expect(struct dns_socket *so, size_t length) {
+	/* Skip the length octets, we are not doing DNS.  */
+	so->apos = 2;
+	so->alen = length;
+}
+
+/* Returns the buffer containing the received data.  */
+static unsigned char *dns_so_tcp_recv_buffer(struct dns_socket *so) {
+	return so->answer->data;
+}
+
+
 #if defined __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warray-bounds"
@@ -7500,10 +7535,7 @@ static int dns_so_tcp_recv(struct dns_socket *so) {
 int dns_so_check(struct dns_socket *so) {
 	int error;
 	size_t n;
-
-	/* XXX */
 	unsigned char *buffer;
-	int method;
 
 retry:
 	switch (so->state) {
@@ -7595,7 +7627,9 @@ retry:
 			goto error;
 
 		so->state++;
-	case DNS_SO_SOCKS_CONN:
+	case DNS_SO_SOCKS_CONN: {
+		unsigned char method;
+
 		error = dns_connect(so->tcp, (struct sockaddr *)so->opts.socks_host, dns_sa_len(so->opts.socks_host));
 		dns_trace_sys_connect(so->trace, so->tcp, SOCK_STREAM, (struct sockaddr *)so->opts.socks_host, error);
 		if (error && error != DNS_EISCONN)
@@ -7609,37 +7643,32 @@ retry:
 		/* Create a new buffer for the handshake.  */
 		dns_p_grow(&so->query);
 
-		/* Skip the two octets length field when
-		   transmitting, send three octets.  */
-		so->qout = 2;
-		so->query->end = 3;
-		buffer = so->query->data;
-
 		/* Negotiate method.  */
+		buffer = dns_so_tcp_send_buffer(so, 3);
 		buffer[0] = 5; /* RFC-1928 VER field.  */
 		buffer[1] = 1; /* NMETHODS */
-		if (0 /* XXX */)
+		if (so->opts.socks_user)
 			method = 2;  /* Method: username/password authentication. */
 		else
 			method = 0;  /* Method: No authentication required. */
 		buffer[2] = method;
 
 		so->state++;
-	case DNS_SO_SOCKS_AUTH_SEND:
+	}
+	case DNS_SO_SOCKS_HELLO_SEND:
 		if ((error = dns_so_tcp_send(so)))
 			goto error;
 
-		/* Skip the two length octets, and receive two octets.  */
-		so->apos = 2;
-		so->alen = 2;
-
+		dns_so_tcp_recv_expect(so, 2);
 		so->state++;
-	case DNS_SO_SOCKS_AUTH_RECV:
+	case DNS_SO_SOCKS_HELLO_RECV: {
+		unsigned char method;
+
 		if ((error = dns_so_tcp_recv(so)))
 			goto error;
 
-		buffer = so->answer->data;
-		method = 0; /* XXX authentication not yet supported */
+		buffer = dns_so_tcp_recv_buffer(so);
+		method = so->opts.socks_user ? 2 : 0;
 		if (buffer[0] != 5 || buffer[1] != method) {
 			/* Socks server returned wrong version or does
 			   not support our requested method.  */
@@ -7647,12 +7676,67 @@ retry:
 			goto error;
 		}
 
-		/* Skip the two octets length field when
-		   transmitting.  */
-		so->qout = 2;
-		buffer = so->query->data;
+		if (method == 0) {
+			/* No authentication, go ahead and send the
+			   request.  */
+			so->state = DNS_SO_SOCKS_REQUEST_PREPARE;
+			goto retry;
+		}
 
+		/* Prepare username/password sub-negotiation.  */
+		if (! so->opts.socks_password) {
+			error = EINVAL; /* No password given.  */
+			goto error;
+		} else {
+			size_t buflen, ulen, plen;
+
+			ulen = strlen(so->opts.socks_user);
+			plen = strlen(so->opts.socks_password);
+			if (!ulen || ulen > 255 || !plen || plen > 255) {
+				error = EINVAL; /* Credentials too long or too short.  */
+				goto error;
+			}
+
+			buffer = dns_so_tcp_send_buffer(so, 3 + ulen + plen);
+			buffer[0] = 1; /* VER of the sub-negotiation. */
+			buffer[1] = (unsigned char) ulen;
+			buflen = 2;
+			memcpy (buffer+buflen, so->opts.socks_user, ulen);
+			buflen += ulen;
+			buffer[buflen++] = (unsigned char) plen;
+			memcpy (buffer+buflen, so->opts.socks_password, plen);
+		}
+
+		so->state++;
+	}
+	case DNS_SO_SOCKS_AUTH_SEND:
+		if ((error = dns_so_tcp_send(so)))
+			goto error;
+
+		/* Skip the two length octets, and receive two octets.  */
+		dns_so_tcp_recv_expect(so, 2);
+
+		so->state++;
+	case DNS_SO_SOCKS_AUTH_RECV:
+		if ((error = dns_so_tcp_recv(so)))
+			goto error;
+
+		buffer = dns_so_tcp_recv_buffer(so);
+		if (buffer[0] != 1) {
+			/* SOCKS server returned wrong version.  */
+			error = EPROTO;
+			goto error;
+		}
+		if (buffer[1]) {
+			/* SOCKS server denied access.  */
+			error = EACCES;
+			goto error;
+		}
+
+		so->state++;
+	case DNS_SO_SOCKS_REQUEST_PREPARE:
 		/* Send request details (rfc-1928, 4).  */
+		buffer = dns_so_tcp_send_buffer(so, so->remote.ss_family == AF_INET6 ? 22 : 10);
 		buffer[0] = 5; /* VER  */
 		buffer[1] = 1; /* CMD = CONNECT  */
 		buffer[2] = 0; /* RSV  */
@@ -7662,14 +7746,12 @@ retry:
 			buffer[3] = 4; /* ATYP = IPv6 */
 			memcpy (buffer+ 4, &addr_in6->sin6_addr.s6_addr, 16); /* DST.ADDR */
 			memcpy (buffer+20, &addr_in6->sin6_port, 2);          /* DST.PORT */
-			so->query->end = 22;
 		} else {
 			struct sockaddr_in *addr_in = (struct sockaddr_in *)&so->remote;
 
 			buffer[3] = 1; /* ATYP = IPv4 */
 			memcpy (buffer+4, &addr_in->sin_addr.s_addr, 4); /* DST.ADDR */
 			memcpy (buffer+8, &addr_in->sin_port, 2);        /* DST.PORT */
-			so->query->end = 10;
 		}
 
 		so->state++;
@@ -7677,19 +7759,16 @@ retry:
 		if ((error = dns_so_tcp_send(so)))
 			goto error;
 
-		/* Skip the two length octets, and receive ten octets.
-		 * This is the length of the response assuming a IPv4
-		 * address is used.  */
-		so->apos = 2;
-		so->alen = 10;
-
+		/* Expect ten octets.  This is the length of the
+		 * response assuming a IPv4 address is used.  */
+		dns_so_tcp_recv_expect(so, 10);
 		so->state++;
 	case DNS_SO_SOCKS_REQUEST_RECV:
 		if ((error = dns_so_tcp_recv(so)))
 			goto error;
 
-		buffer = so->answer->data;
-		if (buffer[0] != 5 || buffer[2] != 0 ) {
+		buffer = dns_so_tcp_recv_buffer(so);
+		if (buffer[0] != 5 || buffer[2] != 0) {
 			/* Socks server returned wrong version or the
 			   reserved field is not zero.  */
 			error = EPROTO;
@@ -7737,13 +7816,10 @@ retry:
 			goto error;
 		}
 
-		/* ATYP indicates a v6 address.  Skip the two length
-		 * octets, and receive twelve octets.  This accounts
-		 * for the remaining bytes assuming an IPv6 address is
+		/* Expect receive twelve octets.  This accounts for
+		 * the remaining bytes assuming an IPv6 address is
 		 * used.  */
-		so->apos = 2;
-		so->alen = 12;
-
+		dns_so_tcp_recv_expect(so, 12);
 		so->state++;
 	case DNS_SO_SOCKS_REQUEST_RECV_V6:
 		if ((error = dns_so_tcp_recv(so)))
@@ -9997,6 +10073,8 @@ struct {
 	} memo;
 
 	struct sockaddr_storage socks_host;
+	const char *socks_user;
+	const char *socks_password;
 } MAIN = {
 	.sort	= &dns_rr_i_packet,
 };
@@ -10679,7 +10757,9 @@ static int resolve_query(int argc DNS_NOTUSED, char *argv[]) {
 	resconf()->options.recurse = recurse;
 
 	if (!(R = dns_res_open(resconf(), hosts(), dns_hints_mortal(hints(resconf(), &error)), cache(),
-			       dns_opts(.socks_host=&MAIN.socks_host), &error)))
+			       dns_opts(.socks_host=&MAIN.socks_host,
+					.socks_user=MAIN.socks_user,
+					.socks_password=MAIN.socks_password), &error)))
 		panic("%s: %s", MAIN.qname, dns_strerror(error));
 
 	dns_res_settrace(R, trace("w+b"));
@@ -10966,6 +11046,7 @@ static void print_usage(const char *progname, FILE *fp) {
 		"  -s HOW    Sort records\n"
 		"  -S ADDR   Address of SOCKS server to use\n"
 		"  -P PORT   Port of SOCKS server to use\n"
+		"  -A USER:PASSWORD Credentials for the SOCKS server\n"
 		"  -f PATH   Path to trace file\n"
 		"  -v        Be more verbose (-vv show packets; -vvv hexdump packets)\n"
 		"  -V        Print version info\n"
@@ -11022,7 +11103,7 @@ int main(int argc, char **argv) {
 
 	atexit(&main_exit);
 
-	while (-1 != (ch = getopt(argc, argv, "q:t:c:n:l:z:s:S:P:f:vVh"))) {
+	while (-1 != (ch = getopt(argc, argv, "q:t:c:n:l:z:s:S:P:A:f:vVh"))) {
 		switch (ch) {
 		case 'c':
 			assert(MAIN.resconf.count < lengthof(MAIN.resconf.path));
@@ -11102,6 +11183,18 @@ int main(int argc, char **argv) {
 			*dns_sa_port(MAIN.socks_host.ss_family, &MAIN.socks_host) = htons(atoi(optarg));
 
 			break;
+		case 'A': {
+			char *password;
+			if (! MAIN.socks_host.ss_family)
+				panic("-A without prior -S");
+			if (! (password = strchr(optarg, ':')))
+				panic("Usage: -A USER:PASSWORD");
+			*password = 0;
+			password += 1;
+			MAIN.socks_user = optarg;
+			MAIN.socks_password = password;
+			break;
+		}
 		case 'f':
 			MAIN.trace = optarg;
 
