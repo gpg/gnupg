@@ -1102,7 +1102,7 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
 {
   gpg_error_t err;
   gcry_sexp_t list, l2;
-  char *curve;
+  char *curve = NULL;
   int i;
   const char *oidstr;
   unsigned int nbits;
@@ -1171,6 +1171,7 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
     }
 
  leave:
+  xfree (curve);
   if (err)
     {
       for (i=0; i < 3; i++)
