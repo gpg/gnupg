@@ -152,6 +152,23 @@ static unsigned int get_keysize_range (int algo,
 
 
 
+/* Return the algo string for a default new key.  */
+const char *
+get_default_pubkey_algo (void)
+{
+  if (opt.def_new_key_algo)
+    {
+      if (*opt.def_new_key_algo && !strchr (opt.def_new_key_algo, ':'))
+        return opt.def_new_key_algo;
+      /* To avoid checking that option every time we delay that until
+       * here.  The only thing we really need to make sure is that
+       * there is no colon in the string so that the --gpgconf-list
+       * command won't mess up its output.  */
+      log_info (_("invalid value for option '%s'\n"), "--default-new-key-algo");
+    }
+  return DEFAULT_STD_KEY_PARAM;
+}
+
 
 static void
 print_status_key_created (int letter, PKT_public_key *pk, const char *handle)
@@ -3122,7 +3139,7 @@ parse_key_parameter_string (const char *string, int part,
 
   if (!string || !*string
       || !strcmp (string, "default") || !strcmp (string, "-"))
-    string = opt.def_new_key_algo? opt.def_new_key_algo : DEFAULT_STD_KEY_PARAM;
+    string = get_default_pubkey_algo ();
   else if (!strcmp (string, "future-default"))
     string = FUTURE_STD_KEY_PARAM;
 

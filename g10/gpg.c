@@ -1832,7 +1832,7 @@ gpgconf_list (const char *configfile)
   /* The next one is an info only item and should match the macros at
      the top of keygen.c  */
   es_printf ("default_pubkey_algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
-             "RSA-2048");
+             get_default_pubkey_algo ());
 
   xfree (configfile_esc);
 }

@@ -300,6 +300,7 @@ void keyedit_quick_set_expire (ctrl_t ctrl,
 void show_basic_key_info (KBNODE keyblock);
 
 /*-- keygen.c --*/
+const char *get_default_pubkey_algo (void);
 u32 parse_expire_string(const char *string);
 u32 ask_expire_interval(int object,const char *def_expire);
 u32 ask_expiredate(void);
