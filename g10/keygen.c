@@ -2871,7 +2871,7 @@ parse_key_parameter_part (char *string, int for_subkey,
                           char const **r_curve)
 {
   char *flags;
-  int algo = 0;
+  int algo;
   char *endp;
   const char *curve = NULL;
   int ecdh_or_ecdsa = 0;
@@ -2887,7 +2887,8 @@ parse_key_parameter_part (char *string, int for_subkey,
   if (flags)
     *flags++ = 0;
 
-  if (strlen (string) > 3 && digitp (string+3))
+  algo = 0;
+  if (strlen (string) >= 3 && (digitp (string+3) || !string[3]))
     {
       if (!ascii_memcasecmp (string, "rsa", 3))
         algo = PUBKEY_ALGO_RSA;
@@ -2898,9 +2899,14 @@ parse_key_parameter_part (char *string, int for_subkey,
     }
   if (algo)
     {
-      size = strtoul (string+3, &endp, 10);
-      if (size < 512 || size > 16384 || *endp)
-        return gpg_error (GPG_ERR_INV_VALUE);
+      if (!string[3])
+        size = get_keysize_range (algo, NULL, NULL);
+      else
+        {
+          size = strtoul (string+3, &endp, 10);
+          if (size < 512 || size > 16384 || *endp)
+            return gpg_error (GPG_ERR_INV_VALUE);
+        }
     }
   else if ((curve = openpgp_is_curve_supported (string, &algo, &size)))
     {
@@ -3080,8 +3086,9 @@ parse_key_parameter_part (char *string, int for_subkey,
  * used:
  *   -1 := Both parts
  *    0 := Only the part of the primary key
- *    1 := Only the part of the secondary key is parsed but returned
- *         in the args for the primary key (R_ALGO,....)
+ *    1 := If there is one part parse that one, if there are
+ *         two parts parse the second part.  Always return
+ *         in the args for the primary key (R_ALGO,....).
  *
  */
 gpg_error_t
@@ -3133,8 +3140,10 @@ parse_key_parameter_string (const char *string, int part,
     }
   else if (part == 1)
     {
-      err = parse_key_parameter_part (secondary, 1, r_algo, r_size,
-                                      r_keyuse, r_curve);
+      /* If we have SECONDARY, use that part.  If there is only one
+       * part consider this to be the subkey algo.  */
+      err = parse_key_parameter_part (secondary? secondary : primary, 1,
+                                      r_algo, r_size, r_keyuse, r_curve);
     }
 
   xfree (primary);
