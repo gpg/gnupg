@@ -3957,6 +3957,8 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
       }
   }
 
+  if (!*expirestr || strcmp (expirestr, "-") == 0)
+    expirestr = default_expiration_interval;
 
   if ((!*algostr || !strcmp (algostr, "default")
        || !strcmp (algostr, "future-default"))

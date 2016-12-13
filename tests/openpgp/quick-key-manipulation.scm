@@ -27,6 +27,13 @@
 (define (exact id)
   (string-append "=" id))
 
+;; Convenient accessors for the colon output.
+(define (:length x) (string->number (list-ref x 2)))
+(define (:alg x) (string->number (list-ref x 3)))
+(define (:expire x) (list-ref x 6))
+(define (:fpr x) (list-ref x 9))
+(define (:cap x) (list-ref x 11))
+
 (define (count-uids-of-secret-key id)
   (length (filter (lambda (x) (and (string=? "uid" (car x))
 				   (not (string=? "r" (cadr x)))))
@@ -47,10 +54,11 @@
 (info "Checking quick key generation...")
 (call-check `(,@GPG --quick-gen-key ,alpha))
 
-(assert (= 1 (count-uids-of-secret-key alpha)))
+(define keyinfo (gpg-with-colons `(-k ,(exact alpha))))
+(define fpr (:fpr (assoc "fpr" keyinfo)))
 
-(define fpr (list-ref (assoc "fpr" (gpg-with-colons `(-k ,(exact alpha))))
-		      9))
+(assert (= 1 (count-uids-of-secret-key alpha)))
+(assert (not (equal? "" (:expire (assoc "pub" keyinfo)))))
 
 (info "Checking that we can add a user ID...")
 
@@ -82,21 +90,16 @@
 (info "Checking that we can change the expiration time.")
 
 (define (expiration-time id)
-  (list-ref (assoc "pub" (gpg-with-colons `(-k ,id)))
-	    6))
+  (:expire (assoc "pub" (gpg-with-colons `(-k ,id)))))
 
-;; XXX This assumes that by default keys are created without
-;; expiration date.  See issue2701.
+;; Remove the expiration date.
+(call-check `(,@gpg --quick-set-expire ,fpr "0"))
 (assert (equal? "" (expiration-time fpr)))
 
 ;; Make the key expire in one year.
 (call-check `(,@gpg --quick-set-expire ,fpr "1y"))
 ;; XXX It'd be nice to check that the value is right.
 (assert (not (equal? "" (expiration-time fpr))))
-
-;; And remove the expiration date.
-(call-check `(,@gpg --quick-set-expire ,fpr "0"))
-(assert (equal? "" (expiration-time fpr)))
 
 
 ;;
@@ -110,12 +113,6 @@
 
 ;; This keeps track of the number of subkeys.
 (define count (length (get-subkeys)))
-
-;; Convenient accessors for the colon output.
-(define (:length x) (string->number (list-ref x 2)))
-(define (:alg x) (string->number (list-ref x 3)))
-(define (:expire x) (list-ref x 6))
-(define (:cap x) (list-ref x 11))
 
 (for-each-p
  "Checking that we can add subkeys..."

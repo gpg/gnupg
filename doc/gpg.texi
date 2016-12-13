@@ -630,6 +630,12 @@ For a description of these optional arguments see the command
 ``cert'' which can be used to create a certification only primary key;
 the default is to a create certification and signing key.
 
+The @code{expire} argument can be used to specify an expiration date
+for the key.  Several formats are supported; commonly the ISO
+YYYY-MM-DD format is used.  The values ``never'', ``none'' can be used
+for no expiration date.  Not specifying a value, or using ``-''
+results in a key expiring in a reasonable default interval.
+
 If this command is used with @option{--batch},
 @option{--pinentry-mode} has been set to @code{loopback}, and one of
 the passphrase options (@option{--passphrase},
