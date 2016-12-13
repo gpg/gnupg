@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.1.15\n"
+"Project-Id-Version: gnupg 2.1.16\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-09-02 16:58+0200\n"
+"PO-Revision-Date: 2016-12-13 15:05+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -296,10 +296,8 @@ msgstr "デーモン・モードで実行 (バックグラウンド)"
 msgid "run in server mode (foreground)"
 msgstr "サーバ・モードで実行 (フォアグラウンド)"
 
-#, fuzzy
-#| msgid "run in server mode"
 msgid "run in supervised mode"
-msgstr "サーバ・モードで実行"
+msgstr "スーパーバイズド・モードで実行"
 
 msgid "verbose"
 msgstr "冗長"
@@ -742,10 +740,9 @@ msgstr "警告: '%s'の安全でない所有 \"%s\"\n"
 msgid "Warning: unsafe permissions on %s \"%s\"\n"
 msgstr "警告: '%s'の安全でない許可 \"%s\"\n"
 
-#, fuzzy, c-format
-#| msgid "waiting for the agent to come up ... (%ds)\n"
+#, c-format
 msgid "waiting for file '%s' to become accessible ...\n"
-msgstr "agentの起動のため、%d秒待ちます\n"
+msgstr "ファイル'%s'がアクセスできるのを待ちます...\n"
 
 #, c-format
 msgid "renaming '%s' to '%s' failed: %s\n"
@@ -1769,6 +1766,9 @@ msgstr "すばやく新しいユーザIDを追加"
 msgid "quickly revoke a user-id"
 msgstr "すばやくユーザIDを失効"
 
+msgid "quickly set a new expiration date"
+msgstr "すばやく新しい有効期限を設定"
+
 msgid "full featured key pair generation"
 msgstr "全機能の鍵ペアを生成"
 
@@ -2025,10 +2025,9 @@ msgstr "鍵の一覧に鍵リングの名前を表示する"
 msgid "show expiration dates during signature listings"
 msgstr "署名の一覧時に有効期限の日付を表示する"
 
-#, fuzzy, c-format
-#| msgid "invalid argument for option \"%.50s\"\n"
+#, c-format
 msgid "valid values for option '%s':\n"
-msgstr "オプション\"%.50s\"には無効な引数です\n"
+msgstr "オプション'%s'に有効な値:\n"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -2037,10 +2036,9 @@ msgstr "不明のTOFUポリシー'%s'\n"
 msgid "(use \"help\" to list choices)\n"
 msgstr "(選択肢の一覧には\"help\"を使ってください)\n"
 
-#, fuzzy, c-format
-#| msgid "invalid argument for option \"%.50s\"\n"
+#, c-format
 msgid "invalid value for option '%s'\n"
-msgstr "オプション\"%.50s\"には無効な引数です\n"
+msgstr "オプション'%s'に無効な値です\n"
 
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
@@ -3292,6 +3290,10 @@ msgstr "マッチするユーザIDはありません。"
 
 msgid "Nothing to sign.\n"
 msgstr "署名するものがありません。\n"
+
+#, c-format
+msgid "'%s' is not a valid expiration time\n"
+msgstr "'%s'は、有効な有効期限ではありません\n"
 
 msgid "Digest: "
 msgstr "ダイジェスト: "
@@ -4683,24 +4685,18 @@ msgstr "この鍵はたぶん本人のものです\n"
 msgid "This key belongs to us\n"
 msgstr "この鍵は自分のものです\n"
 
-#, fuzzy, c-format
-#| msgid "root certificate has now been marked as trusted\n"
+#, c-format
 msgid "%s: This key is bad!  It has been marked as untrusted!\n"
-msgstr "ルート証明書は信用すると今、マークされました\n"
+msgstr "%s: この鍵はダメです! 信用できないとマークされています!\n"
 
-#, fuzzy
-#| msgid ""
-#| "It is NOT certain that the key belongs to the person named\n"
-#| "in the user ID.  If you *really* know what you are doing,\n"
-#| "you may answer the next question with yes.\n"
 msgid ""
 "This key has is bad!  It has been marked as untrusted!  If you\n"
 "*really* know what you are doing, you may answer the next\n"
 "question with yes.\n"
 msgstr ""
-"この鍵は、このユーザIDをなのる本人のものかどうか確信でき\n"
-"ません。今から行うことを＊本当に＊理解していない場合には、\n"
-"次の質問にはnoと答えてください。\n"
+"この鍵は、ダメです! 信用できないとマークされています! *本当に*\n"
+"なにをしているのか分かっている場合には、次の質問には yes と\n"
+"答えてください。\n"
 
 msgid ""
 "It is NOT certain that the key belongs to the person named\n"
@@ -5306,6 +5302,13 @@ msgid "unsupported TOFU database version: %s\n"
 msgstr "サポートされていないTOFUデータベースバージョン: %s\n"
 
 #, c-format
+msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+msgstr "'ultimately_trusted_keys' TOFUテーブル作成エラー: %s\n"
+
+msgid "TOFU DB error"
+msgstr "TOFU DBエラー"
+
+#, c-format
 msgid "error reading TOFU database: %s\n"
 msgstr "TOFUデータベースの読み込みエラー: %s\n"
 
@@ -5318,6 +5321,14 @@ msgid "error initializing TOFU database: %s\n"
 msgstr "TOFUデータベースの初期化エラー: %s\n"
 
 #, c-format
+msgid "error creating 'encryptions' TOFU table: %s\n"
+msgstr "'encryptions' TOFUデータベースの作成エラー: %s\n"
+
+#, c-format
+msgid "adding column effective_policy to bindings DB: %s\n"
+msgstr "バインディングDBにカラムeffective_policyを追加: %s\n"
+
+#, c-format
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "TOFUデータベースのオープンでエラー '%s': %s\n"
 
@@ -5325,42 +5336,35 @@ msgstr "TOFUデータベースのオープンでエラー '%s': %s\n"
 msgid "error updating TOFU database: %s\n"
 msgstr "TOFUデータベースの更新エラー: %s\n"
 
-#, fuzzy, c-format
-#| msgid "The email address \"%s\" is associated with %d key:\n"
-#| msgid_plural "The email address \"%s\" is associated with %d keys:\n"
+#, c-format
 msgid ""
 "This is the first time the email address \"%s\" is being used with key %s."
-msgstr "電子メールアドレス\"%s\"は%d個の鍵に結びつけられます:\n"
+msgstr ""
+"電子メールアドレス\"%s\"が鍵%sに使われたのはこれが最初です。"
 
-#, fuzzy, c-format
-#| msgid "The email address \"%s\" is associated with %d key:\n"
-#| msgid_plural "The email address \"%s\" is associated with %d keys:\n"
-msgid "The email address \"%s\" is associated with %d keys!"
-msgstr "電子メールアドレス\"%s\"は%d個の鍵に結びつけられます:\n"
+#, c-format
+msgid "The email address \"%s\" is associated with %d key!"
+msgid_plural "The email address \"%s\" is associated with %d keys!"
+msgstr[0] "電子メールアドレス\"%s\"は%d個の鍵に結びつけられます!"
 
-#, fuzzy
-#| msgid ""
-#| "The key with fingerprint %s raised a conflict with the binding %s.  Since "
-#| "this binding's policy was 'auto', it was changed to 'ask'."
 msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
 msgstr ""
-"鍵のフィンガープリント%sがバインディング%sと衝突しました。このバインディング"
-"ポリシーは'auto'だったので、'ask'に変更されました。"
+"  このバインディングポリシーは'auto'だったので、'ask'に変更されました。"
 
 #, c-format
 msgid ""
 "Please indicate whether this email address should be associated with key %s "
 "or whether you think someone is impersonating \"%s\"."
 msgstr ""
+"この電子メールアドレスが鍵 %s に結びつけられるべきか、あるいは誰かが"
+"\"%s\" になりすましていると思うか指定してください。"
 
 #, c-format
 msgid "error gathering other user IDs: %s\n"
 msgstr "ほかのユーザIDの収集エラー: %s\n"
 
-#, fuzzy
-#| msgid "list key and user IDs"
 msgid "This key's user IDs:\n"
-msgstr "鍵とユーザIDの一覧"
+msgstr "この鍵のユーザID:\n"
 
 #, c-format
 msgid "policy: %s"
@@ -5380,48 +5384,68 @@ msgid "Statistics for keys with the email address \"%s\":\n"
 msgstr "この電子メールアドレス\"%s\"の鍵の統計:\n"
 
 msgid ", "
-msgstr ""
+msgstr ", "
 
 msgid "this key"
 msgstr "この鍵"
 
-#, fuzzy, c-format
-#| msgid "Verified %ld messages signed by \"%s\"."
-msgid "Verified %d message"
-msgid_plural "Verified %d messages"
-msgstr[0] "%ld個のメッセージを検証しました(\"%s\"で署名されたもの)。"
+#, c-format
+msgid "Verified %d message."
+msgid_plural "Verified %d messages."
+msgstr[0] "%d個のメッセージを検証しました。"
 
 #, c-format
-msgid "Encrypted %d message"
-msgid_plural "Encrypted %d messages"
-msgstr[0] ""
+msgid "Encrypted %d message."
+msgid_plural "Encrypted %d messages."
+msgstr[0] "%d個のメッセージを暗号化しました。"
 
-#, fuzzy, c-format
-#| msgid " over the past %ld day."
-#| msgid_plural " over the past %ld days."
-msgid " over the past day."
-msgid_plural " over the past %d days."
-msgstr[0] "過去%ld日に。"
+#, c-format
+msgid "Verified %d message in the future."
+msgid_plural "Verified %d messages in the future."
+msgstr[0] "%d個のメッセージが未来に検証されました。"
 
-#, fuzzy, c-format
-#| msgid " over the past %ld month."
-#| msgid_plural " over the past %ld months."
-msgid " over the past month."
-msgid_plural " over the past %d months."
-msgstr[0] "過去%ld月に。"
+#, c-format
+msgid "Encrypted %d message in the future."
+msgid_plural "Encrypted %d messages in the future."
+msgstr[0] "%d個のメッセージが未来に暗号化されました。"
 
-#, fuzzy, c-format
-#| msgid " over the past %ld day."
-#| msgid_plural " over the past %ld days."
-msgid " over the past year."
-msgid_plural " over the past %d years."
-msgstr[0] "過去%ld日に。"
+#, c-format
+msgid "Messages verified over the past %d day: %d."
+msgid_plural "Messages verified over the past %d days: %d."
+msgstr[0] "過去%d日間に検証されたメッセージの数: %d."
 
-#, fuzzy
-#| msgid " over the past %ld day."
-#| msgid_plural " over the past %ld days."
-msgid " in the past."
-msgstr "過去%ld日に。"
+#, c-format
+msgid "Messages encrypted over the past %d day: %d."
+msgid_plural "Messages encrypted over the past %d days: %d."
+msgstr[0] "過去%d日間に暗号化されたメッセージの数: %d."
+
+#, c-format
+msgid "Messages verified over the past %d month: %d."
+msgid_plural "Messages verified over the past %d months: %d."
+msgstr[0] "過去%d月の間に検証されたメッセージの数: %d."
+
+#, c-format
+msgid "Messages encrypted over the past %d month: %d."
+msgid_plural "Messages encrypted over the past %d months: %d."
+msgstr[0] "過去%d月の間に暗号化されたメッセージの数: %d."
+
+#, c-format
+msgid "Messages verified over the past %d year: %d."
+msgid_plural "Messages verified over the past %d years: %d."
+msgstr[0] "過去%d年間に検証されたメッセージの数: %d."
+
+#, c-format
+msgid "Messages encrypted over the past %d year: %d."
+msgid_plural "Messages encrypted over the past %d years: %d."
+msgstr[0] "過去%d年間に暗号化されたメッセージの数: %d."
+
+#, c-format
+msgid "Messages verified in the past: %d."
+msgstr "これまでに検証されたメッセージの数: %d."
+
+#, c-format
+msgid "Messages encrypted in the past: %d."
+msgstr "これまでに暗号化されたメッセージの数: %d."
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5437,133 +5461,103 @@ msgstr "gGaAuUrRbB"
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
-"(G)ood-良, (A)ccept once-一度だけ良, (U)nknown-不明, (R)eject once-一度だけ"
+"(G)ood-良, (A)ccept once-一度だけ認める, (U)nknown-不明, (R)eject once-一度だけ"
 "否, (B)ad-ダメ? "
 
 msgid "Defaulting to unknown."
-msgstr ""
+msgstr "不明がデフォルトです。"
 
 msgid "TOFU db corruption detected.\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error writing key: %s\n"
-msgid "resetting keydb: %s\n"
-msgstr "鍵の書き込みエラー: %s\n"
+msgstr "TOFU dbが壊れていることが検出されました。\n"
 
 #, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
-msgstr "TOFUデータベースの信用レベルの設定エラー: %s\n"
+msgid "resetting keydb: %s\n"
+msgstr "keydbをリセット: %s\n"
+
+#, c-format
+msgid "error setting TOFU binding's policy to %s\n"
+msgstr "TOFUバインディングのポリシーを %s に設定エラー\n"
 
 #, c-format
 msgid "error changing TOFU policy: %s\n"
 msgstr "TOFUポリシーの作成エラー: %s\n"
 
-#. TRANSLATORS: The tilde ('~') is used here to indicate a
-#. * non-breakable space
 #, c-format
-msgid "%d~year"
-msgid_plural "%d~years"
-msgstr[0] "%d~年"
+msgid "%lld~year"
+msgid_plural "%lld~years"
+msgstr[0] "%lld年"
 
 #, c-format
-msgid "%d~month"
-msgid_plural "%d~months"
-msgstr[0] "%d~月"
+msgid "%lld~month"
+msgid_plural "%lld~months"
+msgstr[0] "%lld月"
 
 #, c-format
-msgid "%d~day"
-msgid_plural "%d~days"
-msgstr[0] "%d~月"
+msgid "%lld~week"
+msgid_plural "%lld~weeks"
+msgstr[0] "%lld週"
 
 #, c-format
-msgid "%d~hour"
-msgid_plural "%d~hours"
-msgstr[0] "%d~時間"
+msgid "%lld~day"
+msgid_plural "%lld~days"
+msgstr[0] "%lld日"
 
 #, c-format
-msgid "%d~minute"
-msgid_plural "%d~minutes"
-msgstr[0] "%d~分"
+msgid "%lld~hour"
+msgid_plural "%lld~hours"
+msgstr[0] "%lld時間"
 
 #, c-format
-msgid "%d~second"
-msgid_plural "%d~seconds"
-msgstr[0] "%d~秒"
+msgid "%lld~minute"
+msgid_plural "%lld~minutes"
+msgstr[0] "%lld分"
 
 #, c-format
-msgid "%s: "
-msgstr ""
+msgid "%lld~second"
+msgid_plural "%lld~seconds"
+msgstr[0] "%lld秒"
 
-#, fuzzy, c-format
-#| msgid "Deleted %d signatures.\n"
-msgid "Verified %ld signatures"
-msgstr "%d個の署名を削除しました。\n"
+#, c-format
+msgid "%s: Verified 0~signatures and encrypted 0~messages."
+msgstr "%s: 0個の署名を検証、0個のメッセージを暗号化しました。"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Verified %ld message signed by \"%s\"\n"
-#| "in the past %s."
-#| msgid_plural ""
-#| "Verified %ld messages signed by \"%s\"\n"
-#| "in the past %s."
-msgid "Verified %ld signature in the past %s"
-msgid_plural "Verified %ld signatures in the past %s"
-msgstr[0] "メッセージを%ld回検証しました(\"%s\"で署名されたもの。かつて %s)。"
+#, c-format
+msgid "%s: Verified 0 signatures."
+msgstr "%s: 0個の署名を検証しました。"
 
-#, fuzzy, c-format
-#| msgid "encrypted with %lu passphrases\n"
-msgid ", and encrypted %ld messages"
-msgstr "%lu 個のパスフレーズで暗号化\n"
+#, c-format
+msgid "%s: Verified %ld~signature in the past %s."
+msgid_plural "%s: Verified %ld~signatures in the past %s."
+msgstr[0] "%s: 署名を%ld個検証しました(これまで %s に)。"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Verified %ld message signed by \"%s\"\n"
-#| "in the past %s."
-#| msgid_plural ""
-#| "Verified %ld messages signed by \"%s\"\n"
-#| "in the past %s."
-msgid ", and encrypted %ld message in the past %s"
-msgid_plural ", and encrypted %ld messages in the past %s"
-msgstr[0] "メッセージを%ld回検証しました(\"%s\"で署名されたもの。かつて %s)。"
+msgid "Encrypted 0 messages."
+msgstr "0 個のメッセージを暗号化しました。"
 
-#, fuzzy
-#| msgid "Warning: we've have yet to see a message signed by this key!\n"
+#, c-format
+msgid "Encrypted %ld~message in the past %s."
+msgid_plural "Encrypted %ld~messages in the past %s."
+msgstr[0] "メッセージを%ld個暗号化しました(これまで %s に)。"
+
+msgid "(policy: %s)"
+msgstr "(ポリシー: %s)"
+
 msgid ""
 "Warning: we have yet to see a message signed using this key and user id!\n"
-msgstr "警告: この鍵で署名されたメッセージを検証したことはありません!\n"
+msgstr "警告: この鍵とユーザIDで署名されたメッセージは一度も見てません!\n"
 
-#, fuzzy
-#| msgid "Warning: we've only seen a single message signed by this key!\n"
 msgid ""
 "Warning: we've only seen one message signed using this key and user id!\n"
 msgstr ""
-"警告: この鍵で署名されたメッセージを検証したことは一度しかありません!\n"
+"警告: この鍵とユーザIDで署名されたメッセージは一度しか見てません!\n"
 
-#, fuzzy
-#| msgid "Warning: we've have yet to see a message signed by this key!\n"
 msgid "Warning: you have yet to encrypt a message to this key!\n"
-msgstr "警告: この鍵で署名されたメッセージを検証したことはありません!\n"
+msgstr "警告: この鍵へは一つもメッセージを暗号化したことがありません!\n"
 
-#, fuzzy
-#| msgid "Warning: we've only seen a single message signed by this key!\n"
 msgid "Warning: you have only encrypted one message to this key!\n"
 msgstr ""
-"警告: この鍵で署名されたメッセージを検証したことは一度しかありません!\n"
+"警告: この鍵へは一つのメッセージしか暗号化したことがありません!\n"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Warning: if you think you've seen more than %ld message signed by this "
-#| "key, then this key might be a forgery!  Carefully examine the email "
-#| "address for small variations.  If the key is suspect, then use\n"
-#| "  %s\n"
-#| "to mark it as being bad.\n"
-#| msgid_plural ""
-#| "Warning: if you think you've seen more than %ld messages signed by this "
-#| "key, then this key might be a forgery!  Carefully examine the email "
-#| "address for small variations.  If the key is suspect, then use\n"
-#| "  %s\n"
-#| "to mark it as being bad.\n"
+#, c-format
 msgid ""
 "Warning: if you think you've seen more signatures by this key and user id, "
 "then this key might be a forgery!  Carefully examine the email address for "
@@ -5577,8 +5571,8 @@ msgid_plural ""
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[0] ""
-"警告: この鍵で署名されたメッセージを%ld回以上見たと思う場合、偽者の可能性があ"
-"ります! 少数のバリエーションでこの電子メールアドレスを注意深く検査してくださ"
+"警告: この鍵とユーザIDによる署名をもっと見たと思う場合、この鍵は偽物の可能性が"
+"あります! 少数のバリエーションでこの電子メールアドレスを注意深く検査してくださ"
 "い。この鍵が疑われる場合、\n"
 "  %s\n"
 "でダメとマークしてください。\n"
@@ -5589,12 +5583,11 @@ msgstr "TOFUデータベースのオープンでエラー: %s\n"
 
 #, c-format
 msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
-msgstr ""
+msgstr "*警告*: %s に暗号化します。失効していないユーザIDが一つもないものです。\n"
 
-#, fuzzy, c-format
-#| msgid "error writing public keyring '%s': %s\n"
+#, c-format
 msgid "error setting policy for key %s, user id \"%s\": %s"
-msgstr "公開鍵リング'%s'の書き込みエラー: %s\n"
+msgstr "鍵%s, ユーザID \"%s\"のポリシーの設定エラー: %s"
 
 #, c-format
 msgid "'%s' is not a valid long keyID\n"
@@ -5837,10 +5830,8 @@ msgstr "応答にRSAのモジュラスが含まれていません\n"
 msgid "response does not contain the RSA public exponent\n"
 msgstr "応答にRSA公開指数が含まれていません\n"
 
-#, fuzzy
-#| msgid "response does not contain the EC public point\n"
 msgid "response does not contain the EC public key\n"
-msgstr "応答に楕円曲線の公開点が含まれていません\n"
+msgstr "応答に楕円曲線の公開鍵が含まれていません\n"
 
 msgid "response does not contain the public key data\n"
 msgstr "応答に公開鍵データが含まれていません\n"
@@ -7397,7 +7388,7 @@ msgid "allow sending OCSP requests"
 msgstr "OCSP要求の送信を認める"
 
 msgid "allow online software version check"
-msgstr ""
+msgstr "オンラインのソフトウェア・バージョン・チェックを許す"
 
 msgid "inhibit the use of HTTP"
 msgstr "HTTPの使用を禁止する"
@@ -8104,31 +8095,23 @@ msgstr "LDAPサーバ・リスト"
 msgid "Configuration for OCSP"
 msgstr "OCSPのコンフィグレーション"
 
-#, fuzzy
-#| msgid "GPG for OpenPGP"
 msgid "OpenPGP"
-msgstr "OpenPGPのためのGPG"
+msgstr "OpenPGP"
 
 msgid "Private Keys"
-msgstr ""
+msgstr "プライベート鍵"
 
-#, fuzzy
-#| msgid "Smartcard Daemon"
 msgid "Smartcards"
-msgstr "スマートカード・デーモン"
+msgstr "スマートカード"
 
-#, fuzzy
-#| msgid "GPG for S/MIME"
 msgid "S/MIME"
-msgstr "S/MIME のためのGPG"
+msgstr "S/MIME"
 
 msgid "Network"
-msgstr ""
+msgstr "ネットワーク"
 
-#, fuzzy
-#| msgid "PIN and Passphrase Entry"
 msgid "Passphrase Entry"
-msgstr "PINとパスフレーズの入力"
+msgstr "パスフレーズ入力"
 
 msgid "Component not suitable for launching"
 msgstr "コンポーネントが起動するために適切ではありません"
@@ -8167,10 +8150,8 @@ msgstr "グローバルのコンフィグレーション・ファイルをリス
 msgid "check global configuration file"
 msgstr "グローバルのコンフィグレーション・ファイルをチェックする"
 
-#, fuzzy
-#| msgid "update the trust database"
 msgid "query the software version database"
-msgstr "信用データベースを更新"
+msgstr "ソフトウェア・バージョン・データベースに問い合わせる"
 
 msgid "reload all or a given component"
 msgstr "すべて、あるいは指定されたコンポーネントをリロードする"
@@ -8368,10 +8349,6 @@ msgstr ""
 
 #~ msgid "Known user IDs associated with this key:\n"
 #~ msgstr "この鍵に結びつけられた知られているユーザID:\n"
-
-#~ msgid "%ld message signed in the future."
-#~ msgid_plural "%ld messages signed in the future."
-#~ msgstr[0] "%ld個のメッセージが未来に署名されました。"
 
 #~ msgid "%ld message signed"
 #~ msgid_plural "%ld messages signed"
