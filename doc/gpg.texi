@@ -1073,8 +1073,8 @@ you want to specify a different revocation reason, or to supply
 supplementary revocation text, you should use the interactive
 sub-command @code{revuid} of @option{--edit-key}.
 
-@item --passwd @var{user_id}
-@opindex passwd
+@item --change-passphrase @var{user_id}
+@opindex change-passphrase
 Change the passphrase of the secret key belonging to the certificate
 specified as @var{user_id}.  This is a shortcut for the sub-command
 @code{passwd} of the edit key menu.

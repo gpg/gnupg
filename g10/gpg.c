@@ -474,7 +474,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aLSignKey, "lsign-key"  ,N_("sign a key locally")),
   ARGPARSE_c (aEditKey,  "edit-key"   ,N_("sign or edit a key")),
   ARGPARSE_c (aEditKey,  "key-edit"   ,"@"),
-  ARGPARSE_c (aPasswd,   "passwd",     N_("change a passphrase")),
+  ARGPARSE_c (aPasswd,   "change-passphrase", N_("change a passphrase")),
+  ARGPARSE_c (aPasswd,   "passwd", "@"),
   ARGPARSE_c (aDesigRevoke, "desig-revoke","@" ),
   ARGPARSE_c (aExport, "export"           , N_("export keys") ),
   ARGPARSE_c (aSendKeys, "send-keys"     , N_("export keys to a keyserver") ),
@@ -4243,7 +4244,7 @@ main (int argc, char **argv)
 
       case aPasswd:
         if (argc != 1)
-          wrong_args (_("--passwd <user-id>"));
+          wrong_args (_("--change-passphrase <user-id>"));
         else
           {
             username = make_username (fname);

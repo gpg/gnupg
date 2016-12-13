@@ -231,7 +231,8 @@ static ARGPARSE_OPTS opts[] = {
               N_("pass a command to the dirmngr")),
   ARGPARSE_c (aCallProtectTool, "call-protect-tool",
               N_("invoke gpg-protect-tool")),
-  ARGPARSE_c (aPasswd, "passwd", N_("change a passphrase")),
+  ARGPARSE_c (aPasswd, "change-passphrase", N_("change a passphrase")),
+  ARGPARSE_c (aPasswd, "passwd", "@"),
   ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
   ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
 
@@ -1995,7 +1996,7 @@ main ( int argc, char **argv)
 
     case aPasswd:
       if (argc != 1)
-        wrong_args ("--passwd <key-Id>");
+        wrong_args ("--change-passphrase <key-Id>");
       else
         {
           int rc;

@@ -283,8 +283,8 @@ Read information about the private keys from the smartcard and import
 the certificates from there.  This command utilizes the @command{gpg-agent}
 and in turn the @command{scdaemon}.
 
-@item --passwd @var{user_id}
-@opindex passwd
+@item --change-passphrase @var{user_id}
+@opindex change-passphrase
 Change the passphrase of the private key belonging to the certificate
 specified as @var{user_id}.  Note, that changing the passphrase/PIN of a
 smartcard is not yet supported.
