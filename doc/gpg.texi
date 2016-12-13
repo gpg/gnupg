@@ -698,8 +698,8 @@ mode. See the manual section ``Unattended key generation'' on how
 to use this.
 
 
-@item --gen-revoke @code{name}
-@opindex gen-revoke
+@item --generate-revocation-certificate @code{name}
+@opindex generate-revocation-certificate
 Generate a revocation certificate for the complete key.  To only revoke
 a subkey or a key signature, use the @option{--edit} command.
 

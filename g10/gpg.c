@@ -459,7 +459,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aFullKeygen,  "full-generate-key" ,
               N_("full featured key pair generation")),
   ARGPARSE_c (aFullKeygen,  "full-gen-key", "@"),
-  ARGPARSE_c (aGenRevoke, "gen-revoke",N_("generate a revocation certificate")),
+  ARGPARSE_c (aGenRevoke, "generate-revocation-certificate",
+	      N_("generate a revocation certificate")),
+  ARGPARSE_c (aGenRevoke, "gen-revoke", "@"),
   ARGPARSE_c (aDeleteKeys,"delete-keys",
               N_("remove keys from the public keyring")),
   ARGPARSE_c (aDeleteSecretKeys, "delete-secret-keys",
@@ -4544,7 +4546,7 @@ main (int argc, char **argv)
 
       case aGenRevoke:
 	if( argc != 1 )
-	    wrong_args("--gen-revoke user-id");
+	    wrong_args("--generate-revocation-certificate user-id");
 	username =  make_username(*argv);
 	gen_revoke( username );
 	xfree( username );

@@ -571,7 +571,8 @@ gen_standard_revoke (PKT_public_key *psk, const char *cache_nonce)
        "the secret key.  However, if the secret key is still accessible,\n"
        "it is better to generate a new revocation certificate and give\n"
        "a reason for the revocation.  For details see the description of\n"
-       "of the gpg command \"--gen-revoke\" in the GnuPG manual."),
+       "of the gpg command \"--generate-revocation-certificate\" in the "
+       "GnuPG manual."),
      _("To avoid an accidental use of this file, a colon has been inserted\n"
        "before the 5 dashes below.  Remove this colon with a text editor\n"
        "before importing and publishing this revocation certificate."));
