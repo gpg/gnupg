@@ -76,9 +76,14 @@
 			  (string-append prefix "/" (basename (caddr t))))))))
 
 
-(define have-opt-always-trust
+(define (gpg-has-option? option)
   (string-contains? (call-popen `(,(tool 'gpg) --dump-options) "")
-			"--always-trust"))
+		    option))
+
+(define have-opt-always-trust
+  (catch #f
+	 (call-check `(,(tool 'gpg) --gpgconf-test --always-trust))
+	 #t))
 
 (define GPG `(,(tool 'gpg) --no-permission-warning
 	      ,@(if have-opt-always-trust '(--always-trust) '())))
