@@ -719,7 +719,193 @@ get_dns_cert_libdns (const char *name, int want_certtype,
                      void **r_key, size_t *r_keylen,
                      unsigned char **r_fpr, size_t *r_fprlen, char **r_url)
 {
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  gpg_error_t err;
+  struct dns_resolver *res = NULL;
+  struct dns_packet *ans = NULL;
+  struct dns_rr rr;
+  struct dns_rr_i rri;
+  char host[DNS_D_MAXNAME + 1];
+  int derr;
+  int srvcount = 0;
+  int qtype;
+
+  /* Gte the query type from WANT_CERTTYPE (which in general indicates
+   * the subtype we want). */
+  qtype = (want_certtype < DNS_CERTTYPE_RRBASE
+           ? T_CERT
+           : (want_certtype - DNS_CERTTYPE_RRBASE));
+
+
+  err = libdns_init ();
+  if (err)
+    goto leave;
+
+  res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
+                      dns_opts (/*.socks_host=&libdns.socks_host*/), &derr);
+  if (!res)
+    {
+      err = libdns_error_to_gpg_error (derr);
+      goto leave;
+    }
+
+  if (dns_d_anchor (host, sizeof host, name, strlen (name)) >= sizeof host)
+    {
+      err = gpg_error (GPG_ERR_ENAMETOOLONG);
+      goto leave;
+    }
+
+  err = libdns_error_to_gpg_error (dns_res_submit (res, name, qtype, DNS_C_IN));
+  if (err)
+    goto leave;
+
+  /* Loop until we found a record.  */
+  while ((err = libdns_error_to_gpg_error (dns_res_check (res))))
+    {
+      if (gpg_err_code (err) == GPG_ERR_EAGAIN)
+        {
+          if (dns_res_elapsed (res) > 30)
+            {
+              err = gpg_error (GPG_ERR_DNS_TIMEOUT);
+              goto leave;
+            }
+
+          my_unprotect ();
+          dns_res_poll (res, 1);
+          my_protect ();
+        }
+      else if (err)
+        goto leave;
+    }
+  ans = dns_res_fetch (res, &derr);
+  if (!ans)
+    {
+      err = libdns_error_to_gpg_error (derr);
+      goto leave;
+    }
+
+  /* Check the rcode.  */
+  switch (dns_p_rcode (ans))
+    {
+    case DNS_RC_NOERROR: break;
+    case DNS_RC_NXDOMAIN: err = gpg_error (GPG_ERR_NO_NAME); break;
+    default: err = GPG_ERR_SERVER_FAILED; break;
+    }
+  if (err)
+    goto leave;
+
+  memset (&rri, 0, sizeof rri);
+  dns_rr_i_init (&rri, ans);
+  rri.section = DNS_S_ALL & ~DNS_S_QD;
+  rri.name    = host;
+  rri.type    = qtype;
+
+  err = gpg_error (GPG_ERR_NOT_FOUND);
+  while (dns_rr_grep (&rr, 1, &rri, ans, &derr))
+    {
+      unsigned char *rp  = ans->data + rr.rd.p;
+      unsigned short len = rr.rd.len;
+      u16 subtype;
+
+       if (!len)
+        {
+          /* Definitely too short - skip.  */
+        }
+      else if (want_certtype >= DNS_CERTTYPE_RRBASE
+          && rr.type == (want_certtype - DNS_CERTTYPE_RRBASE)
+          && r_key)
+        {
+          *r_key = xtrymalloc (len);
+          if (!*r_key)
+            err = gpg_error_from_syserror ();
+          else
+            {
+              memcpy (*r_key, rp, len);
+              *r_keylen = len;
+              err = 0;
+            }
+          goto leave;
+        }
+      else if (want_certtype >= DNS_CERTTYPE_RRBASE)
+        {
+          /* We did not found the requested RR - skip. */
+        }
+      else if (rr.type == T_CERT && len > 5)
+        {
+          /* We got a CERT type.   */
+          subtype = buf16_to_u16 (rp);
+          rp += 2; len -= 2;
+
+          /* Skip the CERT key tag and algo which we don't need.  */
+          rp += 3; len -= 3;
+
+          if (want_certtype && want_certtype != subtype)
+            ; /* Not the requested subtype - skip.  */
+          else if (subtype == DNS_CERTTYPE_PGP && len && r_key && r_keylen)
+            {
+              /* PGP subtype */
+              *r_key = xtrymalloc (len);
+              if (!*r_key)
+                err = gpg_error_from_syserror ();
+              else
+                {
+                  memcpy (*r_key, rp, len);
+                  *r_keylen = len;
+                  err = 0;
+                }
+              goto leave;
+            }
+          else if (subtype == DNS_CERTTYPE_IPGP
+                   && len && len < 1023 && len >= rp[0] + 1)
+            {
+              /* IPGP type */
+              *r_fprlen = rp[0];
+              if (*r_fprlen)
+                {
+                  *r_fpr = xtrymalloc (*r_fprlen);
+                  if (!*r_fpr)
+                    {
+                      err = gpg_error_from_syserror ();
+                      goto leave;
+                    }
+                  memcpy (*r_fpr, rp+1, *r_fprlen);
+                }
+              else
+                *r_fpr = NULL;
+
+              if (len > *r_fprlen + 1)
+                {
+                  *r_url = xtrymalloc (len - (*r_fprlen + 1) + 1);
+                  if (!*r_url)
+                    {
+                      err = gpg_error_from_syserror ();
+                      xfree (*r_fpr);
+                      *r_fpr = NULL;
+                      goto leave;
+                    }
+                  memcpy (*r_url, rp + *r_fprlen + 1, len - (*r_fprlen + 1));
+                  (*r_url)[len - (*r_fprlen + 1)] = 0;
+                }
+              else
+                *r_url = NULL;
+
+              err = 0;
+              goto leave;
+            }
+          else
+            {
+              /* Unknown subtype or record too short - skip.  */
+            }
+        }
+      else
+        {
+          /* Not a requested type - skip.  */
+        }
+    }
+
+ leave:
+  dns_free (ans);
+  dns_res_close (res);
+  return err;
 }
 
 
@@ -878,7 +1064,7 @@ get_dns_cert_standard (const char *name, int want_certtype,
                   if (dlen > *r_fprlen + 1)
                     {
                       *r_url = xtrymalloc (dlen - (*r_fprlen + 1) + 1);
-                      if (!*r_fpr)
+                      if (!*r_url)
                         {
                           err = gpg_error_from_syserror ();
                           xfree (*r_fpr);
