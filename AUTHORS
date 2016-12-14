@@ -31,6 +31,7 @@ List of Copyright holders
   Copyright (C) 1998-2003 Hallvard B. Furuseth.
   Copyright (C) 1992-1996 Regents of the University of Michigan.
   Copyright (C) 2000 Dimitrios Souflis
+  Copyright (C) 2008,2009,2010,2012-2016 William Ahern
 
 
 Authors with a FSF copyright assignment
@@ -220,9 +221,10 @@ Alexandre Julliard.
 The gpg-zip documentation is based on the manpage for gpg-zip, written
 by Colin Tuckley and Daniel Leidert for the GNU/Debian distribution.
 
+The DNS resolver code is libdns by William Ahern; see COPYING.other.
+
 The test driver is based on TinySCHEME by Dimitrios Souflis and
-available under a permissive license.  For the terms see the file
-tests/gpgscm/LICENSE.TinySCHEME.
+available under a permissive license; see COPYING.other.
 
 
 Copyright
@@ -234,9 +236,10 @@ or later.
 Note that some files are under a combination of the GNU Lesser General
 Public License, version 3 and the GNU General Public License, version
 2.  A few files carry an all permissive license note as found at the
-bottom of this file.  Some small files are distributed under the
-Creative Commons Zero (CC0-1.0-Universal) license which basically puts
-them into the public domain.
+bottom of this file.  A few files are distributed under permissive
+licenses as listed in the file COPYING.other.  Some other small files
+are distributed under the Creative Commons Zero license (see file
+COPYING.CC0) which basically puts them into the public domain.
 
 
 =========
