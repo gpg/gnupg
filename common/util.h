@@ -281,7 +281,7 @@ const char *gnupg_messages_locale_name (void);
    logging subsystem. */
 void setup_libgcrypt_logging (void);
 
-/* Print an out of core emssage and die.  */
+/* Print an out of core message and die.  */
 void xoutofcore (void);
 
 /* Same as estream_asprintf but die on memory failure.  */
