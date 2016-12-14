@@ -263,6 +263,7 @@ char *_gnupg_socketdir_internal (int skip_checks, unsigned *r_info);
 #define GNUPG_MODULE_NAME_GPGV          12
 const char *gnupg_module_name (int which);
 void gnupg_module_name_flush_some (void);
+void gnupg_set_builddir (const char *newdir);
 
 
 

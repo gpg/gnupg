@@ -884,15 +884,60 @@ get_default_pinentry_name (int reset)
 }
 
 
+/* If set, 'gnupg_module_name' returns modules from that build
+ * directory.  */
+static char *gnupg_build_directory;
+
+/* For sanity checks.  */
+static int gnupg_module_name_called;
+
+
+/* Set NEWDIR as the new build directory.  This will make
+ * 'gnupg_module_name' return modules from that build directory.  Must
+ * be called before any invocation of 'gnupg_module_name', and must
+ * not be called twice.  It can be used by test suites to make sure
+ * the components from the build directory are used instead of
+ * potentially outdated installed ones.  */
+void
+gnupg_set_builddir (const char *newdir)
+{
+  log_assert (! gnupg_module_name_called);
+  log_assert (! gnupg_build_directory);
+  gnupg_build_directory = xtrystrdup (newdir);
+}
+
+
+/* If no build directory has been configured, try to set it from the
+ * environment.  We only do this in development builds to avoid
+ * increasing the set of influential environment variables and hence
+ * the attack surface of production builds.  */
+static void
+gnupg_set_builddir_from_env (void)
+{
+#ifdef IS_DEVELOPMENT_VERSION
+  if (gnupg_build_directory)
+    return;
+
+  gnupg_build_directory = getenv ("GNUPG_BUILDDIR");
+#endif
+}
+
+
 /* Return the file name of a helper tool.  WHICH is one of the
    GNUPG_MODULE_NAME_foo constants.  */
 const char *
 gnupg_module_name (int which)
 {
-#define X(a,b) do {                                                     \
+  gnupg_set_builddir_from_env ();
+  gnupg_module_name_called = 1;
+
+#define X(a,b,c) do {                                                   \
     static char *name;                                                  \
     if (!name)                                                          \
-      name = xstrconcat (gnupg_ ## a (), DIRSEP_S b EXEEXT_S, NULL);    \
+      name = gnupg_build_directory                                      \
+        ? xstrconcat (gnupg_build_directory,                            \
+                      DIRSEP_S b DIRSEP_S c EXEEXT_S, NULL)             \
+        : xstrconcat (gnupg_ ## a (), DIRSEP_S c EXEEXT_S, NULL);       \
     return name;                                                        \
   } while (0)
 
@@ -902,7 +947,7 @@ gnupg_module_name (int which)
 #ifdef GNUPG_DEFAULT_AGENT
       return GNUPG_DEFAULT_AGENT;
 #else
-      X(bindir, "gpg-agent");
+      X(bindir, "agent", "gpg-agent");
 #endif
 
     case GNUPG_MODULE_NAME_PINENTRY:
@@ -916,55 +961,57 @@ gnupg_module_name (int which)
 #ifdef GNUPG_DEFAULT_SCDAEMON
       return GNUPG_DEFAULT_SCDAEMON;
 #else
-      X(libexecdir, "scdaemon");
+      X(libexecdir, "scd", "scdaemon");
 #endif
 
     case GNUPG_MODULE_NAME_DIRMNGR:
 #ifdef GNUPG_DEFAULT_DIRMNGR
       return GNUPG_DEFAULT_DIRMNGR;
 #else
-      X(bindir, DIRMNGR_NAME);
+      X(bindir, "dirmngr", DIRMNGR_NAME);
 #endif
 
     case GNUPG_MODULE_NAME_PROTECT_TOOL:
 #ifdef GNUPG_DEFAULT_PROTECT_TOOL
       return GNUPG_DEFAULT_PROTECT_TOOL;
 #else
-      X(libexecdir, "gpg-protect-tool");
+      X(libexecdir, "agent", "gpg-protect-tool");
 #endif
 
     case GNUPG_MODULE_NAME_DIRMNGR_LDAP:
 #ifdef GNUPG_DEFAULT_DIRMNGR_LDAP
       return GNUPG_DEFAULT_DIRMNGR_LDAP;
 #else
-      X(libexecdir, "dirmngr_ldap");
+      X(libexecdir, "dirmngr", "dirmngr_ldap");
 #endif
 
     case GNUPG_MODULE_NAME_CHECK_PATTERN:
-      X(libexecdir, "gpg-check-pattern");
+      X(libexecdir, "tools", "gpg-check-pattern");
 
     case GNUPG_MODULE_NAME_GPGSM:
-      X(bindir, "gpgsm");
+      X(bindir, "sm", "gpgsm");
 
     case GNUPG_MODULE_NAME_GPG:
 #if USE_GPG2_HACK
-      X(bindir, GPG_NAME "2");
-#else
-      X(bindir, GPG_NAME);
+      if (! gnupg_build_directory)
+        X(bindir, "g10", GPG_NAME "2");
+      else
 #endif
+        X(bindir, "g10", GPG_NAME);
 
     case GNUPG_MODULE_NAME_GPGV:
 #if USE_GPG2_HACK
-      X(bindir, GPG_NAME "v2");
-#else
-      X(bindir, GPG_NAME "v");
+      if (! gnupg_build_directory)
+        X(bindir, "g10", GPG_NAME "v2");
+      else
 #endif
+        X(bindir, "g10", GPG_NAME "v");
 
     case GNUPG_MODULE_NAME_CONNECT_AGENT:
-      X(bindir, "gpg-connect-agent");
+      X(bindir, "tools", "gpg-connect-agent");
 
     case GNUPG_MODULE_NAME_GPGCONF:
-      X(bindir, "gpgconf");
+      X(bindir, "tools", "gpgconf");
 
     default:
       BUG ();

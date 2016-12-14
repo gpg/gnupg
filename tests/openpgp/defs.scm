@@ -56,9 +56,7 @@
 	value)))
 
 (define tools
-  '((gpg "GPG" "g10/gpg")
-    (gpgv "GPGV" "g10/gpgv")
-    (gpg-agent "GPG_AGENT" "agent/gpg-agent")
+  '((gpgv "GPGV" "g10/gpgv")
     (gpg-connect-agent "GPG_CONNECT_AGENT" "tools/gpg-connect-agent")
     (gpgconf "GPGCONF" "tools/gpgconf")
     (gpg-preset-passphrase "GPG_PRESET_PASSPHRASE"
@@ -67,7 +65,7 @@
     (gpg-zip "GPGZIP" "tools/gpg-zip")
     (pinentry "PINENTRY" "tests/openpgp/fake-pinentry")))
 
-(define (tool which)
+(define (tool-hardcoded which)
   (let ((t (assoc which tools))
 	(prefix (getenv "BIN_PREFIX")))
     (getenv' (cadr t)
@@ -75,6 +73,24 @@
 			  (string-append (getenv "objdir") "/" (caddr t))
 			  (string-append prefix "/" (basename (caddr t))))))))
 
+(define (gpg-conf . args)
+  (let ((s (call-popen `(,(tool-hardcoded 'gpgconf) ,@args) "")))
+    (map (lambda (line) (string-split line #\:))
+	 (string-split-newlines s))))
+(define :gc:c:name car)
+(define :gc:c:description cadr)
+(define :gc:c:pgmname caddr)
+
+(setenv "GNUPG_BUILDDIR" (getenv "objdir") #t)
+(define gpg-components (gpg-conf '--build-prefix (getenv "objdir")
+				 '--list-components))
+
+(define (tool which)
+  (case which
+    ((gpg gpg-agent scdaemon gpgsm dirmngr)
+     (:gc:c:pgmname (assoc (symbol->string which) gpg-components)))
+    (else
+     (tool-hardcoded which))))
 
 (define (gpg-has-option? option)
   (string-contains? (call-popen `(,(tool 'gpg) --dump-options) "")
