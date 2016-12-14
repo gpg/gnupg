@@ -1577,7 +1577,12 @@ if test "$GCC" = yes; then
     fi
 
     CFLAGS="$mycflags $mycflags_save"
+    USE_C99_CFLAGS="-std=gnu99"
+else
+    USE_C99_CFLAGS=
 fi
+
+AC_SUBST(USE_C99_CFLAGS)
 
 
 #
