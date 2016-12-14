@@ -141,6 +141,7 @@ enum cmd_and_opt_values {
   oNameServer,
   oDisableCheckOwnSocket,
   oStandardResolver,
+  oRecursiveResolver,
   aTest
 };
 
@@ -238,6 +239,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oHonorHTTPProxy, "honor-http-proxy", "@"),
   ARGPARSE_s_s (oIgnoreCertExtension,"ignore-cert-extension", "@"),
   ARGPARSE_s_n (oStandardResolver, "standard-resolver", "@"),
+  ARGPARSE_s_n (oRecursiveResolver, "recursive-resolver", "@"),
 
   ARGPARSE_group (302,N_("@\n(See the \"info\" manual for a complete listing "
                          "of all commands and options)\n")),
@@ -621,6 +623,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oUseTor: opt.use_tor = 1; break;
 
     case oStandardResolver: enable_standard_resolver (1); break;
+    case oRecursiveResolver: enable_recursive_resolver (1); break;
 
     case oKeyServer:
       if (*pargs->r.ret_str)

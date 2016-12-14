@@ -117,6 +117,16 @@
   Add other options as needed.
 
 
+*** Systems without a full C99 compiler
+
+  If you run into problems with our compiler complaining about dns.c
+  you may use
+
+    ./configure --disable-libdns
+
+  Add other options as needed.
+
+
 * MIGRATION from 1.4 or 2.0 to 2.1
 
   The major change in 2.1 is gpg-agent taking care of the OpenPGP

@@ -110,6 +110,7 @@ use_bzip2=yes
 use_exec=yes
 use_trust_models=yes
 use_tofu=yes
+use_libdns=yes
 card_support=yes
 use_ccid_driver=auto
 dirmngr_auto_start=yes
@@ -269,6 +270,16 @@ if test "$use_trust_models" = no && test "$use_tofu" = yes; then
     AC_MSG_ERROR([both --disable-trust-models and --enable-tofu given])
 fi
 
+AC_MSG_CHECKING([whether to enable libdns])
+AC_ARG_ENABLE(libdns,
+                AC_HELP_STRING([--disable-libdns],
+                               [do not build with libdns support]),
+              use_libdns=$enableval, use_libdns=yes)
+AC_MSG_RESULT($use_libdns)
+if test x"$use_libdns" = xyes ; then
+    AC_DEFINE(USE_LIBDNS, 1, [Build with integrated libdns support])
+fi
+AM_CONDITIONAL(USE_LIBDNS, test "$use_libdns" = yes)
 
 
 #
@@ -1063,13 +1074,18 @@ if test "$build_dirmngr" = "yes"; then
     if test x"$need_compat" = xyes ; then
       AC_DEFINE(BIND_8_COMPAT,1,[an Apple OSXism])
     fi
+    if test "$use_libdns" = yes; then
+     show_tor_support=yes
+    fi
+  elif test "$use_libdns" = yes; then
+    show_tor_support=yes
   else
     AC_MSG_WARN([[
 ***
 *** The system's DNS resolver is not usable.
 *** Dirmngr functionality is limited.
 ***]])
-   show_tor_support="${show_tor_support} (no system resolver)"
+    show_tor_support="${show_tor_support} (no system resolver)"
   fi
 
   LIBS=$_dns_save_libs
@@ -1510,6 +1526,7 @@ AC_SUBST(W32SOCKLIBS)
 #
 # Setup gcc specific options
 #
+USE_C99_CFLAGS=
 AC_MSG_NOTICE([checking for cc features])
 if test "$GCC" = yes; then
     mycflags=
@@ -1577,9 +1594,10 @@ if test "$GCC" = yes; then
     fi
 
     CFLAGS="$mycflags $mycflags_save"
-    USE_C99_CFLAGS="-std=gnu99"
-else
-    USE_C99_CFLAGS=
+    if test "$use_libdns" = yes; then
+       # dirmngr/dns.{c,h} require C99 and GNU extensions.  */
+       USE_C99_CFLAGS="-std=gnu99"
+    fi
 fi
 
 AC_SUBST(USE_C99_CFLAGS)

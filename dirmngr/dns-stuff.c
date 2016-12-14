@@ -47,7 +47,9 @@
 #include <unistd.h>
 
 /* William Ahern's DNS library, included as a source copy.  */
-#include "dns.h"
+#ifdef USE_LIBDNS
+# include "dns.h"
+#endif
 
 /* dns.c has a dns_p_free but it is not exported.  We use our own
  * wrapper here so that we do not accidentally use xfree which would
@@ -101,6 +103,9 @@
 /* If set force the use of the standard resolver.  */
 static int standard_resolver;
 
+/* If set use recursive resolver when available. */
+static int recursive_resolver;
+
 /* If set Tor mode shall be used.  */
 static int tor_mode;
 
@@ -111,6 +116,7 @@ static char tor_nameserver[40+20];
 /* A string to hold the credentials presented to Tor.  */
 static char tor_credentials[50];
 
+#ifdef USE_LIBDNS
 /* Libdns gobal data.  */
 struct
 {
@@ -120,7 +126,7 @@ struct
 
   struct sockaddr_storage socks_host;
 } libdns;
-
+#endif /*USE_LIBDNS*/
 
 /* Calling this function with YES set to True forces the use of the
  * standard resolver even if dirmngr has been built with support for
@@ -137,6 +143,27 @@ int
 standard_resolver_p (void)
 {
   return standard_resolver;
+}
+
+
+/* Calling this function with YES switches libdns into recursive mode.
+ * It has no effect on the standard resolver.  */
+void
+enable_recursive_resolver (int yes)
+{
+  recursive_resolver = yes;
+}
+
+
+/* Return true iff the recursive resolver is used.  */
+int
+recursive_resolver_p (void)
+{
+#if USE_LIBDNS
+  return !standard_resolver && recursive_resolver;
+#else
+  return 0;
+#endif
 }
 
 
@@ -233,6 +260,7 @@ map_eai_to_gpg_error (int ec)
 }
 
 
+#ifdef USE_LIBDNS
 static gpg_error_t
 libdns_error_to_gpg_error (int serr)
 {
@@ -266,8 +294,10 @@ libdns_error_to_gpg_error (int serr)
     }
   return gpg_error (ec);
 }
+#endif /*USE_LIBDNS*/
 
 
+#ifdef USE_LIBDNS
 static gpg_error_t
 libdns_init (void)
 {
@@ -297,7 +327,9 @@ libdns_init (void)
     goto leave;
 
   /* dns_hints_local for stub mode, dns_hints_root for recursive.  */
-  libdns.hints = dns_hints_local (libdns.resolv_conf, &error);
+  libdns.hints = (recursive_resolver
+                  ? dns_hints_root  (libdns.resolv_conf, &error)
+                  : dns_hints_local (libdns.resolv_conf, &error));
   if (! libdns.hints)
     goto leave;
 
@@ -305,8 +337,10 @@ libdns_init (void)
  leave:
   return libdns_error_to_gpg_error (error);
 }
+#endif /*USE_LIBDNS*/
 
 
+#ifdef USE_LIBDNS
 static gpg_error_t
 resolve_name_libdns (const char *name, unsigned short port,
                      int want_family, int want_socktype,
@@ -431,6 +465,7 @@ resolve_name_libdns (const char *name, unsigned short port,
 
   return err;
 }
+#endif /*USE_LIBDNS*/
 
 
 /* Resolve a name using the standard system function.  */
@@ -615,9 +650,11 @@ resolve_dns_name (const char *name, unsigned short port,
                   int want_family, int want_socktype,
                   dns_addrinfo_t *r_ai, char **r_canonname)
 {
+#ifdef USE_LIBDNS
   if (!standard_resolver)
     return resolve_name_libdns (name, port, want_family, want_socktype,
                                 r_ai, r_canonname);
+#endif /*USE_LIBDNS*/
 
   return resolve_name_standard (name, port, want_family, want_socktype,
                                 r_ai, r_canonname);
@@ -714,6 +751,7 @@ is_onion_address (const char *name)
 
 
 /* libdns version of get_dns_cert.  */
+#ifdef USE_LIBDNS
 static gpg_error_t
 get_dns_cert_libdns (const char *name, int want_certtype,
                      void **r_key, size_t *r_keylen,
@@ -726,7 +764,6 @@ get_dns_cert_libdns (const char *name, int want_certtype,
   struct dns_rr_i rri;
   char host[DNS_D_MAXNAME + 1];
   int derr;
-  int srvcount = 0;
   int qtype;
 
   /* Gte the query type from WANT_CERTTYPE (which in general indicates
@@ -907,6 +944,7 @@ get_dns_cert_libdns (const char *name, int want_certtype,
   dns_res_close (res);
   return err;
 }
+#endif /*USE_LIBDNS*/
 
 
 /* Standard resolver version of get_dns_cert.  */
@@ -1135,9 +1173,11 @@ get_dns_cert (const char *name, int want_certtype,
   *r_fprlen = 0;
   *r_url = NULL;
 
+#ifdef USE_LIBDNS
   if (!standard_resolver)
     return get_dns_cert_libdns (name, want_certtype, r_key, r_keylen,
                                 r_fpr, r_fprlen, r_url);
+#endif /*USE_LIBDNS*/
 
   return get_dns_cert_standard (name, want_certtype, r_key, r_keylen,
                                 r_fpr, r_fprlen, r_url);
@@ -1160,6 +1200,7 @@ priosort(const void *a,const void *b)
 /* Libdns based helper for getsrv.  Note that it is expected that NULL
  * is stored at the address of LIST and 0 is stored at the address of
  * R_COUNT.  */
+#ifdef USE_LIBDNS
 static gpg_error_t
 getsrv_libdns (const char *name, struct srventry **list, int *r_count)
 {
@@ -1274,6 +1315,7 @@ getsrv_libdns (const char *name, struct srventry **list, int *r_count)
   dns_res_close (res);
   return err;
 }
+#endif /*USE_LIBDNS*/
 
 
 /* Standard resolver based helper for getsrv.  Note that it is
@@ -1412,9 +1454,11 @@ getsrv (const char *name, struct srventry **list)
 
   *list = NULL;
   srvcount = 0;
+#ifdef USE_LIBDNS
   if (!standard_resolver)
     err = getsrv_libdns (name, list, &srvcount);
   else
+#endif /*USE_LIBDNS*/
     err = getsrv_standard (name, list, &srvcount);
 
   if (err)
@@ -1498,6 +1542,7 @@ getsrv (const char *name, struct srventry **list)
 
 
 
+#ifdef USE_LIBDNS
 /* libdns version of get_dns_cname.  */
 gpg_error_t
 get_dns_cname_libdns (const char *name, char **r_cname)
@@ -1505,7 +1550,6 @@ get_dns_cname_libdns (const char *name, char **r_cname)
   gpg_error_t err;
   struct dns_resolver *res = NULL;
   struct dns_packet *ans = NULL;
-  struct dns_rr rr;
   struct dns_cname cname;
   int derr;
 
@@ -1582,6 +1626,7 @@ get_dns_cname_libdns (const char *name, char **r_cname)
   dns_res_close (res);
   return err;
 }
+#endif /*USE_LIBDNS*/
 
 
 /* Standard resolver version of get_dns_cname.  */
@@ -1673,8 +1718,10 @@ get_dns_cname (const char *name, char **r_cname)
 {
   *r_cname = NULL;
 
+#ifdef USE_LIBDNS
   if (!standard_resolver)
     return get_dns_cname_libdns (name, r_cname);
+#endif /*USE_LIBDNS*/
 
   return get_dns_cname_standard (name, r_cname);
 }

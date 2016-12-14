@@ -102,6 +102,11 @@ main (int argc, char **argv)
           enable_standard_resolver (1);
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--recursive-resolver"))
+        {
+          enable_recursive_resolver (1);
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--bracket"))
         {
           opt_bracket = 1;

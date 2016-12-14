@@ -100,6 +100,13 @@ void enable_standard_resolver (int yes);
 /* Return true if the standard resolver is used.  */
 int standard_resolver_p (void);
 
+/* Calling this function with YES switches libdns into recursive mode.
+ * It has no effect on the standard resolver.  */
+void enable_recursive_resolver (int yes);
+
+/* Return true iff the recursive resolver is used.  */
+int recursive_resolver_p (void);
+
 /* Calling this function switches the DNS code into Tor mode if
    possibe.  Return 0 on success.  */
 gpg_error_t enable_dns_tormode (int new_circuit);

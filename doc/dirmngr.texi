@@ -251,6 +251,10 @@ This is mainly used for debugging.  Note that on Windows a standard
 resolver is not used and all DNS access will return the error ``Not
 Implemented'' if this function is used.
 
+@item --recursive-resolver
+@opindex recursive-resolver
+When possible use a recursive resolver instead of a stub resolver.
+
 @item --allow-version-check
 @opindex allow-version-check
 Allow Dirmngr to connect to @code{https://versions.gnupg.org} to get

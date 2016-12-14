@@ -2314,7 +2314,13 @@ cmd_getinfo (assuan_context_t ctx, char *line)
           (ctx, "- Forced use of System resolver (w/o Tor support)");
       else
         {
+#ifdef USE_LIBDNS
+          assuan_set_okay_line (ctx, (recursive_resolver_p ()
+                                      ? "- Libdns recursive resolver"
+                                      : "- Libdns stub resolver"));
+#else
           assuan_set_okay_line (ctx, "- System resolver (w/o Tor support)");
+#endif
         }
       err = 0;
     }
