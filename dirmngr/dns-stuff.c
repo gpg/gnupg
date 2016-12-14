@@ -56,6 +56,7 @@
 # include <npth.h>
 #endif
 
+#include "./dirmngr-err.h"
 #include "util.h"
 #include "host2net.h"
 #include "dns-stuff.h"
@@ -166,6 +167,23 @@ free_dns_addrinfo (dns_addrinfo_t ai)
       xfree (ai);
       ai = next;
     }
+}
+
+/* Return H_ERRNO mapped to a gpg-error code.  Will never return 0. */
+static gpg_error_t
+get_h_errno_as_gpg_error (void)
+{
+  gpg_err_code_t ec;
+
+  switch (h_errno)
+    {
+    case HOST_NOT_FOUND: ec = GPG_ERR_UNKNOWN_HOST; break;
+    case TRY_AGAIN:      ec = GPG_ERR_TRY_LATER; break;
+    case NO_RECOVERY:    ec = GPG_ERR_SERVER_FAILED; break;
+    case NO_DATA:        ec = GPG_ERR_NO_DATA; break;
+    default:             ec = GPG_ERR_UNKNOWN_ERRNO; break;
+    }
+  return gpg_error (ec);
 }
 
 
@@ -670,7 +688,7 @@ get_dns_cert_libdns (const char *name, int want_certtype,
                      void **r_key, size_t *r_keylen,
                      unsigned char **r_fpr, size_t *r_fprlen, char **r_url)
 {
-  return gpg_error (ENOTSUP);
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 }
 
 
@@ -922,17 +940,21 @@ priosort(const void *a,const void *b)
 }
 
 
-/* Standard resolver based helper for getsrv.  */
-static int
-getsrv_standard (const char *name, struct srventry **list)
+/* Libdns based helper for getsrv.  Note that it is expected that NULL
+ * is stored at the address of LIST and 0 is stored at the address of
+ * R_COUNT.  */
+static gpg_error_t
+getsrv_libdns (const char *name, struct srventry **list, int *r_count)
 {
-  return gpg_error (ENOTSUP);
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 }
 
 
-/* libdns based helper for getsrv.  */
+/* Standard resolver based helper for getsrv.  Note that it is
+ * expected that NULL is stored at the address of LIST and 0 is stored
+ * at the address of R_COUNT.  */
 static int
-getsrv_libdns (const char *name, struct srventry **list)
+getsrv_standard (const char *name, struct srventry **list, int *r_count)
 {
 #ifdef HAVE_SYSTEM_RESOLVER
   union {
@@ -949,14 +971,19 @@ getsrv_libdns (const char *name, struct srventry **list)
 
   /* Do not allow a query using the standard resolver in Tor mode.  */
   if (tor_mode)
-    return -1;
+    return gpg_error (GPG_ERR_NOT_ENABLED);
 
   my_unprotect ();
-  r = res_query (name, C_IN, T_SRV, answer, sizeof answer);
+  r = res_query (name, C_IN, T_SRV, answer, sizeof res.ans);
   my_protect ();
-  if (r < sizeof (HEADER) || r > sizeof answer
-      || header->rcode != NOERROR || !(count=ntohs (header->ancount)))
-    return 0; /* Error or no record found.  */
+  if (r < 0)
+    return get_h_errno_as_gpg_error ();
+  if (r < sizeof (HEADER))
+    return gpg_error (GPG_ERR_SERVER_FAILED);
+  if (r > sizeof res.ans)
+    return gpg_error (GPG_ERR_SYSTEM_BUG);
+  if (header->rcode != NOERROR || !(count=ntohs (header->ancount)))
+    return gpg_error (GPG_ERR_NO_NAME); /* Error or no record found.  */
 
   emsg = &answer[r];
   pt = &answer[sizeof(HEADER)];
@@ -970,7 +997,7 @@ getsrv_libdns (const char *name, struct srventry **list)
 
   while (count-- > 0 && pt < emsg)
     {
-      struct srventry *srv = NULL;
+      struct srventry *srv;
       u16 type, class;
       struct srventry *newlist;
 
@@ -1031,18 +1058,20 @@ getsrv_libdns (const char *name, struct srventry **list)
         goto fail;
     }
 
-  return srvcount;
+  *r_count = srvcount;
+  return 0;
 
  fail:
   xfree (*list);
   *list = NULL;
-  return -1;
+  return gpg_error (GPG_ERR_GENERAL);
 
 #else /*!HAVE_SYSTEM_RESOLVER*/
 
   (void)name;
   (void)list;
-  return -1;
+  (void)r_count;
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
 #endif /*!HAVE_SYSTEM_RESOLVER*/
 }
@@ -1051,18 +1080,19 @@ getsrv_libdns (const char *name, struct srventry **list)
 int
 getsrv (const char *name, struct srventry **list)
 {
+  gpg_error_t err;
   int srvcount;
   int i;
 
   *list = NULL;
-
+  srvcount = 0;
   if (!standard_resolver)
-    srvcount = getsrv_libdns (name, list);
+    err = getsrv_libdns (name, list, &srvcount);
   else
-    srvcount = getsrv_standard (name, list);
+    err = getsrv_standard (name, list, &srvcount);
 
-  if (srvcount <= 0)
-    return srvcount;
+  if (err)
+    return -1;  /* Ugly.  FIXME: Return an error code. */
 
   /* Now we have an array of all the srv records. */
 
@@ -1172,9 +1202,15 @@ get_dns_cname_standard (const char *name, char **r_cname)
   if (tor_mode)
     return -1;
 
-  r = res_query (name, C_IN, T_CERT, answer, sizeof answer);
-  if (r < sizeof (HEADER) || r > sizeof answer)
+  my_unprotect ();
+  r = res_query (name, C_IN, T_CERT, answer, sizeof res.ans);
+  my_protect ();
+  if (r < 0)
+    return get_h_errno_as_gpg_error ();
+  if (r < sizeof (HEADER))
     return gpg_error (GPG_ERR_SERVER_FAILED);
+  if (r > sizeof res.ans)
+    return gpg_error (GPG_ERR_SYSTEM_BUG);
   if (header->rcode != NOERROR || !(count=ntohs (header->ancount)))
     return gpg_error (GPG_ERR_NO_NAME); /* Error or no record found.  */
   if (count != 1)
@@ -1221,7 +1257,7 @@ get_dns_cname_standard (const char *name, char **r_cname)
 
   (void)name;
   (void)r_cname;
-  return -1;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
 #endif /*!HAVE_SYSTEM_RESOLVER*/
 }
