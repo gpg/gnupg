@@ -533,7 +533,13 @@ close_tls_session (http_session_t sess)
 {
   if (sess->tls_session)
     {
-# ifdef HTTP_USE_GNUTLS
+# if HTTP_USE_NTBTLS
+      /* FIXME!!
+         Possibly, ntbtls_get_transport and close those streams.
+         Somehow get SOCK to call my_socket_unref.
+      */
+      ntbtls_release (sess->tls_session);
+# elif HTTP_USE_GNUTLS
       my_socket_t sock = gnutls_transport_get_ptr (sess->tls_session);
       my_socket_unref (sock, NULL, NULL);
       gnutls_deinit (sess->tls_session);
@@ -600,6 +606,8 @@ http_session_new (http_session_t *r_session, const char *tls_priority,
 #if HTTP_USE_NTBTLS
   {
     (void)tls_priority;
+
+    /* ntbtls_set_debug (99, NULL, NULL); */
 
     err = ntbtls_new (&sess->tls_session, NTBTLS_CLIENT);
     if (err)
@@ -1685,7 +1693,35 @@ send_request (http_t hd, const char *httphost, const char *auth,
 #if HTTP_USE_NTBTLS
   if (hd->uri->use_tls)
     {
+      estream_t in, out;
+
       my_socket_ref (hd->sock);
+
+      in = es_fdopen_nc (hd->sock->fd, "rb");
+      if (!in)
+        {
+          err = gpg_error_from_syserror ();
+          xfree (proxy_authstr);
+          return err;
+        }
+
+      out = es_fdopen_nc (hd->sock->fd, "wb");
+      if (!out)
+        {
+          err = gpg_error_from_syserror ();
+          es_fclose (in);
+          xfree (proxy_authstr);
+          return err;
+        }
+
+      err = ntbtls_set_transport (hd->session->tls_session, in, out);
+      if (err)
+        {
+          log_info ("TLS set_transport failed: %s <%s>\n",
+                    gpg_strerror (err), gpg_strsource (err));
+          xfree (proxy_authstr);
+          return err;
+        }
 
       while ((err = ntbtls_handshake (hd->session->tls_session)))
         {
@@ -2508,7 +2544,17 @@ cookie_read (void *cookie, void *buffer, size_t size)
         size = c->content_length;
     }
 
-#ifdef HTTP_USE_GNUTLS
+#if HTTP_USE_NTBTLS
+  if (c->use_tls && c->session && c->session->tls_session)
+    {
+      estream_t in, out;
+
+      ntbtls_get_stream (c->session->tls_session, &in, &out);
+      nread = es_fread (buffer, 1, size, in);
+      log_debug ("TLS network read: %d/%u\n", nread, size);
+    }
+  else
+#elif HTTP_USE_GNUTLS
   if (c->use_tls && c->session && c->session->tls_session)
     {
     again:
@@ -2587,7 +2633,20 @@ cookie_write (void *cookie, const void *buffer_arg, size_t size)
   cookie_t c = cookie;
   int nwritten = 0;
 
-#ifdef HTTP_USE_GNUTLS
+#if HTTP_USE_NTBTLS
+  if (c->use_tls && c->session && c->session->tls_session)
+    {
+      estream_t in, out;
+
+      ntbtls_get_stream (c->session->tls_session, &in, &out);
+      if (size == 0)
+        es_fflush (out);
+      else
+        nwritten = es_fwrite (buffer, 1, size, out);
+      log_debug ("TLS network write: %d/%u\n", nwritten, size);
+    }
+  else
+#elif HTTP_USE_GNUTLS
   if (c->use_tls && c->session && c->session->tls_session)
     {
       int nleft = size;
@@ -2666,7 +2725,15 @@ cookie_close (void *cookie)
   if (!c)
     return 0;
 
-#ifdef HTTP_USE_GNUTLS
+#if HTTP_USE_NTBTLS
+  if (c->use_tls && c->session && c->session->tls_session)
+    {
+      /* FIXME!! Possibly call ntbtls_close_notify for close
+         of write stream.  */
+      my_socket_unref (c->sock, NULL, NULL);
+    }
+  else
+#elif HTTP_USE_GNUTLS
   if (c->use_tls && c->session && c->session->tls_session)
     my_socket_unref (c->sock, send_gnutls_bye, c->session->tls_session);
   else
