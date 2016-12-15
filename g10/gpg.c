@@ -4010,7 +4010,7 @@ main (int argc, char **argv)
 
       case aStore: /* only store the file */
 	if( argc > 1 )
-	    wrong_args(_("--store [filename]"));
+	    wrong_args("--store [filename]");
 	if( (rc = encrypt_store(fname)) )
           {
             write_status_failure ("store", rc);
@@ -4020,7 +4020,7 @@ main (int argc, char **argv)
 	break;
       case aSym: /* encrypt the given file only with the symmetric cipher */
 	if( argc > 1 )
-	    wrong_args(_("--symmetric [filename]"));
+	    wrong_args("--symmetric [filename]");
 	if( (rc = encrypt_symmetric(fname)) )
           {
             write_status_failure ("symencrypt", rc);
@@ -4035,7 +4035,7 @@ main (int argc, char **argv)
 	else
 	  {
 	    if( argc > 1 )
-	      wrong_args(_("--encrypt [filename]"));
+	      wrong_args("--encrypt [filename]");
 	    if( (rc = encrypt_crypt (ctrl, -1, fname, remusr, 0, NULL, -1)) )
               {
                 write_status_failure ("encrypt", rc);
@@ -4051,7 +4051,7 @@ main (int argc, char **argv)
 	   might work with 7, but alas, I don't have a copy to test
 	   with right now. */
 	if( argc > 1 )
-	  wrong_args(_("--symmetric --encrypt [filename]"));
+	  wrong_args("--symmetric --encrypt [filename]");
 	else if(opt.s2k_mode==0)
 	  log_error(_("you cannot use --symmetric --encrypt"
 		      " with --s2k-mode 0\n"));
@@ -4077,7 +4077,7 @@ main (int argc, char **argv)
 	}
 	else {
 	    if( argc > 1 )
-		wrong_args(_("--sign [filename]"));
+		wrong_args("--sign [filename]");
 	    if( argc ) {
 		sl = xmalloc_clear( sizeof *sl + strlen(fname));
 		strcpy(sl->d, fname);
@@ -4093,7 +4093,7 @@ main (int argc, char **argv)
 
       case aSignEncr: /* sign and encrypt the given file */
 	if( argc > 1 )
-	    wrong_args(_("--sign --encrypt [filename]"));
+	    wrong_args("--sign --encrypt [filename]");
 	if( argc ) {
 	    sl = xmalloc_clear( sizeof *sl + strlen(fname));
 	    strcpy(sl->d, fname);
@@ -4111,7 +4111,7 @@ main (int argc, char **argv)
 
       case aSignEncrSym: /* sign and encrypt the given file */
 	if( argc > 1 )
-	    wrong_args(_("--symmetric --sign --encrypt [filename]"));
+	    wrong_args("--symmetric --sign --encrypt [filename]");
 	else if(opt.s2k_mode==0)
 	  log_error(_("you cannot use --symmetric --sign --encrypt"
 		      " with --s2k-mode 0\n"));
@@ -4140,7 +4140,7 @@ main (int argc, char **argv)
 
       case aSignSym: /* sign and conventionally encrypt the given file */
 	if (argc > 1)
-	    wrong_args(_("--sign --symmetric [filename]"));
+	    wrong_args("--sign --symmetric [filename]");
 	rc = sign_symencrypt_file (ctrl, fname, locusr);
         if (rc)
           {
@@ -4152,7 +4152,7 @@ main (int argc, char **argv)
 
       case aClearsign: /* make a clearsig */
 	if( argc > 1 )
-	    wrong_args(_("--clear-sign [filename]"));
+	    wrong_args("--clear-sign [filename]");
 	if( (rc = clearsign_file (ctrl, fname, locusr, NULL)) )
           {
             write_status_failure ("sign", rc);
@@ -4182,7 +4182,7 @@ main (int argc, char **argv)
 	else
 	  {
 	    if( argc > 1 )
-	      wrong_args(_("--decrypt [filename]"));
+	      wrong_args("--decrypt [filename]");
 	    if( (rc = decrypt_message (ctrl, fname) ))
               {
                 write_status_failure ("decrypt", rc);
@@ -4209,11 +4209,11 @@ main (int argc, char **argv)
 
       case aSignKey:
 	if( argc != 1 )
-	  wrong_args(_("--sign-key user-id"));
+	  wrong_args("--sign-key user-id");
 	/* fall through */
       case aLSignKey:
 	if( argc != 1 )
-	  wrong_args(_("--lsign-key user-id"));
+	  wrong_args("--lsign-key user-id");
 	/* fall through */
 
 	sl=NULL;
@@ -4234,7 +4234,7 @@ main (int argc, char **argv)
 
       case aEditKey: /* Edit a key signature */
 	if( !argc )
-	    wrong_args(_("--edit-key user-id [commands]"));
+	    wrong_args("--edit-key user-id [commands]");
 	username = make_username( fname );
 	if( argc > 1 ) {
 	    sl = NULL;
@@ -4250,7 +4250,7 @@ main (int argc, char **argv)
 
       case aPasswd:
         if (argc != 1)
-          wrong_args (_("--change-passphrase <user-id>"));
+          wrong_args("--change-passphrase <user-id>");
         else
           {
             username = make_username (fname);
@@ -4884,7 +4884,7 @@ main (int argc, char **argv)
       case aListPackets:
       default:
 	if( argc > 1 )
-	    wrong_args(_("[filename]"));
+	    wrong_args("[filename]");
 	/* Issue some output for the unix newbie */
 	if (!fname && !opt.outfile
             && gnupg_isatty (fileno (stdin))
