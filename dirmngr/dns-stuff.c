@@ -96,6 +96,11 @@
 # define T_CERT 37
 #endif
 
+/* The standard SOCKS and TOR ports.  */
+#define SOCKS_PORT 1080
+#define TOR_PORT   9050
+#define TOR_PORT2  9150   /* (Used by the Tor browser) */
+
 
 /* The default nameserver used in Tor mode.  */
 #define DEFAULT_NAMESERVER "8.8.8.8"
@@ -118,7 +123,7 @@ static char tor_credentials[50];
 
 #ifdef USE_LIBDNS
 /* Libdns gobal data.  */
-struct
+struct libdns_s
 {
   struct dns_resolv_conf *resolv_conf;
   struct dns_hosts *hosts;
@@ -298,44 +303,107 @@ libdns_error_to_gpg_error (int serr)
 
 
 #ifdef USE_LIBDNS
+/* Initialize libdns.  Returns 0 on success; prints a diagnostic and
+ * returns an error code on failure.  */
 static gpg_error_t
 libdns_init (void)
 {
-  int error;
+  gpg_error_t err;
+  struct libdns_s ld;
+  int derr;
+  const char *fname;
+  char *cfgstr = NULL;
 
-  libdns.resolv_conf = dns_resconf_open (&error);
-  if (! libdns.resolv_conf)
-    goto leave;
+  memset (&ld, 0, sizeof ld);
 
-#if 0
-  error = dns_resconf_pton (&libdns.resolv_conf->nameserver[0],
-                            "[127.0.0.1]:53");
-  if (error)
-    goto leave;
-#else
-  error	= dns_resconf_loadpath (libdns.resolv_conf, "/etc/resolv.conf");
-  if (error)
-    goto leave;
+  ld.resolv_conf = dns_resconf_open (&derr);
+  if (!ld.resolv_conf)
+    {
+      err = libdns_error_to_gpg_error (derr);
+      log_error ("failed to allocate DNS resconf object: %s\n",
+                 gpg_strerror (err));
+      goto leave;
+    }
 
-  error	= dns_nssconf_loadpath (libdns.resolv_conf, "/etc/nsswitch.conf");
-  if (error)
-    goto leave;
-#endif
+  if (tor_mode)
+    {
+      if (!*tor_nameserver)
+        set_dns_nameserver (NULL);
 
-  libdns.hosts = dns_hosts_open (&error);
-  if (! libdns.hosts)
-    goto leave;
+      cfgstr = xtryasprintf ("[%s]:53", tor_nameserver);
+      if (!cfgstr)
+        err = gpg_error_from_syserror ();
+      else
+        err = libdns_error_to_gpg_error
+          (dns_resconf_pton (&ld.resolv_conf->nameserver[0], cfgstr));
+      if (err)
+        log_error ("failed to set nameserver '%s': %s\n",
+                   cfgstr, gpg_strerror (err));
+      if (err)
+        goto leave;
+
+      ld.resolv_conf->options.tcp = DNS_RESCONF_TCP_SOCKS;
+
+      xfree (cfgstr);
+      cfgstr = xtryasprintf ("[%s]:%d", "127.0.0.1", TOR_PORT);
+      if (!cfgstr)
+        err = gpg_error_from_syserror ();
+      else
+        err = libdns_error_to_gpg_error
+          (dns_resconf_pton (&ld.socks_host, cfgstr));
+      if (err)
+        {
+          log_error ("failed to set socks server '%s': %s\n",
+                     cfgstr, gpg_strerror (err));
+          goto leave;
+        }
+    }
+  else
+    {
+      fname = "/etc/resolv.conf";
+      err = libdns_error_to_gpg_error
+        (dns_resconf_loadpath (ld.resolv_conf, fname));
+      if (err)
+        {
+          log_error ("failed to load '%s': %s\n", fname, gpg_strerror (err));
+          goto leave;
+        }
+
+      fname = "/etc/nsswitch.conf";
+      err = libdns_error_to_gpg_error
+        (dns_nssconf_loadpath (ld.resolv_conf, fname));
+      if (err)
+        {
+          log_error ("failed to load '%s': %s\n", fname, gpg_strerror (err));
+          goto leave;
+        }
+    }
+
+  ld.hosts = dns_hosts_open (&derr);
+  if (!ld.hosts)
+    {
+      log_error ("failed to load hosts file: %s\n", gpg_strerror (err));
+      err = libdns_error_to_gpg_error (derr);
+      goto leave;
+    }
 
   /* dns_hints_local for stub mode, dns_hints_root for recursive.  */
-  libdns.hints = (recursive_resolver
-                  ? dns_hints_root  (libdns.resolv_conf, &error)
-                  : dns_hints_local (libdns.resolv_conf, &error));
-  if (! libdns.hints)
-    goto leave;
+  ld.hints = (recursive_resolver
+              ? dns_hints_root  (ld.resolv_conf, &derr)
+              : dns_hints_local (ld.resolv_conf, &derr));
+  if (!ld.hints)
+    {
+      log_error ("failed to load DNS hints: %s\n", gpg_strerror (err));
+      err = libdns_error_to_gpg_error (derr);
+      goto leave;
+    }
 
-  /* XXX */
+  /* All fine.  Make the data global.  */
+  libdns = ld;
+
  leave:
-  return libdns_error_to_gpg_error (error);
+  xfree (cfgstr);
+  return err;
 }
 #endif /*USE_LIBDNS*/
 
@@ -379,7 +447,7 @@ resolve_name_libdns (const char *name, unsigned short port,
     }
 
   res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
-                      dns_opts (/*.socks_host=&libdns.socks_host*/), &derr);
+                      dns_opts (.socks_host=&libdns.socks_host), &derr);
   if (!res)
     {
       err = libdns_error_to_gpg_error (derr);
@@ -778,7 +846,7 @@ get_dns_cert_libdns (const char *name, int want_certtype,
     goto leave;
 
   res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
-                      dns_opts (/*.socks_host=&libdns.socks_host*/), &derr);
+                      dns_opts (.socks_host=&libdns.socks_host), &derr);
   if (!res)
     {
       err = libdns_error_to_gpg_error (derr);
@@ -1218,7 +1286,7 @@ getsrv_libdns (const char *name, struct srventry **list, int *r_count)
     goto leave;
 
   res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
-                      dns_opts (/*.socks_host=&libdns.socks_host*/), &derr);
+                      dns_opts (.socks_host=&libdns.socks_host), &derr);
   if (!res)
     {
       err = libdns_error_to_gpg_error (derr);
@@ -1558,7 +1626,7 @@ get_dns_cname_libdns (const char *name, char **r_cname)
     goto leave;
 
   res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
-                      dns_opts (/*.socks_host=&libdns.socks_host*/), &derr);
+                      dns_opts (.socks_host=&libdns.socks_host), &derr);
   if (!res)
     {
       err = libdns_error_to_gpg_error (derr);
