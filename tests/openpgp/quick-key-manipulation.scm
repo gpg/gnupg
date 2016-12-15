@@ -52,7 +52,7 @@
 (setenv "PINENTRY_USER_DATA" "test" #t)
 
 (info "Checking quick key generation...")
-(call-check `(,@GPG --quick-gen-key ,alpha))
+(call-check `(,@GPG --quick-generate-key ,alpha))
 
 (define keyinfo (gpg-with-colons `(-k ,(exact alpha))))
 (define fpr (:fpr (assoc "fpr" keyinfo)))
@@ -65,7 +65,7 @@
 ;; Make sure the key capabilities don't change when we add a user id.
 ;; (See bug #2697.)
 (let ((pre (key-data (exact alpha)))
-      (result (call-check `(,@GPG --quick-adduid ,(exact alpha) ,bravo)))
+      (result (call-check `(,@GPG --quick-add-uid ,(exact alpha) ,bravo)))
       (post (key-data (exact alpha))))
   (if (not (equal? pre post))
       (begin
@@ -83,7 +83,7 @@
 (assert (= 2 (count-uids-of-secret-key bravo)))
 
 (info "Checking that we can revoke a user ID...")
-(call-check `(,@GPG --quick-revuid ,(exact bravo) ,alpha))
+(call-check `(,@GPG --quick-revoke-uid ,(exact bravo) ,alpha))
 
 (assert (= 1 (count-uids-of-secret-key bravo)))
 
@@ -118,7 +118,7 @@
  "Checking that we can add subkeys..."
  (lambda (args check)
    (set! count (+ 1 count))
-   (call-check `(,@gpg --quick-addkey ,fpr ,@args))
+   (call-check `(,@gpg --quick-add-key ,fpr ,@args))
    (let ((subkeys (get-subkeys)))
      (assert (= count (length subkeys)))
      (if check (check (last subkeys)))))

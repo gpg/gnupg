@@ -447,13 +447,17 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aKeygen,	    "generate-key",
               N_("generate a new key pair")),
   ARGPARSE_c (aKeygen,	    "gen-key", "@"),
-  ARGPARSE_c (aQuickKeygen, "quick-gen-key" ,
+  ARGPARSE_c (aQuickKeygen, "quick-generate-key" ,
               N_("quickly generate a new key pair")),
-  ARGPARSE_c (aQuickAddUid,  "quick-adduid",
+  ARGPARSE_c (aQuickKeygen, "quick-gen-key", "@"),
+  ARGPARSE_c (aQuickAddUid,  "quick-add-uid",
               N_("quickly add a new user-id")),
+  ARGPARSE_c (aQuickAddUid,  "quick-adduid", "@"),
+  ARGPARSE_c (aQuickAddKey,  "quick-add-key", "@"),
   ARGPARSE_c (aQuickAddKey,  "quick-addkey", "@"),
-  ARGPARSE_c (aQuickRevUid,  "quick-revuid",
+  ARGPARSE_c (aQuickRevUid,  "quick-revoke-uid",
               N_("quickly revoke a user-id")),
+  ARGPARSE_c (aQuickRevUid,  "quick-revuid", "@"),
   ARGPARSE_c (aQuickSetExpire,  "quick-set-expire",
               N_("quickly set a new expiration date")),
   ARGPARSE_c (aFullKeygen,  "full-generate-key" ,
@@ -4299,7 +4303,7 @@ main (int argc, char **argv)
           const char *x_algo, *x_usage, *x_expire;
 
           if (argc < 1 || argc > 4)
-            wrong_args("--quick-gen-key USER-ID [ALGO [USAGE [EXPIRE]]]");
+            wrong_args("--quick-generate-key USER-ID [ALGO [USAGE [EXPIRE]]]");
           username = make_username (fname);
           argv++, argc--;
           x_algo = "";
@@ -4364,7 +4368,7 @@ main (int argc, char **argv)
           const char *uid, *newuid;
 
           if (argc != 2)
-            wrong_args ("--quick-adduid USER-ID NEW-USER-ID");
+            wrong_args ("--quick-add-uid USER-ID NEW-USER-ID");
           uid = *argv++; argc--;
           newuid = *argv++; argc--;
           keyedit_quick_adduid (ctrl, uid, newuid);
@@ -4376,7 +4380,7 @@ main (int argc, char **argv)
           const char *x_fpr, *x_algo, *x_usage, *x_expire;
 
           if (argc < 1 || argc > 4)
-            wrong_args ("--quick-addkey FINGERPRINT [ALGO [USAGE [EXPIRE]]]");
+            wrong_args ("--quick-add-key FINGERPRINT [ALGO [USAGE [EXPIRE]]]");
           x_fpr = *argv++; argc--;
           x_algo = "";
           x_usage = "";
@@ -4402,7 +4406,7 @@ main (int argc, char **argv)
           const char *uid, *uidtorev;
 
           if (argc != 2)
-            wrong_args ("--quick-revuid USER-ID USER-ID-TO-REVOKE");
+            wrong_args ("--quick-revoke-uid USER-ID USER-ID-TO-REVOKE");
           uid = *argv++; argc--;
           uidtorev = *argv++; argc--;
           keyedit_quick_revuid (ctrl, uid, uidtorev);

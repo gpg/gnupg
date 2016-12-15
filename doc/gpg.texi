@@ -618,8 +618,8 @@ This section explains the main commands for key management.
 
 @table @gnupgtabopt
 
-@item --quick-gen-key @code{user-id} [@code{algo} [@code{usage} [@code{expire}]]]
-@opindex quick-gen-key
+@item --quick-generate-key @code{user-id} [@code{algo} [@code{usage} [@code{expire}]]]
+@opindex quick-generate-key
 This is a simple command to generate a standard key with one user id.
 In contrast to @option{--generate-key} the key is generated directly
 without the need to answer a bunch of prompts.  Unless the option
@@ -636,7 +636,7 @@ created and no prompts are shown.  To specify an expiration date but
 still create a primary and subkey use ``default'' or
 ``future-default'' for @code{algo} and ``default'' for @code{usage}.
 For a description of these optional arguments see the command
-@code{--quick-addkey}.  The @code{usage} accepts also the value
+@code{--quick-add-key}.  The @code{usage} accepts also the value
 ``cert'' which can be used to create a certification only primary key;
 the default is to a create certification and signing key.
 
@@ -660,8 +660,8 @@ Directly set the expiration time of the primary key to @code{expire}.
 To remove the expiration time @code{0} can be used.
 
 
-@item --quick-addkey @code{fpr} [@code{algo} [@code{usage} [@code{expire}]]]
-@opindex quick-addkey
+@item --quick-add-key @code{fpr} [@code{algo} [@code{usage} [@code{expire}]]]
+@opindex quick-add-key
 Directly add a subkey to the key identified by the fingerprint
 @code{fpr}.  Without the optional arguments an encryption subkey is
 added.  If any of the arguments are given a more specific subkey is
@@ -1074,16 +1074,16 @@ full flexibility of the "sign" subcommand from @option{--edit-key}.
 Its intended use is to help unattended key signing by utilizing a list
 of verified fingerprints.
 
-@item --quick-adduid  @var{user-id} @var{new-user-id}
-@opindex quick-adduid
+@item --quick-add-uid  @var{user-id} @var{new-user-id}
+@opindex quick-add-uid
 This command adds a new user id to an existing key.  In contrast to
 the interactive sub-command @code{adduid} of @option{--edit-key} the
 @var{new-user-id} is added verbatim with only leading and trailing
 white space removed, it is expected to be UTF-8 encoded, and no checks
 on its form are applied.
 
-@item --quick-revuid  @var{user-id} @var{user-id-to-revoke}
-@opindex quick-revuid
+@item --quick-revoke-uid  @var{user-id} @var{user-id-to-revoke}
+@opindex quick-revoke-uid
 This command revokes a User ID on an existing key.  It cannot be used
 to revoke the last User ID on key (some non-revoked User ID must
 remain), with revocation reason ``User ID is no longer valid''.  If
