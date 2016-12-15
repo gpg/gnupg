@@ -181,6 +181,8 @@ chosen by default or can be set explicitly using the
 
 @item --clear-sign
 @opindex clear-sign
+@itemx --clearsign
+@opindex clearsign
 Make a cleartext signature.  The content in a cleartext signature is
 readable without any special software. OpenPGP software is only needed
 to verify the signature.  cleartext signatures may modify end-of-line
@@ -303,6 +305,8 @@ exported using @option{--export-secret-subkeys}).  See also
 
 @item --list-signatures
 @opindex list-signatures
+@itemx --list-sigs
+@opindex list-sigs
 Same as @option{--list-keys}, but the signatures are listed too.
 This command has the same effect as
 using @option{--list-keys} with @option{--with-sig-list}.
@@ -322,6 +326,8 @@ command "tsign").
 
 @item --check-signatures
 @opindex check-signatures
+@itemx --check-sigs
+@opindex check-sigs
 Same as @option{--list-signatures}, but the signatures are verified.  Note
 that for performance reasons the revocation status of a signing key is
 not shown.
@@ -466,6 +472,8 @@ signatures, user-IDs and subkeys.
 
 @item --receive-keys @code{key IDs}
 @opindex receive-keys
+@itemx --recv-keys @code{key IDs}
+@opindex recv-keys
 Import the keys with the given key IDs from a keyserver. Option
 @option{--keyserver} must be used to give the name of this keyserver.
 
@@ -683,13 +691,17 @@ can be used for no expiration date.
 
 @item --generate-key
 @opindex generate-key
+@itemx --gen-key
+@opindex gen-key
 Generate a new key pair using the current default parameters.  This is
 the standard command to create a new key.  In addition to the key a
 revocation certificate is created and stored in the
 @file{openpgp-revocs.d} directory below the GnuPG home directory.
 
 @item --full-generate-key
-@opindex gen-key
+@opindex full-generate-key
+@itemx --full-gen-key
+@opindex full-gen-key
 Generate a new key pair with dialogs for all options.  This is an
 extended version of @option{--generate-key}.
 
@@ -700,6 +712,8 @@ to use this.
 
 @item --generate-revocation-certificate @code{name}
 @opindex generate-revocation-certificate
+@itemx --gen-revoke @code{name}
+@opindex gen-revoke
 Generate a revocation certificate for the complete key.  To only revoke
 a subkey or a key signature, use the @option{--edit} command.
 
@@ -1075,6 +1089,8 @@ sub-command @code{revuid} of @option{--edit-key}.
 
 @item --change-passphrase @var{user_id}
 @opindex change-passphrase
+@itemx --passwd @var{user_id}
+@opindex passwd
 Change the passphrase of the secret key belonging to the certificate
 specified as @var{user_id}.  This is a shortcut for the sub-command
 @code{passwd} of the edit key menu.

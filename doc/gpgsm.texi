@@ -167,6 +167,8 @@ use @samp{--help} to get a list of supported operations.
 @table @gnupgtabopt
 @item --generate-key
 @opindex generate-key
+@itemx --gen-key
+@opindex gen-key
 This command allows the creation of a certificate signing request or a
 self-signed certificate.  It is commonly used along with the
 @option{--output} option to save the created CSR or certificate into a
@@ -285,6 +287,8 @@ and in turn the @command{scdaemon}.
 
 @item --change-passphrase @var{user_id}
 @opindex change-passphrase
+@itemx --passwd @var{user_id}
+@opindex passwd
 Change the passphrase of the private key belonging to the certificate
 specified as @var{user_id}.  Note, that changing the passphrase/PIN of a
 smartcard is not yet supported.
