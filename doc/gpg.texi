@@ -727,7 +727,9 @@ published, which is best done by sending the key to a keyserver
 to a file which is then send to frequent communication partners.
 
 
-@item --desig-revoke @code{name}
+@item --generate-designated-revocation @code{name}
+@opindex generate-designated-revocation
+@itemx --desig-revoke @code{name}
 @opindex desig-revoke
 Generate a designated revocation certificate for a key. This allows a
 user (with the permission of the keyholder) to revoke someone else's

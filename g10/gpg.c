@@ -476,6 +476,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aEditKey,  "key-edit"   ,"@"),
   ARGPARSE_c (aPasswd,   "change-passphrase", N_("change a passphrase")),
   ARGPARSE_c (aPasswd,   "passwd", "@"),
+  ARGPARSE_c (aDesigRevoke, "generate-designated-revocation", "@"),
   ARGPARSE_c (aDesigRevoke, "desig-revoke","@" ),
   ARGPARSE_c (aExport, "export"           , N_("export keys") ),
   ARGPARSE_c (aSendKeys, "send-keys"     , N_("export keys to a keyserver") ),
@@ -4555,7 +4556,7 @@ main (int argc, char **argv)
 
       case aDesigRevoke:
 	if (argc != 1)
-	    wrong_args ("--desig-revoke user-id");
+	    wrong_args ("--generate-designated-revocation user-id");
 	username = make_username (*argv);
 	gen_desig_revoke (ctrl, username, locusr);
 	xfree (username);
