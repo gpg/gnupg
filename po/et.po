@@ -5302,7 +5302,7 @@ msgid ""
 "the secret key.  However, if the secret key is still accessible,\n"
 "it is better to generate a new revocation certificate and give\n"
 "a reason for the revocation.  For details see the description of\n"
-"of the gpg command \"--generate-revocation-certificate\" in the GnuPG manual."
+"of the gpg command \"--generate-revocation\" in the GnuPG manual."
 msgstr ""
 
 msgid ""

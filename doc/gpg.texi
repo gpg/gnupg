@@ -710,8 +710,8 @@ mode. See the manual section ``Unattended key generation'' on how
 to use this.
 
 
-@item --generate-revocation-certificate @code{name}
-@opindex generate-revocation-certificate
+@item --generate-revocation @code{name}
+@opindex generate-revocation
 @itemx --gen-revoke @code{name}
 @opindex gen-revoke
 Generate a revocation certificate for the complete key.  To only revoke
