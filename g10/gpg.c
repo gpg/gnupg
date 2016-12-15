@@ -495,7 +495,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aFastImport, "fast-import", "@"),
 #ifdef ENABLE_CARD_SUPPORT
   ARGPARSE_c (aCardStatus,  "card-status", N_("print the card status")),
-  ARGPARSE_c (aCardEdit,   "card-edit",  N_("change data on a card")),
+  ARGPARSE_c (aCardEdit,   "edit-card",  N_("change data on a card")),
+  ARGPARSE_c (aCardEdit,   "card-edit", "@"),
   ARGPARSE_c (aChangePIN,  "change-pin", N_("change a card's PIN")),
 #endif
   ARGPARSE_c (aListConfig, "list-config", "@"),

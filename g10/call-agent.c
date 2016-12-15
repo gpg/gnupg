@@ -660,7 +660,7 @@ agent_scd_learn (struct agent_card_info_s *info, int force)
      care about the data returned.  If the card has already been
      initialized, this is a very fast command.  The main reason we
      need to do this here is to handle a card removed case so that an
-     "l" command in --card-edit can be used to show ta newly inserted
+     "l" command in --edit-card can be used to show ta newly inserted
      card.  We request the openpgp card because that is what we
      expect. */
   rc = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",

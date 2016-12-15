@@ -367,7 +367,9 @@ values are dumped and not only their lengths.  Note that the output of
 this command may change with new releases.
 
 
-@item --card-edit
+@item --edit-card
+@opindex edit-card
+@itemx --card-edit
 @opindex card-edit
 Present a menu to work with a smartcard. The subcommand "help" provides
 an overview on available commands. For a detailed description, please
@@ -382,7 +384,7 @@ Show the content of the smart card.
 @opindex change-pin
 Present a menu to allow changing the PIN of a smartcard. This
 functionality is also available as the subcommand "passwd" with the
-@option{--card-edit} command.
+@option{--edit-card} command.
 
 @item --delete-keys @code{name}
 @itemx --delete-keys @code{name}
