@@ -409,6 +409,73 @@ libdns_init (void)
 
 
 #ifdef USE_LIBDNS
+/*
+ * Initialize libdns if needed and open a dns_resolver context.
+ * Returns 0 on success and stores the new context at R_RES.  On
+ * failure an error code is returned and NULL stored at R_RES.
+ */
+static gpg_error_t
+libdns_res_open (struct dns_resolver **r_res)
+{
+  gpg_error_t err;
+  struct dns_resolver *res;
+  int derr;
+
+  *r_res = NULL;
+
+  err = libdns_init ();
+  if (err)
+    return err;
+
+  res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
+                      dns_opts (.socks_host=&libdns.socks_host), &derr);
+  if (!res)
+    return libdns_error_to_gpg_error (derr);
+
+  *r_res = res;
+  return 0;
+}
+#endif /*USE_LIBDNS*/
+
+
+#ifdef USE_LIBDNS
+/* Wrapper around dns_res_submit.  */
+static gpg_error_t
+libdns_res_submit (struct dns_resolver *res, const char *qname,
+                   enum dns_type qtype, enum dns_class qclass)
+{
+  return libdns_error_to_gpg_error (dns_res_submit (res, qname, qtype, qclass));
+}
+#endif /*USE_LIBDNS*/
+
+
+#ifdef USE_LIBDNS
+/* Standard event handling loop.  */
+gpg_error_t
+libdns_res_wait (struct dns_resolver *res)
+{
+  gpg_error_t err;
+
+  while ((err = libdns_error_to_gpg_error (dns_res_check (res)))
+         && gpg_err_code (err) == GPG_ERR_EAGAIN)
+    {
+      if (dns_res_elapsed (res) > 30)
+        {
+          err = gpg_error (GPG_ERR_DNS_TIMEOUT);
+          break;
+        }
+
+      my_unprotect ();
+      dns_res_poll (res, 1);
+      my_protect ();
+    }
+
+  return err;
+}
+#endif /*USE_LIBDNS*/
+
+
+#ifdef USE_LIBDNS
 static gpg_error_t
 resolve_name_libdns (const char *name, unsigned short port,
                      int want_family, int want_socktype,
@@ -429,10 +496,6 @@ resolve_name_libdns (const char *name, unsigned short port,
   if (r_canonname)
     *r_canonname = NULL;
 
-  err = libdns_init ();
-  if (err)
-    goto leave;
-
   memset (&hints, 0, sizeof hints);
   hints.ai_family = want_family;
   hints.ai_socktype = want_socktype;
@@ -446,13 +509,9 @@ resolve_name_libdns (const char *name, unsigned short port,
       portstr = portstr_;
     }
 
-  res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
-                      dns_opts (.socks_host=&libdns.socks_host), &derr);
-  if (!res)
-    {
-      err = libdns_error_to_gpg_error (derr);
-      goto leave;
-    }
+  err = libdns_res_open (&res);
+  if (err)
+    goto leave;
 
   ai = dns_ai_open (name, portstr, 0, &hints, res, &derr);
   if (!ai)
@@ -841,17 +900,9 @@ get_dns_cert_libdns (const char *name, int want_certtype,
            : (want_certtype - DNS_CERTTYPE_RRBASE));
 
 
-  err = libdns_init ();
+  err = libdns_res_open (&res);
   if (err)
     goto leave;
-
-  res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
-                      dns_opts (.socks_host=&libdns.socks_host), &derr);
-  if (!res)
-    {
-      err = libdns_error_to_gpg_error (derr);
-      goto leave;
-    }
 
   if (dns_d_anchor (host, sizeof host, name, strlen (name)) >= sizeof host)
     {
@@ -859,28 +910,14 @@ get_dns_cert_libdns (const char *name, int want_certtype,
       goto leave;
     }
 
-  err = libdns_error_to_gpg_error (dns_res_submit (res, name, qtype, DNS_C_IN));
+  err = libdns_res_submit (res, name, qtype, DNS_C_IN);
   if (err)
     goto leave;
 
-  /* Loop until we found a record.  */
-  while ((err = libdns_error_to_gpg_error (dns_res_check (res))))
-    {
-      if (gpg_err_code (err) == GPG_ERR_EAGAIN)
-        {
-          if (dns_res_elapsed (res) > 30)
-            {
-              err = gpg_error (GPG_ERR_DNS_TIMEOUT);
-              goto leave;
-            }
+  err = libdns_res_wait (res);
+  if (err)
+    goto leave;
 
-          my_unprotect ();
-          dns_res_poll (res, 1);
-          my_protect ();
-        }
-      else if (err)
-        goto leave;
-    }
   ans = dns_res_fetch (res, &derr);
   if (!ans)
     {
@@ -1281,17 +1318,9 @@ getsrv_libdns (const char *name, struct srventry **list, int *r_count)
   int derr;
   int srvcount=0;
 
-  err = libdns_init ();
+  err = libdns_res_open (&res);
   if (err)
     goto leave;
-
-  res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
-                      dns_opts (.socks_host=&libdns.socks_host), &derr);
-  if (!res)
-    {
-      err = libdns_error_to_gpg_error (derr);
-      goto leave;
-    }
 
   if (dns_d_anchor (host, sizeof host, name, strlen (name)) >= sizeof host)
     {
@@ -1299,29 +1328,14 @@ getsrv_libdns (const char *name, struct srventry **list, int *r_count)
       goto leave;
     }
 
-  err = libdns_error_to_gpg_error
-    (dns_res_submit (res, name, DNS_T_SRV, DNS_C_IN));
+  err = libdns_res_submit (res, name, DNS_T_SRV, DNS_C_IN);
   if (err)
     goto leave;
 
-  /* Loop until we found a record.  */
-  while ((err = libdns_error_to_gpg_error (dns_res_check (res))))
-    {
-      if (gpg_err_code (err) == GPG_ERR_EAGAIN)
-        {
-          if (dns_res_elapsed (res) > 30)
-            {
-              err = gpg_error (GPG_ERR_DNS_TIMEOUT);
-              goto leave;
-            }
+  err = libdns_res_wait (res);
+  if (err)
+    goto leave;
 
-          my_unprotect ();
-          dns_res_poll (res, 1);
-          my_protect ();
-        }
-      else if (err)
-        goto leave;
-    }
   ans = dns_res_fetch (res, &derr);
   if (!ans)
     {
@@ -1616,46 +1630,23 @@ gpg_error_t
 get_dns_cname_libdns (const char *name, char **r_cname)
 {
   gpg_error_t err;
-  struct dns_resolver *res = NULL;
+  struct dns_resolver *res;
   struct dns_packet *ans = NULL;
   struct dns_cname cname;
   int derr;
 
-  err = libdns_init ();
+  err = libdns_res_open (&res);
   if (err)
     goto leave;
 
-  res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
-                      dns_opts (.socks_host=&libdns.socks_host), &derr);
-  if (!res)
-    {
-      err = libdns_error_to_gpg_error (derr);
-      goto leave;
-    }
-
-  err = libdns_error_to_gpg_error
-    (dns_res_submit (res, name, DNS_T_CNAME, DNS_C_IN));
+  err = libdns_res_submit (res, name, DNS_T_CNAME, DNS_C_IN);
   if (err)
     goto leave;
 
-  /* Loop until we found a record.  */
-  while ((err = libdns_error_to_gpg_error (dns_res_check (res))))
-    {
-      if (gpg_err_code (err) == GPG_ERR_EAGAIN)
-        {
-          if (dns_res_elapsed (res) > 30)
-            {
-              err = gpg_error (GPG_ERR_DNS_TIMEOUT);
-              goto leave;
-            }
+  err = libdns_res_wait (res);
+  if (err)
+    goto leave;
 
-          my_unprotect ();
-          dns_res_poll (res, 1);
-          my_protect ();
-        }
-      else if (err)
-        goto leave;
-    }
   ans = dns_res_fetch (res, &derr);
   if (!ans)
     {
