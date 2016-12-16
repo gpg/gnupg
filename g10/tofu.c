@@ -2875,9 +2875,11 @@ write_stats_status (estream_t fp,
                     unsigned long signature_count,
                     unsigned long signature_first_seen,
                     unsigned long signature_most_recent,
+                    unsigned long signature_days,
                     unsigned long encryption_count,
                     unsigned long encryption_first_done,
-                    unsigned long encryption_most_recent)
+                    unsigned long encryption_most_recent,
+                    unsigned long encryption_days)
 {
   int summary;
   int validity;
@@ -2905,17 +2907,17 @@ write_stats_status (estream_t fp,
 
   if (fp)
     {
-      es_fprintf (fp, "tfs:1:%d:%lu:%lu:%s:%lu:%lu:%lu:%lu:%d:\n",
+      es_fprintf (fp, "tfs:1:%d:%lu:%lu:%s:%lu:%lu:%lu:%lu:%d:%lu:%lu:\n",
                   summary, signature_count, encryption_count,
                   tofu_policy_str (policy),
                   signature_first_seen, signature_most_recent,
                   encryption_first_done, encryption_most_recent,
-                  validity);
+                  validity, signature_days, encryption_days);
     }
   else
     {
       write_status_printf (STATUS_TOFU_STATS,
-                           "%d %lu %lu %s %lu %lu %lu %lu %d",
+                           "%d %lu %lu %s %lu %lu %lu %lu %d %lu %lu",
                            summary,
                            signature_count,
                            encryption_count,
@@ -2924,7 +2926,8 @@ write_stats_status (estream_t fp,
                            signature_most_recent,
                            encryption_first_done,
                            encryption_most_recent,
-                           validity);
+                           validity,
+                           signature_days, encryption_days);
     }
 }
 
@@ -2951,9 +2954,11 @@ show_statistics (tofu_dbs_t dbs,
   unsigned long signature_first_seen = 0;
   unsigned long signature_most_recent = 0;
   unsigned long signature_count = 0;
+  unsigned long signature_days = 0;
   unsigned long encryption_first_done = 0;
   unsigned long encryption_most_recent = 0;
   unsigned long encryption_count = 0;
+  unsigned long encryption_days = 0;
 
   int show_warning = 0;
 
@@ -2978,18 +2983,38 @@ show_statistics (tofu_dbs_t dbs,
       rc = gpg_error (GPG_ERR_GENERAL);
       goto out;
     }
+  rc = gpgsql_exec_printf
+    (dbs->db, strings_collect_cb, &strlist, &err,
+     "select count (*) from\n"
+     "  (select round(signatures.time / (24 * 60 * 60)) day\n"
+     "    from signatures\n"
+     "    left join bindings on signatures.binding = bindings.oid\n"
+     "    where fingerprint = %Q and email = %Q\n"
+     "    group by day);",
+     fingerprint, email);
+  if (rc)
+    {
+      log_error (_("error reading TOFU database: %s\n"), err);
+      print_further_info ("getting signature statistics (by day)");
+      sqlite3_free (err);
+      rc = gpg_error (GPG_ERR_GENERAL);
+      goto out;
+    }
 
   if (strlist)
     {
-      /* We expect exactly 3 elements.  */
+      /* We expect exactly 4 elements.  */
       log_assert (strlist->next);
       log_assert (strlist->next->next);
-      log_assert (! strlist->next->next->next);
+      log_assert (strlist->next->next->next);
+      log_assert (! strlist->next->next->next->next);
 
-      string_to_ulong (&signature_count, strlist->d, -1, __LINE__);
-      string_to_ulong (&signature_first_seen, strlist->next->d, -1, __LINE__);
-      string_to_ulong (&signature_most_recent,
+      string_to_ulong (&signature_days, strlist->d, -1, __LINE__);
+      string_to_ulong (&signature_count, strlist->next->d, -1, __LINE__);
+      string_to_ulong (&signature_first_seen,
                        strlist->next->next->d, -1, __LINE__);
+      string_to_ulong (&signature_most_recent,
+                       strlist->next->next->next->d, -1, __LINE__);
 
       free_strlist (strlist);
       strlist = NULL;
@@ -3011,18 +3036,38 @@ show_statistics (tofu_dbs_t dbs,
       rc = gpg_error (GPG_ERR_GENERAL);
       goto out;
     }
+  rc = gpgsql_exec_printf
+    (dbs->db, strings_collect_cb, &strlist, &err,
+     "select count (*) from\n"
+     "  (select round(encryptions.time / (24 * 60 * 60)) day\n"
+     "    from encryptions\n"
+     "    left join bindings on encryptions.binding = bindings.oid\n"
+     "    where fingerprint = %Q and email = %Q\n"
+     "    group by day);",
+     fingerprint, email);
+  if (rc)
+    {
+      log_error (_("error reading TOFU database: %s\n"), err);
+      print_further_info ("getting encryption statistics (by day)");
+      sqlite3_free (err);
+      rc = gpg_error (GPG_ERR_GENERAL);
+      goto out;
+    }
 
   if (strlist)
     {
-      /* We expect exactly 3 elements.  */
+      /* We expect exactly 4 elements.  */
       log_assert (strlist->next);
       log_assert (strlist->next->next);
-      log_assert (! strlist->next->next->next);
+      log_assert (strlist->next->next->next);
+      log_assert (! strlist->next->next->next->next);
 
-      string_to_ulong (&encryption_count, strlist->d, -1, __LINE__);
-      string_to_ulong (&encryption_first_done, strlist->next->d, -1, __LINE__);
-      string_to_ulong (&encryption_most_recent,
+      string_to_ulong (&encryption_days, strlist->d, -1, __LINE__);
+      string_to_ulong (&encryption_count, strlist->next->d, -1, __LINE__);
+      string_to_ulong (&encryption_first_done,
                        strlist->next->next->d, -1, __LINE__);
+      string_to_ulong (&encryption_most_recent,
+                       strlist->next->next->next->d, -1, __LINE__);
 
       free_strlist (strlist);
       strlist = NULL;
@@ -3036,9 +3081,11 @@ show_statistics (tofu_dbs_t dbs,
                       signature_count,
                       signature_first_seen,
                       signature_most_recent,
+                      signature_days,
                       encryption_count,
                       encryption_first_done,
-                      encryption_most_recent);
+                      encryption_most_recent,
+                      encryption_days);
 
   if (!outfp && !only_status_fd)
     {

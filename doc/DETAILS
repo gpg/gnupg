@@ -722,7 +722,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     userid encoded in UTF-8 and percent escaped.  The fingerprint is
     identical for all TOFU_USER lines up to a NEWSIG line.
 
-*** TOFU_STATS <summary> <sign-count> <encryption-count> [<policy> [<tm1> <tm2> <tm3> <tm4> [<validity>]]]
+*** TOFU_STATS <summary> <sign-count> <encryption-count> [<policy> [<tm1> <tm2> <tm3> <tm4> [<validity> [<sign-days> <encrypt-days>]]]]
 
     Statistics for the current user id.
 
@@ -742,7 +742,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     - unknown :: Policy is "unknown" (TOFU information does not
                  contribute to the key's validity)
 
-    TM1 ist the time the first message was verified.  TM2 is the time
+    TM1 is the time the first message was verified.  TM2 is the time
     the most recent message was verified.  TM3 is the time the first
     message was encrypted.  TM4 is the most recent encryption. All may
     either be seconds since Epoch or an ISO time string
@@ -752,6 +752,14 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     doesn't reflect whether the key needs attention.  That is it never
     takes on value 0.  Instead, if there is a conflict, VALIDITY still
     reflects the key's validity (values: 1-4).
+
+    SIGN-COUNT and ENCRYPTION-COUNT are the number of messages that we
+    have seen that have been signed by this key / encryption to this
+    key.
+
+    SIGN-DAYS and ENCRYPTION-DAYS are similar, but the number of days
+    (in UTC) on which we have seen messages signed by this key /
+    encrypted to this key.
 
 *** TOFU_STATS_SHORT <long_string>
 
