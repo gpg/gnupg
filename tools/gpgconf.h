@@ -72,7 +72,8 @@ void gc_component_retrieve_options (int component);
 void gc_component_list_options (int component, estream_t out);
 
 /* Read the modifications from IN and apply them.  */
-void gc_component_change_options (int component, estream_t in, estream_t out);
+void gc_component_change_options (int component, estream_t in, estream_t out,
+                                  int verbatim);
 
 /* Check the options of a single component.  Returns 0 if everything
    is OK.  */
@@ -82,6 +83,9 @@ int gc_component_check_options (int component, estream_t out,
 /* Process global configuration file.  */
 int gc_process_gpgconf_conf (const char *fname, int update, int defaults,
                              estream_t listfp);
+
+/* Apply a profile.  */
+gpg_error_t gc_apply_profile (const char *fname);
 
 
 #endif /*GPGCONF_H*/

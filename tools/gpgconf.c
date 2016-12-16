@@ -60,6 +60,7 @@ enum cmd_and_opt_values
     aKill,
     aCreateSocketDir,
     aRemoveSocketDir,
+    aApplyProfile,
     aReload
   };
 
@@ -76,6 +77,8 @@ static ARGPARSE_OPTS opts[] =
     { aCheckOptions, "check-options", 256, N_("|COMPONENT|check options") },
     { aApplyDefaults, "apply-defaults", 256,
       N_("apply global default values") },
+    { aApplyProfile, "apply-profile", 256,
+      N_("|FILE|update configuration files using FILE") },
     { aListDirs, "list-dirs", 256,
       N_("get the configuration directories for @GPGCONF@") },
     { aListConfig,   "list-config", 256,
@@ -495,6 +498,7 @@ main (int argc, char **argv)
         case aChangeOptions:
         case aCheckOptions:
         case aApplyDefaults:
+        case aApplyProfile:
         case aListConfig:
         case aCheckConfig:
         case aQuerySWDB:
@@ -568,7 +572,8 @@ main (int argc, char **argv)
               if (cmd == aListOptions)
                 gc_component_list_options (idx, get_outfp (&outfp));
               else if (cmd == aChangeOptions)
-                gc_component_change_options (idx, es_stdin, get_outfp (&outfp));
+                gc_component_change_options (idx, es_stdin,
+                                             get_outfp (&outfp), 0);
             }
 	}
       break;
@@ -656,6 +661,12 @@ main (int argc, char **argv)
 	}
       gc_component_retrieve_options (-1);
       if (gc_process_gpgconf_conf (NULL, 1, 1, NULL))
+        exit (1);
+      break;
+
+    case aApplyProfile:
+      gc_component_retrieve_options (-1);
+      if (gc_apply_profile (fname))
         exit (1);
       break;
 

@@ -1,6 +1,6 @@
 /* gpgconf-comp.c - Configuration utility for GnuPG.
- * Copyright (C) 2004, 2007, 2008, 2009, 2010,
- *               2011 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2007-2011 Free Software Foundation, Inc.
+ * Copyright (C) 2016 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -703,9 +703,15 @@ static gc_option_t gc_options_gpg[] =
    { "group", GC_OPT_FLAG_LIST, GC_LEVEL_ADVANCED,
      "gnupg", N_("|SPEC|set up email aliases"),
      GC_ARG_TYPE_ALIAS_LIST, GC_BACKEND_GPG },
-   { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
-     "gnupg", "|FILE|read options from FILE",
+   { "options", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
      GC_ARG_TYPE_FILENAME, GC_BACKEND_GPG },
+   { "compliance", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
+   { "default-new-key-algo", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
    { "default_pubkey_algo",
      (GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_NO_CHANGE), GC_LEVEL_INVISIBLE,
      NULL, NULL,
@@ -815,6 +821,9 @@ static gc_option_t gc_options_gpgsm[] =
      "gnupg", N_("Options controlling the security") },
    { "disable-crl-checks", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "gnupg", "never consult a CRL",
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPGSM },
+   { "enable-crl-checks", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
      GC_ARG_TYPE_NONE, GC_BACKEND_GPGSM },
    { "disable-trusted-cert-crl-check", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", N_("do not check CRLs for root certificates"),
@@ -2333,11 +2342,13 @@ gc_component_retrieve_options (int component)
 
 
 /* Perform a simple validity check based on the type.  Return in
-   NEW_VALUE_NR the value of the number in NEW_VALUE if OPTION is of
-   type GC_ARG_TYPE_NONE.  */
+ * NEW_VALUE_NR the value of the number in NEW_VALUE if OPTION is of
+ * type GC_ARG_TYPE_NONE.  If VERBATIM is set the profile parsing mode
+ * is used. */
 static void
 option_check_validity (gc_option_t *option, unsigned long flags,
-		       char *new_value, unsigned long *new_value_nr)
+		       char *new_value, unsigned long *new_value_nr,
+                       int verbatim)
 {
   char *arg;
 
@@ -2391,17 +2402,17 @@ option_check_validity (gc_option_t *option, unsigned long flags,
   arg = new_value;
   do
     {
-      if (*arg == '\0' || *arg == ',')
+      if (*arg == '\0' || (*arg == ',' && !verbatim))
 	{
 	  if (!(option->flags & GC_OPT_FLAG_ARG_OPT))
 	    gc_error (1, 0, "argument required for option %s", option->name);
 
-	  if (*arg == ',' && !(option->flags & GC_OPT_FLAG_LIST))
+	  if (*arg == ',' && !verbatim && !(option->flags & GC_OPT_FLAG_LIST))
 	    gc_error (1, 0, "list found for non-list option %s", option->name);
 	}
       else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_STRING)
 	{
-	  if (*arg != '"')
+	  if (*arg != '"' && !verbatim)
 	    gc_error (1, 0, "string argument for option %s must begin "
 		      "with a quote (\") character", option->name);
 
@@ -2409,7 +2420,7 @@ option_check_validity (gc_option_t *option, unsigned long flags,
 	     we do not quote arguments in configuration files, and
 	     thus no argument is indistinguishable from the empty
 	     string.  */
-	  if (arg[1] == '\0' || arg[1] == ',')
+	  if (arg[1] == '\0' || (arg[1] == ',' && !verbatim))
 	    gc_error (1, 0, "empty string argument for option %s is "
 		      "currently not allowed.  Please report this!",
 		      option->name);
@@ -2426,7 +2437,7 @@ option_check_validity (gc_option_t *option, unsigned long flags,
 	    gc_error (1, errno, "invalid argument for option %s",
 		      option->name);
 
-	  if (*arg != '\0' && *arg != ',')
+	  if (*arg != '\0' && (*arg != ',' || verbatim))
 	    gc_error (1, 0, "garbage after argument for option %s",
 		      option->name);
 	}
@@ -2442,16 +2453,17 @@ option_check_validity (gc_option_t *option, unsigned long flags,
 	    gc_error (1, errno, "invalid argument for option %s",
 		      option->name);
 
-	  if (*arg != '\0' && *arg != ',')
+	  if (*arg != '\0' && (*arg != ',' || verbatim))
 	    gc_error (1, 0, "garbage after argument for option %s",
 		      option->name);
 	}
-      arg = strchr (arg, ',');
+      arg = verbatim? strchr (arg, ',') : NULL;
       if (arg)
 	arg++;
     }
   while (arg && *arg);
 }
+
 
 #ifdef HAVE_W32_SYSTEM
 int
@@ -2816,11 +2828,13 @@ change_options_file (gc_component_t component, gc_backend_t backend,
 
 
 /* Create and verify the new configuration file for the specified
-   backend and component.  Returns 0 on success and -1 on error.  */
+ * backend and component.  Returns 0 on success and -1 on error.  If
+ * VERBATIM is set the profile mode is used. */
 static int
 change_options_program (gc_component_t component, gc_backend_t backend,
 			char **src_filenamep, char **dest_filenamep,
-			char **orig_filenamep)
+			char **orig_filenamep,
+                        int verbatim)
 {
   static const char marker[] = "###+++--- " GPGCONF_DISP_NAME " ---+++###";
   /* True if we are within the marker in the config file.  */
@@ -3008,15 +3022,20 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 		{
 		  char *end;
 
-		  assert (*arg == '"');
-		  arg++;
+                  if (!verbatim)
+                    {
+                      log_assert (*arg == '"');
+                      arg++;
 
-		  end = strchr (arg, ',');
-		  if (end)
-		    *end = '\0';
+                      end = strchr (arg, ',');
+                      if (end)
+                        *end = '\0';
+                    }
+                  else
+                    end = NULL;
 
 		  fprintf (src_file, "%s %s\n", option->name,
-			   percent_deescape (arg));
+			   verbatim? arg : percent_deescape (arg));
 		  if (ferror (src_file))
 		    goto change_one_err;
 
@@ -3117,14 +3136,15 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 
 
 /* Common code for gc_component_change_options and
-   gc_process_gpgconf_conf.  */
+ * gc_process_gpgconf_conf.  If VERBATIM is set the profile parsing
+ * mode is used.  */
 static void
 change_one_value (gc_option_t *option, int *runtime,
-                  unsigned long flags, char *new_value)
+                  unsigned long flags, char *new_value, int verbatim)
 {
   unsigned long new_value_nr = 0;
 
-  option_check_validity (option, flags, new_value, &new_value_nr);
+  option_check_validity (option, flags, new_value, &new_value_nr, verbatim);
 
   if (option->flags & GC_OPT_FLAG_RUNTIME)
     runtime[option->backend] = 1;
@@ -3158,9 +3178,10 @@ change_one_value (gc_option_t *option, int *runtime,
 
 /* Read the modifications from IN and apply them.  If IN is NULL the
    modifications are expected to already have been set to the global
-   table. */
+   table.  If VERBATIM is set the profile mode is used.  */
 void
-gc_component_change_options (int component, estream_t in, estream_t out)
+gc_component_change_options (int component, estream_t in, estream_t out,
+                             int verbatim)
 {
   int err = 0;
   int runtime[GC_BACKEND_NR];
@@ -3247,7 +3268,7 @@ gc_component_change_options (int component, estream_t in, estream_t out)
               continue;
             }
 
-          change_one_value (option, runtime, flags, new_value);
+          change_one_value (option, runtime, flags, new_value, 0);
         }
     }
 
@@ -3271,7 +3292,8 @@ gc_component_change_options (int component, estream_t in, estream_t out)
 	  err = change_options_program (component, option->backend,
 					&src_filename[option->backend],
 					&dest_filename[option->backend],
-					&orig_filename[option->backend]);
+					&orig_filename[option->backend],
+                                        verbatim);
 	  if (! err)
 	    {
 	      /* External verification.  */
@@ -3789,7 +3811,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
                   xfree (option_info->new_value);
                   option_info->new_value = NULL;
                 }
-              change_one_value (option_info, runtime, newflags, value);
+              change_one_value (option_info, runtime, newflags, value, 0);
             }
         }
     }
@@ -3814,7 +3836,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
 
       for (component_id = 0; component_id < GC_COMPONENT_NR; component_id++)
         {
-          gc_component_change_options (component_id, NULL, NULL);
+          gc_component_change_options (component_id, NULL, NULL, 0);
         }
       opt.runtime = save_opt_runtime;
 
@@ -3828,4 +3850,211 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
 
   xfree (fname);
   return result;
+}
+
+
+/*
+ * Apply the profile FNAME to all known configure files.
+ */
+gpg_error_t
+gc_apply_profile (const char *fname)
+{
+  gpg_error_t err;
+  char *fname_buffer = NULL;
+  char *line = NULL;
+  size_t line_len = 0;
+  ssize_t length;
+  estream_t fp;
+  int lineno = 0;
+  int runtime[GC_BACKEND_NR];
+  int backend_id;
+  int component_id = -1;
+  int skip_section = 0;
+  int error_count = 0;
+  int newflags;
+
+  if (!fname)
+    fname = "-";
+
+  for (backend_id = 0; backend_id < GC_BACKEND_NR; backend_id++)
+    runtime[backend_id] = 0;
+
+
+  if (!(!strcmp (fname, "-")
+        || strchr (fname, '/')
+#ifdef HAVE_W32_SYSTEM
+        || strchr (fname, '\\')
+#endif
+        || strchr (fname, '.')))
+    {
+      /* FNAME looks like a standard profile name.  Check whether one
+       * is installed and use that instead of the given file name.  */
+      fname_buffer = xstrconcat (gnupg_datadir (), DIRSEP_S,
+                                 fname, ".prf", NULL);
+      if (!access (fname_buffer, F_OK))
+        fname = fname_buffer;
+    }
+
+  fp = !strcmp (fname, "-")? es_stdin : es_fopen (fname, "r");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("can't open '%s': %s\n", fname, gpg_strerror (err));
+      return err;
+    }
+
+  if (opt.verbose)
+    log_info ("applying profile '%s'\n", fname);
+
+  err = 0;
+  while ((length = es_read_line (fp, &line, &line_len, NULL)) > 0)
+    {
+      char *name, *flags, *value;
+      gc_option_t *option_info = NULL;
+      char *p;
+
+      lineno++;
+      name = line;
+      while (*name == ' ' || *name == '\t')
+        name++;
+      if (!*name || *name == '#' || *name == '\r' || *name == '\n')
+        continue;
+      trim_trailing_spaces (name);
+
+      /* Check whether this is a new section.  */
+      if (*name == '[')
+        {
+          name++;
+          skip_section = 0;
+          /* New section: Get the name of the component.  */
+          p = strchr (name, ']');
+          if (!p)
+            {
+              error_count++;
+              log_info ("%s:%d:%d: error: syntax error in section tag\n",
+                        fname, lineno, (int)(name - line));
+              skip_section = 1;
+              continue;
+            }
+          *p++ = 0;
+          if (*p)
+            log_info ("%s:%d:%d: warning: garbage after section tag\n",
+                      fname, lineno, (int)(p - line));
+
+          trim_spaces (name);
+          component_id = gc_component_find (name);
+          if (component_id < 0)
+            {
+              log_info ("%s:%d:%d: warning: skipping unknown section '%s'\n",
+                        fname, lineno, (int)(name - line), name );
+              skip_section = 1;
+            }
+          continue;
+        }
+
+      if (skip_section)
+        continue;
+      if (component_id < 0)
+        {
+          error_count++;
+          log_info ("%s:%d:%d: error: not in a valid section\n",
+                    fname, lineno, (int)(name - line));
+          skip_section = 1;
+          continue;
+        }
+
+      /* Parse the option name.  */
+      for (p = name; *p && !spacep (p); p++)
+        ;
+      *p++ = 0;
+      value = p;
+
+      option_info = find_option (component_id, name, GC_BACKEND_ANY);
+      if (!option_info)
+        {
+          error_count++;
+          log_info ("%s:%d:%d: error: unknown option '%s' in section '%s'\n",
+                    fname, lineno, (int)(name - line),
+                    name, gc_component[component_id].name);
+          continue;
+        }
+
+      /* Parse the optional flags. */
+      trim_spaces (value);
+      flags = value;
+      if (*flags == '[')
+        {
+          flags++;
+          p = strchr (flags, ']');
+          if (!p)
+            {
+              log_info ("%s:%d:%d: warning: invalid flag specification\n",
+                        fname, lineno, (int)(p - line));
+              continue;
+            }
+          *p++ = 0;
+          value = p;
+          trim_spaces (value);
+        }
+      else /* No flags given.  */
+        flags = NULL;
+
+      /* Set required defaults.  */
+      if (gc_arg_type[option_info->arg_type].fallback == GC_ARG_TYPE_NONE
+          && !*value)
+        value = "1";
+
+      /* Check and save this option.  */
+      newflags = 0;
+      if (flags && !strcmp (flags, "default"))
+        newflags |= GC_OPT_FLAG_DEFAULT;
+
+      if (newflags)
+        option_info->new_flags = 0;
+      if (*value)
+        {
+          xfree (option_info->new_value);
+          option_info->new_value = NULL;
+        }
+      change_one_value (option_info, runtime, newflags, value, 1);
+    }
+
+  if (length < 0 || es_ferror (fp))
+    {
+      err = gpg_error_from_syserror ();
+      error_count++;
+      log_error (_("%s:%u: read error: %s\n"),
+                 fname, lineno, gpg_strerror (err));
+    }
+  if (es_fclose (fp))
+    log_error (_("error closing '%s'\n"), fname);
+  if (error_count)
+    log_error (_("error parsing '%s'\n"), fname);
+
+  xfree (line);
+
+  /* If it all worked, process the options. */
+  if (!err)
+    {
+      /* We need to switch off the runtime update, so that we can do
+         it later all at once. */
+      int save_opt_runtime = opt.runtime;
+      opt.runtime = 0;
+
+      for (component_id = 0; component_id < GC_COMPONENT_NR; component_id++)
+        {
+          gc_component_change_options (component_id, NULL, NULL, 1);
+        }
+      opt.runtime = save_opt_runtime;
+
+      if (opt.runtime)
+        {
+          for (backend_id = 0; backend_id < GC_BACKEND_NR; backend_id++)
+            if (runtime[backend_id] && gc_backend[backend_id].runtime_change)
+              (*gc_backend[backend_id].runtime_change) (0);
+        }
+    }
+
+  xfree (fname_buffer);
+  return err;
 }
