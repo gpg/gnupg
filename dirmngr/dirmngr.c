@@ -1383,6 +1383,7 @@ cleanup (void)
 {
   crl_cache_deinit ();
   cert_cache_deinit (1);
+  reload_dns_stuff (1);
 
 #if USE_LDAP
   ldapserver_list_free (opt.ldapservers);
@@ -1689,6 +1690,7 @@ dirmngr_sighup_action (void)
   crl_cache_deinit ();
   cert_cache_init ();
   crl_cache_init ();
+  reload_dns_stuff (0);
 }
 
 

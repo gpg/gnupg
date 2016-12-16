@@ -133,7 +133,12 @@ struct libdns_s
 
   struct sockaddr_storage socks_host;
 } libdns;
+
+/* If this flag is set, libdns shall be reinited for the next use.  */
+static int libdns_reinit_pending;
+
 #endif /*USE_LIBDNS*/
+
 
 /* Calling this function with YES set to True forces the use of the
  * standard resolver even if dirmngr has been built with support for
@@ -159,6 +164,7 @@ void
 enable_recursive_resolver (int yes)
 {
   recursive_resolver = yes;
+  libdns_reinit_pending = 1;
 }
 
 
@@ -203,6 +209,7 @@ set_dns_nameserver (const char *ipaddr)
   strncpy (tor_nameserver, ipaddr? ipaddr : DEFAULT_NAMESERVER,
            sizeof tor_nameserver -1);
   tor_nameserver[sizeof tor_nameserver -1] = 0;
+  libdns_reinit_pending = 1;
 }
 
 
@@ -315,6 +322,9 @@ libdns_init (void)
   const char *fname;
   char *cfgstr = NULL;
 
+  if (libdns.resolv_conf)
+    return 0; /* Already initialized.  */
+
   memset (&ld, 0, sizeof ld);
 
   ld.resolv_conf = dns_resconf_open (&derr);
@@ -410,6 +420,41 @@ libdns_init (void)
 
 
 #ifdef USE_LIBDNS
+/* Deinitialize libdns.  */
+static void
+libdns_deinit (void)
+{
+  struct libdns_s ld;
+
+  if (!libdns.resolv_conf)
+    return; /* Not initialized.  */
+
+  ld = libdns;
+  memset (&libdns, 0, sizeof libdns);
+  dns_hints_close (ld.hints);
+  dns_hosts_close (ld.hosts);
+  dns_resconf_close (ld.resolv_conf);
+}
+#endif /*USE_LIBDNS*/
+
+/* SIGHUP action handler for this module.  With FORCE set objects are
+ * all immediately released. */
+void
+reload_dns_stuff (int force)
+{
+  if (force)
+    {
+#ifdef USE_LIBDNS
+      libdns_deinit ();
+#endif
+      libdns_reinit_pending = 0;
+    }
+  else
+    libdns_reinit_pending = 1;
+}
+
+
+#ifdef USE_LIBDNS
 /*
  * Initialize libdns if needed and open a dns_resolver context.
  * Returns 0 on success and stores the new context at R_RES.  On
@@ -423,6 +468,12 @@ libdns_res_open (struct dns_resolver **r_res)
   int derr;
 
   *r_res = NULL;
+
+  if (libdns_reinit_pending)
+    {
+      libdns_reinit_pending = 0;
+      libdns_deinit ();
+    }
 
   err = libdns_init ();
   if (err)

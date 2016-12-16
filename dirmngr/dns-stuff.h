@@ -116,6 +116,8 @@ gpg_error_t enable_dns_tormode (int new_circuit);
    next DNS query.  Note that this is only used in Tor mode.  */
 void set_dns_nameserver (const char *ipaddr);
 
+/* SIGHUP action handler for this module.  */
+void reload_dns_stuff (int force);
 
 void free_dns_addrinfo (dns_addrinfo_t ai);
 

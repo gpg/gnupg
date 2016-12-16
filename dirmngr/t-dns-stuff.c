@@ -217,7 +217,6 @@ main (int argc, char **argv)
         {
           printf ("CNAME found: '%s'\n", cname);
         }
-
       xfree (cname);
     }
   else if (opt_srv)
@@ -291,6 +290,7 @@ main (int argc, char **argv)
       free_dns_addrinfo (aibuf);
     }
 
+  reload_dns_stuff (1); /* Release objects.  */
 
   return 0;
 }
