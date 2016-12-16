@@ -137,6 +137,9 @@ struct libdns_s
 /* If this flag is set, libdns shall be reinited for the next use.  */
 static int libdns_reinit_pending;
 
+/* The Tor port to be used.  */
+static int libdns_tor_port;
+
 #endif /*USE_LIBDNS*/
 
 
@@ -210,6 +213,7 @@ set_dns_nameserver (const char *ipaddr)
            sizeof tor_nameserver -1);
   tor_nameserver[sizeof tor_nameserver -1] = 0;
   libdns_reinit_pending = 1;
+  libdns_tor_port = 0;  /* Start again with the default port.  */
 }
 
 
@@ -341,6 +345,9 @@ libdns_init (void)
       if (!*tor_nameserver)
         set_dns_nameserver (NULL);
 
+      if (!libdns_tor_port)
+        libdns_tor_port = TOR_PORT;
+
       cfgstr = xtryasprintf ("[%s]:53", tor_nameserver);
       if (!cfgstr)
         err = gpg_error_from_syserror ();
@@ -356,7 +363,7 @@ libdns_init (void)
       ld.resolv_conf->options.tcp = DNS_RESCONF_TCP_SOCKS;
 
       xfree (cfgstr);
-      cfgstr = xtryasprintf ("[%s]:%d", "127.0.0.1", TOR_PORT);
+      cfgstr = xtryasprintf ("[%s]:%d", "127.0.0.1", libdns_tor_port);
       if (!cfgstr)
         err = gpg_error_from_syserror ();
       else
@@ -437,6 +444,7 @@ libdns_deinit (void)
 }
 #endif /*USE_LIBDNS*/
 
+
 /* SIGHUP action handler for this module.  With FORCE set objects are
  * all immediately released. */
 void
@@ -488,6 +496,25 @@ libdns_res_open (struct dns_resolver **r_res)
     return libdns_error_to_gpg_error (derr);
 
   *r_res = res;
+  return 0;
+}
+#endif /*USE_LIBDNS*/
+
+
+#ifdef USE_LIBDNS
+/* Helper to test whether we need totry again after having swicthed
+ * the Tor port.  */
+static int
+libdns_switch_port_p (gpg_error_t err)
+{
+  if (tor_mode && gpg_err_code (err) == GPG_ERR_ECONNREFUSED
+      && libdns_tor_port == TOR_PORT)
+    {
+      /* Switch port and try again.  */
+      libdns_tor_port = TOR_PORT2;
+      libdns_reinit_pending = 1;
+      return 1;
+    }
   return 0;
 }
 #endif /*USE_LIBDNS*/
@@ -834,8 +861,16 @@ resolve_dns_name (const char *name, unsigned short port,
 {
 #ifdef USE_LIBDNS
   if (!standard_resolver)
-    return resolve_name_libdns (name, port, want_family, want_socktype,
-                                r_ai, r_canonname);
+    {
+      gpg_error_t err;
+
+      err = resolve_name_libdns (name, port, want_family, want_socktype,
+                                  r_ai, r_canonname);
+      if (err && libdns_switch_port_p (err))
+        err = resolve_name_libdns (name, port, want_family, want_socktype,
+                                   r_ai, r_canonname);
+      return err;
+    }
 #endif /*USE_LIBDNS*/
 
   return resolve_name_standard (name, port, want_family, want_socktype,
@@ -1335,8 +1370,16 @@ get_dns_cert (const char *name, int want_certtype,
 
 #ifdef USE_LIBDNS
   if (!standard_resolver)
-    return get_dns_cert_libdns (name, want_certtype, r_key, r_keylen,
-                                r_fpr, r_fprlen, r_url);
+    {
+      gpg_error_t err;
+
+      err = get_dns_cert_libdns (name, want_certtype, r_key, r_keylen,
+                                 r_fpr, r_fprlen, r_url);
+      if (err && libdns_switch_port_p (err))
+        err = get_dns_cert_libdns (name, want_certtype, r_key, r_keylen,
+                                   r_fpr, r_fprlen, r_url);
+      return err;
+    }
 #endif /*USE_LIBDNS*/
 
   return get_dns_cert_standard (name, want_certtype, r_key, r_keylen,
@@ -1593,7 +1636,11 @@ getsrv (const char *name, struct srventry **list)
   srvcount = 0;
 #ifdef USE_LIBDNS
   if (!standard_resolver)
-    err = getsrv_libdns (name, list, &srvcount);
+    {
+      err = getsrv_libdns (name, list, &srvcount);
+      if (err && libdns_switch_port_p (err))
+        err = getsrv_libdns (name, list, &srvcount);
+    }
   else
 #endif /*USE_LIBDNS*/
     err = getsrv_standard (name, list, &srvcount);
@@ -1834,7 +1881,14 @@ get_dns_cname (const char *name, char **r_cname)
 
 #ifdef USE_LIBDNS
   if (!standard_resolver)
-    return get_dns_cname_libdns (name, r_cname);
+    {
+      gpg_error_t err;
+
+      err = get_dns_cname_libdns (name, r_cname);
+      if (err && libdns_switch_port_p (err))
+        err = get_dns_cname_libdns (name, r_cname);
+      return err;
+    }
 #endif /*USE_LIBDNS*/
 
   return get_dns_cname_standard (name, r_cname);
