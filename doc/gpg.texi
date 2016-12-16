@@ -117,11 +117,6 @@ perform a reasonable action depending on the type of file it is given
 as input (an encrypted message is decrypted, a signature is verified,
 a file containing keys is listed, etc.).
 
-Please remember that option and command parsing stops as soon as a
-non-option is encountered.  Thus, options must precede the command.
-You can explicitly stop parsing by using the special option
-@option{--}.
-
 
 @menu
 * General GPG Commands::        Commands not specific to the functionality.
