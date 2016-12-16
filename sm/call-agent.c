@@ -234,6 +234,7 @@ gpgsm_agent_pksign (ctrl_t ctrl, const char *keygrip, const char *desc,
   rc = start_agent (ctrl);
   if (rc)
     return rc;
+  inq_parm.ctrl = ctrl;
   inq_parm.ctx = agent_ctx;
 
   if (digestlen*2 + 50 > DIM(line))
@@ -319,6 +320,7 @@ gpgsm_scd_pksign (ctrl_t ctrl, const char *keyid, const char *desc,
   rc = start_agent (ctrl);
   if (rc)
     return rc;
+  inq_parm.ctrl = ctrl;
   inq_parm.ctx = agent_ctx;
 
   if (digestlen*2 + 50 > DIM(line))
@@ -583,6 +585,7 @@ gpgsm_agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
   rc = start_agent (ctrl);
   if (rc)
     return rc;
+  inq_parm.ctrl = ctrl;
   inq_parm.ctx = agent_ctx;
 
   rc = assuan_transact (agent_ctx, "RESET",NULL, NULL, NULL, NULL, NULL, NULL);
