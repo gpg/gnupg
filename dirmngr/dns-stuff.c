@@ -118,8 +118,10 @@ static int tor_mode;
   (40 should be sufficient for v6 but we add some extra for a scope.) */
 static char tor_nameserver[40+20];
 
-/* A string to hold the credentials presented to Tor.  */
-static char tor_credentials[50];
+/* Two strings to hold the credentials presented to Tor.  */
+static char tor_socks_user[30];
+static char tor_socks_password[20];
+
 
 #ifdef USE_LIBDNS
 /* Libdns gobal data.  */
@@ -177,15 +179,14 @@ recursive_resolver_p (void)
 gpg_error_t
 enable_dns_tormode (int new_circuit)
 {
-  /* XXX: dns.c doesn't support SOCKS credentials.  */
-
-  if (!*tor_credentials || new_circuit)
+  if (!*tor_socks_user || new_circuit)
     {
       static unsigned int counter;
 
-      gpgrt_snprintf (tor_credentials, sizeof tor_credentials,
-                      "dirmngr-%lu:p%u",
-                      (unsigned long)getpid (), counter);
+      gpgrt_snprintf (tor_socks_user, sizeof tor_socks_user,
+                      "dirmngr-%lu", (unsigned long)getpid ());
+      gpgrt_snprintf (tor_socks_password, sizeof tor_socks_password,
+                      "p%u", counter);
       counter++;
     }
   tor_mode = 1;
@@ -428,7 +429,10 @@ libdns_res_open (struct dns_resolver **r_res)
     return err;
 
   res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
-                      dns_opts (.socks_host=&libdns.socks_host), &derr);
+                      dns_opts (.socks_host     = &libdns.socks_host,
+                                .socks_user     = tor_socks_user,
+                                .socks_password = tor_socks_password ),
+                      &derr);
   if (!res)
     return libdns_error_to_gpg_error (derr);
 
