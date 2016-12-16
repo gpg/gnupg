@@ -1844,6 +1844,8 @@ gpgconf_list (const char *configfile)
   es_printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
   es_printf ("group:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("compliance:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT, "gnupg");
+  es_printf ("default-new-key-algo:%lu:\n", GC_OPT_FLAG_NONE);
 
   /* The next one is an info only item and should match the macros at
      the top of keygen.c  */

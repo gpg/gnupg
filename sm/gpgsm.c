@@ -1719,6 +1719,7 @@ main ( int argc, char **argv)
 	es_printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
 	es_printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
         es_printf ("disable-crl-checks:%lu:\n", GC_OPT_FLAG_NONE);
+        es_printf ("enable-crl-checks:%lu:\n", GC_OPT_FLAG_NONE);
         es_printf ("disable-trusted-cert-crl-check:%lu:\n", GC_OPT_FLAG_NONE);
         es_printf ("enable-ocsp:%lu:\n", GC_OPT_FLAG_NONE);
         es_printf ("include-certs:%lu:%d:\n", GC_OPT_FLAG_DEFAULT,
