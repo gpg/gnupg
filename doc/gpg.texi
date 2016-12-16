@@ -3742,9 +3742,55 @@ way to do this.  The options @option{--status-fd} and @option{--batch}
 are almost always required for this.
 
 @menu
+* Programmatic use of GnuPG:: Programmatic use of GnuPG
+* Ephemeral home directories:: Ephemeral home directories
+* The quick key manipulation interface:: The quick key manipulation interface
 * Unattended GPG key generation::  Unattended key generation
 @end menu
 
+
+@node Programmatic use of GnuPG
+@subsection Programmatic use of GnuPG
+
+Please consider using GPGME instead of calling @command{@gpgname}
+directly.  GPGME offers a stable, backend-independent interface for
+many cryptographic operations.  It supports OpenPGP and S/MIME, and
+also allows interaction with various GnuPG components.
+
+GPGME provides a C-API, and comes with bindings for C++, Qt, and
+Python.  Bindings for other languages are available.
+
+@node Ephemeral home directories
+@subsection Ephemeral home directories
+
+Sometimes you want to contain effects of some operation, for example
+you want to import a key to inspect it, but you do not want this key
+to be added to your keyring.  In earlier versions of GnuPG, it was
+possible to specify alternate keyring files for both public and secret
+keys.  In modern GnuPG versions, however, we changed how secret keys
+are stored in order to better protect secret key material, and it was
+not possible to preserve this interface.
+
+The preferred way to do this is to use ephemeral home directories.
+This technique works across all versions of GnuPG.
+
+Create a temporary directory, create (or copy) a configuration that
+meets your needs, make @command{@gpgname} use this directory either
+using the environment variable @var{GNUPGHOME}, or the option
+@option{--homedir}.  GPGME supports this too on a per-context basis,
+by modifying the engine info of contexts.  Now execute whatever
+operation you like, import and export key material as necessary.  Once
+finished, you can delete the directory.  All GnuPG backend services
+that were started will detect this and shut down.
+
+@node The quick key manipulation interface
+@subsection The quick key manipulation interface
+
+Recent versions of GnuPG have an interface to manipulate keys without
+using the interactive command @option{--edit-key}.  This interface was
+added mainly for the benefit of GPGME (please consider using GPGME,
+see the manual subsection ``Programmatic use of GnuPG'').  This
+interface is described in the subsection ``How to manage your keys''.
 
 @node Unattended GPG key generation
 @subsection Unattended key generation
