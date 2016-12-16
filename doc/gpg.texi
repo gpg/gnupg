@@ -3796,9 +3796,14 @@ interface is described in the subsection ``How to manage your keys''.
 @subsection Unattended key generation
 
 The command @option{--generate-key} may be used along with the option
-@option{--batch} for unattended key generation.  The parameters are
-either read from stdin or given as a file on the command line.
-The format of the parameter file is as follows:
+@option{--batch} for unattended key generation.  This is the most
+flexible way of generating keys, but it is also the most complex one.
+Consider using the quick key manipulation interface described in the
+previous subsection ``The quick key manipulation interface''.
+
+The parameters for the key are either read from stdin or given as a
+file on the command line.  The format of the parameter file is as
+follows:
 
 @itemize @bullet
   @item Text only, line length is limited to about 1000 characters.
@@ -3841,16 +3846,21 @@ Perform the key generation.  Note that an implicit commit is done at
 the next @asis{Key-Type} parameter.
 
 @item %pubring @var{filename}
-@itemx %secring @var{filename}
 Do not write the key to the default or commandline given keyring but
 to @var{filename}.  This must be given before the first commit to take
 place, duplicate specification of the same filename is ignored, the
 last filename before a commit is used.  The filename is used until a
 new filename is used (at commit points) and all keys are written to
 that file. If a new filename is given, this file is created (and
-overwrites an existing one).  For GnuPG versions prior to 2.1, both
-control statements must be given. For GnuPG 2.1 and later
-@samp{%secring} is a no-op.
+overwrites an existing one).
+
+See the previous subsection ``Ephemeral home directories'' for a more
+robust way to contain side-effects.
+
+@item %secring @var{filename}
+This option is a no-op for GnuPG 2.1 and later.
+
+See the previous subsection ``Ephemeral home directories''.
 
 @item %ask-passphrase
 @itemx %no-ask-passphrase
@@ -3968,8 +3978,9 @@ generation to associate a key parameter block with a status line.
 @end table
 
 @noindent
-Here is an example on how to create a key:
+Here is an example on how to create a key in an ephemeral home directory:
 @smallexample
+$ export GNUPGHOME="$(mktemp -d)"
 $ cat >foo <<EOF
      %echo Generating a basic OpenPGP key
      Key-Type: DSA
@@ -3981,22 +3992,20 @@ $ cat >foo <<EOF
      Name-Email: joe@@foo.bar
      Expire-Date: 0
      Passphrase: abc
-     %pubring foo.pub
-     %secring foo.sec
      # Do a commit here, so that we can later print "done" :-)
      %commit
      %echo done
 EOF
 $ @gpgname --batch --generate-key foo
  [...]
-$ @gpgname --no-default-keyring --secret-keyring ./foo.sec \
-       --keyring ./foo.pub --list-secret-keys
-/home/wk/work/gnupg-stable/scratch/foo.sec
-------------------------------------------
-sec  1024D/915A878D 2000-03-09 Joe Tester (with stupid passphrase) <joe@@foo.bar>
-ssb  1024g/8F70E2C0 2000-03-09
+$ @gpgname --list-secret-keys
+/tmp/tmp.0NQxB74PEf/pubring.kbx
+-------------------------------
+sec   dsa1024 2016-12-16 [SCA]
+      768E895903FC1C44045C8CB95EEBDB71E9E849D0
+uid           [ultimate] Joe Tester (with stupid passphrase) <joe@@foo.bar>
+ssb   elg1024 2016-12-16 [E]
 @end smallexample
-
 
 @noindent
 If you want to create a key with the default algorithms you would use
@@ -4010,8 +4019,6 @@ these parameters:
      Name-Email: joe@@foo.bar
      Expire-Date: 0
      Passphrase: abc
-     %pubring foo.pub
-     %secring foo.sec
      # Do a commit here, so that we can later print "done" :-)
      %commit
      %echo done
