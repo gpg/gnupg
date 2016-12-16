@@ -722,9 +722,17 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     userid encoded in UTF-8 and percent escaped.  The fingerprint is
     identical for all TOFU_USER lines up to a NEWSIG line.
 
-*** TOFU_STATS <summary> <sign-count> <encryption-count> [<policy> [<tm1> <tm2> <tm3> <tm4> [<validity> [<sign-days> <encrypt-days>]]]]
+*** TOFU_STATS <MANY_ARGS>
 
     Statistics for the current user id.
+
+    The <MANY_ARGS> are the usual space delimited arguments.  Here we
+    have too many of them to fit on one printed line and thus they are
+    given on 3 printed lines:
+
+    : <summary> <sign-count> <encryption-count>
+    : [<policy> [<tm1> <tm2> <tm3> <tm4>
+    : [<validity> [<sign-days> <encrypt-days>]]]]
 
     Values for SUMMARY are:
     - 0 :: attention, an interaction with the user is required (conflict)
