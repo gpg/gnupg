@@ -1008,7 +1008,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     This may either be the specified mountpoint or one randomly
     chosen by g13.
 
-*** PINENTRY_LAUNCHED <pid>
+*** PINENTRY_LAUNCHED <pid>[:<extra>]
     This status line is emitted by gpg to notify a client that a
     Pinentry has been launched.  <pid> is the PID of the Pinentry.  It
     may be used to display a hint to the user but can't be used to
