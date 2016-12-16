@@ -49,12 +49,12 @@
 
 #define CONTROL_L ('L' - 'A' + 1)
 
-/* Number of signed messages required to indicate that enough history
- * is available for basic trust.  */
-#define BASIC_TRUST_THRESHOLD  10
-/* Number of signed messages required to indicate that a lot of
- * history is available.  */
-#define FULL_TRUST_THRESHOLD  100
+/* Number of days with signed / ecnrypted messages required to
+ * indicate that enough history is available for basic trust.  */
+#define BASIC_TRUST_THRESHOLD  4
+/* Number of days with signed / encrypted messages required to
+ * indicate that a lot of history is available.  */
+#define FULL_TRUST_THRESHOLD  21
 
 
 /* A struct with data pertaining to the tofu DB.  There is one such
@@ -2883,19 +2883,19 @@ write_stats_status (estream_t fp,
 {
   int summary;
   int validity;
-  unsigned long messages;
+  unsigned long days;
 
   /* Use the euclidean distance (m = sqrt(a^2 + b^2)) rather then the
      sum of the magnitudes (m = a + b) to ensure a balance between
      verified signatures and encrypted messages.  */
-  messages = sqrtu32 (signature_count * signature_count
-                      + encryption_count * encryption_count);
+  days = sqrtu32 (signature_days * signature_days
+                  + encryption_days * encryption_days);
 
-  if (messages < 1)
+  if (days < 1)
     validity = 1; /* Key without history.  */
-  else if (messages < 2 * BASIC_TRUST_THRESHOLD)
+  else if (days < 2 * BASIC_TRUST_THRESHOLD)
     validity = 2; /* Key with too little history.  */
-  else if (messages < 2 * FULL_TRUST_THRESHOLD)
+  else if (days < 2 * FULL_TRUST_THRESHOLD)
     validity = 3; /* Key with enough history for basic trust.  */
   else
     validity = 4; /* Key with a lot of history.  */
