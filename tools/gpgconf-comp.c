@@ -2286,9 +2286,6 @@ gc_component_retrieve_options (int component)
   gc_backend_t backend;
   gc_option_t *option;
 
-  if (component == GC_COMPONENT_PINENTRY)
-    return; /* Dummy module for now.  */
-
   for (backend = 0; backend < GC_BACKEND_NR; backend++)
     backend_seen[backend] = 0;
 
@@ -2301,6 +2298,9 @@ gc_component_retrieve_options (int component)
 
   do
     {
+      if (component == GC_COMPONENT_PINENTRY)
+        continue; /* Skip this dummy component.  */
+
       option = gc_component[component].options;
 
       while (option && option->name)
