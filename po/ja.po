@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.1.16\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-12-13 15:05+0900\n"
+"PO-Revision-Date: 2016-12-17 14:34+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1877,7 +1877,7 @@ msgid ""
 "Examples:\n"
 "\n"
 " -se -r Bob [file]          sign and encrypt for user Bob\n"
-" --clear-sign [file]         make a clear text signature\n"
+" --clear-sign [file]        make a clear text signature\n"
 " --detach-sign [file]       make a detached signature\n"
 " --list-keys [names]        show keys\n"
 " --fingerprint [names]      show fingerprints\n"
@@ -2240,21 +2240,9 @@ msgstr "信用データベースの初期化に失敗しました: %s\n"
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr "*警告*: 公開鍵暗号を使わずに、受取人 (-r) を指定しています\n"
 
-msgid "--store [filename]"
-msgstr "--store [ファイル名]"
-
-msgid "--symmetric [filename]"
-msgstr "--symmetric [ファイル名]"
-
 #, c-format
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "'%s'の共通鍵暗号に失敗しました: %s\n"
-
-msgid "--encrypt [filename]"
-msgstr "--encrypt [ファイル名]"
-
-msgid "--symmetric --encrypt [filename]"
-msgstr "--symmetric --encrypt [ファイル名]"
 
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "--symmetric --encryptを--s2k-mode 0で使うことはできません\n"
@@ -2263,42 +2251,12 @@ msgstr "--symmetric --encryptを--s2k-mode 0で使うことはできません\n"
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "--symmetric --encryptを%sモードで使うことはできません\n"
 
-msgid "--sign [filename]"
-msgstr "--sign [ファイル名]"
-
-msgid "--sign --encrypt [filename]"
-msgstr "--sign --encrypt [ファイル名]"
-
-msgid "--symmetric --sign --encrypt [filename]"
-msgstr "--symmetric --sign --encrypt [ファイル名]"
-
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "--symmetric --sign --encryptを--s2k-mode 0で使うことはできません\n"
 
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "--symmetric --sign --encryptを%sモードで使うことはできません\n"
-
-msgid "--sign --symmetric [filename]"
-msgstr "--sign --symmetric [ファイル名]"
-
-msgid "--clear-sign [filename]"
-msgstr "--clear-sign [ファイル名]"
-
-msgid "--decrypt [filename]"
-msgstr "--decrypt [ファイル名]"
-
-msgid "--sign-key user-id"
-msgstr "--sign-key ユーザid"
-
-msgid "--lsign-key user-id"
-msgstr "--lsign-key ユーザid"
-
-msgid "--edit-key user-id [commands]"
-msgstr "--edit-key ユーザid [コマンド]"
-
-msgid "--passwd <user-id>"
-msgstr "--passwd <ユーザid>"
 
 #, c-format
 msgid "keyserver send failed: %s\n"
@@ -2343,9 +2301,6 @@ msgstr "鍵指定'%s'の構文解析エラー: %s\n"
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr "'%s'は有効な鍵ID, フィンガープリント、keygripではないようです。\n"
-
-msgid "[filename]"
-msgstr "[ファイル名]"
 
 msgid "Go ahead and type your message ...\n"
 msgstr "開始します。メッセージを打ってください ...\n"
@@ -5339,8 +5294,7 @@ msgstr "TOFUデータベースの更新エラー: %s\n"
 #, c-format
 msgid ""
 "This is the first time the email address \"%s\" is being used with key %s."
-msgstr ""
-"電子メールアドレス\"%s\"が鍵%sに使われたのはこれが最初です。"
+msgstr "電子メールアドレス\"%s\"が鍵%sに使われたのはこれが最初です。"
 
 #, c-format
 msgid "The email address \"%s\" is associated with %d key!"
@@ -5356,8 +5310,8 @@ msgid ""
 "Please indicate whether this email address should be associated with key %s "
 "or whether you think someone is impersonating \"%s\"."
 msgstr ""
-"この電子メールアドレスが鍵 %s に結びつけられるべきか、あるいは誰かが"
-"\"%s\" になりすましていると思うか指定してください。"
+"この電子メールアドレスが鍵 %s に結びつけられるべきか、あるいは誰かが\"%s\" に"
+"なりすましていると思うか指定してください。"
 
 #, c-format
 msgid "error gathering other user IDs: %s\n"
@@ -5461,8 +5415,8 @@ msgstr "gGaAuUrRbB"
 
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
-"(G)ood-良, (A)ccept once-一度だけ認める, (U)nknown-不明, (R)eject once-一度だけ"
-"否, (B)ad-ダメ? "
+"(G)ood-良, (A)ccept once-一度だけ認める, (U)nknown-不明, (R)eject once-一度だ"
+"け否, (B)ad-ダメ? "
 
 msgid "Defaulting to unknown."
 msgstr "不明がデフォルトです。"
@@ -5538,6 +5492,7 @@ msgid "Encrypted %ld~message in the past %s."
 msgid_plural "Encrypted %ld~messages in the past %s."
 msgstr[0] "メッセージを%ld個暗号化しました(これまで %s に)。"
 
+#, c-format
 msgid "(policy: %s)"
 msgstr "(ポリシー: %s)"
 
@@ -5547,15 +5502,13 @@ msgstr "警告: この鍵とユーザIDで署名されたメッセージは一�
 
 msgid ""
 "Warning: we've only seen one message signed using this key and user id!\n"
-msgstr ""
-"警告: この鍵とユーザIDで署名されたメッセージは一度しか見てません!\n"
+msgstr "警告: この鍵とユーザIDで署名されたメッセージは一度しか見てません!\n"
 
 msgid "Warning: you have yet to encrypt a message to this key!\n"
 msgstr "警告: この鍵へは一つもメッセージを暗号化したことがありません!\n"
 
 msgid "Warning: you have only encrypted one message to this key!\n"
-msgstr ""
-"警告: この鍵へは一つのメッセージしか暗号化したことがありません!\n"
+msgstr "警告: この鍵へは一つのメッセージしか暗号化したことがありません!\n"
 
 #, c-format
 msgid ""
@@ -5571,9 +5524,9 @@ msgid_plural ""
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[0] ""
-"警告: この鍵とユーザIDによる署名をもっと見たと思う場合、この鍵は偽物の可能性が"
-"あります! 少数のバリエーションでこの電子メールアドレスを注意深く検査してくださ"
-"い。この鍵が疑われる場合、\n"
+"警告: この鍵とユーザIDによる署名をもっと見たと思う場合、この鍵は偽物の可能性"
+"があります! 少数のバリエーションでこの電子メールアドレスを注意深く検査してく"
+"ださい。この鍵が疑われる場合、\n"
 "  %s\n"
 "でダメとマークしてください。\n"
 
@@ -5582,8 +5535,9 @@ msgid "error opening TOFU database: %s\n"
 msgstr "TOFUデータベースのオープンでエラー: %s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
-msgstr "*警告*: %s に暗号化します。失効していないユーザIDが一つもないものです。\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
+msgstr ""
+"*警告*: %s に暗号化します。失効していないユーザIDが一つもないものです。\n"
 
 #, c-format
 msgid "error setting policy for key %s, user id \"%s\": %s"
@@ -6581,6 +6535,25 @@ msgstr "|NAME|暗号アルゴリズムにNAMEを使用"
 
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NAME|ダイジェスト・アルゴリズムにNAMEを使用"
+
+msgid ""
+"@\n"
+"Examples:\n"
+"\n"
+" -se -r Bob [file]          sign and encrypt for user Bob\n"
+" --clearsign [file]         make a clear text signature\n"
+" --detach-sign [file]       make a detached signature\n"
+" --list-keys [names]        show keys\n"
+" --fingerprint [names]      show fingerprints\n"
+msgstr ""
+"@\n"
+"例:\n"
+"\n"
+" -se -r Bob [ファイル]      ユーザBobへ署名と暗号化\n"
+" --clearsign [ファイル]     クリア・テクスト署名を作成\n"
+" --detach-sign [ファイル]   分遣署名を作成\n"
+" --list-keys [名前]         鍵を表示\n"
+" --fingerprint [名前]       フィンガープリントを表示\n"
 
 msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
 msgstr "使い方: @GPGSM@ [オプション] [ファイル] (ヘルプは -h)"
@@ -8123,6 +8096,14 @@ msgstr "コンポーネント%sの外部の検証が失敗しました"
 msgid "Note that group specifications are ignored\n"
 msgstr "グループ仕様は無視されていることに注意してください\n"
 
+#, c-format
+msgid "error closing '%s'\n"
+msgstr "'%s'でクローズのエラー\n"
+
+#, c-format
+msgid "error parsing '%s'\n"
+msgstr "'%s'でパーズのエラー: %s\n"
+
 msgid "list all components"
 msgstr "すべてのコンポーネントをリストする"
 
@@ -8140,6 +8121,9 @@ msgstr "|COMPONENT|オプションをチェックする"
 
 msgid "apply global default values"
 msgstr "グローバル・デフォルト値を適用する"
+
+msgid "|FILE|update configuration files using FILE"
+msgstr "|FILE|FILEを使ってコンフィグレーション・ファイルを更新する"
 
 msgid "get the configuration directories for @GPGCONF@"
 msgstr "@GPGCONF@のためにコンフィグレーション・ディレクトリを取得する"
@@ -8330,6 +8314,51 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "--store [filename]"
+#~ msgstr "--store [ファイル名]"
+
+#~ msgid "--symmetric [filename]"
+#~ msgstr "--symmetric [ファイル名]"
+
+#~ msgid "--encrypt [filename]"
+#~ msgstr "--encrypt [ファイル名]"
+
+#~ msgid "--symmetric --encrypt [filename]"
+#~ msgstr "--symmetric --encrypt [ファイル名]"
+
+#~ msgid "--sign [filename]"
+#~ msgstr "--sign [ファイル名]"
+
+#~ msgid "--sign --encrypt [filename]"
+#~ msgstr "--sign --encrypt [ファイル名]"
+
+#~ msgid "--symmetric --sign --encrypt [filename]"
+#~ msgstr "--symmetric --sign --encrypt [ファイル名]"
+
+#~ msgid "--sign --symmetric [filename]"
+#~ msgstr "--sign --symmetric [ファイル名]"
+
+#~ msgid "--clear-sign [filename]"
+#~ msgstr "--clear-sign [ファイル名]"
+
+#~ msgid "--decrypt [filename]"
+#~ msgstr "--decrypt [ファイル名]"
+
+#~ msgid "--sign-key user-id"
+#~ msgstr "--sign-key ユーザid"
+
+#~ msgid "--lsign-key user-id"
+#~ msgstr "--lsign-key ユーザid"
+
+#~ msgid "--edit-key user-id [commands]"
+#~ msgstr "--edit-key ユーザid [コマンド]"
+
+#~ msgid "--passwd <user-id>"
+#~ msgstr "--passwd <ユーザid>"
+
+#~ msgid "[filename]"
+#~ msgstr "[ファイル名]"
 
 #~ msgid "shadowing the key failed: %s\n"
 #~ msgstr "鍵のシャドウ化に失敗しました: %s\n"
