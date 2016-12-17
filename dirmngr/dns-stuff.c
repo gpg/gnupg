@@ -31,10 +31,12 @@
 #include <config.h>
 #include <sys/types.h>
 #ifdef HAVE_W32_SYSTEM
+# define WIN32_LEAN_AND_MEAN
 # ifdef HAVE_WINSOCK2_H
 #  include <winsock2.h>
 # endif
 # include <windows.h>
+# include <iphlpapi.h>
 #else
 # if HAVE_SYSTEM_RESOLVER
 #  include <netinet/in.h>
@@ -45,6 +47,7 @@
 #endif
 #include <string.h>
 #include <unistd.h>
+
 
 /* William Ahern's DNS library, included as a source copy.  */
 #ifdef USE_LIBDNS
@@ -229,6 +232,8 @@ free_dns_addrinfo (dns_addrinfo_t ai)
     }
 }
 
+
+#ifndef HAVE_W32_SYSTEM
 /* Return H_ERRNO mapped to a gpg-error code.  Will never return 0. */
 static gpg_error_t
 get_h_errno_as_gpg_error (void)
@@ -245,7 +250,7 @@ get_h_errno_as_gpg_error (void)
     }
   return gpg_error (ec);
 }
-
+#endif /*!HAVE_W32_SYSTEM*/
 
 static gpg_error_t
 map_eai_to_gpg_error (int ec)
@@ -323,7 +328,6 @@ libdns_init (void)
   gpg_error_t err;
   struct libdns_s ld;
   int derr;
-  const char *fname;
   char *cfgstr = NULL;
 
   if (libdns.resolv_conf)
@@ -378,6 +382,47 @@ libdns_init (void)
     }
   else
     {
+#ifdef HAVE_W32_SYSTEM
+      ULONG ninfo_len;
+      PFIXED_INFO ninfo;
+      PIP_ADDR_STRING pip;
+      int idx;
+
+      ninfo_len = 2048;
+      ninfo = xtrymalloc (ninfo_len);
+      if (!ninfo)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      if (GetNetworkParams (ninfo, &ninfo_len))
+        {
+          log_error ("GetNetworkParms failed: %s\n", w32_strerror (-1));
+          err = gpg_error (GPG_ERR_GENERAL);
+          xfree (ninfo);
+          goto leave;
+        }
+
+      for (idx=0, pip = &(ninfo->DnsServerList);
+           pip && idx < DIM (ld.resolv_conf->nameserver);
+           pip = pip->Next)
+        {
+          log_debug ("ninfo->dnsserver[%d] '%s'\n", idx, pip->IpAddress.String);
+          err = libdns_error_to_gpg_error
+            (dns_resconf_pton (&ld.resolv_conf->nameserver[idx],
+                               pip->IpAddress.String));
+          if (err)
+            log_error ("failed to set nameserver[%d] '%s': %s\n",
+                       idx, pip->IpAddress.String, gpg_strerror (err));
+          else
+            idx++;
+        }
+      xfree (ninfo);
+
+#else /* Unix */
+      const char *fname;
+
       fname = "/etc/resolv.conf";
       err = libdns_error_to_gpg_error
         (dns_resconf_loadpath (ld.resolv_conf, fname));
@@ -395,6 +440,8 @@ libdns_init (void)
           log_error ("failed to load '%s': %s\n", fname, gpg_strerror (err));
           goto leave;
         }
+
+#endif /* Unix */
     }
 
   ld.hosts = dns_hosts_open (&derr);

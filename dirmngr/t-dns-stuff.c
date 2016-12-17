@@ -33,6 +33,16 @@ static int verbose;
 static int debug;
 
 
+static void
+init_sockets (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  WSADATA wsadat;
+
+  WSAStartup (0x202, &wsadat);
+#endif
+}
+
 
 int
 main (int argc, char **argv)
@@ -146,6 +156,8 @@ main (int argc, char **argv)
       fprintf (stderr, PGM ": none or too many host names given\n");
       exit (1);
     }
+
+  init_sockets ();
 
   if (opt_tor)
     {

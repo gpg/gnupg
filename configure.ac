@@ -1088,6 +1088,12 @@ if test "$build_dirmngr" = "yes"; then
     show_tor_support="${show_tor_support} (no system resolver)"
   fi
 
+  if test "$have_w32_system" = yes; then
+    if test "$use_libdns" = yes; then
+      DNSLIBS="$DNSLIBS -liphlpapi"
+    fi
+  fi
+
   LIBS=$_dns_save_libs
 fi
 
