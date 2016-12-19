@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-11-18 15:40+0100\n"
+"PO-Revision-Date: 2016-12-18 20:17+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -1825,6 +1825,9 @@ msgstr "Schnell eine neue User-ID anfügen"
 msgid "quickly revoke a user-id"
 msgstr "Schnell eine User-ID widerrufen"
 
+msgid "quickly set a new expiration date"
+msgstr "Schnell ein neues Ablaufdatum setzen"
+
 msgid "full featured key pair generation"
 msgstr "Ein neues Schlüsselpaar erzeugen (alle Optionen)"
 
@@ -1934,7 +1937,7 @@ msgid ""
 "Examples:\n"
 "\n"
 " -se -r Bob [file]          sign and encrypt for user Bob\n"
-" --clear-sign [file]         make a clear text signature\n"
+" --clear-sign [file]        make a clear text signature\n"
 " --detach-sign [file]       make a detached signature\n"
 " --list-keys [names]        show keys\n"
 " --fingerprint [names]      show fingerprints\n"
@@ -1943,7 +1946,7 @@ msgstr ""
 "Beispiele:\n"
 "\n"
 " -se -r Bob [Datei]         Signieren und verschlüsseln für Benutzer Bob\n"
-" --clear-sign [Datei]        Eine Klartextsignatur erzeugen\n"
+" --clear-sign [Datei]       Eine Klartextsignatur erzeugen\n"
 " --detach-sign [Datei]      Eine abgetrennte Signatur erzeugen\n"
 " --list-keys [Namen]        Schlüssel anzeigen\n"
 " --fingerprint [Namen]      \"Fingerabdrücke\" anzeigen\n"
@@ -3413,6 +3416,10 @@ msgstr "Keine passende User-ID"
 
 msgid "Nothing to sign.\n"
 msgstr "Nichts zu beglaubigen\n"
+
+#, c-format
+msgid "'%s' is not a valid expiration time\n"
+msgstr "'%s' ist kein gültiges Ablaufdatum\n"
 
 msgid "Digest: "
 msgstr "Digest: "
@@ -5535,6 +5542,14 @@ msgstr ""
 #, c-format
 msgid "unsupported TOFU database version: %s\n"
 msgstr "Nicht unterstützte TOFU Datenbank Version: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error creating temporary file: %s\n"
+msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+msgstr "Fehler beim Erstellen einer temporären Datei: %s\n"
+
+msgid "TOFU DB error"
+msgstr "TOFU (Trust on First Use) database error"
 
 #, c-format
 msgid "error reading TOFU database: %s\n"
