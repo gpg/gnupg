@@ -157,6 +157,7 @@ main (int argc, char **argv)
       exit (1);
     }
 
+  set_dns_verbose (verbose, debug);
   init_sockets ();
 
   if (opt_tor)
@@ -234,19 +235,27 @@ main (int argc, char **argv)
   else if (opt_srv)
     {
       struct srventry *srv;
-      int rc,i;
+      unsigned int count;
+      int i;
 
-      rc=getsrv (name? name : "_hkp._tcp.wwwkeys.pgp.net", &srv);
-      printf("Count=%d\n",rc);
-      for(i=0;i<rc;i++)
+      err = get_dns_srv (name? name : "_hkp._tcp.wwwkeys.pgp.net",
+                         &srv, &count);
+      if (err)
+        printf ("get_dns_srv failed: %s <%s>\n",
+                gpg_strerror (err), gpg_strsource (err));
+      else
         {
-          printf("priority=%-8hu  ",srv[i].priority);
-          printf("weight=%-8hu  ",srv[i].weight);
-          printf("port=%-5hu  ",srv[i].port);
-          printf("target=%s\n",srv[i].target);
-        }
+          printf ("count=%u\n",count);
+          for (i=0; i < count; i++)
+            {
+              printf("priority=%-8hu  ",srv[i].priority);
+              printf("weight=%-8hu  ",srv[i].weight);
+              printf("port=%-5hu  ",srv[i].port);
+              printf("target=%s\n",srv[i].target);
+            }
 
-      xfree(srv);
+          xfree(srv);
+        }
     }
   else /* Standard lookup.  */
     {
@@ -289,7 +298,7 @@ main (int argc, char **argv)
                                   (opt_bracket? DNS_WITHBRACKET:0),
                                   &host);
           if (err)
-            printf ("[resolve_dns_addr failed (2): %s]", gpg_strerror (err));
+            printf ("  [resolve_dns_addr failed (2): %s]", gpg_strerror (err));
           else
             {
               if (!is_ip_address (host))

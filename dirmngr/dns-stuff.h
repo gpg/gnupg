@@ -92,6 +92,9 @@ struct srventry
 };
 
 
+/* Set verbosity and debug mode for this module. */
+void set_dns_verbose (int verbose, int debug);
+
 /* Calling this function with YES set to True forces the use of the
  * standard resolver even if dirmngr has been built with support for
  * an alternative resolver.  */
@@ -145,8 +148,9 @@ gpg_error_t get_dns_cert (const char *name, int want_certtype,
                           unsigned char **r_fpr, size_t *r_fprlen,
                           char **r_url);
 
-
-int getsrv (const char *name,struct srventry **list);
+/* Return an array of SRV records.  */
+gpg_error_t get_dns_srv (const char *name,
+                         struct srventry **list, unsigned int *r_count);
 
 
 #endif /*GNUPG_DIRMNGR_DNS_STUFF_H*/

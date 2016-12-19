@@ -108,6 +108,10 @@
 /* The default nameserver used in Tor mode.  */
 #define DEFAULT_NAMESERVER "8.8.8.8"
 
+/* Two flags to enable verbose and debug mode.  */
+static int opt_verbose;
+static int opt_debug;
+
 /* If set force the use of the standard resolver.  */
 static int standard_resolver;
 
@@ -203,6 +207,15 @@ enable_dns_tormode (int new_circuit)
     }
   tor_mode = 1;
   return 0;
+}
+
+
+/* Set verbosity and debug mode for this module. */
+void
+set_dns_verbose (int verbose, int debug)
+{
+  opt_verbose = verbose;
+  opt_debug = debug;
 }
 
 
@@ -558,6 +571,9 @@ libdns_switch_port_p (gpg_error_t err)
       && libdns_tor_port == TOR_PORT)
     {
       /* Switch port and try again.  */
+      if (opt_debug)
+        log_debug ("dns: switching from SOCKS port %d to %d\n",
+                   TOR_PORT, TOR_PORT2);
       libdns_tor_port = TOR_PORT2;
       libdns_reinit_pending = 1;
       return 1;
@@ -906,22 +922,24 @@ resolve_dns_name (const char *name, unsigned short port,
                   int want_family, int want_socktype,
                   dns_addrinfo_t *r_ai, char **r_canonname)
 {
+  gpg_error_t err;
+
 #ifdef USE_LIBDNS
   if (!standard_resolver)
     {
-      gpg_error_t err;
-
       err = resolve_name_libdns (name, port, want_family, want_socktype,
                                   r_ai, r_canonname);
       if (err && libdns_switch_port_p (err))
         err = resolve_name_libdns (name, port, want_family, want_socktype,
                                    r_ai, r_canonname);
-      return err;
     }
+  else
 #endif /*USE_LIBDNS*/
-
-  return resolve_name_standard (name, port, want_family, want_socktype,
-                                r_ai, r_canonname);
+    err = resolve_name_standard (name, port, want_family, want_socktype,
+                                 r_ai, r_canonname);
+  if (opt_debug)
+    log_debug ("dns: resolve_dns_name(%s): %s\n", name, gpg_strerror (err));
+  return err;
 }
 
 
@@ -1407,6 +1425,8 @@ get_dns_cert (const char *name, int want_certtype,
               void **r_key, size_t *r_keylen,
               unsigned char **r_fpr, size_t *r_fprlen, char **r_url)
 {
+  gpg_error_t err;
+
   if (r_key)
     *r_key = NULL;
   if (r_keylen)
@@ -1418,19 +1438,20 @@ get_dns_cert (const char *name, int want_certtype,
 #ifdef USE_LIBDNS
   if (!standard_resolver)
     {
-      gpg_error_t err;
-
       err = get_dns_cert_libdns (name, want_certtype, r_key, r_keylen,
                                  r_fpr, r_fprlen, r_url);
       if (err && libdns_switch_port_p (err))
         err = get_dns_cert_libdns (name, want_certtype, r_key, r_keylen,
                                    r_fpr, r_fprlen, r_url);
-      return err;
     }
+  else
 #endif /*USE_LIBDNS*/
+    err = get_dns_cert_standard (name, want_certtype, r_key, r_keylen,
+                                 r_fpr, r_fprlen, r_url);
 
-  return get_dns_cert_standard (name, want_certtype, r_key, r_keylen,
-                                r_fpr, r_fprlen, r_url);
+  if (opt_debug)
+    log_debug ("dns: get_dns_cert(%s): %s\n", name, gpg_strerror (err));
+  return err;
 }
 
 
@@ -1452,7 +1473,7 @@ priosort(const void *a,const void *b)
  * R_COUNT.  */
 #ifdef USE_LIBDNS
 static gpg_error_t
-getsrv_libdns (const char *name, struct srventry **list, int *r_count)
+getsrv_libdns (const char *name, struct srventry **list, unsigned int *r_count)
 {
   gpg_error_t err;
   struct dns_resolver *res = NULL;
@@ -1461,7 +1482,7 @@ getsrv_libdns (const char *name, struct srventry **list, int *r_count)
   struct dns_rr_i rri;
   char host[DNS_D_MAXNAME + 1];
   int derr;
-  int srvcount=0;
+  unsigned int srvcount = 0;
 
   err = libdns_res_open (&res);
   if (err)
@@ -1549,7 +1570,8 @@ getsrv_libdns (const char *name, struct srventry **list, int *r_count)
  * expected that NULL is stored at the address of LIST and 0 is stored
  * at the address of R_COUNT.  */
 static gpg_error_t
-getsrv_standard (const char *name, struct srventry **list, int *r_count)
+getsrv_standard (const char *name,
+                 struct srventry **list, unsigned int *r_count)
 {
 #ifdef HAVE_SYSTEM_RESOLVER
   union {
@@ -1561,7 +1583,7 @@ getsrv_standard (const char *name, struct srventry **list, int *r_count)
   unsigned char *pt, *emsg;
   int r, rc;
   u16 dlen;
-  int srvcount=0;
+  unsigned int srvcount = 0;
   u16 count;
 
   /* Do not allow a query using the standard resolver in Tor mode.  */
@@ -1672,14 +1694,16 @@ getsrv_standard (const char *name, struct srventry **list, int *r_count)
 }
 
 
-int
-getsrv (const char *name, struct srventry **list)
+/* Note that we do not return NONAME but simply store 0 at R_COUNT.  */
+gpg_error_t
+get_dns_srv (const char *name, struct srventry **list, unsigned int *r_count)
 {
   gpg_error_t err;
-  int srvcount;
+  unsigned int srvcount;
   int i;
 
   *list = NULL;
+  *r_count = 0;
   srvcount = 0;
 #ifdef USE_LIBDNS
   if (!standard_resolver)
@@ -1693,7 +1717,11 @@ getsrv (const char *name, struct srventry **list)
     err = getsrv_standard (name, list, &srvcount);
 
   if (err)
-    return -1;  /* Ugly.  FIXME: Return an error code. */
+    {
+      if (gpg_err_code (err) == GPG_ERR_NO_NAME)
+        err = 0;
+      goto leave;
+    }
 
   /* Now we have an array of all the srv records. */
 
@@ -1768,7 +1796,17 @@ getsrv (const char *name, struct srventry **list)
         }
     }
 
-  return srvcount;
+ leave:
+  if (opt_debug)
+    {
+      if (err)
+        log_debug ("dns: getsrv(%s): %s\n", name, gpg_strerror (err));
+      else
+        log_debug ("dns: getsrv(%s) -> %u records\n", name, srvcount);
+    }
+  if (!err)
+    *r_count = srvcount;
+  return err;
 }
 
 
@@ -1924,13 +1962,13 @@ get_dns_cname_standard (const char *name, char **r_cname)
 gpg_error_t
 get_dns_cname (const char *name, char **r_cname)
 {
+  gpg_error_t err;
+
   *r_cname = NULL;
 
 #ifdef USE_LIBDNS
   if (!standard_resolver)
     {
-      gpg_error_t err;
-
       err = get_dns_cname_libdns (name, r_cname);
       if (err && libdns_switch_port_p (err))
         err = get_dns_cname_libdns (name, r_cname);
@@ -1938,5 +1976,10 @@ get_dns_cname (const char *name, char **r_cname)
     }
 #endif /*USE_LIBDNS*/
 
-  return get_dns_cname_standard (name, r_cname);
+  err = get_dns_cname_standard (name, r_cname);
+  if (opt_debug)
+    log_debug ("get_dns_cname(%s)%s%s\n", name,
+               err ? ": " : " -> ",
+               err ? gpg_strerror (err) : *r_cname);
+  return err;
 }

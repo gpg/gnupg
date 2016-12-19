@@ -640,6 +640,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       return 0; /* Not handled. */
     }
 
+  set_dns_verbose (opt.verbose, !!DBG_DNS);
+
   return 1; /* Handled. */
 }
 

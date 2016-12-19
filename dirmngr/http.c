@@ -2321,7 +2321,7 @@ connect_server (const char *server, unsigned short port,
 {
   gpg_error_t err;
   assuan_fd_t sock = ASSUAN_INVALID_FD;
-  int srvcount = 0;
+  unsigned int srvcount = 0;
   int hostfound = 0;
   int anyhostaddr = 0;
   int srv, connected;
@@ -2377,8 +2377,12 @@ connect_server (const char *server, unsigned short port,
             {
               stpcpy (stpcpy (stpcpy (stpcpy (srvname,"_"), srvtag),
                               "._tcp."), server);
-              srvcount = getsrv (srvname, &serverlist);
+              err = get_dns_srv (srvname, &serverlist, &srvcount);
               xfree (srvname);
+              if (err)
+                log_info ("getting SRV '%s' failed: %s\n",
+                          serverlist[srv].target, gpg_strerror (err));
+              /* Note that on error SRVCOUNT is zero.  */
             }
 	}
     }

@@ -428,7 +428,7 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
       char *cname;
       char *srvrecord;
       struct srventry *srvs;
-      int srvscount;
+      unsigned int srvscount;
 
       reftblsize = 100;
       reftbl = xtrymalloc (reftblsize * sizeof *reftbl);
@@ -456,11 +456,10 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
               return err;
             }
 
-          srvscount = getsrv (srvrecord, &srvs);
+          err = get_dns_srv (srvrecord, &srvs, &srvscount);
           xfree (srvrecord);
-          if (srvscount < 0)
+          if (err)
             {
-              err = gpg_error_from_syserror ();
               xfree (reftbl);
               return err;
             }
