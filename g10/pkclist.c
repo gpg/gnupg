@@ -481,7 +481,7 @@ do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
 
       if ((trustlevel & TRUST_MASK) == TRUST_NEVER)
         tty_printf(
-          _("This key has is bad!  It has been marked as untrusted!  If you\n"
+          _("This key is bad!  It has been marked as untrusted!  If you\n"
             "*really* know what you are doing, you may answer the next\n"
             "question with yes.\n"));
       else
