@@ -1328,6 +1328,43 @@ Status codes are:
 
 
 
+* Debug flags
+
+This tables gives the flag values for the --debug option along with
+the alternative names used by the components.
+
+|       | gpg     | gpgsm   | agent   | scd     | dirmngr | g13     | wks     |
+|-------+---------+---------+---------+---------+---------+---------+---------|
+|     1 | packet  | x509    |         |         | x509    | mount   | mime    |
+|     2 | mpi     | mpi     | mpi     | mpi     |         |         | parser  |
+|     4 | crypto  | crypto  | crypto  | crypto  | crypto  | crypto  | crypto  |
+|     8 | filter  |         |         |         |         |         |         |
+|    16 | iobuf   |         |         |         | dns     |         |         |
+|    32 | memory  | memory  | memory  | memory  | memory  | memory  | memory  |
+|    64 | cache   | cache   | cache   | cache   | cache   |         |         |
+|   128 | memstat | memstat | memstat | memstat | memstat | memstat | memstat |
+|   256 | trust   |         |         |         |         |         |         |
+|   512 | hashing | hashing | hashing | hashing | hashing |         |         |
+|  1024 | ipc     | ipc     | ipc     | ipc     | ipc     | ipc     | ipc     |
+|  2048 |         |         |         | cardio  | network |         |         |
+|  4096 | clock   |         |         | reader  |         |         |         |
+|  8192 | lookup  |         |         |         | lookup  |         |         |
+| 16384 | extprog |         |         |         |         |         | extprog |
+
+Description of some debug flags:
+
+  - cardio :: Used by scdaemon to trace the APDUs exchange with the
+              card.
+  - clock  :: Show execution times of certain functions.
+  - crypto :: Trace crypto operations.
+  - hashing :: Create files with the hashed data.
+  - ipc :: Trace the Assuan commands.
+  - mpi :: Show the values of the MPIs.
+  - reader :: Used by scdaemon to trace card reader related code.  For
+              example: Open and close reader.
+
+
+
 * Miscellaneous notes
 
 ** v3 fingerprints

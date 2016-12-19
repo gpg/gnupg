@@ -251,7 +251,6 @@ static ARGPARSE_OPTS opts[] = {
 /* The list of supported debug flags.  */
 static struct debug_flags_s debug_flags [] =
   {
-    { DBG_COMMAND_VALUE, "command"  },
     { DBG_MPI_VALUE    , "mpi"     },
     { DBG_CRYPTO_VALUE , "crypto"  },
     { DBG_MEMORY_VALUE , "memory"  },
@@ -520,10 +519,9 @@ set_debug (void)
   else if (!strcmp (debug_level, "basic") || (numok && numlvl <= 2))
     opt.debug = DBG_IPC_VALUE;
   else if (!strcmp (debug_level, "advanced") || (numok && numlvl <= 5))
-    opt.debug = DBG_IPC_VALUE|DBG_COMMAND_VALUE;
+    opt.debug = DBG_IPC_VALUE;
   else if (!strcmp (debug_level, "expert") || (numok && numlvl <= 8))
-    opt.debug = (DBG_IPC_VALUE|DBG_COMMAND_VALUE
-                 |DBG_CACHE_VALUE);
+    opt.debug = (DBG_IPC_VALUE | DBG_CACHE_VALUE);
   else if (!strcmp (debug_level, "guru") || numok)
     {
       opt.debug = ~0;

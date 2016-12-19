@@ -168,7 +168,6 @@ struct
 
 
 /* Bit values for the --debug option.  */
-#define DBG_COMMAND_VALUE 1	/* debug commands i/o */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */
 #define DBG_CRYPTO_VALUE  4	/* debug low level crypto */
 #define DBG_MEMORY_VALUE  32	/* debug memory allocation stuff */
@@ -178,7 +177,6 @@ struct
 #define DBG_IPC_VALUE     1024  /* Enable Assuan debugging.  */
 
 /* Test macros for the debug option.  */
-#define DBG_COMMAND (opt.debug & DBG_COMMAND_VALUE)
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
 #define DBG_MEMORY  (opt.debug & DBG_MEMORY_VALUE)
 #define DBG_CACHE   (opt.debug & DBG_CACHE_VALUE)

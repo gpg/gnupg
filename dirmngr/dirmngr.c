@@ -257,6 +257,8 @@ static struct debug_flags_s debug_flags [] =
     { DBG_MEMSTAT_VALUE, "memstat" },
     { DBG_HASHING_VALUE, "hashing" },
     { DBG_IPC_VALUE    , "ipc"     },
+    { DBG_DNS_VALUE    , "dns"     },
+    { DBG_NETWORK_VALUE, "network" },
     { DBG_LOOKUP_VALUE , "lookup"  },
     { 77, NULL } /* 77 := Do not exit on "help" or "?".  */
   };

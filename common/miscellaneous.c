@@ -480,6 +480,8 @@ gnupg_compare_version (const char *a, const char *b)
  *          supplied variable is updated by the parsed flags.
  *
  * If STRING is NULL the enabled debug flags are printed.
+ *
+ * See doc/DETAILS for a summary of used debug options.
  */
 int
 parse_debug_flag (const char *string, unsigned int *debugvar,

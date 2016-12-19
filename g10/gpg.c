@@ -913,7 +913,6 @@ static struct debug_flags_s debug_flags [] =
     { DBG_MEMSTAT_VALUE, "memstat" },
     { DBG_TRUST_VALUE  , "trust"   },
     { DBG_HASHING_VALUE, "hashing" },
-    { DBG_CARD_IO_VALUE, "cardio"  },
     { DBG_IPC_VALUE    , "ipc"     },
     { DBG_CLOCK_VALUE  , "clock"   },
     { DBG_LOOKUP_VALUE , "lookup"  },
