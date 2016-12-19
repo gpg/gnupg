@@ -20,9 +20,16 @@
 (load (with-path "defs.scm"))
 (setup-environment)
 
+(define GPGTIME 1480943782)
+
+;; Generate a --faked-system-time parameter for a particular offset.
+(define (faketime delta)
+  (string-append "--faked-system-time=" (number->string (+ GPGTIME delta))))
+;; A convenience function for the above.
+(define (days->seconds days) (* days 24 60 60))
+
 ;; Redefine GPG without --always-trust and a fixed time.
-(define GPG `(,(tool 'gpg) --no-permission-warning
-	      --faked-system-time=1480943782))
+(define GPG `(,(tool 'gpg) --no-permission-warning ,(faketime GPGTIME)))
 (define GNUPGHOME (getenv "GNUPGHOME"))
 (if (string=? "" GNUPGHOME)
     (fail "GNUPGHOME not set"))
@@ -168,58 +175,107 @@
 
 (display "Checking TOFU stats...\n")
 
-(define (check-counts keyid expected-sigs expected-encs . args)
+(define (check-counts keyid expected-sigs expected-sig-days
+                      expected-encs expected-enc-days . args)
   (let*
       ((tfs (assoc "tfs"
                    (gpg-with-colons
                     `(--trust-model=tofu --with-tofu-info
                                          ,@args --list-keys ,keyid))))
        (sigs (string->number (list-ref tfs 3)))
-       (encs (string->number (list-ref tfs 4))))
+       (sig-days (string->number (list-ref tfs 11)))
+       (encs (string->number (list-ref tfs 4)))
+       (enc-days (string->number (list-ref tfs 12)))
+       )
+    ; (display keyid) (display ": ") (display tfs) (display "\n")
     (unless (= sigs expected-sigs)
             (fail keyid ": # signatures (" sigs ") does not match expected"
                    "# signatures (" expected-sigs ").\n"))
+    (unless (= sig-days expected-sig-days)
+            (fail keyid ": # signature days (" sig-days ")"
+                  "does not match expected"
+                  "# signature days (" expected-sig-days ").\n"))
     (unless (= encs expected-encs)
             (fail keyid ": # encryptions (" encs ") does not match expected"
                    "# encryptions (" expected-encs ").\n"))
+    (unless (= enc-days expected-enc-days)
+            (fail keyid ": # encryption days (" encs ")"
+                  "does not match expected"
+                  "# encryption days (" expected-enc-days ").\n"))
     ))
 
 ;; Carefully remove the TOFU db.
 (catch '() (unlink (string-append GNUPGHOME "/tofu.db")))
 
-(check-counts "1C005AF3" 0 0)
-(check-counts "BE04EB2B" 0 0)
-(check-counts "B662E42F" 0 0)
+(check-counts "1C005AF3" 0 0 0 0)
+(check-counts "BE04EB2B" 0 0 0 0)
+(check-counts "B662E42F" 0 0 0 0)
 
 ;; Verify a message.  The signature count should increase by 1.
 (call-check `(,@GPG --trust-model=tofu
 		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-1.txt")))
-(check-counts "1C005AF3" 1 0)
+
+(check-counts "1C005AF3" 1 1 0 0)
 
 ;; Verify the same message.  The signature count should remain the
 ;; same.
 (call-check `(,@GPG --trust-model=tofu
 		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-1.txt")))
-(check-counts "1C005AF3" 1 0)
+(check-counts "1C005AF3" 1 1 0 0)
 
 ;; Verify another message.
 (call-check `(,@GPG --trust-model=tofu
 		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-2.txt")))
-(check-counts "1C005AF3" 2 0)
+(check-counts "1C005AF3" 2 1 0 0)
 
 ;; Verify another message.
 (call-check `(,@GPG --trust-model=tofu
 		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-3.txt")))
-(check-counts "1C005AF3" 3 0)
+(check-counts "1C005AF3" 3 1 0 0)
 
 ;; Verify a message from a different sender.  The signature count
 ;; should increase by 1 for that key.
 (call-check `(,@GPG --trust-model=tofu
 		    --verify ,(in-srcdir "tofu/conflicting/BE04EB2B-1.txt")))
-(check-counts "1C005AF3" 3 0)
-(check-counts "BE04EB2B" 1 0)
-(check-counts "B662E42F" 0 0)
+(check-counts "1C005AF3" 3 1 0 0)
+(check-counts "BE04EB2B" 1 1 0 0)
+(check-counts "B662E42F" 0 0 0 0)
 
+;; Verify another message on a new day.  (Recall: we are interested in
+;; when the message was first verified, not when the signer claimed
+;; that it was signed.)
+(call-check `(,@GPG --trust-model=tofu ,(faketime (days->seconds 2))
+		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-4.txt")))
+(check-counts "1C005AF3" 4 2 0 0)
+(check-counts "BE04EB2B" 1 1 0 0)
+(check-counts "B662E42F" 0 0 0 0)
+
+;; And another.
+(call-check `(,@GPG --trust-model=tofu ,(faketime (days->seconds 2))
+		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-5.txt")))
+(check-counts "1C005AF3" 5 2 0 0)
+(check-counts "BE04EB2B" 1 1 0 0)
+(check-counts "B662E42F" 0 0 0 0)
+
+;; Another, but for a different key.
+(call-check `(,@GPG --trust-model=tofu ,(faketime (days->seconds 2))
+		    --verify ,(in-srcdir "tofu/conflicting/BE04EB2B-2.txt")))
+(check-counts "1C005AF3" 5 2 0 0)
+(check-counts "BE04EB2B" 2 2 0 0)
+(check-counts "B662E42F" 0 0 0 0)
+
+;; And add a third day.
+(call-check `(,@GPG --trust-model=tofu ,(faketime (days->seconds 4))
+		    --verify ,(in-srcdir "tofu/conflicting/BE04EB2B-3.txt")))
+(check-counts "1C005AF3" 5 2 0 0)
+(check-counts "BE04EB2B" 3 3 0 0)
+(check-counts "B662E42F" 0 0 0 0)
+
+(call-check `(,@GPG --trust-model=tofu ,(faketime (days->seconds 4))
+		    --verify ,(in-srcdir "tofu/conflicting/BE04EB2B-4.txt")))
+(check-counts "1C005AF3" 5 2 0 0)
+(check-counts "BE04EB2B" 4 3 0 0)
+(check-counts "B662E42F" 0 0 0 0)
 
 ;; Check that we detect the following attack:
 ;;
