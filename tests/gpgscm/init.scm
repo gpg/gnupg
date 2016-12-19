@@ -597,7 +597,8 @@
   (cond
    ((more-handlers?)
     ((pop-handler) message args history))
-   ((and args (= 2 (length args)) (equal? *interpreter-exit* (car args)))
+   ((and args (list? args) (= 2 (length args))
+	 (equal? *interpreter-exit* (car args)))
     (*run-atexit-handlers*)
     (quit (cadr args)))
    (else
