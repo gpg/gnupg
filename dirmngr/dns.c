@@ -50,7 +50,7 @@
 
 #if _WIN32
 #ifndef FD_SETSIZE
-#define FD_SETSIZE 256
+#define FD_SETSIZE 1024
 #endif
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -1107,7 +1107,8 @@ static int dns_poll(int fd, short events, int timeout) {
 	if (!events)
 		return 0;
 
-	assert(fd >= 0 && (unsigned)fd < FD_SETSIZE);
+        if (fd < 0 || (unsigned)fd >= FD_SETSIZE)
+          return EINVAL;
 
 	FD_ZERO(&rset);
 	FD_ZERO(&wset);
