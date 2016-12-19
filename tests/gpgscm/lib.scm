@@ -18,13 +18,16 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (macro (assert form)
-  `(if (not ,(cadr form))
-       (begin
-	 (display "Assertion failed: ")
-	 (write (quote ,(cadr form)))
-	 (newline)
-	 (exit 1))))
+  (let ((tag (get-tag form)))
+    `(if (not ,(cadr form))
+	 (throw ,(if (pair? tag)
+		     `(string-append ,(car tag) ":"
+				     ,(number->string (+ 1 (cdr tag)))
+				     ": Assertion failed: ")
+		     "Assertion failed: ")
+		(quote ,(cadr form))))))
 (assert #t)
+(assert (not #f))
 
 (define (filter pred lst)
   (cond ((null? lst) '())
