@@ -930,7 +930,8 @@ signing.
   @opindex keyedit:delkey
   Remove a subkey (secondary key). Note that it is not possible to retract
   a subkey, once it has been send to the public (i.e. to a keyserver).  In
-  that case you better use @code{revkey}.
+  that case you better use @code{revkey}.  Also note that this only
+  deletes the public part of a key.
 
   @item revkey
   @opindex keyedit:revkey
