@@ -1409,14 +1409,23 @@ static pointer mk_atom(scheme *sc, char *q) {
      int has_fp_exp = 0;
 
 #if USE_COLON_HOOK
-     if((p=strstr(q,"::"))!=0) {
+     char *next;
+     next = p = q;
+     while ((next = strstr(next, "::")) != 0) {
+	  /* Keep looking for the last occurrence.  */
+	  p = next;
+	  next = next + 2;
+     }
+
+     if (p != q) {
           *p=0;
           return cons(sc, sc->COLON_HOOK,
                           cons(sc,
                               cons(sc,
                                    sc->QUOTE,
-                                   cons(sc, mk_atom(sc,p+2), sc->NIL)),
-                              cons(sc, mk_symbol(sc,strlwr(q)), sc->NIL)));
+                                   cons(sc, mk_symbol(sc, strlwr(p + 2)),
+					sc->NIL)),
+                              cons(sc, mk_atom(sc, q), sc->NIL)));
      }
 #endif
 
