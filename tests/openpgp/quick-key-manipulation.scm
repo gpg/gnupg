@@ -27,13 +27,6 @@
 (define (exact id)
   (string-append "=" id))
 
-;; Convenient accessors for the colon output.
-(define (:length x) (string->number (list-ref x 2)))
-(define (:alg x) (string->number (list-ref x 3)))
-(define (:expire x) (list-ref x 6))
-(define (:fpr x) (list-ref x 9))
-(define (:cap x) (list-ref x 11))
-
 (define (count-uids-of-secret-key id)
   (length (filter (lambda (x) (and (string=? "uid" (car x))
 				   (not (string=? "r" (cadr x)))))

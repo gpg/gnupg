@@ -90,6 +90,7 @@ XTESTS = \
 	ssh-export.scm \
 	quick-key-manipulation.scm \
 	key-selection.scm \
+	delete-keys.scm \
 	issue2015.scm \
 	issue2346.scm \
 	issue2417.scm \

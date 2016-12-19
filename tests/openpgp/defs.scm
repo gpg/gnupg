@@ -35,6 +35,31 @@
 ;; first and then search for the encryption subkey.)
 (define dsa-usrname2 "0xCB879DE9")
 
+(define keys
+  (package
+   (define (new fpr grip uids subkeys)
+     (package))
+   (define (subkey fpr grip)
+     (package))
+   (define alfa (new "A0FF4590BB6122EDEF6E3C542D727CC768697734"
+		     "76F7E2B35832976B50A27A282D9B87E44577EB66"
+		     '("alfa@example.net" "alpha@example.net")
+		     (list
+		      (subkey "3B3FBC948FE59301ED629EFB6AE6D7EE46A871F8"
+			      "A0747D5F9425E6664F4FFBEED20FBCA79FDED2BD"))))
+   (define one (new "289B0EF1D105E124B6F626020EF77096D74C5F22"
+		    "50B2D4FA4122C212611048BC5FC31BD44393626E"
+		    '("one@example.com")
+		    (list
+		     (subkey "EB467DCA4AD7676A6A62B2ABABAB28A247BE2775"
+			     "7E201E28B6FEB2927B321F443205F4724EBE637E"))))
+   (define two (new "C1DEBB34EA8B71009EAFA474973D50E1C40FDECF"
+		    "343D8AF79796EE107D645A2787A9D9252F924E6F"
+		    '("two@example.com")
+		    (list
+		     (subkey "CD3D0F5701CBFCACB2A4907305A37887B27907AA"
+			     "8B5ABF3EF9EB8D96B91A0B8C2C4401C91C834C34"))))))
+
 (define key-file1 "samplekeys/rsa-rsa-sample-1.asc")
 (define key-file2 "samplekeys/ed25519-cv25519-sample-1.asc")
 
@@ -116,6 +141,30 @@
   (let ((s (call-popen `(,@GPG --with-colons ,@args) "")))
     (map (lambda (line) (string-split line #\:))
 	 (string-split-newlines s))))
+
+;; Convenient accessors for the colon output.
+(define (:type x)   (string->symbol (list-ref x 0)))
+(define (:length x) (string->number (list-ref x 2)))
+(define (:alg x) (string->number (list-ref x 3)))
+(define (:expire x) (list-ref x 6))
+(define (:fpr x) (list-ref x 9))
+(define (:cap x) (list-ref x 11))
+
+(define (have-public-key? key)
+  (catch #f
+	 (pair? (filter (lambda (l) (and (equal? 'fpr (:type l))
+					 (equal? key::fpr (:fpr l))))
+			(gpg-with-colons `(--list-keys ,key::fpr))))))
+
+(define (have-secret-key? key)
+  (catch #f
+	 (pair? (filter (lambda (l) (and (equal? 'fpr (:type l))
+					 (equal? key::fpr (:fpr l))))
+			(gpg-with-colons `(--list-secret-keys ,key::fpr))))))
+
+(define (have-secret-key-file? key)
+  (file-exists? (path-join (getenv "GNUPGHOME") "private-keys-v1.d"
+			   (string-append key::grip ".key"))))
 
 (define (get-config what)
   (string-split (caddar (gpg-with-colons `(--list-config ,what))) #\;))
