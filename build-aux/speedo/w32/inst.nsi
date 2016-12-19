@@ -545,15 +545,16 @@ Section "-gnupginst"
   # If we are reinstalling, try to kill a possible running gpa using
   # an already installed gpa.
   ifFileExists "$INSTDIR\bin\launch-gpa.exe"  0 no_uiserver
-    ExecWait '"$INSTDIR\bin\launch-gpa" --stop-server'
+    nsExec::ExecToLog '"$INSTDIR\bin\launch-gpa" "--stop-server"'
 
   no_uiserver:
 
   # If we are reinstalling, try to kill a possible running agent using
   # an already installed gpgconf.
+
   ifFileExists "$INSTDIR\bin\gpgconf.exe"  0 no_gpgconf
-    ExecWait '"$INSTDIR\bin\gpgconf" --kill dirmngr'
-    ExecWait '"$INSTDIR\bin\gpgconf" --kill gpg-agent'
+    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "dirmngr"'
+    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "gpg-agent"'
 
   no_gpgconf:
 
@@ -976,7 +977,7 @@ ${If} ${RunningX64}
   # RegDLL can't be used for 64 bit and InstallLib seems to be a
   # registry hack.
   ClearErrors
-  ExecWait '"$SYSDIR\regsvr32" /s "$INSTDIR\bin\gpgex6.dll"'
+  nsExec::ExecToLog '"$SYSDIR\regsvr32" "/s" "$INSTDIR\bin\gpgex6.dll"'
   ifErrors 0 +2
      MessageBox MB_OK "$(T_GPGEX_RegFailed) (64 bit)"
 
@@ -1007,11 +1008,11 @@ SectionEnd
 
 Section "-un.gnupglast"
   ifFileExists "$INSTDIR\bin\launch-gpa.exe"  0 no_uiserver
-    ExecWait '"$INSTDIR\bin\launch-gpa" --stop-server'
+    nsExec::ExecToLog '"$INSTDIR\bin\launch-gpa" "--stop-server"'
   no_uiserver:
   ifFileExists "$INSTDIR\bin\gpgconf.exe"  0 no_gpgconf
-    ExecWait '"$INSTDIR\bin\gpgconf" --kill gpg-agent'
-    ExecWait '"$INSTDIR\bin\gpgconf" --kill dirmngr'
+    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "gpg-agent"'
+    nsExec::ExecToLog '"$INSTDIR\bin\gpgconf" "--kill" "dirmngr"'
   no_gpgconf:
 SectionEnd
 
@@ -1021,7 +1022,7 @@ Section "-un.gpgex"
   Delete /REBOOTOK "$INSTDIR\bin\gpgex.dll"
 
 ${If} ${RunningX64}
-  ExecWait '"$SYSDIR\regsvr32" /u /s "$INSTDIR\bin\gpgex6.dll"'
+  nsExec::ExecToLog '"$SYSDIR\regsvr32" "/u" "/s" "$INSTDIR\bin\gpgex6.dll"'
   Delete /REBOOTOK "$INSTDIR\bin\gpgex6.dll"
 ${EndIf}
 SectionEnd
