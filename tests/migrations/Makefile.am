@@ -20,7 +20,8 @@
 
 # Programs required before we can run these tests.
 required_pgms = ../../g10/gpg$(EXEEXT) ../../agent/gpg-agent$(EXEEXT) \
-	../../tools/gpgtar$(EXEEXT)
+	../../tools/gpgtar$(EXEEXT) \
+	../gpgscm/gpgscm$(EXEEXT)
 
 AM_CPPFLAGS = -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am
@@ -30,11 +31,14 @@ AM_CFLAGS =
 TMP ?= /tmp
 
 TESTS_ENVIRONMENT = GPG_AGENT_INFO= LC_ALL=C \
+	EXEEXT=$(EXEEXT) \
 	PATH=../gpgscm:$(PATH) \
 	TMP=$(TMP) \
-	GPGSCM_PATH=$(top_srcdir)/tests/gpgscm:$(top_srcdir)/tests/migrations
+	srcdir=$(abs_srcdir) \
+	objdir=$(abs_top_builddir) \
+	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm:$(abs_top_srcdir)/tests/migrations
 
-TESTS = from-classic.scm \
+XTESTS = from-classic.scm \
 	extended-pkf.scm \
 	issue2276.scm
 
@@ -42,17 +46,22 @@ TEST_FILES = from-classic.tar.asc \
 	     extended-pkf.tar.asc \
 	     issue2276.tar.asc
 
-EXTRA_DIST = common.scm $(TESTS) $(TEST_FILES)
+# XXX: Currently, one cannot override automake's 'check' target.  As a
+# workaround, we avoid defining 'TESTS', thus automake will not emit
+# the 'check' target.  For extra robustness, we merely define a
+# dependency on 'xcheck', so this hack should also work even if
+# automake would emit the 'check' target, as adding dependencies to
+# targets is okay.
+check: xcheck
 
-CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
-	     plain-1 plain-2 plain-3 trustdb.gpg *.lock .\#lk* \
-	     *.test.log gpg_dearmor gpg.conf gpg-agent.conf S.gpg-agent \
-	     pubring.gpg pubring.gpg~ pubring.kbx pubring.kbx~ \
-	     secring.gpg pubring.pkr secring.skr \
-	     gnupg-test.stop random_seed gpg-agent.log tofu.db
+.PHONY: xcheck
+xcheck:
+	$(TESTS_ENVIRONMENT) $(abs_top_builddir)/tests/gpgscm/gpgscm \
+	  run-tests.scm $(TESTFLAGS) $(XTESTS)
 
-clean-local:
-	-rm -rf from-classic.gpghome/*.gpg
+EXTRA_DIST = common.scm run-tests.scm setup.scm $(XTESTS) $(TEST_FILES)
+
+CLEANFILES = *.log
 
 # We need to depend on a couple of programs so that the tests don't
 # start before all programs are built.

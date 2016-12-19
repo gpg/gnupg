@@ -18,14 +18,16 @@
 (if (string=? "" (getenv "srcdir"))
     (error "not called from make"))
 
-(setenv "GNUPGHOME" "" #t)
+(let ((verbose (string->number (getenv "verbose"))))
+  (if (number? verbose)
+      (*set-verbose!* verbose)))
 
 (define (qualify executable)
   (string-append executable (getenv "EXEEXT")))
 
 ;; We may not use a relative name for gpg-agent.
-(define GPG-AGENT (qualify (string-append (getcwd) "/../../agent/gpg-agent")))
-(define GPG `(,(qualify (string-append (getcwd) "/../../g10/gpg"))
+(define GPG-AGENT (path-join (getenv "objdir") "agent" (qualify "gpg-agent")))
+(define GPG `(,(path-join (getenv "objdir") "g10" (qualify "gpg"))
 	      --no-permission-warning --no-greeting
 	      --no-secmem-warning --batch
 	      ,(string-append "--agent-program=" GPG-AGENT
@@ -33,7 +35,7 @@
 (define GPG-no-batch
   (filter (lambda (arg) (not (equal? arg '--batch))) GPG))
 
-(define GPGTAR (qualify (string-append (getcwd) "/../../tools/gpgtar")))
+(define GPGTAR (path-join (getenv "objdir") "tools" (qualify "gpgtar")))
 
 (define (untar-armored source-name)
   (pipe:do
