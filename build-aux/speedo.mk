@@ -52,12 +52,13 @@ SPEEDO_MK := $(realpath $(lastword $(MAKEFILE_LIST)))
 help:
 	@echo 'usage: make -f speedo.mk TARGET'
 	@echo '       with TARGET being one of:'
-	@echo '  help           This help'
-	@echo '  native         Native build of the GnuPG core'
-	@echo '  native-gui     Ditto but with pinentry and GPA'
-	@echo '  w32-installer  Build a Windows installer'
-	@echo '  w32-source     Pack a source archive'
-	@echo '  w32-release    Build a Windows release'
+	@echo '  help               This help'
+	@echo '  native             Native build of the GnuPG core'
+	@echo '  native-gui         Ditto but with pinentry and GPA'
+	@echo '  w32-installer      Build a Windows installer'
+	@echo '  w32-source         Pack a source archive'
+	@echo '  w32-release        Build a Windows release'
+	@echo '  w32-sign-installer Sign the installer'
 	@echo
 	@echo 'You may append INSTALL_PREFIX=<dir> for native builds.'
 	@echo 'Prepend TARGET with "git-" to build from GIT repos.'
@@ -109,6 +110,10 @@ w32-release: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release    WITH_GUI=0 SELFCHECK=0 \
                                                    installer-from-source
 
+w32-sign-installer: check-tools
+	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release    WITH_GUI=0 SELFCHECK=0 \
+                                                   sign-installer
+
 w32-release-offline: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release    WITH_GUI=0 SELFCHECK=0 \
 	  CUSTOM_SWDB=1 pkgrep=${HOME}/b pkg10rep=${HOME}/b  \
@@ -147,6 +152,9 @@ INST_NAME=gnupg-w32
 
 # Use this to override the installaion directory for native builds.
 INSTALL_PREFIX=none
+
+# The Authenticode key used to sign the Windows installer
+AUTHENTICODE_KEY=${HOME}/.gnupg/g10code-authenticode-key.p12
 
 
 # Directory names.
@@ -1162,6 +1170,18 @@ installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
 		    $(extra_installer_options) $(w32src)/inst.nsi
 	@echo "Ready: $(idir)/$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe"
 
+
+define MKSWDB_commands
+ ( pref="#+macro: gnupg21_w32_" ;\
+   echo "$${pref}ver  $(INST_VERSION)_$(BUILD_DATESTR)"  ;\
+   echo "$${pref}date $(2)" ;\
+   echo "$${pref}size $$(wc -c <$(1)|awk '{print int($$1/1024)}')k";\
+   echo "$${pref}sha1 $$(sha1sum <$(1)|cut -d' ' -f1)" ;\
+   echo "$${pref}sha2 $$(sha256sum <$(1)|cut -d' ' -f1)" ;\
+ ) | tee $(1).swdb
+endef
+
+
 # Build the installer from the source tarball.
 installer-from-source: dist-source
 	(set -e;\
@@ -1173,16 +1193,35 @@ installer-from-source: dist-source
          $(MAKE) -f build-aux/speedo.mk this-w32-installer SELFCHECK=0;\
 	 reldate="$$(date -u +%Y-%m-%d)" ;\
 	 exefile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe" ;\
-	 mv "PLAY/inst/$$exefile" ../.. ;\
+	 cp "PLAY/inst/$$exefile" ../.. ;\
 	 exefile="../../$$exefile" ;\
-	 ( pref="#+macro: gnupg21_w32_" ;\
-         echo "$${pref}ver  $(INST_VERSION)_$(BUILD_DATESTR)"  ;\
-         echo "$${pref}date $${reldate}" ;\
-         echo "$${pref}size $$(wc -c <$$exefile|awk '{print int($$1/1024)}')k";\
-	 echo "$${pref}sha1 $$(sha1sum <$$exefile|cut -d' ' -f1)" ;\
-	 echo "$${pref}sha2 $$(sha256sum <$$exefile|cut -d' ' -f1)" ;\
-	 ) | tee $$exefile.swdb ;\
+	 $(call MKSWDB_commands,$${exefile},$${reldate}); \
 	)
+
+# This target repeats some of the installer-from-source steps but it
+# is intended to be called interactively, so that the passphrase can be
+# entered.
+sign-installer:
+	@(set -e; \
+	 cd PLAY-release; \
+	 cd $(INST_NAME)-$(INST_VERSION); \
+	 reldate="$$(date -u +%Y-%m-%d)" ;\
+	 exefile="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe" ;\
+	 echo "speedo: /*" ;\
+	 echo "speedo:  * Signing installer" ;\
+	 echo "speedo:  * Key: $(AUTHENTICODE_KEY)";\
+	 echo "speedo:  */" ;\
+	 osslsigncode sign -pkcs12 $(AUTHENTICODE_KEY) -askpass \
+            -h sha256 -in "PLAY/inst/$$exefile" -out "../../$$exefile" ;\
+	 exefile="../../$$exefile" ;\
+	 $(call MKSWDB_commands,$${exefile},$${reldate}); \
+	 echo "speedo: /*" ;\
+	 echo "speedo:  * Verification result" ;\
+	 echo "speedo:  */" ;\
+         osslsigncode verify $${exefile} \
+	)
+
+
 
 endif
 # }}} W32
