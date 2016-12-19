@@ -26,9 +26,10 @@
 ;; Set objdir so that the tests can locate built programs.
 (setenv "objdir" (getcwd) #f)
 
-(let* ((runner (if (member "--parallel" *args*)
+(let* ((tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*))
+       (runner (if (and (member "--parallel" *args*)
+			(> (length tests) 1))
 		   run-tests-parallel
-		   run-tests-sequential))
-       (tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*)))
+		   run-tests-sequential)))
   (runner (test::scm "setup.scm" "setup.scm")
 	  (map (lambda (t) (test::scm t t)) tests)))
