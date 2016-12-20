@@ -26,10 +26,11 @@
 
   We are currently maintaining three branches of GnuPG:
 
-  - 2.1 (i.e. this release) is the latest development with a lot of
+  - 2.1 (i.e. this release) is the latest stable version with a lot of
     new features.
 
-  - 2.0 is the current stable version for general use.
+  - 2.0 is an often used stable version.  This branch will reach
+    end-of-life on 2017-12-31.
 
   - 1.4 is the old standalone version which is most suitable for older
     or embedded platforms.
@@ -119,7 +120,7 @@
 
 *** Systems without a full C99 compiler
 
-  If you run into problems with our compiler complaining about dns.c
+  If you run into problems with your compiler complaining about dns.c
   you may use
 
     ./configure --disable-libdns
