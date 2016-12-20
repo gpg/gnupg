@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-12-18 20:17+0100\n"
+"PO-Revision-Date: 2016-12-20 11:14+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -2315,21 +2315,9 @@ msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "WARNUNG: Empfänger (-r) angegeben ohne Verwendung von Public-Key-Verfahren\n"
 
-msgid "--store [filename]"
-msgstr "--store [Dateiname]"
-
-msgid "--symmetric [filename]"
-msgstr "--symmetric [Dateiname]"
-
 #, c-format
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "Symmetrische Entschlüsselung von `%s' fehlgeschlagen: %s\n"
-
-msgid "--encrypt [filename]"
-msgstr "--encrypt [Dateiname]"
-
-msgid "--symmetric --encrypt [filename]"
-msgstr "--symmetric --encrypt [Dateiname]"
 
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
@@ -2338,15 +2326,6 @@ msgstr ""
 #, c-format
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "Im %s-Modus kann --symmetric --encrypt nicht verwendet werden.\n"
-
-msgid "--sign [filename]"
-msgstr "--sign [Dateiname]"
-
-msgid "--sign --encrypt [filename]"
-msgstr "--sign --encrypt [Dateiname]"
-
-msgid "--symmetric --sign --encrypt [filename]"
-msgstr "--symmetric --sign --encrypt [Dateiname]"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
@@ -2357,27 +2336,6 @@ msgstr ""
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr ""
 "Im %s-Modus kann --symmetric --sign --encrypt nicht verwendet werden.\n"
-
-msgid "--sign --symmetric [filename]"
-msgstr "--sign --symmetric [Dateiname]"
-
-msgid "--clear-sign [filename]"
-msgstr "--clear-sign [Dateiname]"
-
-msgid "--decrypt [filename]"
-msgstr "--decrypt [Dateiname]"
-
-msgid "--sign-key user-id"
-msgstr "--sign-key User-ID"
-
-msgid "--lsign-key user-id"
-msgstr "--lsign-key User-ID"
-
-msgid "--edit-key user-id [commands]"
-msgstr "--edit-key User-ID [Befehle]"
-
-msgid "--passwd <user-id>"
-msgstr "--passwd User-ID"
 
 #, c-format
 msgid "keyserver send failed: %s\n"
@@ -2424,9 +2382,6 @@ msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr ""
 "'%s\" sieht nicht nach einer gültigen Schlüssel-ID, einem Fingerabdruck oder "
 "einem \"Keygrip\" aus\n"
-
-msgid "[filename]"
-msgstr "[Dateiname]"
 
 msgid "Go ahead and type your message ...\n"
 msgstr "Auf geht's - Botschaft eintippen ...\n"
@@ -4873,24 +4828,20 @@ msgstr ""
 "Dieser Schlüssel gehört uns (da wir nämlich den geheimen Schlüssel dazu "
 "haben)\n"
 
-#, fuzzy, c-format
-#| msgid "root certificate has now been marked as trusted\n"
+#, c-format
 msgid "%s: This key is bad!  It has been marked as untrusted!\n"
-msgstr "Das Wurzelzertifikat wurde nun als vertrauenswürdig markiert\n"
+msgstr ""
+"%s: Der Schlüssel ist gefälscht!  Er wurde als nicht vertrauenswürdig "
+"markiert.\n"
 
-#, fuzzy
-#| msgid ""
-#| "It is NOT certain that the key belongs to the person named\n"
-#| "in the user ID.  If you *really* know what you are doing,\n"
-#| "you may answer the next question with yes.\n"
 msgid ""
-"This key has is bad!  It has been marked as untrusted!  If you\n"
+"This key is bad!  It has been marked as untrusted!  If you\n"
 "*really* know what you are doing, you may answer the next\n"
 "question with yes.\n"
 msgstr ""
-"Es ist NICHT sicher, daß der Schlüssel zu dem in der User-ID\n"
-"Genannten gehört. Wenn Sie *wirklich* wissen, was Sie tun,\n"
-"können Sie die nächste Frage mit ja beantworten\n"
+"Der Schlüssel ist gefälscht!  Er wurde als als nicht vertrauenswürdig\n"
+"markiert.  Wenn Sie *wirklich* wissen, was Sie tun, können Sie die\n"
+"nächste Frage mit ja beantworten.\n"
 
 msgid ""
 "It is NOT certain that the key belongs to the person named\n"
@@ -5563,6 +5514,15 @@ msgstr "Fehler beim Feststellen der TOFU Datenbank Version: %s\n"
 msgid "error initializing TOFU database: %s\n"
 msgstr "Fehler beim Initialisieren der TOFU Datenbank: %s\n"
 
+#, fuzzy, c-format
+#| msgid "error creating temporary file: %s\n"
+msgid "error creating 'encryptions' TOFU table: %s\n"
+msgstr "Fehler beim Erstellen einer temporären Datei: %s\n"
+
+#, c-format
+msgid "adding column effective_policy to bindings DB: %s\n"
+msgstr ""
+
 #, c-format
 msgid "error opening TOFU database '%s': %s\n"
 msgstr "Fehler beim Öffner der TOFU Datenbank '%s': %s\n"
@@ -5581,8 +5541,10 @@ msgstr "Die Email-Adresse \"%s\" ist mit einem Schlüssel assoziert:\n"
 #, fuzzy, c-format
 #| msgid "The email address \"%s\" is associated with %d key:\n"
 #| msgid_plural "The email address \"%s\" is associated with %d keys:\n"
-msgid "The email address \"%s\" is associated with %d keys!"
-msgstr "Die Email-Adresse \"%s\" ist mit einem Schlüssel assoziert:\n"
+msgid "The email address \"%s\" is associated with %d key!"
+msgid_plural "The email address \"%s\" is associated with %d keys!"
+msgstr[0] "Die Email-Adresse \"%s\" ist mit einem Schlüssel assoziert:\n"
+msgstr[1] "Die Email-Adresse \"%s\" ist mit einem Schlüssel assoziert:\n"
 
 #, fuzzy
 #| msgid ""
@@ -5635,46 +5597,99 @@ msgstr "dieser Schlüssel"
 
 #, fuzzy, c-format
 #| msgid "Verified %ld messages signed by \"%s\"."
-msgid "Verified %d message"
-msgid_plural "Verified %d messages"
+msgid "Verified %d message."
+msgid_plural "Verified %d messages."
 msgstr[0] "%ld überprüfte Nachrichten von \"%s\"."
 msgstr[1] "%ld überprüfte Nachrichten von \"%s\"."
 
-#, c-format
-msgid "Encrypted %d message"
-msgid_plural "Encrypted %d messages"
-msgstr[0] ""
-msgstr[1] ""
+#, fuzzy, c-format
+#| msgid "encrypted with %lu passphrases\n"
+msgid "Encrypted %d message."
+msgid_plural "Encrypted %d messages."
+msgstr[0] "Verschlüsselt mit %lu Passphrases\n"
+msgstr[1] "Verschlüsselt mit %lu Passphrases\n"
+
+#, fuzzy, c-format
+#| msgid "%ld message signed in the future."
+#| msgid_plural "%ld messages signed in the future."
+msgid "Verified %d message in the future."
+msgid_plural "Verified %d messages in the future."
+msgstr[0] "%ld Nachricht in der Zukunft signiert."
+msgstr[1] "%ld Nachrichten in der Zukunf signiert."
+
+#, fuzzy, c-format
+#| msgid "%ld message signed in the future."
+#| msgid_plural "%ld messages signed in the future."
+msgid "Encrypted %d message in the future."
+msgid_plural "Encrypted %d messages in the future."
+msgstr[0] "%ld Nachricht in der Zukunft signiert."
+msgstr[1] "%ld Nachrichten in der Zukunf signiert."
 
 #, fuzzy, c-format
 #| msgid " over the past %ld day."
 #| msgid_plural " over the past %ld days."
-msgid " over the past day."
-msgid_plural " over the past %d days."
+msgid "Messages verified over the past %d day: %d."
+msgid_plural "Messages verified over the past %d days: %d."
+msgstr[0] " innerhalb des letzten Tages."
+msgstr[1] " innerhalb der letzten %ld Tage."
+
+#, fuzzy, c-format
+#| msgid " over the past %ld day."
+#| msgid_plural " over the past %ld days."
+msgid "Messages encrypted over the past %d day: %d."
+msgid_plural "Messages encrypted over the past %d days: %d."
 msgstr[0] " innerhalb des letzten Tages."
 msgstr[1] " innerhalb der letzten %ld Tage."
 
 #, fuzzy, c-format
 #| msgid " over the past %ld month."
 #| msgid_plural " over the past %ld months."
-msgid " over the past month."
-msgid_plural " over the past %d months."
+msgid "Messages verified over the past %d month: %d."
+msgid_plural "Messages verified over the past %d months: %d."
+msgstr[0] " innerhalb des letzten Monats."
+msgstr[1] " innerhalb der letzten %ld Monate."
+
+#, fuzzy, c-format
+#| msgid " over the past %ld month."
+#| msgid_plural " over the past %ld months."
+msgid "Messages encrypted over the past %d month: %d."
+msgid_plural "Messages encrypted over the past %d months: %d."
 msgstr[0] " innerhalb des letzten Monats."
 msgstr[1] " innerhalb der letzten %ld Monate."
 
 #, fuzzy, c-format
 #| msgid " over the past %ld day."
 #| msgid_plural " over the past %ld days."
-msgid " over the past year."
-msgid_plural " over the past %d years."
+msgid "Messages verified over the past %d year: %d."
+msgid_plural "Messages verified over the past %d years: %d."
 msgstr[0] " innerhalb des letzten Tages."
 msgstr[1] " innerhalb der letzten %ld Tage."
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid " over the past %ld day."
 #| msgid_plural " over the past %ld days."
-msgid " in the past."
+msgid "Messages encrypted over the past %d year: %d."
+msgid_plural "Messages encrypted over the past %d years: %d."
+msgstr[0] " innerhalb des letzten Tages."
+msgstr[1] " innerhalb der letzten %ld Tage."
+
+#, fuzzy, c-format
+#| msgid " over the past %ld day."
+#| msgid_plural " over the past %ld days."
+msgid "Messages verified in the past: %d."
 msgstr " innerhalb des letzten Tages."
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Verified %ld message signed by \"%s\"\n"
+#| "in the past %s."
+#| msgid_plural ""
+#| "Verified %ld messages signed by \"%s\"\n"
+#| "in the past %s."
+msgid "Messages encrypted in the past: %d."
+msgstr ""
+"%ld überprüfte Nachricht von \"%s\"\n"
+"in den letzten %s."
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5709,59 +5724,84 @@ msgstr ""
 msgid "resetting keydb: %s\n"
 msgstr "Fehler beim Schreiben des Schlüssels: %s\n"
 
-#, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
+#, fuzzy, c-format
+#| msgid "error setting TOFU binding's trust level to %s\n"
+msgid "error setting TOFU binding's policy to %s\n"
 msgstr "Fehler beim Setzen der TOFU Binding Vertrauensstufe auf %s\n"
 
 #, c-format
 msgid "error changing TOFU policy: %s\n"
 msgstr "Fehler beim Ändern der TOFU Richtlinie: %s\n"
 
-#. TRANSLATORS: The tilde ('~') is used here to indicate a
-#. * non-breakable space
-#, c-format
-msgid "%d~year"
-msgid_plural "%d~years"
+#, fuzzy, c-format
+#| msgid "%d~year"
+#| msgid_plural "%d~years"
+msgid "%lld~year"
+msgid_plural "%lld~years"
 msgstr[0] "%d~Jahr"
 msgstr[1] "%d~Jahre"
 
-#, c-format
-msgid "%d~month"
-msgid_plural "%d~months"
+#, fuzzy, c-format
+#| msgid "%d~month"
+#| msgid_plural "%d~months"
+msgid "%lld~month"
+msgid_plural "%lld~months"
 msgstr[0] "%d~Monat"
 msgstr[1] "%d~Monate"
 
 #, c-format
-msgid "%d~day"
-msgid_plural "%d~days"
+msgid "%lld~week"
+msgid_plural "%lld~weeks"
+msgstr[0] ""
+msgstr[1] ""
+
+#, fuzzy, c-format
+#| msgid "%d~day"
+#| msgid_plural "%d~days"
+msgid "%lld~day"
+msgid_plural "%lld~days"
 msgstr[0] "%d~Tag"
 msgstr[1] "%d~Tage"
 
-#, c-format
-msgid "%d~hour"
-msgid_plural "%d~hours"
+#, fuzzy, c-format
+#| msgid "%d~hour"
+#| msgid_plural "%d~hours"
+msgid "%lld~hour"
+msgid_plural "%lld~hours"
 msgstr[0] "%d~Stunde"
 msgstr[1] "%d~Stunden"
 
-#, c-format
-msgid "%d~minute"
-msgid_plural "%d~minutes"
+#, fuzzy, c-format
+#| msgid "%d~minute"
+#| msgid_plural "%d~minutes"
+msgid "%lld~minute"
+msgid_plural "%lld~minutes"
 msgstr[0] "%d~Minute"
 msgstr[1] "%d~Minuten"
 
-#, c-format
-msgid "%d~second"
-msgid_plural "%d~seconds"
+#, fuzzy, c-format
+#| msgid "%d~second"
+#| msgid_plural "%d~seconds"
+msgid "%lld~second"
+msgid_plural "%lld~seconds"
 msgstr[0] "%d~Sekunde"
 msgstr[1] "%d~Sekunden"
 
-#, c-format
-msgid "%s: "
+#, fuzzy, c-format
+#| msgid "TOFU: few signatures %d message %s"
+#| msgid_plural "TOFU: few signatures %d messages %s"
+msgid "%s: Verified 0~signatures and encrypted 0~messages."
 msgstr ""
+"WARNUNG: Falls sie glauben, mehr als %d mit diesem Schlüssel signierte\n"
+"Nachricht erhalten zu haben, so kann es sich bei diesem Schlüssel um\n"
+"eine Fälschung handeln!  Prüfen Sie die Email-Adresse genau auf kleine\n"
+"Variationen (z.B. zusätzliche Leerzeichen).  Falls Ihnen der Schlüssel\n"
+"suspekt erscheint, so benutzen Sie '%s' um den Schlüssel als Fälschung\n"
+"zu markieren."
 
 #, fuzzy, c-format
 #| msgid "Deleted %d signatures.\n"
-msgid "Verified %ld signatures"
+msgid "%s: Verified 0 signatures."
 msgstr "%d Beglaubigungen entfernt.\n"
 
 #, fuzzy, c-format
@@ -5771,8 +5811,8 @@ msgstr "%d Beglaubigungen entfernt.\n"
 #| msgid_plural ""
 #| "Verified %ld messages signed by \"%s\"\n"
 #| "in the past %s."
-msgid "Verified %ld signature in the past %s"
-msgid_plural "Verified %ld signatures in the past %s"
+msgid "%s: Verified %ld~signature in the past %s."
+msgid_plural "%s: Verified %ld~signatures in the past %s."
 msgstr[0] ""
 "%ld überprüfte Nachricht von \"%s\"\n"
 "in den letzten %s."
@@ -5780,9 +5820,9 @@ msgstr[1] ""
 "%ld überprüfte Nachrichten von \"%s\"\n"
 "in den letzten %s."
 
-#, fuzzy, c-format
+#, fuzzy
 #| msgid "encrypted with %lu passphrases\n"
-msgid ", and encrypted %ld messages"
+msgid "Encrypted 0 messages."
 msgstr "Verschlüsselt mit %lu Passphrases\n"
 
 #, fuzzy, c-format
@@ -5792,14 +5832,19 @@ msgstr "Verschlüsselt mit %lu Passphrases\n"
 #| msgid_plural ""
 #| "Verified %ld messages signed by \"%s\"\n"
 #| "in the past %s."
-msgid ", and encrypted %ld message in the past %s"
-msgid_plural ", and encrypted %ld messages in the past %s"
+msgid "Encrypted %ld~message in the past %s."
+msgid_plural "Encrypted %ld~messages in the past %s."
 msgstr[0] ""
 "%ld überprüfte Nachricht von \"%s\"\n"
 "in den letzten %s."
 msgstr[1] ""
 "%ld überprüfte Nachrichten von \"%s\"\n"
 "in den letzten %s."
+
+#, fuzzy, c-format
+#| msgid "policy: %s"
+msgid "(policy: %s)"
+msgstr "Richtlinie: %s"
 
 #, fuzzy
 #| msgid "Warning: we've have yet to see a message signed by this key!\n"
@@ -5876,7 +5921,7 @@ msgid "error opening TOFU database: %s\n"
 msgstr "Fehler beim Öffnen der TOFU Datenbank: %s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -8500,6 +8545,14 @@ msgstr "Die externe Überprüfung der Komponente %s war nicht erfolgreich"
 msgid "Note that group specifications are ignored\n"
 msgstr "Beachten Sie, daß Gruppenspezifiaktionen ignoriert werden\n"
 
+#, c-format
+msgid "error closing '%s'\n"
+msgstr "Fehler beim Schließen von '%s'\n"
+
+#, c-format
+msgid "error parsing '%s'\n"
+msgstr "Fehler beim Hashen von '%s'\n"
+
 msgid "list all components"
 msgstr "Liste aller Komponenten"
 
@@ -8517,6 +8570,9 @@ msgstr "|KOMPONENTE|Prüfe die Optionen"
 
 msgid "apply global default values"
 msgstr "Wende die gobalen Voreinstellungen an"
+
+msgid "|FILE|update configuration files using FILE"
+msgstr "|DATEI|Konfigurationsdateien mittels DATEI ändern"
 
 msgid "get the configuration directories for @GPGCONF@"
 msgstr "Hole die Einstellungsverzeichnisse von @GPGCONF@"
@@ -8708,6 +8764,86 @@ msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
 
+#, fuzzy
+#~| msgid ""
+#~| "@\n"
+#~| "Examples:\n"
+#~| "\n"
+#~| " -se -r Bob [file]          sign and encrypt for user Bob\n"
+#~| " --clear-sign [file]        make a clear text signature\n"
+#~| " --detach-sign [file]       make a detached signature\n"
+#~| " --list-keys [names]        show keys\n"
+#~| " --fingerprint [names]      show fingerprints\n"
+#~ msgid ""
+#~ "@\n"
+#~ "Examples:\n"
+#~ "\n"
+#~ " -se -r Bob [file]          sign and encrypt for user Bob\n"
+#~ " --clearsign [file]         make a clear text signature\n"
+#~ " --detach-sign [file]       make a detached signature\n"
+#~ " --list-keys [names]        show keys\n"
+#~ " --fingerprint [names]      show fingerprints\n"
+#~ msgstr ""
+#~ "@\n"
+#~ "Beispiele:\n"
+#~ "\n"
+#~ " -se -r Bob [Datei]         Signieren und verschlüsseln für Benutzer Bob\n"
+#~ " --clear-sign [Datei]       Eine Klartextsignatur erzeugen\n"
+#~ " --detach-sign [Datei]      Eine abgetrennte Signatur erzeugen\n"
+#~ " --list-keys [Namen]        Schlüssel anzeigen\n"
+#~ " --fingerprint [Namen]      \"Fingerabdrücke\" anzeigen\n"
+
+#~ msgid "--store [filename]"
+#~ msgstr "--store [Dateiname]"
+
+#~ msgid "--symmetric [filename]"
+#~ msgstr "--symmetric [Dateiname]"
+
+#~ msgid "--encrypt [filename]"
+#~ msgstr "--encrypt [Dateiname]"
+
+#~ msgid "--symmetric --encrypt [filename]"
+#~ msgstr "--symmetric --encrypt [Dateiname]"
+
+#~ msgid "--sign [filename]"
+#~ msgstr "--sign [Dateiname]"
+
+#~ msgid "--sign --encrypt [filename]"
+#~ msgstr "--sign --encrypt [Dateiname]"
+
+#~ msgid "--symmetric --sign --encrypt [filename]"
+#~ msgstr "--symmetric --sign --encrypt [Dateiname]"
+
+#~ msgid "--sign --symmetric [filename]"
+#~ msgstr "--sign --symmetric [Dateiname]"
+
+#~ msgid "--clear-sign [filename]"
+#~ msgstr "--clear-sign [Dateiname]"
+
+#~ msgid "--decrypt [filename]"
+#~ msgstr "--decrypt [Dateiname]"
+
+#~ msgid "--sign-key user-id"
+#~ msgstr "--sign-key User-ID"
+
+#~ msgid "--lsign-key user-id"
+#~ msgstr "--lsign-key User-ID"
+
+#~ msgid "--edit-key user-id [commands]"
+#~ msgstr "--edit-key User-ID [Befehle]"
+
+#~ msgid "--passwd <user-id>"
+#~ msgstr "--passwd User-ID"
+
+#~ msgid "[filename]"
+#~ msgstr "[Dateiname]"
+
+#, fuzzy
+#~| msgid " over the past %ld day."
+#~| msgid_plural " over the past %ld days."
+#~ msgid " in the past."
+#~ msgstr " innerhalb des letzten Tages."
+
 #~ msgid "shadowing the key failed: %s\n"
 #~ msgstr "\"Shadowing\" des Schlüssels schlug fehl: %s\n"
 
@@ -8727,11 +8863,6 @@ msgstr ""
 
 #~ msgid "Known user IDs associated with this key:\n"
 #~ msgstr "Bekannte, mit diesem Schlüssel assozierte, User-IDs:\n"
-
-#~ msgid "%ld message signed in the future."
-#~ msgid_plural "%ld messages signed in the future."
-#~ msgstr[0] "%ld Nachricht in der Zukunft signiert."
-#~ msgstr[1] "%ld Nachrichten in der Zukunf signiert."
 
 #~ msgid "%ld message signed"
 #~ msgid_plural "%ld messages signed"
@@ -8838,23 +8969,6 @@ msgstr ""
 #~ msgid_plural "%d days"
 #~ msgstr[0] "%d Tag"
 #~ msgstr[1] "%d Tage"
-
-#~ msgid "TOFU: few signatures %d message %s"
-#~ msgid_plural "TOFU: few signatures %d messages %s"
-#~ msgstr[0] ""
-#~ "WARNUNG: Falls sie glauben, mehr als %d mit diesem Schlüssel signierte\n"
-#~ "Nachricht erhalten zu haben, so kann es sich bei diesem Schlüssel um\n"
-#~ "eine Fälschung handeln!  Prüfen Sie die Email-Adresse genau auf kleine\n"
-#~ "Variationen (z.B. zusätzliche Leerzeichen).  Falls Ihnen der Schlüssel\n"
-#~ "suspekt erscheint, so benutzen Sie '%s' um den Schlüssel als Fälschung\n"
-#~ "zu markieren."
-#~ msgstr[1] ""
-#~ "WARNUNG: Falls sie glauben, mehr als %d mit diesem Schlüssel signierte\n"
-#~ "Nachrichten erhalten zu haben, so kann es sich bei diesem Schlüssel um\n"
-#~ "eine Fälschung handeln!  Prüfen Sie die Email-Adresse genau auf kleine\n"
-#~ "Variationen (z.B. zusätzliche Leerzeichen).  Falls Ihnen der Schlüssel\n"
-#~ "suspekt erscheint, so benutzen Sie '%s' um den Schlüssel als Fälschung\n"
-#~ "zu markieren."
 
 #~ msgid "sending key %s to %s server %s\n"
 #~ msgstr "sende Schlüssel %s auf den %s-Server %s\n"
