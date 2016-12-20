@@ -22,8 +22,7 @@
 (unless (member "--create-tarball" *args*)
 	(fail "Usage: setup.scm --create-tarball <file>"))
 
-(with-temporary-working-directory
- (setenv "GNUPGHOME" (getcwd) #t)
+(with-ephemeral-home-directory
  (create-gpghome)
  (create-legacy-gpghome)
  (stop-agent)

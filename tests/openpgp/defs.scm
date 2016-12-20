@@ -200,6 +200,17 @@
 ;; GnuPG helper.
 ;;
 
+;; Evaluate a sequence of expressions with an ephemeral home
+;; directory.
+(macro (with-ephemeral-home-directory form)
+  `(let ((original-home-directory (getenv "GNUPGHOME")))
+     (with-temporary-working-directory
+      (define ephemeral-home-directory (getcwd))
+      (dynamic-wind
+	  (lambda () (setenv "GNUPGHOME" ephemeral-home-directory #t))
+	  (lambda () ,@(cdr form))
+	  (lambda () (setenv "GNUPGHOME" original-home-directory #t))))))
+
 ;; Call GPG to obtain the hash sums.  Either specify an input file in
 ;; ARGS, or an string in INPUT.  Returns a list of (<algo>
 ;; "<hashsum>") lists.
