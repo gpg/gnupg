@@ -357,12 +357,6 @@ static ARGPARSE_OPTS opts[] = {
   "@\n(See the man page for a complete listing of all commands and options)\n"
   )),
 
-  ARGPARSE_group (303, N_("@\nExamples:\n\n"
-    " -se -r Bob [file]          sign and encrypt for user Bob\n"
-    " --clearsign [file]         make a clear text signature\n"
-    " --detach-sign [file]       make a detached signature\n"
-    " --list-keys [names]        show keys\n"
-    " --fingerprint [names]      show fingerprints\n"  )),
 
   /* Hidden options. */
   ARGPARSE_s_s (oCompliance, "compliance",   "@"),
