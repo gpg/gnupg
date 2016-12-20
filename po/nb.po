@@ -1780,6 +1780,11 @@ msgstr "legg til en ny bruker-ID raskt"
 msgid "quickly revoke a user-id"
 msgstr "opphev bruker-ID raskt"
 
+#, fuzzy
+#| msgid "quickly generate a new key pair"
+msgid "quickly set a new expiration date"
+msgstr "lag nytt nøkkelpar raskt"
+
 msgid "full featured key pair generation"
 msgstr "fullverdig generering av nøkkelpar"
 
@@ -1883,12 +1888,22 @@ msgstr ""
 "@\n"
 "(Se bruksanvisning for en fullstendig liste over alle kommandoer og valg)\n"
 
+#, fuzzy
+#| msgid ""
+#| "@\n"
+#| "Examples:\n"
+#| "\n"
+#| " -se -r Bob [file]          sign and encrypt for user Bob\n"
+#| " --clear-sign [file]         make a clear text signature\n"
+#| " --detach-sign [file]       make a detached signature\n"
+#| " --list-keys [names]        show keys\n"
+#| " --fingerprint [names]      show fingerprints\n"
 msgid ""
 "@\n"
 "Examples:\n"
 "\n"
 " -se -r Bob [file]          sign and encrypt for user Bob\n"
-" --clear-sign [file]         make a clear text signature\n"
+" --clear-sign [file]        make a clear text signature\n"
 " --detach-sign [file]       make a detached signature\n"
 " --list-keys [names]        show keys\n"
 " --fingerprint [names]      show fingerprints\n"
@@ -2252,21 +2267,9 @@ msgstr "klarte ikke å starte tillitsdatabase (TrustDB): %s\n"
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr "ADVARSEL: mottakere (-r) valgt uten offentlig nøkkelkryptering\n"
 
-msgid "--store [filename]"
-msgstr "--store [filnavn]"
-
-msgid "--symmetric [filename]"
-msgstr "--symmetric [filnavn]"
-
 #, c-format
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "symmetrisk kryptering av «%s» mislyktes: %s\n"
-
-msgid "--encrypt [filename]"
-msgstr "--encrypt [filnavn]"
-
-msgid "--symmetric --encrypt [filename]"
-msgstr "--symmetric --encrypt [filnavn]"
 
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "du kan ikke bruke «--symmetric --encrypt» og «--s2k-mode 0» samtidig\n"
@@ -2275,15 +2278,6 @@ msgstr "du kan ikke bruke «--symmetric --encrypt» og «--s2k-mode 0» samtidig
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "du kan ikke velge «--symmtric» og «--encrypt» i «%s»-modus\n"
 
-msgid "--sign [filename]"
-msgstr "--sign [filnavn]"
-
-msgid "--sign --encrypt [filename]"
-msgstr "--sign --encrypt [filnavn]"
-
-msgid "--symmetric --sign --encrypt [filename]"
-msgstr "--symmetric --sign --encrypt [filnavn]"
-
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 "du kan ikke bruke «--symmetric --sign --encrypt» og «--s2k-mode 0» samtidig\n"
@@ -2291,27 +2285,6 @@ msgstr ""
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "du kan ikke velge «--symmtric», «--sign» og «--encrypt» i «%s»-modus\n"
-
-msgid "--sign --symmetric [filename]"
-msgstr "--sign --symmetric [filnavn]"
-
-msgid "--clear-sign [filename]"
-msgstr "--clear-sign [filnavn]"
-
-msgid "--decrypt [filename]"
-msgstr "--decrypt [filnavn]"
-
-msgid "--sign-key user-id"
-msgstr "--sign-key bruker-ID"
-
-msgid "--lsign-key user-id"
-msgstr "--lsign-key bruker-ID"
-
-msgid "--edit-key user-id [commands]"
-msgstr "--edit-key bruker-ID [kommandoer]"
-
-msgid "--passwd <user-id>"
-msgstr "--passwd <bruker-id>"
 
 #, c-format
 msgid "keyserver send failed: %s\n"
@@ -2358,9 +2331,6 @@ msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr ""
 "«%s» ser hverken ut til å være en gyldig nøkkel-ID, fingeravtrykk eller "
 "nøkkelgrep\n"
-
-msgid "[filename]"
-msgstr "[filnavn]"
 
 msgid "Go ahead and type your message ...\n"
 msgstr "Skriv inn melding …\n"
@@ -3332,6 +3302,11 @@ msgstr "Ingen treff på bruker-id-er."
 
 msgid "Nothing to sign.\n"
 msgstr "Ingenting å signere.\n"
+
+#, fuzzy, c-format
+#| msgid "'%s' is not a valid signature expiration\n"
+msgid "'%s' is not a valid expiration time\n"
+msgstr "«%s» er en ugyldig signatur-utløpstid\n"
 
 msgid "Digest: "
 msgstr "Kontrollsum: "
@@ -4763,7 +4738,7 @@ msgstr "rotsertifikat er nå merket som troverdig\n"
 #| "in the user ID.  If you *really* know what you are doing,\n"
 #| "you may answer the next question with yes.\n"
 msgid ""
-"This key has is bad!  It has been marked as untrusted!  If you\n"
+"This key is bad!  It has been marked as untrusted!  If you\n"
 "*really* know what you are doing, you may answer the next\n"
 "question with yes.\n"
 msgstr ""
@@ -5394,6 +5369,14 @@ msgstr "feil under reversering av transaksjon i TOFU-database: %s\n"
 msgid "unsupported TOFU database version: %s\n"
 msgstr "TOFU-databaseversjon støttes ikke: %s\n"
 
+#, fuzzy, c-format
+#| msgid "error creating temporary file: %s\n"
+msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+msgstr "feil under oppretting av midlertidig fil: %s\n"
+
+msgid "TOFU DB error"
+msgstr ""
+
 #, c-format
 msgid "error reading TOFU database: %s\n"
 msgstr "feil under lesing av TOFU-database: %s\n"
@@ -5405,6 +5388,15 @@ msgstr "klarte ikke å kontrollere versjon av TOFU-database: %s\n"
 #, c-format
 msgid "error initializing TOFU database: %s\n"
 msgstr "feil under oppstart av TOFU-database: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error reading TOFU database: %s\n"
+msgid "error creating 'encryptions' TOFU table: %s\n"
+msgstr "feil under lesing av TOFU-database: %s\n"
+
+#, c-format
+msgid "adding column effective_policy to bindings DB: %s\n"
+msgstr ""
 
 #, c-format
 msgid "error opening TOFU database '%s': %s\n"
@@ -5424,8 +5416,10 @@ msgstr "E-postadressen «%s» er tilknyttet %d nøkkel:\n"
 #, fuzzy, c-format
 #| msgid "The email address \"%s\" is associated with %d key:\n"
 #| msgid_plural "The email address \"%s\" is associated with %d keys:\n"
-msgid "The email address \"%s\" is associated with %d keys!"
-msgstr "E-postadressen «%s» er tilknyttet %d nøkkel:\n"
+msgid "The email address \"%s\" is associated with %d key!"
+msgid_plural "The email address \"%s\" is associated with %d keys!"
+msgstr[0] "E-postadressen «%s» er tilknyttet %d nøkkel:\n"
+msgstr[1] "E-postadressen «%s» er tilknyttet %d nøkkel:\n"
 
 #, fuzzy
 #| msgid ""
@@ -5477,46 +5471,99 @@ msgstr "denne nøkkelen"
 
 #, fuzzy, c-format
 #| msgid "Verified %ld messages signed by \"%s\"."
-msgid "Verified %d message"
-msgid_plural "Verified %d messages"
+msgid "Verified %d message."
+msgid_plural "Verified %d messages."
 msgstr[0] "Bekreftet %ld meldinger signert av «%s»."
 msgstr[1] "Bekreftet %ld meldinger signert av «%s»."
 
-#, c-format
-msgid "Encrypted %d message"
-msgid_plural "Encrypted %d messages"
-msgstr[0] ""
-msgstr[1] ""
+#, fuzzy, c-format
+#| msgid "encrypted with %lu passphrases\n"
+msgid "Encrypted %d message."
+msgid_plural "Encrypted %d messages."
+msgstr[0] "kryptert med %lu passordfraser\n"
+msgstr[1] "kryptert med %lu passordfraser\n"
+
+#, fuzzy, c-format
+#| msgid "%ld message signed in the future."
+#| msgid_plural "%ld messages signed in the future."
+msgid "Verified %d message in the future."
+msgid_plural "Verified %d messages in the future."
+msgstr[0] "%ld melding signert i fremtid."
+msgstr[1] "%ld meldinger signert i fremtid."
+
+#, fuzzy, c-format
+#| msgid "%ld message signed in the future."
+#| msgid_plural "%ld messages signed in the future."
+msgid "Encrypted %d message in the future."
+msgid_plural "Encrypted %d messages in the future."
+msgstr[0] "%ld melding signert i fremtid."
+msgstr[1] "%ld meldinger signert i fremtid."
 
 #, fuzzy, c-format
 #| msgid " over the past %ld day."
 #| msgid_plural " over the past %ld days."
-msgid " over the past day."
-msgid_plural " over the past %d days."
+msgid "Messages verified over the past %d day: %d."
+msgid_plural "Messages verified over the past %d days: %d."
+msgstr[0] " i løpet av gårsdagen (%ld)."
+msgstr[1] " i løpet av de %ld siste dagene."
+
+#, fuzzy, c-format
+#| msgid " over the past %ld day."
+#| msgid_plural " over the past %ld days."
+msgid "Messages encrypted over the past %d day: %d."
+msgid_plural "Messages encrypted over the past %d days: %d."
 msgstr[0] " i løpet av gårsdagen (%ld)."
 msgstr[1] " i løpet av de %ld siste dagene."
 
 #, fuzzy, c-format
 #| msgid " over the past %ld month."
 #| msgid_plural " over the past %ld months."
-msgid " over the past month."
-msgid_plural " over the past %d months."
+msgid "Messages verified over the past %d month: %d."
+msgid_plural "Messages verified over the past %d months: %d."
+msgstr[0] " i løpet av den siste måneden (%ld)."
+msgstr[1] " i løpet av de siste %ld månedene."
+
+#, fuzzy, c-format
+#| msgid " over the past %ld month."
+#| msgid_plural " over the past %ld months."
+msgid "Messages encrypted over the past %d month: %d."
+msgid_plural "Messages encrypted over the past %d months: %d."
 msgstr[0] " i løpet av den siste måneden (%ld)."
 msgstr[1] " i løpet av de siste %ld månedene."
 
 #, fuzzy, c-format
 #| msgid " over the past %ld day."
 #| msgid_plural " over the past %ld days."
-msgid " over the past year."
-msgid_plural " over the past %d years."
+msgid "Messages verified over the past %d year: %d."
+msgid_plural "Messages verified over the past %d years: %d."
 msgstr[0] " i løpet av gårsdagen (%ld)."
 msgstr[1] " i løpet av de %ld siste dagene."
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid " over the past %ld day."
 #| msgid_plural " over the past %ld days."
-msgid " in the past."
+msgid "Messages encrypted over the past %d year: %d."
+msgid_plural "Messages encrypted over the past %d years: %d."
+msgstr[0] " i løpet av gårsdagen (%ld)."
+msgstr[1] " i løpet av de %ld siste dagene."
+
+#, fuzzy, c-format
+#| msgid " over the past %ld day."
+#| msgid_plural " over the past %ld days."
+msgid "Messages verified in the past: %d."
 msgstr " i løpet av gårsdagen (%ld)."
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Verified %ld message signed by \"%s\"\n"
+#| "in the past %s."
+#| msgid_plural ""
+#| "Verified %ld messages signed by \"%s\"\n"
+#| "in the past %s."
+msgid "Messages encrypted in the past: %d."
+msgstr ""
+"Bekreftet %ld melding signert av «%s»\n"
+"siste %s."
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5544,59 +5591,78 @@ msgstr ""
 msgid "resetting keydb: %s\n"
 msgstr "feil under skriving av nøkkel: %s\n"
 
-#, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
+#, fuzzy, c-format
+#| msgid "error setting TOFU binding's trust level to %s\n"
+msgid "error setting TOFU binding's policy to %s\n"
 msgstr "feil under endring av tillitsnivå for TOFU-tilknytning til %s\n"
 
 #, c-format
 msgid "error changing TOFU policy: %s\n"
 msgstr "feil under endring av TOFU-regler: %s\n"
 
-#. TRANSLATORS: The tilde ('~') is used here to indicate a
-#. * non-breakable space
-#, c-format
-msgid "%d~year"
-msgid_plural "%d~years"
+#, fuzzy, c-format
+#| msgid "%d~year"
+#| msgid_plural "%d~years"
+msgid "%lld~year"
+msgid_plural "%lld~years"
 msgstr[0] "%d~år"
 msgstr[1] "%d~år"
 
-#, c-format
-msgid "%d~month"
-msgid_plural "%d~months"
+#, fuzzy, c-format
+#| msgid "%d~month"
+#| msgid_plural "%d~months"
+msgid "%lld~month"
+msgid_plural "%lld~months"
 msgstr[0] "%d~måned"
 msgstr[1] "%d~måneder"
 
 #, c-format
-msgid "%d~day"
-msgid_plural "%d~days"
+msgid "%lld~week"
+msgid_plural "%lld~weeks"
+msgstr[0] ""
+msgstr[1] ""
+
+#, fuzzy, c-format
+#| msgid "%d~day"
+#| msgid_plural "%d~days"
+msgid "%lld~day"
+msgid_plural "%lld~days"
 msgstr[0] "%d~dag"
 msgstr[1] "%d~dager"
 
-#, c-format
-msgid "%d~hour"
-msgid_plural "%d~hours"
+#, fuzzy, c-format
+#| msgid "%d~hour"
+#| msgid_plural "%d~hours"
+msgid "%lld~hour"
+msgid_plural "%lld~hours"
 msgstr[0] "%d~time"
 msgstr[1] "%d~timer"
 
-#, c-format
-msgid "%d~minute"
-msgid_plural "%d~minutes"
+#, fuzzy, c-format
+#| msgid "%d~minute"
+#| msgid_plural "%d~minutes"
+msgid "%lld~minute"
+msgid_plural "%lld~minutes"
 msgstr[0] "%d~minutt"
 msgstr[1] "%d~minutter"
 
-#, c-format
-msgid "%d~second"
-msgid_plural "%d~seconds"
+#, fuzzy, c-format
+#| msgid "%d~second"
+#| msgid_plural "%d~seconds"
+msgid "%lld~second"
+msgid_plural "%lld~seconds"
 msgstr[0] "%d~sekund"
 msgstr[1] "%d~sekunder"
 
-#, c-format
-msgid "%s: "
-msgstr ""
+#, fuzzy, c-format
+#| msgid "TOFU: few signatures %d message %s"
+#| msgid_plural "TOFU: few signatures %d messages %s"
+msgid "%s: Verified 0~signatures and encrypted 0~messages."
+msgstr "TOFU: få signaturer %d melding %s"
 
 #, fuzzy, c-format
 #| msgid "Deleted %d signatures.\n"
-msgid "Verified %ld signatures"
+msgid "%s: Verified 0 signatures."
 msgstr "Slettet %d signaturer.\n"
 
 #, fuzzy, c-format
@@ -5606,8 +5672,8 @@ msgstr "Slettet %d signaturer.\n"
 #| msgid_plural ""
 #| "Verified %ld messages signed by \"%s\"\n"
 #| "in the past %s."
-msgid "Verified %ld signature in the past %s"
-msgid_plural "Verified %ld signatures in the past %s"
+msgid "%s: Verified %ld~signature in the past %s."
+msgid_plural "%s: Verified %ld~signatures in the past %s."
 msgstr[0] ""
 "Bekreftet %ld melding signert av «%s»\n"
 "siste %s."
@@ -5615,9 +5681,9 @@ msgstr[1] ""
 "Bekreftet %ld meldinger signert av «%s»\n"
 "siste %s."
 
-#, fuzzy, c-format
+#, fuzzy
 #| msgid "encrypted with %lu passphrases\n"
-msgid ", and encrypted %ld messages"
+msgid "Encrypted 0 messages."
 msgstr "kryptert med %lu passordfraser\n"
 
 #, fuzzy, c-format
@@ -5627,14 +5693,19 @@ msgstr "kryptert med %lu passordfraser\n"
 #| msgid_plural ""
 #| "Verified %ld messages signed by \"%s\"\n"
 #| "in the past %s."
-msgid ", and encrypted %ld message in the past %s"
-msgid_plural ", and encrypted %ld messages in the past %s"
+msgid "Encrypted %ld~message in the past %s."
+msgid_plural "Encrypted %ld~messages in the past %s."
 msgstr[0] ""
 "Bekreftet %ld melding signert av «%s»\n"
 "siste %s."
 msgstr[1] ""
 "Bekreftet %ld meldinger signert av «%s»\n"
 "siste %s."
+
+#, fuzzy, c-format
+#| msgid "policy: %s"
+msgid "(policy: %s)"
+msgstr "regelverk: %s"
 
 #, fuzzy
 #| msgid "Warning: we've have yet to see a message signed by this key!\n"
@@ -5707,7 +5778,7 @@ msgid "error opening TOFU database: %s\n"
 msgstr "feil under åpning av TOFU-database: %s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -8269,6 +8340,16 @@ msgstr "Ekstern bekreftelse av komponent %s mislyktes"
 msgid "Note that group specifications are ignored\n"
 msgstr "Merk at gruppespesifikasjoner blir ignorert\n"
 
+#, fuzzy, c-format
+#| msgid "error closing '%s': %s\n"
+msgid "error closing '%s'\n"
+msgstr "feil under lukking av «%s»: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error hashing '%s': %s\n"
+msgid "error parsing '%s'\n"
+msgstr "feil under summering av «%s»: %s\n"
+
 msgid "list all components"
 msgstr "vis alle komponenter"
 
@@ -8286,6 +8367,11 @@ msgstr "|KOMPONENT|kontroller valg"
 
 msgid "apply global default values"
 msgstr "bruk globale standardverdier"
+
+#, fuzzy
+#| msgid "|FILE|take policy information from FILE"
+msgid "|FILE|update configuration files using FILE"
+msgstr "|FIL|hent regler fra valgt FIL"
 
 msgid "get the configuration directories for @GPGCONF@"
 msgstr "hent oppsettsmapper for @GPGCONF@"
@@ -8479,6 +8565,57 @@ msgstr ""
 "Syntaks: gpg-check-pattern [valg] mønsterfil\n"
 "Kontroller passordfrase oppgitt på standard innkanal mot valgt mønsterfil\n"
 
+#~ msgid "--store [filename]"
+#~ msgstr "--store [filnavn]"
+
+#~ msgid "--symmetric [filename]"
+#~ msgstr "--symmetric [filnavn]"
+
+#~ msgid "--encrypt [filename]"
+#~ msgstr "--encrypt [filnavn]"
+
+#~ msgid "--symmetric --encrypt [filename]"
+#~ msgstr "--symmetric --encrypt [filnavn]"
+
+#~ msgid "--sign [filename]"
+#~ msgstr "--sign [filnavn]"
+
+#~ msgid "--sign --encrypt [filename]"
+#~ msgstr "--sign --encrypt [filnavn]"
+
+#~ msgid "--symmetric --sign --encrypt [filename]"
+#~ msgstr "--symmetric --sign --encrypt [filnavn]"
+
+#~ msgid "--sign --symmetric [filename]"
+#~ msgstr "--sign --symmetric [filnavn]"
+
+#~ msgid "--clear-sign [filename]"
+#~ msgstr "--clear-sign [filnavn]"
+
+#~ msgid "--decrypt [filename]"
+#~ msgstr "--decrypt [filnavn]"
+
+#~ msgid "--sign-key user-id"
+#~ msgstr "--sign-key bruker-ID"
+
+#~ msgid "--lsign-key user-id"
+#~ msgstr "--lsign-key bruker-ID"
+
+#~ msgid "--edit-key user-id [commands]"
+#~ msgstr "--edit-key bruker-ID [kommandoer]"
+
+#~ msgid "--passwd <user-id>"
+#~ msgstr "--passwd <bruker-id>"
+
+#~ msgid "[filename]"
+#~ msgstr "[filnavn]"
+
+#, fuzzy
+#~| msgid " over the past %ld day."
+#~| msgid_plural " over the past %ld days."
+#~ msgid " in the past."
+#~ msgstr " i løpet av gårsdagen (%ld)."
+
 #~ msgid "shadowing the key failed: %s\n"
 #~ msgstr "skyggelegging av nøkkel mislyktes: %s\n"
 
@@ -8497,11 +8634,6 @@ msgstr ""
 
 #~ msgid "Known user IDs associated with this key:\n"
 #~ msgstr "Kjente bruker-id-er tilknyttet denne nøkkelen:\n"
-
-#~ msgid "%ld message signed in the future."
-#~ msgid_plural "%ld messages signed in the future."
-#~ msgstr[0] "%ld melding signert i fremtid."
-#~ msgstr[1] "%ld meldinger signert i fremtid."
 
 #~ msgid "%ld message signed"
 #~ msgid_plural "%ld messages signed"
@@ -8606,11 +8738,6 @@ msgstr ""
 #~ msgid_plural "%d days"
 #~ msgstr[0] "%d dag"
 #~ msgstr[1] "%d dager"
-
-#~ msgid "TOFU: few signatures %d message %s"
-#~ msgid_plural "TOFU: few signatures %d messages %s"
-#~ msgstr[0] "TOFU: få signaturer %d melding %s"
-#~ msgstr[1] "TOFU: få signaturer %d meldinger %s"
 
 #~ msgid "can't gen prime with pbits=%u qbits=%u\n"
 #~ msgstr "du kan ikke lage primtall med pbits=%u qbits=%u\n"

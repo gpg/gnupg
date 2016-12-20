@@ -1917,6 +1917,11 @@ msgstr "generează o nouă perechi de chei"
 msgid "quickly revoke a user-id"
 msgstr "generează o nouă perechi de chei"
 
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly set a new expiration date"
+msgstr "generează o nouă perechi de chei"
+
 msgid "full featured key pair generation"
 msgstr ""
 
@@ -2030,12 +2035,22 @@ msgstr ""
 "@\n"
 "(Arată pagina man pentru o listă completă a comenzilor şi opţiunilor)\n"
 
+#, fuzzy
+#| msgid ""
+#| "@\n"
+#| "Examples:\n"
+#| "\n"
+#| " -se -r Bob [file]          sign and encrypt for user Bob\n"
+#| " --clear-sign [file]         make a clear text signature\n"
+#| " --detach-sign [file]       make a detached signature\n"
+#| " --list-keys [names]        show keys\n"
+#| " --fingerprint [names]      show fingerprints\n"
 msgid ""
 "@\n"
 "Examples:\n"
 "\n"
 " -se -r Bob [file]          sign and encrypt for user Bob\n"
-" --clear-sign [file]         make a clear text signature\n"
+" --clear-sign [file]        make a clear text signature\n"
 " --detach-sign [file]       make a detached signature\n"
 " --list-keys [names]        show keys\n"
 " --fingerprint [names]      show fingerprints\n"
@@ -2459,22 +2474,10 @@ msgstr ""
 "AVERTISMENT: destinatari (-r) furnizaţi fără a folosi cifrare cu cheie "
 "publică\n"
 
-msgid "--store [filename]"
-msgstr "--store [nume_fişier]"
-
-msgid "--symmetric [filename]"
-msgstr "--symmetric [nume_fişier]"
-
 #, fuzzy, c-format
 #| msgid "symmetric encryption of `%s' failed: %s\n"
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "cifrarea simetrică a lui `%s' a eşuat: %s\n"
-
-msgid "--encrypt [filename]"
-msgstr "--encrypt [nume_fişier]"
-
-msgid "--symmetric --encrypt [filename]"
-msgstr "--symmetric --encrypt [nume_fişier]"
 
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "nu puteţi folosi --symmetric --encrypt cu --s2k-mode 0\n"
@@ -2483,43 +2486,12 @@ msgstr "nu puteţi folosi --symmetric --encrypt cu --s2k-mode 0\n"
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "nu puteţi folosi --symmetric --encrypt câtă vreme în modul %s\n"
 
-msgid "--sign [filename]"
-msgstr "--sign [nume_fişier]"
-
-msgid "--sign --encrypt [filename]"
-msgstr "--sign --encrypt [nume_fişier]"
-
-msgid "--symmetric --sign --encrypt [filename]"
-msgstr "--symmetric --sign --encrypt [nume_fişier]"
-
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "nu puteţi folosi --symmetric --sign --encrypt cu --s2k-mode 0\n"
 
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "nu puteţi folosi --symmetric --sign --encrypt câtă vreme în modul %s\n"
-
-msgid "--sign --symmetric [filename]"
-msgstr "--sign --symmetric [nume_fişier]"
-
-msgid "--clear-sign [filename]"
-msgstr "--clear-sign [nume_fişier]"
-
-msgid "--decrypt [filename]"
-msgstr "--decrypt [nume_fişier]"
-
-msgid "--sign-key user-id"
-msgstr "--sign-key id-utilizator"
-
-msgid "--lsign-key user-id"
-msgstr "--lsign-key id-utilizator"
-
-msgid "--edit-key user-id [commands]"
-msgstr "--edit-key id-utilizator [comenzi]"
-
-#, fuzzy
-msgid "--passwd <user-id>"
-msgstr "--sign-key id-utilizator"
 
 #, c-format
 msgid "keyserver send failed: %s\n"
@@ -2566,9 +2538,6 @@ msgstr "eroare la obţinerea numărului serial: %s\n"
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr ""
-
-msgid "[filename]"
-msgstr "[nume_fişier]"
 
 msgid "Go ahead and type your message ...\n"
 msgstr "Daţi-i drumul şi scrieţi mesajul ...\n"
@@ -3582,6 +3551,11 @@ msgstr "Nu există acest ID utilizator.\n"
 #| msgid "Nothing to sign with key %s\n"
 msgid "Nothing to sign.\n"
 msgstr "Nimic de semnat cu cheia %s\n"
+
+#, fuzzy, c-format
+#| msgid "`%s' is not a valid signature expiration\n"
+msgid "'%s' is not a valid expiration time\n"
+msgstr "`%s' nu este expirare de semnătură validă\n"
 
 msgid "Digest: "
 msgstr "Rezumat: "
@@ -5088,7 +5062,7 @@ msgstr ""
 #| "in the user ID.  If you *really* know what you are doing,\n"
 #| "you may answer the next question with yes.\n"
 msgid ""
-"This key has is bad!  It has been marked as untrusted!  If you\n"
+"This key is bad!  It has been marked as untrusted!  If you\n"
 "*really* know what you are doing, you may answer the next\n"
 "question with yes.\n"
 msgstr ""
@@ -5746,6 +5720,13 @@ msgstr ""
 "Algoritmuri suportate:\n"
 
 #, fuzzy, c-format
+msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+msgstr "eroare la crearea frazei-parolă: %s\n"
+
+msgid "TOFU DB error"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "error reading TOFU database: %s\n"
 msgstr "eroare trimitere la `%s': %s\n"
 
@@ -5758,6 +5739,14 @@ msgstr "eroare la scrierea inelului de chei secret `%s': %s\n"
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing TOFU database: %s\n"
 msgstr "%s: eroare scriere înregistrare dir: %s\n"
+
+#, fuzzy, c-format
+msgid "error creating 'encryptions' TOFU table: %s\n"
+msgstr "eroare trimitere la `%s': %s\n"
+
+#, c-format
+msgid "adding column effective_policy to bindings DB: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "error opening TOFU database '%s': %s\n"
@@ -5773,8 +5762,10 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid "The email address \"%s\" is associated with %d keys!"
-msgstr ""
+msgid "The email address \"%s\" is associated with %d key!"
+msgid_plural "The email address \"%s\" is associated with %d keys!"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
 msgstr ""
@@ -5823,37 +5814,73 @@ msgid "this key"
 msgstr "enumeră chei"
 
 #, fuzzy, c-format
-msgid "Verified %d message"
-msgid_plural "Verified %d messages"
+msgid "Verified %d message."
+msgid_plural "Verified %d messages."
+msgstr[0] "|algo [fişiere]|afişează rezumate mesaje"
+msgstr[1] "|algo [fişiere]|afişează rezumate mesaje"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %lu passphrases\n"
+msgid "Encrypted %d message."
+msgid_plural "Encrypted %d messages."
+msgstr[0] "cifrată cu %lu fraze-parolă\n"
+msgstr[1] "cifrată cu %lu fraze-parolă\n"
+
+#, fuzzy, c-format
+msgid "Verified %d message in the future."
+msgid_plural "Verified %d messages in the future."
+msgstr[0] "|algo [fişiere]|afişează rezumate mesaje"
+msgstr[1] "|algo [fişiere]|afişează rezumate mesaje"
+
+#, fuzzy, c-format
+msgid "Encrypted %d message in the future."
+msgid_plural "Encrypted %d messages in the future."
 msgstr[0] "|algo [fişiere]|afişează rezumate mesaje"
 msgstr[1] "|algo [fişiere]|afişează rezumate mesaje"
 
 #, c-format
-msgid "Encrypted %d message"
-msgid_plural "Encrypted %d messages"
+msgid "Messages verified over the past %d day: %d."
+msgid_plural "Messages verified over the past %d days: %d."
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past day."
-msgid_plural " over the past %d days."
+msgid "Messages encrypted over the past %d day: %d."
+msgid_plural "Messages encrypted over the past %d days: %d."
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past month."
-msgid_plural " over the past %d months."
+msgid "Messages verified over the past %d month: %d."
+msgid_plural "Messages verified over the past %d months: %d."
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past year."
-msgid_plural " over the past %d years."
+msgid "Messages encrypted over the past %d month: %d."
+msgid_plural "Messages encrypted over the past %d months: %d."
 msgstr[0] ""
 msgstr[1] ""
 
-msgid " in the past."
+#, c-format
+msgid "Messages verified over the past %d year: %d."
+msgid_plural "Messages verified over the past %d years: %d."
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "Messages encrypted over the past %d year: %d."
+msgid_plural "Messages encrypted over the past %d years: %d."
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "Messages verified in the past: %d."
 msgstr ""
+
+#, fuzzy, c-format
+msgid "Messages encrypted in the past: %d."
+msgstr "|algo [fişiere]|afişează rezumate mesaje"
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5881,76 +5908,85 @@ msgid "resetting keydb: %s\n"
 msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 
 #, fuzzy, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
+msgid "error setting TOFU binding's policy to %s\n"
 msgstr "eroare la citire `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
 msgstr "eroare la crearea frazei-parolă: %s\n"
 
-#. TRANSLATORS: The tilde ('~') is used here to indicate a
-#. * non-breakable space
 #, c-format
-msgid "%d~year"
-msgid_plural "%d~years"
+msgid "%lld~year"
+msgid_plural "%lld~years"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~month"
-msgid_plural "%d~months"
+msgid "%lld~month"
+msgid_plural "%lld~months"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~day"
-msgid_plural "%d~days"
+msgid "%lld~week"
+msgid_plural "%lld~weeks"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~hour"
-msgid_plural "%d~hours"
+msgid "%lld~day"
+msgid_plural "%lld~days"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~minute"
-msgid_plural "%d~minutes"
+msgid "%lld~hour"
+msgid_plural "%lld~hours"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~second"
-msgid_plural "%d~seconds"
+msgid "%lld~minute"
+msgid_plural "%lld~minutes"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%s: "
+msgid "%lld~second"
+msgid_plural "%lld~seconds"
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "%s: Verified 0~signatures and encrypted 0~messages."
 msgstr ""
 
 #, fuzzy, c-format
 #| msgid "Deleted %d signatures.\n"
-msgid "Verified %ld signatures"
+msgid "%s: Verified 0 signatures."
 msgstr "Am şters %d semnături.\n"
 
 #, fuzzy, c-format
-msgid "Verified %ld signature in the past %s"
-msgid_plural "Verified %ld signatures in the past %s"
+msgid "%s: Verified %ld~signature in the past %s."
+msgid_plural "%s: Verified %ld~signatures in the past %s."
 msgstr[0] "|algo [fişiere]|afişează rezumate mesaje"
 msgstr[1] "|algo [fişiere]|afişează rezumate mesaje"
 
-#, fuzzy, c-format
+#, fuzzy
 #| msgid "encrypted with %lu passphrases\n"
-msgid ", and encrypted %ld messages"
+msgid "Encrypted 0 messages."
 msgstr "cifrată cu %lu fraze-parolă\n"
 
 #, fuzzy, c-format
-msgid ", and encrypted %ld message in the past %s"
-msgid_plural ", and encrypted %ld messages in the past %s"
+msgid "Encrypted %ld~message in the past %s."
+msgid_plural "Encrypted %ld~messages in the past %s."
 msgstr[0] "|algo [fişiere]|afişează rezumate mesaje"
 msgstr[1] "|algo [fişiere]|afişează rezumate mesaje"
+
+#, fuzzy, c-format
+#| msgid "Policy: "
+msgid "(policy: %s)"
+msgstr "Politica: "
 
 msgid ""
 "Warning: we have yet to see a message signed using this key and user id!\n"
@@ -5987,7 +6023,7 @@ msgid "error opening TOFU database: %s\n"
 msgstr "eroare trimitere la `%s': %s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -8705,6 +8741,15 @@ msgstr ""
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error closing '%s'\n"
+msgstr "eroare în `%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "error in `%s': %s\n"
+msgid "error parsing '%s'\n"
+msgstr "eroare în `%s': %s\n"
+
 msgid "list all components"
 msgstr ""
 
@@ -8721,6 +8766,9 @@ msgid "|COMPONENT|check options"
 msgstr ""
 
 msgid "apply global default values"
+msgstr ""
+
+msgid "|FILE|update configuration files using FILE"
 msgstr ""
 
 msgid "get the configuration directories for @GPGCONF@"
@@ -8918,6 +8966,52 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "--store [filename]"
+#~ msgstr "--store [nume_fişier]"
+
+#~ msgid "--symmetric [filename]"
+#~ msgstr "--symmetric [nume_fişier]"
+
+#~ msgid "--encrypt [filename]"
+#~ msgstr "--encrypt [nume_fişier]"
+
+#~ msgid "--symmetric --encrypt [filename]"
+#~ msgstr "--symmetric --encrypt [nume_fişier]"
+
+#~ msgid "--sign [filename]"
+#~ msgstr "--sign [nume_fişier]"
+
+#~ msgid "--sign --encrypt [filename]"
+#~ msgstr "--sign --encrypt [nume_fişier]"
+
+#~ msgid "--symmetric --sign --encrypt [filename]"
+#~ msgstr "--symmetric --sign --encrypt [nume_fişier]"
+
+#~ msgid "--sign --symmetric [filename]"
+#~ msgstr "--sign --symmetric [nume_fişier]"
+
+#~ msgid "--clear-sign [filename]"
+#~ msgstr "--clear-sign [nume_fişier]"
+
+#~ msgid "--decrypt [filename]"
+#~ msgstr "--decrypt [nume_fişier]"
+
+#~ msgid "--sign-key user-id"
+#~ msgstr "--sign-key id-utilizator"
+
+#~ msgid "--lsign-key user-id"
+#~ msgstr "--lsign-key id-utilizator"
+
+#~ msgid "--edit-key user-id [commands]"
+#~ msgstr "--edit-key id-utilizator [comenzi]"
+
+#, fuzzy
+#~ msgid "--passwd <user-id>"
+#~ msgstr "--sign-key id-utilizator"
+
+#~ msgid "[filename]"
+#~ msgstr "[nume_fişier]"
 
 #, fuzzy
 #~ msgid "shadowing the key failed: %s\n"

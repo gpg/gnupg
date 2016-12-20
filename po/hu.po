@@ -1914,6 +1914,11 @@ msgstr "új kulcspár létrehozása"
 msgid "quickly revoke a user-id"
 msgstr "új kulcspár létrehozása"
 
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly set a new expiration date"
+msgstr "új kulcspár létrehozása"
+
 msgid "full featured key pair generation"
 msgstr ""
 
@@ -2027,12 +2032,22 @@ msgstr ""
 "@\n"
 "(A parancsok és opciók teljes listáját a man oldalon tekintheti meg.)\n"
 
+#, fuzzy
+#| msgid ""
+#| "@\n"
+#| "Examples:\n"
+#| "\n"
+#| " -se -r Bob [file]          sign and encrypt for user Bob\n"
+#| " --clear-sign [file]         make a clear text signature\n"
+#| " --detach-sign [file]       make a detached signature\n"
+#| " --list-keys [names]        show keys\n"
+#| " --fingerprint [names]      show fingerprints\n"
 msgid ""
 "@\n"
 "Examples:\n"
 "\n"
 " -se -r Bob [file]          sign and encrypt for user Bob\n"
-" --clear-sign [file]         make a clear text signature\n"
+" --clear-sign [file]        make a clear text signature\n"
 " --detach-sign [file]       make a detached signature\n"
 " --list-keys [names]        show keys\n"
 " --fingerprint [names]      show fingerprints\n"
@@ -2422,22 +2437,9 @@ msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "FIGYELEM: Címzett megadva (-r), de nincs nyilvános kulcsú titkosítás!\n"
 
-msgid "--store [filename]"
-msgstr "--store [fájlnév]"
-
-msgid "--symmetric [filename]"
-msgstr "--symmetric [fájlnév]"
-
 #, fuzzy, c-format
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "Visszafejtés sikertelen: %s.\n"
-
-msgid "--encrypt [filename]"
-msgstr "--encrypt [fájlnév]"
-
-#, fuzzy
-msgid "--symmetric --encrypt [filename]"
-msgstr "--sign --encrypt [fájlnév]"
 
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
@@ -2446,44 +2448,12 @@ msgstr ""
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "Lehet, hogy nem használhatja %s-t %s módban!\n"
 
-msgid "--sign [filename]"
-msgstr "--sign [fájlnév]"
-
-msgid "--sign --encrypt [filename]"
-msgstr "--sign --encrypt [fájlnév]"
-
-#, fuzzy
-msgid "--symmetric --sign --encrypt [filename]"
-msgstr "--sign --encrypt [fájlnév]"
-
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
 #, fuzzy, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "Lehet, hogy nem használhatja %s-t %s módban!\n"
-
-msgid "--sign --symmetric [filename]"
-msgstr "--sign --symmetric [fájlnév]"
-
-msgid "--clear-sign [filename]"
-msgstr "--clear-sign [fájlnév]"
-
-msgid "--decrypt [filename]"
-msgstr "--decrypt [fájlnév]"
-
-msgid "--sign-key user-id"
-msgstr "--sign-key felh-azonosító"
-
-msgid "--lsign-key user-id"
-msgstr "--lsign-key felh-azonosító"
-
-msgid "--edit-key user-id [commands]"
-msgstr "--edit-key felh-azonosító [parancsok]"
-
-#, fuzzy
-msgid "--passwd <user-id>"
-msgstr "--sign-key felh-azonosító"
 
 #, c-format
 msgid "keyserver send failed: %s\n"
@@ -2530,9 +2500,6 @@ msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr ""
-
-msgid "[filename]"
-msgstr "[fájlnév]"
 
 msgid "Go ahead and type your message ...\n"
 msgstr "Kezdheti gépelni az üzenetet...\n"
@@ -3566,6 +3533,10 @@ msgstr "Nincs ilyen felhasználói azonosító.\n"
 #, fuzzy
 msgid "Nothing to sign.\n"
 msgstr "Nincs mit aláírni a %08lX kulccsal!\n"
+
+#, fuzzy, c-format
+msgid "'%s' is not a valid expiration time\n"
+msgstr "%s nem érvényes karakterkiosztás!\n"
 
 msgid "Digest: "
 msgstr "Kivonat: "
@@ -5068,7 +5039,7 @@ msgstr ""
 
 #, fuzzy
 msgid ""
-"This key has is bad!  It has been marked as untrusted!  If you\n"
+"This key is bad!  It has been marked as untrusted!  If you\n"
 "*really* know what you are doing, you may answer the next\n"
 "question with yes.\n"
 msgstr ""
@@ -5717,6 +5688,13 @@ msgstr ""
 "Támogatott algoritmusok:\n"
 
 #, fuzzy, c-format
+msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+msgid "TOFU DB error"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "error reading TOFU database: %s\n"
 msgstr "Hiba %s-ra/-re küldéskor: %s\n"
 
@@ -5729,6 +5707,14 @@ msgstr "Hiba a(z) \"%s\" titkoskulcs-karika írásakor: %s.\n"
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing TOFU database: %s\n"
 msgstr "%s: Hiba könyvtárrekord írásakor: %s.\n"
+
+#, fuzzy, c-format
+msgid "error creating 'encryptions' TOFU table: %s\n"
+msgstr "Hiba %s-ra/-re küldéskor: %s\n"
+
+#, c-format
+msgid "adding column effective_policy to bindings DB: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "error opening TOFU database '%s': %s\n"
@@ -5744,8 +5730,10 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid "The email address \"%s\" is associated with %d keys!"
-msgstr ""
+msgid "The email address \"%s\" is associated with %d key!"
+msgid_plural "The email address \"%s\" is associated with %d keys!"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
 msgstr ""
@@ -5793,37 +5781,73 @@ msgid "this key"
 msgstr "kulcsok listázása"
 
 #, fuzzy, c-format
-msgid "Verified %d message"
-msgid_plural "Verified %d messages"
+msgid "Verified %d message."
+msgid_plural "Verified %d messages."
+msgstr[0] "|algo [fájlok]|üzenet kivonatának kiírása"
+msgstr[1] "|algo [fájlok]|üzenet kivonatának kiírása"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %lu passphrases\n"
+msgid "Encrypted %d message."
+msgid_plural "Encrypted %d messages."
+msgstr[0] "%lu jelszóval rejtjelezve\n"
+msgstr[1] "%lu jelszóval rejtjelezve\n"
+
+#, fuzzy, c-format
+msgid "Verified %d message in the future."
+msgid_plural "Verified %d messages in the future."
+msgstr[0] "|algo [fájlok]|üzenet kivonatának kiírása"
+msgstr[1] "|algo [fájlok]|üzenet kivonatának kiírása"
+
+#, fuzzy, c-format
+msgid "Encrypted %d message in the future."
+msgid_plural "Encrypted %d messages in the future."
 msgstr[0] "|algo [fájlok]|üzenet kivonatának kiírása"
 msgstr[1] "|algo [fájlok]|üzenet kivonatának kiírása"
 
 #, c-format
-msgid "Encrypted %d message"
-msgid_plural "Encrypted %d messages"
+msgid "Messages verified over the past %d day: %d."
+msgid_plural "Messages verified over the past %d days: %d."
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past day."
-msgid_plural " over the past %d days."
+msgid "Messages encrypted over the past %d day: %d."
+msgid_plural "Messages encrypted over the past %d days: %d."
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past month."
-msgid_plural " over the past %d months."
+msgid "Messages verified over the past %d month: %d."
+msgid_plural "Messages verified over the past %d months: %d."
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past year."
-msgid_plural " over the past %d years."
+msgid "Messages encrypted over the past %d month: %d."
+msgid_plural "Messages encrypted over the past %d months: %d."
 msgstr[0] ""
 msgstr[1] ""
 
-msgid " in the past."
+#, c-format
+msgid "Messages verified over the past %d year: %d."
+msgid_plural "Messages verified over the past %d years: %d."
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "Messages encrypted over the past %d year: %d."
+msgid_plural "Messages encrypted over the past %d years: %d."
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "Messages verified in the past: %d."
 msgstr ""
+
+#, fuzzy, c-format
+msgid "Messages encrypted in the past: %d."
+msgstr "|algo [fájlok]|üzenet kivonatának kiírása"
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5851,76 +5875,85 @@ msgid "resetting keydb: %s\n"
 msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
 
 #, fuzzy, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
+msgid "error setting TOFU binding's policy to %s\n"
 msgstr "Hiba \"%s\" olvasásakor: %s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 
-#. TRANSLATORS: The tilde ('~') is used here to indicate a
-#. * non-breakable space
 #, c-format
-msgid "%d~year"
-msgid_plural "%d~years"
+msgid "%lld~year"
+msgid_plural "%lld~years"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~month"
-msgid_plural "%d~months"
+msgid "%lld~month"
+msgid_plural "%lld~months"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~day"
-msgid_plural "%d~days"
+msgid "%lld~week"
+msgid_plural "%lld~weeks"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~hour"
-msgid_plural "%d~hours"
+msgid "%lld~day"
+msgid_plural "%lld~days"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~minute"
-msgid_plural "%d~minutes"
+msgid "%lld~hour"
+msgid_plural "%lld~hours"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~second"
-msgid_plural "%d~seconds"
+msgid "%lld~minute"
+msgid_plural "%lld~minutes"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%s: "
+msgid "%lld~second"
+msgid_plural "%lld~seconds"
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "%s: Verified 0~signatures and encrypted 0~messages."
 msgstr ""
 
 #, fuzzy, c-format
 #| msgid "Deleted %d signatures.\n"
-msgid "Verified %ld signatures"
+msgid "%s: Verified 0 signatures."
 msgstr "Töröltem %d aláírást.\n"
 
 #, fuzzy, c-format
-msgid "Verified %ld signature in the past %s"
-msgid_plural "Verified %ld signatures in the past %s"
+msgid "%s: Verified %ld~signature in the past %s."
+msgid_plural "%s: Verified %ld~signatures in the past %s."
 msgstr[0] "|algo [fájlok]|üzenet kivonatának kiírása"
 msgstr[1] "|algo [fájlok]|üzenet kivonatának kiírása"
 
-#, fuzzy, c-format
+#, fuzzy
 #| msgid "encrypted with %lu passphrases\n"
-msgid ", and encrypted %ld messages"
+msgid "Encrypted 0 messages."
 msgstr "%lu jelszóval rejtjelezve\n"
 
 #, fuzzy, c-format
-msgid ", and encrypted %ld message in the past %s"
-msgid_plural ", and encrypted %ld messages in the past %s"
+msgid "Encrypted %ld~message in the past %s."
+msgid_plural "Encrypted %ld~messages in the past %s."
 msgstr[0] "|algo [fájlok]|üzenet kivonatának kiírása"
 msgstr[1] "|algo [fájlok]|üzenet kivonatának kiírása"
+
+#, fuzzy, c-format
+#| msgid "Policy: "
+msgid "(policy: %s)"
+msgstr "Eljárásmód: "
 
 msgid ""
 "Warning: we have yet to see a message signed using this key and user id!\n"
@@ -5957,7 +5990,7 @@ msgid "error opening TOFU database: %s\n"
 msgstr "Hiba %s-ra/-re küldéskor: %s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -8635,6 +8668,14 @@ msgstr ""
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error closing '%s'\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "error parsing '%s'\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
 msgid "list all components"
 msgstr ""
 
@@ -8651,6 +8692,9 @@ msgid "|COMPONENT|check options"
 msgstr ""
 
 msgid "apply global default values"
+msgstr ""
+
+msgid "|FILE|update configuration files using FILE"
 msgstr ""
 
 msgid "get the configuration directories for @GPGCONF@"
@@ -8848,6 +8892,54 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "--store [filename]"
+#~ msgstr "--store [fájlnév]"
+
+#~ msgid "--symmetric [filename]"
+#~ msgstr "--symmetric [fájlnév]"
+
+#~ msgid "--encrypt [filename]"
+#~ msgstr "--encrypt [fájlnév]"
+
+#, fuzzy
+#~ msgid "--symmetric --encrypt [filename]"
+#~ msgstr "--sign --encrypt [fájlnév]"
+
+#~ msgid "--sign [filename]"
+#~ msgstr "--sign [fájlnév]"
+
+#~ msgid "--sign --encrypt [filename]"
+#~ msgstr "--sign --encrypt [fájlnév]"
+
+#, fuzzy
+#~ msgid "--symmetric --sign --encrypt [filename]"
+#~ msgstr "--sign --encrypt [fájlnév]"
+
+#~ msgid "--sign --symmetric [filename]"
+#~ msgstr "--sign --symmetric [fájlnév]"
+
+#~ msgid "--clear-sign [filename]"
+#~ msgstr "--clear-sign [fájlnév]"
+
+#~ msgid "--decrypt [filename]"
+#~ msgstr "--decrypt [fájlnév]"
+
+#~ msgid "--sign-key user-id"
+#~ msgstr "--sign-key felh-azonosító"
+
+#~ msgid "--lsign-key user-id"
+#~ msgstr "--lsign-key felh-azonosító"
+
+#~ msgid "--edit-key user-id [commands]"
+#~ msgstr "--edit-key felh-azonosító [parancsok]"
+
+#, fuzzy
+#~ msgid "--passwd <user-id>"
+#~ msgstr "--sign-key felh-azonosító"
+
+#~ msgid "[filename]"
+#~ msgstr "[fájlnév]"
 
 #, fuzzy
 #~ msgid "shadowing the key failed: %s\n"

@@ -1803,6 +1803,11 @@ msgstr "швидке додавання нового ідентифікатор�
 msgid "quickly revoke a user-id"
 msgstr "швидке відкликання ідентифікатора користувача"
 
+#, fuzzy
+#| msgid "quickly generate a new key pair"
+msgid "quickly set a new expiration date"
+msgstr "швидке створення пари ключів"
+
 msgid "full featured key pair generation"
 msgstr "повноцінне створення пари ключів"
 
@@ -1909,12 +1914,22 @@ msgstr ""
 "(Щоб ознайомитися зі списком команд і параметрів, скористайтеся сторінкою "
 "довідника (man))\n"
 
+#, fuzzy
+#| msgid ""
+#| "@\n"
+#| "Examples:\n"
+#| "\n"
+#| " -se -r Bob [file]          sign and encrypt for user Bob\n"
+#| " --clear-sign [file]         make a clear text signature\n"
+#| " --detach-sign [file]       make a detached signature\n"
+#| " --list-keys [names]        show keys\n"
+#| " --fingerprint [names]      show fingerprints\n"
 msgid ""
 "@\n"
 "Examples:\n"
 "\n"
 " -se -r Bob [file]          sign and encrypt for user Bob\n"
-" --clear-sign [file]         make a clear text signature\n"
+" --clear-sign [file]        make a clear text signature\n"
 " --detach-sign [file]       make a detached signature\n"
 " --list-keys [names]        show keys\n"
 " --fingerprint [names]      show fingerprints\n"
@@ -2307,21 +2322,9 @@ msgstr ""
 "УВАГА: отримувачів (-r) вказано без використання шифрування відкритим "
 "ключем\n"
 
-msgid "--store [filename]"
-msgstr "--store [назва файла]"
-
-msgid "--symmetric [filename]"
-msgstr "--symmetric [назва файла]"
-
 #, c-format
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "помилка під час спроби симетричного шифрування «%s»: %s\n"
-
-msgid "--encrypt [filename]"
-msgstr "--encrypt [назва файла]"
-
-msgid "--symmetric --encrypt [filename]"
-msgstr "--symmetric --encrypt [назва файла]"
 
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
@@ -2333,15 +2336,6 @@ msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr ""
 "не можна використовувати комбінацію --symmetric --encrypt у режимі %s\n"
 
-msgid "--sign [filename]"
-msgstr "--sign [назва файла]"
-
-msgid "--sign --encrypt [filename]"
-msgstr "--sign --encrypt [назва файла]"
-
-msgid "--symmetric --sign --encrypt [filename]"
-msgstr "--symmetric --sign --encrypt [назва файла]"
-
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 "не можна використовувати комбінацію --symmetric --sign --encrypt у режимі --"
@@ -2352,27 +2346,6 @@ msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr ""
 "не можна використовувати комбінацію --symmetric --sign --encrypt у режимі "
 "%s\n"
-
-msgid "--sign --symmetric [filename]"
-msgstr "--sign --symmetric [назва файла]"
-
-msgid "--clear-sign [filename]"
-msgstr "--clear-sign [назва файла]"
-
-msgid "--decrypt [filename]"
-msgstr "--decrypt [назва файла]"
-
-msgid "--sign-key user-id"
-msgstr "--sign-key user-id"
-
-msgid "--lsign-key user-id"
-msgstr "--lsign-key user-id"
-
-msgid "--edit-key user-id [commands]"
-msgstr "--edit-key user-id [команди]"
-
-msgid "--passwd <user-id>"
-msgstr "--passwd <ідентифікатор-користувача>"
 
 #, c-format
 msgid "keyserver send failed: %s\n"
@@ -2417,9 +2390,6 @@ msgstr "помилка під час спроби обробки специфі�
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr "«%s» не є коректним ідентифікатором ключа, відбитком або кодом\n"
-
-msgid "[filename]"
-msgstr "[назва файла]"
 
 msgid "Go ahead and type your message ...\n"
 msgstr "Почніть вводити ваше повідомлення...\n"
@@ -3402,6 +3372,11 @@ msgstr "Немає відповідних ідентифікаторів кор�
 
 msgid "Nothing to sign.\n"
 msgstr "Нічого підписувати.\n"
+
+#, fuzzy, c-format
+#| msgid "'%s' is not a valid signature expiration\n"
+msgid "'%s' is not a valid expiration time\n"
+msgstr "«%s» не є коректним записом завершення строку дії підпису\n"
 
 msgid "Digest: "
 msgstr "Контрольна сума: "
@@ -4869,7 +4844,7 @@ msgstr "кореневий сертифікат було позначено як
 #| "in the user ID.  If you *really* know what you are doing,\n"
 #| "you may answer the next question with yes.\n"
 msgid ""
-"This key has is bad!  It has been marked as untrusted!  If you\n"
+"This key is bad!  It has been marked as untrusted!  If you\n"
 "*really* know what you are doing, you may answer the next\n"
 "question with yes.\n"
 msgstr ""
@@ -5522,6 +5497,14 @@ msgstr "помилка під час скасовування змін у баз
 msgid "unsupported TOFU database version: %s\n"
 msgstr "непідтримувана версія бази даних TOFU: %s\n"
 
+#, fuzzy, c-format
+#| msgid "error creating temporary file: %s\n"
+msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+msgstr "помилка створення тимчасового файла: %s\n"
+
+msgid "TOFU DB error"
+msgstr ""
+
 #, c-format
 msgid "error reading TOFU database: %s\n"
 msgstr "помилка під час спроби читання бази даних TOFU: %s\n"
@@ -5533,6 +5516,15 @@ msgstr "помилка під час спроби визначення верс�
 #, c-format
 msgid "error initializing TOFU database: %s\n"
 msgstr "помилка під час спроби ініціалізації бази даних TOFU: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error reading TOFU database: %s\n"
+msgid "error creating 'encryptions' TOFU table: %s\n"
+msgstr "помилка під час спроби читання бази даних TOFU: %s\n"
+
+#, c-format
+msgid "adding column effective_policy to bindings DB: %s\n"
+msgstr ""
 
 #, c-format
 msgid "error opening TOFU database '%s': %s\n"
@@ -5552,8 +5544,11 @@ msgstr "Адресу електронної пошти «%s» пов’язан�
 #, fuzzy, c-format
 #| msgid "The email address \"%s\" is associated with %d key:\n"
 #| msgid_plural "The email address \"%s\" is associated with %d keys:\n"
-msgid "The email address \"%s\" is associated with %d keys!"
-msgstr "Адресу електронної пошти «%s» пов’язано із %d ключем:\n"
+msgid "The email address \"%s\" is associated with %d key!"
+msgid_plural "The email address \"%s\" is associated with %d keys!"
+msgstr[0] "Адресу електронної пошти «%s» пов’язано із %d ключем:\n"
+msgstr[1] "Адресу електронної пошти «%s» пов’язано із %d ключем:\n"
+msgstr[2] "Адресу електронної пошти «%s» пов’язано із %d ключем:\n"
 
 #, fuzzy
 #| msgid ""
@@ -5607,24 +5602,52 @@ msgstr "цей ключ"
 
 #, fuzzy, c-format
 #| msgid "Verified %ld messages signed by \"%s\"."
-msgid "Verified %d message"
-msgid_plural "Verified %d messages"
+msgid "Verified %d message."
+msgid_plural "Verified %d messages."
 msgstr[0] "Перевірено %ld повідомлень, підписаних «%s»."
 msgstr[1] "Перевірено %ld повідомлень, підписаних «%s»."
 msgstr[2] "Перевірено %ld повідомлень, підписаних «%s»."
 
-#, c-format
-msgid "Encrypted %d message"
-msgid_plural "Encrypted %d messages"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+#, fuzzy, c-format
+#| msgid "encrypted with %lu passphrases\n"
+msgid "Encrypted %d message."
+msgid_plural "Encrypted %d messages."
+msgstr[0] "зашифровано за допомогою %lu паролів\n"
+msgstr[1] "зашифровано за допомогою %lu паролів\n"
+msgstr[2] "зашифровано за допомогою %lu паролів\n"
+
+#, fuzzy, c-format
+#| msgid "%ld message signed in the future."
+#| msgid_plural "%ld messages signed in the future."
+msgid "Verified %d message in the future."
+msgid_plural "Verified %d messages in the future."
+msgstr[0] "%ld повідомлення підписано у майбутньому."
+msgstr[1] "%ld повідомлення підписано у майбутньому."
+msgstr[2] "%ld повідомлень підписано у майбутньому."
+
+#, fuzzy, c-format
+#| msgid "%ld message signed in the future."
+#| msgid_plural "%ld messages signed in the future."
+msgid "Encrypted %d message in the future."
+msgid_plural "Encrypted %d messages in the future."
+msgstr[0] "%ld повідомлення підписано у майбутньому."
+msgstr[1] "%ld повідомлення підписано у майбутньому."
+msgstr[2] "%ld повідомлень підписано у майбутньому."
 
 #, fuzzy, c-format
 #| msgid " over the past %ld day."
 #| msgid_plural " over the past %ld days."
-msgid " over the past day."
-msgid_plural " over the past %d days."
+msgid "Messages verified over the past %d day: %d."
+msgid_plural "Messages verified over the past %d days: %d."
+msgstr[0] " протягом %ld попереднього дня."
+msgstr[1] " протягом %ld попередніх днів."
+msgstr[2] " протягом %ld попередніх днів."
+
+#, fuzzy, c-format
+#| msgid " over the past %ld day."
+#| msgid_plural " over the past %ld days."
+msgid "Messages encrypted over the past %d day: %d."
+msgid_plural "Messages encrypted over the past %d days: %d."
 msgstr[0] " протягом %ld попереднього дня."
 msgstr[1] " протягом %ld попередніх днів."
 msgstr[2] " протягом %ld попередніх днів."
@@ -5632,8 +5655,17 @@ msgstr[2] " протягом %ld попередніх днів."
 #, fuzzy, c-format
 #| msgid " over the past %ld month."
 #| msgid_plural " over the past %ld months."
-msgid " over the past month."
-msgid_plural " over the past %d months."
+msgid "Messages verified over the past %d month: %d."
+msgid_plural "Messages verified over the past %d months: %d."
+msgstr[0] " протягом %ld попереднього місяця."
+msgstr[1] " протягом %ld попередніх місяців."
+msgstr[2] " протягом %ld попередніх місяців."
+
+#, fuzzy, c-format
+#| msgid " over the past %ld month."
+#| msgid_plural " over the past %ld months."
+msgid "Messages encrypted over the past %d month: %d."
+msgid_plural "Messages encrypted over the past %d months: %d."
 msgstr[0] " протягом %ld попереднього місяця."
 msgstr[1] " протягом %ld попередніх місяців."
 msgstr[2] " протягом %ld попередніх місяців."
@@ -5641,17 +5673,38 @@ msgstr[2] " протягом %ld попередніх місяців."
 #, fuzzy, c-format
 #| msgid " over the past %ld day."
 #| msgid_plural " over the past %ld days."
-msgid " over the past year."
-msgid_plural " over the past %d years."
+msgid "Messages verified over the past %d year: %d."
+msgid_plural "Messages verified over the past %d years: %d."
 msgstr[0] " протягом %ld попереднього дня."
 msgstr[1] " протягом %ld попередніх днів."
 msgstr[2] " протягом %ld попередніх днів."
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid " over the past %ld day."
 #| msgid_plural " over the past %ld days."
-msgid " in the past."
+msgid "Messages encrypted over the past %d year: %d."
+msgid_plural "Messages encrypted over the past %d years: %d."
+msgstr[0] " протягом %ld попереднього дня."
+msgstr[1] " протягом %ld попередніх днів."
+msgstr[2] " протягом %ld попередніх днів."
+
+#, fuzzy, c-format
+#| msgid " over the past %ld day."
+#| msgid_plural " over the past %ld days."
+msgid "Messages verified in the past: %d."
 msgstr " протягом %ld попереднього дня."
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Verified %ld message signed by \"%s\"\n"
+#| "in the past %s."
+#| msgid_plural ""
+#| "Verified %ld messages signed by \"%s\"\n"
+#| "in the past %s."
+msgid "Messages encrypted in the past: %d."
+msgstr ""
+"Перевірено %ld повідомлення, підписане «%s»,\n"
+"протягом такого строку: %s."
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5687,8 +5740,9 @@ msgstr ""
 msgid "resetting keydb: %s\n"
 msgstr "помилка під час спроби запису ключа: %s\n"
 
-#, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
+#, fuzzy, c-format
+#| msgid "error setting TOFU binding's trust level to %s\n"
+msgid "error setting TOFU binding's policy to %s\n"
 msgstr ""
 "помилка під час спроби встановлення рівня довіри до прив’язки TOFU до %s\n"
 
@@ -5696,57 +5750,74 @@ msgstr ""
 msgid "error changing TOFU policy: %s\n"
 msgstr "помилка під час спроби змінити правила TOFU: %s\n"
 
-#. TRANSLATORS: The tilde ('~') is used here to indicate a
-#. * non-breakable space
-#, c-format
-msgid "%d~year"
-msgid_plural "%d~years"
+#, fuzzy, c-format
+#| msgid "%d~year"
+#| msgid_plural "%d~years"
+msgid "%lld~year"
+msgid_plural "%lld~years"
 msgstr[0] "%d~рік"
 msgstr[1] "%d~роки"
 msgstr[2] "%d~років"
 
-#, c-format
-msgid "%d~month"
-msgid_plural "%d~months"
+#, fuzzy, c-format
+#| msgid "%d~month"
+#| msgid_plural "%d~months"
+msgid "%lld~month"
+msgid_plural "%lld~months"
 msgstr[0] "%d~місяць"
 msgstr[1] "%d~місяці"
 msgstr[2] "%d~місяців"
 
 #, c-format
-msgid "%d~day"
-msgid_plural "%d~days"
+msgid "%lld~week"
+msgid_plural "%lld~weeks"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#, fuzzy, c-format
+#| msgid "%d~day"
+#| msgid_plural "%d~days"
+msgid "%lld~day"
+msgid_plural "%lld~days"
 msgstr[0] "%d~день"
 msgstr[1] "%d~дні"
 msgstr[2] "%d~днів"
 
-#, c-format
-msgid "%d~hour"
-msgid_plural "%d~hours"
+#, fuzzy, c-format
+#| msgid "%d~hour"
+#| msgid_plural "%d~hours"
+msgid "%lld~hour"
+msgid_plural "%lld~hours"
 msgstr[0] "%d~година"
 msgstr[1] "%d~години"
 msgstr[2] "%d~годин"
 
-#, c-format
-msgid "%d~minute"
-msgid_plural "%d~minutes"
+#, fuzzy, c-format
+#| msgid "%d~minute"
+#| msgid_plural "%d~minutes"
+msgid "%lld~minute"
+msgid_plural "%lld~minutes"
 msgstr[0] "%d~хвилина"
 msgstr[1] "%d~хвилини"
 msgstr[2] "%d~хвилин"
 
-#, c-format
-msgid "%d~second"
-msgid_plural "%d~seconds"
+#, fuzzy, c-format
+#| msgid "%d~second"
+#| msgid_plural "%d~seconds"
+msgid "%lld~second"
+msgid_plural "%lld~seconds"
 msgstr[0] "%d~секунда"
 msgstr[1] "%d~секунди"
 msgstr[2] "%d~секунд"
 
 #, c-format
-msgid "%s: "
+msgid "%s: Verified 0~signatures and encrypted 0~messages."
 msgstr ""
 
 #, fuzzy, c-format
 #| msgid "Deleted %d signatures.\n"
-msgid "Verified %ld signatures"
+msgid "%s: Verified 0 signatures."
 msgstr "Вилучено %d підписів.\n"
 
 #, fuzzy, c-format
@@ -5756,8 +5827,8 @@ msgstr "Вилучено %d підписів.\n"
 #| msgid_plural ""
 #| "Verified %ld messages signed by \"%s\"\n"
 #| "in the past %s."
-msgid "Verified %ld signature in the past %s"
-msgid_plural "Verified %ld signatures in the past %s"
+msgid "%s: Verified %ld~signature in the past %s."
+msgid_plural "%s: Verified %ld~signatures in the past %s."
 msgstr[0] ""
 "Перевірено %ld повідомлення, підписане «%s»,\n"
 "протягом такого строку: %s."
@@ -5768,9 +5839,9 @@ msgstr[2] ""
 "Перевірено %ld повідомлень, підписаних «%s»,\n"
 "протягом такого строку: %s."
 
-#, fuzzy, c-format
+#, fuzzy
 #| msgid "encrypted with %lu passphrases\n"
-msgid ", and encrypted %ld messages"
+msgid "Encrypted 0 messages."
 msgstr "зашифровано за допомогою %lu паролів\n"
 
 #, fuzzy, c-format
@@ -5780,8 +5851,8 @@ msgstr "зашифровано за допомогою %lu паролів\n"
 #| msgid_plural ""
 #| "Verified %ld messages signed by \"%s\"\n"
 #| "in the past %s."
-msgid ", and encrypted %ld message in the past %s"
-msgid_plural ", and encrypted %ld messages in the past %s"
+msgid "Encrypted %ld~message in the past %s."
+msgid_plural "Encrypted %ld~messages in the past %s."
 msgstr[0] ""
 "Перевірено %ld повідомлення, підписане «%s»,\n"
 "протягом такого строку: %s."
@@ -5791,6 +5862,11 @@ msgstr[1] ""
 msgstr[2] ""
 "Перевірено %ld повідомлень, підписаних «%s»,\n"
 "протягом такого строку: %s."
+
+#, fuzzy, c-format
+#| msgid "policy: %s"
+msgid "(policy: %s)"
+msgstr "правило: %s"
 
 #, fuzzy
 #| msgid "Warning: we've have yet to see a message signed by this key!\n"
@@ -5866,7 +5942,7 @@ msgid "error opening TOFU database: %s\n"
 msgstr "помилка під час спроби відкрити бази даних TOFU: %s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -8481,6 +8557,16 @@ msgstr "Помилка зовнішньої перевірки компонен�
 msgid "Note that group specifications are ignored\n"
 msgstr "Зауважте, що специфікації груп буде проігноровано\n"
 
+#, fuzzy, c-format
+#| msgid "error closing '%s': %s\n"
+msgid "error closing '%s'\n"
+msgstr "помилка під час спроби закрити «%s»: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error hashing '%s': %s\n"
+msgid "error parsing '%s'\n"
+msgstr "помилка під час спроби хешування «%s»: %s\n"
+
 msgid "list all components"
 msgstr "показати список всіх компонентів"
 
@@ -8498,6 +8584,11 @@ msgstr "|COMPONENT|перевірити параметри"
 
 msgid "apply global default values"
 msgstr "застосувати загальні типові значення"
+
+#, fuzzy
+#| msgid "|FILE|take policy information from FILE"
+msgid "|FILE|update configuration files using FILE"
+msgstr "|FILE|взяти дані щодо правил з вказаного файла"
 
 msgid "get the configuration directories for @GPGCONF@"
 msgstr "отримати назви каталогів налаштувань для @GPGCONF@"
@@ -8692,6 +8783,57 @@ msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
 
+#~ msgid "--store [filename]"
+#~ msgstr "--store [назва файла]"
+
+#~ msgid "--symmetric [filename]"
+#~ msgstr "--symmetric [назва файла]"
+
+#~ msgid "--encrypt [filename]"
+#~ msgstr "--encrypt [назва файла]"
+
+#~ msgid "--symmetric --encrypt [filename]"
+#~ msgstr "--symmetric --encrypt [назва файла]"
+
+#~ msgid "--sign [filename]"
+#~ msgstr "--sign [назва файла]"
+
+#~ msgid "--sign --encrypt [filename]"
+#~ msgstr "--sign --encrypt [назва файла]"
+
+#~ msgid "--symmetric --sign --encrypt [filename]"
+#~ msgstr "--symmetric --sign --encrypt [назва файла]"
+
+#~ msgid "--sign --symmetric [filename]"
+#~ msgstr "--sign --symmetric [назва файла]"
+
+#~ msgid "--clear-sign [filename]"
+#~ msgstr "--clear-sign [назва файла]"
+
+#~ msgid "--decrypt [filename]"
+#~ msgstr "--decrypt [назва файла]"
+
+#~ msgid "--sign-key user-id"
+#~ msgstr "--sign-key user-id"
+
+#~ msgid "--lsign-key user-id"
+#~ msgstr "--lsign-key user-id"
+
+#~ msgid "--edit-key user-id [commands]"
+#~ msgstr "--edit-key user-id [команди]"
+
+#~ msgid "--passwd <user-id>"
+#~ msgstr "--passwd <ідентифікатор-користувача>"
+
+#~ msgid "[filename]"
+#~ msgstr "[назва файла]"
+
+#, fuzzy
+#~| msgid " over the past %ld day."
+#~| msgid_plural " over the past %ld days."
+#~ msgid " in the past."
+#~ msgstr " протягом %ld попереднього дня."
+
 #~ msgid "shadowing the key failed: %s\n"
 #~ msgstr "помилка під час спроби хешування ключа: %s\n"
 
@@ -8710,12 +8852,6 @@ msgstr ""
 
 #~ msgid "Known user IDs associated with this key:\n"
 #~ msgstr "Відомі ідентифікатори користувачів, пов’язані із цим ключем:\n"
-
-#~ msgid "%ld message signed in the future."
-#~ msgid_plural "%ld messages signed in the future."
-#~ msgstr[0] "%ld повідомлення підписано у майбутньому."
-#~ msgstr[1] "%ld повідомлення підписано у майбутньому."
-#~ msgstr[2] "%ld повідомлень підписано у майбутньому."
 
 #~ msgid "%ld message signed"
 #~ msgid_plural "%ld messages signed"

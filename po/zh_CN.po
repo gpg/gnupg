@@ -1887,6 +1887,11 @@ msgstr "生成一副新的密钥对"
 msgid "quickly revoke a user-id"
 msgstr "生成一副新的密钥对"
 
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly set a new expiration date"
+msgstr "生成一副新的密钥对"
+
 msgid "full featured key pair generation"
 msgstr ""
 
@@ -2000,12 +2005,22 @@ msgstr ""
 "@\n"
 "(请参考在线说明以获得所有命令和选项的完整清单)\n"
 
+#, fuzzy
+#| msgid ""
+#| "@\n"
+#| "Examples:\n"
+#| "\n"
+#| " -se -r Bob [file]          sign and encrypt for user Bob\n"
+#| " --clear-sign [file]         make a clear text signature\n"
+#| " --detach-sign [file]       make a detached signature\n"
+#| " --list-keys [names]        show keys\n"
+#| " --fingerprint [names]      show fingerprints\n"
 msgid ""
 "@\n"
 "Examples:\n"
 "\n"
 " -se -r Bob [file]          sign and encrypt for user Bob\n"
-" --clear-sign [file]         make a clear text signature\n"
+" --clear-sign [file]        make a clear text signature\n"
 " --detach-sign [file]       make a detached signature\n"
 " --list-keys [names]        show keys\n"
 " --fingerprint [names]      show fingerprints\n"
@@ -2404,22 +2419,10 @@ msgstr "初始化信任度数据库失败：%s\n"
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr "警告：给定了收件人(-r)但并未使用公钥加密\n"
 
-msgid "--store [filename]"
-msgstr "--store [文件名]"
-
-msgid "--symmetric [filename]"
-msgstr "--symmetric [文件名]"
-
 #, fuzzy, c-format
 #| msgid "symmetric encryption of `%s' failed: %s\n"
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "对称加密‘%s’失败：%s\n"
-
-msgid "--encrypt [filename]"
-msgstr "--encrypt [文件名]"
-
-msgid "--symmetric --encrypt [filename]"
-msgstr "--symmetric --encrypt [文件名]"
 
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "使用 --symmetric --encrypt 时不能使用 --s2k-mode 0\n"
@@ -2428,43 +2431,12 @@ msgstr "使用 --symmetric --encrypt 时不能使用 --s2k-mode 0\n"
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "您不能在 %s 模式下使用 --symmetric -encrypt\n"
 
-msgid "--sign [filename]"
-msgstr "--sign [文件名]"
-
-msgid "--sign --encrypt [filename]"
-msgstr "--sign --encrypt [文件名]"
-
-msgid "--symmetric --sign --encrypt [filename]"
-msgstr "--symmetric --sign --encrypt [文件名]"
-
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "使用 --symmetric --sign --encrypt 时不能使用 --s2k-mode 0\n"
 
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "您不能在 %s 模式下使用 --symmetric --sign -encrypt\n"
-
-msgid "--sign --symmetric [filename]"
-msgstr "--sign --symmetric [文件名]"
-
-msgid "--clear-sign [filename]"
-msgstr "--clear-sign [文件名]"
-
-msgid "--decrypt [filename]"
-msgstr "--decrypt [文件名]"
-
-msgid "--sign-key user-id"
-msgstr "--sign-key 用户标识"
-
-msgid "--lsign-key user-id"
-msgstr "--lsign-key 用户标识"
-
-msgid "--edit-key user-id [commands]"
-msgstr "--edit-key 用户标识 [指令]"
-
-#, fuzzy
-msgid "--passwd <user-id>"
-msgstr "--sign-key 用户标识"
 
 #, c-format
 msgid "keyserver send failed: %s\n"
@@ -2511,9 +2483,6 @@ msgstr "取得当前密钥信息时出错：%s\n"
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr ""
-
-msgid "[filename]"
-msgstr "[文件名]"
 
 msgid "Go ahead and type your message ...\n"
 msgstr "请开始键入您的报文……\n"
@@ -3499,6 +3468,11 @@ msgstr "没有这个用户标识。\n"
 #| msgid "Nothing to sign with key %s\n"
 msgid "Nothing to sign.\n"
 msgstr "没有东西可以让密钥 %s 签名\n"
+
+#, fuzzy, c-format
+#| msgid "`%s' is not a valid signature expiration\n"
+msgid "'%s' is not a valid expiration time\n"
+msgstr "‘%s’不是一个有效的签名过期日期\n"
 
 msgid "Digest: "
 msgstr "散列："
@@ -4965,7 +4939,7 @@ msgstr ""
 #| "in the user ID.  If you *really* know what you are doing,\n"
 #| "you may answer the next question with yes.\n"
 msgid ""
-"This key has is bad!  It has been marked as untrusted!  If you\n"
+"This key is bad!  It has been marked as untrusted!  If you\n"
 "*really* know what you are doing, you may answer the next\n"
 "question with yes.\n"
 msgstr ""
@@ -5592,6 +5566,13 @@ msgstr ""
 "支持的算法：\n"
 
 #, fuzzy, c-format
+msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+msgstr "生成密码的时候发生错误：%s\n"
+
+msgid "TOFU DB error"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "error reading TOFU database: %s\n"
 msgstr "读取‘%s’时出错：%s\n"
 
@@ -5604,6 +5585,14 @@ msgstr "写入私钥钥匙环‘%s’时发生错误： %s\n"
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing TOFU database: %s\n"
 msgstr "%s：写入目录记录时出错：%s\n"
+
+#, fuzzy, c-format
+msgid "error creating 'encryptions' TOFU table: %s\n"
+msgstr "读取‘%s’时出错：%s\n"
+
+#, c-format
+msgid "adding column effective_policy to bindings DB: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 msgid "error opening TOFU database '%s': %s\n"
@@ -5619,8 +5608,10 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid "The email address \"%s\" is associated with %d keys!"
-msgstr ""
+msgid "The email address \"%s\" is associated with %d key!"
+msgid_plural "The email address \"%s\" is associated with %d keys!"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
 msgstr ""
@@ -5669,37 +5660,73 @@ msgid "this key"
 msgstr "列出密钥"
 
 #, fuzzy, c-format
-msgid "Verified %d message"
-msgid_plural "Verified %d messages"
+msgid "Verified %d message."
+msgid_plural "Verified %d messages."
+msgstr[0] "|算法 [文件]|使用指定的散列算法打印报文散列值"
+msgstr[1] "|算法 [文件]|使用指定的散列算法打印报文散列值"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %lu passphrases\n"
+msgid "Encrypted %d message."
+msgid_plural "Encrypted %d messages."
+msgstr[0] "以 %lu 个密码加密\n"
+msgstr[1] "以 %lu 个密码加密\n"
+
+#, fuzzy, c-format
+msgid "Verified %d message in the future."
+msgid_plural "Verified %d messages in the future."
+msgstr[0] "|算法 [文件]|使用指定的散列算法打印报文散列值"
+msgstr[1] "|算法 [文件]|使用指定的散列算法打印报文散列值"
+
+#, fuzzy, c-format
+msgid "Encrypted %d message in the future."
+msgid_plural "Encrypted %d messages in the future."
 msgstr[0] "|算法 [文件]|使用指定的散列算法打印报文散列值"
 msgstr[1] "|算法 [文件]|使用指定的散列算法打印报文散列值"
 
 #, c-format
-msgid "Encrypted %d message"
-msgid_plural "Encrypted %d messages"
+msgid "Messages verified over the past %d day: %d."
+msgid_plural "Messages verified over the past %d days: %d."
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past day."
-msgid_plural " over the past %d days."
+msgid "Messages encrypted over the past %d day: %d."
+msgid_plural "Messages encrypted over the past %d days: %d."
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past month."
-msgid_plural " over the past %d months."
+msgid "Messages verified over the past %d month: %d."
+msgid_plural "Messages verified over the past %d months: %d."
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past year."
-msgid_plural " over the past %d years."
+msgid "Messages encrypted over the past %d month: %d."
+msgid_plural "Messages encrypted over the past %d months: %d."
 msgstr[0] ""
 msgstr[1] ""
 
-msgid " in the past."
+#, c-format
+msgid "Messages verified over the past %d year: %d."
+msgid_plural "Messages verified over the past %d years: %d."
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "Messages encrypted over the past %d year: %d."
+msgid_plural "Messages encrypted over the past %d years: %d."
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "Messages verified in the past: %d."
 msgstr ""
+
+#, fuzzy, c-format
+msgid "Messages encrypted in the past: %d."
+msgstr "|算法 [文件]|使用指定的散列算法打印报文散列值"
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5727,76 +5754,85 @@ msgid "resetting keydb: %s\n"
 msgstr "写入钥匙环‘%s’时出错： %s\n"
 
 #, fuzzy, c-format
-msgid "error setting TOFU binding's trust level to %s\n"
+msgid "error setting TOFU binding's policy to %s\n"
 msgstr "读取‘%s’时出错：%s\n"
 
 #, fuzzy, c-format
 msgid "error changing TOFU policy: %s\n"
 msgstr "生成密码的时候发生错误：%s\n"
 
-#. TRANSLATORS: The tilde ('~') is used here to indicate a
-#. * non-breakable space
 #, c-format
-msgid "%d~year"
-msgid_plural "%d~years"
+msgid "%lld~year"
+msgid_plural "%lld~years"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~month"
-msgid_plural "%d~months"
+msgid "%lld~month"
+msgid_plural "%lld~months"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~day"
-msgid_plural "%d~days"
+msgid "%lld~week"
+msgid_plural "%lld~weeks"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~hour"
-msgid_plural "%d~hours"
+msgid "%lld~day"
+msgid_plural "%lld~days"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~minute"
-msgid_plural "%d~minutes"
+msgid "%lld~hour"
+msgid_plural "%lld~hours"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~second"
-msgid_plural "%d~seconds"
+msgid "%lld~minute"
+msgid_plural "%lld~minutes"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%s: "
+msgid "%lld~second"
+msgid_plural "%lld~seconds"
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "%s: Verified 0~signatures and encrypted 0~messages."
 msgstr ""
 
 #, fuzzy, c-format
 #| msgid "Deleted %d signatures.\n"
-msgid "Verified %ld signatures"
+msgid "%s: Verified 0 signatures."
 msgstr "已经删除了 %d 个签名。\n"
 
 #, fuzzy, c-format
-msgid "Verified %ld signature in the past %s"
-msgid_plural "Verified %ld signatures in the past %s"
+msgid "%s: Verified %ld~signature in the past %s."
+msgid_plural "%s: Verified %ld~signatures in the past %s."
 msgstr[0] "|算法 [文件]|使用指定的散列算法打印报文散列值"
 msgstr[1] "|算法 [文件]|使用指定的散列算法打印报文散列值"
 
-#, fuzzy, c-format
+#, fuzzy
 #| msgid "encrypted with %lu passphrases\n"
-msgid ", and encrypted %ld messages"
+msgid "Encrypted 0 messages."
 msgstr "以 %lu 个密码加密\n"
 
 #, fuzzy, c-format
-msgid ", and encrypted %ld message in the past %s"
-msgid_plural ", and encrypted %ld messages in the past %s"
+msgid "Encrypted %ld~message in the past %s."
+msgid_plural "Encrypted %ld~messages in the past %s."
 msgstr[0] "|算法 [文件]|使用指定的散列算法打印报文散列值"
 msgstr[1] "|算法 [文件]|使用指定的散列算法打印报文散列值"
+
+#, fuzzy, c-format
+#| msgid "validity: %s"
+msgid "(policy: %s)"
+msgstr "有效性：%s"
 
 msgid ""
 "Warning: we have yet to see a message signed using this key and user id!\n"
@@ -5833,7 +5869,7 @@ msgid "error opening TOFU database: %s\n"
 msgstr "读取‘%s’时出错：%s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -8529,6 +8565,15 @@ msgstr ""
 msgid "Note that group specifications are ignored\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "error closing '%s'\n"
+msgstr "‘%s’中出错：%s\n"
+
+#, fuzzy, c-format
+#| msgid "error in `%s': %s\n"
+msgid "error parsing '%s'\n"
+msgstr "‘%s’中出错：%s\n"
+
 msgid "list all components"
 msgstr ""
 
@@ -8545,6 +8590,9 @@ msgid "|COMPONENT|check options"
 msgstr ""
 
 msgid "apply global default values"
+msgstr ""
+
+msgid "|FILE|update configuration files using FILE"
 msgstr ""
 
 msgid "get the configuration directories for @GPGCONF@"
@@ -8742,6 +8790,52 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "--store [filename]"
+#~ msgstr "--store [文件名]"
+
+#~ msgid "--symmetric [filename]"
+#~ msgstr "--symmetric [文件名]"
+
+#~ msgid "--encrypt [filename]"
+#~ msgstr "--encrypt [文件名]"
+
+#~ msgid "--symmetric --encrypt [filename]"
+#~ msgstr "--symmetric --encrypt [文件名]"
+
+#~ msgid "--sign [filename]"
+#~ msgstr "--sign [文件名]"
+
+#~ msgid "--sign --encrypt [filename]"
+#~ msgstr "--sign --encrypt [文件名]"
+
+#~ msgid "--symmetric --sign --encrypt [filename]"
+#~ msgstr "--symmetric --sign --encrypt [文件名]"
+
+#~ msgid "--sign --symmetric [filename]"
+#~ msgstr "--sign --symmetric [文件名]"
+
+#~ msgid "--clear-sign [filename]"
+#~ msgstr "--clear-sign [文件名]"
+
+#~ msgid "--decrypt [filename]"
+#~ msgstr "--decrypt [文件名]"
+
+#~ msgid "--sign-key user-id"
+#~ msgstr "--sign-key 用户标识"
+
+#~ msgid "--lsign-key user-id"
+#~ msgstr "--lsign-key 用户标识"
+
+#~ msgid "--edit-key user-id [commands]"
+#~ msgstr "--edit-key 用户标识 [指令]"
+
+#, fuzzy
+#~ msgid "--passwd <user-id>"
+#~ msgstr "--sign-key 用户标识"
+
+#~ msgid "[filename]"
+#~ msgstr "[文件名]"
 
 #, fuzzy
 #~ msgid "shadowing the key failed: %s\n"

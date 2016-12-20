@@ -1930,6 +1930,11 @@ msgstr "yeni bir anahtar çifti üretir"
 msgid "quickly revoke a user-id"
 msgstr "yeni bir anahtar çifti üretir"
 
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly set a new expiration date"
+msgstr "yeni bir anahtar çifti üretir"
+
 msgid "full featured key pair generation"
 msgstr ""
 
@@ -2039,12 +2044,22 @@ msgstr ""
 "@\n"
 "(Tüm komut ve seçeneklerin komple listesi için man sayfalarına bakın)\n"
 
+#, fuzzy
+#| msgid ""
+#| "@\n"
+#| "Examples:\n"
+#| "\n"
+#| " -se -r Bob [file]          sign and encrypt for user Bob\n"
+#| " --clear-sign [file]         make a clear text signature\n"
+#| " --detach-sign [file]       make a detached signature\n"
+#| " --list-keys [names]        show keys\n"
+#| " --fingerprint [names]      show fingerprints\n"
 msgid ""
 "@\n"
 "Examples:\n"
 "\n"
 " -se -r Bob [file]          sign and encrypt for user Bob\n"
-" --clear-sign [file]         make a clear text signature\n"
+" --clear-sign [file]        make a clear text signature\n"
 " --detach-sign [file]       make a detached signature\n"
 " --list-keys [names]        show keys\n"
 " --fingerprint [names]      show fingerprints\n"
@@ -2457,22 +2472,10 @@ msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "UYARI: alıcılar (-r) genel anahtar şifrelemesi kullanılmadan belirtilmiş\n"
 
-msgid "--store [filename]"
-msgstr "--store [dosyaismi]"
-
-msgid "--symmetric [filename]"
-msgstr "--symmetric [dosyaismi]"
-
 #, fuzzy, c-format
 #| msgid "symmetric encryption of `%s' failed: %s\n"
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "`%s' için simetrik şifreleme başarısız: %s\n"
-
-msgid "--encrypt [filename]"
-msgstr "--encrypt [dosyaismi]"
-
-msgid "--symmetric --encrypt [filename]"
-msgstr "--symmetric --encrypt [dosyaismi]"
 
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "--s2k-mode 0 ile  --symmetric --encrypt kullanamazsınız\n"
@@ -2481,43 +2484,12 @@ msgstr "--s2k-mode 0 ile  --symmetric --encrypt kullanamazsınız\n"
 msgid "you cannot use --symmetric --encrypt while in %s mode\n"
 msgstr "%s kipindeyken  --symmetric --encrypt kullanamazsınız\n"
 
-msgid "--sign [filename]"
-msgstr "--sign [dosyaismi]"
-
-msgid "--sign --encrypt [filename]"
-msgstr "--sign --encrypt [dosyaismi]"
-
-msgid "--symmetric --sign --encrypt [filename]"
-msgstr "--symmetric --sign --encrypt [dosyaismi]"
-
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "--s2k-mode 0 ile --symmetric --sign --encrypt kullanamazsınız\n"
 
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr "%s kipindeyken --symmetric --sign --encrypt kullanamazsınız.\n"
-
-msgid "--sign --symmetric [filename]"
-msgstr "--sign --symmetric [DOSYA]"
-
-msgid "--clear-sign [filename]"
-msgstr "--clear-sign [dosyaismi]"
-
-msgid "--decrypt [filename]"
-msgstr "--decrypt [dosyaismi]"
-
-msgid "--sign-key user-id"
-msgstr "--sign-key kullanıcı-kimliği"
-
-msgid "--lsign-key user-id"
-msgstr "--lsign-key kullanıcı-kimliği"
-
-msgid "--edit-key user-id [commands]"
-msgstr "--edit-key kullanıcı-kimliği [komutlar]"
-
-#, fuzzy
-msgid "--passwd <user-id>"
-msgstr "--sign-key kullanıcı-kimliği"
 
 #, c-format
 msgid "keyserver send failed: %s\n"
@@ -2565,9 +2537,6 @@ msgstr "serifika saklanırken hata: %s\n"
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr ""
-
-msgid "[filename]"
-msgstr "[dosyaismi]"
 
 msgid "Go ahead and type your message ...\n"
 msgstr "İletinizi yazın ...\n"
@@ -3612,6 +3581,11 @@ msgstr "Böyle bir kullanıcı kimliği yok.\n"
 #| msgid "Nothing to sign with key %s\n"
 msgid "Nothing to sign.\n"
 msgstr "%s anahtarı ile imzalanacak hiçbir şey yok\n"
+
+#, fuzzy, c-format
+#| msgid "`%s' is not a valid signature expiration\n"
+msgid "'%s' is not a valid expiration time\n"
+msgstr "'%s' geçerli bir imza zamanaşımı değil\n"
 
 msgid "Digest: "
 msgstr "Özet: "
@@ -5138,7 +5112,7 @@ msgstr "kök sertifika artık güvenilir olarak imlenmiş oldu\n"
 #| "in the user ID.  If you *really* know what you are doing,\n"
 #| "you may answer the next question with yes.\n"
 msgid ""
-"This key has is bad!  It has been marked as untrusted!  If you\n"
+"This key is bad!  It has been marked as untrusted!  If you\n"
 "*really* know what you are doing, you may answer the next\n"
 "question with yes.\n"
 msgstr ""
@@ -5802,6 +5776,14 @@ msgid "unsupported TOFU database version: %s\n"
 msgstr "desteklenmeyen algoritma: %s"
 
 #, fuzzy, c-format
+#| msgid "error creating temporary file: %s\n"
+msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
+msgstr "geçici dosya oluşturulurken hata: %s\n"
+
+msgid "TOFU DB error"
+msgstr ""
+
+#, fuzzy, c-format
 #| msgid "error sending %s command: %s\n"
 msgid "error reading TOFU database: %s\n"
 msgstr "%s komutu gönderilirken hata: %s\n"
@@ -5815,6 +5797,15 @@ msgstr "`%s' gizli anahtarlığa yazılırken hata oluştu: %s\n"
 #| msgid "%s: error writing dir record: %s\n"
 msgid "error initializing TOFU database: %s\n"
 msgstr "%s: dizin kaydını yazma hatası: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error sending %s command: %s\n"
+msgid "error creating 'encryptions' TOFU table: %s\n"
+msgstr "%s komutu gönderilirken hata: %s\n"
+
+#, c-format
+msgid "adding column effective_policy to bindings DB: %s\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "error opening `%s': %s\n"
@@ -5832,8 +5823,10 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid "The email address \"%s\" is associated with %d keys!"
-msgstr ""
+msgid "The email address \"%s\" is associated with %d key!"
+msgid_plural "The email address \"%s\" is associated with %d keys!"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
 msgstr ""
@@ -5884,37 +5877,76 @@ msgstr "anahtarları listeler"
 
 #, fuzzy, c-format
 #| msgid "print message digests"
-msgid "Verified %d message"
-msgid_plural "Verified %d messages"
+msgid "Verified %d message."
+msgid_plural "Verified %d messages."
+msgstr[0] "ileti özetlerini gösterir"
+msgstr[1] "ileti özetlerini gösterir"
+
+#, fuzzy, c-format
+#| msgid "encrypted with %lu passphrases\n"
+msgid "Encrypted %d message."
+msgid_plural "Encrypted %d messages."
+msgstr[0] "%lu anahtar parolası ile şifrelenmiş\n"
+msgstr[1] "%lu anahtar parolası ile şifrelenmiş\n"
+
+#, fuzzy, c-format
+#| msgid "print message digests"
+msgid "Verified %d message in the future."
+msgid_plural "Verified %d messages in the future."
+msgstr[0] "ileti özetlerini gösterir"
+msgstr[1] "ileti özetlerini gösterir"
+
+#, fuzzy, c-format
+#| msgid "print message digests"
+msgid "Encrypted %d message in the future."
+msgid_plural "Encrypted %d messages in the future."
 msgstr[0] "ileti özetlerini gösterir"
 msgstr[1] "ileti özetlerini gösterir"
 
 #, c-format
-msgid "Encrypted %d message"
-msgid_plural "Encrypted %d messages"
+msgid "Messages verified over the past %d day: %d."
+msgid_plural "Messages verified over the past %d days: %d."
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past day."
-msgid_plural " over the past %d days."
+msgid "Messages encrypted over the past %d day: %d."
+msgid_plural "Messages encrypted over the past %d days: %d."
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past month."
-msgid_plural " over the past %d months."
+msgid "Messages verified over the past %d month: %d."
+msgid_plural "Messages verified over the past %d months: %d."
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid " over the past year."
-msgid_plural " over the past %d years."
+msgid "Messages encrypted over the past %d month: %d."
+msgid_plural "Messages encrypted over the past %d months: %d."
 msgstr[0] ""
 msgstr[1] ""
 
-msgid " in the past."
+#, c-format
+msgid "Messages verified over the past %d year: %d."
+msgid_plural "Messages verified over the past %d years: %d."
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "Messages encrypted over the past %d year: %d."
+msgid_plural "Messages encrypted over the past %d years: %d."
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "Messages verified in the past: %d."
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "print message digests"
+msgid "Messages encrypted in the past: %d."
+msgstr "ileti özetlerini gösterir"
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5944,7 +5976,7 @@ msgstr "anahtarı yazarken hata: %s\n"
 
 #, fuzzy, c-format
 #| msgid "error storing flags: %s\n"
-msgid "error setting TOFU binding's trust level to %s\n"
+msgid "error setting TOFU binding's policy to %s\n"
 msgstr "bayraklar saklanırken hata: %s\n"
 
 #, fuzzy, c-format
@@ -5952,71 +5984,80 @@ msgstr "bayraklar saklanırken hata: %s\n"
 msgid "error changing TOFU policy: %s\n"
 msgstr "boru oluşturulurken hata: %s\n"
 
-#. TRANSLATORS: The tilde ('~') is used here to indicate a
-#. * non-breakable space
 #, c-format
-msgid "%d~year"
-msgid_plural "%d~years"
+msgid "%lld~year"
+msgid_plural "%lld~years"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~month"
-msgid_plural "%d~months"
+msgid "%lld~month"
+msgid_plural "%lld~months"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~day"
-msgid_plural "%d~days"
+msgid "%lld~week"
+msgid_plural "%lld~weeks"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~hour"
-msgid_plural "%d~hours"
+msgid "%lld~day"
+msgid_plural "%lld~days"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~minute"
-msgid_plural "%d~minutes"
+msgid "%lld~hour"
+msgid_plural "%lld~hours"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%d~second"
-msgid_plural "%d~seconds"
+msgid "%lld~minute"
+msgid_plural "%lld~minutes"
 msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "%s: "
+msgid "%lld~second"
+msgid_plural "%lld~seconds"
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "%s: Verified 0~signatures and encrypted 0~messages."
 msgstr ""
 
 #, fuzzy, c-format
 #| msgid "Deleted %d signatures.\n"
-msgid "Verified %ld signatures"
+msgid "%s: Verified 0 signatures."
 msgstr "%d imza silindi.\n"
 
 #, fuzzy, c-format
 #| msgid "print message digests"
-msgid "Verified %ld signature in the past %s"
-msgid_plural "Verified %ld signatures in the past %s"
+msgid "%s: Verified %ld~signature in the past %s."
+msgid_plural "%s: Verified %ld~signatures in the past %s."
 msgstr[0] "ileti özetlerini gösterir"
 msgstr[1] "ileti özetlerini gösterir"
 
-#, fuzzy, c-format
+#, fuzzy
 #| msgid "encrypted with %lu passphrases\n"
-msgid ", and encrypted %ld messages"
+msgid "Encrypted 0 messages."
 msgstr "%lu anahtar parolası ile şifrelenmiş\n"
 
 #, fuzzy, c-format
 #| msgid "print message digests"
-msgid ", and encrypted %ld message in the past %s"
-msgid_plural ", and encrypted %ld messages in the past %s"
+msgid "Encrypted %ld~message in the past %s."
+msgid_plural "Encrypted %ld~messages in the past %s."
 msgstr[0] "ileti özetlerini gösterir"
 msgstr[1] "ileti özetlerini gösterir"
+
+#, fuzzy, c-format
+#| msgid "validity: %s"
+msgid "(policy: %s)"
+msgstr "geçerliliği: %s"
 
 msgid ""
 "Warning: we have yet to see a message signed using this key and user id!\n"
@@ -6054,7 +6095,7 @@ msgid "error opening TOFU database: %s\n"
 msgstr "%s komutu gönderilirken hata: %s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has nonon-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -8944,6 +8985,16 @@ msgstr "%s bileşeninin harici doğrulaması başarısız oldu"
 msgid "Note that group specifications are ignored\n"
 msgstr "Grup belirtimlerinin yoksayıldığına dikkat edin\n"
 
+#, fuzzy, c-format
+#| msgid "error closing %s: %s\n"
+msgid "error closing '%s'\n"
+msgstr "%s kapanırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error in `%s': %s\n"
+msgid "error parsing '%s'\n"
+msgstr "'%s' de hata: %s\n"
+
 msgid "list all components"
 msgstr "tüm bileşenleri listeler"
 
@@ -8961,6 +9012,11 @@ msgstr "|BİLEŞEN|seçenekleri sınar"
 
 msgid "apply global default values"
 msgstr "öntanımlı küresel değerleri uygular"
+
+#, fuzzy
+#| msgid "|FILE|take policy information from FILE"
+msgid "|FILE|update configuration files using FILE"
+msgstr "|DOSYA|poliçe bilgisi DOSYAdan alınır"
 
 #, fuzzy
 #| msgid "get the configuration directories for gpgconf"
@@ -9170,6 +9226,52 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid "--store [filename]"
+#~ msgstr "--store [dosyaismi]"
+
+#~ msgid "--symmetric [filename]"
+#~ msgstr "--symmetric [dosyaismi]"
+
+#~ msgid "--encrypt [filename]"
+#~ msgstr "--encrypt [dosyaismi]"
+
+#~ msgid "--symmetric --encrypt [filename]"
+#~ msgstr "--symmetric --encrypt [dosyaismi]"
+
+#~ msgid "--sign [filename]"
+#~ msgstr "--sign [dosyaismi]"
+
+#~ msgid "--sign --encrypt [filename]"
+#~ msgstr "--sign --encrypt [dosyaismi]"
+
+#~ msgid "--symmetric --sign --encrypt [filename]"
+#~ msgstr "--symmetric --sign --encrypt [dosyaismi]"
+
+#~ msgid "--sign --symmetric [filename]"
+#~ msgstr "--sign --symmetric [DOSYA]"
+
+#~ msgid "--clear-sign [filename]"
+#~ msgstr "--clear-sign [dosyaismi]"
+
+#~ msgid "--decrypt [filename]"
+#~ msgstr "--decrypt [dosyaismi]"
+
+#~ msgid "--sign-key user-id"
+#~ msgstr "--sign-key kullanıcı-kimliği"
+
+#~ msgid "--lsign-key user-id"
+#~ msgstr "--lsign-key kullanıcı-kimliği"
+
+#~ msgid "--edit-key user-id [commands]"
+#~ msgstr "--edit-key kullanıcı-kimliği [komutlar]"
+
+#, fuzzy
+#~ msgid "--passwd <user-id>"
+#~ msgstr "--sign-key kullanıcı-kimliği"
+
+#~ msgid "[filename]"
+#~ msgstr "[dosyaismi]"
 
 #~ msgid "shadowing the key failed: %s\n"
 #~ msgstr "anahtar gölgelenemedi: %s\n"
