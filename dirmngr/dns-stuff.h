@@ -95,6 +95,9 @@ struct srventry
 /* Set verbosity and debug mode for this module. */
 void set_dns_verbose (int verbose, int debug);
 
+/* Set the timeout for libdns requests to SECONDS.  */
+void set_dns_timeout (int seconds);
+
 /* Calling this function with YES set to True forces the use of the
  * standard resolver even if dirmngr has been built with support for
  * an alternative resolver.  */

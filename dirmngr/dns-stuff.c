@@ -108,9 +108,16 @@
 /* The default nameserver used in Tor mode.  */
 #define DEFAULT_NAMESERVER "8.8.8.8"
 
+/* The default timeout in seconds for libdns requests.  */
+#define DEFAULT_TIMEOUT 30
+
+
 /* Two flags to enable verbose and debug mode.  */
 static int opt_verbose;
 static int opt_debug;
+
+/* The timeout in seconds for libdns requests.  */
+static int opt_timeout;
 
 /* If set force the use of the standard resolver.  */
 static int standard_resolver;
@@ -216,6 +223,22 @@ set_dns_verbose (int verbose, int debug)
 {
   opt_verbose = verbose;
   opt_debug = debug;
+}
+
+
+/* Set the timeout for libdns requests to SECONDS.  A value of 0 sets
+ * the default timeout and values are capped at 10 minutes.  */
+void
+set_dns_timeout (int seconds)
+{
+  if (!seconds)
+    seconds = DEFAULT_TIMEOUT;
+  else if (seconds < 1)
+    seconds = 1;
+  else if (seconds > 600)
+    seconds = 600;
+
+  opt_timeout = seconds;
 }
 
 
@@ -421,7 +444,8 @@ libdns_init (void)
            pip && idx < DIM (ld.resolv_conf->nameserver);
            pip = pip->Next)
         {
-          log_debug ("ninfo->dnsserver[%d] '%s'\n", idx, pip->IpAddress.String);
+          if (opt_debug)
+            log_debug ("dns: dnsserver[%d] '%s'\n", idx, pip->IpAddress.String);
           err = libdns_error_to_gpg_error
             (dns_resconf_pton (&ld.resolv_conf->nameserver[idx],
                                pip->IpAddress.String));
@@ -547,6 +571,9 @@ libdns_res_open (struct dns_resolver **r_res)
   if (err)
     return err;
 
+  if (!opt_timeout)
+    set_dns_timeout (0);
+
   res = dns_res_open (libdns.resolv_conf, libdns.hosts, libdns.hints, NULL,
                       dns_opts (.socks_host     = &libdns.socks_host,
                                 .socks_user     = tor_socks_user,
@@ -604,7 +631,7 @@ libdns_res_wait (struct dns_resolver *res)
   while ((err = libdns_error_to_gpg_error (dns_res_check (res)))
          && gpg_err_code (err) == GPG_ERR_EAGAIN)
     {
-      if (dns_res_elapsed (res) > 30)
+      if (dns_res_elapsed (res) > opt_timeout)
         {
           err = gpg_error (GPG_ERR_DNS_TIMEOUT);
           break;
@@ -677,7 +704,7 @@ resolve_name_libdns (const char *name, unsigned short port,
         }
       if (gpg_err_code (err) == GPG_ERR_EAGAIN)
         {
-          if (dns_ai_elapsed (ai) > 30)
+          if (dns_ai_elapsed (ai) > opt_timeout)
             {
               err = gpg_error (GPG_ERR_DNS_TIMEOUT);
               goto leave;

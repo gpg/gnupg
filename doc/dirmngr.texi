@@ -255,6 +255,10 @@ Implemented'' if this function is used.
 @opindex recursive-resolver
 When possible use a recursive resolver instead of a stub resolver.
 
+@item --resolver-timeout @var{n}
+Set the timeout for the DNS resolver to N seconds.  The default are 30
+seconds.
+
 @item --allow-version-check
 @opindex allow-version-check
 Allow Dirmngr to connect to @code{https://versions.gnupg.org} to get

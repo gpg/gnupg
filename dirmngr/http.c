@@ -2378,10 +2378,10 @@ connect_server (const char *server, unsigned short port,
               stpcpy (stpcpy (stpcpy (stpcpy (srvname,"_"), srvtag),
                               "._tcp."), server);
               err = get_dns_srv (srvname, &serverlist, &srvcount);
-              xfree (srvname);
               if (err)
                 log_info ("getting SRV '%s' failed: %s\n",
-                          serverlist[srv].target, gpg_strerror (err));
+                          srvname, gpg_strerror (err));
+              xfree (srvname);
               /* Note that on error SRVCOUNT is zero.  */
             }
 	}

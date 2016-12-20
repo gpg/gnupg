@@ -142,6 +142,7 @@ enum cmd_and_opt_values {
   oDisableCheckOwnSocket,
   oStandardResolver,
   oRecursiveResolver,
+  oResolverTimeout,
   aTest
 };
 
@@ -240,6 +241,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oIgnoreCertExtension,"ignore-cert-extension", "@"),
   ARGPARSE_s_n (oStandardResolver, "standard-resolver", "@"),
   ARGPARSE_s_n (oRecursiveResolver, "recursive-resolver", "@"),
+  ARGPARSE_s_i (oResolverTimeout, "resolver-timeout", "@"),
 
   ARGPARSE_group (302,N_("@\n(See the \"info\" manual for a complete listing "
                          "of all commands and options)\n")),
@@ -550,6 +552,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       /* Note: We do not allow resetting of opt.use_tor at runtime.  */
       disable_check_own_socket = 0;
       enable_standard_resolver (0);
+      set_dns_timeout (0);
       return 1;
     }
 
@@ -634,6 +637,10 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 
     case oNameServer:
       set_dns_nameserver (pargs->r.ret_str);
+      break;
+
+    case oResolverTimeout:
+      set_dns_timeout (pargs->r.ret_int);
       break;
 
     default:
@@ -1376,6 +1383,9 @@ main (int argc, char **argv)
 
       es_printf ("use-tor:%lu:\n", flags | GC_OPT_FLAG_NONE);
       es_printf ("keyserver:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("nameserver:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("resolver-timeout:%lu:%u\n",
+                 flags | GC_OPT_FLAG_DEFAULT, 0);
     }
   cleanup ();
   return !!rc;

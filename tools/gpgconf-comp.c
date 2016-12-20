@@ -889,6 +889,12 @@ static gc_option_t gc_options_dirmngr[] =
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "dirmngr", "|FILE|read options from FILE",
      GC_ARG_TYPE_FILENAME, GC_BACKEND_DIRMNGR },
+   { "resolver-timeout", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_INT32, GC_BACKEND_DIRMNGR },
+   { "nameserver", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_STRING, GC_BACKEND_DIRMNGR },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,

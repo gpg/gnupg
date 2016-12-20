@@ -83,6 +83,7 @@ main (int argc, char **argv)
                  "  --cert              lookup a CERT RR\n"
                  "  --srv               lookup a SRV RR\n"
                  "  --cname             lookup a CNAME RR\n"
+                 "  --timeout SECONDS   timeout after SECONDS\n"
                  , stdout);
           exit (0);
         }
@@ -136,6 +137,15 @@ main (int argc, char **argv)
         {
           any_options = opt_cname = 1;
           argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--timeout"))
+        {
+          argc--; argv++;
+          if (argc)
+            {
+              set_dns_timeout (atoi (*argv));
+              argc--; argv++;
+            }
         }
       else if (!strncmp (*argv, "--", 2))
         {
