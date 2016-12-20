@@ -1,7 +1,37 @@
-Noteworthy changes in version 2.1.17 (unreleased)
+Noteworthy changes in version 2.1.17 (2016-12-20)
 -------------------------------------------------
 
+ * gpg: By default new keys expire after 2 years.
+
+ * gpg: New command --quick-set-expire to conveniently change the
+   expiration date of keys.
+
+ * gpg: Option and command names have been changed for easier
+   comprehension.  The old names are still available as aliases.
+
+ * gpg: Improved the TOFU trust model.
+
  * gpg: New option --default-new-key-algo.
+
+ * scd: Support OpenPGP card V3 for RSA.
+
+ * dirmngr: Support for the ADNS library has been removed.  Instead
+   William Ahern's Libdns is now source included and used on all
+   platforms.  This enables Tor support on all platforms.  The new
+   option --standard-resolver can be used to disable this code at
+   runtime.  In case of build problems the new configure option
+   --disable-libdns can be used to build without Libdns.
+
+ * dirmngr: Lazily launch ldap reaper thread.
+
+ * tools: New options --check and --status-fd for gpg-wks-client.
+
+ * The UTF-8 byte order mark is now skipped when reading conf files.
+
+ * Fixed many bugs and regressions.
+
+ * Major improvements to the test suite.  For example it is possible
+   to run the external test suite of GPGME.
 
 
 Noteworthy changes in version 2.1.16 (2016-11-18)
