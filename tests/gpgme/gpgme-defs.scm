@@ -83,31 +83,6 @@
 	(start-agent))
       (apply create-gpgme-gpghome path)))
 
-;; Command line flag handling.  Returns the elements following KEY in
-;; ARGUMENTS up to the next argument, or #f if KEY is not in
-;; ARGUMENTS.
-(define (flag key arguments)
-  (cond
-   ((null? arguments)
-    #f)
-   ((string=? key (car arguments))
-    (let loop ((acc '())
-	       (args (cdr arguments)))
-      (if (or (null? args) (string-prefix? (car args) "--"))
-	  (reverse acc)
-	  (loop (cons (car args) acc) (cdr args)))))
-   ((string=? "--" (car arguments))
-    #f)
-   (else
-    (flag key (cdr arguments)))))
-(assert (equal? (flag "--xxx" '("--yyy")) #f))
-(assert (equal? (flag "--xxx" '("--xxx")) '()))
-(assert (equal? (flag "--xxx" '("--xxx" "yyy")) '("yyy")))
-(assert (equal? (flag "--xxx" '("--xxx" "yyy" "zzz")) '("yyy" "zzz")))
-(assert (equal? (flag "--xxx" '("--xxx" "yyy" "zzz" "--")) '("yyy" "zzz")))
-(assert (equal? (flag "--xxx" '("--xxx" "yyy" "--" "zzz")) '("yyy")))
-(assert (equal? (flag "--" '("--" "xxx" "yyy" "--" "zzz")) '("xxx" "yyy")))
-
 (define (parse-makefile port key)
   (define (is-continuation? tokens)
     (string=? (last tokens) "\\"))
