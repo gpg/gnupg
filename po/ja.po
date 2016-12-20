@@ -4645,7 +4645,7 @@ msgid "%s: This key is bad!  It has been marked as untrusted!\n"
 msgstr "%s: この鍵はダメです! 信用できないとマークされています!\n"
 
 msgid ""
-"This key has is bad!  It has been marked as untrusted!  If you\n"
+"This key is bad!  It has been marked as untrusted!  If you\n"
 "*really* know what you are doing, you may answer the next\n"
 "question with yes.\n"
 msgstr ""
