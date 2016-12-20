@@ -63,9 +63,10 @@
 (define key-file1 "samplekeys/rsa-rsa-sample-1.asc")
 (define key-file2 "samplekeys/ed25519-cv25519-sample-1.asc")
 
-(define plain-files '("plain-1" "plain-2" "plain-3"))
+(define plain-files '("plain-1" "plain-2" "plain-3" "plain-large"))
 (define data-files '("data-500" "data-9000" "data-32000" "data-80000"))
 (define exp-files '())
+(define all-files (append plain-files data-files))
 
 (let ((verbose (string->number (getenv "verbose"))))
   (if (number? verbose)
@@ -256,7 +257,7 @@
   (create-gpghome)
   (start-agent))
 
-(define (create-legacy-gpghome)
+(define (create-sample-files)
   (log "Creating sample data files")
   (for-each
    (lambda (size)
@@ -267,9 +268,11 @@
   (log "Unpacking samples")
   (for-each
    (lambda (name)
-     (dearmor (in-srcdir (string-append name "o.asc")) name))
-   '("plain-1" "plain-2" "plain-3" "plain-large"))
+     (dearmor (in-srcdir ".." "openpgp" (string-append name "o.asc")) name))
+   plain-files))
 
+(define (create-legacy-gpghome)
+  (create-sample-files)
   (mkdir "private-keys-v1.d" "-rwx")
 
   (log "Storing private keys")

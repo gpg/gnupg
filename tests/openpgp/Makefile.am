@@ -111,7 +111,7 @@ xcheck:
 
 TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     plain-1.asc plain-2.asc plain-3.asc plain-1-pgp.asc \
-	     plain-largeo.asc \
+	     plain-largeo.asc plain-large.asc \
 	     pubring.pkr.asc secring.skr.asc secdemo.asc pubdemo.asc \
              gpg.conf.tmpl gpg-agent.conf.tmpl \
 	     bug537-test.data.asc bug894-test.asc \
