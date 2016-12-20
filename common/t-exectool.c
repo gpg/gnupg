@@ -39,21 +39,27 @@ static void
 test_executing_true (void)
 {
   gpg_error_t err;
-  const char *argv[] = { "/bin/true", NULL };
+  const char *pgmname     = "/bin/true";
+  const char *alt_pgmname = "/usr/bin/true";
+  const char *argv[]     = { NULL, NULL };
   char *result;
   size_t len;
 
-  if (access (argv[0], X_OK))
+  if (access (pgmname, X_OK))
     {
-      fprintf (stderr, "skipping test: %s not executable: %s",
-               argv[0], strerror (errno));
-      return;
+      if (access (alt_pgmname, X_OK))
+        {
+          fprintf (stderr, "skipping test: %s not executable: %s\n",
+                   pgmname, strerror (errno));
+          return;
+        }
+      pgmname = alt_pgmname;
     }
 
   if (verbose)
-    fprintf (stderr, "Executing %s...\n", argv[0]);
+    fprintf (stderr, "Executing %s...\n", pgmname);
 
-  err = gnupg_exec_tool (argv[0], &argv[1], "", &result, &len);
+  err = gnupg_exec_tool (pgmname, argv, "", &result, &len);
   if (err)
     fail ("gnupg_exec_tool", err);
 
@@ -66,23 +72,30 @@ static void
 test_executing_false (void)
 {
   gpg_error_t err;
-  const char *argv[] = { "/bin/false", NULL };
+  const char *pgmname     = "/bin/false";
+  const char *alt_pgmname = "/usr/bin/false";
+  const char *argv[]     = { NULL, NULL };
   char *result;
   size_t len;
 
-  if (access (argv[0], X_OK))
+  if (access (pgmname, X_OK))
     {
-      fprintf (stderr, "skipping test: %s not executable: %s",
-               argv[0], strerror (errno));
-      return;
+      if (access (alt_pgmname, X_OK))
+        {
+          fprintf (stderr, "skipping test: %s not executable: %s\n",
+                   pgmname, strerror (errno));
+          return;
+        }
+      pgmname = alt_pgmname;
     }
 
   if (verbose)
-    fprintf (stderr, "Executing %s...\n", argv[0]);
+    fprintf (stderr, "Executing %s...\n", pgmname);
 
-  err = gnupg_exec_tool (argv[0], &argv[1], "", &result, &len);
+  err = gnupg_exec_tool (pgmname, argv, "", &result, &len);
   assert (err == GPG_ERR_GENERAL);
 }
+
 
 static void
 test_executing_cat (const char *vector)
@@ -94,7 +107,7 @@ test_executing_cat (const char *vector)
 
   if (access (argv[0], X_OK))
     {
-      fprintf (stderr, "skipping test: %s not executable: %s",
+      fprintf (stderr, "skipping test: %s not executable: %s\n",
                argv[0], strerror (errno));
       return;
     }
@@ -131,7 +144,7 @@ test_catting_cat (void)
 
   if (access (argv[0], X_OK))
     {
-      fprintf (stderr, "skipping test: %s not executable: %s",
+      fprintf (stderr, "skipping test: %s not executable: %s\n",
                argv[0], strerror (errno));
       return;
     }
@@ -139,7 +152,7 @@ test_catting_cat (void)
   in = es_fopen (argv[1], "r");
   if (in == NULL)
     {
-      fprintf (stderr, "skipping test: could not open %s: %s",
+      fprintf (stderr, "skipping test: could not open %s: %s\n",
                argv[1], strerror (errno));
       return;
     }
@@ -147,7 +160,7 @@ test_catting_cat (void)
   err = es_fseek (in, 0L, SEEK_END);
   if (err)
     {
-      fprintf (stderr, "skipping test: could not seek in %s: %s",
+      fprintf (stderr, "skipping test: could not seek in %s: %s\n",
                argv[1], gpg_strerror (err));
       return;
     }
