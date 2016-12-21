@@ -4838,7 +4838,7 @@ static pointer opexe_5(scheme *sc, enum scheme_opcodes op) {
                } else {
                     sc->nesting_stack[sc->file_i]++;
 #if USE_TAGS && SHOW_ERROR_LINE
-		    {
+		    if (sc->load_stack[sc->file_i].kind & port_file) {
 		      const char *filename =
 			sc->load_stack[sc->file_i].rep.stdio.filename;
 		      int lineno =
