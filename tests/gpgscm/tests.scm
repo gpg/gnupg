@@ -610,7 +610,7 @@
 		(seek logfd 0 SEEK_SET)
 		(splice logfd STDERR_FILENO)
 		(close logfd))
-	(echo (string-append (status retcode) ":") name))))))
+	(echo (string-append (status) ":") name))))))
 
 ;; Run the setup target to create an environment, then run all given
 ;; tests in parallel.

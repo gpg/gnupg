@@ -3364,11 +3364,9 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                     }
                }
                if (x == sc->NIL) {
-                    /*--
-                     * if (y != sc->NIL) {
-                     *   Error_0(sc,"too many arguments");
-                     * }
-                     */
+                    if (y != sc->NIL) {
+                      Error_0(sc, "too many arguments");
+                    }
                } else if (is_symbol(x))
                     new_slot_in_env(sc, x, y);
                else {
