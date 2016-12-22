@@ -569,6 +569,16 @@
 ;    the thrown exception is bound to *error*.  Errors can be rethrown
 ;    using (rethrow *error*).
 ;
+;    Finalization can be expressed using "finally":
+;
+;         (finally (finalize-something called-purely-for side-effects)
+;              (whether-or-not something goes-wrong)
+;              (with-these calls))
+;
+;    The final expression is executed purely for its side-effects,
+;    both when the function exits successfully, and when an exception
+;    is thrown.
+;
 ;    Exceptions are thrown with:
 ;
 ;         (throw "message")
@@ -621,6 +631,13 @@
                (let ((,label (begin ,@(cddr form))))
                     (pop-handler)
                     ,label)))))
+
+(define-macro (finally final-expression . expressions)
+  (let ((result (gensym)))
+    `(let ((,result (catch (begin ,final-expression (rethrow *error*))
+			   ,@expressions)))
+       ,final-expression
+       ,result)))
 
 ;; Make the vm use throw'.
 (define *error-hook* throw')

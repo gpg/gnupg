@@ -244,27 +244,26 @@
 ;;
 ;; Bind all variables given in <bindings> and initialize each of them
 ;; to the given initial value, and close them after evaluting <body>.
-(macro (letfd form)
-  (let ((result-sym (gensym)))
-    `((lambda (,(caaadr form))
-	(let ((,result-sym
-	       ,(if (= 1 (length (cadr form)))
-		    `(catch (begin (close ,(caaadr form))
-				   (rethrow *error*))
-			    ,@(cddr form))
-		    `(letfd ,(cdadr form) ,@(cddr form)))))
-	  (close ,(caaadr form))
-	  ,result-sym)) ,@(cdaadr form))))
+(define-macro (letfd bindings . body)
+  (let bind ((bindings' bindings))
+    (if (null? bindings')
+	`(begin ,@body)
+	(let* ((binding (car bindings'))
+	       (name (car binding))
+	       (initializer (cadr binding)))
+	  `(let ((,name ,initializer))
+	     (finally (close ,name)
+		      ,(bind (cdr bindings'))))))))
 
-(macro (with-working-directory form)
-  (let ((result-sym (gensym)) (cwd-sym (gensym)))
-    `(let* ((,cwd-sym (getcwd))
-	    (_ (if ,(cadr form) (chdir ,(cadr form))))
-	    (,result-sym (catch (begin (chdir ,cwd-sym)
-				       (rethrow *error*))
-				,@(cddr form))))
-       (chdir ,cwd-sym)
-       ,result-sym)))
+(define-macro (with-working-directory new-directory . expressions)
+  (let ((new-dir (gensym))
+	(old-dir (gensym)))
+    `(let* ((,new-dir ,new-directory)
+	    (,old-dir (getcwd)))
+       (dynamic-wind
+	   (lambda () (if ,new-dir (chdir ,new-dir)))
+	   (lambda () ,@expressions)
+	   (lambda () (chdir ,old-dir))))))
 
 ;; Make a temporary directory.  If arguments are given, they are
 ;; joined using path-join, and must end in a component ending in
@@ -278,18 +277,12 @@
 					  "-XXXXXX"))
 		(apply path-join components))))
 
-(macro (with-temporary-working-directory form)
-  (let ((result-sym (gensym)) (cwd-sym (gensym)) (tmp-sym (gensym)))
-    `(let* ((,cwd-sym (getcwd))
-	    (,tmp-sym (mkdtemp))
-	    (_ (chdir ,tmp-sym))
-	    (,result-sym (catch (begin (chdir ,cwd-sym)
-				       (unlink-recursively ,tmp-sym)
-				       (rethrow *error*))
-				,@(cdr form))))
-       (chdir ,cwd-sym)
-       (unlink-recursively ,tmp-sym)
-       ,result-sym)))
+(define-macro (with-temporary-working-directory . expressions)
+  (let ((tmp-sym (gensym)))
+    `(let* ((,tmp-sym (mkdtemp)))
+       (finally (unlink-recursively ,tmp-sym)
+		(with-working-directory ,tmp-sym
+					,@expressions)))))
 
 (define (make-temporary-file . args)
   (canonical-path (path-join
@@ -310,17 +303,15 @@
 ;; Bind all variables given in <bindings>, initialize each of them to
 ;; a string representing an unique path in the filesystem, and delete
 ;; them after evaluting <body>.
-(macro (lettmp form)
-  (let ((result-sym (gensym)))
-    `((lambda (,(caadr form))
-	(let ((,result-sym
-	       ,(if (= 1 (length (cadr form)))
-		    `(catch (begin (remove-temporary-file ,(caadr form))
-				   (rethrow *error*))
-			    ,@(cddr form))
-		    `(lettmp ,(cdadr form) ,@(cddr form)))))
-	  (remove-temporary-file ,(caadr form))
-	  ,result-sym)) (make-temporary-file ,(symbol->string (caadr form))))))
+(define-macro (lettmp bindings . body)
+  (let bind ((bindings' bindings))
+    (if (null? bindings')
+	`(begin ,@body)
+	(let ((name (car bindings'))
+	      (rest (cdr bindings')))
+	  `(let ((,name (make-temporary-file ,(symbol->string name))))
+	     (finally (remove-temporary-file ,name)
+		      ,(bind rest)))))))
 
 (define (check-execution source transformer)
   (lettmp (sink)
