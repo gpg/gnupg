@@ -690,7 +690,16 @@ command_send (const char *fingerprint, char *userid)
   else
     err = wkd_get_submission_address (addrspec, &submission_to);
   if (err)
-    goto leave;
+    {
+      char *domain = strchr (addrspec, '@');
+      if (domain)
+        domain = domain + 1;
+      log_error (_("looking up WKS submission address for %s: %s\n"),
+                 domain ? domain : addrspec, gpg_strerror (err));
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+        log_error (_("this domain probably doesn't support WKS.\n"));
+      goto leave;
+    }
   log_info ("submitting request to '%s'\n", submission_to);
 
   /* Get the policy flags.  */
@@ -704,7 +713,7 @@ command_send (const char *fingerprint, char *userid)
           log_error ("error reading policy flags for '%s': %s\n",
                      submission_to, gpg_strerror (err));
           goto leave;
-      }
+        }
       if (mbuf)
         {
           err = wks_parse_policy (&policy, mbuf, 1);
