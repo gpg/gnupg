@@ -710,7 +710,7 @@ cmd_readcert (assuan_context_t ctx, char *line)
     return rc;
 
   line = xstrdup (line); /* Need a copy of the line. */
-  rc = app_readcert (ctrl->app_ctx, line, &cert, &ncert);
+  rc = app_readcert (ctrl->app_ctx, ctrl, line, &cert, &ncert);
   if (rc)
     log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
   xfree (line);
@@ -761,7 +761,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
   /* If the application supports the READKEY function we use that.
      Otherwise we use the old way by extracting it from the
      certificate.  */
-  rc = app_readkey (ctrl->app_ctx, advanced, line, &pk, &pklen);
+  rc = app_readkey (ctrl->app_ctx, ctrl, advanced, line, &pk, &pklen);
   if (!rc)
     { /* Yeah, got that key - send it back.  */
       rc = assuan_send_data (ctx, pk, pklen);
@@ -775,7 +775,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
     log_error ("app_readkey failed: %s\n", gpg_strerror (rc));
   else
     {
-      rc = app_readcert (ctrl->app_ctx, line, &cert, &ncert);
+      rc = app_readcert (ctrl->app_ctx, ctrl, line, &cert, &ncert);
       if (rc)
         log_error ("app_readcert failed: %s\n", gpg_strerror (rc));
     }
@@ -985,7 +985,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
   if (!keyidstr)
     return out_of_core ();
 
-  rc = app_sign (ctrl->app_ctx,
+  rc = app_sign (ctrl->app_ctx, ctrl,
                  keyidstr, hash_algo,
                  pin_cb, ctx,
                  ctrl->in_data.value, ctrl->in_data.valuelen,
@@ -1036,9 +1036,7 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   if (!keyidstr)
     return out_of_core ();
 
-  rc = app_auth (ctrl->app_ctx,
-                 keyidstr,
-                 pin_cb, ctx,
+  rc = app_auth (ctrl->app_ctx, ctrl, keyidstr, pin_cb, ctx,
                  ctrl->in_data.value, ctrl->in_data.valuelen,
                  &outdata, &outdatalen);
   xfree (keyidstr);
@@ -1080,9 +1078,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   keyidstr = xtrystrdup (line);
   if (!keyidstr)
     return out_of_core ();
-  rc = app_decipher (ctrl->app_ctx,
-                     keyidstr,
-                     pin_cb, ctx,
+  rc = app_decipher (ctrl->app_ctx, ctrl, keyidstr, pin_cb, ctx,
                      ctrl->in_data.value, ctrl->in_data.valuelen,
                      &outdata, &outdatalen, &infoflags);
 
@@ -1194,7 +1190,7 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
     line++;
   nbytes = percent_plus_unescape_inplace (line, 0);
 
-  rc = app_setattr (ctrl->app_ctx, keyword, pin_cb, ctx,
+  rc = app_setattr (ctrl->app_ctx, ctrl, keyword, pin_cb, ctx,
                     (const unsigned char*)line, nbytes);
   xfree (linebuf);
 
@@ -1441,7 +1437,7 @@ cmd_random (assuan_context_t ctx, char *line)
   if (!buffer)
     return out_of_core ();
 
-  rc = app_get_challenge (ctrl->app_ctx, nbytes, buffer);
+  rc = app_get_challenge (ctrl->app_ctx, ctrl, nbytes, buffer);
   if (!rc)
     {
       rc = assuan_send_data (ctx, buffer, nbytes);
@@ -1562,7 +1558,7 @@ cmd_checkpin (assuan_context_t ctx, char *line)
   if (!idstr)
     return out_of_core ();
 
-  rc = app_check_pin (ctrl->app_ctx, idstr, pin_cb, ctx);
+  rc = app_check_pin (ctrl->app_ctx, ctrl, idstr, pin_cb, ctx);
   xfree (idstr);
   if (rc)
     log_error ("app_check_pin failed: %s\n", gpg_strerror (rc));

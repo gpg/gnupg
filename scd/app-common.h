@@ -152,26 +152,26 @@ gpg_error_t app_munge_serialno (app_t app);
 gpg_error_t app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp);
 gpg_error_t app_write_learn_status (app_t app, ctrl_t ctrl,
                                     unsigned int flags);
-gpg_error_t app_readcert (app_t app, const char *certid,
+gpg_error_t app_readcert (app_t app, ctrl_t ctrl, const char *certid,
                   unsigned char **cert, size_t *certlen);
-gpg_error_t app_readkey (app_t app, int advanced, const char *keyid,
-                 unsigned char **pk, size_t *pklen);
+gpg_error_t app_readkey (app_t app, ctrl_t ctrl, int advanced,
+                 const char *keyid, unsigned char **pk, size_t *pklen);
 gpg_error_t app_getattr (app_t app, ctrl_t ctrl, const char *name);
-gpg_error_t app_setattr (app_t app, const char *name,
+gpg_error_t app_setattr (app_t app, ctrl_t ctrl, const char *name,
                  gpg_error_t (*pincb)(void*, const char *, char **),
                  void *pincb_arg,
                  const unsigned char *value, size_t valuelen);
-gpg_error_t app_sign (app_t app, const char *keyidstr, int hashalgo,
+gpg_error_t app_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
               gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg,
               const void *indata, size_t indatalen,
               unsigned char **outdata, size_t *outdatalen );
-gpg_error_t app_auth (app_t app, const char *keyidstr,
+gpg_error_t app_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
                       gpg_error_t (*pincb)(void*, const char *, char **),
                       void *pincb_arg,
                       const void *indata, size_t indatalen,
                       unsigned char **outdata, size_t *outdatalen);
-gpg_error_t app_decipher (app_t app, const char *keyidstr,
+gpg_error_t app_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
                           gpg_error_t (*pincb)(void*, const char *, char **),
                           void *pincb_arg,
                           const void *indata, size_t indatalen,
@@ -192,13 +192,13 @@ gpg_error_t app_genkey (app_t app, ctrl_t ctrl,
                         time_t createtime,
                         gpg_error_t (*pincb)(void*, const char *, char **),
                         void *pincb_arg);
-gpg_error_t app_get_challenge (app_t app, size_t nbytes,
+gpg_error_t app_get_challenge (app_t app, ctrl_t ctrl, size_t nbytes,
                                unsigned char *buffer);
 gpg_error_t app_change_pin (app_t app, ctrl_t ctrl,
                     const char *chvnostr, int reset_mode,
                     gpg_error_t (*pincb)(void*, const char *, char **),
                     void *pincb_arg);
-gpg_error_t app_check_pin (app_t app, const char *keyidstr,
+gpg_error_t app_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
                    gpg_error_t (*pincb)(void*, const char *, char **),
                    void *pincb_arg);
 
