@@ -28,8 +28,8 @@ typedef struct port {
       FILE *file;
       int closeit;
 #if SHOW_ERROR_LINE
-      int curr_line;
-      char *filename;
+      pointer curr_line;
+      pointer filename;
 #endif
     } stdio;
     struct {
