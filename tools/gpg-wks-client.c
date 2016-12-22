@@ -699,7 +699,7 @@ command_send (const char *fingerprint, char *userid)
       estream_t mbuf;
 
       err = wkd_get_policy_flags (addrspec, &mbuf);
-      if (err)
+      if (err && gpg_err_code (err) != GPG_ERR_NO_DATA)
         {
           log_error ("error reading policy flags for '%s': %s\n",
                      submission_to, gpg_strerror (err));
