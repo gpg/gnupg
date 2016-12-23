@@ -181,7 +181,9 @@ void
 enable_recursive_resolver (int yes)
 {
   recursive_resolver = yes;
+#ifdef USE_LIBDNS
   libdns_reinit_pending = 1;
+#endif
 }
 
 
@@ -251,8 +253,10 @@ set_dns_nameserver (const char *ipaddr)
   strncpy (tor_nameserver, ipaddr? ipaddr : DEFAULT_NAMESERVER,
            sizeof tor_nameserver -1);
   tor_nameserver[sizeof tor_nameserver -1] = 0;
+#ifdef USE_LIBDNS
   libdns_reinit_pending = 1;
   libdns_tor_port = 0;  /* Start again with the default port.  */
+#endif
 }
 
 
@@ -278,7 +282,7 @@ get_h_errno_as_gpg_error (void)
 
   switch (h_errno)
     {
-    case HOST_NOT_FOUND: ec = GPG_ERR_UNKNOWN_HOST; break;
+    case HOST_NOT_FOUND: ec = GPG_ERR_NO_NAME; break;
     case TRY_AGAIN:      ec = GPG_ERR_TRY_LATER; break;
     case NO_RECOVERY:    ec = GPG_ERR_SERVER_FAILED; break;
     case NO_DATA:        ec = GPG_ERR_NO_DATA; break;
@@ -534,15 +538,17 @@ libdns_deinit (void)
 void
 reload_dns_stuff (int force)
 {
+#ifdef USE_LIBDNS
   if (force)
     {
-#ifdef USE_LIBDNS
       libdns_deinit ();
-#endif
       libdns_reinit_pending = 0;
     }
   else
     libdns_reinit_pending = 1;
+#else
+  (void)force;
+#endif
 }
 
 
