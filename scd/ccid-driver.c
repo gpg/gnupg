@@ -952,10 +952,10 @@ parse_ccid_descriptor (ccid_driver_t handle,
      lower than that:
         64 - 10 CCID header -  4 T1frame - 2 reserved = 48
      Product Ids:
-	 0xe001 - SCR 331
-	 0x5111 - SCR 331-DI
-	 0x5115 - SCR 335
-	 0xe003 - SPR 532
+         0xe001 - SCR 331
+         0x5111 - SCR 331-DI
+         0x5115 - SCR 335
+         0xe003 - SPR 532
      The
          0x5117 - SCR 3320 USB ID-000 reader
      seems to be very slow but enabling this workaround boosts the
@@ -1117,7 +1117,7 @@ find_endpoint (const struct libusb_interface_descriptor *ifcdesc, int mode)
    for other reasons. */
 static int
 scan_or_find_usb_device (int scan_mode,
-                         int *readerno, int *count, char **rid_list,
+                         int readerno, int *count, char **rid_list,
                          const char *readerid,
                          struct libusb_device *dev,
                          char **r_rid,
@@ -1133,12 +1133,12 @@ scan_or_find_usb_device (int scan_mode,
   int set_no;
   const struct libusb_interface_descriptor *ifcdesc;
   char *rid;
-  libusb_device_handle *idev;
+  libusb_device_handle *idev = NULL;
   int err;
 
   err = libusb_get_device_descriptor (dev, desc);
   if (err < 0)
-    return err;
+    return 0;
 
   *r_idev = NULL;
 
@@ -1150,7 +1150,7 @@ scan_or_find_usb_device (int scan_mode,
       if (err < 0)
         {
           if (err == LIBUSB_ERROR_NO_MEM)
-            return err;
+            return 0;
           continue;
         }
 
@@ -1176,6 +1176,11 @@ scan_or_find_usb_device (int scan_mode,
                           && desc->idVendor == VENDOR_CHERRY
                           && desc->idProduct == CHERRY_ST2000)))
                 {
+                  ++*count;
+                  if (!scan_mode
+                      && ((readerno > 0 && readerno != *count - 1)))
+                    continue;
+
                   err = libusb_open (dev, &idev);
                   if (err < 0)
                     {
@@ -1184,100 +1189,93 @@ scan_or_find_usb_device (int scan_mode,
                       continue; /* with next setting. */
                     }
 
-                  rid = make_reader_id (idev,
-                                        desc->idVendor,
-                                        desc->idProduct,
+                  rid = make_reader_id (idev, desc->idVendor, desc->idProduct,
                                         desc->iSerialNumber);
-                  if (rid)
+                  if (!rid)
                     {
-                      if (scan_mode)
-                        {
-                          char *p;
-
-                          /* We are collecting infos about all
-                             available CCID readers.  Store them and
-                             continue. */
-                          DEBUGOUT_2 ("found CCID reader %d (ID=%s)\n",
-                                      *count, rid );
-                          p = malloc ((*rid_list? strlen (*rid_list):0) + 1
-                                      + strlen (rid) + 1);
-                          if (p)
-                            {
-                              *p = 0;
-                              if (*rid_list)
-                                {
-                                  strcat (p, *rid_list);
-                                  free (*rid_list);
-                                }
-                              strcat (p, rid);
-                              strcat (p, "\n");
-                              *rid_list = p;
-                            }
-                          else /* Out of memory. */
-                            free (rid);
-
-                          rid = NULL;
-                          ++*count;
-                        }
-                      else if (!*readerno
-                               || (*readerno < 0
-                                   && readerid
-                                   && !strcmp (readerid, rid)))
-                        {
-                          /* We found the requested reader. */
-                          if (ifcdesc_extra && ifcdesc_extra_len)
-                            {
-                              *ifcdesc_extra = malloc (ifcdesc
-                                                       ->extra_length);
-                              if (!*ifcdesc_extra)
-                                {
-                                  libusb_close (idev);
-                                  free (rid);
-                                  libusb_free_config_descriptor (config);
-                                  return 1; /* Out of core. */
-                                }
-                              memcpy (*ifcdesc_extra, ifcdesc->extra,
-                                      ifcdesc->extra_length);
-                              *ifcdesc_extra_len = ifcdesc->extra_length;
-                            }
-
-                          if (interface_number)
-                            *interface_number = (ifcdesc->bInterfaceNumber);
-
-                          if (ep_bulk_out)
-                            *ep_bulk_out = find_endpoint (ifcdesc, 0);
-                          if (ep_bulk_in)
-                            *ep_bulk_in = find_endpoint (ifcdesc, 1);
-                          if (ep_intr)
-                            *ep_intr = find_endpoint (ifcdesc, 2);
-
-                          if (r_rid)
-                            {
-                              *r_rid = rid;
-                              rid = NULL;
-                            }
-                          else
-                            free (rid);
-
-                          *r_idev = idev;
-                          libusb_free_config_descriptor (config);
-                          return 1; /* Found requested device. */
-                        }
-                      else
-                        {
-                          /* This is not yet the reader we want.
-                             fixme: We should avoid the extra usb_open
-                             in this case. */
-                          if (*readerno >= 0)
-                            --*readerno;
-                        }
-                      free (rid);
+                      libusb_free_config_descriptor (config);
+                      return 0;
                     }
 
+                  if (!scan_mode && readerno == -1 && readerid
+                      && strncmp (rid, readerid, strlen (readerid)))
+                    continue;
+
+                  if (scan_mode)
+                    {
+                      char *p;
+
+                      /* We are collecting infos about all
+                         available CCID readers.  Store them and
+                         continue. */
+                      DEBUGOUT_2 ("found CCID reader %d (ID=%s)\n",
+                                  *count, rid );
+                      p = malloc ((*rid_list? strlen (*rid_list):0) + 1
+                                  + strlen (rid) + 1);
+                      if (p)
+                        {
+                          *p = 0;
+                          if (*rid_list)
+                            {
+                              strcat (p, *rid_list);
+                              free (*rid_list);
+                            }
+                          strcat (p, rid);
+                          strcat (p, "\n");
+                          *rid_list = p;
+                        }
+                      else /* Out of memory. */
+                        {
+                          libusb_free_config_descriptor (config);
+                          free (rid);
+                          return 0;
+                        }
+                    }
+                  else
+                    {
+                      /* We found the requested reader. */
+                      if (ifcdesc_extra && ifcdesc_extra_len)
+                        {
+                          *ifcdesc_extra = malloc (ifcdesc
+                                                   ->extra_length);
+                          if (!*ifcdesc_extra)
+                            {
+                              libusb_close (idev);
+                              free (rid);
+                              libusb_free_config_descriptor (config);
+                              return 1; /* Out of core. */
+                            }
+                          memcpy (*ifcdesc_extra, ifcdesc->extra,
+                                  ifcdesc->extra_length);
+                          *ifcdesc_extra_len = ifcdesc->extra_length;
+                        }
+
+                      if (interface_number)
+                        *interface_number = (ifcdesc->bInterfaceNumber);
+
+                      if (ep_bulk_out)
+                        *ep_bulk_out = find_endpoint (ifcdesc, 0);
+                      if (ep_bulk_in)
+                        *ep_bulk_in = find_endpoint (ifcdesc, 1);
+                      if (ep_intr)
+                        *ep_intr = find_endpoint (ifcdesc, 2);
+
+                      if (r_rid)
+                        {
+                          *r_rid = rid;
+                          rid = NULL;
+                        }
+                      else
+                        free (rid);
+
+                      *r_idev = idev;
+                      libusb_free_config_descriptor (config);
+                      return 1; /* Found requested device. */
+                    }
+
+                  free (rid);
                   libusb_close (idev);
                   idev = NULL;
-                  libusb_free_config_descriptor (config);
-                  return 0;
                 }
             }
         }
@@ -1371,7 +1369,7 @@ scan_or_find_devices (int readerno, const char *readerid,
   for (i = 0; i < n; i++)
     {
       dev = dev_list[i];
-      if (scan_or_find_usb_device (scan_mode, &readerno, &count, &rid_list,
+      if (scan_or_find_usb_device (scan_mode, readerno, &count, &rid_list,
                                    readerid,
                                    dev,
                                    r_rid,
@@ -1802,19 +1800,19 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
         case PC_to_RDR_IccPowerOff:
           print_p2r_iccpoweroff (msg, msglen);
           break;
-	case PC_to_RDR_GetSlotStatus:
+        case PC_to_RDR_GetSlotStatus:
           print_p2r_getslotstatus (msg, msglen);
           break;
         case PC_to_RDR_XfrBlock:
           print_p2r_xfrblock (msg, msglen);
           break;
-	case PC_to_RDR_GetParameters:
+        case PC_to_RDR_GetParameters:
           print_p2r_getparameters (msg, msglen);
           break;
         case PC_to_RDR_ResetParameters:
           print_p2r_resetparameters (msg, msglen);
           break;
-	case PC_to_RDR_SetParameters:
+        case PC_to_RDR_SetParameters:
           print_p2r_setparameters (msg, msglen);
           break;
         case PC_to_RDR_Escape:
@@ -1823,7 +1821,7 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
         case PC_to_RDR_IccClock:
           print_p2r_iccclock (msg, msglen);
           break;
-	case PC_to_RDR_T0APDU:
+        case PC_to_RDR_T0APDU:
           print_p2r_to0apdu (msg, msglen);
           break;
         case PC_to_RDR_Secure:
