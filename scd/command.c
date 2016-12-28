@@ -89,13 +89,7 @@ struct vreader_s
   int valid;  /* True if the other objects are valid. */
   int slot;   /* APDU slot number of the reader or -1 if not open. */
 
-  int reset_failed; /* A reset failed. */
-
-  int any;    /* Flag indicating whether any status check has been
-                 done.  This is set once to indicate that the status
-                 tracking for the slot has been initialized.  */
   unsigned int status;  /* Last status of the reader. */
-  unsigned int changed; /* Last change counter of the reader. */
 };
 
 
@@ -1707,7 +1701,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 	    BUG ();
 
 	  vr = &vreader_table[vrdr];
-	  if (vr->valid && vr->any && (vr->status & 1))
+	  if (vr->valid && (vr->status & 1))
 	    flag = 'u';
 	}
       rc = assuan_send_data (ctx, &flag, 1);
@@ -2248,7 +2242,7 @@ static void
 update_reader_status_file (int set_card_removed_flag)
 {
   int idx;
-  unsigned int status, changed;
+  unsigned int status;
 
   /* Note, that we only try to get the status, because it does not
      make sense to wait here for a operation to complete.  If we are
@@ -2263,13 +2257,11 @@ update_reader_status_file (int set_card_removed_flag)
       if (!vr->valid || vr->slot == -1)
         continue; /* Not valid or reader not yet open. */
 
-      sw_apdu = apdu_get_status (vr->slot, 0, &status, &changed);
+      sw_apdu = apdu_get_status (vr->slot, 0, &status);
       if (sw_apdu == SW_HOST_NO_READER)
         {
           /* Most likely the _reader_ has been unplugged.  */
-          apdu_close_reader (vr->slot);
           status = 0;
-          changed = vr->changed;
         }
       else if (sw_apdu)
         {
@@ -2277,16 +2269,14 @@ update_reader_status_file (int set_card_removed_flag)
           continue;
         }
 
-      if (!vr->any || vr->status != status || vr->changed != changed )
+      if (vr->status != status)
         {
           char *fname;
           char templ[50];
           FILE *fp;
 
-          log_info ("updating reader %d (%d) status: 0x%04X->0x%04X (%u->%u)\n",
-                    idx, vr->slot, vr->status, status, vr->changed, changed);
-          vr->status = status;
-          vr->changed = changed;
+          log_info ("updating reader %d (%d) status: 0x%04X->0x%04X\n",
+                    idx, vr->slot, vr->status, status);
 
 	  /* FIXME: Should this be IDX instead of vr->slot?  This
 	     depends on how client sessions will associate the reader
@@ -2346,10 +2336,10 @@ update_reader_status_file (int set_card_removed_flag)
           }
 
           /* Set the card removed flag for all current sessions.  */
-          if (vr->any && vr->status == 0 && set_card_removed_flag)
+          if (status == 0 && set_card_removed_flag)
             update_card_removed (idx, 1);
 
-          vr->any = 1;
+          vr->status = status;
 
           /* Send a signal to all clients who applied for it.  */
           send_client_notifications ();

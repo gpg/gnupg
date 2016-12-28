@@ -134,9 +134,6 @@ struct reader_table_s {
   } rapdu;
 #endif /*USE_G10CODE_RAPDU*/
   char *rdrname;     /* Name of the connected reader or NULL if unknown. */
-  int any_status;    /* True if we have seen any status.  */
-  int last_status;
-  int status;
   int is_t0;         /* True if we know that we are running T=0. */
   int is_spr532;     /* True if we know that the reader is a SPR532.  */
   int pinpad_varlen_supported;  /* True if we know that the reader
@@ -146,7 +143,6 @@ struct reader_table_s {
   size_t atrlen;           /* A zero length indicates that the ATR has
                               not yet been read; i.e. the card is not
                               ready for use. */
-  unsigned int change_counter;
 #ifdef USE_NPTH
   int lock_initialized;
   npth_mutex_t lock;
@@ -217,7 +213,7 @@ static char (* DLSTDCALL CT_close) (unsigned short ctn);
 #define PCSC_STATE_ATRMATCH    0x0040  /* ATR matches card. */
 #define PCSC_STATE_EXCLUSIVE   0x0080  /* Exclusive Mode.  */
 #define PCSC_STATE_INUSE       0x0100  /* Shared mode.  */
-#define PCSC_STATE_MUTE	       0x0200  /* Unresponsive card.  */
+#define PCSC_STATE_MUTE        0x0200  /* Unresponsive card.  */
 #ifdef HAVE_W32_SYSTEM
 # define PCSC_STATE_UNPOWERED  0x0400  /* Card not powerred up.  */
 #endif
@@ -251,7 +247,7 @@ static char (* DLSTDCALL CT_close) (unsigned short ctn);
 #ifdef _WIN32
 #include <winioctl.h>
 #define SCARD_CTL_CODE(code) CTL_CODE(FILE_DEVICE_SMARTCARD, (code), \
-				      METHOD_BUFFERED, FILE_ANY_ACCESS)
+                                      METHOD_BUFFERED, FILE_ANY_ACCESS)
 #else
 #define SCARD_CTL_CODE(code) (0x42000000 + (code))
 #endif
@@ -361,8 +357,7 @@ static int pcsc_vendor_specific_init (int slot);
 static int pcsc_get_status (int slot, unsigned int *status);
 static int reset_pcsc_reader (int slot);
 static int apdu_get_status_internal (int slot, int hang, int no_atr_reset,
-                                     unsigned int *status,
-                                     unsigned int *changed);
+                                     unsigned int *status);
 static int check_pcsc_pinpad (int slot, int command, pininfo_t *pininfo);
 static int pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
                                pininfo_t *pininfo);
@@ -471,8 +466,6 @@ new_reader_slot (void)
   reader_table[reader].pinpad_modify = pcsc_pinpad_modify;
 
   reader_table[reader].used = 1;
-  reader_table[reader].any_status = 0;
-  reader_table[reader].last_status = 0;
   reader_table[reader].is_t0 = 1;
   reader_table[reader].is_spr532 = 0;
   reader_table[reader].pinpad_varlen_supported = 0;
@@ -499,8 +492,7 @@ dump_reader_status (int slot)
   if (reader_table[slot].dump_status_reader)
     reader_table[slot].dump_status_reader (slot);
 
-  if (reader_table[slot].status != -1
-      && reader_table[slot].atrlen)
+  if (reader_table[slot].atrlen)
     {
       log_info ("slot %d: ATR=", slot);
       log_printhex ("", reader_table[slot].atr, reader_table[slot].atrlen);
@@ -590,16 +582,6 @@ ct_error_string (long err)
 }
 
 
-static void
-ct_dump_reader_status (int slot)
-{
-  log_info ("reader slot %d: %s\n", slot,
-            reader_table[slot].status == 1? "Processor ICC present" :
-            reader_table[slot].status == 0? "Memory ICC present" :
-            "ICC not present" );
-}
-
-
 /* Wait for the card in SLOT and activate it.  Return a status word
    error or 0 on success. */
 static int
@@ -658,7 +640,6 @@ ct_activate_card (int slot)
       return SW_HOST_CARD_IO_ERROR;
     }
 
-  reader_table[slot].status = buf[buflen - 1];
   memcpy (reader_table[slot].atr, buf, buflen - 2);
   reader_table[slot].atrlen = buflen - 2;
   return 0;
@@ -763,7 +744,7 @@ open_ct_reader (int port)
   reader_table[reader].get_status_reader = ct_get_status;
   reader_table[reader].send_apdu_reader = ct_send_apdu;
   reader_table[reader].check_pinpad = NULL;
-  reader_table[reader].dump_status_reader = ct_dump_reader_status;
+  reader_table[reader].dump_status_reader = NULL;
   reader_table[reader].pinpad_verify = NULL;
   reader_table[reader].pinpad_modify = NULL;
 
@@ -984,7 +965,7 @@ pcsc_get_status_direct (int slot, unsigned int *status)
     {
       *status |= APDU_CARD_PRESENT;
       if ( !(rdrstates[0].event_state & PCSC_STATE_MUTE) )
-	*status |= APDU_CARD_ACTIVE;
+        *status |= APDU_CARD_ACTIVE;
     }
 #ifndef HAVE_W32_SYSTEM
   /* We indicate a useful card if it is not in use by another
@@ -1553,7 +1534,6 @@ connect_pcsc_card (int slot)
     return SW_HOST_ALREADY_CONNECTED;
 
   reader_table[slot].atrlen = 0;
-  reader_table[slot].last_status = 0;
   reader_table[slot].is_t0 = 0;
 
   err = pcsc_connect (reader_table[slot].pcsc.context,
@@ -1591,11 +1571,6 @@ connect_pcsc_card (int slot)
           if (atrlen > DIM (reader_table[0].atr))
             log_bug ("ATR returned by pcsc_status is too large\n");
           reader_table[slot].atrlen = atrlen;
-          /* If we got to here we know that a card is present
-             and usable.  Remember this.  */
-          reader_table[slot].last_status = (   APDU_CARD_USABLE
-                                             | APDU_CARD_PRESENT
-                                             | APDU_CARD_ACTIVE);
           reader_table[slot].is_t0 = !!(card_protocol & PCSC_PROTOCOL_T0);
         }
     }
@@ -1955,7 +1930,7 @@ open_pcsc_reader_direct (const char *portstr)
           log_error ("error allocating memory for reader list\n");
           pcsc_release_context (reader_table[slot].pcsc.context);
           reader_table[slot].used = 0;
-	  unlock_slot (slot);
+          unlock_slot (slot);
           return -1 /*SW_HOST_OUT_OF_CORE*/;
         }
       err = pcsc_list_readers (reader_table[slot].pcsc.context,
@@ -2006,7 +1981,6 @@ open_pcsc_reader_direct (const char *portstr)
 
   reader_table[slot].pcsc.card = 0;
   reader_table[slot].atrlen = 0;
-  reader_table[slot].last_status = 0;
 
   reader_table[slot].connect_card = connect_pcsc_card;
   reader_table[slot].disconnect_card = disconnect_pcsc_card;
@@ -2188,8 +2162,6 @@ open_pcsc_reader_wrapped (const char *portstr)
       goto command_failed;
     }
 
-  slotp->last_status = 0;
-
   /* The open request may return a zero for the ATR length to
      indicate that no card is present.  */
   n = len;
@@ -2201,11 +2173,6 @@ open_pcsc_reader_wrapped (const char *portstr)
                      i? strerror (errno) : "premature EOF");
           goto command_failed;
         }
-      /* If we got to here we know that a card is present
-         and usable.  Thus remember this.  */
-      slotp->last_status = (  APDU_CARD_USABLE
-                            | APDU_CARD_PRESENT
-                            | APDU_CARD_ACTIVE);
     }
   slotp->atrlen = len;
 
@@ -2353,7 +2320,7 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
 
   if (DBG_CARD_IO)
     log_debug ("send secure: c=%02X i=%02X p1=%02X p2=%02X len=%d pinmax=%d\n",
-	       class, ins, p0, p1, len, pininfo->maxlen);
+               class, ins, p0, p1, len, pininfo->maxlen);
 
   sw = control_pcsc (slot, reader_table[slot].pcsc.verify_ioctl,
                      pin_verify, len, result, &resultlen);
@@ -2439,7 +2406,7 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
 
   if (DBG_CARD_IO)
     log_debug ("send secure: c=%02X i=%02X p1=%02X p2=%02X len=%d pinmax=%d\n",
-	       class, ins, p0, p1, len, (int)pininfo->maxlen);
+               class, ins, p0, p1, len, (int)pininfo->maxlen);
 
   sw = control_pcsc (slot, reader_table[slot].pcsc.modify_ioctl,
                      pin_modify, len, result, &resultlen);
@@ -2573,13 +2540,13 @@ check_ccid_pinpad (int slot, int command, pininfo_t *pininfo)
 
   apdu[1] = command;
   return ccid_transceive_secure (reader_table[slot].ccid.handle, apdu,
-				 sizeof apdu, pininfo, NULL, 0, NULL);
+                                 sizeof apdu, pininfo, NULL, 0, NULL);
 }
 
 
 static int
 ccid_pinpad_operation (int slot, int class, int ins, int p0, int p1,
-		       pininfo_t *pininfo)
+                       pininfo_t *pininfo)
 {
   unsigned char apdu[4];
   int err, sw;
@@ -2632,14 +2599,6 @@ open_ccid_reader (const char *portstr)
     {
       slotp->atrlen = 0;
       err = 0;
-    }
-  else
-    {
-      /* If we got to here we know that a card is present
-         and usable.  Thus remember this.  */
-      reader_table[slot].last_status = (APDU_CARD_USABLE
-                                        | APDU_CARD_PRESENT
-                                        | APDU_CARD_ACTIVE);
     }
 
   reader_table[slot].close_reader = close_ccid_reader;
@@ -3309,7 +3268,7 @@ apdu_connect (int slot)
      Without that we would force a reset of the card with the next
      call to apdu_get_status.  */
   if (!sw)
-    sw = apdu_get_status_internal (slot, 1, 1, &status, NULL);
+    sw = apdu_get_status_internal (slot, 1, 1, &status);
 
   if (sw)
     ;
@@ -3406,18 +3365,8 @@ apdu_reset (int slot)
       return sw;
     }
 
-  reader_table[slot].last_status = 0;
   if (reader_table[slot].reset_reader)
     sw = reader_table[slot].reset_reader (slot);
-
-  if (!sw)
-    {
-      /* If we got to here we know that a card is present
-         and usable.  Thus remember this.  */
-      reader_table[slot].last_status = (APDU_CARD_USABLE
-                                        | APDU_CARD_PRESENT
-                                        | APDU_CARD_ACTIVE);
-    }
 
   unlock_slot (slot);
   if (DBG_READER)
@@ -3476,14 +3425,10 @@ apdu_get_atr (int slot, size_t *atrlen)
                        (bit 3) = card access locked [not yet implemented]
 
    For must applications, testing bit 0 is sufficient.
-
-   CHANGED will receive the value of the counter tracking the number
-   of card insertions.  This value may be used to detect a card
-   change.
 */
 static int
 apdu_get_status_internal (int slot, int hang, int no_atr_reset,
-                          unsigned int *status, unsigned int *changed)
+                          unsigned int *status)
 {
   int sw;
   unsigned int s;
@@ -3501,52 +3446,31 @@ apdu_get_status_internal (int slot, int hang, int no_atr_reset,
 
   if (sw)
     {
-      reader_table[slot].last_status = 0;
-      return sw;
-    }
-
-  /* Keep track of changes.  */
-  if (s != reader_table[slot].last_status
-      || !reader_table[slot].any_status )
-    {
-      reader_table[slot].change_counter++;
-      /* Make sure that the ATR is invalid so that a reset will be
-         triggered by apdu_activate.  */
       if (!no_atr_reset)
         reader_table[slot].atrlen = 0;
+      s = 0;
     }
-  reader_table[slot].any_status = 1;
-  reader_table[slot].last_status = s;
 
   if (status)
     *status = s;
-  if (changed)
-    *changed = reader_table[slot].change_counter;
-  return 0;
+  return sw;
 }
 
 
 /* See above for a description.  */
 int
-apdu_get_status (int slot, int hang,
-                 unsigned int *status, unsigned int *changed)
+apdu_get_status (int slot, int hang, unsigned int *status)
 {
   int sw;
 
   if (DBG_READER)
     log_debug ("enter: apdu_get_status: slot=%d hang=%d\n", slot, hang);
-  sw = apdu_get_status_internal (slot, hang, 0, status, changed);
+  sw = apdu_get_status_internal (slot, hang, 0, status);
   if (DBG_READER)
     {
-      if (status && changed)
-        log_debug ("leave: apdu_get_status => sw=0x%x status=%u changecnt=%u\n",
-                   sw, *status, *changed);
-      else if (status)
+      if (status)
         log_debug ("leave: apdu_get_status => sw=0x%x status=%u\n",
                    sw, *status);
-      else if (changed)
-        log_debug ("leave: apdu_get_status => sw=0x%x changed=%u\n",
-                   sw, *changed);
       else
         log_debug ("leave: apdu_get_status => sw=0x%x\n", sw);
     }
@@ -3584,7 +3508,7 @@ apdu_check_pinpad (int slot, int command, pininfo_t *pininfo)
 
 int
 apdu_pinpad_verify (int slot, int class, int ins, int p0, int p1,
-		    pininfo_t *pininfo)
+                    pininfo_t *pininfo)
 {
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
@@ -3597,7 +3521,7 @@ apdu_pinpad_verify (int slot, int class, int ins, int p0, int p1,
         return sw;
 
       sw = reader_table[slot].pinpad_verify (slot, class, ins, p0, p1,
-					     pininfo);
+                                             pininfo);
       unlock_slot (slot);
       return sw;
     }
@@ -3608,7 +3532,7 @@ apdu_pinpad_verify (int slot, int class, int ins, int p0, int p1,
 
 int
 apdu_pinpad_modify (int slot, int class, int ins, int p0, int p1,
-		    pininfo_t *pininfo)
+                    pininfo_t *pininfo)
 {
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
