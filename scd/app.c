@@ -1,5 +1,5 @@
 /* app.c - Application selection.
- *	Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -25,27 +25,14 @@
 #include <npth.h>
 
 #include "scdaemon.h"
+#include "exechelp.h"
 #include "app-common.h"
 #include "iso7816.h"
 #include "apdu.h"
 #include "tlv.h"
 
-/* This table is used to keep track of locks on a per reader base.
-   The index into the table is the slot number of the reader.  The
-   mutex will be initialized on demand (one of the advantages of a
-   userland threading system). */
-static struct
-{
-  int initialized;
-  npth_mutex_t lock;
-  app_t app;        /* Application context in use or NULL. */
-} lock_table[10];
-
-
-
-static void deallocate_app (app_t app);
-
-
+static npth_mutex_t app_list_lock;
+static app_t app_top;
 
 static void
 print_progress_line (void *opaque, const char *what, int pc, int cur, int tot)
@@ -69,54 +56,35 @@ print_progress_line (void *opaque, const char *what, int pc, int cur, int tot)
    success; only then the unlock_reader function must be called after
    returning from the handler. */
 static gpg_error_t
-lock_reader (int slot, ctrl_t ctrl)
+lock_app (app_t app, ctrl_t ctrl)
 {
-  int res;
+  gpg_error_t err;
 
-  if (slot < 0 || slot >= DIM (lock_table))
-    return gpg_error (slot<0? GPG_ERR_INV_VALUE : GPG_ERR_RESOURCE_LIMIT);
-
-  if (!lock_table[slot].initialized)
+  err = npth_mutex_lock (&app->lock);
+  if (err)
     {
-      res = npth_mutex_init (&lock_table[slot].lock, NULL);
-      if (res)
-        {
-          log_error ("error initializing mutex: %s\n", strerror (res));
-          return gpg_error_from_errno (res);
-        }
-      lock_table[slot].initialized = 1;
-      lock_table[slot].app = NULL;
+      log_error ("failed to acquire APP lock for %p: %s\n",
+                 app, strerror (err));
+      return gpg_error_from_errno (err);
     }
 
-  res = npth_mutex_lock (&lock_table[slot].lock);
-  if (res)
-    {
-      log_error ("failed to acquire APP lock for slot %d: %s\n",
-                 slot, strerror (res));
-      return gpg_error_from_errno (res);
-    }
-
-  apdu_set_progress_cb (slot, print_progress_line, ctrl);
+  apdu_set_progress_cb (app->slot, print_progress_line, ctrl);
 
   return 0;
 }
 
 /* Release a lock on the reader.  See lock_reader(). */
 static void
-unlock_reader (int slot)
+unlock_app (app_t app)
 {
-  int res;
+  gpg_error_t err;
 
-  if (slot < 0 || slot >= DIM (lock_table)
-      || !lock_table[slot].initialized)
-    log_bug ("unlock_reader called for invalid slot %d\n", slot);
+  apdu_set_progress_cb (app->slot, NULL, NULL);
 
-  apdu_set_progress_cb (slot, NULL, NULL);
-
-  res = npth_mutex_unlock (&lock_table[slot].lock);
-  if (res)
-    log_error ("failed to release APP lock for slot %d: %s\n",
-               slot, strerror (res));
+  err = npth_mutex_unlock (&app->lock);
+  if (err)
+    log_error ("failed to release APP lock for %p: %s\n",
+               app, strerror (err));
 }
 
 
@@ -125,20 +93,12 @@ unlock_reader (int slot)
 void
 app_dump_state (void)
 {
-  int slot;
+  app_t a;
 
-  for (slot=0; slot < DIM (lock_table); slot++)
-    if (lock_table[slot].initialized)
-      {
-        log_info ("app_dump_state: slot=%d", slot);
-        if (lock_table[slot].app)
-          {
-            log_printf (" app=%p", lock_table[slot].app);
-            if (lock_table[slot].app->apptype)
-              log_printf (" type='%s'", lock_table[slot].app->apptype);
-          }
-        log_printf ("\n");
-      }
+  npth_mutex_lock (&app_list_lock);
+  for (a = app_top; a; a = a->next)
+    log_info ("app_dump_state: app=%p type='%s'\n", a, a->apptype);
+  npth_mutex_unlock (&app_list_lock);
 }
 
 /* Check wether the application NAME is allowed.  This does not mean
@@ -155,54 +115,16 @@ is_app_allowed (const char *name)
 }
 
 
-/* This may be called to tell this module about a removed or resetted card. */
-void
-application_notify_card_reset (int slot)
-{
-  if (slot < 0 || slot >= DIM (lock_table))
-    return;
-
-  /* FIXME: We are ignoring any error value here.  */
-  lock_reader (slot, NULL);
-
-  /* Release the APP, as it's not reusable any more.  */
-  if (lock_table[slot].app)
-    {
-      if (lock_table[slot].app->ref_count)
-        log_bug ("trying to release active context\n");
-
-      deallocate_app (lock_table[slot].app);
-      lock_table[slot].app = NULL;
-      log_debug ("application has been released\n");
-    }
-
-  unlock_reader (slot);
-}
-
-
-/*
- * This function is called with lock held.
- */
 static gpg_error_t
-check_conflict (int slot, const char *name)
+check_conflict (app_t app, const char *name)
 {
-  app_t app = lock_table[slot].app;
-
   if (!app || !name || (app->apptype && !ascii_strcasecmp (app->apptype, name)))
     return 0;
 
-  if (!app->ref_count)
-    {
-      lock_table[slot].app = NULL;
-      deallocate_app (app);
-      return 0;
-    }
-  else
-    {
-      log_info ("application '%s' in use by reader %d - can't switch\n",
-                app->apptype? app->apptype : "<null>", slot);
-      return gpg_error (GPG_ERR_CONFLICT);
-    }
+  log_info ("application '%s' in use - can't switch\n",
+            app->apptype? app->apptype : "<null>");
+
+  return gpg_error (GPG_ERR_CONFLICT);
 }
 
 /* This function is used by the serialno command to check for an
@@ -210,70 +132,57 @@ check_conflict (int slot, const char *name)
    used to request a specific application and the connection has
    already done a select_application. */
 gpg_error_t
-check_application_conflict (ctrl_t ctrl, int slot, const char *name)
+check_application_conflict (const char *name, app_t app)
 {
-  gpg_error_t err;
-
-  if (slot < 0 || slot >= DIM (lock_table))
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  err = lock_reader (slot, ctrl);
-  if (err)
-    return err;
-
-  err = check_conflict (slot, name);
-  unlock_reader (slot);
-  return err;
+  return check_conflict (app, name);
 }
 
 
-/* If called with NAME as NULL, select the best fitting application
-   and return a context; otherwise select the application with NAME
-   and return a context.  SLOT identifies the reader device. Returns
-   an error code and stores NULL at R_APP if no application was found
-   or no card is present. */
+static void
+release_application_internal (app_t app)
+{
+  if (!app->ref_count)
+    log_bug ("trying to release an already released context\n");
+
+  --app->ref_count;
+}
+
 gpg_error_t
-select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
+app_reset (app_t app, ctrl_t ctrl, int send_reset)
 {
   gpg_error_t err;
+
+  err = lock_app (app, ctrl);
+  if (err)
+    return err;
+
+  if (send_reset)
+    {
+      int sw = apdu_reset (app->slot);
+      if (sw)
+        err = gpg_error (GPG_ERR_CARD_RESET);
+
+      /* Release the same application which is used by other sessions.  */
+      send_client_notifications (app);
+    }
+  else
+    {
+      ctrl->app_ctx = NULL;
+      release_application_internal (app);
+    }
+
+  unlock_app (app);
+  return err;
+}
+
+static gpg_error_t
+app_new_register (int slot, ctrl_t ctrl, const char *name)
+{
+  gpg_error_t err = 0;
   app_t app = NULL;
   unsigned char *result = NULL;
   size_t resultlen;
   int want_undefined;
-
-  (void)ctrl;
-
-  *r_app = NULL;
-
-  want_undefined = (name && !strcmp (name, "undefined"));
-
-  err = lock_reader (slot, ctrl);
-  if (err)
-    return err;
-
-  /* First check whether we already have an application to share. */
-  err = check_conflict (slot, name);
-  if (err)
-    {
-      unlock_reader (slot);
-      return err;
-    }
-
-  app = lock_table[slot].app;
-
-  /* If we can reuse an application, bump the reference count and
-     return it.  */
-  if (app)
-    {
-      if (app->slot != slot)
-        log_bug ("slot mismatch %d/%d\n", app->slot, slot);
-      app->slot = slot;
-
-      app->ref_count++;
-      *r_app = app;
-      unlock_reader (slot);
-      return 0; /* Okay: We share that one. */
-    }
 
   /* Need to allocate a new one.  */
   app = xtrycalloc (1, sizeof *app);
@@ -281,14 +190,27 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
     {
       err = gpg_error_from_syserror ();
       log_info ("error allocating context: %s\n", gpg_strerror (err));
-      unlock_reader (slot);
       return err;
     }
+
   app->slot = slot;
+  err = npth_mutex_init (&app->lock, NULL);
+  if (err)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error initializing mutex: %s\n", strerror (err));
+      xfree (app);
+      return err;
+    }
 
+  err = lock_app (app, ctrl);
+  if (err)
+    {
+      xfree (app);
+      return err;
+    }
 
-  /* Fixme: We should now first check whether a card is at all
-     present. */
+  want_undefined = (name && !strcmp (name, "undefined"));
 
   /* Try to read the GDO file first to get a default serial number.
      We skip this if the undefined application has been requested. */
@@ -377,17 +299,85 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
       else
         log_info ("no supported card application found: %s\n",
                   gpg_strerror (err));
+      unlock_app (app);
       xfree (app);
-      unlock_reader (slot);
       return err;
     }
 
-  app->ref_count = 1;
+  app->require_get_status = 1;   /* For token, this can be 0.  */
 
-  lock_table[slot].app = app;
-  *r_app = app;
-  unlock_reader (slot);
+  npth_mutex_lock (&app_list_lock);
+  app->next = app_top;
+  app_top = app;
+  npth_mutex_unlock (&app_list_lock);
+  unlock_app (app);
   return 0;
+}
+
+/* If called with NAME as NULL, select the best fitting application
+   and return a context; otherwise select the application with NAME
+   and return a context.  Returns an error code and stores NULL at
+   R_APP if no application was found or no card is present. */
+gpg_error_t
+select_application (ctrl_t ctrl, const char *name, app_t *r_app, int scan)
+{
+  gpg_error_t err;
+  app_t app;
+  int slot;
+
+  *r_app = NULL;
+
+  if (scan
+      /* FIXME: Here, we can change code to support multiple readers.
+         For now, we only open a single reader.
+      */
+      && !app_top)
+    {
+      slot = apdu_open_reader (opt.reader_port);
+      if (slot >= 0)
+        {
+          int sw = apdu_connect (slot);
+
+          if (sw == SW_HOST_CARD_INACTIVE)
+            {
+              /* Try again.  */
+              sw = apdu_reset (slot);
+            }
+
+          if (!sw || sw == SW_HOST_ALREADY_CONNECTED)
+            err = 0;
+          else
+            err = gpg_error (GPG_ERR_ENODEV);
+        }
+      else
+        err = gpg_error (GPG_ERR_ENODEV);
+
+      if (!err)
+        err = app_new_register (slot, ctrl, name);
+      else
+        apdu_close_reader (slot);
+    }
+  else
+    err = 0;
+
+  if (!err)
+    app = app_top;
+  else
+    app = NULL;
+
+  if (app)
+    {
+      lock_app (app, ctrl);
+      err = check_conflict (app, name);
+      if (!err)
+        {
+          app->ref_count++;
+          *r_app = app;
+        }
+      unlock_app (app);
+    }
+
+  return err;
 }
 
 
@@ -425,10 +415,27 @@ get_supported_applications (void)
 }
 
 
-/* Deallocate the application. */
+/* Deallocate the application.  */
 static void
 deallocate_app (app_t app)
 {
+  app_t a, a_prev = NULL;
+
+  for (a = app_top; a; a = a->next)
+    if (a == app)
+      {
+        if (a_prev == NULL)
+          app_top = a->next;
+        else
+          a_prev->next = a->next;
+        break;
+      }
+    else
+      a_prev = a;
+
+  if (app->ref_count)
+    log_error ("trying to release context used yet (%d)\n", app->ref_count);
+
   if (app->fnc.deinit)
     {
       app->fnc.deinit (app);
@@ -447,33 +454,17 @@ deallocate_app (app_t app)
 void
 release_application (app_t app)
 {
-  int slot;
-
   if (!app)
     return;
-
-  if (!app->ref_count)
-    log_bug ("trying to release an already released context\n");
-  if (--app->ref_count)
-    return;
-
-  /* Move the reference to the application in the lock table. */
-  slot = app->slot;
-  /* FIXME: We are ignoring any error value.  */
-  lock_reader (slot, NULL);
-  if (lock_table[slot].app != app)
-    {
-      unlock_reader (slot);
-      log_bug ("app mismatch %p/%p\n", app, lock_table[slot].app);
-      deallocate_app (app);
-      return;
-    }
 
   /* We don't deallocate app here.  Instead, we keep it.  This is
      useful so that a card does not get reset even if only one session
      is using the card - this way the PIN cache and other cached data
      are preserved.  */
-  unlock_reader (slot);
+
+  lock_app (app, NULL);
+  release_application_internal (app);
+  unlock_app (app);
 }
 
 
@@ -570,11 +561,11 @@ app_write_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
   if (app->apptype && !(flags & 1))
     send_status_info (ctrl, "APPTYPE",
                       app->apptype, strlen (app->apptype), NULL, 0);
-  err = lock_reader (app->slot, ctrl);
+  err = lock_app (app, ctrl);
   if (err)
     return err;
   err = app->fnc.learn_status (app, ctrl, flags);
-  unlock_reader (app->slot);
+  unlock_app (app);
   return err;
 }
 
@@ -595,11 +586,11 @@ app_readcert (app_t app, ctrl_t ctrl, const char *certid,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.readcert)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app->slot, ctrl);
+  err = lock_app (app, ctrl);
   if (err)
     return err;
   err = app->fnc.readcert (app, certid, cert, certlen);
-  unlock_reader (app->slot);
+  unlock_app (app);
   return err;
 }
 
@@ -628,11 +619,11 @@ app_readkey (app_t app, ctrl_t ctrl, int advanced, const char *keyid,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.readkey)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app->slot, ctrl);
+  err = lock_app (app, ctrl);
   if (err)
     return err;
   err= app->fnc.readkey (app, advanced, keyid, pk, pklen);
-  unlock_reader (app->slot);
+  unlock_app (app);
   return err;
 }
 
@@ -670,11 +661,11 @@ app_getattr (app_t app, ctrl_t ctrl, const char *name)
 
   if (!app->fnc.getattr)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app->slot, ctrl);
+  err = lock_app (app, ctrl);
   if (err)
     return err;
   err =  app->fnc.getattr (app, ctrl, name);
-  unlock_reader (app->slot);
+  unlock_app (app);
   return err;
 }
 
@@ -693,11 +684,11 @@ app_setattr (app_t app, ctrl_t ctrl, const char *name,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.setattr)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app->slot, ctrl);
+  err = lock_app (app, ctrl);
   if (err)
     return err;
   err = app->fnc.setattr (app, name, pincb, pincb_arg, value, valuelen);
-  unlock_reader (app->slot);
+  unlock_app (app);
   return err;
 }
 
@@ -719,14 +710,14 @@ app_sign (app_t app, ctrl_t ctrl, const char *keyidstr, int hashalgo,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.sign)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app->slot, ctrl);
+  err = lock_app (app, ctrl);
   if (err)
     return err;
   err = app->fnc.sign (app, keyidstr, hashalgo,
                        pincb, pincb_arg,
                        indata, indatalen,
                        outdata, outdatalen);
-  unlock_reader (app->slot);
+  unlock_app (app);
   if (opt.verbose)
     log_info ("operation sign result: %s\n", gpg_strerror (err));
   return err;
@@ -751,14 +742,14 @@ app_auth (app_t app, ctrl_t ctrl, const char *keyidstr,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.auth)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app->slot, ctrl);
+  err = lock_app (app, ctrl);
   if (err)
     return err;
   err = app->fnc.auth (app, keyidstr,
                        pincb, pincb_arg,
                        indata, indatalen,
                        outdata, outdatalen);
-  unlock_reader (app->slot);
+  unlock_app (app);
   if (opt.verbose)
     log_info ("operation auth result: %s\n", gpg_strerror (err));
   return err;
@@ -786,7 +777,7 @@ app_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.decipher)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app->slot, ctrl);
+  err = lock_app (app, ctrl);
   if (err)
     return err;
   err = app->fnc.decipher (app, keyidstr,
@@ -794,7 +785,7 @@ app_decipher (app_t app, ctrl_t ctrl, const char *keyidstr,
                            indata, indatalen,
                            outdata, outdatalen,
                            r_info);
-  unlock_reader (app->slot);
+  unlock_app (app);
   if (opt.verbose)
     log_info ("operation decipher result: %s\n", gpg_strerror (err));
   return err;
@@ -817,12 +808,12 @@ app_writecert (app_t app, ctrl_t ctrl,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.writecert)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app->slot, ctrl);
+  err = lock_app (app, ctrl);
   if (err)
     return err;
   err = app->fnc.writecert (app, ctrl, certidstr,
                             pincb, pincb_arg, data, datalen);
-  unlock_reader (app->slot);
+  unlock_app (app);
   if (opt.verbose)
     log_info ("operation writecert result: %s\n", gpg_strerror (err));
   return err;
@@ -845,12 +836,12 @@ app_writekey (app_t app, ctrl_t ctrl,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.writekey)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app->slot, ctrl);
+  err = lock_app (app, ctrl);
   if (err)
     return err;
   err = app->fnc.writekey (app, ctrl, keyidstr, flags,
                            pincb, pincb_arg, keydata, keydatalen);
-  unlock_reader (app->slot);
+  unlock_app (app);
   if (opt.verbose)
     log_info ("operation writekey result: %s\n", gpg_strerror (err));
   return err;
@@ -872,12 +863,12 @@ app_genkey (app_t app, ctrl_t ctrl, const char *keynostr, unsigned int flags,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.genkey)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app->slot, ctrl);
+  err = lock_app (app, ctrl);
   if (err)
     return err;
   err = app->fnc.genkey (app, ctrl, keynostr, flags,
                          createtime, pincb, pincb_arg);
-  unlock_reader (app->slot);
+  unlock_app (app);
   if (opt.verbose)
     log_info ("operation genkey result: %s\n", gpg_strerror (err));
   return err;
@@ -896,11 +887,11 @@ app_get_challenge (app_t app, ctrl_t ctrl, size_t nbytes, unsigned char *buffer)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (!app->ref_count)
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
-  err = lock_reader (app->slot, ctrl);
+  err = lock_app (app, ctrl);
   if (err)
     return err;
   err = iso7816_get_challenge (app->slot, nbytes, buffer);
-  unlock_reader (app->slot);
+  unlock_app (app);
   return err;
 }
 
@@ -920,12 +911,12 @@ app_change_pin (app_t app, ctrl_t ctrl, const char *chvnostr, int reset_mode,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.change_pin)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app->slot, ctrl);
+  err = lock_app (app, ctrl);
   if (err)
     return err;
   err = app->fnc.change_pin (app, ctrl, chvnostr, reset_mode,
                              pincb, pincb_arg);
-  unlock_reader (app->slot);
+  unlock_app (app);
   if (opt.verbose)
     log_info ("operation change_pin result: %s\n", gpg_strerror (err));
   return err;
@@ -948,12 +939,134 @@ app_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,
     return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.check_pin)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
-  err = lock_reader (app->slot, ctrl);
+  err = lock_app (app, ctrl);
   if (err)
     return err;
   err = app->fnc.check_pin (app, keyidstr, pincb, pincb_arg);
-  unlock_reader (app->slot);
+  unlock_app (app);
   if (opt.verbose)
     log_info ("operation check_pin result: %s\n", gpg_strerror (err));
   return err;
+}
+
+static void
+report_change (int slot, int old_status, int cur_status)
+{
+  char *homestr, *envstr;
+  char *fname;
+  char templ[50];
+  FILE *fp;
+
+  snprintf (templ, sizeof templ, "reader_%d.status", slot);
+  fname = make_filename (gnupg_homedir (), templ, NULL );
+  fp = fopen (fname, "w");
+  if (fp)
+    {
+      fprintf (fp, "%s\n",
+               (cur_status & 1)? "USABLE":
+               (cur_status & 4)? "ACTIVE":
+               (cur_status & 2)? "PRESENT": "NOCARD");
+      fclose (fp);
+    }
+  xfree (fname);
+
+  homestr = make_filename (gnupg_homedir (), NULL);
+  if (gpgrt_asprintf (&envstr, "GNUPGHOME=%s", homestr) < 0)
+    log_error ("out of core while building environment\n");
+  else
+    {
+      gpg_error_t err;
+      const char *args[9], *envs[2];
+      char numbuf1[30], numbuf2[30], numbuf3[30];
+
+      envs[0] = envstr;
+      envs[1] = NULL;
+
+      sprintf (numbuf1, "%d", slot);
+      sprintf (numbuf2, "0x%04X", old_status);
+      sprintf (numbuf3, "0x%04X", cur_status);
+      args[0] = "--reader-port";
+      args[1] = numbuf1;
+      args[2] = "--old-code";
+      args[3] = numbuf2;
+      args[4] = "--new-code";
+      args[5] = numbuf3;
+      args[6] = "--status";
+      args[7] = ((cur_status & 1)? "USABLE":
+                 (cur_status & 4)? "ACTIVE":
+                 (cur_status & 2)? "PRESENT": "NOCARD");
+      args[8] = NULL;
+
+      fname = make_filename (gnupg_homedir (), "scd-event", NULL);
+      err = gnupg_spawn_process_detached (fname, args, envs);
+      if (err && gpg_err_code (err) != GPG_ERR_ENOENT)
+        log_error ("failed to run event handler '%s': %s\n",
+                   fname, gpg_strerror (err));
+      xfree (fname);
+      xfree (envstr);
+    }
+  xfree (homestr);
+}
+
+void
+scd_update_reader_status_file (void)
+{
+  app_t a, app_next;
+
+  npth_mutex_lock (&app_list_lock);
+  for (a = app_top; a; a = app_next)
+    {
+      app_next = a->next;
+      if (a->require_get_status)
+        {
+          int sw;
+          unsigned int status;
+          sw = apdu_get_status (a->slot, 0, &status);
+
+          if (sw == SW_HOST_NO_READER)
+            {
+              /* Most likely the _reader_ has been unplugged.  */
+              status = 0;
+            }
+          else if (sw)
+            {
+              /* Get status failed.  Ignore that.  */
+              continue;
+            }
+
+          if (a->card_status != status)
+            {
+              report_change (a->slot, a->card_status, status);
+              send_client_notifications (a);
+
+              if (status == 0)
+                {
+                  log_debug ("Removal of a card: %d\n", a->slot);
+                  apdu_close_reader (a->slot);
+                  deallocate_app (a);
+                }
+              else
+                a->card_status = status;
+            }
+        }
+    }
+  npth_mutex_unlock (&app_list_lock);
+}
+
+/* This function must be called once to initialize this module.  This
+   has to be done before a second thread is spawned.  We can't do the
+   static initialization because Pth emulation code might not be able
+   to do a static init; in particular, it is not possible for W32. */
+void
+initialize_module_command (void)
+{
+  static int initialized;
+  int err;
+
+  if (!initialized)
+    {
+      err = npth_mutex_init (&app_list_lock, NULL);
+      if (!err)
+        initialized = 1;
+    }
 }

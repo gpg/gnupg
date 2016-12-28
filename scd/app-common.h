@@ -22,13 +22,8 @@
 #ifndef GNUPG_SCD_APP_COMMON_H
 #define GNUPG_SCD_APP_COMMON_H
 
-#if GNUPG_MAJOR_VERSION == 1
-# ifdef ENABLE_AGENT_SUPPORT
-# include "assuan.h"
-# endif
-#else
-# include <ksba.h>
-#endif
+#include <npth.h>
+#include <ksba.h>
 
 
 #define APP_CHANGE_FLAG_RESET    1
@@ -41,6 +36,10 @@
 struct app_local_s;  /* Defined by all app-*.c.  */
 
 struct app_ctx_s {
+  struct app_ctx_s *next;
+
+  npth_mutex_t lock;
+
   /* Number of connections currently using this application context.
      If this is not 0 the application has been initialized and the
      function pointers may be used.  Note that for unsupported
@@ -50,18 +49,12 @@ struct app_ctx_s {
   /* Used reader slot. */
   int slot;
 
-  /* If this is used by GnuPG 1.4 we need to know the assuan context
-     in case we need to divert the operation to an already running
-     agent.  This if ASSUAN_CTX is not NULL we take this as indication
-     that all operations are diverted to gpg-agent. */
-#if GNUPG_MAJOR_VERSION == 1
-  assuan_context_t assuan_ctx;
-#endif /*GNUPG_MAJOR_VERSION == 1*/
-
   unsigned char *serialno; /* Serialnumber in raw form, allocated. */
   size_t serialnolen;      /* Length in octets of serialnumber. */
   const char *apptype;
   unsigned int card_version;
+  unsigned int card_status;
+  unsigned int require_get_status:1;
   unsigned int did_chv1:1;
   unsigned int force_chv1:1;   /* True if the card does not cache CHV1. */
   unsigned int did_chv2:1;
@@ -119,20 +112,8 @@ struct app_ctx_s {
                       gpg_error_t (*pincb)(void*, const char *, char **),
                       void *pincb_arg);
   } fnc;
-
 };
 
-#if GNUPG_MAJOR_VERSION == 1
-gpg_error_t app_select_openpgp (app_t app);
-gpg_error_t app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp);
-gpg_error_t app_openpgp_storekey (app_t app, int keyno,
-                          unsigned char *template, size_t template_len,
-                          time_t created_at,
-                          const unsigned char *m, size_t mlen,
-                          const unsigned char *e, size_t elen,
-                          gpg_error_t (*pincb)(void*, const char *, char **),
-                          void *pincb_arg);
-#else
 /*-- app-help.c --*/
 unsigned int app_help_count_bits (const unsigned char *a, size_t len);
 gpg_error_t app_help_get_keygrip_string (ksba_cert_t cert, char *hexkeygrip);
@@ -142,10 +123,10 @@ size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 /*-- app.c --*/
 void app_dump_state (void);
 void application_notify_card_reset (int slot);
-gpg_error_t check_application_conflict (ctrl_t ctrl, int slot,
-                                        const char *name);
-gpg_error_t select_application (ctrl_t ctrl, int slot, const char *name,
-                                app_t *r_app);
+gpg_error_t check_application_conflict (const char *name, app_t app);
+gpg_error_t app_reset (app_t app, ctrl_t ctrl, int send_reset);
+gpg_error_t select_application (ctrl_t ctrl, const char *name, app_t *r_app,
+                                int scan);
 char *get_supported_applications (void);
 void release_application (app_t app);
 gpg_error_t app_munge_serialno (app_t app);
@@ -220,10 +201,6 @@ gpg_error_t app_select_geldkarte (app_t app);
 
 /*-- app-sc-hsm.c --*/
 gpg_error_t app_select_sc_hsm (app_t app);
-
-
-#endif
-
 
 
 #endif /*GNUPG_SCD_APP_COMMON_H*/
