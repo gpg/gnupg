@@ -84,6 +84,8 @@ enum {
 #define APDU_CARD_ACTIVE   (4)    /* Card is active.  */
 
 
+gpg_error_t apdu_init (void);
+
 /* Note, that apdu_open_reader returns no status word but -1 on error. */
 int apdu_open_reader (const char *portstr);
 int apdu_open_remote_reader (const char *portstr,

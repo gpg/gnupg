@@ -144,7 +144,6 @@ struct reader_table_s {
                               not yet been read; i.e. the card is not
                               ready for use. */
 #ifdef USE_NPTH
-  int lock_initialized;
   npth_mutex_t lock;
 #endif
 };
@@ -152,6 +151,10 @@ typedef struct reader_table_s *reader_table_t;
 
 /* A global table to keep track of active readers. */
 static struct reader_table_s reader_table[MAX_READER];
+
+#ifdef USE_NPTH
+static npth_mutex_t reader_table_lock;
+#endif
 
 
 /* ct API function pointer. */
@@ -424,35 +427,29 @@ static int
 new_reader_slot (void)
 {
   int i, reader = -1;
-  int err;
 
+  npth_mutex_lock (&reader_table_lock);
   for (i=0; i < MAX_READER; i++)
-    {
-      if (!reader_table[i].used && reader == -1)
+    if (!reader_table[i].used)
+      {
         reader = i;
-    }
+        reader_table[reader].used = 1;
+        break;
+      }
+  npth_mutex_unlock (&reader_table_lock);
+
   if (reader == -1)
     {
       log_error ("new_reader_slot: out of slots\n");
       return -1;
     }
-#ifdef USE_NPTH
-  if (!reader_table[reader].lock_initialized)
-    {
-      err = npth_mutex_init (&reader_table[reader].lock, NULL);
-      if (err)
-        {
-          log_error ("error initializing mutex: %s\n", strerror (err));
-          return -1;
-        }
-      reader_table[reader].lock_initialized = 1;
-    }
-#endif /*USE_NPTH*/
+
   if (lock_slot (reader))
     {
-      log_error ("error locking mutex: %s\n", strerror (errno));
+      reader_table[reader].used = 0;
       return -1;
     }
+
   reader_table[reader].connect_card = NULL;
   reader_table[reader].disconnect_card = NULL;
   reader_table[reader].close_reader = NULL;
@@ -465,7 +462,6 @@ new_reader_slot (void)
   reader_table[reader].pinpad_verify = pcsc_pinpad_verify;
   reader_table[reader].pinpad_modify = pcsc_pinpad_modify;
 
-  reader_table[reader].used = 1;
   reader_table[reader].is_t0 = 1;
   reader_table[reader].is_spr532 = 0;
   reader_table[reader].pinpad_varlen_supported = 0;
@@ -650,7 +646,6 @@ static int
 close_ct_reader (int slot)
 {
   CT_close (slot);
-  reader_table[slot].used = 0;
   return 0;
 }
 
@@ -1435,7 +1430,6 @@ close_pcsc_reader_direct (int slot)
   pcsc_release_context (reader_table[slot].pcsc.context);
   xfree (reader_table[slot].rdrname);
   reader_table[slot].rdrname = NULL;
-  reader_table[slot].used = 0;
   return 0;
 }
 #endif /*!NEED_PCSC_WRAPPER*/
@@ -2439,7 +2433,6 @@ close_ccid_reader (int slot)
 {
   ccid_close_reader (reader_table[slot].ccid.handle);
   reader_table[slot].rdrname = NULL;
-  reader_table[slot].used = 0;
   return 0;
 }
 
@@ -2670,7 +2663,6 @@ static int
 close_rapdu_reader (int slot)
 {
   rapdu_release (reader_table[slot].rapdu.handle);
-  reader_table[slot].used = 0;
   return 0;
 }
 
@@ -3180,10 +3172,12 @@ apdu_close_reader (int slot)
   if (reader_table[slot].close_reader)
     {
       sw = reader_table[slot].close_reader (slot);
+      reader_table[slot].used = 0;
       if (DBG_READER)
         log_debug ("leave: apdu_close_reader => 0x%x (close_reader)\n", sw);
       return sw;
     }
+  reader_table[slot].used = 0;
   if (DBG_READER)
     log_debug ("leave: apdu_close_reader => SW_HOST_NOT_SUPPORTED\n");
   return SW_HOST_NOT_SUPPORTED;
@@ -3203,6 +3197,7 @@ apdu_prepare_exit (void)
   if (!sentinel)
     {
       sentinel = 1;
+      npth_mutex_lock (&reader_table_lock);
       for (slot = 0; slot < MAX_READER; slot++)
         if (reader_table[slot].used)
           {
@@ -3211,6 +3206,7 @@ apdu_prepare_exit (void)
               reader_table[slot].close_reader (slot);
             reader_table[slot].used = 0;
           }
+      npth_mutex_unlock (&reader_table_lock);
       sentinel = 0;
     }
 }
@@ -4221,4 +4217,29 @@ const char *
 apdu_get_reader_name (int slot)
 {
   return reader_table[slot].rdrname;
+}
+
+gpg_error_t
+apdu_init (void)
+{
+#ifdef USE_NPTH
+  gpg_error_t err;
+  int i;
+
+  if (npth_mutex_init (&reader_table_lock, NULL))
+    goto leave;
+
+  for (i = 0; i < MAX_READER; i++)
+    if (npth_mutex_init (&reader_table[i].lock, NULL))
+      goto leave;
+
+  /* All done well.  */
+  return 0;
+
+ leave:
+  err = gpg_error_from_syserror ();
+  log_error ("apdu: error initializing mutex: %s\n", gpg_strerror (err));
+  return err;
+#endif /*USE_NPTH*/
+  return 0;
 }

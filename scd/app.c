@@ -58,14 +58,12 @@ print_progress_line (void *opaque, const char *what, int pc, int cur, int tot)
 static gpg_error_t
 lock_app (app_t app, ctrl_t ctrl)
 {
-  gpg_error_t err;
-
-  err = npth_mutex_lock (&app->lock);
-  if (err)
+  if (npth_mutex_lock (&app->lock))
     {
+      gpg_error_t err = gpg_error_from_syserror ();
       log_error ("failed to acquire APP lock for %p: %s\n",
-                 app, strerror (err));
-      return gpg_error_from_errno (err);
+                 app, gpg_strerror (err));
+      return err;
     }
 
   apdu_set_progress_cb (app->slot, print_progress_line, ctrl);
@@ -77,14 +75,14 @@ lock_app (app_t app, ctrl_t ctrl)
 static void
 unlock_app (app_t app)
 {
-  gpg_error_t err;
-
   apdu_set_progress_cb (app->slot, NULL, NULL);
 
-  err = npth_mutex_unlock (&app->lock);
-  if (err)
-    log_error ("failed to release APP lock for %p: %s\n",
-               app, strerror (err));
+  if (npth_mutex_unlock (&app->lock))
+    {
+      gpg_error_t err = gpg_error_from_syserror ();
+      log_error ("failed to release APP lock for %p: %s\n",
+                 app, gpg_strerror (err));
+    }
 }
 
 
@@ -194,11 +192,11 @@ app_new_register (int slot, ctrl_t ctrl, const char *name)
     }
 
   app->slot = slot;
-  err = npth_mutex_init (&app->lock, NULL);
-  if (err)
+
+  if (npth_mutex_init (&app->lock, NULL))
     {
       err = gpg_error_from_syserror ();
-      log_error ("error initializing mutex: %s\n", strerror (err));
+      log_error ("error initializing mutex: %s\n", gpg_strerror (err));
       xfree (app);
       return err;
     }
@@ -1057,16 +1055,17 @@ scd_update_reader_status_file (void)
    has to be done before a second thread is spawned.  We can't do the
    static initialization because Pth emulation code might not be able
    to do a static init; in particular, it is not possible for W32. */
-void
+gpg_error_t
 initialize_module_command (void)
 {
-  static int initialized;
-  int err;
+  gpg_error_t err;
 
-  if (!initialized)
+  if (npth_mutex_init (&app_list_lock, NULL))
     {
-      err = npth_mutex_init (&app_list_lock, NULL);
-      if (!err)
-        initialized = 1;
+      err = gpg_error_from_syserror ();
+      log_error ("app: error initializing mutex: %s\n", gpg_strerror (err));
+      return err;
     }
+
+  return apdu_init ();
 }

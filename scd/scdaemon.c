@@ -640,7 +640,12 @@ main (int argc, char **argv )
 
   set_debug (debug_level);
 
-  initialize_module_command ();
+  if (initialize_module_command ())
+    {
+      log_error ("initialization failed\n");
+      cleanup ();
+      exit (1);
+    }
 
   if (gpgconf_list == 2)
     scd_exit (0);
