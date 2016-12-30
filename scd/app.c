@@ -325,11 +325,11 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app, int scan)
 
   *r_app = NULL;
 
-  if (scan
+  if ((scan && !app_top)
       /* FIXME: Here, we can change code to support multiple readers.
          For now, we only open a single reader.
       */
-      && !app_top)
+      || !app_top)
     {
       slot = apdu_open_reader (opt.reader_port);
       if (slot >= 0)
@@ -374,6 +374,8 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app, int scan)
         }
       unlock_app (app);
     }
+  else
+    err = gpg_error (GPG_ERR_ENODEV);
 
   return err;
 }
