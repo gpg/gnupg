@@ -1849,7 +1849,7 @@ send_status_direct (ctrl_t ctrl, const char *keyword, const char *args)
 
 /* Helper to send the clients a status change notification.  */
 void
-send_client_notifications (app_t app)
+send_client_notifications (app_t app, int removal)
 {
   struct {
     pid_t pid;
@@ -1864,65 +1864,75 @@ send_client_notifications (app_t app)
   struct server_local_s *sl;
 
   for (sl=session_list; sl; sl = sl->next_session)
-    {
-      if (sl->event_signal && sl->assuan_ctx
-          && sl->ctrl_backlink->app_ctx == app)
-        {
-          pid_t pid = assuan_get_pid (sl->assuan_ctx);
+    if (sl->ctrl_backlink && sl->ctrl_backlink->app_ctx == app)
+      {
+        pid_t pid;
 #ifdef HAVE_W32_SYSTEM
-          HANDLE handle = (void *)sl->event_signal;
+        HANDLE handle;
+#else
+        int signo;
+#endif
 
-          for (kidx=0; kidx < killidx; kidx++)
-            if (killed[kidx].pid == pid
-                && killed[kidx].handle == handle)
-              break;
-          if (kidx < killidx)
-            log_info ("event %lx (%p) already triggered for client %d\n",
+        if (removal)
+          {
+            sl->ctrl_backlink->app_ctx = NULL;
+            sl->card_removed = 1;
+            release_application (app);
+          }
+
+        if (!sl->event_signal || !sl->assuan_ctx)
+          continue;
+
+        pid = assuan_get_pid (sl->assuan_ctx);
+
+#ifdef HAVE_W32_SYSTEM
+        handle = (void *)sl->event_signal;
+        for (kidx=0; kidx < killidx; kidx++)
+          if (killed[kidx].pid == pid
+              && killed[kidx].handle == handle)
+            break;
+        if (kidx < killidx)
+          log_info ("event %lx (%p) already triggered for client %d\n",
+                    sl->event_signal, handle, (int)pid);
+        else
+          {
+            log_info ("triggering event %lx (%p) for client %d\n",
                       sl->event_signal, handle, (int)pid);
-          else
-            {
-              log_info ("triggering event %lx (%p) for client %d\n",
-                        sl->event_signal, handle, (int)pid);
-              if (!SetEvent (handle))
-                log_error ("SetEvent(%lx) failed: %s\n",
-                           sl->event_signal, w32_strerror (-1));
-              if (killidx < DIM (killed))
-                {
-                  killed[killidx].pid = pid;
-                  killed[killidx].handle = handle;
-                  killidx++;
-                }
-            }
+            if (!SetEvent (handle))
+              log_error ("SetEvent(%lx) failed: %s\n",
+                         sl->event_signal, w32_strerror (-1));
+            if (killidx < DIM (killed))
+              {
+                killed[killidx].pid = pid;
+                killed[killidx].handle = handle;
+                killidx++;
+              }
+          }
 #else /*!HAVE_W32_SYSTEM*/
-          int signo = sl->event_signal;
+        signo = sl->event_signal;
 
-          if (pid != (pid_t)(-1) && pid && signo > 0)
-            {
-              for (kidx=0; kidx < killidx; kidx++)
-                if (killed[kidx].pid == pid
-                    && killed[kidx].signo == signo)
-                  break;
-              if (kidx < killidx)
-                log_info ("signal %d already sent to client %d\n",
+        if (pid != (pid_t)(-1) && pid && signo > 0)
+          {
+            for (kidx=0; kidx < killidx; kidx++)
+              if (killed[kidx].pid == pid
+                  && killed[kidx].signo == signo)
+                break;
+            if (kidx < killidx)
+              log_info ("signal %d already sent to client %d\n",
+                        signo, (int)pid);
+            else
+              {
+                log_info ("sending signal %d to client %d\n",
                           signo, (int)pid);
-              else
-                {
-                  log_info ("sending signal %d to client %d\n",
-                            signo, (int)pid);
-                  kill (pid, signo);
-                  if (killidx < DIM (killed))
-                    {
-                      killed[killidx].pid = pid;
-                      killed[killidx].signo = signo;
-                      killidx++;
-                    }
-                }
-            }
+                kill (pid, signo);
+                if (killidx < DIM (killed))
+                  {
+                    killed[killidx].pid = pid;
+                    killed[killidx].signo = signo;
+                    killidx++;
+                  }
+              }
+          }
 #endif /*!HAVE_W32_SYSTEM*/
-
-          sl->ctrl_backlink->app_ctx = NULL;
-          sl->card_removed = 1;
-          release_application (app);
-        }
-    }
+      }
 }

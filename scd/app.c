@@ -161,7 +161,7 @@ app_reset (app_t app, ctrl_t ctrl, int send_reset)
         err = gpg_error (GPG_ERR_CARD_RESET);
 
       /* Release the same application which is used by other sessions.  */
-      send_client_notifications (app);
+      send_client_notifications (app, 1);
     }
   else
     {
@@ -1035,7 +1035,7 @@ scd_update_reader_status_file (void)
           if (a->card_status != status)
             {
               report_change (a->slot, a->card_status, status);
-              send_client_notifications (a);
+              send_client_notifications (a, status == 0);
 
               if (status == 0)
                 {
