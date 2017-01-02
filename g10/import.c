@@ -1170,7 +1170,7 @@ impex_filter_getval (void *cookie, const char *propname)
           result = node->pkt->pkt.user_id->mbox;
         }
       else if (!strcmp (propname, "primary"))
-        result = node->pkt->pkt.user_id->is_primary? "1":"0";
+        result = node->pkt->pkt.user_id->flags.primary? "1":"0";
       else
         result = NULL;
     }

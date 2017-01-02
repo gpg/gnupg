@@ -1960,11 +1960,11 @@ check_sig_and_print (CTX c, kbnode_t node)
             continue;
           if (!un->pkt->pkt.user_id->created)
             continue;
-          if (un->pkt->pkt.user_id->is_revoked)
+          if (un->pkt->pkt.user_id->flags.revoked)
             continue;
-          if (un->pkt->pkt.user_id->is_expired)
+          if (un->pkt->pkt.user_id->flags.expired)
             continue;
-          if (!un->pkt->pkt.user_id->is_primary)
+          if (!un->pkt->pkt.user_id->flags.primary)
             continue;
           /* We want the textual primary user ID here */
           if (un->pkt->pkt.user_id->attrib_data)
@@ -2041,12 +2041,12 @@ check_sig_and_print (CTX c, kbnode_t node)
             {
               if (un->pkt->pkttype != PKT_USER_ID)
                 continue;
-              if ((un->pkt->pkt.user_id->is_revoked
-                   || un->pkt->pkt.user_id->is_expired)
+              if ((un->pkt->pkt.user_id->flags.revoked
+                   || un->pkt->pkt.user_id->flags.expired)
                   && !(opt.verify_options & VERIFY_SHOW_UNUSABLE_UIDS))
                 continue;
               /* Skip textual primary user ids which we printed above. */
-              if (un->pkt->pkt.user_id->is_primary
+              if (un->pkt->pkt.user_id->flags.primary
                   && !un->pkt->pkt.user_id->attrib_data )
                 continue;
 
@@ -2071,9 +2071,9 @@ check_sig_and_print (CTX c, kbnode_t node)
                 {
                   const char *valid;
 
-                  if (un->pkt->pkt.user_id->is_revoked)
+                  if (un->pkt->pkt.user_id->flags.revoked)
                     valid = _("revoked");
-                  else if (un->pkt->pkt.user_id->is_expired)
+                  else if (un->pkt->pkt.user_id->flags.expired)
                     valid = _("expired");
                   else
 		    /* Since this is just informational, don't

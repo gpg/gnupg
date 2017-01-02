@@ -145,9 +145,9 @@ uid_trust_string_fixed (ctrl_t ctrl, PKT_public_key *key, PKT_user_id *uid)
          uid are both NULL, or neither are NULL. */
       return _("10 translator see trust.c:uid_trust_string_fixed");
     }
-  else if(uid->is_revoked || (key && key->flags.revoked))
+  else if(uid->flags.revoked || (key && key->flags.revoked))
     return                         _("[ revoked]");
-  else if(uid->is_expired)
+  else if(uid->flags.expired)
     return                         _("[ expired]");
   else if(key)
     {
@@ -688,7 +688,7 @@ clean_uid_from_key (kbnode_t keyblock, kbnode_t uidnode, int noisy)
      IDs if --allow-non-selfsigned-uid is set. */
   if (uid->created
       || uid->flags.compacted
-      || (!uid->is_expired && !uid->is_revoked && opt.allow_non_selfsigned_uid))
+      || (!uid->flags.expired && !uid->flags.revoked && opt.allow_non_selfsigned_uid))
     return 0;
 
   for (node=uidnode->next;
@@ -708,9 +708,9 @@ clean_uid_from_key (kbnode_t keyblock, kbnode_t uidnode, int noisy)
       const char *reason;
       char *user = utf8_to_native (uid->name, uid->len, 0);
 
-      if (uid->is_revoked)
+      if (uid->flags.revoked)
 	reason = _("revoked");
-      else if (uid->is_expired)
+      else if (uid->flags.expired)
 	reason = _("expired");
       else
 	reason = _("invalid");

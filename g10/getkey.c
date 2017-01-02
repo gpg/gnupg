@@ -274,7 +274,7 @@ get_primary_uid (KBNODE keyblock, size_t * uidlen)
     {
       if (k->pkt->pkttype == PKT_USER_ID
 	  && !k->pkt->pkt.user_id->attrib_data
-	  && k->pkt->pkt.user_id->is_primary)
+	  && k->pkt->pkt.user_id->flags.primary)
 	{
 	  *uidlen = k->pkt->pkt.user_id->len;
 	  return k->pkt->pkt.user_id->name;
@@ -970,7 +970,7 @@ skip_unusable (void *dummy, u32 * keyid, int uid_no)
 	      if (uids_seen != uid_no)
 		continue;
 
-	      if (user_id->is_revoked || user_id->is_expired)
+	      if (user_id->flags.revoked || user_id->flags.expired)
 		unusable = 1;
 
 	      break;
@@ -1494,7 +1494,7 @@ key_is_ok (const PKT_public_key *key)
 static int
 uid_is_ok (const PKT_public_key *key, const PKT_user_id *uid)
 {
-  return key_is_ok (key) && ! uid->is_revoked;
+  return key_is_ok (key) && ! uid->flags.revoked;
 }
 
 
@@ -2342,26 +2342,26 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
   uid->created = 0;		/* Not created == invalid. */
   if (IS_UID_REV (sig))
     {
-      uid->is_revoked = 1;
+      uid->flags.revoked = 1;
       return; /* Has been revoked.  */
     }
   else
-    uid->is_revoked = 0;
+    uid->flags.revoked = 0;
 
   uid->expiredate = sig->expiredate;
 
   if (sig->flags.expired)
     {
-      uid->is_expired = 1;
+      uid->flags.expired = 1;
       return; /* Has expired.  */
     }
   else
-    uid->is_expired = 0;
+    uid->flags.expired = 0;
 
   uid->created = sig->timestamp; /* This one is okay. */
   uid->selfsigversion = sig->version;
   /* If we got this far, it's not expired :) */
-  uid->is_expired = 0;
+  uid->flags.expired = 0;
 
   /* Store the key flags in the helper variable for later processing.  */
   uid->help_key_usage = parse_key_usage (sig);
@@ -2375,10 +2375,10 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
 
   /* Set the primary user ID flag - we will later wipe out some
    * of them to only have one in our keyblock.  */
-  uid->is_primary = 0;
+  uid->flags.primary = 0;
   p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PRIMARY_UID, NULL);
   if (p && *p)
-    uid->is_primary = 2;
+    uid->flags.primary = 2;
 
   /* We could also query this from the unhashed area if it is not in
    * the hased area and then later try to decide which is the better
@@ -2912,7 +2912,7 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
       if (k->pkt->pkttype == PKT_USER_ID && !k->pkt->pkt.user_id->attrib_data)
 	{
 	  PKT_user_id *uid = k->pkt->pkt.user_id;
-	  if (uid->is_primary)
+	  if (uid->flags.primary)
 	    {
 	      if (uid->created > uiddate)
 		{
@@ -2956,7 +2956,7 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 	    {
 	      PKT_user_id *uid = k->pkt->pkt.user_id;
 	      if (k != uidnode)
-		uid->is_primary = 0;
+		uid->flags.primary = 0;
 	    }
 	}
     }
@@ -2964,7 +2964,7 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
     {
       /* None is flagged primary - use the latest user ID we have,
          and disambiguate with the arbitrary packet comparison. */
-      uidnode2->pkt->pkt.user_id->is_primary = 1;
+      uidnode2->pkt->pkt.user_id->flags.primary = 1;
     }
   else
     {
@@ -2983,7 +2983,7 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 	      if (!uidnode)
 		{
 		  uidnode = k;
-		  uidnode->pkt->pkt.user_id->is_primary = 1;
+		  uidnode->pkt->pkt.user_id->flags.primary = 1;
 		  continue;
 		}
 	      else
@@ -2991,12 +2991,12 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 		  if (cmp_user_ids (k->pkt->pkt.user_id,
 				    uidnode->pkt->pkt.user_id) > 0)
 		    {
-		      uidnode->pkt->pkt.user_id->is_primary = 0;
+		      uidnode->pkt->pkt.user_id->flags.primary = 0;
 		      uidnode = k;
-		      uidnode->pkt->pkt.user_id->is_primary = 1;
+		      uidnode->pkt->pkt.user_id->flags.primary = 1;
 		    }
 		  else
-		    k->pkt->pkt.user_id->is_primary = 0;	/* just to be
+		    k->pkt->pkt.user_id->flags.primary = 0;	/* just to be
 								   safe */
 		}
 	    }
@@ -3310,7 +3310,7 @@ merge_selfsigs (KBNODE keyblock)
     {
       if (k->pkt->pkttype == PKT_USER_ID
 	  && !k->pkt->pkt.user_id->attrib_data
-	  && k->pkt->pkt.user_id->is_primary)
+	  && k->pkt->pkt.user_id->flags.primary)
 	{
 	  prefs = k->pkt->pkt.user_id->prefs;
 	  mdc_feature = k->pkt->pkt.user_id->flags.mdc;

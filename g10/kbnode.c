@@ -392,10 +392,10 @@ dump_kbnode (KBNODE node)
           es_write_sanitized (log_get_stream (), uid->name, uid->len,
                               NULL, NULL);
           log_printf ("\" %c%c%c%c\n",
-                      uid->is_expired? 'e':'.',
-                      uid->is_revoked? 'r':'.',
+                      uid->flags.expired? 'e':'.',
+                      uid->flags.revoked? 'r':'.',
                       uid->created?    'v':'.',
-                      uid->is_primary? 'p':'.' );
+                      uid->flags.primary? 'p':'.' );
         }
       else if (node->pkt->pkttype == PKT_SIGNATURE)
         {

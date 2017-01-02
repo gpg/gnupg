@@ -963,9 +963,9 @@ ks_put_inq_cb (void *opaque, const char *line)
 		    int i;
 
 		    i = 0;
-		    if (uid->is_revoked)
+		    if (uid->flags.revoked)
 		      validity[i ++] = 'r';
-		    if (uid->is_expired)
+		    if (uid->flags.expired)
 		      validity[i ++] = 'e';
 		    validity[i] = '\0';
 

@@ -54,7 +54,7 @@ is_algo_in_prefs (kbnode_t keyblock, preftype_t type, int algo)
           PKT_user_id *uid = k->pkt->pkt.user_id;
           prefitem_t *prefs = uid->prefs;
 
-          if (uid->created && prefs && !uid->is_revoked && !uid->is_expired)
+          if (uid->created && prefs && !uid->flags.revoked && !uid->flags.expired)
             {
               for (; prefs->type; prefs++)
                 if (prefs->type == type && prefs->value == algo)
