@@ -1030,7 +1030,7 @@ list_node (CTX c, kbnode_t node)
                      pk->pubkey_algo,
                      (ulong)keyid[0],(ulong)keyid[1],
                      colon_datestr_from_pk( pk ),
-                     colon_strtime (pk->expiredate) );
+                     colon_strtime (kb_pk_expiredate (pk)) );
           if (pk->flags.primary && !opt.fast_list_mode)
             es_putc (get_ownertrust_info (pk), es_stdout);
           es_putc (':', es_stdout);

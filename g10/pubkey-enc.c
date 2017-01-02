@@ -372,10 +372,10 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
           }
         if (!pk)
           BUG ();
-        if (pk->expiredate && pk->expiredate <= make_timestamp ())
+        if (kb_pk_expiredate (pk) && kb_pk_expiredate (pk) <= make_timestamp ())
           {
             log_info (_("Note: secret key %s expired at %s\n"),
-                      keystr (keyid), asctimestamp (pk->expiredate));
+                      keystr (keyid), asctimestamp (kb_pk_expiredate (pk)));
           }
       }
 

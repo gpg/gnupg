@@ -1394,7 +1394,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
       show_key_with_all_names (ctrl, fp, keyblock, 1, 0, 1, 0, 0, 0);
       tty_fprintf (fp, "\n");
 
-      if (primary_pk->expiredate && !selfsig)
+      if (kb_pk_expiredate (primary_pk) && !selfsig)
 	{
           /* Static analyzer note: A claim that PRIMARY_PK might be
              NULL is not correct because it set from the public key
@@ -1406,7 +1406,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 
 	  u32 now = make_timestamp ();
 
-	  if (primary_pk->expiredate <= now)
+	  if (kb_pk_expiredate (primary_pk) <= now)
 	    {
 	      tty_fprintf (fp, _("This key has expired!"));
 
@@ -1443,7 +1443,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 		         to answer the questions, enter the
 		         passphrase, etc). */
 		      timestamp = now;
-		      duration = primary_pk->expiredate - now;
+		      duration = kb_pk_expiredate (primary_pk) - now;
 		    }
 
 		  cpr_kill_prompt ();
@@ -3676,7 +3676,7 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
                       nbits_from_pk (pk),
                       pk->pubkey_algo,
                       (ulong) keyid[0], (ulong) keyid[1],
-                      (ulong) pk->timestamp, (ulong) pk->expiredate);
+                      (ulong) pk->timestamp, (ulong) kb_pk_expiredate (pk));
 	  if (node->pkt->pkttype == PKT_PUBLIC_KEY
 	      && !(opt.fast_list_mode || opt.no_expensive_trust_checks))
 	    es_putc (get_ownertrust_info (pk), fp);
@@ -4309,7 +4309,7 @@ subkey_expire_warning (kbnode_t keyblock)
       if (pk->timestamp > latest_date || (!pk->timestamp && !latest_date))
         {
           latest_date = pk->timestamp;
-          subexpire = pk->expiredate;
+          subexpire = kb_pk_expiredate (pk);
         }
     }
 
@@ -4872,14 +4872,14 @@ menu_expire (kbnode_t pub_keyblock, int force_mainkey, u32 newexpiration)
 	{
 	  main_pk = node->pkt->pkt.public_key;
 	  keyid_from_pk (main_pk, keyid);
-	  main_pk->expiredate = expiredate;
+	  kb_pk_set_expiredate (main_pk, expiredate);
 	}
       else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
           if ((node->flag & NODFLG_SELKEY) && !force_mainkey)
             {
               sub_pk = node->pkt->pkt.public_key;
-              sub_pk->expiredate = expiredate;
+              kb_pk_set_expiredate (sub_pk, expiredate);
             }
           else
             sub_pk = NULL;

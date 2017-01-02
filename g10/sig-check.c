@@ -132,7 +132,7 @@ check_signature2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
     else
       {
         if(r_expiredate)
-	  *r_expiredate = pk->expiredate;
+	  *r_expiredate = kb_pk_expiredate (pk);
 
 	rc = check_signature_end (pk, sig, digest, r_expired, r_revoked, NULL);
 
@@ -324,12 +324,12 @@ check_signature_metadata_validity (PKT_public_key *pk, PKT_signature *sig,
        flag which is set after a full evaluation of the key (getkey.c)
        as well as a simple compare to the current time in case the
        merge has for whatever reasons not been done.  */
-    if( pk->has_expired || (pk->expiredate && pk->expiredate < cur_time)) {
+    if( pk->has_expired || (kb_pk_expiredate (pk) && kb_pk_expiredate (pk) < cur_time)) {
         char buf[11];
         if (opt.verbose)
 	  log_info(_("Note: signature key %s expired %s\n"),
-		   keystr_from_pk(pk), asctimestamp( pk->expiredate ) );
-	sprintf(buf,"%lu",(ulong)pk->expiredate);
+		   keystr_from_pk(pk), asctimestamp(kb_pk_expiredate (pk)) );
+	sprintf(buf,"%lu",(ulong)kb_pk_expiredate (pk));
 	write_status_text(STATUS_KEYEXPIRED,buf);
 	if(r_expired)
 	  *r_expired = 1;

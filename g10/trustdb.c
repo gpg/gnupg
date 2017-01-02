@@ -1829,9 +1829,9 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
         {
 	  KBNODE node;
 
-          if (pk->expiredate && pk->expiredate >= curtime
-              && pk->expiredate < *next_expire)
-            *next_expire = pk->expiredate;
+          if (kb_pk_expiredate (pk) && kb_pk_expiredate (pk) >= curtime
+              && kb_pk_expiredate (pk) < *next_expire)
+            *next_expire = kb_pk_expiredate (pk);
 
           if (nkeys == maxkeys) {
             maxkeys += 1000;
@@ -2007,9 +2007,9 @@ validate_keys (ctrl_t ctrl, int interactive)
           if (node->pkt->pkttype == PKT_USER_ID)
 	    update_validity (pk, node->pkt->pkt.user_id, 0, TRUST_ULTIMATE);
         }
-      if ( pk->expiredate && pk->expiredate >= start_time
-           && pk->expiredate < next_expire)
-        next_expire = pk->expiredate;
+      if (kb_pk_expiredate (pk) && kb_pk_expiredate (pk) >= start_time
+           && kb_pk_expiredate (pk) < next_expire)
+        next_expire = kb_pk_expiredate (pk);
 
       release_kbnode (keyblock);
       do_sync ();

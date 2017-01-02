@@ -1245,7 +1245,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
           nbits_from_pk (pk),
           pk->pubkey_algo,
           (ulong) keyid[0], (ulong) keyid[1],
-          colon_datestr_from_pk (pk), colon_strtime (pk->expiredate));
+          colon_datestr_from_pk (pk), colon_strtime (kb_pk_expiredate (pk)));
 
   if (ownertrust_print)
     es_putc (ownertrust_print, es_stdout);
@@ -1383,7 +1383,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 		  nbits_from_pk (pk2),
 		  pk2->pubkey_algo,
 		  (ulong) keyid2[0], (ulong) keyid2[1],
-		  colon_datestr_from_pk (pk2), colon_strtime (pk2->expiredate)
+		  colon_datestr_from_pk (pk2), colon_strtime (kb_pk_expiredate (pk2))
 		  /* fixme: add LID and ownertrust here */
 	    );
 	  print_capabilities (pk2, NULL);
@@ -1857,7 +1857,7 @@ print_key_line (estream_t fp, PKT_public_key *pk, int secret)
       tty_fprintf (fp, _("expired: %s"), expirestr_from_pk (pk));
       tty_fprintf (fp, "]");
     }
-  else if (pk->expiredate)
+  else if (kb_pk_expiredate (pk))
     {
       tty_fprintf (fp, " [");
       tty_fprintf (fp, _("expires: %s"), expirestr_from_pk (pk));

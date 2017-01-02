@@ -455,7 +455,7 @@ cmp_public_keys( PKT_public_key *a, PKT_public_key *b )
 
     if( a->timestamp != b->timestamp )
 	return -1;
-    if( a->version < 4 && a->expiredate != b->expiredate )
+    if( a->version < 4 && kb_pk_expiredate (a) != kb_pk_expiredate (b))
 	return -1;
     if( a->pubkey_algo != b->pubkey_algo )
 	return -1;

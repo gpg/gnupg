@@ -660,9 +660,9 @@ expirestr_from_pk (PKT_public_key *pk)
   static char buffer[11+5];
   time_t atime;
 
-  if (!pk->expiredate)
+  if (!kb_pk_expiredate (pk))
     return _("never     ");
-  atime = pk->expiredate;
+  atime = kb_pk_expiredate (pk);
   return mk_datestr (buffer, atime);
 }
 

@@ -2899,7 +2899,7 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
     key_expire = pk->max_expiredate;
 
   pk->has_expired = key_expire >= curtime ? 0 : key_expire;
-  pk->expiredate = key_expire;
+  kb_pk_set_expiredate (pk, key_expire);
 
   /* Fixme: we should see how to get rid of the expiretime fields  but
    * this needs changes at other places too. */
@@ -3037,7 +3037,7 @@ buf_to_sig (const byte * buf, size_t len)
      flags.backsig
      pubkey_usage
      has_expired
-     expired_date
+     expiredate
 
    On this subkey's most revent valid self-signed packet, the
    following field is set:
@@ -3146,7 +3146,7 @@ merge_selfsigs_subkey (KBNODE keyblock, KBNODE subnode)
   else
     key_expire = 0;
   subpk->has_expired = key_expire >= curtime ? 0 : key_expire;
-  subpk->expiredate = key_expire;
+  kb_pk_set_expiredate (subpk, key_expire);
 
   /* Algo doesn't exist.  */
   if (openpgp_pk_test_algo (subpk->pubkey_algo))

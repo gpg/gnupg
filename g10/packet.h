@@ -396,6 +396,10 @@ typedef struct
     unsigned int backsig:2;       /* 0=none, 1=bad, 2=good.  */
     unsigned int serialno_valid:1;/* SERIALNO below is valid.  */
     unsigned int exact:1;         /* Found via exact (!) search.  */
+
+    /* The following flags track the validity of fields.  Should not
+       be accessed directly.  */
+    unsigned int valid_expiredate:1;
   } flags;
   PKT_user_id *user_id;   /* If != NULL: found by that uid. */
   struct revocation_key *revkey;
@@ -851,5 +855,7 @@ gpg_error_t update_keysig_packet (PKT_signature **ret_sig,
 
 /*-- keygen.c --*/
 PKT_user_id *generate_user_id (kbnode_t keyblock, const char *uidstr);
+
+#include "packet-functions.h"
 
 #endif /*G10_PACKET_H*/

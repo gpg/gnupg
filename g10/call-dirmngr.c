@@ -948,7 +948,7 @@ ks_put_inq_cb (void *opaque, const char *line)
 
 		record_output (fp, node->pkt->pkttype, validity,
 			       nbits_from_pk (pk), pk->pubkey_algo,
-			       pk->keyid, pk->timestamp, pk->expiredate,
+			       pk->keyid, pk->timestamp, kb_pk_expiredate (pk),
 			       NULL);
               }
               break;

@@ -2205,7 +2205,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
                 version, algorithm, timestamp, expiredate);
 
   pk->timestamp = timestamp;
-  pk->expiredate = expiredate;
+  kb_pk_invalidate_expiredate (pk);
   pk->max_expiredate = max_expiredate;
   pk->hdrbytes = hdrlen;
   pk->version = version;

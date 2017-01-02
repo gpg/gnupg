@@ -259,10 +259,10 @@ keygen_add_key_expire (PKT_signature *sig, void *opaque)
   byte buf[8];
   u32  u;
 
-  if (pk->expiredate)
+  if (kb_pk_expiredate (pk))
     {
-      if (pk->expiredate > pk->timestamp)
-        u = pk->expiredate - pk->timestamp;
+      if (kb_pk_expiredate (pk) > pk->timestamp)
+        u = kb_pk_expiredate (pk) - pk->timestamp;
       else
         u = 1;
 
@@ -1290,8 +1290,7 @@ do_create_from_keygrip (ctrl_t ctrl, int algo, const char *hexkeygrip,
 
   pk->timestamp = timestamp;
   pk->version = 4;
-  if (expireval)
-    pk->expiredate = pk->timestamp + expireval;
+  kb_pk_set_expiredate (pk, expireval ? pk->timestamp + expireval : 0);
   pk->pubkey_algo = algo;
 
   if (algo == PUBKEY_ALGO_ECDSA
@@ -1357,8 +1356,7 @@ common_gen (const char *keyparms, int algo, const char *algoelem,
 
   pk->timestamp = timestamp;
   pk->version = 4;
-  if (expireval)
-    pk->expiredate = pk->timestamp + expireval;
+  kb_pk_set_expiredate (pk, expireval ? pk->timestamp + expireval : 0);
   pk->pubkey_algo = algo;
 
   if (algo == PUBKEY_ALGO_ECDSA
@@ -5276,8 +5274,7 @@ gen_card_key (int keyno, int algo, int is_primary, kbnode_t pub_root,
 
   pk->timestamp = *timestamp;
   pk->version = 4;
-  if (expireval)
-    pk->expiredate = pk->timestamp + expireval;
+  kb_pk_set_expiredate (pk, expireval ? pk->timestamp + expireval : 0);
   pk->pubkey_algo = algo;
 
   pkt->pkttype = is_primary ? PKT_PUBLIC_KEY : PKT_PUBLIC_SUBKEY;

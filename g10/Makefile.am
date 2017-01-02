@@ -112,6 +112,7 @@ common_source =  \
 	      openfile.c	\
 	      keyid.c		\
 	      packet.h		\
+	      packet-functions.h \
 	      parse-packet.c	\
 	      cpr.c		\
 	      plaintext.c	\
