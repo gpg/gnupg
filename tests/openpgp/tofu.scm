@@ -29,7 +29,7 @@
 (define (days->seconds days) (* days 24 60 60))
 
 ;; Redefine GPG without --always-trust and a fixed time.
-(define GPG `(,(tool 'gpg) --no-permission-warning ,(faketime GPGTIME)))
+(define GPG `(,(tool 'gpg) --no-permission-warning ,(faketime 0)))
 (define GNUPGHOME (getenv "GNUPGHOME"))
 (if (string=? "" GNUPGHOME)
     (fail "GNUPGHOME not set"))
