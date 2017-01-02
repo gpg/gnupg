@@ -732,6 +732,10 @@ resolve_name_libdns (const char *name, unsigned short port,
               err = gpg_error_from_syserror ();
               goto leave;
             }
+          /* Libdns appends the root zone part which is problematic
+           * for most other functions - strip it.  */
+          if (**r_canonname && (*r_canonname)[strlen (*r_canonname)-1] == '.')
+            (*r_canonname)[strlen (*r_canonname)-1] = 0;
         }
 
       dai = xtrymalloc (sizeof *dai + ent->ai_addrlen -1);
@@ -1899,6 +1903,13 @@ get_dns_cname_libdns (const char *name, char **r_cname)
   *r_cname = xtrystrdup (cname.host);
   if (!*r_cname)
     err = gpg_error_from_syserror ();
+  else
+    {
+      /* Libdns appends the root zone part which is problematic
+       * for most other functions - strip it.  */
+      if (**r_cname && (*r_cname)[strlen (*r_cname)-1] == '.')
+        (*r_cname)[strlen (*r_cname)-1] = 0;
+    }
 
  leave:
   dns_free (ans);
