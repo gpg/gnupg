@@ -507,6 +507,9 @@ libdns_init (void)
   /* All fine.  Make the data global.  */
   libdns = ld;
 
+  if (opt_debug)
+    log_debug ("dns: libdns initialized%s\n", tor_mode?" (tor mode)":"");
+
  leave:
   xfree (cfgstr);
   return err;
@@ -595,7 +598,7 @@ libdns_res_open (struct dns_resolver **r_res)
 
 
 #ifdef USE_LIBDNS
-/* Helper to test whether we need totry again after having swicthed
+/* Helper to test whether we need to try again after having switched
  * the Tor port.  */
 static int
 libdns_switch_port_p (gpg_error_t err)
