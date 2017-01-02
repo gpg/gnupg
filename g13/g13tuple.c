@@ -282,7 +282,7 @@ all_printable (const void *buf, size_t buflen)
   const unsigned char *s;
 
   for (s=buf ; buflen; s++, buflen--)
-    if (*s < 32 && *s > 126)
+    if (*s < 32 || *s > 126)
       return 0;
   return 1;
 }
