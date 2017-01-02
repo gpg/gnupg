@@ -362,10 +362,12 @@ main (int argc, char *argv[])
   {
     iobuf_t iobuf;
     int rc;
-    char *content = "0123456789";
+    char content[] = "0123456789";
     int n;
     int c;
-    char buffer[strlen (content)];
+    char buffer[10];
+
+    assert (sizeof buffer == sizeof content - 1);
 
     iobuf = iobuf_temp_with_content (content, strlen (content));
     assert (iobuf);

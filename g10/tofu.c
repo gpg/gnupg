@@ -2457,16 +2457,16 @@ get_policy (tofu_dbs_t dbs, PKT_public_key *pk,
   /* See if the key is signed by an ultimately trusted key.  */
   {
     int fingerprint_raw_len = strlen (fingerprint) / 2;
-    char fingerprint_raw[fingerprint_raw_len];
+    char fingerprint_raw[20];
     int len = 0;
 
-    if (fingerprint_raw_len != 20
+    if (fingerprint_raw_len != sizeof fingerprint_raw
         || ((len = hex2bin (fingerprint,
                             fingerprint_raw, fingerprint_raw_len))
             != strlen (fingerprint)))
       {
         if (DBG_TRUST)
-          log_debug ("TOFU: Bad fingerprint: %s (len: %zd, parsed: %d)\n",
+          log_debug ("TOFU: Bad fingerprint: %s (len: %zu, parsed: %d)\n",
                      fingerprint, strlen (fingerprint), len);
       }
     else

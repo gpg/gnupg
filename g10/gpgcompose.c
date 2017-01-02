@@ -1654,13 +1654,17 @@ mksubpkt_callback (PKT_signature *sig, void *cookie)
 
   if (si->reason_for_revocation)
     {
-      int l = 1 + strlen (si->reason_for_revocation);
-      char buf[l];
+      int len = 1 + strlen (si->reason_for_revocation);
+      char *buf;
+
+      buf = xmalloc (len);
 
       buf[0] = si->reason_for_revocation_code;
-      memcpy (&buf[1], si->reason_for_revocation, l - 1);
+      memcpy (&buf[1], si->reason_for_revocation, len - 1);
 
-      build_sig_subpkt (sig, SIGSUBPKT_REVOC_REASON, buf, l);
+      build_sig_subpkt (sig, SIGSUBPKT_REVOC_REASON, buf, len);
+
+      xfree (buf);
     }
 
   if (si->features)
@@ -2540,10 +2544,13 @@ encrypted (const char *option, int argc, char *argv[], void *cookie)
 
   if (do_debug)
     {
-      char buf[2 * session_key.keylen + 1];
+      char *buf;
+
+      buf = xmalloc (2 * session_key.keylen + 1);
       debug ("session key: algo: %d; keylen: %d; key: %s\n",
              session_key.algo, session_key.keylen,
              bin2hex (session_key.key, session_key.keylen, buf));
+      xfree (buf);
     }
 
   if (strcmp (option, "--encrypted-mdc") == 0)

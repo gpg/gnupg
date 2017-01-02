@@ -68,8 +68,8 @@ log_hexdump (byte *buffer, int length)
     {
       int have = length > 16 ? 16 : length;
       int i;
-      char formatted[2 * have + 1];
-      char text[have + 1];
+      char formatted[2 * 16 + 1];
+      char text[16 + 1];
 
       fprintf (stderr, "%-8d ", written);
       bin2hex (buffer, have, formatted);
@@ -87,10 +87,12 @@ log_hexdump (byte *buffer, int length)
         }
 
       for (i = 0; i < have; i ++)
-        if (isprint (buffer[i]))
-          text[i] = buffer[i];
-        else
-          text[i] = '.';
+        {
+          if (isprint (buffer[i]))
+            text[i] = buffer[i];
+          else
+            text[i] = '.';
+        }
       text[i] = 0;
 
       fprintf (stderr, "    ");
@@ -347,8 +349,9 @@ oracle (int debug, byte *ciphertext, int len, byte **plaintextp, byte **cfbp)
 static int
 oracle_test (unsigned int d, int b, int debug)
 {
-  byte probe[blocksize + 2];
+  byte probe[32 + 2];
 
+  log_assert (blocksize + 2 <= sizeof probe);
   log_assert (d < 256 * 256);
 
   if (b == 1)

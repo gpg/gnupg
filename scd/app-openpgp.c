@@ -3580,11 +3580,23 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
     {
       if (app->app_local->extcap.algo_attr_change)
         {
-          unsigned char keyattr[oid_len];
+          unsigned char *keyattr;
 
+          if (!oid_len)
+            {
+              err = gpg_error (GPG_ERR_INTERNAL);
+              goto leave;
+            }
+          keyattr = xtrymalloc (oid_len);
+          if (!keyattr)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
           keyattr[0] = algo;
           memcpy (keyattr+1, oidbuf+1, oid_len-1);
           err = change_keyattr (app, keyno, keyattr, oid_len, pincb, pincb_arg);
+          xfree (keyattr);
           if (err)
             goto leave;
         }
