@@ -324,7 +324,14 @@ check_signature_metadata_validity (PKT_public_key *pk, PKT_signature *sig,
        flag which is set after a full evaluation of the key (getkey.c)
        as well as a simple compare to the current time in case the
        merge has for whatever reasons not been done.  */
-    if( pk->has_expired || (kb_pk_expiredate (pk) && kb_pk_expiredate (pk) < cur_time)) {
+    if( pk->has_expired || (/* Computing EXPIREDATE requires calling
+			       this function.  To break this circular
+			       dependency, we only check the
+			       expiration if this information is
+			       already known (i.e. valid):  */
+			    kb_pk_valid_expiredate (pk)
+			    && kb_pk_expiredate (pk)
+			    && kb_pk_expiredate (pk) < cur_time)) {
         char buf[11];
         if (opt.verbose)
 	  log_info(_("Note: signature key %s expired %s\n"),
