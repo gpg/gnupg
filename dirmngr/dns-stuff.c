@@ -199,9 +199,9 @@ recursive_resolver_p (void)
 }
 
 
-/* Sets the module in Tor mode.  Returns 0 is this is possible or an
-   error code.  */
-gpg_error_t
+/* Puts this module eternally into Tor mode.  When called agained with
+ * NEW_CIRCUIT request a new TOR circuit for the next DNS query.  */
+void
 enable_dns_tormode (int new_circuit)
 {
   if (!*tor_socks_user || new_circuit)
@@ -215,7 +215,6 @@ enable_dns_tormode (int new_circuit)
       counter++;
     }
   tor_mode = 1;
-  return 0;
 }
 
 
@@ -548,7 +547,10 @@ reload_dns_stuff (int force)
       libdns_reinit_pending = 0;
     }
   else
-    libdns_reinit_pending = 1;
+    {
+      libdns_reinit_pending = 1;
+      libdns_tor_port = 0;  /* Start again with the default port.  */
+    }
 #else
   (void)force;
 #endif

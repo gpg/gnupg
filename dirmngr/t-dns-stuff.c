@@ -51,7 +51,6 @@ main (int argc, char **argv)
   gpg_error_t err;
   int any_options = 0;
   int opt_tor = 0;
-  int opt_new_circuit = 0;
   int opt_cert = 0;
   int opt_srv = 0;
   int opt_bracket = 0;
@@ -101,11 +100,6 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--use-tor"))
         {
           opt_tor = 1;
-          argc--; argv++;
-        }
-      else if (!strcmp (*argv, "--new-circuit"))
-        {
-          opt_new_circuit = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--standard-resolver"))
@@ -171,15 +165,7 @@ main (int argc, char **argv)
   init_sockets ();
 
   if (opt_tor)
-    {
-      err = enable_dns_tormode (opt_new_circuit);
-      if (err)
-        {
-          fprintf (stderr, "error switching into Tor mode: %s\n",
-                   gpg_strerror (err));
-          exit (1);
-        }
-    }
+    enable_dns_tormode (0);
 
   if (opt_cert)
     {

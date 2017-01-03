@@ -113,9 +113,9 @@ void enable_recursive_resolver (int yes);
 /* Return true iff the recursive resolver is used.  */
 int recursive_resolver_p (void);
 
-/* Calling this function switches the DNS code into Tor mode if
-   possibe.  Return 0 on success.  */
-gpg_error_t enable_dns_tormode (int new_circuit);
+/* Put this module eternally into Tor mode.  When called agained with
+ * NEW_CIRCUIT request a new TOR circuit for the next DNS query.  */
+void enable_dns_tormode (int new_circuit);
 
 /* Change the default IP address of the nameserver to IPADDR.  The
    address needs to be a numerical IP address and will be used for the

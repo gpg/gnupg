@@ -481,6 +481,9 @@ set_tor_mode (void)
 {
   if (opt.use_tor)
     {
+      /* Enable Tor mode and when called again force a new curcuit
+       * (e.g. on SIGHUP).  */
+      enable_dns_tormode (1);
       if (assuan_sock_set_flag (ASSUAN_INVALID_FD, "tor-mode", 1))
         {
           log_error ("error enabling Tor mode: %s\n", strerror (errno));
@@ -918,13 +921,6 @@ main (int argc, char **argv)
 #ifdef IS_DEVELOPMENT_VERSION
   log_info ("NOTE: this is a development version!\n");
 #endif
-
-  if (opt.use_tor)
-    {
-      log_info ("WARNING: ***************************************\n");
-      log_info ("WARNING: Tor mode (--use-tor) MAY NOT FULLY WORK!\n");
-      log_info ("WARNING: ***************************************\n");
-    }
 
   /* Print a warning if an argument looks like an option.  */
   if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))

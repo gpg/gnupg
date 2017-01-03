@@ -709,13 +709,6 @@ cmd_dns_cert (assuan_context_t ctx, char *line)
         }
     }
 
-  if (opt.use_tor && (err = enable_dns_tormode (0)))
-    {
-      /* Tor mode is requested but the DNS code can't enable it.  */
-      assuan_set_error (ctx, err, "error enabling Tor mode");
-      goto leave;
-    }
-
   if (pka_mode || dane_mode)
     {
       char *domain;     /* Points to mbox.  */
