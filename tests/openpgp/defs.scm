@@ -81,6 +81,21 @@
 	default
 	value)))
 
+(define (percent-decode s)
+  (define (decode c)
+    (if (and (> (length c) 2) (char=? #\% (car c)))
+	(integer->char (string->number (string #\# #\x (cadr c) (caddr c))))
+	#f))
+  (let loop ((i 0) (c (string->list s)) (r (make-string (string-length s))))
+    (if (null? c)
+	(substring r 0 i)
+	(let ((decoded (decode c)))
+	  (string-set! r i (if decoded decoded (car c)))
+	  (loop (+ 1 i) (if decoded (cdddr c) (cdr c)) r)))))
+(assert (equal? (percent-decode "") ""))
+(assert (equal? (percent-decode "%61") "a"))
+(assert (equal? (percent-decode "foob%61r") "foobar"))
+
 (define tools
   '((gpgv "GPGV" "g10/gpgv")
     (gpg-connect-agent "GPG_CONNECT_AGENT" "tools/gpg-connect-agent")
@@ -91,25 +106,30 @@
     (gpg-zip "GPGZIP" "tools/gpg-zip")
     (pinentry "PINENTRY" "tests/openpgp/fake-pinentry")))
 
+(define bin-prefix (getenv "BIN_PREFIX"))
+(define installed? (not (string=? "" bin-prefix)))
+
 (define (tool-hardcoded which)
-  (let ((t (assoc which tools))
-	(prefix (getenv "BIN_PREFIX")))
+  (let ((t (assoc which tools)))
     (getenv' (cadr t)
-	     (qualify (if (string=? prefix "")
-			  (string-append (getenv "objdir") "/" (caddr t))
-			  (string-append prefix "/" (basename (caddr t))))))))
+	     (qualify (if installed?
+			  (string-append bin-prefix "/" (basename (caddr t)))
+			  (string-append (getenv "objdir") "/" (caddr t)))))))
 
 (define (gpg-conf . args)
   (let ((s (call-popen `(,(tool-hardcoded 'gpgconf) ,@args) "")))
-    (map (lambda (line) (string-split line #\:))
+    (map (lambda (line) (map percent-decode (string-split line #\:)))
 	 (string-split-newlines s))))
 (define :gc:c:name car)
 (define :gc:c:description cadr)
 (define :gc:c:pgmname caddr)
 
-(setenv "GNUPG_BUILDDIR" (getenv "objdir") #t)
-(define gpg-components (gpg-conf '--build-prefix (getenv "objdir")
-				 '--list-components))
+(unless installed?
+	(setenv "GNUPG_BUILDDIR" (getenv "objdir") #t))
+(define gpg-components (apply gpg-conf
+			`(,@(if installed? '()
+				(list '--build-prefix (getenv "objdir")))
+			  --list-components)))
 
 (define (tool which)
   (case which
