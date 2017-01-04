@@ -1002,9 +1002,9 @@ tdb_get_validity_core (ctrl_t ctrl,
   ulong recno;
 #ifdef USE_TOFU
   unsigned int tofu_validity = TRUST_UNKNOWN;
+  int free_kb = 0;
 #endif
   unsigned int validity = TRUST_UNKNOWN;
-  int free_kb = 0;
 
   if (kb && pk)
     log_assert (keyid_cmp (pk_main_keyid (pk),
