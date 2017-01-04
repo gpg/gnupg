@@ -37,6 +37,8 @@ Noteworthy changes in version 2.1.17 (2016-12-20)
  * Major improvements to the test suite.  For example it is possible
    to run the external test suite of GPGME.
 
+ See-also: gnupg-announce/2016q4/000400.html
+
 
 Noteworthy changes in version 2.1.16 (2016-11-18)
 -------------------------------------------------
@@ -109,6 +111,8 @@ Noteworthy changes in version 2.1.16 (2016-11-18)
 
  * Many changes and improvements for the test suite.
 
+ See-also: gnupg-announce/2016q4/000398.html
+
 
 Noteworthy changes in version 2.1.15 (2016-08-18)
 -------------------------------------------------
@@ -159,6 +163,8 @@ Noteworthy changes in version 2.1.15 (2016-08-18)
  * tests: Run each test in a clean environment.
 
  * Spelling and grammar fixes.
+
+ See-also: gnupg-announce/2016q3/000396.html
 
 
 Noteworthy changes in version 2.1.14 (2016-07-14)
@@ -218,6 +224,8 @@ Noteworthy changes in version 2.1.14 (2016-07-14)
 
  * The rendering of the man pages has been improved.
 
+ See-also: gnupg-announce/2016q3/000393.html
+
 
 Noteworthy changes in version 2.1.13 (2016-06-16)
 -------------------------------------------------
@@ -267,6 +275,8 @@ Noteworthy changes in version 2.1.13 (2016-06-16)
  * Fix detection of libusb on FreeBSD.
 
  * Speedup fd closing after a fork.
+
+ See-also: gnupg-announce/2016q2/000390.html
 
 
 Noteworthy changes in version 2.1.12 (2016-05-04)
@@ -321,6 +331,8 @@ Noteworthy changes in version 2.1.12 (2016-05-04)
 
  * Lots of internal cleanups and bug fixes.
 
+ See-also: gnupg-announce/2016q2/000387.html
+
 
 Noteworthy changes in version 2.1.11 (2016-01-26)
 -------------------------------------------------
@@ -371,6 +383,8 @@ Noteworthy changes in version 2.1.11 (2016-01-26)
 
  * Print a warning if a GnuPG component is using an older version of
    gpg-agent, dirmngr, or scdaemon.
+
+ See-also: gnupg-announce/2016q1/000383.html
 
 
 Noteworthy changes in version 2.1.10 (2015-12-04)
@@ -430,6 +444,8 @@ Noteworthy changes in version 2.1.10 (2015-12-04)
 
  * Many other cleanups and bug fixes.
 
+ See-also: gnupg-announce/2015q4/000381.html
+
 
 Noteworthy changes in version 2.1.9 (2015-10-09)
 ------------------------------------------------
@@ -460,6 +476,8 @@ Noteworthy changes in version 2.1.9 (2015-10-09)
  * dirmngr: Add option --keyserver.  Deprecate that option for gpg.
    Install a dirmngr.conf file from a skeleton for new installations.
 
+ See-also: gnupg-announce/2015q4/000380.html
+
 
 Noteworthy changes in version 2.1.8 (2015-09-10)
 ------------------------------------------------
@@ -487,6 +505,8 @@ Noteworthy changes in version 2.1.8 (2015-09-10)
 
  * Various minor bug fixes.
 
+ See-also: gnupg-announce/2015q3/000379.html
+
 
 Noteworthy changes in version 2.1.7 (2015-08-11)
 ------------------------------------------------
@@ -511,6 +531,8 @@ Noteworthy changes in version 2.1.7 (2015-08-11)
  * Dropped deprecated gpgsm-gencert.sh
 
  * Various other bug fixes.
+
+ See-also: gnupg-announce/2015q3/000371.html
 
 
 Noteworthy changes in version 2.1.6 (2015-07-01)
@@ -542,6 +564,8 @@ Noteworthy changes in version 2.1.6 (2015-07-01)
 
  * Various other bug fixes.
 
+ See-also: gnupg-announce/2015q3/000370.html
+
 
 Noteworthy changes in version 2.1.5 (2015-06-11)
 ------------------------------------------------
@@ -555,6 +579,8 @@ Noteworthy changes in version 2.1.5 (2015-06-11)
  * Prepared for improved integration with Emacs.
 
  * Code cleanups and minor bug fixes.
+
+ See-also: gnupg-announce/2015q2/000369.html
 
 
 Noteworthy changes in version 2.1.4 (2015-05-12)
@@ -580,6 +606,8 @@ Noteworthy changes in version 2.1.4 (2015-05-12)
  * Allow building without LDAP support.
 
  * Fixed lots of smaller bugs.
+
+ See-also: gnupg-announce/2015q2/000366.html
 
 
 Noteworthy changes in version 2.1.3 (2015-04-11)
@@ -618,6 +646,8 @@ Noteworthy changes in version 2.1.3 (2015-04-11)
  * Fixed possible problems due to compiler optimization, two minor
    regressions, and other bugs.
 
+ See-also: gnupg-announce/2015q2/000365.html
+
 
 Noteworthy changes in version 2.1.2 (2015-02-11)
 ------------------------------------------------
@@ -651,6 +681,8 @@ Noteworthy changes in version 2.1.2 (2015-02-11)
 
  * Fixed several bugs related to bogus keyrings and improved some
    other code.
+
+ See-also: gnupg-announce/2015q1/000361.html
 
 
 Noteworthy changes in version 2.1.1 (2014-12-16)
@@ -703,6 +735,8 @@ Noteworthy changes in version 2.1.1 (2014-12-16)
    now be redirected.  This feature requires Libassuan 2.2.0.
 
  * Improved portability and the usual bunch of bug fixes.
+
+ See-also: gnupg-announce/2014q4/000360.html
 
 
 Noteworthy changes in version 2.1.0 (2014-11-06)
@@ -1021,6 +1055,8 @@ Noteworthy changes in version 2.1.0 (2014-11-06)
  * Numerical values may now be used as an alternative to the
    debug-level keywords.
 
+ See-also: gnupg-announce/2014q4/000358.html
+
 
 Version 2.0.28 (2015-06-02)
 Version 2.0.27 (2015-02-18)
@@ -1064,6 +1100,8 @@ Noteworthy changes in version 2.0.13 (2009-09-04)
 
  * Minor bug fixes.
 
+ See-also: gnupg-announce/2009q3/000294.html
+
 
 Noteworthy changes in version 2.0.12 (2009-06-17)
 -------------------------------------------------
@@ -1091,6 +1129,8 @@ Noteworthy changes in version 2.0.12 (2009-06-17)
 
  * Changed code to avoid a possible Mac OS X system freeze.
 
+ See-also: gnupg-announce/2009q2/000288.html
+
 
 Noteworthy changes in version 2.0.11 (2009-03-03)
 -------------------------------------------------
@@ -1106,6 +1146,8 @@ Noteworthy changes in version 2.0.11 (2009-03-03)
  * The default cipher algorithm in GPGSM is now again 3DES.  This is
    due to interoperability problems with Outlook 2003 which still
    can't cope with AES.
+
+ See-also: gnupg-announce/2009q1/000287.html
 
 
 Noteworthy changes in version 2.0.10 (2009-01-12)
@@ -1162,6 +1204,8 @@ Noteworthy changes in version 2.0.10 (2009-01-12)
 
  * Libgcrypt 1.4 is now required.
 
+ See-also: gnupg-announce/2009q1/000284.html
+
 
 Noteworthy changes in version 2.0.9 (2008-03-26)
 ------------------------------------------------
@@ -1183,6 +1227,7 @@ Noteworthy changes in version 2.0.9 (2008-03-26)
    introduced with 2.0.8). [CVE-2008-1530]
 
  * Minor bug fixes.
+
 
 
 Noteworthy changes in version 2.0.8 (2007-12-20)
@@ -1218,6 +1263,8 @@ Noteworthy changes in version 2.0.8 (2007-12-20)
    taken into account.  This required a change of our socket emulation
    code and changed the IPC protocol under Windows.
 
+ See-also: gnupg-announce/2007q4/000267.html
+
 
 Noteworthy changes in version 2.0.7 (2007-09-10)
 ------------------------------------------------
@@ -1236,6 +1283,8 @@ Noteworthy changes in version 2.0.7 (2007-09-10)
    installed versions of the programs and does not anymore search via
    PATH for them.
 
+ See-also: gnupg-announce/2007q3/000259.html
+
 
 Noteworthy changes in version 2.0.6 (2007-08-16)
 ------------------------------------------------
@@ -1250,6 +1299,8 @@ Noteworthy changes in version 2.0.6 (2007-08-16)
  * New option --validation-model and support for the chain-model.
 
  * Improved Windows support.
+
+ See-also: gnupg-announce/2007q3/000258.html
 
 
 Noteworthy changes in version 2.0.5 (2007-07-05)
@@ -1268,6 +1319,8 @@ Noteworthy changes in version 2.0.5 (2007-07-05)
  * Changed key generation to reveal less information about the
    machine.  Bug fixes for gpg2's card key generation.
 
+ See-also: gnupg-announce/2007q3/000255.html
+
 
 Noteworthy changes in version 2.0.4 (2007-05-09)
 ------------------------------------------------
@@ -1279,6 +1332,8 @@ Noteworthy changes in version 2.0.4 (2007-05-09)
    was not utf-8 encoded.  New option --p12-charset for gpgsm.
 
  * Improved the libgcrypt logging support in all modules.
+
+ See-also: gnupg-announce/2007q2/000254.html
 
 
 Noteworthy changes in version 2.0.3 (2007-03-08)
@@ -1300,6 +1355,8 @@ Noteworthy changes in version 2.0.3 (2007-03-08)
  * The PIN pad of the Cherry XX44 keyboard is now supported.  The
    DINSIG and the NKS applications are now also aware of PIN pads.
 
+ See-also: gnupg-announce/2007q1/000252.html
+
 
 Noteworthy changes in version 2.0.2 (2007-01-31)
 ------------------------------------------------
@@ -1318,6 +1375,8 @@ Noteworthy changes in version 2.0.2 (2007-01-31)
 
  * The status code BEGIN_SIGNING now shows the used hash algorithms.
 
+ See-also: gnupg-announce/2007q1/000249.html
+
 
 Noteworthy changes in version 2.0.1 (2006-11-28)
 ------------------------------------------------
@@ -1331,11 +1390,15 @@ Noteworthy changes in version 2.0.1 (2006-11-28)
 
  * Fixed a buffer overflow in gpg2. [bug#728,CVE-2006-6169]
 
+ See-also: gnupg-announce/2006q4/000242.html
+
 
 Noteworthy changes in version 2.0.0 (2006-11-11)
 ------------------------------------------------
 
  * First stable version of a GnuPG integrating OpenPGP and S/MIME.
+
+ See-also: gnupg-announce/2006q4/000239.html
 
 
 Noteworthy changes in version 1.9.95 (2006-11-06)
@@ -1376,6 +1439,8 @@ Noteworthy changes in version 1.9.92 (2006-10-11)
 -------------------------------------------------
 
  * Bug fixes.
+
+ See-also: gnupg-announce/2006q4/000236.html
 
 
 Noteworthy changes in version 1.9.91 (2006-10-04)
@@ -1878,6 +1943,8 @@ Noteworthy changes in version 1.3.2 (2003-05-27)
       of GnuPG and other OpenPGP programs, please do not use this
       algorithm.
 
+    See-also: gnupg-announce/2003q2/000153.html
+
 
 Noteworthy changes in version 1.3.1 (2002-11-12)
 ------------------------------------------------
@@ -2204,6 +2271,8 @@ Noteworthy changes in version 1.0.7 (2002-04-29)
 
     * Read only keyrings are now handled as expected.
 
+    See-also: gnupg-announce/2002q2/000135.html
+
 
 Noteworthy changes in version 1.0.6 (2001-05-29)
 ------------------------------------------------
@@ -2221,6 +2290,8 @@ Noteworthy changes in version 1.0.6 (2001-05-29)
     * The usual set of minor bug fixes and enhancements.
 
     * non-writable keyrings are now correctly handled.
+
+    See-also: gnupg-announce/2001q2/000123.html
 
 
 Noteworthy changes in version 1.0.5 (2001-04-29)
@@ -2280,6 +2351,8 @@ Noteworthy changes in version 1.0.5 (2001-04-29)
 
     * New translations: Estonian, Turkish.
 
+    See-also: gnupg-announce/2001q2/000122.html
+
 
 Noteworthy changes in version 1.0.4 (2000-10-17)
 ------------------------------------------------
@@ -2294,6 +2367,9 @@ Noteworthy changes in version 1.0.4 (2000-10-17)
     * Rijndael (AES) is now supported and listed with top preference.
 
     * --with-colons now works with --print-md[s].
+
+    See-also: gnupg-announce/2000q4/000082.html
+
 
 Noteworthy changes in version 1.0.3 (2000-09-18)
 ------------------------------------------------
@@ -2325,6 +2401,8 @@ Noteworthy changes in version 1.0.3 (2000-09-18)
     * Twofish and MDC enhanced encryption is now used.  PGP 7 supports
       this.  Older versions of GnuPG don't support it, so they should be
       upgraded to at least 1.0.2
+
+    See-also: gnupg-announce/2000q3/000075.html
 
 
 Noteworthy changes in version 1.0.2 (2000-07-12)
@@ -2384,6 +2462,9 @@ Noteworthy changes in version 1.0.2 (2000-07-12)
 
     * Danish translation
 
+    See-also: gnupg-announce/2000q3/000069.html
+
+
 Noteworthy changes in version 1.0.1 (1999-12-16)
 -----------------------------------
 
@@ -2415,6 +2496,8 @@ Noteworthy changes in version 1.0.1 (1999-12-16)
     * Removed the GNU Privacy Handbook from the distribution as it will go
       into a separate one.
 
+    See-also: gnupg-announce/1999q4/000050.html
+
 
 Noteworthy changes in version 1.0.0 (1999-09-07)
 -----------------------------------
@@ -2423,6 +2506,8 @@ Noteworthy changes in version 1.0.0 (1999-09-07)
       the distribution (lynx doc/gph/index.html).
 
     * Changed the version number to GnuPG 2001 ;-)
+
+    See-also: gnupg-announce/1999q3/000037.html
 
 
 Noteworthy changes in version 0.9.11 (1999-09-03)
@@ -2435,6 +2520,8 @@ Noteworthy changes in version 0.9.11 (1999-09-03)
 
     * Fixed a problem when importing new subkeys (duplicated signatures).
 
+    See-also: gnupg-announce/1999q3/000036.html
+
 
 Noteworthy changes in version 0.9.10 (1999-07-23)
 ------------------------------------
@@ -2442,6 +2529,8 @@ Noteworthy changes in version 0.9.10 (1999-07-23)
     * Some strange new options to help pgpgpg
 
     * Cleaned up the dox a bit.
+
+    See-also: gnupg-announce/1999q3/000034.html
 
 
 Noteworthy changes in version 0.9.9
@@ -2470,6 +2559,8 @@ Noteworthy changes in version 0.9.9
     * New option --allow-non-selfsigned-uid to work around a problem with
       the German IN way of separating signing and encryption keys.
 
+    See-also: gnupg-announce/1999q3/000028.html
+
 
 Noteworthy changes in version 0.9.8 (1999-06-26)
 -----------------------------------
@@ -2491,6 +2582,8 @@ Noteworthy changes in version 0.9.8 (1999-06-26)
 
     * Better support for HPUX.
 
+    See-also: gnupg-announce/1999q2/000016.html
+
 
 Noteworthy changes in version 0.9.7 (1999-05-23)
 -----------------------------------
@@ -2499,6 +2592,8 @@ Noteworthy changes in version 0.9.7 (1999-05-23)
       when used with canonical texts in some cases.
 
     * Enhanced some status outputs.
+
+    See-also: gnupg-announce/1999q2/000000.html
 
 
 Noteworthy changes in version 0.9.6 (1999-05-06)
@@ -2816,7 +2911,7 @@ Noteworthy changes in version 0.3.3 (1998-08-08)
 	   a copy of the old program.
 	2. Disable the network, make sure that you are the only
 	   user, be sure that there are no Trojan horses etc ....
-	3. Use your old gpg (version 0.3.[12]) and set the
+	3. Use your old gpg (version 0.3.1 or 0.3.2) and set the
 	   passphrases of ALL your secret keys to empty!
 	   (gpg --change-passphrase your-user-id).
 	4. Save your ownertrusts (see the next point)
@@ -2829,7 +2924,7 @@ Noteworthy changes in version 0.3.3 (1998-08-08)
 
     * The format of the trust database has changed; you must delete
       the old one, so gnupg can create a new one.
-      IMPORTANT: Use version 0.3.[12] to save your assigned ownertrusts
+      IMPORTANT: Use version 0.3.1 or .2 to save your assigned ownertrusts
       ("gpgm --list-ownertrust >saved-trust"); then build this new version
       and restore the ownertrust with this new version
       ("gpgm --import-ownertrust saved-trust").  Please note that
