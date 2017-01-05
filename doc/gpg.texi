@@ -255,6 +255,13 @@ out the actual signed data, but there are other pitfalls with this
 format as well.  It is suggested to avoid cleartext signatures in
 favor of detached signatures.
 
+Note: Sometimes the use of the @command{gpgv} tool is easier than
+using the full-fledged @command{gpg} with this option.  @command{gpgv}
+is designed to compare signed data against a list of trusted keys and
+returns with success only for a good signature.  It has its own manual
+page.
+
+
 @item --multifile
 @opindex multifile
 This modifies certain other commands to accept multiple files for
