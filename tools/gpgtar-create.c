@@ -429,7 +429,11 @@ pattern_valid_p (const char *pattern)
     return 0;
   if (*pattern == '.' && pattern[1] == '.')
     return 0;
-  if (*pattern == '/' || *pattern == DIRSEP_C)
+  if (*pattern == '/'
+#ifdef HAVE_DOSISH_SYSTEM
+      || *pattern == '\\'
+#endif
+      )
     return 0; /* Absolute filenames are not supported.  */
 #ifdef HAVE_DRIVE_LETTERS
   if (((*pattern >= 'a' && *pattern <= 'z')

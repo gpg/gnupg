@@ -214,9 +214,9 @@ parse_ber_header (unsigned char const **buffer, size_t *size,
   else
     {
       unsigned long len = 0;
-      int count = c & 0x7f;
+      int count = (c & 0x7f);
 
-      if (count > sizeof (len) || count > sizeof (size_t))
+      if (count > (sizeof(len)<sizeof(size_t)?sizeof(len):sizeof(size_t)))
         return gpg_err_make (default_errsource, GPG_ERR_BAD_BER);
 
       for (; count; count--)
