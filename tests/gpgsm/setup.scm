@@ -24,6 +24,7 @@
 	(error "Usage: setup.scm --create-tarball <file> ..."))
 
 (with-ephemeral-home-directory
+ (chdir (getenv "GNUPGHOME"))
  (create-gpgsmhome)
  (stop-agent)
  (call-check `(,(tool 'gpgtar) --create --output ,(car tarball) ".")))

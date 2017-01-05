@@ -23,6 +23,7 @@
 	(fail "Usage: setup.scm --create-tarball <file>"))
 
 (with-ephemeral-home-directory
+ (chdir (getenv "GNUPGHOME"))
  (create-gpghome)
  (create-legacy-gpghome)
  (stop-agent)
