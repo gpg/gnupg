@@ -128,11 +128,14 @@ close_all_fds (int first, int *except)
 
 
 /* Returns an array with all currently open file descriptors.  The end
-   of the array is marked by -1.  The caller needs to release this
-   array using the *standard free* and not with xfree.  This allow the
-   use of this function right at startup even before libgcrypt has
-   been initialized.  Returns NULL on error and sets ERRNO
-   accordingly.  */
+ * of the array is marked by -1.  The caller needs to release this
+ * array using the *standard free* and not with xfree.  This allow the
+ * use of this function right at startup even before libgcrypt has
+ * been initialized.  Returns NULL on error and sets ERRNO
+ * accordingly.  Note that fstat prints a warning to DebugView for all
+ * invalid fds which is a bit annoying.  We actually do not need this
+ * function in real code (close_all_fds is a dummy anyway) but we keep
+ * it for use by t-exechelp.c.  */
 int *
 get_all_open_fds (void)
 {

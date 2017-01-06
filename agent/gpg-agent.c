@@ -303,8 +303,10 @@ static int putty_support;
 #endif /*HAVE_W32_SYSTEM*/
 
 /* The list of open file descriptors at startup.  Note that this list
-   has been allocated using the standard malloc.  */
+ * has been allocated using the standard malloc.  */
+#ifndef HAVE_W32_SYSTEM
 static int *startup_fd_list;
+#endif
 
 /* The signal mask at startup and a flag telling whether it is valid.  */
 #ifdef HAVE_SIGPROCMASK
@@ -949,8 +951,10 @@ main (int argc, char **argv )
 
   /* Before we do anything else we save the list of currently open
      file descriptors and the signal mask.  This info is required to
-     do the exec call properly. */
+     do the exec call properly.  We don't need it on Windows.  */
+#ifndef HAVE_W32_SYSTEM
   startup_fd_list = get_all_open_fds ();
+#endif /*!HAVE_W32_SYSTEM*/
 #ifdef HAVE_SIGPROCMASK
   if (!sigprocmask (SIG_UNBLOCK, NULL, &startup_signal_mask))
     startup_signal_mask_valid = 1;
