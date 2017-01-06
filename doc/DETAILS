@@ -761,6 +761,19 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     takes on value 0.  Instead, if there is a conflict, VALIDITY still
     reflects the key's validity (values: 1-4).
 
+    SUMMARY values use the euclidean distance (m = sqrt(a² + b²)) rather
+    then the sum of the magnitudes (m = a + b) to ensure a balance between
+    verified signatures and encrypted messages.
+
+    Values are calculated based on the number of days where a key was used
+    for verifying a signature or to encrypt to it.
+    The ranges for the values are:
+
+    - 1 :: signature_days + encryption_days == 0
+    - 2 :: 1 <= sqrt(signature_days² + encryption_days²) < 8
+    - 3 :: 8 <= sqrt(signature_days² + encryption_days²) < 42
+    - 4 :: sqrt(signature_days² + encryption_days²) >= 42
+
     SIGN-COUNT and ENCRYPTION-COUNT are the number of messages that we
     have seen that have been signed by this key / encryption to this
     key.
