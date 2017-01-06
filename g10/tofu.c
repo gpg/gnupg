@@ -3480,7 +3480,7 @@ tofu_register_encryption (ctrl_t ctrl,
 
       if (! user_id_list)
         log_info (_("WARNING: Encrypting to %s, which has no "
-                    "non-revoked user ids.\n"),
+                    "non-revoked user ids\n"),
                   keystr (pk->keyid));
     }
 
