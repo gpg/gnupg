@@ -2974,7 +2974,8 @@ void
 apdu_dev_list_finish (struct dev_list *dl)
 {
 #ifdef HAVE_LIBUSB
-  ccid_dev_scan_finish (dl->ccid_table, dl->idx_max);
+  if (dl->ccid_table)
+    ccid_dev_scan_finish (dl->ccid_table, dl->idx_max);
 #endif
   xfree (dl);
   npth_mutex_unlock (&reader_table_lock);
@@ -3195,14 +3196,14 @@ apdu_open_reader (struct dev_list *dl)
   else
 #endif
     { /* PC/SC readers.  */
-      if (dl->idx++ == 0)
-        slot = apdu_open_one_reader (dl->portstr);
+      if (dl->idx == 0)
+        {
+          dl->idx++;
+          slot = apdu_open_one_reader (dl->portstr);
+        }
       else
         slot = -1;
     }
-
-  if (DBG_READER)
-    log_debug ("leave: apdu_open_reader => slot=%d [ccid]\n", slot);
 
   return slot;
 }
