@@ -74,6 +74,7 @@ enum {
   SW_HOST_ALREADY_CONNECTED = 0x1000f
 };
 
+struct dev_list;
 
 #define SW_EXACT_LENGTH_P(a) (((a)&~0xff) == SW_EXACT_LENGTH)
 
@@ -86,8 +87,11 @@ enum {
 
 gpg_error_t apdu_init (void);
 
+gpg_error_t apdu_dev_list_start (const char *portstr, struct dev_list **l_p);
+void apdu_dev_list_finish (struct dev_list *l);
+
 /* Note, that apdu_open_reader returns no status word but -1 on error. */
-int apdu_open_reader (const char *portstr);
+int apdu_open_reader (struct dev_list *l);
 int apdu_open_remote_reader (const char *portstr,
                              const unsigned char *cookie, size_t length,
                              int (*readfnc) (void *opaque,
@@ -117,9 +121,9 @@ int apdu_reset (int slot);
 int apdu_get_status (int slot, int hang, unsigned int *status);
 int apdu_check_pinpad (int slot, int command, pininfo_t *pininfo);
 int apdu_pinpad_verify (int slot, int class, int ins, int p0, int p1,
-			pininfo_t *pininfo);
+                        pininfo_t *pininfo);
 int apdu_pinpad_modify (int slot, int class, int ins, int p0, int p1,
-			pininfo_t *pininfo);
+                        pininfo_t *pininfo);
 int apdu_send_simple (int slot, int extended_mode,
                       int class, int ins, int p0, int p1,
                       int lc, const char *data);

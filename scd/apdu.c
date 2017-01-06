@@ -66,6 +66,13 @@
 #define CCID_DRIVER_INCLUDE_USB_IDS 1
 #include "ccid-driver.h"
 
+struct dev_list {
+  struct ccid_dev_table *ccid_table;
+  const char *portstr;
+  int idx;
+  int idx_max;
+};
+
 /* Due to conflicting use of threading libraries we usually can't link
    against libpcsclite if we are using Pth.  Instead we use a wrapper
    program.  Note that with nPth there is no need for a wrapper. */
@@ -428,7 +435,6 @@ new_reader_slot (void)
 {
   int i, reader = -1;
 
-  npth_mutex_lock (&reader_table_lock);
   for (i=0; i < MAX_READER; i++)
     if (!reader_table[i].used)
       {
@@ -436,7 +442,6 @@ new_reader_slot (void)
         reader_table[reader].used = 1;
         break;
       }
-  npth_mutex_unlock (&reader_table_lock);
 
   if (reader == -1)
     {
@@ -1428,8 +1433,6 @@ static int
 close_pcsc_reader_direct (int slot)
 {
   pcsc_release_context (reader_table[slot].pcsc.context);
-  xfree (reader_table[slot].rdrname);
-  reader_table[slot].rdrname = NULL;
   return 0;
 }
 #endif /*!NEED_PCSC_WRAPPER*/
@@ -2432,7 +2435,6 @@ static int
 close_ccid_reader (int slot)
 {
   ccid_close_reader (reader_table[slot].ccid.handle);
-  reader_table[slot].rdrname = NULL;
   return 0;
 }
 
@@ -2566,7 +2568,7 @@ ccid_pinpad_operation (int slot, int class, int ins, int p0, int p1,
 
 /* Open the reader and try to read an ATR.  */
 static int
-open_ccid_reader (const char *portstr)
+open_ccid_reader (struct dev_list *dl)
 {
   int err;
   int slot;
@@ -2577,8 +2579,8 @@ open_ccid_reader (const char *portstr)
     return -1;
   slotp = reader_table + slot;
 
-  err = ccid_open_reader (&slotp->ccid.handle, portstr,
-                          (const char **)&slotp->rdrname);
+  err = ccid_open_reader (dl->portstr, dl->idx, dl->ccid_table,
+                          &slotp->ccid.handle, &slotp->rdrname);
   if (err)
     {
       slotp->used = 0;
@@ -2611,12 +2613,7 @@ open_ccid_reader (const char *portstr)
   unlock_slot (slot);
   return slot;
 }
-
-
-
 #endif /* HAVE_LIBUSB */
-
-
 
 #ifdef USE_G10CODE_RAPDU
 /*
@@ -2919,62 +2916,79 @@ open_rapdu_reader (int portno,
 /*
        Driver Access
  */
+gpg_error_t
+apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
+{
+  gpg_error_t err;
+  struct dev_list *dl = xtrymalloc (sizeof (struct dev_list));
+
+  *l_p = NULL;
+  if (!dl)
+    return gpg_error_from_syserror ();
+
+  dl->portstr = portstr;
+  dl->idx = 0;
+
+  npth_mutex_lock (&reader_table_lock);
+
+#ifdef HAVE_LIBUSB
+  if (opt.disable_ccid)
+    {
+      dl->ccid_table = NULL;
+      dl->idx_max = 1;
+    }
+  else
+    {
+      err = ccid_dev_scan (&dl->idx_max, &dl->ccid_table);
+      if (err)
+        return err;
+
+      if (dl->idx_max == 0)
+        {
+          /* If a CCID reader specification has been given, the user does
+             not want a fallback to other drivers. */
+          if (portstr && strlen (portstr) > 5 && portstr[4] == ':')
+            {
+              if (DBG_READER)
+                log_debug ("leave: apdu_open_reader => slot=-1 (no ccid)\n");
+
+              xfree (dl);
+              npth_mutex_unlock (&reader_table_lock);
+              return gpg_error (GPG_ERR_ENODEV);
+            }
+          else
+            dl->idx_max = 1;
+        }
+    }
+#else
+  dl->ccid_table = NULL;
+  dl->idx_max = 1;
+#endif /* HAVE_LIBUSB */
+
+  *l_p = dl;
+  return 0;
+}
+
+void
+apdu_dev_list_finish (struct dev_list *dl)
+{
+  ccid_dev_scan_finish (dl->ccid_table, dl->idx_max);
+  xfree (dl);
+  npth_mutex_unlock (&reader_table_lock);
+}
 
 
 /* Open the reader and return an internal slot number or -1 on
    error. If PORTSTR is NULL we default to a suitable port (for ctAPI:
    the first USB reader.  For PC/SC the first listed reader). */
-int
-apdu_open_reader (const char *portstr)
+static int
+apdu_open_one_reader (const char *portstr)
 {
   static int pcsc_api_loaded, ct_api_loaded;
   int slot;
 
   if (DBG_READER)
     log_debug ("enter: apdu_open_reader: portstr=%s\n", portstr);
-
-#ifdef HAVE_LIBUSB
-  if (!opt.disable_ccid)
-    {
-      static int once_available;
-      int i;
-      const char *s;
-
-      slot = open_ccid_reader (portstr);
-      if (slot != -1)
-        {
-          once_available = 1;
-          if (DBG_READER)
-            log_debug ("leave: apdu_open_reader => slot=%d [ccid]\n", slot);
-          return slot; /* got one */
-        }
-
-      /* If we ever loaded successfully loaded a CCID reader we never
-         want to fallback to another driver.  This solves a problem
-         where ccid was used, the card unplugged and then scdaemon
-         tries to find a new reader and will eventually try PC/SC over
-         and over again.  To reset this flag "gpgconf --kill scdaemon"
-         can be used.  */
-      if (once_available)
-        {
-          if (DBG_READER)
-            log_debug ("leave: apdu_open_reader => slot=-1 (once_avail)\n");
-          return -1;
-        }
-
-      /* If a CCID reader specification has been given, the user does
-         not want a fallback to other drivers. */
-      if (portstr)
-        for (s=portstr, i=0; *s; s++)
-          if (*s == ':' && (++i == 3))
-            {
-              if (DBG_READER)
-                log_debug ("leave: apdu_open_reader => slot=-1 (no ccid)\n");
-              return -1;
-            }
-    }
-
-#endif /* HAVE_LIBUSB */
 
   if (opt.ctapi_driver && *opt.ctapi_driver)
     {
@@ -3004,7 +3018,6 @@ apdu_open_reader (const char *portstr)
         }
       return open_ct_reader (port);
     }
-
 
   /* No ctAPI configured, so lets try the PC/SC API */
   if (!pcsc_api_loaded)
@@ -3099,6 +3112,96 @@ apdu_open_reader (const char *portstr)
   return slot;
 }
 
+int
+apdu_open_reader (struct dev_list *dl)
+{
+  int slot;
+
+  if (dl->ccid_table)
+    { /* CCID readers.  */
+      int readerno;
+
+      /* See whether we want to use the reader ID string or a reader
+         number. A readerno of -1 indicates that the reader ID string is
+         to be used. */
+      if (dl->portstr && strchr (dl->portstr, ':'))
+        readerno = -1; /* We want to use the readerid.  */
+      else if (dl->portstr)
+        {
+          readerno = atoi (dl->portstr);
+          if (readerno < 0)
+            {
+              return -1;
+            }
+        }
+      else
+        readerno = 0;  /* Default. */
+
+      if (readerno > 0)
+        { /* Use single, the specific reader.  */
+          if (readerno >= dl->idx_max)
+            return -1;
+
+          dl->idx = readerno;
+          dl->portstr = NULL;
+          slot = open_ccid_reader (dl);
+          dl->idx = dl->idx_max;
+          if (slot >= 0)
+            return slot;
+          else
+            return -1;
+        }
+
+      while (dl->idx < dl->idx_max)
+        {
+          unsigned int bai = ccid_get_BAI (dl->idx, dl->ccid_table);
+
+          if (DBG_READER)
+            log_debug ("apdu_open_reader: BAI=%x\n", bai);
+
+          /* Check identity by BAI against already opened HANDLEs.  */
+          for (slot = 0; slot < MAX_READER; slot++)
+            if (reader_table[slot].used
+                && ccid_compare_BAI (reader_table[slot].ccid.handle, bai))
+              break;
+
+          if (slot == MAX_READER)
+            { /* Found a new device.  */
+              if (DBG_READER)
+                log_debug ("apdu_open_reader: new device=%x\n", bai);
+
+              slot = open_ccid_reader (dl);
+
+              dl->idx++;
+              if (slot >= 0)
+                return slot;
+              else
+                {
+                  /* Skip this reader.  */
+                  log_error ("ccid open error: skip\n");
+                  continue;
+                }
+            }
+          else
+            dl->idx++;
+        }
+
+      slot = -1;
+    }
+  else
+    { /* PC/SC readers.  */
+      if (dl->idx++ == 0)
+        slot = apdu_open_one_reader (dl->portstr);
+      else
+        slot = -1;
+    }
+
+  if (DBG_READER)
+    log_debug ("leave: apdu_open_reader => slot=%d [ccid]\n", slot);
+
+  return slot;
+}
+
 
 /* Open an remote reader and return an internal slot number or -1 on
    error. This function is an alternative to apdu_open_reader and used
@@ -3177,6 +3280,8 @@ apdu_close_reader (int slot)
         log_debug ("leave: apdu_close_reader => 0x%x (close_reader)\n", sw);
       return sw;
     }
+  xfree (reader_table[slot].rdrname);
+  reader_table[slot].rdrname = NULL;
   reader_table[slot].used = 0;
   if (DBG_READER)
     log_debug ("leave: apdu_close_reader => SW_HOST_NOT_SUPPORTED\n");
@@ -3204,6 +3309,8 @@ apdu_prepare_exit (void)
             apdu_disconnect (slot);
             if (reader_table[slot].close_reader)
               reader_table[slot].close_reader (slot);
+            xfree (reader_table[slot].rdrname);
+            reader_table[slot].rdrname = NULL;
             reader_table[slot].used = 0;
           }
       npth_mutex_unlock (&reader_table_lock);

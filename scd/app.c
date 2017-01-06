@@ -319,22 +319,30 @@ app_new_register (int slot, ctrl_t ctrl, const char *name)
 gpg_error_t
 select_application (ctrl_t ctrl, const char *name, app_t *r_app, int scan)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   app_t app;
-  int slot;
 
   *r_app = NULL;
 
-  if ((scan && !app_top)
-      /* FIXME: Here, we can change code to support multiple readers.
-         For now, we only open a single reader.
-      */
-      || !app_top)
+  if (scan || !app_top)
     {
-      slot = apdu_open_reader (opt.reader_port);
-      if (slot >= 0)
+      struct dev_list *l;
+
+      err = apdu_dev_list_start (opt.reader_port, &l);
+      if (err)
+        return err;
+
+      while (1)
         {
-          int sw = apdu_connect (slot);
+          int slot;
+          int sw;
+
+          slot = apdu_open_reader (l);
+          if (slot < 0)
+            break;
+
+          err = 0;
+          sw = apdu_connect (slot);
 
           if (sw == SW_HOST_CARD_INACTIVE)
             {
@@ -346,23 +354,17 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app, int scan)
             err = 0;
           else
             err = gpg_error (GPG_ERR_ENODEV);
+
+          if (!err)
+            err = app_new_register (slot, ctrl, name);
+          else
+            apdu_close_reader (slot);
         }
-      else
-        err = gpg_error (GPG_ERR_ENODEV);
 
-      if (!err)
-        err = app_new_register (slot, ctrl, name);
-      else
-        apdu_close_reader (slot);
+      apdu_dev_list_finish (l);
     }
-  else
-    err = 0;
 
-  if (!err)
-    app = app_top;
-  else
-    app = NULL;
-
+  app = app_top;
   if (app)
     {
       lock_app (app, ctrl);
@@ -552,8 +554,6 @@ app_write_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 
   if (!app)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!app->ref_count)
-    return gpg_error (GPG_ERR_CARD_NOT_INITIALIZED);
   if (!app->fnc.learn_status)
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
@@ -1070,4 +1070,17 @@ initialize_module_command (void)
     }
 
   return apdu_init ();
+}
+
+app_t
+app_list_start (void)
+{
+  npth_mutex_lock (&app_list_lock);
+  return app_top;
+}
+
+void
+app_list_finish (void)
+{
+  npth_mutex_unlock (&app_list_lock);
 }

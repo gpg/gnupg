@@ -1,5 +1,5 @@
-/* ccid-driver.c - USB ChipCardInterfaceDevices driver
- *	Copyright (C) 2003 Free Software Foundation, Inc.
+/* ccid-driver.h - USB ChipCardInterfaceDevices driver
+ * Copyright (C) 2003 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -109,10 +109,18 @@ enum {
 struct ccid_driver_s;
 typedef struct ccid_driver_s *ccid_driver_t;
 
+struct ccid_dev_table;
+
 int ccid_set_debug_level (int level);
 char *ccid_get_reader_list (void);
-int ccid_open_reader (ccid_driver_t *handle, const char *readerid,
-                      const char **rdrname_p);
+
+gpg_error_t ccid_dev_scan (int *idx_max, struct ccid_dev_table **t_p);
+void ccid_dev_scan_finish (struct ccid_dev_table *tbl, int max);
+unsigned int ccid_get_BAI (int, struct ccid_dev_table *tbl);
+int ccid_compare_BAI (ccid_driver_t handle, unsigned int);
+int ccid_open_reader (const char *spec_reader_name,
+                      int idx, struct ccid_dev_table *ccid_table,
+                      ccid_driver_t *handle, char **rdrname_p);
 int ccid_set_progress_cb (ccid_driver_t handle,
                           void (*cb)(void *, const char *, int, int, int),
                           void *cb_arg);
@@ -126,7 +134,7 @@ int ccid_transceive (ccid_driver_t handle,
                      unsigned char *resp, size_t maxresplen, size_t *nresp);
 int ccid_transceive_secure (ccid_driver_t handle,
                      const unsigned char *apdu, size_t apdulen,
-		     pininfo_t *pininfo,
+                     pininfo_t *pininfo,
                      unsigned char *resp, size_t maxresplen, size_t *nresp);
 int ccid_transceive_escape (ccid_driver_t handle,
                             const unsigned char *data, size_t datalen,
