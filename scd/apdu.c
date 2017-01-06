@@ -2919,7 +2919,6 @@ open_rapdu_reader (int portno,
 gpg_error_t
 apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
 {
-  gpg_error_t err;
   struct dev_list *dl = xtrymalloc (sizeof (struct dev_list));
 
   *l_p = NULL;
@@ -2939,6 +2938,8 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
     }
   else
     {
+      gpg_error_t err;
+
       err = ccid_dev_scan (&dl->idx_max, &dl->ccid_table);
       if (err)
         return err;
@@ -2972,7 +2973,9 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
 void
 apdu_dev_list_finish (struct dev_list *dl)
 {
+#ifdef HAVE_LIBUSB
   ccid_dev_scan_finish (dl->ccid_table, dl->idx_max);
+#endif
   xfree (dl);
   npth_mutex_unlock (&reader_table_lock);
 }
@@ -3117,6 +3120,7 @@ apdu_open_reader (struct dev_list *dl)
 {
   int slot;
 
+#ifdef HAVE_LIBUSB
   if (dl->ccid_table)
     { /* CCID readers.  */
       int readerno;
@@ -3189,6 +3193,7 @@ apdu_open_reader (struct dev_list *dl)
       slot = -1;
     }
   else
+#endif
     { /* PC/SC readers.  */
       if (dl->idx++ == 0)
         slot = apdu_open_one_reader (dl->portstr);
