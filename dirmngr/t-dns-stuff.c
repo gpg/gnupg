@@ -235,7 +235,7 @@ main (int argc, char **argv)
       int i;
 
       err = get_dns_srv (name? name : "_hkp._tcp.wwwkeys.pgp.net",
-                         &srv, &count);
+                         NULL, NULL, &srv, &count);
       if (err)
         printf ("get_dns_srv failed: %s <%s>\n",
                 gpg_strerror (err), gpg_strsource (err));

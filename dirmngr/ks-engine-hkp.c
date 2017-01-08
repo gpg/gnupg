@@ -426,7 +426,6 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
       int refidx;
       int is_pool = 0;
       char *cname;
-      char *srvrecord;
       struct srventry *srvs;
       unsigned int srvscount;
 
@@ -448,16 +447,7 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
       if (!is_ip_address (name))
         {
           /* Check for SRV records.  */
-          srvrecord = xtryasprintf ("_hkp._tcp.%s", name);
-          if (srvrecord == NULL)
-            {
-              err = gpg_error_from_syserror ();
-              xfree (reftbl);
-              return err;
-            }
-
-          err = get_dns_srv (srvrecord, &srvs, &srvscount);
-          xfree (srvrecord);
+          err = get_dns_srv (name, "hkp", NULL, &srvs, &srvscount);
           if (err)
             {
               xfree (reftbl);

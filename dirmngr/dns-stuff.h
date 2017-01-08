@@ -153,6 +153,7 @@ gpg_error_t get_dns_cert (const char *name, int want_certtype,
 
 /* Return an array of SRV records.  */
 gpg_error_t get_dns_srv (const char *name,
+                         const char *service, const char *proto,
                          struct srventry **list, unsigned int *r_count);
 
 

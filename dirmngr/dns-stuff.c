@@ -1740,17 +1740,37 @@ getsrv_standard (const char *name,
 }
 
 
-/* Note that we do not return NONAME but simply store 0 at R_COUNT.  */
+/* Query a SRV record for SERVICE and PROTO for NAME.  If SERVICE is
+ * NULL, NAME is expected to contain the full query name.  Note that
+ * we do not return NONAME but simply store 0 at R_COUNT.  On error an
+ * error code is returned and 0 stored at R_COUNT.  */
 gpg_error_t
-get_dns_srv (const char *name, struct srventry **list, unsigned int *r_count)
+get_dns_srv (const char *name, const char *service, const char *proto,
+             struct srventry **list, unsigned int *r_count)
 {
   gpg_error_t err;
+  char *namebuffer = NULL;
   unsigned int srvcount;
   int i;
 
   *list = NULL;
   *r_count = 0;
   srvcount = 0;
+
+  /* If SERVICE is given construct the query from it and PROTO.  */
+  if (service)
+    {
+      namebuffer = xtryasprintf ("_%s._%s.%s",
+                                 service, proto? proto:"tcp", name);
+      if (!namebuffer)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      name = namebuffer;
+    }
+
+
 #ifdef USE_LIBDNS
   if (!standard_resolver)
     {
@@ -1852,6 +1872,7 @@ get_dns_srv (const char *name, struct srventry **list, unsigned int *r_count)
     }
   if (!err)
     *r_count = srvcount;
+  xfree (namebuffer);
   return err;
 }
 

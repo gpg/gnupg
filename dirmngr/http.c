@@ -2362,29 +2362,11 @@ connect_server (const char *server, unsigned short port,
   /* Do the SRV thing */
   if (srvtag)
     {
-      /* We're using SRV, so append the tags. */
-      if (1 + strlen (srvtag) + 6 + strlen (server) + 1
-          <= DIMof (struct srventry, target))
-	{
-	  char *srvname = xtrymalloc (DIMof (struct srventry, target));
-
-          if (!srvname) /* Out of core */
-            {
-              serverlist = NULL;
-              srvcount = 0;
-            }
-          else
-            {
-              stpcpy (stpcpy (stpcpy (stpcpy (srvname,"_"), srvtag),
-                              "._tcp."), server);
-              err = get_dns_srv (srvname, &serverlist, &srvcount);
-              if (err)
-                log_info ("getting SRV '%s' failed: %s\n",
-                          srvname, gpg_strerror (err));
-              xfree (srvname);
-              /* Note that on error SRVCOUNT is zero.  */
-            }
-	}
+      err = get_dns_srv (server, srvtag, NULL, &serverlist, &srvcount);
+      if (err)
+        log_info ("getting '%s' SRV for '%s' failed: %s\n",
+                  srvtag, server, gpg_strerror (err));
+      /* Note that on error SRVCOUNT is zero.  */
     }
 
   if (!serverlist)
