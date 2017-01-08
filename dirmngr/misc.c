@@ -296,6 +296,7 @@ dump_cert (const char *text, ksba_cert_t cert)
   ksba_sexp_t sexp;
   char *p;
   ksba_isotime_t t;
+  int idx;
 
   log_debug ("BEGIN Certificate '%s':\n", text? text:"");
   if (cert)
@@ -326,6 +327,13 @@ dump_cert (const char *text, ksba_cert_t cert)
       dump_string (p);
       ksba_free (p);
       log_printf ("\n");
+      for (idx=1; (p = ksba_cert_get_subject (cert, idx)); idx++)
+        {
+          log_debug ("        aka: ");
+          dump_string (p);
+          ksba_free (p);
+          log_printf ("\n");
+        }
 
       log_debug ("  hash algo: %s\n", ksba_cert_get_digest_algo (cert));
 
