@@ -826,13 +826,15 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
   char *mbox = NULL;
-  char *domain;     /* Points to mbox.  */
+  char *domainbuf = NULL;
+  char *domain;     /* Points to mbox or domainbuf.  */
   char sha1buf[20];
   char *uri = NULL;
   char *encodedhash = NULL;
   int opt_submission_addr;
   int opt_policy_flags;
   int no_log = 0;
+  char portstr[20] = { 0 };
 
   opt_submission_addr = has_option (line, "--submission-address");
   opt_policy_flags = has_option (line, "--policy-flags");
@@ -846,6 +848,50 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
     }
   *domain++ = 0;
 
+  /* Check for SRV records.  */
+  if (1)
+    {
+      struct srventry *srvs;
+      unsigned int srvscount;
+      size_t domainlen, targetlen;
+      int i;
+
+      err = get_dns_srv (domain, "openpgpkey", NULL, &srvs, &srvscount);
+      if (err)
+        goto leave;
+
+      /* Find the first target which also ends in DOMAIN or is equal
+       * to DOMAIN.  */
+      domainlen = strlen (domain);
+      for (i = 0; i < srvscount; i++)
+        {
+          log_debug ("srv: trying '%s:%hu'\n", srvs[i].target, srvs[i].port);
+          targetlen = strlen (srvs[i].target);
+          if ((targetlen > domainlen + 1
+               && srvs[i].target[targetlen - domainlen - 1] == '.'
+               && !ascii_strcasecmp (srvs[i].target + targetlen - domainlen,
+                                     domain))
+              || (targetlen == domainlen
+                  && !ascii_strcasecmp (srvs[i].target, domain)))
+            {
+              /* found.  */
+              domainbuf = xtrystrdup (srvs[i].target);
+              if (!domainbuf)
+                {
+                  err = gpg_error_from_syserror ();
+                  xfree (srvs);
+                  goto leave;
+                }
+              domain = domainbuf;
+              if (srvs[i].port)
+                snprintf (portstr, sizeof portstr, ":%hu", srvs[i].port);
+              break;
+            }
+        }
+      xfree (srvs);
+      log_debug ("srv: got '%s%s'\n", domain, portstr);
+    }
+
   gcry_md_hash_buffer (GCRY_MD_SHA1, sha1buf, mbox, strlen (mbox));
   encodedhash = zb32_encode (sha1buf, 8*20);
   if (!encodedhash)
@@ -858,6 +904,7 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
     {
       uri = strconcat ("https://",
                        domain,
+                       portstr,
                        "/.well-known/openpgpkey/submission-address",
                        NULL);
     }
@@ -865,6 +912,7 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
     {
       uri = strconcat ("https://",
                        domain,
+                       portstr,
                        "/.well-known/openpgpkey/policy",
                        NULL);
     }
@@ -872,6 +920,7 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
     {
       uri = strconcat ("https://",
                        domain,
+                       portstr,
                        "/.well-known/openpgpkey/hu/",
                        encodedhash,
                        NULL);
@@ -907,6 +956,7 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
   xfree (uri);
   xfree (encodedhash);
   xfree (mbox);
+  xfree (domainbuf);
   return leave_cmd (ctx, err);
 }
 
