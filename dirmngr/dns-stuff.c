@@ -1591,6 +1591,10 @@ getsrv_libdns (const char *name, struct srventry **list, unsigned int *r_count)
       srv->weight   = dsrv.weight;
       srv->port     = dsrv.port;
       mem2str (srv->target, dsrv.target, sizeof srv->target);
+      /* Libdns appends the root zone part which is problematic for
+       * most other functions - strip it.  */
+      if (*srv->target && (srv->target)[strlen (srv->target)-1] == '.')
+        (srv->target)[strlen (srv->target)-1] = 0;
     }
 
   *r_count = srvcount;
