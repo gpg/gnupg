@@ -374,19 +374,20 @@ add_host (const char *name, int is_pool,
 
 
 /* Map the host name NAME to the actual to be used host name.  This
-   allows us to manage round robin DNS names.  We use our own strategy
-   to choose one of the hosts.  For example we skip those hosts which
-   failed for some time and we stick to one host for a time
-   independent of DNS retry times.  If FORCE_RESELECT is true a new
-   host is always selected.  The selected host is stored as a malloced
-   string at R_HOST; on error NULL is stored.  If we know the port
-   used by the selected host, a string representation is written to
-   R_PORTSTR, otherwise it is left untouched.  If R_HTTPFLAGS is not
-   NULL it will receive flags which are to be passed to http_open.  If
-   R_POOLNAME is not NULL a malloced name of the pool is stored or
-   NULL if it is not a pool. */
+ * allows us to manage round robin DNS names.  We use our own strategy
+ * to choose one of the hosts.  For example we skip those hosts which
+ * failed for some time and we stick to one host for a time
+ * independent of DNS retry times.  If FORCE_RESELECT is true a new
+ * host is always selected.  If NO_SRV is set no service record lookup
+ * will be done.  The selected host is stored as a malloced string at
+ * R_HOST; on error NULL is stored.  If we know the port used by the
+ * selected host from a service record, a string representation is
+ * written to R_PORTSTR, otherwise it is left untouched.  If
+ * R_HTTPFLAGS is not NULL it will receive flags which are to be
+ * passed to http_open.  If R_POOLNAME is not NULL a malloced name of
+ * the pool is stored or NULL if it is not a pool. */
 static gpg_error_t
-map_host (ctrl_t ctrl, const char *name, int force_reselect,
+map_host (ctrl_t ctrl, const char *name, int force_reselect, int no_srv,
           char **r_host, char *r_portstr,
           unsigned int *r_httpflags, char **r_poolname)
 {
@@ -444,7 +445,7 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
         }
       hi = hosttable[idx];
 
-      if (!is_ip_address (name))
+      if (!no_srv && !is_ip_address (name))
         {
           /* Check for SRV records.  */
           err = get_dns_srv (name, "hkp", NULL, &srvs, &srvscount);
@@ -848,13 +849,13 @@ ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri)
 
 
 /* Build the remote part of the URL from SCHEME, HOST and an optional
-   PORT.  Returns an allocated string at R_HOSTPORT or NULL on failure
-   If R_POOLNAME is not NULL it receives a malloced string with the
-   poolname.  */
+ * PORT.  If NO_SRV is set no SRV record lookup will be done.  Returns
+ * an allocated string at R_HOSTPORT or NULL on failure If R_POOLNAME
+ * is not NULL it receives a malloced string with the poolname.  */
 static gpg_error_t
 make_host_part (ctrl_t ctrl,
                 const char *scheme, const char *host, unsigned short port,
-                int force_reselect,
+                int force_reselect, int no_srv,
                 char **r_hostport, unsigned int *r_httpflags, char **r_poolname)
 {
   gpg_error_t err;
@@ -864,10 +865,17 @@ make_host_part (ctrl_t ctrl,
   *r_hostport = NULL;
 
   portstr[0] = 0;
-  err = map_host (ctrl, host, force_reselect,
+  err = map_host (ctrl, host, force_reselect, no_srv,
                   &hostname, portstr, r_httpflags, r_poolname);
   if (err)
     return err;
+
+  /* If map_host did not return a port (from a SRV record) but a port
+   * has been specified (implicitly or explicitly) then use that port.
+   * Only in the case that a port was not specified (which might be a
+   * bug in https.c) we will later make sure that it has been set.  */
+  if (!*portstr && port)
+    snprintf (portstr, sizeof portstr, "%hu", port);
 
   /* Map scheme and port.  */
   if (!strcmp (scheme, "hkps") || !strcmp (scheme,"https"))
@@ -881,12 +889,6 @@ make_host_part (ctrl_t ctrl,
       scheme = "http";
       if (! *portstr)
         strcpy (portstr, "11371");
-    }
-  if (port)
-    snprintf (portstr, sizeof portstr, "%hu", port);
-  else
-    {
-      /*fixme_do_srv_lookup ()*/
     }
 
   *r_hostport = strconcat (scheme, "://", hostname, ":", portstr, NULL);
@@ -913,7 +915,11 @@ ks_hkp_resolve (ctrl_t ctrl, parsed_uri_t uri)
   gpg_error_t err;
   char *hostport = NULL;
 
-  err = make_host_part (ctrl, uri->scheme, uri->host, uri->port, 1,
+  /* NB: With an explicitly given port we do not want to consult a
+   * service record because that might be in conflict with the port
+   * from such a service record.  */
+  err = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
+                        1, uri->explicit_port,
                         &hostport, NULL, NULL);
   if (err)
     {
@@ -1219,7 +1225,8 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 
     xfree (hostport); hostport = NULL;
     xfree (httphost); httphost = NULL;
-    err = make_host_part (ctrl, uri->scheme, uri->host, uri->port, reselect,
+    err = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
+                          reselect, uri->explicit_port,
                           &hostport, &httpflags, &httphost);
     if (err)
       goto leave;
@@ -1360,7 +1367,8 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   /* Build the request string.  */
   xfree (hostport); hostport = NULL;
   xfree (httphost); httphost = NULL;
-  err = make_host_part (ctrl, uri->scheme, uri->host, uri->port, reselect,
+  err = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
+                        reselect, uri->explicit_port,
                         &hostport, &httpflags, &httphost);
   if (err)
     goto leave;
@@ -1472,7 +1480,8 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
  again:
   xfree (hostport); hostport = NULL;
   xfree (httphost); httphost = NULL;
-  err = make_host_part (ctrl, uri->scheme, uri->host, uri->port, reselect,
+  err = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
+                        reselect, uri->explicit_port,
                         &hostport, &httpflags, &httphost);
   if (err)
     goto leave;

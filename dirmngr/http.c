@@ -1169,6 +1169,7 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
   uri->opaque = 0;
   uri->v6lit = 0;
   uri->onion = 0;
+  uri->explicit_port = 0;
 
   /* A quick validity check. */
   if (strspn (p, VALID_URI_CHARS) != n)
@@ -1241,6 +1242,7 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
 	    {
 	      *p3++ = '\0';
 	      uri->port = atoi (p3);
+              uri->explicit_port = 1;
 	    }
 
 	  if ((n = remove_escapes (uri->host)) < 0)
