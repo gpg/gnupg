@@ -54,13 +54,14 @@ other utilities.  This tool is not available for Windows.
 @command{watchgnupg} is commonly invoked as
 
 @example
-watchgnupg --force ~/.gnupg/S.log
+watchgnupg --force $(gpgconf --list-dirs socketdir)/S.log
 @end example
 @manpause
 
 @noindent
-This starts it on the current terminal for listening on the socket
-@file{~/.gnupg/S.log}.
+This starts it on the current terminal for listening on the standard
+logging socket (which is either @file{~/.gnupg/S.log} or
+@file{/var/run/user/UID/gnupg/S.log}).
 
 @mansect options
 @noindent
@@ -76,6 +77,10 @@ Delete an already existing socket file.
 @item --tcp @var{n}
 Instead of reading from a local socket, listen for connects on TCP port
 @var{n}.
+
+@item --time-only
+@opindex time-only
+Do not print the date part of the timestamp.
 
 @item --verbose
 @opindex verbose
@@ -96,21 +101,22 @@ Display a brief help page and exit.
 @chapheading Examples
 
 @example
-$ watchgnupg --force /home/foo/.gnupg/S.log
+$ watchgnupg --force --time-only $(gpgconf --list-dirs socketdir)/S.log
 @end example
 
 This waits for connections on the local socket
-@file{/home/foo/.gnupg/S.log} and shows all log entries.  To make this
-work the option @option{log-file} needs to be used with all modules
-which logs are to be shown.  The value for that option must be given
-with a special prefix (e.g. in the conf files):
+(e.g. @file{/home/foo/.gnupg/S.log}) and shows all log entries.  To
+make this work the option @option{log-file} needs to be used with all
+modules which logs are to be shown.  The suggested entry for the
+configuration files is:
 
 @example
-log-file socket:///home/foo/.gnupg/S.log
+log-file socket://
 @end example
 
-If only @code{socket://} is used a default socket file named
-@file{S.log} in the standard socket directory is used.
+If the default socket as given above and returned by "echo $(gpgconf
+--list-dirs socketdir)/S.log" is not desired an arbitrary socket name
+can be specified, for example @file{socket:///home/foo/bar/mysocket}.
 For debugging purposes it is also possible to do remote logging.  Take
 care if you use this feature because the information is send in the
 clear over the network.  Use this syntax in the conf files:
@@ -119,13 +125,14 @@ clear over the network.  Use this syntax in the conf files:
 log-file tcp://192.168.1.1:4711
 @end example
 
-You may use any port and not just 4711 as shown above; only IP addresses
-are supported (v4 and v6) and no host names.  You need to start
-@command{watchgnupg} with the @option{tcp} option.  Note that under
-Windows the registry entry @var{HKCU\Software\GNU\GnuPG:DefaultLogFile}
-can be used to change the default log output from @code{stderr} to
-whatever is given by that entry.  However the only useful entry is a TCP
-name for remote debugging.
+You may use any port and not just 4711 as shown above; only IP
+addresses are supported (v4 and v6) and no host names.  You need to
+start @command{watchgnupg} with the @option{tcp} option.  Note that
+under Windows the registry entry
+@var{HKCU\Software\GNU\GnuPG:DefaultLogFile} can be used to change the
+default log output from @code{stderr} to whatever is given by that
+entry.  However the only useful entry is a TCP name for remote
+debugging.
 
 
 @mansect see also
