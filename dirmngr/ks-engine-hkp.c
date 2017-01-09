@@ -378,16 +378,17 @@ add_host (const char *name, int is_pool,
  * to choose one of the hosts.  For example we skip those hosts which
  * failed for some time and we stick to one host for a time
  * independent of DNS retry times.  If FORCE_RESELECT is true a new
- * host is always selected.  If NO_SRV is set no service record lookup
- * will be done.  The selected host is stored as a malloced string at
- * R_HOST; on error NULL is stored.  If we know the port used by the
- * selected host from a service record, a string representation is
- * written to R_PORTSTR, otherwise it is left untouched.  If
- * R_HTTPFLAGS is not NULL it will receive flags which are to be
- * passed to http_open.  If R_POOLNAME is not NULL a malloced name of
- * the pool is stored or NULL if it is not a pool. */
+ * host is always selected.  If SRVTAG is NULL no service record
+ * lookup will be done, if it is set that service name is used.  The
+ * selected host is stored as a malloced string at R_HOST; on error
+ * NULL is stored.  If we know the port used by the selected host from
+ * a service record, a string representation is written to R_PORTSTR,
+ * otherwise it is left untouched.  If R_HTTPFLAGS is not NULL it will
+ * receive flags which are to be passed to http_open.  If R_POOLNAME
+ * is not NULL a malloced name of the pool is stored or NULL if it is
+ * not a pool. */
 static gpg_error_t
-map_host (ctrl_t ctrl, const char *name, int force_reselect, int no_srv,
+map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
           char **r_host, char *r_portstr,
           unsigned int *r_httpflags, char **r_poolname)
 {
@@ -445,10 +446,10 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect, int no_srv,
         }
       hi = hosttable[idx];
 
-      if (!no_srv && !is_ip_address (name))
+      if (srvtag && !is_ip_address (name))
         {
           /* Check for SRV records.  */
-          err = get_dns_srv (name, "hkp", NULL, &srvs, &srvscount);
+          err = get_dns_srv (name, srvtag, NULL, &srvs, &srvscount);
           if (err)
             {
               xfree (reftbl);
@@ -859,37 +860,41 @@ make_host_part (ctrl_t ctrl,
                 char **r_hostport, unsigned int *r_httpflags, char **r_poolname)
 {
   gpg_error_t err;
+  const char *srvtag;
   char portstr[10];
   char *hostname;
 
   *r_hostport = NULL;
 
+  if (!strcmp (scheme, "hkps") || !strcmp (scheme,"https"))
+    {
+      scheme = "https";
+      srvtag = no_srv? NULL : "pgpkey-https";
+    }
+  else /* HKP or HTTP.  */
+    {
+      scheme = "http";
+      srvtag = no_srv? NULL : "pgpkey-http";
+    }
+
   portstr[0] = 0;
-  err = map_host (ctrl, host, force_reselect, no_srv,
+  err = map_host (ctrl, host, srvtag, force_reselect,
                   &hostname, portstr, r_httpflags, r_poolname);
   if (err)
     return err;
 
   /* If map_host did not return a port (from a SRV record) but a port
    * has been specified (implicitly or explicitly) then use that port.
-   * Only in the case that a port was not specified (which might be a
-   * bug in https.c) we will later make sure that it has been set.  */
-  if (!*portstr && port)
+   * In the case that a port was not specified (which is probably a
+   * bug in https.c) we will set up defaults.  */
+  if (*portstr)
+    ;
+  else if (!*portstr && port)
     snprintf (portstr, sizeof portstr, "%hu", port);
-
-  /* Map scheme and port.  */
-  if (!strcmp (scheme, "hkps") || !strcmp (scheme,"https"))
-    {
-      scheme = "https";
-      if (! *portstr)
-        strcpy (portstr, "443");
-    }
-  else /* HKP or HTTP.  */
-    {
-      scheme = "http";
-      if (! *portstr)
-        strcpy (portstr, "11371");
-    }
+  else if (!strcmp (scheme,"https"))
+    strcpy (portstr, "443");
+  else
+    strcpy (portstr, "11371");
 
   *r_hostport = strconcat (scheme, "://", hostname, ":", portstr, NULL);
   xfree (hostname);
