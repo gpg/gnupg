@@ -131,6 +131,10 @@ will thus trigger reading of fresh CRLs.
 @node Dirmngr Options
 @section Option Summary
 
+Note that all long options with the exception of @option{--options}
+and @option{--homedir} may also be given in the configuration file
+after stripping off the two leading dashes.
+
 @table @gnupgtabopt
 
 @item --options @var{file}
@@ -497,11 +501,20 @@ certificate for that pool.  Otherwise, it will use the system CAs.
 @section Configuration
 
 Dirmngr makes use of several directories when running in daemon mode:
+There are a few configuration files whih control the operation of
+dirmngr.  By default they may all be found in the current home
+directory (@pxref{option --homedir}).
 
 @table @file
 
-@item ~/.gnupg
-This is the standard home directory for all configuration files.
+@item dirmngr.conf
+@efindex dirmngr.conf
+This is the standard configuration file read by @command{dirmngr} on
+startup.  It may contain any valid long option; the leading two dashes
+may not be entered and the option may not be abbreviated.  This file
+is also read after a @code{SIGHUP} however not all options will
+actually have an effect.  This default name may be changed on the
+command line (@pxref{option --options}).  You should backup this file.
 
 @item /etc/gnupg/trusted-certs
 This directory should be filled with certificates of Root CAs you
