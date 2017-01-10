@@ -1007,7 +1007,7 @@ void
 _log_assert (const char *expr, const char *file, int line)
 {
   log_log (GPGRT_LOG_BUG, "Assertion \"%s\" failed (%s:%d)\n",
-           file, line, func);
+           expr, file, line);
   abort (); /* Never called; just to make the compiler happy.  */
 }
 #endif /*!GPGRT_HAVE_MACRO_FUNCTION*/

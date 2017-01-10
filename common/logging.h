@@ -62,7 +62,7 @@ estream_t log_get_stream (void);
    : _log_assert (#expr, __FILE__, __LINE__, __FUNCTION__))
 #else /*!GPGRT_HAVE_MACRO_FUNCTION*/
   void bug_at (const char *file, int line);
-  void _log_assert (const char *expr, const char *file, int line;
+  void _log_assert (const char *expr, const char *file, int line);
 # define BUG() bug_at( __FILE__ , __LINE__ )
 # define log_assert(expr)                                       \
   ((expr)                                                       \
