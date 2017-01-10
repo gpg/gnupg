@@ -8,3 +8,4 @@ RefuseManualStart=true
 
 [Service]
 ExecStart=/usr/bin/dirmngr --supervised
+ExecReload=/usr/bin/gpgconf --reload dirmngr

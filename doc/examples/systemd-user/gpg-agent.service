@@ -8,3 +8,4 @@ RefuseManualStart=true
 
 [Service]
 ExecStart=/usr/bin/gpg-agent --supervised
+ExecReload=/usr/bin/gpgconf --reload gpg-agent
