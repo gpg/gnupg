@@ -898,7 +898,9 @@ find_long_option( ARGPARSE_ARGS *arg,
 	    int j;
 	    for(j=i+1; opts[j].short_opt; j++ ) {
 		if( opts[j].long_opt
-		    && !strncmp( opts[j].long_opt, keyword, n ) )
+		    && !strncmp( opts[j].long_opt, keyword, n )
+                    && !(opts[j].short_opt == opts[i].short_opt
+                         && opts[j].flags == opts[i].flags ) )
 		    return -2;	/* abbreviation is ambiguous */
 	    }
 	    return i;
