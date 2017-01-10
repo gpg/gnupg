@@ -27,15 +27,25 @@
     ""
     (lambda (progress)
       (do ((i 0 (+ 1 i))) ((> i 12) #t)
-	(opt::update (make-value i))
-	(assert (string=? (make-value i) (list-ref (opt::value) 9)))
+	(let ((value (make-value i)))
+	  (if value
+	      (begin
+		(opt::update value)
+		(assert (string=? value (list-ref (opt::value) 9))))
+	      (begin
+		(opt::clear)
+		(let ((v (opt::value)))
+		  (assert (or (< (length v) 10)
+			      (string=? "" (list-ref v 9))))))))
 	(progress ".")))))
  (lambda (name . rest) name)
- (list "keyserver" "verbose")
+ (list "keyserver" "verbose" "quiet")
  (list (gpg-config 'gpg "keyserver")
-       (gpg-config 'gpg "verbose"))
+       (gpg-config 'gpg "verbose")
+       (gpg-config 'gpg "quiet"))
  (list (lambda (i) (if (even? i) "\"hkp://foo.bar" "\"hkps://bar.baz"))
        (lambda (i) (number->string
 		    ;; gpgconf: argument for option verbose of type 0
 		    ;; (none) must be positive
-		    (+ 1 i)))))
+		    (+ 1 i)))
+       (lambda (i) (if (even? i) #f "1"))))

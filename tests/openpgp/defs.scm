@@ -131,6 +131,15 @@
 			  (string-append bin-prefix "/" (basename (caddr t)))
 			  (string-append (getenv "objdir") "/" (caddr t)))))))
 
+;; You can splice VALGRIND into your argument vector to run programs
+;; under valgrind.  For example, to run valgrind on gpg, you may want
+;; to redefine gpg:
+;;
+;; (set! gpg `(,@valgrind ,@gpg))
+;;
+(define valgrind
+  '("/usr/bin/valgrind" --leak-check=full --error-exitcode=154))
+
 (define (gpg-conf . args)
   (gpg-conf' "" args))
 (define (gpg-conf' input args)
@@ -149,7 +158,7 @@
      (gpg-conf' (string-append key ":0:" (percent-encode value))
 		`(--change-options ,component)))
    (define (clear)
-     (gpg-conf' (string-append key ":1:")
+     (gpg-conf' (string-append key ":16:")
 		`(--change-options ,component)))))
 
 
