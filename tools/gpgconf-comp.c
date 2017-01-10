@@ -1102,6 +1102,35 @@ struct error_line_s
 
 
 
+
+/* Initialization and finalization.  */
+
+static void
+gc_option_free (gc_option_t *o)
+{
+  if (o == NULL || o->name == NULL)
+    return;
+
+  xfree (o->value);
+  gc_option_free (o + 1);
+}
+
+static void
+gc_components_free (void)
+{
+  int i;
+  for (i = 0; i < DIM (gc_component); i++)
+    gc_option_free (gc_component[i].options);
+}
+
+void
+gc_components_init (void)
+{
+  atexit (gc_components_free);
+}
+
+
+
 /* Engine specific support.  */
 static void
 gpg_agent_runtime_change (int killflag)
@@ -2183,7 +2212,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 	      if (!(option->flags & GC_OPT_FLAG_LIST))
 		{
 		  if (option->value)
-		    free (option->value);
+		    xfree (option->value);
 		  option->value = opt_value;
 		}
 	      else
@@ -2192,10 +2221,9 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 		    option->value = opt_value;
 		  else
 		    {
-		      char *opt_val = opt_value;
-
-		      option->value = xasprintf ("%s,%s", option->value,
-						 opt_val);
+		      char *old = option->value;
+		      option->value = xasprintf ("%s,%s", old, opt_value);
+		      xfree (old);
 		      xfree (opt_value);
 		    }
 		}
@@ -2872,7 +2900,12 @@ change_options_program (gc_component_t component, gc_backend_t backend,
   res = link (dest_filename, orig_filename);
 #endif
   if (res < 0 && errno != ENOENT)
-    return -1;
+    {
+      xfree (dest_filename);
+      xfree (src_filename);
+      xfree (orig_filename);
+      return -1;
+    }
   if (res < 0)
     {
       xfree (orig_filename);
@@ -3365,6 +3398,7 @@ gc_component_change_options (int component, estream_t in, estream_t out,
 		}
 	      if (err)
 		break;
+	      xfree (src_filename[i]);
 	      src_filename[i] = NULL;
 	    }
 	}
@@ -3434,10 +3468,17 @@ gc_component_change_options (int component, estream_t in, estream_t out,
 	unlink (backup_filename);
 #endif /* HAVE_W32_SYSTEM */
 	rename (orig_filename[backend], backup_filename);
+	xfree (backup_filename);
       }
 
  leave:
   xfree (line);
+  for (backend = 0; backend < GC_BACKEND_NR; backend++)
+    {
+      xfree (src_filename[backend]);
+      xfree (dest_filename[backend]);
+      xfree (orig_filename[backend]);
+    }
 }
 
 

@@ -38,6 +38,10 @@ struct
 
 
 /*-- gpgconf-comp.c --*/
+
+/* Initialize the components.  */
+void gc_components_init (void);
+
 /* Percent-Escape special characters.  The string is valid until the
    next invocation of the function.  */
 char *gc_percent_escape (const char *src);
