@@ -1,6 +1,6 @@
 ;; Common definitions for the OpenPGP test scripts.
 ;;
-;; Copyright (C) 2016 g10 Code GmbH
+;; Copyright (C) 2016, 2017 g10 Code GmbH
 ;;
 ;; This file is part of GnuPG.
 ;;
@@ -96,6 +96,21 @@
 (assert (equal? (percent-decode "%61") "a"))
 (assert (equal? (percent-decode "foob%61r") "foobar"))
 
+(define (percent-encode s)
+  (define (encode c)
+    `(#\% ,@(string->list (number->string (char->integer c) 16))))
+  (let loop ((acc '()) (cs (reverse (string->list s))))
+    (if (null? cs)
+	(list->string acc)
+	(case (car cs)
+	  ((#\: #\%)
+	   (loop (append (encode (car cs)) acc) (cdr cs)))
+	  (else
+	   (loop (cons (car cs) acc) (cdr cs)))))))
+(assert (equal? (percent-encode "") ""))
+(assert (equal? (percent-encode "%61") "%2561"))
+(assert (equal? (percent-encode "foob%61r") "foob%2561r"))
+
 (define tools
   '((gpgv "GPGV" "g10/gpgv")
     (gpg-connect-agent "GPG_CONNECT_AGENT" "tools/gpg-connect-agent")
@@ -117,12 +132,26 @@
 			  (string-append (getenv "objdir") "/" (caddr t)))))))
 
 (define (gpg-conf . args)
-  (let ((s (call-popen `(,(tool-hardcoded 'gpgconf) ,@args) "")))
+  (gpg-conf' "" args))
+(define (gpg-conf' input args)
+  (let ((s (call-popen `(,(tool-hardcoded 'gpgconf) ,@args) input)))
     (map (lambda (line) (map percent-decode (string-split line #\:)))
 	 (string-split-newlines s))))
 (define :gc:c:name car)
 (define :gc:c:description cadr)
 (define :gc:c:pgmname caddr)
+
+(define (gpg-config component key)
+  (package
+   (define (value)
+     (assoc key (gpg-conf '--list-options component)))
+   (define (update value)
+     (gpg-conf' (string-append key ":0:" (percent-encode value))
+		`(--change-options ,component)))
+   (define (clear)
+     (gpg-conf' (string-append key ":1:")
+		`(--change-options ,component)))))
+
 
 (unless installed?
 	(setenv "GNUPG_BUILDDIR" (getenv "objdir") #t))
