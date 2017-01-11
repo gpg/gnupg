@@ -2337,6 +2337,68 @@ start_server ()
 }
 #endif
 
+
+
+/* Return true if SOCKS shall be used.  This is the case if tor_mode
+ * is enabled and the desired address is not the loopback address.
+ * This function is basically a copy of the same internal fucntion in
+ * Libassuan.  */
+static int
+use_socks (struct sockaddr *addr)
+{
+  int mode;
+
+  if (assuan_sock_get_flag (ASSUAN_INVALID_FD, "tor-mode", &mode) || !mode)
+    return 0;  /* Not in Tor mode.  */
+  else if (addr->sa_family == AF_INET6)
+    {
+      struct sockaddr_in6 *addr_in6 = (struct sockaddr_in6 *)addr;
+      const unsigned char *s;
+      int i;
+
+      s = (unsigned char *)&addr_in6->sin6_addr.s6_addr;
+      if (s[15] != 1)
+        return 1;   /* Last octet is not 1 - not the loopback address.  */
+      for (i=0; i < 15; i++, s++)
+        if (*s)
+          return 1; /* Non-zero octet found - not the loopback address.  */
+
+      return 0; /* This is the loopback address.  */
+    }
+  else if (addr->sa_family == AF_INET)
+    {
+      struct sockaddr_in *addr_in = (struct sockaddr_in *)addr;
+
+      if (*(unsigned char*)&addr_in->sin_addr.s_addr == 127)
+        return 0; /* Loopback (127.0.0.0/8) */
+
+      return 1;
+    }
+  else
+    return 0;
+}
+
+
+/* Wrapper around assuan_sock_new which takes the domain from an
+ * address parameter.  */
+static assuan_fd_t
+my_sock_new_for_addr (struct sockaddr *addr, int type, int proto)
+{
+  int domain;
+
+  if (use_socks (addr))
+    {
+      /* Libassaun always uses 127.0.0.1 to connect to the socks
+       * server (i.e. the Tor daemon).  */
+      domain = AF_INET;
+    }
+  else
+    domain = addr->sa_family;
+
+  return assuan_sock_new (domain, type, proto);
+}
+
+
 /* Actually connect to a server.  Returns the file descriptor or -1 on
    error.  ERRNO is set on error. */
 static assuan_fd_t
@@ -2436,7 +2498,7 @@ connect_server (const char *server, unsigned short port,
 
           if (sock != ASSUAN_INVALID_FD)
             assuan_sock_close (sock);
-          sock = assuan_sock_new (ai->family, ai->socktype, ai->protocol);
+          sock = my_sock_new_for_addr (ai->addr, ai->socktype, ai->protocol);
           if (sock == ASSUAN_INVALID_FD)
             {
               int save_errno = errno;
