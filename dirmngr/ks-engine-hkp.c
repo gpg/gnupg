@@ -1138,6 +1138,17 @@ handle_send_request_error (gpg_error_t err, const char *request,
   switch (gpg_err_code (err))
     {
     case GPG_ERR_ECONNREFUSED:
+      if (opt.use_tor)
+        {
+          assuan_fd_t sock;
+
+          sock = assuan_sock_connect_byname (NULL, 0, 0, NULL, ASSUAN_SOCK_TOR);
+          if (sock == ASSUAN_INVALID_FD)
+            log_info ("(it seems Tor is not running)\n");
+          else
+            assuan_sock_close (sock);
+        }
+      /*FALLTHRU*/
     case GPG_ERR_ENETUNREACH:
     case GPG_ERR_ENETDOWN:
     case GPG_ERR_UNKNOWN_HOST:
