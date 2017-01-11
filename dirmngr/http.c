@@ -2,7 +2,7 @@
  * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006, 2009, 2010,
  *               2011 Free Software Foundation, Inc.
  * Copyright (C) 2014 Werner Koch
- * Copyright (C) 2015 g10 Code GmbH
+ * Copyright (C) 2015-2017 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -255,6 +255,12 @@ struct http_context_s
 };
 
 
+/* Two flags to enable verbose and debug mode.  Although currently not
+ * set-able a value > 1 for OPT_DEBUG enables debugging of the session
+ * reference counting.  */
+static int opt_verbose;
+static int opt_debug;
+
 /* The global callback for the verification function.  */
 static gpg_error_t (*tls_callback) (http_t, http_session_t, int);
 
@@ -330,9 +336,9 @@ _my_socket_new (int lnr, assuan_fd_t fd)
     }
   so->fd = fd;
   so->refcount = 1;
-  /* log_debug ("http.c:socket_new(%d): object %p for fd %d created\n", */
-  /*            lnr, so, so->fd); */
-  (void)lnr;
+  if (opt_debug)
+    log_debug ("http.c:%d:socket_new: object %p for fd %d created\n",
+               lnr, so, so->fd);
   return so;
 }
 #define my_socket_new(a) _my_socket_new (__LINE__, (a))
@@ -342,9 +348,9 @@ static my_socket_t
 _my_socket_ref (int lnr, my_socket_t so)
 {
   so->refcount++;
-  /* log_debug ("http.c:socket_ref(%d) object %p for fd %d refcount now %d\n", */
-  /*            lnr, so, so->fd, so->refcount); */
-  (void)lnr;
+  if (opt_debug > 1)
+    log_debug ("http.c:%d:socket_ref: object %p for fd %d refcount now %d\n",
+               lnr, so, so->fd, so->refcount);
   return so;
 }
 #define my_socket_ref(a) _my_socket_ref (__LINE__,(a))
@@ -360,9 +366,10 @@ _my_socket_unref (int lnr, my_socket_t so,
   if (so)
     {
       so->refcount--;
-      /* log_debug ("http.c:socket_unref(%d): object %p for fd %d ref now %d\n", */
-      /*            lnr, so, so->fd, so->refcount); */
-      (void)lnr;
+      if (opt_debug > 1)
+        log_debug ("http.c:%d:socket_unref: object %p for fd %d ref now %d\n",
+                   lnr, so, so->fd, so->refcount);
+
       if (!so->refcount)
         {
           if (preclose)
@@ -469,6 +476,15 @@ make_header_line (const char *prefix, const char *suffix,
 
 
 
+/* Set verbosity and debug mode for this module. */
+void
+http_set_verbose (int verbose, int debug)
+{
+  opt_verbose = verbose;
+  opt_debug = debug;
+}
+
+
 /* Register a non-standard global TLS callback function.  If no
    verification is desired a callback needs to be registered which
    always returns NULL.  */
@@ -562,9 +578,9 @@ session_unref (int lnr, http_session_t sess)
     return;
 
   sess->refcount--;
-  /* log_debug ("http.c:session_unref(%d): sess %p ref now %d\n", */
-  /*            lnr, sess, sess->refcount); */
-  (void)lnr;
+  if (opt_debug > 1)
+    log_debug ("http.c:%d:session_unref: sess %p ref now %d\n",
+               lnr, sess, sess->refcount);
   if (sess->refcount)
     return;
 
@@ -731,7 +747,8 @@ http_session_new (http_session_t *r_session, const char *tls_priority,
   }
 #endif /*!HTTP_USE_GNUTLS*/
 
-  /* log_debug ("http.c:session_new: sess %p created\n", sess); */
+  if (opt_debug > 1)
+    log_debug ("http.c:session_new: sess %p created\n", sess);
   err = 0;
 
 #if USE_TLS
@@ -754,8 +771,9 @@ http_session_ref (http_session_t sess)
   if (sess)
     {
       sess->refcount++;
-      /* log_debug ("http.c:session_ref: sess %p ref now %d\n", sess, */
-      /*            sess->refcount); */
+      if (opt_debug > 1)
+        log_debug ("http.c:session_ref: sess %p ref now %d\n",
+                   sess, sess->refcount);
     }
   return sess;
 }
@@ -937,6 +955,8 @@ http_start_data (http_t hd)
 {
   if (!hd->in_data)
     {
+      if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
+        log_debug_with_string ("\r\n", "http.c:request-header:");
       es_fputs ("\r\n", hd->fp_write);
       es_fflush (hd->fp_write);
       hd->in_data = 1;
@@ -1881,7 +1901,8 @@ send_request (http_t hd, const char *httphost, const char *auth,
       return err;
     }
 
-  /* log_debug ("request:\n%s\nEND request\n", request); */
+  if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
+    log_debug_with_string (request, "http.c:request:");
 
   /* First setup estream so that we can write even the first line
      using estream.  This is also required for the sake of gnutls. */
@@ -1916,6 +1937,8 @@ send_request (http_t hd, const char *httphost, const char *auth,
     {
       for (;headers; headers=headers->next)
         {
+          if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
+            log_debug_with_string (headers->d, "http.c:request-header:");
           if ((es_fputs (headers->d, hd->fp_write) || es_fflush (hd->fp_write))
               || (es_fputs("\r\n",hd->fp_write) || es_fflush(hd->fp_write)))
             {
@@ -2167,8 +2190,7 @@ parse_response (http_t hd)
 	return GPG_ERR_EOF;
 
       if ((hd->flags & HTTP_FLAG_LOG_RESP))
-        log_info ("RESP: '%.*s'\n",
-                  (int)strlen(line)-(*line&&line[1]?2:0),line);
+        log_debug_with_string (line, "http.c:response:\n");
     }
   while (!*line);
 
@@ -2213,7 +2235,7 @@ parse_response (http_t hd)
       if ((*line == '\r' && line[1] == '\n') || *line == '\n')
 	*line = 0;
       if ((hd->flags & HTTP_FLAG_LOG_RESP))
-        log_info ("RESP: '%.*s'\n",
+        log_info ("http.c:RESP: '%.*s'\n",
                   (int)strlen(line)-(*line&&line[1]?2:0),line);
       if (*line)
         {
@@ -2341,6 +2363,9 @@ connect_server (const char *server, unsigned short port,
     {
 #ifdef ASSUAN_SOCK_TOR
 
+      if (opt_debug)
+        log_debug ("http.c:connect_server:onion: name='%s' port=%hu\n",
+                   server, port);
       sock = assuan_sock_connect_byname (server, port, 0, NULL,
                                          ASSUAN_SOCK_TOR);
       if (sock == ASSUAN_INVALID_FD)
@@ -2389,6 +2414,9 @@ connect_server (const char *server, unsigned short port,
     {
       dns_addrinfo_t aibuf, ai;
 
+      if (opt_debug)
+        log_debug ("http.c:connect_server: trying name='%s' port=%hu\n",
+                   serverlist[srv].target, port);
       err = resolve_dns_name (serverlist[srv].target, port, 0, SOCK_STREAM,
                               &aibuf, NULL);
       if (err)
@@ -2539,7 +2567,8 @@ cookie_read (void *cookie, void *buffer, size_t size)
 
       ntbtls_get_stream (c->session->tls_session, &in, &out);
       nread = es_fread (buffer, 1, size, in);
-      log_debug ("TLS network read: %d/%u\n", nread, size);
+      if (opt_debug)
+        log_debug ("TLS network read: %d/%u\n", nread, size);
     }
   else
 #elif HTTP_USE_GNUTLS
@@ -2631,7 +2660,8 @@ cookie_write (void *cookie, const void *buffer_arg, size_t size)
         es_fflush (out);
       else
         nwritten = es_fwrite (buffer, 1, size, out);
-      log_debug ("TLS network write: %d/%u\n", nwritten, size);
+      if (opt_debug)
+        log_debug ("TLS network write: %d/%u\n", nwritten, size);
     }
   else
 #elif HTTP_USE_GNUTLS

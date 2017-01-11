@@ -97,6 +97,8 @@ typedef struct http_session_s *http_session_t;
 struct http_context_s;
 typedef struct http_context_s *http_t;
 
+void http_set_verbose (int verbose, int debug);
+
 void http_register_tls_callback (gpg_error_t (*cb)(http_t,http_session_t,int));
 void http_register_tls_ca (const char *fname);
 void http_register_netactivity_cb (void (*cb)(void));
