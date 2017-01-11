@@ -96,6 +96,8 @@ void log_fatal (const char *fmt, ...)  GPGRT_ATTR_NR_PRINTF(1,2);
 void log_error (const char *fmt, ...)  GPGRT_ATTR_PRINTF(1,2);
 void log_info (const char *fmt, ...)   GPGRT_ATTR_PRINTF(1,2);
 void log_debug (const char *fmt, ...)  GPGRT_ATTR_PRINTF(1,2);
+void log_debug_with_string (const char *string, const char *fmt,
+                            ...) GPGRT_ATTR_PRINTF(2,3);
 void log_printf (const char *fmt, ...) GPGRT_ATTR_PRINTF(1,2);
 void log_flush (void);
 

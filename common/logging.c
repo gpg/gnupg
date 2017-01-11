@@ -665,31 +665,10 @@ log_get_stream ()
   return logstream;
 }
 
+
 static void
-do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
+print_prefix (int level, int leading_backspace)
 {
-  if (!logstream)
-    {
-#ifdef HAVE_W32_SYSTEM
-      char *tmp;
-
-      tmp = (no_registry
-             ? NULL
-             : read_w32_registry_string (NULL, GNUPG_REGISTRY_DIR,
-                                         "DefaultLogFile"));
-      log_set_file (tmp && *tmp? tmp : NULL);
-      xfree (tmp);
-#else
-      log_set_file (NULL); /* Make sure a log stream has been set.  */
-#endif
-      assert (logstream);
-    }
-
-  es_flockfile (logstream);
-  if (missing_lf && level != GPGRT_LOG_CONT)
-    es_putc_unlocked ('\n', logstream );
-  missing_lf = 0;
-
   if (level != GPGRT_LOG_CONT)
     { /* Note this does not work for multiple line logging as we would
        * need to print to a buffer first */
@@ -720,11 +699,9 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
         es_putc_unlocked (':', logstream);
       /* A leading backspace suppresses the extra space so that we can
          correctly output, programname, filename and linenumber. */
-      if (fmt && *fmt == '\b')
-        fmt++;
-      else
-        if (with_time || with_prefix || with_pid || force_prefixes)
-          es_putc_unlocked (' ', logstream);
+      if (!leading_backspace
+          && (with_time || with_prefix || with_pid || force_prefixes))
+        es_putc_unlocked (' ', logstream);
     }
 
   switch (level)
@@ -741,6 +718,40 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
       es_fprintf_unlocked (logstream,"[Unknown log level %d]: ", level);
       break;
     }
+}
+
+
+static void
+do_logv (int level, int ignore_arg_ptr, const char *extrastring,
+         const char *fmt, va_list arg_ptr)
+{
+  int leading_backspace = (fmt && *fmt == '\b');
+
+  if (!logstream)
+    {
+#ifdef HAVE_W32_SYSTEM
+      char *tmp;
+
+      tmp = (no_registry
+             ? NULL
+             : read_w32_registry_string (NULL, GNUPG_REGISTRY_DIR,
+                                         "DefaultLogFile"));
+      log_set_file (tmp && *tmp? tmp : NULL);
+      xfree (tmp);
+#else
+      log_set_file (NULL); /* Make sure a log stream has been set.  */
+#endif
+      assert (logstream);
+    }
+
+  es_flockfile (logstream);
+  if (missing_lf && level != GPGRT_LOG_CONT)
+    es_putc_unlocked ('\n', logstream );
+  missing_lf = 0;
+
+  print_prefix (level, leading_backspace);
+  if (leading_backspace)
+    fmt++;
 
   if (fmt)
     {
@@ -764,6 +775,48 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
         es_vfprintf_unlocked (logstream, fmt, arg_ptr);
       if (*fmt && fmt[strlen(fmt)-1] != '\n')
         missing_lf = 1;
+    }
+
+  /* If we have an EXTRASTRING print it now while we still hold the
+   * lock on the logstream.  */
+  if (extrastring)
+    {
+      int c;
+
+      if (missing_lf)
+        {
+          es_putc_unlocked ('\n', logstream);
+          missing_lf = 0;
+        }
+      print_prefix (level, leading_backspace);
+      es_fputs_unlocked (">> ", logstream);
+      missing_lf = 1;
+      while ((c = *extrastring++))
+        {
+          missing_lf = 1;
+          if (c == '\\')
+            es_fputs_unlocked ("\\\\", logstream);
+          else if (c == '\r')
+            es_fputs_unlocked ("\\r", logstream);
+          else if ((c == '\n'))
+            {
+              es_fputs_unlocked ("\\n\n", logstream);
+              if (*extrastring)
+                {
+                  print_prefix (level, leading_backspace);
+                  es_fputs_unlocked (">> ", logstream);
+                }
+              else
+                missing_lf = 0;
+            }
+          else
+            es_putc_unlocked (c, logstream);
+        }
+      if (missing_lf)
+        {
+          es_putc_unlocked ('\n', logstream);
+          missing_lf = 0;
+        }
     }
 
   if (level == GPGRT_LOG_FATAL)
@@ -804,7 +857,7 @@ log_log (int level, const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt) ;
-  do_logv (level, 0, fmt, arg_ptr);
+  do_logv (level, 0, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
 }
 
@@ -812,7 +865,7 @@ log_log (int level, const char *fmt, ...)
 void
 log_logv (int level, const char *fmt, va_list arg_ptr)
 {
-  do_logv (level, 0, fmt, arg_ptr);
+  do_logv (level, 0, NULL, fmt, arg_ptr);
 }
 
 
@@ -821,7 +874,7 @@ do_log_ignore_arg (int level, const char *str, ...)
 {
   va_list arg_ptr;
   va_start (arg_ptr, str);
-  do_logv (level, 1, str, arg_ptr);
+  do_logv (level, 1, NULL, str, arg_ptr);
   va_end (arg_ptr);
 }
 
@@ -843,7 +896,7 @@ log_info (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (GPGRT_LOG_INFO, 0, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_INFO, 0, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
 }
 
@@ -854,7 +907,7 @@ log_error (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (GPGRT_LOG_ERROR, 0, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_ERROR, 0, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
   /* Protect against counter overflow.  */
   if (errorcount < 30000)
@@ -868,7 +921,7 @@ log_fatal (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (GPGRT_LOG_FATAL, 0, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_FATAL, 0, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
   abort (); /* Never called; just to make the compiler happy.  */
 }
@@ -880,7 +933,7 @@ log_bug (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (GPGRT_LOG_BUG, 0, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_BUG, 0, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
   abort (); /* Never called; just to make the compiler happy.  */
 }
@@ -892,7 +945,21 @@ log_debug (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (GPGRT_LOG_DEBUG, 0, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_DEBUG, 0, NULL, fmt, arg_ptr);
+  va_end (arg_ptr);
+}
+
+
+/* The same as log_debug but at the end of the output STRING is
+ * printed with LFs expanded to include the prefix and a final --end--
+ * marker.  */
+void
+log_debug_with_string (const char *string, const char *fmt, ...)
+{
+  va_list arg_ptr ;
+
+  va_start (arg_ptr, fmt);
+  do_logv (GPGRT_LOG_DEBUG, 0, string, fmt, arg_ptr);
   va_end (arg_ptr);
 }
 
@@ -903,7 +970,7 @@ log_printf (const char *fmt, ...)
   va_list arg_ptr;
 
   va_start (arg_ptr, fmt);
-  do_logv (fmt ? GPGRT_LOG_CONT : GPGRT_LOG_BEGIN, 0, fmt, arg_ptr);
+  do_logv (fmt ? GPGRT_LOG_CONT : GPGRT_LOG_BEGIN, 0, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
 }
 
