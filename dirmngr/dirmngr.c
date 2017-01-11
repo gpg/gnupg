@@ -651,6 +651,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     }
 
   set_dns_verbose (opt.verbose, !!DBG_DNS);
+  http_set_verbose (opt.verbose, !!DBG_NETWORK);
 
   return 1; /* Handled. */
 }
