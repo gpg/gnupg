@@ -44,7 +44,7 @@ static const char oidstr_ocsp[] = "1.3.6.1.5.5.7.48.1";
       HashAlgorithm    AlgorithmIdentifier,
       certificateHash OCTET STRING }
  */
-static const char oidstr_certHash[] = "1.3.36.8.3.13";
+/* static const char oidstr_certHash[] = "1.3.36.8.3.13"; */
 
 
 
