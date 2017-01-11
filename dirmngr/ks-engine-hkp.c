@@ -1132,10 +1132,14 @@ handle_send_request_error (gpg_error_t err, const char *request,
 {
   int retry = 0;
 
+  /* Fixme: Should we disable all hosts of a protocol family if a
+   * request for an address of that familiy returned ENETDOWN?  */
+
   switch (gpg_err_code (err))
     {
     case GPG_ERR_ECONNREFUSED:
     case GPG_ERR_ENETUNREACH:
+    case GPG_ERR_ENETDOWN:
     case GPG_ERR_UNKNOWN_HOST:
     case GPG_ERR_NETWORK:
       if (mark_host_dead (request) && *tries_left)
@@ -1148,6 +1152,7 @@ handle_send_request_error (gpg_error_t err, const char *request,
           log_info ("selecting a different host due to a timeout\n");
           retry = 1;
         }
+      break;
 
     default:
       break;
