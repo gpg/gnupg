@@ -225,7 +225,7 @@ if [ "$myhost" = "find-version" ]; then
       fi
       [ -n "$tmp" ] && beta=yes
       rev=$(git rev-parse --short HEAD | tr -d '\n\r')
-      rvd=$((0x$(echo ${rev} | dd bs=1 count=2 2>/dev/null)))
+      rvd=$((0x$(echo ${rev} | dd bs=1 count=4 2>/dev/null)))
     else
       ingit=no
       beta=yes
