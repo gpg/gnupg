@@ -4246,6 +4246,15 @@ size_t dns_txt_print(void *_dst, size_t lim, struct dns_txt *txt) {
 } /* dns_txt_print() */
 
 
+/* Some of the function pointers of DNS_RRTYPES are initialized with
+ * slighlly different fucntions, thus we can't use prototypes.  */
+DNS_PRAGMA_PUSH
+#if __clang__
+#pragma clang diagnostic ignored "-Wstrict-prototypes"
+#elif DNS_GNUC_PREREQ(4,6,0)
+#pragma GCC   diagnostic ignored "-Wstrict-prototypes"
+#endif
+
 static const struct dns_rrtype {
 	enum dns_type type;
 	const char *name;
@@ -4270,6 +4279,10 @@ static const struct dns_rrtype {
 	{ DNS_T_SSHFP,  "SSHFP",  0,                 &dns_sshfp_parse,  &dns_sshfp_push,  &dns_sshfp_cmp,  &dns_sshfp_print,  0,                },
 	{ DNS_T_AXFR,   "AXFR",   0,                 0,                 0,                0,               0,                 0,                },
 }; /* dns_rrtypes[] */
+
+DNS_PRAGMA_POP  /*(-Wstrict-prototypes)*/
+
+
 
 static const struct dns_rrtype *dns_rrtype(enum dns_type type) {
 	const struct dns_rrtype *t;
