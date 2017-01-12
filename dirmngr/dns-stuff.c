@@ -993,8 +993,10 @@ resolve_dns_addr (const struct sockaddr *addr, int addrlen,
 }
 
 
-/* Check whether NAME is an IP address.  Returns true if it is either
-   an IPv6 or IPv4 numerical address.  */
+/* Check whether NAME is an IP address.  Returns a true if it is
+ * either an IPv6 or a IPv4 numerical address.  The actual return
+ * values can also be used to identify whether it is v4 or v6: The
+ * true value will surprisingly be 4 for IPv4 and 6 for IPv6.  */
 int
 is_ip_address (const char *name)
 {
@@ -1002,7 +1004,7 @@ is_ip_address (const char *name)
   int ndots, dblcol, n;
 
   if (*name == '[')
-    return 1; /* yes: A legal DNS name may not contain this character;
+    return 6; /* yes: A legal DNS name may not contain this character;
                  this mut be bracketed v6 address.  */
   if (*name == '.')
     return 0; /* No.  A leading dot is not a valid IP address.  */
@@ -1035,7 +1037,7 @@ is_ip_address (const char *name)
   if (ndots > 7)
     return 0; /* No: Too many colons.  */
   else if (ndots > 1)
-    return 1; /* Yes: At least 2 colons indicate an v6 address.  */
+    return 6; /* Yes: At least 2 colons indicate an v6 address.  */
 
  legacy:
   /* Check whether it is legacy IP address.  */
@@ -1056,7 +1058,7 @@ is_ip_address (const char *name)
       else if (++n > 3)
         return 0; /* No: More than 3 digits.  */
     }
-  return !!(ndots == 3);
+  return (ndots == 3)? 4 : 0;
 }
 
 

@@ -384,13 +384,14 @@ add_host (const char *name, int is_pool,
  * NULL is stored.  If we know the port used by the selected host from
  * a service record, a string representation is written to R_PORTSTR,
  * otherwise it is left untouched.  If R_HTTPFLAGS is not NULL it will
- * receive flags which are to be passed to http_open.  If R_POOLNAME
- * is not NULL a malloced name of the pool is stored or NULL if it is
- * not a pool. */
+ * receive flags which are to be passed to http_open.  If R_HTTPHOST
+ * is not NULL a malloced name of the host is stored there; this might
+ * be different from R_HOST in case it has been selected from a
+ * pool.  */
 static gpg_error_t
 map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
           char **r_host, char *r_portstr,
-          unsigned int *r_httpflags, char **r_poolname)
+          unsigned int *r_httpflags, char **r_httphost)
 {
   gpg_error_t err = 0;
   hostinfo_t hi;
@@ -399,8 +400,8 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
   *r_host = NULL;
   if (r_httpflags)
     *r_httpflags = 0;
-  if (r_poolname)
-    *r_poolname = NULL;
+  if (r_httphost)
+    *r_httphost = NULL;
 
   /* No hostname means localhost.  */
   if (!name || !*name)
@@ -535,10 +536,10 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
   if (hi->pool)
     {
       /* Deal with the pool name before selecting a host. */
-      if (r_poolname)
+      if (r_httphost)
         {
-          *r_poolname = xtrystrdup (hi->cname? hi->cname : hi->name);
-          if (!*r_poolname)
+          *r_httphost = xtrystrdup (hi->cname? hi->cname : hi->name);
+          if (!*r_httphost)
             return gpg_error_from_syserror ();
         }
 
@@ -557,10 +558,10 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
           if (hi->poolidx == -1)
             {
               log_error ("no alive host found in pool '%s'\n", name);
-              if (r_poolname)
+              if (r_httphost)
                 {
-                  xfree (*r_poolname);
-                  *r_poolname = NULL;
+                  xfree (*r_httphost);
+                  *r_httphost = NULL;
                 }
               return gpg_error (GPG_ERR_NO_KEYSERVER);
             }
@@ -574,10 +575,10 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
   if (hi->dead)
     {
       log_error ("host '%s' marked as dead\n", hi->name);
-      if (r_poolname)
+      if (r_httphost)
         {
-          xfree (*r_poolname);
-          *r_poolname = NULL;
+          xfree (*r_httphost);
+          *r_httphost = NULL;
         }
       return gpg_error (GPG_ERR_NO_KEYSERVER);
     }
@@ -604,10 +605,10 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
   if (!*r_host)
     {
       err = gpg_error_from_syserror ();
-      if (r_poolname)
+      if (r_httphost)
         {
-          xfree (*r_poolname);
-          *r_poolname = NULL;
+          xfree (*r_httphost);
+          *r_httphost = NULL;
         }
       return err;
     }
@@ -851,13 +852,15 @@ ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri)
 
 /* Build the remote part of the URL from SCHEME, HOST and an optional
  * PORT.  If NO_SRV is set no SRV record lookup will be done.  Returns
- * an allocated string at R_HOSTPORT or NULL on failure If R_POOLNAME
- * is not NULL it receives a malloced string with the poolname.  */
+ * an allocated string at R_HOSTPORT or NULL on failure.  If
+ * R_HTTPHOST is not NULL it receives a malloced string with the
+ * hostname; this may be different from HOST if HOST is selected from
+ * a pool.  */
 static gpg_error_t
 make_host_part (ctrl_t ctrl,
                 const char *scheme, const char *host, unsigned short port,
                 int force_reselect, int no_srv,
-                char **r_hostport, unsigned int *r_httpflags, char **r_poolname)
+                char **r_hostport, unsigned int *r_httpflags, char **r_httphost)
 {
   gpg_error_t err;
   const char *srvtag;
@@ -879,7 +882,7 @@ make_host_part (ctrl_t ctrl,
 
   portstr[0] = 0;
   err = map_host (ctrl, host, srvtag, force_reselect,
-                  &hostname, portstr, r_httpflags, r_poolname);
+                  &hostname, portstr, r_httpflags, r_httphost);
   if (err)
     return err;
 
@@ -896,14 +899,17 @@ make_host_part (ctrl_t ctrl,
   else
     strcpy (portstr, "11371");
 
-  *r_hostport = strconcat (scheme, "://", hostname, ":", portstr, NULL);
+  if (*hostname != '[' && is_ip_address (hostname) == 6)
+    *r_hostport = strconcat (scheme, "://[", hostname, "]:", portstr, NULL);
+  else
+    *r_hostport = strconcat (scheme, "://", hostname, ":", portstr, NULL);
   xfree (hostname);
   if (!*r_hostport)
     {
-      if (r_poolname)
+      if (r_httphost)
         {
-          xfree (*r_poolname);
-          *r_poolname = NULL;
+          xfree (*r_httphost);
+          *r_httphost = NULL;
         }
       return gpg_error_from_syserror ();
     }
