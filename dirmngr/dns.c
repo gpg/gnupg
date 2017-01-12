@@ -288,6 +288,10 @@ int dns_v_api(void) {
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef EPROTO
+# define EPROTO EPROTONOSUPPORT
+#endif
+
 #if _WIN32
 
 #define DNS_EINTR	WSAEINTR
