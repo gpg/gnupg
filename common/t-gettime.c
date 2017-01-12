@@ -20,8 +20,17 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
 
 #include "util.h"
+
+/* In case we do not have stdint.h and no other version of that
+ * conversion macro provide shortcut it.  */
+#ifndef UINTMAX_C
+#define UINTMAX_C (c)  (c)
+#endif
 
 #define pass()  do { ; } while(0)
 #define fail(a)  do { fprintf (stderr, "%s:%d: test %d failed\n",\
@@ -55,10 +64,10 @@ test_isotime2epoch (void)
     { "20070629T160000\n", 1183132800 },
     { "20070629T160000.",  INVALID },
 #if SIZEOF_TIME_T > 4
-    { "21060207T062815", (time_t)0x0ffffffff },
-    { "21060207T062816", (time_t)0x100000000 },
-    { "21060207T062817", (time_t)0x100000001 },
-    { "21060711T120001", (time_t)4308292801  },
+    { "21060207T062815", (time_t)UINTMAX_C(0x0ffffffff) },
+    { "21060207T062816", (time_t)UINTMAX_C(0x100000000) },
+    { "21060207T062817", (time_t)UINTMAX_C(0x100000001) },
+    { "21060711T120001", (time_t)UINTMAX_C(4308292801)  },
 #endif /*SIZEOF_TIME_T > 4*/
     { NULL, 0 }
   };
