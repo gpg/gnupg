@@ -225,7 +225,7 @@ if [ "$myhost" = "find-version" ]; then
       fi
       [ -n "$tmp" ] && beta=yes
       rev=$(git rev-parse --short HEAD | tr -d '\n\r')
-      rvd=$((0x$(echo ${rev} | head -c 4)))
+      rvd=$((0x$(echo ${rev} | dd bs=1 count=2 2>/dev/null)))
     else
       ingit=no
       beta=yes
@@ -417,8 +417,11 @@ fi
 
 # Check the git setup.
 if [ -d .git ]; then
-  CP="cp -a"
-  [ -z "${SILENT}" ] && CP="$CP -v"
+  CP="cp -p"
+  # If we have a GNU cp we can add -v
+  if cp --version >/dev/null 2>/dev/null; then
+    [ -z "${SILENT}" ] && CP="$CP -v"
+  fi
   if [ -f .git/hooks/pre-commit.sample -a ! -f .git/hooks/pre-commit ] ; then
     [ -z "${SILENT}" ] && cat <<EOF
 *** Activating trailing whitespace git pre-commit hook. ***
