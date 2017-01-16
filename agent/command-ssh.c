@@ -2408,7 +2408,7 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
   if ( gpg_err_code (err) == GPG_ERR_CARD_REMOVED )
     {
       /* Ask for the serial number to reset the card.  */
-      err = agent_card_serialno (ctrl, &serialno);
+      err = agent_card_serialno (ctrl, &serialno, NULL);
       if (err)
         {
           if (opt.verbose)

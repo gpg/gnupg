@@ -679,16 +679,22 @@ get_serialno_cb (void *opaque, const char *line)
 /* Return the serial number of the card or an appropriate error.  The
    serial number is returned as a hexstring. */
 int
-agent_card_serialno (ctrl_t ctrl, char **r_serialno)
+agent_card_serialno (ctrl_t ctrl, char **r_serialno, const char *demand)
 {
   int rc;
   char *serialno = NULL;
+  char line[ASSUAN_LINELENGTH];
 
   rc = start_scd (ctrl);
   if (rc)
     return rc;
 
-  rc = assuan_transact (ctrl->scd_local->ctx, "SERIALNO",
+  if (!demand)
+    strcpy (line, "SERIALNO");
+  else
+    snprintf (line, DIM(line), "SERIALNO --demand=%s", demand);
+
+  rc = assuan_transact (ctrl->scd_local->ctx, line,
                         NULL, NULL, NULL, NULL,
                         get_serialno_cb, &serialno);
   if (rc)

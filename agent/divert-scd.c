@@ -58,7 +58,7 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
 
   for (;;)
     {
-      rc = agent_card_serialno (ctrl, &serialno);
+      rc = agent_card_serialno (ctrl, &serialno, want_sn);
       if (!rc)
         {
           log_debug ("detected card with S/N %s\n", serialno);
@@ -72,11 +72,17 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
               return 0; /* yes, we have the correct card */
             }
         }
+      else if (gpg_err_code (rc) == GPG_ERR_ENODEV)
+        {
+          log_debug ("no device present\n");
+          rc = 0;
+          no_card = 1;
+        }
       else if (gpg_err_code (rc) == GPG_ERR_CARD_NOT_PRESENT)
         {
           log_debug ("no card present\n");
           rc = 0;
-          no_card = 1;
+          no_card = 2;
         }
       else
         {

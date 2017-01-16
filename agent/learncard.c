@@ -330,7 +330,7 @@ agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
   cparm.ctrl = ctrl;
 
   /* Check whether a card is present and get the serial number */
-  rc = agent_card_serialno (ctrl, &serialno);
+  rc = agent_card_serialno (ctrl, &serialno, NULL);
   if (rc)
     goto leave;
 

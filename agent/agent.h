@@ -532,7 +532,7 @@ int agent_card_learn (ctrl_t ctrl,
                       void (*sinfo_cb)(void*, const char *,
                                        size_t, const char *),
                       void *sinfo_cb_arg);
-int agent_card_serialno (ctrl_t ctrl, char **r_serialno);
+int agent_card_serialno (ctrl_t ctrl, char **r_serialno, const char *demand);
 int agent_card_pksign (ctrl_t ctrl,
                        const char *keyid,
                        int (*getpin_cb)(void *, const char *, char*, size_t),
