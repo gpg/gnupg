@@ -193,10 +193,8 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 
 /* If the card has not yet been opened, do it.  */
 static gpg_error_t
-open_card (ctrl_t ctrl, const char *apptype, int scan)
+open_card (ctrl_t ctrl)
 {
-  gpg_error_t err;
-
   /* If we ever got a card not present error code, return that.  Only
      the SERIALNO command and a reset are able to clear from that
      state. */
@@ -206,23 +204,45 @@ open_card (ctrl_t ctrl, const char *apptype, int scan)
   if ( IS_LOCKED (ctrl) )
     return gpg_error (GPG_ERR_LOCKED);
 
+  if (ctrl->app_ctx)
+    return 0;
+
+  return select_application (ctrl, NULL, &ctrl->app_ctx, 0, NULL, 0);
+}
+
+/* Explicitly open a card for a specific use of APPTYPE or SERIALNO.  */
+static gpg_error_t
+open_card_with_request (ctrl_t ctrl, const char *apptype, const char *serialno)
+{
+  gpg_error_t err;
+  unsigned char *serialno_bin = NULL;
+  size_t serialno_bin_len = 0;
+
   /* If we are already initialized for one specific application we
      need to check that the client didn't requested a specific
      application different from the one in use before we continue. */
-  if (!scan && ctrl->app_ctx)
+  if (apptype && ctrl->app_ctx)
     return check_application_conflict (apptype, ctrl->app_ctx);
 
-  err = select_application (ctrl, apptype, &ctrl->app_ctx, scan);
+  if (serialno)
+    serialno_bin = hex_to_buffer (serialno, &serialno_bin_len);
+
+  err = select_application (ctrl, apptype, &ctrl->app_ctx, 1,
+                            serialno_bin, serialno_bin_len);
+  xfree (serialno_bin);
 
   return err;
 }
 
 
 static const char hlp_serialno[] =
-  "SERIALNO [<apptype>]\n"
+  "SERIALNO [--demand=<serialno>] [<apptype>]\n"
   "\n"
   "Return the serial number of the card using a status response.  This\n"
   "function should be used to check for the presence of a card.\n"
+  "\n"
+  "If --demand is given, an application on the card with SERIALNO is\n"
+  "selected and an error is returned if no such card available.\n"
   "\n"
   "If APPTYPE is given, an application of that type is selected and an\n"
   "error is returned if the application is not supported or available.\n"
@@ -245,17 +265,29 @@ cmd_serialno (assuan_context_t ctx, char *line)
   int rc = 0;
   char *serial;
   time_t stamp;
+  const char *demand;
+
+  if ( IS_LOCKED (ctrl) )
+    return gpg_error (GPG_ERR_LOCKED);
+
+  if ((demand = has_option_name (line, "--demand")))
+    {
+      if (*demand != '=')
+        return set_error (GPG_ERR_ASS_PARAMETER, "missing value for option");
+      line = (char *)++demand;
+      for (; *line && !spacep (line); line++)
+        ;
+      if (*line)
+        *line++ = 0;
+    }
+  else
+    demand = NULL;
 
   /* Clear the remove flag so that the open_card is able to reread it.  */
   if (ctrl->server_local->card_removed)
-    {
-      if ( IS_LOCKED (ctrl) )
-        return gpg_error (GPG_ERR_LOCKED);
+    ctrl->server_local->card_removed = 0;
 
-      ctrl->server_local->card_removed = 0;
-    }
-
-  if ((rc = open_card (ctrl, *line? line:NULL, 1)))
+  if ((rc = open_card_with_request (ctrl, *line? line:NULL, demand)))
     {
       ctrl->server_local->card_removed = 1;
       return rc;
@@ -357,7 +389,7 @@ cmd_learn (assuan_context_t ctx, char *line)
   int rc = 0;
   int only_keypairinfo = has_option (line, "--keypairinfo");
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   /* Unless the force option is used we try a shortcut by identifying
@@ -440,7 +472,7 @@ cmd_readcert (assuan_context_t ctx, char *line)
   unsigned char *cert;
   size_t ncert;
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   line = xstrdup (line); /* Need a copy of the line. */
@@ -482,7 +514,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
   unsigned char *pk;
   size_t pklen;
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   if (has_option (line, "--advanced"))
@@ -704,7 +736,7 @@ cmd_pksign (assuan_context_t ctx, char *line)
 
   line = skip_options (line);
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   /* We have to use a copy of the key ID because the function may use
@@ -748,7 +780,7 @@ cmd_pkauth (assuan_context_t ctx, char *line)
   size_t outdatalen;
   char *keyidstr;
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   if (!ctrl->app_ctx)
@@ -793,7 +825,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   char *keyidstr;
   unsigned int infoflags;
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   keyidstr = xtrystrdup (line);
@@ -846,7 +878,7 @@ cmd_getattr (assuan_context_t ctx, char *line)
   int rc;
   const char *keyword;
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   keyword = line;
@@ -888,7 +920,7 @@ cmd_setattr (assuan_context_t ctx, char *orig_line)
   size_t nbytes;
   char *line, *linebuf;
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   /* We need to use a copy of LINE, because PIN_CB uses the same
@@ -943,7 +975,7 @@ cmd_writecert (assuan_context_t ctx, char *line)
     line++;
   *line = 0;
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   if (!ctrl->app_ctx)
@@ -1005,7 +1037,7 @@ cmd_writekey (assuan_context_t ctx, char *line)
     line++;
   *line = 0;
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   if (!ctrl->app_ctx)
@@ -1092,7 +1124,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
     line++;
   *line = 0;
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   if (!ctrl->app_ctx)
@@ -1130,7 +1162,7 @@ cmd_random (assuan_context_t ctx, char *line)
                       "number of requested bytes missing");
   nbytes = strtoul (line, NULL, 0);
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   if (!ctrl->app_ctx)
@@ -1183,7 +1215,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
     line++;
   *line = 0;
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   if (!ctrl->app_ctx)
@@ -1240,7 +1272,7 @@ cmd_checkpin (assuan_context_t ctx, char *line)
   int rc;
   char *idstr;
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   if (!ctrl->app_ctx)
@@ -1531,7 +1563,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
 
   line = skip_options (line);
 
-  if ((rc = open_card (ctrl, NULL, 0)))
+  if ((rc = open_card (ctrl)))
     return rc;
 
   app = ctrl->app_ctx;

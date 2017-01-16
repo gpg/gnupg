@@ -129,7 +129,8 @@ void application_notify_card_reset (int slot);
 gpg_error_t check_application_conflict (const char *name, app_t app);
 gpg_error_t app_reset (app_t app, ctrl_t ctrl, int send_reset);
 gpg_error_t select_application (ctrl_t ctrl, const char *name, app_t *r_app,
-                                int scan);
+                                int scan, const unsigned char *serialno_bin,
+                                size_t serialno_bin_len);
 char *get_supported_applications (void);
 void release_application (app_t app);
 gpg_error_t app_munge_serialno (app_t app);

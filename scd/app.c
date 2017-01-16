@@ -317,10 +317,12 @@ app_new_register (int slot, ctrl_t ctrl, const char *name)
    and return a context.  Returns an error code and stores NULL at
    R_APP if no application was found or no card is present. */
 gpg_error_t
-select_application (ctrl_t ctrl, const char *name, app_t *r_app, int scan)
+select_application (ctrl_t ctrl, const char *name, app_t *r_app,
+                    int scan, const unsigned char *serialno_bin,
+                    size_t serialno_bin_len)
 {
   gpg_error_t err = 0;
-  app_t app;
+  app_t a;
 
   *r_app = NULL;
 
@@ -352,32 +354,49 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app, int scan)
 
           if (!sw || sw == SW_HOST_ALREADY_CONNECTED)
             err = 0;
+          else if (sw == SW_HOST_NO_CARD)
+            err = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
           else
             err = gpg_error (GPG_ERR_ENODEV);
 
           if (!err)
             err = app_new_register (slot, ctrl, name);
           else
-            apdu_close_reader (slot);
+            {
+              /* We close a reader with no card.  */
+              apdu_close_reader (slot);
+            }
         }
 
       apdu_dev_list_finish (l);
     }
 
-  app = app_top;
-  if (app)
+  npth_mutex_lock (&app_list_lock);
+  for (a = app_top; a; a = a->next)
     {
-      lock_app (app, ctrl);
-      err = check_conflict (app, name);
+      lock_app (a, ctrl);
+      if (serialno_bin == NULL)
+        break;
+      if (a->serialnolen == serialno_bin_len
+          && !memcmp (a->serialno, serialno_bin, a->serialnolen))
+        break;
+      unlock_app (a);
+    }
+
+  if (a)
+    {
+      err = check_conflict (a, name);
       if (!err)
         {
-          app->ref_count++;
-          *r_app = app;
+          a->ref_count++;
+          *r_app = a;
         }
-      unlock_app (app);
+      unlock_app (a);
     }
   else
     err = gpg_error (GPG_ERR_ENODEV);
+
+  npth_mutex_unlock (&app_list_lock);
 
   return err;
 }
