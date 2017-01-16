@@ -30,9 +30,6 @@
 
 ;; Redefine GPG without --always-trust and a fixed time.
 (define GPG `(,(tool 'gpg) --no-permission-warning ,(faketime 0)))
-(define GNUPGHOME (getenv "GNUPGHOME"))
-(if (string=? "" GNUPGHOME)
-    (fail "GNUPGHOME not set"))
 
 (catch (skip "Tofu not supported")
        (call-check `(,@GPG --trust-model=tofu --list-config)))
@@ -106,7 +103,7 @@
 (info "Checking tofu policies and trust...")
 
 ;; Carefully remove the TOFU db.
-(catch '() (unlink (string-append GNUPGHOME "/tofu.db")))
+(catch '() (unlink (path-join GNUPGHOME "tofu.db")))
 
 ;; Verify a message.  There should be no conflict and the trust
 ;; policy should be set to auto.
@@ -205,7 +202,7 @@
     ))
 
 ;; Carefully remove the TOFU db.
-(catch '() (unlink (string-append GNUPGHOME "/tofu.db")))
+(catch '() (unlink (path-join GNUPGHOME "tofu.db")))
 
 (check-counts "1C005AF3" 0 0 0 0)
 (check-counts "BE04EB2B" 0 0 0 0)
@@ -288,7 +285,7 @@
 	      --faked-system-time=1476304861))
 
 ;; Carefully remove the TOFU db.
-(catch '() (unlink (string-append GNUPGHOME "/tofu.db")))
+(catch '() (unlink (path-join GNUPGHOME "tofu.db")))
 
 (define DIR "tofu/cross-sigs")
 ;; The test keys.
@@ -380,7 +377,7 @@
 	      --faked-system-time=1476304861))
 
 ;; Carefully remove the TOFU db.
-(catch '() (unlink (string-append GNUPGHOME "/tofu.db")))
+(catch '() (unlink (path-join GNUPGHOME "tofu.db")))
 
 (define DIR "tofu/cross-sigs")
 ;; The test keys.

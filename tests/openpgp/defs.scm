@@ -253,6 +253,7 @@
 
 (setenv "GPG_AGENT_INFO" "" #t)
 (setenv "GNUPGHOME" (getcwd) #t)
+(define GNUPGHOME (getcwd))
 
 ;;
 ;; GnuPG helper.

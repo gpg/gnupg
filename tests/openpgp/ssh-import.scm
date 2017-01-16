@@ -20,10 +20,6 @@
 (load (with-path "defs.scm"))
 (setup-environment)
 
-(define GNUPGHOME (getenv "GNUPGHOME"))
-(if (string=? "" GNUPGHOME)
-    (fail "GNUPGHOME not set"))
-
 (setenv "SSH_AUTH_SOCK"
         (call-check `(,(tool 'gpgconf) --null --list-dirs agent-ssh-socket))
         #t)
@@ -55,7 +51,7 @@
  car keys)
 
 (info "Checking for issue2316...")
-(unlink (string-append GNUPGHOME "/sshcontrol"))
+(unlink (path-join GNUPGHOME "sshcontrol"))
 (pipe:do
  (pipe:open (path-join (in-srcdir "samplekeys")
 		       (string-append "ssh-rsa.key"))
