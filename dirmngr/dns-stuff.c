@@ -685,6 +685,8 @@ resolve_name_libdns (const char *name, unsigned short port,
   hints.ai_flags = AI_ADDRCONFIG;
   if (r_canonname)
     hints.ai_flags |= AI_CANONNAME;
+  if (is_ip_address (name))
+    hints.ai_flags |= AI_NUMERICHOST;
 
   if (port)
     {
@@ -806,6 +808,8 @@ resolve_name_standard (const char *name, unsigned short port,
   hints.ai_flags = AI_ADDRCONFIG;
   if (r_canonname)
     hints.ai_flags |= AI_CANONNAME;
+  if (is_ip_address (name))
+    hints.ai_flags |= AI_NUMERICHOST;
 
   if (port)
     snprintf (portstr, sizeof portstr, "%hu", port);
