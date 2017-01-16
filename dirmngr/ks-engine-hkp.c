@@ -85,7 +85,7 @@ struct hostinfo_s
   time_t died_at;    /* The time the host was marked dead.  If this is
                         0 the host has been manually marked dead.  */
   char *cname;       /* Canonical name of the host.  Only set if this
-                        is a pool.  */
+                        is a pool or NAME has a numerical IP address.  */
   char *v4addr;      /* A string with the v4 IP address of the host.
                         NULL if NAME has a numeric IP address or no v4
                         address is available.  */
@@ -570,6 +570,34 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
       assert (hi->poolidx >= 0 && hi->poolidx < hosttable_size);
       hi = hosttable[hi->poolidx];
       assert (hi);
+    }
+  else if (r_httphost && is_ip_address (hi->name))
+    {
+      /* This is a numerical IP address and not a pool.  We want to
+       * find the canonical name so that it can be used in the HTTP
+       * Host header.  Fixme: We should store that name in the
+       * hosttable. */
+      dns_addrinfo_t aibuf, ai;
+      char *host;
+
+      err = resolve_dns_name (hi->name, 0, 0, SOCK_STREAM, &aibuf, NULL);
+      if (!err)
+        {
+          for (ai = aibuf; ai; ai = ai->next)
+            {
+              if (ai->family == AF_INET6 || ai->family == AF_INET)
+                {
+                  err = resolve_dns_addr (ai->addr, ai->addrlen, 0, &host);
+                  if (!err)
+                    {
+                      /* Okay, we return the first found name.  */
+                      *r_httphost = host;
+                      break;
+                    }
+                }
+            }
+        }
+      free_dns_addrinfo (aibuf);
     }
 
   if (hi->dead)
