@@ -141,7 +141,7 @@ endif
 t_http_SOURCES = $(t_common_src) t-http.c http.c dns-stuff.c
 t_http_CFLAGS  = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
 	         $(LIBGCRYPT_CFLAGS) $(NTBTLS_CFLAGS) $(LIBGNUTLS_CFLAGS) \
-                 $(GPG_ERROR_CFLAGS)
+                 $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
 t_http_LDADD   = $(t_common_ldadd) \
 	         $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) $(DNSLIBS)
 
@@ -150,7 +150,8 @@ t_ldap_parse_uri_SOURCES = \
         http.c dns-stuff.c \
         $(ldap_url) $(t_common_src)
 t_ldap_parse_uri_CFLAGS = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
-			  $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
+			  $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) \
+			  $(LIBASSUAN_CFLAGS)
 t_ldap_parse_uri_LDADD = $(ldaplibs) $(t_common_ldadd) $(DNSLIBS)
 
 t_dns_stuff_CFLAGS = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
