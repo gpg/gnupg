@@ -892,6 +892,177 @@ resolve_name_standard (const char *name, unsigned short port,
 }
 
 
+/* This a wrapper around getaddrinfo with slightly different semantics.
+   NAME is the name to resolve.
+   PORT is the requested port or 0.
+   WANT_FAMILY is either 0 (AF_UNSPEC), AF_INET6, or AF_INET4.
+   WANT_SOCKETTYPE is either SOCK_STREAM or SOCK_DGRAM.
+
+   On success the result is stored in a linked list with the head
+   stored at the address R_AI; the caller must call gpg_addrinfo_free
+   on this.  If R_CANONNAME is not NULL the official name of the host
+   is stored there as a malloced string; if that name is not available
+   NULL is stored.  */
+gpg_error_t
+resolve_dns_name (const char *name, unsigned short port,
+                  int want_family, int want_socktype,
+                  dns_addrinfo_t *r_ai, char **r_canonname)
+{
+  gpg_error_t err;
+
+#ifdef USE_LIBDNS
+  if (!standard_resolver)
+    {
+      err = resolve_name_libdns (name, port, want_family, want_socktype,
+                                  r_ai, r_canonname);
+      if (err && libdns_switch_port_p (err))
+        err = resolve_name_libdns (name, port, want_family, want_socktype,
+                                   r_ai, r_canonname);
+    }
+  else
+#endif /*USE_LIBDNS*/
+    err = resolve_name_standard (name, port, want_family, want_socktype,
+                                 r_ai, r_canonname);
+  if (opt_debug)
+    log_debug ("dns: resolve_dns_name(%s): %s\n", name, gpg_strerror (err));
+  return err;
+}
+
+
+#ifdef USE_LIBDNS
+/* Resolve an address using libdns.  */
+static gpg_error_t
+resolve_addr_libdns (const struct sockaddr *addr, int addrlen,
+                     unsigned int flags, char **r_name)
+{
+  gpg_error_t err;
+  char host[DNS_D_MAXNAME + 1];
+  struct dns_resolver *res;
+  struct dns_packet *ans = NULL;
+  struct dns_ptr ptr;
+  int derr;
+
+  *r_name = NULL;
+
+  /* First we turn ADDR into a DNS name (with ".arpa" suffix).  */
+  err = 0;
+  if (addr->sa_family == AF_INET6)
+    {
+      const struct sockaddr_in6 *a6 = (const struct sockaddr_in6 *)addr;
+      if (!dns_aaaa_arpa (host, sizeof host, (void*)&a6->sin6_addr))
+        err = gpg_error (GPG_ERR_INV_OBJ);
+    }
+  else if (addr->sa_family == AF_INET)
+    {
+      const struct sockaddr_in *a4 = (const struct sockaddr_in *)addr;
+      if (!dns_a_arpa (host, sizeof host, (void*)&a4->sin_addr))
+        err = gpg_error (GPG_ERR_INV_OBJ);
+    }
+  else
+    err = gpg_error (GPG_ERR_EAFNOSUPPORT);
+  if (err)
+    goto leave;
+
+
+  err = libdns_res_open (&res);
+  if (err)
+    goto leave;
+
+  err = libdns_res_submit (res, host, DNS_T_PTR, DNS_C_IN);
+  if (err)
+    goto leave;
+
+  err = libdns_res_wait (res);
+  if (err)
+    goto leave;
+
+  ans = dns_res_fetch (res, &derr);
+  if (!ans)
+    {
+      err = libdns_error_to_gpg_error (derr);
+      goto leave;
+    }
+
+  /* Check the rcode.  */
+  switch (dns_p_rcode (ans))
+    {
+    case DNS_RC_NOERROR:
+      break;
+    case DNS_RC_NXDOMAIN:
+      err = gpg_error (GPG_ERR_NO_NAME);
+      break;
+    default:
+      err = GPG_ERR_SERVER_FAILED;
+      goto leave;
+    }
+
+  /* Parse the result.  */
+  if (!err)
+    {
+      struct dns_rr rr;
+      struct dns_rr_i rri;
+
+      memset (&rri, 0, sizeof rri);
+      dns_rr_i_init (&rri, ans);
+      rri.section = DNS_S_ALL & ~DNS_S_QD;
+      rri.name    = host;
+      rri.type    = DNS_T_PTR;
+
+      if (!dns_rr_grep (&rr, 1, &rri, ans, &derr))
+        {
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+
+      err = libdns_error_to_gpg_error (dns_ptr_parse (&ptr, &rr, ans));
+      if (err)
+        goto leave;
+
+      /* Copy result.  */
+      *r_name = xtrystrdup (ptr.host);
+      if (!*r_name)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      /* Libdns appends the root zone part which is problematic
+       * for most other functions - strip it.  */
+      if (**r_name && (*r_name)[strlen (*r_name)-1] == '.')
+        (*r_name)[strlen (*r_name)-1] = 0;
+    }
+  else /* GPG_ERR_NO_NAME */
+    {
+      char *buffer, *p;
+      int buflen;
+      int ec;
+
+      buffer = ptr.host;
+      buflen = sizeof ptr.host;
+
+      p = buffer;
+      if (addr->sa_family == AF_INET6 && (flags & DNS_WITHBRACKET))
+        {
+          *p++ = '[';
+          buflen -= 2;
+        }
+      ec = getnameinfo (addr, addrlen, p, buflen, NULL, 0, NI_NUMERICHOST);
+      if (ec)
+        {
+          err = map_eai_to_gpg_error (ec);
+          goto leave;
+        }
+      if (addr->sa_family == AF_INET6 && (flags & DNS_WITHBRACKET))
+        strcat (buffer, "]");
+    }
+
+ leave:
+  dns_free (ans);
+  dns_res_close (res);
+  return err;
+}
+#endif /*USE_LIBDNS*/
+
+
 /* Resolve an address using the standard system function.  */
 static gpg_error_t
 resolve_addr_standard (const struct sockaddr *addr, int addrlen,
@@ -952,48 +1123,28 @@ resolve_addr_standard (const struct sockaddr *addr, int addrlen,
 }
 
 
-/* This a wrapper around getaddrinfo with slightly different semantics.
-   NAME is the name to resolve.
-   PORT is the requested port or 0.
-   WANT_FAMILY is either 0 (AF_UNSPEC), AF_INET6, or AF_INET4.
-   WANT_SOCKETTYPE is either SOCK_STREAM or SOCK_DGRAM.
-
-   On success the result is stored in a linked list with the head
-   stored at the address R_AI; the caller must call gpg_addrinfo_free
-   on this.  If R_CANONNAME is not NULL the official name of the host
-   is stored there as a malloced string; if that name is not available
-   NULL is stored.  */
-gpg_error_t
-resolve_dns_name (const char *name, unsigned short port,
-                  int want_family, int want_socktype,
-                  dns_addrinfo_t *r_ai, char **r_canonname)
-{
-  gpg_error_t err;
-
-#ifdef USE_LIBDNS
-  if (!standard_resolver)
-    {
-      err = resolve_name_libdns (name, port, want_family, want_socktype,
-                                  r_ai, r_canonname);
-      if (err && libdns_switch_port_p (err))
-        err = resolve_name_libdns (name, port, want_family, want_socktype,
-                                   r_ai, r_canonname);
-    }
-  else
-#endif /*USE_LIBDNS*/
-    err = resolve_name_standard (name, port, want_family, want_socktype,
-                                 r_ai, r_canonname);
-  if (opt_debug)
-    log_debug ("dns: resolve_dns_name(%s): %s\n", name, gpg_strerror (err));
-  return err;
-}
-
-
+/* A wrapper around getnameinfo.  */
 gpg_error_t
 resolve_dns_addr (const struct sockaddr *addr, int addrlen,
                   unsigned int flags, char **r_name)
 {
-  return resolve_addr_standard (addr, addrlen, flags, r_name);
+  gpg_error_t err;
+
+#ifdef USE_LIBDNS
+  /* Note that we divert to the standard resolver for NUMERICHOST.  */
+  if (!standard_resolver && !(flags & DNS_NUMERICHOST))
+    {
+      err = resolve_addr_libdns (addr, addrlen, flags, r_name);
+      if (err && libdns_switch_port_p (err))
+        err = resolve_addr_libdns (addr, addrlen, flags, r_name);
+    }
+  else
+#endif /*USE_LIBDNS*/
+    err = resolve_addr_standard (addr, addrlen, flags, r_name);
+
+  if (opt_debug)
+    log_debug ("dns: resolve_dns_addr(): %s\n", gpg_strerror (err));
+  return err;
 }
 
 
@@ -1096,7 +1247,7 @@ get_dns_cert_libdns (const char *name, int want_certtype,
   int derr;
   int qtype;
 
-  /* Gte the query type from WANT_CERTTYPE (which in general indicates
+  /* Get the query type from WANT_CERTTYPE (which in general indicates
    * the subtype we want). */
   qtype = (want_certtype < DNS_CERTTYPE_RRBASE
            ? T_CERT
