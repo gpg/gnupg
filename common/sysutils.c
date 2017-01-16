@@ -68,6 +68,9 @@
 #endif
 #ifdef HAVE_INOTIFY_INIT
 # include <sys/inotify.h>
+# ifndef IN_EXCL_UNLINK
+#  define IN_EXCL_UNLINK 0x04000000
+# endif
 #endif /*HAVE_INOTIFY_INIT*/
 #ifdef HAVE_NPTH
 # include <npth.h>
