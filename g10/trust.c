@@ -434,7 +434,8 @@ mark_usable_uid_certs (kbnode_t keyblock, kbnode_t uidnode,
 
       node->flag &= ~(1<<8 | 1<<9 | 1<<10 | 1<<11 | 1<<12);
       if (node->pkt->pkttype == PKT_USER_ID
-          || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+          || node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+          || node->pkt->pkttype == PKT_SECRET_SUBKEY)
         break; /* ready */
       if (node->pkt->pkttype != PKT_SIGNATURE)
         continue;
@@ -476,7 +477,8 @@ mark_usable_uid_certs (kbnode_t keyblock, kbnode_t uidnode,
       u32 kid[2];
       u32 sigdate;
 
-      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+          || node->pkt->pkttype == PKT_SECRET_SUBKEY)
         break;
       if ( !(node->flag & (1<<9)) )
         continue; /* not a node to look at */
@@ -491,7 +493,8 @@ mark_usable_uid_certs (kbnode_t keyblock, kbnode_t uidnode,
       /* Now find the latest and greatest signature */
       for (n=uidnode->next; n; n = n->next)
         {
-          if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+          if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY
+              || n->pkt->pkttype == PKT_SECRET_SUBKEY)
             break;
           if ( !(n->flag & (1<<9)) )
             continue;
@@ -588,7 +591,8 @@ clean_sigs_from_uid (kbnode_t keyblock, kbnode_t uidnode,
   kbnode_t node;
   u32 keyid[2];
 
-  log_assert (keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+  log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY
+              || keyblock->pkt->pkttype == PKT_SECRET_KEY);
 
   keyid_from_pk (keyblock->pkt->pkt.public_key, keyid);
 
@@ -681,7 +685,8 @@ clean_uid_from_key (kbnode_t keyblock, kbnode_t uidnode, int noisy)
   PKT_user_id *uid = uidnode->pkt->pkt.user_id;
   int deleted = 0;
 
-  log_assert (keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+  log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY
+              || keyblock->pkt->pkttype == PKT_SECRET_KEY);
   log_assert (uidnode->pkt->pkttype==PKT_USER_ID);
 
   /* Skip valid user IDs, compacted user IDs, and non-self-signed user
@@ -733,7 +738,8 @@ clean_one_uid (kbnode_t keyblock, kbnode_t uidnode, int noisy, int self_only,
 {
   int dummy = 0;
 
-  log_assert (keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
+  log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY
+              || keyblock->pkt->pkttype == PKT_SECRET_KEY);
   log_assert (uidnode->pkt->pkttype==PKT_USER_ID);
 
   if (!uids_cleaned)
@@ -759,7 +765,8 @@ clean_key (kbnode_t keyblock, int noisy, int self_only,
   merge_keys_and_selfsig (keyblock);
 
   for (uidnode = keyblock->next;
-       uidnode && uidnode->pkt->pkttype != PKT_PUBLIC_SUBKEY;
+       uidnode && !(uidnode->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                    || uidnode->pkt->pkttype == PKT_SECRET_SUBKEY);
        uidnode = uidnode->next)
     {
       if (uidnode->pkt->pkttype == PKT_USER_ID)
