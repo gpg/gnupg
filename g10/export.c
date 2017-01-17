@@ -1518,6 +1518,7 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
   u32 subkidbuf[2], *subkid;
   kbnode_t kbctx, node;
 
+  /* NB: walk_kbnode skips packets marked as deleted.  */
   for (kbctx=NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); )
     {
       if (skip_until_subkey)

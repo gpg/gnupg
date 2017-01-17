@@ -756,21 +756,41 @@ clean_one_uid (kbnode_t keyblock, kbnode_t uidnode, int noisy, int self_only,
 }
 
 
+/* NB: This function marks the deleted nodes only and the caller is
+ * responsible to skip or remove them.  */
 void
 clean_key (kbnode_t keyblock, int noisy, int self_only,
            int *uids_cleaned, int *sigs_cleaned)
 {
-  kbnode_t uidnode;
+  kbnode_t node;
 
   merge_keys_and_selfsig (keyblock);
 
-  for (uidnode = keyblock->next;
-       uidnode && !(uidnode->pkt->pkttype == PKT_PUBLIC_SUBKEY
-                    || uidnode->pkt->pkttype == PKT_SECRET_SUBKEY);
-       uidnode = uidnode->next)
+  for (node = keyblock->next;
+       node && !(node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                    || node->pkt->pkttype == PKT_SECRET_SUBKEY);
+       node = node->next)
     {
-      if (uidnode->pkt->pkttype == PKT_USER_ID)
-        clean_one_uid (keyblock, uidnode,noisy, self_only,
+      if (node->pkt->pkttype == PKT_USER_ID)
+        clean_one_uid (keyblock, node, noisy, self_only,
                        uids_cleaned, sigs_cleaned);
+    }
+
+  /* Remove bogus subkey binding signatures: The only signatures
+   * allowed are of class 0x18 and 0x28.  */
+  log_assert (!node || (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                        || node->pkt->pkttype == PKT_SECRET_SUBKEY));
+  for (; node; node = node->next)
+    {
+      if (is_deleted_kbnode (node))
+        continue;
+      if (node->pkt->pkttype == PKT_SIGNATURE
+          && !(IS_SUBKEY_SIG (node->pkt->pkt.signature)
+                || IS_SUBKEY_REV (node->pkt->pkt.signature)))
+        {
+          delete_kbnode (node);
+          if (sigs_cleaned)
+            ++*sigs_cleaned;
+        }
     }
 }
