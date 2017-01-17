@@ -1550,14 +1550,14 @@ check_regexp(const char *expr,const char *string)
       {
 	ret=regexec(&pat,string,0,NULL,0);
 	regfree(&pat);
-	ret=(ret==0);
       }
+    ret=(ret==0);
   }
 #endif
 
   if(DBG_TRUST)
     log_debug("regexp '%s' ('%s') on '%s': %s\n",
-	      regexp,expr,string,ret==0?"YES":"NO");
+	      regexp,expr,string,ret?"YES":"NO");
 
   xfree(regexp);
 
