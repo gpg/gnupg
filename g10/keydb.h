@@ -61,12 +61,6 @@ struct kbnode_struct {
 #define is_cloned_kbnode(a)   ((a)->private_flag & 2)
 
 
-enum resource_type {
-    rt_UNKNOWN = 0,
-    rt_RING = 1
-};
-
-
 /* Bit flags used with build_pk_list.  */
 enum
   {
@@ -75,28 +69,14 @@ enum
     PK_LIST_CONFIG     = 4, /* Specified via config file.          */
     PK_LIST_FROM_FILE  = 8  /* Take key from file with that name.  */
   };
+
 /* To store private data in the flags the private data must be left
-   shifted by this value.  */
+ * shifted by this value.  */
 enum
   {
     PK_LIST_SHIFT = 4
   };
 
-/****************
- * A data structure to hold information about the external position
- * of a keyblock.
- */
-struct keyblock_pos_struct {
-    int   resno;     /* resource number */
-    enum resource_type rt;
-    off_t offset;    /* position information */
-    unsigned count;  /* length of the keyblock in packets */
-    iobuf_t  fp;     /* Used by enum_keyblocks. */
-    int secret;      /* working on a secret keyring */
-    PACKET *pkt;     /* ditto */
-    int valid;
-};
-typedef struct keyblock_pos_struct KBPOS;
 
 /* Structure to hold a couple of public key certificates. */
 typedef struct pk_list *PK_LIST;  /* Deprecated. */
