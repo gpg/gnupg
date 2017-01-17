@@ -281,11 +281,11 @@ print_one_sig (int rc, KBNODE keyblock, KBNODE node,
 
       if (sig->flags.policy_url
           && ((opt.list_options & LIST_SHOW_POLICY_URLS) || extended))
-	show_policy_url (sig, 3, 0);
+	show_policy_url (sig, 3, -1);
 
       if (sig->flags.notation
           && ((opt.list_options & LIST_SHOW_NOTATIONS) || extended))
-	show_notation (sig, 3, 0,
+	show_notation (sig, 3, -1,
 		       ((opt.
 			 list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0) +
 		       ((opt.
@@ -293,7 +293,7 @@ print_one_sig (int rc, KBNODE keyblock, KBNODE node,
 
       if (sig->flags.pref_ks
           && ((opt.list_options & LIST_SHOW_KEYSERVER_URLS) || extended))
-	show_keyserver_url (sig, 3, 0);
+	show_keyserver_url (sig, 3, -1);
 
       if (extended)
         {

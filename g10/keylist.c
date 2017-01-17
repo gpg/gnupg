@@ -304,6 +304,7 @@ status_one_subpacket (sigsubpkttype_t type, size_t len, int flags,
 
 
 /* Print a policy URL.  Allowed values for MODE are:
+ *  -1 - print to the TTY
  *   0 - print to stdout.
  *   1 - use log_info and emit status messages.
  *   2 - emit only status messages.
@@ -314,50 +315,48 @@ show_policy_url (PKT_signature * sig, int indent, int mode)
   const byte *p;
   size_t len;
   int seq = 0, crit;
-  estream_t fp = mode ? log_get_stream () : es_stdout;
+  estream_t fp = mode < 0? NULL : mode ? log_get_stream () : es_stdout;
 
   while ((p =
 	  enum_sig_subpkt (sig->hashed, SIGSUBPKT_POLICY, &len, &seq, &crit)))
     {
       if (mode != 2)
 	{
-	  int i;
 	  const char *str;
 
-	  for (i = 0; i < indent; i++)
-	    es_putc (' ', fp);
+          tty_fprintf (fp, "%*s", indent, "");
 
 	  if (crit)
 	    str = _("Critical signature policy: ");
 	  else
 	    str = _("Signature policy: ");
-	  if (mode)
+	  if (mode > 0)
 	    log_info ("%s", str);
 	  else
-	    es_fprintf (fp, "%s", str);
-	  print_utf8_buffer (fp, p, len);
-	  es_fprintf (fp, "\n");
+	    tty_fprintf (fp, "%s", str);
+	  tty_print_utf8_string2 (fp, p, len, 0);
+	  tty_fprintf (fp, "\n");
 	}
 
-      if (mode)
+      if (mode > 0)
 	write_status_buffer (STATUS_POLICY_URL, p, len, 0);
     }
 }
 
 
-/*
-  mode=0 for stdout.
-  mode=1 for log_info + status messages
-  mode=2 for status messages only
-*/
-/* TODO: use this */
+/* Print a keyserver URL.  Allowed values for MODE are:
+ *  -1 - print to the TTY
+ *   0 - print to stdout.
+ *   1 - use log_info and emit status messages.
+ *   2 - emit only status messages.
+ */
 void
 show_keyserver_url (PKT_signature * sig, int indent, int mode)
 {
   const byte *p;
   size_t len;
   int seq = 0, crit;
-  estream_t fp = mode ? log_get_stream () : es_stdout;
+  estream_t fp = mode < 0? NULL : mode ? log_get_stream () : es_stdout;
 
   while ((p =
 	  enum_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_KS, &len, &seq,
@@ -365,43 +364,43 @@ show_keyserver_url (PKT_signature * sig, int indent, int mode)
     {
       if (mode != 2)
 	{
-	  int i;
 	  const char *str;
 
-	  for (i = 0; i < indent; i++)
-	    es_putc (' ', es_stdout);
+          tty_fprintf (fp, "%*s", indent, "");
 
 	  if (crit)
 	    str = _("Critical preferred keyserver: ");
 	  else
 	    str = _("Preferred keyserver: ");
-	  if (mode)
+	  if (mode > 0)
 	    log_info ("%s", str);
 	  else
-	    es_fprintf (es_stdout, "%s", str);
-	  print_utf8_buffer (fp, p, len);
-	  es_fprintf (fp, "\n");
+	    tty_fprintf (es_stdout, "%s", str);
+	  tty_print_utf8_string2 (fp, p, len, 0);
+	  tty_fprintf (fp, "\n");
 	}
 
-      if (mode)
+      if (mode > 0)
 	status_one_subpacket (SIGSUBPKT_PREF_KS, len,
 			      (crit ? 0x02 : 0) | 0x01, p);
     }
 }
 
-/*
-  mode=0 for stdout.
-  mode=1 for log_info + status messages
-  mode=2 for status messages only
 
-  Defined bits in WHICH:
-    1 == standard notations
-    2 == user notations
-*/
+/* Print notation data.  Allowed values for MODE are:
+ *  -1 - print to the TTY
+ *   0 - print to stdout.
+ *   1 - use log_info and emit status messages.
+ *   2 - emit only status messages.
+ *
+ * Defined bits in WHICH:
+ *   1 - standard notations
+ *   2 - user notations
+ */
 void
 show_notation (PKT_signature * sig, int indent, int mode, int which)
 {
-  estream_t fp = mode ? log_get_stream () : es_stdout;
+  estream_t fp = mode < 0? NULL : mode ? log_get_stream () : es_stdout;
   notation_t nd, notations;
 
   if (which == 0)
@@ -418,34 +417,32 @@ show_notation (PKT_signature * sig, int indent, int mode, int which)
 
 	  if ((which & 1 && !has_at) || (which & 2 && has_at))
 	    {
-	      int i;
 	      const char *str;
 
-	      for (i = 0; i < indent; i++)
-		es_putc (' ', es_stdout);
+              tty_fprintf (fp, "%*s", indent, "");
 
 	      if (nd->flags.critical)
 		str = _("Critical signature notation: ");
 	      else
 		str = _("Signature notation: ");
-	      if (mode)
+	      if (mode > 0)
 		log_info ("%s", str);
 	      else
-		es_fprintf (es_stdout, "%s", str);
+		tty_fprintf (es_stdout, "%s", str);
 	      /* This is all UTF8 */
-	      print_utf8_buffer (fp, nd->name, strlen (nd->name));
-	      es_fprintf (fp, "=");
-	      print_utf8_buffer (fp, nd->value, strlen (nd->value));
+	      tty_print_utf8_string2 (fp, nd->name, strlen (nd->name), 0);
+	      tty_fprintf (fp, "=");
+	      tty_print_utf8_string2 (fp, nd->value, strlen (nd->value), 0);
               /* (We need to use log_printf so that the next call to a
                   log function does not insert an extra LF.)  */
-              if (mode)
+              if (mode > 0)
                 log_printf ("\n");
               else
-                es_putc ('\n', fp);
+                tty_fprintf (fp, "\n");
 	    }
 	}
 
-      if (mode)
+      if (mode > 0)
 	{
 	  write_status_buffer (STATUS_NOTATION_NAME,
 			       nd->name, strlen (nd->name), 0);
