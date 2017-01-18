@@ -2748,6 +2748,9 @@ forth to @var{epoch} which is the number of seconds elapsed since the year
 1970.  Alternatively @var{epoch} may be given as a full ISO time string
 (e.g. "20070924T154812").
 
+If you suffix @var{epoch} with an exclamation mark (!), the system time
+will appear to be frozen at the specified time.
+
 @item --enable-progress-filter
 @opindex enable-progress-filter
 Enable certain PROGRESS status outputs. This option allows frontends

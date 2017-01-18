@@ -133,7 +133,7 @@ gnupg_set_time (time_t newtime, int freeze)
   else if (freeze)
     {
       timemode = FROZEN;
-      timewarp = current;
+      timewarp = newtime == (time_t)-1 ? current : newtime;
     }
   else if (newtime > current)
     {

@@ -3493,10 +3493,20 @@ main (int argc, char **argv)
 
           case oFakedSystemTime:
             {
-              time_t faked_time = isotime2epoch (pargs.r.ret_str);
+              size_t len = strlen (pargs.r.ret_str);
+              int freeze = 0;
+              time_t faked_time;
+
+              if (len > 0 && pargs.r.ret_str[len-1] == '!')
+                {
+                  freeze = 1;
+                  pargs.r.ret_str[len-1] = '\0';
+                }
+
+              faked_time = isotime2epoch (pargs.r.ret_str);
               if (faked_time == (time_t)(-1))
                 faked_time = (time_t)strtoul (pargs.r.ret_str, NULL, 10);
-              gnupg_set_time (faked_time, 0);
+              gnupg_set_time (faked_time, freeze);
             }
             break;
 
