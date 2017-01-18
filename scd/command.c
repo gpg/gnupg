@@ -1392,7 +1392,10 @@ static const char hlp_getinfo[] =
   "\n"
   "app_list    - Return a list of supported applications.  One\n"
   "              application per line, fields delimited by colons,\n"
-  "              first field is the name.";
+  "              first field is the name.\n"
+  "\n"
+  "card_list   - Return a list of serial numbers of active cards,\n"
+  "              using a status response.";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
@@ -1422,10 +1425,11 @@ cmd_getinfo (assuan_context_t ctx, char *line)
   else if (!strcmp (line, "status"))
     {
       ctrl_t ctrl = assuan_get_pointer (ctx);
-      app_t app = ctrl->app_ctx;
-      char flag = 'r';
+      char flag;
 
-      if (!ctrl->server_local->card_removed && app)
+      if (open_card (ctrl))
+        flag = 'r';
+      else
         flag = 'u';
 
       rc = assuan_send_data (ctx, &flag, 1);
@@ -1454,6 +1458,12 @@ cmd_getinfo (assuan_context_t ctx, char *line)
       else
         rc = 0;
       xfree (s);
+    }
+  else if (!strcmp (line, "card_list"))
+    {
+      ctrl_t ctrl = assuan_get_pointer (ctx);
+
+      app_send_card_list (ctrl);
     }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");

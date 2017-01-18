@@ -123,6 +123,7 @@ size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 /*-- app.c --*/
 app_t app_list_start (void);
 void app_list_finish (void);
+void app_send_card_list (ctrl_t ctrl);
 
 void app_dump_state (void);
 void application_notify_card_reset (int slot);

@@ -1103,3 +1103,21 @@ app_list_finish (void)
 {
   npth_mutex_unlock (&app_list_lock);
 }
+
+void
+app_send_card_list (ctrl_t ctrl)
+{
+  app_t a;
+  char buf[65];
+
+  npth_mutex_lock (&app_list_lock);
+  for (a = app_top; a; a = a->next)
+    {
+      if (DIM (buf) < 2 * a->serialnolen + 1)
+	continue;
+
+      bin2hex (a->serialno, a->serialnolen, buf);
+      send_status_direct (ctrl, "SERIALNO", buf);
+    }
+  npth_mutex_unlock (&app_list_lock);
+}
