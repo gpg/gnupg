@@ -1763,11 +1763,19 @@ agent_libgcrypt_progress_cb (void *data, const char *what, int printchar,
 
   /* Libgcrypt < 1.8 does not know about nPth and thus when it reads
    * from /dev/random this will block the process.  To mitigate this
-   * problem we take a short nap when Libgcrypt tells us that it needs
+   * problem we yield the thread when Libgcrypt tells us that it needs
    * more entropy.  This way other threads have chance to run.  */
 #if GCRYPT_VERSION_NUMBER < 0x010800 /* 1.8.0 */
   if (what && !strcmp (what, "need_entropy"))
-    npth_usleep (100000); /* 100ms */
+    {
+#if GPGRT_VERSION_NUMBER < 0x011900 /* 1.25 */
+      /* In older gpg-error versions gpgrt_yield is buggy for use with
+       * nPth and thus we need to resort to a sleep call.  */
+      npth_usleep (1000); /* 1ms */
+#else
+      gpgrt_yield ();
+#endif
+    }
 #endif
 }
 
