@@ -336,9 +336,10 @@ force an update of that file this command can be used:
 
 @item --reload [@var{component}]
 @opindex reload
-Reload all or the given component. This is basically the same as sending
-a SIGHUP to the component.  Components which don't support reloading are
-ignored.
+Reload all or the given component. This is basically the same as
+sending a SIGHUP to the component.  Components which don't support
+reloading are ignored.  Without @var{component} or by using "all" for
+@var{component} all components which are daemons are reloaded.
 
 @item --launch [@var{component}]
 @opindex launch
@@ -346,14 +347,16 @@ If the @var{component} is not already running, start it.
 @command{component} must be a daemon.  This is in general not required
 because the system starts these daemons as needed.  However, external
 software making direct use of @command{gpg-agent} or @command{dirmngr}
-may use this command to ensure that they are started.
+may use this command to ensure that they are started.  Using "all" for
+@var{component} launches all components which are daemons.
 
 @item --kill [@var{component}]
 @opindex kill
 Kill the given component.  Components which support killing are
 @command{gpg-agent} and @command{scdaemon}.  Components which don't
-support reloading are ignored.  Note that as of now reload and kill
-have the same effect for @command{scdaemon}.
+support reloading are ignored.  Using "all" for @var{component} kills
+all components running as daemons.  Note that as of now reload and
+kill have the same effect for @command{scdaemon}.
 
 @item --create-socketdir
 @opindex create-socketdir

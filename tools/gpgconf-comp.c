@@ -1263,6 +1263,14 @@ gc_component_launch (int component)
   int i;
   pid_t pid;
 
+  if (component < 0)
+    {
+      err = gc_component_launch (GC_COMPONENT_GPG_AGENT);
+      if (!err)
+        err = gc_component_launch (GC_COMPONENT_DIRMNGR);
+      return err;
+    }
+
   if (!(component == GC_COMPONENT_GPG_AGENT
         || component == GC_COMPONENT_DIRMNGR))
     {
@@ -1304,7 +1312,16 @@ gc_component_kill (int component)
   for (backend = 0; backend < GC_BACKEND_NR; backend++)
     runtime[backend] = 0;
 
-  if (component >= 0)
+  if (component < 0)
+    {
+      for (component = 0; component < GC_COMPONENT_NR; component++)
+        {
+          option = gc_component[component].options;
+          for (; option && option->name; option++)
+            runtime[option->backend] = 1;
+        }
+    }
+  else
     {
       assert (component < GC_COMPONENT_NR);
       option = gc_component[component].options;
@@ -1333,7 +1350,7 @@ gc_component_reload (int component)
   for (backend = 0; backend < GC_BACKEND_NR; backend++)
     runtime[backend] = 0;
 
-  if (component == -1)
+  if (component < 0)
     {
       for (component = 0; component < GC_COMPONENT_NR; component++)
         {

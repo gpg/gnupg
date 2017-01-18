@@ -589,6 +589,18 @@ main (int argc, char **argv)
 	  es_putc ('\n', es_stderr);
 	  exit (2);
 	}
+      else if (!strcmp (fname, "all"))
+        {
+          if (cmd == aLaunch)
+            {
+              if (gc_component_launch (-1))
+                exit (1);
+            }
+          else
+            {
+              gc_component_kill (-1);
+            }
+        }
       else
         {
           /* Launch/Kill a given component.  */
@@ -617,7 +629,7 @@ main (int argc, char **argv)
       break;
 
     case aReload:
-      if (!fname)
+      if (!fname || !strcmp (fname, "all"))
 	{
           /* Reload all.  */
           gc_component_reload (-1);
