@@ -276,15 +276,23 @@ static gpg_error_t
 copy_buffer_flush (struct copy_buffer *c, estream_t sink)
 {
   gpg_error_t err;
+  size_t nwritten;
 
-  while (c->nread > 0)
-    {
-      err = copy_buffer_do_copy (c, NULL, sink);
-      if (err)
-        return err;
-    }
+  nwritten = 0;
+  err = es_write (sink, c->writep, c->nread, &nwritten);
 
-  return 0;
+  assert (nwritten <= c->nread);
+  c->writep += nwritten;
+  c->nread -= nwritten;
+  assert (c->writep - c->buffer <= sizeof c->buffer);
+
+  if (err)
+    return err;
+
+  if (es_fflush (sink))
+    err = my_error_from_syserror ();
+
+  return err;
 }
 
 
@@ -444,6 +452,8 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
           if (es_feof (input))
             {
               err = copy_buffer_flush (cpbuf_in, fds[0].stream);
+              if (err == GPG_ERR_EAGAIN)
+                continue;	/* Retry next time.  */
               if (err)
                 {
                   log_error ("error feeding data to '%s': %s\n",
@@ -470,6 +480,8 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
           if (es_feof (inextra))
             {
               err = copy_buffer_flush (cpbuf_extra, fds[3].stream);
+              if (err == GPG_ERR_EAGAIN)
+                continue;	/* Retry next time.  */
               if (err)
                 {
                   log_error ("error feeding data to '%s': %s\n",
