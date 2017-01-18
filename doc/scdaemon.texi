@@ -516,11 +516,10 @@ done on the same card unless he call this function.
 Return the serial number of the card using a status response like:
 
 @example
-  S SERIALNO D27600000000000000000000 0
+  S SERIALNO D27600000000000000000000
 @end example
 
-The trailing 0 should be ignored for now, it is reserved for a future
-extension.  The serial number is the hex encoded value identified by
+The serial number is the hex encoded value identified by
 the @code{0x5A} tag in the GDO file (FIX=0x2F02).
 
 
@@ -537,7 +536,7 @@ used without the @option{--force} option, the command might do an INQUIRE
 like this:
 
 @example
-      INQUIRE KNOWNCARDP <hexstring_with_serialNumber> <timestamp>
+      INQUIRE KNOWNCARDP <hexstring_with_serialNumber>
 @end example
 
 The client should just send an @code{END} if the processing should go on

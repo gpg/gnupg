@@ -534,33 +534,23 @@ app_munge_serialno (app_t app)
 
 
 
-/* Retrieve the serial number and the time of the last update of the
-   card.  The serial number is returned as a malloced string (hex
-   encoded) in SERIAL and the time of update is returned in STAMP.  If
-   no update time is available the returned value is 0.  Caller must
-   free SERIAL unless the function returns an error.  If STAMP is not
-   of interest, NULL may be passed. */
-gpg_error_t
-app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp)
+/* Retrieve the serial number of the card.  The serial number is
+   returned as a malloced string (hex encoded) in SERIAL.  Caller must
+   free SERIAL unless the function returns an error.  */
+char *
+app_get_serialno (app_t app)
 {
-  char *buf;
+  char *serial;
 
-  if (!app || !serial)
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  *serial = NULL;
-  if (stamp)
-    *stamp = 0; /* not available */
+  if (!app)
+    return NULL;
 
   if (!app->serialnolen)
-    buf = xtrystrdup ("FF7F00");
+    serial = xtrystrdup ("FF7F00");
   else
-    buf = bin2hex (app->serialno, app->serialnolen, NULL);
-  if (!buf)
-    return gpg_error_from_syserror ();
+    serial = bin2hex (app->serialno, app->serialnolen, NULL);
 
-  *serial = buf;
-  return 0;
+  return serial;
 }
 
 
@@ -578,8 +568,7 @@ app_write_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
 
   /* We do not send APPTYPE if only keypairinfo is requested.  */
   if (app->apptype && !(flags & 1))
-    send_status_info (ctrl, "APPTYPE",
-                      app->apptype, strlen (app->apptype), NULL, 0);
+    send_status_direct (ctrl, "APPTYPE", app->apptype);
   err = lock_app (app, ctrl);
   if (err)
     return err;
@@ -660,20 +649,18 @@ app_getattr (app_t app, ctrl_t ctrl, const char *name)
 
   if (app->apptype && name && !strcmp (name, "APPTYPE"))
     {
-      send_status_info (ctrl, "APPTYPE",
-                        app->apptype, strlen (app->apptype), NULL, 0);
+      send_status_direct (ctrl, "APPTYPE", app->apptype);
       return 0;
     }
   if (name && !strcmp (name, "SERIALNO"))
     {
       char *serial;
-      time_t stamp;
-      int rc;
 
-      rc = app_get_serial_and_stamp (app, &serial, &stamp);
-      if (rc)
-        return rc;
-      send_status_info (ctrl, "SERIALNO", serial, strlen (serial), NULL, 0);
+      serial = app_get_serialno (app);
+      if (!serial)
+        return gpg_error (GPG_ERR_INV_VALUE);
+
+      send_status_direct (ctrl, "SERIALNO", serial);
       xfree (serial);
       return 0;
     }
@@ -1114,7 +1101,7 @@ app_send_card_list (ctrl_t ctrl)
   for (a = app_top; a; a = a->next)
     {
       if (DIM (buf) < 2 * a->serialnolen + 1)
-	continue;
+        continue;
 
       bin2hex (a->serialno, a->serialnolen, buf);
       send_status_direct (ctrl, "SERIALNO", buf);

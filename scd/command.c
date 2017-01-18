@@ -264,7 +264,6 @@ cmd_serialno (assuan_context_t ctx, char *line)
   struct server_local_s *sl;
   int rc = 0;
   char *serial;
-  time_t stamp;
   const char *demand;
 
   if ( IS_LOCKED (ctrl) )
@@ -302,12 +301,11 @@ cmd_serialno (assuan_context_t ctx, char *line)
         c->server_local->card_removed = 0;
     }
 
-  rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
-  if (rc)
-    return rc;
+  serial = app_get_serialno (ctrl->app_ctx);
+  if (!serial)
+    return gpg_error (GPG_ERR_INV_VALUE);
 
-  rc = print_assuan_status (ctx, "SERIALNO", "%s %lu",
-                            serial, (unsigned long)stamp);
+  rc = assuan_write_status (ctx, "SERIALNO", serial);
   xfree (serial);
   return rc;
 }
@@ -320,7 +318,7 @@ static const char hlp_learn[] =
   "used without the force options, the command might do an INQUIRE\n"
   "like this:\n"
   "\n"
-  "   INQUIRE KNOWNCARDP <hexstring_with_serialNumber> <timestamp>\n"
+  "   INQUIRE KNOWNCARDP <hexstring_with_serialNumber>\n"
   "\n"
   "The client should just send an \"END\" if the processing should go on\n"
   "or a \"CANCEL\" to force the function to terminate with a Cancel\n"
@@ -400,7 +398,6 @@ cmd_learn (assuan_context_t ctx, char *line)
     {
       const char *reader;
       char *serial;
-      time_t stamp;
       app_t app = ctrl->app_ctx;
 
       if (!app)
@@ -412,12 +409,11 @@ cmd_learn (assuan_context_t ctx, char *line)
       send_status_direct (ctrl, "READER", reader);
       /* No need to free the string of READER.  */
 
-      rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
-      if (rc)
-        return rc;
+      serial = app_get_serialno (ctrl->app_ctx);
+      if (!serial)
+	return gpg_error (GPG_ERR_INV_VALUE);
 
-      rc = print_assuan_status (ctx, "SERIALNO", "%s %lu",
-                                serial, (unsigned long)stamp);
+      rc = assuan_write_status (ctx, "SERIALNO", serial);
       if (rc < 0)
         {
           xfree (serial);
@@ -428,8 +424,7 @@ cmd_learn (assuan_context_t ctx, char *line)
         {
           char *command;
 
-          rc = gpgrt_asprintf (&command, "KNOWNCARDP %s %lu",
-                               serial, (unsigned long)stamp);
+          rc = gpgrt_asprintf (&command, "KNOWNCARDP %s", serial);
           if (rc < 0)
             {
               xfree (serial);

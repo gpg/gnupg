@@ -978,21 +978,13 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
   if (table[idx].special == -1)
     {
       /* The serial number is very special.  We could have used the
-         AID DO to retrieve it, but we have it already in the app
-         context and the stamp argument is required anyway which we
-         can't by other means. The AID DO is available anyway but not
-         hex formatted. */
-      char *serial;
-      time_t stamp;
-      char tmp[50];
+         AID DO to retrieve it.  The AID DO is available anyway but
+         not hex formatted. */
+      char *serial = app_get_serialno (app);
 
-      if (!app_get_serial_and_stamp (app, &serial, &stamp))
+      if (serial)
         {
-          sprintf (tmp, "%lu", (unsigned long)stamp);
-          send_status_info (ctrl, "SERIALNO",
-                            serial, strlen (serial),
-                            tmp, strlen (tmp),
-                            NULL, 0);
+          send_status_direct (ctrl, "SERIALNO", serial);
           xfree (serial);
         }
       return 0;
@@ -1029,10 +1021,9 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     }
   if (table[idx].special == -4)
     {
-      char *serial;
-      time_t stamp;
+      char *serial = app_get_serialno (app);
 
-      if (!app_get_serial_and_stamp (app, &serial, &stamp))
+      if (serial)
         {
           if (strlen (serial) > 16+12)
             {

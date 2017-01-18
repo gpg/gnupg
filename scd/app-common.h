@@ -124,6 +124,7 @@ size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 app_t app_list_start (void);
 void app_list_finish (void);
 void app_send_card_list (ctrl_t ctrl);
+char *app_get_serialno (app_t app);
 
 void app_dump_state (void);
 void application_notify_card_reset (int slot);
@@ -135,7 +136,6 @@ gpg_error_t select_application (ctrl_t ctrl, const char *name, app_t *r_app,
 char *get_supported_applications (void);
 void release_application (app_t app);
 gpg_error_t app_munge_serialno (app_t app);
-gpg_error_t app_get_serial_and_stamp (app_t app, char **serial, time_t *stamp);
 gpg_error_t app_write_learn_status (app_t app, ctrl_t ctrl,
                                     unsigned int flags);
 gpg_error_t app_readcert (app_t app, ctrl_t ctrl, const char *certid,
