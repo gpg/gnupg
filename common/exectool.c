@@ -65,12 +65,6 @@ my_error_from_syserror (void)
   return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
 }
 
-static inline gpg_error_t
-my_error_from_errno (int rc)
-{
-  return gpg_err_make (default_errsource, gpg_err_code_from_errno (rc));
-}
-
 
 static void
 read_and_log_stderr (read_and_log_buffer_t *state, es_poll_t *fderr)
@@ -232,15 +226,13 @@ copy_buffer_shred (struct copy_buffer *c)
 static gpg_error_t
 copy_buffer_do_copy (struct copy_buffer *c, estream_t source, estream_t sink)
 {
-  int rc;
   gpg_error_t err;
   size_t nwritten = 0;
 
   if (c->nread == 0)
     {
       c->writep = c->buffer;
-      rc = es_read (source, c->buffer, sizeof c->buffer, &c->nread);
-      if (rc)
+      if (es_read (source, c->buffer, sizeof c->buffer, &c->nread))
         {
           err = my_error_from_syserror ();
           if (gpg_err_code (err) == GPG_ERR_EAGAIN)
@@ -256,8 +248,10 @@ copy_buffer_do_copy (struct copy_buffer *c, estream_t source, estream_t sink)
     return 0;	/* Done copying.  */
 
   nwritten = 0;
-  rc = sink? es_write (sink, c->writep, c->nread, &nwritten) : 0;
-  err = rc? my_error_from_errno (rc) : 0;
+  if (sink && es_write (sink, c->writep, c->nread, &nwritten))
+    err = my_error_from_syserror ();
+  else
+    err = 0;
 
   log_assert (nwritten <= c->nread);
   c->writep += nwritten;
@@ -283,13 +277,11 @@ copy_buffer_do_copy (struct copy_buffer *c, estream_t source, estream_t sink)
 static gpg_error_t
 copy_buffer_flush (struct copy_buffer *c, estream_t sink)
 {
-  int rc;
-  gpg_error_t err;
-  size_t nwritten;
+  gpg_error_t err = 0;
+  size_t nwritten = 0;
 
-  nwritten = 0;
-  rc = es_write (sink, c->writep, c->nread, &nwritten);
-  err = rc? my_error_from_errno (rc) : 0;
+  if (es_write (sink, c->writep, c->nread, &nwritten))
+    err = my_error_from_syserror ();
 
   log_assert (nwritten <= c->nread);
   c->writep += nwritten;
@@ -628,9 +620,11 @@ gnupg_exec_tool (const char *pgmname, const char *argv[],
 
   if (len)
     {
-      err = es_read (output, *result, len, &nread);
-      if (err)
-        goto leave;
+      if (es_read (output, *result, len, &nread))
+        {
+          err = my_error_from_syserror ();
+          goto leave;
+        }
       if (nread != len)
         log_fatal ("%s: short read from memstream\n", __func__);
     }
