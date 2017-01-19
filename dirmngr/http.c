@@ -621,16 +621,93 @@ http_session_new (http_session_t *r_session, const char *tls_priority,
 
 #if HTTP_USE_NTBTLS
   {
+    x509_cert_t ca_chain;
+    char line[256];
+    estream_t fp, mem_p;
+    size_t nread, nbytes;
+    struct b64state state;
+    void *buf;
+    size_t buflen;
+    char *pemname;
+
     (void)tls_priority;
 
-    /* ntbtls_set_debug (99, NULL, NULL); */
+    pemname = make_filename_try (gnupg_datadir (),
+                                 "sks-keyservers.netCA.pem", NULL);
+    if (!pemname)
+      {
+        err = gpg_error_from_syserror ();
+        log_error ("setting CA from file '%s' failed: %s\n",
+                   pemname, gpg_strerror (err));
+        goto leave;
+      }
+
+    fp = es_fopen (pemname, "r");
+    if (!fp)
+      {
+        err = gpg_error_from_syserror ();
+        log_error ("can't open '%s': %s\n", pemname, gpg_strerror (err));
+        xfree (pemname);
+        goto leave;
+      }
+    xfree (pemname);
+
+    mem_p = es_fopenmem (0, "r+b");
+    err = b64dec_start (&state, "CERTIFICATE");
+    if (err)
+      {
+        log_error ("b64dec failure: %s\n", gpg_strerror (err));
+        goto leave;
+      }
+
+    while ( (nread = es_fread (line, 1, DIM (line), fp)) )
+      {
+        err = b64dec_proc (&state, line, nread, &nbytes);
+        if (err)
+          {
+            if (gpg_err_code (err) == GPG_ERR_EOF)
+              break;
+
+            log_error ("b64dec failure: %s\n", gpg_strerror (err));
+            es_fclose (fp);
+            es_fclose (mem_p);
+            goto leave;
+          }
+        else if (nbytes)
+          es_fwrite (line, 1, nbytes, mem_p);
+      }
+    err = b64dec_finish (&state);
+    if (err)
+      {
+        log_error ("b64dec failure: %s\n", gpg_strerror (err));
+        es_fclose (fp);
+        es_fclose (mem_p);
+        goto leave;
+      }
+
+    es_fclose_snatch (mem_p, &buf, &buflen);
+    es_fclose (fp);
+
+    err = ntbtls_x509_cert_new (&ca_chain);
+    if (err)
+      {
+        log_error ("ntbtls_x509_new failed: %s\n", gpg_strerror (err));
+        xfree (buf);
+        goto leave;
+      }
+
+    err = ntbtls_x509_append_cert (ca_chain, buf, buflen);
+    xfree (buf);
 
     err = ntbtls_new (&sess->tls_session, NTBTLS_CLIENT);
     if (err)
       {
         log_error ("ntbtls_new failed: %s\n", gpg_strerror (err));
+        ntbtls_x509_cert_release (ca_chain);
         goto leave;
       }
+
+    err = ntbtls_set_ca_chain (sess->tls_session, ca_chain, NULL);
   }
 #elif HTTP_USE_GNUTLS
   {
