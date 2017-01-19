@@ -65,6 +65,12 @@ my_error_from_syserror (void)
   return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
 }
 
+static inline gpg_error_t
+my_error_from_errno (int rc)
+{
+  return gpg_err_make (default_errsource, gpg_err_code_from_errno (rc));
+}
+
 
 static void
 read_and_log_stderr (read_and_log_buffer_t *state, es_poll_t *fderr)
@@ -226,42 +232,44 @@ copy_buffer_shred (struct copy_buffer *c)
 static gpg_error_t
 copy_buffer_do_copy (struct copy_buffer *c, estream_t source, estream_t sink)
 {
+  int rc;
   gpg_error_t err;
   size_t nwritten = 0;
 
   if (c->nread == 0)
     {
       c->writep = c->buffer;
-      err = es_read (source, c->buffer, sizeof c->buffer, &c->nread);
-      if (err)
+      rc = es_read (source, c->buffer, sizeof c->buffer, &c->nread);
+      if (rc)
         {
-          if (errno == EAGAIN)
+          err = my_error_from_syserror ();
+          if (gpg_err_code (err) == GPG_ERR_EAGAIN)
             return 0;	/* We will just retry next time.  */
 
-          return my_error_from_syserror ();
+          return err;
         }
 
-      assert (c->nread <= sizeof c->buffer);
+      log_assert (c->nread <= sizeof c->buffer);
     }
 
   if (c->nread == 0)
     return 0;	/* Done copying.  */
 
-
   nwritten = 0;
-  err = sink? es_write (sink, c->writep, c->nread, &nwritten) : 0;
+  rc = sink? es_write (sink, c->writep, c->nread, &nwritten) : 0;
+  err = rc? my_error_from_errno (rc) : 0;
 
-  assert (nwritten <= c->nread);
+  log_assert (nwritten <= c->nread);
   c->writep += nwritten;
   c->nread -= nwritten;
-  assert (c->writep - c->buffer <= sizeof c->buffer);
+  log_assert (c->writep - c->buffer <= sizeof c->buffer);
 
   if (err)
     {
-      if (errno == EAGAIN)
+      if (gpg_err_code (err) == GPG_ERR_EAGAIN)
         return 0;	/* We will just retry next time.  */
 
-      return my_error_from_syserror ();
+      return err;
     }
 
   if (sink && es_fflush (sink) && errno != EAGAIN)
@@ -275,16 +283,18 @@ copy_buffer_do_copy (struct copy_buffer *c, estream_t source, estream_t sink)
 static gpg_error_t
 copy_buffer_flush (struct copy_buffer *c, estream_t sink)
 {
+  int rc;
   gpg_error_t err;
   size_t nwritten;
 
   nwritten = 0;
-  err = es_write (sink, c->writep, c->nread, &nwritten);
+  rc = es_write (sink, c->writep, c->nread, &nwritten);
+  err = rc? my_error_from_errno (rc) : 0;
 
-  assert (nwritten <= c->nread);
+  log_assert (nwritten <= c->nread);
   c->writep += nwritten;
   c->nread -= nwritten;
-  assert (c->writep - c->buffer <= sizeof c->buffer);
+  log_assert (c->writep - c->buffer <= sizeof c->buffer);
 
   if (err)
     return err;
@@ -452,7 +462,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
           if (es_feof (input))
             {
               err = copy_buffer_flush (cpbuf_in, fds[0].stream);
-              if (err == GPG_ERR_EAGAIN)
+              if (gpg_err_code (err) == GPG_ERR_EAGAIN)
                 continue;	/* Retry next time.  */
               if (err)
                 {
@@ -480,7 +490,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
           if (es_feof (inextra))
             {
               err = copy_buffer_flush (cpbuf_extra, fds[3].stream);
-              if (err == GPG_ERR_EAGAIN)
+              if (gpg_err_code (err) == GPG_ERR_EAGAIN)
                 continue;	/* Retry next time.  */
               if (err)
                 {
