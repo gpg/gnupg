@@ -179,6 +179,7 @@ sub parse_amend_file($)
   my $amend_file;
   my $append_dot = 0;
   my $tear_off = 0;
+  my $firstline;
   GetOptions
     (
      help => sub { usage 0 },
@@ -338,7 +339,9 @@ sub parse_amend_file($)
           # Prefix each non-empty line with a TAB.
           @line = map { length $_ ? "\t$_" : '' } @line;
 
-          print "\n", join ("\n", @line), "\n";
+          $firstline = shift @line;
+          print "\n", $firstline, "\n", "\t+ commit $sha\n";
+          print join ("\n", @line), "\n";
         }
 
     SKIPCOMMIT:
