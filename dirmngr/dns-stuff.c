@@ -478,7 +478,16 @@ libdns_init (void)
       if (err)
         {
           log_error ("failed to load '%s': %s\n", fname, gpg_strerror (err));
-          goto leave;
+          /* not fatal, nsswitch.conf is not used on all systems; assume
+           * classic behavior instead.  Our dns library states "bf" which tries
+           * DNS then Files, which is not classic; FreeBSD
+           * /usr/src/lib/libc/net/gethostnamadr.c defines default_src[] which
+           * is Files then DNS, which is. */
+          log_debug ("dns: fallback resolution order, files then DNS");
+          ld.resolv_conf->lookup[0] = 'f';
+          ld.resolv_conf->lookup[1] = 'b';
+          ld.resolv_conf->lookup[2] = '\0';
+          err = GPG_ERR_NO_ERROR;
         }
 
 #endif /* Unix */
