@@ -20,7 +20,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 DISTCHECK_CONFIGURE_FLAGS = --enable-symcryptrun --enable-g13 \
-  --enable-gpg2-is-gpg
+  --enable-gpg2-is-gpg --enable-gpgtar --enable-wks-tools --disable-ntbtls
 
 GITLOG_TO_CHANGELOG=gitlog-to-changelog
 
