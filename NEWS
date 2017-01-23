@@ -1,5 +1,65 @@
-Noteworthy changes in version 2.1.18 (unreleased)
+Noteworthy changes in version 2.1.18 (2017-01-23)
 -------------------------------------------------
+
+  * gpg: Remove bogus subkey signature while cleaning a key (with
+    export-clean, import-clean, or --edit-key's sub-command clean)
+
+  * gpg: Allow freezing the clock with --faked-system-time.
+
+  * gpg: New --export-option flag "backup", new --import-option flag
+    "restore".
+
+  * gpg-agent: Fixed long delay due to a regression in the progress
+    callback code.
+
+  * scd: Lots of code cleanup and internal changes.
+
+  * scd: Improved the internal CCID driver.
+
+  * dirmngr: Fixed problem with the DNS glue code (removal of the
+    trailing dot in domain names).
+
+  * dirmngr: Make sure that Tor is actually enabled after changing the
+    conf file and sending SIGHUP or "gpgconf --reload dirmngr".
+
+  * dirmngr: Fixed Tor access to IPv6 addresses.  Note that current
+    versions of Tor may require that the flag "IPv6Traffic" is used
+    with the option "SocksPort" in torrc to actually allow IPv6
+    traffic.
+
+  * dirmngr: Fixed HKP for literally given IPv6 addresses.
+
+  * dirmngr: Enabled reverse DNS lookups via Tor.
+
+  * dirmngr: Added experimental SRV record lookup for WKD.
+    See commit 88dc3af3d4ae1afe1d5e136bc4c38bc4e7d4cd10 for details.
+
+  * dirmngr: For HKP use "pgpkey-hkps" and "pgpkey-hkp" in SRV record
+    lookups.  Avoid SRV record lookup when a port is explicitly
+    specified.  This fixes a regression from the 1.4 and 2.0 behavior.
+
+  * dirmngr: Gracefully handle a missing /etc/nsswitch.conf.  Ignore
+    negation terms (e.g. "[!UNAVAIL=return]" instead of bailing out.
+
+  * dirmngr: Better debug output for flags "dns" and "network".
+
+  * dirmngr: On reload mark all known HKP servers alive.
+
+  * gpgconf: Allow keyword "all" for --launch, --kill, and --reload.
+
+  * tools: gpg-wks-client now ignores a missing policy file on the
+    server.
+
+  * Avoid unnecessary ambiguity error message in the option parsing.
+
+  * Further improvements of the regression test suite.
+
+  * Fixed building with --disable-libdns configure option.
+
+  * Fixed a crash running the tests on 32 bit architectures.
+
+  * Fixed spurious failures on BSD system in the spawn functions.
+    This affected for example gpg-wks-client and gpgconf.
 
 
 Noteworthy changes in version 2.1.17 (2016-12-20)
