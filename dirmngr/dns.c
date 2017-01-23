@@ -6071,7 +6071,15 @@ int dns_nssconf_loadfile(struct dns_resolv_conf *resconf, FILE *fp) {
 			if ('[' == dns_anyconf_peek(fp)) {
 				dns_anyconf_skip("[ \t", fp);
 
-				while (dns_anyconf_scan(&cf, "%w_", fp, &error)) {
+				for (;;) {
+					if ('!' == dns_anyconf_peek(fp)) {
+						dns_anyconf_skip("! \t", fp);
+						/* FIXME: negating statuses; currently not implemented */
+						dns_anyconf_skip("^#;]\n", fp); /* skip to end of criteria */
+						break;
+					}
+
+					if (!dns_anyconf_scan(&cf, "%w_", fp, &error)) break;
 					dns_anyconf_skip("= \t", fp);
 					if (!dns_anyconf_scan(&cf, "%w_", fp, &error)) {
 						dns_anyconf_pop(&cf); /* discard status */
