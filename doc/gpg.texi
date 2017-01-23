@@ -2283,6 +2283,12 @@ opposite meaning. The options are:
   the most recent self-signature on each user ID. This option is the
   same as running the @option{--edit-key} command "minimize" after import.
   Defaults to no.
+
+  @item restore
+  @itemx import-restore
+  Import in key restore mode.  This imports all data which is usually
+  skipped during import; including all GnuPG specific data.  All other
+  contradicting options are overridden.
 @end table
 
 @item --import-filter @code{@var{name}=@var{expr}}
@@ -2392,6 +2398,13 @@ opposite meaning. The options are:
   @c the passphrases for all exported subkeys to empty. This is useful
   @c when the exported subkey is to be used on an unattended machine where
   @c a passphrase doesn't necessarily make sense. Defaults to no.
+
+  @item backup
+  @itemx export-backup
+  Export for use as a backup.  The exported data includes all data
+  which is needed to restore the key or keys later with GnuPG.  The
+  format is basically the OpenPGP format but enhanced with GnuPG
+  specific data.  All other contradicting options are overridden.
 
   @item export-clean
   Compact (remove all signatures from) user IDs on the key being

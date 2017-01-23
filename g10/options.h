@@ -349,6 +349,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define IMPORT_NO_SECKEY                 (1<<7)
 #define IMPORT_KEEP_OWNERTTRUST          (1<<8)
 #define IMPORT_EXPORT                    (1<<9)
+#define IMPORT_RESTORE                   (1<<10)
 
 #define EXPORT_LOCAL_SIGS                (1<<0)
 #define EXPORT_ATTRIBUTES                (1<<1)
@@ -358,6 +359,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define EXPORT_CLEAN                     (1<<5)
 #define EXPORT_PKA_FORMAT                (1<<6)
 #define EXPORT_DANE_FORMAT               (1<<7)
+#define EXPORT_BACKUP                    (1<<10)
 
 #define LIST_SHOW_PHOTOS                 (1<<0)
 #define LIST_SHOW_POLICY_URLS            (1<<1)

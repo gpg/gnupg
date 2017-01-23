@@ -116,6 +116,10 @@ parse_export_options(char *str,unsigned int *options,int noisy)
       {"export-pka", EXPORT_PKA_FORMAT, NULL, NULL },
       {"export-dane", EXPORT_DANE_FORMAT, NULL, NULL },
 
+      {"backup", EXPORT_BACKUP, NULL,
+       N_("use the GnuPG key backup format")},
+      {"export-backup", EXPORT_BACKUP, NULL, NULL },
+
       /* Aliases for backward compatibility */
       {"include-local-sigs",EXPORT_LOCAL_SIGS,NULL,NULL},
       {"include-attributes",EXPORT_ATTRIBUTES,NULL,NULL},
@@ -127,8 +131,18 @@ parse_export_options(char *str,unsigned int *options,int noisy)
       {NULL,0,NULL,NULL}
       /* add tags for include revoked and disabled? */
     };
+  int rc;
 
-  return parse_options(str,options,export_opts,noisy);
+  rc = parse_options (str, options, export_opts, noisy);
+  if (rc && (*options & EXPORT_BACKUP))
+    {
+      /* Alter other options we want or don't want for restore.  */
+      *options |= (EXPORT_LOCAL_SIGS | EXPORT_ATTRIBUTES
+                   | EXPORT_SENSITIVE_REVKEYS);
+      *options &= ~(EXPORT_CLEAN | EXPORT_MINIMAL
+                    | EXPORT_PKA_FORMAT | EXPORT_DANE_FORMAT);
+    }
+  return rc;
 }
 
 
@@ -1535,8 +1549,9 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
       if (node->pkt->pkttype == PKT_COMMENT)
         continue;
 
-      /* Make sure that ring_trust packets never get exported. */
-      if (node->pkt->pkttype == PKT_RING_TRUST)
+      /* Make sure that ring_trust packets are only exported in backup
+       * mode. */
+      if (node->pkt->pkttype == PKT_RING_TRUST && !(options & EXPORT_BACKUP))
         continue;
 
       /* If exact is set, then we only export what was requested

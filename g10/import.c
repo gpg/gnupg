@@ -175,6 +175,10 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"import-export", IMPORT_EXPORT, NULL,
        N_("run import filters and export key immediately")},
 
+      {"restore", IMPORT_RESTORE, NULL,
+       N_("assume the GnuPG key backup format")},
+      {"import-restore", IMPORT_RESTORE, NULL, NULL},
+
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL,NULL},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL,NULL},
@@ -186,8 +190,18 @@ parse_import_options(char *str,unsigned int *options,int noisy)
                                             the new design.  */
       {NULL,0,NULL,NULL}
     };
+  int rc;
 
-  return parse_options(str,options,import_opts,noisy);
+  rc = parse_options (str, options, import_opts, noisy);
+  if (rc && (*options & IMPORT_RESTORE))
+    {
+      /* Alter other options we want or don't want for restore.  */
+      *options |= (IMPORT_LOCAL_SIGS | IMPORT_KEEP_OWNERTTRUST);
+      *options &= ~(IMPORT_MINIMAL | IMPORT_CLEAN
+                    | IMPORT_REPAIR_PKS_SUBKEY_BUG
+                    | IMPORT_MERGE_ONLY);
+    }
+  return rc;
 }
 
 
@@ -833,7 +847,9 @@ read_block( IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
 	    break;
 
           case PKT_RING_TRUST:
-            /* Skip those packets.  */
+            /* Skip those packets unless we are in restore mode.  */
+            if ((opt.import_options & IMPORT_RESTORE))
+              goto x_default;
 	    free_packet( pkt );
 	    init_packet(pkt);
             break;
@@ -848,6 +864,7 @@ read_block( IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
               }
 	    in_cert = 1;
 	  default:
+          x_default:
 	    if (in_cert && valid_keyblock_packet (pkt->pkttype))
               {
 		if (!root )
