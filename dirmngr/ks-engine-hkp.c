@@ -851,7 +851,7 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
 gpg_error_t
 ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri)
 {
-  const char const data[] =
+  const char data[] =
     "Handler for HKP URLs:\n"
     "  hkp://\n"
 #if  HTTP_USE_GNUTLS || HTTP_USE_NTBTLS

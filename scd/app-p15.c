@@ -2463,7 +2463,7 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
       p = stpcpy (buf, "P15");
       if (app->app_local->home_df)
         {
-          snprintf (p, 6, "-%04hX",
+          snprintf (p, 6, "-%04X",
                     (unsigned int)(app->app_local->home_df & 0xffff));
           p += 5;
         }
@@ -2689,7 +2689,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
           p = stpcpy (buf, "P15");
           if (app->app_local->home_df)
             {
-              snprintf (p, 6, "-%04hX",
+              snprintf (p, 6, "-%04X",
                         (unsigned int)(app->app_local->home_df & 0xffff));
               p += 5;
             }

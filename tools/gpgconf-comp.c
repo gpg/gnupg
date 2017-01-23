@@ -1138,7 +1138,7 @@ gpg_agent_runtime_change (int killflag)
   gpg_error_t err = 0;
   const char *pgmname;
   const char *argv[5];
-  pid_t pid;
+  pid_t pid = (pid_t)(-1);
   char *abs_homedir = NULL;
   int i = 0;
 
@@ -1174,7 +1174,7 @@ scdaemon_runtime_change (int killflag)
   gpg_error_t err = 0;
   const char *pgmname;
   const char *argv[9];
-  pid_t pid;
+  pid_t pid = (pid_t)(-1);
   char *abs_homedir = NULL;
   int i = 0;
 
@@ -1221,7 +1221,7 @@ dirmngr_runtime_change (int killflag)
   gpg_error_t err = 0;
   const char *pgmname;
   const char *argv[6];
-  pid_t pid;
+  pid_t pid = (pid_t)(-1);
   char *abs_homedir = NULL;
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);

@@ -798,7 +798,7 @@ do_logv (int level, int ignore_arg_ptr, const char *extrastring,
             es_fputs_unlocked ("\\\\", logstream);
           else if (c == '\r')
             es_fputs_unlocked ("\\r", logstream);
-          else if ((c == '\n'))
+          else if (c == '\n')
             {
               es_fputs_unlocked ("\\n\n", logstream);
               if (*extrastring)

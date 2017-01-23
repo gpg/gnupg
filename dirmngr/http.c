@@ -2707,7 +2707,7 @@ cookie_read (void *cookie, void *buffer, size_t size)
       ntbtls_get_stream (c->session->tls_session, &in, &out);
       nread = es_fread (buffer, 1, size, in);
       if (opt_debug)
-        log_debug ("TLS network read: %d/%u\n", nread, size);
+        log_debug ("TLS network read: %d/%zu\n", nread, size);
     }
   else
 #elif HTTP_USE_GNUTLS
@@ -2800,7 +2800,7 @@ cookie_write (void *cookie, const void *buffer_arg, size_t size)
       else
         nwritten = es_fwrite (buffer, 1, size, out);
       if (opt_debug)
-        log_debug ("TLS network write: %d/%u\n", nwritten, size);
+        log_debug ("TLS network write: %d/%zu\n", nwritten, size);
     }
   else
 #elif HTTP_USE_GNUTLS

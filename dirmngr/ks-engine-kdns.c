@@ -33,7 +33,7 @@
 gpg_error_t
 ks_kdns_help (ctrl_t ctrl, parsed_uri_t uri)
 {
-  const char const data[] =
+  const char data[] =
     "This keyserver engine accepts URLs of the form:\n"
     "  kdns://[NAMESERVER]/[ROOT][?at=STRING]\n"
     "with\n"

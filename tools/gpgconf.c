@@ -280,7 +280,7 @@ query_swdb (estream_t out, const char *name, const char *current_version)
   gnupg_isotime_t value_date = {0};
   char *value_size = NULL;
   char *value_sha2 = NULL;
-  unsigned long value_size_ul;
+  unsigned long value_size_ul = 0;
   int status, i;
 
 

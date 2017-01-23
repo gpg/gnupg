@@ -289,7 +289,7 @@ epoch2ldaptime (time_t stamp)
 gpg_error_t
 ks_ldap_help (ctrl_t ctrl, parsed_uri_t uri)
 {
-  const char const data[] =
+  const char data[] =
     "Handler for LDAP URLs:\n"
     "  ldap://host:port/[BASEDN]???[bindname=BINDNAME,password=PASSWORD]\n"
     "\n"

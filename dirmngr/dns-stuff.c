@@ -947,7 +947,7 @@ resolve_addr_libdns (const struct sockaddr *addr, int addrlen,
 {
   gpg_error_t err;
   char host[DNS_D_MAXNAME + 1];
-  struct dns_resolver *res;
+  struct dns_resolver *res = NULL;
   struct dns_packet *ans = NULL;
   struct dns_ptr ptr;
   int derr;

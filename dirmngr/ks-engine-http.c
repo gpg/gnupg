@@ -35,7 +35,7 @@
 gpg_error_t
 ks_http_help (ctrl_t ctrl, parsed_uri_t uri)
 {
-  const char const data[] =
+  const char data[] =
     "Handler for HTTP URLs:\n"
     "  http://\n"
 #if  HTTP_USE_GNUTLS || HTTP_USE_NTBTLS
