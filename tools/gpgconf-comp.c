@@ -2641,6 +2641,8 @@ change_options_file (gc_component_t component, gc_backend_t backend,
   if (res < 0 && errno != ENOENT)
     {
       xfree (dest_filename);
+      xfree (src_filename);
+      xfree (orig_filename);
       return -1;
     }
   if (res < 0)
