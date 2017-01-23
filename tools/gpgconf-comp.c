@@ -3328,6 +3328,8 @@ gc_component_change_options (int component, estream_t in, estream_t out,
 
           change_one_value (option, runtime, flags, new_value, 0);
         }
+      if (length < 0 || gpgrt_ferror (in))
+	gc_error (1, errno, "error reading stream 'in'");
     }
 
   /* Now that we have collected and locally verified the changes,
