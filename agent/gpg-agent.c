@@ -346,7 +346,7 @@ static char *redir_socket_name_extra;
 static char *socket_name_browser;
 static char *redir_socket_name_browser;
 
-/* Name of the communication socket used for ssh-agent-emulation.  */
+/* Name of the communication socket used for ssh-agent protocol.  */
 static char *socket_name_ssh;
 static char *redir_socket_name_ssh;
 

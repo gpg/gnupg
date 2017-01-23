@@ -7,7 +7,7 @@
  * to this file.
  *
  * You should have received a copy of the CC0 legalcode along with this
- * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ * work.  If not, see <https://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
 /* The R code to generate the following table.  */

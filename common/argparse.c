@@ -1,6 +1,6 @@
 /* [argparse.c wk 17.06.97] Argument Parser for option handling
  * Copyright (C) 1998-2001, 2006-2008, 2012 Free Software Foundation, Inc.
- * Copyright (C) 1997-2001, 2006-2008, 2013-2016 Werner Koch
+ * Copyright (C) 1997-2001, 2006-2008, 2013-2017 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -71,7 +71,7 @@
 #else /* Used by GnuPG  */
 
 # define ARGPARSE_GPL_VERSION      3
-# define ARGPARSE_CRIGHT_STR "Copyright (C) 2016 Free Software Foundation, Inc."
+# define ARGPARSE_CRIGHT_STR "Copyright (C) 2017 Free Software Foundation, Inc."
 
 #endif /*GNUPG_MAJOR_VERSION*/
 

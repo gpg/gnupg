@@ -1,4 +1,4 @@
-/* command-ssh.c - gpg-agent's ssh-agent emulation layer
+/* command-ssh.c - gpg-agent's implementation of the ssh-agent protocol.
  * Copyright (C) 2004-2006, 2009, 2012 Free Software Foundation, Inc.
  * Copyright (C) 2004-2006, 2009, 2012-2014 Werner Koch
  *
@@ -3216,7 +3216,7 @@ ssh_identities_remove_all (void)
   err = 0;
 
   /* FIXME: shall we remove _all_ cache entries or only those
-     registered through the ssh emulation?  */
+     registered through the ssh-agent protocol?  */
 
   return err;
 }
