@@ -483,7 +483,8 @@ libdns_init (void)
            * DNS then Files, which is not classic; FreeBSD
            * /usr/src/lib/libc/net/gethostnamadr.c defines default_src[] which
            * is Files then DNS, which is. */
-          log_debug ("dns: fallback resolution order, files then DNS");
+          if (opt_debug)
+            log_debug ("dns: fallback resolution order, files then DNS\n");
           ld.resolv_conf->lookup[0] = 'f';
           ld.resolv_conf->lookup[1] = 'b';
           ld.resolv_conf->lookup[2] = '\0';
