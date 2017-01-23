@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-01-23 10:22+0100\n"
+"PO-Revision-Date: 2017-01-23 19:23+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -1694,6 +1694,9 @@ msgstr "Unbrauchbare Teile des Schlüssel während des Exports entfernen"
 msgid "remove as much as possible from key during export"
 msgstr "Während des Exports soviel wie möglich vom Schlüssel entfernen"
 
+msgid "use the GnuPG key backup format"
+msgstr "Das GnuPG Datensicherungsformat für Schlüssel benutzen"
+
 msgid " - skipped"
 msgstr " - übersprungen"
 
@@ -2450,6 +2453,9 @@ msgstr "nach dem Import soviel wie möglich aus dem Schlüssel entfernen"
 
 msgid "run import filters and export key immediately"
 msgstr "Import-Filter anwenden und Schlüssel direkt exportieren"
+
+msgid "assume the GnuPG key backup format"
+msgstr "Eingabedaten sind im GnuPG Datensicherungsformat für Schlüssel"
 
 #, c-format
 msgid "skipping block of type %d\n"
