@@ -1702,6 +1702,7 @@ dirmngr_sighup_action (void)
   cert_cache_init ();
   crl_cache_init ();
   reload_dns_stuff (0);
+  ks_hkp_reload ();
 }
 
 

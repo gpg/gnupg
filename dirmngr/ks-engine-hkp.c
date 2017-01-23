@@ -1003,6 +1003,29 @@ ks_hkp_housekeeping (time_t curtime)
 }
 
 
+/* Reload (SIGHUP) action for this module.  We mark all host alive
+ * even those which have been manually shot.  */
+void
+ks_hkp_reload (void)
+{
+  int idx, count;
+  hostinfo_t hi;
+
+  for (idx=count=0; idx < hosttable_size; idx++)
+    {
+      hi = hosttable[idx];
+      if (!hi)
+        continue;
+      if (!hi->dead)
+        continue;
+      hi->dead = 0;
+      count++;
+    }
+  if (count)
+    log_info ("number of resurrected hosts: %d", count);
+}
+
+
 /* Send an HTTP request.  On success returns an estream object at
    R_FP.  HOSTPORTSTR is only used for diagnostics.  If HTTPHOST is
    not NULL it will be used as HTTP "Host" header.  If POST_CB is not

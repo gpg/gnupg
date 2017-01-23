@@ -194,6 +194,7 @@ const char* dirmngr_get_current_socket_name (void);
 
 /*-- Various housekeeping functions.  --*/
 void ks_hkp_housekeeping (time_t curtime);
+void ks_hkp_reload (void);
 
 
 /*-- server.c --*/
