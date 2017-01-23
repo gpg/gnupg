@@ -1785,6 +1785,9 @@ msgstr "ihraç sırasında anahtardan kullanışsız parçalar kaldırılır"
 msgid "remove as much as possible from key during export"
 msgstr "ihraç sırasında anahtardan mümkün olduğunca çok şey kaldırılır"
 
+msgid "use the GnuPG key backup format"
+msgstr ""
+
 #, fuzzy
 #| msgid "%s: skipped: %s\n"
 msgid " - skipped"
@@ -2611,6 +2614,11 @@ msgstr "ithalat sonrası anahtardan mümkün olduğunca çok şey kaldırır"
 
 msgid "run import filters and export key immediately"
 msgstr ""
+
+#, fuzzy
+#| msgid "assume input is in binary format"
+msgid "assume the GnuPG key backup format"
+msgstr "girdinin ikilik biçimde olduğu kabul edilir"
 
 #, c-format
 msgid "skipping block of type %d\n"

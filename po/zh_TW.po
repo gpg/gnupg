@@ -1655,6 +1655,9 @@ msgstr "匯出時從金鑰中移除無法使用的部分"
 msgid "remove as much as possible from key during export"
 msgstr "匯出時盡可能地從金鑰中移除"
 
+msgid "use the GnuPG key backup format"
+msgstr ""
+
 msgid " - skipped"
 msgstr " - 已跳過"
 
@@ -2415,6 +2418,11 @@ msgstr "匯入後盡可能地從金鑰中移除"
 
 msgid "run import filters and export key immediately"
 msgstr ""
+
+#, fuzzy
+#| msgid "assume input is in binary format"
+msgid "assume the GnuPG key backup format"
+msgstr "假設輸入的是二進制格式"
 
 #, c-format
 msgid "skipping block of type %d\n"

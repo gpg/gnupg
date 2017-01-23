@@ -1639,6 +1639,9 @@ msgstr "エクスポートの際、利用できない部分を除去する"
 msgid "remove as much as possible from key during export"
 msgstr "エクスポートの際、できるだけ除去する"
 
+msgid "use the GnuPG key backup format"
+msgstr ""
+
 msgid " - skipped"
 msgstr " - スキップされました"
 
@@ -2369,6 +2372,11 @@ msgstr "インポート後、できるだけ除去します"
 
 msgid "run import filters and export key immediately"
 msgstr "インポート・フィルタを実行し鍵をすぐにエクスポートします"
+
+#, fuzzy
+#| msgid "assume input is in binary format"
+msgid "assume the GnuPG key backup format"
+msgstr "バイナリ・フォーマットの入力を仮定する"
 
 #, c-format
 msgid "skipping block of type %d\n"

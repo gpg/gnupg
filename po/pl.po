@@ -1791,6 +1791,9 @@ msgstr "usunięcie bezużytecznych części z klucza przy eksporcie"
 msgid "remove as much as possible from key during export"
 msgstr "usunięcie jak największej części klucza przy eksporcie"
 
+msgid "use the GnuPG key backup format"
+msgstr ""
+
 #, fuzzy
 #| msgid "%s: skipped: %s\n"
 msgid " - skipped"
@@ -2630,6 +2633,11 @@ msgstr "usuwanie jak największej części kluczy po imporcie"
 
 msgid "run import filters and export key immediately"
 msgstr ""
+
+#, fuzzy
+#| msgid "assume input is in binary format"
+msgid "assume the GnuPG key backup format"
+msgstr "przyjęcie wejścia w formacie binarnym"
 
 #, c-format
 msgid "skipping block of type %d\n"

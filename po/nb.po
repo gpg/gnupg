@@ -1653,6 +1653,9 @@ msgstr "fjern ubrukelige deler fra nøkkelen under eksportering"
 msgid "remove as much as possible from key during export"
 msgstr "fjern så mye som mulig fra nøkkelen under eksportering"
 
+msgid "use the GnuPG key backup format"
+msgstr ""
+
 msgid " - skipped"
 msgstr ". Hoppet over"
 
@@ -2399,6 +2402,11 @@ msgstr "fjern så mye som mulig fra nøkkel etter importering"
 
 msgid "run import filters and export key immediately"
 msgstr "kjør importeringsfiltre og eksporter nøkkel umiddelbart"
+
+#, fuzzy
+#| msgid "assume input is in binary format"
+msgid "assume the GnuPG key backup format"
+msgstr "forvent inndata i binærformat"
 
 #, c-format
 msgid "skipping block of type %d\n"

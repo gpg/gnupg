@@ -1655,6 +1655,9 @@ msgstr "удалить при экспорте непригодные части
 msgid "remove as much as possible from key during export"
 msgstr "при экспорте удалить из ключа как можно больше"
 
+msgid "use the GnuPG key backup format"
+msgstr ""
+
 msgid " - skipped"
 msgstr " - пропущено"
 
@@ -2414,6 +2417,11 @@ msgstr "удалить после импорта из ключа как можн
 
 msgid "run import filters and export key immediately"
 msgstr "применить фильтры импорта и немедленно экспортировать ключ"
+
+#, fuzzy
+#| msgid "assume input is in binary format"
+msgid "assume the GnuPG key backup format"
+msgstr "предполагаю, что входные данные в двоичном формате"
 
 #, c-format
 msgid "skipping block of type %d\n"

@@ -1774,6 +1774,9 @@ msgstr "cheie secretă de nefolosit"
 msgid "remove as much as possible from key during export"
 msgstr ""
 
+msgid "use the GnuPG key backup format"
+msgstr ""
+
 #, fuzzy
 #| msgid "%s: skipped: %s\n"
 msgid " - skipped"
@@ -2613,6 +2616,9 @@ msgid "remove as much as possible from key after import"
 msgstr ""
 
 msgid "run import filters and export key immediately"
+msgstr ""
+
+msgid "assume the GnuPG key backup format"
 msgstr ""
 
 #, c-format

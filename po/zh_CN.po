@@ -1743,6 +1743,9 @@ msgstr "导出时清除密钥中的不可用部分"
 msgid "remove as much as possible from key during export"
 msgstr "导出时尽可能清除密钥中的可选部分"
 
+msgid "use the GnuPG key backup format"
+msgstr ""
+
 #, fuzzy
 #| msgid "%s: skipped: %s\n"
 msgid " - skipped"
@@ -2557,6 +2560,9 @@ msgid "remove as much as possible from key after import"
 msgstr "导入后尽可能清除密钥中的可选部分"
 
 msgid "run import filters and export key immediately"
+msgstr ""
+
+msgid "assume the GnuPG key backup format"
 msgstr ""
 
 #, c-format

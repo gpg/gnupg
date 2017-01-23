@@ -1673,6 +1673,9 @@ msgstr "вилучити невикористовувані частини кл�
 msgid "remove as much as possible from key during export"
 msgstr "вилучити максимум частин з ключа під час експортування"
 
+msgid "use the GnuPG key backup format"
+msgstr ""
+
 msgid " - skipped"
 msgstr " - пропущено"
 
@@ -2458,6 +2461,11 @@ msgstr "вилучити максимум частин з ключа після 
 
 msgid "run import filters and export key immediately"
 msgstr "запустити фільтри імпортування та експортувати ключ негайно"
+
+#, fuzzy
+#| msgid "assume input is in binary format"
+msgid "assume the GnuPG key backup format"
+msgstr "вважати вхідні дані даними у двійковому форматі"
 
 #, c-format
 msgid "skipping block of type %d\n"
