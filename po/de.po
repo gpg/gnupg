@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-12-20 11:14+0100\n"
+"PO-Revision-Date: 2017-01-23 10:22+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -3423,7 +3423,7 @@ msgstr "verfällt: %s"
 
 #, c-format
 msgid "usage: %s"
-msgstr "Aufruf: %s"
+msgstr "Nutzung: %s"
 
 msgid "card-no: "
 msgstr "Kartennummer:"
@@ -3760,7 +3760,7 @@ msgstr "Authentisierung"
 #. q = Finish
 #.
 msgid "SsEeAaQq"
-msgstr "UuVvAaQq"
+msgstr "SsVvAaQq"
 
 #, c-format
 msgid "Possible actions for a %s key: "
@@ -3771,15 +3771,15 @@ msgstr "Derzeit erlaubte Vorgänge: "
 
 #, c-format
 msgid "   (%c) Toggle the sign capability\n"
-msgstr "   (%c) Umschalten der Signaturfähigkeit\n"
+msgstr "   (%c) Umschalten der Signaturnutzbarkeit\n"
 
 #, c-format
 msgid "   (%c) Toggle the encrypt capability\n"
-msgstr "   (%c) Umschalten der Verschlüsselungsfähigkeit\n"
+msgstr "   (%c) Umschalten der Verschlüsselungsnutzbarkeit\n"
 
 #, c-format
 msgid "   (%c) Toggle the authenticate capability\n"
-msgstr "   (%c) Umschalten der Authentisierungsfähigkeit\n"
+msgstr "   (%c) Umschalten der Authentisierungsnutzbarkeit\n"
 
 #, c-format
 msgid "   (%c) Finished\n"
@@ -3814,11 +3814,11 @@ msgstr "   (%d) RSA (nur verschlüsseln)\n"
 
 #, c-format
 msgid "   (%d) DSA (set your own capabilities)\n"
-msgstr "   (%d) DSA (Leistungsfähigkeit selber einstellbar)\n"
+msgstr "   (%d) DSA (Nutzung selber einstellbar)\n"
 
 #, c-format
 msgid "   (%d) RSA (set your own capabilities)\n"
-msgstr "   (%d) RSA (Leistungsfähigkeit selber einstellbar)\n"
+msgstr "   (%d) RSA (Nutzung selber einstellbar)\n"
 
 #, c-format
 msgid "   (%d) ECC and ECC\n"
@@ -3830,7 +3830,7 @@ msgstr "  (%d) ECC (nur signieren)\n"
 
 #, c-format
 msgid "  (%d) ECC (set your own capabilities)\n"
-msgstr "  (%d) ECC (Leistungsfähigkeit selber einstellbar)\n"
+msgstr "  (%d) ECC (Nutzung selber einstellbar)\n"
 
 #, c-format
 msgid "  (%d) ECC (encrypt only)\n"
