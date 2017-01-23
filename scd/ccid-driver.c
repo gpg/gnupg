@@ -1100,8 +1100,9 @@ find_endpoint (const struct libusb_interface_descriptor *ifcdesc, int mode)
                    == LIBUSB_TRANSFER_TYPE_INTERRUPT)
                && (ep->bEndpointAddress & 0x80))
         return ep->bEndpointAddress;
-      else if (((ep->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK)
-                == LIBUSB_TRANSFER_TYPE_BULK)
+      else if ((mode == 0 || mode == 1)
+               && ((ep->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK)
+                   == LIBUSB_TRANSFER_TYPE_BULK)
                && (ep->bEndpointAddress & 0x80) == want_bulk_in)
         return ep->bEndpointAddress;
     }
@@ -2459,9 +2460,9 @@ ccid_poll (ccid_driver_t handle)
 
   if (handle->idev)
     {
-      rc = libusb_bulk_transfer (handle->idev, handle->ep_intr,
-                                 (char*)msg, sizeof msg, &msglen,
-                                 0 /* ms timeout */ );
+      rc = libusb_interrupt_transfer (handle->idev, handle->ep_intr,
+                                      (char*)msg, sizeof msg, &msglen,
+                                      0 /* ms timeout */ );
       if (rc == LIBUSB_ERROR_TIMEOUT)
         return 0;
     }
