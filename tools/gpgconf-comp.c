@@ -47,6 +47,7 @@
 #include "util.h"
 #include "i18n.h"
 #include "exechelp.h"
+#include "sysutils.h"
 
 #include "gc-opt-flags.h"
 #include "gpgconf.h"
@@ -3267,6 +3268,7 @@ gc_component_change_options (int component, estream_t in, estream_t out,
                              int verbatim)
 {
   int err = 0;
+  int block = 0;
   int runtime[GC_BACKEND_NR];
   char *src_filename[GC_BACKEND_NR];
   char *dest_filename[GC_BACKEND_NR];
@@ -3406,6 +3408,14 @@ gc_component_change_options (int component, estream_t in, estream_t out,
       option++;
     }
 
+  /* We are trying to atomically commit all changes.  Unfortunately,
+     we cannot rely on gnupg_rename_file to manage the signals for us,
+     doing so would require us to pass NULL as BLOCK to any subsequent
+     call to it.  Instead, we just manage the signal handling
+     manually.  */
+  block = 1;
+  gnupg_block_all_signals ();
+
   if (! err && ! opt.dry_run)
     {
       int i;
@@ -3419,20 +3429,13 @@ gc_component_change_options (int component, estream_t in, estream_t out,
 	      assert (dest_filename[i]);
 
 	      if (orig_filename[i])
-		{
-#ifdef HAVE_W32_SYSTEM
-		  /* There is no atomic update on W32.  */
-		  err = unlink (dest_filename[i]);
-#endif /* HAVE_W32_SYSTEM */
-		  if (!err)
-		    err = rename (src_filename[i], dest_filename[i]);
-		}
+		err = gnupg_rename_file (src_filename[i], dest_filename[i], NULL);
 	      else
 		{
 #ifdef HAVE_W32_SYSTEM
 		  /* We skip the unlink if we expect the file not to
 		     be there.  */
-                  err = rename (src_filename[i], dest_filename[i]);
+                  err = gnupg_rename_file (src_filename[i], dest_filename[i], NULL);
 #else /* HAVE_W32_SYSTEM */
 		  /* This is a bit safer than rename() because we
 		     expect DEST_FILENAME not to be there.  If it
@@ -3472,13 +3475,7 @@ gc_component_change_options (int component, estream_t in, estream_t out,
 		 a version of the file that is even newer than the one
 		 we just installed.  */
 	      if (orig_filename[i])
-		{
-#ifdef HAVE_W32_SYSTEM
-		  /* There is no atomic update on W32.  */
-		  unlink (dest_filename[i]);
-#endif /* HAVE_W32_SYSTEM */
-		  rename (orig_filename[i], dest_filename[i]);
-		}
+		gnupg_rename_file (orig_filename[i], dest_filename[i], NULL);
 	      else
 		unlink (dest_filename[i]);
 	    }
@@ -3508,16 +3505,13 @@ gc_component_change_options (int component, estream_t in, estream_t out,
 
 	backup_filename = xasprintf ("%s.%s.bak",
                                      dest_filename[backend], GPGCONF_NAME);
-
-#ifdef HAVE_W32_SYSTEM
-	/* There is no atomic update on W32.  */
-	unlink (backup_filename);
-#endif /* HAVE_W32_SYSTEM */
-	rename (orig_filename[backend], backup_filename);
+	gnupg_rename_file (orig_filename[backend], backup_filename, NULL);
 	xfree (backup_filename);
       }
 
  leave:
+  if (block)
+    gnupg_unblock_all_signals ();
   xfree (line);
   for (backend = 0; backend < GC_BACKEND_NR; backend++)
     {
