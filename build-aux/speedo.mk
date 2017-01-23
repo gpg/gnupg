@@ -184,7 +184,7 @@ speedo_spkgs  = \
 
 ifeq ($(TARGETOS),w32)
 speedo_spkgs += \
-	zlib bzip2 adns sqlite
+	zlib bzip2 sqlite
 ifeq ($(WITH_GUI),1)
 speedo_spkgs += gettext libiconv
 endif
@@ -314,10 +314,6 @@ bzip2_ver  := $(shell awk '$$1=="bzip2_ver" {print $$2}' swdb.lst)
 bzip2_sha1 := $(shell awk '$$1=="bzip2_sha1_gz" {print $$2}' swdb.lst)
 bzip2_sha2 := $(shell awk '$$1=="bzip2_sha2_gz" {print $$2}' swdb.lst)
 
-adns_ver  := $(shell awk '$$1=="adns_ver" {print $$2}' swdb.lst)
-adns_sha1 := $(shell awk '$$1=="adns_sha1" {print $$2}' swdb.lst)
-adns_sha2 := $(shell awk '$$1=="adns_sha2" {print $$2}' swdb.lst)
-
 sqlite_ver  := $(shell awk '$$1=="sqlite_ver" {print $$2}' swdb.lst)
 sqlite_sha1 := $(shell awk '$$1=="sqlite_sha1_gz" {print $$2}' swdb.lst)
 sqlite_sha2 := $(shell awk '$$1=="sqlite_sha2_gz" {print $$2}' swdb.lst)
@@ -331,7 +327,6 @@ $(info Libgcrypt ......: $(libgcrypt_ver))
 $(info Libassuan ......: $(libassuan_ver))
 $(info Zlib ...........: $(zlib_ver))
 $(info Bzip2 ..........: $(bzip2_ver))
-$(info ADNS ...........: $(adns_ver))
 $(info SQLite .........: $(sqlite_ver))
 $(info GPGME ..........: $(gpgme_ver))
 $(info Pinentry .......: $(pinentry_ver))
@@ -431,7 +426,6 @@ speedo_pkg_pkg_config_tar = $(pkg2rep)/pkg-config-$(pkg_config_ver).tar.gz
 speedo_pkg_zlib_tar       = $(pkgrep)/zlib/zlib-$(zlib_ver).tar.gz
 speedo_pkg_bzip2_tar      = $(pkgrep)/bzip2/bzip2-$(bzip2_ver).tar.gz
 speedo_pkg_sqlite_tar     = $(pkgrep)/sqlite/sqlite-autoconf-$(sqlite_ver).tar.gz
-speedo_pkg_adns_tar       = $(pkg10rep)/adns/adns-$(adns_ver).tar.bz2
 speedo_pkg_libiconv_tar   = $(pkg2rep)/libiconv-$(libiconv_ver).tar.gz
 speedo_pkg_gettext_tar    = $(pkg2rep)/gettext-$(gettext_ver).tar.gz
 speedo_pkg_libffi_tar     = $(pkg2rep)/libffi-$(libffi_ver).tar.gz
