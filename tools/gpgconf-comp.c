@@ -2573,7 +2573,20 @@ copy_file (const char *src_name, const char *dst_name)
 
 
 /* Create and verify the new configuration file for the specified
-   backend and component.  Returns 0 on success and -1 on error.  */
+ * backend and component.  Returns 0 on success and -1 on error.  This
+ * function may store pointers to malloced strings in SRC_FILENAMEP,
+ * DEST_FILENAMEP, and ORIG_FILENAMEP.  Those must be freed by the
+ * caller.  The strings refer to three versions of the configuration
+ * file:
+ *
+ * SRC_FILENAME:  The updated configuration is written to this file.
+ * DEST_FILENAME: Name of the configuration file read by the
+ *                component.
+ * ORIG_FILENAME: A backup of the previous configuration file.
+ *
+ * To apply the configuration change, rename SRC_FILENAME to
+ * DEST_FILENAME.  To revert to the previous configuration, rename
+ * ORIG_FILENAME to DEST_FILENAME.  */
 static int
 change_options_file (gc_component_t component, gc_backend_t backend,
 		     char **src_filenamep, char **dest_filenamep,
@@ -2882,7 +2895,19 @@ change_options_file (gc_component_t component, gc_backend_t backend,
 
 /* Create and verify the new configuration file for the specified
  * backend and component.  Returns 0 on success and -1 on error.  If
- * VERBATIM is set the profile mode is used. */
+ * VERBATIM is set the profile mode is used.  This function may store
+ * pointers to malloced strings in SRC_FILENAMEP, DEST_FILENAMEP, and
+ * ORIG_FILENAMEP.  Those must be freed by the caller.  The strings
+ * refer to three versions of the configuration file:
+ *
+ * SRC_FILENAME:  The updated configuration is written to this file.
+ * DEST_FILENAME: Name of the configuration file read by the
+ *                component.
+ * ORIG_FILENAME: A backup of the previous configuration file.
+ *
+ * To apply the configuration change, rename SRC_FILENAME to
+ * DEST_FILENAME.  To revert to the previous configuration, rename
+ * ORIG_FILENAME to DEST_FILENAME.  */
 static int
 change_options_program (gc_component_t component, gc_backend_t backend,
 			char **src_filenamep, char **dest_filenamep,
