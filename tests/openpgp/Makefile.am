@@ -92,14 +92,11 @@ XTESTS = \
 	quick-key-manipulation.scm \
 	key-selection.scm \
 	delete-keys.scm \
+	gpgconf.scm \
 	issue2015.scm \
 	issue2346.scm \
 	issue2417.scm \
 	issue2419.scm
-
-# Fixme: gpgconf.scm does not yet work with make distcheck.
-#	gpgconf.scm
-
 
 # XXX: Currently, one cannot override automake's 'check' target.  As a
 # workaround, we avoid defining 'TESTS', thus automake will not emit
