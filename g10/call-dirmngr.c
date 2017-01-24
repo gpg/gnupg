@@ -374,7 +374,8 @@ ks_status_cb (void *opaque, const char *line)
 {
   struct ks_status_parm_s *parm = opaque;
   gpg_error_t err = 0;
-  const char *s;
+  const char *s, *s2;
+  const char *warn;
 
   if ((s = has_leading_keyword (line, parm->keyword? parm->keyword : "SOURCE")))
     {
@@ -383,6 +384,29 @@ ks_status_cb (void *opaque, const char *line)
           parm->source = xtrystrdup (s);
           if (!parm->source)
             err = gpg_error_from_syserror ();
+        }
+    }
+  else if ((s = has_leading_keyword (line, "WARNING")))
+    {
+      if ((s2 = has_leading_keyword (s, "tor_not_running")))
+        warn = _("Tor is not running");
+      else if ((s2 = has_leading_keyword (s, "tor_config_problem")))
+        warn = _("Tor is not properly configured");
+      else
+        warn = NULL;
+
+      if (warn)
+        {
+          log_info (_("WARNING: %s\n"), warn);
+          if (s2)
+            {
+              while (*s2 && !spacep (s2))
+                s2++;
+              while (*s2 && spacep (s2))
+                s2++;
+              if (*s2)
+                print_further_info ("%s", s2);
+            }
         }
     }
 

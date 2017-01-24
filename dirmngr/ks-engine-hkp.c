@@ -258,6 +258,31 @@ arecords_is_pool (dns_addrinfo_t aibuf)
 }
 
 
+/* Print a warninng iff Tor is not running but Tor has been requested.
+ * Also return true if it is not running.  */
+static int
+tor_not_running_p (ctrl_t ctrl)
+{
+  assuan_fd_t sock;
+
+  if (!opt.use_tor)
+    return 0;
+
+  sock = assuan_sock_connect_byname (NULL, 0, 0, NULL, ASSUAN_SOCK_TOR);
+  if (sock != ASSUAN_INVALID_FD)
+    {
+      assuan_sock_close (sock);
+      return 0;
+    }
+
+  log_info ("(it seems Tor is not running)\n");
+  dirmngr_status (ctrl, "WARNING", "tor_not_running 0",
+                  "Tor is enabled but the local Tor daemon"
+                  " seems to be down", NULL);
+  return 1;
+}
+
+
 /* Add the host AI under the NAME into the HOSTTABLE.  If PORT is not
    zero, it specifies which port to use to talk to the host.  If NAME
    specifies a pool (as indicated by IS_POOL), update the given
@@ -454,6 +479,8 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
           if (err)
             {
               xfree (reftbl);
+              if (gpg_err_code (err) == GPG_ERR_ECONNREFUSED)
+                tor_not_running_p (ctrl);
               return err;
             }
 
@@ -1182,13 +1209,13 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
 }
 
 
-/* Helper to evaluate the error code ERR form a send_request() call
+/* Helper to evaluate the error code ERR from a send_request() call
    with REQUEST.  The function returns true if the caller shall try
    again.  TRIES_LEFT points to a variable to track the number of
    retries; this function decrements it and won't return true if it is
    down to zero. */
 static int
-handle_send_request_error (gpg_error_t err, const char *request,
+handle_send_request_error (ctrl_t ctrl, gpg_error_t err, const char *request,
                            unsigned int *tries_left)
 {
   int retry = 0;
@@ -1199,16 +1226,9 @@ handle_send_request_error (gpg_error_t err, const char *request,
   switch (gpg_err_code (err))
     {
     case GPG_ERR_ECONNREFUSED:
-      if (opt.use_tor)
-        {
-          assuan_fd_t sock;
-
-          sock = assuan_sock_connect_byname (NULL, 0, 0, NULL, ASSUAN_SOCK_TOR);
-          if (sock == ASSUAN_INVALID_FD)
-            log_info ("(it seems Tor is not running)\n");
-          else
-            assuan_sock_close (sock);
-        }
+      if (tor_not_running_p (ctrl))
+        break; /* A retry does not make sense.  */
+      /* Okay: Tor is up or --use-tor is not used.  */
       /*FALLTHRU*/
     case GPG_ERR_ENETUNREACH:
     case GPG_ERR_ENETDOWN:
@@ -1223,6 +1243,16 @@ handle_send_request_error (gpg_error_t err, const char *request,
         {
           log_info ("selecting a different host due to a timeout\n");
           retry = 1;
+        }
+      break;
+
+    case GPG_ERR_EACCES:
+      if (opt.use_tor)
+        {
+          log_info ("(Tor configuration problem)\n");
+          dirmngr_status (ctrl, "WARNING", "tor_config_problem 0",
+                          "Please check that the \"SocksPort\" flag "
+                          "\"IPv6Traffic\" is set in torrc", NULL);
         }
       break;
 
@@ -1336,7 +1366,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, httpflags,
                       NULL, NULL, &fp, r_http_status);
-  if (handle_send_request_error (err, request, &tries))
+  if (handle_send_request_error (ctrl, err, request, &tries))
     {
       reselect = 1;
       goto again;
@@ -1470,7 +1500,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, httpflags,
                       NULL, NULL, &fp, NULL);
-  if (handle_send_request_error (err, request, &tries))
+  if (handle_send_request_error (ctrl, err, request, &tries))
     {
       reselect = 1;
       goto again;
@@ -1579,7 +1609,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, 0,
                       put_post_cb, &parm, &fp, NULL);
-  if (handle_send_request_error (err, request, &tries))
+  if (handle_send_request_error (ctrl, err, request, &tries))
     {
       reselect = 1;
       goto again;
