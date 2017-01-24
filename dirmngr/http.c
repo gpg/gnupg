@@ -155,9 +155,9 @@ static gpg_error_t send_request (http_t hd, const char *httphost,
 static char *build_rel_path (parsed_uri_t uri);
 static gpg_error_t parse_response (http_t hd);
 
-static assuan_fd_t connect_server (const char *server, unsigned short port,
+static gpg_error_t connect_server (const char *server, unsigned short port,
                                    unsigned int flags, const char *srvtag,
-                                   int *r_host_not_found);
+                                   assuan_fd_t *r_sock);
 static gpg_error_t write_server (int sock, const char *data, size_t length);
 
 static gpgrt_ssize_t cookie_read (void *cookie, void *buffer, size_t size);
@@ -924,7 +924,6 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
   gpg_error_t err = 0;
   http_t hd;
   cookie_t cookie;
-  int hnf;
 
   *r_hd = NULL;
 
@@ -950,12 +949,9 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
   {
     assuan_fd_t sock;
 
-    sock = connect_server (server, port, hd->flags, srvtag, &hnf);
-    if (sock == ASSUAN_INVALID_FD)
+    err = connect_server (server, port, hd->flags, srvtag, &sock);
+    if (err)
       {
-        err = gpg_err_make (default_errsource,
-                            (hnf? GPG_ERR_UNKNOWN_HOST
-                             : gpg_err_code_from_syserror ()));
         xfree (hd);
         return err;
       }
@@ -1643,7 +1639,6 @@ send_request (http_t hd, const char *httphost, const char *auth,
   char *proxy_authstr = NULL;
   char *authstr = NULL;
   int sock;
-  int hnf;
 
   if (hd->uri->use_tls && !hd->session)
     {
@@ -1713,7 +1708,6 @@ send_request (http_t hd, const char *httphost, const char *auth,
             && *http_proxy ))
     {
       parsed_uri_t uri;
-      int save_errno;
 
       if (proxy)
 	http_proxy = proxy;
@@ -1760,25 +1754,20 @@ send_request (http_t hd, const char *httphost, const char *auth,
             }
         }
 
-      sock = connect_server (*uri->host ? uri->host : "localhost",
-                             uri->port ? uri->port : 80,
-                             hd->flags, srvtag, &hnf);
-      save_errno = errno;
+      err = connect_server (*uri->host ? uri->host : "localhost",
+                            uri->port ? uri->port : 80,
+                            hd->flags, srvtag, &sock);
       http_release_parsed_uri (uri);
-      if (sock == ASSUAN_INVALID_FD)
-        gpg_err_set_errno (save_errno);
     }
   else
     {
-      sock = connect_server (server, port, hd->flags, srvtag, &hnf);
+      err = connect_server (server, port, hd->flags, srvtag, &sock);
     }
 
-  if (sock == ASSUAN_INVALID_FD)
+  if (err)
     {
       xfree (proxy_authstr);
-      return gpg_err_make (default_errsource,
-                           (hnf? GPG_ERR_UNKNOWN_HOST
-                               : gpg_err_code_from_syserror ()));
+      return err;
     }
   hd->sock = my_socket_new (sock);
   if (!hd->sock)
@@ -1786,7 +1775,6 @@ send_request (http_t hd, const char *httphost, const char *auth,
       xfree (proxy_authstr);
       return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
     }
-
 
 
 #if HTTP_USE_NTBTLS
@@ -2476,11 +2464,13 @@ my_sock_new_for_addr (struct sockaddr *addr, int type, int proto)
 }
 
 
-/* Actually connect to a server.  Returns the file descriptor or -1 on
-   error.  ERRNO is set on error. */
-static assuan_fd_t
+/* Actually connect to a server.  On success 0 is returned and the
+ * file descriptor for the socket is stored at R_SOCK; on error an
+ * error code is returned and ASSUAN_INVALID_FD is stored at
+ * R_SOCK.  */
+static gpg_error_t
 connect_server (const char *server, unsigned short port,
-                unsigned int flags, const char *srvtag, int *r_host_not_found)
+                unsigned int flags, const char *srvtag, assuan_fd_t *r_sock)
 {
   gpg_error_t err;
   assuan_fd_t sock = ASSUAN_INVALID_FD;
@@ -2488,11 +2478,11 @@ connect_server (const char *server, unsigned short port,
   int hostfound = 0;
   int anyhostaddr = 0;
   int srv, connected;
-  int last_errno = 0;
+  gpg_error_t last_err = 0;
   struct srventry *serverlist = NULL;
-  int ret;
 
-  *r_host_not_found = 0;
+  *r_sock = ASSUAN_INVALID_FD;
+
 #if defined(HAVE_W32_SYSTEM) && !defined(HTTP_NO_WSASTARTUP)
   init_sockets ();
 #endif /*Windows*/
@@ -2509,18 +2499,21 @@ connect_server (const char *server, unsigned short port,
                                          ASSUAN_SOCK_TOR);
       if (sock == ASSUAN_INVALID_FD)
         {
-          if (errno == EHOSTUNREACH)
-            *r_host_not_found = 1;
-          log_error ("can't connect to '%s': %s\n", server, strerror (errno));
+          err = gpg_err_make (default_errsource,
+                              (errno == EHOSTUNREACH)? GPG_ERR_UNKNOWN_HOST
+                              : gpg_err_code_from_syserror ());
+          log_error ("can't connect to '%s': %s\n", server, gpg_strerror (err));
+          return err;
         }
-      else
-        notify_netactivity ();
-      return sock;
+
+      notify_netactivity ();
+      *r_sock = sock;
+      return 0;
 
 #else /*!ASSUAN_SOCK_TOR*/
 
-      gpg_err_set_errno (ENETUNREACH);
-      return -1; /* Out of core.  */
+      err = gpg_err_make (default_errsource, GPG_ERR_ENETUNREACH);
+      return ASSUAN_INVALID_FD;
 
 #endif /*!HASSUAN_SOCK_TOR*/
     }
@@ -2533,6 +2526,7 @@ connect_server (const char *server, unsigned short port,
         log_info ("getting '%s' SRV for '%s' failed: %s\n",
                   srvtag, server, gpg_strerror (err));
       /* Note that on error SRVCOUNT is zero.  */
+      err = 0;
     }
 
   if (!serverlist)
@@ -2541,7 +2535,8 @@ connect_server (const char *server, unsigned short port,
 	 up a fake SRV record. */
       serverlist = xtrycalloc (1, sizeof *serverlist);
       if (!serverlist)
-        return -1; /* Out of core.  */
+        return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+
       serverlist->port = port;
       strncpy (serverlist->target, server, DIMof (struct srventry, target));
       serverlist->target[DIMof (struct srventry, target)-1] = '\0';
@@ -2562,6 +2557,7 @@ connect_server (const char *server, unsigned short port,
         {
           log_info ("resolving '%s' failed: %s\n",
                     serverlist[srv].target, gpg_strerror (err));
+          last_err = err;
           continue; /* Not found - try next one. */
         }
       hostfound = 1;
@@ -2578,18 +2574,20 @@ connect_server (const char *server, unsigned short port,
           sock = my_sock_new_for_addr (ai->addr, ai->socktype, ai->protocol);
           if (sock == ASSUAN_INVALID_FD)
             {
-              int save_errno = errno;
-              log_error ("error creating socket: %s\n", strerror (errno));
+              err = gpg_err_make (default_errsource,
+                                  gpg_err_code_from_syserror ());
+              log_error ("error creating socket: %s\n", gpg_strerror (err));
               free_dns_addrinfo (aibuf);
               xfree (serverlist);
-              errno = save_errno;
-              return ASSUAN_INVALID_FD;
+              return err;
             }
 
           anyhostaddr = 1;
-          ret = assuan_sock_connect (sock, ai->addr, ai->addrlen);
-          if (ret)
-            last_errno = errno;
+          if (assuan_sock_connect (sock, ai->addr, ai->addrlen))
+            {
+              last_err = gpg_err_make (default_errsource,
+                                       gpg_err_code_from_syserror ());
+            }
           else
             {
               connected = 1;
@@ -2616,17 +2614,18 @@ connect_server (const char *server, unsigned short port,
                    server, (int)WSAGetLastError());
 #else
         log_error ("can't connect to '%s': %s\n",
-                   server, strerror (last_errno));
+                   server, gpg_strerror (last_err));
 #endif
         }
-      if (!hostfound || (hostfound && !anyhostaddr))
-        *r_host_not_found = 1;
+      err = last_err? last_err : gpg_err_make (default_errsource,
+                                               GPG_ERR_UNKNOWN_HOST);
       if (sock != ASSUAN_INVALID_FD)
 	assuan_sock_close (sock);
-      gpg_err_set_errno (last_errno);
-      return ASSUAN_INVALID_FD;
+      return err;
     }
-  return sock;
+
+  *r_sock = sock;
+  return 0;
 }
 
 
