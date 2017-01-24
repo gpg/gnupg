@@ -313,6 +313,11 @@ not be used a different one can be given using this option.  Note that
 a numerical IP address must be given (IPv6 or IPv4) and that no error
 checking is done for @var{ipaddr}.
 
+@item --disable-ipv4
+@opindex disable-ipv4
+Disable the use of all IPv4 addresses.  This option is mainly useful
+for debugging.
+
 @item --disable-ldap
 @opindex disable-ldap
 Entirely disables the use of LDAP.

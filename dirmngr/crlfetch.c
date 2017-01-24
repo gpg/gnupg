@@ -198,7 +198,9 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
         err = http_open_document (&hd, url, NULL,
                                   ((opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0)
                                    |(DBG_LOOKUP? HTTP_FLAG_LOG_RESP:0)
-                                   |(opt.use_tor? HTTP_FLAG_FORCE_TOR:0)),
+                                   |(opt.use_tor? HTTP_FLAG_FORCE_TOR:0)
+                                   |(opt.disable_ipv4? HTTP_FLAG_IGNORE_IPv4:0)
+                                   ),
                                   ctrl->http_proxy, NULL, NULL, NULL);
 
       switch ( err? 99999 : http_get_status_code (hd) )

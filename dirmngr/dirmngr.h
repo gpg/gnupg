@@ -98,6 +98,7 @@ struct
 
   int disable_http;       /* Do not use HTTP at all.  */
   int disable_ldap;       /* Do not use LDAP at all.  */
+  int disable_ipv4;       /* Do not use leagacy IP addresses.  */
   int honor_http_proxy;   /* Honor the http_proxy env variable. */
   const char *http_proxy; /* The default HTTP proxy.  */
   const char *ldap_proxy; /* Use given LDAP proxy.  */

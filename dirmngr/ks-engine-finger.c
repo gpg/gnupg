@@ -83,7 +83,9 @@ ks_finger_fetch (ctrl_t ctrl, parsed_uri_t uri, estream_t *r_fp)
   *server++ = 0;
 
   err = http_raw_connect (&http, server, 79,
-                          (opt.use_tor? HTTP_FLAG_FORCE_TOR : 0), NULL);
+                          ((opt.use_tor? HTTP_FLAG_FORCE_TOR : 0)
+                           | (opt.disable_ipv4? HTTP_FLAG_IGNORE_IPv4 : 0)),
+                          NULL);
   if (err)
     {
       xfree (name);

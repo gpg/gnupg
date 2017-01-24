@@ -119,6 +119,10 @@ static int opt_debug;
 /* The timeout in seconds for libdns requests.  */
 static int opt_timeout;
 
+/* The flag to disable IPv4 access - right now this only skips
+ * returned A records.  */
+static int opt_disable_ipv4;
+
 /* If set force the use of the standard resolver.  */
 static int standard_resolver;
 
@@ -224,6 +228,15 @@ set_dns_verbose (int verbose, int debug)
 {
   opt_verbose = verbose;
   opt_debug = debug;
+}
+
+
+/* Set the Disable-IPv4 flag so that the name resolver does not return
+ * A addresses.  */
+void
+set_dns_disable_ipv4 (int yes)
+{
+  opt_disable_ipv4 = !!yes;
 }
 
 
@@ -872,6 +885,8 @@ resolve_name_standard (const char *name, unsigned short port,
   for (ai = aibuf; ai; ai = ai->ai_next)
     {
       if (ai->ai_family != AF_INET6 && ai->ai_family != AF_INET)
+        continue;
+      if (opt_disable_ipv4 && ai->ai_family == AF_INET)
         continue;
 
       dai = xtrymalloc (sizeof *dai + ai->ai_addrlen - 1);

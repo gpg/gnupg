@@ -95,6 +95,10 @@ struct srventry
 /* Set verbosity and debug mode for this module. */
 void set_dns_verbose (int verbose, int debug);
 
+/* Set the Disable-IPv4 flag so that the name resolver does not return
+ * A addresses.  */
+void set_dns_disable_ipv4 (int yes);
+
 /* Set the timeout for libdns requests to SECONDS.  */
 void set_dns_timeout (int seconds);
 
