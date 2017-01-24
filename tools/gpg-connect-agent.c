@@ -1155,7 +1155,7 @@ main (int argc, char **argv)
   int rc;
   int cmderr;
   const char *opt_run = NULL;
-  FILE *script_fp = NULL;
+  gpgrt_stream_t script_fp = NULL;
   int use_tty, keep_line;
   struct {
     int collecting;
@@ -1271,7 +1271,7 @@ main (int argc, char **argv)
                 "--tcp-socket", "--raw-socket");
     }
 
-  if (opt_run && !(script_fp = fopen (opt_run, "r")))
+  if (opt_run && !(script_fp = gpgrt_fopen (opt_run, "r")))
     {
       log_error ("cannot open run file '%s': %s\n",
                  opt_run, strerror (errno));
@@ -1425,15 +1425,15 @@ main (int argc, char **argv)
               linesize = 0;
               keep_line = 1;
             }
-          n = read_line (script_fp? script_fp:stdin,
-                         &line, &linesize, &maxlength);
+          n = gpgrt_read_line (script_fp ? script_fp : gpgrt_stdin,
+                               &line, &linesize, &maxlength);
         }
       if (n < 0)
         {
           log_error (_("error reading input: %s\n"), strerror (errno));
           if (script_fp)
             {
-              fclose (script_fp);
+              gpgrt_fclose (script_fp);
               script_fp = NULL;
               log_error ("stopping script execution\n");
               continue;
@@ -1445,7 +1445,7 @@ main (int argc, char **argv)
           /* EOF */
           if (script_fp)
             {
-              fclose (script_fp);
+              gpgrt_fclose (script_fp);
               script_fp = NULL;
               if (opt.verbose)
                 log_info ("end of script\n");
@@ -1683,17 +1683,17 @@ main (int argc, char **argv)
                   log_error ("syntax error in run command\n");
                   if (script_fp)
                     {
-                      fclose (script_fp);
+                      gpgrt_fclose (script_fp);
                       script_fp = NULL;
                     }
                 }
               else if (script_fp)
                 {
                   log_error ("cannot nest run commands - stop\n");
-                  fclose (script_fp);
+                  gpgrt_fclose (script_fp);
                   script_fp = NULL;
                 }
-              else if (!(script_fp = fopen (p, "r")))
+              else if (!(script_fp = gpgrt_fopen (p, "r")))
                 {
                   log_error ("cannot open run file '%s': %s\n",
                              p, strerror (errno));
@@ -1864,7 +1864,7 @@ main (int argc, char **argv)
       if ((rc || cmderr) && script_fp)
         {
           log_error ("stopping script execution\n");
-          fclose (script_fp);
+          gpgrt_fclose (script_fp);
           script_fp = NULL;
         }
 
