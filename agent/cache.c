@@ -475,6 +475,19 @@ agent_get_cache (const char *key, cache_mode_t cache_mode)
 void
 agent_store_cache_hit (const char *key)
 {
-  xfree (last_stored_cache_key);
-  last_stored_cache_key = key? xtrystrdup (key) : NULL;
+  char *new;
+  char *old;
+
+  /* To make sure the update is atomic under the non-preemptive thread
+   * model, we must make sure not to surrender control to a different
+   * thread.  Therefore, we avoid calling the allocator during the
+   * update.  */
+  new = key ? xtrystrdup (key) : NULL;
+
+  /* Atomic update.  */
+  old = last_stored_cache_key;
+  last_stored_cache_key = new;
+  /* Done.  */
+
+  xfree (old);
 }
