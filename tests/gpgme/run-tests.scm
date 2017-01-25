@@ -54,7 +54,7 @@
 	     (apply path-join
 		    `(,(if (compiled? name)
 			   gpgme-builddir
-			   gpgme-srcdir) ,@(:path cmpnts),name)))
+			   gpgme-srcdir) ,@(:path cmpnts) ,(qualify name))))
 	   (let ((makefile (apply path-join `(,gpgme-srcdir ,@(:path cmpnts)
 							    "Makefile.am"))))
 	     (map (lambda (name)
