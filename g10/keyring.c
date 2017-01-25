@@ -928,13 +928,27 @@ compare_name (int mode, const char *name, const char *uid, size_t uidlen)
     else if (   mode == KEYDB_SEARCH_MODE_MAIL
              || mode == KEYDB_SEARCH_MODE_MAILSUB
              || mode == KEYDB_SEARCH_MODE_MAILEND) {
+        int have_angles = 1;
 	for (i=0, s= uid; i < uidlen && *s != '<'; s++, i++)
 	    ;
+	if (i == uidlen)
+	  {
+	    /* The UID is a plain addr-spec (cf. RFC2822 section 4.3).  */
+	    have_angles = 0;
+	    s = uid;
+	    i = 0;
+	  }
 	if (i < uidlen)  {
-	    /* skip opening delim and one char and look for the closing one*/
-	    s++; i++;
-	    for (se=s+1, i++; i < uidlen && *se != '>'; se++, i++)
-		;
+	    if (have_angles)
+	      {
+		/* skip opening delim and one char and look for the closing one*/
+		s++; i++;
+		for (se=s+1, i++; i < uidlen && *se != '>'; se++, i++)
+		  ;
+	      }
+	    else
+	      se = s + uidlen;
+
 	    if (i < uidlen) {
 		i = se - s;
 		if (mode == KEYDB_SEARCH_MODE_MAIL) {
