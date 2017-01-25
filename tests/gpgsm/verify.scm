@@ -54,12 +54,12 @@ MYdRclgjObCcoilA8fZ13VR4DiMJVFCxJL4qVWI=
 ;;
 (info "Checking that a valid signature is verified as such.")
 (lettmp (sig body)
-  (with-output-to-file sig (lambda () (display test-sig1)))
-  (with-output-to-file body (lambda () (display test-text1)))
+  (call-with-binary-output-file sig (lambda (port) (display test-sig1 port)))
+  (call-with-binary-output-file body (lambda (port) (display test-text1 port)))
   (call-check `(,@gpgsm --verify ,sig ,body)))
 
 (info "Checking that an invalid signature is verified as such.")
 (lettmp (sig body)
-  (with-output-to-file sig (lambda () (display test-sig1)))
-  (with-output-to-file body (lambda () (display test-text1f)))
+  (call-with-binary-output-file sig (lambda (port) (display test-sig1 port)))
+  (call-with-binary-output-file body (lambda (port) (display test-text1f port)))
   (assert (not (zero? (call `(,@gpgsm --verify ,sig ,body))))))
