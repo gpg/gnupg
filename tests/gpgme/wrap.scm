@@ -56,5 +56,8 @@
     (log "Importing extra key...")
     (call-check `(,@GPG --yes --import ,(in-srcdir "pubkey-1.asc"))))))
 
-(log "Running" (car executable))
-(exit (run executable))
+(if (file-exists? (car executable))
+    (begin
+      (log "Running" (car executable))
+      (exit (run executable)))
+    (skip (car executable) "is not built"))
