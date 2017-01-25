@@ -42,6 +42,9 @@
 (setenv "PATH" (string-append (path-join (getenv "GNUPG_BUILDDIR") "tools")
 			      (string *pathsep*) (getenv "PATH")) #t)
 
+;; The tests expect the pinentry to return the passphrase "abc".
+(setenv "PINENTRY_USER_DATA" "abc" #t)
+
 (define (create-file name content)
   (letfd ((fd (open name (logior O_WRONLY O_CREAT O_BINARY) #o600)))
     (display content (fdopen fd "wb"))))
@@ -50,8 +53,7 @@
   (create-file "gpg.conf" "no-force-v3-sigs\n")
   (create-file
    "gpg-agent.conf"
-   (string-append "pinentry-program "
-		  (in-gpgme-srcdir "tests" "gpg" "pinentry") "\n"))
+   (string-append "pinentry-program " (tool 'pinentry)))
   (mkdir "private-keys-v1.d" "-rwx")
 
   (log "Storing private keys")
