@@ -115,7 +115,7 @@ int ccid_set_debug_level (int level);
 char *ccid_get_reader_list (void);
 
 gpg_error_t ccid_dev_scan (int *idx_max, struct ccid_dev_table **t_p);
-void ccid_dev_scan_finish (struct ccid_dev_table *tbl, int max);
+int ccid_dev_scan_finish (struct ccid_dev_table *tbl, int max);
 unsigned int ccid_get_BAI (int, struct ccid_dev_table *tbl);
 int ccid_compare_BAI (ccid_driver_t handle, unsigned int);
 int ccid_open_reader (const char *spec_reader_name,

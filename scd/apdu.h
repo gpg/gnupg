@@ -88,7 +88,7 @@ struct dev_list;
 gpg_error_t apdu_init (void);
 
 gpg_error_t apdu_dev_list_start (const char *portstr, struct dev_list **l_p);
-void apdu_dev_list_finish (struct dev_list *l);
+int apdu_dev_list_finish (struct dev_list *l);
 
 /* Note, that apdu_open_reader returns no status word but -1 on error. */
 int apdu_open_reader (struct dev_list *l);

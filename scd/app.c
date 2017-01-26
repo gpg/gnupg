@@ -192,6 +192,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name)
     }
 
   app->slot = slot;
+  app->card_status = (unsigned int)-1;
 
   if (npth_mutex_init (&app->lock, NULL))
     {
@@ -329,6 +330,7 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
   if (scan || !app_top)
     {
       struct dev_list *l;
+      int all_have_intr_endp;
 
       err = apdu_dev_list_start (opt.reader_port, &l);
       if (err)
@@ -368,7 +370,8 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
             }
         }
 
-      apdu_dev_list_finish (l);
+      all_have_intr_endp = apdu_dev_list_finish (l);
+      update_fdset_for_usb (1, all_have_intr_endp);
     }
 
   npth_mutex_lock (&app_list_lock);
@@ -1050,6 +1053,7 @@ scd_update_reader_status_file (void)
                   log_debug ("Removal of a card: %d\n", a->slot);
                   apdu_close_reader (a->slot);
                   deallocate_app (a);
+                  update_fdset_for_usb (0, 0);
                 }
               else
                 a->card_status = status;

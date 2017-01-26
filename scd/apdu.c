@@ -2970,15 +2970,22 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
   return 0;
 }
 
-void
+int
 apdu_dev_list_finish (struct dev_list *dl)
 {
+  int all_have_intr_endp;
+
 #ifdef HAVE_LIBUSB
   if (dl->ccid_table)
-    ccid_dev_scan_finish (dl->ccid_table, dl->idx_max);
+    all_have_intr_endp = ccid_dev_scan_finish (dl->ccid_table, dl->idx_max);
+  else
+    all_have_intr_endp = 0;
+#else
+  all_have_intr_endp = 0;
 #endif
   xfree (dl);
   npth_mutex_unlock (&reader_table_lock);
+  return all_have_intr_endp;
 }
 
 

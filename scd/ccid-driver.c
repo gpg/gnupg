@@ -1699,13 +1699,17 @@ ccid_dev_scan (int *idx_max_p, struct ccid_dev_table **t_p)
   return err;
 }
 
-void
+int
 ccid_dev_scan_finish (struct ccid_dev_table *tbl, int max)
 {
+  int all_have_intr_endp = 1;
   int i;
 
   for (i = 0; i < max; i++)
     {
+      if (tbl[i].ep_intr == -1)
+        all_have_intr_endp = 0;
+
       free (tbl[i].ifcdesc_extra);
       tbl[i].transport = 0;
       tbl[i].n = 0;
@@ -1719,6 +1723,8 @@ ccid_dev_scan_finish (struct ccid_dev_table *tbl, int max)
     }
   libusb_free_device_list (ccid_usb_dev_list, 1);
   ccid_usb_dev_list = NULL;
+
+  return all_have_intr_endp;
 }
 
 unsigned int

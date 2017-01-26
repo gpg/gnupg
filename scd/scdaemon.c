@@ -44,6 +44,10 @@
 
 #include <assuan.h> /* malloc hooks */
 
+#ifdef HAVE_LIBUSB
+#include <libusb.h>
+#endif
+
 #include "i18n.h"
 #include "sysutils.h"
 #include "app-common.h"
@@ -224,7 +228,17 @@ static assuan_sock_nonce_t socket_nonce;
    disabled but it won't perform any ticker specific actions. */
 static int ticker_disabled;
 
+/* Set of FD to select.  */
+static fd_set fdset;
 
+/* Max FD to select.  */
+static int nfd;
+
+/* Set if all usb devices have INTERRUPT endpoints.  */
+static int usb_all_have_intr_endp;
+
+/* FD to listen incomming connections.  */
+static int listen_fd;
 
 static char *create_socket_name (char *standard_name);
 static gnupg_fd_t create_server_socket (const char *name,
@@ -232,7 +246,7 @@ static gnupg_fd_t create_server_socket (const char *name,
                                         assuan_sock_nonce_t *nonce);
 
 static void *start_connection_thread (void *arg);
-static void handle_connections (int listen_fd);
+static void handle_connections (void);
 
 /* Pth wrapper function definitions. */
 ASSUAN_SYSTEM_NPTH_IMPL;
@@ -780,7 +794,8 @@ main (int argc, char **argv )
 
       /* We run handle_connection to wait for the shutdown signal and
          to run the ticker stuff.  */
-      handle_connections (fd);
+      listen_fd = fd;
+      handle_connections ();
       if (fd != -1)
         close (fd);
     }
@@ -912,7 +927,8 @@ main (int argc, char **argv )
 
 #endif /*!HAVE_W32_SYSTEM*/
 
-      handle_connections (fd);
+      listen_fd = fd;
+      handle_connections ();
 
       close (fd);
     }
@@ -1181,23 +1197,76 @@ start_connection_thread (void *arg)
 }
 
 
+void
+update_fdset_for_usb (int scanned, int all_have_intr_endp)
+{
+#ifdef HAVE_LIBUSB
+  const struct libusb_pollfd **pfd_array = libusb_get_pollfds (NULL);
+  const struct libusb_pollfd **p;
+#endif
+
+  if (scanned)
+    usb_all_have_intr_endp = all_have_intr_endp;
+
+  FD_ZERO (&fdset);
+  nfd = 0;
+
+  if (listen_fd != -1)
+    {
+      FD_SET (listen_fd, &fdset);
+      nfd = listen_fd;
+    }
+
+#ifdef HAVE_LIBUSB
+  for (p = pfd_array; *p; p++)
+    {
+      int fd = (*p)->fd;
+
+      FD_SET (fd, &fdset);
+      if (nfd < fd)
+        nfd = fd;
+      p++;
+    }
+
+  libusb_free_pollfds (pfd_array);
+#endif
+
+  log_debug ("update_fdset_for_usb (%d, %d): %d\n",
+             scanned, all_have_intr_endp, nfd);
+}
+
+static int
+need_tick (void)
+{
+  if (shutdown_pending)
+    return 1;
+
+  if (listen_fd != -1 && nfd == listen_fd)
+    return 1;
+
+  if (usb_all_have_intr_endp)
+    return 0;
+
+  return 1;
+}
+
 /* Connection handler loop.  Wait for connection requests and spawn a
    thread after accepting a connection.  LISTEN_FD is allowed to be -1
    in which case this code will only do regular timeouts and handle
    signals. */
 static void
-handle_connections (int listen_fd)
+handle_connections (void)
 {
   npth_attr_t tattr;
   struct sockaddr_un paddr;
   socklen_t plen;
-  fd_set fdset, read_fdset;
+  fd_set read_fdset;
   int ret;
   int fd;
-  int nfd;
   struct timespec abstime;
   struct timespec curtime;
   struct timespec timeout;
+  struct timespec *t;
   int saved_errno;
 #ifndef HAVE_W32_SYSTEM
   int signo;
@@ -1244,56 +1313,63 @@ handle_connections (int listen_fd)
              used to just wait on a signal or timeout event. */
           FD_ZERO (&fdset);
           listen_fd = -1;
-	}
+        }
 
-      npth_clock_gettime (&curtime);
-      if (!(npth_timercmp (&curtime, &abstime, <)))
-	{
-	  /* Timeout.  */
-	  handle_tick ();
-	  timeout.tv_sec = TIMERTICK_INTERVAL_SEC;
-	  timeout.tv_nsec = TIMERTICK_INTERVAL_USEC * 1000;
-	  npth_timeradd (&curtime, &timeout, &abstime);
-	}
-      npth_timersub (&abstime, &curtime, &timeout);
+      if (need_tick ())
+        {
+          npth_clock_gettime (&curtime);
+          if (!(npth_timercmp (&curtime, &abstime, <)))
+            {
+              /* Timeout.  */
+              timeout.tv_sec = TIMERTICK_INTERVAL_SEC;
+              timeout.tv_nsec = TIMERTICK_INTERVAL_USEC * 1000;
+              npth_timeradd (&curtime, &timeout, &abstime);
+            }
+          npth_timersub (&abstime, &curtime, &timeout);
+          t = &timeout;
+        }
+      else
+        t = NULL;
+
+      handle_tick ();
 
       /* POSIX says that fd_set should be implemented as a structure,
          thus a simple assignment is fine to copy the entire set.  */
       read_fdset = fdset;
 
 #ifndef HAVE_W32_SYSTEM
-      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, &timeout, npth_sigev_sigmask());
+      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, t, npth_sigev_sigmask());
       saved_errno = errno;
 
       while (npth_sigev_get_pending(&signo))
-	handle_signal (signo);
+        handle_signal (signo);
 #else
-      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, &timeout, NULL, NULL);
+      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, t, NULL, NULL);
       saved_errno = errno;
 #endif
 
       if (ret == -1 && saved_errno != EINTR)
-	{
+        {
           log_error (_("npth_pselect failed: %s - waiting 1s\n"),
                      strerror (saved_errno));
           npth_sleep (1);
-	  continue;
-	}
+          continue;
+        }
 
       if (ret <= 0)
-	/* Timeout.  Will be handled when calculating the next timeout.  */
-	continue;
+        /* Timeout.  Will be handled when calculating the next timeout.  */
+        continue;
 
       if (listen_fd != -1 && FD_ISSET (listen_fd, &read_fdset))
-	{
+        {
           ctrl_t ctrl;
 
           plen = sizeof paddr;
-	  fd = npth_accept (listen_fd, (struct sockaddr *)&paddr, &plen);
-	  if (fd == -1)
-	    {
-	      log_error ("accept failed: %s\n", strerror (errno));
-	    }
+          fd = npth_accept (listen_fd, (struct sockaddr *)&paddr, &plen);
+          if (fd == -1)
+            {
+              log_error ("accept failed: %s\n", strerror (errno));
+            }
           else if ( !(ctrl = xtrycalloc (1, sizeof *ctrl)) )
             {
               log_error ("error allocating connection control data: %s\n",
@@ -1303,12 +1379,12 @@ handle_connections (int listen_fd)
           else
             {
               char threadname[50];
-	      npth_t thread;
+              npth_t thread;
 
               snprintf (threadname, sizeof threadname, "conn fd=%d", fd);
               ctrl->thread_startup.fd = INT2FD (fd);
               ret = npth_create (&thread, &tattr, start_connection_thread, ctrl);
-	      if (ret)
+              if (ret)
                 {
                   log_error ("error spawning connection handler: %s\n",
                              strerror (ret));
@@ -1316,10 +1392,19 @@ handle_connections (int listen_fd)
                   close (fd);
                 }
               else
-		npth_setname_np (thread, threadname);
+                npth_setname_np (thread, threadname);
             }
-          fd = -1;
-	}
+
+          ret--;
+        }
+
+#ifdef HAVE_LIBUSB
+      if (ret)
+        {
+          struct timeval tv = {0, 0};
+          libusb_handle_events_timeout_completed (NULL, &tv, NULL);
+        }
+#endif
     }
 
   cleanup ();
