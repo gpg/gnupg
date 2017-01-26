@@ -221,7 +221,7 @@ open_card_with_request (ctrl_t ctrl, const char *apptype, const char *serialno)
   /* If we are already initialized for one specific application we
      need to check that the client didn't requested a specific
      application different from the one in use before we continue. */
-  if (apptype && ctrl->app_ctx)
+  if (ctrl->app_ctx)
     return check_application_conflict (apptype, ctrl->app_ctx);
 
   if (serialno)
