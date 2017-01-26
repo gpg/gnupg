@@ -272,6 +272,8 @@ struct ccid_driver_s
      ccid_set_progress_cb.  */
   void (*progress_cb)(void *, const char *, int, int, int);
   void *progress_cb_arg;
+
+  unsigned char intr_buf[64];
 };
 
 
@@ -1753,6 +1755,64 @@ ccid_compare_BAI (ccid_driver_t handle, unsigned int bai)
   return handle->bai == bai;
 }
 
+
+static void
+intr_cb (struct libusb_transfer *transfer)
+{
+  ccid_driver_t handle = transfer->user_data;
+
+  DEBUGOUT ("CCID: interrupt callback\n");
+
+  if (transfer->status == LIBUSB_TRANSFER_NO_DEVICE)
+    {
+    device_removed:
+      DEBUGOUT ("CCID: device removed\n");
+      handle->powered_off = 1;
+      libusb_free_transfer (transfer);
+    }
+  else if (transfer->status == LIBUSB_TRANSFER_COMPLETED)
+    {
+      if (transfer->actual_length == 2
+          && transfer->buffer[0] == 0x50
+          && (transfer->buffer[1] & 1) == 0)
+        {
+          DEBUGOUT ("CCID: card removed\n");
+          handle->powered_off = 1;
+          libusb_free_transfer (transfer);
+        }
+      else
+        {
+          int err;
+
+          /* Submit the URB again to keep watching the INTERRUPT transfer.  */
+          err = libusb_submit_transfer (transfer);
+          if (err == LIBUSB_ERROR_NO_DEVICE)
+            goto device_removed;
+
+          DEBUGOUT_1 ("CCID submit transfer again %d", err);
+        }
+    }
+  else
+    {
+      ;
+    }
+}
+
+static void
+ccid_setup_intr  (ccid_driver_t handle)
+{
+  struct libusb_transfer *transfer;
+  int err;
+
+  transfer = libusb_alloc_transfer (0);
+  libusb_fill_interrupt_transfer (transfer, handle->idev, handle->ep_intr,
+                                  handle->intr_buf, sizeof (handle->intr_buf),
+                                  intr_cb, handle, 0);
+  err = libusb_submit_transfer (transfer);
+  DEBUGOUT_2 ("CCID submit transfer (%x): %d", handle->ep_intr, err);
+}
+
+
 static int
 ccid_open_usb_reader (const char *spec_reader_name,
                       int idx, struct ccid_dev_table *ccid_table,
@@ -1847,6 +1907,9 @@ ccid_open_usb_reader (const char *spec_reader_name,
         }
     }
 
+  if ((*handle)->ep_intr)
+    ccid_setup_intr (*handle);
+
   rc = ccid_vendor_specific_init (*handle);
 
  leave:
@@ -1871,8 +1934,8 @@ ccid_open_usb_reader (const char *spec_reader_name,
 /* Open the reader with the internal number READERNO and return a
    pointer to be used as handle in HANDLE.  Returns 0 on success. */
 int
-ccid_open_reader (const char *spec_reader_name,
-                  int idx, struct ccid_dev_table *ccid_table,
+ccid_open_reader (const char *spec_reader_name, int idx,
+                  struct ccid_dev_table *ccid_table,
                   ccid_driver_t *handle, char **rdrname_p)
 {
   int n;
@@ -2516,6 +2579,9 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits)
   unsigned char seqno;
   int retries = 0;
 
+  if (handle->powered_off)
+    return CCID_DRIVER_ERR_NO_READER;
+
  retry:
   msg[0] = PC_to_RDR_GetSlotStatus;
   msg[5] = 0; /* slot */
@@ -2546,8 +2612,7 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits)
       retries++;
       goto retry;
     }
-  if (rc && rc != CCID_DRIVER_ERR_NO_CARD
-      && rc != CCID_DRIVER_ERR_CARD_INACTIVE)
+  if (rc && rc != CCID_DRIVER_ERR_NO_CARD && rc != CCID_DRIVER_ERR_CARD_INACTIVE)
     return rc;
   *statusbits = (msg[7] & 3);
 

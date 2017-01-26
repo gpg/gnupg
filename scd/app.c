@@ -1049,6 +1049,7 @@ scd_update_reader_status_file (void)
                 {
                   log_debug ("Removal of a card: %d\n", a->slot);
                   apdu_close_reader (a->slot);
+                  release_application_internal (a);
                   deallocate_app (a);
                 }
               else
