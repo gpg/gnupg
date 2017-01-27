@@ -121,8 +121,6 @@ size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 
 
 /*-- app.c --*/
-app_t app_list_start (void);
-void app_list_finish (void);
 void app_send_card_list (ctrl_t ctrl);
 char *app_get_serialno (app_t app);
 

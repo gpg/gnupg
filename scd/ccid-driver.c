@@ -274,6 +274,7 @@ struct ccid_driver_s
   void *progress_cb_arg;
 
   unsigned char intr_buf[64];
+  struct libusb_transfer *transfer;
 };
 
 
@@ -1699,17 +1700,13 @@ ccid_dev_scan (int *idx_max_p, struct ccid_dev_table **t_p)
   return err;
 }
 
-int
+void
 ccid_dev_scan_finish (struct ccid_dev_table *tbl, int max)
 {
-  int all_have_intr_endp = 1;
   int i;
 
   for (i = 0; i < max; i++)
     {
-      if (tbl[i].ep_intr == -1)
-        all_have_intr_endp = 0;
-
       free (tbl[i].ifcdesc_extra);
       tbl[i].transport = 0;
       tbl[i].n = 0;
@@ -1723,8 +1720,6 @@ ccid_dev_scan_finish (struct ccid_dev_table *tbl, int max)
     }
   libusb_free_device_list (ccid_usb_dev_list, 1);
   ccid_usb_dev_list = NULL;
-
-  return all_have_intr_endp;
 }
 
 unsigned int
@@ -1767,14 +1762,14 @@ intr_cb (struct libusb_transfer *transfer)
 {
   ccid_driver_t handle = transfer->user_data;
 
-  DEBUGOUT ("CCID: interrupt callback\n");
+  DEBUGOUT_1 ("CCID: interrupt callback %d\n", transfer->status);
 
-  if (transfer->status == LIBUSB_TRANSFER_NO_DEVICE)
+  if (transfer->status == LIBUSB_TRANSFER_NO_DEVICE
+      || transfer->status == LIBUSB_TRANSFER_ERROR)
     {
     device_removed:
       DEBUGOUT ("CCID: device removed\n");
       handle->powered_off = 1;
-      libusb_free_transfer (transfer);
     }
   else if (transfer->status == LIBUSB_TRANSFER_COMPLETED)
     {
@@ -1784,7 +1779,6 @@ intr_cb (struct libusb_transfer *transfer)
         {
           DEBUGOUT ("CCID: card removed\n");
           handle->powered_off = 1;
-          libusb_free_transfer (transfer);
         }
       else
         {
@@ -1795,12 +1789,12 @@ intr_cb (struct libusb_transfer *transfer)
           if (err == LIBUSB_ERROR_NO_DEVICE)
             goto device_removed;
 
-          DEBUGOUT_1 ("CCID submit transfer again %d", err);
+          DEBUGOUT_1 ("CCID submit transfer again %d\n", err);
         }
     }
   else
     {
-      ;
+      DEBUGOUT_1 ("CCID intr_cb: %d\n", transfer->status);
     }
 }
 
@@ -1811,6 +1805,7 @@ ccid_setup_intr  (ccid_driver_t handle)
   int err;
 
   transfer = libusb_alloc_transfer (0);
+  handle->transfer = transfer;
   libusb_fill_interrupt_transfer (transfer, handle->idev, handle->ep_intr,
                                   handle->intr_buf, sizeof (handle->intr_buf),
                                   intr_cb, handle, 0);
@@ -1913,7 +1908,7 @@ ccid_open_usb_reader (const char *spec_reader_name,
         }
     }
 
-  if ((*handle)->ep_intr)
+  if ((*handle)->ep_intr >= 0)
     ccid_setup_intr (*handle);
 
   rc = ccid_vendor_specific_init (*handle);
@@ -2010,6 +2005,26 @@ ccid_open_reader (const char *spec_reader_name, int idx,
 }
 
 
+int
+ccid_require_get_status (ccid_driver_t handle)
+{
+#ifdef LIBUSB_WORKS_EXPECTED_FOR_INTERRUPT_ENDP
+  if (handle->ep_intr >= 0)
+    return 0;
+#endif
+
+  /* Here comes products check for tokens which
+     always have card inserted.  */
+  switch (handle->id_vendor)
+    {
+    case VENDOR_FSIJ:
+      return 0;
+    }
+
+  return 1;
+}
+
+
 static void
 do_close_reader (ccid_driver_t handle)
 {
@@ -2037,6 +2052,7 @@ do_close_reader (ccid_driver_t handle)
     }
   if (handle->idev)
     {
+      libusb_free_transfer (handle->transfer);
       libusb_release_interface (handle->idev, handle->ifc_no);
       libusb_close (handle->idev);
       handle->idev = NULL;

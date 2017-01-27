@@ -174,7 +174,8 @@ app_reset (app_t app, ctrl_t ctrl, int send_reset)
 }
 
 static gpg_error_t
-app_new_register (int slot, ctrl_t ctrl, const char *name)
+app_new_register (int slot, ctrl_t ctrl, const char *name,
+                  int require_get_status)
 {
   gpg_error_t err = 0;
   app_t app = NULL;
@@ -303,7 +304,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name)
       return err;
     }
 
-  app->require_get_status = 1;   /* For token, this can be 0.  */
+  app->require_get_status = require_get_status;
 
   npth_mutex_lock (&app_list_lock);
   app->next = app_top;
@@ -330,7 +331,7 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
   if (scan || !app_top)
     {
       struct dev_list *l;
-      int all_have_intr_endp;
+      int all_have_intr_endp = 1;
 
       err = apdu_dev_list_start (opt.reader_port, &l);
       if (err)
@@ -339,39 +340,31 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
       while (1)
         {
           int slot;
-          int sw;
+          int require_get_status;
 
           slot = apdu_open_reader (l);
           if (slot < 0)
             break;
 
-          err = 0;
-          sw = apdu_connect (slot);
-
-          if (sw == SW_HOST_CARD_INACTIVE)
-            {
-              /* Try again.  */
-              sw = apdu_reset (slot);
-            }
-
-          if (!sw || sw == SW_HOST_ALREADY_CONNECTED)
-            err = 0;
-          else if (sw == SW_HOST_NO_CARD)
-            err = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
-          else
-            err = gpg_error (GPG_ERR_ENODEV);
-
-          if (!err)
-            err = app_new_register (slot, ctrl, name);
-          else
+          require_get_status = apdu_connect (slot);
+          if (require_get_status < 0)
             {
               /* We close a reader with no card.  */
-              apdu_close_reader (slot);
+              err = gpg_error (GPG_ERR_ENODEV);
             }
+          else
+            {
+              err = app_new_register (slot, ctrl, name, require_get_status);
+              if (require_get_status)
+                all_have_intr_endp = 0;
+            }
+
+          if (err)
+            apdu_close_reader (slot);
         }
 
-      all_have_intr_endp = apdu_dev_list_finish (l);
-      update_fdset_for_usb (1, all_have_intr_endp);
+      apdu_dev_list_finish (l);
+      update_fdset_for_usb (all_have_intr_endp);
     }
 
   npth_mutex_lock (&app_list_lock);
@@ -1021,46 +1014,60 @@ void
 scd_update_reader_status_file (void)
 {
   app_t a, app_next;
+  int all_have_intr_endp = 1;
+  int removal_detected = 0;
 
   npth_mutex_lock (&app_list_lock);
   for (a = app_top; a; a = app_next)
     {
+      int sw;
+      unsigned int status;
+
+      sw = apdu_get_status (a->slot, 0, &status);
       app_next = a->next;
-      if (a->require_get_status)
+
+      if (sw == SW_HOST_NO_READER)
         {
-          int sw;
-          unsigned int status;
-          sw = apdu_get_status (a->slot, 0, &status);
+          /* Most likely the _reader_ has been unplugged.  */
+          status = 0;
+        }
+      else if (sw)
+        {
+          /* Get status failed.  Ignore that.  */
+          if (a->require_get_status)
+            all_have_intr_endp = 0;
+          continue;
+        }
 
-          if (sw == SW_HOST_NO_READER)
-            {
-              /* Most likely the _reader_ has been unplugged.  */
-              status = 0;
-            }
-          else if (sw)
-            {
-              /* Get status failed.  Ignore that.  */
-              continue;
-            }
+      if (a->card_status != status)
+        {
+          report_change (a->slot, a->card_status, status);
+          send_client_notifications (a, status == 0);
 
-          if (a->card_status != status)
+          if (status == 0)
             {
-              report_change (a->slot, a->card_status, status);
-              send_client_notifications (a, status == 0);
-
-              if (status == 0)
-                {
-                  log_debug ("Removal of a card: %d\n", a->slot);
-                  apdu_close_reader (a->slot);
-                  deallocate_app (a);
-                  update_fdset_for_usb (0, 0);
-                }
-              else
-                a->card_status = status;
+              log_debug ("Removal of a card: %d\n", a->slot);
+              apdu_close_reader (a->slot);
+              deallocate_app (a);
+              removal_detected = 1;
             }
+          else
+            {
+              a->card_status = status;
+              if (a->require_get_status)
+                all_have_intr_endp = 0;
+            }
+        }
+      else
+        {
+          if (a->require_get_status)
+            all_have_intr_endp = 0;
         }
     }
   npth_mutex_unlock (&app_list_lock);
+
+  if (removal_detected)
+    update_fdset_for_usb (all_have_intr_endp);
 }
 
 /* This function must be called once to initialize this module.  This
@@ -1080,19 +1087,6 @@ initialize_module_command (void)
     }
 
   return apdu_init ();
-}
-
-app_t
-app_list_start (void)
-{
-  npth_mutex_lock (&app_list_lock);
-  return app_top;
-}
-
-void
-app_list_finish (void)
-{
-  npth_mutex_unlock (&app_list_lock);
 }
 
 void

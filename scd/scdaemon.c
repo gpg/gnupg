@@ -1202,15 +1202,14 @@ start_connection_thread (void *arg)
 
 
 void
-update_fdset_for_usb (int scanned, int all_have_intr_endp)
+update_fdset_for_usb (int all_have_intr_endp)
 {
 #ifdef HAVE_LIBUSB
   const struct libusb_pollfd **pfd_array = libusb_get_pollfds (NULL);
   const struct libusb_pollfd **p;
 #endif
 
-  if (scanned)
-    usb_all_have_intr_endp = all_have_intr_endp;
+  usb_all_have_intr_endp = all_have_intr_endp;
 
   FD_ZERO (&fdset);
   nfd = 0;
@@ -1230,6 +1229,7 @@ update_fdset_for_usb (int scanned, int all_have_intr_endp)
       if (nfd < fd)
         nfd = fd;
       p++;
+      log_debug ("USB: add %d to fdset\n", fd);
     }
 
   libusb_free_pollfds (pfd_array);
@@ -1238,8 +1238,7 @@ update_fdset_for_usb (int scanned, int all_have_intr_endp)
   /* Kick the select loop.  */
   write (notify_fd, "", 1);
 
-  log_debug ("update_fdset_for_usb (%d, %d): %d %lx\n",
-             scanned, all_have_intr_endp, nfd, fdset.fds_bits[0]);
+  log_debug ("update_fdset_for_usb (%d): %d\n", all_have_intr_endp, nfd);
 }
 
 static int
@@ -1395,6 +1394,7 @@ handle_connections (void)
           char buf[256];
 
           read (pipe_fd[0], buf, sizeof buf);
+          ret--;
         }
 
       if (listen_fd != -1 && FD_ISSET (listen_fd, &read_fdset))
@@ -1439,6 +1439,8 @@ handle_connections (void)
       if (ret)
         {
           struct timeval tv = {0, 0};
+
+          log_debug ("scd main: USB handle events\n");
           libusb_handle_events_timeout_completed (NULL, &tv, NULL);
         }
 #endif

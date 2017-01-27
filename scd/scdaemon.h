@@ -125,7 +125,7 @@ void send_status_info (ctrl_t ctrl, const char *keyword, ...)
 void send_status_direct (ctrl_t ctrl, const char *keyword, const char *args);
 void scd_update_reader_status_file (void);
 void send_client_notifications (app_t app, int removal);
-void update_fdset_for_usb (int scanned, int all_have_intr_endp);
+void update_fdset_for_usb (int all_have_intr_endp);
 
 
 #endif /*SCDAEMON_H*/

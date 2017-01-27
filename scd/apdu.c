@@ -141,11 +141,12 @@ struct reader_table_s {
   } rapdu;
 #endif /*USE_G10CODE_RAPDU*/
   char *rdrname;     /* Name of the connected reader or NULL if unknown. */
-  int is_t0;         /* True if we know that we are running T=0. */
-  int is_spr532;     /* True if we know that the reader is a SPR532.  */
-  int pinpad_varlen_supported;  /* True if we know that the reader
-                                   supports variable length pinpad
-                                   input.  */
+  unsigned int is_t0:1;     /* True if we know that we are running T=0. */
+  unsigned int is_spr532:1; /* True if we know that the reader is a SPR532.  */
+  unsigned int pinpad_varlen_supported:1;  /* True if we know that the reader
+                                              supports variable length pinpad
+                                              input.  */
+  unsigned int require_get_status:1;
   unsigned char atr[33];
   size_t atrlen;           /* A zero length indicates that the ATR has
                               not yet been read; i.e. the card is not
@@ -470,6 +471,7 @@ new_reader_slot (void)
   reader_table[reader].is_t0 = 1;
   reader_table[reader].is_spr532 = 0;
   reader_table[reader].pinpad_varlen_supported = 0;
+  reader_table[reader].require_get_status = 1;
 #ifdef NEED_PCSC_WRAPPER
   reader_table[reader].pcsc.req_fd = -1;
   reader_table[reader].pcsc.rsp_fd = -1;
@@ -2572,6 +2574,7 @@ open_ccid_reader (struct dev_list *dl)
 {
   int err;
   int slot;
+  int require_get_status;
   reader_table_t slotp;
 
   slot = new_reader_slot ();
@@ -2596,6 +2599,8 @@ open_ccid_reader (struct dev_list *dl)
       err = 0;
     }
 
+  require_get_status = ccid_require_get_status (slotp->ccid.handle);
+
   reader_table[slot].close_reader = close_ccid_reader;
   reader_table[slot].reset_reader = reset_ccid_reader;
   reader_table[slot].get_status_reader = get_status_ccid;
@@ -2608,6 +2613,7 @@ open_ccid_reader (struct dev_list *dl)
   /* Our CCID reader code does not support T=0 at all, thus reset the
      flag.  */
   reader_table[slot].is_t0 = 0;
+  reader_table[slot].require_get_status = require_get_status;
 
   dump_reader_status (slot);
   unlock_slot (slot);
@@ -2970,22 +2976,15 @@ apdu_dev_list_start (const char *portstr, struct dev_list **l_p)
   return 0;
 }
 
-int
+void
 apdu_dev_list_finish (struct dev_list *dl)
 {
-  int all_have_intr_endp;
-
 #ifdef HAVE_LIBUSB
   if (dl->ccid_table)
-    all_have_intr_endp = ccid_dev_scan_finish (dl->ccid_table, dl->idx_max);
-  else
-    all_have_intr_endp = 0;
-#else
-  all_have_intr_endp = 0;
+    ccid_dev_scan_finish (dl->ccid_table, dl->idx_max);
 #endif
   xfree (dl);
   npth_mutex_unlock (&reader_table_lock);
-  return all_have_intr_endp;
 }
 
 
@@ -3347,8 +3346,11 @@ apdu_enum_reader (int slot, int *used)
 
 /* Connect a card.  This is used to power up the card and make sure
    that an ATR is available.  Depending on the reader backend it may
-   return an error for an inactive card or if no card is
-   available.  */
+   return an error for an inactive card or if no card is available.
+   Return -1 on error.  Return 1 if reader requires get_status to
+   watch card removal.  Return 0 if it's a token (always with a card),
+   or it supports INTERRUPT endpoint to watch card removal.
+  */
 int
 apdu_connect (int slot)
 {
@@ -3362,7 +3364,7 @@ apdu_connect (int slot)
     {
       if (DBG_READER)
         log_debug ("leave: apdu_connect => SW_HOST_NO_DRIVER\n");
-      return SW_HOST_NO_DRIVER;
+      return -1;
     }
 
   /* Only if the access method provides a connect function we use it.
@@ -3393,10 +3395,19 @@ apdu_connect (int slot)
   else if ((status & APDU_CARD_PRESENT) && !(status & APDU_CARD_ACTIVE))
     sw = SW_HOST_CARD_INACTIVE;
 
+  if (sw == SW_HOST_CARD_INACTIVE)
+    {
+      /* Try power it up again.  */
+      sw = apdu_reset (slot);
+    }
+
   if (DBG_READER)
     log_debug ("leave: apdu_connect => sw=0x%x\n", sw);
 
-  return sw;
+  if (sw)
+    return -1;
+
+  return reader_table[slot].require_get_status;
 }
 
 
