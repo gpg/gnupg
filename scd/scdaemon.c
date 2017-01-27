@@ -56,6 +56,7 @@
 #include "ccid-driver.h"
 #include "gc-opt-flags.h"
 #include "asshelp.h"
+#include "exechelp.h"
 #include "../common/init.h"
 
 #ifndef ENAMETOOLONG
@@ -239,6 +240,9 @@ static int usb_all_have_intr_endp;
 
 /* FD to listen incomming connections.  */
 static int listen_fd;
+
+/* FD to notify update of usb devices.  */
+static int notify_fd;
 
 static char *create_socket_name (char *standard_name);
 static gnupg_fd_t create_server_socket (const char *name,
@@ -766,7 +770,7 @@ main (int argc, char **argv )
 
       res = npth_attr_init (&tattr);
       if (res)
-	{
+        {
           log_error ("error allocating thread attributes: %s\n",
                      strerror (res));
           scd_exit (2);
@@ -1231,8 +1235,11 @@ update_fdset_for_usb (int scanned, int all_have_intr_endp)
   libusb_free_pollfds (pfd_array);
 #endif
 
-  log_debug ("update_fdset_for_usb (%d, %d): %d\n",
-             scanned, all_have_intr_endp, nfd);
+  /* Kick the select loop.  */
+  write (notify_fd, "", 1);
+
+  log_debug ("update_fdset_for_usb (%d, %d): %d %lx\n",
+             scanned, all_have_intr_endp, nfd, fdset.fds_bits[0]);
 }
 
 static int
@@ -1271,9 +1278,23 @@ handle_connections (void)
 #ifndef HAVE_W32_SYSTEM
   int signo;
 #endif
+  int pipe_fd[2];
+
+  ret = gnupg_create_pipe (pipe_fd);
+  if (ret)
+    {
+      log_error ("pipe creation failed: %s\n", gpg_strerror (ret));
+      return;
+    }
+  notify_fd = pipe_fd[1];
 
   ret = npth_attr_init(&tattr);
-  /* FIXME: Check error.  */
+  if (ret)
+    {
+      log_error ("npth_attr_init failed: %s\n", strerror (ret));
+      return;
+    }
+
   npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
 
 #ifndef HAVE_W32_SYSTEM
@@ -1302,6 +1323,8 @@ handle_connections (void)
 
   for (;;)
     {
+      int max_fd;
+
       if (shutdown_pending)
         {
           if (active_connections == 0)
@@ -1337,14 +1360,21 @@ handle_connections (void)
          thus a simple assignment is fine to copy the entire set.  */
       read_fdset = fdset;
 
+      FD_SET (pipe_fd[0], &read_fdset);
+      if (nfd < pipe_fd[0])
+        max_fd = pipe_fd[0];
+      else
+        max_fd = nfd;
+
 #ifndef HAVE_W32_SYSTEM
-      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, t, npth_sigev_sigmask());
+      ret = npth_pselect (max_fd+1, &read_fdset, NULL, NULL, t,
+                          npth_sigev_sigmask ());
       saved_errno = errno;
 
       while (npth_sigev_get_pending(&signo))
         handle_signal (signo);
 #else
-      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, t, NULL, NULL);
+      ret = npth_eselect (max_fd+1, &read_fdset, NULL, NULL, t, NULL, NULL);
       saved_errno = errno;
 #endif
 
@@ -1359,6 +1389,13 @@ handle_connections (void)
       if (ret <= 0)
         /* Timeout.  Will be handled when calculating the next timeout.  */
         continue;
+
+      if (FD_ISSET (pipe_fd[0], &read_fdset))
+        {
+          char buf[256];
+
+          read (pipe_fd[0], buf, sizeof buf);
+        }
 
       if (listen_fd != -1 && FD_ISSET (listen_fd, &read_fdset))
         {
@@ -1407,6 +1444,8 @@ handle_connections (void)
 #endif
     }
 
+  close (pipe_fd[0]);
+  close (pipe_fd[1]);
   cleanup ();
   log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
   npth_attr_destroy (&tattr);
