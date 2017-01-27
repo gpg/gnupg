@@ -262,9 +262,9 @@ struct ccid_driver_s
   unsigned int auto_param:1;
   unsigned int auto_pps:1;
   unsigned int auto_ifsd:1;
-  unsigned int powered_off:1;
   unsigned int has_pinpad:2;
   unsigned int enodev_seen:1;
+  int powered_off;
 
   time_t last_progress; /* Last time we sent progress line.  */
 
@@ -1764,12 +1764,17 @@ intr_cb (struct libusb_transfer *transfer)
 
   DEBUGOUT_1 ("CCID: interrupt callback %d\n", transfer->status);
 
-  if (transfer->status == LIBUSB_TRANSFER_NO_DEVICE
-      || transfer->status == LIBUSB_TRANSFER_ERROR)
+  if (transfer->status == LIBUSB_TRANSFER_TIMED_OUT)
     {
-    device_removed:
-      DEBUGOUT ("CCID: device removed\n");
-      handle->powered_off = 1;
+      int err;
+
+    submit_again:
+      /* Submit the URB again to keep watching the INTERRUPT transfer.  */
+      err = libusb_submit_transfer (transfer);
+      if (err == LIBUSB_ERROR_NO_DEVICE)
+        goto device_removed;
+
+      DEBUGOUT_1 ("CCID submit transfer again %d\n", err);
     }
   else if (transfer->status == LIBUSB_TRANSFER_COMPLETED)
     {
@@ -1782,19 +1787,17 @@ intr_cb (struct libusb_transfer *transfer)
         }
       else
         {
-          int err;
-
-          /* Submit the URB again to keep watching the INTERRUPT transfer.  */
-          err = libusb_submit_transfer (transfer);
-          if (err == LIBUSB_ERROR_NO_DEVICE)
-            goto device_removed;
-
-          DEBUGOUT_1 ("CCID submit transfer again %d\n", err);
+          /* Event other than card removal.  */
+          goto submit_again;
         }
     }
+  else if (transfer->status == LIBUSB_TRANSFER_CANCELLED)
+    handle->powered_off = 1;
   else
     {
-      DEBUGOUT_1 ("CCID intr_cb: %d\n", transfer->status);
+    device_removed:
+      DEBUGOUT ("CCID: device removed\n");
+      handle->powered_off = 1;
     }
 }
 
@@ -2048,11 +2051,19 @@ do_close_reader (ccid_driver_t handle)
       if (!rc)
         bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_SlotStatus,
                  seqno, 2000, 0);
-      handle->powered_off = 1;
     }
   if (handle->idev)
     {
-      libusb_free_transfer (handle->transfer);
+      if (handle->transfer)
+        {
+          if (!handle->powered_off)
+            {
+              libusb_cancel_transfer (handle->transfer);
+              while (!handle->powered_off)
+                libusb_handle_events_completed (NULL, &handle->powered_off);
+            }
+          libusb_free_transfer (handle->transfer);
+        }
       libusb_release_interface (handle->idev, handle->ifc_no);
       libusb_close (handle->idev);
       handle->idev = NULL;
