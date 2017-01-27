@@ -175,7 +175,7 @@ app_reset (app_t app, ctrl_t ctrl, int send_reset)
 
 static gpg_error_t
 app_new_register (int slot, ctrl_t ctrl, const char *name,
-                  int require_get_status)
+                  int periodical_check_needed)
 {
   gpg_error_t err = 0;
   app_t app = NULL;
@@ -304,7 +304,7 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
       return err;
     }
 
-  app->require_get_status = require_get_status;
+  app->periodical_check_needed = periodical_check_needed;
 
   npth_mutex_lock (&app_list_lock);
   app->next = app_top;
@@ -331,7 +331,7 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
   if (scan || !app_top)
     {
       struct dev_list *l;
-      int all_have_intr_endp = 1;
+      int periodical_check_needed = 0;
 
       err = apdu_dev_list_start (opt.reader_port, &l);
       if (err)
@@ -340,23 +340,24 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
       while (1)
         {
           int slot;
-          int require_get_status;
+          int periodical_check_needed;
 
           slot = apdu_open_reader (l);
           if (slot < 0)
             break;
 
-          require_get_status = apdu_connect (slot);
-          if (require_get_status < 0)
+          periodical_check_needed = apdu_connect (slot);
+          if (periodical_check_needed < 0)
             {
               /* We close a reader with no card.  */
               err = gpg_error (GPG_ERR_ENODEV);
             }
           else
             {
-              err = app_new_register (slot, ctrl, name, require_get_status);
-              if (require_get_status)
-                all_have_intr_endp = 0;
+              err = app_new_register (slot, ctrl, name,
+                                      periodical_check_needed);
+              if (periodical_check_needed)
+                periodical_check_needed = 1;
             }
 
           if (err)
@@ -364,7 +365,7 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
         }
 
       apdu_dev_list_finish (l);
-      update_fdset_for_usb (all_have_intr_endp);
+      update_usb (periodical_check_needed);
     }
 
   npth_mutex_lock (&app_list_lock);
@@ -1014,7 +1015,7 @@ void
 scd_update_reader_status_file (void)
 {
   app_t a, app_next;
-  int all_have_intr_endp = 1;
+  int periodical_check_needed = 0;
   int removal_detected = 0;
 
   npth_mutex_lock (&app_list_lock);
@@ -1034,8 +1035,8 @@ scd_update_reader_status_file (void)
       else if (sw)
         {
           /* Get status failed.  Ignore that.  */
-          if (a->require_get_status)
-            all_have_intr_endp = 0;
+          if (a->periodical_check_needed)
+            periodical_check_needed = 1;
           continue;
         }
 
@@ -1054,20 +1055,20 @@ scd_update_reader_status_file (void)
           else
             {
               a->card_status = status;
-              if (a->require_get_status)
-                all_have_intr_endp = 0;
+              if (a->periodical_check_needed)
+                periodical_check_needed = 1;
             }
         }
       else
         {
-          if (a->require_get_status)
-            all_have_intr_endp = 0;
+          if (a->periodical_check_needed)
+            periodical_check_needed = 1;
         }
     }
   npth_mutex_unlock (&app_list_lock);
 
   if (removal_detected)
-    update_fdset_for_usb (all_have_intr_endp);
+    update_usb (periodical_check_needed);
 }
 
 /* This function must be called once to initialize this module.  This

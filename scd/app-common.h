@@ -54,7 +54,7 @@ struct app_ctx_s {
   const char *apptype;
   unsigned int card_version;
   unsigned int card_status;
-  unsigned int require_get_status:1;
+  unsigned int periodical_check_needed:1;
   unsigned int did_chv1:1;
   unsigned int force_chv1:1;   /* True if the card does not cache CHV1. */
   unsigned int did_chv2:1;

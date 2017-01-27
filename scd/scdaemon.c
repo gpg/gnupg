@@ -44,10 +44,6 @@
 
 #include <assuan.h> /* malloc hooks */
 
-#ifdef HAVE_LIBUSB
-#include <libusb.h>
-#endif
-
 #include "i18n.h"
 #include "sysutils.h"
 #include "app-common.h"
@@ -229,17 +225,8 @@ static assuan_sock_nonce_t socket_nonce;
    disabled but it won't perform any ticker specific actions. */
 static int ticker_disabled;
 
-/* Set of FD to select.  */
-static fd_set fdset;
-
-/* Max FD to select.  */
-static int nfd;
-
-/* Set if all usb devices have INTERRUPT endpoints.  */
-static int usb_all_have_intr_endp;
-
-/* FD to listen incomming connections.  */
-static int listen_fd;
+/* Set if usb devices require periodical check.  */
+static int usb_periodical_check;
 
 /* FD to notify update of usb devices.  */
 static int notify_fd;
@@ -250,7 +237,7 @@ static gnupg_fd_t create_server_socket (const char *name,
                                         assuan_sock_nonce_t *nonce);
 
 static void *start_connection_thread (void *arg);
-static void handle_connections (void);
+static void handle_connections (int listen_fd);
 
 /* Pth wrapper function definitions. */
 ASSUAN_SYSTEM_NPTH_IMPL;
@@ -798,8 +785,7 @@ main (int argc, char **argv )
 
       /* We run handle_connection to wait for the shutdown signal and
          to run the ticker stuff.  */
-      listen_fd = fd;
-      handle_connections ();
+      handle_connections (fd);
       if (fd != -1)
         close (fd);
     }
@@ -931,8 +917,7 @@ main (int argc, char **argv )
 
 #endif /*!HAVE_W32_SYSTEM*/
 
-      listen_fd = fd;
-      handle_connections ();
+      handle_connections (fd);
 
       close (fd);
     }
@@ -1029,7 +1014,7 @@ handle_signal (int signo)
           log_info ("%s %s stopped\n", strusage(11), strusage(13) );
           cleanup ();
           scd_exit (0);
-	}
+        }
       break;
 
     case SIGINT:
@@ -1136,7 +1121,7 @@ create_server_socket (const char *name, char **r_redir_name,
  if (rc == -1)
     {
       log_error (_("error binding socket to '%s': %s\n"),
-		 unaddr->sun_path,
+                 unaddr->sun_path,
                  gpg_strerror (gpg_error_from_syserror ()));
       assuan_sock_close (fd);
       scd_exit (2);
@@ -1202,43 +1187,17 @@ start_connection_thread (void *arg)
 
 
 void
-update_fdset_for_usb (int all_have_intr_endp)
+update_usb (int periodical_check_needed)
 {
-#ifdef HAVE_LIBUSB
-  const struct libusb_pollfd **pfd_array = libusb_get_pollfds (NULL);
-  const struct libusb_pollfd **p;
-#endif
+  usb_periodical_check = periodical_check_needed;
+  log_debug ("update_usb (%d)\n", periodical_check_needed);
+}
 
-  usb_all_have_intr_endp = all_have_intr_endp;
-
-  FD_ZERO (&fdset);
-  nfd = 0;
-
-  if (listen_fd != -1)
-    {
-      FD_SET (listen_fd, &fdset);
-      nfd = listen_fd;
-    }
-
-#ifdef HAVE_LIBUSB
-  for (p = pfd_array; *p; p++)
-    {
-      int fd = (*p)->fd;
-
-      FD_SET (fd, &fdset);
-      if (nfd < fd)
-        nfd = fd;
-      p++;
-      log_debug ("USB: add %d to fdset\n", fd);
-    }
-
-  libusb_free_pollfds (pfd_array);
-#endif
-
+void
+scd_kick_the_loop (void)
+{
   /* Kick the select loop.  */
   write (notify_fd, "", 1);
-
-  log_debug ("update_fdset_for_usb (%d): %d\n", all_have_intr_endp, nfd);
 }
 
 static int
@@ -1247,10 +1206,7 @@ need_tick (void)
   if (shutdown_pending)
     return 1;
 
-  if (listen_fd != -1 && nfd == listen_fd)
-    return 1;
-
-  if (usb_all_have_intr_endp)
+  if (!usb_periodical_check)
     return 0;
 
   return 1;
@@ -1261,12 +1217,13 @@ need_tick (void)
    in which case this code will only do regular timeouts and handle
    signals. */
 static void
-handle_connections (void)
+handle_connections (int listen_fd)
 {
   npth_attr_t tattr;
   struct sockaddr_un paddr;
   socklen_t plen;
-  fd_set read_fdset;
+  fd_set fdset, read_fdset;
+  int nfd;
   int ret;
   int fd;
   struct timespec abstime;
@@ -1314,6 +1271,10 @@ handle_connections (void)
       nfd = listen_fd;
     }
 
+  FD_SET (pipe_fd[0], &fdset);
+  if (nfd < pipe_fd[0])
+    nfd = pipe_fd[0];
+
   npth_clock_gettime (&curtime);
   timeout.tv_sec = TIMERTICK_INTERVAL_SEC;
   timeout.tv_nsec = TIMERTICK_INTERVAL_USEC * 1000;
@@ -1322,8 +1283,6 @@ handle_connections (void)
 
   for (;;)
     {
-      int max_fd;
-
       if (shutdown_pending)
         {
           if (active_connections == 0)
@@ -1334,10 +1293,13 @@ handle_connections (void)
              file descriptors to wait for, so that the select will be
              used to just wait on a signal or timeout event. */
           FD_ZERO (&fdset);
+          FD_SET (pipe_fd[0], &fdset);
+          nfd = pipe_fd[0];
           listen_fd = -1;
         }
 
-      if (need_tick ())
+      if ((listen_fd != -1 && nfd == listen_fd)
+          || need_tick ())
         {
           npth_clock_gettime (&curtime);
           if (!(npth_timercmp (&curtime, &abstime, <)))
@@ -1359,21 +1321,15 @@ handle_connections (void)
          thus a simple assignment is fine to copy the entire set.  */
       read_fdset = fdset;
 
-      FD_SET (pipe_fd[0], &read_fdset);
-      if (nfd < pipe_fd[0])
-        max_fd = pipe_fd[0];
-      else
-        max_fd = nfd;
-
 #ifndef HAVE_W32_SYSTEM
-      ret = npth_pselect (max_fd+1, &read_fdset, NULL, NULL, t,
+      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, t,
                           npth_sigev_sigmask ());
       saved_errno = errno;
 
       while (npth_sigev_get_pending(&signo))
         handle_signal (signo);
 #else
-      ret = npth_eselect (max_fd+1, &read_fdset, NULL, NULL, t, NULL, NULL);
+      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, t, NULL, NULL);
       saved_errno = errno;
 #endif
 
@@ -1431,19 +1387,7 @@ handle_connections (void)
               else
                 npth_setname_np (thread, threadname);
             }
-
-          ret--;
         }
-
-#ifdef HAVE_LIBUSB
-      if (ret)
-        {
-          struct timeval tv = {0, 0};
-
-          log_debug ("scd main: USB handle events\n");
-          libusb_handle_events_timeout_completed (NULL, &tv, NULL);
-        }
-#endif
     }
 
   close (pipe_fd[0]);
