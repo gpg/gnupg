@@ -2,12 +2,12 @@
 # Copyright (C) 2011 Free Software Foundation, Inc.
 # This file is distributed under the same license as the GnuPG package.
 #
-# Yuri Chornoivan <yurchor@ukr.net>, 2011, 2014, 2015, 2016.
+# Yuri Chornoivan <yurchor@ukr.net>, 2011, 2014, 2015, 2016, 2017.
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-07-10 15:11+0300\n"
+"PO-Revision-Date: 2017-01-27 14:10+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <kde-i18n-uk@kde.org>\n"
 "Language: uk\n"
@@ -301,10 +301,9 @@ msgstr "запустити у режимі фонової служби (фоно
 msgid "run in server mode (foreground)"
 msgstr "запустити у режимі сервера (основному)"
 
-#, fuzzy
 #| msgid "run in server mode"
 msgid "run in supervised mode"
-msgstr "запустити у режимі сервера"
+msgstr "запустити у режимі із наглядом"
 
 msgid "verbose"
 msgstr "докладний режим"
@@ -755,10 +754,10 @@ msgstr "Увага: визначення власника не є безпечн
 msgid "Warning: unsafe permissions on %s \"%s\"\n"
 msgstr "Увага: визначення прав доступу не є безпечним для %s — «%s»\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "waiting for the agent to come up ... (%ds)\n"
 msgid "waiting for file '%s' to become accessible ...\n"
-msgstr "очікування на працездатність агента… (%d с)\n"
+msgstr "очікуємо на отримання доступу до файла «%s»…\n"
 
 #, c-format
 msgid "renaming '%s' to '%s' failed: %s\n"
@@ -1674,7 +1673,7 @@ msgid "remove as much as possible from key during export"
 msgstr "вилучити максимум частин з ключа під час експортування"
 
 msgid "use the GnuPG key backup format"
-msgstr ""
+msgstr "використовувати формат резервних копій ключів GnuPG"
 
 msgid " - skipped"
 msgstr " - пропущено"
@@ -1806,10 +1805,9 @@ msgstr "швидке додавання нового ідентифікатор�
 msgid "quickly revoke a user-id"
 msgstr "швидке відкликання ідентифікатора користувача"
 
-#, fuzzy
 #| msgid "quickly generate a new key pair"
 msgid "quickly set a new expiration date"
-msgstr "швидке створення пари ключів"
+msgstr "швидке встановлення нової дати завершення строку дії"
 
 msgid "full featured key pair generation"
 msgstr "повноцінне створення пари ключів"
@@ -1917,7 +1915,6 @@ msgstr ""
 "(Щоб ознайомитися зі списком команд і параметрів, скористайтеся сторінкою "
 "довідника (man))\n"
 
-#, fuzzy
 #| msgid ""
 #| "@\n"
 #| "Examples:\n"
@@ -2095,10 +2092,10 @@ msgstr "показувати назву сховища ключів у спис�
 msgid "show expiration dates during signature listings"
 msgstr "показувати дати завершення строків дії у списку підписів"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "invalid argument for option \"%.50s\"\n"
 msgid "valid values for option '%s':\n"
-msgstr "некоректний аргумент параметра «%.50s»\n"
+msgstr "коректні значення параметра «%s»:\n"
 
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
@@ -2107,10 +2104,10 @@ msgstr "невідомі правила TOFU «%s»\n"
 msgid "(use \"help\" to list choices)\n"
 msgstr "(команда «help» виводить список можливих варіантів)\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "invalid argument for option \"%.50s\"\n"
 msgid "invalid value for option '%s'\n"
-msgstr "некоректний аргумент параметра «%.50s»\n"
+msgstr "некоректне значення параметра «%s»\n"
 
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
@@ -2124,10 +2121,10 @@ msgstr "ЗАУВАЖЕННЯ: %s не призначено для звичайн
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "«%s» не є коректним записом завершення строку дії підпису\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "line %d: not a valid email address\n"
 msgid "\"%s\" is not a proper mail address\n"
-msgstr "рядок %d: некоректна адреса електронної пошти\n"
+msgstr "«%s» не є коректною адресою електронної пошти\n"
 
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
@@ -2462,10 +2459,9 @@ msgstr "вилучити максимум частин з ключа після 
 msgid "run import filters and export key immediately"
 msgstr "запустити фільтри імпортування та експортувати ключ негайно"
 
-#, fuzzy
 #| msgid "assume input is in binary format"
 msgid "assume the GnuPG key backup format"
-msgstr "вважати вхідні дані даними у двійковому форматі"
+msgstr "припускати формат резервних копій ключів GnuPG"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -3381,10 +3377,10 @@ msgstr "Немає відповідних ідентифікаторів кор�
 msgid "Nothing to sign.\n"
 msgstr "Нічого підписувати.\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "'%s' is not a valid signature expiration\n"
 msgid "'%s' is not a valid expiration time\n"
-msgstr "«%s» не є коректним записом завершення строку дії підпису\n"
+msgstr "«%s» не є коректним записом завершення строку дії\n"
 
 msgid "Digest: "
 msgstr "Контрольна сума: "
@@ -4450,10 +4446,10 @@ msgstr "               за допомогою %s ключа %s\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Підпис створено %s ключем %s з ідентифікатором %s\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "                aka \"%s\""
 msgid "               issuer \"%s\"\n"
-msgstr "                або «%s»"
+msgstr "               видавець «%s»\n"
 
 msgid "Key available at: "
 msgstr "Ключ доступний на: "
@@ -4841,12 +4837,11 @@ msgstr "Ймовірно, цей ключ належить користувач�
 msgid "This key belongs to us\n"
 msgstr "Цей ключ належить нам\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "root certificate has now been marked as trusted\n"
 msgid "%s: This key is bad!  It has been marked as untrusted!\n"
-msgstr "кореневий сертифікат було позначено як надійний\n"
+msgstr "%s: цей ключ є помилковим! Його позначено як не вартий довіри!\n"
 
-#, fuzzy
 #| msgid ""
 #| "It is NOT certain that the key belongs to the person named\n"
 #| "in the user ID.  If you *really* know what you are doing,\n"
@@ -4856,10 +4851,9 @@ msgid ""
 "*really* know what you are doing, you may answer the next\n"
 "question with yes.\n"
 msgstr ""
-"Не можна з певністю вважати, що ключ належить особі,\n"
-"вказаній у ідентифікаторі користувача. Якщо вам *точно*\n"
-"відомі наслідки ваших дій, можете ствердно відповісти\n"
-"на наступне питання.\n"
+"Цей ключ є помилковим! Його позначено як не вартий довіри! Якщо\n"
+"ви попри це впевнені у наслідках своїх дій, вам слід відповісти\n"
+"на наступне питання «так».\n"
 
 msgid ""
 "It is NOT certain that the key belongs to the person named\n"
@@ -5505,13 +5499,14 @@ msgstr "помилка під час скасовування змін у баз
 msgid "unsupported TOFU database version: %s\n"
 msgstr "непідтримувана версія бази даних TOFU: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "error creating temporary file: %s\n"
 msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
-msgstr "помилка створення тимчасового файла: %s\n"
+msgstr ""
+"помилка під час спроби створити таблицю TOFU «ultimately_trusted_keys»: %s\n"
 
 msgid "TOFU DB error"
-msgstr ""
+msgstr "помилка бази даних TOFU"
 
 #, c-format
 msgid "error reading TOFU database: %s\n"
@@ -5525,14 +5520,14 @@ msgstr "помилка під час спроби визначення верс�
 msgid "error initializing TOFU database: %s\n"
 msgstr "помилка під час спроби ініціалізації бази даних TOFU: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "error reading TOFU database: %s\n"
 msgid "error creating 'encryptions' TOFU table: %s\n"
-msgstr "помилка під час спроби читання бази даних TOFU: %s\n"
+msgstr "помилка під час спроби створити таблицю TOFU «encryptions»: %s\n"
 
 #, c-format
 msgid "adding column effective_policy to bindings DB: %s\n"
-msgstr ""
+msgstr "додаємо стовпчик effective_policy до бази даних прив’язок: %s\n"
 
 #, c-format
 msgid "error opening TOFU database '%s': %s\n"
@@ -5542,45 +5537,45 @@ msgstr "помилка під час спроби відкрити бази да
 msgid "error updating TOFU database: %s\n"
 msgstr "помилка під час спроби оновлення бази даних TOFU: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "The email address \"%s\" is associated with %d key:\n"
 #| msgid_plural "The email address \"%s\" is associated with %d keys:\n"
 msgid ""
 "This is the first time the email address \"%s\" is being used with key %s."
-msgstr "Адресу електронної пошти «%s» пов’язано із %d ключем:\n"
+msgstr "Адреса електронної пошти «%s» вперше використовується з ключем %s."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "The email address \"%s\" is associated with %d key:\n"
 #| msgid_plural "The email address \"%s\" is associated with %d keys:\n"
 msgid "The email address \"%s\" is associated with %d key!"
 msgid_plural "The email address \"%s\" is associated with %d keys!"
-msgstr[0] "Адресу електронної пошти «%s» пов’язано із %d ключем:\n"
-msgstr[1] "Адресу електронної пошти «%s» пов’язано із %d ключем:\n"
-msgstr[2] "Адресу електронної пошти «%s» пов’язано із %d ключем:\n"
+msgstr[0] "Адресу електронної пошти «%s» пов’язано із %d ключем!"
+msgstr[1] "Адресу електронної пошти «%s» пов’язано із %d ключами!"
+msgstr[2] "Адресу електронної пошти «%s» пов’язано із %d ключами!"
 
-#, fuzzy
 #| msgid ""
 #| "The key with fingerprint %s raised a conflict with the binding %s.  Since "
 #| "this binding's policy was 'auto', it was changed to 'ask'."
 msgid "  Since this binding's policy was 'auto', it has been changed to 'ask'."
 msgstr ""
-"Ключ із відбитком %s конфліктує із прив’язкою %s. Оскільки правилами цієї "
-"прив’язки визначалося «автоматично», їх змінено на «запитувати»."
+" Оскільки правилами цієї прив’язки визначалося «автоматично», їх змінено на "
+"«запитувати»."
 
 #, c-format
 msgid ""
 "Please indicate whether this email address should be associated with key %s "
 "or whether you think someone is impersonating \"%s\"."
 msgstr ""
+"Будь ласка, вкажіть, слід пов’язати цю адресу електронної пошти з ключем %s "
+"чи ви вважаєте, що хтось видає себе за «%s»."
 
 #, c-format
 msgid "error gathering other user IDs: %s\n"
 msgstr "помилка під час збирання інших ідентифікаторів користувачів: %s\n"
 
-#, fuzzy
 #| msgid "list key and user IDs"
 msgid "This key's user IDs:\n"
-msgstr "показати список ключів та ідентифікаторів користувача"
+msgstr "Ідентифікатори користувачів цього ключа:\n"
 
 #, c-format
 msgid "policy: %s"
@@ -5603,106 +5598,106 @@ msgid "Statistics for keys with the email address \"%s\":\n"
 msgstr "Статистичні дані для ключів із адресою електронної пошти «%s»:\n"
 
 msgid ", "
-msgstr ""
+msgstr ", "
 
 msgid "this key"
 msgstr "цей ключ"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "Verified %ld messages signed by \"%s\"."
 msgid "Verified %d message."
 msgid_plural "Verified %d messages."
-msgstr[0] "Перевірено %ld повідомлень, підписаних «%s»."
-msgstr[1] "Перевірено %ld повідомлень, підписаних «%s»."
-msgstr[2] "Перевірено %ld повідомлень, підписаних «%s»."
+msgstr[0] "Перевірено %d повідомлення."
+msgstr[1] "Перевірено %d повідомлення."
+msgstr[2] "Перевірено %d повідомлень."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "encrypted with %lu passphrases\n"
 msgid "Encrypted %d message."
 msgid_plural "Encrypted %d messages."
-msgstr[0] "зашифровано за допомогою %lu паролів\n"
-msgstr[1] "зашифровано за допомогою %lu паролів\n"
-msgstr[2] "зашифровано за допомогою %lu паролів\n"
+msgstr[0] "Зашифровано %d повідомлення."
+msgstr[1] "Зашифровано %d повідомлення."
+msgstr[2] "Зашифровано %d повідомлень."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "%ld message signed in the future."
 #| msgid_plural "%ld messages signed in the future."
 msgid "Verified %d message in the future."
 msgid_plural "Verified %d messages in the future."
-msgstr[0] "%ld повідомлення підписано у майбутньому."
-msgstr[1] "%ld повідомлення підписано у майбутньому."
-msgstr[2] "%ld повідомлень підписано у майбутньому."
+msgstr[0] "Перевірено %d повідомлення у майбутньому."
+msgstr[1] "Перевірено %d повідомлення у майбутньому."
+msgstr[2] "Перевірено %d повідомлень у майбутньому."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "%ld message signed in the future."
 #| msgid_plural "%ld messages signed in the future."
 msgid "Encrypted %d message in the future."
 msgid_plural "Encrypted %d messages in the future."
-msgstr[0] "%ld повідомлення підписано у майбутньому."
-msgstr[1] "%ld повідомлення підписано у майбутньому."
-msgstr[2] "%ld повідомлень підписано у майбутньому."
+msgstr[0] "Зашифровано %d повідомлення у майбутньому."
+msgstr[1] "Зашифровано %d повідомлення у майбутньому."
+msgstr[2] "Зашифровано %d повідомлень у майбутньому."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid " over the past %ld day."
 #| msgid_plural " over the past %ld days."
 msgid "Messages verified over the past %d day: %d."
 msgid_plural "Messages verified over the past %d days: %d."
-msgstr[0] " протягом %ld попереднього дня."
-msgstr[1] " протягом %ld попередніх днів."
-msgstr[2] " протягом %ld попередніх днів."
+msgstr[0] "Перевірено повідомлень протягом останнього %d дня: %d."
+msgstr[1] "Перевірено повідомлень протягом останніх %d днів: %d."
+msgstr[2] "Перевірено повідомлень протягом останніх %d днів: %d."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid " over the past %ld day."
 #| msgid_plural " over the past %ld days."
 msgid "Messages encrypted over the past %d day: %d."
 msgid_plural "Messages encrypted over the past %d days: %d."
-msgstr[0] " протягом %ld попереднього дня."
-msgstr[1] " протягом %ld попередніх днів."
-msgstr[2] " протягом %ld попередніх днів."
+msgstr[0] "Повідомлень, які зашифровано протягом останнього %d дня: %d."
+msgstr[1] "Повідомлень, які зашифровано протягом останніх %d днів: %d."
+msgstr[2] "Повідомлень, які зашифровано протягом останніх %d днів: %d."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid " over the past %ld month."
 #| msgid_plural " over the past %ld months."
 msgid "Messages verified over the past %d month: %d."
 msgid_plural "Messages verified over the past %d months: %d."
-msgstr[0] " протягом %ld попереднього місяця."
-msgstr[1] " протягом %ld попередніх місяців."
-msgstr[2] " протягом %ld попередніх місяців."
+msgstr[0] "Перевірено повідомлень протягом останнього %d місяця: %d."
+msgstr[1] "Перевірено повідомлень протягом останніх %d місяців: %d."
+msgstr[2] "Перевірено повідомлень протягом останніх %d місяців: %d."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid " over the past %ld month."
 #| msgid_plural " over the past %ld months."
 msgid "Messages encrypted over the past %d month: %d."
 msgid_plural "Messages encrypted over the past %d months: %d."
-msgstr[0] " протягом %ld попереднього місяця."
-msgstr[1] " протягом %ld попередніх місяців."
-msgstr[2] " протягом %ld попередніх місяців."
+msgstr[0] "Повідомлень, які зашифровано протягом останнього %d місяця: %d."
+msgstr[1] "Повідомлень, які зашифровано протягом останніх %d місяців: %d."
+msgstr[2] "Повідомлень, які зашифровано протягом останніх %d місяців: %d."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid " over the past %ld day."
 #| msgid_plural " over the past %ld days."
 msgid "Messages verified over the past %d year: %d."
 msgid_plural "Messages verified over the past %d years: %d."
-msgstr[0] " протягом %ld попереднього дня."
-msgstr[1] " протягом %ld попередніх днів."
-msgstr[2] " протягом %ld попередніх днів."
+msgstr[0] "Перевірено повідомлень протягом останнього %d року: %d."
+msgstr[1] "Перевірено повідомлень протягом останніх %d років: %d."
+msgstr[2] "Перевірено повідомлень протягом останніх %d років: %d."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid " over the past %ld day."
 #| msgid_plural " over the past %ld days."
 msgid "Messages encrypted over the past %d year: %d."
 msgid_plural "Messages encrypted over the past %d years: %d."
-msgstr[0] " протягом %ld попереднього дня."
-msgstr[1] " протягом %ld попередніх днів."
-msgstr[2] " протягом %ld попередніх днів."
+msgstr[0] "Повідомлень, які зашифровано протягом останнього %d року: %d."
+msgstr[1] "Повідомлень, які зашифровано протягом останніх %d років: %d."
+msgstr[2] "Повідомлень, які зашифровано протягом останніх %d років: %d."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid " over the past %ld day."
 #| msgid_plural " over the past %ld days."
 msgid "Messages verified in the past: %d."
-msgstr " протягом %ld попереднього дня."
+msgstr "Повідомлень, які перевірено у минулому: %d."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid ""
 #| "Verified %ld message signed by \"%s\"\n"
 #| "in the past %s."
@@ -5710,9 +5705,7 @@ msgstr " протягом %ld попереднього дня."
 #| "Verified %ld messages signed by \"%s\"\n"
 #| "in the past %s."
 msgid "Messages encrypted in the past: %d."
-msgstr ""
-"Перевірено %ld повідомлення, підписане «%s»,\n"
-"протягом такого строку: %s."
+msgstr "Повідомлень, які зашифровано у минулому: %d."
 
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
@@ -5738,97 +5731,96 @@ msgstr ""
 "(B)Поганий? "
 
 msgid "Defaulting to unknown."
-msgstr ""
+msgstr "Типовим значенням є «невідомий»."
 
 msgid "TOFU db corruption detected.\n"
-msgstr ""
+msgstr "Виявлено пошкодження бази даних TOFU.\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "error writing key: %s\n"
 msgid "resetting keydb: %s\n"
-msgstr "помилка під час спроби запису ключа: %s\n"
+msgstr "скидаємо базу даних ключів: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "error setting TOFU binding's trust level to %s\n"
 msgid "error setting TOFU binding's policy to %s\n"
-msgstr ""
-"помилка під час спроби встановлення рівня довіри до прив’язки TOFU до %s\n"
+msgstr "помилка під час спроби встановлення правил прив’язки TOFU до %s\n"
 
 #, c-format
 msgid "error changing TOFU policy: %s\n"
 msgstr "помилка під час спроби змінити правила TOFU: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "%d~year"
 #| msgid_plural "%d~years"
 msgid "%lld~year"
 msgid_plural "%lld~years"
-msgstr[0] "%d~рік"
-msgstr[1] "%d~роки"
-msgstr[2] "%d~років"
+msgstr[0] "%lld~рік"
+msgstr[1] "%lld~роки"
+msgstr[2] "%lld~років"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "%d~month"
 #| msgid_plural "%d~months"
 msgid "%lld~month"
 msgid_plural "%lld~months"
-msgstr[0] "%d~місяць"
-msgstr[1] "%d~місяці"
-msgstr[2] "%d~місяців"
+msgstr[0] "%lld~місяць"
+msgstr[1] "%lld~місяці"
+msgstr[2] "%lld~місяців"
 
 #, c-format
 msgid "%lld~week"
 msgid_plural "%lld~weeks"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%lld~тиждень"
+msgstr[1] "%lld~тижні"
+msgstr[2] "%lld~тижнів"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "%d~day"
 #| msgid_plural "%d~days"
 msgid "%lld~day"
 msgid_plural "%lld~days"
-msgstr[0] "%d~день"
-msgstr[1] "%d~дні"
-msgstr[2] "%d~днів"
+msgstr[0] "%lld~день"
+msgstr[1] "%lld~дні"
+msgstr[2] "%lld~днів"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "%d~hour"
 #| msgid_plural "%d~hours"
 msgid "%lld~hour"
 msgid_plural "%lld~hours"
-msgstr[0] "%d~година"
-msgstr[1] "%d~години"
-msgstr[2] "%d~годин"
+msgstr[0] "%lld~година"
+msgstr[1] "%lld~години"
+msgstr[2] "%lld~годин"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "%d~minute"
 #| msgid_plural "%d~minutes"
 msgid "%lld~minute"
 msgid_plural "%lld~minutes"
-msgstr[0] "%d~хвилина"
-msgstr[1] "%d~хвилини"
-msgstr[2] "%d~хвилин"
+msgstr[0] "%lld~хвилина"
+msgstr[1] "%lld~хвилини"
+msgstr[2] "%lld~хвилин"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "%d~second"
 #| msgid_plural "%d~seconds"
 msgid "%lld~second"
 msgid_plural "%lld~seconds"
-msgstr[0] "%d~секунда"
-msgstr[1] "%d~секунди"
-msgstr[2] "%d~секунд"
+msgstr[0] "%lld~секунда"
+msgstr[1] "%lld~секунди"
+msgstr[2] "%lld~секунд"
 
 #, c-format
 msgid "%s: Verified 0~signatures and encrypted 0~messages."
-msgstr ""
+msgstr "%s: перевірено 0~підписів і зашифровано 0~повідомлень."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "Deleted %d signatures.\n"
 msgid "%s: Verified 0 signatures."
-msgstr "Вилучено %d підписів.\n"
+msgstr "%s: перевірено 0 підписів."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid ""
 #| "Verified %ld message signed by \"%s\"\n"
 #| "in the past %s."
@@ -5837,22 +5829,15 @@ msgstr "Вилучено %d підписів.\n"
 #| "in the past %s."
 msgid "%s: Verified %ld~signature in the past %s."
 msgid_plural "%s: Verified %ld~signatures in the past %s."
-msgstr[0] ""
-"Перевірено %ld повідомлення, підписане «%s»,\n"
-"протягом такого строку: %s."
-msgstr[1] ""
-"Перевірено %ld повідомлення, підписаних «%s»,\n"
-"протягом такого строку: %s."
-msgstr[2] ""
-"Перевірено %ld повідомлень, підписаних «%s»,\n"
-"протягом такого строку: %s."
+msgstr[0] "%s: перевірено %ld~підпис протягом останнього %s."
+msgstr[1] "%s: перевірено %ld~підписи протягом останнього %s."
+msgstr[2] "%s: перевірено %ld~підписів протягом останнього %s."
 
-#, fuzzy
 #| msgid "encrypted with %lu passphrases\n"
 msgid "Encrypted 0 messages."
-msgstr "зашифровано за допомогою %lu паролів\n"
+msgstr "Зашифровано 0 повідомлень."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid ""
 #| "Verified %ld message signed by \"%s\"\n"
 #| "in the past %s."
@@ -5861,44 +5846,38 @@ msgstr "зашифровано за допомогою %lu паролів\n"
 #| "in the past %s."
 msgid "Encrypted %ld~message in the past %s."
 msgid_plural "Encrypted %ld~messages in the past %s."
-msgstr[0] ""
-"Перевірено %ld повідомлення, підписане «%s»,\n"
-"протягом такого строку: %s."
-msgstr[1] ""
-"Перевірено %ld повідомлення, підписаних «%s»,\n"
-"протягом такого строку: %s."
-msgstr[2] ""
-"Перевірено %ld повідомлень, підписаних «%s»,\n"
-"протягом такого строку: %s."
+msgstr[0] "Зашифровано %ld~повідомлення протягом останнього %s."
+msgstr[1] "Зашифровано %ld~повідомлення протягом останнього %s."
+msgstr[2] "Зашифровано %ld~повідомлень протягом останнього %s."
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "policy: %s"
 msgid "(policy: %s)"
-msgstr "правило: %s"
+msgstr "(правило: %s)"
 
-#, fuzzy
 #| msgid "Warning: we've have yet to see a message signed by this key!\n"
 msgid ""
 "Warning: we have yet to see a message signed using this key and user id!\n"
-msgstr "Попередження: повідомлень, які було б підписано цим ключем, не було!\n"
+msgstr ""
+"Попередження: ще не існує повідомлень, які було б підписано цим ключем та "
+"ідентифікатором користувача!\n"
 
-#, fuzzy
 #| msgid "Warning: we've only seen a single message signed by this key!\n"
 msgid ""
 "Warning: we've only seen one message signed using this key and user id!\n"
-msgstr "Попередження: цим ключем було підписано лише одне повідомлення!\n"
+msgstr ""
+"Попередження: за допомогою цього ключа і ідентифікатора користувача підписано "
+"лише одне повідомлення!\n"
 
-#, fuzzy
 #| msgid "Warning: we've have yet to see a message signed by this key!\n"
 msgid "Warning: you have yet to encrypt a message to this key!\n"
-msgstr "Попередження: повідомлень, які було б підписано цим ключем, не було!\n"
+msgstr "Попередження: цим ключем ще не зашифровано жодного повідомлення!\n"
 
-#, fuzzy
 #| msgid "Warning: we've only seen a single message signed by this key!\n"
 msgid "Warning: you have only encrypted one message to this key!\n"
-msgstr "Попередження: цим ключем було підписано лише одне повідомлення!\n"
+msgstr "Попередження: цим ключем було зашифровано лише одне повідомлення!\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid ""
 #| "Warning: if you think you've seen more than %ld message signed by this "
 #| "key, then this key might be a forgery!  Carefully examine the email "
@@ -5924,23 +5903,26 @@ msgid_plural ""
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[0] ""
-"Попередження: якщо вам здається, що у вас було понад %ld повідомлення, "
-"підписане цим ключем, цей ключ може бути підробним! Уважно перевірте, чи "
+"Попередження: якщо вам здається, що у вас було більше підписів за допомогою "
+"цього ключа, цей ключ та ідентифікатор користувача можуть бути підробними! "
+"Уважно перевірте, чи "
 "точно вказано адресу електронної пошти. Якщо ключ є підозріливим, "
 "скористайтеся командою\n"
 "  %s\n"
 "для позначення ключа як помилкового.\n"
 msgstr[1] ""
-"Попередження: якщо вам здається, що у вас було понад %ld повідомлення, "
-"підписане цим ключем, цей ключ може бути підробним! Уважно перевірте, чи "
-"точно вказано адресу електронної пошти. Якщо ключ є підозріливим, "
+"Попередження: якщо вам здається, що у вас було більше підписів за допомогою "
+"цього ключа, цей ключ та ідентифікатори користувача можуть бути підробними! "
+"Уважно перевірте, чи "
+"точно вказано адреси електронної пошти. Якщо ключ є підозріливим, "
 "скористайтеся командою\n"
 "  %s\n"
 "для позначення ключа як помилкового.\n"
 msgstr[2] ""
-"Попередження: якщо вам здається, що у вас було понад %ld повідомлень, "
-"підписане цим ключем, цей ключ може бути підробним! Уважно перевірте, чи "
-"точно вказано адресу електронної пошти. Якщо ключ є підозріливим, "
+"Попередження: якщо вам здається, що у вас було більше підписів за допомогою "
+"цього ключа, цей ключ та ідентифікатори користувача можуть бути підробними! "
+"Уважно перевірте, чи "
+"точно вказано адреси електронної пошти. Якщо ключ є підозріливим, "
 "скористайтеся командою\n"
 "  %s\n"
 "для позначення ключа як помилкового.\n"
@@ -5952,11 +5934,15 @@ msgstr "помилка під час спроби відкрити бази да
 #, c-format
 msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
 msgstr ""
+"ПОПЕРЕДЖЕННЯ: шифруємо до %s, для якого не виявлено не відкликаних "
+"ідентифікаторів користувача.\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "error writing public keyring '%s': %s\n"
 msgid "error setting policy for key %s, user id \"%s\": %s"
-msgstr "помилка під час спроби запису до сховища відкритих ключів «%s»: %s\n"
+msgstr ""
+"помилка під час спроби встановити правила для ключа %s, ідентифікатор "
+"користувача «%s»: %s"
 
 #, c-format
 msgid "'%s' is not a valid long keyID\n"
@@ -6220,10 +6206,9 @@ msgstr "відповідь не містить основи числення RSA
 msgid "response does not contain the RSA public exponent\n"
 msgstr "відповідь не містить відкритого показника RSA\n"
 
-#, fuzzy
 #| msgid "response does not contain the EC public point\n"
 msgid "response does not contain the EC public key\n"
-msgstr "відповідь не містить відкритої точки еліптичної кривої\n"
+msgstr "відповідь не містить відкритого ключа еліптичної кривої\n"
 
 msgid "response does not contain the public key data\n"
 msgstr "відповідь не містить даних відкритого ключа\n"
@@ -7815,7 +7800,7 @@ msgid "allow sending OCSP requests"
 msgstr "дозволити надсилання запитів OCSP"
 
 msgid "allow online software version check"
-msgstr ""
+msgstr "дозволити інтерактивну перевірку версії програмного забезпечення"
 
 msgid "inhibit the use of HTTP"
 msgstr "заборонити використання HTTP"
@@ -8529,31 +8514,27 @@ msgstr "список серверів LDAP"
 msgid "Configuration for OCSP"
 msgstr "Налаштування OCSP"
 
-#, fuzzy
 #| msgid "GPG for OpenPGP"
 msgid "OpenPGP"
-msgstr "GPG для OpenPGP"
+msgstr "OpenPGP"
 
 msgid "Private Keys"
-msgstr ""
+msgstr "Закриті ключі"
 
-#, fuzzy
 #| msgid "Smartcard Daemon"
 msgid "Smartcards"
-msgstr "Фонова служба карток пам’яті"
+msgstr "Картки пам’яті"
 
-#, fuzzy
 #| msgid "GPG for S/MIME"
 msgid "S/MIME"
-msgstr "GPG для S/MIME"
+msgstr "S/MIME"
 
 msgid "Network"
-msgstr ""
+msgstr "Мережа"
 
-#, fuzzy
 #| msgid "PIN and Passphrase Entry"
 msgid "Passphrase Entry"
-msgstr "Введення пінкодів і паролів"
+msgstr "Введення пароля"
 
 msgid "Component not suitable for launching"
 msgstr "Компонент не є придатним до запуску"
@@ -8565,15 +8546,15 @@ msgstr "Помилка зовнішньої перевірки компонен�
 msgid "Note that group specifications are ignored\n"
 msgstr "Зауважте, що специфікації груп буде проігноровано\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "error closing '%s': %s\n"
 msgid "error closing '%s'\n"
-msgstr "помилка під час спроби закрити «%s»: %s\n"
+msgstr "помилка під час спроби закрити «%s»\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "error hashing '%s': %s\n"
 msgid "error parsing '%s'\n"
-msgstr "помилка під час спроби хешування «%s»: %s\n"
+msgstr "помилка під час спроби обробити «%s»'\n"
 
 msgid "list all components"
 msgstr "показати список всіх компонентів"
@@ -8593,10 +8574,9 @@ msgstr "|COMPONENT|перевірити параметри"
 msgid "apply global default values"
 msgstr "застосувати загальні типові значення"
 
-#, fuzzy
 #| msgid "|FILE|take policy information from FILE"
 msgid "|FILE|update configuration files using FILE"
-msgstr "|FILE|взяти дані щодо правил з вказаного файла"
+msgstr "|FILE|оновити файли налаштувань на основі файла ФАЙЛ"
 
 msgid "get the configuration directories for @GPGCONF@"
 msgstr "отримати назви каталогів налаштувань для @GPGCONF@"
@@ -8607,10 +8587,9 @@ msgstr "показати загальний файл налаштувань"
 msgid "check global configuration file"
 msgstr "перевірити загальний файл налаштувань"
 
-#, fuzzy
 #| msgid "update the trust database"
 msgid "query the software version database"
-msgstr "оновити базу даних довіри"
+msgstr "надіслати запит до бази даних версій програмного забезпечення"
 
 msgid "reload all or a given component"
 msgstr "перезавантажити всі або вказаний компонент"
