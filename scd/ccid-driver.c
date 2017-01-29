@@ -2116,33 +2116,24 @@ do_close_reader (ccid_driver_t handle)
     {
       if (handle->transfer)
         {
-          /* By locking libusb events, make sure handle->transfer is
-             canceled properly;  Don't cancel completed transfer.  */
-#ifdef USE_NPTH
-          npth_unprotect ();
-#endif
-          libusb_lock_events (NULL);
-#ifdef USE_NPTH
-          npth_protect ();
-#endif
           if (!handle->powered_off)
             {
-              libusb_cancel_transfer (handle->transfer);
-              libusb_unlock_events (NULL);
+              DEBUGOUT ("libusb_cancel_transfer\n");
 
-              while (!handle->powered_off)
-                {
+              rc = libusb_cancel_transfer (handle->transfer);
+              if (rc != LIBUSB_ERROR_NOT_FOUND)
+                while (!handle->powered_off)
+                  {
+                    DEBUGOUT ("libusb_handle_events_completed\n");
 #ifdef USE_NPTH
-                  npth_unprotect ();
+                    npth_unprotect ();
 #endif
-                  libusb_handle_events_completed (NULL, &handle->powered_off);
+                    libusb_handle_events_completed (NULL, &handle->powered_off);
 #ifdef USE_NPTH
-                  npth_protect ();
+                    npth_protect ();
 #endif
-                }
+                  }
             }
-          else
-            libusb_unlock_events (NULL);
 
           libusb_free_transfer (handle->transfer);
         }
