@@ -111,27 +111,43 @@ static const char *strlwr(char *s) {
 # define FIRST_CELLSEGS 3
 #endif
 
+
+
+/* Support for immediate values.
+ *
+ * Immediate values are tagged with IMMEDIATE_TAG, which is neither
+ * used in types, nor in pointer values.
+ *
+ * XXX: Currently, we only use this to tag pointers in vectors.  */
+#define IMMEDIATE_TAG		1
+#define is_immediate(p)		((pointer) ((uintptr_t) (p) &  IMMEDIATE_TAG))
+#define set_immediate(p)	((pointer) ((uintptr_t) (p) |  IMMEDIATE_TAG))
+#define clr_immediate(p)	((pointer) ((uintptr_t) (p) & ~IMMEDIATE_TAG))
+
+
+
 enum scheme_types {
-  T_STRING=1,
-  T_NUMBER=2,
-  T_SYMBOL=3,
-  T_PROC=4,
-  T_PAIR=5,
-  T_CLOSURE=6,
-  T_CONTINUATION=7,
-  T_FOREIGN=8,
-  T_CHARACTER=9,
-  T_PORT=10,
-  T_VECTOR=11,
-  T_MACRO=12,
-  T_PROMISE=13,
-  T_ENVIRONMENT=14,
-  T_FOREIGN_OBJECT=15,
-  T_BOOLEAN=16,
-  T_NIL=17,
-  T_EOF_OBJ=18,
-  T_SINK=19,
-  T_LAST_SYSTEM_TYPE=19
+  T_STRING=1 << 1,	/* Do not use the lsb, it is used for
+			 * immediate values.  */
+  T_NUMBER=2 << 1,
+  T_SYMBOL=3 << 1,
+  T_PROC=4 << 1,
+  T_PAIR=5 << 1,
+  T_CLOSURE=6 << 1,
+  T_CONTINUATION=7 << 1,
+  T_FOREIGN=8 << 1,
+  T_CHARACTER=9 << 1,
+  T_PORT=10 << 1,
+  T_VECTOR=11 << 1,
+  T_MACRO=12 << 1,
+  T_PROMISE=13 << 1,
+  T_ENVIRONMENT=14 << 1,
+  T_FOREIGN_OBJECT=15 << 1,
+  T_BOOLEAN=16 << 1,
+  T_NIL=17 << 1,
+  T_EOF_OBJ=18 << 1,
+  T_SINK=19 << 1,
+  T_LAST_SYSTEM_TYPE=19 << 1
 };
 
 static const char *
@@ -163,9 +179,9 @@ type_to_string (enum scheme_types typ)
 }
 
 /* ADJ is enough slack to align cells in a TYPE_BITS-bit boundary */
-#define ADJ 32
-#define TYPE_BITS 5
-#define T_MASKTYPE      31    /* 0000000000011111 */
+#define TYPE_BITS	6
+#define ADJ		(1 << TYPE_BITS)
+#define T_MASKTYPE      (ADJ - 1)
 #define T_TAGGED      1024    /* 0000010000000000 */
 #define T_FINALIZE    2048    /* 0000100000000000 */
 #define T_SYNTAX      4096    /* 0001000000000000 */
