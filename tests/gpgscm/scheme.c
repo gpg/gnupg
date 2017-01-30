@@ -226,7 +226,11 @@ INTERFACE INLINE int is_string(pointer p)     { return (type(p)==T_STRING); }
 
 INTERFACE static int is_list(scheme *sc, pointer p);
 INTERFACE INLINE int is_vector(pointer p)    { return (type(p)==T_VECTOR); }
-#define vector_length(v)	ivalue_unchecked(v)
+/* Given a vector, return it's length.  */
+#define vector_length(v)	(v)->_object._vector._length
+/* Given a vector length, compute the amount of cells required to
+ * represent it.  */
+#define vector_size(len)	(1 + ((len) - 1 + 2) / 3)
 INTERFACE static void fill_vector(pointer vec, pointer obj);
 INTERFACE static pointer vector_elem(pointer vec, int ielem);
 INTERFACE static pointer set_vector_elem(pointer vec, int ielem, pointer a);
@@ -1035,12 +1039,11 @@ static pointer get_cell(scheme *sc, pointer a, pointer b)
 
 static pointer get_vector_object(scheme *sc, int len, pointer init)
 {
-  pointer cells = get_consecutive_cells(sc,len/2+len%2+1);
+  pointer cells = get_consecutive_cells(sc, vector_size(len));
   if(sc->no_memory) { return sc->sink; }
   /* Record it as a vector so that gc understands it. */
-  typeflag(cells) = (T_VECTOR | T_ATOM);
+  typeflag(cells) = (T_VECTOR | T_ATOM | T_FINALIZE);
   vector_length(cells) = len;
-  set_num_integer(cells);
   fill_vector(cells,init);
   if (gc_enabled (sc))
     push_recent_alloc(sc, cells, sc->NIL);
@@ -1340,32 +1343,24 @@ INTERFACE static pointer mk_vector(scheme *sc, int len)
 { return get_vector_object(sc,len,sc->NIL); }
 
 INTERFACE static void fill_vector(pointer vec, pointer obj) {
-     int i;
-     int n = vector_length(vec) / 2 + vector_length(vec) % 2;
-     for(i=0; i < n; i++) {
-          typeflag(vec+1+i) = T_PAIR;
-          setimmutable(vec+1+i);
-          car(vec+1+i)=obj;
-          cdr(vec+1+i)=obj;
+     size_t i;
+     assert (is_vector (vec));
+     for(i = 0; i < vector_length(vec); i++) {
+          vec->_object._vector._elements[i] = set_immediate(obj);
      }
 }
 
 INTERFACE static pointer vector_elem(pointer vec, int ielem) {
-     int n=ielem/2;
-     if(ielem%2==0) {
-          return car(vec+1+n);
-     } else {
-          return cdr(vec+1+n);
-     }
+     assert (is_vector (vec));
+     assert (ielem < vector_length(vec));
+     return clr_immediate(vec->_object._vector._elements[ielem]);
 }
 
 INTERFACE static pointer set_vector_elem(pointer vec, int ielem, pointer a) {
-     int n=ielem/2;
-     if(ielem%2==0) {
-          return car(vec+1+n)=a;
-     } else {
-          return cdr(vec+1+n)=a;
-     }
+     assert (is_vector (vec));
+     assert (ielem < vector_length(vec));
+     vec->_object._vector._elements[ielem] = set_immediate(a);
+     return a;
 }
 
 /* get new symbol */
@@ -1563,10 +1558,8 @@ static void mark(pointer a) {
 E2:  setmark(p);
      if(is_vector(p)) {
           int i;
-          int n = vector_length(p) / 2 + vector_length(p) % 2;
-          for(i=0; i < n; i++) {
-               /* Vector cells will be treated like ordinary cells */
-               mark(p+1+i);
+          for (i = 0; i < vector_length(p); i++) {
+               mark(clr_immediate(p->_object._vector._elements[i]));
           }
      }
 #if SHOW_ERROR_LINE
@@ -1672,6 +1665,8 @@ static void gc(scheme *sc, pointer a, pointer b) {
   for (i = sc->last_cell_seg; i >= 0; i--) {
     p = sc->cell_seg[i] + CELL_SEGSIZE;
     while (--p >= sc->cell_seg[i]) {
+      if (typeflag(p) & IMMEDIATE_TAG)
+        continue;
       if (is_mark(p)) {
     clrmark(p);
       } else {
@@ -1708,6 +1703,16 @@ static void finalize_cell(scheme *sc, pointer a) {
     sc->free(a->_object._port);
   } else if(is_foreign_object(a)) {
     a->_object._foreign_object._vtable->finalize(sc, a->_object._foreign_object._data);
+  } else if (is_vector(a)) {
+    int i;
+    for (i = vector_size(vector_length(a)) - 1; i > 0; i--) {
+      pointer p = a + i;
+      typeflag(p) = 0;
+      car(p) = sc->NIL;
+      cdr(p) = sc->free_cell;
+      sc->free_cell = p;
+      sc->fcells += 1;
+    }
   }
 }
 

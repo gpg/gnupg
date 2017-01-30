@@ -56,6 +56,10 @@ struct cell {
       struct cell *_cdr;
     } _cons;
     struct {
+      size_t _length;
+      pointer _elements[0];
+    } _vector;
+    struct {
          char *_data;
          const foreign_object_vtable *_vtable;
     } _foreign_object;
