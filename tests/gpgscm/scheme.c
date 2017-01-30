@@ -794,7 +794,7 @@ _gc_disable(struct scheme *sc, size_t reserve, int lineno)
   if (sc->inhibit_gc == 0) {
     reserve_cells(sc, (reserve));
     sc->reserved_cells = (reserve);
-#ifndef NDEBUG
+#ifdef NDEBUG
     (void) lineno;
 #else
     sc->reserved_lineno = lineno;
