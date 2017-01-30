@@ -2708,7 +2708,7 @@ ccid_poll (ccid_driver_t handle)
 /* Note that this function won't return the error codes NO_CARD or
    CARD_INACTIVE */
 int
-ccid_slot_status (ccid_driver_t handle, int *statusbits)
+ccid_slot_status (ccid_driver_t handle, int *statusbits, int on_wire)
 {
   int rc;
   unsigned char msg[100];
@@ -2718,6 +2718,16 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits)
 
   if (handle->powered_off)
     return CCID_DRIVER_ERR_NO_READER;
+
+  /* If the card (with its lower-level driver) doesn't require
+     GET_STATUS on wire (because it supports INTERRUPT transfer for
+     status change, or it's a token which has a card always inserted),
+     no need to send on wire.  */
+  if (!on_wire && !ccid_require_get_status (handle))
+    {
+      *statusbits = 0;
+      return 0;
+    }
 
  retry:
   msg[0] = PC_to_RDR_GetSlotStatus;
@@ -2935,7 +2945,7 @@ ccid_get_atr (ccid_driver_t handle,
   };
 
   /* First check whether a card is available.  */
-  rc = ccid_slot_status (handle, &statusbits);
+  rc = ccid_slot_status (handle, &statusbits, 1);
   if (rc)
     return rc;
   if (statusbits == 2)

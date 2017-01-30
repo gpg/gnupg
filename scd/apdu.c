@@ -109,7 +109,7 @@ struct reader_table_s {
   int (*disconnect_card)(int);
   int (*close_reader)(int);
   int (*reset_reader)(int);
-  int (*get_status_reader)(int, unsigned int *);
+  int (*get_status_reader)(int, unsigned int *, int);
   int (*send_apdu_reader)(int,unsigned char *,size_t,
                           unsigned char *, size_t *, pininfo_t *);
   int (*check_pinpad)(int, int, pininfo_t *);
@@ -365,7 +365,7 @@ long (* DLSTDCALL pcsc_control) (long card,
 
 /*  Prototypes.  */
 static int pcsc_vendor_specific_init (int slot);
-static int pcsc_get_status (int slot, unsigned int *status);
+static int pcsc_get_status (int slot, unsigned int *status, int on_wire);
 static int reset_pcsc_reader (int slot);
 static int apdu_get_status_internal (int slot, int hang, unsigned int *status,
                                      int on_wire);
@@ -665,9 +665,10 @@ reset_ct_reader (int slot)
 
 
 static int
-ct_get_status (int slot, unsigned int *status)
+ct_get_status (int slot, unsigned int *status, int on_wire)
 {
   (void)slot;
+  (void)on_wire;
   /* The status we returned is wrong but we don't care because ctAPI
      is not anymore required.  */
   *status = APDU_CARD_USABLE|APDU_CARD_PRESENT|APDU_CARD_ACTIVE;
@@ -929,11 +930,12 @@ dump_pcsc_reader_status (int slot)
 
 #ifndef NEED_PCSC_WRAPPER
 static int
-pcsc_get_status_direct (int slot, unsigned int *status)
+pcsc_get_status_direct (int slot, unsigned int *status, int on_wire)
 {
   long err;
   struct pcsc_readerstate_s rdrstates[1];
 
+  (void)on_wire;
   memset (rdrstates, 0, sizeof *rdrstates);
   rdrstates[0].reader = reader_table[slot].rdrname;
   rdrstates[0].current_state = PCSC_STATE_UNAWARE;
@@ -992,7 +994,7 @@ pcsc_get_status_direct (int slot, unsigned int *status)
 
 #ifdef NEED_PCSC_WRAPPER
 static int
-pcsc_get_status_wrapped (int slot, unsigned int *status)
+pcsc_get_status_wrapped (int slot, unsigned int *status, int on_wire)
 {
   long err;
   reader_table_t slotp;
@@ -1002,6 +1004,7 @@ pcsc_get_status_wrapped (int slot, unsigned int *status)
   unsigned char buffer[16];
   int sw = SW_HOST_CARD_IO_ERROR;
 
+  (void)on_wire;
   slotp = reader_table + slot;
 
   if (slotp->pcsc.req_fd == -1
@@ -1101,12 +1104,12 @@ pcsc_get_status_wrapped (int slot, unsigned int *status)
 
 
 static int
-pcsc_get_status (int slot, unsigned int *status)
+pcsc_get_status (int slot, unsigned int *status, int on_wire)
 {
 #ifdef NEED_PCSC_WRAPPER
-  return pcsc_get_status_wrapped (slot, status);
+  return pcsc_get_status_wrapped (slot, status, on_wire);
 #else
-  return pcsc_get_status_direct (slot, status);
+  return pcsc_get_status_direct (slot, status, on_wire);
 #endif
 }
 
@@ -1705,7 +1708,7 @@ reset_pcsc_reader_wrapped (int slot)
   slotp->atrlen = len;
 
   /* Read the status so that IS_T0 will be set. */
-  pcsc_get_status (slot, &dummy_status);
+  pcsc_get_status (slot, &dummy_status, 1);
 
   return 0;
 
@@ -2184,7 +2187,7 @@ open_pcsc_reader_wrapped (const char *portstr)
   pcsc_vendor_specific_init (slot);
 
   /* Read the status so that IS_T0 will be set. */
-  pcsc_get_status (slot, &dummy_status);
+  pcsc_get_status (slot, &dummy_status, 1);
 
   dump_reader_status (slot);
   unlock_slot (slot);
@@ -2471,12 +2474,12 @@ set_progress_cb_ccid_reader (int slot, gcry_handler_progress_t cb, void *cb_arg)
 
 
 static int
-get_status_ccid (int slot, unsigned int *status)
+get_status_ccid (int slot, unsigned int *status, int on_wire)
 {
   int rc;
   int bits;
 
-  rc = ccid_slot_status (reader_table[slot].ccid.handle, &bits);
+  rc = ccid_slot_status (reader_table[slot].ccid.handle, &bits, on_wire);
   if (rc)
     return rc;
 
@@ -2718,13 +2721,14 @@ reset_rapdu_reader (int slot)
 
 
 static int
-my_rapdu_get_status (int slot, unsigned int *status)
+my_rapdu_get_status (int slot, unsigned int *status, int on_wire)
 {
   int err;
   reader_table_t slotp;
   rapdu_msg_t msg = NULL;
   int oldslot;
 
+  (void)on_wire;
   slotp = reader_table + slot;
 
   oldslot = rapdu_set_reader (slotp->rapdu.handle, slot);
@@ -3565,20 +3569,8 @@ apdu_get_status_internal (int slot, int hang, unsigned int *status, int on_wire)
   if ((sw = hang? lock_slot (slot) : trylock_slot (slot)))
     return sw;
 
-  /* If the card (with its lower-level driver) doesn't require
-     GET_STATUS on wire (because it supports INTERRUPT transfer for
-     status change, or it's a token which has a card always inserted),
-     no need to send on wire.  */
-  if (!on_wire && !reader_table[slot].require_get_status)
-    {
-      unlock_slot (slot);
-      if (status)
-        *status = (APDU_CARD_USABLE|APDU_CARD_ACTIVE);
-      return 0;
-    }
-
   if (reader_table[slot].get_status_reader)
-    sw = reader_table[slot].get_status_reader (slot, &s);
+    sw = reader_table[slot].get_status_reader (slot, &s, on_wire);
 
   unlock_slot (slot);
 
