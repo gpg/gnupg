@@ -481,7 +481,15 @@ agent_store_cache_hit (const char *key)
   /* To make sure the update is atomic under the non-preemptive thread
    * model, we must make sure not to surrender control to a different
    * thread.  Therefore, we avoid calling the allocator during the
-   * update.  */
+   * update.
+   *
+   * Background: xtrystrdup uses gcry_strdup which may use the secure
+   * memory allocator of Libgcrypt.  That allocator takes locks and
+   * since version 1.14 libgpg-error is nPth aware and thus talking a
+   * lock may now lead to thread switch.  Note that this only happens
+   * when secure memory is allocated, the standard allocator uses
+   * malloc which is not nPth aware.
+   */
   new = key ? xtrystrdup (key) : NULL;
 
   /* Atomic update.  */
