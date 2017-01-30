@@ -367,8 +367,8 @@ long (* DLSTDCALL pcsc_control) (long card,
 static int pcsc_vendor_specific_init (int slot);
 static int pcsc_get_status (int slot, unsigned int *status);
 static int reset_pcsc_reader (int slot);
-static int apdu_get_status_internal (int slot, int hang, int no_atr_reset,
-                                     unsigned int *status);
+static int apdu_get_status_internal (int slot, int hang, unsigned int *status,
+                                     int on_wire);
 static int check_pcsc_pinpad (int slot, int command, pininfo_t *pininfo);
 static int pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
                                pininfo_t *pininfo);
@@ -3386,7 +3386,7 @@ apdu_connect (int slot)
      Without that we would force a reset of the card with the next
      call to apdu_get_status.  */
   if (!sw)
-    sw = apdu_get_status_internal (slot, 1, 1, &status);
+    sw = apdu_get_status_internal (slot, 1, &status, 1);
 
   if (sw)
     ;
@@ -3551,11 +3551,10 @@ apdu_get_atr (int slot, size_t *atrlen)
      APDU_CARD_ACTIVE  (bit 2) = card active
                        (bit 3) = card access locked [not yet implemented]
 
-   For must applications, testing bit 0 is sufficient.
+   For most applications, testing bit 0 is sufficient.
 */
 static int
-apdu_get_status_internal (int slot, int hang, int no_atr_reset,
-                          unsigned int *status)
+apdu_get_status_internal (int slot, int hang, unsigned int *status, int on_wire)
 {
   int sw;
   unsigned int s;
@@ -3566,6 +3565,18 @@ apdu_get_status_internal (int slot, int hang, int no_atr_reset,
   if ((sw = hang? lock_slot (slot) : trylock_slot (slot)))
     return sw;
 
+  /* If the card (with its lower-level driver) doesn't require
+     GET_STATUS on wire (because it supports INTERRUPT transfer for
+     status change, or it's a token which has a card always inserted),
+     no need to send on wire.  */
+  if (!on_wire && !reader_table[slot].require_get_status)
+    {
+      unlock_slot (slot);
+      if (status)
+        *status = (APDU_CARD_USABLE|APDU_CARD_ACTIVE);
+      return 0;
+    }
+
   if (reader_table[slot].get_status_reader)
     sw = reader_table[slot].get_status_reader (slot, &s);
 
@@ -3573,7 +3584,7 @@ apdu_get_status_internal (int slot, int hang, int no_atr_reset,
 
   if (sw)
     {
-      if (!no_atr_reset)
+      if (on_wire)
         reader_table[slot].atrlen = 0;
       s = 0;
     }
@@ -3592,7 +3603,7 @@ apdu_get_status (int slot, int hang, unsigned int *status)
 
   if (DBG_READER)
     log_debug ("enter: apdu_get_status: slot=%d hang=%d\n", slot, hang);
-  sw = apdu_get_status_internal (slot, hang, 0, status);
+  sw = apdu_get_status_internal (slot, hang, status, 0);
   if (DBG_READER)
     {
       if (status)
