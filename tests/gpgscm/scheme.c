@@ -210,6 +210,7 @@ INTERFACE INLINE int is_string(pointer p)     { return (type(p)==T_STRING); }
 
 INTERFACE static int is_list(scheme *sc, pointer p);
 INTERFACE INLINE int is_vector(pointer p)    { return (type(p)==T_VECTOR); }
+#define vector_length(v)	ivalue_unchecked(v)
 INTERFACE static void fill_vector(pointer vec, pointer obj);
 INTERFACE static pointer vector_elem(pointer vec, int ielem);
 INTERFACE static pointer set_vector_elem(pointer vec, int ielem, pointer a);
@@ -1022,7 +1023,7 @@ static pointer get_vector_object(scheme *sc, int len, pointer init)
   if(sc->no_memory) { return sc->sink; }
   /* Record it as a vector so that gc understands it. */
   typeflag(cells) = (T_VECTOR | T_ATOM);
-  ivalue_unchecked(cells)=len;
+  vector_length(cells) = len;
   set_num_integer(cells);
   fill_vector(cells,init);
   if (gc_enabled (sc))
@@ -1092,7 +1093,7 @@ static pointer oblist_add_by_name(scheme *sc, const char *name)
   typeflag(x) = T_SYMBOL;
   setimmutable(car(x));
 
-  location = hash_fn(name, ivalue_unchecked(sc->oblist));
+  location = hash_fn(name, vector_length(sc->oblist));
   set_vector_elem(sc->oblist, location,
                   immutable_cons(sc, x, vector_elem(sc->oblist, location)));
   gc_enable(sc);
@@ -1105,7 +1106,7 @@ static INLINE pointer oblist_find_by_name(scheme *sc, const char *name)
   pointer x;
   char *s;
 
-  location = hash_fn(name, ivalue_unchecked(sc->oblist));
+  location = hash_fn(name, vector_length(sc->oblist));
   for (x = vector_elem(sc->oblist, location); x != sc->NIL; x = cdr(x)) {
     s = symname(car(x));
     /* case-insensitive, per R5RS section 2. */
@@ -1122,7 +1123,7 @@ static pointer oblist_all_symbols(scheme *sc)
   pointer x;
   pointer ob_list = sc->NIL;
 
-  for (i = 0; i < ivalue_unchecked(sc->oblist); i++) {
+  for (i = 0; i < vector_length(sc->oblist); i++) {
     for (x  = vector_elem(sc->oblist, i); x != sc->NIL; x = cdr(x)) {
       ob_list = cons(sc, x, ob_list);
     }
@@ -1324,7 +1325,7 @@ INTERFACE static pointer mk_vector(scheme *sc, int len)
 
 INTERFACE static void fill_vector(pointer vec, pointer obj) {
      int i;
-     int n = ivalue(vec)/2+ivalue(vec)%2;
+     int n = vector_length(vec) / 2 + vector_length(vec) % 2;
      for(i=0; i < n; i++) {
           typeflag(vec+1+i) = T_PAIR;
           setimmutable(vec+1+i);
@@ -1546,7 +1547,7 @@ static void mark(pointer a) {
 E2:  setmark(p);
      if(is_vector(p)) {
           int i;
-          int n = ivalue_unchecked(p)/2+ivalue_unchecked(p)%2;
+          int n = vector_length(p) / 2 + vector_length(p) % 2;
           for(i=0; i < n; i++) {
                /* Vector cells will be treated like ordinary cells */
                mark(p+1+i);
@@ -2615,7 +2616,7 @@ static INLINE void new_slot_spec_in_env(scheme *sc, pointer env,
   slot = immutable_cons(sc, variable, value);
 
   if (is_vector(car(env))) {
-    int location = hash_fn(symname(variable), ivalue_unchecked(car(env)));
+    int location = hash_fn(symname(variable), vector_length(car(env)));
 
     set_vector_elem(car(env), location,
                     immutable_cons(sc, slot, vector_elem(car(env), location)));
@@ -2632,7 +2633,7 @@ static pointer find_slot_in_env(scheme *sc, pointer env, pointer hdl, int all)
 
   for (x = env; x != sc->NIL; x = cdr(x)) {
     if (is_vector(car(x))) {
-      location = hash_fn(symname(hdl), ivalue_unchecked(car(x)));
+      location = hash_fn(symname(hdl), vector_length(car(x)));
       y = vector_elem(car(x), location);
     } else {
       y = car(x);
@@ -4366,14 +4367,14 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
 
      CASE(OP_VECLEN):  /* vector-length */
 	  gc_disable(sc, 1);
-          s_return_enable_gc(sc, mk_integer(sc, ivalue(car(sc->args))));
+          s_return_enable_gc(sc, mk_integer(sc, vector_length(car(sc->args))));
 
      CASE(OP_VECREF): { /* vector-ref */
           int index;
 
           index=ivalue(cadr(sc->args));
 
-          if(index>=ivalue(car(sc->args))) {
+          if(index >= vector_length(car(sc->args))) {
                Error_1(sc,"vector-ref: out of bounds:",cadr(sc->args));
           }
 
@@ -4388,7 +4389,7 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
           }
 
           index=ivalue(cadr(sc->args));
-          if(index>=ivalue(car(sc->args))) {
+          if(index >= vector_length(car(sc->args))) {
                Error_1(sc,"vector-set!: out of bounds:",cadr(sc->args));
           }
 
@@ -5082,7 +5083,7 @@ static pointer opexe_5(scheme *sc, enum scheme_opcodes op) {
      CASE(OP_PVECFROM): {
           int i=ivalue_unchecked(cdr(sc->args));
           pointer vec=car(sc->args);
-          int len=ivalue_unchecked(vec);
+          int len = vector_length(vec);
           if(i==len) {
                putstr(sc,")");
                s_return(sc,sc->T);
