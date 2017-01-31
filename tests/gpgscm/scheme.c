@@ -1073,7 +1073,9 @@ static int hash_fn(const char *key, int table_size);
 
 static pointer oblist_initial_value(scheme *sc)
 {
-  return mk_vector(sc, 461); /* probably should be bigger */
+  /* There are about 768 symbols used after loading the
+   * interpreter.  */
+  return mk_vector(sc, 1009);
 }
 
 /* Add a new symbol NAME at SLOT.  SLOT must be obtained using
@@ -2642,9 +2644,9 @@ static void new_frame_in_env(scheme *sc, pointer old_env)
 {
   pointer new_frame;
 
-  /* The interaction-environment has about 300 variables in it. */
+  /* The interaction-environment has about 480 variables in it. */
   if (old_env == sc->NIL) {
-    new_frame = mk_vector(sc, 461);
+    new_frame = mk_vector(sc, 751);
   } else {
     new_frame = sc->NIL;
   }
