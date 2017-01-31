@@ -333,6 +333,7 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
       struct dev_list *l;
       int periodical_check_needed = 0;
 
+      /* Scan the devices to find new device(s).  */
       err = apdu_dev_list_start (opt.reader_port, &l);
       if (err)
         return err;
@@ -340,14 +341,14 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
       while (1)
         {
           int slot;
-          int periodical_check_needed;
+          int periodical_check_needed_this;
 
           slot = apdu_open_reader (l);
           if (slot < 0)
             break;
 
-          periodical_check_needed = apdu_connect (slot);
-          if (periodical_check_needed < 0)
+          periodical_check_needed_this = apdu_connect (slot);
+          if (periodical_check_needed_this < 0)
             {
               /* We close a reader with no card.  */
               err = gpg_error (GPG_ERR_ENODEV);
@@ -355,8 +356,8 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
           else
             {
               err = app_new_register (slot, ctrl, name,
-                                      periodical_check_needed);
-              if (periodical_check_needed)
+                                      periodical_check_needed_this);
+              if (periodical_check_needed_this)
                 periodical_check_needed = 1;
             }
 
@@ -365,7 +366,11 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
         }
 
       apdu_dev_list_finish (l);
-      update_usb (periodical_check_needed);
+
+      /* If periodical check is needed for new device(s), kick the
+       scdaemon loop.  */
+      if (periodical_check_needed)
+        scd_kick_the_loop ();
     }
 
   npth_mutex_lock (&app_list_lock);
@@ -1011,12 +1016,11 @@ report_change (int slot, int old_status, int cur_status)
   xfree (homestr);
 }
 
-void
+int
 scd_update_reader_status_file (void)
 {
   app_t a, app_next;
   int periodical_check_needed = 0;
-  int removal_detected = 0;
 
   npth_mutex_lock (&app_list_lock);
   for (a = app_top; a; a = app_next)
@@ -1050,7 +1054,6 @@ scd_update_reader_status_file (void)
               log_debug ("Removal of a card: %d\n", a->slot);
               apdu_close_reader (a->slot);
               deallocate_app (a);
-              removal_detected = 1;
             }
           else
             {
@@ -1067,8 +1070,7 @@ scd_update_reader_status_file (void)
     }
   npth_mutex_unlock (&app_list_lock);
 
-  if (removal_detected)
-    update_usb (periodical_check_needed);
+  return periodical_check_needed;
 }
 
 /* This function must be called once to initialize this module.  This

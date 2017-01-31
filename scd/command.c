@@ -217,12 +217,17 @@ open_card_with_request (ctrl_t ctrl, const char *apptype, const char *serialno)
   gpg_error_t err;
   unsigned char *serialno_bin = NULL;
   size_t serialno_bin_len = 0;
+  app_t app = ctrl->app_ctx;
 
   /* If we are already initialized for one specific application we
      need to check that the client didn't requested a specific
      application different from the one in use before we continue. */
-  if (ctrl->app_ctx)
+  if (apptype && ctrl->app_ctx)
     return check_application_conflict (apptype, ctrl->app_ctx);
+
+  /* Re-scan USB devices.  Release APP, before the scan.  */
+  ctrl->app_ctx = NULL;
+  release_application (app);
 
   if (serialno)
     serialno_bin = hex_to_buffer (serialno, &serialno_bin_len);

@@ -61,10 +61,10 @@
 
 enum cmd_and_opt_values
 { aNull = 0,
-  oCsh		  = 'c',
-  oQuiet	  = 'q',
-  oSh		  = 's',
-  oVerbose	  = 'v',
+  oCsh            = 'c',
+  oQuiet          = 'q',
+  oSh             = 's',
+  oVerbose        = 'v',
 
   oNoVerbose = 500,
   aGPGConfList,
@@ -115,11 +115,11 @@ static ARGPARSE_OPTS opts[] = {
                 N_("run in multi server mode (foreground)")),
   ARGPARSE_s_n (oDaemon, "daemon", N_("run in daemon mode (background)")),
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
-  ARGPARSE_s_n (oQuiet,	"quiet", N_("be somewhat more quiet")),
-  ARGPARSE_s_n (oSh,	"sh", N_("sh-style command output")),
-  ARGPARSE_s_n (oCsh,	"csh", N_("csh-style command output")),
+  ARGPARSE_s_n (oQuiet, "quiet", N_("be somewhat more quiet")),
+  ARGPARSE_s_n (oSh,    "sh", N_("sh-style command output")),
+  ARGPARSE_s_n (oCsh,   "csh", N_("csh-style command output")),
   ARGPARSE_s_s (oOptions, "options", N_("|FILE|read options from FILE")),
-  ARGPARSE_s_s (oDebug,	"debug", "@"),
+  ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
   ARGPARSE_s_s (oDebugLevel, "debug-level" ,
                 N_("|LEVEL|set the debugging level to LEVEL")),
@@ -461,13 +461,13 @@ main (int argc, char **argv )
         parse_debug++;
       else if (pargs.r_opt == oOptions)
         { /* yes there is one, so we do not try the default one, but
-	     read the option file when it is encountered at the
-	     commandline */
+             read the option file when it is encountered at the
+             commandline */
           default_config = 0;
-	}
-	else if (pargs.r_opt == oNoOptions)
+        }
+        else if (pargs.r_opt == oNoOptions)
           default_config = 0; /* --no-options */
-	else if (pargs.r_opt == oHomedir)
+        else if (pargs.r_opt == oHomedir)
           gnupg_set_homedir (pargs.r.ret_str);
     }
 
@@ -502,16 +502,16 @@ main (int argc, char **argv )
               if( parse_debug )
                 log_info (_("Note: no default option file '%s'\n"),
                           configname );
-	    }
+            }
           else
             {
               log_error (_("option file '%s': %s\n"),
                          configname, strerror(errno) );
               exit(2);
-	    }
+            }
           xfree (configname);
           configname = NULL;
-	}
+        }
       if (parse_debug && configname )
         log_info (_("reading options from '%s'\n"), configname );
       default_config = 0;
@@ -558,10 +558,10 @@ main (int argc, char **argv )
           /* config files may not be nested (silently ignore them) */
           if (!configfp)
             {
-		xfree(configname);
-		configname = xstrdup(pargs.r.ret_str);
-		goto next_pass;
-	    }
+                xfree(configname);
+                configname = xstrdup(pargs.r.ret_str);
+                goto next_pass;
+            }
           break;
         case oNoGreeting: nogreeting = 1; break;
         case oNoVerbose: opt.verbose = 0; break;
@@ -593,12 +593,12 @@ main (int argc, char **argv )
           add_to_strlist (&opt.disabled_applications, pargs.r.ret_str);
           break;
 
-	case oEnablePinpadVarlen: opt.enable_pinpad_varlen = 1; break;
+        case oEnablePinpadVarlen: opt.enable_pinpad_varlen = 1; break;
 
         default:
           pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;
           break;
-	}
+        }
     }
   if (configfp)
     {
@@ -661,7 +661,7 @@ main (int argc, char **argv )
       char *filename_esc;
 
       if (config_filename)
-	filename = xstrdup (config_filename);
+        filename = xstrdup (config_filename);
       else
         filename = make_filename (gnupg_homedir (),
                                   SCDAEMON_NAME EXTSEP_S "conf", NULL);
@@ -1035,7 +1035,7 @@ static void
 handle_tick (void)
 {
   if (!ticker_disabled)
-    scd_update_reader_status_file ();
+    usb_periodical_check = scd_update_reader_status_file ();
 }
 
 
@@ -1187,13 +1187,6 @@ start_connection_thread (void *arg)
 
 
 void
-update_usb (int periodical_check_needed)
-{
-  usb_periodical_check = periodical_check_needed;
-  log_debug ("update_usb (%d)\n", periodical_check_needed);
-}
-
-void
 scd_kick_the_loop (void)
 {
   /* Kick the select loop.  */
@@ -1226,8 +1219,6 @@ handle_connections (int listen_fd)
   int nfd;
   int ret;
   int fd;
-  struct timespec abstime;
-  struct timespec curtime;
   struct timespec timeout;
   struct timespec *t;
   int saved_errno;
@@ -1275,12 +1266,6 @@ handle_connections (int listen_fd)
   if (nfd < pipe_fd[0])
     nfd = pipe_fd[0];
 
-  npth_clock_gettime (&curtime);
-  timeout.tv_sec = TIMERTICK_INTERVAL_SEC;
-  timeout.tv_nsec = TIMERTICK_INTERVAL_USEC * 1000;
-  npth_timeradd (&curtime, &timeout, &abstime);
-  /* We only require abstime here.  The others will be reused.  */
-
   for (;;)
     {
       if (shutdown_pending)
@@ -1298,24 +1283,15 @@ handle_connections (int listen_fd)
           listen_fd = -1;
         }
 
-      if ((listen_fd != -1 && nfd == listen_fd)
-          || need_tick ())
-        {
-          npth_clock_gettime (&curtime);
-          if (!(npth_timercmp (&curtime, &abstime, <)))
-            {
-              /* Timeout.  */
-              timeout.tv_sec = TIMERTICK_INTERVAL_SEC;
-              timeout.tv_nsec = TIMERTICK_INTERVAL_USEC * 1000;
-              npth_timeradd (&curtime, &timeout, &abstime);
-            }
-          npth_timersub (&abstime, &curtime, &timeout);
-          t = &timeout;
-        }
+      handle_tick ();
+
+      timeout.tv_sec = TIMERTICK_INTERVAL_SEC;
+      timeout.tv_nsec = TIMERTICK_INTERVAL_USEC * 1000;
+
+      if (need_tick ())
+        t = &timeout;
       else
         t = NULL;
-
-      handle_tick ();
 
       /* POSIX says that fd_set should be implemented as a structure,
          thus a simple assignment is fine to copy the entire set.  */

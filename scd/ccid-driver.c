@@ -2073,17 +2073,28 @@ ccid_open_reader (const char *spec_reader_name, int idx,
 int
 ccid_require_get_status (ccid_driver_t handle)
 {
+  /* When a card reader supports interrupt transfer to check the
+     status of card, it is possible to submit only an interrupt
+     transfer, and no check is required by application layer.  USB can
+     detect removal of a card and can detect removal of a reader.
+  */
   if (handle->ep_intr >= 0)
     return 0;
 
-  /* Here comes products check for tokens which
-     always have card inserted.  */
-  switch (handle->id_vendor)
-    {
-    case VENDOR_FSIJ:
-      return 0;
-    }
+  /* Libusb actually detects the removal of USB device in use.
+     However, there is no good API to handle the removal (yet),
+     cleanly and with good portability.
 
+     There is libusb_set_pollfd_notifiers function, but it doesn't
+     offer libusb_device_handle* data to its callback.  So, when it
+     watches multiple devices, there is no way to know which device is
+     removed.
+
+     Once, we will have a good programming interface of libusb, we can
+     list tokens (with no interrupt transfer support, but always with
+     card inserted) here to return 0, so that scdaemon can submit
+     minimum packet on wire.
+  */
   return 1;
 }
 
