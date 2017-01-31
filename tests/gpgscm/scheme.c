@@ -1050,30 +1050,6 @@ static pointer get_vector_object(scheme *sc, int len, pointer init)
   return cells;
 }
 
-#if defined TSGRIND
-static void check_cell_alloced(pointer p, int expect_alloced)
-{
-  /* Can't use putstr(sc,str) because callers have no access to
-     sc.  */
-  if(typeflag(p) & !expect_alloced)
-    {
-      fprintf(stderr,"Cell is already allocated!\n");
-    }
-  if(!(typeflag(p)) & expect_alloced)
-    {
-      fprintf(stderr,"Cell is not allocated!\n");
-    }
-
-}
-static void check_range_alloced(pointer p, int n, int expect_alloced)
-{
-  int i;
-  for(i = 0;i<n;i++)
-    { (void)check_cell_alloced(p+i,expect_alloced); }
-}
-
-#endif
-
 /* Medium level cell allocation */
 
 /* get new cons cell */
