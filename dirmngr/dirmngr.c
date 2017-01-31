@@ -1798,7 +1798,7 @@ housekeeping_thread (void *arg)
   if (network_activity_seen)
     {
       network_activity_seen = 0;
-      if (opt.use_tor || opt.allow_version_check)
+      if (opt.allow_version_check)
         dirmngr_load_swdb (&ctrlbuf, 0);
     }
 

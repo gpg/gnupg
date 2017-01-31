@@ -266,8 +266,8 @@ seconds.
 @item --allow-version-check
 @opindex allow-version-check
 Allow Dirmngr to connect to @code{https://versions.gnupg.org} to get
-the list of current software versions.  If this option is enabled, or
-if @option{use-tor} is active, the list is retrieved when the local
+the list of current software versions.  If this option is enabled
+the list is retrieved in case the local
 copy does not exist or is older than 5 to 7 days.  See the option
 @option{--query-swdb} of the command @command{gpgconf} for more
 details.  Note, that regardless of this option a version check can
