@@ -1150,6 +1150,8 @@ start_connection_thread (void *arg)
       return NULL;
     }
 
+  active_connections++;
+
   scd_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("handler for fd %d started\n"),
@@ -1169,6 +1171,10 @@ start_connection_thread (void *arg)
 
   scd_deinit_default_ctrl (ctrl);
   xfree (ctrl);
+
+  if (--active_connections == 0)
+    scd_kick_the_loop ();
+
   return NULL;
 }
 
@@ -1348,4 +1354,11 @@ handle_connections (int listen_fd)
   cleanup ();
   log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
   npth_attr_destroy (&tattr);
+}
+
+/* Return the number of active connections. */
+int
+get_active_connection_count (void)
+{
+  return active_connections;
 }

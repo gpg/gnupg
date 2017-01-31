@@ -1372,30 +1372,26 @@ static const char hlp_getinfo[] =
   "Multi purpose command to return certain information.  \n"
   "Supported values of WHAT are:\n"
   "\n"
-  "version     - Return the version of the program.\n"
-  "pid         - Return the process id of the server.\n"
-  "\n"
-  "socket_name - Return the name of the socket.\n"
-  "\n"
-  "status - Return the status of the current reader (in the future, may\n"
-  "also return the status of all readers).  The status is a list of\n"
-  "one-character flags.  The following flags are currently defined:\n"
-  "  'u'  Usable card present.  This is the normal state during operation.\n"
-  "  'r'  Card removed.  A reset is necessary.\n"
-  "These flags are exclusive.\n"
-  "\n"
-  "reader_list - Return a list of detected card readers.  Does\n"
-  "              currently only work with the internal CCID driver.\n"
-  "\n"
-  "deny_admin  - Returns OK if admin commands are not allowed or\n"
-  "              GPG_ERR_GENERAL if admin commands are allowed.\n"
-  "\n"
-  "app_list    - Return a list of supported applications.  One\n"
-  "              application per line, fields delimited by colons,\n"
-  "              first field is the name.\n"
-  "\n"
-  "card_list   - Return a list of serial numbers of active cards,\n"
-  "              using a status response.";
+  "  version     - Return the version of the program.\n"
+  "  pid         - Return the process id of the server.\n"
+  "  socket_name - Return the name of the socket.\n"
+  "  connections - Return number of active connections.\n"
+  "  status      - Return the status of the current reader (in the future,\n"
+  "                may also return the status of all readers).  The status\n"
+  "                is a list of one-character flags.  The following flags\n"
+  "                are currently defined:\n"
+  "                  'u'  Usable card present.\n"
+  "                  'r'  Card removed.  A reset is necessary.\n"
+  "                These flags are exclusive.\n"
+  "  reader_list - Return a list of detected card readers.  Does\n"
+  "                currently only work with the internal CCID driver.\n"
+  "  deny_admin  - Returns OK if admin commands are not allowed or\n"
+  "                GPG_ERR_GENERAL if admin commands are allowed.\n"
+  "  app_list    - Return a list of supported applications.  One\n"
+  "                application per line, fields delimited by colons,\n"
+  "                first field is the name.\n"
+  "  card_list   - Return a list of serial numbers of active cards,\n"
+  "                using a status response.";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
@@ -1421,6 +1417,13 @@ cmd_getinfo (assuan_context_t ctx, char *line)
         rc = assuan_send_data (ctx, s, strlen (s));
       else
         rc = gpg_error (GPG_ERR_NO_DATA);
+    }
+  else if (!strcmp (line, "connections"))
+    {
+      char numbuf[20];
+
+      snprintf (numbuf, sizeof numbuf, "%d", get_active_connection_count ());
+      rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
     }
   else if (!strcmp (line, "status"))
     {

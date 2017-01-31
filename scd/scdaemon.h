@@ -125,6 +125,7 @@ void send_status_info (ctrl_t ctrl, const char *keyword, ...)
 void send_status_direct (ctrl_t ctrl, const char *keyword, const char *args);
 void send_client_notifications (app_t app, int removal);
 void scd_kick_the_loop (void);
+int get_active_connection_count (void);
 
 /*-- app.c --*/
 int scd_update_reader_status_file (void);
