@@ -1151,6 +1151,7 @@ static INLINE pointer oblist_find_by_name(scheme *sc, const char *name)
 /* returns the new symbol */
 static pointer oblist_add_by_name(scheme *sc, const char *name)
 {
+#define oblist_add_by_name_allocates	3
   pointer x;
 
   x = immutable_cons(sc, mk_string(sc, name), sc->NIL);
