@@ -99,7 +99,6 @@ enum cmd_and_opt_values
   oDenyAdmin,
   oDisableApplication,
   oEnablePinpadVarlen,
-  oDebugDisableTicker
 };
 
 
@@ -126,7 +125,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oDebugWait, "debug-wait", "@"),
   ARGPARSE_s_n (oDebugAllowCoreDump, "debug-allow-core-dump", "@"),
   ARGPARSE_s_n (oDebugCCIDDriver, "debug-ccid-driver", "@"),
-  ARGPARSE_s_n (oDebugDisableTicker, "debug-disable-ticker", "@"),
   ARGPARSE_s_n (oDebugLogTid, "debug-log-tid", "@"),
   ARGPARSE_p_u (oDebugAssuanLogCats, "debug-assuan-log-cats", "@"),
   ARGPARSE_s_n (oNoDetach, "no-detach", N_("do not detach from the console")),
@@ -190,8 +188,13 @@ static struct debug_flags_s debug_flags [] =
 #define DEFAULT_PCSC_DRIVER "libpcsclite.so"
 #endif
 
-/* The timer tick used for housekeeping stuff.  We poll every 500ms to
-   let the user immediately know a status change.
+/* The timer tick used to check card removal.
+
+   We poll every 500ms to let the user immediately know a status
+   change.
+
+   For a card reader with an interrupt endpoint, this timer is not
+   used with the internal CCID driver.
 
    This is not too good for power saving but given that there is no
    easy way to block on card status changes it is the best we can do.
@@ -220,13 +223,6 @@ static char *redir_socket_name;
 /* We need to keep track of the server's nonces (these are dummies for
    POSIX systems). */
 static assuan_sock_nonce_t socket_nonce;
-
-/* Debug flag to disable the ticker.  The ticker is in fact not
-   disabled but it won't perform any ticker specific actions. */
-static int ticker_disabled;
-
-/* Set if usb devices require periodical check.  */
-static int usb_periodical_check;
 
 /* FD to notify update of usb devices.  */
 static int notify_fd;
@@ -546,7 +542,6 @@ main (int argc, char **argv )
           ccid_set_debug_level (ccid_set_debug_level (-1)+1);
 #endif /*HAVE_LIBUSB*/
           break;
-        case oDebugDisableTicker: ticker_disabled = 1; break;
         case oDebugLogTid:
           log_set_pid_suffix_cb (tid_log_callback);
           break;
@@ -1031,14 +1026,6 @@ handle_signal (int signo)
 #endif /*!HAVE_W32_SYSTEM*/
 
 
-static void
-handle_tick (void)
-{
-  if (!ticker_disabled)
-    usb_periodical_check = scd_update_reader_status_file ();
-}
-
-
 /* Create a name for the socket.  We check for valid characters as
    well as against a maximum allowed length for a unix domain socket
    is done.  The function terminates the process in case of an error.
@@ -1193,18 +1180,6 @@ scd_kick_the_loop (void)
   write (notify_fd, "", 1);
 }
 
-static int
-need_tick (void)
-{
-  if (shutdown_pending)
-    return 1;
-
-  if (!usb_periodical_check)
-    return 0;
-
-  return 1;
-}
-
 /* Connection handler loop.  Wait for connection requests and spawn a
    thread after accepting a connection.  LISTEN_FD is allowed to be -1
    in which case this code will only do regular timeouts and handle
@@ -1268,6 +1243,8 @@ handle_connections (int listen_fd)
 
   for (;;)
     {
+      int periodical_check;
+
       if (shutdown_pending)
         {
           if (active_connections == 0)
@@ -1283,12 +1260,12 @@ handle_connections (int listen_fd)
           listen_fd = -1;
         }
 
-      handle_tick ();
+      periodical_check = scd_update_reader_status_file ();
 
       timeout.tv_sec = TIMERTICK_INTERVAL_SEC;
       timeout.tv_nsec = TIMERTICK_INTERVAL_USEC * 1000;
 
-      if (need_tick ())
+      if (shutdown_pending || periodical_check)
         t = &timeout;
       else
         t = NULL;

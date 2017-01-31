@@ -1,6 +1,9 @@
 Noteworthy changes in version 2.1.19 (unreleased)
 -------------------------------------------------
 
+  * scd: Removed option --debug-disable-ticker.  Ticker is used
+    only when it is required to watch removal of device/card.
+
 
 Noteworthy changes in version 2.1.18 (2017-01-23)
 -------------------------------------------------
