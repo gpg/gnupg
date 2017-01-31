@@ -2612,6 +2612,22 @@ static int hash_fn(const char *key, int table_size)
 }
 #endif
 
+/* Compares A and B.  Returns an integer less than, equal to, or
+ * greater than zero if A is stored at a memory location that is
+ * numerical less than, equal to, or greater than that of B.  */
+static int
+pointercmp(pointer a, pointer b)
+{
+  uintptr_t a_n = (uintptr_t) a;
+  uintptr_t b_n = (uintptr_t) b;
+
+  if (a_n < b_n)
+    return -1;
+  if (a_n > b_n)
+    return 1;
+  return 0;
+}
+
 #ifndef USE_ALIST_ENV
 
 /*
@@ -2639,53 +2655,75 @@ static void new_frame_in_env(scheme *sc, pointer old_env)
   setenvironment(sc->envir);
 }
 
+/* Insert (VARIABLE, VALUE) at SSLOT.  SSLOT must be obtained using
+ * find_slot_spec_in_env, and no insertion must be done between
+ * obtaining SSLOT and the call to this function.
+ *
+ * If SSLOT is NULL, the new slot is put into the appropriate place in
+ * the environment vector.  */
 static INLINE void new_slot_spec_in_env(scheme *sc, pointer env,
-                                        pointer variable, pointer value)
+                                        pointer variable, pointer value,
+					pointer *sslot)
 {
 #define new_slot_spec_in_env_allocates	2
   pointer slot;
   gc_disable(sc, gc_reservations (new_slot_spec_in_env));
   slot = immutable_cons(sc, variable, value);
 
-  if (is_vector(car(env))) {
-    int location = hash_fn(symname(variable), vector_length(car(env)));
+  if (sslot == NULL) {
+    int location;
+    assert(is_vector(car(env)));
+    location = hash_fn(symname(variable), vector_length(car(env)));
 
     set_vector_elem(car(env), location,
                     immutable_cons(sc, slot, vector_elem(car(env), location)));
   } else {
-    car(env) = immutable_cons(sc, slot, car(env));
+    *sslot = immutable_cons(sc, slot, *sslot);
   }
   gc_enable(sc);
 }
 
-static pointer find_slot_in_env(scheme *sc, pointer env, pointer hdl, int all)
+/* Find the slot in ENV under the key HDL.  If ALL is given, look in
+ * all environments enclosing ENV.  If the lookup fails, and SSLOT is
+ * given, the position where the new slot has to be inserted is stored
+ * at SSLOT.
+ *
+ * SSLOT may be set to NULL if the new symbol should be placed at the
+ * appropriate place in the vector.  */
+static pointer
+find_slot_spec_in_env(scheme *sc, pointer env, pointer hdl, int all, pointer **sslot)
 {
   pointer x,y;
   int location;
+  pointer *sl;
+  int d;
+  assert(is_symbol(hdl));
 
   for (x = env; x != sc->NIL; x = cdr(x)) {
     if (is_vector(car(x))) {
       location = hash_fn(symname(hdl), vector_length(car(x)));
+      sl = NULL;
       y = vector_elem(car(x), location);
     } else {
-      y = car(x);
+      sl = &car(x);
+      y = *sl;
     }
-    for ( ; y != sc->NIL; y = cdr(y)) {
-              if (caar(y) == hdl) {
-                   break;
-              }
-         }
-         if (y != sc->NIL) {
-              break;
-         }
-         if(!all) {
-           return sc->NIL;
-         }
+    for ( ; y != sc->NIL; sl = &cdr(y), y = *sl) {
+      d = pointercmp(caar(y), hdl);
+      if (d == 0)
+	return car(y);		/* Hit.  */
+      else if (d > 0)
+	break;			/* Miss.  */
     }
-    if (x != sc->NIL) {
-          return car(y);
-    }
-    return sc->NIL;
+
+    if (x == env && sslot)
+      *sslot = sl;		/* Insert here.  */
+
+    if (!all)
+      return sc->NIL;		/* Miss, and stop looking.  */
+  }
+
+  return sc->NIL;		/* Not found in any environment.  */
 }
 
 #else /* USE_ALIST_ENV */
@@ -2696,41 +2734,66 @@ static INLINE void new_frame_in_env(scheme *sc, pointer old_env)
   setenvironment(sc->envir);
 }
 
+/* Insert (VARIABLE, VALUE) at SSLOT.  SSLOT must be obtained using
+ * find_slot_spec_in_env, and no insertion must be done between
+ * obtaining SSLOT and the call to this function.  */
 static INLINE void new_slot_spec_in_env(scheme *sc, pointer env,
-                                        pointer variable, pointer value)
+                                        pointer variable, pointer value,
+					pointer *sslot)
 {
 #define new_slot_spec_in_env_allocates	2
-  car(env) = immutable_cons(sc, immutable_cons(sc, variable, value), car(env));
+  (void) env;
+  assert(is_symbol(variable));
+  *sslot = immutable_cons(sc, immutable_cons(sc, variable, value), *sslot);
 }
 
-static pointer find_slot_in_env(scheme *sc, pointer env, pointer hdl, int all)
+/* Find the slot in ENV under the key HDL.  If ALL is given, look in
+ * all environments enclosing ENV.  If the lookup fails, and SSLOT is
+ * given, the position where the new slot has to be inserted is stored
+ * at SSLOT.  */
+static pointer
+find_slot_spec_in_env(scheme *sc, pointer env, pointer hdl, int all, pointer **sslot)
 {
     pointer x,y;
+    pointer *sl;
+    int d;
+    assert(is_symbol(hdl));
+
     for (x = env; x != sc->NIL; x = cdr(x)) {
-         for (y = car(x); y != sc->NIL; y = cdr(y)) {
-              if (caar(y) == hdl) {
-                   break;
-              }
-         }
-         if (y != sc->NIL) {
-              break;
-         }
-         if(!all) {
-           return sc->NIL;
-         }
+      for (sl = &car(x), y = *sl; y != sc->NIL; sl = &cdr(y), y = *sl) {
+	d = pointercmp(caar(y), hdl);
+	if (d == 0)
+	  return car(y);	/* Hit.  */
+	else if (d > 0)
+	  break;		/* Miss.  */
+      }
+
+      if (x == env && sslot)
+	*sslot = sl;		/* Insert here.  */
+
+      if (!all)
+	return sc->NIL;		/* Miss, and stop looking.  */
     }
-    if (x != sc->NIL) {
-          return car(y);
-    }
-    return sc->NIL;
+
+    return sc->NIL;		/* Not found in any environment.  */
 }
 
 #endif /* USE_ALIST_ENV else */
 
+static pointer find_slot_in_env(scheme *sc, pointer env, pointer hdl, int all)
+{
+  return find_slot_spec_in_env(sc, env, hdl, all, NULL);
+}
+
 static INLINE void new_slot_in_env(scheme *sc, pointer variable, pointer value)
 {
 #define new_slot_in_env_allocates	new_slot_spec_in_env_allocates
-  new_slot_spec_in_env(sc, sc->envir, variable, value);
+  pointer slot;
+  pointer *sslot;
+  assert(is_symbol(variable));
+  slot = find_slot_spec_in_env(sc, sc->envir, variable, 0, &sslot);
+  assert(slot == sc->NIL);
+  new_slot_spec_in_env(sc, sc->envir, variable, value, sslot);
 }
 
 static INLINE void set_slot_in_env(scheme *sc, pointer slot, pointer value)
@@ -3486,15 +3549,16 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           s_save(sc,OP_DEF1, sc->NIL, x);
           s_thread_to(sc,OP_EVAL);
 
-     CASE(OP_DEF1):  /* define */
-          x=find_slot_in_env(sc,sc->envir,sc->code,0);
+     CASE(OP_DEF1): { /* define */
+	  pointer *sslot;
+          x = find_slot_spec_in_env(sc, sc->envir, sc->code, 0, &sslot);
           if (x != sc->NIL) {
                set_slot_in_env(sc, x, sc->value);
           } else {
-               new_slot_in_env(sc, sc->code, sc->value);
+	       new_slot_spec_in_env(sc, sc->envir, sc->code, sc->value, sslot);
           }
           s_return(sc,sc->code);
-
+     }
 
      CASE(OP_DEFP):  /* defined? */
           x=sc->envir;
@@ -3806,15 +3870,17 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
           s_save(sc,OP_MACRO1, sc->NIL, x);
           s_goto(sc,OP_EVAL);
 
-     CASE(OP_MACRO1):     /* macro */
+     CASE(OP_MACRO1): {   /* macro */
+	  pointer *sslot;
           typeflag(sc->value) = T_MACRO;
-          x = find_slot_in_env(sc, sc->envir, sc->code, 0);
+          x = find_slot_spec_in_env(sc, sc->envir, sc->code, 0, &sslot);
           if (x != sc->NIL) {
                set_slot_in_env(sc, x, sc->value);
           } else {
-               new_slot_in_env(sc, sc->code, sc->value);
+	       new_slot_spec_in_env(sc, sc->envir, sc->code, sc->value, sslot);
           }
           s_return(sc,sc->code);
+     }
 
      CASE(OP_CASE0):      /* case */
           s_save(sc,OP_CASE1, sc->NIL, cdr(sc->code));
@@ -5769,12 +5835,12 @@ void scheme_load_string(scheme *sc, const char *cmd) {
 
 void scheme_define(scheme *sc, pointer envir, pointer symbol, pointer value) {
      pointer x;
-
-     x=find_slot_in_env(sc,envir,symbol,0);
+     pointer *sslot;
+     x = find_slot_spec_in_env(sc, envir, symbol, 0, &sslot);
      if (x != sc->NIL) {
           set_slot_in_env(sc, x, value);
      } else {
-          new_slot_spec_in_env(sc, envir, symbol, value);
+          new_slot_spec_in_env(sc, envir, symbol, value, sslot);
      }
 }
 
