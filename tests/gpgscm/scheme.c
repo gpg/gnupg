@@ -1076,8 +1076,14 @@ static pointer oblist_initial_value(scheme *sc)
   return mk_vector(sc, 461); /* probably should be bigger */
 }
 
-/* returns the new symbol */
-static pointer oblist_add_by_name(scheme *sc, const char *name)
+/* Add a new symbol NAME at SLOT.  SLOT must be obtained using
+ * oblist_find_by_name, and no insertion must be done between
+ * obtaining the SLOT and calling this function.  Returns the new
+ * symbol.
+ *
+ * If SLOT is NULL, the new symbol is be placed at the appropriate
+ * place in the vector.  */
+static pointer oblist_add_by_name(scheme *sc, const char *name, pointer *slot)
 {
 #define oblist_add_by_name_allocates	3
   pointer x;
@@ -1088,26 +1094,42 @@ static pointer oblist_add_by_name(scheme *sc, const char *name)
   typeflag(x) = T_SYMBOL;
   setimmutable(car(x));
 
-  location = hash_fn(name, vector_length(sc->oblist));
-  set_vector_elem(sc->oblist, location,
-                  immutable_cons(sc, x, vector_elem(sc->oblist, location)));
+  if (slot == NULL) {
+    location = hash_fn(name, vector_length(sc->oblist));
+    set_vector_elem(sc->oblist, location,
+		    immutable_cons(sc, x, vector_elem(sc->oblist, location)));
+  } else {
+    *slot = immutable_cons(sc, x, *slot);
+  }
+
   gc_enable(sc);
   return x;
 }
 
-static INLINE pointer oblist_find_by_name(scheme *sc, const char *name)
+/* Lookup the symbol NAME.  Returns the symbol, or NIL if it does not
+ * exist.  In that case, SLOT points to the point where the new symbol
+ * is to be inserted.
+ *
+ * SLOT may be set to NULL if the new symbol should be placed at the
+ * appropriate place in the vector.  */
+static INLINE pointer
+oblist_find_by_name(scheme *sc, const char *name, pointer **slot)
 {
   int location;
   pointer x;
   char *s;
+  int d;
 
   location = hash_fn(name, vector_length(sc->oblist));
-  for (x = vector_elem(sc->oblist, location); x != sc->NIL; x = cdr(x)) {
+  for (*slot = NULL, x = vector_elem(sc->oblist, location);
+       x != sc->NIL; *slot = &cdr(x), x = **slot) {
     s = symname(car(x));
     /* case-insensitive, per R5RS section 2. */
-    if(stricmp(name, s) == 0) {
-      return car(x);
-    }
+    d = stricmp(name, s);
+    if (d == 0)
+      return car(x);		/* Hit.  */
+    else if (d > 0)
+      break;			/* Miss.  */
   }
   return sc->NIL;
 }
@@ -1133,23 +1155,33 @@ static pointer oblist_initial_value(scheme *sc)
   return sc->NIL;
 }
 
-static INLINE pointer oblist_find_by_name(scheme *sc, const char *name)
+/* Lookup the symbol NAME.  Returns the symbol, or NIL if it does not
+ * exist.  In that case, SLOT points to the point where the new symbol
+ * is to be inserted.  */
+static INLINE pointer
+oblist_find_by_name(scheme *sc, const char *name, pointer **slot)
 {
      pointer x;
      char    *s;
+     int     d;
 
-     for (x = sc->oblist; x != sc->NIL; x = cdr(x)) {
+     for (*slot = &sc->oblist, x = **slot; x != sc->NIL; *slot = &cdr(x), x = **slot) {
         s = symname(car(x));
         /* case-insensitive, per R5RS section 2. */
-        if(stricmp(name, s) == 0) {
-          return car(x);
-        }
+	d = stricmp(name, s);
+        if (d == 0)
+          return car(x);	/* Hit.  */
+        else if (d > 0)
+	  break;		/* Miss.  */
      }
      return sc->NIL;
 }
 
-/* returns the new symbol */
-static pointer oblist_add_by_name(scheme *sc, const char *name)
+/* Add a new symbol NAME at SLOT.  SLOT must be obtained using
+ * oblist_find_by_name, and no insertion must be done between
+ * obtaining the SLOT and calling this function.  Returns the new
+ * symbol.  */
+static pointer oblist_add_by_name(scheme *sc, const char *name, pointer *slot)
 {
 #define oblist_add_by_name_allocates	3
   pointer x;
@@ -1157,7 +1189,7 @@ static pointer oblist_add_by_name(scheme *sc, const char *name)
   x = immutable_cons(sc, mk_string(sc, name), sc->NIL);
   typeflag(x) = T_SYMBOL;
   setimmutable(car(x));
-  sc->oblist = immutable_cons(sc, x, sc->oblist);
+  *slot = immutable_cons(sc, x, *slot);
   return x;
 }
 static pointer oblist_all_symbols(scheme *sc)
@@ -1344,31 +1376,33 @@ INTERFACE static pointer set_vector_elem(pointer vec, int ielem, pointer a) {
 INTERFACE pointer mk_symbol(scheme *sc, const char *name) {
 #define mk_symbol_allocates	oblist_add_by_name_allocates
      pointer x;
+     pointer *slot;
 
      /* first check oblist */
-     x = oblist_find_by_name(sc, name);
+     x = oblist_find_by_name(sc, name, &slot);
      if (x != sc->NIL) {
           return (x);
      } else {
-          x = oblist_add_by_name(sc, name);
+          x = oblist_add_by_name(sc, name, slot);
           return (x);
      }
 }
 
 INTERFACE pointer gensym(scheme *sc) {
      pointer x;
+     pointer *slot;
      char name[40];
 
      for(; sc->gensym_cnt<LONG_MAX; sc->gensym_cnt++) {
           snprintf(name,40,"gensym-%ld",sc->gensym_cnt);
 
           /* first check oblist */
-          x = oblist_find_by_name(sc, name);
+          x = oblist_find_by_name(sc, name, &slot);
 
           if (x != sc->NIL) {
                continue;
           } else {
-               x = oblist_add_by_name(sc, name);
+	       x = oblist_add_by_name(sc, name, slot);
                return (x);
           }
      }
@@ -5319,8 +5353,12 @@ static void Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
 
 static void assign_syntax(scheme *sc, char *name) {
      pointer x;
+     pointer *slot;
 
-     x = oblist_add_by_name(sc, name);
+     x = oblist_find_by_name(sc, name, &slot);
+     assert (x == sc->NIL);
+
+     x = oblist_add_by_name(sc, name, slot);
      typeflag(x) |= T_SYNTAX;
 }
 
