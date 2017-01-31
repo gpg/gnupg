@@ -2699,6 +2699,7 @@ static INLINE void new_frame_in_env(scheme *sc, pointer old_env)
 static INLINE void new_slot_spec_in_env(scheme *sc, pointer env,
                                         pointer variable, pointer value)
 {
+#define new_slot_spec_in_env_allocates	2
   car(env) = immutable_cons(sc, immutable_cons(sc, variable, value), car(env));
 }
 
