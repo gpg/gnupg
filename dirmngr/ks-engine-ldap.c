@@ -850,7 +850,7 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
 
   (void) ctrl;
 
-  if (opt.use_tor)
+  if (dirmngr_use_tor ())
     {
       /* For now we do not support LDAP over Tor.  */
       log_error (_("LDAP access not possible due to Tor mode\n"));
@@ -1033,7 +1033,7 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 
   (void) ctrl;
 
-  if (opt.use_tor)
+  if (dirmngr_use_tor ())
     {
       /* For now we do not support LDAP over Tor.  */
       log_error (_("LDAP access not possible due to Tor mode\n"));
@@ -1909,7 +1909,7 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
   /* Elide a warning.  */
   (void) ctrl;
 
-  if (opt.use_tor)
+  if (dirmngr_use_tor ())
     {
       /* For now we do not support LDAP over Tor.  */
       log_error (_("LDAP access not possible due to Tor mode\n"));

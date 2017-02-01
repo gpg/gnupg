@@ -198,7 +198,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
         err = http_open_document (&hd, url, NULL,
                                   ((opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0)
                                    |(DBG_LOOKUP? HTTP_FLAG_LOG_RESP:0)
-                                   |(opt.use_tor? HTTP_FLAG_FORCE_TOR:0)
+                                   |(dirmngr_use_tor()? HTTP_FLAG_FORCE_TOR:0)
                                    |(opt.disable_ipv4? HTTP_FLAG_IGNORE_IPv4:0)
                                    ),
                                   ctrl->http_proxy, NULL, NULL, NULL);
@@ -292,7 +292,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
                      "LDAP");
           err = gpg_error (GPG_ERR_NOT_SUPPORTED);
         }
-      else if (opt.use_tor)
+      else if (dirmngr_use_tor ())
         {
           /* For now we do not support LDAP over Tor.  */
           log_error (_("CRL access not possible due to Tor mode\n"));
@@ -318,7 +318,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
 gpg_error_t
 crl_fetch_default (ctrl_t ctrl, const char *issuer, ksba_reader_t *reader)
 {
-  if (opt.use_tor)
+  if (dirmngr_use_tor ())
     {
       /* For now we do not support LDAP over Tor.  */
       log_error (_("CRL access not possible due to Tor mode\n"));
@@ -350,7 +350,7 @@ crl_fetch_default (ctrl_t ctrl, const char *issuer, ksba_reader_t *reader)
 gpg_error_t
 ca_cert_fetch (ctrl_t ctrl, cert_fetch_context_t *context, const char *dn)
 {
-  if (opt.use_tor)
+  if (dirmngr_use_tor ())
     {
       /* For now we do not support LDAP over Tor.  */
       log_error (_("CRL access not possible due to Tor mode\n"));
@@ -377,7 +377,7 @@ gpg_error_t
 start_cert_fetch (ctrl_t ctrl, cert_fetch_context_t *context,
                   strlist_t patterns, const ldap_server_t server)
 {
-  if (opt.use_tor)
+  if (dirmngr_use_tor ())
     {
       /* For now we do not support LDAP over Tor.  */
       log_error (_("CRL access not possible due to Tor mode\n"));

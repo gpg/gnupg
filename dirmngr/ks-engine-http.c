@@ -88,7 +88,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
                    /* httphost */ NULL,
                    /* fixme: AUTH */ NULL,
                    ((opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0)
-                    | (opt.use_tor? HTTP_FLAG_FORCE_TOR:0)
+                    | (dirmngr_use_tor ()? HTTP_FLAG_FORCE_TOR:0)
                     | (opt.disable_ipv4? HTTP_FLAG_IGNORE_IPv4 : 0)),
                    ctrl->http_proxy,
                    session,

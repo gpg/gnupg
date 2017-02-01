@@ -222,6 +222,14 @@ enable_dns_tormode (int new_circuit)
 }
 
 
+/* Disable tor mode.  */
+void
+disable_dns_tormode (void)
+{
+  tor_mode = 0;
+}
+
+
 /* Set verbosity and debug mode for this module. */
 void
 set_dns_verbose (int verbose, int debug)

@@ -138,6 +138,7 @@ enum cmd_and_opt_values {
   oHTTPWrapperProgram,
   oIgnoreCertExtension,
   oUseTor,
+  oNoUseTor,
   oKeyServer,
   oNameServer,
   oDisableCheckOwnSocket,
@@ -224,6 +225,7 @@ static ARGPARSE_OPTS opts[] = {
                 N_("|FILE|use the CA certificates in FILE for HKP over TLS")),
 
   ARGPARSE_s_n (oUseTor, "use-tor", N_("route all network traffic via Tor")),
+  ARGPARSE_s_n (oNoUseTor, "no-use-tor", "@"),
 
   ARGPARSE_s_n (oDisableIPv4, "disable-ipv4", "@"),
 
@@ -299,6 +301,16 @@ static volatile int shutdown_pending;
 
 /* Flags to indicate that we shall not watch our own socket. */
 static int disable_check_own_socket;
+
+/* Flag to control the Tor mode.  */
+static enum
+  { TOR_MODE_AUTO = 0,  /* Switch to NO or YES         */
+    TOR_MODE_NEVER,     /* Never use Tor.              */
+    TOR_MODE_NO,        /* Do not use Tor              */
+    TOR_MODE_YES,       /* Use Tor                     */
+    TOR_MODE_FORCE      /* Force using Tor             */
+  } tor_mode;
+
 
 /* Counter for the active connections.  */
 static int active_connections;
@@ -482,7 +494,7 @@ set_debug (void)
 static void
 set_tor_mode (void)
 {
-  if (opt.use_tor)
+  if (dirmngr_use_tor ())
     {
       /* Enable Tor mode and when called again force a new curcuit
        * (e.g. on SIGHUP).  */
@@ -493,6 +505,26 @@ set_tor_mode (void)
           log_info ("(is your Libassuan recent enough?)\n");
         }
     }
+  else
+    disable_dns_tormode ();
+}
+
+
+/* Return true if Tor shall be used.  */
+int
+dirmngr_use_tor (void)
+{
+  if (tor_mode == TOR_MODE_AUTO)
+    {
+      /* FIXME: Figure out whether Tor is running.  */
+    }
+
+  if (tor_mode == TOR_MODE_FORCE)
+    return 2; /* Use Tor (using 2 to indicate force mode) */
+  else if (tor_mode == TOR_MODE_YES)
+    return 1; /* Use Tor */
+  else
+    return 0; /* Do not use Tor.  */
 }
 
 
@@ -555,7 +587,9 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       FREE_STRLIST (opt.ignored_cert_extensions);
       http_register_tls_ca (NULL);
       FREE_STRLIST (opt.keyserver);
-      /* Note: We do not allow resetting of opt.use_tor at runtime.  */
+      /* Note: We do not allow resetting of TOR_MODE_FORCE at runtime.  */
+      if (tor_mode != TOR_MODE_FORCE)
+        tor_mode = TOR_MODE_AUTO;
       disable_check_own_socket = 0;
       enable_standard_resolver (0);
       set_dns_timeout (0);
@@ -632,7 +666,13 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       add_to_strlist (&opt.ignored_cert_extensions, pargs->r.ret_str);
       break;
 
-    case oUseTor: opt.use_tor = 1; break;
+    case oUseTor:
+      tor_mode = TOR_MODE_FORCE;
+      break;
+    case oNoUseTor:
+      if (tor_mode != TOR_MODE_FORCE)
+        tor_mode = TOR_MODE_NEVER;
+      break;
 
     case oStandardResolver: enable_standard_resolver (1); break;
     case oRecursiveResolver: enable_recursive_resolver (1); break;

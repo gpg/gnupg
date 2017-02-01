@@ -265,7 +265,7 @@ tor_not_running_p (ctrl_t ctrl)
 {
   assuan_fd_t sock;
 
-  if (!opt.use_tor)
+  if (!dirmngr_use_tor ())
     return 0;
 
   sock = assuan_sock_connect_byname (NULL, 0, 0, NULL, ASSUAN_SOCK_TOR);
@@ -1090,7 +1090,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
                    /* fixme: AUTH */ NULL,
                    (httpflags
                     |(opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0)
-                    |(opt.use_tor? HTTP_FLAG_FORCE_TOR:0)
+                    |(dirmngr_use_tor ()? HTTP_FLAG_FORCE_TOR:0)
                     |(opt.disable_ipv4? HTTP_FLAG_IGNORE_IPv4 : 0)),
                    ctrl->http_proxy,
                    session,
@@ -1247,7 +1247,7 @@ handle_send_request_error (ctrl_t ctrl, gpg_error_t err, const char *request,
       break;
 
     case GPG_ERR_EACCES:
-      if (opt.use_tor)
+      if (dirmngr_use_tor ())
         {
           log_info ("(Tor configuration problem)\n");
           dirmngr_status (ctrl, "WARNING", "tor_config_problem 0",

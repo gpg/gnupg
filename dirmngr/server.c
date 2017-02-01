@@ -625,7 +625,7 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
   else if (!strcmp (key, "honor-keyserver-url-used"))
     {
       /* Return an error if we are running in Tor mode.  */
-      if (opt.use_tor)
+      if (dirmngr_use_tor ())
         err = gpg_error (GPG_ERR_FORBIDDEN);
     }
   else
@@ -2338,14 +2338,18 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "tor"))
     {
-      if (opt.use_tor)
+      int use_tor;
+
+      use_tor = dirmngr_use_tor ();
+      if (use_tor)
         {
           if (!is_tor_running (ctrl))
             err = assuan_write_status (ctx, "NO_TOR", "Tor not running");
           else
             err = 0;
           if (!err)
-            assuan_set_okay_line (ctx, "- Tor mode is enabled");
+            assuan_set_okay_line (ctx, use_tor == 1 ? "- Tor mode is enabled"
+                                  /**/              : "- Tor mode is enforced");
         }
       else
         err = set_error (GPG_ERR_FALSE, "Tor mode is NOT enabled");
