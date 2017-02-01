@@ -1227,7 +1227,7 @@ is_ip_address (const char *name)
       if (*s == '.')
         {
           if (s[1] == '.')
-            return 0; /* No:  Douple dot. */
+            return 0; /* No:  Double dot. */
           if (atoi (s+1) > 255)
             return 0; /* No:  Ipv4 byte value too large.  */
           ndots++;

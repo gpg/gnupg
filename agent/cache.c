@@ -485,10 +485,12 @@ agent_store_cache_hit (const char *key)
    *
    * Background: xtrystrdup uses gcry_strdup which may use the secure
    * memory allocator of Libgcrypt.  That allocator takes locks and
-   * since version 1.14 libgpg-error is nPth aware and thus talking a
+   * since version 1.14 libgpg-error is nPth aware and thus taking a
    * lock may now lead to thread switch.  Note that this only happens
-   * when secure memory is allocated, the standard allocator uses
-   * malloc which is not nPth aware.
+   * when secure memory is _allocated_ (the standard allocator uses
+   * malloc which is not nPth aware) but not when calling _xfree_
+   * because gcry_free needs to check whether the pointer is in secure
+   * memory and thus needs to take a lock.
    */
   new = key ? xtrystrdup (key) : NULL;
 
