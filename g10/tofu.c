@@ -2306,7 +2306,11 @@ build_conflict_set (tofu_dbs_t dbs,
 /* Return the effective policy for the binding <FINGERPRINT, EMAIL>
  * (email has already been normalized) and any conflict information in
  * *CONFLICT_SETP, if CONFLICT_SETP is not NULL.  Returns
- * _tofu_GET_POLICY_ERROR if an error occurs.  */
+ * _tofu_GET_POLICY_ERROR if an error occurs.
+ *
+ * This function registers the binding in the bindings table if it has
+ * not yet been registered.
+ */
 static enum tofu_policy
 get_policy (tofu_dbs_t dbs, PKT_public_key *pk,
             const char *fingerprint, const char *user_id, const char *email,
@@ -2677,6 +2681,14 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
               && _tofu_GET_TRUST_ERROR != TRUST_FULLY
               && _tofu_GET_TRUST_ERROR != TRUST_ULTIMATE);
 
+  begin_transaction (ctrl, 0);
+  in_transaction = 1;
+
+  /* We need to call get_policy even if the key is ultimately trusted
+   * to make sure the binding has been registered.  */
+  policy = get_policy (dbs, pk, fingerprint, user_id, email,
+                       &conflict_set, now);
+
   /* If the key is ultimately trusted, there is nothing to do.  */
   {
     u32 kid[2];
@@ -2690,11 +2702,6 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
       }
   }
 
-  begin_transaction (ctrl, 0);
-  in_transaction = 1;
-
-  policy = get_policy (dbs, pk, fingerprint, user_id, email,
-                       &conflict_set, now);
   if (policy == TOFU_POLICY_AUTO)
     {
       policy = opt.tofu_default_policy;
