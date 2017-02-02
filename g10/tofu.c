@@ -1969,7 +1969,7 @@ ask_about_binding (ctrl_t ctrl,
       else if (!response[0])
         /* Default to unknown.  Don't save it.  */
         {
-          tty_printf (_("Defaulting to unknown."));
+          tty_printf (_("Defaulting to unknown.\n"));
           *policy = TOFU_POLICY_UNKNOWN;
           break;
         }
