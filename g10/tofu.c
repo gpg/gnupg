@@ -2644,7 +2644,9 @@ get_policy (tofu_dbs_t dbs, PKT_public_key *pk,
 static enum tofu_policy
 get_trust (ctrl_t ctrl, PKT_public_key *pk,
            const char *fingerprint, const char *email,
-	   const char *user_id, int may_ask, time_t now)
+           const char *user_id, int may_ask,
+           enum tofu_policy *policyp, strlist_t *conflict_setp,
+           time_t now)
 {
   tofu_dbs_t dbs = ctrl->tofu.dbs;
   int in_transaction = 0;
@@ -2683,6 +2685,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
     if (tdb_keyid_is_utk (kid))
       {
         trust_level = TRUST_ULTIMATE;
+        policy = TOFU_POLICY_GOOD;
         goto out;
       }
   }
@@ -2690,7 +2693,8 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
   begin_transaction (ctrl, 0);
   in_transaction = 1;
 
-  policy = get_policy (dbs, pk, fingerprint, user_id, email, &conflict_set, now);
+  policy = get_policy (dbs, pk, fingerprint, user_id, email,
+                       &conflict_set, now);
   if (policy == TOFU_POLICY_AUTO)
     {
       policy = opt.tofu_default_policy;
@@ -2758,10 +2762,6 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
     }
   else
     {
-      for (iter = conflict_set; iter; iter = iter->next)
-        show_statistics (dbs, iter->d, email,
-                         TOFU_POLICY_ASK, NULL, 1, now);
-
       trust_level = TRUST_UNDEFINED;
     }
 
@@ -2807,7 +2807,13 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
   if (in_transaction)
     end_transaction (ctrl, 0);
 
-  free_strlist (conflict_set);
+  if (policyp)
+    *policyp = policy;
+
+  if (conflict_setp)
+    *conflict_setp = conflict_set;
+  else
+    free_strlist (conflict_set);
 
   return trust_level;
 }
@@ -3326,7 +3332,8 @@ tofu_register_signature (ctrl_t ctrl,
 
       /* Make sure the binding exists and record any TOFU
          conflicts.  */
-      if (get_trust (ctrl, pk, fingerprint, email, user_id->d, 0, now)
+      if (get_trust (ctrl, pk, fingerprint, email, user_id->d,
+                     0, NULL, NULL, now)
           == _tofu_GET_TRUST_ERROR)
         {
           rc = gpg_error (GPG_ERR_GENERAL);
@@ -3492,11 +3499,13 @@ tofu_register_encryption (ctrl_t ctrl,
   for (user_id = user_id_list; user_id; user_id = user_id->next)
     {
       char *email = email_from_user_id (user_id->d);
+      strlist_t conflict_set = NULL;
+      enum tofu_policy policy;
 
       /* Make sure the binding exists and that we recognize any
          conflicts.  */
       int tl = get_trust (ctrl, pk, fingerprint, email, user_id->d,
-                          may_ask, now);
+                          may_ask, &policy, &conflict_set, now);
       if (tl == _tofu_GET_TRUST_ERROR)
         {
           /* An error.  */
@@ -3504,6 +3513,28 @@ tofu_register_encryption (ctrl_t ctrl,
           xfree (email);
           goto die;
         }
+
+
+      /* If there is a conflict and MAY_ASK is true, we need to show
+       * the TOFU statistics for the current binding and the
+       * conflicting bindings.  But, if we are not in batch mode, then
+       * they have already been printed (this is required to make sure
+       * the information is available to the caller before cpr_get is
+       * called).  */
+      if (policy == TOFU_POLICY_ASK && may_ask && opt.batch)
+        {
+          strlist_t iter;
+
+          /* The conflict set should contain at least the current
+           * key.  */
+          log_assert (conflict_set);
+
+          for (iter = conflict_set; iter; iter = iter->next)
+            show_statistics (dbs, iter->d, email,
+                             TOFU_POLICY_ASK, NULL, 1, now);
+        }
+
+      free_strlist (conflict_set);
 
       rc = gpgsql_stepx
         (dbs->db, &dbs->s.register_encryption, NULL, NULL, &err,
@@ -3681,11 +3712,13 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
   for (user_id = user_id_list; user_id; user_id = user_id->next, bindings ++)
     {
       char *email = email_from_user_id (user_id->d);
+      strlist_t conflict_set = NULL;
+      enum tofu_policy policy;
 
       /* Always call get_trust to make sure the binding is
          registered.  */
       int tl = get_trust (ctrl, pk, fingerprint, email, user_id->d,
-                          may_ask, now);
+                          may_ask, &policy, &conflict_set, now);
       if (tl == _tofu_GET_TRUST_ERROR)
         {
           /* An error.  */
@@ -3708,12 +3741,34 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 
       if (may_ask && tl != TRUST_ULTIMATE && tl != TRUST_EXPIRED)
         {
-          enum tofu_policy policy =
-            get_policy (dbs, pk, fingerprint, user_id->d, email, NULL, now);
+          /* If policy is ask, then we already printed out the
+           * conflict information in ask_about_binding or will do so
+           * in a moment.  */
+          if (policy != TOFU_POLICY_ASK)
+            need_warning |=
+              show_statistics (dbs, fingerprint, email, policy, NULL, 0, now);
 
-          need_warning |=
-            show_statistics (dbs, fingerprint, email, policy, NULL, 0, now);
+          /* If there is a conflict and MAY_ASK is true, we need to
+           * show the TOFU statistics for the current binding and the
+           * conflicting bindings.  But, if we are not in batch mode,
+           * then they have already been printed (this is required to
+           * make sure the information is available to the caller
+           * before cpr_get is called).  */
+          if (policy == TOFU_POLICY_ASK && opt.batch)
+            {
+              strlist_t iter;
+
+              /* The conflict set should contain at least the current
+               * key.  */
+              log_assert (conflict_set);
+
+              for (iter = conflict_set; iter; iter = iter->next)
+                show_statistics (dbs, iter->d, email,
+                                 TOFU_POLICY_ASK, NULL, 1, now);
+            }
         }
+
+      free_strlist (conflict_set);
 
       if (tl == TRUST_NEVER)
         trust_level = TRUST_NEVER;
