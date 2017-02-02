@@ -2983,7 +2983,8 @@ show_statistics (tofu_dbs_t dbs,
   /* Get the signature stats.  */
   rc = gpgsql_exec_printf
     (dbs->db, strings_collect_cb, &strlist, &err,
-     "select count (*), min (signatures.time), max (signatures.time)\n"
+     "select count (*), coalesce (min (signatures.time), 0),\n"
+     "  coalesce (max (signatures.time), 0)\n"
      " from signatures\n"
      " left join bindings on signatures.binding = bindings.oid\n"
      " where fingerprint = %Q and email = %Q;",
@@ -3036,7 +3037,8 @@ show_statistics (tofu_dbs_t dbs,
   /* Get the encryption stats.  */
   rc = gpgsql_exec_printf
     (dbs->db, strings_collect_cb, &strlist, &err,
-     "select count (*), min (encryptions.time), max (encryptions.time)\n"
+     "select count (*), coalesce (min (encryptions.time), 0),\n"
+     "  coalesce (max (encryptions.time), 0)\n"
      " from encryptions\n"
      " left join bindings on encryptions.binding = bindings.oid\n"
      " where fingerprint = %Q and email = %Q;",
