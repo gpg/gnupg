@@ -3694,6 +3694,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
   int bindings = 0;
   int bindings_valid = 0;
   int need_warning = 0;
+  int had_conflict = 0;
 
   dbs = opendbs (ctrl);
   if (! dbs)
@@ -3762,6 +3763,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
                * key.  */
               log_assert (conflict_set);
 
+              had_conflict = 1;
               for (iter = conflict_set; iter; iter = iter->next)
                 show_statistics (dbs, iter->d, email,
                                  TOFU_POLICY_ASK, NULL, 1, now);
@@ -3794,7 +3796,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
       xfree (email);
     }
 
-  if (need_warning)
+  if (need_warning && ! had_conflict)
     show_warning (fingerprint, user_id_list);
 
  die:
