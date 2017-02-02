@@ -26,7 +26,7 @@
 ;; Redefine GPG without --always-trust and TOFU trust model.
 (define gpg `(,(tool 'gpg) --no-permission-warning --trust-model=tofu))
 
-(info "Checking key creation with TOFU trust model (issue2929).")
+(info "Checking TOFU trust model with ultimately trusted keys (issue2929).")
 (call-check `(,@gpg --quick-generate-key frob@example.org))
 (call-check `(,@gpg --sign gpg.conf))
 (call-check `(,@gpg --verify gpg.conf.gpg))
