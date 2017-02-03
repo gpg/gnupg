@@ -540,6 +540,20 @@ start_pinentry (ctrl_t ctrl)
         }
     }
 
+  /* Tell Pinentry about our client.  */
+  if (ctrl->client_pid)
+    {
+      char *optstr;
+      if ((optstr = xtryasprintf ("OPTION owner=%lu", ctrl->client_pid)))
+        {
+          assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+                           NULL);
+          /* We ignore errors because this is just a fancy thing and
+             older pinentries do not support this feature.  */
+          xfree (optstr);
+        }
+    }
+
 
   /* Ask the pinentry for its version and flavor and store that as a
    * string in MB.  This information is useful for helping users to

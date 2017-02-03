@@ -1375,6 +1375,53 @@ if test $ac_cv_func_mmap != yes -a $mmap_needed = yes; then
   AC_MSG_ERROR([[Sorry, the current implemenation requires mmap.]])
 fi
 
+
+#
+# Check for the getsockopt SO_PEERCRED
+# (This has been copied from libassuan)
+#
+AC_MSG_CHECKING(for SO_PEERCRED)
+AC_CACHE_VAL(gnupg_cv_sys_so_peercred,
+      [AC_TRY_COMPILE([#include <sys/socket.h>],
+         [struct ucred cr;
+          int cl = sizeof cr;
+          getsockopt (1, SOL_SOCKET, SO_PEERCRED, &cr, &cl);],
+          gnupg_cv_sys_so_peercred=yes,
+          gnupg_cv_sys_so_peercred=no)
+       ])
+AC_MSG_RESULT($gnupg_cv_sys_so_peercred)
+
+if test $gnupg_cv_sys_so_peercred = yes; then
+  AC_DEFINE(HAVE_SO_PEERCRED, 1,
+            [Defined if SO_PEERCRED is supported (Linux specific)])
+else
+  # Check for the getsockopt LOCAL_PEEREID (NetBSD)
+  AC_MSG_CHECKING(for LOCAL_PEEREID)
+  AC_CACHE_VAL(gnupg_cv_sys_so_local_peereid,
+      [AC_TRY_COMPILE([#include <sys/socket.>
+         #include <sys/un.h>],
+         [struct unpcbid unp;
+          int unpl = sizeof unp;
+          getsockopt (1, SOL_SOCKET, LOCAL_PEEREID, &unp, &unpl);],
+          gnupg_cv_sys_so_local_peereid=yes,
+          gnupg_cv_sys_so_local_peereid=no)
+       ])
+  AC_MSG_RESULT($gnupg_cv_sys_so_local_peereid)
+
+  if test $gnupg_cv_sys_so_local_peereid = yes; then
+    AC_DEFINE(HAVE_LOCAL_PEEREID, 1,
+              [Defined if LOCAL_PEEREID is supported (NetBSD specific)])
+  else
+    # (Open)Solaris
+    AC_CHECK_FUNCS([getpeerucred], AC_CHECK_HEADERS([ucred.h]))
+    if test $ac_cv_func_getpeerucred != yes; then
+        # FreeBSD
+        AC_CHECK_FUNCS([getpeereid])
+    fi
+  fi
+fi
+
+
 #
 # W32 specific test
 #

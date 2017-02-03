@@ -3288,6 +3288,8 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
 
   for (;;)
     {
+      pid_t client_pid;
+
       rc = assuan_accept (ctx);
       if (gpg_err_code (rc) == GPG_ERR_EOF || rc == -1)
         {
@@ -3299,7 +3301,12 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
           break;
         }
 
-      ctrl->server_local->connect_from_self = (assuan_get_pid (ctx)==getpid ());
+      client_pid = assuan_get_pid (ctx);
+      ctrl->server_local->connect_from_self = (client_pid == getpid ());
+      if (client_pid != ASSUAN_INVALID_PID)
+        ctrl->client_pid = (unsigned long)client_pid;
+      else
+        ctrl->client_pid = 0;
 
       rc = assuan_process (ctx);
       if (rc)

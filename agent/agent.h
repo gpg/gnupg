@@ -218,6 +218,7 @@ struct server_control_s
   session_env_t session_env;
   char *lc_ctype;
   char *lc_messages;
+  unsigned long client_pid;
 
   /* The current pinentry mode.  */
   pinentry_mode_t pinentry_mode;

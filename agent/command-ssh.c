@@ -3491,6 +3491,44 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 }
 
 
+/* Return the peer's pid.  Stripped down code from libassuan.  */
+static unsigned long
+get_client_pid (int fd)
+{
+  pid_t client_pid = (pid_t)(-1);
+
+#ifdef HAVE_SO_PEERCRED
+  {
+    struct ucred cr;
+    socklen_t cl = sizeof cr;
+
+    if ( !getsockopt (fd, SOL_SOCKET, SO_PEERCRED, &cr, &cl))
+      client_pid = cr.pid;
+  }
+#elif defined (HAVE_GETPEERUCRED)
+  {
+    ucred_t *ucred = NULL;
+
+    if (getpeerucred (fd, &ucred) != -1)
+      {
+	client_pid= ucred_getpid (ucred);
+	ucred_free (ucred);
+      }
+  }
+#elif defined (HAVE_LOCAL_PEEREID)
+  {
+    struct unpcbid unp;
+    socklen_t unpl = sizeof unp;
+
+    if (getsockopt (fd, 0, LOCAL_PEEREID, &unp, &unpl) != -1)
+      client_pid = unp.unp_pid;
+  }
+#endif
+
+  return client_pid == (pid_t)(-1)? 0 : (unsigned long)client_pid;
+}
+
+
 /* Start serving client on SOCK_CLIENT.  */
 void
 start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
@@ -3502,6 +3540,8 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
   err = agent_copy_startup_env (ctrl);
   if (err)
     goto out;
+
+  ctrl->client_pid = get_client_pid (FD2INT(sock_client));
 
   /* Create stream from socket.  */
   stream_sock = es_fdopen (FD2INT(sock_client), "r+");
