@@ -31,6 +31,7 @@
 # include <sys/wait.h>
 # include <sys/types.h>
 # include <signal.h>
+# include <sys/utsname.h>
 #endif
 #include <npth.h>
 
@@ -544,7 +545,16 @@ start_pinentry (ctrl_t ctrl)
   if (ctrl->client_pid)
     {
       char *optstr;
-      if ((optstr = xtryasprintf ("OPTION owner=%lu", ctrl->client_pid)))
+      const char *nodename = "";
+
+#ifndef HAVE_W32_SYSTEM
+      struct utsname utsbuf;
+      if (!uname (&utsbuf))
+        nodename = utsbuf.nodename;
+#endif /*!HAVE_W32_SYSTEM*/
+
+      if ((optstr = xtryasprintf ("OPTION owner=%lu %s",
+                                  ctrl->client_pid, nodename)))
         {
           assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
                            NULL);
