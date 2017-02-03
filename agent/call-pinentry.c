@@ -541,7 +541,7 @@ start_pinentry (ctrl_t ctrl)
     }
 
 
-  /* Ask the pinentry for its version and flavor and streo that as a
+  /* Ask the pinentry for its version and flavor and store that as a
    * string in MB.  This information is useful for helping users to
    * figure out Pinentry problems.  */
   {
@@ -555,6 +555,10 @@ start_pinentry (ctrl_t ctrl)
     if (assuan_transact (entry_ctx, "GETINFO version",
                          put_membuf_cb, &mb, NULL, NULL, NULL, NULL))
       put_membuf_str (&mb, "unknown");
+    put_membuf_str (&mb, " ");
+    if (assuan_transact (entry_ctx, "GETINFO ttyinfo",
+                         put_membuf_cb, &mb, NULL, NULL, NULL, NULL))
+      put_membuf_str (&mb, "? ? ?");
     put_membuf (&mb, "", 1);
     flavor_version = get_membuf (&mb, NULL);
   }
