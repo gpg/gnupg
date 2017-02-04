@@ -141,7 +141,8 @@ cannot abbreviate this command.
 @itemx -h
 @opindex help
 Print a usage message summarizing the most useful command-line options.
-Note that you cannot abbreviate this command.
+Note that you cannot arbitrarily abbreviate this command
+(though you can use its short form @option{-h}).
 
 @item --warranty
 @opindex warranty
