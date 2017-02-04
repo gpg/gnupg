@@ -728,9 +728,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oWithKeyData,"with-key-data", "@"),
   ARGPARSE_s_n (oWithSigList,"with-sig-list", "@"),
   ARGPARSE_s_n (oWithSigCheck,"with-sig-check", "@"),
-  ARGPARSE_s_n (aListKeys, "list-key", "@"),   /* alias */
-  ARGPARSE_s_n (aListSigs, "list-sig", "@"),   /* alias */
-  ARGPARSE_s_n (aCheckKeys, "check-sig", "@"), /* alias */
+  ARGPARSE_c (aListKeys, "list-key", "@"),   /* alias */
+  ARGPARSE_c (aListSigs, "list-sig", "@"),   /* alias */
+  ARGPARSE_c (aCheckKeys, "check-sig", "@"), /* alias */
   ARGPARSE_s_n (oSkipVerify, "skip-verify", "@"),
   ARGPARSE_s_n (oSkipHiddenRecipients, "skip-hidden-recipients", "@"),
   ARGPARSE_s_n (oNoSkipHiddenRecipients, "no-skip-hidden-recipients", "@"),
