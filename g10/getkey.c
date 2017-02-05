@@ -3549,6 +3549,13 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 	      continue;
 	    }
 
+	  if ((req_usage & PUBKEY_USAGE_SIG) && agent_probe_secret_key (NULL, pk))
+	    {
+	      if (DBG_LOOKUP)
+		log_debug ("\tno secret key for signing\n");
+	      continue;
+	    }
+
 	  if (DBG_LOOKUP)
 	    log_debug ("\tsubkey might be fine\n");
 	  /* In case a key has a timestamp of 0 set, we make sure
