@@ -593,8 +593,9 @@ start_pinentry (ctrl_t ctrl)
         nodename = utsbuf.nodename;
 #endif /*!HAVE_W32_SYSTEM*/
 
-      if ((optstr = xtryasprintf ("OPTION owner=%lu %s",
-                                  ctrl->client_pid, nodename)))
+      if ((optstr = xtryasprintf ("OPTION owner=%lu/%d %s",
+                                  ctrl->client_pid, ctrl->client_uid,
+                                  nodename)))
         {
           assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
                            NULL);

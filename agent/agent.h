@@ -226,6 +226,7 @@ struct server_control_s
   char *lc_ctype;
   char *lc_messages;
   unsigned long client_pid;
+  int client_uid;
 
   /* The current pinentry mode.  */
   pinentry_mode_t pinentry_mode;

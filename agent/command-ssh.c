@@ -255,6 +255,11 @@ static gpg_error_t ssh_signature_encoder_eddsa (ssh_key_type_spec_t *spec,
 static gpg_error_t ssh_key_extract_comment (gcry_sexp_t key, char **comment);
 
 
+struct peer_info_s
+{
+  unsigned long pid;
+  int uid;
+};
 
 /* Global variables.  */
 
@@ -3581,10 +3586,11 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 
 
 /* Return the peer's pid.  */
-static unsigned long
-get_client_pid (int fd)
+static void
+get_client_info (int fd, struct peer_info_s *out)
 {
-  pid_t client_pid = (pid_t)0;
+  pid_t client_pid = (pid_t)(-1);
+  uid_t client_uid = (uid_t)-1;
 
 #ifdef SO_PEERCRED
   {
@@ -3599,8 +3605,10 @@ get_client_pid (int fd)
       {
 #if defined (HAVE_STRUCT_SOCKPEERCRED_PID) || defined (HAVE_STRUCT_UCRED_PID)
         client_pid = cr.pid;
+        client_uid = cr.uid;
 #elif defined (HAVE_STRUCT_UCRED_CR_PID)
         client_pid = cr.cr_pid;
+        client_pid = cr.cr_uid;
 #else
 #error "Unknown SO_PEERCRED struct"
 #endif
@@ -3611,6 +3619,7 @@ get_client_pid (int fd)
     socklen_t len = sizeof (pid_t);
 
     getsockopt (fd, SOL_LOCAL, LOCAL_PEERPID, &client_pid, &len);
+    getsockopt (fd, SOL_LOCAL, LOCAL_PEERUID, &client_uid, &len);
   }
 #elif defined (LOCAL_PEEREID)
   {
@@ -3619,6 +3628,7 @@ get_client_pid (int fd)
 
     if (getsockopt (fd, 0, LOCAL_PEEREID, &unp, &unpl) != -1)
       client_pid = unp.unp_pid;
+      client_uid = unp.unp_euid;
   }
 #elif defined (HAVE_GETPEERUCRED)
   {
@@ -3626,7 +3636,8 @@ get_client_pid (int fd)
 
     if (getpeerucred (fd, &ucred) != -1)
       {
-        client_pid= ucred_getpid (ucred);
+        client_pid = ucred_getpid (ucred);
+	client_uid = ucred_geteuid (ucred);
         ucred_free (ucred);
       }
   }
@@ -3634,7 +3645,8 @@ get_client_pid (int fd)
   (void)fd;
 #endif
 
-  return (unsigned long)client_pid;
+  out->pid = (client_pid == (pid_t)(-1)? 0 : (unsigned long)client_pid);
+  out->uid = (int)client_uid;
 }
 
 
@@ -3645,12 +3657,15 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
   estream_t stream_sock = NULL;
   gpg_error_t err;
   int ret;
+  struct peer_info_s peer_info;
 
   err = agent_copy_startup_env (ctrl);
   if (err)
     goto out;
 
-  ctrl->client_pid = get_client_pid (FD2INT(sock_client));
+  get_client_info (FD2INT(sock_client), &peer_info);
+  ctrl->client_pid = peer_info.pid;
+  ctrl->client_uid = peer_info.uid;
 
   /* Create stream from socket.  */
   stream_sock = es_fdopen (FD2INT(sock_client), "r+");
