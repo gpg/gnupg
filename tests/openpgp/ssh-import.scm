@@ -24,10 +24,35 @@
         (call-check `(,(tool 'gpgconf) --null --list-dirs agent-ssh-socket))
         #t)
 
-(define SSH-ADD #f)
+(define path (string-split (getenv "PATH") *pathsep*))
+(define ssh #f)
+(catch (skip "ssh not found") (set! ssh (path-expand "ssh" path)))
+
+(define ssh-add #f)
 (catch (skip "ssh-add not found")
-       (set! SSH-ADD
-	     (path-expand "ssh-add" (string-split (getenv "PATH") *pathsep*))))
+       (set! ssh-add (path-expand "ssh-add" path)))
+
+(define ssh-keygen #f)
+(catch (skip "ssh-keygen not found")
+       (set! ssh-keygen (path-expand "ssh-keygen" path)))
+
+(define ssh-version
+  (let ((tmp (:stderr (call-with-io `(,ssh "-V") "")))
+	(prefix "OpenSSH_"))
+    (unless (string-prefix? tmp prefix)
+	    (skip "This doesn't look like OpenSSH:" tmp))
+    (string->number (substring tmp (string-length prefix)
+			       (+ 3 (string-length prefix))))))
+
+(define (ssh-supports? algorithm)
+  (cond
+   ((equal? algorithm "ed25519")
+    (>= ssh-version 6.5))
+   (else
+    (not (string-contains? (:stderr (call-with-io `(,ssh-keygen
+						    -t ,algorithm
+						    -b "1009") ""))
+			   "unknown key type")))))
 
 (define keys
   '(("dsa" "9a:e1:f1:5f:46:ea:a5:06:e1:e2:f8:38:8e:06:54:58")
@@ -48,7 +73,7 @@
       (pipe:spawn `(,SSH-ADD -)))
      (unless (string-contains? (call-popen `(,SSH-ADD -l "-E" md5) "") hash)
 	     (fail "key not added"))))
- car keys)
+ car (filter (lambda (x) (ssh-supports? (car x))) keys))
 
 (info "Checking for issue2316...")
 (unlink (path-join GNUPGHOME "sshcontrol"))
