@@ -915,6 +915,13 @@ send_confirmation_request (server_ctx_t ctx,
   err = mime_maker_add_header (mime, "Subject", "Confirm your key publication");
   if (err)
     goto leave;
+
+  /* Help Enigmail to identify messages.  Note that this is on no way
+   * secured.  */
+  err = mime_maker_add_header (mime, "WKS-Phase", "confirm");
+  if (err)
+    goto leave;
+
   for (sl = opt.extra_headers; sl; sl = sl->next)
     {
       err = mime_maker_add_header (mime, sl->d, NULL);
@@ -1204,6 +1211,9 @@ send_congratulation_message (const char *mbox, const char *keyfile)
   if (err)
     goto leave;
   err = mime_maker_add_header (mime, "Subject", "Your key has been published");
+  if (err)
+    goto leave;
+  err = mime_maker_add_header (mime, "WKS-Phase", "done");
   if (err)
     goto leave;
   for (sl = opt.extra_headers; sl; sl = sl->next)
