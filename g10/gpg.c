@@ -3079,6 +3079,8 @@ main (int argc, char **argv)
 
 	  case oCommandFD:
             opt.command_fd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);
+	    if (! gnupg_fd_valid (opt.command_fd))
+	      log_fatal ("command-fd is invalid: %s\n", strerror (errno));
             break;
 	  case oCommandFile:
             opt.command_fd = open_info_file (pargs.r.ret_str, 0, 1);
@@ -5292,6 +5294,9 @@ read_sessionkey_from_fd (int fd)
 {
   int i, len;
   char *line;
+
+  if (! gnupg_fd_valid (fd))
+    log_fatal ("override-session-key-fd is invalid: %s\n", strerror (errno));
 
   for (line = NULL, i = len = 100; ; i++ )
     {

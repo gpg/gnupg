@@ -1900,6 +1900,9 @@ set_attrib_fd (int fd)
   if (fd == -1)
     return;
 
+  if (! gnupg_fd_valid (fd))
+    log_fatal ("attribute-fd is invalid: %s\n", strerror (errno));
+
 #ifdef HAVE_DOSISH_SYSTEM
   setmode (fd, O_BINARY);
 #endif

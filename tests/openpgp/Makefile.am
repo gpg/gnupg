@@ -97,7 +97,8 @@ XTESTS = \
 	issue2346.scm \
 	issue2417.scm \
 	issue2419.scm \
-	issue2929.scm
+	issue2929.scm \
+	issue2941.scm
 
 # XXX: Currently, one cannot override automake's 'check' target.  As a
 # workaround, we avoid defining 'TESTS', thus automake will not emit

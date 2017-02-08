@@ -1281,3 +1281,14 @@ gnupg_get_socket_name (int fd)
   return name;
 }
 #endif /*!HAVE_W32_SYSTEM*/
+
+/* Check whether FD is valid.  */
+int
+gnupg_fd_valid (int fd)
+{
+  int d = dup (fd);
+  if (d < 0)
+    return 0;
+  close (d);
+  return 1;
+}

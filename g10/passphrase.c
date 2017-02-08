@@ -166,6 +166,9 @@ read_passphrase_from_fd( int fd )
   int i, len;
   char *pw;
 
+  if (! gnupg_fd_valid (fd))
+    log_fatal ("passphrase-fd is invalid: %s\n", strerror (errno));
+
   if ( !opt.batch && opt.pinentry_mode != PINENTRY_MODE_LOOPBACK)
     { /* Not used but we have to do a dummy read, so that it won't end
          up at the begin of the message if the quite usual trick to

@@ -107,6 +107,9 @@ set_status_fd (int fd)
   if (fd == -1)
     return;
 
+  if (! gnupg_fd_valid (fd))
+    log_fatal ("status-fd is invalid: %s\n", strerror (errno));
+
   if (fd == 1)
     statusfp = es_stdout;
   else if (fd == 2)

@@ -570,6 +570,9 @@ log_set_file (const char *name)
 void
 log_set_fd (int fd)
 {
+  if (! gnupg_fd_valid (fd))
+    log_fatal ("logger-fd is invalid: %s\n", strerror (errno));
+
   set_file_fd (NULL, fd);
 }
 
