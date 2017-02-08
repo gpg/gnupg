@@ -61,6 +61,7 @@
 #include "i18n.h"
 #include "common-defs.h"
 #include "logging.h"
+#include "sysutils.h"
 
 #ifdef HAVE_W32_SYSTEM
 # define S_IRGRP S_IRUSR
