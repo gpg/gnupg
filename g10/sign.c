@@ -686,7 +686,10 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
       pk = sk_rover->pk;
 
       /* Build the signature packet.  */
-      sig = xmalloc_clear (sizeof *sig);
+      sig = xtrycalloc (1, sizeof *sig);
+      if (!sig)
+        return gpg_error_from_syserror ();
+
       if (duration || opt.sig_policy_url
           || opt.sig_notations || opt.sig_keyserver_url)
         sig->version = 4;
@@ -731,8 +734,12 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
             print_status_sig_created (pk, sig, status_letter);
           free_packet (&pkt);
           if (rc)
-            log_error ("build signature packet failed: %s\n", gpg_strerror (rc));
+            log_error ("build signature packet failed: %s\n",
+                       gpg_strerror (rc));
 	}
+      else
+        xfree (sig);
+
       if (rc)
         return rc;
     }
