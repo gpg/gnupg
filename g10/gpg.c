@@ -4894,8 +4894,12 @@ main (int argc, char **argv)
 #endif /*USE_TOFU*/
 	break;
 
-      case aListPackets:
       default:
+        if (!opt.quiet)
+          log_info (_("WARNING: no command supplied."
+                      "  Trying to guess what you mean ...\n"));
+        /*FALLTHU*/
+      case aListPackets:
 	if( argc > 1 )
 	    wrong_args("[filename]");
 	/* Issue some output for the unix newbie */
