@@ -2164,8 +2164,11 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
 
   config = es_fopen (config_filename, "r");
   if (!config)
-    gc_error (0, errno, "warning: can not open config file %s",
-	      config_filename);
+    {
+      if (errno != ENOENT)
+        gc_error (0, errno, "warning: can not open config file %s",
+                  config_filename);
+    }
   else
     {
       while ((length = es_read_line (config, &line, &line_len, NULL)) > 0)
