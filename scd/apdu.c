@@ -3127,7 +3127,7 @@ apdu_open_one_reader (const char *portstr)
 }
 
 int
-apdu_open_reader (struct dev_list *dl)
+apdu_open_reader (struct dev_list *dl, int app_empty)
 {
   int slot;
 
@@ -3177,6 +3177,7 @@ apdu_open_reader (struct dev_list *dl)
           /* Check identity by BAI against already opened HANDLEs.  */
           for (slot = 0; slot < MAX_READER; slot++)
             if (reader_table[slot].used
+                && reader_table[slot].ccid.handle
                 && ccid_compare_BAI (reader_table[slot].ccid.handle, bai))
               break;
 
@@ -3201,12 +3202,19 @@ apdu_open_reader (struct dev_list *dl)
             dl->idx++;
         }
 
-      slot = -1;
+      /* Not found.  Try one for PC/SC, only when it's the initial scan.  */
+      if (app_empty && dl->idx == dl->idx_max)
+        {
+          dl->idx++;
+          slot = apdu_open_one_reader (dl->portstr);
+        }
+      else
+        slot = -1;
     }
   else
 #endif
     { /* PC/SC readers.  */
-      if (dl->idx == 0)
+      if (app_empty && dl->idx == 0)
         {
           dl->idx++;
           slot = apdu_open_one_reader (dl->portstr);

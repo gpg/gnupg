@@ -343,7 +343,7 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
           int slot;
           int periodical_check_needed_this;
 
-          slot = apdu_open_reader (l);
+          slot = apdu_open_reader (l, !app_top);
           if (slot < 0)
             break;
 
