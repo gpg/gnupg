@@ -2208,6 +2208,48 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
               latest_key = node;
             }
         }
+
+      /* If no subkey was suitable check the primary key.  */
+      if (!latest_key
+          && (node = keyblock) && node->pkt->pkttype == PKT_PUBLIC_KEY)
+        {
+          pk = node->pkt->pkt.public_key;
+          if (DBG_LOOKUP)
+            log_debug ("\tchecking primary key %08lX\n",
+                       (ulong) keyid_from_pk (pk, NULL));
+          if (!(pk->pubkey_usage & PUBKEY_USAGE_AUTH))
+            {
+              if (DBG_LOOKUP)
+                log_debug ("\tprimary key not usable for authentication\n");
+            }
+          else if (!pk->flags.valid)
+            {
+              if (DBG_LOOKUP)
+                log_debug ("\tprimary key not valid\n");
+            }
+          else if (pk->flags.revoked)
+            {
+              if (DBG_LOOKUP)
+                log_debug ("\tprimary key has been revoked\n");
+            }
+          else if (pk->has_expired)
+            {
+              if (DBG_LOOKUP)
+                log_debug ("\tprimary key has expired\n");
+            }
+          else if (pk->timestamp > curtime && !opt.ignore_valid_from)
+            {
+              if (DBG_LOOKUP)
+                log_debug ("\tprimary key not yet valid\n");
+            }
+          else
+            {
+              if (DBG_LOOKUP)
+                log_debug ("\tprimary key is fine\n");
+              latest_date = pk->timestamp;
+              latest_key = node;
+            }
+        }
     }
 
   if (!latest_key)
