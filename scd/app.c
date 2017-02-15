@@ -136,23 +136,10 @@ check_application_conflict (const char *name, app_t app)
 }
 
 
-static void
-release_application_internal (app_t app)
-{
-  if (!app->ref_count)
-    log_bug ("trying to release an already released context\n");
-
-  --app->ref_count;
-}
-
 gpg_error_t
 app_reset (app_t app, ctrl_t ctrl, int send_reset)
 {
   gpg_error_t err;
-
-  err = lock_app (app, ctrl);
-  if (err)
-    return err;
 
   if (send_reset)
     {
@@ -160,16 +147,17 @@ app_reset (app_t app, ctrl_t ctrl, int send_reset)
       if (sw)
         err = gpg_error (GPG_ERR_CARD_RESET);
 
-      /* Release the same application which is used by other sessions.  */
+      /* Release the same application which is used by all sessions.  */
       send_client_notifications (app, 1);
+      scd_kick_the_loop ();
+      gnupg_sleep (1);
     }
   else
     {
       ctrl->app_ctx = NULL;
-      release_application_internal (app);
+      release_application (app);
     }
 
-  unlock_app (app);
   return err;
 }
 
@@ -486,7 +474,10 @@ release_application (app_t app)
      are preserved.  */
 
   lock_app (app, NULL);
-  release_application_internal (app);
+  if (!app->ref_count)
+    log_bug ("trying to release an already released context\n");
+
+  --app->ref_count;
   unlock_app (app);
 }
 
@@ -1028,20 +1019,25 @@ scd_update_reader_status_file (void)
       int sw;
       unsigned int status;
 
-      sw = apdu_get_status (a->slot, 0, &status);
       app_next = a->next;
 
-      if (sw == SW_HOST_NO_READER)
+      if (a->ref_count == 0)
+        status = 0;
+      else
         {
-          /* Most likely the _reader_ has been unplugged.  */
-          status = 0;
-        }
-      else if (sw)
-        {
-          /* Get status failed.  Ignore that.  */
-          if (a->periodical_check_needed)
-            periodical_check_needed = 1;
-          continue;
+          sw = apdu_get_status (a->slot, 0, &status);
+          if (sw == SW_HOST_NO_READER)
+            {
+              /* Most likely the _reader_ has been unplugged.  */
+              status = 0;
+            }
+          else if (sw)
+            {
+              /* Get status failed.  Ignore that.  */
+              if (a->periodical_check_needed)
+                periodical_check_needed = 1;
+              continue;
+            }
         }
 
       if (a->card_status != status)
