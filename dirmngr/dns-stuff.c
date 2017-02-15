@@ -719,6 +719,7 @@ resolve_name_libdns (const char *name, unsigned short port,
   struct addrinfo *ent;
   char portstr_[21];
   char *portstr = NULL;
+  char *namebuf = NULL;
   int derr;
 
   *r_dai = NULL;
@@ -731,8 +732,6 @@ resolve_name_libdns (const char *name, unsigned short port,
   hints.ai_flags = AI_ADDRCONFIG;
   if (r_canonname)
     hints.ai_flags |= AI_CANONNAME;
-  if (is_ip_address (name))
-    hints.ai_flags |= AI_NUMERICHOST;
 
   if (port)
     {
@@ -743,6 +742,25 @@ resolve_name_libdns (const char *name, unsigned short port,
   err = libdns_res_open (&res);
   if (err)
     goto leave;
+
+
+  if (is_ip_address (name))
+    {
+      hints.ai_flags |= AI_NUMERICHOST;
+      /* libdns does not grok brackets - remove them.  */
+      if (*name == '[' && name[strlen(name)-1] == ']')
+        {
+          namebuf = xtrymalloc (strlen (name));
+          if (!namebuf)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          strcpy (namebuf, name+1);
+          namebuf[strlen (namebuf)-1] = 0;
+          name = namebuf;
+        }
+    }
 
   ai = dns_ai_open (name, portstr, 0, &hints, res, &derr);
   if (!ai)
@@ -825,6 +843,7 @@ resolve_name_libdns (const char *name, unsigned short port,
   else
     *r_dai = daihead;
 
+  xfree (namebuf);
   return err;
 }
 #endif /*USE_LIBDNS*/
@@ -1208,7 +1227,7 @@ is_ip_address (const char *name)
 
   if (*name == '[')
     return 6; /* yes: A legal DNS name may not contain this character;
-                 this mut be bracketed v6 address.  */
+                 this must be bracketed v6 address.  */
   if (*name == '.')
     return 0; /* No.  A leading dot is not a valid IP address.  */
 
