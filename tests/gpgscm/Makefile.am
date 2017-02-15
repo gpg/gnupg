@@ -25,7 +25,8 @@ EXTRA_DIST = \
 	lib.scm \
 	repl.scm \
 	t-child.scm \
-	tests.scm
+	tests.scm \
+	time.scm
 
 AM_CPPFLAGS = -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am
