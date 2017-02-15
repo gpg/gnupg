@@ -644,10 +644,13 @@ For a description of these optional arguments see the command
 the default is to a create certification and signing key.
 
 The @code{expire} argument can be used to specify an expiration date
-for the key.  Several formats are supported; commonly the ISO
-YYYY-MM-DD format is used.  The values ``never'', ``none'' can be used
-for no expiration date.  Not specifying a value, or using ``-''
-results in a key expiring in a reasonable default interval.
+for the key.  Several formats are supported; commonly the ISO formats
+``YYYY-MM-DD'' or ``YYYYMMDDThhmmss'' are used.  To make the key
+expire in N seconds, N days, N weeks, N months, or N years use
+``seconds=N'', ``Nd'', ``Nw'', ``Nm'', or ``Ny'' respectively.  Not
+specifying a value, or using ``-'' results in a key expiring in a
+reasonable default interval.  The values ``never'', ``none'' can be
+used for no expiration date.
 
 If this command is used with @option{--batch},
 @option{--pinentry-mode} has been set to @code{loopback}, and one of
@@ -684,15 +687,20 @@ Depending on the given @code{algo} the subkey may either be an
 encryption subkey or a signing subkey.  If an algorithm is capable of
 signing and encryption and such a subkey is desired, a @code{usage}
 string must be given.  This string is either ``default'' or ``-'' to
-keep the default or a comma delimited list of keywords: ``sign'' for a
-signing subkey, ``auth'' for an authentication subkey, and ``encr''
-for an encryption subkey (``encrypt'' can be used as alias for
-``encr'').  The valid combinations depend on the algorithm.
+keep the default or a comma delimited list (or space delimited list)
+of keywords: ``sign'' for a signing subkey, ``auth'' for an
+authentication subkey, and ``encr'' for an encryption subkey
+(``encrypt'' can be used as alias for ``encr'').  The valid
+combinations depend on the algorithm.
 
 The @code{expire} argument can be used to specify an expiration date
-for the subkey.  Several formats are supported; commonly the ISO
-YYYY-MM-DD format is used.  The values ``never'', ``none'', or ``-''
-can be used for no expiration date.
+for the key.  Several formats are supported; commonly the ISO formats
+``YYYY-MM-DD'' or ``YYYYMMDDThhmmss'' are used.  To make the key
+expire in N seconds, N days, N weeks, N months, or N years use
+``seconds=N'', ``Nd'', ``Nw'', ``Nm'', or ``Ny'' respectively.  Not
+specifying a value, or using ``-'' results in a key expiring in a
+reasonable default interval.  The values ``never'', ``none'' can be
+used for no expiration date.
 
 @item --generate-key
 @opindex generate-key

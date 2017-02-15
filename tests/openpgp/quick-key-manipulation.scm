@@ -121,6 +121,10 @@
  '(()
    (- - -)
    (default default never)
+   (rsa "sign auth encr" "seconds=600") ;; GPGME uses this
+   (rsa "auth,encr" "2") ;; "without a letter, days is assumed"
+   (rsa "sign" "2105-01-01") ;; "last year GnuPG can represent is 2105"
+   (rsa "sign" "21050101T115500") ;; "last year GnuPG can represent is 2105"
    (rsa sign "2d")
    (rsa1024 sign "2w")
    (rsa2048 encr "2m")
@@ -133,6 +137,35 @@
   #f
   (lambda (subkey)
     (assert (equal? "" (:expire subkey))))
+  (lambda (subkey)
+    (assert (= 1 (:alg subkey)))
+    (assert (string-contains? (:cap subkey) "s"))
+    (assert (string-contains? (:cap subkey) "a"))
+    (assert (string-contains? (:cap subkey) "e"))
+    (assert (time-matches? (+ (get-time) 600)
+			   (string->number (:expire subkey))
+			   (minutes->seconds 5))))
+  (lambda (subkey)
+    (assert (= 1 (:alg subkey)))
+    (assert (string-contains? (:cap subkey) "a"))
+    (assert (string-contains? (:cap subkey) "e"))
+    (assert (time-matches? (+ (get-time) (days->seconds 2))
+			   (string->number (:expire subkey))
+			   (minutes->seconds 5))))
+  (lambda (subkey)
+    (assert (= 1 (:alg subkey)))
+    (assert (string-contains? (:cap subkey) "s"))
+    (assert (time-matches? 4260207600 ;; 2105-01-01
+			   (string->number (:expire subkey))
+			   ;; This is off by 12h, but I guess it just
+			   ;; choses the middle of the day.
+			   (days->seconds 1))))
+  (lambda (subkey)
+    (assert (= 1 (:alg subkey)))
+    (assert (string-contains? (:cap subkey) "s"))
+    (assert (time-matches? 4260254100 ;; UTC 2105-01-01 11:55:00
+			   (string->number (:expire subkey))
+			   (minutes->seconds 5))))
   (lambda (subkey)
     (assert (= 1 (:alg subkey)))
     (assert (string-contains? (:cap subkey) "s"))
