@@ -1,6 +1,6 @@
 #!/usr/bin/env gpgscm
 
-;; Copyright (C) 2016 g10 Code GmbH
+;; Copyright (C) 2016-2017 g10 Code GmbH
 ;;
 ;; This file is part of GnuPG.
 ;;
@@ -18,6 +18,7 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
+(load (with-path "time.scm"))
 (setup-environment)
 
  ;; XXX because of --always-trust, the trustdb is not created.
@@ -91,8 +92,9 @@
 
 ;; Make the key expire in one year.
 (call-check `(,@gpg --quick-set-expire ,fpr "1y"))
-;; XXX It'd be nice to check that the value is right.
-(assert (not (equal? "" (expiration-time fpr))))
+(assert (time-matches? (+ (get-time) (years->seconds 1))
+		       (string->number (expiration-time fpr))
+		       (minutes->seconds 5)))
 
 
 ;;
@@ -134,21 +136,29 @@
   (lambda (subkey)
     (assert (= 1 (:alg subkey)))
     (assert (string-contains? (:cap subkey) "s"))
-    (assert (not (equal? "" (:expire subkey)))))
+    (assert (time-matches? (+ (get-time) (days->seconds 2))
+			   (string->number (:expire subkey))
+			   (minutes->seconds 5))))
   (lambda (subkey)
     (assert (= 1 (:alg subkey)))
     (assert (= 1024 (:length subkey)))
     (assert (string-contains? (:cap subkey) "s"))
-    (assert (not (equal? "" (:expire subkey)))))
+    (assert (time-matches? (+ (get-time) (weeks->seconds 2))
+			   (string->number (:expire subkey))
+			   (minutes->seconds 5))))
   (lambda (subkey)
     (assert (= 1 (:alg subkey)))
     (assert (= 2048 (:length subkey)))
     (assert (string-contains? (:cap subkey) "e"))
-    (assert (not (equal? "" (:expire subkey)))))
+    (assert (time-matches? (+ (get-time) (months->seconds 2))
+			   (string->number (:expire subkey))
+			   (minutes->seconds 5))))
   (lambda (subkey)
     (assert (= 1 (:alg subkey)))
     (assert (= 4096 (:length subkey)))
     (assert (string-contains? (:cap subkey) "s"))
     (assert (string-contains? (:cap subkey) "a"))
-    (assert (not (equal? "" (:expire subkey)))))
+    (assert (time-matches? (+ (get-time) (years->seconds 2))
+			   (string->number (:expire subkey))
+			   (minutes->seconds 5))))
   #f))

@@ -502,6 +502,14 @@ do_get_isotime (scheme *sc, pointer args)
 }
 
 static pointer
+do_get_time (scheme *sc, pointer args)
+{
+  FFI_PROLOG ();
+  FFI_ARGS_DONE_OR_RETURN (sc, args);
+  FFI_RETURN_INT (sc, gnupg_get_time ());
+}
+
+static pointer
 do_getpid (scheme *sc, pointer args)
 {
   FFI_PROLOG ();
@@ -1347,6 +1355,7 @@ ffi_init (scheme *sc, const char *argv0, const char *scriptname,
   ffi_define_function (sc, mkdir);
   ffi_define_function (sc, rmdir);
   ffi_define_function (sc, get_isotime);
+  ffi_define_function (sc, get_time);
   ffi_define_function (sc, getpid);
 
   /* Random numbers.  */

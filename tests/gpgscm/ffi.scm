@@ -47,3 +47,6 @@
 
 ;; Low-level mechanism to terminate the process.
 (ffi-define (_exit status))
+
+;; Get the current time in seconds since the epoch.
+(ffi-define (get-time))

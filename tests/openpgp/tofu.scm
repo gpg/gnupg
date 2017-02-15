@@ -18,6 +18,7 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (with-path "defs.scm"))
+(load (with-path "time.scm"))
 (setup-environment)
 
 (define GPGTIME 1480943782)
@@ -25,8 +26,6 @@
 ;; Generate a --faked-system-time parameter for a particular offset.
 (define (faketime delta)
   (string-append "--faked-system-time=" (number->string (+ GPGTIME delta))))
-;; A convenience function for the above.
-(define (days->seconds days) (* days 24 60 60))
 
 ;; Redefine GPG without --always-trust and a fixed time.
 (define GPG `(,(tool 'gpg) --no-permission-warning ,(faketime 0)))
