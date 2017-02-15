@@ -300,10 +300,17 @@ add_host (const char *name, int is_pool,
 
   idx = find_hostinfo (name);
 
-  if (!is_pool && !is_ip_address (name))
+  if (is_pool)
     {
-      /* This is a hostname but not a pool.  Use the name
-         as given without going through resolve_dns_addr.  */
+      /* For a pool immediately convert the address to a string.  */
+      tmperr = resolve_dns_addr (ai->addr, ai->addrlen,
+                                 (DNS_NUMERICHOST | DNS_WITHBRACKET), &tmphost);
+      is_numeric = 1;
+    }
+  else if (!is_ip_address (name))
+    {
+      /* This is a hostname.  Use the name as given without going
+       * through resolve_dns_addr.  */
       tmphost = xtrystrdup (name);
       if (!tmphost)
         tmperr = gpg_error_from_syserror ();
@@ -312,6 +319,10 @@ add_host (const char *name, int is_pool,
     }
   else
     {
+      /* Do a PTR lookup on AI.  If a name was not found the function
+       * returns the numeric address (with brackets) and we set a flag
+       * so that we know that the conversion to a numerical string has
+       * already be done.  */
       tmperr = resolve_dns_addr (ai->addr, ai->addrlen,
                                  DNS_WITHBRACKET, &tmphost);
       if (tmphost && is_ip_address (tmphost))
@@ -344,8 +355,7 @@ add_host (const char *name, int is_pool,
 
       if (tmpidx == -1)
         {
-          log_error ("map_host for '%s' problem: %s - '%s'"
-                     " [ignored]\n",
+          log_error ("map_host for '%s' problem: %s - '%s' [ignored]\n",
                      name, strerror (errno), tmphost);
         }
       else  /* Set or update the entry. */
@@ -355,6 +365,9 @@ add_host (const char *name, int is_pool,
           if (port)
             hosttable[tmpidx]->port = port;
 
+          /* If TMPHOST is not yet a numerical value do this now.
+           * Note: This is a simple string operations and not a PTR
+           * lookup (due to DNS_NUMERICHOST).  */
           if (!is_numeric)
             {
               xfree (tmphost);
