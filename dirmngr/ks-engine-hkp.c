@@ -82,16 +82,13 @@ struct hostinfo_s
   unsigned int v6:1; /* Host supports AF_INET6.  */
   unsigned int onion:1;/* NAME is an onion (Tor HS) address.  */
   unsigned int dead:1; /* Host is currently unresponsive.  */
+  unsigned int iporname_valid:1;  /* The field IPORNAME below is valid */
+                                  /* (but may be NULL) */
   time_t died_at;    /* The time the host was marked dead.  If this is
                         0 the host has been manually marked dead.  */
   char *cname;       /* Canonical name of the host.  Only set if this
                         is a pool or NAME has a numerical IP address.  */
-  char *v4addr;      /* A string with the v4 IP address of the host.
-                        NULL if NAME has a numeric IP address or no v4
-                        address is available.  */
-  char *v6addr;      /* A string with the v6 IP address of the host.
-                        NULL if NAME has a numeric IP address or no v6
-                        address is available.  */
+  char *iporname;    /* Numeric IP address or name for printing.  */
   unsigned short port; /* The port used by the host, 0 if unknown.  */
   char name[1];      /* The hostname.  */
 };
@@ -128,10 +125,10 @@ create_new_hostinfo (const char *name)
   hi->v6 = 0;
   hi->onion = 0;
   hi->dead = 0;
+  hi->iporname_valid = 0;
   hi->died_at = 0;
   hi->cname = NULL;
-  hi->v4addr = NULL;
-  hi->v6addr = NULL;
+  hi->iporname = NULL;
   hi->port = 0;
 
   /* Add it to the hosttable. */
@@ -295,7 +292,6 @@ add_host (const char *name, int is_pool,
   gpg_error_t tmperr;
   char *tmphost;
   int idx, tmpidx;
-  int is_numeric = 0;
   int i;
 
   idx = find_hostinfo (name);
@@ -305,7 +301,6 @@ add_host (const char *name, int is_pool,
       /* For a pool immediately convert the address to a string.  */
       tmperr = resolve_dns_addr (ai->addr, ai->addrlen,
                                  (DNS_NUMERICHOST | DNS_WITHBRACKET), &tmphost);
-      is_numeric = 1;
     }
   else if (!is_ip_address (name))
     {
@@ -320,13 +315,9 @@ add_host (const char *name, int is_pool,
   else
     {
       /* Do a PTR lookup on AI.  If a name was not found the function
-       * returns the numeric address (with brackets) and we set a flag
-       * so that we know that the conversion to a numerical string has
-       * already be done.  */
+       * returns the numeric address (with brackets).  */
       tmperr = resolve_dns_addr (ai->addr, ai->addrlen,
                                  DNS_WITHBRACKET, &tmphost);
-      if (tmphost && is_ip_address (tmphost))
-        is_numeric = 1;
     }
 
   if (tmperr)
@@ -360,42 +351,16 @@ add_host (const char *name, int is_pool,
         }
       else  /* Set or update the entry. */
         {
-          char *ipaddr = NULL;
-
           if (port)
             hosttable[tmpidx]->port = port;
-
-          /* If TMPHOST is not yet a numerical value do this now.
-           * Note: This is a simple string operations and not a PTR
-           * lookup (due to DNS_NUMERICHOST).  */
-          if (!is_numeric)
-            {
-              xfree (tmphost);
-              tmperr = resolve_dns_addr (ai->addr, ai->addrlen,
-                                         (DNS_NUMERICHOST
-                                          | DNS_WITHBRACKET),
-                                         &tmphost);
-              if (tmperr)
-                log_info ("resolve_dns_addr failed: %s\n",
-                          gpg_strerror (tmperr));
-              else
-                {
-                  ipaddr = tmphost;
-                  tmphost = NULL;
-                }
-            }
 
           if (ai->family == AF_INET6)
             {
               hosttable[tmpidx]->v6 = 1;
-              xfree (hosttable[tmpidx]->v6addr);
-              hosttable[tmpidx]->v6addr = ipaddr;
             }
           else if (ai->family == AF_INET)
             {
               hosttable[tmpidx]->v4 = 1;
-              xfree (hosttable[tmpidx]->v4addr);
-              hosttable[tmpidx]->v4addr = ipaddr;
             }
           else
             BUG ();
@@ -832,6 +797,7 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
   if (err)
     return err;
 
+  /* FIXME: We need a lock for the hosttable.  */
   curtime = gnupg_get_time ();
   for (idx=0; idx < hosttable_size; idx++)
     if ((hi=hosttable[idx]))
@@ -843,16 +809,82 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
           }
         else
           diedstr = died = NULL;
-        err = ks_printf_help (ctrl, "%3d %s %s %s %s%s%s%s%s%s%s%s\n",
+
+        if (!hi->iporname_valid)
+          {
+            char *canon = NULL;
+
+            xfree (hi->iporname);
+            hi->iporname = NULL;
+
+            /* Do a lookup just for the display purpose.  */
+            if (hi->onion || hi->pool)
+              ;
+            else if (is_ip_address (hi->name))
+              {
+                dns_addrinfo_t aibuf, ai;
+
+                /* Turn the numerical IP address string into an AI and
+                 * then do a DNS PTR lookup.  */
+                if (!resolve_dns_name (hi->name, 0, 0,
+                                       SOCK_STREAM,
+                                       &aibuf, &canon))
+                  {
+                    if (canon && is_ip_address (canon))
+                      {
+                        xfree (canon);
+                        canon = NULL;
+                      }
+                    for (ai = aibuf; !canon && ai; ai = ai->next)
+                      {
+                        resolve_dns_addr (ai->addr, ai->addrlen,
+                                          DNS_WITHBRACKET, &canon);
+                        if (canon && is_ip_address (canon))
+                          {
+                            /* We already have the numeric IP - no need to
+                             * display it a second time.  */
+                            xfree (canon);
+                            canon = NULL;
+                          }
+                      }
+                  }
+                free_dns_addrinfo (aibuf);
+              }
+            else
+              {
+                dns_addrinfo_t aibuf, ai;
+
+                /* Get the IP address as a string from a name.  Note
+                 * that resolve_dns_addr allocates CANON on success
+                 * and thus terminates the loop. */
+                if (!resolve_dns_name (hi->name, 0,
+                                       hi->v6? AF_INET6 : AF_INET,
+                                       SOCK_STREAM,
+                                       &aibuf, NULL))
+                  {
+                    for (ai = aibuf; !canon && ai; ai = ai->next)
+                      {
+                        resolve_dns_addr (ai->addr, ai->addrlen,
+                                          DNS_NUMERICHOST|DNS_WITHBRACKET,
+                                          &canon);
+                      }
+                  }
+                free_dns_addrinfo (aibuf);
+              }
+
+            hi->iporname = canon;
+            hi->iporname_valid = 1;
+          }
+
+        err = ks_printf_help (ctrl, "%3d %s %s %s %s%s%s%s%s%s%s\n",
                               idx,
                               hi->onion? "O" : hi->v6? "6":" ",
                               hi->v4? "4":" ",
                               hi->dead? "d":" ",
                               hi->name,
-                              hi->v6addr? " v6=":"",
-                              hi->v6addr? hi->v6addr:"",
-                              hi->v4addr? " v4=":"",
-                              hi->v4addr? hi->v4addr:"",
+                              hi->iporname? " (":"",
+                              hi->iporname? hi->iporname : "",
+                              hi->iporname? ")":"",
                               diedstr? "  (":"",
                               diedstr? diedstr:"",
                               diedstr? ")":""   );
@@ -1059,6 +1091,7 @@ ks_hkp_reload (void)
       hi = hosttable[idx];
       if (!hi)
         continue;
+      hi->iporname_valid = 0;
       if (!hi->dead)
         continue;
       hi->dead = 0;
