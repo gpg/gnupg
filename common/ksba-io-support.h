@@ -34,31 +34,31 @@
  * gnupg_ksba_create_writer.  */
 #define GNUPG_KSBA_IO_PEM         1  /* X.509 PEM format.  */
 #define GNUPG_KSBA_IO_BASE64      2  /* Plain Base64 format.  */
-#define GNUPG_KSBA_IO_AUTODETECT  4  /* Try toautodeect the format.  */
+#define GNUPG_KSBA_IO_AUTODETECT  4  /* Try to autodetect the format.  */
 #define GNUPG_KSBA_IO_MULTIPEM    8  /* Allow more than one PEM chunk.  */
 
 
 /* Context object.  */
-typedef struct base64_context_s *Base64Context;
+typedef struct gnupg_ksba_io_s *gnupg_ksba_io_t;
 
 
 
-gpg_error_t gnupg_ksba_create_reader (Base64Context *ctx,
+gpg_error_t gnupg_ksba_create_reader (gnupg_ksba_io_t *ctx,
                                       unsigned int flags,
                                       estream_t fp,
                                       ksba_reader_t *r_reader);
 
-int gpgsm_reader_eof_seen (Base64Context ctx);
-void gpgsm_destroy_reader (Base64Context ctx);
+int gnupg_ksba_reader_eof_seen (gnupg_ksba_io_t ctx);
+void gnupg_ksba_destroy_reader (gnupg_ksba_io_t ctx);
 
-gpg_error_t gnupg_ksba_create_writer (Base64Context *ctx,
+gpg_error_t gnupg_ksba_create_writer (gnupg_ksba_io_t *ctx,
                                       unsigned int flags,
                                       const char *pem_name,
                                       estream_t stream,
                                       ksba_writer_t *r_writer);
 
-int  gpgsm_finish_writer (Base64Context ctx);
-void gpgsm_destroy_writer (Base64Context ctx);
+gpg_error_t gnupg_ksba_finish_writer (gnupg_ksba_io_t ctx);
+void gnupg_ksba_destroy_writer (gnupg_ksba_io_t ctx);
 
 
 

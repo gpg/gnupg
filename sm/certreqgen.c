@@ -737,7 +737,7 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
 
   if (!outctrl->dryrun)
     {
-      Base64Context b64writer = NULL;
+      gnupg_ksba_io_t b64writer = NULL;
       ksba_writer_t writer;
       int create_cert ;
 
@@ -756,7 +756,7 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
           rc = create_request (ctrl, para, cardkeyid, public, sigkey, writer);
           if (!rc)
             {
-              rc = gpgsm_finish_writer (b64writer);
+              rc = gnupg_ksba_finish_writer (b64writer);
               if (rc)
                 log_error ("write failed: %s\n", gpg_strerror (rc));
               else
@@ -766,7 +766,7 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
                             create_cert?"":" request");
                 }
             }
-          gpgsm_destroy_writer (b64writer);
+          gnupg_ksba_destroy_writer (b64writer);
         }
     }
 

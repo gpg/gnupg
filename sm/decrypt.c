@@ -243,8 +243,8 @@ int
 gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
 {
   int rc;
-  Base64Context b64reader = NULL;
-  Base64Context b64writer = NULL;
+  gnupg_ksba_io_t b64reader = NULL;
+  gnupg_ksba_io_t b64writer = NULL;
   ksba_reader_t reader;
   ksba_writer_t writer;
   ksba_cms_t cms = NULL;
@@ -564,7 +564,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
     }
   while (stopreason != KSBA_SR_READY);
 
-  rc = gpgsm_finish_writer (b64writer);
+  rc = gnupg_ksba_finish_writer (b64writer);
   if (rc)
     {
       log_error ("write failed: %s\n", gpg_strerror (rc));
@@ -582,8 +582,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                  gpg_strerror (rc), gpg_strsource (rc));
     }
   ksba_cms_release (cms);
-  gpgsm_destroy_reader (b64reader);
-  gpgsm_destroy_writer (b64writer);
+  gnupg_ksba_destroy_reader (b64reader);
+  gnupg_ksba_destroy_writer (b64writer);
   keydb_release (kh);
   es_fclose (in_fp);
   if (dfparm.hd)

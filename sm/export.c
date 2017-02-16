@@ -133,7 +133,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
   KEYDB_HANDLE hd = NULL;
   KEYDB_SEARCH_DESC *desc = NULL;
   int ndesc;
-  Base64Context b64writer = NULL;
+  gnupg_ksba_io_t b64writer = NULL;
   ksba_writer_t writer;
   strlist_t sl;
   ksba_cert_t cert = NULL;
@@ -284,13 +284,13 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
           if (ctrl->create_pem)
             {
               /* We want one certificate per PEM block */
-              rc = gpgsm_finish_writer (b64writer);
+              rc = gnupg_ksba_finish_writer (b64writer);
               if (rc)
                 {
                   log_error ("write failed: %s\n", gpg_strerror (rc));
                   goto leave;
                 }
-              gpgsm_destroy_writer (b64writer);
+              gnupg_ksba_destroy_writer (b64writer);
               b64writer = NULL;
             }
         }
@@ -302,7 +302,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
     log_error ("keydb_search failed: %s\n", gpg_strerror (rc));
   else if (b64writer)
     {
-      rc = gpgsm_finish_writer (b64writer);
+      rc = gnupg_ksba_finish_writer (b64writer);
       if (rc)
         {
           log_error ("write failed: %s\n", gpg_strerror (rc));
@@ -311,7 +311,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
     }
 
  leave:
-  gpgsm_destroy_writer (b64writer);
+  gnupg_ksba_destroy_writer (b64writer);
   ksba_cert_release (cert);
   xfree (desc);
   keydb_release (hd);
@@ -331,7 +331,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream, int rawmode)
   gpg_error_t err = 0;
   KEYDB_HANDLE hd;
   KEYDB_SEARCH_DESC *desc = NULL;
-  Base64Context b64writer = NULL;
+  gnupg_ksba_io_t b64writer = NULL;
   ksba_writer_t writer;
   ksba_cert_t cert = NULL;
   const unsigned char *image;
@@ -463,13 +463,13 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream, int rawmode)
   if (ctrl->create_pem)
     {
       /* We want one certificate per PEM block */
-      err = gpgsm_finish_writer (b64writer);
+      err = gnupg_ksba_finish_writer (b64writer);
       if (err)
         {
           log_error ("write failed: %s\n", gpg_strerror (err));
           goto leave;
         }
-      gpgsm_destroy_writer (b64writer);
+      gnupg_ksba_destroy_writer (b64writer);
       b64writer = NULL;
     }
 
@@ -477,7 +477,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream, int rawmode)
   cert = NULL;
 
  leave:
-  gpgsm_destroy_writer (b64writer);
+  gnupg_ksba_destroy_writer (b64writer);
   ksba_cert_release (cert);
   xfree (desc);
   keydb_release (hd);

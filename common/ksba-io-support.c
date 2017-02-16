@@ -101,8 +101,8 @@ struct writer_cb_parm_s
 };
 
 
-/* context for this module's functions */
-struct base64_context_s {
+/* Context for this module's functions.  */
+struct gnupg_ksba_io_s {
   union {
     struct reader_cb_parm_s rparm;
     struct writer_cb_parm_s wparm;
@@ -475,7 +475,7 @@ base64_writer_cb (void *cb_value, const void *buffer, size_t count)
 }
 
 
-/* This callback is only used in stream mode.  Hiowever, we don't
+/* This callback is only used in stream mode.  However, we don't
    restrict it to this.  */
 static int
 plain_writer_cb (void *cb_value, const void *buffer, size_t count)
@@ -553,7 +553,7 @@ base64_finish_write (struct writer_cb_parm_s *parm)
 /* Create a reader for the stream FP.  FLAGS can be used to specify
  * the expected input encoding.
  *
- * The function returns a Base64Context object which must be passed to
+ * The function returns a gnupg_ksba_io_t object which must be passed to
  * the gpgme_destroy_reader function.  The created ksba_reader_t
  * object is stored at R_READER - the caller must not call the
  * ksba_reader_release function on.
@@ -571,7 +571,7 @@ base64_finish_write (struct writer_cb_parm_s *parm)
  * which in turn has a gight priority than the AUTODETECT flag.
  */
 gpg_error_t
-gnupg_ksba_create_reader (Base64Context *ctx,
+gnupg_ksba_create_reader (gnupg_ksba_io_t *ctx,
                           unsigned int flags, estream_t fp,
                           ksba_reader_t *r_reader)
 {
@@ -624,14 +624,17 @@ gnupg_ksba_create_reader (Base64Context *ctx,
 }
 
 
+/* Return True if an EOF as been seen.  */
 int
-gpgsm_reader_eof_seen (Base64Context ctx)
+gnupg_ksba_reader_eof_seen (gnupg_ksba_io_t ctx)
 {
   return ctx && ctx->u.rparm.eof_seen;
 }
 
+
+/* Destroy a reader object.  */
 void
-gpgsm_destroy_reader (Base64Context ctx)
+gnupg_ksba_destroy_reader (gnupg_ksba_io_t ctx)
 {
   if (!ctx)
     return;
@@ -647,7 +650,7 @@ gpgsm_destroy_reader (Base64Context ctx)
  * and footer lines; if PEM_NAME is NULL the string "CMS OBJECT" is
  * used.
  *
- * The function returns a Base64Context object which must be passed to
+ * The function returns a gnupg_ksba_io_t object which must be passed to
  * the gpgme_destroy_writer function.  The created ksba_writer_t
  * object is stored at R_WRITER - the caller must not call the
  * ksba_reader_release function on it.
@@ -660,7 +663,7 @@ gpgsm_destroy_reader (Base64Context ctx)
  *
  */
 gpg_error_t
-gnupg_ksba_create_writer (Base64Context *ctx, unsigned int flags,
+gnupg_ksba_create_writer (gnupg_ksba_io_t *ctx, unsigned int flags,
                           const char *pem_name, estream_t stream,
                           ksba_writer_t *r_writer)
 {
@@ -718,8 +721,10 @@ gnupg_ksba_create_writer (Base64Context *ctx, unsigned int flags,
 }
 
 
-int
-gpgsm_finish_writer (Base64Context ctx)
+/* Flush a writer.  This is for example required to write the padding
+ * or the PEM footer.  */
+gpg_error_t
+gnupg_ksba_finish_writer (gnupg_ksba_io_t ctx)
 {
   struct writer_cb_parm_s *parm;
 
@@ -735,8 +740,9 @@ gpgsm_finish_writer (Base64Context ctx)
 }
 
 
+/* Destroy a writer object.  */
 void
-gpgsm_destroy_writer (Base64Context ctx)
+gnupg_ksba_destroy_writer (gnupg_ksba_io_t ctx)
 {
   if (!ctx)
     return;

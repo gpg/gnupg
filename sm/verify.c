@@ -90,8 +90,8 @@ int
 gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 {
   int i, rc;
-  Base64Context b64reader = NULL;
-  Base64Context b64writer = NULL;
+  gnupg_ksba_io_t b64reader = NULL;
+  gnupg_ksba_io_t b64writer = NULL;
   ksba_reader_t reader;
   ksba_writer_t writer = NULL;
   ksba_cms_t cms = NULL;
@@ -253,7 +253,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
   if (b64writer)
     {
-      rc = gpgsm_finish_writer (b64writer);
+      rc = gnupg_ksba_finish_writer (b64writer);
       if (rc)
         {
           log_error ("write failed: %s\n", gpg_strerror (rc));
@@ -650,8 +650,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
  leave:
   ksba_cms_release (cms);
-  gpgsm_destroy_reader (b64reader);
-  gpgsm_destroy_writer (b64writer);
+  gnupg_ksba_destroy_reader (b64reader);
+  gnupg_ksba_destroy_writer (b64writer);
   keydb_release (kh);
   gcry_md_close (data_md);
   es_fclose (in_fp);

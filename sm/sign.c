@@ -316,7 +316,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
 {
   int i, rc;
   gpg_error_t err;
-  Base64Context b64writer = NULL;
+  gnupg_ksba_io_t b64writer = NULL;
   ksba_writer_t writer;
   ksba_cms_t cms = NULL;
   ksba_stop_reason_t stopreason;
@@ -763,7 +763,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
     }
   while (stopreason != KSBA_SR_READY);
 
-  rc = gpgsm_finish_writer (b64writer);
+  rc = gnupg_ksba_finish_writer (b64writer);
   if (rc)
     {
       log_error ("write failed: %s\n", gpg_strerror (rc));
@@ -781,7 +781,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
   if (release_signerlist)
     gpgsm_release_certlist (signerlist);
   ksba_cms_release (cms);
-  gpgsm_destroy_writer (b64writer);
+  gnupg_ksba_destroy_writer (b64writer);
   keydb_release (kh);
   gcry_md_close (data_md);
   return rc;

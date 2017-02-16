@@ -272,7 +272,7 @@ static int
 import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
 {
   int rc;
-  Base64Context b64reader = NULL;
+  gnupg_ksba_io_t b64reader = NULL;
   ksba_reader_t reader;
   ksba_cert_t cert = NULL;
   ksba_cms_t cms = NULL;
@@ -380,14 +380,14 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
 
       ksba_reader_clear (reader, NULL, NULL);
     }
-  while (!gpgsm_reader_eof_seen (b64reader));
+  while (!gnupg_ksba_reader_eof_seen (b64reader));
 
  leave:
   if (any && gpg_err_code (rc) == GPG_ERR_EOF)
     rc = 0;
   ksba_cms_release (cms);
   ksba_cert_release (cert);
-  gpgsm_destroy_reader (b64reader);
+  gnupg_ksba_destroy_reader (b64reader);
   es_fclose (fp);
   return rc;
 }

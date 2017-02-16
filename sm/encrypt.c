@@ -299,7 +299,7 @@ int
 gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
 {
   int rc = 0;
-  Base64Context b64writer = NULL;
+  gnupg_ksba_io_t b64writer = NULL;
   gpg_error_t err;
   ksba_writer_t writer;
   ksba_reader_t reader = NULL;
@@ -502,7 +502,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
     }
 
 
-  rc = gpgsm_finish_writer (b64writer);
+  rc = gnupg_ksba_finish_writer (b64writer);
   if (rc)
     {
       log_error ("write failed: %s\n", gpg_strerror (rc));
@@ -513,7 +513,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
 
  leave:
   ksba_cms_release (cms);
-  gpgsm_destroy_writer (b64writer);
+  gnupg_ksba_destroy_writer (b64writer);
   ksba_reader_release (reader);
   keydb_release (kh);
   xfree (dek);
