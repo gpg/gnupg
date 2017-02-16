@@ -91,7 +91,9 @@ common_sources = \
 	exectool.c exectool.h \
 	server-help.c server-help.h \
 	name-value.c name-value.h \
-	recsel.c recsel.h
+	recsel.c recsel.h \
+	ksba-io-support.c ksba-io-support.h
+
 
 if HAVE_W32_SYSTEM
 common_sources += w32-reg.c

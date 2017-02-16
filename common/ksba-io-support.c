@@ -1,4 +1,4 @@
-/* base64.c
+/* kska-io-support.c - Supporting functions for ksba reader and writer
  * Copyright (C) 2001, 2003, 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -26,7 +26,7 @@
 #include <time.h>
 #include <assert.h>
 
-#include "gpgsm.h"
+#include "../sm/gpgsm.h"
 
 
 #include <ksba.h>
