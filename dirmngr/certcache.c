@@ -68,8 +68,12 @@ struct cert_item_s
   char *subject_dn;         /* The malloced subject DN - maybe NULL.  */
   struct
   {
-    unsigned int loaded:1;  /* It has been explicitly loaded.  */
+    unsigned int config:1;  /* This has been loaded from the configuration.  */
     unsigned int trusted:1; /* This is a trusted root certificate.  */
+    unsigned int systrust:1;/* The certifciate is trusted because it
+                             * is in the system's store of trusted
+                             * certificates (i.e. not configured using
+                             * GnuPG mechanisms.  */
   } flags;
 };
 typedef struct cert_item_s *cert_item_t;
@@ -88,9 +92,9 @@ static npth_rwlock_t cert_cache_lock;
 /* Flag to track whether the cache has been initialized.  */
 static int initialization_done;
 
-/* Total number of certificates loaded during initialization and
-   cached during operation.  */
-static unsigned int total_loaded_certificates;
+/* Total number of certificates loaded during initialization
+ * (ie. configured) and extra certifcates cached during operation.  */
+static unsigned int total_config_certificates;
 static unsigned int total_extra_certificates;
 
 
@@ -229,13 +233,20 @@ clean_cache_slot (cert_item_t ci)
 
 
 /* Put the certificate CERT into the cache.  It is assumed that the
-   cache is locked while this function is called. If FPR_BUFFER is not
-   NULL the fingerprint of the certificate will be stored there.
-   FPR_BUFFER neds to point to a buffer of at least 20 bytes. The
-   fingerprint will be stored on success or when the function returns
-   gpg_err_code(GPG_ERR_DUP_VALUE). */
+ * cache is locked while this function is called.
+ *
+ * FROM_CONFIG indicates that CERT is a permanent certificate and
+ * should stay in the cache.  IS_TRUSTED requests that the trusted
+ * flag is set for the certificate; a value of 1 indicates the the
+ * cert is trusted due to GnuPG mechanisms, a value of 2 indicates
+ * that it is trusted because it has been taken from the system's
+ * store of trusted certificates.  If FPR_BUFFER is not NULL the
+ * fingerprint of the certificate will be stored there.  FPR_BUFFER
+ * needs to point to a buffer of at least 20 bytes.  The fingerprint
+ * will be stored on success or when the function returns
+ * GPG_ERR_DUP_VALUE.  */
 static gpg_error_t
-put_cert (ksba_cert_t cert, int is_loaded, int is_trusted, void *fpr_buffer)
+put_cert (ksba_cert_t cert, int from_config, int is_trusted, void *fpr_buffer)
 {
   unsigned char help_fpr_buffer[20], *fpr;
   cert_item_t ci;
@@ -243,17 +254,17 @@ put_cert (ksba_cert_t cert, int is_loaded, int is_trusted, void *fpr_buffer)
   fpr = fpr_buffer? fpr_buffer : &help_fpr_buffer;
 
   /* If we already reached the caching limit, drop a couple of certs
-     from the cache.  Our dropping strategy is simple: We keep a
-     static index counter and use this to start looking for
-     certificates, then we drop 5 percent of the oldest certificates
-     starting at that index.  For a large cache this is a fair way of
-     removing items. An LRU strategy would be better of course.
-     Because we append new entries to the head of the list and we want
-     to remove old ones first, we need to do this from the tail.  The
-     implementation is not very efficient but compared to the long
-     time it takes to retrieve a certifciate from an external resource
-     it seems to be reasonable. */
-  if (!is_loaded && total_extra_certificates >= MAX_EXTRA_CACHED_CERTS)
+   * from the cache.  Our dropping strategy is simple: We keep a
+   * static index counter and use this to start looking for
+   * certificates, then we drop 5 percent of the oldest certificates
+   * starting at that index.  For a large cache this is a fair way of
+   * removing items.  An LRU strategy would be better of course.
+   * Because we append new entries to the head of the list and we want
+   * to remove old ones first, we need to do this from the tail.  The
+   * implementation is not very efficient but compared to the long
+   * time it takes to retrieve a certificate from an external resource
+   * it seems to be reasonable.  */
+  if (!from_config && total_extra_certificates >= MAX_EXTRA_CACHED_CERTS)
     {
       static int idx;
       cert_item_t ci_mark;
@@ -270,7 +281,7 @@ put_cert (ksba_cert_t cert, int is_loaded, int is_trusted, void *fpr_buffer)
         {
           ci_mark = NULL;
           for (ci = cert_cache[i]; ci; ci = ci->next)
-            if (ci->cert && !ci->flags.loaded)
+            if (ci->cert && !ci->flags.config)
               ci_mark = ci;
           if (ci_mark)
             {
@@ -316,11 +327,12 @@ put_cert (ksba_cert_t cert, int is_loaded, int is_trusted, void *fpr_buffer)
       return gpg_error (GPG_ERR_INV_CERT_OBJ);
     }
   ci->subject_dn = ksba_cert_get_subject (cert, 0);
-  ci->flags.loaded  = !!is_loaded;
+  ci->flags.config  = !!from_config;
   ci->flags.trusted = !!is_trusted;
+  ci->flags.systrust = (is_trusted && is_trusted == 2);
 
-  if (is_loaded)
-    total_loaded_certificates++;
+  if (from_config)
+    total_config_certificates++;
   else
     total_extra_certificates++;
 
@@ -390,7 +402,7 @@ load_certs_from_dir (const char *dirname, int are_trusted)
           continue;
         }
 
-      err = put_cert (cert, 1, are_trusted, NULL);
+      err = put_cert (cert, 1, !!are_trusted, NULL);
       if (gpg_err_code (err) == GPG_ERR_DUP_VALUE)
         log_info (_("certificate '%s' already cached\n"), fname);
       else if (!err)
@@ -476,7 +488,7 @@ cert_cache_deinit (int full)
         }
     }
 
-  total_loaded_certificates = 0;
+  total_config_certificates = 0;
   total_extra_certificates = 0;
   initialization_done = 0;
   release_cache_lock ();
@@ -487,7 +499,7 @@ void
 cert_cache_print_stats (void)
 {
   log_info (_("permanently loaded certificates: %u\n"),
-            total_loaded_certificates);
+            total_config_certificates);
   log_info (_("    runtime cached certificates: %u\n"),
             total_extra_certificates);
 }
