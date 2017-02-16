@@ -23,6 +23,7 @@ common/asshelp.c
 common/audit.c
 common/helpfile.c
 common/gettime.c
+common/ksba-io-support.c
 
 common/argparse.c
 common/logging.c
@@ -82,7 +83,6 @@ scd/app-openpgp.c
 scd/app-dinsig.c
 scd/scdaemon.c
 
-sm/base64.c
 sm/call-agent.c
 sm/call-dirmngr.c
 sm/certchain.c
