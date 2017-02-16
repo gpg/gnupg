@@ -367,10 +367,7 @@ do_get_cert_local (ctrl_t ctrl, const char *name, const char *command)
   ksba_cert_t cert;
 
   if (name)
-    {
-      buf = xmalloc ( strlen (command) + 1 + strlen(name) + 1);
-      strcpy (stpcpy (stpcpy (buf, command), " "), name);
-    }
+    buf = xstrconcat (command, " ", name, NULL);
   else
     buf = xstrdup (command);
 
@@ -475,15 +472,13 @@ get_cert_local_ski (ctrl_t ctrl, const char *name, ksba_sexp_t keyid)
       return NULL;
     }
 
-  buf = xtrymalloc (15 + strlen (hexkeyid) + 2 + strlen(name) + 1);
+  buf = strconcat ("SENDCERT_SKI ", hexkeyid, " /", name, NULL);
   if (!buf)
     {
-
       log_error ("can't allocate enough memory: %s\n", strerror (errno));
       xfree (hexkeyid);
       return NULL;
     }
-  strcpy (stpcpy (stpcpy (stpcpy (buf, "SENDCERT_SKI "), hexkeyid)," /"),name);
   xfree (hexkeyid);
 
   rc = assuan_inquire (ctrl->server_local->assuan_ctx, buf,

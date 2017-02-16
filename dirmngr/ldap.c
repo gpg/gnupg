@@ -445,26 +445,16 @@ make_url (char **url, const char *dn, const char *filter)
       xfree (u_dn);
       return err;
     }
-  *url = malloc ( 8 + strlen (u_dn)
-                 + 1 + strlen (attrs)
-                 + 5 + strlen (u_filter) + 1 );
-  if (!*url)
-    {
-      err = gpg_error_from_errno (errno);
-      xfree (u_dn);
-      xfree (u_filter);
-      return err;
-    }
 
-  stpcpy (stpcpy (stpcpy (stpcpy (stpcpy (stpcpy (*url, "ldap:///"),
-                                          u_dn),
-                                  "?"),
-                          attrs),
-                  "?sub?"),
-          u_filter);
+  *url = strconcat ("ldap:///", u_dn, "?", attrs, "?sub?", u_filter, NULL);
+  if (!*url)
+    err = gpg_error_from_syserror ();
+  else
+    err = 0;
+
   xfree (u_dn);
   xfree (u_filter);
-  return 0;
+  return err;
 }
 
 

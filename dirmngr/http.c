@@ -2150,11 +2150,10 @@ store_header (http_t hd, char *line)
   if (h)
     {
       /* We have already seen a line with that name.  Thus we assume
-         it is a comma separated list and merge them.  */
-      p = xtrymalloc (strlen (h->value) + 1 + strlen (value)+ 1);
+       * it is a comma separated list and merge them.  */
+      p = strconcat (h->value, ",", value, NULL);
       if (!p)
         return gpg_err_code_from_syserror ();
-      strcpy (stpcpy (stpcpy (p, h->value), ","), value);
       xfree (h->value);
       h->value = p;
       return 0;

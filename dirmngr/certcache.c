@@ -1004,15 +1004,15 @@ find_cert_bysn (ctrl_t ctrl, const char *issuer_dn, ksba_sexp_t serialno)
       log_error ("serial_hex() failed\n");
       return NULL;
     }
-  buf = xtrymalloc (1 + strlen (hexsn) + 1 + strlen (issuer_dn) + 1);
+  buf = strconcat ("#", hexsn, "/", issuer_dn, NULL);
   if (!buf)
     {
       log_error ("can't allocate enough memory: %s\n", strerror (errno));
       xfree (hexsn);
       return NULL;
     }
-  strcpy (stpcpy (stpcpy (stpcpy (buf, "#"), hexsn),"/"), issuer_dn);
   xfree (hexsn);
+
   cert = get_cert_local (ctrl, buf);
   xfree (buf);
   if (cert)
@@ -1169,13 +1169,12 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
          search is done. */
       char *buf;
 
-      buf = xtrymalloc (1 + strlen (subject_dn) + 1);
+      buf = strconcat ("/", subject_dn, NULL);
       if (!buf)
         {
           log_error ("can't allocate enough memory: %s\n", strerror (errno));
           return NULL;
         }
-      strcpy (stpcpy (buf, "/"), subject_dn);
       cert = get_cert_local (ctrl, buf);
       xfree (buf);
     }
