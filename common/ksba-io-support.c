@@ -1,14 +1,25 @@
 /* kska-io-support.c - Supporting functions for ksba reader and writer
- * Copyright (C) 2001, 2003, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2001-2005, 2007, 2010-2011, 2017  Werner Koch
+ * Copyright (C) 2006  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
+ * This file is free software; you can redistribute it and/or modify
+ * it under the terms of either
  *
- * GnuPG is distributed in the hope that it will be useful,
+ *   - the GNU Lesser General Public License as published by the Free
+ *     Software Foundation; either version 3 of the License, or (at
+ *     your option) any later version.
+ *
+ * or
+ *
+ *   - the GNU General Public License as published by the Free
+ *     Software Foundation; either version 2 of the License, or (at
+ *     your option) any later version.
+ *
+ * or both in parallel, as here.
+ *
+ * This file is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
