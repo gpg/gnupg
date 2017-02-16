@@ -139,7 +139,7 @@ check_application_conflict (const char *name, app_t app)
 gpg_error_t
 app_reset (app_t app, ctrl_t ctrl, int send_reset)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
 
   if (send_reset)
     {

@@ -1182,8 +1182,11 @@ start_connection_thread (void *arg)
 void
 scd_kick_the_loop (void)
 {
+  int ret;
+
   /* Kick the select loop.  */
-  write (notify_fd, "", 1);
+  ret = write (notify_fd, "", 1);
+  (void)ret;
 }
 
 /* Connection handler loop.  Wait for connection requests and spawn a
@@ -1308,8 +1311,7 @@ handle_connections (int listen_fd)
         {
           char buf[256];
 
-          read (pipe_fd[0], buf, sizeof buf);
-          ret--;
+          ret = read (pipe_fd[0], buf, sizeof buf);
         }
 
       if (listen_fd != -1 && FD_ISSET (listen_fd, &read_fdset))
