@@ -990,6 +990,22 @@ else
   fi
 fi
 
+#
+# Allow to set a fixed trust store file for system provided certificates.
+#
+AC_ARG_WITH([default-trust-store-file],
+            [AC_HELP_STRING([--with-default-trust-store-file=FILE],
+                            [Use FILE as system trust store])],
+            default_trust_store_file="$withval",
+            default_trust_store_file="")
+if test x"$default_trust_store_file" = xno;then
+  default_trust_store_file=""
+fi
+if test x"$default_trust_store_file" != x ; then
+  AC_DEFINE_UNQUOTED([DEFAULT_TRUST_STORE_FILE],
+    ["$default_trust_store_file"], [Use as default system trust store file])
+fi
+
 
 AC_MSG_NOTICE([checking for networking options])
 

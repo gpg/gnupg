@@ -1,5 +1,5 @@
 /* certcache.c - Certificate caching
- *      Copyright (C) 2004, 2005, 2007, 2008 g10 Code GmbH
+ * Copyright (C) 2004, 2005, 2007, 2008, 2017 g10 Code GmbH
  *
  * This file is part of DirMngr.
  *
@@ -29,9 +29,9 @@
 
 #include "dirmngr.h"
 #include "misc.h"
+#include "../common/ksba-io-support.h"
 #include "crlfetch.h"
 #include "certcache.h"
-
 
 #define MAX_EXTRA_CACHED_CERTS 1000
 
@@ -93,10 +93,12 @@ static npth_rwlock_t cert_cache_lock;
 static int initialization_done;
 
 /* Total number of certificates loaded during initialization
- * (ie. configured) and extra certifcates cached during operation.  */
+ * (ie. configured), extra certificates cached during operation,
+ * number of trusted and system trusted certificates.  */
 static unsigned int total_config_certificates;
 static unsigned int total_extra_certificates;
-
+static unsigned int total_trusted_certificates;
+static unsigned int total_system_trusted_certificates;
 
 
 /* Helper to do the cache locking.  */
@@ -288,6 +290,10 @@ put_cert (ksba_cert_t cert, int from_config, int is_trusted, void *fpr_buffer)
               clean_cache_slot (ci_mark);
               drop_count--;
               total_extra_certificates--;
+              if (ci->flags.trusted)
+                total_trusted_certificates--;
+              if (ci->flags.systrust)
+                total_system_trusted_certificates--;
             }
         }
       if (i==idx)
@@ -330,6 +336,11 @@ put_cert (ksba_cert_t cert, int from_config, int is_trusted, void *fpr_buffer)
   ci->flags.config  = !!from_config;
   ci->flags.trusted = !!is_trusted;
   ci->flags.systrust = (is_trusted && is_trusted == 2);
+
+  if (ci->flags.trusted)
+    total_trusted_certificates++;
+  if (ci->flags.systrust)
+    total_system_trusted_certificates++;
 
   if (from_config)
     total_config_certificates++;
@@ -433,6 +444,121 @@ load_certs_from_dir (const char *dirname, int are_trusted)
 }
 
 
+/* Load certificates from FILE.  The certifciates are expected to be
+ * PEM encoded so that it is possible to load several certificates.
+ * All certates rea considered to be system provided trusted
+ * certificates.  The cache should be in a locked state when calling
+ * this function.  */
+static gpg_error_t
+load_certs_from_file (const char *fname)
+{
+  gpg_error_t err;
+  estream_t fp = NULL;
+  gnupg_ksba_io_t ioctx = NULL;
+  ksba_reader_t reader;
+  ksba_cert_t cert = NULL;
+
+  fp = es_fopen (fname, "rb");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("can't open '%s': %s\n"), fname, gpg_strerror (err));
+      goto leave;
+    }
+
+  err = gnupg_ksba_create_reader (&ioctx,
+                                  (GNUPG_KSBA_IO_PEM | GNUPG_KSBA_IO_MULTIPEM),
+                                  fp, &reader);
+  if (err)
+    {
+      log_error ("can't create reader: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Loop to read all certificates from the file.  */
+  do
+    {
+      ksba_cert_release (cert);
+      cert = NULL;
+      err = ksba_cert_new (&cert);
+      if (!err)
+        err = ksba_cert_read_der (cert, reader);
+      if (err)
+        {
+          if (gpg_err_code (err) == GPG_ERR_EOF)
+            err = 0;
+          else
+            log_error (_("can't parse certificate '%s': %s\n"),
+                       fname, gpg_strerror (err));
+          goto leave;
+        }
+
+      err = put_cert (cert, 1, 2, NULL);
+      if (gpg_err_code (err) == GPG_ERR_DUP_VALUE)
+        log_info (_("certificate '%s' already cached\n"), fname);
+      else if (err)
+        log_error (_("error loading certificate '%s': %s\n"),
+                   fname, gpg_strerror (err));
+      else if (opt.verbose > 1)
+        {
+          char *p;
+
+          log_info (_("trusted certificate '%s' loaded\n"), fname);
+          p = get_fingerprint_hexstring_colon (cert);
+          log_info (_("  SHA1 fingerprint = %s\n"), p);
+          xfree (p);
+
+          cert_log_name    (_("   issuer ="), cert);
+          cert_log_subject (_("  subject ="), cert);
+        }
+
+      ksba_reader_clear (reader, NULL, NULL);
+    }
+  while (!gnupg_ksba_reader_eof_seen (ioctx));
+
+ leave:
+  ksba_cert_release (cert);
+  gnupg_ksba_destroy_reader (ioctx);
+  es_fclose (fp);
+
+  return err;
+}
+
+
+/* Load the trusted certificates provided by the system.  */
+static gpg_error_t
+load_certs_from_system (void)
+{
+  /* A list of certificate bundles to try.  */
+  static struct {
+    const char *name;
+  } table[] = {
+#ifdef DEFAULT_TRUST_STORE_FILE
+    { DEFAULT_TRUST_STORE_FILE }
+#else
+    { "/etc/ssl/ca-bundle.pem" },
+    { "/etc/ssl/certs/ca-certificates.crt" },
+    { "/etc/pki/tls/cert.pem" },
+    { "/usr/local/share/certs/ca-root-nss.crt" },
+    { "/etc/ssl/cert.pem" }
+#endif /*!DEFAULT_TRUST_STORE_FILE*/
+  };
+  int idx;
+  gpg_error_t err = 0;
+
+  for (idx=0; idx < DIM (table); idx++)
+    if (!access (table[idx].name, F_OK))
+      {
+        /* Take the first available bundle.  */
+        err = load_certs_from_file (table[idx].name);
+        break;
+      }
+
+
+  return err;
+}
+
+
 /* Initialize the certificate cache if not yet done.  */
 void
 cert_cache_init (void)
@@ -443,6 +569,8 @@ cert_cache_init (void)
     return;
   init_cache_lock ();
   acquire_cache_write_lock ();
+
+  load_certs_from_system ();
 
   dname = make_filename (gnupg_sysconfdir (), "trusted-certs", NULL);
   load_certs_from_dir (dname, 1);
@@ -490,6 +618,8 @@ cert_cache_deinit (int full)
 
   total_config_certificates = 0;
   total_extra_certificates = 0;
+  total_trusted_certificates = 0;
+  total_system_trusted_certificates = 0;
   initialization_done = 0;
   release_cache_lock ();
 }
@@ -502,6 +632,8 @@ cert_cache_print_stats (void)
             total_config_certificates);
   log_info (_("    runtime cached certificates: %u\n"),
             total_extra_certificates);
+  log_info (_("           trusted certificates: %u (%u)\n"),
+            total_trusted_certificates, total_system_trusted_certificates);
 }
 
 
@@ -1274,11 +1406,12 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
 }
 
 
-/* Return 0 if the certificate is a trusted certificate. Returns
-   GPG_ERR_NOT_TRUSTED if it is not trusted or other error codes in
-   case of systems errors. */
+/* Return 0 if the certificate is a trusted certificate.  Returns
+ * GPG_ERR_NOT_TRUSTED if it is not trusted or other error codes in
+ * case of systems errors.  If WITH_SYSTRUST is set also system
+ * provided certificates are considered trusted.  */
 gpg_error_t
-is_trusted_cert (ksba_cert_t cert)
+is_trusted_cert (ksba_cert_t cert, int with_systrust)
 {
   unsigned char fpr[20];
   cert_item_t ci;
@@ -1289,7 +1422,7 @@ is_trusted_cert (ksba_cert_t cert)
   for (ci=cert_cache[*fpr]; ci; ci = ci->next)
     if (ci->cert && !memcmp (ci->fpr, fpr, 20))
       {
-        if (ci->flags.trusted)
+        if (ci->flags.trusted && (with_systrust || !ci->flags.systrust))
           {
             release_cache_lock ();
             return 0; /* Yes, it is trusted. */

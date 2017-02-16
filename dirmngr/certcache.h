@@ -41,9 +41,10 @@ gpg_error_t cache_cert (ksba_cert_t cert);
 gpg_error_t cache_cert_silent (ksba_cert_t cert, void *fpr_buffer);
 
 /* Return 0 if the certificate is a trusted certificate. Returns
-   GPG_ERR_NOT_TRUSTED if it is not trusted or other error codes in
-   case of systems errors. */
-gpg_error_t is_trusted_cert (ksba_cert_t cert);
+ * GPG_ERR_NOT_TRUSTED if it is not trusted or other error codes in
+ * case of systems errors.  If WITH_SYSTRUST is set also system
+ * provided certificates are considered trusted.  */
+gpg_error_t is_trusted_cert (ksba_cert_t cert, int with_systrust);
 
 
 /* Return a certificate object for the given fingerprint.  FPR is
