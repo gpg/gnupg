@@ -167,10 +167,11 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
   http_release_parsed_uri (uri);
   if (err && !strncmp (url, "https:", 6))
     {
-      /* Our HTTP code does not support TLS, thus we can't use this
-         scheme and it is frankly not useful for CRL retrieval anyway.
-         We resort to using http, assuming that the server also
-         provides plain http access. */
+      /* FIXME: We now support https.
+       * Our HTTP code does not support TLS, thus we can't use this
+       * scheme and it is frankly not useful for CRL retrieval anyway.
+       * We resort to using http, assuming that the server also
+       * provides plain http access.  */
       free_this = xtrymalloc (strlen (url) + 1);
       if (free_this)
         {
@@ -343,10 +344,10 @@ crl_fetch_default (ctrl_t ctrl, const char *issuer, ksba_reader_t *reader)
 }
 
 
-/* Fetch a CA certificate for DN using the default server. This
-   function only initiates the fetch; fetch_next_cert must be used to
-   actually read the certificate; end_cert_fetch to end the
-   operation. */
+/* Fetch a CA certificate for DN using the default server.  This
+ * function only initiates the fetch; fetch_next_cert must be used to
+ * actually read the certificate; end_cert_fetch to end the
+ * operation.  */
 gpg_error_t
 ca_cert_fetch (ctrl_t ctrl, cert_fetch_context_t *context, const char *dn)
 {
@@ -417,7 +418,7 @@ fetch_next_cert (cert_fetch_context_t context,
 
 
 /* Fetch the next data from CONTEXT, assuming it is a certificate and return
-   it as a cert object in R_CERT.  */
+ * it as a cert object in R_CERT.  */
 gpg_error_t
 fetch_next_ksba_cert (cert_fetch_context_t context, ksba_cert_t *r_cert)
 {

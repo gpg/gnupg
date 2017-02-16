@@ -62,6 +62,8 @@ hashify_data( const char* data, size_t len )
   return hexify_data (buf, 20, 0);
 }
 
+
+/* FIXME: Replace this by hextobin.  */
 char*
 hexify_data (const unsigned char* data, size_t len, int with_prefix)
 {

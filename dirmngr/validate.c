@@ -371,7 +371,8 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
   int depth, maxdepth;
   char *issuer = NULL;
   char *subject = NULL;
-  ksba_cert_t subject_cert = NULL, issuer_cert = NULL;
+  ksba_cert_t subject_cert = NULL;
+  ksba_cert_t issuer_cert = NULL;
   ksba_isotime_t current_time;
   ksba_isotime_t exptime;
   int any_expired = 0;
@@ -438,7 +439,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
 
   /* We walk up the chain until we find a trust anchor. */
   subject_cert = cert;
-  maxdepth = 10;
+  maxdepth = 10;  /* Sensible limit on the length of the chain.  */
   chain = NULL;
   depth = 0;
   for (;;)
@@ -520,7 +521,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
         goto leave;
 
       /* Is this a self-signed certificate? */
-      if (is_root_cert ( subject_cert, issuer, subject))
+      if (is_root_cert (subject_cert, issuer, subject))
         {
           /* Yes, this is our trust anchor.  */
           if (check_cert_sig (subject_cert, subject_cert) )
@@ -630,9 +631,9 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           dump_cert ("issuer", issuer_cert);
         }
 
-      /* Now check the signature of the certificate.  Well, we
-         should delay this until later so that faked certificates
-         can't be turned into a DoS easily.  */
+      /* Now check the signature of the certificate.  FIXME: we should
+       * delay this until later so that faked certificates can't be
+       * turned into a DoS easily.  */
       err = check_cert_sig (issuer_cert, subject_cert);
       if (err)
         {
@@ -669,14 +670,14 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
                 }
             }
 #endif
-          /* We give a more descriptive error code than the one
-             returned from the signature checking. */
+          /* Return a more descriptive error code than the one
+           * returned from the signature checking.  */
           err = gpg_error (GPG_ERR_BAD_CERT_CHAIN);
           goto leave;
         }
 
       /* Check that the length of the chain is not longer than allowed
-         by the CA.  */
+       * by the CA.  */
       {
         int chainlen;
 
@@ -722,9 +723,11 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       issuer_cert = NULL;
     }
 
+  /* Even if we have no error here we need to check whether we
+   * encountered an error somewhere during the checks.  Set the error
+   * code to the most critical one.  */
   if (!err)
-    { /* If we encountered an error somewhere during the checks, set
-         the error code to the most critical one */
+    {
       if (any_expired)
         err = gpg_error (GPG_ERR_CERT_EXPIRED);
       else if (any_no_policy_match)
@@ -742,19 +745,19 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
 
   if (!err && mode != VALIDATE_MODE_CRL)
     { /* Now that everything is fine, walk the chain and check each
-         certificate for revocations.
-
-         1. item in the chain  - The root certificate.
-         2. item               - the CA below the root
-         last item             - the target certificate.
-
-         Now for each certificate in the chain check whether it has
-         been included in a CRL and thus be revoked.  We don't do OCSP
-         here because this does not seem to make much sense.  This
-         might become a recursive process and we should better cache
-         our validity results to avoid double work.  Far worse a
-         catch-22 may happen for an improper setup hierarchy and we
-         need a way to break up such a deadlock. */
+       * certificate for revocations.
+       *
+       * 1. item in the chain  - The root certificate.
+       * 2. item               - the CA below the root
+       * last item             - the target certificate.
+       *
+       * Now for each certificate in the chain check whether it has
+       * been included in a CRL and thus be revoked.  We don't do OCSP
+       * here because this does not seem to make much sense.  This
+       * might become a recursive process and we should better cache
+       * our validity results to avoid double work.  Far worse a
+       * catch-22 may happen for an improper setup hierarchy and we
+       * need a way to break up such a deadlock.  */
       err = check_revocations (ctrl, chain);
     }
 
@@ -773,11 +776,11 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
   if (!err && !(r_trust_anchor && *r_trust_anchor))
     {
       /* With no error we can update the validation cache.  We do this
-         for all certificates in the chain.  Note that we can't use
-         the cache if the caller requested to check the trustiness of
-         the root certificate himself.  Adding such a feature would
-         require us to also store the fingerprint of root
-         certificate.  */
+       * for all certificates in the chain.  Note that we can't use
+       * the cache if the caller requested to check the trustiness of
+       * the root certificate himself.  Adding such a feature would
+       * require us to also store the fingerprint of root
+       * certificate.  */
       chain_item_t citem;
       time_t validated_at = gnupg_get_time ();
 
@@ -853,8 +856,8 @@ pk_algo_from_sexp (gcry_sexp_t pkey)
 
 
 /* Check the signature on CERT using the ISSUER_CERT.  This function
-   does only test the cryptographic signature and nothing else.  It is
-   assumed that the ISSUER_CERT is valid. */
+ * does only test the cryptographic signature and nothing else.  It is
+ * assumed that the ISSUER_CERT is valid.  */
 static gpg_error_t
 check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
 {
@@ -952,20 +955,23 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
 
 
   /* Prepare the values for signature verification. At this point we
-     have these values:
-
-     S_PKEY    - S-expression with the issuer's public key.
-     S_SIG     - Signature value as given in the certrificate.
-     MD        - Finalized hash context with hash of the certificate.
-     ALGO_NAME - Lowercase hash algorithm name
+   * have these values:
+   *
+   * S_PKEY    - S-expression with the issuer's public key.
+   * S_SIG     - Signature value as given in the certificate.
+   * MD        - Finalized hash context with hash of the certificate.
+   * ALGO_NAME - Lowercase hash algorithm name
    */
   digestlen = gcry_md_get_algo_dlen (algo);
   digest = gcry_md_read (md, algo);
   if (pk_algo_from_sexp (s_pkey) == GCRY_PK_DSA)
     {
+      /* NB.: We support only SHA-1 here because we had problems back
+       * then to get test data for DSA-2.  Meanwhile DSA has been
+       * replaced by ECDSA which we do not yet support.  */
       if (digestlen != 20)
         {
-          log_error (_("DSA requires the use of a 160 bit hash algorithm\n"));
+          log_error ("DSA requires the use of a 160 bit hash algorithm\n");
           gcry_md_close (md);
           gcry_sexp_release (s_sig);
           gcry_sexp_release (s_pkey);
@@ -975,7 +981,7 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
                             (int)digestlen, digest) )
         BUG ();
     }
-  else /* Not DSA.  */
+  else /* Not DSA - we assume RSA  */
     {
       if ( gcry_sexp_build (&s_hash, NULL, "(data(flags pkcs1)(hash %s %b))",
                             algo_name, (int)digestlen, digest) )

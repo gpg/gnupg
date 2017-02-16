@@ -403,12 +403,11 @@ do_get_cert_local (ctrl_t ctrl, const char *name, const char *command)
 
 
 
-/* Ask back to return a certificate for name, given as a regular
-   gpgsm certificate indentificates (e.g. fingerprint or one of the
-   other methods).  Alternatively, NULL may be used for NAME to
-   return the current target certificate. Either return the certificate
-   in a KSBA object or NULL if it is not available.
-*/
+/* Ask back to return a certificate for NAME, given as a regular gpgsm
+ * certificate identifier (e.g. fingerprint or one of the other
+ * methods).  Alternatively, NULL may be used for NAME to return the
+ * current target certificate.  Either return the certificate in a
+ * KSBA object or NULL if it is not available.  */
 ksba_cert_t
 get_cert_local (ctrl_t ctrl, const char *name)
 {
@@ -422,13 +421,12 @@ get_cert_local (ctrl_t ctrl, const char *name)
 
 }
 
-/* Ask back to return the issuing certificate for name, given as a
-   regular gpgsm certificate indentificates (e.g. fingerprint or one
-   of the other methods).  Alternatively, NULL may be used for NAME to
-   return thecurrent target certificate. Either return the certificate
-   in a KSBA object or NULL if it is not available.
 
-*/
+/* Ask back to return the issuing certificate for NAME, given as a
+ * regular gpgsm certificate identifier (e.g. fingerprint or one
+ * of the other methods).  Alternatively, NULL may be used for NAME to
+ * return the current target certificate. Either return the certificate
+ * in a KSBA object or NULL if it is not available.  */
 ksba_cert_t
 get_issuing_cert_local (ctrl_t ctrl, const char *name)
 {
@@ -441,8 +439,9 @@ get_issuing_cert_local (ctrl_t ctrl, const char *name)
   return do_get_cert_local (ctrl, name, "SENDISSUERCERT");
 }
 
+
 /* Ask back to return a certificate with subject NAME and a
-   subjectKeyIdentifier of KEYID. */
+ * subjectKeyIdentifier of KEYID. */
 ksba_cert_t
 get_cert_local_ski (ctrl_t ctrl, const char *name, ksba_sexp_t keyid)
 {
@@ -1773,8 +1772,8 @@ cmd_validate (assuan_context_t ctx, char *line)
     goto leave;
 
   /* If we have this certificate already in our cache, use the cached
-     version for validation because this will take care of any cached
-     results. */
+   * version for validation because this will take care of any cached
+   * results. */
   {
     unsigned char fpr[20];
     ksba_cert_t tmpcert;

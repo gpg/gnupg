@@ -154,8 +154,8 @@ compare_serialno (ksba_sexp_t serial1, ksba_sexp_t serial2 )
 
 
 /* Return a malloced canonical S-Expression with the serial number
-   converted from the hex string HEXSN.  Return NULL on memory
-   error. */
+ * converted from the hex string HEXSN.  Return NULL on memory
+ * error.  */
 ksba_sexp_t
 hexsn_to_sexp (const char *hexsn)
 {
@@ -981,7 +981,7 @@ get_certs_bypattern (const char *pattern,
 
 
 /* Return the certificate matching ISSUER_DN and SERIALNO; if it is
-   not already in the cache, try to find it from other resources.  */
+ * not already in the cache, try to find it from other resources.  */
 ksba_cert_t
 find_cert_bysn (ctrl_t ctrl, const char *issuer_dn, ksba_sexp_t serialno)
 {
@@ -996,8 +996,8 @@ find_cert_bysn (ctrl_t ctrl, const char *issuer_dn, ksba_sexp_t serialno)
     return cert;
 
   /* Ask back to the service requester to return the certificate.
-     This is because we can assume that he already used the
-     certificate while checking for the CRL. */
+   * This is because we can assume that he already used the
+   * certificate while checking for the CRL.  */
   hexsn = serial_hex (serialno);
   if (!hexsn)
     {
@@ -1093,10 +1093,10 @@ find_cert_bysn (ctrl_t ctrl, const char *issuer_dn, ksba_sexp_t serialno)
 
 
 /* Return the certificate matching SUBJECT_DN and (if not NULL)
-   KEYID. If it is not already in the cache, try to find it from other
-   resources.  Note, that the external search does not work for user
-   certificates because the LDAP lookup is on the caCertificate
-   attribute. For our purposes this is just fine.  */
+ * KEYID. If it is not already in the cache, try to find it from other
+ * resources.  Note, that the external search does not work for user
+ * certificates because the LDAP lookup is on the caCertificate
+ * attribute. For our purposes this is just fine.  */
 ksba_cert_t
 find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
 {
@@ -1107,11 +1107,11 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
   ksba_sexp_t subj;
 
   /* If we have certificates from an OCSP request we first try to use
-     them.  This is because these certificates will really be the
-     required ones and thus even in the case that they can't be
-     uniquely located by the following code we can use them.  This is
-     for example required by Telesec certificates where a keyId is
-     used but the issuer certificate comes without a subject keyId! */
+   * them.  This is because these certificates will really be the
+   * required ones and thus even in the case that they can't be
+   * uniquely located by the following code we can use them.  This is
+   * for example required by Telesec certificates where a keyId is
+   * used but the issuer certificate comes without a subject keyId! */
   if (ctrl->ocsp_certs && subject_dn)
     {
       cert_item_t ci;
@@ -1136,8 +1136,7 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
         log_debug ("find_cert_bysubject: certificate not in ocsp_certs\n");
     }
 
-
-  /* First we check whether the certificate is cached.  */
+  /* No check whether the certificate is cached.  */
   for (seq=0; (cert = get_cert_bysubject (subject_dn, seq)); seq++)
     {
       if (!keyid)
@@ -1158,15 +1157,15 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
     log_debug ("find_cert_bysubject: certificate not in cache\n");
 
   /* Ask back to the service requester to return the certificate.
-     This is because we can assume that he already used the
-     certificate while checking for the CRL. */
+   * This is because we can assume that he already used the
+   * certificate while checking for the CRL. */
   if (keyid)
     cert = get_cert_local_ski (ctrl, subject_dn, keyid);
   else
     {
       /* In contrast to get_cert_local_ski, get_cert_local uses any
-         passed pattern, so we need to make sure that an exact subject
-         search is done. */
+       * passed pattern, so we need to make sure that an exact subject
+       * search is done.  */
       char *buf;
 
       buf = strconcat ("/", subject_dn, NULL);
@@ -1263,7 +1262,6 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
 }
 
 
-
 /* Return 0 if the certificate is a trusted certificate. Returns
    GPG_ERR_NOT_TRUSTED if it is not trusted or other error codes in
    case of systems errors. */
@@ -1294,8 +1292,8 @@ is_trusted_cert (ksba_cert_t cert)
 
 
 /* Given the certificate CERT locate the issuer for this certificate
-   and return it at R_CERT.  Returns 0 on success or
-   GPG_ERR_NOT_FOUND.  */
+ * and return it at R_CERT.  Returns 0 on success or
+ * GPG_ERR_NOT_FOUND.  */
 gpg_error_t
 find_issuing_cert (ctrl_t ctrl, ksba_cert_t cert, ksba_cert_t *r_cert)
 {
@@ -1331,16 +1329,18 @@ find_issuing_cert (ctrl_t ctrl, ksba_cert_t cert, ksba_cert_t *r_cert)
         {
           issuer_cert = find_cert_bysn (ctrl, s, authidno);
         }
+
       if (!issuer_cert && keyid)
         {
           /* Not found by issuer+s/n.  Now that we have an AKI
-             keyIdentifier look for a certificate with a matching
-             SKI. */
+           * keyIdentifier look for a certificate with a matching
+           * SKI. */
           issuer_cert = find_cert_bysubject (ctrl, issuer_dn, keyid);
         }
+
       /* Print a note so that the user does not feel too helpless when
-         an issuer certificate was found and gpgsm prints BAD
-         signature because it is not the correct one. */
+       * an issuer certificate was found and gpgsm prints BAD
+       * signature because it is not the correct one.  */
       if (!issuer_cert)
         {
           log_info ("issuer certificate ");
@@ -1366,8 +1366,8 @@ find_issuing_cert (ctrl_t ctrl, ksba_cert_t cert, ksba_cert_t *r_cert)
     }
 
   /* If this did not work, try just with the issuer's name and assume
-     that there is only one such certificate.  We only look into our
-     cache then. */
+   * that there is only one such certificate.  We only look into our
+   * cache then.  */
   if (err || !issuer_cert)
     {
       issuer_cert = get_cert_bysubject (issuer_dn, 0);
