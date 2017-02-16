@@ -125,7 +125,11 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       goto leave;
     }
 
-  rc = gpgsm_create_reader (&b64reader, ctrl, in_fp, 0, &reader);
+  rc = gnupg_ksba_create_reader
+    (&b64reader, ((ctrl->is_pem? GNUPG_KSBA_IO_PEM : 0)
+                  | (ctrl->is_base64? GNUPG_KSBA_IO_BASE64 : 0)
+                  | (ctrl->autodetect_encoding? GNUPG_KSBA_IO_AUTODETECT : 0)),
+     in_fp, &reader);
   if (rc)
     {
       log_error ("can't create reader: %s\n", gpg_strerror (rc));
@@ -134,7 +138,10 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
   if (out_fp)
     {
-      rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
+      rc = gnupg_ksba_create_writer
+        (&b64writer, ((ctrl->create_pem? GNUPG_KSBA_IO_PEM : 0)
+                      | (ctrl->create_base64? GNUPG_KSBA_IO_BASE64 : 0)),
+         ctrl->pem_name, out_fp, &writer);
       if (rc)
         {
           log_error ("can't create writer: %s\n", gpg_strerror (rc));

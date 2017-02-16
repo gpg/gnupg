@@ -288,7 +288,12 @@ import_one (ctrl_t ctrl, struct stats_s *stats, int in_fd)
       goto leave;
     }
 
-  rc = gpgsm_create_reader (&b64reader, ctrl, fp, 1, &reader);
+  rc = gnupg_ksba_create_reader
+    (&b64reader, ((ctrl->is_pem? GNUPG_KSBA_IO_PEM : 0)
+                  | (ctrl->is_base64? GNUPG_KSBA_IO_BASE64 : 0)
+                  | (ctrl->autodetect_encoding? GNUPG_KSBA_IO_AUTODETECT : 0)
+                  | GNUPG_KSBA_IO_MULTIPEM),
+     fp, &reader);
   if (rc)
     {
       log_error ("can't create reader: %s\n", gpg_strerror (rc));

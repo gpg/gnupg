@@ -33,6 +33,7 @@
 #include "../common/status.h"
 #include "../common/audit.h"
 #include "../common/session-env.h"
+#include "../common/ksba-io-support.h"
 
 
 #define MAX_DIGEST_LEN 64
@@ -205,10 +206,6 @@ struct server_control_s
 };
 
 
-/* Data structure used in base64.c. */
-typedef struct base64_context_s *Base64Context;
-
-
 /* An object to keep a list of certificates. */
 struct certlist_s
 {
@@ -260,19 +257,6 @@ unsigned char *gpgsm_get_keygrip (ksba_cert_t cert, unsigned char *array);
 char *gpgsm_get_keygrip_hexstring (ksba_cert_t cert);
 int  gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits);
 char *gpgsm_get_certid (ksba_cert_t cert);
-
-
-/*-- base64.c --*/
-int  gpgsm_create_reader (Base64Context *ctx,
-                          ctrl_t ctrl, estream_t fp, int allow_multi_pem,
-                          ksba_reader_t *r_reader);
-int gpgsm_reader_eof_seen (Base64Context ctx);
-void gpgsm_destroy_reader (Base64Context ctx);
-int  gpgsm_create_writer (Base64Context *ctx,
-                          ctrl_t ctrl, estream_t stream,
-                          ksba_writer_t *r_writer);
-int  gpgsm_finish_writer (Base64Context ctx);
-void gpgsm_destroy_writer (Base64Context ctx);
 
 
 /*-- certdump.c --*/

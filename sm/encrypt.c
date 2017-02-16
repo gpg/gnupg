@@ -364,7 +364,10 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
   encparm.fp = data_fp;
 
   ctrl->pem_name = "ENCRYPTED MESSAGE";
-  rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
+  rc = gnupg_ksba_create_writer
+    (&b64writer, ((ctrl->create_pem? GNUPG_KSBA_IO_PEM : 0)
+                  | (ctrl->create_base64? GNUPG_KSBA_IO_BASE64 : 0)),
+     ctrl->pem_name, out_fp, &writer);
   if (rc)
     {
       log_error ("can't create writer: %s\n", gpg_strerror (rc));

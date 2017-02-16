@@ -263,7 +263,10 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
           if (!b64writer)
             {
               ctrl->pem_name = "CERTIFICATE";
-              rc = gpgsm_create_writer (&b64writer, ctrl, stream, &writer);
+              rc = gnupg_ksba_create_writer
+                (&b64writer, ((ctrl->create_pem? GNUPG_KSBA_IO_PEM : 0)
+                              | (ctrl->create_base64? GNUPG_KSBA_IO_BASE64 :0)),
+                 ctrl->pem_name, stream, &writer);
               if (rc)
                 {
                   log_error ("can't create writer: %s\n", gpg_strerror (rc));
@@ -433,7 +436,10 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream, int rawmode)
     ctrl->pem_name = "PRIVATE KEY";
   else
     ctrl->pem_name = "RSA PRIVATE KEY";
-  err = gpgsm_create_writer (&b64writer, ctrl, stream, &writer);
+  err = gnupg_ksba_create_writer
+    (&b64writer, ((ctrl->create_pem? GNUPG_KSBA_IO_PEM : 0)
+                  | (ctrl->create_base64? GNUPG_KSBA_IO_BASE64 : 0)),
+     ctrl->pem_name, stream, &writer);
   if (err)
     {
       log_error ("can't create writer: %s\n", gpg_strerror (err));

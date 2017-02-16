@@ -340,7 +340,10 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
     }
 
   ctrl->pem_name = "SIGNED MESSAGE";
-  rc = gpgsm_create_writer (&b64writer, ctrl, out_fp, &writer);
+  rc = gnupg_ksba_create_writer
+    (&b64writer, ((ctrl->create_pem? GNUPG_KSBA_IO_PEM : 0)
+                  | (ctrl->create_base64? GNUPG_KSBA_IO_BASE64 : 0)),
+     ctrl->pem_name, out_fp, &writer);
   if (rc)
     {
       log_error ("can't create writer: %s\n", gpg_strerror (rc));
