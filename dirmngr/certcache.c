@@ -100,6 +100,20 @@ static unsigned int total_extra_certificates;
 static unsigned int total_trusted_certificates;
 static unsigned int total_system_trusted_certificates;
 
+
+#ifdef HAVE_W32_SYSTEM
+/* We load some functions dynamically.  Provide typedefs for tehse
+ * fucntions.  */
+typedef HCERTSTORE (WINAPI *CERTOPENSYSTEMSTORE)
+  (HCRYPTPROV hProv, LPCSTR szSubsystemProtocol);
+typedef PCCERT_CONTEXT (WINAPI *CERTENUMCERTIFICATESINSTORE)
+  (HCERTSTORE hCertStore, PCCERT_CONTEXT pPrevCertContext);
+typedef WINBOOL (WINAPI *CERTCLOSESTORE)
+  (HCERTSTORE hCertStore,DWORD dwFlags);
+#endif /*HAVE_W32_SYSTEM*/
+
+
+
 
 /* Helper to do the cache locking.  */
 static void
@@ -444,9 +458,10 @@ load_certs_from_dir (const char *dirname, int are_trusted)
 }
 
 
+#ifndef HAVE_W32_SYSTEM
 /* Load certificates from FILE.  The certifciates are expected to be
  * PEM encoded so that it is possible to load several certificates.
- * All certates rea considered to be system provided trusted
+ * All certificates are considered to be system provided trusted
  * certificates.  The cache should be in a locked state when calling
  * this function.  */
 static gpg_error_t
@@ -523,12 +538,133 @@ load_certs_from_file (const char *fname)
 
   return err;
 }
+#endif /*!HAVE_W32_SYSTEM*/
+
+#ifdef HAVE_W32_SYSTEM
+/* Load all certificates from the Windows store named STORENAME.  All
+ * certificates are considered to be system provided trusted
+ * certificates.  The cache should be in a locked state when calling
+ * this function.  */
+static void
+load_certs_from_w32_store (const char *storename)
+{
+  static int init_done;
+  static CERTOPENSYSTEMSTORE pCertOpenSystemStore;
+  static CERTENUMCERTIFICATESINSTORE pCertEnumCertificatesInStore;
+  static CERTCLOSESTORE pCertCloseStore;
+  gpg_error_t err;
+  HCERTSTORE w32store;
+  const CERT_CONTEXT *w32cert;
+  ksba_cert_t cert = NULL;
+  unsigned int count = 0;
+
+  /* Initialize on the first use.  */
+  if (!init_done)
+    {
+      static HANDLE hCrypt32;
+
+      init_done = 1;
+
+      hCrypt32 = LoadLibrary ("Crypt32.dll");
+      if (!hCrypt32)
+        {
+          log_error ("can't load Crypt32.dll: %s\n",  w32_strerror (-1));
+          return;
+        }
+
+      pCertOpenSystemStore = (CERTOPENSYSTEMSTORE)
+        GetProcAddress (hCrypt32, "CertOpenSystemStoreA");
+      pCertEnumCertificatesInStore = (CERTENUMCERTIFICATESINSTORE)
+        GetProcAddress (hCrypt32, "CertEnumCertificatesInStore");
+      pCertCloseStore = (CERTCLOSESTORE)
+        GetProcAddress (hCrypt32, "CertCloseStore");
+      if (   !pCertOpenSystemStore
+          || !pCertEnumCertificatesInStore
+          || !pCertCloseStore)
+        {
+          log_error ("can't load crypt32.dll: %s\n", "missing function");
+          pCertOpenSystemStore = NULL;
+        }
+    }
+
+  if (!pCertOpenSystemStore)
+    return;  /* Not initialized.  */
+
+
+  w32store = pCertOpenSystemStore (0, storename);
+  if (!w32store)
+    {
+      log_error ("can't open certificate store '%s': %s\n",
+                 storename, w32_strerror (-1));
+      return;
+    }
+
+  w32cert = NULL;
+  while ((w32cert = pCertEnumCertificatesInStore (w32store, w32cert)))
+    {
+      if (w32cert->dwCertEncodingType == X509_ASN_ENCODING)
+        {
+          ksba_cert_release (cert);
+          cert = NULL;
+          err = ksba_cert_new (&cert);
+          if (!err)
+            err = ksba_cert_init_from_mem (cert,
+                                           w32cert->pbCertEncoded,
+                                           w32cert->cbCertEncoded);
+          if (err)
+            {
+              log_error (_("can't parse certificate '%s': %s\n"),
+                         storename, gpg_strerror (err));
+              break;
+            }
+
+          err = put_cert (cert, 1, 2, NULL);
+          if (!err)
+            count++;
+          if (gpg_err_code (err) == GPG_ERR_DUP_VALUE)
+            log_info (_("certificate '%s' already cached\n"), storename);
+          else if (err)
+            log_error (_("error loading certificate '%s': %s\n"),
+                       storename, gpg_strerror (err));
+          else if (opt.verbose > 1)
+            {
+              char *p;
+
+              log_info (_("trusted certificate '%s' loaded\n"), storename);
+              p = get_fingerprint_hexstring_colon (cert);
+              log_info (_("  SHA1 fingerprint = %s\n"), p);
+              xfree (p);
+
+              cert_log_name    (_("   issuer ="), cert);
+              cert_log_subject (_("  subject ="), cert);
+            }
+        }
+    }
+
+  ksba_cert_release (cert);
+  pCertCloseStore (w32store, 0);
+
+  if (DBG_X509)
+    log_debug ("number of certs loaded from store '%s': %u\n",
+               storename, count);
+
+}
+#endif /*HAVE_W32_SYSTEM*/
 
 
 /* Load the trusted certificates provided by the system.  */
 static gpg_error_t
 load_certs_from_system (void)
 {
+#ifdef HAVE_W32_SYSTEM
+
+  load_certs_from_w32_store ("ROOT");
+  load_certs_from_w32_store ("CA");
+
+  return 0;
+
+#else /*!HAVE_W32_SYSTEM*/
+
   /* A list of certificate bundles to try.  */
   static struct {
     const char *name;
@@ -554,8 +690,8 @@ load_certs_from_system (void)
         break;
       }
 
-
   return err;
+#endif /*!HAVE_W32_SYSTEM*/
 }
 
 
