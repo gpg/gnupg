@@ -2387,9 +2387,15 @@ card_key_list (ctrl_t ctrl, char **r_serialno, strlist_t *result)
 {
   gpg_error_t err;
 
+  *r_serialno = NULL;
+  *result = NULL;
+
   err = agent_card_serialno (ctrl, r_serialno, NULL);
   if (err)
     {
+      if (gpg_err_code (err) == GPG_ERR_ENODEV)
+        return 0;               /* Nothing available.  */
+
       if (opt.verbose)
         log_info (_("error getting serial number of card: %s\n"),
                   gpg_strerror (err));
