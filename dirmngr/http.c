@@ -1942,7 +1942,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
     {
       char portstr[35];
 
-      if (port == 80)
+      if (port == (hd->uri->use_tls? 443 : 80))
         *portstr = 0;
       else
         snprintf (portstr, sizeof portstr, ":%u", port);
