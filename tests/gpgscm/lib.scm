@@ -20,7 +20,7 @@
 (macro (assert form)
   (let ((tag (get-tag form)))
     `(if (not ,(cadr form))
-	 (throw ,(if (pair? tag)
+	 (throw ,(if (and (pair? tag) (string? (car tag)) (number? (cdr tag)))
 		     `(string-append ,(car tag) ":"
 				     ,(number->string (+ 1 (cdr tag)))
 				     ": Assertion failed: ")
