@@ -46,7 +46,6 @@ gpg_error_t cache_cert_silent (ksba_cert_t cert, void *fpr_buffer);
  * provided certificates are considered trusted.  */
 gpg_error_t is_trusted_cert (ksba_cert_t cert, int with_systrust);
 
-
 /* Return a certificate object for the given fingerprint.  FPR is
    expected to be a 20 byte binary SHA-1 fingerprint.  If no matching
    certificate is available in the cache NULL is returned.  The caller
@@ -98,6 +97,19 @@ ksba_cert_t find_cert_bysubject (ctrl_t ctrl,
 gpg_error_t find_issuing_cert (ctrl_t ctrl,
                                ksba_cert_t cert, ksba_cert_t *r_cert);
 
+
+
+/* A simple list of certificates.  */
+struct certlist_s
+{
+  struct certlist_s *next;
+  ksba_cert_t cert;
+  unsigned char fpr[20];  /* of the certificate.  */
+};
+typedef struct certlist_s *certlist_t;
+
+gpg_error_t read_certlist_from_stream (certlist_t *r_certlist, estream_t fp);
+void release_certlist (certlist_t cl);
 
 
 

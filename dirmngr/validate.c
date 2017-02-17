@@ -233,8 +233,8 @@ check_revocations (ctrl_t ctrl, chain_item_t chain)
   int any_crl_too_old = 0;
   chain_item_t ci;
 
-  assert (ctrl->check_revocations_nest_level >= 0);
-  assert (chain);
+  log_assert (ctrl->check_revocations_nest_level >= 0);
+  log_assert (chain);
 
   if (ctrl->check_revocations_nest_level > 10)
     {
@@ -551,7 +551,9 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           if (err)
             goto leave;  /* No. */
 
-          err = is_trusted_cert (subject_cert, 0);
+          err = is_trusted_cert (subject_cert,
+                                 (mode == VALIDATE_MODE_CERT_SYSTRUST
+                                  || mode == VALIDATE_MODE_TLS_SYSTRUST));
           if (!err)
             ; /* Yes we trust this cert.  */
           else if (gpg_err_code (err) == GPG_ERR_NOT_TRUSTED)
@@ -772,7 +774,9 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
        * our validity results to avoid double work.  Far worse a
        * catch-22 may happen for an improper setup hierarchy and we
        * need a way to break up such a deadlock.  */
-      err = check_revocations (ctrl, chain);
+      if (mode != VALIDATE_MODE_TLS_SYSTRUST)
+        err = check_revocations (ctrl, chain);
+#warning fix the above
     }
 
   if (!err && opt.verbose)

@@ -155,13 +155,15 @@ struct
 #define DBG_NETWORK (opt.debug & DBG_NETWORK_VALUE)
 #define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
 
-/* A simple list of certificate references. */
+/* A simple list of certificate references.  FIXME: Better use
+   certlist_t also for references (Store NULL at .cert) */
 struct cert_ref_s
 {
   struct cert_ref_s *next;
   unsigned char fpr[20];
 };
 typedef struct cert_ref_s *cert_ref_t;
+
 
 /* Forward references; access only through server.c.  */
 struct server_local_s;

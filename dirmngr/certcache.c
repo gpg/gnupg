@@ -225,6 +225,7 @@ cert_compute_fpr (ksba_cert_t cert, unsigned char *digest)
 }
 
 
+
 /* Cleanup one slot.  This releases all resourses but keeps the actual
    slot in the cache marked for reuse. */
 static void
@@ -1668,4 +1669,93 @@ find_issuing_cert (ctrl_t ctrl, ksba_cert_t cert, ksba_cert_t *r_cert)
     *r_cert = issuer_cert;
 
   return err;
+}
+
+
+
+/* Read a list of certificates in PEM format from stream FP and store
+ * them on success at R_CERTLIST.  On error NULL is stored at R_CERT
+ * list and an error code returned.  Note that even on success an
+ * empty list of certificates can be returned (i.e. NULL stored at
+ * R_CERTLIST) iff the input stream has no certificates.  */
+gpg_error_t
+read_certlist_from_stream (certlist_t *r_certlist, estream_t fp)
+{
+  gpg_error_t err;
+  gnupg_ksba_io_t ioctx = NULL;
+  ksba_reader_t reader;
+  ksba_cert_t cert = NULL;
+  certlist_t certlist = NULL;
+  certlist_t cl, *cltail;
+
+  *r_certlist = NULL;
+
+  err = gnupg_ksba_create_reader (&ioctx,
+                                  (GNUPG_KSBA_IO_PEM | GNUPG_KSBA_IO_MULTIPEM),
+                                  fp, &reader);
+  if (err)
+    goto leave;
+
+  /* Loop to read all certificates from the stream.  */
+  cltail = &certlist;
+  do
+    {
+      ksba_cert_release (cert);
+      cert = NULL;
+      err = ksba_cert_new (&cert);
+      if (!err)
+        err = ksba_cert_read_der (cert, reader);
+      if (err)
+        {
+          if (gpg_err_code (err) == GPG_ERR_EOF)
+            err = 0;
+          goto leave;
+        }
+
+      /* Append the certificate to the list.  We also store the
+       * fingerprint and check whether we have a cached certificate;
+       * in that case the cached certificate is put into the list to
+       * take advantage of a validation result which might be stored
+       * in the cached certificate.  */
+      cl = xtrycalloc (1, sizeof *cl);
+      if (!cl)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      cert_compute_fpr (cert, cl->fpr);
+      cl->cert = get_cert_byfpr (cl->fpr);
+      if (!cl->cert)
+        {
+          cl->cert = cert;
+          cert = NULL;
+        }
+      *cltail = cl;
+      cltail = &cl->next;
+      ksba_reader_clear (reader, NULL, NULL);
+    }
+  while (!gnupg_ksba_reader_eof_seen (ioctx));
+
+ leave:
+  ksba_cert_release (cert);
+  gnupg_ksba_destroy_reader (ioctx);
+  if (err)
+    release_certlist (certlist);
+  else
+    *r_certlist = certlist;
+
+  return err;
+}
+
+
+/* Release the certificate list CL.  */
+void
+release_certlist (certlist_t cl)
+{
+  while (cl)
+    {
+      certlist_t next = cl->next;
+      ksba_cert_release (cl->cert);
+      cl = next;
+    }
 }

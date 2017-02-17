@@ -60,6 +60,10 @@
    Dirmngr was a system service and not a user service. */
 #define MAX_CERT_LENGTH (16*1024)
 
+/* The limit for the CERTLIST inquiry.  We allow for up to 20
+ * certificates but also take PEM encoding into account.  */
+#define MAX_CERTLIST_LENGTH ((MAX_CERT_LENGTH * 20 * 4)/3)
+
 /* The same goes for OpenPGP keyblocks, but here we need to allow for
    much longer blocks; a 200k keyblock is not too unusual for keys
    with a lot of signatures (e.g. 0x5b0358a2).  9C31503C6D866396 even
@@ -1729,7 +1733,7 @@ cmd_cachecert (assuan_context_t ctx, char *line)
 
 
 static const char hlp_validate[] =
-  "VALIDATE\n"
+  "VALIDATE [--systrust] [--tls]\n"
   "\n"
   "Validate a certificate using the certificate validation function\n"
   "used internally by dirmngr.  This command is only useful for\n"
@@ -1739,20 +1743,38 @@ static const char hlp_validate[] =
   "  INQUIRE TARGETCERT\n"
   "\n"
   "and the caller is expected to return the certificate for the\n"
-  "request as a binary blob.";
+  "request as a binary blob.  The option --tls modifies this by asking\n"
+  "for list of certificates with\n"
+  "\n"
+  "  INQUIRE CERTLIST\n"
+  "\n"
+  "Here the first certificate is the target certificate, the remaining\n"
+  "certificates are suggested intermediary certificates.  All certifciates\n"
+  "need to be PEM encoded.\n"
+  "\n"
+  "The option --systrust changes the behaviour to include the system\n"
+  "provided root certificates as trust anchors.";
 static gpg_error_t
 cmd_validate (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
   ksba_cert_t cert = NULL;
+  certlist_t certlist = NULL;
   unsigned char *value = NULL;
   size_t valuelen;
+  int systrust_mode, tls_mode;
 
-  (void)line;
+  systrust_mode = has_option (line, "--systrust");
+  tls_mode = has_option (line, "--tls");
+  line = skip_options (line);
 
-  err = assuan_inquire (ctrl->server_local->assuan_ctx, "TARGETCERT",
-                       &value, &valuelen, MAX_CERT_LENGTH);
+  if (tls_mode)
+    err = assuan_inquire (ctrl->server_local->assuan_ctx, "CERTLIST",
+                          &value, &valuelen, MAX_CERTLIST_LENGTH);
+  else
+    err = assuan_inquire (ctrl->server_local->assuan_ctx, "TARGETCERT",
+                          &value, &valuelen, MAX_CERT_LENGTH);
   if (err)
     {
       log_error (_("assuan_inquire failed: %s\n"), gpg_strerror (err));
@@ -1761,6 +1783,27 @@ cmd_validate (assuan_context_t ctx, char *line)
 
   if (!valuelen) /* No data returned; return a comprehensible error. */
     err = gpg_error (GPG_ERR_MISSING_CERT);
+  else if (tls_mode)
+    {
+      estream_t fp;
+
+      fp = es_fopenmem_init (0, "rb", value, valuelen);
+      if (!fp)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          err = read_certlist_from_stream (&certlist, fp);
+          es_fclose (fp);
+          if (!err && !certlist)
+            err = gpg_error (GPG_ERR_MISSING_CERT);
+          if (!err)
+            {
+              /* Extraxt the first certificate from the list.  */
+              cert = certlist->cert;
+              ksba_cert_ref (cert);
+            }
+        }
+    }
   else
     {
       err = ksba_cert_new (&cert);
@@ -1771,26 +1814,47 @@ cmd_validate (assuan_context_t ctx, char *line)
   if(err)
     goto leave;
 
-  /* If we have this certificate already in our cache, use the cached
-   * version for validation because this will take care of any cached
-   * results. */
-  {
-    unsigned char fpr[20];
-    ksba_cert_t tmpcert;
+  if (!tls_mode)
+    {
+      /* If we have this certificate already in our cache, use the
+       * cached version for validation because this will take care of
+       * any cached results.  We don't need to do this in tls mode
+       * because this has already been done for certificate in a
+       * certlist_t. */
+      unsigned char fpr[20];
+      ksba_cert_t tmpcert;
 
-    cert_compute_fpr (cert, fpr);
-    tmpcert = get_cert_byfpr (fpr);
-    if (tmpcert)
-      {
-        ksba_cert_release (cert);
-        cert = tmpcert;
-      }
-  }
+      cert_compute_fpr (cert, fpr);
+      tmpcert = get_cert_byfpr (fpr);
+      if (tmpcert)
+        {
+          ksba_cert_release (cert);
+          cert = tmpcert;
+        }
+    }
 
-  err = validate_cert_chain (ctrl, cert, NULL, VALIDATE_MODE_CERT, NULL);
+  /* Quick hack to make verification work by inserting the supplied
+   * certs into the cache.  */
+  if (tls_mode && certlist)
+    {
+      certlist_t cl;
+
+      for (cl = certlist->next; cl; cl = cl->next)
+        cache_cert (cl->cert);
+    }
+
+
+  err = validate_cert_chain
+    (ctrl, cert, NULL,
+     tls_mode && systrust_mode ? VALIDATE_MODE_TLS_SYSTRUST  :
+     tls_mode                  ? VALIDATE_MODE_TLS           :
+     /**/        systrust_mode ? VALIDATE_MODE_CERT_SYSTRUST :
+     /**/                        VALIDATE_MODE_CERT,
+     NULL);
 
  leave:
   ksba_cert_release (cert);
+  release_certlist (certlist);
   return leave_cmd (ctx, err);
 }
 
