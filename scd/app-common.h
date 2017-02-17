@@ -54,6 +54,7 @@ struct app_ctx_s {
   const char *apptype;
   unsigned int card_version;
   unsigned int card_status;
+  unsigned int reset_requested:1;
   unsigned int periodical_check_needed:1;
   unsigned int did_chv1:1;
   unsigned int force_chv1:1;   /* True if the card does not cache CHV1. */
@@ -132,7 +133,7 @@ gpg_error_t select_application (ctrl_t ctrl, const char *name, app_t *r_app,
                                 int scan, const unsigned char *serialno_bin,
                                 size_t serialno_bin_len);
 char *get_supported_applications (void);
-void release_application (app_t app);
+void release_application (app_t app, int locked_already);
 gpg_error_t app_munge_serialno (app_t app);
 gpg_error_t app_write_learn_status (app_t app, ctrl_t ctrl,
                                     unsigned int flags);

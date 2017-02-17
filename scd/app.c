@@ -143,19 +143,23 @@ app_reset (app_t app, ctrl_t ctrl, int send_reset)
 
   if (send_reset)
     {
-      int sw = apdu_reset (app->slot);
+      int sw;
+
+      lock_app (app, ctrl);
+      sw = apdu_reset (app->slot);
       if (sw)
         err = gpg_error (GPG_ERR_CARD_RESET);
 
-      /* Release the same application which is used by all sessions.  */
-      send_client_notifications (app, 1);
+      app->reset_requested = 1;
+      unlock_app (app);
+
       scd_kick_the_loop ();
       gnupg_sleep (1);
     }
   else
     {
       ctrl->app_ctx = NULL;
-      release_application (app);
+      release_application (app, 0);
     }
 
   return err;
@@ -454,6 +458,8 @@ deallocate_app (app_t app)
     }
 
   xfree (app->serialno);
+
+  unlock_app (app);
   xfree (app);
 }
 
@@ -463,7 +469,7 @@ deallocate_app (app_t app)
    actually deferring the deallocation to allow for a later reuse by
    a new connection. */
 void
-release_application (app_t app)
+release_application (app_t app, int locked_already)
 {
   if (!app)
     return;
@@ -473,12 +479,15 @@ release_application (app_t app)
      is using the card - this way the PIN cache and other cached data
      are preserved.  */
 
-  lock_app (app, NULL);
+  if (!locked_already)
+    lock_app (app, NULL);
+
   if (!app->ref_count)
     log_bug ("trying to release an already released context\n");
 
   --app->ref_count;
-  unlock_app (app);
+  if (!locked_already)
+    unlock_app (app);
 }
 
 
@@ -1019,9 +1028,10 @@ scd_update_reader_status_file (void)
       int sw;
       unsigned int status;
 
+      lock_app (a, NULL);
       app_next = a->next;
 
-      if (a->ref_count == 0)
+      if (a->reset_requested)
         status = 0;
       else
         {
@@ -1036,6 +1046,7 @@ scd_update_reader_status_file (void)
               /* Get status failed.  Ignore that.  */
               if (a->periodical_check_needed)
                 periodical_check_needed = 1;
+              unlock_app (a);
               continue;
             }
         }
@@ -1056,12 +1067,14 @@ scd_update_reader_status_file (void)
               a->card_status = status;
               if (a->periodical_check_needed)
                 periodical_check_needed = 1;
+              unlock_app (a);
             }
         }
       else
         {
           if (a->periodical_check_needed)
             periodical_check_needed = 1;
+          unlock_app (a);
         }
     }
   npth_mutex_unlock (&app_list_lock);

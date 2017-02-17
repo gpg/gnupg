@@ -227,7 +227,7 @@ open_card_with_request (ctrl_t ctrl, const char *apptype, const char *serialno)
 
   /* Re-scan USB devices.  Release APP, before the scan.  */
   ctrl->app_ctx = NULL;
-  release_application (app);
+  release_application (app, 0);
 
   if (serialno)
     serialno_bin = hex_to_buffer (serialno, &serialno_bin_len);
@@ -1495,7 +1495,7 @@ cmd_restart (assuan_context_t ctx, char *line)
   if (app)
     {
       ctrl->app_ctx = NULL;
-      release_application (app);
+      release_application (app, 0);
     }
   if (locked_session && ctrl->server_local == locked_session)
     {
@@ -1922,7 +1922,7 @@ send_client_notifications (app_t app, int removal)
           {
             sl->ctrl_backlink->app_ctx = NULL;
             sl->card_removed = 1;
-            release_application (app);
+            release_application (app, 1);
           }
 
         if (!sl->event_signal || !sl->assuan_ctx)
