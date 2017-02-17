@@ -25,13 +25,27 @@
 enum {
   /* Simple certificate validation mode. */
   VALIDATE_MODE_CERT = 0,
+
+  /* Same as MODE_CERT but using the system provided root
+   * certificates.  */
+  VALIDATE_MODE_CERT_SYSTRUST,
+
+  /* Same as MODE_CERT but uses a provided list of certificates.  */
+  VALIDATE_MODE_TLS,
+
+  /* Same as MODE_TLS but using the system provided root
+   * certificates.  */
+  VALIDATE_MODE_TLS_SYSTRUST,
+
   /* Standard CRL issuer certificate validation; i.e. CRLs are not
      considered for CRL issuer certificates. */
-  VALIDATE_MODE_CRL = 1,
+  VALIDATE_MODE_CRL,
+
   /* Full CRL validation. */
-  VALIDATE_MODE_CRL_RECURSIVE = 2,
+  VALIDATE_MODE_CRL_RECURSIVE,
+
   /* Validation as used for OCSP. */
-  VALIDATE_MODE_OCSP = 3
+  VALIDATE_MODE_OCSP
 };
 
 
@@ -42,14 +56,14 @@ gpg_error_t validate_cert_chain (ctrl_t ctrl,
                                  int mode, char **r_trust_anchor);
 
 /* Return 0 if the certificate CERT is usable for certification.  */
-gpg_error_t cert_use_cert_p (ksba_cert_t cert);
+gpg_error_t check_cert_use_cert (ksba_cert_t cert);
 
 /* Return 0 if the certificate CERT is usable for signing OCSP
    responses.  */
-gpg_error_t cert_use_ocsp_p (ksba_cert_t cert);
+gpg_error_t check_cert_use_ocsp (ksba_cert_t cert);
 
 /* Return 0 if the certificate CERT is usable for signing CRLs. */
-gpg_error_t cert_use_crl_p (ksba_cert_t cert);
+gpg_error_t check_cert_use_crl (ksba_cert_t cert);
 
 
 #endif /*VALIDATE_H*/

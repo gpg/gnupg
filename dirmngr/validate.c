@@ -1,6 +1,6 @@
 /* validate.c - Validate a certificate chain.
  * Copyright (C) 2001, 2003, 2004, 2008 Free Software Foundation, Inc.
- * Copyright (C) 2004, 2006, 2008 g10 Code GmbH
+ * Copyright (C) 2004, 2006, 2008, 2017 g10 Code GmbH
  *
  * This file is part of DirMngr.
  *
@@ -32,6 +32,20 @@
 #include "crlcache.h"
 #include "validate.h"
 #include "misc.h"
+
+
+/* Mode parameters for cert_check_usage().  */
+enum cert_usage_modes
+  {
+    CERT_USAGE_MODE_SIGN,  /* Usable for encryption.            */
+    CERT_USAGE_MODE_ENCR,  /* Usable for signing.               */
+    CERT_USAGE_MODE_VRFY,  /* Usable for verification.          */
+    CERT_USAGE_MODE_DECR,  /* Usable for decryption.            */
+    CERT_USAGE_MODE_CERT,  /* Usable for cert signing.          */
+    CERT_USAGE_MODE_OCSP,  /* Usable for OCSP respone signing.  */
+    CERT_USAGE_MODE_CRL    /* Usable for CRL signing.           */
+  };
+
 
 /* While running the validation function we need to keep track of the
    certificates and the validation outcome of each.  We use this type
@@ -394,11 +408,11 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
   switch (mode)
     {
     case VALIDATE_MODE_OCSP:
-      err = cert_use_ocsp_p (cert);
+      err = check_cert_use_ocsp (cert);
       break;
     case VALIDATE_MODE_CRL:
     case VALIDATE_MODE_CRL_RECURSIVE:
-      err = cert_use_crl_p (cert);
+      err = check_cert_use_crl (cert);
       break;
     default:
       err = 0;
@@ -694,7 +708,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
       }
 
       /* May that certificate be used for certification? */
-      err = cert_use_cert_p (issuer_cert);
+      err = check_cert_use_cert (issuer_cert);
       if (err)
         goto leave;  /* No.  */
 
@@ -1001,13 +1015,9 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
 
 
 
-/* Return 0 if the cert is usable for encryption.  A MODE of 0 checks
-   for signing, a MODE of 1 checks for encryption, a MODE of 2 checks
-   for verification and a MODE of 3 for decryption (just for
-   debugging).  MODE 4 is for certificate signing, MODE 5 for OCSP
-   response signing, MODE 6 is for CRL signing. */
-static int
-cert_usage_p (ksba_cert_t cert, int mode)
+/* Return 0 if CERT is usable for MODE.  */
+static gpg_error_t
+check_cert_usage (ksba_cert_t cert, enum cert_usage_modes mode)
 {
   gpg_error_t err;
   unsigned int use;
@@ -1077,7 +1087,8 @@ cert_usage_p (ksba_cert_t cert, int mode)
       if (gpg_err_code (err) == GPG_ERR_NO_DATA)
         {
           err = 0;
-          if (opt.verbose && mode < 2)
+          if (opt.verbose && (mode == CERT_USAGE_MODE_SIGN
+                              || mode == CERT_USAGE_MODE_ENCR))
             log_info (_("no key usage specified - assuming all usages\n"));
           use = ~0;
         }
@@ -1094,17 +1105,36 @@ cert_usage_p (ksba_cert_t cert, int mode)
       return err;
     }
 
-  if (mode == 4)
+  switch (mode)
     {
+    case CERT_USAGE_MODE_SIGN:
+    case CERT_USAGE_MODE_VRFY:
+      if ((use & (KSBA_KEYUSAGE_DIGITAL_SIGNATURE
+                  | KSBA_KEYUSAGE_NON_REPUDIATION)))
+        return 0;
+      log_info (mode == CERT_USAGE_MODE_VRFY
+                ? _("certificate should not have been used for signing\n")
+                : _("certificate is not usable for signing\n"));
+      break;
+
+    case CERT_USAGE_MODE_ENCR:
+    case CERT_USAGE_MODE_DECR:
+      if ((use & (KSBA_KEYUSAGE_KEY_ENCIPHERMENT
+                  | KSBA_KEYUSAGE_DATA_ENCIPHERMENT)))
+        return 0;
+      log_info (mode == CERT_USAGE_MODE_DECR
+                ? _("certificate should not have been used for encryption\n")
+                : _("certificate is not usable for encryption\n"));
+      break;
+
+    case CERT_USAGE_MODE_CERT:
       if ((use & (KSBA_KEYUSAGE_KEY_CERT_SIGN)))
         return 0;
       log_info (_("certificate should not have "
                   "been used for certification\n"));
-      return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
-    }
+      break;
 
-  if (mode == 5)
-    {
+    case CERT_USAGE_MODE_OCSP:
       if (use != ~0
           && (have_ocsp_signing
               || (use & (KSBA_KEYUSAGE_KEY_CERT_SIGN
@@ -1112,50 +1142,38 @@ cert_usage_p (ksba_cert_t cert, int mode)
         return 0;
       log_info (_("certificate should not have "
                   "been used for OCSP response signing\n"));
-      return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
-    }
+      break;
 
-  if (mode == 6)
-    {
+    case CERT_USAGE_MODE_CRL:
       if ((use & (KSBA_KEYUSAGE_CRL_SIGN)))
         return 0;
       log_info (_("certificate should not have "
                   "been used for CRL signing\n"));
-      return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+      break;
     }
 
-  if ((use & ((mode&1)?
-              (KSBA_KEYUSAGE_KEY_ENCIPHERMENT|KSBA_KEYUSAGE_DATA_ENCIPHERMENT):
-              (KSBA_KEYUSAGE_DIGITAL_SIGNATURE|KSBA_KEYUSAGE_NON_REPUDIATION)))
-      )
-    return 0;
-
-  log_info (mode==3? _("certificate should not have been used "
-                       "for encryption\n"):
-            mode==2? _("certificate should not have been used for signing\n"):
-            mode==1? _("certificate is not usable for encryption\n"):
-                     _("certificate is not usable for signing\n"));
   return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
 }
 
+
 /* Return 0 if the certificate CERT is usable for certification.  */
 gpg_error_t
-cert_use_cert_p (ksba_cert_t cert)
+check_cert_use_cert (ksba_cert_t cert)
 {
-  return cert_usage_p (cert, 4);
+  return check_cert_usage (cert, CERT_USAGE_MODE_CERT);
 }
 
 /* Return 0 if the certificate CERT is usable for signing OCSP
    responses.  */
 gpg_error_t
-cert_use_ocsp_p (ksba_cert_t cert)
+check_cert_use_ocsp (ksba_cert_t cert)
 {
-  return cert_usage_p (cert, 5);
+  return check_cert_usage (cert, CERT_USAGE_MODE_OCSP);
 }
 
 /* Return 0 if the certificate CERT is usable for signing CRLs. */
 gpg_error_t
-cert_use_crl_p (ksba_cert_t cert)
+check_cert_use_crl (ksba_cert_t cert)
 {
-  return cert_usage_p (cert, 6);
+  return check_cert_usage (cert, CERT_USAGE_MODE_CRL);
 }
