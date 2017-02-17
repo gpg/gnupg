@@ -556,6 +556,7 @@ int agent_card_writekey (ctrl_t ctrl, int force, const char *serialno,
                          int (*getpin_cb)(void *, const char *, char*, size_t),
                          void *getpin_cb_arg);
 gpg_error_t agent_card_getattr (ctrl_t ctrl, const char *name, char **result);
+gpg_error_t agent_card_cardlist (ctrl_t ctrl, strlist_t *result);
 int agent_card_scd (ctrl_t ctrl, const char *cmdline,
                     int (*getpin_cb)(void *, const char *, char*, size_t),
                     void *getpin_cb_arg, void *assuan_context);

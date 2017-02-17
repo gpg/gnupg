@@ -2382,6 +2382,29 @@ ssh_key_grip (gcry_sexp_t key, unsigned char *buffer)
 }
 
 
+static gpg_error_t
+card_key_list (ctrl_t ctrl, char **r_serialno, strlist_t *result)
+{
+  gpg_error_t err;
+
+  err = agent_card_serialno (ctrl, r_serialno, NULL);
+  if (err)
+    {
+      if (opt.verbose)
+        log_info (_("error getting serial number of card: %s\n"),
+                  gpg_strerror (err));
+      return err;
+    }
+
+  err = agent_card_cardlist (ctrl, result);
+  if (err)
+    {
+      xfree (*r_serialno);
+      *r_serialno = NULL;
+    }
+  return err;
+}
+
 /* Check whether a smartcard is available and whether it has a usable
    key.  Store a copy of that key at R_PK and return 0.  If no key is
    available store NULL at R_PK and return an error code.  If CARDSN
@@ -2561,17 +2584,54 @@ ssh_handler_request_identities (ctrl_t ctrl,
      reader - this should be allowed even without being listed in
      sshcontrol. */
 
-  if (!opt.disable_scdaemon
-      && !card_key_available (ctrl, &key_public, &cardsn))
+  if (!opt.disable_scdaemon)
     {
-      err = ssh_send_key_public (key_blobs, key_public, cardsn);
-      gcry_sexp_release (key_public);
-      key_public = NULL;
-      xfree (cardsn);
-      if (err)
-        goto out;
+      char *serialno;
+      strlist_t card_list, sl;
 
-      key_counter++;
+      err = card_key_list (ctrl, &serialno, &card_list);
+      if (err)
+        {
+          if (opt.verbose)
+            log_info (_("error getting list of cards: %s\n"),
+                      gpg_strerror (err));
+          goto out;
+        }
+
+      for (sl = card_list; sl; sl = sl->next)
+        {
+          char *serialno0;
+          err = agent_card_serialno (ctrl, &serialno0, sl->d);
+          if (err)
+            {
+              if (opt.verbose)
+                log_info (_("error getting serial number of card: %s\n"),
+                          gpg_strerror (err));
+              xfree (serialno);
+              free_strlist (card_list);
+              goto out;
+            }
+
+          xfree (serialno0);
+          if (card_key_available (ctrl, &key_public, &cardsn))
+            continue;
+
+          err = ssh_send_key_public (key_blobs, key_public, cardsn);
+          gcry_sexp_release (key_public);
+          key_public = NULL;
+          xfree (cardsn);
+          if (err)
+            {
+              xfree (serialno);
+              free_strlist (card_list);
+              goto out;
+            }
+
+          key_counter++;
+        }
+
+      xfree (serialno);
+      free_strlist (card_list);
     }
 
   /* Then look at all the registered and non-disabled keys. */

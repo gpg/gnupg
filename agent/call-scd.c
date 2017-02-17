@@ -39,6 +39,7 @@
 
 #include "agent.h"
 #include <assuan.h>
+#include "strlist.h"
 
 #ifdef _POSIX_OPEN_MAX
 #define MAX_OPEN_FDS _POSIX_OPEN_MAX
@@ -1189,9 +1190,74 @@ agent_card_getattr (ctrl_t ctrl, const char *name, char **result)
 
   return unlock_scd (ctrl, err);
 }
+
+struct card_cardlist_parm_s {
+  int error;
+  strlist_t list;
+};
 
+/* Callback function for agent_card_cardlist.  */
+static gpg_error_t
+card_cardlist_cb (void *opaque, const char *line)
+{
+  struct card_cardlist_parm_s *parm = opaque;
+  const char *keyword = line;
+  int keywordlen;
 
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  while (spacep (line))
+    line++;
 
+  if (keywordlen == 8 && !memcmp (keyword, "SERIALNO", keywordlen))
+    {
+      const char *s;
+      int n;
+
+      for (n=0,s=line; hexdigitp (s); s++, n++)
+        ;
+
+      if (!n || (n&1) || *s)
+        parm->error = gpg_error (GPG_ERR_ASS_PARAMETER);
+      else
+        add_to_strlist (&parm->list, line);
+    }
+
+  return 0;
+}
+
+/* Call the scdaemon to retrieve list of available cards. On success
+   the allocated strlist is stored at RESULT.  On error an error code is
+   returned and NULL stored at RESULT. */
+gpg_error_t
+agent_card_cardlist (ctrl_t ctrl, strlist_t *result)
+{
+  int err;
+  struct card_cardlist_parm_s parm;
+  char line[ASSUAN_LINELENGTH];
+
+  *result = NULL;
+
+  memset (&parm, 0, sizeof parm);
+  strcpy (line, "GETINFO card_list");
+
+  err = start_scd (ctrl);
+  if (err)
+    return err;
+
+  err = assuan_transact (ctrl->scd_local->ctx, line,
+                         NULL, NULL, NULL, NULL,
+                         card_cardlist_cb, &parm);
+  if (!err && parm.error)
+    err = parm.error;
+
+  if (!err)
+    *result = parm.list;
+  else
+    free_strlist (parm.list);
+
+  return unlock_scd (ctrl, err);
+}
 
 static gpg_error_t
 pass_status_thru (void *opaque, const char *line)
