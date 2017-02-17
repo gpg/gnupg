@@ -379,7 +379,7 @@ is_root_cert (ksba_cert_t cert, const char *issuerdn, const char *subjectdn)
    R_TRUST_ANCHOR; in all other cases NULL is stored there.  */
 gpg_error_t
 validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
-                     int mode, char **r_trust_anchor)
+                     unsigned int flags, char **r_trust_anchor)
 {
   gpg_error_t err = 0;
   int depth, maxdepth;
@@ -405,20 +405,9 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
     dump_cert ("subject", cert);
 
   /* May the target certificate be used for this purpose?  */
-  switch (mode)
-    {
-    case VALIDATE_MODE_OCSP:
-      err = check_cert_use_ocsp (cert);
-      break;
-    case VALIDATE_MODE_CRL:
-    case VALIDATE_MODE_CRL_RECURSIVE:
-      err = check_cert_use_crl (cert);
-      break;
-    default:
-      err = 0;
-      break;
-    }
-  if (err)
+  if ((flags & VALIDATE_FLAG_OCSP) && (err = check_cert_use_ocsp (cert)))
+    return err;
+  if ((flags & VALIDATE_FLAG_CRL) && (err = check_cert_use_crl (cert)))
     return err;
 
   /* If we already validated the certificate not too long ago, we can
@@ -552,8 +541,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
             goto leave;  /* No. */
 
           err = is_trusted_cert (subject_cert,
-                                 (mode == VALIDATE_MODE_CERT_SYSTRUST
-                                  || mode == VALIDATE_MODE_TLS_SYSTRUST));
+                                 !!(flags & VALIDATE_FLAG_SYSTRUST));
           if (!err)
             ; /* Yes we trust this cert.  */
           else if (gpg_err_code (err) == GPG_ERR_NOT_TRUSTED)
@@ -759,7 +747,12 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
         cert_log_name ("  certificate", citem->cert);
     }
 
-  if (!err && mode != VALIDATE_MODE_CRL)
+  /* Now check for revocations unless CRL checks are disabled or we
+   * are non-recursive CRL mode.  */
+  if (!err
+      && !(flags & VALIDATE_FLAG_NOCRLCHECK)
+      && !((flags & VALIDATE_FLAG_CRL)
+           && !(flags & VALIDATE_FLAG_RECURSIVE)))
     { /* Now that everything is fine, walk the chain and check each
        * certificate for revocations.
        *
@@ -774,9 +767,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
        * our validity results to avoid double work.  Far worse a
        * catch-22 may happen for an improper setup hierarchy and we
        * need a way to break up such a deadlock.  */
-      if (mode != VALIDATE_MODE_TLS_SYSTRUST)
-        err = check_revocations (ctrl, chain);
-#warning fix the above
+      err = check_revocations (ctrl, chain);
     }
 
   if (!err && opt.verbose)

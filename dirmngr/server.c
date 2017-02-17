@@ -1733,7 +1733,7 @@ cmd_cachecert (assuan_context_t ctx, char *line)
 
 
 static const char hlp_validate[] =
-  "VALIDATE [--systrust] [--tls]\n"
+  "VALIDATE [--systrust] [--tls] [--no-crl]\n"
   "\n"
   "Validate a certificate using the certificate validation function\n"
   "used internally by dirmngr.  This command is only useful for\n"
@@ -1753,7 +1753,8 @@ static const char hlp_validate[] =
   "need to be PEM encoded.\n"
   "\n"
   "The option --systrust changes the behaviour to include the system\n"
-  "provided root certificates as trust anchors.";
+  "provided root certificates as trust anchors.  The option --no-crl\n"
+  "skips CRL checks";
 static gpg_error_t
 cmd_validate (assuan_context_t ctx, char *line)
 {
@@ -1763,10 +1764,11 @@ cmd_validate (assuan_context_t ctx, char *line)
   certlist_t certlist = NULL;
   unsigned char *value = NULL;
   size_t valuelen;
-  int systrust_mode, tls_mode;
+  int systrust_mode, tls_mode, no_crl;
 
   systrust_mode = has_option (line, "--systrust");
   tls_mode = has_option (line, "--tls");
+  no_crl = has_option (line, "--no-crl");
   line = skip_options (line);
 
   if (tls_mode)
@@ -1843,14 +1845,11 @@ cmd_validate (assuan_context_t ctx, char *line)
         cache_cert (cl->cert);
     }
 
-
-  err = validate_cert_chain
-    (ctrl, cert, NULL,
-     tls_mode && systrust_mode ? VALIDATE_MODE_TLS_SYSTRUST  :
-     tls_mode                  ? VALIDATE_MODE_TLS           :
-     /**/        systrust_mode ? VALIDATE_MODE_CERT_SYSTRUST :
-     /**/                        VALIDATE_MODE_CERT,
-     NULL);
+  err = validate_cert_chain (ctrl, cert, NULL,
+                             ((tls_mode ? VALIDATE_FLAG_TLS : 0)
+                              | (systrust_mode ? VALIDATE_FLAG_SYSTRUST : 0)
+                              | (no_crl ? VALIDATE_FLAG_NOCRLCHECK : 0)),
+                             NULL);
 
  leave:
   ksba_cert_release (cert);

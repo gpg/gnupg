@@ -22,38 +22,35 @@
 #define VALIDATE_H
 
 
-enum {
-  /* Simple certificate validation mode. */
-  VALIDATE_MODE_CERT = 0,
+/* Make use of the system provided root certificates.  */
+#define VALIDATE_FLAG_SYSTRUST     1
 
-  /* Same as MODE_CERT but using the system provided root
-   * certificates.  */
-  VALIDATE_MODE_CERT_SYSTRUST,
+/* Make use of extra provided root certificates.  */
+#define VALIDATE_FLAG_EXTRATRUST   2
 
-  /* Same as MODE_CERT but uses a provided list of certificates.  */
-  VALIDATE_MODE_TLS,
+/* Standard CRL issuer certificate validation; i.e. CRLs are not
+ * considered for CRL issuer certificates.  */
+#define VALIDATE_FLAG_CRL          4
 
-  /* Same as MODE_TLS but using the system provided root
-   * certificates.  */
-  VALIDATE_MODE_TLS_SYSTRUST,
+/* If this flag is set along with VALIDATE_FLAG_CRL a full CRL
+ * verification is done.  */
+#define VALIDATE_FLAG_RECURSIVE    8
 
-  /* Standard CRL issuer certificate validation; i.e. CRLs are not
-     considered for CRL issuer certificates. */
-  VALIDATE_MODE_CRL,
+/* Validation mode as used for OCSP.  */
+#define VALIDATE_FLAG_OCSP        16
 
-  /* Full CRL validation. */
-  VALIDATE_MODE_CRL_RECURSIVE,
+/* Validation mode as used with TLS.  */
+#define VALIDATE_FLAG_TLS         32
 
-  /* Validation as used for OCSP. */
-  VALIDATE_MODE_OCSP
-};
+/* Don't do CRL checks.  */
+#define VALIDATE_FLAG_NOCRLCHECK  64
 
 
 /* Validate the certificate CHAIN up to the trust anchor. Optionally
    return the closest expiration time in R_EXPTIME. */
 gpg_error_t validate_cert_chain (ctrl_t ctrl,
                                  ksba_cert_t cert, ksba_isotime_t r_exptime,
-                                 int mode, char **r_trust_anchor);
+                                 unsigned int flags, char **r_trust_anchor);
 
 /* Return 0 if the certificate CERT is usable for certification.  */
 gpg_error_t check_cert_use_cert (ksba_cert_t cert);
