@@ -221,6 +221,13 @@ struct http_session_s
   /* A callback function to log details of TLS certifciates.  */
   void (*cert_log_cb) (http_session_t, gpg_error_t, const char *,
                        const void **, size_t *);
+
+  /* The flags passed to the session object.  */
+  unsigned int flags;
+
+  /* A per-session TLS verification callback.  */
+  http_verify_cb_t verify_cb;
+  void *verify_cb_value;
 };
 
 
@@ -606,8 +613,9 @@ http_session_release (http_session_t sess)
  *   HTTP_FLAG_TRUST_SYS - Also use the CAs defined by the system
  */
 gpg_error_t
-http_session_new (http_session_t *r_session, const char *tls_priority,
-                  const char *intended_hostname, unsigned int flags)
+http_session_new (http_session_t *r_session,
+                  const char *intended_hostname, unsigned int flags,
+                  http_verify_cb_t verify_cb, void *verify_cb_value)
 {
   gpg_error_t err;
   http_session_t sess;
@@ -618,6 +626,9 @@ http_session_new (http_session_t *r_session, const char *tls_priority,
   if (!sess)
     return gpg_error_from_syserror ();
   sess->refcount = 1;
+  sess->flags = flags;
+  sess->verify_cb = verify_cb;
+  sess->verify_cb_value = verify_cb_value;
 
 #if HTTP_USE_NTBTLS
   {
@@ -629,8 +640,6 @@ http_session_new (http_session_t *r_session, const char *tls_priority,
     void *buf;
     size_t buflen;
     char *pemname;
-
-    (void)tls_priority;
 
     pemname = make_filename_try (gnupg_datadir (),
                                  "sks-keyservers.netCA.pem", NULL);
@@ -799,7 +808,7 @@ http_session_new (http_session_t *r_session, const char *tls_priority,
     gnutls_transport_set_ptr (sess->tls_session, NULL);
 
     rc = gnutls_priority_set_direct (sess->tls_session,
-                                     tls_priority? tls_priority : "NORMAL",
+                                     "NORMAL",
                                      &errpos);
     if (rc < 0)
       {
@@ -1823,10 +1832,27 @@ send_request (http_t hd, const char *httphost, const char *auth,
         }
 
       hd->session->verify.done = 0;
-      if (tls_callback)
+
+
+      /* Try the available verify callbacks until one returns success
+       * or a real error.  */
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+      if (hd->session->verify_cb)
+        err = hd->session->verify_cb (hd->session->verify_cb_value,
+                                      hd, hd->session,
+                                      (hd->flags | hd->session->flags),
+                                      hd->session->tls_session);
+
+      if (tls_callback
+          && gpg_err_source (err) == GPG_ERR_SOURCE_DIRMNGR
+          && gpg_err_code (err) == GPG_ERR_NOT_IMPLEMENTED)
         err = tls_callback (hd, hd->session, 0);
-      else
+
+      if (gpg_err_source (err) == GPG_ERR_SOURCE_DIRMNGR
+          && gpg_err_code (err) == GPG_ERR_NOT_IMPLEMENTED)
         err = http_verify_server_credentials (hd->session);
+
       if (err)
         {
           log_info ("TLS connection authentication failed: %s <%s>\n",
@@ -1834,6 +1860,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
           xfree (proxy_authstr);
           return err;
         }
+
     }
 #elif HTTP_USE_GNUTLS
   if (hd->uri->use_tls)
@@ -2910,10 +2937,7 @@ cookie_close (void *cookie)
 gpg_error_t
 http_verify_server_credentials (http_session_t sess)
 {
-#if HTTP_USE_NTBTLS
-  (void)sess;
-  return 0;  /* FIXME!! */
-#elif HTTP_USE_GNUTLS
+#if HTTP_USE_GNUTLS
   static const char const errprefix[] = "TLS verification of peer failed";
   int rc;
   unsigned int status;

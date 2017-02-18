@@ -262,7 +262,7 @@ main (int argc, char **argv)
   http_register_tls_callback (verify_callback);
   http_register_tls_ca (cafile);
 
-  err = http_session_new (&session, NULL, NULL, HTTP_FLAG_TRUST_DEF);
+  err = http_session_new (&session, NULL, HTTP_FLAG_TRUST_DEF, NULL, NULL);
   if (err)
     log_error ("http_session_new failed: %s\n", gpg_strerror (err));
 

@@ -370,14 +370,15 @@ do_get_cert_local (ctrl_t ctrl, const char *name, const char *command)
   char *buf;
   ksba_cert_t cert;
 
-  if (name)
-    buf = xstrconcat (command, " ", name, NULL);
+  buf = name? strconcat (command, " ", name, NULL) : xtrystrdup (command);
+  if (!buf)
+    rc = gpg_error_from_syserror ();
   else
-    buf = xstrdup (command);
-
-  rc = assuan_inquire (ctrl->server_local->assuan_ctx, buf,
-                       &value, &valuelen, MAX_CERT_LENGTH);
-  xfree (buf);
+    {
+      rc = assuan_inquire (ctrl->server_local->assuan_ctx, buf,
+                           &value, &valuelen, MAX_CERT_LENGTH);
+      xfree (buf);
+    }
   if (rc)
     {
       log_error (_("assuan_inquire(%s) failed: %s\n"),
