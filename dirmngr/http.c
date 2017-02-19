@@ -413,6 +413,21 @@ my_gnutls_write (gnutls_transport_ptr_t ptr, const void *buffer, size_t size)
 #endif /*HTTP_USE_GNUTLS*/
 
 
+#ifdef HTTP_USE_NTBTLS
+/* Connect the ntbls callback to our generic callback.  */
+static gpg_error_t
+my_ntbtls_verify_cb (void *opaque, ntbtls_t tls, unsigned int verify_flags)
+{
+  http_t hd = opaque;
+  log_assert (hd && hd->session && hd->session->verify_cb);
+  return hd->session->verify_cb (hd->session->verify_cb_value,
+                                 hd, hd->session,
+                                 (hd->flags | hd->session->flags),
+                                 tls);
+}
+#endif /*HTTP_USE_NTBTLS*/
+
+
 
 
 /* This notification function is called by estream whenever stream is
@@ -632,91 +647,16 @@ http_session_new (http_session_t *r_session,
 
 #if HTTP_USE_NTBTLS
   {
-    x509_cert_t ca_chain;
-    char line[256];
-    estream_t fp, mem_p;
-    size_t nread, nbytes;
-    struct b64state state;
-    void *buf;
-    size_t buflen;
-    char *pemname;
-
-    pemname = make_filename_try (gnupg_datadir (),
-                                 "sks-keyservers.netCA.pem", NULL);
-    if (!pemname)
-      {
-        err = gpg_error_from_syserror ();
-        log_error ("setting CA from file '%s' failed: %s\n",
-                   pemname, gpg_strerror (err));
-        goto leave;
-      }
-
-    fp = es_fopen (pemname, "r");
-    if (!fp)
-      {
-        err = gpg_error_from_syserror ();
-        log_error ("can't open '%s': %s\n", pemname, gpg_strerror (err));
-        xfree (pemname);
-        goto leave;
-      }
-    xfree (pemname);
-
-    mem_p = es_fopenmem (0, "r+b");
-    err = b64dec_start (&state, "CERTIFICATE");
-    if (err)
-      {
-        log_error ("b64dec failure: %s\n", gpg_strerror (err));
-        goto leave;
-      }
-
-    while ( (nread = es_fread (line, 1, DIM (line), fp)) )
-      {
-        err = b64dec_proc (&state, line, nread, &nbytes);
-        if (err)
-          {
-            if (gpg_err_code (err) == GPG_ERR_EOF)
-              break;
-
-            log_error ("b64dec failure: %s\n", gpg_strerror (err));
-            es_fclose (fp);
-            es_fclose (mem_p);
-            goto leave;
-          }
-        else if (nbytes)
-          es_fwrite (line, 1, nbytes, mem_p);
-      }
-    err = b64dec_finish (&state);
-    if (err)
-      {
-        log_error ("b64dec failure: %s\n", gpg_strerror (err));
-        es_fclose (fp);
-        es_fclose (mem_p);
-        goto leave;
-      }
-
-    es_fclose_snatch (mem_p, &buf, &buflen);
-    es_fclose (fp);
-
-    err = ntbtls_x509_cert_new (&ca_chain);
-    if (err)
-      {
-        log_error ("ntbtls_x509_new failed: %s\n", gpg_strerror (err));
-        xfree (buf);
-        goto leave;
-      }
-
-    err = ntbtls_x509_append_cert (ca_chain, buf, buflen);
-    xfree (buf);
+    (void)intended_hostname; /* Not needed because we do not preload
+                              * certificates.  */
 
     err = ntbtls_new (&sess->tls_session, NTBTLS_CLIENT);
     if (err)
       {
         log_error ("ntbtls_new failed: %s\n", gpg_strerror (err));
-        ntbtls_x509_cert_release (ca_chain);
         goto leave;
       }
 
-    err = ntbtls_set_ca_chain (sess->tls_session, ca_chain, NULL);
   }
 #elif HTTP_USE_GNUTLS
   {
@@ -1819,6 +1759,21 @@ send_request (http_t hd, const char *httphost, const char *auth,
           return err;
         }
 
+#ifdef HTTP_USE_NTBTLS
+      if (hd->session->verify_cb)
+        {
+          err = ntbtls_set_verify_cb (hd->session->tls_session,
+                                      my_ntbtls_verify_cb, hd);
+          if (err)
+            {
+              log_error ("ntbtls_set_verify_cb failed: %s\n",
+                         gpg_strerror (err));
+              xfree (proxy_authstr);
+              return err;
+            }
+        }
+#endif /*HTTP_USE_NTBTLS*/
+
       while ((err = ntbtls_handshake (hd->session->tls_session)))
         {
           switch (err)
@@ -1833,12 +1788,18 @@ send_request (http_t hd, const char *httphost, const char *auth,
 
       hd->session->verify.done = 0;
 
-
       /* Try the available verify callbacks until one returns success
-       * or a real error.  */
+       * or a real error.  Note that NTBTLS does the verification
+       * during the handshake via   */
+#ifdef HTTP_USE_NTBTLS
+      err = 0; /* Fixme check that the CB has been called.  */
+#else
       err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
 
-      if (hd->session->verify_cb)
+      if (hd->session->verify_cb
+          && gpg_err_source (err) == GPG_ERR_SOURCE_DIRMNGR
+          && gpg_err_code (err) == GPG_ERR_NOT_IMPLEMENTED)
         err = hd->session->verify_cb (hd->session->verify_cb_value,
                                       hd, hd->session,
                                       (hd->flags | hd->session->flags),

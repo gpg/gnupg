@@ -168,12 +168,19 @@ typedef struct cert_ref_s *cert_ref_t;
 /* Forward references; access only through server.c.  */
 struct server_local_s;
 
+#if SIZEOF_UNSIGNED_LONG == 8
+# define SERVER_CONTROL_MAGIC 0x6469726d6e677220
+#else
+# define SERVER_CONTROL_MAGIC 0x6469726d
+#endif
+
 /* Connection control structure.  */
 struct server_control_s
 {
-  int refcount;      /* Count additional references to this object.  */
-  int no_server;     /* We are not running under server control. */
-  int status_fd;     /* Only for non-server mode. */
+  unsigned long magic;/* Always has SERVER_CONTROL_MAGIC.  */
+  int refcount;       /* Count additional references to this object.  */
+  int no_server;      /* We are not running under server control. */
+  int status_fd;      /* Only for non-server mode. */
   struct server_local_s *server_local;
   int force_crl_refresh; /* Always load a fresh CRL. */
 
@@ -212,6 +219,15 @@ void start_command_handler (gnupg_fd_t fd);
 gpg_error_t dirmngr_status (ctrl_t ctrl, const char *keyword, ...);
 gpg_error_t dirmngr_status_help (ctrl_t ctrl, const char *text);
 gpg_error_t dirmngr_tick (ctrl_t ctrl);
+
+/*-- http-ntbtls.c --*/
+/* Note that we don't use a callback for gnutls.  */
+
+gpg_error_t gnupg_http_tls_verify_cb (void *opaque,
+                                      http_t http,
+                                      http_session_t session,
+                                      unsigned int flags,
+                                      void *tls_context);
 
 
 /*-- loadswdb.c --*/

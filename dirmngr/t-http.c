@@ -42,7 +42,6 @@
 #include "logging.h"
 #include "http.h"
 
-
 #if HTTP_USE_NTBTLS
 # include <ntbtls.h>
 #elif HTTP_USE_GNUTLS
@@ -118,6 +117,56 @@ my_gnutls_log (int level, const char *text)
 }
 #endif
 
+
+static gpg_error_t
+my_http_tls_verify_cb (void *opaque,
+                       http_t http,
+                       http_session_t session,
+                       unsigned int http_flags,
+                       void *tls_context)
+{
+  gpg_error_t err;
+  int idx;
+  ksba_cert_t cert;
+  ksba_cert_t hostcert = NULL;
+
+  (void)opaque;
+  (void)http;
+  (void)session;
+
+
+  /* Get the peer's certs fron ntbtls.  */
+  for (idx = 0;
+       (cert = ntbtls_x509_get_peer_cert (tls_context, idx)); idx++)
+    {
+      if (!idx)
+        {
+          log_info ("Received host certificate\n");
+          hostcert = cert;
+        }
+      else
+        {
+
+          log_info ("Received additional certificate\n");
+          ksba_cert_release (cert);
+        }
+    }
+  if (!idx)
+    {
+      err  = gpg_error (GPG_ERR_MISSING_CERT);
+      goto leave;
+    }
+
+  err = 0;
+
+ leave:
+  ksba_cert_release (hostcert);
+  log_info ("my_http_tls_verify_cb returns: %s\n", gpg_strerror (err));
+  return err;
+}
+
+
+
 /* Prepend FNAME with the srcdir environment variable's value and
    return an allocated filename. */
 static char *
@@ -142,8 +191,7 @@ main (int argc, char **argv)
 {
   int last_argc = -1;
   gpg_error_t err;
-  int rc;
-  parsed_uri_t uri;
+  int rc;  parsed_uri_t uri;
   uri_tuple_t r;
   http_t hd;
   int c;
@@ -171,7 +219,7 @@ main (int argc, char **argv)
                  "Options:\n"
                  "  --verbose         print timings etc.\n"
                  "  --debug           flyswatter\n"
-                 "  --gnutls-debug N  use GNUTLS debug level N\n"
+                 "  --tls-debug N     use TLS debug level N\n"
                  "  --cacert FNAME    expect CA certificate in file FNAME\n"
                  "  --no-verify       do not verify the certificate\n"
                  "  --force-tls       use HTTP_FLAG_FORCE_TLS\n"
@@ -191,7 +239,7 @@ main (int argc, char **argv)
           debug++;
           argc--; argv++;
         }
-      else if (!strcmp (*argv, "--gnutls-debug"))
+      else if (!strcmp (*argv, "--tls-debug"))
         {
           argc--; argv++;
           if (argc)
@@ -248,9 +296,11 @@ main (int argc, char **argv)
   assuan_sock_init ();
 
 #if HTTP_USE_NTBTLS
-
-  (void)err;
-
+  log_info ("new session.\n");
+  err = http_session_new (&session, NULL, HTTP_FLAG_TRUST_DEF,
+                          my_http_tls_verify_cb, NULL);
+  if (err)
+    log_error ("http_session_new failed: %s\n", gpg_strerror (err));
   ntbtls_set_debug (tls_dbg, NULL, NULL);
 
 #elif HTTP_USE_GNUTLS
