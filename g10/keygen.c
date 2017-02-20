@@ -89,7 +89,8 @@ enum para_name {
   pSERIALNO,
   pCARDBACKUPKEY,
   pHANDLE,
-  pKEYSERVER
+  pKEYSERVER,
+  pKEYGRIP
 };
 
 struct para_data_s {
@@ -3653,8 +3654,9 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
 	{ "Preferences",    pPREFERENCES },
 	{ "Revoker",        pREVOKER },
         { "Handle",         pHANDLE },
-	{ "Keyserver",      pKEYSERVER },
-	{ NULL, 0 }
+        { "Keyserver",      pKEYSERVER },
+        { "Keygrip",        pKEYGRIP },
+        { NULL, 0 }
     };
     IOBUF fp;
     byte *line;
@@ -4175,103 +4177,14 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
   else if (full)  /* Full featured key generation.  */
     {
       int subkey_algo;
-      char *curve = NULL;
+      char *key_from_hexgrip = NULL;
 
-      /* Fixme: To support creating a primary key by keygrip we better
-         also define the keyword for the parameter file.  Note that
-         the subkey case will never be asserted if a keygrip has been
-         given.  */
-      algo = ask_algo (ctrl, 0, &subkey_algo, &use, NULL);
-      if (subkey_algo)
+      algo = ask_algo (ctrl, 0, &subkey_algo, &use, &key_from_hexgrip);
+      if (key_from_hexgrip)
         {
-          /* Create primary and subkey at once.  */
-          both = 1;
-          if (algo == PUBKEY_ALGO_ECDSA
-              || algo == PUBKEY_ALGO_EDDSA
-              || algo == PUBKEY_ALGO_ECDH)
-            {
-              curve = ask_curve (&algo, &subkey_algo);
-              r = xmalloc_clear( sizeof *r + 20 );
-              r->key = pKEYTYPE;
-              sprintf( r->u.value, "%d", algo);
-              r->next = para;
-              para = r;
-              nbits = 0;
-              r = xmalloc_clear (sizeof *r + strlen (curve));
-              r->key = pKEYCURVE;
-              strcpy (r->u.value, curve);
-              r->next = para;
-              para = r;
-            }
-          else
-            {
-              r = xmalloc_clear( sizeof *r + 20 );
-              r->key = pKEYTYPE;
-              sprintf( r->u.value, "%d", algo);
-              r->next = para;
-              para = r;
-              nbits = ask_keysize (algo, 0);
-              r = xmalloc_clear( sizeof *r + 20 );
-              r->key = pKEYLENGTH;
-              sprintf( r->u.value, "%u", nbits);
-              r->next = para;
-              para = r;
-            }
-          r = xmalloc_clear( sizeof *r + 20 );
-          r->key = pKEYUSAGE;
-          strcpy( r->u.value, "sign" );
-          r->next = para;
-          para = r;
-
-          r = xmalloc_clear( sizeof *r + 20 );
-          r->key = pSUBKEYTYPE;
-          sprintf( r->u.value, "%d", subkey_algo);
-          r->next = para;
-          para = r;
-          r = xmalloc_clear( sizeof *r + 20 );
-          r->key = pSUBKEYUSAGE;
-          strcpy( r->u.value, "encrypt" );
-          r->next = para;
-          para = r;
-
-          if (algo == PUBKEY_ALGO_ECDSA
-              || algo == PUBKEY_ALGO_EDDSA
-              || algo == PUBKEY_ALGO_ECDH)
-            {
-              if (algo == PUBKEY_ALGO_EDDSA
-                  && subkey_algo == PUBKEY_ALGO_ECDH)
-                {
-                  /* Need to switch to a different curve for the
-                     encryption key.  */
-                  xfree (curve);
-                  curve = xstrdup ("Curve25519");
-                }
-              r = xmalloc_clear (sizeof *r + strlen (curve));
-              r->key = pSUBKEYCURVE;
-              strcpy (r->u.value, curve);
-              r->next = para;
-              para = r;
-            }
-        }
-      else /* Create only a single key.  */
-        {
-          /* For ECC we need to ask for the curve before storing the
-             algo because ask_curve may change the algo.  */
-          if (algo == PUBKEY_ALGO_ECDSA
-              || algo == PUBKEY_ALGO_EDDSA
-              || algo == PUBKEY_ALGO_ECDH)
-            {
-              curve = ask_curve (&algo, NULL);
-              r = xmalloc_clear (sizeof *r + strlen (curve));
-              r->key = pKEYCURVE;
-              strcpy (r->u.value, curve);
-              r->next = para;
-              para = r;
-            }
-
           r = xmalloc_clear( sizeof *r + 20 );
           r->key = pKEYTYPE;
-          sprintf( r->u.value, "%d", algo );
+          sprintf( r->u.value, "%d", algo);
           r->next = para;
           para = r;
 
@@ -4286,26 +4199,144 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
               r->next = para;
               para = r;
             }
-          nbits = 0;
-        }
 
-      if (algo == PUBKEY_ALGO_ECDSA
-          || algo == PUBKEY_ALGO_EDDSA
-          || algo == PUBKEY_ALGO_ECDH)
-        {
-          /* The curve has already been set.  */
+          r = xmalloc_clear( sizeof *r + 40 );
+          r->key = pKEYGRIP;
+          strcpy (r->u.value, key_from_hexgrip);
+          r->next = para;
+          para = r;
+
+          xfree (key_from_hexgrip);
         }
       else
         {
-          nbits = ask_keysize (both? subkey_algo : algo, nbits);
-          r = xmalloc_clear( sizeof *r + 20 );
-          r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
-          sprintf( r->u.value, "%u", nbits);
-          r->next = para;
-          para = r;
-        }
+          char *curve = NULL;
 
-      xfree (curve);
+          if (subkey_algo)
+            {
+              /* Create primary and subkey at once.  */
+              both = 1;
+              if (algo == PUBKEY_ALGO_ECDSA
+                  || algo == PUBKEY_ALGO_EDDSA
+                  || algo == PUBKEY_ALGO_ECDH)
+                {
+                  curve = ask_curve (&algo, &subkey_algo);
+                  r = xmalloc_clear( sizeof *r + 20 );
+                  r->key = pKEYTYPE;
+                  sprintf( r->u.value, "%d", algo);
+                  r->next = para;
+                  para = r;
+                  nbits = 0;
+                  r = xmalloc_clear (sizeof *r + strlen (curve));
+                  r->key = pKEYCURVE;
+                  strcpy (r->u.value, curve);
+                  r->next = para;
+                  para = r;
+                }
+              else
+                {
+                  r = xmalloc_clear( sizeof *r + 20 );
+                  r->key = pKEYTYPE;
+                  sprintf( r->u.value, "%d", algo);
+                  r->next = para;
+                  para = r;
+                  nbits = ask_keysize (algo, 0);
+                  r = xmalloc_clear( sizeof *r + 20 );
+                  r->key = pKEYLENGTH;
+                  sprintf( r->u.value, "%u", nbits);
+                  r->next = para;
+                  para = r;
+                }
+              r = xmalloc_clear( sizeof *r + 20 );
+              r->key = pKEYUSAGE;
+              strcpy( r->u.value, "sign" );
+              r->next = para;
+              para = r;
+
+              r = xmalloc_clear( sizeof *r + 20 );
+              r->key = pSUBKEYTYPE;
+              sprintf( r->u.value, "%d", subkey_algo);
+              r->next = para;
+              para = r;
+              r = xmalloc_clear( sizeof *r + 20 );
+              r->key = pSUBKEYUSAGE;
+              strcpy( r->u.value, "encrypt" );
+              r->next = para;
+              para = r;
+
+              if (algo == PUBKEY_ALGO_ECDSA
+                  || algo == PUBKEY_ALGO_EDDSA
+                  || algo == PUBKEY_ALGO_ECDH)
+                {
+                  if (algo == PUBKEY_ALGO_EDDSA
+                      && subkey_algo == PUBKEY_ALGO_ECDH)
+                    {
+                      /* Need to switch to a different curve for the
+                         encryption key.  */
+                      xfree (curve);
+                      curve = xstrdup ("Curve25519");
+                    }
+                  r = xmalloc_clear (sizeof *r + strlen (curve));
+                  r->key = pSUBKEYCURVE;
+                  strcpy (r->u.value, curve);
+                  r->next = para;
+                  para = r;
+                }
+            }
+          else /* Create only a single key.  */
+            {
+              /* For ECC we need to ask for the curve before storing the
+                 algo because ask_curve may change the algo.  */
+              if (algo == PUBKEY_ALGO_ECDSA
+                  || algo == PUBKEY_ALGO_EDDSA
+                  || algo == PUBKEY_ALGO_ECDH)
+                {
+                  curve = ask_curve (&algo, NULL);
+                  r = xmalloc_clear (sizeof *r + strlen (curve));
+                  r->key = pKEYCURVE;
+                  strcpy (r->u.value, curve);
+                  r->next = para;
+                  para = r;
+                }
+
+              r = xmalloc_clear( sizeof *r + 20 );
+              r->key = pKEYTYPE;
+              sprintf( r->u.value, "%d", algo );
+              r->next = para;
+              para = r;
+
+              if (use)
+                {
+                  r = xmalloc_clear( sizeof *r + 25 );
+                  r->key = pKEYUSAGE;
+                  sprintf( r->u.value, "%s%s%s",
+                           (use & PUBKEY_USAGE_SIG)? "sign ":"",
+                           (use & PUBKEY_USAGE_ENC)? "encrypt ":"",
+                           (use & PUBKEY_USAGE_AUTH)? "auth":"" );
+                  r->next = para;
+                  para = r;
+                }
+              nbits = 0;
+            }
+
+          if (algo == PUBKEY_ALGO_ECDSA
+              || algo == PUBKEY_ALGO_EDDSA
+              || algo == PUBKEY_ALGO_ECDH)
+            {
+              /* The curve has already been set.  */
+            }
+          else
+            {
+              nbits = ask_keysize (both? subkey_algo : algo, nbits);
+              r = xmalloc_clear( sizeof *r + 20 );
+              r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
+              sprintf( r->u.value, "%u", nbits);
+              r->next = para;
+              para = r;
+            }
+
+          xfree (curve);
+        }
     }
   else /* Default key generation.  */
     {
@@ -4547,6 +4578,9 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
   int did_sub = 0;
   u32 timestamp;
   char *cache_nonce = NULL;
+  int algo;
+  u32 expire;
+  const char *key_from_hexgrip = NULL;
 
   if (outctrl->dryrun)
     {
@@ -4612,20 +4646,26 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
      node of the subkey but that is more work than just to pass the
      current timestamp.  */
 
-  if (!card)
-    err = do_create (get_parameter_algo( para, pKEYTYPE, NULL ),
+  algo = get_parameter_algo( para, pKEYTYPE, NULL );
+  expire = get_parameter_u32( para, pKEYEXPIRE );
+  key_from_hexgrip = get_parameter_value (para, pKEYGRIP);
+  if (key_from_hexgrip)
+    err = do_create_from_keygrip (ctrl, algo, key_from_hexgrip,
+                                  pub_root, timestamp, expire, 0);
+  else if (!card)
+    err = do_create (algo,
                      get_parameter_uint( para, pKEYLENGTH ),
                      get_parameter_value (para, pKEYCURVE),
                      pub_root,
                      timestamp,
-                     get_parameter_u32( para, pKEYEXPIRE ), 0,
+                     expire, 0,
                      outctrl->keygen_flags,
                      get_parameter_passphrase (para),
                      &cache_nonce, NULL);
   else
-    err = gen_card_key (1, get_parameter_algo( para, pKEYTYPE, NULL ),
+    err = gen_card_key (1, algo,
                         1, pub_root, &timestamp,
-                        get_parameter_u32 (para, pKEYEXPIRE));
+                        expire);
 
   /* Get the pointer to the generated public key packet.  */
   if (!err)
