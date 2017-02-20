@@ -715,6 +715,23 @@ pid_suffix_callback (unsigned long *r_suffix)
 }
 #endif /*!HAVE_W32_SYSTEM*/
 
+#if HTTP_USE_NTBTLS
+static void
+my_ntbtls_log_handler (void *opaque, int level, const char *fmt, va_list argv)
+{
+  (void)opaque;
+
+  if (level == -1)
+    log_logv_with_prefix (GPGRT_LOG_INFO, "ntbtls: ", fmt, argv);
+  else
+    {
+      char prefix[10+20];
+      snprintf (prefix, sizeof prefix, "ntbtls(%d): ", level);
+      log_logv_with_prefix (GPGRT_LOG_DEBUG, prefix, fmt, argv);
+    }
+}
+#endif
+
 
 static void
 thread_init (void)
@@ -800,6 +817,10 @@ main (int argc, char **argv)
   setup_libassuan_logging (&opt.debug, dirmngr_assuan_log_monitor);
 
   setup_libgcrypt_logging ();
+
+#if HTTP_USE_NTBTLS
+  ntbtls_set_log_handler (my_ntbtls_log_handler, NULL);
+#endif
 
   /* Setup defaults. */
   shell = getenv ("SHELL");
