@@ -42,6 +42,7 @@
 #include "logging.h"
 #include "http.h"
 
+#include <ksba.h>
 #if HTTP_USE_NTBTLS
 # include <ntbtls.h>
 #elif HTTP_USE_GNUTLS
