@@ -727,7 +727,7 @@ print_prefix (int level, int leading_backspace)
 
 static void
 do_logv (int level, int ignore_arg_ptr, const char *extrastring,
-         const char *fmt, va_list arg_ptr)
+         const char *prefmt, const char *fmt, va_list arg_ptr)
 {
   int leading_backspace = (fmt && *fmt == '\b');
 
@@ -759,6 +759,9 @@ do_logv (int level, int ignore_arg_ptr, const char *extrastring,
 
   if (fmt)
     {
+      if (prefmt)
+        es_fputs_unlocked (prefmt, logstream);
+
       if (ignore_arg_ptr)
         { /* This is used by log_string and comes with the extra
            * feature that after a LF the next line is indent at the
@@ -861,7 +864,7 @@ log_log (int level, const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt) ;
-  do_logv (level, 0, NULL, fmt, arg_ptr);
+  do_logv (level, 0, NULL, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
 }
 
@@ -869,7 +872,18 @@ log_log (int level, const char *fmt, ...)
 void
 log_logv (int level, const char *fmt, va_list arg_ptr)
 {
-  do_logv (level, 0, NULL, fmt, arg_ptr);
+  do_logv (level, 0, NULL, NULL, fmt, arg_ptr);
+}
+
+
+/* Same as log_logv but PREFIX is printed immediately before FMT.
+ * Note that PREFIX is an additional string and independent of the
+ * prefix set by log_set_prefix.  */
+void
+log_logv_with_prefix (int level, const char *prefix,
+                      const char *fmt, va_list arg_ptr)
+{
+  do_logv (level, 0, NULL, prefix, fmt, arg_ptr);
 }
 
 
@@ -878,7 +892,7 @@ do_log_ignore_arg (int level, const char *str, ...)
 {
   va_list arg_ptr;
   va_start (arg_ptr, str);
-  do_logv (level, 1, NULL, str, arg_ptr);
+  do_logv (level, 1, NULL, NULL, str, arg_ptr);
   va_end (arg_ptr);
 }
 
@@ -900,7 +914,7 @@ log_info (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (GPGRT_LOG_INFO, 0, NULL, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_INFO, 0, NULL, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
 }
 
@@ -911,7 +925,7 @@ log_error (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (GPGRT_LOG_ERROR, 0, NULL, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_ERROR, 0, NULL, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
   /* Protect against counter overflow.  */
   if (errorcount < 30000)
@@ -925,7 +939,7 @@ log_fatal (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (GPGRT_LOG_FATAL, 0, NULL, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_FATAL, 0, NULL, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
   abort (); /* Never called; just to make the compiler happy.  */
 }
@@ -937,7 +951,7 @@ log_bug (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (GPGRT_LOG_BUG, 0, NULL, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_BUG, 0, NULL, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
   abort (); /* Never called; just to make the compiler happy.  */
 }
@@ -949,7 +963,7 @@ log_debug (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (GPGRT_LOG_DEBUG, 0, NULL, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_DEBUG, 0, NULL, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
 }
 
@@ -963,7 +977,7 @@ log_debug_with_string (const char *string, const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (GPGRT_LOG_DEBUG, 0, string, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_DEBUG, 0, string, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
 }
 
@@ -974,7 +988,7 @@ log_printf (const char *fmt, ...)
   va_list arg_ptr;
 
   va_start (arg_ptr, fmt);
-  do_logv (fmt ? GPGRT_LOG_CONT : GPGRT_LOG_BEGIN, 0, NULL, fmt, arg_ptr);
+  do_logv (fmt ? GPGRT_LOG_CONT : GPGRT_LOG_BEGIN, 0, NULL, NULL, fmt, arg_ptr);
   va_end (arg_ptr);
 }
 

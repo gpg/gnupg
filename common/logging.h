@@ -90,6 +90,8 @@ enum jnlib_log_levels {
 };
 void log_log (int level, const char *fmt, ...) GPGRT_ATTR_PRINTF(2,3);
 void log_logv (int level, const char *fmt, va_list arg_ptr);
+void log_logv_with_prefix (int level, const char *prefix,
+                           const char *fmt, va_list arg_ptr);
 void log_string (int level, const char *string);
 void log_bug (const char *fmt, ...)    GPGRT_ATTR_NR_PRINTF(1,2);
 void log_fatal (const char *fmt, ...)  GPGRT_ATTR_NR_PRINTF(1,2);
