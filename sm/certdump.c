@@ -1,5 +1,5 @@
 /* certdump.c - Dump a certificate for debugging
- * Copyright (C) 2001, 2004, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2001-2010, 2014-2015  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
