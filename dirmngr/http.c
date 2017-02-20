@@ -767,11 +767,12 @@ http_session_new (http_session_t *r_session,
         goto leave;
       }
   }
-#else /*!HTTP_USE_GNUTLS*/
+#else /*!HTTP_USE_GNUTLS && !HTTP_USE_NTBTLS*/
   {
-    (void)tls_priority;
+    (void)intended_hostname;
+    (void)flags;
   }
-#endif /*!HTTP_USE_GNUTLS*/
+#endif /*!HTTP_USE_GNUTLS && !HTTP_USE_NTBTLS*/
 
   if (opt_debug > 1)
     log_debug ("http.c:session_new: sess %p created\n", sess);
