@@ -1430,7 +1430,7 @@ Note that this adds a keyring to the current list. If the intent is to
 use the specified keyring alone, use @option{--keyring} along with
 @option{--no-default-keyring}.
 
-If the the option @option{--no-keyring} has been used no keyrings will
+If the option @option{--no-keyring} has been used no keyrings will
 be used at all.
 
 
@@ -3391,7 +3391,7 @@ For existing users a small
 helper script is provided to create these files (@pxref{addgnupghome}).
 
 For internal purposes @command{@gpgname} creates and maintains a few other
-files; They all live in in the current home directory (@pxref{option
+files; They all live in the current home directory (@pxref{option
 --homedir}).  Only the @command{@gpgname} program may modify these files.
 
 

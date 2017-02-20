@@ -88,7 +88,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
     }
 }
 
-/* Print usage information and and provide strings for help. */
+/* Print usage information and provide strings for help. */
 static const char *
 my_strusage( int level )
 {

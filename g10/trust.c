@@ -186,7 +186,7 @@ get_ownertrust (PKT_public_key *pk)
 
 /*
  * Same as get_ownertrust but this takes the minimum ownertrust value
- * into into account, and will bump up the value as needed.
+ * into account, and will bump up the value as needed.
  */
 static int
 get_ownertrust_with_min (PKT_public_key *pk)

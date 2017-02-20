@@ -17,7 +17,7 @@
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
  */
 
-/* For historic reasons gpg uses RIPE-MD160 to to identify names in
+/* For historic reasons gpg uses RIPE-MD160 to identify names in
    the trustdb.  It would be better to change that to SHA-1, to take
    advantage of a SHA-1 hardware operation provided by some CPUs.
    This would break trustdb compatibility and thus we don't want to do

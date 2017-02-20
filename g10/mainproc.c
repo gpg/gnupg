@@ -78,7 +78,7 @@ struct mainproc_context
      signature. */
   struct
   {
-    /* A file descriptor of the the signed data.  Only used if not -1. */
+    /* A file descriptor of the signed data.  Only used if not -1. */
     int data_fd;
     /* A list of filenames with the data files or NULL. This is only
        used if DATA_FD is -1. */
@@ -1997,7 +1997,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 
       log_assert (mainpk);
 
-      /* In case we did not found a valid valid textual userid above
+      /* In case we did not found a valid textual userid above
          we print the first user id packet or a "[?]" instead along
          with the "Good|Expired|Bad signature" line.  */
       if (!count)

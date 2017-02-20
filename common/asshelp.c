@@ -414,7 +414,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
 
       /* If the agent has been configured for use with a standard
          socket, an environment variable is not required and thus
-         we we can savely start the agent here.  */
+         we can safely start the agent here.  */
       i = 0;
       argv[i++] = "--homedir";
       argv[i++] = abs_homedir;

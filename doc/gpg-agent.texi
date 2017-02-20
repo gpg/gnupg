@@ -77,7 +77,7 @@ the included Secure Shell Agent you may start the agent using:
 @c
 @c   The rationale for this separation is that it allows access to the
 @c   secret key to be tightly controlled and audited, and it doesn't permit
-@c   the the supplicant to either copy the key or to override the owner's
+@c   the supplicant to either copy the key or to override the owner's
 @c   intentions.
 
 @example
@@ -1412,7 +1412,7 @@ numbers in the range @code{0} to @code{UINT_MAX} and wrapping around to
 0.  The actual values should not be relied upon; they shall only be used
 to detect a change.
 
-The currently defined counters are are:
+The currently defined counters are:
 @table @code
 @item ANY
 Incremented with any change of any of the other counters.
@@ -1508,7 +1508,7 @@ following values are defined:
 
 @item cache-ttl-opt-preset
 This option sets the cache TTL for new entries created by GENKEY and
-PASSWD commands when using the @option{--preset} option.  It it is not
+PASSWD commands when using the @option{--preset} option.  It is not
 used a default value is used.
 
 @item s2k-count

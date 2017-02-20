@@ -690,7 +690,7 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
     return rc;
 
   /* Now create the protected version of the key.  Note that the 10
-     extra bytes are for for the inserted "protected-" string (the
+     extra bytes are for the inserted "protected-" string (the
      beginning of the plaintext reads: "((11:private-key(" ).  The 35
      term is the space for (12:protected-at15:<timestamp>).  */
   *resultlen = (10

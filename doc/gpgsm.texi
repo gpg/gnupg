@@ -898,7 +898,7 @@ start up with a working configuration.  For existing users a small
 helper script is provided to create these files (@pxref{addgnupghome}).
 
 For internal purposes @command{gpgsm} creates and maintains a few other files;
-they all live in in the current home directory (@pxref{option
+they all live in the current home directory (@pxref{option
 --homedir}).  Only @command{gpgsm} may modify these files.
 
 

@@ -265,7 +265,7 @@ keydb_add_resource (ctrl_t ctrl, const char *url, int force, int *auto_created)
 
   /* Do we have an URL?
      gnupg-kbx:filename := this is a plain keybox
-     filename := See what is is, but create as plain keybox.
+     filename := See what it is, but create as plain keybox.
   */
   if (strlen (resname) > 10)
     {

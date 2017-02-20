@@ -191,7 +191,7 @@ struct
 } opt;
 
 
-/* Print usage information and and provide strings for help.  */
+/* Print usage information and provide strings for help.  */
 static const char *
 my_strusage (int level)
 {
@@ -997,7 +997,7 @@ main (int argc, char **argv)
   setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
 
-  /* Tell simple-pwquery about the the standard socket name.  */
+  /* Tell simple-pwquery about the standard socket name.  */
   {
     char *tmp = make_filename (gnupg_socketdir (), GPG_AGENT_SOCK_NAME, NULL);
     simple_pw_set_socket (tmp);

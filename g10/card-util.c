@@ -72,7 +72,7 @@ write_sc_op_status (gpg_error_t err)
 }
 
 
-/* Change the PIN of a an OpenPGP card.  This is an interactive
+/* Change the PIN of an OpenPGP card.  This is an interactive
    function. */
 void
 change_pin (int unblock_v2, int allow_admin)

@@ -2721,7 +2721,7 @@ data_hash (unsigned char *data, size_t data_n,
 }
 
 
-/* This function signs the data described by CTRL. If HASH is is not
+/* This function signs the data described by CTRL. If HASH is not
    NULL, (HASH,HASHLEN) overrides the hash stored in CTRL.  This is to
    allow the use of signature algorithms that implement the hashing
    internally (e.g. Ed25519).  On success the created signature is
@@ -3654,7 +3654,7 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
 
 #ifdef HAVE_W32_SYSTEM
 /* Serve one ssh-agent request.  This is used for the Putty support.
-   REQUEST is the the mmapped memory which may be accessed up to a
+   REQUEST is the mmapped memory which may be accessed up to a
    length of MAXREQLEN.  Returns 0 on success which also indicates
    that a valid SSH response message is now in REQUEST.  */
 int
@@ -3749,7 +3749,7 @@ serve_mmapped_ssh_request (ctrl_t ctrl,
     size_t response_size;
 
     /* NB: In contrast to the request-stream, the response stream
-       includes the the message type byte.  */
+       includes the message type byte.  */
     if (es_fclose_snatch (response_stream, &response_data, &response_size))
       {
         log_error ("snatching ssh response failed: %s",

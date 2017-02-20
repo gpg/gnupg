@@ -225,7 +225,7 @@ This option appends a thread ID to the PID in the log output.
 @efindex ASSUAN_DEBUG
 Changes the active Libassuan logging categories to @var{cats}.  The
 value for @var{cats} is an unsigned integer given in usual C-Syntax.
-A value of of 0 switches to a default category.  If this option is not
+A value of 0 switches to a default category.  If this option is not
 used the categories are taken from the environment variable
 @code{ASSUAN_DEBUG}.  Note that this option has only an effect if the
 Assuan debug flag has also been with the option @option{--debug}.  For

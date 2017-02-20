@@ -160,7 +160,7 @@ set_native_charset (const char *newset)
       const char *aliases;
 
       /* We are a console program thus we need to use the
-         GetConsoleOutputCP function and not the the GetACP which
+         GetConsoleOutputCP function and not the GetACP which
          would give the codepage for a GUI program.  Note this is not
          a bulletproof detection because GetConsoleCP might return a
          different one for console input.  Not sure how to cope with

@@ -41,7 +41,7 @@ if [ -z "$signedby" ]; then
 fi
 
 if [ "$dryrun" = "0" ]; then
-  echo "About to send the the keys signed by $signedby" >&2
+  echo "About to send the keys signed by $signedby" >&2
   echo -n "to their owners.  Do you really want to do this? (y/N)" >&2
   read
   [ "$REPLY" != "y" -a "$REPLY" != "Y" ] && exit 0

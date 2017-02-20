@@ -1157,7 +1157,7 @@ http_get_status_code (http_t hd)
 /* Return information pertaining to TLS.  If TLS is not in use for HD,
    NULL is returned.  WHAT is used ask for specific information:
 
-     (NULL) := Only check whether TLS is is use.  Returns an
+     (NULL) := Only check whether TLS is in use.  Returns an
                unspecified string if TLS is in use.  That string may
                even be the empty string.
  */

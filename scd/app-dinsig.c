@@ -416,7 +416,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* Check that the provided ID is vaid.  This is not really needed
-     but we do it to to enforce correct usage by the caller. */
+     but we do it to enforce correct usage by the caller. */
   if (strncmp (keyidstr, "DINSIG.", 7) )
     return gpg_error (GPG_ERR_INV_ID);
   keyidstr += 7;

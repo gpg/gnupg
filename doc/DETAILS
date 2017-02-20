@@ -187,7 +187,7 @@ described here.
     only filled if the issuer certificate is available. The root has
     been reached if this is the same string as the fingerprint. The
     advantage of using this value is that it is guaranteed to have
-    been been build by the same lookup algorithm as gpgsm uses.
+    been built by the same lookup algorithm as gpgsm uses.
 
     For "uid" records this field lists the preferences in the same way
     gpg's --edit-key menu does.
@@ -702,7 +702,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 
     VALIDATION_MODEL describes the algorithm used to check the
     validity of the key.  The defaults are the standard Web of Trust
-    model for gpg and the the standard X.509 model for gpgsm.  The
+    model for gpg and the standard X.509 model for gpgsm.  The
     defined values are
 
        - pgp   :: The standard PGP WoT.
@@ -796,7 +796,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     recent message was verified 4 seconds ago.'
 
 *** PKA_TRUST_
-    This is is one:
+    This is one of:
 
     - PKA_TRUST_GOOD <addr-spec>
     - PKA_TRUST_BAD  <addr-spec>

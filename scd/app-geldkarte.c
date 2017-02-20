@@ -288,7 +288,7 @@ app_select_geldkarte (app_t app)
     goto leave;
 
   /* Read the first record of EF_ID (SFI=0x17).  We require this
-     record to be at least 24 bytes with the the first byte 0x67 and a
+     record to be at least 24 bytes with the first byte 0x67 and a
      correct filler byte. */
   err = iso7816_read_record (slot, 1, 1, ((0x17 << 3)|4), &result, &resultlen);
   if (err)

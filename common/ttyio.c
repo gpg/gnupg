@@ -602,7 +602,7 @@ tty_get( const char *prompt )
     return do_get ( prompt, 0 );
 }
 
-/* Variable argument version of tty_get.  The prompt is is actually a
+/* Variable argument version of tty_get.  The prompt is actually a
    format string with arguments.  */
 char *
 tty_getf (const char *promptfmt, ... )

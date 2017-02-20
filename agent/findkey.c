@@ -1289,7 +1289,7 @@ agent_public_key_from_file (ctrl_t ctrl,
 
 
 
-/* Check whether the the secret key identified by GRIP is available.
+/* Check whether the secret key identified by GRIP is available.
    Returns 0 is the key is available.  */
 int
 agent_key_available (const unsigned char *grip)

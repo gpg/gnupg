@@ -32,7 +32,7 @@ struct tab_item_s
   char *label;       /* Optional malloced label for that entry.  */
   char *mountpoint;  /* NULL or a malloced mountpoint.  */
   char blockdev[1];  /* String with the name of the block device.  If
-                        it starts with a slash is is a regular device
+                        it starts with a slash it is a regular device
                         name, otherwise it is a PARTUUID.  */
 };
 

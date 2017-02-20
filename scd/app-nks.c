@@ -1004,7 +1004,7 @@ do_decipher (app_t app, const char *keyidstr,
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* Check that the provided ID is valid.  This is not really needed
-     but we do it to to enforce correct usage by the caller. */
+     but we do it to enforce correct usage by the caller. */
   if (!strncmp (keyidstr, "NKS-NKS3.", 9) )
     ;
   else if (!strncmp (keyidstr, "NKS-DF01.", 9) )

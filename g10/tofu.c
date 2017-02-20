@@ -2949,7 +2949,7 @@ write_stats_status (estream_t fp,
  *
  * POLICY is the key's policy (as returned by get_policy).
  *
- * Returns 0 if if ONLY_STATUS_FD is set.  Otherwise, returns whether
+ * Returns 0 if ONLY_STATUS_FD is set.  Otherwise, returns whether
  * the caller should call show_warning after iterating over all user
  * ids.
  */

@@ -900,7 +900,7 @@ cmd_getattr (assuan_context_t ctx, char *line)
 static const char hlp_setattr[] =
   "SETATTR <name> <value> \n"
   "\n"
-  "This command is used to store data on a a smartcard.  The allowed\n"
+  "This command is used to store data on a smartcard.  The allowed\n"
   "names and values are depend on the currently selected smartcard\n"
   "application.  NAME and VALUE must be percent and '+' escaped.\n"
   "\n"
@@ -954,7 +954,7 @@ static const char hlp_writecert[] =
   "application. The actual certifciate is requested using the inquiry\n"
   "\"CERTDATA\" and needs to be provided in its raw (e.g. DER) form.\n"
   "\n"
-  "In almost all cases a a PIN will be requested.  See the related\n"
+  "In almost all cases a PIN will be requested.  See the related\n"
   "writecert function of the actually used application (app-*.c) for\n"
   "details.";
 static gpg_error_t
@@ -1007,7 +1007,7 @@ cmd_writecert (assuan_context_t ctx, char *line)
 static const char hlp_writekey[] =
   "WRITEKEY [--force] <keyid> \n"
   "\n"
-  "This command is used to store a secret key on a a smartcard.  The\n"
+  "This command is used to store a secret key on a smartcard.  The\n"
   "allowed keyids depend on the currently selected smartcard\n"
   "application. The actual keydata is requested using the inquiry\n"
   "\"KEYDATA\" and need to be provided without any protection.  With\n"

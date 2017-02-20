@@ -961,7 +961,7 @@ parse_ccid_descriptor (ccid_driver_t handle, unsigned short bcd_device,
      The
          0x5117 - SCR 3320 USB ID-000 reader
      seems to be very slow but enabling this workaround boosts the
-     performance to a a more or less acceptable level (tested by David).
+     performance to a more or less acceptable level (tested by David).
 
   */
   if (handle->id_vendor == VENDOR_SCM
@@ -1302,7 +1302,7 @@ scan_or_find_usb_device (int scan_mode,
 
    With READERNO >= 0 or READERID is not NULL find mode is used.  This
    uses the same algorithm as the scan mode but stops and returns at
-   the entry number READERNO and return the handle for the the opened
+   the entry number READERNO and return the handle for the opened
    USB device. If R_RID is not NULL it will receive the reader ID of
    that device.  If R_DEV is not NULL it will the device pointer of
    that device.  If IFCDESC_EXTRA is NOT NULL it will receive a

@@ -37,7 +37,7 @@ are disabled like this
    .#gpgsm.some.help-item
    This string is not translated.
 
-After translation you should remove the the hash mark so that the
+After translation you should remove the hash mark so that the
 entry looks like.
 
    .gpgsm.some.help-item

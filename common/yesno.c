@@ -114,7 +114,7 @@ answer_is_yes_no_quit ( const char *s )
 }
 
 /*
-   Return 1 for okay, 0 for for cancel or DEF_ANSWER for default.
+   Return 1 for okay, 0 for cancel or DEF_ANSWER for default.
  */
 int
 answer_is_okay_cancel (const char *s, int def_answer)

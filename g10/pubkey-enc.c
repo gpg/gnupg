@@ -211,7 +211,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
 
   /* Now get the DEK (data encryption key) from the frame
    *
-   * Old versions encode the DEK in in this format (msb is left):
+   * Old versions encode the DEK in this format (msb is left):
    *
    *     0  1  DEK(16 bytes)  CSUM(2 bytes)  0  RND(n bytes) 2
    *

@@ -190,7 +190,7 @@ data_line_write (assuan_context_t ctx, const void *buffer_arg, size_t size)
   const char *buffer = buffer_arg;
   gpg_error_t err;
 
-  /* If we do not want logging, enable it it here.  */
+  /* If we do not want logging, enable it here.  */
   if (ctrl && ctrl->server_local && ctrl->server_local->inhibit_data_logging)
     ctrl->server_local->inhibit_data_logging_now = 1;
 

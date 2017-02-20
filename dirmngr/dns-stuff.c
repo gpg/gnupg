@@ -881,7 +881,7 @@ resolve_name_standard (const char *name, unsigned short port,
   else
     *portstr = 0;
 
-  /* We can't use the the AI_IDN flag because that does the conversion
+  /* We can't use the AI_IDN flag because that does the conversion
      using the current locale.  However, GnuPG always used UTF-8.  To
      support IDN we would need to make use of the libidn API.  */
   ret = getaddrinfo (name, *portstr? portstr : NULL, &hints, &aibuf);
@@ -1680,7 +1680,7 @@ get_dns_cert_standard (const char *name, int want_certtype,
    found, the malloced data is returned at (R_KEY, R_KEYLEN) and
    the other return parameters are set to NULL/0.  If an IPGP CERT
    record was found the fingerprint is stored as an allocated block at
-   R_FPR and its length at R_FPRLEN; an URL is is allocated as a
+   R_FPR and its length at R_FPRLEN; an URL is allocated as a
    string and returned at R_URL.  If WANT_CERTTYPE is 0 this function
    returns the first CERT found with a supported type; it is expected
    that only one CERT record is used.  If WANT_CERTTYPE is one of the

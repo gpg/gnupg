@@ -67,7 +67,7 @@ init_membuf_secure (membuf_t *mb, int initiallen)
 }
 
 
-/* Shift the the content of the membuf MB by AMOUNT bytes.  The next
+/* Shift the content of the membuf MB by AMOUNT bytes.  The next
    operation will then behave as if AMOUNT bytes had not been put into
    the buffer.  If AMOUNT is greater than the actual accumulated
    bytes, the membuf is basically reset to its initial state.  */

@@ -1143,7 +1143,7 @@ key_byname (GETKEY_CTX *retctx, strlist_t namelist,
 
 /* Find a public key identified by NAME.
  *
- * If name appears to be a valid valid RFC822 mailbox (i.e., email
+ * If name appears to be a valid RFC822 mailbox (i.e., email
  * address) and auto key lookup is enabled (no_akl == 0), then the
  * specified auto key lookup methods (--auto-key-lookup) are used to
  * import the key into the local keyring.  Otherwise, just the local

@@ -777,7 +777,7 @@ prepare_search (KEYRING_HANDLE hd)
 
 
 /* A map of the all characters valid used for word_match()
- * Valid characters are in in this table converted to uppercase.
+ * Valid characters are in this table converted to uppercase.
  * because the upper 128 bytes have special meaning, we assume
  * that they are all valid.
  * Note: We must use numerical values here in case that this program

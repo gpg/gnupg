@@ -251,7 +251,7 @@ clean_cache_slot (cert_item_t ci)
  *
  * FROM_CONFIG indicates that CERT is a permanent certificate and
  * should stay in the cache.  IS_TRUSTED requests that the trusted
- * flag is set for the certificate; a value of 1 indicates the the
+ * flag is set for the certificate; a value of 1 indicates the
  * cert is trusted due to GnuPG mechanisms, a value of 2 indicates
  * that it is trusted because it has been taken from the system's
  * store of trusted certificates.  If FPR_BUFFER is not NULL the
@@ -1002,7 +1002,7 @@ get_cert_bysubject (const char *subject_dn, unsigned int seq)
 
 
 
-/* Return a value describing the the class of PATTERN.  The offset of
+/* Return a value describing the class of PATTERN.  The offset of
    the actual string to be used for the comparison is stored at
    R_OFFSET.  The offset of the serialnumer is stored at R_SN_OFFSET. */
 static enum pattern_class

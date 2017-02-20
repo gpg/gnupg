@@ -2502,7 +2502,7 @@ iobuf_get_fname_nonnull (iobuf_t a)
  * Enable or disable partial body length mode (RFC 4880 4.2.2.4).
  *
  * If LEN is 0, this disables partial block mode by popping the
- * partial body length filter, which which must be the most recently
+ * partial body length filter, which must be the most recently
  * added filter.
  *
  * If LEN is non-zero, it pushes a partial body length filter.  If

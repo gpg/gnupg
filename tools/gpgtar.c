@@ -137,7 +137,7 @@ static ARGPARSE_OPTS tar_opts[] = {
 
 
 
-/* Print usage information and and provide strings for help. */
+/* Print usage information and provide strings for help. */
 static const char *
 my_strusage( int level )
 {
@@ -507,7 +507,7 @@ main (int argc, char **argv)
 
 /* Read the next record from STREAM.  RECORD is a buffer provided by
    the caller and must be at leadt of size RECORDSIZE.  The function
-   return 0 on success and and error code on failure; a diagnostic
+   return 0 on success and error code on failure; a diagnostic
    printed as well.  Note that there is no need for an EOF indicator
    because a tarball has an explicit EOF record. */
 gpg_error_t

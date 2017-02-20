@@ -1471,7 +1471,7 @@ modlist_dump (LDAPMod **modlist, estream_t output)
 	  for ((ptr = (*m)->mod_values), (i = 1); ptr && *ptr; ptr++, i ++)
 	    {
 	      /* Assuming terminals are about 80 characters wide,
-		 display at most most about 10 lines of debugging
+		 display at most about 10 lines of debugging
 		 output.  If we do trim the buffer, append '...' to
 		 the end.  */
 	      const int max_len = 10 * 70;

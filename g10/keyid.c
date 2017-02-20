@@ -202,7 +202,7 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
     }
 
   gcry_md_putc ( md, 0x99 );     /* ctb */
-  /* What does it mean if n is greater than than 0xFFFF ? */
+  /* What does it mean if n is greater than 0xFFFF ? */
   gcry_md_putc ( md, n >> 8 );   /* 2 byte length header */
   gcry_md_putc ( md, n );
   gcry_md_putc ( md, pk->version );

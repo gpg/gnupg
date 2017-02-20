@@ -1022,7 +1022,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
           err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
           goto leave;
         }
-      /* Put the curve's OID into into the MPI array.  This requires
+      /* Put the curve's OID into the MPI array.  This requires
          that we shift Q and D.  For ECDH also insert the KDF parms. */
       if (is_ecdh)
         {

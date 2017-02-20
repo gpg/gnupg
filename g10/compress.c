@@ -182,7 +182,7 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	    nread = iobuf_read( a, zfx->inbuf + n, count );
 	    if( nread == -1 ) nread = 0;
 	    n += nread;
-	    /* Algo 1 has no zlib header which requires us to to give
+	    /* Algo 1 has no zlib header which requires us to give
 	     * inflate an extra dummy byte to read. To be on the safe
 	     * side we allow for up to 4 ff bytes.  */
 	    if( nread < count && zfx->algo == 1 && zfx->algo1hack < 4) {

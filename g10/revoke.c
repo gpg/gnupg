@@ -442,7 +442,7 @@ gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr)
    to stdout or the filename given by --output.  REASON describes the
    revocation reason.  PSK is the public primary key - we expect that
    a corresponding secret key is available.  KEYBLOCK is the entire
-   KEYBLOCK which is used in PGP mode to write a a minimal key and not
+   KEYBLOCK which is used in PGP mode to write a minimal key and not
    just the naked revocation signature; it may be NULL.  If LEADINTEXT
    is not NULL, it is written right before the (armored) output.*/
 static int

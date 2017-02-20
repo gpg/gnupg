@@ -50,7 +50,7 @@
 /* Definition of module local data of the CTRL structure.  */
 struct scd_local_s
 {
-  /* We keep a list of all allocated context with a an achnor at
+  /* We keep a list of all allocated context with an achnor at
      SCD_LOCAL_LIST (see below). */
   struct scd_local_s *next_local;
 

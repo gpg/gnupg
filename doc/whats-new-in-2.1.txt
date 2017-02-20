@@ -103,7 +103,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   • The scripts to create a Windows installer are now part of GnuPG.
 
   Now for the detailed description of these new features.  Note that the
-  examples assume that that /gpg/ is installed as /gpg/.  Your
+  examples assume that /gpg/ is installed as /gpg/.  Your
   installation may have it installed under the name /gpg2/.
 
 
@@ -510,7 +510,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   at login time and use an environment variable (`GPG_AGENT_INFO') to
   tell the other GnuPG modules how to connect to the agent.  However,
   correctly managing the start up and this environment variable is
-  cumbersome so that that an easier method is required.  Since GnuPG
+  cumbersome so that an easier method is required.  Since GnuPG
   2.0.16 the `--use-standard-socket' option already allowed to start the
   agent on the fly; however the environment variable was still required.
 
@@ -535,7 +535,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   A deficit of the OpenPGP protocol is that signatures carry only a
   limited indication on which public key has been used to create a
   signature.  Thus a verification engine may only use this “long key id”
-  to look up the the key in its own store or from a public keyserver.
+  to look up the key in its own store or from a public keyserver.
   Unfortunately it has now become possible to create a key with a long
   key id matching the key id of another key.  Importing a key with a
   long key id already used by another key in gpg’s local key store was

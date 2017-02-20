@@ -269,7 +269,7 @@ well.  (And post to comp.std.mumps, since they hardly get any articles
 there, and a \"comp\" group will propagate your article further.)
 	You may also find it is more fun to post the article once in each
 group.  If you list all the newsgroups in the same article, some newsreaders
-will only show the the article to the reader once!  Don't tolerate this.
+will only show the article to the reader once!  Don't tolerate this.
 		-- Emily Postnews Answers Your Questions on Netiquette
 -----BEGIN PGP SIGNATURE-----
 

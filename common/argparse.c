@@ -61,7 +61,7 @@
 /* GnuPG uses GPLv3+ but a standalone version of this defaults to
    GPLv2+ because that is the license of this file.  Change this if
    you include it in a program which uses GPLv3.  If you don't want to
-   set a a copyright string for your usage() you may also hardcode it
+   set a copyright string for your usage() you may also hardcode it
    here.  */
 #ifndef GNUPG_MAJOR_VERSION
 
@@ -571,7 +571,7 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
   int unread_buf[3];  /* We use an int so that we can store EOF.  */
   int unread_buf_count = 0;
 
-  if (!fp) /* Divert to to arg_parse() in this case.  */
+  if (!fp) /* Divert to arg_parse() in this case.  */
     return arg_parse (arg, opts);
 
   initialize (arg, filename, lineno);

@@ -44,7 +44,7 @@
         Field 1: Constant "v"
         Field 2: Version number of this file.  Must be 1.
 
-        This record must be the first non-comment record record and
+        This record must be the first non-comment record and
         there shall only exist one record of this type.
 
    1.3. CRL cache record

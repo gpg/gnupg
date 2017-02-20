@@ -336,7 +336,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
             {
               if (!first_subject)
                 {
-                  /* Save the the subject and the issuer for key usage
+                  /* Save the subject and the issuer for key usage
                      and ambiguous name tests. */
                   first_subject = ksba_cert_get_subject (cert, 0);
                   first_issuer = ksba_cert_get_issuer (cert, 0);

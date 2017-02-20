@@ -1092,7 +1092,7 @@ unlock_all (KEYDB_HANDLE hd)
  *   keydb_get_keyblock (hd, ...);  // -> Result 1.
  *
  * Note: it is only possible to save a single save state at a time.
- * In other words, the the save stack only has room for a single
+ * In other words, the save stack only has room for a single
  * instance of the state.  */
 void
 keydb_push_found_state (KEYDB_HANDLE hd)

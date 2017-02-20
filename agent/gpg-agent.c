@@ -2394,7 +2394,7 @@ handle_signal (int signo)
 }
 #endif
 
-/* Check the nonce on a new connection.  This is a NOP unless we we
+/* Check the nonce on a new connection.  This is a NOP unless we
    are using our Unix domain socket emulation under Windows.  */
 static int
 check_nonce (ctrl_t ctrl, assuan_sock_nonce_t *nonce)

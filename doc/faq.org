@@ -1462,7 +1462,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     :   | sort | uniq | xargs echo gpg --recv-keys
 
     Note that the invocation of sort is also required to wait for the
-    of the listing before before starting the import.
+    of the listing before starting the import.
 
 
 * Bug reporting and hacking
@@ -1491,7 +1491,7 @@ details.
 GnuPG has originally been developed in Germany because we have been
 able to do that without being affected by the US export restrictions.
 We had to reject any contributions from US citizens or from people
-living the the US.  That changed by end of 2000 when the export
+living in the US.  That changed by end of 2000 when the export
 restrictions were basically dropped for all kind of freely available
 software.  However there are still some requirements in the US.
 Quoting David Shaw: mail

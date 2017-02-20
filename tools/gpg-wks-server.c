@@ -133,7 +133,7 @@ static gpg_error_t command_cron (void);
 
 
 
-/* Print usage information and and provide strings for help. */
+/* Print usage information and provide strings for help. */
 static const char *
 my_strusage( int level )
 {
@@ -1105,7 +1105,7 @@ process_new_key (server_ctx_t ctx, estream_t key)
 
       if (policybuf.auth_submit)
         {
-          /* Bypass the confirmation stuff and publish the the key as is.  */
+          /* Bypass the confirmation stuff and publish the key as is.  */
           log_info ("publishing address '%s'\n", sl->d);
           /* FIXME: We need to make sure that we do this only for the
            * address in the mail.  */
@@ -1525,7 +1525,7 @@ command_receive_cb (void *opaque, const char *mediatype,
 
 
 /* Return a list of all configured domains.  ECh list element is the
- * top directory for for the domain.  To figure out the actual domain
+ * top directory for the domain.  To figure out the actual domain
  * name strrchr(name, '/') can be used.  */
 static gpg_error_t
 get_domain_list (strlist_t *r_list)

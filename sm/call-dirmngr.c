@@ -430,7 +430,7 @@ inq_certificate (void *opaque, const char *line)
 }
 
 
-/* Take a 20 byte hexencoded string and put it into the the provided
+/* Take a 20 byte hexencoded string and put it into the provided
    20 byte buffer FPR in binary format. */
 static int
 unhexify_fpr (const char *hexstr, unsigned char *fpr)

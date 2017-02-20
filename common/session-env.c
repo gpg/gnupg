@@ -317,7 +317,7 @@ session_env_getenv (session_env_t se, const char *name)
    long it has not been removed or updated by a call to
    session_env_putenv.  If the variable does not exist, the function
    tries to return the value trough a call to getenv; if that returns
-   a value, this value is recorded and and used.  If no value could be
+   a value, this value is recorded and used.  If no value could be
    found, returns NULL.  The caller must not change the returned
    value. */
 char *

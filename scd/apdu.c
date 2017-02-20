@@ -2017,7 +2017,7 @@ open_pcsc_reader_wrapped (const char *portstr)
   unsigned int dummy_status;
 
   /* Note that we use the constant and not the function because this
-     code won't be be used under Windows.  */
+     code won't be used under Windows.  */
   const char *wrapperpgm = GNUPG_LIBEXECDIR "/gnupg-pcsc-wrapper";
 
   if (access (wrapperpgm, X_OK))

@@ -818,7 +818,7 @@ expand_group (strlist_t input)
  * success the new key is added to PK_LIST_ADDR.  NAME is the user id
  * of the key.  USE the requested usage and a set MARK_HIDDEN will
  * mark the key in the updated list as a hidden recipient.  If
- * FROM_FILE is true, NAME is is not a user ID but the name of a file
+ * FROM_FILE is true, NAME is not a user ID but the name of a file
  * holding a key. */
 gpg_error_t
 find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,

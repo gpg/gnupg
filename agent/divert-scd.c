@@ -387,7 +387,7 @@ divert_pksign (ctrl_t ctrl,
 }
 
 
-/* Decrypt the the value given asn an S-expression in CIPHER using the
+/* Decrypt the value given asn an S-expression in CIPHER using the
    key identified by SHADOW_INFO and return the plaintext in an
    allocated buffer in R_BUF.  The padding information is stored at
    R_PADDING with -1 for not known.  */

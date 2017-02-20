@@ -621,7 +621,7 @@ calc_plaintext( PKT_plaintext *pt )
    is assumed to have been enabled on OUT.  On success, partial block
    mode is disabled.
 
-   If PT->BUF is NULL, the the caller must write out the data.  In
+   If PT->BUF is NULL, the caller must write out the data.  In
    this case, if PT->LEN was 0, then partial body length mode was
    enabled and the caller must disable it by calling
    iobuf_set_partial_body_length_mode (out, 0).  */

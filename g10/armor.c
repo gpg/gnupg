@@ -1294,7 +1294,7 @@ armor_filter( void *opaque, int control,
 	    c = bintoasc[radbuf[2]&077];
 	    iobuf_put(a, c);
 	    iobuf_writestr(a,afx->eol);
-	    /* and the the trailer */
+	    /* and the trailer */
 	    if( afx->what >= DIM(tail_strings) )
 		log_bug("afx->what=%d", afx->what);
 	    iobuf_writestr(a, "-----");

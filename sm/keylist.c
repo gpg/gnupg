@@ -1280,7 +1280,7 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
 }
 
 
-/* Same as standard mode mode list all certifying certs too. */
+/* Same as standard mode list all certifying certs too. */
 static void
 list_cert_chain (ctrl_t ctrl, KEYDB_HANDLE hd,
                  ksba_cert_t cert, int raw_mode,

@@ -340,7 +340,7 @@ unescape_status_string (const unsigned char *s)
 }
 
 
-/* Take a 20 byte hexencoded string and put it into the the provided
+/* Take a 20 byte hexencoded string and put it into the provided
    20 byte buffer FPR in binary format. */
 static int
 unhexify_fpr (const char *hexstr, unsigned char *fpr)

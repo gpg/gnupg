@@ -775,7 +775,7 @@ configuration.
 @end table
 
 If DirMngr has not enough information about the given certificate (which
-is the case for not yet cached certificates), it will will inquire the
+is the case for not yet cached certificates), it will inquire the
 missing data:
 
 @example
@@ -1038,7 +1038,7 @@ as a binary blob.
 @c  c) No authorityKeyIdentifier exits: The certificate is retrieved
 @c     using @code{find_cert_bysubject} without the key ID argument.  If
 @c     the certificate is in the certificate cache the first one with a
-@c     matching subject is is directly returned.  Then the requester is
+@c     matching subject is directly returned.  Then the requester is
 @c     asked via the Assuan inquiry ``SENDCERT'' and an exact
 @c     specification of the subject whether he can
 @c     provide this certificate.  If this succeed the returned
@@ -1115,7 +1115,7 @@ as a binary blob.
 @c respectively. The have already been described above under the
 @c description of @code{crl_cache_insert}.  If no certificate was found
 @c or with no authorityKeyIdentifier, only the cache is consulted using
-@c @code{get_cert_bysubject}.  The latter is is done under the assumption
+@c @code{get_cert_bysubject}.  The latter is done under the assumption
 @c that a matching certificate has explicitly been put into the
 @c certificate cache.  If the issuer's certificate could not be found,
 @c the validation terminates with the error code @code{GPG_ERR_MISSING_CERT}.

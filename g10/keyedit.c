@@ -1080,7 +1080,7 @@ trustsig_prompt (byte * trust_value, byte * trust_depth, char **regexp)
 
 
 /*
- * Loop over all LOCUSR and and sign the uids after asking.  If no
+ * Loop over all LOCUSR and sign the uids after asking.  If no
  * user id is marked, all user ids will be signed; if some user_ids
  * are marked only those will be signed.  If QUICK is true the
  * function won't ask the user and use sensible defaults.
@@ -5186,7 +5186,7 @@ change_primary_uid_cb (PKT_signature * sig, void *opaque)
  * Set the primary uid flag for the selected UID.  We will also reset
  * all other primary uid flags.  For this to work with have to update
  * all the signature timestamps.  If we would do this with the current
- * time, we lose quite a lot of information, so we use a a kludge to
+ * time, we lose quite a lot of information, so we use a kludge to
  * do this: Just increment the timestamp by one second which is
  * sufficient to updated a signature during import.
  */

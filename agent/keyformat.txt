@@ -133,7 +133,7 @@ The currently defined protection modes are:
 
 *** openpgp-s2k3-sha1-aes-cbc
 
-  This describes an algorithm using using AES in CBC mode for
+  This describes an algorithm using AES in CBC mode for
   encryption, SHA-1 for integrity protection and the String to Key
   algorithm 3 from OpenPGP (rfc4880).
 
@@ -182,7 +182,7 @@ The currently defined protection modes are:
 
 *** openpgp-s2k3-ocb-aes
 
-  This describes an algorithm using using AES-128 in OCB mode, a nonce
+  This describes an algorithm using AES-128 in OCB mode, a nonce
   of 96 bit, a taglen of 128 bit, and the String to Key algorithm 3
   from OpenPGP (rfc4880).
 
@@ -311,7 +311,7 @@ This format is used to transfer keys between gpg and gpg-agent.
  * PROTALGO is a Libgcrypt style cipher algorithm name
  * IV is the initialization verctor.
  * S2KMODE is the value from RFC-4880.
- * S2KHASH is a a libgcrypt style hash algorithm identifier.
+ * S2KHASH is a libgcrypt style hash algorithm identifier.
  * S2KSALT is the 8 byte salt
  * S2KCOUNT is the count value from RFC-4880.
 

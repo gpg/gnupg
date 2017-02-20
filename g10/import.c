@@ -76,7 +76,7 @@ struct import_stats_s
 #define NODE_FLAG_A  8
 
 
-/* A an object and a global instance to store selectors created from
+/* An object and a global instance to store selectors created from
  * --import-filter keep-uid=EXPR.
  * --import-filter drop-sig=EXPR.
  *

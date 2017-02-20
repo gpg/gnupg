@@ -619,7 +619,7 @@ count_bits (const unsigned char *a, size_t len)
     The lsb is here the rightmost bit.  Defined flags bits are:
 
       Bit 0 = CHV1 and CHV2 are not syncronized
-      Bit 1 = CHV2 has been been set to the default PIN of "123456"
+      Bit 1 = CHV2 has been set to the default PIN of "123456"
               (this implies that bit 0 is also set).
 
     P=<pinpad-request>
@@ -1874,7 +1874,7 @@ check_pinpad_request (app_t app, pininfo_t *pininfo, int admin_pin)
 }
 
 
-/* Verify a CHV either using using the pinentry or if possible by
+/* Verify a CHV either using the pinentry or if possible by
    using a pinpad.  PINCB and PINCB_ARG describe the usual callback
    for the pinentry.  CHVNO must be either 1 or 2. SIGCOUNT is only
    used with CHV1.  PINVALUE is the address of a pointer which will

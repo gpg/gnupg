@@ -522,7 +522,7 @@ openpgp_cipher_blocklen (cipher_algo_t algo)
      block length.  This is so that the packet parsing code works even
      for unknown algorithms (for which we assume 8 due to tradition).
 
-     NOTE: If you change the the returned blocklen above 16, check
+     NOTE: If you change the returned blocklen above 16, check
      the callers because they may use a fixed size buffer of that
      size. */
   switch (algo)

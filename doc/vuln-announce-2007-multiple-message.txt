@@ -81,7 +81,7 @@ Here the PLAINTEXT status lines clearly identify the start of a new
 message.
 
 Note, that using gpg on the command line is in almost all cases not
-done with redirection but by letting gpg save the the signed message.
+done with redirection but by letting gpg save the signed message.
 In this case gpg will save the message to different files or in case
 the file names are identical, prompt the over to overwrite the first
 one again.

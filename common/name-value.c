@@ -59,7 +59,7 @@ struct name_value_entry
   /* The name.  Comments and blank lines have NAME set to NULL.  */
   char *name;
 
-  /* The value as stored in the file.  We store it when when we parse
+  /* The value as stored in the file.  We store it when we parse
      a file so that we can reproduce it.  */
   strlist_t raw_value;
 

@@ -123,7 +123,7 @@
           IDs go here.
    - bN   Space for the keyblock or certificate.
    - bN   RFU.  This is the remaining space after keyblock and before
-          the checksum.  Is is not covered by the checksum.
+          the checksum.  It is not covered by the checksum.
    - b20  SHA-1 checksum (useful for KS syncronisation?)
           Note, that KBX versions before GnuPG 2.1 used an MD5
           checksum.  However it was only created but never checked.
@@ -589,7 +589,7 @@ create_blob_header (KEYBOXBLOB blob, int blobtype, int as_ephemeral)
   put32 ( a, 0 );  /* size of reserved space */
   /* reserved space (which is currently of size 0) */
 
-  /* space where we write keyIDs and and other stuff so that the
+  /* space where we write keyIDs and other stuff so that the
      pointers can actually point to somewhere */
   if (blobtype == KEYBOX_BLOBTYPE_PGP)
     {
