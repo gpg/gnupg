@@ -222,7 +222,7 @@ tdb_register_trusted_key( const char *string )
 
 /*
  * Helper to add a key to the global list of ultimately trusted keys.
- * Retruns: true = inserted, false = already in list.
+ * Returns: true = inserted, false = already in list.
  */
 static int
 add_utk (u32 *kid)

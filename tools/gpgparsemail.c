@@ -463,7 +463,7 @@ show_event (rfc822parse_event_t event)
 
 /* This function is called by the parser to communicate events.  This
    callback comminucates with the main program using a structure
-   passed in OPAQUE. Should retrun 0 or set errno and return -1. */
+   passed in OPAQUE. Should return 0 or set errno and return -1. */
 static int
 message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
 {

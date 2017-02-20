@@ -44,7 +44,7 @@ static FILE *statusfp;
    the CTRL object of each connection.  */
 struct server_local_s
 {
-  /* The Assuan contect we are working on.  */
+  /* The Assuan context we are working on.  */
   assuan_context_t assuan_ctx;
 
   char *containername;  /* Malloced active containername.  */

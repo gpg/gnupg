@@ -1497,7 +1497,7 @@
 	* dirmngr-client.c (inq_cert): Ignore "SENDCERT" and
 	"SENDISSUERCERT".
 
-	* server.c (do_get_cert_local): Limit the length of a retruned
+	* server.c (do_get_cert_local): Limit the length of a returned
 	certificate.  Return NULL without an error if an empry value has
 	been received.
 
@@ -1897,7 +1897,7 @@
 	corrupted CRL files.
 	(open_dir): Read the new dbfile hash field.
 
-	* src/crlfetch.c (crl_fetch, crl_fetch_default): Changed to retrun
+	* src/crlfetch.c (crl_fetch, crl_fetch_default): Changed to return
 	a stream.
 	(fun_reader, fun_closer, setup_funopen): New.
 	* src/server.c (inquire_cert): Changed to use the new stream interface

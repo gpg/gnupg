@@ -50,13 +50,13 @@
 /* Definition of module local data of the CTRL structure.  */
 struct scd_local_s
 {
-  /* We keep a list of all allocated context with an achnor at
+  /* We keep a list of all allocated context with an anchor at
      SCD_LOCAL_LIST (see below). */
   struct scd_local_s *next_local;
 
   /* We need to get back to the ctrl object actually referencing this
-     structure.  This is really an awkward way of enumerint the lcoal
-     contects.  A much cleaner way would be to keep a global list of
+     structure.  This is really an awkward way of enumerating the local
+     contexts.  A much cleaner way would be to keep a global list of
      ctrl objects to enumerate them.  */
   ctrl_t ctrl_backlink;
 
