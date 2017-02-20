@@ -139,12 +139,14 @@ endif
 
 
 # http tests
+# We need to add the KSBA flags in case we are building against GNUTLS.
+# In that case NTBTLS flags are empty, but we need ksba anyway.
 t_http_SOURCES = $(t_common_src) t-http.c http.c dns-stuff.c
 t_http_CFLAGS  = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
 	         $(LIBGCRYPT_CFLAGS) $(NTBTLS_CFLAGS) $(LIBGNUTLS_CFLAGS) \
-                 $(GPG_ERROR_CFLAGS)
+                 $(GPG_ERROR_CFLAGS) $(KSBA_CFLAGS)
 t_http_LDADD   = $(t_common_ldadd) \
-	         $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) $(DNSLIBS)
+	         $(NTBTLS_LIBS) $(KSBA_LIBS) $(LIBGNUTLS_LIBS) $(DNSLIBS)
 
 t_ldap_parse_uri_SOURCES = \
 	t-ldap-parse-uri.c ldap-parse-uri.c ldap-parse-uri.h \
