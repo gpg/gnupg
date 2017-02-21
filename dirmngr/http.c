@@ -202,9 +202,18 @@ struct cookie_s
 };
 typedef struct cookie_s *cookie_t;
 
+
+#if SIZEOF_UNSIGNED_LONG == 8
+# define HTTP_SESSION_MAGIC 0x0068545470534553 /* "hTTpSES" */
+#else
+# define HTTP_SESSION_MAGIC 0x68547365         /* "hTse"    */
+#endif
+
 /* The session object. */
 struct http_session_s
 {
+  unsigned long magic;
+
   int refcount;    /* Number of references to this object.  */
 #ifdef HTTP_USE_GNUTLS
   gnutls_certificate_credentials_t certcred;
@@ -241,9 +250,17 @@ struct header_s
 typedef struct header_s *header_t;
 
 
+#if SIZEOF_UNSIGNED_LONG == 8
+# define HTTP_CONTEXT_MAGIC 0x0068545470435458 /* "hTTpCTX" */
+#else
+# define HTTP_CONTEXT_MAGIC 0x68546378         /* "hTcx"    */
+#endif
+
+
 /* Our handle context. */
 struct http_context_s
 {
+  unsigned long magic;
   unsigned int status_code;
   my_socket_t sock;
   unsigned int in_data:1;
@@ -419,7 +436,13 @@ static gpg_error_t
 my_ntbtls_verify_cb (void *opaque, ntbtls_t tls, unsigned int verify_flags)
 {
   http_t hd = opaque;
+
+  (void)verify_flags;
+
   log_assert (hd && hd->session && hd->session->verify_cb);
+  log_assert (hd->magic == HTTP_CONTEXT_MAGIC);
+  log_assert (hd->session->magic == HTTP_SESSION_MAGIC);
+
   return hd->session->verify_cb (hd->session->verify_cb_value,
                                  hd, hd->session,
                                  (hd->flags | hd->session->flags),
@@ -440,6 +463,7 @@ fp_onclose_notification (estream_t stream, void *opaque)
 {
   http_t hd = opaque;
 
+  log_assert (hd->magic == HTTP_CONTEXT_MAGIC);
   if (hd->fp_read && hd->fp_read == stream)
     hd->fp_read = NULL;
   else if (hd->fp_write && hd->fp_write == stream)
@@ -599,6 +623,8 @@ session_unref (int lnr, http_session_t sess)
   if (!sess)
     return;
 
+  log_assert (sess->magic == HTTP_SESSION_MAGIC);
+
   sess->refcount--;
   if (opt_debug > 1)
     log_debug ("http.c:%d:session_unref: sess %p ref now %d\n",
@@ -610,6 +636,7 @@ session_unref (int lnr, http_session_t sess)
   close_tls_session (sess);
 #endif /*USE_TLS*/
 
+  sess->magic = 0xdeadbeef;
   xfree (sess);
 }
 #define http_session_unref(a) session_unref (__LINE__, (a))
@@ -640,6 +667,7 @@ http_session_new (http_session_t *r_session,
   sess = xtrycalloc (1, sizeof *sess);
   if (!sess)
     return gpg_error_from_syserror ();
+  sess->magic = HTTP_SESSION_MAGIC;
   sess->refcount = 1;
   sess->flags = flags;
   sess->verify_cb = verify_cb;
@@ -840,6 +868,7 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
   hd = xtrycalloc (1, sizeof *hd);
   if (!hd)
     return gpg_error_from_syserror ();
+  hd->magic = HTTP_CONTEXT_MAGIC;
   hd->req_type = reqtype;
   hd->flags = flags;
   hd->session = http_session_ref (session);
@@ -892,6 +921,7 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
   hd = xtrycalloc (1, sizeof *hd);
   if (!hd)
     return gpg_error_from_syserror ();
+  hd->magic = HTTP_CONTEXT_MAGIC;
   hd->req_type = HTTP_REQ_OPAQUE;
   hd->flags = flags;
 
@@ -1076,6 +1106,8 @@ http_close (http_t hd, int keep_read_stream)
   if (!hd)
     return;
 
+  log_assert (hd->magic == HTTP_CONTEXT_MAGIC);
+
   /* First remove the close notifications for the streams.  */
   if (hd->fp_read)
     es_onclose (hd->fp_read, 0, fp_onclose_notification, hd);
@@ -1089,6 +1121,7 @@ http_close (http_t hd, int keep_read_stream)
   if (hd->fp_write)
     es_fclose (hd->fp_write);
   http_session_unref (hd->session);
+  hd->magic = 0xdeadbeef;
   http_release_parsed_uri (hd->uri);
   while (hd->headers)
     {

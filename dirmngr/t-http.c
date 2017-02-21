@@ -134,7 +134,7 @@ my_http_tls_verify_cb (void *opaque,
   (void)opaque;
   (void)http;
   (void)session;
-
+  (void)http_flags;
 
   /* Get the peer's certs fron ntbtls.  */
   for (idx = 0;
