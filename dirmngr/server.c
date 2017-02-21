@@ -627,6 +627,11 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       if (dirmngr_use_tor ())
         err = gpg_error (GPG_ERR_FORBIDDEN);
     }
+  else if (!strcmp (key, "http-crl"))
+    {
+      int i = *value? atoi (value) : 0;
+      ctrl->http_no_crl = !i;
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
 

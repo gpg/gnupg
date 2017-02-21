@@ -78,8 +78,8 @@ gnupg_http_tls_verify_cb (void *opaque,
   if ((http_flags & HTTP_FLAG_TRUST_SYS))
     validate_flags |= VALIDATE_FLAG_SYSTRUST;
 
-  /* FIXME: For now we don't use CRLs.  */
-  validate_flags |= VALIDATE_FLAG_NOCRLCHECK;
+  if ((http_flags & HTTP_FLAG_NO_CRL))
+    validate_flags |= VALIDATE_FLAG_NOCRLCHECK;
 
   err = validate_cert_chain (ctrl, hostcert, NULL, validate_flags, NULL);
 

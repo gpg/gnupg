@@ -1492,6 +1492,7 @@ dirmngr_init_default_ctrl (ctrl_t ctrl)
   ctrl->magic = SERVER_CONTROL_MAGIC;
   if (opt.http_proxy)
     ctrl->http_proxy = xstrdup (opt.http_proxy);
+  ctrl->http_no_crl = 1;
 }
 
 

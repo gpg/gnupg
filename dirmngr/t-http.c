@@ -199,6 +199,7 @@ main (int argc, char **argv)
   unsigned int my_http_flags = 0;
   int no_out = 0;
   int tls_dbg = 0;
+  int no_crl = 0;
   const char *cafile = NULL;
   http_session_t session = NULL;
 
@@ -225,7 +226,8 @@ main (int argc, char **argv)
                  "  --no-verify       do not verify the certificate\n"
                  "  --force-tls       use HTTP_FLAG_FORCE_TLS\n"
                  "  --force-tor       use HTTP_FLAG_FORCE_TOR\n"
-                 "  --no-out          do not print the content\n",
+                 "  --no-out          do not print the content\n"
+                 "  --no-crl          do not consuilt a CRL\n",
                  stdout);
           exit (0);
         }
@@ -278,6 +280,11 @@ main (int argc, char **argv)
           no_out = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--no-crl"))
+        {
+          no_crl = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         {
           fprintf (stderr, PGM ": unknown option '%s'\n", *argv);
@@ -298,7 +305,9 @@ main (int argc, char **argv)
 
 #if HTTP_USE_NTBTLS
   log_info ("new session.\n");
-  err = http_session_new (&session, NULL, HTTP_FLAG_TRUST_DEF,
+  err = http_session_new (&session, NULL,
+                          ((no_crl? HTTP_FLAG_NO_CRL : 0)
+                           | HTTP_FLAG_TRUST_DEF),
                           my_http_tls_verify_cb, NULL);
   if (err)
     log_error ("http_session_new failed: %s\n", gpg_strerror (err));
@@ -313,7 +322,10 @@ main (int argc, char **argv)
   http_register_tls_callback (verify_callback);
   http_register_tls_ca (cafile);
 
-  err = http_session_new (&session, NULL, HTTP_FLAG_TRUST_DEF, NULL, NULL);
+  err = http_session_new (&session, NULL,
+                          ((no_crl? HTTP_FLAG_NO_CRL : 0)
+                           | HTTP_FLAG_TRUST_DEF),
+                          NULL, NULL);
   if (err)
     log_error ("http_session_new failed: %s\n", gpg_strerror (err));
 

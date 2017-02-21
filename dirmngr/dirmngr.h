@@ -190,6 +190,8 @@ struct server_control_s
 
   int audit_events;  /* Send audit events to client.  */
   char *http_proxy;  /* The used http_proxy or NULL.  */
+
+  unsigned int http_no_crl:1;  /* Do not check CRLs for https.  */
 };
 
 

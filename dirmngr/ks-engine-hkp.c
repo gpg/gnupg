@@ -1123,7 +1123,9 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
 
   *r_fp = NULL;
 
-  err = http_session_new (&session, httphost, HTTP_FLAG_TRUST_DEF,
+  err = http_session_new (&session, httphost,
+                          ((ctrl->http_no_crl? HTTP_FLAG_NO_CRL : 0)
+                           | HTTP_FLAG_TRUST_DEF),
                           gnupg_http_tls_verify_cb, ctrl);
   if (err)
     goto leave;

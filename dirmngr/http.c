@@ -653,6 +653,7 @@ http_session_release (http_session_t sess)
  * Valid values for FLAGS are:
  *   HTTP_FLAG_TRUST_DEF - Use the CAs set with http_register_tls_ca
  *   HTTP_FLAG_TRUST_SYS - Also use the CAs defined by the system
+ *   HTTP_FLAG_NO_CRL    - Do not consult CRLs for https.
  */
 gpg_error_t
 http_session_new (http_session_t *r_session,
