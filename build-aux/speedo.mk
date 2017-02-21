@@ -191,7 +191,15 @@ endif
 endif
 
 speedo_spkgs += \
-	libassuan libksba gnupg
+	libassuan libksba
+
+ifeq ($(TARGETOS),w32)
+speedo_spkgs += \
+	ntbtls
+endif
+
+speedo_spkgs += \
+	gnupg
 
 ifeq ($(TARGETOS),w32)
 ifeq ($(WITH_GUI),1)
@@ -241,7 +249,7 @@ endif
 # Packages which use the gnupg autogen.sh build style
 speedo_gnupg_style = \
 	libgpg-error npth libgcrypt  \
-	libassuan libksba gnupg gpgme \
+	libassuan libksba ntbtls gnupg gpgme \
 	pinentry gpa gpgex
 
 # Packages which use only make and no build directory
@@ -290,6 +298,10 @@ libksba_ver  := $(shell awk '$$1=="libksba_ver" {print $$2}' swdb.lst)
 libksba_sha1 := $(shell awk '$$1=="libksba_sha1" {print $$2}' swdb.lst)
 libksba_sha2 := $(shell awk '$$1=="libksba_sha2" {print $$2}' swdb.lst)
 
+ntbtls_ver  := $(shell awk '$$1=="ntbtls_ver" {print $$2}' swdb.lst)
+ntbtls_sha1 := $(shell awk '$$1=="ntbtls_sha1" {print $$2}' swdb.lst)
+ntbtls_sha2 := $(shell awk '$$1=="ntbtls_sha2" {print $$2}' swdb.lst)
+
 gpgme_ver  := $(shell awk '$$1=="gpgme_ver" {print $$2}' swdb.lst)
 gpgme_sha1 := $(shell awk '$$1=="gpgme_sha1" {print $$2}' swdb.lst)
 gpgme_sha2 := $(shell awk '$$1=="gpgme_sha2" {print $$2}' swdb.lst)
@@ -325,9 +337,11 @@ $(info Libgpg-error ...: $(libgpg_error_ver))
 $(info Npth ...........: $(npth_ver))
 $(info Libgcrypt ......: $(libgcrypt_ver))
 $(info Libassuan ......: $(libassuan_ver))
+$(info Libksba ........: $(libksba_ver))
 $(info Zlib ...........: $(zlib_ver))
 $(info Bzip2 ..........: $(bzip2_ver))
 $(info SQLite .........: $(sqlite_ver))
+$(info NtbTLS .. ......: $(ntbtls_ver))
 $(info GPGME ..........: $(gpgme_ver))
 $(info Pinentry .......: $(pinentry_ver))
 $(info GPA ............: $(gpa_ver))
@@ -391,6 +405,8 @@ else ifeq ($(WHAT),git)
   speedo_pkg_libgcrypt_gitref = master
   speedo_pkg_libksba_git = $(gitrep)/libksba
   speedo_pkg_libksba_gitref = master
+  speedo_pkg_ntbtls_git = $(gitrep)/ntbtls
+  speedo_pkg_ntbtls_gitref = master
   speedo_pkg_gpgme_git = $(gitrep)/gpgme
   speedo_pkg_gpgme_gitref = master
   speedo_pkg_pinentry_git = $(gitrep)/pinentry
@@ -410,6 +426,8 @@ else ifeq ($(WHAT),release)
 	$(pkgrep)/libgcrypt/libgcrypt-$(libgcrypt_ver).tar.bz2
   speedo_pkg_libksba_tar = \
 	$(pkgrep)/libksba/libksba-$(libksba_ver).tar.bz2
+  speedo_pkg_ntbtls_tar = \
+	$(pkgrep)/ntbtls/ntbtls-$(ntbtls_ver).tar.bz2
   speedo_pkg_gpgme_tar = \
 	$(pkgrep)/gpgme/gpgme-$(gpgme_ver).tar.bz2
   speedo_pkg_pinentry_tar = \
@@ -453,9 +471,12 @@ speedo_pkg_libgcrypt_configure = --disable-static
 
 speedo_pkg_libksba_configure = --disable-static
 
+# For now we build ntbtls only static
+speedo_pkg_ntbtls_configure = --enable-static --disable-shared
+
 ifeq ($(TARGETOS),w32)
 speedo_pkg_gnupg_configure = \
-        --enable-gpg2-is-gpg --disable-g13 --disable-ntbtls \
+        --enable-gpg2-is-gpg --disable-g13 --enable-ntbtls \
         --enable-build-timestamp
 else
 speedo_pkg_gnupg_configure = --disable-g13
