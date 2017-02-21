@@ -471,7 +471,8 @@ load_certs_from_file (const char *fname, unsigned int trustclasses,
     }
 
   err = gnupg_ksba_create_reader (&ioctx,
-                                  (GNUPG_KSBA_IO_PEM | GNUPG_KSBA_IO_MULTIPEM),
+                                  (GNUPG_KSBA_IO_AUTODETECT
+                                   | GNUPG_KSBA_IO_MULTIPEM),
                                   fp, &reader);
   if (err)
     {
@@ -686,9 +687,10 @@ load_certs_from_system (void)
 
 /* Initialize the certificate cache if not yet done.  */
 void
-cert_cache_init (void)
+cert_cache_init (strlist_t hkp_cacerts)
 {
   char *fname;
+  strlist_t sl;
 
   if (initialization_done)
     return;
@@ -706,6 +708,10 @@ cert_cache_init (void)
   if (fname)
     load_certs_from_dir (fname, 0);
   xfree (fname);
+
+  for (sl = hkp_cacerts; sl; sl = sl->next)
+    load_certs_from_file (sl->d, CERTTRUST_CLASS_HKP, 0);
+
 
   fname = make_filename_try (gnupg_datadir (),
                              "sks-keyservers.netCA.pem", NULL);

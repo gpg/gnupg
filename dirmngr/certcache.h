@@ -31,7 +31,7 @@ enum {
 
 
 /* First time initialization of the certificate cache.  */
-void cert_cache_init (void);
+void cert_cache_init (strlist_t hkp_cacerts);
 
 /* Deinitialize the certificate cache.  */
 void cert_cache_deinit (int full);

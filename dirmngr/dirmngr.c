@@ -319,6 +319,10 @@ static int active_connections;
  * thread to run background network tasks.  */
 static int network_activity_seen;
 
+/* A list of filenames registred with --hkp-cacert.  */
+static strlist_t hkp_cacert_filenames;
+
+
 /* The timer tick used for housekeeping stuff.  */
 #define TIMERTICK_INTERVAL         (60)
 
@@ -586,6 +590,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
         }
       FREE_STRLIST (opt.ignored_cert_extensions);
       http_register_tls_ca (NULL);
+      FREE_STRLIST (hkp_cacert_filenames);
       FREE_STRLIST (opt.keyserver);
       /* Note: We do not allow resetting of TOR_MODE_FORCE at runtime.  */
       if (tor_mode != TOR_MODE_FORCE)
@@ -653,11 +658,14 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 
     case oHkpCaCert:
       {
+        /* We need to register the filenames with gnutls (http.c) and
+         * also for our own cert cache.  */
         char *tmpname;
 
         /* Do tilde expansion and make path absolute.  */
         tmpname = make_absfilename (pargs->r.ret_str, NULL);
         http_register_tls_ca (tmpname);
+        add_to_strlist (&hkp_cacert_filenames, pargs->r.ret_str);
         xfree (tmpname);
       }
       break;
@@ -1069,7 +1077,7 @@ main (int argc, char **argv)
 
 
       thread_init ();
-      cert_cache_init ();
+      cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
       http_register_netactivity_cb (netactivity_action);
       start_command_handler (ASSUAN_INVALID_FD);
@@ -1104,7 +1112,7 @@ main (int argc, char **argv)
         log_set_prefix (NULL, 0);
 
       thread_init ();
-      cert_cache_init ();
+      cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
       http_register_netactivity_cb (netactivity_action);
       handle_connections (3);
@@ -1311,7 +1319,7 @@ main (int argc, char **argv)
 #endif
 
       thread_init ();
-      cert_cache_init ();
+      cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
       http_register_netactivity_cb (netactivity_action);
       handle_connections (fd);
@@ -1333,7 +1341,7 @@ main (int argc, char **argv)
       dirmngr_init_default_ctrl (&ctrlbuf);
 
       thread_init ();
-      cert_cache_init ();
+      cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
       if (!argc)
         rc = crl_cache_load (&ctrlbuf, NULL);
@@ -1356,7 +1364,7 @@ main (int argc, char **argv)
       dirmngr_init_default_ctrl (&ctrlbuf);
 
       thread_init ();
-      cert_cache_init ();
+      cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
       rc = crl_fetch (&ctrlbuf, argv[0], &reader);
       if (rc)
@@ -1769,7 +1777,7 @@ dirmngr_sighup_action (void)
   reread_configuration ();
   cert_cache_deinit (0);
   crl_cache_deinit ();
-  cert_cache_init ();
+  cert_cache_init (hkp_cacert_filenames);
   crl_cache_init ();
   reload_dns_stuff (0);
   ks_hkp_reload ();
