@@ -22,28 +22,30 @@
 #define VALIDATE_H
 
 
-/* Make use of the system provided root certificates.  */
-#define VALIDATE_FLAG_SYSTRUST     1
-
-/* Make use of extra provided root certificates.  */
-#define VALIDATE_FLAG_EXTRATRUST   2
+/* Flag values matching the CERTTRUST_CLASS values and a MASK for
+ * them.  check_header_constants() checks their consistency.  */
+#define VALIDATE_FLAG_TRUST_SYSTEM     1
+#define VALIDATE_FLAG_TRUST_CONFIG     2
+#define VALIDATE_FLAG_TRUST_HKP        4
+#define VALIDATE_FLAG_TRUST_HKPSPOOL   8
+#define VALIDATE_FLAG_MASK_TRUST      0x0f
 
 /* Standard CRL issuer certificate validation; i.e. CRLs are not
  * considered for CRL issuer certificates.  */
-#define VALIDATE_FLAG_CRL          4
+#define VALIDATE_FLAG_CRL          64
 
 /* If this flag is set along with VALIDATE_FLAG_CRL a full CRL
  * verification is done.  */
-#define VALIDATE_FLAG_RECURSIVE    8
+#define VALIDATE_FLAG_RECURSIVE    128
 
 /* Validation mode as used for OCSP.  */
-#define VALIDATE_FLAG_OCSP        16
+#define VALIDATE_FLAG_OCSP         256
 
 /* Validation mode as used with TLS.  */
-#define VALIDATE_FLAG_TLS         32
+#define VALIDATE_FLAG_TLS          512
 
 /* Don't do CRL checks.  */
-#define VALIDATE_FLAG_NOCRLCHECK  64
+#define VALIDATE_FLAG_NOCRLCHECK  1024
 
 
 /* Validate the certificate CHAIN up to the trust anchor. Optionally

@@ -74,6 +74,29 @@ static const char oid_kp_ocspSigning[]    = "1.3.6.1.5.5.7.3.9";
 static gpg_error_t check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert);
 
 
+/* Make sure that the values defined in the headers are correct.  We
+ * can't use the preprocessor due to the use of enums.  */
+static void
+check_header_constants (void)
+{
+  log_assert (CERTTRUST_CLASS_SYSTEM   == VALIDATE_FLAG_TRUST_SYSTEM);
+  log_assert (CERTTRUST_CLASS_CONFIG   == VALIDATE_FLAG_TRUST_CONFIG);
+  log_assert (CERTTRUST_CLASS_HKP      == VALIDATE_FLAG_TRUST_HKP);
+  log_assert (CERTTRUST_CLASS_HKPSPOOL == VALIDATE_FLAG_TRUST_HKPSPOOL);
+
+#undef  X
+#define X (VALIDATE_FLAG_TRUST_SYSTEM | VALIDATE_FLAG_TRUST_CONFIG  \
+           | VALIDATE_FLAG_TRUST_HKP | VALIDATE_FLAG_TRUST_HKPSPOOL)
+
+#if ( X & VALIDATE_FLAG_MASK_TRUST ) !=  X
+# error VALIDATE_FLAG_MASK_TRUST is bad
+#endif
+#if ( ~X & VALIDATE_FLAG_MASK_TRUST )
+# error VALIDATE_FLAG_MASK_TRUST is bad
+#endif
+
+#undef X
+}
 
 
 /* Check whether CERT contains critical extensions we don't know
@@ -393,6 +416,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
   int any_no_policy_match = 0;
   chain_item_t chain;
 
+  check_header_constants ();
 
   if (r_exptime)
     *r_exptime = 0;
@@ -540,10 +564,8 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           if (err)
             goto leave;  /* No. */
 
-          err = is_trusted_cert
-            (subject_cert,
-             (CERTTRUST_CLASS_CONFIG
-              | (flags & VALIDATE_FLAG_SYSTRUST)? CERTTRUST_CLASS_SYSTEM : 0));
+          err = is_trusted_cert (subject_cert,
+                                 (flags & VALIDATE_FLAG_MASK_TRUST));
           if (!err)
             ; /* Yes we trust this cert.  */
           else if (gpg_err_code (err) == GPG_ERR_NOT_TRUSTED)

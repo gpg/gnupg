@@ -41,20 +41,23 @@ gnupg_http_tls_verify_cb (void *opaque,
                           void *tls_context)
 {
   ctrl_t ctrl = opaque;
+  ntbtls_t tls = tls_context;
   gpg_error_t err;
   int idx;
   ksba_cert_t cert;
   ksba_cert_t hostcert = NULL;
   unsigned int validate_flags;
+  const char *hostname;
 
   (void)http;
   (void)session;
 
   log_assert (ctrl && ctrl->magic == SERVER_CONTROL_MAGIC);
+  log_assert (!ntbtls_check_context (tls));
 
   /* Get the peer's certs fron ntbtls.  */
   for (idx = 0;
-       (cert = ntbtls_x509_get_peer_cert (tls_context, idx)); idx++)
+       (cert = ntbtls_x509_get_peer_cert (tls, idx)); idx++)
     {
       if (!idx)
         hostcert = cert;
@@ -73,10 +76,22 @@ gnupg_http_tls_verify_cb (void *opaque,
     }
 
   validate_flags = VALIDATE_FLAG_TLS;
-  /* if ((http_flags & HTTP_FLAG_TRUST_DEF)) */
-  /*   validate_flags |= VALIDATE_FLAG_??; */
-  if ((http_flags & HTTP_FLAG_TRUST_SYS))
-    validate_flags |= VALIDATE_FLAG_SYSTRUST;
+
+  /* Are we using the standard hkps:// pool use the dedicated
+   * root certificate.  */
+  hostname = ntbtls_get_hostname (tls);
+  if (hostname
+      && !ascii_strcasecmp (hostname, "hkps.pool.sks-keyservers.net"))
+    {
+      validate_flags |= VALIDATE_FLAG_TRUST_HKPSPOOL;
+    }
+  else /* Use the certificates as requested from the HTTP module.  */
+    {
+      if ((http_flags & HTTP_FLAG_TRUST_DEF))
+        validate_flags |= VALIDATE_FLAG_TRUST_HKP;
+      if ((http_flags & HTTP_FLAG_TRUST_SYS))
+        validate_flags |= VALIDATE_FLAG_TRUST_SYSTEM;
+    }
 
   if ((http_flags & HTTP_FLAG_NO_CRL))
     validate_flags |= VALIDATE_FLAG_NOCRLCHECK;

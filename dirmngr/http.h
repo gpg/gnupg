@@ -86,7 +86,7 @@ enum
     HTTP_FLAG_IGNORE_CL = 32,    /* Ignore content-length.  */
     HTTP_FLAG_IGNORE_IPv4 = 64,  /* Do not use IPv4.  */
     HTTP_FLAG_IGNORE_IPv6 = 128, /* Do not use IPv6.  */
-    HTTP_FLAG_TRUST_DEF   = 256, /* Use the default CAs.  */
+    HTTP_FLAG_TRUST_DEF   = 256, /* Use the CAs configured for HKP.  */
     HTTP_FLAG_TRUST_SYS   = 512, /* Also use the system defined CAs.  */
     HTTP_FLAG_NO_CRL     = 1024  /* Do not consult CRLs for https.  */
   };

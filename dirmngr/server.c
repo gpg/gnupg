@@ -1852,8 +1852,9 @@ cmd_validate (assuan_context_t ctx, char *line)
     }
 
   err = validate_cert_chain (ctrl, cert, NULL,
-                             ((tls_mode ? VALIDATE_FLAG_TLS : 0)
-                              | (systrust_mode ? VALIDATE_FLAG_SYSTRUST : 0)
+                             (VALIDATE_FLAG_TRUST_CONFIG
+                              | (tls_mode ? VALIDATE_FLAG_TLS : 0)
+                              | (systrust_mode ? VALIDATE_FLAG_TRUST_SYSTEM : 0)
                               | (no_crl ? VALIDATE_FLAG_NOCRLCHECK : 0)),
                              NULL);
 

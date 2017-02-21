@@ -709,15 +709,14 @@ cert_cache_init (strlist_t hkp_cacerts)
     load_certs_from_dir (fname, 0);
   xfree (fname);
 
-  for (sl = hkp_cacerts; sl; sl = sl->next)
-    load_certs_from_file (sl->d, CERTTRUST_CLASS_HKP, 0);
-
-
   fname = make_filename_try (gnupg_datadir (),
                              "sks-keyservers.netCA.pem", NULL);
   if (fname)
     load_certs_from_file (fname, CERTTRUST_CLASS_HKPSPOOL, 1);
   xfree (fname);
+
+  for (sl = hkp_cacerts; sl; sl = sl->next)
+    load_certs_from_file (sl->d, CERTTRUST_CLASS_HKP, 0);
 
   initialization_done = 1;
   release_cache_lock ();
