@@ -33,7 +33,7 @@
 #include "crlfetch.h"
 #include "certcache.h"
 
-#define MAX_EXTRA_CACHED_CERTS 1000
+#define MAX_NONPERM_CACHED_CERTS 1000
 
 /* Constants used to classify search patterns.  */
 enum pattern_class
@@ -66,15 +66,14 @@ struct cert_item_s
   char *issuer_dn;          /* The malloced issuer DN.  */
   ksba_sexp_t sn;           /* The malloced serial number  */
   char *subject_dn;         /* The malloced subject DN - maybe NULL.  */
-  struct
-  {
-    unsigned int config:1;  /* This has been loaded from the configuration.  */
-    unsigned int trusted:1; /* This is a trusted root certificate.  */
-    unsigned int systrust:1;/* The certifciate is trusted because it
-                             * is in the system's store of trusted
-                             * certificates (i.e. not configured using
-                             * GnuPG mechanisms.  */
-  } flags;
+
+  /* If this field is set the certificate has been taken from some
+   * configuration and shall not be flushed from the cache.  */
+  unsigned int permanent:1;
+
+  /* If this field is set the certificate is trusted.  The actual
+   * value is a (possible) combination of CERTTRUST_CLASS values.  */
+  unsigned int trustclasses:4;
 };
 typedef struct cert_item_s *cert_item_t;
 
@@ -92,13 +91,8 @@ static npth_rwlock_t cert_cache_lock;
 /* Flag to track whether the cache has been initialized.  */
 static int initialization_done;
 
-/* Total number of certificates loaded during initialization
- * (ie. configured), extra certificates cached during operation,
- * number of trusted and system trusted certificates.  */
-static unsigned int total_config_certificates;
-static unsigned int total_extra_certificates;
-static unsigned int total_trusted_certificates;
-static unsigned int total_system_trusted_certificates;
+/* Total number of non-permanent certificates.  */
+static unsigned int total_nonperm_certificates;
 
 
 #ifdef HAVE_W32_SYSTEM
@@ -245,6 +239,9 @@ clean_cache_slot (cert_item_t ci)
   cert = ci->cert;
   ci->cert = NULL;
 
+  ci->permanent = 0;
+  ci->trustclasses = 0;
+
   ksba_cert_release (cert);
 }
 
@@ -263,7 +260,8 @@ clean_cache_slot (cert_item_t ci)
  * will be stored on success or when the function returns
  * GPG_ERR_DUP_VALUE.  */
 static gpg_error_t
-put_cert (ksba_cert_t cert, int from_config, int is_trusted, void *fpr_buffer)
+put_cert (ksba_cert_t cert, int permanent, unsigned int trustclass,
+          void *fpr_buffer)
 {
   unsigned char help_fpr_buffer[20], *fpr;
   cert_item_t ci;
@@ -281,14 +279,14 @@ put_cert (ksba_cert_t cert, int from_config, int is_trusted, void *fpr_buffer)
    * implementation is not very efficient but compared to the long
    * time it takes to retrieve a certificate from an external resource
    * it seems to be reasonable.  */
-  if (!from_config && total_extra_certificates >= MAX_EXTRA_CACHED_CERTS)
+  if (!permanent && total_nonperm_certificates >= MAX_NONPERM_CACHED_CERTS)
     {
       static int idx;
       cert_item_t ci_mark;
       int i;
       unsigned int drop_count;
 
-      drop_count = MAX_EXTRA_CACHED_CERTS / 20;
+      drop_count = MAX_NONPERM_CACHED_CERTS / 20;
       if (drop_count < 2)
         drop_count = 2;
 
@@ -298,17 +296,13 @@ put_cert (ksba_cert_t cert, int from_config, int is_trusted, void *fpr_buffer)
         {
           ci_mark = NULL;
           for (ci = cert_cache[i]; ci; ci = ci->next)
-            if (ci->cert && !ci->flags.config)
+            if (ci->cert && !ci->permanent)
               ci_mark = ci;
           if (ci_mark)
             {
               clean_cache_slot (ci_mark);
               drop_count--;
-              total_extra_certificates--;
-              if (ci->flags.trusted)
-                total_trusted_certificates--;
-              if (ci->flags.systrust)
-                total_system_trusted_certificates--;
+              total_nonperm_certificates--;
             }
         }
       if (i==idx)
@@ -334,8 +328,6 @@ put_cert (ksba_cert_t cert, int from_config, int is_trusted, void *fpr_buffer)
       ci->next = cert_cache[*fpr];
       cert_cache[*fpr] = ci;
     }
-  else
-    memset (&ci->flags, 0, sizeof ci->flags);
 
   ksba_cert_ref (cert);
   ci->cert = cert;
@@ -348,19 +340,11 @@ put_cert (ksba_cert_t cert, int from_config, int is_trusted, void *fpr_buffer)
       return gpg_error (GPG_ERR_INV_CERT_OBJ);
     }
   ci->subject_dn = ksba_cert_get_subject (cert, 0);
-  ci->flags.config  = !!from_config;
-  ci->flags.trusted = !!is_trusted;
-  ci->flags.systrust = (is_trusted && is_trusted == 2);
+  ci->permanent = !!permanent;
+  ci->trustclasses = trustclass;
 
-  if (ci->flags.trusted)
-    total_trusted_certificates++;
-  if (ci->flags.systrust)
-    total_system_trusted_certificates++;
-
-  if (from_config)
-    total_config_certificates++;
-  else
-    total_extra_certificates++;
+  if (!permanent)
+    total_nonperm_certificates++;
 
   return 0;
 }
@@ -371,7 +355,7 @@ put_cert (ksba_cert_t cert, int from_config, int is_trusted, void *fpr_buffer)
    certificates are DER encoded and not PEM encapsulated. The cache
    should be in a locked state when calling this function.  */
 static gpg_error_t
-load_certs_from_dir (const char *dirname, int are_trusted)
+load_certs_from_dir (const char *dirname, unsigned int trustclass)
 {
   gpg_error_t err;
   DIR *dir;
@@ -428,12 +412,12 @@ load_certs_from_dir (const char *dirname, int are_trusted)
           continue;
         }
 
-      err = put_cert (cert, 1, !!are_trusted, NULL);
+      err = put_cert (cert, 1, trustclass, NULL);
       if (gpg_err_code (err) == GPG_ERR_DUP_VALUE)
         log_info (_("certificate '%s' already cached\n"), fname);
       else if (!err)
         {
-          if (are_trusted)
+          if (trustclass)
             log_info (_("trusted certificate '%s' loaded\n"), fname);
           else
             log_info (_("certificate '%s' loaded\n"), fname);
@@ -509,7 +493,7 @@ load_certs_from_file (const char *fname)
           goto leave;
         }
 
-      err = put_cert (cert, 1, 2, NULL);
+      err = put_cert (cert, 1, CERTTRUST_CLASS_SYSTEM, NULL);
       if (gpg_err_code (err) == GPG_ERR_DUP_VALUE)
         log_info (_("certificate '%s' already cached\n"), fname);
       else if (err)
@@ -619,7 +603,7 @@ load_certs_from_w32_store (const char *storename)
               break;
             }
 
-          err = put_cert (cert, 1, 2, NULL);
+          err = put_cert (cert, 1, CERTTRUST_CLASS_SYSTEM, NULL);
           if (!err)
             count++;
           if (gpg_err_code (err) == GPG_ERR_DUP_VALUE)
@@ -710,7 +694,7 @@ cert_cache_init (void)
   load_certs_from_system ();
 
   dname = make_filename (gnupg_sysconfdir (), "trusted-certs", NULL);
-  load_certs_from_dir (dname, 1);
+  load_certs_from_dir (dname, CERTTRUST_CLASS_CONFIG);
   xfree (dname);
 
   dname = make_filename (gnupg_sysconfdir (), "extra-certs", NULL);
@@ -753,10 +737,7 @@ cert_cache_deinit (int full)
         }
     }
 
-  total_config_certificates = 0;
-  total_extra_certificates = 0;
-  total_trusted_certificates = 0;
-  total_system_trusted_certificates = 0;
+  total_nonperm_certificates = 0;
   initialization_done = 0;
   release_cache_lock ();
 }
@@ -765,12 +746,51 @@ cert_cache_deinit (int full)
 void
 cert_cache_print_stats (void)
 {
+  cert_item_t ci;
+  int idx;
+  unsigned int n_nonperm = 0;
+  unsigned int n_permanent = 0;
+  unsigned int n_trusted = 0;
+  unsigned int n_trustclass_system = 0;
+  unsigned int n_trustclass_config = 0;
+  unsigned int n_trustclass_hkp = 0;
+  unsigned int n_trustclass_hkpspool = 0;
+
+  acquire_cache_read_lock ();
+  for (idx = 0; idx < 256; idx++)
+    for (ci=cert_cache[idx]; ci; ci = ci->next)
+      if (ci->cert)
+        {
+          if (ci->permanent)
+            n_permanent++;
+          else
+            n_nonperm++;
+          if (ci->trustclasses)
+            {
+              n_trusted++;
+              if ((ci->trustclasses & CERTTRUST_CLASS_SYSTEM))
+                n_trustclass_system++;
+              if ((ci->trustclasses & CERTTRUST_CLASS_CONFIG))
+                n_trustclass_config++;
+              if ((ci->trustclasses & CERTTRUST_CLASS_HKP))
+                n_trustclass_hkp++;
+              if ((ci->trustclasses & CERTTRUST_CLASS_HKPSPOOL))
+                n_trustclass_hkpspool++;
+            }
+        }
+
+  release_cache_lock ();
+
   log_info (_("permanently loaded certificates: %u\n"),
-            total_config_certificates);
+            n_permanent);
   log_info (_("    runtime cached certificates: %u\n"),
-            total_extra_certificates);
-  log_info (_("           trusted certificates: %u (%u)\n"),
-            total_trusted_certificates, total_system_trusted_certificates);
+            n_nonperm);
+  log_info (_("           trusted certificates: %u (%u,%u,%u,%u)\n"),
+            n_trusted,
+            n_trustclass_system,
+            n_trustclass_config,
+            n_trustclass_hkp,
+            n_trustclass_hkpspool);
 }
 
 
@@ -1543,12 +1563,12 @@ find_cert_bysubject (ctrl_t ctrl, const char *subject_dn, ksba_sexp_t keyid)
 }
 
 
-/* Return 0 if the certificate is a trusted certificate.  Returns
+/* Return 0 if the certificate is a trusted certificate. Returns
  * GPG_ERR_NOT_TRUSTED if it is not trusted or other error codes in
- * case of systems errors.  If WITH_SYSTRUST is set also system
- * provided certificates are considered trusted.  */
+ * case of systems errors.  TRUSTCLASSES are the bitwise ORed
+ * CERTTRUST_CLASS values to use for the check.  */
 gpg_error_t
-is_trusted_cert (ksba_cert_t cert, int with_systrust)
+is_trusted_cert (ksba_cert_t cert, unsigned int trustclasses)
 {
   unsigned char fpr[20];
   cert_item_t ci;
@@ -1559,8 +1579,10 @@ is_trusted_cert (ksba_cert_t cert, int with_systrust)
   for (ci=cert_cache[*fpr]; ci; ci = ci->next)
     if (ci->cert && !memcmp (ci->fpr, fpr, 20))
       {
-        if (ci->flags.trusted && (with_systrust || !ci->flags.systrust))
+        if ((ci->trustclasses & trustclasses))
           {
+            /* The certificate is trusted in one of the given
+             * TRUSTCLASSES.  */
             release_cache_lock ();
             return 0; /* Yes, it is trusted. */
           }

@@ -203,7 +203,7 @@ allowed_ca (ksba_cert_t cert, int *chainlen)
     return err;
   if (!flag)
     {
-      if (!is_trusted_cert (cert, 0))
+      if (!is_trusted_cert (cert, CERTTRUST_CLASS_CONFIG))
         {
           /* The German SigG Root CA's certificate does not flag
              itself as a CA; thus we relax this requirement if we
@@ -540,8 +540,10 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           if (err)
             goto leave;  /* No. */
 
-          err = is_trusted_cert (subject_cert,
-                                 !!(flags & VALIDATE_FLAG_SYSTRUST));
+          err = is_trusted_cert
+            (subject_cert,
+             (CERTTRUST_CLASS_CONFIG
+              | (flags & VALIDATE_FLAG_SYSTRUST)? CERTTRUST_CLASS_SYSTEM : 0));
           if (!err)
             ; /* Yes we trust this cert.  */
           else if (gpg_err_code (err) == GPG_ERR_NOT_TRUSTED)

@@ -21,6 +21,15 @@
 #ifndef CERTCACHE_H
 #define CERTCACHE_H
 
+/* The origin of the trusted root certificates.  */
+enum {
+  CERTTRUST_CLASS_SYSTEM  = 1, /* From the system's list of trusted certs. */
+  CERTTRUST_CLASS_CONFIG  = 2, /* From dirmngr's config files.         */
+  CERTTRUST_CLASS_HKP     = 4, /* From --hkp-cacert                    */
+  CERTTRUST_CLASS_HKPSPOOL= 8, /* The one and only from sks-keyservers */
+};
+
+
 /* First time initialization of the certificate cache.  */
 void cert_cache_init (void);
 
@@ -42,9 +51,9 @@ gpg_error_t cache_cert_silent (ksba_cert_t cert, void *fpr_buffer);
 
 /* Return 0 if the certificate is a trusted certificate. Returns
  * GPG_ERR_NOT_TRUSTED if it is not trusted or other error codes in
- * case of systems errors.  If WITH_SYSTRUST is set also system
- * provided certificates are considered trusted.  */
-gpg_error_t is_trusted_cert (ksba_cert_t cert, int with_systrust);
+ * case of systems errors.  TRUSTCLASSES are the bitwise ORed
+ * CERTTRUST_CLASS values to use for the check.  */
+gpg_error_t is_trusted_cert (ksba_cert_t cert, unsigned trustclasses);
 
 /* Return a certificate object for the given fingerprint.  FPR is
    expected to be a 20 byte binary SHA-1 fingerprint.  If no matching
