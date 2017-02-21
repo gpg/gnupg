@@ -352,7 +352,7 @@ put_cert (ksba_cert_t cert, int permanent, unsigned int trustclass,
 
 /* Load certificates from the directory DIRNAME.  All certificates
    matching the pattern "*.crt" or "*.der"  are loaded.  We assume that
-   certificates are DER encoded and not PEM encapsulated. The cache
+   certificates are DER encoded and not PEM encapsulated.  The cache
    should be in a locked state when calling this function.  */
 static gpg_error_t
 load_certs_from_dir (const char *dirname, unsigned int trustclass)
@@ -443,14 +443,15 @@ load_certs_from_dir (const char *dirname, unsigned int trustclass)
 }
 
 
-#ifndef HAVE_W32_SYSTEM
-/* Load certificates from FILE.  The certifciates are expected to be
+/* Load certificates from FILE.  The certificates are expected to be
  * PEM encoded so that it is possible to load several certificates.
- * All certificates are considered to be system provided trusted
- * certificates.  The cache should be in a locked state when calling
- * this function.  */
+ * TRUSTCLASSES is used to mark the certificates as trusted.  The
+ * cache should be in a locked state when calling this function.
+ * NO_ERROR repalces an error message when FNAME was not found by an
+ * information message.  */
 static gpg_error_t
-load_certs_from_file (const char *fname)
+load_certs_from_file (const char *fname, unsigned int trustclasses,
+                      int no_error)
 {
   gpg_error_t err;
   estream_t fp = NULL;
@@ -462,7 +463,10 @@ load_certs_from_file (const char *fname)
   if (!fp)
     {
       err = gpg_error_from_syserror ();
-      log_error (_("can't open '%s': %s\n"), fname, gpg_strerror (err));
+      if (gpg_err_code (err) == GPG_ERR_ENONET && no_error)
+        log_info (_("can't open '%s': %s\n"), fname, gpg_strerror (err));
+      else
+        log_error (_("can't open '%s': %s\n"), fname, gpg_strerror (err));
       goto leave;
     }
 
@@ -493,7 +497,7 @@ load_certs_from_file (const char *fname)
           goto leave;
         }
 
-      err = put_cert (cert, 1, CERTTRUST_CLASS_SYSTEM, NULL);
+      err = put_cert (cert, 1, trustclasses, NULL);
       if (gpg_err_code (err) == GPG_ERR_DUP_VALUE)
         log_info (_("certificate '%s' already cached\n"), fname);
       else if (err)
@@ -523,7 +527,7 @@ load_certs_from_file (const char *fname)
 
   return err;
 }
-#endif /*!HAVE_W32_SYSTEM*/
+
 
 #ifdef HAVE_W32_SYSTEM
 /* Load all certificates from the Windows store named STORENAME.  All
@@ -671,7 +675,7 @@ load_certs_from_system (void)
     if (!access (table[idx].name, F_OK))
       {
         /* Take the first available bundle.  */
-        err = load_certs_from_file (table[idx].name);
+        err = load_certs_from_file (table[idx].name, CERTTRUST_CLASS_SYSTEM, 0);
         break;
       }
 
@@ -684,7 +688,7 @@ load_certs_from_system (void)
 void
 cert_cache_init (void)
 {
-  char *dname;
+  char *fname;
 
   if (initialization_done)
     return;
@@ -693,13 +697,21 @@ cert_cache_init (void)
 
   load_certs_from_system ();
 
-  dname = make_filename (gnupg_sysconfdir (), "trusted-certs", NULL);
-  load_certs_from_dir (dname, CERTTRUST_CLASS_CONFIG);
-  xfree (dname);
+  fname = make_filename_try (gnupg_sysconfdir (), "trusted-certs", NULL);
+  if (fname)
+    load_certs_from_dir (fname, CERTTRUST_CLASS_CONFIG);
+  xfree (fname);
 
-  dname = make_filename (gnupg_sysconfdir (), "extra-certs", NULL);
-  load_certs_from_dir (dname, 0);
-  xfree (dname);
+  fname = make_filename_try (gnupg_sysconfdir (), "extra-certs", NULL);
+  if (fname)
+    load_certs_from_dir (fname, 0);
+  xfree (fname);
+
+  fname = make_filename_try (gnupg_datadir (),
+                             "sks-keyservers.netCA.pem", NULL);
+  if (fname)
+    load_certs_from_file (fname, CERTTRUST_CLASS_HKPSPOOL, 1);
+  xfree (fname);
 
   initialization_done = 1;
   release_cache_lock ();
