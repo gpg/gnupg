@@ -346,7 +346,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
             is_ECDSA = 1;
         }
 
-      rc = divert_pksign (ctrl,
+      rc = divert_pksign (ctrl, desc_text,
                           data, datalen,
                           ctrl->digest.algo,
                           shadow_info, &buf, &len);

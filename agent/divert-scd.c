@@ -163,6 +163,9 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
    string with the passphrase, the buffer may optionally be padded
    with arbitrary characters.
 
+   If DESC_TEXT is not NULL it can be used as further informtion shown
+   atop of the INFO message.
+
    INFO gets displayed as part of a generic string.  However if the
    first character of INFO is a vertical bar all up to the next
    verical bar are considered flags and only everything after the
@@ -185,7 +188,8 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
    are considered.
  */
 static int
-getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
+getpin_cb (void *opaque, const char *desc_text, const char *info,
+           char *buf, size_t maxbuf)
 {
   struct pin_entry_info_s *pi;
   int rc;
@@ -337,9 +341,13 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
 
 
 
-
+/* This function is used when a sign operation has been diverted to a
+ * smartcard.  DESC_TEXT is the original text for a prompt has send by
+ * gpg to gpg-agent.
+ *
+ * FIXME: Explain the other args.  */
 int
-divert_pksign (ctrl_t ctrl,
+divert_pksign (ctrl_t ctrl, const char *desc_text,
                const unsigned char *digest, size_t digestlen, int algo,
                const unsigned char *shadow_info, unsigned char **r_sig,
                size_t *r_siglen)
@@ -357,7 +365,7 @@ divert_pksign (ctrl_t ctrl,
     {
       int save = ctrl->use_auth_call;
       ctrl->use_auth_call = 1;
-      rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl,
+      rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl, desc_text,
                               algo, digest, digestlen, &sigval, &siglen);
       ctrl->use_auth_call = save;
     }
@@ -369,7 +377,7 @@ divert_pksign (ctrl_t ctrl,
       rc = encode_md_for_card (digest, digestlen, algo, &data, &ndata);
       if (!rc)
         {
-          rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl,
+          rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl, desc_text,
                                   algo, data, ndata, &sigval, &siglen);
           xfree (data);
         }
@@ -392,7 +400,7 @@ divert_pksign (ctrl_t ctrl,
    allocated buffer in R_BUF.  The padding information is stored at
    R_PADDING with -1 for not known.  */
 int
-divert_pkdecrypt (ctrl_t ctrl,
+divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                   const unsigned char *cipher,
                   const unsigned char *shadow_info,
                   char **r_buf, size_t *r_len, int *r_padding)
@@ -471,7 +479,7 @@ divert_pkdecrypt (ctrl_t ctrl,
   if (rc)
     return rc;
 
-  rc = agent_card_pkdecrypt (ctrl, kid, getpin_cb, ctrl,
+  rc = agent_card_pkdecrypt (ctrl, kid, getpin_cb, ctrl, desc_text,
                              ciphertext, ciphertextlen,
                              &plaintext, &plaintextlen, r_padding);
   if (!rc)
