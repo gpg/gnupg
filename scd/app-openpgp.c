@@ -1082,6 +1082,104 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
   return rc;
 }
 
+
+/* Return the DISP-NAME without any padding characters.  Caller must
+ * free the result.  If not found or empty NULL is returned.  */
+static char *
+get_disp_name (app_t app)
+{
+  int rc;
+  void *relptr;
+  unsigned char *value;
+  size_t valuelen;
+  char *string;
+  char *p, *given;
+  char *result;
+
+  relptr = get_one_do (app, 0x005B, &value, &valuelen, &rc);
+  if (!relptr)
+    return NULL;
+
+  string = xtrymalloc (valuelen + 1);
+  if (!string)
+    {
+      xfree (relptr);
+      return NULL;
+    }
+  memcpy (string, value, valuelen);
+  string[valuelen] = 0;
+  xfree (relptr);
+
+  /* Swap surname and given name.  */
+  given = strstr (string, "<<");
+  for (p = string; *p; p++)
+    if (*p == '<')
+      *p = ' ';
+
+  if (given && given[2])
+    {
+      *given = 0;
+      given += 2;
+      result = strconcat (given, " ", string, NULL);
+    }
+  else
+    {
+      result = string;
+      string = NULL;
+    }
+
+  xfree (string);
+  return result;
+}
+
+
+/* Return the pretty formatted serialnumber.  On error NULL is
+ * returned.  */
+static char *
+get_disp_serialno (app_t app)
+{
+  char *serial = app_get_serialno (app);
+
+  /* For our OpenPGP cards we do not want to show the entire serial
+   * number but a nicely reformatted actual serial number.  */
+  if (serial && strlen (serial) > 16+12)
+    {
+      memmove (serial, serial+16, 4);
+      serial[4] = ' ';
+      /* memmove (serial+5, serial+20, 4); */
+      /* serial[9] = ' '; */
+      /* memmove (serial+10, serial+24, 4); */
+      /* serial[14] = 0; */
+      memmove (serial+5, serial+20, 8);
+      serial[13] = 0;
+    }
+  return serial;
+}
+
+
+/* Return the number of remaining tries for the standard or the admin
+ * pw.  Returns -1 on card error.  */
+static int
+get_remaining_tries (app_t app, int adminpw)
+{
+  void *relptr;
+  unsigned char *value;
+  size_t valuelen;
+  int remaining;
+
+  relptr = get_one_do (app, 0x00C4, &value, &valuelen, NULL);
+  if (!relptr || valuelen < 7)
+    {
+      log_error (_("error retrieving CHV status from card\n"));
+      xfree (relptr);
+      return -1;
+    }
+  remaining = value[adminpw? 6 : 4];
+  xfree (relptr);
+  return remaining;
+}
+
+
 /* Retrieve the fingerprint from the card inserted in SLOT and write
    the according hex representation to FPR.  Caller must have provide
    a buffer at FPR of least 41 bytes.  Returns 0 on success or an
@@ -1874,6 +1972,62 @@ check_pinpad_request (app_t app, pininfo_t *pininfo, int admin_pin)
 }
 
 
+/* Return a string with information about the card for use in a
+ * prompt.  Returns NULL on memory failure.  */
+static char *
+get_prompt_info (app_t app, int chvno, unsigned long sigcount, int remaining)
+{
+  char *serial, *disp_name, *rembuf, *tmpbuf, *result;
+
+  serial = get_disp_serialno (app);
+  if (!serial)
+    return NULL;
+
+  disp_name = get_disp_name (app);
+  if (chvno == 1)
+    {
+      result = xtryasprintf (_("Card number:\t%s%%0A"
+                               "Signatures:\t%lu%%0A"
+                               "Cardholder:\t%s"),
+                             serial,
+                             sigcount,
+                             disp_name? disp_name:"");
+    }
+  else
+    {
+      result = xtryasprintf (_("Card number:\t%s%%0A"
+                               "Cardholder:\t%s"),
+                             serial,
+                             disp_name? disp_name:"");
+    }
+  xfree (disp_name);
+  xfree (serial);
+
+  if (remaining != -1)
+    {
+      /* TRANSLATORS: This is the number of remaining attempts to
+       * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed. */
+      rembuf = xtryasprintf (_("Remaining attempts: %d"), remaining);
+      if (!rembuf)
+        {
+          xfree (result);
+          return NULL;
+        }
+      tmpbuf = strconcat (result, "%0A%0A", rembuf, NULL);
+      xfree (rembuf);
+      if (!tmpbuf)
+        {
+          xfree (result);
+          return NULL;
+        }
+      xfree (result);
+      result = tmpbuf;
+    }
+
+  return result;
+}
+
+
 /* Verify a CHV either using the pinentry or if possible by
    using a pinpad.  PINCB and PINCB_ARG describe the usual callback
    for the pinentry.  CHVNO must be either 1 or 2. SIGCOUNT is only
@@ -1895,10 +2049,15 @@ verify_a_chv (app_t app,
   const char *prompt;
   pininfo_t pininfo;
   int minlen = 6;
+  int remaining;
 
-  assert (chvno == 1 || chvno == 2);
+  log_assert (chvno == 1 || chvno == 2);
 
   *pinvalue = NULL;
+
+  remaining = get_remaining_tries (app, 0);
+  if (remaining == -1)
+    return gpg_error (GPG_ERR_CARD);
 
   if (chvno == 2 && app->app_local->flags.def_chv2)
     {
@@ -1923,22 +2082,19 @@ verify_a_chv (app_t app,
   pininfo.fixedlen = -1;
   pininfo.minlen = minlen;
 
+  {
+    const char *firstline = _("||Please unlock the card");
+    char *infoblock = get_prompt_info (app, chvno, sigcount,
+                                       remaining < 3? remaining : -1);
 
-  if (chvno == 1)
-    {
-#define PROMPTSTRING  _("||Please enter the PIN%%0A[sigs done: %lu]")
-      size_t promptsize = strlen (PROMPTSTRING) + 50;
-
-      prompt_buffer = xtrymalloc (promptsize);
-      if (!prompt_buffer)
-        return gpg_error_from_syserror ();
-      snprintf (prompt_buffer, promptsize, PROMPTSTRING, sigcount);
+    prompt_buffer = strconcat (firstline, "%0A%0A", infoblock, NULL);
+    if (prompt_buffer)
       prompt = prompt_buffer;
-#undef PROMPTSTRING
-    }
-  else
-    prompt = _("||Please enter the PIN");
+    else
+      prompt = firstline;  /* ENOMEM fallback.  */
 
+    xfree (infoblock);
+  }
 
   if (!opt.disable_pinpad
       && !iso7816_check_pinpad (app->slot, ISO7816_VERIFY, &pininfo)
@@ -1961,7 +2117,7 @@ verify_a_chv (app_t app,
       /* Dismiss the prompt. */
       pincb (pincb_arg, NULL, NULL);
 
-      assert (!*pinvalue);
+      log_assert (!*pinvalue);
     }
   else
     {
@@ -2049,29 +2205,20 @@ verify_chv2 (app_t app,
 static gpg_error_t
 build_enter_admin_pin_prompt (app_t app, char **r_prompt)
 {
-  void *relptr;
-  unsigned char *value;
-  size_t valuelen;
   int remaining;
   char *prompt;
+  char *infoblock;
 
   *r_prompt = NULL;
 
-  relptr = get_one_do (app, 0x00C4, &value, &valuelen, NULL);
-  if (!relptr || valuelen < 7)
-    {
-      log_error (_("error retrieving CHV status from card\n"));
-      xfree (relptr);
-      return gpg_error (GPG_ERR_CARD);
-    }
-  if (value[6] == 0)
+  remaining = get_remaining_tries (app, 1);
+  if (remaining == -1)
+    return gpg_error (GPG_ERR_CARD);
+  if (!remaining)
     {
       log_info (_("card is permanently locked!\n"));
-      xfree (relptr);
       return gpg_error (GPG_ERR_BAD_PIN);
     }
-  remaining = value[6];
-  xfree (relptr);
 
   log_info (ngettext("%d Admin PIN attempt remaining before card"
                      " is permanently locked\n",
@@ -2079,16 +2226,13 @@ build_enter_admin_pin_prompt (app_t app, char **r_prompt)
                      " is permanently locked\n",
                      remaining), remaining);
 
-  if (remaining < 3)
-    {
-      /* TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-         the start of the string.  Use %%0A to force a linefeed.  */
-      prompt = xtryasprintf (_("|A|Please enter the Admin PIN%%0A"
-                               "[remaining attempts: %d]"), remaining);
-    }
-  else
-    prompt = xtrystrdup (_("|A|Please enter the Admin PIN"));
+  infoblock = get_prompt_info (app, 3, 0, remaining < 3? remaining : -1);
 
+  /* TRANSLATORS: Do not translate the "|A|" prefix but keep it at
+     the start of the string.  Use %0A (single percent) for a linefeed.  */
+  prompt = strconcat (_("|A|Please enter the Admin PIN"),
+                      "%0A%0A", infoblock, NULL);
+  xfree (infoblock);
   if (!prompt)
     return gpg_error_from_syserror ();
 

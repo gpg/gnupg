@@ -39,22 +39,39 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
   char *serialno;
   int no_card = 0;
   char *desc;
-  char *want_sn, *want_kid;
-  int want_sn_displen;
+  char *want_sn, *want_kid, *want_sn_disp;
+  int len;
 
   *r_kid = NULL;
 
   rc = parse_shadow_info (shadow_info, &want_sn, &want_kid, NULL);
   if (rc)
     return rc;
+  want_sn_disp = xtrystrdup (want_sn);
+  if (!want_sn_disp)
+    {
+      rc = gpg_error_from_syserror ();
+      xfree (want_sn);
+      return rc;
+    }
 
-  /* We assume that a 20 byte serial number is a standard one which
-     has the property to have a zero in the last nibble (Due to BCD
-     representation).  We don't display this '0' because it may
-     confuse the user.  */
-  want_sn_displen = strlen (want_sn);
-  if (want_sn_displen == 20 && want_sn[19] == '0')
-    want_sn_displen--;
+  len = strlen (want_sn_disp);
+  if (len == 32 && !strncmp (want_sn_disp, "D27600012401", 12))
+    {
+      /* This is an OpenPGP card - reformat  */
+      memmove (want_sn_disp, want_sn_disp+16, 4);
+      want_sn_disp[4] = ' ';
+      memmove (want_sn_disp+5, want_sn_disp+20, 8);
+      want_sn_disp[13] = 0;
+    }
+  else if (len == 20 && want_sn_disp[19] == '0')
+    {
+      /* We assume that a 20 byte serial number is a standard one
+       * which has the property to have a zero in the last nibble (Due
+       * to BCD representation).  We don't display this '0' because it
+       * may confuse the user.  */
+      want_sn_disp[19] = 0;
+    }
 
   for (;;)
     {
@@ -93,12 +110,12 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
         {
           if (asprintf (&desc,
                     "%s:%%0A%%0A"
-                    "  \"%.*s\"",
+                    "  %s",
                         no_card
                         ? L_("Please insert the card with serial number")
                         : L_("Please remove the current card and "
                              "insert the one with serial number"),
-                    want_sn_displen, want_sn) < 0)
+                        want_sn_disp) < 0)
             {
               rc = out_of_core ();
             }
@@ -114,6 +131,7 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
         }
       if (rc)
         {
+          xfree (want_sn_disp);
           xfree (want_sn);
           xfree (want_kid);
           return rc;
@@ -312,7 +330,8 @@ getpin_cb (void *opaque, const char *desc_text, const char *info,
                              info, NULL);
         else
           desc2 = NULL;
-        rc = agent_askpin (ctrl, desc2, prompt, again_text, pi, NULL, 0);
+        rc = agent_askpin (ctrl, desc2? desc2 : info,
+                           prompt, again_text, pi, NULL, 0);
         xfree (desc2);
       }
       again_text = NULL;
@@ -401,6 +420,8 @@ divert_pksign (ctrl_t ctrl, const char *desc_text,
   size_t siglen;
   unsigned char *sigval = NULL;
 
+  (void)desc_text;
+
   rc = ask_for_card (ctrl, shadow_info, &kid);
   if (rc)
     return rc;
@@ -409,7 +430,7 @@ divert_pksign (ctrl_t ctrl, const char *desc_text,
     {
       int save = ctrl->use_auth_call;
       ctrl->use_auth_call = 1;
-      rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl, desc_text,
+      rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl, NULL,
                               algo, digest, digestlen, &sigval, &siglen);
       ctrl->use_auth_call = save;
     }
@@ -421,7 +442,7 @@ divert_pksign (ctrl_t ctrl, const char *desc_text,
       rc = encode_md_for_card (digest, digestlen, algo, &data, &ndata);
       if (!rc)
         {
-          rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl, desc_text,
+          rc = agent_card_pksign (ctrl, kid, getpin_cb, ctrl, NULL,
                                   algo, data, ndata, &sigval, &siglen);
           xfree (data);
         }
@@ -457,6 +478,8 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   size_t ciphertextlen;
   char *plaintext;
   size_t plaintextlen;
+
+  (void)desc_text;
 
   *r_padding = -1;
 
@@ -523,7 +546,7 @@ divert_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   if (rc)
     return rc;
 
-  rc = agent_card_pkdecrypt (ctrl, kid, getpin_cb, ctrl, desc_text,
+  rc = agent_card_pkdecrypt (ctrl, kid, getpin_cb, ctrl, NULL,
                              ciphertext, ciphertextlen,
                              &plaintext, &plaintextlen, r_padding);
   if (!rc)
