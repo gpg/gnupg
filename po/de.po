@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-02-22 16:21+0100\n"
+"PO-Revision-Date: 2017-02-22 18:55+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -2395,7 +2395,8 @@ msgstr ""
 "einem \"Keygrip\" aus\n"
 
 msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
-msgstr "WARNING:  Kein Kommando angegeben.  Versuche zu raten was gemeint ist ...\n"
+msgstr ""
+"WARNING:  Kein Kommando angegeben.  Versuche zu raten was gemeint ist ...\n"
 
 msgid "Go ahead and type your message ...\n"
 msgstr "Auf geht's - Botschaft eintippen ...\n"
@@ -6220,13 +6221,16 @@ msgstr "Die Antwort enthält keine öffentliche Schlüssel-Daten\n"
 msgid "reading public key failed: %s\n"
 msgstr "Lesen des öffentlichen Schlüssels fehlgeschlagen: %s\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
 #, c-format
-msgid "Number:\t%s%%0AHolder:\t%s%%0ASignatures:\t%lu"
-msgstr "Nummer:\t%s%%0ABesitzer:\t%s%%0ASignaturen:\t%lu"
+msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
+msgstr "%sNummer: %s%%0ABesitzer: %s%%0AAnzahl: %lu%s"
 
 #, c-format
-msgid "Number:\t%s%%0AHolder:\t%s"
-msgstr "Nummer:\t%s%%0ABesitzer:\t%s"
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr "%sNummer: %s%%0ABesitzer: %s%s"
 
 #. TRANSLATORS: This is the number of remaining attempts to
 #. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
