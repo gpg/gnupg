@@ -1986,17 +1986,17 @@ get_prompt_info (app_t app, int chvno, unsigned long sigcount, int remaining)
   disp_name = get_disp_name (app);
   if (chvno == 1)
     {
-      result = xtryasprintf (_("Number:\t%s%%0A"
-                               "Holder:\t%s%%0A"
-                               "Signatures:\t%lu"),
+      result = xtryasprintf (_("Card number:\t%s%%0A"
+                               "Signatures:\t%lu%%0A"
+                               "Cardholder:\t%s"),
                              serial,
-                             disp_name? disp_name:"",
-                             sigcount);
+                             sigcount,
+                             disp_name? disp_name:"");
     }
   else
     {
-      result = xtryasprintf (_("Number:\t%s%%0A"
-                               "Holder:\t%s"),
+      result = xtryasprintf (_("Card number:\t%s%%0A"
+                               "Cardholder:\t%s"),
                              serial,
                              disp_name? disp_name:"");
     }
