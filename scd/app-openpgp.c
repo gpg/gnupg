@@ -1986,19 +1986,30 @@ get_prompt_info (app_t app, int chvno, unsigned long sigcount, int remaining)
   disp_name = get_disp_name (app);
   if (chvno == 1)
     {
-      result = xtryasprintf (_("Card number:\t%s%%0A"
-                               "Signatures:\t%lu%%0A"
-                               "Cardholder:\t%s"),
+      /* TRANSLATORS: Put a \x1f right before a colon.  This can be
+       * used by pinentry to nicely align the names and values.  Keep
+       * the %s at the start and end of the string.  */
+      result = xtryasprintf (_("%s"
+                               "Number\x1f: %s%%0A"
+                               "Holder\x1f: %s%%0A"
+                               "Counter\x1f: %lu"
+                               "%s"),
+                             "\x1e",
                              serial,
+                             disp_name? disp_name:"",
                              sigcount,
-                             disp_name? disp_name:"");
+                             "");
     }
   else
     {
-      result = xtryasprintf (_("Card number:\t%s%%0A"
-                               "Cardholder:\t%s"),
+      result = xtryasprintf (_("%s"
+                               "Number\x1f: %s%%0A"
+                               "Holder\x1f: %s"
+                               "%s"),
+                             "\x1e",
                              serial,
-                             disp_name? disp_name:"");
+                             disp_name? disp_name:"",
+                             "");
     }
   xfree (disp_name);
   xfree (serial);

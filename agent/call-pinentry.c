@@ -56,6 +56,17 @@
 /* The assuan context of the current pinentry. */
 static assuan_context_t entry_ctx;
 
+/* A list of features of the current pinentry.  */
+static struct
+{
+  /* The Pinentry support RS+US tabbing.  This means that a RS (0x1e)
+   * starts a new tabbing block in which a US (0x1f) followed by a
+   * colon marks a colon.  A pinentry can use this to pretty print
+   * name value pairs.  */
+  unsigned int tabbing:1;
+} entry_features;
+
+
 /* The control variable of the connection owning the current pinentry.
    This is only valid if ENTRY_CTX is not NULL.  Note, that we care
    only about the value of the pointer and that it should never be
@@ -205,6 +216,31 @@ atfork_cb (void *opaque, int where)
             }
         }
     }
+}
+
+
+/* Status line callback for the FEATURES status.  */
+static gpg_error_t
+getinfo_features_cb (void *opaque, const char *line)
+{
+  const char *args;
+  char **tokens;
+  int i;
+
+  (void)opaque;
+
+  if ((args = has_leading_keyword (line, "FEATURES")))
+    {
+      tokens = strtokenize (args, " ");
+      if (!tokens)
+        return gpg_error_from_syserror ();
+      for (i=0; tokens[i]; i++)
+        if (!strcmp (tokens[i], "tabbing"))
+          entry_features.tabbing = 1;
+      xfree (tokens);
+    }
+
+  return 0;
 }
 
 
@@ -567,13 +603,17 @@ start_pinentry (ctrl_t ctrl)
 
   /* Ask the pinentry for its version and flavor and store that as a
    * string in MB.  This information is useful for helping users to
-   * figure out Pinentry problems.  */
+   * figure out Pinentry problems.  Noet that "flavor" may also return
+   * a status line with the features; we use a dedicated handler for
+   * that.  */
   {
     membuf_t mb;
 
     init_membuf (&mb, 256);
     if (assuan_transact (entry_ctx, "GETINFO flavor",
-                         put_membuf_cb, &mb, NULL, NULL, NULL, NULL))
+                         put_membuf_cb, &mb,
+                         NULL, NULL,
+                         getinfo_features_cb, NULL))
       put_membuf_str (&mb, "unknown");
     put_membuf_str (&mb, " ");
     if (assuan_transact (entry_ctx, "GETINFO version",
@@ -871,6 +911,25 @@ pinentry_status_cb (void *opaque, const char *line)
 }
 
 
+/* Build a SETDESC command line.  This is a dedicated funcion so that
+ * it can remove control characters which are not supported by the
+ * current Pinentry.  */
+static void
+build_cmd_setdesc (char *line, size_t linelen, const char *desc)
+{
+  char *src, *dst;
+
+  snprintf (line, linelen, "SETDESC %s", desc);
+  if (!entry_features.tabbing)
+    {
+      /* Remove RS and US.  */
+      for (src=dst=line; *src; src++)
+        if (!strchr ("\x1e\x1f", *src))
+          *dst++ = *src;
+      *dst = 0;
+    }
+}
+
 
 
 /* Call the Entry and ask for the PIN.  We do check for a valid PIN
@@ -961,7 +1020,7 @@ agent_askpin (ctrl_t ctrl,
   if (rc && gpg_err_code (rc) != GPG_ERR_ASS_UNKNOWN_CMD)
     return unlock_pinentry (rc);
 
-  snprintf (line, DIM(line), "SETDESC %s", desc_text);
+  build_cmd_setdesc (line, DIM(line), desc_text);
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return unlock_pinentry (rc);
@@ -1170,7 +1229,7 @@ agent_get_passphrase (ctrl_t ctrl,
 
 
   if (desc)
-    snprintf (line, DIM(line), "SETDESC %s", desc);
+    build_cmd_setdesc (line, DIM(line), desc);
   else
     snprintf (line, DIM(line), "RESET");
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -1258,7 +1317,7 @@ agent_get_confirmation (ctrl_t ctrl,
     return rc;
 
   if (desc)
-    snprintf (line, DIM(line), "SETDESC %s", desc);
+    build_cmd_setdesc (line, DIM(line), desc);
   else
     snprintf (line, DIM(line), "RESET");
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -1331,7 +1390,7 @@ agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn)
     return rc;
 
   if (desc)
-    snprintf (line, DIM(line), "SETDESC %s", desc);
+    build_cmd_setdesc (line, DIM(line), desc);
   else
     snprintf (line, DIM(line), "RESET");
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -1401,7 +1460,7 @@ agent_popup_message_start (ctrl_t ctrl, const char *desc, const char *ok_btn)
     return rc;
 
   if (desc)
-    snprintf (line, DIM(line), "SETDESC %s", desc);
+    build_cmd_setdesc (line, DIM(line), desc);
   else
     snprintf (line, DIM(line), "RESET");
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
