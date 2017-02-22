@@ -381,6 +381,8 @@ gpg_error_t ssh_search_control_file (ssh_control_file_t cf,
 void start_command_handler_ssh (ctrl_t, gnupg_fd_t);
 
 /*-- findkey.c --*/
+gpg_error_t agent_modify_description (const char *in, const char *comment,
+                                      const gcry_sexp_t key, char **result);
 int agent_write_private_key (const unsigned char *grip,
                              const void *buffer, size_t length, int force);
 gpg_error_t agent_key_from_file (ctrl_t ctrl,

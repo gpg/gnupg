@@ -321,9 +321,9 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
    The functions returns 0 on success or an error code.  On success a
    newly allocated string is stored at the address of RESULT.
  */
-static gpg_error_t
-modify_description (const char *in, const char *comment, const gcry_sexp_t key,
-                    char **result)
+gpg_error_t
+agent_modify_description (const char *in, const char *comment,
+                          const gcry_sexp_t key, char **result)
 {
   size_t comment_length;
   size_t in_len;
@@ -332,12 +332,19 @@ modify_description (const char *in, const char *comment, const gcry_sexp_t key,
   size_t i;
   int special, pass;
   char *ssh_fpr = NULL;
+  char *p;
+
+  *result = NULL;
+
+  if (!comment)
+    comment = "";
 
   comment_length = strlen (comment);
   in_len  = strlen (in);
 
   /* First pass calculates the length, second pass does the actual
      copying.  */
+  /* FIXME: This can be simplified by using es_fopenmem.  */
   out = NULL;
   out_len = 0;
   for (pass=0; pass < 2; pass++)
@@ -427,8 +434,23 @@ modify_description (const char *in, const char *comment, const gcry_sexp_t key,
     }
 
   *out = 0;
-  assert (*result + out_len == out);
+  log_assert (*result + out_len == out);
   xfree (ssh_fpr);
+
+  /* The ssh prompt may sometimes end in
+   *    "...%0A  ()"
+   * The empty parentheses doesn't look very good.  We use this hack
+   * here to remove them as well as the indentation spaces. */
+  p = *result;
+  i = strlen (p);
+  if (i > 2 && !strcmp (p + i - 2, "()"))
+    {
+      p += i - 2;
+      *p-- = 0;
+      while (p > *result && spacep (p))
+        *p-- = 0;
+    }
+
   return 0;
 }
 
@@ -874,8 +896,8 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
 
         desc_text_final = NULL;
 	if (desc_text)
-          rc = modify_description (desc_text, comment? comment:"", s_skey,
-                                   &desc_text_final);
+          rc = agent_modify_description (desc_text, comment, s_skey,
+                                         &desc_text_final);
         gcry_free (comment);
 
 	if (!rc)
@@ -1453,8 +1475,8 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
           }
 
           if (desc_text)
-            err = modify_description (desc_text, comment? comment:"", s_skey,
-                                      &desc_text_final);
+            err = agent_modify_description (desc_text, comment, s_skey,
+                                            &desc_text_final);
           if (err)
             goto leave;
 

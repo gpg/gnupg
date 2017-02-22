@@ -157,6 +157,18 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
 }
 
 
+/* Return true if STRING ends in "%0A". */
+static int
+has_percent0A_suffix (const char *string)
+{
+  size_t n;
+
+  return (string
+          && (n = strlen (string)) >= 3
+          && !strcmp (string + n - 3, "%0A"));
+}
+
+
 /* Callback used to ask for the PIN which should be set into BUF.  The
    buf has been allocated by the caller and is of size MAXBUF which
    includes the terminating null.  The function should return an UTF-8
@@ -246,7 +258,7 @@ getpin_cb (void *opaque, const char *desc_text, const char *info,
         {
           if (info)
             {
-              char *desc;
+              char *desc, *desc2;
 
               if ( asprintf (&desc,
                              L_("%s%%0A%%0AUse the reader's pinpad for input."),
@@ -254,12 +266,22 @@ getpin_cb (void *opaque, const char *desc_text, const char *info,
                 rc = gpg_error_from_syserror ();
               else
                 {
-                  rc = agent_popup_message_start (ctrl, desc, NULL);
+                  /* Prepend DESC_TEXT to INFO.  */
+                  if (desc_text)
+                    desc2 = strconcat (desc_text,
+                                       has_percent0A_suffix (desc_text)
+                                       ? "%0A" : "%0A%0A",
+                                       desc, NULL);
+                  else
+                    desc2 = NULL;
+                  rc = agent_popup_message_start (ctrl,
+                                                  desc2? desc2:desc, NULL);
+                  xfree (desc2);
                   xfree (desc);
                 }
             }
           else
-            rc = agent_popup_message_start (ctrl, NULL, NULL);
+            rc = agent_popup_message_start (ctrl, desc_text, NULL);
         }
       else
         rc = gpg_error (GPG_ERR_INV_VALUE);
@@ -280,7 +302,19 @@ getpin_cb (void *opaque, const char *desc_text, const char *info,
 
   if (any_flags)
     {
-      rc = agent_askpin (ctrl, info, prompt, again_text, pi, NULL, 0);
+      {
+        char *desc2;
+
+        if (desc_text)
+          desc2 = strconcat (desc_text,
+                             has_percent0A_suffix (desc_text)
+                             ? "%0A" : "%0A%0A",
+                             info, NULL);
+        else
+          desc2 = NULL;
+        rc = agent_askpin (ctrl, desc2, prompt, again_text, pi, NULL, 0);
+        xfree (desc2);
+      }
       again_text = NULL;
       if (!rc && newpin)
         {
@@ -319,14 +353,24 @@ getpin_cb (void *opaque, const char *desc_text, const char *info,
     }
   else
     {
-      char *desc;
+      char *desc, *desc2;
+
       if ( asprintf (&desc,
                      L_("Please enter the PIN%s%s%s to unlock the card"),
                      info? " (":"",
                      info? info:"",
                      info? ")":"") < 0)
         desc = NULL;
-      rc = agent_askpin (ctrl, desc?desc:info, prompt, NULL, pi, NULL, 0);
+      if (desc_text)
+        desc2 = strconcat (desc_text,
+                           has_percent0A_suffix (desc_text)
+                           ? "%0A" : "%0A%0A",
+                           desc, NULL);
+      else
+        desc2 = NULL;
+      rc = agent_askpin (ctrl, desc2? desc2 : desc? desc : info,
+                         prompt, NULL, pi, NULL, 0);
+      xfree (desc2);
       xfree (desc);
     }
 

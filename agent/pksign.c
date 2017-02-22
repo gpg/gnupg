@@ -285,7 +285,8 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
                  cache_mode_t cache_mode, lookup_ttl_t lookup_ttl,
                  const void *overridedata, size_t overridedatalen)
 {
-  gcry_sexp_t s_skey = NULL, s_sig = NULL;
+  gcry_sexp_t s_skey = NULL;
+  gcry_sexp_t s_sig  = NULL;
   gcry_sexp_t s_hash = NULL;
   gcry_sexp_t s_pkey = NULL;
   unsigned char *shadow_info = NULL;
@@ -346,10 +347,18 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
             is_ECDSA = 1;
         }
 
-      rc = divert_pksign (ctrl, desc_text,
-                          data, datalen,
-                          ctrl->digest.algo,
-                          shadow_info, &buf, &len);
+      {
+        char *desc2 = NULL;
+
+        if (desc_text)
+          agent_modify_description (desc_text, NULL, s_skey, &desc2);
+
+        rc = divert_pksign (ctrl, desc2? desc2 : desc_text,
+                            data, datalen,
+                            ctrl->digest.algo,
+                            shadow_info, &buf, &len);
+        xfree (desc2);
+      }
       if (rc)
         {
           log_error ("smartcard signing failed: %s\n", gpg_strerror (rc));
