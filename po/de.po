@@ -6221,12 +6221,12 @@ msgid "reading public key failed: %s\n"
 msgstr "Lesen des öffentlichen Schlüssels fehlgeschlagen: %s\n"
 
 #, c-format
-msgid "Card number:\t%s%%0ASignatures:\t%lu%%0ACardholder:\t%s"
-msgstr "Kartennummer:\t%s%%0ASignaturen:\t%lu%%0AKartenbesitzer:\t%s"
+msgid "Number:\t%s%%0AHolder:\t%s%%0ASignatures:\t%lu"
+msgstr "Nummer:\t%s%%0ABesitzer:\t%s%%0ASignaturen:\t%lu"
 
 #, c-format
-msgid "Card number:\t%s%%0ACardholder:\t%s"
-msgstr "Kartennummer:\t%s%%0AKartenbesitzer:\t%s"
+msgid "Number:\t%s%%0AHolder:\t%s"
+msgstr "Nummer:\t%s%%0ABesitzer:\t%s"
 
 #. TRANSLATORS: This is the number of remaining attempts to
 #. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
