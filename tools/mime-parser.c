@@ -49,6 +49,9 @@ struct mime_parser_context_s
 {
   void *cookie;                /* Cookie passed to all callbacks.  */
 
+  /* The callback to announce the transation from header to body.  */
+  gpg_error_t (*t2body) (void *cookie, int level);
+
   /* The callback to announce a new part.  */
   gpg_error_t (*new_part) (void *cookie,
                            const char *mediatype,
@@ -224,6 +227,14 @@ parse_message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
 
       ctx->want_part = 0;
       ctx->decode_part = 0;
+
+      if (ctx->t2body)
+        {
+          rc = ctx->t2body (ctx->cookie, ctx->nesting_level);
+          if (rc)
+            goto t2body_leave;
+        }
+
       field = rfc822parse_parse_field (msg, "Content-Type", -1);
       if (field)
         {
@@ -412,6 +423,7 @@ parse_message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
             }
         }
 
+    t2body_leave:
       ctx->show.header = 0;
       ctx->show.data = 1;
       ctx->show.n_skip = 1;
@@ -538,6 +550,19 @@ mime_parser_set_verbose (mime_parser_t ctx, int level)
       if (level > 10)
         ctx->debug = 1;
     }
+}
+
+
+/* Set a callback for the transition from header to body.  LEVEL is
+ * the current nesting level, starting with 0.  This callback can be
+ * used to evaluate headers before any other action is done.  Note
+ * that if a new NEW_PART callback needs to be called it is done after
+ * this T2BODY callback.  */
+void
+mime_parser_set_t2body (mime_parser_t ctx,
+                        gpg_error_t (*fnc) (void *cookie, int level))
+{
+  ctx->t2body = fnc;
 }
 
 

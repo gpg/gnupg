@@ -27,6 +27,8 @@ gpg_error_t mime_parser_new (mime_parser_t *r_ctx, void *cookie);
 void        mime_parser_release (mime_parser_t ctx);
 
 void mime_parser_set_verbose (mime_parser_t ctx, int level);
+void mime_parser_set_t2body (mime_parser_t ctx,
+                             gpg_error_t (*fnc) (void *cookie, int level));
 void mime_parser_set_new_part (mime_parser_t ctx,
                                gpg_error_t (*fnc) (void *cookie,
                                                    const char *mediatype,
