@@ -158,13 +158,19 @@ static gpg_error_t parse_response (http_t hd);
 static gpg_error_t connect_server (const char *server, unsigned short port,
                                    unsigned int flags, const char *srvtag,
                                    assuan_fd_t *r_sock);
+static gpgrt_ssize_t read_server (int sock, void *buffer, size_t size);
 static gpg_error_t write_server (int sock, const char *data, size_t length);
 
 static gpgrt_ssize_t cookie_read (void *cookie, void *buffer, size_t size);
 static gpgrt_ssize_t cookie_write (void *cookie,
                                    const void *buffer, size_t size);
 static int cookie_close (void *cookie);
-
+#ifdef HAVE_W32_SYSTEM
+static gpgrt_ssize_t simple_cookie_read (void *cookie,
+                                         void *buffer, size_t size);
+static gpgrt_ssize_t simple_cookie_write (void *cookie,
+                                          const void *buffer, size_t size);
+#endif
 
 /* A socket object used to a allow ref counting of sockets.  */
 struct my_socket_s
@@ -184,6 +190,7 @@ static es_cookie_io_functions_t cookie_functions =
     cookie_close
   };
 
+
 struct cookie_s
 {
   /* Socket object or NULL if already closed. */
@@ -201,6 +208,19 @@ struct cookie_s
   unsigned int content_length_valid:1;
 };
 typedef struct cookie_s *cookie_t;
+
+
+/* Simple cookie functions.  Here the cookie is an int with the
+ * socket. */
+#ifdef HAVE_W32_SYSTEM
+static es_cookie_io_functions_t simple_cookie_functions =
+  {
+    simple_cookie_read,
+    simple_cookie_write,
+    NULL,
+    NULL
+  };
+#endif
 
 
 #if SIZEOF_UNSIGNED_LONG == 8
@@ -362,7 +382,7 @@ _my_socket_new (int lnr, assuan_fd_t fd)
   so->refcount = 1;
   if (opt_debug)
     log_debug ("http.c:%d:socket_new: object %p for fd %d created\n",
-               lnr, so, so->fd);
+               lnr, (int)so, so->fd);
   return so;
 }
 #define my_socket_new(a) _my_socket_new (__LINE__, (a))
@@ -374,7 +394,7 @@ _my_socket_ref (int lnr, my_socket_t so)
   so->refcount++;
   if (opt_debug > 1)
     log_debug ("http.c:%d:socket_ref: object %p for fd %d refcount now %d\n",
-               lnr, so, so->fd, so->refcount);
+               lnr, (int)so, so->fd, so->refcount);
   return so;
 }
 #define my_socket_ref(a) _my_socket_ref (__LINE__,(a))
@@ -392,7 +412,7 @@ _my_socket_unref (int lnr, my_socket_t so,
       so->refcount--;
       if (opt_debug > 1)
         log_debug ("http.c:%d:socket_unref: object %p for fd %d ref now %d\n",
-                   lnr, so, so->fd, so->refcount);
+                   lnr, (int)so, so->fd, so->refcount);
 
       if (!so->refcount)
         {
@@ -1768,7 +1788,14 @@ send_request (http_t hd, const char *httphost, const char *auth,
 
       my_socket_ref (hd->sock);
 
+      /* Until we support send/recv in estream under Windows we need
+       * to use es_fopencookie.  */
+#ifdef HAVE_W32_SYSTEM
+      in = es_fopencookie ((void*)(unsigned int)hd->sock->fd, "rb",
+                           simple_cookie_functions);
+#else
       in = es_fdopen_nc (hd->sock->fd, "rb");
+#endif
       if (!in)
         {
           err = gpg_error_from_syserror ();
@@ -1776,7 +1803,12 @@ send_request (http_t hd, const char *httphost, const char *auth,
           return err;
         }
 
+#ifdef HAVE_W32_SYSTEM
+      out = es_fopencookie ((void*)(unsigned int)hd->sock->fd, "wb",
+                            simple_cookie_functions);
+#else
       out = es_fdopen_nc (hd->sock->fd, "wb");
+#endif
       if (!out)
         {
           err = gpg_error_from_syserror ();
@@ -2651,6 +2683,41 @@ connect_server (const char *server, unsigned short port,
 }
 
 
+/* Helper to read from a socket.  This handles npth things and
+ * EINTR.  */
+static gpgrt_ssize_t
+read_server (int sock, void *buffer, size_t size)
+{
+  int nread;
+
+  do
+    {
+#ifdef HAVE_W32_SYSTEM
+      /* Under Windows we need to use recv for a socket.  */
+# if defined(USE_NPTH)
+      npth_unprotect ();
+# endif
+      nread = recv (sock, buffer, size, 0);
+# if defined(USE_NPTH)
+      npth_protect ();
+# endif
+
+#else /*!HAVE_W32_SYSTEM*/
+
+# ifdef USE_NPTH
+      nread = npth_read (sock, buffer, size);
+# else
+      nread = read (sock, buffer, size);
+# endif
+
+#endif /*!HAVE_W32_SYSTEM*/
+    }
+  while (nread == -1 && errno == EINTR);
+
+  return nread;
+}
+
+
 static gpg_error_t
 write_server (int sock, const char *data, size_t length)
 {
@@ -2766,29 +2833,7 @@ cookie_read (void *cookie, void *buffer, size_t size)
   else
 #endif /*HTTP_USE_GNUTLS*/
     {
-      do
-        {
-#ifdef HAVE_W32_SYSTEM
-          /* Under Windows we need to use recv for a socket.  */
-# if defined(USE_NPTH)
-          npth_unprotect ();
-# endif
-          nread = recv (c->sock->fd, buffer, size, 0);
-# if defined(USE_NPTH)
-          npth_protect ();
-# endif
-
-#else /*!HAVE_W32_SYSTEM*/
-
-# ifdef USE_NPTH
-          nread = npth_read (c->sock->fd, buffer, size);
-# else
-          nread = read (c->sock->fd, buffer, size);
-# endif
-
-#endif /*!HAVE_W32_SYSTEM*/
-        }
-      while (nread == -1 && errno == EINTR);
+      nread = read_server (c->sock->fd, buffer, size);
     }
 
   if (c->content_length_valid && nread > 0)
@@ -2868,6 +2913,34 @@ cookie_write (void *cookie, const void *buffer_arg, size_t size)
 
   return (gpgrt_ssize_t)nwritten;
 }
+
+
+#ifdef HAVE_W32_SYSTEM
+static gpgrt_ssize_t
+simple_cookie_read (void *cookie, void *buffer, size_t size)
+{
+  int sock = (int)(uintptr_t)cookie;
+  return read_server (sock, buffer, size);
+}
+
+static gpgrt_ssize_t
+simple_cookie_write (void *cookie, const void *buffer_arg, size_t size)
+{
+  int sock = (int)(uintptr_t)cookie;
+  const char *buffer = buffer_arg;
+  int nwritten;
+
+  if (write_server (sock, buffer, size))
+    {
+      gpg_err_set_errno (EIO);
+      nwritten = -1;
+    }
+  else
+    nwritten = size;
+
+  return (gpgrt_ssize_t)nwritten;
+}
+#endif /*HAVE_W32_SYSTEM*/
 
 
 #ifdef HTTP_USE_GNUTLS
