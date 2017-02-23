@@ -382,7 +382,7 @@ _my_socket_new (int lnr, assuan_fd_t fd)
   so->refcount = 1;
   if (opt_debug)
     log_debug ("http.c:%d:socket_new: object %p for fd %d created\n",
-               lnr, (int)so, so->fd);
+               lnr, so, so->fd);
   return so;
 }
 #define my_socket_new(a) _my_socket_new (__LINE__, (a))
@@ -394,7 +394,7 @@ _my_socket_ref (int lnr, my_socket_t so)
   so->refcount++;
   if (opt_debug > 1)
     log_debug ("http.c:%d:socket_ref: object %p for fd %d refcount now %d\n",
-               lnr, (int)so, so->fd, so->refcount);
+               lnr, so, so->fd, so->refcount);
   return so;
 }
 #define my_socket_ref(a) _my_socket_ref (__LINE__,(a))
@@ -412,7 +412,7 @@ _my_socket_unref (int lnr, my_socket_t so,
       so->refcount--;
       if (opt_debug > 1)
         log_debug ("http.c:%d:socket_unref: object %p for fd %d ref now %d\n",
-                   lnr, (int)so, so->fd, so->refcount);
+                   lnr, so, so->fd, so->refcount);
 
       if (!so->refcount)
         {

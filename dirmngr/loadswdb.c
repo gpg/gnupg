@@ -191,6 +191,9 @@ verify_status_cb (void *opaque, const char *keyword, char *args)
 {
   struct verify_status_parm_s *parm = opaque;
 
+  if (DBG_EXTPROG)
+    log_debug ("gpgv status: %s %s\n", keyword, args);
+
   /* We care only about the first valid signature.  */
   if (!strcmp (keyword, "VALIDSIG") && !parm->anyvalid)
     {
@@ -302,12 +305,16 @@ dirmngr_load_swdb (ctrl_t ctrl, int force)
       goto leave;
     }
 
+  if (DBG_EXTPROG)
+    log_debug ("starting gpgv\n");
   err = gnupg_exec_tool_stream (gnupg_module_name (GNUPG_MODULE_NAME_GPGV),
                                 argv, swdb, swdb_sig, NULL,
                                 verify_status_cb, &verify_status_parm);
   if (!err && verify_status_parm.sigtime == (time_t)(-1))
     err = gpg_error (verify_status_parm.anyvalid? GPG_ERR_BAD_SIGNATURE
                      /**/                       : GPG_ERR_INV_TIME      );
+  if (DBG_EXTPROG)
+    log_debug ("gpgv finished: err=%d\n", err);
   if (err)
     goto leave;
 

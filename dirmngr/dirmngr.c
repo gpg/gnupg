@@ -267,6 +267,7 @@ static struct debug_flags_s debug_flags [] =
     { DBG_DNS_VALUE    , "dns"     },
     { DBG_NETWORK_VALUE, "network" },
     { DBG_LOOKUP_VALUE , "lookup"  },
+    { DBG_EXTPROG_VALUE, "extprog" },
     { 77, NULL } /* 77 := Do not exit on "help" or "?".  */
   };
 
@@ -2215,7 +2216,7 @@ handle_connections (assuan_fd_t listen_fd)
     close (my_inotify_fd);
 #endif /*HAVE_INOTIFY_INIT*/
   npth_attr_destroy (&tattr);
-  if (listen_fd != -1)
+  if (listen_fd != GNUPG_INVALID_FD)
     assuan_sock_close (fd);
   cleanup ();
   log_info ("%s %s stopped\n", strusage(11), strusage(13));
