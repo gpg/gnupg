@@ -916,7 +916,12 @@ send_confirmation_request (server_ctx_t ctx,
   if (err)
     goto leave;
 
-  /* Help Enigmail to identify messages.  Note that this is on no way
+  err = mime_maker_add_header (mime, "Wks-Draft-Version",
+                               STR2(WKS_DRAFT_VERSION));
+  if (err)
+    goto leave;
+
+  /* Help Enigmail to identify messages.  Note that this is in no way
    * secured.  */
   err = mime_maker_add_header (mime, "WKS-Phase", "confirm");
   if (err)
@@ -1015,7 +1020,7 @@ send_confirmation_request (server_ctx_t ctx,
       if (err)
         goto leave;
 
-      mime_maker_dump_tree (mime);
+      /* mime_maker_dump_tree (mime); */
       err = mime_maker_get_part (mime, partid, &signeddata);
       if (err)
         goto leave;
@@ -1211,6 +1216,10 @@ send_congratulation_message (const char *mbox, const char *keyfile)
   if (err)
     goto leave;
   err = mime_maker_add_header (mime, "Subject", "Your key has been published");
+  if (err)
+    goto leave;
+  err = mime_maker_add_header (mime, "Wks-Draft-Version",
+                               STR2(WKS_DRAFT_VERSION));
   if (err)
     goto leave;
   err = mime_maker_add_header (mime, "WKS-Phase", "done");

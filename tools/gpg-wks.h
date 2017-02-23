@@ -24,6 +24,10 @@
 #include "../common/strlist.h"
 #include "mime-maker.h"
 
+/* The draft version we implement.  */
+#define WKS_DRAFT_VERSION 3
+
+
 /* We keep all global options in the structure OPT.  */
 struct
 {

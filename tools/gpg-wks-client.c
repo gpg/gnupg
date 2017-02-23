@@ -373,6 +373,7 @@ get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
       log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
       goto leave;
     }
+
   /* Prefix the key with the MIME content type.  */
   es_fputs ("Content-Type: application/pgp-keys\n"
             "\n", key);
@@ -437,20 +438,38 @@ get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
 
 
 
+struct decrypt_stream_parm_s
+{
+  char *fpr;
+  char *mainfpr;
+  int  otrust;
+};
+
 static void
 decrypt_stream_status_cb (void *opaque, const char *keyword, char *args)
 {
-  (void)opaque;
+  struct decrypt_stream_parm_s *decinfo = opaque;
 
   if (DBG_CRYPTO)
     log_debug ("gpg status: %s %s\n", keyword, args);
-}
+  if (!strcmp (keyword, "DECRYPTION_KEY") && !decinfo->fpr)
+    {
+      char *fields[3];
 
+      if (split_fields (args, fields, DIM (fields)) >= 3)
+        {
+          decinfo->fpr = xstrdup (fields[0]);
+          decinfo->mainfpr = xstrdup (fields[1]);
+          decinfo->otrust = *fields[2];
+        }
+    }
+}
 
 /* Decrypt the INPUT stream to a new stream which is stored at success
  * at R_OUTPUT.  */
 static gpg_error_t
-decrypt_stream (estream_t *r_output, estream_t input)
+decrypt_stream (estream_t *r_output, struct decrypt_stream_parm_s *decinfo,
+                estream_t input)
 {
   gpg_error_t err;
   ccparray_t ccp;
@@ -458,6 +477,7 @@ decrypt_stream (estream_t *r_output, estream_t input)
   estream_t output;
 
   *r_output = NULL;
+  memset (decinfo, 0, sizeof *decinfo);
 
   output = es_fopenmem (0, "w+b");
   if (!output)
@@ -492,7 +512,9 @@ decrypt_stream (estream_t *r_output, estream_t input)
     }
   err = gnupg_exec_tool_stream (opt.gpg_program, argv, input,
                                 NULL, output,
-                                decrypt_stream_status_cb, NULL);
+                                decrypt_stream_status_cb, decinfo);
+  if (!err && (!decinfo->fpr || !decinfo->mainfpr || !decinfo->otrust))
+    err = gpg_error (GPG_ERR_INV_ENGINE);
   if (err)
     {
       log_error ("decryption failed: %s\n", gpg_strerror (err));
@@ -506,6 +528,12 @@ decrypt_stream (estream_t *r_output, estream_t input)
   output = NULL;
 
  leave:
+  if (err)
+    {
+      xfree (decinfo->fpr);
+      xfree (decinfo->mainfpr);
+      memset (decinfo, 0, sizeof *decinfo);
+    }
   es_fclose (output);
   xfree (argv);
   return err;
@@ -749,8 +777,9 @@ command_send (const char *fingerprint, char *userid)
   if (err)
     goto leave;
 
-  /* Tell server that we support draft version 3.  */
-  err = mime_maker_add_header (mime, "Wks-Draft-Version", "3");
+  /* Tell server which draft we support.  */
+  err = mime_maker_add_header (mime, "Wks-Draft-Version",
+                               STR2(WKS_DRAFT_VERSION));
   if (err)
     goto leave;
 
@@ -948,6 +977,10 @@ send_confirmation_response (const char *sender, const char *address,
   err = mime_maker_add_header (mime, "Subject", "Key publication confirmation");
   if (err)
     goto leave;
+  err = mime_maker_add_header (mime, "Wks-Draft-Version",
+                               STR2(WKS_DRAFT_VERSION));
+  if (err)
+    goto leave;
 
   if (encrypt)
     {
@@ -998,9 +1031,11 @@ send_confirmation_response (const char *sender, const char *address,
 
 
 /* Reply to a confirmation request.  The MSG has already been
- * decrypted and we only need to send the nonce back.  */
+ * decrypted and we only need to send the nonce back.  MAINFPR is
+ * either NULL or the primary key fingerprint of the key used to
+ * decrypt the request.  */
 static gpg_error_t
-process_confirmation_request (estream_t msg)
+process_confirmation_request (estream_t msg, const char *mainfpr)
 {
   gpg_error_t err;
   nvc_t nvc;
@@ -1044,8 +1079,20 @@ process_confirmation_request (estream_t msg)
     }
   fingerprint = value;
 
-  /* FIXME: Check that the fingerprint matches the key used to decrypt the
-   * message.  */
+  /* Check that the fingerprint matches the key used to decrypt the
+   * message.  In --read mode or with the old format we don't have the
+   * decryption key; thus we can't bail out.  */
+  if (!mainfpr || ascii_strcasecmp (mainfpr, fingerprint))
+    {
+      log_info ("target fingerprint: %s\n", fingerprint);
+      log_info ("but decrypted with: %s\n", mainfpr);
+      log_error ("confirmation request not decrypted with target key\n");
+      if (mainfpr)
+        {
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+    }
 
   /* Get the address.  */
   if (!((item = nvc_lookup (nvc, "address:")) && (value = nve_value (item))
@@ -1058,10 +1105,7 @@ process_confirmation_request (estream_t msg)
     }
   address = value;
   /* FIXME: Check that the "address" matches the User ID we want to
-   * publish.  Also get the "fingerprint" and compare that to our to
-   * be published key.  Further we should make sure that we actually
-   * decrypted using that fingerprint (which is a bit problematic if
-   * --read is used). */
+   * publish.  */
 
   /* Get the sender.  */
   if (!((item = nvc_lookup (nvc, "sender:")) && (value = nve_value (item))
@@ -1130,14 +1174,24 @@ read_confirmation_request (estream_t msg)
     }
 
   if (c != '-')
-    err = process_confirmation_request (msg);
+    err = process_confirmation_request (msg, NULL);
   else
     {
-      err = decrypt_stream (&plaintext, msg);
+      struct decrypt_stream_parm_s decinfo;
+
+      err = decrypt_stream (&plaintext, &decinfo, msg);
       if (err)
         log_error ("decryption failed: %s\n", gpg_strerror (err));
+      else if (decinfo.otrust != 'u')
+        {
+          err = gpg_error (GPG_ERR_WRONG_SECKEY);
+          log_error ("key used to decrypt the confirmation request"
+                     " was not generated by us\n");
+        }
       else
-        err = process_confirmation_request (plaintext);
+        err = process_confirmation_request (plaintext, decinfo.mainfpr);
+      xfree (decinfo.fpr);
+      xfree (decinfo.mainfpr);
     }
 
   es_fclose (plaintext);
