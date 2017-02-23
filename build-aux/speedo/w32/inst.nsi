@@ -581,6 +581,7 @@ Section "GnuPG" SEC_gnupg
   File "bin/gpg-connect-agent.exe"
   File "bin/gpgtar.exe"
   File "libexec/gpg-preset-passphrase.exe"
+  File "libexec/gpg-wks-client"
 
   ClearErrors
   SetOverwrite try
@@ -1263,6 +1264,7 @@ Section "-un.gnupg"
   Delete "$INSTDIR\bin\gpg-connect-agent.exe"
   Delete "$INSTDIR\bin\gpgtar.exe"
   Delete "$INSTDIR\bin\gpg-preset-passphrase.exe"
+  Delete "$INSTDIR\bin\gpg-wks-client.exe"
 
   Delete "$INSTDIR\share\gnupg\dirmngr-conf.skel"
   Delete "$INSTDIR\share\gnupg\distsigkey.gpg"
