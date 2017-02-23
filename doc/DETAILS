@@ -486,6 +486,12 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 *** END_DECRYPTION
     Mark the end of the actual decryption process.  This are also
     emitted when in --list-only mode.
+*** DECRYPTION_KEY <fpr> <fpr2> <otrust>
+    This line is emitted when a public key decryption succeeded in
+    providing a session key.  <fpr> is the hexified fingerprint of the
+    actual key used for descryption.  <fpr2> is the fingerprint of the
+    primary key.  <otrust> is the letter with the ownertrust; this is
+    in general a 'u' which stands for ultimately trusted.
 *** DECRYPTION_INFO <mdc_method> <sym_algo>
     Print information about the symmetric encryption algorithm and the
     MDC method.  This will be emitted even if the decryption fails.

@@ -335,9 +335,11 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   if (DBG_CRYPTO)
     log_printhex ("DEK is:", dek->key, dek->keylen);
 
-  /* Check that the algo is in the preferences and whether it has expired.  */
+  /* Check that the algo is in the preferences and whether it has
+   * expired.  Also print a status line with the key's fingerprint.  */
   {
     PKT_public_key *pk = NULL;
+    PKT_public_key *mainpk = NULL;
     KBNODE pkb = get_pubkeyblock (keyid);
 
     if (!pkb)
@@ -351,9 +353,11 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
              && !is_algo_in_prefs (pkb, PREFTYPE_SYM, dek->algo))
       log_info (_("WARNING: cipher algorithm %s not found in recipient"
                   " preferences\n"), openpgp_cipher_algo_name (dek->algo));
+
     if (!err)
       {
-        KBNODE k;
+        kbnode_t k;
+        int first = 1;
 
         for (k = pkb; k; k = k->next)
           {
@@ -361,8 +365,14 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
                 || k->pkt->pkttype == PKT_PUBLIC_SUBKEY)
               {
                 u32 aki[2];
-                keyid_from_pk (k->pkt->pkt.public_key, aki);
 
+                if (first)
+                  {
+                    first = 0;
+                    mainpk = k->pkt->pkt.public_key;
+                  }
+
+                keyid_from_pk (k->pkt->pkt.public_key, aki);
                 if (aki[0] == keyid[0] && aki[1] == keyid[1])
                   {
                     pk = k->pkt->pkt.public_key;
@@ -384,6 +394,19 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
         log_info (_("Note: key has been revoked"));
         log_printf ("\n");
         show_revocation_reason (pk, 1);
+      }
+
+    if (is_status_enabled () && pk && mainpk)
+      {
+        char pkhex[MAX_FINGERPRINT_LEN*2+1];
+        char mainpkhex[MAX_FINGERPRINT_LEN*2+1];
+
+        hexfingerprint (pk, pkhex, sizeof pkhex);
+        hexfingerprint (mainpk, mainpkhex, sizeof mainpkhex);
+
+        write_status_printf (STATUS_DECRYPTION_KEY, "%s %s %c",
+                             pkhex, mainpkhex, get_ownertrust_info (mainpk));
+
       }
 
     release_kbnode (pkb);
