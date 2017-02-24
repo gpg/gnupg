@@ -4,8 +4,8 @@
  *
  * This file is part of GnuPG.
  *
- * GnuPG is free software; you can redistribute it and/or modify it
- * under the terms of either
+ * GnuPG is free software; you can redistribute and/or modify this
+ * part of GnuPG under the terms of either
  *
  *   - the GNU Lesser General Public License as published by the Free
  *     Software Foundation; either version 3 of the License, or (at
