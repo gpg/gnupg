@@ -111,6 +111,11 @@ file DETAILS in the documentation for a listing of them.
 @opindex logger-fd
 Write log output to file descriptor @code{n} and not to stderr.
 
+@item --log-file @code{file}
+@opindex log-file
+Same as @option{--logger-fd}, except the logger data is written to
+file @code{file}.  Use @file{socket://} to log to socket.
+
 @item --ignore-time-conflict
 @opindex ignore-time-conflict
 GnuPG normally checks that the timestamps associated with keys and

@@ -61,9 +61,11 @@ enum cmd_and_opt_values {
   oIgnoreTimeConflict,
   oStatusFD,
   oLoggerFD,
+  oLoggerFile,
   oHomedir,
   oWeakDigest,
   oEnableSpecialFilenames,
+  oDebug,
   aTest
 };
 
@@ -81,14 +83,36 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oStatusFD, "status-fd",
                 N_("|FD|write status info to this FD")),
   ARGPARSE_s_i (oLoggerFD, "logger-fd", "@"),
+  ARGPARSE_s_s (oLoggerFile, "log-file", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
   ARGPARSE_s_s (oWeakDigest, "weak-digest",
                 N_("|ALGO|reject signatures made with ALGO")),
   ARGPARSE_s_n (oEnableSpecialFilenames, "enable-special-filenames", "@"),
+  ARGPARSE_s_s (oDebug, "debug", "@"),
 
   ARGPARSE_end ()
 };
 
+
+/* The list of supported debug flags.  */
+static struct debug_flags_s debug_flags [] =
+  {
+    { DBG_PACKET_VALUE , "packet"  },
+    { DBG_MPI_VALUE    , "mpi"     },
+    { DBG_CRYPTO_VALUE , "crypto"  },
+    { DBG_FILTER_VALUE , "filter"  },
+    { DBG_IOBUF_VALUE  , "iobuf"   },
+    { DBG_MEMORY_VALUE , "memory"  },
+    { DBG_CACHE_VALUE  , "cache"   },
+    { DBG_MEMSTAT_VALUE, "memstat" },
+    { DBG_TRUST_VALUE  , "trust"   },
+    { DBG_HASHING_VALUE, "hashing" },
+    { DBG_IPC_VALUE    , "ipc"     },
+    { DBG_CLOCK_VALUE  , "clock"   },
+    { DBG_LOOKUP_VALUE , "lookup"  },
+    { DBG_EXTPROG_VALUE, "extprog" },
+    { 0, NULL }
+  };
 
 
 int g10_errors_seen = 0;
@@ -192,11 +216,24 @@ main( int argc, char **argv )
           opt.list_sigs=1;
           gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
           break;
+        case oDebug:
+          if (parse_debug_flag (pargs.r.ret_str, &opt.debug, debug_flags))
+            {
+              pargs.r_opt = ARGPARSE_INVALID_ARG;
+              pargs.err = ARGPARSE_PRINT_ERROR;
+            }
+          break;
         case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
         case oOutput: opt.outfile = pargs.r.ret_str; break;
         case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
         case oLoggerFD:
           log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
+          break;
+        case oLoggerFile:
+          log_set_file (pargs.r.ret_str);
+          log_set_prefix (NULL, (GPGRT_LOG_WITH_PREFIX
+                                 | GPGRT_LOG_WITH_TIME
+                                 | GPGRT_LOG_WITH_PID) );
           break;
         case oHomedir: gnupg_set_homedir (pargs.r.ret_str); break;
         case oWeakDigest:
