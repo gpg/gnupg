@@ -581,7 +581,7 @@ Section "GnuPG" SEC_gnupg
   File "bin/gpg-connect-agent.exe"
   File "bin/gpgtar.exe"
   File "libexec/gpg-preset-passphrase.exe"
-  File "libexec/gpg-wks-client"
+  File "libexec/gpg-wks-client.exe"
 
   ClearErrors
   SetOverwrite try
