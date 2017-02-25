@@ -193,18 +193,22 @@ import_ownertrust( const char *fname )
 	if( !rc ) { /* found: update */
 	    if (rec.r.trust.ownertrust != otrust)
               {
-                if( rec.r.trust.ownertrust )
-                  log_info("changing ownertrust from %u to %u\n",
-                           rec.r.trust.ownertrust, otrust );
-                else
-                  log_info("setting ownertrust to %u\n", otrust );
+                if (!opt.quiet)
+                  {
+                    if( rec.r.trust.ownertrust )
+                      log_info("changing ownertrust from %u to %u\n",
+                               rec.r.trust.ownertrust, otrust );
+                    else
+                      log_info("setting ownertrust to %u\n", otrust );
+                  }
                 rec.r.trust.ownertrust = otrust;
                 write_record (&rec );
                 any = 1;
               }
 	}
 	else if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND) { /* insert */
-            log_info("inserting ownertrust of %u\n", otrust );
+            if (!opt.quiet)
+              log_info("inserting ownertrust of %u\n", otrust );
             memset (&rec, 0, sizeof rec);
             rec.recnum = tdbio_new_recnum ();
             rec.rectype = RECTYPE_TRUST;
