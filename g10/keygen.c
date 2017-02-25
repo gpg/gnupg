@@ -5149,7 +5149,7 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
   node = find_kbnode (pub_keyblock, PKT_PUBLIC_KEY);
   if (!node)
     {
-      log_error ("Oops; publkic key lost!\n");
+      log_error ("Oops; public key lost!\n");
       err = gpg_error (GPG_ERR_INTERNAL);
       goto leave;
     }
