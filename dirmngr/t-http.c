@@ -118,7 +118,7 @@ my_gnutls_log (int level, const char *text)
 }
 #endif
 
-
+#if HTTP_USE_NTBTLS
 static gpg_error_t
 my_http_tls_verify_cb (void *opaque,
                        http_t http,
@@ -165,6 +165,7 @@ my_http_tls_verify_cb (void *opaque,
   log_info ("my_http_tls_verify_cb returns: %s\n", gpg_strerror (err));
   return err;
 }
+#endif /*HTTP_USE_NTBTLS*/
 
 
 
