@@ -27,10 +27,6 @@ typedef struct port {
     struct {
       FILE *file;
       int closeit;
-#if SHOW_ERROR_LINE
-      pointer curr_line;
-      pointer filename;
-#endif
     } stdio;
     struct {
       char *start;
@@ -38,6 +34,10 @@ typedef struct port {
       char *curr;
     } string;
   } rep;
+#if SHOW_ERROR_LINE
+  pointer curr_line;
+  pointer filename;
+#endif
 } port;
 
 /* cell structure */

@@ -1578,10 +1578,8 @@ E2:  setmark(p);
 #if SHOW_ERROR_LINE
      else if (is_port(p)) {
 	  port *pt = p->_object._port;
-	  if (pt->kind & port_file) {
-	       mark(pt->rep.stdio.curr_line);
-	       mark(pt->rep.stdio.filename);
-	  }
+	  mark(pt->curr_line);
+	  mark(pt->filename);
      }
 #endif
      /* Mark tag if p has one.  */
@@ -1650,11 +1648,8 @@ static void gc(scheme *sc, pointer a, pointer b) {
   mark(sc->outport);
   mark(sc->loadport);
   for (i = 0; i <= sc->file_i; i++) {
-    if (! (sc->load_stack[i].kind & port_file))
-      continue;
-
-    mark(sc->load_stack[i].rep.stdio.filename);
-    mark(sc->load_stack[i].rep.stdio.curr_line);
+    mark(sc->load_stack[i].filename);
+    mark(sc->load_stack[i].curr_line);
   }
 
   /* Mark recent objects the interpreter doesn't know about yet. */
@@ -1733,25 +1728,41 @@ static void finalize_cell(scheme *sc, pointer a) {
 static void
 port_clear_location (scheme *sc, port *p)
 {
-  assert(p->kind & port_file);
-  p->rep.stdio.curr_line = sc->NIL;
-  p->rep.stdio.filename = sc->NIL;
-}
-
-static void
-port_reset_current_line (scheme *sc, port *p)
-{
-  assert(p->kind & port_file);
-  p->rep.stdio.curr_line = mk_integer(sc, 0);
+  p->curr_line = sc->NIL;
+  p->filename = sc->NIL;
 }
 
 static void
 port_increment_current_line (scheme *sc, port *p, long delta)
 {
-  assert(p->kind & port_file);
-  p->rep.stdio.curr_line =
-    mk_integer(sc, ivalue_unchecked(p->rep.stdio.curr_line) + delta);
+  p->curr_line =
+    mk_integer(sc, ivalue_unchecked(p->curr_line) + delta);
 }
+
+static void
+port_init_location (scheme *sc, port *p, pointer name)
+{
+  p->curr_line = mk_integer(sc, 0);
+  p->filename = name ? name : mk_string(sc, "<unknown>");
+}
+
+#else
+
+static void
+port_clear_location (scheme *sc, port *p)
+{
+}
+
+static void
+port_increment_current_line (scheme *sc, port *p, long delta)
+{
+}
+
+static void
+port_init_location (scheme *sc, port *p, pointer name)
+{
+}
+
 #endif
 
 /* ========== Routines for Reading ========== */
@@ -1769,11 +1780,7 @@ static int file_push(scheme *sc, pointer fname) {
     sc->load_stack[sc->file_i].rep.stdio.closeit=1;
     sc->nesting_stack[sc->file_i]=0;
     sc->loadport->_object._port=sc->load_stack+sc->file_i;
-
-#if SHOW_ERROR_LINE
-    port_reset_current_line(sc, &sc->load_stack[sc->file_i]);
-    sc->load_stack[sc->file_i].rep.stdio.filename = fname;
-#endif
+    port_init_location(sc, &sc->load_stack[sc->file_i], fname);
   }
   return fin!=0;
 }
@@ -1782,10 +1789,7 @@ static void file_pop(scheme *sc) {
  if(sc->file_i != 0) {
    sc->nesting=sc->nesting_stack[sc->file_i];
    port_close(sc,sc->loadport,port_input);
-#if SHOW_ERROR_LINE
-   if (sc->load_stack[sc->file_i].kind & port_file)
-     port_clear_location(sc, &sc->load_stack[sc->file_i]);
-#endif
+   port_clear_location(sc, &sc->load_stack[sc->file_i]);
    sc->file_i--;
    sc->loadport->_object._port=sc->load_stack+sc->file_i;
  }
@@ -1813,15 +1817,7 @@ static port *port_rep_from_filename(scheme *sc, const char *fn, int prop) {
   }
   pt=port_rep_from_file(sc,f,prop);
   pt->rep.stdio.closeit=1;
-
-#if SHOW_ERROR_LINE
-  if (fn)
-    pt->rep.stdio.filename = mk_string(sc, fn);
-  else
-    pt->rep.stdio.filename = mk_string(sc, "<unknown>");
-
-  port_reset_current_line(sc, pt);
-#endif
+  port_init_location(sc, pt, mk_string(sc, fn));
   return pt;
 }
 
@@ -1845,10 +1841,7 @@ static port *port_rep_from_file(scheme *sc, FILE *f, int prop)
     pt->kind = port_file | prop;
     pt->rep.stdio.file = f;
     pt->rep.stdio.closeit = 0;
-#if SHOW_ERROR_LINE
-    pt->rep.stdio.filename = mk_string(sc, "<unknown>");
-    port_reset_current_line(sc, pt);
-#endif
+    port_init_location(sc, pt, NULL);
     return pt;
 }
 
@@ -1871,6 +1864,7 @@ static port *port_rep_from_string(scheme *sc, char *start, char *past_the_end, i
   pt->rep.string.start=start;
   pt->rep.string.curr=start;
   pt->rep.string.past_the_end=past_the_end;
+  port_init_location(sc, pt, NULL);
   return pt;
 }
 
@@ -1902,6 +1896,7 @@ static port *port_rep_from_scratch(scheme *sc) {
   pt->rep.string.start=start;
   pt->rep.string.curr=start;
   pt->rep.string.past_the_end=start+BLOCK_SIZE-1;
+  port_init_location(sc, pt, NULL);
   return pt;
 }
 
@@ -1918,13 +1913,9 @@ static void port_close(scheme *sc, pointer p, int flag) {
   port *pt=p->_object._port;
   pt->kind&=~flag;
   if((pt->kind & (port_input|port_output))==0) {
+    /* Cleanup is here so (close-*-port) functions could work too */
+    port_clear_location(sc, pt);
     if(pt->kind&port_file) {
-
-#if SHOW_ERROR_LINE
-      /* Cleanup is here so (close-*-port) functions could work too */
-      port_clear_location(sc, pt);
-#endif
-
       fclose(pt->rep.stdio.file);
     }
     pt->kind=port_free;
@@ -2199,14 +2190,8 @@ static INLINE int skipspace(scheme *sc) {
 #endif
      } while (isspace(c));
 
-/* record it */
-#if SHOW_ERROR_LINE
-     {
-       port *p = &sc->load_stack[sc->file_i];
-       if (p->kind & port_file)
-	 port_increment_current_line(sc, p, curr_line);
-     }
-#endif
+     /* record it */
+     port_increment_current_line(sc, &sc->load_stack[sc->file_i], curr_line);
 
      if(c!=EOF) {
           backchar(sc,c);
@@ -2243,10 +2228,8 @@ static int token(scheme *sc) {
            while ((c=inchar(sc)) != '\n' && c!=EOF)
              ;
 
-#if SHOW_ERROR_LINE
-           if(c == '\n' && sc->load_stack[sc->file_i].kind & port_file)
+           if(c == '\n')
              port_increment_current_line(sc, &sc->load_stack[sc->file_i], 1);
-#endif
 
        if(c == EOF)
          { return (TOK_EOF); }
@@ -2271,10 +2254,8 @@ static int token(scheme *sc) {
                while ((c=inchar(sc)) != '\n' && c!=EOF)
                    ;
 
-#if SHOW_ERROR_LINE
-           if(c == '\n' && sc->load_stack[sc->file_i].kind & port_file)
+           if(c == '\n')
              port_increment_current_line(sc, &sc->load_stack[sc->file_i], 1);
-#endif
 
            if(c == EOF)
              { return (TOK_EOF); }
@@ -2828,8 +2809,8 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
 
 #if SHOW_ERROR_LINE
      /* make sure error is not in REPL */
-     if (sc->load_stack[sc->file_i].kind & port_file &&
-         sc->load_stack[sc->file_i].rep.stdio.file != stdin) {
+     if (((sc->load_stack[sc->file_i].kind & port_file) == 0
+	  || sc->load_stack[sc->file_i].rep.stdio.file != stdin)) {
        pointer tag;
        const char *fname;
        int ln;
@@ -2840,8 +2821,8 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
 	 fname = string_value(car(tag));
 	 ln = ivalue_unchecked(cdr(tag));
        } else {
-	 fname = string_value(sc->load_stack[sc->file_i].rep.stdio.filename);
-	 ln = ivalue_unchecked(sc->load_stack[sc->file_i].rep.stdio.curr_line);
+	 fname = string_value(sc->load_stack[sc->file_i].filename);
+	 ln = ivalue_unchecked(sc->load_stack[sc->file_i].curr_line);
        }
 
        /* should never happen */
@@ -4986,18 +4967,18 @@ static pointer opexe_5(scheme *sc, enum scheme_opcodes op) {
                } else if (sc->tok == TOK_DOT) {
                     Error_0(sc,"syntax error: illegal dot expression");
                } else {
+#if USE_TAGS && SHOW_ERROR_LINE
+		    pointer filename;
+		    pointer lineno;
+#endif
                     sc->nesting_stack[sc->file_i]++;
 #if USE_TAGS && SHOW_ERROR_LINE
-		    if (sc->load_stack[sc->file_i].kind & port_file) {
-		      pointer filename =
-			sc->load_stack[sc->file_i].rep.stdio.filename;
-		      pointer lineno =
-			sc->load_stack[sc->file_i].rep.stdio.curr_line;
+		    filename = sc->load_stack[sc->file_i].filename;
+		    lineno = sc->load_stack[sc->file_i].curr_line;
 
-		      s_save(sc, OP_TAG_VALUE,
-			     cons(sc, filename, cons(sc, lineno, sc->NIL)),
-			     sc->NIL);
-		    }
+		    s_save(sc, OP_TAG_VALUE,
+			   cons(sc, filename, cons(sc, lineno, sc->NIL)),
+			   sc->NIL);
 #endif
                     s_save(sc,OP_RDLIST, sc->NIL, sc->NIL);
                     s_thread_to(sc,OP_RDSEXPR);
@@ -5064,11 +5045,8 @@ static pointer opexe_5(scheme *sc, enum scheme_opcodes op) {
                int c = inchar(sc);
                if (c != '\n')
                  backchar(sc,c);
-#if SHOW_ERROR_LINE
-               else if (sc->load_stack[sc->file_i].kind & port_file)
-                  port_increment_current_line(sc,
-					      &sc->load_stack[sc->file_i], 1);
-#endif
+	       port_increment_current_line(sc,
+					   &sc->load_stack[sc->file_i], 1);
                sc->nesting_stack[sc->file_i]--;
                s_return(sc,reverse_in_place(sc, sc->NIL, sc->args));
           } else if (sc->tok == TOK_DOT) {
@@ -5759,12 +5737,9 @@ void scheme_deinit(scheme *sc) {
   }
   sc->loadport=sc->NIL;
 
-#if SHOW_ERROR_LINE
   for(i=0; i<=sc->file_i; i++) {
-    if (sc->load_stack[i].kind & port_file)
-      port_clear_location(sc, &sc->load_stack[i]);
+    port_clear_location(sc, &sc->load_stack[i]);
   }
-#endif
 
   sc->gc_verbose=0;
   gc(sc,sc->NIL,sc->NIL);
@@ -5794,13 +5769,10 @@ void scheme_load_named_file(scheme *sc, FILE *fin, const char *filename) {
     sc->interactive_repl=1;
   }
 
-#if SHOW_ERROR_LINE
-  port_reset_current_line(sc, &sc->load_stack[0]);
-  if(fin!=stdin && filename)
-    sc->load_stack[0].rep.stdio.filename = mk_string(sc, filename);
-  else
-    sc->load_stack[0].rep.stdio.filename = mk_string(sc, "<unknown>");
-#endif
+  port_init_location(sc, &sc->load_stack[0],
+		     (fin != stdin && filename)
+		     ? mk_string(sc, filename)
+		     : NULL);
 
   sc->inport=sc->loadport;
   sc->args = mk_integer(sc,sc->file_i);
@@ -5810,9 +5782,7 @@ void scheme_load_named_file(scheme *sc, FILE *fin, const char *filename) {
     sc->retcode=sc->nesting!=0;
   }
 
-#if SHOW_ERROR_LINE
   port_clear_location(sc, &sc->load_stack[0]);
-#endif
 }
 
 void scheme_load_string(scheme *sc, const char *cmd) {
@@ -5823,6 +5793,7 @@ void scheme_load_string(scheme *sc, const char *cmd) {
   sc->load_stack[0].rep.string.start=(char*)cmd; /* This func respects const */
   sc->load_stack[0].rep.string.past_the_end=(char*)cmd+strlen(cmd);
   sc->load_stack[0].rep.string.curr=(char*)cmd;
+  port_init_location(sc, &sc->load_stack[0], NULL);
   sc->loadport=mk_port(sc,sc->load_stack);
   sc->retcode=0;
   sc->interactive_repl=0;
@@ -5833,6 +5804,8 @@ void scheme_load_string(scheme *sc, const char *cmd) {
   if(sc->retcode==0) {
     sc->retcode=sc->nesting!=0;
   }
+
+  port_clear_location(sc, &sc->load_stack[0]);
 }
 
 void scheme_define(scheme *sc, pointer envir, pointer symbol, pointer value) {
