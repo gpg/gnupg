@@ -31,21 +31,18 @@
 	  (if value
 	      (begin
 		(opt::update value)
-		(assert (string=? value (list-ref (opt::value) 9))))
+		(assert (equal? value (opt::value))))
 	      (begin
 		(opt::clear)
-		(let ((v (opt::value)))
-		  (assert (or (< (length v) 10)
-			      (string=? "" (list-ref v 9))))))))
+		(assert (or (not (opt::value)) (string=? "" (opt::value)))))))
 	(progress ".")))))
  (lambda (name . rest) name)
  (list "keyserver" "verbose" "quiet")
  (list (gpg-config 'gpg "keyserver")
        (gpg-config 'gpg "verbose")
        (gpg-config 'gpg "quiet"))
- (list (lambda (i) (if (even? i) "\"hkp://foo.bar" "\"hkps://bar.baz"))
-       (lambda (i) (number->string
-		    ;; gpgconf: argument for option verbose of type 0
-		    ;; (none) must be positive
-		    (+ 1 i)))
-       (lambda (i) (if (even? i) #f "1"))))
+ (list (lambda (i) (if (even? i) "hkp://foo.bar" "hkps://bar.baz"))
+       ;; gpgconf: argument for option verbose of type 0 (none) must
+       ;; be positive
+       (lambda (i) (+ 1 i))
+       (lambda (i) (if (even? i) #f 1))))

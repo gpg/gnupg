@@ -33,6 +33,9 @@
 (catch (skip "Tofu not supported")
        (call-check `(,@GPG --trust-model=tofu --list-config)))
 
+(let ((trust-model (gpg-config 'gpg "trust-model")))
+  (trust-model::update "tofu"))
+
 (define KEYS '("1C005AF3" "BE04EB2B" "B662E42F"))
 
 ;; Import the test keys.
@@ -51,7 +54,7 @@
 (define (getpolicy keyid . args)
   (let ((policy
 	 (list-ref (assoc "tfs" (gpg-with-colons
-				 `(--trust-model=tofu --with-tofu-info
+				 `(--with-tofu-info
 				   ,@args
 				   --list-keys ,keyid))) 5)))
     (unless (member policy '("auto" "good" "unknown" "bad" "ask"))
@@ -75,8 +78,7 @@
 (define (gettrust keyid . args)
   (let ((trust
 	 (list-ref (assoc "pub" (gpg-with-colons
-				 `(--trust-model=tofu
-				   ,@args
+				 `(,@args
 				   --list-keys ,keyid))) 1)))
     (unless (and (= 1 (string-length trust))
 		 (member (string-ref trust 0) (string->list "oidreqnmfuws-")))
@@ -96,7 +98,7 @@
 ;; Set key KEYID's policy to POLICY.  Any remaining arguments are
 ;; passed as options to gpg.
 (define (setpolicy keyid policy . args)
-  (call-check `(,@GPG --trust-model=tofu ,@args
+  (call-check `(,@GPG ,@args
 		      --tofu-policy ,policy ,keyid)))
 
 (info "Checking tofu policies and trust...")
@@ -106,8 +108,7 @@
 
 ;; Verify a message.  There should be no conflict and the trust
 ;; policy should be set to auto.
-(call-check `(,@GPG --trust-model=tofu
-		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-1.txt")))
+(call-check `(,@GPG --verify ,(in-srcdir "tofu/conflicting/1C005AF3-1.txt")))
 
 (checkpolicy "1C005AF3" "auto")
 ;; Check default trust.
@@ -161,8 +162,7 @@
 ;; auto), but not affect 1C005AF3's policy.
 (setpolicy "BE04EB2B" "auto")
 (checkpolicy "BE04EB2B" "ask")
-(call-check `(,@GPG --trust-model=tofu
-		    --verify ,(in-srcdir "tofu/conflicting/B662E42F-1.txt")))
+(call-check `(,@GPG --verify ,(in-srcdir "tofu/conflicting/B662E42F-1.txt")))
 (checkpolicy "BE04EB2B" "ask")
 (checkpolicy "1C005AF3" "bad")
 (checkpolicy "B662E42F" "ask")
@@ -176,8 +176,7 @@
   (let*
       ((tfs (assoc "tfs"
                    (gpg-with-colons
-                    `(--trust-model=tofu --with-tofu-info
-                                         ,@args --list-keys ,keyid))))
+                    `(--with-tofu-info ,@args --list-keys ,keyid))))
        (sigs (string->number (list-ref tfs 3)))
        (sig-days (string->number (list-ref tfs 11)))
        (encs (string->number (list-ref tfs 4)))
@@ -208,31 +207,26 @@
 (check-counts "B662E42F" 0 0 0 0)
 
 ;; Verify a message.  The signature count should increase by 1.
-(call-check `(,@GPG --trust-model=tofu
-		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-1.txt")))
+(call-check `(,@GPG --verify ,(in-srcdir "tofu/conflicting/1C005AF3-1.txt")))
 
 (check-counts "1C005AF3" 1 1 0 0)
 
 ;; Verify the same message.  The signature count should remain the
 ;; same.
-(call-check `(,@GPG --trust-model=tofu
-		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-1.txt")))
+(call-check `(,@GPG --verify ,(in-srcdir "tofu/conflicting/1C005AF3-1.txt")))
 (check-counts "1C005AF3" 1 1 0 0)
 
 ;; Verify another message.
-(call-check `(,@GPG --trust-model=tofu
-		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-2.txt")))
+(call-check `(,@GPG --verify ,(in-srcdir "tofu/conflicting/1C005AF3-2.txt")))
 (check-counts "1C005AF3" 2 1 0 0)
 
 ;; Verify another message.
-(call-check `(,@GPG --trust-model=tofu
-		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-3.txt")))
+(call-check `(,@GPG --verify ,(in-srcdir "tofu/conflicting/1C005AF3-3.txt")))
 (check-counts "1C005AF3" 3 1 0 0)
 
 ;; Verify a message from a different sender.  The signature count
 ;; should increase by 1 for that key.
-(call-check `(,@GPG --trust-model=tofu
-		    --verify ,(in-srcdir "tofu/conflicting/BE04EB2B-1.txt")))
+(call-check `(,@GPG --verify ,(in-srcdir "tofu/conflicting/BE04EB2B-1.txt")))
 (check-counts "1C005AF3" 3 1 0 0)
 (check-counts "BE04EB2B" 1 1 0 0)
 (check-counts "B662E42F" 0 0 0 0)
@@ -240,34 +234,34 @@
 ;; Verify another message on a new day.  (Recall: we are interested in
 ;; when the message was first verified, not when the signer claimed
 ;; that it was signed.)
-(call-check `(,@GPG --trust-model=tofu ,(faketime (days->seconds 2))
+(call-check `(,@GPG ,(faketime (days->seconds 2))
 		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-4.txt")))
 (check-counts "1C005AF3" 4 2 0 0)
 (check-counts "BE04EB2B" 1 1 0 0)
 (check-counts "B662E42F" 0 0 0 0)
 
 ;; And another.
-(call-check `(,@GPG --trust-model=tofu ,(faketime (days->seconds 2))
+(call-check `(,@GPG ,(faketime (days->seconds 2))
 		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-5.txt")))
 (check-counts "1C005AF3" 5 2 0 0)
 (check-counts "BE04EB2B" 1 1 0 0)
 (check-counts "B662E42F" 0 0 0 0)
 
 ;; Another, but for a different key.
-(call-check `(,@GPG --trust-model=tofu ,(faketime (days->seconds 2))
+(call-check `(,@GPG ,(faketime (days->seconds 2))
 		    --verify ,(in-srcdir "tofu/conflicting/BE04EB2B-2.txt")))
 (check-counts "1C005AF3" 5 2 0 0)
 (check-counts "BE04EB2B" 2 2 0 0)
 (check-counts "B662E42F" 0 0 0 0)
 
 ;; And add a third day.
-(call-check `(,@GPG --trust-model=tofu ,(faketime (days->seconds 4))
+(call-check `(,@GPG ,(faketime (days->seconds 4))
 		    --verify ,(in-srcdir "tofu/conflicting/BE04EB2B-3.txt")))
 (check-counts "1C005AF3" 5 2 0 0)
 (check-counts "BE04EB2B" 3 3 0 0)
 (check-counts "B662E42F" 0 0 0 0)
 
-(call-check `(,@GPG --trust-model=tofu ,(faketime (days->seconds 4))
+(call-check `(,@GPG ,(faketime (days->seconds 4))
 		    --verify ,(in-srcdir "tofu/conflicting/BE04EB2B-4.txt")))
 (check-counts "1C005AF3" 5 2 0 0)
 (check-counts "BE04EB2B" 4 3 0 0)
@@ -299,7 +293,7 @@
      (for-each
       (lambda (i)
         (let ((fn (in-srcdir DIR (string-append key "-" i ".txt"))))
-          (call-check `(,@GPG --trust-model=tofu --verify ,fn))))
+          (call-check `(,@GPG --verify ,fn))))
       (list "1" "2")))
    (list KEYIDA KEYIDB)))
 
@@ -391,7 +385,7 @@
      (for-each
       (lambda (i)
         (let ((fn (in-srcdir DIR (string-append key "-" i ".txt"))))
-          (call-check `(,@GPG --trust-model=tofu --verify ,fn))))
+          (call-check `(,@GPG --verify ,fn))))
       (list "1" "2")))
    (list KEYIDA KEYIDB)))
 
