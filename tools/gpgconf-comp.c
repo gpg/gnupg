@@ -748,6 +748,8 @@ static gc_option_t gc_options_gpg[] =
    { "auto-key-locate", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "gnupg", N_("|MECHANISMS|use MECHANISMS to locate keys by mail address"),
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
+   { "auto-key-retrieve", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL, GC_ARG_TYPE_NONE, GC_BACKEND_GPG },
 
 
    GC_OPTION_NULL

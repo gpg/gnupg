@@ -1840,6 +1840,7 @@ gpgconf_list (const char *configfile)
   es_printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("try-secret-key:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("auto-key-locate:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("auto-key-retrieve:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
   es_printf ("group:%lu:\n", GC_OPT_FLAG_NONE);
