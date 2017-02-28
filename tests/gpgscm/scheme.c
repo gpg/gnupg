@@ -5045,8 +5045,8 @@ static pointer opexe_5(scheme *sc, enum scheme_opcodes op) {
                int c = inchar(sc);
                if (c != '\n')
                  backchar(sc,c);
-	       port_increment_current_line(sc,
-					   &sc->load_stack[sc->file_i], 1);
+	       else
+		 port_increment_current_line(sc, &sc->load_stack[sc->file_i], 1);
                sc->nesting_stack[sc->file_i]--;
                s_return(sc,reverse_in_place(sc, sc->NIL, sc->args));
           } else if (sc->tok == TOK_DOT) {
