@@ -1735,6 +1735,9 @@ port_clear_location (scheme *sc, port *p)
 static void
 port_increment_current_line (scheme *sc, port *p, long delta)
 {
+  if (delta == 0)
+    return;
+
   p->curr_line =
     mk_integer(sc, ivalue_unchecked(p->curr_line) + delta);
 }
