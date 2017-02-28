@@ -225,7 +225,9 @@ main( int argc, char **argv )
           break;
         case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
         case oOutput: opt.outfile = pargs.r.ret_str; break;
-        case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
+        case oStatusFD:
+          set_status_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
+          break;
         case oLoggerFD:
           log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
           break;
