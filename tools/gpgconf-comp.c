@@ -717,6 +717,10 @@ static gc_option_t gc_options_gpg[] =
      (GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_NO_CHANGE), GC_LEVEL_INVISIBLE,
      NULL, NULL,
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
+   { "trust-model",
+     GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
 
 
    { "Debug",
