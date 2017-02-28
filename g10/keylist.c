@@ -1232,7 +1232,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
     }
 
   if (!opt.fast_list_mode && !opt.no_expensive_trust_checks)
-    ownertrust_print = get_ownertrust_info (pk);
+    ownertrust_print = get_ownertrust_info (pk, 0);
   else
     ownertrust_print = 0;
 

@@ -404,8 +404,13 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
         hexfingerprint (pk, pkhex, sizeof pkhex);
         hexfingerprint (mainpk, mainpkhex, sizeof mainpkhex);
 
+        /* Note that we do not want to create a trustdb just for
+         * getting the ownertrust: If there is no trustdb there can't
+         * be ulitmately trusted key anyway and thus the ownertrust
+         * value is irrelevant.  */
         write_status_printf (STATUS_DECRYPTION_KEY, "%s %s %c",
-                             pkhex, mainpkhex, get_ownertrust_info (mainpk));
+                             pkhex, mainpkhex,
+                             get_ownertrust_info (mainpk, 1));
 
       }
 

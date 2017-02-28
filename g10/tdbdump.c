@@ -70,7 +70,7 @@ list_trustdb (estream_t fp, const char *username)
 
   (void)username;
 
-  init_trustdb();
+  init_trustdb (0);
   /* For now we ignore the user ID. */
   if (1)
     {
@@ -101,7 +101,7 @@ export_ownertrust()
   int i;
   byte *p;
 
-  init_trustdb();
+  init_trustdb (0);
   es_printf (_("# List of assigned trustvalues, created %s\n"
                "# (Use \"gpg --import-ownertrust\" to restore them)\n"),
              asctimestamp( make_timestamp() ) );
@@ -133,7 +133,7 @@ import_ownertrust( const char *fname )
     int any = 0;
     int rc;
 
-    init_trustdb();
+    init_trustdb (0);
     if( iobuf_is_pipe_filename (fname) ) {
 	fp = es_stdin;
 	fname = "[stdin]";

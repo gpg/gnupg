@@ -179,17 +179,18 @@ get_ownertrust (PKT_public_key *pk)
   (void)pk;
   return TRUST_UNKNOWN;
 #else
-  return tdb_get_ownertrust (pk);
+  return tdb_get_ownertrust (pk, 0);
 #endif
 }
 
 
 /*
  * Same as get_ownertrust but this takes the minimum ownertrust value
- * into account, and will bump up the value as needed.
+ * into account, and will bump up the value as needed.  NO_CREATE
+ * inhibits creation of a trustdb it that does not yet exists.
  */
 static int
-get_ownertrust_with_min (PKT_public_key *pk)
+get_ownertrust_with_min (PKT_public_key *pk, int no_create)
 {
 #ifdef NO_TRUST_MODELS
   (void)pk;
@@ -197,8 +198,15 @@ get_ownertrust_with_min (PKT_public_key *pk)
 #else
   unsigned int otrust, otrust_min;
 
-  otrust = (tdb_get_ownertrust (pk) & TRUST_MASK);
-  otrust_min = tdb_get_min_ownertrust (pk);
+  /* Shortcut instead of doing the same twice in the two tdb_get
+   * functions: If the caller asked not to create a trustdb we call
+   * init_trustdb directly and allow it to fail with an error code for
+   * a non-existing trustdb.  */
+  if (no_create && init_trustdb (1))
+    return TRUST_UNKNOWN;
+
+  otrust = (tdb_get_ownertrust (pk, no_create) & TRUST_MASK);
+  otrust_min = tdb_get_min_ownertrust (pk, no_create);
   if (otrust < otrust_min)
     {
       /* If the trust that the user has set is less than the trust
@@ -217,23 +225,25 @@ get_ownertrust_with_min (PKT_public_key *pk)
 
 /*
  * Same as get_ownertrust but return a trust letter instead of an
- * value.  This takes the minimum ownertrust value into account.
+ * value.  This takes the minimum ownertrust value into account.  If
+ * NO_CREATE is set, no efforts for creating a trustdb will be taken.
  */
 int
-get_ownertrust_info (PKT_public_key *pk)
+get_ownertrust_info (PKT_public_key *pk, int no_create)
 {
-  return trust_letter (get_ownertrust_with_min (pk));
+  return trust_letter (get_ownertrust_with_min (pk, no_create));
 }
 
 
 /*
  * Same as get_ownertrust but return a trust string instead of an
- * value.  This takes the minimum ownertrust value into account.
+ * value.  This takes the minimum ownertrust value into account.  If
+ * NO_CREATE is set, no efforts for creating a trustdb will be taken.
  */
 const char *
-get_ownertrust_string (PKT_public_key *pk)
+get_ownertrust_string (PKT_public_key *pk, int no_create)
 {
-  return trust_value_to_string (get_ownertrust_with_min (pk));
+  return trust_value_to_string (get_ownertrust_with_min (pk, no_create));
 }
 
 

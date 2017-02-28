@@ -296,9 +296,9 @@ verify_own_keys(void)
 		     keystr(k->kid));
           else
 	    {
-	      tdb_update_ownertrust (&pk,
-                                     ((tdb_get_ownertrust (&pk) & ~TRUST_MASK)
-                                      | TRUST_ULTIMATE ));
+	      tdb_update_ownertrust
+                (&pk, ((tdb_get_ownertrust (&pk, 0) & ~TRUST_MASK)
+                       | TRUST_ULTIMATE ));
 	      release_public_key_parts (&pk);
 	    }
 
@@ -439,21 +439,34 @@ how_to_fix_the_trustdb ()
 }
 
 
-void
-init_trustdb ()
+/* Initialize the trustdb.  With NO_CREATE set a missing trustdb is
+ * not an error and the function won't terminate the process on error;
+ * in that case 0 is returned if there is a trustdb or an error code
+ * if no trustdb is available.  */
+gpg_error_t
+init_trustdb (int no_create)
 {
   int level = trustdb_args.level;
   const char* dbname = trustdb_args.dbname;
 
   if( trustdb_args.init )
-    return;
+    return 0;
 
   trustdb_args.init = 1;
 
   if(level==0 || level==1)
     {
-      int rc = tdbio_set_dbname( dbname, !!level, &trustdb_args.no_trustdb);
-      if( rc )
+      int rc = tdbio_set_dbname (dbname, (!no_create && level),
+                                 &trustdb_args.no_trustdb);
+      if (no_create && trustdb_args.no_trustdb)
+        {
+          /* No trustdb found and the caller asked us not to create
+           * it.  Return an error and set the initialization state
+           * back so that we always test for an existing trustdb.  */
+          trustdb_args.init = 0;
+          return gpg_error (GPG_ERR_ENOENT);
+        }
+      if (rc)
 	log_fatal("can't init trustdb: %s\n", gpg_strerror (rc) );
     }
   else
@@ -493,6 +506,8 @@ init_trustdb ()
       if(!tdbio_db_matches_options())
 	pending_check_trustdb=1;
     }
+
+  return 0;
 }
 
 
@@ -504,7 +519,7 @@ init_trustdb ()
 void
 check_trustdb (ctrl_t ctrl)
 {
-  init_trustdb();
+  init_trustdb (0);
   if (opt.trust_model == TM_PGP || opt.trust_model == TM_CLASSIC
       || opt.trust_model == TM_TOFU_PGP || opt.trust_model == TM_TOFU)
     {
@@ -541,7 +556,7 @@ check_trustdb (ctrl_t ctrl)
 void
 update_trustdb (ctrl_t ctrl)
 {
-  init_trustdb ();
+  init_trustdb (0);
   if (opt.trust_model == TM_PGP || opt.trust_model == TM_CLASSIC
       || opt.trust_model == TM_TOFU_PGP || opt.trust_model == TM_TOFU)
     validate_keys (ctrl, 1);
@@ -553,7 +568,7 @@ update_trustdb (ctrl_t ctrl)
 void
 tdb_revalidation_mark (void)
 {
-  init_trustdb();
+  init_trustdb (0);
   if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
     return;
 
@@ -591,7 +606,7 @@ read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
 {
   TRUSTREC opts;
 
-  init_trustdb();
+  init_trustdb (0);
   if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
     memset (&opts, 0, sizeof opts);
   else
@@ -622,7 +637,7 @@ read_trust_record (PKT_public_key *pk, TRUSTREC *rec)
 {
   int rc;
 
-  init_trustdb();
+  init_trustdb (0);
   rc = tdbio_search_trust_bypk (pk, rec);
   if (rc)
     {
@@ -642,17 +657,27 @@ read_trust_record (PKT_public_key *pk, TRUSTREC *rec)
   return 0;
 }
 
-/****************
- * Return the assigned ownertrust value for the given public key.
- * The key should be the primary key.
+
+/*
+ * Return the assigned ownertrust value for the given public key.  The
+ * key should be the primary key.  If NO_CREATE is set a missing
+ * trustdb will not be created.  This comes for example handy when we
+ * want to print status lines (DECRYPTION_KEY) which carry ownertrust
+ * values but we usually use --always-trust.
  */
 unsigned int
-tdb_get_ownertrust ( PKT_public_key *pk)
+tdb_get_ownertrust (PKT_public_key *pk, int no_create)
 {
   TRUSTREC rec;
   gpg_error_t err;
 
   if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return TRUST_UNKNOWN;
+
+  /* If the caller asked not to create a trustdb we call init_trustdb
+   * directly and allow it to fail with an error code for a
+   * non-existing trustdb.  */
+  if (no_create && init_trustdb (1))
     return TRUST_UNKNOWN;
 
   err = read_trust_record (pk, &rec);
@@ -669,12 +694,18 @@ tdb_get_ownertrust ( PKT_public_key *pk)
 
 
 unsigned int
-tdb_get_min_ownertrust (PKT_public_key *pk)
+tdb_get_min_ownertrust (PKT_public_key *pk, int no_create)
 {
   TRUSTREC rec;
   gpg_error_t err;
 
   if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return TRUST_UNKNOWN;
+
+  /* If the caller asked not to create a trustdb we call init_trustdb
+   * directly and allow it to fail with an error code for a
+   * non-existing trustdb.  */
+  if (no_create && init_trustdb (1))
     return TRUST_UNKNOWN;
 
   err = read_trust_record (pk, &rec);
@@ -808,7 +839,7 @@ tdb_clear_ownertrusts (PKT_public_key *pk)
   TRUSTREC rec;
   gpg_error_t err;
 
-  init_trustdb ();
+  init_trustdb (0);
 
   if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
     return 0;
@@ -915,7 +946,7 @@ tdb_cache_disabled_value (PKT_public_key *pk)
   if (pk->flags.disabled_valid)
     return pk->flags.disabled;
 
-  init_trustdb();
+  init_trustdb (0);
 
   if (trustdb_args.no_trustdb)
     return 0;  /* No trustdb => not disabled.  */
@@ -950,7 +981,7 @@ tdb_check_trustdb_stale (ctrl_t ctrl)
 {
   static int did_nextcheck=0;
 
-  init_trustdb ();
+  init_trustdb (0);
 
   if (trustdb_args.no_trustdb)
     return;  /* No trustdb => can't be stale.  */
@@ -1021,7 +1052,7 @@ tdb_get_validity_core (ctrl_t ctrl,
   (void)may_ask;
 #endif
 
-  init_trustdb ();
+  init_trustdb (0);
 
   /* If we have no trustdb (which also means it has not been created)
      and the trust-model is always, we don't know the validity -
@@ -1036,7 +1067,7 @@ tdb_get_validity_core (ctrl_t ctrl,
     {
       /* Note that this happens BEFORE any user ID stuff is checked.
 	 The direct trust model applies to keys as a whole. */
-      validity = tdb_get_ownertrust (main_pk);
+      validity = tdb_get_ownertrust (main_pk, 0);
       goto leave;
     }
 
@@ -1248,7 +1279,7 @@ get_validity_counts (PKT_public_key *pk, PKT_user_id *uid)
 
   uid->help_marginal_count=uid->help_full_count=0;
 
-  init_trustdb ();
+  init_trustdb (0);
 
   if(read_trust_record (pk, &trec))
     return;
@@ -1353,7 +1384,7 @@ ask_ownertrust (ctrl_t ctrl, u32 *kid, int minimum)
     {
       ot=edit_ownertrust (ctrl, pk, 0);
       if(ot>0)
-	ot = tdb_get_ownertrust (pk);
+	ot = tdb_get_ownertrust (pk, 0);
       else if(ot==0)
 	ot = minimum?minimum:TRUST_UNDEFINED;
       else
@@ -2142,9 +2173,9 @@ validate_keys (ctrl_t ctrl, int interactive)
 		      k->kid[1]=kid[1];
 		      k->ownertrust =
 			(tdb_get_ownertrust
-                         (kar->keyblock->pkt->pkt.public_key) & TRUST_MASK);
+                         (kar->keyblock->pkt->pkt.public_key, 0) & TRUST_MASK);
 		      k->min_ownertrust = tdb_get_min_ownertrust
-                        (kar->keyblock->pkt->pkt.public_key);
+                        (kar->keyblock->pkt->pkt.public_key, 0);
 		      k->trust_depth=
 			kar->keyblock->pkt->pkt.public_key->trust_depth;
 		      k->trust_value=

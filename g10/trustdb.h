@@ -127,7 +127,7 @@ void update_trustdb (ctrl_t ctrl);
 int setup_trustdb( int level, const char *dbname );
 void how_to_fix_the_trustdb (void);
 const char *trust_model_string (int model);
-void init_trustdb( void );
+gpg_error_t init_trustdb (int no_create);
 void tdb_check_trustdb_stale (ctrl_t ctrl);
 void sync_trustdb( void );
 
@@ -152,10 +152,10 @@ void read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
 			byte *marginals,byte *completes,byte *cert_depth,
 			byte *min_cert_level);
 
-unsigned int tdb_get_ownertrust (PKT_public_key *pk);
-unsigned int tdb_get_min_ownertrust (PKT_public_key *pk);
-int get_ownertrust_info (PKT_public_key *pk);
-const char *get_ownertrust_string (PKT_public_key *pk);
+unsigned int tdb_get_ownertrust (PKT_public_key *pk, int no_create);
+unsigned int tdb_get_min_ownertrust (PKT_public_key *pk, int no_create);
+int get_ownertrust_info (PKT_public_key *pk, int no_create);
+const char *get_ownertrust_string (PKT_public_key *pk, int no_create);
 
 void tdb_update_ownertrust (PKT_public_key *pk, unsigned int new_trust);
 int tdb_clear_ownertrusts (PKT_public_key *pk);

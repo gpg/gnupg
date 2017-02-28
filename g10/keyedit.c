@@ -3679,7 +3679,7 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
                       (ulong) pk->timestamp, (ulong) pk->expiredate);
 	  if (node->pkt->pkttype == PKT_PUBLIC_KEY
 	      && !(opt.fast_list_mode || opt.no_expensive_trust_checks))
-	    es_putc (get_ownertrust_info (pk), fp);
+	    es_putc (get_ownertrust_info (pk, 0), fp);
 	  es_putc (':', fp);
 	  es_putc (':', fp);
 	  es_putc (':', fp);
@@ -3896,7 +3896,7 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
 	      static int did_warn = 0;
 
 	      trust = get_validity_string (ctrl, pk, NULL);
-	      otrust = get_ownertrust_string (pk);
+	      otrust = get_ownertrust_string (pk, 0);
 
 	      /* Show a warning once */
 	      if (!did_warn

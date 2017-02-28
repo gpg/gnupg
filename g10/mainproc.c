@@ -1032,7 +1032,7 @@ list_node (CTX c, kbnode_t node)
                      colon_datestr_from_pk( pk ),
                      colon_strtime (pk->expiredate) );
           if (pk->flags.primary && !opt.fast_list_mode)
-            es_putc (get_ownertrust_info (pk), es_stdout);
+            es_putc (get_ownertrust_info (pk, 1), es_stdout);
           es_putc (':', es_stdout);
           es_putc ('\n', es_stdout);
         }

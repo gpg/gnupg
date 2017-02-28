@@ -371,9 +371,10 @@ uid_trust_string_fixed (ctrl_t ctrl, PKT_public_key *key, PKT_user_id *uid)
 }
 
 int
-get_ownertrust_info (PKT_public_key *pk)
+get_ownertrust_info (PKT_public_key *pk, int no_create)
 {
   (void)pk;
+  (void)no_create;
   return '?';
 }
 

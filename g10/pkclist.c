@@ -188,7 +188,7 @@ do_edit_ownertrust (ctrl_t ctrl, PKT_public_key *pk, int mode,
   int show=0;
   int min_num;
   int did_help=defer_help;
-  unsigned int minimum = tdb_get_min_ownertrust (pk);
+  unsigned int minimum = tdb_get_min_ownertrust (pk, 0);
 
   switch(minimum)
     {
