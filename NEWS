@@ -1,8 +1,49 @@
-Noteworthy changes in version 2.1.19 (unreleased)
+Noteworthy changes in version 2.1.19 (2017-03-01)
 -------------------------------------------------
+
+  * gpg: Print a warning if Tor mode is requested but the Tor daemon
+    is not running.
+
+  * gpg: New status code DECRYPTION_KEY to print the actual private
+    key used for decryption.
+
+  * gpgv: New options --log-file and --debug.
+
+  * gpg-agent: Revamp the prompts to ask for card PINs.
+
+  * scd: Support for multiple card readers.
 
   * scd: Removed option --debug-disable-ticker.  Ticker is used
     only when it is required to watch removal of device/card.
+
+  * scd: Improved detection of card inserting and removal.
+
+  * dirmngr: New option --disable-ipv4.
+
+  * dirmngr: New option --no-use-tor to explicitly disable the use of
+    Tor.
+
+  * dirmngr: The option --allow-version-check is now required even if
+    the option --use-tor is also used.
+
+  * dirmngr: Handle a missing nsswitch.conf gracefully.
+
+  * dirmngr: Avoid PTR lookups for keyserver pools.  The are only done
+    for the debug command "keyserver --hosttable".
+
+  * dirmngr: Rework the internal certificate cache to support classes
+    of certificates.  Load system provided certificates on startup.
+    Add options --tls, --no-crl, and --systrust to the "VALIDATE"
+    command.
+
+  * dirmngr: Add support for the ntbtls library.
+
+  * wks: Create mails with a "WKS-Phase" header.  Fix detection of
+    Draft-2 mode.
+
+  * The Windows installer is now build with limited TLS support.
+
+  * Many other bug fixes and new regression tests.
 
 
 Noteworthy changes in version 2.1.18 (2017-01-23)
