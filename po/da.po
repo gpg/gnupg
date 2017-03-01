@@ -171,6 +171,11 @@ msgstr "fejl ved indhentelse af standard-keyID for godkendelses af kort: %s\n"
 msgid "no suitable card key found: %s\n"
 msgstr "ingen egnet kortnøgle fundet: %s\n"
 
+#, fuzzy, c-format
+#| msgid "error getting stored flags: %s\n"
+msgid "error getting list of cards: %s\n"
+msgstr "fejl ved indhentelse af gemte flag: %s\n"
+
 #, c-format
 msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
@@ -1084,6 +1089,10 @@ msgstr "ignorerer affaldslinje"
 
 msgid "[none]"
 msgstr "[ingen]"
+
+#, c-format
+msgid "invalid radix64 character %02x skipped\n"
+msgstr "ugyldigt radix64-tegn %02x udeladt\n"
 
 msgid "argument not expected"
 msgstr "parameter var ikke forventet"
@@ -2552,6 +2561,9 @@ msgstr "fejl ved lagring af certifikat: %s\n"
 
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
+
+msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
 msgstr ""
 
 msgid "Go ahead and type your message ...\n"
@@ -5945,7 +5957,7 @@ msgstr ""
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
 
-msgid "Defaulting to unknown."
+msgid "Defaulting to unknown.\n"
 msgstr ""
 
 msgid "TOFU db corruption detected.\n"
@@ -6077,7 +6089,7 @@ msgid "error opening TOFU database: %s\n"
 msgstr "fejl under afsendelse af %s-kommando: %s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6341,6 +6353,9 @@ msgstr "kunne ikke gemme fingeraftrykket: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "kunne ikke gemme oprettelsesdatoen: %s\n"
 
+msgid "error retrieving CHV status from card\n"
+msgstr "fejl ved indhentelse af CHV-status fra kort\n"
+
 msgid "response does not contain the RSA modulus\n"
 msgstr "svar indeholder ikke RSA modulus'erne\n"
 
@@ -6359,6 +6374,23 @@ msgstr "svar indeholder ikke data for offentlig nøgle\n"
 msgid "reading public key failed: %s\n"
 msgstr "læsning af offentlig nøgle mislykkedes: %s\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
+msgstr ""
+
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr "bruger standard-PIN som %s\n"
@@ -6369,11 +6401,9 @@ msgstr ""
 "kunne ikke bruge standard-PIN som %s: %s - deaktiverer yderligere "
 "standardbrug\n"
 
-#, c-format
-msgid "||Please enter the PIN%%0A[sigs done: %lu]"
-msgstr "||Indtast venligst PIN%%0A[sigs færdig: %lu]"
-
-msgid "||Please enter the PIN"
+#, fuzzy
+#| msgid "||Please enter the PIN"
+msgid "||Please unlock the card"
 msgstr "||Indtast venligst PIN'en"
 
 #, c-format
@@ -6383,9 +6413,6 @@ msgstr "PIN for CHV%d er for kort; minimumlængde er %d\n"
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "verificering af CHV%d mislykkedes: %s\n"
-
-msgid "error retrieving CHV status from card\n"
-msgstr "fejl ved indhentelse af CHV-status fra kort\n"
 
 msgid "card is permanently locked!\n"
 msgstr "kort er permanent låst!\n"
@@ -6399,16 +6426,15 @@ msgstr[0] "%d PIN-forsøg for administrator før kort permanent låses\n"
 msgstr[1] "%d PIN-forsøg for administrator før kort permanent låses\n"
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %%0A to force a linefeed.
-#, c-format
-msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
-msgstr "|A|Ændr venligst administrator-PIN%%0A[tilbageværende forsøg: %d]"
-
+#. the start of the string.  Use %0A (single percent) for a linefeed.
 msgid "|A|Please enter the Admin PIN"
 msgstr "|A|Indtast venligst administrator-PIN'en"
 
 msgid "access to admin commands is not configured\n"
 msgstr "adgang til administratorkommandoer er ikke konfigureret\n"
+
+msgid "||Please enter the PIN"
+msgstr "||Indtast venligst PIN'en"
 
 msgid "||Please enter the Reset Code for the card"
 msgstr "||Indtast venligst nulstillingskoden for kortet"
@@ -6578,10 +6604,6 @@ msgstr "håndtering for fd %d startet\n"
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr "håndtering for fd %d termineret\n"
-
-#, c-format
-msgid "invalid radix64 character %02x skipped\n"
-msgstr "ugyldigt radix64-tegn %02x udeladt\n"
 
 #, fuzzy
 #| msgid "no gpg-agent running in this session\n"
@@ -7402,6 +7424,11 @@ msgstr "Inkluderede certifikater"
 #, fuzzy, c-format
 #| msgid "number of matching certificates: %d\n"
 msgid "    runtime cached certificates: %u\n"
+msgstr "antallet af matchende certifikater: %d\n"
+
+#, fuzzy, c-format
+#| msgid "number of matching certificates: %d\n"
+msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
 msgstr "antallet af matchende certifikater: %d\n"
 
 #, fuzzy
@@ -8720,9 +8747,6 @@ msgstr "kontrollerer for kvalificeret certifikat mislykkedes: %s\n"
 msgid "certificate chain is good\n"
 msgstr "certifikat er gyldigt\n"
 
-msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr ""
-
 #, fuzzy
 #| msgid "certificate should not have been used for signing\n"
 msgid "certificate should not have been used for CRL signing\n"
@@ -9183,6 +9207,12 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
+#~ msgstr "||Indtast venligst PIN%%0A[sigs færdig: %lu]"
+
+#~ msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
+#~ msgstr "|A|Ændr venligst administrator-PIN%%0A[tilbageværende forsøg: %d]"
 
 #~ msgid "--store [filename]"
 #~ msgstr "--store [filnavn]"

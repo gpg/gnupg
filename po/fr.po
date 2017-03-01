@@ -160,6 +160,11 @@ msgstr "aucune clef d'authentification pour SSH sur la carte : %s\n"
 msgid "no suitable card key found: %s\n"
 msgstr "aucune clef de carte convenable n'a été trouvée : %s\n"
 
+#, fuzzy, c-format
+#| msgid "error getting stored flags: %s\n"
+msgid "error getting list of cards: %s\n"
+msgstr "erreur de lecture des options stockées : %s\n"
+
 #, c-format
 msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
@@ -1023,6 +1028,10 @@ msgstr "ligne inutile ignorée"
 
 msgid "[none]"
 msgstr "[aucun]"
+
+#, c-format
+msgid "invalid radix64 character %02x skipped\n"
+msgstr "caractère %02x incorrect en radix64, ignoré\n"
 
 msgid "argument not expected"
 msgstr "argument inattendu"
@@ -2453,6 +2462,9 @@ msgstr "erreur de chargement du certificat « %s » : %s\n"
 
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
+
+msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
 msgstr ""
 
 msgid "Go ahead and type your message ...\n"
@@ -5829,7 +5841,7 @@ msgstr ""
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
 
-msgid "Defaulting to unknown."
+msgid "Defaulting to unknown.\n"
 msgstr ""
 
 msgid "TOFU db corruption detected.\n"
@@ -5961,7 +5973,7 @@ msgid "error opening TOFU database: %s\n"
 msgstr "erreur d'envoi de données : %s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6232,6 +6244,9 @@ msgstr "impossible de stocker l'empreinte : %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "impossible de stocker la date de création : %s\n"
 
+msgid "error retrieving CHV status from card\n"
+msgstr "erreur de récupération de l'état CHV de la carte\n"
+
 msgid "response does not contain the RSA modulus\n"
 msgstr "la réponse ne contient pas le module RSA\n"
 
@@ -6250,6 +6265,23 @@ msgstr "la réponse ne contient pas les données de clef publique\n"
 msgid "reading public key failed: %s\n"
 msgstr "échec de lecture de clef publique : %s\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
+msgstr ""
+
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr "utilisation du code personnel par défaut en tant que %s\n"
@@ -6260,11 +6292,9 @@ msgstr ""
 "impossible d'utiliser le code personnel par défaut en tant que %s :\n"
 "%s — désactivation de la prochaine utilisation par défaut\n"
 
-#, c-format
-msgid "||Please enter the PIN%%0A[sigs done: %lu]"
-msgstr "||Veuillez entrer le code personnel%%0A[signatures faites : %lu]"
-
-msgid "||Please enter the PIN"
+#, fuzzy
+#| msgid "||Please enter the PIN"
+msgid "||Please unlock the card"
 msgstr "||Veuillez entrer le code personnel"
 
 #, c-format
@@ -6276,9 +6306,6 @@ msgstr ""
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "échec de vérification CHV%d : %s\n"
-
-msgid "error retrieving CHV status from card\n"
-msgstr "erreur de récupération de l'état CHV de la carte\n"
 
 msgid "card is permanently locked!\n"
 msgstr "la carte est irrémédiablement bloquée.\n"
@@ -6296,18 +6323,15 @@ msgstr[1] ""
 "avant que la carte ne soit irrémédiablement bloquée\n"
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %%0A to force a linefeed.
-#, c-format
-msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
-msgstr ""
-"|A|Veuillez entrer le code personnel d'administration%%0A[tentatives "
-"restantes : %d]"
-
+#. the start of the string.  Use %0A (single percent) for a linefeed.
 msgid "|A|Please enter the Admin PIN"
 msgstr "|A|Veuillez entrer le code personnel d'administration"
 
 msgid "access to admin commands is not configured\n"
 msgstr "l'accès aux commandes d'administration n'est pas configuré\n"
+
+msgid "||Please enter the PIN"
+msgstr "||Veuillez entrer le code personnel"
 
 msgid "||Please enter the Reset Code for the card"
 msgstr "||Veuillez entrer le code de réinitialisation pour la carte"
@@ -6477,10 +6501,6 @@ msgstr "gestionnaire pour le descripteur %d démarré\n"
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr "gestionnaire pour le descripteur %d terminé\n"
-
-#, c-format
-msgid "invalid radix64 character %02x skipped\n"
-msgstr "caractère %02x incorrect en radix64, ignoré\n"
 
 #, fuzzy
 #| msgid "no gpg-agent running in this session\n"
@@ -7272,6 +7292,11 @@ msgstr "certificats chargés de façon permanente : %u\n"
 
 #, c-format
 msgid "    runtime cached certificates: %u\n"
+msgstr "      certificats actuellement en cache : %u\n"
+
+#, fuzzy, c-format
+#| msgid "    runtime cached certificates: %u\n"
+msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
 msgstr "      certificats actuellement en cache : %u\n"
 
 msgid "certificate already cached\n"
@@ -8450,9 +8475,6 @@ msgstr ""
 msgid "certificate chain is good\n"
 msgstr "la chaîne de certificats est correcte\n"
 
-msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "DSA nécessite l'utilisation d'un algorithme de hachage de 160 bits\n"
-
 msgid "certificate should not have been used for CRL signing\n"
 msgstr ""
 "le certificat n'aurait pas dû être utilisé pour signer une liste de "
@@ -8898,6 +8920,18 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
+#~ msgstr "||Veuillez entrer le code personnel%%0A[signatures faites : %lu]"
+
+#~ msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
+#~ msgstr ""
+#~ "|A|Veuillez entrer le code personnel d'administration%%0A[tentatives "
+#~ "restantes : %d]"
+
+#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
+#~ msgstr ""
+#~ "DSA nécessite l'utilisation d'un algorithme de hachage de 160 bits\n"
 
 #~ msgid "--store [filename]"
 #~ msgstr "--store [fichier]"

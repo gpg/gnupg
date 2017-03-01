@@ -159,6 +159,10 @@ msgstr "eroare la obţinerea informaţiei pentru cheia curentă: %s\n"
 msgid "no suitable card key found: %s\n"
 msgstr "nu am găsit nici un inel de chei secret de scris: %s\n"
 
+#, fuzzy, c-format
+msgid "error getting list of cards: %s\n"
+msgstr "eroare la obţinere noului PIN: %s\n"
+
 #, c-format
 msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
@@ -1056,6 +1060,10 @@ msgstr "eroare linia de trailer\n"
 #, fuzzy
 msgid "[none]"
 msgstr "[nesetat(ă)]"
+
+#, fuzzy, c-format
+msgid "invalid radix64 character %02x skipped\n"
+msgstr "caracter radix64 invalid %02X sărit\n"
 
 #, fuzzy
 msgid "argument not expected"
@@ -2540,6 +2548,9 @@ msgstr "eroare la obţinerea numărului serial: %s\n"
 
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
+
+msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
 msgstr ""
 
 msgid "Go ahead and type your message ...\n"
@@ -5903,7 +5914,7 @@ msgstr ""
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
 
-msgid "Defaulting to unknown."
+msgid "Defaulting to unknown.\n"
 msgstr ""
 
 msgid "TOFU db corruption detected.\n"
@@ -6029,7 +6040,7 @@ msgid "error opening TOFU database: %s\n"
 msgstr "eroare trimitere la `%s': %s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6286,6 +6297,9 @@ msgstr "am eşuat să stochez amprenta: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "am eşuat să stochez data creării: %s\n"
 
+msgid "error retrieving CHV status from card\n"
+msgstr "eroare la recuperarea stării CHV de pe card\n"
+
 msgid "response does not contain the RSA modulus\n"
 msgstr "răspunsul nu conţine modulul RSA\n"
 
@@ -6304,6 +6318,23 @@ msgstr "răspunsul nu conţine datele cheii publice\n"
 msgid "reading public key failed: %s\n"
 msgstr "citirea cheii publice a eşuat: %s\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
+msgstr ""
+
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr ""
@@ -6312,12 +6343,8 @@ msgstr ""
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr ""
 
-#, c-format
-msgid "||Please enter the PIN%%0A[sigs done: %lu]"
-msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
-
 #, fuzzy
-msgid "||Please enter the PIN"
+msgid "||Please unlock the card"
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 #, c-format
@@ -6327,9 +6354,6 @@ msgstr "PIN-ul pentru CHV%d este prea scurt; lungimea minimă este %d\n"
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "verificarea CHV%d a eşuat: %s\n"
-
-msgid "error retrieving CHV status from card\n"
-msgstr "eroare la recuperarea stării CHV de pe card\n"
 
 msgid "card is permanently locked!\n"
 msgstr "cardul este încuiat permanent!\n"
@@ -6345,17 +6369,17 @@ msgstr[1] ""
 "%d încercări PIN Admin rămase înainte de a încuia cardul permanent\n"
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %%0A to force a linefeed.
-#, fuzzy, c-format
-msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
-msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
-
+#. the start of the string.  Use %0A (single percent) for a linefeed.
 #, fuzzy
 msgid "|A|Please enter the Admin PIN"
 msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 msgid "access to admin commands is not configured\n"
 msgstr "accesul la comenzile de administrare nu este configurată\n"
+
+#, fuzzy
+msgid "||Please enter the PIN"
+msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
 
 #, fuzzy
 msgid "||Please enter the Reset Code for the card"
@@ -6524,10 +6548,6 @@ msgstr ""
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid radix64 character %02x skipped\n"
-msgstr "caracter radix64 invalid %02X sărit\n"
 
 #, fuzzy
 msgid "no dirmngr running in this session\n"
@@ -7335,6 +7355,10 @@ msgstr "certificat incorect"
 
 #, fuzzy, c-format
 msgid "    runtime cached certificates: %u\n"
+msgstr "eroare la obţinerea numărului serial: %s\n"
+
+#, fuzzy, c-format
+msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
 msgstr "eroare la obţinerea numărului serial: %s\n"
 
 #, fuzzy
@@ -8532,9 +8556,6 @@ msgstr "verificarea semnăturii create a eşuat: %s\n"
 msgid "certificate chain is good\n"
 msgstr "preferinţa `%s' duplicată\n"
 
-msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "DSA necesită folosirea unui algoritm cu hash de 160 biţi\n"
-
 msgid "certificate should not have been used for CRL signing\n"
 msgstr ""
 
@@ -8972,6 +8993,16 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
+#~ msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
+
+#, fuzzy
+#~ msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
+#~ msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"
+
+#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
+#~ msgstr "DSA necesită folosirea unui algoritm cu hash de 160 biţi\n"
 
 #~ msgid "--store [filename]"
 #~ msgstr "--store [nume_fişier]"

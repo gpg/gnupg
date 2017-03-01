@@ -158,6 +158,11 @@ msgstr "卡片上沒有 ssh 用的認證金鑰: %s\n"
 msgid "no suitable card key found: %s\n"
 msgstr "找不到合適的卡片金鑰: %s\n"
 
+#, fuzzy, c-format
+#| msgid "error getting stored flags: %s\n"
+msgid "error getting list of cards: %s\n"
+msgstr "取得已存放的旗標時出錯: %s\n"
+
 #, c-format
 msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
@@ -984,6 +989,10 @@ msgstr "忽略垃圾列"
 
 msgid "[none]"
 msgstr "[ 無 ]"
+
+#, c-format
+msgid "invalid radix64 character %02x skipped\n"
+msgstr "已跳過無效的 radix64 字符 %02x\n"
 
 msgid "argument not expected"
 msgstr "沒料到有引數"
@@ -2345,6 +2354,9 @@ msgstr "載入憑證 '%s' 時出錯: %s\n"
 
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
+
+msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
 msgstr ""
 
 msgid "Go ahead and type your message ...\n"
@@ -5539,7 +5551,7 @@ msgstr ""
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
 
-msgid "Defaulting to unknown."
+msgid "Defaulting to unknown.\n"
 msgstr ""
 
 msgid "TOFU db corruption detected.\n"
@@ -5661,7 +5673,7 @@ msgid "error opening TOFU database: %s\n"
 msgstr "送出資料時出錯: %s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -5912,6 +5924,9 @@ msgstr "存放指紋失敗: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "存放創生日期失敗: %s\n"
 
+msgid "error retrieving CHV status from card\n"
+msgstr "從卡片取回 CHV 狀態時出錯\n"
+
 msgid "response does not contain the RSA modulus\n"
 msgstr "回應中未包含 RSA 系數\n"
 
@@ -5930,6 +5945,23 @@ msgstr "回應中未包含公鑰資料\n"
 msgid "reading public key failed: %s\n"
 msgstr "讀取公鑰時失敗: %s\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
+msgstr ""
+
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr "以 %s 做為預設 PIN\n"
@@ -5938,11 +5970,9 @@ msgstr "以 %s 做為預設 PIN\n"
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr "使用 %s 做為預設個人識別碼 (PIN) 失敗: %s - 正在停用之後的預設使用\n"
 
-#, c-format
-msgid "||Please enter the PIN%%0A[sigs done: %lu]"
-msgstr "||請輸入 PIN%%0A[簽署完成: %lu]"
-
-msgid "||Please enter the PIN"
+#, fuzzy
+#| msgid "||Please enter the PIN"
+msgid "||Please unlock the card"
 msgstr "||請輸入個人識別碼 (PIN)"
 
 #, c-format
@@ -5952,9 +5982,6 @@ msgstr "用於 CHV%d 的個人識別碼 (PIN) 太短; 長度最少要有 %d\n"
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "驗證 CHV%d 失敗: %s\n"
-
-msgid "error retrieving CHV status from card\n"
-msgstr "從卡片取回 CHV 狀態時出錯\n"
 
 msgid "card is permanently locked!\n"
 msgstr "卡片永久鎖定了!!\n"
@@ -5967,16 +5994,15 @@ msgid_plural ""
 msgstr[0] "%d 管理者個人識別碼 (PIN) 試圖在卡片永久鎖定前遺留下來\n"
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %%0A to force a linefeed.
-#, c-format
-msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
-msgstr "|A|請在上輸入管理者 PIN%%0A[剩餘嘗試次數: %d]"
-
+#. the start of the string.  Use %0A (single percent) for a linefeed.
 msgid "|A|Please enter the Admin PIN"
 msgstr "|A|請輸入管理者 PIN"
 
 msgid "access to admin commands is not configured\n"
 msgstr "管理者指令存取權限尚未組態\n"
+
+msgid "||Please enter the PIN"
+msgstr "||請輸入個人識別碼 (PIN)"
 
 msgid "||Please enter the Reset Code for the card"
 msgstr "||請輸入卡片的重設碼"
@@ -6133,10 +6159,6 @@ msgstr "用於 fd %d 的經手程式已啟動\n"
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr "用於 fd %d 的經手程式已終止\n"
-
-#, c-format
-msgid "invalid radix64 character %02x skipped\n"
-msgstr "已跳過無效的 radix64 字符 %02x\n"
 
 #, fuzzy
 #| msgid "no gpg-agent running in this session\n"
@@ -6894,6 +6916,11 @@ msgstr "固定載入的憑證: %u\n"
 
 #, c-format
 msgid "    runtime cached certificates: %u\n"
+msgstr "    執行時期快取的憑證: %u\n"
+
+#, fuzzy, c-format
+#| msgid "    runtime cached certificates: %u\n"
+msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
 msgstr "    執行時期快取的憑證: %u\n"
 
 msgid "certificate already cached\n"
@@ -7995,9 +8022,6 @@ msgstr "檢查根憑證可信度時失敗: %s\n"
 msgid "certificate chain is good\n"
 msgstr "憑證鏈完好\n"
 
-msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "DSA 要求使用 160 位元的雜湊演算法\n"
-
 msgid "certificate should not have been used for CRL signing\n"
 msgstr "憑證應該還未被用於 CRL 簽署\n"
 
@@ -8434,6 +8458,15 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
+#~ msgstr "||請輸入 PIN%%0A[簽署完成: %lu]"
+
+#~ msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
+#~ msgstr "|A|請在上輸入管理者 PIN%%0A[剩餘嘗試次數: %d]"
+
+#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
+#~ msgstr "DSA 要求使用 160 位元的雜湊演算法\n"
 
 #~ msgid "--store [filename]"
 #~ msgstr "--store [檔名]"

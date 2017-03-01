@@ -150,6 +150,11 @@ msgstr "на карте нет основного аутентификацион
 msgid "no suitable card key found: %s\n"
 msgstr "на карте не найдено подходящего ключа: %s\n"
 
+#, fuzzy, c-format
+#| msgid "error getting stored flags: %s\n"
+msgid "error getting list of cards: %s\n"
+msgstr "ошибка получения сохраненных признаков: %s\n"
+
 #, c-format
 msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
@@ -985,6 +990,10 @@ msgstr "игнорируем дефектную строку"
 
 msgid "[none]"
 msgstr "[отсутствует]"
+
+#, c-format
+msgid "invalid radix64 character %02x skipped\n"
+msgstr "недопустимый символ radix64 %02x пропущен\n"
 
 msgid "argument not expected"
 msgstr "неожиданный параметр"
@@ -2343,6 +2352,9 @@ msgstr "ошибка синтаксического анализа специф�
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr "'%s' не является идентификатором, отпечатком или кодом ключа\n"
+
+msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
+msgstr ""
 
 msgid "Go ahead and type your message ...\n"
 msgstr "Пишите сообщение ...\n"
@@ -5594,7 +5606,9 @@ msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
 "(G)Хороший, (A)Пока принять, (U)Неясно, (R)Пока отвергнуть, (B)Плохой? "
 
-msgid "Defaulting to unknown."
+#, fuzzy
+#| msgid "Defaulting to unknown."
+msgid "Defaulting to unknown.\n"
 msgstr "Принимается исходное значение (неясно)."
 
 msgid "TOFU db corruption detected.\n"
@@ -5746,8 +5760,9 @@ msgstr[2] ""
 msgid "error opening TOFU database: %s\n"
 msgstr "ошибка при открытии базы данных TOFU: %s\n"
 
-#, c-format
-msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
+#, fuzzy, c-format
+#| msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
 "ВНИМАНИЕ: Шифрование для ключа %s, у которого нет неотозванных "
 "идентификаторов пользователя.\n"
@@ -6001,6 +6016,9 @@ msgstr "сбой при сохранении отпечатка: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "сбой при сохранении даты создания: %s\n"
 
+msgid "error retrieving CHV status from card\n"
+msgstr "ошибка получения статуса CHV с карты\n"
+
 msgid "response does not contain the RSA modulus\n"
 msgstr "в ответе отсутствует модуль RSA\n"
 
@@ -6017,6 +6035,23 @@ msgstr "ответ не содержит данных открытого клю�
 msgid "reading public key failed: %s\n"
 msgstr "сбой при чтении открытого ключа: %s\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
+msgstr ""
+
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr "основной PIN применяется как %s\n"
@@ -6027,11 +6062,9 @@ msgstr ""
 "не удалось применить основной PIN как %s: %s - далее применяться\n"
 "как основной не будет\n"
 
-#, c-format
-msgid "||Please enter the PIN%%0A[sigs done: %lu]"
-msgstr "||Введите PIN%%0A[сделано подписей: %lu]"
-
-msgid "||Please enter the PIN"
+#, fuzzy
+#| msgid "||Please enter the PIN"
+msgid "||Please unlock the card"
 msgstr "||Введите PIN"
 
 #, c-format
@@ -6041,9 +6074,6 @@ msgstr "PIN для CHV%d слишком короток, минимальная �
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "сбой при проверке CHV%d: %s\n"
-
-msgid "error retrieving CHV status from card\n"
-msgstr "ошибка получения статуса CHV с карты\n"
 
 msgid "card is permanently locked!\n"
 msgstr "карта окончательно заблокирована!\n"
@@ -6060,16 +6090,15 @@ msgstr[2] ""
 "осталось %d попыток ввода административного PIN перед блокировкой карты\n"
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %%0A to force a linefeed.
-#, c-format
-msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
-msgstr "|A|Введите административный PIN%%0A[осталось попыток: %d]"
-
+#. the start of the string.  Use %0A (single percent) for a linefeed.
 msgid "|A|Please enter the Admin PIN"
 msgstr "|A|Введите административный PIN"
 
 msgid "access to admin commands is not configured\n"
 msgstr "доступ к командам управления не настроен\n"
+
+msgid "||Please enter the PIN"
+msgstr "||Введите PIN"
 
 msgid "||Please enter the Reset Code for the card"
 msgstr "||Введите код сброса для карты"
@@ -6227,10 +6256,6 @@ msgstr "обработчик fd %d запущен\n"
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr "обработчик fd %d остановлен\n"
-
-#, c-format
-msgid "invalid radix64 character %02x skipped\n"
-msgstr "недопустимый символ radix64 %02x пропущен\n"
 
 msgid "no dirmngr running in this session\n"
 msgstr "в этом сеансе dirmngr не работает\n"
@@ -7001,6 +7026,11 @@ msgstr "      постоянно загруженных сертификатов
 
 #, c-format
 msgid "    runtime cached certificates: %u\n"
+msgstr "сертификатов в буфере времени исполнения: %u\n"
+
+#, fuzzy, c-format
+#| msgid "    runtime cached certificates: %u\n"
+msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
 msgstr "сертификатов в буфере времени исполнения: %u\n"
 
 msgid "certificate already cached\n"
@@ -8143,9 +8173,6 @@ msgstr "сбой при проверке доверенности корнево
 msgid "certificate chain is good\n"
 msgstr "хорошая цепочка сертификатов\n"
 
-msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "DSA требует 160-битной хеш-функции\n"
-
 msgid "certificate should not have been used for CRL signing\n"
 msgstr ""
 "сертификат не следовало использовать для подписывания списка отозванных "
@@ -8569,3 +8596,12 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
+
+#~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
+#~ msgstr "||Введите PIN%%0A[сделано подписей: %lu]"
+
+#~ msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
+#~ msgstr "|A|Введите административный PIN%%0A[осталось попыток: %d]"
+
+#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
+#~ msgstr "DSA требует 160-битной хеш-функции\n"

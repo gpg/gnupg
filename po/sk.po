@@ -155,6 +155,10 @@ msgstr "chyba pri zápise do súboru tajných kľúčov `%s': %s\n"
 msgid "no suitable card key found: %s\n"
 msgstr "nenájdený zapisovateľný súbor tajných kľúčov (secring): %s\n"
 
+#, fuzzy, c-format
+msgid "error getting list of cards: %s\n"
+msgstr "chyba pri vytváraní hesla: %s\n"
+
 #, c-format
 msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
@@ -1038,6 +1042,10 @@ msgstr "chyba v pätičke\n"
 #, fuzzy
 msgid "[none]"
 msgstr "neznáme"
+
+#, fuzzy, c-format
+msgid "invalid radix64 character %02x skipped\n"
+msgstr "neplatný znak vo formáte radix64 %02x bol preskočený\n"
 
 #, fuzzy
 msgid "argument not expected"
@@ -2520,6 +2528,9 @@ msgstr "chyba pri vytváraní hesla: %s\n"
 
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
+
+msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
 msgstr ""
 
 msgid "Go ahead and type your message ...\n"
@@ -5887,7 +5898,7 @@ msgstr ""
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
 
-msgid "Defaulting to unknown."
+msgid "Defaulting to unknown.\n"
 msgstr ""
 
 msgid "TOFU db corruption detected.\n"
@@ -6013,7 +6024,7 @@ msgid "error opening TOFU database: %s\n"
 msgstr "chyba pri posielaní na `%s': %s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6266,6 +6277,9 @@ msgstr "nemôžem inicializovať databázu dôvery: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "zlyhalo obnovenie vyrovnávacej pamäti kľúčov: %s\n"
 
+msgid "error retrieving CHV status from card\n"
+msgstr ""
+
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
@@ -6284,6 +6298,23 @@ msgstr ""
 msgid "reading public key failed: %s\n"
 msgstr "zmazanie bloku kľúča sa nepodarilo:  %s\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
+msgstr ""
+
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr ""
@@ -6292,12 +6323,8 @@ msgstr ""
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr ""
 
-#, c-format
-msgid "||Please enter the PIN%%0A[sigs done: %lu]"
-msgstr ""
-
 #, fuzzy
-msgid "||Please enter the PIN"
+msgid "||Please unlock the card"
 msgstr "zmeniť heslo"
 
 #, c-format
@@ -6307,9 +6334,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "nepodarilo poslať kľúč na server: %s\n"
-
-msgid "error retrieving CHV status from card\n"
-msgstr ""
 
 msgid "card is permanently locked!\n"
 msgstr ""
@@ -6322,17 +6346,17 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %%0A to force a linefeed.
-#, fuzzy, c-format
-msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
-msgstr "zmeniť heslo"
-
+#. the start of the string.  Use %0A (single percent) for a linefeed.
 #, fuzzy
 msgid "|A|Please enter the Admin PIN"
 msgstr "zmeniť heslo"
 
 msgid "access to admin commands is not configured\n"
 msgstr ""
+
+#, fuzzy
+msgid "||Please enter the PIN"
+msgstr "zmeniť heslo"
 
 #, fuzzy
 msgid "||Please enter the Reset Code for the card"
@@ -6503,10 +6527,6 @@ msgstr ""
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid radix64 character %02x skipped\n"
-msgstr "neplatný znak vo formáte radix64 %02x bol preskočený\n"
 
 #, fuzzy
 msgid "no dirmngr running in this session\n"
@@ -7313,6 +7333,10 @@ msgstr "nesprávny certifikát"
 
 #, fuzzy, c-format
 msgid "    runtime cached certificates: %u\n"
+msgstr "chyba pri vytváraní hesla: %s\n"
+
+#, fuzzy, c-format
+msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
 msgstr "chyba pri vytváraní hesla: %s\n"
 
 #, fuzzy
@@ -8481,9 +8505,6 @@ msgstr "kontrola vytvoreného podpisu sa nepodarila: %s\n"
 msgid "certificate chain is good\n"
 msgstr "duplicita predvoľby %c%lu\n"
 
-msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "DSA požaduje použitie 160 bitového hashovacieho algoritmu\n"
-
 msgid "certificate should not have been used for CRL signing\n"
 msgstr ""
 
@@ -8919,6 +8940,13 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
+#~ msgstr "zmeniť heslo"
+
+#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
+#~ msgstr "DSA požaduje použitie 160 bitového hashovacieho algoritmu\n"
 
 #~ msgid "--store [filename]"
 #~ msgstr "--store [meno súboru]"

@@ -154,6 +154,10 @@ msgstr "αδυναμία εγγραφής μυστικής κλειδοθήκη�
 msgid "no suitable card key found: %s\n"
 msgstr "δε βρέθηκε εγγράψιμη μυστική κλειδοθήκη: %s\n"
 
+#, fuzzy, c-format
+msgid "error getting list of cards: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
 #, c-format
 msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
@@ -1035,6 +1039,10 @@ msgstr "σφάλμα στη γραμμή trailer\n"
 #, fuzzy
 msgid "[none]"
 msgstr "άγνωστο"
+
+#, fuzzy, c-format
+msgid "invalid radix64 character %02x skipped\n"
+msgstr "μη έγκυρος radix64 χαρακτήρας %02x παράβλεψη\n"
 
 #, fuzzy
 msgid "argument not expected"
@@ -2519,6 +2527,9 @@ msgstr "σφάλμα στη δημιουργία της φράσης κλειδ�
 
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
+
+msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
 msgstr ""
 
 msgid "Go ahead and type your message ...\n"
@@ -5915,7 +5926,7 @@ msgstr ""
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
 
-msgid "Defaulting to unknown."
+msgid "Defaulting to unknown.\n"
 msgstr ""
 
 msgid "TOFU db corruption detected.\n"
@@ -6041,7 +6052,7 @@ msgid "error opening TOFU database: %s\n"
 msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6296,6 +6307,9 @@ msgstr "αποτυχία αρχικοποίησης της TrustDB: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "αποτυχία επαναδόμησης της cache κλειδοθήκης: %s\n"
 
+msgid "error retrieving CHV status from card\n"
+msgstr ""
+
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
@@ -6314,6 +6328,23 @@ msgstr ""
 msgid "reading public key failed: %s\n"
 msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
+msgstr ""
+
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr ""
@@ -6322,12 +6353,8 @@ msgstr ""
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr ""
 
-#, c-format
-msgid "||Please enter the PIN%%0A[sigs done: %lu]"
-msgstr ""
-
 #, fuzzy
-msgid "||Please enter the PIN"
+msgid "||Please unlock the card"
 msgstr "αλλαγή της φράσης κλειδί"
 
 #, c-format
@@ -6337,9 +6364,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "keyserver αποστολή απέτυχε: %s\n"
-
-msgid "error retrieving CHV status from card\n"
-msgstr ""
 
 msgid "card is permanently locked!\n"
 msgstr ""
@@ -6352,17 +6376,17 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %%0A to force a linefeed.
-#, fuzzy, c-format
-msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
-msgstr "αλλαγή της φράσης κλειδί"
-
+#. the start of the string.  Use %0A (single percent) for a linefeed.
 #, fuzzy
 msgid "|A|Please enter the Admin PIN"
 msgstr "αλλαγή της φράσης κλειδί"
 
 msgid "access to admin commands is not configured\n"
 msgstr ""
+
+#, fuzzy
+msgid "||Please enter the PIN"
+msgstr "αλλαγή της φράσης κλειδί"
 
 #, fuzzy
 msgid "||Please enter the Reset Code for the card"
@@ -6533,10 +6557,6 @@ msgstr ""
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid radix64 character %02x skipped\n"
-msgstr "μη έγκυρος radix64 χαρακτήρας %02x παράβλεψη\n"
 
 #, fuzzy
 msgid "no dirmngr running in this session\n"
@@ -7340,6 +7360,10 @@ msgstr "κακό πιστοποιητικό"
 
 #, fuzzy, c-format
 msgid "    runtime cached certificates: %u\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy, c-format
+msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
 msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
 #, fuzzy
@@ -8511,9 +8535,6 @@ msgstr "απέτυχε ο έλεγχος της υπογραφής που δημ
 msgid "certificate chain is good\n"
 msgstr "η προεπιλογή %c%lu αντιγράφτηκε\n"
 
-msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "ο DSA απαιτεί τη χρήση ενός 160 bit αλγόριθμου hash\n"
-
 msgid "certificate should not have been used for CRL signing\n"
 msgstr ""
 
@@ -8949,6 +8970,13 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
+#~ msgstr "αλλαγή της φράσης κλειδί"
+
+#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
+#~ msgstr "ο DSA απαιτεί τη χρήση ενός 160 bit αλγόριθμου hash\n"
 
 #~ msgid "--store [filename]"
 #~ msgstr "--store [όνομα αρχείου]"

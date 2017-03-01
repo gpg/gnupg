@@ -159,6 +159,10 @@ msgstr "取得当前密钥信息时出错：%s\n"
 msgid "no suitable card key found: %s\n"
 msgstr "找不到可写的私钥钥匙环：%s\n"
 
+#, fuzzy, c-format
+msgid "error getting list of cards: %s\n"
+msgstr "获取新 PIN 时出错：%s\n"
+
 #, c-format
 msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
@@ -1050,6 +1054,10 @@ msgstr "结尾行有问题\n"
 #, fuzzy
 msgid "[none]"
 msgstr "[未设定]"
+
+#, fuzzy, c-format
+msgid "invalid radix64 character %02x skipped\n"
+msgstr "跳过无效的 64 进制字符 %02x\n"
 
 #, fuzzy
 msgid "argument not expected"
@@ -2485,6 +2493,9 @@ msgstr "取得当前密钥信息时出错：%s\n"
 
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
+
+msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
 msgstr ""
 
 msgid "Go ahead and type your message ...\n"
@@ -5749,7 +5760,7 @@ msgstr ""
 msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
 
-msgid "Defaulting to unknown."
+msgid "Defaulting to unknown.\n"
 msgstr ""
 
 msgid "TOFU db corruption detected.\n"
@@ -5875,7 +5886,7 @@ msgid "error opening TOFU database: %s\n"
 msgstr "读取‘%s’时出错：%s\n"
 
 #, c-format
-msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
+msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6130,6 +6141,9 @@ msgstr "无法存储指纹：%s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "无法存储创建日期：%s\n"
 
+msgid "error retrieving CHV status from card\n"
+msgstr "从卡中获取 CHV 状态时出错\n"
+
 msgid "response does not contain the RSA modulus\n"
 msgstr "响应未包含 RSA 余数\n"
 
@@ -6148,6 +6162,23 @@ msgstr "响应未包含公钥数据\n"
 msgid "reading public key failed: %s\n"
 msgstr "无法读出公钥：%s\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
+msgstr ""
+
+#, c-format
+msgid "%sNumber: %s%%0AHolder: %s%s"
+msgstr ""
+
+#. TRANSLATORS: This is the number of remaining attempts to
+#. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
+#, c-format
+msgid "Remaining attempts: %d"
+msgstr ""
+
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr ""
@@ -6156,12 +6187,8 @@ msgstr ""
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr ""
 
-#, c-format
-msgid "||Please enter the PIN%%0A[sigs done: %lu]"
-msgstr "||请输入 PIN%%0A[完成的签字：%lu]"
-
 #, fuzzy
-msgid "||Please enter the PIN"
+msgid "||Please unlock the card"
 msgstr "||请输入 PIN%%0A[完成的签字：%lu]"
 
 #, c-format
@@ -6171,9 +6198,6 @@ msgstr "CHV%d 的 PIN 太短；最小长度为 %d\n"
 #, c-format
 msgid "verify CHV%d failed: %s\n"
 msgstr "验证 CHV%d 失败：%s\n"
-
-msgid "error retrieving CHV status from card\n"
-msgstr "从卡中获取 CHV 状态时出错\n"
 
 msgid "card is permanently locked!\n"
 msgstr "卡被永久锁定！\n"
@@ -6187,17 +6211,17 @@ msgstr[0] "尝试管理员 PIN %d 次后，卡将被永久锁定！\n"
 msgstr[1] "尝试管理员 PIN %d 次后，卡将被永久锁定！\n"
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
-#. the start of the string.  Use %%0A to force a linefeed.
-#, fuzzy, c-format
-msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
-msgstr "||请输入 PIN%%0A[完成的签字：%lu]"
-
+#. the start of the string.  Use %0A (single percent) for a linefeed.
 #, fuzzy
 msgid "|A|Please enter the Admin PIN"
 msgstr "||请输入 PIN%%0A[完成的签字：%lu]"
 
 msgid "access to admin commands is not configured\n"
 msgstr "尚未配置管理员命令的权限\n"
+
+#, fuzzy
+msgid "||Please enter the PIN"
+msgstr "||请输入 PIN%%0A[完成的签字：%lu]"
 
 #, fuzzy
 msgid "||Please enter the Reset Code for the card"
@@ -6362,10 +6386,6 @@ msgstr ""
 #, c-format
 msgid "handler for fd %d terminated\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid radix64 character %02x skipped\n"
-msgstr "跳过无效的 64 进制字符 %02x\n"
 
 #, fuzzy
 msgid "no dirmngr running in this session\n"
@@ -7170,6 +7190,10 @@ msgstr "证书已损坏"
 
 #, fuzzy, c-format
 msgid "    runtime cached certificates: %u\n"
+msgstr "生成密码的时候发生错误：%s\n"
+
+#, fuzzy, c-format
+msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
 msgstr "生成密码的时候发生错误：%s\n"
 
 #, fuzzy
@@ -8358,9 +8382,6 @@ msgstr "检查已建立的签名时发生错误： %s\n"
 msgid "certificate chain is good\n"
 msgstr "首选项‘%s’重复\n"
 
-msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "DSA 要求使用 160 位的散列算法\n"
-
 msgid "certificate should not have been used for CRL signing\n"
 msgstr ""
 
@@ -8796,6 +8817,16 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
+#~ msgstr "||请输入 PIN%%0A[完成的签字：%lu]"
+
+#, fuzzy
+#~ msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
+#~ msgstr "||请输入 PIN%%0A[完成的签字：%lu]"
+
+#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
+#~ msgstr "DSA 要求使用 160 位的散列算法\n"
 
 #~ msgid "--store [filename]"
 #~ msgstr "--store [文件名]"

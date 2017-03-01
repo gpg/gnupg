@@ -6435,12 +6435,15 @@ msgstr "odpowiedź nie zawiera danych klucza publicznego\n"
 msgid "reading public key failed: %s\n"
 msgstr "odczyt klucza publicznego nie powiódł się: %s\n"
 
+#. TRANSLATORS: Put a \x1f right before a colon.  This can be
+#. * used by pinentry to nicely align the names and values.  Keep
+#. * the %s at the start and end of the string.
 #, c-format
-msgid "Card number:\t%s%%0ASignatures:\t%lu%%0ACardholder:\t%s"
+msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
 msgstr ""
 
 #, c-format
-msgid "Card number:\t%s%%0ACardholder:\t%s"
+msgid "%sNumber: %s%%0AHolder: %s%s"
 msgstr ""
 
 #. TRANSLATORS: This is the number of remaining attempts to
