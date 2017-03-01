@@ -1693,6 +1693,21 @@ AC_ARG_ENABLE(optimization,
                    fi])
 
 #
+# We do not want support for the GNUPG_BUILDDIR environment variable
+# in a released version.  However, our regression tests suite requires
+# this and thus we build with support for it during "make distcheck".
+# This configure option implements this along with the top Makefile's
+# AM_DISTCHECK_CONFIGURE_FLAGS.
+#
+gnupg_builddir_envvar=no
+AC_ARG_ENABLE(gnupg-builddir-envvar,,
+              gnupg_builddir_envvar=$enableval)
+if test x"$gnupg_builddir_envvar" = x"yes"; then
+   AC_DEFINE(ENABLE_GNUPG_BUILDDIR_ENVVAR, 1,
+      [This is only used with "make distcheck"])
+fi
+
+#
 # Add user CFLAGS.
 #
 CFLAGS="$CFLAGS $CFLAGS_orig"

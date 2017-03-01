@@ -914,7 +914,7 @@ gnupg_set_builddir (const char *newdir)
 static void
 gnupg_set_builddir_from_env (void)
 {
-#ifdef IS_DEVELOPMENT_VERSION
+#if defined(IS_DEVELOPMENT_VERSION) || defined(ENABLE_GNUPG_BUILDDIR_ENVVAR)
   if (gnupg_build_directory)
     return;
 
