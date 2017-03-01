@@ -1839,7 +1839,7 @@ check_keygrip (ctrl_t ctrl, const char *hexgrip)
   gpg_error_t err;
   unsigned char *public;
   size_t publiclen;
-  const char *algostr;
+  int algo;
 
   if (hexgrip[0] == '&')
     hexgrip++;
@@ -1849,26 +1849,10 @@ check_keygrip (ctrl_t ctrl, const char *hexgrip)
     return 0;
   publiclen = gcry_sexp_canon_len (public, 0, NULL, NULL);
 
-  get_pk_algo_from_canon_sexp (public, publiclen, &algostr);
+  algo = get_pk_algo_from_canon_sexp (public, publiclen);
   xfree (public);
 
-  /* FIXME: Mapping of ECC algorithms is probably not correct. */
-  if (!algostr)
-    return 0;
-  else if (!strcmp (algostr, "rsa"))
-    return PUBKEY_ALGO_RSA;
-  else if (!strcmp (algostr, "dsa"))
-    return PUBKEY_ALGO_DSA;
-  else if (!strcmp (algostr, "elg"))
-    return PUBKEY_ALGO_ELGAMAL_E;
-  else if (!strcmp (algostr, "ecc"))
-    return PUBKEY_ALGO_ECDH;
-  else if (!strcmp (algostr, "ecdsa"))
-    return PUBKEY_ALGO_ECDSA;
-  else if (!strcmp (algostr, "eddsa"))
-    return PUBKEY_ALGO_EDDSA;
-  else
-    return 0;
+  return map_pk_gcry_to_openpgp (algo);
 }
 
 

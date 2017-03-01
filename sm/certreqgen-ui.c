@@ -95,7 +95,7 @@ check_keygrip (ctrl_t ctrl, const char *hexgrip)
   gpg_error_t err;
   ksba_sexp_t public;
   size_t publiclen;
-  const char *algostr;
+  int algo;
 
   if (hexgrip[0] == '&')
     hexgrip++;
@@ -105,21 +105,17 @@ check_keygrip (ctrl_t ctrl, const char *hexgrip)
     return NULL;
   publiclen = gcry_sexp_canon_len (public, 0, NULL, NULL);
 
-  get_pk_algo_from_canon_sexp (public, publiclen, &algostr);
+  algo = get_pk_algo_from_canon_sexp (public, publiclen);
   xfree (public);
 
-  if (!algostr)
-    return NULL;
-  else if (!strcmp (algostr, "rsa"))
-    return "RSA";
-  else if (!strcmp (algostr, "dsa"))
-    return "DSA";
-  else if (!strcmp (algostr, "elg"))
-    return "ELG";
-  else if (!strcmp (algostr, "ecdsa"))
-    return "ECDSA";
-  else
-    return NULL;
+  switch (algo)
+    {
+    case GCRY_PK_RSA:   return "RSA";
+    case GCRY_PK_DSA:   return "DSA";
+    case GCRY_PK_ELG:   return "ELG";
+    case GCRY_PK_EDDSA: return "ECDSA";
+    default: return NULL;
+    }
 }
 
 

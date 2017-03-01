@@ -195,10 +195,10 @@ gpg_error_t get_rsa_pk_from_canon_sexp (const unsigned char *keydata,
                                         size_t *r_nlen,
                                         unsigned char const **r_e,
                                         size_t *r_elen);
-gpg_error_t get_pk_algo_from_canon_sexp (const unsigned char *keydata,
-                                         size_t keydatalen,
-                                         const char **r_algo);
+
 int get_pk_algo_from_key (gcry_sexp_t key);
+int get_pk_algo_from_canon_sexp (const unsigned char *keydata,
+                                 size_t keydatalen);
 
 /*-- convert.c --*/
 int hex2bin (const char *string, void *buffer, size_t length);
