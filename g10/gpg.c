@@ -4546,7 +4546,7 @@ main (int argc, char **argv)
 	    add_to_strlist2( &sl, *argv, utf8_strings );
         {
           export_stats_t stats = export_new_stats ();
-          export_seckeys (ctrl, sl, stats);
+          export_seckeys (ctrl, sl, opt.export_options, stats);
           export_print_stats (stats);
           export_release_stats (stats);
         }
@@ -4559,7 +4559,7 @@ main (int argc, char **argv)
 	    add_to_strlist2( &sl, *argv, utf8_strings );
         {
           export_stats_t stats = export_new_stats ();
-          export_secsubkeys (ctrl, sl, stats);
+          export_secsubkeys (ctrl, sl, opt.export_options, stats);
           export_print_stats (stats);
           export_release_stats (stats);
         }

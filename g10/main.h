@@ -397,8 +397,10 @@ gpg_error_t parse_and_set_export_filter (const char *string);
 
 int export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options,
                     export_stats_t stats);
-int export_seckeys (ctrl_t ctrl, strlist_t users, export_stats_t stats);
-int export_secsubkeys (ctrl_t ctrl, strlist_t users, export_stats_t stats);
+int export_seckeys (ctrl_t ctrl, strlist_t users, unsigned int options,
+                    export_stats_t stats);
+int export_secsubkeys (ctrl_t ctrl, strlist_t users, unsigned int options,
+                       export_stats_t stats);
 
 gpg_error_t export_pubkey_buffer (ctrl_t ctrl, const char *keyspec,
                                   unsigned int options,

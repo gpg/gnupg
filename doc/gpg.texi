@@ -1832,7 +1832,8 @@ are available for all keyserver types, some common options are:
   used with HKP keyservers.
 
   @item auto-key-retrieve
-  This is the same as the option @option{auto-key-retrieve}.
+  This is an obsolete alias for the option @option{auto-key-retrieve}.
+  Please do not use it; it will be removed in future versions..
 
   @item honor-keyserver-url
   When using @option{--refresh-keys}, if the key in question has a preferred
@@ -2379,8 +2380,8 @@ The available properties are:
 @item --export-options @code{parameters}
 @opindex export-options
 This is a space or comma delimited string that gives options for
-exporting keys. Options can be prepended with a `no-' to give the
-opposite meaning. The options are:
+exporting keys.  Options can be prepended with a `no-' to give the
+opposite meaning.  The options are:
 
 @table @asis
 

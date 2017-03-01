@@ -247,16 +247,17 @@ export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options,
 /*
  * Export secret keys (to stdout or to --output FILE).
  *
- * Depending on opt.armor the output is armored.  If USERS is NULL,
- * all secret keys will be exported.  STATS is either an export stats
- * object for update or NULL.
+ * Depending on opt.armor the output is armored.  OPTIONS are defined
+ * in main.h.  If USERS is NULL, all secret keys will be exported.
+ * STATS is either an export stats object for update or NULL.
  *
  * This function is the core of "gpg --export-secret-keys".
  */
 int
-export_seckeys (ctrl_t ctrl, strlist_t users, export_stats_t stats)
+export_seckeys (ctrl_t ctrl, strlist_t users, unsigned int options,
+                export_stats_t stats)
 {
-  return do_export (ctrl, users, 1, 0, stats);
+  return do_export (ctrl, users, 1, options, stats);
 }
 
 
@@ -264,16 +265,18 @@ export_seckeys (ctrl_t ctrl, strlist_t users, export_stats_t stats)
  * Export secret sub keys (to stdout or to --output FILE).
  *
  * This is the same as export_seckeys but replaces the primary key by
- * a stub key.  Depending on opt.armor the output is armored.  If
- * USERS is NULL, all secret subkeys will be exported.  STATS is
- * either an export stats object for update or NULL.
+ * a stub key.  Depending on opt.armor the output is armored.  OPTIONS
+ * are defined in main.h.  If USERS is NULL, all secret subkeys will
+ * be exported.  STATS is either an export stats object for update or
+ * NULL.
  *
  * This function is the core of "gpg --export-secret-subkeys".
  */
 int
-export_secsubkeys (ctrl_t ctrl, strlist_t users, export_stats_t stats)
+export_secsubkeys (ctrl_t ctrl, strlist_t users, unsigned int options,
+                   export_stats_t stats)
 {
-  return do_export (ctrl, users, 2, 0, stats);
+  return do_export (ctrl, users, 2, options, stats);
 }
 
 
@@ -1969,11 +1972,9 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
         }
 
       /* Always do the cleaning on the public key part if requested.
-         Note that we don't yet set this option if we are exporting
-         secret keys.  Note that both export-clean and export-minimal
-         only apply to UID sigs (0x10, 0x11, 0x12, and 0x13).  A
-         designated revocation is never stripped, even with
-         export-minimal set.  */
+       * Note that both export-clean and export-minimal only apply to
+       * UID sigs (0x10, 0x11, 0x12, and 0x13).  A designated
+       * revocation is never stripped, even with export-minimal set.  */
       if ((options & EXPORT_CLEAN))
         clean_key (keyblock, opt.verbose, (options&EXPORT_MINIMAL), NULL, NULL);
 
