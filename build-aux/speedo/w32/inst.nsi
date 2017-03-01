@@ -611,6 +611,7 @@ Section "GnuPG" SEC_gnupg
   File "share/gnupg/gpg-conf.skel"
   File "share/gnupg/dirmngr-conf.skel"
   File "share/gnupg/distsigkey.gpg"
+  File "share/gnupg/sks-keyservers.netCA.pem"
 
   SetOutPath "$INSTDIR\share\locale\ca\LC_MESSAGES"
   File share/locale/ca/LC_MESSAGES/gnupg2.mo
@@ -1266,6 +1267,7 @@ Section "-un.gnupg"
   Delete "$INSTDIR\bin\gpg-preset-passphrase.exe"
   Delete "$INSTDIR\bin\gpg-wks-client.exe"
 
+  Delete "$INSTDIR\share\gnupg\sks-keyservers.netCA.pem"
   Delete "$INSTDIR\share\gnupg\dirmngr-conf.skel"
   Delete "$INSTDIR\share\gnupg\distsigkey.gpg"
   Delete "$INSTDIR\share\gnupg\gpg-conf.skel"
