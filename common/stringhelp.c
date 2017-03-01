@@ -1052,7 +1052,8 @@ do_percent_escape (const char *str, const char *extra, int die)
     return NULL;
 
   for (i=j=0; str[i]; i++)
-    if (str[i] == ':' || str[i] == '%' || (extra && strchr (extra, str[i])))
+    if (str[i] == ':' || str[i] == '%' || str[i] == '\n'
+        || (extra && strchr (extra, str[i])))
       j++;
   if (die)
     ptr = xmalloc (i + 2 * j + 1);
@@ -1076,6 +1077,13 @@ do_percent_escape (const char *str, const char *extra, int die)
 	  ptr[i++] = '%';
 	  ptr[i++] = '2';
 	  ptr[i++] = '5';
+	}
+      else if (*str == '\n')
+	{
+	  /* The newline is problematic in a line-based format.  */
+	  ptr[i++] = '%';
+	  ptr[i++] = '0';
+	  ptr[i++] = 'a';
 	}
       else if (extra && strchr (extra, *str))
         {

@@ -1491,6 +1491,13 @@ gc_percent_escape (const char *src)
 	  *(dst++) = '2';
 	  *(dst++) = 'c';
 	}
+      else if (*src == '\n')
+	{
+	  /* The newline is problematic in a line-based format.  */
+	  *(dst++) = '%';
+	  *(dst++) = '0';
+	  *(dst++) = 'a';
+	}
       else
 	*(dst++) = *(src);
       src++;
