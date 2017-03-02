@@ -36,8 +36,13 @@
 (catch (skip "ssh-keygen not found")
        (set! ssh-keygen (path-expand "ssh-keygen" path)))
 
+(define ssh-version-string
+  (:stderr (call-with-io `(,ssh "-V") "")))
+
+(log "Using" ssh "version:" ssh-version-string)
+
 (define ssh-version
-  (let ((tmp (:stderr (call-with-io `(,ssh "-V") "")))
+  (let ((tmp ssh-version-string)
 	(prefix "OpenSSH_"))
     (unless (string-prefix? tmp prefix)
 	    (skip "This doesn't look like OpenSSH:" tmp))
@@ -45,14 +50,22 @@
 			       (+ 3 (string-length prefix))))))
 
 (define (ssh-supports? algorithm)
+  ;; We exploit ssh-keygen as an oracle to test what algorithms ssh
+  ;; supports.
   (cond
    ((equal? algorithm "ed25519")
+    ;; Unfortunately, our oracle does not work for ed25519 because
+    ;; this is a specific curve and not a family, so the key size
+    ;; parameter is ignored.
     (>= ssh-version 6.5))
    (else
-    (not (string-contains? (:stderr (call-with-io `(,ssh-keygen
-						    -t ,algorithm
-						    -b "1009") ""))
-			   "unknown key type")))))
+    ;; We call ssh-keygen with the algorithm to test, specify an
+    ;; invalid key size, and observe the error message.
+    (let ((output (:stderr (call-with-io `(,ssh-keygen
+					   -t ,algorithm
+					   -b "1009") ""))))
+      (log "(ssh-supports?" algorithm "), ssh algorithm oracle replied:" output)
+      (not (string-contains? output "unknown key type"))))))
 
 (define keys
   '(("dsa" "9a:e1:f1:5f:46:ea:a5:06:e1:e2:f8:38:8e:06:54:58")
