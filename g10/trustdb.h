@@ -128,6 +128,7 @@ int setup_trustdb( int level, const char *dbname );
 void how_to_fix_the_trustdb (void);
 const char *trust_model_string (int model);
 gpg_error_t init_trustdb (int no_create);
+int have_trustdb (void);
 void tdb_check_trustdb_stale (ctrl_t ctrl);
 void sync_trustdb( void );
 

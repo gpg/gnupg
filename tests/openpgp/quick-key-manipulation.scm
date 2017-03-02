@@ -21,10 +21,6 @@
 (load (with-path "time.scm"))
 (setup-environment)
 
- ;; XXX because of --always-trust, the trustdb is not created.
- ;; Therefore, we redefine GPG without --always-trust.
-(define GPG `(,(tool 'gpg) --no-permission-warning))
-
 (define (exact id)
   (string-append "=" id))
 

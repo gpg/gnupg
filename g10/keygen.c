@@ -4791,8 +4791,9 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
           keyid_from_pk (pk, pk->main_keyid);
           register_trusted_keyid (pk->main_keyid);
 
-          update_ownertrust (pk, ((get_ownertrust (pk) & ~TRUST_MASK)
-                                  | TRUST_ULTIMATE ));
+	  if (have_trustdb ())
+	    update_ownertrust (pk, ((get_ownertrust (pk) & ~TRUST_MASK)
+				    | TRUST_ULTIMATE ));
 
           gen_standard_revoke (pk, cache_nonce);
 

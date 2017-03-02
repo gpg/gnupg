@@ -511,6 +511,16 @@ init_trustdb (int no_create)
 }
 
 
+/* Check whether we have a trust database, initializing it if
+   necessary if the trust model is not 'always trust'.  Returns true
+   if we do have a usable trust database.  */
+int
+have_trustdb (void)
+{
+  return init_trustdb (opt.trust_model == TM_ALWAYS) == 0;
+}
+
+
 /****************
  * Recreate the WoT but do not ask for new ownertrusts.  Special
  * feature: In batch mode and without a forced yes, this is only done
