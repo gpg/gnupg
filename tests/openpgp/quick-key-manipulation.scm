@@ -37,6 +37,7 @@
 
 (define alpha "Alpha <alpha@invalid.example.net>")
 (define bravo "Bravo <bravo@invalid.example.net>")
+(define charlie "Charlie <charlie@invalid.example.net>")
 
 (define (key-data key)
   (filter (lambda (x) (or (string=? (car x) "pub")
@@ -78,6 +79,11 @@
 
 (info "Checking that we can revoke a user ID...")
 (call-check `(,@GPG --quick-revoke-uid ,(exact bravo) ,alpha))
+
+(info "Checking that we get an error revoking a non-existant user ID.")
+(catch '()
+       (call-check `(,@GPG --quick-revoke-uid ,(exact bravo) ,charlie))
+       (error "Expected an error, but get none."))
 
 (assert (= 1 (count-uids-of-secret-key bravo)))
 

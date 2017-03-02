@@ -3053,6 +3053,8 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
         }
     }
 
+  log_error (_("User ID revocation failed: %s\n"), gpg_strerror (GPG_ERR_NOT_FOUND));
+
  leave:
   release_kbnode (keyblock);
   keydb_release (kdbhd);
