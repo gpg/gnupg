@@ -20,6 +20,8 @@
 #ifndef GNUPG_MIME_PARSER_H
 #define GNUPG_MIME_PARSER_H
 
+#include "rfc822parse.h"
+
 struct mime_parser_context_s;
 typedef struct mime_parser_context_s *mime_parser_t;
 
@@ -49,10 +51,6 @@ void mime_parser_set_collect_signature (mime_parser_t ctx,
 
 gpg_error_t mime_parser_parse (mime_parser_t ctx, estream_t fp);
 
-
-/* Duplicated declaration of the RFC822 parser context. */
-struct rfc822parse_context;
-typedef struct rfc822parse_context *rfc822parse_t;
 
 rfc822parse_t mime_parser_rfc822parser (mime_parser_t ctx);
 
