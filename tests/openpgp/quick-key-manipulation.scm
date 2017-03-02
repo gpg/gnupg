@@ -81,6 +81,11 @@
        (call-check `(,@GPG --quick-revoke-uid ,(exact bravo) ,charlie))
        (error "Expected an error, but get none."))
 
+(info "Checking that we get an error revoking the last valid user ID.")
+(catch '()
+       (call-check `(,@GPG --quick-revoke-uid ,(exact bravo) ,bravo))
+       (error "Expected an error, but get none."))
+
 (assert (= 1 (count-uids-of-secret-key bravo)))
 
 (info "Checking that we can change the expiration time.")

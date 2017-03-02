@@ -2966,6 +2966,7 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
   kbnode_t node;
   int modified = 0;
   size_t revlen;
+  size_t valid_uids;
 
 #ifdef HAVE_W32_SYSTEM
   /* See keyedit_menu for why we need this.  */
@@ -3019,7 +3020,16 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
     }
 
   fix_keyblock (&keyblock);
-  setup_main_keyids (keyblock);
+  merge_keys_and_selfsig (keyblock);
+
+  /* Too make sure that we do not revoke the last valid UID, we first
+     count how many valid UIDs there are.  */
+  valid_uids = 0;
+  for (node = keyblock; node; node = node->next)
+    valid_uids +=
+      node->pkt->pkttype == PKT_USER_ID
+      && ! node->pkt->pkt.user_id->is_revoked
+      && ! node->pkt->pkt.user_id->is_expired;
 
   revlen = strlen (uidtorev);
   /* find the right UID */
@@ -3030,6 +3040,15 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
           && !memcmp (node->pkt->pkt.user_id->name, uidtorev, revlen))
         {
           struct revocation_reason_info *reason;
+
+          /* Make sure that we do not revoke the last valid UID.  */
+          if (valid_uids == 1
+              && ! node->pkt->pkt.user_id->is_revoked
+              && ! node->pkt->pkt.user_id->is_expired)
+            {
+              log_error (_("Cannot revoke the last valid user ID.\n"));
+              goto leave;
+            }
 
           reason = get_default_uid_revocation_reason ();
           err = core_revuid (ctrl, keyblock, node, reason, &modified);
@@ -6429,6 +6448,7 @@ menu_revuid (ctrl_t ctrl, kbnode_t pub_keyblock)
   int changed = 0;
   int rc;
   struct revocation_reason_info *reason = NULL;
+  size_t valid_uids;
 
   /* Note that this is correct as per the RFCs, but nevertheless
      somewhat meaningless in the real world.  1991 did define the 0x30
@@ -6445,11 +6465,30 @@ menu_revuid (ctrl_t ctrl, kbnode_t pub_keyblock)
 	  goto leave;
       }
 
+  /* Too make sure that we do not revoke the last valid UID, we first
+     count how many valid UIDs there are.  */
+  valid_uids = 0;
+  for (node = pub_keyblock; node; node = node->next)
+    valid_uids +=
+      node->pkt->pkttype == PKT_USER_ID
+      && ! node->pkt->pkt.user_id->is_revoked
+      && ! node->pkt->pkt.user_id->is_expired;
+
  reloop: /* (better this way because we are modifying the keyring) */
   for (node = pub_keyblock; node; node = node->next)
     if (node->pkt->pkttype == PKT_USER_ID && (node->flag & NODFLG_SELUID))
       {
         int modified = 0;
+
+        /* Make sure that we do not revoke the last valid UID.  */
+        if (valid_uids == 1
+            && ! node->pkt->pkt.user_id->is_revoked
+            && ! node->pkt->pkt.user_id->is_expired)
+          {
+            log_error (_("Cannot revoke the last valid user ID.\n"));
+            goto leave;
+          }
+
         rc = core_revuid (ctrl, pub_keyblock, node, reason, &modified);
         if (rc)
           goto leave;
