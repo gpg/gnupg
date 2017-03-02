@@ -2486,7 +2486,7 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   unsigned char grip[20];
   gcry_sexp_t s_skey = NULL;
   unsigned char *keydata;
-  size_t keydatalen, timestamplen;
+  size_t keydatalen;
   const char *serialno, *timestamp_str, *id;
   unsigned char *shadow_info = NULL;
   time_t timestamp;
@@ -2499,11 +2499,15 @@ cmd_keytocard (assuan_context_t ctx, char *line)
 
   err = parse_keygrip (ctx, line, grip);
   if (err)
-    return err;
+    goto leave;
 
   if (agent_key_available (grip))
-    return gpg_error (GPG_ERR_NO_SECKEY);
+    {
+      err =gpg_error (GPG_ERR_NO_SECKEY);
+      goto leave;
+    }
 
+  /* Fixme: Replace the parsing code by split_fields().  */
   line += 40;
   while (*line && (*line == ' ' || *line == '\t'))
     line++;
@@ -2511,7 +2515,10 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   while (*line && (*line != ' ' && *line != '\t'))
     line++;
   if (!*line)
-    return gpg_error (GPG_ERR_MISSING_VALUE);
+    {
+      err = gpg_error (GPG_ERR_MISSING_VALUE);
+      goto leave;
+    }
   *line = '\0';
   line++;
   while (*line && (*line == ' ' || *line == '\t'))
@@ -2520,7 +2527,10 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   while (*line && (*line != ' ' && *line != '\t'))
     line++;
   if (!*line)
-    return gpg_error (GPG_ERR_MISSING_VALUE);
+    {
+      err = gpg_error (GPG_ERR_MISSING_VALUE);
+      goto leave;
+    }
   *line = '\0';
   line++;
   while (*line && (*line == ' ' || *line == '\t'))
@@ -2530,9 +2540,12 @@ cmd_keytocard (assuan_context_t ctx, char *line)
     line++;
   if (*line)
     *line = '\0';
-  timestamplen = line - timestamp_str;
-  if (timestamplen != 15)
-    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if ((timestamp = isotime2epoch (timestamp_str)) == (time_t)(-1))
+    {
+      err = gpg_error (GPG_ERR_INV_TIME);
+      goto leave;
+    }
 
   err = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc, grip,
                              &shadow_info, CACHE_MODE_IGNORE, NULL,
@@ -2540,34 +2553,36 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   if (err)
     {
       xfree (shadow_info);
-      return err;
+      goto leave;
     }
   if (shadow_info)
     {
       /* Key is on a smartcard already.  */
       xfree (shadow_info);
       gcry_sexp_release (s_skey);
-      return gpg_error (GPG_ERR_UNUSABLE_SECKEY);
+      err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
+      goto leave;
     }
 
   keydatalen =  gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
   keydata = xtrymalloc_secure (keydatalen + 30);
   if (keydata == NULL)
     {
+      err = gpg_error_from_syserror ();
       gcry_sexp_release (s_skey);
-      return gpg_error_from_syserror ();
+      goto leave;
     }
 
   gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, keydata, keydatalen);
   gcry_sexp_release (s_skey);
   keydatalen--;			/* Decrement for last '\0'.  */
   /* Add timestamp "created-at" in the private key */
-  timestamp = isotime2epoch (timestamp_str);
   snprintf (keydata+keydatalen-1, 30, "(10:created-at10:%010lu))", timestamp);
   keydatalen += 10 + 19 - 1;
   err = divert_writekey (ctrl, force, serialno, id, keydata, keydatalen);
   xfree (keydata);
 
+ leave:
   return leave_cmd (ctx, err);
 }
 
