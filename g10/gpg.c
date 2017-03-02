@@ -3949,6 +3949,11 @@ main (int argc, char **argv)
       case aListTrustDB:
         rc = setup_trustdb (argc? 1:0, trustdb_name);
         break;
+      case aKeygen:
+      case aFullKeygen:
+      case aQuickKeygen:
+        rc = setup_trustdb (1, trustdb_name);
+        break;
       default:
         /* If we are using TM_ALWAYS, we do not need to create the
            trustdb.  */
