@@ -26,10 +26,10 @@
 #include "dirmngr.h"
 #include "certcache.h"
 #include "validate.h"
+#include "misc.h"
 
 #ifdef HTTP_USE_NTBTLS
 # include <ntbtls.h>
-
 
 
 /* The callback used to verify the peer's certificate.  */
@@ -77,11 +77,11 @@ gnupg_http_tls_verify_cb (void *opaque,
 
   validate_flags = VALIDATE_FLAG_TLS;
 
-  /* Are we using the standard hkps:// pool use the dedicated
+  /* If we are using the standard hkps:// pool use the dedicated
    * root certificate.  */
   hostname = ntbtls_get_hostname (tls);
   if (hostname
-      && !ascii_strcasecmp (hostname, "hkps.pool.sks-keyservers.net"))
+      && !ascii_strcasecmp (hostname, get_default_keyserver (1)))
     {
       validate_flags |= VALIDATE_FLAG_TRUST_HKPSPOOL;
     }

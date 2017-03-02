@@ -21,6 +21,8 @@
 #ifndef MISC_H
 #define MISC_H
 
+const char *get_default_keyserver (int name_only);
+
 /* Convert hex encoded string back to binary. */
 size_t unhexify (unsigned char *result, const char *string);
 

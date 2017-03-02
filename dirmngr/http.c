@@ -100,6 +100,7 @@
 #include "i18n.h"
 #include "dns-stuff.h"
 #include "http.h"
+#include "misc.h"
 
 
 #ifdef USE_NPTH
@@ -726,7 +727,7 @@ http_session_new (http_session_t *r_session,
 
     is_hkps_pool = (intended_hostname
                     && !ascii_strcasecmp (intended_hostname,
-                                          "hkps.pool.sks-keyservers.net"));
+                                          get_default_keyserver (1)));
 
     /* If the user has not specified a CA list, and they are looking
      * for the hkps pool from sks-keyservers.net, then default to

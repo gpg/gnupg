@@ -1454,7 +1454,13 @@ main (int argc, char **argv)
       es_printf ("ignore-ocsp-servic-url:%lu:\n", flags | GC_OPT_FLAG_NONE);
 
       es_printf ("use-tor:%lu:\n", flags | GC_OPT_FLAG_NONE);
-      es_printf ("keyserver:%lu:\n", flags | GC_OPT_FLAG_NONE);
+
+      filename_esc = percent_escape (get_default_keyserver (0), NULL);
+      es_printf ("keyserver:%lu:\"%s:\n", flags | GC_OPT_FLAG_DEFAULT,
+                 filename_esc);
+      xfree (filename_esc);
+
+
       es_printf ("nameserver:%lu:\n", flags | GC_OPT_FLAG_NONE);
       es_printf ("resolver-timeout:%lu:%u\n",
                  flags | GC_OPT_FLAG_DEFAULT, 0);
