@@ -61,8 +61,7 @@ dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
 	cdb.h cdblib.c misc.c dirmngr-err.h  \
 	ocsp.c ocsp.h validate.c validate.h  \
 	dns-stuff.c dns-stuff.h \
-	http.c http.h \
-	http-ntbtls.c \
+	http.c http.h http-common.c http-common.h http-ntbtls.c \
 	ks-action.c ks-action.h ks-engine.h \
 	ks-engine-hkp.c ks-engine-http.c ks-engine-finger.c ks-engine-kdns.c
 
@@ -141,7 +140,7 @@ endif
 # http tests
 # We need to add the KSBA flags in case we are building against GNUTLS.
 # In that case NTBTLS flags are empty, but we need ksba anyway.
-t_http_SOURCES = $(t_common_src) t-http.c http.c dns-stuff.c
+t_http_SOURCES = $(t_common_src) t-http.c http.c dns-stuff.c http-common.c
 t_http_CFLAGS  = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
 	         $(LIBGCRYPT_CFLAGS) $(NTBTLS_CFLAGS) $(LIBGNUTLS_CFLAGS) \
                  $(GPG_ERROR_CFLAGS) $(KSBA_CFLAGS)
@@ -150,7 +149,7 @@ t_http_LDADD   = $(t_common_ldadd) \
 
 t_ldap_parse_uri_SOURCES = \
 	t-ldap-parse-uri.c ldap-parse-uri.c ldap-parse-uri.h \
-        http.c dns-stuff.c \
+        http.c http-common.c dns-stuff.c \
         $(ldap_url) $(t_common_src)
 t_ldap_parse_uri_CFLAGS = -DWITHOUT_NPTH=1  $(USE_C99_CFLAGS) \
 			  $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)

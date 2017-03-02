@@ -100,7 +100,7 @@
 #include "i18n.h"
 #include "dns-stuff.h"
 #include "http.h"
-#include "misc.h"
+#include "http-common.h"
 
 
 #ifdef USE_NPTH

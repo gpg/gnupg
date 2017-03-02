@@ -30,29 +30,6 @@
 #include "util.h"
 #include "misc.h"
 
-/* Return a static string with the default keyserver.  If NAME_ONLY is
- * given only the name part is returned.  */
-const char *
-get_default_keyserver (int name_only)
-{
-  static const char *result;
-
-  if (!name_only)
-    return DIRMNGR_DEFAULT_KEYSERVER;
-
-  if (!result)
-    {
-      /* Strip the scheme from the constant. */
-      result = strstr (DIRMNGR_DEFAULT_KEYSERVER, "://");
-      log_assert (result && strlen (result) > 3);
-      result += 3;
-      /* Assert that there is no port given.  */
-      log_assert (strchr (result, ':'));
-    }
-  return result;
-}
-
-
 
 /* Convert the hex encoded STRING back into binary and store the
    result into the provided buffer RESULT.  The actual size of that

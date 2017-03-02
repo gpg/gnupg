@@ -26,7 +26,7 @@
 #include "dirmngr.h"
 #include "certcache.h"
 #include "validate.h"
-#include "misc.h"
+#include "http-common.h"
 
 #ifdef HTTP_USE_NTBTLS
 # include <ntbtls.h>

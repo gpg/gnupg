@@ -72,6 +72,7 @@
 #include "../common/init.h"
 #include "gc-opt-flags.h"
 #include "dns-stuff.h"
+#include "http-common.h"
 
 #ifndef ENAMETOOLONG
 # define ENAMETOOLONG EINVAL
