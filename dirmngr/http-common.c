@@ -44,7 +44,7 @@ get_default_keyserver (int name_only)
       log_assert (result && strlen (result) > 3);
       result += 3;
       /* Assert that there is no port given.  */
-      log_assert (strchr (result, ':'));
+      log_assert (!strchr (result, ':'));
     }
   return result;
 }
