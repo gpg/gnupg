@@ -1164,7 +1164,7 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
 }
 
 
-/* Helper for apply_*_filter in im,port.c and export.c.  */
+/* Helper for apply_*_filter in import.c and export.c.  */
 const char *
 impex_filter_getval (void *cookie, const char *propname)
 {
@@ -1175,19 +1175,30 @@ impex_filter_getval (void *cookie, const char *propname)
 
   if (node->pkt->pkttype == PKT_USER_ID)
     {
+      PKT_user_id *uid = node->pkt->pkt.user_id;
+
       if (!strcmp (propname, "uid"))
-        result = node->pkt->pkt.user_id->name;
+        result = uid->name;
       else if (!strcmp (propname, "mbox"))
         {
-          if (!node->pkt->pkt.user_id->mbox)
+          if (!uid->mbox)
             {
-              node->pkt->pkt.user_id->mbox
-                = mailbox_from_userid (node->pkt->pkt.user_id->name);
+              uid->mbox = mailbox_from_userid (uid->name);
             }
-          result = node->pkt->pkt.user_id->mbox;
+          result = uid->mbox;
         }
       else if (!strcmp (propname, "primary"))
-        result = node->pkt->pkt.user_id->is_primary? "1":"0";
+        {
+          result = uid->is_primary? "1":"0";
+        }
+      else if (!strcmp (propname, "expired"))
+        {
+          result = uid->is_expired? "1":"0";
+        }
+      else if (!strcmp (propname, "revoked"))
+        {
+          result = uid->is_revoked? "1":"0";
+        }
       else
         result = NULL;
     }
@@ -1214,6 +1225,10 @@ impex_filter_getval (void *cookie, const char *propname)
         {
           snprintf (numbuf, sizeof numbuf, "%d", sig->digest_algo);
           result = numbuf;
+        }
+      else if (!strcmp (propname, "expired"))
+        {
+          result = sig->flags.expired? "1":"0";
         }
       else
         result = NULL;
@@ -1243,6 +1258,18 @@ impex_filter_getval (void *cookie, const char *propname)
       else if (!strcmp (propname, "key_created_d"))
         {
           result = datestr_from_pk (pk);
+        }
+      else if (!strcmp (propname, "expired"))
+        {
+          result = pk->has_expired? "1":"0";
+        }
+      else if (!strcmp (propname, "revoked"))
+        {
+          result = pk->flags.revoked? "1":"0";
+        }
+      else if (!strcmp (propname, "disabled"))
+        {
+          result = pk_is_disabled (pk)? "1":"0";
         }
       else
         result = NULL;

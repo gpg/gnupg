@@ -1377,7 +1377,7 @@ apply_drop_subkey_filter (kbnode_t keyblock, recsel_expr_t selector)
         {
           if (recsel_select (selector, impex_filter_getval, node))
             {
-              log_debug ("drop-subkey: deleting a key\n");
+              /*log_debug ("drop-subkey: deleting a key\n");*/
               /* The subkey packet and all following packets up to the
                * next subkey.  */
               delete_kbnode (node);

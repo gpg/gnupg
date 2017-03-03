@@ -2359,14 +2359,25 @@ The available properties are:
   @item primary
   Boolean indicating whether the user id is the primary one.  (keep-uid)
 
+  @item expired
+  Boolean indicating whether a user id (keep-uid), a key (drop-subkey), or a
+  signature (drop-sig) expired.
+
+  @item revoked
+  Boolean indicating whether a user id (keep-uid) or a key (drop-subkey) has
+  been revoked.
+
+  @item disabled
+  Boolean indicating whether a primary key is disabled. (not used)
+
   @item secret
   Boolean indicating whether a key or subkey is a secret one.
-  drop-subkey)
+  (drop-subkey)
 
   @item sig_created
   @itemx sig_created_d
   The first is the timestamp a signature packet was created.  The
-  second is the same but given as an ISO string,
+  second is the same but given as an ISO date string,
   e.g. "2016-08-17". (drop-sig)
 
   @item sig_algo
