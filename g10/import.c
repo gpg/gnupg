@@ -1173,7 +1173,8 @@ impex_filter_getval (void *cookie, const char *propname)
   static char numbuf[20];
   const char *result;
 
-  if (node->pkt->pkttype == PKT_USER_ID)
+  if (node->pkt->pkttype == PKT_USER_ID
+      || node->pkt->pkttype == PKT_ATTRIBUTE)
     {
       PKT_user_id *uid = node->pkt->pkt.user_id;
 
@@ -1202,8 +1203,7 @@ impex_filter_getval (void *cookie, const char *propname)
       else
         result = NULL;
     }
-  else if (node->pkt->pkttype == PKT_SIGNATURE
-           || node->pkt->pkttype == PKT_ATTRIBUTE)
+  else if (node->pkt->pkttype == PKT_SIGNATURE)
     {
       PKT_signature *sig = node->pkt->pkt.signature;
 
@@ -1340,12 +1340,12 @@ apply_drop_sig_filter (kbnode_t keyblock, recsel_expr_t selector)
       if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
           || node->pkt->pkttype == PKT_SECRET_SUBKEY)
         break; /* ready.  */
-      if (node->pkt->pkttype == PKT_USER_ID)
+      if (node->pkt->pkttype == PKT_USER_ID
+          || node->pkt->pkttype == PKT_ATTRIBUTE)
         active = 1;
       if (!active)
         continue;
-      if (node->pkt->pkttype != PKT_SIGNATURE
-          && node->pkt->pkttype != PKT_ATTRIBUTE)
+      if (node->pkt->pkttype != PKT_SIGNATURE)
         continue;
 
       sig = node->pkt->pkt.signature;
