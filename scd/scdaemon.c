@@ -224,8 +224,12 @@ static char *redir_socket_name;
    POSIX systems). */
 static assuan_sock_nonce_t socket_nonce;
 
-/* FD to notify update of usb devices.  */
-static int notify_fd;
+#ifdef HAVE_W32_SYSTEM
+static HANDLE the_event;
+#else
+/* PID to notify update of usb devices.  */
+static pid_t main_thread_pid;
+#endif
 
 static char *create_socket_name (char *standard_name);
 static gnupg_fd_t create_server_socket (const char *name,
@@ -996,6 +1000,10 @@ handle_signal (int signo)
       log_info ("SIGUSR2 received - no action defined\n");
       break;
 
+    case SIGCONT:
+      /* Nothing.  */
+      break;
+
     case SIGTERM:
       if (!shutdown_pending)
         log_info ("SIGTERM received - shutting down ...\n");
@@ -1185,8 +1193,17 @@ scd_kick_the_loop (void)
   int ret;
 
   /* Kick the select loop.  */
-  ret = write (notify_fd, "", 1);
-  (void)ret;
+#ifdef HAVE_W32_SYSTEM
+  ret = SetEvent (the_event);
+  if (ret == 0)
+    log_error ("SetEvent for scd_kick_the_loop failed: %s\n",
+               w32_strerror (-1));
+#else
+  ret = kill (main_thread_pid, SIGCONT);
+  if (ret < 0)
+    log_error ("SetEvent for scd_kick_the_loop failed: %s\n",
+               gpg_strerror (gpg_error_from_syserror ()));
+#endif
 }
 
 /* Connection handler loop.  Wait for connection requests and spawn a
@@ -1206,18 +1223,12 @@ handle_connections (int listen_fd)
   struct timespec timeout;
   struct timespec *t;
   int saved_errno;
-#ifndef HAVE_W32_SYSTEM
+#ifdef HAVE_W32_SYSTEM
+  HANDLE events[2];
+  unsigned int events_set;
+#else
   int signo;
 #endif
-  int pipe_fd[2];
-
-  ret = gnupg_create_pipe (pipe_fd);
-  if (ret)
-    {
-      log_error ("pipe creation failed: %s\n", gpg_strerror (ret));
-      return;
-    }
-  notify_fd = pipe_fd[1];
 
   ret = npth_attr_init(&tattr);
   if (ret)
@@ -1228,14 +1239,40 @@ handle_connections (int listen_fd)
 
   npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
 
-#ifndef HAVE_W32_SYSTEM
+#ifdef HAVE_W32_SYSTEM
+  {
+    HANDLE h, h2;
+    SECURITY_ATTRIBUTES sa = { sizeof (SECURITY_ATTRIBUTES), NULL, TRUE};
+
+    events[0] = the_event = INVALID_HANDLE_VALUE;
+    events[1] = INVALID_HANDLE_VALUE;
+    h = CreateEvent (&sa, TRUE, FALSE, NULL);
+    if (!h)
+      log_error ("can't create scd event: %s\n", w32_strerror (-1) );
+    else if (!DuplicateHandle (GetCurrentProcess(), h,
+                               GetCurrentProcess(), &h2,
+                               EVENT_MODIFY_STATE|SYNCHRONIZE, TRUE, 0))
+      {
+        log_error ("setting synchronize for scd_kick_the_loop failed: %s\n",
+                   w32_strerror (-1) );
+        CloseHandle (h);
+      }
+    else
+      {
+        CloseHandle (h);
+        events[0] = the_event = h2;
+      }
+  }
+#else
   npth_sigev_init ();
   npth_sigev_add (SIGHUP);
   npth_sigev_add (SIGUSR1);
   npth_sigev_add (SIGUSR2);
   npth_sigev_add (SIGINT);
+  npth_sigev_add (SIGCONT);
   npth_sigev_add (SIGTERM);
   npth_sigev_fini ();
+  main_thread_pid = getpid ();
 #endif
 
   FD_ZERO (&fdset);
@@ -1245,10 +1282,6 @@ handle_connections (int listen_fd)
       FD_SET (listen_fd, &fdset);
       nfd = listen_fd;
     }
-
-  FD_SET (pipe_fd[0], &fdset);
-  if (nfd < pipe_fd[0])
-    nfd = pipe_fd[0];
 
   for (;;)
     {
@@ -1264,8 +1297,6 @@ handle_connections (int listen_fd)
              file descriptors to wait for, so that the select will be
              used to just wait on a signal or timeout event. */
           FD_ZERO (&fdset);
-          FD_SET (pipe_fd[0], &fdset);
-          nfd = pipe_fd[0];
           listen_fd = -1;
         }
 
@@ -1291,8 +1322,11 @@ handle_connections (int listen_fd)
       while (npth_sigev_get_pending(&signo))
         handle_signal (signo);
 #else
-      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, t, NULL, NULL);
+      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, t,
+                          events, &events_set);
       saved_errno = errno;
+      if (events_set & 1)
+        continue;
 #endif
 
       if (ret == -1 && saved_errno != EINTR)
@@ -1306,13 +1340,6 @@ handle_connections (int listen_fd)
       if (ret <= 0)
         /* Timeout.  Will be handled when calculating the next timeout.  */
         continue;
-
-      if (FD_ISSET (pipe_fd[0], &read_fdset))
-        {
-          char buf[256];
-
-          ret = read (pipe_fd[0], buf, sizeof buf);
-        }
 
       if (listen_fd != -1 && FD_ISSET (listen_fd, &read_fdset))
         {
@@ -1351,8 +1378,6 @@ handle_connections (int listen_fd)
         }
     }
 
-  close (pipe_fd[0]);
-  close (pipe_fd[1]);
   cleanup ();
   log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
   npth_attr_destroy (&tattr);
