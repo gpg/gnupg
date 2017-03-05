@@ -1592,8 +1592,10 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
   if (is_valid_mailbox (name) && ctx)
     {
       /* Rank results and return only the most relevant key.  */
-      struct pubkey_cmp_cookie best = { 0 }, new;
-      KBNODE new_keyblock;
+      struct pubkey_cmp_cookie best = { 0 };
+      struct pubkey_cmp_cookie new;
+      kbnode_t new_keyblock;
+
       while (getkey_next (ctx, &new.key, &new_keyblock) == 0)
         {
           int diff = pubkey_cmp (ctrl, name, &best, &new, new_keyblock);
@@ -1610,17 +1612,20 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
               /* Old key is better.  */
               release_public_key_parts (&new.key);
               free_user_id (new.uid);
+              new.uid = NULL;
             }
           else
             {
               /* A tie.  Keep the old key.  */
               release_public_key_parts (&new.key);
               free_user_id (new.uid);
+              new.uid = NULL;
             }
         }
       getkey_end (ctx);
       ctx = NULL;
       free_user_id (best.uid);
+      best.uid = NULL;
 
       if (best.valid)
         {
