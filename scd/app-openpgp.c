@@ -1280,7 +1280,6 @@ retrieve_key_material (FILE *fp, const char *hexkeyid,
 
       if ( strcmp (fields[0], "pkd") )
         continue; /* Not a key data record.  */
-      i = 0; /* Avoid erroneous compiler warning. */
       if ( nfields < 4 || (i = atoi (fields[1])) < 0 || i > 1
            || (!i && m_new) || (i && e_new))
         {
@@ -2652,7 +2651,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
       rc = pincb (pincb_arg, set_resetcode? _("|RN|New Reset Code") :
                   chvno == 3? _("|AN|New Admin PIN") : _("|N|New PIN"),
                   &pinvalue);
-      if (rc)
+      if (rc || pinvalue == NULL)
         {
           log_error (_("error getting new PIN: %s\n"), gpg_strerror (rc));
           goto leave;
@@ -3352,8 +3351,7 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   maxbits = app->app_local->keyattr[keyno].rsa.n_bits;
   nbits = rsa_n? count_bits (rsa_n, rsa_n_len) : 0;
   if (opt.verbose)
-    log_info ("RSA modulus size is %u bits (%u bytes)\n",
-              nbits, (unsigned int)rsa_n_len);
+    log_info ("RSA modulus size is %u bits\n", nbits);
   if (nbits && nbits != maxbits
       && app->app_local->extcap.algo_attr_change)
     {
