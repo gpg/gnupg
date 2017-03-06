@@ -193,7 +193,7 @@ do_readcert (app_t app, const char *certid,
   /* Read the entire file.  fixme: This could be optimized by first
      reading the header to figure out how long the certificate
      actually is. */
-  err = iso7816_select_file (app->slot, fid, 0, NULL, NULL);
+  err = iso7816_select_file (app->slot, fid, 0);
   if (err)
     {
       log_error ("error selecting FID 0x%04X: %s\n", fid, gpg_strerror (err));

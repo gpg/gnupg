@@ -208,9 +208,9 @@ app_new_register (int slot, ctrl_t ctrl, const char *name,
      We skip this if the undefined application has been requested. */
   if (!want_undefined)
     {
-      err = iso7816_select_file (slot, 0x3F00, 1, NULL, NULL);
+      err = iso7816_select_file (slot, 0x3F00, 1);
       if (!err)
-        err = iso7816_select_file (slot, 0x2F02, 0, NULL, NULL);
+        err = iso7816_select_file (slot, 0x2F02, 0);
       if (!err)
         err = iso7816_read_binary (slot, 0, 0, &result, &resultlen);
       if (!err)

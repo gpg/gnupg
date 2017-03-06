@@ -51,11 +51,9 @@ gpg_error_t iso7816_map_sw (int sw);
 gpg_error_t iso7816_select_application (int slot,
                                         const char *aid, size_t aidlen,
                                         unsigned int flags);
-gpg_error_t iso7816_select_file (int slot, int tag, int is_dir,
-                                 unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_select_file (int slot, int tag, int is_dir);
 gpg_error_t iso7816_select_path (int slot,
-                                 const unsigned short *path, size_t pathlen,
-                                 unsigned char **result, size_t *resultlen);
+                                 const unsigned short *path, size_t pathlen);
 gpg_error_t iso7816_list_directory (int slot, int list_dirs,
                                     unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_apdu_direct (int slot,
@@ -71,7 +69,7 @@ gpg_error_t iso7816_change_reference_data (int slot, int chvno,
                                const char *oldchv, size_t oldchvlen,
                                const char *newchv, size_t newchvlen);
 gpg_error_t iso7816_change_reference_data_kp (int slot, int chvno,
-					      int is_exchange,
+                                              int is_exchange,
                                               pininfo_t *pininfo);
 gpg_error_t iso7816_reset_retry_counter (int slot, int chvno,
                                          const char *newchv, size_t newchvlen);

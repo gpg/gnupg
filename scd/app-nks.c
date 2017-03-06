@@ -151,7 +151,7 @@ keygripstr_from_pk_file (app_t app, int fid, char *r_gripstr)
   int i;
   int offset[2] = { 0, 0 };
 
-  err = iso7816_select_file (app->slot, fid, 0, NULL, NULL);
+  err = iso7816_select_file (app->slot, fid, 0);
   if (err)
     return err;
   err = iso7816_read_record (app->slot, 1, 1, 0, &buffer[0], &buflen[0]);
@@ -528,7 +528,7 @@ do_readcert (app_t app, const char *certid,
   /* Read the entire file.  fixme: This could be optimized by first
      reading the header to figure out how long the certificate
      actually is. */
-  err = iso7816_select_file (app->slot, fid, 0, NULL, NULL);
+  err = iso7816_select_file (app->slot, fid, 0);
   if (err)
     {
       log_error ("error selecting FID 0x%04X: %s\n", fid, gpg_strerror (err));
@@ -636,7 +636,7 @@ do_readkey (app_t app, int advanced, const char *keyid,
     return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
 
   /* Access the KEYD file which is always in the master directory.  */
-  err = iso7816_select_path (app->slot, path, DIM (path), NULL, NULL);
+  err = iso7816_select_path (app->slot, path, DIM (path));
   if (err)
     return err;
   /* Due to the above select we need to re-select our application.  */
@@ -1354,7 +1354,7 @@ switch_application (app_t app, int enable_sigg)
 
       app->app_local->sigg_msig_checked = 1;
       app->app_local->sigg_is_msig = 1;
-      err = iso7816_select_file (app->slot, 0x5349, 0, NULL, NULL);
+      err = iso7816_select_file (app->slot, 0x5349, 0);
       if (!err)
         err = iso7816_read_record (app->slot, 1, 1, 0, &buffer, &buflen);
       if (!err)

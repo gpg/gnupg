@@ -409,7 +409,7 @@ select_and_read_binary (int slot, unsigned short efid, const char *efid_desc,
 {
   gpg_error_t err;
 
-  err = iso7816_select_file (slot, efid, 0, NULL, NULL);
+  err = iso7816_select_file (slot, efid, 0);
   if (err)
     {
       log_error ("error selecting %s (0x%04X): %s\n",
@@ -443,7 +443,7 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
 
   if (app->app_local->direct_path_selection)
     {
-      err = iso7816_select_path (app->slot, path+1, pathlen-1, NULL, NULL);
+      err = iso7816_select_path (app->slot, path+1, pathlen-1);
       if (err)
         {
           log_error ("error selecting path ");
@@ -461,8 +461,7 @@ select_ef_by_path (app_t app, const unsigned short *path, size_t pathlen)
          supported by the card. */
       for (i=0; i < pathlen; i++)
         {
-          err = iso7816_select_file (app->slot, path[i],
-                                     !(i+1 == pathlen), NULL, NULL);
+          err = iso7816_select_file (app->slot, path[i], !(i+1 == pathlen));
           if (err)
             {
               log_error ("error selecting part %d from path ", i);
@@ -2761,7 +2760,7 @@ micardo_mse (app_t app, unsigned short fid)
   unsigned char msebuf[10];
 
   /* Read the KeyD file containing extra information on keys. */
-  err = iso7816_select_file (app->slot, 0x0013, 0, NULL, NULL);
+  err = iso7816_select_file (app->slot, 0x0013, 0);
   if (err)
     {
       log_error ("error reading EF_keyD: %s\n", gpg_strerror (err));
@@ -3301,7 +3300,7 @@ app_select_p15 (app_t app)
          Using the 2f02 just works. */
       unsigned short path[1] = { 0x2f00 };
 
-      rc = iso7816_select_path (app->slot, path, 1, NULL, NULL);
+      rc = iso7816_select_path (app->slot, path, 1);
       if (!rc)
         {
           direct = 1;
@@ -3309,14 +3308,14 @@ app_select_p15 (app_t app)
           if (def_home_df)
             {
               path[0] = def_home_df;
-              rc = iso7816_select_path (app->slot, path, 1, NULL, NULL);
+              rc = iso7816_select_path (app->slot, path, 1);
             }
         }
     }
   if (rc)
     { /* Still not found:  Try the default DF. */
       def_home_df = 0x5015;
-      rc = iso7816_select_file (slot, def_home_df, 1, NULL, NULL);
+      rc = iso7816_select_file (slot, def_home_df, 1);
     }
   if (!rc)
     {
