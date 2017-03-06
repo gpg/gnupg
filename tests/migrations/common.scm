@@ -26,6 +26,7 @@
   (string-append executable (getenv "EXEEXT")))
 
 ;; We may not use a relative name for gpg-agent.
+(define gpgconf (path-join (getenv "objdir") "tools" (qualify "gpgconf")))
 (define GPG-AGENT (path-join (getenv "objdir") "agent" (qualify "gpg-agent")))
 (define GPG `(,(path-join (getenv "objdir") "g10" (qualify "gpg"))
 	      --no-permission-warning --no-greeting
@@ -51,4 +52,9 @@
    (info message)
    (untar-armored src-tarball)
    (setenv "GNUPGHOME" (getcwd) #t)
-   (test (getcwd))))
+
+   (catch (log "Warning: Creating socket directory failed:" (car *error*))
+	  (call-popen `(,gpgconf --create-socketdir) ""))
+   (test (getcwd))
+   (catch (log "Warning: Removing socket directory failed.")
+	  (call-popen `(,gpgconf --remove-socketdir) ""))))

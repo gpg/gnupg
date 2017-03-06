@@ -73,6 +73,7 @@
 	       "faked-system-time 1008241200")
   (create-file "gpg-agent.conf"
 	       (string-append "pinentry-program " (tool 'pinentry)))
+  (start-agent)
   (create-file
    "trustlist.txt"
    "32100C27173EF6E9C4E9A25D3D69F86D37A4F939"
@@ -80,7 +81,6 @@
    "3CF405464F66ED4A7DF45BBDD1E4282E33BDB76E S")
 
   (log "Storing private keys")
-  (mkdir "private-keys-v1.d" "-rwx")
   (for-each
    (lambda (name)
      (file-copy (in-srcdir name)

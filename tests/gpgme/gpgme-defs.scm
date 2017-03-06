@@ -54,7 +54,8 @@
   (create-file
    "gpg-agent.conf"
    (string-append "pinentry-program " (tool 'pinentry)))
-  (mkdir "private-keys-v1.d" "-rwx")
+
+  (start-agent)
 
   (log "Storing private keys")
   (for-each

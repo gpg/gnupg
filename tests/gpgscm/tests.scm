@@ -268,14 +268,13 @@
 ;; Make a temporary directory.  If arguments are given, they are
 ;; joined using path-join, and must end in a component ending in
 ;; "XXXXXX".  If no arguments are given, a suitable location and
-;; generic name is used.
+;; generic name is used.  Returns an absolute path.
 (define (mkdtemp . components)
-  (_mkdtemp (if (null? components)
-		(path-join (getenv "TMP")
-			   (string-append "gpgscm-" (get-isotime) "-"
-					  (basename-suffix *scriptname* ".scm")
-					  "-XXXXXX"))
-		(apply path-join components))))
+  (canonical-path (_mkdtemp (if (null? components)
+				(string-append "gpgscm-" (get-isotime) "-"
+					       (basename-suffix *scriptname* ".scm")
+					       "-XXXXXX")
+				(apply path-join components)))))
 
 (define-macro (with-temporary-working-directory . expressions)
   (let ((tmp-sym (gensym)))

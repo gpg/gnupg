@@ -30,7 +30,7 @@ This is a bit tricky because one needs to manually set some
 environment variables.  We should make that easier.  See discussion
 below.  From your build directory, do:
 
-  obj $ TMP=/tmp srcdir=<path to>/tests/openpgp \
+  obj $ srcdir=<path to>/tests/openpgp \
         GPGSCM_PATH=<path to>/tests/gpgscm:<path to>/tests/openpgp \
         $(pwd)/tests/gpgscm/gpgscm [gpgscm args] \
         run-tests.scm [test suite runner args]

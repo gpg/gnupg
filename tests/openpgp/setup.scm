@@ -25,6 +25,7 @@
 (with-ephemeral-home-directory
  (chdir (getenv "GNUPGHOME"))
  (create-gpghome)
+ (start-agent)
  (create-legacy-gpghome)
  (stop-agent)
  (call-check `(,(tool 'gpgtar) --create --output ,(cadr *args*) ".")))

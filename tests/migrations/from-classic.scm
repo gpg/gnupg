@@ -22,12 +22,6 @@
 (catch (skip "gpgtar not built")
        (call-check `(,GPGTAR --help)))
 
-(define src-tarball (in-srcdir "from-classic.tar.asc"))
-
-(define (setup)
-  (untar-armored src-tarball)
-  (setenv "GNUPGHOME" (getcwd) #t))
-
 (define (trigger-migration)
   (call-check `(,@GPG --list-secret-keys)))
 
@@ -41,24 +35,27 @@
 	    (call-check `(,@GPG --list-secret-keys ,keyid))))
    '("D74C5F22" "C40FDECF" "ECABF51D")))
 
-(info "Testing a clean migration ...")
-(with-temporary-working-directory
- (setup)
- (trigger-migration)
- (assert-migrated))
+(run-test
+ "Testing a clean migration ..."
+ (in-srcdir "from-classic.tar.asc")
+ (lambda (gpghome)
+   (trigger-migration)
+   (assert-migrated)))
 
-(info "Testing a migration with existing private-keys-v1.d ...")
-(with-temporary-working-directory
- (setup)
- (mkdir "private-keys-v1.d" "-rwx")
- (trigger-migration)
- (assert-migrated))
+(run-test
+ "Testing a migration with existing private-keys-v1.d ..."
+ (in-srcdir "from-classic.tar.asc")
+ (lambda (gpghome)
+   (mkdir "private-keys-v1.d" "-rwx")
+   (trigger-migration)
+   (assert-migrated)))
 
-(info "Testing a migration with existing but weird private-keys-v1.d ...")
-(with-temporary-working-directory
- (setup)
- (mkdir "private-keys-v1.d" "")
- (trigger-migration)
- (assert-migrated))
+(run-test
+ "Testing a migration with existing but weird private-keys-v1.d ..."
+ (in-srcdir "from-classic.tar.asc")
+ (lambda (gpghome)
+   (mkdir "private-keys-v1.d" "")
+   (trigger-migration)
+   (assert-migrated)))
 
 ;; XXX Check a case where the migration fails.

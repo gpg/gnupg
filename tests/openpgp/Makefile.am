@@ -33,12 +33,9 @@ noinst_PROGRAMS = fake-pinentry
 
 fake_pinentry_SOURCES = fake-pinentry.c
 
-TMP ?= /tmp
-
 TESTS_ENVIRONMENT = LC_ALL=C \
 	EXEEXT=$(EXEEXT) \
 	PATH=../gpgscm:$(PATH) \
-	TMP=$(TMP) \
 	srcdir=$(abs_srcdir) \
 	objdir=$(abs_top_builddir) \
 	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm:$(abs_top_srcdir)/tests/openpgp

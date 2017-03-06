@@ -278,6 +278,15 @@
 ;; GnuPG helper.
 ;;
 
+;; Evaluate a sequence of expressions with the given home directory.
+(define-macro (with-home-directory gnupghome . expressions)
+  (let ((original-home-directory (gensym)))
+    `(let ((,original-home-directory (getenv "GNUPGHOME")))
+       (dynamic-wind
+	   (lambda () (setenv "GNUPGHOME" ,gnupghome #t))
+	   (lambda () ,@expressions)
+	   (lambda () (setenv "GNUPGHOME" ,original-home-directory #t))))))
+
 ;; Evaluate a sequence of expressions with an ephemeral home
 ;; directory.
 (define-macro (with-ephemeral-home-directory . expressions)
@@ -364,7 +373,6 @@
 
 (define (create-legacy-gpghome)
   (create-sample-files)
-  (mkdir "private-keys-v1.d" "-rwx")
 
   (log "Storing private keys")
   (for-each
@@ -434,7 +442,10 @@
 ;; Create the socket dir and start the agent.
 (define (start-agent)
   (log "Starting gpg-agent...")
-  (atexit stop-agent)
+  (let ((gnupghome (getenv "GNUPGHOME")))
+    (atexit (lambda ()
+	      (with-home-directory gnupghome
+				   (stop-agent)))))
   (catch (log "Warning: Creating socket directory failed:" (car *error*))
 	 (call-popen `(,(tool 'gpgconf) --create-socketdir) ""))
   (call-check `(,(tool 'gpg-connect-agent) --verbose
