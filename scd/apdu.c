@@ -73,16 +73,6 @@ struct dev_list {
   int idx_max;
 };
 
-/* Due to conflicting use of threading libraries we usually can't link
-   against libpcsclite if we are using Pth.  Instead we use a wrapper
-   program.  Note that with nPth there is no need for a wrapper. */
-#ifdef USE_PTH  /* Right, plain old Pth.  */
-#if !defined(HAVE_W32_SYSTEM) && !defined(__CYGWIN__)
-#define NEED_PCSC_WRAPPER 1
-#endif
-#endif
-
-
 #define MAX_READER 4 /* Number of readers we support concurrently. */
 
 
@@ -129,11 +119,6 @@ struct reader_table_s {
     pcsc_dword_t modify_ioctl;
     int pinmin;
     int pinmax;
-#ifdef NEED_PCSC_WRAPPER
-    int req_fd;
-    int rsp_fd;
-    pid_t pid;
-#endif /*NEED_PCSC_WRAPPER*/
   } pcsc;
 #ifdef USE_G10CODE_RAPDU
   struct {
@@ -164,14 +149,6 @@ static struct reader_table_s reader_table[MAX_READER];
 static npth_mutex_t reader_table_lock;
 #endif
 
-
-/* ct API function pointer. */
-static char (* DLSTDCALL CT_init) (unsigned short ctn, unsigned short Pn);
-static char (* DLSTDCALL CT_data) (unsigned short ctn, unsigned char *dad,
-                                   unsigned char *sad, unsigned short lc,
-                                   unsigned char *cmd, unsigned short *lr,
-                                   unsigned char *rsp);
-static char (* DLSTDCALL CT_close) (unsigned short ctn);
 
 /* PC/SC constants and function pointer. */
 #define PCSC_SCOPE_USER      0
@@ -472,11 +449,6 @@ new_reader_slot (void)
   reader_table[reader].is_spr532 = 0;
   reader_table[reader].pinpad_varlen_supported = 0;
   reader_table[reader].require_get_status = 1;
-#ifdef NEED_PCSC_WRAPPER
-  reader_table[reader].pcsc.req_fd = -1;
-  reader_table[reader].pcsc.rsp_fd = -1;
-  reader_table[reader].pcsc.pid = (pid_t)(-1);
-#endif
   reader_table[reader].pcsc.verify_ioctl = 0;
   reader_table[reader].pcsc.modify_ioctl = 0;
   reader_table[reader].pcsc.pinmin = -1;
@@ -562,267 +534,10 @@ apdu_strerror (int rc)
       return "unknown status error";
     }
 }
-
-
-
-/*
-       ct API Interface
- */
-
-static const char *
-ct_error_string (long err)
-{
-  switch (err)
-    {
-    case 0: return "okay";
-    case -1: return "invalid data";
-    case -8: return "ct error";
-    case -10: return "transmission error";
-    case -11: return "memory allocation error";
-    case -128: return "HTSI error";
-    default: return "unknown CT-API error";
-    }
-}
-
-
-/* Wait for the card in SLOT and activate it.  Return a status word
-   error or 0 on success. */
-static int
-ct_activate_card (int slot)
-{
-  int rc;
-  unsigned char dad[1], sad[1], cmd[11], buf[256];
-  unsigned short buflen;
-
-  /* Check whether card has been inserted. */
-  dad[0] = 1;     /* Destination address: CT. */
-  sad[0] = 2;     /* Source address: Host. */
-
-  cmd[0] = 0x20;  /* Class byte. */
-  cmd[1] = 0x13;  /* Request status. */
-  cmd[2] = 0x00;  /* From kernel. */
-  cmd[3] = 0x80;  /* Return card's DO. */
-  cmd[4] = 0x00;
-
-  buflen = DIM(buf);
-
-  rc = CT_data (slot, dad, sad, 5, cmd, &buflen, buf);
-  if (rc || buflen < 2 || buf[buflen-2] != 0x90)
-    {
-      log_error ("ct_activate_card: can't get status of reader %d: %s\n",
-                 slot, ct_error_string (rc));
-      return SW_HOST_CARD_IO_ERROR;
-    }
-
-  /* Connected, now activate the card. */
-  dad[0] = 1;    /* Destination address: CT. */
-  sad[0] = 2;    /* Source address: Host. */
-
-  cmd[0] = 0x20;  /* Class byte. */
-  cmd[1] = 0x12;  /* Request ICC. */
-  cmd[2] = 0x01;  /* From first interface. */
-  cmd[3] = 0x01;  /* Return card's ATR. */
-  cmd[4] = 0x00;
-
-  buflen = DIM(buf);
-
-  rc = CT_data (slot, dad, sad, 5, cmd, &buflen, buf);
-  if (rc || buflen < 2 || buf[buflen-2] != 0x90)
-    {
-      log_error ("ct_activate_card(%d): activation failed: %s\n",
-                 slot, ct_error_string (rc));
-      if (!rc)
-        log_printhex ("  received data:", buf, buflen);
-      return SW_HOST_CARD_IO_ERROR;
-    }
-
-  /* Store the type and the ATR. */
-  if (buflen - 2 > DIM (reader_table[0].atr))
-    {
-      log_error ("ct_activate_card(%d): ATR too long\n", slot);
-      return SW_HOST_CARD_IO_ERROR;
-    }
-
-  memcpy (reader_table[slot].atr, buf, buflen - 2);
-  reader_table[slot].atrlen = buflen - 2;
-  return 0;
-}
-
-
-static int
-close_ct_reader (int slot)
-{
-  CT_close (slot);
-  return 0;
-}
-
-static int
-reset_ct_reader (int slot)
-{
-  /* FIXME: Check is this is sufficient do do a reset. */
-  return ct_activate_card (slot);
-}
-
-
-static int
-ct_get_status (int slot, unsigned int *status, int on_wire)
-{
-  (void)slot;
-  (void)on_wire;
-  /* The status we returned is wrong but we don't care because ctAPI
-     is not anymore required.  */
-  *status = APDU_CARD_USABLE|APDU_CARD_PRESENT|APDU_CARD_ACTIVE;
-  return 0;
-}
-
-/* Actually send the APDU of length APDULEN to SLOT and return a
-   maximum of *BUFLEN data in BUFFER, the actual returned size will be
-   set to BUFLEN.  Returns: CT API error code. */
-static int
-ct_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
-              unsigned char *buffer, size_t *buflen, pininfo_t *pininfo)
-{
-  int rc;
-  unsigned char dad[1], sad[1];
-  unsigned short ctbuflen;
-
-  (void)pininfo;
-
-  /* If we don't have an ATR, we need to reset the reader first. */
-  if (!reader_table[slot].atrlen
-      && (rc = reset_ct_reader (slot)))
-    return rc;
-
-  dad[0] = 0;     /* Destination address: Card. */
-  sad[0] = 2;     /* Source address: Host. */
-  ctbuflen = *buflen;
-  if (DBG_CARD_IO)
-    log_printhex ("  CT_data:", apdu, apdulen);
-  rc = CT_data (slot, dad, sad, apdulen, apdu, &ctbuflen, buffer);
-  *buflen = ctbuflen;
-
-  return rc? SW_HOST_CARD_IO_ERROR: 0;
-}
-
-
-
-/* Open a reader and return an internal handle for it.  PORT is a
-   non-negative value with the port number of the reader. USB readers
-   do have port numbers starting at 32769. */
-static int
-open_ct_reader (int port)
-{
-  int rc, reader;
-
-  if (port < 0 || port > 0xffff)
-    {
-      log_error ("open_ct_reader: invalid port %d requested\n", port);
-      return -1;
-    }
-  reader = new_reader_slot ();
-  if (reader == -1)
-    return reader;
-  reader_table[reader].port = port;
-
-  rc = CT_init (reader, (unsigned short)port);
-  if (rc)
-    {
-      log_error ("apdu_open_ct_reader failed on port %d: %s\n",
-                 port, ct_error_string (rc));
-      reader_table[reader].used = 0;
-      unlock_slot (reader);
-      return -1;
-    }
-
-  /* Only try to activate the card. */
-  rc = ct_activate_card (reader);
-  if (rc)
-    {
-      reader_table[reader].atrlen = 0;
-      rc = 0;
-    }
-
-  reader_table[reader].close_reader = close_ct_reader;
-  reader_table[reader].reset_reader = reset_ct_reader;
-  reader_table[reader].get_status_reader = ct_get_status;
-  reader_table[reader].send_apdu_reader = ct_send_apdu;
-  reader_table[reader].check_pinpad = NULL;
-  reader_table[reader].dump_status_reader = NULL;
-  reader_table[reader].pinpad_verify = NULL;
-  reader_table[reader].pinpad_modify = NULL;
-
-  dump_reader_status (reader);
-  unlock_slot (reader);
-  return reader;
-}
-
 
 /*
        PC/SC Interface
  */
-
-#ifdef NEED_PCSC_WRAPPER
-static int
-writen (int fd, const void *buf, size_t nbytes)
-{
-  size_t nleft = nbytes;
-  int nwritten;
-
-/*   log_printhex (" writen:", buf, nbytes); */
-
-  while (nleft > 0)
-    {
-#ifdef USE_NPTH
-      nwritten = npth_write (fd, buf, nleft);
-#else
-      nwritten = write (fd, buf, nleft);
-#endif
-      if (nwritten < 0 && errno == EINTR)
-        continue;
-      if (nwritten < 0)
-        return -1;
-      nleft -= nwritten;
-      buf = (const char*)buf + nwritten;
-    }
-  return 0;
-}
-
-/* Read up to BUFLEN bytes from FD and return the number of bytes
-   actually read in NREAD.  Returns -1 on error or 0 on success. */
-static int
-readn (int fd, void *buf, size_t buflen, size_t *nread)
-{
-  size_t nleft = buflen;
-  int n;
-/*   void *orig_buf = buf; */
-
-  while (nleft > 0)
-    {
-#ifdef USE_NPTH
-# ifdef HAVE_W32_SYSTEM
-#  error Cannot use npth_read here because it expects a system HANDLE.
-# endif
-      n = npth_read (fd, buf, nleft);
-#else
-      n = read (fd, buf, nleft);
-#endif
-      if (n < 0 && errno == EINTR)
-        continue;
-      if (n < 0)
-        return -1; /* read error. */
-      if (!n)
-        break; /* EOF */
-      nleft -= n;
-      buf = (char*)buf + n;
-    }
-  if (nread)
-    *nread = buflen - nleft;
-
-/*   log_printhex ("  readn:", orig_buf, *nread); */
-
-  return 0;
-}
-#endif /*NEED_PCSC_WRAPPER*/
 
 static const char *
 pcsc_error_string (long err)
@@ -928,9 +643,8 @@ dump_pcsc_reader_status (int slot)
 }
 
 
-#ifndef NEED_PCSC_WRAPPER
 static int
-pcsc_get_status_direct (int slot, unsigned int *status, int on_wire)
+pcsc_get_status (int slot, unsigned int *status, int on_wire)
 {
   long err;
   struct pcsc_readerstate_s rdrstates[1];
@@ -989,136 +703,15 @@ pcsc_get_status_direct (int slot, unsigned int *status, int on_wire)
 
   return 0;
 }
-#endif /*!NEED_PCSC_WRAPPER*/
 
 
-#ifdef NEED_PCSC_WRAPPER
+/* Send the APDU of length APDULEN to SLOT and return a maximum of
+   *BUFLEN data in BUFFER, the actual returned size will be stored at
+   BUFLEN.  Returns: A status word. */
 static int
-pcsc_get_status_wrapped (int slot, unsigned int *status, int on_wire)
-{
-  long err;
-  reader_table_t slotp;
-  size_t len, full_len;
-  int i, n;
-  unsigned char msgbuf[9];
-  unsigned char buffer[16];
-  int sw = SW_HOST_CARD_IO_ERROR;
-
-  (void)on_wire;
-  slotp = reader_table + slot;
-
-  if (slotp->pcsc.req_fd == -1
-      || slotp->pcsc.rsp_fd == -1
-      || slotp->pcsc.pid == (pid_t)(-1) )
-    {
-      log_error ("pcsc_get_status: pcsc-wrapper not running\n");
-      return sw;
-    }
-
-  msgbuf[0] = 0x04; /* STATUS command. */
-  len = 0;
-  msgbuf[1] = (len >> 24);
-  msgbuf[2] = (len >> 16);
-  msgbuf[3] = (len >>  8);
-  msgbuf[4] = (len      );
-  if ( writen (slotp->pcsc.req_fd, msgbuf, 5) )
-    {
-      log_error ("error sending PC/SC STATUS request: %s\n",
-                 strerror (errno));
-      goto command_failed;
-    }
-
-  /* Read the response. */
-  if ((i=readn (slotp->pcsc.rsp_fd, msgbuf, 9, &len)) || len != 9)
-    {
-      log_error ("error receiving PC/SC STATUS response: %s\n",
-                 i? strerror (errno) : "premature EOF");
-      goto command_failed;
-    }
-  len = buf_to_size_t (msgbuf+1);
-  if (msgbuf[0] != 0x81 || len < 4)
-    {
-      log_error ("invalid response header from PC/SC received\n");
-      goto command_failed;
-    }
-  len -= 4; /* Already read the error code. */
-  err = PCSC_ERR_MASK (buf32_to_ulong (msgbuf+5));
-  if (err)
-    {
-      log_error ("pcsc_status failed: %s (0x%lx)\n",
-                 pcsc_error_string (err), err);
-      /* This is a proper error code, so return immediately.  */
-      return pcsc_error_to_sw (err);
-    }
-
-  full_len = len;
-
-  /* The current version returns 3 words but we allow also for old
-     versions returning only 2 words. */
-  n = 12 < len ? 12 : len;
-  if ((i=readn (slotp->pcsc.rsp_fd, buffer, n, &len))
-      || (len != 8 && len != 12))
-    {
-      log_error ("error receiving PC/SC STATUS response: %s\n",
-                 i? strerror (errno) : "premature EOF");
-      goto command_failed;
-    }
-
-  slotp->is_t0 = (len == 12 && !!(buffer[11] & PCSC_PROTOCOL_T0));
-
-
-  full_len -= len;
-  /* Newer versions of the wrapper might send more status bytes.
-     Read them. */
-  while (full_len)
-    {
-      unsigned char dummybuf[128];
-
-      n = full_len < DIM (dummybuf) ? full_len : DIM (dummybuf);
-      if ((i=readn (slotp->pcsc.rsp_fd, dummybuf, n, &len)) || len != n)
-        {
-          log_error ("error receiving PC/SC TRANSMIT response: %s\n",
-                     i? strerror (errno) : "premature EOF");
-          goto command_failed;
-        }
-      full_len -= n;
-    }
-
-  /* We are lucky: The wrapper already returns the data in the
-     required format. */
-  *status = buffer[3];
-  return 0;
-
- command_failed:
-  close (slotp->pcsc.req_fd);
-  close (slotp->pcsc.rsp_fd);
-  slotp->pcsc.req_fd = -1;
-  slotp->pcsc.rsp_fd = -1;
-  if (slotp->pcsc.pid != -1)
-    kill (slotp->pcsc.pid, SIGTERM);
-  slotp->pcsc.pid = (pid_t)(-1);
-  slotp->used = 0;
-  return sw;
-}
-#endif /*NEED_PCSC_WRAPPER*/
-
-
-static int
-pcsc_get_status (int slot, unsigned int *status, int on_wire)
-{
-#ifdef NEED_PCSC_WRAPPER
-  return pcsc_get_status_wrapped (slot, status, on_wire);
-#else
-  return pcsc_get_status_direct (slot, status, on_wire);
-#endif
-}
-
-
-#ifndef NEED_PCSC_WRAPPER
-static int
-pcsc_send_apdu_direct (int slot, unsigned char *apdu, size_t apdulen,
-                       unsigned char *buffer, size_t *buflen,
-                       pininfo_t *pininfo)
+pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
+                unsigned char *buffer, size_t *buflen,
+                pininfo_t *pininfo)
 {
   long err;
   struct pcsc_io_request_s send_pci;
@@ -1149,147 +742,17 @@ pcsc_send_apdu_direct (int slot, unsigned char *apdu, size_t apdulen,
 
   return pcsc_error_to_sw (err);
 }
-#endif /*!NEED_PCSC_WRAPPER*/
 
 
-#ifdef NEED_PCSC_WRAPPER
+/* Do some control with the value of IOCTL_CODE to the card inserted
+   to SLOT.  Input buffer is specified by CNTLBUF of length LEN.
+   Output buffer is specified by BUFFER of length *BUFLEN, and the
+   actual output size will be stored at BUFLEN.  Returns: A status word.
+   This routine is used for PIN pad input support.  */
 static int
-pcsc_send_apdu_wrapped (int slot, unsigned char *apdu, size_t apdulen,
-                        unsigned char *buffer, size_t *buflen,
-                        pininfo_t *pininfo)
-{
-  long err;
-  reader_table_t slotp;
-  size_t len, full_len;
-  int i, n;
-  unsigned char msgbuf[9];
-  int sw = SW_HOST_CARD_IO_ERROR;
-
-  (void)pininfo;
-
-  if (!reader_table[slot].atrlen
-      && (err = reset_pcsc_reader (slot)))
-    return err;
-
-  if (DBG_CARD_IO)
-    log_printhex ("  PCSC_data:", apdu, apdulen);
-
-  slotp = reader_table + slot;
-
-  if (slotp->pcsc.req_fd == -1
-      || slotp->pcsc.rsp_fd == -1
-      || slotp->pcsc.pid == (pid_t)(-1) )
-    {
-      log_error ("pcsc_send_apdu: pcsc-wrapper not running\n");
-      return sw;
-    }
-
-  msgbuf[0] = 0x03; /* TRANSMIT command. */
-  len = apdulen;
-  msgbuf[1] = (len >> 24);
-  msgbuf[2] = (len >> 16);
-  msgbuf[3] = (len >>  8);
-  msgbuf[4] = (len      );
-  if ( writen (slotp->pcsc.req_fd, msgbuf, 5)
-       || writen (slotp->pcsc.req_fd, apdu, len))
-    {
-      log_error ("error sending PC/SC TRANSMIT request: %s\n",
-                 strerror (errno));
-      goto command_failed;
-    }
-
-  /* Read the response. */
-  if ((i=readn (slotp->pcsc.rsp_fd, msgbuf, 9, &len)) || len != 9)
-    {
-      log_error ("error receiving PC/SC TRANSMIT response: %s\n",
-                 i? strerror (errno) : "premature EOF");
-      goto command_failed;
-    }
-  len = buf_to_size_t (msgbuf+1);
-  if (msgbuf[0] != 0x81 || len < 4)
-    {
-      log_error ("invalid response header from PC/SC received\n");
-      goto command_failed;
-    }
-  len -= 4; /* Already read the error code. */
-  err = PCSC_ERR_MASK (buf32_to_ulong (msgbuf+5));
-  if (err)
-    {
-      log_error ("pcsc_transmit failed: %s (0x%lx)\n",
-                 pcsc_error_string (err), err);
-      return pcsc_error_to_sw (err);
-    }
-
-   full_len = len;
-
-   n = *buflen < len ? *buflen : len;
-   if ((i=readn (slotp->pcsc.rsp_fd, buffer, n, &len)) || len != n)
-     {
-       log_error ("error receiving PC/SC TRANSMIT response: %s\n",
-                  i? strerror (errno) : "premature EOF");
-       goto command_failed;
-     }
-   *buflen = n;
-
-   full_len -= len;
-   if (full_len)
-     {
-       log_error ("pcsc_send_apdu: provided buffer too short - truncated\n");
-       err = SW_HOST_INV_VALUE;
-     }
-   /* We need to read any rest of the response, to keep the
-      protocol running.  */
-   while (full_len)
-     {
-       unsigned char dummybuf[128];
-
-       n = full_len < DIM (dummybuf) ? full_len : DIM (dummybuf);
-       if ((i=readn (slotp->pcsc.rsp_fd, dummybuf, n, &len)) || len != n)
-         {
-           log_error ("error receiving PC/SC TRANSMIT response: %s\n",
-                      i? strerror (errno) : "premature EOF");
-           goto command_failed;
-         }
-       full_len -= n;
-     }
-
-   return err;
-
- command_failed:
-  close (slotp->pcsc.req_fd);
-  close (slotp->pcsc.rsp_fd);
-  slotp->pcsc.req_fd = -1;
-  slotp->pcsc.rsp_fd = -1;
-  if (slotp->pcsc.pid != -1)
-    kill (slotp->pcsc.pid, SIGTERM);
-  slotp->pcsc.pid = (pid_t)(-1);
-  slotp->used = 0;
-  return sw;
-}
-#endif /*NEED_PCSC_WRAPPER*/
-
-
-/* Send the APDU of length APDULEN to SLOT and return a maximum of
-   *BUFLEN data in BUFFER, the actual returned size will be stored at
-   BUFLEN.  Returns: A status word. */
-static int
-pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
-                unsigned char *buffer, size_t *buflen,
-                pininfo_t *pininfo)
-{
-#ifdef NEED_PCSC_WRAPPER
-  return pcsc_send_apdu_wrapped (slot, apdu, apdulen, buffer, buflen, pininfo);
-#else
-  return pcsc_send_apdu_direct (slot, apdu, apdulen, buffer, buflen, pininfo);
-#endif
-}
-
-
-#ifndef NEED_PCSC_WRAPPER
-static int
-control_pcsc_direct (int slot, pcsc_dword_t ioctl_code,
-                     const unsigned char *cntlbuf, size_t len,
-                     unsigned char *buffer, pcsc_dword_t *buflen)
+control_pcsc (int slot, pcsc_dword_t ioctl_code,
+              const unsigned char *cntlbuf, size_t len,
+              unsigned char *buffer, pcsc_dword_t *buflen)
 {
   long err;
 
@@ -1304,227 +767,17 @@ control_pcsc_direct (int slot, pcsc_dword_t ioctl_code,
 
   return 0;
 }
-#endif /*!NEED_PCSC_WRAPPER*/
-
-
-#ifdef NEED_PCSC_WRAPPER
-static int
-control_pcsc_wrapped (int slot, pcsc_dword_t ioctl_code,
-                      const unsigned char *cntlbuf, size_t len,
-                      unsigned char *buffer, pcsc_dword_t *buflen)
-{
-  long err = PCSC_E_NOT_TRANSACTED;
-  reader_table_t slotp;
-  unsigned char msgbuf[9];
-  int i, n;
-  size_t full_len;
-
-  slotp = reader_table + slot;
-
-  msgbuf[0] = 0x06; /* CONTROL command. */
-  msgbuf[1] = ((len + 4) >> 24);
-  msgbuf[2] = ((len + 4) >> 16);
-  msgbuf[3] = ((len + 4) >>  8);
-  msgbuf[4] = ((len + 4)      );
-  msgbuf[5] = (ioctl_code >> 24);
-  msgbuf[6] = (ioctl_code >> 16);
-  msgbuf[7] = (ioctl_code >>  8);
-  msgbuf[8] = (ioctl_code      );
-  if ( writen (slotp->pcsc.req_fd, msgbuf, 9)
-       || writen (slotp->pcsc.req_fd, cntlbuf, len))
-    {
-      log_error ("error sending PC/SC CONTROL request: %s\n",
-                 strerror (errno));
-      goto command_failed;
-    }
-
-  /* Read the response. */
-  if ((i=readn (slotp->pcsc.rsp_fd, msgbuf, 9, &len)) || len != 9)
-    {
-      log_error ("error receiving PC/SC CONTROL response: %s\n",
-                 i? strerror (errno) : "premature EOF");
-      goto command_failed;
-    }
-  len = buf32_to_size_t (msgbuf+1);
-  if (msgbuf[0] != 0x81 || len < 4)
-    {
-      log_error ("invalid response header from PC/SC received\n");
-      goto command_failed;
-    }
-  len -= 4; /* Already read the error code. */
-  err = PCSC_ERR_MASK (buf32_to_ulong (msgbuf+5));
-  if (err)
-    {
-      log_error ("pcsc_control failed: %s (0x%lx)\n",
-                 pcsc_error_string (err), err);
-      return pcsc_error_to_sw (err);
-    }
-
-  full_len = len;
-
-  if (buflen)
-    n = *buflen < len ? *buflen : len;
-  else
-    n = 0;
-  if ((i=readn (slotp->pcsc.rsp_fd, buffer, n, &len)) || len != n)
-    {
-      log_error ("error receiving PC/SC CONTROL response: %s\n",
-                 i? strerror (errno) : "premature EOF");
-      goto command_failed;
-    }
-  if (buflen)
-    *buflen = n;
-
-  full_len -= len;
-  if (full_len)
-    {
-      log_error ("pcsc_send_apdu: provided buffer too short - truncated\n");
-      err = PCSC_E_INVALID_VALUE;
-    }
-  /* We need to read any rest of the response, to keep the
-     protocol running.  */
-  while (full_len)
-    {
-      unsigned char dummybuf[128];
-
-      n = full_len < DIM (dummybuf) ? full_len : DIM (dummybuf);
-      if ((i=readn (slotp->pcsc.rsp_fd, dummybuf, n, &len)) || len != n)
-        {
-          log_error ("error receiving PC/SC CONTROL response: %s\n",
-                     i? strerror (errno) : "premature EOF");
-          goto command_failed;
-        }
-      full_len -= n;
-    }
-
-  if (!err)
-    return 0;
-
- command_failed:
-  close (slotp->pcsc.req_fd);
-  close (slotp->pcsc.rsp_fd);
-  slotp->pcsc.req_fd = -1;
-  slotp->pcsc.rsp_fd = -1;
-  if (slotp->pcsc.pid != -1)
-    kill (slotp->pcsc.pid, SIGTERM);
-  slotp->pcsc.pid = (pid_t)(-1);
-  slotp->used = 0;
-  return pcsc_error_to_sw (err);
-}
-#endif /*NEED_PCSC_WRAPPER*/
-
-
-
-/* Do some control with the value of IOCTL_CODE to the card inserted
-   to SLOT.  Input buffer is specified by CNTLBUF of length LEN.
-   Output buffer is specified by BUFFER of length *BUFLEN, and the
-   actual output size will be stored at BUFLEN.  Returns: A status word.
-   This routine is used for PIN pad input support.  */
-static int
-control_pcsc (int slot, pcsc_dword_t ioctl_code,
-              const unsigned char *cntlbuf, size_t len,
-              unsigned char *buffer, pcsc_dword_t *buflen)
-{
-#ifdef NEED_PCSC_WRAPPER
-  return control_pcsc_wrapped (slot, ioctl_code, cntlbuf, len, buffer, buflen);
-#else
-  return control_pcsc_direct (slot, ioctl_code, cntlbuf, len, buffer, buflen);
-#endif
-}
-
-
-#ifndef NEED_PCSC_WRAPPER
-static int
-close_pcsc_reader_direct (int slot)
-{
-  pcsc_release_context (reader_table[slot].pcsc.context);
-  return 0;
-}
-#endif /*!NEED_PCSC_WRAPPER*/
-
-
-#ifdef NEED_PCSC_WRAPPER
-static int
-close_pcsc_reader_wrapped (int slot)
-{
-  long err;
-  reader_table_t slotp;
-  size_t len;
-  int i;
-  unsigned char msgbuf[9];
-
-  slotp = reader_table + slot;
-
-  if (slotp->pcsc.req_fd == -1
-      || slotp->pcsc.rsp_fd == -1
-      || slotp->pcsc.pid == (pid_t)(-1) )
-    {
-      log_error ("close_pcsc_reader: pcsc-wrapper not running\n");
-      return 0;
-    }
-
-  msgbuf[0] = 0x02; /* CLOSE command. */
-  len = 0;
-  msgbuf[1] = (len >> 24);
-  msgbuf[2] = (len >> 16);
-  msgbuf[3] = (len >>  8);
-  msgbuf[4] = (len      );
-  if ( writen (slotp->pcsc.req_fd, msgbuf, 5) )
-    {
-      log_error ("error sending PC/SC CLOSE request: %s\n",
-                 strerror (errno));
-      goto command_failed;
-    }
-
-  /* Read the response. */
-  if ((i=readn (slotp->pcsc.rsp_fd, msgbuf, 9, &len)) || len != 9)
-    {
-      log_error ("error receiving PC/SC CLOSE response: %s\n",
-                 i? strerror (errno) : "premature EOF");
-      goto command_failed;
-    }
-  len = buf32_to_size_t (msgbuf+1);
-  if (msgbuf[0] != 0x81 || len < 4)
-    {
-      log_error ("invalid response header from PC/SC received\n");
-      goto command_failed;
-    }
-  len -= 4; /* Already read the error code. */
-  err = PCSC_ERR_MASK (buf32_to_ulong (msgbuf+5));
-  if (err)
-    log_error ("pcsc_close failed: %s (0x%lx)\n",
-               pcsc_error_string (err), err);
-
-  /* We will close the wrapper in any case - errors are merely
-     informational. */
-
- command_failed:
-  close (slotp->pcsc.req_fd);
-  close (slotp->pcsc.rsp_fd);
-  slotp->pcsc.req_fd = -1;
-  slotp->pcsc.rsp_fd = -1;
-  if (slotp->pcsc.pid != -1)
-    kill (slotp->pcsc.pid, SIGTERM);
-  slotp->pcsc.pid = (pid_t)(-1);
-  slotp->used = 0;
-  return 0;
-}
-#endif /*NEED_PCSC_WRAPPER*/
 
 
 static int
 close_pcsc_reader (int slot)
 {
-#ifdef NEED_PCSC_WRAPPER
-  return close_pcsc_reader_wrapped (slot);
-#else
-  return close_pcsc_reader_direct (slot);
-#endif
+  pcsc_release_context (reader_table[slot].pcsc.context);
+  return 0;
 }
 
 
 /* Connect a PC/SC card.  */
-#ifndef NEED_PCSC_WRAPPER
 static int
 connect_pcsc_card (int slot)
 {
@@ -1580,12 +833,8 @@ connect_pcsc_card (int slot)
   dump_reader_status (slot);
   return pcsc_error_to_sw (err);
 }
-#endif /*!NEED_PCSC_WRAPPER*/
 
 
-/* Disconnect a PC/SC card.  Note that this succeeds even if the card
-   is not connected.  */
-#ifndef NEED_PCSC_WRAPPER
 static int
 disconnect_pcsc_card (int slot)
 {
@@ -1606,12 +855,12 @@ disconnect_pcsc_card (int slot)
   reader_table[slot].pcsc.card = 0;
   return 0;
 }
-#endif /*!NEED_PCSC_WRAPPER*/
 
 
-#ifndef NEED_PCSC_WRAPPER
+/* Send an PC/SC reset command and return a status word on error or 0
+   on success. */
 static int
-reset_pcsc_reader_direct (int slot)
+reset_pcsc_reader (int slot)
 {
   int sw;
 
@@ -1620,122 +869,6 @@ reset_pcsc_reader_direct (int slot)
     sw = connect_pcsc_card (slot);
 
   return sw;
-}
-#endif /*NEED_PCSC_WRAPPER*/
-
-
-#ifdef NEED_PCSC_WRAPPER
-static int
-reset_pcsc_reader_wrapped (int slot)
-{
-  long err;
-  reader_table_t slotp;
-  size_t len;
-  int i, n;
-  unsigned char msgbuf[9];
-  unsigned int dummy_status;
-  int sw = SW_HOST_CARD_IO_ERROR;
-
-  slotp = reader_table + slot;
-
-  if (slotp->pcsc.req_fd == -1
-      || slotp->pcsc.rsp_fd == -1
-      || slotp->pcsc.pid == (pid_t)(-1) )
-    {
-      log_error ("pcsc_get_status: pcsc-wrapper not running\n");
-      return sw;
-    }
-
-  msgbuf[0] = 0x05; /* RESET command. */
-  len = 0;
-  msgbuf[1] = (len >> 24);
-  msgbuf[2] = (len >> 16);
-  msgbuf[3] = (len >>  8);
-  msgbuf[4] = (len      );
-  if ( writen (slotp->pcsc.req_fd, msgbuf, 5) )
-    {
-      log_error ("error sending PC/SC RESET request: %s\n",
-                 strerror (errno));
-      goto command_failed;
-    }
-
-  /* Read the response. */
-  if ((i=readn (slotp->pcsc.rsp_fd, msgbuf, 9, &len)) || len != 9)
-    {
-      log_error ("error receiving PC/SC RESET response: %s\n",
-                 i? strerror (errno) : "premature EOF");
-      goto command_failed;
-    }
-  len = buf32_to_size_t (msgbuf+1);
-  if (msgbuf[0] != 0x81 || len < 4)
-    {
-      log_error ("invalid response header from PC/SC received\n");
-      goto command_failed;
-    }
-  len -= 4; /* Already read the error code. */
-  if (len > DIM (slotp->atr))
-    {
-      log_error ("PC/SC returned a too large ATR (len=%lx)\n",
-                 (unsigned long)len);
-      sw = SW_HOST_GENERAL_ERROR;
-      goto command_failed;
-    }
-  err = PCSC_ERR_MASK (buf32_to_ulong (msgbuf+5));
-  if (err)
-    {
-      log_error ("PC/SC RESET failed: %s (0x%lx)\n",
-                 pcsc_error_string (err), err);
-      /* If the error code is no smart card, we should not considere
-         this a major error and close the wrapper.  */
-      sw = pcsc_error_to_sw (err);
-      if (err == PCSC_E_NO_SMARTCARD)
-        return sw;
-      goto command_failed;
-    }
-
-  /* The open function may return a zero for the ATR length to
-     indicate that no card is present.  */
-  n = len;
-  if (n)
-    {
-      if ((i=readn (slotp->pcsc.rsp_fd, slotp->atr, n, &len)) || len != n)
-        {
-          log_error ("error receiving PC/SC RESET response: %s\n",
-                     i? strerror (errno) : "premature EOF");
-          goto command_failed;
-        }
-    }
-  slotp->atrlen = len;
-
-  /* Read the status so that IS_T0 will be set. */
-  pcsc_get_status (slot, &dummy_status, 1);
-
-  return 0;
-
- command_failed:
-  close (slotp->pcsc.req_fd);
-  close (slotp->pcsc.rsp_fd);
-  slotp->pcsc.req_fd = -1;
-  slotp->pcsc.rsp_fd = -1;
-  if (slotp->pcsc.pid != -1)
-    kill (slotp->pcsc.pid, SIGTERM);
-  slotp->pcsc.pid = (pid_t)(-1);
-  slotp->used = 0;
-  return sw;
-}
-#endif /* !NEED_PCSC_WRAPPER */
-
-
-/* Send an PC/SC reset command and return a status word on error or 0
-   on success. */
-static int
-reset_pcsc_reader (int slot)
-{
-#ifdef NEED_PCSC_WRAPPER
-  return reset_pcsc_reader_wrapped (slot);
-#else
-  return reset_pcsc_reader_direct (slot);
-#endif
 }
 
 
@@ -1894,9 +1027,8 @@ pcsc_vendor_specific_init (int slot)
 
 /* Open the PC/SC reader without using the wrapper.  Returns -1 on
    error or a slot number for the reader.  */
-#ifndef NEED_PCSC_WRAPPER
 static int
-open_pcsc_reader_direct (const char *portstr)
+open_pcsc_reader (const char *portstr)
 {
   long err;
   int slot;
@@ -1995,229 +1127,6 @@ open_pcsc_reader_direct (const char *portstr)
   dump_reader_status (slot);
   unlock_slot (slot);
   return slot;
-}
-#endif /*!NEED_PCSC_WRAPPER */
-
-
-/* Open the PC/SC reader using the pcsc_wrapper program.  This is
-   needed to cope with different thread models and other peculiarities
-   of libpcsclite. */
-#ifdef NEED_PCSC_WRAPPER
-static int
-open_pcsc_reader_wrapped (const char *portstr)
-{
-  int slot;
-  reader_table_t slotp;
-  int fd, rp[2], wp[2];
-  int n, i;
-  pid_t pid;
-  size_t len;
-  unsigned char msgbuf[9];
-  int err;
-  unsigned int dummy_status;
-
-  /* Note that we use the constant and not the function because this
-     code won't be used under Windows.  */
-  const char *wrapperpgm = GNUPG_LIBEXECDIR "/gnupg-pcsc-wrapper";
-
-  if (access (wrapperpgm, X_OK))
-    {
-      log_error ("can't run PC/SC access module '%s': %s\n",
-                 wrapperpgm, strerror (errno));
-      return -1;
-    }
-
-  slot = new_reader_slot ();
-  if (slot == -1)
-    return -1;
-  slotp = reader_table + slot;
-
-  /* Fire up the PC/SCc wrapper.  We don't use any fork/exec code from
-     the common directy but implement it directly so that this file
-     may still be source copied. */
-
-  if (pipe (rp) == -1)
-    {
-      log_error ("error creating a pipe: %s\n", strerror (errno));
-      slotp->used = 0;
-      unlock_slot (slot);
-      return -1;
-    }
-  if (pipe (wp) == -1)
-    {
-      log_error ("error creating a pipe: %s\n", strerror (errno));
-      close (rp[0]);
-      close (rp[1]);
-      slotp->used = 0;
-      unlock_slot (slot);
-      return -1;
-    }
-
-  pid = fork ();
-  if (pid == -1)
-    {
-      log_error ("error forking process: %s\n", strerror (errno));
-      close (rp[0]);
-      close (rp[1]);
-      close (wp[0]);
-      close (wp[1]);
-      slotp->used = 0;
-      unlock_slot (slot);
-      return -1;
-    }
-  slotp->pcsc.pid = pid;
-
-  if (!pid)
-    { /*
-         === Child ===
-       */
-
-      /* Double fork. */
-      pid = fork ();
-      if (pid == -1)
-        _exit (31);
-      if (pid)
-        _exit (0); /* Immediate exit this parent, so that the child
-                      gets cleaned up by the init process. */
-
-      /* Connect our pipes. */
-      if (wp[0] != 0 && dup2 (wp[0], 0) == -1)
-        log_fatal ("dup2 stdin failed: %s\n", strerror (errno));
-      if (rp[1] != 1 && dup2 (rp[1], 1) == -1)
-        log_fatal ("dup2 stdout failed: %s\n", strerror (errno));
-
-      /* Send stderr to the bit bucket. */
-      fd = open ("/dev/null", O_WRONLY);
-      if (fd == -1)
-        log_fatal ("can't open '/dev/null': %s", strerror (errno));
-      if (fd != 2 && dup2 (fd, 2) == -1)
-        log_fatal ("dup2 stderr failed: %s\n", strerror (errno));
-
-      /* Close all other files. */
-      close_all_fds (3, NULL);
-
-      execl (wrapperpgm,
-             "pcsc-wrapper",
-             "--",
-             "1", /* API version */
-             opt.pcsc_driver, /* Name of the PC/SC library. */
-              NULL);
-      _exit (31);
-    }
-
-  /*
-     === Parent ===
-   */
-  close (wp[0]);
-  close (rp[1]);
-  slotp->pcsc.req_fd = wp[1];
-  slotp->pcsc.rsp_fd = rp[0];
-
-  /* Wait for the intermediate child to terminate. */
-#ifdef USE_NPTH
-#define WAIT npth_waitpid
-#else
-#define WAIT waitpid
-#endif
-  while ( (i=WAIT (pid, NULL, 0)) == -1 && errno == EINTR)
-    ;
-#undef WAIT
-
-  /* Now send the open request. */
-  msgbuf[0] = 0x01; /* OPEN command. */
-  len = portstr? strlen (portstr):0;
-  msgbuf[1] = (len >> 24);
-  msgbuf[2] = (len >> 16);
-  msgbuf[3] = (len >>  8);
-  msgbuf[4] = (len      );
-  if ( writen (slotp->pcsc.req_fd, msgbuf, 5)
-       || (portstr && writen (slotp->pcsc.req_fd, portstr, len)))
-    {
-      log_error ("error sending PC/SC OPEN request: %s\n",
-                 strerror (errno));
-      goto command_failed;
-    }
-  /* Read the response. */
-  if ((i=readn (slotp->pcsc.rsp_fd, msgbuf, 9, &len)) || len != 9)
-    {
-      log_error ("error receiving PC/SC OPEN response: %s\n",
-                 i? strerror (errno) : "premature EOF");
-      goto command_failed;
-    }
-  len = buf32_to_size_t (msgbuf+1);
-  if (msgbuf[0] != 0x81 || len < 4)
-    {
-      log_error ("invalid response header from PC/SC received\n");
-      goto command_failed;
-    }
-  len -= 4; /* Already read the error code. */
-  if (len > DIM (slotp->atr))
-    {
-      log_error ("PC/SC returned a too large ATR (len=%lx)\n",
-                 (unsigned long)len);
-      goto command_failed;
-    }
-  err = PCSC_ERR_MASK (buf32_to_ulong (msgbuf+5));
-  if (err)
-    {
-      log_error ("PC/SC OPEN failed: %s\n", pcsc_error_string (err));
-      goto command_failed;
-    }
-
-  /* The open request may return a zero for the ATR length to
-     indicate that no card is present.  */
-  n = len;
-  if (n)
-    {
-      if ((i=readn (slotp->pcsc.rsp_fd, slotp->atr, n, &len)) || len != n)
-        {
-          log_error ("error receiving PC/SC OPEN response: %s\n",
-                     i? strerror (errno) : "premature EOF");
-          goto command_failed;
-        }
-    }
-  slotp->atrlen = len;
-
-  reader_table[slot].close_reader = close_pcsc_reader;
-  reader_table[slot].reset_reader = reset_pcsc_reader;
-  reader_table[slot].get_status_reader = pcsc_get_status;
-  reader_table[slot].send_apdu_reader = pcsc_send_apdu;
-  reader_table[slot].dump_status_reader = dump_pcsc_reader_status;
-
-  pcsc_vendor_specific_init (slot);
-
-  /* Read the status so that IS_T0 will be set. */
-  pcsc_get_status (slot, &dummy_status, 1);
-
-  dump_reader_status (slot);
-  unlock_slot (slot);
-  return slot;
-
- command_failed:
-  close (slotp->pcsc.req_fd);
-  close (slotp->pcsc.rsp_fd);
-  slotp->pcsc.req_fd = -1;
-  slotp->pcsc.rsp_fd = -1;
-  if (slotp->pcsc.pid != -1)
-    kill (slotp->pcsc.pid, SIGTERM);
-  slotp->pcsc.pid = (pid_t)(-1);
-  slotp->used = 0;
-  unlock_slot (slot);
-  /* There is no way to return SW. */
-  return -1;
-
-}
-#endif /*NEED_PCSC_WRAPPER*/
-
-
-static int
-open_pcsc_reader (const char *portstr)
-{
-#ifdef NEED_PCSC_WRAPPER
-  return open_pcsc_reader_wrapped (portstr);
-#else
-  return open_pcsc_reader_direct (portstr);
-#endif
 }
 
 
@@ -2998,45 +1907,15 @@ apdu_dev_list_finish (struct dev_list *dl)
 static int
 apdu_open_one_reader (const char *portstr)
 {
-  static int pcsc_api_loaded, ct_api_loaded;
+  static int pcsc_api_loaded;
   int slot;
 
   if (DBG_READER)
     log_debug ("enter: apdu_open_reader: portstr=%s\n", portstr);
 
-  if (opt.ctapi_driver && *opt.ctapi_driver)
-    {
-      int port = portstr? atoi (portstr) : 32768;
-
-      if (!ct_api_loaded)
-        {
-          void *handle;
-
-          handle = dlopen (opt.ctapi_driver, RTLD_LAZY);
-          if (!handle)
-            {
-              log_error ("apdu_open_reader: failed to open driver: %s\n",
-                         dlerror ());
-              return -1;
-            }
-          CT_init = dlsym (handle, "CT_init");
-          CT_data = dlsym (handle, "CT_data");
-          CT_close = dlsym (handle, "CT_close");
-          if (!CT_init || !CT_data || !CT_close)
-            {
-              log_error ("apdu_open_reader: invalid CT-API driver\n");
-              dlclose (handle);
-              return -1;
-            }
-          ct_api_loaded = 1;
-        }
-      return open_ct_reader (port);
-    }
-
-  /* No ctAPI configured, so lets try the PC/SC API */
+  /* Lets try the PC/SC API */
   if (!pcsc_api_loaded)
     {
-#ifndef NEED_PCSC_WRAPPER
       void *handle;
 
       handle = dlopen (opt.pcsc_driver, RTLD_LAZY);
@@ -3115,7 +1994,6 @@ apdu_open_one_reader (const char *portstr)
           dlclose (handle);
           return -1;
         }
-#endif /*!NEED_PCSC_WRAPPER*/
       pcsc_api_loaded = 1;
     }
 
@@ -3569,7 +2447,7 @@ static int
 apdu_get_status_internal (int slot, int hang, unsigned int *status, int on_wire)
 {
   int sw;
-  unsigned int s;
+  unsigned int s = 0;
 
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
@@ -3935,7 +2813,6 @@ send_le (int slot, int class, int ins, int p0, int p1,
     {
       xfree (apdu_buffer);
       apdu_buffer = NULL;
-      apdu_buffer_size = 0;
     }
 
   /* Store away the returned data but strip the statusword. */
