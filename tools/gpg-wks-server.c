@@ -1374,6 +1374,11 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
       goto leave;
     }
 
+  /* Make sure it is world readable.  */
+  if (gnupg_chmod (fnewname, "-rwxr--r--"))
+    log_error ("can't set permissions of '%s': %s\n",
+               fnewname, gpg_strerror (gpg_err_code_from_syserror()));
+
   log_info ("key %s published for '%s'\n", ctx->fpr, address);
   send_congratulation_message (address, fnewname);
 
