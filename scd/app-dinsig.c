@@ -456,7 +456,6 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
           /* Fixme: This is a kludge.  A better solution is not to use
              SHA1 as default but use an autodetection.  However this
              needs changes in all app-*.c */
-          hashalgo = GCRY_MD_SHA256;
           datalen  = indatalen;
         }
       else

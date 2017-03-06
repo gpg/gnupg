@@ -414,7 +414,6 @@ parse_keyusage_flags (const unsigned char *der, size_t derlen,
       else
         {
           bits &= ~mask;
-          mask = 0;
         }
     }
   else
@@ -827,7 +826,6 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
   if (prkdf->usageflags.non_repudiation)
     {
       log_printf ("%snon_repudiation", s);
-      s = ",";
     }
   log_printf ("\n");
 
@@ -891,7 +889,8 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
     }
   else
     {
-      prkdf->next = *prkdresult;
+      if (prkdf)
+        prkdf->next = *prkdresult;
       *prkdresult = prkdf;
       if (cdf)
         {
@@ -1112,7 +1111,8 @@ read_ef_cd (app_t app, unsigned short fid, cdf_object_t *result)
     }
   else
     {
-      cdf->next = *result;
+      if (cdf)
+        cdf->next = *result;
       *result = cdf;
     }
   return err;

@@ -752,7 +752,6 @@ parse_keyusage_flags (const unsigned char *der, size_t derlen,
       else
         {
           bits &= ~mask;
-          mask = 0;
         }
     }
   else
@@ -1388,7 +1387,7 @@ read_ef_cdf (app_t app, unsigned short fid, cdf_object_t *result)
       if (class != CLASS_UNIVERSAL || tag != TAG_SEQUENCE)
         {
           errstr = "unsupported reference type";
-          continue;
+          goto parse_error;
         }
       nn = objlen;
 
@@ -1801,7 +1800,6 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
             else
               {
                 bits &= ~mask;
-                mask = 0;
               }
           }
         if ((bits & 0x80))
