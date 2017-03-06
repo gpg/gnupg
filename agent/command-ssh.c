@@ -2393,13 +2393,12 @@ card_key_list (ctrl_t ctrl, char **r_serialno, strlist_t *result)
   err = agent_card_serialno (ctrl, r_serialno, NULL);
   if (err)
     {
-      if (gpg_err_code (err) == GPG_ERR_ENODEV)
-        return 0;               /* Nothing available.  */
-
-      if (opt.verbose)
+      if (gpg_err_code (err) != GPG_ERR_ENODEV && opt.verbose)
         log_info (_("error getting serial number of card: %s\n"),
                   gpg_strerror (err));
-      return err;
+
+      /* Nothing available.  */
+      return 0;
     }
 
   err = agent_card_cardlist (ctrl, result);
@@ -2568,7 +2567,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
   gpg_error_t err;
   int ret;
   ssh_control_file_t cf = NULL;
-  char *cardsn;
   gpg_error_t ret_err;
 
   (void)request;
@@ -2601,21 +2599,21 @@ ssh_handler_request_identities (ctrl_t ctrl,
           if (opt.verbose)
             log_info (_("error getting list of cards: %s\n"),
                       gpg_strerror (err));
-          goto out;
+          goto scd_out;
         }
 
       for (sl = card_list; sl; sl = sl->next)
         {
           char *serialno0;
+          char *cardsn;
+
           err = agent_card_serialno (ctrl, &serialno0, sl->d);
           if (err)
             {
               if (opt.verbose)
                 log_info (_("error getting serial number of card: %s\n"),
                           gpg_strerror (err));
-              xfree (serialno);
-              free_strlist (card_list);
-              goto out;
+              continue;
             }
 
           xfree (serialno0);
@@ -2640,6 +2638,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
       free_strlist (card_list);
     }
 
+ scd_out:
   /* Then look at all the registered and non-disabled keys. */
   err = open_control_file (&cf, 0);
   if (err)
