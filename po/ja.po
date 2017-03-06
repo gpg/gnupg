@@ -4,7 +4,7 @@
 # IIDA Yosiaki <iida@gnu.org>, 1999, 2000, 2002, 2003, 2004.
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # Takashi P.KATOH, 2002.
-# NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016.
+# NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015, 2016, 2017.
 #
 msgid ""
 msgstr ""
@@ -149,10 +149,9 @@ msgstr "カードにsshの認証鍵がありません: %s\n"
 msgid "no suitable card key found: %s\n"
 msgstr "適当なカードの鍵が見つかりません: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error getting stored flags: %s\n"
+#, c-format
 msgid "error getting list of cards: %s\n"
-msgstr "保存されたフラグの取得エラー: %s\n"
+msgstr "カードのリスト の取得エラー: %s\n"
 
 #, c-format
 msgid ""
@@ -1649,7 +1648,7 @@ msgid "remove as much as possible from key during export"
 msgstr "エクスポートの際、できるだけ除去する"
 
 msgid "use the GnuPG key backup format"
-msgstr ""
+msgstr "GnuPGの鍵のバックアップフォーマットを使います"
 
 msgid " - skipped"
 msgstr " - スキップされました"
@@ -2315,7 +2314,7 @@ msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr "'%s'は有効な鍵ID, フィンガープリント、keygripではないようです。\n"
 
 msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
-msgstr ""
+msgstr "警告: コマンドが指定されていません。なにを意味しているのか当ててみます ...\n"
 
 msgid "Go ahead and type your message ...\n"
 msgstr "開始します。メッセージを打ってください ...\n"
@@ -2385,10 +2384,8 @@ msgstr "インポート後、できるだけ除去します"
 msgid "run import filters and export key immediately"
 msgstr "インポート・フィルタを実行し鍵をすぐにエクスポートします"
 
-#, fuzzy
-#| msgid "assume input is in binary format"
 msgid "assume the GnuPG key backup format"
-msgstr "バイナリ・フォーマットの入力を仮定する"
+msgstr "GnuPGの鍵のバックアップフォーマットを仮定します"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -5438,10 +5435,8 @@ msgstr ""
 "(G)ood-良, (A)ccept once-一度だけ認める, (U)nknown-不明, (R)eject once-一度だ"
 "け否, (B)ad-ダメ? "
 
-#, fuzzy
-#| msgid "Defaulting to unknown."
 msgid "Defaulting to unknown.\n"
-msgstr "不明がデフォルトです。"
+msgstr "不明をデフォルトとします。\n"
 
 msgid "TOFU db corruption detected.\n"
 msgstr "TOFU dbが壊れていることが検出されました。\n"
@@ -5556,11 +5551,10 @@ msgstr[0] ""
 msgid "error opening TOFU database: %s\n"
 msgstr "TOFUデータベースのオープンでエラー: %s\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
+#, c-format
 msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
-"*警告*: %s に暗号化します。失効していないユーザIDが一つもないものです。\n"
+"*警告*: %s に暗号化します。失効していないユーザIDが一つもないものです\n"
 
 #, c-format
 msgid "error setting policy for key %s, user id \"%s\": %s"
@@ -5825,17 +5819,17 @@ msgstr "公開鍵の読み込みに失敗しました: %s\n"
 #. * the %s at the start and end of the string.
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
-msgstr ""
+msgstr "%s番号: %s%%0A保持者: %s%%0Aカウンタ: %lu%s"
 
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr ""
+msgstr "%s番号: %s%%0A保持者: %s%s"
 
 #. TRANSLATORS: This is the number of remaining attempts to
 #. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
 #, c-format
 msgid "Remaining attempts: %d"
-msgstr ""
+msgstr "残された試行回数: %d"
 
 #, c-format
 msgid "using default PIN as %s\n"
@@ -5847,10 +5841,8 @@ msgstr ""
 "デフォルトのPIN %s を使うのに失敗しました: %s - これ以上デフォルトとしての使"
 "用を無効とします\n"
 
-#, fuzzy
-#| msgid "||Please enter the PIN"
 msgid "||Please unlock the card"
-msgstr "||PINを入力してください"
+msgstr "||カードをアンロックしてください"
 
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
@@ -6803,10 +6795,9 @@ msgstr "永続的にロードされる証明書: %u\n"
 msgid "    runtime cached certificates: %u\n"
 msgstr "実行時キャッシュ証明書の数: %u\n"
 
-#, fuzzy, c-format
-#| msgid "    runtime cached certificates: %u\n"
+#, c-format
 msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
-msgstr "実行時キャッシュ証明書の数: %u\n"
+msgstr "           信用された証明書の数: %u (%u,%u,%u,%u)\n"
 
 msgid "certificate already cached\n"
 msgstr "   すでにキャッシュされた証明書\n"
