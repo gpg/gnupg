@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <gpg-error.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -345,7 +346,11 @@ do_mkdtemp (scheme *sc, pointer args)
 {
   FFI_PROLOG ();
   char *template;
-  char buffer[128];
+#ifdef PATH_MAX
+  char buffer[PATH_MAX];
+#else
+  char buffer[1024];
+#endif
   char *name;
   FFI_ARG_OR_RETURN (sc, char *, template, string, args);
   FFI_ARGS_DONE_OR_RETURN (sc, args);
