@@ -26,14 +26,14 @@
 #include <string.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "packet.h"
 #include "keydb.h"
 #include "cipher.h"
 #include "main.h"
 #include "options.h"
-#include "i18n.h"
-#include "status.h"
+#include "../common/i18n.h"
+#include "../common/status.h"
 #include "pkglue.h"
 
 static int

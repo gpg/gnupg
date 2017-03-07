@@ -32,8 +32,8 @@
 #include "options.h"
 #include "errors.h"
 #include "memory.h"
-#include "util.h"
-#include "i18n.h"
+#include "../common/util.h"
+#include "../common/i18n.h"
 #else /* GNUPG_MAJOR_VERSION != 1 */
 #include "scdaemon.h"
 #endif /* GNUPG_MAJOR_VERSION != 1 */

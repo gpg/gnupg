@@ -18,7 +18,7 @@
 #include <errno.h>
 
 #include "../common/util.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 
 
 /* Replace libgcrypt's malloc functions which are used by

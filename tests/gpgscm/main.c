@@ -34,7 +34,7 @@
 #include "scheme.h"
 #include "scheme-private.h"
 #include "ffi.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "../../common/argparse.h"
 #include "../../common/init.h"
 #include "../../common/logging.h"
