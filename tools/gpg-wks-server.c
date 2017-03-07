@@ -31,14 +31,14 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-#include "util.h"
-#include "init.h"
-#include "sysutils.h"
-#include "ccparray.h"
-#include "exectool.h"
-#include "zb32.h"
-#include "mbox-util.h"
-#include "name-value.h"
+#include "../common/util.h"
+#include "../common/init.h"
+#include "../common/sysutils.h"
+#include "../common/ccparray.h"
+#include "../common/exectool.h"
+#include "../common/zb32.h"
+#include "../common/mbox-util.h"
+#include "../common/name-value.h"
 #include "mime-maker.h"
 #include "send-mail.h"
 #include "gpg-wks.h"
