@@ -44,12 +44,12 @@
 #endif
 
 /* For log_logv(), asctimestamp(), gnupg_get_time ().  */
-#include "util.h"
-#include "i18n.h"
-#include "exechelp.h"
-#include "sysutils.h"
+#include "../common/util.h"
+#include "../common/i18n.h"
+#include "../common/exechelp.h"
+#include "../common/sysutils.h"
 
-#include "gc-opt-flags.h"
+#include "../common/gc-opt-flags.h"
 #include "gpgconf.h"
 
 /* There is a problem with gpg 1.4 under Windows: --gpgconf-list

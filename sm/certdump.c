@@ -37,7 +37,7 @@
 #include <ksba.h>
 
 #include "keydb.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 
 
 struct dn_array_s {

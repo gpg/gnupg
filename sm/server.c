@@ -29,8 +29,8 @@
 
 #include "gpgsm.h"
 #include <assuan.h>
-#include "sysutils.h"
-#include "server-help.h"
+#include "../common/sysutils.h"
+#include "../common/server-help.h"
 
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 

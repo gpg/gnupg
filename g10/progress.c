@@ -21,10 +21,10 @@
 #include <stdio.h>
 
 #include "gpg.h"
-#include "iobuf.h"
+#include "../common/iobuf.h"
 #include "filter.h"
-#include "status.h"
-#include "util.h"
+#include "../common/status.h"
+#include "../common/util.h"
 #include "options.h"
 
 /* Create a new context for use with the progress filter.  We need to

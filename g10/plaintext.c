@@ -29,14 +29,14 @@
 #endif
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "options.h"
 #include "packet.h"
-#include "ttyio.h"
+#include "../common/ttyio.h"
 #include "filter.h"
 #include "main.h"
-#include "status.h"
-#include "i18n.h"
+#include "../common/status.h"
+#include "../common/i18n.h"
 
 
 /* Get the output filename.  On success, the actual filename that is

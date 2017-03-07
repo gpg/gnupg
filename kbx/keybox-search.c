@@ -27,8 +27,8 @@
 
 #include "keybox-defs.h"
 #include <gcrypt.h>
-#include "host2net.h"
-#include "mbox-util.h"
+#include "../common/host2net.h"
+#include "../common/mbox-util.h"
 
 #define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))

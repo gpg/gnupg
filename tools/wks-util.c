@@ -22,11 +22,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "util.h"
-#include "status.h"
-#include "ccparray.h"
-#include "exectool.h"
-#include "mbox-util.h"
+#include "../common/util.h"
+#include "../common/status.h"
+#include "../common/ccparray.h"
+#include "../common/exectool.h"
+#include "../common/mbox-util.h"
 #include "mime-maker.h"
 #include "send-mail.h"
 #include "gpg-wks.h"

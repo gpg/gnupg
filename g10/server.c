@@ -29,12 +29,12 @@
 
 #include "gpg.h"
 #include <assuan.h>
-#include "util.h"
-#include "i18n.h"
+#include "../common/util.h"
+#include "../common/i18n.h"
 #include "options.h"
 #include "../common/server-help.h"
 #include "../common/sysutils.h"
-#include "status.h"
+#include "../common/status.h"
 
 
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))

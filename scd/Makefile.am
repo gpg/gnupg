@@ -21,7 +21,7 @@ EXTRA_DIST = ChangeLog-2011 scdaemon-w32info.rc
 
 libexec_PROGRAMS = scdaemon
 
-AM_CPPFLAGS = -I$(top_srcdir)/common $(LIBUSB_CPPFLAGS)
+AM_CPPFLAGS = $(LIBUSB_CPPFLAGS)
 
 include $(top_srcdir)/am/cmacros.am
 

@@ -31,9 +31,9 @@
 #include <ksba.h>
 
 #include "keydb.h"
-#include "exechelp.h"
-#include "i18n.h"
-#include "sysutils.h"
+#include "../common/exechelp.h"
+#include "../common/i18n.h"
+#include "../common/sysutils.h"
 #include "../kbx/keybox.h" /* for KEYBOX_FLAG_* */
 #include "../common/membuf.h"
 #include "minip12.h"

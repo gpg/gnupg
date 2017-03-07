@@ -34,8 +34,8 @@
 
 #include "keydb.h"
 #include "../kbx/keybox.h" /* for KEYBOX_FLAG_* */
-#include "i18n.h"
-#include "tlv.h"
+#include "../common/i18n.h"
+#include "../common/tlv.h"
 
 struct list_external_parm_s
 {

@@ -32,10 +32,10 @@
 #include <gcrypt.h>
 #include <assuan.h>
 
-#include "i18n.h"
-#include "sysutils.h"
-#include "gc-opt-flags.h"
-#include "asshelp.h"
+#include "../common/i18n.h"
+#include "../common/sysutils.h"
+#include "../common/gc-opt-flags.h"
+#include "../common/asshelp.h"
 #include "../common/init.h"
 #include "keyblob.h"
 #include "server.h"

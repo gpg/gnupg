@@ -32,7 +32,7 @@
 #include <ksba.h>
 
 #include "keydb.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 
 
 static const char oid_kp_serverAuth[]     = "1.3.6.1.5.5.7.3.1";

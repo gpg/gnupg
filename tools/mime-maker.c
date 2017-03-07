@@ -22,8 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "util.h"
-#include "zb32.h"
+#include "../common/util.h"
+#include "../common/zb32.h"
 #include "mime-maker.h"
 
 

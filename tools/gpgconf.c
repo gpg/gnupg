@@ -26,8 +26,8 @@
 #include <unistd.h>
 
 #include "gpgconf.h"
-#include "i18n.h"
-#include "sysutils.h"
+#include "../common/i18n.h"
+#include "../common/sysutils.h"
 #include "../common/init.h"
 
 

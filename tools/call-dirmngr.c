@@ -29,10 +29,10 @@
 #endif
 
 #include <assuan.h>
-#include "util.h"
-#include "i18n.h"
-#include "asshelp.h"
-#include "mbox-util.h"
+#include "../common/util.h"
+#include "../common/i18n.h"
+#include "../common/asshelp.h"
+#include "../common/mbox-util.h"
 #include "./call-dirmngr.h"
 
 static struct

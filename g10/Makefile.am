@@ -23,7 +23,7 @@ EXTRA_DIST = options.skel dirmngr-conf.skel distsigkey.gpg \
 	     gpg.w32-manifest.in test.c t-keydb-keyring.kbx \
 	     t-keydb-get-keyblock.gpg t-stutter-data.asc
 
-AM_CPPFLAGS = -I$(top_srcdir)/common
+AM_CPPFLAGS =
 
 include $(top_srcdir)/am/cmacros.am
 

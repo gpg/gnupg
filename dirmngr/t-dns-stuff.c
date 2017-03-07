@@ -24,7 +24,7 @@
 #include <assert.h>
 
 
-#include "util.h"
+#include "../common/util.h"
 #include "dns-stuff.h"
 
 #define PGM "t-dns-stuff"

@@ -28,14 +28,14 @@
 #include <time.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "main.h"
 #include "packet.h"
 #include "options.h"
 #include "keydb.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "rmd160.h"
-#include "host2net.h"
+#include "../common/host2net.h"
 
 
 #define KEYID_STR_SIZE 19

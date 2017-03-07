@@ -31,9 +31,9 @@
 #include <ksba.h>
 
 #include "keydb.h"
-#include "exechelp.h"
-#include "i18n.h"
-#include "sysutils.h"
+#include "../common/exechelp.h"
+#include "../common/i18n.h"
+#include "../common/sysutils.h"
 #include "minip12.h"
 
 /* A table to store a fingerprint as used in a duplicates table.  We

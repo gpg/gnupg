@@ -29,21 +29,21 @@
 #include <unistd.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "main.h"
 #include "packet.h"
-#include "ttyio.h"
+#include "../common/ttyio.h"
 #include "options.h"
 #include "keydb.h"
 #include "trustdb.h"
-#include "status.h"
-#include "i18n.h"
+#include "../common/status.h"
+#include "../common/i18n.h"
 #include "keyserver-internal.h"
 #include "call-agent.h"
 #include "pkglue.h"
 #include "../common/shareddefs.h"
-#include "host2net.h"
-#include "mbox-util.h"
+#include "../common/host2net.h"
+#include "../common/mbox-util.h"
 
 
 /* The default algorithms.  If you change them remember to change them

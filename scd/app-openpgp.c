@@ -62,13 +62,13 @@
 #include "scdaemon.h"
 #endif /* GNUPG_MAJOR_VERSION != 1 */
 
-#include "util.h"
-#include "i18n.h"
+#include "../common/util.h"
+#include "../common/i18n.h"
 #include "iso7816.h"
 #include "app-common.h"
-#include "tlv.h"
-#include "host2net.h"
-#include "openpgpdefs.h"
+#include "../common/tlv.h"
+#include "../common/host2net.h"
+#include "../common/openpgpdefs.h"
 
 
 /* A table describing the DOs of the card.  */

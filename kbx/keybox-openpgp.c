@@ -36,7 +36,7 @@
 #include <gcrypt.h>
 
 #include "../common/openpgpdefs.h"
-#include "host2net.h"
+#include "../common/host2net.h"
 
 /* Assume a valid OpenPGP packet at the address pointed to by BUFBTR
    which has a maximum length as stored at BUFLEN.  Return the header

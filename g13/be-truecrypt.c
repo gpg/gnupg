@@ -25,7 +25,7 @@
 #include <unistd.h>
 
 #include "g13.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "be-truecrypt.h"
 
 

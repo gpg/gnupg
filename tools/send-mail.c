@@ -22,9 +22,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "util.h"
-#include "exectool.h"
-#include "sysutils.h"
+#include "../common/util.h"
+#include "../common/exectool.h"
+#include "../common/sysutils.h"
 #include "send-mail.h"
 
 

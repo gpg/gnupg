@@ -28,14 +28,14 @@
 #include <unistd.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "options.h"
 #include "main.h" /*try_make_homedir ()*/
 #include "packet.h"
 #include "keyring.h"
 #include "../kbx/keybox.h"
 #include "keydb.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 
 static int active_handles;
 

@@ -22,9 +22,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "util.h"
-#include "ccparray.h"
-#include "exectool.h"
+#include "../common/util.h"
+#include "../common/ccparray.h"
+#include "../common/exectool.h"
 #include "gpg-wks.h"
 #include "rfc822parse.h"
 #include "mime-parser.h"

@@ -32,7 +32,7 @@
 #include <ksba.h>
 
 #include "keydb.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 
 
 struct dek_s {

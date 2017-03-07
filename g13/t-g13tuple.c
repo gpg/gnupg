@@ -23,7 +23,7 @@
 #include <assert.h>
 
 
-#include "util.h"
+#include "../common/util.h"
 #include "keyblob.h"
 #include "g13tuple.h"
 

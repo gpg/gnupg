@@ -31,12 +31,12 @@
 #include <npth.h>
 
 #include "dirmngr.h"
-#include "exechelp.h"
+#include "../common/exechelp.h"
 #include "crlfetch.h"
 #include "ldapserver.h"
 #include "misc.h"
 #include "ldap-wrapper.h"
-#include "host2net.h"
+#include "../common/host2net.h"
 
 
 #define UNENCODED_URL_CHARS "abcdefghijklmnopqrstuvwxyz"   \

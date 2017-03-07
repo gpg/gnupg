@@ -27,7 +27,7 @@
 
 #include "g13.h"
 #include <assuan.h>
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "keyblob.h"
 #include "server.h"
 #include "create.h"

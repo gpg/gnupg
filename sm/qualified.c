@@ -26,7 +26,7 @@
 #include <errno.h>
 
 #include "gpgsm.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include <ksba.h>
 
 

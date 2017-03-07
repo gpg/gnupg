@@ -51,9 +51,9 @@
 # include "ldap-parse-uri.h"
 #endif
 #include "dns-stuff.h"
-#include "mbox-util.h"
-#include "zb32.h"
-#include "server-help.h"
+#include "../common/mbox-util.h"
+#include "../common/zb32.h"
+#include "../common/server-help.h"
 
 /* To avoid DoS attacks we limit the size of a certificate to
    something reasonable.  The DoS was actually only an issue back when

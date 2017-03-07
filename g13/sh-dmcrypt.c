@@ -32,9 +32,9 @@
 
 #include "g13-syshelp.h"
 #include <assuan.h>
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "g13tuple.h"
-#include "exectool.h"
+#include "../common/exectool.h"
 #include "keyblob.h"
 
 /* The standard disk block size (logical).  */

@@ -31,7 +31,7 @@ endif
 noinst_PROGRAMS = $(module_tests) $(module_net_tests) $(module_maint_tests)
 TESTS = $(module_tests) $(module_net_tests)
 
-AM_CPPFLAGS = -I$(top_srcdir)/common
+AM_CPPFLAGS =
 
 include $(top_srcdir)/am/cmacros.am
 

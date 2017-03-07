@@ -25,13 +25,13 @@
 #include <ctype.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "packet.h"
-#include "status.h"
-#include "iobuf.h"
-#include "i18n.h"
+#include "../common/status.h"
+#include "../common/iobuf.h"
+#include "../common/i18n.h"
 #include "options.h"
-#include "host2net.h"
+#include "../common/host2net.h"
 
 static int do_user_id( IOBUF out, int ctb, PKT_user_id *uid );
 static int do_key (iobuf_t out, int ctb, PKT_public_key *pk);

@@ -23,8 +23,8 @@
 #include <string.h>
 
 #include "gpg.h"
-#include "util.h"
-#include "logging.h"
+#include "../common/util.h"
+#include "../common/logging.h"
 
 #include "gpgsql.h"
 

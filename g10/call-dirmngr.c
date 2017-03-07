@@ -31,13 +31,13 @@
 
 #include "gpg.h"
 #include <assuan.h>
-#include "util.h"
-#include "membuf.h"
+#include "../common/util.h"
+#include "../common/membuf.h"
 #include "options.h"
-#include "i18n.h"
-#include "asshelp.h"
-#include "keyserver.h"
-#include "status.h"
+#include "../common/i18n.h"
+#include "../common/asshelp.h"
+#include "../common/keyserver.h"
+#include "../common/status.h"
 #include "call-dirmngr.h"
 
 

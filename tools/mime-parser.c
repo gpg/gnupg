@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "util.h"
+#include "../common/util.h"
 #include "rfc822parse.h"
 #include "mime-parser.h"
 

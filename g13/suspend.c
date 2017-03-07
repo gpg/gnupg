@@ -27,7 +27,7 @@
 #include <assert.h>
 
 #include "g13.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "suspend.h"
 
 #include "keyblob.h"

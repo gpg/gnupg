@@ -27,7 +27,7 @@
 #include "gpg.h"
 #include "options.h"
 #include "keydb.h"
-#include "util.h"
+#include "../common/util.h"
 #include "main.h"
 #include "call-agent.h"
 

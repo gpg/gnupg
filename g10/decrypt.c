@@ -27,13 +27,13 @@
 #include "gpg.h"
 #include "options.h"
 #include "packet.h"
-#include "status.h"
-#include "iobuf.h"
+#include "../common/status.h"
+#include "../common/iobuf.h"
 #include "keydb.h"
-#include "util.h"
+#include "../common/util.h"
 #include "main.h"
-#include "status.h"
-#include "i18n.h"
+#include "../common/status.h"
+#include "../common/i18n.h"
 
 /* Assume that the input is an encrypted message and decrypt
  * (and if signed, verify the signature on) it.

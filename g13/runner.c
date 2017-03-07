@@ -27,7 +27,7 @@
 #include <npth.h>
 
 #include "g13.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "keyblob.h"
 #include "runner.h"
 #include "../common/exechelp.h"

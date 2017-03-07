@@ -33,7 +33,7 @@
 #include "../common/argparse.h"
 #include "../common/stringhelp.h"
 #include "../common/utf8conv.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "keybox-defs.h"
 #include "../common/init.h"
 #include <gcrypt.h>

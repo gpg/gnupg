@@ -25,19 +25,19 @@
 #include <time.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "packet.h"
-#include "iobuf.h"
+#include "../common/iobuf.h"
 #include "options.h"
 #include "keydb.h"
 #include "filter.h"
 #include "main.h"
-#include "status.h"
-#include "i18n.h"
+#include "../common/status.h"
+#include "../common/i18n.h"
 #include "trustdb.h"
 #include "keyserver-internal.h"
 #include "photoid.h"
-#include "mbox-util.h"
+#include "../common/mbox-util.h"
 #include "call-dirmngr.h"
 
 /* Put an upper limit on nested packets.  The 32 is an arbitrary

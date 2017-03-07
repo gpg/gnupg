@@ -37,10 +37,10 @@
 
 #include "scdaemon.h"
 
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "iso7816.h"
 #include "app-common.h"
-#include "tlv.h"
+#include "../common/tlv.h"
 
 
 

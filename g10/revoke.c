@@ -28,13 +28,12 @@
 #include "gpg.h"
 #include "options.h"
 #include "packet.h"
-#include "status.h"
+#include "../common/status.h"
 #include "keydb.h"
-#include "util.h"
+#include "../common/util.h"
 #include "main.h"
-#include "ttyio.h"
-#include "status.h"
-#include "i18n.h"
+#include "../common/ttyio.h"
+#include "../common/i18n.h"
 #include "call-agent.h"
 
 struct revocation_reason_info {

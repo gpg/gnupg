@@ -68,8 +68,8 @@
 #endif
 
 #include "./dirmngr-err.h"
-#include "util.h"
-#include "host2net.h"
+#include "../common/util.h"
+#include "../common/host2net.h"
 #include "dns-stuff.h"
 
 #ifdef USE_NPTH

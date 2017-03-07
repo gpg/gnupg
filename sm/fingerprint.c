@@ -31,7 +31,7 @@
 #include <gcrypt.h>
 #include <ksba.h>
 
-#include "host2net.h"
+#include "../common/host2net.h"
 
 
 /* Return the fingerprint of the certificate (we can't put this into

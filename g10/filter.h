@@ -20,7 +20,7 @@
 #ifndef G10_FILTER_H
 #define G10_FILTER_H
 
-#include "types.h"
+#include "../common/types.h"
 #include "dek.h"
 
 typedef struct {

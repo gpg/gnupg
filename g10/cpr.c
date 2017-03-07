@@ -29,12 +29,12 @@
 #endif
 
 #include "gpg.h"
-#include "util.h"
-#include "status.h"
-#include "ttyio.h"
+#include "../common/util.h"
+#include "../common/status.h"
+#include "../common/ttyio.h"
 #include "options.h"
 #include "main.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 
 #define CONTROL_D ('D' - 'A' + 1)
 

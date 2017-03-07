@@ -35,11 +35,11 @@
 #include "passphrase.h"
 #include "../common/shareddefs.h"
 #include "../kbx/keybox.h" /* malloc hooks */
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "keydb.h"
-#include "sysutils.h"
-#include "gc-opt-flags.h"
-#include "asshelp.h"
+#include "../common/sysutils.h"
+#include "../common/gc-opt-flags.h"
+#include "../common/asshelp.h"
 #include "../common/init.h"
 
 

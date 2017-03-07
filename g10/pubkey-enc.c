@@ -24,17 +24,17 @@
 #include <string.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "packet.h"
 #include "keydb.h"
 #include "trustdb.h"
-#include "status.h"
+#include "../common/status.h"
 #include "options.h"
 #include "main.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "pkglue.h"
 #include "call-agent.h"
-#include "host2net.h"
+#include "../common/host2net.h"
 
 
 static gpg_error_t get_it (PKT_pubkey_enc *k,

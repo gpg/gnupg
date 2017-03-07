@@ -56,8 +56,8 @@
 #include "../common/mischelp.h"
 #include "../common/strlist.h"
 
-#include "i18n.h"
-#include "util.h"
+#include "../common/i18n.h"
+#include "../common/util.h"
 #include "../common/init.h"
 
 /* With the ldap wrapper, there is no need for the npth_unprotect and leave

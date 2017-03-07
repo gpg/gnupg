@@ -25,11 +25,11 @@
 #include <npth.h>
 
 #include "scdaemon.h"
-#include "exechelp.h"
+#include "../common/exechelp.h"
 #include "app-common.h"
 #include "iso7816.h"
 #include "apdu.h"
-#include "tlv.h"
+#include "../common/tlv.h"
 
 static npth_mutex_t app_list_lock;
 static app_t app_top;

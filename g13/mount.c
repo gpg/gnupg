@@ -27,7 +27,7 @@
 #include <assert.h>
 
 #include "g13.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "mount.h"
 
 #include "keyblob.h"
@@ -35,7 +35,7 @@
 #include "g13tuple.h"
 #include "mountinfo.h"
 #include "runner.h"
-#include "host2net.h"
+#include "../common/host2net.h"
 #include "server.h"  /*(g13_keyblob_decrypt)*/
 #include "../common/sysutils.h"
 #include "call-syshelp.h"

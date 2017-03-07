@@ -28,10 +28,10 @@
 
 #include "g13.h"
 #include <assuan.h>
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "g13tuple.h"
 #include "keyblob.h"
-#include "membuf.h"
+#include "../common/membuf.h"
 #include "create.h"
 #include "call-syshelp.h"
 

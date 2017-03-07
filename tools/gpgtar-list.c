@@ -24,7 +24,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "gpgtar.h"
 #include "../common/exectool.h"
 #include "../common/ccparray.h"

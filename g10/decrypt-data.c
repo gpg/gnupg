@@ -24,11 +24,11 @@
 #include <string.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "packet.h"
 #include "options.h"
-#include "i18n.h"
-#include "status.h"
+#include "../common/i18n.h"
+#include "../common/status.h"
 
 
 static int mdc_decode_filter ( void *opaque, int control, IOBUF a,

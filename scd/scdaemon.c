@@ -44,15 +44,15 @@
 
 #include <assuan.h> /* malloc hooks */
 
-#include "i18n.h"
-#include "sysutils.h"
+#include "../common/i18n.h"
+#include "../common/sysutils.h"
 #include "app-common.h"
 #include "iso7816.h"
 #include "apdu.h"
 #include "ccid-driver.h"
-#include "gc-opt-flags.h"
-#include "asshelp.h"
-#include "exechelp.h"
+#include "../common/gc-opt-flags.h"
+#include "../common/asshelp.h"
+#include "../common/exechelp.h"
 #include "../common/init.h"
 
 #ifndef ENAMETOOLONG

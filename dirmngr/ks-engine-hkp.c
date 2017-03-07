@@ -37,7 +37,7 @@
 
 #include "dirmngr.h"
 #include "misc.h"
-#include "userids.h"
+#include "../common/userids.h"
 #include "dns-stuff.h"
 #include "ks-engine.h"
 

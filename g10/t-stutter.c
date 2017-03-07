@@ -54,7 +54,7 @@
 #include "gpg.h"
 #include "main.h"
 #include "../common/types.h"
-#include "util.h"
+#include "../common/util.h"
 #include "dek.h"
 #include "../common/logging.h"
 

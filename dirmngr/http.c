@@ -96,8 +96,8 @@
 
 #include <assuan.h>  /* We need the socket wrapper.  */
 
-#include "util.h"
-#include "i18n.h"
+#include "../common/util.h"
+#include "../common/i18n.h"
 #include "dns-stuff.h"
 #include "http.h"
 #include "http-common.h"

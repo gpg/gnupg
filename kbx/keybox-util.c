@@ -27,7 +27,7 @@
 #endif
 
 #include "keybox-defs.h"
-#include "utilproto.h"
+#include "../common/utilproto.h"
 
 
 static void *(*alloc_func)(size_t n) = malloc;

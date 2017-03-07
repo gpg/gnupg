@@ -27,10 +27,10 @@
 #include "gpg.h"
 #include "options.h"
 #include "packet.h"
-#include "status.h"
+#include "../common/status.h"
 #include "keydb.h"
-#include "util.h"
-#include "i18n.h"
+#include "../common/util.h"
+#include "../common/i18n.h"
 
 
 /* Return true if Libgcrypt's RNG is in faked mode.  */

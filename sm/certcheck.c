@@ -31,7 +31,7 @@
 #include <ksba.h>
 
 #include "keydb.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 
 
 /* Return the number of bits of the Q parameter from the DSA key

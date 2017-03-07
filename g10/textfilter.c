@@ -24,13 +24,13 @@
 #include <errno.h>
 
 #include "gpg.h"
-#include "status.h"
-#include "iobuf.h"
-#include "util.h"
+#include "../common/status.h"
+#include "../common/iobuf.h"
+#include "../common/util.h"
 #include "filter.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "options.h"
-#include "status.h"
+#include "../common/status.h"
 
 #ifdef HAVE_DOSISH_SYSTEM
 #define LF "\r\n"

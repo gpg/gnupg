@@ -40,8 +40,8 @@
 #ifdef HAVE_LIBUSB
 #include "ccid-driver.h"
 #endif
-#include "asshelp.h"
-#include "server-help.h"
+#include "../common/asshelp.h"
+#include "../common/server-help.h"
 
 /* Maximum length allowed as a PIN; used for INQUIRE NEEDPIN */
 #define MAXLEN_PIN 100

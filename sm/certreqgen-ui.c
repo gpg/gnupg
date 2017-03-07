@@ -29,9 +29,9 @@
 #include "gpgsm.h"
 #include <gcrypt.h>
 
-#include "i18n.h"
-#include "ttyio.h"
-#include "membuf.h"
+#include "../common/i18n.h"
+#include "../common/ttyio.h"
+#include "../common/membuf.h"
 
 
 /* Prompt for lines and append them to MB.  */

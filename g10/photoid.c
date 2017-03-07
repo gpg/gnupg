@@ -32,17 +32,17 @@
 #endif
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "packet.h"
-#include "status.h"
+#include "../common/status.h"
 #include "exec.h"
 #include "keydb.h"
-#include "i18n.h"
-#include "iobuf.h"
+#include "../common/i18n.h"
+#include "../common/iobuf.h"
 #include "options.h"
 #include "main.h"
 #include "photoid.h"
-#include "ttyio.h"
+#include "../common/ttyio.h"
 #include "trustdb.h"
 
 /* Generate a new photo id packet, or return NULL if canceled.

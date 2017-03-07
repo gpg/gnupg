@@ -26,7 +26,7 @@
 #include <sys/stat.h>
 
 #include "g13.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "keyblob.h"
 #include "backend.h"
 #include "be-encfs.h"

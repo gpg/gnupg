@@ -65,12 +65,12 @@
 #if USE_LDAP
 # include "ldapserver.h"
 #endif
-#include "asshelp.h"
+#include "../common/asshelp.h"
 #if USE_LDAP
 # include "ldap-wrapper.h"
 #endif
 #include "../common/init.h"
-#include "gc-opt-flags.h"
+#include "../common/gc-opt-flags.h"
 #include "dns-stuff.h"
 #include "http-common.h"
 

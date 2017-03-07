@@ -26,7 +26,7 @@
 #include <assert.h>
 
 #include "g13.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "keyblob.h"
 #include "be-encfs.h"
 #include "runner.h"

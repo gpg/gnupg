@@ -23,7 +23,7 @@ EXTRA_DIST = \
 	ccidmon.c ChangeLog-2011 gpg-connect-agent-w32info.rc
 
 
-AM_CPPFLAGS = -I$(top_srcdir)/common
+AM_CPPFLAGS =
 include $(top_srcdir)/am/cmacros.am
 
 if HAVE_W32_SYSTEM

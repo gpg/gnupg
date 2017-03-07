@@ -20,7 +20,7 @@
 #ifndef G10_TDBIO_H
 #define G10_TDBIO_H
 
-#include "host2net.h"
+#include "../common/host2net.h"
 
 #define TRUST_RECORD_LEN 40
 #define SIGS_PER_RECORD 	((TRUST_RECORD_LEN-10)/5)

@@ -26,7 +26,7 @@ sbin_PROGRAMS = g13-syshelp
 noinst_PROGRAMS = $(module_tests)
 TESTS = $(module_tests)
 
-AM_CPPFLAGS = -I$(top_srcdir)/common
+AM_CPPFLAGS =
 
 include $(top_srcdir)/am/cmacros.am
 

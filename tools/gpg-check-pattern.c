@@ -40,9 +40,9 @@
 #include <regex.h>
 #include <ctype.h>
 
-#include "util.h"
-#include "i18n.h"
-#include "sysutils.h"
+#include "../common/util.h"
+#include "../common/i18n.h"
+#include "../common/sysutils.h"
 #include "../common/init.h"
 
 

@@ -26,19 +26,19 @@
 #include <ctype.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "packet.h"
-#include "iobuf.h"
+#include "../common/iobuf.h"
 #include "keydb.h"
 #include "options.h"
 #include "main.h"
 #include "trustdb.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "keyserver-internal.h"
 #include "call-agent.h"
-#include "host2net.h"
-#include "mbox-util.h"
-#include "status.h"
+#include "../common/host2net.h"
+#include "../common/mbox-util.h"
+#include "../common/status.h"
 
 #define MAX_PK_CACHE_ENTRIES   PK_UID_CACHE_SIZE
 #define MAX_UID_CACHE_ENTRIES  PK_UID_CACHE_SIZE

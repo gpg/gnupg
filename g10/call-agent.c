@@ -31,16 +31,16 @@
 
 #include "gpg.h"
 #include <assuan.h>
-#include "util.h"
-#include "membuf.h"
+#include "../common/util.h"
+#include "../common/membuf.h"
 #include "options.h"
-#include "i18n.h"
-#include "asshelp.h"
-#include "sysutils.h"
+#include "../common/i18n.h"
+#include "../common/asshelp.h"
+#include "../common/sysutils.h"
 #include "call-agent.h"
-#include "status.h"
+#include "../common/status.h"
 #include "../common/shareddefs.h"
-#include "host2net.h"
+#include "../common/host2net.h"
 
 #define CONTROL_D ('D' - 'A' + 1)
 

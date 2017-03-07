@@ -27,21 +27,21 @@
 #include <errno.h>
 
 #include "gpg.h"
-#include "iobuf.h"
+#include "../common/iobuf.h"
 #include "filter.h"
 #include "keydb.h"
-#include "status.h"
+#include "../common/status.h"
 #include "exec.h"
 #include "main.h"
-#include "i18n.h"
-#include "ttyio.h"
+#include "../common/i18n.h"
+#include "../common/ttyio.h"
 #include "options.h"
 #include "packet.h"
 #include "trustdb.h"
 #include "keyserver-internal.h"
-#include "util.h"
-#include "membuf.h"
-#include "mbox-util.h"
+#include "../common/util.h"
+#include "../common/membuf.h"
+#include "../common/mbox-util.h"
 #include "call-dirmngr.h"
 
 #ifdef HAVE_W32_SYSTEM

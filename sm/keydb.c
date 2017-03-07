@@ -31,7 +31,7 @@
 #include "gpgsm.h"
 #include "../kbx/keybox.h"
 #include "keydb.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 
 static int active_handles;
 

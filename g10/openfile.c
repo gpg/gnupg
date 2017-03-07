@@ -29,12 +29,12 @@
 #include <unistd.h>
 
 #include "gpg.h"
-#include "util.h"
-#include "ttyio.h"
+#include "../common/util.h"
+#include "../common/ttyio.h"
 #include "options.h"
 #include "main.h"
-#include "status.h"
-#include "i18n.h"
+#include "../common/status.h"
+#include "../common/i18n.h"
 
 #ifdef USE_ONLY_8DOT3
 #define SKELEXT ".skl"

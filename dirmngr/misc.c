@@ -27,7 +27,7 @@
 #include <errno.h>
 
 #include "dirmngr.h"
-#include "util.h"
+#include "../common/util.h"
 #include "misc.h"
 
 

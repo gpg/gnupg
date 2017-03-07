@@ -24,10 +24,10 @@
 #include <string.h>
 
 #include "gpg.h"
-#include "util.h"
-#include "ttyio.h"
+#include "../common/util.h"
+#include "../common/ttyio.h"
 #include "main.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 
 
 

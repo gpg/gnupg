@@ -20,7 +20,7 @@
 
 EXTRA_DIST = mkerrors
 
-AM_CPPFLAGS = -I$(top_srcdir)/common
+AM_CPPFLAGS =
 
 include $(top_srcdir)/am/cmacros.am
 

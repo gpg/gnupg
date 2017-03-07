@@ -25,7 +25,7 @@
 
 #include "keybox-defs.h"
 #include <gcrypt.h>
-#include "host2net.h"
+#include "../common/host2net.h"
 
 /* Argg, we can't include ../common/util.h */
 char *bin2hexcolon (const void *buffer, size_t length, char *stringbuf);

@@ -40,8 +40,8 @@
 #endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
-#include "util.h"
-#include "openpgpdefs.h"
+#include "../common/util.h"
+#include "../common/openpgpdefs.h"
 
 static int opt_verbose;
 static const char *opt_prefix = "";

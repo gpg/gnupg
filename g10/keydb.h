@@ -22,8 +22,8 @@
 #ifndef G10_KEYDB_H
 #define G10_KEYDB_H
 
-#include "types.h"
-#include "util.h"
+#include "../common/types.h"
+#include "../common/util.h"
 #include "packet.h"
 
 /* What qualifies as a certification (rather than a signature?) */

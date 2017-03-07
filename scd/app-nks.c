@@ -51,12 +51,12 @@
 #include <time.h>
 
 #include "scdaemon.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "iso7816.h"
 #include "app-common.h"
-#include "tlv.h"
+#include "../common/tlv.h"
 #include "apdu.h"
-#include "host2net.h"
+#include "../common/host2net.h"
 
 static char const aid_nks[]  = { 0xD2, 0x76, 0x00, 0x00, 0x03, 0x01, 0x02 };
 static char const aid_sigg[] = { 0xD2, 0x76, 0x00, 0x00, 0x66, 0x01 };

@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "../common/util.h"
 #include "../common/asshelp.h"
 #include "../common/sysutils.h"

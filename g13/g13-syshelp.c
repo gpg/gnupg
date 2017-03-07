@@ -36,9 +36,9 @@
 #include <gcrypt.h>
 #include <assuan.h>
 
-#include "i18n.h"
-#include "sysutils.h"
-#include "asshelp.h"
+#include "../common/i18n.h"
+#include "../common/sysutils.h"
+#include "../common/asshelp.h"
 #include "../common/init.h"
 #include "keyblob.h"
 

@@ -38,9 +38,9 @@
 #include "../common/strlist.h"
 #include "../common/asshelp.h"
 
-#include "i18n.h"
-#include "util.h"
-#include "init.h"
+#include "../common/i18n.h"
+#include "../common/util.h"
+#include "../common/init.h"
 
 
 /* Constants for the options.  */

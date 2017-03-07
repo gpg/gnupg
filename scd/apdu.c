@@ -48,18 +48,18 @@
 /* This is used with GnuPG version < 1.9.  The code has been source
    copied from the current GnuPG >= 1.9  and is maintained over
    there. */
-#include "options.h"
+#include "../common/options.h"
 #include "errors.h"
 #include "memory.h"
-#include "util.h"
-#include "i18n.h"
+#include "../common/util.h"
+#include "../common/i18n.h"
 #include "dynload.h"
 #include "cardglue.h"
 #else /* GNUPG_MAJOR_VERSION != 1 */
 #include "scdaemon.h"
-#include "exechelp.h"
+#include "../common/exechelp.h"
 #endif /* GNUPG_MAJOR_VERSION != 1 */
-#include "host2net.h"
+#include "../common/host2net.h"
 
 #include "iso7816.h"
 #include "apdu.h"

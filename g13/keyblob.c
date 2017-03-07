@@ -32,7 +32,7 @@
 
 #include "keyblob.h"
 #include "../common/sysutils.h"
-#include "host2net.h"
+#include "../common/host2net.h"
 
 
 /* Parse the header prefix and return the length of the entire header.  */

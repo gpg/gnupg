@@ -24,14 +24,14 @@
 #include <errno.h>
 
 #include "gpg.h"
-#include "status.h"
-#include "iobuf.h"
-#include "util.h"
+#include "../common/status.h"
+#include "../common/iobuf.h"
+#include "../common/util.h"
 #include "filter.h"
 #include "packet.h"
 #include "options.h"
 #include "main.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 
 /****************
  * Take an armor file and write it out without armor

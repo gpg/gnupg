@@ -23,7 +23,7 @@
 #include <time.h>
 #include "../common/keyserver.h"
 #include "../common/iobuf.h"
-#include "types.h"
+#include "../common/types.h"
 
 int parse_keyserver_options(char *options);
 void free_keyserver_spec(struct keyserver_spec *keyserver);

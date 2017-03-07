@@ -29,15 +29,15 @@
 #include <unistd.h>
 
 #include "gpg.h"
-#include "status.h"
-#include "iobuf.h"
+#include "../common/status.h"
+#include "../common/iobuf.h"
 #include "keydb.h"
-#include "util.h"
+#include "../common/util.h"
 #include "trustdb.h"
 #include "options.h"
 #include "packet.h"
 #include "main.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "tdbio.h"
 
 

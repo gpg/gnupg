@@ -59,15 +59,15 @@
 
 #include "gpg.h"
 #ifdef HAVE_W32_SYSTEM
-# include "status.h"
+# include "../common/status.h"
 #endif /*HAVE_W32_SYSTEM*/
-#include "util.h"
+#include "../common/util.h"
 #include "main.h"
 #include "photoid.h"
 #include "options.h"
 #include "call-agent.h"
-#include "i18n.h"
-#include "zb32.h"
+#include "../common/i18n.h"
+#include "../common/zb32.h"
 
 
 #ifdef ENABLE_SELINUX_HACKS

@@ -24,9 +24,9 @@
 #include <errno.h>
 
 #include "gpg.h"
-#include "status.h"
-#include "iobuf.h"
-#include "util.h"
+#include "../common/status.h"
+#include "../common/iobuf.h"
+#include "../common/util.h"
 #include "filter.h"
 
 

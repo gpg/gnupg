@@ -20,10 +20,10 @@
 #ifndef G10_MAIN_H
 #define G10_MAIN_H
 
-#include "types.h"
-#include "iobuf.h"
+#include "../common/types.h"
+#include "../common/iobuf.h"
 #include "keydb.h"
-#include "util.h"
+#include "../common/util.h"
 
 /* It could be argued that the default cipher should be 3DES rather
    than AES128, and the default compression should be 0

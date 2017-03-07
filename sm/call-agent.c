@@ -33,11 +33,11 @@
 #include "gpgsm.h"
 #include <gcrypt.h>
 #include <assuan.h>
-#include "i18n.h"
-#include "asshelp.h"
+#include "../common/i18n.h"
+#include "../common/asshelp.h"
 #include "keydb.h" /* fixme: Move this to import.c */
-#include "membuf.h"
-#include "shareddefs.h"
+#include "../common/membuf.h"
+#include "../common/shareddefs.h"
 #include "passphrase.h"
 
 

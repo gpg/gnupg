@@ -25,7 +25,7 @@
 #include <errno.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "pkglue.h"
 #include "main.h"
 #include "options.h"

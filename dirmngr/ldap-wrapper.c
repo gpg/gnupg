@@ -58,7 +58,7 @@
 #include <npth.h>
 
 #include "dirmngr.h"
-#include "exechelp.h"
+#include "../common/exechelp.h"
 #include "misc.h"
 #include "ldap-wrapper.h"
 

@@ -24,10 +24,10 @@
 #include <string.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "options.h"
 #include "main.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 
 
 /* Generate a new session key in *DEK that is appropriate for the

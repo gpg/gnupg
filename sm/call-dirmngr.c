@@ -32,9 +32,9 @@
 #include <gcrypt.h>
 #include <assuan.h>
 
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "keydb.h"
-#include "asshelp.h"
+#include "../common/asshelp.h"
 
 
 struct membuf {

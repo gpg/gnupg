@@ -28,8 +28,8 @@
 
 #include "g13-syshelp.h"
 #include <assuan.h>
-#include "i18n.h"
-#include "exectool.h"
+#include "../common/i18n.h"
+#include "../common/exectool.h"
 #include "keyblob.h"
 
 #ifndef HAVE_STRTOULL

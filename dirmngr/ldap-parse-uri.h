@@ -20,7 +20,7 @@
 #ifndef DIRMNGR_LDAP_PARSE_URI_H
 #define DIRMNGR_LDAP_PARSE_URI_H
 
-#include "util.h"
+#include "../common/util.h"
 #include "http.h"
 
 extern int ldap_uri_p (const char *url);

@@ -45,7 +45,7 @@
 
 #include "dirmngr.h"
 #include "misc.h"
-#include "userids.h"
+#include "../common/userids.h"
 #include "ks-engine.h"
 #include "ldap-parse-uri.h"
 

@@ -27,7 +27,7 @@
 # include <ldap.h>
 #endif
 
-#include "util.h"
+#include "../common/util.h"
 #include "http.h"
 
 /* Returns 1 if the string is an LDAP URL (begins with ldap:, ldaps:

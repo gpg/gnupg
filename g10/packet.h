@@ -22,14 +22,14 @@
 #ifndef G10_PACKET_H
 #define G10_PACKET_H
 
-#include "types.h"
+#include "../common/types.h"
 #include "../common/iobuf.h"
 #include "../common/strlist.h"
 #include "dek.h"
 #include "filter.h"
 #include "../common/openpgpdefs.h"
 #include "../common/userids.h"
-#include "util.h"
+#include "../common/util.h"
 
 #define DEBUG_PARSE_PACKET 1
 

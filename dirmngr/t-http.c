@@ -38,8 +38,8 @@
 #include <unistd.h>
 #include <assuan.h>
 
-#include "util.h"
-#include "logging.h"
+#include "../common/util.h"
+#include "../common/logging.h"
 #include "http.h"
 
 #include <ksba.h>

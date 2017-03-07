@@ -26,13 +26,13 @@
 
 #include "gpg.h"
 #include "keydb.h"
-#include "util.h"
+#include "../common/util.h"
 #include "options.h"
 #include "packet.h"
 #include "main.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "trustdb.h"
-#include "host2net.h"
+#include "../common/host2net.h"
 
 
 /* Return true if key is disabled.  Note that this is usually used via

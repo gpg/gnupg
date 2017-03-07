@@ -45,11 +45,11 @@
 
 #include "gpg.h"
 #include "options.h"
-#include "i18n.h"
-#include "iobuf.h"
-#include "util.h"
-#include "membuf.h"
-#include "sysutils.h"
+#include "../common/i18n.h"
+#include "../common/iobuf.h"
+#include "../common/util.h"
+#include "../common/membuf.h"
+#include "../common/sysutils.h"
 #include "exec.h"
 
 #ifdef NO_EXEC

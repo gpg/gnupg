@@ -22,7 +22,7 @@
 #define G10_OPTIONS_H
 
 #include <sys/types.h>
-#include <types.h>
+#include "../common/types.h"
 #include <stdint.h>
 #include "main.h"
 #include "packet.h"

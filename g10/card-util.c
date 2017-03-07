@@ -31,10 +31,10 @@
 #if GNUPG_MAJOR_VERSION != 1
 # include "gpg.h"
 #endif /*GNUPG_MAJOR_VERSION != 1*/
-#include "util.h"
-#include "i18n.h"
-#include "ttyio.h"
-#include "status.h"
+#include "../common/util.h"
+#include "../common/i18n.h"
+#include "../common/ttyio.h"
+#include "../common/status.h"
 #include "options.h"
 #include "main.h"
 #include "keyserver-internal.h"

@@ -28,13 +28,13 @@
 #include <sys/stat.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "keyring.h"
 #include "packet.h"
 #include "keydb.h"
 #include "options.h"
 #include "main.h" /*for check_key_signature()*/
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "../kbx/keybox.h"
 
 

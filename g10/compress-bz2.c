@@ -23,7 +23,7 @@
 #include <bzlib.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "packet.h"
 #include "filter.h"
 #include "main.h"

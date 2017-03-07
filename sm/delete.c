@@ -31,7 +31,7 @@
 #include <ksba.h>
 
 #include "keydb.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 
 
 /* Delete a certificate or an secret key from a key database. */

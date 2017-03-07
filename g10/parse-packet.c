@@ -26,15 +26,15 @@
 #include <string.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "packet.h"
-#include "iobuf.h"
+#include "../common/iobuf.h"
 #include "filter.h"
 #include "photoid.h"
 #include "options.h"
 #include "main.h"
-#include "i18n.h"
-#include "host2net.h"
+#include "../common/i18n.h"
+#include "../common/host2net.h"
 
 
 /* Maximum length of packets to avoid excessive memory allocation.  */

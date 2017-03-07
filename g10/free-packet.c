@@ -24,7 +24,7 @@
 #include <string.h>
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "packet.h"
 #include "../common/iobuf.h"
 #include "options.h"

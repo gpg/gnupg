@@ -26,7 +26,7 @@
 
 #include "dirmngr.h"
 #include "misc.h"
-#include "userids.h"
+#include "../common/userids.h"
 #include "ks-engine.h"
 
 /* Print a help output for the schemata supported by this module. */

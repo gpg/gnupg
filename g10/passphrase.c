@@ -33,13 +33,13 @@
 #endif
 
 #include "gpg.h"
-#include "util.h"
+#include "../common/util.h"
 #include "options.h"
-#include "ttyio.h"
+#include "../common/ttyio.h"
 #include "keydb.h"
 #include "main.h"
-#include "i18n.h"
-#include "status.h"
+#include "../common/i18n.h"
+#include "../common/status.h"
 #include "call-agent.h"
 #include "../common/shareddefs.h"
 
