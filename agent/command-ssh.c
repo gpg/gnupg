@@ -40,6 +40,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <assert.h>
+#ifdef HAVE_UCRED_H
+#include <ucred.h>
+#endif
 
 #include "agent.h"
 
@@ -3556,19 +3559,45 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 }
 
 
-/* Return the peer's pid.  Stripped down code from libassuan.  */
+/* Return the peer's pid.  */
 static unsigned long
 get_client_pid (int fd)
 {
   pid_t client_pid = (pid_t)(-1);
 
-#ifdef HAVE_SO_PEERCRED
+#ifdef SO_PEERCRED
   {
+#ifdef HAVE_STRUCT_SOCKPEERCRED_PID
+    struct sockpeercred cr;
+#else
     struct ucred cr;
+#endif
     socklen_t cl = sizeof cr;
 
     if ( !getsockopt (fd, SOL_SOCKET, SO_PEERCRED, &cr, &cl))
-      client_pid = cr.pid;
+      {
+#if defined (HAVE_STRUCT_SOCKPEERCRED_PID) || defined (HAVE_STRUCT_UCRED_PID)
+        client_pid = cr.pid;
+#elif defined (HAVE_STRUCT_UCRED_CR_PID)
+        client_pid = cr.cr_pid;
+#else
+#error "Unknown SO_PEERCRED struct"
+#endif
+      }
+  }
+#elif defined (LOCAL_PEERPID)
+  {
+    socklen_t len = sizeof (pid_t);
+
+    getsockopt(fd, SOL_LOCAL, LOCAL_PEERPID, &client_pid, &len);
+  }
+#elif defined (LOCAL_PEEREID)
+  {
+    struct unpcbid unp;
+    socklen_t unpl = sizeof unp;
+
+    if (getsockopt (fd, 0, LOCAL_PEEREID, &unp, &unpl) != -1)
+      client_pid = unp.unp_pid;
   }
 #elif defined (HAVE_GETPEERUCRED)
   {
@@ -3576,17 +3605,9 @@ get_client_pid (int fd)
 
     if (getpeerucred (fd, &ucred) != -1)
       {
-	client_pid= ucred_getpid (ucred);
-	ucred_free (ucred);
+        client_pid= ucred_getpid (ucred);
+        ucred_free (ucred);
       }
-  }
-#elif defined (HAVE_LOCAL_PEEREID)
-  {
-    struct unpcbid unp;
-    socklen_t unpl = sizeof unp;
-
-    if (getsockopt (fd, 0, LOCAL_PEEREID, &unp, &unpl) != -1)
-      client_pid = unp.unp_pid;
   }
 #endif
 
