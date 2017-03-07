@@ -40,6 +40,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <assert.h>
+#ifndef HAVE_W32_SYSTEM
+#include <sys/socket.h>
+#include <sys/un.h>
+#endif /*!HAVE_W32_SYSTEM*/
 #ifdef HAVE_UCRED_H
 #include <ucred.h>
 #endif
