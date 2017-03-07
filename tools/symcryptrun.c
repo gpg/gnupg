@@ -71,9 +71,21 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+
 #ifdef HAVE_PTY_H
 #include <pty.h>
+#else
+#ifdef HAVE_TERMIOS_H
+#include <termios.h>
 #endif
+#ifdef HAVE_UTIL_H
+#include <util.h>
+#endif
+#ifdef HAVE_LIBUTIL_H
+#include <libutil.h>
+#endif
+#endif
+
 #ifdef HAVE_UTMP_H
 #include <utmp.h>
 #endif
