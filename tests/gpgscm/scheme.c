@@ -12,6 +12,10 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #define _SCHEME_SOURCE
 #include "scheme-private.h"
 #ifndef WIN32
@@ -88,7 +92,7 @@ static int stricmp(const char *s1, const char *s2)
 }
 #endif /* __APPLE__ */
 
-#if USE_STRLWR
+#if USE_STRLWR && !defined(HAVE_STRLWR)
 static const char *strlwr(char *s) {
   const char *p=s;
   while(*s) {

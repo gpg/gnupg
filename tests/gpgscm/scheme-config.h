@@ -30,7 +30,3 @@
 #define USE_PLIST		0
 #define USE_INTERFACE		1
 #define SHOW_ERROR_LINE		1
-
-#if __MINGW32__
-# define USE_STRLWR 0
-#endif /* __MINGW32__ */
