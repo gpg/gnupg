@@ -85,14 +85,12 @@ AB_INIT
 
 AC_GNU_SOURCE
 
-# Before we do anything with the C compiler, we first split the user's
-# CFLAGS into two lists, one containing all flags matching '-Werror',
-# and the other one containing all remaing flags. They are recombined
-# at the end of the configure script.  This is because some configure
-# checks don't work with -Werror, but we'd like to use -Werror with
-# our build.
-CFLAGS_werror="$(echo $CFLAGS | tr '[[:space:]]' '\n' | grep -e -Werror | tr '\n' ' ')"
-CFLAGS="$(echo $CFLAGS | tr '[[:space:]]' '\n' | grep -v -e -Werror | tr '\n' ' ')"
+# Before we do anything with the C compiler, we first save the user's
+# CFLAGS (they are restored at the end of the configure script).  This
+# is because some configure checks don't work with -Werror, but we'd
+# like to use -Werror with our build.
+CFLAGS_orig=$CFLAGS
+CFLAGS=
 
 # Some status variables.
 have_gpg_error=no
@@ -1678,7 +1676,7 @@ fi
 #
 # Add user CFLAGS.
 #
-CFLAGS="$CFLAGS $CFLAGS_werror"
+CFLAGS="$CFLAGS $CFLAGS_orig"
 
 #
 # Decide what to build
