@@ -1378,6 +1378,10 @@ handle_connections (int listen_fd)
         }
     }
 
+#ifdef HAVE_W32_SYSTEM
+  if (the_event != INVALID_HANDLE_VALUE)
+    CloseHandle (the_event);
+#endif
   cleanup ();
   log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
   npth_attr_destroy (&tattr);
