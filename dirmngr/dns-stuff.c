@@ -511,7 +511,7 @@ libdns_init (void)
         }
       else if (!strchr (ld.resolv_conf->lookup, 'b'))
         {
-          /* No DNS resulution type found in the list.  This might be
+          /* No DNS resolution type found in the list.  This might be
            * due to systemd based systems which allow for custom
            * keywords which are not known to us and thus we do not
            * know whether DNS is wanted or not.  Becuase DNS is
