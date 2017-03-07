@@ -25,9 +25,9 @@
 #include <assert.h>
 
 #include "agent.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "cvt-openpgp.h"
-#include "host2net.h"
+#include "../common/host2net.h"
 
 
 /* Helper to pass data via the callback to do_unprotect. */

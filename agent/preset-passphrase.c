@@ -45,9 +45,9 @@
 #endif
 
 #include "agent.h"
-#include "simple-pwquery.h"
-#include "i18n.h"
-#include "sysutils.h"
+#include "../common/simple-pwquery.h"
+#include "../common/i18n.h"
+#include "../common/sysutils.h"
 #include "../common/init.h"
 
 

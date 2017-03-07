@@ -37,8 +37,8 @@
 
 #include "agent.h"
 #include <assuan.h>
-#include "sysutils.h"
-#include "i18n.h"
+#include "../common/sysutils.h"
+#include "../common/i18n.h"
 
 #ifdef _POSIX_OPEN_MAX
 #define MAX_OPEN_FDS _POSIX_OPEN_MAX

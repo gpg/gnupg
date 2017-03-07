@@ -31,7 +31,7 @@
 
 #include "agent.h"
 #include <assuan.h> /* fixme: need a way to avoid assuan calls here */
-#include "i18n.h"
+#include "../common/i18n.h"
 
 
 /* A structure to store the information from the trust file. */

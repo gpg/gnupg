@@ -27,9 +27,9 @@
 #include <assert.h>
 
 #include "agent.h"
-#include "i18n.h"
-#include "exechelp.h"
-#include "sysutils.h"
+#include "../common/i18n.h"
+#include "../common/exechelp.h"
+#include "../common/sysutils.h"
 
 static int
 store_key (gcry_sexp_t private, const char *passphrase, int force,

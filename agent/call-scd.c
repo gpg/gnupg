@@ -39,7 +39,7 @@
 
 #include "agent.h"
 #include <assuan.h>
-#include "strlist.h"
+#include "../common/strlist.h"
 
 #ifdef _POSIX_OPEN_MAX
 #define MAX_OPEN_FDS _POSIX_OPEN_MAX

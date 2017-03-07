@@ -28,7 +28,7 @@
 #include <assert.h>
 #include <windows.h>
 
-#include "util.h"
+#include "../common/util.h"
 #include "w32main.h"
 
 /* The instance handle has received by WinMain.  */

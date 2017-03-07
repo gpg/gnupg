@@ -28,7 +28,7 @@ noinst_PROGRAMS = $(TESTS)
 EXTRA_DIST = ChangeLog-2011 gpg-agent-w32info.rc
 
 
-AM_CPPFLAGS = -I$(top_srcdir)/common
+AM_CPPFLAGS =
 
 include $(top_srcdir)/am/cmacros.am
 

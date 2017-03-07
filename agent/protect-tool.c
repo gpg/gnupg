@@ -39,9 +39,9 @@
 #endif
 
 #include "agent.h"
-#include "i18n.h"
-#include "get-passphrase.h"
-#include "sysutils.h"
+#include "../common/i18n.h"
+#include "../common/get-passphrase.h"
+#include "../common/sysutils.h"
 #include "../common/init.h"
 
 

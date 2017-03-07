@@ -33,7 +33,7 @@
 #include <npth.h> /* (we use pth_sleep) */
 
 #include "agent.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "../common/ssh-utils.h"
 #include "../common/name-value.h"
 

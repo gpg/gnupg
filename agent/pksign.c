@@ -29,7 +29,7 @@
 #include <sys/stat.h>
 
 #include "agent.h"
-#include "i18n.h"
+#include "../common/i18n.h"
 
 
 static int

@@ -50,9 +50,9 @@
 
 #include "agent.h"
 
-#include "i18n.h"
-#include "util.h"
-#include "ssh-utils.h"
+#include "../common/i18n.h"
+#include "../common/util.h"
+#include "../common/ssh-utils.h"
 
 
 

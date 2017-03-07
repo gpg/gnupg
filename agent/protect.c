@@ -39,7 +39,7 @@
 #include "agent.h"
 
 #include "cvt-openpgp.h"
-#include "sexp-parse.h"
+#include "../common/sexp-parse.h"
 
 
 /* To use the openpgp-s2k3-ocb-aes scheme by default set the value of

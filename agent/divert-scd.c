@@ -28,8 +28,8 @@
 #include <sys/stat.h>
 
 #include "agent.h"
-#include "i18n.h"
-#include "sexp-parse.h"
+#include "../common/i18n.h"
+#include "../common/sexp-parse.h"
 
 
 static int

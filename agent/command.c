@@ -37,7 +37,7 @@
 
 #include "agent.h"
 #include <assuan.h>
-#include "i18n.h"
+#include "../common/i18n.h"
 #include "cvt-openpgp.h"
 #include "../common/ssh-utils.h"
 #include "../common/asshelp.h"
