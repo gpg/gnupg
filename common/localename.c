@@ -79,6 +79,7 @@ do_nl_locale_name (int category, const char *categoryname)
   (void)categoryname;
   retval = setlocale (category, NULL);
 # else
+  (void)category;
   /* Setting of LC_ALL overwrites all other.  */
   retval = getenv ("LC_ALL");
   if (retval == NULL || retval[0] == '\0')
