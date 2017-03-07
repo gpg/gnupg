@@ -125,8 +125,13 @@
    (default default never)
    (rsa "sign auth encr" "seconds=600") ;; GPGME uses this
    (rsa "auth,encr" "2") ;; "without a letter, days is assumed"
-   (rsa "sign" "2105-01-01") ;; "last year GnuPG can represent is 2105"
-   (rsa "sign" "21050101T115500") ;; "last year GnuPG can represent is 2105"
+   ;; Sadly, the timestamp is truncated by the use of time_t on
+   ;; systems where time_t is a signed 32 bit value.
+   (rsa "sign" "2038-01-01")      ;; unix millennium
+   (rsa "sign" "20380101T115500") ;; unix millennium
+   ;; Once fixed, we can use later timestamps:
+   ;; (rsa "sign" "2105-01-01")      ;; "last year GnuPG can represent is 2105"
+   ;; (rsa "sign" "21050101T115500") ;; "last year GnuPG can represent is 2105"
    (rsa sign "2d")
    (rsa1024 sign "2w")
    (rsa2048 encr "2m")
@@ -157,7 +162,8 @@
   (lambda (subkey)
     (assert (= 1 (:alg subkey)))
     (assert (string-contains? (:cap subkey) "s"))
-    (assert (time-matches? 4260207600 ;; 2105-01-01
+    (assert (time-matches? 2145916800    ;; 2038-01-01
+			   ;; 4260207600 ;; 2105-01-01
 			   (string->number (:expire subkey))
 			   ;; This is off by 12h, but I guess it just
 			   ;; choses the middle of the day.
@@ -165,7 +171,8 @@
   (lambda (subkey)
     (assert (= 1 (:alg subkey)))
     (assert (string-contains? (:cap subkey) "s"))
-    (assert (time-matches? 4260254100 ;; UTC 2105-01-01 11:55:00
+    (assert (time-matches? 2145959700    ;; UTC 2038-01-01 11:55:00
+			   ;; 4260254100 ;; UTC 2105-01-01 11:55:00
 			   (string->number (:expire subkey))
 			   (minutes->seconds 5))))
   (lambda (subkey)
