@@ -1608,17 +1608,17 @@ Set what trust model GnuPG should follow. The models are:
 @table @asis
 
   @item pgp
-  @opindex trust-mode:pgp
+  @opindex trust-model:pgp
   This is the Web of Trust combined with trust signatures as used in PGP
   5.x and later. This is the default trust model when creating a new
   trust database.
 
   @item classic
-  @opindex trust-mode:classic
+  @opindex trust-model:classic
   This is the standard Web of Trust as introduced by PGP 2.
 
   @item tofu
-  @opindex trust-mode:tofu
+  @opindex trust-model:tofu
   @anchor{trust-model-tofu}
   TOFU stands for Trust On First Use.  In this trust model, the first
   time a key is seen, it is memorized.  If later another key is seen
@@ -1664,7 +1664,7 @@ Set what trust model GnuPG should follow. The models are:
   @code{undefined} trust level is returned.
 
   @item tofu+pgp
-  @opindex trust-mode:tofu+pgp
+  @opindex trust-model:tofu+pgp
   This trust model combines TOFU with the Web of Trust.  This is done
   by computing the trust level for each model and then taking the
   maximum trust level where the trust levels are ordered as follows:
@@ -1677,12 +1677,16 @@ Set what trust model GnuPG should follow. The models are:
   which some security-conscious users don't like.
 
   @item direct
-  @opindex trust-mode:direct
+  @opindex trust-model:direct
   Key validity is set directly by the user and not calculated via the
-  Web of Trust.
+  Web of Trust.  This model is soley based on the key and does
+  not distinguish user IDs.  Note that when changing to another trust
+  model the trust values assigned to a key are transformed into
+  ownertrust values, which also indicate how you trust the owner of
+  the key to sign other keys.
 
   @item always
-  @opindex trust-mode:always
+  @opindex trust-model:always
   Skip key validation and assume that used keys are always fully
   valid. You generally won't use this unless you are using some
   external validation scheme. This option also suppresses the
@@ -1692,7 +1696,7 @@ Set what trust model GnuPG should follow. The models are:
   disabled keys.
 
   @item auto
-  @opindex trust-mode:auto
+  @opindex trust-model:auto
   Select the trust model depending on whatever the internal trust
   database says. This is the default model if such a database already
   exists.
