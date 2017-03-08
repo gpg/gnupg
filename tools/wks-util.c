@@ -276,7 +276,11 @@ wks_send_mime (mime_maker_t mime)
 
   /* Without any option we take a short path.  */
   if (!opt.use_sendmail && !opt.output)
-    return mime_maker_make (mime, es_stdout);
+    {
+      es_set_binary (es_stdout);
+      return mime_maker_make (mime, es_stdout);
+    }
+
 
   mail = es_fopenmem (0, "w+b");
   if (!mail)
