@@ -71,13 +71,23 @@ send_mail_to_file (estream_t fp, const char *fname)
   if (!buffer)
     return gpg_error_from_syserror ();
 
-  outfp = !strcmp (fname,"-")? es_stdout : es_fopen (fname, "wb");
-  if (!outfp)
+
+  if (!strcmp (fname,"-"))
     {
-      err = gpg_error_from_syserror ();
-      log_error ("error creating '%s': %s\n", fname, gpg_strerror (err));
-      goto leave;
+      outfp = es_stdout;
+      es_set_binary (es_stdout);
     }
+  else
+    {
+      outfp = es_fopen (fname, "wb");
+      if (!outfp)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error creating '%s': %s\n", fname, gpg_strerror (err));
+          goto leave;
+        }
+    }
+
   for (;;)
     {
       if (es_read (fp, buffer, sizeof buffer, &nbytes))
