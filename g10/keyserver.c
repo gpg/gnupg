@@ -1323,7 +1323,7 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	      for(node=node->next;node;node=node->next)
 		{
 		  if(node->pkt->pkttype==PKT_USER_ID
-		     && node->pkt->pkt.user_id->is_primary)
+		     && node->pkt->pkt.user_id->flags.primary)
 		    uid=node->pkt->pkt.user_id;
 		  else if(node->pkt->pkttype==PKT_SIGNATURE
 			  && node->pkt->pkt.signature->

@@ -1434,7 +1434,7 @@ print_pka_or_dane_records (iobuf_t out, kbnode_t keyblock, PKT_public_key *pk,
         continue;
       uid = node->pkt->pkt.user_id;
 
-      if (uid->is_expired || uid->is_revoked)
+      if (uid->flags.expired || uid->flags.revoked)
         continue;
 
       xfree (mbox);

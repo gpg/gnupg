@@ -849,9 +849,8 @@ dump_attribs (const PKT_user_id *uid, PKT_public_key *pk)
 		   (ulong) uid->attribs[i].len, uid->attribs[i].type, i + 1,
 		   uid->numattribs, (ulong) uid->created,
 		   (ulong) uid->expiredate,
-		   ((uid->is_primary ? 0x01 : 0) | (uid->
-						    is_revoked ? 0x02 : 0) |
-		    (uid->is_expired ? 0x04 : 0)));
+		   ((uid->flags.primary ? 0x01 : 0) | (uid->flags.revoked ? 0x02 : 0) |
+		    (uid->flags.expired ? 0x04 : 0)));
 	  write_status_text (STATUS_ATTRIBUTE, buf);
 	}
 
@@ -926,7 +925,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
           int indent;
           int kl = opt.keyid_format == KF_NONE? 10 : keystrlen ();
 
-	  if ((uid->is_expired || uid->is_revoked)
+	  if ((uid->flags.expired || uid->flags.revoked)
 	      && !(opt.list_options & LIST_SHOW_UNUSABLE_UIDS))
 	    {
 	      skip_sigs = 1;
@@ -938,7 +937,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 	  if (attrib_fp && uid->attrib_data != NULL)
 	    dump_attribs (uid, pk);
 
-	  if ((uid->is_revoked || uid->is_expired)
+	  if ((uid->flags.revoked || uid->flags.expired)
 	      || ((opt.list_options & LIST_SHOW_UID_VALIDITY)
                   && !listctx->no_validity))
 	    {
@@ -1297,9 +1296,9 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	  if (attrib_fp && uid->attrib_data != NULL)
 	    dump_attribs (uid, pk);
 
-	  if (uid->is_revoked)
+	  if (uid->flags.revoked)
 	    uid_validity = 'r';
-	  else if (uid->is_expired)
+	  else if (uid->flags.expired)
 	    uid_validity = 'e';
 	  else if (opt.no_expensive_trust_checks)
 	    uid_validity = 0;
@@ -1556,7 +1555,7 @@ do_reorder_keyblock (KBNODE keyblock, int attr)
       if (node->pkt->pkttype == PKT_USER_ID &&
 	  ((attr && node->pkt->pkt.user_id->attrib_data) ||
 	   (!attr && !node->pkt->pkt.user_id->attrib_data)) &&
-	  node->pkt->pkt.user_id->is_primary)
+	  node->pkt->pkt.user_id->flags.primary)
 	{
 	  primary = primary2 = node;
 	  for (node = node->next; node; primary2 = node, node = node->next)

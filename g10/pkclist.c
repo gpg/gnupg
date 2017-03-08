@@ -235,12 +235,12 @@ do_edit_ownertrust (ctrl_t ctrl, PKT_public_key *pk, int mode,
 	      {
                 if (un->pkt->pkttype != PKT_USER_ID )
 		  continue;
-                if (un->pkt->pkt.user_id->is_revoked )
+                if (un->pkt->pkt.user_id->flags.revoked)
 		  continue;
-                if (un->pkt->pkt.user_id->is_expired )
+                if (un->pkt->pkt.user_id->flags.expired)
 		  continue;
 		/* Only skip textual primaries */
-                if (un->pkt->pkt.user_id->is_primary
+                if (un->pkt->pkt.user_id->flags.primary
 		    && !un->pkt->pkt.user_id->attrib_data )
 		  continue;
 

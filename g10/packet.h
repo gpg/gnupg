@@ -280,19 +280,18 @@ typedef struct
   u32 help_key_expire;
   int help_full_count;
   int help_marginal_count;
-  int is_primary;       /* 2 if set via the primary flag, 1 if calculated */
-  int is_revoked;
-  int is_expired;
   u32 expiredate;       /* expires at this date or 0 if not at all */
   prefitem_t *prefs;    /* list of preferences (may be NULL)*/
   u32 created;          /* according to the self-signature */
   byte selfsigversion;
   struct
   {
-    /* TODO: Move more flags here */
     unsigned int mdc:1;
     unsigned int ks_modify:1;
     unsigned int compacted:1;
+    unsigned int primary:2;       /* 2 if set via the primary flag, 1 if calculated */
+    unsigned int revoked:1;
+    unsigned int expired:1;
   } flags;
   char *mbox;   /* NULL or the result of mailbox_from_userid.  */
   /* The text contained in the user id packet, which is normally the

@@ -1164,7 +1164,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
                       uidnode->flag &= ~NODFLG_MARK_A;
                       uidnode = NULL;
                     }
-		  else if (uidnode->pkt->pkt.user_id->is_revoked)
+		  else if (uidnode->pkt->pkt.user_id->flags.revoked)
 		    {
 		      tty_fprintf (fp, _("User ID \"%s\" is revoked."), user);
 
@@ -1192,7 +1192,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 			  tty_fprintf (fp, _("  Unable to sign.\n"));
 			}
 		    }
-		  else if (uidnode->pkt->pkt.user_id->is_expired)
+		  else if (uidnode->pkt->pkt.user_id->flags.expired)
 		    {
 		      tty_fprintf (fp, _("User ID \"%s\" is expired."), user);
 
@@ -3028,8 +3028,8 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
   for (node = keyblock; node; node = node->next)
     valid_uids +=
       node->pkt->pkttype == PKT_USER_ID
-      && ! node->pkt->pkt.user_id->is_revoked
-      && ! node->pkt->pkt.user_id->is_expired;
+      && ! node->pkt->pkt.user_id->flags.revoked
+      && ! node->pkt->pkt.user_id->flags.expired;
 
   revlen = strlen (uidtorev);
   /* find the right UID */
@@ -3043,8 +3043,8 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
 
           /* Make sure that we do not revoke the last valid UID.  */
           if (valid_uids == 1
-              && ! node->pkt->pkt.user_id->is_revoked
-              && ! node->pkt->pkt.user_id->is_expired)
+              && ! node->pkt->pkt.user_id->flags.revoked
+              && ! node->pkt->pkt.user_id->flags.expired)
             {
               log_error (_("Cannot revoke the last valid user ID.\n"));
               goto leave;
@@ -3735,9 +3735,9 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 	  else
 	    es_fputs ("uid:", fp);
 
-	  if (uid->is_revoked)
+	  if (uid->flags.revoked)
 	    es_fputs ("r::::::::", fp);
-	  else if (uid->is_expired)
+	  else if (uid->flags.expired)
 	    es_fputs ("e::::::::", fp);
 	  else if (opt.fast_list_mode || opt.no_expensive_trust_checks)
 	    es_fputs ("::::::::", fp);
@@ -3785,11 +3785,11 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 	  es_putc (':', fp);
 	  /* flags */
 	  es_fprintf (fp, "%d,", i);
-	  if (uid->is_primary)
+	  if (uid->flags.primary)
 	    es_putc ('p', fp);
-	  if (uid->is_revoked)
+	  if (uid->flags.revoked)
 	    es_putc ('r', fp);
-	  if (uid->is_expired)
+	  if (uid->flags.expired)
 	    es_putc ('e', fp);
 	  if ((node->flag & NODFLG_SELUID))
 	    es_putc ('s', fp);
@@ -3835,7 +3835,7 @@ show_names (ctrl_t ctrl, estream_t fp,
 		tty_fprintf (fp, "     ");
 	      else if (node->flag & NODFLG_SELUID)
 		tty_fprintf (fp, "(%d)* ", i);
-	      else if (uid->is_primary)
+	      else if (uid->flags.primary)
 		tty_fprintf (fp, "(%d). ", i);
 	      else
 		tty_fprintf (fp, "(%d)  ", i);
@@ -4167,9 +4167,9 @@ show_basic_key_info (KBNODE keyblock)
 	  ++i;
 
 	  tty_printf ("     ");
-	  if (uid->is_revoked)
+	  if (uid->flags.revoked)
 	    tty_printf ("[%s] ", _("revoked"));
-	  else if (uid->is_expired)
+	  else if (uid->flags.expired)
 	    tty_printf ("[%s] ", _("expired"));
 	  tty_print_utf8_string (uid->name, uid->len);
 	  tty_printf ("\n");
@@ -4277,7 +4277,7 @@ no_primary_warning (KBNODE keyblock)
 	{
 	  uid_count++;
 
-	  if (node->pkt->pkt.user_id->is_primary == 2)
+	  if (node->pkt->pkt.user_id->flags.primary == 2)
 	    {
 	      have_primary = 1;
 	      break;
@@ -4478,7 +4478,7 @@ menu_deluid (KBNODE pub_keyblock)
 	    {
 	      /* Only cause a trust update if we delete a
 	         non-revoked user id */
-	      if (!node->pkt->pkt.user_id->is_revoked)
+	      if (!node->pkt->pkt.user_id->flags.revoked)
 		update_trust = 1;
 	      delete_kbnode (node);
 	    }
@@ -4598,9 +4598,9 @@ menu_clean (KBNODE keyblock, int self_only)
 	    {
 	      const char *reason;
 
-	      if (uidnode->pkt->pkt.user_id->is_revoked)
+	      if (uidnode->pkt->pkt.user_id->flags.revoked)
 		reason = _("revoked");
-	      else if (uidnode->pkt->pkt.user_id->is_expired)
+	      else if (uidnode->pkt->pkt.user_id->flags.expired)
 		reason = _("expired");
 	      else
 		reason = _("invalid");
@@ -6335,7 +6335,7 @@ reloop:			/* (must use this, because we are modifing the list) */
       /* Are we revoking our own uid? */
       if (primary_pk->keyid[0] == sig->keyid[0] &&
 	  primary_pk->keyid[1] == sig->keyid[1])
-	unode->pkt->pkt.user_id->is_revoked = 1;
+	unode->pkt->pkt.user_id->flags.revoked = 1;
       pkt = xmalloc_clear (sizeof *pkt);
       pkt->pkttype = PKT_SIGNATURE;
       pkt->pkt.signature = sig;
@@ -6369,7 +6369,7 @@ core_revuid (ctrl_t ctrl, kbnode_t keyblock, KBNODE node,
     {
       PKT_user_id *uid = node->pkt->pkt.user_id;
 
-      if (uid->is_revoked)
+      if (uid->flags.revoked)
         {
           char *user = utf8_to_native (uid->name, uid->len, 0);
           log_info (_("user ID \"%s\" is already revoked\n"), user);
@@ -6429,7 +6429,7 @@ core_revuid (ctrl_t ctrl, kbnode_t keyblock, KBNODE node,
                 update_trust = 1;
 #endif /*!NO_TRUST_MODELS*/
 
-              node->pkt->pkt.user_id->is_revoked = 1;
+              node->pkt->pkt.user_id->flags.revoked = 1;
               if (modified)
                 *modified = 1;
             }
@@ -6471,8 +6471,8 @@ menu_revuid (ctrl_t ctrl, kbnode_t pub_keyblock)
   for (node = pub_keyblock; node; node = node->next)
     valid_uids +=
       node->pkt->pkttype == PKT_USER_ID
-      && ! node->pkt->pkt.user_id->is_revoked
-      && ! node->pkt->pkt.user_id->is_expired;
+      && ! node->pkt->pkt.user_id->flags.revoked
+      && ! node->pkt->pkt.user_id->flags.expired;
 
  reloop: /* (better this way because we are modifying the keyring) */
   for (node = pub_keyblock; node; node = node->next)
@@ -6482,8 +6482,8 @@ menu_revuid (ctrl_t ctrl, kbnode_t pub_keyblock)
 
         /* Make sure that we do not revoke the last valid UID.  */
         if (valid_uids == 1
-            && ! node->pkt->pkt.user_id->is_revoked
-            && ! node->pkt->pkt.user_id->is_expired)
+            && ! node->pkt->pkt.user_id->flags.revoked
+            && ! node->pkt->pkt.user_id->flags.expired)
           {
             log_error (_("Cannot revoke the last valid user ID.\n"));
             goto leave;

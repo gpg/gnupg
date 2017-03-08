@@ -2209,9 +2209,9 @@ build_conflict_set (tofu_dbs_t dbs,
             {
               found_user_id = 1;
 
-              if (user_id2->is_revoked)
+              if (user_id2->flags.revoked)
                 iter->flags |= BINDING_REVOKED;
-              if (user_id2->is_expired)
+              if (user_id2->flags.expired)
                 iter->flags |= BINDING_EXPIRED;
             }
 
@@ -3486,7 +3486,7 @@ tofu_register_encryption (ctrl_t ctrl,
         {
 	  PKT_user_id *uid = n->pkt->pkt.user_id;
 
-          if (uid->is_revoked)
+          if (uid->flags.revoked)
             continue;
 
           add_to_strlist (&user_id_list, uid->name);
@@ -3871,7 +3871,7 @@ tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
 	continue;
 
       user_id = kb->pkt->pkt.user_id;
-      if (user_id->is_revoked)
+      if (user_id->flags.revoked)
 	/* Skip revoked user ids.  (Don't skip expired user ids, the
 	   expiry can be changed.)  */
 	continue;

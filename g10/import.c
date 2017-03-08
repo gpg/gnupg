@@ -1189,15 +1189,15 @@ impex_filter_getval (void *cookie, const char *propname)
         }
       else if (!strcmp (propname, "primary"))
         {
-          result = uid->is_primary? "1":"0";
+          result = uid->flags.primary? "1":"0";
         }
       else if (!strcmp (propname, "expired"))
         {
-          result = uid->is_expired? "1":"0";
+          result = uid->flags.expired? "1":"0";
         }
       else if (!strcmp (propname, "revoked"))
         {
-          result = uid->is_revoked? "1":"0";
+          result = uid->flags.revoked? "1":"0";
         }
       else
         result = NULL;

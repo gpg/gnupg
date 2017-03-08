@@ -1140,14 +1140,14 @@ tdb_get_validity_core (ctrl_t ctrl,
             }
 
           /* If the user id is revoked or expired, then skip it.  */
-          if (user_id->is_revoked || user_id->is_expired)
+          if (user_id->flags.revoked || user_id->flags.expired)
             {
               if (DBG_TRUST)
                 {
                   char *s;
-                  if (user_id->is_revoked && user_id->is_expired)
+                  if (user_id->flags.revoked && user_id->flags.expired)
                     s = "revoked and expired";
-                  else if (user_id->is_revoked)
+                  else if (user_id->flags.revoked)
                     s = "revoked";
                   else
                     s = "expire";
@@ -1156,7 +1156,7 @@ tdb_get_validity_core (ctrl_t ctrl,
                              s, user_id->name);
                 }
 
-              if (user_id->is_revoked)
+              if (user_id->flags.revoked)
                 continue;
 
               expired = 1;
@@ -1645,8 +1645,8 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
 	 resigned.  -dshaw */
 
       if (node->pkt->pkttype == PKT_USER_ID
-	  && !node->pkt->pkt.user_id->is_revoked
-	  && !node->pkt->pkt.user_id->is_expired)
+	  && !node->pkt->pkt.user_id->flags.revoked
+	  && !node->pkt->pkt.user_id->flags.expired)
         {
           if (uidnode && issigned)
             {
