@@ -42,20 +42,21 @@
 # through the usual method:
 #      hkp://keyserver.example.net:22742
 #
-# Most users just set the name and type of their preferred keyserver.
 # Note that most servers (with the notable exception of
 # ldap://keyserver.pgp.com) synchronize changes with each other.  Note
 # also that a single server name may actually point to multiple
-# servers via DNS round-robin.  hkp://keys.gnupg.net is an example of
-# such a "server", which spreads the load over a number of physical
-# servers.
+# servers via DNS round-robin or service records.
 #
 # If exactly two keyservers are configured and only one is a Tor hidden
 # service, Dirmngr selects the keyserver to use depending on whether
-# Tor is locally running or not (on a per session base).
+# Tor is locally running or not (on a per session base).  Example:
+#
+#  keyserver hkp://jirk5u4osbsr34t5.onion
+#  keyserver hkps://hkps.pool.sks-keyservers.net
+#
+# If no keyserver is specified GnuPG uses
+#  hkps://hkps.pool.sks-keyservers.net
 
-keyserver hkp://jirk5u4osbsr34t5.onion
-keyserver hkp://keys.gnupg.net
 
 # --hkp-cacert FILENAME
 #
@@ -65,5 +66,8 @@ keyserver hkp://keys.gnupg.net
 # root certificates here.  If that file is in PEM format a ".pem"
 # suffix is expected.  This option may be given multiple times to add
 # more root certificates.  Tilde expansion is supported.
+# This is not required when the default server
+#   hkps://hkps.pool.sks-keyservers.net
+# is used.
 
 #hkp-cacert /path/to/CA/sks-keyservers.netCA.pem
