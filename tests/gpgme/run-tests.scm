@@ -39,9 +39,10 @@
 (let* ((runner (if (member "--parallel" *args*)
 		   run-tests-parallel
 		   run-tests-sequential))
+       (setup-c (make-environment-cache
+		 (test::scm #f "setup.scm" (in-srcdir "setup.scm") "--" "tests" "gpg")))
        (tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*)))
   (runner
-   (test::scm "setup.scm" (in-srcdir "setup.scm") "--" "tests" "gpg")
    (apply
     append
     (map (lambda (cmpnts)
@@ -50,6 +51,7 @@
 		      (string-suffix? name ".test"))))
 	   (define :path car)
 	   (define :key cadr)
+	   (define :setup caddr)
 	   (define (find-test name)
 	     (apply path-join
 		    `(,(if (compiled? name)
@@ -59,11 +61,12 @@
 							    "Makefile.am"))))
 	     (map (lambda (name)
 		    (apply test::scm
-			   `(,name ,(in-srcdir "wrap.scm") --executable
-				   ,(find-test name)
-				   -- ,@(:path cmpnts))))
+			   `(,(:setup cmpnts)
+			     ,name ,(in-srcdir "wrap.scm") --executable
+			     ,(find-test name)
+			     -- ,@(:path cmpnts))))
 		  (if (null? tests) (all-tests makefile (:key cmpnts)) tests))))
-	 '((("tests" "gpg") "c_tests")
+	 `((("tests" "gpg") "c_tests" ,setup-c)
 	   ;; XXX: Not yet.
 	   ;; (("lang" "python" "tests") "py_tests")
-	   (("lang" "qt" "tests") "TESTS"))))))
+	   (("lang" "qt" "tests") "TESTS" ,setup-c))))))

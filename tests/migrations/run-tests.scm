@@ -22,5 +22,4 @@
 			(> (length tests) 1))
 		   run-tests-parallel
 		   run-tests-sequential)))
-  (runner (test::scm "setup.scm" "setup.scm")
-	  (map (lambda (t) (test::scm t t)) tests)))
+  (runner (map (lambda (t) (test::scm #f t t)) tests)))

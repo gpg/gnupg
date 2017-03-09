@@ -551,18 +551,20 @@
 ;; A single test.
 (define test
   (package
-   (define (scm name path . args)
+   (define (scm setup name path . args)
      ;; Start the process.
      (define (spawn-scm args' in out err)
        (spawn-process-fd `(,*argv0* ,@(verbosity (*verbose*))
 				    ,(locate-test path)
+				    ,@(if setup (force setup) '())
 				    ,@args' ,@args) in out err))
      (new name #f spawn-scm #f #f CLOSED_FD))
 
-   (define (binary name path . args)
+   (define (binary setup name path . args)
      ;; Start the process.
      (define (spawn-binary args' in out err)
-       (spawn-process-fd `(,path ,@args' ,@args) in out err))
+       (spawn-process-fd `(,path ,@(if setup (force setup) '()) ,@args' ,@args)
+			 in out err))
      (new name #f spawn-binary #f #f CLOSED_FD))
 
    (define (new name directory spawn pid retcode logfd)
@@ -613,41 +615,47 @@
 
 ;; Run the setup target to create an environment, then run all given
 ;; tests in parallel.
-(define (run-tests-parallel setup tests)
-  (lettmp (gpghome-tar)
-    (setup::run-sync '--create-tarball gpghome-tar)
-    (let loop ((pool (test-pool::new '())) (tests' tests))
-      (if (null? tests')
-	  (let ((results (pool::wait)))
-	    (for-each (lambda (t)
-			(catch (echo "Removing" t::directory "failed:" *error*)
-			       (unlink-recursively t::directory))
-			(t::report)) (reverse results::procs))
-	    (exit (results::report)))
-	  (let* ((wd (mkdtemp))
-		 (test (car tests'))
-		 (test' (test::set-directory wd)))
-	    (loop (pool::add (test'::run-async '--unpack-tarball gpghome-tar))
-		  (cdr tests')))))))
+(define (run-tests-parallel tests)
+  (let loop ((pool (test-pool::new '())) (tests' tests))
+    (if (null? tests')
+	(let ((results (pool::wait)))
+	  (for-each (lambda (t)
+		      (catch (echo "Removing" t::directory "failed:" *error*)
+			     (unlink-recursively t::directory))
+		      (t::report)) (reverse results::procs))
+	  (exit (results::report)))
+	(let* ((wd (mkdtemp))
+	       (test (car tests'))
+	       (test' (test::set-directory wd)))
+	  (loop (pool::add (test'::run-async))
+		(cdr tests'))))))
 
 ;; Run the setup target to create an environment, then run all given
 ;; tests in sequence.
-(define (run-tests-sequential setup tests)
-  (lettmp (gpghome-tar)
-    (setup::run-sync '--create-tarball gpghome-tar)
-    (let loop ((pool (test-pool::new '())) (tests' tests))
-      (if (null? tests')
-	  (let ((results (pool::wait)))
-	    (for-each (lambda (t)
-			(catch (echo "Removing" t::directory "failed:" *error*)
-			       (unlink-recursively t::directory)))
-		      results::procs)
-	    (exit (results::report)))
-	  (let* ((wd (mkdtemp))
-		 (test (car tests'))
-		 (test' (test::set-directory wd)))
-	    (loop (pool::add (test'::run-sync '--unpack-tarball gpghome-tar))
-		  (cdr tests')))))))
+(define (run-tests-sequential tests)
+  (let loop ((pool (test-pool::new '())) (tests' tests))
+    (if (null? tests')
+	(let ((results (pool::wait)))
+	  (for-each (lambda (t)
+		      (catch (echo "Removing" t::directory "failed:" *error*)
+			     (unlink-recursively t::directory)))
+		    results::procs)
+	  (exit (results::report)))
+	(let* ((wd (mkdtemp))
+	       (test (car tests'))
+	       (test' (test::set-directory wd)))
+	  (loop (pool::add (test'::run-sync))
+		(cdr tests'))))))
+
+;; Helper to create environment caches from test functions.  SETUP
+;; must be a test implementing the producer side cache protocol.
+;; Returns a promise containing the arguments that must be passed to a
+;; test implementing the consumer side of the cache protocol.
+(define (make-environment-cache setup)
+  (delay (let* ((tarball (make-temporary-file "environment-cache")))
+	   (atexit (lambda () (remove-temporary-file tarball)))
+	   (setup::run-sync '--create-tarball tarball)
+	   `(--unpack-tarball ,tarball))))
 
 ;; Command line flag handling.  Returns the elements following KEY in
 ;; ARGUMENTS up to the next argument, or #f if KEY is not in

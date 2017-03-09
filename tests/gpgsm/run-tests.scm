@@ -20,13 +20,13 @@
 (if (string=? "" (getenv "srcdir"))
     (begin
       (echo "Environment variable 'srcdir' not set.  Please point it to"
-	    "tests/openpgp.")
+	    "tests/gpgsm.")
       (exit 2)))
 
 (let* ((tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*))
+       (setup (make-environment-cache (test::scm #f "setup.scm" "setup.scm")))
        (runner (if (and (member "--parallel" *args*)
 			(> (length tests) 1))
 		   run-tests-parallel
 		   run-tests-sequential)))
-  (runner (test::scm "setup.scm" "setup.scm")
-	  (map (lambda (t) (test::scm t t)) tests)))
+  (runner (map (lambda (t) (test::scm setup t t)) tests)))
