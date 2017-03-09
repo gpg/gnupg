@@ -29,6 +29,9 @@
 (setenv "top_srcdir" gpgme-srcdir #t)
 (setenv "srcdir" (path-join gpgme-srcdir "tests" "gpg") #t)
 
+(define python (catch #f
+		      (path-expand "python" (string-split (getenv "PATH") *pathsep*))))
+
 (define (run what)
   (if (string-suffix? (car what) ".py")
       (begin
@@ -39,15 +42,17 @@
 				   (getenv "LD_LIBRARY_PATH"))
 		    (path-join gpgme-builddir "src/.libs"))
 		#t)
-	(call-with-fds
-	 `("/usr/bin/python"
-	   ,(in-gpgme-srcdir "lang" "python" "tests" "run-tests.py")
-	   --quiet
-	   --interpreters=/usr/bin/python
-	   --builddir ,(path-join gpgme-builddir "lang" "python" "tests")
-	   ,@what)
-	 STDIN_FILENO STDOUT_FILENO STDERR_FILENO))
-      (if #f 77 (call-with-fds what STDIN_FILENO STDOUT_FILENO STDERR_FILENO))))
+	(if python
+	    (call-with-fds
+	     `(,python
+	       ,(in-gpgme-srcdir "lang" "python" "tests" "run-tests.py")
+	       --quiet
+	       ,(string-append "--interpreters=" python)
+	       --builddir ,(path-join gpgme-builddir "lang" "python" "tests")
+	       ,@what)
+	     STDIN_FILENO STDOUT_FILENO STDERR_FILENO)
+	    77))
+      (call-with-fds what STDIN_FILENO STDOUT_FILENO STDERR_FILENO)))
 
 (let ((name (basename (car executable))))
   (cond

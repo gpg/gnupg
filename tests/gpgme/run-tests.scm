@@ -40,7 +40,11 @@
 		   run-tests-parallel
 		   run-tests-sequential))
        (setup-c (make-environment-cache
-		 (test::scm #f "setup.scm" (in-srcdir "setup.scm") "--" "tests" "gpg")))
+		 (test::scm #f "setup.scm (tests/gpg)" (in-srcdir "setup.scm")
+			    "--" "tests" "gpg")))
+       (setup-py (make-environment-cache
+		  (test::scm #f "setup.scm (lang/python/tests)" (in-srcdir "setup.scm")
+			     "--" "lang" "python" "tests")))
        (tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*)))
   (runner
    (apply
@@ -67,6 +71,5 @@
 			     -- ,@(:path cmpnts))))
 		  (if (null? tests) (all-tests makefile (:key cmpnts)) tests))))
 	 `((("tests" "gpg") "c_tests" ,setup-c)
-	   ;; XXX: Not yet.
-	   ;; (("lang" "python" "tests") "py_tests")
+	   (("lang" "python" "tests") "py_tests" ,setup-py)
 	   (("lang" "qt" "tests") "TESTS" ,setup-c))))))

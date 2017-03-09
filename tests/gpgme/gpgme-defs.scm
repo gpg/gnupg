@@ -45,12 +45,25 @@
 ;; The tests expect the pinentry to return the passphrase "abc".
 (setenv "PINENTRY_USER_DATA" "abc" #t)
 
-(define (create-file name content)
+(define (create-file name . lines)
   (letfd ((fd (open name (logior O_WRONLY O_CREAT O_BINARY) #o600)))
-    (display content (fdopen fd "wb"))))
+    (let ((port (fdopen fd "wb")))
+      (for-each (lambda (line) (display line port) (newline port)) lines))))
 
 (define (create-gpgmehome . path)
-  (create-file "gpg.conf" "no-force-v3-sigs\n")
+  ;; Support for various environments.
+  (define mode
+    (cond
+     ((equal? path '("lang" "python" "tests"))
+      (set! path '("tests" "gpg")) ;; Mostly uses files from tests/gpg.
+      'python)
+     (else
+      'gpg)))
+
+  (create-file
+   "gpg.conf"
+   "no-force-v3-sigs"
+   (string-append "agent-program " (tool 'gpg-agent) "|--debug-quick-random\n"))
   (create-file
    "gpg-agent.conf"
    (string-append "pinentry-program " (tool 'pinentry)))
@@ -75,6 +88,21 @@
      (call-check `(,@GPG --yes --import ,(apply in-gpgme-srcdir
 						`(,@path ,file)))))
    (list "pubdemo.asc" "secdemo.asc"))
+
+  (when (equal? mode 'python)
+	(log "Importing extra keys for Python tests")
+	(for-each
+	 (lambda (file)
+	   (call-check `(,@GPG --yes --import
+			       ,(apply in-gpgme-srcdir
+				       `("lang" "python" "tests" ,file)))))
+	 (list "encrypt-only.asc" "sign-only.asc"))
+
+	(log "Marking key as trusted")
+	(pipe:do
+	 (pipe:echo "A0FF4590BB6122EDEF6E3C542D727CC768697734:6:\n")
+	 (pipe:spawn `(,(tool 'gpg) --import-ownertrust))))
+
   (stop-agent))
 
 ;; Initialize the test environment, install appropriate configuration
