@@ -465,6 +465,10 @@ print_signature_stats (struct keylist_context *s)
   if (!s->check_sigs)
     return;  /* Signature checking was not requested.  */
 
+  /* Better flush stdout so that the stats are always printed after
+   * the output.  */
+  es_fflush (es_stdout);
+
   if (s->good_sigs)
     log_info (ngettext("%d good signature\n",
                        "%d good signatures\n", s->good_sigs), s->good_sigs);
@@ -1446,7 +1450,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	    {
 	      PKT_public_key *signer_pk = NULL;
 
-	      fflush (stdout);
+	      es_fflush (es_stdout);
 	      if (opt.no_sig_cache)
 		signer_pk = xmalloc_clear (sizeof (PKT_public_key));
 
