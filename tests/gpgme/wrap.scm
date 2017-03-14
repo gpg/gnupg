@@ -29,9 +29,6 @@
 (setenv "top_srcdir" gpgme-srcdir #t)
 (setenv "srcdir" (path-join gpgme-srcdir "tests" "gpg") #t)
 
-(define python (catch #f
-		      (path-expand "python" (string-split (getenv "PATH") *pathsep*))))
-
 (define (run what)
   (if (string-suffix? (car what) ".py")
       (begin

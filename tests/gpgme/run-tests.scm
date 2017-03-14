@@ -71,5 +71,7 @@
 			     -- ,@(:path cmpnts))))
 		  (if (null? tests) (all-tests makefile (:key cmpnts)) tests))))
 	 `((("tests" "gpg") "c_tests" ,setup-c)
-	   (("lang" "python" "tests") "py_tests" ,setup-py)
+	   ,@(if (run-python-tests?)
+		 `((("lang" "python" "tests") "py_tests" ,setup-py))
+		 '())
 	   (("lang" "qt" "tests") "TESTS" ,setup-c))))))
