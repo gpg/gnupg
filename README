@@ -148,6 +148,30 @@
   use of the GnuPG directories.  Dirmngr is started by gpg or gpgsm as
   needed. There is no more need to install a separate Dirmngr package.
 
+* RECOMMENDATIONS
+
+** Socket directory
+
+  GnuPG uses Unix domain sockets to connect its components (on Windows
+  an emulation of these sockets is used).  Depending on the type of
+  the file system, it is sometimes not possible to use the GnuPG home
+  directory (i.e. ~/.gnupg) as the location for the sockets.  To solve
+  this problem GnuPG prefers the use of a per-user directory below the
+  the /run (or /var/run) hierarchy for the the sockets.  It is thus
+  suggested to create per-user directories on system or session
+  startup.  For example the following snippet can be used in
+  /etc/rc.local to create these directories:
+
+      [ ! -d /run/user ] && mkdir /run/user
+      awk -F: </etc/passwd '$3 >= 1000 && $3 < 65000 {print $3}' \
+        | ( while read uid rest; do
+              if [ ! -d "/run/user/$uid" ]; then
+                mkdir /run/user/$uid
+                chown $uid /run/user/$uid
+                chmod 700 /run/user/$uid
+              fi
+            done )
+
 
 * DOCUMENTATION
 
