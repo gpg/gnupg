@@ -22,6 +22,24 @@
 (unless (member "--create-tarball" *args*)
 	(fail "Usage: setup.scm --create-tarball <file>"))
 
+(when (> (*verbose*) 0)
+      (define (pad symbol length)
+	(let loop ((cs (string->list (symbol->string symbol)))
+		   (result (make-string length #\space))
+		   (i 0))
+	  (if (null? cs)
+	      result
+	      (begin
+		(string-set! result i (car cs))
+		(loop (cdr cs) result (+ 1 i))))))
+      (log " I am going to use these tools:\n"
+	   "==============================")
+      (for-each
+       (lambda (t)
+	 (log (pad t 25) (tool t)))
+       '(gpgconf gpg gpg-agent scdaemon gpgsm dirmngr gpg-connect-agent
+		 gpg-preset-passphrase gpgtar pinentry)))
+
 (with-ephemeral-home-directory
  (chdir (getenv "GNUPGHOME"))
  (create-gpghome)
