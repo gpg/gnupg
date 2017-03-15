@@ -81,11 +81,6 @@ dirmngr = dirmngr
 else
 dirmngr =
 endif
-if BUILD_TOOLS
-tools = tools
-else
-tools =
-endif
 if BUILD_DOC
 doc = doc
 else
@@ -94,7 +89,7 @@ endif
 
 SUBDIRS = m4 common kbx \
           ${gpg} ${sm} ${agent} ${scd} ${g13} ${dirmngr} \
-          ${tools} po ${doc} tests
+          tools po ${doc} tests
 
 dist_doc_DATA = README
 
