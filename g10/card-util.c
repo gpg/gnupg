@@ -435,7 +435,7 @@ card_status (estream_t fp, char *serialno, size_t serialnobuflen)
 
   if (!serialno)
     ;
-  else if (strlen (serialno)+1 > serialnobuflen)
+  else if (strlen (info.serialno)+1 > serialnobuflen)
     log_error ("serial number longer than expected\n");
   else
     strcpy (serialno, info.serialno);
