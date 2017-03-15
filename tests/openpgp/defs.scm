@@ -140,10 +140,16 @@
 (define valgrind
   '("/usr/bin/valgrind" --leak-check=full --error-exitcode=154))
 
+(unless installed?
+	(setenv "GNUPG_BUILDDIR" (getenv "objdir") #t))
+
 (define (gpg-conf . args)
   (gpg-conf' "" args))
 (define (gpg-conf' input args)
-  (let ((s (call-popen `(,(tool-hardcoded 'gpgconf) ,@args) input)))
+  (let ((s (call-popen `(,(tool-hardcoded 'gpgconf)
+			 ,@(if installed? '()
+			       (list '--build-prefix (getenv "objdir")))
+			 ,@args) input)))
     (map (lambda (line) (map percent-decode (string-split line #\:)))
 	 (string-split-newlines s))))
 (define :gc:c:name car)
@@ -180,13 +186,7 @@
      (gpg-conf' (string-append key ":16:")
 		`(--change-options ,component)))))
 
-
-(unless installed?
-	(setenv "GNUPG_BUILDDIR" (getenv "objdir") #t))
-(define gpg-components (apply gpg-conf
-			`(,@(if installed? '()
-				(list '--build-prefix (getenv "objdir")))
-			  --list-components)))
+(define gpg-components (apply gpg-conf '(--list-components)))
 
 (define (tool which)
   (case which
