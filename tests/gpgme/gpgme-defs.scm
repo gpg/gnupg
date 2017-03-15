@@ -175,9 +175,10 @@
 (define python (catch #f
 		      (path-expand "python" (string-split (getenv "PATH") *pathsep*))))
 (define (run-python-tests?)
-  (let* ((python-version
-	  (string-trim char-whitespace?
-		       (call-popen `(,python -c "import sys; print('{0}.{1}'.format(sys.version_info[0], sys.version_info[1]))") "")))
-	 (build-path (path-join gpgme-builddir "lang" "python"
-				(string-append "python" python-version "-gpg"))))
-    (trace (file-exists? (trace build-path)))))
+  (and python
+       (let* ((python-version
+	       (string-trim char-whitespace?
+			    (call-popen `(,python -c "import sys; print('{0}.{1}'.format(sys.version_info[0], sys.version_info[1]))") "")))
+	      (build-path (path-join gpgme-builddir "lang" "python"
+				     (string-append "python" python-version "-gpg"))))
+	 (trace (file-exists? (trace build-path))))))
