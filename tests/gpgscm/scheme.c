@@ -117,41 +117,29 @@ static const char *strlwr(char *s) {
 
 
 
-/* Support for immediate values.
- *
- * Immediate values are tagged with IMMEDIATE_TAG, which is neither
- * used in types, nor in pointer values.
- *
- * XXX: Currently, we only use this to tag pointers in vectors.  */
-#define IMMEDIATE_TAG		1
-#define is_immediate(p)		((pointer) ((uintptr_t) (p) &  IMMEDIATE_TAG))
-#define set_immediate(p)	((pointer) ((uintptr_t) (p) |  IMMEDIATE_TAG))
-#define clr_immediate(p)	((pointer) ((uintptr_t) (p) & ~IMMEDIATE_TAG))
-
-
-
+/* All types have the LSB set.  The garbage collector takes advantage
+ * of that to identify types.  */
 enum scheme_types {
-  T_STRING=1 << 1,	/* Do not use the lsb, it is used for
-			 * immediate values.  */
-  T_NUMBER=2 << 1,
-  T_SYMBOL=3 << 1,
-  T_PROC=4 << 1,
-  T_PAIR=5 << 1,
-  T_CLOSURE=6 << 1,
-  T_CONTINUATION=7 << 1,
-  T_FOREIGN=8 << 1,
-  T_CHARACTER=9 << 1,
-  T_PORT=10 << 1,
-  T_VECTOR=11 << 1,
-  T_MACRO=12 << 1,
-  T_PROMISE=13 << 1,
-  T_ENVIRONMENT=14 << 1,
-  T_FOREIGN_OBJECT=15 << 1,
-  T_BOOLEAN=16 << 1,
-  T_NIL=17 << 1,
-  T_EOF_OBJ=18 << 1,
-  T_SINK=19 << 1,
-  T_LAST_SYSTEM_TYPE=19 << 1
+  T_STRING =		 1 << 1 | 1,
+  T_NUMBER =		 2 << 1 | 1,
+  T_SYMBOL =		 3 << 1 | 1,
+  T_PROC =		 4 << 1 | 1,
+  T_PAIR =		 5 << 1 | 1,
+  T_CLOSURE =		 6 << 1 | 1,
+  T_CONTINUATION =	 7 << 1 | 1,
+  T_FOREIGN =		 8 << 1 | 1,
+  T_CHARACTER =		 9 << 1 | 1,
+  T_PORT =		10 << 1 | 1,
+  T_VECTOR =		11 << 1 | 1,
+  T_MACRO =		12 << 1 | 1,
+  T_PROMISE =		13 << 1 | 1,
+  T_ENVIRONMENT =	14 << 1 | 1,
+  T_FOREIGN_OBJECT =	15 << 1 | 1,
+  T_BOOLEAN =		16 << 1 | 1,
+  T_NIL =		17 << 1 | 1,
+  T_EOF_OBJ =		18 << 1 | 1,
+  T_SINK =		19 << 1 | 1,
+  T_LAST_SYSTEM_TYPE =	19 << 1 | 1
 };
 
 static const char *
@@ -1361,20 +1349,20 @@ INTERFACE static void fill_vector(pointer vec, pointer obj) {
      size_t i;
      assert (is_vector (vec));
      for(i = 0; i < vector_length(vec); i++) {
-          vec->_object._vector._elements[i] = set_immediate(obj);
+          vec->_object._vector._elements[i] = obj;
      }
 }
 
 INTERFACE static pointer vector_elem(pointer vec, int ielem) {
      assert (is_vector (vec));
      assert (ielem < vector_length(vec));
-     return clr_immediate(vec->_object._vector._elements[ielem]);
+     return vec->_object._vector._elements[ielem];
 }
 
 INTERFACE static pointer set_vector_elem(pointer vec, int ielem, pointer a) {
      assert (is_vector (vec));
      assert (ielem < vector_length(vec));
-     vec->_object._vector._elements[ielem] = set_immediate(a);
+     vec->_object._vector._elements[ielem] = a;
      return a;
 }
 
@@ -1576,7 +1564,7 @@ E2:  setmark(p);
      if(is_vector(p)) {
           int i;
           for (i = 0; i < vector_length(p); i++) {
-               mark(clr_immediate(p->_object._vector._elements[i]));
+               mark(p->_object._vector._elements[i]);
           }
      }
 #if SHOW_ERROR_LINE
@@ -1677,8 +1665,9 @@ static void gc(scheme *sc, pointer a, pointer b) {
   for (i = sc->last_cell_seg; i >= 0; i--) {
     p = sc->cell_seg[i] + CELL_SEGSIZE;
     while (--p >= sc->cell_seg[i]) {
-      if (typeflag(p) & IMMEDIATE_TAG)
-        continue;
+      if ((typeflag(p) & 1) == 0)
+	/* All types have the LSB set.  This is not a typeflag.  */
+	continue;
       if (is_mark(p)) {
     clrmark(p);
       } else {
