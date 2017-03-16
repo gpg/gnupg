@@ -224,6 +224,7 @@ INTERFACE INLINE int is_vector(pointer p)    { return (type(p)==T_VECTOR); }
  * represent it.  */
 #define vector_size(len)	(1 + ((len) - 1 + 2) / 3)
 INTERFACE static void fill_vector(pointer vec, pointer obj);
+INTERFACE static pointer *vector_elem_slot(pointer vec, int ielem);
 INTERFACE static pointer vector_elem(pointer vec, int ielem);
 INTERFACE static pointer set_vector_elem(pointer vec, int ielem, pointer a);
 INTERFACE INLINE int is_number(pointer p)    { return (type(p)==T_NUMBER); }
@@ -1073,39 +1074,24 @@ static pointer oblist_initial_value(scheme *sc)
 /* Add a new symbol NAME at SLOT.  SLOT must be obtained using
  * oblist_find_by_name, and no insertion must be done between
  * obtaining the SLOT and calling this function.  Returns the new
- * symbol.
- *
- * If SLOT is NULL, the new symbol is be placed at the appropriate
- * place in the vector.  */
+ * symbol.  */
 static pointer oblist_add_by_name(scheme *sc, const char *name, pointer *slot)
 {
 #define oblist_add_by_name_allocates	3
   pointer x;
-  int location;
 
   gc_disable(sc, gc_reservations (oblist_add_by_name));
   x = immutable_cons(sc, mk_string(sc, name), sc->NIL);
   typeflag(x) = T_SYMBOL;
   setimmutable(car(x));
-
-  if (slot == NULL) {
-    location = hash_fn(name, vector_length(sc->oblist));
-    set_vector_elem(sc->oblist, location,
-		    immutable_cons(sc, x, vector_elem(sc->oblist, location)));
-  } else {
-    *slot = immutable_cons(sc, x, *slot);
-  }
-
+  *slot = immutable_cons(sc, x, *slot);
   gc_enable(sc);
   return x;
 }
 
 /* Lookup the symbol NAME.  Returns the symbol, or NIL if it does not
  * exist.  In that case, SLOT points to the point where the new symbol
- * is to be inserted.
- *
- * SLOT may be set to NULL if the new symbol should be placed at the
- * appropriate place in the vector.  */
+ * is to be inserted.  */
 static INLINE pointer
 oblist_find_by_name(scheme *sc, const char *name, pointer **slot)
 {
@@ -1115,7 +1101,7 @@ oblist_find_by_name(scheme *sc, const char *name, pointer **slot)
   int d;
 
   location = hash_fn(name, vector_length(sc->oblist));
-  for (*slot = NULL, x = vector_elem(sc->oblist, location);
+  for (*slot = vector_elem_slot(sc->oblist, location), x = **slot;
        x != sc->NIL; *slot = &cdr(x), x = **slot) {
     s = symname(car(x));
     /* case-insensitive, per R5RS section 2. */
@@ -1351,6 +1337,12 @@ INTERFACE static void fill_vector(pointer vec, pointer obj) {
      for(i = 0; i < vector_length(vec); i++) {
           vec->_object._vector._elements[i] = obj;
      }
+}
+
+INTERFACE static pointer *vector_elem_slot(pointer vec, int ielem) {
+     assert (is_vector (vec));
+     assert (ielem < vector_length(vec));
+     return &vec->_object._vector._elements[ielem];
 }
 
 INTERFACE static pointer vector_elem(pointer vec, int ielem) {
@@ -2636,11 +2628,8 @@ static void new_frame_in_env(scheme *sc, pointer old_env)
 
 /* Insert (VARIABLE, VALUE) at SSLOT.  SSLOT must be obtained using
  * find_slot_spec_in_env, and no insertion must be done between
- * obtaining SSLOT and the call to this function.
- *
- * If SSLOT is NULL, the new slot is put into the appropriate place in
- * the environment vector.  */
-static INLINE void new_slot_spec_in_env(scheme *sc, pointer env,
+ * obtaining SSLOT and the call to this function.  */
+static INLINE void new_slot_spec_in_env(scheme *sc,
                                         pointer variable, pointer value,
 					pointer *sslot)
 {
@@ -2648,27 +2637,14 @@ static INLINE void new_slot_spec_in_env(scheme *sc, pointer env,
   pointer slot;
   gc_disable(sc, gc_reservations (new_slot_spec_in_env));
   slot = immutable_cons(sc, variable, value);
-
-  if (sslot == NULL) {
-    int location;
-    assert(is_vector(car(env)));
-    location = hash_fn(symname(variable), vector_length(car(env)));
-
-    set_vector_elem(car(env), location,
-                    immutable_cons(sc, slot, vector_elem(car(env), location)));
-  } else {
-    *sslot = immutable_cons(sc, slot, *sslot);
-  }
+  *sslot = immutable_cons(sc, slot, *sslot);
   gc_enable(sc);
 }
 
 /* Find the slot in ENV under the key HDL.  If ALL is given, look in
  * all environments enclosing ENV.  If the lookup fails, and SSLOT is
  * given, the position where the new slot has to be inserted is stored
- * at SSLOT.
- *
- * SSLOT may be set to NULL if the new symbol should be placed at the
- * appropriate place in the vector.  */
+ * at SSLOT.  */
 static pointer
 find_slot_spec_in_env(scheme *sc, pointer env, pointer hdl, int all, pointer **sslot)
 {
@@ -2681,13 +2657,11 @@ find_slot_spec_in_env(scheme *sc, pointer env, pointer hdl, int all, pointer **s
   for (x = env; x != sc->NIL; x = cdr(x)) {
     if (is_vector(car(x))) {
       location = hash_fn(symname(hdl), vector_length(car(x)));
-      sl = NULL;
-      y = vector_elem(car(x), location);
+      sl = vector_elem_slot(car(x), location);
     } else {
       sl = &car(x);
-      y = *sl;
     }
-    for ( ; y != sc->NIL; sl = &cdr(y), y = *sl) {
+    for (y = *sl ; y != sc->NIL; sl = &cdr(y), y = *sl) {
       d = pointercmp(caar(y), hdl);
       if (d == 0)
 	return car(y);		/* Hit.  */
@@ -2716,12 +2690,11 @@ static INLINE void new_frame_in_env(scheme *sc, pointer old_env)
 /* Insert (VARIABLE, VALUE) at SSLOT.  SSLOT must be obtained using
  * find_slot_spec_in_env, and no insertion must be done between
  * obtaining SSLOT and the call to this function.  */
-static INLINE void new_slot_spec_in_env(scheme *sc, pointer env,
+static INLINE void new_slot_spec_in_env(scheme *sc,
                                         pointer variable, pointer value,
 					pointer *sslot)
 {
 #define new_slot_spec_in_env_allocates	2
-  (void) env;
   assert(is_symbol(variable));
   *sslot = immutable_cons(sc, immutable_cons(sc, variable, value), *sslot);
 }
@@ -2772,7 +2745,7 @@ static INLINE void new_slot_in_env(scheme *sc, pointer variable, pointer value)
   assert(is_symbol(variable));
   slot = find_slot_spec_in_env(sc, sc->envir, variable, 0, &sslot);
   assert(slot == sc->NIL);
-  new_slot_spec_in_env(sc, sc->envir, variable, value, sslot);
+  new_slot_spec_in_env(sc, variable, value, sslot);
 }
 
 static INLINE void set_slot_in_env(scheme *sc, pointer slot, pointer value)
@@ -3534,7 +3507,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           if (x != sc->NIL) {
                set_slot_in_env(sc, x, sc->value);
           } else {
-	       new_slot_spec_in_env(sc, sc->envir, sc->code, sc->value, sslot);
+	       new_slot_spec_in_env(sc, sc->code, sc->value, sslot);
           }
           s_return(sc,sc->code);
      }
@@ -3856,7 +3829,7 @@ static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
           if (x != sc->NIL) {
                set_slot_in_env(sc, x, sc->value);
           } else {
-	       new_slot_spec_in_env(sc, sc->envir, sc->code, sc->value, sslot);
+	       new_slot_spec_in_env(sc, sc->code, sc->value, sslot);
           }
           s_return(sc,sc->code);
      }
@@ -5811,7 +5784,7 @@ void scheme_define(scheme *sc, pointer envir, pointer symbol, pointer value) {
      if (x != sc->NIL) {
           set_slot_in_env(sc, x, value);
      } else {
-          new_slot_spec_in_env(sc, envir, symbol, value, sslot);
+          new_slot_spec_in_env(sc, symbol, value, sslot);
      }
 }
 
