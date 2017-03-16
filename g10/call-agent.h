@@ -76,6 +76,12 @@ void agent_release_card_info (struct agent_card_info_s *info);
 /* Return card info. */
 int agent_scd_learn (struct agent_card_info_s *info, int force);
 
+/* Return list of cards.  */
+int agent_scd_cardlist (strlist_t *result);
+
+/* Return the serial number, possibly select by DEMAND.  */
+int agent_scd_serialno (char **r_serialno, const char *demand);
+
 /* Send an APDU to the card.  */
 gpg_error_t agent_scd_apdu (const char *hexapdu, unsigned int *r_sw);
 

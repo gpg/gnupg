@@ -656,18 +656,6 @@ agent_scd_learn (struct agent_card_info_s *info, int force)
   if (rc)
     return rc;
 
-  /* Send the serialno command to initialize the connection.  We don't
-     care about the data returned.  If the card has already been
-     initialized, this is a very fast command.  The main reason we
-     need to do this here is to handle a card removed case so that an
-     "l" command in --edit-card can be used to show ta newly inserted
-     card.  We request the openpgp card because that is what we
-     expect. */
-  rc = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",
-                        NULL, NULL, NULL, NULL, NULL, NULL);
-  if (rc)
-    return rc;
-
   parm.ctx = agent_ctx;
   rc = assuan_transact (agent_ctx,
                         force ? "LEARN --sendinfo --force" : "LEARN --sendinfo",
@@ -1024,9 +1012,37 @@ agent_scd_genkey (int keyno, int force, u32 *createtime)
   status_sc_op_failure (rc);
   return rc;
 }
+
+/* Return the serial number of the card or an appropriate error.  The
+   serial number is returned as a hexstring. */
+int
+agent_scd_serialno (char **r_serialno, const char *demand)
+{
+  int err;
+  char *serialno = NULL;
+  char line[ASSUAN_LINELENGTH];
 
+  err = start_agent (NULL, 1);
+  if (err)
+    return err;
 
+  if (!demand)
+    strcpy (line, "SCD SERIALNO");
+  else
+    snprintf (line, DIM(line), "SCD SERIALNO --demand=%s", demand);
 
+  err = assuan_transact (agent_ctx, line,
+                         NULL, NULL, NULL, NULL,
+                         get_serialno_cb, &serialno);
+  if (err)
+    {
+      xfree (serialno);
+      return err;
+    }
+
+  *r_serialno = serialno;
+  return 0;
+}
 
 /* Send a READCERT command to the SCdaemon. */
 int
@@ -1066,8 +1082,72 @@ agent_scd_readcert (const char *certidstr,
 
   return 0;
 }
+
+struct card_cardlist_parm_s {
+  int error;
+  strlist_t list;
+};
 
 
+/* Callback function for agent_card_cardlist.  */
+static gpg_error_t
+card_cardlist_cb (void *opaque, const char *line)
+{
+  struct card_cardlist_parm_s *parm = opaque;
+  const char *keyword = line;
+  int keywordlen;
+
+  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
+    ;
+  while (spacep (line))
+    line++;
+
+  if (keywordlen == 8 && !memcmp (keyword, "SERIALNO", keywordlen))
+    {
+      const char *s;
+      int n;
+
+      for (n=0,s=line; hexdigitp (s); s++, n++)
+        ;
+
+      if (!n || (n&1) || *s)
+        parm->error = gpg_error (GPG_ERR_ASS_PARAMETER);
+      else
+        add_to_strlist (&parm->list, line);
+    }
+
+  return 0;
+}
+
+/* Return cardlist.  */
+int
+agent_scd_cardlist (strlist_t *result)
+{
+  int err;
+  char line[ASSUAN_LINELENGTH];
+  struct card_cardlist_parm_s parm;
+
+  memset (&parm, 0, sizeof parm);
+  *result = NULL;
+  err = start_agent (NULL, 1);
+  if (err)
+    return err;
+
+  strcpy (line, "SCD GETINFO card_list");
+
+  err = assuan_transact (agent_ctx, line,
+                         NULL, NULL, NULL, NULL,
+                         card_cardlist_cb, &parm);
+  if (!err && parm.error)
+    err = parm.error;
+
+  if (!err)
+    *result = parm.list;
+  else
+    free_strlist (parm.list);
+
+  return 0;
+}
 
 /* Change the PIN of an OpenPGP card or reset the retry counter.
    CHVNO 1: Change the PIN

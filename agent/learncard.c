@@ -302,11 +302,10 @@ int
 agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
 {
   int rc;
-
   struct kpinfo_cb_parm_s parm;
   struct certinfo_cb_parm_s cparm;
   struct sinfo_cb_parm_s sparm;
-  char *serialno = NULL;
+  const char *serialno = NULL;
   KEYPAIR_INFO item;
   SINFO sitem;
   unsigned char grip[20];
@@ -329,11 +328,6 @@ agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
   parm.ctrl = ctrl;
   cparm.ctrl = ctrl;
 
-  /* Check whether a card is present and get the serial number */
-  rc = agent_card_serialno (ctrl, &serialno, NULL);
-  if (rc)
-    goto leave;
-
   /* Now gather all the available info. */
   rc = agent_card_learn (ctrl, kpinfo_cb, &parm, certinfo_cb, &cparm,
                          sinfo_cb, &sparm);
@@ -345,16 +339,24 @@ agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
       goto leave;
     }
 
-  log_info ("card has S/N: %s\n", serialno);
-
   /* Pass on all the collected status information. */
   if (assuan_context)
     {
       for (sitem = sparm.info; sitem; sitem = sitem->next)
         {
+          if (!strcmp (sitem->keyword, "SERIALNO"))
+            serialno = sitem->data;
           assuan_write_status (assuan_context, sitem->keyword, sitem->data);
         }
     }
+
+  if (!serialno)
+    {
+      rc = GPG_ERR_NOT_FOUND;
+      goto leave;
+    }
+
+  log_info ("card has S/N: %s\n", serialno);
 
   /* Write out the certificates in a standard order. */
   for (i=0; certtype_list[i] != -1; i++)
@@ -438,7 +440,6 @@ agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
 
 
  leave:
-  xfree (serialno);
   release_keypair_info (parm.info);
   release_certinfo (cparm.info);
   release_sinfo (sparm.info);
