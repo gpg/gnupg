@@ -1903,6 +1903,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
       gnutls_transport_set_push_function (hd->session->tls_session,
                                           my_gnutls_write);
 
+    handshake_again:
       do
         {
           rc = gnutls_handshake (hd->session->tls_session);
@@ -1918,10 +1919,15 @@ send_request (http_t hd, const char *httphost, const char *auth,
 
               alertno = gnutls_alert_get (hd->session->tls_session);
               alertstr = gnutls_alert_get_name (alertno);
-              log_info ("TLS handshake failed: %s (alert %d)\n",
+              log_info ("TLS handshake %s: %s (alert %d)\n",
+                        rc == GNUTLS_E_WARNING_ALERT_RECEIVED
+                        ? "warning" : "failed",
                         alertstr, (int)alertno);
               if (alertno == GNUTLS_A_UNRECOGNIZED_NAME && server)
                 log_info ("  (sent server name '%s')\n", server);
+
+              if (rc == GNUTLS_E_WARNING_ALERT_RECEIVED)
+                goto handshake_again;
             }
           else
             log_info ("TLS handshake failed: %s\n", gnutls_strerror (rc));
