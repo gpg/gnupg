@@ -120,6 +120,7 @@
 (checktrust "1C005AF3" "f" '--tofu-default-policy=good)
 (checktrust "1C005AF3" "-" '--tofu-default-policy=unknown)
 (checktrust "1C005AF3" "n" '--tofu-default-policy=bad)
+(checktrust "1C005AF3" "q" '--tofu-default-policy=ask)
 
 ;; Change the policy to something other than auto and make sure the
 ;; policy and the trust are correct.
