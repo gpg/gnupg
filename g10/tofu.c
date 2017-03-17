@@ -2304,9 +2304,14 @@ build_conflict_set (tofu_dbs_t dbs,
 
 
 /* Return the effective policy for the binding <FINGERPRINT, EMAIL>
- * (email has already been normalized) and any conflict information in
- * *CONFLICT_SETP, if CONFLICT_SETP is not NULL.  Returns
- * _tofu_GET_POLICY_ERROR if an error occurs.
+ * (email has already been normalized).  Returns
+ * _tofu_GET_POLICY_ERROR if an error occurs.  Returns any conflict
+ * information in *CONFLICT_SETP if CONFLICT_SETP is not NULL and the
+ * returned policy is TOFU_POLICY_ASK (consequently, if there is a
+ * conflict, but the user set the policy to good *CONFLICT_SETP will
+ * empty).  Note: as per build_conflict_set, which is used to build
+ * the conflict information, the conflict information includes the
+ * current user id as the first element of the linked list.
  *
  * This function registers the binding in the bindings table if it has
  * not yet been registered.
@@ -2689,6 +2694,15 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
   policy = get_policy (dbs, pk, fingerprint, user_id, email,
                        &conflict_set, now);
 
+  if (policy == TOFU_POLICY_ASK)
+    /* The conflict set should always contain at least one element:
+     * the current key.  */
+    log_assert (conflict_set);
+  else
+    /* If the policy is not TOFU_POLICY_ASK, then conflict_set will be
+     * NULL.  */
+    log_assert (! conflict_set);
+
   /* If the key is ultimately trusted, there is nothing to do.  */
   {
     u32 kid[2];
@@ -2710,6 +2724,14 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
                    " auto (default: %s).\n",
 		   fingerprint, email,
 		   tofu_policy_str (opt.tofu_default_policy));
+
+      if (policy == TOFU_POLICY_ASK)
+        /* The default policy is ASK, but there is no conflict (policy
+         * was 'auto').  In this case, we need to make sure the
+         * conflict set includes at least the current user id.  */
+        {
+          add_to_strlist (&conflict_set, fingerprint);
+        }
     }
   switch (policy)
     {
