@@ -148,7 +148,6 @@ struct
     {
       KF_DEFAULT, KF_NONE, KF_SHORT, KF_LONG, KF_0xSHORT, KF_0xLONG
     } keyid_format;
-  int shm_coprocess;
   const char *set_filename;
   strlist_t comments;
   int throw_keyids;
