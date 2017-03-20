@@ -23,6 +23,7 @@ EXTRA_DIST = \
 	ffi.scm \
 	init.scm \
 	lib.scm \
+	makefile.scm \
 	repl.scm \
 	t-child.scm \
 	xml.scm \
