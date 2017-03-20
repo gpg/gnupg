@@ -346,6 +346,14 @@ email_kludge (const char *name)
 }
 
 
+/* Print the compliance flags to field 18.  ALGO is the gcrypt algo
+ * number.  NBITS is the length of the key in bits.  */
+static void
+print_compliance_flags (int algo, unsigned int nbits, estream_t fp)
+{
+  if (algo == GCRY_PK_RSA && nbits >= 2048)
+    es_fputs ("23", fp);
+}
 
 
 /* List one certificate in colon mode */
@@ -496,6 +504,8 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   print_capabilities (cert, fp);
   /* Field 13, not used: */
   es_putc (':', fp);
+  /* Field 14, not used: */
+  es_putc (':', fp);
   if (have_secret || ctrl->with_secret)
     {
       char *cardsn;
@@ -504,18 +514,20 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
       if (!gpgsm_agent_keyinfo (ctrl, p, &cardsn)
           && (cardsn || ctrl->with_secret))
         {
-          /* Field 14, not used: */
-          es_putc (':', fp);
           /* Field 15:  Token serial number or secret key indicator.  */
           if (cardsn)
             es_fputs (cardsn, fp);
           else if (ctrl->with_secret)
             es_putc ('+', fp);
-          es_putc (':', fp);
         }
       xfree (cardsn);
       xfree (p);
     }
+  es_putc (':', fp);  /* End of field 15. */
+  es_putc (':', fp);  /* End of field 16. */
+  es_putc (':', fp);  /* End of field 17. */
+  print_compliance_flags (algo, nbits, fp);
+  es_putc (':', fp);  /* End of field 18. */
   es_putc ('\n', fp);
 
   /* FPR record */

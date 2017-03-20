@@ -640,7 +640,7 @@ openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use)
   if (!ga)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
 
-  /* No check whether Libgcrypt has support for the algorithm.  */
+  /* Now check whether Libgcrypt has support for the algorithm.  */
   return gcry_pk_algo_info (ga, GCRYCTL_TEST_ALGO, NULL, &use_buf);
 }
 
@@ -701,6 +701,94 @@ openpgp_pk_algo_name (pubkey_algo_t algo)
     case PUBKEY_ALGO_EDDSA:     return "EDDSA";
     }
   return "?";
+}
+
+
+/* Return true if PK is compliant to the give COMPLIANCE mode.  If
+ * KEYLENGTH and CURVENAME are not 0/NULL the are assumed to be the
+ * already computed values from PK.  */
+int
+gnupg_pk_is_compliant (int compliance, PKT_public_key *pk,
+                       unsigned int keylength, const char *curvename)
+{
+  enum { is_rsa, is_pgp5, is_elg_sign, is_ecc } algotype;
+  int result;
+
+  switch (pk->pubkey_algo)
+    {
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_E:
+    case PUBKEY_ALGO_RSA_S:
+      algotype = is_rsa;
+      break;
+
+    case PUBKEY_ALGO_ELGAMAL_E:
+    case PUBKEY_ALGO_DSA:
+      algotype = is_pgp5;
+      break;
+
+    case PUBKEY_ALGO_ECDH:
+    case PUBKEY_ALGO_ECDSA:
+    case PUBKEY_ALGO_EDDSA:
+      algotype = is_ecc;
+      break;
+
+    case PUBKEY_ALGO_ELGAMAL:
+      algotype = is_elg_sign;
+      break;
+
+    default: /* Unknown.  */
+      return 0;
+    }
+
+  if (compliance == CO_DE_VS)
+    {
+      char *curve = NULL;
+
+      switch (algotype)
+        {
+        case is_pgp5:
+          result = 0;
+          break;
+
+        case is_rsa:
+          if (!keylength)
+            keylength = nbits_from_pk (pk);
+          result = (keylength >= 2048);
+          break;
+
+        case is_ecc:
+          if (!curvename)
+            {
+              curve = openpgp_oid_to_str (pk->pkey[0]);
+              curvename = openpgp_oid_to_curve (curve, 0);
+              if (!curvename)
+                curvename = curve;
+            }
+
+          result = (curvename
+                    && pk->pubkey_algo != PUBKEY_ALGO_EDDSA
+                    && (!strcmp (curvename, "brainpoolP256r1")
+                        || !strcmp (curvename, "brainpoolP384r1")
+                        || !strcmp (curvename, "brainpoolP512r1")));
+          break;
+
+        default:
+          result = 0;
+        }
+      xfree (curve);
+    }
+  else if (algotype == is_elg_sign)
+    {
+      /* An Elgamal signing key is only RFC-2440 compliant.  */
+      result = (compliance == RFC2440);
+    }
+  else
+    {
+      result = 1; /* Assume compliance.  */
+    }
+
+  return result;
 }
 
 

@@ -125,6 +125,9 @@ int openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use);
 int openpgp_pk_algo_usage ( int algo );
 const char *openpgp_pk_algo_name (pubkey_algo_t algo);
 
+int gnupg_pk_is_compliant (int compliance, PKT_public_key *pk,
+                           unsigned int keylength, const char *curvename);
+
 enum gcry_md_algos map_md_openpgp_to_gcry (digest_algo_t algo);
 int openpgp_md_test_algo (digest_algo_t algo);
 const char *openpgp_md_algo_name (int algo);

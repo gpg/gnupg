@@ -218,6 +218,15 @@ described here.
     For pub, sub, sec, and ssb records this field is used for the ECC
     curve name.
 
+*** Field 18 - Compliance flags
+
+    Space separated list of asserted compliance modes for this key.
+
+    Valid values are:
+
+    - 8  :: The key is compliant with RFC4880bis
+    - 23 :: The key is compliant with compliance mode "de-vs".
+
 ** Special fields
 
 *** PKD - Public key data

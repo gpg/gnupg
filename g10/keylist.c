@@ -1170,6 +1170,29 @@ print_revokers (estream_t fp, PKT_public_key * pk)
 }
 
 
+/* Print the compliance flags to field 18.  PK is the public key.
+ * KEYLENGTH is the length of the key in bits and CURVENAME is either
+ * NULL or the name of the curve.  The latter two args are here
+ * merely because the caller has already computed them.  */
+static void
+print_compliance_flags (PKT_public_key *pk,
+                        unsigned int keylength, const char *curvename)
+{
+  int any = 0;
+
+  if (pk->version == 5)
+    {
+      es_fputs ("8", es_stdout);
+      any++;
+    }
+  if (gnupg_pk_is_compliant (CO_DE_VS, pk, keylength, curvename))
+    {
+      es_fputs (any? " 23":"23", es_stdout);
+      any++;
+    }
+}
+
+
 /* List a key in colon mode.  If SECRET is true this is a secret key
    record (i.e. requested via --list-secret-key).  If HAS_SECRET a
    secret key is available even if SECRET is not set.  */
@@ -1191,6 +1214,9 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
   const char *hexgrip = NULL;
   char *serialno = NULL;
   int stubkey;
+  unsigned int keylength;
+  char *curve = NULL;
+  const char *curvename = NULL;
 
   /* Get the keyid from the keyblock.  */
   node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
@@ -1239,14 +1265,16 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
   else
     ownertrust_print = 0;
 
+  keylength = nbits_from_pk (pk);
+
   es_fputs (secret? "sec:":"pub:", es_stdout);
   if (trustletter_print)
     es_putc (trustletter_print, es_stdout);
   es_fprintf (es_stdout, ":%u:%d:%08lX%08lX:%s:%s::",
-          nbits_from_pk (pk),
-          pk->pubkey_algo,
-          (ulong) keyid[0], (ulong) keyid[1],
-          colon_datestr_from_pk (pk), colon_strtime (pk->expiredate));
+              keylength,
+              pk->pubkey_algo,
+              (ulong) keyid[0], (ulong) keyid[1],
+              colon_datestr_from_pk (pk), colon_strtime (pk->expiredate));
 
   if (ownertrust_print)
     es_putc (ownertrust_print, es_stdout);
@@ -1272,14 +1300,14 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
       || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
       || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {
-      char *curve = openpgp_oid_to_str (pk->pkey[0]);
-      const char *name = openpgp_oid_to_curve (curve, 0);
-      if (!name)
-        name = curve;
-      es_fputs (name, es_stdout);
-      xfree (curve);
+      curve = openpgp_oid_to_str (pk->pkey[0]);
+      curvename = openpgp_oid_to_curve (curve, 0);
+      if (!curvename)
+        curvename = curve;
+      es_fputs (curvename, es_stdout);
     }
   es_putc (':', es_stdout);		/* End of field 17. */
+  print_compliance_flags (pk, keylength, curvename);
   es_putc (':', es_stdout);		/* End of field 18. */
   es_putc ('\n', es_stdout);
 
@@ -1380,13 +1408,13 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	      if (trustletter)
 		es_fprintf (es_stdout, "%c", trustletter);
 	    }
+          keylength = nbits_from_pk (pk2);
 	  es_fprintf (es_stdout, ":%u:%d:%08lX%08lX:%s:%s:::::",
-		  nbits_from_pk (pk2),
-		  pk2->pubkey_algo,
-		  (ulong) keyid2[0], (ulong) keyid2[1],
-		  colon_datestr_from_pk (pk2), colon_strtime (pk2->expiredate)
-		  /* fixme: add LID and ownertrust here */
-	    );
+                      keylength,
+                      pk2->pubkey_algo,
+                      (ulong) keyid2[0], (ulong) keyid2[1],
+                      colon_datestr_from_pk (pk2),
+                      colon_strtime (pk2->expiredate));
 	  print_capabilities (pk2, NULL);
           es_putc (':', es_stdout);	/* End of field 13. */
           es_putc (':', es_stdout);	/* End of field 14. */
@@ -1405,14 +1433,16 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
               || pk2->pubkey_algo == PUBKEY_ALGO_EDDSA
               || pk2->pubkey_algo == PUBKEY_ALGO_ECDH)
             {
-              char *curve = openpgp_oid_to_str (pk2->pkey[0]);
-              const char *name = openpgp_oid_to_curve (curve, 0);
-              if (!name)
-                name = curve;
-              es_fputs (name, es_stdout);
               xfree (curve);
+              curve = openpgp_oid_to_str (pk2->pkey[0]);
+              curvename = openpgp_oid_to_curve (curve, 0);
+              if (!curvename)
+                curvename = curve;
+              es_fputs (curvename, es_stdout);
             }
           es_putc (':', es_stdout);	/* End of field 17. */
+          print_compliance_flags (pk2, keylength, curvename);
+          es_putc (':', es_stdout);	/* End of field 18. */
 	  es_putc ('\n', es_stdout);
           print_fingerprint (NULL, pk2, 0);
           if (hexgrip)
@@ -1540,6 +1570,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	}
     }
 
+  xfree (curve);
   xfree (hexgrip_buffer);
   xfree (serialno);
 }
