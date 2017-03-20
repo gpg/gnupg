@@ -25,7 +25,7 @@ libexec_PROGRAMS += gpg-preset-passphrase
 endif
 noinst_PROGRAMS = $(TESTS)
 
-EXTRA_DIST = ChangeLog-2011 gpg-agent-w32info.rc
+EXTRA_DIST = ChangeLog-2011 gpg-agent-w32info.rc all-tests.scm
 
 
 AM_CPPFLAGS =

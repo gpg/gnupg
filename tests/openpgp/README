@@ -7,7 +7,7 @@ From your build directory, run
 
 to run all tests or
 
-  obj $ make -C tests/openpgp check XTESTS=your-test.scm
+  obj $ make -C tests/openpgp check TESTS=your-test.scm
 
 to run a specific test (or any number of tests separated by spaces).
 
@@ -89,7 +89,7 @@ the inner progress indicator will be abbreviated using '.'.
 Say you are working on a new test called 'your-test.scm', you can run
 it on its own using
 
-  obj $ make -C tests/openpgp check XTESTS=your-test.scm
+  obj $ make -C tests/openpgp check TESTS=your-test.scm
 
 but something isn't working as expected.  There are several little
 gadgets that might help.  The first one is 'trace', a function that

@@ -17,12 +17,11 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(let* ((tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*))
-       (runner (if (and (member "--parallel" *args*)
-			(> (length tests) 1))
-		   run-tests-parallel
-		   run-tests-sequential)))
-  (runner (map (lambda (name)
-		 (test::scm #f
-			    (path-join "tests" "migrations" name)
-			    (in-srcdir "tests" "migrations" name))) tests)))
+(define tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*))
+
+(run-tests (if (null? tests)
+	       (load-tests "tests" "migrations")
+	       (map (lambda (name)
+		      (test::scm #f
+				 (path-join "tests" "migrations" name)
+				 (in-srcdir "tests" "migrations" name))) tests)))

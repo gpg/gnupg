@@ -1,6 +1,4 @@
-#!/usr/bin/env gpgscm
-
-;; Copyright (C) 2016 g10 Code GmbH
+;; Copyright (C) 2017 g10 Code GmbH
 ;;
 ;; This file is part of GnuPG.
 ;;
@@ -17,4 +15,21 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(run-tests (load-tests "tests" "gpgme"))
+(export all-tests
+ ;; Parse the Makefile.am to find all tests.
+
+ (load (with-path "makefile.scm"))
+
+ (define (expander filename port key)
+   (parse-makefile port key))
+
+ (define (parse filename key)
+   (parse-makefile-expand filename expander key))
+
+ (map (lambda (name)
+	(test::binary #f
+		      (path-join "g10" name)
+		      (path-join (getenv "objdir") "g10" name)))
+      (parse-makefile-expand (in-srcdir "g10" "Makefile.am")
+			     (lambda (filename port key) (parse-makefile port key))
+			     "module_tests")))

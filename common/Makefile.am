@@ -20,7 +20,8 @@
 
 EXTRA_DIST = mkstrtable.awk exaudit.awk exstatus.awk ChangeLog-2011 \
              audit-events.h status-codes.h ChangeLog.jnlib \
-	     ChangeLog-2011.include w32info-rc.h.in gnupg.ico
+	     ChangeLog-2011.include w32info-rc.h.in gnupg.ico \
+	     all-tests.scm
 
 noinst_LIBRARIES = libcommon.a libcommonpth.a libgpgrl.a
 if !HAVE_W32CE_SYSTEM

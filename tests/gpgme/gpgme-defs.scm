@@ -20,21 +20,26 @@
 (load (in-srcdir "tests" "openpgp" "defs.scm"))
 
 (define gpgme-srcdir (getenv "XTEST_GPGME_SRCDIR"))
-(when (string=? "" gpgme-srcdir)
-    (info
-     "SKIP: Environment variable 'XTEST_GPGME_SRCDIR' not set.  Please"
-     "point it to a recent GPGME source tree to run the GPGME test suite.")
-    (exit 0))
 
 (define (in-gpgme-srcdir . names)
   (canonical-path (apply path-join (cons gpgme-srcdir names))))
 
 (define gpgme-builddir (getenv "XTEST_GPGME_BUILDDIR"))
-(when (string=? "" gpgme-builddir)
+
+(define (have-gpgme?)
+  (cond
+   ((string=? "" gpgme-srcdir)
+    (info
+     "SKIP: Environment variable 'XTEST_GPGME_SRCDIR' not set.  Please"
+     "point it to a recent GPGME source tree to run the GPGME test suite.")
+    #f)
+   ((string=? "" gpgme-builddir)
     (info
      "SKIP: Environment variable 'XTEST_GPGME_BUILDDIR' not set.  Please"
      "point it to a recent GPGME build tree to run the GPGME test suite.")
-    (exit 0))
+    #f)
+   (else
+    #t)))
 
 ;; Make sure that GPGME picks up our gpgconf.  This makes GPGME use
 ;; and thus executes the tests with GnuPG components from the build

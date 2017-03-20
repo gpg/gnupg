@@ -54,7 +54,7 @@ check: xcheck
 .PHONY: xcheck
 xcheck:
 	$(TESTS_ENVIRONMENT) $(abs_top_builddir)/tests/gpgscm/gpgscm \
-	  $(abs_srcdir)/run-tests.scm $(TESTFLAGS) $(XTESTS)
+	  $(abs_srcdir)/run-tests.scm $(TESTFLAGS) $(TESTS)
 
 KEYS =	32100C27173EF6E9C4E9A25D3D69F86D37A4F939
 CERTS =	cert_g10code_test1.der \
@@ -66,7 +66,7 @@ TEST_FILES = plain-1.cms.asc \
 	plain-large.cms.asc
 
 EXTRA_DIST = $(XTESTS) $(KEYS) $(CERTS) $(TEST_FILES) \
-	gpgsm-defs.scm run-tests.scm setup.scm
+	gpgsm-defs.scm run-tests.scm setup.scm all-tests.scm
 
 CLEANFILES = *.log report.xml
 

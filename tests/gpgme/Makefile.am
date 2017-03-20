@@ -46,9 +46,9 @@ check: xcheck
 .PHONY: xcheck
 xcheck:
 	$(TESTS_ENVIRONMENT) $(abs_top_builddir)/tests/gpgscm/gpgscm \
-	  $(abs_srcdir)/run-tests.scm $(TESTFLAGS) $(XTESTS)
+	  $(abs_srcdir)/run-tests.scm $(TESTFLAGS) $(TESTS)
 
-EXTRA_DIST = gpgme-defs.scm run-tests.scm setup.scm wrap.scm
+EXTRA_DIST = gpgme-defs.scm run-tests.scm setup.scm wrap.scm all-tests.scm
 
 CLEANFILES = *.log report.xml
 

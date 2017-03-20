@@ -44,7 +44,8 @@ EXTRA_DIST = runtest inittests $(testscripts) ChangeLog-2011 \
              samplekeys/32100C27173EF6E9C4E9A25D3D69F86D37A4F939.key \
              samplekeys/cert_g10code_pete1.pem \
              samplekeys/cert_g10code_test1.pem \
-             samplekeys/cert_g10code_theo1.pem
+             samplekeys/cert_g10code_theo1.pem \
+	     run-tests.scm
 
 # We used to run $(testscripts) here but these asschk scripts are not
 # completely reliable in all environments and thus we better disable

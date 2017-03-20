@@ -226,6 +226,7 @@
 (define (dirname path)
   (let ((i (string-rindex path #\/)))
     (if i (substring path 0 i) ".")))
+(assert (string=? "foo/bar" (dirname "foo/bar/baz")))
 
 ;; Helper for (pipe).
 (define :read-end car)
@@ -738,6 +739,19 @@
 	  (test:::set! 'directory wd)
 	  (loop (pool::add (test::run-sync))
 		(cdr tests'))))))
+
+;; Run tests either in sequence or in parallel, depending on the
+;; number of tests and the command line flags.
+(define (run-tests tests)
+  (if (and (flag "--parallel" *args*)
+	   (> (length tests) 1))
+      (run-tests-parallel tests)
+      (run-tests-sequential tests)))
+
+;; Load all tests from the given path.
+(define (load-tests . path)
+  (load (apply in-srcdir `(,@path "all-tests.scm")))
+  all-tests)
 
 ;; Helper to create environment caches from test functions.  SETUP
 ;; must be a test implementing the producer side cache protocol.

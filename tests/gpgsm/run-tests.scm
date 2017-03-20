@@ -23,16 +23,17 @@
 	    "tests/gpgsm.")
       (exit 2)))
 
-(let* ((tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*))
-       (setup (make-environment-cache (test::scm
-				       #f
-				       (path-join "tests" "gpgsm" "setup.scm")
-				       (in-srcdir "tests" "gpgsm" "setup.scm"))))
-       (runner (if (and (member "--parallel" *args*)
-			(> (length tests) 1))
-		   run-tests-parallel
-		   run-tests-sequential)))
-  (runner (map (lambda (name)
-		 (test::scm setup
-			    (path-join "tests" "gpgsm" name)
-			    (in-srcdir "tests" "gpgsm" name))) tests)))
+(define tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*))
+
+(define setup
+  (make-environment-cache (test::scm
+			   #f
+			   (path-join "tests" "gpgsm" "setup.scm")
+			   (in-srcdir "tests" "gpgsm" "setup.scm"))))
+
+(run-tests (if (null? tests)
+	       (load-tests "tests" "gpgsm")
+	       (map (lambda (name)
+		      (test::scm setup
+				 (path-join "tests" "gpgsm" name)
+				 (in-srcdir "tests" "gpgsm" name))) tests)))

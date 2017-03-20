@@ -18,7 +18,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = ChangeLog-2011
+EXTRA_DIST = ChangeLog-2011 all-tests.scm
 
 bin_PROGRAMS = g13
 sbin_PROGRAMS = g13-syshelp

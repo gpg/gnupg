@@ -26,16 +26,17 @@
 ;; Set objdir so that the tests can locate built programs.
 (setenv "objdir" (getcwd) #f)
 
-(let* ((tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*))
-       (setup (make-environment-cache (test::scm
-				       #f
-				       (path-join "tests" "openpgp" "setup.scm")
-				       (in-srcdir "tests" "openpgp" "setup.scm"))))
-       (runner (if (and (member "--parallel" *args*)
-			(> (length tests) 1))
-		   run-tests-parallel
-		   run-tests-sequential)))
-  (runner (map (lambda (name)
-		 (test::scm setup
-			    (path-join "tests" "openpgp" name)
-			    (in-srcdir "tests" "openpgp" name))) tests)))
+(define setup
+  (make-environment-cache (test::scm
+			   #f
+			   (path-join "tests" "openpgp" "setup.scm")
+			   (in-srcdir "tests" "openpgp" "setup.scm"))))
+
+(define tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*))
+
+(run-tests (if (null? tests)
+	       (load-tests "tests" "openpgp")
+	       (map (lambda (name)
+		      (test::scm setup
+				 (path-join "tests" "openpgp" name)
+				 (in-srcdir "tests" "openpgp" name))) tests)))

@@ -141,3 +141,17 @@ gen-ChangeLog:
 
 stowinstall:
 	$(MAKE) $(AM_MAKEFLAGS) install prefix=/usr/local/stow/gnupg
+
+TESTS_ENVIRONMENT = \
+	LC_ALL=C \
+	EXEEXT=$(EXEEXT) \
+	PATH=$(abs_top_builddir)/tests/gpgscm:$(PATH) \
+	abs_top_srcdir=$(abs_top_srcdir) \
+	objdir=$(abs_top_builddir) \
+	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm
+
+.PHONY: check-all
+check-all:
+	$(TESTS_ENVIRONMENT) \
+	  $(abs_top_builddir)/tests/gpgscm/gpgscm \
+	  $(abs_srcdir)/tests/run-tests.scm $(TESTFLAGS) $(TESTS)

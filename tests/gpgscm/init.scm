@@ -701,6 +701,11 @@
 	    ,@(cdr form)
 	    (current-environment))))
 
+(define-macro (export name . expressions)
+  `(define ,name
+     (begin
+       ,@expressions)))
+
 ;;;;; I/O
 
 (define (input-output-port? p)

@@ -21,7 +21,8 @@
 EXTRA_DIST = distsigkey.gpg \
 	     ChangeLog-2011 gpg-w32info.rc \
 	     gpg.w32-manifest.in test.c t-keydb-keyring.kbx \
-	     t-keydb-get-keyblock.gpg t-stutter-data.asc
+	     t-keydb-get-keyblock.gpg t-stutter-data.asc \
+	     all-tests.scm
 
 AM_CPPFLAGS =
 
