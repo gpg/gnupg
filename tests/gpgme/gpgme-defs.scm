@@ -181,4 +181,4 @@
 			    (call-popen `(,python -c "import sys; print('{0}.{1}'.format(sys.version_info[0], sys.version_info[1]))") "")))
 	      (build-path (path-join gpgme-builddir "lang" "python"
 				     (string-append "python" python-version "-gpg"))))
-	 (trace (file-exists? (trace build-path))))))
+	 (file-exists? build-path))))
