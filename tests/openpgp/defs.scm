@@ -446,7 +446,7 @@
     (atexit (lambda ()
 	      (with-home-directory gnupghome
 				   (stop-agent)))))
-  (catch (log "Warning: Creating socket directory failed:" (car *error*))
+  (catch (fail "Creating socket directory failed (see README):" (car *error*))
 	 (call-popen `(,(tool 'gpgconf) --create-socketdir) ""))
   (call-check `(,(tool 'gpg-connect-agent) --verbose
 		,(string-append "--agent-program=" (tool 'gpg-agent)
