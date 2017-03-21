@@ -271,9 +271,11 @@
 ;; generic name is used.  Returns an absolute path.
 (define (mkdtemp . components)
   (canonical-path (_mkdtemp (if (null? components)
-				(string-append "gpgscm-" (get-isotime) "-"
-					       (basename-suffix *scriptname* ".scm")
-					       "-XXXXXX")
+				(path-join
+				 (if *win32* (getenv "Temp") "/tmp")
+				 (string-append "gpgscm-" (get-isotime) "-"
+						(basename-suffix *scriptname* ".scm")
+						"-XXXXXX"))
 				(apply path-join components)))))
 
 (define-macro (with-temporary-working-directory . expressions)

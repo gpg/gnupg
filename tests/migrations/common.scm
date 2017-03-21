@@ -53,7 +53,7 @@
    (untar-armored src-tarball)
    (setenv "GNUPGHOME" (getcwd) #t)
 
-   (catch (fail "Creating socket directory failed (see README):" (car *error*))
+   (catch (log "Warning: Creating socket directory failed:" (car *error*))
 	  (call-popen `(,gpgconf --create-socketdir) ""))
    (test (getcwd))
    (catch (log "Warning: Removing socket directory failed.")
