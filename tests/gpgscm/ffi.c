@@ -342,6 +342,24 @@ do_seek (scheme *sc, pointer args)
 }
 
 static pointer
+do_get_temp_path (scheme *sc, pointer args)
+{
+  FFI_PROLOG ();
+#ifdef HAVE_W32_SYSTEM
+  char buffer[MAX_PATH+1];
+#endif
+  FFI_ARGS_DONE_OR_RETURN (sc, args);
+
+#ifdef HAVE_W32_SYSTEM
+  if (GetTempPath (MAX_PATH+1, buffer) == 0)
+    FFI_RETURN_STRING (sc, "/temp");
+  FFI_RETURN_STRING (sc, buffer);
+#else
+  FFI_RETURN_STRING (sc, "/tmp");
+#endif
+}
+
+static pointer
 do_mkdtemp (scheme *sc, pointer args)
 {
   FFI_PROLOG ();
@@ -1352,6 +1370,7 @@ ffi_init (scheme *sc, const char *argv0, const char *scriptname,
   ffi_define_function (sc, fdopen);
   ffi_define_function (sc, close);
   ffi_define_function (sc, seek);
+  ffi_define_function (sc, get_temp_path);
   ffi_define_function_name (sc, "_mkdtemp", mkdtemp);
   ffi_define_function (sc, unlink);
   ffi_define_function (sc, unlink_recursively);

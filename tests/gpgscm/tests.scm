@@ -272,7 +272,7 @@
 (define (mkdtemp . components)
   (canonical-path (_mkdtemp (if (null? components)
 				(path-join
-				 (if *win32* (getenv "Temp") "/tmp")
+				 (get-temp-path)
 				 (string-append "gpgscm-" (get-isotime) "-"
 						(basename-suffix *scriptname* ".scm")
 						"-XXXXXX"))
