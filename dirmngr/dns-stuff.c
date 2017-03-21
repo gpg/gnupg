@@ -568,8 +568,8 @@ libdns_init (void)
               : dns_hints_local (ld.resolv_conf, &derr));
   if (!ld.hints)
     {
-      log_error ("failed to load DNS hints: %s\n", gpg_strerror (err));
       err = libdns_error_to_gpg_error (derr);
+      log_error ("failed to load DNS hints: %s\n", gpg_strerror (err));
       goto leave;
     }
 
