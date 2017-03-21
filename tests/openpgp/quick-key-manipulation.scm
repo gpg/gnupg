@@ -73,6 +73,17 @@
 (assert (= 2 (count-uids-of-secret-key alpha)))
 (assert (= 2 (count-uids-of-secret-key bravo)))
 
+(info "Checking that we can mark an user ID as primary.")
+(call-check `(,@gpg --quick-set-primary-uid ,(exact alpha) ,alpha))
+(call-check `(,@gpg --quick-set-primary-uid ,(exact alpha) ,bravo))
+;; XXX I don't know how to verify this.  The keylisting does not seem
+;; to indicate the primary UID.
+
+(info "Checking that we get an error making non-existant user ID the primary one.")
+(catch '()
+       (call-check `(,@GPG --quick-set-primary-uid ,(exact alpha) ,charlie))
+       (error "Expected an error, but get none."))
+
 (info "Checking that we can revoke a user ID...")
 (call-check `(,@GPG --quick-revoke-uid ,(exact bravo) ,alpha))
 
