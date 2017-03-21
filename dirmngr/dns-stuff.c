@@ -533,10 +533,34 @@ libdns_init (void)
   ld.hosts = dns_hosts_open (&derr);
   if (!ld.hosts)
     {
-      log_error ("failed to load hosts file: %s\n", gpg_strerror (err));
       err = libdns_error_to_gpg_error (derr);
+      log_error ("failed to initialize hosts file: %s\n", gpg_strerror (err));
       goto leave;
     }
+
+
+  {
+#if HAVE_W32_SYSTEM
+    char *hosts_path = xtryasprintf ("%s\System32\drivers\etc\hosts",
+                                     getenv ("SystemRoot"));
+    if (! hosts_path)
+      {
+        err = gpg_error_from_syserror ();
+        goto leave;
+      }
+
+    derr = dns_hosts_loadpath (ld.hosts, hosts_path);
+    xfree (hosts_path);
+#else
+    derr = dns_hosts_loadpath (ld.hosts, "/etc/hosts");
+#endif
+    if (derr)
+      {
+        err = libdns_error_to_gpg_error (derr);
+        log_error ("failed to load hosts file: %s\n", gpg_strerror (err));
+        goto leave;
+      }
+  }
 
   /* dns_hints_local for stub mode, dns_hints_root for recursive.  */
   ld.hints = (recursive_resolver
