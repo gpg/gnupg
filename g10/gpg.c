@@ -1,7 +1,7 @@
 /* gpg.c - The GnuPG utility (main for gpg)
  * Copyright (C) 1998-2011 Free Software Foundation, Inc.
- * Copyright (C) 1997-2016 Werner Koch
- * Copyright (C) 2015-2016 g10 Code GmbH
+ * Copyright (C) 1997-2017 Werner Koch
+ * Copyright (C) 2015-2017 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -124,6 +124,7 @@ enum cmd_and_opt_values
     aQuickAddKey,
     aQuickRevUid,
     aQuickSetExpire,
+    aQuickSetPrimaryUid,
     aListConfig,
     aListGcryptConfig,
     aGPGConfList,
@@ -460,6 +461,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aQuickRevUid,  "quick-revuid", "@"),
   ARGPARSE_c (aQuickSetExpire,  "quick-set-expire",
               N_("quickly set a new expiration date")),
+  ARGPARSE_c (aQuickSetPrimaryUid,  "quick-set-primary-uid", "@"),
   ARGPARSE_c (aFullKeygen,  "full-generate-key" ,
               N_("full featured key pair generation")),
   ARGPARSE_c (aFullKeygen,  "full-gen-key", "@"),
@@ -2581,6 +2583,7 @@ main (int argc, char **argv)
 	  case aQuickAddKey:
 	  case aQuickRevUid:
 	  case aQuickSetExpire:
+	  case aQuickSetPrimaryUid:
 	  case aExportOwnerTrust:
 	  case aImportOwnerTrust:
           case aRebuildKeydbCaches:
@@ -4002,6 +4005,7 @@ main (int argc, char **argv)
       case aQuickAddUid:
       case aQuickAddKey:
       case aQuickRevUid:
+      case aQuickSetPrimaryUid:
       case aFullKeygen:
       case aKeygen:
       case aImport:
@@ -4442,6 +4446,18 @@ main (int argc, char **argv)
           x_fpr = *argv++; argc--;
           x_expire = *argv++; argc--;
           keyedit_quick_set_expire (ctrl, x_fpr, x_expire);
+        }
+	break;
+
+      case aQuickSetPrimaryUid:
+        {
+          const char *uid, *primaryuid;
+
+          if (argc != 2)
+            wrong_args ("--quick-set-primary-uid USER-ID PRIMARY-USER-ID");
+          uid = *argv++; argc--;
+          primaryuid = *argv++; argc--;
+          keyedit_quick_set_primary (ctrl, uid, primaryuid);
         }
 	break;
 

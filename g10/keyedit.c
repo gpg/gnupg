@@ -1,6 +1,6 @@
 /* keyedit.c - Edit properties of a key
  * Copyright (C) 1998-2010 Free Software Foundation, Inc.
- * Copyright (C) 1998-2016 Werner Koch
+ * Copyright (C) 1998-2017 Werner Koch
  * Copyright (C) 2015, 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.
@@ -2860,36 +2860,28 @@ leave:
 }
 
 
-/* Unattended adding of a new keyid.  USERNAME specifies the
-   key. NEWUID is the new user id to add to the key.  */
-void
-keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
+/* Helper for quick commands to find the keyblock for USERNAME.
+ * Returns on success the key database handle at R_KDBHD and the
+ * keyblock at R_KEYBLOCK.  */
+static gpg_error_t
+quick_find_keyblock (ctrl_t ctrl, const char *username,
+                     KEYDB_HANDLE *r_kdbhd, kbnode_t *r_keyblock)
 {
   gpg_error_t err;
   KEYDB_HANDLE kdbhd = NULL;
-  KEYDB_SEARCH_DESC desc;
   kbnode_t keyblock = NULL;
+  KEYDB_SEARCH_DESC desc;
   kbnode_t node;
-  char *uidstring = NULL;
 
-  uidstring = xstrdup (newuid);
-  trim_spaces (uidstring);
-  if (!*uidstring)
-    {
-      log_error ("%s\n", gpg_strerror (GPG_ERR_INV_USER_ID));
-      goto leave;
-    }
-
-#ifdef HAVE_W32_SYSTEM
-  /* See keyedit_menu for why we need this.  */
-  check_trustdb_stale (ctrl);
-#endif
+  *r_kdbhd = NULL;
+  *r_keyblock = NULL;
 
   /* Search the key; we don't want the whole getkey stuff here.  */
   kdbhd = keydb_new ();
   if (!kdbhd)
     {
       /* Note that keydb_new has already used log_error.  */
+      err = gpg_error_from_syserror ();
       goto leave;
     }
 
@@ -2917,23 +2909,64 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
 
       if (!err)
         {
-          /* We require the secret primary key to add a UID.  */
+          /* We require the secret primary key to set the primary UID.  */
           node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
-          if (!node)
-            BUG ();
+          log_assert (node);
           err = agent_probe_secret_key (ctrl, node->pkt->pkt.public_key);
         }
     }
+  else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+    err = gpg_error (GPG_ERR_NO_PUBKEY);
+
   if (err)
     {
-      log_error (_("secret key \"%s\" not found: %s\n"),
+      log_error (_("key \"%s\" not found: %s\n"),
                  username, gpg_strerror (err));
       goto leave;
     }
 
   fix_keyblock (&keyblock);
-
   merge_keys_and_selfsig (keyblock);
+
+  *r_keyblock = keyblock;
+  keyblock = NULL;
+  *r_kdbhd = kdbhd;
+  kdbhd = NULL;
+
+ leave:
+  release_kbnode (keyblock);
+  keydb_release (kdbhd);
+  return err;
+}
+
+
+/* Unattended adding of a new keyid.  USERNAME specifies the
+   key. NEWUID is the new user id to add to the key.  */
+void
+keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
+{
+  gpg_error_t err;
+  KEYDB_HANDLE kdbhd = NULL;
+  kbnode_t keyblock = NULL;
+  char *uidstring = NULL;
+
+  uidstring = xstrdup (newuid);
+  trim_spaces (uidstring);
+  if (!*uidstring)
+    {
+      log_error ("%s\n", gpg_strerror (GPG_ERR_INV_USER_ID));
+      goto leave;
+    }
+
+#ifdef HAVE_W32_SYSTEM
+  /* See keyedit_menu for why we need this.  */
+  check_trustdb_stale (ctrl);
+#endif
+
+  /* Search the key; we don't want the whole getkey stuff here.  */
+  err = quick_find_keyblock (ctrl, username, &kdbhd, &keyblock);
+  if (err)
+    goto leave;
 
   if (menu_adduid (ctrl, keyblock, 0, NULL, uidstring))
     {
@@ -2954,6 +2987,7 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
   keydb_release (kdbhd);
 }
 
+
 /* Unattended revocation of a keyid.  USERNAME specifies the
    key. UIDTOREV is the user id revoke from the key.  */
 void
@@ -2961,7 +2995,6 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
 {
   gpg_error_t err;
   KEYDB_HANDLE kdbhd = NULL;
-  KEYDB_SEARCH_DESC desc;
   kbnode_t keyblock = NULL;
   kbnode_t node;
   int modified = 0;
@@ -2974,65 +3007,20 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
 #endif
 
   /* Search the key; we don't want the whole getkey stuff here.  */
-  kdbhd = keydb_new ();
-  if (!kdbhd)
-    {
-      /* Note that keydb_new has already used log_error.  */
-      goto leave;
-    }
-
-  err = classify_user_id (username, &desc, 1);
-  if (!err)
-    err = keydb_search (kdbhd, &desc, 1, NULL);
-  if (!err)
-    {
-      err = keydb_get_keyblock (kdbhd, &keyblock);
-      if (err)
-        {
-          log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));
-          goto leave;
-        }
-      /* Now with the keyblock retrieved, search again to detect an
-         ambiguous specification.  We need to save the found state so
-         that we can do an update later.  */
-      keydb_push_found_state (kdbhd);
-      err = keydb_search (kdbhd, &desc, 1, NULL);
-      if (!err)
-        err = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
-      else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
-        err = 0;
-      keydb_pop_found_state (kdbhd);
-
-      if (!err)
-        {
-          /* We require the secret primary key to revoke a UID.  */
-          node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
-          if (!node)
-            BUG ();
-          err = agent_probe_secret_key (ctrl, node->pkt->pkt.public_key);
-        }
-    }
+  err = quick_find_keyblock (ctrl, username, &kdbhd, &keyblock);
   if (err)
-    {
-      log_error (_("secret key \"%s\" not found: %s\n"),
-                 username, gpg_strerror (err));
-      goto leave;
-    }
-
-  fix_keyblock (&keyblock);
-  merge_keys_and_selfsig (keyblock);
+    goto leave;
 
   /* Too make sure that we do not revoke the last valid UID, we first
      count how many valid UIDs there are.  */
   valid_uids = 0;
   for (node = keyblock; node; node = node->next)
-    valid_uids +=
-      node->pkt->pkttype == PKT_USER_ID
-      && ! node->pkt->pkt.user_id->flags.revoked
-      && ! node->pkt->pkt.user_id->flags.expired;
+    valid_uids += (node->pkt->pkttype == PKT_USER_ID
+                   && !node->pkt->pkt.user_id->flags.revoked
+                   && !node->pkt->pkt.user_id->flags.expired);
 
+  /* Find the right UID. */
   revlen = strlen (uidtorev);
-  /* find the right UID */
   for (node = keyblock; node; node = node->next)
     {
       if (node->pkt->pkttype == PKT_USER_ID
@@ -3046,7 +3034,8 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
               && ! node->pkt->pkt.user_id->flags.revoked
               && ! node->pkt->pkt.user_id->flags.expired)
             {
-              log_error (_("Cannot revoke the last valid user ID.\n"));
+              log_error (_("cannot revoke the last valid user ID.\n"));
+              err = gpg_error (GPG_ERR_INV_USER_ID);
               goto leave;
             }
 
@@ -3054,11 +3043,7 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
           err = core_revuid (ctrl, keyblock, node, reason, &modified);
           release_revocation_reason_info (reason);
           if (err)
-            {
-              log_error (_("User ID revocation failed: %s\n"),
-                         gpg_strerror (err));
-              goto leave;
-            }
+            goto leave;
           err = keydb_update_keyblock (ctrl, kdbhd, keyblock);
           if (err)
             {
@@ -3066,13 +3051,81 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
               goto leave;
             }
 
-          if (update_trust)
-            revalidation_mark ();
+          revalidation_mark ();
           goto leave;
         }
     }
+  err = gpg_error (GPG_ERR_NO_USER_ID);
 
-  log_error (_("User ID revocation failed: %s\n"), gpg_strerror (GPG_ERR_NOT_FOUND));
+
+ leave:
+  if (err)
+    log_error (_("revoking the user ID failed: %s\n"), gpg_strerror (err));
+  release_kbnode (keyblock);
+  keydb_release (kdbhd);
+}
+
+
+/* Unattended setting of the primary uid.  USERNAME specifies the key.
+   PRIMARYUID is the user id which shall be primary.  */
+void
+keyedit_quick_set_primary (ctrl_t ctrl, const char *username,
+                           const char *primaryuid)
+{
+  gpg_error_t err;
+  KEYDB_HANDLE kdbhd = NULL;
+  kbnode_t keyblock = NULL;
+  kbnode_t node;
+  size_t primaryuidlen;
+  int any;
+
+#ifdef HAVE_W32_SYSTEM
+  /* See keyedit_menu for why we need this.  */
+  check_trustdb_stale (ctrl);
+#endif
+
+  err = quick_find_keyblock (ctrl, username, &kdbhd, &keyblock);
+  if (err)
+    goto leave;
+
+  /* Find and mark the UID - we mark only the first valid one. */
+  primaryuidlen = strlen (primaryuid);
+  any = 0;
+  for (node = keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_USER_ID
+          && !any
+          && !node->pkt->pkt.user_id->flags.revoked
+          && !node->pkt->pkt.user_id->flags.expired
+          && primaryuidlen == node->pkt->pkt.user_id->len
+          && !memcmp (node->pkt->pkt.user_id->name, primaryuid, primaryuidlen))
+        {
+          node->flag |= NODFLG_SELUID;
+          any = 1;
+        }
+      else
+        node->flag &= ~NODFLG_SELUID;
+    }
+
+  if (!any)
+    err = gpg_error (GPG_ERR_NO_USER_ID);
+  else if (menu_set_primary_uid (keyblock))
+    {
+      merge_keys_and_selfsig (keyblock);
+      err = keydb_update_keyblock (ctrl, kdbhd, keyblock);
+      if (err)
+        {
+          log_error (_("update failed: %s\n"), gpg_strerror (err));
+          goto leave;
+        }
+      revalidation_mark ();
+    }
+  else
+    err = gpg_error (GPG_ERR_GENERAL);
+
+  if (err)
+    log_error (_("setting the primary user ID failed: %s\n"),
+               gpg_strerror (err));
 
  leave:
   release_kbnode (keyblock);
@@ -5205,7 +5258,7 @@ change_primary_uid_cb (PKT_signature * sig, void *opaque)
 
 /*
  * Set the primary uid flag for the selected UID.  We will also reset
- * all other primary uid flags.  For this to work with have to update
+ * all other primary uid flags.  For this to work we have to update
  * all the signature timestamps.  If we would do this with the current
  * time, we lose quite a lot of information, so we use a kludge to
  * do this: Just increment the timestamp by one second which is

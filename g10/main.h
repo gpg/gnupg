@@ -300,6 +300,8 @@ void keyedit_quick_sign (ctrl_t ctrl, const char *fpr,
                          strlist_t uids, strlist_t locusr, int local);
 void keyedit_quick_set_expire (ctrl_t ctrl,
                                const char *fpr, const char *expirestr);
+void keyedit_quick_set_primary (ctrl_t ctrl, const char *username,
+                                const char *primaryuid);
 void show_basic_key_info (KBNODE keyblock);
 
 /*-- keygen.c --*/
