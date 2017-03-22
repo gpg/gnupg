@@ -725,9 +725,26 @@ get_tag(scheme *sc, pointer v)
 
 
 
+/* Low-level allocator.
+ *
+ * Memory is allocated in segments.  Every segment holds a fixed
+ * number of cells.  Segments are linked into a list, sorted in
+ * reverse address order (i.e. those with a higher address first).
+ * This is used in the garbage collector to build the freelist in
+ * address order.
+ */
+
+struct cell_segment
+{
+     struct cell_segment *next;
+     void *alloc;
+     pointer cells;
+     size_t cells_len;
+};
+
 /* Allocate a new cell segment but do not make it available yet.  */
 static int
-_alloc_cellseg(scheme *sc, size_t len, void **alloc, pointer *cells)
+_alloc_cellseg(scheme *sc, size_t len, struct cell_segment **segment)
 {
   int adj = ADJ;
   void *cp;
@@ -735,46 +752,64 @@ _alloc_cellseg(scheme *sc, size_t len, void **alloc, pointer *cells)
   if (adj < sizeof(struct cell))
     adj = sizeof(struct cell);
 
-  cp = sc->malloc(len * sizeof(struct cell) + adj);
+  /* The segment header is conveniently allocated with the cells.  */
+  cp = sc->malloc(sizeof **segment + len * sizeof(struct cell) + adj);
   if (cp == NULL)
     return 1;
 
-  *alloc = cp;
+  *segment = cp;
+  (*segment)->next = NULL;
+  (*segment)->alloc = cp;
+  cp = (void *) ((uintptr_t) cp + sizeof **segment);
 
   /* adjust in TYPE_BITS-bit boundary */
   if (((uintptr_t) cp) % adj != 0)
     cp = (void *) (adj * ((uintptr_t) cp / adj + 1));
 
-  *cells = cp;
+  (*segment)->cells = cp;
+  (*segment)->cells_len = len;
   return 0;
+}
+
+/* Deallocate a cell segment.  Returns the next cell segment.
+ * Convenient for deallocation in a loop.  */
+static struct cell_segment *
+_dealloc_cellseg(scheme *sc, struct cell_segment *segment)
+{
+
+  struct cell_segment *next;
+
+  if (segment == NULL)
+    return NULL;
+
+  next = segment->next;
+  sc->free(segment->alloc);
+  return next;
 }
 
 /* allocate new cell segment */
 static int alloc_cellseg(scheme *sc, int n) {
-     pointer newp;
      pointer last;
      pointer p;
-     long i;
      int k;
 
      for (k = 0; k < n; k++) {
-         if (sc->last_cell_seg >= CELL_NSEGMENT - 1)
-              return k;
-	 i = ++sc->last_cell_seg;
-	 if (_alloc_cellseg(sc, CELL_SEGSIZE, &sc->alloc_seg[i], &newp)) {
-	      sc->last_cell_seg--;
+	 struct cell_segment *new, **s;
+	 if (_alloc_cellseg(sc, CELL_SEGSIZE, &new)) {
 	      return k;
 	 }
-         /* insert new segment in address order */
-         sc->cell_seg[i] = newp;
-         while (i > 0 && sc->cell_seg[i - 1] > sc->cell_seg[i]) {
-             p = sc->cell_seg[i];
-             sc->cell_seg[i] = sc->cell_seg[i - 1];
-             sc->cell_seg[--i] = p;
-         }
-         sc->fcells += CELL_SEGSIZE;
-         last = newp + CELL_SEGSIZE - 1;
-         for (p = newp; p <= last; p++) {
+	 /* insert new segment in reverse address order */
+	 for (s = &sc->cell_segments;
+	      *s && (uintptr_t) (*s)->alloc > (uintptr_t) new->alloc;
+	      s = &(*s)->next) {
+	     /* walk */
+	 }
+	 new->next = *s;
+	 *s = new;
+
+         sc->fcells += new->cells_len;
+         last = new->cells + new->cells_len - 1;
+          for (p = new->cells; p <= last; p++) {
               typeflag(p) = 0;
               cdr(p) = p + 1;
               car(p) = sc->NIL;
@@ -782,13 +817,13 @@ static int alloc_cellseg(scheme *sc, int n) {
          /* insert new cells in address order on free list */
          if (sc->free_cell == sc->NIL || p < sc->free_cell) {
               cdr(last) = sc->free_cell;
-              sc->free_cell = newp;
+              sc->free_cell = new->cells;
          } else {
                p = sc->free_cell;
-               while (cdr(p) != sc->NIL && newp > cdr(p))
+               while (cdr(p) != sc->NIL && (uintptr_t) new->cells > (uintptr_t) cdr(p))
                     p = cdr(p);
                cdr(last) = cdr(p);
-               cdr(p) = newp;
+               cdr(p) = new->cells;
          }
      }
      return n;
@@ -922,7 +957,7 @@ static pointer _get_cell(scheme *sc, pointer a, pointer b) {
 
   assert (gc_enabled (sc));
   if (sc->free_cell == sc->NIL) {
-    const int min_to_be_recovered = sc->last_cell_seg*8;
+    const int min_to_be_recovered = CELL_SEGSIZE / 4;
     gc(sc,a, b);
     if (sc->fcells < min_to_be_recovered
         || sc->free_cell == sc->NIL) {
@@ -1283,12 +1318,11 @@ static int
 initialize_small_integers(scheme *sc)
 {
   int i;
-  if (_alloc_cellseg(sc, MAX_SMALL_INTEGER, &sc->integer_alloc,
-		     &sc->integer_cells))
+  if (_alloc_cellseg(sc, MAX_SMALL_INTEGER, &sc->integer_segment))
     return 1;
 
   for (i = 0; i < MAX_SMALL_INTEGER; i++) {
-    pointer x = &sc->integer_cells[i];
+    pointer x = &sc->integer_segment->cells[i];
     typeflag(x) = T_NUMBER | T_ATOM | MARK;
     ivalue_unchecked(x) = i;
     set_num_integer(x);
@@ -1302,7 +1336,7 @@ mk_small_integer(scheme *sc, long n)
 {
 #define mk_small_integer_allocates	0
   assert(0 <= n && n < MAX_SMALL_INTEGER);
-  return &sc->integer_cells[n];
+  return &sc->integer_segment->cells[n];
 }
 #else
 
@@ -1666,6 +1700,7 @@ E6:   /* up.  Undo the link switching from steps E4 and E5. */
 /* garbage collection. parameter a, b is marked. */
 static void gc(scheme *sc, pointer a, pointer b) {
   pointer p;
+  struct cell_segment *s;
   int i;
 
   assert (gc_enabled (sc));
@@ -1712,9 +1747,9 @@ static void gc(scheme *sc, pointer a, pointer b) {
      (which are also kept sorted by address) downwards to build the
      free-list in sorted order.
   */
-  for (i = sc->last_cell_seg; i >= 0; i--) {
-    p = sc->cell_seg[i] + CELL_SEGSIZE;
-    while (--p >= sc->cell_seg[i]) {
+  for (s = sc->cell_segments; s; s = s->next) {
+    p = s->cells + s->cells_len;
+    while (--p >= s->cells) {
       if ((typeflag(p) & 1) == 0)
 	/* All types have the LSB set.  This is not a typeflag.  */
 	continue;
@@ -5592,7 +5627,6 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   sc->gensym_cnt=0;
   sc->malloc=malloc;
   sc->free=free;
-  sc->last_cell_seg = -1;
   sc->sink = &sc->_sink;
   sc->NIL = &sc->_NIL;
   sc->T = &sc->_HASHT;
@@ -5626,6 +5660,7 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   }
   sc->strbuff_size = STRBUFFSIZE;
 
+  sc->cell_segments = NULL;
   if (alloc_cellseg(sc,FIRST_CELLSEGS) != FIRST_CELLSEGS) {
     sc->no_memory=1;
     return 0;
@@ -5726,6 +5761,7 @@ void scheme_set_external_data(scheme *sc, void *p) {
 }
 
 void scheme_deinit(scheme *sc) {
+  struct cell_segment *s;
   int i;
 
   sc->oblist=sc->NIL;
@@ -5758,11 +5794,11 @@ void scheme_deinit(scheme *sc) {
   gc(sc,sc->NIL,sc->NIL);
 
 #if USE_SMALL_INTEGERS
-  sc->free(sc->integer_alloc);
+  _dealloc_cellseg(sc, sc->integer_segment);
 #endif
 
-  for(i=0; i<=sc->last_cell_seg; i++) {
-    sc->free(sc->alloc_seg[i]);
+  for (s = sc->cell_segments; s; s = _dealloc_cellseg(sc, s)) {
+    /* nop */
   }
   sc->free(sc->strbuff);
 }

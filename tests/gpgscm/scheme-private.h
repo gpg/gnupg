@@ -108,12 +108,7 @@ int tracing;
 #ifndef CELL_SEGSIZE
 #define CELL_SEGSIZE    5000  /* # of cells in one segment */
 #endif
-#ifndef CELL_NSEGMENT
-#define CELL_NSEGMENT   10    /* # of segments for cells */
-#endif
-void *alloc_seg[CELL_NSEGMENT];
-pointer cell_seg[CELL_NSEGMENT];
-int     last_cell_seg;
+struct cell_segment *cell_segments;
 
 /* We use 4 registers. */
 pointer args;            /* register for arguments of function */
@@ -159,8 +154,7 @@ pointer COMPILE_HOOK;  /* *compile-hook* */
 
 #if USE_SMALL_INTEGERS
 /* A fixed allocation of small integers.  */
-void *integer_alloc;
-pointer integer_cells;
+struct cell_segment *integer_segment;
 #endif
 
 pointer free_cell;       /* pointer to top of free cells */
