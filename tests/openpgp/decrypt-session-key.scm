@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-legacy-environment)
 
 (define (get-session-key filename)
@@ -35,7 +35,7 @@
 (for-each-p
  "Checking decryption of supplied files using the session key."
  (lambda (name)
-   (let* ((source (in-srcdir (string-append name ".asc")))
+   (let* ((source (in-srcdir "tests" "openpgp" (string-append name ".asc")))
 	  (key (get-session-key source)))
      (with-ephemeral-home-directory setup-environment
       (tr:do

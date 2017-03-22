@@ -23,7 +23,7 @@
 ;; Note: We do not support multiple signatures anymore thus this test is
 ;; not really needed because verify could do the same.  We keep it anyway.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-legacy-environment)
 
 (define sig-1ls1ls-valid "

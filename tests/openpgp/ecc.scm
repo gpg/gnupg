@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-legacy-environment)
 
 (define keygrips '("8E06A180EFFE4C65B812150CAF19BF30C0689A4C"
@@ -48,7 +48,7 @@
 (for-each
  (lambda (n)
    (call-check `(,(tool 'gpg) --import
-		 ,(in-srcdir (string-append
+		 ,(in-srcdir "tests" "openpgp" (string-append
 			      "samplekeys/ecc-sample-"
 			      (number->string n)
 			      "-pub.asc")))))
@@ -117,7 +117,7 @@ Ic1RdzgeCfosMF+l/zVRchcLKzenEQA=
  (lambda (n)
    (call-check `(,(tool 'gpg) --import
 		 ,@(if (> n 1) '(--allow-non-selfsigned-uid) '())
-		 ,(in-srcdir (string-append
+		 ,(in-srcdir "tests" "openpgp" (string-append
 			      "samplekeys/ecc-sample-"
 			      (number->string n)
 			      "-sec.asc")))))
@@ -242,7 +242,7 @@ Rg==
  (lambda (n)
    (call-check `(,(tool 'gpg) --import
 		 ,@(if (> n 1) '(--allow-non-selfsigned-uid) '())
-		 ,(in-srcdir (string-append
+		 ,(in-srcdir "tests" "openpgp" (string-append
 			      "samplekeys/ecc-sample-"
 			      (number->string n)
 			      "-sec.asc")))))

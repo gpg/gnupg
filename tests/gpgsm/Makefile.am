@@ -31,9 +31,9 @@ AM_CFLAGS =
 TESTS_ENVIRONMENT = LC_ALL=C \
 	EXEEXT=$(EXEEXT) \
 	PATH=../gpgscm:$(PATH) \
-	srcdir=$(abs_srcdir) \
+	abs_top_srcdir=$(abs_top_srcdir) \
 	objdir=$(abs_top_builddir) \
-	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm:$(abs_top_srcdir)/tests/openpgp:$(abs_top_srcdir)/tests/gpgsm
+	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm
 
 XTESTS = \
 	import.scm \

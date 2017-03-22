@@ -189,7 +189,7 @@
   (if (absolute-path? path) path (path-join (getcwd) path)))
 
 (define (in-srcdir . names)
-  (canonical-path (apply path-join (cons (getenv "srcdir") names))))
+  (canonical-path (apply path-join (cons (getenv "abs_top_srcdir") names))))
 
 ;; Try to find NAME in PATHS.  Returns the full path name on success,
 ;; or raises an error.

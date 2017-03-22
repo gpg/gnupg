@@ -36,9 +36,9 @@ fake_pinentry_SOURCES = fake-pinentry.c
 TESTS_ENVIRONMENT = LC_ALL=C \
 	EXEEXT=$(EXEEXT) \
 	PATH=../gpgscm:$(PATH) \
-	srcdir=$(abs_srcdir) \
+	abs_top_srcdir=$(abs_top_srcdir) \
 	objdir=$(abs_top_builddir) \
-	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm:$(abs_top_srcdir)/tests/openpgp
+	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm
 
 XTESTS = \
 	version.scm \
@@ -109,7 +109,7 @@ check: xcheck
 .PHONY: xcheck
 xcheck:
 	$(TESTS_ENVIRONMENT) $(abs_top_builddir)/tests/gpgscm/gpgscm \
-	  run-tests.scm $(TESTFLAGS) $(XTESTS)
+	  $(abs_srcdir)/run-tests.scm $(TESTFLAGS) $(XTESTS)
 
 TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     plain-1.asc plain-2.asc plain-3.asc plain-1-pgp.asc \

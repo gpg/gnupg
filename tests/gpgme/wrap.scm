@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "gpgme-defs.scm"))
+(load (in-srcdir "tests" "gpgme" "gpgme-defs.scm"))
 
 (define executable (flag "--executable" *args*))
 (unless (and executable (not (null? executable)))
@@ -28,6 +28,7 @@
 (setenv "abs_builddir" (getcwd) #t)
 (setenv "top_srcdir" gpgme-srcdir #t)
 (setenv "srcdir" (path-join gpgme-srcdir "tests" "gpg") #t)
+(setenv "abs_top_srcdir" (path-join gpgme-srcdir "tests" "gpg") #t)
 
 (define (run what)
   (if (string-suffix? (car what) ".py")

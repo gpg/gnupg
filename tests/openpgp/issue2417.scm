@@ -17,10 +17,10 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-environment)
 
-(define keyfile (in-srcdir "samplekeys" "rsa-rsa-sample-1.asc"))
+(define keyfile (in-srcdir "tests" "openpgp" "samplekeys" "rsa-rsa-sample-1.asc"))
 
 (define (touch file-name)
   (close (open file-name (logior O_WRONLY O_BINARY O_CREAT) #o600)))

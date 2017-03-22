@@ -17,17 +17,17 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-environment)
 
 (info "Checking bug 894: segv importing certain keys.")
-(call-check `(,(tool 'gpg) --import ,(in-srcdir "bug894-test.asc")))
+(call-check `(,(tool 'gpg) --import ,(in-srcdir "tests" "openpgp" "bug894-test.asc")))
 
 (define keyid "0xC108E83A")
 (info "Checking bug 1223: designated revoker sigs are not properly merged.")
 (call `(,(tool 'gpg) --delete-key --batch --yes ,keyid))
-(call `(,(tool 'gpg) --import ,(in-srcdir "bug1223-bogus.asc")))
-(call `(,(tool 'gpg) --import ,(in-srcdir "bug1223-good.asc")))
+(call `(,(tool 'gpg) --import ,(in-srcdir "tests" "openpgp" "bug1223-bogus.asc")))
+(call `(,(tool 'gpg) --import ,(in-srcdir "tests" "openpgp" "bug1223-good.asc")))
 (tr:do
  (tr:pipe-do
   (pipe:gpg `(--list-keys --with-colons ,keyid)))
@@ -44,8 +44,8 @@
 (define fpr2 "A55120427374F3F7AA5F1166DDA252EBB8EBE1AF")
 (info "Checking import of two keys with colliding long key ids.")
 (call `(,(tool 'gpg) --delete-key --batch --yes ,fpr1 ,fpr2))
-(call `(,(tool 'gpg) --import ,(in-srcdir "samplekeys/dda252ebb8ebe1af-1.asc")))
-(call `(,(tool 'gpg) --import ,(in-srcdir "samplekeys/dda252ebb8ebe1af-2.asc")))
+(call `(,(tool 'gpg) --import ,(in-srcdir "tests" "openpgp" "samplekeys/dda252ebb8ebe1af-1.asc")))
+(call `(,(tool 'gpg) --import ,(in-srcdir "tests" "openpgp" "samplekeys/dda252ebb8ebe1af-2.asc")))
 (tr:do
  (tr:pipe-do
   (pipe:gpg `(--list-keys --with-colons ,fpr1 ,fpr2)))

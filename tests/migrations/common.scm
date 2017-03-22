@@ -15,7 +15,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(if (string=? "" (getenv "srcdir"))
+(if (string=? "" (getenv "abs_top_srcdir"))
     (error "not called from make"))
 
 (let ((verbose (string->number (getenv "verbose"))))

@@ -17,13 +17,13 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-environment)
 
 (info "Checking iobuf_peek corner case (issue2419)...")
 (lettmp
  (onebyte)
- (dearmor (in-srcdir "samplemsgs/issue2419.asc") onebyte)
+ (dearmor (in-srcdir "tests" "openpgp" "samplemsgs/issue2419.asc") onebyte)
  (catch (assert (string-contains? (car *error*) "invalid packet"))
 	(call-popen `(,@GPG --list-packets ,onebyte) "")
 	(fail "Expected an error but got none")))

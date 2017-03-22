@@ -17,11 +17,11 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-environment)
 
 (define key
-  `(,(in-srcdir "samplekeys" "authenticate-only.sec.asc")
+  `(,(in-srcdir "tests" "openpgp" "samplekeys" "authenticate-only.sec.asc")
     "927EF377FD1A1B6F795E40C02A87917D8FFBA49F"
     "72360FDB6380212D5DAF2FA9E51185A9253C496D"
     "ssh-rsa"))

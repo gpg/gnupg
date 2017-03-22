@@ -318,7 +318,7 @@
   (log "Creating configuration files")
   (for-each
    (lambda (name)
-     (file-copy (in-srcdir (string-append name ".tmpl")) name)
+     (file-copy (in-srcdir "tests" "openpgp" (string-append name ".tmpl")) name)
      (let ((p (open-input-output-file name)))
        (cond
 	((string=? "gpg.conf" name)
@@ -349,7 +349,7 @@
   (log "Unpacking samples")
   (for-each
    (lambda (name)
-     (dearmor (in-srcdir ".." "openpgp" (string-append name "o.asc")) name))
+     (dearmor (in-srcdir "tests" "openpgp" (string-append name "o.asc")) name))
    plain-files))
 
 (define (create-legacy-gpghome)
@@ -358,7 +358,7 @@
   (log "Storing private keys")
   (for-each
    (lambda (name)
-     (dearmor (in-srcdir (string-append "/privkeys/" name ".asc"))
+     (dearmor (in-srcdir "tests" "openpgp" "privkeys" (string-append name ".asc"))
 	      (string-append "private-keys-v1.d/" name ".key")))
    '("50B2D4FA4122C212611048BC5FC31BD44393626E"
      "7E201E28B6FEB2927B321F443205F4724EBE637E"
@@ -382,11 +382,11 @@
   (log "Importing public demo and test keys")
   (for-each
    (lambda (file)
-     (call-check `(,@GPG --yes --import ,(in-srcdir file))))
+     (call-check `(,@GPG --yes --import ,(in-srcdir "tests" "openpgp" file))))
    (list "pubdemo.asc" "pubring.asc" key-file1))
 
   (pipe:do
-   (pipe:open (in-srcdir "pubring.pkr.asc") (logior O_RDONLY O_BINARY))
+   (pipe:open (in-srcdir "tests" "openpgp" "pubring.pkr.asc") (logior O_RDONLY O_BINARY))
    (pipe:spawn `(,@GPG --dearmor))
    (pipe:spawn `(,@GPG --yes --import))))
 

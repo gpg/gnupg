@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-legacy-environment)
 
 ;; This test assumes a fixed time of 2004-01-01.
@@ -52,7 +52,7 @@
 (define :comment cadr)
 (define :number caddr)
 (define (:filename key)
-  (in-srcdir "key-selection"
+  (in-srcdir "tests" "openpgp" "key-selection"
 	     (string-append (number->string (:number key)) ".asc")))
 
 (define (delete-keys which)

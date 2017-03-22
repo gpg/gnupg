@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-legacy-environment)
 
 ;; Import the sample key
@@ -33,7 +33,7 @@
 (info "Importing public key.")
 (call-check
  `(,(tool 'gpg) --import
-   ,(in-srcdir "samplekeys/E657FB607BB4F21C90BB6651BC067AF28BC90111.asc")))
+   ,(in-srcdir "tests" "openpgp" "samplekeys/E657FB607BB4F21C90BB6651BC067AF28BC90111.asc")))
 
 ;; By default, the most recent, valid signing subkey (1EA97479).
 (for-each-p

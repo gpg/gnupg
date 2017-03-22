@@ -22,4 +22,7 @@
 			(> (length tests) 1))
 		   run-tests-parallel
 		   run-tests-sequential)))
-  (runner (map (lambda (t) (test::scm #f t t)) tests)))
+  (runner (map (lambda (name)
+		 (test::scm #f
+			    (path-join "tests" "migrations" name)
+			    (in-srcdir "tests" "migrations" name))) tests)))

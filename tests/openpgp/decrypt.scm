@@ -17,14 +17,14 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-legacy-environment)
 
 (for-each-p
  "Checking decryption of supplied files"
  (lambda (name)
    (tr:do
-    (tr:open (in-srcdir (string-append name ".asc")))
+    (tr:open (in-srcdir "tests" "openpgp" (string-append name ".asc")))
     (tr:gpg "" '(--yes --decrypt))
     (tr:assert-identity name)))
  plain-files)

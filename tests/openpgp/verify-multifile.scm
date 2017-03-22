@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-legacy-environment)
 
 (define files '("clearsig-1-key-1.asc" "signed-1-key-1.asc"))
@@ -27,7 +27,7 @@
 (let* ((status
 	(call-popen
 	 `(,@gpg --verify --multifile --status-fd=1
-		 ,@(map (lambda (name) (in-srcdir "samplemsgs" name)) files))
+		 ,@(map (lambda (name) (in-srcdir "tests" "openpgp" "samplemsgs" name)) files))
 	 ""))
        (lines (map (lambda (l)
 		     (assert (string-prefix? l "[GNUPG:] "))

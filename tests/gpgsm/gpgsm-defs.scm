@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 
 ;; This is the list of certificates that we install in the test
 ;; environment.
@@ -83,13 +83,13 @@
   (log "Storing private keys")
   (for-each
    (lambda (name)
-     (file-copy (in-srcdir name)
+     (file-copy (in-srcdir "tests" "gpgsm" name)
 		(path-join "private-keys-v1.d"
 			   (string-append name ".key"))))
    '("32100C27173EF6E9C4E9A25D3D69F86D37A4F939"))
 
   (log "Importing public demo and test keys")
-  (call-check `(,@gpgsm --import ,(in-srcdir "cert_g10code_test1.der")))
+  (call-check `(,@gpgsm --import ,(in-srcdir "tests" "gpgsm" "cert_g10code_test1.der")))
 
   (create-sample-files)
   (stop-agent))

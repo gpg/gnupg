@@ -17,14 +17,14 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "gpgsm-defs.scm"))
+(load (in-srcdir "tests" "gpgsm" "gpgsm-defs.scm"))
 (setup-gpgsm-environment)
 
 (for-each-p
  "Checking decryption of supplied files."
  (lambda (name)
    (tr:do
-    (tr:open (in-srcdir (string-append name ".cms.asc")))
+    (tr:open (in-srcdir "tests" "gpgsm" (string-append name ".cms.asc")))
     (tr:gpgsm "" '(--decrypt))
     (tr:assert-identity name)))
  plain-files)

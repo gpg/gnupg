@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "common.scm"))
+(load (in-srcdir "tests" "migrations" "common.scm"))
 
 (catch (skip "gpgtar not built")
        (call-check `(,GPGTAR --help)))
@@ -37,14 +37,14 @@
 
 (run-test
  "Testing a clean migration ..."
- (in-srcdir "from-classic.tar.asc")
+ (in-srcdir "tests" "migrations" "from-classic.tar.asc")
  (lambda (gpghome)
    (trigger-migration)
    (assert-migrated)))
 
 (run-test
  "Testing a migration with existing private-keys-v1.d ..."
- (in-srcdir "from-classic.tar.asc")
+ (in-srcdir "tests" "migrations" "from-classic.tar.asc")
  (lambda (gpghome)
    (mkdir "private-keys-v1.d" "-rwx")
    (trigger-migration)
@@ -52,7 +52,7 @@
 
 (run-test
  "Testing a migration with existing but weird private-keys-v1.d ..."
- (in-srcdir "from-classic.tar.asc")
+ (in-srcdir "tests" "migrations" "from-classic.tar.asc")
  (lambda (gpghome)
    (mkdir "private-keys-v1.d" "")
    (trigger-migration)

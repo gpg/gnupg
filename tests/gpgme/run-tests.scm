@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "gpgme-defs.scm"))
+(load (in-srcdir "tests" "gpgme" "gpgme-defs.scm"))
 
 (info "Running GPGME's test suite...")
 
@@ -40,11 +40,17 @@
 		   run-tests-parallel
 		   run-tests-sequential))
        (setup-c (make-environment-cache
-		 (test::scm #f "setup.scm (tests/gpg)" (in-srcdir "setup.scm")
-			    "--" "tests" "gpg")))
+		 (test::scm
+		  #f
+		  (path-join "tests" "gpgme" "setup.scm" "tests" "gpg")
+		  (in-srcdir "tests" "gpgme" "setup.scm")
+		  "--" "tests" "gpg")))
        (setup-py (make-environment-cache
-		  (test::scm #f "setup.scm (lang/python/tests)" (in-srcdir "setup.scm")
-			     "--" "lang" "python" "tests")))
+		  (test::scm
+		   #f
+		   (path-join "tests" "gpgme" "setup.scm" "lang" "python" "tests")
+		   (in-srcdir "tests" "gpgme" "setup.scm")
+		   "--" "lang" "python" "tests")))
        (tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*)))
   (runner
    (apply
@@ -66,7 +72,10 @@
 	     (map (lambda (name)
 		    (apply test::scm
 			   `(,(:setup cmpnts)
-			     ,name ,(in-srcdir "wrap.scm") --executable
+			     ,(apply path-join
+				     `("tests" "gpgme" ,@(:path cmpnts) ,name))
+			     ,(in-srcdir "tests" "gpgme" "wrap.scm")
+			     --executable
 			     ,(find-test name)
 			     -- ,@(:path cmpnts))))
 		  (if (null? tests) (all-tests makefile (:key cmpnts)) tests))))

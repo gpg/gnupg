@@ -17,10 +17,10 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-environment)
 
-(define key (in-srcdir "samplekeys/issue2346.gpg"))
+(define key (in-srcdir "tests" "openpgp" "samplekeys/issue2346.gpg"))
 
 (info "Checking import statistics (issue2346)...")
 (let ((status (call-popen `(,@GPG --status-fd=1 --import ,key) "")))

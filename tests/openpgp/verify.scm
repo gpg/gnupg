@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-legacy-environment)
 
 ;;
@@ -343,7 +343,7 @@ GisM
 
 ;;; Need to import the ed25519 sample key used for
 ;;; the next two tests.
-(call-check `(,@GPG --quiet --yes --import ,(in-srcdir key-file2)))
+(call-check `(,@GPG --quiet --yes --import ,(in-srcdir "tests" "openpgp" key-file2)))
 (for-each-p
  "Checking that a valid Ed25519 signature is verified as such"
  (lambda (armored-file)

@@ -17,16 +17,22 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(if (string=? "" (getenv "srcdir"))
+(if (string=? "" (getenv "abs_top_srcdir"))
     (begin
-      (echo "Environment variable 'srcdir' not set.  Please point it to"
+      (echo "Environment variable 'abs_top_srcdir' not set.  Please point it to"
 	    "tests/gpgsm.")
       (exit 2)))
 
 (let* ((tests (filter (lambda (arg) (not (string-prefix? arg "--"))) *args*))
-       (setup (make-environment-cache (test::scm #f "setup.scm" "setup.scm")))
+       (setup (make-environment-cache (test::scm
+				       #f
+				       (path-join "tests" "gpgsm" "setup.scm")
+				       (in-srcdir "tests" "gpgsm" "setup.scm"))))
        (runner (if (and (member "--parallel" *args*)
 			(> (length tests) 1))
 		   run-tests-parallel
 		   run-tests-sequential)))
-  (runner (map (lambda (t) (test::scm setup t t)) tests)))
+  (runner (map (lambda (name)
+		 (test::scm setup
+			    (path-join "tests" "gpgsm" name)
+			    (in-srcdir "tests" "gpgsm" name))) tests)))

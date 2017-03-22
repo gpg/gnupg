@@ -154,12 +154,12 @@ prepend_srcdir (const char *fname)
   static const char *srcdir;
   char *result;
 
-  if (!srcdir && !(srcdir = getenv ("srcdir")))
+  if (!srcdir && !(srcdir = getenv ("abs_top_srcdir")))
     srcdir = ".";
 
-  result = malloc (strlen (srcdir) + 1 + strlen (fname) + 1);
+  result = malloc (strlen (srcdir) + strlen ("/g10/") + strlen (fname) + 1);
   strcpy (result, srcdir);
-  strcat (result, "/");
+  strcat (result, "/g10/");
   strcat (result, fname);
   return result;
 }

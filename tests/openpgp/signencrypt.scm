@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-legacy-environment)
 
 (for-each-p
@@ -33,7 +33,8 @@
 (info "Checking bug 537: MDC problem with old style compressed packets.")
 (lettmp (tmp)
   (call-popen `(,@GPG --yes --passphrase-fd "0"
-		      --output ,tmp --decrypt ,(in-srcdir "bug537-test.data.asc"))
+		      --output ,tmp --decrypt ,(in-srcdir "tests" "openpgp"
+							  "bug537-test.data.asc"))
 	      usrpass1)
   (if (not (string=? "4336AE2A528FAE091E73E59E325B588FEE795F9B"
 		     (cadar (gpg-hash-string `(--print-md SHA1 ,tmp) ""))))

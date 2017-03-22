@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-legacy-environment)
 
 (lettmp (steve's-key)
@@ -29,7 +29,7 @@
      ;; First, unwrap the encrypted message using Steve's secret key.
      (lettmp (unwrapped)
        (tr:do
-	(tr:open (in-srcdir "samplemsgs" (string-append name ".asc")))
+	(tr:open (in-srcdir "tests" "openpgp" "samplemsgs" (string-append name ".asc")))
 	(tr:gpg "" `(--yes --decrypt --unwrap))
 	(tr:write-to unwrapped))
 

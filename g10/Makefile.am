@@ -54,6 +54,8 @@ noinst_PROGRAMS += gpgcompose
 endif
 noinst_PROGRAMS += $(module_tests)
 TESTS = $(module_tests)
+TESTS_ENVIRONMENT = \
+	abs_top_srcdir=$(abs_top_srcdir)
 
 if ENABLE_BZIP2_SUPPORT
 bzip2_source = compress-bz2.c

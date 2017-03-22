@@ -31,9 +31,9 @@ AM_CFLAGS =
 TESTS_ENVIRONMENT = GPG_AGENT_INFO= LC_ALL=C \
 	EXEEXT=$(EXEEXT) \
 	PATH=../gpgscm:$(PATH) \
-	srcdir=$(abs_srcdir) \
+	abs_top_srcdir=$(abs_top_srcdir) \
 	objdir=$(abs_top_builddir) \
-	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm:$(abs_top_srcdir)/tests/migrations
+	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm
 
 XTESTS = from-classic.scm \
 	extended-pkf.scm \
@@ -54,7 +54,7 @@ check: xcheck
 .PHONY: xcheck
 xcheck:
 	$(TESTS_ENVIRONMENT) $(abs_top_builddir)/tests/gpgscm/gpgscm \
-	  run-tests.scm $(TESTFLAGS) $(XTESTS)
+	  $(abs_srcdir)/run-tests.scm $(TESTFLAGS) $(XTESTS)
 
 EXTRA_DIST = common.scm run-tests.scm setup.scm $(XTESTS) $(TEST_FILES)
 

@@ -17,12 +17,12 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "common.scm"))
+(load (in-srcdir "tests" "migrations" "common.scm"))
 
 (run-test
  "Checking migration with legacy key (issue2276)..."
  ;; This tarball contains a keyring with a legacy key.
- (in-srcdir "issue2276.tar.asc")
+ (in-srcdir "tests" "migrations" "issue2276.tar.asc")
  (lambda (gpghome)
    ;; GnuPG up to 2.1.14 failed to skip the legacy key when updating
    ;; the trust database and thereby rebuilding the keyring cache.

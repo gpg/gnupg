@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-legacy-environment)
 
 ;; XXX because of --always-trust, the trustdb is not created.
@@ -25,7 +25,7 @@
 (define gpg `(,(tool 'gpg) --no-permission-warning))
 
 (info "Checking key revocation.")
-(call-check `(,@gpg --import ,(in-srcdir "samplemsgs"
+(call-check `(,@gpg --import ,(in-srcdir "tests" "openpgp" "samplemsgs"
 					 "revoke-2D727CC768697734.asc")))
 (let loop ((output (gpg-with-colons '(--list-secret-keys "2D727CC768697734"))))
   (unless (null? output)

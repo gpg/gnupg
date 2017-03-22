@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-legacy-environment)
 
 (info "Checking decryption of supplied files using --multifile.")
@@ -31,7 +31,7 @@
  ;; First, copy the files so that GnuPG writes the decrypted files here
  ;; and not into the source directory.
  (for-each (lambda (name)
-	     (file-copy (in-srcdir name) name))
+	     (file-copy (in-srcdir "tests" "openpgp" name) name))
 	   encrypted-files)
 
  ;; Now decrypt all files.

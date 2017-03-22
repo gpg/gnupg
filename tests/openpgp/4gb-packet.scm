@@ -20,10 +20,10 @@
 ;; GnuPG through 2.1.7 would incorrect mark packets whose size is
 ;; 2^32-1 as invalid and exit with status code 2.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-environment)
 
 (unless (have-compression-algo? "BZIP2")
 	(skip "BZIP2 support not compiled in."))
 
-(call-check `(,@GPG --list-packets ,(in-srcdir "4gb-packet.asc")))
+(call-check `(,@GPG --list-packets ,(in-srcdir "tests" "openpgp" "4gb-packet.asc")))

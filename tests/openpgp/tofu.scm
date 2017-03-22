@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (load (with-path "time.scm"))
 (setup-environment)
 
@@ -41,7 +41,7 @@
 ;; Import the test keys.
 (for-each (lambda (keyid)
             (call-check `(,@GPG --import
-                                ,(in-srcdir "tofu/conflicting/"
+                                ,(in-srcdir "tests" "openpgp" "tofu" "conflicting"
                                             (string-append keyid ".gpg"))))
 	    (catch (fail "Missing key" keyid)
 		   (call-check `(,@GPG --list-keys ,keyid))))
@@ -108,7 +108,7 @@
 
 ;; Verify a message.  There should be no conflict and the trust
 ;; policy should be set to auto.
-(call-check `(,@GPG --verify ,(in-srcdir "tofu/conflicting/1C005AF3-1.txt")))
+(call-check `(,@GPG --verify ,(in-srcdir "tests" "openpgp" "tofu" "conflicting" "1C005AF3-1.txt")))
 
 (checkpolicy "1C005AF3" "auto")
 ;; Check default trust.
@@ -163,7 +163,7 @@
 ;; auto), but not affect 1C005AF3's policy.
 (setpolicy "BE04EB2B" "auto")
 (checkpolicy "BE04EB2B" "ask")
-(call-check `(,@GPG --verify ,(in-srcdir "tofu/conflicting/B662E42F-1.txt")))
+(call-check `(,@GPG --verify ,(in-srcdir "tests" "openpgp" "tofu" "conflicting" "B662E42F-1.txt")))
 (checkpolicy "BE04EB2B" "ask")
 (checkpolicy "1C005AF3" "bad")
 (checkpolicy "B662E42F" "ask")
@@ -208,26 +208,26 @@
 (check-counts "B662E42F" 0 0 0 0)
 
 ;; Verify a message.  The signature count should increase by 1.
-(call-check `(,@GPG --verify ,(in-srcdir "tofu/conflicting/1C005AF3-1.txt")))
+(call-check `(,@GPG --verify ,(in-srcdir "tests" "openpgp" "tofu" "conflicting" "1C005AF3-1.txt")))
 
 (check-counts "1C005AF3" 1 1 0 0)
 
 ;; Verify the same message.  The signature count should remain the
 ;; same.
-(call-check `(,@GPG --verify ,(in-srcdir "tofu/conflicting/1C005AF3-1.txt")))
+(call-check `(,@GPG --verify ,(in-srcdir "tests" "openpgp" "tofu" "conflicting" "1C005AF3-1.txt")))
 (check-counts "1C005AF3" 1 1 0 0)
 
 ;; Verify another message.
-(call-check `(,@GPG --verify ,(in-srcdir "tofu/conflicting/1C005AF3-2.txt")))
+(call-check `(,@GPG --verify ,(in-srcdir "tests" "openpgp" "tofu" "conflicting" "1C005AF3-2.txt")))
 (check-counts "1C005AF3" 2 1 0 0)
 
 ;; Verify another message.
-(call-check `(,@GPG --verify ,(in-srcdir "tofu/conflicting/1C005AF3-3.txt")))
+(call-check `(,@GPG --verify ,(in-srcdir "tests" "openpgp" "tofu" "conflicting" "1C005AF3-3.txt")))
 (check-counts "1C005AF3" 3 1 0 0)
 
 ;; Verify a message from a different sender.  The signature count
 ;; should increase by 1 for that key.
-(call-check `(,@GPG --verify ,(in-srcdir "tofu/conflicting/BE04EB2B-1.txt")))
+(call-check `(,@GPG --verify ,(in-srcdir "tests" "openpgp" "tofu" "conflicting" "BE04EB2B-1.txt")))
 (check-counts "1C005AF3" 3 1 0 0)
 (check-counts "BE04EB2B" 1 1 0 0)
 (check-counts "B662E42F" 0 0 0 0)
@@ -236,34 +236,34 @@
 ;; when the message was first verified, not when the signer claimed
 ;; that it was signed.)
 (call-check `(,@GPG ,(faketime (days->seconds 2))
-		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-4.txt")))
+		    --verify ,(in-srcdir "tests" "openpgp" "tofu" "conflicting" "1C005AF3-4.txt")))
 (check-counts "1C005AF3" 4 2 0 0)
 (check-counts "BE04EB2B" 1 1 0 0)
 (check-counts "B662E42F" 0 0 0 0)
 
 ;; And another.
 (call-check `(,@GPG ,(faketime (days->seconds 2))
-		    --verify ,(in-srcdir "tofu/conflicting/1C005AF3-5.txt")))
+		    --verify ,(in-srcdir "tests" "openpgp" "tofu" "conflicting" "1C005AF3-5.txt")))
 (check-counts "1C005AF3" 5 2 0 0)
 (check-counts "BE04EB2B" 1 1 0 0)
 (check-counts "B662E42F" 0 0 0 0)
 
 ;; Another, but for a different key.
 (call-check `(,@GPG ,(faketime (days->seconds 2))
-		    --verify ,(in-srcdir "tofu/conflicting/BE04EB2B-2.txt")))
+		    --verify ,(in-srcdir "tests" "openpgp" "tofu" "conflicting" "BE04EB2B-2.txt")))
 (check-counts "1C005AF3" 5 2 0 0)
 (check-counts "BE04EB2B" 2 2 0 0)
 (check-counts "B662E42F" 0 0 0 0)
 
 ;; And add a third day.
 (call-check `(,@GPG ,(faketime (days->seconds 4))
-		    --verify ,(in-srcdir "tofu/conflicting/BE04EB2B-3.txt")))
+		    --verify ,(in-srcdir "tests" "openpgp" "tofu" "conflicting" "BE04EB2B-3.txt")))
 (check-counts "1C005AF3" 5 2 0 0)
 (check-counts "BE04EB2B" 3 3 0 0)
 (check-counts "B662E42F" 0 0 0 0)
 
 (call-check `(,@GPG ,(faketime (days->seconds 4))
-		    --verify ,(in-srcdir "tofu/conflicting/BE04EB2B-4.txt")))
+		    --verify ,(in-srcdir "tests" "openpgp" "tofu" "conflicting" "BE04EB2B-4.txt")))
 (check-counts "1C005AF3" 5 2 0 0)
 (check-counts "BE04EB2B" 4 3 0 0)
 (check-counts "B662E42F" 0 0 0 0)
@@ -293,15 +293,15 @@
    (lambda (key)
      (for-each
       (lambda (i)
-        (let ((fn (in-srcdir DIR (string-append key "-" i ".txt"))))
+        (let ((fn (in-srcdir "tests" "openpgp" DIR (string-append key "-" i ".txt"))))
           (call-check `(,@GPG --verify ,fn))))
       (list "1" "2")))
    (list KEYIDA KEYIDB)))
 
 ;; Import the public keys.
 (display "    > Two keys. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDA "-1.gpg"))))
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-1.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir "tests" "openpgp" DIR (string-append KEYIDA "-1.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir "tests" "openpgp" DIR (string-append KEYIDB "-1.gpg"))))
 ;; Make sure the tofu engine registers the keys.
 (verify-messages)
 (display "<\n")
@@ -312,8 +312,8 @@
 
 ;; Import the cross sigs.
 (display "    > Adding cross signatures. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDA "-2.gpg"))))
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-2.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir "tests" "openpgp" DIR (string-append KEYIDA "-2.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir "tests" "openpgp" DIR (string-append KEYIDB "-2.gpg"))))
 (verify-messages)
 (display "<\n")
 
@@ -323,7 +323,7 @@
 
 ;; Import the conflicting user id.
 (display "    > Adding conflicting user id. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-3.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir "tests" "openpgp" DIR (string-append KEYIDB "-3.gpg"))))
 (verify-messages)
 (display "<\n")
 
@@ -333,7 +333,7 @@
 ;; Import Alice's signature on the conflicting user id.  Since there
 ;; is now a cross signature, we should revert to the default policy.
 (display "    > Adding cross signature on user id. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-4.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir "tests" "openpgp" DIR (string-append KEYIDB "-4.gpg"))))
 (verify-messages)
 (display "<\n")
 
@@ -385,15 +385,15 @@
    (lambda (key)
      (for-each
       (lambda (i)
-        (let ((fn (in-srcdir DIR (string-append key "-" i ".txt"))))
+        (let ((fn (in-srcdir "tests" "openpgp" DIR (string-append key "-" i ".txt"))))
           (call-check `(,@GPG --verify ,fn))))
       (list "1" "2")))
    (list KEYIDA KEYIDB)))
 
 ;; Import the public keys.
 (display "    > Two keys. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDA "-1.gpg"))))
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-1.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir "tests" "openpgp" DIR (string-append KEYIDA "-1.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir "tests" "openpgp" DIR (string-append KEYIDB "-1.gpg"))))
 (display "<\n")
 
 (checkpolicy KEYA "auto")
@@ -401,8 +401,8 @@
 
 ;; Import the cross sigs.
 (display "    > Adding cross signatures. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDA "-2.gpg"))))
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-2.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir "tests" "openpgp" DIR (string-append KEYIDA "-2.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir "tests" "openpgp" DIR (string-append KEYIDB "-2.gpg"))))
 (display "<\n")
 
 (checkpolicy KEYA "auto")
@@ -423,7 +423,7 @@
 
 ;; Import the conflicting user id.
 (display "    > Adding conflicting user id. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-3.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir "tests" "openpgp" DIR (string-append KEYIDB "-3.gpg"))))
 (verify-messages)
 (display "<\n")
 
@@ -432,7 +432,7 @@
 
 ;; Import Alice's signature on the conflicting user id.
 (display "    > Adding cross signature on user id. ")
-(call-check `(,@GPG --import ,(in-srcdir DIR (string-append KEYIDB "-4.gpg"))))
+(call-check `(,@GPG --import ,(in-srcdir "tests" "openpgp" DIR (string-append KEYIDB "-4.gpg"))))
 (verify-messages)
 (display "<\n")
 

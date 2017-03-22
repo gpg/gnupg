@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "common.scm"))
+(load (in-srcdir "tests" "migrations" "common.scm"))
 
 (catch (skip "gpgtar not built")
        (call-check `(,GPGTAR --help)))
@@ -31,7 +31,7 @@
 
 (run-test
  "Testing the extended private key format ..."
- (in-srcdir "extended-pkf.tar.asc")
+ (in-srcdir "tests" "migrations" "extended-pkf.tar.asc")
  (lambda (gpghome)
    (assert-keys-usable)))
 

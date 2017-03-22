@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-legacy-environment)
 
 (define msg_signed_asc "
@@ -63,6 +63,6 @@ N1Glbw1OJfP1q+QFPMPKoCsTYmZpuugq2b5gV/eH0Abvk2pG4Fo/YTDPHhec7Jk=
    (catch '()
 	  (pipe:do
 	   (pipe:echo (eval armored-file (current-environment)))
-	   (pipe:spawn `(,@GPGV --keyring ,(in-srcdir "forged-keyring.gpg"))))
+	   (pipe:spawn `(,@GPGV --keyring ,(in-srcdir "tests" "openpgp" "forged-keyring.gpg"))))
 	  (fail "verification succeeded but should not")))
  '(msg_signed_asc))

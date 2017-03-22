@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-(load (with-path "defs.scm"))
+(load (in-srcdir "tests" "openpgp" "defs.scm"))
 (setup-environment)
 
 (setenv "SSH_AUTH_SOCK"
@@ -76,7 +76,7 @@
 (for-each-p'
  "Importing ssh keys..."
  (lambda (key)
-   (let ((file (path-join (in-srcdir "samplekeys")
+   (let ((file (path-join (in-srcdir "tests" "openpgp" "samplekeys")
 			  (string-append "ssh-" (car key) ".key")))
 	 (hash (cadr key)))
      ;; We pipe the key to ssh-add so that it won't complain about
@@ -91,7 +91,7 @@
 (info "Checking for issue2316...")
 (unlink (path-join GNUPGHOME "sshcontrol"))
 (pipe:do
- (pipe:open (path-join (in-srcdir "samplekeys")
+ (pipe:open (path-join (in-srcdir "tests" "openpgp" "samplekeys")
 		       (string-append "ssh-rsa.key"))
 	    (logior O_RDONLY O_BINARY))
  (pipe:spawn `(,SSH-ADD -)))
