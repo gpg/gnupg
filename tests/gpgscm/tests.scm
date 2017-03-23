@@ -278,6 +278,15 @@
 						"-XXXXXX"))
 				(apply path-join components)))))
 
+;; Make a temporary directory and remove it at interpreter shutdown.
+;; Note that there are macros that limit the lifetime of temporary
+;; directories and files to a lexical scope.  Use those if possible.
+;; Otherwise this works like mkdtemp.
+(define (mkdtemp-autoremove . components)
+  (let ((dir (apply mkdtemp components)))
+    (atexit (lambda () (unlink-recursively dir)))
+    dir))
+
 (define-macro (with-temporary-working-directory . expressions)
   (let ((tmp-sym (gensym)))
     `(let* ((,tmp-sym (mkdtemp)))
@@ -621,12 +630,9 @@
   (let loop ((pool (test-pool::new '())) (tests' tests))
     (if (null? tests')
 	(let ((results (pool::wait)))
-	  (for-each (lambda (t)
-		      (catch (echo "Removing" t::directory "failed:" *error*)
-			     (unlink-recursively t::directory))
-		      (t::report)) (reverse results::procs))
+	  (for-each (lambda (t) (t::report)) (reverse results::procs))
 	  (exit (results::report)))
-	(let* ((wd (mkdtemp))
+	(let* ((wd (mkdtemp-autoremove))
 	       (test (car tests'))
 	       (test' (test::set-directory wd)))
 	  (loop (pool::add (test'::run-async))
@@ -638,12 +644,8 @@
   (let loop ((pool (test-pool::new '())) (tests' tests))
     (if (null? tests')
 	(let ((results (pool::wait)))
-	  (for-each (lambda (t)
-		      (catch (echo "Removing" t::directory "failed:" *error*)
-			     (unlink-recursively t::directory)))
-		    results::procs)
 	  (exit (results::report)))
-	(let* ((wd (mkdtemp))
+	(let* ((wd (mkdtemp-autoremove))
 	       (test (car tests'))
 	       (test' (test::set-directory wd)))
 	  (loop (pool::add (test'::run-sync))
@@ -654,10 +656,11 @@
 ;; Returns a promise containing the arguments that must be passed to a
 ;; test implementing the consumer side of the cache protocol.
 (define (make-environment-cache setup)
-  (delay (let* ((tarball (make-temporary-file "environment-cache")))
-	   (atexit (lambda () (remove-temporary-file tarball)))
-	   (setup::run-sync '--create-tarball tarball)
-	   `(--unpack-tarball ,tarball))))
+  (delay (with-temporary-working-directory
+	  (let ((tarball (make-temporary-file "environment-cache")))
+	    (atexit (lambda () (remove-temporary-file tarball)))
+	    (setup::run-sync '--create-tarball tarball)
+	    `(--unpack-tarball ,tarball)))))
 
 ;; Command line flag handling.  Returns the elements following KEY in
 ;; ARGUMENTS up to the next argument, or #f if KEY is not in
