@@ -542,7 +542,7 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
 
   /* If a non default homedir is used, we check whether an
    * corresponding sub directory below the socket dir is available
-   * and use that.  We has the non default homedir to keep the new
+   * and use that.  We hash the non default homedir to keep the new
    * subdir short enough.  */
   if (non_default_homedir)
     {
@@ -566,16 +566,27 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
           goto leave;
         }
 
-      /* Stat that directory and check constraints.  Note that we
-       * do not auto create such a directory because we would not
-       * have a way to remove it.  Thus the directory needs to be
-       * pre-created.  The command
-       *    gpgconf --create-socketdir
-       * can be used tocreate that directory.  */
+      /* Stat that directory and check constraints.
+       * The command
+       *    gpgconf --remove-socketdir
+       * can be used to remove that directory.  */
       if (stat (name, &sb))
         {
           if (errno != ENOENT)
             *r_info |= 1; /* stat failed. */
+          else if (!skip_checks)
+            {
+              /* Try to create the directory and check again.  */
+              if (gnupg_mkdir (name, "-rwx"))
+                *r_info |= 16; /* mkdir failed.  */
+              else if (stat (prefix, &sb))
+                {
+                  if (errno != ENOENT)
+                    *r_info |= 1; /* stat failed. */
+                  else
+                    *r_info |= 64; /* Subdir does not exist.  */
+                }
+            }
           else
             *r_info |= 64; /* Subdir does not exist.  */
           if (!skip_checks)
