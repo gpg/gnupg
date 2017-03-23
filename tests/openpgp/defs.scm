@@ -453,10 +453,12 @@
 				"|--debug-quick-random")
 		/bye)))
 
-;; Stop the agent and remove the socket dir.
+;; Stop the agent and other daemons and remove the socket dir.
 (define (stop-agent)
   (log "Stopping gpg-agent...")
+  (call-check `(,(tool 'gpgconf) --kill all))
   (catch (log "Warning: Removing socket directory failed.")
-	 (call-popen `(,(tool 'gpgconf) --remove-socketdir) ""))
-  (call-check `(,(tool 'gpg-connect-agent) --verbose --no-autostart
-		killagent /bye)))
+	 (call-popen `(,(tool 'gpgconf) --remove-socketdir) "")))
+
+
+;; end

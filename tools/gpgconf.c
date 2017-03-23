@@ -456,6 +456,7 @@ query_swdb (estream_t out, const char *name, const char *current_version)
 int
 main (int argc, char **argv)
 {
+  gpg_error_t err;
   ARGPARSE_ARGS pargs;
   const char *fname;
   int no_more_options = 0;
@@ -755,7 +756,42 @@ main (int argc, char **argv)
         else if (opt.dry_run)
           ;
         else if (rmdir (socketdir))
-          gc_error (1, errno, "error removing '%s'", socketdir);
+          {
+            /* If the director is not empty we first try to delet
+             * socket files.  */
+            err = gpg_error_from_syserror ();
+            if (gpg_err_code (err) == GPG_ERR_ENOTEMPTY
+                || gpg_err_code (err) == GPG_ERR_EEXIST)
+              {
+                static const char * const names[] = {
+                  GPG_AGENT_SOCK_NAME,
+                  GPG_AGENT_EXTRA_SOCK_NAME,
+                  GPG_AGENT_BROWSER_SOCK_NAME,
+                  GPG_AGENT_SSH_SOCK_NAME,
+                  SCDAEMON_SOCK_NAME,
+                  DIRMNGR_SOCK_NAME
+                };
+                int i;
+                char *p;
+
+                for (i=0; i < DIM(names); i++)
+                  {
+                    p = strconcat (socketdir , "/", names[i], NULL);
+                    if (p)
+                      gnupg_remove (p);
+                    xfree (p);
+                  }
+                if (rmdir (socketdir))
+                  gc_error (1, 0, "error removing '%s': %s",
+                            socketdir, gpg_strerror (err));
+              }
+            else if (gpg_err_code (err) == GPG_ERR_ENOENT)
+              gc_error (0, 0, "warning: removing '%s' failed: %s",
+                        socketdir, gpg_strerror (err));
+            else
+              gc_error (1, 0, "error removing '%s': %s",
+                        socketdir, gpg_strerror (err));
+          }
 
         xfree (socketdir);
       }
