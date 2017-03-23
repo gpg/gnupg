@@ -45,11 +45,11 @@ typedef struct port {
 struct cell {
   uintptr_t _flag;
   union {
+    num _number;
     struct {
       char   *_svalue;
       int   _length;
     } _string;
-    num _number;
     port *_port;
     foreign_func _ff;
     struct {
@@ -150,11 +150,6 @@ pointer ERROR_HOOK;      /* *error-hook* */
 pointer SHARP_HOOK;  /* *sharp-hook* */
 #if USE_COMPILE_HOOK
 pointer COMPILE_HOOK;  /* *compile-hook* */
-#endif
-
-#if USE_SMALL_INTEGERS
-/* A fixed allocation of small integers.  */
-struct cell_segment *integer_segment;
 #endif
 
 pointer free_cell;       /* pointer to top of free cells */

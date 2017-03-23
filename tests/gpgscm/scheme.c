@@ -1312,31 +1312,22 @@ INTERFACE pointer mk_character(scheme *sc, int c) {
 
 /* s_save assumes that all opcodes can be expressed as a small
  * integer.  */
-#define MAX_SMALL_INTEGER	OP_MAXDEFINED
+static const struct cell small_integers[] = {
+#define DEFINE_INTEGER(n) { T_NUMBER | T_ATOM | MARK, {{ 1, {n}}}},
+#include "small-integers.h"
+#undef DEFINE_INTEGER
+     {0}
+};
 
-static int
-initialize_small_integers(scheme *sc)
-{
-  int i;
-  if (_alloc_cellseg(sc, MAX_SMALL_INTEGER, &sc->integer_segment))
-    return 1;
-
-  for (i = 0; i < MAX_SMALL_INTEGER; i++) {
-    pointer x = &sc->integer_segment->cells[i];
-    typeflag(x) = T_NUMBER | T_ATOM | MARK;
-    ivalue_unchecked(x) = i;
-    set_num_integer(x);
-  }
-
-  return 0;
-}
+#define MAX_SMALL_INTEGER	(sizeof small_integers / sizeof *small_integers - 1)
 
 static INLINE pointer
 mk_small_integer(scheme *sc, long n)
 {
 #define mk_small_integer_allocates	0
+  (void) sc;
   assert(0 <= n && n < MAX_SMALL_INTEGER);
-  return &sc->integer_segment->cells[n];
+  return (pointer) &small_integers[n];
 }
 #else
 
@@ -1644,7 +1635,8 @@ static void mark(pointer a) {
 
      t = (pointer) 0;
      p = a;
-E2:  setmark(p);
+E2:  if (! is_mark(p))
+	  setmark(p);
      if(is_vector(p)) {
           int i;
           for (i = 0; i < vector_length(p); i++) {
@@ -5629,13 +5621,6 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   sc->F = &sc->_HASHF;
   sc->EOF_OBJ=&sc->_EOF_OBJ;
 
-#if USE_SMALL_INTEGERS
-  if (initialize_small_integers(sc)) {
-    sc->no_memory=1;
-    return 0;
-  }
-#endif
-
   sc->free_cell = &sc->_NIL;
   sc->fcells = 0;
   sc->inhibit_gc = GC_ENABLED;
@@ -5788,10 +5773,6 @@ void scheme_deinit(scheme *sc) {
 
   sc->gc_verbose=0;
   gc(sc,sc->NIL,sc->NIL);
-
-#if USE_SMALL_INTEGERS
-  _dealloc_cellseg(sc, sc->integer_segment);
-#endif
 
   for (s = sc->cell_segments; s; s = _dealloc_cellseg(sc, s)) {
     /* nop */

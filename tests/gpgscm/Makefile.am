@@ -44,7 +44,8 @@ commonpth_libs = ../$(libcommonpth)
 gpgscm_CFLAGS = -imacros scheme-config.h \
 	$(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 gpgscm_SOURCES = main.c private.h ffi.c ffi.h ffi-private.h \
-	scheme-config.h opdefines.h scheme.c scheme.h scheme-private.h
+	scheme-config.h scheme.c scheme.h scheme-private.h \
+	opdefines.h small-integers.h
 gpgscm_LDADD = $(LDADD) $(common_libs) \
 	$(NETLIBS) $(LIBICONV) $(LIBREADLINE) $(LIBINTL) \
 	$(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS)
