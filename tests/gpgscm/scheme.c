@@ -205,8 +205,8 @@ static INLINE int num_is_integer(pointer p) {
   return ((p)->_object._number.is_fixnum);
 }
 
-static num num_zero;
-static num num_one;
+static const struct num num_zero = { 1, {0} };
+static const struct num num_one  = { 1, {1} };
 
 /* macros for cell operations */
 #define typeflag(p)      ((p)->_flag)
@@ -339,7 +339,7 @@ static INLINE int Cislower(int c) { return isascii(c) && islower(c); }
 #endif
 
 #if USE_ASCII_NAMES
-static const char *charnames[32]={
+static const char charnames[32][3]={
  "nul",
  "soh",
  "stx",
@@ -377,12 +377,12 @@ static const char *charnames[32]={
 static int is_ascii_name(const char *name, int *pc) {
   int i;
   for(i=0; i<32; i++) {
-     if(stricmp(name,charnames[i])==0) {
+     if (strncasecmp(name, charnames[i], 3) == 0) {
           *pc=i;
           return 1;
      }
   }
-  if(stricmp(name,"del")==0) {
+  if (strcasecmp(name, "del") == 0) {
      *pc=127;
      return 1;
   }
@@ -447,7 +447,7 @@ static pointer opexe_6(scheme *sc, enum scheme_opcodes op);
 static void Eval_Cycle(scheme *sc, enum scheme_opcodes op);
 static void assign_syntax(scheme *sc, char *name);
 static int syntaxnum(pointer p);
-static void assign_proc(scheme *sc, enum scheme_opcodes, char *name);
+static void assign_proc(scheme *sc, enum scheme_opcodes, const char *name);
 
 #define num_ivalue(n)       (n.is_fixnum?(n).value.ivalue:(long)(n).value.rvalue)
 #define num_rvalue(n)       (!n.is_fixnum?(n).value.rvalue:(double)(n).value.ivalue)
@@ -5308,7 +5308,7 @@ static int is_nonneg(pointer p) {
 }
 
 /* Correspond carefully with following defines! */
-static struct {
+static const struct {
   test_predicate fct;
   const char *kind;
 } tests[]={
@@ -5347,17 +5347,18 @@ static struct {
 
 typedef struct {
   dispatch_func func;
-  char *name;
+  const char *name;
   int min_arity;
   int max_arity;
-  char *arg_tests_encoding;
+  const char *arg_tests_encoding;
 } op_code_info;
 
 #define INF_ARG 0xffff
 
-static op_code_info dispatch_table[]= {
+static const op_code_info dispatch_table[]= {
 #define _OP_DEF(A,B,C,D,E,OP) {A,B,C,D,E},
 #include "opdefines.h"
+#undef _OP_DEF
   { 0 }
 };
 
@@ -5374,7 +5375,7 @@ static const char *procname(pointer x) {
 static void Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
   sc->op = op;
   for (;;) {
-    op_code_info *pcd=dispatch_table+sc->op;
+    const op_code_info *pcd=dispatch_table+sc->op;
     if (pcd->name!=0) { /* if built-in function, check arguments */
       char msg[STRBUFFSIZE];
       int ok=1;
@@ -5457,7 +5458,7 @@ static void assign_syntax(scheme *sc, char *name) {
      typeflag(x) |= T_SYNTAX;
 }
 
-static void assign_proc(scheme *sc, enum scheme_opcodes op, char *name) {
+static void assign_proc(scheme *sc, enum scheme_opcodes op, const char *name) {
      pointer x, y;
 
      x = mk_symbol(sc, name);
@@ -5519,7 +5520,7 @@ INTERFACE static pointer s_immutable_cons(scheme *sc, pointer a, pointer b) {
  return immutable_cons(sc,a,b);
 }
 
-static struct scheme_interface vtbl ={
+static const struct scheme_interface vtbl = {
   scheme_define,
   s_cons,
   s_immutable_cons,
@@ -5615,11 +5616,6 @@ int scheme_init(scheme *sc) {
 int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   int i, n=sizeof(dispatch_table)/sizeof(dispatch_table[0]);
   pointer x;
-
-  num_zero.is_fixnum=1;
-  num_zero.value.ivalue=0;
-  num_one.is_fixnum=1;
-  num_one.value.ivalue=1;
 
 #if USE_INTERFACE
   sc->vptr=&vtbl;

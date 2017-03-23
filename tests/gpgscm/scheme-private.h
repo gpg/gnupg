@@ -200,7 +200,7 @@ unsigned int flags;
 void *ext_data;     /* For the benefit of foreign functions */
 long gensym_cnt;
 
-struct scheme_interface *vptr;
+const struct scheme_interface *vptr;
 };
 
 /* operator code */
