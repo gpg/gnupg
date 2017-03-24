@@ -318,6 +318,50 @@ make_printable_string (const void *p, size_t n, int delim )
 }
 
 
+/* Check whether (BUF,LEN) is valid header for an OpenPGP compressed
+ * packet.  LEN should be at least 6.  */
+static int
+is_openpgp_compressed_packet (unsigned char *buf, size_t len)
+{
+  int c, ctb, pkttype;
+  int lenbytes;
+
+  ctb = *buf++; len--;
+  if (!(ctb & 0x80))
+    return 0; /* Invalid packet.  */
+
+  if ((ctb & 0x40)) /* New style (OpenPGP) CTB.  */
+    {
+      pkttype = (ctb & 0x3f);
+      if (!len)
+        return 0; /* Expected first length octet missing.  */
+      c = *buf++; len--;
+      if (c < 192)
+        ;
+      else if (c < 224)
+        {
+          if (!len)
+            return 0; /* Expected second length octet missing. */
+        }
+      else if (c == 255)
+        {
+          if (len < 4)
+            return 0; /* Expected length octets missing */
+        }
+    }
+  else /* Old style CTB.  */
+    {
+      pkttype = (ctb>>2)&0xf;
+      lenbytes = ((ctb&3)==3)? 0 : (1<<(ctb & 3));
+      if (len < lenbytes)
+        return 0; /* Not enough length bytes.  */
+    }
+
+  return (pkttype == 8);
+}
+
+
+
 /*
  * Check if the file is compressed.
  */
@@ -325,8 +369,9 @@ int
 is_file_compressed (const char *s, int *ret_rc)
 {
     iobuf_t a;
-    byte buf[4];
-    int i, rc = 0;
+    byte buf[6];
+    int i;
+    int rc = 0;
     int overflow;
 
     struct magic_compress_s {
@@ -347,12 +392,12 @@ is_file_compressed (const char *s, int *ret_rc)
         return 0;
     }
 
-    if ( iobuf_get_filelength( a, &overflow ) < 4 && !overflow) {
+    if ( iobuf_get_filelength( a, &overflow ) < 6 && !overflow) {
         *ret_rc = 0;
         goto leave;
     }
 
-    if ( iobuf_read( a, buf, 4 ) == -1 ) {
+    if ( iobuf_read( a, buf, 6 ) == -1 ) {
         *ret_rc = a->error;
         goto leave;
     }
@@ -361,11 +406,17 @@ is_file_compressed (const char *s, int *ret_rc)
         if ( !memcmp( buf, magic[i].magic, magic[i].len ) ) {
             *ret_rc = 0;
             rc = 1;
-            break;
+            goto leave;
         }
     }
 
-leave:
+    if (is_openpgp_compressed_packet (buf, 6))
+      {
+        *ret_rc = 0;
+        rc = 1;
+      }
+
+ leave:
     iobuf_close( a );
     return rc;
 }
