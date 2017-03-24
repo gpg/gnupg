@@ -52,23 +52,38 @@ struct try_unprotect_arg_s
 };
 
 
+/* Note: Ownership of FNAME and FP are moved to this function.  */
 static gpg_error_t
-write_extended_private_key (char *fname, estream_t fp,
+write_extended_private_key (char *fname, estream_t fp, int update,
                             const void *buf, size_t len)
 {
   gpg_error_t err;
   nvc_t pk = NULL;
   gcry_sexp_t key = NULL;
   int remove = 0;
-  int line;
 
-  err = nvc_parse_private_key (&pk, &line, fp);
-  if (err)
+  if (update)
     {
-      log_error ("error parsing '%s' line %d: %s\n",
-                 fname, line, gpg_strerror (err));
-      goto leave;
+      int line;
+
+      err = nvc_parse_private_key (&pk, &line, fp);
+      if (err && gpg_err_code (err) != GPG_ERR_ENOENT)
+        {
+          log_error ("error parsing '%s' line %d: %s\n",
+                     fname, line, gpg_strerror (err));
+          goto leave;
+        }
     }
+  else
+    {
+      pk = nvc_new_private_key ();
+      if (!pk)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+  es_clearerr (fp);
 
   err = gcry_sexp_sscan (&key, NULL, buf, len);
   if (err)
@@ -111,8 +126,7 @@ write_extended_private_key (char *fname, estream_t fp,
   bump_key_eventcounter ();
 
  leave:
-  if (fp)
-    es_fclose (fp);
+  es_fclose (fp);
   if (remove)
     gnupg_remove (fname);
   xfree (fname);
@@ -193,10 +207,18 @@ agent_write_private_key (const unsigned char *grip,
 
       if (first != '(')
         {
-          /* Key is in extended format.  */
-          return write_extended_private_key (fname, fp, buffer, length);
+          /* Key is already in the extended format.  */
+          return write_extended_private_key (fname, fp, 1, buffer, length);
+        }
+      if (first == '(' && opt.enable_extended_key_format)
+        {
+          /* Key is in the old format - but we want the extended format.  */
+          return write_extended_private_key (fname, fp, 0, buffer, length);
         }
     }
+
+  if (opt.enable_extended_key_format)
+    return write_extended_private_key (fname, fp, 0, buffer, length);
 
   if (es_fwrite (buffer, length, 1, fp) != 1)
     {

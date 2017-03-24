@@ -111,6 +111,7 @@ enum cmd_and_opt_values
   oCheckPassphrasePattern,
   oMaxPassphraseDays,
   oEnablePassphraseHistory,
+  oEnableExtendedKeyFormat,
   oUseStandardSocket,
   oNoUseStandardSocket,
   oExtraSocket,
@@ -238,6 +239,7 @@ static ARGPARSE_OPTS opts[] = {
                 /* */           "@"
 #endif
                 ),
+  ARGPARSE_s_n (oEnableExtendedKeyFormat, "enable-extended-key-format", "@"),
 
   /* Dummy options for backward compatibility.  */
   ARGPARSE_o_s (oWriteEnvFile, "write-env-file", "@"),
@@ -790,6 +792,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.check_passphrase_pattern = NULL;
       opt.max_passphrase_days = MAX_PASSPHRASE_DAYS;
       opt.enable_passphrase_history = 0;
+      opt.enable_extended_key_format = 0;
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 1;
       opt.allow_external_cache = 1;
@@ -857,6 +860,10 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       break;
     case oEnablePassphraseHistory:
       opt.enable_passphrase_history = 1;
+      break;
+
+    case oEnableExtendedKeyFormat:
+      opt.enable_extended_key_format = 1;
       break;
 
     case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;

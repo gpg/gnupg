@@ -124,6 +124,9 @@ struct
      passphrase change.  */
   int enable_passphrase_history;
 
+  /* If set the extended key format is used for new keys.  */
+  int enable_extended_key_format;
+
   int running_detached; /* We are running detached from the tty. */
 
   /* If this global option is true, the passphrase cache is ignored
