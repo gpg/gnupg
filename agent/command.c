@@ -2433,23 +2433,25 @@ cmd_export_key (assuan_context_t ctx, char *line)
 
 
 static const char hlp_delete_key[] =
-  "DELETE_KEY [--force] <hexstring_with_keygrip>\n"
+  "DELETE_KEY [--force|--stub-only] <hexstring_with_keygrip>\n"
   "\n"
   "Delete a secret key from the key store.  If --force is used\n"
   "and a loopback pinentry is allowed, the agent will not ask\n"
-  "the user for confirmation.";
+  "the user for confirmation.  If --stub-only is used the key will\n"
+  "only be deleted if it is a reference to a token.";
 static gpg_error_t
 cmd_delete_key (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
-  int force;
+  int force, stub_only;
   unsigned char grip[20];
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
   force = has_option (line, "--force");
+  stub_only = has_option (line, "--stub-only");
   line = skip_options (line);
 
   /* If the use of a loopback pinentry has been disabled, we assume
@@ -2461,7 +2463,8 @@ cmd_delete_key (assuan_context_t ctx, char *line)
   if (err)
     goto leave;
 
-  err = agent_delete_key (ctrl, ctrl->server_local->keydesc, grip, force );
+  err = agent_delete_key (ctrl, ctrl->server_local->keydesc, grip,
+                          force, stub_only);
   if (err)
     goto leave;
 

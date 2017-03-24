@@ -1413,18 +1413,20 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
 
 
 /* Delete the key with GRIP from the disk after having asked for
-   confirmation using DESC_TEXT.  If FORCE is set the function won't
-   require a confirmation via Pinentry or warns if the key is also
-   used by ssh.
-
-   Common error codes are:
-     GPG_ERR_NO_SECKEY
-     GPG_ERR_KEY_ON_CARD
-     GPG_ERR_NOT_CONFIRMED
-*/
+ * confirmation using DESC_TEXT.  If FORCE is set the function won't
+ * require a confirmation via Pinentry or warns if the key is also
+ * used by ssh.  If ONLY_STUBS is set only stub keys (references to
+ * smartcards) will be affected.
+ *
+ * Common error codes are:
+ *   GPG_ERR_NO_SECKEY
+ *   GPG_ERR_KEY_ON_CARD
+ *   GPG_ERR_NOT_CONFIRMED
+ *   GPG_ERR_FORBIDDEN     - Not a stub key and ONLY_STUBS requested.
+ */
 gpg_error_t
 agent_delete_key (ctrl_t ctrl, const char *desc_text,
-                  const unsigned char *grip, int force)
+                  const unsigned char *grip, int force, int only_stubs)
 {
   gpg_error_t err;
   gcry_sexp_t s_skey = NULL;
@@ -1435,6 +1437,7 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
   ssh_control_file_t cf = NULL;
   char hexgrip[40+4+1];
   char *default_desc = NULL;
+  int key_type;
 
   err = read_key_file (grip, &s_skey);
   if (gpg_err_code (err) == GPG_ERR_ENOENT)
@@ -1446,7 +1449,14 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
   if (err)
     goto leave;
 
-  switch (agent_private_key_type (buf))
+  key_type = agent_private_key_type (buf);
+  if (only_stubs && key_type != PRIVATE_KEY_SHADOWED)
+    {
+      err  = gpg_error (GPG_ERR_FORBIDDEN);
+      goto leave;
+    }
+
+  switch (key_type)
     {
     case PRIVATE_KEY_CLEAR:
     case PRIVATE_KEY_OPENPGP_NONE:
