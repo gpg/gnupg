@@ -108,8 +108,10 @@
 */
 #define CCID_MAX_BUF (2048+7+10)
 
-/* CCID command timeout.  OpenPGPcard v2.1 requires timeout of 13 seconds.  */
-#define CCID_CMD_TIMEOUT (13*1000)
+/* CCID command timeout.  */
+#define CCID_CMD_TIMEOUT (5*1000)
+/* OpenPGPcard v2.1 requires huge timeout for key generation.  */
+#define CCID_CMD_TIMEOUT_LONGER (60*1000)
 
 /* Depending on how this source is used we either define our error
    output to go to stderr or to the GnuPG based logging functions.  We
@@ -3394,6 +3396,7 @@ ccid_transceive (ccid_driver_t handle,
   int retries = 0;
   int resyncing = 0;
   int nad_byte;
+  int wait_more = 0;
 
   if (!nresp)
     nresp = &dummy_nresp;
@@ -3407,7 +3410,7 @@ ccid_transceive (ccid_driver_t handle,
          but the Windows driver does it this way.  Tested using a
          CM6121.  This method works also for the Cherry XX44
          keyboards; however there are problems with the
-         ccid_tranceive_secure which leads to a loss of sync on the
+         ccid_transceive_secure which leads to a loss of sync on the
          CCID level.  If Cherry wants to make their keyboard work
          again, they should hand over some docs. */
       if ((handle->id_vendor == VENDOR_OMNIKEY
@@ -3503,8 +3506,8 @@ ccid_transceive (ccid_driver_t handle,
 
       msg = recv_buffer;
       rc = bulk_in (handle, msg, sizeof recv_buffer, &msglen,
-                    via_escape? RDR_to_PC_Escape : RDR_to_PC_DataBlock,
-                    seqno, CCID_CMD_TIMEOUT, 0);
+                    via_escape? RDR_to_PC_Escape : RDR_to_PC_DataBlock, seqno,
+                    wait_more? CCID_CMD_TIMEOUT_LONGER: CCID_CMD_TIMEOUT, 0);
       if (rc)
         return rc;
 
@@ -3678,6 +3681,11 @@ ccid_transceive (ccid_driver_t handle,
             {
               /* Wait time extension request. */
               unsigned char bwi = tpdu[3];
+
+              /* Check if it's unsual value which can't be expressed in ATR.  */
+              if (bwi > 15)
+                wait_more = 1;
+
               msg = send_buffer;
               tpdu = msg + hdrlen;
               tpdu[0] = nad_byte;
