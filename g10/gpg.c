@@ -4791,9 +4791,12 @@ main (int argc, char **argv)
 
 #ifdef ENABLE_CARD_SUPPORT
       case aCardStatus:
-        if (argc)
-            wrong_args ("--card-status");
-        card_status (es_stdout, NULL, 0);
+        if (argc == 0)
+          card_status (es_stdout, NULL);
+        else if (argc == 1)
+          card_status (es_stdout, *argv);
+        else
+            wrong_args ("--card-status [serialno]");
         break;
 
       case aCardEdit:

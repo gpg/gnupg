@@ -361,8 +361,8 @@ fpr_is_ff (const char *fpr)
 
 
 /* Print all available information about the current card. */
-void
-card_status (estream_t fp, char *serialno, size_t serialnobuflen)
+static void
+current_card_status (estream_t fp, char *serialno, size_t serialnobuflen)
 {
   struct agent_card_info_s info;
   PKT_public_key *pk = xcalloc (1, sizeof *pk);
@@ -622,6 +622,70 @@ card_status (estream_t fp, char *serialno, size_t serialnobuflen)
   release_kbnode (keyblock);
   free_public_key (pk);
   agent_release_card_info (&info);
+}
+
+
+/* Print all available information for specific card with SERIALNO.
+   Print all available information for current card when SERIALNO is NULL.
+   Or print llfor all cards when SERIALNO is "all".  */
+void
+card_status (estream_t fp, const char *serialno)
+{
+  int err;
+  strlist_t card_list, sl;
+  char *serialno0;
+  int all_cards = 0;
+
+  if (serialno == NULL)
+    {
+      current_card_status (fp, NULL, 0);
+      return;
+    }
+
+  if (!strcmp (serialno, "all"))
+    all_cards = 1;
+
+  err = agent_scd_serialno (&serialno0, NULL);
+  if (err)
+    {
+      if (gpg_err_code (err) != GPG_ERR_ENODEV && opt.verbose)
+        log_info (_("error getting serial number of card: %s\n"),
+                  gpg_strerror (err));
+      /* Nothing available.  */
+      return;
+    }
+
+  err = agent_scd_cardlist (&card_list);
+
+  for (sl = card_list; sl; sl = sl->next)
+    {
+      char *serialno1;
+
+      if (!all_cards && strcmp (serialno, sl->d))
+        continue;
+
+      err = agent_scd_serialno (&serialno1, sl->d);
+      if (err)
+        {
+          if (opt.verbose)
+            log_info (_("error getting serial number of card: %s\n"),
+                      gpg_strerror (err));
+          continue;
+        }
+
+      current_card_status (fp, NULL, 0);
+      xfree (serialno1);
+
+      if (!all_cards)
+        goto leave;
+    }
+
+  /* Select the original card again.  */
+  err = agent_scd_serialno (&serialno0, serialno0);
+
+ leave:
+  xfree (serialno0);
+  free_strlist (card_list);
 }
 
 
@@ -1919,16 +1983,16 @@ card_edit (ctrl_t ctrl, strlist_t commands)
       int cmd_admin_only;
 
       tty_printf("\n");
-      if (redisplay )
+      if (redisplay)
         {
           if (opt.with_colons)
             {
-              card_status (es_stdout, serialnobuf, DIM (serialnobuf));
+              current_card_status (es_stdout, serialnobuf, DIM (serialnobuf));
               fflush (stdout);
             }
           else
             {
-              card_status (NULL, serialnobuf, DIM (serialnobuf));
+              current_card_status (NULL, serialnobuf, DIM (serialnobuf));
               tty_printf("\n");
             }
           redisplay = 0;
