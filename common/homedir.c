@@ -586,6 +586,8 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
                   else
                     *r_info |= 64; /* Subdir does not exist.  */
                 }
+              else
+                goto leave; /* Success!  */
             }
           else
             *r_info |= 64; /* Subdir does not exist.  */
