@@ -316,7 +316,7 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
                     size_t serialno_bin_len)
 {
   gpg_error_t err = 0;
-  app_t a;
+  app_t a, a_prev = NULL;
 
   *r_app = NULL;
 
@@ -375,6 +375,7 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
           && !memcmp (a->serialno, serialno_bin, a->serialnolen))
         break;
       unlock_app (a);
+      a_prev = a;
     }
 
   if (a)
@@ -384,7 +385,13 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
         {
           a->ref_count++;
           *r_app = a;
-        }
+          if (a_prev)
+            {
+              a_prev->next = a->next;
+              a->next = app_top;
+              app_top = a;
+            }
+      }
       unlock_app (a);
     }
   else
