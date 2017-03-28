@@ -222,7 +222,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
 
   if (opt.unwrap_encryption)
     {
-      char *filename;
+      char *filename = NULL;
       estream_t fp;
       rc = get_output_file ("", 0, ed->buf, &filename, &fp);
       if (! rc)
@@ -248,6 +248,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
           if (afx)
             release_armor_context (afx);
         }
+      xfree (filename);
     }
   else
     proc_packets (ctrl, procctx, ed->buf );
