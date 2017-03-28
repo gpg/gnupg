@@ -53,7 +53,7 @@
 
 (let ((name (basename (car executable))))
   (cond
-   ((string=? "t-keylist" name)
+   ((string=? (qualify "t-keylist") name)
     ;; This test assumes that 't-import' imported a key.
     (log "Importing extra key...")
     (call-check `(,@GPG --yes --import ,(in-srcdir "pubkey-1.asc"))))))
