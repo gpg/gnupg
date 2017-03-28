@@ -48,6 +48,7 @@ XTESTS = \
 	decrypt-multifile.scm \
 	decrypt-dsa.scm \
 	decrypt-session-key.scm \
+	decrypt-unwrap-verify.scm \
 	sigs.scm \
 	sigs-dsa.scm \
 	encrypt.scm \
