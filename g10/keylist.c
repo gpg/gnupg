@@ -1308,7 +1308,9 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
     }
   es_putc (':', es_stdout);		/* End of field 17. */
   print_compliance_flags (pk, keylength, curvename);
-  es_putc (':', es_stdout);		/* End of field 18. */
+  es_putc (':', es_stdout);		/* End of field 18 (compliance). */
+  es_putc (':', es_stdout);		/* End of field 19 (last_update). */
+  es_putc (':', es_stdout);		/* End of field 20 (origin). */
   es_putc ('\n', es_stdout);
 
   print_revokers (es_stdout, pk);
@@ -1358,7 +1360,9 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	    es_fprintf (es_stdout, "%u %lu", uid->numattribs, uid->attrib_len);
 	  else
 	    es_write_sanitized (es_stdout, uid->name, uid->len, ":", NULL);
-	  es_putc (':', es_stdout);
+	  es_fputs (":::::::::", es_stdout);
+          es_putc (':', es_stdout);	/* End of field 19 (last_update). */
+          es_putc (':', es_stdout);	/* End of field 20 (origin). */
 	  es_putc ('\n', es_stdout);
 #ifdef USE_TOFU
 	  if (!uid->attrib_data && opt.with_tofu_info

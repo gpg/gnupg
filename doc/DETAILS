@@ -149,6 +149,7 @@ described here.
     the regular expression value, quoted as in field 10.
 
 *** Field 10 - User-ID
+
     The value is quoted like a C string to avoid control characters
     (the colon is quoted =\x3a=).  For a "pub" record this field is
     not used on --fixed-list-mode.  A UAT record puts the attribute
@@ -156,6 +157,7 @@ described here.
     subpacket size.  In gpgsm the issuer name comes here.  A FPR
     record stores the fingerprint here.  The fingerprint of a
     revocation key is stored here.
+
 *** Field 11 - Signature class
 
     Signature class as per RFC-4880.  This is a 2 digit hexnumber
@@ -226,6 +228,21 @@ described here.
 
     - 8  :: The key is compliant with RFC4880bis
     - 23 :: The key is compliant with compliance mode "de-vs".
+
+*** Field 19 - Last update
+
+    The timestamp of the last update of a key or user ID.  The update
+    time of a key is defined a lookup of the key via its unique
+    identifier (fingerprint); the field is empty if not known.  The
+    update time of a user ID is defined by a lookup of the key using a
+    trusted mapping from mail address to key.
+
+*** Field 20 - Origin
+
+    The origin of the key or the user ID.  This is an integer
+    optionally followed by a space and an URL.  This goes along with
+    the previous field.  The values are not yet defined.
+
 
 ** Special fields
 
