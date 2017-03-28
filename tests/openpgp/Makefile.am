@@ -219,10 +219,34 @@ sample_keys = samplekeys/README \
 	      samplekeys/authenticate-only.pub.asc \
 	      samplekeys/authenticate-only.sec.asc
 
-sample_msgs = samplemsgs/issue2419.asc \
-	      samplemsgs/clearsig-1-key-1.asc \
+sample_msgs = samplemsgs/clearsig-1-key-1.asc \
+	      samplemsgs/clearsig-2-keys-1.asc \
+	      samplemsgs/clearsig-2-keys-2.asc \
+	      samplemsgs/enc-1-key-1.asc \
+	      samplemsgs/enc-1-key-2.asc \
+	      samplemsgs/enc-2-keys-1.asc \
+	      samplemsgs/enc-2-keys-2.asc \
+	      samplemsgs/enc-2-keys-hh-1.asc \
+	      samplemsgs/enc-2-keys-hr-1.asc \
+	      samplemsgs/enc-2-keys-rh-1.asc \
+	      samplemsgs/encsig-2-2-keys-3.asc \
+	      samplemsgs/encsig-2-2-keys-4.asc \
+	      samplemsgs/encsig-2-keys-1.asc \
+	      samplemsgs/encsig-2-keys-2.asc \
+	      samplemsgs/encsig-2-keys-3.asc \
+	      samplemsgs/encsig-2-keys-4.asc \
+	      samplemsgs/encz0-1-key-1.asc \
+	      samplemsgs/encz0-1-key-2.asc \
+	      samplemsgs/issue2419.asc \
+	      samplemsgs/revoke-2D727CC768697734.asc \
+	      samplemsgs/sig-1-key-1.asc \
+	      samplemsgs/sig-1-key-2.asc \
+	      samplemsgs/sig-2-keys-1.asc \
+	      samplemsgs/sig-2-keys-2.asc \
 	      samplemsgs/signed-1-key-1.asc \
-	      samplemsgs/revoke-2D727CC768697734.asc
+	      samplemsgs/signed-1-key-2.asc \
+	      samplemsgs/signed-2-keys-1.asc \
+	      samplemsgs/signed-2-keys-2.asc
 
 EXTRA_DIST = defs.scm $(XTESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
