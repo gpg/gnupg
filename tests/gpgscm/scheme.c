@@ -1145,6 +1145,7 @@ pointer _cons(scheme *sc, pointer a, pointer b, int immutable) {
   return (x);
 }
 
+
 /* ========== oblist implementation  ========== */
 
 #ifndef USE_OBJECT_LIST
@@ -1156,24 +1157,6 @@ static pointer oblist_initial_value(scheme *sc)
   /* There are about 768 symbols used after loading the
    * interpreter.  */
   return mk_vector(sc, 1009);
-}
-
-/* Add a new symbol NAME at SLOT.  SLOT must be obtained using
- * oblist_find_by_name, and no insertion must be done between
- * obtaining the SLOT and calling this function.  Returns the new
- * symbol.  */
-static pointer oblist_add_by_name(scheme *sc, const char *name, pointer *slot)
-{
-#define oblist_add_by_name_allocates	3
-  pointer x;
-
-  gc_disable(sc, gc_reservations (oblist_add_by_name));
-  x = immutable_cons(sc, mk_string(sc, name), sc->NIL);
-  typeflag(x) = T_SYMBOL;
-  setimmutable(car(x));
-  *slot = immutable_cons(sc, x, *slot);
-  gc_enable(sc);
-  return x;
 }
 
 /* Lookup the symbol NAME.  Returns the symbol, or NIL if it does not
@@ -1244,6 +1227,13 @@ oblist_find_by_name(scheme *sc, const char *name, pointer **slot)
      return sc->NIL;
 }
 
+static pointer oblist_all_symbols(scheme *sc)
+{
+  return sc->oblist;
+}
+
+#endif
+
 /* Add a new symbol NAME at SLOT.  SLOT must be obtained using
  * oblist_find_by_name, and no insertion must be done between
  * obtaining the SLOT and calling this function.  Returns the new
@@ -1253,18 +1243,16 @@ static pointer oblist_add_by_name(scheme *sc, const char *name, pointer *slot)
 #define oblist_add_by_name_allocates	3
   pointer x;
 
+  gc_disable(sc, gc_reservations (oblist_add_by_name));
   x = immutable_cons(sc, mk_string(sc, name), sc->NIL);
   typeflag(x) = T_SYMBOL;
   setimmutable(car(x));
   *slot = immutable_cons(sc, x, *slot);
+  gc_enable(sc);
   return x;
 }
-static pointer oblist_all_symbols(scheme *sc)
-{
-  return sc->oblist;
-}
 
-#endif
+
 
 static pointer mk_port(scheme *sc, port *p) {
   pointer x = get_cell(sc, sc->NIL, sc->NIL);
@@ -2643,6 +2631,7 @@ int eqv(pointer a, pointer b) {
 #define is_true(p)       ((p) != sc->F)
 #define is_false(p)      ((p) == sc->F)
 
+
 /* ========== Environment implementation  ========== */
 
 #if !defined(USE_ALIST_ENV) || !defined(USE_OBJECT_LIST)
@@ -2705,21 +2694,6 @@ static void new_frame_in_env(scheme *sc, pointer old_env)
   setenvironment(sc->envir);
 }
 
-/* Insert (VARIABLE, VALUE) at SSLOT.  SSLOT must be obtained using
- * find_slot_spec_in_env, and no insertion must be done between
- * obtaining SSLOT and the call to this function.  */
-static INLINE void new_slot_spec_in_env(scheme *sc,
-                                        pointer variable, pointer value,
-					pointer *sslot)
-{
-#define new_slot_spec_in_env_allocates	2
-  pointer slot;
-  gc_disable(sc, gc_reservations (new_slot_spec_in_env));
-  slot = immutable_cons(sc, variable, value);
-  *sslot = immutable_cons(sc, slot, *sslot);
-  gc_enable(sc);
-}
-
 /* Find the slot in ENV under the key HDL.  If ALL is given, look in
  * all environments enclosing ENV.  If the lookup fails, and SSLOT is
  * given, the position where the new slot has to be inserted is stored
@@ -2766,18 +2740,6 @@ static INLINE void new_frame_in_env(scheme *sc, pointer old_env)
   setenvironment(sc->envir);
 }
 
-/* Insert (VARIABLE, VALUE) at SSLOT.  SSLOT must be obtained using
- * find_slot_spec_in_env, and no insertion must be done between
- * obtaining SSLOT and the call to this function.  */
-static INLINE void new_slot_spec_in_env(scheme *sc,
-                                        pointer variable, pointer value,
-					pointer *sslot)
-{
-#define new_slot_spec_in_env_allocates	2
-  assert(is_symbol(variable));
-  *sslot = immutable_cons(sc, immutable_cons(sc, variable, value), *sslot);
-}
-
 /* Find the slot in ENV under the key HDL.  If ALL is given, look in
  * all environments enclosing ENV.  If the lookup fails, and SSLOT is
  * given, the position where the new slot has to be inserted is stored
@@ -2816,6 +2778,21 @@ static pointer find_slot_in_env(scheme *sc, pointer env, pointer hdl, int all)
   return find_slot_spec_in_env(sc, env, hdl, all, NULL);
 }
 
+/* Insert (VARIABLE, VALUE) at SSLOT.  SSLOT must be obtained using
+ * find_slot_spec_in_env, and no insertion must be done between
+ * obtaining SSLOT and the call to this function.  */
+static INLINE void new_slot_spec_in_env(scheme *sc,
+                                        pointer variable, pointer value,
+					pointer *sslot)
+{
+#define new_slot_spec_in_env_allocates	2
+  pointer slot;
+  gc_disable(sc, gc_reservations (new_slot_spec_in_env));
+  slot = immutable_cons(sc, variable, value);
+  *sslot = immutable_cons(sc, slot, *sslot);
+  gc_enable(sc);
+}
+
 static INLINE void new_slot_in_env(scheme *sc, pointer variable, pointer value)
 {
 #define new_slot_in_env_allocates	new_slot_spec_in_env_allocates
@@ -2838,6 +2815,7 @@ static INLINE pointer slot_value_in_env(pointer slot)
   return cdr(slot);
 }
 
+
 /* ========== Evaluation Cycle ========== */
 
 
