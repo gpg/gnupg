@@ -596,13 +596,22 @@ int set_packet_list_mode( int mode );
 /* A context used with parse_packet.  */
 struct parse_packet_ctx_s
 {
-  iobuf_t inp; /* The input stream with the packets.  */
+  iobuf_t inp;       /* The input stream with the packets.  */
+  PACKET *last_pkt;  /* The last parsed packet.  */
+  int free_last_pkt; /* Indicates that LAST_PKT must be freed.  */
 };
 typedef struct parse_packet_ctx_s *parse_packet_ctx_t;
 
-#define init_parse_packet(a,i) do { (a)->inp = (i);    \
-    /**/                       } while (0)
+#define init_parse_packet(a,i) do { \
+    (a)->inp = (i);                 \
+    (a)->last_pkt = NULL;           \
+    (a)->free_last_pkt = 0;         \
+  } while (0)
 
+#define deinit_parse_packet(a) do { \
+    if ((a)->free_last_pkt)         \
+      free_packet (NULL, (a));      \
+  } while (0)
 
 
 #if DEBUG_PARSE_PACKET
@@ -803,7 +812,7 @@ void free_public_key( PKT_public_key *key );
 void free_attributes(PKT_user_id *uid);
 void free_user_id( PKT_user_id *uid );
 void free_comment( PKT_comment *rem );
-void free_packet( PACKET *pkt );
+void free_packet (PACKET *pkt, parse_packet_ctx_t parsectx);
 prefitem_t *copy_prefs (const prefitem_t *prefs);
 PKT_public_key *copy_public_key( PKT_public_key *d, PKT_public_key *s );
 PKT_signature *copy_signature( PKT_signature *d, PKT_signature *s );

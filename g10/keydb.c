@@ -1180,7 +1180,7 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
     {
       if (gpg_err_code (err) == GPG_ERR_UNKNOWN_PACKET)
         {
-          free_packet (pkt);
+          free_packet (pkt, &parsectx);
           init_packet (pkt);
           continue;
 	}
@@ -1209,7 +1209,7 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
              the other GPG specific packets don't make sense either.  */
           log_error ("skipped packet of type %d in keybox\n",
                      (int)pkt->pkttype);
-          free_packet(pkt);
+          free_packet(pkt, &parsectx);
           init_packet(pkt);
           continue;
         }
@@ -1311,7 +1311,8 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
     release_kbnode (keyblock);
   else
     *r_keyblock = keyblock;
-  free_packet (pkt);
+  free_packet (pkt, &parsectx);
+  deinit_parse_packet (&parsectx);
   xfree (pkt);
   return err;
 }

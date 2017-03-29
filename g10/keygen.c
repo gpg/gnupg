@@ -867,7 +867,7 @@ make_backsig (PKT_signature *sig, PKT_public_key *pk,
       backsig_pkt.pkttype = PKT_SIGNATURE;
       backsig_pkt.pkt.signature = backsig;
       err = build_packet (backsig_out, &backsig_pkt);
-      free_packet (&backsig_pkt);
+      free_packet (&backsig_pkt, NULL);
       if (err)
 	log_error ("build_packet failed for backsig: %s\n", gpg_strerror (err));
       else

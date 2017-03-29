@@ -790,7 +790,7 @@ read_block( IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
         {
           in_v3key = 1;
           ++*r_v3keys;
-          free_packet (pkt);
+          free_packet (pkt, &parsectx);
           init_packet (pkt);
           continue;
         }
@@ -804,7 +804,7 @@ read_block( IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
               rc = GPG_ERR_INV_KEYRING;
               goto ready;
             }
-          free_packet( pkt );
+          free_packet (pkt, &parsectx);
           init_packet(pkt);
           continue;
 	}
@@ -812,7 +812,7 @@ read_block( IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
         if (in_v3key && !(pkt->pkttype == PKT_PUBLIC_KEY
                           || pkt->pkttype == PKT_SECRET_KEY))
           {
-	    free_packet( pkt );
+	    free_packet (pkt, &parsectx);
 	    init_packet(pkt);
 	    continue;
           }
@@ -843,7 +843,7 @@ read_block( IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
 		pkt->pkt.compressed->buf = NULL;
 		push_compress_filter2(a,cfx,pkt->pkt.compressed->algorithm,1);
 	      }
-	    free_packet( pkt );
+	    free_packet (pkt, &parsectx);
 	    init_packet(pkt);
 	    break;
 
@@ -851,7 +851,7 @@ read_block( IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
             /* Skip those packets unless we are in restore mode.  */
             if ((opt.import_options & IMPORT_RESTORE))
               goto x_default;
-	    free_packet( pkt );
+	    free_packet (pkt, &parsectx);
 	    init_packet(pkt);
             break;
 
@@ -887,7 +887,8 @@ read_block( IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
     release_kbnode( root );
   else
     *ret_root = root;
-  free_packet( pkt );
+  free_packet (pkt, &parsectx);
+  deinit_parse_packet (&parsectx);
   xfree( pkt );
   return rc;
 }

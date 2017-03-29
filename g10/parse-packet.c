@@ -352,6 +352,9 @@ dbg_copy_all_packets (iobuf_t inp, iobuf_t out, const char *dbg_f, int dbg_l)
 	 (rc =
 	  parse (&parsectx, &pkt, 0, NULL, &skip, out, 0, "copy",
                  dbg_f, dbg_l)));
+
+  deinit_parse_packet (&parsectx);
+
   return rc;
 }
 #else /*!DEBUG_PARSE_PACKET*/
@@ -372,6 +375,9 @@ copy_all_packets (iobuf_t inp, iobuf_t out)
       init_packet (&pkt);
     }
   while (!(rc = parse (&parsectx, &pkt, 0, NULL, &skip, out, 0)));
+
+  deinit_parse_packet (&parsectx);
+
   return rc;
 }
 #endif /*!DEBUG_PARSE_PACKET*/
@@ -397,11 +403,17 @@ dbg_copy_some_packets (iobuf_t inp, iobuf_t out, off_t stopoff,
   do
     {
       if (iobuf_tell (inp) >= stopoff)
-	return 0;
+        {
+          deinit_parse_packet (&parsectx);
+          return 0;
+        }
       init_packet (&pkt);
     }
   while (!(rc = parse (&parsectx, &pkt, 0, NULL, &skip, out, 0,
 		       "some", dbg_f, dbg_l)));
+
+  deinit_parse_packet (&parsectx);
+
   return rc;
 }
 #else /*!DEBUG_PARSE_PACKET*/
@@ -418,10 +430,16 @@ copy_some_packets (iobuf_t inp, iobuf_t out, off_t stopoff)
   do
     {
       if (iobuf_tell (inp) >= stopoff)
-	return 0;
+        {
+          deinit_parse_packet (&parsectx);
+          return 0;
+        }
       init_packet (&pkt);
     }
   while (!(rc = parse (&parsectx, &pkt, 0, NULL, &skip, out, 0)));
+
+  deinit_parse_packet (&parsectx);
+
   return rc;
 }
 #endif /*!DEBUG_PARSE_PACKET*/
@@ -447,6 +465,9 @@ dbg_skip_some_packets (iobuf_t inp, unsigned n, const char *dbg_f, int dbg_l)
       rc = parse (&parsectx, &pkt, 0, NULL, &skip, NULL, 1, "skip",
                   dbg_f, dbg_l);
     }
+
+  deinit_parse_packet (&parsectx);
+
   return rc;
 }
 #else /*!DEBUG_PARSE_PACKET*/
@@ -465,6 +486,9 @@ skip_some_packets (iobuf_t inp, unsigned int n)
       init_packet (&pkt);
       rc = parse (&parsectx, &pkt, 0, NULL, &skip, NULL, 1);
     }
+
+  deinit_parse_packet (&parsectx);
+
   return rc;
 }
 #endif /*!DEBUG_PARSE_PACKET*/
@@ -803,6 +827,16 @@ parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
       skip_packet (inp, pkttype, pktlen, partial);
       break;
     }
+
+  /* Store a shallow copy of certain packets in the context.  */
+  if (!rc && (pkttype == PKT_PUBLIC_KEY
+              || pkttype == PKT_SECRET_KEY
+              || pkttype == PKT_USER_ID
+              || pkttype == PKT_ATTRIBUTE
+              || pkttype == PKT_SIGNATURE))
+    ctx->last_pkt = pkt;
+  else
+    ctx->last_pkt = NULL;
 
  leave:
   /* FIXME: We leak in case of an error (see the xmalloc's above).  */

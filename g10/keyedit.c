@@ -2467,7 +2467,8 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    init_packet (pkt);
             init_parse_packet (&parsectx, a);
 	    err = parse_packet (&parsectx, pkt);
-	    iobuf_close (a);
+	    deinit_parse_packet (&parsectx);
+            iobuf_close (a);
 	    iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char *) fname);
 	    if (!err && pkt->pkttype != PKT_SECRET_KEY
 		&& pkt->pkttype != PKT_SECRET_SUBKEY)
@@ -2477,7 +2478,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
                 tty_printf (_("Error reading backup key from '%s': %s\n"),
                             fname, gpg_strerror (err));
                 xfree (fname);
-                free_packet (pkt);
+                free_packet (pkt, NULL);
                 xfree (pkt);
                 break;
               }
@@ -5008,7 +5009,7 @@ menu_expire (kbnode_t pub_keyblock, int force_mainkey, u32 newexpiration)
 	      newpkt = xmalloc_clear (sizeof *newpkt);
 	      newpkt->pkttype = PKT_SIGNATURE;
 	      newpkt->pkt.signature = newsig;
-	      free_packet (node->pkt);
+	      free_packet (node->pkt, NULL);
 	      xfree (node->pkt);
 	      node->pkt = newpkt;
 	      sub_pk = NULL;
@@ -5114,7 +5115,7 @@ menu_changeusage (kbnode_t keyblock)
 	      newpkt = xmalloc_clear (sizeof *newpkt);
 	      newpkt->pkttype = PKT_SIGNATURE;
 	      newpkt->pkt.signature = newsig;
-	      free_packet (node->pkt);
+	      free_packet (node->pkt, NULL);
 	      xfree (node->pkt);
 	      node->pkt = newpkt;
 	      sub_pk = NULL;
@@ -5213,7 +5214,7 @@ menu_backsign (KBNODE pub_keyblock)
 	      newpkt = xmalloc_clear (sizeof (*newpkt));
 	      newpkt->pkttype = PKT_SIGNATURE;
 	      newpkt->pkt.signature = newsig;
-	      free_packet (sig_pk->pkt);
+	      free_packet (sig_pk->pkt, NULL);
 	      xfree (sig_pk->pkt);
 	      sig_pk->pkt = newpkt;
 
@@ -5371,7 +5372,7 @@ menu_set_primary_uid (KBNODE pub_keyblock)
 		      newpkt = xmalloc_clear (sizeof *newpkt);
 		      newpkt->pkttype = PKT_SIGNATURE;
 		      newpkt->pkt.signature = newsig;
-		      free_packet (node->pkt);
+		      free_packet (node->pkt, NULL);
 		      xfree (node->pkt);
 		      node->pkt = newpkt;
 		      modified = 1;
@@ -5460,7 +5461,7 @@ menu_set_preferences (KBNODE pub_keyblock)
 		  newpkt = xmalloc_clear (sizeof *newpkt);
 		  newpkt->pkttype = PKT_SIGNATURE;
 		  newpkt->pkt.signature = newsig;
-		  free_packet (node->pkt);
+		  free_packet (node->pkt, NULL);
 		  xfree (node->pkt);
 		  node->pkt = newpkt;
 		  modified = 1;
@@ -5596,7 +5597,7 @@ menu_set_keyserver_url (const char *url, KBNODE pub_keyblock)
 		  newpkt = xmalloc_clear (sizeof *newpkt);
 		  newpkt->pkttype = PKT_SIGNATURE;
 		  newpkt->pkt.signature = newsig;
-		  free_packet (node->pkt);
+		  free_packet (node->pkt, NULL);
 		  xfree (node->pkt);
 		  node->pkt = newpkt;
 		  modified = 1;
@@ -5797,7 +5798,7 @@ menu_set_notation (const char *string, KBNODE pub_keyblock)
 		  newpkt = xmalloc_clear (sizeof *newpkt);
 		  newpkt->pkttype = PKT_SIGNATURE;
 		  newpkt->pkt.signature = newsig;
-		  free_packet (node->pkt);
+		  free_packet (node->pkt, NULL);
 		  xfree (node->pkt);
 		  node->pkt = newpkt;
 		  modified = 1;

@@ -575,7 +575,7 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
         pkt.pkttype = PKT_ONEPASS_SIG;
         pkt.pkt.onepass_sig = ops;
         rc = build_packet (out, &pkt);
-        free_packet (&pkt);
+        free_packet (&pkt, NULL);
         if (rc) {
             log_error ("build onepass_sig packet failed: %s\n",
                        gpg_strerror (rc));
@@ -645,7 +645,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
             log_error ("build_packet(PLAINTEXT) failed: %s\n",
                        gpg_strerror (rc) );
         pt->buf = NULL;
-        free_packet (&pkt);
+        free_packet (&pkt, NULL);
     }
     else {
         byte copy_buffer[4096];
@@ -732,7 +732,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
           rc = build_packet (out, &pkt);
           if (!rc && is_status_enabled())
             print_status_sig_created (pk, sig, status_letter);
-          free_packet (&pkt);
+          free_packet (&pkt, NULL);
           if (rc)
             log_error ("build signature packet failed: %s\n",
                        gpg_strerror (rc));

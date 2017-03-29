@@ -415,7 +415,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     while ((rc=parse_packet (&parsectx, pkt)) != -1) {
         hd->found.n_packets++;
         if (gpg_err_code (rc) == GPG_ERR_UNKNOWN_PACKET) {
-	    free_packet (pkt);
+	    free_packet (pkt, &parsectx);
 	    init_packet (pkt);
 	    continue;
 	}
@@ -461,7 +461,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
           default:
 	    log_error ("skipped packet of type %d in keyring\n",
                        (int)pkt->pkttype);
-	    free_packet(pkt);
+	    free_packet(pkt, &parsectx);
 	    init_packet(pkt);
 	    continue;
           }
@@ -490,7 +490,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
             /* Reset LASTNODE, so that we set the cache status only from
              * the ring trust packet immediately following a signature. */
             lastnode = NULL;
-	    free_packet(pkt);
+	    free_packet(pkt, &parsectx);
 	    init_packet(pkt);
 	    continue;
           }
@@ -542,7 +542,8 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
         }
 	*ret_kb = keyblock;
     }
-    free_packet (pkt);
+    free_packet (pkt, &parsectx);
+    deinit_parse_packet (&parsectx);
     xfree (pkt);
     iobuf_close(a);
 
@@ -1132,7 +1133,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       rc = search_packet (&parsectx, &pkt, &offset, need_uid);
       if (ignore_legacy && gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
         {
-          free_packet (&pkt);
+          free_packet (&pkt, &parsectx);
           continue;
         }
       if (rc)
@@ -1146,7 +1147,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         }
       if (initial_skip)
         {
-          free_packet (&pkt);
+          free_packet (&pkt, &parsectx);
           continue;
         }
 
@@ -1228,7 +1229,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
             goto found;
           }
 	}
-      free_packet (&pkt);
+      free_packet (&pkt, &parsectx);
       continue;
     found:
       if (rc)
@@ -1255,7 +1256,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         }
       if (n == ndesc)
         goto real_found;
-      free_packet (&pkt);
+      free_packet (&pkt, &parsectx);
     }
  real_found:
   if (!rc)
@@ -1309,7 +1310,8 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       hd->current.error = rc;
     }
 
-  free_packet(&pkt);
+  free_packet (&pkt, &parsectx);
+  deinit_parse_packet (&parsectx);
   set_packet_list_mode(save_mode);
   return rc;
 }

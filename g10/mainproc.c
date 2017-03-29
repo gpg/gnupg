@@ -358,7 +358,7 @@ proc_symkey_enc (CTX c, PACKET *pkt)
 
  leave:
   c->symkeys++;
-  free_packet (pkt);
+  free_packet (pkt, NULL);
 }
 
 
@@ -456,7 +456,7 @@ proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
         log_info (_("public key encrypted data: good DEK\n"));
     }
 
-  free_packet(pkt);
+  free_packet(pkt, NULL);
 }
 
 
@@ -657,7 +657,7 @@ proc_encrypted (CTX c, PACKET *pkt)
 
   xfree (c->dek);
   c->dek = NULL;
-  free_packet (pkt);
+  free_packet (pkt, NULL);
   c->last_was_session_key = 0;
   write_status (STATUS_END_DECRYPTION);
 }
@@ -774,7 +774,7 @@ proc_plaintext( CTX c, PACKET *pkt )
   if (rc)
     log_error ("handle plaintext failed: %s\n", gpg_strerror (rc));
 
-  free_packet(pkt);
+  free_packet (pkt, NULL);
   c->last_was_session_key = 0;
 
   /* We add a marker control packet instead of the plaintext packet.
@@ -837,7 +837,7 @@ proc_compressed (CTX c, PACKET *pkt)
   else if (rc)
     log_error ("uncompressing failed: %s\n", gpg_strerror (rc));
 
-  free_packet(pkt);
+  free_packet (pkt, NULL);
   c->last_was_session_key = 0;
   return rc;
 }
@@ -1348,7 +1348,7 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
       any_data = 1;
       if (rc)
         {
-          free_packet (pkt);
+          free_packet (pkt, &parsectx);
           /* Stop processing when an invalid packet has been encountered
            * but don't do so when we are doing a --list-packets.  */
           if (gpg_err_code (rc) == GPG_ERR_INV_PACKET
@@ -1466,7 +1466,7 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
           init_packet (pkt);
 	}
       else
-        free_packet(pkt);
+        free_packet (pkt, &parsectx);
     }
 
   if (rc == GPG_ERR_INV_PACKET)
@@ -1481,7 +1481,8 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
  leave:
   release_list (c);
   xfree(c->dek);
-  free_packet (pkt);
+  free_packet (pkt, &parsectx);
+  deinit_parse_packet (&parsectx);
   xfree (pkt);
   free_md_filter_context (&c->mfx);
   return rc;

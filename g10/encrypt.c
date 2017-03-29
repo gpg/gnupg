@@ -394,7 +394,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
     }
   if (pt)
     pt->buf = NULL;
-  free_packet (&pkt);
+  free_packet (&pkt, NULL);
   xfree (cfx.dek);
   xfree (s2k);
   release_armor_context (afx);
@@ -755,7 +755,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
     }
   if (pt)
     pt->buf = NULL;
-  free_packet (&pkt);
+  free_packet (&pkt, NULL);
   xfree (cfx.dek);
   xfree (symkey_dek);
   xfree (symkey_s2k);

@@ -117,8 +117,8 @@ release_kbnode( KBNODE n )
     while( n ) {
 	n2 = n->next;
 	if( !is_cloned_kbnode(n) ) {
-	    free_packet( n->pkt );
-	    xfree( n->pkt );
+            free_packet (n->pkt, NULL);
+            xfree( n->pkt );
 	}
 	free_node( n );
 	n = n2;
@@ -288,7 +288,7 @@ commit_kbnode( KBNODE *root )
 	    else
 		nl->next = n->next;
 	    if( !is_cloned_kbnode(n) ) {
-		free_packet( n->pkt );
+                free_packet (n->pkt, NULL);
 		xfree( n->pkt );
 	    }
 	    free_node( n );
@@ -312,7 +312,7 @@ remove_kbnode( KBNODE *root, KBNODE node )
 	    else
 		nl->next = n->next;
 	    if( !is_cloned_kbnode(n) ) {
-		free_packet( n->pkt );
+                free_packet (n->pkt, NULL);
 		xfree( n->pkt );
 	    }
 	    free_node( n );

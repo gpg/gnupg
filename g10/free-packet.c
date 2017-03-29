@@ -394,17 +394,39 @@ free_plaintext( PKT_plaintext *pt )
   xfree (pt);
 }
 
+
 /****************
  * Free the packet in PKT.
  */
 void
-free_packet (PACKET *pkt)
+free_packet (PACKET *pkt, parse_packet_ctx_t parsectx)
 {
   if (!pkt || !pkt->pkt.generic)
-    return;
+    {
+      if (parsectx && parsectx->last_pkt)
+        {
+          if (parsectx->free_last_pkt)
+            {
+              free_packet (parsectx->last_pkt, NULL);
+              parsectx->free_last_pkt = 0;
+            }
+          parsectx->last_pkt = NULL;
+        }
+      return;
+    }
 
   if (DBG_MEMORY)
     log_debug ("free_packet() type=%d\n", pkt->pkttype);
+
+  /* If we have a parser context holding PKT then do not free the
+   * packet but set a flag that the packet in the parser context is
+   * now a deep copy.  */
+  if (parsectx && parsectx->last_pkt == pkt && !parsectx->free_last_pkt)
+    {
+      parsectx->free_last_pkt = 1;
+      pkt->pkt.generic = NULL;
+      return;
+    }
 
   switch (pkt->pkttype)
     {
