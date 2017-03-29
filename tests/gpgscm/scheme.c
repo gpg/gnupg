@@ -438,7 +438,6 @@ static pointer reverse_in_place(scheme *sc, pointer term, pointer list);
 static pointer revappend(scheme *sc, pointer a, pointer b);
 static void dump_stack_mark(scheme *);
 static pointer opexe_0(scheme *sc, enum scheme_opcodes op);
-static pointer opexe_6(scheme *sc, enum scheme_opcodes op);
 static void Eval_Cycle(scheme *sc, enum scheme_opcodes op);
 static void assign_syntax(scheme *sc, char *name);
 static int syntaxnum(pointer p);
@@ -5158,27 +5157,14 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           }
      }
 
-     default:
-          snprintf(sc->strbuff,STRBUFFSIZE,"%d: illegal operator", sc->op);
-          Error_0(sc,sc->strbuff);
-
-     }
-     return sc->T;
-}
-
-static pointer opexe_6(scheme *sc, enum scheme_opcodes op) {
-     pointer x, y;
-     long v;
-
-     switch (op) {
-     CASE(OP_LIST_LENGTH):     /* length */   /* a.k */
-          v=list_length(sc,car(sc->args));
-          if(v<0) {
+     CASE(OP_LIST_LENGTH): {   /* length */   /* a.k */
+	  long l = list_length(sc, car(sc->args));
+          if(l<0) {
                Error_1(sc,"length: not a list:",car(sc->args));
           }
 	  gc_disable(sc, 1);
-          s_return_enable_gc(sc, mk_integer(sc, v));
-
+          s_return_enable_gc(sc, mk_integer(sc, l));
+     }
      CASE(OP_ASSQ):       /* assq */     /* a.k */
           x = car(sc->args);
           for (y = cadr(sc->args); is_pair(y); y = cdr(y)) {

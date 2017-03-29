@@ -196,11 +196,11 @@
     _OP_DEF(opexe_0, 0,                                0,  0,       0,                               OP_P0LIST           )
     _OP_DEF(opexe_0, 0,                                0,  0,       0,                               OP_P1LIST           )
     _OP_DEF(opexe_0, 0,                                0,  0,       0,                               OP_PVECFROM         )
-    _OP_DEF(opexe_6, "length",                         1,  1,       TST_LIST,                        OP_LIST_LENGTH      )
-    _OP_DEF(opexe_6, "assq",                           2,  2,       TST_NONE,                        OP_ASSQ             )
-    _OP_DEF(opexe_6, "get-closure-code",               1,  1,       TST_NONE,                        OP_GET_CLOSURE      )
-    _OP_DEF(opexe_6, "closure?",                       1,  1,       TST_NONE,                        OP_CLOSUREP         )
-    _OP_DEF(opexe_6, "macro?",                         1,  1,       TST_NONE,                        OP_MACROP           )
-    _OP_DEF(opexe_6, "*vm-history*",                   0,  0,       TST_NONE,                        OP_VM_HISTORY       )
+    _OP_DEF(opexe_0, "length",                         1,  1,       TST_LIST,                        OP_LIST_LENGTH      )
+    _OP_DEF(opexe_0, "assq",                           2,  2,       TST_NONE,                        OP_ASSQ             )
+    _OP_DEF(opexe_0, "get-closure-code",               1,  1,       TST_NONE,                        OP_GET_CLOSURE      )
+    _OP_DEF(opexe_0, "closure?",                       1,  1,       TST_NONE,                        OP_CLOSUREP         )
+    _OP_DEF(opexe_0, "macro?",                         1,  1,       TST_NONE,                        OP_MACROP           )
+    _OP_DEF(opexe_0, "*vm-history*",                   0,  0,       TST_NONE,                        OP_VM_HISTORY       )
 
 #undef _OP_DEF
