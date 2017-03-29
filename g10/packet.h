@@ -592,12 +592,26 @@ int list_packets( iobuf_t a );
 */
 int set_packet_list_mode( int mode );
 
+
+/* A context used with parse_packet.  */
+struct parse_packet_ctx_s
+{
+  iobuf_t inp; /* The input stream with the packets.  */
+};
+typedef struct parse_packet_ctx_s *parse_packet_ctx_t;
+
+#define init_parse_packet(a,i) do { (a)->inp = (i);    \
+    /**/                       } while (0)
+
+
+
 #if DEBUG_PARSE_PACKET
 /* There are debug functions and should not be used directly.  */
-int dbg_search_packet( iobuf_t inp, PACKET *pkt, off_t *retpos, int with_uid,
+int dbg_search_packet (parse_packet_ctx_t ctx, PACKET *pkt,
+                       off_t *retpos, int with_uid,
                        const char* file, int lineno  );
-int dbg_parse_packet( iobuf_t inp, PACKET *ret_pkt,
-                      const char* file, int lineno );
+int dbg_parse_packet (parse_packet_ctx_t ctx, PACKET *ret_pkt,
+                      const char *file, int lineno);
 int dbg_copy_all_packets( iobuf_t inp, iobuf_t out,
                           const char* file, int lineno  );
 int dbg_copy_some_packets( iobuf_t inp, iobuf_t out, off_t stopoff,
@@ -616,51 +630,53 @@ int dbg_skip_some_packets( iobuf_t inp, unsigned n,
              dbg_skip_some_packets((a),(b), __FILE__, __LINE__ )
 #else
 /* Return the next valid OpenPGP packet in *PKT.  (This function will
-   skip any packets whose type is 0.)
-
-   Returns 0 on success, -1 if EOF is reached, and an error code
-   otherwise.  In the case of an error, the packet in *PKT may be
-   partially constructed.  As such, even if there is an error, it is
-   necessary to free *PKT to avoid a resource leak.  To detect what
-   has been allocated, clear *PKT before calling this function.  */
-int parse_packet( iobuf_t inp, PACKET *pkt);
+ * skip any packets whose type is 0.)  CTX must have been setup prior to
+ * calling this function.
+ *
+ * Returns 0 on success, -1 if EOF is reached, and an error code
+ * otherwise.  In the case of an error, the packet in *PKT may be
+ * partially constructed.  As such, even if there is an error, it is
+ * necessary to free *PKT to avoid a resource leak.  To detect what
+ * has been allocated, clear *PKT before calling this function.  */
+int parse_packet (parse_packet_ctx_t ctx, PACKET *pkt);
 
 /* Return the first OpenPGP packet in *PKT that contains a key (either
-   a public subkey, a public key, a secret subkey or a secret key) or,
-   if WITH_UID is set, a user id.
-
-   Saves the position in the pipeline of the start of the returned
-   packet (according to iobuf_tell) in RETPOS, if it is not NULL.
-
-   The return semantics are the same as parse_packet.  */
-int search_packet( iobuf_t inp, PACKET *pkt, off_t *retpos, int with_uid );
+ * a public subkey, a public key, a secret subkey or a secret key) or,
+ * if WITH_UID is set, a user id.
+ *
+ * Saves the position in the pipeline of the start of the returned
+ * packet (according to iobuf_tell) in RETPOS, if it is not NULL.
+ *
+ * The return semantics are the same as parse_packet.  */
+int search_packet (parse_packet_ctx_t ctx, PACKET *pkt,
+                   off_t *retpos, int with_uid);
 
 /* Copy all packets (except invalid packets, i.e., those with a type
-   of 0) from INP to OUT until either an error occurs or EOF is
-   reached.
-
-   Returns -1 when end of file is reached or an error code, if an
-   error occurred.  (Note: this function never returns 0, because it
-   effectively keeps going until it gets an EOF.)  */
-int copy_all_packets( iobuf_t inp, iobuf_t out );
+ * of 0) from INP to OUT until either an error occurs or EOF is
+ * reached.
+ *
+ * Returns -1 when end of file is reached or an error code, if an
+ * error occurred.  (Note: this function never returns 0, because it
+ * effectively keeps going until it gets an EOF.)  */
+int copy_all_packets (iobuf_t inp, iobuf_t out );
 
 /* Like copy_all_packets, but stops at the first packet that starts at
-   or after STOPOFF (as indicated by iobuf_tell).
-
-   Example: if STOPOFF is 100, the first packet in INP goes from 0 to
-   110 and the next packet starts at offset 111, then the packet
-   starting at offset 0 will be completely processed (even though it
-   extends beyond STOPOFF) and the packet starting at offset 111 will
-   not be processed at all.  */
-int copy_some_packets( iobuf_t inp, iobuf_t out, off_t stopoff );
+ * or after STOPOFF (as indicated by iobuf_tell).
+ *
+ * Example: if STOPOFF is 100, the first packet in INP goes from
+ * 0 to 110 and the next packet starts at offset 111, then the packet
+ * starting at offset 0 will be completely processed (even though it
+ * extends beyond STOPOFF) and the packet starting at offset 111 will
+ * not be processed at all.  */
+int copy_some_packets (iobuf_t inp, iobuf_t out, off_t stopoff);
 
 /* Skips the next N packets from INP.
-
-   If parsing a packet returns an error code, then the function stops
-   immediately and returns the error code.  Note: in the case of an
-   error, this function does not indicate how many packets were
-   successfully processed.  */
-int skip_some_packets( iobuf_t inp, unsigned n );
+ *
+ * If parsing a packet returns an error code, then the function stops
+ * immediately and returns the error code.  Note: in the case of an
+ * error, this function does not indicate how many packets were
+ * successfully processed.  */
+int skip_some_packets (iobuf_t inp, unsigned int n);
 #endif
 
 /* Parse a signature packet and store it in *SIG.

@@ -2431,6 +2431,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    char *fname;
 	    PACKET *pkt;
 	    IOBUF a;
+            struct parse_packet_ctx_s parsectx;
 
             if (!*arg_string)
 	      {
@@ -2464,7 +2465,8 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    /* Parse and check that file.  */
 	    pkt = xmalloc (sizeof *pkt);
 	    init_packet (pkt);
-	    err = parse_packet (a, pkt);
+            init_parse_packet (&parsectx, a);
+	    err = parse_packet (&parsectx, pkt);
 	    iobuf_close (a);
 	    iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char *) fname);
 	    if (!err && pkt->pkttype != PKT_SECRET_KEY

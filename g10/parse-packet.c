@@ -48,7 +48,7 @@ static int mpi_print_mode;
 static int list_mode;
 static estream_t listfp;
 
-static int parse (IOBUF inp, PACKET * pkt, int onlykeypkts,
+static int parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts,
 		  off_t * retpos, int *skip, IOBUF out, int do_skip
 #ifdef DEBUG_PARSE_PACKET
 		  , const char *dbg_w, const char *dbg_f, int dbg_l
@@ -263,26 +263,27 @@ unknown_pubkey_warning (int algo)
 
 #ifdef DEBUG_PARSE_PACKET
 int
-dbg_parse_packet (IOBUF inp, PACKET *pkt, const char *dbg_f, int dbg_l)
+dbg_parse_packet (parse_packet_ctx_t ctx, PACKET *pkt,
+                  const char *dbg_f, int dbg_l)
 {
   int skip, rc;
 
   do
     {
-      rc = parse (inp, pkt, 0, NULL, &skip, NULL, 0, "parse", dbg_f, dbg_l);
+      rc = parse (ctx, pkt, 0, NULL, &skip, NULL, 0, "parse", dbg_f, dbg_l);
     }
   while (skip && ! rc);
   return rc;
 }
 #else /*!DEBUG_PARSE_PACKET*/
 int
-parse_packet (IOBUF inp, PACKET * pkt)
+parse_packet (parse_packet_ctx_t ctx, PACKET *pkt)
 {
   int skip, rc;
 
   do
     {
-      rc = parse (inp, pkt, 0, NULL, &skip, NULL, 0);
+      rc = parse (ctx, pkt, 0, NULL, &skip, NULL, 0);
     }
   while (skip && ! rc);
   return rc;
@@ -296,29 +297,30 @@ parse_packet (IOBUF inp, PACKET * pkt)
  */
 #ifdef DEBUG_PARSE_PACKET
 int
-dbg_search_packet (IOBUF inp, PACKET * pkt, off_t * retpos, int with_uid,
+dbg_search_packet (parse_packet_ctx_t ctx, PACKET *pkt,
+                   off_t * retpos, int with_uid,
 		   const char *dbg_f, int dbg_l)
 {
   int skip, rc;
 
   do
     {
-      rc =
-	parse (inp, pkt, with_uid ? 2 : 1, retpos, &skip, NULL, 0, "search",
-	       dbg_f, dbg_l);
+      rc = parse (ctx, pkt, with_uid ? 2 : 1, retpos, &skip, NULL, 0, "search",
+                  dbg_f, dbg_l);
     }
   while (skip && ! rc);
   return rc;
 }
 #else /*!DEBUG_PARSE_PACKET*/
 int
-search_packet (IOBUF inp, PACKET * pkt, off_t * retpos, int with_uid)
+search_packet (parse_packet_ctx_t ctx, PACKET *pkt,
+               off_t * retpos, int with_uid)
 {
   int skip, rc;
 
   do
     {
-      rc = parse (inp, pkt, with_uid ? 2 : 1, retpos, &skip, NULL, 0);
+      rc = parse (ctx, pkt, with_uid ? 2 : 1, retpos, &skip, NULL, 0);
     }
   while (skip && ! rc);
   return rc;
@@ -331,13 +333,16 @@ search_packet (IOBUF inp, PACKET * pkt, off_t * retpos, int with_uid)
  */
 #ifdef DEBUG_PARSE_PACKET
 int
-dbg_copy_all_packets (IOBUF inp, IOBUF out, const char *dbg_f, int dbg_l)
+dbg_copy_all_packets (iobuf_t inp, iobuf_t out, const char *dbg_f, int dbg_l)
 {
   PACKET pkt;
+  struct parse_packet_ctx_s parsectx;
   int skip, rc = 0;
 
   if (! out)
     log_bug ("copy_all_packets: OUT may not be NULL.\n");
+
+  init_parse_packet (&parsectx, inp);
 
   do
     {
@@ -345,24 +350,28 @@ dbg_copy_all_packets (IOBUF inp, IOBUF out, const char *dbg_f, int dbg_l)
     }
   while (!
 	 (rc =
-	  parse (inp, &pkt, 0, NULL, &skip, out, 0, "copy", dbg_f, dbg_l)));
+	  parse (&parsectx, &pkt, 0, NULL, &skip, out, 0, "copy",
+                 dbg_f, dbg_l)));
   return rc;
 }
 #else /*!DEBUG_PARSE_PACKET*/
 int
-copy_all_packets (IOBUF inp, IOBUF out)
+copy_all_packets (iobuf_t inp, iobuf_t out)
 {
   PACKET pkt;
+  struct parse_packet_ctx_s parsectx;
   int skip, rc = 0;
 
   if (! out)
     log_bug ("copy_all_packets: OUT may not be NULL.\n");
 
+  init_parse_packet (&parsectx, inp);
+
   do
     {
       init_packet (&pkt);
     }
-  while (!(rc = parse (inp, &pkt, 0, NULL, &skip, out, 0)));
+  while (!(rc = parse (&parsectx, &pkt, 0, NULL, &skip, out, 0)));
   return rc;
 }
 #endif /*!DEBUG_PARSE_PACKET*/
@@ -375,34 +384,44 @@ copy_all_packets (IOBUF inp, IOBUF out)
  */
 #ifdef DEBUG_PARSE_PACKET
 int
-dbg_copy_some_packets (IOBUF inp, IOBUF out, off_t stopoff,
+dbg_copy_some_packets (iobuf_t inp, iobuf_t out, off_t stopoff,
 		       const char *dbg_f, int dbg_l)
 {
+  int rc = 0;
   PACKET pkt;
-  int skip, rc = 0;
+  int skip;
+  struct parse_packet_ctx_s parsectx;
+
+  init_parse_packet (&parsectx, inp);
+
   do
     {
       if (iobuf_tell (inp) >= stopoff)
 	return 0;
       init_packet (&pkt);
     }
-  while (!(rc = parse (inp, &pkt, 0, NULL, &skip, out, 0,
+  while (!(rc = parse (&parsectx, &pkt, 0, NULL, &skip, out, 0,
 		       "some", dbg_f, dbg_l)));
   return rc;
 }
 #else /*!DEBUG_PARSE_PACKET*/
 int
-copy_some_packets (IOBUF inp, IOBUF out, off_t stopoff)
+copy_some_packets (iobuf_t inp, iobuf_t out, off_t stopoff)
 {
+  int rc = 0;
   PACKET pkt;
-  int skip, rc = 0;
+  struct parse_packet_ctx_s parsectx;
+  int skip;
+
+  init_parse_packet (&parsectx, inp);
+
   do
     {
       if (iobuf_tell (inp) >= stopoff)
 	return 0;
       init_packet (&pkt);
     }
-  while (!(rc = parse (inp, &pkt, 0, NULL, &skip, out, 0)));
+  while (!(rc = parse (&parsectx, &pkt, 0, NULL, &skip, out, 0)));
   return rc;
 }
 #endif /*!DEBUG_PARSE_PACKET*/
@@ -413,29 +432,38 @@ copy_some_packets (IOBUF inp, IOBUF out, off_t stopoff)
  */
 #ifdef DEBUG_PARSE_PACKET
 int
-dbg_skip_some_packets (IOBUF inp, unsigned n, const char *dbg_f, int dbg_l)
+dbg_skip_some_packets (iobuf_t inp, unsigned n, const char *dbg_f, int dbg_l)
 {
-  int skip, rc = 0;
+  int rc = 0;
+  int skip;
   PACKET pkt;
+  struct parse_packet_ctx_s parsectx;
+
+  init_parse_packet (&parsectx, inp);
 
   for (; n && !rc; n--)
     {
       init_packet (&pkt);
-      rc = parse (inp, &pkt, 0, NULL, &skip, NULL, 1, "skip", dbg_f, dbg_l);
+      rc = parse (&parsectx, &pkt, 0, NULL, &skip, NULL, 1, "skip",
+                  dbg_f, dbg_l);
     }
   return rc;
 }
 #else /*!DEBUG_PARSE_PACKET*/
 int
-skip_some_packets (IOBUF inp, unsigned n)
+skip_some_packets (iobuf_t inp, unsigned int n)
 {
-  int skip, rc = 0;
+  int rc = 0;
+  int skip;
   PACKET pkt;
+  struct parse_packet_ctx_s parsectx;
+
+  init_parse_packet (&parsectx, inp);
 
   for (; n && !rc; n--)
     {
       init_packet (&pkt);
-      rc = parse (inp, &pkt, 0, NULL, &skip, NULL, 1);
+      rc = parse (&parsectx, &pkt, 0, NULL, &skip, NULL, 1);
     }
   return rc;
 }
@@ -466,18 +494,20 @@ skip_some_packets (IOBUF inp, unsigned n)
    Note: ONLYKEYPKTS and DO_SKIP are only respected if OUT is NULL,
    i.e., the packets are not simply being copied.
 
-   If RETPOS is not NULL, then the position of INP (as returned by
-   iobuf_tell) is saved there before any data is read from INP.
+   If RETPOS is not NULL, then the position of CTX->INP (as returned by
+   iobuf_tell) is saved there before any data is read from CTX->INP.
   */
 static int
-parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
+parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
        int *skip, IOBUF out, int do_skip
 #ifdef DEBUG_PARSE_PACKET
        , const char *dbg_w, const char *dbg_f, int dbg_l
 #endif
        )
 {
-  int rc = 0, c, ctb, pkttype, lenbytes;
+  int rc = 0;
+  iobuf_t inp;
+  int c, ctb, pkttype, lenbytes;
   unsigned long pktlen;
   byte hdr[8];
   int hdrlen;
@@ -486,6 +516,8 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
   off_t pos;
 
   *skip = 0;
+  inp = ctx->inp;
+
   log_assert (!pkt->pkt.generic);
   if (retpos || list_mode)
     {

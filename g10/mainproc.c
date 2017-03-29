@@ -1330,6 +1330,7 @@ static int
 do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
 {
   PACKET *pkt;
+  struct parse_packet_ctx_s parsectx;
   int rc = 0;
   int any_data = 0;
   int newpkt;
@@ -1341,7 +1342,8 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
   pkt = xmalloc( sizeof *pkt );
   c->iobuf = a;
   init_packet(pkt);
-  while ((rc=parse_packet(a, pkt)) != -1)
+  init_parse_packet (&parsectx, a);
+  while ((rc=parse_packet (&parsectx, pkt)) != -1)
     {
       any_data = 1;
       if (rc)

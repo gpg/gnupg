@@ -762,6 +762,7 @@ static int
 read_block( IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
 {
   int rc;
+  struct parse_packet_ctx_s parsectx;
   PACKET *pkt;
   kbnode_t root = NULL;
   int in_cert, in_v3key;
@@ -779,8 +780,9 @@ read_block( IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
 
   pkt = xmalloc (sizeof *pkt);
   init_packet (pkt);
+  init_parse_packet (&parsectx, a);
   in_v3key = 0;
-  while ((rc=parse_packet(a, pkt)) != -1)
+  while ((rc=parse_packet (&parsectx, pkt)) != -1)
     {
       if (rc && (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY
                  && (pkt->pkttype == PKT_PUBLIC_KEY

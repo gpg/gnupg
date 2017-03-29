@@ -378,6 +378,7 @@ int
 keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
 {
     PACKET *pkt;
+    struct parse_packet_ctx_s parsectx;
     int rc;
     KBNODE keyblock = NULL, node, lastnode;
     IOBUF a;
@@ -407,10 +408,11 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
 
     pkt = xmalloc (sizeof *pkt);
     init_packet (pkt);
+    init_parse_packet (&parsectx, a);
     hd->found.n_packets = 0;;
     lastnode = NULL;
     save_mode = set_packet_list_mode(0);
-    while ((rc=parse_packet (a, pkt)) != -1) {
+    while ((rc=parse_packet (&parsectx, pkt)) != -1) {
         hd->found.n_packets++;
         if (gpg_err_code (rc) == GPG_ERR_UNKNOWN_PACKET) {
 	    free_packet (pkt);
@@ -985,6 +987,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
 {
   int rc;
   PACKET pkt;
+  struct parse_packet_ctx_s parsectx;
   int save_mode;
   off_t offset, main_offset;
   size_t n;
@@ -1120,12 +1123,13 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   if (DBG_LOOKUP)
     log_debug ("%s: %ssearching from start of resource.\n",
                __func__, scanned_from_start ? "" : "not ");
+  init_parse_packet (&parsectx, hd->current.iobuf);
   while (1)
     {
       byte afp[MAX_FINGERPRINT_LEN];
       size_t an;
 
-      rc = search_packet (hd->current.iobuf, &pkt, &offset, need_uid);
+      rc = search_packet (&parsectx, &pkt, &offset, need_uid);
       if (ignore_legacy && gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
         {
           free_packet (&pkt);

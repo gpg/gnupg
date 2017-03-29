@@ -1156,6 +1156,7 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
                       const u32 *sigstatus, kbnode_t *r_keyblock)
 {
   gpg_error_t err;
+  struct parse_packet_ctx_s parsectx;
   PACKET *pkt;
   kbnode_t keyblock = NULL;
   kbnode_t node, *tail;
@@ -1169,12 +1170,13 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
   if (!pkt)
     return gpg_error_from_syserror ();
   init_packet (pkt);
+  init_parse_packet (&parsectx, iobuf);
   save_mode = set_packet_list_mode (0);
   in_cert = 0;
   n_sigs = 0;
   tail = NULL;
   pk_count = uid_count = 0;
-  while ((err = parse_packet (iobuf, pkt)) != -1)
+  while ((err = parse_packet (&parsectx, pkt)) != -1)
     {
       if (gpg_err_code (err) == GPG_ERR_UNKNOWN_PACKET)
         {
