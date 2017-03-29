@@ -438,7 +438,6 @@ static pointer reverse_in_place(scheme *sc, pointer term, pointer list);
 static pointer revappend(scheme *sc, pointer a, pointer b);
 static void dump_stack_mark(scheme *);
 static pointer opexe_0(scheme *sc, enum scheme_opcodes op);
-static pointer opexe_3(scheme *sc, enum scheme_opcodes op);
 static pointer opexe_4(scheme *sc, enum scheme_opcodes op);
 static pointer opexe_5(scheme *sc, enum scheme_opcodes op);
 static pointer opexe_6(scheme *sc, enum scheme_opcodes op);
@@ -3323,6 +3322,50 @@ set_property(scheme *sc, pointer obj, pointer key, pointer value)
 
 
 
+static int is_list(scheme *sc, pointer a)
+{ return list_length(sc,a) >= 0; }
+
+/* Result is:
+   proper list: length
+   circular list: -1
+   not even a pair: -2
+   dotted list: -2 minus length before dot
+*/
+int list_length(scheme *sc, pointer a) {
+    int i=0;
+    pointer slow, fast;
+
+    slow = fast = a;
+    while (1)
+    {
+        if (fast == sc->NIL)
+                return i;
+        if (!is_pair(fast))
+                return -2 - i;
+        fast = cdr(fast);
+        ++i;
+        if (fast == sc->NIL)
+                return i;
+        if (!is_pair(fast))
+                return -2 - i;
+        ++i;
+        fast = cdr(fast);
+
+        /* Safe because we would have already returned if `fast'
+           encountered a non-pair. */
+        slow = cdr(slow);
+        if (fast == slow)
+        {
+            /* the fast pointer has looped back around and caught up
+               with the slow pointer, hence the structure is circular,
+               not of finite length, and therefore not a list */
+            return -1;
+        }
+    }
+}
+
+
+
 #define s_retbool(tf)    s_return(sc,(tf) ? sc->T : sc->F)
 
 static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
@@ -3332,6 +3375,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 #if USE_MATH
      double dd;
 #endif
+     int (*comp_func)(num, num) = NULL;
 
      switch (op) {
      CASE(OP_LOAD):       /* load */
@@ -4506,61 +4550,6 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           s_return(sc,car(sc->args));
      }
 
-     default:
-          snprintf(sc->strbuff,STRBUFFSIZE,"%d: illegal operator", sc->op);
-          Error_0(sc,sc->strbuff);
-     }
-     return sc->T;
-}
-
-static int is_list(scheme *sc, pointer a)
-{ return list_length(sc,a) >= 0; }
-
-/* Result is:
-   proper list: length
-   circular list: -1
-   not even a pair: -2
-   dotted list: -2 minus length before dot
-*/
-int list_length(scheme *sc, pointer a) {
-    int i=0;
-    pointer slow, fast;
-
-    slow = fast = a;
-    while (1)
-    {
-        if (fast == sc->NIL)
-                return i;
-        if (!is_pair(fast))
-                return -2 - i;
-        fast = cdr(fast);
-        ++i;
-        if (fast == sc->NIL)
-                return i;
-        if (!is_pair(fast))
-                return -2 - i;
-        ++i;
-        fast = cdr(fast);
-
-        /* Safe because we would have already returned if `fast'
-           encountered a non-pair. */
-        slow = cdr(slow);
-        if (fast == slow)
-        {
-            /* the fast pointer has looped back around and caught up
-               with the slow pointer, hence the structure is circular,
-               not of finite length, and therefore not a list */
-            return -1;
-        }
-    }
-}
-
-static pointer opexe_3(scheme *sc, enum scheme_opcodes op) {
-     pointer x;
-     num v;
-     int (*comp_func)(num,num)=0;
-
-     switch (op) {
      CASE(OP_NOT):        /* not */
           s_retbool(is_false(car(sc->args)));
      CASE(OP_BOOLP):       /* boolean? */
