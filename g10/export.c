@@ -1282,8 +1282,11 @@ write_keyblock_to_output (kbnode_t keyblock, int with_armor,
 
   for (node = keyblock; node; node = node->next)
     {
-      if (is_deleted_kbnode (node) || node->pkt->pkttype == PKT_RING_TRUST)
+      if (is_deleted_kbnode (node))
         continue;
+      if (node->pkt->pkttype == PKT_RING_TRUST && !(options & EXPORT_BACKUP))
+        continue;
+
       if (!pk && (node->pkt->pkttype == PKT_PUBLIC_KEY
                   || node->pkt->pkttype == PKT_SECRET_KEY))
         pk = node->pkt->pkt.public_key;
