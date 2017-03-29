@@ -671,8 +671,6 @@ copy_value(scheme *sc, pointer dst, pointer src)
 /* Tags are like property lists, but can be attached to arbitrary
  * values.  */
 
-#if USE_TAGS
-
 static pointer
 mk_tagged_value(scheme *sc, pointer v, pointer tag_car, pointer tag_cdr)
 {
@@ -708,14 +706,6 @@ get_tag(scheme *sc, pointer v)
     return v + 1;
   return sc->NIL;
 }
-
-#else
-
-#define mk_tagged_value(SC, X, A, B)	(X)
-#define has_tag(V)			0
-#define get_tag(SC, V)			(SC)->NIL
-
-#endif
 
 
 
@@ -4718,7 +4708,6 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 	  s_return(sc, get_property(sc, car(sc->args), cadr(sc->args)));
 #endif /* USE_PLIST */
 
-#if USE_TAGS
      CASE(OP_TAG_VALUE): {      /* not exposed */
 	  /* This tags sc->value with car(sc->args).  Useful to tag
 	   * results of opcode evaluations.  */
@@ -4738,7 +4727,6 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 
      CASE(OP_GET_TAG):        /* get-tag */
 	  s_return(sc, get_tag(sc, car(sc->args)));
-#endif /* USE_TAGS */
 
      CASE(OP_QUIT):       /* quit */
           if(is_pair(sc->args)) {
@@ -4927,12 +4915,12 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                } else if (sc->tok == TOK_DOT) {
                     Error_0(sc,"syntax error: illegal dot expression");
                } else {
-#if USE_TAGS && SHOW_ERROR_LINE
+#if SHOW_ERROR_LINE
 		    pointer filename;
 		    pointer lineno;
 #endif
                     sc->nesting_stack[sc->file_i]++;
-#if USE_TAGS && SHOW_ERROR_LINE
+#if SHOW_ERROR_LINE
 		    filename = sc->load_stack[sc->file_i].filename;
 		    lineno = sc->load_stack[sc->file_i].curr_line;
 

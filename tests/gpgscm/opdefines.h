@@ -154,11 +154,9 @@ _OP_DEF("append",                         0,  INF_ARG, TST_NONE,                
 _OP_DEF("set-symbol-property!",           3,  3,       TST_SYMBOL TST_SYMBOL TST_ANY,   OP_SET_SYMBOL_PROPERTY )
 _OP_DEF("symbol-property",                2,  2,       TST_SYMBOL TST_SYMBOL,           OP_SYMBOL_PROPERTY  )
 #endif
-#if USE_TAGS
 _OP_DEF(0,                                0,  0,       TST_NONE,                        OP_TAG_VALUE        )
 _OP_DEF("make-tagged-value",              2,  2,       TST_ANY TST_PAIR,                 OP_MK_TAGGED        )
 _OP_DEF("get-tag",                        1,  1,       TST_ANY,                         OP_GET_TAG          )
-#endif
 _OP_DEF("quit",                           0,  1,       TST_NUMBER,                      OP_QUIT             )
 _OP_DEF("gc",                             0,  0,       0,                               OP_GC               )
 _OP_DEF("gc-verbose",                     0,  1,       TST_NONE,                        OP_GCVERB           )

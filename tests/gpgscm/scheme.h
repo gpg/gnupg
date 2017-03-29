@@ -44,7 +44,6 @@ extern "C" {
 # define USE_DL 0
 # define USE_PLIST 0
 # define USE_SMALL_INTEGERS 0
-# define USE_TAGS 0
 # define USE_HISTORY 0
 #endif
 
@@ -76,11 +75,6 @@ extern "C" {
 
 #ifndef USE_PLIST
 # define USE_PLIST 0
-#endif
-
-/* If set, then every object can be tagged.  */
-#ifndef USE_TAGS
-# define USE_TAGS 1
 #endif
 
 /* Keep a history of function calls.  This enables a feature similar
