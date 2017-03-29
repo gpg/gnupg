@@ -438,7 +438,6 @@ static pointer reverse_in_place(scheme *sc, pointer term, pointer list);
 static pointer revappend(scheme *sc, pointer a, pointer b);
 static void dump_stack_mark(scheme *);
 static pointer opexe_0(scheme *sc, enum scheme_opcodes op);
-static pointer opexe_5(scheme *sc, enum scheme_opcodes op);
 static pointer opexe_6(scheme *sc, enum scheme_opcodes op);
 static void Eval_Cycle(scheme *sc, enum scheme_opcodes op);
 static void assign_syntax(scheme *sc, char *name);
@@ -4877,24 +4876,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
      CASE(OP_CURR_ENV): /* current-environment */
           s_return(sc,sc->envir);
 
-     default:
-          snprintf(sc->strbuff,STRBUFFSIZE,"%d: illegal operator", sc->op);
-          Error_0(sc,sc->strbuff);
-     }
-     return sc->T;
-}
 
-static pointer opexe_5(scheme *sc, enum scheme_opcodes op) {
-     pointer x;
-
-     if(sc->nesting!=0) {
-          int n=sc->nesting;
-          sc->nesting=0;
-          sc->retcode=-1;
-          Error_1(sc,"unmatched parentheses:",mk_integer(sc,n));
-     }
-
-     switch (op) {
      /* ========== reading part ========== */
      CASE(OP_READ):
           if(!is_pair(sc->args)) {
