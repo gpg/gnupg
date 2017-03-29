@@ -154,7 +154,7 @@ _OP_DEF("set-symbol-property!",           3,  3,       TST_SYMBOL TST_SYMBOL TST
 _OP_DEF("symbol-property",                2,  2,       TST_SYMBOL TST_SYMBOL,           OP_SYMBOL_PROPERTY  )
 #endif
 #if USE_TAGS
-_OP_DEF(NULL,                             0,  0,       TST_NONE,                        OP_TAG_VALUE        )
+_OP_DEF(0,                                0,  0,       TST_NONE,                        OP_TAG_VALUE        )
 _OP_DEF("make-tagged-value",              2,  2,       TST_ANY TST_PAIR,                 OP_MK_TAGGED        )
 _OP_DEF("get-tag",                        1,  1,       TST_ANY,                         OP_GET_TAG          )
 #endif

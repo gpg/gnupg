@@ -5262,25 +5262,25 @@ static const struct {
 #define TST_NATURAL "\016"
 
 typedef struct {
-  const char *name;
-  int min_arity;
-  int max_arity;
-  const char *arg_tests_encoding;
+  char name[31];	/* strlen ("call-with-current-continuation") + 1 */
+  unsigned char min_arity;
+  unsigned char max_arity;
+  char arg_tests_encoding[3];
 } op_code_info;
 
-#define INF_ARG 0xffff
+#define INF_ARG 0xff
 
 static const op_code_info dispatch_table[]= {
-#define _OP_DEF(A,B,C,D,OP) {A,B,C,D},
+#define _OP_DEF(A,B,C,D,OP) {{A},B,C,{D}},
 #include "opdefines.h"
 #undef _OP_DEF
-  { 0 }
+  {{0},0,0,{0}},
 };
 
 static const char *procname(pointer x) {
  int n=procnum(x);
  const char *name=dispatch_table[n].name;
- if(name==0) {
+ if (name[0] == 0) {
      name="ILLEGAL!";
  }
  return name;
@@ -5291,7 +5291,7 @@ static void Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
   sc->op = op;
   for (;;) {
     const op_code_info *pcd=dispatch_table+sc->op;
-    if (pcd->name!=0) { /* if built-in function, check arguments */
+    if (pcd->name[0] != 0) { /* if built-in function, check arguments */
       char msg[STRBUFFSIZE];
       int ok=1;
       int n=list_length(sc,sc->args);
@@ -5312,7 +5312,7 @@ static void Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
         pcd->max_arity);
       }
       if(ok) {
-        if(pcd->arg_tests_encoding!=0) {
+        if (pcd->arg_tests_encoding[0] != 0) {
           int i=0;
           int j;
           const char *t=pcd->arg_tests_encoding;
@@ -5326,7 +5326,8 @@ static void Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
               if(!tests[j].fct(arg)) break;
             }
 
-            if(t[1]!=0) {/* last test is replicated as necessary */
+            if (t[1] != 0 && i < sizeof pcd->arg_tests_encoding) {
+              /* last test is replicated as necessary */
               t++;
             }
             arglist=cdr(arglist);
@@ -5620,7 +5621,7 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   assign_syntax(sc, "case");
 
   for(i=0; i<n; i++) {
-    if(dispatch_table[i].name!=0) {
+    if (dispatch_table[i].name[0] != 0) {
       assign_proc(sc, (enum scheme_opcodes)i, dispatch_table[i].name);
     }
   }
