@@ -438,7 +438,6 @@ static pointer reverse_in_place(scheme *sc, pointer term, pointer list);
 static pointer revappend(scheme *sc, pointer a, pointer b);
 static void dump_stack_mark(scheme *);
 static pointer opexe_0(scheme *sc, enum scheme_opcodes op);
-static pointer opexe_1(scheme *sc, enum scheme_opcodes op);
 static pointer opexe_2(scheme *sc, enum scheme_opcodes op);
 static pointer opexe_3(scheme *sc, enum scheme_opcodes op);
 static pointer opexe_4(scheme *sc, enum scheme_opcodes op);
@@ -3744,17 +3743,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                sc->args = sc->NIL;
                s_thread_to(sc,OP_BEGIN);
           }
-     default:
-          snprintf(sc->strbuff,STRBUFFSIZE,"%d: illegal operator", sc->op);
-          Error_0(sc,sc->strbuff);
-     }
-     return sc->T;
-}
 
-static pointer opexe_1(scheme *sc, enum scheme_opcodes op) {
-     pointer x, y;
-
-     switch (op) {
      CASE(OP_LET0REC):    /* letrec */
           new_frame_in_env(sc, sc->envir);
           sc->args = sc->NIL;
