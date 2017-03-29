@@ -2963,8 +2963,7 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
 #if USE_THREADED_CODE
 
 /* Do not bounce back to Eval_Cycle but execute A by jumping directly
- * to it.  Only applicable if A is part of the same dispatch
- * function.  */
+ * to it.  */
 #define s_thread_to(sc, a)	\
      BEGIN			\
      op = (int) (a);		\
@@ -2972,7 +2971,7 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
      END
 
 /* Define a label OP and emit a case statement for OP.  For use in the
- * dispatch functions.  The slightly peculiar goto that is never
+ * dispatch function.  The slightly peculiar goto that is never
  * executed avoids warnings about unused labels.  */
 #define CASE(OP)	if (0) goto OP; OP: case OP
 
@@ -3397,7 +3396,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
          {
            sc->args=sc->NIL;
            sc->nesting = sc->nesting_stack[0];
-           s_goto(sc,OP_QUIT);
+           s_thread_to(sc,OP_QUIT);
          }
        else
          {
@@ -3434,7 +3433,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           sc->tok = token(sc);
           if(sc->tok==TOK_EOF)
         { s_return(sc,sc->EOF_OBJ); }
-          s_goto(sc,OP_RDSEXPR);
+          s_thread_to(sc,OP_RDSEXPR);
 
      CASE(OP_GENSYM):
           s_return(sc, gensym(sc));
@@ -3449,7 +3448,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
        if(file_interactive(sc)) {
          sc->print_flag = 1;
          sc->args = sc->value;
-         s_goto(sc,OP_P0LIST);
+         s_thread_to(sc,OP_P0LIST);
        } else {
          s_return(sc,sc->value);
        }
@@ -3461,7 +3460,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
          s_save(sc,OP_REAL_EVAL,sc->args,sc->code);
          sc->args=sc->code;
          putstr(sc,"\nEval: ");
-         s_goto(sc,OP_P0LIST);
+         s_thread_to(sc,OP_P0LIST);
        }
        /* fall through */
      CASE(OP_REAL_EVAL):
@@ -3550,7 +3549,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
          sc->print_flag = 1;
          /*  sc->args=cons(sc,sc->code,sc->args);*/
          putstr(sc,"\nApply to: ");
-         s_goto(sc,OP_P0LIST);
+         s_thread_to(sc,OP_P0LIST);
        }
        /* fall through */
      CASE(OP_REAL_APPLY):
@@ -3856,7 +3855,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                sc->code = cadar(sc->code);
                sc->args = sc->NIL;
 	       s_clear_flag(sc, TAIL_CONTEXT);
-               s_goto(sc,OP_EVAL);
+               s_thread_to(sc,OP_EVAL);
           } else {  /* end */
                sc->args = reverse_in_place(sc, sc->NIL, sc->args);
                sc->code = car(sc->args);
@@ -3870,7 +3869,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           }
           sc->code = cdr(sc->code);
           sc->args = sc->NIL;
-          s_goto(sc,OP_BEGIN);
+          s_thread_to(sc,OP_BEGIN);
 
      CASE(OP_COND0):      /* cond */
           if (!is_pair(sc->code)) {
@@ -3879,7 +3878,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           s_save(sc,OP_COND1, sc->NIL, sc->code);
           sc->code = caar(sc->code);
 	  s_clear_flag(sc, TAIL_CONTEXT);
-          s_goto(sc,OP_EVAL);
+          s_thread_to(sc,OP_EVAL);
 
      CASE(OP_COND1):      /* cond */
           if (is_true(sc->value)) {
@@ -3894,9 +3893,9 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                     x=cons(sc, sc->QUOTE, cons(sc, sc->value, sc->NIL));
                     sc->code=cons(sc,cadr(sc->code),cons(sc,x,sc->NIL));
 		    gc_enable(sc);
-                    s_goto(sc,OP_EVAL);
+                    s_thread_to(sc,OP_EVAL);
                }
-               s_goto(sc,OP_BEGIN);
+               s_thread_to(sc,OP_BEGIN);
           } else {
                if ((sc->code = cdr(sc->code)) == sc->NIL) {
                     s_return(sc,sc->NIL);
@@ -3904,7 +3903,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                     s_save(sc,OP_COND1, sc->NIL, sc->code);
                     sc->code = caar(sc->code);
 		    s_clear_flag(sc, TAIL_CONTEXT);
-                    s_goto(sc,OP_EVAL);
+                    s_thread_to(sc,OP_EVAL);
                }
           }
 
@@ -3922,7 +3921,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 	  if (cdr(sc->code) != sc->NIL)
 	       s_clear_flag(sc, TAIL_CONTEXT);
           sc->code = car(sc->code);
-          s_goto(sc,OP_EVAL);
+          s_thread_to(sc,OP_EVAL);
 
      CASE(OP_AND1):       /* and */
           if (is_false(sc->value)) {
@@ -3934,7 +3933,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 	       if (cdr(sc->code) != sc->NIL)
 		    s_clear_flag(sc, TAIL_CONTEXT);
                sc->code = car(sc->code);
-               s_goto(sc,OP_EVAL);
+               s_thread_to(sc,OP_EVAL);
           }
 
      CASE(OP_OR0):        /* or */
@@ -3945,7 +3944,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 	  if (cdr(sc->code) != sc->NIL)
 	       s_clear_flag(sc, TAIL_CONTEXT);
           sc->code = car(sc->code);
-          s_goto(sc,OP_EVAL);
+          s_thread_to(sc,OP_EVAL);
 
      CASE(OP_OR1):        /* or */
           if (is_true(sc->value)) {
@@ -3957,13 +3956,13 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 	       if (cdr(sc->code) != sc->NIL)
 		    s_clear_flag(sc, TAIL_CONTEXT);
                sc->code = car(sc->code);
-               s_goto(sc,OP_EVAL);
+               s_thread_to(sc,OP_EVAL);
           }
 
      CASE(OP_C0STREAM):   /* cons-stream */
           s_save(sc,OP_C1STREAM, sc->NIL, cdr(sc->code));
           sc->code = car(sc->code);
-          s_goto(sc,OP_EVAL);
+          s_thread_to(sc,OP_EVAL);
 
      CASE(OP_C1STREAM):   /* cons-stream */
           sc->args = sc->value;  /* save sc->value to register sc->args for gc */
@@ -3986,7 +3985,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                Error_0(sc,"variable is not a symbol");
           }
           s_save(sc,OP_MACRO1, sc->NIL, x);
-          s_goto(sc,OP_EVAL);
+          s_thread_to(sc,OP_EVAL);
 
      CASE(OP_MACRO1): {   /* macro */
 	  pointer *sslot;
@@ -4004,7 +4003,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           s_save(sc,OP_CASE1, sc->NIL, cdr(sc->code));
           sc->code = car(sc->code);
 	  s_clear_flag(sc, TAIL_CONTEXT);
-          s_goto(sc,OP_EVAL);
+          s_thread_to(sc,OP_EVAL);
 
      CASE(OP_CASE1):      /* case */
           for (x = sc->code; x != sc->NIL; x = cdr(x)) {
@@ -4023,11 +4022,11 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           if (x != sc->NIL) {
                if (is_pair(caar(x))) {
                     sc->code = cdar(x);
-                    s_goto(sc,OP_BEGIN);
+                    s_thread_to(sc,OP_BEGIN);
                } else {/* else */
                     s_save(sc,OP_CASE2, sc->NIL, cdar(x));
                     sc->code = caar(x);
-                    s_goto(sc,OP_EVAL);
+                    s_thread_to(sc,OP_EVAL);
                }
           } else {
                s_return(sc,sc->NIL);
@@ -4035,7 +4034,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 
      CASE(OP_CASE2):      /* case */
           if (is_true(sc->value)) {
-               s_goto(sc,OP_BEGIN);
+               s_thread_to(sc,OP_BEGIN);
           } else {
                s_return(sc,sc->NIL);
           }
@@ -4044,21 +4043,21 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           sc->code = car(sc->args);
           sc->args = list_star(sc,cdr(sc->args));
           /*sc->args = cadr(sc->args);*/
-          s_goto(sc,OP_APPLY);
+          s_thread_to(sc,OP_APPLY);
 
      CASE(OP_PEVAL): /* eval */
           if(cdr(sc->args)!=sc->NIL) {
                sc->envir=cadr(sc->args);
           }
           sc->code = car(sc->args);
-          s_goto(sc,OP_EVAL);
+          s_thread_to(sc,OP_EVAL);
 
      CASE(OP_CONTINUATION):    /* call-with-current-continuation */
           sc->code = car(sc->args);
 	  gc_disable(sc, 2);
           sc->args = cons(sc, mk_continuation(sc, sc->dump), sc->NIL);
 	  gc_enable(sc);
-          s_goto(sc,OP_APPLY);
+          s_thread_to(sc,OP_APPLY);
 
 #if USE_MATH
      CASE(OP_INEX2EX):    /* inexact->exact */
@@ -4637,7 +4636,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                /* Should change type to closure here */
                s_save(sc, OP_SAVE_FORCED, sc->NIL, sc->code);
                sc->args = sc->NIL;
-               s_goto(sc,OP_APPLY);
+               s_thread_to(sc,OP_APPLY);
           } else {
                s_return(sc,sc->code);
           }
@@ -4662,7 +4661,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           } else {
                sc->print_flag = 0;
           }
-          s_goto(sc,OP_P0LIST);
+          s_thread_to(sc,OP_P0LIST);
 
      CASE(OP_NEWLINE):    /* newline */
           if(is_pair(sc->args)) {
@@ -4692,11 +4691,11 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                s_save(sc,OP_ERR1, cdr(sc->args), sc->NIL);
                sc->args = car(sc->args);
                sc->print_flag = 1;
-               s_goto(sc,OP_P0LIST);
+               s_thread_to(sc,OP_P0LIST);
           } else {
                putstr(sc, "\n");
                if(sc->interactive_repl) {
-                    s_goto(sc,OP_T0LVL);
+                    s_thread_to(sc,OP_T0LVL);
                } else {
                     return sc->NIL;
                }
@@ -4879,19 +4878,19 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
      /* ========== reading part ========== */
      CASE(OP_READ):
           if(!is_pair(sc->args)) {
-               s_goto(sc,OP_READ_INTERNAL);
+               s_thread_to(sc,OP_READ_INTERNAL);
           }
           if(!is_inport(car(sc->args))) {
                Error_1(sc,"read: not an input port:",car(sc->args));
           }
           if(car(sc->args)==sc->inport) {
-               s_goto(sc,OP_READ_INTERNAL);
+               s_thread_to(sc,OP_READ_INTERNAL);
           }
           x=sc->inport;
           sc->inport=car(sc->args);
           x=cons(sc,x,sc->NIL);
           s_save(sc,OP_SET_INPORT, x, sc->NIL);
-          s_goto(sc,OP_READ_INTERNAL);
+          s_thread_to(sc,OP_READ_INTERNAL);
 
      CASE(OP_READ_CHAR): /* read-char */
      CASE(OP_PEEK_CHAR): /* peek-char */ {
@@ -5000,7 +4999,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                     Error_0(sc,"undefined sharp expression");
                } else {
                     sc->code=cons(sc,slot_value_in_env(f),sc->NIL);
-                    s_goto(sc,OP_EVAL);
+                    s_thread_to(sc,OP_EVAL);
                }
           }
           case TOK_SHARP_CONST:
@@ -5077,14 +5076,14 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 
      CASE(OP_RDVEC):
           /*sc->code=cons(sc,mk_proc(sc,OP_VECTOR),sc->value);
-          s_goto(sc,OP_EVAL); Cannot be quoted*/
+          s_thread_to(sc,OP_EVAL); Cannot be quoted*/
           /*x=cons(sc,mk_proc(sc,OP_VECTOR),sc->value);
           s_return(sc,x); Cannot be part of pairs*/
           /*sc->code=mk_proc(sc,OP_VECTOR);
           sc->args=sc->value;
-          s_goto(sc,OP_APPLY);*/
+          s_thread_to(sc,OP_APPLY);*/
           sc->args=sc->value;
-          s_goto(sc,OP_VECTOR);
+          s_thread_to(sc,OP_VECTOR);
 
      /* ========== printing part ========== */
      CASE(OP_P0LIST):
