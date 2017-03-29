@@ -438,7 +438,6 @@ static pointer reverse_in_place(scheme *sc, pointer term, pointer list);
 static pointer revappend(scheme *sc, pointer a, pointer b);
 static void dump_stack_mark(scheme *);
 static pointer opexe_0(scheme *sc, enum scheme_opcodes op);
-static pointer opexe_4(scheme *sc, enum scheme_opcodes op);
 static pointer opexe_5(scheme *sc, enum scheme_opcodes op);
 static pointer opexe_6(scheme *sc, enum scheme_opcodes op);
 static void Eval_Cycle(scheme *sc, enum scheme_opcodes op);
@@ -4633,17 +4632,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           s_retbool(car(sc->args) == cadr(sc->args));
      CASE(OP_EQV):        /* eqv? */
           s_retbool(eqv(car(sc->args), cadr(sc->args)));
-     default:
-          snprintf(sc->strbuff,STRBUFFSIZE,"%d: illegal operator", sc->op);
-          Error_0(sc,sc->strbuff);
-     }
-     return sc->T;
-}
 
-static pointer opexe_4(scheme *sc, enum scheme_opcodes op) {
-     pointer x, y;
-
-     switch (op) {
      CASE(OP_FORCE):      /* force */
           sc->code = car(sc->args);
           if (is_promise(sc->code)) {
@@ -4823,7 +4812,6 @@ static pointer opexe_4(scheme *sc, enum scheme_opcodes op) {
           }
           s_return(sc,p);
 	  break;
-     default: assert (! "reached");
      }
 
 #if USE_STRING_PORTS
@@ -4889,6 +4877,9 @@ static pointer opexe_4(scheme *sc, enum scheme_opcodes op) {
      CASE(OP_CURR_ENV): /* current-environment */
           s_return(sc,sc->envir);
 
+     default:
+          snprintf(sc->strbuff,STRBUFFSIZE,"%d: illegal operator", sc->op);
+          Error_0(sc,sc->strbuff);
      }
      return sc->T;
 }
