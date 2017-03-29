@@ -5213,8 +5213,6 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
      return sc->T; /* NOTREACHED */
 }
 
-typedef pointer (*dispatch_func)(scheme *, enum scheme_opcodes);
-
 typedef int (*test_predicate)(pointer);
 
 static int is_any(pointer p) {
@@ -5265,7 +5263,6 @@ static const struct {
 #define TST_NATURAL "\016"
 
 typedef struct {
-  dispatch_func func;
   const char *name;
   int min_arity;
   int max_arity;
@@ -5275,7 +5272,7 @@ typedef struct {
 #define INF_ARG 0xffff
 
 static const op_code_info dispatch_table[]= {
-#define _OP_DEF(A,B,C,D,E,OP) {A,B,C,D,E},
+#define _OP_DEF(A,B,C,D,OP) {A,B,C,D},
 #include "opdefines.h"
 #undef _OP_DEF
   { 0 }
@@ -5354,7 +5351,7 @@ static void Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
       }
     }
     ok_to_freely_gc(sc);
-    if (pcd->func(sc, (enum scheme_opcodes)sc->op) == sc->NIL) {
+    if (opexe_0(sc, (enum scheme_opcodes)sc->op) == sc->NIL) {
       return;
     }
     if(sc->no_memory) {
