@@ -438,7 +438,6 @@ static pointer reverse_in_place(scheme *sc, pointer term, pointer list);
 static pointer revappend(scheme *sc, pointer a, pointer b);
 static void dump_stack_mark(scheme *);
 static pointer opexe_0(scheme *sc, enum scheme_opcodes op);
-static pointer opexe_2(scheme *sc, enum scheme_opcodes op);
 static pointer opexe_3(scheme *sc, enum scheme_opcodes op);
 static pointer opexe_4(scheme *sc, enum scheme_opcodes op);
 static pointer opexe_5(scheme *sc, enum scheme_opcodes op);
@@ -3276,11 +3275,63 @@ history_flatten(scheme *sc)
 
 
 
+#if USE_PLIST
+static pointer
+get_property(scheme *sc, pointer obj, pointer key)
+{
+  pointer x;
+
+  assert (is_symbol(obj));
+  assert (is_symbol(key));
+
+  for (x = symprop(obj); x != sc->NIL; x = cdr(x)) {
+    if (caar(x) == key)
+      break;
+  }
+
+  if (x != sc->NIL)
+    return cdar(x);
+
+  return sc->NIL;
+}
+
+static pointer
+set_property(scheme *sc, pointer obj, pointer key, pointer value)
+{
+#define set_property_allocates	2
+  pointer x;
+
+  assert (is_symbol(obj));
+  assert (is_symbol(key));
+
+  for (x = symprop(obj); x != sc->NIL; x = cdr(x)) {
+    if (caar(x) == key)
+      break;
+  }
+
+  if (x != sc->NIL)
+    cdar(x) = value;
+  else {
+    gc_disable(sc, gc_reservations(set_property));
+    symprop(obj) = cons(sc, cons(sc, key, value), symprop(obj));
+    gc_enable(sc);
+  }
+
+  return sc->T;
+}
+#endif
+
+
+
 #define s_retbool(tf)    s_return(sc,(tf) ? sc->T : sc->F)
 
 static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
      pointer x, y;
      pointer callsite;
+     num v;
+#if USE_MATH
+     double dd;
+#endif
 
      switch (op) {
      CASE(OP_LOAD):       /* load */
@@ -3968,67 +4019,6 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
 	  gc_enable(sc);
           s_goto(sc,OP_APPLY);
 
-     default:
-          snprintf(sc->strbuff,STRBUFFSIZE,"%d: illegal operator", sc->op);
-          Error_0(sc,sc->strbuff);
-     }
-     return sc->T;
-}
-
-#if USE_PLIST
-static pointer
-get_property(scheme *sc, pointer obj, pointer key)
-{
-  pointer x;
-
-  assert (is_symbol(obj));
-  assert (is_symbol(key));
-
-  for (x = symprop(obj); x != sc->NIL; x = cdr(x)) {
-    if (caar(x) == key)
-      break;
-  }
-
-  if (x != sc->NIL)
-    return cdar(x);
-
-  return sc->NIL;
-}
-
-static pointer
-set_property(scheme *sc, pointer obj, pointer key, pointer value)
-{
-#define set_property_allocates	2
-  pointer x;
-
-  assert (is_symbol(obj));
-  assert (is_symbol(key));
-
-  for (x = symprop(obj); x != sc->NIL; x = cdr(x)) {
-    if (caar(x) == key)
-      break;
-  }
-
-  if (x != sc->NIL)
-    cdar(x) = value;
-  else {
-    gc_disable(sc, gc_reservations(set_property));
-    symprop(obj) = cons(sc, cons(sc, key, value), symprop(obj));
-    gc_enable(sc);
-  }
-
-  return sc->T;
-}
-#endif
-
-static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
-     pointer x;
-     num v;
-#if USE_MATH
-     double dd;
-#endif
-
-     switch (op) {
 #if USE_MATH
      CASE(OP_INEX2EX):    /* inexact->exact */
           x=car(sc->args);
