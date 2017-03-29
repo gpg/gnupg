@@ -439,8 +439,8 @@ static pointer revappend(scheme *sc, pointer a, pointer b);
 static void dump_stack_mark(scheme *);
 static pointer opexe_0(scheme *sc, enum scheme_opcodes op);
 static void Eval_Cycle(scheme *sc, enum scheme_opcodes op);
-static void assign_syntax(scheme *sc, char *name);
-static int syntaxnum(pointer p);
+static void assign_syntax(scheme *sc, enum scheme_opcodes op, char *name);
+static int syntaxnum(scheme *sc, pointer p);
 static void assign_proc(scheme *sc, enum scheme_opcodes, const char *name);
 
 #define num_ivalue(n)       (n.is_fixnum?(n).value.ivalue:(long)(n).value.rvalue)
@@ -3443,7 +3443,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           } else if (is_pair(sc->code)) {
                if (is_syntax(x = car(sc->code))) {     /* SYNTAX */
                     sc->code = cdr(sc->code);
-                    s_goto(sc,syntaxnum(x));
+                    s_goto(sc, syntaxnum(sc, x));
                } else {/* first, eval top element and eval arguments */
                     s_save(sc,OP_E0ARGS, sc->NIL, sc->code);
                     /* If no macros => s_save(sc,OP_E1ARGS, sc->NIL, cdr(sc->code));*/
@@ -5332,15 +5332,28 @@ static void Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
 
 /* ========== Initialization of internal keywords ========== */
 
-static void assign_syntax(scheme *sc, char *name) {
-     pointer x;
+/* Symbols representing syntax are tagged with (OP . '()).  */
+static void assign_syntax(scheme *sc, enum scheme_opcodes op, char *name) {
+     pointer x, y;
      pointer *slot;
 
      x = oblist_find_by_name(sc, name, &slot);
      assert (x == sc->NIL);
 
-     x = oblist_add_by_name(sc, name, slot);
-     typeflag(x) |= T_SYNTAX;
+     x = immutable_cons(sc, mk_string(sc, name), sc->NIL);
+     typeflag(x) = T_SYMBOL | T_SYNTAX;
+     setimmutable(car(x));
+     y = mk_tagged_value(sc, x, mk_integer(sc, op), sc->NIL);
+     free_cell(sc, x);
+     setimmutable(get_tag(sc, y));
+     *slot = immutable_cons(sc, y, *slot);
+}
+
+/* Returns the opcode for the syntax represented by P.  */
+static int syntaxnum(scheme *sc, pointer p) {
+  int op = ivalue_unchecked(car(get_tag(sc, p)));
+  assert (op < OP_MAXDEFINED);
+  return op;
 }
 
 static void assign_proc(scheme *sc, enum scheme_opcodes op, const char *name) {
@@ -5359,41 +5372,6 @@ static pointer mk_proc(scheme *sc, enum scheme_opcodes op) {
      ivalue_unchecked(y) = (long) op;
      set_num_integer(y);
      return y;
-}
-
-/* Hard-coded for the given keywords. Remember to rewrite if more are added! */
-static int syntaxnum(pointer p) {
-     const char *s=strvalue(car(p));
-     switch(strlength(car(p))) {
-     case 2:
-          if(s[0]=='i') return OP_IF0;        /* if */
-          else return OP_OR0;                 /* or */
-     case 3:
-          if(s[0]=='a') return OP_AND0;      /* and */
-          else return OP_LET0;               /* let */
-     case 4:
-          switch(s[3]) {
-          case 'e': return OP_CASE0;         /* case */
-          case 'd': return OP_COND0;         /* cond */
-          case '*': return OP_LET0AST;       /* let* */
-          default: return OP_SET0;           /* set! */
-          }
-     case 5:
-          switch(s[2]) {
-          case 'g': return OP_BEGIN;         /* begin */
-          case 'l': return OP_DELAY;         /* delay */
-          case 'c': return OP_MACRO0;        /* macro */
-          default: return OP_QUOTE;          /* quote */
-          }
-     case 6:
-          switch(s[2]) {
-          case 'm': return OP_LAMBDA;        /* lambda */
-          case 'f': return OP_DEF0;          /* define */
-          default: return OP_LET0REC;        /* letrec */
-          }
-     default:
-          return OP_C0STREAM;                /* cons-stream */
-     }
 }
 
 /* initialization of TinyScheme */
@@ -5572,22 +5550,22 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   x = mk_symbol(sc,"else");
   new_slot_in_env(sc, x, sc->T);
 
-  assign_syntax(sc, "lambda");
-  assign_syntax(sc, "quote");
-  assign_syntax(sc, "define");
-  assign_syntax(sc, "if");
-  assign_syntax(sc, "begin");
-  assign_syntax(sc, "set!");
-  assign_syntax(sc, "let");
-  assign_syntax(sc, "let*");
-  assign_syntax(sc, "letrec");
-  assign_syntax(sc, "cond");
-  assign_syntax(sc, "delay");
-  assign_syntax(sc, "and");
-  assign_syntax(sc, "or");
-  assign_syntax(sc, "cons-stream");
-  assign_syntax(sc, "macro");
-  assign_syntax(sc, "case");
+  assign_syntax(sc, OP_LAMBDA, "lambda");
+  assign_syntax(sc, OP_QUOTE, "quote");
+  assign_syntax(sc, OP_DEF0, "define");
+  assign_syntax(sc, OP_IF0, "if");
+  assign_syntax(sc, OP_BEGIN, "begin");
+  assign_syntax(sc, OP_SET0, "set!");
+  assign_syntax(sc, OP_LET0, "let");
+  assign_syntax(sc, OP_LET0AST, "let*");
+  assign_syntax(sc, OP_LET0REC, "letrec");
+  assign_syntax(sc, OP_COND0, "cond");
+  assign_syntax(sc, OP_DELAY, "delay");
+  assign_syntax(sc, OP_AND0, "and");
+  assign_syntax(sc, OP_OR0, "or");
+  assign_syntax(sc, OP_C0STREAM, "cons-stream");
+  assign_syntax(sc, OP_MACRO0, "macro");
+  assign_syntax(sc, OP_CASE0, "case");
 
   for(i=0; i<n; i++) {
     if (dispatch_table[i].name[0] != 0) {
