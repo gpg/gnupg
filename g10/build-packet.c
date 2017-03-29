@@ -85,93 +85,101 @@ ctb_pkttype (int ctb)
 int
 build_packet( IOBUF out, PACKET *pkt )
 {
-    int new_ctb=0, rc=0, ctb;
-    int pkttype;
+  int rc = 0;
+  int new_ctb = 0;
+  int ctb, pkttype;
 
-    if( DBG_PACKET )
-	log_debug("build_packet() type=%d\n", pkt->pkttype );
-    log_assert( pkt->pkt.generic );
+  if (DBG_PACKET)
+    log_debug ("build_packet() type=%d\n", pkt->pkttype);
+  log_assert (pkt->pkt.generic);
 
-    switch ((pkttype = pkt->pkttype))
-      {
-      case PKT_PUBLIC_KEY:
-        if (pkt->pkt.public_key->seckey_info)
-          pkttype = PKT_SECRET_KEY;
-        break;
-      case PKT_PUBLIC_SUBKEY:
-        if (pkt->pkt.public_key->seckey_info)
-          pkttype = PKT_SECRET_SUBKEY;
-        break;
-      case PKT_PLAINTEXT: new_ctb = pkt->pkt.plaintext->new_ctb; break;
-      case PKT_ENCRYPTED:
-      case PKT_ENCRYPTED_MDC: new_ctb = pkt->pkt.encrypted->new_ctb; break;
-      case PKT_COMPRESSED:new_ctb = pkt->pkt.compressed->new_ctb; break;
-      case PKT_USER_ID:
-	if( pkt->pkt.user_id->attrib_data )
-	  pkttype = PKT_ATTRIBUTE;
-	break;
-      default: break;
-      }
+  switch ((pkttype = pkt->pkttype))
+    {
+    case PKT_PUBLIC_KEY:
+      if (pkt->pkt.public_key->seckey_info)
+        pkttype = PKT_SECRET_KEY;
+      break;
+    case PKT_PUBLIC_SUBKEY:
+      if (pkt->pkt.public_key->seckey_info)
+        pkttype = PKT_SECRET_SUBKEY;
+      break;
+    case PKT_PLAINTEXT:
+      new_ctb = pkt->pkt.plaintext->new_ctb;
+      break;
+    case PKT_ENCRYPTED:
+    case PKT_ENCRYPTED_MDC:
+      new_ctb = pkt->pkt.encrypted->new_ctb;
+      break;
+    case PKT_COMPRESSED:
+      new_ctb = pkt->pkt.compressed->new_ctb;
+      break;
+    case PKT_USER_ID:
+      if (pkt->pkt.user_id->attrib_data)
+        pkttype = PKT_ATTRIBUTE;
+      break;
+    default:
+      break;
+    }
 
-    if( new_ctb || pkttype > 15 ) /* new format */
-	ctb = 0xc0 | (pkttype & 0x3f);
-    else
-	ctb = 0x80 | ((pkttype & 15)<<2);
-    switch( pkttype )
-      {
-      case PKT_ATTRIBUTE:
-      case PKT_USER_ID:
-	rc = do_user_id( out, ctb, pkt->pkt.user_id );
-	break;
-      case PKT_OLD_COMMENT:
-      case PKT_COMMENT:
-	/*
-	  Ignore these.  Theoretically, this will never be called as
-	  we have no way to output comment packets any longer, but
-	  just in case there is some code path that would end up
-	  outputting a comment that was written before comments were
-	  dropped (in the public key?) this is a no-op.
-	*/
-	break;
-      case PKT_PUBLIC_SUBKEY:
-      case PKT_PUBLIC_KEY:
-      case PKT_SECRET_SUBKEY:
-      case PKT_SECRET_KEY:
-	rc = do_key (out, ctb, pkt->pkt.public_key);
-	break;
-      case PKT_SYMKEY_ENC:
-	rc = do_symkey_enc( out, ctb, pkt->pkt.symkey_enc );
-	break;
-      case PKT_PUBKEY_ENC:
-	rc = do_pubkey_enc( out, ctb, pkt->pkt.pubkey_enc );
-	break;
-      case PKT_PLAINTEXT:
-	rc = do_plaintext( out, ctb, pkt->pkt.plaintext );
-	break;
-      case PKT_ENCRYPTED:
-	rc = do_encrypted( out, ctb, pkt->pkt.encrypted );
-	break;
-      case PKT_ENCRYPTED_MDC:
-	rc = do_encrypted_mdc( out, ctb, pkt->pkt.encrypted );
-	break;
-      case PKT_COMPRESSED:
-	rc = do_compressed( out, ctb, pkt->pkt.compressed );
-	break;
-      case PKT_SIGNATURE:
-	rc = do_signature( out, ctb, pkt->pkt.signature );
-	break;
-      case PKT_ONEPASS_SIG:
-	rc = do_onepass_sig( out, ctb, pkt->pkt.onepass_sig );
-	break;
-      case PKT_RING_TRUST:
-	break; /* ignore it (keyring.c does write it directly)*/
-      case PKT_MDC: /* we write it directly, so we should never see it here. */
-      default:
-	log_bug("invalid packet type in build_packet()\n");
-	break;
-      }
+  if (new_ctb || pkttype > 15) /* new format */
+    ctb = (0xc0 | (pkttype & 0x3f));
+  else
+    ctb = (0x80 | ((pkttype & 15)<<2));
+  switch (pkttype)
+    {
+    case PKT_ATTRIBUTE:
+    case PKT_USER_ID:
+      rc = do_user_id (out, ctb, pkt->pkt.user_id);
+      break;
+    case PKT_OLD_COMMENT:
+    case PKT_COMMENT:
+      /* Ignore these.  Theoretically, this will never be called as we
+       * have no way to output comment packets any longer, but just in
+       * case there is some code path that would end up outputting a
+       * comment that was written before comments were dropped (in the
+       * public key?) this is a no-op. 	*/
+      break;
+    case PKT_PUBLIC_SUBKEY:
+    case PKT_PUBLIC_KEY:
+    case PKT_SECRET_SUBKEY:
+    case PKT_SECRET_KEY:
+      rc = do_key (out, ctb, pkt->pkt.public_key);
+      break;
+    case PKT_SYMKEY_ENC:
+      rc = do_symkey_enc (out, ctb, pkt->pkt.symkey_enc);
+      break;
+    case PKT_PUBKEY_ENC:
+      rc = do_pubkey_enc (out, ctb, pkt->pkt.pubkey_enc);
+      break;
+    case PKT_PLAINTEXT:
+      rc = do_plaintext (out, ctb, pkt->pkt.plaintext);
+      break;
+    case PKT_ENCRYPTED:
+      rc = do_encrypted (out, ctb, pkt->pkt.encrypted);
+      break;
+    case PKT_ENCRYPTED_MDC:
+      rc = do_encrypted_mdc (out, ctb, pkt->pkt.encrypted);
+      break;
+    case PKT_COMPRESSED:
+      rc = do_compressed (out, ctb, pkt->pkt.compressed);
+      break;
+    case PKT_SIGNATURE:
+      rc = do_signature (out, ctb, pkt->pkt.signature);
+      break;
+    case PKT_ONEPASS_SIG:
+      rc = do_onepass_sig (out, ctb, pkt->pkt.onepass_sig);
+      break;
+    case PKT_RING_TRUST:
+      /* Ignore it (keyring.c does write it directly)  */
+      break;
+    case PKT_MDC:
+      /* We write it directly, so we should never see it here. */
+    default:
+      log_bug ("invalid packet type in build_packet()\n");
+      break;
+    }
 
-    return rc;
+  return rc;
 }
 
 
@@ -262,34 +270,35 @@ gpg_mpi_write_nohdr (iobuf_t out, gcry_mpi_t a)
 u32
 calc_packet_length( PACKET *pkt )
 {
-    u32 n=0;
-    int new_ctb = 0;
+  u32 n = 0;
+  int new_ctb = 0;
 
-    log_assert (pkt->pkt.generic);
-    switch( pkt->pkttype ) {
-      case PKT_PLAINTEXT:
-	n = calc_plaintext( pkt->pkt.plaintext );
-	new_ctb = pkt->pkt.plaintext->new_ctb;
-	break;
-      case PKT_ATTRIBUTE:
-      case PKT_USER_ID:
-      case PKT_COMMENT:
-      case PKT_PUBLIC_KEY:
-      case PKT_SECRET_KEY:
-      case PKT_SYMKEY_ENC:
-      case PKT_PUBKEY_ENC:
-      case PKT_ENCRYPTED:
-      case PKT_SIGNATURE:
-      case PKT_ONEPASS_SIG:
-      case PKT_RING_TRUST:
-      case PKT_COMPRESSED:
-      default:
-	log_bug("invalid packet type in calc_packet_length()");
-	break;
+  log_assert (pkt->pkt.generic);
+  switch (pkt->pkttype)
+    {
+    case PKT_PLAINTEXT:
+      n = calc_plaintext (pkt->pkt.plaintext);
+      new_ctb = pkt->pkt.plaintext->new_ctb;
+      break;
+    case PKT_ATTRIBUTE:
+    case PKT_USER_ID:
+    case PKT_COMMENT:
+    case PKT_PUBLIC_KEY:
+    case PKT_SECRET_KEY:
+    case PKT_SYMKEY_ENC:
+    case PKT_PUBKEY_ENC:
+    case PKT_ENCRYPTED:
+    case PKT_SIGNATURE:
+    case PKT_ONEPASS_SIG:
+    case PKT_RING_TRUST:
+    case PKT_COMPRESSED:
+    default:
+      log_bug ("invalid packet type in calc_packet_length()");
+      break;
     }
 
-    n += calc_header_length(n, new_ctb);
-    return n;
+  n += calc_header_length (n, new_ctb);
+  return n;
 }
 
 
@@ -312,10 +321,10 @@ write_fake_data (IOBUF out, gcry_mpi_t a)
 
 
 /* Serialize the user id (RFC 4880, Section 5.11) or the user
-   attribute UID (Section 5.12) and write it to OUT.
-
-   CTB is the serialization's CTB.  It specifies the header format and
-   the packet's type.  The header length must not be set.  */
+ * attribute UID (Section 5.12) and write it to OUT.
+ *
+ * CTB is the serialization's CTB.  It specifies the header format and
+ * the packet's type.  The header length must not be set.  */
 static int
 do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
@@ -339,17 +348,17 @@ do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 
 
 /* Serialize the key (RFC 4880, Section 5.5) described by PK and write
-   it to OUT.
-
-   This function serializes both primary keys and subkeys with or
-   without a secret part.
-
-   CTB is the serialization's CTB.  It specifies the header format and
-   the packet's type.  The header length must not be set.
-
-   PK->VERSION specifies the serialization format.  A value of 0 means
-   to use the default version.  Currently, only version 4 packets are
-   supported.
+ * it to OUT.
+ *
+ * This function serializes both primary keys and subkeys with or
+ * without a secret part.
+ *
+ * CTB is the serialization's CTB.  It specifies the header format and
+ * the packet's type.  The header length must not be set.
+ *
+ * PK->VERSION specifies the serialization format.  A value of 0 means
+ * to use the default version.  Currently, only version 4 packets are
+ * supported.
  */
 static int
 do_key (iobuf_t out, int ctb, PKT_public_key *pk)
@@ -496,36 +505,33 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
   return err;
 }
 
-/* Serialize the symmetric-key encrypted session key packet (RFC 4880,
-   5.3) described by ENC and write it to OUT.
 
-   CTB is the serialization's CTB.  It specifies the header format and
-   the packet's type.  The header length must not be set.  */
+/* Serialize the symmetric-key encrypted session key packet (RFC 4880,
+ * 5.3) described by ENC and write it to OUT.
+ *
+ * CTB is the serialization's CTB.  It specifies the header format and
+ * the packet's type.  The header length must not be set.  */
 static int
 do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
 {
-    int rc = 0;
-    IOBUF a = iobuf_temp();
+  int rc = 0;
+  IOBUF a = iobuf_temp();
 
-    log_assert (ctb_pkttype (ctb) == PKT_SYMKEY_ENC);
+  log_assert (ctb_pkttype (ctb) == PKT_SYMKEY_ENC);
 
-    /* The only acceptable version.  */
-    log_assert( enc->version == 4 );
+  /* The only acceptable version.  */
+  log_assert( enc->version == 4 );
 
-    /* RFC 4880, Section 3.7.  */
-    switch( enc->s2k.mode )
-      {
-      /* Simple S2K.  */
-      case 0:
-      /* Salted S2K.  */
-      case 1:
-      /* Iterated and salted S2K.  */
-      case 3:
-        /* Reasonable values.  */
-        break;
+  /* RFC 4880, Section 3.7.  */
+  switch (enc->s2k.mode)
+    {
+    case 0: /* Simple S2K.  */
+    case 1: /* Salted S2K.  */
+    case 3: /* Iterated and salted S2K.  */
+      break; /* Reasonable values.  */
 
-      default:
-        log_bug("do_symkey_enc: s2k=%d\n", enc->s2k.mode );
+    default:
+      log_bug ("do_symkey_enc: s2k=%d\n", enc->s2k.mode);
     }
     iobuf_put( a, enc->version );
     iobuf_put( a, enc->cipher_algo );
