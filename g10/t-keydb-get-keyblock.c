@@ -61,4 +61,5 @@ do_test (int argc, char *argv[])
   TEST_P ("", ! rc);
 
   keydb_release (hd1);
+  release_kbnode (kb1);
 }

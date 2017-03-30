@@ -621,7 +621,7 @@ int set_packet_list_mode( int mode );
 struct parse_packet_ctx_s
 {
   iobuf_t inp;       /* The input stream with the packets.  */
-  PACKET *last_pkt;  /* The last parsed packet.  */
+  struct packet_struct last_pkt; /* The last parsed packet.  */
   int free_last_pkt; /* Indicates that LAST_PKT must be freed.  */
   int skip_meta;     /* Skip right trust packets.  */
 };
@@ -629,7 +629,8 @@ typedef struct parse_packet_ctx_s *parse_packet_ctx_t;
 
 #define init_parse_packet(a,i) do { \
     (a)->inp = (i);                 \
-    (a)->last_pkt = NULL;           \
+    (a)->last_pkt.pkttype = 0;      \
+    (a)->last_pkt.pkt.generic= NULL;\
     (a)->free_last_pkt = 0;         \
     (a)->skip_meta = 0;             \
   } while (0)

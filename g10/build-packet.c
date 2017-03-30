@@ -420,7 +420,7 @@ do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
   log_assert (ctb_pkttype (ctb) == PKT_USER_ID
               || ctb_pkttype (ctb) == PKT_ATTRIBUTE);
 
-  /* We need to take special care that doe user ID with a length of 0:
+  /* We need to take special care of a user ID with a length of 0:
    * Without forcing HDRLEN to 2 in this case an indeterminate length
    * packet would be written which is not allowed.  Note that we are
    * always called with a CTB indicating an old packet header format,

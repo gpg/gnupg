@@ -409,14 +409,15 @@ free_packet (PACKET *pkt, parse_packet_ctx_t parsectx)
 {
   if (!pkt || !pkt->pkt.generic)
     {
-      if (parsectx && parsectx->last_pkt)
+      if (parsectx && parsectx->last_pkt.pkt.generic)
         {
           if (parsectx->free_last_pkt)
             {
-              free_packet (parsectx->last_pkt, NULL);
+              free_packet (&parsectx->last_pkt, NULL);
               parsectx->free_last_pkt = 0;
             }
-          parsectx->last_pkt = NULL;
+          parsectx->last_pkt.pkttype = 0;
+          parsectx->last_pkt.pkt.generic = NULL;
         }
       return;
     }
@@ -427,8 +428,11 @@ free_packet (PACKET *pkt, parse_packet_ctx_t parsectx)
   /* If we have a parser context holding PKT then do not free the
    * packet but set a flag that the packet in the parser context is
    * now a deep copy.  */
-  if (parsectx && parsectx->last_pkt == pkt && !parsectx->free_last_pkt)
+  if (parsectx && !parsectx->free_last_pkt
+      && parsectx->last_pkt.pkttype == pkt->pkttype
+      && parsectx->last_pkt.pkt.generic == pkt->pkt.generic)
     {
+      parsectx->last_pkt = *pkt;
       parsectx->free_last_pkt = 1;
       pkt->pkt.generic = NULL;
       return;

@@ -833,14 +833,15 @@ parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
     }
 
   /* Store a shallow copy of certain packets in the context.  */
+  free_packet (NULL, ctx);
   if (!rc && (pkttype == PKT_PUBLIC_KEY
               || pkttype == PKT_SECRET_KEY
               || pkttype == PKT_USER_ID
               || pkttype == PKT_ATTRIBUTE
               || pkttype == PKT_SIGNATURE))
-    ctx->last_pkt = pkt;
-  else
-    ctx->last_pkt = NULL;
+    {
+      ctx->last_pkt = *pkt;
+    }
 
  leave:
   /* FIXME: We leak in case of an error (see the xmalloc's above).  */
@@ -2992,12 +2993,12 @@ parse_ring_trust (parse_packet_ctx_t ctx, unsigned long pktlen)
 
   /* Now transfer the data to the respective packet.  Do not do this
    * if SKIP_META is set.  */
-  if (!ctx->last_pkt || ctx->skip_meta)
+  if (!ctx->last_pkt.pkt.generic || ctx->skip_meta)
     ;
   else if (rt.subtype == RING_TRUST_SIG
-           && ctx->last_pkt->pkttype == PKT_SIGNATURE)
+           && ctx->last_pkt.pkttype == PKT_SIGNATURE)
     {
-      PKT_signature *sig = ctx->last_pkt->pkt.signature;
+      PKT_signature *sig = ctx->last_pkt.pkt.signature;
 
       if ((rt.sigcache & 1))
         {
@@ -3006,10 +3007,10 @@ parse_ring_trust (parse_packet_ctx_t ctx, unsigned long pktlen)
         }
     }
   else if (rt.subtype == RING_TRUST_UID
-           && (ctx->last_pkt->pkttype == PKT_USER_ID
-               || ctx->last_pkt->pkttype == PKT_ATTRIBUTE))
+           && (ctx->last_pkt.pkttype == PKT_USER_ID
+               || ctx->last_pkt.pkttype == PKT_ATTRIBUTE))
     {
-      PKT_user_id *uid = ctx->last_pkt->pkt.user_id;
+      PKT_user_id *uid = ctx->last_pkt.pkt.user_id;
 
       uid->keysrc = rt.keysrc;
       uid->keyupdate = rt.keyupdate;
@@ -3017,10 +3018,10 @@ parse_ring_trust (parse_packet_ctx_t ctx, unsigned long pktlen)
       rt.url = NULL;
     }
   else if (rt.subtype == RING_TRUST_KEY
-           && (ctx->last_pkt->pkttype == PKT_PUBLIC_KEY
-               || ctx->last_pkt->pkttype == PKT_SECRET_KEY))
+           && (ctx->last_pkt.pkttype == PKT_PUBLIC_KEY
+               || ctx->last_pkt.pkttype == PKT_SECRET_KEY))
     {
-      PKT_public_key *pk = ctx->last_pkt->pkt.public_key;
+      PKT_public_key *pk = ctx->last_pkt.pkt.public_key;
 
       pk->keysrc = rt.keysrc;
       pk->keyupdate = rt.keyupdate;
