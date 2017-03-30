@@ -50,7 +50,7 @@ static estream_t listfp;
 
 static int parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts,
 		  off_t * retpos, int *skip, IOBUF out, int do_skip
-#ifdef DEBUG_PARSE_PACKET
+#if DEBUG_PARSE_PACKET
 		  , const char *dbg_w, const char *dbg_f, int dbg_l
 #endif
   );
@@ -261,7 +261,7 @@ unknown_pubkey_warning (int algo)
 }
 
 
-#ifdef DEBUG_PARSE_PACKET
+#if DEBUG_PARSE_PACKET
 int
 dbg_parse_packet (parse_packet_ctx_t ctx, PACKET *pkt,
                   const char *dbg_f, int dbg_l)
@@ -295,7 +295,7 @@ parse_packet (parse_packet_ctx_t ctx, PACKET *pkt)
  * Like parse packet, but only return secret or public (sub)key
  * packets.
  */
-#ifdef DEBUG_PARSE_PACKET
+#if DEBUG_PARSE_PACKET
 int
 dbg_search_packet (parse_packet_ctx_t ctx, PACKET *pkt,
                    off_t * retpos, int with_uid,
@@ -331,7 +331,7 @@ search_packet (parse_packet_ctx_t ctx, PACKET *pkt,
 /*
  * Copy all packets from INP to OUT, thereby removing unused spaces.
  */
-#ifdef DEBUG_PARSE_PACKET
+#if DEBUG_PARSE_PACKET
 int
 dbg_copy_all_packets (iobuf_t inp, iobuf_t out, const char *dbg_f, int dbg_l)
 {
@@ -388,7 +388,7 @@ copy_all_packets (iobuf_t inp, iobuf_t out)
  * Stop at offset STOPoff (i.e. don't copy packets at this or later
  * offsets)
  */
-#ifdef DEBUG_PARSE_PACKET
+#if DEBUG_PARSE_PACKET
 int
 dbg_copy_some_packets (iobuf_t inp, iobuf_t out, off_t stopoff,
 		       const char *dbg_f, int dbg_l)
@@ -448,7 +448,7 @@ copy_some_packets (iobuf_t inp, iobuf_t out, off_t stopoff)
 /*
  * Skip over N packets
  */
-#ifdef DEBUG_PARSE_PACKET
+#if DEBUG_PARSE_PACKET
 int
 dbg_skip_some_packets (iobuf_t inp, unsigned n, const char *dbg_f, int dbg_l)
 {
@@ -524,7 +524,7 @@ skip_some_packets (iobuf_t inp, unsigned int n)
 static int
 parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
        int *skip, IOBUF out, int do_skip
-#ifdef DEBUG_PARSE_PACKET
+#if DEBUG_PARSE_PACKET
        , const char *dbg_w, const char *dbg_f, int dbg_l
 #endif
        )
@@ -747,7 +747,7 @@ parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
 
   if (DBG_PACKET)
     {
-#ifdef DEBUG_PARSE_PACKET
+#if DEBUG_PARSE_PACKET
       log_debug ("parse_packet(iob=%d): type=%d length=%lu%s (%s.%s.%d)\n",
 		 iobuf_id (inp), pkttype, pktlen, new_ctb ? " (new_ctb)" : "",
 		 dbg_w, dbg_f, dbg_l);
