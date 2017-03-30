@@ -1284,14 +1284,17 @@ write_keyblock_to_output (kbnode_t keyblock, int with_armor,
     {
       if (is_deleted_kbnode (node))
         continue;
-      if (node->pkt->pkttype == PKT_RING_TRUST && !(options & EXPORT_BACKUP))
-        continue;
+      if (node->pkt->pkttype == PKT_RING_TRUST)
+        continue; /* Skip - they should not be here anyway.  */
 
       if (!pk && (node->pkt->pkttype == PKT_PUBLIC_KEY
                   || node->pkt->pkttype == PKT_SECRET_KEY))
         pk = node->pkt->pkt.public_key;
 
-      err = build_packet (out_help? out_help : out, node->pkt);
+      if ((options & EXPORT_BACKUP))
+        err = build_packet_and_meta (out_help? out_help : out, node->pkt);
+      else
+        err = build_packet (out_help? out_help : out, node->pkt);
       if (err)
         {
           log_error ("build_packet(%d) failed: %s\n",
@@ -1555,9 +1558,8 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
       if (node->pkt->pkttype == PKT_COMMENT)
         continue;
 
-      /* Make sure that ring_trust packets are only exported in backup
-       * mode. */
-      if (node->pkt->pkttype == PKT_RING_TRUST && !(options & EXPORT_BACKUP))
+      /* Skip ring trust packets - they should not ne here anyway.  */
+      if (node->pkt->pkttype == PKT_RING_TRUST)
         continue;
 
       /* If exact is set, then we only export what was requested
@@ -1723,7 +1725,10 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
                     ski->iv[ski->ivlen] = xtoi_2 (s);
                 }
 
-              err = build_packet (out, node->pkt);
+              if ((options & EXPORT_BACKUP))
+                err = build_packet_and_meta (out, node->pkt);
+              else
+                err = build_packet (out, node->pkt);
               if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
                 {
                   stats->exported++;
@@ -1744,7 +1749,10 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
                 }
               else
                 {
-                  err = build_packet (out, node->pkt);
+                  if ((options & EXPORT_BACKUP))
+                    err = build_packet_and_meta (out, node->pkt);
+                  else
+                    err = build_packet (out, node->pkt);
                   if (node->pkt->pkttype == PKT_PUBLIC_KEY)
                     {
                       stats->exported++;
@@ -1775,7 +1783,10 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
         }
       else /* Not secret or common packets.  */
         {
-          err = build_packet (out, node->pkt);
+          if ((options & EXPORT_BACKUP))
+            err = build_packet_and_meta (out, node->pkt);
+          else
+            err = build_packet (out, node->pkt);
           if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
             {
               stats->exported++;

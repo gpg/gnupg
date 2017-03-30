@@ -1202,6 +1202,7 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
         case PKT_USER_ID:
         case PKT_ATTRIBUTE:
         case PKT_SIGNATURE:
+        case PKT_RING_TRUST:
           break; /* Allowed per RFC.  */
 
         default:
@@ -1458,14 +1459,13 @@ build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf, u32 **r_sigstatus)
         case PKT_SIGNATURE:
         case PKT_USER_ID:
         case PKT_ATTRIBUTE:
-          /* Note that we don't want the ring trust packets.  They are
-             not useful. */
+        case PKT_RING_TRUST:
           break;
         default:
           continue;
         }
 
-      err = build_packet (iobuf, node->pkt);
+      err = build_packet_and_meta (iobuf, node->pkt);
       if (err)
         {
           iobuf_close (iobuf);

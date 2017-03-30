@@ -1311,6 +1311,43 @@ CREATE TABLE signatures (
   S2K Specifier with an offset of 1000.
 
 
+* Format of the OpenPGP TRUST packet
+
+  According to RFC4880 (5.10), the trust packet (aka ring trust) is
+  only used within keyrings and contains data that records the user's
+  specifications of which key holds trusted introducers.  The RFC also
+  states that the format of this packet is implementation defined and
+  SHOULD NOT be emitted to output streams or should be ignored on
+  import.  GnuPG uses this packet in several additional ways:
+
+  - 1 octet :: Trust-Value (only used by Subtype SIG)
+  - 1 octet :: Signature-Cache (only used by Subtype SIG; value must
+               be less than 128)
+  - 3 octets :: Fixed value: "gpg"
+  - 1 octet  :: Subtype
+               - 0 :: Signature cache (SIG)
+               - 1 :: Key source on the primary key (KEY)
+               - 2 :: Key source on a user id (UID)
+  - 1 octet :: Key Source; i.e. the origin of the key:
+               - 0 :: Unknown source.
+               - 1 :: Direct import from a file.
+               - 2 :: Public keyserver.
+               - 3 :: Preferred keysrver.
+               - 4 :: Web Key Directory.
+               - 5 :: Web Key Directory via sub-domain.
+               - 6 :: OpenPGP DANE.
+  - 4 octets :: Time of last update.  This is a a four-octet scalar
+                with the seconds since Epoch.
+  - 1 octet  :: Scalar with the length of the following field.
+  - N octets :: String with the URL of the source.  This may be a
+                zero-length string.
+
+  If the packets contains only two octets a Subtype of 0 is assumed;
+  this is the only format recognized by GnuPG versions < 2.1.18.
+  Trust-Value and Signature-Cache must be zero for all subtypes other
+  than SIG.
+
+
 * Keyserver helper message format
 
   *This information is obsolete*

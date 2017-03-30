@@ -74,8 +74,8 @@ static int parse_attribute (IOBUF inp, int pkttype, unsigned long pktlen,
 			    PACKET * packet);
 static int parse_comment (IOBUF inp, int pkttype, unsigned long pktlen,
 			  PACKET * packet);
-static void parse_trust (IOBUF inp, int pkttype, unsigned long pktlen,
-			 PACKET * packet);
+static gpg_error_t parse_ring_trust (parse_packet_ctx_t ctx,
+                                     unsigned long pktlen);
 static int parse_plaintext (IOBUF inp, int pkttype, unsigned long pktlen,
 			    PACKET * packet, int new_ctb, int partial);
 static int parse_compressed (IOBUF inp, int pkttype, unsigned long pktlen,
@@ -542,6 +542,7 @@ parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
   *skip = 0;
   inp = ctx->inp;
 
+ again:
   log_assert (!pkt->pkt.generic);
   if (retpos || list_mode)
     {
@@ -800,8 +801,11 @@ parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
       rc = parse_comment (inp, pkttype, pktlen, pkt);
       break;
     case PKT_RING_TRUST:
-      parse_trust (inp, pkttype, pktlen, pkt);
-      rc = 0;
+      {
+        rc = parse_ring_trust (ctx, pktlen);
+        if (!rc)
+          goto again; /* Directly read the next packet.  */
+      }
       break;
     case PKT_PLAINTEXT:
       rc = parse_plaintext (inp, pkttype, pktlen, pkt, new_ctb, partial);
@@ -2873,42 +2877,164 @@ parse_comment (IOBUF inp, int pkttype, unsigned long pktlen, PACKET * packet)
 }
 
 
-static void
-parse_trust (IOBUF inp, int pkttype, unsigned long pktlen, PACKET * pkt)
+/* Parse a ring trust packet RFC4880 (5.10).
+ *
+ * This parser is special in that the packet is not stored as a packet
+ * but its content is merged into the previous packet.  */
+static gpg_error_t
+parse_ring_trust (parse_packet_ctx_t ctx, unsigned long pktlen)
 {
+  gpg_error_t err;
+  iobuf_t inp = ctx->inp;
+  PKT_ring_trust rt = {0};
   int c;
+  int not_gpg = 0;
 
-  (void) pkttype;
-
-  pkt->pkt.ring_trust = xmalloc (sizeof *pkt->pkt.ring_trust);
-  if (pktlen)
+  if (!pktlen)
     {
-      c = iobuf_get_noeof (inp);
-      pktlen--;
-      pkt->pkt.ring_trust->trustval = c;
-      pkt->pkt.ring_trust->sigcache = 0;
-      if (!c && pktlen == 1)
-	{
-	  c = iobuf_get_noeof (inp);
-	  pktlen--;
-	  /* We require that bit 7 of the sigcache is 0 (easier eof
-             handling).  */
-	  if (!(c & 0x80))
-	    pkt->pkt.ring_trust->sigcache = c;
-	}
-      if (list_mode)
-	es_fprintf (listfp, ":trust packet: flag=%02x sigcache=%02x\n",
-                    pkt->pkt.ring_trust->trustval,
-                    pkt->pkt.ring_trust->sigcache);
-    }
-  else
-    {
-      pkt->pkt.ring_trust->trustval = 0;
-      pkt->pkt.ring_trust->sigcache = 0;
       if (list_mode)
 	es_fprintf (listfp, ":trust packet: empty\n");
+      err = 0;
+      goto leave;
     }
+
+  c = iobuf_get_noeof (inp);
+  pktlen--;
+  rt.trustval = c;
+  if (pktlen)
+    {
+      if (!c)
+        {
+          c = iobuf_get_noeof (inp);
+          /* We require that bit 7 of the sigcache is 0 (easier
+           * eof handling).  */
+          if (!(c & 0x80))
+            rt.sigcache = c;
+        }
+      else
+        iobuf_get_noeof (inp);  /* Dummy read.  */
+      pktlen--;
+    }
+
+  /* Next is the optional subtype.  */
+  if (pktlen > 3)
+    {
+      char tmp[4];
+      tmp[0] = iobuf_get_noeof (inp);
+      tmp[1] = iobuf_get_noeof (inp);
+      tmp[2] = iobuf_get_noeof (inp);
+      tmp[3] = iobuf_get_noeof (inp);
+      pktlen -= 4;
+      if (!memcmp (tmp, "gpg", 3))
+        rt.subtype = tmp[3];
+      else
+        not_gpg = 1;
+    }
+  /* If it is a key or uid subtype read the remaining data.  */
+  if ((rt.subtype == RING_TRUST_KEY || rt.subtype == RING_TRUST_UID)
+      && pktlen >= 6 )
+    {
+      int i;
+      unsigned int namelen;
+
+      rt.keysrc = iobuf_get_noeof (inp);
+      pktlen--;
+      rt.keyupdate = read_32 (inp);
+      pktlen -= 4;
+      namelen = iobuf_get_noeof (inp);
+      pktlen--;
+      if (namelen && pktlen)
+        {
+          rt.url = xtrymalloc (namelen + 1);
+          if (rt.url)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          for (i = 0; pktlen && i < namelen; pktlen--, i++)
+            rt.url[i] = iobuf_get_noeof (inp);
+          rt.url[i] = 0;
+        }
+    }
+
+  if (list_mode)
+    {
+      if (rt.subtype == RING_TRUST_SIG)
+        es_fprintf (listfp, ":trust packet: sig flag=%02x sigcache=%02x\n",
+                    rt.trustval, rt.sigcache);
+      else if (rt.subtype == RING_TRUST_UID || rt.subtype == RING_TRUST_KEY)
+        {
+          unsigned char *p;
+
+          es_fprintf (listfp, ":trust packet: %s upd=%lu src=%d%s",
+                      (rt.subtype == RING_TRUST_UID? "uid" : "key"),
+                      (unsigned long)rt.keyupdate,
+                      rt.keysrc,
+                      (rt.url? " url=":""));
+          if (rt.url)
+            {
+              for (p = rt.url; *p; p++)
+                {
+                  if (*p >= ' ' && *p <= 'z')
+                    es_putc (*p, listfp);
+                  else
+                    es_fprintf (listfp, "\\x%02x", *p);
+                }
+            }
+          es_putc ('\n', listfp);
+        }
+      else if (not_gpg)
+        es_fprintf (listfp, ":trust packet: not created by gpg\n");
+      else
+        es_fprintf (listfp, ":trust packet: subtype=%02x\n",
+                    rt.subtype);
+    }
+
+  /* Now transfer the data to the respective packet.  Do not do this
+   * if SKIP_META is set.  */
+  if (!ctx->last_pkt || ctx->skip_meta)
+    ;
+  else if (rt.subtype == RING_TRUST_SIG
+           && ctx->last_pkt->pkttype == PKT_SIGNATURE)
+    {
+      PKT_signature *sig = ctx->last_pkt->pkt.signature;
+
+      if ((rt.sigcache & 1))
+        {
+          sig->flags.checked = 1;
+          sig->flags.valid = !!(rt.sigcache & 2);
+        }
+    }
+  else if (rt.subtype == RING_TRUST_UID
+           && (ctx->last_pkt->pkttype == PKT_USER_ID
+               || ctx->last_pkt->pkttype == PKT_ATTRIBUTE))
+    {
+      PKT_user_id *uid = ctx->last_pkt->pkt.user_id;
+
+      uid->keysrc = rt.keysrc;
+      uid->keyupdate = rt.keyupdate;
+      uid->updateurl = rt.url;
+      rt.url = NULL;
+    }
+  else if (rt.subtype == RING_TRUST_KEY
+           && (ctx->last_pkt->pkttype == PKT_PUBLIC_KEY
+               || ctx->last_pkt->pkttype == PKT_SECRET_KEY))
+    {
+      PKT_public_key *pk = ctx->last_pkt->pkt.public_key;
+
+      pk->keysrc = rt.keysrc;
+      pk->keyupdate = rt.keyupdate;
+      pk->updateurl = rt.url;
+      rt.url = NULL;
+    }
+
+  err = 0;
+
+ leave:
+  xfree (rt.url);
+  free_packet (NULL, ctx); /* This sets ctx->last_pkt to NULL.  */
   iobuf_skip_rest (inp, pktlen, 0);
+  return err;
 }
 
 

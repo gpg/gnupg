@@ -97,8 +97,8 @@ static int import (ctrl_t ctrl,
                    IOBUF inp, const char* fname, struct import_stats_s *stats,
 		   unsigned char **fpr, size_t *fpr_len, unsigned int options,
 		   import_screener_t screener, void *screener_arg);
-static int read_block (IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root,
-                       int *r_v3keys);
+static int read_block (IOBUF a, int with_meta,
+                       PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys);
 static void revocation_present (ctrl_t ctrl, kbnode_t keyblock);
 static int import_one (ctrl_t ctrl,
                        kbnode_t keyblock,
@@ -333,7 +333,7 @@ read_key_from_file (ctrl_t ctrl, const char *fname, kbnode_t *r_keyblock)
   }
 
   /* Read the first non-v3 keyblock.  */
-  while (!(err = read_block (inp, &pending_pkt, &keyblock, &v3keys)))
+  while (!(err = read_block (inp, 0, &pending_pkt, &keyblock, &v3keys)))
     {
       if (keyblock->pkt->pkttype == PKT_PUBLIC_KEY)
         break;
@@ -563,7 +563,8 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
       release_armor_context (afx);
     }
 
-  while (!(rc = read_block (inp, &pending_pkt, &keyblock, &v3keys)))
+  while (!(rc = read_block (inp, !!(options & IMPORT_RESTORE),
+                            &pending_pkt, &keyblock, &v3keys)))
     {
       stats->v3keys += v3keys;
       if (keyblock->pkt->pkttype == PKT_PUBLIC_KEY)
@@ -637,7 +638,7 @@ import_old_secring (ctrl_t ctrl, const char *fname)
 
   getkey_disable_caches();
   stats = import_new_stats_handle ();
-  while (!(err = read_block (inp, &pending_pkt, &keyblock, &v3keys)))
+  while (!(err = read_block (inp, 0, &pending_pkt, &keyblock, &v3keys)))
     {
       if (keyblock->pkt->pkttype == PKT_SECRET_KEY)
         err = import_secret_one (ctrl, keyblock, stats, 1, 0, 1,
@@ -752,14 +753,15 @@ valid_keyblock_packet (int pkttype)
 
 /****************
  * Read the next keyblock from stream A.
- * PENDING_PKT should be initialzed to NULL
- * and not changed by the caller.
+ * Meta data (ring trust packets) are only considered of WITH_META is set.
+ * PENDING_PKT should be initialzed to NULL and not changed by the caller.
  * Return: 0 = okay, -1 no more blocks or another errorcode.
  *         The int at at R_V3KEY counts the number of unsupported v3
  *         keyblocks.
  */
 static int
-read_block( IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
+read_block( IOBUF a, int with_meta,
+            PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
 {
   int rc;
   struct parse_packet_ctx_s parsectx;
@@ -781,6 +783,8 @@ read_block( IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
   pkt = xmalloc (sizeof *pkt);
   init_packet (pkt);
   init_parse_packet (&parsectx, a);
+  if (!with_meta)
+    parsectx.skip_meta = 1;
   in_v3key = 0;
   while ((rc=parse_packet (&parsectx, pkt)) != -1)
     {

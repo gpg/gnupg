@@ -283,20 +283,25 @@ typedef struct
   u32 expiredate;       /* expires at this date or 0 if not at all */
   prefitem_t *prefs;    /* list of preferences (may be NULL)*/
   u32 created;          /* according to the self-signature */
+  u32 keyupdate;        /* From the ring trust packet.  */
+  char *updateurl;      /* NULL or the URL of the last update origin.  */
+  byte keysrc;          /* From the ring trust packet.  */
   byte selfsigversion;
   struct
   {
     unsigned int mdc:1;
     unsigned int ks_modify:1;
     unsigned int compacted:1;
-    unsigned int primary:2;       /* 2 if set via the primary flag, 1 if calculated */
+    unsigned int primary:2; /* 2 if set via the primary flag, 1 if calculated */
     unsigned int revoked:1;
     unsigned int expired:1;
   } flags;
+
   char *mbox;   /* NULL or the result of mailbox_from_userid.  */
+
   /* The text contained in the user id packet, which is normally the
-     name and email address of the key holder (See RFC 4880 5.11).
-     (Serialized.). For convenience an extra Nul is always appended.  */
+   * name and email address of the key holder (See RFC 4880 5.11).
+   * (Serialized.). For convenience an extra Nul is always appended.  */
   char name[1];
 } PKT_user_id;
 
@@ -402,6 +407,9 @@ typedef struct
   u32     trust_timestamp;
   byte    trust_depth;
   byte    trust_value;
+  byte    keysrc;         /* From the ring trust packet.  */
+  u32     keyupdate;      /* From the ring trust packet.  */
+  char    *updateurl;     /* NULL or the URL of the last update origin.  */
   const byte *trust_regexp;
   char    *serialno;      /* Malloced hex string or NULL if it is
                              likely not on a card.  See also
@@ -474,10 +482,27 @@ typedef struct {
     byte hash[20];
 } PKT_mdc;
 
+
+/* Subtypes for the ring trust packet.  */
+#define RING_TRUST_SIG 0  /* The classical signature cache.  */
+#define RING_TRUST_KEY 1  /* A KEYSRC on a primary key.      */
+#define RING_TRUST_UID 2  /* A KEYSRC on a user id.          */
+
+/* The local only ring trust packet which OpenPGP declares as
+ * implementation defined.  GnuPG uses this to cache signature
+ * verification status and since 2.1.18 also to convey information
+ * about the origin of a key.  Note that this packet is not part
+ * struct packet_struct becuase we use it only local in the packet
+ * parser and builder. */
 typedef struct {
-    unsigned int trustval;
-    unsigned int sigcache;
+  unsigned int trustval;
+  unsigned int sigcache;
+  unsigned char subtype; /* The subtype of this ring trust packet.   */
+  unsigned char keysrc;  /* The origin of the key (KEYSRC_*).        */
+  u32 keyupdate;         /* The wall time the key was last updated.  */
+  char *url;             /* NULL or the URL of the source.           */
 } PKT_ring_trust;
+
 
 /* A plaintext packet (see RFC 4880, 5.9).  */
 typedef struct {
@@ -519,7 +544,6 @@ struct packet_struct {
 	PKT_compressed	*compressed;	/* PKT_COMPRESSED */
 	PKT_encrypted	*encrypted;	/* PKT_ENCRYPTED[_MDC] */
 	PKT_mdc 	*mdc;		/* PKT_MDC */
-	PKT_ring_trust	*ring_trust;	/* PKT_RING_TRUST */
 	PKT_plaintext	*plaintext;	/* PKT_PLAINTEXT */
         PKT_gpg_control *gpg_control;   /* PKT_GPG_CONTROL */
     } pkt;
@@ -599,6 +623,7 @@ struct parse_packet_ctx_s
   iobuf_t inp;       /* The input stream with the packets.  */
   PACKET *last_pkt;  /* The last parsed packet.  */
   int free_last_pkt; /* Indicates that LAST_PKT must be freed.  */
+  int skip_meta;     /* Skip right trust packets.  */
 };
 typedef struct parse_packet_ctx_s *parse_packet_ctx_t;
 
@@ -606,6 +631,7 @@ typedef struct parse_packet_ctx_s *parse_packet_ctx_t;
     (a)->inp = (i);                 \
     (a)->last_pkt = NULL;           \
     (a)->free_last_pkt = 0;         \
+    (a)->skip_meta = 0;             \
   } while (0)
 
 #define deinit_parse_packet(a) do { \
@@ -786,7 +812,8 @@ PACKET *create_gpg_control ( ctrlpkttype_t type,
                              size_t datalen );
 
 /*-- build-packet.c --*/
-int build_packet( iobuf_t inp, PACKET *pkt );
+int build_packet (iobuf_t out, PACKET *pkt);
+gpg_error_t build_packet_and_meta (iobuf_t out, PACKET *pkt);
 gpg_error_t gpg_mpi_write (iobuf_t out, gcry_mpi_t a);
 gpg_error_t gpg_mpi_write_nohdr (iobuf_t out, gcry_mpi_t a);
 u32 calc_packet_length( PACKET *pkt );

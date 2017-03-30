@@ -473,29 +473,6 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
         }
 
         in_cert = 1;
-        if (pkt->pkttype == PKT_RING_TRUST)
-          {
-            /*(this code is duplicated after the loop)*/
-            if ( lastnode
-                 && lastnode->pkt->pkttype == PKT_SIGNATURE
-                 && (pkt->pkt.ring_trust->sigcache & 1) ) {
-                /* This is a ring trust packet with a checked signature
-                 * status cache following directly a signature paket.
-                 * Set the cache status into that signature packet.  */
-                PKT_signature *sig = lastnode->pkt->pkt.signature;
-
-                sig->flags.checked = 1;
-                sig->flags.valid = !!(pkt->pkt.ring_trust->sigcache & 2);
-            }
-            /* Reset LASTNODE, so that we set the cache status only from
-             * the ring trust packet immediately following a signature. */
-            lastnode = NULL;
-	    free_packet(pkt, &parsectx);
-	    init_packet(pkt);
-	    continue;
-          }
-
-
         node = lastnode = new_kbnode (pkt);
         if (!keyblock)
           keyblock = node;
@@ -531,16 +508,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     if (rc || !ret_kb)
 	release_kbnode (keyblock);
     else {
-        /*(duplicated from the loop body)*/
-        if ( pkt && pkt->pkttype == PKT_RING_TRUST
-             && lastnode
-             && lastnode->pkt->pkttype == PKT_SIGNATURE
-             && (pkt->pkt.ring_trust->sigcache & 1) ) {
-            PKT_signature *sig = lastnode->pkt->pkt.signature;
-            sig->flags.checked = 1;
-            sig->flags.valid = !!(pkt->pkt.ring_trust->sigcache & 2);
-        }
-	*ret_kb = keyblock;
+        *ret_kb = keyblock;
     }
     free_packet (pkt, &parsectx);
     deinit_parse_packet (&parsectx);
@@ -1420,35 +1388,11 @@ write_keyblock (IOBUF fp, KBNODE keyblock)
 
   while ( (node = walk_kbnode (keyblock, &kbctx, 0)) )
     {
-      if (node->pkt->pkttype == PKT_RING_TRUST)
-        continue; /* we write it later on our own */
-
-      if ( (rc = build_packet (fp, node->pkt) ))
+      if ( (rc = build_packet_and_meta (fp, node->pkt) ))
         {
           log_error ("build_packet(%d) failed: %s\n",
                      node->pkt->pkttype, gpg_strerror (rc) );
           return rc;
-        }
-      if (node->pkt->pkttype == PKT_SIGNATURE)
-        { /* always write a signature cache packet */
-          PKT_signature *sig = node->pkt->pkt.signature;
-          unsigned int cacheval = 0;
-
-          if (sig->flags.checked)
-            {
-              cacheval |= 1;
-              if (sig->flags.valid)
-                cacheval |= 2;
-            }
-          iobuf_put (fp, 0xb0); /* old style packet 12, 1 byte len*/
-          iobuf_put (fp, 2);    /* 2 bytes */
-          iobuf_put (fp, 0);    /* unused */
-          if (iobuf_put (fp, cacheval))
-            {
-              rc = gpg_error_from_syserror ();
-              log_error ("writing sigcache packet failed\n");
-              return rc;
-            }
         }
     }
   return 0;
@@ -1639,6 +1583,7 @@ keyring_rebuild_cache (void *token,int noisy)
   keyring_release (hd);
   return rc;
 }
+
 
 
 /****************

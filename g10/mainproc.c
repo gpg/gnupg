@@ -1046,13 +1046,6 @@ list_node (CTX c, kbnode_t node)
       else if ((pk->flags.primary && opt.fingerprint) || opt.fingerprint > 1)
         print_fingerprint (NULL, pk, 0);
 
-      if (opt.with_colons)
-        {
-          if (node->next && node->next->pkt->pkttype == PKT_RING_TRUST)
-            es_printf ("rtv:1:%u:\n",
-                       node->next->pkt->pkt.ring_trust->trustval);
-        }
-
       if (pk->flags.primary)
         {
           int kl = opt.keyid_format == KF_NONE? 0 : keystrlen ();
@@ -1077,14 +1070,6 @@ list_node (CTX c, kbnode_t node)
                   if (opt.with_colons)
                     es_putc (':', es_stdout);
                   es_putc ('\n', es_stdout);
-                  if (opt.with_colons
-                      && node->next
-                      && node->next->pkt->pkttype == PKT_RING_TRUST)
-                    {
-                      es_printf ("rtv:2:%u:\n",
-                                 node->next->pkt->pkt.ring_trust?
-                                 node->next->pkt->pkt.ring_trust->trustval : 0);
-                    }
 		}
               else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
                 {

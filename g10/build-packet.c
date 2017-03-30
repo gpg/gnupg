@@ -33,6 +33,7 @@
 #include "options.h"
 #include "../common/host2net.h"
 
+static gpg_error_t do_ring_trust (iobuf_t out, PKT_ring_trust *rt);
 static int do_user_id( IOBUF out, int ctb, PKT_user_id *uid );
 static int do_key (iobuf_t out, int ctb, PKT_public_key *pk);
 static int do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc );
@@ -76,14 +77,11 @@ ctb_pkttype (int ctb)
     return (ctb & ((1 << 6) - 1)) >> 2;
 }
 
-/****************
- * Build a packet and write it to INP
- * Returns: 0 := okay
- *	   >0 := error
- * Note: Caller must free the packet
- */
+
+/* Build a packet and write it to the stream OUT.
+ * Returns: 0 on success or on an error code.  */
 int
-build_packet( IOBUF out, PACKET *pkt )
+build_packet (IOBUF out, PACKET *pkt)
 {
   int rc = 0;
   int new_ctb = 0;
@@ -170,7 +168,7 @@ build_packet( IOBUF out, PACKET *pkt )
       rc = do_onepass_sig (out, ctb, pkt->pkt.onepass_sig);
       break;
     case PKT_RING_TRUST:
-      /* Ignore it (keyring.c does write it directly)  */
+      /* Ignore it (only written by build_packet_and_meta)  */
       break;
     case PKT_MDC:
       /* We write it directly, so we should never see it here. */
@@ -180,6 +178,62 @@ build_packet( IOBUF out, PACKET *pkt )
     }
 
   return rc;
+}
+
+
+/* Build a packet and write it to the stream OUT.  This variant also
+ * writes the meta data using ring tyrust packets.  Returns: 0 on
+ * success or on aerror code.  */
+gpg_error_t
+build_packet_and_meta (iobuf_t out, PACKET *pkt)
+{
+  gpg_error_t err;
+  PKT_ring_trust rt = {0};
+
+  err = build_packet (out, pkt);
+  if (err)
+    ;
+  else if (pkt->pkttype == PKT_SIGNATURE)
+    {
+      PKT_signature *sig = pkt->pkt.signature;
+
+      rt.subtype = RING_TRUST_SIG;
+      /* Note: trustval is not yet used.  */
+      if (sig->flags.checked)
+        {
+          rt.sigcache = 1;
+          if (sig->flags.valid)
+            rt.sigcache |= 2;
+        }
+      err = do_ring_trust (out, &rt);
+    }
+  else if (pkt->pkttype == PKT_USER_ID
+           || pkt->pkttype == PKT_ATTRIBUTE)
+    {
+      PKT_user_id *uid = pkt->pkt.user_id;
+
+      rt.subtype = RING_TRUST_UID;
+      rt.keysrc = uid->keysrc;
+      rt.keyupdate = uid->keyupdate;
+      rt.url = uid->updateurl;
+      err = do_ring_trust (out, &rt);
+      rt.url = NULL;
+    }
+  else if (pkt->pkttype == PKT_PUBLIC_KEY
+           || pkt->pkttype == PKT_SECRET_KEY)
+    {
+      PKT_public_key *pk = pkt->pkt.public_key;
+
+      rt.subtype = RING_TRUST_KEY;
+      rt.keysrc = pk->keysrc;
+      rt.keyupdate = pk->keyupdate;
+      rt.url = pk->updateurl;
+      err = do_ring_trust (out, &rt);
+      rt.url = NULL;
+
+    }
+
+  return err;
 }
 
 
@@ -317,6 +371,38 @@ write_fake_data (IOBUF out, gcry_mpi_t a)
     return 0; /* For example due to a read error in
                  parse-packet.c:read_rest.  */
   return iobuf_write (out, p, (n+7)/8 );
+}
+
+
+/* Write a ring trust meta packet.  */
+static gpg_error_t
+do_ring_trust (iobuf_t out, PKT_ring_trust *rt)
+{
+  unsigned int namelen = 0;
+  unsigned int pktlen = 6;
+
+  if (rt->subtype == RING_TRUST_KEY || rt->subtype == RING_TRUST_UID)
+    {
+      if (rt->url)
+        namelen = strlen (rt->url);
+      pktlen += 1 + 4 + 1 + namelen;
+    }
+
+  write_header (out, (0x80 | ((PKT_RING_TRUST & 15)<<2)), pktlen);
+  iobuf_put (out, rt->trustval);
+  iobuf_put (out, rt->sigcache);
+  iobuf_write (out, "gpg", 3);
+  iobuf_put (out, rt->subtype);
+  if (rt->subtype == RING_TRUST_KEY || rt->subtype == RING_TRUST_UID)
+    {
+      iobuf_put (out, rt->keysrc);
+      write_32 (out, rt->keyupdate);
+      iobuf_put (out, namelen);
+      if (namelen)
+        iobuf_write (out, rt->url, namelen);
+    }
+
+  return 0;
 }
 
 

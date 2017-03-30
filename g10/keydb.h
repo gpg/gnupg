@@ -119,6 +119,19 @@ union pref_hint
 };
 
 
+/* Constants to describe from where a key was fetched or updated.  */
+enum
+  {
+    KEYSRC_UNKNOWN = 0,
+    KEYSRC_FILE    = 1, /* Direct import from a file.  */
+    KEYSRC_KS      = 2, /* Public keyserver.    */
+    KEYSRC_PREF_KS = 3, /* Preferred keysrver.  */
+    KEYSRC_WKD     = 4, /* Web Key Directory.   */
+    KEYSRC_WKD_SD  = 5, /* Web Key Directory but from a sub domain.  */
+    KEYSRC_DANE    = 6  /* OpenPGP DANE.  */
+  };
+
+
 /*-- keydb.c --*/
 
 #define KEYDB_RESOURCE_FLAG_PRIMARY  2  /* The primary resource.  */

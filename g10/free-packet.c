@@ -127,6 +127,11 @@ release_public_key_parts (PKT_public_key *pk)
       xfree (pk->serialno);
       pk->serialno = NULL;
     }
+  if (pk->updateurl)
+    {
+      xfree (pk->updateurl);
+      pk->updateurl = NULL;
+    }
 }
 
 
@@ -314,6 +319,7 @@ free_user_id (PKT_user_id *uid)
   free_attributes(uid);
   xfree (uid->prefs);
   xfree (uid->namehash);
+  xfree (uid->updateurl);
   xfree (uid->mbox);
   xfree (uid);
 }
