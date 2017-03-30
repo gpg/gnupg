@@ -274,7 +274,7 @@ INTERFACE INLINE int is_syntax(pointer p)   { return (typeflag(p)&T_SYNTAX); }
 INTERFACE INLINE int is_proc(pointer p)     { return (type(p)==T_PROC); }
 INTERFACE INLINE int is_foreign(pointer p)  { return (type(p)==T_FOREIGN); }
 INTERFACE INLINE char *syntaxname(pointer p) { return strvalue(car(p)); }
-#define procnum(p)       ivalue(p)
+#define procnum(p)       ivalue_unchecked(p)
 static const char *procname(pointer x);
 
 INTERFACE INLINE int is_closure(pointer p)  { return (type(p)==T_CLOSURE); }
