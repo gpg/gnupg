@@ -101,7 +101,9 @@
    - u16  [NSIGS] Number of signatures
    - u16  Size of signature information (4)
    - NSIGS times:
-      - u32  Expiration time of signature with some special values:
+      - u32  Expiration time of signature with some special values.
+             Since version 2.1.20 these special valuesare not anymore
+             used for OpenPGP:
              - 0x00000000 = not checked
              - 0x00000001 = missing key
              - 0x00000002 = bad signature
@@ -705,18 +707,12 @@ _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
                              keybox_openpgp_info_t info,
                              const unsigned char *image,
                              size_t imagelen,
-                             u32 *sigstatus,
                              int as_ephemeral)
 {
   gpg_error_t err;
   KEYBOXBLOB blob;
 
   *r_blob = NULL;
-
-  /* If we have a signature status vector, check that the number of
-     elements matches the actual number of signatures.  */
-  if (sigstatus && sigstatus[0] != info->nsigs)
-    return gpg_error (GPG_ERR_INTERNAL);
 
   blob = xtrycalloc (1, sizeof *blob);
   if (!blob)
@@ -756,7 +752,7 @@ _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
   if (err)
     goto leave;
   pgp_create_uid_part (blob, info);
-  pgp_create_sig_part (blob, sigstatus);
+  pgp_create_sig_part (blob, NULL);
 
   init_membuf (&blob->bufbuf, 1024);
   blob->buf = &blob->bufbuf;

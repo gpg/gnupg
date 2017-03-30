@@ -82,7 +82,6 @@ struct keyblock_cache {
   enum keyblock_cache_states state;
   byte fpr[MAX_FINGERPRINT_LEN];
   iobuf_t iobuf; /* Image of the keyblock.  */
-  u32 *sigstatus;
   int pk_no;
   int uid_no;
   /* Offset of the record in the keybox.  */
@@ -248,8 +247,6 @@ static void
 keyblock_cache_clear (struct keydb_handle *hd)
 {
   hd->keyblock_cache.state = KEYBLOCK_CACHE_EMPTY;
-  xfree (hd->keyblock_cache.sigstatus);
-  hd->keyblock_cache.sigstatus = NULL;
   iobuf_close (hd->keyblock_cache.iobuf);
   hd->keyblock_cache.iobuf = NULL;
   hd->keyblock_cache.resource = -1;
@@ -1153,7 +1150,7 @@ keydb_pop_found_state (KEYDB_HANDLE hd)
 
 static gpg_error_t
 parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
-                      const u32 *sigstatus, kbnode_t *r_keyblock)
+                      kbnode_t *r_keyblock)
 {
   gpg_error_t err;
   struct parse_packet_ctx_s parsectx;
@@ -1161,7 +1158,6 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
   kbnode_t keyblock = NULL;
   kbnode_t node, *tail;
   int in_cert, save_mode;
-  u32 n_sigs;
   int pk_count, uid_count;
 
   *r_keyblock = NULL;
@@ -1173,7 +1169,6 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
   init_parse_packet (&parsectx, iobuf);
   save_mode = set_packet_list_mode (0);
   in_cert = 0;
-  n_sigs = 0;
   tail = NULL;
   pk_count = uid_count = 0;
   while ((err = parse_packet (&parsectx, pkt)) != -1)
@@ -1233,36 +1228,6 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
         }
       in_cert = 1;
 
-      if (pkt->pkttype == PKT_SIGNATURE && sigstatus)
-        {
-          PKT_signature *sig = pkt->pkt.signature;
-
-          n_sigs++;
-          if (n_sigs > sigstatus[0])
-            {
-              log_error ("parse_keyblock_image: "
-                         "more signatures than found in the meta data\n");
-              err = gpg_error (GPG_ERR_INV_KEYRING);
-              break;
-
-            }
-          if (sigstatus[n_sigs])
-            {
-              sig->flags.checked = 1;
-              if (sigstatus[n_sigs] == 1 )
-                ; /* missing key */
-              else if (sigstatus[n_sigs] == 2 )
-                ; /* bad signature */
-              else if (sigstatus[n_sigs] < 0x10000000)
-                ; /* bad flag */
-              else
-                {
-                  sig->flags.valid = 1;
-                  /* Fixme: Shall we set the expired flag here?  */
-                }
-            }
-        }
-
       node = new_kbnode (pkt);
 
       switch (pkt->pkttype)
@@ -1301,12 +1266,6 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
 
   if (err == -1 && keyblock)
     err = 0; /* Got the entire keyblock.  */
-
-  if (!err && sigstatus && n_sigs != sigstatus[0])
-    {
-      log_error ("parse_keyblock_image: signature count does not match\n");
-      err = gpg_error (GPG_ERR_INV_KEYRING);
-    }
 
   if (err)
     release_kbnode (keyblock);
@@ -1354,7 +1313,6 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
 	  err = parse_keyblock_image (hd->keyblock_cache.iobuf,
 				      hd->keyblock_cache.pk_no,
 				      hd->keyblock_cache.uid_no,
-				      hd->keyblock_cache.sigstatus,
 				      ret_kb);
 	  if (err)
 	    keyblock_cache_clear (hd);
@@ -1379,26 +1337,22 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       {
         iobuf_t iobuf;
-        u32 *sigstatus;
         int pk_no, uid_no;
 
         err = keybox_get_keyblock (hd->active[hd->found].u.kb,
-                                   &iobuf, &pk_no, &uid_no, &sigstatus);
+                                   &iobuf, &pk_no, &uid_no);
         if (!err)
           {
-            err = parse_keyblock_image (iobuf, pk_no, uid_no, sigstatus,
-                                        ret_kb);
+            err = parse_keyblock_image (iobuf, pk_no, uid_no, ret_kb);
             if (!err && hd->keyblock_cache.state == KEYBLOCK_CACHE_PREPARED)
               {
                 hd->keyblock_cache.state     = KEYBLOCK_CACHE_FILLED;
-                hd->keyblock_cache.sigstatus = sigstatus;
                 hd->keyblock_cache.iobuf     = iobuf;
                 hd->keyblock_cache.pk_no     = pk_no;
                 hd->keyblock_cache.uid_no    = uid_no;
               }
             else
               {
-                xfree (sigstatus);
                 iobuf_close (iobuf);
               }
           }
@@ -1417,39 +1371,18 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
 
 
 /* Build a keyblock image from KEYBLOCK.  Returns 0 on success and
-   only then stores a new iobuf object at R_IOBUF and a signature
-   status vecotor at R_SIGSTATUS.  */
+ * only then stores a new iobuf object at R_IOBUF.  */
 static gpg_error_t
-build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf, u32 **r_sigstatus)
+build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf)
 {
   gpg_error_t err;
   iobuf_t iobuf;
   kbnode_t kbctx, node;
-  u32 n_sigs;
-  u32 *sigstatus;
 
   *r_iobuf = NULL;
-  if (r_sigstatus)
-    *r_sigstatus = NULL;
-
-  /* Allocate a vector for the signature cache.  This is an array of
-     u32 values with the first value giving the number of elements to
-     follow and each element descriping the cache status of the
-     signature.  */
-  if (r_sigstatus)
-    {
-      for (kbctx=NULL, n_sigs=0; (node = walk_kbnode (keyblock, &kbctx, 0));)
-        if (node->pkt->pkttype == PKT_SIGNATURE)
-          n_sigs++;
-      sigstatus = xtrycalloc (1+n_sigs, sizeof *sigstatus);
-      if (!sigstatus)
-        return gpg_error_from_syserror ();
-    }
-  else
-    sigstatus = NULL;
 
   iobuf = iobuf_temp ();
-  for (kbctx = NULL, n_sigs = 0; (node = walk_kbnode (keyblock, &kbctx, 0));)
+  for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
     {
       /* Make sure to use only packets valid on a keyblock.  */
       switch (node->pkt->pkttype)
@@ -1471,36 +1404,9 @@ build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf, u32 **r_sigstatus)
           iobuf_close (iobuf);
           return err;
         }
-
-      /* Build signature status vector.  */
-      if (node->pkt->pkttype == PKT_SIGNATURE)
-        {
-          PKT_signature *sig = node->pkt->pkt.signature;
-
-          n_sigs++;
-          /* Fixme: Detect the "missing key" status.  */
-          if (sig->flags.checked && sigstatus)
-            {
-              if (sig->flags.valid)
-                {
-                  if (!sig->expiredate)
-                    sigstatus[n_sigs] = 0xffffffff;
-                  else if (sig->expiredate < 0x1000000)
-                    sigstatus[n_sigs] = 0x10000000;
-                  else
-                    sigstatus[n_sigs] = sig->expiredate;
-                }
-              else
-                sigstatus[n_sigs] = 0x00000002; /* Bad signature.  */
-            }
-        }
     }
-  if (sigstatus)
-    sigstatus[0] = n_sigs;
 
   *r_iobuf = iobuf;
-  if (r_sigstatus)
-    *r_sigstatus = sigstatus;
   return 0;
 }
 
@@ -1574,7 +1480,7 @@ keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb)
       {
         iobuf_t iobuf;
 
-        err = build_keyblock_image (kb, &iobuf, NULL);
+        err = build_keyblock_image (kb, &iobuf);
         if (!err)
           {
             err = keybox_update_keyblock (hd->active[hd->found].u.kb,
@@ -1641,16 +1547,13 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
            included in the keybox code.  Eventually we can change this
            kludge to have the caller pass the image.  */
         iobuf_t iobuf;
-        u32 *sigstatus;
 
-        err = build_keyblock_image (kb, &iobuf, &sigstatus);
+        err = build_keyblock_image (kb, &iobuf);
         if (!err)
           {
             err = keybox_insert_keyblock (hd->active[idx].u.kb,
                                           iobuf_get_temp_buffer (iobuf),
-                                          iobuf_get_temp_length (iobuf),
-                                          sigstatus);
-            xfree (sigstatus);
+                                          iobuf_get_temp_length (iobuf));
             iobuf_close (iobuf);
           }
       }

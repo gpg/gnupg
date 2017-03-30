@@ -411,8 +411,7 @@ import_openpgp (const char *filename, int dryrun)
             dump_openpgp_key (&info, p);
           else
             {
-              err = _keybox_create_openpgp_blob (&blob, &info, p, nparsed,
-                                                 NULL, 0);
+              err = _keybox_create_openpgp_blob (&blob, &info, p, nparsed, 0);
               if (err)
                 {
                   fflush (stdout);

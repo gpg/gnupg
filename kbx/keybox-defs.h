@@ -155,7 +155,6 @@ gpg_error_t _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
                                          keybox_openpgp_info_t info,
                                          const unsigned char *image,
                                          size_t imagelen,
-                                         u32 *sigstatus,
                                          int as_ephemeral);
 #ifdef KEYBOX_WITH_X509
 int _keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,

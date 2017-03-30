@@ -1048,23 +1048,20 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
 
 
 /* Return the last found keyblock.  Returns 0 on success and stores a
-   new iobuf at R_IOBUF and a signature status vector at R_SIGSTATUS
-   in that case.  R_UID_NO and R_PK_NO are used to retun the number of
-   the key or user id which was matched the search criteria; if not
-   known they are set to 0. */
+ * new iobuf at R_IOBUF.  R_UID_NO and R_PK_NO are used to retun the
+ * number of the key or user id which was matched the search criteria;
+ * if not known they are set to 0. */
 gpg_error_t
 keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf,
-                     int *r_pk_no, int *r_uid_no, u32 **r_sigstatus)
+                     int *r_pk_no, int *r_uid_no)
 {
   gpg_error_t err;
-  const unsigned char *buffer, *p;
+  const unsigned char *buffer;
   size_t length;
   size_t image_off, image_len;
   size_t siginfo_off, siginfo_len;
-  u32 *sigstatus, n, n_sigs, sigilen;
 
   *r_iobuf = NULL;
-  *r_sigstatus = NULL;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1086,19 +1083,9 @@ keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf,
                                    &siginfo_off, &siginfo_len);
   if (err)
     return err;
-  n_sigs  = get16 (buffer + siginfo_off);
-  sigilen = get16 (buffer + siginfo_off + 2);
-  p = buffer + siginfo_off + 4;
-  sigstatus = xtrymalloc ((1+n_sigs) * sizeof *sigstatus);
-  if (!sigstatus)
-    return gpg_error_from_syserror ();
-  sigstatus[0] = n_sigs;
-  for (n=1; n <= n_sigs; n++, p += sigilen)
-    sigstatus[n] = get32 (p);
 
   *r_pk_no  = hd->found.pk_no;
   *r_uid_no = hd->found.uid_no;
-  *r_sigstatus = sigstatus;
   *r_iobuf = iobuf_temp_with_content (buffer+image_off, image_len);
   return 0;
 }
