@@ -2552,7 +2552,7 @@ iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
      NUL character in the buffer.  This requires at least 2 bytes.  We
      don't complicate the code by handling the stupid corner case, but
      simply assert that it can't happen.  */
-  assert (length >= 2 || maxlen >= 2);
+  assert (!buffer || length >= 2 || maxlen >= 2);
 
   if (!buffer || length <= 1)
     /* must allocate a new buffer */
