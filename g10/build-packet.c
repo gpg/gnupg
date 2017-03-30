@@ -204,7 +204,12 @@ do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
     if( uid->attrib_data )
       {
-	write_header(out, ctb, uid->attrib_len);
+        /* We need to take special care of a user ID with a length of 0:
+         * Without forcing HDRLEN to 2 in this case an indeterminate length
+         * packet would be written which is not allowed.  Note that we are
+         * always called with a CTB indicating an old packet header format,
+         * so that forcing a 2 octet header works.  */
+	write_header2(out, ctb, uid->attrib_len, (uid->attrib_len? 0 : 2));
 	if( iobuf_write( out, uid->attrib_data, uid->attrib_len ) )
 	  return G10ERR_WRITE_FILE;
       }
