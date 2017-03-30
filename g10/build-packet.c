@@ -415,18 +415,26 @@ static int
 do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
   int rc;
+  int hdrlen;
 
   log_assert (ctb_pkttype (ctb) == PKT_USER_ID
               || ctb_pkttype (ctb) == PKT_ATTRIBUTE);
 
+  /* We need to take special care that doe user ID with a length of 0:
+   * Without forcing HDRLEN to 2 in this case an indeterminate length
+   * packet would be written which is not allowed.  Note that we are
+   * always called with a CTB indicating an old packet header format,
+   * so that forcing a 2 octet header works.  */
   if (uid->attrib_data)
     {
-      write_header(out, ctb, uid->attrib_len);
+      hdrlen = uid->attrib_len? 0 : 2;
+      write_header2 (out, ctb, uid->attrib_len, hdrlen);
       rc = iobuf_write( out, uid->attrib_data, uid->attrib_len );
     }
   else
     {
-      write_header2( out, ctb, uid->len, 0 );
+      hdrlen = uid->len? 0 : 2;
+      write_header2 (out, ctb, uid->len, hdrlen);
       rc = iobuf_write( out, uid->name, uid->len );
     }
   return rc;
