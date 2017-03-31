@@ -42,6 +42,27 @@ static int check_signature_end (PKT_public_key *pk, PKT_signature *sig,
 static int check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
                                        gcry_md_hd_t digest);
 
+
+/* Statistics for signature verification.  */
+struct
+{
+  unsigned int total;  /* Total number of verifications.  */
+  unsigned int cached; /* Number of seen cache entries.  */
+  unsigned int goodsig;/* Number of good verifications from the cache.  */
+  unsigned int badsig; /* Number of bad verifications from the cache.  */
+} cache_stats;
+
+
+/* Dump verification stats.  */
+void
+sig_check_dump_stats (void)
+{
+  log_info ("sig_cache: total=%u cached=%u good=%u bad=%u\n",
+            cache_stats.total, cache_stats.cached,
+            cache_stats.goodsig, cache_stats.badsig);
+}
+
+
 /* Check a signature.  This is shorthand for check_signature2 with
    the unnamed arguments passed as NULL.  */
 int
@@ -990,8 +1011,10 @@ check_key_signature2 (ctrl_t ctrl,
      cache refresh detects and clears these cases. */
   if ( !opt.no_sig_cache )
     {
+      cache_stats.total++;
       if (sig->flags.checked) /* Cached status available.  */
         {
+          cache_stats.cached++;
           if (is_selfsig)
             {
               u32 keyid[2];
@@ -1005,7 +1028,13 @@ check_key_signature2 (ctrl_t ctrl,
           rc = check_signature_metadata_validity (pk, sig, r_expired, NULL);
           if (rc)
             return rc;
-          return sig->flags.valid? 0 : gpg_error (GPG_ERR_BAD_SIGNATURE);
+          if (sig->flags.valid)
+            {
+              cache_stats.goodsig++;
+              return 0;
+            }
+          cache_stats.badsig++;
+          return gpg_error (GPG_ERR_BAD_SIGNATURE);
         }
     }
 

@@ -251,6 +251,7 @@ int clearsign_file (ctrl_t ctrl,
 int sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr);
 
 /*-- sig-check.c --*/
+void sig_check_dump_stats (void);
 
 /* SIG is a revocation signature.  Check if any of PK's designated
    revokers generated it.  If so, return 0.  Note: this function

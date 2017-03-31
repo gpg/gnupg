@@ -4998,6 +4998,7 @@ g10_exit( int rc )
   if ( (opt.debug & DBG_MEMSTAT_VALUE) )
     {
       keydb_dump_stats ();
+      sig_check_dump_stats ();
       gcry_control (GCRYCTL_DUMP_MEMORY_STATS);
       gcry_control (GCRYCTL_DUMP_RANDOM_STATS);
     }

@@ -148,14 +148,35 @@ struct keydb_handle
 static struct kid_not_found_cache_bucket *
   kid_not_found_cache[KID_NOT_FOUND_CACHE_BUCKETS];
 
-/* The total number of entries in the hash table.  */
-static unsigned int kid_not_found_cache_count;
-
 struct kid_not_found_cache_bucket
 {
   struct kid_not_found_cache_bucket *next;
   u32 kid[2];
 };
+
+struct
+{
+  unsigned int count;   /* The current number of entries in the hash table.  */
+  unsigned int peak;    /* The peak of COUNT.  */
+  unsigned int flushes; /* The number of flushes.  */
+} kid_not_found_stats;
+
+struct
+{
+  unsigned int handles; /* Number of handles created.  */
+  unsigned int locks;   /* Number of locks taken.  */
+  unsigned int parse_keyblocks; /* Number of parse_keyblock_image calls.  */
+  unsigned int get_keyblocks;   /* Number of keydb_get_keyblock calls.    */
+  unsigned int build_keyblocks; /* Number of build_keyblock_image calls.  */
+  unsigned int update_keyblocks;/* Number of update_keyblock calls.       */
+  unsigned int insert_keyblocks;/* Number of update_keyblock calls.       */
+  unsigned int delete_keyblocks;/* Number of delete_keyblock calls.       */
+  unsigned int search_resets;   /* Number of keydb_search_reset calls.    */
+  unsigned int found;           /* Number of successful keydb_search calls. */
+  unsigned int found_cached;    /* Ditto but from the cache.              */
+  unsigned int notfound;        /* Number of failed keydb_search calls.   */
+  unsigned int notfound_cached; /* Ditto but from the cache.              */
+} keydb_stats;
 
 
 static int lock_all (KEYDB_HANDLE hd);
@@ -213,7 +234,7 @@ kid_not_found_insert (u32 *kid)
   k->kid[1] = kid[1];
   k->next = kid_not_found_cache[kid[0] % KID_NOT_FOUND_CACHE_BUCKETS];
   kid_not_found_cache[kid[0] % KID_NOT_FOUND_CACHE_BUCKETS] = k;
-  kid_not_found_cache_count++;
+  kid_not_found_stats.count++;
 }
 
 
@@ -227,7 +248,7 @@ kid_not_found_flush (void)
   if (DBG_CACHE)
     log_debug ("keydb: kid_not_found_flush\n");
 
-  if (!kid_not_found_cache_count)
+  if (!kid_not_found_stats.count)
     return;
 
   for (i=0; i < DIM(kid_not_found_cache); i++)
@@ -239,7 +260,10 @@ kid_not_found_flush (void)
         }
       kid_not_found_cache[i] = NULL;
     }
-  kid_not_found_cache_count = 0;
+  if (kid_not_found_stats.count > kid_not_found_stats.peak)
+    kid_not_found_stats.peak = kid_not_found_stats.count;
+  kid_not_found_stats.count = 0;
+  kid_not_found_stats.flushes++;
 }
 
 
@@ -831,9 +855,26 @@ keydb_add_resource (const char *url, unsigned int flags)
 void
 keydb_dump_stats (void)
 {
-  if (kid_not_found_cache_count)
-    log_info ("keydb: kid_not_found_cache: total: %u\n",
-	      kid_not_found_cache_count);
+  log_info ("keydb: handles=%u locks=%u parse=%u get=%u\n",
+            keydb_stats.handles,
+            keydb_stats.locks,
+            keydb_stats.parse_keyblocks,
+            keydb_stats.get_keyblocks);
+  log_info ("       build=%u update=%u insert=%u delete=%u\n",
+            keydb_stats.build_keyblocks,
+            keydb_stats.update_keyblocks,
+            keydb_stats.insert_keyblocks,
+            keydb_stats.delete_keyblocks);
+  log_info ("       reset=%u found=%u not=%u cache=%u not=%u\n",
+            keydb_stats.search_resets,
+            keydb_stats.found,
+            keydb_stats.notfound,
+            keydb_stats.found_cached,
+            keydb_stats.notfound_cached);
+  log_info ("kid_not_found_cache: count=%u peak=%u flushes=%u\n",
+            kid_not_found_stats.count,
+            kid_not_found_stats.peak,
+            kid_not_found_stats.flushes);
 }
 
 
@@ -895,6 +936,7 @@ keydb_new (void)
   hd->used = j;
 
   active_handles++;
+  keydb_stats.handles++;
 
   if (die)
     {
@@ -1042,7 +1084,10 @@ lock_all (KEYDB_HANDLE hd)
         }
     }
   else
-    hd->locked = 1;
+    {
+      hd->locked = 1;
+      keydb_stats.locks++;
+    }
 
   return rc;
 }
@@ -1270,7 +1315,10 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
   if (err)
     release_kbnode (keyblock);
   else
-    *r_keyblock = keyblock;
+    {
+      *r_keyblock = keyblock;
+      keydb_stats.parse_keyblocks++;
+    }
   free_packet (pkt, &parsectx);
   deinit_parse_packet (&parsectx);
   xfree (pkt);
@@ -1363,6 +1411,9 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
   if (hd->keyblock_cache.state != KEYBLOCK_CACHE_FILLED)
     keyblock_cache_clear (hd);
 
+  if (!err)
+    keydb_stats.get_keyblocks++;
+
   if (DBG_CLOCK)
     log_clock (err? "keydb_get_keyblock leave (failed)"
                : "keydb_get_keyblock leave");
@@ -1406,6 +1457,7 @@ build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf)
         }
     }
 
+  keydb_stats.build_keyblocks++;
   *r_iobuf = iobuf;
   return 0;
 }
@@ -1493,6 +1545,8 @@ keydb_update_keyblock (ctrl_t ctrl, KEYDB_HANDLE hd, kbnode_t kb)
     }
 
   unlock_all (hd);
+  if (!err)
+    keydb_stats.update_keyblocks++;
   return err;
 }
 
@@ -1561,6 +1615,8 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
     }
 
   unlock_all (hd);
+  if (!err)
+    keydb_stats.insert_keyblocks++;
   return err;
 }
 
@@ -1605,6 +1661,8 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
     }
 
   unlock_all (hd);
+  if (!rc)
+    keydb_stats.delete_keyblocks++;
   return rc;
 }
 
@@ -1751,6 +1809,8 @@ keydb_search_reset (KEYDB_HANDLE hd)
         }
     }
   hd->is_reset = 1;
+  if (!rc)
+    keydb_stats.search_resets++;
   return rc;
 }
 
@@ -1815,6 +1875,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     {
       if (DBG_CLOCK)
         log_clock ("keydb_search leave (not found, cached)");
+      keydb_stats.notfound_cached++;
       return gpg_error (GPG_ERR_NOT_FOUND);
     }
 
@@ -1843,6 +1904,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
          Seek just beyond that.  */
       keybox_seek (hd->active[hd->current].u.kb,
                    hd->keyblock_cache.offset + 1);
+      keydb_stats.found_cached++;
       return 0;
     }
 
@@ -1926,6 +1988,10 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   if (DBG_CLOCK)
     log_clock (rc? "keydb_search leave (not found)"
                  : "keydb_search leave (found)");
+  if (!rc)
+    keydb_stats.found++;
+  else
+    keydb_stats.notfound++;
   return rc;
 }
 
