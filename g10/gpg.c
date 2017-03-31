@@ -2182,7 +2182,7 @@ set_compliance_option (enum cmd_and_opt_values option)
 static void
 gpg_init_default_ctrl (ctrl_t ctrl)
 {
-  (void)ctrl;
+  ctrl->magic = SERVER_CONTROL_MAGIC;
 }
 
 

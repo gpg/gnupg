@@ -1182,6 +1182,8 @@ impex_filter_getval (void *cookie, const char *propname)
   static char numbuf[20];
   const char *result;
 
+  log_assert (ctrl && ctrl->magic == SERVER_CONTROL_MAGIC);
+
   if (node->pkt->pkttype == PKT_USER_ID
       || node->pkt->pkttype == PKT_ATTRIBUTE)
     {
