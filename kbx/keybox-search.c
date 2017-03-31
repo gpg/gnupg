@@ -746,8 +746,13 @@ keybox_search_reset (KEYBOX_HANDLE hd)
 
   if (hd->fp)
     {
-      fclose (hd->fp);
-      hd->fp = NULL;
+      if (fseeko (hd->fp, 0, SEEK_SET))
+        {
+          /* Ooops.  Seek did not work.  Close so that the search will
+           * open the file again.  */
+          fclose (hd->fp);
+          hd->fp = NULL;
+        }
     }
   hd->error = 0;
   hd->eof = 0;

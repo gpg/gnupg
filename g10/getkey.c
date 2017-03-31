@@ -736,11 +736,21 @@ get_pubkey (ctrl_t ctrl, PKT_public_key * pk, u32 * keyid)
     memset (&ctx, 0, sizeof ctx);
     ctx.exact = 1; /* Use the key ID exactly as given.  */
     ctx.not_allocated = 1;
-    ctx.kr_handle = keydb_new ();
-    if (!ctx.kr_handle)
+
+    if (ctrl && ctrl->cached_getkey_kdb)
       {
-        rc = gpg_error_from_syserror ();
-        goto leave;
+        ctx.kr_handle = ctrl->cached_getkey_kdb;
+        ctrl->cached_getkey_kdb = NULL;
+        keydb_search_reset (ctx.kr_handle);
+      }
+    else
+      {
+        ctx.kr_handle = keydb_new ();
+        if (!ctx.kr_handle)
+          {
+            rc = gpg_error_from_syserror ();
+            goto leave;
+          }
       }
     ctx.nitems = 1;
     ctx.items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
@@ -2208,7 +2218,10 @@ getkey_end (ctrl_t ctrl, getkey_ctx_t ctx)
 {
   if (ctx)
     {
-      keydb_release (ctx->kr_handle);
+      if (ctrl && !ctrl->cached_getkey_kdb)
+        ctrl->cached_getkey_kdb = ctx->kr_handle;
+      else
+        keydb_release (ctx->kr_handle);
       free_strlist (ctx->extra_list);
       if (!ctx->not_allocated)
 	xfree (ctx);

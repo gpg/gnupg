@@ -59,9 +59,12 @@ struct server_local_s;
 struct dirmngr_local_s;
 typedef struct dirmngr_local_s *dirmngr_local_t;
 
-/* Object used to describe a keyblok node.  */
+/* Object used to describe a keyblock node.  */
 typedef struct kbnode_struct *KBNODE;   /* Deprecated use kbnode_t. */
 typedef struct kbnode_struct *kbnode_t;
+
+/* The handle for keydb operations.  */
+typedef struct keydb_handle *KEYDB_HANDLE;
 
 /* TOFU database meta object.  */
 struct tofu_dbs_s;
@@ -94,6 +97,8 @@ struct server_control_s
     int batch_updated_wanted;
   } tofu;
 
+  /* This is used to cache a key data base handle.  */
+  KEYDB_HANDLE cached_getkey_kdb;
 };
 
 

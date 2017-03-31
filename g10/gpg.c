@@ -2195,6 +2195,8 @@ gpg_deinit_default_ctrl (ctrl_t ctrl)
   tofu_closedbs (ctrl);
 #endif
   gpg_dirmngr_deinit_session_data (ctrl);
+
+  keydb_release (ctrl->cached_getkey_kdb);
 }
 
 

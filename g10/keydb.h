@@ -109,9 +109,6 @@ struct pubkey_find_info {
 };
 
 
-typedef struct keydb_handle *KEYDB_HANDLE;
-
-
 /* Helper type for preference fucntions. */
 union pref_hint
 {
