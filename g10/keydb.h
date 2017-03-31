@@ -186,7 +186,7 @@ gpg_error_t keydb_delete_keyblock (KEYDB_HANDLE hd);
 gpg_error_t keydb_locate_writable (KEYDB_HANDLE hd);
 
 /* Rebuild the on-disk caches of all key resources.  */
-void keydb_rebuild_caches (int noisy);
+void keydb_rebuild_caches (ctrl_t ctrl, int noisy);
 
 /* Return the number of skipped blocks (because they were to large to
    read from a keybox) since the last search reset.  */
@@ -215,7 +215,7 @@ gpg_error_t keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr);
 
 
 /*-- pkclist.c --*/
-void show_revocation_reason( PKT_public_key *pk, int mode );
+void show_revocation_reason (ctrl_t ctrl, PKT_public_key *pk, int mode );
 int  check_signatures_trust (ctrl_t ctrl, PKT_signature *sig);
 
 void release_pk_list (PK_LIST pk_list);
@@ -258,13 +258,15 @@ void set_next_passphrase( const char *s );
 char *get_last_passphrase(void);
 void next_to_last_passphrase(void);
 
-void emit_status_need_passphrase (u32 *keyid, u32 *mainkeyid, int pubkey_algo);
+void emit_status_need_passphrase (ctrl_t ctrl, u32 *keyid,
+                                  u32 *mainkeyid, int pubkey_algo);
 
 #define FORMAT_KEYDESC_NORMAL  0
 #define FORMAT_KEYDESC_IMPORT  1
 #define FORMAT_KEYDESC_EXPORT  2
 #define FORMAT_KEYDESC_DELKEY  3
-char *gpg_format_keydesc (PKT_public_key *pk, int mode, int escaped);
+char *gpg_format_keydesc (ctrl_t ctrl,
+                          PKT_public_key *pk, int mode, int escaped);
 
 
 /*-- getkey.c --*/
@@ -276,7 +278,7 @@ void cache_public_key( PKT_public_key *pk );
 void getkey_disable_caches(void);
 
 /* Return the public key with the key id KEYID and store it at PK.  */
-int get_pubkey( PKT_public_key *pk, u32 *keyid );
+int get_pubkey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid);
 
 /* Similar to get_pubkey, but it does not take PK->REQ_USAGE into
    account nor does it merge in the self-signed data.  This function
@@ -284,7 +286,7 @@ int get_pubkey( PKT_public_key *pk, u32 *keyid );
 int get_pubkey_fast (PKT_public_key *pk, u32 *keyid);
 
 /* Return the key block for the key with KEYID.  */
-kbnode_t get_pubkeyblock (u32 *keyid);
+kbnode_t get_pubkeyblock (ctrl_t ctrl, u32 *keyid);
 
 /* A list used by get_pubkeys to gather all of the matches.  */
 struct pubkey_s
@@ -330,10 +332,10 @@ gpg_error_t get_pubkey_fromfile (ctrl_t ctrl,
 
 /* Return the public key with the key id KEYID iff the secret key is
  * available and store it at PK.  */
-gpg_error_t get_seckey (PKT_public_key *pk, u32 *keyid);
+gpg_error_t get_seckey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid);
 
 /* Lookup a key with the specified fingerprint.  */
-int get_pubkey_byfprint (PKT_public_key *pk,  kbnode_t *r_keyblock,
+int get_pubkey_byfprint (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
                          const byte *fprint, size_t fprint_len);
 
 /* This function is similar to get_pubkey_byfprint, but it doesn't
@@ -354,7 +356,8 @@ const char *parse_def_secret_key (ctrl_t ctrl);
 gpg_error_t get_seckey_default (ctrl_t ctrl, PKT_public_key *pk);
 
 /* Search for keys matching some criteria.  */
-gpg_error_t getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,
+gpg_error_t getkey_bynames (ctrl_t ctrl,
+                            getkey_ctx_t *retctx, PKT_public_key *pk,
                             strlist_t names, int want_secret,
                             kbnode_t *ret_keyblock);
 
@@ -365,8 +368,8 @@ gpg_error_t getkey_byname (ctrl_t ctrl,
                            kbnode_t *ret_keyblock);
 
 /* Return the next search result.  */
-gpg_error_t getkey_next (getkey_ctx_t ctx, PKT_public_key *pk,
-                         kbnode_t *ret_keyblock);
+gpg_error_t getkey_next (ctrl_t ctrl, getkey_ctx_t ctx,
+                         PKT_public_key *pk, kbnode_t *ret_keyblock);
 
 /* Release any resources used by a key listing context.  */
 void getkey_end (getkey_ctx_t ctx);
@@ -383,14 +386,14 @@ void setup_main_keyids (kbnode_t keyblock);
 
 /* This function merges information from the self-signed data into the
    data structures.  */
-void merge_keys_and_selfsig (kbnode_t keyblock);
+void merge_keys_and_selfsig (ctrl_t ctrl, kbnode_t keyblock);
 
-char*get_user_id_string_native( u32 *keyid );
-char*get_long_user_id_string( u32 *keyid );
-char*get_user_id( u32 *keyid, size_t *rn );
-char*get_user_id_native( u32 *keyid );
-char *get_user_id_byfpr (const byte *fpr, size_t *rn);
-char *get_user_id_byfpr_native (const byte *fpr);
+char*get_user_id_string_native (ctrl_t ctrl, u32 *keyid);
+char*get_long_user_id_string (ctrl_t ctrl, u32 *keyid);
+char*get_user_id (ctrl_t ctrl, u32 *keyid, size_t *rn);
+char*get_user_id_native (ctrl_t ctrl, u32 *keyid);
+char *get_user_id_byfpr (ctrl_t ctrl, const byte *fpr, size_t *rn);
+char *get_user_id_byfpr_native (ctrl_t ctrl, const byte *fpr);
 
 void release_akl(void);
 int parse_auto_key_locate(char *options);
@@ -449,8 +452,9 @@ const char *pk_keyid_str (PKT_public_key *pk);
 
 const char *keystr_from_desc(KEYDB_SEARCH_DESC *desc);
 u32 keyid_from_pk( PKT_public_key *pk, u32 *keyid );
-u32 keyid_from_sig( PKT_signature *sig, u32 *keyid );
-u32 keyid_from_fingerprint(const byte *fprint, size_t fprint_len, u32 *keyid);
+u32 keyid_from_sig (PKT_signature *sig, u32 *keyid );
+u32 keyid_from_fingerprint (ctrl_t ctrl, const byte *fprint, size_t fprint_len,
+                            u32 *keyid);
 byte *namehash_from_uid(PKT_user_id *uid);
 unsigned nbits_from_pk( PKT_public_key *pk );
 const char *datestr_from_pk( PKT_public_key *pk );

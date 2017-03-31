@@ -1674,7 +1674,7 @@ keydb_locate_writable (KEYDB_HANDLE hd)
 
 /* Rebuild the on-disk caches of all key resources.  */
 void
-keydb_rebuild_caches (int noisy)
+keydb_rebuild_caches (ctrl_t ctrl, int noisy)
 {
   int i, rc;
 
@@ -1687,7 +1687,7 @@ keydb_rebuild_caches (int noisy)
         case KEYDB_RESOURCE_TYPE_NONE: /* ignore */
           break;
         case KEYDB_RESOURCE_TYPE_KEYRING:
-          rc = keyring_rebuild_cache (all_resources[i].token,noisy);
+          rc = keyring_rebuild_cache (ctrl, all_resources[i].token,noisy);
           if (rc)
             log_error (_("failed to rebuild keyring cache: %s\n"),
                        gpg_strerror (rc));

@@ -38,13 +38,13 @@
 /* Return true if key is disabled.  Note that this is usually used via
    the pk_is_disabled macro.  */
 int
-cache_disabled_value (PKT_public_key *pk)
+cache_disabled_value (ctrl_t ctrl, PKT_public_key *pk)
 {
 #ifdef NO_TRUST_MODELS
   (void)pk;
   return 0;
 #else
-  return tdb_cache_disabled_value (pk);
+  return tdb_cache_disabled_value (ctrl, pk);
 #endif
 }
 
@@ -173,13 +173,13 @@ uid_trust_string_fixed (ctrl_t ctrl, PKT_public_key *key, PKT_user_id *uid)
  * The key should be the primary key.
  */
 unsigned int
-get_ownertrust (PKT_public_key *pk)
+get_ownertrust (ctrl_t ctrl, PKT_public_key *pk)
 {
 #ifdef NO_TRUST_MODELS
   (void)pk;
   return TRUST_UNKNOWN;
 #else
-  return tdb_get_ownertrust (pk, 0);
+  return tdb_get_ownertrust (ctrl, pk, 0);
 #endif
 }
 
@@ -190,7 +190,7 @@ get_ownertrust (PKT_public_key *pk)
  * inhibits creation of a trustdb it that does not yet exists.
  */
 static int
-get_ownertrust_with_min (PKT_public_key *pk, int no_create)
+get_ownertrust_with_min (ctrl_t ctrl, PKT_public_key *pk, int no_create)
 {
 #ifdef NO_TRUST_MODELS
   (void)pk;
@@ -202,11 +202,11 @@ get_ownertrust_with_min (PKT_public_key *pk, int no_create)
    * functions: If the caller asked not to create a trustdb we call
    * init_trustdb directly and allow it to fail with an error code for
    * a non-existing trustdb.  */
-  if (no_create && init_trustdb (1))
+  if (no_create && init_trustdb (ctrl, 1))
     return TRUST_UNKNOWN;
 
-  otrust = (tdb_get_ownertrust (pk, no_create) & TRUST_MASK);
-  otrust_min = tdb_get_min_ownertrust (pk, no_create);
+  otrust = (tdb_get_ownertrust (ctrl, pk, no_create) & TRUST_MASK);
+  otrust_min = tdb_get_min_ownertrust (ctrl, pk, no_create);
   if (otrust < otrust_min)
     {
       /* If the trust that the user has set is less than the trust
@@ -229,9 +229,9 @@ get_ownertrust_with_min (PKT_public_key *pk, int no_create)
  * NO_CREATE is set, no efforts for creating a trustdb will be taken.
  */
 int
-get_ownertrust_info (PKT_public_key *pk, int no_create)
+get_ownertrust_info (ctrl_t ctrl, PKT_public_key *pk, int no_create)
 {
-  return trust_letter (get_ownertrust_with_min (pk, no_create));
+  return trust_letter (get_ownertrust_with_min (ctrl, pk, no_create));
 }
 
 
@@ -241,9 +241,9 @@ get_ownertrust_info (PKT_public_key *pk, int no_create)
  * NO_CREATE is set, no efforts for creating a trustdb will be taken.
  */
 const char *
-get_ownertrust_string (PKT_public_key *pk, int no_create)
+get_ownertrust_string (ctrl_t ctrl, PKT_public_key *pk, int no_create)
 {
-  return trust_value_to_string (get_ownertrust_with_min (pk, no_create));
+  return trust_value_to_string (get_ownertrust_with_min (ctrl, pk, no_create));
 }
 
 
@@ -252,34 +252,34 @@ get_ownertrust_string (PKT_public_key *pk, int no_create)
  * The key should be a primary one.
  */
 void
-update_ownertrust (PKT_public_key *pk, unsigned int new_trust)
+update_ownertrust (ctrl_t ctrl, PKT_public_key *pk, unsigned int new_trust)
 {
 #ifdef NO_TRUST_MODELS
   (void)pk;
   (void)new_trust;
 #else
-  tdb_update_ownertrust (pk, new_trust);
+  tdb_update_ownertrust (ctrl, pk, new_trust);
 #endif
 }
 
 
 int
-clear_ownertrusts (PKT_public_key *pk)
+clear_ownertrusts (ctrl_t ctrl, PKT_public_key *pk)
 {
 #ifdef NO_TRUST_MODELS
   (void)pk;
   return 0;
 #else
-  return tdb_clear_ownertrusts (pk);
+  return tdb_clear_ownertrusts (ctrl, pk);
 #endif
 }
 
 
 void
-revalidation_mark (void)
+revalidation_mark (ctrl_t ctrl)
 {
 #ifndef NO_TRUST_MODELS
-  tdb_revalidation_mark ();
+  tdb_revalidation_mark (ctrl);
 #endif
 }
 
@@ -343,7 +343,7 @@ get_validity (ctrl_t ctrl, kbnode_t kb, PKT_public_key *pk, PKT_user_id *uid,
       else
         {
           main_pk = xmalloc_clear (sizeof *main_pk);
-          rc = get_pubkey (main_pk, pk->main_keyid);
+          rc = get_pubkey (ctrl, main_pk, pk->main_keyid);
           if (rc)
             {
               char *tempkeystr = xstrdup (keystr (pk->main_keyid));
@@ -430,7 +430,7 @@ get_validity_string (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *uid)
  * 9 and 10 are used for internal purposes.
  */
 void
-mark_usable_uid_certs (kbnode_t keyblock, kbnode_t uidnode,
+mark_usable_uid_certs (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
                        u32 *main_kid, struct key_item *klist,
                        u32 curtime, u32 *next_expire)
 {
@@ -461,7 +461,7 @@ mark_usable_uid_certs (kbnode_t keyblock, kbnode_t uidnode,
 		     invalid signature */
       if (klist && !is_in_klist (klist, sig))
         continue;  /* no need to check it then */
-      if ((rc=check_key_signature (keyblock, node, NULL)))
+      if ((rc=check_key_signature (ctrl, keyblock, node, NULL)))
 	{
 	  /* we ignore anything that won't verify, but tag the
 	     no_pubkey case */
@@ -594,7 +594,7 @@ mark_usable_uid_certs (kbnode_t keyblock, kbnode_t uidnode,
 
 
 static int
-clean_sigs_from_uid (kbnode_t keyblock, kbnode_t uidnode,
+clean_sigs_from_uid (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
                      int noisy, int self_only)
 {
   int deleted = 0;
@@ -609,7 +609,7 @@ clean_sigs_from_uid (kbnode_t keyblock, kbnode_t uidnode,
   /* Passing in a 0 for current time here means that we'll never weed
      out an expired sig.  This is correct behavior since we want to
      keep the most recent expired sig in a series. */
-  mark_usable_uid_certs (keyblock, uidnode, NULL, NULL, 0, NULL);
+  mark_usable_uid_certs (ctrl, keyblock, uidnode, NULL, NULL, 0, NULL);
 
   /* What we want to do here is remove signatures that are not
      considered as part of the trust calculations.  Thus, all invalid
@@ -743,8 +743,8 @@ clean_uid_from_key (kbnode_t keyblock, kbnode_t uidnode, int noisy)
 
 /* Needs to be called after a merge_keys_and_selfsig() */
 void
-clean_one_uid (kbnode_t keyblock, kbnode_t uidnode, int noisy, int self_only,
-               int *uids_cleaned, int *sigs_cleaned)
+clean_one_uid (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
+               int noisy, int self_only, int *uids_cleaned, int *sigs_cleaned)
 {
   int dummy = 0;
 
@@ -762,19 +762,20 @@ clean_one_uid (kbnode_t keyblock, kbnode_t uidnode, int noisy, int self_only,
      to bother with the other.  */
   *uids_cleaned += clean_uid_from_key (keyblock, uidnode, noisy);
   if (!uidnode->pkt->pkt.user_id->flags.compacted)
-    *sigs_cleaned += clean_sigs_from_uid (keyblock, uidnode, noisy, self_only);
+    *sigs_cleaned += clean_sigs_from_uid (ctrl, keyblock, uidnode,
+                                          noisy, self_only);
 }
 
 
 /* NB: This function marks the deleted nodes only and the caller is
  * responsible to skip or remove them.  */
 void
-clean_key (kbnode_t keyblock, int noisy, int self_only,
+clean_key (ctrl_t ctrl, kbnode_t keyblock, int noisy, int self_only,
            int *uids_cleaned, int *sigs_cleaned)
 {
   kbnode_t node;
 
-  merge_keys_and_selfsig (keyblock);
+  merge_keys_and_selfsig (ctrl, keyblock);
 
   for (node = keyblock->next;
        node && !(node->pkt->pkttype == PKT_PUBLIC_SUBKEY
@@ -782,7 +783,7 @@ clean_key (kbnode_t keyblock, int noisy, int self_only,
        node = node->next)
     {
       if (node->pkt->pkttype == PKT_USER_ID)
-        clean_one_uid (keyblock, node, noisy, self_only,
+        clean_one_uid (ctrl, keyblock, node, noisy, self_only,
                        uids_cleaned, sigs_cleaned);
     }
 

@@ -428,7 +428,7 @@ typedef struct
    there is no disable value cached, fill one in. */
 #define pk_is_disabled(a)                                       \
   (((a)->flags.disabled_valid)?                                 \
-   ((a)->flags.disabled):(cache_disabled_value((a))))
+   ((a)->flags.disabled):(cache_disabled_value(ctrl,(a))))
 
 
 typedef struct {
@@ -853,14 +853,15 @@ int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 /*-- sig-check.c --*/
 /* Check a signature.  This is shorthand for check_signature2 with
    the unnamed arguments passed as NULL.  */
-int check_signature (PKT_signature *sig, gcry_md_hd_t digest);
+int check_signature (ctrl_t ctrl, PKT_signature *sig, gcry_md_hd_t digest);
 
 /* Check a signature.  Looks up the public key from the key db.  (If
  * R_PK is not NULL, it is stored at RET_PK.)  DIGEST contains a
  * valid hash context that already includes the signed data.  This
  * function adds the relevant meta-data to the hash before finalizing
  * it and verifying the signature.  */
-gpg_error_t check_signature2 (PKT_signature *sig, gcry_md_hd_t digest,
+gpg_error_t check_signature2 (ctrl_t ctrl,
+                              PKT_signature *sig, gcry_md_hd_t digest,
                               u32 *r_expiredate, int *r_expired, int *r_revoked,
                               PKT_public_key **r_pk);
 
@@ -885,14 +886,16 @@ int ask_for_detached_datafile( gcry_md_hd_t md, gcry_md_hd_t md2,
 			       const char *inname, int textmode );
 
 /*-- sign.c --*/
-int make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
+int make_keysig_packet (ctrl_t ctrl,
+                        PKT_signature **ret_sig, PKT_public_key *pk,
 			PKT_user_id *uid, PKT_public_key *subpk,
 			PKT_public_key *pksk, int sigclass, int digest_algo,
 			u32 timestamp, u32 duration,
 			int (*mksubpkt)(PKT_signature *, void *),
 			void *opaque,
                         const char *cache_nonce);
-gpg_error_t update_keysig_packet (PKT_signature **ret_sig,
+gpg_error_t update_keysig_packet (ctrl_t ctrl,
+                      PKT_signature **ret_sig,
                       PKT_signature *orig_sig,
                       PKT_public_key *pk,
                       PKT_user_id *uid,

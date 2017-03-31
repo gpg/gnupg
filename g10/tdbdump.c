@@ -49,9 +49,9 @@
  * Write a record; die on error.
  */
 static void
-write_record( TRUSTREC *rec )
+write_record (ctrl_t ctrl, TRUSTREC *rec)
 {
-    int rc = tdbio_write_record( rec );
+    int rc = tdbio_write_record (ctrl, rec);
     if( !rc )
 	return;
     log_error(_("trust record %lu, type %d: write failed: %s\n"),
@@ -64,13 +64,13 @@ write_record( TRUSTREC *rec )
  * Dump the entire trustdb to FP or only the entries of one key.
  */
 void
-list_trustdb (estream_t fp, const char *username)
+list_trustdb (ctrl_t ctrl, estream_t fp, const char *username)
 {
   TRUSTREC rec;
 
   (void)username;
 
-  init_trustdb (0);
+  init_trustdb (ctrl, 0);
   /* For now we ignore the user ID. */
   if (1)
     {
@@ -94,14 +94,14 @@ list_trustdb (estream_t fp, const char *username)
  * Print a list of all defined owner trust value.
  */
 void
-export_ownertrust()
+export_ownertrust (ctrl_t ctrl)
 {
   TRUSTREC rec;
   ulong recnum;
   int i;
   byte *p;
 
-  init_trustdb (0);
+  init_trustdb (ctrl, 0);
   es_printf (_("# List of assigned trustvalues, created %s\n"
                "# (Use \"gpg --import-ownertrust\" to restore them)\n"),
              asctimestamp( make_timestamp() ) );
@@ -121,7 +121,7 @@ export_ownertrust()
 
 
 void
-import_ownertrust( const char *fname )
+import_ownertrust (ctrl_t ctrl, const char *fname )
 {
     estream_t fp;
     int is_stdin=0;
@@ -133,7 +133,7 @@ import_ownertrust( const char *fname )
     int any = 0;
     int rc;
 
-    init_trustdb (0);
+    init_trustdb (ctrl, 0);
     if( iobuf_is_pipe_filename (fname) ) {
 	fp = es_stdin;
 	fname = "[stdin]";
@@ -202,7 +202,7 @@ import_ownertrust( const char *fname )
                       log_info("setting ownertrust to %u\n", otrust );
                   }
                 rec.r.trust.ownertrust = otrust;
-                write_record (&rec );
+                write_record (ctrl, &rec);
                 any = 1;
               }
 	}
@@ -210,11 +210,11 @@ import_ownertrust( const char *fname )
             if (!opt.quiet)
               log_info("inserting ownertrust of %u\n", otrust );
             memset (&rec, 0, sizeof rec);
-            rec.recnum = tdbio_new_recnum ();
+            rec.recnum = tdbio_new_recnum (ctrl);
             rec.rectype = RECTYPE_TRUST;
             memcpy (rec.r.trust.fingerprint, fpr, 20);
             rec.r.trust.ownertrust = otrust;
-            write_record (&rec );
+            write_record (ctrl, &rec);
             any = 1;
 	}
 	else /* error */
@@ -228,7 +228,7 @@ import_ownertrust( const char *fname )
 
     if (any)
       {
-        revalidation_mark ();
+        revalidation_mark (ctrl);
         rc = tdbio_sync ();
         if (rc)
           log_error (_("trustdb: sync failed: %s\n"), gpg_strerror (rc) );

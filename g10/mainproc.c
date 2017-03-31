@@ -465,7 +465,7 @@ proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
  * not decrypt.
  */
 static void
-print_pkenc_list (struct kidlist_item *list, int failed)
+print_pkenc_list (ctrl_t ctrl, struct kidlist_item *list, int failed)
 {
   for (; list; list = list->next)
     {
@@ -483,13 +483,13 @@ print_pkenc_list (struct kidlist_item *list, int failed)
       if (!algstr)
         algstr = "[?]";
       pk->pubkey_algo = list->pubkey_algo;
-      if (!get_pubkey (pk, list->kid))
+      if (!get_pubkey (ctrl, pk, list->kid))
         {
           char *p;
           log_info (_("encrypted with %u-bit %s key, ID %s, created %s\n"),
                     nbits_from_pk (pk), algstr, keystr_from_pk(pk),
                     strtimestamp (pk->timestamp));
-          p = get_user_id_native (list->kid);
+          p = get_user_id_native (ctrl, list->kid);
           log_printf (_("      \"%s\"\n"), p);
           xfree (p);
         }
@@ -530,8 +530,8 @@ proc_encrypted (CTX c, PACKET *pkt)
         log_info (_("encrypted with %lu passphrases\n"), c->symkeys);
       else if (c->symkeys == 1)
         log_info (_("encrypted with 1 passphrase\n"));
-      print_pkenc_list ( c->pkenc_list, 1 );
-      print_pkenc_list ( c->pkenc_list, 0 );
+      print_pkenc_list (c->ctrl, c->pkenc_list, 1 );
+      print_pkenc_list (c->ctrl, c->pkenc_list, 0 );
     }
 
   /* FIXME: Figure out the session key by looking at all pkenc packets. */
@@ -916,7 +916,7 @@ do_check_sig (CTX c, kbnode_t node, int *is_selfsig,
       if (c->list->pkt->pkttype == PKT_PUBLIC_KEY
           || c->list->pkt->pkttype == PKT_PUBLIC_SUBKEY)
         {
-          return check_key_signature( c->list, node, is_selfsig );
+          return check_key_signature (c->ctrl, c->list, node, is_selfsig);
 	}
       else if (sig->sig_class == 0x20)
         {
@@ -935,14 +935,14 @@ do_check_sig (CTX c, kbnode_t node, int *is_selfsig,
 
   /* We only get here if we are checking the signature of a binary
      (0x00) or text document (0x01).  */
-  rc = check_signature2 (sig, md, NULL, is_expkey, is_revkey, r_pk);
+  rc = check_signature2 (c->ctrl, sig, md, NULL, is_expkey, is_revkey, r_pk);
   if (! rc)
     md_good = md;
   else if (gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE && md2)
     {
       PKT_public_key *pk2;
 
-      rc = check_signature2 (sig, md2, NULL, is_expkey, is_revkey,
+      rc = check_signature2 (c->ctrl, sig, md2, NULL, is_expkey, is_revkey,
                              r_pk? &pk2 : NULL);
       if (!rc)
         {
@@ -1032,19 +1032,19 @@ list_node (CTX c, kbnode_t node)
                      colon_datestr_from_pk( pk ),
                      colon_strtime (pk->expiredate) );
           if (pk->flags.primary && !opt.fast_list_mode)
-            es_putc (get_ownertrust_info (pk, 1), es_stdout);
+            es_putc (get_ownertrust_info (c->ctrl, pk, 1), es_stdout);
           es_putc (':', es_stdout);
           es_putc ('\n', es_stdout);
         }
       else
         {
-          print_key_line (es_stdout, pk, 0);
+          print_key_line (c->ctrl, es_stdout, pk, 0);
         }
 
       if (opt.keyid_format == KF_NONE && !opt.with_colons)
         ; /* Already printed.  */
       else if ((pk->flags.primary && opt.fingerprint) || opt.fingerprint > 1)
-        print_fingerprint (NULL, pk, 0);
+        print_fingerprint (c->ctrl, NULL, pk, 0);
 
       if (pk->flags.primary)
         {
@@ -1165,7 +1165,7 @@ list_node (CTX c, kbnode_t node)
 	}
       else if (!opt.fast_list_mode)
         {
-          p = get_user_id (sig->keyid, &n);
+          p = get_user_id (c->ctrl, sig->keyid, &n);
           es_write_sanitized (es_stdout, p, n,
                               opt.with_colons?":":NULL, NULL );
           xfree (p);
@@ -1928,7 +1928,7 @@ check_sig_and_print (CTX c, kbnode_t node)
        * keyboock has already been fetched.  Thus we could use the
        * fingerprint or PK itself to lookup the entire keyblock.  That
        * would best be done with a cache.  */
-      keyblock = get_pubkeyblock (sig->keyid);
+      keyblock = get_pubkeyblock (c->ctrl, sig->keyid);
 
       snprintf (keyid_str, sizeof keyid_str, "%08lX%08lX [uncertain] ",
                 (ulong)sig->keyid[0], (ulong)sig->keyid[1]);
@@ -2254,12 +2254,12 @@ proc_tree (CTX c, kbnode_t node)
   if (node->pkt->pkttype == PKT_PUBLIC_KEY
       || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
     {
-      merge_keys_and_selfsig (node);
+      merge_keys_and_selfsig (c->ctrl, node);
       list_node (c, node);
     }
   else if (node->pkt->pkttype == PKT_SECRET_KEY)
     {
-      merge_keys_and_selfsig (node);
+      merge_keys_and_selfsig (c->ctrl, node);
       list_node (c, node);
     }
   else if (node->pkt->pkttype == PKT_ONEPASS_SIG)

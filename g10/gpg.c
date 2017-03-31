@@ -4292,7 +4292,8 @@ main (int argc, char **argv)
            proper order :) */
 	for( ; argc; argc-- )
 	  add_to_strlist2( &sl, argv[argc-1], utf8_strings );
-	delete_keys(sl,cmd==aDeleteSecretKeys,cmd==aDeleteSecretAndPublicKeys);
+	delete_keys (ctrl, sl,
+                     cmd==aDeleteSecretKeys, cmd==aDeleteSecretAndPublicKeys);
 	free_strlist(sl);
 	break;
 
@@ -4591,7 +4592,7 @@ main (int argc, char **argv)
 	if( argc != 1 )
 	    wrong_args("--generate-revocation user-id");
 	username =  make_username(*argv);
-	gen_revoke( username );
+	gen_revoke (ctrl, username );
 	xfree( username );
 	break;
 
@@ -4738,10 +4739,10 @@ main (int argc, char **argv)
 #ifndef NO_TRUST_MODELS
       case aListTrustDB:
 	if( !argc )
-          list_trustdb (es_stdout, NULL);
+          list_trustdb (ctrl, es_stdout, NULL);
 	else {
 	    for( ; argc; argc--, argv++ )
-              list_trustdb (es_stdout, *argv );
+              list_trustdb (ctrl, es_stdout, *argv );
 	}
 	break;
 
@@ -4773,28 +4774,28 @@ main (int argc, char **argv)
       case aExportOwnerTrust:
 	if( argc )
 	    wrong_args("--export-ownertrust");
-	export_ownertrust();
+	export_ownertrust (ctrl);
 	break;
 
       case aImportOwnerTrust:
 	if( argc > 1 )
 	    wrong_args("--import-ownertrust [file]");
-	import_ownertrust( argc? *argv:NULL );
+	import_ownertrust (ctrl, argc? *argv:NULL );
 	break;
 #endif /*!NO_TRUST_MODELS*/
 
       case aRebuildKeydbCaches:
         if (argc)
             wrong_args ("--rebuild-keydb-caches");
-        keydb_rebuild_caches (1);
+        keydb_rebuild_caches (ctrl, 1);
         break;
 
 #ifdef ENABLE_CARD_SUPPORT
       case aCardStatus:
         if (argc == 0)
-          card_status (es_stdout, NULL);
+            card_status (ctrl, es_stdout, NULL);
         else if (argc == 1)
-          card_status (es_stdout, *argv);
+            card_status (ctrl, es_stdout, *argv);
         else
             wrong_args ("--card-status [serialno]");
         break;
@@ -4906,7 +4907,7 @@ main (int argc, char **argv)
 		  g10_exit (1);
 		}
 
-	      merge_keys_and_selfsig (kb);
+	      merge_keys_and_selfsig (ctrl, kb);
 	      if (tofu_set_policy (ctrl, kb, policy))
 		g10_exit (1);
 

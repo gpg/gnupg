@@ -362,7 +362,8 @@ fpr_is_ff (const char *fpr)
 
 /* Print all available information about the current card. */
 static void
-current_card_status (estream_t fp, char *serialno, size_t serialnobuflen)
+current_card_status (ctrl_t ctrl, estream_t fp,
+                     char *serialno, size_t serialnobuflen)
 {
   struct agent_card_info_s info;
   PKT_public_key *pk = xcalloc (1, sizeof *pk);
@@ -609,9 +610,9 @@ current_card_status (estream_t fp, char *serialno, size_t serialnobuflen)
       /* If the fingerprint is all 0xff, the key has no asssociated
          OpenPGP certificate.  */
       if ( thefpr && !fpr_is_ff (thefpr)
-           && !get_pubkey_byfprint (pk, &keyblock, thefpr, 20))
+           && !get_pubkey_byfprint (ctrl, pk, &keyblock, thefpr, 20))
         {
-          print_pubkey_info (fp, pk);
+          print_pubkey_info (ctrl, fp, pk);
           if (keyblock)
             print_card_key_info (fp, keyblock);
         }
@@ -629,7 +630,7 @@ current_card_status (estream_t fp, char *serialno, size_t serialnobuflen)
    Print all available information for current card when SERIALNO is NULL.
    Or print llfor all cards when SERIALNO is "all".  */
 void
-card_status (estream_t fp, const char *serialno)
+card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
 {
   int err;
   strlist_t card_list, sl;
@@ -638,7 +639,7 @@ card_status (estream_t fp, const char *serialno)
 
   if (serialno == NULL)
     {
-      current_card_status (fp, NULL, 0);
+      current_card_status (ctrl, fp, NULL, 0);
       return;
     }
 
@@ -673,7 +674,7 @@ card_status (estream_t fp, const char *serialno)
           continue;
         }
 
-      current_card_status (fp, NULL, 0);
+      current_card_status (ctrl, fp, NULL, 0);
       xfree (serialno1);
 
       if (!all_cards)
@@ -1510,7 +1511,7 @@ generate_card_keys (ctrl_t ctrl)
 /* This function is used by the key edit menu to generate an arbitrary
    subkey. */
 gpg_error_t
-card_generate_subkey (KBNODE pub_keyblock)
+card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock)
 {
   gpg_error_t err;
   struct agent_card_info_s info;
@@ -1581,7 +1582,7 @@ card_generate_subkey (KBNODE pub_keyblock)
          the serialnumber and thus it won't harm.  */
     }
 
-  err = generate_card_subkeypair (pub_keyblock, keyno, info.serialno);
+  err = generate_card_subkeypair (ctrl, pub_keyblock, keyno, info.serialno);
 
  leave:
   agent_release_card_info (&info);
@@ -1987,12 +1988,14 @@ card_edit (ctrl_t ctrl, strlist_t commands)
         {
           if (opt.with_colons)
             {
-              current_card_status (es_stdout, serialnobuf, DIM (serialnobuf));
+              current_card_status (ctrl, es_stdout,
+                                   serialnobuf, DIM (serialnobuf));
               fflush (stdout);
             }
           else
             {
-              current_card_status (NULL, serialnobuf, DIM (serialnobuf));
+              current_card_status (ctrl, NULL,
+                                   serialnobuf, DIM (serialnobuf));
               tty_printf("\n");
             }
           redisplay = 0;

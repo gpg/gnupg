@@ -119,7 +119,7 @@ static int in_transaction;
 
 
 static void open_db (void);
-static void create_hashtable (TRUSTREC *vr, int type);
+static void create_hashtable (ctrl_t ctrl, TRUSTREC *vr, int type);
 
 
 
@@ -535,7 +535,7 @@ cleanup (void)
  * Returns: 0 on success or an error code.
  */
 int
-tdbio_update_version_record (void)
+tdbio_update_version_record (ctrl_t ctrl)
 {
   TRUSTREC rec;
   int rc;
@@ -551,7 +551,7 @@ tdbio_update_version_record (void)
       rec.r.ver.cert_depth  = opt.max_cert_depth;
       rec.r.ver.trust_model = opt.trust_model;
       rec.r.ver.min_cert_level = opt.min_cert_level;
-      rc=tdbio_write_record(&rec);
+      rc = tdbio_write_record (ctrl, &rec);
     }
 
   return rc;
@@ -564,7 +564,7 @@ tdbio_update_version_record (void)
  * Returns: 0 on success or an error code.
  */
 static int
-create_version_record (void)
+create_version_record (ctrl_t ctrl)
 {
   TRUSTREC rec;
   int rc;
@@ -582,13 +582,13 @@ create_version_record (void)
   rec.r.ver.min_cert_level = opt.min_cert_level;
   rec.rectype = RECTYPE_VER;
   rec.recnum = 0;
-  rc = tdbio_write_record (&rec);
+  rc = tdbio_write_record (ctrl, &rec);
 
   if (!rc)
     tdbio_sync ();
 
   if (!rc)
-    create_hashtable (&rec, 0);
+    create_hashtable (ctrl, &rec, 0);
 
   return rc;
 }
@@ -606,7 +606,8 @@ create_version_record (void)
  *
  */
 int
-tdbio_set_dbname (const char *new_dbname, int create, int *r_nofile)
+tdbio_set_dbname (ctrl_t ctrl, const char *new_dbname,
+                  int create, int *r_nofile)
 {
   char *fname, *p;
   struct stat statbuf;
@@ -719,7 +720,7 @@ tdbio_set_dbname (const char *new_dbname, int create, int *r_nofile)
       if (db_fd == -1)
         log_fatal (_("can't open '%s': %s\n"), db_name, strerror (errno));
 
-      rc = create_version_record ();
+      rc = create_version_record (ctrl);
       if (rc)
         log_fatal (_("%s: failed to create version record: %s"),
                    fname, gpg_strerror (rc));
@@ -806,7 +807,7 @@ open_db ()
  * the function terminates the process.
  */
 static void
-create_hashtable( TRUSTREC *vr, int type )
+create_hashtable (ctrl_t ctrl, TRUSTREC *vr, int type)
 {
   TRUSTREC rec;
   off_t offset;
@@ -829,13 +830,13 @@ create_hashtable( TRUSTREC *vr, int type )
       memset (&rec, 0, sizeof rec);
       rec.rectype = RECTYPE_HTBL;
       rec.recnum = recnum;
-      rc = tdbio_write_record (&rec);
+      rc = tdbio_write_record (ctrl, &rec);
       if (rc)
         log_fatal (_("%s: failed to create hashtable: %s\n"),
                    db_name, gpg_strerror (rc));
     }
   /* Update the version record and flush. */
-  rc = tdbio_write_record (vr);
+  rc = tdbio_write_record (ctrl, vr);
   if (!rc)
     rc = tdbio_sync ();
   if (rc)
@@ -919,7 +920,7 @@ tdbio_read_nextcheck ()
  * Return: True if the stamp actually changed.
  */
 int
-tdbio_write_nextcheck (ulong stamp)
+tdbio_write_nextcheck (ctrl_t ctrl, ulong stamp)
 {
   TRUSTREC vr;
   int rc;
@@ -933,7 +934,7 @@ tdbio_write_nextcheck (ulong stamp)
     return 0;
 
   vr.r.ver.nextcheck = stamp;
-  rc = tdbio_write_record( &vr );
+  rc = tdbio_write_record (ctrl, &vr);
   if (rc)
     log_fatal (_("%s: error writing version record: %s\n"),
                db_name, gpg_strerror (rc));
@@ -980,7 +981,7 @@ get_trusthashrec(void)
  * Return: 0 on success or an error code.
  */
 static int
-upd_hashtable (ulong table, byte *key, int keylen, ulong newrecnum)
+upd_hashtable (ctrl_t ctrl, ulong table, byte *key, int keylen, ulong newrecnum)
 {
   TRUSTREC lastrec, rec;
   ulong hashrec, item;
@@ -1003,7 +1004,7 @@ upd_hashtable (ulong table, byte *key, int keylen, ulong newrecnum)
   if (!item)  /* Insert a new item into the hash table.  */
     {
       rec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = newrecnum;
-      rc = tdbio_write_record (&rec);
+      rc = tdbio_write_record (ctrl, &rec);
       if (rc)
         {
           log_error ("upd_hashtable: write htbl failed: %s\n",
@@ -1068,7 +1069,7 @@ upd_hashtable (ulong table, byte *key, int keylen, ulong newrecnum)
                     {
                       /* Empty slot found.  */
                       rec.r.hlst.rnum[i] = newrecnum;
-                      rc = tdbio_write_record (&rec);
+                      rc = tdbio_write_record (ctrl, &rec);
                       if (rc)
                         log_error ("upd_hashtable: write hlst failed: %s\n",
                                    gpg_strerror (rc));
@@ -1090,8 +1091,8 @@ upd_hashtable (ulong table, byte *key, int keylen, ulong newrecnum)
               else
                 {
                   /* Append a new record to the list.  */
-                  rec.r.hlst.next = item = tdbio_new_recnum ();
-                  rc = tdbio_write_record (&rec);
+                  rec.r.hlst.next = item = tdbio_new_recnum (ctrl);
+                  rc = tdbio_write_record (ctrl, &rec);
                   if (rc)
                     {
                       log_error ("upd_hashtable: write hlst failed: %s\n",
@@ -1102,7 +1103,7 @@ upd_hashtable (ulong table, byte *key, int keylen, ulong newrecnum)
                   rec.rectype = RECTYPE_HLST;
                   rec.recnum = item;
                   rec.r.hlst.rnum[0] = newrecnum;
-                  rc = tdbio_write_record (&rec);
+                  rc = tdbio_write_record (ctrl, &rec);
                   if (rc)
                     log_error ("upd_hashtable: write ext hlst failed: %s\n",
                                gpg_strerror (rc));
@@ -1120,10 +1121,10 @@ upd_hashtable (ulong table, byte *key, int keylen, ulong newrecnum)
           item = rec.recnum; /* Save number of key record.  */
           memset (&rec, 0, sizeof rec);
           rec.rectype = RECTYPE_HLST;
-          rec.recnum = tdbio_new_recnum ();
+          rec.recnum = tdbio_new_recnum (ctrl);
           rec.r.hlst.rnum[0] = item;	    /* Old key record */
           rec.r.hlst.rnum[1] = newrecnum; /* and new key record */
-          rc = tdbio_write_record (&rec);
+          rc = tdbio_write_record (ctrl, &rec);
           if (rc)
             {
               log_error( "upd_hashtable: write new hlst failed: %s\n",
@@ -1132,7 +1133,7 @@ upd_hashtable (ulong table, byte *key, int keylen, ulong newrecnum)
             }
           /* Update the hashtable record.  */
           lastrec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = rec.recnum;
-          rc = tdbio_write_record (&lastrec);
+          rc = tdbio_write_record (ctrl, &lastrec);
           if (rc)
             log_error ("upd_hashtable: update htbl failed: %s\n",
                        gpg_strerror (rc));
@@ -1143,7 +1144,7 @@ upd_hashtable (ulong table, byte *key, int keylen, ulong newrecnum)
           log_error ("hashtbl %lu: %lu/%d points to an invalid record %lu\n",
                      table, hashrec, (msb % ITEMS_PER_HTBL_RECORD), item);
           if (opt.verbose > 1)
-            list_trustdb (es_stderr, NULL);
+            list_trustdb (ctrl, es_stderr, NULL);
           return GPG_ERR_TRUSTDB;
 	}
     }
@@ -1159,7 +1160,8 @@ upd_hashtable (ulong table, byte *key, int keylen, ulong newrecnum)
  * Return: 0 on success or an error code.
  */
 static int
-drop_from_hashtable (ulong table, byte *key, int keylen, ulong recnum)
+drop_from_hashtable (ctrl_t ctrl, ulong table,
+                     byte *key, int keylen, ulong recnum)
 {
   TRUSTREC rec;
   ulong hashrec, item;
@@ -1185,7 +1187,7 @@ drop_from_hashtable (ulong table, byte *key, int keylen, ulong recnum)
   if (item == recnum) /* Table points direct to the record.  */
     {
       rec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = 0;
-      rc = tdbio_write_record( &rec );
+      rc = tdbio_write_record (ctrl, &rec);
       if (rc)
         log_error ("drop_from_hashtable: write htbl failed: %s\n",
                    gpg_strerror (rc));
@@ -1221,7 +1223,7 @@ drop_from_hashtable (ulong table, byte *key, int keylen, ulong recnum)
               if (rec.r.hlst.rnum[i] == recnum)
                 {
                   rec.r.hlst.rnum[i] = 0; /* Mark as free.  */
-                  rc = tdbio_write_record (&rec);
+                  rc = tdbio_write_record (ctrl, &rec);
                   if (rc)
                     log_error("drop_from_hashtable: write htbl failed: %s\n",
                               gpg_strerror (rc));
@@ -1354,9 +1356,9 @@ lookup_hashtable (ulong table, const byte *key, size_t keylen,
  * Return: 0 on success or an error code.
  */
 static int
-update_trusthashtbl( TRUSTREC *tr )
+update_trusthashtbl (ctrl_t ctrl, TRUSTREC *tr)
 {
-  return upd_hashtable (get_trusthashrec(),
+  return upd_hashtable (ctrl, get_trusthashrec (),
                         tr->r.trust.fingerprint, 20, tr->recnum);
 }
 
@@ -1591,7 +1593,7 @@ tdbio_read_record (ulong recnum, TRUSTREC *rec, int expected)
  * Return: 0 on success or an error code.
  */
 int
-tdbio_write_record( TRUSTREC *rec )
+tdbio_write_record (ctrl_t ctrl, TRUSTREC *rec)
 {
   byte buf[TRUST_RECORD_LEN];
   byte *p;
@@ -1675,7 +1677,7 @@ tdbio_write_record( TRUSTREC *rec )
   if (rc)
     ;
   else if (rec->rectype == RECTYPE_TRUST)
-    rc = update_trusthashtbl (rec);
+    rc = update_trusthashtbl (ctrl, rec);
 
   return rc;
 }
@@ -1687,7 +1689,7 @@ tdbio_write_record( TRUSTREC *rec )
  * Return: 0 on success or an error code.
  */
 int
-tdbio_delete_record (ulong recnum)
+tdbio_delete_record (ctrl_t ctrl, ulong recnum)
 {
   TRUSTREC vr, rec;
   int rc;
@@ -1698,7 +1700,7 @@ tdbio_delete_record (ulong recnum)
     ;
   else if (rec.rectype == RECTYPE_TRUST)
     {
-      rc = drop_from_hashtable (get_trusthashrec(),
+      rc = drop_from_hashtable (ctrl, get_trusthashrec(),
                                 rec.r.trust.fingerprint, 20, rec.recnum);
     }
 
@@ -1715,9 +1717,9 @@ tdbio_delete_record (ulong recnum)
   rec.rectype = RECTYPE_FREE;
   rec.r.free.next = vr.r.ver.firstfree;
   vr.r.ver.firstfree = recnum;
-  rc = tdbio_write_record (&rec);
+  rc = tdbio_write_record (ctrl, &rec);
   if (!rc)
-    rc = tdbio_write_record (&vr);
+    rc = tdbio_write_record (ctrl, &vr);
 
   return rc;
 }
@@ -1727,7 +1729,7 @@ tdbio_delete_record (ulong recnum)
  * Create a new record and return its record number.
  */
 ulong
-tdbio_new_recnum ()
+tdbio_new_recnum (ctrl_t ctrl)
 {
   off_t offset;
   ulong recnum;
@@ -1751,7 +1753,7 @@ tdbio_new_recnum ()
 	}
       /* Update dir record.  */
       vr.r.ver.firstfree = rec.r.free.next;
-      rc = tdbio_write_record (&vr);
+      rc = tdbio_write_record (ctrl, &vr);
       if (rc)
         {
           log_error (_("%s: error writing dir record: %s\n"),
@@ -1763,7 +1765,7 @@ tdbio_new_recnum ()
       rec.rectype = 0; /* Mark as unused record (actually already done
                           my the memset).  */
       rec.recnum = recnum;
-      rc = tdbio_write_record (&rec);
+      rc = tdbio_write_record (ctrl, &rec);
       if (rc)
         log_fatal (_("%s: failed to zero a record: %s\n"),
                    db_name, gpg_strerror (rc));

@@ -66,10 +66,12 @@ check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
 }
 
 void
-read_trust_options(byte *trust_model, ulong *created, ulong *nextcheck,
-		   byte *marginals, byte *completes, byte *cert_depth,
-		   byte *min_cert_level)
+read_trust_options (ctrl_t ctrl,
+                    byte *trust_model, ulong *created, ulong *nextcheck,
+                    byte *marginals, byte *completes, byte *cert_depth,
+                    byte *min_cert_level)
 {
+  (void)ctrl;
   (void)trust_model;
   (void)created;
   (void)nextcheck;
@@ -85,8 +87,9 @@ read_trust_options(byte *trust_model, ulong *created, ulong *nextcheck,
  */
 
 int
-cache_disabled_value(PKT_public_key *pk)
+cache_disabled_value (ctrl_t ctrl, PKT_public_key *pk)
 {
+  (void)ctrl;
   (void)pk;
   return 0;
 }
@@ -138,16 +141,18 @@ uid_trust_string_fixed (ctrl_t ctrl, PKT_public_key *key, PKT_user_id *uid)
 }
 
 int
-get_ownertrust_info (PKT_public_key *pk, int no_create)
+get_ownertrust_info (ctrl_t ctrl, PKT_public_key *pk, int no_create)
 {
+  (void)ctrl;
   (void)pk;
   (void)no_create;
   return '?';
 }
 
 unsigned int
-get_ownertrust (PKT_public_key *pk)
+get_ownertrust (ctrl_t ctrl, PKT_public_key *pk)
 {
+  (void)ctrl;
   (void)pk;
   return TRUST_UNKNOWN;
 }

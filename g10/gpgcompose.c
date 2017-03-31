@@ -42,6 +42,11 @@ struct filter
   struct filter *next;
 };
 
+
+/* Hack to ass CTRL to some functions.  */
+static ctrl_t global_ctrl;
+
+
 static struct filter *filters;
 
 static void
@@ -1609,7 +1614,7 @@ mksubpkt_callback (PKT_signature *sig, void *cookie)
       if (err)
         {
           u32 keyid[2];
-          keyid_from_fingerprint (revkey->fpr, 20, keyid);
+          keyid_from_fingerprint (global_ctrl, revkey->fpr, 20, keyid);
           log_fatal ("adding revocation key %s: %s\n",
                      keystr (keyid), gpg_strerror (err));
         }
@@ -1793,7 +1798,8 @@ signature (const char *option, int argc, char *argv[], void *cookie)
   /* Changing the issuer's key id is fragile.  Check to make sure
      make_keysig_packet didn't recompute the keyid.  */
   keyid_copy (keyid, si.issuer_pk->keyid);
-  err = make_keysig_packet (&sig, si.pk, si.uid, si.sk, si.issuer_pk,
+  err = make_keysig_packet (global_ctrl,
+                            &sig, si.pk, si.uid, si.sk, si.issuer_pk,
                             si.class, si.digest_algo,
                             si.timestamp, si.expiration,
                             mksubpkt_callback, &si, NULL);
@@ -2446,7 +2452,7 @@ pk_esk (const char *option, int argc, char *argv[], void *cookie)
       make_session_key (&session_key);
     }
 
-  err = write_pubkey_enc (&pk, pi.throw_keyid, &session_key, out);
+  err = write_pubkey_enc (global_ctrl, &pk, pi.throw_keyid, &session_key, out);
   if (err)
     log_fatal ("%s: writing pk_esk packet for %s: %s\n",
                option, pi.keyid, gpg_strerror (err));
@@ -2967,7 +2973,7 @@ main (int argc, char *argv[])
   /* Allow notations in the IETF space, for instance.  */
   opt.expert = 1;
 
-  ctrl = xcalloc (1, sizeof *ctrl);
+  global_ctrl = ctrl = xcalloc (1, sizeof *ctrl);
 
   keydb_add_resource ("pubring" EXTSEP_S GPGEXT_GPG,
                       KEYDB_RESOURCE_FLAG_DEFAULT);
@@ -3035,7 +3041,8 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 }
 
 void
-show_basic_key_info (KBNODE keyblock)
+show_basic_key_info (ctrl_t ctrl, KBNODE keyblock)
 {
+  (void)ctrl;
   (void) keyblock;
 }

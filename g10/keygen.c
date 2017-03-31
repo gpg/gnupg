@@ -843,7 +843,7 @@ keygen_add_revkey (PKT_signature *sig, void *opaque)
 /* Create a back-signature.  If TIMESTAMP is not NULL, use it for the
    signature creation time.  */
 gpg_error_t
-make_backsig (PKT_signature *sig, PKT_public_key *pk,
+make_backsig (ctrl_t ctrl, PKT_signature *sig, PKT_public_key *pk,
               PKT_public_key *sub_pk, PKT_public_key *sub_psk,
               u32 timestamp, const char *cache_nonce)
 {
@@ -852,7 +852,7 @@ make_backsig (PKT_signature *sig, PKT_public_key *pk,
 
   cache_public_key (sub_pk);
 
-  err = make_keysig_packet (&backsig, pk, NULL, sub_pk, sub_psk, 0x19,
+  err = make_keysig_packet (ctrl, &backsig, pk, NULL, sub_pk, sub_psk, 0x19,
                             0, timestamp, 0, NULL, NULL, cache_nonce);
   if (err)
     log_error ("make_keysig_packet failed for backsig: %s\n",
@@ -936,7 +936,7 @@ make_backsig (PKT_signature *sig, PKT_public_key *pk,
    PSK.  REVKEY is describes the direct key signature and TIMESTAMP is
    the timestamp to set on the signature.  */
 static gpg_error_t
-write_direct_sig (KBNODE root, PKT_public_key *psk,
+write_direct_sig (ctrl_t ctrl, kbnode_t root, PKT_public_key *psk,
                   struct revocation_key *revkey, u32 timestamp,
                   const char *cache_nonce)
 {
@@ -960,7 +960,7 @@ write_direct_sig (KBNODE root, PKT_public_key *psk,
   cache_public_key (pk);
 
   /* Make the signature.  */
-  err = make_keysig_packet (&sig, pk, NULL,NULL, psk, 0x1F,
+  err = make_keysig_packet (ctrl, &sig, pk, NULL,NULL, psk, 0x1F,
                             0, timestamp, 0,
                             keygen_add_revkey, revkey, cache_nonce);
   if (err)
@@ -982,7 +982,7 @@ write_direct_sig (KBNODE root, PKT_public_key *psk,
    PSK.  USE and TIMESTAMP give the extra data we need for the
    signature.  */
 static gpg_error_t
-write_selfsigs (KBNODE root, PKT_public_key *psk,
+write_selfsigs (ctrl_t ctrl, kbnode_t root, PKT_public_key *psk,
 		unsigned int use, u32 timestamp, const char *cache_nonce)
 {
   gpg_error_t err;
@@ -1015,7 +1015,7 @@ write_selfsigs (KBNODE root, PKT_public_key *psk,
   cache_public_key (pk);
 
   /* Make the signature.  */
-  err = make_keysig_packet (&sig, pk, uid, NULL, psk, 0x13,
+  err = make_keysig_packet (ctrl, &sig, pk, uid, NULL, psk, 0x13,
                             0, timestamp, 0,
                             keygen_add_std_prefs, pk, cache_nonce);
   if (err)
@@ -1038,7 +1038,8 @@ write_selfsigs (KBNODE root, PKT_public_key *psk,
    SUB_PSK is a key used to create a back-signature; that one is only
    used if USE has the PUBKEY_USAGE_SIG capability.  */
 static int
-write_keybinding (KBNODE root, PKT_public_key *pri_psk, PKT_public_key *sub_psk,
+write_keybinding (ctrl_t ctrl, kbnode_t root,
+                  PKT_public_key *pri_psk, PKT_public_key *sub_psk,
                   unsigned int use, u32 timestamp, const char *cache_nonce)
 {
   gpg_error_t err;
@@ -1074,7 +1075,7 @@ write_keybinding (KBNODE root, PKT_public_key *pri_psk, PKT_public_key *sub_psk,
   /* Make the signature.  */
   oduap.usage = use;
   oduap.pk = sub_pk;
-  err = make_keysig_packet (&sig, pri_pk, NULL, sub_pk, pri_psk, 0x18,
+  err = make_keysig_packet (ctrl, &sig, pri_pk, NULL, sub_pk, pri_psk, 0x18,
                             0, timestamp, 0,
                             keygen_add_key_flags_and_expire, &oduap,
                             cache_nonce);
@@ -1087,7 +1088,8 @@ write_keybinding (KBNODE root, PKT_public_key *pri_psk, PKT_public_key *sub_psk,
   /* Make a backsig.  */
   if (use & PUBKEY_USAGE_SIG)
     {
-      err = make_backsig (sig, pri_pk, sub_pk, sub_psk, timestamp, cache_nonce);
+      err = make_backsig (ctrl,
+                          sig, pri_pk, sub_pk, sub_psk, timestamp, cache_nonce);
       if (err)
         return err;
     }
@@ -4667,12 +4669,13 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
     }
 
   if (!err && (revkey = get_parameter_revkey (para, pREVOKER)))
-    err = write_direct_sig (pub_root, pri_psk, revkey, timestamp, cache_nonce);
+    err = write_direct_sig (ctrl, pub_root, pri_psk,
+                            revkey, timestamp, cache_nonce);
 
   if (!err && (s = get_parameter_value (para, pUSERID)))
     {
       write_uid (pub_root, s );
-      err = write_selfsigs (pub_root, pri_psk,
+      err = write_selfsigs (ctrl, pub_root, pri_psk,
                             get_parameter_uint (para, pKEYUSAGE), timestamp,
                             cache_nonce);
     }
@@ -4690,7 +4693,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                           0, pub_root, &timestamp,
                           get_parameter_u32 (para, pKEYEXPIRE));
       if (!err)
-        err = write_keybinding (pub_root, pri_psk, NULL,
+        err = write_keybinding (ctrl, pub_root, pri_psk, NULL,
                                 PUBKEY_USAGE_AUTH, timestamp, cache_nonce);
     }
 
@@ -4732,7 +4735,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
         }
 
       if (!err)
-        err = write_keybinding (pub_root, pri_psk, sub_psk,
+        err = write_keybinding (ctrl, pub_root, pri_psk, sub_psk,
                                 get_parameter_uint (para, pSUBKEYUSAGE),
                                 timestamp, cache_nonce);
       did_sub = 1;
@@ -4791,10 +4794,11 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
           keyid_from_pk (pk, pk->main_keyid);
           register_trusted_keyid (pk->main_keyid);
 
-	  update_ownertrust (pk, ((get_ownertrust (pk) & ~TRUST_MASK)
-				  | TRUST_ULTIMATE ));
+	  update_ownertrust (ctrl, pk,
+                             ((get_ownertrust (ctrl, pk) & ~TRUST_MASK)
+                              | TRUST_ULTIMATE ));
 
-          gen_standard_revoke (pk, cache_nonce);
+          gen_standard_revoke (ctrl, pk, cache_nonce);
 
           /* Get rid of the first empty packet.  */
           commit_kbnode (&pub_root);
@@ -4803,7 +4807,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
             {
               tty_printf (_("public and secret key created and signed.\n") );
               tty_printf ("\n");
-              merge_keys_and_selfsig (pub_root);
+              merge_keys_and_selfsig (ctrl, pub_root);
               list_keyblock_direct (ctrl, pub_root, 0, 1, 1, 1);
             }
 
@@ -5033,7 +5037,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
    * nonce, which we can use to set the passphrase for the subkey to
    * that of the primary key.  */
   {
-    char *desc = gpg_format_keydesc (pri_psk, FORMAT_KEYDESC_NORMAL, 1);
+    char *desc = gpg_format_keydesc (ctrl, pri_psk, FORMAT_KEYDESC_NORMAL, 1);
     err = agent_passwd (ctrl, hexgrip, desc, 1 /*=verify*/,
                         &cache_nonce, &passwd_nonce);
     xfree (desc);
@@ -5071,7 +5075,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
       sub_psk = node->pkt->pkt.public_key;
 
   /* Write the binding signature.  */
-  err = write_keybinding (keyblock, pri_psk, sub_psk, use, cur_time,
+  err = write_keybinding (ctrl, keyblock, pri_psk, sub_psk, use, cur_time,
                           cache_nonce);
   if (err)
     goto leave;
@@ -5095,7 +5099,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
 #ifdef ENABLE_CARD_SUPPORT
 /* Generate a subkey on a card. */
 gpg_error_t
-generate_card_subkeypair (kbnode_t pub_keyblock,
+generate_card_subkeypair (ctrl_t ctrl, kbnode_t pub_keyblock,
                           int keyno, const char *serialno)
 {
   gpg_error_t err = 0;
@@ -5186,7 +5190,7 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
         if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
           sub_pk = node->pkt->pkt.public_key;
       log_assert (sub_pk);
-      err = write_keybinding (pub_keyblock, pri_pk, sub_pk,
+      err = write_keybinding (ctrl, pub_keyblock, pri_pk, sub_pk,
                               use, cur_time, NULL);
     }
 

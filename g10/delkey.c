@@ -47,7 +47,8 @@
  * key can't be deleted for that reason.
  */
 static gpg_error_t
-do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
+do_delete_key (ctrl_t ctrl, const char *username, int secret, int force,
+               int *r_sec_avail)
 {
   gpg_error_t err;
   kbnode_t keyblock = NULL;
@@ -137,9 +138,9 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
   else
     {
       if (secret)
-        print_seckey_info (pk);
+        print_seckey_info (ctrl, pk);
       else
-        print_pubkey_info (NULL, pk );
+        print_pubkey_info (ctrl, NULL, pk );
       tty_printf( "\n" );
 
       yes = cpr_get_answer_is_yes
@@ -180,7 +181,8 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
               if (agent_probe_secret_key (NULL, node->pkt->pkt.public_key))
                 continue;  /* No secret key for that public (sub)key.  */
 
-              prompt = gpg_format_keydesc (node->pkt->pkt.public_key,
+              prompt = gpg_format_keydesc (ctrl,
+                                           node->pkt->pkt.public_key,
                                            FORMAT_KEYDESC_DELKEY, 1);
               err = hexkeygrip_from_pk (node->pkt->pkt.public_key, &hexgrip);
               /* NB: We require --yes to advise the agent not to
@@ -232,7 +234,7 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
 	 revalidation_mark().  This makes sense - only deleting keys
 	 that have ownertrust set should trigger this. */
 
-      if (!secret && pk && clear_ownertrusts (pk))
+      if (!secret && pk && clear_ownertrusts (ctrl, pk))
         {
           if (opt.verbose)
             log_info (_("ownertrust information cleared\n"));
@@ -249,7 +251,7 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
  * Delete a public or secret key from a keyring.
  */
 gpg_error_t
-delete_keys (strlist_t names, int secret, int allow_both)
+delete_keys (ctrl_t ctrl, strlist_t names, int secret, int allow_both)
 {
   gpg_error_t err;
   int avail;
@@ -260,14 +262,14 @@ delete_keys (strlist_t names, int secret, int allow_both)
 
   for ( ;names ; names=names->next )
     {
-      err = do_delete_key (names->d, secret, force, &avail);
+      err = do_delete_key (ctrl, names->d, secret, force, &avail);
       if (err && avail)
         {
           if (allow_both)
             {
-              err = do_delete_key (names->d, 1, 0, &avail);
+              err = do_delete_key (ctrl, names->d, 1, 0, &avail);
               if (!err)
-                err = do_delete_key (names->d, 0, 0, &avail);
+                err = do_delete_key (ctrl, names->d, 0, 0, &avail);
             }
           else
             {

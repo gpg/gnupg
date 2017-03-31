@@ -2031,7 +2031,7 @@ ask_about_binding (ctrl_t ctrl,
    email> (including the binding itself, which will be first in the
    list).  For each returned key also sets BINDING_NEW, etc.  */
 static strlist_t
-build_conflict_set (tofu_dbs_t dbs,
+build_conflict_set (ctrl_t ctrl, tofu_dbs_t dbs,
                     PKT_public_key *pk, const char *fingerprint,
                     const char *email)
 {
@@ -2174,7 +2174,7 @@ build_conflict_set (tofu_dbs_t dbs,
           continue;
         }
 
-      merge_keys_and_selfsig (kb);
+      merge_keys_and_selfsig (ctrl, kb);
 
       log_assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
 
@@ -2317,7 +2317,7 @@ build_conflict_set (tofu_dbs_t dbs,
  * not yet been registered.
  */
 static enum tofu_policy
-get_policy (tofu_dbs_t dbs, PKT_public_key *pk,
+get_policy (ctrl_t ctrl, tofu_dbs_t dbs, PKT_public_key *pk,
             const char *fingerprint, const char *user_id, const char *email,
 	    strlist_t *conflict_setp, time_t now)
 {
@@ -2483,7 +2483,7 @@ get_policy (tofu_dbs_t dbs, PKT_public_key *pk,
         int lookup_err;
         kbnode_t kb;
 
-        lookup_err = get_pubkey_byfprint (NULL, &kb,
+        lookup_err = get_pubkey_byfprint (ctrl, NULL, &kb,
                                           fingerprint_raw,
                                           fingerprint_raw_len);
         if (lookup_err)
@@ -2509,7 +2509,7 @@ get_policy (tofu_dbs_t dbs, PKT_public_key *pk,
    * disappeared.  The latter can happen if the conflicting bindings
    * are now cross signed, for instance.  */
 
-  conflict_set = build_conflict_set (dbs, pk, fingerprint, email);
+  conflict_set = build_conflict_set (ctrl, dbs, pk, fingerprint, email);
   conflict_set_count = strlist_length (conflict_set);
   if (conflict_set_count == 0)
     {
@@ -2615,7 +2615,7 @@ get_policy (tofu_dbs_t dbs, PKT_public_key *pk,
   if (effective_policy == TOFU_POLICY_ASK && conflict_setp)
     {
       if (! conflict_set)
-        conflict_set = build_conflict_set (dbs, pk, fingerprint, email);
+        conflict_set = build_conflict_set (ctrl, dbs, pk, fingerprint, email);
       *conflict_setp = conflict_set;
     }
   else
@@ -2691,7 +2691,7 @@ get_trust (ctrl_t ctrl, PKT_public_key *pk,
 
   /* We need to call get_policy even if the key is ultimately trusted
    * to make sure the binding has been registered.  */
-  policy = get_policy (dbs, pk, fingerprint, user_id, email,
+  policy = get_policy (ctrl, dbs, pk, fingerprint, user_id, email,
                        &conflict_set, now);
 
   if (policy == TOFU_POLICY_ASK)
@@ -3493,7 +3493,7 @@ tofu_register_encryption (ctrl_t ctrl,
       ! pk_is_primary (pk)
       /* We need the key block to find all user ids.  */
       || ! user_id_list)
-    kb = get_pubkeyblock (pk->keyid);
+    kb = get_pubkeyblock (ctrl, pk->keyid);
 
   /* Make sure PK is a primary key.  */
   if (! pk_is_primary (pk))
@@ -3692,7 +3692,7 @@ tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
 
   fingerprint = hexfingerprint (pk, NULL, 0);
   email = email_from_user_id (user_id);
-  policy = get_policy (dbs, pk, fingerprint, user_id, email, NULL, now);
+  policy = get_policy (ctrl, dbs, pk, fingerprint, user_id, email, NULL, now);
 
   show_statistics (dbs, fingerprint, email, policy, fp, 0, now);
 
@@ -3953,7 +3953,8 @@ tofu_get_policy (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *user_id,
 
   email = email_from_user_id (user_id->name);
 
-  *policy = get_policy (dbs, pk, fingerprint, user_id->name, email, NULL, now);
+  *policy = get_policy (ctrl, dbs, pk, fingerprint,
+                        user_id->name, email, NULL, now);
 
   xfree (email);
   xfree (fingerprint);

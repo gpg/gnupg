@@ -54,6 +54,7 @@
 
 typedef struct
 {
+  ctrl_t ctrl;
   int header_okay;
   PK_LIST pk_list;
   DEK *symkey_dek;
@@ -237,12 +238,12 @@ void encrypt_crypt_files (ctrl_t ctrl,
 int encrypt_filter (void *opaque, int control,
 		    iobuf_t a, byte *buf, size_t *ret_len);
 
-int write_pubkey_enc (PKT_public_key *pk, int throw_keyid,
+int write_pubkey_enc (ctrl_t ctrl, PKT_public_key *pk, int throw_keyid,
                       DEK *dek, iobuf_t out);
 
 /*-- sign.c --*/
-int complete_sig (PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md,
-                  const char *cache_nonce);
+int complete_sig (ctrl_t ctrl, PKT_signature *sig, PKT_public_key *pksk,
+                  gcry_md_hd_t md, const char *cache_nonce);
 int sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	       int do_encrypt, strlist_t remusr, const char *outfile );
 int clearsign_file (ctrl_t ctrl,
@@ -254,7 +255,7 @@ int sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr);
 /* SIG is a revocation signature.  Check if any of PK's designated
    revokers generated it.  If so, return 0.  Note: this function
    (correctly) doesn't care if the designated revoker is revoked.  */
-int check_revocation_keys (PKT_public_key *pk, PKT_signature *sig);
+int check_revocation_keys (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig);
 /* Check that the backsig BACKSIG from the subkey SUB_PK to its
    primary key MAIN_PK is valid.  */
 int check_backsig(PKT_public_key *main_pk,PKT_public_key *sub_pk,
@@ -262,13 +263,14 @@ int check_backsig(PKT_public_key *main_pk,PKT_public_key *sub_pk,
 /* Check that the signature SIG over a key (e.g., a key binding or a
    key revocation) is valid.  (To check signatures over data, use
    check_signature.)  */
-int check_key_signature( KBNODE root, KBNODE sig, int *is_selfsig );
+int check_key_signature (ctrl_t ctrl, kbnode_t root, kbnode_t sig,
+                         int *is_selfsig );
 /* Like check_key_signature, but with the ability to specify some
    additional parameters and get back additional information.  See the
    documentation for the implementation for details.  */
-int check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
-			  PKT_public_key *ret_pk, int *is_selfsig,
-			  u32 *r_expiredate, int *r_expired );
+int check_key_signature2 (ctrl_t ctrl, kbnode_t root, kbnode_t node,
+                          PKT_public_key *check_pk, PKT_public_key *ret_pk,
+                          int *is_selfsig, u32 *r_expiredate, int *r_expired);
 
 /* Returns whether SIGNER generated the signature SIG over the packet
    PACKET, which is a key, subkey or uid, and comes from the key block
@@ -276,7 +278,8 @@ int check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
    SIG.  If not NULL, sets *IS_SELFSIG to indicate whether the
    signature is a self-signature and *RET_PK to a copy of the signer's
    key.  */
-gpg_error_t check_signature_over_key_or_uid (PKT_public_key *signer,
+gpg_error_t check_signature_over_key_or_uid (ctrl_t ctrl,
+                                             PKT_public_key *signer,
                                              PKT_signature *sig,
                                              KBNODE kb, PACKET *packet,
                                              int *is_selfsig,
@@ -284,7 +287,8 @@ gpg_error_t check_signature_over_key_or_uid (PKT_public_key *signer,
 
 
 /*-- delkey.c --*/
-gpg_error_t delete_keys (strlist_t names, int secret, int allow_both);
+gpg_error_t delete_keys (ctrl_t ctrl,
+                         strlist_t names, int secret, int allow_both);
 
 /*-- keyedit.c --*/
 void keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
@@ -302,7 +306,7 @@ void keyedit_quick_set_expire (ctrl_t ctrl,
                                const char *fpr, const char *expirestr);
 void keyedit_quick_set_primary (ctrl_t ctrl, const char *username,
                                 const char *primaryuid);
-void show_basic_key_info (KBNODE keyblock);
+void show_basic_key_info (ctrl_t ctrl, kbnode_t keyblock);
 
 /*-- keygen.c --*/
 const char *get_default_pubkey_algo (void);
@@ -323,7 +327,8 @@ int keygen_upd_std_prefs( PKT_signature *sig, void *opaque );
 int keygen_add_keyserver_url(PKT_signature *sig, void *opaque);
 int keygen_add_notations(PKT_signature *sig,void *opaque);
 int keygen_add_revkey(PKT_signature *sig, void *opaque);
-gpg_error_t make_backsig (PKT_signature *sig, PKT_public_key *pk,
+gpg_error_t make_backsig (ctrl_t ctrl,
+                          PKT_signature *sig, PKT_public_key *pk,
                           PKT_public_key *sub_pk, PKT_public_key *sub_psk,
                           u32 timestamp, const char *cache_nonce);
 gpg_error_t generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock,
@@ -331,7 +336,7 @@ gpg_error_t generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock,
                                  const char *usagestr,
                                  const char *expirestr);
 #ifdef ENABLE_CARD_SUPPORT
-gpg_error_t generate_card_subkeypair (kbnode_t pub_keyblock,
+gpg_error_t generate_card_subkeypair (ctrl_t ctrl, kbnode_t pub_keyblock,
                                       int keyno, const char *serialno);
 #endif
 
@@ -382,6 +387,13 @@ gpg_error_t import_old_secring (ctrl_t ctrl, const char *fname);
 import_stats_t import_new_stats_handle (void);
 void import_release_stats_handle (import_stats_t hd);
 void import_print_stats (import_stats_t hd);
+/* Communication for impex_filter_getval */
+struct impex_filter_parm_s
+{
+  ctrl_t ctrl;
+  kbnode_t node;
+};
+
 const char *impex_filter_getval (void *cookie, const char *propname);
 gpg_error_t transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
                                   kbnode_t sec_keyblock, int batch, int force);
@@ -430,8 +442,10 @@ int enarmor_file( const char *fname );
 
 /*-- revoke.c --*/
 struct revocation_reason_info;
-int gen_standard_revoke (PKT_public_key *psk, const char *cache_nonce);
-int gen_revoke( const char *uname );
+
+int gen_standard_revoke (ctrl_t ctrl,
+                         PKT_public_key *psk, const char *cache_nonce);
+int gen_revoke (ctrl_t ctrl, const char *uname);
 int gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr);
 int revocation_reason_build_cb( PKT_signature *sig, void *opaque );
 struct revocation_reason_info *
@@ -446,18 +460,19 @@ void print_subpackets_colon(PKT_signature *sig);
 void reorder_keyblock (KBNODE keyblock);
 void list_keyblock_direct (ctrl_t ctrl, kbnode_t keyblock, int secret,
                            int has_secret, int fpr, int no_validity);
-void print_fingerprint (estream_t fp, PKT_public_key *pk, int mode);
+void print_fingerprint (ctrl_t ctrl, estream_t fp,
+                        PKT_public_key *pk, int mode);
 void print_revokers (estream_t fp, PKT_public_key *pk);
 void show_policy_url(PKT_signature *sig,int indent,int mode);
 void show_keyserver_url(PKT_signature *sig,int indent,int mode);
 void show_notation(PKT_signature *sig,int indent,int mode,int which);
 void dump_attribs (const PKT_user_id *uid, PKT_public_key *pk);
 void set_attrib_fd(int fd);
-char *format_seckey_info (PKT_public_key *pk);
-void print_seckey_info (PKT_public_key *pk);
-void print_pubkey_info (estream_t fp, PKT_public_key *pk);
+char *format_seckey_info (ctrl_t ctrl, PKT_public_key *pk);
+void print_seckey_info (ctrl_t ctrl, PKT_public_key *pk);
+void print_pubkey_info (ctrl_t ctrl, estream_t fp, PKT_public_key *pk);
 void print_card_key_info (estream_t fp, KBNODE keyblock);
-void print_key_line (estream_t fp, PKT_public_key *pk, int secret);
+void print_key_line (ctrl_t ctrl, estream_t fp, PKT_public_key *pk, int secret);
 
 /*-- verify.c --*/
 void print_file_status( int status, const char *name, int what );
@@ -485,9 +500,9 @@ gpg_error_t gpg_proxy_pinentry_notify (ctrl_t ctrl,
 #ifdef ENABLE_CARD_SUPPORT
 /*-- card-util.c --*/
 void change_pin (int no, int allow_admin);
-void card_status (estream_t fp, const char *serialno);
+void card_status (ctrl_t ctrl, estream_t fp, const char *serialno);
 void card_edit (ctrl_t ctrl, strlist_t commands);
-gpg_error_t  card_generate_subkey (KBNODE pub_keyblock);
+gpg_error_t  card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock);
 int  card_store_subkey (KBNODE node, int use);
 #endif
 

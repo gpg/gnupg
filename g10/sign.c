@@ -253,7 +253,7 @@ hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
 /* Perform the sign operation.  If CACHE_NONCE is given the agent is
    advised to use that cached passphrase fro the key.  */
 static int
-do_sign (PKT_public_key *pksk, PKT_signature *sig,
+do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
 	 gcry_md_hd_t md, int mdalgo, const char *cache_nonce)
 {
   gpg_error_t err;
@@ -294,7 +294,7 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
       char *desc;
       gcry_sexp_t s_sigval;
 
-      desc = gpg_format_keydesc (pksk, FORMAT_KEYDESC_NORMAL, 1);
+      desc = gpg_format_keydesc (ctrl, pksk, FORMAT_KEYDESC_NORMAL, 1);
       err = agent_pksign (NULL/*ctrl*/, cache_nonce, hexgrip, desc,
                           pksk->keyid, pksk->main_keyid, pksk->pubkey_algo,
                           dp, gcry_md_get_algo_dlen (mdalgo), mdalgo,
@@ -327,7 +327,7 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
     {
       if (opt.verbose)
         {
-          char *ustr = get_user_id_string_native (sig->keyid);
+          char *ustr = get_user_id_string_native (ctrl, sig->keyid);
           log_info (_("%s/%s signature from: \"%s\"\n"),
                     openpgp_pk_algo_name (pksk->pubkey_algo),
                     openpgp_md_algo_name (sig->digest_algo),
@@ -340,13 +340,14 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
 
 
 int
-complete_sig (PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md,
+complete_sig (ctrl_t ctrl,
+              PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md,
               const char *cache_nonce)
 {
   int rc;
 
   /* if (!(rc = check_secret_key (pksk, 0))) */
-  rc = do_sign (pksk, sig, md, 0, cache_nonce);
+  rc = do_sign (ctrl, pksk, sig, md, 0, cache_nonce);
   return rc;
 }
 
@@ -669,7 +670,8 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
  * hash which will not be changes here.
  */
 static int
-write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
+write_signature_packets (ctrl_t ctrl,
+                         SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
                          int sigclass, u32 timestamp, u32 duration,
 			 int status_letter, const char *cache_nonce)
 {
@@ -719,7 +721,7 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
       hash_sigversion_to_magic (md, sig);
       gcry_md_final (md);
 
-      rc = do_sign (pk, sig, md, hash_for (pk), cache_nonce);
+      rc = do_sign (ctrl, pk, sig, md, hash_for (pk), cache_nonce);
       gcry_md_close (md);
       if (!rc)
         {
@@ -785,6 +787,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
     memset( &zfx, 0, sizeof zfx);
     memset( &mfx, 0, sizeof mfx);
     memset( &efx, 0, sizeof efx);
+    efx.ctrl = ctrl;
     init_packet( &pkt );
 
     if( filenames ) {
@@ -1066,7 +1069,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	goto leave;
 
     /* write the signatures */
-    rc = write_signature_packets (sk_list, out, mfx.md,
+    rc = write_signature_packets (ctrl, sk_list, out, mfx.md,
                                   opt.textmode && !outfile? 0x01 : 0x00,
 				  0, duration, detached ? 'D':'S', NULL);
     if( rc )
@@ -1209,8 +1212,8 @@ clearsign_file (ctrl_t ctrl,
     push_armor_filter (afx, out);
 
     /* Write the signatures.  */
-    rc = write_signature_packets (sk_list, out, textmd, 0x01, 0, duration, 'C',
-                                  NULL);
+    rc = write_signature_packets (ctrl, sk_list, out, textmd, 0x01, 0,
+                                  duration, 'C', NULL);
     if( rc )
         goto leave;
 
@@ -1369,7 +1372,7 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
 
     /* Write the signatures */
     /*(current filters: zip - encrypt - armor)*/
-    rc = write_signature_packets (sk_list, out, mfx.md,
+    rc = write_signature_packets (ctrl, sk_list, out, mfx.md,
 				  opt.textmode? 0x01 : 0x00,
 				  0, duration, 'S', NULL);
     if( rc )
@@ -1420,7 +1423,8 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
  * MKSUBPKT.
  */
 int
-make_keysig_packet (PKT_signature **ret_sig, PKT_public_key *pk,
+make_keysig_packet (ctrl_t ctrl,
+                    PKT_signature **ret_sig, PKT_public_key *pk,
 		    PKT_user_id *uid, PKT_public_key *subpk,
 		    PKT_public_key *pksk,
 		    int sigclass, int digest_algo,
@@ -1513,7 +1517,7 @@ make_keysig_packet (PKT_signature **ret_sig, PKT_public_key *pk,
         hash_sigversion_to_magic (md, sig);
 	gcry_md_final (md);
 
-	rc = complete_sig (sig, pksk, md, cache_nonce);
+	rc = complete_sig (ctrl, sig, pksk, md, cache_nonce);
     }
 
     gcry_md_close (md);
@@ -1535,7 +1539,8 @@ make_keysig_packet (PKT_signature **ret_sig, PKT_public_key *pk,
  * TODO: Merge this with make_keysig_packet.
  */
 gpg_error_t
-update_keysig_packet( PKT_signature **ret_sig,
+update_keysig_packet (ctrl_t ctrl,
+                      PKT_signature **ret_sig,
                       PKT_signature *orig_sig,
                       PKT_public_key *pk,
                       PKT_user_id *uid,
@@ -1612,7 +1617,7 @@ update_keysig_packet( PKT_signature **ret_sig,
         hash_sigversion_to_magic (md, sig);
 	gcry_md_final (md);
 
-	rc = complete_sig (sig, pksk, md, NULL);
+	rc = complete_sig (ctrl, sig, pksk, md, NULL);
     }
 
  leave:

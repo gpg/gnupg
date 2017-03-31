@@ -1404,7 +1404,7 @@ write_keyblock (IOBUF fp, KBNODE keyblock)
  * This is only done for the public keyrings.
  */
 int
-keyring_rebuild_cache (void *token,int noisy)
+keyring_rebuild_cache (ctrl_t ctrl, void *token, int noisy)
 {
   KEYRING_HANDLE hd;
   KEYDB_SEARCH_DESC desc;
@@ -1521,7 +1521,7 @@ keyring_rebuild_cache (void *token,int noisy)
                          || openpgp_pk_test_algo(sig->pubkey_algo)))
                     sig->flags.checked=sig->flags.valid=0;
                   else
-                    check_key_signature (keyblock, node, NULL);
+                    check_key_signature (ctrl, keyblock, node, NULL);
 
                   sigcount++;
                 }

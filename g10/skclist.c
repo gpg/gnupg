@@ -59,14 +59,14 @@ release_sk_list (SK_LIST sk_list)
  * the string "(insecure!)" or "not secure" or "do not use"
  * in one of the user ids.  */
 static int
-is_insecure (PKT_public_key *pk)
+is_insecure (ctrl_t ctrl, PKT_public_key *pk)
 {
   u32 keyid[2];
   KBNODE node = NULL, u;
   int insecure = 0;
 
   keyid_from_pk (pk, keyid);
-  node = get_pubkeyblock (keyid);
+  node = get_pubkeyblock (ctrl, keyid);
   for (u = node; u; u = u->next)
     {
       if (u->pkt->pkttype == PKT_USER_ID)
@@ -150,7 +150,7 @@ build_sk_list (ctrl_t ctrl,
 	{
 	  SK_LIST r;
 
-	  if (random_is_faked () && !is_insecure (pk))
+	  if (random_is_faked () && !is_insecure (ctrl, pk))
 	    {
 	      log_info (_("key is not flagged as insecure - "
 			  "can't use it with the faked RNG!\n"));
@@ -231,7 +231,7 @@ build_sk_list (ctrl_t ctrl,
 		     get_inv_recpsgnr_code (GPG_ERR_WRONG_KEY_USAGE),
 		     locusr->d, strlen (locusr->d), -1);
 		}
-	      else if (random_is_faked () && !is_insecure (pk))
+	      else if (random_is_faked () && !is_insecure (ctrl, pk))
 		{
 		  log_info (_("key is not flagged as insecure - "
 			      "can't use it with the faked RNG!\n"));

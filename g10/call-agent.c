@@ -160,7 +160,8 @@ default_inq_cb (void *opaque, const char *line)
           char buf[32];
 
           if (parm->keyinfo.keyid)
-            emit_status_need_passphrase (parm->keyinfo.keyid,
+            emit_status_need_passphrase (parm->ctrl,
+                                         parm->keyinfo.keyid,
                                          parm->keyinfo.mainkeyid,
                                          parm->keyinfo.pubkey_algo);
 

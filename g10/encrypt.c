@@ -41,7 +41,8 @@
 
 
 static int encrypt_simple( const char *filename, int mode, int use_seskey );
-static int write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, iobuf_t out );
+static int write_pubkey_enc_from_list (ctrl_t ctrl,
+                                       PK_LIST pk_list, DEK *dek, iobuf_t out);
 
 /****************
  * Encrypt FILENAME with only the symmetric cipher.  Take input from
@@ -634,7 +635,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   if (DBG_CRYPTO)
     log_printhex ("DEK is: ", cfx.dek->key, cfx.dek->keylen );
 
-  rc = write_pubkey_enc_from_list (pk_list, cfx.dek, out);
+  rc = write_pubkey_enc_from_list (ctrl, pk_list, cfx.dek, out);
   if (rc)
     goto leave;
 
@@ -828,7 +829,8 @@ encrypt_filter (void *opaque, int control,
           if (DBG_CRYPTO)
             log_printhex ("DEK is: ", efx->cfx.dek->key, efx->cfx.dek->keylen);
 
-          rc = write_pubkey_enc_from_list (efx->pk_list, efx->cfx.dek, a);
+          rc = write_pubkey_enc_from_list (efx->ctrl,
+                                           efx->pk_list, efx->cfx.dek, a);
           if (rc)
             return rc;
 
@@ -864,7 +866,8 @@ encrypt_filter (void *opaque, int control,
  * Write a pubkey-enc packet for the public key PK to OUT.
  */
 int
-write_pubkey_enc (PKT_public_key *pk, int throw_keyid, DEK *dek, iobuf_t out)
+write_pubkey_enc (ctrl_t ctrl,
+                  PKT_public_key *pk, int throw_keyid, DEK *dek, iobuf_t out)
 {
   PACKET pkt;
   PKT_pubkey_enc *enc;
@@ -899,7 +902,7 @@ write_pubkey_enc (PKT_public_key *pk, int throw_keyid, DEK *dek, iobuf_t out)
     {
       if ( opt.verbose )
         {
-          char *ustr = get_user_id_string_native (enc->keyid);
+          char *ustr = get_user_id_string_native (ctrl, enc->keyid);
           log_info (_("%s/%s encrypted for: \"%s\"\n"),
                     openpgp_pk_algo_name (enc->pubkey_algo),
                     openpgp_cipher_algo_name (dek->algo),
@@ -924,7 +927,7 @@ write_pubkey_enc (PKT_public_key *pk, int throw_keyid, DEK *dek, iobuf_t out)
  * Write pubkey-enc packets from the list of PKs to OUT.
  */
 static int
-write_pubkey_enc_from_list (PK_LIST pk_list, DEK *dek, iobuf_t out)
+write_pubkey_enc_from_list (ctrl_t ctrl, PK_LIST pk_list, DEK *dek, iobuf_t out)
 {
   if (opt.throw_keyids && (PGP6 || PGP7 || PGP8))
     {
@@ -937,7 +940,7 @@ write_pubkey_enc_from_list (PK_LIST pk_list, DEK *dek, iobuf_t out)
     {
       PKT_public_key *pk = pk_list->pk;
       int throw_keyid = (opt.throw_keyids || (pk_list->flags&1));
-      int rc = write_pubkey_enc (pk, throw_keyid, dek, out);
+      int rc = write_pubkey_enc (ctrl, pk, throw_keyid, dek, out);
       if (rc)
         return rc;
     }

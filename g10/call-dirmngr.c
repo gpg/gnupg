@@ -1068,7 +1068,7 @@ gpg_dirmngr_ks_put (ctrl_t ctrl, void *data, size_t datalen, kbnode_t keyblock)
   /* We are going to parse the keyblock, thus we better make sure the
      all information is readily available.  */
   if (keyblock)
-    merge_keys_and_selfsig (keyblock);
+    merge_keys_and_selfsig (ctrl, keyblock);
 
   err = open_context (ctrl, &ctx);
   if (err)

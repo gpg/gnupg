@@ -92,7 +92,7 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
       byte trust_model, marginals, completes, cert_depth, min_cert_level;
       ulong created, nextcheck;
 
-      read_trust_options (&trust_model, &created, &nextcheck,
+      read_trust_options (ctrl, &trust_model, &created, &nextcheck,
 			  &marginals, &completes, &cert_depth, &min_cert_level);
 
       es_fprintf (es_stdout, "tru:");
@@ -164,7 +164,7 @@ secret_key_list (ctrl_t ctrl, strlist_t list)
 }
 
 char *
-format_seckey_info (PKT_public_key *pk)
+format_seckey_info (ctrl_t ctrl, PKT_public_key *pk)
 {
   u32 keyid[2];
   char *p;
@@ -172,7 +172,7 @@ format_seckey_info (PKT_public_key *pk)
   char *info;
 
   keyid_from_pk (pk, keyid);
-  p = get_user_id_native (keyid);
+  p = get_user_id_native (ctrl, keyid);
 
   info = xtryasprintf ("sec  %s/%s %s %s",
                        pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
@@ -184,9 +184,9 @@ format_seckey_info (PKT_public_key *pk)
 }
 
 void
-print_seckey_info (PKT_public_key *pk)
+print_seckey_info (ctrl_t ctrl, PKT_public_key *pk)
 {
-  char *p = format_seckey_info (pk);
+  char *p = format_seckey_info (ctrl, pk);
   tty_printf ("\n%s\n", p);
   xfree (p);
 }
@@ -195,7 +195,7 @@ print_seckey_info (PKT_public_key *pk)
    the tty output interface is used, otherwise output is directted to
    the given stream.  */
 void
-print_pubkey_info (estream_t fp, PKT_public_key *pk)
+print_pubkey_info (ctrl_t ctrl, estream_t fp, PKT_public_key *pk)
 {
   u32 keyid[2];
   char *p;
@@ -208,7 +208,7 @@ print_pubkey_info (estream_t fp, PKT_public_key *pk)
   if (pk->user_id)
     p = utf8_to_native (pk->user_id->name, pk->user_id->len, 0);
   else
-    p = get_user_id_native (keyid);
+    p = get_user_id_native (ctrl, keyid);
 
   if (fp)
     tty_printf ("\n");
@@ -553,7 +553,7 @@ list_all (ctrl_t ctrl, int secret, int mark_secret)
                   lastresname = resname;
                 }
             }
-          merge_keys_and_selfsig (keyblock);
+          merge_keys_and_selfsig (ctrl, keyblock);
           list_keyblock (ctrl, keyblock, secret, any_secret, opt.fingerprint,
                          &listctx);
         }
@@ -604,7 +604,7 @@ list_one (ctrl_t ctrl, strlist_t names, int secret, int mark_secret)
    * functions) or to have the search function return indicators for
    * found names.  Yet another way is to use the keydb search
    * facilities directly. */
-  rc = getkey_bynames (&ctx, NULL, names, secret, &keyblock);
+  rc = getkey_bynames (ctrl, &ctx, NULL, names, secret, &keyblock);
   if (rc)
     {
       log_error ("error reading key: %s\n", gpg_strerror (rc));
@@ -626,7 +626,7 @@ list_one (ctrl_t ctrl, strlist_t names, int secret, int mark_secret)
                      keyblock, secret, mark_secret, opt.fingerprint, &listctx);
       release_kbnode (keyblock);
     }
-  while (!getkey_next (ctx, NULL, &keyblock));
+  while (!getkey_next (ctrl, ctx, NULL, &keyblock));
   getkey_end (ctx);
 
   if (opt.check_sigs && !opt.with_colons)
@@ -667,7 +667,7 @@ locate_one (ctrl_t ctrl, strlist_t names)
 	      list_keyblock (ctrl, keyblock, 0, 0, opt.fingerprint, &listctx);
 	      release_kbnode (keyblock);
 	    }
-	  while (ctx && !getkey_next (ctx, NULL, &keyblock));
+	  while (ctx && !getkey_next (ctrl, ctx, NULL, &keyblock));
 	  getkey_end (ctx);
 	  ctx = NULL;
 	}
@@ -696,7 +696,7 @@ print_key_data (PKT_public_key * pk)
 }
 
 static void
-print_capabilities (PKT_public_key *pk, KBNODE keyblock)
+print_capabilities (ctrl_t ctrl, PKT_public_key *pk, KBNODE keyblock)
 {
   unsigned int use = pk->pubkey_usage;
   int c_printed = 0;
@@ -907,10 +907,10 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
     check_trustdb_stale (ctrl);
 
   /* Print the "pub" line and in KF_NONE mode the fingerprint.  */
-  print_key_line (es_stdout, pk, secret);
+  print_key_line (ctrl, es_stdout, pk, secret);
 
   if (fpr)
-    print_fingerprint (NULL, pk, 0);
+    print_fingerprint (ctrl, NULL, pk, 0);
 
   if (opt.with_keygrip && hexgrip)
     es_fprintf (es_stdout, "      Keygrip = %s\n", hexgrip);
@@ -1020,10 +1020,10 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
             }
 
           /* Print the "sub" line.  */
-          print_key_line (es_stdout, pk2, secret);
+          print_key_line (ctrl, es_stdout, pk2, secret);
 	  if (fpr > 1 || opt.with_subkey_fingerprint)
             {
-              print_fingerprint (NULL, pk2, 0);
+              print_fingerprint (ctrl, NULL, pk2, 0);
               if (serialno)
                 print_card_serialno (serialno);
             }
@@ -1041,7 +1041,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 
 	  if (listctx->check_sigs)
 	    {
-	      rc = check_key_signature (keyblock, node, NULL);
+	      rc = check_key_signature (ctrl, keyblock, node, NULL);
 	      switch (gpg_err_code (rc))
 		{
 		case 0:
@@ -1113,7 +1113,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 	  else if (!opt.fast_list_mode)
 	    {
 	      size_t n;
-	      char *p = get_user_id (sig->keyid, &n);
+	      char *p = get_user_id (ctrl, sig->keyid, &n);
 	      print_utf8_buffer (es_stdout, p, n);
 	      xfree (p);
 	    }
@@ -1261,7 +1261,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
     }
 
   if (!opt.fast_list_mode && !opt.no_expensive_trust_checks)
-    ownertrust_print = get_ownertrust_info (pk, 0);
+    ownertrust_print = get_ownertrust_info (ctrl, pk, 0);
   else
     ownertrust_print = 0;
 
@@ -1282,7 +1282,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 
   es_putc (':', es_stdout);
   es_putc (':', es_stdout);
-  print_capabilities (pk, keyblock);
+  print_capabilities (ctrl, pk, keyblock);
   es_putc (':', es_stdout);		/* End of field 13. */
   es_putc (':', es_stdout);		/* End of field 14. */
   if (secret || has_secret)
@@ -1314,7 +1314,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
   es_putc ('\n', es_stdout);
 
   print_revokers (es_stdout, pk);
-  print_fingerprint (NULL, pk, 0);
+  print_fingerprint (ctrl, NULL, pk, 0);
   if (hexgrip)
     es_fprintf (es_stdout, "grp:::::::::%s:\n", hexgrip);
   if (opt.with_key_data)
@@ -1419,7 +1419,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
                       (ulong) keyid2[0], (ulong) keyid2[1],
                       colon_datestr_from_pk (pk2),
                       colon_strtime (pk2->expiredate));
-	  print_capabilities (pk2, NULL);
+	  print_capabilities (ctrl, pk2, NULL);
           es_putc (':', es_stdout);	/* End of field 13. */
           es_putc (':', es_stdout);	/* End of field 14. */
           if (secret || has_secret)
@@ -1448,7 +1448,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
           print_compliance_flags (pk2, keylength, curvename);
           es_putc (':', es_stdout);	/* End of field 18. */
 	  es_putc ('\n', es_stdout);
-          print_fingerprint (NULL, pk2, 0);
+          print_fingerprint (ctrl, NULL, pk2, 0);
           if (hexgrip)
             es_fprintf (es_stdout, "grp:::::::::%s:\n", hexgrip);
           if (opt.with_key_data)
@@ -1488,7 +1488,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	      if (opt.no_sig_cache)
 		signer_pk = xmalloc_clear (sizeof (PKT_public_key));
 
-	      rc = check_key_signature2 (keyblock, node, NULL, signer_pk,
+	      rc = check_key_signature2 (ctrl, keyblock, node, NULL, signer_pk,
 					 NULL, NULL, NULL);
 	      switch (gpg_err_code (rc))
 		{
@@ -1524,7 +1524,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	    }
 
 	  if (sigrc != '%' && sigrc != '?' && !opt.fast_list_mode)
-            siguid = get_user_id (sig->keyid, &siguidlen);
+            siguid = get_user_id (ctrl, sig->keyid, &siguidlen);
           else
             {
               siguid = NULL;
@@ -1697,7 +1697,8 @@ print_icao_hexdigit (estream_t fp, int c)
  * of es_stdout or instead of the TTY in modes 2 and 3.
  */
 void
-print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
+print_fingerprint (ctrl_t ctrl, estream_t override_fp,
+                   PKT_public_key *pk, int mode)
 {
   char hexfpr[2*MAX_FINGERPRINT_LEN+1];
   char *p;
@@ -1742,8 +1743,8 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
   if (!primary && (mode == 1 || mode == 2))
     {
       PKT_public_key *primary_pk = xmalloc_clear (sizeof (*primary_pk));
-      get_pubkey (primary_pk, pk->main_keyid);
-      print_fingerprint (override_fp, primary_pk, (mode | 0x80));
+      get_pubkey (ctrl, primary_pk, pk->main_keyid);
+      print_fingerprint (ctrl, override_fp, primary_pk, (mode | 0x80));
       free_public_key (primary_pk);
     }
 
@@ -1864,7 +1865,7 @@ print_card_serialno (const char *serialno)
  *    3 := '>' Secret key is on a token.
  */
 void
-print_key_line (estream_t fp, PKT_public_key *pk, int secret)
+print_key_line (ctrl_t ctrl, estream_t fp, PKT_public_key *pk, int secret)
 {
   char pkstrbuf[PUBKEY_STRING_SIZE];
 
@@ -1919,7 +1920,7 @@ print_key_line (estream_t fp, PKT_public_key *pk, int secret)
      fingerprints, show compact fpr of primary key: */
   if (pk->flags.primary &&
       !opt.fingerprint && !opt.with_fingerprint)
-    print_fingerprint (fp, pk, 20);
+    print_fingerprint (ctrl, fp, pk, 20);
 }
 
 

@@ -37,7 +37,7 @@
 #include "../common/host2net.h"
 
 
-static gpg_error_t get_it (PKT_pubkey_enc *k,
+static gpg_error_t get_it (ctrl_t ctrl, PKT_pubkey_enc *k,
                            DEK *dek, PKT_public_key *sk, u32 *keyid);
 
 
@@ -87,8 +87,8 @@ get_session_key (ctrl_t ctrl, PKT_pubkey_enc * k, DEK * dek)
     {
       sk = xmalloc_clear (sizeof *sk);
       sk->pubkey_algo = k->pubkey_algo; /* We want a pubkey with this algo.  */
-      if (!(rc = get_seckey (sk, k->keyid)))
-        rc = get_it (k, dek, sk, k->keyid);
+      if (!(rc = get_seckey (ctrl, sk, k->keyid)))
+        rc = get_it (ctrl, k, dek, sk, k->keyid);
     }
   else if (opt.skip_hidden_recipients)
     rc = gpg_error (GPG_ERR_NO_SECKEY);
@@ -116,7 +116,7 @@ get_session_key (ctrl_t ctrl, PKT_pubkey_enc * k, DEK * dek)
             log_info (_("anonymous recipient; trying secret key %s ...\n"),
                       keystr (keyid));
 
-          rc = get_it (k, dek, sk, keyid);
+          rc = get_it (ctrl, k, dek, sk, keyid);
           if (!rc)
             {
               if (!opt.quiet)
@@ -138,7 +138,8 @@ leave:
 
 
 static gpg_error_t
-get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
+get_it (ctrl_t ctrl,
+        PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
 {
   gpg_error_t err;
   byte *frame = NULL;
@@ -200,7 +201,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
     }
 
   /* Decrypt. */
-  desc = gpg_format_keydesc (sk, FORMAT_KEYDESC_NORMAL, 1);
+  desc = gpg_format_keydesc (ctrl, sk, FORMAT_KEYDESC_NORMAL, 1);
   err = agent_pkdecrypt (NULL, keygrip,
                          desc, sk->keyid, sk->main_keyid, sk->pubkey_algo,
                          s_data, &frame, &nframe, &padding);
@@ -340,7 +341,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   {
     PKT_public_key *pk = NULL;
     PKT_public_key *mainpk = NULL;
-    KBNODE pkb = get_pubkeyblock (keyid);
+    KBNODE pkb = get_pubkeyblock (ctrl, keyid);
 
     if (!pkb)
       {
@@ -393,7 +394,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
       {
         log_info (_("Note: key has been revoked"));
         log_printf ("\n");
-        show_revocation_reason (pk, 1);
+        show_revocation_reason (ctrl, pk, 1);
       }
 
     if (is_status_enabled () && pk && mainpk)
@@ -410,7 +411,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
          * value is irrelevant.  */
         write_status_printf (STATUS_DECRYPTION_KEY, "%s %s %c",
                              pkhex, mainpkhex,
-                             get_ownertrust_info (mainpk, 1));
+                             get_ownertrust_info (ctrl, mainpk, 1));
 
       }
 

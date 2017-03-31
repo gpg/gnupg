@@ -1188,7 +1188,7 @@ receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
   if (opt.verbose)
     log_info ("key %s: asking agent for the secret parts\n", hexgrip);
 
-  prompt = gpg_format_keydesc (pk, FORMAT_KEYDESC_EXPORT,1);
+  prompt = gpg_format_keydesc (ctrl, pk, FORMAT_KEYDESC_EXPORT,1);
   err = agent_export_key (ctrl, hexgrip, prompt, !cleartext, cache_nonce_addr,
                           &wrappedkey, &wrappedkeylen);
   xfree (prompt);
@@ -1336,15 +1336,19 @@ write_keyblock_to_output (kbnode_t keyblock, int with_armor,
  * KEYBLOCK must not have any blocks marked as deleted.
  */
 static void
-apply_keep_uid_filter (kbnode_t keyblock, recsel_expr_t selector)
+apply_keep_uid_filter (ctrl_t ctrl, kbnode_t keyblock, recsel_expr_t selector)
 {
   kbnode_t node;
+  struct impex_filter_parm_s parm;
+
+  parm.ctrl = ctrl;
 
   for (node = keyblock->next; node; node = node->next )
     {
       if (node->pkt->pkttype == PKT_USER_ID)
         {
-          if (!recsel_select (selector, impex_filter_getval, node))
+          parm.node = node;
+          if (!recsel_select (selector, impex_filter_getval, &parm))
             {
               /* log_debug ("keep-uid: deleting '%s'\n", */
               /*            node->pkt->pkt.user_id->name); */
@@ -1372,16 +1376,21 @@ apply_keep_uid_filter (kbnode_t keyblock, recsel_expr_t selector)
  * KEYBLOCK must not have any blocks marked as deleted.
  */
 static void
-apply_drop_subkey_filter (kbnode_t keyblock, recsel_expr_t selector)
+apply_drop_subkey_filter (ctrl_t ctrl, kbnode_t keyblock,
+                          recsel_expr_t selector)
 {
   kbnode_t node;
+  struct impex_filter_parm_s parm;
+
+  parm.ctrl = ctrl;
 
   for (node = keyblock->next; node; node = node->next )
     {
       if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
           || node->pkt->pkttype == PKT_SECRET_SUBKEY)
         {
-          if (recsel_select (selector, impex_filter_getval, node))
+          parm.node = node;
+          if (recsel_select (selector, impex_filter_getval, &parm))
             {
               /*log_debug ("drop-subkey: deleting a key\n");*/
               /* The subkey packet and all following packets up to the
@@ -1990,19 +1999,20 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
        * UID sigs (0x10, 0x11, 0x12, and 0x13).  A designated
        * revocation is never stripped, even with export-minimal set.  */
       if ((options & EXPORT_CLEAN))
-        clean_key (keyblock, opt.verbose, (options&EXPORT_MINIMAL), NULL, NULL);
+        clean_key (ctrl, keyblock, opt.verbose,
+                   (options&EXPORT_MINIMAL), NULL, NULL);
 
       if (export_keep_uid)
         {
           commit_kbnode (&keyblock);
-          apply_keep_uid_filter (keyblock, export_keep_uid);
+          apply_keep_uid_filter (ctrl, keyblock, export_keep_uid);
           commit_kbnode (&keyblock);
         }
 
       if (export_drop_subkey)
         {
           commit_kbnode (&keyblock);
-          apply_drop_subkey_filter (keyblock, export_drop_subkey);
+          apply_drop_subkey_filter (ctrl, keyblock, export_drop_subkey);
           commit_kbnode (&keyblock);
         }
 
@@ -2139,7 +2149,7 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
                                1  /* No AKL lookup.  */);
       if (!err)
         {
-          err = getkey_next (getkeyctx, NULL, NULL);
+          err = getkey_next (ctrl, getkeyctx, NULL, NULL);
           if (!err)
             err = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
           else if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY)

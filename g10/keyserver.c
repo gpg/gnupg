@@ -468,7 +468,7 @@ parse_preferred_keyserver(PKT_signature *sig)
 }
 
 static void
-print_keyrec(int number,struct keyrec *keyrec)
+print_keyrec (ctrl_t ctrl, int number,struct keyrec *keyrec)
 {
   int i;
 
@@ -522,7 +522,7 @@ print_keyrec(int number,struct keyrec *keyrec)
     case KEYDB_SEARCH_MODE_FPR20:
       {
 	u32 kid[2];
-	keyid_from_fingerprint(keyrec->desc.u.fpr,20,kid);
+	keyid_from_fingerprint (ctrl, keyrec->desc.u.fpr,20,kid);
 	es_printf("key %s",keystr(kid));
       }
       break;
@@ -960,7 +960,7 @@ search_line_handler (void *opaque, int special, char *line)
               parm->numlines = 0;
             }
 
-          print_keyrec (parm->nkeys+1, keyrec);
+          print_keyrec (parm->ctrl, parm->nkeys+1, keyrec);
         }
 
       parm->numlines += keyrec->lines;
@@ -1196,9 +1196,11 @@ keyserver_import_keyid (ctrl_t ctrl,
   return keyserver_get (ctrl, &desc, 1, keyserver, quick, NULL, NULL);
 }
 
+
 /* code mostly stolen from do_export_stream */
 static int
-keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
+keyidlist (ctrl_t ctrl, strlist_t users, KEYDB_SEARCH_DESC **klist,
+           int *count, int fakev3)
 {
   int rc = 0;
   int num = 100;
@@ -1318,7 +1320,7 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	      PKT_user_id *uid=NULL;
 	      PKT_signature *sig=NULL;
 
-	      merge_keys_and_selfsig(keyblock);
+	      merge_keys_and_selfsig (ctrl, keyblock);
 
 	      for(node=node->next;node;node=node->next)
 		{
@@ -1401,7 +1403,7 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
 	 ascii_strcasecmp(opt.keyserver->scheme,"mailto")==0))
     fakev3=1;
 
-  err = keyidlist (users, &desc, &numdesc, fakev3);
+  err = keyidlist (ctrl, users, &desc, &numdesc, fakev3);
   if (err)
     return err;
 
