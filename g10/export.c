@@ -2155,7 +2155,7 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
           else if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY)
             err = 0;
         }
-      getkey_end (getkeyctx);
+      getkey_end (ctrl, getkeyctx);
     }
   if (err)
     {

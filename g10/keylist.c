@@ -608,7 +608,7 @@ list_one (ctrl_t ctrl, strlist_t names, int secret, int mark_secret)
   if (rc)
     {
       log_error ("error reading key: %s\n", gpg_strerror (rc));
-      getkey_end (ctx);
+      getkey_end (ctrl, ctx);
       return;
     }
 
@@ -627,7 +627,7 @@ list_one (ctrl_t ctrl, strlist_t names, int secret, int mark_secret)
       release_kbnode (keyblock);
     }
   while (!getkey_next (ctrl, ctx, NULL, &keyblock));
-  getkey_end (ctx);
+  getkey_end (ctrl, ctx);
 
   if (opt.check_sigs && !opt.with_colons)
     print_signature_stats (&listctx);
@@ -668,7 +668,7 @@ locate_one (ctrl_t ctrl, strlist_t names)
 	      release_kbnode (keyblock);
 	    }
 	  while (ctx && !getkey_next (ctrl, ctx, NULL, &keyblock));
-	  getkey_end (ctx);
+	  getkey_end (ctrl, ctx);
 	  ctx = NULL;
 	}
     }

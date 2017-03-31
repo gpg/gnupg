@@ -372,7 +372,7 @@ gpg_error_t getkey_next (ctrl_t ctrl, getkey_ctx_t ctx,
                          PKT_public_key *pk, kbnode_t *ret_keyblock);
 
 /* Release any resources used by a key listing context.  */
-void getkey_end (getkey_ctx_t ctx);
+void getkey_end (ctrl_t ctrl, getkey_ctx_t ctx);
 
 /* Return the database handle used by this context.  The context still
    owns the handle.  */

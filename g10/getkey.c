@@ -558,7 +558,7 @@ get_pubkeys (ctrl_t ctrl,
       results = r;
     }
   while (ctx);
-  getkey_end (ctx);
+  getkey_end (ctrl, ctx);
 
   if (DBG_LOOKUP)
     {
@@ -752,7 +752,7 @@ get_pubkey (ctrl_t ctrl, PKT_public_key * pk, u32 * keyid)
       {
 	pk_from_block (pk, kb, found_key);
       }
-    getkey_end (&ctx);
+    getkey_end (ctrl, &ctx);
     release_kbnode (kb);
   }
   if (!rc)
@@ -868,7 +868,7 @@ get_pubkeyblock (ctrl_t ctrl, u32 * keyid)
   ctx.items[0].u.kid[0] = keyid[0];
   ctx.items[0].u.kid[1] = keyid[1];
   rc = lookup (ctrl, &ctx, 0, &keyblock, NULL);
-  getkey_end (&ctx);
+  getkey_end (ctrl, &ctx);
 
   return rc ? NULL : keyblock;
 }
@@ -915,7 +915,7 @@ get_seckey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid)
     {
       pk_from_block (pk, keyblock, found_key);
     }
-  getkey_end (&ctx);
+  getkey_end (ctrl, &ctx);
   release_kbnode (keyblock);
 
   if (!err)
@@ -1109,7 +1109,7 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
   if (!ctx->kr_handle)
     {
       rc = gpg_error_from_syserror ();
-      getkey_end (ctx);
+      getkey_end (ctrl, ctx);
       return rc;
     }
 
@@ -1138,7 +1138,7 @@ key_byname (ctrl_t ctrl, GETKEY_CTX *retctx, strlist_t namelist,
 	  *ret_kdbhd = ctx->kr_handle;
 	  ctx->kr_handle = NULL;
 	}
-      getkey_end (ctx);
+      getkey_end (ctrl, ctx);
     }
 
   return rc;
@@ -1310,7 +1310,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	      did_akl_local = 1;
 	      if (retctx)
 		{
-		  getkey_end (*retctx);
+		  getkey_end (ctrl, *retctx);
 		  *retctx = NULL;
 		}
 	      add_to_strlist (&namelist, name);
@@ -1428,7 +1428,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	       * keyring.  */
 	      if (retctx)
 		{
-		  getkey_end (*retctx);
+		  getkey_end (ctrl, *retctx);
 		  *retctx = NULL;
 		}
 	      rc = key_byname (ctrl, anylocalfirst ? retctx : NULL,
@@ -1453,7 +1453,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 
   if (rc && retctx)
     {
-      getkey_end (*retctx);
+      getkey_end (ctrl, *retctx);
       *retctx = NULL;
     }
 
@@ -1589,7 +1589,7 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
   if (rc)
     {
       if (ctx)
-        getkey_end (ctx);
+        getkey_end (ctrl, ctx);
       return rc;
     }
 
@@ -1626,7 +1626,7 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
               new.uid = NULL;
             }
         }
-      getkey_end (ctx);
+      getkey_end (ctrl, ctx);
       ctx = NULL;
       free_user_id (best.uid);
       best.uid = NULL;
@@ -1675,14 +1675,14 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
 
   if (rc && ctx)
     {
-      getkey_end (ctx);
+      getkey_end (ctrl, ctx);
       ctx = NULL;
     }
 
   if (retctx && ctx)
     *retctx = ctx;
   else
-    getkey_end (ctx);
+    getkey_end (ctrl, ctx);
 
   return rc;
 }
@@ -1799,7 +1799,7 @@ get_pubkey_byfprint (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
 	  kb = NULL;
 	}
       release_kbnode (kb);
-      getkey_end (&ctx);
+      getkey_end (ctrl, &ctx);
     }
   else
     rc = GPG_ERR_GENERAL; /* Oops */
@@ -2204,7 +2204,7 @@ getkey_next (ctrl_t ctrl, getkey_ctx_t ctx,
 /* Release any resources used by a key listing context.  This must be
  * called on the context returned by, e.g., getkey_byname.  */
 void
-getkey_end (getkey_ctx_t ctx)
+getkey_end (ctrl_t ctrl, getkey_ctx_t ctx)
 {
   if (ctx)
     {
@@ -3833,7 +3833,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
     {
       /* Free the context.  */
       release_kbnode (c->keyblock);
-      getkey_end (c->ctx);
+      getkey_end (ctrl, c->ctx);
       xfree (c);
       *context = NULL;
       return 0;
@@ -3881,7 +3881,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                     {
                       release_kbnode (keyblock);
                       keyblock = NULL;
-                      getkey_end (c->ctx);
+                      getkey_end (ctrl, c->ctx);
                       c->ctx = NULL;
                     }
                   c->state++;
@@ -3895,7 +3895,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                         {
                           release_kbnode (keyblock);
                           keyblock = NULL;
-                          getkey_end (c->ctx);
+                          getkey_end (ctrl, c->ctx);
                           c->ctx = NULL;
                         }
                     }
