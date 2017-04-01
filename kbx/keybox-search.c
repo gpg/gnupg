@@ -725,6 +725,23 @@ release_sn_array (struct sn_array_s *array, size_t size)
   xfree (array);
 }
 
+
+/* Helper to open the file.  */
+static gpg_error_t
+open_file (KEYBOX_HANDLE hd)
+{
+
+  hd->fp = fopen (hd->kb->fname, "rb");
+  if (!hd->fp)
+    {
+      hd->error = gpg_error_from_syserror ();
+      return hd->error;
+    }
+
+  return 0;
+}
+
+
 
 /*
 
@@ -822,12 +839,11 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
 
   if (!hd->fp)
     {
-      hd->fp = fopen (hd->kb->fname, "rb");
-      if (!hd->fp)
+      rc = open_file (hd);
+      if (rc)
         {
-          hd->error = gpg_error_from_syserror ();
           xfree (sn_array);
-          return hd->error;
+          return rc;
         }
     }
 
@@ -899,7 +915,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
       int blobtype;
 
       _keybox_release_blob (blob); blob = NULL;
-      rc = _keybox_read_blob (&blob, hd->fp);
+      rc = _keybox_read_blob (&blob, hd->fp, NULL);
       if (gpg_err_code (rc) == GPG_ERR_TOO_LARGE
           && gpg_err_source (rc) == GPG_ERR_SOURCE_KEYBOX)
         {
@@ -1192,24 +1208,23 @@ keybox_offset (KEYBOX_HANDLE hd)
 gpg_error_t
 keybox_seek (KEYBOX_HANDLE hd, off_t offset)
 {
-  int err;
+  gpg_error_t err;
 
   if (hd->error)
     return hd->error; /* still in error state */
 
   if (! hd->fp)
     {
-      if (offset == 0)
-        /* No need to open the file.  An unopened file is effectively at
-           offset 0.  */
-        return 0;
-
-      hd->fp = fopen (hd->kb->fname, "rb");
-      if (!hd->fp)
+      if (!offset)
         {
-          hd->error = gpg_error_from_syserror ();
-          return hd->error;
+          /* No need to open the file.  An unopened file is effectively at
+             offset 0.  */
+          return 0;
         }
+
+      err = open_file (hd);
+      if (err)
+        return err;
     }
 
   err = fseeko (hd->fp, offset, SEEK_SET);

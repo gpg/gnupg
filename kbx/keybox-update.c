@@ -288,7 +288,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
         }
 
       /* Skip this blob. */
-      rc = _keybox_read_blob (NULL, fp);
+      rc = _keybox_read_blob (NULL, fp, NULL);
       if (rc)
         {
           fclose (fp);
@@ -665,7 +665,7 @@ keybox_compress (KEYBOX_HANDLE hd)
 
   /* A quick test to see if we need to compress the file at all.  We
      schedule a compress run after 3 hours. */
-  if ( !_keybox_read_blob (&blob, fp) )
+  if ( !_keybox_read_blob (&blob, fp, NULL) )
     {
       const unsigned char *buffer;
       size_t length;
@@ -703,7 +703,7 @@ keybox_compress (KEYBOX_HANDLE hd)
   cut_time = time(NULL) - 86400;
   first_blob = 1;
   skipped_deleted = 0;
-  for (rc=0; !(read_rc = _keybox_read_blob2 (&blob, fp, &skipped_deleted));
+  for (rc=0; !(read_rc = _keybox_read_blob (&blob, fp, &skipped_deleted));
        _keybox_release_blob (blob), blob = NULL )
     {
       unsigned int blobflags;

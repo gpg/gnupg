@@ -177,8 +177,7 @@ void _keybox_destroy_openpgp_info (keybox_openpgp_info_t info);
 
 
 /*-- keybox-file.c --*/
-int _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp);
-int _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted);
+int _keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted);
 int _keybox_write_blob (KEYBOXBLOB blob, FILE *fp);
 
 /*-- keybox-search.c --*/

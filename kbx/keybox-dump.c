@@ -581,7 +581,7 @@ _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
 
   for (;;)
     {
-      rc = _keybox_read_blob (&blob, fp);
+      rc = _keybox_read_blob (&blob, fp, NULL);
       if (gpg_err_code (rc) == GPG_ERR_TOO_LARGE
           && gpg_err_source (rc) == GPG_ERR_SOURCE_KEYBOX)
         {
@@ -704,7 +704,7 @@ _keybox_dump_find_dups (const char *filename, int print_them, FILE *outfp)
     }
   dupitems_count = 0;
 
-  while ( !(rc = _keybox_read_blob (&blob, fp)) )
+  while ( !(rc = _keybox_read_blob (&blob, fp, NULL)) )
     {
       unsigned char digest[20];
 
@@ -778,7 +778,7 @@ _keybox_dump_cut_records (const char *filename, unsigned long from,
   if (!(fp = open_file (&filename, stderr)))
     return gpg_error_from_syserror ();
 
-  while ( !(rc = _keybox_read_blob (&blob, fp)) )
+  while ( !(rc = _keybox_read_blob (&blob, fp, NULL)) )
     {
       if (recno > to)
         break; /* Ready.  */

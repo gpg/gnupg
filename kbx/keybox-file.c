@@ -45,10 +45,10 @@ ftello (FILE *stream)
 
 
 
-/* Read a block at the current position and return it in r_blob.
-   r_blob may be NULL to simply skip the current block.  */
+/* Read a block at the current position and return it in R_BLOB.
+   R_BLOB may be NULL to simply skip the current block.  */
 int
-_keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
+_keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
 {
   unsigned char *image;
   size_t imagelen = 0;
@@ -56,7 +56,8 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
   int rc;
   off_t off;
 
-  *skipped_deleted = 0;
+  if (skipped_deleted)
+    *skipped_deleted = 0;
  again:
   if (r_blob)
     *r_blob = NULL;
@@ -86,7 +87,8 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
       /* Special treatment for empty blobs. */
       if (fseek (fp, imagelen-5, SEEK_CUR))
         return gpg_error_from_syserror ();
-      *skipped_deleted = 1;
+      if (skipped_deleted)
+        *skipped_deleted = 1;
       goto again;
     }
 
@@ -97,6 +99,14 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
       if (fseek (fp, imagelen-5, SEEK_CUR))
         return gpg_error_from_syserror ();
       return gpg_error (GPG_ERR_TOO_LARGE);
+    }
+
+  if (!r_blob)
+    {
+      /* This blob shall be skipped.  */
+      if (fseek (fp, imagelen-5, SEEK_CUR))
+        return gpg_error_from_syserror ();
+      return 0;
     }
 
   image = xtrymalloc (imagelen);
@@ -111,17 +121,10 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
       return tmperr;
     }
 
-  rc = r_blob? _keybox_new_blob (r_blob, image, imagelen, off) : 0;
-  if (rc || !r_blob)
+  rc = _keybox_new_blob (r_blob, image, imagelen, off);
+  if (rc)
     xfree (image);
   return rc;
-}
-
-int
-_keybox_read_blob (KEYBOXBLOB *r_blob, FILE *fp)
-{
-  int dummy;
-  return _keybox_read_blob2 (r_blob, fp, &dummy);
 }
 
 
