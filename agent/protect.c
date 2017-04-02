@@ -42,11 +42,6 @@
 #include "../common/sexp-parse.h"
 
 
-/* To use the openpgp-s2k3-ocb-aes scheme by default set the value of
- * this macro to 1.  Note that the caller of agent_protect may
- * override this default.  */
-#define PROT_DEFAULT_TO_OCB 0
-
 /* The protection mode for encryption.  The supported modes for
    decryption are listed in agent_unprotect().  */
 #define PROT_CIPHER        GCRY_CIPHER_AES128
@@ -580,7 +575,7 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   int have_curve = 0;
 
   if (use_ocb == -1)
-    use_ocb = PROT_DEFAULT_TO_OCB;
+    use_ocb = opt.enable_extended_key_format;
 
   /* Create an S-expression with the protected-at timestamp.  */
   memcpy (timestamp_exp, "(12:protected-at15:", 19);

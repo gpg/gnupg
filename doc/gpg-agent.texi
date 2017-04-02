@@ -579,7 +579,8 @@ the passphrase of a key will also convert the key to that new format.
 Using this option makes the private keys unreadable for gpg-agent
 versions before 2.1.12.  The advantage of the extended private key
 format is that it is text based and can carry additional meta data.
-
+Note that this option also changes the key protection format to use
+OCB mode.
 
 @anchor{option --enable-ssh-support}
 @item --enable-ssh-support
