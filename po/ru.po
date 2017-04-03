@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-01-24 17:17+0000\n"
+"PO-Revision-Date: 2017-03-01 17:17+0000\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -150,10 +150,9 @@ msgstr "на карте нет основного аутентификацион
 msgid "no suitable card key found: %s\n"
 msgstr "на карте не найдено подходящего ключа: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error getting stored flags: %s\n"
+#, c-format
 msgid "error getting list of cards: %s\n"
-msgstr "ошибка получения сохраненных признаков: %s\n"
+msgstr "ошибка получения списка карт: %s\n"
 
 #, c-format
 msgid ""
@@ -2354,7 +2353,7 @@ msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr "'%s' не является идентификатором, отпечатком или кодом ключа\n"
 
 msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
-msgstr ""
+msgstr "Внимание: команда не отдана. Пытаюсь угадать, что имелось в виду ...\n"
 
 msgid "Go ahead and type your message ...\n"
 msgstr "Пишите сообщение ...\n"
@@ -5606,10 +5605,8 @@ msgid "(G)ood, (A)ccept once, (U)nknown, (R)eject once, (B)ad? "
 msgstr ""
 "(G)Хороший, (A)Пока принять, (U)Неясно, (R)Пока отвергнуть, (B)Плохой? "
 
-#, fuzzy
-#| msgid "Defaulting to unknown."
 msgid "Defaulting to unknown.\n"
-msgstr "Принимается исходное значение (неясно)."
+msgstr "Принимается исходное значение (\"неизвестно\").\n"
 
 msgid "TOFU db corruption detected.\n"
 msgstr "Обнаружено повреждение базы данных TOFU.\n"
@@ -5760,12 +5757,11 @@ msgstr[2] ""
 msgid "error opening TOFU database: %s\n"
 msgstr "ошибка при открытии базы данных TOFU: %s\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: Encrypting to %s, which has no non-revoked user ids.\n"
+#, c-format
 msgid "WARNING: Encrypting to %s, which has no non-revoked user ids\n"
 msgstr ""
 "ВНИМАНИЕ: Шифрование для ключа %s, у которого нет неотозванных "
-"идентификаторов пользователя.\n"
+"идентификаторов пользователя\n"
 
 #, c-format
 msgid "error setting policy for key %s, user id \"%s\": %s"
@@ -6040,17 +6036,17 @@ msgstr "сбой при чтении открытого ключа: %s\n"
 #. * the %s at the start and end of the string.
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%%0ACounter: %lu%s"
-msgstr ""
+msgstr "%sНомер: %s%%0AДержатель: %s%%0AСчетчик: %lu%s"
 
 #, c-format
 msgid "%sNumber: %s%%0AHolder: %s%s"
-msgstr ""
+msgstr "%sНомер: %s%%0AДержатель: %s%s"
 
 #. TRANSLATORS: This is the number of remaining attempts to
 #. * enter a PIN.  Use %%0A (double-percent,0A) for a linefeed.
 #, c-format
 msgid "Remaining attempts: %d"
-msgstr ""
+msgstr "Осталось попыток: %d"
 
 #, c-format
 msgid "using default PIN as %s\n"
@@ -6062,10 +6058,8 @@ msgstr ""
 "не удалось применить основной PIN как %s: %s - далее применяться\n"
 "как основной не будет\n"
 
-#, fuzzy
-#| msgid "||Please enter the PIN"
 msgid "||Please unlock the card"
-msgstr "||Введите PIN"
+msgstr "||Разблокируйте карту"
 
 #, c-format
 msgid "PIN for CHV%d is too short; minimum length is %d\n"
@@ -7028,10 +7022,9 @@ msgstr "      постоянно загруженных сертификатов
 msgid "    runtime cached certificates: %u\n"
 msgstr "сертификатов в буфере времени исполнения: %u\n"
 
-#, fuzzy, c-format
-#| msgid "    runtime cached certificates: %u\n"
+#, c-format
 msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
-msgstr "сертификатов в буфере времени исполнения: %u\n"
+msgstr "                достоверных сертификатов: %u (%u,%u,%u,%u)\n"
 
 msgid "certificate already cached\n"
 msgstr "сертификат уже в буфере\n"
