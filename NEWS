@@ -1,7 +1,11 @@
+Noteworthy changes in version 2.1.21 (unreleased)
+-------------------------------------------------
+
+
 Noteworthy changes in version 2.1.20 (2017-04-03)
 -------------------------------------------------
 
-  * gpg: New properties 'expired', 'revoked', and 'disbaled' for the
+  * gpg: New properties 'expired', 'revoked', and 'disabled' for the
     import and export filters.
 
   * gpg: New command --quick-set-primary-uid.
