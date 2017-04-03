@@ -1643,6 +1643,7 @@ can_handle_critical (const byte * buffer, size_t n, int type)
       /* Is it enough to show the policy or keyserver? */
     case SIGSUBPKT_POLICY:
     case SIGSUBPKT_PREF_KS:
+    case SIGSUBPKT_REVOC_REASON: /* At least we know about it.  */
       return 1;
 
     default:
