@@ -1283,6 +1283,7 @@ handle_send_request_error (ctrl_t ctrl, gpg_error_t err, const char *request,
     case GPG_ERR_ENETDOWN:
     case GPG_ERR_UNKNOWN_HOST:
     case GPG_ERR_NETWORK:
+    case GPG_ERR_EIO:  /* Sometimes used by estream cookie functions.  */
       if (mark_host_dead (request) && *tries_left)
         retry = 1;
       break;
