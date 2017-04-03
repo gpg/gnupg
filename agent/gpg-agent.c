@@ -1378,6 +1378,8 @@ main (int argc, char **argv )
                  GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       es_printf ("pinentry-timeout:%lu:0:\n",
                  GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME);
+      es_printf ("enable-extended-key-format:%lu:\n",
+                 GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
 
       agent_exit (0);
     }
