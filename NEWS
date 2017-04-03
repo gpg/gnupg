@@ -1,5 +1,47 @@
-Noteworthy changes in version 2.1.20 (unreleased)
+Noteworthy changes in version 2.1.20 (2017-04-03)
 -------------------------------------------------
+
+  * gpg: New properties 'expired', 'revoked', and 'disbaled' for the
+    import and export filters.
+
+  * gpg: New command --quick-set-primary-uid.
+
+  * gpg: New compliance field for the --with-colon key listing.
+
+  * gpg: Changed the key parser to generalize the processing of local
+    meta data packets.
+
+  * gpg: Fixed assertion failure in the TOFU trust model.
+
+  * gpg: Fixed exporting of zero length user ID packets.
+
+  * scd: Improved support for multiple readers.
+
+  * scd: Fixed timeout handling for key generation.
+
+  * agent: New option --enable-extended-key-format.
+
+  * dirmngr: Do not add a keyserver to a new dirmngr.conf.  Dirmngr
+    uses a default keyserver.
+
+  * dimngr: Do not treat TLS warning alerts as severe error when
+    building with GNUTLS.
+
+  * dirmngr: Actually take /etc/hosts in account.
+
+  * wks: Fixed client problems on Windows.  Published keys are now set
+    to world-readable.
+
+  * tests: Fixed creation of temporary directories.
+
+  * A socket directory for a non standard GNUGHOME is now created on
+    the fly under /run/user.  Thus "gpgconf --create-socketdir" is now
+    optional.  The use of "gpgconf --remove-socketdir" to clean up
+    obsolete socket directories is however recommended to avoid
+    cluttering /run/user with useless directories.
+
+  * Fixed build problems on some platforms.
+
 
 
 Noteworthy changes in version 2.1.19 (2017-03-01)
@@ -48,6 +90,8 @@ Noteworthy changes in version 2.1.19 (2017-03-01)
   * The Windows installer is now build with limited TLS support.
 
   * Many other bug fixes and new regression tests.
+
+  See-also: gnupg-announce/2017q1/000402.html
 
 
 Noteworthy changes in version 2.1.18 (2017-01-23)
