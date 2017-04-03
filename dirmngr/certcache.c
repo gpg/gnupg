@@ -612,7 +612,10 @@ load_certs_from_w32_store (const char *storename)
           if (!err)
             count++;
           if (gpg_err_code (err) == GPG_ERR_DUP_VALUE)
-            log_info (_("certificate '%s' already cached\n"), storename);
+            {
+              if (DBG_X509)
+                log_debug (_("certificate '%s' already cached\n"), storename);
+            }
           else if (err)
             log_error (_("error loading certificate '%s': %s\n"),
                        storename, gpg_strerror (err));
