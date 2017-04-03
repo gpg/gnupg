@@ -550,24 +550,15 @@ libdns_init (void)
 
     derr = dns_hosts_loadpath (ld.hosts, hosts_path);
     xfree (hosts_path);
-    if (derr)
-      {
-        err = libdns_error_to_gpg_error (derr);
-        /* Most Windows systems don't have a hosts files.  So do not
-         * report in this case.  */
-        if (gpg_err_code (err) != GPG_ERR_ENOENT)
-          log_error ("failed to load hosts file: %s\n", gpg_strerror (err));
-        err = 0; /* Do not bail out.  */
-      }
 #else
     derr = dns_hosts_loadpath (ld.hosts, "/etc/hosts");
+#endif
     if (derr)
       {
         err = libdns_error_to_gpg_error (derr);
         log_error ("failed to load hosts file: %s\n", gpg_strerror (err));
         err = 0; /* Do not bail out - having no /etc/hosts is legal.  */
       }
-#endif
   }
 
   /* dns_hints_local for stub mode, dns_hints_root for recursive.  */
