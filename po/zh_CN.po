@@ -3457,10 +3457,18 @@ msgstr "更新失败：%s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "密钥没有变动所以不需要更新。\n"
 
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "您不能删除最后一个用户标识！\n"
+
 #, fuzzy, c-format
-#| msgid "Key generation failed: %s\n"
-msgid "User ID revocation failed: %s\n"
-msgstr "生成密钥失败：%s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "检查已建立的签名时发生错误： %s\n"
+
+#, fuzzy, c-format
+msgid "setting the primary user ID failed: %s\n"
+msgstr "检查已建立的签名时发生错误： %s\n"
 
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
@@ -3794,6 +3802,11 @@ msgstr "用户标识“%s”已经被吊销。\n"
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "警告：有一份用户标识签名的日期标记为 %d 秒后的未来\n"
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "您不能删除最后一个用户标识！\n"
 
 #, c-format
 msgid "Key %s is already revoked.\n"
@@ -8817,6 +8830,11 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "Key generation failed: %s\n"
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "生成密钥失败：%s\n"
 
 #~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 #~ msgstr "||请输入 PIN%%0A[完成的签字：%lu]"

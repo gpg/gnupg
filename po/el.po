@@ -3552,10 +3552,18 @@ msgstr "η ενημέρωση απέτυχε: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Το κλειδί δεν άλλαξε οπότε δεν χρειάζεται ενημέρωση.\n"
 
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "Δεν μπορείτε να διαγράψετε το τελευταίο user ID!\n"
+
 #, fuzzy, c-format
-#| msgid "Key generation failed: %s\n"
-msgid "User ID revocation failed: %s\n"
-msgstr "Η δημιουργία κλειδιού απέτυχε: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
+
+#, fuzzy, c-format
+msgid "setting the primary user ID failed: %s\n"
+msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
 
 #, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3908,6 +3916,11 @@ msgstr "το user ID \"%s\" έχει ήδη ανακληθεί\n"
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μια υπογραφή user ID έχει ημερομηνία %d δεύτερα στο μέλλον\n"
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "Δεν μπορείτε να διαγράψετε το τελευταίο user ID!\n"
 
 #, fuzzy, c-format
 msgid "Key %s is already revoked.\n"
@@ -8970,6 +8983,11 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "Key generation failed: %s\n"
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "Η δημιουργία κλειδιού απέτυχε: %s\n"
 
 #, fuzzy
 #~ msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"

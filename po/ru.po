@@ -3315,9 +3315,20 @@ msgstr "сбой при обновлении: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Ключ не изменялся - обновление не нужно.\n"
 
-#, c-format
-msgid "User ID revocation failed: %s\n"
-msgstr "Сбой при отзыве идентификатора: %s\n"
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "Вы не можете удалить последний идентификатор пользователя!\n"
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "сбой проверки списка доверия: %s\n"
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the primary user ID failed: %s\n"
+msgstr "сбой проверки списка доверия: %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3646,6 +3657,11 @@ msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "Внимание: подпись идентификатора пользователя датирована %d секундами в "
 "будущем\n"
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "Вы не можете удалить последний идентификатор пользователя!\n"
 
 #, c-format
 msgid "Key %s is already revoked.\n"
@@ -8589,6 +8605,9 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
+
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "Сбой при отзыве идентификатора: %s\n"
 
 #~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 #~ msgstr "||Введите PIN%%0A[сделано подписей: %lu]"

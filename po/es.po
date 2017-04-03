@@ -3579,10 +3579,20 @@ msgstr "actualización fallida: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Clave sin cambios, no se necesita actualización.\n"
 
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "¡No puede borrar el último identificador de usuario!\n"
+
 #, fuzzy, c-format
-#| msgid "Key generation failed: %s\n"
-msgid "User ID revocation failed: %s\n"
-msgstr "Creación de la clave fallida: %s\n"
+#| msgid "checking the trust list failed: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "la comprobación de la lista de confianza falló: %s\n"
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the primary user ID failed: %s\n"
+msgstr "la comprobación de la lista de confianza falló: %s\n"
 
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
@@ -3919,6 +3929,11 @@ msgstr "ID de usuario \"%s\" ya ha sido revocado\n"
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "AVISO: un ID de usuario tiene fecha %d segundos en el futuro\n"
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "¡No puede borrar el último identificador de usuario!\n"
 
 #, c-format
 msgid "Key %s is already revoked.\n"
@@ -9246,6 +9261,11 @@ msgstr ""
 "Sintaxis: gpg-check-pattern [opciones] fichero_de_patrones\n"
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
+
+#, fuzzy
+#~| msgid "Key generation failed: %s\n"
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "Creación de la clave fallida: %s\n"
 
 #~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 #~ msgstr "||Por favor introduzca PIN%%0A[firmas hechas: %lu]"

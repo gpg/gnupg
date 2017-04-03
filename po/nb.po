@@ -3301,9 +3301,20 @@ msgstr "oppdatering mislyktes: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Nøkkelen ble ikke endret, så ingen oppdatering er nødvendig.\n"
 
-#, c-format
-msgid "User ID revocation failed: %s\n"
-msgstr "oppheving av bruker-ID mislyktes: %s\n"
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "Du kan ikke slette siste bruker-ID.\n"
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "kontroll av tillitsliste mislyktes: %s\n"
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the primary user ID failed: %s\n"
+msgstr "kontroll av tillitsliste mislyktes: %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3626,6 +3637,11 @@ msgstr "bruker-ID «%s» er allerede opphevet\n"
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "ADVARSEL: en bruker-id-signatur er datert %d sekunder i fremtiden\n"
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "Du kan ikke slette siste bruker-ID.\n"
 
 #, c-format
 msgid "Key %s is already revoked.\n"
@@ -8596,6 +8612,9 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [valg] mønsterfil\n"
 "Kontroller passordfrase oppgitt på standard innkanal mot valgt mønsterfil\n"
+
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "oppheving av bruker-ID mislyktes: %s\n"
 
 #~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 #~ msgstr "||Skriv inn PIN%%0A[signaturer utført: %lu]"

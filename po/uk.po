@@ -3351,9 +3351,20 @@ msgstr "помилка оновлення: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Ключ не змінено, отже оновлення непотрібне.\n"
 
-#, c-format
-msgid "User ID revocation failed: %s\n"
-msgstr "Спроба відкликання ідентифікатор користувача зазнала невдачі: %s\n"
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "Не можна вилучати останній ідентифікатор користувача!\n"
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "помилка перевірки списку довіри: %s\n"
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the primary user ID failed: %s\n"
+msgstr "помилка перевірки списку довіри: %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3686,6 +3697,11 @@ msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "УВАГА: підпис ідентифікатора користувача позначено датою на %d секунд у "
 "майбутньому\n"
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "Не можна вилучати останній ідентифікатор користувача!\n"
 
 #, c-format
 msgid "Key %s is already revoked.\n"
@@ -8678,6 +8694,9 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "Спроба відкликання ідентифікатор користувача зазнала невдачі: %s\n"
 
 #~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 #~ msgstr "||Будь ласка, вкажіть пінкод%%0A[підписів: %lu]"

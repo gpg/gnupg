@@ -3551,10 +3551,18 @@ msgstr "a actualización fallou: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "A chave non cambiou, polo que non fai falla actualizar.\n"
 
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "¡Non pode borra-lo último ID de usuario!\n"
+
 #, fuzzy, c-format
-#| msgid "Key generation failed: %s\n"
-msgid "User ID revocation failed: %s\n"
-msgstr "A xeración da chave fallou: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "fallou a comprobación da sinatura creada: %s\n"
+
+#, fuzzy, c-format
+msgid "setting the primary user ID failed: %s\n"
+msgstr "fallou a comprobación da sinatura creada: %s\n"
 
 #, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3905,6 +3913,11 @@ msgstr "o ID de usuario \"%s\" xa está revocado\n"
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "AVISO: unha sinatura de ID de usuario ten unha data %d segundos no futuro\n"
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "¡Non pode borra-lo último ID de usuario!\n"
 
 #, fuzzy, c-format
 msgid "Key %s is already revoked.\n"
@@ -8979,6 +8992,11 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "Key generation failed: %s\n"
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "A xeración da chave fallou: %s\n"
 
 #, fuzzy
 #~ msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"

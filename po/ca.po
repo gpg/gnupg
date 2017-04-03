@@ -3646,10 +3646,18 @@ msgstr "ha fallat l'actualització: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "La clau no ha canviat, per tant no cal actualització.\n"
 
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "No podeu esborrar l'últim ID d'usuari!\n"
+
 #, fuzzy, c-format
-#| msgid "Key generation failed: %s\n"
-msgid "User ID revocation failed: %s\n"
-msgstr "La generació de claus ha fallat: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "no s'ha pogut comprovar la signatura creada: %s\n"
+
+#, fuzzy, c-format
+msgid "setting the primary user ID failed: %s\n"
+msgstr "no s'ha pogut comprovar la signatura creada: %s\n"
 
 #, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -4005,6 +4013,11 @@ msgstr "l'ID d'usuari «%s» ja està revocat\n"
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "AVÍS: una signatura d'ID d'usuari està datada %d segons en el futur\n"
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "No podeu esborrar l'últim ID d'usuari!\n"
 
 #, fuzzy, c-format
 msgid "Key %s is already revoked.\n"
@@ -9147,6 +9160,11 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "Key generation failed: %s\n"
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "La generació de claus ha fallat: %s\n"
 
 #, fuzzy
 #~ msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"

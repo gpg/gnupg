@@ -3539,10 +3539,18 @@ msgstr "aktualigo malsukcesis: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Ŝlosilo ne ŝanĝita, do aktualigo ne necesas.\n"
 
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "Vi ne povas forviŝi la lastan uzantidentigilon!\n"
+
 #, fuzzy, c-format
-#| msgid "Key generation failed: %s\n"
-msgid "User ID revocation failed: %s\n"
-msgstr "Kreado de ŝlosiloj malsukcesis: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "kontrolo de kreita subskribo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "setting the primary user ID failed: %s\n"
+msgstr "kontrolo de kreita subskribo malsukcesis: %s\n"
 
 #, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3883,6 +3891,11 @@ msgstr "Uzantidentigilo \"%s\" estas revokita.\n"
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "Vi ne povas forviŝi la lastan uzantidentigilon!\n"
 
 #, fuzzy, c-format
 msgid "Key %s is already revoked.\n"
@@ -8914,6 +8927,11 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "Key generation failed: %s\n"
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "Kreado de ŝlosiloj malsukcesis: %s\n"
 
 #, fuzzy
 #~ msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"

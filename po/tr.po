@@ -3572,10 +3572,20 @@ msgstr "güncelleme başarısız: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Güncelleme gereği olmadığından anahtar değişmedi.\n"
 
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "Son kullanıcı kimliğini silemezsiniz!\n"
+
 #, fuzzy, c-format
-#| msgid "Key generation failed: %s\n"
-msgid "User ID revocation failed: %s\n"
-msgstr "Anahtar üretimi başarısızlığa uğradı: %s\n"
+#| msgid "checking the trust list failed: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "güvence listesinin sınanması başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the primary user ID failed: %s\n"
+msgstr "güvence listesinin sınanması başarısız: %s\n"
 
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
@@ -3932,6 +3942,11 @@ msgstr "kullanıcı kimliği \"%s\" zaten iptal edilmişti\n"
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "UYARI: bir kullanıcı kimliği imzası %d saniye gelecekte oluşturuldu\n"
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "Son kullanıcı kimliğini silemezsiniz!\n"
 
 #, c-format
 msgid "Key %s is already revoked.\n"
@@ -9256,6 +9271,11 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#, fuzzy
+#~| msgid "Key generation failed: %s\n"
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "Anahtar üretimi başarısızlığa uğradı: %s\n"
 
 #~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 #~ msgstr "||Lütfen PIN'i giriniz%%0A[yapılan imza: %lu]"

@@ -3540,10 +3540,18 @@ msgstr "actualizarea a eşuat: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Cheia nu a fost schimbată aşa că nici o actualizare a fost necesară.\n"
 
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "Nu puteţi şterge ultimul ID utilizator!\n"
+
 #, fuzzy, c-format
-#| msgid "Key generation failed: %s\n"
-msgid "User ID revocation failed: %s\n"
-msgstr "Generarea cheii a eşuat: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "verificarea semnăturii create a eşuat: %s\n"
+
+#, fuzzy, c-format
+msgid "setting the primary user ID failed: %s\n"
+msgstr "verificarea semnăturii create a eşuat: %s\n"
 
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
@@ -3890,6 +3898,11 @@ msgstr "ID-ul utilizator \"%s\" este deja revocat\n"
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "AVERTISMENT: o semnătură ID utilizator este datată %d secunde în viitor\n"
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "Nu puteţi şterge ultimul ID utilizator!\n"
 
 #, c-format
 msgid "Key %s is already revoked.\n"
@@ -8993,6 +9006,11 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "Key generation failed: %s\n"
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "Generarea cheii a eşuat: %s\n"
 
 #~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 #~ msgstr "||Vă rugăm introduceţi PIN%%0A[semnături făcute: %lu]"

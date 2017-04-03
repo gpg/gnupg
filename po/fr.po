@@ -3439,10 +3439,20 @@ msgstr "échec de la mise à jour : %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "La clef n'a pas été modifiée donc la mise à jour est inutile.\n"
 
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "Vous ne pouvez pas supprimer la dernière identité.\n"
+
 #, fuzzy, c-format
-#| msgid "Key generation failed: %s\n"
-msgid "User ID revocation failed: %s\n"
-msgstr "Échec de génération de la clef : %s\n"
+#| msgid "checking the trust list failed: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "échec de vérification de la liste de confiance : %s\n"
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the primary user ID failed: %s\n"
+msgstr "échec de vérification de la liste de confiance : %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3781,6 +3791,11 @@ msgstr "l'identité « %s »\" est déjà révoquée.\n"
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "Attention : une signature d'identité date de %d secondes dans le futur\n"
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "Vous ne pouvez pas supprimer la dernière identité.\n"
 
 #, c-format
 msgid "Key %s is already revoked.\n"
@@ -8920,6 +8935,11 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#, fuzzy
+#~| msgid "Key generation failed: %s\n"
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "Échec de génération de la clef : %s\n"
 
 #~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 #~ msgstr "||Veuillez entrer le code personnel%%0A[signatures faites : %lu]"

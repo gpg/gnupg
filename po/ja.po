@@ -2314,7 +2314,8 @@ msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr "'%s'は有効な鍵ID, フィンガープリント、keygripではないようです。\n"
 
 msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
-msgstr "警告: コマンドが指定されていません。なにを意味しているのか当ててみます ...\n"
+msgstr ""
+"警告: コマンドが指定されていません。なにを意味しているのか当ててみます ...\n"
 
 msgid "Go ahead and type your message ...\n"
 msgstr "開始します。メッセージを打ってください ...\n"
@@ -3241,9 +3242,20 @@ msgstr "更新に失敗しました: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "鍵は無変更なので更新は不要です。\n"
 
-#, c-format
-msgid "User ID revocation failed: %s\n"
-msgstr "ユーザIDの失効に失敗しました: %s\n"
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "最後のユーザIDは削除できません!\n"
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "信用リストの検査に失敗しました: %s\n"
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the primary user ID failed: %s\n"
+msgstr "信用リストの検査に失敗しました: %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3560,6 +3572,11 @@ msgstr "ユーザID\"%s\"は、もう失効されています\n"
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "*警告*: ユーザID署名が、%d秒未来です\n"
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "最後のユーザIDは削除できません!\n"
 
 #, c-format
 msgid "Key %s is already revoked.\n"
@@ -8321,6 +8338,9 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "ユーザIDの失効に失敗しました: %s\n"
 
 #~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 #~ msgstr "||PINを入力してください%%0A[署名数: %lu]"

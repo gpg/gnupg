@@ -3384,10 +3384,20 @@ msgstr "aktualizace selhala: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Klíč nebyl změněn, takže není potřeba jej aktualizovat.\n"
 
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "Nemůžete smazat poslední id uživatele!\n"
+
 #, fuzzy, c-format
-#| msgid "Key generation failed: %s\n"
-msgid "User ID revocation failed: %s\n"
-msgstr "Vytvoření klíče se nepodařilo: %s\n"
+#| msgid "checking the trust list failed: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "kontrola seznamu důvěry se nepodařila: %s\n"
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the primary user ID failed: %s\n"
+msgstr "kontrola seznamu důvěry se nepodařila: %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3712,6 +3722,11 @@ msgstr "uživatelské ID „%s“ je již revokováno\n"
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "VAROVÁNÍ: podpis ID uživatele je datován %d sekund v budoucnosti\n"
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "Nemůžete smazat poslední id uživatele!\n"
 
 #, c-format
 msgid "Key %s is already revoked.\n"
@@ -8696,6 +8711,11 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#, fuzzy
+#~| msgid "Key generation failed: %s\n"
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "Vytvoření klíče se nepodařilo: %s\n"
 
 #~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 #~ msgstr "||Prosím vložte PIN%%0A[podpis hotov: %lu]"

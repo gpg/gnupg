@@ -3582,10 +3582,20 @@ msgstr "zapis zmian nie powiódł się: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Klucz nie został zmieniony więc zapis zmian nie jest konieczny.\n"
 
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "Nie możesz usunąć ostatniego identyfikatora użytkownika!\n"
+
 #, fuzzy, c-format
-#| msgid "Key generation failed: %s\n"
-msgid "User ID revocation failed: %s\n"
-msgstr "Generacja klucza nie powiodła się: %s\n"
+#| msgid "checking the trust list failed: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "sprawdzenie listy zaufania nie powiodło się: %s\n"
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "setting the primary user ID failed: %s\n"
+msgstr "sprawdzenie listy zaufania nie powiodło się: %s\n"
 
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
@@ -3926,6 +3936,11 @@ msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "OSTRZEŻENIE: identyfikator użytkownika podpisany za %d sekund (w "
 "przyszłości)\n"
+
+#, fuzzy
+#| msgid "You can't delete the last user ID!\n"
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "Nie możesz usunąć ostatniego identyfikatora użytkownika!\n"
 
 #, c-format
 msgid "Key %s is already revoked.\n"
@@ -9277,6 +9292,11 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
+
+#, fuzzy
+#~| msgid "Key generation failed: %s\n"
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "Generacja klucza nie powiodła się: %s\n"
 
 #~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 #~ msgstr "||Proszę wpisać PIN%%0A[podpisów wykonanych: %lu]"
