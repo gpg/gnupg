@@ -438,6 +438,14 @@ static pointer reverse_in_place(scheme *sc, pointer term, pointer list);
 static pointer revappend(scheme *sc, pointer a, pointer b);
 static void dump_stack_mark(scheme *);
 static pointer opexe_0(scheme *sc, enum scheme_opcodes op);
+struct op_code_info {
+  char name[31];	/* strlen ("call-with-current-continuation") + 1 */
+  unsigned char min_arity;
+  unsigned char max_arity;
+  char arg_tests_encoding[3];
+};
+static const struct op_code_info dispatch_table[];
+static int check_arguments (scheme *sc, const struct op_code_info *pcd, char *msg, size_t msg_size);
 static void Eval_Cycle(scheme *sc, enum scheme_opcodes op);
 static void assign_syntax(scheme *sc, enum scheme_opcodes op, char *name);
 static int syntaxnum(scheme *sc, pointer p);
@@ -5230,16 +5238,9 @@ static const struct {
 #define TST_INTEGER "\015"
 #define TST_NATURAL "\016"
 
-typedef struct {
-  char name[31];	/* strlen ("call-with-current-continuation") + 1 */
-  unsigned char min_arity;
-  unsigned char max_arity;
-  char arg_tests_encoding[3];
-} op_code_info;
-
 #define INF_ARG 0xff
 
-static const op_code_info dispatch_table[]= {
+static const struct op_code_info dispatch_table[]= {
 #define _OP_DEF(A,B,C,D,OP) {{A},B,C,{D}},
 #include "opdefines.h"
 #undef _OP_DEF
@@ -5255,64 +5256,73 @@ static const char *procname(pointer x) {
  return name;
 }
 
+static int
+check_arguments (scheme *sc, const struct op_code_info *pcd, char *msg, size_t msg_size)
+{
+  int ok = 1;
+  int n = list_length(sc, sc->args);
+
+  /* Check number of arguments */
+  if (n < pcd->min_arity) {
+    ok = 0;
+    snprintf(msg, msg_size, "%s: needs%s %d argument(s)",
+	     pcd->name,
+	     pcd->min_arity == pcd->max_arity ? "" : " at least",
+	     pcd->min_arity);
+  }
+  if (ok && n>pcd->max_arity) {
+    ok = 0;
+    snprintf(msg, msg_size, "%s: needs%s %d argument(s)",
+	     pcd->name,
+	     pcd->min_arity == pcd->max_arity ? "" : " at most",
+	     pcd->max_arity);
+  }
+  if (ok) {
+    if (pcd->arg_tests_encoding[0] != 0) {
+      int i = 0;
+      int j;
+      const char *t = pcd->arg_tests_encoding;
+      pointer arglist = sc->args;
+
+      do {
+	pointer arg = car(arglist);
+	j = (int)t[0];
+	if (j == TST_LIST[0]) {
+	  if (arg != sc->NIL && !is_pair(arg)) break;
+	} else {
+	  if (!tests[j].fct(arg)) break;
+	}
+
+	if (t[1] != 0 && i < sizeof pcd->arg_tests_encoding) {
+	  /* last test is replicated as necessary */
+	  t++;
+	}
+	arglist = cdr(arglist);
+	i++;
+      } while (i < n);
+
+      if (i < n) {
+	ok = 0;
+	snprintf(msg, msg_size, "%s: argument %d must be: %s, got: %s",
+		 pcd->name,
+		 i + 1,
+		 tests[j].kind,
+		 type_to_string(type(car(arglist))));
+      }
+    }
+  }
+
+  return ok;
+}
+
 /* kernel of this interpreter */
 static void Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
   sc->op = op;
   for (;;) {
-    const op_code_info *pcd=dispatch_table+sc->op;
+    const struct op_code_info *pcd=dispatch_table+sc->op;
     if (pcd->name[0] != 0) { /* if built-in function, check arguments */
       char msg[STRBUFFSIZE];
-      int ok=1;
-      int n=list_length(sc,sc->args);
-
-      /* Check number of arguments */
-      if(n<pcd->min_arity) {
-        ok=0;
-        snprintf(msg, STRBUFFSIZE, "%s: needs%s %d argument(s)",
-        pcd->name,
-        pcd->min_arity==pcd->max_arity?"":" at least",
-        pcd->min_arity);
-      }
-      if(ok && n>pcd->max_arity) {
-        ok=0;
-        snprintf(msg, STRBUFFSIZE, "%s: needs%s %d argument(s)",
-        pcd->name,
-        pcd->min_arity==pcd->max_arity?"":" at most",
-        pcd->max_arity);
-      }
-      if(ok) {
-        if (pcd->arg_tests_encoding[0] != 0) {
-          int i=0;
-          int j;
-          const char *t=pcd->arg_tests_encoding;
-          pointer arglist=sc->args;
-          do {
-            pointer arg=car(arglist);
-            j=(int)t[0];
-            if(j==TST_LIST[0]) {
-                  if(arg!=sc->NIL && !is_pair(arg)) break;
-            } else {
-              if(!tests[j].fct(arg)) break;
-            }
-
-            if (t[1] != 0 && i < sizeof pcd->arg_tests_encoding) {
-              /* last test is replicated as necessary */
-              t++;
-            }
-            arglist=cdr(arglist);
-            i++;
-          } while(i<n);
-          if(i<n) {
-            ok=0;
-            snprintf(msg, STRBUFFSIZE, "%s: argument %d must be: %s, got: %s",
-                pcd->name,
-                i+1,
-		tests[j].kind,
-		type_to_string(type(car(arglist))));
-          }
-        }
-      }
-      if(!ok) {
+      if (! check_arguments (sc, pcd, msg, sizeof msg)) {
         if(_Error_1(sc,msg,0)==sc->NIL) {
           return;
         }
