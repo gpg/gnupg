@@ -1,0 +1,21 @@
+# vsnfd.prf - Configure options for the VS-NfD mode           -*- conf -*-
+
+[gpg]
+compliance de-vs
+default-new-key-algo brainpoolP256r1+brainpoolP256r1
+
+[gpgsm]
+enable-crl-checks
+
+[gpg-agent]
+enable-extended-key-format
+default-cache-ttl 900
+max-cache-ttl [] 3600
+no-allow-mark-trusted
+no-allow-external-cache
+enforce-passphrase-constraints
+min-passphrase-len 9
+min-passphrase-nonalpha 0
+
+[dirmngr]
+allow-ocsp
