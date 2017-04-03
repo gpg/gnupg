@@ -99,6 +99,10 @@ void set_dns_verbose (int verbose, int debug);
  * A addresses.  */
 void set_dns_disable_ipv4 (int yes);
 
+/* Set the Disable-IPv6 flag so that the name resolver does not return
+ * AAAA addresses.  */
+void set_dns_disable_ipv6 (int yes);
+
 /* Set the timeout for libdns requests to SECONDS.  */
 void set_dns_timeout (int seconds);
 

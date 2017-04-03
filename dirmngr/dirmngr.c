@@ -113,6 +113,7 @@ enum cmd_and_opt_values {
   oDisableHTTP,
   oDisableLDAP,
   oDisableIPv4,
+  oDisableIPv6,
   oIgnoreLDAPDP,
   oIgnoreHTTPDP,
   oIgnoreOCSPSvcUrl,
@@ -229,6 +230,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoUseTor, "no-use-tor", "@"),
 
   ARGPARSE_s_n (oDisableIPv4, "disable-ipv4", "@"),
+  ARGPARSE_s_n (oDisableIPv6, "disable-ipv6", "@"),
 
   ARGPARSE_s_s (oSocketName, "socket-name", "@"),  /* Only for debugging.  */
 
@@ -638,6 +640,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oDisableHTTP: opt.disable_http = 1; break;
     case oDisableLDAP: opt.disable_ldap = 1; break;
     case oDisableIPv4: opt.disable_ipv4 = 1; break;
+    case oDisableIPv6: opt.disable_ipv6 = 1; break;
     case oHonorHTTPProxy: opt.honor_http_proxy = 1; break;
     case oHTTPProxy: opt.http_proxy = pargs->r.ret_str; break;
     case oLDAPProxy: opt.ldap_proxy = pargs->r.ret_str; break;
@@ -707,6 +710,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
   set_dns_verbose (opt.verbose, !!DBG_DNS);
   http_set_verbose (opt.verbose, !!DBG_NETWORK);
   set_dns_disable_ipv4 (opt.disable_ipv4);
+  set_dns_disable_ipv6 (opt.disable_ipv6);
 
   return 1; /* Handled. */
 }

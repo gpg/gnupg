@@ -314,9 +314,10 @@ a numerical IP address must be given (IPv6 or IPv4) and that no error
 checking is done for @var{ipaddr}.
 
 @item --disable-ipv4
+@item --disable-ipv6
 @opindex disable-ipv4
-Disable the use of all IPv4 addresses.  This option is mainly useful
-for debugging.
+@opindex disable-ipv6
+Disable the use of all IPv4 or IPv6 addresses.
 
 @item --disable-ldap
 @opindex disable-ldap

@@ -123,6 +123,10 @@ static int opt_timeout;
  * returned A records.  */
 static int opt_disable_ipv4;
 
+/* The flag to disable IPv6 access - right now this only skips
+ * returned AAAA records.  */
+static int opt_disable_ipv6;
+
 /* If set force the use of the standard resolver.  */
 static int standard_resolver;
 
@@ -245,6 +249,15 @@ void
 set_dns_disable_ipv4 (int yes)
 {
   opt_disable_ipv4 = !!yes;
+}
+
+
+/* Set the Disable-IPv6 flag so that the name resolver does not return
+ * AAAA addresses.  */
+void
+set_dns_disable_ipv6 (int yes)
+{
+  opt_disable_ipv6 = !!yes;
 }
 
 
@@ -952,6 +965,8 @@ resolve_name_standard (const char *name, unsigned short port,
       if (ai->ai_family != AF_INET6 && ai->ai_family != AF_INET)
         continue;
       if (opt_disable_ipv4 && ai->ai_family == AF_INET)
+        continue;
+      if (opt_disable_ipv6 && ai->ai_family == AF_INET6)
         continue;
 
       dai = xtrymalloc (sizeof *dai + ai->ai_addrlen - 1);

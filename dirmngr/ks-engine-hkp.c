@@ -512,6 +512,8 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
                 continue;
               if (opt.disable_ipv4 && ai->family == AF_INET)
                 continue;
+              if (opt.disable_ipv6 && ai->family == AF_INET6)
+                continue;
               dirmngr_tick (ctrl);
 
               add_host (name, is_pool, ai, 0, reftbl, reftblsize, &refidx);
@@ -592,7 +594,7 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
         {
           for (ai = aibuf; ai; ai = ai->next)
             {
-              if (ai->family == AF_INET6
+              if ((!opt.disable_ipv6 && ai->family == AF_INET6)
                   || (!opt.disable_ipv4 && ai->family == AF_INET))
                 {
                   err = resolve_dns_addr (ai->addr, ai->addrlen, 0, &host);
@@ -1140,7 +1142,8 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
                    (httpflags
                     |(opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0)
                     |(dirmngr_use_tor ()? HTTP_FLAG_FORCE_TOR:0)
-                    |(opt.disable_ipv4? HTTP_FLAG_IGNORE_IPv4 : 0)),
+                    |(opt.disable_ipv4? HTTP_FLAG_IGNORE_IPv4 : 0)
+                    |(opt.disable_ipv6? HTTP_FLAG_IGNORE_IPv6 : 0)),
                    ctrl->http_proxy,
                    session,
                    NULL,

@@ -201,6 +201,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
                                    |(DBG_LOOKUP? HTTP_FLAG_LOG_RESP:0)
                                    |(dirmngr_use_tor()? HTTP_FLAG_FORCE_TOR:0)
                                    |(opt.disable_ipv4? HTTP_FLAG_IGNORE_IPv4:0)
+                                   |(opt.disable_ipv6? HTTP_FLAG_IGNORE_IPv6:0)
                                    ),
                                   ctrl->http_proxy, NULL, NULL, NULL);
 
