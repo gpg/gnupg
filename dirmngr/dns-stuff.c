@@ -538,10 +538,9 @@ libdns_init (void)
       goto leave;
     }
 
-
   {
 #if HAVE_W32_SYSTEM
-    char *hosts_path = xtryasprintf ("%s\System32\drivers\etc\hosts",
+    char *hosts_path = xtryasprintf ("%s\\System32\\drivers\\etc\\hosts",
                                      getenv ("SystemRoot"));
     if (! hosts_path)
       {
@@ -551,15 +550,24 @@ libdns_init (void)
 
     derr = dns_hosts_loadpath (ld.hosts, hosts_path);
     xfree (hosts_path);
+    if (derr)
+      {
+        err = libdns_error_to_gpg_error (derr);
+        /* Most Windows systems don't have a hosts files.  So do not
+         * report in this case.  */
+        if (gpg_err_code (err) != GPG_ERR_ENOENT)
+          log_error ("failed to load hosts file: %s\n", gpg_strerror (err));
+        err = 0; /* Do not bail out.  */
+      }
 #else
     derr = dns_hosts_loadpath (ld.hosts, "/etc/hosts");
-#endif
     if (derr)
       {
         err = libdns_error_to_gpg_error (derr);
         log_error ("failed to load hosts file: %s\n", gpg_strerror (err));
-        goto leave;
+        err = 0; /* Do not bail out - having no /etc/hosts is legal.  */
       }
+#endif
   }
 
   /* dns_hints_local for stub mode, dns_hints_root for recursive.  */
