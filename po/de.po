@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-02-22 18:55+0100\n"
+"PO-Revision-Date: 2017-04-03 17:10+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -3368,9 +3368,16 @@ msgstr "Änderung fehlgeschlagen: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Schlüssel ist nicht geändert worden, also ist kein Speichern nötig.\n"
 
+msgid "cannot revoke the last valid user ID.\n"
+msgstr "Die letzte User-ID kann nicht widerrufen werden!\n"
+
 #, c-format
-msgid "User ID revocation failed: %s\n"
-msgstr "Widerufen der User-ID fehlgeschlagen: %s\n"
+msgid "revoking the user ID failed: %s\n"
+msgstr "Fehler beim Widerrufen der User-ID: %s\n"
+
+#, c-format
+msgid "setting the primary user ID failed: %s\n"
+msgstr "Fehler beim Setzen der Haupt-User-ID: %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3702,6 +3709,9 @@ msgstr "User-ID \"%s\" ist bereits widerrufen\n"
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "WARNUNG: Eine User-ID-Signatur datiert mit %d Sekunden aus der Zukunft\n"
+
+msgid "Cannot revoke the last valid user ID.\n"
+msgstr "Die letzte User-ID kann nicht widerrufen werden!\n"
 
 #, c-format
 msgid "Key %s is already revoked.\n"
@@ -8790,6 +8800,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "User ID revocation failed: %s\n"
+#~ msgstr "Widerufen der User-ID fehlgeschlagen: %s\n"
 
 #~ msgid "||Please enter the PIN%%0A[sigs done: %lu]"
 #~ msgstr "||Bitte die PIN eingeben%%0A[Sigs erzeugt: %lu]"
