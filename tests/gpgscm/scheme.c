@@ -624,6 +624,56 @@ static long binary_decode(const char *s) {
 
 
 
+/*
+ * Copying values.
+ *
+ * Occasionally, we need to copy a value from one location in the
+ * storage to another.  Scheme objects are fine.  Some primitive
+ * objects, however, require finalization, usually to free resources.
+ *
+ * For these values, we either make a copy or acquire a reference.
+ */
+
+/*
+ * Copy SRC to DST.
+ *
+ * Copies the representation of SRC to DST.  This makes SRC
+ * indistinguishable from DST from the perspective of a Scheme
+ * expression modulo the fact that they reside at a different location
+ * in the store.
+ *
+ * Conditions:
+ *
+ *     - SRC must not be a vector.
+ *     - Caller must ensure that any resources associated with the
+ *       value currently stored in DST is accounted for.
+ */
+static void
+copy_value(scheme *sc, pointer dst, pointer src)
+{
+  memcpy(dst, src, sizeof *src);
+
+  /* We may need to make a copy or acquire a reference.  */
+  if (typeflag(dst) & T_FINALIZE)
+    switch (type(dst)) {
+    case T_STRING:
+      strvalue(dst) = store_string(sc, strlength(dst), strvalue(dst), 0);
+      break;
+    case T_PORT:
+      /* XXX acquire reference */
+      assert (!"implemented");
+      break;
+    case T_FOREIGN_OBJECT:
+      /* XXX acquire reference */
+      assert (!"implemented");
+      break;
+     case T_VECTOR:
+      assert (!"vectors cannot be copied");
+    }
+}
+
+
+
 /* Tags are like property lists, but can be attached to arbitrary
  * values.  */
 
@@ -640,7 +690,7 @@ mk_tagged_value(scheme *sc, pointer v, pointer tag_car, pointer tag_cdr)
   if (r == sc->sink)
     return sc->sink;
 
-  memcpy(r, v, sizeof *v);
+  copy_value(sc, r, v);
   typeflag(r) |= T_TAGGED;
 
   t = r + 1;
@@ -4603,7 +4653,7 @@ static pointer opexe_4(scheme *sc, enum scheme_opcodes op) {
           }
 
      CASE(OP_SAVE_FORCED):     /* Save forced value replacing promise */
-          memcpy(sc->code,sc->value,sizeof(struct cell));
+	  copy_value(sc, sc->code, sc->value);
           s_return(sc,sc->value);
 
      CASE(OP_WRITE):      /* write */
