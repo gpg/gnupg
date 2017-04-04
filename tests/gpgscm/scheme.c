@@ -4355,7 +4355,6 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
           char *str;
           int index0;
           int index1;
-          int len;
 
           str=strvalue(car(sc->args));
 
@@ -4374,13 +4373,8 @@ static pointer opexe_2(scheme *sc, enum scheme_opcodes op) {
                index1=strlength(car(sc->args));
           }
 
-          len=index1-index0;
 	  gc_disable(sc, 1);
-          x=mk_empty_string(sc,len,' ');
-          memcpy(strvalue(x),str+index0,len);
-          strvalue(x)[len]=0;
-
-          s_return_enable_gc(sc, x);
+          s_return_enable_gc(sc, mk_counted_string(sc, str + index0, index1 - index0));
      }
 
      CASE(OP_VECTOR): {   /* vector */
