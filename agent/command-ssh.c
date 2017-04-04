@@ -3567,7 +3567,7 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 static unsigned long
 get_client_pid (int fd)
 {
-  pid_t client_pid = (pid_t)(-1);
+  pid_t client_pid = (pid_t)0;
 
 #ifdef SO_PEERCRED
   {
@@ -3578,7 +3578,7 @@ get_client_pid (int fd)
 #endif
     socklen_t cl = sizeof cr;
 
-    if ( !getsockopt (fd, SOL_SOCKET, SO_PEERCRED, &cr, &cl))
+    if (!getsockopt (fd, SOL_SOCKET, SO_PEERCRED, &cr, &cl))
       {
 #if defined (HAVE_STRUCT_SOCKPEERCRED_PID) || defined (HAVE_STRUCT_UCRED_PID)
         client_pid = cr.pid;
@@ -3593,7 +3593,7 @@ get_client_pid (int fd)
   {
     socklen_t len = sizeof (pid_t);
 
-    getsockopt(fd, SOL_LOCAL, LOCAL_PEERPID, &client_pid, &len);
+    getsockopt (fd, SOL_LOCAL, LOCAL_PEERPID, &client_pid, &len);
   }
 #elif defined (LOCAL_PEEREID)
   {
@@ -3613,9 +3613,11 @@ get_client_pid (int fd)
         ucred_free (ucred);
       }
   }
+#else
+  (void)fd;
 #endif
 
-  return client_pid == (pid_t)(-1)? 0 : (unsigned long)client_pid;
+  return (unsigned long)client_pid;
 }
 
 
