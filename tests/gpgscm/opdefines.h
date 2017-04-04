@@ -147,6 +147,7 @@ _OP_DEF("newline",                        0,  1,       TST_OUTPORT,             
 _OP_DEF("error",                          1,  INF_ARG, TST_NONE,                        OP_ERR0             )
 _OP_DEF(0,                                0,  0,       0,                               OP_ERR1             )
 _OP_DEF("reverse",                        1,  1,       TST_LIST,                        OP_REVERSE          )
+_OP_DEF("reverse!",                       1,  1,       TST_LIST,                        OP_REVERSE_IN_PLACE )
 _OP_DEF("list*",                          1,  INF_ARG, TST_NONE,                        OP_LIST_STAR        )
 _OP_DEF("append",                         0,  INF_ARG, TST_NONE,                        OP_APPEND           )
 #if USE_PLIST

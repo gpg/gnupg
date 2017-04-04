@@ -4682,6 +4682,9 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
      CASE(OP_REVERSE):   /* reverse */
           s_return(sc,reverse(sc, sc->NIL, car(sc->args)));
 
+     CASE(OP_REVERSE_IN_PLACE):   /* reverse! */
+          s_return(sc, reverse_in_place(sc, sc->NIL, car(sc->args)));
+
      CASE(OP_LIST_STAR): /* list* */
           s_return(sc,list_star(sc,sc->args));
 
