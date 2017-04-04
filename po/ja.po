@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.1.16\n"
+"Project-Id-Version: gnupg 2.1.20\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2016-12-17 16:29+0900\n"
+"PO-Revision-Date: 2017-04-04 10:45+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -2135,7 +2135,7 @@ msgid "show revoked and expired user IDs in signature verification"
 msgstr "署名の検証時に失効したユーザID、期限切れとなったユーザIDを表示する"
 
 msgid "show only the primary user ID in signature verification"
-msgstr "署名の検証時に主なユーザIDだけをを表示する"
+msgstr "署名の検証時にプライマリ・ユーザIDだけをを表示する"
 
 msgid "validate signatures with PKA data"
 msgstr "PKAデータで署名を検証する"
@@ -3242,20 +3242,16 @@ msgstr "更新に失敗しました: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "鍵は無変更なので更新は不要です。\n"
 
-#, fuzzy
-#| msgid "You can't delete the last user ID!\n"
 msgid "cannot revoke the last valid user ID.\n"
-msgstr "最後のユーザIDは削除できません!\n"
+msgstr "最後の有効なユーザIDは失効できません。\n"
 
-#, fuzzy, c-format
-#| msgid "checking the trust list failed: %s\n"
+#, c-format
 msgid "revoking the user ID failed: %s\n"
-msgstr "信用リストの検査に失敗しました: %s\n"
+msgstr "ユーザIDの失効に失敗しました: %s\n"
 
-#, fuzzy, c-format
-#| msgid "checking the trust list failed: %s\n"
+#, c-format
 msgid "setting the primary user ID failed: %s\n"
-msgstr "信用リストの検査に失敗しました: %s\n"
+msgstr "プライマリ・ユーザIDの設定に失敗しました: %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3573,10 +3569,8 @@ msgstr "ユーザID\"%s\"は、もう失効されています\n"
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "*警告*: ユーザID署名が、%d秒未来です\n"
 
-#, fuzzy
-#| msgid "You can't delete the last user ID!\n"
 msgid "Cannot revoke the last valid user ID.\n"
-msgstr "最後のユーザIDは削除できません!\n"
+msgstr "最後の有効なユーザIDは失効できません。\n"
 
 #, c-format
 msgid "Key %s is already revoked.\n"
