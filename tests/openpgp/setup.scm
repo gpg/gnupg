@@ -40,10 +40,9 @@
        '(gpgconf gpg gpg-agent scdaemon gpgsm dirmngr gpg-connect-agent
 		 gpg-preset-passphrase gpgtar pinentry)))
 
-(with-ephemeral-home-directory
- (chdir (getenv "GNUPGHOME"))
- (create-gpghome)
- (start-agent)
- (create-legacy-gpghome)
- (stop-agent)
- (call-check `(,(tool 'gpgtar) --create --output ,(cadr *args*) ".")))
+(setenv "GNUPGHOME" (getcwd) #t)
+(create-gpghome)
+(start-agent)
+(create-legacy-gpghome)
+(stop-agent)
+(call-check `(,(tool 'gpgtar) --create --output ,(cadr *args*) "."))

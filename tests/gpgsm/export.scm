@@ -25,7 +25,7 @@
  (lambda (cert)
    (lettmp (exported)
      (call-check `(,@gpgsm --output ,exported --export ,cert::uid::CN))
-     (with-ephemeral-home-directory
+     (with-ephemeral-home-directory setup-gpgsm-environment
       (call-check `(,@gpgsm --import ,exported))
       (assert (sm-have-public-key? cert)))))
  (lambda (cert) cert::uid::CN)

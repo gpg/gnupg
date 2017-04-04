@@ -37,7 +37,7 @@
  (lambda (name)
    (let* ((source (in-srcdir (string-append name ".asc")))
 	  (key (get-session-key source)))
-     (with-ephemeral-home-directory
+     (with-ephemeral-home-directory setup-environment
       (tr:do
        (tr:open source)
        (tr:gpg "" `(--yes --decrypt --override-session-key ,key))
