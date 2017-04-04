@@ -4811,20 +4811,12 @@ static pointer opexe_4(scheme *sc, enum scheme_opcodes op) {
           port *p;
 
           if ((p=car(sc->args)->_object._port)->kind&port_string) {
-               off_t size;
-               char *str;
-
-               size=p->rep.string.curr-p->rep.string.start+1;
-               str=sc->malloc(size);
-               if(str != NULL) {
-                    pointer s;
-
-                    memcpy(str,p->rep.string.start,size-1);
-                    str[size-1]='\0';
-                    s=mk_string(sc,str);
-                    sc->free(str);
-                    s_return(sc,s);
-               }
+	       gc_disable(sc, 1);
+	       s_return_enable_gc(
+		    sc,
+		    mk_counted_string(sc,
+				      p->rep.string.start,
+				      p->rep.string.curr - p->rep.string.start));
           }
           s_return(sc,sc->F);
      }
