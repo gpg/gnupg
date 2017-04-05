@@ -23,12 +23,19 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <gcrypt.h>
 #include <gpg-error.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
+
+#if HAVE_MMAP
+#include <sys/mman.h>
+#endif
 
 #include "private.h"
 #include "scheme.h"
@@ -177,7 +184,39 @@ load (scheme *sc, char *file_name,
     }
   if (verbose > 1)
     fprintf (stderr, "Loading %s...\n", qualified_name);
-  scheme_load_named_file (sc, h, qualified_name);
+
+#if HAVE_MMAP
+  /* Always try to mmap the file.  This allows the pages to be shared
+   * between processes.  If anything fails, we fall back to using
+   * buffered streams.  */
+  if (1)
+    {
+      struct stat st;
+      void *map;
+      size_t len;
+      int fd = fileno (h);
+
+      if (fd < 0)
+        goto fallback;
+
+      if (fstat (fd, &st))
+        goto fallback;
+
+      len = (size_t) st.st_size;
+      if ((off_t) len != st.st_size)
+        goto fallback;	/* Truncated.  */
+
+      map = mmap (NULL, len, PROT_READ, MAP_SHARED, fd, 0);
+      if (map == MAP_FAILED)
+        goto fallback;
+
+      scheme_load_memory (sc, map, len, qualified_name);
+      munmap (map, len);
+    }
+  else
+  fallback:
+#endif
+    scheme_load_named_file (sc, h, qualified_name);
   fclose (h);
 
   if (sc->retcode && sc->nesting)

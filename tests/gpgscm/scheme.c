@@ -5693,14 +5693,18 @@ void scheme_load_named_file(scheme *sc, FILE *fin, const char *filename) {
 }
 
 void scheme_load_string(scheme *sc, const char *cmd) {
+  scheme_load_memory(sc, cmd, strlen(cmd), NULL);
+}
+
+void scheme_load_memory(scheme *sc, const char *buf, size_t len, const char *filename) {
   dump_stack_reset(sc);
   sc->envir = sc->global_env;
   sc->file_i=0;
   sc->load_stack[0].kind=port_input|port_string;
-  sc->load_stack[0].rep.string.start=(char*)cmd; /* This func respects const */
-  sc->load_stack[0].rep.string.past_the_end=(char*)cmd+strlen(cmd);
-  sc->load_stack[0].rep.string.curr=(char*)cmd;
-  port_init_location(sc, &sc->load_stack[0], NULL);
+  sc->load_stack[0].rep.string.start = (char *) buf; /* This func respects const */
+  sc->load_stack[0].rep.string.past_the_end = (char *) buf + len;
+  sc->load_stack[0].rep.string.curr = (char *) buf;
+  port_init_location(sc, &sc->load_stack[0], filename ? mk_string(sc, filename) : NULL);
   sc->loadport=mk_port(sc,sc->load_stack);
   sc->retcode=0;
   sc->interactive_repl=0;
