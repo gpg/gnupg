@@ -437,7 +437,6 @@ static pointer reverse(scheme *sc, pointer term, pointer list);
 static pointer reverse_in_place(scheme *sc, pointer term, pointer list);
 static pointer revappend(scheme *sc, pointer a, pointer b);
 static void dump_stack_mark(scheme *);
-static pointer opexe_0(scheme *sc, enum scheme_opcodes op);
 struct op_code_info {
   char name[31];	/* strlen ("call-with-current-continuation") + 1 */
   unsigned char min_arity;
@@ -2834,7 +2833,8 @@ static INLINE pointer slot_value_in_env(pointer slot)
 /* ========== Evaluation Cycle ========== */
 
 
-static pointer _Error_1(scheme *sc, const char *s, pointer a) {
+static enum scheme_opcodes
+_Error_1(scheme *sc, const char *s, pointer a) {
      const char *str = s;
      pointer history;
 #if USE_ERROR_HOOK
@@ -2892,8 +2892,7 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
          sc->code = cons(sc, mk_string(sc, str), sc->code);
          setimmutable(car(sc->code));
          sc->code = cons(sc, slot_value_in_env(x), sc->code);
-         sc->op = (int)OP_EVAL;
-         return sc->T;
+         return OP_EVAL;
     }
 #endif
 
@@ -2904,11 +2903,10 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
     }
     sc->args = cons(sc, mk_string(sc, str), sc->args);
     setimmutable(car(sc->args));
-    sc->op = (int)OP_ERR0;
-    return sc->T;
+    return OP_ERR0;
 }
-#define Error_1(sc,s, a) return _Error_1(sc,s,a)
-#define Error_0(sc,s)    return _Error_1(sc,s,0)
+#define Error_1(sc,s, a) { op = _Error_1(sc,s,a); goto dispatch; }
+#define Error_0(sc,s)    { op = _Error_1(sc,s,0); goto dispatch; }
 
 /* Too small to turn into function */
 # define  BEGIN     do {
@@ -2949,9 +2947,7 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
 
 
 /* Bounce back to Eval_Cycle and execute A.  */
-#define s_goto(sc,a) BEGIN                                  \
-    sc->op = (int)(a);                                      \
-    return sc->T; END
+#define s_goto(sc, a) { op = (a); goto dispatch; }
 
 #if USE_THREADED_CODE
 
@@ -2959,7 +2955,7 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
  * to it.  */
 #define s_thread_to(sc, a)	\
      BEGIN			\
-     op = (int) (a);		\
+     op = (a);			\
      goto a;			\
      END
 
@@ -2975,11 +2971,11 @@ static pointer _Error_1(scheme *sc, const char *s, pointer a) {
 
 /* Return to the previous frame on the dump stack, setting the current
  * value to A.  */
-#define s_return(sc, a) return _s_return(sc, a, 0)
+#define s_return(sc, a)	s_goto(sc, _s_return(sc, a, 0))
 
 /* Return to the previous frame on the dump stack, setting the current
  * value to A, and re-enable the garbage collector.  */
-#define s_return_enable_gc(sc, a) return _s_return(sc, a, 1)
+#define s_return_enable_gc(sc, a) s_goto(sc, _s_return(sc, a, 1))
 
 static INLINE void dump_stack_reset(scheme *sc)
 {
@@ -2996,18 +2992,20 @@ static void dump_stack_free(scheme *sc)
   sc->dump = sc->NIL;
 }
 
-static pointer _s_return(scheme *sc, pointer a, int enable_gc) {
+static enum scheme_opcodes
+_s_return(scheme *sc, pointer a, int enable_gc) {
   pointer dump = sc->dump;
   pointer op;
   unsigned long v;
+  enum scheme_opcodes next_op;
   sc->value = (a);
   if (enable_gc)
        gc_enable(sc);
   if (dump == sc->NIL)
-    return sc->NIL;
+    return OP_QUIT;
   free_cons(sc, dump, &op, &dump);
   v = (unsigned long) ivalue_unchecked(op);
-  sc->op = (int) (v & S_OP_MASK);
+  next_op = (int) (v & S_OP_MASK);
   sc->flags = v & S_FLAG_MASK;
 #ifdef USE_SMALL_INTEGERS
   if (v < MAX_SMALL_INTEGER) {
@@ -3019,7 +3017,7 @@ static pointer _s_return(scheme *sc, pointer a, int enable_gc) {
   free_cons(sc, dump, &sc->args, &dump);
   free_cons(sc, dump, &sc->envir, &dump);
   free_cons(sc, dump, &sc->code, &sc->dump);
-  return sc->T;
+  return next_op;
 }
 
 static void s_save(scheme *sc, enum scheme_opcodes op, pointer args, pointer code) {
@@ -3357,7 +3355,10 @@ int list_length(scheme *sc, pointer a) {
 
 #define s_retbool(tf)    s_return(sc,(tf) ? sc->T : sc->F)
 
-static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
+/* kernel of this interpreter */
+static void
+Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
+  for (;;) {
      pointer x, y;
      pointer callsite;
      num v;
@@ -3365,6 +3366,21 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
      double dd;
 #endif
      int (*comp_func)(num, num) = NULL;
+     const struct op_code_info *pcd = &dispatch_table[op];
+
+  dispatch:
+     if (pcd->name[0] != 0) { /* if built-in function, check arguments */
+       char msg[STRBUFFSIZE];
+       if (! check_arguments (sc, pcd, msg, sizeof msg)) {
+	 s_goto(sc, _Error_1(sc, msg, 0));
+       }
+     }
+
+     if(sc->no_memory) {
+       fprintf(stderr,"No memory!\n");
+       exit(1);
+     }
+     ok_to_freely_gc(sc);
 
      switch (op) {
      CASE(OP_LOAD):       /* load */
@@ -4693,7 +4709,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                if(sc->interactive_repl) {
                     s_thread_to(sc,OP_T0LVL);
                } else {
-                    return sc->NIL;
+                    return;
                }
           }
 
@@ -4760,7 +4776,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           if(is_pair(sc->args)) {
                sc->retcode=ivalue(car(sc->args));
           }
-          return (sc->NIL);
+          return;
 
      CASE(OP_GC):         /* gc */
           gc(sc, sc->NIL, sc->NIL);
@@ -5206,7 +5222,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           snprintf(sc->strbuff,STRBUFFSIZE,"%d: illegal operator", op);
           Error_0(sc,sc->strbuff);
      }
-     return sc->T; /* NOTREACHED */
+  }
 }
 
 typedef int (*test_predicate)(pointer);
@@ -5333,31 +5349,6 @@ check_arguments (scheme *sc, const struct op_code_info *pcd, char *msg, size_t m
   }
 
   return ok;
-}
-
-/* kernel of this interpreter */
-static void Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
-  sc->op = op;
-  for (;;) {
-    const struct op_code_info *pcd=dispatch_table+sc->op;
-    if (pcd->name[0] != 0) { /* if built-in function, check arguments */
-      char msg[STRBUFFSIZE];
-      if (! check_arguments (sc, pcd, msg, sizeof msg)) {
-        if(_Error_1(sc,msg,0)==sc->NIL) {
-          return;
-        }
-        pcd=dispatch_table+sc->op;
-      }
-    }
-    ok_to_freely_gc(sc);
-    if (opexe_0(sc, (enum scheme_opcodes)sc->op) == sc->NIL) {
-      return;
-    }
-    if(sc->no_memory) {
-      fprintf(stderr,"No memory!\n");
-      exit(1);
-    }
-  }
 }
 
 /* ========== Initialization of internal keywords ========== */
@@ -5551,7 +5542,6 @@ int scheme_init_custom_alloc(scheme *sc, func_alloc malloc, func_dealloc free) {
   dump_stack_initialize(sc);
   sc->code = sc->NIL;
   sc->tracing=0;
-  sc->op = -1;
   sc->flags = 0;
 
   /* init sc->NIL */
