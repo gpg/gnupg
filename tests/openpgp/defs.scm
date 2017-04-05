@@ -299,8 +299,8 @@
        (finally (unlink-recursively ,ephemeral-home-directory)
 	 (dynamic-wind
 	     (lambda ()
-	       (force ,setup)
-	       (setenv "GNUPGHOME" ,ephemeral-home-directory #t))
+	       (setenv "GNUPGHOME" ,ephemeral-home-directory #t)
+	       (with-working-directory ,ephemeral-home-directory (force ,setup)))
 	     (lambda () ,@expressions)
 	     (lambda () (setenv "GNUPGHOME" ,original-home-directory #t)))))))
 
