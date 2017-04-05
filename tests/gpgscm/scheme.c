@@ -4884,7 +4884,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
           if(c==EOF) {
                s_return(sc,sc->EOF_OBJ);
           }
-          if(sc->op==OP_PEEK_CHAR) {
+          if(op==OP_PEEK_CHAR) {
                backchar(sc,c);
           }
           s_return(sc,mk_character(sc,c));
@@ -5183,7 +5183,7 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
      CASE(OP_VM_HISTORY):          /* *vm-history* */
           s_return(sc, history_flatten(sc));
      default:
-          snprintf(sc->strbuff,STRBUFFSIZE,"%d: illegal operator", sc->op);
+          snprintf(sc->strbuff,STRBUFFSIZE,"%d: illegal operator", op);
           Error_0(sc,sc->strbuff);
      }
      return sc->T; /* NOTREACHED */
