@@ -5181,7 +5181,7 @@ static pointer opexe_5(scheme *sc, enum scheme_opcodes op) {
                s_return(sc,sc->T);
           } else {
                pointer elem=vector_elem(vec,i);
-               ivalue_unchecked(cdr(sc->args))=i+1;
+               cdr(sc->args) = mk_integer(sc, i + 1);
                s_save(sc,OP_PVECFROM, sc->args, sc->NIL);
                sc->args=elem;
                if (i > 0)
