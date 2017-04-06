@@ -46,7 +46,7 @@ testscripts = import-all-certs validate-all-certs \
 EXTRA_DIST = inittests runtest common.sh $(testscripts) ChangeLog-2011 \
 	     import-all-certs.data
 
-TESTS = $(testscripts)
+TESTS =
 
 CLEANFILES = inittests.stamp scratch.*.tmp x y z out err  *.lock .\#lk* *.log
 
