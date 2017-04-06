@@ -52,7 +52,7 @@ if [ -n "$GPG_AGENT_INFO" ]; then
     exit 1
 fi
 
-if [ -f PKITS_data.tar.bz2 ]; then
+if [ -f "$srcdir/PKITS_data.tar.bz2" ]; then
   :
 else
     if [ "$pgmname" = "import-all-certs" ]; then

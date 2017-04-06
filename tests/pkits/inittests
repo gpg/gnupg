@@ -58,8 +58,8 @@ if [ -n "$GPG_AGENT_INFO" ]; then
     exit 1
 fi
 
-if test -f PKITS_data.tar.bz2; then
-  if ! bunzip2 -c PKITS_data.tar.bz2 | tar xf - ; then
+if test -f "$srcdir/PKITS_data.tar.bz2"; then
+  if ! bunzip2 -c "$srcdir/PKITS_data.tar.bz2" | tar xf - ; then
     echo "inittests: failed to untar the test data" >&2
     exit 1
   fi    
