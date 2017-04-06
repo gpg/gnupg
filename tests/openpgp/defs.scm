@@ -258,6 +258,8 @@
   (not (not (member x (force all-hash-algos)))))
 (define (have-cipher-algo? x)
   (not (not (member x (force all-cipher-algos)))))
+(define (have-compression-algo? x)
+  (not (not (member x (force all-compression-algos)))))
 
 (define (gpg-pipe args0 args1 errfd)
   (lambda (source sink)

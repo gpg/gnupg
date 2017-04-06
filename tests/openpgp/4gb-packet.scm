@@ -23,6 +23,7 @@
 (load (with-path "defs.scm"))
 (setup-environment)
 
-(if (= 0 (call `(,@GPG --list-packets ,(in-srcdir "4gb-packet.asc"))))
-  (info "Can parse 4GB packets.")
-  (fail "Failed to parse 4GB packet."))
+(unless (have-compression-algo? "BZIP2")
+	(skip "BZIP2 support not compiled in."))
+
+(call-check `(,@GPG --list-packets ,(in-srcdir "4gb-packet.asc")))
