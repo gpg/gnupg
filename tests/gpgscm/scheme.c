@@ -1083,11 +1083,19 @@ static pointer get_cell(scheme *sc, pointer a, pointer b)
 static pointer get_vector_object(scheme *sc, int len, pointer init)
 {
   pointer cells = get_consecutive_cells(sc, vector_size(len));
+  int i;
+  int alloc_len = 1 + 3 * (vector_size(len) - 1);
   if(sc->no_memory) { return sc->sink; }
   /* Record it as a vector so that gc understands it. */
   typeflag(cells) = (T_VECTOR | T_ATOM | T_FINALIZE);
   vector_length(cells) = len;
   fill_vector(cells,init);
+
+  /* Initialize the unused slots at the end.  */
+  assert (alloc_len - len < 3);
+  for (i = len; i < alloc_len; i++)
+    cells->_object._vector._elements[i] = sc->NIL;
+
   if (gc_enabled (sc))
     push_recent_alloc(sc, cells, sc->NIL);
   return cells;
