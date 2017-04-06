@@ -139,7 +139,8 @@ enum scheme_types {
   T_NIL =		17 << 1 | 1,
   T_EOF_OBJ =		18 << 1 | 1,
   T_SINK =		19 << 1 | 1,
-  T_LAST_SYSTEM_TYPE =	19 << 1 | 1
+  T_FRAME =		20 << 1 | 1,
+  T_LAST_SYSTEM_TYPE =	20 << 1 | 1
 };
 
 static const char *
@@ -166,6 +167,7 @@ type_to_string (enum scheme_types typ)
      case T_NIL: return "nil";
      case T_EOF_OBJ: return "eof object";
      case T_SINK: return "sink";
+     case T_FRAME: return "frame";
      }
      assert (! "not reached");
 }
@@ -174,6 +176,7 @@ type_to_string (enum scheme_types typ)
 #define TYPE_BITS	6
 #define ADJ		(1 << TYPE_BITS)
 #define T_MASKTYPE      (ADJ - 1)
+                              /* 0000000000111111 */
 #define T_TAGGED      1024    /* 0000010000000000 */
 #define T_FINALIZE    2048    /* 0000100000000000 */
 #define T_SYNTAX      4096    /* 0001000000000000 */
@@ -211,6 +214,7 @@ static const struct num num_one  = { 1, {1} };
 /* macros for cell operations */
 #define typeflag(p)      ((p)->_flag)
 #define type(p)          (typeflag(p)&T_MASKTYPE)
+#define settype(p, typ)  (typeflag(p) = (typeflag(p) & ~T_MASKTYPE) | (typ))
 
 INTERFACE INLINE int is_string(pointer p)     { return (type(p)==T_STRING); }
 #define strvalue(p)      ((p)->_object._string._svalue)
@@ -298,6 +302,9 @@ INTERFACE INLINE int is_promise(pointer p)  { return (type(p)==T_PROMISE); }
 
 INTERFACE INLINE int is_environment(pointer p) { return (type(p)==T_ENVIRONMENT); }
 #define setenvironment(p)    typeflag(p) = T_ENVIRONMENT
+
+INTERFACE INLINE int is_frame(pointer p) { return (type(p) == T_FRAME); }
+#define setframe(p)    settype(p, T_FRAME)
 
 #define is_atom(p)       (typeflag(p)&T_ATOM)
 #define setatom(p)       typeflag(p) |= T_ATOM
@@ -436,6 +443,7 @@ static pointer mk_continuation(scheme *sc, pointer d);
 static pointer reverse(scheme *sc, pointer term, pointer list);
 static pointer reverse_in_place(scheme *sc, pointer term, pointer list);
 static pointer revappend(scheme *sc, pointer a, pointer b);
+static void dump_stack_preallocate_frame(scheme *sc);
 static void dump_stack_mark(scheme *);
 struct op_code_info {
   char name[31];	/* strlen ("call-with-current-continuation") + 1 */
@@ -867,7 +875,8 @@ gc_reservation_failure(struct scheme *sc)
 	  "insufficient reservation\n")
 #else
   fprintf(stderr,
-	  "insufficient reservation in line %d\n",
+	  "insufficient %s reservation in line %d\n",
+	  sc->frame_freelist == sc->NIL ? "frame" : "cell",
 	  sc->reserved_lineno);
 #endif
   abort();
@@ -893,7 +902,15 @@ _gc_disable(struct scheme *sc, size_t reserve, int lineno)
   sc->inhibit_gc += 1;
 }
 #define gc_disable(sc, reserve)			\
-     _gc_disable (sc, reserve, __LINE__)
+     do {					\
+       if (sc->frame_freelist == sc->NIL) {	\
+	 if (gc_enabled(sc))			\
+	   dump_stack_preallocate_frame(sc);	\
+	 else					\
+	   gc_reservation_failure(sc);		\
+       }					\
+       _gc_disable (sc, reserve, __LINE__);	\
+     } while (0)
 
 /* Enable the garbage collector.  */
 #define gc_enable(sc)				\
@@ -917,7 +934,12 @@ _gc_disable(struct scheme *sc, size_t reserve, int lineno)
 
 #else /* USE_GC_LOCKING */
 
-#define gc_disable(sc, reserve)	(void) 0
+#define gc_reservation_failure(sc)	(void) 0
+#define gc_disable(sc, reserve)			\
+     do {					\
+       if (sc->frame_freelist == sc->NIL)	\
+	 dump_stack_preallocate_frame(sc);	\
+     } while (0)
 #define gc_enable(sc)	(void) 0
 #define gc_enabled(sc)	1
 #define gc_consume(sc)	(void) 0
@@ -1284,8 +1306,6 @@ INTERFACE pointer mk_character(scheme *sc, int c) {
 
 #if USE_SMALL_INTEGERS
 
-/* s_save assumes that all opcodes can be expressed as a small
- * integer.  */
 static const struct cell small_integers[] = {
 #define DEFINE_INTEGER(n) { T_NUMBER | T_ATOM | MARK, {{ 1, {n}}}},
 #include "small-integers.h"
@@ -1599,6 +1619,9 @@ static pointer mk_sharp_const(scheme *sc, char *name) {
 
 /* ========== garbage collector ========== */
 
+const int frame_length;
+static void dump_stack_deallocate_frame(scheme *sc, pointer frame);
+
 /*--
  *  We use algorithm E (Knuth, The Art of Computer Programming Vol.1,
  *  sec. 2.3.5), the Schorr-Deutsch-Waite link-inversion algorithm,
@@ -1611,9 +1634,10 @@ static void mark(pointer a) {
      p = a;
 E2:  if (! is_mark(p))
 	  setmark(p);
-     if(is_vector(p)) {
+     if (is_vector(p) || is_frame(p)) {
           int i;
-          for (i = 0; i < vector_length(p); i++) {
+	  int len = is_vector(p) ? vector_length(p) : frame_length;
+          for (i = 0; i < len; i++) {
                mark(p->_object._vector._elements[i]);
           }
      }
@@ -1783,8 +1807,12 @@ finalize_cell(scheme *sc, pointer a)
 	sc->free_cell = p;
 	sc->fcells += 1;
       }
-      break;
     } while (0);
+    break;
+
+  case T_FRAME:
+    dump_stack_deallocate_frame(sc, a);
+    return 0;	/* Do not free cell.  */
   }
 
   return 1;	/* Free cell.  */
@@ -2985,17 +3013,73 @@ static INLINE void dump_stack_reset(scheme *sc)
 static INLINE void dump_stack_initialize(scheme *sc)
 {
   dump_stack_reset(sc);
+  sc->frame_freelist = sc->NIL;
 }
 
 static void dump_stack_free(scheme *sc)
 {
-  sc->dump = sc->NIL;
+  dump_stack_initialize(sc);
+}
+
+const int frame_length = 4;
+
+static pointer
+dump_stack_make_frame(scheme *sc)
+{
+  pointer frame;
+
+  frame = mk_vector(sc, frame_length);
+  if (! sc->no_memory)
+    setframe(frame);
+
+  return frame;
+}
+
+static INLINE pointer *
+frame_slots(pointer frame)
+{
+  return &frame->_object._vector._elements[0];
+}
+
+#define frame_payload	vector_length
+
+static pointer
+dump_stack_allocate_frame(scheme *sc)
+{
+  pointer frame = sc->frame_freelist;
+  if (frame == sc->NIL) {
+    if (gc_enabled(sc))
+      frame = dump_stack_make_frame(sc);
+    else
+      gc_reservation_failure(sc);
+  } else
+    sc->frame_freelist = *frame_slots(frame);
+  return frame;
+}
+
+static void
+dump_stack_deallocate_frame(scheme *sc, pointer frame)
+{
+  pointer *p = frame_slots(frame);
+  *p++ = sc->frame_freelist;
+  *p++ = sc->NIL;
+  *p++ = sc->NIL;
+  *p++ = sc->NIL;
+  sc->frame_freelist = frame;
+}
+
+static void
+dump_stack_preallocate_frame(scheme *sc)
+{
+  pointer frame = dump_stack_make_frame(sc);
+  if (! sc->no_memory)
+    dump_stack_deallocate_frame(sc, frame);
 }
 
 static enum scheme_opcodes
 _s_return(scheme *sc, pointer a, int enable_gc) {
   pointer dump = sc->dump;
-  pointer op;
+  pointer *p;
   unsigned long v;
   enum scheme_opcodes next_op;
   sc->value = (a);
@@ -3003,37 +3087,38 @@ _s_return(scheme *sc, pointer a, int enable_gc) {
        gc_enable(sc);
   if (dump == sc->NIL)
     return OP_QUIT;
-  free_cons(sc, dump, &op, &dump);
-  v = (unsigned long) ivalue_unchecked(op);
+  v = frame_payload(dump);
   next_op = (int) (v & S_OP_MASK);
   sc->flags = v & S_FLAG_MASK;
-#ifdef USE_SMALL_INTEGERS
-  if (v < MAX_SMALL_INTEGER) {
-    /* This is a small integer, we must not free it.  */
-  } else
-    /* Normal integer.  Recover the cell.  */
-#endif
-    free_cell(sc, op);
-  free_cons(sc, dump, &sc->args, &dump);
-  free_cons(sc, dump, &sc->envir, &dump);
-  free_cons(sc, dump, &sc->code, &sc->dump);
+  p = frame_slots(dump);
+  sc->args = *p++;
+  sc->envir = *p++;
+  sc->code = *p++;
+  sc->dump = *p++;
+  dump_stack_deallocate_frame(sc, dump);
   return next_op;
 }
 
 static void s_save(scheme *sc, enum scheme_opcodes op, pointer args, pointer code) {
-#define s_save_allocates	5
+#define s_save_allocates	0
     pointer dump;
-    unsigned long v = sc->flags | ((unsigned long) op);
+    pointer *p;
     gc_disable(sc, gc_reservations (s_save));
-    dump = cons(sc, sc->envir, cons(sc, (code), sc->dump));
-    dump = cons(sc, (args), dump);
-    sc->dump = cons(sc, mk_integer(sc, (long) v), dump);
+    dump = dump_stack_allocate_frame(sc);
+    frame_payload(dump) = (size_t) (sc->flags | (unsigned long) op);
+    p = frame_slots(dump);
+    *p++ = args;
+    *p++ = sc->envir;
+    *p++ = code;
+    *p++ = sc->dump;
+    sc->dump = dump;
     gc_enable(sc);
 }
 
 static INLINE void dump_stack_mark(scheme *sc)
 {
   mark(sc->dump);
+  mark(sc->frame_freelist);
 }
 
 

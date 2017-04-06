@@ -122,6 +122,7 @@ pointer args;            /* register for arguments of function */
 pointer envir;           /* stack register for current environment */
 pointer code;            /* register for current code */
 pointer dump;            /* stack register for next evaluation */
+pointer frame_freelist;
 
 #if USE_HISTORY
 struct history history;  /* we keep track of the call history for
