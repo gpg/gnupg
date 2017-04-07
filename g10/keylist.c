@@ -1016,7 +1016,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
               if (!agent_get_keyinfo (NULL, hexgrip, &serialno, NULL))
                 secret = serialno? 3 : 1;
               else
-                secret = '2';  /* Key not found.  */
+                secret = 2;  /* Key not found.  */
             }
 
           /* Print the "sub" line.  */
