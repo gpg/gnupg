@@ -1496,19 +1496,14 @@ open_ccid_reader (struct dev_list *dl)
 
   err = ccid_open_reader (dl->portstr, dl->idx, dl->ccid_table,
                           &slotp->ccid.handle, &slotp->rdrname);
+  if (!err)
+    err = ccid_get_atr (slotp->ccid.handle,
+                        slotp->atr, sizeof slotp->atr, &slotp->atrlen);
   if (err)
     {
       slotp->used = 0;
       unlock_slot (slot);
       return -1;
-    }
-
-  err = ccid_get_atr (slotp->ccid.handle,
-                      slotp->atr, sizeof slotp->atr, &slotp->atrlen);
-  if (err)
-    {
-      slotp->atrlen = 0;
-      err = 0;
     }
 
   require_get_status = ccid_require_get_status (slotp->ccid.handle);
