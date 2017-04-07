@@ -3,6 +3,7 @@
 #ifndef _SCHEME_PRIVATE_H
 #define _SCHEME_PRIVATE_H
 
+#include <stdint.h>
 #include "scheme.h"
 /*------------------ Ugly internals -----------------------------------*/
 /*------------------ Of interest only to FFI users --------------------*/
@@ -42,7 +43,7 @@ typedef struct port {
 
 /* cell structure */
 struct cell {
-  unsigned int _flag;
+  uintptr_t _flag;
   union {
     struct {
       char   *_svalue;
