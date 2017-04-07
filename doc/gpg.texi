@@ -301,10 +301,13 @@ and other programs.
 @itemx -K
 @opindex list-secret-keys
 List the specified secret keys.  If no keys are specified, then all
-known secret keys are listed.  A @code{#} after the letters @code{sec}
-means that the secret key is not usable (for example, if it was
-exported using @option{--export-secret-subkeys}).  See also
-@option{--list-keys}.
+known secret keys are listed.  A @code{#} after the intial tags
+@code{sec} or @code{ssb} means that the secret key or subkey is
+currently not usable.  We also say that this key has been taken
+offline (for example, a primary key can be taken offline by exported
+the key using the command @option{--export-secret-subkeys}).  A
+@code{>} after these tags indicate that the key is stored on a
+smartcard.  See also @option{--list-keys}.
 
 @item --list-signatures
 @opindex list-signatures
