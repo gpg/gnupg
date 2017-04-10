@@ -1823,7 +1823,7 @@ read_ef_aodf (app_t app, unsigned short fid, aodf_object_t *result)
       if (!err && (objlen > nn
                    || class != CLASS_UNIVERSAL || tag != TAG_ENUMERATED))
         err = gpg_error (GPG_ERR_INV_OBJ);
-      if (!err && (objlen > sizeof (pin_type_t) || objlen > sizeof (ul)))
+      if (!err && || objlen > sizeof (ul))
         err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
       if (err)
         goto parse_error;
