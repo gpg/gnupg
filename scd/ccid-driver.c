@@ -218,31 +218,11 @@ enum {
 #define CCID_ERROR_CODE(buf)     (((unsigned char *)(buf))[8])
 
 
-/* A list and a table with special transport descriptions. */
-enum {
-  TRANSPORT_USB    = 0, /* Standard USB transport. */
-  TRANSPORT_CM4040 = 1  /* As used by the Cardman 4040. */
-};
-
-static struct
-{
-  char *name;  /* Device name. */
-  int  type;
-
-} transports[] = {
-  { "/dev/cmx0", TRANSPORT_CM4040 },
-  { "/dev/cmx1", TRANSPORT_CM4040 },
-  { NULL },
-};
-
-
 /* Store information on the driver's state.  A pointer to such a
    structure is used as handle for most functions. */
 struct ccid_driver_s
 {
   libusb_device_handle *idev;
-  int dev_fd;  /* -1 for USB transport or file descriptor of the
-                   transport device. */
   unsigned int bai;
   unsigned short id_vendor;
   unsigned short id_product;
@@ -328,20 +308,6 @@ set_msg_len (unsigned char *msg, unsigned int length)
   msg[4] = length >> 24;
 }
 
-
-static void
-my_sleep (int seconds)
-{
-#ifdef USE_NPTH
-  npth_sleep (seconds);
-#else
-# ifdef HAVE_W32_SYSTEM
-  Sleep (seconds*1000);
-# else
-  sleep (seconds);
-# endif
-#endif
-}
 
 static void
 print_progress (ccid_driver_t handle)
@@ -716,31 +682,6 @@ print_r2p_unknown (const unsigned char *msg, size_t msglen)
   print_pr_data (msg, msglen, 10);
 }
 
-
-/* Given a handle used for special transport prepare it for use.  In
-   particular setup all information in way that resembles what
-   parse_cccid_descriptor does. */
-static void
-prepare_special_transport (ccid_driver_t handle)
-{
-  assert (!handle->id_vendor);
-
-  handle->nonnull_nad = 0;
-  handle->auto_ifsd = 0;
-  handle->max_ifsd = 32;
-  handle->max_ccid_msglen = CCID_MAX_BUF;
-  handle->has_pinpad = 0;
-  handle->apdu_level = 0;
-  switch (handle->id_product)
-    {
-    case TRANSPORT_CM4040:
-      DEBUGOUT ("setting up transport for CardMan 4040\n");
-      handle->apdu_level = 1;
-      break;
-
-    default: assert (!"transport not defined");
-    }
-}
 
 /* Parse a CCID descriptor, optionally print all available features
    and test whether this reader is usable by this driver.  Returns 0
@@ -1328,7 +1269,6 @@ ccid_vendor_specific_init (ccid_driver_t handle)
 
 struct ccid_dev_table {
   int n;                        /* Index to ccid_usb_dev_list */
-  int transport;
   int interface_number;
   int setting_number;
   unsigned char *ifcdesc_extra;
@@ -1407,7 +1347,6 @@ ccid_dev_scan (int *idx_max_p, struct ccid_dev_table **t_p)
                   }
                 memcpy (ifcdesc_extra, ifcdesc->extra, ifcdesc->extra_length);
 
-                ccid_dev_table[idx].transport = TRANSPORT_USB;
                 ccid_dev_table[idx].n = i;
                 ccid_dev_table[idx].interface_number = ifc_no;
                 ccid_dev_table[idx].setting_number = set_no;
@@ -1430,30 +1369,6 @@ ccid_dev_scan (int *idx_max_p, struct ccid_dev_table **t_p)
       libusb_free_config_descriptor (config);
     }
 
-  /* Now check whether there are any devices with special transport types. */
-  for (i=0; transports[i].name; i++)
-    {
-      if (access (transports[i].name, (R_OK|W_OK)) == 0)
-        {
-          /* Found a device. */
-          DEBUGOUT_1 ("Found CCID reader %d\n", idx);
-
-          ccid_dev_table[idx].transport = TRANSPORT_CM4040;
-          ccid_dev_table[idx].n = i;
-          ccid_dev_table[idx].interface_number = 0;
-          ccid_dev_table[idx].setting_number = 0;
-          ccid_dev_table[idx].ifcdesc_extra = NULL;
-          ccid_dev_table[idx].ifcdesc_extra_len = 0;
-          ccid_dev_table[idx].ep_bulk_out = 0;
-          ccid_dev_table[idx].ep_bulk_in = 0;
-          ccid_dev_table[idx].ep_intr = 0;
-
-          idx++;
-          if (idx >= MAX_DEVICE)
-            goto scan_finish;
-        }
-    }
-
  scan_finish:
 
   if (err)
@@ -1463,7 +1378,6 @@ ccid_dev_scan (int *idx_max_p, struct ccid_dev_table **t_p)
       for (i = 0; i < idx; i++)
         {
           free (ccid_dev_table[idx].ifcdesc_extra);
-          ccid_dev_table[idx].transport = 0;
           ccid_dev_table[idx].n = 0;
           ccid_dev_table[idx].interface_number = 0;
           ccid_dev_table[idx].setting_number = 0;
@@ -1496,7 +1410,6 @@ ccid_dev_scan_finish (struct ccid_dev_table *tbl, int max)
   for (i = 0; i < max; i++)
     {
       free (tbl[i].ifcdesc_extra);
-      tbl[i].transport = 0;
       tbl[i].n = 0;
       tbl[i].interface_number = 0;
       tbl[i].setting_number = 0;
@@ -1516,24 +1429,15 @@ ccid_get_BAI (int idx, struct ccid_dev_table *tbl)
   int n;
   int bus, addr, intf;
   unsigned int bai;
+  libusb_device *dev;
 
-  if (tbl[idx].transport == TRANSPORT_USB)
-    {
-      libusb_device *dev;
+  n = tbl[idx].n;
+  dev = ccid_usb_dev_list[n];
 
-      n = tbl[idx].n;
-      dev = ccid_usb_dev_list[n];
-
-      bus = libusb_get_bus_number (dev);
-      addr = libusb_get_device_address (dev);
-      intf = tbl[idx].interface_number;
-      bai = (bus << 16) | (addr << 8) | intf;
-    }
-  else
-    {
-      n = tbl[idx].n;
-      bai = 0xFFFF0000 | n;
-    }
+  bus = libusb_get_bus_number (dev);
+  addr = libusb_get_device_address (dev);
+  intf = tbl[idx].interface_number;
+  bai = (bus << 16) | (addr << 8) | intf;
 
   return bai;
 }
@@ -1710,7 +1614,6 @@ ccid_open_usb_reader (const char *spec_reader_name,
   (*handle)->id_vendor = desc.idVendor;
   (*handle)->id_product = desc.idProduct;
   (*handle)->idev = idev;
-  (*handle)->dev_fd = -1;
   (*handle)->bai = bai;
   (*handle)->ifc_no = ifc_no;
   (*handle)->ep_bulk_out = ccid_table[idx].ep_bulk_out;
@@ -1779,10 +1682,6 @@ ccid_open_reader (const char *spec_reader_name, int idx,
                   struct ccid_dev_table *ccid_table,
                   ccid_driver_t *handle, char **rdrname_p)
 {
-  int n;
-  int fd;
-  char *rid;
-
   *handle = calloc (1, sizeof **handle);
   if (!*handle)
     {
@@ -1790,58 +1689,8 @@ ccid_open_reader (const char *spec_reader_name, int idx,
       return CCID_DRIVER_ERR_OUT_OF_CORE;
     }
 
-  if (ccid_table[idx].transport == TRANSPORT_USB)
-    return ccid_open_usb_reader (spec_reader_name, idx, ccid_table,
-                                 handle, rdrname_p);
-
-  /* Special transport support.  */
-
-  n = ccid_table[idx].n;
-  fd = open (transports[n].name, O_RDWR);
-  if (fd < 0)
-    {
-      DEBUGOUT_2 ("failed to open '%s': %s\n",
-                  transports[n].name, strerror (errno));
-      free (*handle);
-      *handle = NULL;
-      return -1;
-    }
-
-  rid = malloc (strlen (transports[n].name) + 30 + 10);
-  if (!rid)
-    {
-      close (fd);
-      free (*handle);
-      *handle = NULL;
-      return -1; /* Error. */
-    }
-
-  sprintf (rid, "0000:%04X:%s:0", transports[n].type, transports[n].name);
-
-  /* Check to see if reader name matches the spec.  */
-  if (spec_reader_name
-      && strncmp (rid, spec_reader_name, strlen (spec_reader_name)))
-    {
-      DEBUGOUT ("device not matched\n");
-      free (rid);
-      close (fd);
-      free (*handle);
-      *handle = NULL;
-      return -1;
-    }
-
-  (*handle)->id_vendor = 0;
-  (*handle)->id_product = transports[n].type;
-  (*handle)->idev = NULL;
-  (*handle)->dev_fd = fd;
-  (*handle)->bai = 0xFFFF0000 | n;
-  prepare_special_transport (*handle);
-  if (rdrname_p)
-    *rdrname_p = rid;
-  else
-    free (rid);
-
-  return 0;
+  return ccid_open_usb_reader (spec_reader_name, idx, ccid_table,
+                               handle, rdrname_p);
 }
 
 
@@ -1898,41 +1747,34 @@ do_close_reader (ccid_driver_t handle)
         bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_SlotStatus,
                  seqno, 2000, 0);
     }
-  if (handle->idev)
+
+  if (handle->transfer)
     {
-      if (handle->transfer)
+      if (!handle->powered_off)
         {
-          if (!handle->powered_off)
-            {
-              DEBUGOUT ("libusb_cancel_transfer\n");
+          DEBUGOUT ("libusb_cancel_transfer\n");
 
-              rc = libusb_cancel_transfer (handle->transfer);
-              if (rc != LIBUSB_ERROR_NOT_FOUND)
-                while (!handle->powered_off)
-                  {
-                    DEBUGOUT ("libusb_handle_events_completed\n");
+          rc = libusb_cancel_transfer (handle->transfer);
+          if (rc != LIBUSB_ERROR_NOT_FOUND)
+            while (!handle->powered_off)
+              {
+                DEBUGOUT ("libusb_handle_events_completed\n");
 #ifdef USE_NPTH
-                    npth_unprotect ();
+                npth_unprotect ();
 #endif
-                    libusb_handle_events_completed (NULL, &handle->powered_off);
+                libusb_handle_events_completed (NULL, &handle->powered_off);
 #ifdef USE_NPTH
-                    npth_protect ();
+                npth_protect ();
 #endif
-                  }
-            }
-
-          libusb_free_transfer (handle->transfer);
+              }
         }
-      libusb_release_interface (handle->idev, handle->ifc_no);
-      --ccid_usb_thread_is_alive;
-      libusb_close (handle->idev);
-      handle->idev = NULL;
+
+      libusb_free_transfer (handle->transfer);
     }
-  if (handle->dev_fd != -1)
-    {
-      close (handle->dev_fd);
-      handle->dev_fd = -1;
-    }
+  libusb_release_interface (handle->idev, handle->ifc_no);
+  --ccid_usb_thread_is_alive;
+  libusb_close (handle->idev);
+  handle->idev = NULL;
 }
 
 
@@ -1954,7 +1796,7 @@ ccid_set_progress_cb (ccid_driver_t handle,
 int
 ccid_close_reader (ccid_driver_t handle)
 {
-  if (!handle || (!handle->idev && handle->dev_fd == -1))
+  if (!handle)
     return 0;
 
   do_close_reader (handle);
@@ -1972,31 +1814,6 @@ ccid_check_card_presence (ccid_driver_t handle)
 }
 
 
-/* Write NBYTES of BUF to file descriptor FD. */
-static int
-writen (int fd, const void *buf, size_t nbytes)
-{
-  size_t nleft = nbytes;
-  int nwritten;
-
-  while (nleft > 0)
-    {
-      nwritten = write (fd, buf, nleft);
-      if (nwritten < 0)
-        {
-          if (errno == EINTR)
-            nwritten = 0;
-          else
-            return -1;
-        }
-      nleft -= nwritten;
-      buf = (const char*)buf + nwritten;
-    }
-
-  return 0;
-}
-
-
 /* Write a MSG of length MSGLEN to the designated bulk out endpoint.
    Returns 0 on success. */
 static int
@@ -2004,6 +1821,7 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
           int no_debug)
 {
   int rc;
+  int transferred;
 
   /* No need to continue and clutter the log with USB write error
      messages after we got the first ENODEV.  */
@@ -2062,42 +1880,29 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
         }
     }
 
-  if (handle->idev)
+#ifdef USE_NPTH
+  npth_unprotect ();
+#endif
+  rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_out,
+                             (char*)msg, msglen, &transferred,
+                             5000 /* ms timeout */);
+#ifdef USE_NPTH
+  npth_protect ();
+#endif
+  if (rc == 0 && transferred == msglen)
+    return 0;
+
+  if (rc)
     {
-      int transferred;
-
-#ifdef USE_NPTH
-      npth_unprotect ();
-#endif
-      rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_out,
-                                 (char*)msg, msglen, &transferred,
-                                 5000 /* ms timeout */);
-#ifdef USE_NPTH
-      npth_protect ();
-#endif
-      if (rc == 0 && transferred == msglen)
-        return 0;
-
-      if (rc)
+      DEBUGOUT_1 ("usb_bulk_write error: %s\n", libusb_error_name (rc));
+      if (rc == LIBUSB_ERROR_NO_DEVICE)
         {
-          DEBUGOUT_1 ("usb_bulk_write error: %s\n", libusb_error_name (rc));
-          if (rc == LIBUSB_ERROR_NO_DEVICE)
-            {
-              handle->enodev_seen = 1;
-              return CCID_DRIVER_ERR_NO_READER;
-            }
+          handle->enodev_seen = 1;
+          return CCID_DRIVER_ERR_NO_READER;
         }
     }
-  else
-    {
-      rc = writen (handle->dev_fd, msg, msglen);
-      if (!rc)
-        return 0;
-      DEBUGOUT_2 ("writen to %d failed: %s\n",
-                  handle->dev_fd, strerror (errno));
 
-    }
-  return CCID_DRIVER_ERR_CARD_IO_ERROR;
+  return 0;
 }
 
 
@@ -2115,55 +1920,34 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
 {
   int rc;
   int msglen;
-  int eagain_retries = 0;
 
   /* Fixme: The next line for the current Valgrind without support
      for USB IOCTLs. */
   memset (buffer, 0, length);
  retry:
-  if (handle->idev)
-    {
-#ifdef USE_NPTH
-      npth_unprotect ();
-#endif
-      rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_in,
-                                 (char*)buffer, length, &msglen, timeout);
-#ifdef USE_NPTH
-      npth_protect ();
-#endif
-      if (rc)
-        {
-          DEBUGOUT_1 ("usb_bulk_read error: %s\n", libusb_error_name (rc));
-          if (rc == LIBUSB_ERROR_NO_DEVICE)
-            {
-              handle->enodev_seen = 1;
-              return CCID_DRIVER_ERR_NO_READER;
-            }
 
-          return CCID_DRIVER_ERR_CARD_IO_ERROR;
-        }
-      if (msglen < 0)
-        return CCID_DRIVER_ERR_INV_VALUE;  /* Faulty libusb.  */
-      *nread = msglen;
-    }
-  else
+#ifdef USE_NPTH
+  npth_unprotect ();
+#endif
+  rc = libusb_bulk_transfer (handle->idev, handle->ep_bulk_in,
+                             (char*)buffer, length, &msglen, timeout);
+#ifdef USE_NPTH
+  npth_protect ();
+#endif
+  if (rc)
     {
-      rc = read (handle->dev_fd, buffer, length);
-      if (rc < 0)
+      DEBUGOUT_1 ("usb_bulk_read error: %s\n", libusb_error_name (rc));
+      if (rc == LIBUSB_ERROR_NO_DEVICE)
         {
-          rc = errno;
-          DEBUGOUT_2 ("read from %d failed: %s\n",
-                      handle->dev_fd, strerror (rc));
-          if (rc == EAGAIN && eagain_retries++ < 5)
-            {
-              my_sleep (1);
-              goto retry;
-            }
-          return CCID_DRIVER_ERR_CARD_IO_ERROR;
+          handle->enodev_seen = 1;
+          return CCID_DRIVER_ERR_NO_READER;
         }
-      *nread = msglen = rc;
+
+      return CCID_DRIVER_ERR_CARD_IO_ERROR;
     }
-  eagain_retries = 0;
+  if (msglen < 0)
+    return CCID_DRIVER_ERR_INV_VALUE;  /* Faulty libusb.  */
+  *nread = msglen;
 
   if (msglen < 10)
     {
@@ -2253,12 +2037,6 @@ abort_cmd (ccid_driver_t handle, int seqno)
   char dummybuf[8];
   unsigned char msg[100];
   int msglen;
-
-  if (!handle->idev)
-    {
-      /* I don't know how to send an abort to non-USB devices.  */
-      return CCID_DRIVER_ERR_NOT_SUPPORTED;
-    }
 
   seqno &= 0xff;
   DEBUGOUT_1 ("sending abort sequence for seqno %d\n", seqno);
@@ -2445,15 +2223,10 @@ ccid_poll (ccid_driver_t handle)
   int msglen;
   int i, j;
 
-  if (handle->idev)
-    {
-      rc = libusb_interrupt_transfer (handle->idev, handle->ep_intr,
-                                      (char*)msg, sizeof msg, &msglen,
-                                      0 /* ms timeout */ );
-      if (rc == LIBUSB_ERROR_TIMEOUT)
-        return 0;
-    }
-  else
+  rc = libusb_interrupt_transfer (handle->idev, handle->ep_intr,
+                                  (char*)msg, sizeof msg, &msglen,
+                                  0 /* ms timeout */ );
+  if (rc == LIBUSB_ERROR_TIMEOUT)
     return 0;
 
   if (rc)
@@ -3187,8 +2960,7 @@ ccid_transceive (ccid_driver_t handle,
          ccid_transceive_secure which leads to a loss of sync on the
          CCID level.  If Cherry wants to make their keyboard work
          again, they should hand over some docs. */
-      if ((handle->id_vendor == VENDOR_OMNIKEY
-           || (!handle->idev && handle->id_product == TRANSPORT_CM4040))
+      if ((handle->id_vendor == VENDOR_OMNIKEY)
           && handle->apdu_level < 2
           && is_exlen_apdu (apdu_buf, apdu_buflen))
         via_escape = 1;
