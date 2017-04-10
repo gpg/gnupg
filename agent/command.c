@@ -2477,6 +2477,12 @@ cmd_delete_key (assuan_context_t ctx, char *line)
 
 
 
+#if SIZEOF_TIME_T > SIZEOF_UNSIGNED_LONG
+#define KEYTOCARD_TIMESTAMP_FORMAT "(10:created-at10:%010llu))"
+#else
+#define KEYTOCARD_TIMESTAMP_FORMAT "(10:created-at10:%010lu))"
+#endif
+
 static const char hlp_keytocard[] =
   "KEYTOCARD [--force] <hexstring_with_keygrip> <serialno> <id> <timestamp>\n"
   "\n";
@@ -2580,7 +2586,7 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   gcry_sexp_release (s_skey);
   keydatalen--;			/* Decrement for last '\0'.  */
   /* Add timestamp "created-at" in the private key */
-  snprintf (keydata+keydatalen-1, 30, "(10:created-at10:%010lu))", timestamp);
+  snprintf (keydata+keydatalen-1, 30, KEYTOCARD_TIMESTAMP_FORMAT, timestamp);
   keydatalen += 10 + 19 - 1;
   err = divert_writekey (ctrl, force, serialno, id, keydata, keydatalen);
   xfree (keydata);
