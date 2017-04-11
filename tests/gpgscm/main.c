@@ -314,6 +314,8 @@ main (int argc, char **argv)
     err = load (sc, "repl.scm", 0, 1);
   if (! err)
     err = load (sc, "tests.scm", 0, 1);
+  if (! err)
+    err = load (sc, "gnupg.scm", 0, 1);
   if (err)
     {
       fprintf (stderr, "Error initializing gpgscm: %s.\n",

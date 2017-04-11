@@ -280,32 +280,6 @@
 ;; GnuPG helper.
 ;;
 
-;; Evaluate a sequence of expressions with the given home directory.
-(define-macro (with-home-directory gnupghome . expressions)
-  (let ((original-home-directory (gensym)))
-    `(let ((,original-home-directory (getenv "GNUPGHOME")))
-       (dynamic-wind
-	   (lambda () (setenv "GNUPGHOME" ,gnupghome #t))
-	   (lambda () ,@expressions)
-	   (lambda () (setenv "GNUPGHOME" ,original-home-directory #t))))))
-
-;; Evaluate a sequence of expressions with an ephemeral home
-;; directory.
-(define-macro (with-ephemeral-home-directory setup-fn . expressions)
-  (let ((original-home-directory (gensym))
-	(ephemeral-home-directory (gensym))
-	(setup (gensym)))
-    `(let ((,original-home-directory (getenv "GNUPGHOME"))
-	   (,ephemeral-home-directory (mkdtemp))
-	   (,setup (delay (,setup-fn))))
-       (finally (unlink-recursively ,ephemeral-home-directory)
-	 (dynamic-wind
-	     (lambda ()
-	       (setenv "GNUPGHOME" ,ephemeral-home-directory #t)
-	       (with-working-directory ,ephemeral-home-directory (force ,setup)))
-	     (lambda () ,@expressions)
-	     (lambda () (setenv "GNUPGHOME" ,original-home-directory #t)))))))
-
 ;; Call GPG to obtain the hash sums.  Either specify an input file in
 ;; ARGS, or an string in INPUT.  Returns a list of (<algo>
 ;; "<hashsum>") lists.
