@@ -196,7 +196,7 @@ buffer_put_data (struct outstream_cookie_s *cookie, const char *src, int cnt)
 
 /* The writer function for the outstream.  This is used to transfer
    the output of the ldap wrapper thread to the ksba reader object.  */
-static ssize_t
+static gpgrt_ssize_t
 outstream_cookie_writer (void *cookie_arg, const void *buffer, size_t size)
 {
   struct outstream_cookie_s *cookie = cookie_arg;
