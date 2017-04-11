@@ -34,7 +34,7 @@
        (tr:gpg passphrase `(--yes --passphrase-fd "0" ,s2k
 				  --force-mdc -c
 				  --cipher-algo ,algo))
-       (tr:gpg passphrase `(--yes --passphrase-fd "0" ,s2k))
+       (tr:gpg passphrase `(--yes --passphrase-fd "0" --decrypt ,s2k))
        (tr:assert-identity source)))
     '("plain-1" "data-80000")))
  (force all-cipher-algos))
@@ -45,6 +45,6 @@
    (tr:do
     (tr:open source)
      (tr:gpg passphrase `(--yes --passphrase-fd "0" ,s2k -cs))
-     (tr:gpg passphrase `(--yes --passphrase-fd "0" ,s2k))
+     (tr:gpg passphrase `(--yes --passphrase-fd "0" --decrypt ,s2k))
      (tr:assert-identity source)))
  (append plain-files data-files))

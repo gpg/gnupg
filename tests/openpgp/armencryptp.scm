@@ -27,6 +27,6 @@
     (tr:open source)
     (tr:pipe-do
      (pipe:gpg `(--yes -ea --recipient ,usrname2))
-     (pipe:gpg '(--yes)))
+     (pipe:gpg '(--yes --decrypt)))
     (tr:assert-identity source)))
  (append plain-files data-files))

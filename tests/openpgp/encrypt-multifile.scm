@@ -34,6 +34,6 @@
  (lambda (source)
    (tr:do
     (tr:open (string-append source ".gpg"))
-    (tr:gpg "" '(--yes))
+    (tr:gpg "" '(--yes --decrypt))
     (tr:assert-identity source)))
  files)

@@ -764,4 +764,4 @@ wg7Md81a5RI3F2FG8747t9gX
 (tr:do
  (tr:pipe-do
   (pipe:echo nopad_armored_msg)
-  (pipe:gpg '())))
+  (pipe:gpg '(--decrypt))))

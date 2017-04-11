@@ -26,7 +26,7 @@
    (tr:do
     (tr:open source)
     (tr:gpg "" `(--yes --encrypt --recipient ,dsa-usrname2))
-    (tr:gpg "" '(--yes))
+    (tr:gpg "" '(--yes --decrypt))
     (tr:assert-identity source)))
  (append plain-files data-files))
 
@@ -40,7 +40,7 @@
        (tr:open source)
        (tr:gpg "" `(--yes --encrypt --recipient ,dsa-usrname2
 			  --cipher-algo ,cipher))
-       (tr:gpg "" '(--yes))
+       (tr:gpg "" '(--yes --decrypt))
        (tr:assert-identity source)))
     (append plain-files data-files)))
  (force all-cipher-algos))

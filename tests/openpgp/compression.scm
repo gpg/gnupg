@@ -30,7 +30,7 @@
        (tr:open source)
        (tr:gpg "" `(--yes --encrypt --recipient ,usrname2
 			  --compress-algo ,compression))
-       (tr:gpg "" '(--yes))
+       (tr:gpg "" '(--yes --decrypt))
        (tr:assert-identity source)))
     (append plain-files data-files)))
  (force all-compression-algos))

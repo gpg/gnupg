@@ -33,4 +33,4 @@
 			      (pipe:open file (logior O_RDONLY O_BINARY))
 			      (pipe:splice sink)))
 			   files)))
-   (pipe:spawn `(,@GPG --yes ,tmp))))
+   (pipe:spawn `(,@GPG --yes --verify ,tmp -))))

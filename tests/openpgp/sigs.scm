@@ -26,7 +26,7 @@
    (tr:do
     (tr:open source)
     (tr:gpg "" '(--yes --sign))
-    (tr:gpg "" '(--yes))
+    (tr:gpg "" '(--yes --decrypt))
     (tr:assert-identity source)))
  (append plain-files data-files))
 
@@ -38,7 +38,7 @@
        (tr:do
 	(tr:open (car plain-files))
 	(tr:gpg "" `(--yes --sign --user ,usrname3 --digest-algo ,hash))
-	(tr:gpg "" '(--yes))
+	(tr:gpg "" '(--yes --decrypt))
 	(tr:assert-identity (car plain-files))))
    (if (not (equal? "MD5" hash))
        ;; Using the DSA sig key - only 160 bit or larger hashes
@@ -46,6 +46,6 @@
 	(tr:open (car plain-files))
 	(tr:gpg usrpass1
 		`(--yes --sign --passphrase-fd "0" --digest-algo ,hash))
-	(tr:gpg "" '(--yes))
+	(tr:gpg "" '(--yes --decrypt))
 	(tr:assert-identity (car plain-files)))))
  (force all-hash-algos))

@@ -26,6 +26,6 @@
    (tr:do
     (tr:open source)
     (tr:gpg usrpass1 '(--yes -seat -r two@example.com --passphrase-fd "0"))
-    (tr:gpg "" '(--yes))
+    (tr:gpg "" '(--yes --decrypt))
     (tr:assert-weak-identity source)))
  plain-files)

@@ -28,5 +28,5 @@
 			 --output ,tmp ,source ) usrpass1)
      (pipe:do
       (pipe:open source (logior O_RDONLY O_BINARY))
-      (pipe:spawn `(,@GPG --yes ,tmp)))))
+      (pipe:spawn `(,@GPG --yes --verify ,tmp -)))))
  (append plain-files data-files))

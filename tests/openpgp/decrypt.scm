@@ -25,6 +25,6 @@
  (lambda (name)
    (tr:do
     (tr:open (in-srcdir (string-append name ".asc")))
-    (tr:gpg "" '(--yes))
+    (tr:gpg "" '(--yes --decrypt))
     (tr:assert-identity name)))
  plain-files)

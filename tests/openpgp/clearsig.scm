@@ -25,7 +25,7 @@
     (lettmp (signed)
 	    (call-popen `(,@GPG --output ,signed --yes
 				,@args ,source) input)
-	    (call-popen `(,@GPG --output ,sink --yes ,signed) ""))))
+	    (call-popen `(,@GPG --output ,sink --yes --verify ,signed) ""))))
 
 (for-each-p
  "Checking signing and verifying plain text messages"

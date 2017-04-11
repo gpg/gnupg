@@ -101,8 +101,7 @@ Ic1RdzgeCfosMF+l/zVRchcLKzenEQA=
      (lettmp (x y)
        (call-with-output-file
 	   x (lambda (p) (display (eval test (current-environment)) p)))
-       (call-check `(,(tool 'gpg) --verify ,x))
-       (call-check `(,(tool 'gpg) --output ,y ,x))
+       (call-check `(,(tool 'gpg) --output ,y --verify ,x))
        (unless (file=? y z) (fail "mismatch"))))
    '(msg_opaque_signed_256 msg_opaque_signed_384 msg_opaque_signed_521)))
 
@@ -181,7 +180,7 @@ Rg==
      (lettmp (x y)
        (call-with-output-file
 	   x (lambda (p) (display (eval test (current-environment)) p)))
-       (call-check `(,@GPG --yes --output ,y ,x))
+       (call-check `(,@GPG --yes --output ,y --decrypt ,x))
        (unless (file=? y z) (fail "mismatch"))))
    '(msg_encrypted_256 msg_encrypted_384 msg_encrypted_521)))
 
@@ -200,7 +199,7 @@ Rg==
       (tr:do
        (tr:open source)
        (tr:gpg "" `(--yes --encrypt --recipient ,keyid))
-       (tr:gpg "" '(--yes))
+       (tr:gpg "" '(--yes --decrypt))
        (tr:assert-identity source)))
     mainkeyids))
  (append plain-files data-files))
@@ -217,7 +216,7 @@ Rg==
       (tr:do
        (tr:open source)
        (tr:gpg "" `(--yes --sign --local-user ,keyid))
-       (tr:gpg "" '(--yes))
+       (tr:gpg "" '(--yes --decrypt))
        (tr:assert-identity source)))
     mainkeyids))
  (append plain-files data-files))

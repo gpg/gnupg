@@ -28,7 +28,7 @@
     (tr:gpg usrpass1 `(--yes --passphrase-fd "0" -se
 			     -u ,dsa-usrname1
 			     --recipient ,dsa-usrname2))
-    (tr:gpg "" '(--yes))
+    (tr:gpg "" '(--yes --decrypt))
     (tr:assert-identity source)))
  (append plain-files data-files))
 
@@ -44,6 +44,6 @@
 			     -u ,dsa-usrname1
 			     --recipient ,dsa-usrname2
 			     --digest-algo ,hash))
-    (tr:gpg "" '(--yes))
+    (tr:gpg "" '(--yes --decrypt))
     (tr:assert-identity (car plain-files))))
  algos)
