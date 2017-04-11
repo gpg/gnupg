@@ -2125,7 +2125,7 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
   u32 curtime = make_timestamp ();
   kbnode_t latest_key, node;
   PKT_public_key *pk;
-  const char *identifier;
+  const char *identifier = NULL;
   membuf_t mb;
   estream_t fp = NULL;
   struct b64state b64_state;
@@ -2321,8 +2321,6 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
               identifier = "ecdsa-sha2-nistp384";
             else if (!strcmp (curve, "nistp521"))
               identifier = "ecdsa-sha2-nistp521";
-            else
-              identifier = NULL;
 
             if (!identifier)
               err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
@@ -2353,7 +2351,7 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
       break;
     }
 
-  if (err)
+  if (!identifier)
     goto leave;
 
   if (opt.outfile && *opt.outfile && strcmp (opt.outfile, "-"))
@@ -2369,22 +2367,21 @@ export_ssh_key (ctrl_t ctrl, const char *userid)
 
   es_fprintf (fp, "%s ", identifier);
   err = b64enc_start_es (&b64_state, fp, "");
-  if (err)
-    goto leave;
-  {
-    void *blob;
-    size_t bloblen;
+  if (!err)
+    {
+      void *blob;
+      size_t bloblen;
 
-    blob = get_membuf (&mb, &bloblen);
-    if (!blob)
-      err = gpg_error_from_syserror ();
-    else
-      err = b64enc_write (&b64_state, blob, bloblen);
-    xfree (blob);
-    if (err)
-      goto leave;
-  }
-  err = b64enc_finish (&b64_state);
+      blob = get_membuf (&mb, &bloblen);
+      if (blob)
+        {
+          err = b64enc_write (&b64_state, blob, bloblen);
+          xfree (blob);
+          if (err)
+            goto leave;
+        }
+      err = b64enc_finish (&b64_state);
+    }
   if (err)
     goto leave;
   es_fprintf (fp, " openpgp:0x%08lX\n", (ulong)keyid_from_pk (pk, NULL));
