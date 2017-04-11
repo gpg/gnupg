@@ -26,6 +26,7 @@ EXTRA_DIST = \
 	repl.scm \
 	t-child.scm \
 	tests.scm \
+	gnupg.scm \
 	time.scm
 
 AM_CPPFLAGS = -I$(top_srcdir)/common
