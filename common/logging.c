@@ -64,10 +64,14 @@
 #include "sysutils.h"
 
 #ifdef HAVE_W32_SYSTEM
-# define S_IRGRP S_IRUSR
-# define S_IROTH S_IRUSR
-# define S_IWGRP S_IWUSR
-# define S_IWOTH S_IWUSR
+# ifndef S_IRWXG
+#  define S_IRGRP S_IRUSR
+#  define S_IWGRP S_IWUSR
+# endif
+# ifndef S_IRWXO
+#  define S_IROTH S_IRUSR
+#  define S_IWOTH S_IWUSR
+# endif
 #endif
 
 
