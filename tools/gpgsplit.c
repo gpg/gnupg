@@ -32,9 +32,6 @@
 #ifdef HAVE_ZIP
 # include <zlib.h>
 #endif
-#ifdef HAVE_BZIP2
-# include <bzlib.h>
-#endif /* HAVE_BZIP2 */
 #if defined(__riscos__) && defined(USE_ZLIBRISCOS)
 # include "zlib-riscos.h"
 #endif
@@ -42,6 +39,10 @@
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "../common/util.h"
 #include "../common/openpgpdefs.h"
+
+#ifdef HAVE_BZIP2
+# include <bzlib.h>
+#endif /* HAVE_BZIP2 */
 
 static int opt_verbose;
 static const char *opt_prefix = "";

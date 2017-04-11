@@ -20,10 +20,11 @@
 #include <config.h>
 #include <string.h>
 #include <stdio.h> /* Early versions of bzlib (1.0) require stdio.h */
-#include <bzlib.h>
 
 #include "gpg.h"
 #include "../common/util.h"
+#include <bzlib.h>
+
 #include "packet.h"
 #include "filter.h"
 #include "main.h"
