@@ -155,7 +155,7 @@ capitalize_header_name (unsigned char *name)
 
 #ifndef HAVE_STPCPY
 static char *
-stpcpy (char *a,const char *b)
+my_stpcpy (char *a,const char *b)
 {
   while (*b)
     *a++ = *b++;
@@ -163,6 +163,7 @@ stpcpy (char *a,const char *b)
 
   return (char*)a;
 }
+#define stpcpy my_stpcpy
 #endif
 
 
