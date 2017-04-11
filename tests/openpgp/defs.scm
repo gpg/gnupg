@@ -201,7 +201,8 @@
 
 (define have-opt-always-trust
   (catch #f
-	 (call-check `(,(tool 'gpg) --gpgconf-test --always-trust))
+	 (with-ephemeral-home-directory (lambda ())
+	   (call-check `(,(tool 'gpg) --gpgconf-test --always-trust)))
 	 #t))
 
 (define GPG `(,(tool 'gpg) --no-permission-warning

@@ -39,10 +39,11 @@
 (define GPGTAR (path-join (getenv "objdir") "tools" (qualify "gpgtar")))
 
 (define (untar-armored source-name)
-  (pipe:do
-   (pipe:open source-name (logior O_RDONLY O_BINARY))
-   (pipe:spawn `(,@GPG --dearmor))
-   (pipe:spawn `(,GPGTAR --extract --directory=. -))))
+  (with-ephemeral-home-directory (lambda ())
+    (pipe:do
+     (pipe:open source-name (logior O_RDONLY O_BINARY))
+     (pipe:spawn `(,@GPG --dearmor))
+     (pipe:spawn `(,GPGTAR --extract --directory=. -)))))
 
 (define (run-test message src-tarball test)
   (catch (skip "gpgtar not built")
