@@ -1573,7 +1573,7 @@ ask_about_binding (ctrl_t ctrl,
   struct signature_stats *stats = NULL;
   struct signature_stats *stats_iter = NULL;
   char *prompt = NULL;
-  char *choices;
+  const char *choices;
 
   dbs = ctrl->tofu.dbs;
   log_assert (dbs);
