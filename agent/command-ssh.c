@@ -674,13 +674,7 @@ stream_read_blob (estream_t stream, unsigned int secure, gcry_mpi_t *r_mpi)
 static gpg_error_t
 stream_read_cstring (estream_t stream, char **string)
 {
-  gpg_error_t err;
-  unsigned char *buffer;
-
-  err = stream_read_string (stream, 0, &buffer, NULL);
-  if (!err)
-    *string = (char *)buffer;
-  return err;
+  return stream_read_string (stream, 0, (unsigned char **)string, NULL);
 }
 
 
