@@ -885,7 +885,7 @@ test_format_text (void)
     {
       struct test *test = &tests[i];
       char *result =
-        format_text (test->input, 0, test->target_cols, test->max_cols);
+        format_text (test->input, test->target_cols, test->max_cols);
       if (strcmp (result, test->expected) != 0)
         {
           printf ("%s: Test #%d failed.\nExpected: '%s'\nResult: '%s'\n",

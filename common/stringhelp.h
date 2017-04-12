@@ -155,7 +155,7 @@ int split_fields (char *string, char **array, int arraysize);
 int compare_version_strings (const char *my_version, const char *req_version);
 
 /* Format a string so that it fits within about TARGET_COLS columns.  */
-char *format_text (char *text, int in_place, int target_cols, int max_cols);
+char *format_text (const char *text, int target_cols, int max_cols);
 
 
 /*-- mapstrings.c --*/

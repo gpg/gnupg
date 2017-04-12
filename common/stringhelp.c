@@ -1443,11 +1443,10 @@ compare_version_strings (const char *my_version, const char *req_version)
 
 
 /* Format a string so that it fits within about TARGET_COLS columns.
-   If IN_PLACE is 0, then TEXT is copied to a new buffer, which is
-   returned.  Otherwise, TEXT is modified in place and returned.
+   TEXT_IN is copied to a new buffer, which is returned.
    Normally, target_cols will be 72 and max_cols is 80.  */
 char *
-format_text (char *text, int in_place, int target_cols, int max_cols)
+format_text (const char *text_in, int target_cols, int max_cols)
 {
   const int do_debug = 0;
 
@@ -1459,9 +1458,9 @@ format_text (char *text, int in_place, int target_cols, int max_cols)
   char *last_space = NULL;
   int last_space_cols = 0;
   int copied_last_space = 0;
+  char *text;
 
-  if (! in_place)
-    text = xstrdup (text);
+  text = xstrdup (text_in);
 
   p = line = text;
   while (1)

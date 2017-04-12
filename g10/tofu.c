@@ -1355,7 +1355,7 @@ format_conflict_msg_part1 (int policy, strlist_t conflict_set,
   es_fputc (0, fp);
   if (es_fclose_snatch (fp, (void **)&tmpstr, NULL))
     log_fatal ("error snatching memory stream\n");
-  text = format_text (tmpstr, 0, 72, 80);
+  text = format_text (tmpstr, 72, 80);
   es_free (tmpstr);
 
   return text;
@@ -1913,7 +1913,7 @@ ask_about_binding (ctrl_t ctrl,
       /* TRANSLATORS: Please translate the text found in the source
        * file below.  We don't directly internationalize that text so
        * that we can tweak it without breaking translations.  */
-      char *text = _("TOFU detected a binding conflict");
+      const char *text = _("TOFU detected a binding conflict");
       char *textbuf;
       if (!strcmp (text, "TOFU detected a binding conflict"))
         {
@@ -1926,7 +1926,7 @@ ask_about_binding (ctrl_t ctrl,
             "attack!  Before accepting this association, you should talk to or "
             "call the person to make sure this new key is legitimate.";
         }
-      textbuf = format_text (text, 0, 72, 80);
+      textbuf = format_text (text, 72, 80);
       es_fprintf (fp, "\n%s\n", textbuf);
       xfree (textbuf);
     }
@@ -3190,7 +3190,7 @@ show_statistics (tofu_dbs_t dbs,
         es_fputc (0, fp);
         if (es_fclose_snatch (fp, (void **) &tmpmsg, NULL))
           log_fatal ("error snatching memory stream\n");
-        msg = format_text (tmpmsg, 0, 72, 80);
+        msg = format_text (tmpmsg, 72, 80);
         es_free (tmpmsg);
 
         /* Print a status line but suppress the trailing LF.
@@ -3265,7 +3265,7 @@ show_warning (const char *fingerprint, strlist_t user_id_list)
       strlist_length (user_id_list)),
      set_policy_command);
 
-  text = format_text (tmpmsg, 0, 72, 80);
+  text = format_text (tmpmsg, 72, 80);
   xfree (tmpmsg);
   log_string (GPGRT_LOG_INFO, text);
   xfree (text);
