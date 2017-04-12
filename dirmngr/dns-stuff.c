@@ -40,6 +40,7 @@
 #else
 # if HAVE_SYSTEM_RESOLVER
 #  include <netinet/in.h>
+#  include <arpa/nameser.h>
 #  include <resolv.h>
 # endif
 # include <netdb.h>
