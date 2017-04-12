@@ -95,9 +95,8 @@
 #ifndef T_SRV
 #define T_SRV 33
 #endif
-#ifndef T_CERT
-# define T_CERT 37
-#endif
+#undef T_CERT
+#define T_CERT 37
 
 /* The standard SOCKS and TOR ports.  */
 #define SOCKS_PORT 1080
