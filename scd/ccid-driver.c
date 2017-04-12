@@ -1980,7 +1980,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
       goto retry;
     }
 
-  if (buffer[0] != expected_type)
+  if (buffer[0] != expected_type && buffer[0] != RDR_to_PC_SlotStatus)
     {
       DEBUGOUT_1 ("unexpected bulk-in msg type (%02x)\n", buffer[0]);
       abort_cmd (handle, seqno);
@@ -2020,11 +2020,23 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
   switch ((buffer[7] & 0x03))
     {
     case 0: /* no error */ break;
-    case 1: return CCID_DRIVER_ERR_CARD_INACTIVE;
-    case 2: return CCID_DRIVER_ERR_NO_CARD;
+    case 1: rc = CCID_DRIVER_ERR_CARD_INACTIVE; break;
+    case 2: rc = CCID_DRIVER_ERR_NO_CARD; break;
     case 3: /* RFU */ break;
     }
-  return 0;
+
+  if (rc)
+    {
+      /*
+       * Communication failure by device side.
+       * Possibly, it was forcibly suspended and resumed.
+       */
+      DEBUGOUT ("CCID: card inactive/removed\n");
+      handle->powered_off = 1;
+      scd_kick_the_loop ();
+    }
+
+  return rc;
 }
 
 
