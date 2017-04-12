@@ -2237,7 +2237,7 @@ start_agent (void)
     {
       if (!opt.autostart
           && (gpg_err_code (err)
-              == opt.use_dirmngr? GPG_ERR_NO_DIRMNGR : GPG_ERR_NO_AGENT))
+              == (opt.use_dirmngr? GPG_ERR_NO_DIRMNGR : GPG_ERR_NO_AGENT)))
         {
           /* In the no-autostart case we don't make gpg-connect-agent
              fail on a missing server.  */
