@@ -1968,6 +1968,15 @@ void dns_p_dictadd(struct dns_packet *P, unsigned short dn) {
 } /* dns_p_dictadd() */
 
 
+static inline uint16_t
+plus1_ns (uint16_t count_net)
+{
+  uint16_t count = ntohs (count);
+
+  count++;
+  return htons (count);
+}
+
 int dns_p_push(struct dns_packet *P, enum dns_section section, const void *dn, size_t dnlen, enum dns_type type, enum dns_class class, unsigned ttl, const void *any) {
 	size_t end = P->end;
 	int error;
@@ -2009,7 +2018,7 @@ update:
 		if (!P->memo.qd.base && (error = dns_p_study(P)))
 			goto error;
 
-		dns_header(P)->qdcount = htons(ntohs(dns_header(P)->qdcount) + 1);
+		dns_header(P)->qdcount = plus1_ns (dns_header(P)->qdcount);
 
 		P->memo.qd.end  = P->end;
 		P->memo.an.base = P->end;
@@ -2027,7 +2036,7 @@ update:
 		if (!P->memo.an.base && (error = dns_p_study(P)))
 			goto error;
 
-		dns_header(P)->ancount = htons(ntohs(dns_header(P)->ancount) + 1);
+		dns_header(P)->ancount = plus1_ns (dns_header(P)->ancount);
 
 		P->memo.an.end  = P->end;
 		P->memo.ns.base = P->end;
@@ -2043,7 +2052,7 @@ update:
 		if (!P->memo.ns.base && (error = dns_p_study(P)))
 			goto error;
 
-		dns_header(P)->nscount = htons(ntohs(dns_header(P)->nscount) + 1);
+		dns_header(P)->nscount = plus1_ns (dns_header(P)->nscount);
 
 		P->memo.ns.end  = P->end;
 		P->memo.ar.base = P->end;
@@ -2054,7 +2063,7 @@ update:
 		if (!P->memo.ar.base && (error = dns_p_study(P)))
 			goto error;
 
-		dns_header(P)->arcount = htons(ntohs(dns_header(P)->arcount) + 1);
+		dns_header(P)->arcount = plus1_ns (dns_header(P)->arcount);
 
 		P->memo.ar.end = P->end;
 
