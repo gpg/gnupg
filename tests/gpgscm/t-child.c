@@ -33,9 +33,9 @@ main (int argc, char **argv)
   char buffer[4096];
   memset (buffer, 'A', sizeof buffer);
 #if _WIN32
-  if (! setmode (stdin, O_BINARY))
+  if (! setmode (fileno (stdin), O_BINARY))
     return 23;
-  if (! setmode (stdout, O_BINARY))
+  if (! setmode (fileno (stdout), O_BINARY))
     return 23;
 #endif
 
