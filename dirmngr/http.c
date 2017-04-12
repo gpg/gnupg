@@ -1643,7 +1643,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
   const char *http_proxy = NULL;
   char *proxy_authstr = NULL;
   char *authstr = NULL;
-  int sock;
+  assuan_fd_t sock;
 
   if (hd->uri->use_tls && !hd->session)
     {
