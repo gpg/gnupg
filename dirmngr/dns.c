@@ -54,6 +54,9 @@
 #endif
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#ifdef TIME_WITH_SYS_TIME
+#include <sys/time.h>		/* gettimeofday(2) */
+#endif
 #else
 #include <sys/time.h>		/* gettimeofday(2) */
 #include <sys/types.h>		/* FD_SETSIZE socklen_t */
@@ -1971,7 +1974,7 @@ void dns_p_dictadd(struct dns_packet *P, unsigned short dn) {
 static inline uint16_t
 plus1_ns (uint16_t count_net)
 {
-  uint16_t count = ntohs (count);
+  uint16_t count = ntohs (count_net);
 
   count++;
   return htons (count);
