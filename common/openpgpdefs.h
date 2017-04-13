@@ -136,7 +136,8 @@ typedef enum
     CIPHER_ALGO_TWOFISH	    = 10, /* 256 bit */
     CIPHER_ALGO_CAMELLIA128 = 11,
     CIPHER_ALGO_CAMELLIA192 = 12,
-    CIPHER_ALGO_CAMELLIA256 = 13
+    CIPHER_ALGO_CAMELLIA256 = 13,
+    CIPHER_ALGO_PRIVATE10   = 110
   }
 cipher_algo_t;
 
@@ -152,7 +153,8 @@ typedef enum
     PUBKEY_ALGO_ECDSA       = 19, /* RFC-6637  */
     PUBKEY_ALGO_ELGAMAL     = 20, /* Elgamal encrypt+sign (legacy).  */
     /*                        21     reserved by OpenPGP.            */
-    PUBKEY_ALGO_EDDSA       = 22  /* EdDSA (not yet assigned).       */
+    PUBKEY_ALGO_EDDSA       = 22, /* EdDSA (not yet assigned).       */
+    PUBKEY_ALGO_PRIVATE10   = 110
   }
 pubkey_algo_t;
 
@@ -166,7 +168,8 @@ typedef enum
     DIGEST_ALGO_SHA256      =  8,
     DIGEST_ALGO_SHA384      =  9,
     DIGEST_ALGO_SHA512      = 10,
-    DIGEST_ALGO_SHA224      = 11
+    DIGEST_ALGO_SHA224      = 11,
+    DIGEST_ALGO_PRIVATE10   = 110
   }
 digest_algo_t;
 
@@ -176,7 +179,8 @@ typedef enum
     COMPRESS_ALGO_NONE      =  0,
     COMPRESS_ALGO_ZIP       =  1,
     COMPRESS_ALGO_ZLIB      =  2,
-    COMPRESS_ALGO_BZIP2     =  3
+    COMPRESS_ALGO_BZIP2     =  3,
+    COMPRESS_ALGO_PRIVATE10 = 110
   }
 compress_algo_t;
 

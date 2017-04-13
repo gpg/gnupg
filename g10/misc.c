@@ -473,8 +473,8 @@ map_cipher_openpgp_to_gcry (cipher_algo_t algo)
 #else
     case CIPHER_ALGO_CAMELLIA256: return 0;
 #endif
+    default: return 0;
     }
-  return 0;
 }
 
 /* The inverse function of above.  */
@@ -509,7 +509,7 @@ map_pk_gcry_to_openpgp (enum gcry_pk_algos algo)
     {
     case GCRY_PK_ECDSA:  return PUBKEY_ALGO_ECDSA;
     case GCRY_PK_ECDH:   return PUBKEY_ALGO_ECDH;
-    default: return algo < 110 ? algo : 0;
+    default: return algo < 110 ? (pubkey_algo_t)algo : 0;
     }
 }
 
@@ -565,7 +565,6 @@ openpgp_cipher_algo_name (cipher_algo_t algo)
 {
   switch (algo)
     {
-    case CIPHER_ALGO_NONE:        break;
     case CIPHER_ALGO_IDEA:        return "IDEA";
     case CIPHER_ALGO_3DES:	  return "3DES";
     case CIPHER_ALGO_CAST5:	  return "CAST5";
@@ -577,8 +576,9 @@ openpgp_cipher_algo_name (cipher_algo_t algo)
     case CIPHER_ALGO_CAMELLIA128: return "CAMELLIA128";
     case CIPHER_ALGO_CAMELLIA192: return "CAMELLIA192";
     case CIPHER_ALGO_CAMELLIA256: return "CAMELLIA256";
+    case CIPHER_ALGO_NONE:
+    default: return "?";
     }
-  return "?";
 }
 
 
@@ -635,6 +635,9 @@ openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use)
       /* Dont't allow type 20 keys unless in rfc2440 mode.  */
       if (RFC2440)
         ga = GCRY_PK_ELG;
+      break;
+
+    default:
       break;
     }
   if (!ga)
@@ -699,8 +702,8 @@ openpgp_pk_algo_name (pubkey_algo_t algo)
     case PUBKEY_ALGO_ECDH:      return "ECDH";
     case PUBKEY_ALGO_ECDSA:     return "ECDSA";
     case PUBKEY_ALGO_EDDSA:     return "EDDSA";
+    default: return "?";
     }
-  return "?";
 }
 
 
@@ -832,8 +835,8 @@ map_md_openpgp_to_gcry (digest_algo_t algo)
 #else
     case DIGEST_ALGO_SHA512: return 0;
 #endif
+    default: return 0;
     }
-  return 0;
 }
 
 
@@ -1652,8 +1655,8 @@ pubkey_get_npkey (pubkey_algo_t algo)
     case PUBKEY_ALGO_ECDSA:     return 2;
     case PUBKEY_ALGO_ELGAMAL:   return 3;
     case PUBKEY_ALGO_EDDSA:     return 2;
+    default: return 0;
     }
-  return 0;
 }
 
 
@@ -1672,8 +1675,8 @@ pubkey_get_nskey (pubkey_algo_t algo)
     case PUBKEY_ALGO_ECDSA:     return 3;
     case PUBKEY_ALGO_ELGAMAL:   return 4;
     case PUBKEY_ALGO_EDDSA:     return 3;
+    default: return 0;
     }
-  return 0;
 }
 
 /* Temporary helper. */
@@ -1691,8 +1694,8 @@ pubkey_get_nsig (pubkey_algo_t algo)
     case PUBKEY_ALGO_ECDSA:     return 2;
     case PUBKEY_ALGO_ELGAMAL:   return 2;
     case PUBKEY_ALGO_EDDSA:     return 2;
+    default: return 0;
     }
-  return 0;
 }
 
 
@@ -1711,8 +1714,8 @@ pubkey_get_nenc (pubkey_algo_t algo)
     case PUBKEY_ALGO_ECDSA:     return 0;
     case PUBKEY_ALGO_ELGAMAL:   return 2;
     case PUBKEY_ALGO_EDDSA:     return 0;
+    default: return 0;
     }
-  return 0;
 }
 
 
