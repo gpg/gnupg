@@ -350,7 +350,7 @@ union int_and_ptr_u
    local storage.  We use this in conjunction with the
    log_set_pid_suffix_cb feature.  */
 #ifndef HAVE_W32_SYSTEM
-static int my_tlskey_current_fd;
+static npth_key_t my_tlskey_current_fd;
 #endif
 
 /* Prototypes. */
