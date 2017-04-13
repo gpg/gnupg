@@ -54,10 +54,14 @@
 #endif
 #include <winsock2.h>
 #include <ws2tcpip.h>
+typedef SOCKET socket_fd_t;
+#define STDCALL __stdcall
 #ifdef TIME_WITH_SYS_TIME
 #include <sys/time.h>		/* gettimeofday(2) */
 #endif
 #else
+typedef int socket_fd_t;
+#define STDCALL
 #include <sys/time.h>		/* gettimeofday(2) */
 #include <sys/types.h>		/* FD_SETSIZE socklen_t */
 #include <sys/select.h>		/* FD_ZERO FD_SET fd_set select(2) */
@@ -4448,7 +4452,7 @@ struct dns_trace {
 	} cnames;
 };
 
-static void dns_te_initname(struct sockaddr_storage *ss, int fd, int (*f)(int, struct sockaddr *, socklen_t *)) {
+static void dns_te_initname(struct sockaddr_storage *ss, int fd, int (* STDCALL f)(socket_fd_t, struct sockaddr *, socklen_t *)) {
 	socklen_t n = sizeof *ss;
 
 	if (0 != f(fd, (struct sockaddr *)ss, &n))
