@@ -166,7 +166,7 @@ static gpgrt_ssize_t cookie_read (void *cookie, void *buffer, size_t size);
 static gpgrt_ssize_t cookie_write (void *cookie,
                                    const void *buffer, size_t size);
 static int cookie_close (void *cookie);
-#ifdef HAVE_W32_SYSTEM
+#if defined(HAVE_W32_SYSTEM) && defined(HTTP_USE_NTBTLS)
 static gpgrt_ssize_t simple_cookie_read (void *cookie,
                                          void *buffer, size_t size);
 static gpgrt_ssize_t simple_cookie_write (void *cookie,
@@ -213,7 +213,7 @@ typedef struct cookie_s *cookie_t;
 
 /* Simple cookie functions.  Here the cookie is an int with the
  * socket. */
-#ifdef HAVE_W32_SYSTEM
+#if defined(HAVE_W32_SYSTEM) && defined(HTTP_USE_NTBTLS)
 static es_cookie_io_functions_t simple_cookie_functions =
   {
     simple_cookie_read,
@@ -383,7 +383,7 @@ _my_socket_new (int lnr, assuan_fd_t fd)
   so->refcount = 1;
   if (opt_debug)
     log_debug ("http.c:%d:socket_new: object %p for fd %d created\n",
-               lnr, so, so->fd);
+               lnr, so, (int)so->fd);
   return so;
 }
 #define my_socket_new(a) _my_socket_new (__LINE__, (a))
@@ -395,7 +395,7 @@ _my_socket_ref (int lnr, my_socket_t so)
   so->refcount++;
   if (opt_debug > 1)
     log_debug ("http.c:%d:socket_ref: object %p for fd %d refcount now %d\n",
-               lnr, so, so->fd, so->refcount);
+               lnr, so, (int)so->fd, so->refcount);
   return so;
 }
 #define my_socket_ref(a) _my_socket_ref (__LINE__,(a))
@@ -413,7 +413,7 @@ _my_socket_unref (int lnr, my_socket_t so,
       so->refcount--;
       if (opt_debug > 1)
         log_debug ("http.c:%d:socket_unref: object %p for fd %d ref now %d\n",
-                   lnr, so, so->fd, so->refcount);
+                   lnr, so, (int)so->fd, so->refcount);
 
       if (!so->refcount)
         {
@@ -2923,7 +2923,7 @@ cookie_write (void *cookie, const void *buffer_arg, size_t size)
 }
 
 
-#ifdef HAVE_W32_SYSTEM
+#if defined(HAVE_W32_SYSTEM) && defined(HTTP_USE_NTBTLS)
 static gpgrt_ssize_t
 simple_cookie_read (void *cookie, void *buffer, size_t size)
 {
