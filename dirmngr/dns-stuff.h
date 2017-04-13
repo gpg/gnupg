@@ -78,7 +78,7 @@ struct dns_addrinfo_s
   int socktype;
   int protocol;
   int addrlen;
-  struct sockaddr addr[1];
+  struct sockaddr_storage addr[1];
 };
 
 
@@ -142,7 +142,7 @@ gpg_error_t resolve_dns_name (const char *name, unsigned short port,
                               dns_addrinfo_t *r_dai, char **r_canonname);
 
 /* Function similar to getnameinfo.  */
-gpg_error_t resolve_dns_addr (const struct sockaddr *addr, int addrlen,
+gpg_error_t resolve_dns_addr (const struct sockaddr_storage *addr, int addrlen,
                               unsigned int flags, char **r_name);
 
 /* Return true if NAME is a numerical IP address.  */

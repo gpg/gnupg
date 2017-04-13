@@ -844,7 +844,7 @@ resolve_name_libdns (const char *name, unsigned short port,
             (*r_canonname)[strlen (*r_canonname)-1] = 0;
         }
 
-      dai = xtrymalloc (sizeof *dai + ent->ai_addrlen -1);
+      dai = xtrymalloc (sizeof *dai);
       if (dai == NULL)
         {
           err = gpg_error_from_syserror ();
@@ -968,7 +968,7 @@ resolve_name_standard (const char *name, unsigned short port,
       if (opt_disable_ipv6 && ai->ai_family == AF_INET6)
         continue;
 
-      dai = xtrymalloc (sizeof *dai + ai->ai_addrlen - 1);
+      dai = xtrymalloc (sizeof *dai);
       dai->family = ai->ai_family;
       dai->socktype = ai->ai_socktype;
       dai->protocol = ai->ai_protocol;
@@ -1036,7 +1036,7 @@ resolve_dns_name (const char *name, unsigned short port,
 #ifdef USE_LIBDNS
 /* Resolve an address using libdns.  */
 static gpg_error_t
-resolve_addr_libdns (const struct sockaddr *addr, int addrlen,
+resolve_addr_libdns (const struct sockaddr_storage *addr, int addrlen,
                      unsigned int flags, char **r_name)
 {
   gpg_error_t err;
@@ -1050,13 +1050,13 @@ resolve_addr_libdns (const struct sockaddr *addr, int addrlen,
 
   /* First we turn ADDR into a DNS name (with ".arpa" suffix).  */
   err = 0;
-  if (addr->sa_family == AF_INET6)
+  if (addr->ss_family == AF_INET6)
     {
       const struct sockaddr_in6 *a6 = (const struct sockaddr_in6 *)addr;
       if (!dns_aaaa_arpa (host, sizeof host, (void*)&a6->sin6_addr))
         err = gpg_error (GPG_ERR_INV_OBJ);
     }
-  else if (addr->sa_family == AF_INET)
+  else if (addr->ss_family == AF_INET)
     {
       const struct sockaddr_in *a4 = (const struct sockaddr_in *)addr;
       if (!dns_a_arpa (host, sizeof host, (void*)&a4->sin_addr))
@@ -1144,18 +1144,19 @@ resolve_addr_libdns (const struct sockaddr *addr, int addrlen,
       buflen = sizeof ptr.host;
 
       p = buffer;
-      if (addr->sa_family == AF_INET6 && (flags & DNS_WITHBRACKET))
+      if (addr->ss_family == AF_INET6 && (flags & DNS_WITHBRACKET))
         {
           *p++ = '[';
           buflen -= 2;
         }
-      ec = getnameinfo (addr, addrlen, p, buflen, NULL, 0, NI_NUMERICHOST);
+      ec = getnameinfo ((const struct sockaddr *)addr,
+                        addrlen, p, buflen, NULL, 0, NI_NUMERICHOST);
       if (ec)
         {
           err = map_eai_to_gpg_error (ec);
           goto leave;
         }
-      if (addr->sa_family == AF_INET6 && (flags & DNS_WITHBRACKET))
+      if (addr->ss_family == AF_INET6 && (flags & DNS_WITHBRACKET))
         strcat (buffer, "]");
     }
 
@@ -1169,7 +1170,7 @@ resolve_addr_libdns (const struct sockaddr *addr, int addrlen,
 
 /* Resolve an address using the standard system function.  */
 static gpg_error_t
-resolve_addr_standard (const struct sockaddr *addr, int addrlen,
+resolve_addr_standard (const struct sockaddr_storage *addr, int addrlen,
                        unsigned int flags, char **r_name)
 {
   gpg_error_t err;
@@ -1187,20 +1188,22 @@ resolve_addr_standard (const struct sockaddr *addr, int addrlen,
   if ((flags & DNS_NUMERICHOST) || tor_mode)
     ec = EAI_NONAME;
   else
-    ec = getnameinfo (addr, addrlen, buffer, buflen, NULL, 0, NI_NAMEREQD);
+    ec = getnameinfo ((const struct sockaddr *)addr,
+                      addrlen, buffer, buflen, NULL, 0, NI_NAMEREQD);
 
   if (!ec && *buffer == '[')
     ec = EAI_FAIL;  /* A name may never start with a bracket.  */
   else if (ec == EAI_NONAME)
     {
       p = buffer;
-      if (addr->sa_family == AF_INET6 && (flags & DNS_WITHBRACKET))
+      if (addr->ss_family == AF_INET6 && (flags & DNS_WITHBRACKET))
         {
           *p++ = '[';
           buflen -= 2;
         }
-      ec = getnameinfo (addr, addrlen, p, buflen, NULL, 0, NI_NUMERICHOST);
-      if (!ec && addr->sa_family == AF_INET6 && (flags & DNS_WITHBRACKET))
+      ec = getnameinfo ((const struct sockaddr *)addr,
+                        addrlen, p, buflen, NULL, 0, NI_NUMERICHOST);
+      if (!ec && addr->ss_family == AF_INET6 && (flags & DNS_WITHBRACKET))
         strcat (buffer, "]");
     }
 
@@ -1229,7 +1232,7 @@ resolve_addr_standard (const struct sockaddr *addr, int addrlen,
 
 /* A wrapper around getnameinfo.  */
 gpg_error_t
-resolve_dns_addr (const struct sockaddr *addr, int addrlen,
+resolve_dns_addr (const struct sockaddr_storage *addr, int addrlen,
                   unsigned int flags, char **r_name)
 {
   gpg_error_t err;
