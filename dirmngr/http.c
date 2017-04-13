@@ -2470,13 +2470,13 @@ start_server ()
  * This function is basically a copy of the same internal fucntion in
  * Libassuan.  */
 static int
-use_socks (struct sockaddr *addr)
+use_socks (struct sockaddr_storage *addr)
 {
   int mode;
 
   if (assuan_sock_get_flag (ASSUAN_INVALID_FD, "tor-mode", &mode) || !mode)
     return 0;  /* Not in Tor mode.  */
-  else if (addr->sa_family == AF_INET6)
+  else if (addr->ss_family == AF_INET6)
     {
       struct sockaddr_in6 *addr_in6 = (struct sockaddr_in6 *)addr;
       const unsigned char *s;
@@ -2491,7 +2491,7 @@ use_socks (struct sockaddr *addr)
 
       return 0; /* This is the loopback address.  */
     }
-  else if (addr->sa_family == AF_INET)
+  else if (addr->ss_family == AF_INET)
     {
       struct sockaddr_in *addr_in = (struct sockaddr_in *)addr;
 
@@ -2508,7 +2508,7 @@ use_socks (struct sockaddr *addr)
 /* Wrapper around assuan_sock_new which takes the domain from an
  * address parameter.  */
 static assuan_fd_t
-my_sock_new_for_addr (struct sockaddr *addr, int type, int proto)
+my_sock_new_for_addr (struct sockaddr_storage *addr, int type, int proto)
 {
   int domain;
 
@@ -2519,7 +2519,7 @@ my_sock_new_for_addr (struct sockaddr *addr, int type, int proto)
       domain = AF_INET;
     }
   else
-    domain = addr->sa_family;
+    domain = addr->ss_family;
 
   return assuan_sock_new (domain, type, proto);
 }
@@ -2644,7 +2644,8 @@ connect_server (const char *server, unsigned short port,
             }
 
           anyhostaddr = 1;
-          if (assuan_sock_connect (sock, ai->addr, ai->addrlen))
+          if (assuan_sock_connect (sock, (struct sockaddr *)ai->addr,
+                                   ai->addrlen))
             {
               last_err = gpg_err_make (default_errsource,
                                        gpg_err_code_from_syserror ());
