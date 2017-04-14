@@ -328,7 +328,7 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
       xfree (desc);
     }
 
-  return 0;
+  return err;
 }
 
 
@@ -552,7 +552,6 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
               return 0;
             }
           xfree (pw);
-          rc  = 0;
         }
       else if (cache_mode == CACHE_MODE_NORMAL)
         {
@@ -590,7 +589,6 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
                   return 0;
                 }
               xfree (pw);
-              rc  = 0;
             }
         }
 

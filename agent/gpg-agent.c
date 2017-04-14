@@ -2964,7 +2964,6 @@ handle_connections (gnupg_fd_t listen_fd,
                       xfree (ctrl);
                     }
                 }
-              fd = GNUPG_INVALID_FD;
             }
         }
     }

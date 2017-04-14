@@ -654,7 +654,7 @@ start_pinentry (ctrl_t ctrl)
 
   xfree (flavor_version);
 
-  return 0;
+  return rc;
 }
 
 

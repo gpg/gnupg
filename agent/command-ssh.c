@@ -2576,7 +2576,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
   key_public = NULL;
   key_counter = 0;
-  err = 0;
 
   key_blobs = es_fopenmem (0, "r+b");
   if (! key_blobs)
