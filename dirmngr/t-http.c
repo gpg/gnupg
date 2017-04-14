@@ -347,6 +347,10 @@ main (int argc, char **argv)
   if (tls_dbg)
     gnutls_global_set_log_level (tls_dbg);
 
+#else
+  (void)err;
+  (void)tls_dbg;
+  (void)no_crl;
 #endif /*HTTP_USE_GNUTLS*/
 
   rc = http_parse_uri (&uri, *argv, 1);
