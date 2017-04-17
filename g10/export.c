@@ -580,7 +580,7 @@ canon_pk_algo (enum gcry_pk_algos algo)
 static gpg_error_t
 cleartext_secret_key_to_openpgp (gcry_sexp_t s_key, PKT_public_key *pk)
 {
-  gpg_error_t err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  gpg_error_t err;
   gcry_sexp_t top_list;
   gcry_sexp_t key = NULL;
   char *key_type = NULL;
@@ -1539,7 +1539,7 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
                         KEYDB_SEARCH_DESC *desc, size_t ndesc,
                         size_t descindex, gcry_cipher_hd_t cipherhd)
 {
-  gpg_error_t err;
+  gpg_error_t err = gpg_error (GPG_ERR_NOT_FOUND);
   char *cache_nonce = NULL;
   subkey_list_t subkey_list = NULL;  /* Track already processed subkeys. */
   int skip_until_subkey = 0;

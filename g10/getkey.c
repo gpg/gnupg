@@ -1654,7 +1654,8 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
                   if (! ctx->kr_handle)
                     {
                       xfree (ctx);
-                      *retctx = NULL;
+                      if (retctx)
+                        *retctx = NULL;
                       rc = gpg_error_from_syserror ();
                     }
                   else

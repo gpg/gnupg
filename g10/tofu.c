@@ -3857,7 +3857,7 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 gpg_error_t
 tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   time_t now = gnupg_get_time ();
   tofu_dbs_t dbs;
   PKT_public_key *pk;
