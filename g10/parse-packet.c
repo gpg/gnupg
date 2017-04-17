@@ -2948,7 +2948,7 @@ parse_ring_trust (parse_packet_ctx_t ctx, unsigned long pktlen)
       if (namelen && pktlen)
         {
           rt.url = xtrymalloc (namelen + 1);
-          if (rt.url)
+          if (!rt.url)
             {
               err = gpg_error_from_syserror ();
               goto leave;
