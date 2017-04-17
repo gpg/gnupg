@@ -18,7 +18,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = options.skel dirmngr-conf.skel distsigkey.gpg \
+EXTRA_DIST = distsigkey.gpg \
 	     ChangeLog-2011 gpg-w32info.rc \
 	     gpg.w32-manifest.in test.c t-keydb-keyring.kbx \
 	     t-keydb-get-keyblock.gpg t-stutter-data.asc
@@ -240,18 +240,12 @@ install-exec-hook:
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) $(srcdir)/options.skel \
-				$(DESTDIR)$(pkgdatadir)/gpg-conf.skel
-	$(INSTALL_DATA) $(srcdir)/dirmngr-conf.skel \
-				$(DESTDIR)$(pkgdatadir)/dirmngr-conf.skel
 	$(INSTALL_DATA) $(srcdir)/distsigkey.gpg \
 				$(DESTDIR)$(pkgdatadir)/distsigkey.gpg
 
 # NB: For uninstalling gpg and gpgv we use -local because there is
 # no need for a specific order the targets need to be run.
 uninstall-local:
-	-@rm $(DESTDIR)$(pkgdatadir)/gpg-conf.skel
-	-@rm $(DESTDIR)$(pkgdatadir)/dirmngr-conf.skel
 	-@rm $(DESTDIR)$(pkgdatadir)/distsigkey.gpg
 	-@files=`for p in $(gpg2_hack_uninst); do echo "$$p"; done | \
 	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
