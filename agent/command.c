@@ -927,7 +927,6 @@ cmd_genkey (assuan_context_t ctx, char *line)
     }
   line = skip_options (line);
 
-  p = line;
   for (p=line; *p && *p != ' ' && *p != '\t'; p++)
     ;
   *p = '\0';
@@ -2105,7 +2104,6 @@ cmd_import_key (assuan_context_t ctx, char *line)
   force = has_option (line, "--force");
   line = skip_options (line);
 
-  p = line;
   for (p=line; *p && *p != ' ' && *p != '\t'; p++)
     ;
   *p = '\0';

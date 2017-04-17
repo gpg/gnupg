@@ -2975,7 +2975,6 @@ ssh_key_to_protected_buffer (gcry_sexp_t key, const char *passphrase,
   unsigned int buffer_new_n;
   gpg_error_t err;
 
-  err = 0;
   buffer_new_n = gcry_sexp_sprint (key, GCRYSEXP_FMT_CANON, NULL, 0);
   buffer_new = xtrymalloc_secure (buffer_new_n);
   if (! buffer_new)
