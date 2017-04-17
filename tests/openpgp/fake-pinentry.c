@@ -126,6 +126,8 @@ get_passphrase (const char *fname)
                fname, fname_new, strerror (errno));
       exit (1);
     }
+
+  free (fname_new);
   return passphrase;
 }
 
