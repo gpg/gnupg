@@ -1261,7 +1261,7 @@ impex_filter_getval (void *cookie, const char *propname)
           snprintf (numbuf, sizeof numbuf, "%d", pk->pubkey_algo);
           result = numbuf;
         }
-      if (!strcmp (propname, "key_created"))
+      else if (!strcmp (propname, "key_created"))
         {
           snprintf (numbuf, sizeof numbuf, "%lu", (ulong)pk->timestamp);
           result = numbuf;
