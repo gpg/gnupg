@@ -36,12 +36,6 @@
 #include "../common/status.h"
 #include "../common/i18n.h"
 
-#ifdef USE_ONLY_8DOT3
-#define SKELEXT ".skl"
-#else
-#define SKELEXT EXTSEP_S "skel"
-#endif
-
 #ifdef HAVE_W32_SYSTEM
 #define NAME_OF_DEV_NULL "nul"
 #else
@@ -373,93 +367,6 @@ open_sigfile (const char *sigfilename, progress_filter_context_t *pfx)
 }
 
 
-/****************
- * Copy the option file skeleton for NAME to the given directory.
- * Returns true if the new option file has any option.
- */
-static int
-copy_options_file (const char *destdir, const char *name)
-{
-  const char *datadir = gnupg_datadir ();
-  char *fname;
-  FILE *src, *dst;
-  int linefeeds=0;
-  int c;
-  mode_t oldmask;
-  int esc = 0;
-  int any_option = 0;
-
-  if (opt.dry_run)
-    return 0;
-
-  fname = xstrconcat (datadir, DIRSEP_S, name, "-conf", SKELEXT, NULL);
-  src = fopen (fname, "r");
-  if (src && is_secured_file (fileno (src)))
-    {
-      fclose (src);
-      src = NULL;
-      gpg_err_set_errno (EPERM);
-    }
-  if (!src)
-    {
-      log_info (_("can't open '%s': %s\n"), fname, strerror(errno));
-      xfree(fname);
-      return 0;
-    }
-  xfree (fname);
-  fname = xstrconcat (destdir, DIRSEP_S, name, EXTSEP_S, "conf", NULL);
-
-  oldmask = umask (077);
-  if (is_secured_filename (fname))
-    {
-      dst = NULL;
-      gpg_err_set_errno (EPERM);
-    }
-  else
-    dst = fopen( fname, "w" );
-  umask (oldmask);
-
-  if (!dst)
-    {
-      log_info (_("can't create '%s': %s\n"), fname, strerror(errno) );
-      fclose (src);
-      xfree (fname);
-      return 0;
-    }
-
-  while ((c = getc (src)) != EOF)
-    {
-      if (linefeeds < 3)
-        {
-          if (c == '\n')
-            linefeeds++;
-	}
-      else
-        {
-          putc (c, dst);
-          if (c== '\n')
-            esc = 1;
-          else if (esc == 1)
-            {
-              if (c == ' ' || c == '\t')
-                ;
-              else if (c == '#')
-                esc = 2;
-              else
-                any_option = 1;
-            }
-        }
-    }
-
-  fclose (dst);
-  fclose (src);
-
-  log_info (_("new configuration file '%s' created\n"), fname);
-  xfree (fname);
-  return any_option;
-}
-
-
 void
 try_make_homedir (const char *fname)
 {
@@ -489,15 +396,6 @@ try_make_homedir (const char *fname)
                     fname, strerror(errno) );
       else if (!opt.quiet )
         log_info ( _("directory '%s' created\n"), fname );
-
-      /* Note that we also copy a dirmngr.conf file here.  This is
-         because gpg is likely the first invoked tool and thus creates
-         the directory.  */
-      copy_options_file (fname, DIRMNGR_NAME);
-      if (copy_options_file (fname, GPG_NAME))
-        log_info (_("WARNING: options in '%s'"
-                    " are not yet active during this run\n"),
-                  fname);
     }
 }
 

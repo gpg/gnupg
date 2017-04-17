@@ -3480,10 +3480,6 @@ files; They all live in the current home directory (@pxref{option
   You should backup all files in this directory and take care to keep
   this backup closed away.
 
-  @item @value{DATADIR}/options.skel
-  @efindex options.skel
-  The skeleton options file.
-
 @end table
 
 Operation is further controlled by a few environment variables:

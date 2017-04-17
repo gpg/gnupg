@@ -608,8 +608,6 @@ Section "GnuPG" SEC_gnupg
       Rename /REBOOTOK scdaemon.exe.tmp scdaemon.exe
 
   SetOutPath "$INSTDIR\share\gnupg"
-  File "share/gnupg/gpg-conf.skel"
-  File "share/gnupg/dirmngr-conf.skel"
   File "share/gnupg/distsigkey.gpg"
   File "share/gnupg/sks-keyservers.netCA.pem"
 
