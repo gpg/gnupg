@@ -791,7 +791,6 @@ cmd_pksign (assuan_context_t ctx, char *line)
 
   line = skip_options (line);
 
-  p = line;
   for (p=line; *p && *p != ' ' && *p != '\t'; p++)
     ;
   *p = '\0';
