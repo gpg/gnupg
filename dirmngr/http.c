@@ -98,6 +98,7 @@
 
 #include "../common/util.h"
 #include "../common/i18n.h"
+#include "../common/sysutils.h" /* (gnupg_fd_t) */
 #include "dns-stuff.h"
 #include "http.h"
 #include "http-common.h"
@@ -159,8 +160,8 @@ static gpg_error_t parse_response (http_t hd);
 static gpg_error_t connect_server (const char *server, unsigned short port,
                                    unsigned int flags, const char *srvtag,
                                    assuan_fd_t *r_sock);
-static gpgrt_ssize_t read_server (int sock, void *buffer, size_t size);
-static gpg_error_t write_server (int sock, const char *data, size_t length);
+static gpgrt_ssize_t read_server (assuan_fd_t sock, void *buffer, size_t size);
+static gpg_error_t write_server (assuan_fd_t sock, const char *data, size_t length);
 
 static gpgrt_ssize_t cookie_read (void *cookie, void *buffer, size_t size);
 static gpgrt_ssize_t cookie_write (void *cookie,
@@ -1065,7 +1066,7 @@ http_wait_response (http_t hd)
      is not required but some very old servers (e.g. the original pksd
      keyserver didn't worked without it.  */
   if ((hd->flags & HTTP_FLAG_SHUTDOWN))
-    shutdown (hd->sock->fd, 1);
+    shutdown (FD2INT (hd->sock->fd), 1);
   hd->in_data = 0;
 
   /* Create a new cookie and a stream for reading.  */
@@ -2694,7 +2695,7 @@ connect_server (const char *server, unsigned short port,
 /* Helper to read from a socket.  This handles npth things and
  * EINTR.  */
 static gpgrt_ssize_t
-read_server (int sock, void *buffer, size_t size)
+read_server (assuan_fd_t sock, void *buffer, size_t size)
 {
   int nread;
 
@@ -2705,7 +2706,7 @@ read_server (int sock, void *buffer, size_t size)
 # if defined(USE_NPTH)
       npth_unprotect ();
 # endif
-      nread = recv (sock, buffer, size, 0);
+      nread = recv (FD2INT (sock), buffer, size, 0);
 # if defined(USE_NPTH)
       npth_protect ();
 # endif
@@ -2727,7 +2728,7 @@ read_server (int sock, void *buffer, size_t size)
 
 
 static gpg_error_t
-write_server (int sock, const char *data, size_t length)
+write_server (assuan_fd_t sock, const char *data, size_t length)
 {
   int nleft;
   int nwritten;
@@ -2739,7 +2740,7 @@ write_server (int sock, const char *data, size_t length)
 # if defined(USE_NPTH)
       npth_unprotect ();
 # endif
-      nwritten = send (sock, data, nleft, 0);
+      nwritten = send (FD2INT (sock), data, nleft, 0);
 # if defined(USE_NPTH)
       npth_protect ();
 # endif
@@ -2927,14 +2928,14 @@ cookie_write (void *cookie, const void *buffer_arg, size_t size)
 static gpgrt_ssize_t
 simple_cookie_read (void *cookie, void *buffer, size_t size)
 {
-  int sock = (int)(uintptr_t)cookie;
+  assuan_fd_t sock = (assuan_fd_t)cookie;
   return read_server (sock, buffer, size);
 }
 
 static gpgrt_ssize_t
 simple_cookie_write (void *cookie, const void *buffer_arg, size_t size)
 {
-  int sock = (int)(uintptr_t)cookie;
+  assuan_fd_t sock = (assuan_fd_t)cookie;
   const char *buffer = buffer_arg;
   int nwritten;
 
