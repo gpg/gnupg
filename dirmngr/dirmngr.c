@@ -2046,7 +2046,6 @@ handle_connections (assuan_fd_t listen_fd)
 #endif
   struct sockaddr_un paddr;
   socklen_t plen = sizeof( paddr );
-  gnupg_fd_t fd;
   int nfd, ret;
   fd_set fdset, read_fdset;
   struct timespec abstime;
@@ -2190,6 +2189,8 @@ handle_connections (assuan_fd_t listen_fd)
 
       if (FD_ISSET (FD2INT (listen_fd), &read_fdset))
 	{
+          gnupg_fd_t fd;
+
           plen = sizeof paddr;
 	  fd = INT2FD (npth_accept (FD2INT(listen_fd),
 				    (struct sockaddr *)&paddr, &plen));
@@ -2218,7 +2219,6 @@ handle_connections (assuan_fd_t listen_fd)
                 }
 	      npth_setname_np (thread, threadname);
             }
-          fd = GNUPG_INVALID_FD;
 	}
     }
 
@@ -2228,7 +2228,7 @@ handle_connections (assuan_fd_t listen_fd)
 #endif /*HAVE_INOTIFY_INIT*/
   npth_attr_destroy (&tattr);
   if (listen_fd != GNUPG_INVALID_FD)
-    assuan_sock_close (fd);
+    assuan_sock_close (listen_fd);
   cleanup ();
   log_info ("%s %s stopped\n", strusage(11), strusage(13));
 }
