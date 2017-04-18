@@ -199,6 +199,13 @@
 (assert (string-contains? "Hallo" "llo"))
 (assert (not (string-contains? "Hallo" "olla")))
 
+;; Translate characters.
+(define (string-translate s from to)
+  (list->string (map (lambda (c)
+		       (let ((i (string-index from c)))
+			 (if i (string-ref to i) c))) (string->list s))))
+(assert (equal? (string-translate "foo/bar" "/" ".") "foo.bar"))
+
 ;; Read a word from port P.
 (define (read-word . p)
   (list->string

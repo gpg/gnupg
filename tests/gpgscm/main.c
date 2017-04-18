@@ -313,6 +313,8 @@ main (int argc, char **argv)
   if (! err)
     err = load (sc, "repl.scm", 0, 1);
   if (! err)
+    err = load (sc, "xml.scm", 0, 1);
+  if (! err)
     err = load (sc, "tests.scm", 0, 1);
   if (! err)
     err = load (sc, "gnupg.scm", 0, 1);

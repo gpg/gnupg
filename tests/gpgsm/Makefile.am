@@ -68,7 +68,7 @@ TEST_FILES = plain-1.cms.asc \
 EXTRA_DIST = $(XTESTS) $(KEYS) $(CERTS) $(TEST_FILES) \
 	gpgsm-defs.scm run-tests.scm setup.scm
 
-CLEANFILES = *.log
+CLEANFILES = *.log report.xml
 
 # We need to depend on a couple of programs so that the tests don't
 # start before all programs are built.

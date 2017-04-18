@@ -50,7 +50,7 @@ xcheck:
 
 EXTRA_DIST = gpgme-defs.scm run-tests.scm setup.scm wrap.scm
 
-CLEANFILES = *.log
+CLEANFILES = *.log report.xml
 
 # We need to depend on a couple of programs so that the tests don't
 # start before all programs are built.

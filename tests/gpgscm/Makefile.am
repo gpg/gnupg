@@ -25,6 +25,7 @@ EXTRA_DIST = \
 	lib.scm \
 	repl.scm \
 	t-child.scm \
+	xml.scm \
 	tests.scm \
 	gnupg.scm \
 	time.scm

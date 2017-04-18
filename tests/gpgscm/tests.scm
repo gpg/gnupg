@@ -223,6 +223,10 @@
        (substring path 0 (- (string-length path) (string-length suffix)))
        path)))
 
+(define (dirname path)
+  (let ((i (string-rindex path #\/)))
+    (if i (substring path 0 i) ".")))
+
 ;; Helper for (pipe).
 (define :read-end car)
 (define :write-end cadr)
@@ -511,7 +515,9 @@
 	      (let ((names (map (lambda (t) t::name) unfinished))
 		    (pids (map (lambda (t) t::pid) unfinished)))
 		(for-each
-		 (lambda (test retcode) (test:::set! 'retcode retcode))
+		 (lambda (test retcode)
+		   (test::set-end-time!)
+		   (test:::set! 'retcode retcode))
 		 (map pid->test pids)
 		 (wait-processes (map stringify names) pids #t)))))
 	(current-environment))
@@ -539,7 +545,15 @@
 		(length skipped') "skipped.")
 	  (print-tests failed' "Failed tests:")
 	  (print-tests skipped' "Skipped tests:")
-	  (length failed')))))))
+	  (length failed')))
+
+      (define (xml)
+	(xx::document
+	 (xx::tag 'testsuites
+		  `((xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance")
+		    ("xsi:noNamespaceSchemaLocation"
+		     "https://windyroad.com.au/dl/Open%20Source/JUnit.xsd"))
+		  (map (lambda (t) (t::xml)) procs))))))))
 
 (define (verbosity n)
   (if (= 0 n) '() (cons '--verbose (verbosity (- n 1)))))
@@ -549,6 +563,23 @@
 
 ;; A single test.
 (define test
+ (begin
+
+  ;; Private definitions.
+
+  (define (isotime->junit t)
+    "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
+    "20170418T145809"
+    (string-append (substring t 0 4)
+		   "-"
+		   (substring t 4 6)
+		   "-"
+		   (substring t 6 11)
+		   ":"
+		   (substring t 11 13)
+		   ":"
+		   (substring t 13 15)))
+
   (package
    (define (scm setup name path . args)
      ;; Start the process.
@@ -568,14 +599,34 @@
 
    (define (new name directory spawn pid retcode logfd)
      (package
+
+      ;; XXX: OO glue.
+      (define self (current-environment))
       (define (:set! key value)
 	(eval `(set! ,key ,value) (current-environment))
 	(current-environment))
+
+      ;; The log is written here.
+      (define log-file-name "not set")
+
+      ;; Record time stamps.
+      (define timestamp #f)
+      (define start-time 0)
+      (define end-time 0)
+
+      (define (set-start-time!)
+	(set! timestamp (isotime->junit (get-isotime)))
+	(set! start-time (get-time)))
+      (define (set-end-time!)
+	(set! end-time (get-time)))
+
       (define (open-log-file)
-	(let ((filename (string-append (basename name) ".log")))
-	  (catch '() (unlink filename))
-	  (open filename (logior O_RDWR O_BINARY O_CREAT) #o600)))
+	(set! log-file-name (string-append (basename name) ".log"))
+	(catch '() (unlink log-file-name))
+	(open log-file-name (logior O_RDWR O_BINARY O_CREAT) #o600))
+
       (define (run-sync . args)
+	(set-start-time!)
 	(letfd ((log (open-log-file)))
 	  (with-working-directory directory
 	    (let* ((p (inbound-pipe))
@@ -588,25 +639,62 @@
 	(report)
 	(current-environment))
       (define (run-sync-quiet . args)
+	(set-start-time!)
 	(with-working-directory directory
-	  (set! pid (spawn args CLOSED_FD CLOSED_FD CLOSED_FD))
-	  (set! retcode (wait-process name pid #t)))
+	  (set! pid (spawn args CLOSED_FD CLOSED_FD CLOSED_FD)))
+	(set! retcode (wait-process name pid #t))
+	(set-end-time!)
 	(current-environment))
       (define (run-async . args)
+	(set-start-time!)
 	(let ((log (open-log-file)))
 	  (with-working-directory directory
 	    (set! pid (spawn args CLOSED_FD log log)))
 	  (set! logfd log))
 	(current-environment))
       (define (status)
-	(let ((t (assoc retcode '((0 "PASS") (77 "SKIP") (99 "ERROR")))))
-	  (if (not t) "FAIL" (cadr t))))
+	(let ((t (assoc retcode '((0 PASS) (77 SKIP) (99 ERROR)))))
+	  (if (not t) 'FAIL (cadr t))))
+      (define (status-string)
+	(cadr (assoc (status) '((PASS "PASS")
+			       (SKIP "SKIP")
+			       (ERROR "ERROR")
+			       (FAIL "FAIL")))))
       (define (report)
 	(unless (= logfd CLOSED_FD)
 		(seek logfd 0 SEEK_SET)
 		(splice logfd STDERR_FILENO)
 		(close logfd))
-	(echo (string-append (status) ":") name))))))
+	(echo (string-append (status-string) ":") name))
+
+      (define (xml)
+	(xx::tag
+	 'testsuite
+	 `((name ,name)
+	   (time ,(- end-time start-time))
+	   (package ,(dirname name))
+	   (id 0)
+	   (timestamp ,timestamp)
+	   (hostname "unknown")
+	   (tests 1)
+	   (failures ,(if (eq? FAIL (status)) 1 0))
+	   (errors ,(if (eq? ERROR (status)) 1 0)))
+	 (list
+	  (xx::tag 'properties)
+	  (xx::tag 'testcase
+		   `((name ,(basename name))
+		     (classname ,(string-translate (dirname name) "/" "."))
+		     (time ,(- end-time start-time)))
+		   `(,@(case (status)
+			 ((PASS) '())
+			 ((SKIP) (list (xx::tag 'skipped)))
+			 ((ERROR) (list
+				   (xx::tag 'error '((message "Unknown error.")))))
+			 (else
+			  (list (xx::tag 'failure '((message "Unknown error."))))))))
+	  (xx::tag 'system-out '()
+		   (list (xx::textnode (read-all (open-input-file log-file-name)))))
+	  (xx::tag 'system-err '() (list (xx::textnode "")))))))))))
 
 ;; Run the setup target to create an environment, then run all given
 ;; tests in parallel.
@@ -615,6 +703,7 @@
     (if (null? tests')
 	(let ((results (pool::wait)))
 	  (for-each (lambda (t) (t::report)) (reverse results::procs))
+	  ((results::xml) (open-output-file "report.xml"))
 	  (exit (results::report)))
 	(let ((wd (mkdtemp-autoremove))
 	      (test (car tests')))
@@ -628,6 +717,7 @@
   (let loop ((pool (test-pool::new '())) (tests' tests))
     (if (null? tests')
 	(let ((results (pool::wait)))
+	  ((results::xml) (open-output-file "report.xml"))
 	  (exit (results::report)))
 	(let ((wd (mkdtemp-autoremove))
 	      (test (car tests')))
