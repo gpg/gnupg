@@ -498,23 +498,22 @@
    (define (new procs)
      (package
       (define (add test)
-	(new (cons test procs)))
+	(set! procs (cons test procs))
+	(current-environment))
+      (define (pid->test pid)
+	(let ((t (filter (lambda (x) (= pid x::pid)) procs)))
+	  (if (null? t) #f (car t))))
       (define (wait)
 	(let ((unfinished (filter (lambda (t) (not t::retcode)) procs)))
 	  (if (null? unfinished)
-	      (package)
-	      (let* ((names (map (lambda (t) t::name) unfinished))
-		     (pids (map (lambda (t) t::pid) unfinished))
-		     (results
-		      (map (lambda (pid retcode) (list pid retcode))
-			   pids
-			   (wait-processes (map stringify names) pids #t))))
-		(new
-		 (map (lambda (t)
-			(if t::retcode
-			    t
-			    (t::set-retcode (cadr (assoc t::pid results)))))
-		      procs))))))
+	      (current-environment)
+	      (let ((names (map (lambda (t) t::name) unfinished))
+		    (pids (map (lambda (t) t::pid) unfinished)))
+		(for-each
+		 (lambda (test retcode) (test:::set! 'retcode retcode))
+		 (map pid->test pids)
+		 (wait-processes (map stringify names) pids #t)))))
+	(current-environment))
       (define (passed)
 	(filter (lambda (p) (= 0 p::retcode)) procs))
       (define (skipped)
@@ -568,14 +567,9 @@
 
    (define (new name directory spawn pid retcode logfd)
      (package
-      (define (set-directory x)
-	(new name x spawn pid retcode logfd))
-      (define (set-retcode x)
-	(new name directory spawn pid x logfd))
-      (define (set-pid x)
-	(new name directory spawn x retcode logfd))
-      (define (set-logfd x)
-	(new name directory spawn pid retcode x))
+      (define (:set! key value)
+	(eval `(set! ,key ,value) (current-environment))
+	(current-environment))
       (define (open-log-file)
 	(let ((filename (string-append (basename name) ".log")))
 	  (catch '() (unlink filename))
@@ -584,24 +578,25 @@
 	(letfd ((log (open-log-file)))
 	  (with-working-directory directory
 	    (let* ((p (inbound-pipe))
-		   (pid (spawn args 0 (:write-end p) (:write-end p))))
+		   (pid' (spawn args 0 (:write-end p) (:write-end p))))
 	      (close (:write-end p))
 	      (splice (:read-end p) STDERR_FILENO log)
 	      (close (:read-end p))
-	      (let ((t' (set-retcode (wait-process name pid #t))))
-		(t'::report)
-		t')))))
+	      (set! pid pid')
+	      (set! retcode (wait-process name pid' #t)))))
+	(report)
+	(current-environment))
       (define (run-sync-quiet . args)
 	(with-working-directory directory
-	  (set-retcode
-	   (wait-process
-	    name (spawn args CLOSED_FD CLOSED_FD CLOSED_FD) #t))))
+	  (set! pid (spawn args CLOSED_FD CLOSED_FD CLOSED_FD))
+	  (set! retcode (wait-process name pid #t)))
+	(current-environment))
       (define (run-async . args)
 	(let ((log (open-log-file)))
 	  (with-working-directory directory
-	    (new name directory spawn
-		 (spawn args CLOSED_FD log log)
-		 retcode log))))
+	    (set! pid (spawn args CLOSED_FD log log)))
+	  (set! logfd log))
+	(current-environment))
       (define (status)
 	(let ((t (assoc retcode '((0 "PASS") (77 "SKIP") (99 "ERROR")))))
 	  (if (not t) "FAIL" (cadr t))))
@@ -620,10 +615,10 @@
 	(let ((results (pool::wait)))
 	  (for-each (lambda (t) (t::report)) (reverse results::procs))
 	  (exit (results::report)))
-	(let* ((wd (mkdtemp-autoremove))
-	       (test (car tests'))
-	       (test' (test::set-directory wd)))
-	  (loop (pool::add (test'::run-async))
+	(let ((wd (mkdtemp-autoremove))
+	      (test (car tests')))
+	  (test:::set! 'directory wd)
+	  (loop (pool::add (test::run-async))
 		(cdr tests'))))))
 
 ;; Run the setup target to create an environment, then run all given
@@ -633,10 +628,10 @@
     (if (null? tests')
 	(let ((results (pool::wait)))
 	  (exit (results::report)))
-	(let* ((wd (mkdtemp-autoremove))
-	       (test (car tests'))
-	       (test' (test::set-directory wd)))
-	  (loop (pool::add (test'::run-sync))
+	(let ((wd (mkdtemp-autoremove))
+	      (test (car tests')))
+	  (test:::set! 'directory wd)
+	  (loop (pool::add (test::run-sync))
 		(cdr tests'))))))
 
 ;; Helper to create environment caches from test functions.  SETUP
