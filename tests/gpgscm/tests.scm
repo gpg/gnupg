@@ -17,18 +17,6 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-;; Trace displays and returns the given value.  A debugging aid.
-(define (trace x)
-  (display x)
-  (newline)
-  x)
-
-;; Stringification.
-(define (stringify expression)
-  (let ((p (open-output-string)))
-    (write expression p)
-    (get-output-string p)))
-
 ;; Reporting.
 (define (echo . msg)
   (for-each (lambda (x) (display x) (display " ")) msg)

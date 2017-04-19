@@ -29,6 +29,18 @@
 (assert #t)
 (assert (not #f))
 
+;; Trace displays and returns the given value.  A debugging aid.
+(define (trace x)
+  (display x)
+  (newline)
+  x)
+
+;; Stringification.
+(define (stringify expression)
+  (let ((p (open-output-string)))
+    (write expression p)
+    (get-output-string p)))
+
 (define (filter pred lst)
   (cond ((null? lst) '())
         ((pred (car lst))
