@@ -107,12 +107,12 @@
   (pipe:spawn `(,child stdout4096))
   (pipe:spawn `(,child cat)))
  (tr:call-with-content (lambda (c)
-			 (assert (= 4096 (length c))))))
+			 (assert (= 4096 (string-length c))))))
 (tr:do
  (tr:pipe-do
   (pipe:spawn `(,child stdout8192))
   (pipe:spawn `(,child cat)))
  (tr:call-with-content (lambda (c)
-			 (assert (= 8192 (length c))))))
+			 (assert (= 8192 (string-length c))))))
 
 (echo "All good.")
