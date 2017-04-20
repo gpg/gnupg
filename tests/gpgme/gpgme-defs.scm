@@ -45,11 +45,6 @@
 ;; The tests expect the pinentry to return the passphrase "abc".
 (setenv "PINENTRY_USER_DATA" "abc" #t)
 
-(define (create-file name . lines)
-  (letfd ((fd (open name (logior O_WRONLY O_CREAT O_BINARY) #o600)))
-    (let ((port (fdopen fd "wb")))
-      (for-each (lambda (line) (display line port) (newline port)) lines))))
-
 (define (create-gpgmehome . path)
   ;; Support for various environments.
   (define mode

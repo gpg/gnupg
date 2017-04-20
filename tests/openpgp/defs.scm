@@ -309,6 +309,12 @@
    (lambda (port)
      (display (make-random-string size) port))))
 
+(define (create-file name . lines)
+  (letfd ((fd (open name (logior O_WRONLY O_CREAT O_BINARY) #o600)))
+    (let ((port (fdopen fd "wb")))
+      (for-each (lambda (line) (display line port) (newline port))
+		lines))))
+
 (define (create-gpghome)
   (log "Creating test environment...")
 
@@ -316,21 +322,24 @@
   (make-test-data "random_seed" 600)
 
   (log "Creating configuration files")
-  (for-each
-   (lambda (name)
-     (file-copy (in-srcdir "tests" "openpgp" (string-append name ".tmpl")) name)
-     (let ((p (open-input-output-file name)))
-       (cond
-	((string=? "gpg.conf" name)
-	 (if have-opt-always-trust
-	     (display "no-auto-check-trustdb\n" p))
-	 (display (string-append "agent-program "
-				 (tool 'gpg-agent)
-				 "|--debug-quick-random\n") p)
-	 (display "allow-weak-digest-algos\n" p))
-	((string=? "gpg-agent.conf" name)
-	 (display (string-append "pinentry-program " PINENTRY "\n") p)))))
-   '("gpg.conf" "gpg-agent.conf")))
+  (create-file "gpg.conf"
+	       "no-greeting"
+	       "no-secmem-warning"
+	       "no-permission-warning"
+	       "batch"
+	       "allow-weak-digest-algos"
+	       (if have-opt-always-trust
+		   "no-auto-check-trustdb" "#no-auto-check-trustdb")
+	       (string-append "agent-program "
+			      (tool 'gpg-agent)
+			      "|--debug-quick-random\n")
+	       )
+  (create-file "gpg-agent.conf"
+	       "allow-preset-passphrase"
+	       "no-grab"
+	       "enable-ssh-support"
+	       (string-append "pinentry-program " (tool 'pinentry))
+	       ))
 
 ;; Initialize the test environment, install appropriate configuration
 ;; and start the agent, without any keys.

@@ -61,12 +61,6 @@
 					 (equal? key::fpr (:fpr l))))
 			(gpgsm-with-colons `(--list-secret-keys ,key::fpr))))))
 
-(define (create-file name . lines)
-  (letfd ((fd (open name (logior O_WRONLY O_CREAT O_BINARY) #o600)))
-    (let ((port (fdopen fd "wb")))
-      (for-each (lambda (line) (display line port) (newline port))
-		lines))))
-
 (define (create-gpgsmhome)
   (create-file "gpgsm.conf"
 	       "disable-crl-checks"
