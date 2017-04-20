@@ -949,15 +949,10 @@ static pointer _get_cell(scheme *sc, pointer a, pointer b) {
 
   assert (gc_enabled (sc));
   if (sc->free_cell == sc->NIL) {
-    const int min_to_be_recovered = CELL_SEGSIZE / 4;
     gc(sc,a, b);
-    if (sc->fcells < min_to_be_recovered
-        || sc->free_cell == sc->NIL) {
-      /* if only a few recovered, get more to avoid fruitless gc's */
-      if (!alloc_cellseg(sc,1) && sc->free_cell == sc->NIL) {
-        sc->no_memory=1;
-        return sc->sink;
-      }
+    if (sc->free_cell == sc->NIL) {
+	 sc->no_memory=1;
+	 return sc->sink;
     }
   }
   x = sc->free_cell;
@@ -1746,6 +1741,11 @@ static void gc(scheme *sc, pointer a, pointer b) {
     snprintf(msg,80,"done: %ld cells were recovered.\n", sc->fcells);
     putstr(sc,msg);
   }
+
+  /* if only a few recovered, get more to avoid fruitless gc's */
+  if (sc->fcells < CELL_MINRECOVER
+       && alloc_cellseg(sc, 1) == 0)
+       sc->no_memory = 1;
 }
 
 static void finalize_cell(scheme *sc, pointer a) {

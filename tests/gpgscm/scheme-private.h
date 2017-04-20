@@ -108,6 +108,13 @@ int tracing;
 #ifndef CELL_SEGSIZE
 #define CELL_SEGSIZE    5000  /* # of cells in one segment */
 #endif
+
+/* If less than # of cells are recovered in a garbage collector run,
+ * allocate a new cell segment to avoid fruitless collection cycles in
+ * the near future.  */
+#ifndef CELL_MINRECOVER
+#define CELL_MINRECOVER    (CELL_SEGSIZE >> 2)
+#endif
 struct cell_segment *cell_segments;
 
 /* We use 4 registers. */
