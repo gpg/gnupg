@@ -402,7 +402,7 @@ static pointer _get_cell(scheme *sc, pointer a, pointer b);
 static pointer reserve_cells(scheme *sc, int n);
 static pointer get_consecutive_cells(scheme *sc, int n);
 static pointer find_consecutive_cells(scheme *sc, int n);
-static void finalize_cell(scheme *sc, pointer a);
+static int finalize_cell(scheme *sc, pointer a);
 static int count_consecutive_cells(pointer x, int needed);
 static pointer find_slot_in_env(scheme *sc, pointer env, pointer sym, int all);
 static pointer mk_number(scheme *sc, num n);
@@ -1723,15 +1723,16 @@ static void gc(scheme *sc, pointer a, pointer b) {
       if (is_mark(p)) {
     clrmark(p);
       } else {
-    /* reclaim cell */
-        if (typeflag(p) & T_FINALIZE) {
-          finalize_cell(sc, p);
-        }
-        ++sc->fcells;
-	typeflag(p) = 0;
-        car(p) = sc->NIL;
-        cdr(p) = sc->free_cell;
-        sc->free_cell = p;
+	/* reclaim cell */
+        if ((typeflag(p) & T_FINALIZE) == 0
+	    || finalize_cell(sc, p)) {
+	  /* Reclaim cell.  */
+	  ++sc->fcells;
+	  typeflag(p) = 0;
+	  car(p) = sc->NIL;
+	  cdr(p) = sc->free_cell;
+	  sc->free_cell = p;
+	}
       }
     }
   }
@@ -1748,10 +1749,17 @@ static void gc(scheme *sc, pointer a, pointer b) {
        sc->no_memory = 1;
 }
 
-static void finalize_cell(scheme *sc, pointer a) {
-  if(is_string(a)) {
+/* Finalize A.  Returns true if a can be added to the list of free
+ * cells.  */
+static int
+finalize_cell(scheme *sc, pointer a)
+{
+  switch (type(a)) {
+  case T_STRING:
     sc->free(strvalue(a));
-  } else if(is_port(a)) {
+    break;
+
+  case T_PORT:
     if(a->_object._port->kind&port_file
        && a->_object._port->rep.stdio.closeit) {
       port_close(sc,a,port_input|port_output);
@@ -1759,19 +1767,28 @@ static void finalize_cell(scheme *sc, pointer a) {
       sc->free(a->_object._port->rep.string.start);
     }
     sc->free(a->_object._port);
-  } else if(is_foreign_object(a)) {
+    break;
+
+  case T_FOREIGN_OBJECT:
     a->_object._foreign_object._vtable->finalize(sc, a->_object._foreign_object._data);
-  } else if (is_vector(a)) {
-    int i;
-    for (i = vector_size(vector_length(a)) - 1; i > 0; i--) {
-      pointer p = a + i;
-      typeflag(p) = 0;
-      car(p) = sc->NIL;
-      cdr(p) = sc->free_cell;
-      sc->free_cell = p;
-      sc->fcells += 1;
-    }
+    break;
+
+  case T_VECTOR:
+    do {
+      int i;
+      for (i = vector_size(vector_length(a)) - 1; i > 0; i--) {
+	pointer p = a + i;
+	typeflag(p) = 0;
+	car(p) = sc->NIL;
+	cdr(p) = sc->free_cell;
+	sc->free_cell = p;
+	sc->fcells += 1;
+      }
+      break;
+    } while (0);
   }
+
+  return 1;	/* Free cell.  */
 }
 
 #if SHOW_ERROR_LINE
