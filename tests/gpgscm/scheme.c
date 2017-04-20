@@ -3559,10 +3559,13 @@ static pointer opexe_0(scheme *sc, enum scheme_opcodes op) {
                     is_pair(x); x = cdr(x), y = cdr(y)) {
                     if (y == sc->NIL) {
                          Error_1(sc, "not enough arguments, missing:", x);
-                    } else {
+                    } else if (is_symbol(car(x))) {
                          new_slot_in_env(sc, car(x), car(y));
-                    }
+                    } else {
+			 Error_1(sc, "syntax error in closure: not a symbol", car(x));
+		    }
                }
+
                if (x == sc->NIL) {
                     if (y != sc->NIL) {
                       Error_0(sc, "too many arguments");
