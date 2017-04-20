@@ -613,8 +613,13 @@
     (quit (cadr args)))
    (else
     (display message)
-    (if args (begin
-	      (display ": ")
+    (when (and args (not (null? args)))
+	  (display ": ")
+	  (if (string? (car args))
+	      (begin (display (car args))
+		     (unless (null? (cdr args))
+			     (newline)
+			     (write (cdr args))))
 	      (write args)))
     (newline)
     (vm-history-print history)
