@@ -104,10 +104,11 @@
       (es-fclose (:stdout h))
       (es-fclose (:stderr h))
       (if (> (*verbose*) 2)
-	  (begin
-	    (echo (stringify what) "returned:" result)
-	    (echo (stringify what) "wrote to stdout:" out)
-	    (echo (stringify what) "wrote to stderr:" err)))
+	  (info "Child" (:pid h) "returned:"
+		`((command ,(stringify what))
+		  (status ,result)
+		  (stdout ,out)
+		  (stderr ,err))))
       (list result out err))))
 
 ;; Accessor function for the results of 'call-with-io'.  ':stdout' and
