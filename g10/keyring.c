@@ -663,7 +663,6 @@ keyring_search_reset (KEYRING_HANDLE hd)
 {
     log_assert (hd);
 
-    hd->current.kr = NULL;
     iobuf_close (hd->current.iobuf);
     hd->current.iobuf = NULL;
     hd->current.eof = 0;
@@ -671,6 +670,12 @@ keyring_search_reset (KEYRING_HANDLE hd)
 
     hd->found.kr = NULL;
     hd->found.offset = 0;
+
+    if (hd->current.kr)
+      iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0,
+                   (char*)hd->current.kr->fname);
+    hd->current.kr = NULL;
+
     return 0;
 }
 
