@@ -167,13 +167,15 @@
 	     (expand-one (append acc (list (car v))) (cdr v))))))
 	values)))
 
-(define python (catch #f
-		      (path-expand "python" (string-split (getenv "PATH") *pathsep*))))
+(define python
+  (let loop ((pythons (list "python" "python2" "python3")))
+    (if (null? pythons)
+	#f
+	(catch (loop (cdr pythons))
+	       (unless (file-exists? (path-join gpgme-builddir "lang" "python"
+						(string-append (car pythons) "-gpg")))
+		       (throw "next please"))
+	       (path-expand (car pythons) (string-split (getenv "PATH") *pathsep*))))))
+
 (define (run-python-tests?)
-  (and python
-       (let* ((python-version
-	       (string-trim char-whitespace?
-			    (call-popen `(,python -c "import sys; print('{0}.{1}'.format(sys.version_info[0], sys.version_info[1]))") "")))
-	      (build-path (path-join gpgme-builddir "lang" "python"
-				     (string-append "python" python-version "-gpg"))))
-	 (file-exists? build-path))))
+  (not (not python)))
