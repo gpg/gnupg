@@ -9456,29 +9456,31 @@ void dns_ai_close(struct dns_addrinfo *ai) {
 
 
 static int dns_ai_setent(struct addrinfo **ent, union dns_any *any, enum dns_type type, struct dns_addrinfo *ai) {
-	struct sockaddr *saddr;
-	struct sockaddr_in sin;
-	struct sockaddr_in6 sin6;
+	union u {
+		struct sockaddr_in sin;
+		struct sockaddr_in6 sin6;
+		struct sockaddr_storage ss;
+	} addr;
 	const char *cname;
 	size_t clen;
 
 	switch (type) {
 	case DNS_T_A:
-		saddr	= memset(&sin, '\0', sizeof sin);
+		memset(&addr.sin, '\0', sizeof addr.sin);
 
-		sin.sin_family	= AF_INET;
-		sin.sin_port	= htons(ai->port);
+		addr.sin.sin_family	= AF_INET;
+		addr.sin.sin_port	= htons(ai->port);
 
-		memcpy(&sin.sin_addr, any, sizeof sin.sin_addr);
+		memcpy(&addr.sin.sin_addr, any, sizeof addr.sin.sin_addr);
 
 		break;
 	case DNS_T_AAAA:
-		saddr	= memset(&sin6, '\0', sizeof sin6);
+		memset(&addr.sin6, '\0', sizeof addr.sin6);
 
-		sin6.sin6_family	= AF_INET6;
-		sin6.sin6_port		= htons(ai->port);
+		addr.sin6.sin6_family	= AF_INET6;
+		addr.sin6.sin6_port	= htons(ai->port);
 
-		memcpy(&sin6.sin6_addr, any, sizeof sin6.sin6_addr);
+		memcpy(&addr.sin6.sin6_addr, any, sizeof addr.sin6.sin6_addr);
 
 		break;
 	default:
@@ -9493,20 +9495,20 @@ static int dns_ai_setent(struct addrinfo **ent, union dns_any *any, enum dns_typ
 		clen	= 0;
 	}
 
-	if (!(*ent = malloc(sizeof **ent + dns_sa_len(saddr) + ((ai->hints.ai_flags & AI_CANONNAME)? clen + 1 : 0))))
+	if (!(*ent = malloc(sizeof **ent + dns_sa_len(&addr) + ((ai->hints.ai_flags & AI_CANONNAME)? clen + 1 : 0))))
 		return dns_syerr();
 
 	memset(*ent, '\0', sizeof **ent);
 
-	(*ent)->ai_family	= saddr->sa_family;
+	(*ent)->ai_family	= addr.ss.ss_family;
 	(*ent)->ai_socktype	= ai->hints.ai_socktype;
 	(*ent)->ai_protocol	= ai->hints.ai_protocol;
 
-	(*ent)->ai_addr		= memcpy((unsigned char *)*ent + sizeof **ent, saddr, dns_sa_len(saddr));
-	(*ent)->ai_addrlen	= dns_sa_len(saddr);
+	(*ent)->ai_addr		= memcpy((unsigned char *)*ent + sizeof **ent, &addr, dns_sa_len(&addr));
+	(*ent)->ai_addrlen	= dns_sa_len(&addr);
 
 	if (ai->hints.ai_flags & AI_CANONNAME)
-		(*ent)->ai_canonname	= memcpy((unsigned char *)*ent + sizeof **ent + dns_sa_len(saddr), cname, clen + 1);
+		(*ent)->ai_canonname	= memcpy((unsigned char *)*ent + sizeof **ent + dns_sa_len(&addr), cname, clen + 1);
 
 	ai->found++;
 
