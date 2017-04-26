@@ -242,8 +242,6 @@ int write_pubkey_enc (ctrl_t ctrl, PKT_public_key *pk, int throw_keyid,
                       DEK *dek, iobuf_t out);
 
 /*-- sign.c --*/
-int complete_sig (ctrl_t ctrl, PKT_signature *sig, PKT_public_key *pksk,
-                  gcry_md_hd_t md, const char *cache_nonce);
 int sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	       int do_encrypt, strlist_t remusr, const char *outfile );
 int clearsign_file (ctrl_t ctrl,

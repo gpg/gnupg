@@ -339,7 +339,7 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
 }
 
 
-int
+static int
 complete_sig (ctrl_t ctrl,
               PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md,
               const char *cache_nonce)
