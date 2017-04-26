@@ -117,6 +117,7 @@ struct outstream_cookie_s
   char buffer[4000];  /* Data ring buffer.  */
   size_t buffer_len;  /* The amount of data in the BUFFER.  */
   size_t buffer_pos;  /* The next read position of the BUFFER.  */
+  size_t buffer_read_pos;  /* The next read position of the BUFFER.  */
 };
 
 #define BUFFER_EMPTY(c) ((c)->buffer_len == 0)
@@ -125,6 +126,8 @@ struct outstream_cookie_s
 #define BUFFER_SPACE_AVAILABLE(c) (DIM((c)->buffer) - (c)->buffer_len)
 #define BUFFER_INC_POS(c,n) (c)->buffer_pos = ((c)->buffer_pos + (n)) % DIM((c)->buffer)
 #define BUFFER_CUR_POS(c) (&(c)->buffer[(c)->buffer_pos])
+#define BUFFER_INC_READ_POS(c,n) (c)->buffer_read_pos = ((c)->buffer_read_pos + (n)) % DIM((c)->buffer)
+#define BUFFER_CUR_READ_POS(c) (&(c)->buffer[(c)->buffer_read_pos])
 
 static int
 buffer_get_data (struct outstream_cookie_s *cookie, char *dst, int cnt)
@@ -143,15 +146,15 @@ buffer_get_data (struct outstream_cookie_s *cookie, char *dst, int cnt)
   if (chunk > left)
     chunk = left;
 
-  memcpy (dst, BUFFER_CUR_POS (cookie), chunk);
-  BUFFER_INC_POS (cookie, chunk);
+  memcpy (dst, BUFFER_CUR_READ_POS (cookie), chunk);
+  BUFFER_INC_READ_POS (cookie, chunk);
   left -= chunk;
   dst += chunk;
 
   if (left)
     {
-      memcpy (dst, BUFFER_CUR_POS (cookie), left);
-      BUFFER_INC_POS (cookie, left);
+      memcpy (dst, BUFFER_CUR_READ_POS (cookie), left);
+      BUFFER_INC_READ_POS (cookie, left);
     }
 
   return amount;
