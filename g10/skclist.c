@@ -31,6 +31,7 @@
 #include "keydb.h"
 #include "../common/util.h"
 #include "../common/i18n.h"
+#include "call-agent.h"
 
 
 /* Return true if Libgcrypt's RNG is in faked mode.  */
@@ -126,13 +127,38 @@ build_sk_list (ctrl_t ctrl,
      select the best key.  If a key specification is ambiguous and we
      are in batch mode, die.  */
 
-  if (!locusr) /* No user ids given - use the default key.  */
+  if (!locusr) /* No user ids given - use the card key or the default key.  */
     {
+      struct agent_card_info_s info;
       PKT_public_key *pk;
+      char *serialno;
 
+      memset (&info, 0, sizeof(info));
       pk = xmalloc_clear (sizeof *pk);
       pk->req_usage = use;
-      if ((err = getkey_byname (ctrl, NULL, pk, NULL, 1, NULL)))
+
+      /* Check if a card is available.  If any, use it.  */
+      err = agent_scd_serialno (&serialno, NULL);
+      if (!err)
+        {
+          xfree (serialno);
+          err = agent_scd_getattr ("KEY-FPR", &info);
+          if (err)
+            log_error ("error retrieving key fingerprint from card: %s\n",
+                       gpg_strerror (err));
+          else if (info.fpr1valid)
+            {
+              if ((err = get_pubkey_byfprint (ctrl, pk, NULL, info.fpr1, 20)))
+                {
+                  info.fpr1valid = 0;
+                  log_error ("error on card key to sign: %s, try default\n",
+                             gpg_strerror (err));
+                }
+            }
+        }
+
+      if (!info.fpr1valid
+          && (err = getkey_byname (ctrl, NULL, pk, NULL, 1, NULL)))
 	{
 	  free_public_key (pk);
 	  pk = NULL;
