@@ -1707,7 +1707,7 @@ tdbio_delete_record (ctrl_t ctrl, ulong recnum)
   if (rc)
     return rc;
 
-  /* Now we can chnage it to a free record.  */
+  /* Now we can change it to a free record.  */
   rc = tdbio_read_record (0, &vr, RECTYPE_VER);
   if (rc)
     log_fatal (_("%s: error reading version record: %s\n"),

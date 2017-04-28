@@ -2110,7 +2110,7 @@ parse_compliance_option (const char *string)
 
 
 
-/* Helper to set compliance related options.  This is a separte
+/* Helper to set compliance related options.  This is a separate
  * function so that it can also be used by the --compliance option
  * parser.  */
 static void

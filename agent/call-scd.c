@@ -145,7 +145,7 @@ initialize_module_call_scd (void)
 }
 
 
-/* This function may be called to print infromation pertaining to the
+/* This function may be called to print information pertaining to the
    current state of this module to the log. */
 void
 agent_scd_dump_state (void)
@@ -306,7 +306,7 @@ start_scd (ctrl_t ctrl)
       log_error ("error flushing pending output: %s\n", strerror (errno));
       /* At least Windows XP fails here with EBADF.  According to docs
          and Wine an fflush(NULL) is the same as _flushall.  However
-         the Wime implementaion does not flush stdin,stdout and stderr
+         the Wime implementation does not flush stdin,stdout and stderr
          - see above.  Lets try to ignore the error. */
 #ifndef HAVE_W32_SYSTEM
       goto leave;

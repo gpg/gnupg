@@ -154,7 +154,7 @@ int is_onion_address (const char *name);
 /* Get the canonical name for NAME.  */
 gpg_error_t get_dns_cname (const char *name, char **r_cname);
 
-/* Return a CERT record or an arbitray RR.  */
+/* Return a CERT record or an arbitrary RR.  */
 gpg_error_t get_dns_cert (const char *name, int want_certtype,
                           void **r_key, size_t *r_keylen,
                           unsigned char **r_fpr, size_t *r_fprlen,

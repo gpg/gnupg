@@ -329,7 +329,7 @@ query_swdb (estream_t out, const char *name, const char *current_version)
       goto leave;
     }
 
-  /* Note that the parser uses the first occurance of a matching
+  /* Note that the parser uses the first occurrence of a matching
    * values and ignores possible duplicated values.  */
 
   maxlen = 2048; /* Set limit.  */

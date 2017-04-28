@@ -388,7 +388,7 @@ gpgsm_add_to_certlist (ctrl_t ctrl, const char *name, int secret,
                   if (!dup_certs)
                     gpgsm_add_cert_to_certlist (ctrl, cert, &dup_certs, 0);
 
-                  /* We have to ignore ambigious names as long as
+                  /* We have to ignore ambiguous names as long as
                      there only fault is a bad key usage.  This is
                      required to support encryption and signing
                      certificates of the same subject.
@@ -532,7 +532,7 @@ gpgsm_find_cert (ctrl_t ctrl,
             }
 
           /* If we don't have the KEYID filter we need to check for
-             ambigious search results.  Note, that it is somehwat
+             ambiguous search results.  Note, that it is somehwat
              reasonable to assume that a specification of a KEYID
              won't lead to ambiguous names. */
           if (!rc && !keyid)

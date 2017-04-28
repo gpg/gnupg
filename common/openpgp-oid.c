@@ -141,7 +141,7 @@ openpgp_oid_from_str (const char *string, gcry_mpi_t *r_mpi)
     if (arcno == 1)
       {
         if (val > 2)
-          break; /* Not allowed, error catched below.  */
+          break; /* Not allowed, error caught below.  */
         val1 = val;
       }
     else if (arcno == 2)

@@ -107,7 +107,7 @@ struct wrapper_context_s
 
 
 
-/* We keep a global list of spawed wrapper process.  A separate thread
+/* We keep a global list of spawned wrapper process.  A separate thread
    makes use of this list to log error messages and to watch out for
    finished processes. */
 static struct wrapper_context_s *wrapper_list;

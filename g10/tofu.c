@@ -1941,7 +1941,7 @@ ask_about_binding (ctrl_t ctrl,
   /* I think showing the large message once is sufficient.  If we
    * would move it right before the cpr_get many lines will scroll
    * away and the user might not realize that he merely entered a
-   * wrong choise (because he does not see that either).  As a small
+   * wrong choice (because he does not see that either).  As a small
    * benefit we allow C-L to redisplay everything.  */
   tty_printf ("%s", prompt);
 
@@ -2239,7 +2239,7 @@ build_conflict_set (ctrl_t ctrl, tofu_dbs_t dbs,
     if (!die)
       {
         /*err = gpg_error_from_syserror ();*/
-        xoutofcore (); /* Fixme: Let the fucntion return an error.  */
+        xoutofcore (); /* Fixme: Let the function return an error.  */
       }
 
     for (i = 0; i < conflict_set_count; i ++)

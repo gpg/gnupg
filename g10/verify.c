@@ -60,7 +60,7 @@ verify_signatures (ctrl_t ctrl, int nfiles, char **files )
     /* Decide whether we should handle a detached or a normal signature,
      * which is needed so that the code later can hash the correct data and
      * not have a normal signature act as detached signature and ignoring the
-     * indended signed material from the 2nd file or stdin.
+     * intended signed material from the 2nd file or stdin.
      * 1. gpg <file        - normal
      * 2. gpg file         - normal (or detached)
      * 3. gpg file <file2  - detached

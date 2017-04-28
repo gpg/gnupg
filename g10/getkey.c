@@ -368,7 +368,7 @@ cache_user_id (KBNODE keyblock)
 
 /* Disable and drop the public key cache (which is filled by
    cache_public_key and get_pubkey).  Note: there is currently no way
-   to reenable this cache.  */
+   to re-enable this cache.  */
 void
 getkey_disable_caches ()
 {
@@ -413,7 +413,7 @@ pubkeys_free (pubkey_t keys)
     }
 }
 
-/* Returns all keys that match the search specfication SEARCH_TERMS.
+/* Returns all keys that match the search specification SEARCH_TERMS.
 
    This function also checks for and warns about duplicate entries in
    the keydb, which can occur if the user has configured multiple

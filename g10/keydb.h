@@ -109,7 +109,7 @@ struct pubkey_find_info {
 };
 
 
-/* Helper type for preference fucntions. */
+/* Helper type for preference functions. */
 union pref_hint
 {
   int digest_length;
@@ -301,7 +301,7 @@ void pubkey_free (pubkey_t key);
 /* Free a list of public keys.  */
 void pubkeys_free (pubkey_t keys);
 
-/* Returns all keys that match the search specfication SEARCH_TERMS.
+/* Returns all keys that match the search specification SEARCH_TERMS.
    The returned keys should be freed using pubkeys_free.  */
 gpg_error_t
 get_pubkeys (ctrl_t ctrl,

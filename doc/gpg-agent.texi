@@ -1323,7 +1323,7 @@ This command adds a passphrase to the cache for the specified @var{keygrip}.
   PRESET_PASSPHRASE [--inquire] <string_or_keygrip> <timeout> [<hexstring>]
 @end example
 
-The passphrase is a hexidecimal string when specified. When not specified, the
+The passphrase is a hexadecimal string when specified. When not specified, the
 passphrase will be retrieved from the pinentry module unless the
 @option{--inquire} option was specified in which case the passphrase will be
 retrieved from the client.

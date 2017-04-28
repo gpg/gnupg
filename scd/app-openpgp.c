@@ -1588,7 +1588,7 @@ read_public_key (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
 }
 
 
-/* Get the public key for KEYNO and store it as an S-expresion with
+/* Get the public key for KEYNO and store it as an S-expression with
    the APP handle.  On error that field gets cleared.  If we already
    know about the public key we will just return.  Note that this does
    not mean a key is available; this is solely indicated by the
@@ -1596,7 +1596,7 @@ read_public_key (app_t app, ctrl_t ctrl, u32 created_at, int keyno,
 
    Note that GnuPG 1.x does not need this and it would be too time
    consuming to send it just for the fun of it. However, given that we
-   use the same code in gpg 1.4, we can't use the gcry S-expresion
+   use the same code in gpg 1.4, we can't use the gcry S-expression
    here but need to open encode it. */
 #if GNUPG_MAJOR_VERSION > 1
 static gpg_error_t

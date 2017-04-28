@@ -217,7 +217,7 @@ write_keyblob (const char *filename,
 
 
 
-/* Create a new container under the name FILENAME and intialize it
+/* Create a new container under the name FILENAME and initialize it
    using the current settings.  If the file already exists an error is
    returned.  */
 gpg_error_t

@@ -29,7 +29,7 @@
  */
 
 /* This file implements a few utility functions useful when working
-   with canonical encrypted S-expresions (i.e. not the S-exprssion
+   with canonical encrypted S-expressions (i.e. not the S-exprssion
    objects from libgcrypt).  */
 
 #include <config.h>
@@ -266,7 +266,7 @@ cmp_simple_canon_sexp (const unsigned char *a_orig,
 /* Create a simple S-expression from the hex string at LINE.  Returns
    a newly allocated buffer with that canonical encoded S-expression
    or NULL in case of an error.  On return the number of characters
-   scanned in LINE will be stored at NSCANNED.  This fucntions stops
+   scanned in LINE will be stored at NSCANNED.  This functions stops
    converting at the first character not representing a hexdigit. Odd
    numbers of hex digits are allowed; a leading zero is then
    assumed. If no characters have been found, NULL is returned.*/

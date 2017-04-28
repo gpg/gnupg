@@ -430,7 +430,7 @@ gnupg_exec_tool_stream (const char *pgmname, const char *argv[],
 
   /* Now read as long as we have something to poll.  We continue
      reading even after EOF or error on stdout so that we get the
-     other error messages or remaining outut.  */
+     other error messages or remaining output.  */
   while (! (fds[1].ignore && fds[2].ignore))
     {
       count = es_poll (fds, DIM(fds), -1);

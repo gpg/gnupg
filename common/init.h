@@ -1,4 +1,4 @@
-/* init.h - Definitions for init fucntions.
+/* init.h - Definitions for init functions.
  * Copyright (C) 2007, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.

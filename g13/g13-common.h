@@ -61,7 +61,7 @@ struct
   const char *agent_program;
 
   /* Filename of the GPG program.  Unless set via an program option it
-     is initialzed at the first engine startup to the standard gpg
+     is initialized at the first engine startup to the standard gpg
      filename.  */
   const char *gpg_program;
 

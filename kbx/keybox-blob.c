@@ -65,7 +65,7 @@
            1 = The only defined value
    - u16  Blob flags
           bit 0 = contains secret key material (not used)
-          bit 1 = ephemeral blob (e.g. used while quering external resources)
+          bit 1 = ephemeral blob (e.g. used while querying external resources)
    - u32  Offset to the OpenPGP keyblock or the X.509 DER encoded
           certificate
    - u32  The length of the keyblock or certificate
@@ -229,7 +229,7 @@ struct keyboxblob {
 
 
 
-/* A simple implemention of a dynamic buffer.  Use init_membuf() to
+/* A simple implementation of a dynamic buffer.  Use init_membuf() to
    create a buffer, put_membuf to append bytes and get_membuf to
    release and return the buffer.  Allocation errors are detected but
    only returned at the final get_membuf(), this helps not to clutter

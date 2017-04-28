@@ -1,4 +1,4 @@
-/* misc.c - Miscellaneous fucntions
+/* misc.c - Miscellaneous functions
  * Copyright (C) 2004, 2009, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.

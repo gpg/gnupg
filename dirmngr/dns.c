@@ -4263,7 +4263,7 @@ size_t dns_txt_print(void *_dst, size_t lim, struct dns_txt *txt) {
 
 
 /* Some of the function pointers of DNS_RRTYPES are initialized with
- * slighlly different fucntions, thus we can't use prototypes.  */
+ * slighlly different functions, thus we can't use prototypes.  */
 DNS_PRAGMA_PUSH
 #if __clang__
 #pragma clang diagnostic ignored "-Wstrict-prototypes"

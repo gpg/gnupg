@@ -190,7 +190,7 @@ do_encode_dsa (const byte *md, size_t mdlen, int pkalgo, gcry_sexp_t pkey,
     }
 
   /* ECDSA 521 is special has it is larger than the largest hash
-     we have (SHA-512).  Thus we chnage the size for further
+     we have (SHA-512).  Thus we change the size for further
      processing to 512.  */
   if (pkalgo == GCRY_PK_ECDSA && qbits > 512)
     qbits = 512;

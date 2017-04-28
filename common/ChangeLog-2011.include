@@ -250,7 +250,7 @@
 2001-12-19  Werner Koch  <wk@gnupg.org>
 
 	* util.h [CYGWIN32]: Allow this as an alias for MINGW32. Include
-	stdarg.h becuase we use the va_list type.  By Disastry.
+	stdarg.h because we use the va_list type.  By Disastry.
 
 2001-09-28  Werner Koch  <wk@gnupg.org>
 

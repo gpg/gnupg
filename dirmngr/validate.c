@@ -147,7 +147,7 @@ unknown_criticals (ksba_cert_t cert)
         }
     }
   if (err && gpg_err_code (err) != GPG_ERR_EOF)
-    rc = err; /* Such an error takes precendence.  */
+    rc = err; /* Such an error takes precedence.  */
 
   return rc;
 }
@@ -344,7 +344,7 @@ is_root_cert (ksba_cert_t cert, const char *issuerdn, const char *subjectdn)
     {
       if (gpg_err_code (err) == GPG_ERR_NO_DATA)
         return 1; /* Yes. Without a authorityKeyIdentifier this needs
-                     to be the Root certifcate (our trust anchor).  */
+                     to be the Root certificate (our trust anchor).  */
       log_error ("error getting authorityKeyIdentifier: %s\n",
                  gpg_strerror (err));
       return 0; /* Well, it is broken anyway.  Return No. */
@@ -619,7 +619,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
                 log_info ("root certificate is good and trusted\n");
             }
 
-          break;  /* Okay: a self-signed certicate is an end-point. */
+          break;  /* Okay: a self-signed certificate is an end-point. */
         }
 
       /* To avoid loops, we use an arbitrary limit on the length of

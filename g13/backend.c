@@ -105,7 +105,7 @@ be_take_lock_for_create (ctrl_t ctrl, const char *fname, dotlock_t *r_lock)
   *r_lock = NULL;
 
   /* A DM-crypt container requires special treatment by using the
-     syshelper fucntions.  */
+     syshelper functions.  */
   if (ctrl->conttype == CONTTYPE_DM_CRYPT)
     {
       /*  */

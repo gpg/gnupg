@@ -2112,7 +2112,7 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
        *   string	private_key
        *
        * Note that the private key is the concatenation of the private
-       * key with the public key.  Thus theres are 64 bytes; however
+       * key with the public key.  Thus there's are 64 bytes; however
        * we only want the real 32 byte private key - Libgcrypt expects
        * this.
        */
@@ -3650,7 +3650,7 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
   /* Main processing loop. */
   while ( !ssh_request_process (ctrl, stream_sock) )
     {
-      /* Check wether we have reached EOF before trying to read
+      /* Check whether we have reached EOF before trying to read
 	 another request.  */
       int c;
 

@@ -857,7 +857,7 @@ AC_SUBST(LIBUSB_LIBS)
 AC_SUBST(LIBUSB_CPPFLAGS)
 
 #
-# Check wether it is necessary to link against libdl.
+# Check whether it is necessary to link against libdl.
 # (For example to load libpcsclite)
 #
 gnupg_dlopen_save_libs="$LIBS"
@@ -1393,7 +1393,7 @@ AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 
 # Dirmngr requires mmap on Unix systems.
 if test $ac_cv_func_mmap != yes -a $mmap_needed = yes; then
-  AC_MSG_ERROR([[Sorry, the current implemenation requires mmap.]])
+  AC_MSG_ERROR([[Sorry, the current implementation requires mmap.]])
 fi
 
 
@@ -1570,7 +1570,7 @@ if test "$GCC" = yes; then
     mycflags=
     mycflags_save=$CFLAGS
 
-    # Check whether gcc does not emit a diagnositc for unknow -Wno-*
+    # Check whether gcc does not emit a diagnositc for unknown -Wno-*
     # options.  This is the case for gcc >= 4.6
     AC_MSG_CHECKING([if gcc ignores unknown -Wno-* options])
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[

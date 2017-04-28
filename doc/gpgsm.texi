@@ -1564,8 +1564,8 @@ to @var{value}.
 This option overrides the command line option
 @option{--include-certs}.  A @var{value} of -2 includes all
 certificates except for the root certificate, -1 includes all
-certicates, 0 does not include any certicates, 1 includes only the
-signers certicate and all other positive values include up to
+certificates, 0 does not include any certificates, 1 includes only the
+signers certificate and all other positive values include up to
 @var{value} certificates starting with the signer cert.
 
 @item list-mode

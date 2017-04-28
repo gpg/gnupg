@@ -32,7 +32,7 @@
 
 /* Get the time from the current swdb file and store it at R_FILEDATE
  * and R_VERIFIED.  If the file does not exist 0 is stored at there.
- * The function returns 0 on sucess or an error code.  */
+ * The function returns 0 on success or an error code.  */
 static gpg_error_t
 time_of_saved_swdb (const char *fname, time_t *r_filedate, time_t *r_verified)
 {
@@ -59,7 +59,7 @@ time_of_saved_swdb (const char *fname, time_t *r_filedate, time_t *r_verified)
       goto leave;
     }
 
-  /* Note that the parser uses the first occurance of a matching
+  /* Note that the parser uses the first occurrence of a matching
    * values and ignores possible duplicated values.  */
   maxlen = 2048; /* Set limit.  */
   while ((len = es_read_line (fp, &line, &length_of_line, &maxlen)) > 0)

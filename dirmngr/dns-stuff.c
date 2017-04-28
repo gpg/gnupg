@@ -526,7 +526,7 @@ libdns_init (void)
           /* No DNS resolution type found in the list.  This might be
            * due to systemd based systems which allow for custom
            * keywords which are not known to us and thus we do not
-           * know whether DNS is wanted or not.  Becuase DNS is
+           * know whether DNS is wanted or not.  Because DNS is
            * important for our infrastructure, we forcefully append
            * DNS to the end of the list.  */
           if (strlen (ld.resolv_conf->lookup)+2 < sizeof ld.resolv_conf->lookup)

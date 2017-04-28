@@ -332,7 +332,7 @@
 # endif
 #endif
 
-/* In GnuPG we use wrappers around the malloc fucntions.  If they are
+/* In GnuPG we use wrappers around the malloc functions.  If they are
    not defined we assume that this code is used outside of GnuPG and
    fall back to the regular malloc functions.  */
 #ifndef xtrymalloc

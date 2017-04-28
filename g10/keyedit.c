@@ -1593,7 +1593,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
 	continue;
 
       /* Now we can sign the user ids.  */
-    reloop:  /* (Must use this, because we are modifing the list.)  */
+    reloop:  /* (Must use this, because we are modifying the list.)  */
       primary_pk = NULL;
       for (node = keyblock; node; node = node->next)
 	{
@@ -4104,7 +4104,7 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
               && pk->seckey_info->is_protected
               && pk->seckey_info->s2k.mode == 1002)
 	    {
-              /* FIXME: Check wether this code path is still used.  */
+              /* FIXME: Check whether this code path is still used.  */
 	      tty_fprintf (fp, "%*s%s", opt.legacy_list_mode? 21:5, "",
                            _("card-no: "));
 	      if (pk->seckey_info->ivlen == 16
@@ -6361,7 +6361,7 @@ menu_revsig (ctrl_t ctrl, kbnode_t keyblock)
     }
 
   /* now we can sign the user ids */
-reloop:			/* (must use this, because we are modifing the list) */
+reloop:			/* (must use this, because we are modifying the list) */
   primary_pk = keyblock->pkt->pkt.public_key;
   for (node = keyblock; node; node = node->next)
     {
@@ -6641,7 +6641,7 @@ menu_revsubkey (ctrl_t ctrl, kbnode_t pub_keyblock)
   if (!reason)
       return 0; /* User decided to cancel.  */
 
- reloop: /* (better this way because we are modifing the keyring) */
+ reloop: /* (better this way because we are modifying the keyring) */
   mainpk = pub_keyblock->pkt->pkt.public_key;
   for (node = pub_keyblock; node; node = node->next)
     {

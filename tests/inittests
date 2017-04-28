@@ -65,10 +65,10 @@ fi
 echo gnupg-test-directory > testdir.stamp
 
 
-# Create the private key directy if it does not exists and copy 
+# Create the private key directly if it does not exists and copy
 # the sample keys.
 [ -d private-keys-v1.d ] || mkdir private-keys-v1.d
-for i in ${private_keys}; do 
+for i in ${private_keys}; do
     cat ${srcdir}/samplekeys/$i.key >private-keys-v1.d/$i.key
 done
 
@@ -94,6 +94,6 @@ EOF
 
 # Make sure that the sample certs are available but ignore errors here
 # because we are not a test script.
-for i in ${sample_certs}; do 
+for i in ${sample_certs}; do
     $GPGSM --import ${srcdir}/samplekeys/$i || true
 done

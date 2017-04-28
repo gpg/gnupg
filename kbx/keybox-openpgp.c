@@ -296,7 +296,7 @@ parse_key (const unsigned char *data, size_t datalen,
     }
   else
     {
-      /* Its a pitty that we need to prefix the buffer with the tag
+      /* Its a pity that we need to prefix the buffer with the tag
          and a length header: We can't simply pass it to the fast
          hashing function for that reason.  It might be a good idea to
          have a scatter-gather enabled hash function. What we do here

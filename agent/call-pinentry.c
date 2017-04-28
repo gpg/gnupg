@@ -114,7 +114,7 @@ initialize_module_call_pinentry (void)
 
 
 
-/* This function may be called to print infromation pertaining to the
+/* This function may be called to print information pertaining to the
    current state of this module to the log. */
 void
 agent_query_dump_state (void)
@@ -318,7 +318,7 @@ start_pinentry (ctrl_t ctrl)
       log_error ("error flushing pending output: %s\n", strerror (errno));
       /* At least Windows XP fails here with EBADF.  According to docs
          and Wine an fflush(NULL) is the same as _flushall.  However
-         the Wine implementaion does not flush stdin,stdout and stderr
+         the Wine implementation does not flush stdin,stdout and stderr
          - see above.  Let's try to ignore the error. */
 #ifndef HAVE_W32_SYSTEM
       return unlock_pinentry (tmperr);
@@ -911,7 +911,7 @@ pinentry_status_cb (void *opaque, const char *line)
 }
 
 
-/* Build a SETDESC command line.  This is a dedicated funcion so that
+/* Build a SETDESC command line.  This is a dedicated function so that
  * it can remove control characters which are not supported by the
  * current Pinentry.  */
 static void

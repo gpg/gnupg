@@ -103,7 +103,7 @@ test_all (void)
   if (gpg_err_code (err) != GPG_ERR_INV_VALUE)
     fail (err);
 
-  /* Delete some nonexistant variables.  */
+  /* Delete some nonexistent variables.  */
   err = session_env_putenv (se, "A");
   if (err)
     fail (err);

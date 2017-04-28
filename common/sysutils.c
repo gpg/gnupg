@@ -416,7 +416,7 @@ translate_sys2libc_fd_int (int fd, int for_write)
 /* Check whether FNAME has the form "-&nnnn", where N is a non-zero
  * number.  Returns this number or -1 if it is not the case.  If the
  * caller wants to use the file descriptor for writing FOR_WRITE shall
- * be set to 1.  If NOTRANSLATE is set the Windows spefic mapping is
+ * be set to 1.  If NOTRANSLATE is set the Windows specific mapping is
  * not done. */
 int
 check_special_filename (const char *fname, int for_write, int notranslate)

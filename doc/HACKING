@@ -348,7 +348,7 @@ Note that such a comment will be removed if the git commit option
   - g10/mdfilter.c :: Filter to calculate hashs
   - g10/textfilter.c :: Filter to handle CR/LF and trailing white space
   - g10/cipher.c   :: En-/Decryption filter
-  - g10/misc.c     :: Utlity functions
+  - g10/misc.c     :: Utility functions
   - g10/options.h  :: Structure with all the command line options
                       and related constants
   - g10/openfile.c :: Create/Open Files
@@ -358,7 +358,7 @@ Note that such a comment will be removed if the git commit option
 
   - g10/pubkey-enc.c :: Process a public key encoded packet.
   - g10/seckey-cert.c :: Not anymore used
-  - g10/seskey.c     :: Make sesssion keys etc.
+  - g10/seskey.c     :: Make session keys etc.
   - g10/import.c     :: Import keys into our key storage.
   - g10/export.c     :: Export keys to the OpenPGP format.
   - g10/sign.c       :: Create signature and optionally encrypt.

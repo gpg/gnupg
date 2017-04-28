@@ -814,7 +814,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader, struct stats_s *stats)
 /*    print_mpi ("   q", sk.q); */
 /*    print_mpi ("   u", sk.u); */
 
-  /* Create an S-expresion from the parameters. */
+  /* Create an S-expression from the parameters. */
   err = gcry_sexp_build (&s_key, NULL,
                          "(private-key(rsa(n%m)(e%m)(d%m)(p%m)(q%m)(u%m)))",
                          sk.n, sk.e, sk.d, sk.p, sk.q, sk.u, NULL);

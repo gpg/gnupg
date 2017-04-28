@@ -79,7 +79,7 @@ struct
 
 
 /* Do not print this extension in the list of extensions.  This is set
-   for oids which are already available via ksba fucntions. */
+   for oids which are already available via ksba functions. */
 #define OID_FLAG_SKIP 1
 /* The extension is a simple UTF8String and should be printed.  */
 #define OID_FLAG_UTF8 2

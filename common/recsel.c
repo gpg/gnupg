@@ -602,7 +602,7 @@ recsel_select (recsel_expr_t selector,
 
       if (result)
         {
-          /* This expression evaluated to true.  See wether there are
+          /* This expression evaluated to true.  See whether there are
              remaining expressions in this conjunction.  */
           if (!se->next || se->next->disjun)
             break; /* All expressions are true.  Return True.  */

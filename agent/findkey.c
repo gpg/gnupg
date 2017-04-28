@@ -1264,7 +1264,7 @@ agent_public_key_from_file (ctrl_t ctrl,
   /* FIXME: The following thing is pretty ugly code; we should
      investigate how to make it cleaner.  Probably code to handle
      canonical S-expressions in a memory buffer is better suited for
-     such a task.  After all that is what we do in protect.c.  Neeed
+     such a task.  After all that is what we do in protect.c.  Need
      to find common patterns and write a straightformward API to use
      them.  */
   assert (sizeof (size_t) <= sizeof (void*));

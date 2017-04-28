@@ -1,4 +1,4 @@
-/* atr.c - ISO 7816 ATR fucntions
+/* atr.c - ISO 7816 ATR functions
  * Copyright (C) 2003, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.

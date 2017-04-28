@@ -1,4 +1,4 @@
-/* wks-utils.c - Common helper fucntions for wks tools
+/* wks-utils.c - Common helper functions for wks tools
  * Copyright (C) 2016 g10 Code GmbH
  *
  * This file is part of GnuPG.

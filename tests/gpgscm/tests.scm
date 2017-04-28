@@ -236,7 +236,7 @@
 ;; (letfd <bindings> <body>)
 ;;
 ;; Bind all variables given in <bindings> and initialize each of them
-;; to the given initial value, and close them after evaluting <body>.
+;; to the given initial value, and close them after evaluating <body>.
 (define-macro (letfd bindings . body)
   (let bind ((bindings' bindings))
     (if (null? bindings')
@@ -305,7 +305,7 @@
 ;;
 ;; Bind all variables given in <bindings>, initialize each of them to
 ;; a string representing an unique path in the filesystem, and delete
-;; them after evaluting <body>.
+;; them after evaluating <body>.
 (define-macro (lettmp bindings . body)
   (let bind ((bindings' bindings))
     (if (null? bindings')

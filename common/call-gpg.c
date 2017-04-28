@@ -75,7 +75,7 @@ start_gpg (ctrl_t ctrl, const char *gpg_program, strlist_t gpg_arguments,
       return err;
     }
 
-  /* The first time we are used, intialize the gpg_program variable.  */
+  /* The first time we are used, initialize the gpg_program variable.  */
   if ( !gpg_program || !*gpg_program )
     gpg_program = gnupg_module_name (GNUPG_MODULE_NAME_GPG);
 

@@ -446,7 +446,7 @@ main (int argc, char **argv)
       client_t client;
 
       /* Usually we don't have that many connections, thus it is okay
-         to set them allways from scratch and don't maintain an active
+         to set them always from scratch and don't maintain an active
          fd_set. */
       FD_ZERO (&rfds);
       max_fd = -1;

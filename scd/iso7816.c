@@ -204,7 +204,7 @@ iso7816_list_directory (int slot, int list_dirs,
 }
 
 
-/* This funcion sends an already formatted APDU to the card.  With
+/* This function sends an already formatted APDU to the card.  With
    HANDLE_MORE set to true a MORE DATA status will be handled
    internally.  The return value is a gpg error code (i.e. a mapped
    status word).  This is basically the same as apdu_send_direct but

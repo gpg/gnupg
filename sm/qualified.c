@@ -32,7 +32,7 @@
 
 /* We open the file only once and keep the open file pointer as well
    as the name of the file here.  Note that, a listname not equal to
-   NULL indicates that this module has been intialized and if the
+   NULL indicates that this module has been initialized and if the
    LISTFP is also NULL, no list of qualified signatures exists. */
 static char *listname;
 static FILE *listfp;

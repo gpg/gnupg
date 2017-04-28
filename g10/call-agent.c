@@ -758,7 +758,7 @@ agent_keytocard (const char *hexgrip, int keyno, int force,
 
 /* Call the agent to retrieve a data object.  This function returns
    the data in the same structure as used by the learn command.  It is
-   allowed to update such a structure using this commmand. */
+   allowed to update such a structure using this command. */
 int
 agent_scd_getattr (const char *name, struct agent_card_info_s *info)
 {

@@ -97,7 +97,7 @@ static unsigned int total_nonperm_certificates;
 
 #ifdef HAVE_W32_SYSTEM
 /* We load some functions dynamically.  Provide typedefs for tehse
- * fucntions.  */
+ * functions.  */
 typedef HCERTSTORE (WINAPI *CERTOPENSYSTEMSTORE)
   (HCRYPTPROV hProv, LPCSTR szSubsystemProtocol);
 typedef PCCERT_CONTEXT (WINAPI *CERTENUMCERTIFICATESINSTORE)

@@ -432,7 +432,7 @@ confucius_copy_file (char *infile, char *outfile, int plain)
 /* Get a passphrase in secure storage (if possible).  If AGAIN is
    true, then this is a repeated attempt.  If CANCELED is not a null
    pointer, it will be set to true or false, depending on if the user
-   canceled the operation or not.  On error (including cancelation), a
+   canceled the operation or not.  On error (including cancellation), a
    null pointer is returned.  The passphrase must be deallocated with
    confucius_drop_pass.  CACHEID is the ID to be used for passphrase
    caching and can be NULL to disable caching.  */

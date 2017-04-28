@@ -94,7 +94,7 @@ struct reader_table_s {
   int used;            /* True if slot is used. */
   unsigned short port; /* Port number:  0 = unused, 1 - dev/tty */
 
-  /* Function pointers intialized to the various backends.  */
+  /* Function pointers initialized to the various backends.  */
   int (*connect_card)(int);
   int (*disconnect_card)(int);
   int (*close_reader)(int);
@@ -230,7 +230,7 @@ static npth_mutex_t reader_table_lock;
 #define PCSC_E_SERVICE_STOPPED         0x8010001E
 #define PCSC_W_REMOVED_CARD            0x80100069
 
-/* Fix pcsc-lite ABI incompatibilty.  */
+/* Fix pcsc-lite ABI incompatibility.  */
 #ifndef SCARD_CTL_CODE
 #ifdef _WIN32
 #include <winioctl.h>

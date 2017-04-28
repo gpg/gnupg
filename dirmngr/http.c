@@ -31,7 +31,7 @@
  */
 
 /* Simple HTTP client implementation.  We try to keep the code as
-   self-contained as possible.  There are some contraints however:
+   self-contained as possible.  There are some constraints however:
 
   - estream is required.  We now require estream because it provides a
     very useful and portable asprintf implementation and the fopencookie
@@ -1347,7 +1347,7 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
 	  if ((n = remove_escapes (uri->host)) < 0)
 	    return GPG_ERR_BAD_URI;
 	  if (n != strlen (uri->host))
-	    return GPG_ERR_BAD_URI;	/* Hostname incudes a Nul. */
+	    return GPG_ERR_BAD_URI;	/* Hostname includes a Nul. */
 	  p = p2 ? p2 : NULL;
 	}
       else if (uri->is_http)
@@ -2185,7 +2185,7 @@ store_header (http_t hd, char *line)
   if (*line == ' ' || *line == '\t')
     {
       /* Continuation. This won't happen too often as it is not
-         recommended.  We use a straightforward implementaion. */
+         recommended.  We use a straightforward implementation. */
       if (!hd->headers)
         return GPG_ERR_PROTOCOL_VIOLATION;
       n += strlen (hd->headers->value);
@@ -2468,7 +2468,7 @@ start_server ()
 
 /* Return true if SOCKS shall be used.  This is the case if tor_mode
  * is enabled and the desired address is not the loopback address.
- * This function is basically a copy of the same internal fucntion in
+ * This function is basically a copy of the same internal function in
  * Libassuan.  */
 static int
 use_socks (struct sockaddr_storage *addr)

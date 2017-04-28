@@ -445,7 +445,7 @@ cmd_learn (assuan_context_t ctx, char *line)
               xfree (serial);
               return rc;
             }
-          /* Not canceled, so we have to proceeed.  */
+          /* Not canceled, so we have to proceed.  */
         }
       xfree (serial);
     }

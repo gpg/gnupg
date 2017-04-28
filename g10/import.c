@@ -755,7 +755,7 @@ valid_keyblock_packet (int pkttype)
 /****************
  * Read the next keyblock from stream A.
  * Meta data (ring trust packets) are only considered of WITH_META is set.
- * PENDING_PKT should be initialzed to NULL and not changed by the caller.
+ * PENDING_PKT should be initialized to NULL and not changed by the caller.
  * Return: 0 = okay, -1 no more blocks or another errorcode.
  *         The int at at R_V3KEY counts the number of unsupported v3
  *         keyblocks.
@@ -2681,7 +2681,7 @@ chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid, int *non_self)
 
 
 /* Delete all parts which are invalid and those signatures whose
- * public key algorithm is not available in this implemenation; but
+ * public key algorithm is not available in this implementation; but
  * consider RSA as valid, because parse/build_packets knows about it.
  *
  * Returns: True if at least one valid user-id is left over.

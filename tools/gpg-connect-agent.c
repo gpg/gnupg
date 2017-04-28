@@ -839,7 +839,7 @@ add_definq (char *line, int is_var, int is_prog)
 }
 
 
-/* Show all inquiry defintions. */
+/* Show all inquiry definitions. */
 static void
 show_definq (void)
 {

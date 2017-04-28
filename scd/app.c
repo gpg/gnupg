@@ -99,7 +99,7 @@ app_dump_state (void)
   npth_mutex_unlock (&app_list_lock);
 }
 
-/* Check wether the application NAME is allowed.  This does not mean
+/* Check whether the application NAME is allowed.  This does not mean
    we have support for it though.  */
 static int
 is_app_allowed (const char *name)
@@ -939,7 +939,7 @@ app_change_pin (app_t app, ctrl_t ctrl, const char *chvnostr, int reset_mode,
 
 
 /* Perform a VERIFY operation without doing anything lese.  This may
-   be used to initialze a the PIN cache for long lasting other
+   be used to initialize a the PIN cache for long lasting other
    operations.  Its use is highly application dependent. */
 gpg_error_t
 app_check_pin (app_t app, ctrl_t ctrl, const char *keyidstr,

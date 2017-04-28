@@ -115,7 +115,7 @@ gpg_error_t gnupg_create_pipe (int filedes[2]);
    GNUPG_SPAWN_RUN_ASFW
           On W32 (but not on W32CE) run AllowSetForegroundWindow for
           the child.  Note that due to unknown problems this actually
-          allows SetForegroundWindow for all childs of this process.
+          allows SetForegroundWindow for all children of this process.
 
  */
 gpg_error_t
@@ -162,7 +162,7 @@ gpg_error_t gnupg_spawn_process_fd (const char *pgmname,
 
    Other error codes may be returned as well.  Unless otherwise noted,
    -1 will be stored at R_EXITCODE.  R_EXITCODE may be passed as NULL
-   if the exit code is not required (in that case an error messge will
+   if the exit code is not required (in that case an error message will
    be printed).  Note that under Windows PID is not the process id but
    the handle of the process.  */
 gpg_error_t gnupg_wait_process (const char *pgmname, pid_t pid, int hang,

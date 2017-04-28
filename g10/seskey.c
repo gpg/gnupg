@@ -1,4 +1,4 @@
-/* seskey.c -  make sesssion keys etc.
+/* seskey.c -  make session keys etc.
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
  *               2006, 2009, 2010 Free Software Foundation, Inc.
  *
@@ -311,7 +311,7 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 
 
       /* ECDSA 521 is special has it is larger than the largest hash
-         we have (SHA-512).  Thus we chnage the size for further
+         we have (SHA-512).  Thus we change the size for further
          processing to 512.  */
       if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA && qbits > 512)
         qbits = 512;

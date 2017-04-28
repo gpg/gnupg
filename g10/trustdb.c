@@ -1512,7 +1512,7 @@ sanitize_regexp(const char *old)
 
   /* There are basically two commonly-used regexps here.  GPG and most
      versions of PGP use "<[^>]+[@.]example\.com>$" and PGP (9)
-     command line uses "example.com" (i.e. whatever the user specfies,
+     command line uses "example.com" (i.e. whatever the user specifies,
      and we can't expect users know to use "\." instead of ".").  So
      here are the rules: we're allowed to start with "<[^>]+[@.]" and
      end with ">$" or start and end with nothing.  In between, the

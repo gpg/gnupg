@@ -1141,7 +1141,7 @@ as a binary blob.
 @c recursive process because a CRL has to be checked for each certificate
 @c in the chain except for the root certificate, of which we already know
 @c that it is trusted and we avoid checking a CRL here due to common
-@c setup problems and the assumption that a revoked root certifcate has
+@c setup problems and the assumption that a revoked root certificate has
 @c been removed from the list of trusted certificates.
 @c
 @c

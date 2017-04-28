@@ -716,7 +716,7 @@ list_cert (audit_ctx_t ctx, ksba_cert_t cert, int with_subj)
 
 
 /* List the chain of certificates from STARTITEM up to STOPEVENT.  The
-   certifcates are written out as comments.  */
+   certificates are written out as comments.  */
 static void
 list_certchain (audit_ctx_t ctx, log_item_t startitem, audit_event_t stopevent)
 {

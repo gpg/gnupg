@@ -127,7 +127,7 @@ make_outfile_name (const char *iname)
 
 /* Ask for an output filename; use the given one as default.  Return
    NULL if no file has been given or if it is not possible to ask the
-   user.  NAME is the template len which might conatin enbedded Nuls.
+   user.  NAME is the template len which might contain enbedded Nuls.
    NAMELEN is its actual length.
  */
 char *

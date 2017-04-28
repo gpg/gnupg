@@ -33,7 +33,7 @@
 
 #include <sys/types.h> /* off_t */
 
-/* We include the type defintions from jnlib instead of defining our
+/* We include the type definitions from jnlib instead of defining our
    owns here.  This will not allow us build KBX in a standalone way
    but there is currently no need for it anyway.  Same goes for
    stringhelp.h which for example provides a replacement for stpcpy -

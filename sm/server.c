@@ -409,7 +409,7 @@ cmd_signer (assuan_context_t ctx, char *line)
     {
       gpgsm_status2 (ctrl, STATUS_INV_SGNR,
                      get_inv_recpsgnr_code (rc), line, NULL);
-      /* For compatibiliy reasons we also issue the old code after the
+      /* For compatibility reasons we also issue the old code after the
          new one.  */
       gpgsm_status2 (ctrl, STATUS_INV_RECP,
                      get_inv_recpsgnr_code (rc), line, NULL);

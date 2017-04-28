@@ -492,7 +492,7 @@ typedef struct {
  * implementation defined.  GnuPG uses this to cache signature
  * verification status and since 2.1.18 also to convey information
  * about the origin of a key.  Note that this packet is not part
- * struct packet_struct becuase we use it only local in the packet
+ * struct packet_struct because we use it only local in the packet
  * parser and builder. */
 typedef struct {
   unsigned int trustval;

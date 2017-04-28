@@ -1389,7 +1389,7 @@ gc_component_reload (int component)
 
 /* More or less Robust version of dgettext.  It has the side effect of
    switching the codeset to utf-8 because this is what we want to
-   output.  In theory it is posible to keep the original code set and
+   output.  In theory it is possible to keep the original code set and
    switch back for regular disgnostic output (redefine "_(" for that)
    but given the natur of this tool, being something invoked from
    other pograms, it does not make much sense.  */

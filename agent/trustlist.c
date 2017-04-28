@@ -612,7 +612,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
 
   /* Check whether we are at all allowed to modify the trustlist.
      This is useful so that the trustlist may be a symlink to a global
-     trustlist with only admin priviliges to modify it.  Of course
+     trustlist with only admin privileges to modify it.  Of course
      this is not a secure way of denying access, but it avoids the
      usual clicking on an Okay button most users are used to. */
   fname = make_filename_try (gnupg_homedir (), "trustlist.txt", NULL);

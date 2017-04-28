@@ -1413,7 +1413,7 @@ lookup_cert_by_pattern (assuan_context_t ctx, char *line,
         }
     }
 
-  /* First look through the internal cache.  The certifcates returned
+  /* First look through the internal cache.  The certificates returned
      here are not counted towards the truncation limit.  */
   if (single && !cache_only)
     ; /* Do not read from the local cache in this case.  */
@@ -1940,7 +1940,7 @@ ensure_keyserver (ctrl_t ctrl)
         }
     }
 
-  /* Decide which to use.  Note that the sesssion has no keyservers
+  /* Decide which to use.  Note that the session has no keyservers
      yet set. */
   if (onion_items && !onion_items->next && plain_items && !plain_items->next)
     {
@@ -2328,7 +2328,7 @@ cmd_ks_put (assuan_context_t ctx, char *line)
     }
 
   /* Ask for the key meta data. Not actually needed for HKP servers
-     but we do it anyway to test the client implementaion.  */
+     but we do it anyway to test the client implementation.  */
   err = assuan_inquire (ctx, "KEYBLOCK_INFO",
                         &info, &infolen, MAX_KEYBLOCK_LENGTH);
   if (err)

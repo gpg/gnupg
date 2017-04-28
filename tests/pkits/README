@@ -7,7 +7,7 @@ http://csrc.nist.gov/pki/testing/x509paths.html .
 README             - this file.
 PKITS_data.tar.bz2 - the original ZIP file, repackaged as a tarball.
 Makefile.am        - Part of our build system.
-import-all-certs   - Run a simple import test on all certifcates
+import-all-certs   - Run a simple import test on all certificates
 validate-all-certs - Run an import and validate test on all certificates
 signature-verification         - PKITS test 4.1  
 validity-periods               - PKITS test 4.2  
