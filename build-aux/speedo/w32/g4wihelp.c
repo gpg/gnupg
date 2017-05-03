@@ -964,10 +964,8 @@ read_w32_registry_string (HKEY root, const char *dir, const char *name)
 #define ENV_REG "SYSTEM\\CurrentControlSet\\Control\\" \
     "Session Manager\\Environment"
   /* The following setting can be used for a per-user setting.  */
-#if 0
-#define ENV_HK HKEY_CURRENT_USER
-#define ENV_REG "Environment"
-#endif
+#define ENV_HK_USER HKEY_CURRENT_USER
+#define ENV_REG_USER "Environment"
 /* Due to a bug in Windows7 (kb 2685893) we better put a lower limit
    than 8191 on the maximum length of the PATH variable.  Note, that
    depending on the used toolchain we used to had a 259 byte limit in
@@ -979,12 +977,16 @@ path_add (HWND hwndParent, int string_size, char *variables,
 	  stack_t **stacktop, extra_parameters_t *extra)
 {
   char dir[PATH_LENGTH_LIMIT];
+  char is_user_install[2];
   char *path;
   char *path_new;
   int path_new_size;
   char *comp;
   const char delims[] = ";";
+  int is_user;
   HKEY key_handle = 0;
+  HKEY root_key;
+  const char *env_reg;
 
   g_hwndParent = hwndParent;
   EXDLL_INIT();
@@ -997,13 +999,26 @@ path_add (HWND hwndParent, int string_size, char *variables,
   if (popstring (dir, sizeof (dir)))
     return;
 
-/*   MessageBox (g_hwndParent, "XXX 2", 0, MB_OK); */
+  /* The expected stack layout: HKEY component.  */
+  if (popstring (is_user_install, sizeof (is_user_install)))
+    return;
 
-  path = read_w32_registry_string (ENV_HK, ENV_REG, "Path");
+  if (!strcmp(is_user_install, "1"))
+    {
+      root_key = ENV_HK_USER;
+      env_reg = ENV_REG_USER;
+    }
+  else
+    {
+      root_key = ENV_HK;
+      env_reg = ENV_REG;
+    }
+
+  path = read_w32_registry_string (root_key, env_reg, "Path");
+
   if (! path)
     {
-      MessageBox (g_hwndParent, "No PATH variable found", 0, MB_OK);
-      return;
+      path = strdup ("");
     }
 
 /*   MessageBox (g_hwndParent, "XXX 3", 0, MB_OK); */
@@ -1041,6 +1056,8 @@ path_add (HWND hwndParent, int string_size, char *variables,
   do
     {
 /*       MessageBox (g_hwndParent, comp, 0, MB_OK); */
+      if (!comp)
+        break;
 
       if (!strcmp (comp, dir))
 	{
@@ -1053,10 +1070,8 @@ path_add (HWND hwndParent, int string_size, char *variables,
   while (comp);
   free (path);
 
-/*   MessageBox (g_hwndParent, "XXX 8", 0, MB_OK); */
-
-  /* Set a key for our CLSID.  */
-  RegCreateKey (ENV_HK, ENV_REG, &key_handle);
+  /* Update the path key.  */
+  RegCreateKey (root_key, env_reg, &key_handle);
   RegSetValueEx (key_handle, "Path", 0, REG_EXPAND_SZ,
 		 path_new, path_new_size);
   RegCloseKey (key_handle);
@@ -1074,6 +1089,7 @@ path_remove (HWND hwndParent, int string_size, char *variables,
 	     stack_t **stacktop, extra_parameters_t *extra)
 {
   char dir[PATH_LENGTH_LIMIT];
+  char is_user_install[2];
   char *path;
   char *path_new;
   int path_new_size;
@@ -1082,6 +1098,8 @@ path_remove (HWND hwndParent, int string_size, char *variables,
   HKEY key_handle = 0;
   int changed = 0;
   int count = 0;
+  HKEY root_key;
+  const char *env_reg;
 
   g_hwndParent = hwndParent;
   EXDLL_INIT();
@@ -1092,7 +1110,25 @@ path_remove (HWND hwndParent, int string_size, char *variables,
   if (popstring (dir, sizeof (dir)))
     return;
 
-  path = read_w32_registry_string (ENV_HK, ENV_REG, "Path");
+  /* The expected stack layout: HKEY component.  */
+  if (popstring (is_user_install, sizeof (is_user_install)))
+    return;
+
+  if (!strcmp(is_user_install, "1"))
+    {
+      root_key = ENV_HK_USER;
+      env_reg = ENV_REG_USER;
+    }
+  else
+    {
+      root_key = ENV_HK;
+      env_reg = ENV_REG;
+    }
+
+  path = read_w32_registry_string (root_key, env_reg, "Path");
+
+  if (!path)
+    return;
   /* Old path plus semicolon plus dir plus terminating nul.  */
   path_new_size = strlen (path) + 1;
   path_new = malloc (path_new_size);
@@ -1126,7 +1162,7 @@ path_remove (HWND hwndParent, int string_size, char *variables,
     return;
 
   /* Set a key for our CLSID.  */
-  RegCreateKey (ENV_HK, ENV_REG, &key_handle);
+  RegCreateKey (root_key, env_reg, &key_handle);
   RegSetValueEx (key_handle, "Path", 0, REG_EXPAND_SZ,
 		 path_new, path_new_size);
   RegCloseKey (key_handle);
