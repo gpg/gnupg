@@ -360,8 +360,6 @@ FunctionEnd
 # OS version without the need for an Administrator is in use.  Print a
 # diagnostic if this is not the case and abort installation.
 Function PrintNonAdminWarning
-  Var /GLOBAL is_user_install
-  StrCpy $is_user_install "0"
   ClearErrors
   UserInfo::GetName
   IfErrors leave
@@ -370,7 +368,6 @@ Function PrintNonAdminWarning
   Pop $1
   StrCmp $1 "Admin" leave +1
   MessageBox MB_YESNO "$(T_AdminWanted)" IDNO exit
-  StrCpy $is_user_install "1"
   goto leave
  exit:
     Quit
@@ -520,8 +517,24 @@ FunctionEnd
 # AddToPath - Adds the given dir to the search path.
 #        Input - head of the stack
 Function AddToPath
+  ClearErrors
+  UserInfo::GetName
+  IfErrors add_admin
+  Pop $0
+  UserInfo::GetAccountType
+  Pop $1
+  StrCmp $1 "Admin" add_admin add_user
+
+add_admin:
   Exch $0
-  g4wihelp::path_add "$0" $is_user_install
+  g4wihelp::path_add "$0" "0"
+  goto add_done
+add_user:
+  Exch $0
+  g4wihelp::path_add "$0" "1"
+  goto add_done
+
+add_done:
   StrCmp $R5 "0" add_to_path_done
   SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
   add_to_path_done:
