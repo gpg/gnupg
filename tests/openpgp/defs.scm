@@ -299,6 +299,12 @@
    (pipe:spawn `(,@GPG --dearmor))
    (pipe:write-to sink-name (logior O_WRONLY O_CREAT O_BINARY) #o600)))
 
+(define (gpg-dump-packets source-name sink-name)
+  (pipe:do
+   (pipe:open source-name (logior O_RDONLY O_BINARY))
+   (pipe:spawn `(,@GPG --list-packets))
+   (pipe:write-to sink-name (logior O_WRONLY O_CREAT O_BINARY) #o600)))
+
 ;;
 ;; Support for test environment creation and teardown.
 ;;
