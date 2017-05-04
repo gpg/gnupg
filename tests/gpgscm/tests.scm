@@ -521,31 +521,29 @@
 		 (map pid->test pids)
 		 (wait-processes (map stringify names) pids #t)))))
 	(current-environment))
-      (define (passed)
-	(filter (lambda (p) (= 0 p::retcode)) procs))
-      (define (skipped)
-	(filter (lambda (p) (= 77 p::retcode)) procs))
-      (define (hard-errored)
-	(filter (lambda (p) (= 99 p::retcode)) procs))
-      (define (failed)
-	(filter (lambda (p)
-		  (not (or (= 0 p::retcode) (= 77 p::retcode)
-			   (= 99 p::retcode))))
-		procs))
+      (define (filter-tests status)
+	(filter (lambda (p) (eq? status (p::status))) procs))
       (define (report)
 	(define (print-tests tests message)
 	  (unless (null? tests)
 		  (apply echo (cons message
 				    (map (lambda (t) t::name) tests)))))
 
-	(let ((failed' (failed)) (skipped' (skipped)))
+	(let ((failed (filter-tests 'FAIL))
+	      (xfailed (filter-tests 'XFAIL))
+	      (xpassed (filter-tests 'XPASS))
+	      (skipped (filter-tests 'SKIP)))
 	  (echo (length procs) "tests run,"
-		(length (passed)) "succeeded,"
-		(length failed') "failed,"
-		(length skipped') "skipped.")
-	  (print-tests failed' "Failed tests:")
-	  (print-tests skipped' "Skipped tests:")
-	  (length failed')))
+		(length (filter-tests 'PASS)) "succeeded,"
+		(length failed) "failed,"
+		(length xfailed) "failed expectedly,"
+		(length xpassed) "succeeded unexpectedly,"
+		(length skipped) "skipped.")
+	  (print-tests failed "Failed tests:")
+	  (print-tests xfailed "Expectedly failed tests:")
+	  (print-tests xpassed "Unexpectedly passed tests:")
+	  (print-tests skipped "Skipped tests:")
+	  (+ (length failed) (length xpassed))))
 
       (define (xml)
 	(xx::document
@@ -580,24 +578,34 @@
 		   ":"
 		   (substring t 13 15)))
 
+  ;; If a tests name ends with a bang (!), it is expected to fail.
+  (define (expect-failure? name)
+    (string-suffix? name "!"))
+  ;; Strips the bang (if any).
+  (define (test-name name)
+    (if (expect-failure? name)
+	(substring name 0 (- (string-length name) 1))
+	name))
+
   (package
    (define (scm setup name path . args)
      ;; Start the process.
      (define (spawn-scm args' in out err)
        (spawn-process-fd `(,*argv0* ,@(verbosity (*verbose*))
-				    ,(locate-test path)
+				    ,(locate-test (test-name path))
 				    ,@(if setup (force setup) '())
 				    ,@args' ,@args) in out err))
-     (new name #f spawn-scm #f #f CLOSED_FD))
+     (new name #f spawn-scm #f #f CLOSED_FD (expect-failure? name)))
 
    (define (binary setup name path . args)
      ;; Start the process.
      (define (spawn-binary args' in out err)
-       (spawn-process-fd `(,path ,@(if setup (force setup) '()) ,@args' ,@args)
+       (spawn-process-fd `(,(test-name path)
+			   ,@(if setup (force setup) '()) ,@args' ,@args)
 			 in out err))
-     (new name #f spawn-binary #f #f CLOSED_FD))
+     (new name #f spawn-binary #f #f CLOSED_FD (expect-failure? name)))
 
-   (define (new name directory spawn pid retcode logfd)
+   (define (new name directory spawn pid retcode logfd expect-failure)
      (package
 
       ;; XXX: OO glue.
@@ -653,13 +661,18 @@
 	  (set! logfd log))
 	(current-environment))
       (define (status)
-	(let ((t (assoc retcode '((0 PASS) (77 SKIP) (99 ERROR)))))
-	  (if (not t) 'FAIL (cadr t))))
+	(let* ((t' (assoc retcode '((0 PASS) (77 SKIP) (99 ERROR))))
+	       (t (if (not t') 'FAIL (cadr t'))))
+	  (if expect-failure
+	      (case t ((PASS) 'XPASS) ((FAIL) 'XFAIL) (else t))
+	      t)))
       (define (status-string)
 	(cadr (assoc (status) '((PASS "PASS")
 			       (SKIP "SKIP")
 			       (ERROR "ERROR")
-			       (FAIL "FAIL")))))
+			       (FAIL "FAIL")
+			       (XPASS "XPASS")
+			       (XFAIL "XFAIL")))))
       (define (report)
 	(unless (= logfd CLOSED_FD)
 		(seek logfd 0 SEEK_SET)
@@ -686,7 +699,7 @@
 		     (classname ,(string-translate (dirname name) "/" "."))
 		     (time ,(- end-time start-time)))
 		   `(,@(case (status)
-			 ((PASS) '())
+			 ((PASS XFAIL) '())
 			 ((SKIP) (list (xx::tag 'skipped)))
 			 ((ERROR) (list
 				   (xx::tag 'error '((message "Unknown error.")))))
