@@ -624,6 +624,7 @@ struct parse_packet_ctx_s
   struct packet_struct last_pkt; /* The last parsed packet.  */
   int free_last_pkt; /* Indicates that LAST_PKT must be freed.  */
   int skip_meta;     /* Skip ring trust packets.  */
+  unsigned int n_parsed_packets;	/* Number of parsed packets.  */
 };
 typedef struct parse_packet_ctx_s *parse_packet_ctx_t;
 
@@ -633,6 +634,7 @@ typedef struct parse_packet_ctx_s *parse_packet_ctx_t;
     (a)->last_pkt.pkt.generic= NULL;\
     (a)->free_last_pkt = 0;         \
     (a)->skip_meta = 0;             \
+    (a)->n_parsed_packets = 0;      \
   } while (0)
 
 #define deinit_parse_packet(a) do { \

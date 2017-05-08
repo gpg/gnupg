@@ -409,11 +409,11 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     pkt = xmalloc (sizeof *pkt);
     init_packet (pkt);
     init_parse_packet (&parsectx, a);
-    hd->found.n_packets = 0;;
+    hd->found.n_packets = 0;
     lastnode = NULL;
     save_mode = set_packet_list_mode(0);
     while ((rc=parse_packet (&parsectx, pkt)) != -1) {
-        hd->found.n_packets++;
+        hd->found.n_packets = parsectx.n_parsed_packets;
         if (gpg_err_code (rc) == GPG_ERR_UNKNOWN_PACKET) {
 	    free_packet (pkt, &parsectx);
 	    init_packet (pkt);

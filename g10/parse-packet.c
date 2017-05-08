@@ -764,6 +764,9 @@ parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
                 partial? (new_ctb ? " partial" : " indeterminate") :"",
                 new_ctb? " new-ctb":"");
 
+  /* Count it.  */
+  ctx->n_parsed_packets++;
+
   pkt->pkttype = pkttype;
   rc = GPG_ERR_UNKNOWN_PACKET;	/* default error */
   switch (pkttype)
