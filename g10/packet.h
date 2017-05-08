@@ -623,7 +623,7 @@ struct parse_packet_ctx_s
   iobuf_t inp;       /* The input stream with the packets.  */
   struct packet_struct last_pkt; /* The last parsed packet.  */
   int free_last_pkt; /* Indicates that LAST_PKT must be freed.  */
-  int skip_meta;     /* Skip right trust packets.  */
+  int skip_meta;     /* Skip ring trust packets.  */
 };
 typedef struct parse_packet_ctx_s *parse_packet_ctx_t;
 
