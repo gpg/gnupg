@@ -393,7 +393,7 @@ functionality is also available as the subcommand "passwd" with the
 @option{--edit-card} command.
 
 @item --delete-keys @code{name}
-@itemx --delete-keys @code{name}
+@opindex delete-keys
 Remove key from the public keyring. In batch mode either @option{--yes} is
 required or the key must be specified by fingerprint. This is a
 safeguard against accidental deletion of multiple keys.
