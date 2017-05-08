@@ -58,13 +58,16 @@
   (call-check `(,@gpg --delete-secret-keys ,subkey::fpr))
   (assert (have-public-key? key))
   (assert (have-public-key? subkey))
-  ;; JW: Deleting the secret subkey also deletes the secret key.
+  ;; JW: Deleting the secret subkey also deletes the secret key.  This
+  ;; is a deliberate design choice, and currently there is no way to
+  ;; delete the subkey without using --edit-key.
   ;; XXX (assert (have-secret-key? key))
   ;; XXX (assert (have-secret-key-file? key))
   (assert (not (have-secret-key? subkey)))
   (assert (not (have-secret-key-file? subkey)))
 
   ;; Then, delete the secret key.
+  ;; JW: We already deleted the key.  See above.
   ;; XXX (call-check `(,@gpg --delete-secret-keys ,key::fpr))
   (assert (have-public-key? key))
   (assert (have-public-key? subkey))
@@ -75,11 +78,14 @@
 
   ;; Now, delete the public subkey.
   (call-check `(,@gpg --delete-keys ,subkey::fpr))
-  ;; JW: Deleting the subkey also deletes the key.
+  ;; JW: Deleting the subkey also deletes the key.  This
+  ;; is a deliberate design choice, and currently there is no way to
+  ;; delete the subkey without using --edit-key.
   ;; XXX (assert (have-public-key? key))
   (assert (not (have-public-key? subkey)))
 
   ;; Now, delete the public key.
+  ;; JW: We already deleted the key.  See above.
   ;; XXX (call-check `(,@gpg --delete-keys ,key::fpr))
   (assert (not (have-public-key? key)))
   (assert (not (have-public-key? subkey))))
