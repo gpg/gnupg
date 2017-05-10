@@ -1515,6 +1515,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
 
     case KEYDB_SEARCH_MODE_FPR16:
       log_error ("HKP keyservers do not support v3 fingerprints\n");
+      /* fall through */
     default:
       return gpg_error (GPG_ERR_INV_USER_ID);
     }

@@ -1855,7 +1855,7 @@ main ( int argc, char **argv)
 
     case aListChain:
     case aDumpChain:
-       ctrl.with_chain = 1;
+       ctrl.with_chain = 1; /* fall through */
     case aListKeys:
     case aDumpKeys:
     case aListExternalKeys:

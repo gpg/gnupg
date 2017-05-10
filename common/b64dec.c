@@ -118,6 +118,7 @@ b64dec_proc (struct b64state *state, void *buffer, size_t length,
           break;
         case s_init:
           ds = s_lfseen;
+          /* fall through */
         case s_lfseen:
           if (*s != "-----BEGIN "[pos])
             {

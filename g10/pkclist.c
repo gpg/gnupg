@@ -632,7 +632,7 @@ check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
               log_info (_("trustlevel adjusted to FULL"
                           " due to valid PKA info\n"));
             }
-          /* (fall through) */
+          /* fall through */
         case TRUST_FULLY:
           if (!okay)
             {

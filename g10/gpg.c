@@ -4303,9 +4303,9 @@ main (int argc, char **argv)
 	break;
 
       case aCheckKeys:
-	opt.check_sigs = 1;
+	opt.check_sigs = 1; /* fall through */
       case aListSigs:
-	opt.list_sigs = 1;
+	opt.list_sigs = 1; /* fall through */
       case aListKeys:
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
@@ -4468,7 +4468,7 @@ main (int argc, char **argv)
 	break;
 
       case aFastImport:
-        opt.import_options |= IMPORT_FAST;
+        opt.import_options |= IMPORT_FAST; /* fall through */
       case aImport:
 	import_keys (ctrl, argc? argv:NULL, argc, NULL, opt.import_options);
 	break;
@@ -4930,7 +4930,7 @@ main (int argc, char **argv)
         if (!opt.quiet)
           log_info (_("WARNING: no command supplied."
                       "  Trying to guess what you mean ...\n"));
-        /*FALLTHU*/
+        /*FALLTHRU*/
       case aListPackets:
 	if( argc > 1 )
 	    wrong_args("[filename]");

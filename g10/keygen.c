@@ -910,10 +910,10 @@ make_backsig (ctrl_t ctrl, PKT_signature *sig, PKT_public_key *pk,
 		case 2:
 		  pktlen  = (size_t)buf[mark++] << 24;
 		  pktlen |= buf[mark++] << 16;
-
+		  /* fall through */
 		case 1:
 		  pktlen |= buf[mark++] << 8;
-
+		  /* fall through */
 		case 0:
 		  pktlen |= buf[mark++];
 		}

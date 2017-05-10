@@ -517,7 +517,7 @@ read_pem_certificate (const char *fname, unsigned char **rbuf, size_t *rbuflen)
             }
           break;
         case s_init:
-          state = s_lfseen;
+          state = s_lfseen; /* fall through */
         case s_lfseen:
           if (c != "-----BEGIN "[pos])
             state = s_idle;

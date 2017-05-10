@@ -617,7 +617,7 @@ cdb_make_put(struct cdb_make *cdbmp,
 	else
 	  r = 1;
       }
-      /* fall */
+      /* fall through */
 
     case CDB_PUT_ADD:
       rl = cdbmp->cdb_rec[hval&255];

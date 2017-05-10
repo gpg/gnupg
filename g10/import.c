@@ -868,7 +868,7 @@ read_block( IOBUF a, int with_meta,
 		pkt = NULL;
 		goto ready;
               }
-	    in_cert = 1;
+	    in_cert = 1; /* fall through */
 	  default:
           x_default:
 	    if (in_cert && valid_keyblock_packet (pkt->pkttype))

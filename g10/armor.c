@@ -1440,7 +1440,7 @@ unarmor_pump (UnarmorPump x, int c)
         break;
       case STA_first_dash: /* just need for initialization */
         x->pos = 0;
-        x->state = STA_compare_header;
+        x->state = STA_compare_header; /* fall through */
       case STA_compare_header:
         if ( "-----BEGIN PGP SIGNATURE-----"[++x->pos] == c ) {
             if ( x->pos == 28 )
@@ -1521,7 +1521,7 @@ unarmor_pump (UnarmorPump x, int c)
         /* assume that we are at the next line */
         x->state = STA_read_crc;
         x->pos = 0;
-        x->mycrc = 0;
+        x->mycrc = 0; /* fall through */
       case STA_read_crc:
         if( (c = asctobin[c]) == 255 ) {
             rval = -1; /* ready */
