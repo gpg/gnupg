@@ -381,6 +381,7 @@ do_test (int argc, char *argv[])
   byte *raw_data;
   int raw_data_len;
 
+  (void)current_test_group_failed;
   for (i = 1; i < argc; i ++)
     {
       if (strcmp (argv[i], "--debug") == 0)
