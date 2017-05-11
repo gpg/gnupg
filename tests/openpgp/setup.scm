@@ -19,8 +19,9 @@
 
 (load (in-srcdir "tests" "openpgp" "defs.scm"))
 
-(unless (member "--create-tarball" *args*)
-	(fail "Usage: setup.scm --create-tarball <file>"))
+(define cache (flag "--create-tarball" *args*))
+(unless (and cache (= 1 (length cache)))
+	(fail "Usage: setup.scm --create-tarball <file> [--use-keyring]"))
 
 (when (> (*verbose*) 0)
       (define (pad symbol length)
@@ -45,4 +46,4 @@
 (start-agent)
 (create-legacy-gpghome)
 (stop-agent)
-(call-check `(,(tool 'gpgtar) --create --output ,(cadr *args*) "."))
+(call-check `(,(tool 'gpgtar) --create --output ,(car cache) "."))

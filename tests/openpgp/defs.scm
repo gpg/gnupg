@@ -328,6 +328,10 @@
   (make-test-data "random_seed" 600)
 
   (log "Creating configuration files")
+
+  (if (flag "--use-keyring" *args*)
+      (create-file "pubring.gpg"))
+
   (create-file "gpg.conf"
 	       "no-greeting"
 	       "no-secmem-warning"

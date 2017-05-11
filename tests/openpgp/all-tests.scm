@@ -31,13 +31,28 @@
     (test::scm
      #f
      (path-join "tests" "openpgp" "setup.scm")
-     (in-srcdir "tests" "openpgp" "setup.scm")
-     "--" "tests" "gpg")))
+     (in-srcdir "tests" "openpgp" "setup.scm"))))
 
- (map (lambda (name)
-	(test::scm setup
-		   (path-join "tests" "openpgp" name)
-		   (in-srcdir "tests" "openpgp" name)))
-      (parse-makefile-expand (in-srcdir "tests" "openpgp" "Makefile.am")
-			     (lambda (filename port key) (parse-makefile port key))
-			     "XTESTS")))
+ (define setup-use-keyring
+   (make-environment-cache
+    (test::scm
+     #f
+     (string-append "<use-keyring>" (path-join "tests" "openpgp" "setup.scm"))
+     (in-srcdir "tests" "openpgp" "setup.scm")
+     "--use-keyring")))
+
+ (define all-tests
+   (parse-makefile-expand (in-srcdir "tests" "openpgp" "Makefile.am")
+			  (lambda (filename port key) (parse-makefile port key))
+			  "XTESTS"))
+ (append
+  (map (lambda (name)
+	 (test::scm setup
+		    (path-join "tests" "openpgp" name)
+		    (in-srcdir "tests" "openpgp" name))) all-tests)
+  (map (lambda (name)
+	 (test::scm setup-use-keyring
+		    (string-append "<use-keyring>"
+				   (path-join "tests" "openpgp" name))
+		    (in-srcdir "tests" "openpgp" name)
+		    "--use-keyring")) all-tests)))
