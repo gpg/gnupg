@@ -615,7 +615,7 @@
 	(current-environment))
 
       ;; The log is written here.
-      (define log-file-name "not set")
+      (define log-file-name #f)
 
       ;; Record time stamps.
       (define timestamp #f)
@@ -629,7 +629,8 @@
 	(set! end-time (get-time)))
 
       (define (open-log-file)
-	(set! log-file-name (string-append (basename name) ".log"))
+	(unless log-file-name
+		(set! log-file-name (string-append (basename name) ".log")))
 	(catch '() (unlink log-file-name))
 	(open log-file-name (logior O_RDWR O_BINARY O_CREAT) #o600))
 
