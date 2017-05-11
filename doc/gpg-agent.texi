@@ -205,7 +205,7 @@ below the home directory of the user.
 @opindex verbose
 Outputs additional information while running.
 You can increase the verbosity by giving several
-verbose commands to @command{gpgsm}, such as @samp{-vv}.
+verbose commands to @command{gpg-agent}, such as @samp{-vv}.
 
 @item -q
 @item --quiet
