@@ -1305,7 +1305,7 @@ signature_stats_collect_cb (void *cookie, int argc, char **argv,
 }
 
 /* Format the first part of a conflict message and return that as a
- * malloced string.  */
+ * malloced string. Returns NULL on error. */
 static char *
 format_conflict_msg_part1 (int policy, strlist_t conflict_set,
                            const char *email)
@@ -1586,6 +1586,10 @@ ask_about_binding (ctrl_t ctrl,
 
   {
     char *text = format_conflict_msg_part1 (*policy, conflict_set, email);
+    if (!text) /* FIXME: Return the error all the way up.  */
+      log_fatal ("format failed: %s\n",
+                 gpg_strerror (gpg_error_from_syserror()));
+
     es_fputs (text, fp);
     es_fputc ('\n', fp);
     xfree (text);
@@ -1927,7 +1931,7 @@ ask_about_binding (ctrl_t ctrl,
             "call the person to make sure this new key is legitimate.";
         }
       textbuf = format_text (text, 72, 80);
-      es_fprintf (fp, "\n%s\n", textbuf);
+      es_fprintf (fp, "\n%s\n", textbuf? textbuf : "[OUT OF CORE!]");
       xfree (textbuf);
     }
 
@@ -3191,6 +3195,9 @@ show_statistics (tofu_dbs_t dbs,
         if (es_fclose_snatch (fp, (void **) &tmpmsg, NULL))
           log_fatal ("error snatching memory stream\n");
         msg = format_text (tmpmsg, 72, 80);
+        if (!msg) /* FIXME: Return the error all the way up.  */
+          log_fatal ("format failed: %s\n",
+                     gpg_strerror (gpg_error_from_syserror()));
         es_free (tmpmsg);
 
         /* Print a status line but suppress the trailing LF.
@@ -3266,6 +3273,9 @@ show_warning (const char *fingerprint, strlist_t user_id_list)
      set_policy_command);
 
   text = format_text (tmpmsg, 72, 80);
+  if (!text) /* FIXME: Return the error all the way up.  */
+    log_fatal ("format failed: %s\n",
+               gpg_strerror (gpg_error_from_syserror()));
   xfree (tmpmsg);
   log_string (GPGRT_LOG_INFO, text);
   xfree (text);

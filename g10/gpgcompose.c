@@ -306,6 +306,8 @@ show_help (struct option options[])
       if (! option)
         space = 72;
       formatted = format_text (tmp, space, space + 4);
+      if (!format_text)
+        abort ();
 
       if (tmp != help)
         xfree (tmp);

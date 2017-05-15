@@ -1443,12 +1443,13 @@ compare_version_strings (const char *my_version, const char *req_version)
 
 
 /* Format a string so that it fits within about TARGET_COLS columns.
-   TEXT_IN is copied to a new buffer, which is returned.
-   Normally, target_cols will be 72 and max_cols is 80.  */
+ * TEXT_IN is copied to a new buffer, which is returned.  Normally,
+ * target_cols will be 72 and max_cols is 80.  On error NULL is
+ * returned and ERRNO is set. */
 char *
 format_text (const char *text_in, int target_cols, int max_cols)
 {
-  const int do_debug = 0;
+  /* const int do_debug = 0; */
 
   /* The character under consideration.  */
   char *p;
@@ -1460,7 +1461,9 @@ format_text (const char *text_in, int target_cols, int max_cols)
   int copied_last_space = 0;
   char *text;
 
-  text = xstrdup (text_in);
+  text = xtrystrdup (text_in);
+  if (!text)
+    return NULL;
 
   p = line = text;
   while (1)
@@ -1514,9 +1517,9 @@ format_text (const char *text_in, int target_cols, int max_cols)
           cols_with_left_space = last_space_cols;
           cols_with_right_space = cols;
 
-          if (do_debug)
-            log_debug ("Breaking: '%.*s'\n",
-                       (int) ((uintptr_t) p - (uintptr_t) line), line);
+          /* if (do_debug) */
+          /*   log_debug ("Breaking: '%.*s'\n", */
+          /*              (int) ((uintptr_t) p - (uintptr_t) line), line); */
 
           /* The number of columns away from TARGET_COLS.  We prefer
              to underflow than to overflow.  */
@@ -1528,21 +1531,22 @@ format_text (const char *text_in, int target_cols, int max_cols)
                max_cols.  */
             right_penalty += 4 * (cols_with_right_space - max_cols);
 
-          if (do_debug)
-            log_debug ("Left space => %d cols (penalty: %d); right space => %d cols (penalty: %d)\n",
-                       cols_with_left_space, left_penalty,
-                       cols_with_right_space, right_penalty);
+          /* if (do_debug) */
+          /*   log_debug ("Left space => %d cols (penalty: %d); " */
+          /*              "right space => %d cols (penalty: %d)\n", */
+          /*              cols_with_left_space, left_penalty, */
+          /*              cols_with_right_space, right_penalty); */
           if (last_space_cols && left_penalty <= right_penalty)
-            /* Prefer the left space.  */
             {
-              if (do_debug)
-                log_debug ("Breaking at left space.\n");
+              /* Prefer the left space.  */
+              /* if (do_debug) */
+              /*   log_debug ("Breaking at left space.\n"); */
               p = last_space;
             }
           else
             {
-              if (do_debug)
-                log_debug ("Breaking at right space.\n");
+              /* if (do_debug) */
+              /*   log_debug ("Breaking at right space.\n"); */
             }
 
           if (! *p)
