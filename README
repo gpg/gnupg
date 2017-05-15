@@ -24,19 +24,10 @@
   can be freely used, modified and distributed under the terms of the
   GNU General Public License.
 
-  We are currently maintaining three branches of GnuPG:
-
-  - 2.1 (i.e. this release) is the latest stable version with a lot of
-    new features.
-
-  - 2.0 is an often used stable version.  This branch will reach
-    end-of-life on 2017-12-31.
-
-  - 1.4 is the old standalone version which is most suitable for older
-    or embedded platforms.
-
-  You may not install 2.1 and 2.0 at the same time.  However, it is
-  possible to install 1.4 along with any of the 2.x versions.
+  Note that the 2.0 series of GnuPG will reach end-of-life on
+  2017-12-31.  It is not possible to install a 2.1.x version along
+  with any 2.0.x version.  However, it is possible to install GnuPG
+  1.4 along with a 2.x version.
 
 
 * BUILD INSTRUCTIONS

@@ -1,5 +1,24 @@
-Noteworthy changes in version 2.1.21 (unreleased)
+Noteworthy changes in version 2.1.21 (2017-05-15)
 -------------------------------------------------
+
+  * gpg,gpgsm: Fix corruption of old style keyring.gpg files.  This
+    bug was introduced with version 2.1.20.  Note that the default
+    pubring.kbx format was not affected.
+
+  * gpg,dirmngr: Removed the skeleton config file support.  The
+    system's standard methods for providing default configuration
+    files should be used instead.
+
+  * w32: The Windows installer now allows installion of GnuPG without
+    Administrator permissions.
+
+  * gpg: Fixed import filter property match bug.
+
+  * scd: Removed Linux support for Cardman 4040 PCMCIA reader.
+
+  * scd: Fixed some corner case bugs in resume/suspend handling.
+
+  * Many minor bug fixes and code cleanup.
 
 
 Noteworthy changes in version 2.1.20 (2017-04-03)
