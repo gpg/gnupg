@@ -1786,12 +1786,12 @@ ask_about_binding (ctrl_t ctrl,
               if ((binding->flags & BINDING_REVOKED))
                 {
                   es_fprintf (fp, _("revoked"));
-                  es_fprintf (fp, _(", "));
+                  es_fprintf (fp, ", ");
                 }
               else if ((binding->flags & BINDING_EXPIRED))
                 {
                   es_fprintf (fp, _("expired"));
-                  es_fprintf (fp, _(", "));
+                  es_fprintf (fp, ", ");
                 }
 
               if (this_key)
