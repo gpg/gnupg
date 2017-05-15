@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-04-03 17:10+0200\n"
+"PO-Revision-Date: 2017-05-15 16:00+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -4635,15 +4635,6 @@ msgid "assuming signed data in '%s'\n"
 msgstr "die unterzeichneten Daten sind wohl in '%s'\n"
 
 #, c-format
-msgid "new configuration file '%s' created\n"
-msgstr "Neue Konfigurationsdatei `%s' erstellt\n"
-
-#, c-format
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr ""
-"WARNUNG: Optionen in `%s' sind während dieses Laufes noch nicht wirksam\n"
-
-#, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "dieses Public-Key Verfahren %d kann nicht benutzt werden\n"
 
@@ -5617,9 +5608,6 @@ msgstr[1] "Die Email-Adresse \"%s\" ist mit %d Schlüsseln assoziert:\n"
 msgid "Statistics for keys with the email address \"%s\":\n"
 msgstr "Statistik für Schlüssel mit der Email-Adresse \"%s\":\n"
 
-msgid ", "
-msgstr ""
-
 msgid "this key"
 msgstr "dieser Schlüssel"
 
@@ -5761,59 +5749,47 @@ msgstr "Fehler beim Setzen der TOFU Binding Vertrauensstufe auf %s\n"
 msgid "error changing TOFU policy: %s\n"
 msgstr "Fehler beim Ändern der TOFU Richtlinie: %s\n"
 
-#, fuzzy, c-format
-#| msgid "%d~year"
-#| msgid_plural "%d~years"
+#, c-format
 msgid "%lld~year"
 msgid_plural "%lld~years"
-msgstr[0] "%d~Jahr"
-msgstr[1] "%d~Jahre"
+msgstr[0] "%lld~Jahr"
+msgstr[1] "%lld~Jahre"
 
-#, fuzzy, c-format
-#| msgid "%d~month"
-#| msgid_plural "%d~months"
+#, c-format
 msgid "%lld~month"
 msgid_plural "%lld~months"
-msgstr[0] "%d~Monat"
-msgstr[1] "%d~Monate"
+msgstr[0] "%lld~Monat"
+msgstr[1] "%lld~Monate"
 
 #, c-format
 msgid "%lld~week"
 msgid_plural "%lld~weeks"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%lld~Woche"
+msgstr[1] "%lld Wochen"
 
-#, fuzzy, c-format
-#| msgid "%d~day"
-#| msgid_plural "%d~days"
+#, c-format
 msgid "%lld~day"
 msgid_plural "%lld~days"
-msgstr[0] "%d~Tag"
-msgstr[1] "%d~Tage"
+msgstr[0] "%lld~Tag"
+msgstr[1] "%lld~Tage"
 
-#, fuzzy, c-format
-#| msgid "%d~hour"
-#| msgid_plural "%d~hours"
+#, c-format
 msgid "%lld~hour"
 msgid_plural "%lld~hours"
-msgstr[0] "%d~Stunde"
-msgstr[1] "%d~Stunden"
+msgstr[0] "%lld~Stunde"
+msgstr[1] "%lld~Stunden"
 
-#, fuzzy, c-format
-#| msgid "%d~minute"
-#| msgid_plural "%d~minutes"
+#, c-format
 msgid "%lld~minute"
 msgid_plural "%lld~minutes"
-msgstr[0] "%d~Minute"
-msgstr[1] "%d~Minuten"
+msgstr[0] "%lld~Minute"
+msgstr[1] "%lld~Minuten"
 
-#, fuzzy, c-format
-#| msgid "%d~second"
-#| msgid_plural "%d~seconds"
+#, c-format
 msgid "%lld~second"
 msgid_plural "%lld~seconds"
-msgstr[0] "%d~Sekunde"
-msgstr[1] "%d~Sekunden"
+msgstr[0] "%lld~Sekunde"
+msgstr[1] "%lld~Sekunden"
 
 #, fuzzy, c-format
 #| msgid "TOFU: few signatures %d message %s"
@@ -8800,6 +8776,13 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "Neue Konfigurationsdatei `%s' erstellt\n"
+
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr ""
+#~ "WARNUNG: Optionen in `%s' sind während dieses Laufes noch nicht wirksam\n"
 
 #~ msgid "User ID revocation failed: %s\n"
 #~ msgstr "Widerufen der User-ID fehlgeschlagen: %s\n"
