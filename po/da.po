@@ -4892,17 +4892,6 @@ msgstr "skriver til stdout\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "antager underskrevne data i »%s«\n"
 
-#, fuzzy, c-format
-#| msgid "new configuration file `%s' created\n"
-msgid "new configuration file '%s' created\n"
-msgstr "ny konfigurationsfil »%s« oprettet\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: options in `%s' are not yet active during this run\n"
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr ""
-"ADVARSEL: indstillinger i »%s« er endnu ikke aktive under denne kørsel\n"
-
 #, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "kan ikke håndtere offentlig nøglealgoritme %d\n"
@@ -5874,9 +5863,6 @@ msgstr[1] ""
 
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
-msgstr ""
-
-msgid ", "
 msgstr ""
 
 #, fuzzy
@@ -9222,6 +9208,17 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#, fuzzy
+#~| msgid "new configuration file `%s' created\n"
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "ny konfigurationsfil »%s« oprettet\n"
+
+#, fuzzy
+#~| msgid "WARNING: options in `%s' are not yet active during this run\n"
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr ""
+#~ "ADVARSEL: indstillinger i »%s« er endnu ikke aktive under denne kørsel\n"
 
 #, fuzzy
 #~| msgid "Key generation failed: %s\n"

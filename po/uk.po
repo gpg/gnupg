@@ -4639,14 +4639,6 @@ msgid "assuming signed data in '%s'\n"
 msgstr "припускаємо підписані дані у «%s»\n"
 
 #, c-format
-msgid "new configuration file '%s' created\n"
-msgstr "створено новий файл налаштувань «%s»\n"
-
-#, c-format
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr "УВАГА: параметри у «%s» ще не є активними під час цього запуску\n"
-
-#, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "робота з алгоритмом створення відкритого ключа %d неможлива\n"
 
@@ -5591,9 +5583,6 @@ msgstr[2] "Адресу електронної пошти «%s» пов’яза
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
 msgstr "Статистичні дані для ключів із адресою електронної пошти «%s»:\n"
-
-msgid ", "
-msgstr ", "
 
 msgid "this key"
 msgstr "цей ключ"
@@ -8694,6 +8683,15 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid ", "
+#~ msgstr ", "
+
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "створено новий файл налаштувань «%s»\n"
+
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr "УВАГА: параметри у «%s» ще не є активними під час цього запуску\n"
 
 #~ msgid "User ID revocation failed: %s\n"
 #~ msgstr "Спроба відкликання ідентифікатор користувача зазнала невдачі: %s\n"

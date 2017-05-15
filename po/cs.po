@@ -4666,14 +4666,6 @@ msgid "assuming signed data in '%s'\n"
 msgstr "v „%s“ se předpokládají podepsaná data\n"
 
 #, c-format
-msgid "new configuration file '%s' created\n"
-msgstr "vytvořen nový konfigurační soubor „%s“\n"
-
-#, c-format
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr "VAROVÁNÍ: nastavení z „%s“ nejsou při tomto spuštění zatím aktivní\n"
-
-#, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "nemohu pracovat s algoritmem veřejného klíče %d\n"
 
@@ -5628,9 +5620,6 @@ msgstr[2] ""
 
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
-msgstr ""
-
-msgid ", "
 msgstr ""
 
 #, fuzzy
@@ -8711,6 +8700,13 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "vytvořen nový konfigurační soubor „%s“\n"
+
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr ""
+#~ "VAROVÁNÍ: nastavení z „%s“ nejsou při tomto spuštění zatím aktivní\n"
 
 #, fuzzy
 #~| msgid "Key generation failed: %s\n"

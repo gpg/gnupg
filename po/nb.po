@@ -4559,14 +4559,6 @@ msgid "assuming signed data in '%s'\n"
 msgstr "antar signert data i «%s»\n"
 
 #, c-format
-msgid "new configuration file '%s' created\n"
-msgstr "ny oppsettsfil «%s» opprettet\n"
-
-#, c-format
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr "ADVARSEL: valgene i «%s» trer ikke i kraft for gjeldende programøkt\n"
-
-#, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "klarte ikke å håndtere offentlig nøkkelalgoritme %d\n"
 
@@ -5498,9 +5490,6 @@ msgstr[1] "E-postadressen «%s» er tilknyttet %d nøkler:\n"
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
 msgstr "Statistikk for nøkler med e-postadresse «%s»:\n"
-
-msgid ", "
-msgstr ""
 
 msgid "this key"
 msgstr "denne nøkkelen"
@@ -8612,6 +8601,13 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [valg] mønsterfil\n"
 "Kontroller passordfrase oppgitt på standard innkanal mot valgt mønsterfil\n"
+
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "ny oppsettsfil «%s» opprettet\n"
+
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr ""
+#~ "ADVARSEL: valgene i «%s» trer ikke i kraft for gjeldende programøkt\n"
 
 #~ msgid "User ID revocation failed: %s\n"
 #~ msgstr "oppheving av bruker-ID mislyktes: %s\n"

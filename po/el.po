@@ -4882,17 +4882,6 @@ msgstr "εγγραφή στην stdout\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "υπόθεση υπογεγραμμένων δεδομένων στο `%s'\n"
 
-#, fuzzy, c-format
-#| msgid "new configuration file `%s' created\n"
-msgid "new configuration file '%s' created\n"
-msgstr "δημιουργήθηκε νέο αρχείο επιλογών `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: options in `%s' are not yet active during this run\n"
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr ""
-"ΠΡΟΕΙΔΟΠΟΙΗΣΗ: οι επιλογες στο `%s' δεν είναι ενεργές σε αυτή την εκτέλεση\n"
-
 #, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "αδυναμία χειρισμού του αλγόριθμου δημοσίου κλειδιού %d\n"
@@ -5845,9 +5834,6 @@ msgstr[1] ""
 
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
-msgstr ""
-
-msgid ", "
 msgstr ""
 
 #, fuzzy
@@ -8983,6 +8969,18 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "new configuration file `%s' created\n"
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "δημιουργήθηκε νέο αρχείο επιλογών `%s'\n"
+
+#, fuzzy
+#~| msgid "WARNING: options in `%s' are not yet active during this run\n"
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr ""
+#~ "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: οι επιλογες στο `%s' δεν είναι ενεργές σε αυτή την "
+#~ "εκτέλεση\n"
 
 #, fuzzy
 #~| msgid "Key generation failed: %s\n"

@@ -4863,16 +4863,6 @@ msgstr "zapisujem na štandardný výstup (stdout)\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "predpokladám podpísané dáta v `%s'\n"
 
-#, fuzzy, c-format
-#| msgid "new configuration file `%s' created\n"
-msgid "new configuration file '%s' created\n"
-msgstr "vytvorený nový konfiguračný súbor `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: options in `%s' are not yet active during this run\n"
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr "VAROVANIE: nastavenie v `%s' ešte nie je aktívne\n"
-
 #, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "nemôžem pracovať s algoritmom verejného kľúča %d\n"
@@ -5817,9 +5807,6 @@ msgstr[1] ""
 
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
-msgstr ""
-
-msgid ", "
 msgstr ""
 
 #, fuzzy
@@ -8953,6 +8940,16 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "new configuration file `%s' created\n"
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "vytvorený nový konfiguračný súbor `%s'\n"
+
+#, fuzzy
+#~| msgid "WARNING: options in `%s' are not yet active during this run\n"
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr "VAROVANIE: nastavenie v `%s' ešte nie je aktívne\n"
 
 #, fuzzy
 #~| msgid "Key generation failed: %s\n"

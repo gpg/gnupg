@@ -4859,17 +4859,6 @@ msgstr "scriu la stdout\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "presupun date semnate în `%s'\n"
 
-#, fuzzy, c-format
-#| msgid "new configuration file `%s' created\n"
-msgid "new configuration file '%s' created\n"
-msgstr "fişier de configurare nou `%s' creat\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: options in `%s' are not yet active during this run\n"
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr ""
-"AVERTISMENT: opţiunile din %s nu sunt încă active în timpul acestei rulări\n"
-
 #, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "nu pot mânui algoritmul cu cheie publică %d\n"
@@ -5833,9 +5822,6 @@ msgstr[1] ""
 
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
-msgstr ""
-
-msgid ", "
 msgstr ""
 
 #, fuzzy
@@ -9006,6 +8992,18 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "new configuration file `%s' created\n"
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "fişier de configurare nou `%s' creat\n"
+
+#, fuzzy
+#~| msgid "WARNING: options in `%s' are not yet active during this run\n"
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr ""
+#~ "AVERTISMENT: opţiunile din %s nu sunt încă active în timpul acestei "
+#~ "rulări\n"
 
 #, fuzzy
 #~| msgid "Key generation failed: %s\n"

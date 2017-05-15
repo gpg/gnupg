@@ -4552,14 +4552,6 @@ msgid "assuming signed data in '%s'\n"
 msgstr "假設被簽署的資料在 '%s'\n"
 
 #, c-format
-msgid "new configuration file '%s' created\n"
-msgstr "新的組態檔案 '%s' 已建立\n"
-
-#, c-format
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr "警告: 在 '%s' 裡的選項於這次執行期間並沒有被啟用\n"
-
-#, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "無法操作 %d 公開金鑰演算法\n"
 
@@ -5478,9 +5470,6 @@ msgstr[0] ""
 
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
-msgstr ""
-
-msgid ", "
 msgstr ""
 
 #, fuzzy
@@ -8473,6 +8462,12 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "新的組態檔案 '%s' 已建立\n"
+
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr "警告: 在 '%s' 裡的選項於這次執行期間並沒有被啟用\n"
 
 #, fuzzy
 #~| msgid "Key generation failed: %s\n"

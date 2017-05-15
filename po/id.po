@@ -4843,16 +4843,6 @@ msgstr "menulis ke stdout\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "mengasumsikan data bertanda dalam `%s'\n"
 
-#, fuzzy, c-format
-#| msgid "new configuration file `%s' created\n"
-msgid "new configuration file '%s' created\n"
-msgstr "file konfigurasi baru `%s' tercipta\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: options in `%s' are not yet active during this run\n"
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr "PERINGATAN: opsi dalam `%s' belum aktif selama pelaksanaan ini\n"
-
 #, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "tidak dapat menangani algoritma kunci publik %d\n"
@@ -5792,9 +5782,6 @@ msgstr[1] ""
 
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
-msgstr ""
-
-msgid ", "
 msgstr ""
 
 #, fuzzy
@@ -8923,6 +8910,16 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "new configuration file `%s' created\n"
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "file konfigurasi baru `%s' tercipta\n"
+
+#, fuzzy
+#~| msgid "WARNING: options in `%s' are not yet active during this run\n"
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr "PERINGATAN: opsi dalam `%s' belum aktif selama pelaksanaan ini\n"
 
 #, fuzzy
 #~| msgid "Key generation failed: %s\n"

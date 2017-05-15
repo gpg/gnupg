@@ -4869,18 +4869,6 @@ msgstr "kirjoitetaan vakiotulosteeseen\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "data kohteessa \"%s\" oletetaan allekirjoitetuksi\n"
 
-#, fuzzy, c-format
-#| msgid "new configuration file `%s' created\n"
-msgid "new configuration file '%s' created\n"
-msgstr "uusi asetustiedosto \"%s\" luotu\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: options in `%s' are not yet active during this run\n"
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr ""
-"VAROITUS: asetukset tiedostossa \"%s\" eivät ole käytössä vielä tässä "
-"ajossa\n"
-
 #, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "julkisen avaimen algorimin %d käsittely ei onnistu\n"
@@ -5830,9 +5818,6 @@ msgstr[1] ""
 
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
-msgstr ""
-
-msgid ", "
 msgstr ""
 
 #, fuzzy
@@ -8965,6 +8950,18 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "new configuration file `%s' created\n"
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "uusi asetustiedosto \"%s\" luotu\n"
+
+#, fuzzy
+#~| msgid "WARNING: options in `%s' are not yet active during this run\n"
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr ""
+#~ "VAROITUS: asetukset tiedostossa \"%s\" eivät ole käytössä vielä tässä "
+#~ "ajossa\n"
 
 #, fuzzy
 #~| msgid "Key generation failed: %s\n"

@@ -4752,15 +4752,6 @@ msgid "assuming signed data in '%s'\n"
 msgstr "les données signées sont supposées être dans « %s »\n"
 
 #, c-format
-msgid "new configuration file '%s' created\n"
-msgstr "nouveau fichier de configuration « %s » créé\n"
-
-#, c-format
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr ""
-"Attention : les options de « %s » ne sont pas encore actives cette fois\n"
-
-#, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "impossible de gérer l'algorithme à clef publique %d\n"
 
@@ -5758,9 +5749,6 @@ msgstr[1] ""
 
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
-msgstr ""
-
-msgid ", "
 msgstr ""
 
 #, fuzzy
@@ -8935,6 +8923,13 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "nouveau fichier de configuration « %s » créé\n"
+
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr ""
+#~ "Attention : les options de « %s » ne sont pas encore actives cette fois\n"
 
 #, fuzzy
 #~| msgid "Key generation failed: %s\n"

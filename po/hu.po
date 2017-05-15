@@ -4847,17 +4847,6 @@ msgstr "Írok a szabványos kimenetre.\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "Azt feltételezem, hogy az aláírt adat a %s állományban van.\n"
 
-#, fuzzy, c-format
-#| msgid "new configuration file `%s' created\n"
-msgid "new configuration file '%s' created\n"
-msgstr "\"%s\" új konfigurációs állományt létrehoztam.\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: options in `%s' are not yet active during this run\n"
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr ""
-"FIGYELEM: \"%s\" opciói csak a következő futáskor lesznek érvényesek!\n"
-
 #, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "Nem tudom kezelni a(z) %d. számú nyilvános kulcsú algoritmust!\n"
@@ -5800,9 +5789,6 @@ msgstr[1] ""
 
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
-msgstr ""
-
-msgid ", "
 msgstr ""
 
 #, fuzzy
@@ -8932,6 +8918,17 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~| msgid "new configuration file `%s' created\n"
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "\"%s\" új konfigurációs állományt létrehoztam.\n"
+
+#, fuzzy
+#~| msgid "WARNING: options in `%s' are not yet active during this run\n"
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr ""
+#~ "FIGYELEM: \"%s\" opciói csak a következő futáskor lesznek érvényesek!\n"
 
 #, fuzzy
 #~| msgid "Key generation failed: %s\n"

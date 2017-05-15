@@ -4470,14 +4470,6 @@ msgid "assuming signed data in '%s'\n"
 msgstr "署名されたデータが'%s'にあると想定します\n"
 
 #, c-format
-msgid "new configuration file '%s' created\n"
-msgstr "新しいコンフィグレーション・ファイル'%s'ができました\n"
-
-#, c-format
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr "*警告*: '%s'のオプションはこの実行では、まだ有効になりません\n"
-
-#, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "公開鍵のアルゴリズム%dは、取り扱えません\n"
 
@@ -5364,9 +5356,6 @@ msgstr[0] "電子メールアドレス\"%s\"は%d個の鍵に結びつけられ�
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
 msgstr "この電子メールアドレス\"%s\"の鍵の統計:\n"
-
-msgid ", "
-msgstr ", "
 
 msgid "this key"
 msgstr "この鍵"
@@ -8332,6 +8321,15 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid ", "
+#~ msgstr ", "
+
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "新しいコンフィグレーション・ファイル'%s'ができました\n"
+
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr "*警告*: '%s'のオプションはこの実行では、まだ有効になりません\n"
 
 #~ msgid "User ID revocation failed: %s\n"
 #~ msgstr "ユーザIDの失効に失敗しました: %s\n"

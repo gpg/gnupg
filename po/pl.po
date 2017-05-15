@@ -4919,16 +4919,6 @@ msgstr "zapisywanie na wyjście standardowe\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "przyjęto obecność podpisanych danych w '%s'\n"
 
-#, fuzzy, c-format
-#| msgid "new configuration file `%s' created\n"
-msgid "new configuration file '%s' created\n"
-msgstr "nowy plik ustawień ,,%s'' został utworzony\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: options in `%s' are not yet active during this run\n"
-msgid "WARNING: options in '%s' are not yet active during this run\n"
-msgstr "OSTRZEŻENIE: opcje w ,,%s'' nie są jeszcze uwzględnione.\n"
-
 #, c-format
 msgid "can't handle public key algorithm %d\n"
 msgstr "nie można obsłużyć tego algorytmu klucza publicznego: %d\n"
@@ -5914,9 +5904,6 @@ msgstr[2] ""
 
 #, c-format
 msgid "Statistics for keys with the email address \"%s\":\n"
-msgstr ""
-
-msgid ", "
 msgstr ""
 
 #, fuzzy
@@ -9292,6 +9279,16 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
+
+#, fuzzy
+#~| msgid "new configuration file `%s' created\n"
+#~ msgid "new configuration file '%s' created\n"
+#~ msgstr "nowy plik ustawień ,,%s'' został utworzony\n"
+
+#, fuzzy
+#~| msgid "WARNING: options in `%s' are not yet active during this run\n"
+#~ msgid "WARNING: options in '%s' are not yet active during this run\n"
+#~ msgstr "OSTRZEŻENIE: opcje w ,,%s'' nie są jeszcze uwzględnione.\n"
 
 #, fuzzy
 #~| msgid "Key generation failed: %s\n"
