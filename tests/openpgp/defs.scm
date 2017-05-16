@@ -349,6 +349,7 @@
 	       "no-grab"
 	       "enable-ssh-support"
 	       (string-append "pinentry-program " (tool 'pinentry))
+	       (string-append "scdaemon-program " (tool 'scdaemon))
 	       ))
 
 ;; Initialize the test environment, install appropriate configuration

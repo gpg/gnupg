@@ -66,7 +66,9 @@
    (string-append "agent-program " (tool 'gpg-agent) "|--debug-quick-random\n"))
   (create-file
    "gpg-agent.conf"
-   (string-append "pinentry-program " (tool 'pinentry)))
+   (string-append "pinentry-program " (tool 'pinentry))
+   (string-append "scdaemon-program " (tool 'scdaemon))
+   )
 
   (start-agent)
 

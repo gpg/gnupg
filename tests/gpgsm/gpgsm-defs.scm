@@ -66,7 +66,9 @@
 	       "disable-crl-checks"
 	       "faked-system-time 1008241200")
   (create-file "gpg-agent.conf"
-	       (string-append "pinentry-program " (tool 'pinentry)))
+	       (string-append "pinentry-program " (tool 'pinentry))
+	       (string-append "scdaemon-program " (tool 'scdaemon))
+	       )
   (start-agent)
   (create-file
    "trustlist.txt"
