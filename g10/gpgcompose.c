@@ -306,7 +306,7 @@ show_help (struct option options[])
       if (! option)
         space = 72;
       formatted = format_text (tmp, space, space + 4);
-      if (!format_text)
+      if (!formatted)
         abort ();
 
       if (tmp != help)
