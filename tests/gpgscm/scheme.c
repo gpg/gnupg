@@ -3451,9 +3451,10 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
      double dd;
 #endif
      int (*comp_func)(num, num) = NULL;
-     const struct op_code_info *pcd = &dispatch_table[op];
+     const struct op_code_info *pcd;
 
   dispatch:
+     pcd = &dispatch_table[op];
      if (pcd->name[0] != 0) { /* if built-in function, check arguments */
        char msg[STRBUFFSIZE];
        if (! check_arguments (sc, pcd, msg, sizeof msg)) {
