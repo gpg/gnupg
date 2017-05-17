@@ -448,7 +448,7 @@
 	      (with-home-directory gnupghome
 				   (stop-agent)))))
   (catch (log "Warning: Creating socket directory failed:" (car *error*))
-	 (call-popen `(,(tool 'gpgconf) --create-socketdir) ""))
+	 (gpg-conf '--create-socketdir))
   (call-check `(,(tool 'gpg-connect-agent) --verbose
 		,(string-append "--agent-program=" (tool 'gpg-agent)
 				"|--debug-quick-random")
@@ -457,9 +457,9 @@
 ;; Stop the agent and other daemons and remove the socket dir.
 (define (stop-agent)
   (log "Stopping gpg-agent...")
-  (call-check `(,(tool 'gpgconf) --kill all))
+  (gpg-conf '--kill 'all)
   (catch (log "Warning: Removing socket directory failed.")
-	 (call-popen `(,(tool 'gpgconf) --remove-socketdir) "")))
+	 (gpg-conf '--remove-socketdir)))
 
 
 ;; end
