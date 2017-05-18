@@ -301,7 +301,7 @@ and other programs.
 @itemx -K
 @opindex list-secret-keys
 List the specified secret keys.  If no keys are specified, then all
-known secret keys are listed.  A @code{#} after the intial tags
+known secret keys are listed.  A @code{#} after the initial tags
 @code{sec} or @code{ssb} means that the secret key or subkey is
 currently not usable.  We also say that this key has been taken
 offline (for example, a primary key can be taken offline by exported
@@ -1691,7 +1691,7 @@ Set what trust model GnuPG should follow. The models are:
   @item direct
   @opindex trust-model:direct
   Key validity is set directly by the user and not calculated via the
-  Web of Trust.  This model is soley based on the key and does
+  Web of Trust.  This model is solely based on the key and does
   not distinguish user IDs.  Note that when changing to another trust
   model the trust values assigned to a key are transformed into
   ownertrust values, which also indicate how you trust the owner of
