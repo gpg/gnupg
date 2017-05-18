@@ -6,9 +6,8 @@
 #+LANGUAGE:  en
 #+TITLE:     GnuPG Frequently Asked Questions
 #+OPTIONS:   H:3 num:nil toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t TeX:t LaTeX:t skip:nil d:(HIDE) tags:not-in-toc
-#+LINK: gnupgweb http://www.gnupg.org/
-#+LINK: roundup https://bugs.g10code.com/gnupg/issue
-#+STYLE: <link rel="stylesheet" type="text/css" href="http://www.gnupg.org/share/site.css" />
+#+LINK: gnupgweb https://www.gnupg.org/
+#+STYLE: <link rel="stylesheet" type="text/css" href="https://www.gnupg.org/share/site.css" />
 
 # FIXME: This FAQ needs a heavy cleanup.  For now I only switched to
 #        org-mode format for easier maintenance.
@@ -29,9 +28,9 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
   :END:
 
   Welcome to the GnuPG FAQ.  The latest HTML version is available at\\
-  [[http://www.gnupg.org/faq/GnuPG-FAQ.html]]; \\
-  a plain text Gversion at \\
-  ftp://ftp.gnupg.org/gcrypt/gnupg/GnuPG-FAQ.txt.
+  [[https://www.gnupg.org/faq/GnuPG-FAQ.html]]; \\
+  a plain text version at \\
+  https://gnupg.org/ftp/gcrypt/gnupg/GnuPG-FAQ.txt .
 
   See the end of this file for the release date.
 
@@ -89,7 +88,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     communication and data storage. It can be used to encrypt data and
     to create digital signatures. It includes an advanced key
     management facility and is compliant with the proposed OpenPGP
-    Internet standard as described in [[http://www.rfc-editor.org/rfc/rfc4880.txt][RFC-4880]].  As such, it is aimed
+    Internet standard as described in [[https://www.rfc-editor.org/rfc/rfc4880.txt][RFC-4880]].  As such, it is aimed
     to be compatible with PGP from PGP Corp. and other OpenPGP tools
 
 ** Is GnuPG compatible with PGP?
@@ -158,8 +157,8 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
    :CUSTOM_ID: where-do-i-get-gnupg
    :END:
 
-    You can download the GNU Privacy Guard from its primary FTP server
-    [[ftp://ftp.gnupg.org/gcrypt/gnupg/][ftp.gnupg.org]] or from one of its [[gnupgweb:download/mirrors.html][mirrors]].
+    You can download the GNU Privacy Guard from its primary server
+    [[https://gnupg.org/ftp/gcrypt/gnupg/][ftp.gnupg.org]] or from one of its [[gnupgweb:download/mirrors.html][mirrors]].
 
     The current stable version is FIXME. Please upgrade to this
     version as it includes additional features, functions and security
@@ -1139,8 +1138,8 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     lists? Did you have a look at the bug list (you'll find a link to
     the list of reported bugs on the documentation page). If you're
     not sure about it being a bug, you can send mail to the
-    gnupg-devel list. Otherwise, use the bug tracking system
-    [[http://bugs.gnupg.org][bugs.gnupg.org]].
+    gnupg-devel list. Otherwise, use the bug tracking system at
+    [[https://dev.gnupg.org][dev.gnupg.org]].
 
 ** Why doesn't GnuPG support X.509 certificates?
    :PROPERTIES:
@@ -1177,7 +1176,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
 
     There is a small bug in 1.0.6 which didn't parse trust packets
     correctly. You may want to apply this patch if you can't upgrade:
-    [[http://www.gnupg.org/developer/gpg-woody-fix.txt]].
+    [[https://www.gnupg.org/developer/gpg-woody-fix.txt]].
 
 ** I upgraded to GnuPG version 1.0.7 and now it takes longer to load my keyrings. What can I do?
    :PROPERTIES:
@@ -1203,7 +1202,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     More information and a patch for a some pre-1.2.2 versions of GnuPG
     can be found at:
 
-    [[http://lists.gnupg.org/pipermail/gnupg-announce/2003q2/000268.html]].
+    [[https://lists.gnupg.org/pipermail/gnupg-announce/2003q2/000268.html]].
 
 ** I just compiled GnuPG from source on my GNU/Linux RPM-based system and it's not working. Why?
    :PROPERTIES:
@@ -1480,7 +1479,7 @@ assignment to the FSF.  Without such an assignment we may only accept
 trivial patches.  As a rule of thumb the sum of all changed lines by
 one contributor may not exceed about 15 lines.  Exceptions are typo
 corrections and translations.  See
-http://www.gnu.org/prep/maintain/html_node/Copyright-Papers.html for
+https://www.gnu.org/prep/maintain/html_node/Copyright-Papers.html for
 details.
 
 ** U.S. export restrictions
@@ -1504,8 +1503,8 @@ email changed, so I just sent "www.gnupg.org" and haven't bothered
 with the email since.
 #+end_quote
 
-The rules: http://www.bis.doc.gov/encryption/pubavailencsourcecodenofify.html
-The 2004 rule change: http://edocket.access.gpo.gov/2004/04-26992.htm
+The rules: https://www.bis.doc.gov/encryption/pubavailencsourcecodenofify.html
+The 2004 rule change: https://edocket.access.gpo.gov/2004/04-26992.htm
 
 
 * Acknowledgements

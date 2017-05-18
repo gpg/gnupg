@@ -3777,7 +3777,7 @@ may be recoverable from it later.
 
 Before you report a bug you should first search the mailing list
 archives for similar problems and second check whether such a bug has
-already been reported to our bug tracker at http://bugs.gnupg.org .
+already been reported to our bug tracker at https://dev.gnupg.org .
 
 @c *******************************************
 @c ***************              **************

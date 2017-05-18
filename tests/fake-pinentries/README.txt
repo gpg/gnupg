@@ -35,4 +35,4 @@ Troubleshooting
 
 If you have any trouble with this technique, please drop a line to the
 GnuPG development mailing list <gnupg-devel@gnupg.org> or open a
-report on the GnuPG bug tracker at https://bugs.gnupg.org/gnupg
+report on the GnuPG bug tracker at https://dev.gnupg.org/gnupg

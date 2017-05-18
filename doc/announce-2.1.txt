@@ -236,7 +236,7 @@ Support
 Please consult the archive of the gnupg-users mailing list before
 reporting a bug <https://gnupg.org/documentation/mailing-lists.html>.
 We suggest to send bug reports for a new release to this list in favor
-of filing a bug at <https://bugs.gnupg.org>.  For commercial support
+of filing a bug at <https://dev.gnupg.org>.  For commercial support
 requests we keep a list of known service companies at:
 
   https://gnupg.org/service.html
