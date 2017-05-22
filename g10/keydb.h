@@ -351,6 +351,8 @@ const char *parse_def_secret_key (ctrl_t ctrl);
 
 /* Look up a secret key.  */
 gpg_error_t get_seckey_default (ctrl_t ctrl, PKT_public_key *pk);
+gpg_error_t get_seckey_default_or_card (ctrl_t ctrl, PKT_public_key *pk,
+                                        const byte *fpr, size_t fpr_len);
 
 /* Search for keys matching some criteria.  */
 gpg_error_t getkey_bynames (ctrl_t ctrl,

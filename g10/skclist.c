@@ -137,7 +137,7 @@ build_sk_list (ctrl_t ctrl,
       pk = xmalloc_clear (sizeof *pk);
       pk->req_usage = use;
 
-      /* Check if a card is available.  If any, use it.  */
+      /* Check if a card is available.  If any, use the key as a hint.  */
       err = agent_scd_serialno (&serialno, NULL);
       if (!err)
         {
@@ -146,19 +146,11 @@ build_sk_list (ctrl_t ctrl,
           if (err)
             log_error ("error retrieving key fingerprint from card: %s\n",
                        gpg_strerror (err));
-          else if (info.fpr1valid)
-            {
-              if ((err = get_pubkey_byfprint (ctrl, pk, NULL, info.fpr1, 20)))
-                {
-                  info.fpr1valid = 0;
-                  log_error ("error on card key to sign: %s, try default\n",
-                             gpg_strerror (err));
-                }
-            }
         }
 
-      if (!info.fpr1valid
-          && (err = getkey_byname (ctrl, NULL, pk, NULL, 1, NULL)))
+      err = get_seckey_default_or_card (ctrl, pk,
+                                        info.fpr1valid? info.fpr1 : NULL, 20);
+      if (err)
 	{
 	  free_public_key (pk);
 	  pk = NULL;

@@ -184,8 +184,7 @@ default_inq_cb (void *opaque, const char *line)
 
 
 /* Print a warning if the server's version number is less than our
-   version number.  Returns an error code on a connection problem.
-   Ignore an error for scdaemon (MODE==2).  */
+   version number.  Returns an error code on a connection problem.  */
 static gpg_error_t
 warn_version_mismatch (assuan_context_t ctx, const char *servername, int mode)
 {
@@ -194,7 +193,7 @@ warn_version_mismatch (assuan_context_t ctx, const char *servername, int mode)
   const char *myversion = strusage (13);
 
   err = get_assuan_server_version (ctx, mode, &serverversion);
-  if (err && mode != 2)
+  if (err)
     log_error (_("error getting version from '%s': %s\n"),
                servername, gpg_strerror (err));
   else if (compare_version_strings (serverversion, myversion) < 0)
@@ -290,7 +289,8 @@ start_agent (ctrl_t ctrl, int flag_for_card)
 
       memset (&info, 0, sizeof info);
 
-      rc = warn_version_mismatch (agent_ctx, SCDAEMON_NAME, 2);
+      if (!(flag_for_card & FLAG_FOR_CARD_SUPPRESS_ERRORS))
+        rc = warn_version_mismatch (agent_ctx, SCDAEMON_NAME, 2);
       if (!rc)
         rc = assuan_transact (agent_ctx, "SCD SERIALNO openpgp",
                               NULL, NULL, NULL, NULL,
