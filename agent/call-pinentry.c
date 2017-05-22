@@ -489,7 +489,7 @@ start_pinentry (ctrl_t ctrl)
   {
     /* Provide a few default strings for use by the pinentries.  This
        may help a pinentry to avoid implementing localization code.  */
-    static struct { const char *key, *value; int what; } tbl[] = {
+    static const struct { const char *key, *value; int what; } tbl[] = {
       /* TRANSLATORS: These are labels for buttons etc used in
          Pinentries.  An underscore indicates that the next letter
          should be used as an accelerator.  Double the underscore for

@@ -54,7 +54,7 @@
 
 /* A table containing the information needed to create a protected
    private key.  */
-static struct {
+static const struct {
   const char *algo;
   const char *parmlist;
   int prot_from, prot_to;
@@ -1010,7 +1010,7 @@ agent_unprotect (ctrl_t ctrl,
                  gnupg_isotime_t protected_at,
                  unsigned char **result, size_t *resultlen)
 {
-  static struct {
+  static const struct {
     const char *name; /* Name of the protection method. */
     int algo;         /* (A zero indicates the "openpgp-native" hack.)  */
     int keylen;       /* Used key length in bytes.  */

@@ -1911,7 +1911,7 @@ agent_copy_startup_env (ctrl_t ctrl)
   const char *value;
 
   for (idx=0; !err && names[idx]; idx++)
-      if ((value = session_env_getenv (opt.startup_env, names[idx])))
+    if ((value = session_env_getenv (opt.startup_env, names[idx])))
       err = session_env_setenv (ctrl->session_env, names[idx], value);
 
   if (!err && !ctrl->lc_ctype && opt.startup_lc_ctype)

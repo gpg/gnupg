@@ -262,7 +262,7 @@ static gpg_error_t ssh_key_extract_comment (gcry_sexp_t key, char **comment);
 /* Associating request types with the corresponding request
    handlers.  */
 
-static ssh_request_spec_t request_specs[] =
+static const ssh_request_spec_t request_specs[] =
   {
 #define REQUEST_SPEC_DEFINE(id, name, secret_input) \
   { SSH_REQUEST_##id, ssh_handler_##name, #name, secret_input }
@@ -280,7 +280,7 @@ static ssh_request_spec_t request_specs[] =
 
 
 /* Table holding key type specifications.  */
-static ssh_key_type_spec_t ssh_key_types[] =
+static const ssh_key_type_spec_t ssh_key_types[] =
   {
     {
       "ssh-ed25519", "Ed25519", GCRY_PK_EDDSA, "qd",  "q", "rs", "qd",
@@ -3376,10 +3376,10 @@ ssh_handler_unlock (ctrl_t ctrl, estream_t request, estream_t response)
 /* Return the request specification for the request identified by TYPE
    or NULL in case the requested request specification could not be
    found.  */
-static ssh_request_spec_t *
+static const ssh_request_spec_t *
 request_spec_lookup (int type)
 {
-  ssh_request_spec_t *spec;
+  const ssh_request_spec_t *spec;
   unsigned int i;
 
   for (i = 0; i < DIM (request_specs); i++)
@@ -3403,7 +3403,7 @@ request_spec_lookup (int type)
 static int
 ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 {
-  ssh_request_spec_t *spec;
+  const ssh_request_spec_t *spec;
   estream_t response = NULL;
   estream_t request = NULL;
   unsigned char request_type;
