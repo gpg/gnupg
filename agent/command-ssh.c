@@ -1040,12 +1040,14 @@ search_control_file (ssh_control_file_t cf, const char *hexgrip,
    We can assume that the user wants to allow ssh using this key. */
 static gpg_error_t
 add_control_entry (ctrl_t ctrl, ssh_key_type_spec_t *spec,
-                   const char *hexgrip, const char *fmtfpr,
+                   const char *hexgrip, gcry_sexp_t key,
                    int ttl, int confirm)
 {
   gpg_error_t err;
   ssh_control_file_t cf;
   int disabled;
+  char *fpr_md5 = NULL;
+  char *fpr_sha256 = NULL;
 
   (void)ctrl;
 
@@ -1059,19 +1061,31 @@ add_control_entry (ctrl_t ctrl, ssh_key_type_spec_t *spec,
       struct tm *tp;
       time_t atime = time (NULL);
 
+      err = ssh_get_fingerprint_string (key, GCRY_MD_MD5, &fpr_md5);
+      if (err)
+        goto out;
+
+      err = ssh_get_fingerprint_string (key, GCRY_MD_SHA256, &fpr_sha256);
+      if (err)
+        goto out;
+
       /* Not yet in the file - add it. Because the file has been
          opened in append mode, we simply need to write to it.  */
       tp = localtime (&atime);
       fprintf (cf->fp,
                ("# %s key added on: %04d-%02d-%02d %02d:%02d:%02d\n"
-                "# MD5 Fingerprint:  %s\n"
+                "# Fingerprints:  %s\n"
+                "#                %s\n"
                 "%s %d%s\n"),
                spec->name,
                1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
                tp->tm_hour, tp->tm_min, tp->tm_sec,
-               fmtfpr, hexgrip, ttl, confirm? " confirm":"");
+               fpr_md5, fpr_sha256, hexgrip, ttl, confirm? " confirm":"");
 
     }
+ out:
+  xfree (fpr_md5);
+  xfree (fpr_sha256);
   close_control_file (cf);
   return 0;
 }
@@ -3118,7 +3132,7 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
 
  key_exists:
   /* And add an entry to the sshcontrol file.  */
-  err = add_control_entry (ctrl, spec, key_grip, key_fpr, ttl, confirm);
+  err = add_control_entry (ctrl, spec, key_grip, key, ttl, confirm);
 
 
  out:
