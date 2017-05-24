@@ -28,7 +28,12 @@
 #include "ssh-utils.h"
 
 
-static struct { const char *key; const char *fpr; } sample_keys[] = {
+static struct
+{
+  const char *key;
+  const char *fpr_md5;
+  const char *fpr_sha256;
+} sample_keys[] = {
   { "(protected-private-key "
     "(rsa "
     "(n #"
@@ -70,7 +75,8 @@ static struct { const char *key; const char *fpr; } sample_keys[] = {
     ")"
     "(comment passphrase_is_abc)"
     ")",
-    "c7:c6:a7:ec:04:6c:87:59:54:f2:88:58:09:e0:f2:b1"
+    "MD5:c7:c6:a7:ec:04:6c:87:59:54:f2:88:58:09:e0:f2:b1",
+    "SHA256:ksKb4DKk2SFX56GRtpt0szBnyjiYARSb2FNlUb7snnE"
   },
   {
     "(protected-private-key "
@@ -99,7 +105,8 @@ static struct { const char *key; const char *fpr; } sample_keys[] = {
     ")"
     "(comment sample_dsa_passphrase_is_abc)"
     ")",
-    "2d:b1:70:1a:04:9e:41:a3:ce:27:a5:c7:22:fe:3a:a3"
+    "MD5:2d:b1:70:1a:04:9e:41:a3:ce:27:a5:c7:22:fe:3a:a3",
+    "SHA256:z8+8HEuD/5QpegGS4tSK02dJF+a6o2V67VM2gOPz9oQ"
   },
   { /* OpenSSH 6.7p1 generated key:  */
     "(protected-private-key "
@@ -118,7 +125,8 @@ static struct { const char *key; const char *fpr; } sample_keys[] = {
     ")"
     "(comment \"ecdsa w/o comment\")"
     ")", /* Passphrase="abc" */
-    "93:4f:08:02:7d:cb:16:9b:0c:39:21:4b:cf:28:5a:19"
+    "MD5:93:4f:08:02:7d:cb:16:9b:0c:39:21:4b:cf:28:5a:19",
+    "SHA256:zSj4uXfE1hlQnESD2LO723fMGXsNwzHrfqOfqep37is"
   },
   { /* OpenSSH 6.7p1 generated key:  */
     "(protected-private-key "
@@ -139,7 +147,8 @@ static struct { const char *key; const char *fpr; } sample_keys[] = {
     ")"
     "(comment \"ecdsa w/o comment\")"
     ")", /* Passphrase="abc" */
-    "a3:cb:44:c8:56:15:25:62:85:fd:e8:04:7a:26:dc:76"
+    "MD5:a3:cb:44:c8:56:15:25:62:85:fd:e8:04:7a:26:dc:76",
+    "SHA256:JuQh5fjduynuuTEwI9C6yAKK1NnLX9PPd7TP0qZfbGs"
   },
   { /* OpenSSH 6.7p1 generated key:  */
     "(protected-private-key "
@@ -161,7 +170,8 @@ static struct { const char *key; const char *fpr; } sample_keys[] = {
     ")"
     "(comment \"ecdsa w/o comment\")"
     ")", /* Passphrase="abc" */
-    "1e:a6:94:ab:bd:81:73:5f:22:bc:0e:c7:89:f6:68:df"
+    "MD5:1e:a6:94:ab:bd:81:73:5f:22:bc:0e:c7:89:f6:68:df",
+    "SHA256:+pbRyYa2UBwDki1k4Wziu2CKrdJIbZM/hOWOQ/sNe/0"
   },
   { /* OpenSSH 6.7p1 generated key:  */
     "(protected-private-key "
@@ -180,7 +190,8 @@ static struct { const char *key; const char *fpr; } sample_keys[] = {
     ")"
     "(comment \"eddsa w/o comment\")"
     ")", /* Passphrase="abc" */
-    "f1:fa:c8:a6:40:bb:b9:a1:65:d7:62:65:ac:26:78:0e"
+    "MD5:f1:fa:c8:a6:40:bb:b9:a1:65:d7:62:65:ac:26:78:0e",
+    "SHA256:yhwBfYnTOnSXcWf1EOPo+oIIpNJ6w/bG36udZ96MmsQ"
   },
   {
     NULL,
@@ -259,9 +270,43 @@ main (int argc, char **argv)
   char *string;
   int idx;
 
-  if (argc == 2)
+  /* --dump-keys dumps the keys as KEYGRIP.key.IDX.  Useful to compute
+       fingerprints to enhance the test vectors.  */
+  if (argc == 2 && strcmp (argv[1], "--dump-keys") == 0)
+    for (idx=0; sample_keys[idx].key; idx++)
+      {
+	FILE *s;
+	char *name;
+	char grip[20];
+	char *hexgrip;
+
+	err = keygrip_from_canon_sexp (sample_keys[idx].key,
+				       strlen (sample_keys[idx].key),
+				       grip);
+	if (err)
+	  {
+	    fprintf (stderr, "%s:%d: error computing keygrip: %s\n",
+		     __FILE__, __LINE__, gpg_strerror (err));
+	    exit (1);
+	  }
+	hexgrip = bin2hex (grip, 20, NULL);
+
+	name = xtryasprintf ("%s.key.%d", hexgrip, idx);
+	s = fopen (name, "w");
+	if (s == NULL)
+	  {
+	    fprintf (stderr, "%s:%d: error opening file: %s\n",
+		     __FILE__, __LINE__, gpg_strerror (gpg_error_from_syserror ()));
+	    exit (1);
+	  }
+	xfree (name);
+	fprintf (s, "%s", sample_keys[idx].key);
+	fclose (s);
+      }
+  else if (argc == 2)
     {
       key = read_key (argv[1]);
+
       err = ssh_get_fingerprint_string (key, GCRY_MD_MD5, &string);
       if (err)
         {
@@ -271,6 +316,17 @@ main (int argc, char **argv)
         }
       puts (string);
       xfree (string);
+
+      err = ssh_get_fingerprint_string (key, GCRY_MD_SHA256, &string);
+      if (err)
+        {
+          fprintf (stderr, "%s:%d: error getting fingerprint: %s\n",
+                   __FILE__, __LINE__, gpg_strerror (err));
+          exit (1);
+        }
+      puts (string);
+      xfree (string);
+
       gcry_sexp_release (key);
     }
   else
@@ -288,7 +344,6 @@ main (int argc, char **argv)
             }
 
           err = ssh_get_fingerprint_string (key, GCRY_MD_MD5, &string);
-          gcry_sexp_release (key);
           if (err)
             {
               fprintf (stderr, "%s:%d: error getting fingerprint for "
@@ -297,16 +352,38 @@ main (int argc, char **argv)
               exit (1);
             }
 
-          if (strcmp (string, sample_keys[idx].fpr))
+          if (strcmp (string, sample_keys[idx].fpr_md5))
             {
               fprintf (stderr, "%s:%d: fingerprint mismatch for "
                        "sample key %d\n",
                        __FILE__, __LINE__, idx);
               fprintf (stderr, "want: %s\n got: %s\n",
-                       sample_keys[idx].fpr, string);
+                       sample_keys[idx].fpr_md5, string);
               exit (1);
             }
           xfree (string);
+
+          err = ssh_get_fingerprint_string (key, GCRY_MD_SHA256, &string);
+          if (err)
+            {
+              fprintf (stderr, "%s:%d: error getting fingerprint for "
+                       "sample key %d: %s\n",
+                       __FILE__, __LINE__, idx, gpg_strerror (err));
+              exit (1);
+            }
+
+          if (strcmp (string, sample_keys[idx].fpr_sha256))
+            {
+              fprintf (stderr, "%s:%d: fingerprint mismatch for "
+                       "sample key %d\n",
+                       __FILE__, __LINE__, idx);
+              fprintf (stderr, "want: %s\n got: %s\n",
+                       sample_keys[idx].fpr_sha256, string);
+              exit (1);
+            }
+          xfree (string);
+
+          gcry_sexp_release (key);
         }
     }
 

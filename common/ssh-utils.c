@@ -64,6 +64,9 @@ is_eddsa (gcry_sexp_t keyparms)
   return result;
 }
 
+/* Dummy functions for es_mopen.  */
+static void *dummy_realloc (void *mem, size_t size) { (void) size; return mem; }
+static void dummy_free (void *mem) { (void) mem; }
 
 /* Return the Secure Shell type fingerprint for KEY using digest ALGO.
    The length of the fingerprint is returned at R_LEN and the
@@ -232,10 +235,74 @@ get_fingerprint (gcry_sexp_t key, int algo,
 
   if (as_string)
     {
-      *r_fpr = (algo == GCRY_MD_MD5 ? bin2hexcolon : /* XXX we need base64 */ bin2hex)
-        (gcry_md_read (md, algo), gcry_md_get_algo_dlen (algo), NULL);
+      const char *algo_name;
+      char *fpr;
+
+      /* Prefix string with the algorithm name and a colon.  */
+      algo_name = gcry_md_algo_name (algo);
+      *r_fpr = xtrymalloc (strlen (algo_name) + 1 + 3 * gcry_md_get_algo_dlen (algo) + 1);
+      if (*r_fpr == NULL)
+        {
+          err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+          goto leave;
+        }
+
+      strncpy (*r_fpr, algo_name, strlen (algo_name));
+      fpr = (char *) *r_fpr + strlen (algo_name);
+      *fpr++ = ':';
+
+      if (algo == GCRY_MD_MD5)
+        {
+          bin2hexcolon (gcry_md_read (md, algo), gcry_md_get_algo_dlen (algo), fpr);
+          strlwr (fpr);
+        }
+      else
+        {
+          struct b64state b64s;
+          estream_t stream;
+          char *p;
+          long int len;
+
+          /* Write the base64-encoded hash to fpr.  */
+          stream = es_mopen (fpr, 3 * gcry_md_get_algo_dlen (algo) + 1, 0,
+                             0, dummy_realloc, dummy_free, "w");
+          if (stream == NULL)
+            {
+              err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+              goto leave;
+            }
+
+          err = b64enc_start_es (&b64s, stream, "");
+          if (err)
+            {
+              es_fclose (stream);
+              goto leave;
+            }
+
+          err = b64enc_write (&b64s,
+                              gcry_md_read (md, algo), gcry_md_get_algo_dlen (algo));
+          if (err)
+            {
+              es_fclose (stream);
+              goto leave;
+            }
+
+          /* Finish, get the length, and close the stream.  */
+          err = b64enc_finish (&b64s);
+          len = es_ftell (stream);
+          es_fclose (stream);
+          if (err)
+            goto leave;
+
+          /* Terminate.  */
+          fpr[len] = 0;
+
+          /* Strip the trailing padding characters.  */
+          for (p = fpr + len - 1; p > fpr && *p == '='; p--)
+            *p = 0;
+        }
+
       *r_len = strlen (*r_fpr) + 1;
-      strlwr (*r_fpr);
     }
   else
     {
