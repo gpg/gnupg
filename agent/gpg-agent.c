@@ -129,6 +129,7 @@ enum cmd_and_opt_values
   oKeepTTY,
   oKeepDISPLAY,
   oSSHSupport,
+  oSSHFingerprintDigest,
   oPuttySupport,
   oDisableScdaemon,
   oDisableCheckOwnSocket,
@@ -232,6 +233,8 @@ static ARGPARSE_OPTS opts[] = {
                 /* */    N_("allow passphrase to be prompted through Emacs")),
 
   ARGPARSE_s_n (oSSHSupport,   "enable-ssh-support", N_("enable ssh support")),
+  ARGPARSE_s_s (oSSHFingerprintDigest, "ssh-fingerprint-digest",
+                N_("digest to use when communicating ssh fingerprints")),
   ARGPARSE_s_n (oPuttySupport, "enable-putty-support",
 #ifdef HAVE_W32_SYSTEM
                 /* */           N_("enable putty support")
@@ -800,6 +803,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.allow_emacs_pinentry = 0;
       opt.disable_scdaemon = 0;
       disable_check_own_socket = 0;
+      opt.ssh_fingerprint_digest = GCRY_MD_MD5;
       return 1;
     }
 
@@ -1175,6 +1179,11 @@ main (int argc, char **argv )
 
 	case oSSHSupport:
           ssh_support = 1;
+          break;
+	case oSSHFingerprintDigest:
+          opt.ssh_fingerprint_digest = gcry_md_map_name (pargs.r.ret_str);
+          if (opt.ssh_fingerprint_digest == 0)
+            log_error ("Unknown digest algorithm: %s\n", pargs.r.ret_str);
           break;
         case oPuttySupport:
 #        ifdef HAVE_W32_SYSTEM

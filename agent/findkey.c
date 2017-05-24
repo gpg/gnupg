@@ -412,7 +412,8 @@ agent_modify_description (const char *in, const char *comment,
 
                 case 'F': /* SSH style fingerprint.  */
                   if (!ssh_fpr && key)
-                    ssh_get_fingerprint_string (key, GCRY_MD_MD5, &ssh_fpr);
+                    ssh_get_fingerprint_string (key, opt.ssh_fingerprint_digest,
+                                                &ssh_fpr);
                   if (ssh_fpr)
                     {
                       if (out)

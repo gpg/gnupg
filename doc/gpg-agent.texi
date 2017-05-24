@@ -636,6 +636,13 @@ and allows the use of gpg-agent with the ssh implementation
 @command{putty}.  This is similar to the regular ssh-agent support but
 makes use of Windows message queue as required by @command{putty}.
 
+@anchor{option --ssh-fingerprint-digest}
+@item --ssh-fingerprint-digest
+@opindex ssh-fingerprint-digest
+
+Select the digest algorithm used to compute ssh fingerprints that are
+communicated to the user, e.g. in pinentry dialogs.  OpenSSH has
+transitioned from using MD5 to the more secure SHA256.
 
 @end table
 

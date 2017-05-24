@@ -167,6 +167,10 @@ struct
      gpg-agent.c: If the value is less than 2 the name has not yet
      been malloced. */
   int browser_socket;
+
+  /* The digest algorithm to use for ssh fingerprints when
+   * communicating with the user.  */
+  int ssh_fingerprint_digest;
 } opt;
 
 
