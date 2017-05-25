@@ -45,6 +45,9 @@
 # endif
 # include <netdb.h>
 #endif
+#ifdef HAVE_STAT
+# include <sys/stat.h>
+#endif
 #include <string.h>
 #include <unistd.h>
 
@@ -110,6 +113,8 @@
 /* The default timeout in seconds for libdns requests.  */
 #define DEFAULT_TIMEOUT 30
 
+
+#define RESOLV_CONF_NAME "/etc/resolv.conf"
 
 /* Two flags to enable verbose and debug mode.  */
 static int opt_verbose;
@@ -391,6 +396,37 @@ libdns_error_to_gpg_error (int serr)
 #endif /*USE_LIBDNS*/
 
 
+/* Return true if resolve.conf changed since it was last loaded.  */
+#ifdef USE_LIBDNS
+static int
+resolv_conf_changed_p (void)
+{
+#if defined(HAVE_W32_SYSTEM) || !defined(HAVE_STAT)
+  return 0;
+#else
+  static time_t last_mtime;
+  const char *fname = RESOLV_CONF_NAME;
+  struct stat statbuf;
+  int changed;
+
+  if (stat (fname, &statbuf))
+    {
+      log_error ("stat'ing '%s' failed: %s\n",
+                 fname, gpg_strerror (gpg_error_from_syserror ()));
+      changed = 0;
+      last_mtime = 1; /* Force a "changed" result the next time stat
+                       * works.  */
+    }
+  else
+    {
+      changed = last_mtime && (last_mtime != statbuf.st_mtime);
+      last_mtime = statbuf.st_mtime;
+    }
+  return changed;
+#endif
+}
+#endif /*USE_LIBDNS*/
+
 #ifdef USE_LIBDNS
 /* Initialize libdns.  Returns 0 on success; prints a diagnostic and
  * returns an error code on failure.  */
@@ -496,7 +532,8 @@ libdns_init (void)
 #else /* Unix */
       const char *fname;
 
-      fname = "/etc/resolv.conf";
+      fname = RESOLV_CONF_NAME;
+      resolv_conf_changed_p (); /* Reset timestamp.  */
       err = libdns_error_to_gpg_error
         (dns_resconf_loadpath (ld.resolv_conf, fname));
       if (err)
@@ -652,6 +689,14 @@ libdns_res_open (struct dns_resolver **r_res)
   int derr;
 
   *r_res = NULL;
+
+  /* Force a reload if resolv.conf has changed.  */
+  if (resolv_conf_changed_p ())
+    {
+      if (opt_debug)
+        log_debug ("dns: resolv.conf changed - forcing reload\n");
+      libdns_reinit_pending = 1;
+    }
 
   if (libdns_reinit_pending)
     {
