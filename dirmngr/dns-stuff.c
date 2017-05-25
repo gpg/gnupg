@@ -407,21 +407,23 @@ resolv_conf_changed_p (void)
   static time_t last_mtime;
   const char *fname = RESOLV_CONF_NAME;
   struct stat statbuf;
-  int changed;
+  int changed = 0;
 
   if (stat (fname, &statbuf))
     {
       log_error ("stat'ing '%s' failed: %s\n",
                  fname, gpg_strerror (gpg_error_from_syserror ()));
-      changed = 0;
       last_mtime = 1; /* Force a "changed" result the next time stat
                        * works.  */
     }
-  else
+  else if (!last_mtime)
+    last_mtime = statbuf.st_mtime;
+  else if (last_mtime != statbuf.st_mtime)
     {
-      changed = last_mtime && (last_mtime != statbuf.st_mtime);
+      changed = 1;
       last_mtime = statbuf.st_mtime;
     }
+
   return changed;
 #endif
 }
