@@ -73,7 +73,7 @@ status_currently_allowed (int no)
     return 1; /* Yes. */
 
   /* We allow some statis anyway, so that import statistics are
-     correct and to avoid problems if the retriebval subsystem will
+     correct and to avoid problems if the retrieval subsystem will
      prompt the user. */
   switch (no)
     {

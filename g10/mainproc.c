@@ -845,7 +845,7 @@ proc_compressed (CTX c, PACKET *pkt)
 
 /*
  * Check the signature.  If R_PK is not NULL a copy of the public key
- * used to verify the signature will be stored tehre, or NULL if not
+ * used to verify the signature will be stored there, or NULL if not
  * found.  Returns: 0 = valid signature or an error code
  */
 static int
@@ -1925,7 +1925,7 @@ check_sig_and_print (CTX c, kbnode_t node)
         statno = STATUS_GOODSIG;
 
       /* FIXME: We should have the public key in PK and thus the
-       * keyboock has already been fetched.  Thus we could use the
+       * keyblock has already been fetched.  Thus we could use the
        * fingerprint or PK itself to lookup the entire keyblock.  That
        * would best be done with a cache.  */
       keyblock = get_pubkeyblock (c->ctrl, sig->keyid);
