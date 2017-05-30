@@ -52,6 +52,7 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
     {
       rc = gpg_error_from_syserror ();
       xfree (want_sn);
+      xfree (want_kid);
       return rc;
     }
 
@@ -84,6 +85,7 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
           serialno = NULL;
           if (!i)
             {
+              xfree (want_sn_disp);
               xfree (want_sn);
               *r_kid = want_kid;
               return 0; /* yes, we have the correct card */
@@ -122,9 +124,9 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
           else
             {
               rc = agent_get_confirmation (ctrl, desc, NULL, NULL, 0);
-	      if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK &&
-		  gpg_err_code (rc) == GPG_ERR_NO_PIN_ENTRY)
-		rc = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
+              if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK &&
+                  gpg_err_code (rc) == GPG_ERR_NO_PIN_ENTRY)
+                rc = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
 
               xfree (desc);
             }

@@ -2129,6 +2129,7 @@ create_server_socket (char *name, int primary, int cygwin,
           log_error ("error preparing socket '%s': %s\n",
                      name, gpg_strerror (gpg_error_from_syserror ()));
         *name = 0; /* Inhibit removal of the socket by cleanup(). */
+        xfree (unaddr);
         agent_exit (2);
       }
     if (redirected)
@@ -2166,6 +2167,7 @@ create_server_socket (char *name, int primary, int cygwin,
                        "not starting a new one\n"));
           *name = 0; /* Inhibit removal of the socket by cleanup(). */
           assuan_sock_close (fd);
+          xfree (unaddr);
           agent_exit (2);
         }
       gnupg_remove (unaddr->sun_path);
@@ -2178,11 +2180,12 @@ create_server_socket (char *name, int primary, int cygwin,
       /* We use gpg_strerror here because it allows us to get strings
          for some W32 socket error codes.  */
       log_error (_("error binding socket to '%s': %s\n"),
-		 unaddr->sun_path,
+                 unaddr->sun_path,
                  gpg_strerror (gpg_error_from_syserror ()));
 
       assuan_sock_close (fd);
       *name = 0; /* Inhibit removal of the socket by cleanup(). */
+      xfree (unaddr);
       agent_exit (2);
     }
 
@@ -2195,12 +2198,14 @@ create_server_socket (char *name, int primary, int cygwin,
       log_error (_("listen() failed: %s\n"), strerror (errno));
       *name = 0; /* Inhibit removal of the socket by cleanup(). */
       assuan_sock_close (fd);
+      xfree (unaddr);
       agent_exit (2);
     }
 
   if (opt.verbose)
     log_info (_("listening on socket '%s'\n"), unaddr->sun_path);
 
+  xfree (unaddr);
   return fd;
 }
 
