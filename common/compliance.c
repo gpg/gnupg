@@ -45,8 +45,8 @@ int
 gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
 		       gcry_mpi_t key[], unsigned int keylength, const char *curvename)
 {
-  enum { is_rsa, is_pgp5, is_elg_sign, is_ecc } algotype;
-  int result;
+  enum { is_rsa, is_dsa, is_pgp5, is_elg_sign, is_ecc } algotype;
+  int result = 0;
 
   switch (algo)
     {
@@ -56,8 +56,11 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
       algotype = is_rsa;
       break;
 
-    case PUBKEY_ALGO_ELGAMAL_E:
     case PUBKEY_ALGO_DSA:
+      algotype = is_dsa;
+      break;
+
+    case PUBKEY_ALGO_ELGAMAL_E:
       algotype = is_pgp5;
       break;
 
@@ -91,6 +94,16 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
                     || keylength == 4096);
           break;
 
+	case is_dsa:
+	  if (key)
+	    {
+	      size_t L = gcry_mpi_get_nbits (key[0] /* p */);
+	      size_t N = gcry_mpi_get_nbits (key[1] /* q */);
+	      result = (L == 256
+			&& (N == 2048 || N == 3072));
+	    }
+	  break;
+
         case is_ecc:
           if (!curvename && key)
             {
@@ -123,6 +136,59 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
     }
 
   return result;
+}
+
+
+/* Return true if CIPHER is compliant to the give COMPLIANCE mode.  */
+int
+gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance, cipher_algo_t cipher)
+{
+  switch (compliance)
+    {
+    case CO_DE_VS:
+      switch (cipher)
+	{
+	case CIPHER_ALGO_AES:
+	case CIPHER_ALGO_AES192:
+	case CIPHER_ALGO_AES256:
+	case CIPHER_ALGO_3DES:
+	  return 1;
+	default:
+	  return 0;
+	}
+      log_assert (!"reached");
+
+    default:
+      return 0;
+    }
+
+  log_assert (!"reached");
+}
+
+
+/* Return true if DIGEST is compliant to the give COMPLIANCE mode.  */
+int
+gnupg_digest_is_compliant (enum gnupg_compliance_mode compliance, digest_algo_t digest)
+{
+  switch (compliance)
+    {
+    case CO_DE_VS:
+      switch (digest)
+	{
+	case DIGEST_ALGO_SHA256:
+	case DIGEST_ALGO_SHA384:
+	case DIGEST_ALGO_SHA512:
+	  return 1;
+	default:
+	  return 0;
+	}
+      log_assert (!"reached");
+
+    default:
+      return 0;
+    }
+
+  log_assert (!"reached");
 }
 
 

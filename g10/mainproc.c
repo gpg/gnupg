@@ -39,6 +39,7 @@
 #include "photoid.h"
 #include "../common/mbox-util.h"
 #include "call-dirmngr.h"
+#include "../common/compliance.h"
 
 /* Put an upper limit on nested packets.  The 32 is an arbitrary
    value, a much lower should actually be sufficient.  */
@@ -598,6 +599,44 @@ proc_encrypted (CTX c, PACKET *pkt)
     }
   else if (!c->dek)
     result = GPG_ERR_NO_SECKEY;
+
+  /* Compute compliance with CO_DE_VS.  */
+  if (!result && is_status_enabled ()
+      /* Symmetric encryption voids compliance.  */
+      && c->symkeys == 0
+      /* Overriding session key voids compliance.  */
+      && opt.override_session_key == NULL
+      /* Check symmetric cipher.  */
+      && gnupg_cipher_is_compliant (CO_DE_VS, c->dek->algo))
+    {
+      struct kidlist_item *i;
+      int compliant = 1;
+      PKT_public_key *pk = xmalloc (sizeof *pk);
+
+      log_assert (c->pkenc_list || !"where else did the session key come from!?");
+
+      /* Now check that every key used to encrypt the session key is
+       * compliant.  */
+      for (i = c->pkenc_list; i && compliant; i = i->next)
+        {
+          memset (pk, 0, sizeof *pk);
+          pk->pubkey_algo = i->pubkey_algo;
+          if (get_pubkey (c->ctrl, pk, i->kid) != 0
+              || ! gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, pk->pkey,
+                                          nbits_from_pk (pk), NULL))
+            compliant = 0;
+          release_public_key_parts (pk);
+        }
+
+      xfree (pk);
+
+      if (compliant)
+        write_status_strings (STATUS_DECRYPTION_COMPLIANCE_MODE,
+                              gnupg_status_compliance_flag (CO_DE_VS),
+                              NULL);
+
+    }
+
 
   if (!result)
     result = decrypt_data (c->ctrl, c, pkt->pkt.encrypted, c->dek );
@@ -2195,6 +2234,15 @@ check_sig_and_print (CTX c, kbnode_t node)
               xfree (dfile);
             }
         }
+
+      /* Compute compliance with CO_DE_VS.  */
+      if (pk && is_status_enabled ()
+          && gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, pk->pkey,
+                                    nbits_from_pk (pk), NULL)
+          && gnupg_digest_is_compliant (CO_DE_VS, sig->digest_algo))
+        write_status_strings (STATUS_VERIFICATION_COMPLIANCE_MODE,
+                              gnupg_status_compliance_flag (CO_DE_VS),
+                              NULL);
 
       free_public_key (pk);
       pk = NULL;

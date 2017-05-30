@@ -42,6 +42,10 @@ enum gnupg_compliance_mode
 int gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
                            gcry_mpi_t key[], unsigned int keylength,
                            const char *curvename);
+int gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance,
+                               cipher_algo_t cipher);
+int gnupg_digest_is_compliant (enum gnupg_compliance_mode compliance,
+                               digest_algo_t digest);
 const char *gnupg_status_compliance_flag (enum gnupg_compliance_mode compliance);
 
 #endif /*GNUPG_COMMON_COMPLIANCE_H*/

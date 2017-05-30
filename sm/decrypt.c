@@ -32,6 +32,7 @@
 
 #include "keydb.h"
 #include "../common/i18n.h"
+#include "../common/compliance.h"
 
 struct decrypt_filter_parm_s
 {
@@ -325,6 +326,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
           int algo, mode;
           const char *algoid;
           int any_key = 0;
+          int is_de_vs;	/* Computed compliance with CO_DE_VS.  */
 
           audit_log (ctrl->audit, AUDIT_GOT_DATA);
 
@@ -355,6 +357,10 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
 
               goto leave;
             }
+
+          /* For CMS, CO_DE_VS demands CBC mode.  */
+          is_de_vs = (mode == GCRY_CIPHER_MODE_CBC
+                      && gnupg_cipher_is_compliant (CO_DE_VS, algo));
 
           audit_log_i (ctrl->audit, AUDIT_DATA_CIPHER_ALGO, algo);
           dfparm.algo = algo;
@@ -460,7 +466,21 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                   hexkeygrip = gpgsm_get_keygrip_hexstring (cert);
                   desc = gpgsm_format_keydesc (cert);
 
+                  /* Check that all certs are compliant with CO_DE_VS.  */
+                  if (is_de_vs)
+                    {
+                      unsigned int nbits;
+                      int pk_algo = gpgsm_get_key_algo_info (cert, &nbits);
+
+                      is_de_vs = gnupg_pk_is_compliant (CO_DE_VS, pk_algo, NULL,
+                                                        nbits, NULL);
+                    }
+
                 oops:
+                  if (rc)
+                    /* We cannot check compliance of certs that we
+                     * don't have.  */
+                    is_de_vs = 0;
                   xfree (issuer);
                   xfree (serial);
                   ksba_cert_release (cert);
@@ -489,6 +509,11 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                       ksba_writer_set_filter (writer,
                                               decrypt_filter,
                                               &dfparm);
+
+                      if (is_de_vs)
+                        gpgsm_status (ctrl, STATUS_DECRYPTION_COMPLIANCE_MODE,
+                                      gnupg_status_compliance_flag (CO_DE_VS));
+
                     }
                   audit_log_ok (ctrl->audit, AUDIT_RECP_RESULT, rc);
                 }

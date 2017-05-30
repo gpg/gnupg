@@ -33,6 +33,7 @@
 
 #include "keydb.h"
 #include "../common/i18n.h"
+#include "../common/compliance.h"
 
 static char *
 strtimestamp_r (ksba_isotime_t atime)
@@ -631,6 +632,16 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
                     (verifyflags & VALIDATE_FLAG_CHAIN_MODEL)?
                     "0 chain": "0 shell");
 
+      /* Check compliance with CO_DE_VS.  */
+      {
+        unsigned int nbits;
+        int pk_algo = gpgsm_get_key_algo_info (cert, &nbits);
+
+        if (gnupg_pk_is_compliant (CO_DE_VS, pk_algo, NULL, nbits, NULL)
+            && gnupg_digest_is_compliant (CO_DE_VS, sigval_hash_algo))
+          gpgsm_status (ctrl, STATUS_VERIFICATION_COMPLIANCE_MODE,
+                        gnupg_status_compliance_flag (CO_DE_VS));
+      }
 
     next_signer:
       rc = 0;

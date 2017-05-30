@@ -638,6 +638,17 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     This indicates that a signature subpacket was seen.  The format is
     the same as the "spk" record above.
 
+*** DECRYPTION_COMPLIANCE_MODE <flags>
+    Indicates that the current decryption operation is in compliance
+    with the given set of modes.  "flags" is a space separated list of
+    numerical flags, see "Field 18 - Compliance flags" above.
+
+*** VERIFICATION_COMPLIANCE_MODE <flags>
+    Indicates that the current signature verification operation is in
+    compliance with the given set of modes.  "flags" is a space
+    separated list of numerical flags, see "Field 18 - Compliance
+    flags" above.
+
 ** Key related
 *** INV_RECP, INV_SGNR
     The two similar status codes:
