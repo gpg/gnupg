@@ -44,6 +44,7 @@
 #include "../common/mbox-util.h"
 #include "../common/zb32.h"
 #include "tofu.h"
+#include "../common/compliance.h"
 
 
 static void list_all (ctrl_t, int, int);
@@ -1180,14 +1181,19 @@ print_compliance_flags (PKT_public_key *pk,
 {
   int any = 0;
 
+  if (!keylength)
+    keylength = nbits_from_pk (pk);
+
   if (pk->version == 5)
     {
-      es_fputs ("8", es_stdout);
+      es_fputs (gnupg_status_compliance_flag (CO_GNUPG), es_stdout);
       any++;
     }
-  if (gnupg_pk_is_compliant (CO_DE_VS, pk, keylength, curvename))
+  if (gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, pk->pkey,
+			     keylength, curvename))
     {
-      es_fputs (any? " 23":"23", es_stdout);
+      es_fprintf (es_stdout, any ? " %s" : "%s",
+		  gnupg_status_compliance_flag (CO_DE_VS));
       any++;
     }
 }

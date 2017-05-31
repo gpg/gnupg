@@ -36,6 +36,7 @@
 #include "../kbx/keybox.h" /* for KEYBOX_FLAG_* */
 #include "../common/i18n.h"
 #include "../common/tlv.h"
+#include "../common/compliance.h"
 
 struct list_external_parm_s
 {
@@ -351,8 +352,8 @@ email_kludge (const char *name)
 static void
 print_compliance_flags (int algo, unsigned int nbits, estream_t fp)
 {
-  if (algo == GCRY_PK_RSA && nbits >= 2048)
-    es_fputs ("23", fp);
+  if (gnupg_pk_is_compliant (CO_DE_VS, algo, NULL, nbits, NULL))
+    es_fputs (gnupg_status_compliance_flag (CO_DE_VS), fp);
 }
 
 

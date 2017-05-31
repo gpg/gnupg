@@ -28,6 +28,7 @@
 #include "packet.h"
 #include "tofu.h"
 #include "../common/session-env.h"
+#include "../common/compliance.h"
 
 #ifndef EXTERN_UNLESS_MAIN_MODULE
 /* Norcraft can't cope with common symbols */
@@ -139,11 +140,7 @@ struct
     } trust_model;
   enum tofu_policy tofu_default_policy;
   int force_ownertrust;
-  enum
-    {
-      CO_GNUPG, CO_RFC4880, CO_RFC2440,
-      CO_PGP6, CO_PGP7, CO_PGP8, CO_DE_VS
-    } compliance;
+  enum gnupg_compliance_mode compliance;
   enum
     {
       KF_DEFAULT, KF_NONE, KF_SHORT, KF_LONG, KF_0xSHORT, KF_0xLONG

@@ -93,7 +93,8 @@ common_sources = \
 	server-help.c server-help.h \
 	name-value.c name-value.h \
 	recsel.c recsel.h \
-	ksba-io-support.c ksba-io-support.h
+	ksba-io-support.c ksba-io-support.h \
+	compliance.c compliance.h
 
 
 if HAVE_W32_SYSTEM
