@@ -41,7 +41,7 @@ struct decrypt_filter_parm_s
   gcry_cipher_hd_t hd;
   char iv[16];
   size_t ivlen;
-  int any_data;  /* dod we push anything through the filter at all? */
+  int any_data;  /* did we push anything through the filter at all? */
   unsigned char lastblock[16];  /* to strip the padding we have to
                                    keep this one */
   char helpblock[16];  /* needed because there is no block buffering in
