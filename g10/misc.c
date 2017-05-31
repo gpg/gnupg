@@ -784,7 +784,7 @@ gnupg_pk_is_compliant (int compliance, PKT_public_key *pk,
   else if (algotype == is_elg_sign)
     {
       /* An Elgamal signing key is only RFC-2440 compliant.  */
-      result = (compliance == RFC2440);
+      result = (compliance == CO_RFC2440);
     }
   else
     {
