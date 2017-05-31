@@ -564,7 +564,7 @@ Write output to @var{file}.  The default is to write it to stdout.
 Displays extra information with the @code{--list-keys} commands.  Especially
 a line tagged @code{grp} is printed which tells you the keygrip of a
 key.  This string is for example used as the file name of the
-secret key.
+secret key.  Implies @code{--with-colons}.
 
 @anchor{gpgsm-option --with-validation}
 @item --with-validation
