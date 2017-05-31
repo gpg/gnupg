@@ -381,7 +381,10 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
       outbuf = gcry_malloc_secure (outlen);
     }
   if (!outbuf)
-    rc = out_of_core ();
+    {
+      rc = out_of_core ();
+      goto leave;
+    }
 
   /* Allocate a buffer for the nonce and the salt.  */
   if (!rc)
@@ -421,11 +424,13 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
         }
     }
 
+  if (rc)
+    goto leave;
+
   /* Set the IV/nonce.  */
-  if (!rc)
-    {
-      rc = gcry_cipher_setiv (hd, iv, use_ocb? 12 : blklen);
-    }
+  rc = gcry_cipher_setiv (hd, iv, use_ocb? 12 : blklen);
+  if (rc)
+    goto leave;
 
   if (use_ocb)
     {
@@ -436,7 +441,6 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
       if (!rc)
         rc = gcry_cipher_authenticate
           (hd, protbegin+protlen, hashlen - (protbegin+protlen - hashbegin));
-
     }
   else
     {
@@ -500,14 +504,11 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
         }
     }
 
+  if (rc)
+    goto leave;
+
   /* Release cipher handle and check for errors.  */
   gcry_cipher_close (hd);
-  if (rc)
-    {
-      xfree (iv);
-      xfree (outbuf);
-      return rc;
-    }
 
   /* Now allocate the buffer we want to return.  This is
 
@@ -546,6 +547,12 @@ do_encryption (const unsigned char *hashbegin, size_t hashlen,
   xfree (iv);
   xfree (outbuf);
   return 0;
+
+ leave:
+  gcry_cipher_close (hd);
+  xfree (iv);
+  xfree (outbuf);
+  return rc;
 }
 
 
