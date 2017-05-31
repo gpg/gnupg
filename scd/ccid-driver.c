@@ -1306,7 +1306,7 @@ ccid_dev_scan (int *idx_max_p, struct ccid_dev_table **t_p)
       if ((rc = libusb_init (NULL)))
         {
           DEBUGOUT_1 ("usb_init failed: %s.\n", libusb_error_name (rc));
-          return gpg_error (GPG_ERR_NOT_FOUND);
+          return gpg_error (GPG_ERR_ENODEV);
         }
       initialized_usb = 1;
     }
