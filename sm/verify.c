@@ -341,16 +341,11 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
                                         &msgdigest, &msgdigestlen);
       if (!rc)
         {
-          size_t is_enabled;
-
           algoid = ksba_cms_get_digest_algo (cms, signer);
           algo = gcry_md_map_name (algoid);
           if (DBG_X509)
             log_debug ("signer %d - digest algo: %d\n", signer, algo);
-          is_enabled = sizeof algo;
-          if ( gcry_md_info (data_md, GCRYCTL_IS_ALGO_ENABLED,
-                             &algo, &is_enabled)
-               || !is_enabled)
+          if (! gcry_md_is_enabled (data_md, algo))
             {
               log_error ("digest algo %d (%s) has not been enabled\n",
                          algo, algoid?algoid:"");
