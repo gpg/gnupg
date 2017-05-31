@@ -1228,7 +1228,12 @@ ccid_get_reader_list (void)
 
   if (!initialized_usb)
     {
-      libusb_init (NULL);
+      int rc;
+      if ((rc = libusb_init (NULL)))
+        {
+          DEBUGOUT_1 ("usb_init failed: %s.\n", libusb_error_name (rc));
+          return NULL;
+        }
       initialized_usb = 1;
     }
 
@@ -1292,9 +1297,17 @@ ccid_dev_scan (int *idx_max_p, struct ccid_dev_table **t_p)
   int idx = 0;
   int err = 0;
 
+  *idx_max_p = 0;
+  *t_p = NULL;
+
   if (!initialized_usb)
     {
-      libusb_init (NULL);
+      int rc;
+      if ((rc = libusb_init (NULL)))
+        {
+          DEBUGOUT_1 ("usb_init failed: %s.\n", libusb_error_name (rc));
+          return gpg_error (GPG_ERR_NOT_FOUND);
+        }
       initialized_usb = 1;
     }
 
@@ -1373,8 +1386,6 @@ ccid_dev_scan (int *idx_max_p, struct ccid_dev_table **t_p)
 
   if (err)
     {
-      *idx_max_p = 0;
-      *t_p = NULL;
       for (i = 0; i < idx; i++)
         {
           free (ccid_dev_table[idx].ifcdesc_extra);
