@@ -86,7 +86,9 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
           break;
 
         case is_rsa:
-          result = (keylength >= 2048);
+          result = (keylength == 2048
+                    || keylength == 3072
+                    || keylength == 4096);
           break;
 
         case is_ecc:
