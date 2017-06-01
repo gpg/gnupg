@@ -2166,6 +2166,7 @@ set_compliance_option (enum cmd_and_opt_values option)
     case oDE_VS:
       set_compliance_option (oOpenPGP);
       opt.compliance = CO_DE_VS;
+      opt.force_mdc = 1;
       /* Fixme: Change other options.  */
       break;
 
