@@ -29,6 +29,7 @@
 #include "options.h"
 #include "../common/i18n.h"
 #include "../common/status.h"
+#include "../common/compliance.h"
 
 
 static int mdc_decode_filter ( void *opaque, int control, IOBUF a,
@@ -95,6 +96,17 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       else
         log_info (_("encrypted with unknown algorithm %d\n"), dek->algo );
       dek->algo_info_printed = 1;
+    }
+
+  /* Check compliance.  */
+  if (! gnupg_cipher_is_allowed (opt.compliance, 0, dek->algo, GCRY_CIPHER_MODE_CFB))
+    {
+      log_error (_ ("you may not use cipher algorithm '%s'"
+		    " while in %s mode\n"),
+		 openpgp_cipher_algo_name (dek->algo),
+		 gnupg_compliance_option_string (opt.compliance));
+      rc = gpg_error (GPG_ERR_CIPHER_ALGO);
+      goto leave;
     }
 
   {

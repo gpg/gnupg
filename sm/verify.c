@@ -450,6 +450,37 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
           goto next_signer;
         }
 
+      /* Check compliance.  */
+      {
+        unsigned int nbits;
+        int pk_algo = gpgsm_get_key_algo_info (cert, &nbits);
+
+        if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
+                                   pk_algo, NULL, nbits, NULL))
+          {
+            log_error ("certificate ID 0x%08lX not suitable for "
+                       "verification while in %s mode\n",
+                       gpgsm_get_short_fingerprint (cert, NULL),
+                       gnupg_compliance_option_string (opt.compliance));
+            goto next_signer;
+          }
+
+        if (! gnupg_digest_is_allowed (opt.compliance, 0, sigval_hash_algo))
+          {
+            log_error (_ ("you may not use digest algorithm '%s'"
+                          " while in %s mode\n"),
+                       gcry_md_algo_name (sigval_hash_algo),
+                       gnupg_compliance_option_string (opt.compliance));
+            goto next_signer;
+          }
+
+        /* Check compliance with CO_DE_VS.  */
+        if (gnupg_pk_is_compliant (CO_DE_VS, pk_algo, NULL, nbits, NULL)
+            && gnupg_digest_is_compliant (CO_DE_VS, sigval_hash_algo))
+          gpgsm_status (ctrl, STATUS_VERIFICATION_COMPLIANCE_MODE,
+                        gnupg_status_compliance_flag (CO_DE_VS));
+      }
+
       log_info (_("Signature made "));
       if (*sigtime)
         dump_isotime (sigtime);
@@ -631,17 +662,6 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
                     "0 steed":
                     (verifyflags & VALIDATE_FLAG_CHAIN_MODEL)?
                     "0 chain": "0 shell");
-
-      /* Check compliance with CO_DE_VS.  */
-      {
-        unsigned int nbits;
-        int pk_algo = gpgsm_get_key_algo_info (cert, &nbits);
-
-        if (gnupg_pk_is_compliant (CO_DE_VS, pk_algo, NULL, nbits, NULL)
-            && gnupg_digest_is_compliant (CO_DE_VS, sigval_hash_algo))
-          gpgsm_status (ctrl, STATUS_VERIFICATION_COMPLIANCE_MODE,
-                        gnupg_status_compliance_flag (CO_DE_VS));
-      }
 
     next_signer:
       rc = 0;

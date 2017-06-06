@@ -358,6 +358,17 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
               goto leave;
             }
 
+          /* Check compliance.  */
+          if (! gnupg_cipher_is_allowed (opt.compliance, 0, algo, mode))
+            {
+              log_error (_ ("you may not use cipher algorithm '%s'"
+                            " while in %s mode\n"),
+                         gcry_cipher_algo_name (algo),
+                         gnupg_compliance_option_string (opt.compliance));
+              rc = gpg_error (GPG_ERR_CIPHER_ALGO);
+              goto leave;
+            }
+
           /* For CMS, CO_DE_VS demands CBC mode.  */
           is_de_vs = gnupg_cipher_is_compliant (CO_DE_VS, algo, mode);
 
@@ -465,15 +476,27 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                   hexkeygrip = gpgsm_get_keygrip_hexstring (cert);
                   desc = gpgsm_format_keydesc (cert);
 
-                  /* Check that all certs are compliant with CO_DE_VS.  */
-                  if (is_de_vs)
-                    {
-                      unsigned int nbits;
-                      int pk_algo = gpgsm_get_key_algo_info (cert, &nbits);
+                  {
+                    unsigned int nbits;
+                    int pk_algo = gpgsm_get_key_algo_info (cert, &nbits);
 
-                      is_de_vs = gnupg_pk_is_compliant (CO_DE_VS, pk_algo, NULL,
-                                                        nbits, NULL);
-                    }
+                    /* Check compliance.  */
+                    if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_DECRYPTION,
+                                               pk_algo, NULL, nbits, NULL))
+                      {
+                        log_error ("certificate ID 0x%08lX not suitable for "
+                                   "decryption while in %s mode\n",
+                                   gpgsm_get_short_fingerprint (cert, NULL),
+                                   gnupg_compliance_option_string (opt.compliance));
+                        rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
+                        goto oops;
+                      }
+
+                    /* Check that all certs are compliant with CO_DE_VS.  */
+                    is_de_vs = (is_de_vs
+                                && gnupg_pk_is_compliant (CO_DE_VS, pk_algo, NULL,
+                                                          nbits, NULL));
+                  }
 
                 oops:
                   if (rc)

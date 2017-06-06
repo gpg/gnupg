@@ -193,6 +193,105 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
 }
 
 
+/* Return true if ALGO with the given KEYLENGTH is allowed in the
+ * given COMPLIANCE mode.  USE specifies for which use case the
+ * predicate is evaluated.  This way policies can be strict in what
+ * they produce, and liberal in what they accept.  */
+int
+gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
+		     enum pk_use_case use, int algo, gcry_mpi_t key[],
+		     unsigned int keylength, const char *curvename)
+{
+  switch (compliance)
+    {
+    case CO_DE_VS:
+      switch (algo)
+	{
+	case PUBKEY_ALGO_RSA:
+	case PUBKEY_ALGO_RSA_E:
+	case PUBKEY_ALGO_RSA_S:
+	  switch (use)
+	    {
+	    case PK_USE_ENCRYPTION:
+	      return 1;
+	    case PK_USE_DECRYPTION:
+	    case PK_USE_SIGNING:
+	      return (keylength == 2048
+		      || keylength == 3072
+		      || keylength == 4096);
+	    case PK_USE_VERIFICATION:
+	      return (keylength == 2048
+		      || keylength == 3072
+		      || keylength == 4096
+		      || keylength < 2048);
+	    default:
+	      log_assert (!"reached");
+	    }
+	  log_assert (!"reached");
+
+	case PUBKEY_ALGO_DSA:
+	  if (key)
+	    {
+	      size_t L = gcry_mpi_get_nbits (key[0] /* p */);
+	      size_t N = gcry_mpi_get_nbits (key[1] /* q */);
+	      return ((use == PK_USE_SIGNING
+		       && L == 256
+		       && (N == 2048 || N == 3072))
+		      || (use == PK_USE_VERIFICATION
+			  && N < 2048));
+	    }
+	  else
+	    return 0;
+	  log_assert (!"reached");
+
+	case PUBKEY_ALGO_ELGAMAL:
+	case PUBKEY_ALGO_ELGAMAL_E:
+	  return use == PK_USE_ENCRYPTION;
+
+	case PUBKEY_ALGO_ECDH:
+	  return use == PK_USE_ENCRYPTION;
+
+	case PUBKEY_ALGO_ECDSA:
+	  {
+	    int result = 0;
+	    char *curve = NULL;
+
+	    if (! curvename && key)
+	      {
+		curve = openpgp_oid_to_str (key[0]);
+		curvename = openpgp_oid_to_curve (curve, 0);
+		if (!curvename)
+		  curvename = curve;
+	      }
+
+	    result = ((use == PK_USE_SIGNING
+		       && curvename
+		       && (!strcmp (curvename, "brainpoolP256r1")
+			   || !strcmp (curvename, "brainpoolP384r1")
+			   || !strcmp (curvename, "brainpoolP512r1")))
+		      || use == PK_USE_VERIFICATION);
+
+	    xfree (curve);
+	    return result;
+	  }
+
+	case PUBKEY_ALGO_EDDSA:
+	  return 0;
+
+	default:
+	  return 0;
+	}
+      log_assert (!"reached");
+
+    default:
+      /* The default policy is to allow all algorithms.  */
+      return 1;
+    }
+
+  log_assert (!"reached");
+}
+
+
 /* Return true if (CIPHER, MODE) is compliant to the given COMPLIANCE mode.  */
 int
 gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance,
@@ -232,6 +331,57 @@ gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance,
 }
 
 
+/* Return true if CIPHER is allowed in the given COMPLIANCE mode.  If
+ * PRODUCER is true, the predicate is evaluated for the producer, if
+ * false for the consumer.  This way policies can be strict in what
+ * they produce, and liberal in what they accept.  */
+int
+gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance, int producer,
+			 cipher_algo_t cipher,
+			 enum gcry_cipher_modes mode)
+{
+  switch (compliance)
+    {
+    case CO_DE_VS:
+      switch (cipher)
+	{
+	case CIPHER_ALGO_AES:
+	case CIPHER_ALGO_AES192:
+	case CIPHER_ALGO_AES256:
+	case CIPHER_ALGO_3DES:
+	  switch (module)
+	    {
+	    case GNUPG_MODULE_NAME_GPG:
+	      return mode == GCRY_CIPHER_MODE_NONE || mode == GCRY_CIPHER_MODE_CFB;
+	    case GNUPG_MODULE_NAME_GPGSM:
+	      return mode == GCRY_CIPHER_MODE_NONE || mode == GCRY_CIPHER_MODE_CBC;
+	    }
+	  log_assert (!"reached");
+
+	case CIPHER_ALGO_BLOWFISH:
+	case CIPHER_ALGO_CAMELLIA128:
+	case CIPHER_ALGO_CAMELLIA192:
+	case CIPHER_ALGO_CAMELLIA256:
+	case CIPHER_ALGO_CAST5:
+	case CIPHER_ALGO_IDEA:
+	case CIPHER_ALGO_TWOFISH:
+	  return (module == GNUPG_MODULE_NAME_GPG
+		  && (mode == GCRY_CIPHER_MODE_NONE || mode == GCRY_CIPHER_MODE_CFB)
+		  && ! producer);
+	default:
+	  return 0;
+	}
+      log_assert (!"reached");
+
+    default:
+      /* The default policy is to allow all algorithms.  */
+      return 1;
+    }
+
+  log_assert (!"reached");
+}
+
+
 /* Return true if DIGEST is compliant to the given COMPLIANCE mode.  */
 int
 gnupg_digest_is_compliant (enum gnupg_compliance_mode compliance, digest_algo_t digest)
@@ -254,6 +404,44 @@ gnupg_digest_is_compliant (enum gnupg_compliance_mode compliance, digest_algo_t 
 
     default:
       return 0;
+    }
+
+  log_assert (!"reached");
+}
+
+
+/* Return true if DIGEST is allowed in the given COMPLIANCE mode.  If
+ * PRODUCER is true, the predicate is evaluated for the producer, if
+ * false for the consumer.  This way policies can be strict in what
+ * they produce, and liberal in what they accept.  */
+int
+gnupg_digest_is_allowed (enum gnupg_compliance_mode compliance, int producer,
+			 digest_algo_t digest)
+{
+  switch (compliance)
+    {
+    case CO_DE_VS:
+      switch (digest)
+	{
+	case DIGEST_ALGO_SHA256:
+	case DIGEST_ALGO_SHA384:
+	case DIGEST_ALGO_SHA512:
+	  return 1;
+	case DIGEST_ALGO_SHA1:
+	case DIGEST_ALGO_SHA224:
+	case DIGEST_ALGO_RMD160:
+	  return ! producer;
+	case DIGEST_ALGO_MD5:
+	case GCRY_MD_WHIRLPOOL:
+	  return ! producer && module == GNUPG_MODULE_NAME_GPGSM;
+	default:
+	  return 0;
+	}
+      log_assert (!"reached");
+
+    default:
+      /* The default policy is to allow all algorithms.  */
+      return 1;
     }
 
   log_assert (!"reached");

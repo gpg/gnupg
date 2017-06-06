@@ -62,6 +62,7 @@
 #include "../common/init.h"
 #include "../common/mbox-util.h"
 #include "../common/shareddefs.h"
+#include "../common/compliance.h"
 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
 #define MY_O_BINARY  O_BINARY
@@ -3865,6 +3866,43 @@ main (int argc, char **argv)
 	    compliance_failure();
 	  }
       }
+
+    /* Check our chosen algorithms against the list of allowed
+     * algorithms in the current compliance mode, and fail hard if it
+     * is not.  This is us being nice to the user informing her early
+     * that the chosen algorithms are not available.  We also check
+     * and enforce this right before the actual operation.  */
+    if (opt.def_cipher_algo
+	&& ! gnupg_cipher_is_allowed (opt.compliance,
+				      cmd == aEncr
+				      || cmd == aSignEncr
+				      || cmd == aEncrSym
+				      || cmd == aSym
+				      || cmd == aSignSym
+				      || cmd == aSignEncrSym,
+				      opt.def_cipher_algo,
+				      GCRY_CIPHER_MODE_NONE))
+      log_error (_ ("you may not use cipher algorithm '%s'"
+		    " while in %s mode\n"),
+		 openpgp_cipher_algo_name (opt.def_cipher_algo),
+		 gnupg_compliance_option_string (opt.compliance));
+
+    if (opt.def_digest_algo
+	&& ! gnupg_digest_is_allowed (opt.compliance,
+				      cmd == aSign
+				      || cmd == aSignEncr
+				      || cmd == aSignEncrSym
+				      || cmd == aSignSym
+				      || cmd == aClearsign,
+				      opt.def_digest_algo))
+      log_error (_ ("you may not use digest algorithm '%s'"
+		    " while in %s mode\n"),
+		 gcry_md_algo_name (opt.def_digest_algo),
+		 gnupg_compliance_option_string (opt.compliance));
+
+    /* Fail hard.  */
+    if (log_get_errorcount (0))
+	g10_exit (2);
 
     /* Set the random seed file. */
     if( use_random_seed ) {

@@ -1614,6 +1614,43 @@ main ( int argc, char **argv)
         }
     }
 
+  /* Check our chosen algorithms against the list of allowed
+   * algorithms in the current compliance mode, and fail hard if it is
+   * not.  This is us being nice to the user informing her early that
+   * the chosen algorithms are not available.  We also check and
+   * enforce this right before the actual operation.  */
+  if (! gnupg_cipher_is_allowed (opt.compliance,
+                                 cmd == aEncr || cmd == aSignEncr,
+                                 gcry_cipher_map_name (opt.def_cipher_algoid),
+                                 GCRY_CIPHER_MODE_NONE)
+      && ! gnupg_cipher_is_allowed (opt.compliance,
+                                    cmd == aEncr || cmd == aSignEncr,
+                                    gcry_cipher_mode_from_oid (opt.def_cipher_algoid),
+                                    GCRY_CIPHER_MODE_NONE))
+    log_error (_ ("you may not use cipher algorithm '%s'"
+                  " while in %s mode\n"),
+               opt.def_cipher_algoid, gnupg_compliance_option_string (opt.compliance));
+
+  if (forced_digest_algo
+      && ! gnupg_digest_is_allowed (opt.compliance,
+                                     cmd == aSign
+                                     || cmd == aSignEncr
+                                     || cmd == aClearsign,
+                                     opt.forced_digest_algo))
+    log_error (_ ("you may not use digest algorithm '%s'"
+                  " while in %s mode\n"),
+               forced_digest_algo, gnupg_compliance_option_string (opt.compliance));
+
+  if (extra_digest_algo
+      && ! gnupg_digest_is_allowed (opt.compliance,
+                                     cmd == aSign
+                                     || cmd == aSignEncr
+                                     || cmd == aClearsign,
+                                     opt.extra_digest_algo))
+    log_error (_ ("you may not use digest algorithm '%s'"
+                  " while in %s mode\n"),
+               forced_digest_algo, gnupg_compliance_option_string (opt.compliance));
+
   if (log_get_errorcount(0))
     gpgsm_exit(2);
 

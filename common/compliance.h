@@ -41,14 +41,28 @@ enum gnupg_compliance_mode
     CO_PGP6, CO_PGP7, CO_PGP8, CO_DE_VS
   };
 
+enum pk_use_case
+  {
+    PK_USE_ENCRYPTION, PK_USE_DECRYPTION,
+    PK_USE_SIGNING, PK_USE_VERIFICATION,
+  };
+
 int gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
                            gcry_mpi_t key[], unsigned int keylength,
                            const char *curvename);
+int gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
+                         enum pk_use_case use, int algo, gcry_mpi_t key[],
+                         unsigned int keylength, const char *curvename);
 int gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance,
                                cipher_algo_t cipher,
                                enum gcry_cipher_modes mode);
+int gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance, int producer,
+                             cipher_algo_t cipher,
+                             enum gcry_cipher_modes mode);
 int gnupg_digest_is_compliant (enum gnupg_compliance_mode compliance,
                                digest_algo_t digest);
+int gnupg_digest_is_allowed (enum gnupg_compliance_mode compliance, int producer,
+                             digest_algo_t digest);
 const char *gnupg_status_compliance_flag (enum gnupg_compliance_mode compliance);
 
 struct gnupg_compliance_option

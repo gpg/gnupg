@@ -38,6 +38,7 @@
 #include "../common/i18n.h"
 #include "../common/status.h"
 #include "pkglue.h"
+#include "../common/compliance.h"
 
 
 static int encrypt_simple( const char *filename, int mode, int use_seskey );
@@ -611,6 +612,35 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
 
       cfx.dek->algo = opt.def_cipher_algo;
     }
+
+  /* Check compliance.  */
+  if (! gnupg_cipher_is_allowed (opt.compliance, 1, cfx.dek->algo,
+                                 GCRY_CIPHER_MODE_CFB))
+    {
+      log_error (_ ("you may not use cipher algorithm '%s'"
+		    " while in %s mode\n"),
+		 openpgp_cipher_algo_name (cfx.dek->algo),
+		 gnupg_compliance_option_string (opt.compliance));
+      rc = gpg_error (GPG_ERR_CIPHER_ALGO);
+      goto leave;
+    }
+
+  {
+    pk_list_t pkr;
+    for (pkr = pk_list; pkr; pkr = pkr->next)
+      {
+        PKT_public_key *pk = pkr->pk;
+        if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_ENCRYPTION, pk->pubkey_algo,
+                                   pk->pkey, nbits_from_pk (pk), NULL))
+          {
+            log_error ("key %s not suitable for encryption while in %s mode\n",
+                       keystr_from_pk (pk),
+                       gnupg_compliance_option_string (opt.compliance));
+            rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
+            goto leave;
+          }
+      }
+  }
 
   cfx.dek->use_mdc = use_mdc (pk_list,cfx.dek->algo);
 

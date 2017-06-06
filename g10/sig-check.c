@@ -33,6 +33,7 @@
 #include "../common/i18n.h"
 #include "options.h"
 #include "pkglue.h"
+#include "../common/compliance.h"
 
 static int check_signature_end (PKT_public_key *pk, PKT_signature *sig,
 				gcry_md_hd_t digest,
@@ -132,6 +133,15 @@ check_signature2 (ctrl_t ctrl,
 
     if ( (rc=openpgp_md_test_algo(sig->digest_algo)) )
       ; /* We don't have this digest. */
+    else if (! gnupg_digest_is_allowed (opt.compliance, 0, sig->digest_algo))
+      {
+	/* Compliance failure.  */
+	log_info (_ ("you may not use digest algorithm '%s'"
+		     " while in %s mode\n"),
+		  gcry_md_algo_name (sig->digest_algo),
+		  gnupg_compliance_option_string (opt.compliance));
+	rc = gpg_error (GPG_ERR_DIGEST_ALGO);
+      }
     else if ((rc=openpgp_pk_test_algo(sig->pubkey_algo)))
       ; /* We don't have this pubkey algo. */
     else if (!gcry_md_is_enabled (digest,sig->digest_algo))
@@ -146,6 +156,15 @@ check_signature2 (ctrl_t ctrl,
       }
     else if( get_pubkey (ctrl, pk, sig->keyid ) )
       rc = gpg_error (GPG_ERR_NO_PUBKEY);
+    else if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
+				    pk->pubkey_algo, pk->pkey, nbits_from_pk (pk),
+				    NULL))
+      {
+	/* Compliance failure.  */
+	log_info ("key %s not suitable for signature verification while in %s mode\n",
+		  keystr_from_pk (pk), gnupg_compliance_option_string (opt.compliance));
+	rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      }
     else if(!pk->flags.valid)
       {
         /* You cannot have a good sig from an invalid key.  */

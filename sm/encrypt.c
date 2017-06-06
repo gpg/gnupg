@@ -33,6 +33,7 @@
 
 #include "keydb.h"
 #include "../common/i18n.h"
+#include "../common/compliance.h"
 
 
 struct dek_s {
@@ -405,6 +406,19 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
       goto leave;
     }
 
+  /* Check compliance.  */
+  if (! gnupg_cipher_is_allowed (opt.compliance, 1,
+                                 gcry_cipher_map_name (opt.def_cipher_algoid),
+                                 gcry_cipher_mode_from_oid (opt.def_cipher_algoid)))
+    {
+      log_error (_ ("you may not use cipher algorithm '%s'"
+		    " while in %s mode\n"),
+		 opt.def_cipher_algoid,
+		 gnupg_compliance_option_string (opt.compliance));
+      rc = gpg_error (GPG_ERR_CIPHER_ALGO);
+      goto leave;
+    }
+
   /* Create a session key */
   dek = xtrycalloc_secure (1, sizeof *dek);
   if (!dek)
@@ -447,6 +461,20 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
   for (recpno = 0, cl = recplist; cl; recpno++, cl = cl->next)
     {
       unsigned char *encval;
+
+      /* Check compliance.  */
+      unsigned int nbits;
+      int pk_algo = gpgsm_get_key_algo_info (cl->cert, &nbits);
+      if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_ENCRYPTION, pk_algo,
+                                 NULL, nbits, NULL))
+        {
+          log_error ("certificate ID 0x%08lX not suitable for "
+                     "encryption while in %s mode\n",
+                     gpgsm_get_short_fingerprint (cl->cert, NULL),
+                     gnupg_compliance_option_string (opt.compliance));
+          rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
+          goto leave;
+        }
 
       rc = encrypt_dek (dek, cl->cert, &encval);
       if (rc)

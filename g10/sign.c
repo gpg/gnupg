@@ -41,6 +41,7 @@
 #include "../common/sysutils.h"
 #include "call-agent.h"
 #include "../common/mbox-util.h"
+#include "../common/compliance.h"
 
 #ifdef HAVE_DOSISH_SYSTEM
 #define LF "\r\n"
@@ -277,6 +278,27 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
   if (!mdalgo)
     mdalgo = gcry_md_get_algo (md);
 
+  /* Check compliance.  */
+  if (! gnupg_digest_is_allowed (opt.compliance, 1, mdalgo))
+    {
+      log_error (_ ("you may not use digest algorithm '%s'"
+		    " while in %s mode\n"),
+		 gcry_md_algo_name (mdalgo),
+		 gnupg_compliance_option_string (opt.compliance));
+      err = gpg_error (GPG_ERR_DIGEST_ALGO);
+      goto leave;
+    }
+
+  if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pksk->pubkey_algo,
+                             pksk->pkey, nbits_from_pk (pksk), NULL))
+    {
+      log_error ("key %s not suitable for signing while in %s mode\n",
+                 keystr_from_pk (pksk),
+                 gnupg_compliance_option_string (opt.compliance));
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      goto leave;
+    }
+
   print_digest_algo_note (mdalgo);
   dp = gcry_md_read  (md, mdalgo);
   sig->digest_algo = mdalgo;
@@ -321,6 +343,7 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
     }
   xfree (hexgrip);
 
+ leave:
   if (err)
     log_error (_("signing failed: %s\n"), gpg_strerror (err));
   else

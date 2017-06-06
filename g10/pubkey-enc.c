@@ -35,6 +35,7 @@
 #include "pkglue.h"
 #include "call-agent.h"
 #include "../common/host2net.h"
+#include "../common/compliance.h"
 
 
 static gpg_error_t get_it (ctrl_t ctrl, PKT_pubkey_enc *k,
@@ -88,7 +89,20 @@ get_session_key (ctrl_t ctrl, PKT_pubkey_enc * k, DEK * dek)
       sk = xmalloc_clear (sizeof *sk);
       sk->pubkey_algo = k->pubkey_algo; /* We want a pubkey with this algo.  */
       if (!(rc = get_seckey (ctrl, sk, k->keyid)))
-        rc = get_it (ctrl, k, dek, sk, k->keyid);
+        {
+          /* Check compliance.  */
+          if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_DECRYPTION,
+                                     sk->pubkey_algo,
+                                     sk->pkey, nbits_from_pk (sk), NULL))
+            {
+              log_info ("key %s not suitable for decryption while in %s mode\n",
+                        keystr_from_pk (sk), gnupg_compliance_option_string (opt.compliance));
+              free_public_key (sk);
+              return gpg_error (GPG_ERR_PUBKEY_ALGO);
+            }
+
+          rc = get_it (ctrl, k, dek, sk, k->keyid);
+        }
     }
   else if (opt.skip_hidden_recipients)
     rc = gpg_error (GPG_ERR_NO_SECKEY);
@@ -115,6 +129,16 @@ get_session_key (ctrl_t ctrl, PKT_pubkey_enc * k, DEK * dek)
           if (!opt.quiet)
             log_info (_("anonymous recipient; trying secret key %s ...\n"),
                       keystr (keyid));
+
+          /* Check compliance.  */
+          if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_DECRYPTION,
+                                     sk->pubkey_algo,
+                                     sk->pkey, nbits_from_pk (sk), NULL))
+            {
+              log_info ("key %s not suitable for decryption while in %s mode\n",
+                        keystr_from_pk (sk), gnupg_compliance_option_string (opt.compliance));
+              continue;
+            }
 
           rc = get_it (ctrl, k, dek, sk, keyid);
           if (!rc)

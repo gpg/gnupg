@@ -460,6 +460,33 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
           break;
         }
       cl->hash_algo_oid = oid;
+
+      /* Check compliance.  */
+      if (! gnupg_digest_is_allowed (opt.compliance, 1, cl->hash_algo))
+        {
+          log_error (_ ("you may not use digest algorithm '%s'"
+                        " while in %s mode\n"),
+                     gcry_md_algo_name (cl->hash_algo),
+                     gnupg_compliance_option_string (opt.compliance));
+          err = gpg_error (GPG_ERR_DIGEST_ALGO);
+          goto leave;
+        }
+
+      {
+        unsigned int nbits;
+        int pk_algo = gpgsm_get_key_algo_info (cl->cert, &nbits);
+
+        if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pk_algo,
+                                   NULL, nbits, NULL))
+          {
+            log_error ("certificate ID 0x%08lX not suitable for "
+                       "signing while in %s mode\n",
+                       gpgsm_get_short_fingerprint (cl->cert, NULL),
+                       gnupg_compliance_option_string (opt.compliance));
+            err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+            goto leave;
+          }
+      }
     }
 
   if (opt.verbose)
