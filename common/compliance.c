@@ -36,7 +36,7 @@
 #include "compliance.h"
 
 /* Return true if ALGO with a key of KEYLENGTH is compliant to the
- * give COMPLIANCE mode.  If KEY is not NULL, various bits of
+ * given COMPLIANCE mode.  If KEY is not NULL, various bits of
  * information will be extracted from it.  If CURVENAME is not NULL, it
  * is assumed to be the already computed.  ALGO may be either an
  * OpenPGP-style pubkey_algo_t, or a gcrypt-style enum gcry_pk_algos,
@@ -139,7 +139,7 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
 }
 
 
-/* Return true if CIPHER is compliant to the give COMPLIANCE mode.  */
+/* Return true if CIPHER is compliant to the given COMPLIANCE mode.  */
 int
 gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance, cipher_algo_t cipher)
 {
@@ -166,7 +166,7 @@ gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance, cipher_algo_t 
 }
 
 
-/* Return true if DIGEST is compliant to the give COMPLIANCE mode.  */
+/* Return true if DIGEST is compliant to the given COMPLIANCE mode.  */
 int
 gnupg_digest_is_compliant (enum gnupg_compliance_mode compliance, digest_algo_t digest)
 {

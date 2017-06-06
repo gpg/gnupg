@@ -251,7 +251,7 @@ hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
 
 
 /* Perform the sign operation.  If CACHE_NONCE is given the agent is
-   advised to use that cached passphrase fro the key.  */
+   advised to use that cached passphrase for the key.  */
 static int
 do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
 	 gcry_md_hd_t md, int mdalgo, const char *cache_nonce)
