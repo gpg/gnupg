@@ -1127,10 +1127,10 @@ dist-source: installer
 	(set -e;\
 	 tarname="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).tar" ;\
 	 [ -f "$$tarname" ] && rm "$$tarname" ;\
-         tar -C $(topsrc) -cf "$$tarname" --exclude-backups --exclude-vc \
+         tar -C $(topsrc) -cf "$$tarname" --exclude-backups --exclude-vcs \
              --transform='s,^\./,$(INST_NAME)-$(INST_VERSION)/,' \
              --anchored --exclude './PLAY' . ;\
-	 tar --totals -rf "$$tarname" --exclude-backups --exclude-vc \
+	 tar --totals -rf "$$tarname" --exclude-backups --exclude-vcs \
               --transform='s,^,$(INST_NAME)-$(INST_VERSION)/,' \
 	     PLAY/stamps/stamp-*-00-unpack PLAY/src swdb.lst swdb.lst.sig ;\
 	 [ -f "$$tarname".xz ] && rm "$$tarname".xz;\
