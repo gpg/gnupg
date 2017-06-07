@@ -932,7 +932,7 @@ write_pubkey_enc_from_list (ctrl_t ctrl, PK_LIST pk_list, DEK *dek, iobuf_t out)
   if (opt.throw_keyids && (PGP6 || PGP7 || PGP8))
     {
       log_info(_("you may not use %s while in %s mode\n"),
-               "--throw-keyids",compliance_option_string());
+               "--throw-keyids", gnupg_compliance_option_string (opt.compliance));
       compliance_failure();
     }
 

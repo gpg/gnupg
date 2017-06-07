@@ -1242,24 +1242,6 @@ default_compress_algo(void)
     return DEFAULT_COMPRESS_ALGO;
 }
 
-const char *
-compliance_option_string(void)
-{
-  char *ver="???";
-
-  switch(opt.compliance)
-    {
-    case CO_GNUPG:   return "--gnupg";
-    case CO_RFC4880: return "--openpgp";
-    case CO_RFC2440: return "--rfc2440";
-    case CO_PGP6:    return "--pgp6";
-    case CO_PGP7:    return "--pgp7";
-    case CO_PGP8:    return "--pgp8";
-    case CO_DE_VS:   return "--compliance=de-vs";
-    }
-
-  return ver;
-}
 
 void
 compliance_failure(void)

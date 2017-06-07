@@ -58,5 +58,7 @@ int gnupg_parse_compliance_option (const char *string,
                                    struct gnupg_compliance_option options[],
                                    size_t length,
                                    int quiet);
+const char *gnupg_compliance_option_string (enum gnupg_compliance_mode compliance);
+
 
 #endif /*GNUPG_COMMON_COMPLIANCE_H*/

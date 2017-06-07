@@ -2314,7 +2314,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  if (RFC2440)
 	    {
 	      tty_printf (_("This command is not allowed while in %s mode.\n"),
-			  compliance_option_string ());
+			  gnupg_compliance_option_string (opt.compliance));
 	      break;
 	    }
 	  photo = 1;

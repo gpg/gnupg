@@ -3843,17 +3843,17 @@ main (int argc, char **argv)
 	      case PREFTYPE_SYM:
 		log_info(_("you may not use cipher algorithm '%s'"
 			   " while in %s mode\n"),
-			 badalg,compliance_option_string());
+			 badalg, gnupg_compliance_option_string (opt.compliance));
 		break;
 	      case PREFTYPE_HASH:
 		log_info(_("you may not use digest algorithm '%s'"
 			   " while in %s mode\n"),
-			 badalg,compliance_option_string());
+			 badalg, gnupg_compliance_option_string (opt.compliance));
 		break;
 	      case PREFTYPE_ZIP:
 		log_info(_("you may not use compression algorithm '%s'"
 			   " while in %s mode\n"),
-			 badalg,compliance_option_string());
+			 badalg, gnupg_compliance_option_string (opt.compliance));
 		break;
 	      default:
 		BUG();
@@ -4072,7 +4072,8 @@ main (int argc, char **argv)
 		      " with --s2k-mode 0\n"));
 	else if(PGP6 || PGP7)
 	  log_error(_("you cannot use --symmetric --encrypt"
-		      " while in %s mode\n"),compliance_option_string());
+		      " while in %s mode\n"),
+		    gnupg_compliance_option_string (opt.compliance));
 	else
 	  {
 	    if( (rc = encrypt_crypt (ctrl, -1, fname, remusr, 1, NULL, -1)) )
@@ -4132,7 +4133,8 @@ main (int argc, char **argv)
 		      " with --s2k-mode 0\n"));
 	else if(PGP6 || PGP7)
 	  log_error(_("you cannot use --symmetric --sign --encrypt"
-		      " while in %s mode\n"),compliance_option_string());
+		      " while in %s mode\n"),
+		    gnupg_compliance_option_string (opt.compliance));
 	else
 	  {
 	    if( argc )

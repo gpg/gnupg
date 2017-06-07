@@ -1028,7 +1028,7 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
             {
               log_info(_("you may not use %s while in %s mode\n"),
                        "--hidden-recipient",
-                       compliance_option_string());
+                       gnupg_compliance_option_string (opt.compliance));
 
               compliance_failure();
             }
@@ -1079,7 +1079,7 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
                     {
                       log_info(_("you may not use %s while in %s mode\n"),
                                "--hidden-encrypt-to",
-                               compliance_option_string());
+                               gnupg_compliance_option_string (opt.compliance));
 
                       compliance_failure();
                     }
