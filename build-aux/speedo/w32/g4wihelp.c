@@ -1159,7 +1159,10 @@ path_remove (HWND hwndParent, int string_size, char *variables,
   free (path);
 
   if (! changed)
-    return;
+    {
+      free (path_new);
+      return;
+    }
 
   /* Set a key for our CLSID.  */
   RegCreateKey (root_key, env_reg, &key_handle);
