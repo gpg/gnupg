@@ -2073,11 +2073,8 @@ parse_tofu_policy (const char *policystr)
 }
 
 
-/* Parse the value of --compliance.  */
-static int
-parse_compliance_option (const char *string)
-{
-  struct { const char *keyword; enum cmd_and_opt_values option; } list[] = {
+static struct gnupg_compliance_option compliance_options[] =
+  {
     { "gnupg",      oGnuPG },
     { "openpgp",    oOpenPGP },
     { "rfc4880bis", oRFC4880bis },
@@ -2088,26 +2085,6 @@ parse_compliance_option (const char *string)
     { "pgp8",       oPGP8 },
     { "de-vs",      oDE_VS }
   };
-  int i;
-
-  if (!ascii_strcasecmp (string, "help"))
-    {
-      log_info (_("valid values for option '%s':\n"), "--compliance");
-      for (i=0; i < DIM (list); i++)
-        log_info ("  %s\n", list[i].keyword);
-      g10_exit (1);
-    }
-
-  for (i=0; i < DIM (list); i++)
-    if (!ascii_strcasecmp (string, list[i].keyword))
-      return list[i].option;
-
-  log_error (_("invalid value for option '%s'\n"), "--compliance");
-  if (!opt.quiet)
-    log_info (_("(use \"help\" to list choices)\n"));
-  g10_exit (1);
-}
-
 
 
 /* Helper to set compliance related options.  This is a separate
@@ -2862,7 +2839,15 @@ main (int argc, char **argv)
 	    break;
 
           case oCompliance:
-            set_compliance_option (parse_compliance_option (pargs.r.ret_str));
+	    {
+	      int compliance = gnupg_parse_compliance_option (pargs.r.ret_str,
+							      compliance_options,
+							      DIM (compliance_options),
+							      opt.quiet);
+	      if (compliance < 0)
+		g10_exit (1);
+	      set_compliance_option (compliance);
+	    }
             break;
           case oOpenPGP:
           case oRFC2440:

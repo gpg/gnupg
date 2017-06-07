@@ -41,6 +41,7 @@
 #include "../common/gc-opt-flags.h"
 #include "../common/asshelp.h"
 #include "../common/init.h"
+#include "../common/compliance.h"
 
 
 #ifndef O_BINARY
@@ -1443,7 +1444,19 @@ main ( int argc, char **argv)
         case oNoAutostart: opt.autostart = 0; break;
 
         case oCompliance:
-          /* Dummy option for now.  */
+          {
+            struct gnupg_compliance_option compliance_options[] =
+              {
+                { "de-vs", CO_DE_VS }
+              };
+            int compliance = gnupg_parse_compliance_option (pargs.r.ret_str,
+                                                            compliance_options,
+                                                            DIM (compliance_options),
+                                                            opt.quiet);
+            if (compliance < 0)
+              gpgsm_exit (1);
+            opt.compliance = compliance;
+          }
           break;
 
         default:

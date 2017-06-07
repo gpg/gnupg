@@ -33,6 +33,7 @@
 #include "openpgpdefs.h"
 #include "logging.h"
 #include "util.h"
+#include "i18n.h"
 #include "compliance.h"
 
 /* Return true if ALGO with a key of KEYLENGTH is compliant to the
@@ -209,4 +210,36 @@ gnupg_status_compliance_flag (enum gnupg_compliance_mode compliance)
       return "23";
     }
   log_assert (!"invalid compliance mode");
+}
+
+
+/* Parse the value of --compliance.  Returns the value corresponding
+ * to the given STRING according to OPTIONS of size LENGTH, or -1
+ * indicating that the lookup was unsuccessful, or the list of options
+ * was printed.  If quiet is false, an additional hint to use 'help'
+ * is printed on unsuccessful lookups.  */
+int
+gnupg_parse_compliance_option (const char *string,
+			       struct gnupg_compliance_option options[],
+			       size_t length,
+			       int quiet)
+{
+  size_t i;
+
+  if (! ascii_strcasecmp (string, "help"))
+    {
+      log_info (_ ("valid values for option '%s':\n"), "--compliance");
+      for (i = 0; i < length; i++)
+        log_info ("  %s\n", options[i].keyword);
+      return -1;
+    }
+
+  for (i = 0; i < length; i++)
+    if (! ascii_strcasecmp (string, options[i].keyword))
+      return options[i].value;
+
+  log_error (_ ("invalid value for option '%s'\n"), "--compliance");
+  if (! quiet)
+    log_info (_ ("(use \"help\" to list choices)\n"));
+  return -1;
 }

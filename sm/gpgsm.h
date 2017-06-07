@@ -34,6 +34,7 @@
 #include "../common/audit.h"
 #include "../common/session-env.h"
 #include "../common/ksba-io-support.h"
+#include "../common/compliance.h"
 
 
 #define MAX_DIGEST_LEN 64
@@ -144,6 +145,7 @@ struct
      OID per string.  */
   strlist_t ignored_cert_extensions;
 
+  enum gnupg_compliance_mode compliance;
 } opt;
 
 /* Debug values and macros.  */

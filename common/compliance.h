@@ -48,4 +48,15 @@ int gnupg_digest_is_compliant (enum gnupg_compliance_mode compliance,
                                digest_algo_t digest);
 const char *gnupg_status_compliance_flag (enum gnupg_compliance_mode compliance);
 
+struct gnupg_compliance_option
+{
+  const char *keyword;
+  int value;
+};
+
+int gnupg_parse_compliance_option (const char *string,
+                                   struct gnupg_compliance_option options[],
+                                   size_t length,
+                                   int quiet);
+
 #endif /*GNUPG_COMMON_COMPLIANCE_H*/
