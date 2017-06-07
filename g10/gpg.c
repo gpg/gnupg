@@ -2327,6 +2327,9 @@ main (int argc, char **argv)
 
     dotlock_create (NULL, 0); /* Register lock file cleanup. */
 
+    /* Tell the compliance module who we are.  */
+    gnupg_initialize_compliance (GNUPG_MODULE_NAME_GPG);
+
     opt.autostart = 1;
     opt.session_env = session_env_new ();
     if (!opt.session_env)

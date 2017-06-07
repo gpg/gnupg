@@ -36,6 +36,57 @@
 #include "i18n.h"
 #include "compliance.h"
 
+static int initialized;
+static int module;
+
+/* Initializes the module.  Must be called with the current
+ * GNUPG_MODULE_NAME.  Checks a few invariants, and tunes the policies
+ * for the given module.  */
+void
+gnupg_initialize_compliance (int gnupg_module_name)
+{
+  log_assert (! initialized);
+
+  /* We accept both OpenPGP-style and gcrypt-style algorithm ids.
+   * Assert that they are compatible.  */
+  log_assert ((int) GCRY_PK_RSA          == (int) PUBKEY_ALGO_RSA);
+  log_assert ((int) GCRY_PK_RSA_E        == (int) PUBKEY_ALGO_RSA_E);
+  log_assert ((int) GCRY_PK_RSA_S        == (int) PUBKEY_ALGO_RSA_S);
+  log_assert ((int) GCRY_PK_ELG_E        == (int) PUBKEY_ALGO_ELGAMAL_E);
+  log_assert ((int) GCRY_PK_DSA          == (int) PUBKEY_ALGO_DSA);
+  log_assert ((int) GCRY_PK_ECC          == (int) PUBKEY_ALGO_ECDH);
+  log_assert ((int) GCRY_PK_ELG          == (int) PUBKEY_ALGO_ELGAMAL);
+  log_assert ((int) GCRY_CIPHER_NONE     == (int) CIPHER_ALGO_NONE);
+  log_assert ((int) GCRY_CIPHER_IDEA     == (int) CIPHER_ALGO_IDEA);
+  log_assert ((int) GCRY_CIPHER_3DES     == (int) CIPHER_ALGO_3DES);
+  log_assert ((int) GCRY_CIPHER_CAST5    == (int) CIPHER_ALGO_CAST5);
+  log_assert ((int) GCRY_CIPHER_BLOWFISH == (int) CIPHER_ALGO_BLOWFISH);
+  log_assert ((int) GCRY_CIPHER_AES      == (int) CIPHER_ALGO_AES);
+  log_assert ((int) GCRY_CIPHER_AES192   == (int) CIPHER_ALGO_AES192);
+  log_assert ((int) GCRY_CIPHER_AES256   == (int) CIPHER_ALGO_AES256);
+  log_assert ((int) GCRY_CIPHER_TWOFISH  == (int) CIPHER_ALGO_TWOFISH);
+  log_assert ((int) GCRY_MD_MD5          == (int) DIGEST_ALGO_MD5);
+  log_assert ((int) GCRY_MD_SHA1         == (int) DIGEST_ALGO_SHA1);
+  log_assert ((int) GCRY_MD_RMD160       == (int) DIGEST_ALGO_RMD160);
+  log_assert ((int) GCRY_MD_SHA256       == (int) DIGEST_ALGO_SHA256);
+  log_assert ((int) GCRY_MD_SHA384       == (int) DIGEST_ALGO_SHA384);
+  log_assert ((int) GCRY_MD_SHA512       == (int) DIGEST_ALGO_SHA512);
+  log_assert ((int) GCRY_MD_SHA224       == (int) DIGEST_ALGO_SHA224);
+
+  switch (gnupg_module_name)
+    {
+    case GNUPG_MODULE_NAME_GPGSM:
+    case GNUPG_MODULE_NAME_GPG:
+      break;
+
+    default:
+      log_assert (!"no policies for this module");
+    }
+
+  module = gnupg_module_name;
+  initialized = 1;
+}
+
 /* Return true if ALGO with a key of KEYLENGTH is compliant to the
  * given COMPLIANCE mode.  If KEY is not NULL, various bits of
  * information will be extracted from it.  If CURVENAME is not NULL, it
@@ -48,6 +99,8 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
 {
   enum { is_rsa, is_dsa, is_pgp5, is_elg_sign, is_ecc } algotype;
   int result = 0;
+
+  log_assert (initialized);
 
   switch (algo)
     {
@@ -144,6 +197,8 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
 int
 gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance, cipher_algo_t cipher)
 {
+  log_assert (initialized);
+
   switch (compliance)
     {
     case CO_DE_VS:
@@ -171,6 +226,8 @@ gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance, cipher_algo_t 
 int
 gnupg_digest_is_compliant (enum gnupg_compliance_mode compliance, digest_algo_t digest)
 {
+  log_assert (initialized);
+
   switch (compliance)
     {
     case CO_DE_VS:
@@ -196,6 +253,8 @@ gnupg_digest_is_compliant (enum gnupg_compliance_mode compliance, digest_algo_t 
 const char *
 gnupg_status_compliance_flag (enum gnupg_compliance_mode compliance)
 {
+  log_assert (initialized);
+
   switch (compliance)
     {
     case CO_GNUPG:
@@ -226,6 +285,8 @@ gnupg_parse_compliance_option (const char *string,
 {
   size_t i;
 
+  log_assert (initialized);
+
   if (! ascii_strcasecmp (string, "help"))
     {
       log_info (_ ("valid values for option '%s':\n"), "--compliance");
@@ -249,6 +310,8 @@ gnupg_parse_compliance_option (const char *string,
 const char *
 gnupg_compliance_option_string (enum gnupg_compliance_mode compliance)
 {
+  log_assert (initialized);
+
   switch (compliance)
     {
     case CO_GNUPG:   return "--compliance=gnupg";

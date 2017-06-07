@@ -33,6 +33,8 @@
 #include <gcrypt.h>
 #include "openpgpdefs.h"
 
+void gnupg_initialize_compliance (int gnupg_module_name);
+
 enum gnupg_compliance_mode
   {
     CO_GNUPG, CO_RFC4880, CO_RFC2440,
