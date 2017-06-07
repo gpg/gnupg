@@ -607,7 +607,7 @@ proc_encrypted (CTX c, PACKET *pkt)
       /* Overriding session key voids compliance.  */
       && opt.override_session_key == NULL
       /* Check symmetric cipher.  */
-      && gnupg_cipher_is_compliant (CO_DE_VS, c->dek->algo))
+      && gnupg_cipher_is_compliant (CO_DE_VS, c->dek->algo, GCRY_CIPHER_MODE_CFB))
     {
       struct kidlist_item *i;
       int compliant = 1;

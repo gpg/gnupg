@@ -193,9 +193,11 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
 }
 
 
-/* Return true if CIPHER is compliant to the given COMPLIANCE mode.  */
+/* Return true if (CIPHER, MODE) is compliant to the given COMPLIANCE mode.  */
 int
-gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance, cipher_algo_t cipher)
+gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance,
+			   cipher_algo_t cipher,
+			   enum gcry_cipher_modes mode)
 {
   log_assert (initialized);
 
@@ -208,7 +210,15 @@ gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance, cipher_algo_t 
 	case CIPHER_ALGO_AES192:
 	case CIPHER_ALGO_AES256:
 	case CIPHER_ALGO_3DES:
-	  return 1;
+	  switch (module)
+	    {
+	    case GNUPG_MODULE_NAME_GPG:
+	      return mode == GCRY_CIPHER_MODE_CFB;
+	    case GNUPG_MODULE_NAME_GPGSM:
+	      return mode == GCRY_CIPHER_MODE_CBC;
+	    }
+	  log_assert (!"reached");
+
 	default:
 	  return 0;
 	}
