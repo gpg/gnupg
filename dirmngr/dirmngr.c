@@ -147,6 +147,8 @@ enum cmd_and_opt_values {
   oStandardResolver,
   oRecursiveResolver,
   oResolverTimeout,
+  oConnectTimeout,
+  oConnectQuickTimeout,
   aTest
 };
 
@@ -250,6 +252,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oStandardResolver, "standard-resolver", "@"),
   ARGPARSE_s_n (oRecursiveResolver, "recursive-resolver", "@"),
   ARGPARSE_s_i (oResolverTimeout, "resolver-timeout", "@"),
+  ARGPARSE_s_i (oConnectTimeout, "connect-timeout", "@"),
+  ARGPARSE_s_i (oConnectQuickTimeout, "connect-quick-timeout", "@"),
 
   ARGPARSE_group (302,N_("@\n(See the \"info\" manual for a complete listing "
                          "of all commands and options)\n")),
@@ -276,6 +280,9 @@ static struct debug_flags_s debug_flags [] =
 
 #define DEFAULT_MAX_REPLIES 10
 #define DEFAULT_LDAP_TIMEOUT 100 /* arbitrary large timeout */
+
+#define DEFAULT_CONNECT_TIMEOUT       (15*1000)  /* 15 seconds */
+#define DEFAULT_CONNECT_QUICK_TIMEOUT ( 2*1000)  /*  2 seconds */
 
 /* For the cleanup handler we need to keep track of the socket's name.  */
 static const char *socket_name;
@@ -602,6 +609,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       disable_check_own_socket = 0;
       enable_standard_resolver (0);
       set_dns_timeout (0);
+      opt.connect_timeout = 0;
+      opt.connect_quick_timeout = 0;
       return 1;
     }
 
@@ -703,6 +712,14 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       set_dns_timeout (pargs->r.ret_int);
       break;
 
+    case oConnectTimeout:
+      opt.connect_timeout = pargs->r.ret_ulong * 1000;
+      break;
+
+    case oConnectQuickTimeout:
+      opt.connect_quick_timeout = pargs->r.ret_ulong * 1000;
+      break;
+
     default:
       return 0; /* Not handled. */
     }
@@ -713,6 +730,21 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
   set_dns_disable_ipv6 (opt.disable_ipv6);
 
   return 1; /* Handled. */
+}
+
+
+/* This fucntion is called after option parsing to adjust some values
+ * and call option setup functions.  */
+static void
+post_option_parsing (void)
+{
+  /* It would be too surpirsing if the quick timeout is larger than
+   * the standard value.  */
+  if (opt.connect_quick_timeout > opt.connect_timeout)
+    opt.connect_quick_timeout = opt.connect_timeout;
+
+  set_debug ();
+  set_tor_mode ();
 }
 
 
@@ -843,6 +875,10 @@ main (int argc, char **argv)
 
   /* Reset rereadable options to default values. */
   parse_rereadable_options (NULL, 0);
+
+  /* Default TCP timeouts.  */
+  opt.connect_timeout = DEFAULT_CONNECT_TIMEOUT;
+  opt.connect_quick_timeout = DEFAULT_CONNECT_QUICK_TIMEOUT;
 
   /* LDAP defaults.  */
   opt.add_new_ldapservers = 0;
@@ -1031,8 +1067,7 @@ main (int argc, char **argv)
       log_printf ("\n");
     }
 
-  set_debug ();
-  set_tor_mode ();
+  post_option_parsing ();
 
   /* Get LDAP server list from file. */
 #if USE_LDAP
@@ -1513,6 +1548,7 @@ dirmngr_init_default_ctrl (ctrl_t ctrl)
   if (opt.http_proxy)
     ctrl->http_proxy = xstrdup (opt.http_proxy);
   ctrl->http_no_crl = 1;
+  ctrl->timeout = opt.connect_timeout;
 }
 
 
@@ -1774,8 +1810,7 @@ reread_configuration (void)
     }
   fclose (fp);
 
-  set_debug ();
-  set_tor_mode ();
+  post_option_parsing ();
 }
 
 

@@ -95,6 +95,10 @@ struct
 
   int force;          /* Force loading outdated CRLs. */
 
+
+  unsigned int connect_timeout;       /* Timeout for connect.  */
+  unsigned int connect_quick_timeout; /* Shorter timeout for connect.  */
+
   int disable_http;       /* Do not use HTTP at all.  */
   int disable_ldap;       /* Do not use LDAP at all.  */
   int disable_ipv4;       /* Do not use legacy IP addresses.  */
@@ -193,6 +197,8 @@ struct server_control_s
 
   int audit_events;  /* Send audit events to client.  */
   char *http_proxy;  /* The used http_proxy or NULL.  */
+
+  unsigned int timeout; /* Timeout for connect calls in ms.  */
 
   unsigned int http_no_crl:1;  /* Do not check CRLs for https.  */
 };

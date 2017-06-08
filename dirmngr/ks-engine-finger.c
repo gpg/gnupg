@@ -86,7 +86,7 @@ ks_finger_fetch (ctrl_t ctrl, parsed_uri_t uri, estream_t *r_fp)
                           ((dirmngr_use_tor ()? HTTP_FLAG_FORCE_TOR : 0)
                            | (opt.disable_ipv4? HTTP_FLAG_IGNORE_IPv4 : 0)
                            | (opt.disable_ipv6? HTTP_FLAG_IGNORE_IPv6 : 0)),
-                          NULL);
+                          NULL, ctrl->timeout);
   if (err)
     {
       xfree (name);

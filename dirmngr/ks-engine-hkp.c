@@ -1132,6 +1132,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
   if (err)
     goto leave;
   http_session_set_log_cb (session, cert_log_cb);
+  http_session_set_timeout (session, ctrl->timeout);
 
  once_more:
   err = http_open (&http,

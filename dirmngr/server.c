@@ -842,6 +842,8 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
 
   opt_submission_addr = has_option (line, "--submission-address");
   opt_policy_flags = has_option (line, "--policy-flags");
+  if (has_option (line, "--quick"))
+    ctrl->timeout = opt.connect_quick_timeout;
   line = skip_options (line);
 
   mbox = mailbox_from_userid (line);
@@ -2123,7 +2125,8 @@ cmd_ks_search (assuan_context_t ctx, char *line)
   char *p;
   estream_t outfp;
 
-  /* No options for now.  */
+  if (has_option (line, "--quick"))
+    ctrl->timeout = opt.connect_quick_timeout;
   line = skip_options (line);
 
   /* Break the line down into an strlist.  Each pattern is
@@ -2187,7 +2190,8 @@ cmd_ks_get (assuan_context_t ctx, char *line)
   char *p;
   estream_t outfp;
 
-  /* No options for now.  */
+  if (has_option (line, "--quick"))
+    ctrl->timeout = opt.connect_quick_timeout;
   line = skip_options (line);
 
   /* Break the line into a strlist.  Each pattern is by
@@ -2251,7 +2255,8 @@ cmd_ks_fetch (assuan_context_t ctx, char *line)
   gpg_error_t err;
   estream_t outfp;
 
-  /* No options for now.  */
+  if (has_option (line, "--quick"))
+    ctrl->timeout = opt.connect_quick_timeout;
   line = skip_options (line);
 
   err = ensure_keyserver (ctrl);  /* FIXME: Why do we needs this here?  */

@@ -83,6 +83,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
   if (err)
     goto leave;
   http_session_set_log_cb (session, cert_log_cb);
+  http_session_set_timeout (session, ctrl->timeout);
 
   *r_fp = NULL;
   err = http_open (&http,
