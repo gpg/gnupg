@@ -124,6 +124,7 @@ void http_session_set_log_cb (http_session_t sess,
                               void (*cb)(http_session_t, gpg_error_t,
                                          const char *,
                                          const void **, size_t *));
+void http_session_set_timeout (http_session_t sess, unsigned int timeout);
 
 
 gpg_error_t http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
@@ -133,7 +134,8 @@ void http_release_parsed_uri (parsed_uri_t uri);
 
 gpg_error_t http_raw_connect (http_t *r_hd,
                               const char *server, unsigned short port,
-                              unsigned int flags, const char *srvtag);
+                              unsigned int flags, const char *srvtag,
+                              unsigned int timeout);
 
 gpg_error_t http_open (http_t *r_hd, http_req_t reqtype,
                        const char *url,

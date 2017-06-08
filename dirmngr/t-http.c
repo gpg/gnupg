@@ -203,6 +203,7 @@ main (int argc, char **argv)
   int no_crl = 0;
   const char *cafile = NULL;
   http_session_t session = NULL;
+  unsigned int timeout = 0;
 
   gpgrt_init ();
   log_set_prefix (PGM, GPGRT_LOG_WITH_PREFIX | GPGRT_LOG_WITH_PID);
@@ -224,6 +225,7 @@ main (int argc, char **argv)
                  "  --debug           flyswatter\n"
                  "  --tls-debug N     use TLS debug level N\n"
                  "  --cacert FNAME    expect CA certificate in file FNAME\n"
+                 "  --timeout MS      timeout for connect in MS\n"
                  "  --no-verify       do not verify the certificate\n"
                  "  --force-tls       use HTTP_FLAG_FORCE_TLS\n"
                  "  --force-tor       use HTTP_FLAG_FORCE_TOR\n"
@@ -258,6 +260,15 @@ main (int argc, char **argv)
           if (argc)
             {
               cafile = *argv;
+              argc--; argv++;
+            }
+        }
+      else if (!strcmp (*argv, "--timeout"))
+        {
+          argc--; argv++;
+          if (argc)
+            {
+              timeout = strtoul (*argv, NULL, 10);
               argc--; argv++;
             }
         }
@@ -406,6 +417,9 @@ main (int argc, char **argv)
   fflush (stdout);
   http_release_parsed_uri (uri);
   uri = NULL;
+
+  if (session)
+    http_session_set_timeout (session, timeout);
 
   rc = http_open_document (&hd, *argv, NULL, my_http_flags,
                            NULL, session, NULL, NULL);

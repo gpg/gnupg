@@ -70,6 +70,7 @@
 # include <sys/socket.h>
 # include <sys/time.h>
 # include <time.h>
+# include <fcntl.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <netdb.h>
@@ -153,13 +154,14 @@ static int insert_escapes (char *buffer, const char *string,
 static uri_tuple_t parse_tuple (char *string);
 static gpg_error_t send_request (http_t hd, const char *httphost,
                                  const char *auth,const char *proxy,
-				 const char *srvtag,strlist_t headers);
+				 const char *srvtag, unsigned int timeout,
+                                 strlist_t headers);
 static char *build_rel_path (parsed_uri_t uri);
 static gpg_error_t parse_response (http_t hd);
 
 static gpg_error_t connect_server (const char *server, unsigned short port,
                                    unsigned int flags, const char *srvtag,
-                                   assuan_fd_t *r_sock);
+                                   unsigned int timeout, assuan_fd_t *r_sock);
 static gpgrt_ssize_t read_server (assuan_fd_t sock, void *buffer, size_t size);
 static gpg_error_t write_server (assuan_fd_t sock, const char *data, size_t length);
 
@@ -259,6 +261,9 @@ struct http_session_s
   /* A per-session TLS verification callback.  */
   http_verify_cb_t verify_cb;
   void *verify_cb_value;
+
+  /* The connect timeout */
+  unsigned int connect_timeout;
 };
 
 
@@ -695,6 +700,7 @@ http_session_new (http_session_t *r_session,
   sess->flags = flags;
   sess->verify_cb = verify_cb;
   sess->verify_cb_value = verify_cb_value;
+  sess->connect_timeout = 0;
 
 #if HTTP_USE_NTBTLS
   {
@@ -867,6 +873,15 @@ http_session_set_log_cb (http_session_t sess,
 }
 
 
+/* Set the TIMEOUT in milliseconds for the connection's connect
+ * calls.  Using 0 disables the timeout.  */
+void
+http_session_set_timeout (http_session_t sess, unsigned int timeout)
+{
+  sess->connect_timeout = timeout;
+}
+
+
 
 
 /* Start a HTTP retrieval and on success store at R_HD a context
@@ -898,7 +913,9 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
 
   err = parse_uri (&hd->uri, url, 0, !!(flags & HTTP_FLAG_FORCE_TLS));
   if (!err)
-    err = send_request (hd, httphost, auth, proxy, srvtag, headers);
+    err = send_request (hd, httphost, auth, proxy, srvtag,
+                        hd->session? hd->session->connect_timeout : 0,
+                        headers);
 
   if (err)
     {
@@ -918,10 +935,10 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
 
 /* This function is useful to connect to a generic TCP service using
    this http abstraction layer.  This has the advantage of providing
-   service tags and an estream interface.  */
+   service tags and an estream interface.  TIMEOUT is in milliseconds. */
 gpg_error_t
 http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
-                  unsigned int flags, const char *srvtag)
+                  unsigned int flags, const char *srvtag, unsigned int timeout)
 {
   gpg_error_t err = 0;
   http_t hd;
@@ -952,7 +969,7 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
   {
     assuan_fd_t sock;
 
-    err = connect_server (server, port, hd->flags, srvtag, &sock);
+    err = connect_server (server, port, hd->flags, srvtag, timeout, &sock);
     if (err)
       {
         xfree (hd);
@@ -1635,7 +1652,8 @@ is_hostname_port (const char *string)
  */
 static gpg_error_t
 send_request (http_t hd, const char *httphost, const char *auth,
-	      const char *proxy, const char *srvtag, strlist_t headers)
+	      const char *proxy, const char *srvtag, unsigned int timeout,
+              strlist_t headers)
 {
   gpg_error_t err;
   const char *server;
@@ -1762,12 +1780,12 @@ send_request (http_t hd, const char *httphost, const char *auth,
 
       err = connect_server (*uri->host ? uri->host : "localhost",
                             uri->port ? uri->port : 80,
-                            hd->flags, srvtag, &sock);
+                            hd->flags, srvtag, timeout, &sock);
       http_release_parsed_uri (uri);
     }
   else
     {
-      err = connect_server (server, port, hd->flags, srvtag, &sock);
+      err = connect_server (server, port, hd->flags, srvtag, timeout, &sock);
     }
 
   if (err)
@@ -2526,13 +2544,162 @@ my_sock_new_for_addr (struct sockaddr_storage *addr, int type, int proto)
 }
 
 
+/* Call WSAGetLastError and map it to a libgpg-error.  */
+#ifdef HAVE_W32_SYSTEM
+static gpg_error_t
+my_wsagetlasterror (void)
+{
+  int wsaerr;
+  gpg_err_code_t ec;
+
+  wsaerr = WSAGetLastError ();
+  switch (wsaerr)
+    {
+    case WSAENOTSOCK:        ec = GPG_ERR_EINVAL;       break;
+    case WSAEWOULDBLOCK:     ec = GPG_ERR_EAGAIN;       break;
+    case ERROR_BROKEN_PIPE:  ec = GPG_ERR_EPIPE;        break;
+    case WSANOTINITIALISED:  ec = GPG_ERR_ENOSYS;       break;
+    case WSAENOBUFS:         ec = GPG_ERR_ENOBUFS;      break;
+    case WSAEMSGSIZE:        ec = GPG_ERR_EMSGSIZE;     break;
+    case WSAECONNREFUSED:    ec = GPG_ERR_ECONNREFUSED; break;
+    case WSAEISCONN:         ec = GPG_ERR_EISCONN;      break;
+    case WSAEALREADY:        ec = GPG_ERR_EALREADY;     break;
+    case WSAETIMEDOUT:       ec = GPG_ERR_ETIMEDOUT;    break;
+    default:                 ec = GPG_ERR_EIO;          break;
+    }
+
+  return gpg_err_make (default_errsource, ec);
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+/* Connect SOCK and return GPG_ERR_ETIMEOUT if a connection could not
+ * be established within TIMEOUT milliseconds.  0 indicates the
+ * system's default timeout.  The other args are the usual connect
+ * args.  On success 0 is returned, on timeout GPG_ERR_ETIMEDOUT, and
+ * another error code for other errors.  On timeout the caller needs
+ * to close the socket as soon as possible to stop an ongoing
+ * handshake.
+ *
+ * This implementation is for well-behaving systems; see Stevens,
+ * Network Programming, 2nd edition, Vol 1, 15.4.  */
+static gpg_error_t
+connect_with_timeout (assuan_fd_t sock,
+                      struct sockaddr *addr, int addrlen,
+                      unsigned int timeout)
+{
+  gpg_error_t err;
+  int syserr;
+  socklen_t slen;
+  fd_set rset, wset;
+  struct timeval tval;
+  int n;
+
+#ifndef HAVE_W32_SYSTEM
+  int oflags;
+# define RESTORE_BLOCKING()  do {  \
+    fcntl (sock, F_SETFL, oflags); \
+  } while (0)
+#else /*HAVE_W32_SYSTEM*/
+# define RESTORE_BLOCKING()  do {                       \
+    unsigned long along = 0;                            \
+    ioctlsocket (FD2INT (sock), FIONBIO, &along);       \
+  } while (0)
+#endif /*HAVE_W32_SYSTEM*/
+
+
+  if (!timeout)
+    {
+      /* Shortcut.  */
+      if (assuan_sock_connect (sock, addr, addrlen))
+        err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+      else
+        err = 0;
+      return err;
+    }
+
+  /* Switch the socket into non-blocking mode.  */
+#ifdef HAVE_W32_SYSTEM
+  {
+    unsigned long along = 1;
+    if (ioctlsocket (FD2INT (sock), FIONBIO, &along))
+      return my_wsagetlasterror ();
+  }
+#else
+  oflags = fcntl (sock, F_GETFL, 0);
+  if (fcntl (sock, F_SETFL, oflags | O_NONBLOCK))
+    return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+#endif
+
+  /* Do the connect.  */
+  if (!assuan_sock_connect (sock, addr, addrlen))
+    {
+      /* Immediate connect.  Restore flags. */
+      RESTORE_BLOCKING ();
+      return 0; /* Success.  */
+    }
+  err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+  if (gpg_err_code (err) != GPG_ERR_EINPROGRESS)
+    {
+      RESTORE_BLOCKING ();
+      return err;
+    }
+
+  FD_ZERO (&rset);
+  FD_SET (sock, &rset);
+  wset = rset;
+  tval.tv_sec = timeout / 1000;
+  tval.tv_usec = (timeout % 1000) * 1000;
+
+  n = my_select (FD2INT(sock)+1, &rset, &wset, NULL, &tval);
+  if (n < 0)
+    {
+      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+      RESTORE_BLOCKING ();
+      return err;
+    }
+  if (!n)
+    {
+      /* Timeout: We do not restore the socket flags on timeout
+       * because the caller is expected to close the socket.  */
+      return gpg_err_make (default_errsource, GPG_ERR_ETIMEDOUT);
+    }
+  if (!FD_ISSET (sock, &rset) && !FD_ISSET (sock, &wset))
+    {
+      /* select misbehaved.  */
+      return gpg_err_make (default_errsource, GPG_ERR_SYSTEM_BUG);
+    }
+
+  slen = sizeof (syserr);
+  if (getsockopt (FD2INT(sock), SOL_SOCKET, SO_ERROR,
+                  (void*)&syserr, &slen) < 0)
+    {
+      /* Assume that this is Solaris which returns the error in ERRNO.  */
+      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+    }
+  else if (syserr)
+    err = gpg_err_make (default_errsource, gpg_err_code_from_errno (syserr));
+  else
+    err = 0; /* Connected.  */
+
+  RESTORE_BLOCKING ();
+
+  return err;
+
+#undef RESTORE_BLOCKING
+}
+
+
 /* Actually connect to a server.  On success 0 is returned and the
  * file descriptor for the socket is stored at R_SOCK; on error an
- * error code is returned and ASSUAN_INVALID_FD is stored at
- * R_SOCK.  */
+ * error code is returned and ASSUAN_INVALID_FD is stored at R_SOCK.
+ * TIMEOUT is the connect timeout in milliseconds.  Note that the
+ * function tries to connect to all known addresses and the timeout is
+ * for each one. */
 static gpg_error_t
 connect_server (const char *server, unsigned short port,
-                unsigned int flags, const char *srvtag, assuan_fd_t *r_sock)
+                unsigned int flags, const char *srvtag, unsigned int timeout,
+                assuan_fd_t *r_sock)
 {
   gpg_error_t err;
   assuan_fd_t sock = ASSUAN_INVALID_FD;
@@ -2645,11 +2812,11 @@ connect_server (const char *server, unsigned short port,
             }
 
           anyhostaddr = 1;
-          if (assuan_sock_connect (sock, (struct sockaddr *)ai->addr,
-                                   ai->addrlen))
+          err = connect_with_timeout (sock, (struct sockaddr *)ai->addr,
+                                      ai->addrlen, timeout);
+          if (err)
             {
-              last_err = gpg_err_make (default_errsource,
-                                       gpg_err_code_from_syserror ());
+              last_err = err;
             }
           else
             {
