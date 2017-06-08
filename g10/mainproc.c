@@ -602,8 +602,8 @@ proc_encrypted (CTX c, PACKET *pkt)
 
   /* Compute compliance with CO_DE_VS.  */
   if (!result && is_status_enabled ()
-      /* Symmetric encryption voids compliance.  */
-      && c->symkeys == 0
+      /* Symmetric encryption and asymmetric encryption voids compliance.  */
+      && ((c->symkeys > 0) != (c->pkenc_list != NULL))
       /* Overriding session key voids compliance.  */
       && opt.override_session_key == NULL
       /* Check symmetric cipher.  */
@@ -613,7 +613,8 @@ proc_encrypted (CTX c, PACKET *pkt)
       int compliant = 1;
       PKT_public_key *pk = xmalloc (sizeof *pk);
 
-      log_assert (c->pkenc_list || !"where else did the session key come from!?");
+      log_assert (c->pkenc_list || c->symkeys
+                  || !"where else did the session key come from!?");
 
       /* Now check that every key used to encrypt the session key is
        * compliant.  */
