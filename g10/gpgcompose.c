@@ -81,7 +81,7 @@ filter_pop (iobuf_t out, int expected_type)
                "but current container is a %s container.\n",
                pkttype_str (f->pkttype), pkttype_str (expected_type));
 
-  if (f->pkttype == PKT_ENCRYPTED || f->pkttype == PKT_ENCRYPTED_MDC)
+  if (f->pkttype == PKT_ENCRYPTED)
     {
       err = iobuf_pop_filter (out, f->func, f->context);
       if (err)
@@ -2588,12 +2588,6 @@ encrypted_pop (const char *option, int argc, char *argv[], void *cookie)
   (void) argc;
   (void) argv;
 
-  if (strcmp (option, "--encrypted-pop") == 0)
-    filter_pop (out, PKT_ENCRYPTED);
-  else if (strcmp (option, "--encrypted-mdc-pop") == 0)
-    filter_pop (out, PKT_ENCRYPTED_MDC);
-  else
-    log_fatal ("%s: option not handled by this function!\n", option);
 
   debug ("Popped encryption container.\n");
 
