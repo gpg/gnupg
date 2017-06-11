@@ -281,18 +281,18 @@ show_help (struct option options[])
         {
           const char *o = option[0] ? option : "ARG";
           l = strlen (o);
-          fprintf (stderr, "%s", o);
+          fprintf (stdout, "%s", o);
         }
 
       if (! help)
         {
-          fputc ('\n', stderr);
+          fputc ('\n', stdout);
           continue;
         }
 
       if (option)
         for (j = l; j < max_length + 2; j ++)
-          fputc (' ', stderr);
+          fputc (' ', stdout);
 
 #define BOLD_START "\033[1m"
 #define NORMAL_RESTORE "\033[0m"
@@ -314,7 +314,7 @@ show_help (struct option options[])
 
       if (! option)
         {
-          fprintf (stderr, "\n%s\n", formatted);
+          printf ("\n%s\n", formatted);
           break;
         }
 
@@ -330,10 +330,10 @@ show_help (struct option options[])
 
           if (p != formatted)
             for (j = 0; j < max_length + 2; j ++)
-              fputc (' ', stderr);
+              fputc (' ', stdout);
 
-          fwrite (p, l, 1, stderr);
-          fputc ('\n', stderr);
+          fwrite (p, l, 1, stdout);
+          fputc ('\n', stdout);
         }
 
       xfree (formatted);
