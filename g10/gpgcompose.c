@@ -2580,18 +2580,36 @@ encrypted (const char *option, int argc, char *argv[], void *cookie)
   return processed;
 }
 
+static struct option encrypted_pop_options[] = {
+  { NULL, NULL,
+    "Example:\n\n"
+    "  $ gpgcompose --sk-esk PASSWORD \\\n"
+    "    --encrypted-mdc \\\n"
+    "      --literal --value foo \\\n"
+    "    --encrypted-pop | " GPG_NAME " --list-packets" }
+};
+
 static int
 encrypted_pop (const char *option, int argc, char *argv[], void *cookie)
 {
   iobuf_t out = cookie;
+  int processed;
 
-  (void) argc;
-  (void) argv;
+  processed = process_options (option,
+                               major_options,
+                               encrypted_pop_options,
+                               NULL,
+                               global_options, NULL,
+                               argc, argv);
+  /* We only support a single option, --help, which causes the program
+   * to exit.  */
+  log_assert (processed == 0);
 
+  filter_pop (out, PKT_ENCRYPTED);
 
   debug ("Popped encryption container.\n");
 
-  return 0;
+  return processed;
 }
 
 struct data
