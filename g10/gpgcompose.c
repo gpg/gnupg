@@ -512,7 +512,8 @@ static struct option major_options[] = {
   { "--encrypted-mdc", encrypted,
     "Create a symmetrically encrypted and integrity protected data packet." },
   { "--encrypted-pop", encrypted_pop,
-    "Pop an encryption container." },
+    "Pop the most recent encryption container started by either"
+    " --encrypted or --encrypted-mdc." },
   { "--compressed", NULL, "Create a compressed data packet." },
   { "--literal", literal, "Create a literal (plaintext) data packet." },
   { "--signature", signature, "Create a signature packet." },
@@ -2534,7 +2535,9 @@ encrypted (const char *option, int argc, char *argv[], void *cookie)
                                argc, argv);
 
   if (! session_key.algo)
-    log_fatal ("%s: no session key configured.\n", option);
+    log_fatal ("%s: no session key configured\n"
+               "  (use e.g. --sk-esk PASSWORD or --pk-esk KEYID).\n",
+               option);
 
   memset (&e, 0, sizeof (e));
   /* We only need to set E->LEN, E->EXTRALEN (if E->LEN is not
