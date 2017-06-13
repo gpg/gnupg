@@ -153,7 +153,7 @@ gpg_sources = server.c          \
 	      exec.c exec.h
 
 gpg_SOURCES  = gpg.c \
-	keyedit.c 	\
+	keyedit.c keyedit.h	\
 	$(gpg_sources)
 
 gpgcompose_SOURCES  = gpgcompose.c  $(gpg_sources)

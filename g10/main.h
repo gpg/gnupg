@@ -23,6 +23,7 @@
 #include "../common/types.h"
 #include "../common/iobuf.h"
 #include "keydb.h"
+#include "keyedit.h"
 #include "../common/util.h"
 
 /* It could be argued that the default cipher should be 3DES rather
@@ -284,24 +285,6 @@ gpg_error_t check_signature_over_key_or_uid (ctrl_t ctrl,
 /*-- delkey.c --*/
 gpg_error_t delete_keys (ctrl_t ctrl,
                          strlist_t names, int secret, int allow_both);
-
-/*-- keyedit.c --*/
-void keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
-		   strlist_t commands, int quiet, int seckey_check );
-void keyedit_passwd (ctrl_t ctrl, const char *username);
-void keyedit_quick_adduid (ctrl_t ctrl, const char *username,
-                           const char *newuid);
-void keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
-                           const char *usagestr, const char *expirestr);
-void keyedit_quick_revuid (ctrl_t ctrl, const char *username,
-                           const char *uidtorev);
-void keyedit_quick_sign (ctrl_t ctrl, const char *fpr,
-                         strlist_t uids, strlist_t locusr, int local);
-void keyedit_quick_set_expire (ctrl_t ctrl,
-                               const char *fpr, const char *expirestr);
-void keyedit_quick_set_primary (ctrl_t ctrl, const char *username,
-                                const char *primaryuid);
-void show_basic_key_info (ctrl_t ctrl, kbnode_t keyblock);
 
 /*-- keygen.c --*/
 const char *get_default_pubkey_algo (void);

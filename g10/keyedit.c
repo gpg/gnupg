@@ -48,6 +48,7 @@
 #include "call-agent.h"
 #include "../common/host2net.h"
 #include "tofu.h"
+#include "keyedit.h"
 
 static void show_prefs (PKT_user_id * uid, PKT_signature * selfsig,
 			int verbose);
@@ -104,17 +105,6 @@ static void menu_showphoto (ctrl_t ctrl, kbnode_t keyblock);
 static int update_trust = 0;
 
 #define CONTROL_D ('D' - 'A' + 1)
-
-#define NODFLG_BADSIG (1<<0)	/* Bad signature.  */
-#define NODFLG_NOKEY  (1<<1)	/* No public key.  */
-#define NODFLG_SIGERR (1<<2)	/* Other sig error.  */
-
-#define NODFLG_MARK_A (1<<4)	/* Temporary mark.  */
-#define NODFLG_DELSIG (1<<5)	/* To be deleted.  */
-
-#define NODFLG_SELUID (1<<8)	/* Indicate the selected userid. */
-#define NODFLG_SELKEY (1<<9)	/* Indicate the selected key.  */
-#define NODFLG_SELSIG (1<<10)	/* Indicate a selected signature.  */
 
 struct sign_attrib
 {
@@ -201,10 +191,10 @@ print_and_check_one_sig_colon (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
  * packet.  With EXTENDED set all possible signature list options will
  * always be printed.
  */
-static int
-print_one_sig (ctrl_t ctrl, int rc, kbnode_t keyblock, kbnode_t node,
-               int *inv_sigs, int *no_key, int *oth_err,
-               int is_selfsig, int print_without_key, int extended)
+int
+keyedit_print_one_sig (ctrl_t ctrl, int rc, kbnode_t keyblock, kbnode_t node,
+		       int *inv_sigs, int *no_key, int *oth_err,
+		       int is_selfsig, int print_without_key, int extended)
 {
   PKT_signature *sig = node->pkt->pkt.signature;
   int sigrc;
@@ -326,9 +316,9 @@ print_and_check_one_sig (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
   int rc;
 
   rc = check_key_signature (ctrl, keyblock, node, is_selfsig);
-  return print_one_sig (ctrl, rc,
-                        keyblock, node, inv_sigs, no_key, oth_err,
-                        *is_selfsig, print_without_key, extended);
+  return keyedit_print_one_sig (ctrl, rc,
+				keyblock, node, inv_sigs, no_key, oth_err,
+				*is_selfsig, print_without_key, extended);
 }
 
 
@@ -808,8 +798,8 @@ check_all_keysigs (ctrl_t ctrl, kbnode_t kb,
               }
 
             if (modified)
-              print_one_sig (ctrl, rc, kb, n, NULL, NULL, NULL, has_selfsig,
-                             0, only_selfsigs);
+              keyedit_print_one_sig (ctrl, rc, kb, n, NULL, NULL, NULL,
+				     has_selfsig, 0, only_selfsigs);
           }
 
           if (dump_sig_params)
