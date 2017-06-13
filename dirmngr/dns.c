@@ -7583,6 +7583,22 @@ int dns_so_check(struct dns_socket *so) {
 retry:
 	switch (so->state) {
 	case DNS_SO_UDP_INIT:
+		if (so->remote.ss_family != so->local.ss_family) {
+			/* Family mismatch.  Reinitialize.  */
+			if ((error = dns_so_closefd(so, &so->udp)))
+				goto error;
+			if ((error = dns_so_closefd(so, &so->tcp)))
+				goto error;
+
+			/* If the user supplied an interface
+			   statement, that is gone now.  Sorry.  */
+			memset(&so->local, 0, sizeof so->local);
+			so->local.ss_family = so->remote.ss_family;
+
+			if (-1 == (so->udp = dns_socket((struct sockaddr *)&so->local, SOCK_DGRAM, &error)))
+				goto error;
+		}
+
 		so->state++;
 	case DNS_SO_UDP_CONN:
 		error = dns_connect(so->udp, (struct sockaddr *)&so->remote, dns_sa_len(&so->remote));
@@ -7621,6 +7637,19 @@ retry:
 
 		so->state++;
 	case DNS_SO_TCP_INIT:
+		if (so->remote.ss_family != so->local.ss_family) {
+			/* Family mismatch.  Reinitialize.  */
+			if ((error = dns_so_closefd(so, &so->udp)))
+				goto error;
+			if ((error = dns_so_closefd(so, &so->tcp)))
+				goto error;
+
+			/* If the user supplied an interface
+			   statement, that is gone now.  Sorry.  */
+			memset(&so->local, 0, sizeof so->local);
+			so->local.ss_family = so->remote.ss_family;
+		}
+
 		if (dns_so_tcp_keep(so)) {
 			so->state = DNS_SO_TCP_SEND;
 
@@ -8072,6 +8101,8 @@ enum dns_res_state {
 	DNS_R_RESOLV1_NS,	/* Epilog: Inspect answer */
 	DNS_R_FOREACH_A,
 	DNS_R_QUERY_A,
+	DNS_R_FOREACH_AAAA,
+	DNS_R_QUERY_AAAA,
 	DNS_R_CNAME0_A,
 	DNS_R_CNAME1_A,
 
@@ -8731,8 +8762,22 @@ exec:
 		F->hints_j.section	= DNS_S_ALL & ~DNS_S_QD;
 
 		if (!dns_rr_grep(&rr, 1, &F->hints_j, F->hints, &error)) {
-			if (!dns_rr_i_count(&F->hints_j))
+			if (!dns_rr_i_count(&F->hints_j)) {
+				/* Check if we have in fact servers
+				   with an IPv6 address.  */
+				dns_rr_i_init(&F->hints_j, F->hints);
+				F->hints_j.name		= u.ns.host;
+				F->hints_j.type		= DNS_T_AAAA;
+				F->hints_j.section	= DNS_S_ALL & ~DNS_S_QD;
+				if (dns_rr_grep(&rr, 1, &F->hints_j, F->hints, &error)) {
+					/* We do.  Reinitialize
+					   iterator and handle it.  */
+					dns_rr_i_init(&F->hints_j, F->hints);
+					dgoto(R->sp, DNS_R_FOREACH_AAAA);
+				}
+
 				dgoto(R->sp, DNS_R_RESOLV0_NS);
+			}
 
 			dgoto(R->sp, DNS_R_FOREACH_NS);
 		}
@@ -8833,6 +8878,139 @@ exec:
 		/* XXX: Should we copy F->answer to R->nodata? */
 
 		dgoto(R->sp, DNS_R_FOREACH_A);
+	case DNS_R_FOREACH_AAAA: {
+		struct dns_aaaa aaaa;
+		struct sockaddr_in6 sin6;
+
+		/*
+		 * NOTE: Iterator initialized in DNS_R_FOREACH_NS because
+		 * this state is re-entrant, but we need to reset
+		 * .name to a valid pointer each time.
+		 */
+		if ((error = dns_ns_parse(&u.ns, &F->hints_ns, F->hints)))
+			goto error;
+
+		F->hints_j.name		= u.ns.host;
+		F->hints_j.type		= DNS_T_AAAA;
+		F->hints_j.section	= DNS_S_ALL & ~DNS_S_QD;
+
+		if (!dns_rr_grep(&rr, 1, &F->hints_j, F->hints, &error)) {
+			if (!dns_rr_i_count(&F->hints_j)) {
+				/* Check if we have in fact servers
+				   with an IPv4 address.  */
+				dns_rr_i_init(&F->hints_j, F->hints);
+				F->hints_j.name		= u.ns.host;
+				F->hints_j.type		= DNS_T_A;
+				F->hints_j.section	= DNS_S_ALL & ~DNS_S_QD;
+				if (dns_rr_grep(&rr, 1, &F->hints_j, F->hints, &error)) {
+					/* We do.  Reinitialize
+					   iterator and handle it.  */
+					dns_rr_i_init(&F->hints_j, F->hints);
+					dgoto(R->sp, DNS_R_FOREACH_A);
+				}
+
+				dgoto(R->sp, DNS_R_RESOLV0_NS);
+			}
+
+			dgoto(R->sp, DNS_R_FOREACH_NS);
+		}
+
+		if ((error = dns_aaaa_parse(&aaaa, &rr, F->hints)))
+			goto error;
+
+		memset(&sin6, '\0', sizeof sin6); /* NB: silence valgrind */
+		sin6.sin6_family	= AF_INET6;
+		sin6.sin6_addr	= aaaa.addr;
+		if (R->sp == 0)
+			sin6.sin6_port = dns_hints_port(R->hints, AF_INET, &sin6.sin6_addr);
+		else
+			sin6.sin6_port = htons(53);
+
+		if (DNS_DEBUG) {
+			char addr[INET6_ADDRSTRLEN + 1];
+			dns_aaaa_print(addr, sizeof addr, &aaaa);
+			dns_header(F->query)->qid = dns_so_mkqid(&R->so);
+			DNS_SHOW(F->query, "ASKING: %s/%s @ DEPTH: %u)", u.ns.host, addr, R->sp);
+		}
+
+		dns_trace_setcname(R->trace, u.ns.host, (struct sockaddr *)&sin6);
+
+		if ((error = dns_so_submit(&R->so, F->query, (struct sockaddr *)&sin6)))
+			goto error;
+
+		F->state++;
+	}
+	case DNS_R_QUERY_AAAA:
+		if (dns_so_elapsed(&R->so) >= dns_resconf_timeout(R->resconf))
+			dgoto(R->sp, DNS_R_FOREACH_AAAA);
+
+		if ((error = dns_so_check(&R->so)))
+			goto error;
+
+		if (!dns_p_setptr(&F->answer, dns_so_fetch(&R->so, &error)))
+			goto error;
+
+		if (DNS_DEBUG) {
+			DNS_SHOW(F->answer, "ANSWER @ DEPTH: %u)", R->sp);
+		}
+
+		if (dns_p_rcode(F->answer) == DNS_RC_FORMERR ||
+		    dns_p_rcode(F->answer) == DNS_RC_NOTIMP ||
+		    dns_p_rcode(F->answer) == DNS_RC_BADVERS) {
+			/* Temporarily disable EDNS0 and try again. */
+			if (F->qflags & DNS_Q_EDNS0) {
+				F->qflags &= ~DNS_Q_EDNS0;
+				if ((error = dns_q_remake(&F->query, F->qflags)))
+					goto error;
+
+				dgoto(R->sp, DNS_R_FOREACH_AAAA);
+			}
+		}
+
+		if ((error = dns_rr_parse(&rr, 12, F->query)))
+			goto error;
+
+		if (!(len = dns_d_expand(u.name, sizeof u.name, rr.dn.p, F->query, &error)))
+			goto error;
+		else if (len >= sizeof u.name)
+			goto toolong;
+
+		dns_rr_foreach(&rr, F->answer, .section = DNS_S_AN, .name = u.name, .type = rr.type) {
+			dgoto(R->sp, DNS_R_FINISH);	/* Found */
+		}
+
+		dns_rr_foreach(&rr, F->answer, .section = DNS_S_AN, .name = u.name, .type = DNS_T_CNAME) {
+			F->ans_cname	= rr;
+
+			dgoto(R->sp, DNS_R_CNAME0_A);
+		}
+
+		/*
+		 * XXX: The condition here should probably check whether
+		 * R->sp == 0, because DNS_R_SEARCH runs regardless of
+		 * options.recurse. See DNS_R_BIND.
+		 */
+		if (!R->resconf->options.recurse) {
+			/* Make first answer our tentative answer */
+			if (!R->nodata)
+				dns_p_movptr(&R->nodata, &F->answer);
+
+			dgoto(R->sp, DNS_R_SEARCH);
+		}
+
+		dns_rr_foreach(&rr, F->answer, .section = DNS_S_NS, .type = DNS_T_NS) {
+			dns_p_movptr(&F->hints, &F->answer);
+
+			dgoto(R->sp, DNS_R_ITERATE);
+		}
+
+		/* XXX: Should this go further up? */
+		if (dns_header(F->answer)->aa)
+			dgoto(R->sp, DNS_R_FINISH);
+
+		/* XXX: Should we copy F->answer to R->nodata? */
+
+		dgoto(R->sp, DNS_R_FOREACH_AAAA);
 	case DNS_R_CNAME0_A:
 		if (&F[1] >= endof(R->stack))
 			dgoto(R->sp, DNS_R_FINISH);
