@@ -2353,9 +2353,10 @@ main (int argc, char **argv)
     opt.max_cert_depth = 5;
     opt.escape_from = 1;
     opt.flags.require_cross_cert = 1;
-    opt.import_options = 0;
+    opt.import_options = IMPORT_REPAIR_KEYS;
     opt.export_options = EXPORT_ATTRIBUTES;
-    opt.keyserver_options.import_options = IMPORT_REPAIR_PKS_SUBKEY_BUG;
+    opt.keyserver_options.import_options = (IMPORT_REPAIR_KEYS
+					    | IMPORT_REPAIR_PKS_SUBKEY_BUG);
     opt.keyserver_options.export_options = EXPORT_ATTRIBUTES;
     opt.keyserver_options.options = KEYSERVER_HONOR_PKA_RECORD;
     opt.verify_options = (LIST_SHOW_UID_VALIDITY

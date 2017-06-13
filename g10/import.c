@@ -40,6 +40,7 @@
 #include "../common/membuf.h"
 #include "../common/init.h"
 #include "../common/mbox-util.h"
+#include "key-check.h"
 
 
 struct import_stats_s
@@ -178,6 +179,9 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"restore", IMPORT_RESTORE, NULL,
        N_("assume the GnuPG key backup format")},
       {"import-restore", IMPORT_RESTORE, NULL, NULL},
+
+      {"repair-keys", IMPORT_REPAIR_KEYS, NULL,
+       N_("repair keys on import")},
 
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL,NULL},
@@ -1481,6 +1485,9 @@ import_one (ctrl_t ctrl,
       && opt.verbose)
     log_info (_("key %s: PKS subkey corruption repaired\n"),
               keystr_from_pk(pk));
+
+  if ((options & IMPORT_REPAIR_KEYS))
+    key_check_all_keysigs (ctrl, keyblock, 0, 0);
 
   if (chk_self_sigs (ctrl, keyblock, keyid, &non_self))
     return 0;  /* Invalid keyblock - error already printed.  */
