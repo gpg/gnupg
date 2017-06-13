@@ -432,7 +432,6 @@ gnupg_digest_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 	case DIGEST_ALGO_RMD160:
 	  return ! producer;
 	case DIGEST_ALGO_MD5:
-	case GCRY_MD_WHIRLPOOL:
 	  return ! producer && module == GNUPG_MODULE_NAME_GPGSM;
 	default:
 	  return 0;
