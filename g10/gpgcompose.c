@@ -3063,3 +3063,21 @@ show_basic_key_info (ctrl_t ctrl, KBNODE keyblock)
   (void)ctrl;
   (void) keyblock;
 }
+
+int
+keyedit_print_one_sig (ctrl_t ctrl, int rc, kbnode_t keyblock, kbnode_t node,
+		       int *inv_sigs, int *no_key, int *oth_err,
+		       int is_selfsig, int print_without_key, int extended)
+{
+  (void) ctrl;
+  (void) rc;
+  (void) keyblock;
+  (void) node;
+  (void) inv_sigs;
+  (void) no_key;
+  (void) oth_err;
+  (void) is_selfsig;
+  (void) print_without_key;
+  (void) extended;
+  return 0;
+}

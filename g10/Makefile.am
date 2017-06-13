@@ -150,7 +150,8 @@ gpg_sources = server.c          \
 	      call-agent.c call-agent.h \
 	      trust.c $(trust_source) $(tofu_source) \
 	      $(card_source) \
-	      exec.c exec.h
+	      exec.c exec.h \
+	      key-check.c key-check.h
 
 gpg_SOURCES  = gpg.c \
 	keyedit.c keyedit.h	\
