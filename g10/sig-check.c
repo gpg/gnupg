@@ -157,12 +157,15 @@ check_signature2 (ctrl_t ctrl,
     else if( get_pubkey (ctrl, pk, sig->keyid ) )
       rc = gpg_error (GPG_ERR_NO_PUBKEY);
     else if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
-				    pk->pubkey_algo, pk->pkey, nbits_from_pk (pk),
+				    pk->pubkey_algo, pk->pkey,
+                                    nbits_from_pk (pk),
 				    NULL))
       {
 	/* Compliance failure.  */
-	log_info ("key %s not suitable for signature verification while in %s mode\n",
-		  keystr_from_pk (pk), gnupg_compliance_option_string (opt.compliance));
+	log_info (_("key %s not suitable for signature verification"
+                    " while in %s mode\n"),
+		  keystr_from_pk (pk),
+                  gnupg_compliance_option_string (opt.compliance));
 	rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
       }
     else if(!pk->flags.valid)
