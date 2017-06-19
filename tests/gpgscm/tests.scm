@@ -766,7 +766,8 @@
 
 ;; Command line flag handling.  Returns the elements following KEY in
 ;; ARGUMENTS up to the next argument, or #f if KEY is not in
-;; ARGUMENTS.
+;; ARGUMENTS.  If 'KEY=XYZ' is encountered, then the singleton list
+;; containing 'XYZ' is returned.
 (define (flag key arguments)
   (cond
    ((null? arguments)
@@ -777,6 +778,10 @@
       (if (or (null? args) (string-prefix? (car args) "--"))
 	  (reverse acc)
 	  (loop (cons (car args) acc) (cdr args)))))
+   ((string-prefix? (car arguments) (string-append key "="))
+    (list (substring (car arguments)
+		     (+ (string-length key) 1)
+		     (string-length (car arguments)))))
    ((string=? "--" (car arguments))
     #f)
    (else
@@ -784,6 +789,7 @@
 (assert (equal? (flag "--xxx" '("--yyy")) #f))
 (assert (equal? (flag "--xxx" '("--xxx")) '()))
 (assert (equal? (flag "--xxx" '("--xxx" "yyy")) '("yyy")))
+(assert (equal? (flag "--xxx" '("--xxx=foo" "yyy")) '("foo")))
 (assert (equal? (flag "--xxx" '("--xxx" "yyy" "zzz")) '("yyy" "zzz")))
 (assert (equal? (flag "--xxx" '("--xxx" "yyy" "zzz" "--")) '("yyy" "zzz")))
 (assert (equal? (flag "--xxx" '("--xxx" "yyy" "--" "zzz")) '("yyy")))
