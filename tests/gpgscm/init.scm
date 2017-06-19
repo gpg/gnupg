@@ -615,7 +615,7 @@
     (display message)
     (when (and args (not (null? args)))
 	  (display ": ")
-	  (if (string? (car args))
+	  (if (and (pair? args) (string? (car args)))
 	      (begin (display (car args))
 		     (unless (null? (cdr args))
 			     (newline)

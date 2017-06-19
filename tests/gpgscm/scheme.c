@@ -3565,7 +3565,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
                if (x != sc->NIL) {
                     s_return(sc,slot_value_in_env(x));
                } else {
-                    Error_1(sc,"eval: unbound variable:", sc->code);
+                    Error_1(sc, "eval: unbound variable", sc->code);
                }
           } else if (is_pair(sc->code)) {
                if (is_syntax(x = car(sc->code))) {     /* SYNTAX */
@@ -3677,7 +3677,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
                for (x = car(closure_code(sc->code)), y = sc->args;
                     is_pair(x); x = cdr(x), y = cdr(y)) {
                     if (y == sc->NIL) {
-                         Error_1(sc, "not enough arguments, missing:", x);
+                         Error_1(sc, "not enough arguments, missing", x);
                     } else if (is_symbol(car(x))) {
                          new_slot_in_env(sc, car(x), car(y));
                     } else {
@@ -3692,7 +3692,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
                } else if (is_symbol(x))
                     new_slot_in_env(sc, x, y);
                else {
-                    Error_1(sc,"syntax error in closure: not a symbol:", x);
+                    Error_1(sc, "syntax error in closure: not a symbol", x);
                }
                sc->code = cdr(closure_code(sc->code));
                sc->args = sc->NIL;
@@ -3805,7 +3805,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
                set_slot_in_env(sc, y, sc->value);
                s_return(sc,sc->value);
           } else {
-               Error_1(sc,"set!: unbound variable:", sc->code);
+               Error_1(sc, "set!: unbound variable", sc->code);
           }
 
 
@@ -3855,7 +3855,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
           if (is_pair(sc->code)) { /* continue */
                if (!is_pair(car(sc->code)) || !is_pair(cdar(sc->code))) {
 		    gc_enable(sc);
-                    Error_1(sc, "Bad syntax of binding spec in let :",
+                    Error_1(sc, "Bad syntax of binding spec in let",
                             car(sc->code));
                }
                s_save(sc,OP_LET1, sc->args, cdr(sc->code));
@@ -3881,9 +3881,9 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
           if (is_symbol(car(sc->code))) {    /* named let */
                for (x = cadr(sc->code), sc->args = sc->NIL; x != sc->NIL; x = cdr(x)) {
                     if (!is_pair(x))
-                        Error_1(sc, "Bad syntax of binding in let :", x);
+                        Error_1(sc, "Bad syntax of binding in let", x);
                     if (!is_list(sc, car(x)))
-                        Error_1(sc, "Bad syntax of binding in let :", car(x));
+                        Error_1(sc, "Bad syntax of binding in let", car(x));
 		    gc_disable(sc, 1);
                     sc->args = cons(sc, caar(x), sc->args);
 		    gc_enable(sc);
@@ -3907,7 +3907,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
                s_thread_to(sc,OP_BEGIN);
           }
           if(!is_pair(car(sc->code)) || !is_pair(caar(sc->code)) || !is_pair(cdaar(sc->code))) {
-               Error_1(sc,"Bad syntax of binding spec in let* :",car(sc->code));
+               Error_1(sc, "Bad syntax of binding spec in let*", car(sc->code));
           }
           s_save(sc,OP_LET1AST, cdr(sc->code), car(sc->code));
           sc->code = cadaar(sc->code);
@@ -3946,7 +3946,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
 	  gc_enable(sc);
           if (is_pair(sc->code)) { /* continue */
                if (!is_pair(car(sc->code)) || !is_pair(cdar(sc->code))) {
-                    Error_1(sc, "Bad syntax of binding spec in letrec :",
+                    Error_1(sc, "Bad syntax of binding spec in letrec",
                             car(sc->code));
                }
                s_save(sc,OP_LET1REC, sc->args, cdr(sc->code));
@@ -4165,7 +4165,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
           } else if(modf(rvalue_unchecked(x),&dd)==0.0) {
                s_return(sc,mk_integer(sc,ivalue(x)));
           } else {
-               Error_1(sc,"inexact->exact: not integral:",x);
+               Error_1(sc, "inexact->exact: not integral", x);
           }
 
      CASE(OP_EXP):
@@ -4425,7 +4425,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
             }
           }
           if (pf < 0) {
-            Error_1(sc, "string->atom: bad base:", cadr(sc->args));
+            Error_1(sc, "string->atom: bad base", cadr(sc->args));
           } else if(*s=='#') /* no use of base! */ {
             s_return(sc, mk_sharp_const(sc, s+1));
           } else {
@@ -4466,7 +4466,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
             }
           }
           if (pf < 0) {
-            Error_1(sc, "atom->string: bad base:", cadr(sc->args));
+            Error_1(sc, "atom->string: bad base", cadr(sc->args));
           } else if(is_number(x) || is_character(x) || is_string(x) || is_symbol(x)) {
             char *p;
             int len;
@@ -4474,7 +4474,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
 	    gc_disable(sc, 1);
             s_return_enable_gc(sc, mk_counted_string(sc, p, len));
           } else {
-            Error_1(sc, "atom->string: not an atom:", x);
+            Error_1(sc, "atom->string: not an atom", x);
           }
         }
 
@@ -4504,7 +4504,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
           index=ivalue(cadr(sc->args));
 
           if(index>=strlength(car(sc->args))) {
-               Error_1(sc,"string-ref: out of bounds:",cadr(sc->args));
+               Error_1(sc, "string-ref: out of bounds", cadr(sc->args));
           }
 
 	  gc_disable(sc, 1);
@@ -4518,13 +4518,14 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
           int c;
 
           if(is_immutable(car(sc->args))) {
-               Error_1(sc,"string-set!: unable to alter immutable string:",car(sc->args));
+               Error_1(sc, "string-set!: unable to alter immutable string",
+		       car(sc->args));
           }
           str=strvalue(car(sc->args));
 
           index=ivalue(cadr(sc->args));
           if(index>=strlength(car(sc->args))) {
-               Error_1(sc,"string-set!: out of bounds:",cadr(sc->args));
+               Error_1(sc, "string-set!: out of bounds", cadr(sc->args));
           }
 
           c=charvalue(caddr(sc->args));
@@ -4563,13 +4564,13 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
           index0=ivalue(cadr(sc->args));
 
           if(index0>strlength(car(sc->args))) {
-               Error_1(sc,"substring: start out of bounds:",cadr(sc->args));
+               Error_1(sc, "substring: start out of bounds", cadr(sc->args));
           }
 
           if(cddr(sc->args)!=sc->NIL) {
                index1=ivalue(caddr(sc->args));
                if(index1>strlength(car(sc->args)) || index1<index0) {
-                    Error_1(sc,"substring: end out of bounds:",caddr(sc->args));
+                    Error_1(sc, "substring: end out of bounds", caddr(sc->args));
                }
           } else {
                index1=strlength(car(sc->args));
@@ -4584,7 +4585,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
           pointer vec;
           int len=list_length(sc,sc->args);
           if(len<0) {
-               Error_1(sc,"vector: not a proper list:",sc->args);
+               Error_1(sc, "vector: not a proper list", sc->args);
           }
           vec=mk_vector(sc,len);
           if(sc->no_memory) { s_return(sc, sc->sink); }
@@ -4622,7 +4623,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
           index=ivalue(cadr(sc->args));
 
           if(index >= vector_length(car(sc->args))) {
-               Error_1(sc,"vector-ref: out of bounds:",cadr(sc->args));
+               Error_1(sc, "vector-ref: out of bounds", cadr(sc->args));
           }
 
           s_return(sc,vector_elem(car(sc->args),index));
@@ -4632,12 +4633,13 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
           int index;
 
           if(is_immutable(car(sc->args))) {
-               Error_1(sc,"vector-set!: unable to alter immutable vector:",car(sc->args));
+               Error_1(sc, "vector-set!: unable to alter immutable vector",
+		       car(sc->args));
           }
 
           index=ivalue(cadr(sc->args));
           if(index >= vector_length(car(sc->args))) {
-               Error_1(sc,"vector-set!: out of bounds:",cadr(sc->args));
+               Error_1(sc, "vector-set!: out of bounds", cadr(sc->args));
           }
 
           set_vector_elem(car(sc->args),index,caddr(sc->args));
@@ -4980,7 +4982,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
                s_thread_to(sc,OP_READ_INTERNAL);
           }
           if(!is_inport(car(sc->args))) {
-               Error_1(sc,"read: not an input port:",car(sc->args));
+               Error_1(sc, "read: not an input port", car(sc->args));
           }
           if(car(sc->args)==sc->inport) {
                s_thread_to(sc,OP_READ_INTERNAL);
@@ -5258,7 +5260,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
      CASE(OP_LIST_LENGTH): {   /* length */   /* a.k */
 	  long l = list_length(sc, car(sc->args));
           if(l<0) {
-               Error_1(sc,"length: not a list:",car(sc->args));
+               Error_1(sc, "length: not a list", car(sc->args));
           }
 	  gc_disable(sc, 1);
           s_return_enable_gc(sc, mk_integer(sc, l));
