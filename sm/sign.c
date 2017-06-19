@@ -464,8 +464,8 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       /* Check compliance.  */
       if (! gnupg_digest_is_allowed (opt.compliance, 1, cl->hash_algo))
         {
-          log_error (_ ("you may not use digest algorithm '%s'"
-                        " while in %s mode\n"),
+          log_error (_("you may not use digest algorithm '%s'"
+                       " while in %s mode\n"),
                      gcry_md_algo_name (cl->hash_algo),
                      gnupg_compliance_option_string (opt.compliance));
           err = gpg_error (GPG_ERR_DIGEST_ALGO);

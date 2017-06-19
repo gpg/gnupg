@@ -397,7 +397,8 @@ gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 
 /* Return true if DIGEST is compliant to the given COMPLIANCE mode.  */
 int
-gnupg_digest_is_compliant (enum gnupg_compliance_mode compliance, digest_algo_t digest)
+gnupg_digest_is_compliant (enum gnupg_compliance_mode compliance,
+                           digest_algo_t digest)
 {
   if (! initialized)
     return 0;
@@ -499,7 +500,7 @@ gnupg_parse_compliance_option (const char *string,
 
   if (! ascii_strcasecmp (string, "help"))
     {
-      log_info (_ ("valid values for option '%s':\n"), "--compliance");
+      log_info (_("valid values for option '%s':\n"), "--compliance");
       for (i = 0; i < length; i++)
         log_info ("  %s\n", options[i].keyword);
       return -1;
@@ -509,9 +510,9 @@ gnupg_parse_compliance_option (const char *string,
     if (! ascii_strcasecmp (string, options[i].keyword))
       return options[i].value;
 
-  log_error (_ ("invalid value for option '%s'\n"), "--compliance");
+  log_error (_("invalid value for option '%s'\n"), "--compliance");
   if (! quiet)
-    log_info (_ ("(use \"help\" to list choices)\n"));
+    log_info (_("(use \"help\" to list choices)\n"));
   return -1;
 }
 

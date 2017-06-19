@@ -281,8 +281,8 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
   /* Check compliance.  */
   if (! gnupg_digest_is_allowed (opt.compliance, 1, mdalgo))
     {
-      log_error (_ ("you may not use digest algorithm '%s'"
-		    " while in %s mode\n"),
+      log_error (_("you may not use digest algorithm '%s'"
+		   " while in %s mode\n"),
 		 gcry_md_algo_name (mdalgo),
 		 gnupg_compliance_option_string (opt.compliance));
       err = gpg_error (GPG_ERR_DIGEST_ALGO);

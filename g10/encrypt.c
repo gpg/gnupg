@@ -617,8 +617,8 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   if (! gnupg_cipher_is_allowed (opt.compliance, 1, cfx.dek->algo,
                                  GCRY_CIPHER_MODE_CFB))
     {
-      log_error (_ ("you may not use cipher algorithm '%s'"
-		    " while in %s mode\n"),
+      log_error (_("you may not use cipher algorithm '%s'"
+		   " while in %s mode\n"),
 		 openpgp_cipher_algo_name (cfx.dek->algo),
 		 gnupg_compliance_option_string (opt.compliance));
       rc = gpg_error (GPG_ERR_CIPHER_ALGO);

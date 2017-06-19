@@ -411,8 +411,8 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
                                  gcry_cipher_map_name (opt.def_cipher_algoid),
                                  gcry_cipher_mode_from_oid (opt.def_cipher_algoid)))
     {
-      log_error (_ ("you may not use cipher algorithm '%s'"
-		    " while in %s mode\n"),
+      log_error (_("you may not use cipher algorithm '%s'"
+		   " while in %s mode\n"),
 		 opt.def_cipher_algoid,
 		 gnupg_compliance_option_string (opt.compliance));
       rc = gpg_error (GPG_ERR_CIPHER_ALGO);

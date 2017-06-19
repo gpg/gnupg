@@ -1627,8 +1627,8 @@ main ( int argc, char **argv)
                                     cmd == aEncr || cmd == aSignEncr,
                                     gcry_cipher_mode_from_oid (opt.def_cipher_algoid),
                                     GCRY_CIPHER_MODE_NONE))
-    log_error (_ ("you may not use cipher algorithm '%s'"
-                  " while in %s mode\n"),
+    log_error (_("you may not use cipher algorithm '%s'"
+                 " while in %s mode\n"),
                opt.def_cipher_algoid, gnupg_compliance_option_string (opt.compliance));
 
   if (forced_digest_algo
@@ -1637,8 +1637,8 @@ main ( int argc, char **argv)
                                      || cmd == aSignEncr
                                      || cmd == aClearsign,
                                      opt.forced_digest_algo))
-    log_error (_ ("you may not use digest algorithm '%s'"
-                  " while in %s mode\n"),
+    log_error (_("you may not use digest algorithm '%s'"
+                 " while in %s mode\n"),
                forced_digest_algo, gnupg_compliance_option_string (opt.compliance));
 
   if (extra_digest_algo
@@ -1647,8 +1647,8 @@ main ( int argc, char **argv)
                                      || cmd == aSignEncr
                                      || cmd == aClearsign,
                                      opt.extra_digest_algo))
-    log_error (_ ("you may not use digest algorithm '%s'"
-                  " while in %s mode\n"),
+    log_error (_("you may not use digest algorithm '%s'"
+                 " while in %s mode\n"),
                forced_digest_algo, gnupg_compliance_option_string (opt.compliance));
 
   if (log_get_errorcount(0))

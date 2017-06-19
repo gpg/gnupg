@@ -3883,8 +3883,8 @@ main (int argc, char **argv)
 				      || cmd == aSignEncrSym,
 				      opt.def_cipher_algo,
 				      GCRY_CIPHER_MODE_NONE))
-      log_error (_ ("you may not use cipher algorithm '%s'"
-		    " while in %s mode\n"),
+      log_error (_("you may not use cipher algorithm '%s'"
+		   " while in %s mode\n"),
 		 openpgp_cipher_algo_name (opt.def_cipher_algo),
 		 gnupg_compliance_option_string (opt.compliance));
 
@@ -3896,8 +3896,8 @@ main (int argc, char **argv)
 				      || cmd == aSignSym
 				      || cmd == aClearsign,
 				      opt.def_digest_algo))
-      log_error (_ ("you may not use digest algorithm '%s'"
-		    " while in %s mode\n"),
+      log_error (_("you may not use digest algorithm '%s'"
+		   " while in %s mode\n"),
 		 gcry_md_algo_name (opt.def_digest_algo),
 		 gnupg_compliance_option_string (opt.compliance));
 

@@ -361,8 +361,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
           /* Check compliance.  */
           if (! gnupg_cipher_is_allowed (opt.compliance, 0, algo, mode))
             {
-              log_error (_ ("you may not use cipher algorithm '%s'"
-                            " while in %s mode\n"),
+              log_error (_("you may not use cipher algorithm '%s'"
+                           " while in %s mode\n"),
                          gcry_cipher_algo_name (algo),
                          gnupg_compliance_option_string (opt.compliance));
               rc = gpg_error (GPG_ERR_CIPHER_ALGO);

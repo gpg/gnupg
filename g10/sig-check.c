@@ -136,8 +136,8 @@ check_signature2 (ctrl_t ctrl,
     else if (! gnupg_digest_is_allowed (opt.compliance, 0, sig->digest_algo))
       {
 	/* Compliance failure.  */
-	log_info (_ ("you may not use digest algorithm '%s'"
-		     " while in %s mode\n"),
+	log_info (_("you may not use digest algorithm '%s'"
+		    " while in %s mode\n"),
 		  gcry_md_algo_name (sig->digest_algo),
 		  gnupg_compliance_option_string (opt.compliance));
 	rc = gpg_error (GPG_ERR_DIGEST_ALGO);

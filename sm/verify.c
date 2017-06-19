@@ -467,8 +467,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
         if (! gnupg_digest_is_allowed (opt.compliance, 0, sigval_hash_algo))
           {
-            log_error (_ ("you may not use digest algorithm '%s'"
-                          " while in %s mode\n"),
+            log_error (_("you may not use digest algorithm '%s'"
+                         " while in %s mode\n"),
                        gcry_md_algo_name (sigval_hash_algo),
                        gnupg_compliance_option_string (opt.compliance));
             goto next_signer;
