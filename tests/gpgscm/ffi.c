@@ -915,6 +915,8 @@ do_wait_processes (scheme *sc, pointer args)
                               retcodes);
   if (err == GPG_ERR_GENERAL)
     err = 0;	/* Let the return codes speak.  */
+  if (err == GPG_ERR_TIMEOUT)
+    err = 0;	/* We may have got some results.  */
 
   for (i = 0; i < count; i++)
     retcodes_list =

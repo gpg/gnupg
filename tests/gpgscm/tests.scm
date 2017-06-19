@@ -498,29 +498,98 @@
 ;; The main test framework.
 ;;
 
+(define semaphore
+  (package
+   (define (new n)
+     (package
+      (define (acquire!?)
+	(if (> n 0)
+	    (begin
+	      (set! n (- n 1))
+	      #t)
+	    #f))
+      (define (release!)
+	(set! n (+ n 1)))))))
+
 ;; A pool of tests.
 (define test-pool
   (package
-   (define (new procs)
+   (define (new n)
      (package
+      ;; A semaphore to restrict the number of spawned processes.
+      (define sem (semaphore::new n))
+
+      ;; A list of enqueued, but not yet run tests.
+      (define enqueued '())
+
+      ;; A list of running or finished processes.
+      (define procs '())
+
       (define (add test)
-	(set! procs (cons test procs))
+	(if (test::started?)
+	    (set! procs (cons test procs))
+	    (if (sem::acquire!?)
+		(add (test::run-async))
+		(set! enqueued (cons test enqueued))))
 	(current-environment))
+
+      ;; Pop the last of the enqueued tests off the fifo queue.
+      (define (pop-test!)
+	(let ((i (length enqueued)))
+	  (assert (> i 0))
+	  (cond
+	   ((= i 1)
+	    (let ((test (car enqueued)))
+	      (set! enqueued '())
+	      test))
+	   (else
+	    (let* ((tail (list-tail enqueued (- i 2)))
+		   (test (cadr tail)))
+	      (set-cdr! tail '())
+	      (assert (= (length enqueued) (- i 1)))
+	      test)))))
+
       (define (pid->test pid)
 	(let ((t (filter (lambda (x) (= pid x::pid)) procs)))
 	  (if (null? t) #f (car t))))
       (define (wait)
+	(if (null? enqueued)
+	    ;; If no tests are enqueued, we can just block until all
+	    ;; of them finished.
+	    (wait' #t)
+	    ;; Otherwise, we must not block, but give some tests the
+	    ;; chance to finish so that we can start new ones.
+	    (begin
+	      (wait' #f)
+	      (usleep (/ 1000000 10))
+	      (wait))))
+      (define (wait' hang)
 	(let ((unfinished (filter (lambda (t) (not t::retcode)) procs)))
 	  (if (null? unfinished)
 	      (current-environment)
 	      (let ((names (map (lambda (t) t::name) unfinished))
-		    (pids (map (lambda (t) t::pid) unfinished)))
+		    (pids (map (lambda (t) t::pid) unfinished))
+		    (any #f))
 		(for-each
 		 (lambda (test retcode)
-		   (test::set-end-time!)
-		   (test:::set! 'retcode retcode))
+		   (unless (< retcode 0)
+			   (test::set-end-time!)
+			   (test:::set! 'retcode retcode)
+			   (test::report)
+			   (sem::release!)
+			   (set! any #t)))
 		 (map pid->test pids)
-		 (wait-processes (map stringify names) pids #t)))))
+		 (wait-processes (map stringify names) pids hang))
+
+		;; If some processes finished, try to start new ones.
+		(let loop ()
+		  (cond
+		   ((not any) #f)
+		   ((pair? enqueued)
+		    (if (sem::acquire!?)
+			(let ((test (pop-test!)))
+			  (add (test::run-async))
+			  (loop)))))))))
 	(current-environment))
       (define (filter-tests status)
 	(filter (lambda (p) (eq? status (p::status))) procs))
@@ -629,6 +698,10 @@
       (define (set-end-time!)
 	(set! end-time (get-time)))
 
+      ;; Has the test been started yet?
+      (define (started?)
+	(number? pid))
+
       (define (open-log-file)
 	(unless log-file-name
 		(set! log-file-name (string-append (basename name) ".log")))
@@ -713,23 +786,22 @@
 
 ;; Run the setup target to create an environment, then run all given
 ;; tests in parallel.
-(define (run-tests-parallel tests)
-  (let loop ((pool (test-pool::new '())) (tests' tests))
+(define (run-tests-parallel tests n)
+  (let loop ((pool (test-pool::new n)) (tests' tests))
     (if (null? tests')
 	(let ((results (pool::wait)))
-	  (for-each (lambda (t) (t::report)) (reverse results::procs))
 	  ((results::xml) (open-output-file "report.xml"))
 	  (exit (results::report)))
 	(let ((wd (mkdtemp-autoremove))
 	      (test (car tests')))
 	  (test:::set! 'directory wd)
-	  (loop (pool::add (test::run-async))
+	  (loop (pool::add test)
 		(cdr tests'))))))
 
 ;; Run the setup target to create an environment, then run all given
 ;; tests in sequence.
 (define (run-tests-sequential tests)
-  (let loop ((pool (test-pool::new '())) (tests' tests))
+  (let loop ((pool (test-pool::new 1)) (tests' tests))
     (if (null? tests')
 	(let ((results (pool::wait)))
 	  ((results::xml) (open-output-file "report.xml"))
@@ -743,10 +815,14 @@
 ;; Run tests either in sequence or in parallel, depending on the
 ;; number of tests and the command line flags.
 (define (run-tests tests)
-  (if (and (flag "--parallel" *args*)
-	   (> (length tests) 1))
-      (run-tests-parallel tests)
-      (run-tests-sequential tests)))
+  (let ((parallel (flag "--parallel" *args*))
+	(default-parallel-jobs 32))
+    (if (and parallel (> (length tests) 1))
+	(run-tests-parallel tests (if (and (pair? parallel)
+					   (string->number (car parallel)))
+				      (string->number (car parallel))
+				      default-parallel-jobs))
+	(run-tests-sequential tests))))
 
 ;; Load all tests from the given path.
 (define (load-tests . path)
