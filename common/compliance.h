@@ -1,5 +1,6 @@
 /* compliance.h - Definitions for compliance modi
  * Copyright (C) 2017 g10 Code GmbH
+ * Copyright (C) 2017 Bundesamt für Sicherheit in der Informationstechnik
  *
  * This file is part of GnuPG.
  *

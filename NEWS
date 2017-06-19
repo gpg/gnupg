@@ -13,8 +13,8 @@ Noteworthy changes in version 2.1.21 (2017-05-15)
     system's standard methods for providing default configuration
     files should be used instead.
 
-  * w32: The Windows installer now allows installion of GnuPG without
-    Administrator permissions.
+  * w32: The Windows installer now allows installation of GnuPG
+    without Administrator permissions.
 
   * gpg: Fixed import filter property match bug.
 

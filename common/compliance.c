@@ -1,5 +1,6 @@
 /* compliance.c - Functions for compliance modi
  * Copyright (C) 2017 g10 Code GmbH
+ * Copyright (C) 2017 Bundesamt für Sicherheit in der Informationstechnik
  *
  * This file is part of GnuPG.
  *
@@ -95,7 +96,8 @@ gnupg_initialize_compliance (int gnupg_module_name)
  * both are compatible from the point of view of this function.  */
 int
 gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
-		       gcry_mpi_t key[], unsigned int keylength, const char *curvename)
+		       gcry_mpi_t key[], unsigned int keylength,
+                       const char *curvename)
 {
   enum { is_rsa, is_dsa, is_pgp5, is_elg_sign, is_ecc } algotype;
   int result = 0;
@@ -360,9 +362,11 @@ gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 	  switch (module)
 	    {
 	    case GNUPG_MODULE_NAME_GPG:
-	      return mode == GCRY_CIPHER_MODE_NONE || mode == GCRY_CIPHER_MODE_CFB;
+	      return (mode == GCRY_CIPHER_MODE_NONE
+                      || mode == GCRY_CIPHER_MODE_CFB);
 	    case GNUPG_MODULE_NAME_GPGSM:
-	      return mode == GCRY_CIPHER_MODE_NONE || mode == GCRY_CIPHER_MODE_CBC;
+	      return (mode == GCRY_CIPHER_MODE_NONE
+                      || mode == GCRY_CIPHER_MODE_CBC);
 	    }
 	  log_assert (!"reached");
 
@@ -374,7 +378,8 @@ gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 	case CIPHER_ALGO_IDEA:
 	case CIPHER_ALGO_TWOFISH:
 	  return (module == GNUPG_MODULE_NAME_GPG
-		  && (mode == GCRY_CIPHER_MODE_NONE || mode == GCRY_CIPHER_MODE_CFB)
+		  && (mode == GCRY_CIPHER_MODE_NONE
+                      || mode == GCRY_CIPHER_MODE_CFB)
 		  && ! producer);
 	default:
 	  return 0;

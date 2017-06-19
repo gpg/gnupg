@@ -1,5 +1,6 @@
 /* loadswdb.c - Load the swdb file from versions.gnupg.org
  * Copyright (C) 2016 g10 Code GmbH
+ * Copyright (C) 2016 Bundesamt für Sicherheit in der Informationstechnik
  *
  * This file is part of GnuPG.
  *

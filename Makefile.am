@@ -28,7 +28,8 @@ GITLOG_TO_CHANGELOG=gitlog-to-changelog
 EXTRA_DIST = build-aux/config.rpath build-aux/potomo autogen.sh autogen.rc \
 	     ChangeLog-2011 po/ChangeLog-2011 build-aux/ChangeLog-2011     \
 	     VERSION README.GIT build-aux/gitlog-to-changelog              \
-	     COPYING.CC0 COPYING.other                      \
+	     COPYING.GPL2 COPYING.LGPL21 COPYING.LGPL3      \
+             COPYING.CC0 COPYING.other                      \
 	     build-aux/git-log-fix build-aux/git-log-footer \
 	     build-aux/getswdb.sh                           \
 	     build-aux/speedo.mk                            \
