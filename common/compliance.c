@@ -100,7 +100,8 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
   enum { is_rsa, is_dsa, is_pgp5, is_elg_sign, is_ecc } algotype;
   int result = 0;
 
-  log_assert (initialized);
+  if (! initialized)
+    return 0;
 
   switch (algo)
     {
@@ -202,6 +203,9 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 		     enum pk_use_case use, int algo, gcry_mpi_t key[],
 		     unsigned int keylength, const char *curvename)
 {
+  if (! initialized)
+    return 1;
+
   switch (compliance)
     {
     case CO_DE_VS:
@@ -298,7 +302,8 @@ gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance,
 			   cipher_algo_t cipher,
 			   enum gcry_cipher_modes mode)
 {
-  log_assert (initialized);
+  if (! initialized)
+    return 0;
 
   switch (compliance)
     {
@@ -340,6 +345,9 @@ gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 			 cipher_algo_t cipher,
 			 enum gcry_cipher_modes mode)
 {
+  if (! initialized)
+    return 1;
+
   switch (compliance)
     {
     case CO_DE_VS:
@@ -386,7 +394,8 @@ gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 int
 gnupg_digest_is_compliant (enum gnupg_compliance_mode compliance, digest_algo_t digest)
 {
-  log_assert (initialized);
+  if (! initialized)
+    return 0;
 
   switch (compliance)
     {
@@ -418,6 +427,9 @@ int
 gnupg_digest_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 			 digest_algo_t digest)
 {
+  if (! initialized)
+    return 1;
+
   switch (compliance)
     {
     case CO_DE_VS:
@@ -450,8 +462,6 @@ gnupg_digest_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 const char *
 gnupg_status_compliance_flag (enum gnupg_compliance_mode compliance)
 {
-  log_assert (initialized);
-
   switch (compliance)
     {
     case CO_GNUPG:
@@ -482,8 +492,6 @@ gnupg_parse_compliance_option (const char *string,
 {
   size_t i;
 
-  log_assert (initialized);
-
   if (! ascii_strcasecmp (string, "help"))
     {
       log_info (_ ("valid values for option '%s':\n"), "--compliance");
@@ -507,8 +515,6 @@ gnupg_parse_compliance_option (const char *string,
 const char *
 gnupg_compliance_option_string (enum gnupg_compliance_mode compliance)
 {
-  log_assert (initialized);
-
   switch (compliance)
     {
     case CO_GNUPG:   return "--compliance=gnupg";
