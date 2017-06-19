@@ -154,10 +154,10 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
 	case is_dsa:
 	  if (key)
 	    {
-	      size_t L = gcry_mpi_get_nbits (key[0] /* p */);
-	      size_t N = gcry_mpi_get_nbits (key[1] /* q */);
-	      result = (L == 256
-			&& (N == 2048 || N == 3072));
+	      size_t P = gcry_mpi_get_nbits (key[0]);
+	      size_t Q = gcry_mpi_get_nbits (key[1]);
+	      result = (Q == 256
+			&& (P == 2048 || P == 3072));
 	    }
 	  break;
 
@@ -171,7 +171,8 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
             }
 
           result = (curvename
-                    && algo != PUBKEY_ALGO_EDDSA
+                    && (algo == PUBKEY_ALGO_ECDH
+                        || algo == PUBKEY_ALGO_ECDSA)
                     && (!strcmp (curvename, "brainpoolP256r1")
                         || !strcmp (curvename, "brainpoolP384r1")
                         || !strcmp (curvename, "brainpoolP512r1")));
@@ -238,13 +239,13 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 	case PUBKEY_ALGO_DSA:
 	  if (key)
 	    {
-	      size_t L = gcry_mpi_get_nbits (key[0] /* p */);
-	      size_t N = gcry_mpi_get_nbits (key[1] /* q */);
+	      size_t P = gcry_mpi_get_nbits (key[0]);
+	      size_t Q = gcry_mpi_get_nbits (key[1]);
 	      return ((use == PK_USE_SIGNING
-		       && L == 256
-		       && (N == 2048 || N == 3072))
+		       && Q == 256
+		       && (P == 2048 || P == 3072))
 		      || (use == PK_USE_VERIFICATION
-			  && N < 2048));
+			  && P < 2048));
 	    }
 	  else
 	    return 0;

@@ -94,7 +94,7 @@ struct mainproc_context
   kbnode_t list;    /* The current list of packets. */
   iobuf_t iobuf;    /* Used to get the filename etc. */
   int trustletter;  /* Temporary usage in list_node. */
-  ulong symkeys;
+  ulong symkeys;    /* Number of symmetrically encrypted session keys.  */
   struct kidlist_item *pkenc_list; /* List of encryption packets. */
   struct {
     unsigned int sig_seen:1;      /* Set to true if a signature packet
@@ -603,18 +603,19 @@ proc_encrypted (CTX c, PACKET *pkt)
   /* Compute compliance with CO_DE_VS.  */
   if (!result && is_status_enabled ()
       /* Symmetric encryption and asymmetric encryption voids compliance.  */
-      && ((c->symkeys > 0) != (c->pkenc_list != NULL))
+      && (c->symkeys != !!c->pkenc_list )
       /* Overriding session key voids compliance.  */
-      && opt.override_session_key == NULL
+      && !opt.override_session_key
       /* Check symmetric cipher.  */
-      && gnupg_cipher_is_compliant (CO_DE_VS, c->dek->algo, GCRY_CIPHER_MODE_CFB))
+      && gnupg_cipher_is_compliant (CO_DE_VS, c->dek->algo,
+                                    GCRY_CIPHER_MODE_CFB))
     {
       struct kidlist_item *i;
       int compliant = 1;
       PKT_public_key *pk = xmalloc (sizeof *pk);
 
-      log_assert (c->pkenc_list || c->symkeys
-                  || !"where else did the session key come from!?");
+      if ( !(c->pkenc_list || c->symkeys) )
+        log_debug ("%s: where else did the session key come from?\n", __func__);
 
       /* Now check that every key used to encrypt the session key is
        * compliant.  */

@@ -493,9 +493,10 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                       }
 
                     /* Check that all certs are compliant with CO_DE_VS.  */
-                    is_de_vs = (is_de_vs
-                                && gnupg_pk_is_compliant (CO_DE_VS, pk_algo, NULL,
-                                                          nbits, NULL));
+                    is_de_vs =
+                      (is_de_vs
+                       && gnupg_pk_is_compliant (CO_DE_VS, pk_algo, NULL,
+                                                 nbits, NULL));
                   }
 
                 oops:

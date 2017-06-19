@@ -57,14 +57,17 @@ int gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 int gnupg_cipher_is_compliant (enum gnupg_compliance_mode compliance,
                                cipher_algo_t cipher,
                                enum gcry_cipher_modes mode);
-int gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance, int producer,
+int gnupg_cipher_is_allowed (enum gnupg_compliance_mode compliance,
+                             int producer,
                              cipher_algo_t cipher,
                              enum gcry_cipher_modes mode);
 int gnupg_digest_is_compliant (enum gnupg_compliance_mode compliance,
                                digest_algo_t digest);
-int gnupg_digest_is_allowed (enum gnupg_compliance_mode compliance, int producer,
+int gnupg_digest_is_allowed (enum gnupg_compliance_mode compliance,
+                             int producer,
                              digest_algo_t digest);
-const char *gnupg_status_compliance_flag (enum gnupg_compliance_mode compliance);
+const char *gnupg_status_compliance_flag (enum gnupg_compliance_mode
+                                          compliance);
 
 struct gnupg_compliance_option
 {
@@ -76,7 +79,8 @@ int gnupg_parse_compliance_option (const char *string,
                                    struct gnupg_compliance_option options[],
                                    size_t length,
                                    int quiet);
-const char *gnupg_compliance_option_string (enum gnupg_compliance_mode compliance);
+const char *gnupg_compliance_option_string (enum gnupg_compliance_mode
+                                            compliance);
 
 
 #endif /*GNUPG_COMMON_COMPLIANCE_H*/
