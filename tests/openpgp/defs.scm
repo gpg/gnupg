@@ -348,6 +348,8 @@
 	       "allow-preset-passphrase"
 	       "no-grab"
 	       "enable-ssh-support"
+	       (if (flag "--extended-key-format" *args*)
+		   "enable-extended-key-format" "#enable-extended-key-format")
 	       (string-append "pinentry-program " (tool 'pinentry))
 	       (string-append "scdaemon-program " (tool 'scdaemon))
 	       ))

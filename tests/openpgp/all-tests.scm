@@ -33,13 +33,19 @@
      (path-join "tests" "openpgp" "setup.scm")
      (in-srcdir "tests" "openpgp" "setup.scm"))))
 
- (define setup-use-keyring
+ (define (qualify path variant)
+   (string-append "<" variant ">" path))
+
+ (define (setup* variant)
    (make-environment-cache
     (test::scm
      #f
-     (string-append "<use-keyring>" (path-join "tests" "openpgp" "setup.scm"))
+     (qualify (path-join "tests" "openpgp" "setup.scm") variant)
      (in-srcdir "tests" "openpgp" "setup.scm")
-     "--use-keyring")))
+     (string-append "--" variant))))
+
+ (define setup-use-keyring (setup* "use-keyring"))
+ (define setup-extended-key-format (setup* "extended-key-format"))
 
  (define all-tests
    (parse-makefile-expand (in-srcdir "tests" "openpgp" "Makefile.am")
@@ -52,7 +58,11 @@
 		    (in-srcdir "tests" "openpgp" name))) all-tests)
   (map (lambda (name)
 	 (test::scm setup-use-keyring
-		    (string-append "<use-keyring>"
-				   (path-join "tests" "openpgp" name))
+		    (qualify (path-join "tests" "openpgp" name) "use-keyring")
 		    (in-srcdir "tests" "openpgp" name)
-		    "--use-keyring")) all-tests)))
+		    "--use-keyring")) all-tests)
+  (map (lambda (name)
+	 (test::scm setup-extended-key-format
+		    (qualify (path-join "tests" "openpgp" name) "extended-key-format")
+		    (in-srcdir "tests" "openpgp" name)
+		    "--extended-key-format")) all-tests)))
