@@ -36,8 +36,7 @@
 (define (ffi-fail name args message)
   (let ((args' (open-output-string)))
     (write (cons (string->symbol name) args) args')
-    (throw (string-append
-	    (get-output-string args') ": " message))))
+    (throw (get-output-string args') message)))
 
 ;; Pseudo-definitions for foreign functions.  Evaluates to no code,
 ;; but serves as documentation.
