@@ -74,9 +74,11 @@ struct hostinfo_s
 {
   time_t lastfail;   /* Time we tried to connect and failed.  */
   time_t lastused;   /* Time of last use.  */
-  int *pool;         /* A -1 terminated array with indices into
-                        HOSTTABLE or NULL if NAME is not a pool
-                        name.  */
+  int *pool;         /* An array with indices into HOSTTABLE or NULL
+                        if NAME is not a pool name.  */
+  size_t pool_len;   /* Length of POOL.  */
+  size_t pool_size;  /* Allocated size of POOL.  */
+#define MAX_POOL_SIZE	128
   int poolidx;       /* Index into POOL with the used host.  -1 if not set.  */
   unsigned int v4:1; /* Host supports AF_INET.  */
   unsigned int v6:1; /* Host supports AF_INET6.  */
@@ -118,6 +120,8 @@ create_new_hostinfo (const char *name)
     return -1;
   strcpy (hi->name, name);
   hi->pool = NULL;
+  hi->pool_len = 0;
+  hi->pool_size = 0;
   hi->poolidx = -1;
   hi->lastused = (time_t)(-1);
   hi->lastfail = (time_t)(-1);
@@ -187,24 +191,24 @@ sort_hostpool (const void *xa, const void *xb)
 }
 
 
-/* Return true if the host with the hosttable index TBLIDX is in POOL.  */
+/* Return true if the host with the hosttable index TBLIDX is in HI->pool.  */
 static int
-host_in_pool_p (int *pool, int tblidx)
+host_in_pool_p (hostinfo_t hi, int tblidx)
 {
   int i, pidx;
 
-  for (i=0; (pidx = pool[i]) != -1; i++)
+  for (i = 0; i < hi->pool_len && (pidx = hi->pool[i]) != -1; i++)
     if (pidx == tblidx && hosttable[pidx])
       return 1;
   return 0;
 }
 
 
-/* Select a random host.  Consult TABLE which indices into the global
-   hosttable.  Returns index into TABLE or -1 if no host could be
+/* Select a random host.  Consult HI->pool which indices into the global
+   hosttable.  Returns index into HI->pool or -1 if no host could be
    selected.  */
 static int
-select_random_host (int *table)
+select_random_host (hostinfo_t hi)
 {
   int *tbl;
   size_t tblsize;
@@ -212,7 +216,9 @@ select_random_host (int *table)
 
   /* We create a new table so that we randomly select only from
      currently alive hosts.  */
-  for (idx=0, tblsize=0; (pidx = table[idx]) != -1; idx++)
+  for (idx = 0, tblsize = 0;
+       idx < hi->pool_len && (pidx = hi->pool[idx]) != -1;
+       idx++)
     if (hosttable[pidx] && !hosttable[pidx]->dead)
       tblsize++;
   if (!tblsize)
@@ -221,7 +227,9 @@ select_random_host (int *table)
   tbl = xtrymalloc (tblsize * sizeof *tbl);
   if (!tbl)
     return -1;
-  for (idx=0, tblsize=0; (pidx = table[idx]) != -1; idx++)
+  for (idx = 0, tblsize = 0;
+       idx < hi->pool_len && (pidx = hi->pool[idx]) != -1;
+       idx++)
     if (hosttable[pidx] && !hosttable[pidx]->dead)
       tbl[tblsize++] = pidx;
 
@@ -286,15 +294,16 @@ tor_not_running_p (ctrl_t ctrl)
    reference table accordingly.  */
 static void
 add_host (const char *name, int is_pool,
-          const dns_addrinfo_t ai, unsigned short port,
-          int *reftbl, size_t reftblsize, int *refidx)
+          const dns_addrinfo_t ai, unsigned short port)
 {
   gpg_error_t tmperr;
   char *tmphost;
   int idx, tmpidx;
+  hostinfo_t host;
   int i;
 
   idx = find_hostinfo (name);
+  host = hosttable[idx];
 
   if (is_pool)
     {
@@ -325,7 +334,7 @@ add_host (const char *name, int is_pool,
       log_info ("resolve_dns_addr failed while checking '%s': %s\n",
                 name, gpg_strerror (tmperr));
     }
-  else if ((*refidx) + 1 >= reftblsize)
+  else if (host->pool_len + 1 >= MAX_POOL_SIZE)
     {
       log_error ("resolve_dns_addr for '%s': '%s'"
                  " [index table full - ignored]\n", name, tmphost);
@@ -365,16 +374,53 @@ add_host (const char *name, int is_pool,
           else
             BUG ();
 
-          for (i=0; i < *refidx; i++)
-            if (reftbl[i] == tmpidx)
-              break;
-          if (!(i < *refidx) && tmpidx != idx)
-            reftbl[(*refidx)++] = tmpidx;
+          /* If we updated the main entry, we're done.  */
+          if (idx == tmpidx)
+            goto leave;
+
+          /* If we updated an existing entry, we're done.  */
+          for (i = 0; i < host->pool_len; i++)
+            if (host->pool[i] == tmpidx)
+              goto leave;
+
+          /* Otherwise, we need to add it to the pool.  Check if there
+             is space.  */
+          if (host->pool_len + 1 > host->pool_size)
+            {
+              int *new_pool;
+              size_t new_size;
+
+              if (host->pool_size == 0)
+                new_size = 4;
+              else
+                new_size = host->pool_size * 2;
+
+              new_pool = xtryrealloc (host->pool,
+                                      new_size * sizeof *new_pool);
+
+              if (new_pool == NULL)
+                goto leave;
+
+              host->pool = new_pool;
+              host->pool_size = new_size;
+            }
+
+          /* Finally, add it.  */
+          log_assert (host->pool_len < host->pool_size);
+          host->pool[host->pool_len++] = tmpidx;
         }
     }
+ leave:
   xfree (tmphost);
 }
 
+
+/* Sort the pool of the given hostinfo HI.  */
+static void
+hostinfo_sort_pool (hostinfo_t hi)
+{
+  qsort (hi->pool, hi->pool_len, sizeof *hi->pool, sort_hostpool);
+}
 
 /* Map the host name NAME to the actual to be used host name.  This
  * allows us to manage round robin DNS names.  We use our own strategy
@@ -427,25 +473,15 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
     {
       /* We never saw this host.  Allocate a new entry.  */
       dns_addrinfo_t aibuf, ai;
-      int *reftbl;
-      size_t reftblsize;
-      int refidx;
       int is_pool = 0;
       char *cname;
       struct srventry *srvs;
       unsigned int srvscount;
 
-      reftblsize = 100;
-      reftbl = xtrymalloc (reftblsize * sizeof *reftbl);
-      if (!reftbl)
-        return gpg_error_from_syserror ();
-      refidx = 0;
-
       idx = create_new_hostinfo (name);
       if (idx == -1)
         {
           err = gpg_error_from_syserror ();
-          xfree (reftbl);
           return err;
         }
       hi = hosttable[idx];
@@ -456,7 +492,6 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
           err = get_dns_srv (name, srvtag, NULL, &srvs, &srvscount);
           if (err)
             {
-              xfree (reftbl);
               if (gpg_err_code (err) == GPG_ERR_ECONNREFUSED)
                 tor_not_running_p (ctrl);
               return err;
@@ -475,8 +510,7 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
                   if (err)
                     continue;
                   dirmngr_tick (ctrl);
-                  add_host (name, is_pool, ai, srvs[i].port,
-                            reftbl, reftblsize, &refidx);
+                  add_host (name, is_pool, ai, srvs[i].port);
                 }
 
               xfree (srvs);
@@ -516,29 +550,12 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
                 continue;
               dirmngr_tick (ctrl);
 
-              add_host (name, is_pool, ai, 0, reftbl, reftblsize, &refidx);
+              add_host (name, is_pool, ai, 0);
             }
         }
-      reftbl[refidx] = -1;
       xfree (cname);
       free_dns_addrinfo (aibuf);
-
-      if (refidx && is_pool)
-        {
-          assert (!hi->pool);
-          hi->pool = xtryrealloc (reftbl, (refidx+1) * sizeof *reftbl);
-          if (!hi->pool)
-            {
-              err = gpg_error_from_syserror ();
-              log_error ("shrinking index table in map_host failed: %s\n",
-                         gpg_strerror (err));
-              xfree (reftbl);
-              return err;
-            }
-          qsort (hi->pool, refidx, sizeof *reftbl, sort_hostpool);
-        }
-      else
-        xfree (reftbl);
+      hostinfo_sort_pool (hi);
     }
 
   hi = hosttable[idx];
@@ -563,7 +580,7 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
       /* Select a host if needed.  */
       if (hi->poolidx == -1)
         {
-          hi->poolidx = select_random_host (hi->pool);
+          hi->poolidx = select_random_host (hi);
           if (hi->poolidx == -1)
             {
               log_error ("no alive host found in pool '%s'\n", name);
@@ -740,7 +757,9 @@ ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive)
   /* If the host is a pool mark all member hosts. */
   if (!err && hi->pool)
     {
-      for (idx2=0; !err && (n=hi->pool[idx2]) != -1; idx2++)
+      for (idx2 = 0;
+           !err && idx2 < hi->pool_len && (n = hi->pool[idx2]) != -1;
+           idx2++)
         {
           assert (n >= 0 && n < hosttable_size);
 
@@ -753,7 +772,7 @@ ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive)
                   if (hosttable[idx3]
                       && hosttable[idx3]->pool
                       && idx3 != idx
-                      && host_in_pool_p (hosttable[idx3]->pool, n))
+                      && host_in_pool_p (hosttable[idx3], n))
                     break;
                 }
               if (idx3 < hosttable_size)
@@ -903,7 +922,7 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
           {
             init_membuf (&mb, 256);
             put_membuf_printf (&mb, "  .   -->");
-            for (idx2=0; hi->pool[idx2] != -1; idx2++)
+            for (idx2 = 0; idx2 < hi->pool_len && hi->pool[idx2] != -1; idx2++)
               {
                 put_membuf_printf (&mb, " %d", hi->pool[idx2]);
                 if (hi->poolidx == hi->pool[idx2])
