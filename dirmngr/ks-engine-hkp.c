@@ -67,6 +67,8 @@
 /* Number of retries done for a dead host etc.  */
 #define SEND_REQUEST_RETRIES 3
 
+enum ks_protocol { KS_PROTOCOL_HKP, KS_PROTOCOL_HKPS, KS_PROTOCOL_MAX };
+
 /* Objects used to maintain information about hosts.  */
 struct hostinfo_s;
 typedef struct hostinfo_s *hostinfo_t;
@@ -86,12 +88,18 @@ struct hostinfo_s
   unsigned int dead:1; /* Host is currently unresponsive.  */
   unsigned int iporname_valid:1;  /* The field IPORNAME below is valid */
                                   /* (but may be NULL) */
+  unsigned int did_a_lookup:1;    /* Have we done an A lookup yet?  */
+  unsigned int did_srv_lookup:2;  /* One bit per protocol indicating
+                                     whether we already did a SRV
+                                     lookup.  */
   time_t died_at;    /* The time the host was marked dead.  If this is
                         0 the host has been manually marked dead.  */
   char *cname;       /* Canonical name of the host.  Only set if this
                         is a pool or NAME has a numerical IP address.  */
   char *iporname;    /* Numeric IP address or name for printing.  */
-  unsigned short port; /* The port used by the host, 0 if unknown.  */
+  unsigned short port[KS_PROTOCOL_MAX];
+                     /* The port used by the host for all protocols, 0
+                        if unknown.  */
   char name[1];      /* The hostname.  */
 };
 
@@ -129,11 +137,14 @@ create_new_hostinfo (const char *name)
   hi->v6 = 0;
   hi->onion = 0;
   hi->dead = 0;
+  hi->did_a_lookup = 0;
+  hi->did_srv_lookup = 0;
   hi->iporname_valid = 0;
   hi->died_at = 0;
   hi->cname = NULL;
   hi->iporname = NULL;
-  hi->port = 0;
+  hi->port[KS_PROTOCOL_HKP] = 0;
+  hi->port[KS_PROTOCOL_HKPS] = 0;
 
   /* Add it to the hosttable. */
   for (idx=0; idx < hosttable_size; idx++)
@@ -289,12 +300,13 @@ tor_not_running_p (ctrl_t ctrl)
 
 
 /* Add the host AI under the NAME into the HOSTTABLE.  If PORT is not
-   zero, it specifies which port to use to talk to the host.  If NAME
-   specifies a pool (as indicated by IS_POOL), update the given
-   reference table accordingly.  */
+   zero, it specifies which port to use to talk to the host for
+   PROTOCOL.  If NAME specifies a pool (as indicated by IS_POOL),
+   update the given reference table accordingly.  */
 static void
 add_host (const char *name, int is_pool,
-          const dns_addrinfo_t ai, unsigned short port)
+          const dns_addrinfo_t ai,
+          enum ks_protocol protocol, unsigned short port)
 {
   gpg_error_t tmperr;
   char *tmphost;
@@ -361,7 +373,7 @@ add_host (const char *name, int is_pool,
       else  /* Set or update the entry. */
         {
           if (port)
-            hosttable[tmpidx]->port = port;
+            hosttable[tmpidx]->port[protocol] = port;
 
           if (ai->family == AF_INET6)
             {
@@ -439,12 +451,16 @@ hostinfo_sort_pool (hostinfo_t hi)
  * pool.  */
 static gpg_error_t
 map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
-          char **r_host, char *r_portstr,
+          enum ks_protocol protocol, char **r_host, char *r_portstr,
           unsigned int *r_httpflags, char **r_httphost)
 {
   gpg_error_t err = 0;
   hostinfo_t hi;
   int idx;
+  dns_addrinfo_t aibuf, ai;
+  int is_pool;
+  int new_hosts = 0;
+  char *cname;
 
   *r_host = NULL;
   if (r_httpflags)
@@ -461,62 +477,62 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
 
   /* See whether the host is in our table.  */
   idx = find_hostinfo (name);
-  if (idx == -1 && is_onion_address (name))
+  if (idx == -1)
     {
       idx = create_new_hostinfo (name);
       if (idx == -1)
         return gpg_error_from_syserror ();
       hi = hosttable[idx];
-      hi->onion = 1;
+      hi->onion = is_onion_address (name);
     }
-  else if (idx == -1)
+  else
+    hi = hosttable[idx];
+
+  is_pool = hi->pool != NULL;
+
+  if (srvtag && !is_ip_address (name)
+      && ! hi->onion
+      && ! (hi->did_srv_lookup & 1 << protocol))
     {
-      /* We never saw this host.  Allocate a new entry.  */
-      dns_addrinfo_t aibuf, ai;
-      int is_pool = 0;
-      char *cname;
       struct srventry *srvs;
       unsigned int srvscount;
 
-      idx = create_new_hostinfo (name);
-      if (idx == -1)
+      /* Check for SRV records.  */
+      err = get_dns_srv (name, srvtag, NULL, &srvs, &srvscount);
+      if (err)
         {
-          err = gpg_error_from_syserror ();
+          if (gpg_err_code (err) == GPG_ERR_ECONNREFUSED)
+            tor_not_running_p (ctrl);
           return err;
         }
-      hi = hosttable[idx];
 
-      if (srvtag && !is_ip_address (name))
+      if (srvscount > 0)
         {
-          /* Check for SRV records.  */
-          err = get_dns_srv (name, srvtag, NULL, &srvs, &srvscount);
-          if (err)
+          int i;
+          if (! is_pool)
+            is_pool = srvscount > 1;
+
+          for (i = 0; i < srvscount; i++)
             {
-              if (gpg_err_code (err) == GPG_ERR_ECONNREFUSED)
-                tor_not_running_p (ctrl);
-              return err;
+              err = resolve_dns_name (srvs[i].target, 0,
+                                      AF_UNSPEC, SOCK_STREAM,
+                                      &ai, &cname);
+              if (err)
+                continue;
+              dirmngr_tick (ctrl);
+              add_host (name, is_pool, ai, protocol, srvs[i].port);
+              new_hosts = 1;
             }
 
-          if (srvscount > 0)
-            {
-              int i;
-              is_pool = srvscount > 1;
-
-              for (i = 0; i < srvscount; i++)
-                {
-                  err = resolve_dns_name (srvs[i].target, 0,
-                                          AF_UNSPEC, SOCK_STREAM,
-                                          &ai, &cname);
-                  if (err)
-                    continue;
-                  dirmngr_tick (ctrl);
-                  add_host (name, is_pool, ai, srvs[i].port);
-                }
-
-              xfree (srvs);
-            }
+          xfree (srvs);
         }
 
+      hi->did_srv_lookup |= 1 << protocol;
+    }
+
+  if (! hi->did_a_lookup
+      && ! hi->onion)
+    {
       /* Find all A records for this entry and put them into the pool
          list - if any.  */
       err = resolve_dns_name (name, 0, 0, SOCK_STREAM, &aibuf, &cname);
@@ -550,15 +566,18 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
                 continue;
               dirmngr_tick (ctrl);
 
-              add_host (name, is_pool, ai, 0);
+              add_host (name, is_pool, ai, 0, 0);
+              new_hosts = 1;
             }
+
+          hi->did_a_lookup = 1;
         }
       xfree (cname);
       free_dns_addrinfo (aibuf);
-      hostinfo_sort_pool (hi);
     }
+  if (new_hosts)
+    hostinfo_sort_pool (hi);
 
-  hi = hosttable[idx];
   if (hi->pool)
     {
       /* Deal with the pool name before selecting a host. */
@@ -603,7 +622,6 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
        * find the canonical name so that it can be used in the HTTP
        * Host header.  Fixme: We should store that name in the
        * hosttable. */
-      dns_addrinfo_t aibuf, ai;
       char *host;
 
       err = resolve_dns_name (hi->name, 0, 0, SOCK_STREAM, &aibuf, NULL);
@@ -667,9 +685,9 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
         }
       return err;
     }
-  if (hi->port)
+  if (hi->port[protocol])
     snprintf (r_portstr, 6 /* five digits and the sentinel */,
-              "%hu", hi->port);
+              "%hu", hi->port[protocol]);
   return 0;
 }
 
@@ -990,6 +1008,7 @@ make_host_part (ctrl_t ctrl,
   const char *srvtag;
   char portstr[10];
   char *hostname;
+  enum ks_protocol protocol;
 
   *r_hostport = NULL;
 
@@ -997,15 +1016,17 @@ make_host_part (ctrl_t ctrl,
     {
       scheme = "https";
       srvtag = no_srv? NULL : "pgpkey-https";
+      protocol = KS_PROTOCOL_HKPS;
     }
   else /* HKP or HTTP.  */
     {
       scheme = "http";
       srvtag = no_srv? NULL : "pgpkey-http";
+      protocol = KS_PROTOCOL_HKP;
     }
 
   portstr[0] = 0;
-  err = map_host (ctrl, host, srvtag, force_reselect,
+  err = map_host (ctrl, host, srvtag, force_reselect, protocol,
                   &hostname, portstr, r_httpflags, r_httphost);
   if (err)
     return err;
