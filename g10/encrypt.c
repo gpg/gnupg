@@ -630,10 +630,13 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
     for (pkr = pk_list; pkr; pkr = pkr->next)
       {
         PKT_public_key *pk = pkr->pk;
-        if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_ENCRYPTION, pk->pubkey_algo,
+
+        if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_ENCRYPTION,
+                                   pk->pubkey_algo,
                                    pk->pkey, nbits_from_pk (pk), NULL))
           {
-            log_error ("key %s not suitable for encryption while in %s mode\n",
+            log_error (_("key %s not suitable for encryption"
+                         " while in %s mode\n"),
                        keystr_from_pk (pk),
                        gnupg_compliance_option_string (opt.compliance));
             rc = gpg_error (GPG_ERR_PUBKEY_ALGO);

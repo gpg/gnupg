@@ -95,13 +95,14 @@ get_session_key (ctrl_t ctrl, PKT_pubkey_enc * k, DEK * dek)
                                      sk->pubkey_algo,
                                      sk->pkey, nbits_from_pk (sk), NULL))
             {
-              log_info ("key %s not suitable for decryption while in %s mode\n",
-                        keystr_from_pk (sk), gnupg_compliance_option_string (opt.compliance));
-              free_public_key (sk);
-              return gpg_error (GPG_ERR_PUBKEY_ALGO);
+              log_info (_("key %s not suitable for decryption"
+                          " while in %s mode\n"),
+                        keystr_from_pk (sk),
+                        gnupg_compliance_option_string (opt.compliance));
+              rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
             }
-
-          rc = get_it (ctrl, k, dek, sk, k->keyid);
+          else
+            rc = get_it (ctrl, k, dek, sk, k->keyid);
         }
     }
   else if (opt.skip_hidden_recipients)
@@ -135,8 +136,10 @@ get_session_key (ctrl_t ctrl, PKT_pubkey_enc * k, DEK * dek)
                                      sk->pubkey_algo,
                                      sk->pkey, nbits_from_pk (sk), NULL))
             {
-              log_info ("key %s not suitable for decryption while in %s mode\n",
-                        keystr_from_pk (sk), gnupg_compliance_option_string (opt.compliance));
+              log_info (_("key %s not suitable for decryption"
+                          " while in %s mode\n"),
+                          keystr_from_pk (sk),
+                          gnupg_compliance_option_string (opt.compliance));
               continue;
             }
 
@@ -153,7 +156,7 @@ get_session_key (ctrl_t ctrl, PKT_pubkey_enc * k, DEK * dek)
       enum_secret_keys (ctrl, &enum_context, NULL);  /* free context */
     }
 
-leave:
+ leave:
   free_public_key (sk);
   if (DBG_CLOCK)
     log_clock ("get_session_key leave");

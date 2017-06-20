@@ -481,7 +481,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                     int pk_algo = gpgsm_get_key_algo_info (cert, &nbits);
 
                     /* Check compliance.  */
-                    if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_DECRYPTION,
+                    if (! gnupg_pk_is_allowed (opt.compliance,
+                                               PK_USE_DECRYPTION,
                                                pk_algo, NULL, nbits, NULL))
                       {
                         log_error ("certificate ID 0x%08lX not suitable for "

@@ -292,7 +292,7 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
   if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pksk->pubkey_algo,
                              pksk->pkey, nbits_from_pk (pksk), NULL))
     {
-      log_error ("key %s not suitable for signing while in %s mode\n",
+      log_error (_("key %s not suitable for signing while in %s mode\n"),
                  keystr_from_pk (pksk),
                  gnupg_compliance_option_string (opt.compliance));
       err = gpg_error (GPG_ERR_PUBKEY_ALGO);

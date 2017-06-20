@@ -99,7 +99,8 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
     }
 
   /* Check compliance.  */
-  if (! gnupg_cipher_is_allowed (opt.compliance, 0, dek->algo, GCRY_CIPHER_MODE_CFB))
+  if (! gnupg_cipher_is_allowed (opt.compliance, 0, dek->algo,
+                                 GCRY_CIPHER_MODE_CFB))
     {
       log_error (_("you may not use cipher algorithm '%s'"
                    " while in %s mode\n"),
