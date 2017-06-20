@@ -5041,6 +5041,8 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
     err = agent_passwd (ctrl, hexgrip, desc, 1 /*=verify*/,
                         &cache_nonce, &passwd_nonce);
     xfree (desc);
+    if (err)
+      goto leave;
   }
 
   /* Start creation.  */
