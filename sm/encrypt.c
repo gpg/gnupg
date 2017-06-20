@@ -313,6 +313,7 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
   estream_t data_fp = NULL;
   certlist_t cl;
   int count;
+  int compliant;
 
   memset (&encparm, 0, sizeof encparm);
 
@@ -456,15 +457,19 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
 
   audit_log_s (ctrl->audit, AUDIT_SESSION_KEY, dek->algoid);
 
+  compliant = gnupg_cipher_is_compliant (CO_DE_VS, dek->algo,
+                                         GCRY_CIPHER_MODE_CBC);
+
   /* Gather certificates of recipients, encrypt the session key for
      each and store them in the CMS object */
   for (recpno = 0, cl = recplist; cl; recpno++, cl = cl->next)
     {
       unsigned char *encval;
+      unsigned int nbits;
+      int pk_algo;
 
       /* Check compliance.  */
-      unsigned int nbits;
-      int pk_algo = gpgsm_get_key_algo_info (cl->cert, &nbits);
+      pk_algo = gpgsm_get_key_algo_info (cl->cert, &nbits);
       if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_ENCRYPTION, pk_algo,
                                  NULL, nbits, NULL))
         {
@@ -475,6 +480,12 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
           rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
           goto leave;
         }
+
+      /* Fixme: When adding ECC we need to provide the curvename and
+       * the key to gnupg_pk_is_compliant.  */
+      if (compliant
+          && !gnupg_pk_is_compliant (CO_DE_VS, pk_algo, NULL, nbits, NULL))
+        compliant = 0;
 
       rc = encrypt_dek (dek, cl->cert, &encval);
       if (rc)
@@ -507,6 +518,10 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
           goto leave;
         }
     }
+
+  if (compliant)
+    gpgsm_status (ctrl, STATUS_ENCRYPTION_COMPLIANCE_MODE,
+                  gnupg_status_compliance_flag (CO_DE_VS));
 
   /* Main control loop for encryption. */
   recpno = 0;

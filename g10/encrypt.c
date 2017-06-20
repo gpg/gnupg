@@ -486,6 +486,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   progress_filter_context_t *pfx;
   PK_LIST pk_list;
   int do_compress;
+  int compliant;
 
   if (filefd != -1 && filename)
     return gpg_error (GPG_ERR_INV_ARG);  /* Both given.  */
@@ -625,15 +626,19 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
       goto leave;
     }
 
+  compliant = gnupg_cipher_is_compliant (CO_DE_VS, cfx.dek->algo,
+                                         GCRY_CIPHER_MODE_CFB);
+
   {
     pk_list_t pkr;
+
     for (pkr = pk_list; pkr; pkr = pkr->next)
       {
         PKT_public_key *pk = pkr->pk;
+        unsigned int nbits = nbits_from_pk (pk);
 
         if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_ENCRYPTION,
-                                   pk->pubkey_algo,
-                                   pk->pkey, nbits_from_pk (pk), NULL))
+                                   pk->pubkey_algo, pk->pkey, nbits, NULL))
           {
             log_error (_("key %s not suitable for encryption"
                          " while in %s mode\n"),
@@ -642,8 +647,19 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
             rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
             goto leave;
           }
+
+        if (compliant
+            && !gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, pk->pkey,
+                                       nbits, NULL))
+          compliant = 0;
       }
+
   }
+
+  if (compliant)
+    write_status_strings (STATUS_ENCRYPTION_COMPLIANCE_MODE,
+                          gnupg_status_compliance_flag (CO_DE_VS),
+                          NULL);
 
   cfx.dek->use_mdc = use_mdc (pk_list,cfx.dek->algo);
 
@@ -965,7 +981,8 @@ write_pubkey_enc_from_list (ctrl_t ctrl, PK_LIST pk_list, DEK *dek, iobuf_t out)
   if (opt.throw_keyids && (PGP6 || PGP7 || PGP8))
     {
       log_info(_("you may not use %s while in %s mode\n"),
-               "--throw-keyids", gnupg_compliance_option_string (opt.compliance));
+               "--throw-keyids",
+               gnupg_compliance_option_string (opt.compliance));
       compliance_failure();
     }
 
