@@ -255,7 +255,7 @@ arecords_is_pool (dns_addrinfo_t aibuf)
 }
 
 
-/* Print a warninng iff Tor is not running but Tor has been requested.
+/* Print a warning iff Tor is not running but Tor has been requested.
  * Also return true if it is not running.  */
 static int
 tor_not_running_p (ctrl_t ctrl)
