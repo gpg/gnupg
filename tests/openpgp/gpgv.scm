@@ -1,6 +1,6 @@
 #!/usr/bin/env gpgscm
 
-;; Copyright (C) 2016 g10 Code GmbH
+;; Copyright (C) 2016-2017 g10 Code GmbH
 ;;
 ;; This file is part of GnuPG.
 ;;
@@ -21,6 +21,8 @@
 (load (in-srcdir "tests" "openpgp" "signed-messages.scm"))
 (setup-legacy-environment)
 
+(define keyring (if (file-exists? "pubring.kbx") "pubring.kbx" "pubring.gpg"))
+
 ;;
 ;; Two simple tests to check that verify fails for bad input data
 ;;
@@ -33,7 +35,7 @@
       (lambda (port)
 	(display (make-string 64 (integer->char (string->number char)))
 		 port)))
-     (if (= 0 (call `(,@GPG --verify ,x data-500)))
+     (if (= 0 (call `(,@gpgv --keyring ,keyring ,x data-500)))
 	 (fail "no error code from verify"))))
  '("#x2d" "#xca"))
 
@@ -47,22 +49,8 @@
  (lambda (armored-file)
    (pipe:do
     (pipe:echo (eval armored-file (current-environment)))
-    (pipe:spawn `(,@GPG --verify))))
+    (pipe:spawn `(,@gpgv --keyring ,keyring))))
  '(msg_ols_asc msg_cols_asc msg_sl_asc msg_oolss_asc msg_cls_asc msg_clss_asc))
-
-(for-each-p
- "Checking that a valid signature over multiple messages is verified as such"
- (lambda (armored-file)
-   (pipe:do
-    (pipe:echo (eval armored-file (current-environment)))
-    (pipe:spawn `(,@GPG --verify --allow-multiple-messages)))
-   (catch '()
-	  (pipe:do
-	   (pipe:defer (lambda (sink)
-			 (display armored-file (fdopen sink "w"))))
-	   (pipe:spawn `(,@GPG --verify)))
-	  (fail "verification succeeded but should not")))
- '(msg_olsols_asc_multiple msg_clsclss_asc_multiple))
 
 (for-each-p
  "Checking that an invalid signature is verified as such"
@@ -70,18 +58,18 @@
    (catch '()
 	  (pipe:do
 	   (pipe:echo (eval armored-file (current-environment)))
-	   (pipe:spawn `(,@GPG --verify)))
+	   (pipe:spawn `(,@gpgv --keyring ,keyring)))
 	  (fail "verification succeeded but should not")))
  '(bad_ls_asc bad_fols_asc bad_olsf_asc bad_ools_asc))
 
 
-;;; Need to import the ed25519 sample key used for
-;;; the next two tests.
-(call-check `(,@GPG --quiet --yes --import ,(in-srcdir "tests" "openpgp" key-file2)))
+;; Need to import the ed25519 sample key used for the next two tests.
+(call-check `(,@gpg --quiet --yes
+		    --import ,(in-srcdir "tests" "openpgp" key-file2)))
 (for-each-p
  "Checking that a valid Ed25519 signature is verified as such"
  (lambda (armored-file)
    (pipe:do
     (pipe:echo (eval armored-file (current-environment)))
-    (pipe:spawn `(,@GPG --verify))))
+    (pipe:spawn `(,@gpgv --keyring ,keyring))))
  '(msg_ed25519_rshort msg_ed25519_sshort))
