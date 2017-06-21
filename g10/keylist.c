@@ -376,7 +376,7 @@ show_keyserver_url (PKT_signature * sig, int indent, int mode)
 	  if (mode > 0)
 	    log_info ("%s", str);
 	  else
-	    tty_fprintf (es_stdout, "%s", str);
+	    tty_fprintf (fp, "%s", str);
 	  tty_print_utf8_string2 (fp, p, len, 0);
 	  tty_fprintf (fp, "\n");
 	}
@@ -429,7 +429,7 @@ show_notation (PKT_signature * sig, int indent, int mode, int which)
 	      if (mode > 0)
 		log_info ("%s", str);
 	      else
-		tty_fprintf (es_stdout, "%s", str);
+		tty_fprintf (fp, "%s", str);
 	      /* This is all UTF8 */
 	      tty_print_utf8_string2 (fp, nd->name, strlen (nd->name), 0);
 	      tty_fprintf (fp, "=");
