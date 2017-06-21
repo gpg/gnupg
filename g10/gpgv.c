@@ -270,6 +270,7 @@ main( int argc, char **argv )
   if ((rc = verify_signatures (ctrl, argc, argv)))
     log_error("verify signatures failed: %s\n", gpg_strerror (rc) );
 
+  keydb_release (ctrl->cached_getkey_kdb);
   xfree (ctrl);
 
   /* cleanup */
