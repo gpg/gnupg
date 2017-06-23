@@ -1125,6 +1125,43 @@ w32_get_user_sid (void)
 
 /* Support for inotify under Linux.  */
 
+/* Store a new inotify file handle for FNAME at R_FD or return an
+ * error code.  This file descriptor watch the removal of FNAME. */
+gpg_error_t
+gnupg_inotify_watch_delete_self (int *r_fd, const char *fname)
+{
+#if HAVE_INOTIFY_INIT
+  gpg_error_t err;
+  int fd;
+
+  *r_fd = -1;
+
+  if (!fname)
+    return my_error (GPG_ERR_INV_VALUE);
+
+  fd = inotify_init ();
+  if (fd == -1)
+    return my_error_from_syserror ();
+
+  if (inotify_add_watch (fd, fname, IN_DELETE_SELF) == -1)
+    {
+      err = my_error_from_syserror ();
+      close (fd);
+      return err;
+    }
+
+  *r_fd = fd;
+  return 0;
+#else /*!HAVE_INOTIFY_INIT*/
+
+  (void)fname;
+  *r_fd = -1;
+  return my_error (GPG_ERR_NOT_SUPPORTED);
+
+#endif /*!HAVE_INOTIFY_INIT*/
+}
+
+
 /* Store a new inotify file handle for SOCKET_NAME at R_FD or return
  * an error code. */
 gpg_error_t

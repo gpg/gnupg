@@ -2750,7 +2750,8 @@ handle_connections (gnupg_fd_t listen_fd,
   HANDLE events[2];
   unsigned int events_set;
 #endif
-  int my_inotify_fd = -1;
+  int sock_inotify_fd = -1;
+  int home_inotify_fd = -1;
   struct {
     const char *name;
     void *(*func) (void *arg);
@@ -2789,11 +2790,21 @@ handle_connections (gnupg_fd_t listen_fd,
 #endif
 
   if (disable_check_own_socket)
-    my_inotify_fd = -1;
-  else if ((err = gnupg_inotify_watch_socket (&my_inotify_fd, socket_name)))
+    sock_inotify_fd = -1;
+  else if ((err = gnupg_inotify_watch_socket (&sock_inotify_fd, socket_name)))
     {
       if (gpg_err_code (err) != GPG_ERR_NOT_SUPPORTED)
-        log_info ("error enabling fast daemon termination: %s\n",
+        log_info ("error enabling daemon termination by socket removal: %s\n",
+                  gpg_strerror (err));
+    }
+
+  if (disable_check_own_socket)
+    home_inotify_fd = -1;
+  else if ((err = gnupg_inotify_watch_delete_self (&home_inotify_fd,
+                                                   gnupg_homedir ())))
+    {
+      if (gpg_err_code (err) != GPG_ERR_NOT_SUPPORTED)
+        log_info ("error enabling daemon termination bu homedir removal: %s\n",
                   gpg_strerror (err));
     }
 
@@ -2838,11 +2849,17 @@ handle_connections (gnupg_fd_t listen_fd,
       if (FD2INT (listen_fd_ssh) > nfd)
         nfd = FD2INT (listen_fd_ssh);
     }
-  if (my_inotify_fd != -1)
+  if (sock_inotify_fd != -1)
     {
-      FD_SET (my_inotify_fd, &fdset);
-      if (my_inotify_fd > nfd)
-        nfd = my_inotify_fd;
+      FD_SET (sock_inotify_fd, &fdset);
+      if (sock_inotify_fd > nfd)
+        nfd = sock_inotify_fd;
+    }
+  if (home_inotify_fd != -1)
+    {
+      FD_SET (home_inotify_fd, &fdset);
+      if (home_inotify_fd > nfd)
+        nfd = home_inotify_fd;
     }
 
   listentbl[0].l_fd = listen_fd;
@@ -2870,10 +2887,16 @@ handle_connections (gnupg_fd_t listen_fd,
            * intention of a shutdown. */
           FD_ZERO (&fdset);
           nfd = -1;
-          if (my_inotify_fd != -1)
+          if (sock_inotify_fd != -1)
             {
-              FD_SET (my_inotify_fd, &fdset);
-              nfd = my_inotify_fd;
+              FD_SET (sock_inotify_fd, &fdset);
+              nfd = sock_inotify_fd;
+            }
+          if (home_inotify_fd != -1)
+            {
+              FD_SET (home_inotify_fd, &fdset);
+              if (home_inotify_fd > nfd)
+                nfd = home_inotify_fd;
             }
 	}
 
@@ -2929,12 +2952,19 @@ handle_connections (gnupg_fd_t listen_fd,
           ctrl_t ctrl;
           npth_t thread;
 
-          if (my_inotify_fd != -1
-              && FD_ISSET (my_inotify_fd, &read_fdset)
-              && gnupg_inotify_has_name (my_inotify_fd, GPG_AGENT_SOCK_NAME))
+          if (sock_inotify_fd != -1
+              && FD_ISSET (sock_inotify_fd, &read_fdset)
+              && gnupg_inotify_has_name (sock_inotify_fd, GPG_AGENT_SOCK_NAME))
             {
               shutdown_pending = 1;
               log_info ("socket file has been removed - shutting down\n");
+            }
+
+          if (home_inotify_fd != -1
+              && FD_ISSET (home_inotify_fd, &read_fdset))
+            {
+              shutdown_pending = 1;
+              log_info ("homedir has been removed - shutting down\n");
             }
 
           for (idx=0; idx < DIM(listentbl); idx++)
@@ -2982,8 +3012,10 @@ handle_connections (gnupg_fd_t listen_fd,
         }
     }
 
-  if (my_inotify_fd != -1)
-    close (my_inotify_fd);
+  if (sock_inotify_fd != -1)
+    close (sock_inotify_fd);
+  if (home_inotify_fd != -1)
+    close (home_inotify_fd);
   cleanup ();
   log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
   npth_attr_destroy (&tattr);
