@@ -44,8 +44,8 @@
 (call-check `(,@GPG --yes --import ,(:file key)))
 
 (let* ((result (call-check `(,@GPG --export-ssh-key ,(:fpr key))))
-       ;; XXX: We should split at any whitespace here.
-       (parts (string-split (string-trim char-whitespace? result) #\space)))
+       (parts (string-splitp (string-trim char-whitespace? result)
+			     char-whitespace? -1)))
   (assert (string=? (car parts) (:kind key)))
   ;; XXX: We should not use a short keyid as the comment when
   ;; exporting an ssh key.
