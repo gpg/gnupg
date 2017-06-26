@@ -2980,6 +2980,7 @@ ssh_key_extract_comment (gcry_sexp_t key, char **r_comment)
 
 /* This function converts the key contained in the S-Expression KEY
    into a buffer, which is protected by the passphrase PASSPHRASE.
+   If PASSPHRASE is the empty passphrase, the key is not protected.
    Returns usual error code.  */
 static gpg_error_t
 ssh_key_to_protected_buffer (gcry_sexp_t key, const char *passphrase,
@@ -3000,7 +3001,17 @@ ssh_key_to_protected_buffer (gcry_sexp_t key, const char *passphrase,
   gcry_sexp_sprint (key, GCRYSEXP_FMT_CANON, buffer_new, buffer_new_n);
   /* FIXME: guarantee?  */
 
-  err = agent_protect (buffer_new, passphrase, buffer, buffer_n, 0, -1);
+  if (*passphrase)
+    err = agent_protect (buffer_new, passphrase, buffer, buffer_n, 0, -1);
+  else
+    {
+      /* The key derivation function does not support zero length
+       * strings.  Store key unprotected if the user wishes so.  */
+      *buffer = buffer_new;
+      *buffer_n = buffer_new_n;
+      buffer_new = NULL;
+      err = 0;
+    }
 
  out:
 
