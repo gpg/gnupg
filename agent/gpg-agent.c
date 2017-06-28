@@ -164,7 +164,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oDebug,	     "debug",       "@"),
   ARGPARSE_s_n (oDebugAll,   "debug-all",   "@"),
   ARGPARSE_s_s (oDebugLevel, "debug-level", "@"),
-  ARGPARSE_s_i (oDebugWait,"  debug-wait",  "@"),
+  ARGPARSE_s_i (oDebugWait,  "debug-wait",  "@"),
   ARGPARSE_s_n (oDebugQuickRandom, "debug-quick-random", "@"),
   ARGPARSE_s_n (oDebugPinentry, "debug-pinentry", "@"),
 
