@@ -365,10 +365,7 @@ default value is @file{@value{BINDIR}/dirmngr}.
 
 @item --prefer-system-dirmngr
 @opindex prefer-system-dirmngr
-If a system wide @command{dirmngr} is running in daemon mode, first try
-to connect to this one.  Fallback to a pipe based server if this does
-not work.  Under Windows this option is ignored because the system dirmngr is
-always used.
+This option is obsolete and ignored.
 
 @item --disable-dirmngr
 Entirely disable the use of the Dirmngr.
