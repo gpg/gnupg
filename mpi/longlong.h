@@ -189,7 +189,7 @@ extern UDItype __udiv_qrnnd ();
 	   : "%r" ((USItype)(ah)),                                      \
 	     "rI" ((USItype)(bh)),                                      \
 	     "%r" ((USItype)(al)),                                      \
-	     "rI" ((USItype)(bl)))
+	     "rI" ((USItype)(bl)) __CLOBBER_CC)
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   __asm__ ("subs %1, %4, %5\n"                                          \
 	   "sbc  %0, %2, %3"                                            \
@@ -198,7 +198,7 @@ extern UDItype __udiv_qrnnd ();
 	   : "r" ((USItype)(ah)),                                       \
 	     "rI" ((USItype)(bh)),                                      \
 	     "r" ((USItype)(al)),                                       \
-	     "rI" ((USItype)(bl)))
+	     "rI" ((USItype)(bl)) __CLOBBER_CC)
 #if defined __ARM_ARCH_2__ || defined __ARM_ARCH_3__
 #define umul_ppmm(xh, xl, a, b) \
   __asm__ ("%@ Inlined umul_ppmm\n"                                     \
@@ -218,7 +218,7 @@ extern UDItype __udiv_qrnnd ();
 	     "=r" ((USItype)(xl))                                       \
 	   : "r" ((USItype)(a)),                                        \
 	     "r" ((USItype)(b))                                         \
-	   : "r0", "r1", "r2")
+	   : "r0", "r1", "r2" __AND_CLOBBER_CC)
 #else
 #define umul_ppmm(xh, xl, a, b)                                         \
   __asm__ ("%@ Inlined umul_ppmm\n"                                     \
