@@ -1224,7 +1224,7 @@ do not want to feed data via STDIN, you should connect STDIN to
 g@file{/dev/null}.
 
 It is highly recommended to use this option along with the options
-@option{--status-fd} and @option{--with-colons} for any unattended of
+@option{--status-fd} and @option{--with-colons} for any unattended use of
 @command{gpg}.
 
 @item --no-tty
