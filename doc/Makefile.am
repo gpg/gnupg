@@ -146,12 +146,12 @@ yat2m-stamp: $(myman_sources) defs.inc
 	@touch yat2m-stamp.tmp
 	incd="`test -f defsincdate || echo '$(srcdir)/'`defsincdate"; \
 	for file in $(myman_sources) ; do \
-              ./yat2m $(YAT2M_OPTIONS) --store \
+              $(YAT2M) $(YAT2M_OPTIONS) --store \
                   --date "`cat $$incd 2>/dev/null`" \
 	          `test -f '$$file' || echo '$(srcdir)/'`$$file ; done
 	@mv -f yat2m-stamp.tmp $@
 
-yat2m-stamp: yat2m
+yat2m-stamp: $(YAT2M)
 
 $(myman_pages) gnupg.7 : yat2m-stamp defs.inc
 	@if test -f $@; then :; else \
