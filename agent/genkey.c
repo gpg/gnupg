@@ -357,10 +357,10 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
   if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK)
     {
 	size_t size;
-	size_t len = 100;
 	unsigned char *buffer;
 
-	err = pinentry_loopback(ctrl, "NEW_PASSPHRASE", &buffer, &size, len);
+	err = pinentry_loopback (ctrl, "NEW_PASSPHRASE", &buffer, &size,
+                                 MAX_PASSPHRASE_LEN);
 	if (!err)
 	  {
 	    if (size)

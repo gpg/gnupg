@@ -964,8 +964,8 @@ agent_askpin (ctrl_t ctrl,
 	  size_t size;
 
 	  *pininfo->pin = 0; /* Reset the PIN. */
-	  rc = pinentry_loopback(ctrl, "PASSPHRASE", &passphrase, &size,
-		  pininfo->max_length - 1);
+	  rc = pinentry_loopback (ctrl, "PASSPHRASE", &passphrase, &size,
+                                  pininfo->max_length - 1);
 	  if (rc)
 	    return rc;
 
@@ -1192,10 +1192,10 @@ agent_get_passphrase (ctrl_t ctrl,
       if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK)
         {
 	  size_t size;
-	  size_t len = ASSUAN_LINELENGTH/2;
 
 	  return pinentry_loopback (ctrl, "PASSPHRASE",
-				    (unsigned char **)retpass, &size, len);
+				    (unsigned char **)retpass, &size,
+                                    MAX_PASSPHRASE_LEN);
         }
       return gpg_error (GPG_ERR_NO_PIN_ENTRY);
     }
