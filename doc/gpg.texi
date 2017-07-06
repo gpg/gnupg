@@ -3865,7 +3865,7 @@ follows:
   @item Text only, line length is limited to about 1000 characters.
   @item UTF-8 encoding must be used to specify non-ASCII characters.
   @item Empty lines are ignored.
-  @item Leading and trailing while space is ignored.
+  @item Leading and trailing white space is ignored.
   @item A hash sign as the first non white space character indicates
   a comment line.
   @item Control statements are indicated by a leading percent sign, the
