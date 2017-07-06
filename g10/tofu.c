@@ -42,7 +42,6 @@
 #include "../common/mkdir_p.h"
 #include "gpgsql.h"
 #include "../common/status.h"
-#include "sqrtu32.h"
 
 #include "tofu.h"
 
@@ -2922,19 +2921,18 @@ write_stats_status (estream_t fp,
 {
   int summary;
   int validity;
-  unsigned long days;
+  unsigned long days_sq;
 
   /* Use the euclidean distance (m = sqrt(a^2 + b^2)) rather then the
      sum of the magnitudes (m = a + b) to ensure a balance between
      verified signatures and encrypted messages.  */
-  days = sqrtu32 (signature_days * signature_days
-                  + encryption_days * encryption_days);
+  days_sq = signature_days * signature_days + encryption_days * encryption_days;
 
-  if (days < 1)
+  if (days_sq < 1)
     validity = 1; /* Key without history.  */
-  else if (days < 2 * BASIC_TRUST_THRESHOLD)
+  else if (days_sq < (2 * BASIC_TRUST_THRESHOLD) * (2 * BASIC_TRUST_THRESHOLD))
     validity = 2; /* Key with too little history.  */
-  else if (days < 2 * FULL_TRUST_THRESHOLD)
+  else if (days_sq < (2 * FULL_TRUST_THRESHOLD) * (2 * FULL_TRUST_THRESHOLD))
     validity = 3; /* Key with enough history for basic trust.  */
   else
     validity = 4; /* Key with a lot of history.  */
@@ -3232,9 +3230,9 @@ show_statistics (tofu_dbs_t dbs,
                         " one message to this key!\n"));
 
           /* Cf. write_stats_status  */
-          if (sqrtu32 (encryption_count * encryption_count
-                       + signature_count * signature_count)
-              < 2 * BASIC_TRUST_THRESHOLD)
+          if ((encryption_count * encryption_count
+	       + signature_count * signature_count)
+	      < ((2 * BASIC_TRUST_THRESHOLD) * (2 * BASIC_TRUST_THRESHOLD)))
             show_warning = 1;
         }
     }
