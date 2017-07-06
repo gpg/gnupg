@@ -1633,10 +1633,14 @@ Set what trust model GnuPG should follow. The models are:
   @opindex trust-model:tofu
   @anchor{trust-model-tofu}
   TOFU stands for Trust On First Use.  In this trust model, the first
-  time a key is seen, it is memorized.  If later another key is seen
-  with a user id with the same email address, a warning is displayed
-  indicating that there is a conflict and that the key might be a
-  forgery and an attempt at a man-in-the-middle attack.
+  time a key is seen, it is memorized.  If later another key with a
+  user id with the same email address is seen, both keys are marked as
+  suspect.  In that case, the next time either is used, a warning is
+  displayed describing the conflict, why it might have occured
+  (either the user generated a new key and failed to cross sign the
+  old and new keys, the key is forgery, or a man-in-the-middle attack
+  is being attempted), and the user is prompted to manually confirm
+  the validity of the key in question.
 
   Because a potential attacker is able to control the email address
   and thereby circumvent the conflict detection algorithm by using an
