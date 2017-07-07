@@ -387,6 +387,9 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
   size = 2 * msize;
   msign = mod->sign;
 
+  ep = expo->d;
+  MPN_NORMALIZE(ep, esize);
+
   if (esize * BITS_PER_MPI_LIMB > 512)
     W = 5;
   else if (esize * BITS_PER_MPI_LIMB > 256)
@@ -403,10 +406,9 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
   bsec = mpi_is_secure(base);
 
   rp = res->d;
-  ep = expo->d;
 
   if (!msize)
-     msize = 1 / msize;	    /* provoke a signal */
+    msize = 1 / msize;	    /* provoke a signal */
 
   if (!esize)
     {
@@ -463,7 +465,8 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
     }
 
 
-  /* Make BASE, EXPO and MOD not overlap with RES.  */
+  /* Make BASE, EXPO not overlap with RES.  We don't need to check MOD
+     because that has already been copied to the MP var.  */
   if ( rp == bp )
     {
       /* RES and BASE are identical.  Allocate temp. space for BASE.  */
@@ -476,13 +479,6 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
       /* RES and EXPO are identical.  Allocate temp. space for EXPO.  */
       ep = ep_marker = mpi_alloc_limb_space( esize, esec );
       MPN_COPY(ep, rp, esize);
-    }
-  if ( rp == mp )
-    {
-      /* RES and MOD are identical.  Allocate temporary space for MOD.*/
-      assert (!mp_marker);
-      mp = mp_marker = mpi_alloc_limb_space( msize, msec );
-      MPN_COPY(mp, rp, msize);
     }
 
   /* Copy base to the result.  */
@@ -529,7 +525,10 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
         MPN_COPY (precomp[i], rp, rsize);
       }
 
+    if (msize > max_u_size)
+      max_u_size = msize;
     base_u = mpi_alloc_limb_space (max_u_size, esec);
+    MPN_ZERO (base_u, max_u_size);
 
     i = esize - 1;
 
@@ -574,6 +573,10 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
         {
           int c0;
           mpi_limb_t e0;
+          struct gcry_mpi w, u;
+          w.sign = u.sign = 0;
+          w.flags = u.flags = 0;
+          w.d = base_u;
 
           count_leading_zeros (c0, e);
           e = (e << c0);
@@ -582,7 +585,7 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
 
           e0 = (e >> (BITS_PER_MPI_LIMB - W));
           if (c >= W)
-            c0 =0;
+            c0 = 0;
           else
             {
               if ( --i < 0 )
@@ -597,7 +600,7 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
                   e = ep[i];
                   c = BITS_PER_MPI_LIMB;
                   e0 |= (e >> (BITS_PER_MPI_LIMB - (W - c0)));
-               }
+		}
             }
 
           e = e << (W - c0);
@@ -607,30 +610,31 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
           count_trailing_zeros (c0, e0);
           e0 = (e0 >> c0) >> 1;
 
-          /*
-           *  base_u <= precomp[e0]
-           *  base_u_size <= precomp_size[e0];
-           */
-          base_u_size = 0;
-          for (k = 0; k < (1<< (W - 1)); k++)
-            {
-              struct gcry_mpi w, u;
-              w.alloced = w.nlimbs = precomp_size[k];
-              u.alloced = u.nlimbs = precomp_size[k];
-              w.nbits = w.nlimbs * BITS_PER_MPI_LIMB;
-              u.nbits = u.nlimbs * BITS_PER_MPI_LIMB;
-              w.sign = u.sign = 0;
-              w.flags = u.flags = 0;
-              w.d = base_u;
-              u.d = precomp[k];
-
-              mpi_set_cond (&w, &u, k == e0);
-              base_u_size |= ( precomp_size[k] & ((mpi_size_t)0 - (k == e0)) );
-            }
           for (j += W - c0; j >= 0; j--)
             {
-              mul_mod (xp, &xsize, rp, rsize,
-                       j == 0 ? base_u : rp, j == 0 ? base_u_size : rsize,
+
+              /*
+               *  base_u <= precomp[e0]
+               *  base_u_size <= precomp_size[e0]
+               */
+              base_u_size = 0;
+              for (k = 0; k < (1<< (W - 1)); k++)
+                {
+                  w.alloced = w.nlimbs = precomp_size[k];
+                  u.alloced = u.nlimbs = precomp_size[k];
+                  u.d = precomp[k];
+
+                  mpi_set_cond (&w, &u, k == e0);
+                  base_u_size |= ( precomp_size[k] & (0UL - (k == e0)) );
+                }
+
+              w.alloced = w.nlimbs = rsize;
+              u.alloced = u.nlimbs = rsize;
+              u.d = rp;
+              mpi_set_cond (&w, &u, j != 0);
+              base_u_size ^= ((base_u_size ^ rsize)  & (0UL - (j != 0)));
+
+              mul_mod (xp, &xsize, rp, rsize, base_u, base_u_size,
                        mp, msize, &karactx);
               tp = rp; rp = xp; xp = tp;
               rsize = xsize;
