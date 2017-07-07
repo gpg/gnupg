@@ -564,12 +564,8 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
       if (e == 0)
         {
           j += c;
-          i--;
-          if ( i < 0 )
-            {
-              c = 0;
-              break;
-            }
+          if ( --i < 0 )
+            break;
 
           e = ep[i];
           c = BITS_PER_MPI_LIMB;
@@ -584,37 +580,32 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
           c -= c0;
           j += c0;
 
+          e0 = (e >> (BITS_PER_MPI_LIMB - W));
           if (c >= W)
-            {
-              e0 = (e >> (BITS_PER_MPI_LIMB - W));
-              e = (e << W);
-              c -= W;
-            }
+            c0 =0;
           else
             {
-              i--;
-              if ( i < 0 )
+              if ( --i < 0 )
                 {
-                  e = (e >> (BITS_PER_MPI_LIMB - c));
-                  break;
+                  e0 = (e >> (BITS_PER_MPI_LIMB - c));
+                  j += c - W;
+                  goto last_step;
                 }
-
-              c0 = c;
-              e0 = (e >> (BITS_PER_MPI_LIMB - W))
-                | (ep[i] >> (BITS_PER_MPI_LIMB - W + c0));
-              e = (ep[i] << (W - c0));
-              c = BITS_PER_MPI_LIMB - W + c0;
+              else
+                {
+                  c0 = c;
+                  e = ep[i];
+                  c = BITS_PER_MPI_LIMB;
+                  e0 |= (e >> (BITS_PER_MPI_LIMB - (W - c0)));
+               }
             }
 
+          e = e << (W - c0);
+          c -= (W - c0);
+
+        last_step:
           count_trailing_zeros (c0, e0);
           e0 = (e0 >> c0) >> 1;
-
-          for (j += W - c0; j; j--)
-            {
-              mul_mod (xp, &xsize, rp, rsize, rp, rsize, mp, msize, &karactx);
-              tp = rp; rp = xp; xp = tp;
-              rsize = xsize;
-            }
 
           /*
            *  base_u <= precomp[e0]
@@ -634,61 +625,27 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
               u.d = precomp[k];
 
               mpi_set_cond (&w, &u, k == e0);
-              base_u_size |= (precomp_size[k] & ((mpi_size_t)0 - (k == e0)) );
+              base_u_size |= ( precomp_size[k] & ((mpi_size_t)0 - (k == e0)) );
             }
-          mul_mod (xp, &xsize, rp, rsize, base_u, base_u_size,
-                   mp, msize, &karactx);
-          tp = rp; rp = xp; xp = tp;
-          rsize = xsize;
+          for (j += W - c0; j >= 0; j--)
+            {
+              mul_mod (xp, &xsize, rp, rsize,
+                       j == 0 ? base_u : rp, j == 0 ? base_u_size : rsize,
+                       mp, msize, &karactx);
+              tp = rp; rp = xp; xp = tp;
+              rsize = xsize;
+            }
 
           j = c0;
+          if ( i < 0 )
+            break;
         }
-
-    if (c != 0)
-      {
-        j += c;
-        count_trailing_zeros (c, e);
-        e = (e >> c);
-        j -= c;
-      }
 
     while (j--)
       {
         mul_mod (xp, &xsize, rp, rsize, rp, rsize, mp, msize, &karactx);
         tp = rp; rp = xp; xp = tp;
         rsize = xsize;
-      }
-
-    if (e != 0)
-      {
-        base_u_size = 0;
-        for (k = 0; k < (1<< (W - 1)); k++)
-          {
-            struct gcry_mpi w, u;
-            w.alloced = w.nlimbs = precomp_size[k];
-            u.alloced = u.nlimbs = precomp_size[k];
-            w.nbits = w.nlimbs * BITS_PER_MPI_LIMB;
-            u.nbits = u.nlimbs * BITS_PER_MPI_LIMB;
-            w.sign = u.sign = 0;
-            w.flags = u.flags = 0;
-            w.d = base_u;
-            u.d = precomp[k];
-
-            mpi_set_cond (&w, &u, k == (e>>1));
-            base_u_size |= (precomp_size[k] & ((mpi_size_t)0 - (k == (e>>1))) );
-          }
-
-        mul_mod (xp, &xsize, rp, rsize, base_u, base_u_size,
-                 mp, msize, &karactx);
-        tp = rp; rp = xp; xp = tp;
-        rsize = xsize;
-
-        for (; c; c--)
-          {
-            mul_mod (xp, &xsize, rp, rsize, rp, rsize, mp, msize, &karactx);
-            tp = rp; rp = xp; xp = tp;
-            rsize = xsize;
-          }
       }
 
     /* We shifted MOD, the modulo reduction argument, left
