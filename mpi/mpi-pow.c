@@ -162,7 +162,7 @@ mpi_powm( MPI res, MPI base, MPI exponent, MPI mod)
 
     {
 	mpi_size_t i;
-	mpi_ptr_t xp = xp_marker = mpi_alloc_limb_space( 2 * (msize + 1), msec );
+	mpi_ptr_t xp = xp_marker = mpi_alloc_limb_space( size, msec );
 	int c;
 	mpi_limb_t e;
 	mpi_limb_t carry_limb;
@@ -499,7 +499,7 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
     struct karatsuba_ctx karactx;
     mpi_ptr_t tp;
 
-    xp = xp_marker = mpi_alloc_limb_space( 2 * (msize + 1), msec );
+    xp = xp_marker = mpi_alloc_limb_space( size, msec );
 
     memset( &karactx, 0, sizeof karactx );
     negative_result = (ep[0] & 1) && bsign;
