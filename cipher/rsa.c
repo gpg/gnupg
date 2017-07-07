@@ -29,7 +29,7 @@
 #include <string.h>
 #include "util.h"
 #include "mpi.h"
-#include "../mpi/mpi-internal.h"
+#include "mpi-internal.h"
 #include "cipher.h"
 #include "rsa.h"
 

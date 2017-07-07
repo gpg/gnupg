@@ -17,7 +17,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 ## Process this file with automake to produce Makefile.in
 
-AM_CPPFLAGS = -I.. -I$(top_srcdir)/include -I$(top_srcdir)/intl
+AM_CPPFLAGS = -I.. -I$(top_srcdir)/include -I$(top_srcdir)/intl -I$(top_srcdir)/mpi -I../mpi
 
 if ! HAVE_DOSISH_SYSTEM
 AM_CPPFLAGS += -DGNUPG_LIBDIR="\"$(libdir)/@PACKAGE@\""
