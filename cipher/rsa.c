@@ -341,9 +341,14 @@ secret(MPI output, MPI input, RSA_secret_key *skey )
     mpi_set_highbit (rr, rr_nbits - 1);
     mpi_sub_ui( h, skey->p, 1  );
     mpi_mul ( D_blind, h, rr );
+    mpi_free ( rr );
     mpi_fdiv_r( h, skey->d, h );
     mpi_add ( D_blind, D_blind, h );
+    mpi_free ( h );
     mpi_powm ( m1, input, D_blind, skey->p );
+
+    h = mpi_alloc_secure (nlimbs);
+    rr = mpi_alloc_secure ( (rr_nbits + BITS_PER_MPI_LIMB-1)/BITS_PER_MPI_LIMB );
 
     /* d_blind = (d mod (q-1)) + (q-1) * r            */
     /* m2 = c ^ d_blind mod q */
@@ -351,12 +356,14 @@ secret(MPI output, MPI input, RSA_secret_key *skey )
     mpi_set_highbit (rr, rr_nbits - 1);
     mpi_sub_ui( h, skey->q, 1  );
     mpi_mul ( D_blind, h, rr );
+    mpi_free ( rr );
     mpi_fdiv_r( h, skey->d, h );
     mpi_add ( D_blind, D_blind, h );
+    mpi_free ( h );
     mpi_powm ( m2, input, D_blind, skey->q );
 
-    mpi_free ( rr );
     mpi_free ( D_blind );
+    h = mpi_alloc_secure (nlimbs);
 
     /* h = u * ( m2 - m1 ) mod q */
     mpi_sub( h, m2, m1 );
