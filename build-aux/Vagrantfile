@@ -1,0 +1,36 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# This Vagrantfile installs all build dependencies for speedo and runs it to compile all of gnupg.
+
+$script = <<SCRIPT
+echo I am provisioning...
+export DEBIAN_FRONTEND noninteractive
+apt-get update -q -q
+apt-get install --yes rsync build-essential git gpg automake autoconf gettext libtool
+apt-get install --yes libz-dev libbz2-dev libldap2-dev libsqlite3-dev libgnutls28-dev libcurl4-gnutls-dev libreadline-dev librsvg2-bin libusb-1.0-0-dev
+apt-get install --yes texinfo transfig fig2dev imagemagick file ghostscript swig doxygen graphviz
+apt-get install --yes pkg-config autopoint python-all-dev python3-all-dev qtbase5-dev
+(cd /tmp; rsync -rvazp /vagrant .)
+(cd /tmp/vagrant; autoreconf -f -i)
+(cd /tmp/vagrant/build-aux; make -f speedo.mk native INSTALL_PREFIX=/tmp/install SELFCHECK=0)
+(cd /tmp/vagrant/build-aux/PLAY/build/gnupg; make check-all)
+SCRIPT
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "debian/stretch64"
+
+  # Use .. for mount.  Also, Force NFS vers=3 (instead vers=4) for Debian 8.
+  config.vm.synced_folder "..", "/vagrant", :mount_options => ['nolock,vers=3,tcp,noatime']
+
+  config.vm.provider "libvirt" do |libvirt|
+    libvirt.nested = true
+    libvirt.cpus = 1
+    libvirt.cpu_mode = "host-model"
+    libvirt.memory = 1024
+    libvirt.storage :file, :path => 'vms.qcow2', :size => '1G'
+  end
+
+  config.vm.provision "shell", inline: $script
+
+end
