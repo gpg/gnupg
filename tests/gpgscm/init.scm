@@ -605,12 +605,12 @@
 ;; This is used by the vm to throw exceptions.
 (define (throw' message args history)
   (cond
-   ((more-handlers?)
-    ((pop-handler) message args history))
    ((and args (list? args) (= 2 (length args))
 	 (equal? *interpreter-exit* (car args)))
     (*run-atexit-handlers*)
     (quit (cadr args)))
+   ((more-handlers?)
+    ((pop-handler) message args history))
    (else
     (display message)
     (when (and args (not (null? args)))
