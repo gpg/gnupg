@@ -1160,6 +1160,8 @@ useful for unattended machines, where the usual @command{pinentry} tool
 may not be used and the passphrases for the to be used keys are given at
 machine startup.
 
+This program works with GnuPG 2 and later.  GnuPG 1.x is not supported.
+
 Passphrases set with this utility don't expire unless the
 @option{--forget} option is used to explicitly clear them from the
 cache --- or @command{gpg-agent} is either restarted or reloaded (by
