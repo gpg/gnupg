@@ -4508,7 +4508,8 @@ main (int argc, char **argv)
       case aFastImport:
         opt.import_options |= IMPORT_FAST; /* fall through */
       case aImport:
-	import_keys (ctrl, argc? argv:NULL, argc, NULL, opt.import_options);
+	import_keys (ctrl, argc? argv:NULL, argc, NULL,
+                     opt.import_options, opt.key_origin);
 	break;
 
 	/* TODO: There are a number of command that use this same
@@ -4596,7 +4597,7 @@ main (int argc, char **argv)
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	    append_to_strlist2( &sl, *argv, utf8_strings );
-	rc = keyserver_fetch (ctrl, sl);
+	rc = keyserver_fetch (ctrl, sl, opt.key_origin);
 	if(rc)
           {
             write_status_failure ("fetch-keys", rc);

@@ -818,7 +818,7 @@ fetch_url (ctrl_t ctrl)
           strlist_t sl = NULL;
 
           add_to_strlist (&sl, info.pubkey_url);
-          rc = keyserver_fetch (ctrl, sl);
+          rc = keyserver_fetch (ctrl, sl, KEYORG_URL);
           free_strlist (sl);
         }
       else if (info.fpr1valid)

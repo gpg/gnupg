@@ -1746,7 +1746,8 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
                              r_fpr, r_fprlen,
                              (opt.keyserver_options.import_options
                               | IMPORT_NO_SECKEY),
-                             keyserver_retrieval_screener, &screenerarg);
+                             keyserver_retrieval_screener, &screenerarg,
+                             0 /* FIXME? */);
     }
   es_fclose (datastream);
   xfree (source);
@@ -1852,7 +1853,7 @@ keyserver_put (ctrl_t ctrl, strlist_t keyspecs)
    that the fetch operation ignores the configured keyservers and
    instead directly retrieves the keys.  */
 int
-keyserver_fetch (ctrl_t ctrl, strlist_t urilist)
+keyserver_fetch (ctrl_t ctrl, strlist_t urilist, int origin)
 {
   gpg_error_t err;
   strlist_t sl;
@@ -1877,7 +1878,7 @@ keyserver_fetch (ctrl_t ctrl, strlist_t urilist)
           stats_handle = import_new_stats_handle();
           import_keys_es_stream (ctrl, datastream, stats_handle, NULL, NULL,
                                  opt.keyserver_options.import_options,
-                                 NULL, NULL);
+                                 NULL, NULL, origin);
 
           import_print_stats (stats_handle);
           import_release_stats_handle (stats_handle);
@@ -1932,7 +1933,7 @@ keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
       err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
                                    (opt.keyserver_options.import_options
                                     | IMPORT_NO_SECKEY),
-                                   NULL, NULL);
+                                   NULL, NULL, KEYORG_DANE);
 
       opt.no_armor=armor_status;
 
@@ -2055,7 +2056,7 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name, int quick,
           if (!err)
             err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
                                          IMPORT_NO_SECKEY,
-                                         NULL, NULL);
+                                         NULL, NULL, KEYORG_WKD);
 
         }
 
