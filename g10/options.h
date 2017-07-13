@@ -263,6 +263,9 @@ struct
     struct akl *next;
   } *auto_key_locate;
 
+  /* The value of --key-origin.  See parse_key_origin().  */
+  int key_origin;
+
   int passphrase_repeat;
   int pinentry_mode;
 

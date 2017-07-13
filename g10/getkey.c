@@ -4294,6 +4294,41 @@ parse_auto_key_locate (char *options)
 }
 
 
+/* Parse the argument for --key-origin.  Return false on error. */
+int
+parse_key_origin (char *string)
+{
+  struct { const char *name; int origin; } list[] = {
+    { "self",    KEYORG_SELF    },
+    { "file",    KEYORG_FILE    },
+    { "url",     KEYORG_URL     },
+    { "wkd",     KEYORG_WKD     },
+    { "dane",    KEYORG_DANE    },
+    { "ks-pref", KEYORG_KS_PREF },
+    { "ks",      KEYORG_KS      },
+    { "unknown", KEYORG_UNKNOWN }
+  };
+  int i;
+
+  if (!ascii_strcasecmp (string, "help"))
+    {
+      log_info (_("valid values for option '%s':\n"), "--key-origin");
+      for (i=0; i < DIM (list); i++)
+        log_info ("  %s\n", list[i].name);
+      g10_exit (1);
+    }
+
+  for (i=0; i < DIM (list); i++)
+    if (!ascii_strcasecmp (string, list[i].name))
+      {
+        opt.key_origin = list[i].origin;
+        return 1;
+      }
+
+  return 0;
+}
+
+
 /* Returns true if a secret key is available for the public key with
    key id KEYID; returns false if not.  This function ignores legacy
    keys.  Note: this is just a fast check and does not tell us whether

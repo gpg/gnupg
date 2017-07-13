@@ -379,6 +379,7 @@ ks_status_cb (void *opaque, const char *line)
 
   if ((s = has_leading_keyword (line, parm->keyword? parm->keyword : "SOURCE")))
     {
+      /* Note that the arg for "S SOURCE" is the URL of a keyserver.  */
       if (!parm->source)
         {
           parm->source = xtrystrdup (s);

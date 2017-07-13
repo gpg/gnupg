@@ -2942,7 +2942,7 @@ parse_ring_trust (parse_packet_ctx_t ctx, unsigned long pktlen)
       int i;
       unsigned int namelen;
 
-      rt.keysrc = iobuf_get_noeof (inp);
+      rt.keyorg = iobuf_get_noeof (inp);
       pktlen--;
       rt.keyupdate = read_32 (inp);
       pktlen -= 4;
@@ -2974,7 +2974,7 @@ parse_ring_trust (parse_packet_ctx_t ctx, unsigned long pktlen)
           es_fprintf (listfp, ":trust packet: %s upd=%lu src=%d%s",
                       (rt.subtype == RING_TRUST_UID? "uid" : "key"),
                       (unsigned long)rt.keyupdate,
-                      rt.keysrc,
+                      rt.keyorg,
                       (rt.url? " url=":""));
           if (rt.url)
             {
@@ -3016,7 +3016,7 @@ parse_ring_trust (parse_packet_ctx_t ctx, unsigned long pktlen)
     {
       PKT_user_id *uid = ctx->last_pkt.pkt.user_id;
 
-      uid->keysrc = rt.keysrc;
+      uid->keyorg = rt.keyorg;
       uid->keyupdate = rt.keyupdate;
       uid->updateurl = rt.url;
       rt.url = NULL;
@@ -3027,7 +3027,7 @@ parse_ring_trust (parse_packet_ctx_t ctx, unsigned long pktlen)
     {
       PKT_public_key *pk = ctx->last_pkt.pkt.public_key;
 
-      pk->keysrc = rt.keysrc;
+      pk->keyorg = rt.keyorg;
       pk->keyupdate = rt.keyupdate;
       pk->updateurl = rt.url;
       rt.url = NULL;

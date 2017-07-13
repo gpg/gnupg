@@ -419,6 +419,7 @@ enum cmd_and_opt_values
     oOnlySignTextIDs,
     oDisableSignerUID,
     oSender,
+    oKeyOrigin,
 
     oNoop
   };
@@ -615,6 +616,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_s (oKeyServer, "keyserver", "@"),
   ARGPARSE_s_s (oKeyServerOptions, "keyserver-options", "@"),
+  ARGPARSE_s_s (oKeyOrigin, "key-origin", "@"),
   ARGPARSE_s_s (oImportOptions, "import-options", "@"),
   ARGPARSE_s_s (oImportFilter,  "import-filter", "@"),
   ARGPARSE_s_s (oExportOptions, "export-options", "@"),
@@ -2845,10 +2847,10 @@ main (int argc, char **argv)
 
           case oCompliance:
 	    {
-	      int compliance = gnupg_parse_compliance_option (pargs.r.ret_str,
-							      compliance_options,
-							      DIM (compliance_options),
-							      opt.quiet);
+	      int compliance = gnupg_parse_compliance_option
+                (pargs.r.ret_str,
+                 compliance_options, DIM (compliance_options),
+                 opt.quiet);
 	      if (compliance < 0)
 		g10_exit (1);
 	      set_compliance_option (compliance);
@@ -3460,6 +3462,12 @@ main (int argc, char **argv)
 	    break;
 	  case oNoAutoKeyLocate:
 	    release_akl();
+	    break;
+
+	  case oKeyOrigin:
+	    if(!parse_key_origin (pargs.r.ret_str))
+              log_error (_("invalid argument for option \"%.50s\"\n"),
+                         "--key-origin");
 	    break;
 
 	  case oEnableLargeRSA:

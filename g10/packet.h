@@ -285,7 +285,7 @@ typedef struct
   u32 created;          /* according to the self-signature */
   u32 keyupdate;        /* From the ring trust packet.  */
   char *updateurl;      /* NULL or the URL of the last update origin.  */
-  byte keysrc;          /* From the ring trust packet.  */
+  byte keyorg;          /* From the ring trust packet.  */
   byte selfsigversion;
   struct
   {
@@ -407,7 +407,7 @@ typedef struct
   u32     trust_timestamp;
   byte    trust_depth;
   byte    trust_value;
-  byte    keysrc;         /* From the ring trust packet.  */
+  byte    keyorg;         /* From the ring trust packet.  */
   u32     keyupdate;      /* From the ring trust packet.  */
   char    *updateurl;     /* NULL or the URL of the last update origin.  */
   const byte *trust_regexp;
@@ -498,7 +498,7 @@ typedef struct {
   unsigned int trustval;
   unsigned int sigcache;
   unsigned char subtype; /* The subtype of this ring trust packet.   */
-  unsigned char keysrc;  /* The origin of the key (KEYSRC_*).        */
+  unsigned char keyorg;  /* The origin of the key (KEYSRC_*).        */
   u32 keyupdate;         /* The wall time the key was last updated.  */
   char *url;             /* NULL or the URL of the source.           */
 } PKT_ring_trust;

@@ -119,13 +119,14 @@ union pref_hint
 /* Constants to describe from where a key was fetched or updated.  */
 enum
   {
-    KEYSRC_UNKNOWN = 0,
-    KEYSRC_FILE    = 1, /* Direct import from a file.  */
-    KEYSRC_KS      = 2, /* Public keyserver.    */
-    KEYSRC_PREF_KS = 3, /* Preferred keysrver.  */
-    KEYSRC_WKD     = 4, /* Web Key Directory.   */
-    KEYSRC_WKD_SD  = 5, /* Web Key Directory but from a sub domain.  */
-    KEYSRC_DANE    = 6  /* OpenPGP DANE.  */
+    KEYORG_UNKNOWN = 0,
+    KEYORG_KS      = 1, /* Public keyserver.    */
+    KEYORG_KS_PREF = 2, /* Preferred keysrver.  */
+    KEYORG_DANE    = 3, /* OpenPGP DANE.        */
+    KEYORG_WKD     = 4, /* Web Key Directory.   */
+    KEYORG_URL     = 5, /* Trusted URL.         */
+    KEYORG_FILE    = 6, /* Trusted file.        */
+    KEYORG_SELF    = 7, /* We generated it.     */
   };
 
 
@@ -396,6 +397,7 @@ char *get_user_id_byfpr_native (ctrl_t ctrl, const byte *fpr);
 
 void release_akl(void);
 int parse_auto_key_locate(char *options);
+int parse_key_origin (char *string);
 
 /*-- keyid.c --*/
 int pubkey_letter( int algo );

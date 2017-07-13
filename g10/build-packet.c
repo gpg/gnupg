@@ -213,7 +213,7 @@ build_packet_and_meta (iobuf_t out, PACKET *pkt)
       PKT_user_id *uid = pkt->pkt.user_id;
 
       rt.subtype = RING_TRUST_UID;
-      rt.keysrc = uid->keysrc;
+      rt.keyorg = uid->keyorg;
       rt.keyupdate = uid->keyupdate;
       rt.url = uid->updateurl;
       err = do_ring_trust (out, &rt);
@@ -225,7 +225,7 @@ build_packet_and_meta (iobuf_t out, PACKET *pkt)
       PKT_public_key *pk = pkt->pkt.public_key;
 
       rt.subtype = RING_TRUST_KEY;
-      rt.keysrc = pk->keysrc;
+      rt.keyorg = pk->keyorg;
       rt.keyupdate = pk->keyupdate;
       rt.url = pk->updateurl;
       err = do_ring_trust (out, &rt);
@@ -395,7 +395,7 @@ do_ring_trust (iobuf_t out, PKT_ring_trust *rt)
   iobuf_put (out, rt->subtype);
   if (rt->subtype == RING_TRUST_KEY || rt->subtype == RING_TRUST_UID)
     {
-      iobuf_put (out, rt->keysrc);
+      iobuf_put (out, rt->keyorg);
       write_32 (out, rt->keyupdate);
       iobuf_put (out, namelen);
       if (namelen)

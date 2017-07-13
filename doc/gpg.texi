@@ -2254,6 +2254,13 @@ hint to optimize its buffer allocation strategy.  It is also used by
 the @option{--status-fd} line ``PROGRESS'' to provide a value for
 ``total'' if that is not available by other means.
 
+@item --key-origin @var{string}
+@opindex key-origin
+gpg can track the origin of a key. Certain origins are implicitly
+known (e.g. keyserver, web key directory) and set.  For a standard
+import the origin of the keys imported can be set with this optionb.
+To list the possible values use "help" for @var{string}.
+
 @item --import-options @code{parameters}
 @opindex import-options
 This is a space or comma delimited string that gives options for
