@@ -182,7 +182,7 @@ load (scheme *sc, char *file_name,
                  "of the Scheme library.\n");
       goto leave;
     }
-  if (verbose > 1)
+  if (verbose > 2)
     fprintf (stderr, "Loading %s...\n", qualified_name);
 
 #if HAVE_MMAP
