@@ -1627,9 +1627,12 @@ import_one (ctrl_t ctrl,
       if ( !(options & IMPORT_RESTORE) )
         {
           rc = apply_meta_data (keyblock, 0, origin);
-          log_error ("apply_meta_data failed: %s\n", gpg_strerror (rc));
-          keydb_release (hd);
-          return GPG_ERR_GENERAL;
+          if (rc)
+            {
+              log_error ("apply_meta_data failed: %s\n", gpg_strerror (rc));
+              keydb_release (hd);
+              return GPG_ERR_GENERAL;
+            }
         }
 
       rc = keydb_insert_keyblock (hd, keyblock );
