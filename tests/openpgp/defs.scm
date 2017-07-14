@@ -316,6 +316,7 @@
      (display (make-random-string size) port))))
 
 (define (create-file name . lines)
+  (catch #f (unlink name))
   (letfd ((fd (open name (logior O_WRONLY O_CREAT O_BINARY) #o600)))
     (let ((port (fdopen fd "wb")))
       (for-each (lambda (line) (display line port) (newline port))

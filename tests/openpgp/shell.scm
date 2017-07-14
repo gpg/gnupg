@@ -18,7 +18,6 @@
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 (load (in-srcdir "tests" "openpgp" "defs.scm"))
-(setup-environment)
 
 ;; This is not a test, but can be used to inspect the test
 ;; environment.  Simply execute
@@ -27,7 +26,28 @@
 ;;
 ;; to run it.
 
-(echo "Note that gpg.conf includes 'batch'.  If you want to use gpg")
-(echo "interactively you should drop that.")
-(echo)
+(if (prompt-yes-no? "Load legacy test environment" #t)
+    (setup-legacy-environment)
+    (setup-environment))
+
+(if (prompt-yes-no? "Drop 'batch' from gpg.conf" #t)
+    (apply create-file
+	   (cons "gpg.conf"
+		 (filter (lambda (line) (not (equal? "batch" line)))
+			 (string-split-newlines
+			  (call-with-input-file "gpg.conf" read-all)))))
+    (begin
+      (echo "Note that gpg.conf includes 'batch'.  If you want to use gpg")
+      (echo "interactively you should drop that.")))
+
+;; Add paths to tools to PATH.
+(setenv "PATH" (pathsep-join
+		(append (map (lambda (t) (dirname (tool t)))
+			     '(gpg gpg-agent scdaemon gpgsm dirmngr gpgconf))
+			(pathsep-split (getenv "PATH"))))
+	#t)
+
+(echo "\nEnjoy your test environment. "
+      "Type 'exit' to exit it, it will be cleaned up after you.\n")
+
 (interactive-shell)
