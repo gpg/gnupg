@@ -838,6 +838,8 @@
 	  (let ((tarball (make-temporary-file "environment-cache")))
 	    (atexit (lambda () (remove-temporary-file tarball)))
 	    (setup::run-sync '--create-tarball tarball)
+	    (if (not (equal? 'PASS (setup::status)))
+		(fail "Setup failed."))
 	    `(--unpack-tarball ,tarball)))))
 
 ;; Command line flag handling.  Returns the elements following KEY in
