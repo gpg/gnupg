@@ -55,3 +55,15 @@
 (define (interactive-repl . environment)
   (repl (lambda (p) (prompt-append-prefix "gpgscm " p))
 	(if (null? environment) (interaction-environment) (car environment))))
+
+;; Ask a yes/no question.
+(define (prompt-yes-no? question default)
+  (let ((answer (prompt (string-append question "? ["
+				       (if default "Y/n" "y/N") "] "))))
+    (cond
+     ((= 0 (string-length answer))
+      default)
+     ((or (equal? "y" answer) (equal? "Y" answer))
+      #t)
+     (else
+      #f))))

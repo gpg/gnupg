@@ -192,6 +192,16 @@
 (define (in-srcdir . names)
   (canonical-path (apply path-join (cons (getenv "abs_top_srcdir") names))))
 
+;; Split a list of paths.
+(define (pathsep-split s)
+  (string-split s *pathsep*))
+
+;; Join a list of paths.
+(define (pathsep-join paths)
+  (foldr (lambda (a b) (string-append a (string *pathsep*) b))
+	 (car paths)
+	 (cdr paths)))
+
 ;; Try to find NAME in PATHS.  Returns the full path name on success,
 ;; or raises an error.
 (define (path-expand name paths)
@@ -209,7 +219,7 @@
 ;;   (load (with-path "library.scm"))
 (define (with-path name)
   (catch name
-	 (path-expand name (string-split (getenv "GPGSCM_PATH") *pathsep*))))
+	 (path-expand name (pathsep-split (getenv "GPGSCM_PATH")))))
 
 (define (basename path)
   (let ((i (string-index path #\/)))
