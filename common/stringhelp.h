@@ -151,6 +151,10 @@ char **strtokenize (const char *string, const char *delim);
  * provided ARRAY.  */
 int split_fields (char *string, char **array, int arraysize);
 
+/* Split STRING into colon delimited fields and store them in the
+ * provided ARRAY.  */
+int split_fields_colon (char *string, char **array, int arraysize);
+
 /* Return True if MYVERSION is greater or equal than REQ_VERSION.  */
 int compare_version_strings (const char *my_version, const char *req_version);
 
