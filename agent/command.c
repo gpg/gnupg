@@ -2852,6 +2852,7 @@ static const char hlp_getinfo[] =
   "  cmd_has_option\n"
   "              - Returns OK if the command CMD implements the option OPT.\n"
   "  connections - Return number of active connections.\n"
+  "  jent_active - Returns OK if Libgcrypt's JENT is active.\n"
   "  restricted  - Returns OK if the connection is in restricted mode.\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
@@ -2991,6 +2992,24 @@ cmd_getinfo (assuan_context_t ctx, char *line)
       snprintf (numbuf, sizeof numbuf, "%d",
                 get_agent_active_connection_count ());
       rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+    }
+  else if (!strcmp (line, "jent_active"))
+    {
+#if GCRYPT_VERSION_NUMBER >= 0x010800
+      char *buf;
+      char *fields[5];
+
+      buf = gcry_get_config (0, "rng-type");
+      if (buf
+          && split_fields_colon (buf, fields, DIM (fields)) >= 5
+          && atoi (fields[4]) > 0)
+        rc = 0;
+      else
+        rc = gpg_error (GPG_ERR_FALSE);
+      gcry_free (buf);
+#else
+      rc = gpg_error (GPG_ERR_FALSE);
+#endif
     }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
