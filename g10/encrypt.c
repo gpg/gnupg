@@ -185,6 +185,16 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   progress_filter_context_t *pfx;
   int do_compress = !!default_compress_algo();
 
+  if (!gnupg_rng_is_compliant (opt.compliance))
+    {
+      rc = gpg_error (GPG_ERR_FORBIDDEN);
+      log_error (_("%s is not compliant with %s mode\n"),
+                 "RNG",
+                 gnupg_compliance_option_string (opt.compliance));
+      write_status_error ("random-compliance", rc);
+      return rc;
+    }
+
   pfx = new_progress_context ();
   memset( &cfx, 0, sizeof cfx);
   memset( &zfx, 0, sizeof zfx);
@@ -623,6 +633,16 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
 		 openpgp_cipher_algo_name (cfx.dek->algo),
 		 gnupg_compliance_option_string (opt.compliance));
       rc = gpg_error (GPG_ERR_CIPHER_ALGO);
+      goto leave;
+    }
+
+  if (!gnupg_rng_is_compliant (opt.compliance))
+    {
+      rc = gpg_error (GPG_ERR_FORBIDDEN);
+      log_error (_("%s is not compliant with %s mode\n"),
+                 "RNG",
+                 gnupg_compliance_option_string (opt.compliance));
+      write_status_error ("random-compliance", rc);
       goto leave;
     }
 

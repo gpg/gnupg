@@ -171,6 +171,25 @@ start_agent (ctrl_t ctrl)
                            str_pinentry_mode (opt.pinentry_mode),
                            gpg_strerror (rc));
             }
+
+          /* In DE_VS mode under Windows we require that the JENT RNG
+           * is active.  */
+#ifdef HAVE_W32_SYSTEM
+          if (!rc && opt.compliance == CO_DE_VS)
+            {
+              if (assuan_transact (agent_ctx, "GETINFO jent_active",
+                                   NULL, NULL, NULL, NULL, NULL, NULL))
+                {
+                  rc = gpg_error (GPG_ERR_FORBIDDEN);
+                  log_error (_("%s is not compliant with %s mode\n"),
+                             GPG_AGENT_NAME,
+                             gnupg_compliance_option_string (opt.compliance));
+                  gpgsm_status_with_error (ctrl, STATUS_ERROR,
+                                           "random-compliance", rc);
+                }
+            }
+#endif /*HAVE_W32_SYSTEM*/
+
         }
     }
 

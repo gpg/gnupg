@@ -299,6 +299,16 @@ do_sign (ctrl_t ctrl, PKT_public_key *pksk, PKT_signature *sig,
       goto leave;
     }
 
+  if (!gnupg_rng_is_compliant (opt.compliance))
+    {
+      err = gpg_error (GPG_ERR_FORBIDDEN);
+      log_error (_("%s is not compliant with %s mode\n"),
+                 "RNG",
+                 gnupg_compliance_option_string (opt.compliance));
+      write_status_error ("random-compliance", err);
+      goto leave;
+    }
+
   print_digest_algo_note (mdalgo);
   dp = gcry_md_read  (md, mdalgo);
   sig->digest_algo = mdalgo;

@@ -466,6 +466,46 @@ gnupg_digest_is_allowed (enum gnupg_compliance_mode compliance, int producer,
 }
 
 
+/* Return True if the random number generator is compliant in
+ * COMPLIANCE mode.  */
+int
+gnupg_rng_is_compliant (enum gnupg_compliance_mode compliance)
+{
+  static int result = -1;
+
+  if (result != -1)
+    ; /* Use cached result.  */
+  else if (compliance == CO_DE_VS)
+    {
+      /* In DE_VS mode under Windows we require that the JENT RNG
+       * is active.  */
+#ifdef HAVE_W32_SYSTEM
+# if GCRYPT_VERSION_NUMBER >= 0x010800
+      char *buf;
+      char *fields[5];
+
+      buf = gcry_get_config (0, "rng-type");
+      if (buf
+          && split_fields_colon (buf, fields, DIM (fields)) >= 5
+          && atoi (fields[4]) > 0)
+        result = 1;
+      else
+        result = 0;
+      gcry_free (buf);
+# else
+      result = 0;  /* No JENT - can't be compliant.  */
+# endif
+#else /*!HAVE_W32_SYSTEM*/
+      result = 1;  /* Not Windows - RNG is good.  */
+#endif /*!HAVE_W32_SYSTEM*/
+    }
+  else
+    result = 1;
+
+  return result;
+}
+
+
 const char *
 gnupg_status_compliance_flag (enum gnupg_compliance_mode compliance)
 {

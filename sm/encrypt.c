@@ -420,6 +420,17 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
       goto leave;
     }
 
+  if (!gnupg_rng_is_compliant (opt.compliance))
+    {
+      rc = gpg_error (GPG_ERR_FORBIDDEN);
+      log_error (_("%s is not compliant with %s mode\n"),
+                 "RNG",
+                 gnupg_compliance_option_string (opt.compliance));
+      gpgsm_status_with_error (ctrl, STATUS_ERROR,
+                               "random-compliance", rc);
+      goto leave;
+    }
+
   /* Create a session key */
   dek = xtrycalloc_secure (1, sizeof *dek);
   if (!dek)

@@ -339,6 +339,17 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       goto leave;
     }
 
+  if (!gnupg_rng_is_compliant (opt.compliance))
+    {
+      rc = gpg_error (GPG_ERR_FORBIDDEN);
+      log_error (_("%s is not compliant with %s mode\n"),
+                 "RNG",
+                 gnupg_compliance_option_string (opt.compliance));
+      gpgsm_status_with_error (ctrl, STATUS_ERROR,
+                               "random-compliance", rc);
+      goto leave;
+    }
+
   ctrl->pem_name = "SIGNED MESSAGE";
   rc = gnupg_ksba_create_writer
     (&b64writer, ((ctrl->create_pem? GNUPG_KSBA_IO_PEM : 0)
