@@ -1756,9 +1756,10 @@ send_request (http_t hd, const char *httphost, const char *auth,
 
       if (err)
         ;
-      else if (!strcmp (uri->scheme, "http") || !strcmp (uri->scheme, "socks4"))
+      else if (!strcmp (uri->scheme, "http"))
         ;
-      else if (!strcmp (uri->scheme, "socks5h"))
+      else if (!strcmp (uri->scheme, "socks4")
+               || !strcmp (uri->scheme, "socks5h"))
         err = gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
       else
         err = gpg_err_make (default_errsource, GPG_ERR_INV_URI);
