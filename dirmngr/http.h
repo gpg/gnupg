@@ -47,6 +47,7 @@ typedef struct uri_tuple_s *uri_tuple_t;
 struct parsed_uri_s
 {
   /* All these pointers point into BUFFER; most stuff is not escaped. */
+  char *original;       /* Unmodified copy of the parsed URI.  */
   char *scheme;	        /* Pointer to the scheme string (always lowercase). */
   unsigned int is_http:1; /* This is a HTTP style URI.   */
   unsigned int use_tls:1; /* Whether TLS should be used. */

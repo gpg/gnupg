@@ -1219,10 +1219,12 @@ parse_uri (parsed_uri_t *ret_uri, const char *uri,
 {
   gpg_err_code_t ec;
 
-  *ret_uri = xtrycalloc (1, sizeof **ret_uri + strlen (uri));
+  *ret_uri = xtrycalloc (1, sizeof **ret_uri + 2 * strlen (uri) + 1);
   if (!*ret_uri)
     return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
   strcpy ((*ret_uri)->buffer, uri);
+  strcpy ((*ret_uri)->buffer + strlen (uri) + 1, uri);
+  (*ret_uri)->original = (*ret_uri)->buffer + strlen (uri) + 1;
   ec = do_parse_uri (*ret_uri, 0, no_scheme_check, force_tls);
   if (ec)
     {
