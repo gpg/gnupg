@@ -918,6 +918,41 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
   char *s, *s2;
   int i;
 
+  /* Fill in missing standard options: help, version, warranty and dump-options.  */
+  ARGPARSE_OPTS help_opt = ARGPARSE_s_n(ARGPARSE_SHORTOPT_HELP, "help", "@");
+  ARGPARSE_OPTS version_opt = ARGPARSE_s_n(ARGPARSE_SHORTOPT_VERSION, "version", "@");
+  ARGPARSE_OPTS warranty_opt = ARGPARSE_s_n(ARGPARSE_SHORTOPT_WARRANTY, "warranty", "@");
+  ARGPARSE_OPTS dump_options_opt = ARGPARSE_s_n(ARGPARSE_SHORTOPT_DUMP_OPTIONS, "dump-options", "@");
+  int seen_help = 0;
+  int seen_version = 0;
+  int seen_warranty = 0;
+  int seen_dump_options = 0;
+
+  i = 0;
+  while (opts[i].short_opt)
+    {
+      if (opts[i].long_opt)
+	{
+	  if (!strcmp(opts[i].long_opt, help_opt.long_opt))
+	    seen_help = 1;
+	  else if (!strcmp(opts[i].long_opt, version_opt.long_opt))
+	    seen_version = 1;
+	  else if (!strcmp(opts[i].long_opt, warranty_opt.long_opt))
+	    seen_warranty = 1;
+	  else if (!strcmp(opts[i].long_opt, dump_options_opt.long_opt))
+	    seen_dump_options = 1;
+	}
+      i++;
+    }
+  if (! seen_help)
+    opts[i++] = help_opt;
+  if (! seen_version)
+    opts[i++] = version_opt;
+  if (! seen_warranty)
+    opts[i++] = warranty_opt;
+  if (! seen_dump_options)
+    opts[i++] = dump_options_opt;
+
   initialize( arg, NULL, NULL );
   argc = *arg->argc;
   argv = *arg->argv;
@@ -974,9 +1009,9 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
       if ( argpos )
         *argpos = '=';
 
-      if ( i < 0 && !strcmp ( "help", s+2) )
+      if (i > 0 && opts[i].short_opt == ARGPARSE_SHORTOPT_HELP)
         show_help (opts, arg->flags);
-      else if ( i < 0 && !strcmp ( "version", s+2) )
+      else if (i > 0 && opts[i].short_opt == ARGPARSE_SHORTOPT_VERSION)
         {
           if (!(arg->flags & ARGPARSE_FLAG_NOVERSION))
             {
@@ -984,20 +1019,18 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
               exit(0);
             }
 	}
-      else if ( i < 0 && !strcmp( "warranty", s+2))
+      else if (i > 0 && opts[i].short_opt == ARGPARSE_SHORTOPT_WARRANTY)
         {
           writestrings (0, strusage (16), "\n", NULL);
           exit (0);
 	}
-      else if ( i < 0 && !strcmp( "dump-options", s+2) )
+      else if (i > 0 && opts[i].short_opt == ARGPARSE_SHORTOPT_DUMP_OPTIONS)
         {
           for (i=0; opts[i].short_opt; i++ )
             {
               if (opts[i].long_opt && !(opts[i].flags & ARGPARSE_OPT_IGNORE))
                 writestrings (0, "--", opts[i].long_opt, "\n", NULL);
 	    }
-          writestrings (0, "--dump-options\n--help\n--version\n--warranty\n",
-                        NULL);
           exit (0);
 	}
 

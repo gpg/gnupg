@@ -71,6 +71,12 @@ typedef struct
   const char  *description; /* Optional option description. */
 } ARGPARSE_OPTS;
 
+/* Short options.  */
+#define ARGPARSE_SHORTOPT_HELP 32768
+#define ARGPARSE_SHORTOPT_VERSION 32769
+#define ARGPARSE_SHORTOPT_WARRANTY 32770
+#define ARGPARSE_SHORTOPT_DUMP_OPTIONS 32771
+
 
 /* Global flags (ARGPARSE_ARGS).  */
 #define ARGPARSE_FLAG_KEEP       1   /* Do not remove options form argv.     */
@@ -169,7 +175,13 @@ typedef struct
 #define ARGPARSE_group(s,d) \
      { (s), NULL, 0, (d) }
 
-#define ARGPARSE_end()  { 0, NULL, 0, NULL }
+/* Placeholder options for help, version, warranty and dump-options.  See arg_parse(). */
+#define ARGPARSE_end() \
+     { 0, NULL, 0, NULL }, \
+     { 0, NULL, 0, NULL }, \
+     { 0, NULL, 0, NULL }, \
+     { 0, NULL, 0, NULL }, \
+     { 0, NULL, 0, NULL }
 
 
 /* Other constants.  */
