@@ -124,6 +124,19 @@ my_strusage( int level )
 }
 
 
+
+static int
+path_absolute_p (const char *p)
+{
+#if _WIN32
+  return ((strlen (p) > 2 && p[1] == ':' && (p[2] == '\\' || p[2] == '/'))
+          || p[0] == '\\' || p[0] == '/');
+#else
+  return p[0] == '/';
+#endif
+}
+
+
 /* Load the Scheme program from FILE_NAME.  If FILE_NAME is not an
    absolute path, and LOOKUP_IN_PATH is given, then it is qualified
    with the values in scmpath until the file is found.  */
@@ -139,9 +152,9 @@ load (scheme *sc, char *file_name,
   FILE *h = NULL;
 
   use_path =
-    lookup_in_path && ! (file_name[0] == '/' || scmpath_len == 0);
+    lookup_in_path && ! (path_absolute_p (file_name) || scmpath_len == 0);
 
-  if (file_name[0] == '/' || lookup_in_cwd || scmpath_len == 0)
+  if (path_absolute_p (file_name) || lookup_in_cwd || scmpath_len == 0)
     {
       h = fopen (file_name, "r");
       if (! h)
