@@ -1226,7 +1226,7 @@ parse_uri (parsed_uri_t *ret_uri, const char *uri,
   ec = do_parse_uri (*ret_uri, 0, no_scheme_check, force_tls);
   if (ec)
     {
-      xfree (*ret_uri);
+      http_release_parsed_uri (*ret_uri);
       *ret_uri = NULL;
     }
   return gpg_err_make (default_errsource, ec);
