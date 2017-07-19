@@ -1672,6 +1672,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
   char *proxy_authstr = NULL;
   char *authstr = NULL;
   assuan_fd_t sock;
+  int have_http_proxy = 0;
 
   if (hd->uri->use_tls && !hd->session)
     {
@@ -1759,7 +1760,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
       if (err)
         ;
       else if (!strcmp (uri->scheme, "http"))
-        ;
+        have_http_proxy = 1;
       else if (!strcmp (uri->scheme, "socks4")
                || !strcmp (uri->scheme, "socks5h"))
         err = gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
@@ -1810,6 +1811,94 @@ send_request (http_t hd, const char *httphost, const char *auth,
       return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
     }
 
+#if USE_TLS
+  if (have_http_proxy && hd->uri->use_tls)
+    {
+      int saved_flags;
+      cookie_t cookie;
+
+      /* Try to use the CONNECT method to proxy our TLS stream.  */
+      request = es_bsprintf
+        ("CONNECT %s:%hu HTTP/1.0\r\nHost: %s:%hu\r\n%s",
+         httphost ? httphost : server,
+         port,
+         httphost ? httphost : server,
+         port,
+         proxy_authstr ? proxy_authstr : "");
+      xfree (proxy_authstr);
+      proxy_authstr = NULL;
+
+      if (! request)
+        return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+
+      if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
+        log_debug_with_string (request, "http.c:request:");
+
+      cookie = xtrycalloc (1, sizeof *cookie);
+      if (! cookie)
+        {
+          err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+          xfree (request);
+          return err;
+        }
+      cookie->sock = my_socket_ref (hd->sock);
+      hd->write_cookie = cookie;
+
+      hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
+      if (! hd->fp_write)
+        {
+          err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+          my_socket_unref (cookie->sock, NULL, NULL);
+          xfree (cookie);
+          xfree (request);
+          hd->write_cookie = NULL;
+          return err;
+        }
+      else if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
+        err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+
+      xfree (request);
+      request = NULL;
+
+      /* Make sure http_wait_response doesn't close the stream.  */
+      saved_flags = hd->flags;
+      hd->flags &= ~HTTP_FLAG_SHUTDOWN;
+
+      /* Get the response.  */
+      err = http_wait_response (hd);
+
+      /* Restore flags, destroy stream.  */
+      hd->flags = saved_flags;
+      es_fclose (hd->fp_read);
+      hd->fp_read = NULL;
+      hd->read_cookie = NULL;
+
+      /* Reset state.  */
+      hd->in_data = 0;
+
+      if (err)
+        return err;
+
+      if (hd->status_code != 200)
+        {
+          request = es_bsprintf
+            ("CONNECT %s:%hu",
+             httphost ? httphost : server,
+             port);
+
+          log_error (_("error accessing '%s': http status %u\n"),
+                     request ? request : "out of core",
+                     http_get_status_code (hd));
+
+          xfree (request);
+          return gpg_error (GPG_ERR_NO_DATA);
+        }
+
+      /* We are done with the proxy, the code below will establish a
+       * TLS session and talk directly to the target server.  */
+      http_proxy = NULL;
+    }
+#endif	/* USE_TLS */
 
 #if HTTP_USE_NTBTLS
   if (hd->uri->use_tls)
