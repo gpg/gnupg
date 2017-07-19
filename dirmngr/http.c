@@ -1064,6 +1064,7 @@ http_wait_response (http_t hd)
 {
   gpg_error_t err;
   cookie_t cookie;
+  int use_tls;
 
   /* Make sure that we are in the data. */
   http_start_data (hd);
@@ -1074,6 +1075,7 @@ http_wait_response (http_t hd)
   if (!cookie)
     return gpg_err_make (default_errsource, GPG_ERR_INTERNAL);
 
+  use_tls = cookie->use_tls;
   es_fclose (hd->fp_write);
   hd->fp_write = NULL;
   /* The close has released the cookie and thus we better set it to NULL.  */
@@ -1092,7 +1094,7 @@ http_wait_response (http_t hd)
     return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
   cookie->sock = my_socket_ref (hd->sock);
   cookie->session = http_session_ref (hd->session);
-  cookie->use_tls = hd->uri->use_tls;
+  cookie->use_tls = use_tls;
 
   hd->read_cookie = cookie;
   hd->fp_read = es_fopencookie (cookie, "r", cookie_functions);
