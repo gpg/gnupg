@@ -82,6 +82,10 @@ XTESTS = \
 	ecc.scm \
 	4gb-packet.scm \
 	tofu.scm \
+	trust-pgp-1.scm \
+	trust-pgp-2.scm \
+	trust-pgp-3.scm \
+	trust-pgp-4.scm! \
 	gpgtar.scm \
 	use-exact-key.scm \
 	default-key.scm \
@@ -158,7 +162,18 @@ TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     key-selection/1.asc \
 	     key-selection/2.asc \
 	     key-selection/3.asc \
-	     key-selection/4.asc
+	     key-selection/4.asc \
+	     trust-pgp/scenario1.asc \
+	     trust-pgp/scenario2.asc \
+	     trust-pgp/scenario3.asc \
+	     trust-pgp/scenario4.asc \
+	     trust-pgp/alice.sec.asc \
+	     trust-pgp/bobby.sec.asc \
+	     trust-pgp/carol.sec.asc \
+	     trust-pgp/david.sec.asc \
+	     trust-pgp/frank.sec.asc \
+	     trust-pgp/grace.sec.asc \
+	     trust-pgp/heidi.sec.asc
 
 data_files = data-500 data-9000 data-32000 data-80000 plain-large
 
@@ -248,7 +263,7 @@ sample_msgs = samplemsgs/clearsig-1-key-1.asc \
 	      samplemsgs/signed-2-keys-1.asc \
 	      samplemsgs/signed-2-keys-2.asc
 
-EXTRA_DIST = defs.scm $(XTESTS) $(TEST_FILES) \
+EXTRA_DIST = defs.scm trust-pgp/common.scm $(XTESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
 	     $(sample_msgs) ChangeLog-2011 run-tests.scm \
 	     setup.scm shell.scm all-tests.scm signed-messages.scm
