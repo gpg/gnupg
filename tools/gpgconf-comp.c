@@ -149,7 +149,7 @@ typedef enum
 
 /* To be able to implement generic algorithms for the various
    backends, we collect all information about them in this struct.  */
-static struct
+static const struct
 {
   /* The name of the backend.  */
   const char *name;
@@ -256,7 +256,7 @@ typedef enum
 
 /* For every argument, we record some information about it in the
    following struct.  */
-static struct
+static const struct
 {
   /* For every argument type exists a basic argument type that can be
      used as a fallback for input and validation purposes.  */
@@ -328,7 +328,7 @@ typedef enum
   } gc_expert_level_t;
 
 /* A description for each expert level.  */
-static struct
+static const struct
 {
   const char *name;
 } gc_level[] =
@@ -361,7 +361,7 @@ static struct
 
 
 /* A human-readable description for each flag.  */
-static struct
+static const struct
 {
   const char *name;
 } gc_flag[] =
@@ -1070,7 +1070,7 @@ typedef enum
 
 
 /* The information associated with each component.  */
-static struct
+static const struct
 {
   /* The name of this component.  Must not contain a colon (':')
      character.  */
