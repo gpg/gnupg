@@ -1658,6 +1658,7 @@ check_sig_and_print (CTX c, kbnode_t node)
   int is_revkey = 0;
   char *issuer_fpr;
   PKT_public_key *pk = NULL;  /* The public key for the signature or NULL. */
+  int tried_ks_by_fpr;
 
   if (opt.skip_verify)
     {
@@ -1886,6 +1887,7 @@ check_sig_and_print (CTX c, kbnode_t node)
    * that the signers fingerprint is encoded in the signature.  We
    * favor this over the WKD method (to be tried next), because an
    * arbitrary keyserver is less subject to web bug like monitoring.  */
+  tried_ks_by_fpr = 0;
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
       && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE)
       && keyserver_any_configured (c->ctrl))
@@ -1902,6 +1904,7 @@ check_sig_and_print (CTX c, kbnode_t node)
           pk = NULL;
           glo_ctrl.in_auto_key_retrieve++;
           res = keyserver_import_fprint (c->ctrl, p+1, n-1, opt.keyserver, 1);
+          tried_ks_by_fpr = 1;
           glo_ctrl.in_auto_key_retrieve--;
           if (!res)
             rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey, &pk);
@@ -1933,6 +1936,7 @@ check_sig_and_print (CTX c, kbnode_t node)
    * keyserver.  */
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
       && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE)
+      && !tried_ks_by_fpr
       && keyserver_any_configured (c->ctrl))
     {
       int res;
