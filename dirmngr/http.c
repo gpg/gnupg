@@ -2344,7 +2344,7 @@ parse_response (http_t hd)
       if (!len)
 	return GPG_ERR_EOF;
 
-      if ((hd->flags & HTTP_FLAG_LOG_RESP))
+      if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
         log_debug_with_string (line, "http.c:response:\n");
     }
   while (!*line);
@@ -2389,7 +2389,7 @@ parse_response (http_t hd)
       /* Trim line endings of empty lines. */
       if ((*line == '\r' && line[1] == '\n') || *line == '\n')
 	*line = 0;
-      if ((hd->flags & HTTP_FLAG_LOG_RESP))
+      if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
         log_info ("http.c:RESP: '%.*s'\n",
                   (int)strlen(line)-(*line&&line[1]?2:0),line);
       if (*line)
