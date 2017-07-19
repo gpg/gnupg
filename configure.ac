@@ -42,7 +42,7 @@ m4_define([mym4_betastring],
 m4_define([mym4_isgit],m4_if(mym4_betastring,[],[no],[yes]))
 m4_define([mym4_full_version],[mym4_version[]mym4_betastring])
 
-AC_INIT([gnupg],[mym4_full_version], [http://bugs.gnupg.org])
+AC_INIT([gnupg],[mym4_full_version], [https://bugs.gnupg.org])
 
 
 development_version=mym4_isgit

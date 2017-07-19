@@ -1,5 +1,11 @@
-Noteworthy changes in version 1.4.22 (unreleased)
+Noteworthy changes in version 1.4.22 (2017-07-19)
 -------------------------------------------------
+
+ * Mitigate a flush+reload side-channel attack on RSA secret keys
+   dubbed "Sliding right into disaster".  For details see
+   <https://eprint.iacr.org/2017/627>.  [CVE-2017-7526]
+
+ * Fix some minor bugs.
 
 
 Noteworthy changes in version 1.4.21 (2016-08-17)
