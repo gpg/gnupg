@@ -1788,7 +1788,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
 
       err = connect_server (*uri->host ? uri->host : "localhost",
                             uri->port ? uri->port : 80,
-                            hd->flags, srvtag, timeout, &sock);
+                            hd->flags, NULL, timeout, &sock);
       http_release_parsed_uri (uri);
     }
   else
