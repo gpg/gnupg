@@ -72,6 +72,13 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
   int redirects_left = MAX_REDIRECTS;
   estream_t fp = NULL;
   char *request_buffer = NULL;
+  parsed_uri_t uri = NULL;
+  int is_onion;
+
+  err = http_parse_uri (&uri, url, 0);
+  if (err)
+    goto leave;
+  is_onion = uri->onion;
 
  once_more:
   /* Note that we only use the system provided certificates with the
@@ -145,6 +152,23 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
                   url, s?s:"[none]", http_get_status_code (http));
         if (s && *s && redirects_left-- )
           {
+            if (is_onion)
+              {
+                /* Make sure that an onion address only redirects to
+                 * another onion address.  */
+                http_release_parsed_uri (uri);
+                uri = NULL;
+                err = http_parse_uri (&uri, s, 0);
+                if (err)
+                  goto leave;
+
+                if (! uri->onion)
+                  {
+                    err = gpg_error (GPG_ERR_FORBIDDEN);
+                    goto leave;
+                  }
+              }
+
             xfree (request_buffer);
             request_buffer = xtrystrdup (s);
             if (request_buffer)
@@ -186,5 +210,6 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
   http_close (http, 0);
   http_session_release (session);
   xfree (request_buffer);
+  http_release_parsed_uri (uri);
   return err;
 }

@@ -1162,8 +1162,15 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
   int redirects_left = MAX_REDIRECTS;
   estream_t fp = NULL;
   char *request_buffer = NULL;
+  parsed_uri_t uri = NULL;
+  int is_onion;
 
   *r_fp = NULL;
+
+  err = http_parse_uri (&uri, request, 0);
+  if (err)
+    goto leave;
+  is_onion = uri->onion;
 
   err = http_session_new (&session, httphost,
                           ((ctrl->http_no_crl? HTTP_FLAG_NO_CRL : 0)
@@ -1250,6 +1257,23 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
                   request, s?s:"[none]", http_get_status_code (http));
         if (s && *s && redirects_left-- )
           {
+            if (is_onion)
+              {
+                /* Make sure that an onion address only redirects to
+                 * another onion address.  */
+                http_release_parsed_uri (uri);
+                uri = NULL;
+                err = http_parse_uri (&uri, s, 0);
+                if (err)
+                  goto leave;
+
+                if (! uri->onion)
+                  {
+                    err = gpg_error (GPG_ERR_FORBIDDEN);
+                    goto leave;
+                  }
+              }
+
             xfree (request_buffer);
             request_buffer = xtrystrdup (s);
             if (request_buffer)
@@ -1298,6 +1322,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
   http_close (http, 0);
   http_session_release (session);
   xfree (request_buffer);
+  http_release_parsed_uri (uri);
   return err;
 }
 
