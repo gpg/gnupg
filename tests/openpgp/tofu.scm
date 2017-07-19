@@ -71,30 +71,6 @@
 	    (fail keyid ": Expected policy to be" expected-policy
 		   "but got" policy))))
 
-;; Get the trust level for KEYID.  Any remaining arguments are simply
-;; passed to GPG.
-;;
-;; This function only supports keys with a single user id.
-(define (gettrust keyid . args)
-  (let ((trust
-	 (list-ref (assoc "pub" (gpg-with-colons
-				 `(,@args
-				   --list-keys ,keyid))) 1)))
-    (unless (and (= 1 (string-length trust))
-		 (member (string-ref trust 0) (string->list "oidreqnmfuws-")))
-	    (fail "Bad trust value:" trust))
-    trust))
-
-;; Check that KEYID's trust level matches EXPECTED-TRUST.  Any
-;; remaining arguments are simply passed to GPG.
-;;
-;; This function only supports keys with a single user id.
-(define (checktrust keyid expected-trust . args)
-  (let ((trust (apply gettrust `(,keyid ,@args))))
-    (unless (string=? trust expected-trust)
-	    (fail keyid ": Expected trust to be" expected-trust
-		   "but got" trust))))
-
 ;; Set key KEYID's policy to POLICY.  Any remaining arguments are
 ;; passed as options to gpg.
 (define (setpolicy keyid policy . args)
