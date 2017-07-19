@@ -74,7 +74,7 @@ static ARGPARSE_OPTS opts[] = {
   { oCheck,   "check", 0,  "run only a syntax check on the patternfile" },
   { oNull,    "null", 0,   "input is expected to be null delimited" },
 
-  {0}
+  ARGPARSE_end ()
 };
 
 

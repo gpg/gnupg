@@ -75,7 +75,9 @@ static ARGPARSE_OPTS opts[] = {
     { oUncompress, "uncompress", 0, "uncompress a packet"},
     { oSecretToPublic, "secret-to-public", 0, "convert secret keys to public keys"},
     { oNoSplit, "no-split", 0, "write to stdout and don't actually split"},
-{0} };
+
+    ARGPARSE_end ()
+};
 
 
 static const char *

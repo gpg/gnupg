@@ -105,7 +105,8 @@ static ARGPARSE_OPTS opts[] =
     { oBuilddir, "build-prefix", 2, "@" },
     { oNull, "null", 0, "@" },
     { oNoVerbose, "no-verbose",  0, "@"},
-    {0}
+
+    ARGPARSE_end(),
   };
 
 

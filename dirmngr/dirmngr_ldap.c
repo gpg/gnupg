@@ -150,7 +150,7 @@ static ARGPARSE_OPTS opts[] = {
   { oAttr,     "attr",      2, N_("|STRING|return the attribute STRING")},
   { oOnlySearchTimeout, "only-search-timeout", 0, "@"},
   { oLogWithPID,"log-with-pid", 0, "@"},
-  { 0, NULL, 0, NULL }
+  ARGPARSE_end ()
 };
 
 

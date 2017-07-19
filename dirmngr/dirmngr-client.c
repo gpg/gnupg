@@ -80,7 +80,7 @@ static ARGPARSE_OPTS opts[] = {
   { oPEM,      "pem",       0, N_("expect certificates in PEM format")},
   { oForceDefaultResponder, "force-default-responder", 0,
     N_("force the use of the default OCSP responder")},
-  { 0, NULL, 0, NULL }
+  ARGPARSE_end ()
 };
 
 

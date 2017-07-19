@@ -249,7 +249,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oUseStandardSocket, "use-standard-socket", "@"),
   ARGPARSE_s_n (oNoUseStandardSocket, "no-use-standard-socket", "@"),
 
-  {0} /* End of list */
+  ARGPARSE_end () /* End of list */
 };
 
 

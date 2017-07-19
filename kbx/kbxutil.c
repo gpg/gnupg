@@ -92,7 +92,7 @@ static ARGPARSE_OPTS opts[] = {
   { oDebug, "debug"     ,4|16, N_("set debugging flags")},
   { oDebugAll, "debug-all" ,0, N_("enable full debugging")},
 
-  {0} /* end of list */
+  ARGPARSE_end () /* end of list */
 };
 
 

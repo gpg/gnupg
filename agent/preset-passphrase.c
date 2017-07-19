@@ -78,7 +78,8 @@ static ARGPARSE_OPTS opts[] = {
   { oForget,  "forget",  256, "forget passphrase"},
 
   { oHomedir, "homedir", 2, "@" },
-  {0}
+
+  ARGPARSE_end ()
 };
 
 

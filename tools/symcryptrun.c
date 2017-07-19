@@ -185,7 +185,7 @@ static ARGPARSE_OPTS opts[] =
     { oHomedir, "homedir", 2, "@" },
     { oNoOptions, "no-options", 0, "@" },/* shortcut for --options /dev/null */
 
-    {0}
+    ARGPARSE_end ()
   };
 
 
