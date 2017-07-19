@@ -133,7 +133,7 @@ print_seckey_info (PKT_secret_key *sk)
 	      nbits_from_sk (sk),
 	      pubkey_letter (sk->pubkey_algo),
 	      keystr(keyid), datestr_from_sk (sk), p);
-    
+
   xfree (p);
 }
 
@@ -177,13 +177,13 @@ print_card_key_info (FILE *fp, KBNODE keyblock)
   KBNODE node;
   int i;
 
-  for (node = keyblock; node; node = node->next ) 
+  for (node = keyblock; node; node = node->next )
     {
       if (node->pkt->pkttype == PKT_SECRET_KEY
           || (node->pkt->pkttype == PKT_SECRET_SUBKEY) )
         {
           PKT_secret_key *sk = node->pkt->pkt.secret_key;
-          
+
           tty_fprintf (fp, "%s%c  %4u%c/%s  ",
 		       node->pkt->pkttype == PKT_SECRET_KEY? "sec":"ssb",
                        (sk->protect.s2k.mode==1001)?'#':
@@ -197,10 +197,10 @@ print_card_key_info (FILE *fp, KBNODE keyblock)
           if (sk->is_protected && sk->protect.s2k.mode == 1002)
             {
               tty_fprintf (fp, "\n                      ");
-              tty_fprintf (fp, _("card-no: ")); 
+              tty_fprintf (fp, _("card-no: "));
               if (sk->protect.ivlen == 16
                   && !memcmp (sk->protect.iv, "\xD2\x76\x00\x01\x24\x01", 6))
-                { 
+                {
                   /* This is an OpenPGP card. */
                   for (i=8; i < 14; i++)
                     {
@@ -446,7 +446,7 @@ list_all( int secret )
         merge_keys_and_selfsig( keyblock );
 	list_keyblock( keyblock, secret, opt.fingerprint,
 		       opt.check_sigs?&stats:NULL);
-	release_kbnode( keyblock ); 
+	release_kbnode( keyblock );
         keyblock = NULL;
     } while (!(rc = keydb_search_next (hd)));
     if( rc && rc != -1 )
@@ -580,7 +580,7 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
         int enc=0, sign=0, cert=0, auth=0, disabled=0;
 
         for (k=keyblock; k; k = k->next ) {
-            if ( k->pkt->pkttype == PKT_PUBLIC_KEY 
+            if ( k->pkt->pkttype == PKT_PUBLIC_KEY
                  || k->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
                 pk = k->pkt->pkt.public_key;
 
@@ -602,7 +602,7 @@ print_capabilities (PKT_public_key *pk, PKT_secret_key *sk, KBNODE keyblock)
                       auth = 1;
                 }
             }
-            else if ( k->pkt->pkttype == PKT_SECRET_KEY 
+            else if ( k->pkt->pkttype == PKT_SECRET_KEY
                       || k->pkt->pkttype == PKT_SECRET_SUBKEY ) {
                 sk = k->pkt->pkt.secret_key;
                 if ( sk->is_valid && !sk->is_revoked && !sk->has_expired
@@ -933,7 +933,7 @@ list_keyblock_print ( KBNODE keyblock, int secret, int fpr, void *opaque )
 		switch( rc ) {
 		 case 0:		 sigrc = '!'; break;
 		 case G10ERR_BAD_SIGN:   stats->inv_sigs++; sigrc = '-'; break;
-		 case G10ERR_NO_PUBKEY: 
+		 case G10ERR_NO_PUBKEY:
 		 case G10ERR_UNU_PUBKEY: stats->no_key++; continue;
 		 default:		 stats->oth_err++; sigrc = '%'; break;
 		}
@@ -1077,7 +1077,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
             putchar ('r');
         else if ( pk->has_expired )
             putchar ('e');
-        else if ( opt.fast_list_mode || opt.no_expensive_trust_checks ) 
+        else if ( opt.fast_list_mode || opt.no_expensive_trust_checks )
             ;
         else {
             trustletter = get_validity_info ( pk, NULL );
@@ -1093,7 +1093,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 		    colon_strtime (pk->expiredate) );
         if( !opt.fast_list_mode && !opt.no_expensive_trust_checks  )
             putchar( get_ownertrust_info(pk) );
-	    putchar(':');
+        putchar(':');
     }
 
     if (opt.fixed_list_mode) {
@@ -1131,7 +1131,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 	    if(attrib_fp && node->pkt->pkt.user_id->attrib_data!=NULL)
 	      dump_attribs(node->pkt->pkt.user_id,pk,sk);
             /*
-             * Fixme: We need a is_valid flag here too 
+             * Fixme: We need a is_valid flag here too
              */
 	    if( any ) {
 	        char *str=uid->attrib_data?"uat":"uid";
@@ -1323,7 +1323,7 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
 		switch( rc ) {
 		  case 0:		   sigrc = '!'; break;
 		  case G10ERR_BAD_SIGN:    sigrc = '-'; break;
-		  case G10ERR_NO_PUBKEY: 
+		  case G10ERR_NO_PUBKEY:
 		  case G10ERR_UNU_PUBKEY:  sigrc = '?'; break;
 		  default:		   sigrc = '%'; break;
 		}
@@ -1411,8 +1411,8 @@ do_reorder_keyblock (KBNODE keyblock,int attr)
             node->pkt->pkt.user_id->is_primary ) {
             primary = primary2 = node;
             for (node=node->next; node; primary2=node, node = node->next ) {
-                if( node->pkt->pkttype == PKT_USER_ID 
-                    || node->pkt->pkttype == PKT_PUBLIC_SUBKEY 
+                if( node->pkt->pkttype == PKT_USER_ID
+                    || node->pkt->pkttype == PKT_PUBLIC_SUBKEY
                     || node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
                     break;
                 }
@@ -1534,7 +1534,7 @@ print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
         fp = stdout;
 	text = _("      Key fingerprint =");
     }
-  
+
     if (sk)
 	fingerprint_from_sk (sk, array, &n);
     else
@@ -1594,7 +1594,7 @@ print_card_serialno (PKT_secret_key *sk)
 
   if (!sk)
     return;
-  if (!sk->is_protected || sk->protect.s2k.mode != 1002) 
+  if (!sk->is_protected || sk->protect.s2k.mode != 1002)
     return; /* Not a card. */
   if (opt.with_colons)
     return; /* Handled elsewhere. */
@@ -1631,7 +1631,7 @@ void set_attrib_fd(int fd)
   if ( attrib_fp && attrib_fp != stdout && attrib_fp != stderr )
     fclose (attrib_fp);
   attrib_fp = NULL;
-  if ( fd == -1 ) 
+  if ( fd == -1 )
     return;
 
   if( fd == 1 )
