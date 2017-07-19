@@ -32,7 +32,16 @@ endif
 needed_libs = ../cipher/libcipher.a ../mpi/libmpi.a ../util/libutil.a
 other_libs = $(LIBICONV) $(DNSLIBS) $(LIBINTL) $(CAPLIBS)
 
+
 bin_PROGRAMS = gpg gpgv
+
+# "make distcheck" runs "gpg --version" which unfortunately may print
+# warnings about unsupported options to stderr which make distcheck
+# rejects.  I am not sure on how to pass the envvar GNUPGHOME to that
+# gpg invocation to make sure that a gpg.conf from gnupg 2 is not
+# used.  The easiest way to avoid that is to not run this extra test.
+AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = gpg$(EXEEXT)
+
 dist_pkgdata_DATA = options.skel
 
 if ENABLE_BZIP2_SUPPORT
