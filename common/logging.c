@@ -472,7 +472,8 @@ set_file_fd (const char *name, int fd)
   /* Close an open log stream.  */
   if (logstream)
     {
-      es_fclose (logstream);
+      if (logstream != es_stderr)
+        es_fclose (logstream);
       logstream = NULL;
     }
 
