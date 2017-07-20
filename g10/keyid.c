@@ -613,9 +613,13 @@ nbits_from_pk (PKT_public_key *pk)
 }
 
 
-static const char *
-mk_datestr (char *buffer, time_t atime)
+/* Convert an UTC TIMESTAMP into an UTC yyyy-mm-dd string.  Return
+ * that string.  The caller should pass a buffer with at least a size
+ * of MK_DATESTR_SIZE.  */
+char *
+mk_datestr (char *buffer, size_t bufsize, u32 timestamp)
 {
+  time_t atime = timestamp;
   struct tm *tp;
 
   if (IS_INVALID_TIME_T (atime))
@@ -623,8 +627,8 @@ mk_datestr (char *buffer, time_t atime)
   else
     {
       tp = gmtime (&atime);
-      sprintf (buffer,"%04d-%02d-%02d",
-               1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
+      snprintf (buffer, bufsize, "%04d-%02d-%02d",
+                1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday );
     }
   return buffer;
 }
@@ -638,59 +642,51 @@ mk_datestr (char *buffer, time_t atime)
 const char *
 datestr_from_pk (PKT_public_key *pk)
 {
-  static char buffer[11+5];
-  time_t atime = pk->timestamp;
+  static char buffer[MK_DATESTR_SIZE];
 
-  return mk_datestr (buffer, atime);
+  return mk_datestr (buffer, sizeof buffer, pk->timestamp);
 }
 
 
 const char *
 datestr_from_sig (PKT_signature *sig )
 {
-  static char buffer[11+5];
-  time_t atime = sig->timestamp;
+  static char buffer[MK_DATESTR_SIZE];
 
-  return mk_datestr (buffer, atime);
+  return mk_datestr (buffer, sizeof buffer, sig->timestamp);
 }
 
 
 const char *
 expirestr_from_pk (PKT_public_key *pk)
 {
-  static char buffer[11+5];
-  time_t atime;
+  static char buffer[MK_DATESTR_SIZE];
 
   if (!pk->expiredate)
     return _("never     ");
-  atime = pk->expiredate;
-  return mk_datestr (buffer, atime);
+  return mk_datestr (buffer, sizeof buffer, pk->expiredate);
 }
 
 
 const char *
 expirestr_from_sig (PKT_signature *sig)
 {
-  static char buffer[11+5];
-  time_t atime;
+  static char buffer[MK_DATESTR_SIZE];
 
   if (!sig->expiredate)
     return _("never     ");
-  atime=sig->expiredate;
-  return mk_datestr (buffer, atime);
+  return mk_datestr (buffer, sizeof buffer, sig->expiredate);
 }
 
 
 const char *
 revokestr_from_pk( PKT_public_key *pk )
 {
-  static char buffer[11+5];
-  time_t atime;
+  static char buffer[MK_DATESTR_SIZE];
 
   if(!pk->revoked.date)
     return _("never     ");
-  atime=pk->revoked.date;
-  return mk_datestr (buffer, atime);
+  return mk_datestr (buffer, sizeof buffer, pk->revoked.date);
 }
 
 

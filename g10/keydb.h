@@ -458,6 +458,13 @@ u32 keyid_from_fingerprint (ctrl_t ctrl, const byte *fprint, size_t fprint_len,
                             u32 *keyid);
 byte *namehash_from_uid(PKT_user_id *uid);
 unsigned nbits_from_pk( PKT_public_key *pk );
+
+/* Convert an UTC TIMESTAMP into an UTC yyyy-mm-dd string.  Return
+ * that string.  The caller should pass a buffer with at least a size
+ * of MK_DATESTR_SIZE.  */
+char *mk_datestr (char *buffer, size_t bufsize, u32 timestamp);
+#define MK_DATESTR_SIZE 11
+
 const char *datestr_from_pk( PKT_public_key *pk );
 const char *datestr_from_sig( PKT_signature *sig );
 const char *expirestr_from_pk( PKT_public_key *pk );
