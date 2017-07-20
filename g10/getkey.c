@@ -2491,32 +2491,32 @@ sig_to_revoke_info (PKT_signature * sig, struct revoke_info *rinfo)
 
 
 /* Given a keyblock, parse the key block and extract various pieces of
-   information and save them with the primary key packet and the user
-   id packets.  For instance, some information is stored in signature
-   packets.  We find the latest such valid packet (since the user can
-   change that information) and copy its contents into the
-   PKT_public_key.
-
-   Note that R_REVOKED may be set to 0, 1 or 2.
-
-   This function fills in the following fields in the primary key's
-   keyblock:
-
-     main_keyid          (computed)
-     revkey / numrevkeys (derived from self signed key data)
-     flags.valid         (whether we have at least 1 self-sig)
-     flags.maybe_revoked (whether a designed revoked the key, but
-                          we are missing the key to check the sig)
-     selfsigversion      (highest version of any valid self-sig)
-     pubkey_usage        (derived from most recent self-sig or most
-                          recent user id)
-     has_expired         (various sources)
-     expiredate          (various sources)
-
-  See the documentation for fixup_uidnode for how the user id packets
-  are modified.  In addition to that the primary user id's is_primary
-  field is set to 1 and the other user id's is_primary are set to
-  0.  */
+ * information and save them with the primary key packet and the user
+ * id packets.  For instance, some information is stored in signature
+ * packets.  We find the latest such valid packet (since the user can
+ * change that information) and copy its contents into the
+ * PKT_public_key.
+ *
+ * Note that R_REVOKED may be set to 0, 1 or 2.
+ *
+ * This function fills in the following fields in the primary key's
+ * keyblock:
+ *
+ *   main_keyid          (computed)
+ *   revkey / numrevkeys (derived from self signed key data)
+ *   flags.valid         (whether we have at least 1 self-sig)
+ *   flags.maybe_revoked (whether a designed revoked the key, but
+ *                        we are missing the key to check the sig)
+ *   selfsigversion      (highest version of any valid self-sig)
+ *   pubkey_usage        (derived from most recent self-sig or most
+ *                        recent user id)
+ *   has_expired         (various sources)
+ *   expiredate          (various sources)
+ *
+ * See the documentation for fixup_uidnode for how the user id packets
+ * are modified.  In addition to that the primary user id's is_primary
+ * field is set to 1 and the other user id's is_primary are set to 0.
+ */
 static void
 merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 		     struct revoke_info *rinfo)
@@ -2537,17 +2537,16 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
   memset (rinfo, 0, sizeof (*rinfo));
 
   /* Section 11.1 of RFC 4880 determines the order of packets within a
-     message.  There are three sections, which must occur in the
-     following order: the public key, the user ids and user attributes
-     and the subkeys.  Within each section, each primary packet (e.g.,
-     a user id packet) is followed by one or more signature packets,
-     which modify that packet.  */
+   * message.  There are three sections, which must occur in the
+   * following order: the public key, the user ids and user attributes
+   * and the subkeys.  Within each section, each primary packet (e.g.,
+   * a user id packet) is followed by one or more signature packets,
+   * which modify that packet.  */
 
   /* According to Section 11.1 of RFC 4880, the public key must be the
-     first packet.  */
+     first packet.  Note that parse_keyblock_image ensures that the
+     first packet is the public key.  */
   if (keyblock->pkt->pkttype != PKT_PUBLIC_KEY)
-    /* parse_keyblock_image ensures that the first packet is the
-       public key.  */
     BUG ();
   pk = keyblock->pkt->pkt.public_key;
   keytimestamp = pk->timestamp;
@@ -2566,16 +2565,16 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
     }
 
   /* First pass:
-
-      - Find the latest direct key self-signature.  We assume that the
-        newest one overrides all others.
-
-      - Determine whether the key has been revoked.
-
-      - Gather all revocation keys (unlike other data, we don't just
-        take them from the latest self-signed packet).
-
-      - Determine max (sig[...]->version).
+   *
+   * - Find the latest direct key self-signature.  We assume that the
+   *   newest one overrides all others.
+   *
+   * - Determine whether the key has been revoked.
+   *
+   * - Gather all revocation keys (unlike other data, we don't just
+   *   take them from the latest self-signed packet).
+   *
+   * - Determine max (sig[...]->version).
    */
 
   /* Reset this in case this key was already merged. */
@@ -2587,8 +2586,8 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
   sigdate = 0; /* Helper variable to find the latest signature.  */
 
   /* According to Section 11.1 of RFC 4880, the public key comes first
-     and is immediately followed by any signature packets that modify
-     it.  */
+   * and is immediately followed by any signature packets that modify
+   * it.  */
   for (k = keyblock;
        k && k->pkt->pkttype != PKT_USER_ID
 	 && k->pkt->pkttype != PKT_ATTRIBUTE
@@ -2599,8 +2598,8 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 	{
 	  PKT_signature *sig = k->pkt->pkt.signature;
 	  if (sig->keyid[0] == kid[0] && sig->keyid[1] == kid[1])
-	    /* Self sig.  */
-	    {
+	    { /* Self sig.  */
+
 	      if (check_key_signature (ctrl, keyblock, k, NULL))
 		; /* Signature did not verify.  */
 	      else if (IS_KEY_REV (sig))
@@ -2620,11 +2619,11 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 	      else if (IS_KEY_SIG (sig))
 		{
 		  /* Add the indicated revocations keys from all
-		     signatures not just the latest.  We do this
-		     because you need multiple 1F sigs to properly
-		     handle revocation keys (PGP does it this way, and
-		     a revocation key could be sensitive and hence in
-		     a different signature). */
+		   * signatures not just the latest.  We do this
+		   * because you need multiple 1F sigs to properly
+		   * handle revocation keys (PGP does it this way, and
+		   * a revocation key could be sensitive and hence in
+		   * a different signature).  */
 		  if (sig->revkey)
 		    {
 		      int i;
@@ -2640,8 +2639,8 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 		    }
 
 		  if (sig->timestamp >= sigdate)
-		    /* This is the latest signature so far.  */
-		    {
+		    { /* This is the latest signature so far.  */
+
 		      if (sig->flags.expired)
 			; /* Signature has expired - ignore it.  */
 		      else
@@ -2688,9 +2687,9 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 			       sizeof (struct revocation_key));
     }
 
+  /* SIGNODE is the 1F signature packet with the latest creation time.
+   * Extract some information from it.  */
   if (signode)
-    /* SIGNODE is the 1F signature packet with the latest creation
-       time.  Extract some information from it.  */
     {
       /* Some information from a direct key signature take precedence
        * over the same information given in UID sigs.  */
@@ -2712,9 +2711,9 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
     }
 
   /* Pass 1.5: Look for key revocation signatures that were not made
-     by the key (i.e. did a revocation key issue a revocation for
-     us?).  Only bother to do this if there is a revocation key in the
-     first place and we're not revoked already.  */
+   * by the key (i.e. did a revocation key issue a revocation for
+   * us?).  Only bother to do this if there is a revocation key in the
+   * first place and we're not revoked already.  */
 
   if (!*r_revoked && pk->revkey)
     for (k = keyblock; k && k->pkt->pkttype != PKT_USER_ID; k = k->next)
@@ -2732,20 +2731,20 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 		    *r_revoked = 2;
 		    sig_to_revoke_info (sig, rinfo);
 		    /* Don't continue checking since we can't be any
-		       more revoked than this.  */
+		     * more revoked than this.  */
 		    break;
 		  }
 		else if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY)
 		  pk->flags.maybe_revoked = 1;
 
 		/* A failure here means the sig did not verify, was
-		   not issued by a revocation key, or a revocation
-		   key loop was broken.  If a revocation key isn't
-		   findable, however, the key might be revoked and
-		   we don't know it.  */
+		 * not issued by a revocation key, or a revocation
+		 * key loop was broken.  If a revocation key isn't
+		 * findable, however, the key might be revoked and
+		 * we don't know it.  */
 
-		/* TODO: In the future handle subkey and cert
-		   revocations?  PGP doesn't, but it's in 2440. */
+		/* Fixme: In the future handle subkey and cert
+		 * revocations?  PGP doesn't, but it's in 2440.  */
 	      }
 	  }
       }
@@ -2753,28 +2752,30 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
   /* Second pass: Look at the self-signature of all user IDs.  */
 
   /* According to RFC 4880 section 11.1, user id and attribute packets
-     are in the second section, after the public key packet and before
-     the subkey packets.  */
+   * are in the second section, after the public key packet and before
+   * the subkey packets.  */
   signode = uidnode = NULL;
   sigdate = 0; /* Helper variable to find the latest signature in one UID. */
   for (k = keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k = k->next)
     {
       if (k->pkt->pkttype == PKT_USER_ID || k->pkt->pkttype == PKT_ATTRIBUTE)
-	/* New user id packet.  */
-	{
+	{ /* New user id packet.  */
+
+          /* Apply the data from the most recent self-signed packet to
+	   * the preceding user id packet.  */
 	  if (uidnode && signode)
-	    /* Apply the data from the most recent self-signed packet
-	       to the preceding user id packet.  */
 	    {
 	      fixup_uidnode (uidnode, signode, keytimestamp);
 	      pk->flags.valid = 1;
 	    }
+
 	  /* Clear SIGNODE.  The only relevant self-signed data for
-	     UIDNODE follows it.  */
+	   * UIDNODE follows it.  */
 	  if (k->pkt->pkttype == PKT_USER_ID)
 	    uidnode = k;
 	  else
 	    uidnode = NULL;
+
 	  signode = NULL;
 	  sigdate = 0;
 	}
@@ -2812,7 +2813,7 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
     }
 
   /* If the key isn't valid yet, and we have
-     --allow-non-selfsigned-uid set, then force it valid. */
+   * --allow-non-selfsigned-uid set, then force it valid. */
   if (!pk->flags.valid && opt.allow_non_selfsigned_uid)
     {
       if (opt.verbose)
@@ -2822,7 +2823,7 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
     }
 
   /* The key STILL isn't valid, so try and find an ultimately
-     trusted signature. */
+   * trusted signature. */
   if (!pk->flags.valid)
     {
       uidnode = NULL;
@@ -2842,12 +2843,11 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 
 		  ultimate_pk = xmalloc_clear (sizeof (*ultimate_pk));
 
-		  /* We don't want to use the full get_pubkey to
-		     avoid infinite recursion in certain cases.
-		     There is no reason to check that an ultimately
-		     trusted key is still valid - if it has been
-		     revoked the user should also remove the
-		     ultimate trust flag.  */
+		  /* We don't want to use the full get_pubkey to avoid
+		   * infinite recursion in certain cases.  There is no
+		   * reason to check that an ultimately trusted key is
+		   * still valid - if it has been revoked the user
+		   * should also remove the ultimate trust flag.  */
 		  if (get_pubkey_fast (ultimate_pk, sig->keyid) == 0
 		      && check_key_signature2 (ctrl,
                                                keyblock, k, ultimate_pk,
@@ -2865,20 +2865,18 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 	}
     }
 
-  /* Record the highest selfsig version so we know if this is a v3
-     key through and through, or a v3 key with a v4 selfsig
-     somewhere.  This is useful in a few places to know if the key
-     must be treated as PGP2-style or OpenPGP-style.  Note that a
-     selfsig revocation with a higher version number will also raise
-     this value.  This is okay since such a revocation must be
-     issued by the user (i.e. it cannot be issued by someone else to
-     modify the key behavior.) */
+  /* Record the highest selfsig version so we know if this is a v3 key
+   * through and through, or a v3 key with a v4 selfsig somewhere.
+   * This is useful in a few places to know if the key must be treated
+   * as PGP2-style or OpenPGP-style.  Note that a selfsig revocation
+   * with a higher version number will also raise this value.  This is
+   * okay since such a revocation must be issued by the user (i.e. it
+   * cannot be issued by someone else to modify the key behavior.) */
 
   pk->selfsigversion = sigversion;
 
-  /* Now that we had a look at all user IDs we can now get some information
-   * from those user IDs.
-   */
+  /* Now that we had a look at all user IDs we can now get some
+   * information from those user IDs.  */
 
   if (!key_usage)
     {
@@ -2890,6 +2888,7 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 	  if (k->pkt->pkttype == PKT_USER_ID)
 	    {
 	      PKT_user_id *uid = k->pkt->pkt.user_id;
+
 	      if (uid->help_key_usage && uid->created > uiddate)
 		{
 		  key_usage = uid->help_key_usage;
@@ -2898,6 +2897,7 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 	    }
 	}
     }
+
   if (!key_usage)
     {
       /* No key flags at all: get it from the algo.  */
@@ -2936,7 +2936,7 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
     }
 
   /* Currently only v3 keys have a maximum expiration date, but I'll
-     bet v5 keys get this feature again. */
+   * bet v5 keys get this feature again. */
   if (key_expire == 0
       || (pk->max_expiredate && key_expire > pk->max_expiredate))
     key_expire = pk->max_expiredate;
@@ -2944,8 +2944,8 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
   pk->has_expired = key_expire >= curtime ? 0 : key_expire;
   pk->expiredate = key_expire;
 
-  /* Fixme: we should see how to get rid of the expiretime fields  but
-   * this needs changes at other places too. */
+  /* Fixme: we should see how to get rid of the expiretime fields but
+   * this needs changes at other places too.  */
 
   /* And now find the real primary user ID and delete all others.  */
   uiddate = uiddate2 = 0;
@@ -2964,12 +2964,11 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 		}
 	      else if (uid->created == uiddate && uidnode)
 		{
-		  /* The dates are equal, so we need to do a
-		     different (and arbitrary) comparison.  This
-		     should rarely, if ever, happen.  It's good to
-		     try and guarantee that two different GnuPG
-		     users with two different keyrings at least pick
-		     the same primary. */
+		  /* The dates are equal, so we need to do a different
+		   * (and arbitrary) comparison.  This should rarely,
+		   * if ever, happen.  It's good to try and guarantee
+		   * that two different GnuPG users with two different
+		   * keyrings at least pick the same primary.  */
 		  if (cmp_user_ids (uid, uidnode->pkt->pkt.user_id) > 0)
 		    uidnode = k;
 		}
@@ -3006,14 +3005,14 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
   else if (uidnode2)
     {
       /* None is flagged primary - use the latest user ID we have,
-         and disambiguate with the arbitrary packet comparison. */
+       * and disambiguate with the arbitrary packet comparison. */
       uidnode2->pkt->pkt.user_id->flags.primary = 1;
     }
   else
     {
       /* None of our uids were self-signed, so pick the one that
-         sorts first to be the primary.  This is the best we can do
-         here since there are no self sigs to date the uids. */
+       * sorts first to be the primary.  This is the best we can do
+       * here since there are no self sigs to date the uids. */
 
       uidnode = NULL;
 
@@ -3039,16 +3038,19 @@ merge_selfsigs_main (ctrl_t ctrl, kbnode_t keyblock, int *r_revoked,
 		      uidnode->pkt->pkt.user_id->flags.primary = 1;
 		    }
 		  else
-		    k->pkt->pkt.user_id->flags.primary = 0;	/* just to be
-								   safe */
+                    {
+                      /* just to be safe: */
+                      k->pkt->pkt.user_id->flags.primary = 0;
+                    }
 		}
 	    }
 	}
     }
 }
 
+
 /* Convert a buffer to a signature.  Useful for 0x19 embedded sigs.
-   Caller must free the signature when they are done. */
+ * Caller must free the signature when they are done. */
 static PKT_signature *
 buf_to_sig (const byte * buf, size_t len)
 {
@@ -3068,25 +3070,26 @@ buf_to_sig (const byte * buf, size_t len)
   return sig;
 }
 
+
 /* Use the self-signed data to fill in various fields in subkeys.
-
-   KEYBLOCK is the whole keyblock.  SUBNODE is the subkey to fill in.
-
-   Sets the following fields on the subkey:
-
-     main_keyid
-     flags.valid        if the subkey has a valid self-sig binding
-     flags.revoked
-     flags.backsig
-     pubkey_usage
-     has_expired
-     expired_date
-
-   On this subkey's most revent valid self-signed packet, the
-   following field is set:
-
-     flags.chosen_selfsig
-  */
+ *
+ * KEYBLOCK is the whole keyblock.  SUBNODE is the subkey to fill in.
+ *
+ * Sets the following fields on the subkey:
+ *
+ *   main_keyid
+ *   flags.valid        if the subkey has a valid self-sig binding
+ *   flags.revoked
+ *   flags.backsig
+ *   pubkey_usage
+ *   has_expired
+ *   expired_date
+ *
+ * On this subkey's most revent valid self-signed packet, the
+ * following field is set:
+ *
+ *   flags.chosen_selfsig
+ */
 static void
 merge_selfsigs_subkey (ctrl_t ctrl, kbnode_t keyblock, kbnode_t subnode)
 {
@@ -3132,13 +3135,13 @@ merge_selfsigs_subkey (ctrl_t ctrl, kbnode_t keyblock, kbnode_t subnode)
 	      else if (IS_SUBKEY_REV (sig))
 		{
 		  /* Note that this means that the date on a
-		     revocation sig does not matter - even if the
-		     binding sig is dated after the revocation sig,
-		     the subkey is still marked as revoked.  This
-		     seems ok, as it is just as easy to make new
-		     subkeys rather than re-sign old ones as the
-		     problem is in the distribution.  Plus, PGP (7)
-		     does this the same way.  */
+		   * revocation sig does not matter - even if the
+		   * binding sig is dated after the revocation sig,
+		   * the subkey is still marked as revoked.  This
+		   * seems ok, as it is just as easy to make new
+		   * subkeys rather than re-sign old ones as the
+		   * problem is in the distribution.  Plus, PGP (7)
+		   * does this the same way.  */
 		  subpk->flags.revoked = 1;
 		  sig_to_revoke_info (sig, &subpk->revoked);
 		  /* Although we could stop now, we continue to
@@ -3188,6 +3191,7 @@ merge_selfsigs_subkey (ctrl_t ctrl, kbnode_t keyblock, kbnode_t subnode)
     key_expire = keytimestamp + buf32_to_u32 (p);
   else
     key_expire = 0;
+
   subpk->has_expired = key_expire >= curtime ? 0 : key_expire;
   subpk->expiredate = key_expire;
 
@@ -3207,7 +3211,7 @@ merge_selfsigs_subkey (ctrl_t ctrl, kbnode_t keyblock, kbnode_t subnode)
       sigdate = 0;
 
       /* We do this while() since there may be other embedded
-         signatures in the future.  We only want 0x19 here. */
+       * signatures in the future.  We only want 0x19 here. */
 
       while ((p = enum_sig_subpkt (sig->hashed,
 				   SIGSUBPKT_SIGNATURE, &n, &seq, NULL)))
@@ -3233,7 +3237,7 @@ merge_selfsigs_subkey (ctrl_t ctrl, kbnode_t keyblock, kbnode_t subnode)
       seq = 0;
 
       /* It is safe to have this in the unhashed area since the 0x19
-         is located on the selfsig for convenience, not security. */
+       * is located on the selfsig for convenience, not security. */
 
       while ((p = enum_sig_subpkt (sig->unhashed, SIGSUBPKT_SIGNATURE,
 				   &n, &seq, NULL)))
@@ -3259,7 +3263,7 @@ merge_selfsigs_subkey (ctrl_t ctrl, kbnode_t keyblock, kbnode_t subnode)
       if (backsig)
 	{
 	  /* At this point, backsig contains the most recent 0x19 sig.
-	     Let's see if it is good. */
+	   * Let's see if it is good. */
 
 	  /* 2==valid, 1==invalid, 0==didn't check */
 	  if (check_backsig (mainpk, subpk, backsig) == 0)
@@ -3274,10 +3278,10 @@ merge_selfsigs_subkey (ctrl_t ctrl, kbnode_t keyblock, kbnode_t subnode)
 
 
 /* Merge information from the self-signatures with the public key,
-   subkeys and user ids to make using them more easy.
-
-   See documentation for merge_selfsigs_main, merge_selfsigs_subkey
-   and fixup_uidnode for exactly which fields are updated.  */
+ * subkeys and user ids to make using them more easy.
+ *
+ * See documentation for merge_selfsigs_main, merge_selfsigs_subkey
+ * and fixup_uidnode for exactly which fields are updated.  */
 static void
 merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
 {
@@ -3295,8 +3299,8 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
 	  log_error ("expected public key but found secret key "
 		     "- must stop\n");
 	  /* We better exit here because a public key is expected at
-	     other places too.  FIXME: Figure this out earlier and
-	     don't get to here at all */
+	   * other places too.  FIXME: Figure this out earlier and
+	   * don't get to here at all */
 	  g10_exit (1);
 	}
       BUG ();
@@ -3691,22 +3695,22 @@ print_status_key_considered (kbnode_t keyblock, unsigned int flags)
 
 
 /* A high-level function to lookup keys.
-
-   This function builds on top of the low-level keydb API.  It first
-   searches the database using the description stored in CTX->ITEMS,
-   then it filters the results using CTX and, finally, if WANT_SECRET
-   is set, it ignores any keys for which no secret key is available.
-
-   Unlike the low-level search functions, this function also merges
-   all of the self-signed data into the keys, subkeys and user id
-   packets (see the merge_selfsigs for details).
-
-   On success the key's keyblock is stored at *RET_KEYBLOCK, and the
-   specific subkey is stored at *RET_FOUND_KEY.  Note that we do not
-   return a reference in *RET_FOUND_KEY, i.e. the result must not be
-   freed using 'release_kbnode', and it is only valid until
-   *RET_KEYBLOCK is deallocated.  Therefore, if RET_FOUND_KEY is not
-   NULL, then RET_KEYBLOCK must not be NULL.  */
+ *
+ * This function builds on top of the low-level keydb API.  It first
+ * searches the database using the description stored in CTX->ITEMS,
+ * then it filters the results using CTX and, finally, if WANT_SECRET
+ * is set, it ignores any keys for which no secret key is available.
+ *
+ * Unlike the low-level search functions, this function also merges
+ * all of the self-signed data into the keys, subkeys and user id
+ * packets (see the merge_selfsigs for details).
+ *
+ * On success the key's keyblock is stored at *RET_KEYBLOCK, and the
+ * specific subkey is stored at *RET_FOUND_KEY.  Note that we do not
+ * return a reference in *RET_FOUND_KEY, i.e. the result must not be
+ * freed using 'release_kbnode', and it is only valid until
+ * *RET_KEYBLOCK is deallocated.  Therefore, if RET_FOUND_KEY is not
+ * NULL, then RET_KEYBLOCK must not be NULL.  */
 static int
 lookup (ctrl_t ctrl, getkey_ctx_t ctx, int want_secret,
         kbnode_t *ret_keyblock, kbnode_t *ret_found_key)
@@ -3728,9 +3732,8 @@ lookup (ctrl_t ctrl, getkey_ctx_t ctx, int want_secret,
         break;
 
       /* If we are iterating over the entire database, then we need to
-	 change from KEYDB_SEARCH_MODE_FIRST, which does an implicit
-	 reset, to KEYDB_SEARCH_MODE_NEXT, which gets the next
-	 record.  */
+       * change from KEYDB_SEARCH_MODE_FIRST, which does an implicit
+       * reset, to KEYDB_SEARCH_MODE_NEXT, which gets the next record.  */
       if (ctx->nitems && ctx->items->mode == KEYDB_SEARCH_MODE_FIRST)
 	ctx->items->mode = KEYDB_SEARCH_MODE_NEXT;
 
@@ -3771,10 +3774,10 @@ lookup (ctrl_t ctrl, getkey_ctx_t ctx, int want_secret,
       release_kbnode (keyblock);
       keyblock = NULL;
       /* The keyblock cache ignores the current "file position".
-         Thus, if we request the next result and the cache matches
-         (and it will since it is what we just looked for), we'll get
-         the same entry back!  We can avoid this infinite loop by
-         disabling the cache.  */
+       * Thus, if we request the next result and the cache matches
+       * (and it will since it is what we just looked for), we'll get
+       * the same entry back!  We can avoid this infinite loop by
+       * disabling the cache.  */
       keydb_disable_caching (ctx->kr_handle);
     }
 
