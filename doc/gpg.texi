@@ -2433,9 +2433,10 @@ opposite meaning.  The options are:
   Defaults to no.
 
   @item export-attributes
-  Include attribute user IDs (photo IDs) while exporting. This is
-  useful to export keys if they are going to be used by an OpenPGP
-  program that does not accept attribute user IDs. Defaults to yes.
+  Include attribute user IDs (photo IDs) while exporting. Not
+  including attribute user IDs is useful to export keys that are going
+  to be used by an OpenPGP program that does not accept attribute user
+  IDs.  Defaults to yes.
 
   @item export-sensitive-revkeys
   Include designated revoker information that was marked as
