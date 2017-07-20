@@ -228,6 +228,16 @@ print_utf8_buffer (estream_t stream, const void *p, size_t n)
   do_print_utf8_buffer (stream, p, n, NULL, NULL);
 }
 
+
+void
+print_utf8_string (estream_t stream, const char *p)
+{
+  if (!p)
+    p = "";
+  do_print_utf8_buffer (stream, p, strlen (p), NULL, NULL);
+}
+
+
 /* Write LENGTH bytes of BUFFER to FP as a hex encoded string.
    RESERVED must be 0. */
 void

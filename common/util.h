@@ -302,6 +302,7 @@ void print_utf8_buffer3 (estream_t fp, const void *p, size_t n,
                          const char *delim);
 void print_utf8_buffer2 (estream_t fp, const void *p, size_t n, int delim);
 void print_utf8_buffer (estream_t fp, const void *p, size_t n);
+void print_utf8_string (estream_t stream, const char *p);
 void print_hexstring (FILE *fp, const void *buffer, size_t length,
                       int reserved);
 char *try_make_printable_string (const void *p, size_t n, int delim);
