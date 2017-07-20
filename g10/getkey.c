@@ -3741,8 +3741,14 @@ lookup (ctrl_t ctrl, getkey_ctx_t ctx, int want_secret,
 	  goto skip;
 	}
 
-      if (want_secret && agent_probe_any_secret_key (NULL, keyblock))
-        goto skip; /* No secret key available.  */
+      if (want_secret)
+	{
+	  rc = agent_probe_any_secret_key (NULL, keyblock);
+	  if (gpg_err_code(rc) == GPG_ERR_NO_SECKEY)
+	    goto skip; /* No secret key available.  */
+	  if (rc)
+	    goto found; /* Unexpected error.  */
+	}
 
       /* Warning: node flag bits 0 and 1 should be preserved by
        * merge_selfsigs.  */
