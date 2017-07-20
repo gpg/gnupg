@@ -241,8 +241,7 @@ described here.
 
     The origin of the key or the user ID.  This is an integer
     optionally followed by a space and an URL.  This goes along with
-    the previous field.  The values are not yet defined.
-
+    the previous field.  The URL is quoted in C style.
 
 ** Special fields
 

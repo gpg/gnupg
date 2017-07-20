@@ -85,6 +85,7 @@ struct
   int with_tofu_info;   /* Option --with-tofu_info active.  */
   int with_secret;      /* Option --with-secret active.  */
   int with_wkd_hash;    /* Option --with-wkd-hash.  */
+  int with_key_origin;  /* Option --with-key-origin.  */
   int fingerprint; /* list fingerprints */
   int list_sigs;   /* list signatures */
   int no_armor;

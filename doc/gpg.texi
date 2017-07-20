@@ -2531,6 +2531,13 @@ Print the ICAO spelling of the fingerprint in addition to the hex digits.
 Include the keygrip in the key listings.  In @code{--with-colons} mode
 this is implicitly enable for secret keys.
 
+@item --with-key-origin
+@opindex with-key-origin
+Include the locally held information on the origin and last update of
+a key in a key listing.  In @code{--with-colons} mode this is always
+printed.  This data is currently experimental and shall not be
+considered part of the stable API.
+
 @item --with-wkd-hash
 @opindex with-wkd-hash
 Print a Web Key Directory identifier along with each user ID in key

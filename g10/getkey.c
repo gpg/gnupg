@@ -4300,11 +4300,13 @@ parse_auto_key_locate (char *options)
 }
 
 
-/* Parse the argument for --key-origin.  Return false on error. */
-int
-parse_key_origin (char *string)
-{
-  struct { const char *name; int origin; } list[] = {
+
+/* The list of key origins. */
+static struct {
+  const char *name;
+  int origin;
+} key_origin_list[] =
+  {
     { "self",    KEYORG_SELF    },
     { "file",    KEYORG_FILE    },
     { "url",     KEYORG_URL     },
@@ -4314,27 +4316,45 @@ parse_key_origin (char *string)
     { "ks",      KEYORG_KS      },
     { "unknown", KEYORG_UNKNOWN }
   };
+
+/* Parse the argument for --key-origin.  Return false on error. */
+int
+parse_key_origin (char *string)
+{
   int i;
 
   if (!ascii_strcasecmp (string, "help"))
     {
       log_info (_("valid values for option '%s':\n"), "--key-origin");
-      for (i=0; i < DIM (list); i++)
-        log_info ("  %s\n", list[i].name);
+      for (i=0; i < DIM (key_origin_list); i++)
+        log_info ("  %s\n", key_origin_list[i].name);
       g10_exit (1);
     }
 
-  for (i=0; i < DIM (list); i++)
-    if (!ascii_strcasecmp (string, list[i].name))
+  for (i=0; i < DIM (key_origin_list); i++)
+    if (!ascii_strcasecmp (string, key_origin_list[i].name))
       {
-        opt.key_origin = list[i].origin;
+        opt.key_origin = key_origin_list[i].origin;
         return 1;
       }
 
   return 0;
 }
 
+/* Return a string or "?" for the key ORIGIN.  */
+const char *
+key_origin_string (int origin)
+{
+  int i;
 
+  for (i=0; i < DIM (key_origin_list); i++)
+    if (key_origin_list[i].origin == origin)
+      return key_origin_list[i].name;
+  return "?";
+}
+
+
+
 /* Returns true if a secret key is available for the public key with
    key id KEYID; returns false if not.  This function ignores legacy
    keys.  Note: this is just a fast check and does not tell us whether

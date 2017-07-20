@@ -922,6 +922,21 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
   if (opt.with_key_data)
     print_key_data (pk);
 
+  if (opt.with_key_origin
+      && (pk->keyorg || pk->keyupdate || pk->updateurl))
+    {
+      char updatestr[MK_DATESTR_SIZE];
+
+      es_fprintf (es_stdout, "      origin=%s last=%s %s",
+                  key_origin_string (pk->keyorg),
+                  mk_datestr (updatestr, sizeof updatestr, pk->keyupdate),
+                  pk->updateurl? "url=":"");
+      if (pk->updateurl)
+        print_utf8_string (es_stdout, pk->updateurl);
+      es_putc ('\n', es_stdout);
+    }
+
+
   for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
     {
       if (node->pkt->pkttype == PKT_USER_ID)
@@ -985,6 +1000,22 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
                     }
                 }
               xfree (mbox);
+            }
+
+          if (opt.with_key_origin
+              && (uid->keyorg || uid->keyupdate || uid->updateurl))
+            {
+              char updatestr[MK_DATESTR_SIZE];
+
+              es_fprintf (es_stdout, "   %*sorigin=%s last=%s %s",
+                          indent, "",
+                          key_origin_string (uid->keyorg),
+                          mk_datestr (updatestr, sizeof updatestr,
+                                      uid->keyupdate),
+                          pk->updateurl? "url=":"");
+              if (pk->updateurl)
+                print_utf8_string (es_stdout, pk->updateurl);
+              es_putc ('\n', es_stdout);
             }
 
 	  if ((opt.list_options & LIST_SHOW_PHOTOS) && uid->attribs != NULL)
@@ -1315,7 +1346,13 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
   es_putc (':', es_stdout);		/* End of field 17. */
   print_compliance_flags (pk, keylength, curvename);
   es_putc (':', es_stdout);		/* End of field 18 (compliance). */
+  if (pk->keyupdate)
+    es_fputs (colon_strtime (pk->keyupdate), es_stdout);
   es_putc (':', es_stdout);		/* End of field 19 (last_update). */
+  es_fprintf (es_stdout, "%d%s", pk->keyorg, pk->updateurl? " ":"");
+  if (pk->updateurl)
+    es_write_sanitized (es_stdout, pk->updateurl, strlen (pk->updateurl),
+                        ":", NULL);
   es_putc (':', es_stdout);		/* End of field 20 (origin). */
   es_putc ('\n', es_stdout);
 
@@ -1367,7 +1404,14 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	  else
 	    es_write_sanitized (es_stdout, uid->name, uid->len, ":", NULL);
 	  es_fputs (":::::::::", es_stdout);
+          if (uid->keyupdate)
+            es_fputs (colon_strtime (uid->keyupdate), es_stdout);
           es_putc (':', es_stdout);	/* End of field 19 (last_update). */
+          es_fprintf (es_stdout, "%d%s", uid->keyorg, uid->updateurl? " ":"");
+          if (uid->updateurl)
+            es_write_sanitized (es_stdout,
+                                uid->updateurl, strlen (uid->updateurl),
+                                ":", NULL);
           es_putc (':', es_stdout);	/* End of field 20 (origin). */
 	  es_putc ('\n', es_stdout);
 #ifdef USE_TOFU
