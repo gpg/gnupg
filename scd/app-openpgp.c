@@ -85,12 +85,15 @@ static struct {
                                  does not work with composite DO and
                                  is currently only useful for the CHV
                                  status bytes. */
-  int try_extlen:1;           /* Large object; try to use an extended
-                                 length APDU.  */
+  int try_extlen:2;           /* Large object; try to use an extended
+                                 length APDU when !=0.  The size is
+                                 determined by extcap.max_certlen_3
+                                 when == 1, and by extcap.max_special_do
+                                 when == 2.  */
   char *desc;
 } data_objects[] = {
-  { 0x005E, 0,    0, 1, 0, 0, 0, 0, "Login Data" },
-  { 0x5F50, 0,    0, 0, 0, 0, 0, 0, "URL" },
+  { 0x005E, 0,    0, 1, 0, 0, 0, 2, "Login Data" },
+  { 0x5F50, 0,    0, 0, 0, 0, 0, 2, "URL" },
   { 0x5F52, 0,    0, 1, 0, 0, 0, 0, "Historical Bytes" },
   { 0x0065, 1,    0, 1, 0, 0, 0, 0, "Cardholder Related Data"},
   { 0x005B, 0, 0x65, 0, 0, 0, 0, 0, "Name" },
@@ -110,10 +113,10 @@ static struct {
   { 0x00CD, 0, 0x6E, 1, 0, 0, 0, 0, "Generation time" },
   { 0x007A, 1,    0, 1, 0, 0, 0, 0, "Security Support Template" },
   { 0x0093, 0, 0x7A, 1, 1, 0, 0, 0, "Digital Signature Counter" },
-  { 0x0101, 0,    0, 0, 0, 0, 0, 0, "Private DO 1"},
-  { 0x0102, 0,    0, 0, 0, 0, 0, 0, "Private DO 2"},
-  { 0x0103, 0,    0, 0, 0, 0, 0, 0, "Private DO 3"},
-  { 0x0104, 0,    0, 0, 0, 0, 0, 0, "Private DO 4"},
+  { 0x0101, 0,    0, 0, 0, 0, 0, 2, "Private DO 1"},
+  { 0x0102, 0,    0, 0, 0, 0, 0, 2, "Private DO 2"},
+  { 0x0103, 0,    0, 0, 0, 0, 0, 2, "Private DO 3"},
+  { 0x0104, 0,    0, 0, 0, 0, 0, 2, "Private DO 4"},
   { 0x7F21, 1,    0, 1, 0, 0, 0, 1, "Cardholder certificate"},
   /* V3.0 */
   { 0x7F74, 0,    0, 1, 0, 0, 0, 0, "General Feature Management"},
@@ -185,18 +188,25 @@ struct app_local_s {
   /* Keep track of extended card capabilities.  */
   struct
   {
-    unsigned int is_v2:1;              /* This is a v2.0 compatible card.  */
-    unsigned int sm_supported:1;       /* Secure Messaging is supported.  */
+    unsigned int is_v2:1;              /* Compatible to v2 or later.        */
+    unsigned int extcap_v3:1;          /* Extcap is in v3 format.           */
+    unsigned int has_button:1;         /* Has confirmation button or not.   */
+
+    unsigned int sm_supported:1;       /* Secure Messaging is supported.    */
     unsigned int get_challenge:1;
     unsigned int key_import:1;
     unsigned int change_force_chv:1;
     unsigned int private_dos:1;
     unsigned int algo_attr_change:1;   /* Algorithm attributes changeable.  */
-    unsigned int has_decrypt:1;        /* Support symmetric decryption.  */
-    unsigned int has_button:1;
-    unsigned int sm_algo:2;            /* Symmetric crypto algo for SM.  */
+    unsigned int has_decrypt:1;        /* Support symmetric decryption.     */
+    unsigned int kdf_do:1;                /* Support KDF DOs.               */
+
+    unsigned int sm_algo:2;            /* Symmetric crypto algo for SM.     */
+    unsigned int pin_blk2:1;           /* PIN block 2 format supported.     */
+    unsigned int mse:1;                /* MSE command supported.            */
     unsigned int max_certlen_3:16;
-    unsigned int max_get_challenge:16; /* Maximum size for get_challenge.  */
+    unsigned int max_get_challenge:16; /* Maximum size for get_challenge.   */
+    unsigned int max_special_do:16;    /* Maximum size for special DOs.     */
   } extcap;
 
   /* Flags used to control the application.  */
@@ -323,7 +333,14 @@ get_cached_data (app_t app, int tag,
     }
 
   if (try_extlen && app->app_local->cardcap.ext_lc_le)
-    exmode = app->app_local->extcap.max_certlen_3;
+    {
+      if (try_extlen == 1)
+        exmode = app->app_local->extcap.max_certlen_3;
+      else if (try_extlen == 2 && app->app_local->extcap.extcap_v3)
+        exmode = app->app_local->extcap.max_special_do;
+      else
+        exmode = 0;
+    }
   else
     exmode = 0;
 
@@ -5006,6 +5023,8 @@ app_select_openpgp (app_t app)
       if (app->card_version >= 0x0200)
         app->app_local->extcap.is_v2 = 1;
 
+      if (app->card_version >= 0x0300)
+        app->app_local->extcap.extcap_v3 = 1;
 
       /* Read the historical bytes.  */
       relptr = get_one_do (app, 0x5f52, &buffer, &buflen, NULL);
@@ -5048,14 +5067,24 @@ app_select_openpgp (app_t app)
           app->app_local->extcap.private_dos      = !!(*buffer & 0x08);
           app->app_local->extcap.algo_attr_change = !!(*buffer & 0x04);
           app->app_local->extcap.has_decrypt      = !!(*buffer & 0x02);
+          app->app_local->extcap.kdf_do           = !!(*buffer & 0x01);
         }
       if (buflen >= 10)
         {
-          /* Available with v2 cards.  */
+          /* Available with cards of v2 or later.  */
           app->app_local->extcap.sm_algo = buffer[1];
           app->app_local->extcap.max_get_challenge
                                                = (buffer[2] << 8 | buffer[3]);
           app->app_local->extcap.max_certlen_3 = (buffer[4] << 8 | buffer[5]);
+
+          /* Interpretation is different between v2 and v3, unfortunately.  */
+          if (app->app_local->extcap.extcap_v3)
+            {
+              app->app_local->extcap.max_special_do
+                = (buffer[6] << 8 | buffer[7]);
+              app->app_local->extcap.pin_blk2 = !!(buffer[8] & 0x01);
+              app->app_local->extcap.mse= !!(buffer[9] & 0x01);
+            }
         }
       xfree (relptr);
 
