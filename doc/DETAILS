@@ -1348,7 +1348,7 @@ CREATE TABLE signatures (
   - 1 octet :: Key Source; i.e. the origin of the key:
                - 0 :: Unknown source.
                - 1 :: Public keyserver.
-               - 2 :: Preferred keysrver.
+               - 2 :: Preferred keyserver.
                - 3 :: OpenPGP DANE.
                - 4 :: Web Key Directory.
                - 5 :: Import from a trusted URL.
@@ -1538,5 +1538,5 @@ Description of some debug flags:
    If one of the "foo/*" names are used a "keygen.flags" prompt needs
    to be answered as well.  Instead of toggling the predefined flags,
    it is also possible to set them direct: Use a "=" character
-   directly followed by a comination of "a" (for authentication), "s"
+   directly followed by a combination of "a" (for authentication), "s"
    (for signing), or "c" (for certification).

@@ -485,8 +485,8 @@ typedef struct {
 
 /* Subtypes for the ring trust packet.  */
 #define RING_TRUST_SIG 0  /* The classical signature cache.  */
-#define RING_TRUST_KEY 1  /* A KEYSRC on a primary key.      */
-#define RING_TRUST_UID 2  /* A KEYSRC on a user id.          */
+#define RING_TRUST_KEY 1  /* A KEYORG on a primary key.      */
+#define RING_TRUST_UID 2  /* A KEYORG on a user id.          */
 
 /* The local only ring trust packet which OpenPGP declares as
  * implementation defined.  GnuPG uses this to cache signature
@@ -498,7 +498,7 @@ typedef struct {
   unsigned int trustval;
   unsigned int sigcache;
   unsigned char subtype; /* The subtype of this ring trust packet.   */
-  unsigned char keyorg;  /* The origin of the key (KEYSRC_*).        */
+  unsigned char keyorg;  /* The origin of the key (KEYORG_*).        */
   u32 keyupdate;         /* The wall time the key was last updated.  */
   char *url;             /* NULL or the URL of the source.           */
 } PKT_ring_trust;

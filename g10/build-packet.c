@@ -182,8 +182,8 @@ build_packet (IOBUF out, PACKET *pkt)
 
 
 /* Build a packet and write it to the stream OUT.  This variant also
- * writes the meta data using ring tyrust packets.  Returns: 0 on
- * success or on aerror code.  */
+ * writes the meta data using ring trust packets.  Returns: 0 on
+ * success or on error code.  */
 gpg_error_t
 build_packet_and_meta (iobuf_t out, PACKET *pkt)
 {
