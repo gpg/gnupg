@@ -1487,6 +1487,7 @@ intr_cb (struct libusb_transfer *transfer)
         {
           DEBUGOUT ("CCID: card removed\n");
           handle->powered_off = 1;
+          scd_kick_the_loop ();
         }
       else
         {
@@ -1501,9 +1502,8 @@ intr_cb (struct libusb_transfer *transfer)
     device_removed:
       DEBUGOUT ("CCID: device removed\n");
       handle->powered_off = 1;
+      scd_kick_the_loop ();
     }
-
-  scd_kick_the_loop ();
 }
 
 static void
@@ -2043,8 +2043,11 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
        * Possibly, it was forcibly suspended and resumed.
        */
       DEBUGOUT ("CCID: card inactive/removed\n");
-      handle->powered_off = 1;
-      scd_kick_the_loop ();
+      if (handle->transfer == NULL)
+        {
+          handle->powered_off = 1;
+          scd_kick_the_loop ();
+        }
     }
 
   return rc;
