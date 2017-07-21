@@ -575,7 +575,7 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
                                 opt.batch, options, 0,
                                 screener, screener_arg);
       else if (keyblock->pkt->pkttype == PKT_SIGNATURE
-               && keyblock->pkt->pkt.signature->sig_class == 0x20 )
+               && IS_KEY_REV (keyblock->pkt->pkt.signature) )
         rc = import_revoke_cert (ctrl, keyblock, stats);
       else
         {
@@ -822,7 +822,7 @@ read_block( IOBUF a, int with_meta,
         in_v3key = 0;
 
 	if (!root && pkt->pkttype == PKT_SIGNATURE
-		  && pkt->pkt.signature->sig_class == 0x20 )
+            && IS_KEY_REV (pkt->pkt.signature) )
           {
 	    /* This is a revocation certificate which is handled in a
 	     * special way.  */
@@ -925,7 +925,7 @@ fix_pks_corruption (ctrl_t ctrl, kbnode_t keyblock)
 	    sknode=node;
 	}
       else if (node->pkt->pkttype == PKT_SIGNATURE
-               && node->pkt->pkt.signature->sig_class == 0x18
+               && IS_SUBKEY_SIG (node->pkt->pkt.signature)
                && keycount >= 2
                && !node->next)
 	{
@@ -2398,7 +2398,7 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
 
   log_assert (!node->next );
   log_assert (node->pkt->pkttype == PKT_SIGNATURE );
-  log_assert (node->pkt->pkt.signature->sig_class == 0x20 );
+  log_assert (IS_KEY_REV (node->pkt->pkt.signature));
 
   keyid[0] = node->pkt->pkt.signature->keyid[0];
   keyid[1] = node->pkt->pkt.signature->keyid[1];
@@ -2451,8 +2451,8 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
     }
 
   /* it is okay, that node is not in keyblock because
-   * check_key_signature works fine for sig_class 0x20 in this
-   * special case. */
+   * check_key_signature works fine for sig_class 0x20 (KEY_REV) in
+   * this special case. */
   rc = check_key_signature (ctrl, keyblock, node, NULL);
   if (rc )
     {
@@ -2797,7 +2797,7 @@ delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
           delete_kbnode( node );
         }
       else if (node->pkt->pkttype == PKT_SIGNATURE
-               && node->pkt->pkt.signature->sig_class == 0x20)
+               && IS_KEY_REV (node->pkt->pkt.signature))
         {
           if (uid_seen )
             {
@@ -2829,8 +2829,8 @@ delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
 	    }
 	}
       else if (node->pkt->pkttype == PKT_SIGNATURE
-               && (node->pkt->pkt.signature->sig_class == 0x18
-                   || node->pkt->pkt.signature->sig_class == 0x28)
+               && (IS_SUBKEY_SIG (node->pkt->pkt.signature)
+                   || IS_SUBKEY_REV (node->pkt->pkt.signature))
                && !subkey_seen )
         {
           if(opt.verbose)
@@ -3006,9 +3006,9 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
       if(onode->pkt->pkttype==PKT_USER_ID)
 	break;
 
-      if(onode->pkt->pkttype==PKT_SIGNATURE &&
-	 onode->pkt->pkt.signature->sig_class==0x1F &&
-	 onode->pkt->pkt.signature->revkey)
+      if (onode->pkt->pkttype == PKT_SIGNATURE
+          && IS_KEY_SIG (onode->pkt->pkt.signature)
+          && onode->pkt->pkt.signature->revkey)
 	{
 	  int idx;
 	  PKT_signature *sig=onode->pkt->pkt.signature;
@@ -3026,14 +3026,14 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
 		  if(inode->pkt->pkttype==PKT_USER_ID)
 		    break;
 
-		  if(inode->pkt->pkttype==PKT_SIGNATURE &&
-		     inode->pkt->pkt.signature->sig_class==0x20 &&
-		     inode->pkt->pkt.signature->keyid[0]==keyid[0] &&
-		     inode->pkt->pkt.signature->keyid[1]==keyid[1])
+		  if (inode->pkt->pkttype == PKT_SIGNATURE
+                      && IS_KEY_REV (inode->pkt->pkt.signature)
+                      && inode->pkt->pkt.signature->keyid[0]==keyid[0]
+                      && inode->pkt->pkt.signature->keyid[1]==keyid[1])
 		    {
 		      /* Okay, we have a revocation key, and a
-                         revocation issued by it.  Do we have the key
-                         itself? */
+                       * revocation issued by it.  Do we have the key
+                       * itself?  */
 		      int rc;
 
 		      rc=get_pubkey_byfprint_fast (NULL,sig->revkey[idx].fpr,
@@ -3102,7 +3102,7 @@ merge_blocks (ctrl_t ctrl, kbnode_t keyblock_orig, kbnode_t keyblock,
       if (node->pkt->pkttype == PKT_USER_ID )
         break;
       else if (node->pkt->pkttype == PKT_SIGNATURE
-               && node->pkt->pkt.signature->sig_class == 0x20)
+               && IS_KEY_REV (node->pkt->pkt.signature))
         {
           /* check whether we already have this */
           found = 0;
@@ -3111,7 +3111,7 @@ merge_blocks (ctrl_t ctrl, kbnode_t keyblock_orig, kbnode_t keyblock,
               if (onode->pkt->pkttype == PKT_USER_ID )
                 break;
               else if (onode->pkt->pkttype == PKT_SIGNATURE
-                       && onode->pkt->pkt.signature->sig_class == 0x20
+                       && IS_KEY_REV (onode->pkt->pkt.signature)
                        && !cmp_signatures(onode->pkt->pkt.signature,
                                           node->pkt->pkt.signature))
                 {
@@ -3142,7 +3142,7 @@ merge_blocks (ctrl_t ctrl, kbnode_t keyblock_orig, kbnode_t keyblock,
       if (node->pkt->pkttype == PKT_USER_ID )
         break;
       else if (node->pkt->pkttype == PKT_SIGNATURE
-               && node->pkt->pkt.signature->sig_class == 0x1F)
+               && IS_KEY_SIG (node->pkt->pkt.signature))
         {
           /* check whether we already have this */
           found = 0;
@@ -3151,7 +3151,7 @@ merge_blocks (ctrl_t ctrl, kbnode_t keyblock_orig, kbnode_t keyblock,
               if (onode->pkt->pkttype == PKT_USER_ID)
                 break;
               else if (onode->pkt->pkttype == PKT_SIGNATURE
-                       && onode->pkt->pkt.signature->sig_class == 0x1F
+                       && IS_KEY_SIG (onode->pkt->pkt.signature)
                        && !cmp_signatures(onode->pkt->pkt.signature,
                                           node->pkt->pkt.signature))
                 {
@@ -3345,8 +3345,8 @@ merge_sigs (kbnode_t dst, kbnode_t src, int *n_sigs)
     {
       if (n->pkt->pkttype != PKT_SIGNATURE )
         continue;
-      if (n->pkt->pkt.signature->sig_class == 0x18
-          || n->pkt->pkt.signature->sig_class == 0x28 )
+      if (IS_SUBKEY_SIG (n->pkt->pkt.signature)
+          || IS_SUBKEY_REV (n->pkt->pkt.signature) )
         continue; /* skip signatures which are only valid on subkeys */
 
       found = 0;
