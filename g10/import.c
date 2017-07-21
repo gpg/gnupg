@@ -1606,6 +1606,7 @@ import_one (ctrl_t ctrl,
   else if (rc )  /* Insert this key. */
     {
       KEYDB_HANDLE hd;
+      int n_sigs_cleaned, n_uids_cleaned;
 
       hd = keydb_new ();
       if (!hd)
@@ -1634,6 +1635,10 @@ import_one (ctrl_t ctrl,
               return GPG_ERR_GENERAL;
             }
         }
+
+      if ((options & IMPORT_CLEAN))
+        clean_key (ctrl, keyblock, opt.verbose, (options&IMPORT_MINIMAL),
+                   &n_uids_cleaned,&n_sigs_cleaned);
 
       rc = keydb_insert_keyblock (hd, keyblock );
       if (rc)
