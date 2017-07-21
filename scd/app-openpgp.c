@@ -4757,7 +4757,14 @@ do_check_pin (app_t app, const char *keyidstr,
 static void
 show_caps (struct app_local_s *s)
 {
-  log_info ("Version-2 ......: %s\n", s->extcap.is_v2? "yes":"no");
+  log_info ("Version-2+ .....: %s\n", s->extcap.is_v2? "yes":"no");
+  log_info ("Extcap-v3 ......: %s\n", s->extcap.extcap_v3? "yes":"no");
+  log_info ("Button .........: %s\n", s->extcap.has_button? "yes":"no");
+
+  log_info ("SM-Support .....: %s", s->extcap.sm_supported? "yes":"no");
+  if (s->extcap.sm_supported)
+    log_printf (" (%s)", s->extcap.sm_algo==2? "3DES":
+                (s->extcap.sm_algo==2? "AES-128" : "AES-256"));
   log_info ("Get-Challenge ..: %s", s->extcap.get_challenge? "yes":"no");
   if (s->extcap.get_challenge)
     log_printf (" (%u bytes max)", s->extcap.max_get_challenge);
@@ -4765,16 +4772,18 @@ show_caps (struct app_local_s *s)
   log_info ("Change-Force-PW1: %s\n", s->extcap.change_force_chv? "yes":"no");
   log_info ("Private-DOs ....: %s\n", s->extcap.private_dos? "yes":"no");
   log_info ("Algo-Attr-Change: %s\n", s->extcap.algo_attr_change? "yes":"no");
-  log_info ("SM-Support .....: %s", s->extcap.sm_supported? "yes":"no");
-  if (s->extcap.sm_supported)
-    log_printf (" (%s)", s->extcap.sm_algo==2? "3DES":
-                (s->extcap.sm_algo==2? "AES-128" : "AES-256"));
+  log_info ("Symmetric Crypto: %s\n", s->extcap.has_decrypt? "yes":"no");
+  log_info ("KDF-Support ....: %s\n", s->extcap.kdf_do? "yes":"no");
   log_info ("Max-Cert3-Len ..: %u\n", s->extcap.max_certlen_3);
+  if (s->extcap.extcap_v3)
+    {
+      log_info ("PIN-Block-2 ....: %s\n", s->extcap.pin_blk2? "yes":"no");
+      log_info ("MSE-Support ....: %s\n", s->extcap.mse? "yes":"no");
+      log_info ("Max-Special-DOs : %u\n", s->extcap.max_special_do);
+    }
   log_info ("Cmd-Chaining ...: %s\n", s->cardcap.cmd_chaining?"yes":"no");
   log_info ("Ext-Lc-Le ......: %s\n", s->cardcap.ext_lc_le?"yes":"no");
-  log_info ("Status Indicator: %02X\n", s->status_indicator);
-  log_info ("Symmetric crypto: %s\n", s->extcap.has_decrypt? "yes":"no");
-  log_info ("Button..........: %s\n", s->extcap.has_button? "yes":"no");
+  log_info ("Status-Indicator: %02X\n", s->status_indicator);
 
   log_info ("GnuPG-No-Sync ..: %s\n",  s->flags.no_sync? "yes":"no");
   log_info ("GnuPG-Def-PW2 ..: %s\n",  s->flags.def_chv2? "yes":"no");
