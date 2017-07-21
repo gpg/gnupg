@@ -681,7 +681,8 @@ proc_encrypted (CTX c, PACKET *pkt)
     }
   else
     {
-      if (gpg_err_code (result) == GPG_ERR_BAD_KEY
+      if ((gpg_err_code (result) == GPG_ERR_BAD_KEY
+	   || gpg_err_code (result) == GPG_ERR_CIPHER_ALGO)
           && *c->dek->s2k_cacheid != '\0')
         {
           if (opt.debug)
