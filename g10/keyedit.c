@@ -73,7 +73,7 @@ static int menu_clean (ctrl_t ctrl, kbnode_t keyblock, int self_only);
 static void menu_delkey (KBNODE pub_keyblock);
 static int menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive);
 static gpg_error_t menu_expire (ctrl_t ctrl, kbnode_t pub_keyblock,
-                                int force_mainkey, u32 newexpiration);
+                                int unattended, u32 newexpiration);
 static int menu_changeusage (ctrl_t ctrl, kbnode_t keyblock);
 static int menu_backsign (ctrl_t ctrl, kbnode_t pub_keyblock);
 static int menu_set_primary_uid (ctrl_t ctrl, kbnode_t pub_keyblock);
@@ -2808,18 +2808,24 @@ keyedit_quick_addkey (ctrl_t ctrl, const char *fpr, const char *algostr,
 }
 
 
-/* Unattended expiration setting function for the main key.
- *
+/* Unattended expiration setting function for the main key.  If
+ * SUBKEYFPRS is not NULL and SUBKEYSFPRS[0] is neither NULL, it is
+ * expected to be an array of fingerprints for subkeys to change. It
+ * may also be an array which just one item "*" to indicate that all
+ * keys shall be set to that expiration date.
  */
 void
-keyedit_quick_set_expire (ctrl_t ctrl, const char *fpr, const char *expirestr)
+keyedit_quick_set_expire (ctrl_t ctrl, const char *fpr, const char *expirestr,
+                          char **subkeyfprs)
 {
   gpg_error_t err;
-  kbnode_t keyblock;
+  kbnode_t keyblock, node;
   KEYDB_HANDLE kdbhd;
   int modified = 0;
   PKT_public_key *pk;
   u32 expire;
+  int primary_only = 0;
+  int idx;
 
 #ifdef HAVE_W32_SYSTEM
   /* See keyedit_menu for why we need this.  */
@@ -2846,7 +2852,6 @@ keyedit_quick_set_expire (ctrl_t ctrl, const char *fpr, const char *expirestr)
       goto leave;
     }
 
-
   expire = parse_expire_string (expirestr);
   if (expire == (u32)-1 )
     {
@@ -2857,8 +2862,78 @@ keyedit_quick_set_expire (ctrl_t ctrl, const char *fpr, const char *expirestr)
   if (expire)
     expire += make_timestamp ();
 
+  /* Check whether a subkey's expiration time shall be changed or the
+   * expiration time of all keys.  */
+  if (!subkeyfprs || !subkeyfprs[0])
+    primary_only = 1;
+  else if ( !strcmp (subkeyfprs[0], "*") && !subkeyfprs[1])
+    {
+      /* Change all subkeys keys which have not been revoked and are
+       * not yet expired.  */
+      merge_keys_and_selfsig (ctrl, keyblock);
+      for (node = keyblock; node; node = node->next)
+        {
+          if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+              && (pk = node->pkt->pkt.public_key)
+              && !pk->flags.revoked
+              && !pk->has_expired)
+            node->flag |= NODFLG_SELKEY;
+        }
+    }
+  else
+    {
+      /* Change specified subkeys.  */
+      KEYDB_SEARCH_DESC desc;
+      byte fprbin[MAX_FINGERPRINT_LEN];
+      size_t fprlen;
+
+      err = 0;
+      merge_keys_and_selfsig (ctrl, keyblock);
+      for (idx=0; subkeyfprs[idx]; idx++)
+        {
+          int any = 0;
+
+          /* Parse the fingerprint.  */
+          if (classify_user_id (subkeyfprs[idx], &desc, 1)
+              || !(desc.mode == KEYDB_SEARCH_MODE_FPR
+                   || desc.mode == KEYDB_SEARCH_MODE_FPR20))
+            {
+              log_error (_("\"%s\" is not a proper fingerprint\n"),
+                         subkeyfprs[idx] );
+              if (!err)
+                err = gpg_error (GPG_ERR_INV_NAME);
+              continue;
+            }
+
+          /* Set the flag for the matching non revoked subkey.  */
+          for (node = keyblock; node; node = node->next)
+            {
+              if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                  && (pk = node->pkt->pkt.public_key)
+                  && !pk->flags.revoked )
+                {
+                  fingerprint_from_pk (pk, fprbin, &fprlen);
+                  if (fprlen == 20 && !memcmp (fprbin, desc.u.fpr, 20))
+                    {
+                      node->flag |= NODFLG_SELKEY;
+                      any = 1;
+                    }
+                }
+            }
+          if (!any)
+            {
+              log_error (_("subkey \"%s\" not found\n"), subkeyfprs[idx]);
+              if (!err)
+                err = gpg_error (GPG_ERR_NOT_FOUND);
+            }
+        }
+
+      if (err)
+        goto leave;
+    }
+
   /* Set the new expiration date.  */
-  err = menu_expire (ctrl, keyblock, 1, expire);
+  err = menu_expire (ctrl, keyblock, primary_only? 1 : 2, expire);
   if (gpg_err_code (err) == GPG_ERR_TRUE)
     modified = 1;
   else if (err)
@@ -4283,30 +4358,34 @@ fail:
 
 
 /* With FORCE_MAINKEY cleared this function handles the interactive
- * menu option "expire".  With FORCE_MAINKEY set this functions only
+ * menu option "expire".  With UNATTENDED set to 1 this function only
  * sets the expiration date of the primary key to NEWEXPIRATION and
- * avoid all interactivity.  Retirns 0 if nothing was done,
+ * avoid all interactivity; with a value of 2 only the flagged subkeys
+ * are set to NEWEXPIRATION.  Returns 0 if nothing was done,
  * GPG_ERR_TRUE if the key was modified, or any other error code. */
 static gpg_error_t
 menu_expire (ctrl_t ctrl, kbnode_t pub_keyblock,
-             int force_mainkey, u32 newexpiration)
+             int unattended, u32 newexpiration)
 {
   int signumber, rc;
   u32 expiredate;
-  int mainkey = 0;
+  int only_mainkey;  /* Set if only the mainkey is to be updated.  */
   PKT_public_key *main_pk, *sub_pk;
   PKT_user_id *uid;
   kbnode_t node;
   u32 keyid[2];
 
-  if (force_mainkey)
+  if (unattended)
     {
-      mainkey = 1;
+      only_mainkey = (unattended == 1);
       expiredate = newexpiration;
     }
   else
     {
-      int n1 = count_selected_keys (pub_keyblock);
+      int n1;
+
+      only_mainkey = 0;
+      n1 = count_selected_keys (pub_keyblock);
       if (n1 > 1)
         {
           if (!cpr_get_answer_is_yes
@@ -4320,7 +4399,7 @@ menu_expire (ctrl_t ctrl, kbnode_t pub_keyblock,
       else
         {
           tty_printf (_("Changing expiration time for the primary key.\n"));
-          mainkey = 1;
+          only_mainkey = 1;
           no_primary_warning (pub_keyblock);
         }
 
@@ -4342,8 +4421,10 @@ menu_expire (ctrl_t ctrl, kbnode_t pub_keyblock,
 	}
       else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
-          if ((node->flag & NODFLG_SELKEY) && !force_mainkey)
+          if ((node->flag & NODFLG_SELKEY) && unattended != 1)
             {
+              /* The flag is set and we do not want to set the
+               * expiration date only for the main key.  */
               sub_pk = node->pkt->pkt.public_key;
               sub_pk->expiredate = expiredate;
             }
@@ -4353,14 +4434,14 @@ menu_expire (ctrl_t ctrl, kbnode_t pub_keyblock,
       else if (node->pkt->pkttype == PKT_USER_ID)
 	uid = node->pkt->pkt.user_id;
       else if (main_pk && node->pkt->pkttype == PKT_SIGNATURE
-	       && (mainkey || sub_pk))
+	       && (only_mainkey || sub_pk))
 	{
 	  PKT_signature *sig = node->pkt->pkt.signature;
 
 	  if (keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]
-	      && ((mainkey && uid
+	      && ((only_mainkey && uid
 		   && uid->created && (sig->sig_class & ~3) == 0x10)
-		  || (!mainkey && sig->sig_class == 0x18))
+		  || (!only_mainkey && sig->sig_class == 0x18))
 	      && sig->flags.chosen_selfsig)
 	    {
 	      /* This is a self-signature which is to be replaced.  */
@@ -4369,15 +4450,15 @@ menu_expire (ctrl_t ctrl, kbnode_t pub_keyblock,
 
 	      signumber++;
 
-	      if ((mainkey && main_pk->version < 4)
-		  || (!mainkey && sub_pk->version < 4))
+	      if ((only_mainkey && main_pk->version < 4)
+		  || (!only_mainkey && sub_pk->version < 4))
 		{
 		  log_info
                     (_("You can't change the expiration date of a v3 key\n"));
 		  return gpg_error (GPG_ERR_LEGACY_KEY);
 		}
 
-	      if (mainkey)
+	      if (only_mainkey)
 		rc = update_keysig_packet (ctrl,
                                            &newsig, sig, main_pk, uid, NULL,
 					   main_pk, keygen_add_key_expire,

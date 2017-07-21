@@ -663,10 +663,16 @@ supplied passphrase is used for the new key and the agent does not ask
 for it.  To create a key without any protection @code{--passphrase ''}
 may be used.
 
-@item --quick-set-expire @code{fpr} @code{expire}
+@item --quick-set-expire @var{fpr} @var{expire} [*|@var{subfprs}]
 @opindex quick-set-expire
-Directly set the expiration time of the primary key to @code{expire}.
-To remove the expiration time @code{0} can be used.
+With two arguments given, directly set the expiration time of the
+primary key identified by @var{fpr} to @var{expire}.  To remove the
+expiration time @code{0} can be used.  With three arguments and the
+third given as an asterisk, the expiration time of all non-revoked and
+not yet expired subkeys are set to @var{expire}.  With more than two
+arguments and a list of fingerprints given for @var{subfprs}, all
+non-revoked subkeys matching these fingerprints are set to
+@var{expire}.
 
 
 @item --quick-add-key @code{fpr} [@code{algo} [@code{usage} [@code{expire}]]]
