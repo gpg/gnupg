@@ -224,6 +224,12 @@ copy_public_key (PKT_public_key *d, PKT_public_key *s)
     }
   else
     d->revkey = NULL;
+
+  if (s->serialno)
+    d->serialno = xstrdup (s->serialno);
+  if (s->updateurl)
+    d->updateurl = xstrdup (s->updateurl);
+
   return d;
 }
 
