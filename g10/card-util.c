@@ -777,14 +777,6 @@ change_url (void)
   trim_spaces (url);
   cpr_kill_prompt ();
 
-  if (strlen (url) > 254 )
-    {
-      tty_printf (_("Error: URL too long "
-                    "(limit is %d characters).\n"), 254);
-      xfree (url);
-      return -1;
-    }
-
   rc = agent_scd_setattr ("PUBKEY-URL", url, strlen (url), NULL );
   if (rc)
     log_error ("error setting URL: %s\n", gpg_strerror (rc));
@@ -831,12 +823,14 @@ fetch_url (ctrl_t ctrl)
 }
 
 
-/* Read data from file FNAME up to MAXLEN characters.  On error return
-   -1 and store NULL at R_BUFFER; on success return the number of
-   bytes read and store the address of a newly allocated buffer at
-   R_BUFFER. */
+#define MAX_GET_DATA_FROM_FILE 16384
+
+/* Read data from file FNAME up to MAX_GET_DATA_FROM_FILE characters.
+   On error return -1 and store NULL at R_BUFFER; on success return
+   the number of bytes read and store the address of a newly allocated
+   buffer at R_BUFFER. */
 static int
-get_data_from_file (const char *fname, size_t maxlen, char **r_buffer)
+get_data_from_file (const char *fname, char **r_buffer)
 {
   estream_t fp;
   char *data;
@@ -859,7 +853,7 @@ get_data_from_file (const char *fname, size_t maxlen, char **r_buffer)
       return -1;
     }
 
-  data = xtrymalloc (maxlen? maxlen:1);
+  data = xtrymalloc (MAX_GET_DATA_FROM_FILE);
   if (!data)
     {
       tty_printf (_("error allocating enough memory: %s\n"), strerror (errno));
@@ -867,10 +861,7 @@ get_data_from_file (const char *fname, size_t maxlen, char **r_buffer)
       return -1;
     }
 
-  if (maxlen)
-    n = es_fread (data, 1, maxlen, fp);
-  else
-    n = 0;
+  n = es_fread (data, 1, MAX_GET_DATA_FROM_FILE, fp);
   es_fclose (fp);
   if (n < 0)
     {
@@ -927,7 +918,7 @@ change_login (const char *args)
     {
       for (args++; spacep (args); args++)
         ;
-      n = get_data_from_file (args, 254, &data);
+      n = get_data_from_file (args, &data);
       if (n < 0)
         return -1;
     }
@@ -940,14 +931,6 @@ change_login (const char *args)
       trim_spaces (data);
       cpr_kill_prompt ();
       n = strlen (data);
-    }
-
-  if (n > 254 )
-    {
-      tty_printf (_("Error: Login data too long "
-                    "(limit is %d characters).\n"), 254);
-      xfree (data);
-      return -1;
     }
 
   rc = agent_scd_setattr ("LOGIN-DATA", data, n, NULL );
@@ -973,7 +956,7 @@ change_private_do (const char *args, int nr)
     {
       for (args++; spacep (args); args++)
         ;
-      n = get_data_from_file (args, 254, &data);
+      n = get_data_from_file (args, &data);
       if (n < 0)
         return -1;
     }
@@ -986,14 +969,6 @@ change_private_do (const char *args, int nr)
       trim_spaces (data);
       cpr_kill_prompt ();
       n = strlen (data);
-    }
-
-  if (n > 254 )
-    {
-      tty_printf (_("Error: Private DO too long "
-                    "(limit is %d characters).\n"), 254);
-      xfree (data);
-      return -1;
     }
 
   rc = agent_scd_setattr (do_name, data, n, NULL );
@@ -1016,7 +991,7 @@ change_cert (const char *args)
     {
       for (args++; spacep (args); args++)
         ;
-      n = get_data_from_file (args, 16384, &data);
+      n = get_data_from_file (args, &data);
       if (n < 0)
         return -1;
     }
