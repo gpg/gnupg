@@ -2776,6 +2776,24 @@ dirmngr_status_help (ctrl_t ctrl, const char *text)
   return err;
 }
 
+
+/* This function is similar to print_assuan_status but takes a CTRL
+ * arg instead of an assuan context as first argument.  */
+gpg_error_t
+dirmngr_status_printf (ctrl_t ctrl, const char *keyword,
+                       const char *format, ...)
+{
+  gpg_error_t err;
+  va_list arg_ptr;
+  assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+
+  va_start (arg_ptr, format);
+  err = vprint_assuan_status (ctx, keyword, format, arg_ptr);
+  va_end (arg_ptr);
+  return err;
+}
+
+
 /* Send a tick progress indicator back.  Fixme: This is only done for
    the currently active channel.  */
 gpg_error_t

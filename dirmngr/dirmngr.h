@@ -229,6 +229,9 @@ int dirmngr_assuan_log_monitor (assuan_context_t ctx, unsigned int cat,
 void start_command_handler (gnupg_fd_t fd);
 gpg_error_t dirmngr_status (ctrl_t ctrl, const char *keyword, ...);
 gpg_error_t dirmngr_status_help (ctrl_t ctrl, const char *text);
+gpg_error_t dirmngr_status_printf (ctrl_t ctrl, const char *keyword,
+                                   const char *format,
+                                   ...) GPGRT_ATTR_PRINTF(3,4);
 gpg_error_t dirmngr_tick (ctrl_t ctrl);
 
 /*-- http-ntbtls.c --*/
