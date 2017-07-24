@@ -3282,7 +3282,7 @@ gpg_error_t
 http_verify_server_credentials (http_session_t sess)
 {
 #if HTTP_USE_GNUTLS
-  static const char const errprefix[] = "TLS verification of peer failed";
+  static const char errprefix[] = "TLS verification of peer failed";
   int rc;
   unsigned int status;
   const char *hostname;

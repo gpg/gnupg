@@ -363,6 +363,7 @@ parse_one_pattern (const char *pattern)
       break;
     case '*':
       pattern++;
+      /* fall through */
     default:			/* Take as substring match. */
       {
 	const char format[] = "(|(sn=*%s*)(|(cn=*%s*)(mail=*%s*)))";
