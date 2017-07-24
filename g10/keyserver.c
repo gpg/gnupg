@@ -1884,7 +1884,7 @@ keyserver_fetch (ctrl_t ctrl, strlist_t urilist, int origin)
           stats_handle = import_new_stats_handle();
           import_keys_es_stream (ctrl, datastream, stats_handle, NULL, NULL,
                                  opt.keyserver_options.import_options,
-                                 NULL, NULL, origin, NULL);
+                                 NULL, NULL, origin, sl->d);
 
           import_print_stats (stats_handle);
           import_release_stats_handle (stats_handle);

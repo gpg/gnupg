@@ -1425,6 +1425,22 @@ apply_meta_data (kbnode_t keyblock, int origin, const char *url)
               if (!pk->updateurl)
                 return gpg_error_from_syserror ();
             }
+          else if (origin == KEYORG_FILE)
+            {
+              pk->keyorg = origin;
+              pk->keyupdate = curtime;
+            }
+          else if (origin == KEYORG_URL)
+            {
+              pk->keyorg = origin;
+              pk->keyupdate = curtime;
+              if (url)
+                {
+                  pk->updateurl = xtrystrdup (url);
+                  if (!pk->updateurl)
+                    return gpg_error_from_syserror ();
+                }
+            }
         }
       else if (node->pkt->pkttype == PKT_USER_ID)
         {
@@ -1455,6 +1471,16 @@ apply_meta_data (kbnode_t keyblock, int origin, const char *url)
                * However we do not store the keyserver URL in the UID.
                * A later update (merge) from a more trusted source
                * will replace this info.  */
+              uid->keyorg = origin;
+              uid->keyupdate = curtime;
+            }
+          else if (origin == KEYORG_FILE)
+            {
+              uid->keyorg = origin;
+              uid->keyupdate = curtime;
+            }
+          else if (origin == KEYORG_URL)
+            {
               uid->keyorg = origin;
               uid->keyupdate = curtime;
             }

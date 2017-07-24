@@ -266,6 +266,7 @@ struct
 
   /* The value of --key-origin.  See parse_key_origin().  */
   int key_origin;
+  char *key_origin_url;
 
   int passphrase_repeat;
   int pinentry_mode;

@@ -4325,6 +4325,11 @@ int
 parse_key_origin (char *string)
 {
   int i;
+  char *comma;
+
+  comma = strchr (string, ',');
+  if (comma)
+    *comma = 0;
 
   if (!ascii_strcasecmp (string, "help"))
     {
@@ -4338,9 +4343,19 @@ parse_key_origin (char *string)
     if (!ascii_strcasecmp (string, key_origin_list[i].name))
       {
         opt.key_origin = key_origin_list[i].origin;
+        xfree (opt.key_origin_url);
+        opt.key_origin_url = NULL;
+        if (comma && comma[1])
+          {
+            opt.key_origin_url = xstrdup (comma+1);
+            trim_spaces (opt.key_origin_url);
+          }
+
         return 1;
       }
 
+  if (comma)
+    *comma = ',';
   return 0;
 }
 
