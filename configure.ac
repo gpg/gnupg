@@ -47,7 +47,7 @@ m4_define([mym4_version],      m4_argn(4, mym4_verslist))
 m4_define([mym4_revision],     m4_argn(7, mym4_verslist))
 m4_define([mym4_revision_dec], m4_argn(8, mym4_verslist))
 m4_esyscmd([echo ]mym4_version[>VERSION])
-AC_INIT([mym4_package],[mym4_version], [https://dev.gnupg.org])
+AC_INIT([mym4_package],[mym4_version], [https://bugs.gnupg.org])
 
 NEED_GPG_ERROR_VERSION=1.24
 

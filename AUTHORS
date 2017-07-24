@@ -2,7 +2,7 @@ Program: GnuPG
 Homepage: https://www.gnupg.org
 Download: https://gnupg.org/ftp/gcrypt/gnupg/
 Repository: git://git.gnupg.org/gnupg.git
-Bug reports: https://dev.gnupg.org
+Bug reports: https://bugs.gnupg.org
 Security related bug reports: <security@gnupg.org>
 Maintainer: Werner Koch <wk@gnupg.org>
 License: GPLv3+

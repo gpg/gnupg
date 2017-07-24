@@ -1139,7 +1139,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     the list of reported bugs on the documentation page). If you're
     not sure about it being a bug, you can send mail to the
     gnupg-devel list. Otherwise, use the bug tracking system at
-    [[https://dev.gnupg.org][dev.gnupg.org]].
+    [[https://bugs.gnupg.org][bugs.gnupg.org]].
 
 ** Why doesn't GnuPG support X.509 certificates?
    :PROPERTIES:
