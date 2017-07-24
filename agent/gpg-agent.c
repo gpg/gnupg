@@ -39,6 +39,7 @@
 # endif
 # include <aclapi.h>
 # include <sddl.h>
+# include <direct.h>
 #else /*!HAVE_W32_SYSTEM*/
 # include <sys/socket.h>
 # include <sys/un.h>
@@ -1558,6 +1559,11 @@ main (int argc, char **argv )
       (void)csh_style;
       (void)nodetach;
       initialize_modules ();
+      if (_chdir("\\"))
+        {
+          log_error ("chdir to / failed: %s\n", strerror (errno));
+          exit (1);
+        }
 
 #else /*!HAVE_W32_SYSTEM*/
 
