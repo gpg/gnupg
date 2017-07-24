@@ -896,7 +896,6 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
             }
         }
       xfree (srvs);
-      log_debug ("srv: got '%s%s'\n", domain, portstr);
     }
 
   gcry_md_hash_buffer (GCRY_MD_SHA1, sha1buf, mbox, strlen (mbox));
@@ -932,6 +931,13 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
                        encodedhash,
                        NULL);
       no_log = 1;
+      if (uri)
+        {
+          err = dirmngr_status_printf (ctrl, "SOURCE", "https://%s%s",
+                                       domain, portstr);
+          if (err)
+            goto leave;
+        }
     }
   if (!uri)
     {
