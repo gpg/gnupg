@@ -76,16 +76,16 @@ static struct {
   int tag;
   int constructed;
   int get_from;  /* Constructed DO with this DO or 0 for direct access. */
-  int binary:1;
-  int dont_cache:1;
-  int flush_on_error:1;
-  int get_immediate_in_v11:1; /* Enable a hack to bypass the cache of
+  unsigned int binary:1;
+  unsigned int dont_cache:1;
+  unsigned int flush_on_error:1;
+  unsigned int get_immediate_in_v11:1; /* Enable a hack to bypass the cache of
                                  this data object if it is used in 1.1
                                  and later versions of the card.  This
                                  does not work with composite DO and
                                  is currently only useful for the CHV
                                  status bytes. */
-  int try_extlen:2;           /* Large object; try to use an extended
+  unsigned int try_extlen:2;           /* Large object; try to use an extended
                                  length APDU when !=0.  The size is
                                  determined by extcap.max_certlen_3
                                  when == 1, and by extcap.max_special_do
