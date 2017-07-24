@@ -1926,14 +1926,36 @@ keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
   else if (key)
     {
       int armor_status=opt.no_armor;
+      import_filter_t save_filt;
 
       /* CERTs and DANE records are always in binary format */
       opt.no_armor=1;
-
-      err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
-                                   (opt.keyserver_options.import_options
-                                    | IMPORT_NO_SECKEY),
-                                   NULL, NULL, KEYORG_DANE);
+      if (dane_mode)
+        {
+          save_filt = save_and_clear_import_filter ();
+          if (!save_filt)
+            err = gpg_error_from_syserror ();
+          else
+            {
+              char *filtstr = es_bsprintf ("keep-uid=mbox = %s", look);
+              err = filtstr? 0 : gpg_error_from_syserror ();
+              if (!err)
+                err = parse_and_set_import_filter (filtstr);
+              xfree (filtstr);
+              if (!err)
+                err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
+                                             IMPORT_NO_SECKEY,
+                                             NULL, NULL, KEYORG_DANE);
+              restore_import_filter (save_filt);
+            }
+        }
+      else
+        {
+          err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
+                                       (opt.keyserver_options.import_options
+                                        | IMPORT_NO_SECKEY),
+                                       NULL, NULL, 0);
+        }
 
       opt.no_armor=armor_status;
 
