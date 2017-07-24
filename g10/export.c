@@ -1190,7 +1190,8 @@ receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,
 
   prompt = gpg_format_keydesc (ctrl, pk, FORMAT_KEYDESC_EXPORT,1);
   err = agent_export_key (ctrl, hexgrip, prompt, !cleartext, cache_nonce_addr,
-                          &wrappedkey, &wrappedkeylen);
+                          &wrappedkey, &wrappedkeylen,
+			  pk->keyid, pk->main_keyid, pk->pubkey_algo);
   xfree (prompt);
 
   if (err)

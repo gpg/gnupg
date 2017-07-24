@@ -2152,7 +2152,8 @@ agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
 gpg_error_t
 agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
                   int openpgp_protected, char **cache_nonce_addr,
-                  unsigned char **r_result, size_t *r_resultlen)
+                  unsigned char **r_result, size_t *r_resultlen,
+		  u32 *keyid, u32 *mainkeyid, int pubkey_algo)
 {
   gpg_error_t err;
   struct cache_nonce_parm_s cn_parm;
@@ -2164,6 +2165,9 @@ agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
 
   memset (&dfltparm, 0, sizeof dfltparm);
   dfltparm.ctrl = ctrl;
+  dfltparm.keyinfo.keyid       = keyid;
+  dfltparm.keyinfo.mainkeyid   = mainkeyid;
+  dfltparm.keyinfo.pubkey_algo = pubkey_algo;
 
   *r_result = NULL;
 

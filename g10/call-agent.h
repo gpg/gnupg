@@ -192,7 +192,8 @@ gpg_error_t agent_import_key (ctrl_t ctrl, const char *desc,
 gpg_error_t agent_export_key (ctrl_t ctrl, const char *keygrip,
                               const char *desc, int openpgp_protected,
                               char **cache_nonce_addr,
-                              unsigned char **r_result, size_t *r_resultlen);
+                              unsigned char **r_result, size_t *r_resultlen,
+			      u32 *keyid, u32 *mainkeyid, int pubkey_algo);
 
 /* Delete a key from the agent.  */
 gpg_error_t agent_delete_key (ctrl_t ctrl, const char *hexkeygrip,
