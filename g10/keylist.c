@@ -1012,9 +1012,9 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
                           key_origin_string (uid->keyorg),
                           mk_datestr (updatestr, sizeof updatestr,
                                       uid->keyupdate),
-                          pk->updateurl? "url=":"");
-              if (pk->updateurl)
-                print_utf8_string (es_stdout, pk->updateurl);
+                          uid->updateurl? "url=":"");
+              if (uid->updateurl)
+                print_utf8_string (es_stdout, uid->updateurl);
               es_putc ('\n', es_stdout);
             }
 

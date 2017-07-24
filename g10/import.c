@@ -97,7 +97,8 @@ struct import_filter_s import_filter;
 static int import (ctrl_t ctrl,
                    IOBUF inp, const char* fname, struct import_stats_s *stats,
 		   unsigned char **fpr, size_t *fpr_len, unsigned int options,
-		   import_screener_t screener, void *screener_arg, int origin);
+		   import_screener_t screener, void *screener_arg,
+                   int origin, const char *url);
 static int read_block (IOBUF a, int with_meta,
                        PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys);
 static void revocation_present (ctrl_t ctrl, kbnode_t keyblock);
@@ -107,7 +108,7 @@ static int import_one (ctrl_t ctrl,
                        unsigned char **fpr, size_t *fpr_len,
                        unsigned int options, int from_sk, int silent,
                        import_screener_t screener, void *screener_arg,
-                       int origin);
+                       int origin, const char *url);
 static int import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
                               struct import_stats_s *stats, int batch,
                               unsigned int options, int for_migration,
@@ -432,7 +433,7 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
                       unsigned char **fpr, size_t *fpr_len,
 		      unsigned int options,
                       import_screener_t screener, void *screener_arg,
-                      int origin)
+                      int origin, const char *url)
 {
   int i;
   int rc = 0;
@@ -444,7 +445,7 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
   if (inp)
     {
       rc = import (ctrl, inp, "[stream]", stats, fpr, fpr_len, options,
-                   screener, screener_arg, origin);
+                   screener, screener_arg, origin, url);
     }
   else
     {
@@ -469,7 +470,7 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
           else
             {
               rc = import (ctrl, inp2, fname, stats, fpr, fpr_len, options,
-                           screener, screener_arg, origin);
+                           screener, screener_arg, origin, url);
               iobuf_close (inp2);
               /* Must invalidate that ugly cache to actually close it. */
               iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname);
@@ -503,10 +504,11 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
 
 void
 import_keys (ctrl_t ctrl, char **fnames, int nnames,
-	     import_stats_t stats_handle, unsigned int options, int origin)
+	     import_stats_t stats_handle, unsigned int options,
+             int origin, const char *url)
 {
   import_keys_internal (ctrl, NULL, fnames, nnames, stats_handle,
-                        NULL, NULL, options, NULL, NULL, origin);
+                        NULL, NULL, options, NULL, NULL, origin, url);
 }
 
 
@@ -516,7 +518,7 @@ import_keys_es_stream (ctrl_t ctrl, estream_t fp,
                        unsigned char **fpr, size_t *fpr_len,
                        unsigned int options,
                        import_screener_t screener, void *screener_arg,
-                       int origin)
+                       int origin, const char *url)
 {
   int rc;
   iobuf_t inp;
@@ -531,7 +533,7 @@ import_keys_es_stream (ctrl_t ctrl, estream_t fp,
 
   rc = import_keys_internal (ctrl, inp, NULL, 0, stats_handle,
                              fpr, fpr_len, options,
-                             screener, screener_arg, origin);
+                             screener, screener_arg, origin, url);
 
   iobuf_close (inp);
   return rc;
@@ -541,7 +543,8 @@ import_keys_es_stream (ctrl_t ctrl, estream_t fp,
 static int
 import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
 	unsigned char **fpr,size_t *fpr_len, unsigned int options,
-	import_screener_t screener, void *screener_arg, int origin)
+	import_screener_t screener, void *screener_arg,
+        int origin, const char *url)
 {
   PACKET *pending_pkt = NULL;
   kbnode_t keyblock = NULL;  /* Need to initialize because gcc can't
@@ -569,7 +572,7 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
       if (keyblock->pkt->pkttype == PKT_PUBLIC_KEY)
         rc = import_one (ctrl, keyblock,
                          stats, fpr, fpr_len, options, 0, 0,
-                         screener, screener_arg, origin);
+                         screener, screener_arg, origin, url);
       else if (keyblock->pkt->pkttype == PKT_SECRET_KEY)
         rc = import_secret_one (ctrl, keyblock, stats,
                                 opt.batch, options, 0,
@@ -1379,11 +1382,53 @@ apply_drop_sig_filter (ctrl_t ctrl, kbnode_t keyblock, recsel_expr_t selector)
 
 
 /* Apply meta data to KEYBLOCK.  This sets the origin of the key to
- * ORIGIN.  If MERGE is true KEYBLOCK has been updated and the meta
- * data is merged and not simply inserted.  */
+ * ORIGIN and the updateurl to URL.  Note that this function is only
+ * used for a new key, that is not when we are merging keys.  */
 static gpg_error_t
-apply_meta_data (kbnode_t keyblock, int merge, int origin)
+apply_meta_data (kbnode_t keyblock, int origin, const char *url)
 {
+  kbnode_t node;
+  u32 curtime = make_timestamp ();
+
+  for (node = keyblock; node; node = node->next)
+    {
+      if (is_deleted_kbnode (node))
+        ;
+      else if (node->pkt->pkttype == PKT_PUBLIC_KEY
+               && (origin == KEYORG_WKD || origin == KEYORG_DANE))
+        {
+          /* For WKD and DANE we insert origin information also for
+           * the key but we don't record the URL because we have have
+           * no use for that: An update using a keyserver has higher
+           * precedence and will thus update this origin info.  For
+           * refresh using WKD or DANE we need to go via the User ID
+           * anyway.  Recall that we are only inserting a new key. */
+          PKT_public_key *pk = node->pkt->pkt.public_key;
+
+          pk->keyorg = origin;
+          pk->keyupdate = curtime;
+        }
+      else if (node->pkt->pkttype == PKT_USER_ID
+               && (origin == KEYORG_WKD || origin == KEYORG_DANE))
+        {
+          /* We insert origin information on a UID only when we
+           * received them via the Web Key Directory or a DANE record.
+           * The key we receive here from the WKD has been filtered to
+           * contain only the user ID as looked up in the WKD.  For a
+           * DANE origin we this should also be the case.  Thus we
+           * will see here only one user id.  */
+          PKT_user_id *uid = node->pkt->pkt.user_id;
+
+          uid->keyorg = origin;
+          uid->keyupdate = curtime;
+          if (url)
+            {
+              uid->updateurl = xtrystrdup (url);
+              if (!uid->updateurl)
+                return gpg_error_from_syserror ();
+            }
+        }
+    }
 
   return 0;
 }
@@ -1395,7 +1440,7 @@ apply_meta_data (kbnode_t keyblock, int merge, int origin)
  * the internal errorcount, so that invalid input can be detected by
  * programs which called gpg.  If SILENT is no messages are printed -
  * even most error messages are suppressed.  ORIGIN is the origin of
- * the key (0 for unknown).
+ * the key (0 for unknown) and URL the corresponding URL.
  */
 static int
 import_one (ctrl_t ctrl,
@@ -1403,7 +1448,7 @@ import_one (ctrl_t ctrl,
 	    unsigned char **fpr, size_t *fpr_len, unsigned int options,
 	    int from_sk, int silent,
             import_screener_t screener, void *screener_arg,
-            int origin)
+            int origin, const char *url)
 {
   PKT_public_key *pk;
   PKT_public_key *pk_orig = NULL;
@@ -1627,7 +1672,7 @@ import_one (ctrl_t ctrl,
        * and thus the address of KEYBLOCK won't change.  */
       if ( !(options & IMPORT_RESTORE) )
         {
-          rc = apply_meta_data (keyblock, 0, origin);
+          rc = apply_meta_data (keyblock, origin, url);
           if (rc)
             {
               log_error ("apply_meta_data failed: %s\n", gpg_strerror (rc));
@@ -2313,7 +2358,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
 	 the secret keys.  FIXME?  */
       import_one (ctrl, pub_keyblock, stats,
 		  NULL, NULL, options, 1, for_migration,
-                  screener, screener_arg, 0);
+                  screener, screener_arg, 0, NULL);
 
       /* Fixme: We should check for an invalid keyblock and
 	 cancel the secret key import in this case.  */

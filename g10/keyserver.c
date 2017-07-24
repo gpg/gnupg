@@ -1747,7 +1747,7 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
                              (opt.keyserver_options.import_options
                               | IMPORT_NO_SECKEY),
                              keyserver_retrieval_screener, &screenerarg,
-                             0 /* FIXME? */);
+                             0 /* FIXME? */, NULL);
     }
   es_fclose (datastream);
   xfree (source);
@@ -1878,7 +1878,7 @@ keyserver_fetch (ctrl_t ctrl, strlist_t urilist, int origin)
           stats_handle = import_new_stats_handle();
           import_keys_es_stream (ctrl, datastream, stats_handle, NULL, NULL,
                                  opt.keyserver_options.import_options,
-                                 NULL, NULL, origin);
+                                 NULL, NULL, origin, NULL);
 
           import_print_stats (stats_handle);
           import_release_stats_handle (stats_handle);
@@ -1945,7 +1945,7 @@ keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
               if (!err)
                 err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
                                              IMPORT_NO_SECKEY,
-                                             NULL, NULL, KEYORG_DANE);
+                                             NULL, NULL, KEYORG_DANE, NULL);
               restore_import_filter (save_filt);
             }
         }
@@ -1954,7 +1954,7 @@ keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
           err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
                                        (opt.keyserver_options.import_options
                                         | IMPORT_NO_SECKEY),
-                                       NULL, NULL, 0);
+                                       NULL, NULL, 0, NULL);
         }
 
       opt.no_armor=armor_status;
@@ -2043,6 +2043,7 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name, int quick,
   gpg_error_t err;
   char *mbox;
   estream_t key;
+  char *url = NULL;
 
   /* We want to work on the mbox.  That is what dirmngr will do anyway
    * and we need the mbox for the import filter anyway.  */
@@ -2055,7 +2056,7 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name, int quick,
       return err;
     }
 
-  err = gpg_dirmngr_wkd_get (ctrl, mbox, quick, &key);
+  err = gpg_dirmngr_wkd_get (ctrl, mbox, quick, &key, &url);
   if (err)
     ;
   else if (key)
@@ -2078,7 +2079,7 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name, int quick,
           if (!err)
             err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
                                          IMPORT_NO_SECKEY,
-                                         NULL, NULL, KEYORG_WKD);
+                                         NULL, NULL, KEYORG_WKD, url);
 
         }
 
@@ -2089,6 +2090,7 @@ keyserver_import_wkd (ctrl_t ctrl, const char *name, int quick,
       key = NULL;
     }
 
+  xfree (url);
   xfree (mbox);
   return err;
 }

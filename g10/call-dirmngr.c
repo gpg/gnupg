@@ -41,7 +41,8 @@
 #include "call-dirmngr.h"
 
 
-/* Parameter structure used to gather status info.  */
+/* Parameter structure used to gather status info.  Note that it is
+ * also used for WKD requests.  */
 struct ks_status_parm_s
 {
   const char *keyword; /* Look for this keyword or NULL for "SOURCE". */
@@ -368,7 +369,7 @@ clear_context_flags (ctrl_t ctrl, assuan_context_t ctx)
 
 
 
-/* Status callback for ks_list, ks_get and ks_search.  */
+/* Status callback for ks_list, ks_get, ks_search, and wkd_get  */
 static gpg_error_t
 ks_status_cb (void *opaque, const char *line)
 {
@@ -1317,17 +1318,24 @@ gpg_dirmngr_get_pka (ctrl_t ctrl, const char *userid,
 
 /* Ask the dirmngr to retrieve a key via the Web Key Directory
  * protocol.  If QUICK is set the dirmngr is advised to use a shorter
- * timeout.  On success a new estream with the key is stored at R_KEY.
+ * timeout.  On success a new estream with the key stored at R_KEY and the
+ * url of the lookup (if any) stored at R_URL.  Note that
  */
 gpg_error_t
-gpg_dirmngr_wkd_get (ctrl_t ctrl, const char *name, int quick, estream_t *r_key)
+gpg_dirmngr_wkd_get (ctrl_t ctrl, const char *name, int quick,
+                     estream_t *r_key, char **r_url)
 {
   gpg_error_t err;
   assuan_context_t ctx;
-  struct dns_cert_parm_s parm;
+  struct ks_status_parm_s stparm = { NULL };
+  struct dns_cert_parm_s parm = { NULL };
   char *line = NULL;
 
-  memset (&parm, 0, sizeof parm);
+  if (r_key)
+    *r_key = NULL;
+
+  if (r_url)
+    *r_url = NULL;
 
   err = open_context (ctrl, &ctx);
   if (err)
@@ -1352,7 +1360,7 @@ gpg_dirmngr_wkd_get (ctrl_t ctrl, const char *name, int quick, estream_t *r_key)
       goto leave;
     }
   err = assuan_transact (ctx, line, dns_cert_data_cb, &parm,
-                         NULL, NULL, NULL, &parm);
+                         NULL, NULL, ks_status_cb, &stparm);
   if (err)
     goto leave;
 
@@ -1363,7 +1371,14 @@ gpg_dirmngr_wkd_get (ctrl_t ctrl, const char *name, int quick, estream_t *r_key)
       parm.memfp = NULL;
     }
 
+  if (r_url)
+    {
+      *r_url = stparm.source;
+      stparm.source = NULL;
+    }
+
  leave:
+  xfree (stparm.source);
   xfree (parm.fpr);
   xfree (parm.url);
   es_fclose (parm.memfp);

@@ -352,13 +352,14 @@ void            restore_import_filter (import_filter_t filt);
 gpg_error_t read_key_from_file (ctrl_t ctrl, const char *fname,
                                 kbnode_t *r_keyblock);
 void import_keys (ctrl_t ctrl, char **fnames, int nnames,
-		  import_stats_t stats_hd, unsigned int options, int origin);
+		  import_stats_t stats_hd, unsigned int options,
+                  int origin, const char *url);
 int import_keys_es_stream (ctrl_t ctrl, estream_t fp,
                            import_stats_t stats_handle,
                            unsigned char **fpr, size_t *fpr_len,
                            unsigned int options,
                            import_screener_t screener, void *screener_arg,
-                           int origin);
+                           int origin, const char *url);
 gpg_error_t import_old_secring (ctrl_t ctrl, const char *fname);
 import_stats_t import_new_stats_handle (void);
 void import_release_stats_handle (import_stats_t hd);

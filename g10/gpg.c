@@ -4515,7 +4515,7 @@ main (int argc, char **argv)
         opt.import_options |= IMPORT_FAST; /* fall through */
       case aImport:
 	import_keys (ctrl, argc? argv:NULL, argc, NULL,
-                     opt.import_options, opt.key_origin);
+                     opt.import_options, opt.key_origin, NULL);
 	break;
 
 	/* TODO: There are a number of command that use this same
