@@ -1672,7 +1672,9 @@ send_request (http_t hd, const char *httphost, const char *auth,
   char *proxy_authstr = NULL;
   char *authstr = NULL;
   assuan_fd_t sock;
+#ifdef USE_TLS
   int have_http_proxy = 0;
+#endif
 
   if (hd->uri->use_tls && !hd->session)
     {
@@ -1759,8 +1761,10 @@ send_request (http_t hd, const char *httphost, const char *auth,
 
       if (err)
         ;
+#ifdef USE_TLS
       else if (!strcmp (uri->scheme, "http"))
         have_http_proxy = 1;
+#endif
       else if (!strcmp (uri->scheme, "socks4")
                || !strcmp (uri->scheme, "socks5h"))
         err = gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
