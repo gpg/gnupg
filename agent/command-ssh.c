@@ -3707,7 +3707,7 @@ serve_mmapped_ssh_request (ctrl_t ctrl,
   gpg_error_t err;
   int send_err = 0;
   int valid_response = 0;
-  ssh_request_spec_t *spec;
+  const ssh_request_spec_t *spec;
   u32 msglen;
   estream_t request_stream, response_stream;
 
