@@ -1590,11 +1590,12 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
 {
   gpg_error_t err = 0;
   char **pattern;
-  int idx, npat;
+  int idx, npat, npat_fpr;
   estream_t datastream;
   char *source = NULL;
   size_t linelen;  /* Estimated linelen for KS_GET.  */
   size_t n;
+  int only_fprs;
 
 #define MAX_KS_GET_LINELEN 950  /* Somewhat lower than the real limit.  */
 
@@ -1613,7 +1614,7 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
      but we are sure that R_NDESC_USED has been updated.  This avoids
      a possible indefinite loop.  */
   linelen = 17; /* "KS_GET --quick --" */
-  for (npat=idx=0; idx < ndesc; idx++)
+  for (npat=npat_fpr=0, idx=0; idx < ndesc; idx++)
     {
       int quiet = 0;
 
@@ -1635,6 +1636,8 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
                        desc[idx].mode == KEYDB_SEARCH_MODE_FPR20? 20 : 16,
                        pattern[npat]+2);
               npat++;
+              if (desc[idx].mode == KEYDB_SEARCH_MODE_FPR20)
+                npat_fpr++;
             }
         }
       else if(desc[idx].mode == KEYDB_SEARCH_MODE_LONG_KID)
@@ -1716,6 +1719,8 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
      this is different from NPAT.  */
   *r_ndesc_used = idx;
 
+  only_fprs = (npat && npat == npat_fpr);
+
   err = gpg_dirmngr_ks_get (ctrl, pattern, override_keyserver, quick,
                             &datastream, &source);
   for (idx=0; idx < npat; idx++)
@@ -1747,7 +1752,8 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
                              (opt.keyserver_options.import_options
                               | IMPORT_NO_SECKEY),
                              keyserver_retrieval_screener, &screenerarg,
-                             0 /* FIXME? */, NULL);
+                             only_fprs? KEYORG_KS : 0,
+                             source);
     }
   es_fclose (datastream);
   xfree (source);

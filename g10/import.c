@@ -1394,38 +1394,69 @@ apply_meta_data (kbnode_t keyblock, int origin, const char *url)
     {
       if (is_deleted_kbnode (node))
         ;
-      else if (node->pkt->pkttype == PKT_PUBLIC_KEY
-               && (origin == KEYORG_WKD || origin == KEYORG_DANE))
+      else if (node->pkt->pkttype == PKT_PUBLIC_KEY)
         {
-          /* For WKD and DANE we insert origin information also for
-           * the key but we don't record the URL because we have have
-           * no use for that: An update using a keyserver has higher
-           * precedence and will thus update this origin info.  For
-           * refresh using WKD or DANE we need to go via the User ID
-           * anyway.  Recall that we are only inserting a new key. */
           PKT_public_key *pk = node->pkt->pkt.public_key;
 
-          pk->keyorg = origin;
-          pk->keyupdate = curtime;
+          if (origin == KEYORG_WKD || origin == KEYORG_DANE)
+            {
+              /* For WKD and DANE we insert origin information also
+               * for the key but we don't record the URL because we
+               * have have no use for that: An update using a
+               * keyserver has higher precedence and will thus update
+               * this origin info.  For refresh using WKD or DANE we
+               * need to go via the User ID anyway.  Recall that we
+               * are only inserting a new key. */
+              pk->keyorg = origin;
+              pk->keyupdate = curtime;
+            }
+          else if (origin == KEYORG_KS && url)
+            {
+              /* If the key was retrieved from a keyserver using a
+               * fingerprint request we add the meta information.
+               * Note that the use of a fingerprint needs to be
+               * enforced by the caller of the import function.  This
+               * is commonly triggered by verifying a modern signature
+               * which has an Issuer Fingerprint signature
+               * subpacket.  */
+              pk->keyorg = origin;
+              pk->keyupdate = curtime;
+              pk->updateurl = xtrystrdup (url);
+              if (!pk->updateurl)
+                return gpg_error_from_syserror ();
+            }
         }
-      else if (node->pkt->pkttype == PKT_USER_ID
-               && (origin == KEYORG_WKD || origin == KEYORG_DANE))
+      else if (node->pkt->pkttype == PKT_USER_ID)
         {
-          /* We insert origin information on a UID only when we
-           * received them via the Web Key Directory or a DANE record.
-           * The key we receive here from the WKD has been filtered to
-           * contain only the user ID as looked up in the WKD.  For a
-           * DANE origin we this should also be the case.  Thus we
-           * will see here only one user id.  */
           PKT_user_id *uid = node->pkt->pkt.user_id;
 
-          uid->keyorg = origin;
-          uid->keyupdate = curtime;
-          if (url)
+          if (origin == KEYORG_WKD || origin == KEYORG_DANE)
             {
-              uid->updateurl = xtrystrdup (url);
-              if (!uid->updateurl)
-                return gpg_error_from_syserror ();
+              /* We insert origin information on a UID only when we
+               * received them via the Web Key Directory or a DANE
+               * record.  The key we receive here from the WKD has
+               * been filtered to contain only the user ID as looked
+               * up in the WKD.  For a DANE origin we this should also
+               * be the case.  Thus we will see here only one user
+               * id.  */
+              uid->keyorg = origin;
+              uid->keyupdate = curtime;
+              if (url)
+                {
+                  uid->updateurl = xtrystrdup (url);
+                  if (!uid->updateurl)
+                    return gpg_error_from_syserror ();
+                }
+            }
+          else if (origin == KEYORG_KS && url)
+            {
+              /* If the key was retrieved from a keyserver using a
+               * fingerprint request we mark that also in the user ID.
+               * However we do not store the keyserver URL in the UID.
+               * A later update (merge) from a more trusted source
+               * will replace this info.  */
+              uid->keyorg = origin;
+              uid->keyupdate = curtime;
             }
         }
     }
