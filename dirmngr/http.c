@@ -2745,7 +2745,7 @@ connect_with_timeout (assuan_fd_t sock,
     }
 
   FD_ZERO (&rset);
-  FD_SET (sock, &rset);
+  FD_SET (FD2INT (sock), &rset);
   wset = rset;
   tval.tv_sec = timeout / 1000;
   tval.tv_usec = (timeout % 1000) * 1000;
