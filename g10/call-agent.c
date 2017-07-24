@@ -2096,7 +2096,8 @@ inq_import_key_parms (void *opaque, const char *line)
 /* Call the agent to import a key into the agent.  */
 gpg_error_t
 agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
-                  const void *key, size_t keylen, int unattended, int force)
+                  const void *key, size_t keylen, int unattended, int force,
+		  u32 *keyid, u32 *mainkeyid, int pubkey_algo)
 {
   gpg_error_t err;
   struct import_key_parm_s parm;
@@ -2106,6 +2107,9 @@ agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
 
   memset (&dfltparm, 0, sizeof dfltparm);
   dfltparm.ctrl = ctrl;
+  dfltparm.keyinfo.keyid       = keyid;
+  dfltparm.keyinfo.mainkeyid   = mainkeyid;
+  dfltparm.keyinfo.pubkey_algo = pubkey_algo;
 
   err = start_agent (ctrl, 0);
   if (err)
