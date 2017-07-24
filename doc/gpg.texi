@@ -392,13 +392,13 @@ Present a menu to allow changing the PIN of a smartcard. This
 functionality is also available as the subcommand "passwd" with the
 @option{--edit-card} command.
 
-@item --delete-keys @code{name}
+@item --delete-keys @var{name}
 @opindex delete-keys
 Remove key from the public keyring. In batch mode either @option{--yes} is
 required or the key must be specified by fingerprint. This is a
 safeguard against accidental deletion of multiple keys.
 
-@item --delete-secret-keys @code{name}
+@item --delete-secret-keys @var{name}
 @opindex delete-secret-keys
 Remove key from the secret keyring. In batch mode the key must be
 specified by fingerprint.  The option @option{--yes} can be used to
@@ -408,7 +408,7 @@ secret key (as controlled by gpg-agent) is only used for the given
 OpenPGP public key.
 
 
-@item --delete-secret-and-public-key @code{name}
+@item --delete-secret-and-public-key @var{name}
 @opindex delete-secret-and-public-key
 Same as @option{--delete-key}, but if a secret key exists, it will be
 removed first. In batch mode the key must be specified by fingerprint.
@@ -423,13 +423,14 @@ those of the given name. The exported keys are written to STDOUT or to the
 file given with option @option{--output}.  Use together with
 @option{--armor} to mail those keys.
 
-@item --send-keys @code{key IDs}
+@item --send-keys @var{keyIDs}
 @opindex send-keys
 Similar to @option{--export} but sends the keys to a keyserver.
-Fingerprints may be used instead of key IDs. Option @option{--keyserver}
-must be used to give the name of this keyserver. Don't send your
-complete keyring to a keyserver --- select only those keys which are new
-or changed by you.  If no key IDs are given, @command{@gpgname} does nothing.
+Fingerprints may be used instead of key IDs.  Option
+@option{--keyserver} must be used to give the name of this
+keyserver. Don't send your complete keyring to a keyserver --- select
+only those keys which are new or changed by you.  If no @var{keyIDs}
+are given, @command{@gpgname} does nothing.
 
 @item --export-secret-keys
 @itemx --export-secret-subkeys
@@ -478,11 +479,11 @@ Most notable here is the @option{--import-options merge-only} option
 which does not insert new keys but does only the merging of new
 signatures, user-IDs and subkeys.
 
-@item --receive-keys @code{key IDs}
+@item --receive-keys @var{keyIDs}
 @opindex receive-keys
-@itemx --recv-keys @code{key IDs}
+@itemx --recv-keys @var{keyIDs}
 @opindex recv-keys
-Import the keys with the given key IDs from a keyserver. Option
+Import the keys with the given @var{keyIDs} from a keyserver. Option
 @option{--keyserver} must be used to give the name of this keyserver.
 
 @item --refresh-keys
@@ -494,9 +495,9 @@ the entire keyring. Option @option{--keyserver} must be used to give the
 name of the keyserver for all keys that do not have preferred keyservers
 set (see @option{--keyserver-options honor-keyserver-url}).
 
-@item --search-keys @code{names}
+@item --search-keys @var{names}
 @opindex search-keys
-Search the keyserver for the given names. Multiple names given here will
+Search the keyserver for the given @var{names}. Multiple names given here will
 be joined together to create the search string for the keyserver.
 Option @option{--keyserver} must be used to give the name of this
 keyserver.  Keyservers that support different search methods allow using
@@ -504,9 +505,9 @@ the syntax specified in "How to specify a user ID" below. Note that
 different keyserver types support different search methods. Currently
 only LDAP supports them all.
 
-@item --fetch-keys @code{URIs}
+@item --fetch-keys @var{URIs}
 @opindex fetch-keys
-Retrieve keys located at the specified URIs. Note that different
+Retrieve keys located at the specified @var{URIs}. Note that different
 installations of GnuPG may support different protocols (HTTP, FTP,
 LDAP, etc.).  When using HTTPS the system provided root certificates
 are used by this command.
@@ -572,14 +573,14 @@ When updating from version 1.0.6 to 1.0.7 this command should be used
 to create signature caches in the keyring. It might be handy in other
 situations too.
 
-@item --print-md @code{algo}
+@item --print-md @var{algo}
 @itemx --print-mds
 @opindex print-md
-Print message digest of algorithm ALGO for all given files or STDIN.
-With the second form (or a deprecated "*" as algo) digests for all
+Print message digest of algorithm @var{algo} for all given files or STDIN.
+With the second form (or a deprecated "*" for @var{algo}) digests for all
 available algorithms are printed.
 
-@item --gen-random @code{0|1|2} @code{count}
+@item --gen-random @var{0|1|2} @var{count}
 @opindex gen-random
 Emit @var{count} random bytes of the given quality level 0, 1 or 2. If
 @var{count} is not given or zero, an endless sequence of random bytes
@@ -587,9 +588,10 @@ will be emitted.  If used with @option{--armor} the output will be
 base64 encoded.  PLEASE, don't use this command unless you know what
 you are doing; it may remove precious entropy from the system!
 
-@item --gen-prime @code{mode}  @code{bits}
+@item --gen-prime @var{mode}  @var{bits}
 @opindex gen-prime
-Use the source, Luke :-). The output format is still subject to change.
+Use the source, Luke :-). The output format is subject to change
+with ant release.
 
 
 @item --enarmor
@@ -599,11 +601,11 @@ Use the source, Luke :-). The output format is still subject to change.
 Pack or unpack an arbitrary input into/from an OpenPGP ASCII armor.
 This is a GnuPG extension to OpenPGP and in general not very useful.
 
-@item --tofu-policy @code{auto|good|unknown|bad|ask}  @code{key...}
+@item --tofu-policy @{auto|good|unknown|bad|ask@}  @var{keys}
 @opindex tofu-policy
 Set the TOFU policy for all the bindings associated with the specified
-keys.  For more information about the meaning of the policies,
-@pxref{trust-model-tofu}.  The keys may be specified either by their
+@var{keys}.  For more information about the meaning of the policies,
+@pxref{trust-model-tofu}.  The @var{keys} may be specified either by their
 fingerprint (preferred) or their keyid.
 
 @c @item --server
@@ -624,7 +626,7 @@ This section explains the main commands for key management.
 
 @table @gnupgtabopt
 
-@item --quick-generate-key @code{user-id} [@code{algo} [@code{usage} [@code{expire}]]]
+@item --quick-generate-key @var{user-id} [@var{algo} [@var{usage} [@var{expire}]]]
 @opindex quick-generate-key
 This is a simple command to generate a standard key with one user id.
 In contrast to @option{--generate-key} the key is generated directly
@@ -637,16 +639,16 @@ answer to a ``Continue?'' style confirmation prompt is required.  In
 case the user id already exists in the keyring a second prompt to
 force the creation of the key will show up.
 
-If @code{algo} or @code{usage} are given, only the primary key is
+If @var{algo} or @var{usage} are given, only the primary key is
 created and no prompts are shown.  To specify an expiration date but
 still create a primary and subkey use ``default'' or
-``future-default'' for @code{algo} and ``default'' for @code{usage}.
+``future-default'' for @var{algo} and ``default'' for @var{usage}.
 For a description of these optional arguments see the command
-@code{--quick-add-key}.  The @code{usage} accepts also the value
+@code{--quick-add-key}.  The @var{usage} accepts also the value
 ``cert'' which can be used to create a certification only primary key;
 the default is to a create certification and signing key.
 
-The @code{expire} argument can be used to specify an expiration date
+The @var{expire} argument can be used to specify an expiration date
 for the key.  Several formats are supported; commonly the ISO formats
 ``YYYY-MM-DD'' or ``YYYYMMDDThhmmss'' are used.  To make the key
 expire in N seconds, N days, N weeks, N months, or N years use
@@ -675,14 +677,14 @@ non-revoked subkeys matching these fingerprints are set to
 @var{expire}.
 
 
-@item --quick-add-key @code{fpr} [@code{algo} [@code{usage} [@code{expire}]]]
+@item --quick-add-key @var{fpr} [@var{algo} [@var{usage} [@var{expire}]]]
 @opindex quick-add-key
 Directly add a subkey to the key identified by the fingerprint
-@code{fpr}.  Without the optional arguments an encryption subkey is
+@var{fpr}.  Without the optional arguments an encryption subkey is
 added.  If any of the arguments are given a more specific subkey is
 added.
 
-@code{algo} may be any of the supported algorithms or curve names
+@var{algo} may be any of the supported algorithms or curve names
 given in the format as used by key listings.  To use the default
 algorithm the string ``default'' or ``-'' can be used.  Supported
 algorithms are ``rsa'', ``dsa'', ``elg'', ``ed25519'', ``cv25519'',
@@ -692,9 +694,9 @@ key length is 4096 bits.  The string ``future-default'' is an alias
 for the algorithm which will likely be used as default algorithm in
 future versions of gpg.
 
-Depending on the given @code{algo} the subkey may either be an
+Depending on the given @var{algo} the subkey may either be an
 encryption subkey or a signing subkey.  If an algorithm is capable of
-signing and encryption and such a subkey is desired, a @code{usage}
+signing and encryption and such a subkey is desired, a @var{usage}
 string must be given.  This string is either ``default'' or ``-'' to
 keep the default or a comma delimited list (or space delimited list)
 of keywords: ``sign'' for a signing subkey, ``auth'' for an
@@ -702,7 +704,7 @@ authentication subkey, and ``encr'' for an encryption subkey
 (``encrypt'' can be used as alias for ``encr'').  The valid
 combinations depend on the algorithm.
 
-The @code{expire} argument can be used to specify an expiration date
+The @var{expire} argument can be used to specify an expiration date
 for the key.  Several formats are supported; commonly the ISO formats
 ``YYYY-MM-DD'' or ``YYYYMMDDThhmmss'' are used.  To make the key
 expire in N seconds, N days, N weeks, N months, or N years use
@@ -732,9 +734,9 @@ mode. See the manual section ``Unattended key generation'' on how
 to use this.
 
 
-@item --generate-revocation @code{name}
+@item --generate-revocation @var{name}
 @opindex generate-revocation
-@itemx --gen-revoke @code{name}
+@itemx --gen-revoke @var{name}
 @opindex gen-revoke
 Generate a revocation certificate for the complete key.  To only revoke
 a subkey or a key signature, use the @option{--edit} command.
@@ -749,9 +751,9 @@ published, which is best done by sending the key to a keyserver
 to a file which is then send to frequent communication partners.
 
 
-@item --generate-designated-revocation @code{name}
+@item --generate-designated-revocation @var{name}
 @opindex generate-designated-revocation
-@itemx --desig-revoke @code{name}
+@itemx --desig-revoke @var{name}
 @opindex desig-revoke
 Generate a designated revocation certificate for a key. This allows a
 user (with the permission of the keyholder) to revoke someone else's
@@ -767,14 +769,14 @@ line.
 @c ******** Begin Edit-key Options **********
 @table @asis
 
-  @item uid @code{n}
+  @item uid @var{n}
   @opindex keyedit:uid
-  Toggle selection of user ID or photographic user ID with index @code{n}.
+  Toggle selection of user ID or photographic user ID with index @var{n}.
   Use @code{*} to select all and @code{0} to deselect all.
 
-  @item key @code{n}
+  @item key @var{n}
   @opindex keyedit:key
-  Toggle selection of subkey with index @code{n} or key ID @code{n}.
+  Toggle selection of subkey with index @var{n} or key ID @var{n}.
   Use @code{*} to select all and @code{0} to deselect all.
 
   @item sign
@@ -899,9 +901,9 @@ signing.
   not already included in the preference list. In addition, the
   preferred keyserver and signature notations (if any) are shown.
 
-  @item setpref @code{string}
+  @item setpref @var{string}
   @opindex keyedit:setpref
-  Set the list of user ID preferences to @code{string} for all (or just
+  Set the list of user ID preferences to @var{string} for all (or just
   the selected) user IDs. Calling setpref with no arguments sets the
   preference list to the default (either built-in or set via
   @option{--default-preference-list}), and calling setpref with "none"
@@ -941,9 +943,9 @@ signing.
   from the card - if the card gets broken your secret key will be lost
   unless you have a backup somewhere.
 
-  @item bkuptocard @code{file}
+  @item bkuptocard @var{file}
   @opindex keyedit:bkuptocard
-  Restore the given file to a card. This command may be used to restore a
+  Restore the given @var{file} to a card. This command may be used to restore a
   backup key (as generated during card initialization) to a new card. In
   almost all cases this will be the encryption key. You should use this
   command only with the corresponding public key and make sure that the
@@ -1063,25 +1065,25 @@ the values:
 @end table
 @c ******** End Edit-key Options **********
 
-@item --sign-key @code{name}
+@item --sign-key @var{name}
 @opindex sign-key
 Signs a public key with your secret key. This is a shortcut version of
 the subcommand "sign" from @option{--edit}.
 
-@item --lsign-key @code{name}
+@item --lsign-key @var{name}
 @opindex lsign-key
 Signs a public key with your secret key but marks it as
 non-exportable. This is a shortcut version of the subcommand "lsign"
 from @option{--edit-key}.
 
-@item --quick-sign-key @code{fpr} [@code{names}]
-@itemx --quick-lsign-key @code{fpr} [@code{names}]
+@item --quick-sign-key @var{fpr} [@var{names}]
+@itemx --quick-lsign-key @var{fpr} [@var{names}]
 @opindex quick-sign-key
 @opindex quick-lsign-key
 Directly sign a key from the passphrase without any further user
-interaction.  The @code{fpr} must be the verified primary fingerprint
-of a key in the local keyring. If no @code{names} are given, all
-useful user ids are signed; with given [@code{names}] only useful user
+interaction.  The @var{fpr} must be the verified primary fingerprint
+of a key in the local keyring. If no @var{names} are given, all
+useful user ids are signed; with given [@var{names}] only useful user
 ids matching one of theses names are signed.  By default, or if a name
 is prefixed with a '*', a case insensitive substring match is used.
 If a name is prefixed with a '=' a case sensitive exact match is done.
@@ -1248,7 +1250,7 @@ Assume "yes" on most questions.
 Assume "no" on most questions.
 
 
-@item --list-options @code{parameters}
+@item --list-options @var{parameters}
 @opindex list-options
 This is a space or comma delimited string that gives options used when
 listing keys and signatures (that is, @option{--list-keys},
@@ -1327,7 +1329,7 @@ give the opposite meaning.  The options are:
 
 @end table
 
-@item --verify-options @code{parameters}
+@item --verify-options @var{parameters}
 @opindex verify-options
 This is a space or comma delimited string that gives options used when
 verifying signatures. Options can be prepended with a `no-' to give
@@ -1408,7 +1410,7 @@ Enable hash truncation for all DSA keys even for old DSA Keys up to
 that older versions of GnuPG also required this flag to allow the
 generation of DSA larger than 1024 bit.
 
-@item --photo-viewer @code{string}
+@item --photo-viewer @var{string}
 @opindex photo-viewer
 This is the command line that should be run to view a photo ID. "%i"
 will be expanded to a filename containing the photo. "%I" does the
@@ -1426,7 +1428,7 @@ The default viewer is "xloadimage -fork -quiet -title 'KeyID 0x%k'
 STDIN". Note that if your image viewer program is not secure, then
 executing it from GnuPG does not make it secure.
 
-@item --exec-path @code{string}
+@item --exec-path @var{string}
 @opindex exec-path
 @efindex PATH
 Sets a list of directories to search for photo viewers and keyserver
@@ -1436,9 +1438,9 @@ variable.
 Note, that on W32 system this value is ignored when searching for
 keyserver helpers.
 
-@item --keyring @code{file}
+@item --keyring @var{file}
 @opindex keyring
-Add @code{file} to the current list of keyrings. If @code{file} begins
+Add @var{file} to the current list of keyrings. If @var{file} begins
 with a tilde and a slash, these are replaced by the $HOME directory. If
 the filename does not contain a slash, it is assumed to be in the GnuPG
 home directory ("~/.gnupg" if @option{--homedir} or $GNUPGHOME is not
@@ -1452,20 +1454,20 @@ If the option @option{--no-keyring} has been used no keyrings will
 be used at all.
 
 
-@item --secret-keyring @code{file}
+@item --secret-keyring @var{file}
 @opindex secret-keyring
 This is an obsolete option and ignored.  All secret keys are stored in
 the @file{private-keys-v1.d} directory below the GnuPG home directory.
 
-@item --primary-keyring @code{file}
+@item --primary-keyring @var{file}
 @opindex primary-keyring
-Designate @code{file} as the primary public keyring. This means that
+Designate @var{file} as the primary public keyring. This means that
 newly imported keys (via @option{--import} or keyserver
 @option{--recv-from}) will go to this keyring.
 
-@item --trustdb-name @code{file}
+@item --trustdb-name @var{file}
 @opindex trustdb-name
-Use @code{file} instead of the default trustdb. If @code{file} begins
+Use @var{file} instead of the default trustdb. If @var{file} begins
 with a tilde and a slash, these are replaced by the $HOME directory. If
 the filename does not contain a slash, it is assumed to be in the GnuPG
 home directory (@file{~/.gnupg} if @option{--homedir} or $GNUPGHOME is
@@ -1474,7 +1476,7 @@ not used).
 @include opt-homedir.texi
 
 
-@item --display-charset @code{name}
+@item --display-charset @var{name}
 @opindex display-charset
 Set the name of the native character set. This is used to convert
 some informational strings like user IDs to the proper UTF-8 encoding.
@@ -1482,7 +1484,7 @@ Note that this has nothing to do with the character set of data to be
 encrypted or signed; GnuPG does not recode user-supplied data. If
 this option is not used, the default character set is determined from
 the current locale. A verbosity level of 3 shows the chosen set.
-Valid values for @code{name} are:
+Valid values for @var{name} are:
 
 @table @asis
 
@@ -1519,9 +1521,9 @@ encoded in the character set as specified by
 arguments. Both options may be used multiple times.
 
 @anchor{gpg-option --options}
-@item --options @code{file}
+@item --options @var{file}
 @opindex options
-Read options from @code{file} and do not try to read them from the
+Read options from @var{file} and do not try to read them from the
 default options file in the homedir (see @option{--homedir}). This
 option is ignored if used in an options file.
 
@@ -1531,18 +1533,18 @@ Shortcut for @option{--options /dev/null}. This option is detected
 before an attempt to open an option file.  Using this option will also
 prevent the creation of a @file{~/.gnupg} homedir.
 
-@item -z @code{n}
-@itemx --compress-level @code{n}
-@itemx --bzip2-compress-level @code{n}
+@item -z @var{n}
+@itemx --compress-level @var{n}
+@itemx --bzip2-compress-level @var{n}
 @opindex compress-level
 @opindex bzip2-compress-level
-Set compression level to @code{n} for the ZIP and ZLIB compression
+Set compression level to @var{n} for the ZIP and ZLIB compression
 algorithms. The default is to use the default compression level of zlib
 (normally 6). @option{--bzip2-compress-level} sets the compression level
 for the BZIP2 compression algorithm (defaulting to 6 as well). This is a
 different option from @option{--compress-level} since BZIP2 uses a
 significant amount of memory for each additional compression level.
-@option{-z} sets both. A value of 0 for @code{n} disables compression.
+@option{-z} sets both. A value of 0 for @var{n} disables compression.
 
 @item --bzip2-decompress-lowmem
 @opindex bzip2-decompress-lowmem
@@ -1573,7 +1575,7 @@ information on the specific levels and how they are
 used. @option{--no-ask-cert-level} disables this option. This option
 defaults to no.
 
-@item --default-cert-level @code{n}
+@item --default-cert-level @var{n}
 @opindex default-cert-level
 The default to use for the check level when signing a key.
 
@@ -1610,7 +1612,7 @@ certification level below this as invalid. Defaults to 2, which
 disregards level 1 signatures. Note that level 0 "no particular
 claim" signatures are always accepted.
 
-@item --trusted-key @code{long key ID}
+@item --trusted-key @var{long key ID}
 @opindex trusted-key
 Assume that the specified key (which must be given
 as a full 8 byte key ID) is as trustworthy as one of
@@ -1619,7 +1621,7 @@ don't want to keep your secret keys (or one of them)
 online but still want to be able to check the validity of a given
 recipient's or signator's key.
 
-@item --trust-model @code{pgp|classic|tofu|tofu+pgp|direct|always|auto}
+@item --trust-model @{pgp|classic|tofu|tofu+pgp|direct|always|auto@}
 @opindex trust-model
 Set what trust model GnuPG should follow. The models are:
 
@@ -1724,7 +1726,7 @@ Set what trust model GnuPG should follow. The models are:
   exists.
 @end table
 
-@item --auto-key-locate @code{parameters}
+@item --auto-key-locate @var{parameters}
 @itemx --no-auto-key-locate
 @opindex auto-key-locate
 GnuPG can automatically locate and retrieve keys as needed using this
@@ -1800,7 +1802,7 @@ you naturally will not have on your local keyring), the operator can
 tell both your IP address and the time when you verified the
 signature.
 
-@item --keyid-format @code{none|short|0xshort|long|0xlong}
+@item --keyid-format @{none|short|0xshort|long|0xlong@}
 @opindex keyid-format
 Select how to display key IDs.  "none" does not show the key ID at all
 but shows the fingerprint in a separate line.  "short" is the
@@ -1809,15 +1811,15 @@ convenient) 16-character key ID.  Add an "0x" to either to include an
 "0x" at the beginning of the key ID, as in 0x99242560.  Note that this
 option is ignored if the option @option{--with-colons} is used.
 
-@item --keyserver @code{name}
+@item --keyserver @var{name}
 @opindex keyserver
 This option is deprecated - please use the @option{--keyserver} in
 @file{dirmngr.conf} instead.
 
-Use @code{name} as your keyserver. This is the server that
+Use @var{name} as your keyserver. This is the server that
 @option{--receive-keys}, @option{--send-keys}, and @option{--search-keys}
 will communicate with to receive keys from, send keys to, and search for
-keys on. The format of the @code{name} is a URI:
+keys on. The format of the @var{name} is a URI:
 `scheme:[//]keyservername[:port]' The scheme is the type of keyserver:
 "hkp" for the HTTP (or compatible) keyservers, "ldap" for the LDAP
 keyservers, or "mailto" for the Graff email keyserver. Note that your
@@ -1832,7 +1834,7 @@ need to send keys to more than one server. The keyserver
 @code{hkp://keys.gnupg.net} uses round robin DNS to give a different
 keyserver each time you use it.
 
-@item --keyserver-options @code{name=value}
+@item --keyserver-options @{@var{name}=@var{value}@}
 @opindex keyserver-options
 This is a space or comma delimited string that gives options for the
 keyserver. Options can be prefixed with a `no-' to give the opposite
@@ -1888,7 +1890,7 @@ are available for all keyserver types, some common options are:
   timeout applies separately to each key retrieval, and not to the
   @option{--receive-keys} command as a whole. Defaults to 30 seconds.
 
-  @item http-proxy=@code{value}
+  @item http-proxy=@var{value}
   This option is deprecated.
   Set the proxy to use for HTTP and HKP keyservers.
   This overrides any proxy defined in @file{dirmngr.conf}.
@@ -1911,22 +1913,22 @@ are available for all keyserver types, some common options are:
 
 @end table
 
-@item --completes-needed @code{n}
+@item --completes-needed @var{n}
 @opindex compliant-needed
 Number of completely trusted users to introduce a new
 key signer (defaults to 1).
 
-@item --marginals-needed @code{n}
+@item --marginals-needed @var{n}
 @opindex marginals-needed
 Number of marginally trusted users to introduce a new
 key signer (defaults to 3)
 
-@item --tofu-default-policy @code{auto|good|unknown|bad|ask}
+@item --tofu-default-policy @{auto|good|unknown|bad|ask@}
 @opindex tofu-default-policy
 The default TOFU policy (defaults to @code{auto}).  For more
 information about the meaning of this option, @pxref{trust-model-tofu}.
 
-@item --max-cert-depth @code{n}
+@item --max-cert-depth @var{n}
 @opindex max-cert-depth
 Maximum depth of a certification chain (default is 5).
 
@@ -2008,9 +2010,9 @@ connected pipe too early. Using this option along with
 @option{--enable-progress-filter} may be used to cleanly cancel long
 running gpg operations.
 
-@item --limit-card-insert-tries @code{n}
+@item --limit-card-insert-tries @var{n}
 @opindex limit-card-insert-tries
-With @code{n} greater than 0 the number of prompts asking to insert a
+With @var{n} greater than 0 the number of prompts asking to insert a
 smartcard gets limited to N-1. Thus with a value of 1 gpg won't at
 all ask to insert a card if none has been inserted at startup. This
 option is useful in the configuration file in case an application does
@@ -2120,7 +2122,7 @@ encrypts to a key stored in the given file.  @var{file} must be the
 name of a file containing exactly one key.  @command{@gpgname} assumes that
 the key in this file is fully valid.
 
-@item --encrypt-to @code{name}
+@item --encrypt-to @var{name}
 @opindex encrypt-to
 Same as @option{--recipient} but this one is intended for use in the
 options file and may be used with your own user-id as an
@@ -2129,7 +2131,7 @@ recipients given either by use of @option{--recipient} or by the asked
 user id.  No trust checking is performed for these user ids and even
 disabled keys can be used.
 
-@item --hidden-encrypt-to @code{name}
+@item --hidden-encrypt-to @var{name}
 @opindex hidden-encrypt-to
 Same as @option{--hidden-recipient} but this one is intended for use in the
 options file and may be used with your own user-id as a hidden
@@ -2143,7 +2145,7 @@ keys can be used.
 Disable the use of all @option{--encrypt-to} and
 @option{--hidden-encrypt-to} keys.
 
-@item --group @code{name=value}
+@item --group @{@var{name}=@var{value}@}
 @opindex group
 Sets up a named group, which is similar to aliases in email programs.
 Any time the group name is a recipient (@option{-r} or
@@ -2159,7 +2161,7 @@ from the command line, it may be necessary to quote the argument to
 this option to prevent the shell from treating it as multiple
 arguments.
 
-@item --ungroup @code{name}
+@item --ungroup @var{name}
 @opindex ungroup
 Remove a given entry from the @option{--group} list.
 
@@ -2241,7 +2243,7 @@ Assume the input data is not in ASCII armored format.
 Write output to @var{file}.  To write to stdout use @code{-} as the
 filename.
 
-@item --max-output @code{n}
+@item --max-output @var{n}
 @opindex max-output
 This option sets a limit on the number of bytes that will be generated
 when processing a file. Since OpenPGP supports various levels of
@@ -2269,7 +2271,7 @@ To list the possible values use "help" for @var{string}.  Some origins
 can store an optional @var{url} argument.  That URL can appended to
 @var{string} after a comma.
 
-@item --import-options @code{parameters}
+@item --import-options @var{parameters}
 @opindex import-options
 This is a space or comma delimited string that gives options for
 importing keys. Options can be prepended with a `no-' to give the
@@ -2340,8 +2342,8 @@ opposite meaning. The options are:
   contradicting options are overridden.
 @end table
 
-@item --import-filter @code{@var{name}=@var{expr}}
-@itemx --export-filter @code{@var{name}=@var{expr}}
+@item --import-filter @{@var{name}=@var{expr}@}
+@itemx --export-filter @{@var{name}=@var{expr}@}
 @opindex import-filter
 @opindex export-filter
 These options define an import/export filter which are applied to the
@@ -2427,7 +2429,7 @@ The available properties are:
 
 @end table
 
-@item --export-options @code{parameters}
+@item --export-options @var{parameters}
 @opindex export-options
 This is a space or comma delimited string that gives options for
 exporting keys.  Options can be prepended with a `no-' to give the
@@ -2606,9 +2608,9 @@ specified with @option{local-user} using a mail address.  This
 information can be helpful for verifier to locate the key; see
 option @option{--auto-key-retrieve}.
 
-@item --personal-cipher-preferences @code{string}
+@item --personal-cipher-preferences @var{string}
 @opindex personal-cipher-preferences
-Set the list of personal cipher preferences to @code{string}.  Use
+Set the list of personal cipher preferences to @var{string}.  Use
 @command{@gpgname --version} to get a list of available algorithms,
 and use @code{none} to set no preference at all.  This allows the user
 to safely override the algorithm chosen by the recipient key
@@ -2616,9 +2618,9 @@ preferences, as GPG will only select an algorithm that is usable by
 all recipients.  The most highly ranked cipher in this list is also
 used for the @option{--symmetric} encryption command.
 
-@item --personal-digest-preferences @code{string}
+@item --personal-digest-preferences @var{string}
 @opindex personal-digest-preferences
-Set the list of personal digest preferences to @code{string}.  Use
+Set the list of personal digest preferences to @var{string}.  Use
 @command{@gpgname --version} to get a list of available algorithms,
 and use @code{none} to set no preference at all.  This allows the user
 to safely override the algorithm chosen by the recipient key
@@ -2627,9 +2629,9 @@ all recipients.  The most highly ranked digest algorithm in this list
 is also used when signing without encryption
 (e.g. @option{--clear-sign} or @option{--sign}).
 
-@item --personal-compress-preferences @code{string}
+@item --personal-compress-preferences @var{string}
 @opindex personal-compress-preferences
-Set the list of personal compression preferences to @code{string}.
+Set the list of personal compression preferences to @var{string}.
 Use @command{@gpgname --version} to get a list of available
 algorithms, and use @code{none} to set no preference at all.  This
 allows the user to safely override the algorithm chosen by the
@@ -2638,26 +2640,26 @@ is usable by all recipients.  The most highly ranked compression
 algorithm in this list is also used when there are no recipient keys
 to consider (e.g. @option{--symmetric}).
 
-@item --s2k-cipher-algo @code{name}
+@item --s2k-cipher-algo @var{name}
 @opindex s2k-cipher-algo
-Use @code{name} as the cipher algorithm for symmetric encryption with
+Use @var{name} as the cipher algorithm for symmetric encryption with
 a passphrase if @option{--personal-cipher-preferences} and
 @option{--cipher-algo} are not given.  The default is @value{GPGSYMENCALGO}.
 
-@item --s2k-digest-algo @code{name}
+@item --s2k-digest-algo @var{name}
 @opindex s2k-digest-algo
-Use @code{name} as the digest algorithm used to mangle the passphrases
+Use @var{name} as the digest algorithm used to mangle the passphrases
 for symmetric encryption.  The default is SHA-1.
 
-@item --s2k-mode @code{n}
+@item --s2k-mode @var{n}
 @opindex s2k-mode
 Selects how passphrases for symmetric encryption are mangled. If
-@code{n} is 0 a plain passphrase (which is in general not recommended)
+@var{n} is 0 a plain passphrase (which is in general not recommended)
 will be used, a 1 adds a salt (which should not be used) to the
 passphrase and a 3 (the default) iterates the whole process a number
 of times (see @option{--s2k-count}).
 
-@item --s2k-count @code{n}
+@item --s2k-count @var{n}
 @opindex s2k-count
 Specify how many times the passphrases mangling for symmetric
 encryption is repeated.  This value may range between 1024 and
@@ -2838,42 +2840,42 @@ Enable certain PROGRESS status outputs. This option allows frontends
 to display a progress indicator while gpg is processing larger files.
 There is a slight performance overhead using it.
 
-@item --status-fd @code{n}
+@item --status-fd @var{n}
 @opindex status-fd
-Write special status strings to the file descriptor @code{n}.
+Write special status strings to the file descriptor @var{n}.
 See the file DETAILS in the documentation for a listing of them.
 
-@item --status-file @code{file}
+@item --status-file @var{file}
 @opindex status-file
 Same as @option{--status-fd}, except the status data is written to file
-@code{file}.
+@var{file}.
 
-@item --logger-fd @code{n}
+@item --logger-fd @var{n}
 @opindex logger-fd
-Write log output to file descriptor @code{n} and not to STDERR.
+Write log output to file descriptor @var{n} and not to STDERR.
 
-@item --log-file @code{file}
-@itemx --logger-file @code{file}
+@item --log-file @var{file}
+@itemx --logger-file @var{file}
 @opindex log-file
 Same as @option{--logger-fd}, except the logger data is written to
-file @code{file}.  Use @file{socket://} to log to socket.
+file @var{file}.  Use @file{socket://} to log to s socket.
 
-@item --attribute-fd @code{n}
+@item --attribute-fd @var{n}
 @opindex attribute-fd
-Write attribute subpackets to the file descriptor @code{n}. This is most
+Write attribute subpackets to the file descriptor @var{n}. This is most
 useful for use with @option{--status-fd}, since the status messages are
 needed to separate out the various subpackets from the stream delivered
 to the file descriptor.
 
-@item --attribute-file @code{file}
+@item --attribute-file @var{file}
 @opindex attribute-file
 Same as @option{--attribute-fd}, except the attribute data is written to
-file @code{file}.
+file @var{file}.
 
-@item --comment @code{string}
+@item --comment @var{string}
 @itemx --no-comments
 @opindex comment
-Use @code{string} as a comment string in cleartext signatures and ASCII
+Use @var{string} as a comment string in cleartext signatures and ASCII
 armored messages or keys (see @option{--armor}). The default behavior is
 not to use a comment string. @option{--comment} may be repeated multiple
 times to get multiple comment strings. @option{--no-comments} removes
@@ -2892,21 +2894,21 @@ the micro is added, and given four times an operating system identification
 is also emitted.  @option{--no-emit-version} (default) disables the version
 line.
 
-@item --sig-notation @code{name=value}
-@itemx --cert-notation @code{name=value}
-@itemx -N, --set-notation @code{name=value}
+@item --sig-notation @{@var{name}=@var{value}@}
+@itemx --cert-notation @{@var{name}=@var{value}@}
+@itemx -N, --set-notation @{@var{name}=@var{value}@}
 @opindex sig-notation
 @opindex cert-notation
 @opindex set-notation
 Put the name value pair into the signature as notation data.
-@code{name} must consist only of printable characters or spaces, and
+@var{name} must consist only of printable characters or spaces, and
 must contain a '@@' character in the form keyname@@domain.example.com
 (substituting the appropriate keyname and domain name, of course).  This
 is to help prevent pollution of the IETF reserved notation
 namespace. The @option{--expert} flag overrides the '@@'
-check. @code{value} may be any printable string; it will be encoded in
+check. @var{value} may be any printable string; it will be encoded in
 UTF-8, so you should check that your @option{--display-charset} is set
-correctly. If you prefix @code{name} with an exclamation mark (!), the
+correctly. If you prefix @var{name} with an exclamation mark (!), the
 notation data will be flagged as critical
 (rfc4880:5.2.3.16). @option{--sig-notation} sets a notation for data
 signatures. @option{--cert-notation} sets a notation for key signatures
@@ -2924,13 +2926,13 @@ smartcard, and "%%" results in a single "%". %k, %K, and %f are only
 meaningful when making a key signature (certification), and %c is only
 meaningful when using the OpenPGP smartcard.
 
-@item --sig-policy-url @code{string}
-@itemx --cert-policy-url @code{string}
-@itemx --set-policy-url @code{string}
+@item --sig-policy-url @var{string}
+@itemx --cert-policy-url @var{string}
+@itemx --set-policy-url @var{string}
 @opindex sig-policy-url
 @opindex cert-policy-url
 @opindex set-policy-url
-Use @code{string} as a Policy URL for signatures (rfc4880:5.2.3.20).  If
+Use @var{string} as a Policy URL for signatures (rfc4880:5.2.3.20).  If
 you prefix it with an exclamation mark (!), the policy URL packet will
 be flagged as critical. @option{--sig-policy-url} sets a policy url for
 data signatures. @option{--cert-policy-url} sets a policy url for key
@@ -2938,19 +2940,19 @@ signatures (certifications). @option{--set-policy-url} sets both.
 
 The same %-expandos used for notation data are available here as well.
 
-@item --sig-keyserver-url @code{string}
+@item --sig-keyserver-url @var{string}
 @opindex sig-keyserver-url
-Use @code{string} as a preferred keyserver URL for data signatures. If
+Use @var{string} as a preferred keyserver URL for data signatures. If
 you prefix it with an exclamation mark (!), the keyserver URL packet
 will be flagged as critical.
 
 The same %-expandos used for notation data are available here as well.
 
-@item --set-filename @code{string}
+@item --set-filename @var{string}
 @opindex set-filename
-Use @code{string} as the filename which is stored inside messages.
+Use @var{string} as the filename which is stored inside messages.
 This overrides the default, which is to use the actual filename of the
-file being encrypted.  Using the empty string for @code{string}
+file being encrypted.  Using the empty string for @var{string}
 effectively removes the filename from the output.
 
 @item --for-your-eyes-only
@@ -2968,9 +2970,9 @@ to display the message. This option overrides @option{--set-filename}.
 Try to create a file with a name as embedded in the data. This can be
 a dangerous option as it enables overwriting files. Defaults to no.
 
-@item --cipher-algo @code{name}
+@item --cipher-algo @var{name}
 @opindex cipher-algo
-Use @code{name} as cipher algorithm. Running the program with the
+Use @var{name} as cipher algorithm. Running the program with the
 command @option{--version} yields a list of supported algorithms. If
 this is not used the cipher algorithm is selected from the preferences
 stored with the key. In general, you do not want to use this option as
@@ -2978,17 +2980,17 @@ it allows you to violate the OpenPGP standard.
 @option{--personal-cipher-preferences} is the safe way to accomplish the
 same thing.
 
-@item --digest-algo @code{name}
+@item --digest-algo @var{name}
 @opindex digest-algo
-Use @code{name} as the message digest algorithm. Running the program
+Use @var{name} as the message digest algorithm. Running the program
 with the command @option{--version} yields a list of supported algorithms. In
 general, you do not want to use this option as it allows you to
 violate the OpenPGP standard. @option{--personal-digest-preferences} is the
 safe way to accomplish the same thing.
 
-@item --compress-algo @code{name}
+@item --compress-algo @var{name}
 @opindex compress-algo
-Use compression algorithm @code{name}. "zlib" is RFC-1950 ZLIB
+Use compression algorithm @var{name}. "zlib" is RFC-1950 ZLIB
 compression. "zip" is RFC-1951 ZIP compression which is used by PGP.
 "bzip2" is a more modern compression scheme that can compress some
 things better than zip or zlib, but at the cost of more memory used
@@ -3009,24 +3011,24 @@ general, you do not want to use this option as it allows you to
 violate the OpenPGP standard. @option{--personal-compress-preferences} is the
 safe way to accomplish the same thing.
 
-@item --cert-digest-algo @code{name}
+@item --cert-digest-algo @var{name}
 @opindex cert-digest-algo
-Use @code{name} as the message digest algorithm used when signing a
+Use @var{name} as the message digest algorithm used when signing a
 key. Running the program with the command @option{--version} yields a
 list of supported algorithms. Be aware that if you choose an algorithm
 that GnuPG supports but other OpenPGP implementations do not, then some
 users will not be able to use the key signatures you make, or quite
 possibly your entire key.
 
-@item --disable-cipher-algo @code{name}
+@item --disable-cipher-algo @var{name}
 @opindex disable-cipher-algo
-Never allow the use of @code{name} as cipher algorithm.
+Never allow the use of @var{name} as cipher algorithm.
 The given name will not be checked so that a later loaded algorithm
 will still get disabled.
 
-@item --disable-pubkey-algo @code{name}
+@item --disable-pubkey-algo @var{name}
 @opindex disable-pubkey-algo
-Never allow the use of @code{name} as public key algorithm.
+Never allow the use of @var{name} as public key algorithm.
 The given name will not be checked so that a later loaded algorithm
 will still get disabled.
 
@@ -3062,44 +3064,44 @@ signatures to prevent the mail system from breaking the signature. Note
 that all other PGP versions do it this way too.  Enabled by
 default. @option{--no-escape-from-lines} disables this option.
 
-@item --passphrase-repeat @code{n}
+@item --passphrase-repeat @var{n}
 @opindex passphrase-repeat
 Specify how many times @command{@gpgname} will request a new
 passphrase be repeated.  This is useful for helping memorize a
 passphrase.  Defaults to 1 repetition.
 
-@item --passphrase-fd @code{n}
+@item --passphrase-fd @var{n}
 @opindex passphrase-fd
-Read the passphrase from file descriptor @code{n}. Only the first line
-will be read from file descriptor @code{n}. If you use 0 for @code{n},
+Read the passphrase from file descriptor @var{n}. Only the first line
+will be read from file descriptor @var{n}. If you use 0 for @var{n},
 the passphrase will be read from STDIN. This can only be used if only
 one passphrase is supplied.
 
 Note that this passphrase is only used if the option @option{--batch}
 has also been given.  This is different from GnuPG version 1.x.
 
-@item --passphrase-file @code{file}
+@item --passphrase-file @var{file}
 @opindex passphrase-file
-Read the passphrase from file @code{file}. Only the first line will
-be read from file @code{file}. This can only be used if only one
+Read the passphrase from file @var{file}. Only the first line will
+be read from file @var{file}. This can only be used if only one
 passphrase is supplied. Obviously, a passphrase stored in a file is
 of questionable security if other users can read this file. Don't use
 this option if you can avoid it.
 Note that this passphrase is only used if the option @option{--batch}
 has also been given.  This is different from GnuPG version 1.x.
 
-@item --passphrase @code{string}
+@item --passphrase @var{string}
 @opindex passphrase
-Use @code{string} as the passphrase. This can only be used if only one
+Use @var{string} as the passphrase. This can only be used if only one
 passphrase is supplied. Obviously, this is of very questionable
 security on a multi-user system. Don't use this option if you can
 avoid it.
 Note that this passphrase is only used if the option @option{--batch}
 has also been given.  This is different from GnuPG version 1.x.
 
-@item --pinentry-mode @code{mode}
+@item --pinentry-mode @var{mode}
 @opindex pinentry-mode
-Set the pinentry mode to @code{mode}.  Allowed values for @code{mode}
+Set the pinentry mode to @var{mode}.  Allowed values for @var{mode}
 are:
 @table @asis
   @item default
@@ -3115,7 +3117,7 @@ are:
   Pinentry the user is not prompted again if he enters a bad password.
 @end table
 
-@item --command-fd @code{n}
+@item --command-fd @var{n}
 @opindex command-fd
 This is a replacement for the deprecated shared-memory IPC mode.
 If this option is enabled, user input on questions is not expected
@@ -3123,10 +3125,10 @@ from the TTY but from the given file descriptor. It should be used
 together with @option{--status-fd}. See the file doc/DETAILS in the source
 distribution for details on how to use it.
 
-@item --command-file @code{file}
+@item --command-file @var{file}
 @opindex command-file
 Same as @option{--command-fd}, except the commands are read out of file
-@code{file}
+@var{file}
 
 @item --allow-non-selfsigned-uid
 @itemx --no-allow-non-selfsigned-uid
@@ -3181,7 +3183,7 @@ allows the verification of signatures made with such weak algorithms.
 MD5 is the only digest algorithm considered weak by default.  See also
 @option{--weak-digest} to reject other digest algorithms.
 
-@item --weak-digest @code{name}
+@item --weak-digest @var{name}
 @opindex weak-digest
 Treat the specified digest algorithm as weak.  Signatures made over
 weak digests algorithms are normally rejected. This option can be
@@ -3246,12 +3248,12 @@ messaging system that the ciphertext transmitted corresponds to an
 inappropriate plaintext so they can take action against the offending
 user.
 
-@item --override-session-key @code{string}
-@itemx --override-session-key-fd @code{fd}
+@item --override-session-key @var{string}
+@itemx --override-session-key-fd @var{fd}
 @opindex override-session-key
-Don't use the public key but the session key @code{string} respective
+Don't use the public key but the session key @var{string} respective
 the session key taken from the first line read from file descriptor
-@code{fd}.  The format of this string is the same as the one printed
+@var{fd}.  The format of this string is the same as the one printed
 by @option{--show-session-key}. This option is normally not used but
 comes handy in case someone forces you to reveal the content of an
 encrypted message; using this option you can do this without handing
@@ -3330,15 +3332,15 @@ Experimental use only.
 Don't change the permissions of a secret keyring back to user
 read/write only. Use this option only if you really know what you are doing.
 
-@item --default-preference-list @code{string}
+@item --default-preference-list @var{string}
 @opindex default-preference-list
-Set the list of default preferences to @code{string}. This preference
+Set the list of default preferences to @var{string}. This preference
 list is used for new keys and becomes the default for "setpref" in the
 edit menu.
 
-@item --default-keyserver-url @code{name}
+@item --default-keyserver-url @var{name}
 @opindex default-keyserver-url
-Set the default keyserver URL to @code{name}. This keyserver will be
+Set the default keyserver URL to @var{name}. This keyserver will be
 used as the keyserver URL when writing a new self-signature on a key,
 which includes key generation and changing preferences.
 
