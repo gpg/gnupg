@@ -1,6 +1,6 @@
 /* import.c - import a key into our key storage.
  * Copyright (C) 1998-2007, 2010-2011 Free Software Foundation, Inc.
- * Copyright (C) 2014, 2016  Werner Koch
+ * Copyright (C) 2014, 2016, 2017  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -120,10 +120,15 @@ static int chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
 static int delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock,
                              u32 *keyid, unsigned int options);
 static int any_uid_left (kbnode_t keyblock);
-static int merge_blocks (ctrl_t ctrl, kbnode_t keyblock_orig,
+static int merge_blocks (ctrl_t ctrl, unsigned int options,
+                         kbnode_t keyblock_orig,
 			 kbnode_t keyblock, u32 *keyid,
+                         int origin, const char *url,
 			 int *n_uids, int *n_sigs, int *n_subk );
-static int append_uid (kbnode_t keyblock, kbnode_t node, int *n_sigs);
+static gpg_error_t append_new_uid (unsigned int options,
+                                   kbnode_t keyblock, kbnode_t node,
+                                   u32 curtime, int origin, const char *url,
+                                   int *n_sigs);
 static int append_key (kbnode_t keyblock, kbnode_t node, int *n_sigs);
 static int merge_sigs (kbnode_t dst, kbnode_t src, int *n_sigs);
 static int merge_keysigs (kbnode_t dst, kbnode_t src, int *n_sigs);
@@ -1381,12 +1386,114 @@ apply_drop_sig_filter (ctrl_t ctrl, kbnode_t keyblock, recsel_expr_t selector)
 }
 
 
+/* Insert a key origin into a public key packet.  */
+static gpg_error_t
+insert_key_origin_pk (PKT_public_key *pk, u32 curtime,
+                      int origin, const char *url)
+{
+  if (origin == KEYORG_WKD || origin == KEYORG_DANE)
+    {
+      /* For WKD and DANE we insert origin information also for the
+       * key but we don't record the URL because we have have no use
+       * for that: An update using a keyserver has higher precedence
+       * and will thus update this origin info.  For refresh using WKD
+       * or DANE we need to go via the User ID anyway.  Recall that we
+       * are only inserting a new key. */
+      pk->keyorg = origin;
+      pk->keyupdate = curtime;
+    }
+  else if (origin == KEYORG_KS && url)
+    {
+      /* If the key was retrieved from a keyserver using a fingerprint
+       * request we add the meta information.  Note that the use of a
+       * fingerprint needs to be enforced by the caller of the import
+       * function.  This is commonly triggered by verifying a modern
+       * signature which has an Issuer Fingerprint signature
+       * subpacket.  */
+      pk->keyorg = origin;
+      pk->keyupdate = curtime;
+      xfree (pk->updateurl);
+      pk->updateurl = xtrystrdup (url);
+      if (!pk->updateurl)
+        return gpg_error_from_syserror ();
+    }
+  else if (origin == KEYORG_FILE)
+    {
+      pk->keyorg = origin;
+      pk->keyupdate = curtime;
+    }
+  else if (origin == KEYORG_URL)
+    {
+      pk->keyorg = origin;
+      pk->keyupdate = curtime;
+      if (url)
+        {
+          xfree (pk->updateurl);
+          pk->updateurl = xtrystrdup (url);
+          if (!pk->updateurl)
+            return gpg_error_from_syserror ();
+        }
+    }
+
+  return 0;
+}
+
+
+/* Insert a key origin into a user id packet.  */
+static gpg_error_t
+insert_key_origin_uid (PKT_user_id *uid, u32 curtime,
+                       int origin, const char *url)
+
+{
+  if (origin == KEYORG_WKD || origin == KEYORG_DANE)
+    {
+      /* We insert origin information on a UID only when we received
+       * them via the Web Key Directory or a DANE record.  The key we
+       * receive here from the WKD has been filtered to contain only
+       * the user ID as looked up in the WKD.  For a DANE origin we
+       * this should also be the case.  Thus we will see here only one
+       * user id.  */
+      uid->keyorg = origin;
+      uid->keyupdate = curtime;
+      if (url)
+        {
+          xfree (uid->updateurl);
+          uid->updateurl = xtrystrdup (url);
+          if (!uid->updateurl)
+            return gpg_error_from_syserror ();
+        }
+    }
+  else if (origin == KEYORG_KS && url)
+    {
+      /* If the key was retrieved from a keyserver using a fingerprint
+       * request we mark that also in the user ID.  However we do not
+       * store the keyserver URL in the UID.  A later update (merge)
+       * from a more trusted source will replace this info.  */
+      uid->keyorg = origin;
+      uid->keyupdate = curtime;
+    }
+  else if (origin == KEYORG_FILE)
+    {
+      uid->keyorg = origin;
+      uid->keyupdate = curtime;
+    }
+  else if (origin == KEYORG_URL)
+    {
+      uid->keyorg = origin;
+      uid->keyupdate = curtime;
+    }
+
+  return 0;
+}
+
+
 /* Apply meta data to KEYBLOCK.  This sets the origin of the key to
  * ORIGIN and the updateurl to URL.  Note that this function is only
  * used for a new key, that is not when we are merging keys.  */
 static gpg_error_t
-apply_meta_data (kbnode_t keyblock, int origin, const char *url)
+insert_key_origin (kbnode_t keyblock, int origin, const char *url)
 {
+  gpg_error_t err;
   kbnode_t node;
   u32 curtime = make_timestamp ();
 
@@ -1396,94 +1503,17 @@ apply_meta_data (kbnode_t keyblock, int origin, const char *url)
         ;
       else if (node->pkt->pkttype == PKT_PUBLIC_KEY)
         {
-          PKT_public_key *pk = node->pkt->pkt.public_key;
-
-          if (origin == KEYORG_WKD || origin == KEYORG_DANE)
-            {
-              /* For WKD and DANE we insert origin information also
-               * for the key but we don't record the URL because we
-               * have have no use for that: An update using a
-               * keyserver has higher precedence and will thus update
-               * this origin info.  For refresh using WKD or DANE we
-               * need to go via the User ID anyway.  Recall that we
-               * are only inserting a new key. */
-              pk->keyorg = origin;
-              pk->keyupdate = curtime;
-            }
-          else if (origin == KEYORG_KS && url)
-            {
-              /* If the key was retrieved from a keyserver using a
-               * fingerprint request we add the meta information.
-               * Note that the use of a fingerprint needs to be
-               * enforced by the caller of the import function.  This
-               * is commonly triggered by verifying a modern signature
-               * which has an Issuer Fingerprint signature
-               * subpacket.  */
-              pk->keyorg = origin;
-              pk->keyupdate = curtime;
-              pk->updateurl = xtrystrdup (url);
-              if (!pk->updateurl)
-                return gpg_error_from_syserror ();
-            }
-          else if (origin == KEYORG_FILE)
-            {
-              pk->keyorg = origin;
-              pk->keyupdate = curtime;
-            }
-          else if (origin == KEYORG_URL)
-            {
-              pk->keyorg = origin;
-              pk->keyupdate = curtime;
-              if (url)
-                {
-                  pk->updateurl = xtrystrdup (url);
-                  if (!pk->updateurl)
-                    return gpg_error_from_syserror ();
-                }
-            }
+          err = insert_key_origin_pk (node->pkt->pkt.public_key, curtime,
+                                      origin, url);
+          if (err)
+            return err;
         }
       else if (node->pkt->pkttype == PKT_USER_ID)
         {
-          PKT_user_id *uid = node->pkt->pkt.user_id;
-
-          if (origin == KEYORG_WKD || origin == KEYORG_DANE)
-            {
-              /* We insert origin information on a UID only when we
-               * received them via the Web Key Directory or a DANE
-               * record.  The key we receive here from the WKD has
-               * been filtered to contain only the user ID as looked
-               * up in the WKD.  For a DANE origin we this should also
-               * be the case.  Thus we will see here only one user
-               * id.  */
-              uid->keyorg = origin;
-              uid->keyupdate = curtime;
-              if (url)
-                {
-                  uid->updateurl = xtrystrdup (url);
-                  if (!uid->updateurl)
-                    return gpg_error_from_syserror ();
-                }
-            }
-          else if (origin == KEYORG_KS && url)
-            {
-              /* If the key was retrieved from a keyserver using a
-               * fingerprint request we mark that also in the user ID.
-               * However we do not store the keyserver URL in the UID.
-               * A later update (merge) from a more trusted source
-               * will replace this info.  */
-              uid->keyorg = origin;
-              uid->keyupdate = curtime;
-            }
-          else if (origin == KEYORG_FILE)
-            {
-              uid->keyorg = origin;
-              uid->keyupdate = curtime;
-            }
-          else if (origin == KEYORG_URL)
-            {
-              uid->keyorg = origin;
-              uid->keyupdate = curtime;
-            }
+          err = insert_key_origin_uid (node->pkt->pkt.user_id, curtime,
+                                       origin, url);
+          if (err)
+            return err;
         }
     }
 
@@ -1724,23 +1754,23 @@ import_one (ctrl_t ctrl,
       if (opt.verbose > 1 )
         log_info (_("writing to '%s'\n"), keydb_get_resource_name (hd) );
 
+      if ((options & IMPORT_CLEAN))
+        clean_key (ctrl, keyblock, opt.verbose, (options&IMPORT_MINIMAL),
+                   &n_uids_cleaned,&n_sigs_cleaned);
+
       /* Unless we are in restore mode apply meta data to the
        * keyblock.  Note that this will never change the first packet
        * and thus the address of KEYBLOCK won't change.  */
       if ( !(options & IMPORT_RESTORE) )
         {
-          rc = apply_meta_data (keyblock, origin, url);
+          rc = insert_key_origin (keyblock, origin, url);
           if (rc)
             {
-              log_error ("apply_meta_data failed: %s\n", gpg_strerror (rc));
+              log_error ("insert_key_origin failed: %s\n", gpg_strerror (rc));
               keydb_release (hd);
               return GPG_ERR_GENERAL;
             }
         }
-
-      if ((options & IMPORT_CLEAN))
-        clean_key (ctrl, keyblock, opt.verbose, (options&IMPORT_MINIMAL),
-                   &n_uids_cleaned,&n_sigs_cleaned);
 
       rc = keydb_insert_keyblock (hd, keyblock );
       if (rc)
@@ -1778,7 +1808,7 @@ import_one (ctrl_t ctrl,
       stats->imported++;
       new_key = 1;
     }
-  else /* merge */
+  else /* Merge the key.  */
     {
       KEYDB_HANDLE hd;
       int n_uids, n_sigs, n_subk, n_sigs_cleaned, n_uids_cleaned;
@@ -1827,8 +1857,9 @@ import_one (ctrl_t ctrl,
       clear_kbnode_flags( keyblock_orig );
       clear_kbnode_flags( keyblock );
       n_uids = n_sigs = n_subk = n_uids_cleaned = 0;
-      rc = merge_blocks (ctrl, keyblock_orig, keyblock,
-                         keyid, &n_uids, &n_sigs, &n_subk );
+      rc = merge_blocks (ctrl, options, keyblock_orig, keyblock, keyid,
+                         origin, url,
+                         &n_uids, &n_sigs, &n_subk );
       if (rc )
         {
           keydb_release (hd);
@@ -3193,11 +3224,14 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
  * Note: We indicate newly inserted packets with NODE_FLAG_A.
  */
 static int
-merge_blocks (ctrl_t ctrl, kbnode_t keyblock_orig, kbnode_t keyblock,
-	      u32 *keyid, int *n_uids, int *n_sigs, int *n_subk )
+merge_blocks (ctrl_t ctrl, unsigned int options,
+              kbnode_t keyblock_orig, kbnode_t keyblock,
+              u32 *keyid, int origin, const char *url,
+	      int *n_uids, int *n_sigs, int *n_subk )
 {
   kbnode_t onode, node;
   int rc, found;
+  u32 curtime = make_timestamp ();
 
   /* 1st: handle revocation certificates */
   for (node=keyblock->next; node; node=node->next )
@@ -3308,7 +3342,8 @@ merge_blocks (ctrl_t ctrl, kbnode_t keyblock_orig, kbnode_t keyblock,
               break;
           if (!onode ) /* this is a new user id: append */
             {
-              rc = append_uid (keyblock_orig, node, n_sigs);
+              rc = append_new_uid (options, keyblock_orig, node,
+                                   curtime, origin, url, n_sigs);
               if (rc )
                 return rc;
               ++*n_uids;
@@ -3384,17 +3419,23 @@ merge_blocks (ctrl_t ctrl, kbnode_t keyblock_orig, kbnode_t keyblock,
 
 
 /* Helper function for merge_blocks.
- * Append the userid starting with NODE and all signatures to KEYBLOCK.
+ *
+ * Append the new userid starting with NODE and all signatures to
+ * KEYBLOCK.  ORIGIN and URL conveys the usual key origin info.  The
+ * integer at N_SIGS is updated with the number of new signatures.
  */
-static int
-append_uid (kbnode_t keyblock, kbnode_t node, int *n_sigs)
+static gpg_error_t
+append_new_uid (unsigned int options,
+                kbnode_t keyblock, kbnode_t node, u32 curtime,
+                int origin, const char *url, int *n_sigs)
 {
+  gpg_error_t err;
   kbnode_t n;
   kbnode_t n_where = NULL;
 
-  log_assert (node->pkt->pkttype == PKT_USER_ID );
+  log_assert (node->pkt->pkttype == PKT_USER_ID);
 
-  /* find the position */
+  /* Find the right position for the new user id and its signatures.  */
   for (n = keyblock; n; n_where = n, n = n->next)
     {
       if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY
@@ -3408,8 +3449,17 @@ append_uid (kbnode_t keyblock, kbnode_t node, int *n_sigs)
   while (node)
     {
       /* we add a clone to the original keyblock, because this
-       * one is released first */
+       * one is released first. */
       n = clone_kbnode(node);
+      if (n->pkt->pkttype == PKT_USER_ID
+          && !(options & IMPORT_RESTORE) )
+        {
+          err = insert_key_origin_uid (n->pkt->pkt.user_id,
+                                       curtime, origin, url);
+          if (err)
+            return err;
+        }
+
       if (n_where)
         {
           insert_kbnode( n_where, n, 0 );
