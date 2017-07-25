@@ -796,6 +796,15 @@ gnupg_mkdir (const char *name, const char *modestr)
 }
 
 
+/* A simple wrapper around chdir.  NAME is expected to be utf8
+ * encoded.  */
+int
+gnupg_chdir (const char *name)
+{
+  return chdir (name);
+}
+
+
 /* A wrapper around chmod which takes a string for the mode argument.
    This makes it easier to handle the mode argument which is not
    defined on all systems.  The format of the modestring is the same

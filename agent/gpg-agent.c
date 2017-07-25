@@ -1708,9 +1708,10 @@ main (int argc, char **argv )
           opt.running_detached = 1;
         }
 
-      if (chdir("/"))
+      if (gnupg_chdir (gnupg_daemon_rootdir ()))
         {
-          log_error ("chdir to / failed: %s\n", strerror (errno));
+          log_error ("chdir to '%s' failed: %s\n",
+                     gnupg_daemon_rootdir (), strerror (errno));
           exit (1);
         }
 

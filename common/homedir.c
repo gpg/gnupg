@@ -433,6 +433,34 @@ gnupg_default_homedir_p (void)
 }
 
 
+/* Return the directory name used by daemons for their current working
+ * directory.  */
+const char *
+gnupg_daemon_rootdir (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  static char *name;
+
+  if (!name)
+    {
+      char path[MAX_PATH];
+      size_t n;
+
+      n = GetSystemDirectoryA (path, sizeof path);
+      if (!n || n >= sizeof path)
+        name = xstrdup ("/"); /* Error - use the curret top dir instead.  */
+      else
+        name = xstrdup (path);
+    }
+
+  return name;
+
+#else /*!HAVE_W32_SYSTEM*/
+  return "/";
+#endif /*!HAVE_W32_SYSTEM*/
+}
+
+
 /* Helper for gnupg-socketdir.  This is a global function, so that
  * gpgconf can use it for its --create-socketdir command.  If
  * SKIP_CHECKS is set permission checks etc. are not done.  The
