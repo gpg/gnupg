@@ -908,14 +908,14 @@ main (int argc, char **argv )
         sigaction (SIGPIPE, &sa, NULL);
       }
 
+#endif /*!HAVE_W32_SYSTEM*/
+
       if (gnupg_chdir (gnupg_daemon_rootdir ()))
         {
           log_error ("chdir to '%s' failed: %s\n",
                      gnupg_daemon_rootdir (), strerror (errno));
           exit (1);
         }
-
-#endif /*!HAVE_W32_SYSTEM*/
 
       handle_connections (fd);
 

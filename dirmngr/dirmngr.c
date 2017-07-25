@@ -1351,15 +1351,18 @@ main (int argc, char **argv)
           log_set_prefix (NULL, oldflags | GPGRT_LOG_RUN_DETACHED);
           opt.running_detached = 1;
 
+        }
+#endif
+
+      if (!nodetach )
+        {
           if (gnupg_chdir (gnupg_daemon_rootdir ()))
             {
               log_error ("chdir to '%s' failed: %s\n",
                          gnupg_daemon_rootdir (), strerror (errno));
               dirmngr_exit (1);
             }
-
         }
-#endif
 
       thread_init ();
       cert_cache_init (hkp_cacert_filenames);

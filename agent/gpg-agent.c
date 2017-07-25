@@ -1708,13 +1708,6 @@ main (int argc, char **argv )
           opt.running_detached = 1;
         }
 
-      if (gnupg_chdir (gnupg_daemon_rootdir ()))
-        {
-          log_error ("chdir to '%s' failed: %s\n",
-                     gnupg_daemon_rootdir (), strerror (errno));
-          exit (1);
-        }
-
       {
         struct sigaction sa;
 
@@ -1724,6 +1717,13 @@ main (int argc, char **argv )
         sigaction (SIGPIPE, &sa, NULL);
       }
 #endif /*!HAVE_W32_SYSTEM*/
+
+      if (gnupg_chdir (gnupg_daemon_rootdir ()))
+        {
+          log_error ("chdir to '%s' failed: %s\n",
+                     gnupg_daemon_rootdir (), strerror (errno));
+          exit (1);
+        }
 
       log_info ("%s %s started\n", strusage(11), strusage(13) );
       handle_connections (fd, fd_extra, fd_browser, fd_ssh);
