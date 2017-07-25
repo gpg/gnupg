@@ -247,7 +247,7 @@ default_homedir (void)
         {
           if (!dir || !*dir)
             {
-              char *tmp;
+              char *tmp, *p;
 
               tmp = read_w32_registry_string (NULL,
                                               GNUPG_REGISTRY_DIR,
@@ -258,7 +258,13 @@ default_homedir (void)
                   tmp = NULL;
                 }
               if (tmp)
-                saved_dir = tmp;
+                {
+                  /* Strip trailing backslashes.  */
+                  p = tmp + strlen (tmp) - 1;
+                  while (p > tmp && *p == '\\')
+                    *p-- = 0;
+                  saved_dir = tmp;
+                }
             }
 
           if (!saved_dir)
@@ -267,10 +273,27 @@ default_homedir (void)
       dir = saved_dir;
     }
 #endif /*HAVE_W32_SYSTEM*/
+
   if (!dir || !*dir)
     dir = GNUPG_DEFAULT_HOMEDIR;
-  else if (!is_gnupg_default_homedir (dir))
-    non_default_homedir = 1;
+  else
+    {
+      /* Strip trailing slashes if any.  */
+      if (dir[strlen (dir)-1] == '/')
+        {
+          char *tmp, *p;
+
+          tmp = xstrdup (dir);
+          p = tmp + strlen (tmp) - 1;
+          while (p > tmp && *p == '/')
+            *p-- = 0;
+
+          dir = tmp;
+        }
+
+      if (!is_gnupg_default_homedir (dir))
+        non_default_homedir = 1;
+    }
 
   return dir;
 }
@@ -403,12 +426,40 @@ w32_commondir (void)
 void
 gnupg_set_homedir (const char *newdir)
 {
+  char *tmp = NULL;
+
   if (!newdir || !*newdir)
     newdir = default_homedir ();
-  else if (!is_gnupg_default_homedir (newdir))
-    non_default_homedir = 1;
+  else
+    {
+      /* Remove trailing slashes from NEWSDIR.  */
+      if (newdir[strlen (newdir)-1] == '/'
+#ifdef HAVE_W32_SYSTEM
+          || newdir[strlen (newdir)-1] == '\\'
+#endif
+          )
+        {
+          char *p;
+
+          tmp = xstrdup (newdir);
+          p = tmp + strlen (tmp) - 1;
+          while (p > tmp
+                 && (*p == '/'
+#ifdef HAVE_W32_SYSTEM
+                     || *p == '\\'
+#endif
+                     )
+                 )
+            *p-- = 0;
+
+          newdir = tmp;
+        }
+      if (!is_gnupg_default_homedir (newdir))
+        non_default_homedir = 1;
+    }
   xfree (the_gnupg_homedir);
   the_gnupg_homedir = make_absfilename (newdir, NULL);;
+  xfree (tmp);
 }
 
 

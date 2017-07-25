@@ -486,7 +486,8 @@ AH_BOTTOM([
 #define SAFE_VERSION_DOT  '.'
 #define SAFE_VERSION_DASH '-'
 
-/* Some global constants. */
+/* Some global constants.
+ * Note that the homedir must not end in a slash.  */
 #ifdef HAVE_DOSISH_SYSTEM
 # ifdef HAVE_DRIVE_LETTERS
 #  define GNUPG_DEFAULT_HOMEDIR "c:/gnupg"
