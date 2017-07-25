@@ -123,7 +123,7 @@ static int any_uid_left (kbnode_t keyblock);
 static int merge_blocks (ctrl_t ctrl, unsigned int options,
                          kbnode_t keyblock_orig,
 			 kbnode_t keyblock, u32 *keyid,
-                         int origin, const char *url,
+                         u32 curtime, int origin, const char *url,
 			 int *n_uids, int *n_sigs, int *n_subk );
 static gpg_error_t append_new_uid (unsigned int options,
                                    kbnode_t keyblock, kbnode_t node,
@@ -1521,6 +1521,81 @@ insert_key_origin (kbnode_t keyblock, int origin, const char *url)
 }
 
 
+/* Update meta data on KEYBLOCK.  This updates the key origin on the
+ * public key according to ORIGIN and URL.  The UIDs are already
+ * updated when this function is called.  */
+static gpg_error_t
+update_key_origin (kbnode_t keyblock, u32 curtime, int origin, const char *url)
+{
+  PKT_public_key *pk;
+
+  log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
+  pk = keyblock->pkt->pkt.public_key;
+
+  if (pk->keyupdate > curtime)
+    ; /* Don't do it for a time warp.  */
+  else if (origin == KEYORG_WKD || origin == KEYORG_DANE)
+    {
+      /* We only update the origin info if they either have never been
+       * set or are the origin was the same as the new one.  If this
+       * is WKD we also update the UID to show from which user id this
+       * was updated.  */
+      if (!pk->keyorg || pk->keyorg == KEYORG_WKD || pk->keyorg == KEYORG_DANE)
+        {
+          pk->keyorg = origin;
+          pk->keyupdate = curtime;
+          xfree (pk->updateurl);
+          pk->updateurl = NULL;
+          if (origin == KEYORG_WKD && url)
+            {
+              pk->updateurl = xtrystrdup (url);
+              if (!pk->updateurl)
+                return gpg_error_from_syserror ();
+            }
+        }
+    }
+  else if (origin == KEYORG_KS)
+    {
+      /* All updates from a keyserver are considered to have the
+       * freshed key.  Thus we always set the new key origin.  */
+      pk->keyorg = origin;
+      pk->keyupdate = curtime;
+      xfree (pk->updateurl);
+      pk->updateurl = NULL;
+      if (url)
+        {
+          pk->updateurl = xtrystrdup (url);
+          if (!pk->updateurl)
+            return gpg_error_from_syserror ();
+        }
+    }
+  else if (origin == KEYORG_FILE)
+    {
+      /* Updates from a file are considered to be fresh.  */
+      pk->keyorg = origin;
+      pk->keyupdate = curtime;
+      xfree (pk->updateurl);
+      pk->updateurl = NULL;
+    }
+  else if (origin == KEYORG_URL)
+    {
+      /* Updates from a URL are considered to be fresh.  */
+      pk->keyorg = origin;
+      pk->keyupdate = curtime;
+      xfree (pk->updateurl);
+      pk->updateurl = NULL;
+      if (url)
+        {
+          pk->updateurl = xtrystrdup (url);
+          if (!pk->updateurl)
+            return gpg_error_from_syserror ();
+        }
+    }
+
+  return 0;
+}
+
+
 /*
  * Try to import one keyblock. Return an error only in serious cases,
  * but never for an invalid keyblock.  It uses log_error to increase
@@ -1812,6 +1887,7 @@ import_one (ctrl_t ctrl,
     {
       KEYDB_HANDLE hd;
       int n_uids, n_sigs, n_subk, n_sigs_cleaned, n_uids_cleaned;
+      u32 curtime = make_timestamp ();
 
       /* Compare the original against the new key; just to be sure nothing
        * weird is going on */
@@ -1858,7 +1934,7 @@ import_one (ctrl_t ctrl,
       clear_kbnode_flags( keyblock );
       n_uids = n_sigs = n_subk = n_uids_cleaned = 0;
       rc = merge_blocks (ctrl, options, keyblock_orig, keyblock, keyid,
-                         origin, url,
+                         curtime, origin, url,
                          &n_uids, &n_sigs, &n_subk );
       if (rc )
         {
@@ -1872,6 +1948,21 @@ import_one (ctrl_t ctrl,
 
       if (n_uids || n_sigs || n_subk || n_sigs_cleaned || n_uids_cleaned)
         {
+          /* Unless we are in restore mode apply meta data to the
+           * keyblock.  Note that this will never change the first packet
+           * and thus the address of KEYBLOCK won't change.  */
+          if ( !(options & IMPORT_RESTORE) )
+            {
+              rc = update_key_origin (keyblock_orig, curtime, origin, url);
+              if (rc)
+                {
+                  log_error ("update_key_origin failed: %s\n",
+                             gpg_strerror (rc));
+                  keydb_release (hd);
+                  goto leave;
+                }
+            }
+
           mod_key = 1;
           /* KEYBLOCK_ORIG has been updated; write */
           rc = keydb_update_keyblock (ctrl, hd, keyblock_orig);
@@ -1929,6 +2020,9 @@ import_one (ctrl_t ctrl,
 	}
       else
         {
+          /* Fixme: we do not track the time we last checked a key for
+           * updates.  To do this we would need to rewrite even the
+           * keys which have no changes.  */
           same_key = 1;
           if (is_status_enabled ())
             print_import_ok (pk, 0);
@@ -3226,12 +3320,11 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
 static int
 merge_blocks (ctrl_t ctrl, unsigned int options,
               kbnode_t keyblock_orig, kbnode_t keyblock,
-              u32 *keyid, int origin, const char *url,
+              u32 *keyid, u32 curtime, int origin, const char *url,
 	      int *n_uids, int *n_sigs, int *n_subk )
 {
   kbnode_t onode, node;
   int rc, found;
-  u32 curtime = make_timestamp ();
 
   /* 1st: handle revocation certificates */
   for (node=keyblock->next; node; node=node->next )
