@@ -29,11 +29,9 @@
 #include <assert.h>
 #include <time.h>
 #include <fcntl.h>
-#ifdef HAVE_W32_SYSTEM
-# include <direct.h>
-#else
-# include <sys/socket.h>
-# include <sys/un.h>
+#ifndef HAVE_W32_SYSTEM
+#include <sys/socket.h>
+#include <sys/un.h>
 #endif /*HAVE_W32_SYSTEM*/
 #include <unistd.h>
 #include <signal.h>
@@ -813,11 +811,6 @@ main (int argc, char **argv )
 #ifdef HAVE_W32_SYSTEM
       (void)csh_style;
       (void)nodetach;
-      if (_chdir("\\"))
-        {
-          log_error ("chdir to / failed: %s\n", strerror (errno));
-          exit (1);
-        }
 #else
       pid = fork ();
       if (pid == (pid_t)-1)
