@@ -7617,14 +7617,14 @@ retry:
 				goto error;
 		}
 
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_UDP_CONN:
 		error = dns_connect(so->udp, (struct sockaddr *)&so->remote, dns_sa_len(&so->remote));
 		dns_trace_sys_connect(so->trace, so->udp, SOCK_DGRAM, (struct sockaddr *)&so->remote, error);
 		if (error)
 			goto error;
 
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_UDP_SEND:
 		n = dns_send(so->udp, (void *)so->query->data, so->query->end, 0, &error);
 		dns_trace_sys_send(so->trace, so->udp, SOCK_DGRAM, so->query->data, n, error);
@@ -7634,7 +7634,7 @@ retry:
 		so->stat.udp.sent.bytes += n;
 		so->stat.udp.sent.count++;
 
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_UDP_RECV:
 		n = dns_recv(so->udp, (void *)so->answer->data, so->answer->size, 0, &error);
 		dns_trace_sys_recv(so->trace, so->udp, SOCK_DGRAM, so->answer->data, n, error);
@@ -7648,12 +7648,12 @@ retry:
 		if ((error = dns_so_verify(so, so->answer)))
 			goto trash;
 
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_UDP_DONE:
 		if (!dns_header(so->answer)->tc || so->type == SOCK_DGRAM)
 			return 0;
 
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_TCP_INIT:
 		if (so->remote.ss_family != so->local.ss_family) {
 			/* Family mismatch.  Reinitialize.  */
@@ -7680,24 +7680,24 @@ retry:
 		if (-1 == (so->tcp = dns_socket((struct sockaddr *)&so->local, SOCK_STREAM, &error)))
 			goto error;
 
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_TCP_CONN:
 		error = dns_connect(so->tcp, (struct sockaddr *)&so->remote, dns_sa_len(&so->remote));
 		dns_trace_sys_connect(so->trace, so->tcp, SOCK_STREAM, (struct sockaddr *)&so->remote, error);
 		if (error && error != DNS_EISCONN)
 			goto error;
 
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_TCP_SEND:
 		if ((error = dns_so_tcp_send(so)))
 			goto error;
 
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_TCP_RECV:
 		if ((error = dns_so_tcp_recv(so)))
 			goto error;
 
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_TCP_DONE:
 		/* close unless DNS_RESCONF_TCP_ONLY (see dns_res_tcp2type) */
 		if (so->type != SOCK_STREAM) {
@@ -7716,7 +7716,7 @@ retry:
 		if (-1 == (so->tcp = dns_socket((struct sockaddr *)&so->local, SOCK_STREAM, &error)))
 			goto error;
 
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_SOCKS_CONN: {
 		unsigned char method;
 
@@ -7744,13 +7744,13 @@ retry:
 		buffer[2] = method;
 
 		so->state++;
-	}
+	} /* FALL THROUGH */
 	case DNS_SO_SOCKS_HELLO_SEND:
 		if ((error = dns_so_tcp_send(so)))
 			goto error;
 
 		dns_so_tcp_recv_expect(so, 2);
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_SOCKS_HELLO_RECV: {
 		unsigned char method;
 
@@ -7798,7 +7798,7 @@ retry:
 		}
 
 		so->state++;
-	}
+	} /* FALL THROUGH */
 	case DNS_SO_SOCKS_AUTH_SEND:
 		if ((error = dns_so_tcp_send(so)))
 			goto error;
@@ -7806,7 +7806,7 @@ retry:
 		/* Skip the two length octets, and receive two octets.  */
 		dns_so_tcp_recv_expect(so, 2);
 
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_SOCKS_AUTH_RECV:
 		if ((error = dns_so_tcp_recv(so)))
 			goto error;
@@ -7823,7 +7823,7 @@ retry:
 			goto error;
 		}
 
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_SOCKS_REQUEST_PREPARE:
 		/* Send request details (rfc-1928, 4).  */
 		buffer = dns_so_tcp_send_buffer(so, so->remote.ss_family == AF_INET6 ? 22 : 10);
@@ -7844,7 +7844,7 @@ retry:
 			memcpy (buffer+8, &addr_in->sin_port, 2);        /* DST.PORT */
 		}
 
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_SOCKS_REQUEST_SEND:
 		if ((error = dns_so_tcp_send(so)))
 			goto error;
@@ -7852,7 +7852,7 @@ retry:
 		/* Expect ten octets.  This is the length of the
 		 * response assuming a IPv4 address is used.  */
 		dns_so_tcp_recv_expect(so, 10);
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_SOCKS_REQUEST_RECV:
 		if ((error = dns_so_tcp_recv(so)))
 			goto error;
@@ -7910,12 +7910,12 @@ retry:
 		 * the remaining bytes assuming an IPv6 address is
 		 * used.  */
 		dns_so_tcp_recv_expect(so, 12);
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_SOCKS_REQUEST_RECV_V6:
 		if ((error = dns_so_tcp_recv(so)))
 			goto error;
 
-		so->state++;
+		so->state++;	/* FALL THROUGH */
 	case DNS_SO_SOCKS_HANDSHAKE_DONE:
 		/* We have not way to store the actual address used by
 		 * the server.  Then again, we don't really care.  */
@@ -8543,7 +8543,7 @@ exec:
 
 	switch (F->state) {
 	case DNS_R_INIT:
-		F->state++;
+		F->state++;	/* FALL THROUGH */
 	case DNS_R_GLUE:
 		if (R->sp == 0)
 			dgoto(R->sp, DNS_R_SWITCH);
@@ -8657,17 +8657,17 @@ exec:
 		} else if (error)
 			goto error;
 
-		F->state++;
+		F->state++;	/* FALL THROUGH */
 	case DNS_R_SUBMIT:
 		if ((error = R->cache->submit(F->query, R->cache)))
 			goto error;
 
-		F->state++;
+		F->state++;	/* FALL THROUGH */
 	case DNS_R_CHECK:
 		if ((error = R->cache->check(R->cache)))
 			goto error;
 
-		F->state++;
+		F->state++;	/* FALL THROUGH */
 	case DNS_R_FETCH:
 		error = 0;
 
@@ -8692,7 +8692,7 @@ exec:
 
 		R->search = 0;
 
-		F->state++;
+		F->state++;	/* FALL THROUGH */
 	case DNS_R_SEARCH:
 		/*
 		 * XXX: We probably should only apply the domain search
@@ -8704,12 +8704,12 @@ exec:
 		if ((error = dns_q_make2(&F->query, u.name, len, R->qtype, R->qclass, F->qflags)))
 			goto error;
 
-		F->state++;
+		F->state++;	/* FALL THROUGH */
 	case DNS_R_HINTS:
 		if (!dns_p_setptr(&F->hints, dns_hints_query(R->hints, F->query, &error)))
 			goto error;
 
-		F->state++;
+		F->state++;	/* FALL THROUGH */
 	case DNS_R_ITERATE:
 		dns_rr_i_init(&F->hints_i, F->hints);
 
@@ -8718,7 +8718,7 @@ exec:
 		F->hints_i.sort		= &dns_res_nameserv_cmp;
 		F->hints_i.args[0]	= F->hints->end;
 
-		F->state++;
+		F->state++;	/* FALL THROUGH */
 	case DNS_R_FOREACH_NS:
 		dns_rr_i_save(&F->hints_i);
 
@@ -8824,7 +8824,7 @@ exec:
 			goto error;
 
 		F->state++;
-	}
+	} /* FALL THROUGH */
 	case DNS_R_QUERY_A:
 		if (dns_so_elapsed(&R->so) >= dns_resconf_timeout(R->resconf))
 			dgoto(R->sp, DNS_R_FOREACH_A);
@@ -8957,7 +8957,7 @@ exec:
 			goto error;
 
 		F->state++;
-	}
+	} /* FALL THROUGH */
 	case DNS_R_QUERY_AAAA:
 		if (dns_so_elapsed(&R->so) >= dns_resconf_timeout(R->resconf))
 			dgoto(R->sp, DNS_R_FOREACH_AAAA);
@@ -9060,7 +9060,7 @@ exec:
 
 		dns_rr_i_init(&R->smart, F->answer);
 
-		F->state++;
+		F->state++;	/* FALL THROUGH */
 	case DNS_R_SMART0_A:
 		if (&F[1] >= endof(R->stack))
 			dgoto(R->sp, DNS_R_DONE);
@@ -9745,12 +9745,12 @@ exec:
 
 	switch (ai->state) {
 	case DNS_AI_S_INIT:
-		ai->state++;
+		ai->state++;	/* FALL THROUGH */
 	case DNS_AI_S_NEXTAF:
 		if (!dns_ai_nextaf(ai))
 			dns_ai_goto(DNS_AI_S_DONE);
 
-		ai->state++;
+		ai->state++;	/* FALL THROUGH */
 	case DNS_AI_S_NUMERIC:
 		if (1 == dns_inet_pton(AF_INET, ai->qname, &any.a)) {
 			if (ai->af.atype == AF_INET) {
@@ -9773,19 +9773,19 @@ exec:
 		if (ai->hints.ai_flags & AI_NUMERICHOST)
 			dns_ai_goto(DNS_AI_S_NEXTAF);
 
-		ai->state++;
+		ai->state++;	/* FALL THROUGH */
 	case DNS_AI_S_SUBMIT:
 		assert(ai->res);
 
 		if ((error = dns_res_submit(ai->res, ai->qname, dns_ai_qtype(ai), DNS_C_IN)))
 			return error;
 
-		ai->state++;
+		ai->state++;	/* FALL THROUGH */
 	case DNS_AI_S_CHECK:
 		if ((error = dns_res_check(ai->res)))
 			return error;
 
-		ai->state++;
+		ai->state++;	/* FALL THROUGH */
 	case DNS_AI_S_FETCH:
 		if (!(ans = dns_res_fetch_and_study(ai->res, &error)))
 			return error;
@@ -9808,7 +9808,7 @@ exec:
 		ai->i.type    = dns_ai_qtype(ai);
 		ai->i.sort    = &dns_rr_i_order;
 
-		ai->state++;
+		ai->state++;	/* FALL THROUGH */
 	case DNS_AI_S_FOREACH_I:
 		if (!dns_rr_grep(&rr, 1, &ai->i, ai->answer, &error))
 			dns_ai_goto(DNS_AI_S_NEXTAF);
@@ -9842,11 +9842,11 @@ exec:
 			break;
 		} /* switch() */
 
-		ai->state++;
+		ai->state++;	/* FALL THROUGH */
 	case DNS_AI_S_INIT_G:
 		ai->g_depth = 0;
 
-		ai->state++;
+		ai->state++;	/* FALL THROUGH */
 	case DNS_AI_S_ITERATE_G:
 		dns_strlcpy(ai->g_cname, ai->cname, sizeof ai->g_cname);
 		dns_rr_i_init(&ai->g, ai->glue);
@@ -9854,7 +9854,7 @@ exec:
 		ai->g.name    = ai->g_cname;
 		ai->g.type    = ai->af.qtype;
 
-		ai->state++;
+		ai->state++;	/* FALL THROUGH */
 	case DNS_AI_S_FOREACH_G:
 		if (!dns_rr_grep(&rr, 1, &ai->g, ai->glue, &error)) {
 			if (dns_rr_i_count(&ai->g) > 0)
@@ -9878,12 +9878,12 @@ exec:
 		if ((error = dns_res_submit(ai->res, ai->g.name, ai->g.type, DNS_C_IN)))
 			return error;
 
-		ai->state++;
+		ai->state++;	/* FALL THROUGH */
 	case DNS_AI_S_CHECK_G:
 		if ((error = dns_res_check(ai->res)))
 			return error;
 
-		ai->state++;
+		ai->state++;	/* FALL THROUGH */
 	case DNS_AI_S_FETCH_G:
 		if (!(ans = dns_res_fetch_and_study(ai->res, &error)))
 			return error;
