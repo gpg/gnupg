@@ -154,8 +154,8 @@ my_strusage( int level )
 
   switch (level)
     {
-    case 11: p = "gpg-wks-server (@GNUPG@)";
-      break;
+    case 11: p = "gpg-wks-server"; break;
+    case 12: p = "@GNUPG@"; break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = ("Please report bugs to <@EMAIL@>.\n"); break;
