@@ -63,6 +63,9 @@ enum cmd_and_opt_values
     aReceive,
     aCron,
     aListDomains,
+    aInstallKey,
+    aRevokeKey,
+    aRemoveKey,
 
     oGpgProgram,
     oSend,
@@ -83,6 +86,12 @@ static ARGPARSE_OPTS opts[] = {
               ("run regular jobs")),
   ARGPARSE_c (aListDomains, "list-domains",
               ("list configured domains")),
+  ARGPARSE_c (aInstallKey, "install-key",
+              "|FILE|install a key from FILE into the WKD"),
+  ARGPARSE_c (aRemoveKey, "remove-key",
+              "|ADDR|remove the key ADDR from the WKD"),
+  ARGPARSE_c (aRevokeKey, "revoke-key",
+              "|ADDR|mark the key ADDR in the WKD as revoked"),
 
   ARGPARSE_group (301, ("@\nOptions:\n ")),
 
@@ -130,6 +139,9 @@ static gpg_error_t command_receive_cb (void *opaque,
                                        const char *mediatype, estream_t fp,
                                        unsigned int flags);
 static gpg_error_t command_list_domains (void);
+static gpg_error_t command_install_key (const char *fname);
+static gpg_error_t command_remove_key (const char *mailaddr);
+static gpg_error_t command_revoke_key (const char *mailaddr);
 static gpg_error_t command_cron (void);
 
 
@@ -212,6 +224,9 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
 	case aReceive:
         case aCron:
         case aListDomains:
+        case aInstallKey:
+        case aRemoveKey:
+        case aRevokeKey:
           cmd = pargs->r_opt;
           break;
 
@@ -335,6 +350,24 @@ main (int argc, char **argv)
 
     case aListDomains:
       err = command_list_domains ();
+      break;
+
+    case aInstallKey:
+      if (argc != 1)
+        wrong_args ("--install-key FILE");
+      err = command_install_key (*argv);
+      break;
+
+    case aRemoveKey:
+      if (argc != 1)
+        wrong_args ("--remove-key MAILADDR");
+      err = command_remove_key (*argv);
+      break;
+
+    case aRevokeKey:
+      if (argc != 1)
+        wrong_args ("--revoke-key MAILADDR");
+      err = command_revoke_key (*argv);
       break;
 
     default:
@@ -1861,4 +1894,31 @@ command_cron (void)
 
   free_strlist (domaindirs);
   return err;
+}
+
+
+/* Install a single key into the WKD by reading FNAME.  */
+static gpg_error_t
+command_install_key (const char *fname)
+{
+  (void)fname;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}
+
+
+/* Remove the key with mail address MAILADDR.  */
+static gpg_error_t
+command_remove_key (const char *mailaddr)
+{
+  (void)mailaddr;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}
+
+
+/* Revoke the key with mail address MAILADDR.  */
+static gpg_error_t
+command_revoke_key (const char *mailaddr)
+{
+  (void)mailaddr;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 }
