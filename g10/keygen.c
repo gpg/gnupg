@@ -4808,7 +4808,8 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
               tty_printf (_("public and secret key created and signed.\n") );
               tty_printf ("\n");
               merge_keys_and_selfsig (ctrl, pub_root);
-              list_keyblock_direct (ctrl, pub_root, 0, 1, 1, 1);
+
+              list_keyblock_direct (ctrl, pub_root, 0, 1, opt.fingerprint || opt.with_fingerprint, 1);
             }
 
 
