@@ -2,7 +2,7 @@
 
 [gpg]
 compliance de-vs
-default-new-key-algo brainpoolP256r1+brainpoolP256r1
+default-new-key-algo rsa3072/cert,sign+rsa3072/encr
 
 [gpgsm]
 enable-crl-checks
