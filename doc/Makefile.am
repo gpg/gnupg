@@ -68,7 +68,7 @@ nobase_dist_doc_DATA = FAQ DETAILS HACKING DCO TRANSLATE OpenPGP KEYSERVER \
 gnupg_TEXINFOS = \
 	gpg.texi gpgsm.texi gpg-agent.texi scdaemon.texi instguide.texi \
 	tools.texi debugging.texi glossary.texi contrib.texi gpl.texi \
-	sysnotes.texi dirmngr.texi \
+	sysnotes.texi dirmngr.texi wks.texi \
         gnupg-module-overview.svg \
         gnupg-card-architecture.fig \
 	howtos.texi howto-create-a-server-cert.texi
@@ -88,11 +88,11 @@ YAT2M_OPTIONS = -I $(srcdir) \
         --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard 2.1"
 
 myman_sources = gnupg7.texi gpg.texi gpgsm.texi gpg-agent.texi \
-	        dirmngr.texi scdaemon.texi tools.texi
+	        dirmngr.texi scdaemon.texi tools.texi wks.texi
 myman_pages   = gpgsm.1 gpg-agent.1 dirmngr.8 scdaemon.1 \
                 watchgnupg.1 gpgconf.1 addgnupghome.8 gpg-preset-passphrase.1 \
 		gpg-connect-agent.1 gpgparsemail.1 symcryptrun.1 \
-		applygnupgdefaults.8 \
+		applygnupgdefaults.8 gpg-wks-client.1 gpg-wks-server.1 \
 		dirmngr-client.1
 if USE_GPG2_HACK
 myman_pages += gpg2.1 gpgv2.1

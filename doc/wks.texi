@@ -1,0 +1,340 @@
+@c wks.texi - man pages for the Web Key Service tools.
+@c Copyright (C) 2017 g10 Code GmbH
+@c Copyright (C) 2017 Bundesamt für Sicherheit in der Informationstechnik
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file GnuPG.texi.
+
+@include defs.inc
+
+@node Web Key Service
+@chapter Web Key Service
+
+GnuPG comes with tools used to maintain and access a Web Key
+Directory.
+
+@menu
+* gpg-wks-client::        Send requests via WKS
+* gpg-wks-server::        Server to provide the WKS.
+@end menu
+
+@c
+@c  GPG-WKS-CLIENT
+@c
+@manpage gpg-wks-client.1
+@node gpg-wks-client
+@section Send requests via WKS
+@ifset manverb
+.B gpg-wks-client
+\- Client for the Web Key Service
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B gpg-wks-client
+.RI [ options ]
+.B \-\-supported
+.I user-id
+.br
+.B gpg-wks-client
+.RI [ options ]
+.B \-\-check
+.I user-id
+.br
+.B gpg-wks-client
+.RI [ options ]
+.B \-\-create
+.I fingerprint
+.I user-id
+.br
+.B gpg-wks-client
+.RI [ options ]
+.B \-\-receive
+.br
+.B gpg-wks-client
+.RI [ options ]
+.B \-\-read
+@end ifset
+
+@mansect description
+The @command{gpg-wks-client} is used to send requests to a Web Key
+Service provider.  This is usuallay done to upload a key into a Web
+Key Directory.
+
+With the @option{--supported} command the caller can test whether a
+site supports the Web Key Service.  The argument is an arbitray
+address in the to be tested domain. For example
+@file{foo@@example.net}.  The command returns success if the Web Key
+Service is supported.  The operation is silent; to get diagnostic
+output use the option @option{--verbose}.
+
+With the @option{--check} command the caller can test whether a key
+exists for a supplied mail address.  The command returns success if a
+key is available.
+
+The @option{--create} command is used to send a request for
+publication in the Web Key Directory.  The arguments are the
+fingerprint of the key and the user id to publish.  The output from
+the command is a properly formatted mail with all standard headers.
+This mail can be fed to @command{sendmail(8)} or any other tool to
+actually send that mail.  If @command{sendmail(8)} is installed the
+option @option{--send} can be used to directly send the created
+request.
+
+The @option{--receive} and @option{--read} commands are used to
+process confirmation mails as send from the service provider.  The
+former expects an encrypted MIME messages, the latter an already
+decrypted MIME message.  The result of these commands are another mail
+which can be send in the same way as the mail created with
+@option{--create}.
+
+@command{gpg-wks-client} is not commonly invoked directly and thus it
+is not installed in the bin directory.  Here is an example how it can
+be invoked manually to check for a Web Key Directory entry for
+@file{foo@@example.org}:
+
+@example
+$(gpgconf --list-dirs libexecdir)/gpg-wks-client --check foo@@example.net
+@end example
+
+@mansect options
+@noindent
+@command{gpg-wks-client} understands these options:
+
+@table @gnupgtabopt
+
+@item --send
+@opindex send
+Directly send created mails using the @command{sendmail} command.
+Requires installation of that command.
+
+@item --output @var{file}
+@itemx -o
+@opindex output
+Write the created mail to @var{file} instead of stdout.  Note that the
+value @code{-} for @var{file} is the same as writing to stdout.
+
+@item --status-fd @var{n}
+@opindex status-fd
+Write special status strings to the file descriptor @var{n}.
+This program returns only the status messages SUCCESS or FAILURE which
+are helpful when the caller uses a double fork approach and can't
+easily get the return code of the process.
+
+@item --verbose
+@opindex verbose
+Enable extra informational output.
+
+@item --quiet
+@opindex quiet
+Disable almost all informational output.
+
+@item --version
+@opindex version
+Print version of the program and exit.
+
+@item --help
+@opindex help
+Display a brief help page and exit.
+
+@end table
+
+
+@mansect see also
+@ifset isman
+@command{gpg-wks-server}(1)
+@end ifset
+
+
+@c
+@c  GPG-WKS-SERVER
+@c
+@manpage gpg-wks-server.1
+@node gpg-wks-server
+@section Provide the Web Key Service
+@ifset manverb
+.B gpg-wks-server
+\- Server providing the Web Key Service
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B gpg-wks-server
+.RI [ options ]
+.B \-\-receive
+.br
+.B gpg-wks-server
+.RI [ options ]
+.B \-\-cron
+.br
+.B gpg-wks-server
+.RI [ options ]
+.B \-\-list-domains
+.br
+.B gpg-wks-server
+.RI [ options ]
+.B \-\-install-key
+.I file
+.br
+.B gpg-wks-server
+.RI [ options ]
+.B \-\-remove-key
+.I mailaddr
+.br
+.B gpg-wks-server
+.RI [ options ]
+.B \-\-revoke-key
+.I mailaddr
+@end ifset
+
+@mansect description
+The @command{gpg-wks-server} is a server site implementation of the
+Web Key Service.  It receives requests for publication, sends
+confirmation requests, receives confirmations, and published the key.
+It also has features to ease the setup and maintenance of a Web Key
+Directory.
+
+When used with the command @option{--receive} a single Web Key Service
+mail is processed.  Commonly this command is used with the option
+@option{--send} to directly send the crerated mails back.  See below
+for an installation example.
+
+The command @option{--cron} is used for regualr cleanup tasks.  For
+example non-confirmed requested should be removed after their expire
+time.  It is best to run this command once a day from a cronjob.
+
+The command @option{--list-domains} prints all configured domains.
+Further it creates missing directories for the configuration and
+prints warnings pertaining to problems in the configuration.
+
+The commands @option{--install-key}, @option{--remove-key}, and
+@option{--revoke-key} are not yet functional.
+
+
+@mansect options
+@noindent
+@command{gpg-wks-server} understands these options:
+
+@table @gnupgtabopt
+
+@item --from @var{mailaddr}
+@opindex from
+Use @var{mailaddr} as the default sender address.
+
+@item --header @var{name}=@var{value}
+@opindex header
+Add the mail header "@var{name}: @var{value}" to all outgoing mails.
+
+@item --send
+@opindex send
+Directly send created mails using the @command{sendmail} command.
+Requires installation of that command.
+
+@item --output @var{file}
+@itemx -o
+@opindex output
+Write the created mail also to @var{file}. Note that the value
+@code{-} for @var{file} would write it to stdout.
+
+@item --verbose
+@opindex verbose
+Enable extra informational output.
+
+@item --quiet
+@opindex quiet
+Disable almost all informational output.
+
+@item --version
+@opindex version
+Print version of the program and exit.
+
+@item --help
+@opindex help
+Display a brief help page and exit.
+
+@end table
+
+@noindent
+@mansect examples
+@chapheading Examples
+
+The Web Key Service requires a working directory to store keys
+pending for publication.  As root create a working directory:
+
+@example
+  # mkdir /var/lib/gnupg/wks
+  # chown webkey:webkey /var/lib/gnupg/wks
+  # chmod 2750 /var/lib/gnupg/wks
+@end example
+
+Then under your webkey account create directories for all your
+domains.  Here we do it for "example.net":
+
+@example
+  $ mkdir /var/lib/gnupg/wks/example.net
+@end example
+
+Finally run
+
+@example
+  $ gpg-wks-server --list-domains
+@end example
+
+to create the required sub-directories with the permission set
+correctly.  For each domain a submission address needs to be
+configured.  All service mails are directed to that address.  It can
+be the same address for all configured domains, for example:
+
+@example
+  $ cd /var/lib/gnupg/wks/example.net
+  $ echo key-submission@@example.net >submission-address
+@end example
+
+The protocol requires that the key to be published is sent with an
+encrypted mail to the service.  Thus you need to create a key for
+the submission address:
+
+@example
+  $ gpg --batch --passphrase '' --quick-gen-key key-submission@@example.net
+  $ gpg --with-wkd-hash -K key-submission@@example.net
+@end example
+
+The output of the last command looks similar to this:
+
+@example
+  sec   rsa2048 2016-08-30 [SC]
+        C0FCF8642D830C53246211400346653590B3795B
+  uid           [ultimate] key-submission@@example.net
+                bxzcxpxk8h87z1k7bzk86xn5aj47intu@@example.net
+  ssb   rsa2048 2016-08-30 [E]
+@end example
+
+Take the hash of the string "key-submission", which is
+"bxzcxpxk8h87z1k7bzk86xn5aj47intu" and manually publish that key:
+
+@example
+  $ gpg --export-options export-minimal --export \
+  >  -o /var/lib/gnupg/wks/example.net/hu/bxzcxpxk8h87z1k7bzk86xn5aj47intu \
+  >  key-submission@@example.new
+@end example
+
+Make sure that the created file is world readable.
+
+Finally that submission address needs to be redirected to a script
+running @command{gpg-wks-server}.  The @command{procmail} command can
+be used for this: Redirect the submission address to the user "webkey"
+and put this into webkey's @file{.procmailrc}:
+
+@example
+:0
+* !^From: webkey@@example.net
+* !^X-WKS-Loop: webkey.example.net
+|gpg-wks-server -v --receive \
+     --header X-WKS-Loop=webkey.example.net \
+     --from webkey@@example.net --send
+@end example
+
+
+@mansect see also
+@ifset isman
+@command{gpg-wks-client}(1)
+@end ifset

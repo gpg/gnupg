@@ -45,7 +45,7 @@ Published by The GnuPG Project@*
 
 @copyright{} 2002, 2004, 2005, 2006, 2007, 2010 Free Software Foundation, Inc.@*
 @copyright{} 2013, 2014, 2015 Werner Koch.@*
-@copyright{} 2015 g10 Code GmbH.
+@copyright{} 2015, 2016, 2017 g10 Code GmbH.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -142,6 +142,7 @@ the administration and the architecture.
 * Specify a User ID::   How to Specify a User Id.
 
 * Helper Tools::        Description of small helper tools
+* Web Key Service::     Tools for the Web Key Service
 
 * Howtos::              How to do certain things.
 * System Notes::        Notes pertaining to certain OSes.
@@ -180,6 +181,7 @@ the administration and the architecture.
 
 
 @include tools.texi
+@include wks.texi
 
 @include howtos.texi
 
