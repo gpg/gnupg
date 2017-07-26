@@ -532,7 +532,17 @@ dirmngr_use_tor (void)
 {
   if (tor_mode == TOR_MODE_AUTO)
     {
-      /* FIXME: Figure out whether Tor is running.  */
+      /* Figure out whether Tor is running.  */
+      assuan_fd_t sock;
+
+      sock = assuan_sock_connect_byname (NULL, 0, 0, NULL, ASSUAN_SOCK_TOR);
+      if (sock == ASSUAN_INVALID_FD)
+        tor_mode = TOR_MODE_NO;
+      else
+        {
+          tor_mode = TOR_MODE_YES;
+          assuan_sock_close (sock);
+        }
     }
 
   if (tor_mode == TOR_MODE_FORCE)

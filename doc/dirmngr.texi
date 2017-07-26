@@ -243,10 +243,16 @@ Enabling this option forces loading of expired CRLs; this is only
 useful for debugging.
 
 @item --use-tor
+@itemx --no-use-tor
 @opindex use-tor
-This option switches Dirmngr and thus GnuPG into ``Tor mode'' to route
-all network access via Tor (an anonymity network).  Certain other
-features are disabled if this mode is active.
+@opindex no-use-tor
+The option @option{--use-tor} switches Dirmngr and thus GnuPG into
+``Tor mode'' to route all network access via Tor (an anonymity
+network).  Certain other features are disabled in this mode.  The
+effect of @option{--use-tor} cannot be overridden by any other command
+or even be reloading gpg-agent.  The use of @option{--no-use-tor}
+disables the use of Tor.  The default is to use Tor if it is available
+on startup or after reloading dirmngr.
 
 @item --standard-resolver
 @opindex standard-resolver

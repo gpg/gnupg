@@ -308,8 +308,8 @@ strcpy_escaped_plus (char *d, const unsigned char *s)
 }
 
 
-/* This function returns true if a Tor server is running.  The sattus
-   is cached for the current connection.  */
+/* This function returns true if a Tor server is running.  The status
+ * is cached for the current connection.  */
 static int
 is_tor_running (ctrl_t ctrl)
 {
