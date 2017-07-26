@@ -955,6 +955,10 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
           log_error ("Tor support is not available\n");
           return gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
         }
+      /* Non-blocking connects do not work with our Tor proxy because
+       * we can't continue the Socks protocol after the EINPROGRESS.
+       * Disable the timeout to use a blocking connect.  */
+      timeout = 0;
     }
 
   /* Create the handle. */
@@ -1698,6 +1702,10 @@ send_request (http_t hd, const char *httphost, const char *auth,
           log_error ("Tor support is not available\n");
           return gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
         }
+      /* Non-blocking connects do not work with our Tor proxy because
+       * we can't continue the Socks protocol after the EINPROGRESS.
+       * Disable the timeout to use a blocking connect.  */
+      timeout = 0;
     }
 
   server = *hd->uri->host ? hd->uri->host : "localhost";

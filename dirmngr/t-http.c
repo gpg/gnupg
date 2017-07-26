@@ -40,6 +40,7 @@
 
 #include "../common/util.h"
 #include "../common/logging.h"
+#include "dns-stuff.h"
 #include "http.h"
 
 #include <ksba.h>
@@ -312,8 +313,24 @@ main (int argc, char **argv)
   if (!cafile)
     cafile = prepend_srcdir ("tls-ca.pem");
 
+  if (verbose)
+    my_http_flags |= HTTP_FLAG_LOG_RESP;
+
+  if (verbose || debug)
+    http_set_verbose (verbose, debug);
+
   /* http.c makes use of the assuan socket wrapper.  */
   assuan_sock_init ();
+
+  if ((my_http_flags & HTTP_FLAG_FORCE_TOR))
+    {
+      enable_dns_tormode (1);
+      if (assuan_sock_set_flag (ASSUAN_INVALID_FD, "tor-mode", 1))
+        {
+          log_error ("error enabling Tor mode: %s\n", strerror (errno));
+          log_info ("(is your Libassuan recent enough?)\n");
+        }
+    }
 
 #if HTTP_USE_NTBTLS
   log_info ("new session.\n");
