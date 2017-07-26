@@ -276,19 +276,17 @@ static struct debug_flags_s debug_flags [] =
 #define MIN_PASSPHRASE_NONALPHA (1)
 #define MAX_PASSPHRASE_DAYS   (0)
 
-/* The timer tick used for housekeeping stuff.  For Windows we use a
-   longer period as the SetWaitableTimer seems to signal earlier than
-   the 2 seconds.  CHECK_OWN_SOCKET_INTERVAL defines how often we
-   check our own socket in standard socket mode.  If that value is 0
-   we don't check at all.   All values are in seconds. */
+/* The timer tick used for housekeeping stuff.  Note that on Windows
+ * we use a SetWaitableTimer seems to signal earlier than about 2
+ * seconds.  Thus we use 4 seconds on all platforms except for
+ * Windowsce.  CHECK_OWN_SOCKET_INTERVAL defines how often we check
+ * our own socket in standard socket mode.  If that value is 0 we
+ * don't check at all.  All values are in seconds. */
 #if defined(HAVE_W32CE_SYSTEM)
 # define TIMERTICK_INTERVAL         (60)
 # define CHECK_OWN_SOCKET_INTERVAL   (0)  /* Never */
-#elif defined(HAVE_W32_SYSTEM)
-# define TIMERTICK_INTERVAL          (4)
-# define CHECK_OWN_SOCKET_INTERVAL  (60)
 #else
-# define TIMERTICK_INTERVAL          (2)
+# define TIMERTICK_INTERVAL          (4)
 # define CHECK_OWN_SOCKET_INTERVAL  (60)
 #endif
 
