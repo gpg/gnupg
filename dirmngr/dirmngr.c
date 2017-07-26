@@ -334,8 +334,9 @@ static int network_activity_seen;
 static strlist_t hkp_cacert_filenames;
 
 
-/* The timer tick used for housekeeping stuff.  */
-#define TIMERTICK_INTERVAL         (60)
+/* The timer tick used for housekeeping stuff.  The second constant is used when a shutdown is pending.  */
+#define TIMERTICK_INTERVAL           (60)
+#define TIMERTICK_INTERVAL_SHUTDOWN  (4)
 
 /* How oft to run the housekeeping.  */
 #define HOUSEKEEPING_INTERVAL      (600)
@@ -1967,6 +1968,8 @@ time_for_housekeeping_p (time_t curtime)
 static void
 handle_tick (void)
 {
+  struct stat statbuf;
+
   if (time_for_housekeeping_p (gnupg_get_time ()))
     {
       npth_t thread;
@@ -1985,6 +1988,14 @@ handle_tick (void)
                        strerror (err));
           npth_attr_destroy (&tattr);
         }
+    }
+
+  /* Check whether the homedir is still available.  */
+  if (!shutdown_pending
+      && stat (gnupg_homedir (), &statbuf) && errno == ENOENT)
+    {
+      shutdown_pending = 1;
+      log_info ("homedir has been removed - shutting down\n");
     }
 }
 
@@ -2179,10 +2190,13 @@ handle_connections (assuan_fd_t listen_fd)
       npth_clock_gettime (&curtime);
       if (!(npth_timercmp (&curtime, &abstime, <)))
 	{
-	  /* Timeout.  */
+	  /* Timeout.  When a shutdown is pending we use a shorter
+           * interval to handle the shutdown more quickly.  */
 	  handle_tick ();
 	  npth_clock_gettime (&abstime);
-	  abstime.tv_sec += TIMERTICK_INTERVAL;
+	  abstime.tv_sec += (shutdown_pending
+                             ? TIMERTICK_INTERVAL_SHUTDOWN
+                             : TIMERTICK_INTERVAL);
 	}
       npth_timersub (&abstime, &curtime, &timeout);
 

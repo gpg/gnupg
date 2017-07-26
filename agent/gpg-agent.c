@@ -380,9 +380,19 @@ static const char *debug_level;
 static char *current_logfile;
 
 /* The handle_tick() function may test whether a parent is still
-   running.  We record the PID of the parent here or -1 if it should be
-   watched. */
+ * running.  We record the PID of the parent here or -1 if it should
+ * be watched.  */
 static pid_t parent_pid = (pid_t)(-1);
+
+/* This flag is true if the inotify mechanism for detecting the
+ * removal of the homedir is active.  This flag is used to disable the
+ * alternative but portable stat based check.  */
+static int have_homedir_inotify;
+
+/* Depending on how gpg-agent was started, the homedir inotify watch
+ * may not be reliable.  This flag is set if we assume that inotify
+ * works reliable.  */
+static int reliable_homedir_inotify;
 
 /* Number of active connections.  */
 static int active_connections;
@@ -1704,6 +1714,12 @@ main (int argc, char **argv )
           log_get_prefix (&oldflags);
           log_set_prefix (NULL, oldflags | GPGRT_LOG_RUN_DETACHED);
           opt.running_detached = 1;
+
+          /* Unless we are running with a program given on the command
+           * line we can assume that the inotify things works and thus
+           * we can avoid tye regular stat calls.  */
+          if (!argc)
+            reliable_homedir_inotify = 1;
         }
 
       {
@@ -2297,6 +2313,7 @@ static void
 handle_tick (void)
 {
   static time_t last_minute;
+  struct stat statbuf;
 
   if (!last_minute)
     last_minute = time (NULL);
@@ -2329,6 +2346,14 @@ handle_tick (void)
     }
 #endif
 
+  /* Check whether the homedir is still available.  */
+  if (!shutdown_pending
+      && (!have_homedir_inotify || !reliable_homedir_inotify)
+      && stat (gnupg_homedir (), &statbuf) && errno == ENOENT)
+    {
+      shutdown_pending = 1;
+      log_info ("homedir has been removed - shutting down\n");
+    }
 }
 
 
@@ -2803,9 +2828,11 @@ handle_connections (gnupg_fd_t listen_fd,
                                                    gnupg_homedir ())))
     {
       if (gpg_err_code (err) != GPG_ERR_NOT_SUPPORTED)
-        log_info ("error enabling daemon termination bu homedir removal: %s\n",
+        log_info ("error enabling daemon termination by homedir removal: %s\n",
                   gpg_strerror (err));
     }
+  else
+    have_homedir_inotify = 1;
 
   /* On Windows we need to fire up a separate thread to listen for
      requests from Putty (an SSH client), so we can replace Putty's
