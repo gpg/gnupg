@@ -480,17 +480,19 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                     unsigned int nbits;
                     int pk_algo = gpgsm_get_key_algo_info (cert, &nbits);
 
-                    /* Check compliance.  */
-                    if (! gnupg_pk_is_allowed (opt.compliance,
-                                               PK_USE_DECRYPTION,
-                                               pk_algo, NULL, nbits, NULL))
+                    /* Print compliance warning.  */
+                    if (! gnupg_pk_is_compliant (opt.compliance,
+                                                 pk_algo, NULL, nbits, NULL))
                       {
-                        log_error ("certificate ID 0x%08lX not suitable for "
-                                   "decryption while in %s mode\n",
-                                   gpgsm_get_short_fingerprint (cert, NULL),
-                                   gnupg_compliance_option_string (opt.compliance));
-                        rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
-                        goto oops;
+                        char  kidstr[10+1];
+
+                        snprintf (kidstr, sizeof kidstr, "0x%08lX",
+                                  gpgsm_get_short_fingerprint (cert, NULL));
+                        log_info
+                          (_("Note: key %s was not suitable for encryption"
+                             " in %s mode\n"),
+                           kidstr,
+                           gnupg_compliance_option_string (opt.compliance));
                       }
 
                     /* Check that all certs are compliant with CO_DE_VS.  */

@@ -99,7 +99,7 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
 		       gcry_mpi_t key[], unsigned int keylength,
                        const char *curvename)
 {
-  enum { is_rsa, is_dsa, is_pgp5, is_elg_sign, is_ecc } algotype;
+  enum { is_rsa, is_dsa, is_elg, is_ecc } algotype;
   int result = 0;
 
   if (! initialized)
@@ -118,7 +118,7 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
       break;
 
     case PUBKEY_ALGO_ELGAMAL_E:
-      algotype = is_pgp5;
+      algotype = is_elg;
       break;
 
     case PUBKEY_ALGO_ECDH:
@@ -128,8 +128,7 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
       break;
 
     case PUBKEY_ALGO_ELGAMAL:
-      algotype = is_elg_sign;
-      break;
+      return 0; /* Signing with Elgamal is not at all supported.  */
 
     default: /* Unknown.  */
       return 0;
@@ -141,7 +140,7 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
 
       switch (algotype)
         {
-        case is_pgp5:
+        case is_elg:
           result = 0;
           break;
 
@@ -183,11 +182,6 @@ gnupg_pk_is_compliant (enum gnupg_compliance_mode compliance, int algo,
         }
       xfree (curve);
     }
-  else if (algotype == is_elg_sign)
-    {
-      /* An Elgamal signing key is only RFC-2440 compliant.  */
-      result = (compliance == CO_RFC2440);
-    }
   else
     {
       result = 1; /* Assume compliance.  */
@@ -219,9 +213,9 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 	case PUBKEY_ALGO_RSA_S:
 	  switch (use)
 	    {
-	    case PK_USE_ENCRYPTION:
-	      return 1;
 	    case PK_USE_DECRYPTION:
+	      return 1;
+	    case PK_USE_ENCRYPTION:
 	    case PK_USE_SIGNING:
 	      return (keylength == 2048
 		      || keylength == 3072
@@ -253,10 +247,34 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 
 	case PUBKEY_ALGO_ELGAMAL:
 	case PUBKEY_ALGO_ELGAMAL_E:
-	  return use == PK_USE_ENCRYPTION;
+	  return use == PK_USE_DECRYPTION;
 
 	case PUBKEY_ALGO_ECDH:
-	  return use == PK_USE_ENCRYPTION;
+	  if (use == PK_USE_DECRYPTION)
+            return 1;
+          else if (use == PK_USE_ENCRYPTION)
+            {
+              int result = 0;
+              char *curve = NULL;
+
+              if (!curvename && key)
+                {
+                  curve = openpgp_oid_to_str (key[0]);
+                  curvename = openpgp_oid_to_curve (curve, 0);
+                  if (!curvename)
+                    curvename = curve;
+                }
+
+              result = (curvename
+                        && (!strcmp (curvename, "brainpoolP256r1")
+                            || !strcmp (curvename, "brainpoolP384r1")
+                            || !strcmp (curvename, "brainpoolP512r1")));
+
+              xfree (curve);
+              return result;
+            }
+          else
+            return 0;
 
 	case PUBKEY_ALGO_ECDSA:
 	  {
