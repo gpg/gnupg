@@ -1701,7 +1701,7 @@ import_one (ctrl_t ctrl,
               keystr_from_pk(pk));
 
   if ((options & IMPORT_REPAIR_KEYS))
-    key_check_all_keysigs (ctrl, keyblock, 0, 0);
+    key_check_all_keysigs (ctrl, 1, keyblock, 0, 0);
 
   if (chk_self_sigs (ctrl, keyblock, keyid, &non_self))
     return 0;  /* Invalid keyblock - error already printed.  */

@@ -3065,11 +3065,13 @@ show_basic_key_info (ctrl_t ctrl, KBNODE keyblock)
 }
 
 int
-keyedit_print_one_sig (ctrl_t ctrl, int rc, kbnode_t keyblock, kbnode_t node,
+keyedit_print_one_sig (ctrl_t ctrl, estream_t fp,
+                       int rc, kbnode_t keyblock, kbnode_t node,
 		       int *inv_sigs, int *no_key, int *oth_err,
 		       int is_selfsig, int print_without_key, int extended)
 {
   (void) ctrl;
+  (void) fp;
   (void) rc;
   (void) keyblock;
   (void) node;

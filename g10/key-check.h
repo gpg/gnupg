@@ -22,7 +22,7 @@
 
 #include "gpg.h"
 
-int key_check_all_keysigs (ctrl_t ctrl, kbnode_t kb,
+int key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
 			   int only_selected, int only_selfsigs);
 
 #endif	/* GNUPG_G10_PACKET_TOOLS_H */

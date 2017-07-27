@@ -193,7 +193,7 @@ print_seckey_info (ctrl_t ctrl, PKT_public_key *pk)
 }
 
 /* Print information about the public key.  With FP passed as NULL,
-   the tty output interface is used, otherwise output is directted to
+   the tty output interface is used, otherwise output is directed to
    the given stream.  */
 void
 print_pubkey_info (ctrl_t ctrl, estream_t fp, PKT_public_key *pk)

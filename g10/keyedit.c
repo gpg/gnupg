@@ -193,7 +193,8 @@ print_and_check_one_sig_colon (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
  * always be printed.
  */
 int
-keyedit_print_one_sig (ctrl_t ctrl, int rc, kbnode_t keyblock, kbnode_t node,
+keyedit_print_one_sig (ctrl_t ctrl, estream_t fp,
+                       int rc, kbnode_t keyblock, kbnode_t node,
 		       int *inv_sigs, int *no_key, int *oth_err,
 		       int is_selfsig, int print_without_key, int extended)
 {
@@ -232,7 +233,7 @@ keyedit_print_one_sig (ctrl_t ctrl, int rc, kbnode_t keyblock, kbnode_t node,
     }
   if (sigrc != '?' || print_without_key)
     {
-      tty_printf ("%s%c%c %c%c%c%c%c%c %s %s",
+      tty_fprintf (fp, "%s%c%c %c%c%c%c%c%c %s %s",
 		  is_rev ? "rev" : "sig", sigrc,
 		  (sig->sig_class - 0x10 > 0 &&
 		   sig->sig_class - 0x10 <
@@ -248,38 +249,41 @@ keyedit_print_one_sig (ctrl_t ctrl, int rc, kbnode_t keyblock, kbnode_t node,
                   keystr (sig->keyid),
 		  datestr_from_sig (sig));
       if ((opt.list_options & LIST_SHOW_SIG_EXPIRE) || extended )
-	tty_printf (" %s", expirestr_from_sig (sig));
-      tty_printf ("  ");
+	tty_fprintf (fp, " %s", expirestr_from_sig (sig));
+      tty_fprintf (fp, "  ");
       if (sigrc == '%')
-	tty_printf ("[%s] ", gpg_strerror (rc));
+	tty_fprintf (fp, "[%s] ", gpg_strerror (rc));
       else if (sigrc == '?')
 	;
       else if (is_selfsig)
 	{
-	  tty_printf (is_rev ? _("[revocation]") : _("[self-signature]"));
+	  tty_fprintf (fp, is_rev ? _("[revocation]") : _("[self-signature]"));
           if (extended && sig->flags.chosen_selfsig)
-            tty_printf ("*");
+            tty_fprintf (fp, "*");
 	}
       else
 	{
 	  size_t n;
 	  char *p = get_user_id (ctrl, sig->keyid, &n);
-	  tty_print_utf8_string2 (NULL, p, n,
+	  tty_print_utf8_string2 (fp, p, n,
 				  opt.screen_columns - keystrlen () - 26 -
 				  ((opt.
 				    list_options & LIST_SHOW_SIG_EXPIRE) ? 11
 				   : 0));
 	  xfree (p);
 	}
-      tty_printf ("\n");
+      if (fp == log_get_stream ())
+        log_printf ("\n");
+      else
+        tty_fprintf (fp, "\n");
 
       if (sig->flags.policy_url
           && ((opt.list_options & LIST_SHOW_POLICY_URLS) || extended))
-	show_policy_url (sig, 3, -1);
+	show_policy_url (sig, 3, (!fp? -1 : fp == log_get_stream ()? 1 : 0));
 
       if (sig->flags.notation
           && ((opt.list_options & LIST_SHOW_NOTATIONS) || extended))
-	show_notation (sig, 3, -1,
+	show_notation (sig, 3, (!fp? -1 : fp == log_get_stream ()? 1 : 0),
 		       ((opt.
 			 list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0) +
 		       ((opt.
@@ -287,7 +291,7 @@ keyedit_print_one_sig (ctrl_t ctrl, int rc, kbnode_t keyblock, kbnode_t node,
 
       if (sig->flags.pref_ks
           && ((opt.list_options & LIST_SHOW_KEYSERVER_URLS) || extended))
-	show_keyserver_url (sig, 3, -1);
+	show_keyserver_url (sig, 3, (!fp? -1 : fp == log_get_stream ()? 1 : 0));
 
       if (extended)
         {
@@ -296,12 +300,12 @@ keyedit_print_one_sig (ctrl_t ctrl, int rc, kbnode_t keyblock, kbnode_t node,
 
           s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PRIMARY_UID, NULL);
           if (s && *s)
-            tty_printf ("             [primary]\n");
+            tty_fprintf (fp, "             [primary]\n");
 
           s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
           if (s && buf32_to_u32 (s))
-            tty_printf ("             [expires: %s]\n",
-                        isotimestamp (pk->timestamp + buf32_to_u32 (s)));
+            tty_fprintf (fp, "             [expires: %s]\n",
+                         isotimestamp (pk->timestamp + buf32_to_u32 (s)));
         }
     }
 
@@ -317,7 +321,7 @@ print_and_check_one_sig (ctrl_t ctrl, kbnode_t keyblock, kbnode_t node,
   int rc;
 
   rc = check_key_signature (ctrl, keyblock, node, is_selfsig);
-  return keyedit_print_one_sig (ctrl, rc,
+  return keyedit_print_one_sig (ctrl, NULL, rc,
 				keyblock, node, inv_sigs, no_key, oth_err,
 				*is_selfsig, print_without_key, extended);
 }
@@ -1166,7 +1170,7 @@ fix_keyblock (ctrl_t ctrl, kbnode_t *keyblockp)
 
   if (collapse_uids (keyblockp))
     changed++;
-  if (key_check_all_keysigs (ctrl, *keyblockp, 0, 1))
+  if (key_check_all_keysigs (ctrl, 1, *keyblockp, 0, 1))
     changed++;
   reorder_keyblock (*keyblockp);
   /* If we modified the keyblock, make sure the flags are right. */
@@ -1613,7 +1617,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  break;
 
 	case cmdCHECK:
-	  if (key_check_all_keysigs (ctrl, keyblock,
+	  if (key_check_all_keysigs (ctrl, -1, keyblock,
 				     count_selected_uids (keyblock),
 				     !strcmp (arg_string, "selfsig")))
             modified = 1;

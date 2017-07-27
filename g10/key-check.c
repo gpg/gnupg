@@ -33,7 +33,7 @@
 #include "key-check.h"
 
 /* Order two signatures.  The actual ordering isn't important.  Our
-   goal is to ensure that identical signatures occur together.  */
+ * goal is to ensure that identical signatures occur together.  */
 static int
 sig_comparison (const void *av, const void *bv)
 {
@@ -72,28 +72,35 @@ sig_comparison (const void *av, const void *bv)
   return 0;
 }
 
+
 /* Perform a few sanity checks on a keyblock is okay and possibly
-   repair some damage.  Concretely:
-
-     - Detect duplicate signatures and remove them.
-
-     - Detect out of order signatures and relocate them (e.g., a sig
-       over user id X located under subkey Y).
-
-   Note: this function does not remove signatures that don't belong or
-   components that are not signed!  (Although it would be trivial to
-   do so.)
-
-   If ONLY_SELFSIGS is true, then this function only reorders self
-   signatures (it still checks all signatures for duplicates,
-   however).
-
-   Returns 1 if the keyblock was modified, 0 otherwise.  */
+ * repair some damage.  Concretely:
+ *
+ *   - Detect duplicate signatures and remove them.
+ *
+ *   - Detect out of order signatures and relocate them (e.g., a sig
+ *     over user id X located under subkey Y).
+ *
+ * Note: this function does not remove signatures that don't belong or
+ * components that are not signed!  (Although it would be trivial to
+ * do so.)
+ *
+ * If ONLY_SELFSIGS is true, then this function only reorders self
+ * signatures (it still checks all signatures for duplicates,
+ * however).
+ *
+ * Allowed values for MODE are:
+ *  -1 - print to the TTY
+ *   0 - print to stdout
+ *   1 - use log_info.
+ *
+ * Returns true if the keyblock was modified.  */
 int
-key_check_all_keysigs (ctrl_t ctrl, kbnode_t kb,
+key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
                        int only_selected, int only_selfsigs)
 {
   gpg_error_t err;
+  estream_t fp = mode < 0? NULL : mode ? log_get_stream () : es_stdout;
   PKT_public_key *pk;
   KBNODE n, n_next, *n_prevp, n2;
   char *pending_desc = NULL;
@@ -329,8 +336,8 @@ key_check_all_keysigs (ctrl_t ctrl, kbnode_t kb,
             {
               if (DBG_PACKET && pending_desc)
                 log_debug ("%s", pending_desc);
-              tty_printf (_("can't check signature with unsupported"
-                            " public-key algorithm (%d): %s.\n"),
+              log_info (_("can't check signature with unsupported"
+                          " public-key algorithm (%d): %s.\n"),
                           sig->pubkey_algo, gpg_strerror (err));
               break;
             }
@@ -338,8 +345,8 @@ key_check_all_keysigs (ctrl_t ctrl, kbnode_t kb,
             {
               if (DBG_PACKET && pending_desc)
                 log_debug ("%s", pending_desc);
-              tty_printf (_("can't check signature with unsupported"
-                            " message-digest algorithm %d: %s.\n"),
+              log_info (_("can't check signature with unsupported"
+                          " message-digest algorithm %d: %s.\n"),
                           sig->digest_algo, gpg_strerror (err));
               break;
             }
@@ -482,32 +489,36 @@ key_check_all_keysigs (ctrl_t ctrl, kbnode_t kb,
                   ;
                 else if (last_printed_component->pkt->pkttype == PKT_USER_ID)
                   {
-                    tty_printf ("uid  ");
-                    tty_print_utf8_string (last_printed_component
-                                           ->pkt->pkt.user_id->name,
-                                           last_printed_component
-                                           ->pkt->pkt.user_id->len);
+                    tty_fprintf (fp, "uid  ");
+                    tty_print_utf8_string2 (fp,
+                                            last_printed_component
+                                            ->pkt->pkt.user_id->name,
+                                            last_printed_component
+                                            ->pkt->pkt.user_id->len, 0);
                   }
                 else if (last_printed_component->pkt->pkttype
                          == PKT_PUBLIC_KEY)
-                  tty_printf ("pub  %s",
-                              pk_keyid_str (last_printed_component
-                                            ->pkt->pkt.public_key));
+                  tty_fprintf (fp, "pub  %s",
+                               pk_keyid_str (last_printed_component
+                                             ->pkt->pkt.public_key));
                 else
-                  tty_printf ("sub  %s",
-                              pk_keyid_str (last_printed_component
-                                            ->pkt->pkt.public_key));
+                  tty_fprintf (fp, "sub  %s",
+                               pk_keyid_str (last_printed_component
+                                             ->pkt->pkt.public_key));
 
                 if (modified)
                   {
                     if (is_reordered)
-                      tty_printf (_(" (reordered signatures follow)"));
-                    tty_printf ("\n");
+                      tty_fprintf (fp, _(" (reordered signatures follow)"));
+                    if (mode > 0)
+                      log_printf ("\n");
+                    else
+                      tty_fprintf (fp, "\n");
                   }
               }
 
             if (modified)
-              keyedit_print_one_sig (ctrl, rc, kb, n, NULL, NULL, NULL,
+              keyedit_print_one_sig (ctrl, fp, rc, kb, n, NULL, NULL, NULL,
 				     has_selfsig, 0, only_selfsigs);
           }
 
@@ -524,7 +535,7 @@ key_check_all_keysigs (ctrl_t ctrl, kbnode_t kb,
                                   buffer, sizeof (buffer), &len,
                                   sig->data[i]);
                   printable = bin2hex (buffer, len, NULL);
-                  log_info ("        %d: %s\n", i, printable);
+                  log_debug ("        %d: %s\n", i, printable);
                   xfree (printable);
                 }
             }
@@ -614,27 +625,31 @@ key_check_all_keysigs (ctrl_t ctrl, kbnode_t kb,
   }
 
   if (dups || missing_issuer || bad_signature || reordered)
-    tty_printf (_("key %s:\n"), pk_keyid_str (pk));
+    tty_fprintf (fp, _("key %s:\n"), pk_keyid_str (pk));
 
   if (dups)
-    tty_printf (ngettext ("%d duplicate signature removed\n",
-                          "%d duplicate signatures removed\n", dups), dups);
+    tty_fprintf (fp,
+                 ngettext ("%d duplicate signature removed\n",
+                           "%d duplicate signatures removed\n", dups), dups);
   if (missing_issuer)
-    tty_printf (ngettext ("%d signature not checked due to a missing key\n",
-                          "%d signatures not checked due to missing keys\n",
-                          missing_issuer), missing_issuer);
+    tty_fprintf (fp,
+                 ngettext ("%d signature not checked due to a missing key\n",
+                           "%d signatures not checked due to missing keys\n",
+                           missing_issuer), missing_issuer);
   if (bad_signature)
-    tty_printf (ngettext ("%d bad signature\n",
-                          "%d bad signatures\n",
-                          bad_signature), bad_signature);
+    tty_fprintf (fp,
+                 ngettext ("%d bad signature\n",
+                           "%d bad signatures\n",
+                           bad_signature), bad_signature);
   if (reordered)
-    tty_printf (ngettext ("%d signature reordered\n",
-                          "%d signatures reordered\n",
-                          reordered), reordered);
+    tty_fprintf (fp,
+                 ngettext ("%d signature reordered\n",
+                           "%d signatures reordered\n",
+                           reordered), reordered);
 
   if (only_selfsigs && (bad_signature || reordered))
-    tty_printf (_("Warning: errors found and only checked self-signatures,"
-                  " run '%s' to check all signatures.\n"), "check");
+    tty_fprintf (fp, _("Warning: errors found and only checked self-signatures,"
+                       " run '%s' to check all signatures.\n"), "check");
 
   return modified;
 }
