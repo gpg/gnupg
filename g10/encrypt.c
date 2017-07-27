@@ -657,16 +657,12 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
         PKT_public_key *pk = pkr->pk;
         unsigned int nbits = nbits_from_pk (pk);
 
-        if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_ENCRYPTION,
-                                   pk->pubkey_algo, pk->pkey, nbits, NULL))
-          {
-            log_error (_("key %s not suitable for encryption"
-                         " while in %s mode\n"),
-                       keystr_from_pk (pk),
-                       gnupg_compliance_option_string (opt.compliance));
-            rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
-            goto leave;
-          }
+        if (!gnupg_pk_is_compliant (opt.compliance,
+                                    pk->pubkey_algo, pk->pkey, nbits, NULL))
+          log_info (_("WARNING: key %s is not suitable for encryption"
+                      " in %s mode\n"),
+                    keystr_from_pk (pk),
+                    gnupg_compliance_option_string (opt.compliance));
 
         if (compliant
             && !gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, pk->pkey,

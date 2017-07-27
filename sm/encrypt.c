@@ -481,15 +481,16 @@ gpgsm_encrypt (ctrl_t ctrl, certlist_t recplist, int data_fd, estream_t out_fp)
 
       /* Check compliance.  */
       pk_algo = gpgsm_get_key_algo_info (cl->cert, &nbits);
-      if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_ENCRYPTION, pk_algo,
-                                 NULL, nbits, NULL))
+      if (!gnupg_pk_is_compliant (opt.compliance, pk_algo, NULL, nbits, NULL))
         {
-          log_error ("certificate ID 0x%08lX not suitable for "
-                     "encryption while in %s mode\n",
-                     gpgsm_get_short_fingerprint (cl->cert, NULL),
-                     gnupg_compliance_option_string (opt.compliance));
-          rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
-          goto leave;
+          char  kidstr[10+1];
+
+          snprintf (kidstr, sizeof kidstr, "0x%08lX",
+                    gpgsm_get_short_fingerprint (cl->cert, NULL));
+          log_info (_("WARNING: key %s is not suitable for encryption"
+                      " in %s mode\n"),
+                    kidstr,
+                    gnupg_compliance_option_string (opt.compliance));
         }
 
       /* Fixme: When adding ECC we need to provide the curvename and
