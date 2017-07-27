@@ -200,6 +200,8 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 		     enum pk_use_case use, int algo, gcry_mpi_t key[],
 		     unsigned int keylength, const char *curvename)
 {
+  int result = 0;
+
   if (! initialized)
     return 1;
 
@@ -214,47 +216,41 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 	  switch (use)
 	    {
 	    case PK_USE_DECRYPTION:
-	      return 1;
+	    case PK_USE_VERIFICATION:
+	      result = 1;
+              break;
 	    case PK_USE_ENCRYPTION:
 	    case PK_USE_SIGNING:
-	      return (keylength == 2048
-		      || keylength == 3072
-		      || keylength == 4096);
-	    case PK_USE_VERIFICATION:
-	      return (keylength == 2048
-		      || keylength == 3072
-		      || keylength == 4096
-		      || keylength < 2048);
+	      result = (keylength == 2048
+                        || keylength == 3072
+                        || keylength == 4096);
+              break;
 	    default:
 	      log_assert (!"reached");
 	    }
-	  log_assert (!"reached");
+	  break;
 
 	case PUBKEY_ALGO_DSA:
-	  if (key)
+          if (use == PK_USE_VERIFICATION)
+            result = 1;
+	  else if (use == PK_USE_SIGNING && key)
 	    {
 	      size_t P = gcry_mpi_get_nbits (key[0]);
 	      size_t Q = gcry_mpi_get_nbits (key[1]);
-	      return ((use == PK_USE_SIGNING
-		       && Q == 256
-		       && (P == 2048 || P == 3072))
-		      || (use == PK_USE_VERIFICATION
-			  && P < 2048));
-	    }
-	  else
-	    return 0;
-	  log_assert (!"reached");
+	      result = (Q == 256 && (P == 2048 || P == 3072));
+            }
+          break;
 
 	case PUBKEY_ALGO_ELGAMAL:
 	case PUBKEY_ALGO_ELGAMAL_E:
-	  return use == PK_USE_DECRYPTION;
+	  result = (use == PK_USE_DECRYPTION);
+          break;
 
 	case PUBKEY_ALGO_ECDH:
 	  if (use == PK_USE_DECRYPTION)
-            return 1;
+            result = 1;
           else if (use == PK_USE_ENCRYPTION)
             {
-              int result = 0;
               char *curve = NULL;
 
               if (!curvename && key)
@@ -271,17 +267,17 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
                             || !strcmp (curvename, "brainpoolP512r1")));
 
               xfree (curve);
-              return result;
             }
-          else
-            return 0;
+          break;
 
 	case PUBKEY_ALGO_ECDSA:
-	  {
-	    int result = 0;
-	    char *curve = NULL;
+          if (use == PK_USE_VERIFICATION)
+            result = 1;
+          else
+            {
+              char *curve = NULL;
 
-	    if (! curvename && key)
+              if (! curvename && key)
 	      {
 		curve = openpgp_oid_to_str (key[0]);
 		curvename = openpgp_oid_to_curve (curve, 0);
@@ -289,31 +285,30 @@ gnupg_pk_is_allowed (enum gnupg_compliance_mode compliance,
 		  curvename = curve;
 	      }
 
-	    result = ((use == PK_USE_SIGNING
-		       && curvename
-		       && (!strcmp (curvename, "brainpoolP256r1")
-			   || !strcmp (curvename, "brainpoolP384r1")
-			   || !strcmp (curvename, "brainpoolP512r1")))
-		      || use == PK_USE_VERIFICATION);
+              result = (use == PK_USE_SIGNING
+                         && curvename
+                         && (!strcmp (curvename, "brainpoolP256r1")
+                             || !strcmp (curvename, "brainpoolP384r1")
+                             || !strcmp (curvename, "brainpoolP512r1")));
+              xfree (curve);
+            }
+          break;
 
-	    xfree (curve);
-	    return result;
-	  }
 
 	case PUBKEY_ALGO_EDDSA:
-	  return 0;
+	  break;
 
 	default:
-	  return 0;
+	  break;
 	}
-      log_assert (!"reached");
+      break;
 
     default:
       /* The default policy is to allow all algorithms.  */
-      return 1;
+      result = 1;
     }
 
-  log_assert (!"reached");
+  return result;
 }
 
 

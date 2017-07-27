@@ -162,10 +162,10 @@ check_signature2 (ctrl_t ctrl,
 				    NULL))
       {
 	/* Compliance failure.  */
-	log_info (_("key %s not suitable for signature verification"
-                    " while in %s mode\n"),
-		  keystr_from_pk (pk),
-                  gnupg_compliance_option_string (opt.compliance));
+	log_error (_("key %s is not suitable for signature verification"
+                     " in %s mode\n"),
+                   keystr_from_pk (pk),
+                   gnupg_compliance_option_string (opt.compliance));
 	rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
       }
     else if(!pk->flags.valid)
@@ -207,6 +207,7 @@ check_signature2 (ctrl_t ctrl,
 		rc = gpg_error (GPG_ERR_GENERAL);
 	      }
 	  }
+
       }
 
     if( !rc && sig->sig_class < 2 && is_status_enabled() ) {

@@ -2168,6 +2168,16 @@ check_sig_and_print (CTX c, kbnode_t node)
                                mainpkhex);
 	}
 
+      /* Print compliance warning for Good signatures.  */
+      if (!rc && pk && !opt.quiet
+          && !gnupg_pk_is_compliant (opt.compliance, pk->pubkey_algo,
+                                     pk->pkey, nbits_from_pk (pk), NULL))
+        {
+          log_info (_("WARNING: This key is not suitable for signing"
+                      " in %s mode\n"),
+                    gnupg_compliance_option_string (opt.compliance));
+        }
+
       /* For good signatures compute and print the trust information.
          Note that in the Tofu trust model this may ask the user on
          how to resolve a conflict.  */
