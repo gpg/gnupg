@@ -1583,24 +1583,23 @@ pubkey_cmp (ctrl_t ctrl, const char *name, struct pubkey_cmp_cookie *old,
 /* This function works like get_pubkey_byname, but if the name
  * resembles a mail address, the results are ranked and only the best
  * result is returned.  */
-int
+gpg_error_t
 get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
                         const char *name, KBNODE *ret_keyblock,
                         int include_unusable, int no_akl)
 {
-  int rc;
+  gpg_error_t err;
   struct getkey_ctx_s *ctx = NULL;
 
   if (retctx)
     *retctx = NULL;
 
-  rc = get_pubkey_byname (ctrl, &ctx, pk, name, ret_keyblock,
-                          NULL, include_unusable, no_akl);
-  if (rc)
+  err = get_pubkey_byname (ctrl, &ctx, pk, name, ret_keyblock,
+                           NULL, include_unusable, no_akl);
+  if (err)
     {
-      if (ctx)
-        getkey_end (ctrl, ctx);
-      return rc;
+      getkey_end (ctrl, ctx);
+      return err;
     }
 
   if (is_valid_mailbox (name) && ctx)
@@ -1647,16 +1646,17 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
             {
               ctx = xtrycalloc (1, sizeof **retctx);
               if (! ctx)
-                rc = gpg_error_from_syserror ();
+                err = gpg_error_from_syserror ();
               else
                 {
                   ctx->kr_handle = keydb_new ();
                   if (! ctx->kr_handle)
                     {
+                      err = gpg_error_from_syserror ();
                       xfree (ctx);
+                      ctx = NULL;
                       if (retctx)
                         *retctx = NULL;
-                      rc = gpg_error_from_syserror ();
                     }
                   else
                     {
@@ -1671,7 +1671,7 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
                         {
                           release_kbnode (*ret_keyblock);
                           *ret_keyblock = NULL;
-                          rc = getkey_next (ctrl, ctx, NULL, ret_keyblock);
+                          err = getkey_next (ctrl, ctx, NULL, ret_keyblock);
                         }
                     }
                 }
@@ -1684,7 +1684,7 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
         }
     }
 
-  if (rc && ctx)
+  if (err && ctx)
     {
       getkey_end (ctrl, ctx);
       ctx = NULL;
@@ -1695,7 +1695,7 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
   else
     getkey_end (ctrl, ctx);
 
-  return rc;
+  return err;
 }
 
 
