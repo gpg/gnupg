@@ -813,7 +813,14 @@ do_decryption (const unsigned char *aad_begin, size_t aad_len,
                                         protected, protectedlen - 16);
             }
           if (!rc)
-            rc = gcry_cipher_checktag (hd, protected + protectedlen - 16, 16);
+            {
+              rc = gcry_cipher_checktag (hd, protected + protectedlen - 16, 16);
+              if (gpg_err_code (rc) == GPG_ERR_CHECKSUM)
+                {
+                  /* Return Bad Passphrase instead of checksum error */
+                  rc = gpg_error (GPG_ERR_BAD_PASSPHRASE);
+                }
+            }
         }
       else
         {
@@ -833,8 +840,6 @@ do_decryption (const unsigned char *aad_begin, size_t aad_len,
   /* Do a quick check on the data structure. */
   if (*outbuf != '(' && outbuf[1] != '(')
     {
-      /* Note that in OCB mode this is actually invalid _encrypted_
-       * data and not a bad passphrase.  */
       xfree (outbuf);
       return gpg_error (GPG_ERR_BAD_PASSPHRASE);
     }

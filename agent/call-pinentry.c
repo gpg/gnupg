@@ -167,6 +167,10 @@ unlock_pinentry (gpg_error_t rc)
         case GPG_ERR_BAD_PIN:
           break;
 
+        case GPG_ERR_CORRUPTED_PROTECTION:
+          /* This comes from gpg-agent.  */
+          break;
+
         default:
           rc = gpg_err_make (GPG_ERR_SOURCE_PINENTRY, gpg_err_code (rc));
           break;
