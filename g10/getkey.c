@@ -1607,7 +1607,7 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
     {
       /* Rank results and return only the most relevant key.  */
       struct pubkey_cmp_cookie best = { 0 };
-      struct pubkey_cmp_cookie new;
+      struct pubkey_cmp_cookie new = { 0 };
       kbnode_t new_keyblock;
 
       while (getkey_next (ctrl, ctx, &new.key, &new_keyblock) == 0)
