@@ -271,26 +271,26 @@ do_encode_raw_pkcs1 (const byte *md, size_t mdlen, unsigned int nbits,
 
 
 /* SIGN whatever information we have accumulated in CTRL and return
-   the signature S-expression.  LOOKUP is an optional function to
-   provide a way for lower layers to ask for the caching TTL.  If a
-   CACHE_NONCE is given that cache item is first tried to get a
-   passphrase.  If OVERRIDEDATA is not NULL, OVERRIDEDATALEN bytes
-   from this buffer are used instead of the data in CTRL.  The
-   override feature is required to allow the use of Ed25519 with ssh
-   because Ed25519 does the hashing itself.  */
-int
+ * the signature S-expression.  LOOKUP is an optional function to
+ * provide a way for lower layers to ask for the caching TTL.  If a
+ * CACHE_NONCE is given that cache item is first tried to get a
+ * passphrase.  If OVERRIDEDATA is not NULL, OVERRIDEDATALEN bytes
+ * from this buffer are used instead of the data in CTRL.  The
+ * override feature is required to allow the use of Ed25519 with ssh
+ * because Ed25519 does the hashing itself.  */
+gpg_error_t
 agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
                  const char *desc_text,
 		 gcry_sexp_t *signature_sexp,
                  cache_mode_t cache_mode, lookup_ttl_t lookup_ttl,
                  const void *overridedata, size_t overridedatalen)
 {
+  gpg_error_t err = 0;
   gcry_sexp_t s_skey = NULL;
   gcry_sexp_t s_sig  = NULL;
   gcry_sexp_t s_hash = NULL;
   gcry_sexp_t s_pkey = NULL;
   unsigned char *shadow_info = NULL;
-  unsigned int rc = 0;		/* FIXME: gpg-error? */
   const unsigned char *data;
   int datalen;
   int check_signature = 0;
@@ -309,12 +309,12 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
   if (!ctrl->have_keygrip)
     return gpg_error (GPG_ERR_NO_SECKEY);
 
-  rc = agent_key_from_file (ctrl, cache_nonce, desc_text, ctrl->keygrip,
-                            &shadow_info, cache_mode, lookup_ttl,
-                            &s_skey, NULL);
-  if (rc)
+  err = agent_key_from_file (ctrl, cache_nonce, desc_text, ctrl->keygrip,
+                             &shadow_info, cache_mode, lookup_ttl,
+                             &s_skey, NULL);
+  if (err)
     {
-      if (gpg_err_code (rc) != GPG_ERR_NO_SECKEY)
+      if (gpg_err_code (err) != GPG_ERR_NO_SECKEY)
         log_error ("failed to read the secret key\n");
       goto leave;
     }
@@ -329,8 +329,8 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       int is_ECDSA = 0;
       int is_EdDSA = 0;
 
-      rc = agent_public_key_from_file (ctrl, ctrl->keygrip, &s_pkey);
-      if (rc)
+      err = agent_public_key_from_file (ctrl, ctrl->keygrip, &s_pkey);
+      if (err)
         {
           log_error ("failed to read the public key\n");
           goto leave;
@@ -353,15 +353,15 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
         if (desc_text)
           agent_modify_description (desc_text, NULL, s_skey, &desc2);
 
-        rc = divert_pksign (ctrl, desc2? desc2 : desc_text,
-                            data, datalen,
-                            ctrl->digest.algo,
-                            shadow_info, &buf, &len);
+        err = divert_pksign (ctrl, desc2? desc2 : desc_text,
+                             data, datalen,
+                             ctrl->digest.algo,
+                             shadow_info, &buf, &len);
         xfree (desc2);
       }
-      if (rc)
+      if (err)
         {
-          log_error ("smartcard signing failed: %s\n", gpg_strerror (rc));
+          log_error ("smartcard signing failed: %s\n", gpg_strerror (err));
           goto leave;
         }
 
@@ -379,13 +379,13 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
               *buf = 0;
             }
 
-          rc = gcry_sexp_build (&s_sig, NULL, "(sig-val(rsa(s%b)))",
-                                (int)len, buf);
+          err = gcry_sexp_build (&s_sig, NULL, "(sig-val(rsa(s%b)))",
+                                 (int)len, buf);
         }
       else if (is_EdDSA)
         {
-          rc = gcry_sexp_build (&s_sig, NULL, "(sig-val(eddsa(r%b)(s%b)))",
-                                (int)len/2, buf, (int)len/2, buf + len/2);
+          err = gcry_sexp_build (&s_sig, NULL, "(sig-val(eddsa(r%b)(s%b)))",
+                                 (int)len/2, buf, (int)len/2, buf + len/2);
         }
       else if (is_ECDSA)
         {
@@ -401,7 +401,10 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
               r_buflen++;
               r_buf_allocated = xtrymalloc (r_buflen);
               if (!r_buf_allocated)
-                goto leave;
+                {
+                  err = gpg_error_from_syserror ();
+                  goto leave;
+                }
 
               r_buf = r_buf_allocated;
               memcpy (r_buf + 1, buf, len/2);
@@ -416,6 +419,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
               s_buf_allocated = xtrymalloc (s_buflen);
               if (!s_buf_allocated)
                 {
+                  err = gpg_error_from_syserror ();
                   xfree (r_buf_allocated);
                   goto leave;
                 }
@@ -427,20 +431,20 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
           else
             s_buf = buf + len/2;
 
-          rc = gcry_sexp_build (&s_sig, NULL, "(sig-val(ecdsa(r%b)(s%b)))",
-                                r_buflen, r_buf,
-                                s_buflen, s_buf);
+          err = gcry_sexp_build (&s_sig, NULL, "(sig-val(ecdsa(r%b)(s%b)))",
+                                 r_buflen, r_buf,
+                                 s_buflen, s_buf);
           xfree (r_buf_allocated);
           xfree (s_buf_allocated);
         }
       else
-        rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+        err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
       xfree (buf);
-      if (rc)
+      if (err)
 	{
 	  log_error ("failed to convert sigbuf returned by divert_pksign "
-		     "into S-Exp: %s", gpg_strerror (rc));
+		     "into S-Exp: %s", gpg_strerror (err));
 	  goto leave;
 	}
     }
@@ -451,27 +455,29 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
 
       /* Put the hash into a sexp */
       if (agent_is_eddsa_key (s_skey))
-        rc = do_encode_eddsa (data, datalen,
-                              &s_hash);
+        err = do_encode_eddsa (data, datalen,
+                               &s_hash);
       else if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1)
-        rc = do_encode_raw_pkcs1 (data, datalen,
-                                  gcry_pk_get_nbits (s_skey),
-                                  &s_hash);
+        err = do_encode_raw_pkcs1 (data, datalen,
+                                   gcry_pk_get_nbits (s_skey),
+                                   &s_hash);
       else if ( (dsaalgo = agent_is_dsa_key (s_skey)) )
-        rc = do_encode_dsa (data, datalen,
-                            dsaalgo, s_skey,
-                            &s_hash);
+        err = do_encode_dsa (data, datalen,
+                             dsaalgo, s_skey,
+                             &s_hash);
       else
-        rc = do_encode_md (data, datalen,
-                           ctrl->digest.algo,
-                           &s_hash,
-                           ctrl->digest.raw_value);
-      if (rc)
+        err = do_encode_md (data, datalen,
+                            ctrl->digest.algo,
+                            &s_hash,
+                            ctrl->digest.raw_value);
+      if (err)
         goto leave;
 
       if (dsaalgo == 0 && GCRYPT_VERSION_NUMBER < 0x010700)
-        /* It's RSA and Libgcrypt < 1.7 */
-        check_signature = 1;
+        {
+          /* It's RSA and Libgcrypt < 1.7 */
+          check_signature = 1;
+        }
 
       if (DBG_CRYPTO)
         {
@@ -480,10 +486,10 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
         }
 
       /* sign */
-      rc = gcry_pk_sign (&s_sig, s_hash, s_skey);
-      if (rc)
+      err = gcry_pk_sign (&s_sig, s_hash, s_skey);
+      if (err)
         {
-          log_error ("signing failed: %s\n", gpg_strerror (rc));
+          log_error ("signing failed: %s\n", gpg_strerror (err));
           goto leave;
         }
 
@@ -502,20 +508,20 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       if (s_hash == NULL)
         {
           if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1)
-            rc = do_encode_raw_pkcs1 (data, datalen,
-                                      gcry_pk_get_nbits (sexp_key), &s_hash);
+            err = do_encode_raw_pkcs1 (data, datalen,
+                                       gcry_pk_get_nbits (sexp_key), &s_hash);
           else
-            rc = do_encode_md (data, datalen, ctrl->digest.algo, &s_hash,
-                               ctrl->digest.raw_value);
+            err = do_encode_md (data, datalen, ctrl->digest.algo, &s_hash,
+                                ctrl->digest.raw_value);
         }
 
-      if (! rc)
-        rc = gcry_pk_verify (s_sig, s_hash, sexp_key);
+      if (!err)
+        err = gcry_pk_verify (s_sig, s_hash, sexp_key);
 
-      if (rc)
+      if (err)
         {
           log_error (_("checking created signature failed: %s\n"),
-                     gpg_strerror (rc));
+                     gpg_strerror (err));
           gcry_sexp_release (s_sig);
           s_sig = NULL;
         }
@@ -530,37 +536,42 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
   gcry_sexp_release (s_hash);
   xfree (shadow_info);
 
-  return rc;
+  return err;
 }
 
+
 /* SIGN whatever information we have accumulated in CTRL and write it
-   back to OUTFP.  If a CACHE_NONCE is given that cache item is first
-   tried to get a passphrase.  */
-int
+ * back to OUTFP.  If a CACHE_NONCE is given that cache item is first
+ * tried to get a passphrase.  */
+gpg_error_t
 agent_pksign (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
               membuf_t *outbuf, cache_mode_t cache_mode)
 {
+  gpg_error_t err;
   gcry_sexp_t s_sig = NULL;
   char *buf = NULL;
   size_t len = 0;
-  int rc = 0;
 
-  rc = agent_pksign_do (ctrl, cache_nonce, desc_text, &s_sig, cache_mode, NULL,
-                        NULL, 0);
-  if (rc)
+  err = agent_pksign_do (ctrl, cache_nonce, desc_text, &s_sig, cache_mode,
+                         NULL, NULL, 0);
+  if (err)
     goto leave;
 
   len = gcry_sexp_sprint (s_sig, GCRYSEXP_FMT_CANON, NULL, 0);
-  assert (len);
-  buf = xmalloc (len);
+  log_assert (len);
+  buf = xtrymalloc (len);
+  if (!buf)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
   len = gcry_sexp_sprint (s_sig, GCRYSEXP_FMT_CANON, buf, len);
-  assert (len);
-
+  log_assert (len);
   put_membuf (outbuf, buf, len);
 
  leave:
   gcry_sexp_release (s_sig);
   xfree (buf);
 
-  return rc;
+  return err;
 }

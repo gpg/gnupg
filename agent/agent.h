@@ -450,14 +450,14 @@ void agent_store_cache_hit (const char *key);
 
 
 /*-- pksign.c --*/
-int agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
-                     const char *desc_text,
-		     gcry_sexp_t *signature_sexp,
-                     cache_mode_t cache_mode, lookup_ttl_t lookup_ttl,
-                     const void *overridedata, size_t overridedatalen);
-int agent_pksign (ctrl_t ctrl, const char *cache_nonce,
-                  const char *desc_text,
-                  membuf_t *outbuf, cache_mode_t cache_mode);
+gpg_error_t agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
+                             const char *desc_text,
+                             gcry_sexp_t *signature_sexp,
+                             cache_mode_t cache_mode, lookup_ttl_t lookup_ttl,
+                             const void *overridedata, size_t overridedatalen);
+gpg_error_t agent_pksign (ctrl_t ctrl, const char *cache_nonce,
+                          const char *desc_text,
+                          membuf_t *outbuf, cache_mode_t cache_mode);
 
 /*-- pkdecrypt.c --*/
 int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
@@ -482,7 +482,7 @@ unsigned char get_standard_s2k_count_rfc4880 (void);
 int agent_protect (const unsigned char *plainkey, const char *passphrase,
                    unsigned char **result, size_t *resultlen,
 		   unsigned long s2k_count, int use_ocb);
-int agent_unprotect (ctrl_t ctrl,
+gpg_error_t agent_unprotect (ctrl_t ctrl,
                      const unsigned char *protectedkey, const char *passphrase,
                      gnupg_isotime_t protected_at,
                      unsigned char **result, size_t *resultlen);
@@ -491,8 +491,8 @@ unsigned char *make_shadow_info (const char *serialno, const char *idstring);
 int agent_shadow_key (const unsigned char *pubkey,
                       const unsigned char *shadow_info,
                       unsigned char **result);
-int agent_get_shadow_info (const unsigned char *shadowkey,
-                           unsigned char const **shadow_info);
+gpg_error_t agent_get_shadow_info (const unsigned char *shadowkey,
+                                   unsigned char const **shadow_info);
 gpg_error_t parse_shadow_info (const unsigned char *shadow_info,
                                char **r_hexsn, char **r_idstr, int *r_pinlen);
 gpg_error_t s2k_hash_passphrase (const char *passphrase, int hashalgo,

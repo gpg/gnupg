@@ -238,7 +238,7 @@ get_standard_s2k_count_rfc4880 (void)
 /* Calculate the MIC for a private key or shared secret S-expression.
    SHA1HASH should point to a 20 byte buffer.  This function is
    suitable for all algorithms. */
-static int
+static gpg_error_t
 calculate_mic (const unsigned char *plainkey, unsigned char *sha1hash)
 {
   const unsigned char *hash_begin, *hash_end;
@@ -728,7 +728,7 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
 
 
 /* Do the actual decryption and check the return list for consistency.  */
-static int
+static gpg_error_t
 do_decryption (const unsigned char *aad_begin, size_t aad_len,
                const unsigned char *aadhole_begin, size_t aadhole_len,
                const unsigned char *protected, size_t protectedlen,
@@ -738,7 +738,7 @@ do_decryption (const unsigned char *aad_begin, size_t aad_len,
                int prot_cipher, int prot_cipher_keylen, int is_ocb,
                unsigned char **result)
 {
-  int rc = 0;
+  int rc;
   int blklen;
   gcry_cipher_hd_t hd;
   unsigned char *outbuf;
@@ -858,7 +858,7 @@ do_decryption (const unsigned char *aad_begin, size_t aad_len,
  * CUTOFF and CUTLEN will receive the offset and the length of the
  * resulting list which should go into the MIC calculation but then be
  * removed.  */
-static int
+static gpg_error_t
 merge_lists (const unsigned char *protectedkey,
              size_t replacepos,
              const unsigned char *cleartext,
@@ -1011,7 +1011,7 @@ merge_lists (const unsigned char *protectedkey,
 /* Unprotect the key encoded in canonical format.  We assume a valid
    S-Exp here.  If a protected-at item is available, its value will
    be stored at protected_at unless this is NULL.  */
-int
+gpg_error_t
 agent_unprotect (ctrl_t ctrl,
                  const unsigned char *protectedkey, const char *passphrase,
                  gnupg_isotime_t protected_at,
@@ -1291,6 +1291,7 @@ agent_unprotect (ctrl_t ctrl,
   return 0;
 }
 
+
 /* Check the type of the private key, this is one of the constants:
    PRIVATE_KEY_UNKNOWN if we can't figure out the type (this is the
    value 0), PRIVATE_KEY_CLEAR for an unprotected private key.
@@ -1549,7 +1550,7 @@ agent_shadow_key (const unsigned char *pubkey,
 
 /* Parse a canonical encoded shadowed key and return a pointer to the
    inner list with the shadow_info */
-int
+gpg_error_t
 agent_get_shadow_info (const unsigned char *shadowkey,
                        unsigned char const **shadow_info)
 {

@@ -782,7 +782,7 @@ static const char hlp_pksign[] =
 static gpg_error_t
 cmd_pksign (assuan_context_t ctx, char *line)
 {
-  int rc;
+  gpg_error_t err;
   cache_mode_t cache_mode = CACHE_MODE_NORMAL;
   ctrl_t ctrl = assuan_get_pointer (ctx);
   membuf_t outbuf;
@@ -804,17 +804,17 @@ cmd_pksign (assuan_context_t ctx, char *line)
 
   init_membuf (&outbuf, 512);
 
-  rc = agent_pksign (ctrl, cache_nonce, ctrl->server_local->keydesc,
-                     &outbuf, cache_mode);
-  if (rc)
+  err = agent_pksign (ctrl, cache_nonce, ctrl->server_local->keydesc,
+                      &outbuf, cache_mode);
+  if (err)
     clear_outbuf (&outbuf);
   else
-    rc = write_and_clear_outbuf (ctx, &outbuf);
+    err = write_and_clear_outbuf (ctx, &outbuf);
 
   xfree (cache_nonce);
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
-  return leave_cmd (ctx, rc);
+  return leave_cmd (ctx, err);
 }
 
 
