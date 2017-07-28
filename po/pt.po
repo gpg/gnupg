@@ -396,6 +396,9 @@ msgstr ""
 msgid "enable ssh support"
 msgstr "não suportado"
 
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
 #, fuzzy
 #| msgid "not supported"
 msgid "enable putty support"
@@ -420,6 +423,9 @@ msgstr ""
 #, c-format
 msgid "invalid debug-level '%s' given\n"
 msgstr ""
+
+msgid "selected digest algorithm is invalid\n"
+msgstr "o algoritmo de \"digest\" selecionado é inválido\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
@@ -1283,6 +1289,10 @@ msgid "WARNING: %s\n"
 msgstr "AVISO: %s sobrepõe %s\n"
 
 #, fuzzy, c-format
+msgid "%s is not compliant with %s mode\n"
+msgstr "%s não faz sentido com %s!\n"
+
+#, fuzzy, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "chave secreta não disponível"
 
@@ -1350,10 +1360,6 @@ msgstr ""
 msgid "URL to retrieve public key: "
 msgstr "a escrever chave pública para `%s'\n"
 
-#, c-format
-msgid "Error: URL too long (limit is %d characters).\n"
-msgstr ""
-
 #, fuzzy, c-format
 #| msgid "error reading `%s': %s\n"
 msgid "error reading '%s': %s\n"
@@ -1366,15 +1372,7 @@ msgstr "erro na escrita do porta-chaves `%s': %s\n"
 msgid "Login data (account name): "
 msgstr ""
 
-#, c-format
-msgid "Error: Login data too long (limit is %d characters).\n"
-msgstr ""
-
 msgid "Private DO data: "
-msgstr ""
-
-#, c-format
-msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr ""
 
 #, fuzzy
@@ -1681,6 +1679,14 @@ msgstr ""
 "ao forçar a cifra simétrica %s (%d) viola as preferências do destinatário\n"
 
 #, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
+
+#, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "AVISO: \"%s\" é uma opção depreciada\n"
+
+#, fuzzy, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -1697,8 +1703,9 @@ msgstr ""
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s cifrado para: \"%s\"\n"
 
-#, c-format
-msgid "you may not use %s while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "option '%s' may not be used in %s mode\n"
 msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
 
 #, c-format
@@ -1869,6 +1876,10 @@ msgstr "Chave inválida %08lX tornada válida por --allow-non-selfsigned-uid\n"
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "usando chave secundária %08lX ao invés de chave primária %08lX\n"
+
+#, fuzzy, c-format
+msgid "valid values for option '%s':\n"
+msgstr "opções de importação inválidas\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -2223,19 +2234,11 @@ msgid "show expiration dates during signature listings"
 msgstr "Nenhuma assinatura correspondente no porta-chaves secreto\n"
 
 #, fuzzy, c-format
-msgid "valid values for option '%s':\n"
-msgstr "opções de importação inválidas\n"
-
-#, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "destinatário por omissão desconhecido `%s'\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid value for option '%s'\n"
-msgstr "opções de importação inválidas\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
@@ -2382,9 +2385,6 @@ msgstr "a escrever chave privada para `%s'\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "o algoritmo de cifragem selecionado é inválido\n"
 
-msgid "selected digest algorithm is invalid\n"
-msgstr "o algoritmo de \"digest\" selecionado é inválido\n"
-
 #, fuzzy
 msgid "selected compression algorithm is invalid\n"
 msgstr "o algoritmo de cifragem selecionado é inválido\n"
@@ -2435,15 +2435,11 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s não faz sentido com %s!\n"
 
 #, fuzzy, c-format
-msgid "you may not use cipher algorithm '%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
 
 #, fuzzy, c-format
-msgid "you may not use digest algorithm '%s' while in %s mode\n"
-msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
-
-#, fuzzy, c-format
-msgid "you may not use compression algorithm '%s' while in %s mode\n"
+msgid "compression algorithm '%s' may not be used in %s mode\n"
 msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
 
 #, c-format
@@ -2462,14 +2458,14 @@ msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
 msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
 
 #, fuzzy, c-format
@@ -2599,6 +2595,10 @@ msgstr ""
 
 msgid "assume the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+msgid "repair keys on import"
+msgstr "mostra impressão digital"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2989,59 +2989,6 @@ msgstr "[revogação]"
 
 msgid "[self-signature]"
 msgstr "[auto-assinatura]"
-
-#, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "erro ao criar porta-chaves `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "chave %08lX: algoritmo de chave pública não suportado\n"
-
-#, fuzzy, c-format
-msgid ""
-"can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "assinatura %s de: \"%s\"\n"
-
-#, fuzzy
-msgid " (reordered signatures follow)"
-msgstr "Assinatura correcta de \""
-
-#, fuzzy, c-format
-msgid "key %s:\n"
-msgstr "ignorado `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "%d duplicate signature removed\n"
-msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "Utilizador \"%s\" está revocado."
-msgstr[1] "Utilizador \"%s\" está revocado."
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 assinatura não verificada por falta de chave\n"
-msgstr[1] "1 assinatura não verificada por falta de chave\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d assinaturas incorrectas\n"
-msgstr[1] "%d assinaturas incorrectas\n"
-
-#, fuzzy, c-format
-msgid "%d signature reordered\n"
-msgid_plural "%d signatures reordered\n"
-msgstr[0] "Assinatura correcta de \""
-msgstr[1] "Assinatura correcta de \""
-
-#, c-format
-msgid ""
-"Warning: errors found and only checked self-signatures, run '%s' to check "
-"all signatures.\n"
-msgstr ""
 
 #, fuzzy
 msgid ""
@@ -3576,6 +3523,14 @@ msgstr "Nada para assinar com a chave %08lX\n"
 msgid "'%s' is not a valid expiration time\n"
 msgstr "%s não é um conjunto de caracteres válido\n"
 
+#, fuzzy, c-format
+msgid "\"%s\" is not a proper fingerprint\n"
+msgstr "%s: versão de ficheiro inválida %d\n"
+
+#, fuzzy, c-format
+msgid "subkey \"%s\" not found\n"
+msgstr "chave `%s' não encontrada: %s\n"
+
 msgid "Digest: "
 msgstr "'Digest': "
 
@@ -3906,6 +3861,10 @@ msgstr "o utilizador com o id \"%s\" já está revocado\n"
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr ""
 "A mostrar a fotografia %s com o tamanho %ld da chave 0x%08lX (uid %d)\n"
+
+#, fuzzy, c-format
+msgid "invalid value for option '%s'\n"
+msgstr "opções de importação inválidas\n"
 
 #, fuzzy, c-format
 msgid "preference '%s' duplicated\n"
@@ -4402,6 +4361,20 @@ msgstr[0] "%d assinaturas incorrectas\n"
 msgstr[1] "%d assinaturas incorrectas\n"
 
 #, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d assinaturas incorrectas\n"
+msgstr[1] "%d assinaturas incorrectas\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 assinatura não verificada por falta de chave\n"
+msgstr[1] "1 assinatura não verificada por falta de chave\n"
+
+#, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
@@ -4681,6 +4654,11 @@ msgstr "[incerto]"
 #, fuzzy, c-format
 msgid "                aka \"%s\""
 msgstr "                   ou \""
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+msgid "WARNING: This key is not suitable for signing in %s mode\n"
+msgstr "AVISO: Esta chave não está certificada com uma assinatura confiável!\n"
 
 #, fuzzy, c-format
 msgid "Signature expired %s\n"
@@ -5241,6 +5219,10 @@ msgid "can't open signed data fd=%d: %s\n"
 msgstr "impossível abrir dados assinados `%s'\n"
 
 #, fuzzy, c-format
+msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgstr "chave %08lX: sem ID de utilizador\n"
+
+#, fuzzy, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "destinatário anónimo; a tentar chave secreta %08lX ...\n"
 
@@ -5410,6 +5392,11 @@ msgstr ""
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "AVISO: conflito no 'digest' de assinatura da mensagem\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "key %s may not be used for signing in %s mode\n"
+msgstr "não pode utilizar %s enquanto estiver no modo %s\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
@@ -8195,6 +8182,14 @@ msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, fuzzy, c-format
+msgid "error accessing '%s': http status %u\n"
+msgstr "erro na leitura de `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "erro ao criar porta-chaves `%s': %s\n"
+
+#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "erro na escrita do porta-chaves `%s': %s\n"
 
@@ -8299,10 +8294,6 @@ msgstr "erro na escrita do porta-chaves `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error reading HTTP response for '%s': %s\n"
-msgstr "erro na leitura de `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error accessing '%s': http status %u\n"
 msgstr "erro na leitura de `%s': %s\n"
 
 #, fuzzy, c-format
@@ -8921,6 +8912,36 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid ""
+#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+#~ msgstr "chave %08lX: algoritmo de chave pública não suportado\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
+#~ msgstr "assinatura %s de: \"%s\"\n"
+
+#, fuzzy
+#~ msgid " (reordered signatures follow)"
+#~ msgstr "Assinatura correcta de \""
+
+#, fuzzy
+#~ msgid "key %s:\n"
+#~ msgstr "ignorado `%s': %s\n"
+
+#, fuzzy
+#~ msgid "%d duplicate signature removed\n"
+#~ msgid_plural "%d duplicate signatures removed\n"
+#~ msgstr[0] "Utilizador \"%s\" está revocado."
+#~ msgstr[1] "Utilizador \"%s\" está revocado."
+
+#, fuzzy
+#~ msgid "%d signature reordered\n"
+#~ msgid_plural "%d signatures reordered\n"
+#~ msgstr[0] "Assinatura correcta de \""
+#~ msgstr[1] "Assinatura correcta de \""
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

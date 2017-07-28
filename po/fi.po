@@ -407,6 +407,9 @@ msgstr ""
 msgid "enable ssh support"
 msgstr "ei tuettu"
 
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
 #, fuzzy
 #| msgid "not supported"
 msgid "enable putty support"
@@ -432,6 +435,9 @@ msgstr ""
 #, c-format
 msgid "invalid debug-level '%s' given\n"
 msgstr ""
+
+msgid "selected digest algorithm is invalid\n"
+msgstr "valittu tiivistealgoritmi ei kelpaa\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
@@ -1296,6 +1302,11 @@ msgid "WARNING: %s\n"
 msgstr "VAROITUS: %s korvaa %s:n\n"
 
 #, fuzzy, c-format
+#| msgid "%s does not yet work with %s\n"
+msgid "%s is not compliant with %s mode\n"
+msgstr "%s ja %s eivät vielä toimi yhdessä\n"
+
+#, fuzzy, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "salaista avainta ei löydy"
 
@@ -1363,10 +1374,6 @@ msgstr ""
 msgid "URL to retrieve public key: "
 msgstr "ei vastaavaa julkista avainta: %s\n"
 
-#, c-format
-msgid "Error: URL too long (limit is %d characters).\n"
-msgstr ""
-
 #, fuzzy, c-format
 #| msgid "error reading `%s': %s\n"
 msgid "error reading '%s': %s\n"
@@ -1379,15 +1386,7 @@ msgstr "virhe kirjoitettaessa avainrenkaaseen \"%s\": %s\n"
 msgid "Login data (account name): "
 msgstr ""
 
-#, c-format
-msgid "Error: Login data too long (limit is %d characters).\n"
-msgstr ""
-
 msgid "Private DO data: "
-msgstr ""
-
-#, c-format
-msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr ""
 
 #, fuzzy
@@ -1693,6 +1692,14 @@ msgid ""
 msgstr "valittu symmetrinen salain %s (%d) ei ole vastaanottajan suosima\n"
 
 #, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "salausalgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
+
+#, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "VAROITUS: \"%s\" on paheksuttu valitsin\n"
+
+#, fuzzy, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -1706,8 +1713,9 @@ msgstr "valittu symmetrinen salain %s (%d) ei ole vastaanottajan suosima\n"
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s salattu vastaanottajalle: \"%s\"\n"
 
-#, c-format
-msgid "you may not use %s while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "option '%s' may not be used in %s mode\n"
 msgstr "valitsinta %s ei voi käyttää %s-tilassa\n"
 
 #, c-format
@@ -1886,6 +1894,10 @@ msgstr ""
 msgid "using subkey %s instead of primary key %s\n"
 msgstr ""
 "käytetään toissijaista avainta %08lX ensisijaisen avaimen %08lX sijasta\n"
+
+#, fuzzy, c-format
+msgid "valid values for option '%s':\n"
+msgstr "virheelliset tuontivalitsimet\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -2236,19 +2248,11 @@ msgid "show expiration dates during signature listings"
 msgstr "Salaisesta avainrenkaasta ei löydy vastaavaa allekirjoitusta\n"
 
 #, fuzzy, c-format
-msgid "valid values for option '%s':\n"
-msgstr "virheelliset tuontivalitsimet\n"
-
-#, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "tuntematon oletusvastaanottaja \"%s\"\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid value for option '%s'\n"
-msgstr "virheelliset tuontivalitsimet\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
@@ -2395,9 +2399,6 @@ msgstr "kirjoitan salaisen avaimen kohteeseen \"%s\"\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "valittu salausalgoritmi ei kelpaa\n"
 
-msgid "selected digest algorithm is invalid\n"
-msgstr "valittu tiivistealgoritmi ei kelpaa\n"
-
 #, fuzzy
 msgid "selected compression algorithm is invalid\n"
 msgstr "valittu salausalgoritmi ei kelpaa\n"
@@ -2447,15 +2448,11 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s ja %s eivät vielä toimi yhdessä\n"
 
 #, fuzzy, c-format
-msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgstr "salausalgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
-
-#, fuzzy, c-format
-msgid "you may not use digest algorithm '%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "tiivistealgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
 
 #, fuzzy, c-format
-msgid "you may not use compression algorithm '%s' while in %s mode\n"
+msgid "compression algorithm '%s' may not be used in %s mode\n"
 msgstr "pakkausalgoritmia \"%s\" ei voi käyttää %s-tilassa\n"
 
 #, c-format
@@ -2474,14 +2471,14 @@ msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "valitsinta %s ei voi käyttää %s-tilassa\n"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
 msgstr "valitsinta %s ei voi käyttää %s-tilassa\n"
 
 #, c-format
@@ -2611,6 +2608,10 @@ msgstr ""
 
 msgid "assume the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+msgid "repair keys on import"
+msgstr "näytä sormenjälki"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -3001,60 +3002,6 @@ msgstr "[mitätöinti]"
 
 msgid "[self-signature]"
 msgstr "[oma-allekirjoitus]"
-
-#, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "virhe luotaessa avainrengasta \"%s\": %s\n"
-
-#, fuzzy, c-format
-msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "avain %08lX: julkisen avaimen algoritmia ei tueta\n"
-
-# Ensimmäinen %s on binary, textmode tai unknown, ks. alla
-#, fuzzy, c-format
-msgid ""
-"can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "%sallekirjoitus, tiivistealgoritmi %s\n"
-
-#, fuzzy
-msgid " (reordered signatures follow)"
-msgstr "Allekirjoitus täsmää lähettäjään \""
-
-#, fuzzy, c-format
-msgid "key %s:\n"
-msgstr "ohitetaan \"%s\": %s\n"
-
-#, fuzzy, c-format
-msgid "%d duplicate signature removed\n"
-msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "Käyttäjätunnus \"%s\" on mitätöity."
-msgstr[1] "Käyttäjätunnus \"%s\" on mitätöity."
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 allekirjoitus jätetty tarkistamatta puuttuvan avaimen vuoksi\n"
-msgstr[1] "1 allekirjoitus jätetty tarkistamatta puuttuvan avaimen vuoksi\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d väärää allekirjoitusta\n"
-msgstr[1] "%d väärää allekirjoitusta\n"
-
-#, fuzzy, c-format
-msgid "%d signature reordered\n"
-msgid_plural "%d signatures reordered\n"
-msgstr[0] "Allekirjoitus täsmää lähettäjään \""
-msgstr[1] "Allekirjoitus täsmää lähettäjään \""
-
-#, c-format
-msgid ""
-"Warning: errors found and only checked self-signatures, run '%s' to check "
-"all signatures.\n"
-msgstr ""
 
 #, fuzzy
 msgid ""
@@ -3585,6 +3532,14 @@ msgstr "Avaimelle %08lX ei löydy mitään mitä allekirjoittaa\n"
 msgid "'%s' is not a valid expiration time\n"
 msgstr "%s ei kelpaa merkistöksi\n"
 
+#, fuzzy, c-format
+msgid "\"%s\" is not a proper fingerprint\n"
+msgstr "virhe: sormenjälki on väärä\n"
+
+#, fuzzy, c-format
+msgid "subkey \"%s\" not found\n"
+msgstr "avainta \"%s\" ei löydy: %s\n"
+
 msgid "Digest: "
 msgstr "Tiiviste: "
 
@@ -3920,6 +3875,10 @@ msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr ""
 "Näytetään valokuva %s, kokoa %ld avaimelle 0x%08lX\n"
 "(käyttäjätunnus %d)\n"
+
+#, fuzzy, c-format
+msgid "invalid value for option '%s'\n"
+msgstr "virheelliset tuontivalitsimet\n"
 
 #, fuzzy, c-format
 msgid "preference '%s' duplicated\n"
@@ -4412,6 +4371,20 @@ msgstr[0] "%d väärää allekirjoitusta\n"
 msgstr[1] "%d väärää allekirjoitusta\n"
 
 #, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d väärää allekirjoitusta\n"
+msgstr[1] "%d väärää allekirjoitusta\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 allekirjoitus jätetty tarkistamatta puuttuvan avaimen vuoksi\n"
+msgstr[1] "1 allekirjoitus jätetty tarkistamatta puuttuvan avaimen vuoksi\n"
+
+#, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
@@ -4692,6 +4665,12 @@ msgstr "[ei tiedossa]"
 #, fuzzy, c-format
 msgid "                aka \"%s\""
 msgstr "                aka \""
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+msgid "WARNING: This key is not suitable for signing in %s mode\n"
+msgstr ""
+"VAROITUS: Tätä avainta ei ole varmennettu luotettavalla allekirjoituksella!\n"
 
 #, c-format
 msgid "Signature expired %s\n"
@@ -5261,6 +5240,10 @@ msgid "can't open signed data fd=%d: %s\n"
 msgstr "allekirjoitetun datan \"%s\" avaaminen ei onnistu\n"
 
 #, fuzzy, c-format
+msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgstr "avain %08lX: ei käyttäjätunnusta\n"
+
+#, fuzzy, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "nimetön vastaanottaja; yritän käyttää salaista avainta %08lX ...\n"
 
@@ -5435,6 +5418,11 @@ msgstr ""
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "VAROITUS: allekirjoitustiiviste ei täsmää viestin kanssa\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "key %s may not be used for signing in %s mode\n"
+msgstr "valitsinta %s ei voi käyttää %s-tilassa\n"
 
 #, fuzzy, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
@@ -8224,6 +8212,14 @@ msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, fuzzy, c-format
+msgid "error accessing '%s': http status %u\n"
+msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
+
+#, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "virhe luotaessa avainrengasta \"%s\": %s\n"
+
+#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "virhe kirjoitettaessa avainrenkaaseen \"%s\": %s\n"
 
@@ -8328,10 +8324,6 @@ msgstr "virhe kirjoitettaessa avainrenkaaseen \"%s\": %s\n"
 
 #, fuzzy, c-format
 msgid "error reading HTTP response for '%s': %s\n"
-msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
-
-#, fuzzy, c-format
-msgid "error accessing '%s': http status %u\n"
 msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
 
 #, fuzzy, c-format
@@ -8950,6 +8942,37 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid ""
+#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+#~ msgstr "avain %08lX: julkisen avaimen algoritmia ei tueta\n"
+
+# Ensimmäinen %s on binary, textmode tai unknown, ks. alla
+#, fuzzy
+#~ msgid ""
+#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
+#~ msgstr "%sallekirjoitus, tiivistealgoritmi %s\n"
+
+#, fuzzy
+#~ msgid " (reordered signatures follow)"
+#~ msgstr "Allekirjoitus täsmää lähettäjään \""
+
+#, fuzzy
+#~ msgid "key %s:\n"
+#~ msgstr "ohitetaan \"%s\": %s\n"
+
+#, fuzzy
+#~ msgid "%d duplicate signature removed\n"
+#~ msgid_plural "%d duplicate signatures removed\n"
+#~ msgstr[0] "Käyttäjätunnus \"%s\" on mitätöity."
+#~ msgstr[1] "Käyttäjätunnus \"%s\" on mitätöity."
+
+#, fuzzy
+#~ msgid "%d signature reordered\n"
+#~ msgid_plural "%d signatures reordered\n"
+#~ msgstr[0] "Allekirjoitus täsmää lähettäjään \""
+#~ msgstr[1] "Allekirjoitus täsmää lähettäjään \""
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

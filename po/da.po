@@ -427,6 +427,9 @@ msgstr ""
 msgid "enable ssh support"
 msgstr "aktiver ssh-agent-emulering"
 
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
 msgid "enable putty support"
 msgstr ""
 
@@ -456,6 +459,9 @@ msgstr ""
 #| msgid "invalid debug-level `%s' given\n"
 msgid "invalid debug-level '%s' given\n"
 msgstr "ugyldigt fejlsøgningsniveau »%s« angivet\n"
+
+msgid "selected digest algorithm is invalid\n"
+msgstr "valgt sammendragsalgoritme er ugyldig\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
@@ -1324,6 +1330,11 @@ msgstr ""
 msgid "WARNING: %s\n"
 msgstr "ADVARSEL: %s overskriver %s\n"
 
+#, fuzzy, c-format
+#| msgid "%s does not yet work with %s\n"
+msgid "%s is not compliant with %s mode\n"
+msgstr "%s virker endnu ikke med %s\n"
+
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGP-kort er ikke tilgængeligt: %s\n"
@@ -1384,10 +1395,6 @@ msgstr "Fejl: Kombineret navn er for langt (begrænsningen er på %d tegn).\n"
 msgid "URL to retrieve public key: "
 msgstr "Adresse hvor offentlig nøgle skal hentes: "
 
-#, c-format
-msgid "Error: URL too long (limit is %d characters).\n"
-msgstr "Fejl: Adresse er for lang (begrænsningen er %d tegn).\n"
-
 #, fuzzy, c-format
 #| msgid "error reading `%s': %s\n"
 msgid "error reading '%s': %s\n"
@@ -1401,16 +1408,8 @@ msgstr "fejl ved skrivning af »%s«: %s\n"
 msgid "Login data (account name): "
 msgstr "Loginddata (kontonavn): "
 
-#, c-format
-msgid "Error: Login data too long (limit is %d characters).\n"
-msgstr "Fejl: Loginddata er for lange (begrænsningen er %d tegn).\n"
-
 msgid "Private DO data: "
 msgstr "Private DO-data: "
-
-#, c-format
-msgid "Error: Private DO too long (limit is %d characters).\n"
-msgstr "Fejl: Privat DO er for lang (begrænsningen er %d tegn).\n"
 
 msgid "Language preferences: "
 msgstr "Sprogpræferencer: "
@@ -1716,6 +1715,16 @@ msgstr ""
 "ADVARSEL: Tvang for symmetrisk chiffer %s (%d) overtræder modtagerens "
 "præferencer\n"
 
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "du må ikke bruge chifferalgoritmen »%s« i tilstanden %s\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "ADVARSEL: »%s« er en forældet indstilling - den har ingen effekt\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -1733,8 +1742,9 @@ msgstr ""
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s krypteret for: »%s«\n"
 
-#, c-format
-msgid "you may not use %s while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "option '%s' may not be used in %s mode\n"
 msgstr "du kan ikke bruge %s i tilstanden %s\n"
 
 #, c-format
@@ -1908,6 +1918,11 @@ msgstr "Ugyldig nøgle %s gjort gyldig med --allow-non-selfsigned-uid\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "bruger undernøgle %s i stedet for primær nøgle %s\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "valid values for option '%s':\n"
+msgstr "manglende parameter for indstilling »%.50s«\n"
 
 msgid "make a signature"
 msgstr "opret en underskrift"
@@ -2267,22 +2282,12 @@ msgid "show expiration dates during signature listings"
 msgstr "vis udløbsdatoer under underskriftvisninger"
 
 #, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "valid values for option '%s':\n"
-msgstr "manglende parameter for indstilling »%.50s«\n"
-
-#, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
 msgstr "ukendt tilvalg »%s«\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "invalid value for option '%s'\n"
-msgstr "manglende parameter for indstilling »%.50s«\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
@@ -2426,9 +2431,6 @@ msgstr "vil ikke køre med usikker hukommelse på grund af %s\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "valgt chifferalgoritme er ugyldig\n"
 
-msgid "selected digest algorithm is invalid\n"
-msgstr "valgt sammendragsalgoritme er ugyldig\n"
-
 msgid "selected compression algorithm is invalid\n"
 msgstr "valgt komprimeringsalgoritme er ugyldig\n"
 
@@ -2475,18 +2477,13 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s virker endnu ikke med %s\n"
 
 #, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgstr "du må ikke bruge chifferalgoritmen »%s« i tilstanden %s\n"
-
-#, fuzzy, c-format
 #| msgid "you may not use digest algorithm `%s' while in %s mode\n"
-msgid "you may not use digest algorithm '%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "du må ikke bruge sammendragsalgoritmen »%s« i tilstanden %s\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm `%s' while in %s mode\n"
-msgid "you may not use compression algorithm '%s' while in %s mode\n"
+msgid "compression algorithm '%s' may not be used in %s mode\n"
 msgstr "du må ikke bruge komprimeringsalgoritmen »%s« i tilstanden %s\n"
 
 #, c-format
@@ -2505,15 +2502,17 @@ msgstr "symmetrisk kryptering af »%s« mislykkedes: %s\n"
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "du kan ikke bruge --symmetric --encrypt med --s2k-mode 0\n"
 
-#, c-format
-msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "du kan ikke bruge --symmetric --encrypt i tilstanden %s\n"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "du kan ikke bruge --symmetric --sign --encrypt med --s2k-mode 0\n"
 
-#, c-format
-msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
 msgstr "du kan ikke bruge --symmetric --sign --encrypt i tilstanden %s\n"
 
 #, c-format
@@ -2643,6 +2642,11 @@ msgstr ""
 #| msgid "assume input is in binary format"
 msgid "assume the GnuPG key backup format"
 msgstr "antag inddata er i binært format"
+
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "repair keys on import"
+msgstr "vis nøglefingeraftryk"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -3041,66 +3045,6 @@ msgstr "[tilbagekald]"
 
 msgid "[self-signature]"
 msgstr "[egenunderskrift]"
-
-#, fuzzy, c-format
-#| msgid "error allocating enough memory: %s\n"
-msgid "error allocating memory: %s\n"
-msgstr "fejl ved allokering af nok hukommelse: %s\n"
-
-#, fuzzy, c-format
-#| msgid "key %s: unsupported public key algorithm\n"
-msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "nøgle %s: ikke understøttet offentlig nøglealgoritme\n"
-
-#, fuzzy, c-format
-#| msgid "card does not support digest algorithm %s\n"
-msgid ""
-"can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "kort understøtter ikke sammendragsalgoritme %s\n"
-
-#, fuzzy
-#| msgid "Good signature from"
-msgid " (reordered signatures follow)"
-msgstr "God underskrift fra"
-
-#, fuzzy, c-format
-#| msgid "skipped \"%s\": %s\n"
-msgid "key %s:\n"
-msgstr "udelod »%s«: %s\n"
-
-#, fuzzy, c-format
-#| msgid "User ID \"%s\": %d signature removed\n"
-msgid "%d duplicate signature removed\n"
-msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "Bruger-id »%s«: %d underskrift fjernet\n"
-msgstr[1] "Bruger-id »%s«: %d underskrift fjernet\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 underskrift er ikke kontrolleret på grund af en manglende nøgle\n"
-msgstr[1] "1 underskrift er ikke kontrolleret på grund af en manglende nøgle\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d ugyldige underskrifter\n"
-msgstr[1] "%d ugyldige underskrifter\n"
-
-#, fuzzy, c-format
-#| msgid "Good signature from"
-msgid "%d signature reordered\n"
-msgid_plural "%d signatures reordered\n"
-msgstr[0] "God underskrift fra"
-msgstr[1] "God underskrift fra"
-
-#, c-format
-msgid ""
-"Warning: errors found and only checked self-signatures, run '%s' to check "
-"all signatures.\n"
-msgstr ""
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3612,6 +3556,16 @@ msgstr "Intet at underskrive med nøgle %s\n"
 msgid "'%s' is not a valid expiration time\n"
 msgstr "»%s« er ikke et gyldigt underskriftudløb\n"
 
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" is not a proper fingerprint\n"
+msgstr "ugyldig fingeraftryk"
+
+#, fuzzy, c-format
+#| msgid "key \"%s\" not found: %s\n"
+msgid "subkey \"%s\" not found\n"
+msgstr "nøglen »%s« blev ikke fundet: %s\n"
+
 msgid "Digest: "
 msgstr "Sammendrag: "
 
@@ -3941,6 +3895,11 @@ msgstr "Undernøgle %s er allerede tilbagekaldt.\n"
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Viser %s billed'id med størrelse %ld for nøgle %s (uid %d)\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid value for option '%s'\n"
+msgstr "manglende parameter for indstilling »%.50s«\n"
 
 #, fuzzy, c-format
 #| msgid "preference `%s' duplicated\n"
@@ -4437,6 +4396,20 @@ msgstr[0] "%d ugyldige underskrifter\n"
 msgstr[1] "%d ugyldige underskrifter\n"
 
 #, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d ugyldige underskrifter\n"
+msgstr[1] "%d ugyldige underskrifter\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 underskrift er ikke kontrolleret på grund af en manglende nøgle\n"
+msgstr[1] "1 underskrift er ikke kontrolleret på grund af en manglende nøgle\n"
+
+#, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
@@ -4713,6 +4686,12 @@ msgstr "[usikker]"
 #, c-format
 msgid "                aka \"%s\""
 msgstr "       også kendt som »%s«"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+msgid "WARNING: This key is not suitable for signing in %s mode\n"
+msgstr ""
+"ADVARSEL: Denne nøgle er ikke certificeret med en troværdig underskrift!\n"
 
 #, c-format
 msgid "Signature expired %s\n"
@@ -5292,6 +5271,11 @@ msgstr "kan ikke åbne underskrevne data »%s«\n"
 msgid "can't open signed data fd=%d: %s\n"
 msgstr "kan ikke åbne underskrevne data fd=%d: %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate is not usable for encryption\n"
+msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgstr "certifikat kan ikke bruges til kryptering\n"
+
 #, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "anonym modtager; prøver hemmelig nøgle %s ...\n"
@@ -5466,6 +5450,11 @@ msgstr "DSA-nøgle %s kræver en %u bit eller større hash\n"
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "ADVARSEL: konflikt for underskriftssammendrag i besked\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "key %s may not be used for signing in %s mode\n"
+msgstr "du kan ikke bruge %s i tilstanden %s\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
@@ -8412,6 +8401,16 @@ msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "error running `%s': exit status %d\n"
+msgid "error accessing '%s': http status %u\n"
+msgstr "fejl ved kørsel af »%s«: afslutningsstatus %d\n"
+
+#, fuzzy, c-format
+#| msgid "error allocating enough memory: %s\n"
+msgid "error allocating memory: %s\n"
+msgstr "fejl ved allokering af nok hukommelse: %s\n"
+
+#, fuzzy, c-format
 #| msgid "error writing to %s: %s\n"
 msgid "error printing log line: %s\n"
 msgstr "fejl ved skrivning til »%s«: %s\n"
@@ -8532,11 +8531,6 @@ msgstr "fejl ved skrivning til »%s«: %s\n"
 #| msgid "error reading from %s: %s\n"
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "fejl ved læsning fra %s: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error running `%s': exit status %d\n"
-msgid "error accessing '%s': http status %u\n"
-msgstr "fejl ved kørsel af »%s«: afslutningsstatus %d\n"
 
 #, fuzzy, c-format
 #| msgid "error binding socket to `%s': %s\n"
@@ -9208,6 +9202,51 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#~ msgid "Error: URL too long (limit is %d characters).\n"
+#~ msgstr "Fejl: Adresse er for lang (begrænsningen er %d tegn).\n"
+
+#~ msgid "Error: Login data too long (limit is %d characters).\n"
+#~ msgstr "Fejl: Loginddata er for lange (begrænsningen er %d tegn).\n"
+
+#~ msgid "Error: Private DO too long (limit is %d characters).\n"
+#~ msgstr "Fejl: Privat DO er for lang (begrænsningen er %d tegn).\n"
+
+#, fuzzy
+#~| msgid "key %s: unsupported public key algorithm\n"
+#~ msgid ""
+#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+#~ msgstr "nøgle %s: ikke understøttet offentlig nøglealgoritme\n"
+
+#, fuzzy
+#~| msgid "card does not support digest algorithm %s\n"
+#~ msgid ""
+#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
+#~ msgstr "kort understøtter ikke sammendragsalgoritme %s\n"
+
+#, fuzzy
+#~| msgid "Good signature from"
+#~ msgid " (reordered signatures follow)"
+#~ msgstr "God underskrift fra"
+
+#, fuzzy
+#~| msgid "skipped \"%s\": %s\n"
+#~ msgid "key %s:\n"
+#~ msgstr "udelod »%s«: %s\n"
+
+#, fuzzy
+#~| msgid "User ID \"%s\": %d signature removed\n"
+#~ msgid "%d duplicate signature removed\n"
+#~ msgid_plural "%d duplicate signatures removed\n"
+#~ msgstr[0] "Bruger-id »%s«: %d underskrift fjernet\n"
+#~ msgstr[1] "Bruger-id »%s«: %d underskrift fjernet\n"
+
+#, fuzzy
+#~| msgid "Good signature from"
+#~ msgid "%d signature reordered\n"
+#~ msgid_plural "%d signatures reordered\n"
+#~ msgstr[0] "God underskrift fra"
+#~ msgstr[1] "God underskrift fra"
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

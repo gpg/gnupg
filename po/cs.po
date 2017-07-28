@@ -402,6 +402,9 @@ msgstr "umožnit zadání hesla skrze Emacs"
 msgid "enable ssh support"
 msgstr "zapnout podporu pro OpenSSH"
 
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
 msgid "enable putty support"
 msgstr "zapnout podporu pro PuTTY"
 
@@ -426,6 +429,9 @@ msgstr ""
 #, c-format
 msgid "invalid debug-level '%s' given\n"
 msgstr "zadána neplatná úroveň ladění „%s“\n"
+
+msgid "selected digest algorithm is invalid\n"
+msgstr "vybraný hashovací algoritmus je neplatný\n"
 
 #, c-format
 msgid "Note: no default option file '%s'\n"
@@ -1246,6 +1252,11 @@ msgstr ""
 msgid "WARNING: %s\n"
 msgstr "VAROVÁNÍ: "
 
+#, fuzzy, c-format
+#| msgid "%s does not yet work with %s\n"
+msgid "%s is not compliant with %s mode\n"
+msgstr "%s dosud není funkční s %s\n"
+
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGP karta není dostupná: %s\n"
@@ -1307,10 +1318,6 @@ msgid "URL to retrieve public key: "
 msgstr "URL pro získání veřejného klíče: "
 
 #, c-format
-msgid "Error: URL too long (limit is %d characters).\n"
-msgstr "Chyba: URL je příliš dlouhé (limit je %d znaků).\n"
-
-#, c-format
 msgid "error reading '%s': %s\n"
 msgstr "chyba při čtení „%s“: %s\n"
 
@@ -1321,16 +1328,8 @@ msgstr "chyba při zápisu do „%s“: %s\n"
 msgid "Login data (account name): "
 msgstr "Login (jménu účtu): "
 
-#, c-format
-msgid "Error: Login data too long (limit is %d characters).\n"
-msgstr "Chyba: Login je příliš dlouhý (limit je %d znaků).\n"
-
 msgid "Private DO data: "
 msgstr "Privátní DO data: "
-
-#, c-format
-msgid "Error: Private DO too long (limit is %d characters).\n"
-msgstr "Chyba: Privátní DO je příliš dlouhé (limit je %d znaků).\n"
 
 msgid "Language preferences: "
 msgstr "Jazykové předvolby: "
@@ -1613,6 +1612,16 @@ msgid ""
 msgstr ""
 "VAROVÁNÍ: vyžádaná symetrická šifra %s (%d) nevyhovuje předvolbám příjemce\n"
 
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "použití šifrovacího algoritmu „%s“ v módu %s není dovoleno\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "VAROVÁNÍ: „%s%s“ je zastaralý parametr – neúčinkuje\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -1629,8 +1638,9 @@ msgstr "vyžádaná symetrická šifra %s (%d) nevyhovuje předvolbám příjemc
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s zašifrovaný pro: „%s“\n"
 
-#, c-format
-msgid "you may not use %s while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "option '%s' may not be used in %s mode\n"
 msgstr "použití %s není v módu %s dovoleno\n"
 
 #, c-format
@@ -1799,6 +1809,11 @@ msgstr "Neplatný klíč %s změněn na platný pomocí --always-non-selfsigned-
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "používám podklíč %s místo primárního klíče %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid argument for option \"%.50s\"\n"
+msgid "valid values for option '%s':\n"
+msgstr "neplatný argument u volby „%.50s“\n"
 
 msgid "make a signature"
 msgstr "vytvořit podpis"
@@ -2138,22 +2153,12 @@ msgstr "ukazovat název souboru s klíči při výpisu klíčů"
 msgid "show expiration dates during signature listings"
 msgstr "ukazovat data expirace během výpisu podpisů"
 
-#, fuzzy, c-format
-#| msgid "invalid argument for option \"%.50s\"\n"
-msgid "valid values for option '%s':\n"
-msgstr "neplatný argument u volby „%.50s“\n"
-
 #, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "neznámá TOFU politika „%s“\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr "(možnosti lze vypsat příkazem „help“)\n"
-
-#, fuzzy, c-format
-#| msgid "invalid argument for option \"%.50s\"\n"
-msgid "invalid value for option '%s'\n"
-msgstr "neplatný argument u volby „%.50s“\n"
 
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
@@ -2292,9 +2297,6 @@ msgstr "nelze spustit s nebezpečnou pamětí vzhledem k %s\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "vybraný šifrovací algoritmus je neplatný\n"
 
-msgid "selected digest algorithm is invalid\n"
-msgstr "vybraný hashovací algoritmus je neplatný\n"
-
 msgid "selected compression algorithm is invalid\n"
 msgstr "vybraný kompresní algoritmus je neplatný\n"
 
@@ -2342,16 +2344,14 @@ msgstr "neplatné uživatelské předvolby pro komprimaci\n"
 msgid "%s does not yet work with %s\n"
 msgstr "%s dosud není funkční s %s\n"
 
-#, c-format
-msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgstr "použití šifrovacího algoritmu „%s“ v módu %s není dovoleno\n"
-
-#, c-format
-msgid "you may not use digest algorithm '%s' while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use digest algorithm '%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "použití hashovacího algoritmu „%s“ v módu %s není dovoleno\n"
 
-#, c-format
-msgid "you may not use compression algorithm '%s' while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use compression algorithm '%s' while in %s mode\n"
+msgid "compression algorithm '%s' may not be used in %s mode\n"
 msgstr "použití kompresního algoritmu „%s“ v módu %s není dovoleno\n"
 
 #, c-format
@@ -2369,15 +2369,17 @@ msgstr "symetrické šifrování „%s“ se nepovedlo: %s\n"
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "nelze použít --symmetric --encrypt s příkazem --s2k-mode 0\n"
 
-#, c-format
-msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "nelze použít --symmetric --encrypt v módu %s\n"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "nelze použít --symmetric --sign --encrypt s příkazem --s2k-mode 0\n"
 
-#, c-format
-msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
 msgstr "nelze použít --symmetric --sign --encrypt v módu %s\n"
 
 #, c-format
@@ -2502,6 +2504,11 @@ msgstr ""
 #| msgid "assume input is in binary format"
 msgid "assume the GnuPG key backup format"
 msgstr "předpokládat vstup v binárním formátu"
+
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "repair keys on import"
+msgstr "vypsat otisk klíče"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2885,69 +2892,6 @@ msgstr "[revokace]"
 
 msgid "[self-signature]"
 msgstr "[podpis klíče jím samým]"
-
-#, c-format
-msgid "error allocating memory: %s\n"
-msgstr "chyba při alokování paměti: %s\n"
-
-#, fuzzy, c-format
-#| msgid "key %s: unsupported public key algorithm\n"
-msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "klíč %s: nepodporovaný algoritmus veřejného klíče\n"
-
-#, fuzzy, c-format
-#| msgid "card does not support digest algorithm %s\n"
-msgid ""
-"can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "karta nepodporuje hashovací algoritmus %s\n"
-
-#, fuzzy
-#| msgid "Good signature from"
-msgid " (reordered signatures follow)"
-msgstr "Dobrý podpis od"
-
-#, fuzzy, c-format
-#| msgid "key %s: %s\n"
-msgid "key %s:\n"
-msgstr "klíč %s: %s\n"
-
-#, fuzzy, c-format
-#| msgid "User ID \"%s\": %d signature removed\n"
-msgid "%d duplicate signature removed\n"
-msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "Uživatelské ID „%s“: %d podpisů odstraněno\n"
-msgstr[1] "Uživatelské ID „%s“: %d podpisů odstraněno\n"
-msgstr[2] "Uživatelské ID „%s“: %d podpisů odstraněno\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 podpis neověřen, protože chybí klíč\n"
-msgstr[1] "1 podpis neověřen, protože chybí klíč\n"
-msgstr[2] "1 podpis neověřen, protože chybí klíč\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d špatných podpisů\n"
-msgstr[1] "%d špatných podpisů\n"
-msgstr[2] "%d špatných podpisů\n"
-
-#, fuzzy, c-format
-#| msgid "Good signature from"
-msgid "%d signature reordered\n"
-msgid_plural "%d signatures reordered\n"
-msgstr[0] "Dobrý podpis od"
-msgstr[1] "Dobrý podpis od"
-msgstr[2] "Dobrý podpis od"
-
-#, c-format
-msgid ""
-"Warning: errors found and only checked self-signatures, run '%s' to check "
-"all signatures.\n"
-msgstr ""
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3423,6 +3367,16 @@ msgstr "Nic na podepsání.\n"
 msgid "'%s' is not a valid expiration time\n"
 msgstr "„%s“ není platná doba expirace podpisu\n"
 
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" is not a proper fingerprint\n"
+msgstr "„%s“ není otisk\n"
+
+#, fuzzy, c-format
+#| msgid "key \"%s\" not found\n"
+msgid "subkey \"%s\" not found\n"
+msgstr "klíč „%s“ nenalezen\n"
+
 msgid "Digest: "
 msgstr "Hash: "
 
@@ -3739,6 +3693,11 @@ msgstr "Podklíč %s je již revokován.\n"
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Zobrazuji %s fotografický ID o velikosti %ld pro klíč %s (uid %d)\n"
+
+#, fuzzy, c-format
+#| msgid "invalid argument for option \"%.50s\"\n"
+msgid "invalid value for option '%s'\n"
+msgstr "neplatný argument u volby „%.50s“\n"
 
 #, c-format
 msgid "preference '%s' duplicated\n"
@@ -4213,6 +4172,22 @@ msgstr[1] "%d dobrých podpisů\n"
 msgstr[2] "%d dobrých podpisů\n"
 
 #, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d špatných podpisů\n"
+msgstr[1] "%d špatných podpisů\n"
+msgstr[2] "%d špatných podpisů\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 podpis neověřen, protože chybí klíč\n"
+msgstr[1] "1 podpis neověřen, protože chybí klíč\n"
+msgstr[2] "1 podpis neověřen, protože chybí klíč\n"
+
+#, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
@@ -4500,6 +4475,11 @@ msgstr "[nejistý]"
 #, c-format
 msgid "                aka \"%s\""
 msgstr "                alias „%s“"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+msgid "WARNING: This key is not suitable for signing in %s mode\n"
+msgstr "VAROVÁNÍ: Tento klíč není certifikován důvěryhodným podpisem!\n"
 
 #, c-format
 msgid "Signature expired %s\n"
@@ -5039,6 +5019,11 @@ msgstr "nelze otevřít podepsaná data „%s“\n"
 msgid "can't open signed data fd=%d: %s\n"
 msgstr "nelze otevřít podepsaná data na deskriptoru=%d: %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate is not usable for encryption\n"
+msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgstr "certifikát není použitelný pro šifrování\n"
+
 #, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "anonymní adresát; zkouším tajný klíč %s…\n"
@@ -5221,6 +5206,11 @@ msgstr "%s klíč %s vyžaduje hash o délce %zu nebo více bitů (hash je %s)\
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "VAROVÁNÍ: konflikt hashe podpisu ve zprávě\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "key %s may not be used for signing in %s mode\n"
+msgstr "použití %s není v módu %s dovoleno\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
@@ -7988,6 +7978,14 @@ msgid "'%s' is an invalid LDAP URL\n"
 msgstr "„%s“ není platné LDAP URL\n"
 
 #, c-format
+msgid "error accessing '%s': http status %u\n"
+msgstr "chyba přístupu k „%s“: status HTTP %u\n"
+
+#, c-format
+msgid "error allocating memory: %s\n"
+msgstr "chyba při alokování paměti: %s\n"
+
+#, c-format
 msgid "error printing log line: %s\n"
 msgstr "chyba při tisknutí řádku protokolu: %s\n"
 
@@ -8089,10 +8087,6 @@ msgstr "chyba při připojování na „%s“: %s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "chyba při čtení HTTP odpovědi od „%s“: %s\n"
-
-#, c-format
-msgid "error accessing '%s': http status %u\n"
-msgstr "chyba přístupu k „%s“: status HTTP %u\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
@@ -8700,6 +8694,53 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "Error: URL too long (limit is %d characters).\n"
+#~ msgstr "Chyba: URL je příliš dlouhé (limit je %d znaků).\n"
+
+#~ msgid "Error: Login data too long (limit is %d characters).\n"
+#~ msgstr "Chyba: Login je příliš dlouhý (limit je %d znaků).\n"
+
+#~ msgid "Error: Private DO too long (limit is %d characters).\n"
+#~ msgstr "Chyba: Privátní DO je příliš dlouhé (limit je %d znaků).\n"
+
+#, fuzzy
+#~| msgid "key %s: unsupported public key algorithm\n"
+#~ msgid ""
+#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+#~ msgstr "klíč %s: nepodporovaný algoritmus veřejného klíče\n"
+
+#, fuzzy
+#~| msgid "card does not support digest algorithm %s\n"
+#~ msgid ""
+#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
+#~ msgstr "karta nepodporuje hashovací algoritmus %s\n"
+
+#, fuzzy
+#~| msgid "Good signature from"
+#~ msgid " (reordered signatures follow)"
+#~ msgstr "Dobrý podpis od"
+
+#, fuzzy
+#~| msgid "key %s: %s\n"
+#~ msgid "key %s:\n"
+#~ msgstr "klíč %s: %s\n"
+
+#, fuzzy
+#~| msgid "User ID \"%s\": %d signature removed\n"
+#~ msgid "%d duplicate signature removed\n"
+#~ msgid_plural "%d duplicate signatures removed\n"
+#~ msgstr[0] "Uživatelské ID „%s“: %d podpisů odstraněno\n"
+#~ msgstr[1] "Uživatelské ID „%s“: %d podpisů odstraněno\n"
+#~ msgstr[2] "Uživatelské ID „%s“: %d podpisů odstraněno\n"
+
+#, fuzzy
+#~| msgid "Good signature from"
+#~ msgid "%d signature reordered\n"
+#~ msgid_plural "%d signatures reordered\n"
+#~ msgstr[0] "Dobrý podpis od"
+#~ msgstr[1] "Dobrý podpis od"
+#~ msgstr[2] "Dobrý podpis od"
 
 #~ msgid "new configuration file '%s' created\n"
 #~ msgstr "vytvořen nový konfigurační soubor „%s“\n"

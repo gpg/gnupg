@@ -369,6 +369,9 @@ msgstr "Emacsを通じてパスフレーズを催促することを認める"
 msgid "enable ssh support"
 msgstr "sshサポートを有功にする"
 
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
 msgid "enable putty support"
 msgstr "puttyサポートを有功にする"
 
@@ -391,6 +394,9 @@ msgstr ""
 #, c-format
 msgid "invalid debug-level '%s' given\n"
 msgstr "無効なdebug-level '%s'が与えられました\n"
+
+msgid "selected digest algorithm is invalid\n"
+msgstr "選択されたダイジェスト・アルゴリズムは、無効です\n"
 
 #, c-format
 msgid "Note: no default option file '%s'\n"
@@ -1194,6 +1200,11 @@ msgstr "サーバ'%s'はこちらより古いです(%s < %s)"
 msgid "WARNING: %s\n"
 msgstr "*警告*: %s\n"
 
+#, fuzzy, c-format
+#| msgid "%s does not yet work with %s\n"
+msgid "%s is not compliant with %s mode\n"
+msgstr "%sは%sではまだ機能しません\n"
+
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGPカードが利用できません: %s\n"
@@ -1255,10 +1266,6 @@ msgid "URL to retrieve public key: "
 msgstr "公開鍵を取得するURL: "
 
 #, c-format
-msgid "Error: URL too long (limit is %d characters).\n"
-msgstr "エラー: URLが長すぎます (上限%d文字)。\n"
-
-#, c-format
 msgid "error reading '%s': %s\n"
 msgstr "'%s'の読み込みエラー: %s\n"
 
@@ -1269,16 +1276,8 @@ msgstr "'%s'の書き込みエラー: %s\n"
 msgid "Login data (account name): "
 msgstr "ログイン・データ (アカウント名): "
 
-#, c-format
-msgid "Error: Login data too long (limit is %d characters).\n"
-msgstr "エラー: ログイン・データが長すぎます (上限%d文字)。\n"
-
 msgid "Private DO data: "
 msgstr "プライベート DO データ: "
-
-#, c-format
-msgid "Error: Private DO too long (limit is %d characters).\n"
-msgstr "エラー: プライベート DOが長すぎます (上限%d文字)。\n"
 
 msgid "Language preferences: "
 msgstr "言語の優先指定: "
@@ -1555,6 +1554,17 @@ msgid ""
 msgstr ""
 "*警告*: 共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"
 
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "暗号アルゴリズム'%s'を%sモードで使うことはできません\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr ""
+"*警告*: \"%s%s\"は、使われなくなったオプションです - なんの効果もありません\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -1570,8 +1580,9 @@ msgstr "共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定を
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s暗号化 受信者:\"%s\"\n"
 
-#, c-format
-msgid "you may not use %s while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "option '%s' may not be used in %s mode\n"
 msgstr "%sを%sモードで使うことはできません\n"
 
 #, c-format
@@ -1728,6 +1739,10 @@ msgstr "--allow-non-selfsigned-uidで有効にされた無効な鍵%sです\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "副鍵%s(主鍵%sではなく)を用います\n"
+
+#, c-format
+msgid "valid values for option '%s':\n"
+msgstr "オプション'%s'に有効な値:\n"
 
 msgid "make a signature"
 msgstr "署名を作成"
@@ -2037,19 +2052,11 @@ msgid "show expiration dates during signature listings"
 msgstr "署名の一覧時に有効期限の日付を表示する"
 
 #, c-format
-msgid "valid values for option '%s':\n"
-msgstr "オプション'%s'に有効な値:\n"
-
-#, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "不明のTOFUポリシー'%s'\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr "(選択肢の一覧には\"help\"を使ってください)\n"
-
-#, c-format
-msgid "invalid value for option '%s'\n"
-msgstr "オプション'%s'に無効な値です\n"
 
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
@@ -2186,9 +2193,6 @@ msgstr "%s のため、セキュアでないメモリで実行しません\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "選択された暗号アルゴリズムは、無効です\n"
 
-msgid "selected digest algorithm is invalid\n"
-msgstr "選択されたダイジェスト・アルゴリズムは、無効です\n"
-
 msgid "selected compression algorithm is invalid\n"
 msgstr "選択された圧縮アルゴリズムは、無効です\n"
 
@@ -2232,16 +2236,14 @@ msgstr "無効な個人用圧縮の優先指定\n"
 msgid "%s does not yet work with %s\n"
 msgstr "%sは%sではまだ機能しません\n"
 
-#, c-format
-msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgstr "暗号アルゴリズム'%s'を%sモードで使うことはできません\n"
-
-#, c-format
-msgid "you may not use digest algorithm '%s' while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use digest algorithm '%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "ダイジェスト・アルゴリズム'%s'を%sモードで使うことはできません\n"
 
-#, c-format
-msgid "you may not use compression algorithm '%s' while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use compression algorithm '%s' while in %s mode\n"
+msgid "compression algorithm '%s' may not be used in %s mode\n"
 msgstr "圧縮アルゴリズム'%s'を%sモードで使うことはできません\n"
 
 #, c-format
@@ -2258,15 +2260,17 @@ msgstr "'%s'の共通鍵暗号に失敗しました: %s\n"
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "--symmetric --encryptを--s2k-mode 0で使うことはできません\n"
 
-#, c-format
-msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "--symmetric --encryptを%sモードで使うことはできません\n"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "--symmetric --sign --encryptを--s2k-mode 0で使うことはできません\n"
 
-#, c-format
-msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
 msgstr "--symmetric --sign --encryptを%sモードで使うことはできません\n"
 
 #, c-format
@@ -2387,6 +2391,11 @@ msgstr "インポート・フィルタを実行し鍵をすぐにエクスポー
 
 msgid "assume the GnuPG key backup format"
 msgstr "GnuPGの鍵のバックアップフォーマットを仮定します"
+
+#, fuzzy
+#| msgid "show key during import"
+msgid "repair keys on import"
+msgstr "インポートの際、鍵を表示"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2766,55 +2775,6 @@ msgstr "[失効]"
 
 msgid "[self-signature]"
 msgstr "[自己署名]"
-
-#, c-format
-msgid "error allocating memory: %s\n"
-msgstr "メモリの確保のエラー: %s\n"
-
-#, c-format
-msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "サポートしていない公開鍵アルゴリズム(%d)の署名は確認できません: %s.\n"
-
-#, c-format
-msgid ""
-"can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr ""
-"サポートしていないメッセージ・ダイジェスト(%d)の署名は確認できません: %s.\n"
-
-msgid " (reordered signatures follow)"
-msgstr "(順番を変えた署名が続きます)"
-
-#, c-format
-msgid "key %s:\n"
-msgstr "鍵  %s:\n"
-
-#, c-format
-msgid "%d duplicate signature removed\n"
-msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "%d個の重複した署名が除去されました\n"
-
-#, c-format
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "鍵がないため%d個の署名は検査しません\n"
-
-#, c-format
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d個の不正な署名\n"
-
-#, c-format
-msgid "%d signature reordered\n"
-msgid_plural "%d signatures reordered\n"
-msgstr[0] "%d個の正しい署名\n"
-
-#, c-format
-msgid ""
-"Warning: errors found and only checked self-signatures, run '%s' to check "
-"all signatures.\n"
-msgstr ""
-"警告: エラーがあり、自己署名だけ確認しました。'%s'を実行してすべての署名を確"
-"認ください。\n"
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3275,6 +3235,16 @@ msgstr "署名するものがありません。\n"
 msgid "'%s' is not a valid expiration time\n"
 msgstr "'%s'は、有効な有効期限ではありません\n"
 
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" is not a proper fingerprint\n"
+msgstr "\"%s\"はフィンガープリントではありません\n"
+
+#, fuzzy, c-format
+#| msgid "key \"%s\" not found\n"
+msgid "subkey \"%s\" not found\n"
+msgstr "鍵\"%s\"が見つかりません\n"
+
 msgid "Digest: "
 msgstr "ダイジェスト: "
 
@@ -3583,6 +3553,10 @@ msgstr "副鍵 %s は、もう失効されています。\n"
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "%s (大きさ%ld) の鍵%s (uid %d) のフォトIDとして表示\n"
+
+#, c-format
+msgid "invalid value for option '%s'\n"
+msgstr "オプション'%s'に無効な値です\n"
 
 #, c-format
 msgid "preference '%s' duplicated\n"
@@ -4045,6 +4019,16 @@ msgid_plural "%d good signatures\n"
 msgstr[0] "正しい署名%d個\n"
 
 #, c-format
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d個の不正な署名\n"
+
+#, c-format
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "鍵がないため%d個の署名は検査しません\n"
+
+#, c-format
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
 msgstr[0] "エラーのため%d個の署名を検査しません\n"
@@ -4303,6 +4287,11 @@ msgstr "[不確定]"
 #, c-format
 msgid "                aka \"%s\""
 msgstr "                別名\"%s\""
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+msgid "WARNING: This key is not suitable for signing in %s mode\n"
+msgstr "*警告*: この鍵は信用できる署名で証明されていません!\n"
 
 #, c-format
 msgid "Signature expired %s\n"
@@ -4832,6 +4821,11 @@ msgstr "署名されたデータ'%s'が開けません\n"
 msgid "can't open signed data fd=%d: %s\n"
 msgstr "署名されたデータ fd=%d が開けません: %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate is not usable for encryption\n"
+msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgstr "証明書は暗号化のために使えません\n"
+
 #, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "匿名の受取人用です。秘密鍵%sを試します ...\n"
@@ -5007,6 +5001,11 @@ msgstr ""
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "*警告*: 署名のダイジェストが、メッセージと衝突します\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "key %s may not be used for signing in %s mode\n"
+msgstr "%sを%sモードで使うことはできません\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
@@ -7627,6 +7626,14 @@ msgid "'%s' is an invalid LDAP URL\n"
 msgstr "'%s' は無効なLDAP URLです\n"
 
 #, c-format
+msgid "error accessing '%s': http status %u\n"
+msgstr "'%s'へアクセスのエラー: httpステイタス %u\n"
+
+#, c-format
+msgid "error allocating memory: %s\n"
+msgstr "メモリの確保のエラー: %s\n"
+
+#, c-format
 msgid "error printing log line: %s\n"
 msgstr "log出力エラー: %s\n"
 
@@ -7728,10 +7735,6 @@ msgstr "'%s'の接続エラー: %s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "'%s'のHTTP応答の読み込みエラー: %s\n"
-
-#, c-format
-msgid "error accessing '%s': http status %u\n"
-msgstr "'%s'へアクセスのエラー: httpステイタス %u\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
@@ -8321,6 +8324,47 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "Error: URL too long (limit is %d characters).\n"
+#~ msgstr "エラー: URLが長すぎます (上限%d文字)。\n"
+
+#~ msgid "Error: Login data too long (limit is %d characters).\n"
+#~ msgstr "エラー: ログイン・データが長すぎます (上限%d文字)。\n"
+
+#~ msgid "Error: Private DO too long (limit is %d characters).\n"
+#~ msgstr "エラー: プライベート DOが長すぎます (上限%d文字)。\n"
+
+#~ msgid ""
+#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+#~ msgstr ""
+#~ "サポートしていない公開鍵アルゴリズム(%d)の署名は確認できません: %s.\n"
+
+#~ msgid ""
+#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
+#~ msgstr ""
+#~ "サポートしていないメッセージ・ダイジェスト(%d)の署名は確認できません: "
+#~ "%s.\n"
+
+#~ msgid " (reordered signatures follow)"
+#~ msgstr "(順番を変えた署名が続きます)"
+
+#~ msgid "key %s:\n"
+#~ msgstr "鍵  %s:\n"
+
+#~ msgid "%d duplicate signature removed\n"
+#~ msgid_plural "%d duplicate signatures removed\n"
+#~ msgstr[0] "%d個の重複した署名が除去されました\n"
+
+#~ msgid "%d signature reordered\n"
+#~ msgid_plural "%d signatures reordered\n"
+#~ msgstr[0] "%d個の正しい署名\n"
+
+#~ msgid ""
+#~ "Warning: errors found and only checked self-signatures, run '%s' to check "
+#~ "all signatures.\n"
+#~ msgstr ""
+#~ "警告: エラーがあり、自己署名だけ確認しました。'%s'を実行してすべての署名を"
+#~ "確認ください。\n"
 
 #~ msgid ", "
 #~ msgstr ", "

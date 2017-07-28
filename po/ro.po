@@ -406,6 +406,9 @@ msgstr ""
 msgid "enable ssh support"
 msgstr "nu este suportat(ă)"
 
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
 #, fuzzy
 #| msgid "not supported"
 msgid "enable putty support"
@@ -430,6 +433,9 @@ msgstr ""
 #, c-format
 msgid "invalid debug-level '%s' given\n"
 msgstr ""
+
+msgid "selected digest algorithm is invalid\n"
+msgstr "algoritm rezumat selectat este invalid\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
@@ -1299,6 +1305,11 @@ msgstr ""
 msgid "WARNING: %s\n"
 msgstr "AVERTISMENT: "
 
+#, fuzzy, c-format
+#| msgid "%s does not yet work with %s\n"
+msgid "%s is not compliant with %s mode\n"
+msgstr "%s nu merge încă cu %s!\n"
+
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "cardul OpenPGP nu e disponibil: %s\n"
@@ -1361,10 +1372,6 @@ msgstr "Eroare: Nume combinat prea lung (limita este de %d caractere).\n"
 msgid "URL to retrieve public key: "
 msgstr "URL pentru a aduce cheia publică: "
 
-#, c-format
-msgid "Error: URL too long (limit is %d characters).\n"
-msgstr "Eroare: URL prea lung (limita este de %d caractere).\n"
-
 #, fuzzy, c-format
 #| msgid "error reading `%s': %s\n"
 msgid "error reading '%s': %s\n"
@@ -1377,16 +1384,8 @@ msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 msgid "Login data (account name): "
 msgstr "Date login (nume cont): "
 
-#, c-format
-msgid "Error: Login data too long (limit is %d characters).\n"
-msgstr "Eroare: datele de login prea lungi (limita este de %d caractere).\n"
-
 msgid "Private DO data: "
 msgstr "Date DO personale: "
-
-#, c-format
-msgid "Error: Private DO too long (limit is %d characters).\n"
-msgstr "Eroare DO personal pre lung (limita este de %d caractere).\n"
 
 msgid "Language preferences: "
 msgstr "Preferinţe limbă: "
@@ -1680,6 +1679,15 @@ msgstr ""
 "AVERTISMENT: forţând cifrul simetric %s (%d) violaţi preferinţele "
 "destinatarului\n"
 
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "nu puteţi folosi algoritmul de cifrare `%s' câtă vreme în modul %s\n"
+
+#, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "AVERTISMENT: \"%s\" este o opţiune învechită\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -1696,8 +1704,9 @@ msgstr "forţând cifrul simetric %s (%d) violaţi preferinţele destinatarului\
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s cifrat pentru: \"%s\"\n"
 
-#, c-format
-msgid "you may not use %s while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "option '%s' may not be used in %s mode\n"
 msgstr "nu puteţi folosi %s câtă vreme în modul %s\n"
 
 #, c-format
@@ -1871,6 +1880,10 @@ msgstr "Cheia invalidă %s făcută validă de --allow-non-selfsigned-uid\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "folosim subcheia %s în loc de cheia primară %s\n"
+
+#, fuzzy, c-format
+msgid "valid values for option '%s':\n"
+msgstr "opţiuni enumerare invalide\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -2253,20 +2266,12 @@ msgid "show expiration dates during signature listings"
 msgstr "Nici o semnătură corespunzătoare în inelul secret\n"
 
 #, fuzzy, c-format
-msgid "valid values for option '%s':\n"
-msgstr "opţiuni enumerare invalide\n"
-
-#, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
 msgstr "opţiune necunoscută `%s'\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid value for option '%s'\n"
-msgstr "opţiuni enumerare invalide\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
@@ -2413,9 +2418,6 @@ msgstr "nu va rula cu memorie neprotejată (insecure) pentru că %s\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "algoritm cifrare selectat este invalid\n"
 
-msgid "selected digest algorithm is invalid\n"
-msgstr "algoritm rezumat selectat este invalid\n"
-
 msgid "selected compression algorithm is invalid\n"
 msgstr "algoritm compresie selectat este invalid\n"
 
@@ -2462,18 +2464,13 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s nu merge încă cu %s!\n"
 
 #, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgstr "nu puteţi folosi algoritmul de cifrare `%s' câtă vreme în modul %s\n"
-
-#, fuzzy, c-format
 #| msgid "you may not use digest algorithm `%s' while in %s mode\n"
-msgid "you may not use digest algorithm '%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "nu puteţi folosi algorimul de rezumat `%s' câtă vreme în modul %s\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm `%s' while in %s mode\n"
-msgid "you may not use compression algorithm '%s' while in %s mode\n"
+msgid "compression algorithm '%s' may not be used in %s mode\n"
 msgstr "nu puteţi folosi algoritmul de compresie `%s' câtă vreme în modul %s\n"
 
 #, c-format
@@ -2493,15 +2490,17 @@ msgstr "cifrarea simetrică a lui `%s' a eşuat: %s\n"
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "nu puteţi folosi --symmetric --encrypt cu --s2k-mode 0\n"
 
-#, c-format
-msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "nu puteţi folosi --symmetric --encrypt câtă vreme în modul %s\n"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "nu puteţi folosi --symmetric --sign --encrypt cu --s2k-mode 0\n"
 
-#, c-format
-msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
 msgstr "nu puteţi folosi --symmetric --sign --encrypt câtă vreme în modul %s\n"
 
 #, c-format
@@ -2631,6 +2630,11 @@ msgstr ""
 
 msgid "assume the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "repair keys on import"
+msgstr "afişează amprenta cheii"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -3024,62 +3028,6 @@ msgstr "[revocare]"
 
 msgid "[self-signature]"
 msgstr "[auto-semnătură]"
-
-#, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "eroare la crearea inelului de chei `%s': %s\n"
-
-#, fuzzy, c-format
-#| msgid "key %s: unsupported public key algorithm\n"
-msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "cheia %s: algoritm cu cheie publică nesuportat\n"
-
-#, fuzzy, c-format
-msgid ""
-"can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "semnătură %s, algoritm rezumat %s\n"
-
-#, fuzzy
-#| msgid "revoke signatures"
-msgid " (reordered signatures follow)"
-msgstr "revocă semnături"
-
-#, fuzzy, c-format
-#| msgid "skipped \"%s\": %s\n"
-msgid "key %s:\n"
-msgstr "sărită \"%s\": %s\n"
-
-#, fuzzy, c-format
-msgid "%d duplicate signature removed\n"
-msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "ID utilizator \"%s\" a fost revocat."
-msgstr[1] "ID utilizator \"%s\" a fost revocat."
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 semnătură nu a fost verificată din cauza unei chei lipsă\n"
-msgstr[1] "1 semnătură nu a fost verificată din cauza unei chei lipsă\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d semnături incorecte\n"
-msgstr[1] "%d semnături incorecte\n"
-
-#, fuzzy, c-format
-msgid "%d signature reordered\n"
-msgid_plural "%d signatures reordered\n"
-msgstr[0] "Semnătură bună din \"%s\""
-msgstr[1] "Semnătură bună din \"%s\""
-
-#, c-format
-msgid ""
-"Warning: errors found and only checked self-signatures, run '%s' to check "
-"all signatures.\n"
-msgstr ""
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3582,6 +3530,16 @@ msgstr "Nimic de semnat cu cheia %s\n"
 msgid "'%s' is not a valid expiration time\n"
 msgstr "`%s' nu este expirare de semnătură validă\n"
 
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" is not a proper fingerprint\n"
+msgstr "amprentă invalidă"
+
+#, fuzzy, c-format
+#| msgid "key \"%s\" not found: %s\n"
+msgid "subkey \"%s\" not found\n"
+msgstr "cheia \"%s\" nu a fost găsită: %s\n"
+
 msgid "Digest: "
 msgstr "Rezumat: "
 
@@ -3915,6 +3873,10 @@ msgstr "Subcheia %s este deja revocată.\n"
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Afişez poza ID %s de dimensiune %ld pentru cheia %s (uid %d)\n"
+
+#, fuzzy, c-format
+msgid "invalid value for option '%s'\n"
+msgstr "opţiuni enumerare invalide\n"
 
 #, fuzzy, c-format
 #| msgid "preference `%s' duplicated\n"
@@ -4405,6 +4367,20 @@ msgstr[0] "%d semnături incorecte\n"
 msgstr[1] "%d semnături incorecte\n"
 
 #, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d semnături incorecte\n"
+msgstr[1] "%d semnături incorecte\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 semnătură nu a fost verificată din cauza unei chei lipsă\n"
+msgstr[1] "1 semnătură nu a fost verificată din cauza unei chei lipsă\n"
+
+#, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
@@ -4683,6 +4659,12 @@ msgstr "[nesigur]"
 #, c-format
 msgid "                aka \"%s\""
 msgstr "                aka \"%s\""
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+msgid "WARNING: This key is not suitable for signing in %s mode\n"
+msgstr ""
+"AVERTISMENT: Această cheie nu este certificată de o semnătură de încredere!\n"
 
 #, c-format
 msgid "Signature expired %s\n"
@@ -5255,6 +5237,10 @@ msgstr "nu pot deschide date semnate `%s'\n"
 msgid "can't open signed data fd=%d: %s\n"
 msgstr "nu pot deschide date semnate `%s'\n"
 
+#, fuzzy, c-format
+msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgstr "cheia %s nu are nici un ID utilizator\n"
+
 #, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "destinator anonim; încerc cheia secretă %s ...\n"
@@ -5428,6 +5414,11 @@ msgstr ""
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "AVERTISMENT: conflict pentru rezumat semnătură în mesaj\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "key %s may not be used for signing in %s mode\n"
+msgstr "nu puteţi folosi %s câtă vreme în modul %s\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
@@ -8259,6 +8250,14 @@ msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, fuzzy, c-format
+msgid "error accessing '%s': http status %u\n"
+msgstr "eroare la citire `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "eroare la crearea inelului de chei `%s': %s\n"
+
+#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 
@@ -8366,10 +8365,6 @@ msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error reading HTTP response for '%s': %s\n"
-msgstr "eroare la citire `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error accessing '%s': http status %u\n"
 msgstr "eroare la citire `%s': %s\n"
 
 #, fuzzy, c-format
@@ -8992,6 +8987,48 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "Error: URL too long (limit is %d characters).\n"
+#~ msgstr "Eroare: URL prea lung (limita este de %d caractere).\n"
+
+#~ msgid "Error: Login data too long (limit is %d characters).\n"
+#~ msgstr "Eroare: datele de login prea lungi (limita este de %d caractere).\n"
+
+#~ msgid "Error: Private DO too long (limit is %d characters).\n"
+#~ msgstr "Eroare DO personal pre lung (limita este de %d caractere).\n"
+
+#, fuzzy
+#~| msgid "key %s: unsupported public key algorithm\n"
+#~ msgid ""
+#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+#~ msgstr "cheia %s: algoritm cu cheie publică nesuportat\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
+#~ msgstr "semnătură %s, algoritm rezumat %s\n"
+
+#, fuzzy
+#~| msgid "revoke signatures"
+#~ msgid " (reordered signatures follow)"
+#~ msgstr "revocă semnături"
+
+#, fuzzy
+#~| msgid "skipped \"%s\": %s\n"
+#~ msgid "key %s:\n"
+#~ msgstr "sărită \"%s\": %s\n"
+
+#, fuzzy
+#~ msgid "%d duplicate signature removed\n"
+#~ msgid_plural "%d duplicate signatures removed\n"
+#~ msgstr[0] "ID utilizator \"%s\" a fost revocat."
+#~ msgstr[1] "ID utilizator \"%s\" a fost revocat."
+
+#, fuzzy
+#~ msgid "%d signature reordered\n"
+#~ msgid_plural "%d signatures reordered\n"
+#~ msgstr[0] "Semnătură bună din \"%s\""
+#~ msgstr[1] "Semnătură bună din \"%s\""
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

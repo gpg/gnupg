@@ -441,6 +441,9 @@ msgstr ""
 msgid "enable ssh support"
 msgstr "permitir emulación de ssh-agent"
 
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
 #, fuzzy
 #| msgid "not supported"
 msgid "enable putty support"
@@ -472,6 +475,9 @@ msgstr ""
 #| msgid "invalid debug-level `%s' given\n"
 msgid "invalid debug-level '%s' given\n"
 msgstr "el nivel de depuración `%s` no es válido\n"
+
+msgid "selected digest algorithm is invalid\n"
+msgstr "el algoritmo de resumen seleccionado no inválido\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
@@ -1342,6 +1348,11 @@ msgstr ""
 msgid "WARNING: %s\n"
 msgstr "ATENCION: "
 
+#, fuzzy, c-format
+#| msgid "%s does not yet work with %s\n"
+msgid "%s is not compliant with %s mode\n"
+msgstr "%s aún no funciona con %s\n"
+
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "tarjeta OpenPGP no disponible: %s\n"
@@ -1402,10 +1413,6 @@ msgstr "Error: nombre combinado demasiado largo (máximo %d caracteres).\n"
 msgid "URL to retrieve public key: "
 msgstr "URL de donde recuperar la clave pública: "
 
-#, c-format
-msgid "Error: URL too long (limit is %d characters).\n"
-msgstr "Error: URL demasiado larga (el máximo son %d caracteres).\n"
-
 #, fuzzy, c-format
 #| msgid "error reading `%s': %s\n"
 msgid "error reading '%s': %s\n"
@@ -1419,17 +1426,8 @@ msgstr "error escribiendo `%s': %s\n"
 msgid "Login data (account name): "
 msgstr "Datos de login (nombre de la cuenta): "
 
-#, c-format
-msgid "Error: Login data too long (limit is %d characters).\n"
-msgstr "Error: el login es demasiado largo (límite de %d caracteres).\n"
-
 msgid "Private DO data: "
 msgstr "Datos privados: "
-
-#, c-format
-msgid "Error: Private DO too long (limit is %d characters).\n"
-msgstr ""
-"Error: los datos privados son demasiado largos (límite de %d caracteres).\n"
 
 msgid "Language preferences: "
 msgstr "Preferencias de idioma: "
@@ -1734,6 +1732,16 @@ msgstr ""
 "AVISO: forzar el cifrado simétrico %s (%d) viola las preferencias\n"
 "del destinatario\n"
 
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "no puede usar el cifrado `%s' en modo %s\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "ATENCIÓN: \"%s\" es una opción obsoleta - no tiene efecto\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -1752,8 +1760,9 @@ msgstr ""
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s cifrado para: \"%s\"\n"
 
-#, c-format
-msgid "you may not use %s while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "option '%s' may not be used in %s mode\n"
 msgstr "no puede usar %s en modo %s\n"
 
 #, c-format
@@ -1927,6 +1936,11 @@ msgstr "Clave %s inválida hecha válida mediante --allow-non-selfsigned-uid\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "usando subclave %s en vez de clave primaria %s\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "valid values for option '%s':\n"
+msgstr "falta parámetro para la opción \"%.50s\"\n"
 
 msgid "make a signature"
 msgstr "crea una firma"
@@ -2293,22 +2307,12 @@ msgid "show expiration dates during signature listings"
 msgstr "mostrar fechas de caducidad al listar firmas"
 
 #, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "valid values for option '%s':\n"
-msgstr "falta parámetro para la opción \"%.50s\"\n"
-
-#, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
 msgstr "opción desconocida `%s'\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "invalid value for option '%s'\n"
-msgstr "falta parámetro para la opción \"%.50s\"\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
@@ -2452,9 +2456,6 @@ msgstr "no se ejecutará en memoria insegura por %s\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "el algoritmo de cifrado seleccionado es inválido\n"
 
-msgid "selected digest algorithm is invalid\n"
-msgstr "el algoritmo de resumen seleccionado no inválido\n"
-
 msgid "selected compression algorithm is invalid\n"
 msgstr "el algoritmo de compresión seleccionado es inválido\n"
 
@@ -2501,18 +2502,13 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s aún no funciona con %s\n"
 
 #, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgstr "no puede usar el cifrado `%s' en modo %s\n"
-
-#, fuzzy, c-format
 #| msgid "you may not use digest algorithm `%s' while in %s mode\n"
-msgid "you may not use digest algorithm '%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "no puede usar el resumen `%s' en modo %s\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm `%s' while in %s mode\n"
-msgid "you may not use compression algorithm '%s' while in %s mode\n"
+msgid "compression algorithm '%s' may not be used in %s mode\n"
 msgstr "no puede usar la compresión `%s' en modo %s\n"
 
 #, c-format
@@ -2530,15 +2526,17 @@ msgstr "el cifrado simétrico de `%s' falló: %s\n"
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "no puede usar --symetric --encrypt con --s2k-mode 0\n"
 
-#, c-format
-msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "no puede usar --symetric --encrypt en modo %s\n"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "no puede usar --symetric --sign --encrypt con --s2k-mode 0\n"
 
-#, c-format
-msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
 msgstr "no puede usar --symmetric --sign --encrypt en modo %s\n"
 
 #, c-format
@@ -2672,6 +2670,11 @@ msgstr ""
 #| msgid "assume input is in binary format"
 msgid "assume the GnuPG key backup format"
 msgstr "asumir entrada en formato binario"
+
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "repair keys on import"
+msgstr "muestra huella dactilar de la clave"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -3070,66 +3073,6 @@ msgstr "[revocación]"
 
 msgid "[self-signature]"
 msgstr "[autofirma]"
-
-#, fuzzy, c-format
-#| msgid "error allocating enough memory: %s\n"
-msgid "error allocating memory: %s\n"
-msgstr "error reservando memoria: %s\n"
-
-#, fuzzy, c-format
-#| msgid "key %s: unsupported public key algorithm\n"
-msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "clave %s: algoritmo de clave pública no disponible\n"
-
-#, fuzzy, c-format
-#| msgid "card does not support digest algorithm %s\n"
-msgid ""
-"can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "la tarjeta no permite usar el algoritmo de resumen %s\n"
-
-#, fuzzy
-#| msgid "revoke signatures"
-msgid " (reordered signatures follow)"
-msgstr "revoca firmas"
-
-#, fuzzy, c-format
-#| msgid "skipped \"%s\": %s\n"
-msgid "key %s:\n"
-msgstr "omitido \"%s\": %s\n"
-
-#, fuzzy, c-format
-#| msgid "User ID \"%s\": %d signature removed\n"
-msgid "%d duplicate signature removed\n"
-msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "ID de usuario \"%s\": %d firma borrada\n"
-msgstr[1] "ID de usuario \"%s\": %d firma borrada\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 firma no comprobada por falta de clave\n"
-msgstr[1] "1 firma no comprobada por falta de clave\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d firmas incorrectas\n"
-msgstr[1] "%d firmas incorrectas\n"
-
-#, fuzzy, c-format
-#| msgid "Good signature from"
-msgid "%d signature reordered\n"
-msgid_plural "%d signatures reordered\n"
-msgstr[0] "Firma correcta de"
-msgstr[1] "Firma correcta de"
-
-#, c-format
-msgid ""
-"Warning: errors found and only checked self-signatures, run '%s' to check "
-"all signatures.\n"
-msgstr ""
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3624,6 +3567,16 @@ msgstr "Nada que firmar con la clave %s\n"
 msgid "'%s' is not a valid expiration time\n"
 msgstr "`%s' no es una fecha de caducidad válida\n"
 
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" is not a proper fingerprint\n"
+msgstr "huella dactilar no válida"
+
+#, fuzzy, c-format
+#| msgid "key \"%s\" not found: %s\n"
+msgid "subkey \"%s\" not found\n"
+msgstr "clave \"%s\" no encontrada: %s\n"
+
 msgid "Digest: "
 msgstr "Resumen: "
 
@@ -3946,6 +3899,11 @@ msgstr "La subclave %s ya ha sido revocada.\n"
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Mostrando ID fotográfico %s de tamaño %ld para la clave %s (uid %d)\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid value for option '%s'\n"
+msgstr "falta parámetro para la opción \"%.50s\"\n"
 
 #, fuzzy, c-format
 #| msgid "preference `%s' duplicated\n"
@@ -4437,6 +4395,20 @@ msgstr[0] "%d firmas incorrectas\n"
 msgstr[1] "%d firmas incorrectas\n"
 
 #, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d firmas incorrectas\n"
+msgstr[1] "%d firmas incorrectas\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 firma no comprobada por falta de clave\n"
+msgstr[1] "1 firma no comprobada por falta de clave\n"
+
+#, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
@@ -4714,6 +4686,12 @@ msgstr "[incierto]"
 #, c-format
 msgid "                aka \"%s\""
 msgstr "                alias \"%s\""
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+msgid "WARNING: This key is not suitable for signing in %s mode\n"
+msgstr ""
+"ATENCIÓN: ¡Esta clave no está certificada por una firma de confianza!\n"
 
 #, c-format
 msgid "Signature expired %s\n"
@@ -5286,6 +5264,11 @@ msgstr "imposible abrir datos firmados `%s'\n"
 msgid "can't open signed data fd=%d: %s\n"
 msgstr "imposible abrir datos firmados fd=%d: %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate is not usable for encryption\n"
+msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgstr "el certificado no es utilizable para cifrar\n"
+
 #, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "destinatario anónimo; probando clave secreta %s ...\n"
@@ -5462,6 +5445,11 @@ msgstr "la clave DSA %s requiere un resumen de %u bits al menos\n"
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "AVISO: conflicto con el resumen de la firma del mensaje\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "key %s may not be used for signing in %s mode\n"
+msgstr "no puede usar %s en modo %s\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
@@ -8433,6 +8421,16 @@ msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "error running `%s': exit status %d\n"
+msgid "error accessing '%s': http status %u\n"
+msgstr "error ejecutando `%s': código de finalización %d\n"
+
+#, fuzzy, c-format
+#| msgid "error allocating enough memory: %s\n"
+msgid "error allocating memory: %s\n"
+msgstr "error reservando memoria: %s\n"
+
+#, fuzzy, c-format
 #| msgid "error writing to %s: %s\n"
 msgid "error printing log line: %s\n"
 msgstr "error escribiendo en %s: %s\n"
@@ -8554,11 +8552,6 @@ msgstr "error escribiendo en `%s': %s\n"
 #| msgid "error reading from %s: %s\n"
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "error leyendo de %s: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error running `%s': exit status %d\n"
-msgid "error accessing '%s': http status %u\n"
-msgstr "error ejecutando `%s': código de finalización %d\n"
 
 #, fuzzy, c-format
 #| msgid "error binding socket to `%s': %s\n"
@@ -9248,6 +9241,53 @@ msgstr ""
 "Sintaxis: gpg-check-pattern [opciones] fichero_de_patrones\n"
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
+
+#~ msgid "Error: URL too long (limit is %d characters).\n"
+#~ msgstr "Error: URL demasiado larga (el máximo son %d caracteres).\n"
+
+#~ msgid "Error: Login data too long (limit is %d characters).\n"
+#~ msgstr "Error: el login es demasiado largo (límite de %d caracteres).\n"
+
+#~ msgid "Error: Private DO too long (limit is %d characters).\n"
+#~ msgstr ""
+#~ "Error: los datos privados son demasiado largos (límite de %d "
+#~ "caracteres).\n"
+
+#, fuzzy
+#~| msgid "key %s: unsupported public key algorithm\n"
+#~ msgid ""
+#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+#~ msgstr "clave %s: algoritmo de clave pública no disponible\n"
+
+#, fuzzy
+#~| msgid "card does not support digest algorithm %s\n"
+#~ msgid ""
+#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
+#~ msgstr "la tarjeta no permite usar el algoritmo de resumen %s\n"
+
+#, fuzzy
+#~| msgid "revoke signatures"
+#~ msgid " (reordered signatures follow)"
+#~ msgstr "revoca firmas"
+
+#, fuzzy
+#~| msgid "skipped \"%s\": %s\n"
+#~ msgid "key %s:\n"
+#~ msgstr "omitido \"%s\": %s\n"
+
+#, fuzzy
+#~| msgid "User ID \"%s\": %d signature removed\n"
+#~ msgid "%d duplicate signature removed\n"
+#~ msgid_plural "%d duplicate signatures removed\n"
+#~ msgstr[0] "ID de usuario \"%s\": %d firma borrada\n"
+#~ msgstr[1] "ID de usuario \"%s\": %d firma borrada\n"
+
+#, fuzzy
+#~| msgid "Good signature from"
+#~ msgid "%d signature reordered\n"
+#~ msgid_plural "%d signatures reordered\n"
+#~ msgstr[0] "Firma correcta de"
+#~ msgstr[1] "Firma correcta de"
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

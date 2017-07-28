@@ -410,6 +410,9 @@ msgstr ""
 msgid "enable ssh support"
 msgstr "ssh-agent öykünümü etkinleşir"
 
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
 msgid "enable putty support"
 msgstr ""
 
@@ -440,6 +443,9 @@ msgstr ""
 #| msgid "invalid debug-level `%s' given\n"
 msgid "invalid debug-level '%s' given\n"
 msgstr "belirtilen hata seviyesi `%s' geçersiz\n"
+
+msgid "selected digest algorithm is invalid\n"
+msgstr "seçilen özet algoritması geçersiz\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
@@ -1316,6 +1322,11 @@ msgstr ""
 msgid "WARNING: %s\n"
 msgstr "UYARI: %s %s'i aşıyor\n"
 
+#, fuzzy, c-format
+#| msgid "%s does not yet work with %s\n"
+msgid "%s is not compliant with %s mode\n"
+msgstr "%s, %s ile henüz çalışmıyor\n"
+
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGP anahtarı kullanılabilir değil: %s\n"
@@ -1376,10 +1387,6 @@ msgstr "Hata: İsimler birlikte çok uzun oluyor (sınır: %d karakter).\n"
 msgid "URL to retrieve public key: "
 msgstr "genel anahtarın alınacağı URL: "
 
-#, c-format
-msgid "Error: URL too long (limit is %d characters).\n"
-msgstr "Hata: URL çok uzun (sınır: %d karakter).\n"
-
 #, fuzzy, c-format
 #| msgid "error reading `%s': %s\n"
 msgid "error reading '%s': %s\n"
@@ -1392,16 +1399,8 @@ msgstr "`%s' yazılırken hata: %s\n"
 msgid "Login data (account name): "
 msgstr "Oturum açma verisi (hesap adı): "
 
-#, c-format
-msgid "Error: Login data too long (limit is %d characters).\n"
-msgstr "Hata: Oturum açma verisi çok uzun (sınır: %d karakter).\n"
-
 msgid "Private DO data: "
 msgstr "Özel DO verisi: "
-
-#, c-format
-msgid "Error: Private DO too long (limit is %d characters).\n"
-msgstr "Hata: Özel DO çok uzun (sınır: %d karakter).\n"
 
 msgid "Language preferences: "
 msgstr "Dil tercihleri: "
@@ -1695,6 +1694,16 @@ msgstr ""
 "UYARI: alıcının tercihleriyle çelişen %s (%d) simetrik şifre kullanımı "
 "zorlanıyor\n"
 
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "%2$s kipindeyken '%1$s' şifreleme algoritması kullanılamaz\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "UYARI: \"%s\" seçeneği eskidi - artık etkisiz\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -1712,8 +1721,9 @@ msgstr ""
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s \"%s\" için şifrelendi\n"
 
-#, c-format
-msgid "you may not use %s while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "option '%s' may not be used in %s mode\n"
 msgstr "%2$s kipindeyken %1$s kullanılamayabilir.\n"
 
 #, c-format
@@ -1887,6 +1897,11 @@ msgstr ""
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "yardımcı anahtar %s, asıl anahtar %s yerine kullanılıyor\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "valid values for option '%s':\n"
+msgstr "\"%.50s\" seçeneği için değiştirge eksik\n"
 
 msgid "make a signature"
 msgstr "bir imza yapar"
@@ -2250,22 +2265,12 @@ msgid "show expiration dates during signature listings"
 msgstr "imza listelemesi sırasında zamanaşımı tarihleri gösterilir"
 
 #, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "valid values for option '%s':\n"
-msgstr "\"%.50s\" seçeneği için değiştirge eksik\n"
-
-#, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
 msgstr "`%s' seçeneği bilinmiyor\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "invalid value for option '%s'\n"
-msgstr "\"%.50s\" seçeneği için değiştirge eksik\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
@@ -2413,9 +2418,6 @@ msgstr "%s olmasından dolayı güvensiz bellekle çalıştırılmayacak\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "seçilen şifre algoritması geçersiz\n"
 
-msgid "selected digest algorithm is invalid\n"
-msgstr "seçilen özet algoritması geçersiz\n"
-
 msgid "selected compression algorithm is invalid\n"
 msgstr "seçilen şifre algoritması geçersiz\n"
 
@@ -2462,18 +2464,13 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s, %s ile henüz çalışmıyor\n"
 
 #, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgstr "%2$s kipindeyken '%1$s' şifreleme algoritması kullanılamaz\n"
-
-#, fuzzy, c-format
 #| msgid "you may not use digest algorithm `%s' while in %s mode\n"
-msgid "you may not use digest algorithm '%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "%2$s kipindeyken '%1$s' özet algoritması kullanılamaz\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm `%s' while in %s mode\n"
-msgid "you may not use compression algorithm '%s' while in %s mode\n"
+msgid "compression algorithm '%s' may not be used in %s mode\n"
 msgstr "%2$s kipindeyken '%1$s' sıkıştırma algoritması kullanılamaz\n"
 
 #, c-format
@@ -2492,15 +2489,17 @@ msgstr "`%s' için simetrik şifreleme başarısız: %s\n"
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "--s2k-mode 0 ile  --symmetric --encrypt kullanamazsınız\n"
 
-#, c-format
-msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "%s kipindeyken  --symmetric --encrypt kullanamazsınız\n"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "--s2k-mode 0 ile --symmetric --sign --encrypt kullanamazsınız\n"
 
-#, c-format
-msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
 msgstr "%s kipindeyken --symmetric --sign --encrypt kullanamazsınız.\n"
 
 #, c-format
@@ -2631,6 +2630,11 @@ msgstr ""
 #| msgid "assume input is in binary format"
 msgid "assume the GnuPG key backup format"
 msgstr "girdinin ikilik biçimde olduğu kabul edilir"
+
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "repair keys on import"
+msgstr "parmakizini gösterir"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -3037,66 +3041,6 @@ msgstr "[yürürlükten kaldırma]"
 
 msgid "[self-signature]"
 msgstr "[öz-imza]"
-
-#, fuzzy, c-format
-#| msgid "error allocating enough memory: %s\n"
-msgid "error allocating memory: %s\n"
-msgstr "yeterli bellek ayrılırken hata: %s\n"
-
-#, fuzzy, c-format
-#| msgid "key %s: unsupported public key algorithm\n"
-msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "anahtar %s: genel anahtar algoritması desteklenmiyor\n"
-
-#, fuzzy, c-format
-#| msgid "card does not support digest algorithm %s\n"
-msgid ""
-"can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "kart %s özet algoritmasını desteklemiyor\n"
-
-#, fuzzy
-#| msgid "Good signature from"
-msgid " (reordered signatures follow)"
-msgstr "Buradaki imzeler iyi:"
-
-#, fuzzy, c-format
-#| msgid "skipped \"%s\": %s\n"
-msgid "key %s:\n"
-msgstr "\"%s\" atlandı: %s\n"
-
-#, fuzzy, c-format
-#| msgid "User ID \"%s\": %d signature removed\n"
-msgid "%d duplicate signature removed\n"
-msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "Kullanıcı kimliği \"%s\": %d imza temizlendi\n"
-msgstr[1] "Kullanıcı kimliği \"%s\": %d imza temizlendi\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 imza kayıp bir anahtar yüzünden kontrol edilmedi\n"
-msgstr[1] "1 imza kayıp bir anahtar yüzünden kontrol edilmedi\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d kötü imza\n"
-msgstr[1] "%d kötü imza\n"
-
-#, fuzzy, c-format
-#| msgid "Good signature from"
-msgid "%d signature reordered\n"
-msgid_plural "%d signatures reordered\n"
-msgstr[0] "Buradaki imzeler iyi:"
-msgstr[1] "Buradaki imzeler iyi:"
-
-#, c-format
-msgid ""
-"Warning: errors found and only checked self-signatures, run '%s' to check "
-"all signatures.\n"
-msgstr ""
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3617,6 +3561,16 @@ msgstr "%s anahtarı ile imzalanacak hiçbir şey yok\n"
 msgid "'%s' is not a valid expiration time\n"
 msgstr "'%s' geçerli bir imza zamanaşımı değil\n"
 
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" is not a proper fingerprint\n"
+msgstr "parmakizi geçersiz"
+
+#, fuzzy, c-format
+#| msgid "key \"%s\" not found: %s\n"
+msgid "subkey \"%s\" not found\n"
+msgstr "anahtar \"%s\" yok: %s\n"
+
 msgid "Digest: "
 msgstr "Özet: "
 
@@ -3961,6 +3915,11 @@ msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr ""
 "Anahtar 0x%3$s (kull-kiml %4$d) için %2$ld uzunluktaki %1$s foto kimliği "
 "gösteriliyor\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid value for option '%s'\n"
+msgstr "\"%.50s\" seçeneği için değiştirge eksik\n"
 
 #, fuzzy, c-format
 #| msgid "preference `%s' duplicated\n"
@@ -4459,6 +4418,20 @@ msgstr[0] "%d kötü imza\n"
 msgstr[1] "%d kötü imza\n"
 
 #, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d kötü imza\n"
+msgstr[1] "%d kötü imza\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 imza kayıp bir anahtar yüzünden kontrol edilmedi\n"
+msgstr[1] "1 imza kayıp bir anahtar yüzünden kontrol edilmedi\n"
+
+#, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
@@ -4739,6 +4712,11 @@ msgstr "[şüpheli]"
 #, c-format
 msgid "                aka \"%s\""
 msgstr "                nam-ı diğer \"%s\""
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+msgid "WARNING: This key is not suitable for signing in %s mode\n"
+msgstr "UYARI: Bu anahtar güven dereceli bir imza ile sertifikalanmamış!\n"
 
 #, c-format
 msgid "Signature expired %s\n"
@@ -5312,6 +5290,11 @@ msgstr "imzalı veri '%s'  açılamadı\n"
 msgid "can't open signed data fd=%d: %s\n"
 msgstr "imzalı veri fd=%d açılamadı: %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate is not usable for encryption\n"
+msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgstr "sertifika şifreleme için elverişli değil\n"
+
 #, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "anonim alıcı: %s gizli anahtarı deneniyor ...\n"
@@ -5494,6 +5477,11 @@ msgstr "DSA anahtarı %s, %u bitlik veya daha geniş bir çittirim gerektiriyor\
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "UYARI: iletideki imza özeti çelişkili\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "key %s may not be used for signing in %s mode\n"
+msgstr "%2$s kipindeyken %1$s kullanılamayabilir.\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
@@ -8456,6 +8444,16 @@ msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "error running `%s': exit status %d\n"
+msgid "error accessing '%s': http status %u\n"
+msgstr "`%s' çalışırken hata: çıkış durumu: %d\n"
+
+#, fuzzy, c-format
+#| msgid "error allocating enough memory: %s\n"
+msgid "error allocating memory: %s\n"
+msgstr "yeterli bellek ayrılırken hata: %s\n"
+
+#, fuzzy, c-format
 #| msgid "error writing to %s: %s\n"
 msgid "error printing log line: %s\n"
 msgstr "%s yazılırken hata: %s\n"
@@ -8576,11 +8574,6 @@ msgstr "`%s' yazılırken hata: %s\n"
 #| msgid "error reading from %s: %s\n"
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "%s okunurken hata: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error running `%s': exit status %d\n"
-msgid "error accessing '%s': http status %u\n"
-msgstr "`%s' çalışırken hata: çıkış durumu: %d\n"
 
 #, fuzzy, c-format
 #| msgid "error binding socket to `%s': %s\n"
@@ -9257,6 +9250,51 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid "Error: URL too long (limit is %d characters).\n"
+#~ msgstr "Hata: URL çok uzun (sınır: %d karakter).\n"
+
+#~ msgid "Error: Login data too long (limit is %d characters).\n"
+#~ msgstr "Hata: Oturum açma verisi çok uzun (sınır: %d karakter).\n"
+
+#~ msgid "Error: Private DO too long (limit is %d characters).\n"
+#~ msgstr "Hata: Özel DO çok uzun (sınır: %d karakter).\n"
+
+#, fuzzy
+#~| msgid "key %s: unsupported public key algorithm\n"
+#~ msgid ""
+#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+#~ msgstr "anahtar %s: genel anahtar algoritması desteklenmiyor\n"
+
+#, fuzzy
+#~| msgid "card does not support digest algorithm %s\n"
+#~ msgid ""
+#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
+#~ msgstr "kart %s özet algoritmasını desteklemiyor\n"
+
+#, fuzzy
+#~| msgid "Good signature from"
+#~ msgid " (reordered signatures follow)"
+#~ msgstr "Buradaki imzeler iyi:"
+
+#, fuzzy
+#~| msgid "skipped \"%s\": %s\n"
+#~ msgid "key %s:\n"
+#~ msgstr "\"%s\" atlandı: %s\n"
+
+#, fuzzy
+#~| msgid "User ID \"%s\": %d signature removed\n"
+#~ msgid "%d duplicate signature removed\n"
+#~ msgid_plural "%d duplicate signatures removed\n"
+#~ msgstr[0] "Kullanıcı kimliği \"%s\": %d imza temizlendi\n"
+#~ msgstr[1] "Kullanıcı kimliği \"%s\": %d imza temizlendi\n"
+
+#, fuzzy
+#~| msgid "Good signature from"
+#~ msgid "%d signature reordered\n"
+#~ msgid_plural "%d signatures reordered\n"
+#~ msgstr[0] "Buradaki imzeler iyi:"
+#~ msgstr[1] "Buradaki imzeler iyi:"
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

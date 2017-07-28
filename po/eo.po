@@ -395,6 +395,9 @@ msgstr ""
 msgid "enable ssh support"
 msgstr "ne realigita"
 
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
 #, fuzzy
 #| msgid "not supported"
 msgid "enable putty support"
@@ -419,6 +422,9 @@ msgstr ""
 #, c-format
 msgid "invalid debug-level '%s' given\n"
 msgstr ""
+
+msgid "selected digest algorithm is invalid\n"
+msgstr "elektita kompendi-metodo ne validas\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
@@ -1284,6 +1290,10 @@ msgid "WARNING: %s\n"
 msgstr "AVERTO: %s nuligas %s\n"
 
 #, fuzzy, c-format
+msgid "%s is not compliant with %s mode\n"
+msgstr "%s ne havas sencon kun %s!\n"
+
+#, fuzzy, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "sekreta ŝlosilo ne havebla"
 
@@ -1351,10 +1361,6 @@ msgstr ""
 msgid "URL to retrieve public key: "
 msgstr "skribas publikan ŝlosilon al '%s'\n"
 
-#, c-format
-msgid "Error: URL too long (limit is %d characters).\n"
-msgstr ""
-
 #, fuzzy, c-format
 #| msgid "error reading `%s': %s\n"
 msgid "error reading '%s': %s\n"
@@ -1367,15 +1373,7 @@ msgstr "eraro dum skribado de ŝlosilaro '%s': %s\n"
 msgid "Login data (account name): "
 msgstr ""
 
-#, c-format
-msgid "Error: Login data too long (limit is %d characters).\n"
-msgstr ""
-
 msgid "Private DO data: "
-msgstr ""
-
-#, c-format
-msgid "Error: Private DO too long (limit is %d characters).\n"
 msgstr ""
 
 #, fuzzy
@@ -1680,6 +1678,14 @@ msgid ""
 msgstr "NOTO: ĉifrad-metodo %d ne trovita en preferoj\n"
 
 #, fuzzy, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
+
+#, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "AVERTO: '%s' estas malplena dosiero\n"
+
+#, fuzzy, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -1694,7 +1700,7 @@ msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s-ĉifrita por: %s\n"
 
 #, fuzzy, c-format
-msgid "you may not use %s while in %s mode\n"
+msgid "option '%s' may not be used in %s mode\n"
 msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
 
 #, c-format
@@ -1864,6 +1870,10 @@ msgstr "Nevalida ŝlosilo %08lX validigita per --always-trust\n"
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "uzas flankan ŝlosilon %08lX anstataŭ la ĉefa ŝlosilo %08lX\n"
+
+#, fuzzy, c-format
+msgid "valid values for option '%s':\n"
+msgstr "nevalida kiraso"
 
 #, fuzzy
 msgid "make a signature"
@@ -2215,19 +2225,11 @@ msgid "show expiration dates during signature listings"
 msgstr "Mankas responda subskribo en sekreta ŝlosilaro\n"
 
 #, fuzzy, c-format
-msgid "valid values for option '%s':\n"
-msgstr "nevalida kiraso"
-
-#, fuzzy, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "nekonata implicita ricevonto '%s'\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid value for option '%s'\n"
-msgstr "nevalida kiraso"
 
 #, fuzzy, c-format
 msgid "Note: old default options file '%s' ignored\n"
@@ -2375,9 +2377,6 @@ msgstr "skribas sekretan ŝlosilon al '%s'\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "elektita ĉifrad-metodo ne validas\n"
 
-msgid "selected digest algorithm is invalid\n"
-msgstr "elektita kompendi-metodo ne validas\n"
-
 #, fuzzy
 msgid "selected compression algorithm is invalid\n"
 msgstr "elektita ĉifrad-metodo ne validas\n"
@@ -2433,15 +2432,11 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s ne havas sencon kun %s!\n"
 
 #, fuzzy, c-format
-msgid "you may not use cipher algorithm '%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
 
 #, fuzzy, c-format
-msgid "you may not use digest algorithm '%s' while in %s mode\n"
-msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
-
-#, fuzzy, c-format
-msgid "you may not use compression algorithm '%s' while in %s mode\n"
+msgid "compression algorithm '%s' may not be used in %s mode\n"
 msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
 
 #, c-format
@@ -2459,14 +2454,14 @@ msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
 msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
 
 #, fuzzy, c-format
@@ -2594,6 +2589,10 @@ msgstr ""
 
 msgid "assume the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+msgid "repair keys on import"
+msgstr "montri fingrospuron"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2978,59 +2977,6 @@ msgstr "[revoko]"
 
 msgid "[self-signature]"
 msgstr "[mem-subskribo]"
-
-#, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "eraro dum kreado de ŝlosilaro '%s': %s\n"
-
-#, fuzzy, c-format
-msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "ŝlosilo %08lX: nerealigita publikŝlosila metodo\n"
-
-#, fuzzy, c-format
-msgid ""
-"can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "%s-subskribo de: %s\n"
-
-#, fuzzy
-msgid " (reordered signatures follow)"
-msgstr "Bona subskribo de \""
-
-#, fuzzy, c-format
-msgid "key %s:\n"
-msgstr "ignoris '%s': %s\n"
-
-#, fuzzy, c-format
-msgid "%d duplicate signature removed\n"
-msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "Uzantidentigilo \"%s\" estas revokita.\n"
-msgstr[1] "Uzantidentigilo \"%s\" estas revokita.\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 subskribo ne kontrolita pro manko de ŝlosilo\n"
-msgstr[1] "1 subskribo ne kontrolita pro manko de ŝlosilo\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d malbonaj subskriboj\n"
-msgstr[1] "%d malbonaj subskriboj\n"
-
-#, fuzzy, c-format
-msgid "%d signature reordered\n"
-msgid_plural "%d signatures reordered\n"
-msgstr[0] "Bona subskribo de \""
-msgstr[1] "Bona subskribo de \""
-
-#, c-format
-msgid ""
-"Warning: errors found and only checked self-signatures, run '%s' to check "
-"all signatures.\n"
-msgstr ""
 
 #, fuzzy
 msgid ""
@@ -3578,6 +3524,14 @@ msgstr "Nenio por subskribi per ŝlosilo %08lX\n"
 msgid "'%s' is not a valid expiration time\n"
 msgstr "%s ne estas valida signaro\n"
 
+#, fuzzy, c-format
+msgid "\"%s\" is not a proper fingerprint\n"
+msgstr "%s: nevalida dosiero-versio %d\n"
+
+#, fuzzy, c-format
+msgid "subkey \"%s\" not found\n"
+msgstr "ŝlosilo '%s' ne trovita: %s\n"
+
 msgid "Digest: "
 msgstr ""
 
@@ -3908,6 +3862,10 @@ msgstr "Uzantidentigilo \"%s\" estas revokita.\n"
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid value for option '%s'\n"
+msgstr "nevalida kiraso"
 
 #, fuzzy, c-format
 msgid "preference '%s' duplicated\n"
@@ -4401,6 +4359,20 @@ msgstr[0] "%d malbonaj subskriboj\n"
 msgstr[1] "%d malbonaj subskriboj\n"
 
 #, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d malbonaj subskriboj\n"
+msgstr[1] "%d malbonaj subskriboj\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 subskribo ne kontrolita pro manko de ŝlosilo\n"
+msgstr[1] "1 subskribo ne kontrolita pro manko de ŝlosilo\n"
+
+#, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
@@ -4686,6 +4658,11 @@ msgstr "[malcerta]"
 #, fuzzy, c-format
 msgid "                aka \"%s\""
 msgstr "            alinome \""
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+msgid "WARNING: This key is not suitable for signing in %s mode\n"
+msgstr "AVERTO: Ĉi tiu ŝlosilo ne estas atestita kun fidata subskribo!\n"
 
 #, fuzzy, c-format
 msgid "Signature expired %s\n"
@@ -5243,6 +5220,10 @@ msgid "can't open signed data fd=%d: %s\n"
 msgstr "ne povas malfermi subskribitan dosieron '%s'\n"
 
 #, fuzzy, c-format
+msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgstr "ŝlosilo %08lX: mankas uzantidentigilo\n"
+
+#, fuzzy, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "nenomita ricevonto; provas per sekreta ŝlosilo %08lX ...\n"
 
@@ -5410,6 +5391,10 @@ msgstr ""
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "key %s may not be used for signing in %s mode\n"
+msgstr "Tiu komando ne eblas en la reĝimo %s.\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
@@ -8191,6 +8176,14 @@ msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, fuzzy, c-format
+msgid "error accessing '%s': http status %u\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "eraro dum kreado de ŝlosilaro '%s': %s\n"
+
+#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "eraro dum skribado de ŝlosilaro '%s': %s\n"
 
@@ -8295,10 +8288,6 @@ msgstr "eraro dum skribado de ŝlosilaro '%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error reading HTTP response for '%s': %s\n"
-msgstr "eraro dum legado de '%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error accessing '%s': http status %u\n"
 msgstr "eraro dum legado de '%s': %s\n"
 
 #, fuzzy, c-format
@@ -8916,6 +8905,36 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid ""
+#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+#~ msgstr "ŝlosilo %08lX: nerealigita publikŝlosila metodo\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
+#~ msgstr "%s-subskribo de: %s\n"
+
+#, fuzzy
+#~ msgid " (reordered signatures follow)"
+#~ msgstr "Bona subskribo de \""
+
+#, fuzzy
+#~ msgid "key %s:\n"
+#~ msgstr "ignoris '%s': %s\n"
+
+#, fuzzy
+#~ msgid "%d duplicate signature removed\n"
+#~ msgid_plural "%d duplicate signatures removed\n"
+#~ msgstr[0] "Uzantidentigilo \"%s\" estas revokita.\n"
+#~ msgstr[1] "Uzantidentigilo \"%s\" estas revokita.\n"
+
+#, fuzzy
+#~ msgid "%d signature reordered\n"
+#~ msgid_plural "%d signatures reordered\n"
+#~ msgstr[0] "Bona subskribo de \""
+#~ msgstr[1] "Bona subskribo de \""
 
 #, fuzzy
 #~ msgid "new configuration file '%s' created\n"

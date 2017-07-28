@@ -403,6 +403,9 @@ msgstr ""
 msgid "enable ssh support"
 msgstr "未被支持"
 
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
 #, fuzzy
 #| msgid "not supported"
 msgid "enable putty support"
@@ -428,6 +431,9 @@ msgstr ""
 #, c-format
 msgid "invalid debug-level '%s' given\n"
 msgstr ""
+
+msgid "selected digest algorithm is invalid\n"
+msgstr "所选的散列算法无效\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
@@ -1280,6 +1286,11 @@ msgstr ""
 msgid "WARNING: %s\n"
 msgstr "警告："
 
+#, fuzzy, c-format
+#| msgid "%s does not yet work with %s\n"
+msgid "%s is not compliant with %s mode\n"
+msgstr "%s 尚不能和 %s 并用\n"
+
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGP 卡不可用：%s\n"
@@ -1342,10 +1353,6 @@ msgstr "错误：合成的姓名太长(至多 %d 个字符)。\n"
 msgid "URL to retrieve public key: "
 msgstr "获取公钥的 URL："
 
-#, c-format
-msgid "Error: URL too long (limit is %d characters).\n"
-msgstr "错误：URL 太长(至多 %d 个字符)\n"
-
 #, fuzzy, c-format
 #| msgid "error reading `%s': %s\n"
 msgid "error reading '%s': %s\n"
@@ -1358,16 +1365,8 @@ msgstr "写入钥匙环‘%s’时出错： %s\n"
 msgid "Login data (account name): "
 msgstr "登录数据(帐号名)："
 
-#, c-format
-msgid "Error: Login data too long (limit is %d characters).\n"
-msgstr "错误：登录数据太长(至多 %d 个字符)。\n"
-
 msgid "Private DO data: "
 msgstr "个人 DO 数据："
-
-#, c-format
-msgid "Error: Private DO too long (limit is %d characters).\n"
-msgstr "错误：个人 DO 太长(至多 %d 个字符)。\n"
 
 msgid "Language preferences: "
 msgstr "首选语言："
@@ -1659,6 +1658,15 @@ msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr "警告：强行使用的 %s (%d)对称加密算法不在收件者的首选项中\n"
 
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "您不能在 %s 模式下使用‘%s’对称加密算法\n"
+
+#, fuzzy, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "警告：“%s”选项已不建议使用\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -1673,8 +1681,9 @@ msgstr "强行使用的 %s (%d)对称加密算法不在收件者的首选项中\
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s 已经加密给：“%s”\n"
 
-#, c-format
-msgid "you may not use %s while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "option '%s' may not be used in %s mode\n"
 msgstr "您不该将 %s 用于 %s 模式中\n"
 
 #, c-format
@@ -1841,6 +1850,10 @@ msgstr "--allow-non-selfsigned-uid 使无效密钥 %s 生效\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "使用子钥 %s 而非主钥 %s\n"
+
+#, fuzzy, c-format
+msgid "valid values for option '%s':\n"
+msgstr "无效的列表选项\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -2204,20 +2217,12 @@ msgid "show expiration dates during signature listings"
 msgstr "列出签名时显示过期日期"
 
 #, fuzzy, c-format
-msgid "valid values for option '%s':\n"
-msgstr "无效的列表选项\n"
-
-#, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
 msgstr "未知的选项 '%s'\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid value for option '%s'\n"
-msgstr "无效的列表选项\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
@@ -2360,9 +2365,6 @@ msgstr "不会在内存不安全的情况下运行，原因是 %s\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "所选的对称加密算法无效\n"
 
-msgid "selected digest algorithm is invalid\n"
-msgstr "所选的散列算法无效\n"
-
 msgid "selected compression algorithm is invalid\n"
 msgstr "所选的压缩算法无效\n"
 
@@ -2409,18 +2411,13 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s 尚不能和 %s 并用\n"
 
 #, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgstr "您不能在 %s 模式下使用‘%s’对称加密算法\n"
-
-#, fuzzy, c-format
 #| msgid "you may not use digest algorithm `%s' while in %s mode\n"
-msgid "you may not use digest algorithm '%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "您不能在 %s 模式下使用‘%s’散列算法\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm `%s' while in %s mode\n"
-msgid "you may not use compression algorithm '%s' while in %s mode\n"
+msgid "compression algorithm '%s' may not be used in %s mode\n"
 msgstr "您不能在 %s 模式下使用‘%s’压缩算法\n"
 
 #, c-format
@@ -2438,15 +2435,17 @@ msgstr "对称加密‘%s’失败：%s\n"
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "使用 --symmetric --encrypt 时不能使用 --s2k-mode 0\n"
 
-#, c-format
-msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "您不能在 %s 模式下使用 --symmetric -encrypt\n"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "使用 --symmetric --sign --encrypt 时不能使用 --s2k-mode 0\n"
 
-#, c-format
-msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
 msgstr "您不能在 %s 模式下使用 --symmetric --sign -encrypt\n"
 
 #, c-format
@@ -2575,6 +2574,11 @@ msgstr ""
 
 msgid "assume the GnuPG key backup format"
 msgstr ""
+
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "repair keys on import"
+msgstr "显示密钥指纹"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2964,62 +2968,6 @@ msgstr "[吊销]"
 
 msgid "[self-signature]"
 msgstr "[自身签名]"
-
-#, fuzzy, c-format
-msgid "error allocating memory: %s\n"
-msgstr "建立钥匙环‘%s’时发生错误：%s\n"
-
-#, fuzzy, c-format
-#| msgid "key %s: unsupported public key algorithm\n"
-msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "密钥 %s：不支持的公钥算法\n"
-
-#, fuzzy, c-format
-#| msgid "card does not support digest algorithm %s\n"
-msgid ""
-"can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "卡不支持散列算法 %s\n"
-
-#, fuzzy
-msgid " (reordered signatures follow)"
-msgstr "完好的签名，来自于“%s”"
-
-#, fuzzy, c-format
-#| msgid "skipped \"%s\": %s\n"
-msgid "key %s:\n"
-msgstr "“%s”已跳过：%s\n"
-
-#, fuzzy, c-format
-msgid "%d duplicate signature removed\n"
-msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "密钥 %s：“%s”%d 个签名被清除\n"
-msgstr[1] "密钥 %s：“%s”%d 个签名被清除\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "有 1 份签名因为遗失密钥而未被检查\n"
-msgstr[1] "有 1 份签名因为遗失密钥而未被检查\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d 个损坏的签名\n"
-msgstr[1] "%d 个损坏的签名\n"
-
-#, fuzzy, c-format
-msgid "%d signature reordered\n"
-msgid_plural "%d signatures reordered\n"
-msgstr[0] "完好的签名，来自于“%s”"
-msgstr[1] "完好的签名，来自于“%s”"
-
-#, c-format
-msgid ""
-"Warning: errors found and only checked self-signatures, run '%s' to check "
-"all signatures.\n"
-msgstr ""
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3499,6 +3447,16 @@ msgstr "没有东西可以让密钥 %s 签名\n"
 msgid "'%s' is not a valid expiration time\n"
 msgstr "‘%s’不是一个有效的签名过期日期\n"
 
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" is not a proper fingerprint\n"
+msgstr "指纹无效"
+
+#, fuzzy, c-format
+#| msgid "key \"%s\" not found: %s\n"
+msgid "subkey \"%s\" not found\n"
+msgstr "密钥‘%s’找不到：%s\n"
+
 msgid "Digest: "
 msgstr "散列："
 
@@ -3819,6 +3777,10 @@ msgstr "子钥 %s 已被吊销。\n"
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "正在显示 %s 照片标识(大小为 %ld，属于密钥 %s，用户标识 %d)\n"
+
+#, fuzzy, c-format
+msgid "invalid value for option '%s'\n"
+msgstr "无效的列表选项\n"
 
 #, fuzzy, c-format
 #| msgid "preference `%s' duplicated\n"
@@ -4300,6 +4262,20 @@ msgstr[0] "%d 个损坏的签名\n"
 msgstr[1] "%d 个损坏的签名\n"
 
 #, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d 个损坏的签名\n"
+msgstr[1] "%d 个损坏的签名\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "有 1 份签名因为遗失密钥而未被检查\n"
+msgstr[1] "有 1 份签名因为遗失密钥而未被检查\n"
+
+#, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
@@ -4576,6 +4552,11 @@ msgstr "[不确定]"
 #, c-format
 msgid "                aka \"%s\""
 msgstr "              亦即“%s”"
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+msgid "WARNING: This key is not suitable for signing in %s mode\n"
+msgstr "警告：这把密钥未经受信任的签名认证！\n"
 
 #, c-format
 msgid "Signature expired %s\n"
@@ -5126,6 +5107,10 @@ msgstr "无法打开有签名的数据‘%s’\n"
 msgid "can't open signed data fd=%d: %s\n"
 msgstr "无法打开有签名的数据‘%s’\n"
 
+#, fuzzy, c-format
+msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgstr "密钥 %s：没有有效的用户标识\n"
+
 #, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "匿名收件者；正在尝试使用私钥 %s ……\n"
@@ -5298,6 +5283,11 @@ msgstr "DSA 密钥 %s 需要 %u 位或更长的散列\n"
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "警告：签名散列值与报文不一致\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "key %s may not be used for signing in %s mode\n"
+msgstr "您不该将 %s 用于 %s 模式中\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
@@ -8086,6 +8076,14 @@ msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, fuzzy, c-format
+msgid "error accessing '%s': http status %u\n"
+msgstr "读取‘%s’时出错：%s\n"
+
+#, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "建立钥匙环‘%s’时发生错误：%s\n"
+
+#, fuzzy, c-format
 msgid "error printing log line: %s\n"
 msgstr "写入钥匙环‘%s’时出错： %s\n"
 
@@ -8193,10 +8191,6 @@ msgstr "写入钥匙环‘%s’时出错： %s\n"
 
 #, fuzzy, c-format
 msgid "error reading HTTP response for '%s': %s\n"
-msgstr "读取‘%s’时出错：%s\n"
-
-#, fuzzy, c-format
-msgid "error accessing '%s': http status %u\n"
 msgstr "读取‘%s’时出错：%s\n"
 
 #, fuzzy, c-format
@@ -8817,6 +8811,48 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "Error: URL too long (limit is %d characters).\n"
+#~ msgstr "错误：URL 太长(至多 %d 个字符)\n"
+
+#~ msgid "Error: Login data too long (limit is %d characters).\n"
+#~ msgstr "错误：登录数据太长(至多 %d 个字符)。\n"
+
+#~ msgid "Error: Private DO too long (limit is %d characters).\n"
+#~ msgstr "错误：个人 DO 太长(至多 %d 个字符)。\n"
+
+#, fuzzy
+#~| msgid "key %s: unsupported public key algorithm\n"
+#~ msgid ""
+#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+#~ msgstr "密钥 %s：不支持的公钥算法\n"
+
+#, fuzzy
+#~| msgid "card does not support digest algorithm %s\n"
+#~ msgid ""
+#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
+#~ msgstr "卡不支持散列算法 %s\n"
+
+#, fuzzy
+#~ msgid " (reordered signatures follow)"
+#~ msgstr "完好的签名，来自于“%s”"
+
+#, fuzzy
+#~| msgid "skipped \"%s\": %s\n"
+#~ msgid "key %s:\n"
+#~ msgstr "“%s”已跳过：%s\n"
+
+#, fuzzy
+#~ msgid "%d duplicate signature removed\n"
+#~ msgid_plural "%d duplicate signatures removed\n"
+#~ msgstr[0] "密钥 %s：“%s”%d 个签名被清除\n"
+#~ msgstr[1] "密钥 %s：“%s”%d 个签名被清除\n"
+
+#, fuzzy
+#~ msgid "%d signature reordered\n"
+#~ msgid_plural "%d signatures reordered\n"
+#~ msgstr[0] "完好的签名，来自于“%s”"
+#~ msgstr[1] "完好的签名，来自于“%s”"
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

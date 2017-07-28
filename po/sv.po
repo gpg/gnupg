@@ -441,6 +441,9 @@ msgstr ""
 msgid "enable ssh support"
 msgstr "aktivera ssh-agent-emulering"
 
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
 msgid "enable putty support"
 msgstr ""
 
@@ -472,6 +475,9 @@ msgstr ""
 #| msgid "invalid debug-level `%s' given\n"
 msgid "invalid debug-level '%s' given\n"
 msgstr "ogiltig debug-level \"%s\" angiven\n"
+
+msgid "selected digest algorithm is invalid\n"
+msgstr "vald sammandragsalgoritm är ogiltig\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: no default option file `%s'\n"
@@ -1352,6 +1358,11 @@ msgstr ""
 msgid "WARNING: %s\n"
 msgstr "VARNING: %s gäller istället för %s\n"
 
+#, fuzzy, c-format
+#| msgid "%s does not yet work with %s\n"
+msgid "%s is not compliant with %s mode\n"
+msgstr "%s fungerar ännu inte med  %s\n"
+
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGP-kort är inte tillgängligt: %s\n"
@@ -1412,10 +1423,6 @@ msgstr "Fel: Fullständigt namn för långt (gränsen är %d tecken).\n"
 msgid "URL to retrieve public key: "
 msgstr "Url för att hämta publik nyckel: "
 
-#, c-format
-msgid "Error: URL too long (limit is %d characters).\n"
-msgstr "Fel: URL:en är för lång (gränsen är %d tecken).\n"
-
 #, fuzzy, c-format
 #| msgid "error reading `%s': %s\n"
 msgid "error reading '%s': %s\n"
@@ -1429,16 +1436,8 @@ msgstr "fel vid skrivning till \"%s\": %s\n"
 msgid "Login data (account name): "
 msgstr "Inloggningsdata (kontonamn): "
 
-#, c-format
-msgid "Error: Login data too long (limit is %d characters).\n"
-msgstr "Fel: Inloggningsdata är för långt (gräns är %d tecken).\n"
-
 msgid "Private DO data: "
 msgstr "Privat DO-data: "
-
-#, c-format
-msgid "Error: Private DO too long (limit is %d characters).\n"
-msgstr "Fel: Privat DO för långt (gränsen är %d tecken).\n"
 
 msgid "Language preferences: "
 msgstr "Språkinställningar: "
@@ -1748,6 +1747,16 @@ msgstr ""
 "VARNING: tvinga symmetriskt chiffer med %s (%d) strider mot "
 "mottagarinställningarna\n"
 
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "du får inte använda chifferalgoritmen \"%s\" när du är i %s-läget\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "VARNING: \"%s\" är en föråldrad flagga - den har ingen effekt\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -1765,8 +1774,9 @@ msgstr ""
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s krypterad för: \"%s\"\n"
 
-#, c-format
-msgid "you may not use %s while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "option '%s' may not be used in %s mode\n"
 msgstr "du kan inte använda %s när du är i %s-läget\n"
 
 #, c-format
@@ -1942,6 +1952,11 @@ msgstr ""
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "använder undernyckeln %s istället för primära nyckeln %s\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "valid values for option '%s':\n"
+msgstr "argument för flaggan \"%.50s\" saknas\n"
 
 msgid "make a signature"
 msgstr "skapa en signatur"
@@ -2312,22 +2327,12 @@ msgid "show expiration dates during signature listings"
 msgstr "visa utgångsdatum under signaturlistningar"
 
 #, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "valid values for option '%s':\n"
-msgstr "argument för flaggan \"%.50s\" saknas\n"
-
-#, fuzzy, c-format
 #| msgid "unknown option `%s'\n"
 msgid "unknown TOFU policy '%s'\n"
 msgstr "okänd flagga \"%s\"\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "invalid value for option '%s'\n"
-msgstr "argument för flaggan \"%.50s\" saknas\n"
 
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
@@ -2472,9 +2477,6 @@ msgstr "kommer inte att köra med osäkert minne på grund av %s\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "den valda chifferalgoritmen är ogiltig\n"
 
-msgid "selected digest algorithm is invalid\n"
-msgstr "vald sammandragsalgoritm är ogiltig\n"
-
 msgid "selected compression algorithm is invalid\n"
 msgstr "vald komprimeringsalgoritm är ogiltig\n"
 
@@ -2529,19 +2531,14 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s fungerar ännu inte med  %s\n"
 
 #, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
-msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgstr "du får inte använda chifferalgoritmen \"%s\" när du är i %s-läget\n"
-
-#, fuzzy, c-format
 #| msgid "you may not use digest algorithm `%s' while in %s mode\n"
-msgid "you may not use digest algorithm '%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr ""
 "du får inte använda sammandragsalgoritmen \"%s\" när du är i %s-läget\n"
 
 #, fuzzy, c-format
 #| msgid "you may not use compression algorithm `%s' while in %s mode\n"
-msgid "you may not use compression algorithm '%s' while in %s mode\n"
+msgid "compression algorithm '%s' may not be used in %s mode\n"
 msgstr ""
 "du får inte använda komprimeringsalgoritmen \"%s\" när du är i %s-läget\n"
 
@@ -2561,15 +2558,17 @@ msgstr "symmetrisk kryptering av \"%s\" misslyckades: %s\n"
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "du kan inte använda --symmetric --encrypt med --s2k-mode 0\n"
 
-#, c-format
-msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "du kan inte använda --symmetric --encrypt i %s-läget\n"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "du kan inte använda --symmetric --sign --encrypt med --s2k-mode 0\n"
 
-#, c-format
-msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
 msgstr ""
 "du kan inte använda --symmetric --sign --encrypt när du är i %s-läget\n"
 
@@ -2703,6 +2702,11 @@ msgstr ""
 #| msgid "assume input is in binary format"
 msgid "assume the GnuPG key backup format"
 msgstr "anta att inmatning är i binärformat"
+
+#, fuzzy
+#| msgid "show key fingerprint"
+msgid "repair keys on import"
+msgstr "visa nyckelns fingeravtryck"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -3106,66 +3110,6 @@ msgstr "[spärr]"
 
 msgid "[self-signature]"
 msgstr "[självsignatur]"
-
-#, fuzzy, c-format
-#| msgid "error allocating enough memory: %s\n"
-msgid "error allocating memory: %s\n"
-msgstr "fel vid allokering av tillräckligt mycket minne: %s\n"
-
-#, fuzzy, c-format
-#| msgid "key %s: unsupported public key algorithm\n"
-msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr "nyckel %s: algoritmen för publika nycklar stöds inte\n"
-
-#, fuzzy, c-format
-#| msgid "card does not support digest algorithm %s\n"
-msgid ""
-"can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "kortet har inte stöd för sammandragsalgoritmen %s\n"
-
-#, fuzzy
-#| msgid "Good signature from"
-msgid " (reordered signatures follow)"
-msgstr "Korrekt signatur från"
-
-#, fuzzy, c-format
-#| msgid "skipped \"%s\": %s\n"
-msgid "key %s:\n"
-msgstr "hoppade över \"%s\": %s\n"
-
-#, fuzzy, c-format
-#| msgid "User ID \"%s\": %d signature removed\n"
-msgid "%d duplicate signature removed\n"
-msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "Användaridentitet \"%s\": %d signaturer borttagna\n"
-msgstr[1] "Användaridentitet \"%s\": %d signaturer borttagna\n"
-
-#, fuzzy, c-format
-#| msgid "1 signature not checked due to a missing key\n"
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "1 signatur validerades inte eftersom nyckeln saknades\n"
-msgstr[1] "1 signatur validerades inte eftersom nyckeln saknades\n"
-
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d felaktiga signaturer\n"
-msgstr[1] "%d felaktiga signaturer\n"
-
-#, fuzzy, c-format
-#| msgid "Good signature from"
-msgid "%d signature reordered\n"
-msgid_plural "%d signatures reordered\n"
-msgstr[0] "Korrekt signatur från"
-msgstr[1] "Korrekt signatur från"
-
-#, c-format
-msgid ""
-"Warning: errors found and only checked self-signatures, run '%s' to check "
-"all signatures.\n"
-msgstr ""
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3672,6 +3616,16 @@ msgstr "Det finns inget att signera med nyckeln %s\n"
 msgid "'%s' is not a valid expiration time\n"
 msgstr "\"%s\" är inte ett giltigt utgångsdatum för en signatur\n"
 
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" is not a proper fingerprint\n"
+msgstr "ogiltigt fingeravtryck"
+
+#, fuzzy, c-format
+#| msgid "key \"%s\" not found: %s\n"
+msgid "subkey \"%s\" not found\n"
+msgstr "nyckeln \"%s\" hittades inte: %s\n"
+
 msgid "Digest: "
 msgstr "Sammandrag: "
 
@@ -4005,6 +3959,11 @@ msgstr "Undernyckeln %s är redan spärrad.\n"
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Visar %s foto-id med storleken %ld för nyckeln %s (uid %d)\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid value for option '%s'\n"
+msgstr "argument för flaggan \"%.50s\" saknas\n"
 
 #, fuzzy, c-format
 #| msgid "preference `%s' duplicated\n"
@@ -4510,6 +4469,20 @@ msgstr[0] "%d felaktiga signaturer\n"
 msgstr[1] "%d felaktiga signaturer\n"
 
 #, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d felaktiga signaturer\n"
+msgstr[1] "%d felaktiga signaturer\n"
+
+#, fuzzy, c-format
+#| msgid "1 signature not checked due to a missing key\n"
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "1 signatur validerades inte eftersom nyckeln saknades\n"
+msgstr[1] "1 signatur validerades inte eftersom nyckeln saknades\n"
+
+#, fuzzy, c-format
 #| msgid "1 signature not checked due to an error\n"
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
@@ -4795,6 +4768,11 @@ msgstr "[osäkert]"
 #, c-format
 msgid "                aka \"%s\""
 msgstr "      även känd som \"%s\""
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+msgid "WARNING: This key is not suitable for signing in %s mode\n"
+msgstr "VARNING: Denna nyckel är inte certifierad med en pålitlig signatur!\n"
 
 #, c-format
 msgid "Signature expired %s\n"
@@ -5375,6 +5353,11 @@ msgstr "kan inte öppna signerat data \"%s\"\n"
 msgid "can't open signed data fd=%d: %s\n"
 msgstr "kan inte öppna signerad data fd=%d: %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate is not usable for encryption\n"
+msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgstr "certifikatet är inte användbart för kryptering\n"
+
 #, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "anonym mottagare; provar med den hemliga nyckeln %s ...\n"
@@ -5558,6 +5541,11 @@ msgstr "DSA-nyckeln %s kräver en hash med %u bitar eller större\n"
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "VARNING: konflikt mellan signatursammandrag i meddelandet\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "key %s may not be used for signing in %s mode\n"
+msgstr "du kan inte använda %s när du är i %s-läget\n"
 
 # Vad betyder det?
 #, c-format
@@ -8554,6 +8542,16 @@ msgid "'%s' is an invalid LDAP URL\n"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "error running `%s': exit status %d\n"
+msgid "error accessing '%s': http status %u\n"
+msgstr "fel vid körning av \"%s\": avslutsstatus %d\n"
+
+#, fuzzy, c-format
+#| msgid "error allocating enough memory: %s\n"
+msgid "error allocating memory: %s\n"
+msgstr "fel vid allokering av tillräckligt mycket minne: %s\n"
+
+#, fuzzy, c-format
 #| msgid "error writing to %s: %s\n"
 msgid "error printing log line: %s\n"
 msgstr "fel vid skrivning till %s: %s\n"
@@ -8674,11 +8672,6 @@ msgstr "fel vid skrivning till \"%s\": %s\n"
 #| msgid "error reading from %s: %s\n"
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "fel vid läsning från %s: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error running `%s': exit status %d\n"
-msgid "error accessing '%s': http status %u\n"
-msgstr "fel vid körning av \"%s\": avslutsstatus %d\n"
 
 #, fuzzy, c-format
 #| msgid "error binding socket to `%s': %s\n"
@@ -9353,6 +9346,51 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid "Error: URL too long (limit is %d characters).\n"
+#~ msgstr "Fel: URL:en är för lång (gränsen är %d tecken).\n"
+
+#~ msgid "Error: Login data too long (limit is %d characters).\n"
+#~ msgstr "Fel: Inloggningsdata är för långt (gräns är %d tecken).\n"
+
+#~ msgid "Error: Private DO too long (limit is %d characters).\n"
+#~ msgstr "Fel: Privat DO för långt (gränsen är %d tecken).\n"
+
+#, fuzzy
+#~| msgid "key %s: unsupported public key algorithm\n"
+#~ msgid ""
+#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+#~ msgstr "nyckel %s: algoritmen för publika nycklar stöds inte\n"
+
+#, fuzzy
+#~| msgid "card does not support digest algorithm %s\n"
+#~ msgid ""
+#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
+#~ msgstr "kortet har inte stöd för sammandragsalgoritmen %s\n"
+
+#, fuzzy
+#~| msgid "Good signature from"
+#~ msgid " (reordered signatures follow)"
+#~ msgstr "Korrekt signatur från"
+
+#, fuzzy
+#~| msgid "skipped \"%s\": %s\n"
+#~ msgid "key %s:\n"
+#~ msgstr "hoppade över \"%s\": %s\n"
+
+#, fuzzy
+#~| msgid "User ID \"%s\": %d signature removed\n"
+#~ msgid "%d duplicate signature removed\n"
+#~ msgid_plural "%d duplicate signatures removed\n"
+#~ msgstr[0] "Användaridentitet \"%s\": %d signaturer borttagna\n"
+#~ msgstr[1] "Användaridentitet \"%s\": %d signaturer borttagna\n"
+
+#, fuzzy
+#~| msgid "Good signature from"
+#~ msgid "%d signature reordered\n"
+#~ msgid_plural "%d signatures reordered\n"
+#~ msgstr[0] "Korrekt signatur från"
+#~ msgstr[1] "Korrekt signatur från"
 
 #, fuzzy
 #~| msgid "new configuration file `%s' created\n"

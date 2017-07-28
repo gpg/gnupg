@@ -380,6 +380,9 @@ msgstr "разрешить ввод фразы-пароля через Emacs"
 msgid "enable ssh support"
 msgstr "включить поддержку ssh"
 
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr ""
+
 msgid "enable putty support"
 msgstr "включить поддержку putty"
 
@@ -402,6 +405,9 @@ msgstr ""
 #, c-format
 msgid "invalid debug-level '%s' given\n"
 msgstr "запрошен недопустимый уровень отладки '%s'\n"
+
+msgid "selected digest algorithm is invalid\n"
+msgstr "выбрана недопустимая хеш-функция\n"
 
 #, c-format
 msgid "Note: no default option file '%s'\n"
@@ -1204,6 +1210,11 @@ msgstr "сервер '%s' старше нас (%s < %s)"
 msgid "WARNING: %s\n"
 msgstr "Внимание: %s\n"
 
+#, fuzzy, c-format
+#| msgid "%s does not yet work with %s\n"
+msgid "%s is not compliant with %s mode\n"
+msgstr "%s пока не работает совместно с %s!\n"
+
 #, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "Карта OpenPGP недоступна: %s\n"
@@ -1265,10 +1276,6 @@ msgid "URL to retrieve public key: "
 msgstr "URL для получения открытого ключа: "
 
 #, c-format
-msgid "Error: URL too long (limit is %d characters).\n"
-msgstr "Ошибка: Слишком длинный URL (предел - %d символов).\n"
-
-#, c-format
 msgid "error reading '%s': %s\n"
 msgstr "ошибка чтения '%s': %s\n"
 
@@ -1279,17 +1286,8 @@ msgstr "ошибка записи '%s': %s\n"
 msgid "Login data (account name): "
 msgstr "Учетная запись (имя): "
 
-#, c-format
-msgid "Error: Login data too long (limit is %d characters).\n"
-msgstr ""
-"Ошибка: Слишком длинные данные учетной записи (предел - %d символов).\n"
-
 msgid "Private DO data: "
 msgstr "Секретные данные DO:"
-
-#, c-format
-msgid "Error: Private DO too long (limit is %d characters).\n"
-msgstr "Ошибка: Слишком много секретных данных DO (предел - %d символов).\n"
 
 msgid "Language preferences: "
 msgstr "Предпочтительный язык: "
@@ -1567,6 +1565,16 @@ msgstr ""
 "Внимание: принудительное использование симметричного шифра %s (%d)\n"
 "          нарушает предпочтения получателя\n"
 
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "шифрование '%s' в режиме %s использовать нельзя\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "Внимание: параметр \"%s%s\" устарел - он игнорируется\n"
+
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
@@ -1583,8 +1591,9 @@ msgstr ""
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s зашифровано для пользователя \"%s\"\n"
 
-#, c-format
-msgid "you may not use %s while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "option '%s' may not be used in %s mode\n"
 msgstr "нельзя использовать %s в режиме %s\n"
 
 #, c-format
@@ -1749,6 +1758,10 @@ msgstr ""
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "использую подключ %s вместо первичного ключа %s\n"
+
+#, c-format
+msgid "valid values for option '%s':\n"
+msgstr "недопустимые значения для параметра \"%s\"\n"
 
 msgid "make a signature"
 msgstr "создать подпись"
@@ -2069,19 +2082,11 @@ msgid "show expiration dates during signature listings"
 msgstr "показать в списке подписей сроки действия"
 
 #, c-format
-msgid "valid values for option '%s':\n"
-msgstr "недопустимые значения для параметра \"%s\"\n"
-
-#, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "неизвестные правила TOFU '%s'\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr "(\"help\" выведет список вариантов)\n"
-
-#, c-format
-msgid "invalid value for option '%s'\n"
-msgstr "недопустимое значения для параметра \"%s\"\n"
 
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
@@ -2222,9 +2227,6 @@ msgstr "не будет работать с небезопасной памят�
 msgid "selected cipher algorithm is invalid\n"
 msgstr "выбран недопустимый алгоритм шифрования\n"
 
-msgid "selected digest algorithm is invalid\n"
-msgstr "выбрана недопустимая хеш-функция\n"
-
 msgid "selected compression algorithm is invalid\n"
 msgstr "выбран недопустимый алгоритм сжатия\n"
 
@@ -2268,16 +2270,14 @@ msgstr "недопустимые личные предпочтения алго�
 msgid "%s does not yet work with %s\n"
 msgstr "%s пока не работает совместно с %s!\n"
 
-#, c-format
-msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgstr "шифрование '%s' в режиме %s использовать нельзя\n"
-
-#, c-format
-msgid "you may not use digest algorithm '%s' while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use digest algorithm '%s' while in %s mode\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "хеш-функцию '%s' в режиме %s использовать нельзя\n"
 
-#, c-format
-msgid "you may not use compression algorithm '%s' while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you may not use compression algorithm '%s' while in %s mode\n"
+msgid "compression algorithm '%s' may not be used in %s mode\n"
 msgstr "сжатие '%s' в режиме %s использовать нельзя\n"
 
 #, c-format
@@ -2296,16 +2296,18 @@ msgstr "сбой симметричного шифрования '%s': %s\n"
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "--symmetric --encrypt нельзя использовать совместно с --s2k-mode 0\n"
 
-#, c-format
-msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "в режиме %s нельзя использовать --symmetric --encrypt\n"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 "нельзя использовать --symmetric --sign --encrypt совместно с --s2k-mode 0\n"
 
-#, c-format
-msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+#, fuzzy, c-format
+#| msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
 msgstr "в режиме %s нельзя использовать --symmetric --sign --encrypt\n"
 
 #, c-format
@@ -2425,6 +2427,11 @@ msgstr "применить фильтры импорта и немедленно
 
 msgid "assume the GnuPG key backup format"
 msgstr "ожидать ключи в архивном формате GnuPG"
+
+#, fuzzy
+#| msgid "show key during import"
+msgid "repair keys on import"
+msgstr "показывать ключ во время импорта"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2811,64 +2818,6 @@ msgstr "[отзыв]"
 
 msgid "[self-signature]"
 msgstr "[самоподпись]"
-
-#, c-format
-msgid "error allocating memory: %s\n"
-msgstr "ошибка выделения памяти: %s\n"
-
-#, c-format
-msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr ""
-"не удалось проверить подпись: алгоритм с открытым ключом %d не "
-"поддерживается: %s.\n"
-
-#, c-format
-msgid ""
-"can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr "не удалось проверить подпись: хеш-функция %d не поддерживается: %s.\n"
-
-msgid " (reordered signatures follow)"
-msgstr "(порядок подписей изменен)"
-
-#, c-format
-msgid "key %s:\n"
-msgstr "ключ %s:\n"
-
-#, c-format
-msgid "%d duplicate signature removed\n"
-msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "%d повторная подпись удалена\n"
-msgstr[1] "%d повторные подписи удалены\n"
-msgstr[2] "%d повторных подписей удалено\n"
-
-#, c-format
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "%d подпись не проверена за отсутствием ключа\n"
-msgstr[1] "%d подписи не проверены за отсутствием ключа\n"
-msgstr[2] "%d подписей не проверено за отсутствием ключа\n"
-
-#, c-format
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d плохая подпись\n"
-msgstr[1] "%d плохих подписи\n"
-msgstr[2] "%d плохих подписей\n"
-
-#, c-format
-msgid "%d signature reordered\n"
-msgid_plural "%d signatures reordered\n"
-msgstr[0] "Порядок %d подписи изменен\n"
-msgstr[1] "Порядок %d подписей изменен\n"
-msgstr[2] "Порядок %d подписей изменен\n"
-
-#, c-format
-msgid ""
-"Warning: errors found and only checked self-signatures, run '%s' to check "
-"all signatures.\n"
-msgstr ""
-"Внимание: обнаружены ошибки, проверялись только самоподписи; для проверки "
-"всех подписей выполните '%s'.\n"
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3352,6 +3301,16 @@ msgstr "Подписывать нечего.\n"
 msgid "'%s' is not a valid expiration time\n"
 msgstr "'%s' - не допустимый срок действия\n"
 
+#, fuzzy, c-format
+#| msgid "\"%s\" is not a fingerprint\n"
+msgid "\"%s\" is not a proper fingerprint\n"
+msgstr "\"%s\" - не отпечаток\n"
+
+#, fuzzy, c-format
+#| msgid "key \"%s\" not found\n"
+msgid "subkey \"%s\" not found\n"
+msgstr "ключ \"%s\" не найден\n"
+
 msgid "Digest: "
 msgstr "Хеш: "
 
@@ -3674,6 +3633,10 @@ msgstr "Подключ %s уже отозван.\n"
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Показ фотоидентификатора %s размера %ld для ключа %s (uid %d)\n"
+
+#, c-format
+msgid "invalid value for option '%s'\n"
+msgstr "недопустимое значения для параметра \"%s\"\n"
 
 #, c-format
 msgid "preference '%s' duplicated\n"
@@ -4146,6 +4109,20 @@ msgstr[1] "%d хороших подписи\n"
 msgstr[2] "%d хороших подписей\n"
 
 #, c-format
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d плохая подпись\n"
+msgstr[1] "%d плохих подписи\n"
+msgstr[2] "%d плохих подписей\n"
+
+#, c-format
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "%d подпись не проверена за отсутствием ключа\n"
+msgstr[1] "%d подписи не проверены за отсутствием ключа\n"
+msgstr[2] "%d подписей не проверено за отсутствием ключа\n"
+
+#, c-format
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
 msgstr[0] "%d подпись не проверена из-за ошибки\n"
@@ -4416,6 +4393,11 @@ msgstr "[сомнительно]"
 #, c-format
 msgid "                aka \"%s\""
 msgstr "                или \"%s\""
+
+#, fuzzy, c-format
+#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+msgid "WARNING: This key is not suitable for signing in %s mode\n"
+msgstr "Внимание: Данный ключ не заверен доверенной подписью!\n"
 
 #, c-format
 msgid "Signature expired %s\n"
@@ -4951,6 +4933,11 @@ msgstr "не могу открыть подписанные данные '%s'\n"
 msgid "can't open signed data fd=%d: %s\n"
 msgstr "не могу открыть подписанные данные fd=%d: %s\n"
 
+#, fuzzy, c-format
+#| msgid "certificate is not usable for encryption\n"
+msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgstr "сертификат не пригоден для шифрования\n"
+
 #, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "анонимный получатель; пробую секретный ключ %s ...\n"
@@ -5125,6 +5112,11 @@ msgstr "Ключ %s %s требует %zu-битного или более дл�
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "Внимание: конфликт хешей подписей в сообщении\n"
+
+#, fuzzy, c-format
+#| msgid "you may not use %s while in %s mode\n"
+msgid "key %s may not be used for signing in %s mode\n"
+msgstr "нельзя использовать %s в режиме %s\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
@@ -7895,6 +7887,14 @@ msgid "'%s' is an invalid LDAP URL\n"
 msgstr "'%s' - недопустимый URL LDAP\n"
 
 #, c-format
+msgid "error accessing '%s': http status %u\n"
+msgstr "ошибка чтения '%s': статус HTTP %u\n"
+
+#, c-format
+msgid "error allocating memory: %s\n"
+msgstr "ошибка выделения памяти: %s\n"
+
+#, c-format
 msgid "error printing log line: %s\n"
 msgstr "ошибка вывода строки журнала: %s\n"
 
@@ -7996,10 +7996,6 @@ msgstr "ошибка соединения с '%s': %s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "ошибка чтения ответа HTTP для '%s': %s\n"
-
-#, c-format
-msgid "error accessing '%s': http status %u\n"
-msgstr "ошибка чтения '%s': статус HTTP %u\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
@@ -8594,6 +8590,52 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
+
+#~ msgid "Error: URL too long (limit is %d characters).\n"
+#~ msgstr "Ошибка: Слишком длинный URL (предел - %d символов).\n"
+
+#~ msgid "Error: Login data too long (limit is %d characters).\n"
+#~ msgstr ""
+#~ "Ошибка: Слишком длинные данные учетной записи (предел - %d символов).\n"
+
+#~ msgid "Error: Private DO too long (limit is %d characters).\n"
+#~ msgstr "Ошибка: Слишком много секретных данных DO (предел - %d символов).\n"
+
+#~ msgid ""
+#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+#~ msgstr ""
+#~ "не удалось проверить подпись: алгоритм с открытым ключом %d не "
+#~ "поддерживается: %s.\n"
+
+#~ msgid ""
+#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
+#~ msgstr ""
+#~ "не удалось проверить подпись: хеш-функция %d не поддерживается: %s.\n"
+
+#~ msgid " (reordered signatures follow)"
+#~ msgstr "(порядок подписей изменен)"
+
+#~ msgid "key %s:\n"
+#~ msgstr "ключ %s:\n"
+
+#~ msgid "%d duplicate signature removed\n"
+#~ msgid_plural "%d duplicate signatures removed\n"
+#~ msgstr[0] "%d повторная подпись удалена\n"
+#~ msgstr[1] "%d повторные подписи удалены\n"
+#~ msgstr[2] "%d повторных подписей удалено\n"
+
+#~ msgid "%d signature reordered\n"
+#~ msgid_plural "%d signatures reordered\n"
+#~ msgstr[0] "Порядок %d подписи изменен\n"
+#~ msgstr[1] "Порядок %d подписей изменен\n"
+#~ msgstr[2] "Порядок %d подписей изменен\n"
+
+#~ msgid ""
+#~ "Warning: errors found and only checked self-signatures, run '%s' to check "
+#~ "all signatures.\n"
+#~ msgstr ""
+#~ "Внимание: обнаружены ошибки, проверялись только самоподписи; для проверки "
+#~ "всех подписей выполните '%s'.\n"
 
 #~ msgid ", "
 #~ msgstr ", "
