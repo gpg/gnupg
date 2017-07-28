@@ -136,8 +136,7 @@ check_signature2 (ctrl_t ctrl,
     else if (! gnupg_digest_is_allowed (opt.compliance, 0, sig->digest_algo))
       {
 	/* Compliance failure.  */
-	log_info (_("you may not use digest algorithm '%s'"
-		    " while in %s mode\n"),
+	log_info (_("digest algorithm '%s' may not be used in %s mode\n"),
 		  gcry_md_algo_name (sig->digest_algo),
 		  gnupg_compliance_option_string (opt.compliance));
 	rc = gpg_error (GPG_ERR_DIGEST_ALGO);
@@ -162,8 +161,7 @@ check_signature2 (ctrl_t ctrl,
 				    NULL))
       {
 	/* Compliance failure.  */
-	log_error (_("key %s is not suitable for signature verification"
-                     " in %s mode\n"),
+	log_error (_("key %s may not be used for signing in %s mode\n"),
                    keystr_from_pk (pk),
                    gnupg_compliance_option_string (opt.compliance));
 	rc = gpg_error (GPG_ERR_PUBKEY_ALGO);

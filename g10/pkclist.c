@@ -1026,7 +1026,7 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
              issue a warning and switch into GnuPG mode. */
           if ((rov->flags & PK_LIST_HIDDEN) && (PGP6 || PGP7 || PGP8))
             {
-              log_info(_("you may not use %s while in %s mode\n"),
+              log_info(_("option '%s' may not be used in %s mode\n"),
                        "--hidden-recipient",
                        gnupg_compliance_option_string (opt.compliance));
 
@@ -1077,7 +1077,7 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
                      GnuPG mode. */
                   if ((r->flags&PK_LIST_ENCRYPT_TO) && (PGP6 || PGP7 || PGP8))
                     {
-                      log_info(_("you may not use %s while in %s mode\n"),
+                      log_info(_("option '%s' may not be used in %s mode\n"),
                                "--hidden-encrypt-to",
                                gnupg_compliance_option_string (opt.compliance));
 

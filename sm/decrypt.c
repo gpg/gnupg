@@ -361,8 +361,8 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
           /* Check compliance.  */
           if (! gnupg_cipher_is_allowed (opt.compliance, 0, algo, mode))
             {
-              log_error (_("you may not use cipher algorithm '%s'"
-                           " while in %s mode\n"),
+              log_error (_("cipher algorithm '%s'"
+                           " may not be used in %s mode\n"),
                          gcry_cipher_algo_name (algo),
                          gnupg_compliance_option_string (opt.compliance));
               rc = gpg_error (GPG_ERR_CIPHER_ALGO);
@@ -489,7 +489,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                         snprintf (kidstr, sizeof kidstr, "0x%08lX",
                                   gpgsm_get_short_fingerprint (cert, NULL));
                         log_info
-                          (_("Note: key %s was not suitable for encryption"
+                          (_("Note: key %s is not suitable for encryption"
                              " in %s mode\n"),
                            kidstr,
                            gnupg_compliance_option_string (opt.compliance));

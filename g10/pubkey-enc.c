@@ -94,7 +94,7 @@ get_session_key (ctrl_t ctrl, PKT_pubkey_enc * k, DEK * dek)
           if (!gnupg_pk_is_compliant (opt.compliance,
                                       sk->pubkey_algo,
                                       sk->pkey, nbits_from_pk (sk), NULL))
-            log_info (_("Note: key %s was not suitable for encryption"
+            log_info (_("Note: key %s is not suitable for encryption"
                         " in %s mode\n"),
                       keystr_from_pk (sk),
                       gnupg_compliance_option_string (opt.compliance));
@@ -132,7 +132,7 @@ get_session_key (ctrl_t ctrl, PKT_pubkey_enc * k, DEK * dek)
           if (!gnupg_pk_is_compliant (opt.compliance,
                                       sk->pubkey_algo,
                                       sk->pkey, nbits_from_pk (sk), NULL))
-            log_info (_("Note: key %s was not suitable for encryption"
+            log_info (_("Note: key %s is not suitable for encryption"
                         " in %s mode\n"),
                       keystr_from_pk (sk),
                       gnupg_compliance_option_string (opt.compliance));

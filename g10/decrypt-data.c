@@ -102,8 +102,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
   if (! gnupg_cipher_is_allowed (opt.compliance, 0, dek->algo,
                                  GCRY_CIPHER_MODE_CFB))
     {
-      log_error (_("you may not use cipher algorithm '%s'"
-                   " while in %s mode\n"),
+      log_error (_("cipher algorithm '%s' may not be used in %s mode\n"),
 		 openpgp_cipher_algo_name (dek->algo),
 		 gnupg_compliance_option_string (opt.compliance));
       rc = gpg_error (GPG_ERR_CIPHER_ALGO);

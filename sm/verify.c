@@ -458,17 +458,19 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
         if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
                                    pk_algo, NULL, nbits, NULL))
           {
-            log_error ("certificate ID 0x%08lX not suitable for "
-                       "verification while in %s mode\n",
-                       gpgsm_get_short_fingerprint (cert, NULL),
+            char  kidstr[10+1];
+
+            snprintf (kidstr, sizeof kidstr, "0x%08lX",
+                      gpgsm_get_short_fingerprint (cert, NULL));
+            log_error (_("key %s may not be used for signing in %s mode\n"),
+                       kidstr,
                        gnupg_compliance_option_string (opt.compliance));
             goto next_signer;
           }
 
         if (! gnupg_digest_is_allowed (opt.compliance, 0, sigval_hash_algo))
           {
-            log_error (_("you may not use digest algorithm '%s'"
-                         " while in %s mode\n"),
+            log_error (_("digest algorithm '%s' may not be used in %s mode\n"),
                        gcry_md_algo_name (sigval_hash_algo),
                        gnupg_compliance_option_string (opt.compliance));
             goto next_signer;

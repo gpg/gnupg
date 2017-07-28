@@ -628,8 +628,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   if (! gnupg_cipher_is_allowed (opt.compliance, 1, cfx.dek->algo,
                                  GCRY_CIPHER_MODE_CFB))
     {
-      log_error (_("you may not use cipher algorithm '%s'"
-		   " while in %s mode\n"),
+      log_error (_("cipher algorithm '%s' may not be used in %s mode\n"),
 		 openpgp_cipher_algo_name (cfx.dek->algo),
 		 gnupg_compliance_option_string (opt.compliance));
       rc = gpg_error (GPG_ERR_CIPHER_ALGO);
@@ -996,7 +995,7 @@ write_pubkey_enc_from_list (ctrl_t ctrl, PK_LIST pk_list, DEK *dek, iobuf_t out)
 {
   if (opt.throw_keyids && (PGP6 || PGP7 || PGP8))
     {
-      log_info(_("you may not use %s while in %s mode\n"),
+      log_info(_("option '%s' may not be used in %s mode\n"),
                "--throw-keyids",
                gnupg_compliance_option_string (opt.compliance));
       compliance_failure();

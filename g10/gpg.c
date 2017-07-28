@@ -3860,19 +3860,22 @@ main (int argc, char **argv)
 	    switch(badtype)
 	      {
 	      case PREFTYPE_SYM:
-		log_info(_("you may not use cipher algorithm '%s'"
-			   " while in %s mode\n"),
-			 badalg, gnupg_compliance_option_string (opt.compliance));
+		log_info (_("cipher algorithm '%s'"
+                            " may not be used in %s mode\n"),
+			 badalg,
+                          gnupg_compliance_option_string (opt.compliance));
 		break;
 	      case PREFTYPE_HASH:
-		log_info(_("you may not use digest algorithm '%s'"
-			   " while in %s mode\n"),
-			 badalg, gnupg_compliance_option_string (opt.compliance));
+		log_info (_("digest algorithm '%s'"
+                            " may not be used in %s mode\n"),
+                          badalg,
+                          gnupg_compliance_option_string (opt.compliance));
 		break;
 	      case PREFTYPE_ZIP:
-		log_info(_("you may not use compression algorithm '%s'"
-			   " while in %s mode\n"),
-			 badalg, gnupg_compliance_option_string (opt.compliance));
+		log_info (_("compression algorithm '%s'"
+                            " may not be used in %s mode\n"),
+                          badalg,
+                          gnupg_compliance_option_string (opt.compliance));
 		break;
 	      default:
 		BUG();
@@ -3897,8 +3900,7 @@ main (int argc, char **argv)
 				      || cmd == aSignEncrSym,
 				      opt.def_cipher_algo,
 				      GCRY_CIPHER_MODE_NONE))
-      log_error (_("you may not use cipher algorithm '%s'"
-		   " while in %s mode\n"),
+      log_error (_("cipher algorithm '%s' may not be used in %s mode\n"),
 		 openpgp_cipher_algo_name (opt.def_cipher_algo),
 		 gnupg_compliance_option_string (opt.compliance));
 
@@ -3910,8 +3912,7 @@ main (int argc, char **argv)
 				      || cmd == aSignSym
 				      || cmd == aClearsign,
 				      opt.def_digest_algo))
-      log_error (_("you may not use digest algorithm '%s'"
-		   " while in %s mode\n"),
+      log_error (_("digest algorithm '%s' may not be used in %s mode\n"),
 		 gcry_md_algo_name (opt.def_digest_algo),
 		 gnupg_compliance_option_string (opt.compliance));
 
@@ -4128,7 +4129,7 @@ main (int argc, char **argv)
 		      " with --s2k-mode 0\n"));
 	else if(PGP6 || PGP7)
 	  log_error(_("you cannot use --symmetric --encrypt"
-		      " while in %s mode\n"),
+		      " in %s mode\n"),
 		    gnupg_compliance_option_string (opt.compliance));
 	else
 	  {
@@ -4189,7 +4190,7 @@ main (int argc, char **argv)
 		      " with --s2k-mode 0\n"));
 	else if(PGP6 || PGP7)
 	  log_error(_("you cannot use --symmetric --sign --encrypt"
-		      " while in %s mode\n"),
+		      " in %s mode\n"),
 		    gnupg_compliance_option_string (opt.compliance));
 	else
 	  {

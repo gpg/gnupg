@@ -475,8 +475,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       /* Check compliance.  */
       if (! gnupg_digest_is_allowed (opt.compliance, 1, cl->hash_algo))
         {
-          log_error (_("you may not use digest algorithm '%s'"
-                       " while in %s mode\n"),
+          log_error (_("digest algorithm '%s' may not be used in %s mode\n"),
                      gcry_md_algo_name (cl->hash_algo),
                      gnupg_compliance_option_string (opt.compliance));
           err = gpg_error (GPG_ERR_DIGEST_ALGO);
@@ -490,9 +489,12 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
         if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_SIGNING, pk_algo,
                                    NULL, nbits, NULL))
           {
-            log_error ("certificate ID 0x%08lX not suitable for "
-                       "signing while in %s mode\n",
-                       gpgsm_get_short_fingerprint (cl->cert, NULL),
+            char  kidstr[10+1];
+
+            snprintf (kidstr, sizeof kidstr, "0x%08lX",
+                      gpgsm_get_short_fingerprint (cl->cert, NULL));
+            log_error (_("key %s may not be used for signing in %s mode\n"),
+                       kidstr,
                        gnupg_compliance_option_string (opt.compliance));
             err = gpg_error (GPG_ERR_PUBKEY_ALGO);
             goto leave;
