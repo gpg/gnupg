@@ -234,7 +234,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_n (oSSHSupport,   "enable-ssh-support", N_("enable ssh support")),
   ARGPARSE_s_s (oSSHFingerprintDigest, "ssh-fingerprint-digest",
-                N_("digest to use when communicating ssh fingerprints")),
+                N_("|ALGO|use ALGO to show ssh fingerprints")),
   ARGPARSE_s_n (oPuttySupport, "enable-putty-support",
 #ifdef HAVE_W32_SYSTEM
                 /* */           N_("enable putty support")
@@ -780,6 +780,8 @@ cleanup (void)
 static int
 parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 {
+  int i;
+
   if (!pargs)
     { /* reset mode */
       opt.quiet = 0;
@@ -811,6 +813,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.allow_emacs_pinentry = 0;
       opt.disable_scdaemon = 0;
       disable_check_own_socket = 0;
+      /* Note: When changing the next line, change also gpgconf_list.  */
       opt.ssh_fingerprint_digest = GCRY_MD_MD5;
       return 1;
     }
@@ -892,6 +895,14 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       break;
 
     case oAllowEmacsPinentry: opt.allow_emacs_pinentry = 1;
+      break;
+
+    case oSSHFingerprintDigest:
+      i = gcry_md_map_name (pargs->r.ret_str);
+      if (!i)
+        log_error (_("selected digest algorithm is invalid\n"));
+      else
+        opt.ssh_fingerprint_digest = i;
       break;
 
     default:
@@ -1188,11 +1199,7 @@ main (int argc, char **argv )
 	case oSSHSupport:
           ssh_support = 1;
           break;
-	case oSSHFingerprintDigest:
-          opt.ssh_fingerprint_digest = gcry_md_map_name (pargs.r.ret_str);
-          if (opt.ssh_fingerprint_digest == 0)
-            log_error ("Unknown digest algorithm: %s\n", pargs.r.ret_str);
-          break;
+
         case oPuttySupport:
 #        ifdef HAVE_W32_SYSTEM
           putty_support = 1;
@@ -1386,6 +1393,8 @@ main (int argc, char **argv )
       es_printf ("disable-scdaemon:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       es_printf ("enable-ssh-support:%lu:\n", GC_OPT_FLAG_NONE);
+      es_printf ("ssh-fingerprint-digest:%lu:\"%s:\n",
+                 GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, "md5");
 #ifdef HAVE_W32_SYSTEM
       es_printf ("enable-putty-support:%lu:\n", GC_OPT_FLAG_NONE);
 #endif
