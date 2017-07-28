@@ -1,5 +1,44 @@
-Noteworthy changes in version 2.1.22 (unreleased)
+Noteworthy changes in version 2.1.22 (2017-07-28)
 -------------------------------------------------
+
+  * gpg: Extend command --quick-set-expire to allow for setting the
+    expiration time of subkeys.
+
+  * gpg: By default try to repair keys during import.  New sub-option
+    no-repair-keys for --import-options.
+
+  * gpg,gpgsm: Improved checking and reporting of DE-VS compliance.
+
+  * gpg: New options --key-origin and --with-key-origin.  Store the
+    time of the last key update from keyservers, WKD, or DANE.
+
+  * agent: New option --ssh-fingerprint-digest.
+
+  * dimngr: Lower timeouts on keyserver connection attempts and made
+    it configurable.
+
+  * dirmngr: Tor will now automatically be detected and used.  The
+    option --no-use-tor disables Tor detection.
+
+  * dirmngr: Now detects a changed /etc/resolv.conf.
+
+  * agent,dirmngr: Initiate shutdown on removal of the GnuPG home
+    directory.
+
+  * gpg: Avoid caching passphrase for failed symmetric encryption.
+
+  * agent: Support for unprotected ssh keys.
+
+  * dirmngr: Fixed name resolving on systems using only v6
+    nameservers.
+
+  * dirmngr: Allow the use of TLS over http proxies.
+
+  * w32: Change directory of the daemons after startup.
+
+  * wks: New man pages for client and server.
+
+  * Many other bug fixes.
 
 
 Noteworthy changes in version 2.1.21 (2017-05-15)
@@ -3515,8 +3554,8 @@ Version 0.1.0 (1998-01-05)
 Version 0.0.0 (1997-12-20)
 
 
- Copyright (C) 1998-2016 Free Software Foundation, Inc.
- Copyright (C) 1997-2016 Werner Koch
+ Copyright (C) 1998-2017 Free Software Foundation, Inc.
+ Copyright (C) 1997-2017 Werner Koch
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
