@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-05-15 16:00+0200\n"
+"PO-Revision-Date: 2017-07-28 18:50+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -386,6 +386,9 @@ msgstr "Erlaube die Eingabe einer Passphrase über Emacs"
 msgid "enable ssh support"
 msgstr "SSH Unterstützung einschalten"
 
+msgid "|ALGO|use ALGO to show ssh fingerprints"
+msgstr "Verwende ALGO für SSH Fingerabdrücke"
+
 msgid "enable putty support"
 msgstr "PuTTY Unterstützung einschalten"
 
@@ -410,6 +413,9 @@ msgstr ""
 #, c-format
 msgid "invalid debug-level '%s' given\n"
 msgstr "ungültige Debugebene `%s' angegeben\n"
+
+msgid "selected digest algorithm is invalid\n"
+msgstr "Das ausgewählte Hashverfahren ist ungültig\n"
 
 #, c-format
 msgid "Note: no default option file '%s'\n"
@@ -1228,6 +1234,10 @@ msgid "WARNING: %s\n"
 msgstr "WARNUNG: %s\n"
 
 #, c-format
+msgid "%s is not compliant with %s mode\n"
+msgstr "%s is nicht konform mit dem %s Modus\n"
+
+#, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGP Karte ist nicht vorhanden: %s\n"
 
@@ -1289,10 +1299,6 @@ msgid "URL to retrieve public key: "
 msgstr "URL um den öffentlichen Schlüssel zu holen: "
 
 #, c-format
-msgid "Error: URL too long (limit is %d characters).\n"
-msgstr "Fehler: URL ist zu lang (Grenze beträgt %d Zeichen).\n"
-
-#, c-format
 msgid "error reading '%s': %s\n"
 msgstr "Fehler beim Lesen von `%s': %s\n"
 
@@ -1303,16 +1309,8 @@ msgstr "Fehler beim Schreiben von %s: %s\n"
 msgid "Login data (account name): "
 msgstr "Logindaten (Kontenname): "
 
-#, c-format
-msgid "Error: Login data too long (limit is %d characters).\n"
-msgstr "Fehler: Logindaten sind zu lang (Grenze beträgt %d Zeichen).\n"
-
 msgid "Private DO data: "
 msgstr "Geheime DO-Daten: "
-
-#, c-format
-msgid "Error: Private DO too long (limit is %d characters).\n"
-msgstr "Fehler: Geheime DO-Daten sind zu lang (Grenze beträgt %d Zeichen).\n"
 
 msgid "Language preferences: "
 msgstr "Spracheinstellungen"
@@ -1605,6 +1603,14 @@ msgstr ""
 "%s (%d) verletzt die Empfängervoreinstellungen\n"
 
 #, c-format
+msgid "cipher algorithm '%s' may not be used in %s mode\n"
+msgstr "Das Verschlüsselungsverfahren %s darf im %s Modus nicht verwendet werden.\n"
+
+#, c-format
+msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
+msgstr "WARNUNG: Schlüssel %s ist zur Verschlüsselung im %s Modus nicht geeignet.\n"
+
+#, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
@@ -1623,8 +1629,8 @@ msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s verschlüsselt für: %s\n"
 
 #, c-format
-msgid "you may not use %s while in %s mode\n"
-msgstr "Die Benutzung von %s ist im %s-Modus nicht erlaubt.\n"
+msgid "option '%s' may not be used in %s mode\n"
+msgstr "Die Benutzung der Option \"%s\" ist im %s-Modus nicht erlaubt.\n"
 
 #, c-format
 msgid "%s encrypted data\n"
@@ -1787,6 +1793,10 @@ msgstr ""
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "der Unterschlüssel %s wird anstelle des Hauptschlüssels %s verwendet\n"
+
+#, c-format
+msgid "valid values for option '%s':\n"
+msgstr "Gültige Argumente für Option '%s':\n"
 
 msgid "make a signature"
 msgstr "Eine Signatur erzeugen"
@@ -2106,19 +2116,11 @@ msgid "show expiration dates during signature listings"
 msgstr "Das Ablaufdatum mit den Signaturen anlisten"
 
 #, c-format
-msgid "valid values for option '%s':\n"
-msgstr "Gültige Argumente für Option '%s':\n"
-
-#, c-format
 msgid "unknown TOFU policy '%s'\n"
 msgstr "Unbekannte TOFU Regel '%s'\n"
 
 msgid "(use \"help\" to list choices)\n"
 msgstr "(\"help\" um mögliche Werte anzuzeigen)\n"
-
-#, c-format
-msgid "invalid value for option '%s'\n"
-msgstr "Ungültiges Argument für Option '%s'\n"
 
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
@@ -2257,9 +2259,6 @@ msgstr "Startet nicht mit unsicherem Speicher, wegen Option %s\n"
 msgid "selected cipher algorithm is invalid\n"
 msgstr "Das ausgewählte Verschlüsselungsverfahren ist ungültig\n"
 
-msgid "selected digest algorithm is invalid\n"
-msgstr "Das ausgewählte Hashverfahren ist ungültig\n"
-
 msgid "selected compression algorithm is invalid\n"
 msgstr "Das ausgewählte Komprimierungsverfahren ist ungültig\n"
 
@@ -2304,19 +2303,12 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s arbeitet noch nicht mit %s zusammen\n"
 
 #, c-format
-msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgstr ""
-"Die Benutzung des Verschlüsselungsverfahren %s ist im %s-Modus nicht "
-"erlaubt.\n"
+msgid "digest algorithm '%s' may not be used in %s mode\n"
+msgstr "Die Benutzung der Hashmethode %s ist im %s Modus nicht erlaubt.\n"
 
 #, c-format
-msgid "you may not use digest algorithm '%s' while in %s mode\n"
-msgstr "Die Benutzung der Hashmethode %s ist im %s-Modus nicht erlaubt.\n"
-
-#, c-format
-msgid "you may not use compression algorithm '%s' while in %s mode\n"
-msgstr ""
-"Die Benutzung des Komprimierverfahren %s ist im %s-Modus nicht erlaubt.\n"
+msgid "compression algorithm '%s' may not be used in %s mode\n"
+msgstr "Die Benutzung des Komprimierverfahren %s ist im %s Modus nicht erlaubt.\n"
 
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
@@ -2335,8 +2327,8 @@ msgstr ""
 "--symmetric --encrypt kann nicht zusammen mit --s2k-mode 0 verwendet werden\n"
 
 #, c-format
-msgid "you cannot use --symmetric --encrypt while in %s mode\n"
-msgstr "Im %s-Modus kann --symmetric --encrypt nicht verwendet werden.\n"
+msgid "you cannot use --symmetric --encrypt in %s mode\n"
+msgstr "Im %s Modus kann --symmetric --encrypt nicht verwendet werden.\n"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
@@ -2344,9 +2336,8 @@ msgstr ""
 "werden\n"
 
 #, c-format
-msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
-msgstr ""
-"Im %s-Modus kann --symmetric --sign --encrypt nicht verwendet werden.\n"
+msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
+msgstr "Im %s Modus kann --symmetric --sign --encrypt nicht verwendet werden.\n"
 
 #, c-format
 msgid "keyserver send failed: %s\n"
@@ -2468,6 +2459,9 @@ msgstr "Import-Filter anwenden und Schlüssel direkt exportieren"
 
 msgid "assume the GnuPG key backup format"
 msgstr "Eingabedaten sind im GnuPG Datensicherungsformat für Schlüssel"
+
+msgid "repair keys on import"
+msgstr "Schlüssel beim Import reparieren"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -2862,62 +2856,6 @@ msgstr "[Widerruf]"
 
 msgid "[self-signature]"
 msgstr "[Eigenbeglaubigung]"
-
-#, c-format
-msgid "error allocating memory: %s\n"
-msgstr "Fehler beim Allozieren von Speicher: %s\n"
-
-#, c-format
-msgid "can't check signature with unsupported public-key algorithm (%d): %s.\n"
-msgstr ""
-"Die Signatur mit den nicht unterstützten Public-Key-Verfahren (%d) kann "
-"nicht geprüft werden: %s\n"
-
-#, c-format
-msgid ""
-"can't check signature with unsupported message-digest algorithm %d: %s.\n"
-msgstr ""
-"Die Signatur mit der nicht unterstützten Hashmethode (%d) kann nicht\n"
-"geprüft werden: %s.\n"
-
-msgid " (reordered signatures follow)"
-msgstr " (neu geordnete Signaturen folgen)"
-
-#, c-format
-msgid "key %s:\n"
-msgstr "Schlüssel %s:\n"
-
-#, c-format
-msgid "%d duplicate signature removed\n"
-msgid_plural "%d duplicate signatures removed\n"
-msgstr[0] "%d doppelte Signatur entfernt\n"
-msgstr[1] "%d doppelte Signaturen entfernt\n"
-
-#, c-format
-msgid "%d signature not checked due to a missing key\n"
-msgid_plural "%d signatures not checked due to missing keys\n"
-msgstr[0] "%d Beglaubigung wegen fehlendem Schlüssel nicht geprüft\n"
-msgstr[1] "%d Beglaubigungen wegen fehlender Schlüssel nicht geprüft\n"
-
-#, c-format
-msgid "%d bad signature\n"
-msgid_plural "%d bad signatures\n"
-msgstr[0] "%d falsche Beglaubigung\n"
-msgstr[1] "%d falsche Beglaubigungen\n"
-
-#, c-format
-msgid "%d signature reordered\n"
-msgid_plural "%d signatures reordered\n"
-msgstr[0] "%d Signatur neu eingeordnet\n"
-msgstr[1] "%d Signaturen neu eingeordnet\n"
-
-#, c-format
-msgid ""
-"Warning: errors found and only checked self-signatures, run '%s' to check "
-"all signatures.\n"
-msgstr ""
-"WARNUNG: Es wurden Fehler gefunden aber nur Eigenbeglaubigungen geprüft; um "
-"alle Beglaubigungen zu prüfen das Kommando '%s' verwenden.\n"
 
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
@@ -3401,6 +3339,14 @@ msgstr "Nichts zu beglaubigen\n"
 msgid "'%s' is not a valid expiration time\n"
 msgstr "'%s' ist kein gültiges Ablaufdatum\n"
 
+#, c-format
+msgid "\"%s\" is not a proper fingerprint\n"
+msgstr "\"%s\" ist kein gültiger Fingerabdruck\n"
+
+#, c-format
+msgid "subkey \"%s\" not found\n"
+msgstr "Unterschlüssel \"%s\" nicht gefunden\n"
+
 msgid "Digest: "
 msgstr "Digest: "
 
@@ -3724,6 +3670,10 @@ msgstr "Unterschlüssel %s ist bereits widerrufen\n"
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Anzeigen einer %s Foto-ID (Größe %ld) für Schlüssel %s (User-ID %d)\n"
+
+#, c-format
+msgid "invalid value for option '%s'\n"
+msgstr "Ungültiges Argument für Option '%s'\n"
 
 #, c-format
 msgid "preference '%s' duplicated\n"
@@ -4192,6 +4142,18 @@ msgstr[0] "%d korrekte Signatur\n"
 msgstr[1] "%d korrekte Signaturen\n"
 
 #, c-format
+msgid "%d bad signature\n"
+msgid_plural "%d bad signatures\n"
+msgstr[0] "%d falsche Beglaubigung\n"
+msgstr[1] "%d falsche Beglaubigungen\n"
+
+#, c-format
+msgid "%d signature not checked due to a missing key\n"
+msgid_plural "%d signatures not checked due to missing keys\n"
+msgstr[0] "%d Beglaubigung wegen fehlendem Schlüssel nicht geprüft\n"
+msgstr[1] "%d Beglaubigungen wegen fehlender Schlüssel nicht geprüft\n"
+
+#, c-format
 msgid "%d signature not checked due to an error\n"
 msgid_plural "%d signatures not checked due to errors\n"
 msgstr[0] "%d Beglaubigung aufgrund eines Fehlers nicht geprüft\n"
@@ -4463,6 +4425,10 @@ msgstr "[ungewiß]  "
 #, c-format
 msgid "                aka \"%s\""
 msgstr "                    alias \"%s\""
+
+#, c-format
+msgid "WARNING: This key is not suitable for signing in %s mode\n"
+msgstr "WARNUNG: Dieser Schlüssel ist zum Signieren im %s Modus nicht geeignet.\n"
 
 #, c-format
 msgid "Signature expired %s\n"
@@ -5032,6 +4998,10 @@ msgid "can't open signed data fd=%d: %s\n"
 msgstr "kann signierte Daten auf fd=%d nicht öffnen: %s\n"
 
 #, c-format
+msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgstr "Hinweis: Schlüssel \"%s\" ist zum Verschlüsseln im %s Modus nicht geeignet.\n"
+
+#, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "Ungenannter Empfänger; Versuch mit geheimen Schlüssel %s ...\n"
 
@@ -5216,6 +5186,10 @@ msgstr ""
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "WARNUNG: Widersprechende Hashverfahren in der signierten Nachricht\n"
+
+#, c-format
+msgid "key %s may not be used for signing in %s mode\n"
+msgstr "Schlüssel \"%s\" darf zum Signieren im %s Modus nicht verwendet werden.\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
@@ -5880,19 +5854,7 @@ msgstr ""
 "WARNUNG: Wir haben nur eine einzige mit diesem Schlüssel signierte Nachricht "
 "gesehen.\n"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Warning: if you think you've seen more than %ld message signed by this "
-#| "key, then this key might be a forgery!  Carefully examine the email "
-#| "address for small variations.  If the key is suspect, then use\n"
-#| "  %s\n"
-#| "to mark it as being bad.\n"
-#| msgid_plural ""
-#| "Warning: if you think you've seen more than %ld messages signed by this "
-#| "key, then this key might be a forgery!  Carefully examine the email "
-#| "address for small variations.  If the key is suspect, then use\n"
-#| "  %s\n"
-#| "to mark it as being bad.\n"
+#, c-format
 msgid ""
 "Warning: if you think you've seen more signatures by this key and user id, "
 "then this key might be a forgery!  Carefully examine the email address for "
@@ -5906,18 +5868,20 @@ msgid_plural ""
 "  %s\n"
 "to mark it as being bad.\n"
 msgstr[0] ""
-"WARNUNG: Falls sie glauben, mehr als %ld mit diesem Schlüssel signierte "
-"Nachricht erhalten zu haben, so kann es sich bei diesem Schlüssel um eine "
-"Fälschung handeln!  Prüfen Sie die Email-Adresse genau auf kleine "
-"Variationen.  Falls Ihnen der Schlüssel suspekt erscheint, so benutzen Sie\n"
-"  %s\n"
+"WARNUNG: Falls sie glauben, mehr mit diesem Schlüssel und dieser\n"
+"User-ID signierte Nachricht erhalten zu haben, so kann es sich bei\n"
+"diesem Schlüssel um eine Fälschung handeln!  Prüfen Sie die\n"
+"Email-Adresse genau auf kleine Abweichungen.  Falls Ihnen der\n"
+"Schlüssel suspekt erscheint, benutzen Sie\n"
+"   %s\n"
 "um den Schlüssel als Fälschung zu markieren.\n"
 msgstr[1] ""
-"WARNUNG: Falls sie glauben, mehr als %ld mit diesem Schlüssel signierte "
-"Nachrichten erhalten zu haben, so kann es sich bei diesem Schlüssel um eine "
-"Fälschung handeln!  Prüfen Sie die Email-Adresse genau auf kleine "
-"Variationen.  Falls Ihnen der Schlüssel suspekt erscheint, so benutzen Sie\n"
-"  %s\n"
+"WARNUNG: Falls sie glauben, mehr mit diesem Schlüssel und diesen\n"
+"User-IDs signierte Nachrichten erhalten zu haben, so kann es sich\n"
+"bei diesem Schlüssel um eine Fälschung handeln!  Prüfen Sie die\n"
+"Email-Adressen genau auf kleine Abweichungen.  Falls Ihnen der\n"
+"Schlüssel suspekt erscheint, benutzen Sie\n"
+"   %s\n"
 "um den Schlüssel als Fälschung zu markieren.\n"
 
 #, c-format
@@ -8077,6 +8041,14 @@ msgid "'%s' is an invalid LDAP URL\n"
 msgstr "`%s' ist ein ungültiger LDAP URL\n"
 
 #, c-format
+msgid "error accessing '%s': http status %u\n"
+msgstr "Fehler beim Zugreifen auf `%s': HTTP Status %u\n"
+
+#, c-format
+msgid "error allocating memory: %s\n"
+msgstr "Fehler beim Allozieren von Speicher: %s\n"
+
+#, c-format
 msgid "error printing log line: %s\n"
 msgstr "Fehler beim Schreiben einer Logzeile: %s\n"
 
@@ -8178,10 +8150,6 @@ msgstr "Fehler beim Verbinden mit '%s': %s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "Fehler beim Lesen der HTTP Antwort von `%s': %s\n"
-
-#, c-format
-msgid "error accessing '%s': http status %u\n"
-msgstr "Fehler beim Zugreifen auf `%s': HTTP Status %u\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
@@ -8776,6 +8744,51 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "Error: URL too long (limit is %d characters).\n"
+#~ msgstr "Fehler: URL ist zu lang (Grenze beträgt %d Zeichen).\n"
+
+#~ msgid "Error: Login data too long (limit is %d characters).\n"
+#~ msgstr "Fehler: Logindaten sind zu lang (Grenze beträgt %d Zeichen).\n"
+
+#~ msgid "Error: Private DO too long (limit is %d characters).\n"
+#~ msgstr ""
+#~ "Fehler: Geheime DO-Daten sind zu lang (Grenze beträgt %d Zeichen).\n"
+
+#~ msgid ""
+#~ "can't check signature with unsupported public-key algorithm (%d): %s.\n"
+#~ msgstr ""
+#~ "Die Signatur mit den nicht unterstützten Public-Key-Verfahren (%d) kann "
+#~ "nicht geprüft werden: %s\n"
+
+#~ msgid ""
+#~ "can't check signature with unsupported message-digest algorithm %d: %s.\n"
+#~ msgstr ""
+#~ "Die Signatur mit der nicht unterstützten Hashmethode (%d) kann nicht\n"
+#~ "geprüft werden: %s.\n"
+
+#~ msgid " (reordered signatures follow)"
+#~ msgstr " (neu geordnete Signaturen folgen)"
+
+#~ msgid "key %s:\n"
+#~ msgstr "Schlüssel %s:\n"
+
+#~ msgid "%d duplicate signature removed\n"
+#~ msgid_plural "%d duplicate signatures removed\n"
+#~ msgstr[0] "%d doppelte Signatur entfernt\n"
+#~ msgstr[1] "%d doppelte Signaturen entfernt\n"
+
+#~ msgid "%d signature reordered\n"
+#~ msgid_plural "%d signatures reordered\n"
+#~ msgstr[0] "%d Signatur neu eingeordnet\n"
+#~ msgstr[1] "%d Signaturen neu eingeordnet\n"
+
+#~ msgid ""
+#~ "Warning: errors found and only checked self-signatures, run '%s' to check "
+#~ "all signatures.\n"
+#~ msgstr ""
+#~ "WARNUNG: Es wurden Fehler gefunden aber nur Eigenbeglaubigungen geprüft; "
+#~ "um alle Beglaubigungen zu prüfen das Kommando '%s' verwenden.\n"
 
 #~ msgid "new configuration file '%s' created\n"
 #~ msgstr "Neue Konfigurationsdatei `%s' erstellt\n"
