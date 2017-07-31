@@ -209,6 +209,13 @@ warn_version_mismatch (assuan_context_t ctx, const char *servername, int mode)
       else
         {
           log_info (_("WARNING: %s\n"), warn);
+          if (!opt.quiet)
+            {
+              log_info (_("Note: Outdated servers may lack important"
+                          " security fixes.\n"));
+              log_info (_("Note: Use the command \"%s\" to restart them.\n"),
+                        "gpgconf --kill all");
+            }
           write_status_strings (STATUS_WARNING, "server_version_mismatch 0",
                                 " ", warn, NULL);
           xfree (warn);

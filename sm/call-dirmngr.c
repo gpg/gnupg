@@ -175,6 +175,13 @@ warn_version_mismatch (ctrl_t ctrl, assuan_context_t ctx,
       else
         {
           log_info (_("WARNING: %s\n"), warn);
+          if (!opt.quiet)
+            {
+              log_info (_("Note: Outdated servers may lack important"
+                          " security fixes.\n"));
+              log_info (_("Note: Use the command \"%s\" to restart them.\n"),
+                        "gpgconf --kill all");
+            }
           gpgsm_status2 (ctrl, STATUS_WARNING, "server_version_mismatch 0",
                          warn, NULL);
           xfree (warn);
