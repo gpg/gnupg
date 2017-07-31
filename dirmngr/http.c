@@ -2750,7 +2750,11 @@ connect_with_timeout (assuan_fd_t sock,
       return 0; /* Success.  */
     }
   err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-  if (gpg_err_code (err) != GPG_ERR_EINPROGRESS)
+  if (gpg_err_code (err) != GPG_ERR_EINPROGRESS
+#ifdef HAVE_W32_SYSTEM
+      && gpg_err_code (err) != GPG_ERR_EAGAIN
+#endif
+      )
     {
       RESTORE_BLOCKING ();
       return err;
