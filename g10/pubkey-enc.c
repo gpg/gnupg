@@ -90,16 +90,19 @@ get_session_key (ctrl_t ctrl, PKT_pubkey_enc * k, DEK * dek)
       sk->pubkey_algo = k->pubkey_algo; /* We want a pubkey with this algo.  */
       if (!(rc = get_seckey (ctrl, sk, k->keyid)))
         {
-          /* Print compliance warning.  */
-          if (!gnupg_pk_is_compliant (opt.compliance,
-                                      sk->pubkey_algo,
-                                      sk->pkey, nbits_from_pk (sk), NULL))
-            log_info (_("Note: key %s is not suitable for encryption"
-                        " in %s mode\n"),
-                      keystr_from_pk (sk),
-                      gnupg_compliance_option_string (opt.compliance));
-
-          rc = get_it (ctrl, k, dek, sk, k->keyid);
+          /* Check compliance.  */
+          if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_DECRYPTION,
+                                     sk->pubkey_algo,
+                                     sk->pkey, nbits_from_pk (sk), NULL))
+            {
+              log_info (_("key %s is not suitable for decryption"
+                          " in %s mode\n"),
+                        keystr_from_pk (sk),
+                        gnupg_compliance_option_string (opt.compliance));
+              rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
+            }
+          else
+            rc = get_it (ctrl, k, dek, sk, k->keyid);
         }
     }
   else if (opt.skip_hidden_recipients)
@@ -128,14 +131,17 @@ get_session_key (ctrl_t ctrl, PKT_pubkey_enc * k, DEK * dek)
             log_info (_("anonymous recipient; trying secret key %s ...\n"),
                       keystr (keyid));
 
-          /* Print compliance warning.  */
-          if (!gnupg_pk_is_compliant (opt.compliance,
-                                      sk->pubkey_algo,
-                                      sk->pkey, nbits_from_pk (sk), NULL))
-            log_info (_("Note: key %s is not suitable for encryption"
-                        " in %s mode\n"),
-                      keystr_from_pk (sk),
-                      gnupg_compliance_option_string (opt.compliance));
+          /* Check compliance.  */
+          if (! gnupg_pk_is_allowed (opt.compliance, PK_USE_DECRYPTION,
+                                     sk->pubkey_algo,
+                                     sk->pkey, nbits_from_pk (sk), NULL))
+            {
+              log_info (_("key %s is not suitable for decryption"
+                          " in %s mode\n"),
+                          keystr_from_pk (sk),
+                          gnupg_compliance_option_string (opt.compliance));
+              continue;
+            }
 
           rc = get_it (ctrl, k, dek, sk, keyid);
           if (!rc)

@@ -480,19 +480,22 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                     unsigned int nbits;
                     int pk_algo = gpgsm_get_key_algo_info (cert, &nbits);
 
-                    /* Print compliance warning.  */
-                    if (! gnupg_pk_is_compliant (opt.compliance,
-                                                 pk_algo, NULL, nbits, NULL))
+                    /* Check compliance.  */
+                    if (!gnupg_pk_is_allowed (opt.compliance,
+                                              PK_USE_DECRYPTION,
+                                              pk_algo, NULL, nbits, NULL))
                       {
                         char  kidstr[10+1];
 
                         snprintf (kidstr, sizeof kidstr, "0x%08lX",
                                   gpgsm_get_short_fingerprint (cert, NULL));
                         log_info
-                          (_("Note: key %s is not suitable for encryption"
+                          (_("key %s is not suitable for decryption"
                              " in %s mode\n"),
                            kidstr,
                            gnupg_compliance_option_string (opt.compliance));
+                        rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
+                        goto oops;
                       }
 
                     /* Check that all certs are compliant with CO_DE_VS.  */
@@ -504,9 +507,11 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
 
                 oops:
                   if (rc)
-                    /* We cannot check compliance of certs that we
-                     * don't have.  */
-                    is_de_vs = 0;
+                    {
+                      /* We cannot check compliance of certs that we
+                       * don't have.  */
+                      is_de_vs = 0;
+                    }
                   xfree (issuer);
                   xfree (serial);
                   ksba_cert_release (cert);
