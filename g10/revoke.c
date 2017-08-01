@@ -334,7 +334,7 @@ gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr)
 	    if( !opt.armor )
 	      tty_printf(_("ASCII armored output forced.\n"));
 
-	    if( (rc = open_outfile (-1, NULL, 0, 1, &out )) )
+	    if( (rc = open_outfile (-1, NULL, 0, 1, &out, 0 )) )
 	      goto leave;
 
 	    afx->what = 1;
@@ -461,7 +461,7 @@ create_revocation (ctrl_t ctrl,
 
   afx = new_armor_context ();
 
-  if ((rc = open_outfile (-1, filename, suffix, 1, &out)))
+  if ((rc = open_outfile (-1, filename, suffix, 1, &out, !!filename)))
     goto leave;
 
   if (leadintext )

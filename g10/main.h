@@ -324,7 +324,7 @@ int overwrite_filep( const char *fname );
 char *make_outfile_name( const char *iname );
 char *ask_outfile_name( const char *name, size_t namelen );
 int open_outfile (int inp_fd, const char *iname, int mode,
-                  int restrictedperm, iobuf_t *a);
+                  int restrictedperm, iobuf_t *a, int no_outfile);
 char *get_matching_datafile (const char *sigfilename);
 iobuf_t open_sigfile (const char *sigfilename, progress_filter_context_t *pfx);
 void try_make_homedir( const char *fname );
