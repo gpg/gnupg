@@ -918,11 +918,16 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
   char *s, *s2;
   int i;
 
-  /* Fill in missing standard options: help, version, warranty and dump-options.  */
-  ARGPARSE_OPTS help_opt = ARGPARSE_s_n(ARGPARSE_SHORTOPT_HELP, "help", "@");
-  ARGPARSE_OPTS version_opt = ARGPARSE_s_n(ARGPARSE_SHORTOPT_VERSION, "version", "@");
-  ARGPARSE_OPTS warranty_opt = ARGPARSE_s_n(ARGPARSE_SHORTOPT_WARRANTY, "warranty", "@");
-  ARGPARSE_OPTS dump_options_opt = ARGPARSE_s_n(ARGPARSE_SHORTOPT_DUMP_OPTIONS, "dump-options", "@");
+  /* Fill in missing standard options: help, version, warranty and
+   * dump-options.  */
+  ARGPARSE_OPTS help_opt
+    = ARGPARSE_s_n (ARGPARSE_SHORTOPT_HELP, "help", "@");
+  ARGPARSE_OPTS version_opt
+    = ARGPARSE_s_n (ARGPARSE_SHORTOPT_VERSION, "version", "@");
+  ARGPARSE_OPTS warranty_opt
+    = ARGPARSE_s_n (ARGPARSE_SHORTOPT_WARRANTY, "warranty", "@");
+  ARGPARSE_OPTS dump_options_opt
+    = ARGPARSE_s_n(ARGPARSE_SHORTOPT_DUMP_OPTIONS, "dump-options", "@");
   int seen_help = 0;
   int seen_version = 0;
   int seen_warranty = 0;
