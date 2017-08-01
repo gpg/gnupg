@@ -174,15 +174,13 @@ ask_outfile_name( const char *name, size_t namelen )
  * If INP_FD is not -1 the function simply creates an IOBUF for that
  * file descriptor and ignore INAME and MODE.  Note that INP_FD won't
  * be closed if the returned IOBUF is closed.  With RESTRICTEDPERM a
- * file will be created with mode 700 if possible.  If NO_OUTFILE is
- * true, don't use the outfile option even if it is set.
+ * file will be created with mode 700 if possible.
  */
 int
 open_outfile (int inp_fd, const char *iname, int mode, int restrictedperm,
-              iobuf_t *a, int no_outfile)
+              iobuf_t *a)
 {
   int rc = 0;
-  const char outfile = no_outfile ? NULL : opt.outfile;
 
   *a = NULL;
   if (inp_fd != -1)
@@ -202,7 +200,7 @@ open_outfile (int inp_fd, const char *iname, int mode, int restrictedperm,
           log_info (_("writing to '%s'\n"), xname);
         }
     }
-  else if (iobuf_is_pipe_filename (iname) && !outfile)
+  else if (iobuf_is_pipe_filename (iname) && !opt.outfile)
     {
       *a = iobuf_create (NULL, 0);
       if ( !*a )
@@ -220,8 +218,8 @@ open_outfile (int inp_fd, const char *iname, int mode, int restrictedperm,
 
       if (opt.dry_run)
         name = NAME_OF_DEV_NULL;
-      else if (outfile)
-        name = outfile;
+      else if (opt.outfile)
+        name = opt.outfile;
       else
         {
 #ifdef USE_ONLY_8DOT3

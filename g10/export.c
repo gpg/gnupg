@@ -352,7 +352,7 @@ do_export (ctrl_t ctrl, strlist_t users, int secret, unsigned int options,
 
   memset( &zfx, 0, sizeof zfx);
 
-  rc = open_outfile (-1, NULL, 0, !!secret, &out, 0 );
+  rc = open_outfile (-1, NULL, 0, !!secret, &out );
   if (rc)
     return rc;
 

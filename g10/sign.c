@@ -889,7 +889,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	    log_info(_("writing to '%s'\n"), outfile );
     }
     else if( (rc = open_outfile (-1, fname,
-                                 opt.armor? 1: detached? 2:0, 0, &out, 0)))
+                                 opt.armor? 1: detached? 2:0, 0, &out)))
 	goto leave;
 
     /* prepare to calculate the MD over the input */
@@ -1191,7 +1191,7 @@ clearsign_file (ctrl_t ctrl,
 	else if( opt.verbose )
 	    log_info(_("writing to '%s'\n"), outfile );
     }
-    else if ((rc = open_outfile (-1, fname, 1, 0, &out, 0)))
+    else if ((rc = open_outfile (-1, fname, 1, 0, &out)))
 	goto leave;
 
     iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----" LF );
@@ -1340,7 +1340,7 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
     cfx.dek->use_mdc = use_mdc (NULL, cfx.dek->algo);
 
     /* now create the outfile */
-    rc = open_outfile (-1, fname, opt.armor? 1:0, 0, &out, 0);
+    rc = open_outfile (-1, fname, opt.armor? 1:0, 0, &out);
     if (rc)
 	goto leave;
 

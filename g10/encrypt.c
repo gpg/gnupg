@@ -276,7 +276,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       do_compress = 0;
     }
 
-  if ( rc || (rc = open_outfile (-1, filename, opt.armor? 1:0, 0, &out, 0 )))
+  if ( rc || (rc = open_outfile (-1, filename, opt.armor? 1:0, 0, &out )))
     {
       iobuf_cancel (inp);
       xfree (cfx.dek);
@@ -574,7 +574,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   if (opt.textmode)
     iobuf_push_filter (inp, text_filter, &tfx);
 
-  rc = open_outfile (outputfd, filename, opt.armor? 1:0, 0, &out, 0);
+  rc = open_outfile (outputfd, filename, opt.armor? 1:0, 0, &out);
   if (rc)
     goto leave;
 
