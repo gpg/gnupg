@@ -5,13 +5,13 @@
 #  <armando@clerval.org> in his PGP 2.3.6i translation.
 #  I also got inspiration from it.po by Marco d'Itri <md@linux.it>
 # Jaime Suárez <jsuarez@ono.com>, 2001-2004.
-# Manuel "Venturi" Porras Peralta <venturi@openmailbox.org>, 2014.
+# Manuel "Venturi" Porras Peralta <venturi@openmailbox.org>, 2014, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 1.4.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-11-23 01:52+0100\n"
+"PO-Revision-Date: 2016-01-22 21:28+0100\n"
 "Last-Translator: Manuel \"Venturi\" Porras Peralta <venturi@openmailbox."
 "org>\n"
 "Language-Team: Español; Castellano <debian-l10n-spanish@lists.debian.org>\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Gtranslator 2.91.6\n"
+"X-Generator: Gtranslator 2.91.7\n"
 
 #, c-format
 msgid "can't gen prime with pbits=%u qbits=%u\n"
@@ -2868,12 +2868,10 @@ msgstr ""
 "distinto.\n"
 
 msgid "WARNING: Your encryption subkey expires soon.\n"
-msgstr ""
+msgstr "ATENCIÓN: Su sub-clave de cifrado expirará pronto.\n"
 
-#, fuzzy
-#| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
-msgstr "No puede cambiar la fecha de caducidad de una clave v3\n"
+msgstr "Quizás también desee cambiar su fecha de expiración.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -3943,10 +3941,9 @@ msgstr "opción ambigua `%s'\n"
 msgid "unknown option `%s'\n"
 msgstr "opción desconocida `%s'\n"
 
-#, fuzzy, c-format
-#| msgid "Unknown signature type `%s'\n"
+#, c-format
 msgid "Unknown weak digest '%s'\n"
-msgstr "Clase de firma desconocida `%s'\n"
+msgstr "Resumen débil desconocido '%s'\n"
 
 #, c-format
 msgid "File `%s' exists. "
@@ -4543,10 +4540,9 @@ msgstr ""
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "NOTA: clave de la firma %s caducada el %s\n"
 
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
+#, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "firma %s, algoritmo de resumen %s\n"
+msgstr "Nota: se rechazarán las firmas que usan el algoritmo %s\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
