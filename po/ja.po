@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.1.20\n"
+"Project-Id-Version: gnupg 2.1.22\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-04-04 10:45+0900\n"
+"PO-Revision-Date: 2017-08-01 11:34+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -370,7 +370,7 @@ msgid "enable ssh support"
 msgstr "sshサポートを有功にする"
 
 msgid "|ALGO|use ALGO to show ssh fingerprints"
-msgstr ""
+msgstr "|ALGO|ssh署名の表示にALGOを使う"
 
 msgid "enable putty support"
 msgstr "puttyサポートを有功にする"
@@ -1200,10 +1200,9 @@ msgstr "サーバ'%s'はこちらより古いです(%s < %s)"
 msgid "WARNING: %s\n"
 msgstr "*警告*: %s\n"
 
-#, fuzzy, c-format
-#| msgid "%s does not yet work with %s\n"
+#, c-format
 msgid "%s is not compliant with %s mode\n"
-msgstr "%sは%sではまだ機能しません\n"
+msgstr "%sは%sモードに準拠しません\n"
 
 #, c-format
 msgid "OpenPGP card not available: %s\n"
@@ -1554,16 +1553,14 @@ msgid ""
 msgstr ""
 "*警告*: 共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定をそむきます\n"
 
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm '%s' while in %s mode\n"
+#, c-format
 msgid "cipher algorithm '%s' may not be used in %s mode\n"
 msgstr "暗号アルゴリズム'%s'を%sモードで使うことはできません\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+#, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
 msgstr ""
-"*警告*: \"%s%s\"は、使われなくなったオプションです - なんの効果もありません\n"
+"*警告*: 鍵%sは、%sモードでは、暗号化に適しません\n"
 
 #, c-format
 msgid ""
@@ -1580,10 +1577,9 @@ msgstr "共通鍵暗号方式 %s (%d) の強制が、受取人の優先指定を
 msgid "%s/%s encrypted for: \"%s\"\n"
 msgstr "%s/%s暗号化 受信者:\"%s\"\n"
 
-#, fuzzy, c-format
-#| msgid "you may not use %s while in %s mode\n"
+#, c-format
 msgid "option '%s' may not be used in %s mode\n"
-msgstr "%sを%sモードで使うことはできません\n"
+msgstr "オプション'%s'を%sモードで使うことはできません\n"
 
 #, c-format
 msgid "%s encrypted data\n"
@@ -2236,13 +2232,11 @@ msgstr "無効な個人用圧縮の優先指定\n"
 msgid "%s does not yet work with %s\n"
 msgstr "%sは%sではまだ機能しません\n"
 
-#, fuzzy, c-format
-#| msgid "you may not use digest algorithm '%s' while in %s mode\n"
+#, c-format
 msgid "digest algorithm '%s' may not be used in %s mode\n"
 msgstr "ダイジェスト・アルゴリズム'%s'を%sモードで使うことはできません\n"
 
-#, fuzzy, c-format
-#| msgid "you may not use compression algorithm '%s' while in %s mode\n"
+#, c-format
 msgid "compression algorithm '%s' may not be used in %s mode\n"
 msgstr "圧縮アルゴリズム'%s'を%sモードで使うことはできません\n"
 
@@ -2260,16 +2254,14 @@ msgstr "'%s'の共通鍵暗号に失敗しました: %s\n"
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "--symmetric --encryptを--s2k-mode 0で使うことはできません\n"
 
-#, fuzzy, c-format
-#| msgid "you cannot use --symmetric --encrypt while in %s mode\n"
+#, c-format
 msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "--symmetric --encryptを%sモードで使うことはできません\n"
 
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "--symmetric --sign --encryptを--s2k-mode 0で使うことはできません\n"
 
-#, fuzzy, c-format
-#| msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
+#, c-format
 msgid "you cannot use --symmetric --sign --encrypt in %s mode\n"
 msgstr "--symmetric --sign --encryptを%sモードで使うことはできません\n"
 
@@ -2392,10 +2384,8 @@ msgstr "インポート・フィルタを実行し鍵をすぐにエクスポー
 msgid "assume the GnuPG key backup format"
 msgstr "GnuPGの鍵のバックアップフォーマットを仮定します"
 
-#, fuzzy
-#| msgid "show key during import"
 msgid "repair keys on import"
-msgstr "インポートの際、鍵を表示"
+msgstr "インポートの際、鍵を修復する"
 
 #, c-format
 msgid "skipping block of type %d\n"
@@ -3235,15 +3225,13 @@ msgstr "署名するものがありません。\n"
 msgid "'%s' is not a valid expiration time\n"
 msgstr "'%s'は、有効な有効期限ではありません\n"
 
-#, fuzzy, c-format
-#| msgid "\"%s\" is not a fingerprint\n"
+#, c-format
 msgid "\"%s\" is not a proper fingerprint\n"
-msgstr "\"%s\"はフィンガープリントではありません\n"
+msgstr "\"%s\"はフ正しいィンガープリントではありません\n"
 
-#, fuzzy, c-format
-#| msgid "key \"%s\" not found\n"
+#, c-format
 msgid "subkey \"%s\" not found\n"
-msgstr "鍵\"%s\"が見つかりません\n"
+msgstr "副鍵\"%s\"が見つかりません\n"
 
 msgid "Digest: "
 msgstr "ダイジェスト: "
@@ -4288,10 +4276,9 @@ msgstr "[不確定]"
 msgid "                aka \"%s\""
 msgstr "                別名\"%s\""
 
-#, fuzzy, c-format
-#| msgid "WARNING: This key is not certified with a trusted signature!\n"
+#, c-format
 msgid "WARNING: This key is not suitable for signing in %s mode\n"
-msgstr "*警告*: この鍵は信用できる署名で証明されていません!\n"
+msgstr "*警告*: この鍵は%sモードでの署名に適しません!\n"
 
 #, c-format
 msgid "Signature expired %s\n"
@@ -4821,10 +4808,9 @@ msgstr "署名されたデータ'%s'が開けません\n"
 msgid "can't open signed data fd=%d: %s\n"
 msgstr "署名されたデータ fd=%d が開けません: %s\n"
 
-#, fuzzy, c-format
-#| msgid "certificate is not usable for encryption\n"
+#, c-format
 msgid "Note: key %s is not suitable for encryption in %s mode\n"
-msgstr "証明書は暗号化のために使えません\n"
+msgstr "注: 鍵%sは%sモードでの暗号化のために適しません\n"
 
 #, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
@@ -5002,10 +4988,9 @@ msgstr ""
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "*警告*: 署名のダイジェストが、メッセージと衝突します\n"
 
-#, fuzzy, c-format
-#| msgid "you may not use %s while in %s mode\n"
+#, c-format
 msgid "key %s may not be used for signing in %s mode\n"
-msgstr "%sを%sモードで使うことはできません\n"
+msgstr "鍵%sを署名のために%sモードで使うことはできません\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
