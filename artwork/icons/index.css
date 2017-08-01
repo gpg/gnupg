@@ -1,0 +1,59 @@
+body {
+      font-family: Sans-Serif;
+      color: #333;
+      background-color: #fcfcfc;
+}
+
+img {
+    padding-right: 0.1em;
+}
+
+/* Factor 0.72 */
+
+.fpr {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.fpr12 {
+    font-size: 17px;
+}
+
+.fpr16 {
+    font-size: 22px;
+}
+
+.fpr24 {
+    font-size: 33px;
+}
+
+.fpr32 {
+    font-size: 44px;
+}
+
+.fpr48 {
+    font-size: 67px;
+}
+
+.fpr64 {
+    font-size: 89px;
+}
+
+.fpr128 {
+    font-size: 178px;
+}
+
+.fpr256 {
+    font-size: 356px;
+}
+
+.text {
+    column-count: 3;
+    column-gap: 40px;
+}
+
+h2 {
+    padding-top: 0px;
+    margin-top: 0px;
+}
