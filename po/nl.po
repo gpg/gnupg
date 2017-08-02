@@ -24,13 +24,13 @@
 # When output to an ASCII terminal, the single quotation marks are
 # transliterated to apostrophes, and the double quotation marks are
 # transliterated to 0x22.
-# Frans Spiesschaert <Frans.Spiesschaert@yucom.be>, 2014.
+# Frans Spiesschaert <Frans.Spiesschaert@yucom.be>, 2014, 2016.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 1.4.6\n"
+"Project-Id-Version: gnupg 1.4.21\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-11-24 12:23+0100\n"
+"PO-Revision-Date: 2016-11-08 20:05+0100\n"
 "Last-Translator: Frans Spiesschaert <Frans.Spiesschaert@yucom.be>\n"
 "Language-Team: Debian Dutch l10n Team <debian-l10n-dutch@lists.debian.org>\n"
 "Language: nl\n"
@@ -38,6 +38,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Gtranslator 2.91.6\n"
 
 #, c-format
 msgid "can't gen prime with pbits=%u qbits=%u\n"
@@ -2943,12 +2944,10 @@ msgstr ""
 "              de veronderstelde primaire ID worden.\n"
 
 msgid "WARNING: Your encryption subkey expires soon.\n"
-msgstr ""
+msgstr "WAARSCHUWING: Binnenkort vervalt uw encryptie-subsleutel.\n"
 
-#, fuzzy
-#| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
-msgstr "U kunt de vervaldatum van een v3-sleutel niet veranderen\n"
+msgstr "Misschien wilt u ook zijn vervaldatum wijzigen.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -4054,10 +4053,9 @@ msgstr "dubbelzinnige optie `%s'\n"
 msgid "unknown option `%s'\n"
 msgstr "onbekende optie `%s'\n"
 
-#, fuzzy, c-format
-#| msgid "Unknown signature type `%s'\n"
+#, c-format
 msgid "Unknown weak digest '%s'\n"
-msgstr "Onbekend ondertekeningstype ‘%s’\n"
+msgstr "Onbekende zwakke hash ‘%s’\n"
 
 #, c-format
 msgid "File `%s' exists. "
@@ -4680,10 +4678,10 @@ msgstr ""
 msgid "NOTE: signature key %s expired %s\n"
 msgstr "NOOT: ondertekeningssleutel %s verviel op %s\n"
 
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
+#, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s handtekening, hashalgoritme %s\n"
+msgstr ""
+"Opmerking: handtekeningen die het algoritme %s gebruiken worden verworpen\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
