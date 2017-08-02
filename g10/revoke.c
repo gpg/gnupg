@@ -532,6 +532,7 @@ gen_standard_revoke (ctrl_t ctrl, PKT_public_key *psk, const char *cache_nonce)
   u32 keyid[2];
   int kl;
   char *orig_codeset;
+  char *old_outfile;
 
   dir = get_openpgp_revocdir (gnupg_homedir ());
   tmpstr = hexfingerprint (psk, NULL, 0);
@@ -586,8 +587,11 @@ gen_standard_revoke (ctrl_t ctrl, PKT_public_key *psk, const char *cache_nonce)
 
   reason.code = 0x00; /* No particular reason.  */
   reason.desc = NULL;
+  old_outfile = opt.outfile;
+  opt.outfile = NULL;
   rc = create_revocation (ctrl,
                           fname, &reason, psk, NULL, leadin, 3, cache_nonce);
+  opt.outfile = old_outfile;
   if (!rc && !opt.quiet)
     log_info (_("revocation certificate stored as '%s.rev'\n"), fname);
 
