@@ -551,7 +551,14 @@ command_supported (char *userid)
   char *addrspec = NULL;
   char *submission_to = NULL;
 
-  addrspec = mailbox_from_userid (userid);
+  if (!strchr (userid, '@'))
+    {
+      char *tmp = xstrconcat ("foo@", userid, NULL);
+      addrspec = mailbox_from_userid (tmp);
+      xfree (tmp);
+    }
+  else
+    addrspec = mailbox_from_userid (userid);
   if (!addrspec)
     {
       log_error (_("\"%s\" is not a proper mail address\n"), userid);
