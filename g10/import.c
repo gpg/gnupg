@@ -1778,7 +1778,8 @@ import_one (ctrl_t ctrl,
       merge_keys_done = 1;
       /* Note that we do not want to show the validity because the key
        * has not yet imported.  */
-      list_keyblock_direct (ctrl, keyblock, 0, 0, 1, 1);
+      list_keyblock_direct (ctrl, keyblock, 0, 0,
+                            opt.fingerprint || opt.with_fingerprint, 1);
       es_fflush (es_stdout);
     }
 
