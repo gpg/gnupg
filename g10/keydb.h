@@ -396,7 +396,7 @@ char *get_user_id_byfpr (ctrl_t ctrl, const byte *fpr, size_t *rn);
 char *get_user_id_byfpr_native (ctrl_t ctrl, const byte *fpr);
 
 void release_akl(void);
-int parse_auto_key_locate(char *options);
+int parse_auto_key_locate(const char *options);
 int parse_key_origin (char *string);
 const char *key_origin_string (int origin);
 

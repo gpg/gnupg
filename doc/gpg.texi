@@ -1726,14 +1726,18 @@ Set what trust model GnuPG should follow. The models are:
   exists.
 @end table
 
-@item --auto-key-locate @var{parameters}
+@item --auto-key-locate @var{mechanisms}
 @itemx --no-auto-key-locate
 @opindex auto-key-locate
 GnuPG can automatically locate and retrieve keys as needed using this
-option. This happens when encrypting to an email address (in the
-"user@@example.com" form), and there are no user@@example.com keys on
-the local keyring.  This option takes any number of the following
-mechanisms, in the order they are to be tried:
+option.  This happens when encrypting to an email address (in the
+"user@@example.com" form), and there are no "user@@example.com" keys
+on the local keyring.  This option takes any number of the mechanisms
+listed below, in the order they are to be tried.  Instead of listing
+the mechanisms as comma delimited arguments, the option may also be
+given several times to add more mechanism.  The option
+@option{--no-auto-key-locate} or the mechanism "clear" resets the
+list.  The default is "local,wkd".
 
 @table @asis
 
@@ -1749,7 +1753,6 @@ mechanisms, in the order they are to be tried:
 
   @item wkd
   Locate a key using the Web Key Directory protocol.
-  This is an experimental method and semantics may change.
 
   @item ldap
   Using DNS Service Discovery, check the domain in question for any LDAP
@@ -1782,13 +1785,14 @@ mechanisms, in the order they are to be tried:
 
 @end table
 
+
 @item --auto-key-retrieve
 @itemx --no-auto-key-retrieve
 @opindex auto-key-retrieve
 @opindex no-auto-key-retrieve
-This option enables the automatic retrieving of keys from a keyserver
-when verifying signatures made by keys that are not on the local
-keyring.
+These options enable or disable the automatic retrieving of keys from
+a keyserver when verifying signatures made by keys that are not on the
+local keyring.  The default is @option{--auto-key-retrieve}.
 
 If the method "wkd" is included in the list of methods given to
 @option{auto-key-locate}, the signer's user ID is part of the

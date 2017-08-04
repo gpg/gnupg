@@ -4229,9 +4229,10 @@ release_akl (void)
 
 /* Returns false on error. */
 int
-parse_auto_key_locate (char *options)
+parse_auto_key_locate (const char *options_arg)
 {
   char *tok;
+  char *options = xstrdup (options_arg);
 
   while ((tok = optsep (&options)))
     {
@@ -4271,6 +4272,7 @@ parse_auto_key_locate (char *options)
       else
 	{
 	  free_akl (akl);
+          xfree (options);
 	  return 0;
 	}
 
@@ -4299,6 +4301,7 @@ parse_auto_key_locate (char *options)
 	}
     }
 
+  xfree (options);
   return 1;
 }
 

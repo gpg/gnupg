@@ -2292,6 +2292,7 @@ main (int argc, char **argv)
     int ovrseskeyfd = -1;
     int fpr_maybe_cmd = 0; /* --fingerprint maybe a command.  */
     int any_explicit_recipient = 0;
+    int default_akl = 1;
     int require_secmem = 0;
     int got_secmem = 0;
     struct assuan_malloc_hooks malloc_hooks;
@@ -2362,7 +2363,8 @@ main (int argc, char **argv)
     opt.keyserver_options.import_options = (IMPORT_REPAIR_KEYS
 					    | IMPORT_REPAIR_PKS_SUBKEY_BUG);
     opt.keyserver_options.export_options = EXPORT_ATTRIBUTES;
-    opt.keyserver_options.options = KEYSERVER_HONOR_PKA_RECORD;
+    opt.keyserver_options.options = (KEYSERVER_HONOR_PKA_RECORD
+                                     | KEYSERVER_AUTO_KEY_RETRIEVE);
     opt.verify_options = (LIST_SHOW_UID_VALIDITY
                           | VERIFY_SHOW_POLICY_URLS
                           | VERIFY_SHOW_STD_NOTATIONS
@@ -2385,7 +2387,6 @@ main (int argc, char **argv)
     opt.passphrase_repeat = 1;
     opt.emit_version = 0;
     opt.weak_digests = NULL;
-    additional_weak_digest("MD5");
 
     /* Check whether we have a config file on the command line.  */
     orig_argc = argc;
@@ -2460,6 +2461,10 @@ main (int argc, char **argv)
     assuan_set_malloc_hooks (&malloc_hooks);
     assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
     setup_libassuan_logging (&opt.debug, NULL);
+
+    /* Set default options which require that malloc stuff is ready.  */
+    additional_weak_digest ("MD5");
+    parse_auto_key_locate ("local,wkd");
 
     /* Try for a version specific config file first */
     default_configname = get_default_configname ();
@@ -3457,6 +3462,13 @@ main (int argc, char **argv)
 	  case oNoRequireCrossCert: opt.flags.require_cross_cert=0; break;
 
 	  case oAutoKeyLocate:
+            if (default_akl)
+              {
+                /* This is the first time --aito-key-locate is seen.
+                 * We need to reset the default akl.  */
+                default_akl = 0;
+                release_akl();
+              }
 	    if(!parse_auto_key_locate(pargs.r.ret_str))
 	      {
 		if(configname)
