@@ -4232,8 +4232,9 @@ int
 parse_auto_key_locate (const char *options_arg)
 {
   char *tok;
-  char *options = xstrdup (options_arg);
+  char *options, *options_buf;
 
+  options = options_buf = xstrdup (options_arg);
   while ((tok = optsep (&options)))
     {
       struct akl *akl, *check, *last = NULL;
@@ -4272,7 +4273,7 @@ parse_auto_key_locate (const char *options_arg)
       else
 	{
 	  free_akl (akl);
-          xfree (options);
+          xfree (options_buf);
 	  return 0;
 	}
 
@@ -4301,7 +4302,7 @@ parse_auto_key_locate (const char *options_arg)
 	}
     }
 
-  xfree (options);
+  xfree (options_buf);
   return 1;
 }
 
