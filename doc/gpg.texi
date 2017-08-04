@@ -2302,9 +2302,11 @@ opposite meaning. The options are:
   keyserver @option{--receive-keys}.
 
   @item import-show
+  @itemx show-only
   Show a listing of the key as imported right before it is stored.
   This can be combined with the option @option{--dry-run} to only look
-  at keys.
+  at keys; the option @option{show-only} is a shortcut for this
+  combination.
 
   @item import-export
   Run the entire import code but instead of storing the key to the

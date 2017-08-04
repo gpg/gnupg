@@ -190,6 +190,10 @@ parse_import_options(char *str,unsigned int *options,int noisy)
       {"repair-keys", IMPORT_REPAIR_KEYS, NULL,
        N_("repair keys on import")},
 
+      /* No description to avoid string change: Fixme for 2.3 */
+      {"show-only", (IMPORT_SHOW | IMPORT_DRY_RUN), NULL,
+       NULL},
+
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL,NULL},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL,NULL},
@@ -1790,7 +1794,7 @@ import_one (ctrl_t ctrl,
       goto leave;
     }
 
-  if (opt.dry_run)
+  if (opt.dry_run || (options & IMPORT_DRY_RUN))
     goto leave;
 
   /* Do we have this key already in one of our pubrings ? */
