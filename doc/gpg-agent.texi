@@ -325,10 +325,14 @@ the environment variable @code{SHELL} which is correct in almost all
 cases.
 
 
-@item --no-grab
+@item --grab
+@itemx --no-grab
+@opindex grab
 @opindex no-grab
-Tell the pinentry not to grab the keyboard and mouse.  This option
-should in general not be used to avoid X-sniffing attacks.
+Tell the pinentry to grab the keyboard and mouse.  This option should
+be used on X-Servers to avoid X-sniffing attacks. Any use of the
+option @option{--grab} overrides an used option @option{--no-grab}.
+The default is @option{--no-grab}.
 
 @anchor{option --log-file}
 @item --log-file @var{file}

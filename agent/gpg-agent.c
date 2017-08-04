@@ -83,6 +83,7 @@ enum cmd_and_opt_values
   oNoOptions,
   oHomedir,
   oNoDetach,
+  oGrab,
   oNoGrab,
   oLogFile,
   oServer,
@@ -169,7 +170,10 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDebugPinentry, "debug-pinentry", "@"),
 
   ARGPARSE_s_n (oNoDetach,  "no-detach", N_("do not detach from the console")),
-  ARGPARSE_s_n (oNoGrab,    "no-grab",   N_("do not grab keyboard and mouse")),
+  ARGPARSE_s_n (oGrab,      "grab",      "@"),
+                /* FIXME: Add the below string for 2.3 */
+                /* N_("let PIN-Entry grab keyboard and mouse")), */
+  ARGPARSE_s_n (oNoGrab,    "no-grab",   "@"),
   ARGPARSE_s_s (oLogFile,   "log-file",  N_("use a log file for the server")),
   ARGPARSE_s_s (oPinentryProgram, "pinentry-program",
                 /* */             N_("|PGM|use PGM as the PIN-Entry program")),
@@ -787,7 +791,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.quiet = 0;
       opt.verbose = 0;
       opt.debug = 0;
-      opt.no_grab = 0;
+      opt.no_grab = 1;
       opt.debug_pinentry = 0;
       opt.pinentry_program = NULL;
       opt.pinentry_touch_file = NULL;
@@ -842,7 +846,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
         }
       break;
 
-    case oNoGrab: opt.no_grab = 1; break;
+    case oNoGrab: opt.no_grab |= 1; break;
+    case oGrab: opt.no_grab |= 2; break;
 
     case oPinentryProgram: opt.pinentry_program = pargs->r.ret_str; break;
     case oPinentryTouchFile: opt.pinentry_touch_file = pargs->r.ret_str; break;
@@ -917,6 +922,9 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 static void
 finalize_rereadable_options (void)
 {
+  /* Hack to allow --grab to override --no-grab.  */
+  if ((opt.no_grab & 2))
+    opt.no_grab = 0;
 }
 
 
@@ -1405,6 +1413,8 @@ main (int argc, char **argv )
       es_printf ("pinentry-timeout:%lu:0:\n",
                  GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME);
       es_printf ("enable-extended-key-format:%lu:\n",
+                 GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
+      es_printf ("grab:%lu:\n",
                  GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
 
       agent_exit (0);
