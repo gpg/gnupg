@@ -338,6 +338,8 @@
 	       "no-secmem-warning"
 	       "no-permission-warning"
 	       "batch"
+               "no-auto-key-retrieve"
+               "no-auto-key-locate"
 	       "allow-weak-digest-algos"
 	       (if have-opt-always-trust
 		   "no-auto-check-trustdb" "#no-auto-check-trustdb")
