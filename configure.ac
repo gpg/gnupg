@@ -208,20 +208,18 @@ show_gnupg_dirmngr_ldap_pgm="(default)"
 test -n "$GNUPG_DIRMNGR_LDAP_PGM" \
       && show_gnupg_dirmngr_ldap_pgm="$GNUPG_DIRMNGR_LDAP_PGM"
 
+
 #
-# On some platforms gpg2 is usually installed as gpg without using a
-# symlink.  For correct operation of gpgconf it needs to know the
-# installed name of gpg.  This option sets "gpg2"'s installed name to
-# just "gpg".  Note that it might be required to rename gpg2 to gpg
-# manually after the build process.
+# For a long time gpg 2.x was installed as gpg2.  This changed with
+# 2.2.  This option can be used to install gpg under the name gpg2.
 #
-AC_ARG_ENABLE(gpg2-is-gpg,
-    AC_HELP_STRING([--enable-gpg2-is-gpg],[Set installed name of gpg2 to gpg]),
-    gpg2_is_gpg=$enableval)
-if test "$gpg2_is_gpg" != "yes"; then
+AC_ARG_ENABLE(gpg-is-gpg2,
+    AC_HELP_STRING([--enable-gpg-is-gpg2],[Set installed name of gpg to gpg2]),
+    gpg_is_gpg2=$enableval)
+if test "$gpg_is_gpg2" = "yes"; then
    AC_DEFINE(USE_GPG2_HACK, 1, [Define to install gpg as gpg2])
 fi
-AM_CONDITIONAL(USE_GPG2_HACK, test "$gpg2_is_gpg" != "yes")
+AM_CONDITIONAL(USE_GPG2_HACK, test "$gpg_is_gpg2" = "yes")
 
 
 # SELinux support includes tracking of sensitive files to avoid

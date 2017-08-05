@@ -177,16 +177,15 @@
   is at [[https://gnupg.org/documentation/manuals/gnupg-devel/]] .
 
 
-* GnuPG 1.4 and GnuPG 2.0
+* Installing GnuPG 2.2. and GnuPG 1.4
 
-  GnuPG 2.0 is a newer version of GnuPG with additional support for
-  S/MIME.  It has a different design philosophy that splits
-  functionality up into several modules.  Both versions may be
-  installed simultaneously without any conflict (gpg is called gpg2 in
-  GnuPG 2).  In fact, the gpg version from GnuPG 1.4 is able to make
-  use of the gpg-agent as included in GnuPG 2 and allows for seamless
-  passphrase caching.  The advantage of GnuPG 1.4 is its smaller size
-  and no dependency on other modules at run and build time.
+  GnuPG 2.2 is a current version of GnuPG with state of the art
+  security design and many more features.  To install both versions
+  alongside, it is suggested to rename the 1.4 version of "gpg" to
+  "gpg1" as well as the corresponding man page.  Newer releases of the
+  1.4 branch will likely do this by default.  In case this is not
+  possible, the 2.2 version can be installed under the name "gpg2"
+  using the configure option --enable-gpg-is-gpg2.
 
 
 * HOW TO GET MORE INFORMATION

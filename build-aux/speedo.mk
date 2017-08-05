@@ -476,7 +476,7 @@ speedo_pkg_ntbtls_configure = --enable-static --disable-shared
 
 ifeq ($(TARGETOS),w32)
 speedo_pkg_gnupg_configure = \
-        --enable-gpg2-is-gpg --disable-g13 --enable-ntbtls \
+        --disable-g13 --enable-ntbtls \
         --enable-build-timestamp
 else
 speedo_pkg_gnupg_configure = --disable-g13
