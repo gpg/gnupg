@@ -2,7 +2,6 @@
 Description=GnuPG network certificate management daemon
 Documentation=man:dirmngr(8)
 Requires=dirmngr.socket
-After=dirmngr.socket
 
 [Service]
 ExecStart=/usr/bin/dirmngr --supervised
