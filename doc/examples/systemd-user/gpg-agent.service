@@ -3,8 +3,6 @@ Description=GnuPG cryptographic agent and passphrase cache
 Documentation=man:gpg-agent(1)
 Requires=gpg-agent.socket
 After=gpg-agent.socket
-## This is a socket-activated service:
-RefuseManualStart=true
 
 [Service]
 ExecStart=/usr/bin/gpg-agent --supervised
