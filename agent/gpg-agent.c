@@ -2407,7 +2407,7 @@ agent_sigusr2_action (void)
 
 #ifndef HAVE_W32_SYSTEM
 /* The signal handler for this program.  It is expected to be run in
-   its own trhead and not in the context of a signal handler.  */
+   its own thread and not in the context of a signal handler.  */
 static void
 handle_signal (int signo)
 {
