@@ -1644,7 +1644,7 @@ Set what trust model GnuPG should follow. The models are:
   time a key is seen, it is memorized.  If later another key with a
   user id with the same email address is seen, both keys are marked as
   suspect.  In that case, the next time either is used, a warning is
-  displayed describing the conflict, why it might have occured
+  displayed describing the conflict, why it might have occurred
   (either the user generated a new key and failed to cross sign the
   old and new keys, the key is forgery, or a man-in-the-middle attack
   is being attempted), and the user is prompted to manually confirm
