@@ -51,18 +51,28 @@
    (parse-makefile-expand (in-srcdir "tests" "openpgp" "Makefile.am")
 			  (lambda (filename port key) (parse-makefile port key))
 			  "XTESTS"))
- (append
-  (map (lambda (name)
-	 (test::scm setup
-		    (path-join "tests" "openpgp" name)
-		    (in-srcdir "tests" "openpgp" name))) all-tests)
-  (map (lambda (name)
-	 (test::scm setup-use-keyring
-		    (qualify (path-join "tests" "openpgp" name) "use-keyring")
-		    (in-srcdir "tests" "openpgp" name)
-		    "--use-keyring")) all-tests)
-  (map (lambda (name)
-	 (test::scm setup-extended-key-format
-		    (qualify (path-join "tests" "openpgp" name) "extended-key-format")
-		    (in-srcdir "tests" "openpgp" name)
-		    "--extended-key-format")) all-tests)))
+
+ (define tests
+   (map (lambda (name)
+	  (test::scm setup
+		     (path-join "tests" "openpgp" name)
+		     (in-srcdir "tests" "openpgp" name))) all-tests))
+
+ (when *maintainer-mode*
+       (set! tests
+	     (append
+	      tests
+	      (map (lambda (name)
+		     (test::scm setup-use-keyring
+				(qualify (path-join "tests" "openpgp" name)
+					 "use-keyring")
+				(in-srcdir "tests" "openpgp" name)
+				"--use-keyring")) all-tests)
+	      (map (lambda (name)
+		     (test::scm setup-extended-key-format
+				(qualify (path-join "tests" "openpgp" name)
+					 "extended-key-format")
+				(in-srcdir "tests" "openpgp" name)
+				"--extended-key-format")) all-tests))))
+
+ tests)

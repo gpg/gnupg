@@ -1541,6 +1541,11 @@ if test "$development_version" = yes; then
             [Defined if this is not a regular release])
 fi
 
+if test "$USE_MAINTAINER_MODE" = "yes"; then
+    AC_DEFINE(MAINTAINER_MODE,1,
+            [Defined if this build is in maintainer mode])
+fi
+
 AM_CONDITIONAL(CROSS_COMPILING, test x$cross_compiling = xyes)
 
 GNUPG_CHECK_GNUMAKE
