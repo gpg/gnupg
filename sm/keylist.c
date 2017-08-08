@@ -541,15 +541,15 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   xfree (fpr); fpr = NULL; chain_id = NULL;
   xfree (chain_id_buffer); chain_id_buffer = NULL;
 
-  if (opt.with_key_data)
+  /* Always print the keygrip.  */
+  if ( (p = gpgsm_get_keygrip_hexstring (cert)))
     {
-      if ( (p = gpgsm_get_keygrip_hexstring (cert)))
-        {
-          es_fprintf (fp, "grp:::::::::%s:\n", p);
-          xfree (p);
-        }
-      print_key_data (cert, fp);
+      es_fprintf (fp, "grp:::::::::%s:\n", p);
+      xfree (p);
     }
+
+  if (opt.with_key_data)
+    print_key_data (cert, fp);
 
   kludge_uid = NULL;
   for (idx=0; (p = ksba_cert_get_subject (cert,idx)); idx++)

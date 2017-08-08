@@ -1189,10 +1189,12 @@ gpg-preset-passphrase [options] [command] @var{cacheid}
 @var{cacheid} is either a 40 character keygrip of hexadecimal
 characters identifying the key for which the passphrase should be set
 or cleared.  The keygrip is listed along with the key when running the
-command: @code{gpgsm --dump-secret-keys}.  Alternatively an arbitrary
-string may be used to identify a passphrase; it is suggested that such
-a string is prefixed with the name of the application (e.g
-@code{foo:12346}).
+command: @code{gpgsm --with-keygrip --list-secret-keys}.
+Alternatively an arbitrary string may be used to identify a
+passphrase; it is suggested that such a string is prefixed with the
+name of the application (e.g @code{foo:12346}).  Scripts should always
+use the option @option{--with-colons}, which provides the keygrip in a
+"grp" line (cf. @file{doc/DETAILS})/
 
 @noindent
 One of the following command options must be given:
