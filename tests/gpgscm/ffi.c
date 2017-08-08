@@ -1450,6 +1450,14 @@ ffi_init (scheme *sc, const char *argv0, const char *scriptname,
 #endif
               );
 
+  ffi_define (sc, "*run-all-tests*",
+#if RUN_ALL_TESTS
+              sc->T
+#else
+              sc->F
+#endif
+              );
+
 
   ffi_define (sc, "*stdin*",
               sc->vptr->mk_port_from_file (sc, stdin, port_input));

@@ -60,9 +60,12 @@
 
     ./configure
     make
+    make check
     make install
 
-  (Before doing install you might need to become root.)
+  The "make check" is optional but highly recommended.  To run even
+  more tests you may add "--enable-all-tests" to the configure run.
+  Before running the "make install" you might need to become root.
 
   If everything succeeds, you have a working GnuPG with support for
   OpenPGP, S/MIME, ssh-agent, and smartcards.  Note that there is no

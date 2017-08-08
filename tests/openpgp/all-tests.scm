@@ -58,7 +58,7 @@
 		     (path-join "tests" "openpgp" name)
 		     (in-srcdir "tests" "openpgp" name))) all-tests))
 
- (when *maintainer-mode*
+ (when *run-all-tests*
        (set! tests
 	     (append
 	      tests

@@ -1668,6 +1668,20 @@ AC_ARG_ENABLE(optimization,
                    fi])
 
 #
+# Configure option --enable-all-tests
+#
+AC_MSG_CHECKING([whether "make check" shall run all tests])
+AC_ARG_ENABLE(all-tests,
+              AC_HELP_STRING([--enable-all-tests],
+                             [let "make check" run all tests]),
+              run_all_tests=$enableval, run_all_tests=no)
+AC_MSG_RESULT($run_all_tests)
+if test "$run_all_tests" = "yes"; then
+    AC_DEFINE(RUN_ALL_TESTS,1,
+            [Defined if "make check" shall run all tests])
+fi
+
+#
 # We do not want support for the GNUPG_BUILDDIR environment variable
 # in a released version.  However, our regression tests suite requires
 # this and thus we build with support for it during "make distcheck".
