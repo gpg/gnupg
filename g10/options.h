@@ -121,6 +121,7 @@ struct
   int max_cert_depth;
   const char *agent_program;
   const char *dirmngr_program;
+  int disable_dirmngr;
 
   const char *def_new_key_algo;
 

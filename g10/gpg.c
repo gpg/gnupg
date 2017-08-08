@@ -374,6 +374,7 @@ enum cmd_and_opt_values
     oPersonalCompressPreferences,
     oAgentProgram,
     oDirmngrProgram,
+    oDisableDirmngr,
     oDisplay,
     oTTYname,
     oTTYtype,
@@ -837,6 +838,7 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
   ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
+  ARGPARSE_s_n (oDisableDirmngr, "disable-dirmngr", "@"),
   ARGPARSE_s_s (oDisplay,    "display",    "@"),
   ARGPARSE_s_s (oTTYname,    "ttyname",    "@"),
   ARGPARSE_s_s (oTTYtype,    "ttytype",    "@"),
@@ -1857,6 +1859,7 @@ gpgconf_list (const char *configfile)
   es_printf ("compliance:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT, "gnupg");
   es_printf ("default-new-key-algo:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("trust-model:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("disable-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);
 
   /* The next one is an info only item and should match the macros at
      the top of keygen.c  */
@@ -3388,6 +3391,7 @@ main (int argc, char **argv)
 	    break;
           case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
           case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str; break;
+	  case oDisableDirmngr: opt.disable_dirmngr = 1;  break;
           case oWeakDigest:
 	    additional_weak_digest(pargs.r.ret_str);
 	    break;

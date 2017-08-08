@@ -759,6 +759,9 @@ static gc_option_t gc_options_gpg[] =
      NULL, NULL, GC_ARG_TYPE_NONE, GC_BACKEND_GPG },
    { "no-auto-key-retrieve", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      NULL, NULL, GC_ARG_TYPE_NONE, GC_BACKEND_GPG },
+   { "disable-dirmngr", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
+     "gnupg", N_("disable all access to the dirmngr"),
+     GC_ARG_TYPE_NONE, GC_BACKEND_GPG },
 
 
    GC_OPTION_NULL

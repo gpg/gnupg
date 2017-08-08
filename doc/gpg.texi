@@ -1976,6 +1976,9 @@ file name.
 Specify a dirmngr program to be used for keyserver access.  The
 default value is @file{@value{BINDIR}/dirmngr}.
 
+@item --disable-dirmngr
+Entirely disable the use of the Dirmngr.
+
 @item --no-autostart
 @opindex no-autostart
 Do not start the gpg-agent or the dirmngr if it has not yet been

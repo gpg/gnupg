@@ -184,6 +184,10 @@ create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
   assuan_context_t ctx;
 
   *r_ctx = NULL;
+
+  if (opt.disable_dirmngr)
+    return gpg_error (GPG_ERR_NO_DIRMNGR);
+
   err = start_new_dirmngr (&ctx,
                            GPG_ERR_SOURCE_DEFAULT,
                            opt.dirmngr_program,
