@@ -613,6 +613,7 @@
 	      (xfailed (filter-tests 'XFAIL))
 	      (xpassed (filter-tests 'XPASS))
 	      (skipped (filter-tests 'SKIP)))
+          (echo "===================")
 	  (echo (length procs) "tests run,"
 		(length (filter-tests 'PASS)) "succeeded,"
 		(length failed) "failed,"
@@ -623,6 +624,7 @@
 	  (print-tests xfailed "Expectedly failed tests:")
 	  (print-tests xpassed "Unexpectedly passed tests:")
 	  (print-tests skipped "Skipped tests:")
+          (echo "===================")
 	  (+ (length failed) (length xpassed))))
 
       (define (xml)
