@@ -321,9 +321,6 @@ msgstr "|FILE|FILEからオプションを読み込みます"
 msgid "do not detach from the console"
 msgstr "コンソールからデタッチしない"
 
-msgid "do not grab keyboard and mouse"
-msgstr "キーボードとマウスを占有しない"
-
 msgid "use a log file for the server"
 msgstr "サーバのログ・ファイルを使う"
 
@@ -1200,6 +1197,14 @@ msgstr "サーバ'%s'はこちらより古いです(%s < %s)"
 msgid "WARNING: %s\n"
 msgstr "*警告*: %s\n"
 
+msgid "Note: Outdated servers may lack important security fixes.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr "まず\"toggle\"コマンドを使ってください。\n"
+
 #, c-format
 msgid "%s is not compliant with %s mode\n"
 msgstr "%sは%sモードに準拠しません\n"
@@ -1559,8 +1564,7 @@ msgstr "暗号アルゴリズム'%s'を%sモードで使うことはできませ
 
 #, c-format
 msgid "WARNING: key %s is not suitable for encryption in %s mode\n"
-msgstr ""
-"*警告*: 鍵%sは、%sモードでは、暗号化に適しません\n"
+msgstr "*警告*: 鍵%sは、%sモードでは、暗号化に適しません\n"
 
 #, c-format
 msgid ""
@@ -4808,8 +4812,9 @@ msgstr "署名されたデータ'%s'が開けません\n"
 msgid "can't open signed data fd=%d: %s\n"
 msgstr "署名されたデータ fd=%d が開けません: %s\n"
 
-#, c-format
-msgid "Note: key %s is not suitable for encryption in %s mode\n"
+#, fuzzy, c-format
+#| msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgid "key %s is not suitable for decryption in %s mode\n"
 msgstr "注: 鍵%sは%sモードでの暗号化のために適しません\n"
 
 #, c-format
@@ -8310,6 +8315,9 @@ msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
 
+#~ msgid "do not grab keyboard and mouse"
+#~ msgstr "キーボードとマウスを占有しない"
+
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "エラー: URLが長すぎます (上限%d文字)。\n"
 
@@ -8651,9 +8659,6 @@ msgstr ""
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "秘密鍵と公開鍵の一覧の反転"
-
-#~ msgid "Please use the command \"toggle\" first.\n"
-#~ msgstr "まず\"toggle\"コマンドを使ってください。\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "パスフレーズ"

@@ -335,9 +335,6 @@ msgstr "|fájl|bővítő modul betöltése"
 msgid "do not detach from the console"
 msgstr ""
 
-msgid "do not grab keyboard and mouse"
-msgstr ""
-
 #, fuzzy
 msgid "use a log file for the server"
 msgstr "kulcsok keresése kulcsszerveren"
@@ -1281,6 +1278,14 @@ msgstr ""
 #| msgid "WARNING: %s overrides %s\n"
 msgid "WARNING: %s\n"
 msgstr "FIGYELEM: %s hatástalanítja %s-t!\n"
+
+msgid "Note: Outdated servers may lack important security fixes.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr "Kérem, használja előbb a \"toggle\" parancsot!\n"
 
 #, fuzzy, c-format
 #| msgid "%s does not yet work with %s\n"
@@ -5215,7 +5220,7 @@ msgid "can't open signed data fd=%d: %s\n"
 msgstr "Nem tudom megnyitni a(z) \"%s\" aláírt adatot!\n"
 
 #, fuzzy, c-format
-msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgid "key %s is not suitable for decryption in %s mode\n"
 msgstr "%08lX kulcs: Nincs felhasználói azonosító.\n"
 
 #, fuzzy, c-format
@@ -9194,9 +9199,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "váltás a titkos és a nyilvános kulcs listázása között"
-
-#~ msgid "Please use the command \"toggle\" first.\n"
-#~ msgstr "Kérem, használja előbb a \"toggle\" parancsot!\n"
 
 #, fuzzy
 #~ msgid "Passphrase"

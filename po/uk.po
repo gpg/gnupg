@@ -327,9 +327,6 @@ msgstr "|FILE|прочитати параметри з вказаного фай
 msgid "do not detach from the console"
 msgstr "не від’єднувати від консолі"
 
-msgid "do not grab keyboard and mouse"
-msgstr "не захоплювати керування клавіатурою і мишею"
-
 msgid "use a log file for the server"
 msgstr "використовувати файл журналу для сервера"
 
@@ -1213,6 +1210,14 @@ msgstr "сервер «%s» має версію, старішу за нашу (%
 #, c-format
 msgid "WARNING: %s\n"
 msgstr "УВАГА: %s\n"
+
+msgid "Note: Outdated servers may lack important security fixes.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr "Скористайтеся спочатку командою «toggle».\n"
 
 #, fuzzy, c-format
 #| msgid "%s does not yet work with %s\n"
@@ -4994,7 +4999,7 @@ msgstr "не вдалося відкрити підписані дані fd=%d: 
 
 #, fuzzy, c-format
 #| msgid "certificate is not usable for encryption\n"
-msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgid "key %s is not suitable for decryption in %s mode\n"
 msgstr "сертифікат непридатний для шифрування\n"
 
 #, c-format
@@ -8677,6 +8682,9 @@ msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
 
+#~ msgid "do not grab keyboard and mouse"
+#~ msgstr "не захоплювати керування клавіатурою і мишею"
+
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "Помилка: адреса є занадто довгою (максимум — %d символів).\n"
 
@@ -9059,9 +9067,6 @@ msgstr ""
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "перемкнутися між списками закритих і відкритих ключів"
-
-#~ msgid "Please use the command \"toggle\" first.\n"
-#~ msgstr "Скористайтеся спочатку командою «toggle».\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "Пароль"

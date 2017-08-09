@@ -328,9 +328,6 @@ msgstr "|FIL|les valg fra valgt FIL"
 msgid "do not detach from the console"
 msgstr "ikke løsne fra konsoll"
 
-msgid "do not grab keyboard and mouse"
-msgstr "ikke bruk tastatur og mus"
-
 msgid "use a log file for the server"
 msgstr "bruk loggfil for tjeneren"
 
@@ -1209,6 +1206,14 @@ msgstr "tjener «%s» er eldre enn oss (%s < %s)"
 #, c-format
 msgid "WARNING: %s\n"
 msgstr "ADVARSEL: %s\n"
+
+msgid "Note: Outdated servers may lack important security fixes.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr "Bruk kommandoen «toggle» først.\n"
 
 #, fuzzy, c-format
 #| msgid "%s does not yet work with %s\n"
@@ -4921,7 +4926,7 @@ msgstr "klarte ikke å åpne signert data fd=%d: «%s»\n"
 
 #, fuzzy, c-format
 #| msgid "certificate is not usable for encryption\n"
-msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgid "key %s is not suitable for decryption in %s mode\n"
 msgstr "sertifikatet egner seg ikke til kryptering\n"
 
 #, c-format
@@ -8600,6 +8605,9 @@ msgstr ""
 "Syntaks: gpg-check-pattern [valg] mønsterfil\n"
 "Kontroller passordfrase oppgitt på standard innkanal mot valgt mønsterfil\n"
 
+#~ msgid "do not grab keyboard and mouse"
+#~ msgstr "ikke bruk tastatur og mus"
+
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "Feil: Adressen er for lang (grensa er %d tegn).\n"
 
@@ -9348,9 +9356,6 @@ msgstr ""
 
 #~ msgid "error reading secret keyblock \"%s\": %s\n"
 #~ msgstr "feil under lesing av hemmelig nøkkelblokk «%s»: %s\n"
-
-#~ msgid "Please use the command \"toggle\" first.\n"
-#~ msgstr "Bruk kommandoen «toggle» først.\n"
 
 #~ msgid "User ID \"%s\": %d signatures removed\n"
 #~ msgstr "Bruker-ID «%s»: %d signaturer fjernet\n"

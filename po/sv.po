@@ -384,9 +384,6 @@ msgstr "|FIL|läs inställningar från FIL"
 msgid "do not detach from the console"
 msgstr "frigör inte från konsollen"
 
-msgid "do not grab keyboard and mouse"
-msgstr "fånga inte tangentbord och mus"
-
 msgid "use a log file for the server"
 msgstr "använd en loggfil för servern"
 
@@ -1357,6 +1354,14 @@ msgstr ""
 #| msgid "WARNING: %s overrides %s\n"
 msgid "WARNING: %s\n"
 msgstr "VARNING: %s gäller istället för %s\n"
+
+msgid "Note: Outdated servers may lack important security fixes.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr "Använd kommandot \"toggle\" först.\n"
 
 #, fuzzy, c-format
 #| msgid "%s does not yet work with %s\n"
@@ -5355,7 +5360,7 @@ msgstr "kan inte öppna signerad data fd=%d: %s\n"
 
 #, fuzzy, c-format
 #| msgid "certificate is not usable for encryption\n"
-msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgid "key %s is not suitable for decryption in %s mode\n"
 msgstr "certifikatet är inte användbart för kryptering\n"
 
 #, c-format
@@ -9347,6 +9352,9 @@ msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
 
+#~ msgid "do not grab keyboard and mouse"
+#~ msgstr "fånga inte tangentbord och mus"
+
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "Fel: URL:en är för lång (gränsen är %d tecken).\n"
 
@@ -9667,9 +9675,6 @@ msgstr ""
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "växla mellan att lista hemliga och publika nycklar"
-
-#~ msgid "Please use the command \"toggle\" first.\n"
-#~ msgstr "Använd kommandot \"toggle\" först.\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "Lösenfras"

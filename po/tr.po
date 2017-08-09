@@ -354,9 +354,6 @@ msgstr "|DOSYA|seçenekler DOSYAdan okunur"
 msgid "do not detach from the console"
 msgstr "konsoldan kopulmaz"
 
-msgid "do not grab keyboard and mouse"
-msgstr "klavye ve fare gaspedilmez"
-
 msgid "use a log file for the server"
 msgstr "sunucu için bir günlük dosyası kullanılır"
 
@@ -1321,6 +1318,14 @@ msgstr ""
 #| msgid "WARNING: %s overrides %s\n"
 msgid "WARNING: %s\n"
 msgstr "UYARI: %s %s'i aşıyor\n"
+
+msgid "Note: Outdated servers may lack important security fixes.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr "lütfen önce \"seçmece\" komutunu kullanın.\n"
 
 #, fuzzy, c-format
 #| msgid "%s does not yet work with %s\n"
@@ -5292,7 +5297,7 @@ msgstr "imzalı veri fd=%d açılamadı: %s\n"
 
 #, fuzzy, c-format
 #| msgid "certificate is not usable for encryption\n"
-msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgid "key %s is not suitable for decryption in %s mode\n"
 msgstr "sertifika şifreleme için elverişli değil\n"
 
 #, c-format
@@ -9251,6 +9256,9 @@ msgstr ""
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
 
+#~ msgid "do not grab keyboard and mouse"
+#~ msgstr "klavye ve fare gaspedilmez"
+
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "Hata: URL çok uzun (sınır: %d karakter).\n"
 
@@ -9573,9 +9581,6 @@ msgstr ""
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "genel ve gizli anahtar listeleri arasında yer değiştirir"
-
-#~ msgid "Please use the command \"toggle\" first.\n"
-#~ msgstr "lütfen önce \"seçmece\" komutunu kullanın.\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "Anahtar Parolası"

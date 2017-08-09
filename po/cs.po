@@ -352,9 +352,6 @@ msgstr "|SOUBOR|načíst volby ze SOUBORU"
 msgid "do not detach from the console"
 msgstr "neodpojovat se od konzole"
 
-msgid "do not grab keyboard and mouse"
-msgstr "neuzurpovat si klávesnici a myš"
-
 msgid "use a log file for the server"
 msgstr "použít pro server soubor s protokolem"
 
@@ -1251,6 +1248,14 @@ msgstr ""
 #| msgid "WARNING: "
 msgid "WARNING: %s\n"
 msgstr "VAROVÁNÍ: "
+
+msgid "Note: Outdated servers may lack important security fixes.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr "Prosím, nejdříve použijte příkaz „toggle“ (přepnout).\n"
 
 #, fuzzy, c-format
 #| msgid "%s does not yet work with %s\n"
@@ -5021,7 +5026,7 @@ msgstr "nelze otevřít podepsaná data na deskriptoru=%d: %s\n"
 
 #, fuzzy, c-format
 #| msgid "certificate is not usable for encryption\n"
-msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgid "key %s is not suitable for decryption in %s mode\n"
 msgstr "certifikát není použitelný pro šifrování\n"
 
 #, c-format
@@ -8695,6 +8700,9 @@ msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
 
+#~ msgid "do not grab keyboard and mouse"
+#~ msgstr "neuzurpovat si klávesnici a myš"
+
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "Chyba: URL je příliš dlouhé (limit je %d znaků).\n"
 
@@ -8991,9 +8999,6 @@ msgstr ""
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "přepnout mezi výpisem seznamu tajných a veřejných klíčů"
-
-#~ msgid "Please use the command \"toggle\" first.\n"
-#~ msgstr "Prosím, nejdříve použijte příkaz „toggle“ (přepnout).\n"
 
 #~ msgid "Please select at most one subkey.\n"
 #~ msgstr "Prosím, vyberte nejvýše jeden podklíč.\n"

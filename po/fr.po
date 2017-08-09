@@ -345,9 +345,6 @@ msgstr "|FICHIER|lire les options depuis le FICHIER"
 msgid "do not detach from the console"
 msgstr "ne pas détacher de la console"
 
-msgid "do not grab keyboard and mouse"
-msgstr "ne pas capturer le clavier et la souris"
-
 msgid "use a log file for the server"
 msgstr "utiliser un fichier journal pour le serveur"
 
@@ -1259,6 +1256,14 @@ msgstr ""
 #| msgid "WARNING: "
 msgid "WARNING: %s\n"
 msgstr "Attention : "
+
+msgid "Note: Outdated servers may lack important security fixes.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr "Veuillez d'abord utiliser la commande « toggle ».\n"
 
 #, fuzzy, c-format
 #| msgid "%s does not yet work with %s\n"
@@ -5136,7 +5141,7 @@ msgstr "impossible d'ouvrir les données signées fd=%d : %s\n"
 
 #, fuzzy, c-format
 #| msgid "certificate is not usable for encryption\n"
-msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgid "key %s is not suitable for decryption in %s mode\n"
 msgstr "le certificat n'est pas utilisable pour le chiffrement\n"
 
 #, c-format
@@ -8919,6 +8924,9 @@ msgstr ""
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
 
+#~ msgid "do not grab keyboard and mouse"
+#~ msgstr "ne pas capturer le clavier et la souris"
+
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "Erreur : URL trop longue (limitée à %d caractères).\n"
 
@@ -9257,9 +9265,6 @@ msgstr ""
 #~ msgstr ""
 #~ "passer de la liste de clefs secrètes à celle de clefs privées ou vice "
 #~ "versa"
-
-#~ msgid "Please use the command \"toggle\" first.\n"
-#~ msgstr "Veuillez d'abord utiliser la commande « toggle ».\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "Phrase secrète"

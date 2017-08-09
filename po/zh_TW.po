@@ -329,9 +329,6 @@ msgstr "|檔案|從指定檔案中讀取選項"
 msgid "do not detach from the console"
 msgstr "不要從 console 分離"
 
-msgid "do not grab keyboard and mouse"
-msgstr "不要奪取鍵盤及滑鼠"
-
 msgid "use a log file for the server"
 msgstr "為伺服器使用日誌檔"
 
@@ -1214,6 +1211,14 @@ msgstr ""
 #| msgid "WARNING: %s overrides %s\n"
 msgid "WARNING: %s\n"
 msgstr "警告: %s 會推翻 %s\n"
+
+msgid "Note: Outdated servers may lack important security fixes.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr "請先使用 \"toggle\" 指令.\n"
 
 #, fuzzy, c-format
 #| msgid "%s does not yet work with %s\n"
@@ -4908,7 +4913,7 @@ msgstr "無法開啟被簽署過的資料 fd=%d: %s\n"
 
 #, fuzzy, c-format
 #| msgid "certificate is not usable for encryption\n"
-msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgid "key %s is not suitable for decryption in %s mode\n"
 msgstr "憑證無法用於加密\n"
 
 #, c-format
@@ -8461,6 +8466,9 @@ msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
 
+#~ msgid "do not grab keyboard and mouse"
+#~ msgstr "不要奪取鍵盤及滑鼠"
+
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "錯誤: URL 太長 (上限是 %d 個字符).\n"
 
@@ -8773,9 +8781,6 @@ msgstr ""
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "在私鑰清單和公鑰清單間切換"
-
-#~ msgid "Please use the command \"toggle\" first.\n"
-#~ msgstr "請先使用 \"toggle\" 指令.\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "密語"

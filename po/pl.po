@@ -362,9 +362,6 @@ msgstr "|PLIK|odczyt opcji z PLIKU"
 msgid "do not detach from the console"
 msgstr "nie odczepianie od konsoli"
 
-msgid "do not grab keyboard and mouse"
-msgstr "nie przechwytywanie klawiatury i myszy"
-
 msgid "use a log file for the server"
 msgstr "użycie pliku loga dla serwera"
 
@@ -1316,6 +1313,14 @@ msgstr ""
 #| msgid "WARNING: %s overrides %s\n"
 msgid "WARNING: %s\n"
 msgstr "OSTRZEŻENIE: %s powoduje obejście %s\n"
+
+msgid "Note: Outdated servers may lack important security fixes.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr "Najpierw trzeba użyć polecenia \"przeł\".\n"
 
 #, fuzzy, c-format
 #| msgid "%s does not yet work with %s\n"
@@ -5291,7 +5296,7 @@ msgstr "nie można otworzyć podpisanych danych z fd=%d: %s\n"
 
 #, fuzzy, c-format
 #| msgid "certificate is not usable for encryption\n"
-msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgid "key %s is not suitable for decryption in %s mode\n"
 msgstr "certyfikat nie nadaje się do szyfrowania\n"
 
 #, c-format
@@ -9271,6 +9276,9 @@ msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
 
+#~ msgid "do not grab keyboard and mouse"
+#~ msgstr "nie przechwytywanie klawiatury i myszy"
+
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "Błąd: URL zbyt długi (limit to %d znaków).\n"
 
@@ -9596,9 +9604,6 @@ msgstr ""
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "przełączenie pomiędzy listami kluczy tajnych i publicznych"
-
-#~ msgid "Please use the command \"toggle\" first.\n"
-#~ msgstr "Najpierw trzeba użyć polecenia \"przeł\".\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "Hasło"

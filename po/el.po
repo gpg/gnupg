@@ -337,9 +337,6 @@ msgstr "|ΑΡΧΕΙΟ|φόρτωμα του αρθρώματος επέκτασ�
 msgid "do not detach from the console"
 msgstr ""
 
-msgid "do not grab keyboard and mouse"
-msgstr ""
-
 #, fuzzy
 msgid "use a log file for the server"
 msgstr "αναζήτηση κλειδιών σε ένα διακομιστή κλειδιών"
@@ -1284,6 +1281,14 @@ msgstr ""
 #| msgid "WARNING: %s overrides %s\n"
 msgid "WARNING: %s\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: το %s παρακάμπτει το %s\n"
+
+msgid "Note: Outdated servers may lack important security fixes.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr "Παρακαλώ χρησιμοποιείστε την εντολή \"toggle\" πρώτα.\n"
 
 #, fuzzy, c-format
 #| msgid "%s does not yet work with %s\n"
@@ -5253,7 +5258,7 @@ msgid "can't open signed data fd=%d: %s\n"
 msgstr "αδυναμία πρόσβασης υπογεγραμμένων δεδομένων `%s'\n"
 
 #, fuzzy, c-format
-msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgid "key %s is not suitable for decryption in %s mode\n"
 msgstr "κλειδί %08lX: δεν υπάρχει αυτό το user ID\n"
 
 #, fuzzy, c-format
@@ -9248,9 +9253,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "αλλαγή μεταξύ της απεικόνισης μυστικού και δημόσιου κλειδιού"
-
-#~ msgid "Please use the command \"toggle\" first.\n"
-#~ msgstr "Παρακαλώ χρησιμοποιείστε την εντολή \"toggle\" πρώτα.\n"
 
 #, fuzzy
 #~ msgid "Passphrase"

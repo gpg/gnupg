@@ -331,9 +331,6 @@ msgstr "|FILE|взять параметры из файла FILE"
 msgid "do not detach from the console"
 msgstr "не отсоединяться от консоли"
 
-msgid "do not grab keyboard and mouse"
-msgstr "не захватывать клавиатуру и мышь"
-
 msgid "use a log file for the server"
 msgstr "использовать файл журнала для сервера"
 
@@ -1209,6 +1206,13 @@ msgstr "сервер '%s' старше нас (%s < %s)"
 #, c-format
 msgid "WARNING: %s\n"
 msgstr "Внимание: %s\n"
+
+msgid "Note: Outdated servers may lack important security fixes.\n"
+msgstr ""
+
+#, c-format
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "%s does not yet work with %s\n"
@@ -4935,7 +4939,7 @@ msgstr "не могу открыть подписанные данные fd=%d: 
 
 #, fuzzy, c-format
 #| msgid "certificate is not usable for encryption\n"
-msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgid "key %s is not suitable for decryption in %s mode\n"
 msgstr "сертификат не пригоден для шифрования\n"
 
 #, c-format
@@ -8590,6 +8594,9 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
+
+#~ msgid "do not grab keyboard and mouse"
+#~ msgstr "не захватывать клавиатуру и мышь"
 
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "Ошибка: Слишком длинный URL (предел - %d символов).\n"

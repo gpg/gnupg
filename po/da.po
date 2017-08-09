@@ -371,9 +371,6 @@ msgstr "|FIL|læs tilvalg fra FIL"
 msgid "do not detach from the console"
 msgstr "frakobl ikke fra konsollen"
 
-msgid "do not grab keyboard and mouse"
-msgstr "fang ikke tastatur og mus"
-
 msgid "use a log file for the server"
 msgstr "brug en logfil for serveren"
 
@@ -1329,6 +1326,14 @@ msgstr ""
 #| msgid "WARNING: %s overrides %s\n"
 msgid "WARNING: %s\n"
 msgstr "ADVARSEL: %s overskriver %s\n"
+
+msgid "Note: Outdated servers may lack important security fixes.\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Please use the command \"toggle\" first.\n"
+msgid "Note: Use the command \"%s\" to restart them.\n"
+msgstr "Brug venligst kommandoen »toggle« først.\n"
 
 #, fuzzy, c-format
 #| msgid "%s does not yet work with %s\n"
@@ -5273,7 +5278,7 @@ msgstr "kan ikke åbne underskrevne data fd=%d: %s\n"
 
 #, fuzzy, c-format
 #| msgid "certificate is not usable for encryption\n"
-msgid "Note: key %s is not suitable for encryption in %s mode\n"
+msgid "key %s is not suitable for decryption in %s mode\n"
 msgstr "certifikat kan ikke bruges til kryptering\n"
 
 #, c-format
@@ -9203,6 +9208,9 @@ msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
 
+#~ msgid "do not grab keyboard and mouse"
+#~ msgstr "fang ikke tastatur og mus"
+
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "Fejl: Adresse er for lang (begrænsningen er %d tegn).\n"
 
@@ -9523,9 +9531,6 @@ msgstr ""
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "skift mellem hemmelig og offentlig nøglevisning"
-
-#~ msgid "Please use the command \"toggle\" first.\n"
-#~ msgstr "Brug venligst kommandoen »toggle« først.\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "Adgangsfrase"
