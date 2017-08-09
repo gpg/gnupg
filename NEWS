@@ -1,5 +1,38 @@
-Noteworthy changes in version 2.1.23 (unreleased)
+Noteworthy changes in version 2.1.23 (2017-08-09)
 -------------------------------------------------
+
+  * gpg: "gpg" is now installed as "gpg" and not anymore as "gpg2".
+    If needed, the new configure option --enable-gpg-is-gpg2 can be
+    used to revert this.
+
+  * gpg: Options --auto-key-retrieve and --auto-key-locate "local,wkd"
+    are now used by default.  Note: this enables keyserver and Web Key
+    Directory operators to notice when a signature from a locally
+    non-available key is being verified for the first time or when
+    you intend to encrypt to a mail address without having the key
+    locally.  This new behaviour will eventually make key discovery
+    much easier and mostly automatic.  Disable this by adding
+      no-auto-key-retrieve
+      auto-key-locate local
+    to your gpg.conf.
+
+  * agent: Option --no-grab is now the default.  The new option --grab
+    allows to revert this.
+
+  * gpg: New import option "show-only".
+
+  * gpg: New option --disable-dirmngr to entirely disable network
+    access for gpg.
+
+  * gpg,gpgsm: Tweaked DE-VS compliance behaviour.
+
+  * New configure flag --enable-all-tests to run more extensive tests
+    during "make check".
+
+  * gpgsm: The keygrip is now always printed in colon mode as
+    documented in the man page.
+
+  * Fixed connection timeout problem under Windows.
 
 
 Noteworthy changes in version 2.1.22 (2017-07-28)
@@ -44,6 +77,8 @@ Noteworthy changes in version 2.1.22 (2017-07-28)
 
   * Many other bug fixes.
 
+  See-also: gnupg-announce/2017q3/000411.html
+
 
 Noteworthy changes in version 2.1.21 (2017-05-15)
 -------------------------------------------------
@@ -66,6 +101,8 @@ Noteworthy changes in version 2.1.21 (2017-05-15)
   * scd: Fixed some corner case bugs in resume/suspend handling.
 
   * Many minor bug fixes and code cleanup.
+
+  See-also: gnupg-announce/2017q2/000405.html
 
 
 Noteworthy changes in version 2.1.20 (2017-04-03)
@@ -112,6 +149,7 @@ Noteworthy changes in version 2.1.20 (2017-04-03)
 
   * Fixed build problems on some platforms.
 
+  See-also: gnupg-announce/2017q2/000404.html
 
 
 Noteworthy changes in version 2.1.19 (2017-03-01)
