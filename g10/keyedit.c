@@ -2455,7 +2455,10 @@ keyedit_quick_revuid (ctrl_t ctrl, const char *username, const char *uidtorev)
 
  leave:
   if (err)
-    log_error (_("revoking the user ID failed: %s\n"), gpg_strerror (err));
+    {
+      log_error (_("revoking the user ID failed: %s\n"), gpg_strerror (err));
+      write_status_error ("keyedit.revoke.uid", err);
+    }
   release_kbnode (keyblock);
   keydb_release (kdbhd);
 }
