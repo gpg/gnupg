@@ -1,6 +1,15 @@
 #                                   Emacs, this is an -*- org -*- file.
 
 * How to run the test suite
+** tldr: How to run all tests fast.
+
+ obj $ make check-all TESTFLAGS=--parallel
+
+You can use --parallel=N to request N parallel jobs.  Hint: Tuck
+TESTFLAGS=--parallel in your environment.
+
+** Running individual test suites or tests
+
 From your build directory, run
 
   obj $ make -C tests/openpgp check
@@ -15,6 +24,34 @@ If you want to debug a test, add verbose=1 to see messages printed by
 spawned programs to their standard error stream, verbose=2 to see what
 programs are executed, or verbose=3 to see even more program output
 and exit codes.
+
+** Inspecting the test environment
+
+To inspect the environment in which tests are running, or to quickly
+create keys for debugging or testing, you can start a shell.  There is
+one test that doese just that:
+
+  obj $ make -C tests/openpgp check TESTS=shell.scm
+  PASS: tests/openpgp/setup.scm
+  Load legacy test environment? [Y/n] y
+  Drop 'batch' from gpg.conf? [Y/n] y
+
+  Enjoy your test environment.  Type 'exit' to exit it, it will be cleaned up after you.
+
+  ... $ gpg -k Alfa
+  gpg: NOTE: THIS IS A DEVELOPMENT VERSION!
+  gpg: It is only intended for test purposes and should NOT be
+  gpg: used in a production environment or with production keys!
+  gpg: /tmp/gpgscm-20170809T144032-run-tests-PFfybw/trustdb.gpg: trustdb created
+  pub   dsa1024 1999-03-08 [SCA]
+        A0FF4590BB6122EDEF6E3C542D727CC768697734
+  uid           [ unknown] Alfa Test (demo key) <alfa@example.net>
+  uid           [ unknown] Alpha Test (demo key) <alpha@example.net>
+  uid           [ unknown] Alice (demo key)
+  sub   elg1024 1999-03-08 [E]
+
+PATH is adjusted so that you will use the tools from the build tree.
+Note that the directory is removed when you exit the shell.
 
 ** Passing options to the test driver
 
@@ -58,9 +95,9 @@ suite.
 The test suite does not hardcode any paths to tools.  If set it is
 used to locate the tools to test, otherwise the test suite assumes to
 be run from the build directory.
-**** MKTDATA and GPG_PRESET_PASSPHRASE
-These two tools are not installed by 'make install', hence we need to
-explicitly override their position.  In fact, the location of any tool
+**** GPG_PRESET_PASSPHRASE
+This tool is not installed by 'make install', hence we need to
+explicitly override its position.  In fact, the location of any tool
 used by the test suite can be overridden this way.  See defs.scm.
 **** argv[0]
 run-tests.scm depends on being able to re-exec gpgscm.  It uses
