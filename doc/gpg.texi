@@ -1792,7 +1792,7 @@ list.  The default is "local,wkd".
 @opindex no-auto-key-retrieve
 These options enable or disable the automatic retrieving of keys from
 a keyserver when verifying signatures made by keys that are not on the
-local keyring.  The default is @option{--auto-key-retrieve}.
+local keyring.  The default is @option{--no-auto-key-retrieve}.
 
 If the method "wkd" is included in the list of methods given to
 @option{auto-key-locate}, the signer's user ID is part of the

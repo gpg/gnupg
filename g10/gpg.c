@@ -2366,8 +2366,7 @@ main (int argc, char **argv)
     opt.keyserver_options.import_options = (IMPORT_REPAIR_KEYS
 					    | IMPORT_REPAIR_PKS_SUBKEY_BUG);
     opt.keyserver_options.export_options = EXPORT_ATTRIBUTES;
-    opt.keyserver_options.options = (KEYSERVER_HONOR_PKA_RECORD
-                                     | KEYSERVER_AUTO_KEY_RETRIEVE);
+    opt.keyserver_options.options = KEYSERVER_HONOR_PKA_RECORD;
     opt.verify_options = (LIST_SHOW_UID_VALIDITY
                           | VERIFY_SHOW_POLICY_URLS
                           | VERIFY_SHOW_STD_NOTATIONS
