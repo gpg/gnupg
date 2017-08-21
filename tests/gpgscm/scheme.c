@@ -2990,7 +2990,7 @@ _Error_1(scheme *sc, const char *s, pointer a) {
 /* Define a label OP and emit a case statement for OP.  For use in the
  * dispatch function.  The slightly peculiar goto that is never
  * executed avoids warnings about unused labels.  */
-#define CASE(OP)	if (0) goto OP; OP: case OP
+#define CASE(OP)	case OP: if (0) goto OP; OP
 
 #else	/* USE_THREADED_CODE */
 #define s_thread_to(sc, a)	s_goto(sc, a)
@@ -3727,7 +3727,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
                     s_thread_to(sc,OP_APPLY);
                }
           }
-
+	  /* Fallthrough. */
 #else
      CASE(OP_LAMBDA):     /* lambda */
 	  sc->value = sc->code;
@@ -4655,9 +4655,13 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
      CASE(OP_NULLP):       /* null? */
           s_retbool(car(sc->args) == sc->NIL);
      CASE(OP_NUMEQ):      /* = */
+	  /* Fallthrough.  */
      CASE(OP_LESS):       /* < */
+	  /* Fallthrough.  */
      CASE(OP_GRE):        /* > */
+	  /* Fallthrough.  */
      CASE(OP_LEQ):        /* <= */
+	  /* Fallthrough.  */
      CASE(OP_GEQ):        /* >= */
           switch(op) {
                case OP_NUMEQ: comp_func=num_eq; break;
@@ -4746,7 +4750,9 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
           s_return(sc,sc->value);
 
      CASE(OP_WRITE):      /* write */
+	  /* Fallthrough.  */
      CASE(OP_DISPLAY):    /* display */
+	  /* Fallthrough.  */
      CASE(OP_WRITE_CHAR): /* write-char */
           if(is_pair(cdr(sc->args))) {
                if(cadr(sc->args)!=sc->outport) {
@@ -4894,7 +4900,9 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
           s_return(sc,sc->outport);
 
      CASE(OP_OPEN_INFILE): /* open-input-file */
+	  /* Fallthrough.  */
      CASE(OP_OPEN_OUTFILE): /* open-output-file */
+	  /* Fallthrough.  */
      CASE(OP_OPEN_INOUTFILE): /* open-input-output-file */ {
           int prop=0;
           pointer p;
@@ -4914,6 +4922,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
 
 #if USE_STRING_PORTS
      CASE(OP_OPEN_INSTRING): /* open-input-string */
+	  /* Fallthrough.  */
      CASE(OP_OPEN_INOUTSTRING): /* open-input-output-string */ {
           int prop=0;
           pointer p;
@@ -4994,6 +5003,7 @@ Eval_Cycle(scheme *sc, enum scheme_opcodes op) {
           s_thread_to(sc,OP_READ_INTERNAL);
 
      CASE(OP_READ_CHAR): /* read-char */
+	  /* Fallthrough.  */
      CASE(OP_PEEK_CHAR): /* peek-char */ {
           int c;
           if(is_pair(sc->args)) {
