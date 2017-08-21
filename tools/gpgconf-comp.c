@@ -762,6 +762,18 @@ static gc_option_t gc_options_gpg[] =
    { "disable-dirmngr", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      "gnupg", N_("disable all access to the dirmngr"),
      GC_ARG_TYPE_NONE, GC_BACKEND_GPG },
+   { "max-cert-depth",
+     GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG },
+   { "completes-needed",
+     GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG },
+   { "marginals-needed",
+     GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_UINT32, GC_BACKEND_GPG },
 
 
    GC_OPTION_NULL

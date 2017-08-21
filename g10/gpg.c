@@ -1860,6 +1860,9 @@ gpgconf_list (const char *configfile)
   es_printf ("default-new-key-algo:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("trust-model:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("disable-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("max-cert-depth:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("completes-needed:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("marginals-needed:%lu:\n", GC_OPT_FLAG_NONE);
 
   /* The next one is an info only item and should match the macros at
      the top of keygen.c  */
