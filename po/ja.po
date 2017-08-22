@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.1.22\n"
+"Project-Id-Version: gnupg 2.1.23\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-08-01 11:34+0900\n"
+"PO-Revision-Date: 2017-08-22 11:22+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -630,7 +630,7 @@ msgstr "誤り"
 
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
-msgstr "注意: パスフレーズは変更されていません。%0A今、変更してください。"
+msgstr "*注意*: パスフレーズは変更されていません。%0A今、変更してください。"
 
 #, c-format
 msgid ""
@@ -1198,12 +1198,11 @@ msgid "WARNING: %s\n"
 msgstr "*警告*: %s\n"
 
 msgid "Note: Outdated servers may lack important security fixes.\n"
-msgstr ""
+msgstr "*注意*: 古いサーバは、重要なセキュリティの修正が欠如しているかもしれません。\n"
 
-#, fuzzy, c-format
-#| msgid "Please use the command \"toggle\" first.\n"
+#, c-format
 msgid "Note: Use the command \"%s\" to restart them.\n"
-msgstr "まず\"toggle\"コマンドを使ってください。\n"
+msgstr "*注意*: \"%s\"コマンドを使って再起動してください。\n"
 
 #, c-format
 msgid "%s is not compliant with %s mode\n"
@@ -4360,7 +4359,7 @@ msgstr "*警告*: ダイジェスト・アルゴリズム %s は廃止されて�
 
 #, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "注意: アルゴリズム %s を用いた署名は拒否されました\n"
+msgstr "*注意*: アルゴリズム %s を用いた署名は拒否されました\n"
 
 #, c-format
 msgid "(reported error: %s)\n"
@@ -4684,15 +4683,15 @@ msgid "WARNING: This subkey has been revoked by its owner!\n"
 msgstr "*警告*: この副鍵は所有者によって失効されています!\n"
 
 msgid "Note: This key has been disabled.\n"
-msgstr "注意: この鍵は使用禁止に設定されています。\n"
+msgstr "*注意*: この鍵は使用禁止に設定されています。\n"
 
 #, c-format
 msgid "Note: Verified signer's address is '%s'\n"
-msgstr "注意: 確認された署名者のアドレスは'%s'です\n"
+msgstr "*注意*: 確認された署名者のアドレスは'%s'です\n"
 
 #, c-format
 msgid "Note: Signer's address '%s' does not match DNS entry\n"
-msgstr "注意: 署名者のアドレス'%s'がDNSのエントリと一致しません\n"
+msgstr "*注意*: 署名者のアドレス'%s'がDNSのエントリと一致しません\n"
 
 msgid "trustlevel adjusted to FULL due to valid PKA info\n"
 msgstr "PKA情報が有効のため、信用レベルがFULLに調整されました\n"
@@ -4701,7 +4700,7 @@ msgid "trustlevel adjusted to NEVER due to bad PKA info\n"
 msgstr "PKA情報が無効のため、信用レベルがNEVERに調整されました\n"
 
 msgid "Note: This key has expired!\n"
-msgstr "注意: この鍵は期限切れです!\n"
+msgstr "*注意*: この鍵は期限切れです!\n"
 
 msgid "WARNING: This key is not certified with a trusted signature!\n"
 msgstr "*警告*: この鍵は信用できる署名で証明されていません!\n"
@@ -4782,11 +4781,11 @@ msgstr "有効な宛先がありません\n"
 
 #, c-format
 msgid "Note: key %s has no %s feature\n"
-msgstr "注意: 鍵%sには %s の機能がありません\n"
+msgstr "*注意*: 鍵%sには %s の機能がありません\n"
 
 #, c-format
 msgid "Note: key %s has no preference for %s\n"
-msgstr "注意: 鍵%sには%sに対する優先指定がありません\n"
+msgstr "*注意*: 鍵%sには%sに対する優先指定がありません\n"
 
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr ""
@@ -4812,10 +4811,9 @@ msgstr "署名されたデータ'%s'が開けません\n"
 msgid "can't open signed data fd=%d: %s\n"
 msgstr "署名されたデータ fd=%d が開けません: %s\n"
 
-#, fuzzy, c-format
-#| msgid "Note: key %s is not suitable for encryption in %s mode\n"
+#, c-format
 msgid "key %s is not suitable for decryption in %s mode\n"
-msgstr "注: 鍵%sは%sモードでの暗号化のために適しません\n"
+msgstr "鍵%sは%sモードでの復号化のために適しません\n"
 
 #, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
@@ -6044,7 +6042,7 @@ msgid "failed to open '%s': %s\n"
 msgstr "'%s'が開けません: %s\n"
 
 msgid "Note: non-critical certificate policy not allowed"
-msgstr "注意: クリティカルでない証明書ポリシーは認められません"
+msgstr "*注意*: クリティカルでない証明書ポリシーは認められません"
 
 msgid "certificate policy not allowed"
 msgstr "証明書ポリシーは認められません"
