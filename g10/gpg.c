@@ -1852,7 +1852,7 @@ gpgconf_list (const char *configfile)
   es_printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("try-secret-key:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("auto-key-locate:%lu:\n", GC_OPT_FLAG_NONE);
-  es_printf ("no-auto-key-retrieve:%lu:\n", GC_OPT_FLAG_NONE);
+  es_printf ("auto-key-retrieve:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("log-file:%lu:\n", GC_OPT_FLAG_NONE);
   es_printf ("debug-level:%lu:\"none:\n", GC_OPT_FLAG_DEFAULT);
   es_printf ("group:%lu:\n", GC_OPT_FLAG_NONE);
@@ -3336,13 +3336,14 @@ main (int argc, char **argv)
 	  case oIgnoreCrcError: opt.ignore_crc_error = 1; break;
 	  case oIgnoreMDCError: opt.ignore_mdc_error = 1; break;
 	  case oNoRandomSeedFile: use_random_seed = 0; break;
+
 	  case oAutoKeyRetrieve:
+            opt.keyserver_options.options |= KEYSERVER_AUTO_KEY_RETRIEVE;
+            break;
 	  case oNoAutoKeyRetrieve:
-	        if(pargs.r_opt==oAutoKeyRetrieve)
-		  opt.keyserver_options.options|=KEYSERVER_AUTO_KEY_RETRIEVE;
-		else
-		  opt.keyserver_options.options&=~KEYSERVER_AUTO_KEY_RETRIEVE;
-		break;
+            opt.keyserver_options.options &= ~KEYSERVER_AUTO_KEY_RETRIEVE;
+            break;
+
 	  case oShowSessionKey: opt.show_session_key = 1; break;
 	  case oOverrideSessionKey:
 		opt.override_session_key = pargs.r.ret_str;
