@@ -99,7 +99,7 @@ dist-hook: gen-ChangeLog
 
 distcheck-hook:
 	set -e; ( \
-	pref="#+macro: gnupg21_" ;\
+	pref="#+macro: gnupg22_" ;\
 	reldate="$$(date -u +%Y-%m-%d)" ;\
         echo "$${pref}ver  $(PACKAGE_VERSION)"  ;\
         echo "$${pref}date $${reldate}" ;\

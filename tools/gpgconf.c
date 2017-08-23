@@ -292,7 +292,7 @@ query_swdb (estream_t out, const char *name, const char *current_version)
       goto leave;
     }
   if (!strcmp (name, "gnupg"))
-    search_name = "gnupg21";
+    search_name = GNUPG_SWDB_TAG;
   else if (!strcmp (name, "gnupg1"))
     search_name = "gnupg1";
   else

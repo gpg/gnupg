@@ -276,7 +276,7 @@ endif
 # Version numbers of the released packages
 gnupg_ver_this = $(shell cat $(topsrc)/VERSION)
 
-gnupg_ver        := $(shell awk '$$1=="gnupg21_ver" {print $$2}' swdb.lst)
+gnupg_ver        := $(shell awk '$$1=="gnupg22_ver" {print $$2}' swdb.lst)
 
 libgpg_error_ver := $(shell awk '$$1=="libgpg_error_ver" {print $$2}' swdb.lst)
 libgpg_error_sha1:= $(shell awk '$$1=="libgpg_error_sha1" {print $$2}' swdb.lst)
@@ -1187,7 +1187,7 @@ installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
 
 
 define MKSWDB_commands
- ( pref="#+macro: gnupg21_w32_" ;\
+ ( pref="#+macro: gnupg22_w32_" ;\
    echo "$${pref}ver  $(INST_VERSION)_$(BUILD_DATESTR)"  ;\
    echo "$${pref}date $(2)" ;\
    echo "$${pref}size $$(wc -c <$(1)|awk '{print int($$1/1024)}')k";\
