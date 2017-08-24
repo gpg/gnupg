@@ -5,10 +5,10 @@
 case "$myhost:$myhostsub" in
   w32:ce)
     extraoptions="--enable-dirmngr-auto-start --disable-scdaemon "
-    extraoptions="$extraoptions --disable-zip --enable-gpg2-is-gpg"
+    extraoptions="$extraoptions --disable-zip"
     ;;
   w32:)
-    extraoptions="--enable-gpgtar --enable-gpg2-is-gpg"
+    extraoptions="--enable-gpgtar"
     ;;
 esac
 
