@@ -878,6 +878,9 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
               if (ret_pk)
                 {
                   signer = ret_pk;
+                  /* FIXME: Using memset here is probematic because it
+                   * assumes that there are no allocated fields in
+                   * SIGNER.  */
                   memset (signer, 0, sizeof (*signer));
                   signer_alloced = 1;
                 }
@@ -956,10 +959,10 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
   gcry_md_close (md);
 
  leave:
-  if (! rc && ret_pk && (signer_alloced == -1 || ret_pk != signer))
+  if (! rc && ret_pk && ret_pk != signer)
     copy_public_key (ret_pk, signer);
 
-  if (signer_alloced == 1)
+  if (signer_alloced)
     {
       /* We looked up SIGNER; it is not a pointer into KB.  */
       release_public_key_parts (signer);
