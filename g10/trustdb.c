@@ -797,6 +797,7 @@ update_min_ownertrust (ctrl_t ctrl, u32 *kid, unsigned int new_trust)
     {
       log_error (_("public key %s not found: %s\n"),
                  keystr (kid), gpg_strerror (err));
+      xfree (pk);
       return;
     }
 
@@ -836,6 +837,8 @@ update_min_ownertrust (ctrl_t ctrl, u32 *kid, unsigned int new_trust)
     {
       tdbio_invalid ();
     }
+
+  free_public_key (pk);
 }
 
 
