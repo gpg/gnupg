@@ -943,8 +943,8 @@ determine_rsa_response (app_t app, int keyno)
   int size;
 
   size = 2 + 3 /* header */
-    + 4 /* tag+len */ + app->app_local->keyattr[keyno].rsa.n_bits/8
-    + 2 /* tag+len */ + app->app_local->keyattr[keyno].rsa.e_bits/8;
+    + 4 /* tag+len */ + (app->app_local->keyattr[keyno].rsa.n_bits+7)/8
+    + 2 /* tag+len */ + (app->app_local->keyattr[keyno].rsa.e_bits+7)/8;
 
   return size;
 }
