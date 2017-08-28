@@ -1209,8 +1209,8 @@ msgstr "Внимание: %s\n"
 
 msgid "Note: Outdated servers may lack important security fixes.\n"
 msgstr ""
-"Замечание: На старых серверах могут быть оставаться ошибки, "
-"критичные для безопасности.\n"
+"Замечание: На старых серверах могут быть оставаться ошибки, критичные для "
+"безопасности.\n"
 
 #, c-format
 msgid "Note: Use the command \"%s\" to restart them.\n"

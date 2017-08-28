@@ -1198,7 +1198,9 @@ msgid "WARNING: %s\n"
 msgstr "*警告*: %s\n"
 
 msgid "Note: Outdated servers may lack important security fixes.\n"
-msgstr "*注意*: 古いサーバは、重要なセキュリティの修正が欠如しているかもしれません。\n"
+msgstr ""
+"*注意*: 古いサーバは、重要なセキュリティの修正が欠如しているかもしれませ"
+"ん。\n"
 
 #, c-format
 msgid "Note: Use the command \"%s\" to restart them.\n"
