@@ -1,5 +1,13 @@
-Noteworthy changes in version 2.2.0 (unreleased)
--------------------------------------------------
+Noteworthy changes in version 2.2.0 (2017-08-28)
+------------------------------------------------
+
+  This is the new long term stable branch.  This branch will only see
+  bug fixes and no new features.
+
+  * gpg: Reverted change in 2.1.23 so that --no-auto-key-retrieve is
+    again the default.
+
+  * Fixed a few minor bugs.
 
 
 Noteworthy changes in version 2.1.23 (2017-08-09)
@@ -37,6 +45,8 @@ Noteworthy changes in version 2.1.23 (2017-08-09)
     documented in the man page.
 
   * Fixed connection timeout problem under Windows.
+
+  See-also: gnupg-announce/2017q3/000412.html
 
 
 Noteworthy changes in version 2.1.22 (2017-07-28)

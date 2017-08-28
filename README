@@ -1,6 +1,6 @@
                        The GNU Privacy Guard 2
                       =========================
-                             Version 2.1
+                             Version 2.2
 
           Copyright 1997-2017 Werner Koch
           Copyright 1998-2017 Free Software Foundation, Inc.
@@ -25,14 +25,14 @@
   GNU General Public License.
 
   Note that the 2.0 series of GnuPG will reach end-of-life on
-  2017-12-31.  It is not possible to install a 2.1.x version along
+  2017-12-31.  It is not possible to install a 2.2.x version along
   with any 2.0.x version.  However, it is possible to install GnuPG
-  1.4 along with a 2.x version.
+  1.4 along with any 2.x version.
 
 
 * BUILD INSTRUCTIONS
 
-  GnuPG 2.1 depends on the following GnuPG related packages:
+  GnuPG 2.2 depends on the following GnuPG related packages:
 
     npth         (ftp://ftp.gnupg.org/gcrypt/npth/)
     libgpg-error (ftp://ftp.gnupg.org/gcrypt/libgpg-error/)
@@ -122,9 +122,9 @@
   Add other options as needed.
 
 
-* MIGRATION from 1.4 or 2.0 to 2.1
+* MIGRATION from 1.4 or 2.0 to 2.2
 
-  The major change in 2.1 is gpg-agent taking care of the OpenPGP
+  The major change in 2.2 is gpg-agent taking care of the OpenPGP
   secret keys (those managed by GPG).  The former file "secring.gpg"
   will not be used anymore.  Newly generated keys are stored in the
   agent's key store directory "~/.gnupg/private-keys-v1.d/".  The
@@ -134,13 +134,16 @@
 
   Note that gpg-agent now uses a fixed socket.  All tools will start
   the gpg-agent as needed.  The formerly used environment variable
-  GPG_AGENT_INFO is ignored by 2.1.  The SSH_AUTH_SOCK environment
+  GPG_AGENT_INFO is ignored by 2.2.  The SSH_AUTH_SOCK environment
   variable should be set to a fixed value.
 
   The Dirmngr is now part of GnuPG proper and also used to access
   OpenPGP keyservers.  The directory layout of Dirmngr changed to make
   use of the GnuPG directories.  Dirmngr is started by gpg or gpgsm as
   needed. There is no more need to install a separate Dirmngr package.
+
+  All changes introduced with GnuPG 2.2 have been developed in the 2.1
+  series of releases.  See the respective entries in the file NEWS.
 
 * RECOMMENDATIONS
 
@@ -193,13 +196,13 @@
 
 * HOW TO GET MORE INFORMATION
 
-  A description of new features and changes in version 2.1 can be
+  A description of new features and changes since version 2.1 can be
   found in the file "doc/whats-new-in-2.1.txt" and online at
   "https://gnupg.org/faq/whats-new-in-2.1.html" .
 
-  The primary WWW page is "https://www.gnupg.org"
+  The primary WWW page is "https://gnupg.org"
              or using Tor "http://ic6au7wa3f6naxjq.onion"
-  The primary FTP site is "ftp://ftp.gnupg.org/gcrypt/"
+  The primary FTP site is "https://gnupg.org/ftp/gcrypt/"
 
   See [[https://gnupg.org/download/mirrors.html]] for a list of
   mirrors and use them if possible.  You may also find GnuPG mirrored
@@ -229,7 +232,7 @@
   https://www.gnupg.org/documentation/mailing-lists.html for archives
   of the mailing lists.
 
-  Please direct bug reports to [[http://bugs.gnupg.org]] or post them
+  Please direct bug reports to [[https://bugs.gnupg.org]] or post them
   direct to the mailing list <gnupg-devel@gnupg.org>.
 
   Please direct questions about GnuPG to the users mailing list or one

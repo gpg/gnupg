@@ -1864,7 +1864,7 @@ if test "$have_gpg_error" = "no"; then
 ***
 *** You need libgpg-error to build this program.
 **  This library is for example available at
-***   ftp://ftp.gnupg.org/gcrypt/libgpg-error
+***   https://gnupg.org/ftp/gcrypt/libgpg-error
 *** (at least version $NEED_GPG_ERROR_VERSION is required.)
 ***]])
 fi
@@ -1874,7 +1874,7 @@ if test "$have_libgcrypt" = "no"; then
 ***
 *** You need libgcrypt to build this program.
 **  This library is for example available at
-***   ftp://ftp.gnupg.org/gcrypt/libgcrypt/
+***   https://gnupg.org/ftp/gcrypt/libgcrypt/
 *** (at least version $NEED_LIBGCRYPT_VERSION (API $NEED_LIBGCRYPT_API) is required.)
 ***]])
 fi
@@ -1884,7 +1884,7 @@ if test "$have_libassuan" = "no"; then
 ***
 *** You need libassuan to build this program.
 *** This library is for example available at
-***   ftp://ftp.gnupg.org/gcrypt/libassuan/
+***   https://gnupg.org/ftp/gcrypt/libassuan/
 *** (at least version $NEED_LIBASSUAN_VERSION (API $NEED_LIBASSUAN_API) is required).
 ***]])
 fi
@@ -1894,7 +1894,7 @@ if test "$have_ksba" = "no"; then
 ***
 *** You need libksba to build this program.
 *** This library is for example available at
-***   ftp://ftp.gnupg.org/gcrypt/libksba/
+***   https://gnupg.org/ftp/gcrypt/libksba/
 *** (at least version $NEED_KSBA_VERSION using API $NEED_KSBA_API is required).
 ***]])
 fi
@@ -1915,7 +1915,7 @@ if test "$have_npth" = "no"; then
 *** It is now required to build with support for the
 *** New Portable Threads Library (nPth). Please install this
 *** library first.  The library is for example available at
-***   ftp://ftp.gnupg.org/gcrypt/npth/
+***   https://gnupg.org/ftp/gcrypt/npth/
 *** (at least version $NEED_NPTH_VERSION (API $NEED_NPTH_API) is required).
 ***]])
 fi
@@ -1928,7 +1928,7 @@ if test "$require_iconv" = yes; then
 *** The system does not provide a working iconv function.  Please
 *** install a suitable library; for example GNU Libiconv which is
 *** available at:
-***   http://ftp.gnu.org/gnu/libiconv/
+***   https://ftp.gnu.org/gnu/libiconv/
 ***]])
   fi
 fi

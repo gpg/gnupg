@@ -6,7 +6,7 @@
                       ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-                               2016-07-14
+                               2017-08-28
 
 
 Table of Contents
@@ -42,11 +42,11 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 1 What’s new in GnuPG 2.1
 ═════════════════════════
 
-  GnuPG version 2.1 comes with a bag of new features which changes some
-  things old-timers are used to.  This page explains the more important
-  ones.  It expects that the reader is familiar with GnuPG version 2.0
-  and aware that GnuPG consists of /gpg/, /gpgsm/, and /gpg-agent/ as
-  its main components.
+  GnuPG version 2.1 (now known as 2.2) comes with a bag of new features
+  which changes some things old-timers are used to.  This page explains
+  the more important ones.  It expects that the reader is familiar with
+  GnuPG version 2.0 and aware that GnuPG consists of /gpg/, /gpgsm/, and
+  /gpg-agent/ as its main components.
 
   • The file /secring.gpg/ is not anymore used to store the secret keys.
     Merging of secret keys is now supported.
@@ -103,8 +103,8 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   • The scripts to create a Windows installer are now part of GnuPG.
 
   Now for the detailed description of these new features.  Note that the
-  examples assume that /gpg/ is installed as /gpg/.  Your
-  installation may have it installed under the name /gpg2/.
+  examples assume that /gpg/ is installed as /gpg/.  Your installation
+  may have it installed under the name /gpg2/.
 
 
 1.1 Removal of the secret keyring
@@ -477,6 +477,25 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   │ uid               [ unknown] Sample 2 <me@example.org>
   └────
 
+  Since version 2.1.17 the expiration date of the primary key can be
+  changed directly:
+
+  ┌────
+  │ $ gpg --quick-set-expire 5B83120DB1E3A65AE5A8DCF6AA43F1DCC7FED1B7 2017-12-31
+  │ $ gpg -K 5B83120DB1E3A65AE5A8DCF6AA43F1DCC7FED1B7
+  │ sec   rsa2048 2016-06-22 [SC] [expires: 2017-12-31]
+  │       5B83120DB1E3A65AE5A8DCF6AA43F1DCC7FED1B7
+  │ uid           [ultimate] steve.biko@example.net
+  │ ssb   rsa2048 2016-06-22 [E]
+  │
+  │ $ gpg --quick-set-expire 5B83120DB1E3A65AE5A8DCF6AA43F1DCC7FED1B7 none
+  │ $ gpg -K 5B83120DB1E3A65AE5A8DCF6AA43F1DCC7FED1B7
+  │ sec   rsa2048 2016-06-22 [SC]
+  │       5B83120DB1E3A65AE5A8DCF6AA43F1DCC7FED1B7
+  │ uid           [ultimate] steve.biko@example.net
+  │ ssb   rsa2048 2016-06-22 [E]
+  └────
+
 
 1.6 Improved Pinentry support
 ─────────────────────────────
@@ -510,9 +529,9 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   at login time and use an environment variable (`GPG_AGENT_INFO') to
   tell the other GnuPG modules how to connect to the agent.  However,
   correctly managing the start up and this environment variable is
-  cumbersome so that an easier method is required.  Since GnuPG
-  2.0.16 the `--use-standard-socket' option already allowed to start the
-  agent on the fly; however the environment variable was still required.
+  cumbersome so that an easier method is required.  Since GnuPG 2.0.16
+  the `--use-standard-socket' option already allowed to start the agent
+  on the fly; however the environment variable was still required.
 
   With GnuPG 2.1 the need of `GPG_AGENT_INFO' has been completely
   removed and the variable is ignored.  Instead a fixed Unix domain
@@ -668,6 +687,10 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   pad are supported.  The internal CCID driver does now also work with
   certain non-auto-configuration equipped readers.
 
+  Since version 2.1.19 multiple card readers are support and the format
+  of the Pinentry prompts has been changed to show more information on
+  the requested card.
+
 
   [gnuk] http://www.fsij.org/doc-gnuk/
 
@@ -713,7 +736,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   makes writing of key manager software easier.
 
 
-  [GPGME] https://gnupg.org/related_software/gpgme/
+  [GPGME] https://gnupg.org/software/gpgme/
 
 
 1.15 Recipient key from file
@@ -836,7 +859,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 
 
 
-  # Copyright 2014--2016 The GnuPG Project.
+  # Copyright 2014--2017 The GnuPG Project.
   # This work is licensed under the Creative Commons
   # Attribution-ShareAlike 4.0 International License.  To view a copy of
   # this license, visit http://creativecommons.org/licenses/by-sa/4.0/
