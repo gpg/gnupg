@@ -4575,19 +4575,43 @@ do_decipher (app_t app, const char *keyidstr,
             }
         }
 
-      fixuplen = 7;
+      n = 0;
+      if (indatalen < 128)
+        fixuplen = 7;
+      else
+        fixuplen = 10;
+
       fixbuf = xtrymalloc (fixuplen + indatalen);
       if (!fixbuf)
         return gpg_error_from_syserror ();
 
       /* Build 'Cipher DO' */
-      fixbuf[0] = '\xa6';
-      fixbuf[1] = (char)(indatalen+5);
-      fixbuf[2] = '\x7f';
-      fixbuf[3] = '\x49';
-      fixbuf[4] = (char)(indatalen+2);
-      fixbuf[5] = '\x86';
-      fixbuf[6] = (char)indatalen;
+      fixbuf[n++] = '\xa6';
+      if (indatalen < 128)
+        fixbuf[n++] = (char)(indatalen+5);
+      else
+        {
+          fixbuf[n++] = 0x81;
+          fixbuf[n++] = (char)(indatalen+7);
+        }
+      fixbuf[n++] = '\x7f';
+      fixbuf[n++] = '\x49';
+      if (indatalen < 128)
+        fixbuf[n++] = (char)(indatalen+2);
+      else
+        {
+          fixbuf[n++] = 0x81;
+          fixbuf[n++] = (char)(indatalen+3);
+        }
+      fixbuf[n++] = '\x86';
+      if (indatalen < 128)
+        fixbuf[n++] = (char)indatalen;
+      else
+        {
+          fixbuf[n++] = 0x81;
+          fixbuf[n++] = (char)indatalen;
+        }
+
       if (old_format_len)
         {
           memset (fixbuf+fixuplen, 0, 32 - old_format_len);
