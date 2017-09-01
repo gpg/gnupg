@@ -22,7 +22,7 @@ AM_CPPFLAGS =
 include $(top_srcdir)/am/cmacros.am
 
 examples = examples/README examples/scd-event examples/trustlist.txt	\
-	   examples/vsnfd.prf examples/debug.prf                        \
+	   examples/vsnfd.prf examples/debug.prf examples/qualified.txt \
 	   examples/systemd-user/README 				\
 	   examples/systemd-user/dirmngr.service 			\
 	   examples/systemd-user/dirmngr.socket				\
@@ -43,7 +43,7 @@ helpfiles = help.txt help.be.txt help.ca.txt help.cs.txt		\
 
 profiles =
 
-EXTRA_DIST = samplekeys.asc mksamplekeys com-certs.pem qualified.txt \
+EXTRA_DIST = samplekeys.asc mksamplekeys com-certs.pem \
 	     gnupg-logo.eps gnupg-logo.pdf gnupg-logo.png gnupg-logo-tr.png \
 	     gnupg-module-overview.png gnupg-module-overview.pdf \
              gnupg-card-architecture.png gnupg-card-architecture.pdf \

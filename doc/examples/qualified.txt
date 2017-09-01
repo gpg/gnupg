@@ -29,7 +29,7 @@
 #
 #                 Germany
 #
-# The information for Germany is available 
+# The information for Germany is available
 # at http://www.bundesnetzagentur.de
 #*******************************************
 
@@ -74,7 +74,7 @@ DB:45:3D:1B:B0:1A:F3:23:10:6B:DE:D0:09:61:57:AA:F4:25:E0:5B  de
 #Serial number: 02
 #       Issuer: /CN=9R-CA 1:PN/O=Regulierungsbehörde für
 #               Telekommunikation und Post/C=DE
-#      Subject: /CN=9R-CA 1:PN/O=Regulierungsbehörde für 
+#      Subject: /CN=9R-CA 1:PN/O=Regulierungsbehörde für
 #               Telekommunikation und Post/C=DE
 #     validity: 2004-11-25 14:59:11 through 2007-12-31 14:56:59
 #     key type: 1024 bit RSA
@@ -118,7 +118,7 @@ A0:8B:DF:3B:AA:EE:3F:9D:64:6C:47:81:23:21:D4:A6:18:81:67:1D  de
 #    key usage: certSign
 #     policies: 1.3.36.8.1.1:N:
 # chain length: unlimited
-# [checked: 2008-06-25] 
+# [checked: 2008-06-25]
 44:7E:D4:E3:9A:D7:92:E2:07:FA:53:1A:2E:F5:B8:02:5B:47:57:B0  de
 
 #           ID: 0x46A2CC8A
@@ -130,7 +130,7 @@ A0:8B:DF:3B:AA:EE:3F:9D:64:6C:47:81:23:21:D4:A6:18:81:67:1D  de
 #    key usage: certSign
 #     policies: 1.3.36.8.1.1:N:
 # chain length: unlimited
-# [checked: 2008-06-25] 
+# [checked: 2008-06-25]
 AC:A7:BE:45:1F:A6:BF:09:F2:D1:3F:08:7B:BC:EB:7F:46:A2:CC:8A  de
 
 
@@ -215,7 +215,7 @@ E0:BF:1B:91:91:6B:88:E4:F1:15:92:22:CE:37:23:96:B1:4A:2E:5C  de
 #     key type: 2048 bit RSA
 #    key usage: certSign crlSign
 # chain length: 1
-#[checked: 2007-12-13 via received ZIP file with qualified signature from 
+#[checked: 2007-12-13 via received ZIP file with qualified signature from
 #         /CN=Dr. Matthias Stehle/O=Deutscher Sparkassenverlag
 #         /C=DE/SerialNumber=DSV0000000008/SN=Stehle/GN=Matthias Georg]
 C9:2F:E6:50:DB:32:59:E0:CE:65:55:F3:8C:76:E0:B8:A8:FE:A3:CA  de
@@ -230,7 +230,7 @@ C9:2F:E6:50:DB:32:59:E0:CE:65:55:F3:8C:76:E0:B8:A8:FE:A3:CA  de
 #     key type: 2048 bit RSA
 #    key usage: certSign crlSign
 # chain length: 1
-#[checked: 2007-12-13 via received ZIP file with qualified signature from 
+#[checked: 2007-12-13 via received ZIP file with qualified signature from
 #         /CN=Dr. Matthias Stehle/O=Deutscher Sparkassenverlag
 #         /C=DE/SerialNumber=DSV0000000008/SN=Stehle/GN=Matthias Georg"]
 D5:C7:50:F2:FE:4E:EE:D7:C7:B1:E4:13:7B:FB:54:84:3A:7D:97:9B  de

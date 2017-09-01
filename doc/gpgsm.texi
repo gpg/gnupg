@@ -843,15 +843,9 @@ purposes.
 
 Note that even if a certificate is listed in this file, this does not
 mean that the certificate is trusted; in general the certificates listed
-in this file need to be listed also in @file{trustlist.txt}.
-
-This is a global file an installed in the data directory
-(e.g. @file{@value{DATADIR}/qualified.txt}).  GnuPG installs a suitable
-file with root certificates as used in Germany.  As new Root-CA
-certificates may be issued over time, these entries may need to be
-updated; new distributions of this software should come with an updated
-list but it is still the responsibility of the Administrator to check
-that this list is correct.
+in this file need to be listed also in @file{trustlist.txt}. This is a global
+file an installed in the sysconf directory (e.g.
+@file{@value{SYSCONFDIR}/qualified.txt}).
 
 Every time @command{gpgsm} uses a certificate for signing or verification
 this file will be consulted to check whether the certificate under
