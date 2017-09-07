@@ -46,11 +46,10 @@
 #include "../common/mbox-util.h"
 
 
-/* The default algorithms.  If you change them remember to change them
-   also in gpg.c:gpgconf_list.  You should also check that the value
+/* The default algorithms.  If you change them, you should ensure the value
    is inside the bounds enforced by ask_keysize and gen_xxx.  See also
    get_keysize_range which encodes the allowed ranges.  */
-#define DEFAULT_STD_KEY_PARAM  "rsa2048/cert,sign+rsa2048/encr"
+#define DEFAULT_STD_KEY_PARAM  "rsa3072/cert,sign+rsa3072/encr"
 #define FUTURE_STD_KEY_PARAM   "ed25519/cert,sign+cv25519/encr"
 
 /* When generating keys using the streamlined key generation dialog,
@@ -1623,7 +1622,7 @@ gen_rsa (int algo, unsigned int nbits, KBNODE pub_root,
 
   if (nbits < 1024)
     {
-      nbits = 2048;
+      nbits = 3072;
       log_info (_("keysize invalid; using %u bits\n"), nbits );
     }
   else if (nbits > maxsize)
@@ -2092,7 +2091,7 @@ get_keysize_range (int algo, unsigned int *min, unsigned int *max)
     default:
       *min = opt.compliance == CO_DE_VS ? 2048: 1024;
       *max = 4096;
-      def = 2048;
+      def = 3072;
       break;
     }
 

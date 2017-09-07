@@ -874,7 +874,7 @@ static const char hlp_genkey[] =
   "\n"
   "  C: GENKEY\n"
   "  S: INQUIRE KEYPARAM\n"
-  "  C: D (genkey (rsa (nbits  2048)))\n"
+  "  C: D (genkey (rsa (nbits 3072)))\n"
   "  C: END\n"
   "  S: D (public-key\n"
   "  S: D   (rsa (n 326487324683264) (e 10001)))\n"

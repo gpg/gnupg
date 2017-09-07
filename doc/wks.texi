@@ -301,11 +301,11 @@ the submission address:
 The output of the last command looks similar to this:
 
 @example
-  sec   rsa2048 2016-08-30 [SC]
+  sec   rsa3072 2016-08-30 [SC]
         C0FCF8642D830C53246211400346653590B3795B
   uid           [ultimate] key-submission@@example.net
                 bxzcxpxk8h87z1k7bzk86xn5aj47intu@@example.net
-  ssb   rsa2048 2016-08-30 [E]
+  ssb   rsa3072 2016-08-30 [E]
 @end example
 
 Take the hash of the string "key-submission", which is
