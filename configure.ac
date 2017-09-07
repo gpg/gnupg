@@ -317,7 +317,7 @@ GNUPG_GPG_DISABLE_ALGO([rmd160],[RIPE-MD160 hash])
 GNUPG_GPG_DISABLE_ALGO([sha224],[SHA-224 hash])
 # SHA256 is a MUST algorithm for GnuPG.
 GNUPG_GPG_DISABLE_ALGO([sha384],[SHA-384 hash])
-GNUPG_GPG_DISABLE_ALGO([sha512],[SHA-512 hash])
+# SHA512 is a MUST algorithm for GnuPG.
 
 
 # Allow disabling of zip support.

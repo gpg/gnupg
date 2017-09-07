@@ -751,11 +751,8 @@ map_md_openpgp_to_gcry (digest_algo_t algo)
     case DIGEST_ALGO_SHA384: return 0;
 #endif
 
-#ifdef GPG_USE_SHA512
     case DIGEST_ALGO_SHA512: return GCRY_MD_SHA512;
-#else
-    case DIGEST_ALGO_SHA512: return 0;
-#endif
+
     default: return 0;
     }
 }
