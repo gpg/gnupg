@@ -1073,7 +1073,7 @@ key. The algorithm must be capable of signing.  This is a required
 parameter.  The only supported value for @var{algo} is @samp{rsa}.
 
 @item Key-Length: @var{nbits}
-The requested length of a generated key in bits.  Defaults to 2048.
+The requested length of a generated key in bits.  Defaults to 3072.
 
 @item Key-Grip: @var{hexstring}
 This is optional and used to generate a CSR or certificate for an

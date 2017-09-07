@@ -26,7 +26,7 @@
      $ cat >foo <<EOF
      %echo Generating a standard key
      Key-Type: RSA
-     Key-Length: 2048
+     Key-Length: 3072
      Name-DN: CN=test cert 1,OU=Aegypten Project,O=g10 Code GmbH,L=Ddorf,C=DE
      Name-Email: joe@foo.bar
      # Do a commit here, so that we can later print a "done"
@@ -468,7 +468,7 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
   /* Check the keylength.  NOTE: If you change this make sure that it
      macthes the gpgconflist item in gpgsm.c  */
   if (!get_parameter (para, pKEYLENGTH, 0))
-    nbits = 2048;
+    nbits = 3072;
   else
     nbits = get_parameter_uint (para, pKEYLENGTH);
   if ((nbits < 1024 || nbits > 4096) && !cardkeyid)

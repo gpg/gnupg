@@ -138,7 +138,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
   unsigned int nbits;
   int minbits = 1024;
   int maxbits = 4096;
-  int defbits = 2048;
+  int defbits = 3072;
   const char *keyusage;
   char *subject_name;
   membuf_t mb_email, mb_dns, mb_uri, mb_result;
