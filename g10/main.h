@@ -31,7 +31,9 @@
    (i.e. uncompressed) rather than 1 (zip).  However, the real world
    issues of speed and size come into play here. */
 
-#if GPG_USE_AES128
+#if GPG_USE_AES256
+# define DEFAULT_CIPHER_ALGO     CIPHER_ALGO_AES256
+#elif GPG_USE_AES128
 # define DEFAULT_CIPHER_ALGO     CIPHER_ALGO_AES
 #elif GPG_USE_CAST5
 # define DEFAULT_CIPHER_ALGO     CIPHER_ALGO_CAST5
