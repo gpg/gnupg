@@ -31,14 +31,14 @@ Let's continue:
 
 @cartouche
 @example
-  What keysize do you want? (2048)
-  Requested keysize is 2048 bits
+  What keysize do you want? (3072)
+  Requested keysize is 3072 bits
 @end example
 @end cartouche
 
-Hitting enter chooses the default RSA key size of 2048 bits.  Smaller
-keys are too weak on the modern Internet.  If you choose a larger
-(stronger) key, your server will need to do more work.
+Hitting enter chooses the default RSA key size of 3072 bits.  Keys
+smaller than 2048 bits are too weak on the modern Internet.  If you
+choose a larger (stronger) key, your server will need to do more work.
 
 @cartouche
 @example
@@ -124,7 +124,7 @@ request:
 @example
   These parameters are used:
       Key-Type: RSA
-      Key-Length: 2048
+      Key-Length: 3072
       Key-Usage: sign, encrypt
       Name-DN: CN=example.com
       Name-DNS: example.com
@@ -224,7 +224,7 @@ To see the content of your certificate, you may now enter:
             aka: (dns-name example.com)
             aka: (dns-name www.example.com)
        validity: 2015-07-01 16:20:51 through 2016-07-01 16:20:51
-       key type: 2048 bit RSA
+       key type: 3072 bit RSA
       key usage: digitalSignature keyEncipherment
   ext key usage: clientAuth (suggested), serverAuth (suggested), [...]
     fingerprint: 0F:9C:27:B2:DA:05:5F:CB:33:D8:19:E9:65:B9:4F:BD:B1:98:CC:57

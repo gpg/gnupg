@@ -1800,7 +1800,7 @@ main ( int argc, char **argv)
         /* The next one is an info only item and should match what
            proc_parameters actually implements.  */
         es_printf ("default_pubkey_algo:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT,
-                   "RSA-2048");
+                   "RSA-3072");
         es_printf ("compliance:%lu:\"%s:\n", GC_OPT_FLAG_DEFAULT, "gnupg");
 
       }
