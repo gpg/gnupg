@@ -73,7 +73,7 @@ pubkey_letter( int algo )
    is copied to the supplied buffer up a length of BUFSIZE-1.
    Examples for the output are:
 
-   "rsa2048"  - RSA with 2048 bit
+   "rsa3072"  - RSA with 3072 bit
    "elg1024"  - Elgamal with 1024 bit
    "ed25519"  - ECC using the curve Ed25519.
    "E_1.2.3.4"  - ECC using the unsupported curve with OID "1.2.3.4".
@@ -83,7 +83,7 @@ pubkey_letter( int algo )
    If the option --legacy-list-mode is active, the output use the
    legacy format:
 
-   "2048R" - RSA with 2048 bit
+   "3072R" - RSA with 3072 bit
    "1024g" - Elgamal with 1024 bit
    "256E"  - ECDSA using a curve with 256 bit
 
