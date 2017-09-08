@@ -178,11 +178,11 @@
   (lambda (subkey)
     (assert (= 1 (:alg subkey)))
     (assert (string-contains? (:cap subkey) "s"))
-    (assert (time-matches? 2145916800    ;; 2038-01-01
-			   ;; 4260207600 ;; 2105-01-01
+    (assert (time-matches? 2145960000    ;; UTC 2038-01-01 12:00:00
+			   ;; 4260254400 ;; UTC 2105-01-01 12:00:00
 			   (string->number (:expire subkey))
-			   ;; This is off by 12h, but I guess it just
-			   ;; choses the middle of the day.
+			   ;; GnuPG choses the middle of the day (local time)
+			   ;; when no hh:mm:ss is specified
 			   (days->seconds 1))))
   (lambda (subkey)
     (assert (= 1 (:alg subkey)))
