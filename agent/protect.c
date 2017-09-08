@@ -159,7 +159,7 @@ calibrate_s2k_count_one (unsigned long count)
 
 
 /* Measure the time we need to do the hash operations and deduce an
-   S2K count which requires about 100ms of time.  */
+   S2K count which requires roughly some targeted amount of time.  */
 static unsigned long
 calibrate_s2k_count (void)
 {
@@ -171,11 +171,11 @@ calibrate_s2k_count (void)
       ms = calibrate_s2k_count_one (count);
       if (opt.verbose > 1)
         log_info ("S2K calibration: %lu -> %lums\n", count, ms);
-      if (ms > 100)
+      if (ms > AGENT_S2K_CALIBRATION)
         break;
     }
 
-  count = (unsigned long)(((double)count / ms) * 100);
+  count = (unsigned long)(((double)count / ms) * AGENT_S2K_CALIBRATION);
   count /= 1024;
   count *= 1024;
   if (count < 65536)

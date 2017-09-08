@@ -122,7 +122,6 @@ use_tls_library=no
 large_secmem=no
 show_tor_support=no
 
-
 GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
 # The agent is a required part and can't be disabled anymore.
@@ -249,6 +248,15 @@ else
 fi
 AC_DEFINE_UNQUOTED(SECMEM_BUFFER_SIZE,$SECMEM_BUFFER_SIZE,
                    [Size of secure memory buffer])
+
+AC_MSG_CHECKING([calibrated passphrase-stretching (s2k) duration])
+AC_ARG_WITH(agent-s2k-calibration,
+              AC_HELP_STRING([--with-agent-s2k-calibration=MSEC],
+                             [calibrate passphrase stretching (s2k) to MSEC milliseconds]),
+              agent_s2k_calibration=$withval, agent_s2k_calibration=100)
+AC_MSG_RESULT($agent_s2k_calibration milliseconds)
+AC_DEFINE_UNQUOTED(AGENT_S2K_CALIBRATION, $agent_s2k_calibration,
+                   [Agent s2k calibration time (ms)])
 
 AC_MSG_CHECKING([whether to enable trust models])
 AC_ARG_ENABLE(trust-models,
