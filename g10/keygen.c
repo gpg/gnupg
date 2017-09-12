@@ -3533,7 +3533,7 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
             {
               /* If we have only the email part, do not add the space
                * and the angle brackets.  */
-              if (*p)
+              if (*r->u.value)
                 p = stpcpy(stpcpy(stpcpy(p," <"), s3 ),">");
               else
                 p = stpcpy (p, s3);
