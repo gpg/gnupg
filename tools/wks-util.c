@@ -316,7 +316,8 @@ wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
     TOK_MAILBOX_ONLY,
     TOK_DANE_ONLY,
     TOK_AUTH_SUBMIT,
-    TOK_MAX_PENDING
+    TOK_MAX_PENDING,
+    TOK_PROTOCOL_VERSION
   };
   static struct {
     const char *name;
@@ -325,7 +326,8 @@ wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
     { "mailbox-only", TOK_MAILBOX_ONLY },
     { "dane-only",    TOK_DANE_ONLY    },
     { "auth-submit",  TOK_AUTH_SUBMIT  },
-    { "max-pending",  TOK_MAX_PENDING  }
+    { "max-pending",  TOK_MAX_PENDING  },
+    { "protocol-version", TOK_PROTOCOL_VERSION }
   };
   gpg_error_t err = 0;
   int lnr = 0;
@@ -399,6 +401,14 @@ wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
           /* FIXME: Define whether these are seconds, hours, or days
            * and decide whether to allow other units.  */
           flags->max_pending = atoi (value);
+          break;
+        case TOK_PROTOCOL_VERSION:
+          if (!value)
+            {
+              err = gpg_error (GPG_ERR_SYNTAX);
+              goto leave;
+            }
+          flags->protocol_version = atoi (value);
           break;
         }
     }

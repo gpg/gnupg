@@ -63,6 +63,7 @@ struct policy_flags_s
   unsigned int mailbox_only : 1;
   unsigned int dane_only : 1;
   unsigned int auth_submit : 1;
+  unsigned int protocol_version; /* The supported WKS_DRAFT_VERION or 0  */
   unsigned int max_pending;      /* Seconds to wait for a confirmation.  */
 };
 typedef struct policy_flags_s *policy_flags_t;
