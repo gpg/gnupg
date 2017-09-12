@@ -693,6 +693,7 @@ command_send (const char *fingerprint, char *userid)
   mime_maker_t mime = NULL;
   struct policy_flags_s policy;
   int no_encrypt = 0;
+  int posteo_hack = 0;
   const char *domain;
 
   memset (&policy, 0, sizeof policy);
@@ -762,11 +763,14 @@ command_send (const char *fingerprint, char *userid)
   if (policy.auth_submit)
     log_info ("no confirmation required for '%s'\n", addrspec);
 
-  /* Hack to support old providers.  */
-  if (policy.auth_submit && !ascii_strcasecmp (domain, "posteo.de"))
+  /* Hack to support posteo but let them disable this by setting the
+   * new policy-version flag.  */
+  if (policy.protocol_version < 3
+      && !ascii_strcasecmp (domain, "posteo.de"))
     {
       log_info ("Warning: Using draft-1 method for domain '%s'\n", domain);
       no_encrypt = 1;
+      posteo_hack = 1;
     }
 
   /* Encrypt the key part.  */
@@ -804,6 +808,18 @@ command_send (const char *fingerprint, char *userid)
     {
       void *data;
       size_t datalen, n;
+
+      if (posteo_hack)
+        {
+          /* Needs a multipart/mixed with one(!) attachment.  It does
+           * not grok a non-multipart mail.  */
+          err = mime_maker_add_header (mime, "Content-Type", "multipart/mixed");
+          if (err)
+            goto leave;
+          err = mime_maker_add_container (mime);
+          if (err)
+            goto leave;
+        }
 
       err = mime_maker_add_header (mime, "Content-type",
                                    "application/pgp-keys");
