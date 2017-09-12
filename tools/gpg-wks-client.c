@@ -349,10 +349,7 @@ get_key_status_cb (void *opaque, const char *keyword, char *args)
 
 /* Get a key by fingerprint from gpg's keyring and make sure that the
  * mail address ADDRSPEC is included in the key.  The key is returned
- * as a new memory stream at R_KEY.
- *
- * Fixme: After we have implemented import and export filters for gpg
- * this function shall only return a key with just this user id.  */
+ * as a new memory stream at R_KEY.  */
 static gpg_error_t
 get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
 {
@@ -695,6 +692,8 @@ command_send (const char *fingerprint, char *userid)
   char *submission_to = NULL;
   mime_maker_t mime = NULL;
   struct policy_flags_s policy;
+  int no_encrypt = 0;
+  const char *domain;
 
   memset (&policy, 0, sizeof policy);
 
@@ -717,6 +716,10 @@ command_send (const char *fingerprint, char *userid)
   if (err)
     goto leave;
 
+  domain = strchr (addrspec, '@');
+  log_assert (domain);
+  domain++;
+
   /* Get the submission address.  */
   if (fake_submission_addr)
     {
@@ -727,11 +730,8 @@ command_send (const char *fingerprint, char *userid)
     err = wkd_get_submission_address (addrspec, &submission_to);
   if (err)
     {
-      char *domain = strchr (addrspec, '@');
-      if (domain)
-        domain = domain + 1;
-      log_error (_("looking up WKS submission address for %s: %s\n"),
-                 domain ? domain : addrspec, gpg_strerror (err));
+      log_error (_("error looking up submission address for domain '%s': %s\n"),
+                 domain, gpg_strerror (err));
       if (gpg_err_code (err) == GPG_ERR_NO_DATA)
         log_error (_("this domain probably doesn't support WKS.\n"));
       goto leave;
@@ -762,14 +762,23 @@ command_send (const char *fingerprint, char *userid)
   if (policy.auth_submit)
     log_info ("no confirmation required for '%s'\n", addrspec);
 
-  /* Encrypt the key part.  */
-  es_rewind (key);
-  err = encrypt_response (&keyenc, key, submission_to, fingerprint);
-  if (err)
-    goto leave;
-  es_fclose (key);
-  key = NULL;
+  /* Hack to support old providers.  */
+  if (policy.auth_submit && !ascii_strcasecmp (domain, "posteo.de"))
+    {
+      log_info ("Warning: Using draft-1 method for domain '%s'\n", domain);
+      no_encrypt = 1;
+    }
 
+  /* Encrypt the key part.  */
+  if (!no_encrypt)
+    {
+      es_rewind (key);
+      err = encrypt_response (&keyenc, key, submission_to, fingerprint);
+      if (err)
+        goto leave;
+      es_fclose (key);
+      key = NULL;
+    }
 
   /* Send the key.  */
   err = mime_maker_new (&mime, NULL);
@@ -787,34 +796,67 @@ command_send (const char *fingerprint, char *userid)
 
   /* Tell server which draft we support.  */
   err = mime_maker_add_header (mime, "Wks-Draft-Version",
-                               STR2(WKS_DRAFT_VERSION));
+                                 STR2(WKS_DRAFT_VERSION));
   if (err)
     goto leave;
 
-  err = mime_maker_add_header (mime, "Content-Type",
-                               "multipart/encrypted; "
-                               "protocol=\"application/pgp-encrypted\"");
-  if (err)
-    goto leave;
-  err = mime_maker_add_container (mime);
-  if (err)
-    goto leave;
+  if (no_encrypt)
+    {
+      void *data;
+      size_t datalen, n;
 
-  err = mime_maker_add_header (mime, "Content-Type",
-                               "application/pgp-encrypted");
-  if (err)
-    goto leave;
-  err = mime_maker_add_body (mime, "Version: 1\n");
-  if (err)
-    goto leave;
-  err = mime_maker_add_header (mime, "Content-Type",
-                               "application/octet-stream");
-  if (err)
-    goto leave;
+      err = mime_maker_add_header (mime, "Content-type",
+                                   "application/pgp-keys");
+      if (err)
+        goto leave;
 
-  err = mime_maker_add_stream (mime, &keyenc);
-  if (err)
-    goto leave;
+      if (es_fclose_snatch (key, &data, &datalen))
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      key = NULL;
+      /* We need to skip over the first line which has a content-type
+       * header not needed here.  */
+      for (n=0; n < datalen ; n++)
+        if (((const char *)data)[n] == '\n')
+          {
+            n++;
+            break;
+          }
+
+      err = mime_maker_add_body_data (mime, (char*)data + n, datalen - n);
+      xfree (data);
+      if (err)
+        goto leave;
+    }
+  else
+    {
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "multipart/encrypted; "
+                                   "protocol=\"application/pgp-encrypted\"");
+      if (err)
+        goto leave;
+      err = mime_maker_add_container (mime);
+      if (err)
+        goto leave;
+
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "application/pgp-encrypted");
+      if (err)
+        goto leave;
+      err = mime_maker_add_body (mime, "Version: 1\n");
+      if (err)
+        goto leave;
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "application/octet-stream");
+      if (err)
+        goto leave;
+
+      err = mime_maker_add_stream (mime, &keyenc);
+      if (err)
+        goto leave;
+    }
 
   err = wks_send_mime (mime);
 
