@@ -478,7 +478,8 @@ add_body (mime_maker_t ctx, const void *data, size_t datalen)
 
 
 /* Add STRING as body to the mail or the current MIME container.  A
- * second call to this function is not allowed.
+ * second call to this function or mime_make_add_body_data is not
+ * allowed.
  *
  * FIXME: We may want to have an append_body to add more data to a body.
  */
@@ -486,6 +487,16 @@ gpg_error_t
 mime_maker_add_body (mime_maker_t ctx, const char *string)
 {
   return add_body (ctx, string, strlen (string));
+}
+
+
+/* Add (DATA,DATALEN) as body to the mail or the current MIME
+ * container.  Note that a second call to this function or to
+ * mime_make_add_body is not allowed.  */
+gpg_error_t
+mime_maker_add_body_data (mime_maker_t ctx, const void *data, size_t datalen)
+{
+  return add_body (ctx, data, datalen);
 }
 
 
