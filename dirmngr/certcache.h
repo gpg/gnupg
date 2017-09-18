@@ -39,6 +39,9 @@ void cert_cache_deinit (int full);
 /* Print some statistics to the log file.  */
 void cert_cache_print_stats (void);
 
+/* Return true if any cert of a class in MASK is permanently loaded.  */
+int cert_cache_any_in_class (unsigned int mask);
+
 /* Compute the fingerprint of the certificate CERT and put it into
    the 20 bytes large buffer DIGEST.  Return address of this buffer.  */
 unsigned char *cert_compute_fpr (ksba_cert_t cert, unsigned char *digest);

@@ -94,6 +94,10 @@ static int initialization_done;
 /* Total number of non-permanent certificates.  */
 static unsigned int total_nonperm_certificates;
 
+/* For each cert class the corresponding bit is set if at least one
+ * certificate of that class is loaded permanetly.  */
+static unsigned int any_cert_of_class;
+
 
 #ifdef HAVE_W32_SYSTEM
 /* We load some functions dynamically.  Provide typedefs for tehse
@@ -343,7 +347,9 @@ put_cert (ksba_cert_t cert, int permanent, unsigned int trustclass,
   ci->permanent = !!permanent;
   ci->trustclasses = trustclass;
 
-  if (!permanent)
+  if (permanent)
+    any_cert_of_class |= trustclass;
+  else
     total_nonperm_certificates++;
 
   return 0;
@@ -758,6 +764,7 @@ cert_cache_deinit (int full)
     }
 
   total_nonperm_certificates = 0;
+  any_cert_of_class = 0;
   initialization_done = 0;
   release_cache_lock ();
 }
@@ -811,6 +818,15 @@ cert_cache_print_stats (void)
             n_trustclass_config,
             n_trustclass_hkp,
             n_trustclass_hkpspool);
+}
+
+
+/* Return true if any cert of a class in MASK is permanently
+ * loaded.  */
+int
+cert_cache_any_in_class (unsigned int mask)
+{
+  return !!(any_cert_of_class & mask);
 }
 
 
