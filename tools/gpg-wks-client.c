@@ -348,10 +348,13 @@ get_key_status_cb (void *opaque, const char *keyword, char *args)
 
 
 /* Get a key by fingerprint from gpg's keyring and make sure that the
- * mail address ADDRSPEC is included in the key.  The key is returned
- * as a new memory stream at R_KEY.  */
+ * mail address ADDRSPEC is included in the key.  If EXACT is set the
+ * returned user id must match Addrspec exactly and not just in the
+ * addr-spec (mailbox) part.  The key is returned as a new memory
+ * stream at R_KEY.  */
 static gpg_error_t
-get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
+get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
+         int exact)
 {
   gpg_error_t err;
   ccparray_t ccp;
@@ -376,7 +379,7 @@ get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
   es_fputs ("Content-Type: application/pgp-keys\n"
             "\n", key);
 
-  filterexp = es_bsprintf ("keep-uid=mbox = %s", addrspec);
+  filterexp = es_bsprintf ("keep-uid=%s=%s", exact? "uid":"mbox", addrspec);
   if (!filterexp)
     {
       err = gpg_error_from_syserror ();
@@ -431,6 +434,49 @@ get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
   es_fclose (key);
   xfree (argv);
   xfree (filterexp);
+  return err;
+}
+
+
+/* Add the user id UID to the key identified by FINGERPRINT.  */
+static gpg_error_t
+add_user_id (const char *fingerprint, const char *uid)
+{
+  gpg_error_t err;
+  ccparray_t ccp;
+  const char **argv = NULL;
+
+  ccparray_init (&ccp, 0);
+
+  ccparray_put (&ccp, "--no-options");
+  if (!opt.verbose)
+    ccparray_put (&ccp, "--quiet");
+  else if (opt.verbose > 1)
+    ccparray_put (&ccp, "--verbose");
+  ccparray_put (&ccp, "--batch");
+  ccparray_put (&ccp, "--always-trust");
+  ccparray_put (&ccp, "--quick-add-uid");
+  ccparray_put (&ccp, fingerprint);
+  ccparray_put (&ccp, uid);
+
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gnupg_exec_tool_stream (opt.gpg_program, argv, NULL,
+                                NULL, NULL,
+                                NULL, NULL);
+  if (err)
+    {
+      log_error ("adding user id failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+ leave:
+  xfree (argv);
   return err;
 }
 
@@ -721,7 +767,7 @@ command_send (const char *fingerprint, const char *userid)
       err = gpg_error (GPG_ERR_INV_USER_ID);
       goto leave;
     }
-  err = get_key (&key, fingerprint, addrspec);
+  err = get_key (&key, fingerprint, addrspec, 0);
   if (err)
     goto leave;
 
@@ -786,6 +832,9 @@ command_send (const char *fingerprint, const char *userid)
     {
       if (!uid->mbox)
         continue; /* Should not happen anyway.  */
+      if (policy.mailbox_only
+          && ascii_strcasecmp (uid->uid, uid->mbox))
+        continue; /* UID has more than just the mailbox.  */
       if (uid->created > thistime)
         {
           thistime = uid->created;
@@ -793,7 +842,7 @@ command_send (const char *fingerprint, const char *userid)
         }
     }
   if (!thisuid)
-    thisuid = uid;  /* This is the case for a missing timestamp.  */
+    thisuid = uidlist;  /* This is the case for a missing timestamp.  */
   if (opt.verbose)
     log_info ("submitting key with user id '%s'\n", thisuid->uid);
 
@@ -816,10 +865,22 @@ command_send (const char *fingerprint, const char *userid)
     }
 
   if (policy.mailbox_only
-      && ascii_strcasecmp (userid, addrspec))
+      && (!thisuid->mbox || ascii_strcasecmp (thisuid->uid, thisuid->mbox)))
     {
       log_info ("Warning: policy requires 'mailbox-only'"
-                " - creating new user id'\n");
+                " - adding user id '%s'\n", addrspec);
+      err = add_user_id (fingerprint, addrspec);
+      if (err)
+        goto leave;
+
+      /* Need to get the key again.  This time we request filtering
+       * for the full user id, so that we do not need check and filter
+       * the key again.  */
+      es_fclose (key);
+      key = NULL;
+      err = get_key (&key, fingerprint, addrspec, 1);
+      if (err)
+        goto leave;
     }
 
   /* Hack to support posteo but let them disable this by setting the

@@ -78,7 +78,9 @@ the command is a properly formatted mail with all standard headers.
 This mail can be fed to @command{sendmail(8)} or any other tool to
 actually send that mail.  If @command{sendmail(8)} is installed the
 option @option{--send} can be used to directly send the created
-request.
+request.  If the provider request a 'mailbox-only' user id and no such
+user id is found, @command{gpg-wks-client} will try an additional user
+id.
 
 The @option{--receive} and @option{--read} commands are used to
 process confirmation mails as send from the service provider.  The
