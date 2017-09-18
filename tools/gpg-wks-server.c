@@ -127,7 +127,7 @@ static struct debug_flags_s debug_flags [] =
 struct server_ctx_s
 {
   char *fpr;
-  strlist_t mboxes;  /* List of addr-specs taken from the UIDs.  */
+  uidinfo_list_t mboxes;  /* List with addr-specs taken from the UIDs.  */
   unsigned int draft_version_2:1; /* Client supports the draft 2.  */
 };
 typedef struct server_ctx_s *server_ctx_t;
@@ -1092,7 +1092,7 @@ static gpg_error_t
 process_new_key (server_ctx_t ctx, estream_t key)
 {
   gpg_error_t err;
-  strlist_t sl;
+  uidinfo_list_t sl;
   const char *s;
   char *dname = NULL;
   char *nonce = NULL;
@@ -1101,7 +1101,7 @@ process_new_key (server_ctx_t ctx, estream_t key)
 
   /* First figure out the user id from the key.  */
   xfree (ctx->fpr);
-  free_strlist (ctx->mboxes);
+  free_uidinfo_list (ctx->mboxes);
   err = wks_list_key (key, &ctx->fpr, &ctx->mboxes);
   if (err)
     goto leave;
@@ -1114,14 +1114,17 @@ process_new_key (server_ctx_t ctx, estream_t key)
   log_info ("fingerprint: %s\n", ctx->fpr);
   for (sl = ctx->mboxes; sl; sl = sl->next)
     {
-      log_info ("  addr-spec: %s\n", sl->d);
+      if (sl->mbox)
+        log_info ("  addr-spec: %s\n", sl->mbox);
     }
 
   /* Walk over all user ids and send confirmation requests for those
    * we support.  */
   for (sl = ctx->mboxes; sl; sl = sl->next)
     {
-      s = strchr (sl->d, '@');
+      if (!sl->mbox)
+        continue;
+      s = strchr (sl->mbox, '@');
       log_assert (s && s[1]);
       xfree (dname);
       dname = make_filename_try (opt.directory, s+1, NULL);
@@ -1133,26 +1136,26 @@ process_new_key (server_ctx_t ctx, estream_t key)
 
       if (access (dname, W_OK))
         {
-          log_info ("skipping address '%s': Domain not configured\n", sl->d);
+          log_info ("skipping address '%s': Domain not configured\n", sl->mbox);
           continue;
         }
-      if (get_policy_flags (&policybuf, sl->d))
+      if (get_policy_flags (&policybuf, sl->mbox))
         {
-          log_info ("skipping address '%s': Bad policy flags\n", sl->d);
+          log_info ("skipping address '%s': Bad policy flags\n", sl->mbox);
           continue;
         }
 
       if (policybuf.auth_submit)
         {
           /* Bypass the confirmation stuff and publish the key as is.  */
-          log_info ("publishing address '%s'\n", sl->d);
+          log_info ("publishing address '%s'\n", sl->mbox);
           /* FIXME: We need to make sure that we do this only for the
            * address in the mail.  */
           log_debug ("auth-submit not yet working!\n");
         }
       else
         {
-          log_info ("storing address '%s'\n", sl->d);
+          log_info ("storing address '%s'\n", sl->mbox);
 
           xfree (nonce);
           xfree (fname);
@@ -1160,7 +1163,7 @@ process_new_key (server_ctx_t ctx, estream_t key)
           if (err)
             goto leave;
 
-          err = send_confirmation_request (ctx, sl->d, nonce, fname);
+          err = send_confirmation_request (ctx, sl->mbox, nonce, fname);
           if (err)
             goto leave;
         }
@@ -1313,7 +1316,7 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
   char *hash = NULL;
   const char *domain;
   const char *s;
-  strlist_t sl;
+  uidinfo_list_t sl;
   char shaxbuf[32]; /* Used for SHA-1 and SHA-256 */
 
   /* FIXME: There is a bug in name-value.c which adds white space for
@@ -1351,7 +1354,7 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
 
   /* We need to get the fingerprint from the key.  */
   xfree (ctx->fpr);
-  free_strlist (ctx->mboxes);
+  free_uidinfo_list (ctx->mboxes);
   err = wks_list_key (key, &ctx->fpr, &ctx->mboxes);
   if (err)
     goto leave;
@@ -1363,13 +1366,14 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
     }
   log_info ("fingerprint: %s\n", ctx->fpr);
   for (sl = ctx->mboxes; sl; sl = sl->next)
-    log_info ("  addr-spec: %s\n", sl->d);
+    if (sl->mbox)
+      log_info ("  addr-spec: %s\n", sl->mbox);
 
   /* Check that the key has 'address' as a user id.  We use
    * case-insensitive matching because the client is expected to
    * return the address verbatim.  */
   for (sl = ctx->mboxes; sl; sl = sl->next)
-    if (!strcmp (sl->d, address))
+    if (sl->mbox && !strcmp (sl->mbox, address))
       break;
   if (!sl)
     {
@@ -1565,7 +1569,7 @@ command_receive_cb (void *opaque, const char *mediatype,
     }
 
   xfree (ctx.fpr);
-  free_strlist (ctx.mboxes);
+  free_uidinfo_list (ctx.mboxes);
 
   return err;
 }

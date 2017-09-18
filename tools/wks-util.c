@@ -90,6 +90,48 @@ wks_write_status (int no, const char *format, ...)
 
 
 
+
+/* Append UID to LIST and return the new item.  On success LIST is
+ * updated.  On error ERRNO is set and NULL returned. */
+static uidinfo_list_t
+append_to_uidinfo_list (uidinfo_list_t *list, const char *uid)
+{
+  uidinfo_list_t r, sl;
+
+  sl = xtrymalloc (sizeof *sl + strlen (uid));
+  if (!sl)
+    return NULL;
+
+  strcpy (sl->uid, uid);
+  sl->mbox = mailbox_from_userid (uid);
+  sl->next = NULL;
+  if (!*list)
+    *list = sl;
+  else
+    {
+      for (r = *list; r->next; r = r->next )
+        ;
+      r->next = sl;
+    }
+  return sl;
+}
+
+
+/* Free the list of uid infos at LIST.  */
+void
+free_uidinfo_list (uidinfo_list_t list)
+{
+  while (list)
+    {
+      uidinfo_list_t tmp = list->next;
+      xfree (list->mbox);
+      xfree (list);
+      list = tmp;
+    }
+}
+
+
+
 /* Helper for wks_list_key.  */
 static void
 list_key_status_cb (void *opaque, const char *keyword, char *args)
@@ -105,7 +147,7 @@ list_key_status_cb (void *opaque, const char *keyword, char *args)
  * list of mailboxes at R_MBOXES.  Returns 0 on success; on error NULL
  * is stored at R_FPR and R_MBOXES and an error code is returned.  */
 gpg_error_t
-wks_list_key (estream_t key, char **r_fpr, strlist_t *r_mboxes)
+wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
 {
   gpg_error_t err;
   ccparray_t ccp;
@@ -118,9 +160,8 @@ wks_list_key (estream_t key, char **r_fpr, strlist_t *r_mboxes)
   char **fields = NULL;
   int nfields;
   int lnr;
-  char *mbox = NULL;
   char *fpr = NULL;
-  strlist_t mboxes = NULL;
+  uidinfo_list_t mboxes = NULL;
 
   *r_fpr = NULL;
   *r_mboxes = NULL;
@@ -232,9 +273,7 @@ wks_list_key (estream_t key, char **r_fpr, strlist_t *r_mboxes)
       else if (!strcmp (fields[0], "uid") && nfields > 9)
         {
           /* Fixme: Unescape fields[9] */
-          xfree (mbox);
-          mbox = mailbox_from_userid (fields[9]);
-          if (mbox && !append_to_strlist_try (&mboxes, mbox))
+          if (!append_to_uidinfo_list (&mboxes, fields[9]))
             {
               err = gpg_error_from_syserror ();
               goto leave;
@@ -255,8 +294,7 @@ wks_list_key (estream_t key, char **r_fpr, strlist_t *r_mboxes)
 
  leave:
   xfree (fpr);
-  xfree (mboxes);
-  xfree (mbox);
+  free_uidinfo_list (mboxes);
   xfree (fields);
   es_free (line);
   xfree (argv);

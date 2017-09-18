@@ -119,7 +119,7 @@ const char *fake_submission_addr;
 static void wrong_args (const char *text) GPGRT_ATTR_NORETURN;
 static gpg_error_t command_supported (char *userid);
 static gpg_error_t command_check (char *userid);
-static gpg_error_t command_send (const char *fingerprint, char *userid);
+static gpg_error_t command_send (const char *fingerprint, const char *userid);
 static gpg_error_t encrypt_response (estream_t *r_output, estream_t input,
                                      const char *addrspec,
                                      const char *fingerprint);
@@ -597,8 +597,8 @@ command_check (char *userid)
   char *addrspec = NULL;
   estream_t key = NULL;
   char *fpr = NULL;
-  strlist_t mboxes = NULL;
-  strlist_t sl;
+  uidinfo_list_t mboxes = NULL;
+  uidinfo_list_t sl;
   int found = 0;
 
   addrspec = mailbox_from_userid (userid);
@@ -657,10 +657,14 @@ command_check (char *userid)
 
   for (sl = mboxes; sl; sl = sl->next)
     {
-      if (!strcmp (sl->d, addrspec))
+      if (sl->mbox && !strcmp (sl->mbox, addrspec))
         found = 1;
       if (opt.verbose)
-        log_info ("  addr-spec: %s\n", sl->d);
+        {
+          log_info ("    user-id: %s\n", sl->uid);
+          if (sl->mbox)
+            log_info ("  addr-spec: %s\n", sl->mbox);
+        }
     }
   if (!found)
     {
@@ -671,7 +675,7 @@ command_check (char *userid)
 
  leave:
   xfree (fpr);
-  free_strlist (mboxes);
+  free_uidinfo_list (mboxes);
   es_fclose (key);
   xfree (addrspec);
   return err;
@@ -682,7 +686,7 @@ command_check (char *userid)
 /* Locate the key by fingerprint and userid and send a publication
  * request.  */
 static gpg_error_t
-command_send (const char *fingerprint, char *userid)
+command_send (const char *fingerprint, const char *userid)
 {
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
@@ -706,6 +710,7 @@ command_send (const char *fingerprint, char *userid)
       err = gpg_error (GPG_ERR_INV_NAME);
       goto leave;
     }
+
   addrspec = mailbox_from_userid (userid);
   if (!addrspec)
     {
