@@ -644,10 +644,9 @@ command_check (char *userid)
 
   /* Look closer at the key.  */
   err = wks_list_key (key, &fpr, &mboxes);
-  if (err || !fpr)
+  if (err)
     {
-      log_error ("error parsing key: %s\n",
-                 err? gpg_strerror (err) : "no fingerprint found");
+      log_error ("error parsing key: %s\n", gpg_strerror (err));
       err = gpg_error (GPG_ERR_NO_PUBKEY);
       goto leave;
     }
@@ -700,6 +699,9 @@ command_send (const char *fingerprint, const char *userid)
   int no_encrypt = 0;
   int posteo_hack = 0;
   const char *domain;
+  uidinfo_list_t uidlist = NULL;
+  uidinfo_list_t uid, thisuid;
+  time_t thistime;
 
   memset (&policy, 0, sizeof policy);
 
@@ -768,6 +770,57 @@ command_send (const char *fingerprint, const char *userid)
 
   if (policy.auth_submit)
     log_info ("no confirmation required for '%s'\n", addrspec);
+
+  /* In case the key has several uids with the same addr-spec we will
+   * use the newest one.  */
+  err = wks_list_key (key, NULL, &uidlist);
+  if (err)
+    {
+      log_error ("error parsing key: %s\n",gpg_strerror (err));
+      err = gpg_error (GPG_ERR_NO_PUBKEY);
+      goto leave;
+    }
+  thistime = 0;
+  thisuid = NULL;
+  for (uid = uidlist; uid; uid = uid->next)
+    {
+      if (!uid->mbox)
+        continue; /* Should not happen anyway.  */
+      if (uid->created > thistime)
+        {
+          thistime = uid->created;
+          thisuid = uid;
+        }
+    }
+  if (!thisuid)
+    thisuid = uid;  /* This is the case for a missing timestamp.  */
+  if (opt.verbose)
+    log_info ("submitting key with user id '%s'\n", thisuid->uid);
+
+  /* If we have more than one user id we need to filter the key to
+   * include only THISUID.  */
+  if (uidlist->next)
+    {
+      estream_t newkey;
+
+      es_rewind (key);
+      err = wks_filter_uid (&newkey, key, thisuid->uid);
+      if (err)
+        {
+          log_error ("error filtering key: %s\n", gpg_strerror (err));
+          err = gpg_error (GPG_ERR_NO_PUBKEY);
+          goto leave;
+        }
+      es_fclose (key);
+      key = newkey;
+    }
+
+  if (policy.mailbox_only
+      && ascii_strcasecmp (userid, addrspec))
+    {
+      log_info ("Warning: policy requires 'mailbox-only'"
+                " - creating new user id'\n");
+    }
 
   /* Hack to support posteo but let them disable this by setting the
    * new policy-version flag.  */
@@ -885,6 +938,7 @@ command_send (const char *fingerprint, const char *userid)
  leave:
   mime_maker_release (mime);
   xfree (submission_to);
+  free_uidinfo_list (uidlist);
   es_fclose (keyenc);
   es_fclose (key);
   xfree (addrspec);

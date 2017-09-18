@@ -1105,12 +1105,7 @@ process_new_key (server_ctx_t ctx, estream_t key)
   err = wks_list_key (key, &ctx->fpr, &ctx->mboxes);
   if (err)
     goto leave;
-  if (!ctx->fpr)
-    {
-      log_error ("error parsing key (no fingerprint)\n");
-      err = gpg_error (GPG_ERR_NO_PUBKEY);
-      goto leave;
-    }
+  log_assert (ctx->fpr);
   log_info ("fingerprint: %s\n", ctx->fpr);
   for (sl = ctx->mboxes; sl; sl = sl->next)
     {
@@ -1358,12 +1353,7 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
   err = wks_list_key (key, &ctx->fpr, &ctx->mboxes);
   if (err)
     goto leave;
-  if (!ctx->fpr)
-    {
-      log_error ("error parsing key (no fingerprint)\n");
-      err = gpg_error (GPG_ERR_NO_PUBKEY);
-      goto leave;
-    }
+  log_assert (ctx->fpr);
   log_info ("fingerprint: %s\n", ctx->fpr);
   for (sl = ctx->mboxes; sl; sl = sl->next)
     if (sl->mbox)

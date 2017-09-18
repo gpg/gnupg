@@ -133,9 +133,9 @@ free_uidinfo_list (uidinfo_list_t list)
 
 
 
-/* Helper for wks_list_key.  */
+/* Helper for wks_list_key and wks_filter_uid.  */
 static void
-list_key_status_cb (void *opaque, const char *keyword, char *args)
+key_status_cb (void *opaque, const char *keyword, char *args)
 {
   (void)opaque;
 
@@ -146,7 +146,8 @@ list_key_status_cb (void *opaque, const char *keyword, char *args)
 
 /* Run gpg on KEY and store the primary fingerprint at R_FPR and the
  * list of mailboxes at R_MBOXES.  Returns 0 on success; on error NULL
- * is stored at R_FPR and R_MBOXES and an error code is returned.  */
+ * is stored at R_FPR and R_MBOXES and an error code is returned.
+ * R_FPR may be NULL if the fingerprint is not needed.  */
 gpg_error_t
 wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
 {
@@ -164,7 +165,8 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
   char *fpr = NULL;
   uidinfo_list_t mboxes = NULL;
 
-  *r_fpr = NULL;
+  if (r_fpr)
+    *r_fpr = NULL;
   *r_mboxes = NULL;
 
   /* Open a memory stream.  */
@@ -200,7 +202,7 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
     }
   err = gnupg_exec_tool_stream (opt.gpg_program, argv, key,
                                 NULL, listing,
-                                list_key_status_cb, NULL);
+                                key_status_cb, NULL);
   if (err)
     {
       log_error ("import failed: %s\n", gpg_strerror (err));
@@ -289,8 +291,17 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
       goto leave;
     }
 
-  *r_fpr = fpr;
-  fpr = NULL;
+  if (!fpr)
+    {
+      err = gpg_error (GPG_ERR_NO_PUBKEY);
+      goto leave;
+    }
+
+  if (r_fpr)
+    {
+      *r_fpr = fpr;
+      fpr = NULL;
+    }
   *r_mboxes = mboxes;
   mboxes = NULL;
 
@@ -301,6 +312,85 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
   es_free (line);
   xfree (argv);
   es_fclose (listing);
+  return err;
+}
+
+
+/* Run gpg as a filter on KEY and write the output to a new stream
+ * stored at R_NEWKEY.  The new key will containn only the user id
+ * UID.  Returns 0 on success.  Only one key is expected in KEY. */
+gpg_error_t
+wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid)
+{
+  gpg_error_t err;
+  ccparray_t ccp;
+  const char **argv = NULL;
+  estream_t newkey;
+  char *filterexp = NULL;
+
+  *r_newkey = NULL;
+
+  /* Open a memory stream.  */
+  newkey = es_fopenmem (0, "w+b");
+  if (!newkey)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  /* Prefix the key with the MIME content type.  */
+  es_fputs ("Content-Type: application/pgp-keys\n"
+            "\n", newkey);
+
+  filterexp = es_bsprintf ("keep-uid=uid=%s", uid);
+  if (!filterexp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  ccparray_init (&ccp, 0);
+
+  ccparray_put (&ccp, "--no-options");
+  if (!opt.verbose)
+    ccparray_put (&ccp, "--quiet");
+  else if (opt.verbose > 1)
+    ccparray_put (&ccp, "--verbose");
+  ccparray_put (&ccp, "--batch");
+  ccparray_put (&ccp, "--status-fd=2");
+  ccparray_put (&ccp, "--always-trust");
+  ccparray_put (&ccp, "--armor");
+  ccparray_put (&ccp, "--import-options=import-export");
+  ccparray_put (&ccp, "--import-filter");
+  ccparray_put (&ccp, filterexp);
+  ccparray_put (&ccp, "--import");
+
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gnupg_exec_tool_stream (opt.gpg_program, argv, key,
+                                NULL, newkey,
+                                key_status_cb, NULL);
+  if (err)
+    {
+      log_error ("import/export failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  es_rewind (newkey);
+  *r_newkey = newkey;
+  newkey = NULL;
+
+ leave:
+  xfree (filterexp);
+  xfree (argv);
+  es_fclose (newkey);
   return err;
 }
 
