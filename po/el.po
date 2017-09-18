@@ -1,20 +1,21 @@
 # Greek Translation of GnuPG.
 # Copyright (C) 2002 Free Software Foundation, Inc.
 # Dokianakis Theofanis <madf@hellug.gr>, 2002.
-#                      !-- psbl.surriel.com rejected (2011-01-11)
+# !-- psbl.surriel.com rejected (2011-01-11)
 # Designated-Translator: none
-#
+# Dimitris Maroulidis <dmaroulidis@dimitrismaroulidis.com>, 2017.
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.1.92\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2003-06-27 12:00+0200\n"
-"Last-Translator: Dokianakis Theofanis <madf@hellug.gr>\n"
-"Language-Team: Greek <nls@tux.hellug.gr>\n"
+"PO-Revision-Date: 2017-09-14 21:14+0300\n"
+"Last-Translator: Dimitris Maroulidis <dmaroulidis@dimitrismaroulidis.com>\n"
+"Language-Team: team@gnome.gr\n"
 "Language: el\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #, fuzzy, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
@@ -4423,7 +4424,7 @@ msgid "Keyring"
 msgstr "Κλειδοθήκη"
 
 msgid "Primary key fingerprint:"
-msgstr "Αποτύπωμα πρωτεύων κλειδιού:"
+msgstr "Αποτύπωμα πρωτεύοντος κλειδιού:"
 
 msgid "     Subkey fingerprint:"
 msgstr "     Αποτύπωμα υποκλειδιού:"
@@ -4431,7 +4432,7 @@ msgstr "     Αποτύπωμα υποκλειδιού:"
 #. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
-msgstr " Αποτύπωμα πρωτεύων κλειδιού:"
+msgstr " Αποτύπωμα πρωτ. κλειδιού:"
 
 msgid "      Subkey fingerprint:"
 msgstr "      Αποτύπωμα υποκλειδιού:"
