@@ -73,6 +73,7 @@ typedef struct policy_flags_s *policy_flags_t;
 struct uidinfo_list_s
 {
   struct uidinfo_list_s *next;
+  time_t created; /* Time the userid was created.  */
   char *mbox;  /* NULL or the malloced mailbox from UID.  */
   char uid[1];
 };

@@ -94,7 +94,7 @@ wks_write_status (int no, const char *format, ...)
 /* Append UID to LIST and return the new item.  On success LIST is
  * updated.  On error ERRNO is set and NULL returned. */
 static uidinfo_list_t
-append_to_uidinfo_list (uidinfo_list_t *list, const char *uid)
+append_to_uidinfo_list (uidinfo_list_t *list, const char *uid, time_t created)
 {
   uidinfo_list_t r, sl;
 
@@ -103,6 +103,7 @@ append_to_uidinfo_list (uidinfo_list_t *list, const char *uid)
     return NULL;
 
   strcpy (sl->uid, uid);
+  sl->created = created;
   sl->mbox = mailbox_from_userid (uid);
   sl->next = NULL;
   if (!*list)
@@ -273,7 +274,8 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
       else if (!strcmp (fields[0], "uid") && nfields > 9)
         {
           /* Fixme: Unescape fields[9] */
-          if (!append_to_uidinfo_list (&mboxes, fields[9]))
+          if (!append_to_uidinfo_list (&mboxes, fields[9],
+                                       parse_timestamp (fields[5], NULL)))
             {
               err = gpg_error_from_syserror ();
               goto leave;

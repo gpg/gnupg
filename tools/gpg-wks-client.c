@@ -662,6 +662,7 @@ command_check (char *userid)
       if (opt.verbose)
         {
           log_info ("    user-id: %s\n", sl->uid);
+          log_info ("    created: %s\n", asctimestamp (sl->created));
           if (sl->mbox)
             log_info ("  addr-spec: %s\n", sl->mbox);
         }
