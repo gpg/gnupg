@@ -1,5 +1,23 @@
-Noteworthy changes in version 2.2.1 (unreleased)
+Noteworthy changes in version 2.2.1 (2017-09-19)
 ------------------------------------------------
+
+  * gpg: Fix formatting of the user id in batch mode key generation
+    if only "name-email" is given.
+
+  * gpgv: Fix annoying "not suitable for" warnings.
+
+  * wks: Convey only the newest user id to the provider.  This is the
+    case if different names are used with the same addr-spec.
+
+  * wks: Create a complying user id for provider policy mailbox-only.
+
+  * wks: Add workaround for posteo.de.
+
+  * scd: Fix the use of large ECC keys with an OpenPGP card.
+
+  * dirmngr: Use system provided root certificates if no specific HKP
+    certificates are configured.  If build with GNUTLS, this was
+    already the case.
 
 
 Noteworthy changes in version 2.2.0 (2017-08-28)
@@ -12,6 +30,8 @@ Noteworthy changes in version 2.2.0 (2017-08-28)
     again the default.
 
   * Fixed a few minor bugs.
+
+  See-also: gnupg-announce/2017q3/000413.html
 
 
 Noteworthy changes in version 2.1.23 (2017-08-09)
