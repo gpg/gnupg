@@ -784,30 +784,32 @@ gnupg_wait_processes (const char **pgmnames, pid_t *pids, size_t count,
         }
     }
 
-  if (ec == 0)
-    for (i = 0; i < count; i++)
-      {
-        if (WIFEXITED (r_exitcodes[i]) && WEXITSTATUS (r_exitcodes[i]) == 127)
-          {
-            log_error (_("error running '%s': probably not installed\n"),
-                       pgmnames[i]);
-            ec = GPG_ERR_CONFIGURATION;
-          }
-        else if (WIFEXITED (r_exitcodes[i]) && WEXITSTATUS (r_exitcodes[i]))
-          {
-            if (dummy)
-              log_error (_("error running '%s': exit status %d\n"),
-                         pgmnames[i], WEXITSTATUS (r_exitcodes[i]));
-            else
-              r_exitcodes[i] = WEXITSTATUS (r_exitcodes[i]);
-            ec = GPG_ERR_GENERAL;
-          }
-        else if (!WIFEXITED (r_exitcodes[i]))
-          {
-            log_error (_("error running '%s': terminated\n"), pgmnames[i]);
-            ec = GPG_ERR_GENERAL;
-          }
-      }
+  for (i = 0; i < count; i++)
+    {
+      if (r_exitcodes[i] == -1)
+        continue;
+
+      if (WIFEXITED (r_exitcodes[i]) && WEXITSTATUS (r_exitcodes[i]) == 127)
+        {
+          log_error (_("error running '%s': probably not installed\n"),
+                     pgmnames[i]);
+          ec = GPG_ERR_CONFIGURATION;
+        }
+      else if (WIFEXITED (r_exitcodes[i]) && WEXITSTATUS (r_exitcodes[i]))
+        {
+          if (dummy)
+            log_error (_("error running '%s': exit status %d\n"),
+                       pgmnames[i], WEXITSTATUS (r_exitcodes[i]));
+          else
+            r_exitcodes[i] = WEXITSTATUS (r_exitcodes[i]);
+          ec = GPG_ERR_GENERAL;
+        }
+      else if (!WIFEXITED (r_exitcodes[i]))
+        {
+          log_error (_("error running '%s': terminated\n"), pgmnames[i]);
+          ec = GPG_ERR_GENERAL;
+        }
+    }
 
   xfree (dummy);
   return gpg_err_make (GPG_ERR_SOURCE_DEFAULT, ec);
