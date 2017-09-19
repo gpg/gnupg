@@ -222,6 +222,8 @@ isotime_p (const char *string)
   for (s++, i=9; i < 15; i++, s++)
     if (!digitp (s))
       return 0;
+  if (*s == 'Z')
+    s++;
   if ( !(!*s || (isascii (*s) && isspace(*s)) || *s == ':' || *s == ','))
     return 0;  /* Wrong delimiter.  */
 
@@ -354,9 +356,10 @@ string2isotime (gnupg_isotime_t atime, const char *string)
 }
 
 
-/* Scan an ISO timestamp and return an Epoch based timestamp.  The only
-   supported format is "yyyymmddThhmmss" delimited by white space, nul, a
-   colon or a comma.  Returns (time_t)(-1) for an invalid string.  */
+/* Scan an ISO timestamp and return an Epoch based timestamp.  The
+   only supported format is "yyyymmddThhmmss[Z]" delimited by white
+   space, nul, a colon or a comma.  Returns (time_t)(-1) for an
+   invalid string.  */
 time_t
 isotime2epoch (const char *string)
 {
