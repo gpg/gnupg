@@ -501,6 +501,7 @@ host_sw_string (long err)
     case SW_HOST_ABORTED: return "aborted";
     case SW_HOST_NO_PINPAD: return "no pinpad";
     case SW_HOST_ALREADY_CONNECTED: return "already connected";
+    case SW_HOST_CANCELLED: return "cancelled";
     default: return "unknown host status error";
     }
 }
@@ -607,7 +608,7 @@ pcsc_error_to_sw (long ec)
     {
     case 0:  rc = 0; break;
 
-    case PCSC_E_CANCELLED:           rc = SW_HOST_ABORTED; break;
+    case PCSC_E_CANCELLED:           rc = SW_HOST_CANCELLED; break;
     case PCSC_E_NO_MEMORY:           rc = SW_HOST_OUT_OF_CORE; break;
     case PCSC_E_TIMEOUT:             rc = SW_HOST_CARD_IO_ERROR; break;
     case PCSC_E_NO_SERVICE:
