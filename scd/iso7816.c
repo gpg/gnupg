@@ -93,8 +93,9 @@ map_sw (int sw)
     case SW_HOST_CARD_IO_ERROR:  ec = GPG_ERR_EIO; break;
     case SW_HOST_GENERAL_ERROR:  ec = GPG_ERR_GENERAL; break;
     case SW_HOST_NO_READER:      ec = GPG_ERR_ENODEV; break;
-    case SW_HOST_ABORTED:        ec = GPG_ERR_CANCELED; break;
+    case SW_HOST_ABORTED:        ec = GPG_ERR_INV_RESPONSE; break;
     case SW_HOST_NO_PINPAD:      ec = GPG_ERR_NOT_SUPPORTED; break;
+    case SW_HOST_CANCELLED:      ec = GPG_ERR_CANCELED; break;
 
     default:
       if ((sw & 0x010000))
