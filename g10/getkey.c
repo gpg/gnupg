@@ -144,7 +144,7 @@ static int lookup (ctrl_t ctrl, getkey_ctx_t ctx, int want_secret,
 		   kbnode_t *ret_keyblock, kbnode_t *ret_found_key);
 static kbnode_t finish_lookup (kbnode_t keyblock,
                                unsigned int req_usage, int want_exact,
-                               unsigned int *r_flags);
+                               int want_secret, unsigned int *r_flags);
 static void print_status_key_considered (kbnode_t keyblock, unsigned int flags);
 
 
@@ -1743,7 +1743,7 @@ get_pubkey_fromfile (ctrl_t ctrl, PKT_public_key *pk, const char *fname)
       /* Warning: node flag bits 0 and 1 should be preserved by
        * merge_selfsigs.  FIXME: Check whether this still holds. */
       merge_selfsigs (ctrl, keyblock);
-      found_key = finish_lookup (keyblock, pk->req_usage, 0, &infoflags);
+      found_key = finish_lookup (keyblock, pk->req_usage, 0, 0, &infoflags);
       print_status_key_considered (keyblock, infoflags);
       if (found_key)
         pk_from_block (pk, keyblock, found_key);
@@ -3494,7 +3494,7 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
  */
 static kbnode_t
 finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
-               unsigned int *r_flags)
+               int want_secret, unsigned int *r_flags)
 {
   kbnode_t k;
 
@@ -3635,6 +3635,13 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
 		log_debug ("\tsubkey not yet valid\n");
 	      continue;
 	    }
+
+          if (want_secret && agent_probe_secret_key (NULL, pk))
+            {
+              if (DBG_LOOKUP)
+                log_debug ("\tno secret key\n");
+              continue;
+            }
 
 	  if (DBG_LOOKUP)
 	    log_debug ("\tsubkey might be fine\n");
@@ -3823,7 +3830,7 @@ lookup (ctrl_t ctrl, getkey_ctx_t ctx, int want_secret,
        * merge_selfsigs.  */
       merge_selfsigs (ctrl, keyblock);
       found_key = finish_lookup (keyblock, ctx->req_usage, ctx->exact,
-                                 &infoflags);
+                                 want_secret, &infoflags);
       print_status_key_considered (keyblock, infoflags);
       if (found_key)
 	{
