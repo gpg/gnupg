@@ -90,9 +90,52 @@ wks_write_status (int no, const char *format, ...)
 
 
 
-/* Helper for wks_list_key.  */
+
+/* Append UID to LIST and return the new item.  On success LIST is
+ * updated.  On error ERRNO is set and NULL returned. */
+static uidinfo_list_t
+append_to_uidinfo_list (uidinfo_list_t *list, const char *uid, time_t created)
+{
+  uidinfo_list_t r, sl;
+
+  sl = xtrymalloc (sizeof *sl + strlen (uid));
+  if (!sl)
+    return NULL;
+
+  strcpy (sl->uid, uid);
+  sl->created = created;
+  sl->mbox = mailbox_from_userid (uid);
+  sl->next = NULL;
+  if (!*list)
+    *list = sl;
+  else
+    {
+      for (r = *list; r->next; r = r->next )
+        ;
+      r->next = sl;
+    }
+  return sl;
+}
+
+
+/* Free the list of uid infos at LIST.  */
+void
+free_uidinfo_list (uidinfo_list_t list)
+{
+  while (list)
+    {
+      uidinfo_list_t tmp = list->next;
+      xfree (list->mbox);
+      xfree (list);
+      list = tmp;
+    }
+}
+
+
+
+/* Helper for wks_list_key and wks_filter_uid.  */
 static void
-list_key_status_cb (void *opaque, const char *keyword, char *args)
+key_status_cb (void *opaque, const char *keyword, char *args)
 {
   (void)opaque;
 
@@ -103,9 +146,10 @@ list_key_status_cb (void *opaque, const char *keyword, char *args)
 
 /* Run gpg on KEY and store the primary fingerprint at R_FPR and the
  * list of mailboxes at R_MBOXES.  Returns 0 on success; on error NULL
- * is stored at R_FPR and R_MBOXES and an error code is returned.  */
+ * is stored at R_FPR and R_MBOXES and an error code is returned.
+ * R_FPR may be NULL if the fingerprint is not needed.  */
 gpg_error_t
-wks_list_key (estream_t key, char **r_fpr, strlist_t *r_mboxes)
+wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
 {
   gpg_error_t err;
   ccparray_t ccp;
@@ -118,11 +162,11 @@ wks_list_key (estream_t key, char **r_fpr, strlist_t *r_mboxes)
   char **fields = NULL;
   int nfields;
   int lnr;
-  char *mbox = NULL;
   char *fpr = NULL;
-  strlist_t mboxes = NULL;
+  uidinfo_list_t mboxes = NULL;
 
-  *r_fpr = NULL;
+  if (r_fpr)
+    *r_fpr = NULL;
   *r_mboxes = NULL;
 
   /* Open a memory stream.  */
@@ -158,7 +202,7 @@ wks_list_key (estream_t key, char **r_fpr, strlist_t *r_mboxes)
     }
   err = gnupg_exec_tool_stream (opt.gpg_program, argv, key,
                                 NULL, listing,
-                                list_key_status_cb, NULL);
+                                key_status_cb, NULL);
   if (err)
     {
       log_error ("import failed: %s\n", gpg_strerror (err));
@@ -232,9 +276,8 @@ wks_list_key (estream_t key, char **r_fpr, strlist_t *r_mboxes)
       else if (!strcmp (fields[0], "uid") && nfields > 9)
         {
           /* Fixme: Unescape fields[9] */
-          xfree (mbox);
-          mbox = mailbox_from_userid (fields[9]);
-          if (mbox && !append_to_strlist_try (&mboxes, mbox))
+          if (!append_to_uidinfo_list (&mboxes, fields[9],
+                                       parse_timestamp (fields[5], NULL)))
             {
               err = gpg_error_from_syserror ();
               goto leave;
@@ -248,19 +291,106 @@ wks_list_key (estream_t key, char **r_fpr, strlist_t *r_mboxes)
       goto leave;
     }
 
-  *r_fpr = fpr;
-  fpr = NULL;
+  if (!fpr)
+    {
+      err = gpg_error (GPG_ERR_NO_PUBKEY);
+      goto leave;
+    }
+
+  if (r_fpr)
+    {
+      *r_fpr = fpr;
+      fpr = NULL;
+    }
   *r_mboxes = mboxes;
   mboxes = NULL;
 
  leave:
   xfree (fpr);
-  xfree (mboxes);
-  xfree (mbox);
+  free_uidinfo_list (mboxes);
   xfree (fields);
   es_free (line);
   xfree (argv);
   es_fclose (listing);
+  return err;
+}
+
+
+/* Run gpg as a filter on KEY and write the output to a new stream
+ * stored at R_NEWKEY.  The new key will containn only the user id
+ * UID.  Returns 0 on success.  Only one key is expected in KEY. */
+gpg_error_t
+wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid)
+{
+  gpg_error_t err;
+  ccparray_t ccp;
+  const char **argv = NULL;
+  estream_t newkey;
+  char *filterexp = NULL;
+
+  *r_newkey = NULL;
+
+  /* Open a memory stream.  */
+  newkey = es_fopenmem (0, "w+b");
+  if (!newkey)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  /* Prefix the key with the MIME content type.  */
+  es_fputs ("Content-Type: application/pgp-keys\n"
+            "\n", newkey);
+
+  filterexp = es_bsprintf ("keep-uid=uid=%s", uid);
+  if (!filterexp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  ccparray_init (&ccp, 0);
+
+  ccparray_put (&ccp, "--no-options");
+  if (!opt.verbose)
+    ccparray_put (&ccp, "--quiet");
+  else if (opt.verbose > 1)
+    ccparray_put (&ccp, "--verbose");
+  ccparray_put (&ccp, "--batch");
+  ccparray_put (&ccp, "--status-fd=2");
+  ccparray_put (&ccp, "--always-trust");
+  ccparray_put (&ccp, "--armor");
+  ccparray_put (&ccp, "--import-options=import-export");
+  ccparray_put (&ccp, "--import-filter");
+  ccparray_put (&ccp, filterexp);
+  ccparray_put (&ccp, "--import");
+
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gnupg_exec_tool_stream (opt.gpg_program, argv, key,
+                                NULL, newkey,
+                                key_status_cb, NULL);
+  if (err)
+    {
+      log_error ("import/export failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  es_rewind (newkey);
+  *r_newkey = newkey;
+  newkey = NULL;
+
+ leave:
+  xfree (filterexp);
+  xfree (argv);
+  es_fclose (newkey);
   return err;
 }
 
@@ -316,7 +446,8 @@ wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
     TOK_MAILBOX_ONLY,
     TOK_DANE_ONLY,
     TOK_AUTH_SUBMIT,
-    TOK_MAX_PENDING
+    TOK_MAX_PENDING,
+    TOK_PROTOCOL_VERSION
   };
   static struct {
     const char *name;
@@ -325,7 +456,8 @@ wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
     { "mailbox-only", TOK_MAILBOX_ONLY },
     { "dane-only",    TOK_DANE_ONLY    },
     { "auth-submit",  TOK_AUTH_SUBMIT  },
-    { "max-pending",  TOK_MAX_PENDING  }
+    { "max-pending",  TOK_MAX_PENDING  },
+    { "protocol-version", TOK_PROTOCOL_VERSION }
   };
   gpg_error_t err = 0;
   int lnr = 0;
@@ -399,6 +531,14 @@ wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
           /* FIXME: Define whether these are seconds, hours, or days
            * and decide whether to allow other units.  */
           flags->max_pending = atoi (value);
+          break;
+        case TOK_PROTOCOL_VERSION:
+          if (!value)
+            {
+              err = gpg_error (GPG_ERR_SYNTAX);
+              goto leave;
+            }
+          flags->protocol_version = atoi (value);
           break;
         }
     }

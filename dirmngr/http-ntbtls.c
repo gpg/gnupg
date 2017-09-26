@@ -91,6 +91,12 @@ gnupg_http_tls_verify_cb (void *opaque,
         validate_flags |= VALIDATE_FLAG_TRUST_HKP;
       if ((http_flags & HTTP_FLAG_TRUST_SYS))
         validate_flags |= VALIDATE_FLAG_TRUST_SYSTEM;
+
+      /* If HKP trust is requested and there are no HKP certificates
+       * configured, also try thye standard system certificates.  */
+      if ((validate_flags & VALIDATE_FLAG_TRUST_HKP)
+          && !cert_cache_any_in_class (CERTTRUST_CLASS_HKP))
+        validate_flags |= VALIDATE_FLAG_TRUST_SYSTEM;
     }
 
   if ((http_flags & HTTP_FLAG_NO_CRL))

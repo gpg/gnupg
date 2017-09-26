@@ -34,6 +34,8 @@ void mime_maker_dump_tree (mime_maker_t ctx);
 gpg_error_t mime_maker_add_header (mime_maker_t ctx,
                                    const char *name, const char *value);
 gpg_error_t mime_maker_add_body (mime_maker_t ctx, const char *string);
+gpg_error_t mime_maker_add_body_data (mime_maker_t ctx,
+                                      const void *data, size_t datalen);
 gpg_error_t mime_maker_add_stream (mime_maker_t ctx, estream_t *stream_addr);
 gpg_error_t mime_maker_add_container (mime_maker_t ctx);
 gpg_error_t mime_maker_end_container (mime_maker_t ctx);

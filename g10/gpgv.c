@@ -202,6 +202,7 @@ main( int argc, char **argv )
   dotlock_disable ();
   gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
   additional_weak_digest("MD5");
+  gnupg_initialize_compliance (GNUPG_MODULE_NAME_GPG);
 
   pargs.argc = &argc;
   pargs.argv = &argv;

@@ -3529,7 +3529,14 @@ proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
 	  if( s2 )
 	    p = stpcpy(stpcpy(stpcpy(p," ("), s2 ),")");
 	  if( s3 )
-	    p = stpcpy(stpcpy(stpcpy(p," <"), s3 ),">");
+            {
+              /* If we have only the email part, do not add the space
+               * and the angle brackets.  */
+              if (*r->u.value)
+                p = stpcpy(stpcpy(stpcpy(p," <"), s3 ),">");
+              else
+                p = stpcpy (p, s3);
+            }
           append_to_parameter (para, r);
 	  have_user_id=1;
 	}

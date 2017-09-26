@@ -119,7 +119,7 @@ const char *fake_submission_addr;
 static void wrong_args (const char *text) GPGRT_ATTR_NORETURN;
 static gpg_error_t command_supported (char *userid);
 static gpg_error_t command_check (char *userid);
-static gpg_error_t command_send (const char *fingerprint, char *userid);
+static gpg_error_t command_send (const char *fingerprint, const char *userid);
 static gpg_error_t encrypt_response (estream_t *r_output, estream_t input,
                                      const char *addrspec,
                                      const char *fingerprint);
@@ -348,13 +348,13 @@ get_key_status_cb (void *opaque, const char *keyword, char *args)
 
 
 /* Get a key by fingerprint from gpg's keyring and make sure that the
- * mail address ADDRSPEC is included in the key.  The key is returned
- * as a new memory stream at R_KEY.
- *
- * Fixme: After we have implemented import and export filters for gpg
- * this function shall only return a key with just this user id.  */
+ * mail address ADDRSPEC is included in the key.  If EXACT is set the
+ * returned user id must match Addrspec exactly and not just in the
+ * addr-spec (mailbox) part.  The key is returned as a new memory
+ * stream at R_KEY.  */
 static gpg_error_t
-get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
+get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
+         int exact)
 {
   gpg_error_t err;
   ccparray_t ccp;
@@ -379,7 +379,7 @@ get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
   es_fputs ("Content-Type: application/pgp-keys\n"
             "\n", key);
 
-  filterexp = es_bsprintf ("keep-uid=mbox = %s", addrspec);
+  filterexp = es_bsprintf ("keep-uid=%s=%s", exact? "uid":"mbox", addrspec);
   if (!filterexp)
     {
       err = gpg_error_from_syserror ();
@@ -434,6 +434,49 @@ get_key (estream_t *r_key, const char *fingerprint, const char *addrspec)
   es_fclose (key);
   xfree (argv);
   xfree (filterexp);
+  return err;
+}
+
+
+/* Add the user id UID to the key identified by FINGERPRINT.  */
+static gpg_error_t
+add_user_id (const char *fingerprint, const char *uid)
+{
+  gpg_error_t err;
+  ccparray_t ccp;
+  const char **argv = NULL;
+
+  ccparray_init (&ccp, 0);
+
+  ccparray_put (&ccp, "--no-options");
+  if (!opt.verbose)
+    ccparray_put (&ccp, "--quiet");
+  else if (opt.verbose > 1)
+    ccparray_put (&ccp, "--verbose");
+  ccparray_put (&ccp, "--batch");
+  ccparray_put (&ccp, "--always-trust");
+  ccparray_put (&ccp, "--quick-add-uid");
+  ccparray_put (&ccp, fingerprint);
+  ccparray_put (&ccp, uid);
+
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = gnupg_exec_tool_stream (opt.gpg_program, argv, NULL,
+                                NULL, NULL,
+                                NULL, NULL);
+  if (err)
+    {
+      log_error ("adding user id failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+ leave:
+  xfree (argv);
   return err;
 }
 
@@ -600,8 +643,8 @@ command_check (char *userid)
   char *addrspec = NULL;
   estream_t key = NULL;
   char *fpr = NULL;
-  strlist_t mboxes = NULL;
-  strlist_t sl;
+  uidinfo_list_t mboxes = NULL;
+  uidinfo_list_t sl;
   int found = 0;
 
   addrspec = mailbox_from_userid (userid);
@@ -647,10 +690,9 @@ command_check (char *userid)
 
   /* Look closer at the key.  */
   err = wks_list_key (key, &fpr, &mboxes);
-  if (err || !fpr)
+  if (err)
     {
-      log_error ("error parsing key: %s\n",
-                 err? gpg_strerror (err) : "no fingerprint found");
+      log_error ("error parsing key: %s\n", gpg_strerror (err));
       err = gpg_error (GPG_ERR_NO_PUBKEY);
       goto leave;
     }
@@ -660,10 +702,15 @@ command_check (char *userid)
 
   for (sl = mboxes; sl; sl = sl->next)
     {
-      if (!strcmp (sl->d, addrspec))
+      if (sl->mbox && !strcmp (sl->mbox, addrspec))
         found = 1;
       if (opt.verbose)
-        log_info ("  addr-spec: %s\n", sl->d);
+        {
+          log_info ("    user-id: %s\n", sl->uid);
+          log_info ("    created: %s\n", asctimestamp (sl->created));
+          if (sl->mbox)
+            log_info ("  addr-spec: %s\n", sl->mbox);
+        }
     }
   if (!found)
     {
@@ -674,7 +721,7 @@ command_check (char *userid)
 
  leave:
   xfree (fpr);
-  free_strlist (mboxes);
+  free_uidinfo_list (mboxes);
   es_fclose (key);
   xfree (addrspec);
   return err;
@@ -685,7 +732,7 @@ command_check (char *userid)
 /* Locate the key by fingerprint and userid and send a publication
  * request.  */
 static gpg_error_t
-command_send (const char *fingerprint, char *userid)
+command_send (const char *fingerprint, const char *userid)
 {
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
@@ -695,6 +742,12 @@ command_send (const char *fingerprint, char *userid)
   char *submission_to = NULL;
   mime_maker_t mime = NULL;
   struct policy_flags_s policy;
+  int no_encrypt = 0;
+  int posteo_hack = 0;
+  const char *domain;
+  uidinfo_list_t uidlist = NULL;
+  uidinfo_list_t uid, thisuid;
+  time_t thistime;
 
   memset (&policy, 0, sizeof policy);
 
@@ -706,6 +759,7 @@ command_send (const char *fingerprint, char *userid)
       err = gpg_error (GPG_ERR_INV_NAME);
       goto leave;
     }
+
   addrspec = mailbox_from_userid (userid);
   if (!addrspec)
     {
@@ -713,9 +767,13 @@ command_send (const char *fingerprint, char *userid)
       err = gpg_error (GPG_ERR_INV_USER_ID);
       goto leave;
     }
-  err = get_key (&key, fingerprint, addrspec);
+  err = get_key (&key, fingerprint, addrspec, 0);
   if (err)
     goto leave;
+
+  domain = strchr (addrspec, '@');
+  log_assert (domain);
+  domain++;
 
   /* Get the submission address.  */
   if (fake_submission_addr)
@@ -727,11 +785,8 @@ command_send (const char *fingerprint, char *userid)
     err = wkd_get_submission_address (addrspec, &submission_to);
   if (err)
     {
-      char *domain = strchr (addrspec, '@');
-      if (domain)
-        domain = domain + 1;
-      log_error (_("looking up WKS submission address for %s: %s\n"),
-                 domain ? domain : addrspec, gpg_strerror (err));
+      log_error (_("error looking up submission address for domain '%s': %s\n"),
+                 domain, gpg_strerror (err));
       if (gpg_err_code (err) == GPG_ERR_NO_DATA)
         log_error (_("this domain probably doesn't support WKS.\n"));
       goto leave;
@@ -762,14 +817,92 @@ command_send (const char *fingerprint, char *userid)
   if (policy.auth_submit)
     log_info ("no confirmation required for '%s'\n", addrspec);
 
-  /* Encrypt the key part.  */
-  es_rewind (key);
-  err = encrypt_response (&keyenc, key, submission_to, fingerprint);
+  /* In case the key has several uids with the same addr-spec we will
+   * use the newest one.  */
+  err = wks_list_key (key, NULL, &uidlist);
   if (err)
-    goto leave;
-  es_fclose (key);
-  key = NULL;
+    {
+      log_error ("error parsing key: %s\n",gpg_strerror (err));
+      err = gpg_error (GPG_ERR_NO_PUBKEY);
+      goto leave;
+    }
+  thistime = 0;
+  thisuid = NULL;
+  for (uid = uidlist; uid; uid = uid->next)
+    {
+      if (!uid->mbox)
+        continue; /* Should not happen anyway.  */
+      if (policy.mailbox_only
+          && ascii_strcasecmp (uid->uid, uid->mbox))
+        continue; /* UID has more than just the mailbox.  */
+      if (uid->created > thistime)
+        {
+          thistime = uid->created;
+          thisuid = uid;
+        }
+    }
+  if (!thisuid)
+    thisuid = uidlist;  /* This is the case for a missing timestamp.  */
+  if (opt.verbose)
+    log_info ("submitting key with user id '%s'\n", thisuid->uid);
 
+  /* If we have more than one user id we need to filter the key to
+   * include only THISUID.  */
+  if (uidlist->next)
+    {
+      estream_t newkey;
+
+      es_rewind (key);
+      err = wks_filter_uid (&newkey, key, thisuid->uid);
+      if (err)
+        {
+          log_error ("error filtering key: %s\n", gpg_strerror (err));
+          err = gpg_error (GPG_ERR_NO_PUBKEY);
+          goto leave;
+        }
+      es_fclose (key);
+      key = newkey;
+    }
+
+  if (policy.mailbox_only
+      && (!thisuid->mbox || ascii_strcasecmp (thisuid->uid, thisuid->mbox)))
+    {
+      log_info ("Warning: policy requires 'mailbox-only'"
+                " - adding user id '%s'\n", addrspec);
+      err = add_user_id (fingerprint, addrspec);
+      if (err)
+        goto leave;
+
+      /* Need to get the key again.  This time we request filtering
+       * for the full user id, so that we do not need check and filter
+       * the key again.  */
+      es_fclose (key);
+      key = NULL;
+      err = get_key (&key, fingerprint, addrspec, 1);
+      if (err)
+        goto leave;
+    }
+
+  /* Hack to support posteo but let them disable this by setting the
+   * new policy-version flag.  */
+  if (policy.protocol_version < 3
+      && !ascii_strcasecmp (domain, "posteo.de"))
+    {
+      log_info ("Warning: Using draft-1 method for domain '%s'\n", domain);
+      no_encrypt = 1;
+      posteo_hack = 1;
+    }
+
+  /* Encrypt the key part.  */
+  if (!no_encrypt)
+    {
+      es_rewind (key);
+      err = encrypt_response (&keyenc, key, submission_to, fingerprint);
+      if (err)
+        goto leave;
+      es_fclose (key);
+      key = NULL;
+    }
 
   /* Send the key.  */
   err = mime_maker_new (&mime, NULL);
@@ -787,40 +920,86 @@ command_send (const char *fingerprint, char *userid)
 
   /* Tell server which draft we support.  */
   err = mime_maker_add_header (mime, "Wks-Draft-Version",
-                               STR2(WKS_DRAFT_VERSION));
+                                 STR2(WKS_DRAFT_VERSION));
   if (err)
     goto leave;
 
-  err = mime_maker_add_header (mime, "Content-Type",
-                               "multipart/encrypted; "
-                               "protocol=\"application/pgp-encrypted\"");
-  if (err)
-    goto leave;
-  err = mime_maker_add_container (mime);
-  if (err)
-    goto leave;
+  if (no_encrypt)
+    {
+      void *data;
+      size_t datalen, n;
 
-  err = mime_maker_add_header (mime, "Content-Type",
-                               "application/pgp-encrypted");
-  if (err)
-    goto leave;
-  err = mime_maker_add_body (mime, "Version: 1\n");
-  if (err)
-    goto leave;
-  err = mime_maker_add_header (mime, "Content-Type",
-                               "application/octet-stream");
-  if (err)
-    goto leave;
+      if (posteo_hack)
+        {
+          /* Needs a multipart/mixed with one(!) attachment.  It does
+           * not grok a non-multipart mail.  */
+          err = mime_maker_add_header (mime, "Content-Type", "multipart/mixed");
+          if (err)
+            goto leave;
+          err = mime_maker_add_container (mime);
+          if (err)
+            goto leave;
+        }
 
-  err = mime_maker_add_stream (mime, &keyenc);
-  if (err)
-    goto leave;
+      err = mime_maker_add_header (mime, "Content-type",
+                                   "application/pgp-keys");
+      if (err)
+        goto leave;
+
+      if (es_fclose_snatch (key, &data, &datalen))
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      key = NULL;
+      /* We need to skip over the first line which has a content-type
+       * header not needed here.  */
+      for (n=0; n < datalen ; n++)
+        if (((const char *)data)[n] == '\n')
+          {
+            n++;
+            break;
+          }
+
+      err = mime_maker_add_body_data (mime, (char*)data + n, datalen - n);
+      xfree (data);
+      if (err)
+        goto leave;
+    }
+  else
+    {
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "multipart/encrypted; "
+                                   "protocol=\"application/pgp-encrypted\"");
+      if (err)
+        goto leave;
+      err = mime_maker_add_container (mime);
+      if (err)
+        goto leave;
+
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "application/pgp-encrypted");
+      if (err)
+        goto leave;
+      err = mime_maker_add_body (mime, "Version: 1\n");
+      if (err)
+        goto leave;
+      err = mime_maker_add_header (mime, "Content-Type",
+                                   "application/octet-stream");
+      if (err)
+        goto leave;
+
+      err = mime_maker_add_stream (mime, &keyenc);
+      if (err)
+        goto leave;
+    }
 
   err = wks_send_mime (mime);
 
  leave:
   mime_maker_release (mime);
   xfree (submission_to);
+  free_uidinfo_list (uidlist);
   es_fclose (keyenc);
   es_fclose (key);
   xfree (addrspec);

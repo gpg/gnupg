@@ -63,16 +63,32 @@ struct policy_flags_s
   unsigned int mailbox_only : 1;
   unsigned int dane_only : 1;
   unsigned int auth_submit : 1;
+  unsigned int protocol_version; /* The supported WKS_DRAFT_VERION or 0  */
   unsigned int max_pending;      /* Seconds to wait for a confirmation.  */
 };
 typedef struct policy_flags_s *policy_flags_t;
+
+
+/* An object to convey user ids of a key.  */
+struct uidinfo_list_s
+{
+  struct uidinfo_list_s *next;
+  time_t created; /* Time the userid was created.  */
+  char *mbox;  /* NULL or the malloced mailbox from UID.  */
+  char uid[1];
+};
+typedef struct uidinfo_list_s *uidinfo_list_t;
 
 
 
 /*-- wks-util.c --*/
 void wks_set_status_fd (int fd);
 void wks_write_status (int no, const char *format, ...) GPGRT_ATTR_PRINTF(2,3);
-gpg_error_t wks_list_key (estream_t key, char **r_fpr, strlist_t *r_mboxes);
+void free_uidinfo_list (uidinfo_list_t list);
+gpg_error_t wks_list_key (estream_t key, char **r_fpr,
+                          uidinfo_list_t *r_mboxes);
+gpg_error_t wks_filter_uid (estream_t *r_newkey, estream_t key,
+                            const char *uid);
 gpg_error_t wks_send_mime (mime_maker_t mime);
 gpg_error_t wks_parse_policy (policy_flags_t flags, estream_t stream,
                               int ignore_unknown);
