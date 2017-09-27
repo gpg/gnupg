@@ -1474,7 +1474,7 @@ agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
   char *p;
   kbnode_t kbctx, node;
   int nkeys;
-  unsigned char grip[20];
+  unsigned char grip[KEYGRIP_LEN];
 
   err = start_agent (ctrl, 0);
   if (err)

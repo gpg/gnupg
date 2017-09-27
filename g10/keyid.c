@@ -959,18 +959,18 @@ gpg_error_t
 hexkeygrip_from_pk (PKT_public_key *pk, char **r_grip)
 {
   gpg_error_t err;
-  unsigned char grip[20];
+  unsigned char grip[KEYGRIP_LEN];
 
   *r_grip = NULL;
   err = keygrip_from_pk (pk, grip);
   if (!err)
     {
-      char * buf = xtrymalloc (20*2+1);
+      char * buf = xtrymalloc (KEYGRIP_LEN * 2 + 1);
       if (!buf)
         err = gpg_error_from_syserror ();
       else
         {
-          bin2hex (grip, 20, buf);
+          bin2hex (grip, KEYGRIP_LEN, buf);
           *r_grip = buf;
         }
     }
