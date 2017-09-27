@@ -309,43 +309,36 @@ the key using the command @option{--export-secret-subkeys}).  A
 @code{>} after these tags indicate that the key is stored on a
 smartcard.  See also @option{--list-keys}.
 
-@item --list-signatures
-@opindex list-signatures
-@itemx --list-sigs
-@opindex list-sigs
-Same as @option{--list-keys}, but the signatures are listed too.
-This command has the same effect as
-using @option{--list-keys} with @option{--with-sig-list}.
-
-For each signature listed, there are several flags in between the "sig"
-tag and keyid. These flags give additional information about each
-signature. From left to right, they are the numbers 1-3 for certificate
-check level (see @option{--ask-cert-level}), "L" for a local or
-non-exportable signature (see @option{--lsign-key}), "R" for a
-nonRevocable signature (see the @option{--edit-key} command "nrsign"),
-"P" for a signature that contains a policy URL (see
-@option{--cert-policy-url}), "N" for a signature that contains a
-notation (see @option{--cert-notation}), "X" for an eXpired signature
-(see @option{--ask-cert-expire}), and the numbers 1-9 or "T" for 10 and
-above to indicate trust signature levels (see the @option{--edit-key}
-command "tsign").
-
 @item --check-signatures
 @opindex check-signatures
 @itemx --check-sigs
 @opindex check-sigs
-Same as @option{--list-signatures}, but the signatures are verified.  Note
-that for performance reasons the revocation status of a signing key is
-not shown.
-This command has the same effect as
+Same as @option{--list-keys}, but the key signatures are verified and
+listed too.  Note that for performance reasons the revocation status
+of a signing key is not shown.  This command has the same effect as
 using @option{--list-keys} with @option{--with-sig-check}.
 
-The status of the verification is indicated by a flag directly following
-the "sig" tag (and thus before the flags described above for
-@option{--list-signatures}).  A "!" indicates that the signature has been
-successfully verified, a "-" denotes a bad signature and a "%" is used
-if an error occurred while checking the signature (e.g. a non supported
-algorithm).
+The status of the verification is indicated by a flag directly
+following the "sig" tag (and thus before the flags described below.  A
+"!" indicates that the signature has been successfully verified, a "-"
+denotes a bad signature and a "%" is used if an error occurred while
+checking the signature (e.g. a non supported algorithm).  Signatures
+where the public key is not availabale are not listed; to see their
+keyids the command @option{--list-sigs} can be used.
+
+For each signature listed, there are several flags in between the
+signature status flag and keyid.  These flags give additional
+information about each key signature.  From left to right, they are
+the numbers 1-3 for certificate check level (see
+@option{--ask-cert-level}), "L" for a local or non-exportable
+signature (see @option{--lsign-key}), "R" for a nonRevocable signature
+(see the @option{--edit-key} command "nrsign"), "P" for a signature
+that contains a policy URL (see @option{--cert-policy-url}), "N" for a
+signature that contains a notation (see @option{--cert-notation}), "X"
+for an eXpired signature (see @option{--ask-cert-expire}), and the
+numbers 1-9 or "T" for 10 and above to indicate trust signature levels
+(see the @option{--edit-key} command "tsign").
+
 
 @item --locate-keys
 @opindex locate-keys
@@ -360,7 +353,7 @@ be used to locate a key.  Only public keys are listed.
 List all keys (or the specified ones) along with their
 fingerprints. This is the same output as @option{--list-keys} but with
 the additional output of a line with the fingerprint. May also be
-combined with @option{--list-signatures} or @option{--check-signatures}.  If this
+combined with @option{--check-signatures}.  If this
 command is given twice, the fingerprints of all secondary keys are
 listed too.  This command also forces pretty printing of fingerprints
 if the keyid format has been set to "none".
@@ -1254,7 +1247,7 @@ Assume "no" on most questions.
 @opindex list-options
 This is a space or comma delimited string that gives options used when
 listing keys and signatures (that is, @option{--list-keys},
-@option{--list-signatures}, @option{--list-public-keys},
+@option{--check-signatures}, @option{--list-public-keys},
 @option{--list-secret-keys}, and the @option{--edit-key} functions).
 Options can be prepended with a @option{no-} (after the two dashes) to
 give the opposite meaning.  The options are:
@@ -1263,7 +1256,7 @@ give the opposite meaning.  The options are:
 
   @item show-photos
   @opindex list-options:show-photos
-  Causes @option{--list-keys}, @option{--list-signatures},
+  Causes @option{--list-keys}, @option{--check-signatures},
   @option{--list-public-keys}, and @option{--list-secret-keys} to
   display any photo IDs attached to the key.  Defaults to no. See also
   @option{--photo-viewer}.  Does not work with @option{--with-colons}:
@@ -1279,7 +1272,7 @@ give the opposite meaning.  The options are:
 
   @item show-policy-urls
   @opindex list-options:show-policy-urls
-  Show policy URLs in the @option{--list-signatures} or @option{--check-signatures}
+  Show policy URLs in the  @option{--check-signatures}
   listings.  Defaults to no.
 
   @item show-notations
@@ -1289,11 +1282,11 @@ give the opposite meaning.  The options are:
   @opindex list-options:show-std-notations
   @opindex list-options:show-user-notations
   Show all, IETF standard, or user-defined signature notations in the
-  @option{--list-signatures} or @option{--check-signatures} listings. Defaults to no.
+  @option{--check-signatures} listings. Defaults to no.
 
   @item show-keyserver-urls
   @opindex list-options:show-keyserver-urls
-  Show any preferred keyserver URL in the @option{--list-signatures} or
+  Show any preferred keyserver URL in the
   @option{--check-signatures} listings. Defaults to no.
 
   @item show-uid-validity
@@ -1316,7 +1309,7 @@ give the opposite meaning.  The options are:
 
   @item show-sig-expire
   @opindex list-options:show-sig-expire
-  Show signature expiration dates (if any) during @option{--list-signatures} or
+  Show signature expiration dates (if any) during
   @option{--check-signatures} listings. Defaults to no.
 
   @item show-sig-subpackets
@@ -1325,7 +1318,7 @@ give the opposite meaning.  The options are:
   optional argument list of the subpackets to list. If no argument is
   passed, list all subpackets. Defaults to no. This option is only
   meaningful when using @option{--with-colons} along with
-  @option{--list-signatures} or @option{--check-signatures}.
+  @option{--check-signatures}.
 
 @end table
 
@@ -3223,6 +3216,16 @@ verification is not needed.
 @opindex with-key-data
 Print key listings delimited by colons (like @option{--with-colons}) and
 print the public key data.
+
+@item --list-signatures
+@opindex list-signatures
+@itemx --list-sigs
+@opindex list-sigs
+Same as @option{--list-keys}, but the signatures are listed too.  This
+command has the same effect as using @option{--list-keys} with
+@option{--with-sig-list}.  Note that in contrast to
+@option{--check-signatures} the key signatures are not verified.
+
 
 @item --fast-list-mode
 @opindex fast-list-mode
