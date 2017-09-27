@@ -1854,10 +1854,16 @@ agent_pksign (ctrl_t ctrl, const char *cache_nonce,
   snprintf (line, sizeof line, "PKSIGN%s%s",
             cache_nonce? " -- ":"",
             cache_nonce? cache_nonce:"");
+
+  if (DBG_CLOCK)
+    log_clock ("enter signing");
   err = assuan_transact (agent_ctx, line,
                          put_membuf_cb, &data,
                          default_inq_cb, &dfltparm,
                          NULL, NULL);
+  if (DBG_CLOCK)
+    log_clock ("leave signing");
+
   if (err)
     xfree (get_membuf (&data, NULL));
   else

@@ -1680,6 +1680,21 @@ AC_ARG_ENABLE(optimization,
                    fi])
 
 #
+# log_debug has certain requirements which might hamper portability.
+# Thus we use an option to enable it.
+#
+AC_MSG_CHECKING([whether to enable log_clock])
+AC_ARG_ENABLE(log_clock,
+              AC_HELP_STRING([--enable-log-clock],
+                             [enable log_clock timestamps]),
+              enable_log_clock=$enableval, enable_log_clock=no)
+AC_MSG_RESULT($enable_log_clock)
+if test "$enable_log_clock" = yes ; then
+  AC_DEFINE(ENABLE_LOG_CLOCK,1,[Defined to use log_clock timestamps])
+fi
+
+
+#
 # Configure option --enable-all-tests
 #
 AC_MSG_CHECKING([whether "make check" shall run all tests])

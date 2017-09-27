@@ -510,7 +510,11 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
         return GPG_ERR_GENERAL;
 
     /* Verify the signature.  */
+    if (DBG_CLOCK && sig->sig_class <= 0x01)
+      log_clock ("enter pk_verify");
     rc = pk_verify( pk->pubkey_algo, result, sig->data, pk->pkey );
+    if (DBG_CLOCK && sig->sig_class <= 0x01)
+      log_clock ("leave pk_verify");
     gcry_mpi_release (result);
 
     if( !rc && sig->flags.unknown_critical )

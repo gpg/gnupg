@@ -1039,11 +1039,11 @@ log_printsexp () {}
 is found in sexputils.c
 */
 
-
+/* Print a microsecond timestamp followed by STRING.  */
 void
 log_clock (const char *string)
 {
-#if 0
+#if ENABLE_LOG_CLOCK
   static unsigned long long initial;
   struct timespec tv;
   unsigned long long now;
@@ -1060,10 +1060,10 @@ log_clock (const char *string)
     initial = now;
 
   log_debug ("[%6llu] %s", (now - initial)/1000, string);
-#else
-  /* You need to link with -ltr to enable the above code.  */
-  log_debug ("[not enabled in the source] %s", string);
-#endif
+#else /*!ENABLE_LOG_CLOCK*/
+  /* You may need to link with -ltr to use the above code.  */
+  log_debug ("[not enabled by configure] %s", string);
+#endif  /*!ENABLE_LOG_CLOCK*/
 }
 
 
