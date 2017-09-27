@@ -38,14 +38,15 @@
 #define MAX_EXTERN_MPI_BITS 16384
 
 /* The maximum length of a binary fingerprints.  This is used to
-   provide a static buffer and will be increased if we need to support
-   longer fingerprints.
-   Warning: At some places we still use 20 instead of this macro. */
-#define MAX_FINGERPRINT_LEN 20
+ * provide a static buffer and will be increased if we need to support
+ * longer fingerprints.  Warning: At some places we have some
+ * assumption on a 20 byte fingerprint.
+ * Watch out for FIXME(fingerprint) */
+#define MAX_FINGERPRINT_LEN 32
 
 /* The maximum length of a formatted fingerprint as returned by
-   format_hexfingerprint().  */
-#define MAX_FORMATTED_FINGERPRINT_LEN 50
+ * format_hexfingerprint().  */
+#define MAX_FORMATTED_FINGERPRINT_LEN 59
 
 
 /*

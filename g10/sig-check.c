@@ -233,7 +233,7 @@ check_signature2 (ctrl_t ctrl,
 	unsigned char *p, *buffer;
         size_t n, nbytes;
         int i;
-        char hashbuf[20];
+        char hashbuf[20];  /* We use SHA-1 here.  */
 
         nbytes = 6;
 	for (i=0; i < nsig; i++ )

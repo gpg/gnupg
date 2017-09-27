@@ -66,7 +66,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
     {
         char buf[20];
 
-        sprintf (buf, "%d %d", ed.mdc_method, cfx->dek->algo);
+        snprintf (buf, sizeof buf, "%d %d", ed.mdc_method, cfx->dek->algo);
         write_status_text (STATUS_BEGIN_ENCRYPTION, buf);
     }
 

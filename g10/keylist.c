@@ -1906,6 +1906,9 @@ print_card_serialno (const char *serialno)
  * pub   dsa2048 2007-12-31 [SC] [expires: 2018-12-31]
  *       80615870F5BAD690333686D0F2AD85AC1E42B367
  *
+ * pub   rsa2048 2017-12-31 [SC] [expires: 2028-12-31]
+ *       80615870F5BAD690333686D0F2AD85AC1E42B3671122334455
+ *
  * Some global options may result in a different output format.  If
  * SECRET is set, "sec" or "ssb" is used instead of "pub" or "sub" and
  * depending on the value a flag character is shown:

@@ -2469,10 +2469,11 @@ get_policy (ctrl_t ctrl, tofu_dbs_t dbs, PKT_public_key *pk,
   /* See if the key is signed by an ultimately trusted key.  */
   {
     int fingerprint_raw_len = strlen (fingerprint) / 2;
-    char fingerprint_raw[20];
+    char fingerprint_raw[MAX_FINGERPRINT_LEN];
     int len = 0;
 
-    if (fingerprint_raw_len != sizeof fingerprint_raw
+    /* FIXME(fingerprint) */
+    if (fingerprint_raw_len != 20 /*sizeof fingerprint_raw */
         || ((len = hex2bin (fingerprint,
                             fingerprint_raw, fingerprint_raw_len))
             != strlen (fingerprint)))

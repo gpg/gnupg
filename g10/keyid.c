@@ -835,8 +835,22 @@ format_hexfingerprint (const char *fingerprint, char *buffer, size_t buflen)
 	       /* Half way through we add a second space.  */
 	       + 1);
     }
+  else if (hexlen == 64 || hexlen == 50)  /* v5 fingerprint */
+    {
+      /* The v5 fingerprint is commonly printed truncated to 25
+       * octets.  We accept the truncated as well as the full hex
+       * version here and format it like this:
+       * B2CCB6 838332 5D61BA C50F9F 5E CD21A8 0AC8C5 2565C8 C52565
+       */
+      hexlen = 50;
+      space = 8 * 6 + 2 + 8 + 1;
+    }
   else  /* Other fingerprint versions - print as is.  */
     {
+      /* We truncated here so that we do not need to provide a buffer
+       * of a length which is in reality never used.  */
+      if (hexlen > MAX_FORMATTED_FINGERPRINT_LEN - 1)
+        hexlen = MAX_FORMATTED_FINGERPRINT_LEN - 1;
       space = hexlen + 1;
     }
 
@@ -849,7 +863,7 @@ format_hexfingerprint (const char *fingerprint, char *buffer, size_t buflen)
     {
       for (i = 0, j = 0; i < 40; i ++)
         {
-          if (i && i % 4 == 0)
+          if (i && !(i % 4))
             buffer[j ++] = ' ';
           if (i == 40 / 2)
             buffer[j ++] = ' ';
@@ -859,9 +873,29 @@ format_hexfingerprint (const char *fingerprint, char *buffer, size_t buflen)
       buffer[j ++] = 0;
       log_assert (j == space);
     }
+  else if (hexlen == 50)  /* v5 fingerprint */
+    {
+      for (i=j=0; i < 24; i++)
+        {
+          if (i && !(i % 6))
+            buffer[j++] = ' ';
+          buffer[j++] = fingerprint[i];
+        }
+      buffer[j++] = ' ';
+      buffer[j++] = fingerprint[i++];
+      buffer[j++] = fingerprint[i++];
+      for (; i < 50; i++)
+        {
+          if (!((i-26) % 6))
+            buffer[j++] = ' ';
+          buffer[j++] = fingerprint[i];
+        }
+      buffer[j++] = 0;
+      log_assert (j == space);
+    }
   else
     {
-      strcpy (buffer, fingerprint);
+      mem2str (buffer, fingerprint, space);
     }
 
   return buffer;

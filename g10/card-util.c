@@ -1121,7 +1121,8 @@ change_cafpr (int fprno)
   char *data;
   const char *s;
   int i, c, rc;
-  unsigned char fpr[20];
+  unsigned char fpr[MAX_FINGERPRINT_LEN];
+  int fprlen;
 
   data = cpr_get ("cardedit.change_cafpr", _("CA fingerprint: "));
   if (!data)
@@ -1129,7 +1130,7 @@ change_cafpr (int fprno)
   trim_spaces (data);
   cpr_kill_prompt ();
 
-  for (i=0, s=data; i < 20 && *s; )
+  for (i=0, s=data; i < MAX_FINGERPRINT_LEN && *s; )
     {
       while (spacep(s))
         s++;
@@ -1143,8 +1144,9 @@ change_cafpr (int fprno)
       fpr[i++] = c;
       s += 2;
     }
+  fprlen = i;
   xfree (data);
-  if (i != 20 || *s)
+  if ((fprlen != 20 && fprlen != 32) || *s)
     {
       tty_printf (_("Error: invalid formatted fingerprint.\n"));
       return -1;
@@ -1152,7 +1154,7 @@ change_cafpr (int fprno)
 
   rc = agent_scd_setattr (fprno==1?"CA-FPR-1":
                           fprno==2?"CA-FPR-2":
-                          fprno==3?"CA-FPR-3":"x", fpr, 20, NULL );
+                          fprno==3?"CA-FPR-3":"x", fpr, fprlen, NULL );
   if (rc)
     log_error ("error setting cafpr: %s\n", gpg_strerror (rc));
   write_sc_op_status (rc);
