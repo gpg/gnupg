@@ -2746,7 +2746,7 @@ literal_name (const char *option, int argc, char *argv[], void *cookie)
 {
   struct litinfo *li = cookie;
 
-  if (argc <= 1)
+  if (argc <= 0)
     log_fatal ("Usage: %s NAME\n", option);
 
   if (strlen (argv[0]) > 255)
