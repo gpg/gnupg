@@ -73,12 +73,13 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
   estream_t fp = NULL;
   char *request_buffer = NULL;
   parsed_uri_t uri = NULL;
-  int is_onion;
+  int is_onion, is_https;
 
   err = http_parse_uri (&uri, url, 0);
   if (err)
     goto leave;
   is_onion = uri->onion;
+  is_https = uri->use_tls;
 
  once_more:
   /* Note that we only use the system provided certificates with the
@@ -152,17 +153,18 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
                   url, s?s:"[none]", http_get_status_code (http));
         if (s && *s && redirects_left-- )
           {
-            if (is_onion)
+            if (is_onion || is_https)
               {
                 /* Make sure that an onion address only redirects to
-                 * another onion address.  */
+                 * another onion address, or that a https address
+                 * only redirects to a https address. */
                 http_release_parsed_uri (uri);
                 uri = NULL;
                 err = http_parse_uri (&uri, s, 0);
                 if (err)
                   goto leave;
 
-                if (! uri->onion)
+                if ((is_onion && ! uri->onion) || (is_https && ! uri->use_tls))
                   {
                     err = gpg_error (GPG_ERR_FORBIDDEN);
                     goto leave;
