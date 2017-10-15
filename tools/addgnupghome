@@ -27,9 +27,9 @@ info () {
 # Do it for one user
 one_user () {
     user="$1"
-    home=$(${cat_passwd} | awk -F: -v n="$user" '$1 == n {print $6}')
+    home=$($(printf "$cat_passwd" "${user}") | awk -F: -v n="$user" '$1 == n {print $6}')
     if [ -z "$home" ]; then
-        if ${cat_passwd} | awk -F: -v n="$user" '$1 == n {exit 1}'; then
+        if $(printf "$cat_passwd" "${user}") | awk -F: -v n="$user" '$1 == n {exit 1}'; then
             error "no such user \`$user'"
         else
             error "no home directory for user \`$user'"
@@ -96,7 +96,7 @@ fi
 
 # Check whether we can use getent
 if getent --help </dev/null >/dev/null 2>&1 ; then
-    cat_passwd='getent passwd'
+    cat_passwd='getent passwd %s'
 else
     cat_passwd='cat /etc/passwd'
     info "please note that only users from /etc/passwd are checked"
