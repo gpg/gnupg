@@ -289,8 +289,6 @@ print_capabilities (ksba_cert_t cert, estream_t fp)
     es_putc ('S', fp);
   if ((use & KSBA_KEYUSAGE_KEY_CERT_SIGN))
     es_putc ('C', fp);
-
-  es_putc (':', fp);
 }
 
 
@@ -503,6 +501,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   es_putc (':', fp);
   /* Field 12, capabilities: */
   print_capabilities (cert, fp);
+  es_putc (':', fp);
   /* Field 13, not used: */
   es_putc (':', fp);
   /* Field 14, not used: */
