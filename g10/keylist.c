@@ -45,6 +45,7 @@
 #include "../common/zb32.h"
 #include "tofu.h"
 #include "../common/compliance.h"
+#include "../common/pkscreening.h"
 
 
 static void list_all (ctrl_t, int, int);
@@ -696,6 +697,37 @@ print_key_data (PKT_public_key * pk)
     }
 }
 
+
+/* Various public key screenings.  (Right now just ROCA).  With
+ * COLON_MODE set the output is formatted for use in the compliance
+ * field of a colon listing.
+ */
+static void
+print_pk_screening (PKT_public_key *pk, int colon_mode)
+{
+  gpg_error_t err;
+
+  if (is_RSA (pk->pubkey_algo) && pubkey_get_npkey (pk->pubkey_algo))
+    {
+      err = screen_key_for_roca (pk->pkey[0]);
+      if (!err)
+        ;
+      else if (gpg_err_code (err) == GPG_ERR_TRUE)
+        {
+          if (colon_mode)
+            es_fprintf (es_stdout, colon_mode > 1? " %d":"%d", 6001);
+          else
+            es_fprintf (es_stdout,
+                        "      Screening: ROCA vulnerability detected\n");
+        }
+      else if (!colon_mode)
+        es_fprintf (es_stdout, "      Screening: [ROCA check failed: %s]\n",
+                    gpg_strerror (err));
+    }
+
+}
+
+
 static void
 print_capabilities (ctrl_t ctrl, PKT_public_key *pk, KBNODE keyblock)
 {
@@ -922,6 +954,9 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
   if (opt.with_key_data)
     print_key_data (pk);
 
+  if (opt.with_key_screening)
+    print_pk_screening (pk, 0);
+
   if (opt.with_key_origin
       && (pk->keyorg || pk->keyupdate || pk->updateurl))
     {
@@ -1063,6 +1098,8 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
             es_fprintf (es_stdout, "      Keygrip = %s\n", hexgrip);
 	  if (opt.with_key_data)
 	    print_key_data (pk2);
+          if (opt.with_key_screening)
+            print_pk_screening (pk2, 0);
 	}
       else if (opt.list_sigs
 	       && node->pkt->pkttype == PKT_SIGNATURE && !skip_sigs)
@@ -1227,6 +1264,9 @@ print_compliance_flags (PKT_public_key *pk,
 		  gnupg_status_compliance_flag (CO_DE_VS));
       any++;
     }
+
+  if (opt.with_key_screening)
+    print_pk_screening (pk, 1+any);
 }
 
 

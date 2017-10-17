@@ -94,7 +94,8 @@ common_sources = \
 	name-value.c name-value.h \
 	recsel.c recsel.h \
 	ksba-io-support.c ksba-io-support.h \
-	compliance.c compliance.h
+	compliance.c compliance.h \
+	pkscreening.c pkscreening.h
 
 
 if HAVE_W32_SYSTEM

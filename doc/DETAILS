@@ -222,12 +222,14 @@ described here.
 
 *** Field 18 - Compliance flags
 
-    Space separated list of asserted compliance modes for this key.
+    Space separated list of asserted compliance modes and
+    screening result for this key.
 
     Valid values are:
 
     - 8  :: The key is compliant with RFC4880bis
     - 23 :: The key is compliant with compliance mode "de-vs".
+    - 6001 :: Screening hit on the ROCA vulnerability.
 
 *** Field 19 - Last update
 

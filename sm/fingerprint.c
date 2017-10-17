@@ -277,6 +277,70 @@ gpgsm_get_key_algo_info (ksba_cert_t cert, unsigned int *nbits)
 }
 
 
+/* If KEY is an RSA key, return its modulus.  For non-RSA keys or on
+ * error return NULL.  */
+gcry_mpi_t
+gpgsm_get_rsa_modulus (ksba_cert_t cert)
+{
+  gpg_error_t err;
+  gcry_sexp_t key;
+  gcry_sexp_t list = NULL;
+  gcry_sexp_t l2 = NULL;
+  char *name = NULL;
+  gcry_mpi_t modulus = NULL;
+
+  {
+    ksba_sexp_t ckey;
+    size_t n;
+
+    ckey = ksba_cert_get_public_key (cert);
+    if (!ckey)
+      return NULL;
+    n = gcry_sexp_canon_len (ckey, 0, NULL, NULL);
+    if (!n)
+      {
+        xfree (ckey);
+        return NULL;
+      }
+    err = gcry_sexp_sscan (&key, NULL, (char *)ckey, n);
+    xfree (ckey);
+    if (err)
+      return NULL;
+  }
+
+  list = gcry_sexp_find_token (key, "public-key", 0);
+  if (!list)
+    list = gcry_sexp_find_token (key, "private-key", 0);
+  if (!list)
+    list = gcry_sexp_find_token (key, "protected-private-key", 0);
+  if (!list)
+    list = gcry_sexp_find_token (key, "shadowed-private-key", 0);
+
+  gcry_sexp_release (key);
+  if (!list)
+    return NULL;  /* No suitable key.  */
+
+  l2 = gcry_sexp_cadr (list);
+  gcry_sexp_release (list);
+  list = l2;
+  l2 = NULL;
+
+  name = gcry_sexp_nth_string (list, 0);
+  if (!name)
+    ;
+  else if (gcry_pk_map_name (name) == GCRY_PK_RSA)
+    {
+      l2 = gcry_sexp_find_token (list, "n", 1);
+      if (l2)
+        modulus = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
+    }
+
+  gcry_free (name);
+  gcry_sexp_release (l2);
+  gcry_sexp_release (list);
+  return modulus;
+}
+
 
 
 /* For certain purposes we need a certificate id which has an upper

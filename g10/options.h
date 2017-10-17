@@ -82,6 +82,7 @@ struct
   int with_fingerprint; /* Option --with-fingerprint active.  */
   int with_subkey_fingerprint; /* Option --with-subkey-fingerprint active.  */
   int with_keygrip;     /* Option --with-keygrip active.  */
+  int with_key_screening;/* Option --with-key-screening active.  */
   int with_tofu_info;   /* Option --with-tofu_info active.  */
   int with_secret;      /* Option --with-secret active.  */
   int with_wkd_hash;    /* Option --with-wkd-hash.  */

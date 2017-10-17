@@ -197,6 +197,7 @@ enum cmd_and_opt_values
     oWithSubkeyFingerprint,
     oWithICAOSpelling,
     oWithKeygrip,
+    oWithKeyScreening,
     oWithSecret,
     oWithWKDHash,
     oWithColons,
@@ -785,6 +786,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oWithSubkeyFingerprint, "with-subkey-fingerprints", "@"),
   ARGPARSE_s_n (oWithICAOSpelling, "with-icao-spelling", "@"),
   ARGPARSE_s_n (oWithKeygrip,     "with-keygrip", "@"),
+  ARGPARSE_s_n (oWithKeyScreening,"with-key-screening", "@"),
   ARGPARSE_s_n (oWithSecret,      "with-secret", "@"),
   ARGPARSE_s_n (oWithWKDHash,     "with-wkd-hash", "@"),
   ARGPARSE_s_n (oWithKeyOrigin,   "with-key-origin", "@"),
@@ -2735,6 +2737,10 @@ main (int argc, char **argv)
 
 	  case oWithKeygrip:
             opt.with_keygrip = 1;
+            break;
+
+	  case oWithKeyScreening:
+            opt.with_key_screening = 1;
             break;
 
 	  case oWithSecret:

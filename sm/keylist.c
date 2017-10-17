@@ -37,6 +37,7 @@
 #include "../common/i18n.h"
 #include "../common/tlv.h"
 #include "../common/compliance.h"
+#include "../common/pkscreening.h"
 
 struct list_external_parm_s
 {
@@ -238,6 +239,38 @@ print_key_data (ksba_cert_t cert, estream_t fp)
 #endif
 }
 
+
+/* Various public key screenings.  (Right now just ROCA).  With
+ * COLON_MODE set the output is formatted for use in the compliance
+ * field of a colon listing.  */
+static void
+print_pk_screening (ksba_cert_t cert, int colon_mode, estream_t fp)
+{
+  gpg_error_t err;
+  gcry_mpi_t modulus;
+
+  modulus = gpgsm_get_rsa_modulus (cert);
+  if (modulus)
+    {
+      err = screen_key_for_roca (modulus);
+      if (!err)
+        ;
+      else if (gpg_err_code (err) == GPG_ERR_TRUE)
+        {
+          if (colon_mode)
+            es_fprintf (fp, colon_mode > 1? " %d":"%d", 6001);
+          else
+            es_fprintf (fp, "    screening: ROCA vulnerability detected\n");
+        }
+      else if (!colon_mode)
+        es_fprintf (fp, "    screening: [ROCA check failed: %s]\n",
+                    gpg_strerror (err));
+      gcry_mpi_release (modulus);
+    }
+
+}
+
+
 static void
 print_capabilities (ksba_cert_t cert, estream_t fp)
 {
@@ -348,10 +381,19 @@ email_kludge (const char *name)
 /* Print the compliance flags to field 18.  ALGO is the gcrypt algo
  * number.  NBITS is the length of the key in bits.  */
 static void
-print_compliance_flags (int algo, unsigned int nbits, estream_t fp)
+print_compliance_flags (ksba_cert_t cert, int algo, unsigned int nbits,
+                        estream_t fp)
 {
+  int any = 0;
+
   if (gnupg_pk_is_compliant (CO_DE_VS, algo, NULL, nbits, NULL))
-    es_fputs (gnupg_status_compliance_flag (CO_DE_VS), fp);
+    {
+      es_fputs (gnupg_status_compliance_flag (CO_DE_VS), fp);
+      any++;
+    }
+
+  if (opt.with_key_screening)
+    print_pk_screening (cert, 1+any, fp);
 }
 
 
@@ -526,7 +568,7 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   es_putc (':', fp);  /* End of field 15. */
   es_putc (':', fp);  /* End of field 16. */
   es_putc (':', fp);  /* End of field 17. */
-  print_compliance_flags (algo, nbits, fp);
+  print_compliance_flags (cert, algo, nbits, fp);
   es_putc (':', fp);  /* End of field 18. */
   es_putc ('\n', fp);
 
@@ -1252,6 +1294,9 @@ list_cert_std (ctrl_t ctrl, ksba_cert_t cert, estream_t fp, int have_secret,
           xfree (dn);
         }
     }
+
+  if (opt.with_key_screening)
+    print_pk_screening (cert, 0, fp);
 
   if (have_secret)
     {
