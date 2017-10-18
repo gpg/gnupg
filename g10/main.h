@@ -356,7 +356,7 @@ gpg_error_t read_key_from_file (ctrl_t ctrl, const char *fname,
 void import_keys (ctrl_t ctrl, char **fnames, int nnames,
 		  import_stats_t stats_hd, unsigned int options,
                   int origin, const char *url);
-int import_keys_es_stream (ctrl_t ctrl, estream_t fp,
+gpg_error_t import_keys_es_stream (ctrl_t ctrl, estream_t fp,
                            import_stats_t stats_handle,
                            unsigned char **fpr, size_t *fpr_len,
                            unsigned int options,
