@@ -2083,13 +2083,16 @@ build_conflict_set (ctrl_t ctrl, tofu_dbs_t dbs,
    * policy to ask due to a conflict.  */
   for (iter = conflict_set; iter; iter = iter->next)
     {
+      /* Fixme: Why the check against N+1?  */
       int l = strlen (iter->d);
-      if (!(l == 2 * MAX_FINGERPRINT_LEN
-            || l == 2 * MAX_FINGERPRINT_LEN + 1))
+      if (!(l == 2 * 20
+            || l == 2 * 20 + 1
+            || l == 2 * 32
+            || l == 2 * 32 + 1))
         {
           log_error (_("TOFU db corruption detected.\n"));
-          print_further_info ("fingerprint '%s' is not %d characters long",
-                              iter->d, 2 * MAX_FINGERPRINT_LEN);
+          print_further_info ("fingerprint '%s' is %d characters long",
+                              iter->d, l);
         }
 
       if (l >= 1 && iter->d[l - 1] == '!')
