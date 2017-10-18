@@ -102,7 +102,7 @@ static int import (ctrl_t ctrl,
 static int read_block (IOBUF a, int with_meta,
                        PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys);
 static void revocation_present (ctrl_t ctrl, kbnode_t keyblock);
-static int import_one (ctrl_t ctrl,
+static gpg_error_t import_one (ctrl_t ctrl,
                        kbnode_t keyblock,
                        struct import_stats_s *stats,
                        unsigned char **fpr, size_t *fpr_len,
@@ -436,7 +436,7 @@ read_key_from_file (ctrl_t ctrl, const char *fname, kbnode_t *r_keyblock)
  *
  *  Key revocation certificates have special handling.
  */
-static int
+static gpg_error_t
 import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
 		      import_stats_t stats_handle,
                       unsigned char **fpr, size_t *fpr_len,
@@ -445,7 +445,7 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
                       int origin, const char *url)
 {
   int i;
-  int rc = 0;
+  gpg_error_t err = 0;
   struct import_stats_s *stats = stats_handle;
 
   if (!stats)
@@ -453,8 +453,8 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
 
   if (inp)
     {
-      rc = import (ctrl, inp, "[stream]", stats, fpr, fpr_len, options,
-                   screener, screener_arg, origin, url);
+      err = import (ctrl, inp, "[stream]", stats, fpr, fpr_len, options,
+                    screener, screener_arg, origin, url);
     }
   else
     {
@@ -478,14 +478,14 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
             log_error (_("can't open '%s': %s\n"), fname, strerror (errno));
           else
             {
-              rc = import (ctrl, inp2, fname, stats, fpr, fpr_len, options,
+              err = import (ctrl, inp2, fname, stats, fpr, fpr_len, options,
                            screener, screener_arg, origin, url);
               iobuf_close (inp2);
               /* Must invalidate that ugly cache to actually close it. */
               iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname);
-              if (rc)
+              if (err)
                 log_error ("import from '%s' failed: %s\n",
-                           fname, gpg_strerror (rc) );
+                           fname, gpg_strerror (err) );
             }
           if (!fname)
             break;
@@ -507,7 +507,7 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
   if (!(options & IMPORT_FAST))
     check_or_update_trustdb (ctrl);
 
-  return rc;
+  return err;
 }
 
 
@@ -521,7 +521,7 @@ import_keys (ctrl_t ctrl, char **fnames, int nnames,
 }
 
 
-int
+gpg_error_t
 import_keys_es_stream (ctrl_t ctrl, estream_t fp,
                        import_stats_t stats_handle,
                        unsigned char **fpr, size_t *fpr_len,
@@ -529,23 +529,23 @@ import_keys_es_stream (ctrl_t ctrl, estream_t fp,
                        import_screener_t screener, void *screener_arg,
                        int origin, const char *url)
 {
-  int rc;
+  gpg_error_t err;
   iobuf_t inp;
 
   inp = iobuf_esopen (fp, "rb", 1);
   if (!inp)
     {
-      rc = gpg_error_from_syserror ();
-      log_error ("iobuf_esopen failed: %s\n", gpg_strerror (rc));
-      return rc;
+      err = gpg_error_from_syserror ();
+      log_error ("iobuf_esopen failed: %s\n", gpg_strerror (err));
+      return err;
     }
 
-  rc = import_keys_internal (ctrl, inp, NULL, 0, stats_handle,
+  err = import_keys_internal (ctrl, inp, NULL, 0, stats_handle,
                              fpr, fpr_len, options,
                              screener, screener_arg, origin, url);
 
   iobuf_close (inp);
-  return rc;
+  return err;
 }
 
 
@@ -1608,7 +1608,7 @@ update_key_origin (kbnode_t keyblock, u32 curtime, int origin, const char *url)
  * even most error messages are suppressed.  ORIGIN is the origin of
  * the key (0 for unknown) and URL the corresponding URL.
  */
-static int
+static gpg_error_t
 import_one (ctrl_t ctrl,
             kbnode_t keyblock, struct import_stats_s *stats,
 	    unsigned char **fpr, size_t *fpr_len, unsigned int options,
@@ -1616,6 +1616,7 @@ import_one (ctrl_t ctrl,
             import_screener_t screener, void *screener_arg,
             int origin, const char *url)
 {
+  gpg_error_t err = 0;
   PKT_public_key *pk;
   PKT_public_key *pk_orig = NULL;
   kbnode_t node, uidnode;
@@ -1623,7 +1624,6 @@ import_one (ctrl_t ctrl,
   byte fpr2[MAX_FINGERPRINT_LEN];
   size_t fpr2len;
   u32 keyid[2];
-  int rc = 0;
   int new_key = 0;
   int mod_key = 0;
   int same_key = 0;
@@ -1632,6 +1632,7 @@ import_one (ctrl_t ctrl,
   char pkstrbuf[PUBKEY_STRING_SIZE];
   int merge_keys_done = 0;
   int any_filter = 0;
+  KEYDB_HANDLE hd = NULL;
 
   /* Get the key and print some info about it. */
   node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
@@ -1791,7 +1792,7 @@ import_one (ctrl_t ctrl,
           merge_keys_and_selfsig (ctrl, keyblock);
           merge_keys_done = 1;
         }
-      rc = write_keyblock_to_output (keyblock, opt.armor, opt.export_options);
+      err = write_keyblock_to_output (keyblock, opt.armor, opt.export_options);
       goto leave;
     }
 
@@ -1799,37 +1800,37 @@ import_one (ctrl_t ctrl,
     goto leave;
 
   /* Do we have this key already in one of our pubrings ? */
+  hd = keydb_new ();
+  if (!hd)
+    return gpg_error_from_syserror ();
+  keydb_disable_caching (hd);
   pk_orig = xmalloc_clear( sizeof *pk_orig );
-  rc = get_pubkey_byfprint_fast (pk_orig, fpr2, fpr2len);
-  if (rc && gpg_err_code (rc) != GPG_ERR_NO_PUBKEY
-      && gpg_err_code (rc) != GPG_ERR_UNUSABLE_PUBKEY )
+  err = get_pubkey_byfprint_fast (pk_orig, fpr2, fpr2len);
+  if (err
+      && gpg_err_code (err) != GPG_ERR_NO_PUBKEY
+      && gpg_err_code (err) != GPG_ERR_UNUSABLE_PUBKEY )
     {
       if (!silent)
         log_error (_("key %s: public key not found: %s\n"),
-                   keystr(keyid), gpg_strerror (rc));
+                   keystr(keyid), gpg_strerror (err));
     }
-  else if ( rc && (opt.import_options&IMPORT_MERGE_ONLY) )
+  else if (err && (opt.import_options&IMPORT_MERGE_ONLY) )
     {
       if (opt.verbose && !silent )
         log_info( _("key %s: new key - skipped\n"), keystr(keyid));
-      rc = 0;
+      err = 0;
       stats->skipped_new_keys++;
     }
-  else if (rc )  /* Insert this key. */
+  else if (err)  /* Insert this key. */
     {
-      KEYDB_HANDLE hd;
       int n_sigs_cleaned, n_uids_cleaned;
 
-      hd = keydb_new ();
-      if (!hd)
-        return gpg_error_from_syserror ();
-
-      rc = keydb_locate_writable (hd);
-      if (rc)
+      err = keydb_locate_writable (hd);
+      if (err)
         {
-          log_error (_("no writable keyring found: %s\n"), gpg_strerror (rc));
-          keydb_release (hd);
-          return GPG_ERR_GENERAL;
+          log_error (_("no writable keyring found: %s\n"), gpg_strerror (err));
+          err = gpg_error (GPG_ERR_GENERAL);
+          goto leave;
 	}
       if (opt.verbose > 1 )
         log_info (_("writing to '%s'\n"), keydb_get_resource_name (hd) );
@@ -1843,19 +1844,19 @@ import_one (ctrl_t ctrl,
        * and thus the address of KEYBLOCK won't change.  */
       if ( !(options & IMPORT_RESTORE) )
         {
-          rc = insert_key_origin (keyblock, origin, url);
-          if (rc)
+          err = insert_key_origin (keyblock, origin, url);
+          if (err)
             {
-              log_error ("insert_key_origin failed: %s\n", gpg_strerror (rc));
-              keydb_release (hd);
-              return GPG_ERR_GENERAL;
+              log_error ("insert_key_origin failed: %s\n", gpg_strerror (err));
+              err = gpg_error (GPG_ERR_GENERAL);
+              goto leave;
             }
         }
 
-      rc = keydb_insert_keyblock (hd, keyblock );
-      if (rc)
+      err = keydb_insert_keyblock (hd, keyblock );
+      if (err)
         log_error (_("error writing keyring '%s': %s\n"),
-                   keydb_get_resource_name (hd), gpg_strerror (rc));
+                   keydb_get_resource_name (hd), gpg_strerror (err));
       else if (!(opt.import_options & IMPORT_KEEP_OWNERTTRUST))
         {
           /* This should not be possible since we delete the
@@ -1868,7 +1869,10 @@ import_one (ctrl_t ctrl,
           if (non_self)
             revalidation_mark (ctrl);
         }
+
+      /* Release the handle and thus unlock the keyring asap.  */
       keydb_release (hd);
+      hd = NULL;
 
       /* We are ready.  */
       if (!opt.quiet && !silent)
@@ -1890,7 +1894,6 @@ import_one (ctrl_t ctrl,
     }
   else /* Merge the key.  */
     {
-      KEYDB_HANDLE hd;
       int n_uids, n_sigs, n_subk, n_sigs_cleaned, n_uids_cleaned;
       u32 curtime = make_timestamp ();
 
@@ -1903,29 +1906,22 @@ import_one (ctrl_t ctrl,
           goto leave;
         }
 
-      /* Now read the original keyblock again so that we can use
-         that handle for updating the keyblock.  */
-      hd = keydb_new ();
-      if (!hd)
-        {
-          rc = gpg_error_from_syserror ();
-          goto leave;
-        }
-      keydb_disable_caching (hd);
-      rc = keydb_search_fpr (hd, fpr2);
-      if (rc )
+      /* Now read the original keyblock again so that we can use the
+       * handle for updating the keyblock.  FIXME: Why not let
+       * get_pubkey_byfprint_fast do that - it fetches the keyblock
+       * anyway. */
+      err = keydb_search_fpr (hd, fpr2);
+      if (err)
         {
           log_error (_("key %s: can't locate original keyblock: %s\n"),
-                     keystr(keyid), gpg_strerror (rc));
-          keydb_release (hd);
+                     keystr(keyid), gpg_strerror (err));
           goto leave;
         }
-      rc = keydb_get_keyblock (hd, &keyblock_orig);
-      if (rc)
+      err = keydb_get_keyblock (hd, &keyblock_orig);
+      if (err)
         {
           log_error (_("key %s: can't read original keyblock: %s\n"),
-                     keystr(keyid), gpg_strerror (rc));
-          keydb_release (hd);
+                     keystr(keyid), gpg_strerror (err));
           goto leave;
         }
 
@@ -1938,14 +1934,11 @@ import_one (ctrl_t ctrl,
       clear_kbnode_flags( keyblock_orig );
       clear_kbnode_flags( keyblock );
       n_uids = n_sigs = n_subk = n_uids_cleaned = 0;
-      rc = merge_blocks (ctrl, options, keyblock_orig, keyblock, keyid,
-                         curtime, origin, url,
-                         &n_uids, &n_sigs, &n_subk );
-      if (rc )
-        {
-          keydb_release (hd);
-          goto leave;
-        }
+      err = merge_blocks (ctrl, options, keyblock_orig, keyblock, keyid,
+                          curtime, origin, url,
+                          &n_uids, &n_sigs, &n_subk );
+      if (err)
+        goto leave;
 
       if ((options & IMPORT_CLEAN))
         clean_key (ctrl, keyblock_orig, opt.verbose, (options&IMPORT_MINIMAL),
@@ -1958,24 +1951,27 @@ import_one (ctrl_t ctrl,
            * and thus the address of KEYBLOCK won't change.  */
           if ( !(options & IMPORT_RESTORE) )
             {
-              rc = update_key_origin (keyblock_orig, curtime, origin, url);
-              if (rc)
+              err = update_key_origin (keyblock_orig, curtime, origin, url);
+              if (err)
                 {
                   log_error ("update_key_origin failed: %s\n",
-                             gpg_strerror (rc));
-                  keydb_release (hd);
+                             gpg_strerror (err));
                   goto leave;
                 }
             }
 
           mod_key = 1;
           /* KEYBLOCK_ORIG has been updated; write */
-          rc = keydb_update_keyblock (ctrl, hd, keyblock_orig);
-          if (rc)
+          err = keydb_update_keyblock (ctrl, hd, keyblock_orig);
+          if (err)
             log_error (_("error writing keyring '%s': %s\n"),
-                       keydb_get_resource_name (hd), gpg_strerror (rc) );
+                       keydb_get_resource_name (hd), gpg_strerror (err));
           else if (non_self)
             revalidation_mark (ctrl);
+
+          /* Release the handle and thus unlock the keyring asap.  */
+          keydb_release (hd);
+          hd = NULL;
 
           /* We are ready.  */
           if (!opt.quiet && !silent)
@@ -2025,6 +2021,10 @@ import_one (ctrl_t ctrl,
 	}
       else
         {
+          /* Release the handle and thus unlock the keyring asap.  */
+          keydb_release (hd);
+          hd = NULL;
+
           /* Fixme: we do not track the time we last checked a key for
            * updates.  To do this we would need to rewrite even the
            * keys which have no changes.  */
@@ -2041,11 +2041,10 @@ import_one (ctrl_t ctrl,
 
           stats->unchanged++;
         }
-
-      keydb_release (hd); hd = NULL;
     }
 
  leave:
+  keydb_release (hd);
   if (mod_key || new_key || same_key)
     {
       /* A little explanation for this: we fill in the fingerprint
@@ -2094,7 +2093,7 @@ import_one (ctrl_t ctrl,
   release_kbnode( keyblock_orig );
   free_public_key( pk_orig );
 
-  return rc;
+  return err;
 }
 
 
