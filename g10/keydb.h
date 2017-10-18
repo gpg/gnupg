@@ -339,8 +339,17 @@ int get_pubkey_byfprint (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
 /* This function is similar to get_pubkey_byfprint, but it doesn't
    merge the self-signed data into the public key and subkeys or into
    the user ids.  */
-int get_pubkey_byfprint_fast (PKT_public_key *pk,
-                              const byte *fprint, size_t fprint_len);
+gpg_error_t get_pubkey_byfprint_fast (PKT_public_key *pk,
+                                      const byte *fprint, size_t fprint_len);
+
+/* This function is similar to get_pubkey_byfprint, but it doesn't
+   merge the self-signed data into the public key and subkeys or into
+   the user ids.  */
+gpg_error_t get_keyblock_byfprint_fast (kbnode_t *r_keyblock,
+                                        KEYDB_HANDLE *r_hd,
+                                        const byte *fprint, size_t fprint_len,
+                                        int lock);
+
 
 /* Returns true if a secret key is available for the public key with
    key id KEYID.  */
