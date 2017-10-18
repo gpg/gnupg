@@ -1877,13 +1877,24 @@ get_keyblock_byfprint_fast (kbnode_t *r_keyblock, KEYDB_HANDLE *r_hd,
   hd = keydb_new ();
   if (!hd)
     return gpg_error_from_syserror ();
-  if (r_hd)
-    *r_hd = hd;
 
   if (lock)
     {
+      err = keydb_lock (hd);
+      if (err)
+        {
+          /* If locking did not work, we better don't return a handle
+           * at all - there was a reason that locking has been
+           * requested.  */
+          keydb_release (hd);
+          return err;
+        }
       keydb_disable_caching (hd);
     }
+
+  /* Fo all other errors we return the handle.  */
+  if (r_hd)
+    *r_hd = hd;
 
   err = keydb_search_fpr (hd, fprbuf);
   if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)

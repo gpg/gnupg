@@ -154,6 +154,10 @@ KEYDB_HANDLE keydb_new (void);
 /* Free all resources owned by the database handle.  */
 void keydb_release (KEYDB_HANDLE hd);
 
+/* Take a lock on the files immediately and not only during insert or
+ * update.  This lock is released with keydb_release.  */
+gpg_error_t keydb_lock (KEYDB_HANDLE hd);
+
 /* Set a flag on the handle to suppress use of cached results.  This
    is required for updating a keyring and for key listings.  Fixme:
    Using a new parameter for keydb_new might be a better solution.  */

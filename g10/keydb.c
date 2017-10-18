@@ -96,6 +96,10 @@ struct keydb_handle
      / keybox_lock, as appropriate).  */
   int locked;
 
+  /* If this flag is set a lock will only be released by
+   * keydb_release.  */
+  int keep_lock;
+
   /* The index into ACTIVE of the resources in which the last search
      result was found.  Initially -1.  */
   int found;
@@ -964,6 +968,7 @@ keydb_release (KEYDB_HANDLE hd)
   log_assert (active_handles > 0);
   active_handles--;
 
+  hd->keep_lock = 0;
   unlock_all (hd);
   for (i=0; i < hd->used; i++)
     {
@@ -982,6 +987,24 @@ keydb_release (KEYDB_HANDLE hd)
 
   keyblock_cache_clear (hd);
   xfree (hd);
+}
+
+
+/* Take a lock on the files immediately and not only during insert or
+ * update.  This lock is released with keydb_release.  */
+gpg_error_t
+keydb_lock (KEYDB_HANDLE hd)
+{
+  gpg_error_t err;
+
+  if (!hd)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  err = lock_all (hd);
+  if (!err)
+    hd->keep_lock = 1;
+
+  return err;
 }
 
 
@@ -1098,7 +1121,7 @@ unlock_all (KEYDB_HANDLE hd)
 {
   int i;
 
-  if (!hd->locked)
+  if (!hd->locked || hd->keep_lock)
     return;
 
   for (i=hd->used-1; i >= 0; i--)
