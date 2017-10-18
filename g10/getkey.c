@@ -1828,15 +1828,46 @@ get_pubkey_byfprint (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
  *
  * Like get_pubkey_byfprint, PK may be NULL.  In that case, this
  * function effectively just checks for the existence of the key.  */
-int
+gpg_error_t
 get_pubkey_byfprint_fast (PKT_public_key * pk,
 			  const byte * fprint, size_t fprint_len)
 {
-  int rc = 0;
-  KEYDB_HANDLE hd;
+  gpg_error_t err;
   KBNODE keyblock;
+
+  err = get_keyblock_byfprint_fast (&keyblock, NULL, fprint, fprint_len, 0);
+  if (!err)
+    {
+      if (pk)
+        copy_public_key (pk, keyblock->pkt->pkt.public_key);
+      release_kbnode (keyblock);
+    }
+
+  return err;
+}
+
+
+/* This function is similar to get_pubkey_byfprint_fast but returns a
+ * keydb handle at R_HD and the keyblock at R_KEYBLOCK.  R_KEYBLOCK or
+ * R_HD may be NULL.  If LOCK is set the handle has been opend in
+ * locked mode and keydb_disable_caching () has been called.  On error
+ * R_KEYBLOCK is set to NULL but R_HD must be released by the caller;
+ * it may have a value of NULL, though.  This allows to do an insert
+ * operation on a locked keydb handle.  */
+gpg_error_t
+get_keyblock_byfprint_fast (kbnode_t *r_keyblock, KEYDB_HANDLE *r_hd,
+                            const byte *fprint, size_t fprint_len, int lock)
+{
+  gpg_error_t err;
+  KEYDB_HANDLE hd;
+  kbnode_t keyblock;
   byte fprbuf[MAX_FINGERPRINT_LEN];
   int i;
+
+  if (r_keyblock)
+    *r_keyblock = NULL;
+  if (r_hd)
+    *r_hd = NULL;
 
   for (i = 0; i < MAX_FINGERPRINT_LEN && i < fprint_len; i++)
     fprbuf[i] = fprint[i];
@@ -1846,32 +1877,47 @@ get_pubkey_byfprint_fast (PKT_public_key * pk,
   hd = keydb_new ();
   if (!hd)
     return gpg_error_from_syserror ();
+  if (r_hd)
+    *r_hd = hd;
 
-  rc = keydb_search_fpr (hd, fprbuf);
-  if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
+  if (lock)
     {
-      keydb_release (hd);
-      return GPG_ERR_NO_PUBKEY;
+      keydb_disable_caching (hd);
     }
-  rc = keydb_get_keyblock (hd, &keyblock);
-  keydb_release (hd);
-  if (rc)
+
+  err = keydb_search_fpr (hd, fprbuf);
+  if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     {
-      log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (rc));
-      return GPG_ERR_NO_PUBKEY;
+      if (!r_hd)
+        keydb_release (hd);
+      return gpg_error (GPG_ERR_NO_PUBKEY);
+    }
+  err = keydb_get_keyblock (hd, &keyblock);
+  if (err)
+    {
+      log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (err));
+      if (!r_hd)
+        keydb_release (hd);
+      return gpg_error (GPG_ERR_NO_PUBKEY);
     }
 
   log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY
               || keyblock->pkt->pkttype == PKT_PUBLIC_SUBKEY);
-  if (pk)
-    copy_public_key (pk, keyblock->pkt->pkt.public_key);
-  release_kbnode (keyblock);
 
   /* Not caching key here since it won't have all of the fields
      properly set. */
 
+  if (r_keyblock)
+    *r_keyblock = keyblock;
+  else
+    release_kbnode (keyblock);
+
+  if (!r_hd)
+    keydb_release (hd);
+
   return 0;
 }
+
 
 const char *
 parse_def_secret_key (ctrl_t ctrl)

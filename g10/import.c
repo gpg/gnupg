@@ -1618,7 +1618,6 @@ import_one (ctrl_t ctrl,
 {
   gpg_error_t err = 0;
   PKT_public_key *pk;
-  PKT_public_key *pk_orig = NULL;
   kbnode_t node, uidnode;
   kbnode_t keyblock_orig = NULL;
   byte fpr2[MAX_FINGERPRINT_LEN];
@@ -1800,16 +1799,15 @@ import_one (ctrl_t ctrl,
     goto leave;
 
   /* Do we have this key already in one of our pubrings ? */
-  hd = keydb_new ();
-  if (!hd)
-    return gpg_error_from_syserror ();
-  keydb_disable_caching (hd);
-  pk_orig = xmalloc_clear( sizeof *pk_orig );
-  err = get_pubkey_byfprint_fast (pk_orig, fpr2, fpr2len);
-  if (err
-      && gpg_err_code (err) != GPG_ERR_NO_PUBKEY
-      && gpg_err_code (err) != GPG_ERR_UNUSABLE_PUBKEY )
+  err = get_keyblock_byfprint_fast (&keyblock_orig, &hd,
+                                    fpr2, fpr2len, 1/*locked*/);
+  if ((err
+       && gpg_err_code (err) != GPG_ERR_NO_PUBKEY
+       && gpg_err_code (err) != GPG_ERR_UNUSABLE_PUBKEY)
+      || !hd)
     {
+      /* The !hd above is to catch a misbehaving function which
+       * returns NO_PUBKEY for failing to allocate a handle.  */
       if (!silent)
         log_error (_("key %s: public key not found: %s\n"),
                    keystr(keyid), gpg_strerror (err));
@@ -1823,6 +1821,7 @@ import_one (ctrl_t ctrl,
     }
   else if (err)  /* Insert this key. */
     {
+      /* Note: ERR can only be NO_PUBKEY or UNUSABLE_PUBKEY.  */
       int n_sigs_cleaned, n_uids_cleaned;
 
       err = keydb_locate_writable (hd);
@@ -1892,36 +1891,17 @@ import_one (ctrl_t ctrl,
       stats->imported++;
       new_key = 1;
     }
-  else /* Merge the key.  */
+  else /* Key already exists - merge.  */
     {
       int n_uids, n_sigs, n_subk, n_sigs_cleaned, n_uids_cleaned;
       u32 curtime = make_timestamp ();
 
       /* Compare the original against the new key; just to be sure nothing
        * weird is going on */
-      if (cmp_public_keys( pk_orig, pk ) )
+      if (cmp_public_keys (keyblock_orig->pkt->pkt.public_key, pk))
         {
           if (!silent)
             log_error( _("key %s: doesn't match our copy\n"),keystr(keyid));
-          goto leave;
-        }
-
-      /* Now read the original keyblock again so that we can use the
-       * handle for updating the keyblock.  FIXME: Why not let
-       * get_pubkey_byfprint_fast do that - it fetches the keyblock
-       * anyway. */
-      err = keydb_search_fpr (hd, fpr2);
-      if (err)
-        {
-          log_error (_("key %s: can't locate original keyblock: %s\n"),
-                     keystr(keyid), gpg_strerror (err));
-          goto leave;
-        }
-      err = keydb_get_keyblock (hd, &keyblock_orig);
-      if (err)
-        {
-          log_error (_("key %s: can't read original keyblock: %s\n"),
-                     keystr(keyid), gpg_strerror (err));
           goto leave;
         }
 
@@ -1930,7 +1910,7 @@ import_one (ctrl_t ctrl,
       if (n_sigs_cleaned)
         commit_kbnode (&keyblock_orig);
 
-      /* and try to merge the block */
+      /* Try to merge KEYBLOCK into KEYBLOCK_ORIG.  */
       clear_kbnode_flags( keyblock_orig );
       clear_kbnode_flags( keyblock );
       n_uids = n_sigs = n_subk = n_uids_cleaned = 0;
@@ -2091,7 +2071,6 @@ import_one (ctrl_t ctrl,
     }
 
   release_kbnode( keyblock_orig );
-  free_public_key( pk_orig );
 
   return err;
 }
@@ -3266,14 +3245,15 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
 		      /* Okay, we have a revocation key, and a
                        * revocation issued by it.  Do we have the key
                        * itself?  */
-		      int rc;
+                      gpg_error_t err;
 
-		      rc=get_pubkey_byfprint_fast (NULL,sig->revkey[idx].fpr,
-                                                   MAX_FINGERPRINT_LEN);
-		      if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
-                          || gpg_err_code (rc) == GPG_ERR_UNUSABLE_PUBKEY)
+		      err = get_pubkey_byfprint_fast (NULL,
+                                                      sig->revkey[idx].fpr,
+                                                      MAX_FINGERPRINT_LEN);
+		      if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY
+                          || gpg_err_code (err) == GPG_ERR_UNUSABLE_PUBKEY)
 			{
-			  char *tempkeystr=xstrdup(keystr_from_pk(pk));
+			  char *tempkeystr = xstrdup (keystr_from_pk (pk));
 
 			  /* No, so try and get it */
 			  if ((opt.keyserver_options.options
@@ -3289,13 +3269,13 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
                                                        opt.keyserver, 0);
 
 			      /* Do we have it now? */
-			      rc=get_pubkey_byfprint_fast (NULL,
+			      err = get_pubkey_byfprint_fast (NULL,
 						     sig->revkey[idx].fpr,
 						     MAX_FINGERPRINT_LEN);
 			    }
 
-			  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
-                              || gpg_err_code (rc) == GPG_ERR_UNUSABLE_PUBKEY)
+			  if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY
+                              || gpg_err_code (err) == GPG_ERR_UNUSABLE_PUBKEY)
 			    log_info(_("WARNING: key %s may be revoked:"
 				       " revocation key %s not present.\n"),
 				     tempkeystr,keystr(keyid));
