@@ -2306,7 +2306,8 @@ opposite meaning. The options are:
   Show a listing of the key as imported right before it is stored.
   This can be combined with the option @option{--dry-run} to only look
   at keys; the option @option{show-only} is a shortcut for this
-  combination.
+  combination.  Note that suffixes like '#' for "sec" and "sbb" lines
+  may or may not be printed.
 
   @item import-export
   Run the entire import code but instead of storing the key to the
