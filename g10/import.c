@@ -2532,7 +2532,8 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
       /* At least we cancel the secret key import when the public key
 	 import was skipped due to MERGE_ONLY option and a new
 	 key.  */
-      if (stats->skipped_new_keys <= nr_prev)
+      if (!(opt.dry_run || (options & IMPORT_DRY_RUN))
+          && stats->skipped_new_keys <= nr_prev)
 	{
           /* Read the keyblock again to get the effects of a merge.  */
           /* Fixme: we should do this based on the fingerprint or
