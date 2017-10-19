@@ -826,6 +826,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
 {
   int rc;
   PKT_public_key *pk;
+  KBNODE keyblock = NULL;
 
   if (!name || !*name)
     return gpg_error (GPG_ERR_INV_USER_ID);
@@ -838,7 +839,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
   if (from_file)
     rc = get_pubkey_fromfile (ctrl, pk, name);
   else
-    rc = get_best_pubkey_byname (ctrl, NULL, pk, name, NULL, 0, 0);
+    rc = get_best_pubkey_byname (ctrl, NULL, pk, name, &keyblock, 0, 0);
   if (rc)
     {
       int code;
@@ -861,6 +862,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
   if (rc)
     {
       /* Key found but not usable for us (e.g. sign-only key). */
+      release_kbnode (keyblock);
       send_status_inv_recp (3, name); /* Wrong key usage */
       log_error (_("%s: skipped: %s\n"), name, gpg_strerror (rc) );
       free_public_key (pk);
@@ -872,7 +874,8 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
     {
       int trustlevel;
 
-      trustlevel = get_validity (ctrl, NULL, pk, pk->user_id, NULL, 1);
+      trustlevel = get_validity (ctrl, keyblock, pk, pk->user_id, NULL, 1);
+      release_kbnode (keyblock);
       if ( (trustlevel & TRUST_FLAG_DISABLED) )
         {
           /* Key has been disabled. */
