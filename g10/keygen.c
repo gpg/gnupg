@@ -5051,6 +5051,9 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
     err = agent_passwd (ctrl, hexgrip, desc, 1 /*=verify*/,
                         &cache_nonce, &passwd_nonce);
     xfree (desc);
+    if (gpg_err_code (err) == GPG_ERR_NOT_IMPLEMENTED
+        && gpg_err_source (err) == GPG_ERR_SOURCE_GPGAGENT)
+      err = 0;  /* Very likely that the key is on a card.  */
     if (err)
       goto leave;
   }
