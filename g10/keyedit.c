@@ -1223,6 +1223,8 @@ parse_sign_type (const char *str, int *localsig, int *nonrevokesig,
 
 /* Need an SK for this command */
 #define KEYEDIT_NEED_SK 1
+/* Need an SUB KEY for this command */
+#define KEYEDIT_NEED_SUBSK 2
 /* Match the tail of the string */
 #define KEYEDIT_TAIL_MATCH 8
 
@@ -1288,9 +1290,9 @@ static struct
 #ifdef ENABLE_CARD_SUPPORT
   { "addcardkey", cmdADDCARDKEY,  KEYEDIT_NEED_SK,
     N_("add a key to a smartcard")},
-  { "keytocard", cmdKEYTOCARD, KEYEDIT_NEED_SK,
+  { "keytocard", cmdKEYTOCARD, KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK,
     N_("move a key to a smartcard")},
-  { "bkuptocard", cmdBKUPTOCARD, KEYEDIT_NEED_SK,
+  { "bkuptocard", cmdBKUPTOCARD, KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK,
     N_("move a backup key to a smartcard")},
 #endif /*ENABLE_CARD_SUPPORT */
   { "delkey", cmdDELKEY, 0, N_("delete selected subkeys")},
@@ -1298,7 +1300,7 @@ static struct
     N_("add a revocation key")},
   { "delsig", cmdDELSIG, 0,
     N_("delete signatures from the selected user IDs")},
-  { "expire", cmdEXPIRE,  KEYEDIT_NEED_SK,
+  { "expire", cmdEXPIRE,  KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK,
     N_("change the expiration date for the key or selected subkeys")},
   { "primary", cmdPRIMARY,  KEYEDIT_NEED_SK,
     N_("flag the selected user ID as primary")},
@@ -1313,9 +1315,9 @@ static struct
     N_("set the preferred keyserver URL for the selected user IDs")},
   { "notation", cmdNOTATION,  KEYEDIT_NEED_SK,
     N_("set a notation for the selected user IDs")},
-  { "passwd", cmdPASSWD,  KEYEDIT_NEED_SK,
+  { "passwd", cmdPASSWD,  KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK,
     N_("change the passphrase")},
-  { "password", cmdPASSWD,  KEYEDIT_NEED_SK, NULL},
+  { "password", cmdPASSWD,  KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK, NULL},
 #ifndef NO_TRUST_MODELS
   { "trust", cmdTRUST, 0, N_("change the ownertrust")},
 #endif /*!NO_TRUST_MODELS*/
@@ -1402,6 +1404,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
   KBNODE keyblock = NULL;
   KEYDB_HANDLE kdbhd = NULL;
   int have_seckey = 0;
+  int have_anyseckey = 0;
   char *answer = NULL;
   int redisplay = 1;
   int modified = 0;
@@ -1444,9 +1447,18 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
   /* See whether we have a matching secret key.  */
   if (seckey_check)
     {
-      have_seckey = !agent_probe_any_secret_key (ctrl, keyblock);
+      have_anyseckey = !agent_probe_any_secret_key (ctrl, keyblock);
+      if (have_anyseckey
+          && !agent_probe_secret_key (ctrl, keyblock->pkt->pkt.public_key))
+        {
+          /* The primary key is also available.   */
+          have_seckey = 1;
+        }
+
       if (have_seckey && !quiet)
-	tty_printf (_("Secret key is available.\n"));
+        tty_printf (_("Secret key is available.\n"));
+      else if (have_anyseckey && !quiet)
+        tty_printf (_("Secret subkeys are available.\n"));
     }
 
   /* Main command loop.  */
@@ -1544,12 +1556,14 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	      else if (!ascii_strcasecmp (answer, cmds[i].name))
 		break;
 	    }
-	  if ((cmds[i].flags & KEYEDIT_NEED_SK) && !have_seckey)
+	  if ((cmds[i].flags & (KEYEDIT_NEED_SK|KEYEDIT_NEED_SUBSK))
+              && !(((cmds[i].flags & KEYEDIT_NEED_SK) && have_seckey)
+                   || ((cmds[i].flags & KEYEDIT_NEED_SUBSK) && have_anyseckey)))
 	    {
 	      tty_printf (_("Need the secret key to do this.\n"));
 	      cmd = cmdNOP;
 	    }
-	  else
+          else
 	    cmd = cmds[i].id;
 	}
 
@@ -1559,7 +1573,9 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	case cmdHELP:
 	  for (i = 0; cmds[i].name; i++)
 	    {
-	      if ((cmds[i].flags & KEYEDIT_NEED_SK) && !have_seckey)
+              if ((cmds[i].flags & (KEYEDIT_NEED_SK|KEYEDIT_NEED_SUBSK))
+                  && !(((cmds[i].flags & KEYEDIT_NEED_SK) && have_seckey)
+                       ||((cmds[i].flags&KEYEDIT_NEED_SUBSK)&&have_anyseckey)))
 		; /* Skip those item if we do not have the secret key.  */
 	      else if (cmds[i].desc)
 		tty_printf ("%-11s %s\n", cmds[i].name, _(cmds[i].desc));
