@@ -32,6 +32,27 @@
 
 #include "key-check.h"
 
+
+/* Print PREFIX followed by TEXT.  With mode > 0 use log_info, with
+ * mode < 0 use ttyio, else print to stdout.  If TEXT is not NULL, it
+ * may be modified by this function.  */
+static void
+print_info (int mode, const char *prefix, char *text)
+{
+  char *p;
+
+  if (!text)
+    text = "";
+  else if ((p = strchr (text,'\n')))
+    *p = 0; /* Strip LF.  */
+
+   if (mode > 0)
+     log_info ("%s %s\n", prefix, text);
+   else
+     tty_fprintf (mode? NULL:es_stdout, "%s %s\n", prefix, text);
+}
+
+
 /* Order two signatures.  The actual ordering isn't important.  Our
  * goal is to ensure that identical signatures occur together.  */
 static int
@@ -100,7 +121,6 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
                        int only_selected, int only_selfsigs)
 {
   gpg_error_t err;
-  estream_t fp = mode < 0? NULL : mode ? log_get_stream () : es_stdout;
   PKT_public_key *pk;
   KBNODE n, n_next, *n_prevp, n2;
   char *pending_desc = NULL;
@@ -476,8 +496,9 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
                   has_selfsig = 1;
               }
 
-            if ((n2 && n2 != last_printed_component)
-                || (! n2 && last_printed_component != current_component))
+            if (DBG_PACKET
+                && ((n2 && n2 != last_printed_component)
+                    || (! n2 && last_printed_component != current_component)))
               {
                 int is_reordered = n2 && n2 != current_component;
                 if (n2)
@@ -489,36 +510,34 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
                   ;
                 else if (last_printed_component->pkt->pkttype == PKT_USER_ID)
                   {
-                    tty_fprintf (fp, "uid  ");
-                    tty_print_utf8_string2 (fp,
-                                            last_printed_component
-                                            ->pkt->pkt.user_id->name,
-                                            last_printed_component
-                                            ->pkt->pkt.user_id->len, 0);
+                    log_debug ("uid  ");
+                    print_utf8_buffer (log_get_stream (),
+                                       last_printed_component
+                                       ->pkt->pkt.user_id->name,
+                                       last_printed_component
+                                       ->pkt->pkt.user_id->len);
+                    log_flush ();
                   }
                 else if (last_printed_component->pkt->pkttype
                          == PKT_PUBLIC_KEY)
-                  tty_fprintf (fp, "pub  %s",
-                               pk_keyid_str (last_printed_component
+                  log_debug ("pub  %s\n",
+                             pk_keyid_str (last_printed_component
                                              ->pkt->pkt.public_key));
                 else
-                  tty_fprintf (fp, "sub  %s",
-                               pk_keyid_str (last_printed_component
-                                             ->pkt->pkt.public_key));
+                  log_debug ("sub  %s\n",
+                             pk_keyid_str (last_printed_component
+                                           ->pkt->pkt.public_key));
 
                 if (modified)
                   {
                     if (is_reordered)
-                      tty_fprintf (fp, _(" (reordered signatures follow)"));
-                    if (mode > 0)
-                      log_printf ("\n");
-                    else
-                      tty_fprintf (fp, "\n");
+                      log_debug ("%s\n", _(" (reordered signatures follow)"));
                   }
               }
 
-            if (modified)
-              keyedit_print_one_sig (ctrl, fp, rc, kb, n, NULL, NULL, NULL,
+            if (DBG_PACKET && modified)
+              keyedit_print_one_sig (ctrl, log_get_stream (),
+                                     rc, kb, n, NULL, NULL, NULL,
 				     has_selfsig, 0, only_selfsigs);
           }
 
@@ -624,32 +643,62 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
       }
   }
 
-  if (dups || missing_issuer || bad_signature || reordered)
-    tty_fprintf (fp, _("key %s:\n"), pk_keyid_str (pk));
+  if (!opt.quiet)
+    {
+      char prefix[100];
+      char *p;
 
-  if (dups)
-    tty_fprintf (fp,
-                 ngettext ("%d duplicate signature removed\n",
-                           "%d duplicate signatures removed\n", dups), dups);
-  if (missing_issuer)
-    tty_fprintf (fp,
-                 ngettext ("%d signature not checked due to a missing key\n",
-                           "%d signatures not checked due to missing keys\n",
-                           missing_issuer), missing_issuer);
-  if (bad_signature)
-    tty_fprintf (fp,
-                 ngettext ("%d bad signature\n",
-                           "%d bad signatures\n",
-                           bad_signature), bad_signature);
-  if (reordered)
-    tty_fprintf (fp,
-                 ngettext ("%d signature reordered\n",
-                           "%d signatures reordered\n",
-                           reordered), reordered);
+      /* To avoid string changes in 2.2 we strip the LF here. */
+      snprintf (prefix, sizeof prefix, _("key %s:\n"), pk_keyid_str (pk));
+      p = strrchr (prefix, '\n');
+      if (p)
+        *p = 0;
 
-  if (only_selfsigs && (bad_signature || reordered))
-    tty_fprintf (fp, _("Warning: errors found and only checked self-signatures,"
-                       " run '%s' to check all signatures.\n"), "check");
+      if (dups)
+        {
+          p = xtryasprintf
+            (ngettext ("%d duplicate signature removed\n",
+                       "%d duplicate signatures removed\n", dups), dups);
+          print_info (mode, prefix, p);
+          xfree (p);
+        }
+
+      if (missing_issuer)
+        {
+          p = xtryasprintf
+            (ngettext ("%d signature not checked due to a missing key\n",
+                       "%d signatures not checked due to missing keys\n",
+                       missing_issuer), missing_issuer);
+          print_info (mode, prefix, p);
+          xfree (p);
+        }
+      if (bad_signature)
+        {
+          p = xtryasprintf (ngettext ("%d bad signature\n",
+                                      "%d bad signatures\n",
+                                      bad_signature), bad_signature);
+          print_info (mode, prefix, p);
+          xfree (p);
+        }
+
+      if (reordered)
+        {
+          p = xtryasprintf (ngettext ("%d signature reordered\n",
+                                      "%d signatures reordered\n",
+                                      reordered), reordered);
+          print_info (mode, prefix, p);
+          xfree (p);
+        }
+
+      if (only_selfsigs && (bad_signature || reordered))
+        {
+          p = xtryasprintf
+            (_("Warning: errors found and only checked self-signatures,"
+               " run '%s' to check all signatures.\n"), "check");
+          print_info (mode, prefix, p);
+          xfree (p);
+        }
+    }
 
   return modified;
 }
