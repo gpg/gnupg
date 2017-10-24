@@ -1223,10 +1223,6 @@ parse_sign_type (const char *str, int *localsig, int *nonrevokesig,
 
 /* Need an SK for this command */
 #define KEYEDIT_NEED_SK 1
-/* Cannot be viewing the SK for this command */
-#define KEYEDIT_NOT_SK  2
-/* Must be viewing the SK for this command */
-#define KEYEDIT_ONLY_SK 4
 /* Match the tail of the string */
 #define KEYEDIT_TAIL_MATCH 8
 
@@ -1268,12 +1264,12 @@ static struct
   { "key", cmdSELKEY, 0, N_("select subkey N")},
   { "check", cmdCHECK, 0, N_("check signatures")},
   { "c", cmdCHECK, 0, NULL},
-  { "change-usage", cmdCHANGEUSAGE, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK, NULL},
-  { "cross-certify", cmdBACKSIGN, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK, NULL},
-  { "backsign", cmdBACKSIGN, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK, NULL},
-  { "sign", cmdSIGN, KEYEDIT_NOT_SK | KEYEDIT_TAIL_MATCH,
+  { "change-usage", cmdCHANGEUSAGE, KEYEDIT_NEED_SK, NULL},
+  { "cross-certify", cmdBACKSIGN, KEYEDIT_NEED_SK, NULL},
+  { "backsign", cmdBACKSIGN,  KEYEDIT_NEED_SK, NULL},
+  { "sign", cmdSIGN,  KEYEDIT_TAIL_MATCH,
     N_("sign selected user IDs [* see below for related commands]")},
-  { "s", cmdSIGN, KEYEDIT_NOT_SK, NULL},
+  { "s", cmdSIGN, 0, NULL},
     /* "lsign" and friends will never match since "sign" comes first
        and it is a tail match.  They are just here so they show up in
        the help menu. */
@@ -1282,62 +1278,62 @@ static struct
   { "nrsign", cmdNOP, 0,
     N_("sign selected user IDs with a non-revocable signature")},
   { "debug", cmdDEBUG, 0, NULL},
-  { "adduid", cmdADDUID, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK, N_("add a user ID")},
-  { "addphoto", cmdADDPHOTO, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
+  { "adduid", cmdADDUID,  KEYEDIT_NEED_SK, N_("add a user ID")},
+  { "addphoto", cmdADDPHOTO,  KEYEDIT_NEED_SK,
     N_("add a photo ID")},
-  { "deluid", cmdDELUID, KEYEDIT_NOT_SK, N_("delete selected user IDs")},
+  { "deluid", cmdDELUID, 0, N_("delete selected user IDs")},
     /* delphoto is really deluid in disguise */
-  { "delphoto", cmdDELUID, KEYEDIT_NOT_SK, NULL},
-  { "addkey", cmdADDKEY, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK, N_("add a subkey")},
+  { "delphoto", cmdDELUID, 0, NULL},
+  { "addkey", cmdADDKEY,  KEYEDIT_NEED_SK, N_("add a subkey")},
 #ifdef ENABLE_CARD_SUPPORT
-  { "addcardkey", cmdADDCARDKEY, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
+  { "addcardkey", cmdADDCARDKEY,  KEYEDIT_NEED_SK,
     N_("add a key to a smartcard")},
-  { "keytocard", cmdKEYTOCARD, KEYEDIT_NEED_SK | KEYEDIT_ONLY_SK,
+  { "keytocard", cmdKEYTOCARD, KEYEDIT_NEED_SK,
     N_("move a key to a smartcard")},
-  { "bkuptocard", cmdBKUPTOCARD, KEYEDIT_NEED_SK | KEYEDIT_ONLY_SK,
+  { "bkuptocard", cmdBKUPTOCARD, KEYEDIT_NEED_SK,
     N_("move a backup key to a smartcard")},
 #endif /*ENABLE_CARD_SUPPORT */
-  { "delkey", cmdDELKEY, KEYEDIT_NOT_SK, N_("delete selected subkeys")},
-  { "addrevoker", cmdADDREVOKER, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
+  { "delkey", cmdDELKEY, 0, N_("delete selected subkeys")},
+  { "addrevoker", cmdADDREVOKER,  KEYEDIT_NEED_SK,
     N_("add a revocation key")},
-  { "delsig", cmdDELSIG, KEYEDIT_NOT_SK,
+  { "delsig", cmdDELSIG, 0,
     N_("delete signatures from the selected user IDs")},
-  { "expire", cmdEXPIRE, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
+  { "expire", cmdEXPIRE,  KEYEDIT_NEED_SK,
     N_("change the expiration date for the key or selected subkeys")},
-  { "primary", cmdPRIMARY, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
+  { "primary", cmdPRIMARY,  KEYEDIT_NEED_SK,
     N_("flag the selected user ID as primary")},
   { "toggle", cmdTOGGLE, KEYEDIT_NEED_SK, NULL},  /* Dummy command.  */
   { "t", cmdTOGGLE, KEYEDIT_NEED_SK, NULL},
-  { "pref", cmdPREF, KEYEDIT_NOT_SK, N_("list preferences (expert)")},
-  { "showpref", cmdSHOWPREF, KEYEDIT_NOT_SK, N_("list preferences (verbose)")},
-  { "setpref", cmdSETPREF, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
+  { "pref", cmdPREF, 0, N_("list preferences (expert)")},
+  { "showpref", cmdSHOWPREF, 0, N_("list preferences (verbose)")},
+  { "setpref", cmdSETPREF,  KEYEDIT_NEED_SK,
     N_("set preference list for the selected user IDs")},
-  { "updpref", cmdSETPREF, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK, NULL},
-  { "keyserver", cmdPREFKS, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
+  { "updpref", cmdSETPREF,  KEYEDIT_NEED_SK, NULL},
+  { "keyserver", cmdPREFKS,  KEYEDIT_NEED_SK,
     N_("set the preferred keyserver URL for the selected user IDs")},
-  { "notation", cmdNOTATION, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
+  { "notation", cmdNOTATION,  KEYEDIT_NEED_SK,
     N_("set a notation for the selected user IDs")},
-  { "passwd", cmdPASSWD, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
+  { "passwd", cmdPASSWD,  KEYEDIT_NEED_SK,
     N_("change the passphrase")},
-  { "password", cmdPASSWD, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK, NULL},
+  { "password", cmdPASSWD,  KEYEDIT_NEED_SK, NULL},
 #ifndef NO_TRUST_MODELS
-  { "trust", cmdTRUST, KEYEDIT_NOT_SK, N_("change the ownertrust")},
+  { "trust", cmdTRUST, 0, N_("change the ownertrust")},
 #endif /*!NO_TRUST_MODELS*/
-  { "revsig", cmdREVSIG, KEYEDIT_NOT_SK,
+  { "revsig", cmdREVSIG, 0,
     N_("revoke signatures on the selected user IDs")},
-  { "revuid", cmdREVUID, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
+  { "revuid", cmdREVUID,  KEYEDIT_NEED_SK,
     N_("revoke selected user IDs")},
-  { "revphoto", cmdREVUID, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK, NULL},
-  { "revkey", cmdREVKEY, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
+  { "revphoto", cmdREVUID,  KEYEDIT_NEED_SK, NULL},
+  { "revkey", cmdREVKEY,  KEYEDIT_NEED_SK,
     N_("revoke key or selected subkeys")},
 #ifndef NO_TRUST_MODELS
-  { "enable", cmdENABLEKEY, KEYEDIT_NOT_SK, N_("enable key")},
-  { "disable", cmdDISABLEKEY, KEYEDIT_NOT_SK, N_("disable key")},
+  { "enable", cmdENABLEKEY, 0, N_("enable key")},
+  { "disable", cmdDISABLEKEY, 0, N_("disable key")},
 #endif /*!NO_TRUST_MODELS*/
   { "showphoto", cmdSHOWPHOTO, 0, N_("show selected photo IDs")},
-  { "clean", cmdCLEAN, KEYEDIT_NOT_SK,
+  { "clean", cmdCLEAN, 0,
     N_("compact unusable user IDs and remove unusable signatures from key")},
-  { "minimize", cmdMINIMIZE, KEYEDIT_NOT_SK,
+  { "minimize", cmdMINIMIZE, 0,
     N_("compact unusable user IDs and remove all signatures from key")},
 
   { NULL, cmdNONE, 0, NULL}
