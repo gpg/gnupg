@@ -1179,7 +1179,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
 
   line = skip_options (line);
 
-  err = gpgsm_find_cert (ctrl, line, NULL, &cert);
+  err = gpgsm_find_cert (ctrl, line, NULL, &cert, 0);
   if (err)
     ;
   else if (!(grip = gpgsm_get_keygrip_hexstring (cert)))
