@@ -1666,6 +1666,17 @@ AC_ARG_ENABLE(optimization,
                    fi])
 
 #
+# Add -Werror to CFLAGS.  This hack can be used to avoid problems with
+# misbehaving autoconf tests in case the user supplied -Werror.
+#
+AC_ARG_ENABLE(werror,
+   AC_HELP_STRING([--enable-werror],
+                  [append -Werror to CFLAGS]),
+                  [if test $enableval = yes ; then
+                      CFLAGS="$CFLAGS -Werror"
+                   fi])
+
+#
 # Configure option --enable-all-tests
 #
 AC_MSG_CHECKING([whether "make check" shall run all tests])
