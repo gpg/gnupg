@@ -2085,9 +2085,12 @@ get_config_filename (gc_component_t component, gc_backend_t backend)
 
 
 /* Retrieve the options for the component COMPONENT from backend
-   BACKEND, which we already know is a program-type backend.  */
+ * BACKEND, which we already know is a program-type backend.  With
+ * ONLY_INSTALLED set components which are not installed are silently
+ * ignored. */
 static void
-retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
+retrieve_options_from_program (gc_component_t component, gc_backend_t backend,
+                               int only_installed)
 {
   gpg_error_t err;
   const char *pgmname;
@@ -2106,6 +2109,11 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
              : gc_backend[backend].program );
   argv[0] = "--gpgconf-list";
   argv[1] = NULL;
+
+  if (only_installed && access (pgmname, X_OK))
+    {
+      return;  /* The component is not installed.  */
+    }
 
   err = gnupg_spawn_process (pgmname, argv, NULL, NULL, 0,
                              NULL, &outfp, NULL, &pid);
@@ -2378,7 +2386,7 @@ retrieve_options_from_file (gc_component_t component, gc_backend_t backend)
 
 /* Retrieve the currently active options and their defaults from all
    involved backends for this component.  Using -1 for component will
-   retrieve all options from all components. */
+   retrieve all options from all installed components. */
 void
 gc_component_retrieve_options (int component)
 {
@@ -2420,7 +2428,8 @@ gc_component_retrieve_options (int component)
               assert (backend != GC_BACKEND_ANY);
 
               if (gc_backend[backend].program)
-                retrieve_options_from_program (component, backend);
+                retrieve_options_from_program (component, backend,
+                                               process_all);
               else
                 retrieve_options_from_file (component, backend);
             }
