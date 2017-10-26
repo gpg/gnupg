@@ -67,7 +67,9 @@
 	       "faked-system-time 1008241200")
   (create-file "gpg-agent.conf"
 	       (string-append "pinentry-program " (tool 'pinentry))
-	       (string-append "scdaemon-program " (tool 'scdaemon))
+	       (if (assoc "scdaemon" gpg-components)
+		   (string-append "scdaemon-program " (tool 'scdaemon))
+		   "# No scdaemon available")
 	       )
   (start-agent)
   (create-file

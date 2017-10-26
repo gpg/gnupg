@@ -1988,14 +1988,17 @@ static const char hlp_scd[] =
 static gpg_error_t
 cmd_scd (assuan_context_t ctx, char *line)
 {
-  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc;
-
+#ifdef BUILD_WITH_SCDAEMON
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
   rc = divert_generic_cmd (ctrl, line, ctx);
-
+#else
+  (void)ctx; (void)line;
+  rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
+#endif
   return rc;
 }
 
