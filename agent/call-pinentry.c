@@ -177,15 +177,19 @@ unlock_pinentry (gpg_error_t rc)
         }
     }
 
-  entry_ctx = NULL;
-  err = npth_mutex_unlock (&entry_lock);
-  if (err)
+  if (--entry_owner->pinentry_level == 0)
     {
-      log_error ("failed to release the entry lock: %s\n", strerror (err));
-      if (!rc)
-        rc = gpg_error_from_errno (err);
+      entry_owner = NULL;
+      entry_ctx = NULL;
+      err = npth_mutex_unlock (&entry_lock);
+      if (err)
+        {
+          log_error ("failed to release the entry lock: %s\n", strerror (err));
+          if (!rc)
+            rc = gpg_error_from_errno (err);
+        }
+      assuan_release (ctx);
     }
-  assuan_release (ctx);
   return rc;
 }
 
@@ -288,6 +292,13 @@ start_pinentry (ctrl_t ctrl)
   char *flavor_version;
   int err;
 
+  if (entry_owner == ctrl)
+    {
+      /* Allow recursive use of pinentry.  */
+      ctrl->pinentry_level++;
+      return 0;
+    }
+
   npth_clock_gettime (&abstime);
   abstime.tv_sec += LOCK_TIMEOUT;
   err = npth_mutex_timedlock (&entry_lock, &abstime);
@@ -371,6 +382,10 @@ start_pinentry (ctrl_t ctrl)
       log_error ("can't allocate assuan context: %s\n", gpg_strerror (rc));
       return rc;
     }
+
+  ctrl->pinentry_level = 1;
+  entry_ctx = ctx;
+
   /* We don't want to log the pinentry communication to make the logs
      easier to read.  We might want to add a new debug option to enable
      pinentry logging.  */
@@ -382,17 +397,15 @@ start_pinentry (ctrl_t ctrl)
      that atfork is used to change the environment for pinentry.  We
      start the server in detached mode to suppress the console window
      under Windows.  */
-  rc = assuan_pipe_connect (ctx, full_pgmname, argv,
+  rc = assuan_pipe_connect (entry_ctx, full_pgmname, argv,
 			    no_close_list, atfork_cb, ctrl,
 			    ASSUAN_PIPE_CONNECT_DETACHED);
   if (rc)
     {
       log_error ("can't connect to the PIN entry module '%s': %s\n",
                  full_pgmname, gpg_strerror (rc));
-      assuan_release (ctx);
       return unlock_pinentry (gpg_error (GPG_ERR_NO_PIN_ENTRY));
     }
-  entry_ctx = ctx;
 
   if (DBG_IPC)
     log_debug ("connection to PIN entry established\n");
@@ -1552,7 +1565,6 @@ agent_popup_message_stop (ctrl_t ctrl)
   /* Thread IDs are opaque, but we try our best here by resetting it
      to the same content that a static global variable has.  */
   memset (&popup_tid, '\0', sizeof (popup_tid));
-  entry_owner = NULL;
 
   /* Now we can close the connection. */
   unlock_pinentry (0);

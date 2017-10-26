@@ -255,6 +255,9 @@ struct server_control_s
   /* The current S2K which might be different from the calibrated
      count. */
   unsigned long s2k_count;
+
+  /* Recursion level of pinentry.  */
+  int pinentry_level;
 };
 
 
