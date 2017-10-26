@@ -1777,7 +1777,7 @@ if test "$build_scdaemon" = yes ; then
     AC_DEFINE(BUILD_WITH_SCDAEMON,1,[Defined if SCDAEMON is to be build])
 fi
 if test "$build_dirmngr" = yes ; then
-    AC_DEFINE(BUILD_WITH_DIRMNGR,1,[Defined if SCDAEMON is to be build])
+    AC_DEFINE(BUILD_WITH_DIRMNGR,1,[Defined if DIRMNGR is to be build])
 fi
 if test "$build_g13" = yes ; then
     AC_DEFINE(BUILD_WITH_G13,1,[Defined if G13 is to be build])
