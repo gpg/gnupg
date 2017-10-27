@@ -89,12 +89,6 @@ AB_INIT
 
 AC_GNU_SOURCE
 
-# Before we do anything with the C compiler, we first save the user's
-# CFLAGS (they are restored at the end of the configure script).  This
-# is because some configure checks don't work with -Werror, but we'd
-# like to use -Werror with our build.
-CFLAGS_orig=$CFLAGS
-CFLAGS=
 
 # Some status variables.
 have_gpg_error=no
@@ -1693,6 +1687,15 @@ if test "$enable_log_clock" = yes ; then
   AC_DEFINE(ENABLE_LOG_CLOCK,1,[Defined to use log_clock timestamps])
 fi
 
+# Add -Werror to CFLAGS.  This hack can be used to avoid problems with
+# misbehaving autoconf tests in case the user supplied -Werror.
+#
+AC_ARG_ENABLE(werror,
+   AC_HELP_STRING([--enable-werror],
+                  [append -Werror to CFLAGS]),
+                  [if test $enableval = yes ; then
+                      CFLAGS="$CFLAGS -Werror"
+                   fi])
 
 #
 # Configure option --enable-all-tests
@@ -1722,11 +1725,6 @@ if test x"$gnupg_builddir_envvar" = x"yes"; then
    AC_DEFINE(ENABLE_GNUPG_BUILDDIR_ENVVAR, 1,
       [This is only used with "make distcheck"])
 fi
-
-#
-# Add user CFLAGS.
-#
-CFLAGS="$CFLAGS $CFLAGS_orig"
 
 #
 # Decide what to build

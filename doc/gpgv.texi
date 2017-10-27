@@ -187,6 +187,6 @@ The default keyring with the allowed keys.
 @end table
 
 @mansect see also
-@command{gpg2}(1)
+@command{gpg}(1)
 @include see-also-note.texi
 

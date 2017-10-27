@@ -2058,7 +2058,7 @@ main ( int argc, char **argv)
           ksba_cert_t cert = NULL;
           char *grip = NULL;
 
-          rc = gpgsm_find_cert (&ctrl, *argv, NULL, &cert);
+          rc = gpgsm_find_cert (&ctrl, *argv, NULL, &cert, 0);
           if (rc)
             ;
           else if (!(grip = gpgsm_get_keygrip_hexstring (cert)))

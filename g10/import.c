@@ -1778,7 +1778,7 @@ import_one (ctrl_t ctrl,
       merge_keys_done = 1;
       /* Note that we do not want to show the validity because the key
        * has not yet imported.  */
-      list_keyblock_direct (ctrl, keyblock, 0, 0,
+      list_keyblock_direct (ctrl, keyblock, from_sk, 0,
                             opt.fingerprint || opt.with_fingerprint, 1);
       es_fflush (es_stdout);
     }
@@ -2532,7 +2532,8 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
       /* At least we cancel the secret key import when the public key
 	 import was skipped due to MERGE_ONLY option and a new
 	 key.  */
-      if (stats->skipped_new_keys <= nr_prev)
+      if (!(opt.dry_run || (options & IMPORT_DRY_RUN))
+          && stats->skipped_new_keys <= nr_prev)
 	{
           /* Read the keyblock again to get the effects of a merge.  */
           /* Fixme: we should do this based on the fingerprint or
