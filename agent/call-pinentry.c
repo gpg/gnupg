@@ -67,12 +67,6 @@ static struct
 } entry_features;
 
 
-/* The control variable of the connection owning the current pinentry.
-   This is only valid if ENTRY_CTX is not NULL.  Note, that we care
-   only about the value of the pointer and that it should never be
-   dereferenced.  */
-static ctrl_t entry_owner;
-
 /* A mutex used to serialize access to the pinentry. */
 static npth_mutex_t entry_lock;
 
@@ -128,7 +122,7 @@ agent_query_dump_state (void)
 void
 agent_reset_query (ctrl_t ctrl)
 {
-  if (entry_ctx && popup_tid && entry_owner == ctrl)
+  if (entry_ctx && popup_tid && ctrl->pinentry_active)
     {
       agent_popup_message_stop (ctrl);
     }
@@ -140,7 +134,7 @@ agent_reset_query (ctrl_t ctrl)
    stalled pinentry does not block other threads.  Fixme: We should
    have a timeout in Assuan for the disconnect operation. */
 static gpg_error_t
-unlock_pinentry (gpg_error_t rc)
+unlock_pinentry (ctrl_t ctrl, gpg_error_t rc)
 {
   assuan_context_t ctx = entry_ctx;
   int err;
@@ -177,9 +171,8 @@ unlock_pinentry (gpg_error_t rc)
         }
     }
 
-  if (--entry_owner->pinentry_level == 0)
+  if (--ctrl->pinentry_active == 0)
     {
-      entry_owner = NULL;
       entry_ctx = NULL;
       err = npth_mutex_unlock (&entry_lock);
       if (err)
@@ -292,10 +285,11 @@ start_pinentry (ctrl_t ctrl)
   char *flavor_version;
   int err;
 
-  if (entry_owner == ctrl)
+  if (ctrl->pinentry_active)
     {
-      /* Allow recursive use of pinentry.  */
-      ctrl->pinentry_level++;
+      /* It's trying to use pinentry recursively.  In this situation,
+         the thread holds ENTRY_LOCK already.  */
+      ctrl->pinentry_active++;
       return 0;
     }
 
@@ -312,8 +306,6 @@ start_pinentry (ctrl_t ctrl)
                  gpg_strerror (rc));
       return rc;
     }
-
-  entry_owner = ctrl;
 
   if (entry_ctx)
     return 0;
@@ -336,7 +328,7 @@ start_pinentry (ctrl_t ctrl)
          the Wine implementation does not flush stdin,stdout and stderr
          - see above.  Let's try to ignore the error. */
 #ifndef HAVE_W32_SYSTEM
-      return unlock_pinentry (tmperr);
+      return unlock_pinentry (ctrl, tmperr);
 #endif
     }
 
@@ -383,7 +375,7 @@ start_pinentry (ctrl_t ctrl)
       return rc;
     }
 
-  ctrl->pinentry_level = 1;
+  ctrl->pinentry_active = 1;
   entry_ctx = ctx;
 
   /* We don't want to log the pinentry communication to make the logs
@@ -404,7 +396,7 @@ start_pinentry (ctrl_t ctrl)
     {
       log_error ("can't connect to the PIN entry module '%s': %s\n",
                  full_pgmname, gpg_strerror (rc));
-      return unlock_pinentry (gpg_error (GPG_ERR_NO_PIN_ENTRY));
+      return unlock_pinentry (ctrl, gpg_error (GPG_ERR_NO_PIN_ENTRY));
     }
 
   if (DBG_IPC)
@@ -415,65 +407,65 @@ start_pinentry (ctrl_t ctrl)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION pinentry-user-data=%s", value) < 0 )
-	return unlock_pinentry (out_of_core ());
+        return unlock_pinentry (ctrl, out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       xfree (optstr);
       if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
-        return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
 
   rc = assuan_transact (entry_ctx,
                         opt.no_grab? "OPTION no-grab":"OPTION grab",
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_pinentry (rc);
+    return unlock_pinentry (ctrl, rc);
 
   value = session_env_getenv (ctrl->session_env, "GPG_TTY");
   if (value)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION ttyname=%s", value) < 0 )
-	return unlock_pinentry (out_of_core ());
+        return unlock_pinentry (ctrl, out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       xfree (optstr);
       if (rc)
-	return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
   value = session_env_getenv (ctrl->session_env, "TERM");
   if (value)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION ttytype=%s", value) < 0 )
-	return unlock_pinentry (out_of_core ());
+        return unlock_pinentry (ctrl, out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       xfree (optstr);
       if (rc)
-	return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
   if (ctrl->lc_ctype)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-ctype=%s", ctrl->lc_ctype) < 0 )
-	return unlock_pinentry (out_of_core ());
+        return unlock_pinentry (ctrl, out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       xfree (optstr);
       if (rc)
-	return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
   if (ctrl->lc_messages)
     {
       char *optstr;
       if (asprintf (&optstr, "OPTION lc-messages=%s", ctrl->lc_messages) < 0 )
-	return unlock_pinentry (out_of_core ());
+        return unlock_pinentry (ctrl, out_of_core ());
       rc = assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
 			    NULL);
       xfree (optstr);
       if (rc)
-	return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
 
 
@@ -489,7 +481,7 @@ start_pinentry (ctrl_t ctrl)
       rc = assuan_transact (entry_ctx, "OPTION allow-external-password-cache",
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
-        return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
 
   if (opt.allow_emacs_pinentry)
@@ -499,7 +491,7 @@ start_pinentry (ctrl_t ctrl)
       rc = assuan_transact (entry_ctx, "OPTION allow-emacs-prompt",
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
-        return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
 
 
@@ -537,7 +529,7 @@ start_pinentry (ctrl_t ctrl)
         if (*s == '|' && (s2=strchr (s+1,'|')))
           s = s2+1;
         if (asprintf (&optstr, "OPTION default-%s=%s", tbl[idx].key, s) < 0 )
-          return unlock_pinentry (out_of_core ());
+          return unlock_pinentry (ctrl, out_of_core ());
         assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
                          NULL);
         xfree (optstr);
@@ -664,8 +656,8 @@ start_pinentry (ctrl_t ctrl)
       rc = agent_inq_pinentry_launched (ctrl, pinentry_pid, flavor_version);
       if (gpg_err_code (rc) == GPG_ERR_CANCELED
           || gpg_err_code (rc) == GPG_ERR_FULLY_CANCELED)
-        return unlock_pinentry (gpg_err_make (GPG_ERR_SOURCE_DEFAULT,
-                                              gpg_err_code (rc)));
+        return unlock_pinentry (ctrl, gpg_err_make (GPG_ERR_SOURCE_DEFAULT,
+                                                    gpg_err_code (rc)));
       rc = 0;
     }
 
@@ -1035,18 +1027,18 @@ agent_askpin (ctrl_t ctrl,
   rc = assuan_transact (entry_ctx, line,
 			NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc && gpg_err_code (rc) != GPG_ERR_ASS_UNKNOWN_CMD)
-    return unlock_pinentry (rc);
+    return unlock_pinentry (ctrl, rc);
 
   build_cmd_setdesc (line, DIM(line), desc_text);
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_pinentry (rc);
+    return unlock_pinentry (ctrl, rc);
 
   snprintf (line, DIM(line), "SETPROMPT %s",
             prompt_text? prompt_text : is_pin? L_("PIN:") : L_("Passphrase:"));
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_pinentry (rc);
+    return unlock_pinentry (ctrl, rc);
 
   /* If a passphrase quality indicator has been requested and a
      minimum passphrase length has not been disabled, send the command
@@ -1055,7 +1047,7 @@ agent_askpin (ctrl_t ctrl,
     {
       rc = setup_qualitybar (ctrl);
       if (rc)
-        return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
 
   if (initial_errtext)
@@ -1064,7 +1056,7 @@ agent_askpin (ctrl_t ctrl,
       rc = assuan_transact (entry_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
-        return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
 
   if (pininfo->with_repeat)
@@ -1095,7 +1087,7 @@ agent_askpin (ctrl_t ctrl,
           rc = assuan_transact (entry_ctx, line,
                                 NULL, NULL, NULL, NULL, NULL, NULL);
           if (rc)
-            return unlock_pinentry (rc);
+            return unlock_pinentry (ctrl, rc);
           errtext = NULL;
         }
 
@@ -1105,7 +1097,7 @@ agent_askpin (ctrl_t ctrl,
           rc = assuan_transact (entry_ctx, line,
                                 NULL, NULL, NULL, NULL, NULL, NULL);
           if (rc)
-            return unlock_pinentry (rc);
+            return unlock_pinentry (ctrl, rc);
         }
 
       saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
@@ -1133,7 +1125,7 @@ agent_askpin (ctrl_t ctrl,
         errtext = is_pin? L_("PIN too long")
                         : L_("Passphrase too long");
       else if (rc)
-        return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
 
       if (!errtext && pininfo->min_digits)
         {
@@ -1159,7 +1151,7 @@ agent_askpin (ctrl_t ctrl,
                    || gpg_err_code (rc) == GPG_ERR_BAD_PIN)
             errtext = (is_pin? L_("Bad PIN") : L_("Bad Passphrase"));
           else if (rc)
-            return unlock_pinentry (rc);
+            return unlock_pinentry (ctrl, rc);
         }
 
       if (!errtext)
@@ -1167,7 +1159,7 @@ agent_askpin (ctrl_t ctrl,
           if (pininfo->with_repeat
 	      && (pinentry_status & PINENTRY_STATUS_PIN_REPEATED))
             pininfo->repeat_okay = 1;
-          return unlock_pinentry (0); /* okay, got a PIN or passphrase */
+          return unlock_pinentry (ctrl, 0); /* okay, got a PIN or passphrase */
         }
 
       if ((pinentry_status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
@@ -1176,7 +1168,7 @@ agent_askpin (ctrl_t ctrl,
 	pininfo->failed_tries --;
     }
 
-  return unlock_pinentry (gpg_error (pininfo->min_digits? GPG_ERR_BAD_PIN
+  return unlock_pinentry (ctrl, gpg_error (pininfo->min_digits? GPG_ERR_BAD_PIN
                           : GPG_ERR_BAD_PASSPHRASE));
 }
 
@@ -1242,7 +1234,7 @@ agent_get_passphrase (ctrl_t ctrl,
   rc = assuan_transact (entry_ctx, line,
 			NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc && gpg_err_code (rc) != GPG_ERR_ASS_UNKNOWN_CMD)
-    return unlock_pinentry (rc);
+    return unlock_pinentry (ctrl, rc);
 
 
   if (desc)
@@ -1251,18 +1243,18 @@ agent_get_passphrase (ctrl_t ctrl,
     snprintf (line, DIM(line), "RESET");
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_pinentry (rc);
+    return unlock_pinentry (ctrl, rc);
 
   snprintf (line, DIM(line), "SETPROMPT %s", prompt);
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_pinentry (rc);
+    return unlock_pinentry (ctrl, rc);
 
   if (with_qualitybar && opt.min_passphrase_len)
     {
       rc = setup_qualitybar (ctrl);
       if (rc)
-        return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
 
   if (errtext)
@@ -1270,14 +1262,14 @@ agent_get_passphrase (ctrl_t ctrl,
       snprintf (line, DIM(line), "SETERROR %s", errtext);
       rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
-        return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
 
   memset (&parm, 0, sizeof parm);
   parm.size = ASSUAN_LINELENGTH/2 - 5;
   parm.buffer = gcry_malloc_secure (parm.size+10);
   if (!parm.buffer)
-    return unlock_pinentry (out_of_core ());
+    return unlock_pinentry (ctrl, out_of_core ());
 
   saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
   assuan_begin_confidential (entry_ctx);
@@ -1301,7 +1293,7 @@ agent_get_passphrase (ctrl_t ctrl,
     xfree (parm.buffer);
   else
     *retpass = parm.buffer;
-  return unlock_pinentry (rc);
+  return unlock_pinentry (ctrl, rc);
 }
 
 
@@ -1345,7 +1337,7 @@ agent_get_confirmation (ctrl_t ctrl,
     rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
 
   if (rc)
-    return unlock_pinentry (rc);
+    return unlock_pinentry (ctrl, rc);
 
   if (ok)
     {
@@ -1353,7 +1345,7 @@ agent_get_confirmation (ctrl_t ctrl,
       rc = assuan_transact (entry_ctx,
                             line, NULL, NULL, NULL, NULL, NULL, NULL);
       if (rc)
-        return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
   if (notok)
     {
@@ -1376,7 +1368,7 @@ agent_get_confirmation (ctrl_t ctrl,
                                 NULL, NULL, NULL, NULL, NULL, NULL);
 	}
       if (rc)
-        return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
 
   rc = assuan_transact (entry_ctx, "CONFIRM",
@@ -1384,7 +1376,7 @@ agent_get_confirmation (ctrl_t ctrl,
   if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
     rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
 
-  return unlock_pinentry (rc);
+  return unlock_pinentry (ctrl, rc);
 }
 
 
@@ -1418,7 +1410,7 @@ agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn)
     rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
 
   if (rc)
-    return unlock_pinentry (rc);
+    return unlock_pinentry (ctrl, rc);
 
   if (ok_btn)
     {
@@ -1426,7 +1418,7 @@ agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn)
       rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL,
                             NULL, NULL, NULL);
       if (rc)
-        return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
 
   rc = assuan_transact (entry_ctx, "CONFIRM --one-button", NULL, NULL, NULL,
@@ -1434,7 +1426,7 @@ agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn)
   if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
     rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
 
-  return unlock_pinentry (rc);
+  return unlock_pinentry (ctrl, rc);
 }
 
 
@@ -1482,19 +1474,19 @@ agent_popup_message_start (ctrl_t ctrl, const char *desc, const char *ok_btn)
     snprintf (line, DIM(line), "RESET");
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
-    return unlock_pinentry (rc);
+    return unlock_pinentry (ctrl, rc);
 
   if (ok_btn)
     {
       snprintf (line, DIM(line), "SETOK %s", ok_btn);
       rc = assuan_transact (entry_ctx, line, NULL,NULL,NULL,NULL,NULL,NULL);
       if (rc)
-        return unlock_pinentry (rc);
+        return unlock_pinentry (ctrl, rc);
     }
 
   err = npth_attr_init (&tattr);
   if (err)
-    return unlock_pinentry (gpg_error_from_errno (err));
+    return unlock_pinentry (ctrl, gpg_error_from_errno (err));
   npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
 
   popup_finished = 0;
@@ -1505,7 +1497,7 @@ agent_popup_message_start (ctrl_t ctrl, const char *desc, const char *ok_btn)
       rc = gpg_error_from_errno (err);
       log_error ("error spawning popup message handler: %s\n",
                  strerror (err) );
-      return unlock_pinentry (rc);
+      return unlock_pinentry (ctrl, rc);
     }
   npth_setname_np (popup_tid, "popup-message");
 
@@ -1566,7 +1558,7 @@ agent_popup_message_stop (ctrl_t ctrl)
   memset (&popup_tid, '\0', sizeof (popup_tid));
 
   /* Now we can close the connection. */
-  unlock_pinentry (0);
+  unlock_pinentry (ctrl, 0);
 }
 
 int
@@ -1592,5 +1584,5 @@ agent_clear_passphrase (ctrl_t ctrl,
   rc = assuan_transact (entry_ctx, line,
 			NULL, NULL, NULL, NULL, NULL, NULL);
 
-  return unlock_pinentry (rc);
+  return unlock_pinentry (ctrl, rc);
 }

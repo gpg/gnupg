@@ -255,8 +255,9 @@ struct server_control_s
      count. */
   unsigned long s2k_count;
 
-  /* Recursion level of pinentry.  */
-  int pinentry_level;
+  /* If pinentry is active for this thread.  It can be more than 1,
+     when pinentry is called recursively.  */
+  int pinentry_active;
 };
 
 
