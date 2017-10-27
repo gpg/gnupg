@@ -1328,7 +1328,7 @@ show_keysize_warning (void)
    select the prompt.  Returns 0 to use the default size (i.e. NBITS)
    or the selected size.  */
 static unsigned int
-ask_card_rsa_keysize (int keyno, unsigned int nbits)
+ask_card_keyattr (int keyno, unsigned int nbits)
 {
   unsigned int min_nbits = 1024;
   unsigned int max_nbits = 4096;
@@ -1378,7 +1378,7 @@ ask_card_rsa_keysize (int keyno, unsigned int nbits)
 /* Change the size of key KEYNO (0..2) to NBITS and show an error
    message if that fails.  */
 static gpg_error_t
-do_change_rsa_keysize (int keyno, unsigned int nbits)
+do_change_keyattr (int keyno, unsigned int nbits)
 {
   gpg_error_t err;
   char args[100];
@@ -1459,8 +1459,8 @@ generate_card_keys (ctrl_t ctrl)
         {
           if (info.key_attr[keyno].algo == PUBKEY_ALGO_RSA)
             {
-              nbits = ask_card_rsa_keysize (keyno, info.key_attr[keyno].nbits);
-              if (nbits && do_change_rsa_keysize (keyno, nbits))
+              nbits = ask_card_keyattr (keyno, info.key_attr[keyno].nbits);
+              if (nbits && do_change_keyattr (keyno, nbits))
                 {
                   /* Error: Better read the default key size again.  */
                   agent_release_card_info (&info);
@@ -1542,8 +1542,8 @@ card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock)
           unsigned int nbits;
 
         ask_again:
-          nbits = ask_card_rsa_keysize (keyno-1, info.key_attr[keyno-1].nbits);
-          if (nbits && do_change_rsa_keysize (keyno-1, nbits))
+          nbits = ask_card_keyattr (keyno-1, info.key_attr[keyno-1].nbits);
+          if (nbits && do_change_keyattr (keyno-1, nbits))
             {
               /* Error: Better read the default key size again.  */
               agent_release_card_info (&info);
