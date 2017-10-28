@@ -39,7 +39,10 @@
     libgcrypt    (ftp://ftp.gnupg.org/gcrypt/libgcrypt/)
     libksba      (ftp://ftp.gnupg.org/gcrypt/libksba/)
     libassuan    (ftp://ftp.gnupg.org/gcrypt/libassuan/)
-
+  
+  Downgrade maybe required. For example, on Ubuntu 16.04 latest version of libgcrypt will not work. 
+  In that case we need downgrade the library.
+  
   You should get the latest versions of course, the GnuPG configure
   script complains if a version is not sufficient.
 
