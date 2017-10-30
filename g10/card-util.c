@@ -1729,9 +1729,6 @@ factory_reset (void)
         scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
         scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
         scd apdu 00 e6 00 00
-        scd reset
-        scd serialno undefined
-        scd apdu 00 A4 04 00 06 D2 76 00 01 24 01
         scd apdu 00 44 00 00
         /echo Card has been reset to factory defaults
 
@@ -1805,17 +1802,6 @@ factory_reset (void)
       if (err)
         goto leave;
     }
-
-  /* The card is in termination state - reset and select again.  */
-  err = send_apdu (NULL, "RESET", 0);
-  if (err)
-    goto leave;
-  err = send_apdu ("undefined", "dummy select", 0);
-  if (err)
-    goto leave;
-
-  /* Select the OpenPGP application. (no error checking here). */
-  send_apdu ("00A4040006D27600012401", "SELECT AID", 0xffff);
 
   /* Send activate datafile command.  This is used without
      confirmation if the card is already in termination state.  */
