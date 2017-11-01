@@ -90,7 +90,8 @@ enum para_name {
   pCARDBACKUPKEY,
   pHANDLE,
   pKEYSERVER,
-  pKEYGRIP
+  pKEYGRIP,
+  pSUBKEYGRIP,
 };
 
 struct para_data_s {
@@ -3649,6 +3650,8 @@ read_parameter_file (ctrl_t ctrl, const char *fname )
         { "Handle",         pHANDLE },
         { "Keyserver",      pKEYSERVER },
         { "Keygrip",        pKEYGRIP },
+        { "Key-Grip",       pKEYGRIP },
+        { "Subkey-grip",    pSUBKEYGRIP },
         { NULL, 0 }
     };
     IOBUF fp;
@@ -4697,8 +4700,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
   if (!err && card && get_parameter (para, pAUTHKEYTYPE))
     {
       err = gen_card_key (3, get_parameter_algo( para, pAUTHKEYTYPE, NULL ),
-                          0, pub_root, &timestamp,
-                          get_parameter_u32 (para, pKEYEXPIRE));
+                          0, pub_root, &timestamp, expire);
       if (!err)
         err = write_keybinding (ctrl, pub_root, pri_psk, NULL,
                                 PUBKEY_USAGE_AUTH, timestamp, cache_nonce);
@@ -4706,11 +4708,18 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 
   if (!err && get_parameter (para, pSUBKEYTYPE))
     {
-      sub_psk = NULL;
+      int subkey_algo = get_parameter_algo (para, pSUBKEYTYPE, NULL);
+
       s = NULL;
-      if (!card || (s = get_parameter_value (para, pCARDBACKUPKEY)))
+      key_from_hexgrip = get_parameter_value (para, pSUBKEYGRIP);
+      if (key_from_hexgrip)
+        err = do_create_from_keygrip (ctrl, subkey_algo, key_from_hexgrip,
+                                      pub_root, timestamp,
+                                      get_parameter_u32 (para, pSUBKEYEXPIRE),
+                                      1);
+      else if (!card || (s = get_parameter_value (para, pCARDBACKUPKEY)))
         {
-          err = do_create (get_parameter_algo (para, pSUBKEYTYPE, NULL),
+          err = do_create (subkey_algo,
                            get_parameter_uint (para, pSUBKEYLENGTH),
                            get_parameter_value (para, pSUBKEYCURVE),
                            pub_root,
@@ -4736,9 +4745,7 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
         }
       else
         {
-          err = gen_card_key (2, get_parameter_algo (para, pSUBKEYTYPE, NULL),
-                              0, pub_root, &timestamp,
-                              get_parameter_u32 (para, pKEYEXPIRE));
+          err = gen_card_key (2, subkey_algo, 0, pub_root, &timestamp, expire);
         }
 
       if (!err)
