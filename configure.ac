@@ -847,12 +847,6 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
 #
 NAME_OF_DEV_RANDOM="/dev/random"
 NAME_OF_DEV_URANDOM="/dev/urandom"
-case "${host}" in
-    *-openbsd*)
-        NAME_OF_DEV_RANDOM="/dev/srandom"
-        NAME_OF_DEV_URANDOM="/dev/urandom"
-        ;;
-esac
 AC_DEFINE_UNQUOTED(NAME_OF_DEV_RANDOM, "$NAME_OF_DEV_RANDOM",
                    [defined to the name of the strong random device])
 AC_DEFINE_UNQUOTED(NAME_OF_DEV_URANDOM, "$NAME_OF_DEV_URANDOM",
