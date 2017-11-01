@@ -212,6 +212,7 @@ get_manufacturer (unsigned int no)
     case 0x000A: return "Dangerous Things";
 
     case 0x002A: return "Magrathea";
+    case 0x0042: return "GnuPG e.V.";
 
     case 0x1337: return "Warsaw Hackerspace";
     case 0x2342: return "warpzone"; /* hackerspace Muenster.  */
