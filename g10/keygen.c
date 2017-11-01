@@ -90,7 +90,7 @@ enum para_name {
   pHANDLE,
   pKEYSERVER,
   pKEYGRIP,
-  pSUBKEYGRIP,
+  pSUBKEYGRIP
 };
 
 struct para_data_s {
