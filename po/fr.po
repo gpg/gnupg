@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-09-10 16:22+0200\n"
+"PO-Revision-Date: 2017-11-02 17:40+0100\n"
 "Last-Translator: David Prévot <david@tilapin.org>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -1403,6 +1403,12 @@ msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr ""
 "Quelle taille de clef désirez-vous pour la clef d'authentification ? (%u) "
 
+#, fuzzy, c-format
+#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr ""
+"La carte sera maintenant reconfigurée pour générer une clef de %u bits\n"
+
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "arrondie à %u bits\n"
@@ -2710,14 +2716,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "clef %s : ne correspond pas à notre copie\n"
 
 #, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "clef %s : impossible de trouver le bloc de clef d'origine : %s\n"
-
-#, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "clef %s : impossible de lire le bloc de clef d'origine : %s\n"
-
-#, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "clef %s : « %s » 1 nouvelle identité\n"
 
@@ -2803,6 +2801,14 @@ msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "clef %s : pas de clef publique — impossible d'appliquer le certificat\n"
 "          de révocation\n"
+
+#, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "clef %s : impossible de trouver le bloc de clef d'origine : %s\n"
+
+#, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "clef %s : impossible de lire le bloc de clef d'origine : %s\n"
 
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3263,6 +3269,11 @@ msgstr ""
 "            les signatures de la clef"
 
 msgid "Secret key is available.\n"
+msgstr "La clef secrète est disponible.\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "La clef secrète est disponible.\n"
 
 msgid "Need the secret key to do this.\n"

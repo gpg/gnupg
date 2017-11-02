@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.1.23\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-08-22 11:22+0900\n"
+"PO-Revision-Date: 2017-11-02 17:40+0100\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1340,6 +1340,11 @@ msgstr "暗号化鍵の鍵長は? (%u) "
 msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "認証鍵の鍵長は? (%u) "
 
+#, fuzzy, c-format
+#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr "今、%uビットの鍵を生成するようにカードは再コンフィグされました\n"
+
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "%uビットに切り上げます\n"
@@ -2545,14 +2550,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "鍵%s: こちらの複製と合いません\n"
 
 #, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "鍵%s: 元の鍵ブロックに位置づけできません: %s\n"
-
-#, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "鍵%s: 元の鍵ブロックを読み込めません: %s\n"
-
-#, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "鍵%s: \"%s\" 新しいユーザIDを1個\n"
 
@@ -2636,6 +2633,14 @@ msgstr "'%s'の移行には、スマードカードそれぞれで、以下を�
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "鍵%s: 公開鍵がありません - 失効証明書を適用できません\n"
+
+#, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "鍵%s: 元の鍵ブロックに位置づけできません: %s\n"
+
+#, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "鍵%s: 元の鍵ブロックを読み込めません: %s\n"
 
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3077,6 +3082,11 @@ msgid "compact unusable user IDs and remove all signatures from key"
 msgstr "使えないユーザIDをコンパクトにし、すべての署名を鍵から除去"
 
 msgid "Secret key is available.\n"
+msgstr "秘密鍵が利用できます。\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "秘密鍵が利用できます。\n"
 
 msgid "Need the secret key to do this.\n"

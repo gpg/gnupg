@@ -1440,6 +1440,10 @@ msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "Di che dimensioni vuoi la chiave? (1024) "
 
 #, c-format
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr ""
+
+#, c-format
 msgid "rounded up to %u bits\n"
 msgstr "arrotondate a %u bit\n"
 
@@ -2764,14 +2768,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "chiave %08lX: non corrisponde alla nostra copia\n"
 
 #, fuzzy, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "chiave %08lX: impossibile individuare il keyblock originale: %s\n"
-
-#, fuzzy, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "chiave %08lX: impossibile leggere il keyblock originale: %s\n"
-
-#, fuzzy, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "chiave %08lX: \"%s\" 1 nuovo user ID\n"
 
@@ -2859,6 +2855,14 @@ msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "chiave %08lX: manca la chiave pubblica - impossibile applicare il\n"
 "certificato di revoca\n"
+
+#, fuzzy, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "chiave %08lX: impossibile individuare il keyblock originale: %s\n"
+
+#, fuzzy, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "chiave %08lX: impossibile leggere il keyblock originale: %s\n"
 
 #, fuzzy, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3355,6 +3359,11 @@ msgid "compact unusable user IDs and remove all signatures from key"
 msgstr ""
 
 msgid "Secret key is available.\n"
+msgstr "È disponibile una chiave segreta.\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "È disponibile una chiave segreta.\n"
 
 msgid "Need the secret key to do this.\n"

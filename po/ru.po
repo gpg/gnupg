@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-08-05 17:17+0000\n"
+"PO-Revision-Date: 2017-11-02 17:41+0100\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -1350,6 +1350,11 @@ msgstr "Какой Вам нужен размер ключа для шифров
 msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "Какой Вам нужен размер ключа для аутентификации? (%u) "
 
+#, fuzzy, c-format
+#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr "Теперь карта будет перенастроена на генерацию ключа длиной %u бит\n"
+
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "округлен до %u бит\n"
@@ -2585,14 +2590,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "ключ %s: не совпадает с нашей копией\n"
 
 #, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "ключ %s: оригинальный блок ключей не найден: %s\n"
-
-#, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "ключ %s: оригинальный блок ключей не читается: %s\n"
-
-#, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "ключ %s: \"%s\" 1 новый идентификатор пользователя\n"
 
@@ -2676,6 +2673,14 @@ msgstr "Для переноса '%s' выполните на каждой кри
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "ключ %s: нет открытого ключа - не могу применить сертификат отзыва\n"
+
+#, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "ключ %s: оригинальный блок ключей не найден: %s\n"
+
+#, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "ключ %s: оригинальный блок ключей не читается: %s\n"
 
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3133,6 +3138,11 @@ msgstr ""
 "сжать непригодные идентификаторы пользователей и удалить все подписи из ключа"
 
 msgid "Secret key is available.\n"
+msgstr "Секретный ключ доступен.\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "Секретный ключ доступен.\n"
 
 msgid "Need the secret key to do this.\n"

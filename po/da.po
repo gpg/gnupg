@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2012-11-01 20:27+0200\n"
+"PO-Revision-Date: 2017-11-02 17:39+0100\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <debian-l10n-danish@lists.debian.org>\n"
 "Language: da\n"
@@ -1451,11 +1451,6 @@ msgstr "fejl ved indhentelse af aktuel nøgleinformation: %s\n"
 msgid "Replace existing key? (y/N) "
 msgstr "Erstat eksisterende nøgle? (j/N) "
 
-#, fuzzy
-#| msgid ""
-#| "NOTE: There is no guarantee that the card supports the requested size.\n"
-#| "      If the key generation does not succeed, please check the\n"
-#| "      documentation of your card to see what sizes are allowed.\n"
 msgid ""
 "Note: There is no guarantee that the card supports the requested size.\n"
 "      If the key generation does not succeed, please check the\n"
@@ -1477,6 +1472,11 @@ msgstr "Hvilken nøglestørrelse ønsker du for krypteringsnøglen? (%u) "
 #, c-format
 msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "Hvilken nøglestørrelse ønsker du for godkendelsesnøglen? (%u) "
+
+#, fuzzy, c-format
+#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr "Kortet vil nu blive omkonfigureret til at oprette en nøgle på %u bit\n"
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -2811,14 +2811,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "nøgle %s: stemmer ikke med vores kopi\n"
 
 #, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "nøgle %s: kan ikke lokalisere original nøgleblok: %s\n"
-
-#, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "nøgle %s: kan ikke læse original nøgleblok: %s\n"
-
-#, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "nøgle %s: »%s« 1 ny bruger-id\n"
 
@@ -2906,6 +2898,14 @@ msgstr ""
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "nøgle %s: ingen offentlig nøgle - kan ikke anvende tilbagekaldscertifikat\n"
+
+#, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "nøgle %s: kan ikke lokalisere original nøgleblok: %s\n"
+
+#, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "nøgle %s: kan ikke læse original nøgleblok: %s\n"
 
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3380,6 +3380,11 @@ msgstr ""
 "komprimer ubrugelige bruger-id'er og fjern alle underskrifter fra nøgle"
 
 msgid "Secret key is available.\n"
+msgstr "Hemmelig nøgle er tilgængelig.\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "Hemmelig nøgle er tilgængelig.\n"
 
 msgid "Need the secret key to do this.\n"

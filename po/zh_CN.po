@@ -1427,6 +1427,10 @@ msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "您想要用多大的密钥尺寸？(%u)"
 
 #, c-format
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr ""
+
+#, c-format
 msgid "rounded up to %u bits\n"
 msgstr "舍入到 %u 位\n"
 
@@ -2739,14 +2743,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "密钥 %s：与我们的副本不吻合\n"
 
 #, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "密钥 %s：无法定位原始的密钥区块：%s\n"
-
-#, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "密钥 %s：无法读取原始的密钥区块： %s\n"
-
-#, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "密钥 %s：“%s”一个新的用户标识\n"
 
@@ -2832,6 +2828,14 @@ msgstr ""
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "密钥 %s：没有公钥――无法应用吊销证书\n"
+
+#, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "密钥 %s：无法定位原始的密钥区块：%s\n"
+
+#, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "密钥 %s：无法读取原始的密钥区块： %s\n"
 
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3278,6 +3282,11 @@ msgid "compact unusable user IDs and remove all signatures from key"
 msgstr "压缩不可用的用户标识并删除所有签名"
 
 msgid "Secret key is available.\n"
+msgstr "私钥可用。\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "私钥可用。\n"
 
 msgid "Need the secret key to do this.\n"

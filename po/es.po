@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.9\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-10-09 17:10+0200\n"
+"PO-Revision-Date: 2017-11-02 17:39+0100\n"
 "Last-Translator: Jaime Suárez <jaime.suma@gmail.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "Language: es\n"
@@ -1469,11 +1469,6 @@ msgstr "error obteniendo la información actual de la clave: %s\n"
 msgid "Replace existing key? (y/N) "
 msgstr "¿Reemplazar la clave existente? (s/N) "
 
-#, fuzzy
-#| msgid ""
-#| "NOTE: There is no guarantee that the card supports the requested size.\n"
-#| "      If the key generation does not succeed, please check the\n"
-#| "      documentation of your card to see what sizes are allowed.\n"
 msgid ""
 "Note: There is no guarantee that the card supports the requested size.\n"
 "      If the key generation does not succeed, please check the\n"
@@ -1494,6 +1489,11 @@ msgstr "¿De qué tamaño quiere la clave de Cifrado? (%u) "
 #, c-format
 msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "¿De qué tamaño quiere la clave de Autenticación? (%u) "
+
+#, fuzzy, c-format
+#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr "Ahora la tarjeta se reconfigurará para generar una clave de %u bits\n"
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -2840,14 +2840,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "clave %s: no coincide con nuestra copia\n"
 
 #, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "clave %s: no puede localizarse el bloque de claves original: %s\n"
-
-#, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "clave %s: no puede leerse el bloque de claves original: %s\n"
-
-#, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "clave %s: \"%s\" 1 ID de usuario nuevo\n"
 
@@ -2936,6 +2928,14 @@ msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "clave %s: falta la clave pública - imposible emplear el\n"
 "certificado de revocación\n"
+
+#, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "clave %s: no puede localizarse el bloque de claves original: %s\n"
+
+#, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "clave %s: no puede leerse el bloque de claves original: %s\n"
 
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3393,6 +3393,11 @@ msgid "compact unusable user IDs and remove all signatures from key"
 msgstr "compactar IDs inutilizables y borrar todas las firmas de la clave"
 
 msgid "Secret key is available.\n"
+msgstr "Clave secreta disponible.\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "Clave secreta disponible.\n"
 
 msgid "Need the secret key to do this.\n"

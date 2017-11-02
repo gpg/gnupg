@@ -1436,6 +1436,10 @@ msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "Millist võtmepikkust te soovite? (1024) "
 
 #, c-format
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr ""
+
+#, c-format
 msgid "rounded up to %u bits\n"
 msgstr "ümardatud üles %u bitini\n"
 
@@ -2756,14 +2760,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "võti %08lX: ei sobi meie koopiaga\n"
 
 #, fuzzy, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "võti %08lX: ei leia algset võtmeblokki: %s\n"
-
-#, fuzzy, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "võti %08lX: ei õnnestu lugeda algset võtmeblokki: %s\n"
-
-#, fuzzy, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "võti %08lX: \"%s\" 1 uus kasutaja ID\n"
 
@@ -2850,6 +2846,14 @@ msgstr ""
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "võti %08lX: avalik võti puudub - tühistamise sertifikaati ei saa rakendada\n"
+
+#, fuzzy, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "võti %08lX: ei leia algset võtmeblokki: %s\n"
+
+#, fuzzy, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "võti %08lX: ei õnnestu lugeda algset võtmeblokki: %s\n"
 
 #, fuzzy, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3344,6 +3348,11 @@ msgid "compact unusable user IDs and remove all signatures from key"
 msgstr ""
 
 msgid "Secret key is available.\n"
+msgstr "Salajane võti on kasutatav.\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "Salajane võti on kasutatav.\n"
 
 msgid "Need the secret key to do this.\n"

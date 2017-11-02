@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-08-15 10:19+0200\n"
+"PO-Revision-Date: 2017-11-02 17:40+0100\n"
 "Last-Translator: Åka Sikrom <a4@hush.com>\n"
 "Language-Team: Norwegian Bokmål <i18n-nb@lister.ping.uio.no>\n"
 "Language: nb\n"
@@ -1343,6 +1343,11 @@ msgstr "Hvor stor skal krypteringsnøkkelen være? (%u) "
 msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "Hvor stor skal autentiseringsnøkkelen være? (%u) "
 
+#, fuzzy, c-format
+#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr "Kortet blir nå satt opp på nytt for å lage nøkkel på %u bit\n"
+
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "rundet opp til %u bit\n"
@@ -2556,14 +2561,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "nøkkel %s: stemmer ikke med vår kopi\n"
 
 #, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "nøkkel %s: finner ikke original nøkkelblokk: %s\n"
-
-#, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "nøkkel %s: klarte ikke å lese opprinnelig nøkkelblokk: %s\n"
-
-#, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "nøkkel %s: «%s» 1 ny bruker-ID\n"
 
@@ -2650,6 +2647,14 @@ msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "nøkkel %s: offentlig nøkkel mangler. Klarte ikke å bruke "
 "opphevelsessertifikat\n"
+
+#, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "nøkkel %s: finner ikke original nøkkelblokk: %s\n"
+
+#, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "nøkkel %s: klarte ikke å lese opprinnelig nøkkelblokk: %s\n"
 
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3101,6 +3106,11 @@ msgstr ""
 "pakkk sammen ubrukelige bruker-id-er og fjern alle signaturer fra nøkkel"
 
 msgid "Secret key is available.\n"
+msgstr "Hemmelig nøkkel er tilgjengelig.\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "Hemmelig nøkkel er tilgjengelig.\n"
 
 msgid "Need the secret key to do this.\n"

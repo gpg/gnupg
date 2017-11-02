@@ -1461,6 +1461,10 @@ msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "İstediğiniz anahtar uzunluğu nedir? (%u) "
 
 #, c-format
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr ""
+
+#, c-format
 msgid "rounded up to %u bits\n"
 msgstr "%u bite yuvarlandı\n"
 
@@ -2802,14 +2806,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "anahtar %s: bizim kopyamızla eşleşmiyor\n"
 
 #, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "anahtar %s: özgün anahtar bloku bulunamadı: %s\n"
-
-#, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "anahtar %s: özgün anahtar bloku okunamadı: %s\n"
-
-#, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "anahtar %s: \"%s\" 1 yeni kullanıcı kimliği\n"
 
@@ -2898,6 +2894,14 @@ msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "anahtar %s: genel anahtar değil - yürürlükten kaldırma sertifikası "
 "uygulanamaz\n"
+
+#, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "anahtar %s: özgün anahtar bloku bulunamadı: %s\n"
+
+#, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "anahtar %s: özgün anahtar bloku okunamadı: %s\n"
 
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3375,6 +3379,11 @@ msgstr ""
 "kaldırır"
 
 msgid "Secret key is available.\n"
+msgstr "Gizli anahtar mevcut.\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "Gizli anahtar mevcut.\n"
 
 msgid "Need the secret key to do this.\n"
