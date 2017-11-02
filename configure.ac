@@ -116,7 +116,8 @@ use_tls_library=no
 large_secmem=no
 show_tor_support=no
 
-GNUPG_BUILD_PROGRAM(gpg, yes)
+# gpg is a required part and can't be disabled anymore.
+build_gpg=yes
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
 # The agent is a required part and can't be disabled anymore.
 build_agent=yes
