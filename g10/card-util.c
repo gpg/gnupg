@@ -1381,8 +1381,12 @@ ask_card_keyattr (int keyno, unsigned int nbits)
             }
           else
             {
+              char name[30];
+
+              snprintf (name, sizeof name, "rsa%u", req_nbits);
               tty_printf (_("The card will now be re-configured"
-                            " to generate a key of %u bits\n"), req_nbits);
+                            " to generate a key of type: %s\n"),
+                          name);
               show_keysize_warning ();
               return req_nbits;
             }
