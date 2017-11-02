@@ -1350,40 +1350,61 @@ ask_card_keyattr (int keyno, unsigned int nbits)
       xfree (prompt);
       xfree (answer);
 
-      if (req_nbits != nbits && (req_nbits % 32) )
+      if (req_nbits == 25519)
         {
-          req_nbits = ((req_nbits + 31) / 32) * 32;
-          tty_printf (_("rounded up to %u bits\n"), req_nbits);
-        }
+          if (req_nbits == nbits)
+            return 0;  /* Use default.  */
 
-      if (req_nbits == nbits)
-        return 0;  /* Use default.  */
-
-      if (req_nbits < min_nbits || req_nbits > max_nbits)
-        {
-          tty_printf (_("%s keysizes must be in the range %u-%u\n"),
-                      "RSA", min_nbits, max_nbits);
+          tty_printf (_("The card will now be re-configured"
+                        " to generate a key of type: %s\n"),
+                      keyno==1? "cv25519":"ed25519");
+          show_keysize_warning ();
+          return req_nbits;
         }
       else
         {
-          tty_printf (_("The card will now be re-configured "
-                        "to generate a key of %u bits\n"), req_nbits);
-          show_keysize_warning ();
-          return req_nbits;
+          if (req_nbits != nbits && (req_nbits % 32) )
+            {
+              req_nbits = ((req_nbits + 31) / 32) * 32;
+              tty_printf (_("rounded up to %u bits\n"), req_nbits);
+            }
+
+          if (req_nbits == nbits)
+            return 0;  /* Use default.  */
+
+          if (req_nbits < min_nbits || req_nbits > max_nbits)
+            {
+              tty_printf (_("%s keysizes must be in the range %u-%u\n"),
+                      "RSA", min_nbits, max_nbits);
+            }
+          else
+            {
+              tty_printf (_("The card will now be re-configured"
+                            " to generate a key of %u bits\n"), req_nbits);
+              show_keysize_warning ();
+              return req_nbits;
+            }
         }
     }
 }
 
 
 /* Change the size of key KEYNO (0..2) to NBITS and show an error
-   message if that fails.  */
+ * message if that fails.  Using the magic value 25519 for NBITS
+ * switches to ed25519 or cv25519 depending on the KEYNO.  */
 static gpg_error_t
 do_change_keyattr (int keyno, unsigned int nbits)
 {
   gpg_error_t err;
   char args[100];
 
-  snprintf (args, sizeof args, "--force %d 1 rsa%u", keyno+1, nbits);
+  if (nbits == 25519)
+    snprintf (args, sizeof args, "--force %d %d %s",
+              keyno+1,
+              keyno == 1? PUBKEY_ALGO_ECDH : PUBKEY_ALGO_EDDSA,
+              keyno == 1? "cv25519" : "ed25519");
+  else
+    snprintf (args, sizeof args, "--force %d 1 rsa%u", keyno+1, nbits);
   err = agent_scd_setattr ("KEY-ATTR", args, strlen (args), NULL);
   if (err)
     log_error (_("error changing size of key %d to %u bits: %s\n"),
@@ -1457,9 +1478,15 @@ generate_card_keys (ctrl_t ctrl)
 
       for (keyno = 0; keyno < DIM (info.key_attr); keyno++)
         {
-          if (info.key_attr[keyno].algo == PUBKEY_ALGO_RSA)
+          if (info.key_attr[keyno].algo == PUBKEY_ALGO_RSA
+              || info.key_attr[keyno].algo == PUBKEY_ALGO_ECDH
+              || info.key_attr[keyno].algo == PUBKEY_ALGO_EDDSA)
             {
-              nbits = ask_card_keyattr (keyno, info.key_attr[keyno].nbits);
+              if (info.key_attr[keyno].algo == PUBKEY_ALGO_RSA)
+                nbits = ask_card_keyattr (keyno, info.key_attr[keyno].nbits);
+              else
+                nbits = ask_card_keyattr (keyno, 25519 /* magic */);
+
               if (nbits && do_change_keyattr (keyno, nbits))
                 {
                   /* Error: Better read the default key size again.  */
@@ -1537,12 +1564,18 @@ card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock)
      key size.  */
   if (info.is_v2 && info.extcap.aac)
     {
-      if (info.key_attr[keyno-1].algo == PUBKEY_ALGO_RSA)
+      if (info.key_attr[keyno-1].algo == PUBKEY_ALGO_RSA
+          || info.key_attr[keyno].algo == PUBKEY_ALGO_ECDH
+          || info.key_attr[keyno].algo == PUBKEY_ALGO_EDDSA)
         {
           unsigned int nbits;
 
         ask_again:
-          nbits = ask_card_keyattr (keyno-1, info.key_attr[keyno-1].nbits);
+          if (info.key_attr[keyno].algo == PUBKEY_ALGO_RSA)
+            nbits = ask_card_keyattr (keyno-1, info.key_attr[keyno-1].nbits);
+          else
+            nbits = ask_card_keyattr (keyno-1, 25519);
+
           if (nbits && do_change_keyattr (keyno-1, nbits))
             {
               /* Error: Better read the default key size again.  */
