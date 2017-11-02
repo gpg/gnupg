@@ -340,14 +340,12 @@ agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
     }
 
   /* Pass on all the collected status information. */
-  if (assuan_context)
+  for (sitem = sparm.info; sitem; sitem = sitem->next)
     {
-      for (sitem = sparm.info; sitem; sitem = sitem->next)
-        {
-          if (!strcmp (sitem->keyword, "SERIALNO"))
-            serialno = sitem->data;
-          assuan_write_status (assuan_context, sitem->keyword, sitem->data);
-        }
+      if (!strcmp (sitem->keyword, "SERIALNO"))
+        serialno = sitem->data;
+      if (assuan_context)
+        assuan_write_status (assuan_context, sitem->keyword, sitem->data);
     }
 
   if (!serialno)
