@@ -186,6 +186,9 @@ this convention).
 @node Agent Options
 @section Option Summary
 
+Options may either be used on the command line or, after stripping off
+the two leading dashes, in the configuration file.
+
 @table @gnupgtabopt
 
 @anchor{option --options}
@@ -193,8 +196,9 @@ this convention).
 @opindex options
 Reads configuration from @var{file} instead of from the default
 per-user configuration file.  The default configuration file is named
-@file{gpg-agent.conf} and expected in the @file{.gnupg} directory directly
-below the home directory of the user.
+@file{gpg-agent.conf} and expected in the @file{.gnupg} directory
+directly below the home directory of the user.  This option is ignored
+if used in an options file.
 
 @anchor{option --homedir}
 @include opt-homedir.texi
@@ -652,19 +656,25 @@ transitioned from using MD5 to the more secure SHA256.
 @opindex s2k-count
 Specify the iteration count used to protect the passphrase.  This
 option can be used to override the auto-calibration done by default.
-This auto-calibration computes a count which requires 100ms to mangle
-a given passphrase.  To view the auto-calibrated count do not use this
-option (or use 0 for @var{n}) and run this command:
+The auto-calibration computes a count which requires 100ms to mangle
+a given passphrase.
+
+To view the actually used iteration count and the milliseconds
+required for an S2K operation use:
 
 @example
 gpg-connect-agent 'GETINFO s2k_count' /bye
+gpg-connect-agent 'GETINFO s2k_time' /bye
+@end example
+
+To view the auto-calibrated count use:
+
+@example
+gpg-connect-agent 'GETINFO s2k_count_cal' /bye
 @end example
 
 
 @end table
-
-All the long options may also be given in the configuration file after
-stripping off the two leading dashes.
 
 
 @mansect files
