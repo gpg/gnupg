@@ -2843,20 +2843,22 @@ static const char hlp_getinfo[] =
   "Multipurpose function to return a variety of information.\n"
   "Supported values for WHAT are:\n"
   "\n"
-  "  version     - Return the version of the program.\n"
-  "  pid         - Return the process id of the server.\n"
-  "  socket_name - Return the name of the socket.\n"
+  "  version         - Return the version of the program.\n"
+  "  pid             - Return the process id of the server.\n"
+  "  socket_name     - Return the name of the socket.\n"
   "  ssh_socket_name - Return the name of the ssh socket.\n"
-  "  scd_running - Return OK if the SCdaemon is already running.\n"
-  "  s2k_count   - Return the calibrated S2K count.\n"
+  "  scd_running     - Return OK if the SCdaemon is already running.\n"
+  "  s2k_time        - Return the time in milliseconds required for S2K.\n"
+  "  s2k_count       - Return the standard S2K count.\n"
+  "  s2k_count_cal   - Return the calibrated S2K count.\n"
   "  std_env_names   - List the names of the standard environment.\n"
   "  std_session_env - List the standard session environment.\n"
   "  std_startup_env - List the standard startup environment.\n"
-  "  cmd_has_option\n"
-  "              - Returns OK if the command CMD implements the option OPT.\n"
-  "  connections - Return number of active connections.\n"
-  "  jent_active - Returns OK if Libgcrypt's JENT is active.\n"
-  "  restricted  - Returns OK if the connection is in restricted mode.\n";
+  "  connections     - Return number of active connections.\n"
+  "  jent_active     - Returns OK if Libgcrypt's JENT is active.\n"
+  "  restricted      - Returns OK if the connection is in restricted mode.\n"
+  "  cmd_has_option CMD OPT\n"
+  "                  - Returns OK if command CMD has option OPT.\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
@@ -3013,6 +3015,20 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 #else
       rc = gpg_error (GPG_ERR_FALSE);
 #endif
+    }
+  else if (!strcmp (line, "s2k_count_cal"))
+    {
+      char numbuf[50];
+
+      snprintf (numbuf, sizeof numbuf, "%lu", get_calibrated_s2k_count ());
+      rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
+    }
+  else if (!strcmp (line, "s2k_time"))
+    {
+      char numbuf[50];
+
+      snprintf (numbuf, sizeof numbuf, "%lu", get_standard_s2k_time ());
+      rc = assuan_send_data (ctx, numbuf, strlen (numbuf));
     }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");

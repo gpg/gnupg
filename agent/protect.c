@@ -191,21 +191,38 @@ calibrate_s2k_count (void)
 }
 
 
-
-/* Return the standard S2K count.  */
+/* Return the calibrated S2K count.  This is only public for the use
+ * of the Assuan getinfo s2k_count_cal command.  */
 unsigned long
-get_standard_s2k_count (void)
+get_calibrated_s2k_count (void)
 {
   static unsigned long count;
-
-  if (opt.s2k_count)
-    return opt.s2k_count < 65536 ? 65536 : opt.s2k_count;
 
   if (!count)
     count = calibrate_s2k_count ();
 
   /* Enforce a lower limit.  */
   return count < 65536 ? 65536 : count;
+}
+
+
+/* Return the standard S2K count.  */
+unsigned long
+get_standard_s2k_count (void)
+{
+  if (opt.s2k_count)
+    return opt.s2k_count < 65536 ? 65536 : opt.s2k_count;
+
+  return get_calibrated_s2k_count ();
+}
+
+
+/* Return the milliseconds required for the standard S2K
+ * operation.  */
+unsigned long
+get_standard_s2k_time (void)
+{
+  return calibrate_s2k_count_one (get_standard_s2k_count ());
 }
 
 

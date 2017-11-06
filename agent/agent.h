@@ -486,8 +486,10 @@ gpg_error_t agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
                                      char **passphrase_addr);
 
 /*-- protect.c --*/
+unsigned long get_calibrated_s2k_count (void);
 unsigned long get_standard_s2k_count (void);
 unsigned char get_standard_s2k_count_rfc4880 (void);
+unsigned long get_standard_s2k_time (void);
 int agent_protect (const unsigned char *plainkey, const char *passphrase,
                    unsigned char **result, size_t *resultlen,
 		   unsigned long s2k_count, int use_ocb);
