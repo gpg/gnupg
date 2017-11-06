@@ -648,6 +648,19 @@ Select the digest algorithm used to compute ssh fingerprints that are
 communicated to the user, e.g. in pinentry dialogs.  OpenSSH has
 transitioned from using MD5 to the more secure SHA256.
 
+@item --s2k-count @var{n}
+@opindex s2k-count
+Specify the iteration count used to protect the passphrase.  This
+option can be used to override the auto-calibration done by default.
+This auto-calibration computes a count which requires 100ms to mangle
+a given passphrase.  To view the auto-calibrated count do not use this
+option (or use 0 for @var{n}) and run this command:
+
+@example
+gpg-connect-agent 'GETINFO s2k_count' /bye
+@end example
+
+
 @end table
 
 All the long options may also be given in the configuration file after
@@ -813,6 +826,7 @@ again.  Only certain options are honored: @code{quiet},
 @code{pinentry-invisible-char},
 @code{default-cache-ttl},
 @code{max-cache-ttl}, @code{ignore-cache-for-signing},
+@code{s2k-count},
 @code{no-allow-external-cache}, @code{allow-emacs-pinentry},
 @code{no-allow-mark-trusted}, @code{disable-scdaemon}, and
 @code{disable-check-own-socket}.  @code{scdaemon-program} is also
