@@ -198,6 +198,9 @@ get_standard_s2k_count (void)
 {
   static unsigned long count;
 
+  if (opt.s2k_count)
+    return opt.s2k_count < 65536 ? 65536 : opt.s2k_count;
+
   if (!count)
     count = calibrate_s2k_count ();
 

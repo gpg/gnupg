@@ -134,6 +134,8 @@ enum cmd_and_opt_values
   oPuttySupport,
   oDisableScdaemon,
   oDisableCheckOwnSocket,
+  oS2KCount,
+
   oWriteEnvFile
 };
 
@@ -247,6 +249,8 @@ static ARGPARSE_OPTS opts[] = {
 #endif
                 ),
   ARGPARSE_s_n (oEnableExtendedKeyFormat, "enable-extended-key-format", "@"),
+
+  ARGPARSE_s_u (oS2KCount, "s2k-count", "@"),
 
   /* Dummy options for backward compatibility.  */
   ARGPARSE_o_s (oWriteEnvFile, "write-env-file", "@"),
@@ -819,6 +823,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       disable_check_own_socket = 0;
       /* Note: When changing the next line, change also gpgconf_list.  */
       opt.ssh_fingerprint_digest = GCRY_MD_MD5;
+      opt.s2k_count = 0;
       return 1;
     }
 
@@ -908,6 +913,10 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
         log_error (_("selected digest algorithm is invalid\n"));
       else
         opt.ssh_fingerprint_digest = i;
+      break;
+
+    case oS2KCount:
+      opt.s2k_count = pargs->r.ret_ulong;
       break;
 
     default:

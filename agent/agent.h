@@ -171,6 +171,10 @@ struct
   /* The digest algorithm to use for ssh fingerprints when
    * communicating with the user.  */
   int ssh_fingerprint_digest;
+
+  /* The value of the option --s2k-count.  If this option is not given
+   * or 0 an auto-calibrated value is used.  */
+  unsigned long s2k_count;
 } opt;
 
 
