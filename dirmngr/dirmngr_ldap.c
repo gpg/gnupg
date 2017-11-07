@@ -104,7 +104,7 @@ static void npth_protect (void) { }
  typedef struct timeval my_ldap_timeval_t;
 #endif
 
-#define DEFAULT_LDAP_TIMEOUT 100 /* Arbitrary long timeout. */
+#define DEFAULT_LDAP_TIMEOUT 15 /* Arbitrary long timeout. */
 
 
 /* Constants for the options.  */
