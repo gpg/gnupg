@@ -1,11 +1,12 @@
 Here is a list with collected copyright notices. For details see the
-description of each individual package.  [Compiled by wk 2016-06-17]
+description of each individual package.  [Compiled by wk 2017-11-07]
 
-GnuPG is
 
-  Copyright (C) 1997-2016 Werner Koch
-  Copyright (C) 1994-2016 Free Software Foundation, Inc.
-  Copyright (C) 2003-2016 g10 Code GmbH
+GNUPG is
+
+  Copyright (C) 1997-2017 Werner Koch
+  Copyright (C) 1994-2017 Free Software Foundation, Inc.
+  Copyright (C) 2003-2017 g10 Code GmbH
   Copyright (C) 2002 Klarälvdalens Datakonsult AB
   Copyright (C) 1995-1997, 2000-2007 Ulrich Drepper <drepper@gnu.ai.mit.edu>
   Copyright (C) 1994 X Consortium
@@ -32,31 +33,46 @@ GnuPG is
   License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-  02110-1301, USA
+  along with this program; if not, see <https://www.gnu.org/licenses/>.
 
-GPGME is
 
-  Copyright (C) 2000 Werner Koch (dd9jn)
-  Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 g10 Code GmbH
+LIBGCRYPT is
 
-  GPGME is free software; you can redistribute it and/or modify it
-  under the terms of the GNU Lesser General Public License as
+  Copyright (C) 1989,1991-2017 Free Software Foundation, Inc.
+  Copyright (C) 1994 X Consortium
+  Copyright (C) 1996 L. Peter Deutsch
+  Copyright (C) 1997 Werner Koch
+  Copyright (C) 1998 The Internet Society
+  Copyright (C) 1996-1999 Peter Gutmann, Paul Kendall, and Chris Wedgwood
+  Copyright (C) 1996-2006 Peter Gutmann, Matt Thomlinson and Blake Coverett
+  Copyright (C) 2003 Nikos Mavroyanopoulos
+  Copyright (C) 2006-2007 NTT (Nippon Telegraph and Telephone Corporation)
+  Copyright (C) 2012-2017 g10 Code GmbH
+  Copyright (C) 2012 Simon Josefsson, Niels Möller
+  Copyright (c) 2012 Intel Corporation
+  Copyright (C) 2013 Christian Grothoff
+  Copyright (C) 2013-2017 Jussi Kivilinna
+  Copyright (C) 2013-2014 Dmitry Eremin-Solenikov
+  Copyright (C) 2014 Stephan Mueller
+  Copyright (C) 2017 Bundesamt für Sicherheit in der Informationstechnik
+
+  Libgcrypt is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as
   published by the Free Software Foundation; either version 2.1 of
   the License, or (at your option) any later version.
 
-  GPGME is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
+  Libgcrypt is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
 
-  You should have received a copy of the GNU Lesser General Public License
-  along with this program; if not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU Lesser General Public
+  License along with this program; if not, see <http://www.gnu.org/licenses/>.
+
 
 LIBGPG-ERROR is
 
-  Copyright (C) 2003, 2004 g10 Code GmbH
+  Copyright (C) 2003-2004, 2010, 2013-2017 g10 Code GmbH
 
   libgpg-error is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public License
@@ -72,9 +88,167 @@ LIBGPG-ERROR is
   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 
+LIBASSUAN is
+
+  Copyright (C) 1992-2013 Free Software Foundation, Inc.
+  Copyright (C) 1994 X Consortium
+  Copyright (C) 2000 Werner Koch (dd9jn)
+  Copyright (C) 2001-2016 g10 Code GmbH
+  Copyright (C) 2004 Simon Josefsson
+
+  Assuan is free software; you can redistribute it and/or modify it
+  under the terms of the GNU Lesser General Public License as
+  published by the Free Software Foundation; either version 2.1 of
+  the License, or (at your option) any later version.
+
+  Assuan is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this program; if not, see <http://www.gnu.org/licenses/>.
+
+
+LIBKSBA is
+
+  Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2010, 2011
+                2012, 2013, 2014, 2015 g10 Code GmbH
+  Copyright (C) 2001, 2002, 2003, 2007 Free Software Foundation, Inc.
+  Copyright (C) 2000, 2001 Fabio Fiorina
+
+  The library and the header files are distributed under the following
+  terms (LGPLv3+/GPLv2+):
+
+  KSBA is free software; you can redistribute it and/or modify
+  it under the terms of either
+
+    - the GNU Lesser General Public License as published by the Free
+      Software Foundation; either version 3 of the License, or (at
+      your option) any later version.
+
+  or
+
+    - the GNU General Public License as published by the Free
+      Software Foundation; either version 2 of the License, or (at
+      your option) any later version.
+
+  or both in parallel, as here.
+
+  KSBA is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+  License for more details.
+
+  The other parts (e.g. manual, build system, tests) are distributed
+  under the following terms (GPLv3):
+
+  KSBA is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or
+  (at your option) any later version.
+
+  KSBA is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+
+NPTH is
+
+  Copyright (C) 2011, 2012, 2014, 2015, 2017 g10 Code GmbH
+
+  nPth is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as
+  published by the Free Software Foundation; either version 2.1 of
+  the License, or (at your option) any later version.
+
+  nPth is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+  the GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this program; if not, see <https://www.gnu.org/licenses/>.
+
+
+NTBTLS is
+
+  Copyright (C) 2006-2014 Brainspark B.V.
+  Copyright (C) 2014-2017 g10 Code GmbH
+
+  NTBTLS is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or
+  (at your option) any later version.
+
+  NTBTLS is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, see <http://www.gnu.org/licenses/>.
+
+
+PINENTRY is
+
+  Copyright (C) 1999 Robert Bihlmeyer <robbe@orcus.priv.at>
+  Copyright (C) 2001-2004, 2007-2008, 2010, 2015-2016 g10 Code GmbH
+  Copyright (C) 2002, 2008 Klarälvdalens Datakonsult AB (KDAB)
+  Copyright (C) 2004 by Albrecht Dreß <albrecht.dress@arcor.de>
+  Copyright 2007 Ingo Klöcker
+  Copyright (C) 2014 Serge Voilokov
+  Copyright (C) 2015 Daiki Ueno
+  Copyright (C) 2015 Daniel Kahn Gillmor <dkg@fifthhorseman.net>
+  Copyright 2016 Intevation GmbH
+
+  PINENTRY is free software; you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  PINENTRY is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, see <https://www.gnu.org/licenses/>.
+
+
+GPGME is
+
+  Copyright (C) 1991-2013 Free Software Foundation, Inc.
+  Copyright (C) 2000-2001 Werner Koch
+  Copyright (C) 2001-2017 g10 Code GmbH
+  Copyright (C) 2002 Klarälvdalens Datakonsult AB
+  Copyright (C) 2004-2008 Igor Belyi
+  Copyright (C) 2002 John Goerzen
+  Copyright (C) 2014, 2015 Martin Albrecht
+  Copyright (C) 2015 Ben McGinnes
+  Copyright (C) 2015-2016 Bundesamt für Sicherheit in der Informationstechnik
+  Copyright (C) 2016 Intevation GmbH
+
+  GPGME is free software; you can redistribute it and/or modify it
+  under the terms of the GNU Lesser General Public License as
+  published by the Free Software Foundation; either version 2.1 of
+  the License, or (at your option) any later version.
+
+  GPGME is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with this program; if not, see <http://www.gnu.org/licenses/>.
+
+
 NSIS is
 
-  Copyright (C) 1999-2005 Nullsoft, Inc.
+  Copyright 1999-2009 Nullsoft and Contributors
+  Copyright 2002-2008 Amir Szekely
+  Copyright 2003 Ramon
 
   This license applies to everything in the NSIS package, except where
   otherwise noted.
@@ -100,17 +274,10 @@ NSIS is
 
   The user interface used with the installer is
 
-  Copyright (C) 2002-2005 Joost Verburg
+  Copyright 2002-2009 Joost Verburg
 
   [It is distributed along with NSIS and the same conditions as stated
    above apply]
-
-
-ADNS is
-
-  Copyright (C) 1997-2000,2003,2006 Ian Jackson
-  Copyright (C) 1999-2000,2003,2006 Tony Finch
-  Copyright (C) 1991 Massachusetts Institute of Technology
 
 
 TinySCHEME is part of the GnuPG package and is
@@ -146,7 +313,7 @@ TinySCHEME is part of the GnuPG package and is
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-libdns is part of the GnuPG package and is
+LIBDNS is part of the GnuPG package and is
 
   Copyright (c) 2008, 2009, 2010, 2012-2016  William Ahern
 
@@ -170,7 +337,69 @@ libdns is part of the GnuPG package and is
   USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-SQLite has
+ZLIB is
+
+  (C) 1995-2013 Jean-loup Gailly and Mark Adler
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+
+  Jean-loup Gailly        Mark Adler
+  jloup@gzip.org          madler@alumni.caltech.edu
+
+
+BZIP2 is
+
+  This program, "bzip2", the associated library "libbzip2", and all
+  documentation, are copyright (C) 1996-2010 Julian R Seward.  All
+  rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+
+  1. Redistributions of source code must retain the above copyright
+     notice, this list of conditions and the following disclaimer.
+
+  2. The origin of this software must not be misrepresented; you must
+     not claim that you wrote the original software.  If you use this
+     software in a product, an acknowledgment in the product
+     documentation would be appreciated but is not required.
+
+  3. Altered source versions must be plainly marked as such, and must
+     not be misrepresented as being the original software.
+
+  4. The name of the author may not be used to endorse or promote
+     products derived from this software without specific prior written
+     permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+  OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+  GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+SQLITE has
 
   been put into the public-domain by its author D. Richard Hipp:
   The author disclaims copyright to this source code.  In place of
