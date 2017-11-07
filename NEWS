@@ -1,5 +1,44 @@
-Noteworthy changes in version 2.2.2 (unreleased)
+Noteworthy changes in version 2.2.2 (2017-11-07)
 ------------------------------------------------
+
+  * gpg: Avoid duplicate key imports by concurrently running gpg
+    processes. [#3446]
+
+  * gpg: Fix creating on-disk subkey with on-card primary key. [#3280]
+
+  * gpg: Fix validity retrieval for multiple keyrings. [Debian#878812]
+
+  * gpg: Fix --dry-run and import option show-only for secret keys.
+
+  * gpg: Print "sec" or "sbb" for secret keys with import option
+    import-show. [#3431]
+
+  * gpg: Make import less verbose. [#3397]
+
+  * gpg: Add alias "Key-Grip" for parameter "Keygrip" and new
+    parameter "Subkey-Grip" to unattended key generation.  [#3478]
+
+  * gpg: Improve "factory-reset" command for OpenPGP cards.  [#3286]
+
+  * gpg: Ease switching Gnuk tokens into ECC mode by using the magic
+    keysize value 25519.
+
+  * gpgsm: Fix --with-colon listing in crt records for fields > 12.
+
+  * gpgsm: Do not expect X.509 keyids to be unique.  [#1644]
+
+  * agent: Fix stucked Pinentry when using --max-passphrase-days. [#3190]
+
+  * agent: New option --s2k-count.  [#3276 (workaround)]
+
+  * dirmngr: Do not follow https-to-http redirects. [#3436]
+
+  * dirmngr: Reduce default LDAP timeout from 100 to 15 seconds. [#3487]
+
+  * gpgconf: Ignore non-installed components for commands
+    --apply-profile and --apply-defaults. [#3313]
+
+  * Add configure option --enable-werror.  [#2423]
 
 
 Noteworthy changes in version 2.2.1 (2017-09-19)
@@ -22,6 +61,8 @@ Noteworthy changes in version 2.2.1 (2017-09-19)
   * dirmngr: Use system provided root certificates if no specific HKP
     certificates are configured.  If build with GNUTLS, this was
     already the case.
+
+  See-also: gnupg-announce/2017q3/000415.html
 
 
 Noteworthy changes in version 2.2.0 (2017-08-28)

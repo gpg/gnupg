@@ -26,8 +26,7 @@
 
   Note that the 2.0 series of GnuPG will reach end-of-life on
   2017-12-31.  It is not possible to install a 2.2.x version along
-  with any 2.0.x version.  However, it is possible to install GnuPG
-  1.4 along with any 2.x version.
+  with any 2.0.x version.
 
 
 * BUILD INSTRUCTIONS
