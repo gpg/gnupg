@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <ctype.h>
 #include <assert.h>
 #include <unistd.h>
@@ -104,11 +105,14 @@ calibrate_get_time (struct calibrate_time_s *data)
                    &data->creation_time, &data->exit_time,
                    &data->kernel_time, &data->user_time);
 # endif
-#else
-  struct tms tmp;
+#elif defined (CLOCK_THREAD_CPUTIME_ID)
+  struct timespec tmp;
 
-  times (&tmp);
-  data->ticks = tmp.tms_utime;
+  clock_gettime (CLOCK_THREAD_CPUTIME_ID, &tmp);
+  data->ticks = (clock_t)(((unsigned long long)tmp.tv_sec * 1000000000 +
+                           tmp.tv_nsec) * CLOCKS_PER_SEC / 1000000000);
+#else
+  data->ticks = clock ();
 #endif
 }
 
@@ -135,7 +139,7 @@ calibrate_elapsed_time (struct calibrate_time_s *starttime)
   }
 #else
   return (unsigned long)((((double) (stoptime.ticks - starttime->ticks))
-                          /CLOCKS_PER_SEC)*10000000);
+                          /CLOCKS_PER_SEC)*1000);
 #endif
 }
 
