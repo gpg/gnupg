@@ -5,8 +5,9 @@
 ;; replaced by the Makefile; those words are enclosed by exclamation
 ;; marks.
 
-                          GNUPG for Windows
-                         ===================
+
+                    GNU Privacy Guard for Windows
+                   ===============================
 
 This is GnuPG for Windows, version !VERSION!.
 
@@ -15,7 +16,8 @@ Content:
      1. Important notes
      2. Changes
      3. GnuPG README file
-     4. Legal notices
+     4. Package versions
+     5. Legal notices
 
 
 1. Important Notes
@@ -47,7 +49,7 @@ release.
 !NEWSFILE!
 
 
-3. GnuPG README file
+3. GnuPG README File
 ====================
 
 Below is the README file as distributed with the GnuPG source.
@@ -55,8 +57,19 @@ Below is the README file as distributed with the GnuPG source.
 !GNUPGREADME!
 
 
-4. Legal notices pertaining to the individual packets
-=====================================================
+4. Software Versions of the Included Packages
+=============================================
+
+GnuPG for Windows depends on several independet developed packages
+which are part of the installation.  These packages along with their
+version numbers and the SHA-1 checksums of their compressed tarballs
+are listed here:
+
+!PKG-VERSIONS!
+
+
+5. Legal Notices Pertaining to the Individual Packages
+======================================================
 
 GnuPG for Windows consist of several independent developed packages,
 available under different license conditions.  Most of these packages

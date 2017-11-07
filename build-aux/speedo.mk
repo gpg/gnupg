@@ -757,6 +757,7 @@ define SETVARS
         git="$(call GETVAR,speedo_pkg_$(1)_git)";                       \
         gitref="$(call GETVAR,speedo_pkg_$(1)_gitref)";                 \
         tar="$(call GETVAR,speedo_pkg_$(1)_tar)";                       \
+        ver="$(call GETVAR,$(1)_ver)";                                  \
         sha2="$(call GETVAR,$(1)_sha2)";                                \
         sha1="$(call GETVAR,$(1)_sha1)";                                \
         pkgsdir="$(sdir)/$(1)";                                         \
@@ -792,6 +793,7 @@ define SETVARS_W64
         git="$(call GETVAR,speedo_pkg_$(1)_git)";                       \
         gitref="$(call GETVAR,speedo_pkg_$(1)_gitref)";                 \
         tar="$(call GETVAR,speedo_pkg_$(1)_tar)";                       \
+        ver="$(call GETVAR,$(1)_ver)";                                  \
         sha2="$(call GETVAR,$(1)_sha2)";                                \
         sha1="$(call GETVAR,$(1)_sha1)";                                \
         pkgsdir="$(sdir)/$(1)";                                         \
@@ -1048,6 +1050,9 @@ endif
 	touch $(stampdir)/stamp-w64-$(1)-03-install
 
 $(stampdir)/stamp-final-$(1): $(stampdir)/stamp-$(1)-03-install
+	@($(call SETVARS,$(1));                                  \
+	  printf "%-14s %-12s %s\n" $(1) "$$$${ver}" "$$$${sha1}" \
+	      >> $(bdir)/pkg-versions.txt)
 	@echo "speedo: $(1) done"
 	@touch $(stampdir)/stamp-final-$(1)
 
@@ -1097,12 +1102,15 @@ endef
 # Insert the template for each source package.
 $(foreach spkg, $(speedo_spkgs), $(eval $(call SPKG_template,$(spkg))))
 
-$(stampdir)/stamp-final: $(stampdir)/stamp-directories
+$(stampdir)/stamp-final: $(stampdir)/stamp-directories clean-pkg-versions
 ifeq ($(TARGETOS),w32)
 $(stampdir)/stamp-final: $(addprefix $(stampdir)/stamp-w64-final-,$(speedo_w64_build_list))
 endif
 $(stampdir)/stamp-final: $(addprefix $(stampdir)/stamp-final-,$(speedo_build_list))
 	touch $(stampdir)/stamp-final
+
+clean-pkg-versions:
+        @: >$(bdir)/pkg-versions.txt
 
 all-speedo: $(stampdir)/stamp-final
 
@@ -1143,12 +1151,18 @@ $(bdir)/NEWS.tmp: $(topsrc)/NEWS
 	awk '/^Notewo/ {if(okay>1){exit}; okay++};okay {print $0}' \
 	    <$(topsrc)/NEWS  >$(bdir)/NEWS.tmp
 
+# Sort the file with the package versions.
+$(bdir)/pkg-versions.sorted: $(bdir)/pkg-versions.txt
+	grep -v '^gnupg ' <$(bdir)/pkg-versions.txt \
+	    | sort | uniq >$(bdir)/pkg-versions.sorted
+
 $(bdir)/README.txt: $(bdir)/NEWS.tmp $(topsrc)/README $(w32src)/README.txt \
-                    $(w32src)/pkg-copyright.txt
+                    $(w32src)/pkg-copyright.txt $(bdir)/pkg-versions.sorted
 	sed -e '/^;.*/d;' \
 	-e '/!NEWSFILE!/{r $(bdir)/NEWS.tmp' -e 'd;}' \
 	-e '/!GNUPGREADME!/{r $(topsrc)/README' -e 'd;}' \
         -e '/!PKG-COPYRIGHT!/{r $(w32src)/pkg-copyright.txt' -e 'd;}' \
+        -e '/!PKG-VERSIONS!/{r $(bdir)/pkg-versions.sorted' -e 'd;}' \
         -e 's,!VERSION!,$(INST_VERSION),g' \
 	   < $(w32src)/README.txt \
            | sed -e '/^#/d' \
@@ -1252,4 +1266,4 @@ check-tools:
 # Mark phony targets
 #
 .PHONY: all all-speedo report-speedo clean-stamps clean-speedo installer \
-	w32_insthelpers check-tools
+	w32_insthelpers check-tools clean-pkg-versions
