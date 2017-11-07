@@ -416,7 +416,7 @@ percent-escaped strings.}
 @item --ldaptimeout @var{secs}
 @opindex ldaptimeout
 Specify the number of seconds to wait for an LDAP query before timing
-out. The default is currently 100 seconds.  0 will never timeout.
+out.  The default are 15 seconds.  0 will never timeout.
 
 
 @item --add-servers

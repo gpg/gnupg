@@ -279,7 +279,7 @@ static struct debug_flags_s debug_flags [] =
   };
 
 #define DEFAULT_MAX_REPLIES 10
-#define DEFAULT_LDAP_TIMEOUT 100 /* arbitrary large timeout */
+#define DEFAULT_LDAP_TIMEOUT 15  /* seconds */
 
 #define DEFAULT_CONNECT_TIMEOUT       (15*1000)  /* 15 seconds */
 #define DEFAULT_CONNECT_QUICK_TIMEOUT ( 2*1000)  /*  2 seconds */
