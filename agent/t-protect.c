@@ -322,9 +322,9 @@ test_agent_protect_shared_secret (void)
 int
 main (int argc, char **argv)
 {
-  (void)argc;
   (void)argv;
 
+  opt.verbose = argc - 1;       /* We can do "./t-protect -v -v" */
   gcry_control (GCRYCTL_DISABLE_SECMEM);
 
   test_agent_protect ();
