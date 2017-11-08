@@ -310,14 +310,32 @@ unlock_spawning (lock_spawn_t *lock, const char *name)
 static gpg_error_t
 wait_for_sock (int secs, const char *name, const char *sockname, int verbose, assuan_context_t ctx, int *did_success_msg)
 {
-  int i;
   gpg_error_t err = 0;
-  for (i=0; i < secs; i++)
+  int target_us = secs * 1000000;
+  int elapsed_us = 0;
+  /*
+   * 977us * 1024 = just a little more than 1s.
+   * so we will double this timeout 10 times in the first
+   * second, and then switch over to 1s checkins.
+   */
+  int next_sleep_us = 977;
+  int lastalert = secs+1;
+  int secsleft;
+
+  while (elapsed_us < target_us)
     {
       if (verbose)
-        log_info (_("waiting for the %s to come up ... (%ds)\n"),
-                  name, secs - i);
-      gnupg_sleep (1);
+        {
+          secsleft = (target_us - elapsed_us)/1000000;
+          if (secsleft < lastalert)
+            {
+              log_info (_("waiting for the %s to come up ... (%ds)\n"),
+                        name, secsleft);
+              lastalert = secsleft;
+            }
+        }
+      gnupg_usleep (next_sleep_us);
+      elapsed_us += next_sleep_us;
       err = assuan_socket_connect (ctx, sockname, 0, 0);
       if (!err)
         {
@@ -329,6 +347,9 @@ wait_for_sock (int secs, const char *name, const char *sockname, int verbose, as
             }
           break;
         }
+      next_sleep_us *= 2;
+      if (next_sleep_us > 1000000)
+        next_sleep_us = 1000000;
     }
   return err;
 }
