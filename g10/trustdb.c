@@ -1817,6 +1817,11 @@ clean_key(KBNODE keyblock,int noisy,int self_only,
 
 /* Returns a sanitized copy of the regexp (which might be "", but not
    NULL). */
+#ifndef DISABLE_REGEX
+/* Operator charactors except '.' and backslash.
+   See regex(7) on BSD.  */
+#define REGEXP_OPERATOR_CHARS "^[$()|*+?{"
+
 static char *
 sanitize_regexp(const char *old)
 {
@@ -1856,7 +1861,7 @@ sanitize_regexp(const char *old)
     {
       if(!escaped && old[start]=='\\')
 	escaped=1;
-      else if(!escaped && old[start]!='.')
+      else if (!escaped && strchr (REGEXP_OPERATOR_CHARS, old[start]))
 	new[idx++]='\\';
       else
 	escaped=0;
@@ -1877,6 +1882,7 @@ sanitize_regexp(const char *old)
 
   return new;
 }
+#endif /*!DISABLE_REGEX*/
 
 /* Used by validate_one_keyblock to confirm a regexp within a trust
    signature.  Returns 1 for match, and 0 for no match or regex
