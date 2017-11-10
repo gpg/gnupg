@@ -304,6 +304,9 @@ secret(MPI output, MPI input, RSA_secret_key *skey )
 #if 0
     mpi_powm( output, input, skey->d, skey->n );
 #else
+    MPI D_blind;
+    MPI rr;
+    unsigned int rr_nbits;
     int nlimbs = mpi_get_nlimbs (skey->n)+1;
     MPI m1   = mpi_alloc_secure (nlimbs);
     MPI m2   = mpi_alloc_secure (nlimbs);
@@ -326,9 +329,7 @@ secret(MPI output, MPI input, RSA_secret_key *skey )
 # endif /* USE_BLINDING */
 
     /* RSA secret operation:  */
-    MPI D_blind = mpi_alloc_secure (nlimbs);
-    MPI rr;
-    unsigned int rr_nbits;
+    D_blind = mpi_alloc_secure (nlimbs);
 
     rr_nbits = mpi_get_nbits (skey->p) / 4;
     if (rr_nbits < 96)
