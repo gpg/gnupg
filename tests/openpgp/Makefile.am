@@ -85,6 +85,7 @@ XTESTS = \
 	trust-pgp-1.scm \
 	trust-pgp-2.scm \
 	trust-pgp-3.scm \
+	trust-pgp-4.scm \
 	gpgtar.scm \
 	use-exact-key.scm \
 	default-key.scm \
@@ -101,9 +102,6 @@ XTESTS = \
 	issue2419.scm \
 	issue2929.scm \
 	issue2941.scm
-
-# Temporary removed tests:
-#	trust-pgp-4.scm
 
 
 # XXX: Currently, one cannot override automake's 'check' target.  As a
@@ -268,7 +266,7 @@ sample_msgs = samplemsgs/clearsig-1-key-1.asc \
 
 EXTRA_DIST = defs.scm trust-pgp/common.scm $(XTESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)   \
-	     $(sample_msgs) ChangeLog-2011 run-tests.scm trust-pgp-4.scm \
+	     $(sample_msgs) ChangeLog-2011 run-tests.scm \
 	     setup.scm shell.scm all-tests.scm signed-messages.scm
 
 CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
