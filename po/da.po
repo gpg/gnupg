@@ -4989,7 +4989,7 @@ msgid "Key is superseded"
 msgstr "Nøglen er blevet afløst"
 
 msgid "Key has been compromised"
-msgstr "Nøglen er blevet komprimeret"
+msgstr "Nøglen er blevet kompromitteret"
 
 msgid "Key is no longer used"
 msgstr "Nøglen bruges ikke længere"
