@@ -17,6 +17,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ *
+ * SPDX-License-Identifier: GPL-3.0+
  */
 
 #ifndef DIRMNGR_H
@@ -246,6 +248,16 @@ gpg_error_t gnupg_http_tls_verify_cb (void *opaque,
 
 /*-- loadswdb.c --*/
 gpg_error_t dirmngr_load_swdb (ctrl_t ctrl, int force);
+
+
+/*-- domaininfo.c --*/
+void domaininfo_print_stats (void);
+int  domaininfo_is_wkd_not_supported (const char *domain);
+void domaininfo_set_no_name (const char *domain);
+void domaininfo_set_wkd_supported (const char *domain);
+void domaininfo_set_wkd_not_supported (const char *domain);
+void domaininfo_set_wkd_not_found (const char *domain);
+
 
 
 #endif /*DIRMNGR_H*/

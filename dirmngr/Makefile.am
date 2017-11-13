@@ -16,6 +16,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <https://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: GPL-3.0+
 
 ## Process this file with automake to produce Makefile.in
 
@@ -57,6 +59,7 @@ noinst_HEADERS = dirmngr.h crlcache.h crlfetch.h misc.h
 
 dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
 	certcache.c certcache.h \
+	domaininfo.c \
 	loadswdb.c \
 	cdb.h cdblib.c misc.c dirmngr-err.h  \
 	ocsp.c ocsp.h validate.c validate.h  \
