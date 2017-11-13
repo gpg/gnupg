@@ -3000,26 +3000,33 @@ handle_connections (gnupg_fd_t listen_fd,
 	   next timeout.  */
 	continue;
 
+      /* The inotify fds are set even when a shutdown is pending (see
+       * above).  So we must handle them in any case.  To avoid that
+       * they trigger a second time we close them immediately.  */
+      if (sock_inotify_fd != -1
+          && FD_ISSET (sock_inotify_fd, &read_fdset)
+          && gnupg_inotify_has_name (sock_inotify_fd, GPG_AGENT_SOCK_NAME))
+        {
+          shutdown_pending = 1;
+          close (sock_inotify_fd);
+          sock_inotify_fd = -1;
+          log_info ("socket file has been removed - shutting down\n");
+        }
+
+      if (home_inotify_fd != -1
+          && FD_ISSET (home_inotify_fd, &read_fdset))
+        {
+          shutdown_pending = 1;
+          close (home_inotify_fd);
+          home_inotify_fd = -1;
+          log_info ("homedir has been removed - shutting down\n");
+        }
+
       if (!shutdown_pending)
         {
           int idx;
           ctrl_t ctrl;
           npth_t thread;
-
-          if (sock_inotify_fd != -1
-              && FD_ISSET (sock_inotify_fd, &read_fdset)
-              && gnupg_inotify_has_name (sock_inotify_fd, GPG_AGENT_SOCK_NAME))
-            {
-              shutdown_pending = 1;
-              log_info ("socket file has been removed - shutting down\n");
-            }
-
-          if (home_inotify_fd != -1
-              && FD_ISSET (home_inotify_fd, &read_fdset))
-            {
-              shutdown_pending = 1;
-              log_info ("homedir has been removed - shutting down\n");
-            }
 
           for (idx=0; idx < DIM(listentbl); idx++)
             {
