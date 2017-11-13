@@ -48,7 +48,7 @@
  (define setup-extended-key-format (setup* "extended-key-format"))
 
  (define all-tests
-   (parse-makefile-expand (in-srcdir "tests" "openpgp" "Makefile.am")
+   (parse-makefile-expand "Makefile"
 			  (lambda (filename port key) (parse-makefile port key))
 			  "XTESTS"))
 
