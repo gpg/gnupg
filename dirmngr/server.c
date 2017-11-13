@@ -18,6 +18,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ *
+ * SPDX-License-Identifier: GPL-3.0+
  */
 
 #include <config.h>
@@ -833,11 +835,13 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
   char *mbox = NULL;
   char *domainbuf = NULL;
   char *domain;     /* Points to mbox or domainbuf.  */
+  char *domain_orig;/* Points to mbox.  */
   char sha1buf[20];
   char *uri = NULL;
   char *encodedhash = NULL;
   int opt_submission_addr;
   int opt_policy_flags;
+  int is_wkd_query;   /* True if this is a real WKD query.  */
   int no_log = 0;
   char portstr[20] = { 0 };
 
@@ -846,6 +850,7 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
   if (has_option (line, "--quick"))
     ctrl->timeout = opt.connect_quick_timeout;
   line = skip_options (line);
+  is_wkd_query = !(opt_policy_flags || opt_submission_addr);
 
   mbox = mailbox_from_userid (line);
   if (!mbox || !(domain = strchr (mbox, '@')))
@@ -854,6 +859,18 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
       goto leave;
     }
   *domain++ = 0;
+  domain_orig = domain;
+
+  /* First check whether we already know that the domain does not
+   * support WKD.  */
+  if (is_wkd_query)
+    {
+      if (domaininfo_is_wkd_not_supported (domain_orig))
+        {
+          err = gpg_error (GPG_ERR_NO_DATA);
+          goto leave;
+        }
+    }
 
   /* Check for SRV records.  */
   if (1)
@@ -962,6 +979,29 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
         err = ks_action_fetch (ctrl, uri, outfp);
         es_fclose (outfp);
         ctrl->server_local->inhibit_data_logging = 0;
+        /* Register the result under the domain name of MBOX. */
+        switch (gpg_err_code (err))
+          {
+          case 0:
+            domaininfo_set_wkd_supported (domain_orig);
+            break;
+
+          case GPG_ERR_NO_NAME:
+            /* There is no such domain.  */
+            domaininfo_set_no_name (domain_orig);
+            break;
+
+          case GPG_ERR_NO_DATA:
+            if (is_wkd_query) /* Mark that - we will latter do a check.  */
+              domaininfo_set_wkd_not_found (domain_orig);
+            else if (opt_policy_flags) /* No policy file - no support.  */
+              domaininfo_set_wkd_not_supported (domain_orig);
+            break;
+
+          default:
+            /* Don't register other errors.  */
+            break;
+          }
       }
   }
 

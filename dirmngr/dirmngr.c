@@ -17,6 +17,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ *
+ * SPDX-License-Identifier: GPL-3.0+
  */
 
 #include <config.h>
@@ -1871,6 +1873,7 @@ handle_signal (int signo)
 
     case SIGUSR1:
       cert_cache_print_stats ();
+      domaininfo_print_stats ();
       break;
 
     case SIGUSR2:
