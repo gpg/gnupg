@@ -205,7 +205,7 @@ maybe_create_keybox (char *filename, int force, int *r_created)
 
   /* The file does not yet exist, create it now. */
   oldmask = umask (077);
-  fp = fopen (filename, "w");
+  fp = fopen (filename, "wb");
   if (!fp)
     {
       rc = gpg_error_from_syserror ();
