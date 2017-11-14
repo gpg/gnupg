@@ -1041,15 +1041,16 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     - 4 :: Key is stored on a smartcard.
 
 *** PROGRESS <what> <char> <cur> <total> [<units>]
-    Used by the primegen and Public key functions to indicate
+    Used by the primegen and public key functions to indicate
     progress.  <char> is the character displayed with no --status-fd
     enabled, with the linefeed replaced by an 'X'.  <cur> is the
     current amount done and <total> is amount to be done; a <total> of
-    0 indicates that the total amount is not known. The condition
+    0 indicates that the total amount is not known. Both are
+    non-negative integers.  The condition
       :       TOTAL && CUR == TOTAL
     may be used to detect the end of an operation.
 
-    Well known values for WHAT are:
+    Well known values for <what> are:
 
            - pk_dsa   :: DSA key generation
            - pk_elg   :: Elgamal key generation
@@ -1064,7 +1065,9 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
                           the data of a smartcard.
            - card_busy :: A smartcard is still working
 
-    <units> is sometines used to describe the units for <current> and
+    When <what> refers to a file path, it may be truncated.
+
+    <units> is sometimes used to describe the units for <current> and
     <total>.  For example "B", "KiB", or "MiB".
 
 *** BACKUP_KEY_CREATED <fingerprint> <fname>
