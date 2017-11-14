@@ -158,6 +158,7 @@ insert_or_update (const char *domain,
   di_new = xtrycalloc (1, sizeof *di + strlen (domain));
   if (!di_new)
     return;  /* Out of core - we ignore this.  */
+  strcpy (di_new->name, domain);
 
   /* Need to do another lookup because the malloc is a system call and
    * thus the hash array may have been changed by another thread.  */
