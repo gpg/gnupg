@@ -80,7 +80,8 @@
 
 #define PARM_ERROR(t) assuan_set_error (ctx, \
                                         gpg_error (GPG_ERR_ASS_PARAMETER), (t))
-#define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
+#define set_error(e,t) (ctx ? assuan_set_error (ctx, gpg_error (e), (t)) \
+                        /**/: gpg_error (e))
 
 
 
@@ -828,15 +829,11 @@ cmd_dns_cert (assuan_context_t ctx, char *line)
 
 
 
-static const char hlp_wkd_get[] =
-  "WKD_GET [--submission-address|--policy-flags] <user_id>\n"
-  "\n"
-  "Return the key or other info for <user_id>\n"
-  "from the Web Key Directory.";
+/* Core of cmd_wkd_get and task_check_wkd_support.  If CTX is NULL
+ * this function will not write anything to the assuan output.  */
 static gpg_error_t
-cmd_wkd_get (assuan_context_t ctx, char *line)
+proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
 {
-  ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
   char *mbox = NULL;
   char *domainbuf = NULL;
@@ -895,7 +892,8 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
       domainlen = strlen (domain);
       for (i = 0; i < srvscount; i++)
         {
-          log_debug ("srv: trying '%s:%hu'\n", srvs[i].target, srvs[i].port);
+          if (DBG_DNS)
+            log_debug ("srv: trying '%s:%hu'\n", srvs[i].target, srvs[i].port);
           targetlen = strlen (srvs[i].target);
           if ((targetlen > domainlen + 1
                && srvs[i].target[targetlen - domainlen - 1] == '.'
@@ -972,19 +970,24 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
   {
     estream_t outfp;
 
-    outfp = es_fopencookie (ctx, "w", data_line_cookie_functions);
-    if (!outfp)
+    outfp = ctx? es_fopencookie (ctx, "w", data_line_cookie_functions) : NULL;
+    if (!outfp && ctx)
       err = set_error (GPG_ERR_ASS_GENERAL,
                        "error setting up a data stream");
     else
       {
-        if (no_log)
-          ctrl->server_local->inhibit_data_logging = 1;
-        ctrl->server_local->inhibit_data_logging_now = 0;
-        ctrl->server_local->inhibit_data_logging_count = 0;
+        if (ctrl->server_local)
+          {
+            if (no_log)
+              ctrl->server_local->inhibit_data_logging = 1;
+            ctrl->server_local->inhibit_data_logging_now = 0;
+            ctrl->server_local->inhibit_data_logging_count = 0;
+          }
         err = ks_action_fetch (ctrl, uri, outfp);
         es_fclose (outfp);
-        ctrl->server_local->inhibit_data_logging = 0;
+        if (ctrl->server_local)
+          ctrl->server_local->inhibit_data_logging = 0;
+
         /* Register the result under the domain name of MBOX. */
         switch (gpg_err_code (err))
           {
@@ -998,8 +1001,9 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
             break;
 
           case GPG_ERR_NO_DATA:
-            if (is_wkd_query) /* Mark that and schedule a check.  */
+            if (is_wkd_query && ctrl->server_local)
               {
+                /* Mark that and schedule a check.  */
                 domaininfo_set_wkd_not_found (domain_orig);
                 workqueue_add_task (task_check_wkd_support, domain_orig,
                                     ctrl->server_local->session_id, 1);
@@ -1020,6 +1024,23 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
   xfree (encodedhash);
   xfree (mbox);
   xfree (domainbuf);
+  return err;
+}
+
+
+static const char hlp_wkd_get[] =
+  "WKD_GET [--submission-address|--policy-flags] <user_id>\n"
+  "\n"
+  "Return the key or other info for <user_id>\n"
+  "from the Web Key Directory.";
+static gpg_error_t
+cmd_wkd_get (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+
+  err = proc_wkd_get (ctrl, ctx, line);
+
   return leave_cmd (ctx, err);
 }
 
@@ -1029,10 +1050,19 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
 static const char *
 task_check_wkd_support (ctrl_t ctrl, const char *domain)
 {
+  char *string;
+
   if (!ctrl || !domain)
     return "check_wkd_support";
 
-  log_debug ("FIXME: Implement %s\n", __func__);
+  string = strconcat ("--policy-flags foo@", domain, NULL);
+  if (!string)
+    log_error ("%s: %s\n", __func__, gpg_strerror (gpg_error_from_syserror ()));
+  else
+    {
+      proc_wkd_get (ctrl, NULL, string);
+      xfree (string);
+    }
 
   return NULL;
 }
@@ -2800,12 +2830,12 @@ dirmngr_status (ctrl_t ctrl, const char *keyword, ...)
   gpg_error_t err = 0;
   va_list arg_ptr;
   const char *text;
+  assuan_context_t ctx;
 
   va_start (arg_ptr, keyword);
 
-  if (ctrl->server_local)
+  if (ctrl->server_local && (ctx = ctrl->server_local->assuan_ctx))
     {
-      assuan_context_t ctx = ctrl->server_local->assuan_ctx;
       char buf[950], *p;
       size_t n;
 
@@ -2835,10 +2865,10 @@ gpg_error_t
 dirmngr_status_help (ctrl_t ctrl, const char *text)
 {
   gpg_error_t err = 0;
+  assuan_context_t ctx;
 
-  if (ctrl->server_local)
+  if (ctrl->server_local && (ctx = ctrl->server_local->assuan_ctx))
     {
-      assuan_context_t ctx = ctrl->server_local->assuan_ctx;
       char buf[950], *p;
       size_t n;
 
@@ -2888,7 +2918,10 @@ dirmngr_status_printf (ctrl_t ctrl, const char *keyword,
 {
   gpg_error_t err;
   va_list arg_ptr;
-  assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+  assuan_context_t ctx;
+
+  if (!ctrl->server_local || !(ctx = ctrl->server_local->assuan_ctx))
+    return 0;
 
   va_start (arg_ptr, format);
   err = vprint_assuan_status (ctx, keyword, format, arg_ptr);

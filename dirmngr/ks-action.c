@@ -296,7 +296,8 @@ ks_action_get (ctrl_t ctrl, uri_item_t keyservers,
 
 
 /* Retrieve keys from URL and write the result to the provided output
-   stream OUTFP.  */
+ * stream OUTFP.  If OUTFP is NULL the data is written to the bit
+ * bucket. */
 gpg_error_t
 ks_action_fetch (ctrl_t ctrl, const char *url, estream_t outfp)
 {
