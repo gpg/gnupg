@@ -90,6 +90,9 @@ struct server_local_s
   /* Data used to associate an Assuan context with local server data */
   assuan_context_t assuan_ctx;
 
+  /* The session id (a counter).  */
+  unsigned int session_id;
+
   /* Per-session LDAP servers.  */
   ldap_server_t ldapservers;
 
@@ -124,6 +127,9 @@ static es_cookie_io_functions_t data_line_cookie_functions =
     data_line_cookie_close
   };
 
+
+/* Local prototypes */
+static const char *task_check_wkd_support (ctrl_t ctrl, const char *domain);
 
 
 
@@ -992,8 +998,12 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
             break;
 
           case GPG_ERR_NO_DATA:
-            if (is_wkd_query) /* Mark that - we will latter do a check.  */
-              domaininfo_set_wkd_not_found (domain_orig);
+            if (is_wkd_query) /* Mark that and schedule a check.  */
+              {
+                domaininfo_set_wkd_not_found (domain_orig);
+                workqueue_add_task (task_check_wkd_support, domain_orig,
+                                    ctrl->server_local->session_id, 1);
+              }
             else if (opt_policy_flags) /* No policy file - no support.  */
               domaininfo_set_wkd_not_supported (domain_orig);
             break;
@@ -1011,6 +1021,20 @@ cmd_wkd_get (assuan_context_t ctx, char *line)
   xfree (mbox);
   xfree (domainbuf);
   return leave_cmd (ctx, err);
+}
+
+
+/* A task to check whether DOMAIN supports WKD.  This is done by
+ * checking whether the policy flags file can be read.  */
+static const char *
+task_check_wkd_support (ctrl_t ctrl, const char *domain)
+{
+  if (!ctrl || !domain)
+    return "check_wkd_support";
+
+  log_debug ("FIXME: Implement %s\n", __func__);
+
+  return NULL;
 }
 
 
@@ -2428,12 +2452,15 @@ static const char hlp_getinfo[] =
   "pid         - Return the process id of the server.\n"
   "tor         - Return OK if running in Tor mode\n"
   "dnsinfo     - Return info about the DNS resolver\n"
-  "socket_name - Return the name of the socket.\n";
+  "socket_name - Return the name of the socket.\n"
+  "session_id  - Return the current session_id.\n"
+  "workqueue   - Inspect the work queue\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
+  char numbuf[50];
 
   if (!strcmp (line, "version"))
     {
@@ -2442,8 +2469,6 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "pid"))
     {
-      char numbuf[50];
-
       snprintf (numbuf, sizeof numbuf, "%lu", (unsigned long)getpid ());
       err = assuan_send_data (ctx, numbuf, strlen (numbuf));
     }
@@ -2451,6 +2476,11 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     {
       const char *s = dirmngr_get_current_socket_name ();
       err = assuan_send_data (ctx, s, strlen (s));
+    }
+  else if (!strcmp (line, "session_id"))
+    {
+      snprintf (numbuf, sizeof numbuf, "%u", ctrl->server_local->session_id);
+      err = assuan_send_data (ctx, numbuf, strlen (numbuf));
     }
   else if (!strcmp (line, "tor"))
     {
@@ -2485,6 +2515,11 @@ cmd_getinfo (assuan_context_t ctx, char *line)
           assuan_set_okay_line (ctx, "- System resolver (w/o Tor support)");
 #endif
         }
+      err = 0;
+    }
+  else if (!strcmp (line, "workqueue"))
+    {
+      workqueue_dump_queue (ctrl);
       err = 0;
     }
   else
@@ -2614,9 +2649,10 @@ dirmngr_assuan_log_monitor (assuan_context_t ctx, unsigned int cat,
 
 
 /* Startup the server and run the main command loop.  With FD = -1,
-   use stdin/stdout. */
+ * use stdin/stdout.  SESSION_ID is either 0 or a unique number
+ * identifying a session.  */
 void
-start_command_handler (assuan_fd_t fd)
+start_command_handler (assuan_fd_t fd, unsigned int session_id)
 {
   static const char hello[] = "Dirmngr " VERSION " at your service";
   static char *hello_line;
@@ -2692,6 +2728,8 @@ start_command_handler (assuan_fd_t fd)
   assuan_set_hello_line (ctx, hello_line);
   assuan_register_option_handler (ctx, option_handler);
   assuan_register_reset_notify (ctx, reset_notify);
+
+  ctrl->server_local->session_id = session_id;
 
   for (;;)
     {
@@ -2792,8 +2830,7 @@ dirmngr_status (ctrl_t ctrl, const char *keyword, ...)
 }
 
 
-/* Print a help status line.  TEXTLEN gives the length of the text
-   from TEXT to be printed.  The function splits text at LFs.  */
+/* Print a help status line.  The function splits text at LFs.  */
 gpg_error_t
 dirmngr_status_help (ctrl_t ctrl, const char *text)
 {
@@ -2819,6 +2856,26 @@ dirmngr_status_help (ctrl_t ctrl, const char *text)
       while (!err && *text);
     }
 
+  return err;
+}
+
+
+/* Print a help status line using a printf like format.  The function
+ * splits text at LFs.  */
+gpg_error_t
+dirmngr_status_helpf (ctrl_t ctrl, const char *format, ...)
+{
+  va_list arg_ptr;
+  gpg_error_t err;
+  char *buf;
+
+  va_start (arg_ptr, format);
+  buf = es_vbsprintf (format, arg_ptr);
+  err = buf? 0 : gpg_error_from_syserror ();
+  va_end (arg_ptr);
+  if (!err)
+    err = dirmngr_status_help (ctrl, buf);
+  es_free (buf);
   return err;
 }
 

@@ -60,6 +60,7 @@ noinst_HEADERS = dirmngr.h crlcache.h crlfetch.h misc.h
 dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
 	certcache.c certcache.h \
 	domaininfo.c \
+	workqueue.c \
 	loadswdb.c \
 	cdb.h cdblib.c misc.c dirmngr-err.h  \
 	ocsp.c ocsp.h validate.c validate.h  \

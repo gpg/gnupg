@@ -1134,7 +1134,7 @@ main (int argc, char **argv)
       cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
       http_register_netactivity_cb (netactivity_action);
-      start_command_handler (ASSUAN_INVALID_FD);
+      start_command_handler (ASSUAN_INVALID_FD, 0);
       shutdown_reaper ();
     }
 #ifndef HAVE_W32_SYSTEM
@@ -1939,7 +1939,10 @@ housekeeping_thread (void *arg)
       network_activity_seen = 0;
       if (opt.allow_version_check)
         dirmngr_load_swdb (&ctrlbuf, 0);
+      workqueue_run_global_tasks (&ctrlbuf, 1);
     }
+  else
+    workqueue_run_global_tasks (&ctrlbuf, 0);
 
   dirmngr_deinit_default_ctrl (&ctrlbuf);
 
@@ -2034,6 +2037,8 @@ check_nonce (assuan_fd_t fd, assuan_sock_nonce_t *nonce)
 static void *
 start_connection_thread (void *arg)
 {
+  static unsigned int last_session_id;
+  unsigned int session_id;
   union int_and_ptr_u argval;
   gnupg_fd_t fd;
 
@@ -2055,11 +2060,16 @@ start_connection_thread (void *arg)
   if (opt.verbose)
     log_info (_("handler for fd %d started\n"), FD2INT (fd));
 
-  start_command_handler (fd);
+  session_id = ++last_session_id;
+  if (!session_id)
+    session_id = ++last_session_id;
+  start_command_handler (fd, session_id);
 
   if (opt.verbose)
     log_info (_("handler for fd %d terminated\n"), FD2INT (fd));
   active_connections--;
+
+  workqueue_run_post_session_tasks (session_id);
 
 #ifndef HAVE_W32_SYSTEM
   argval.afd = ASSUAN_INVALID_FD;

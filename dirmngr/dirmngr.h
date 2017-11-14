@@ -228,9 +228,11 @@ ksba_cert_t get_cert_local_ski (ctrl_t ctrl,
 gpg_error_t get_istrusted_from_client (ctrl_t ctrl, const char *hexfpr);
 int dirmngr_assuan_log_monitor (assuan_context_t ctx, unsigned int cat,
                                 const char *msg);
-void start_command_handler (gnupg_fd_t fd);
+void start_command_handler (gnupg_fd_t fd, unsigned int session_id);
 gpg_error_t dirmngr_status (ctrl_t ctrl, const char *keyword, ...);
 gpg_error_t dirmngr_status_help (ctrl_t ctrl, const char *text);
+gpg_error_t dirmngr_status_helpf (ctrl_t ctrl, const char *format,
+                                  ...) GPGRT_ATTR_PRINTF(2,3);
 gpg_error_t dirmngr_status_printf (ctrl_t ctrl, const char *keyword,
                                    const char *format,
                                    ...) GPGRT_ATTR_PRINTF(3,4);
@@ -257,6 +259,15 @@ void domaininfo_set_no_name (const char *domain);
 void domaininfo_set_wkd_supported (const char *domain);
 void domaininfo_set_wkd_not_supported (const char *domain);
 void domaininfo_set_wkd_not_found (const char *domain);
+
+/*-- workqueue.c --*/
+typedef const char *(*wqtask_t)(ctrl_t ctrl, const char *args);
+
+void workqueue_dump_queue (ctrl_t ctrl);
+gpg_error_t workqueue_add_task (wqtask_t func, const char *args,
+                                unsigned int session_id, int need_network);
+void workqueue_run_global_tasks (ctrl_t ctrl, int with_network);
+void workqueue_run_post_session_tasks (unsigned int session_id);
 
 
 
