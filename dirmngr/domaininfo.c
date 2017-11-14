@@ -26,7 +26,18 @@
 #include "dirmngr.h"
 
 
-#define NO_OF_DOMAINBUCKETS 103
+/* Number of bucket for the hash array and limit for the length of a
+ * bucket chain.  For debugging values of 13 and 10 are more suitable
+ * and a command like
+ *   for j   in a b c d e f g h i j k l m n o p q r s t u v w z y z; do \
+ *     for i in a b c d e f g h i j k l m n o p q r s t u v w z y z; do \
+ *       gpg-connect-agent --dirmngr "wkd_get foo@$i.$j.gnupg.net" /bye \
+ *       >/dev/null ; done; done
+ * will quickly add a couple of domains.
+ */
+#define NO_OF_DOMAINBUCKETS  103
+#define MAX_DOMAINBUCKET_LEN  20
+
 
 /* Object to keep track of a domain name.  */
 struct domaininfo_s
@@ -74,13 +85,18 @@ domaininfo_print_stats (void)
   int bidx;
   domaininfo_t di;
   int count, no_name, wkd_not_found, wkd_supported, wkd_not_supported;
+  int len, minlen, maxlen;
 
+  count = no_name = wkd_not_found = wkd_supported = wkd_not_supported = 0;
+  maxlen = 0;
+  minlen = -1;
   for (bidx = 0; bidx < NO_OF_DOMAINBUCKETS; bidx++)
     {
-      count = no_name = wkd_not_found = wkd_supported = wkd_not_supported = 0;
+      len = 0;
       for (di = domainbuckets[bidx]; di; di = di->next)
         {
           count++;
+          len++;
           if (di->no_name)
             no_name++;
           if (di->wkd_not_found)
@@ -90,11 +106,16 @@ domaininfo_print_stats (void)
           if (di->wkd_not_supported)
             wkd_not_supported++;
         }
-      if (count)
-        log_info ("domaininfo: chain %3d length=%d nn=%d nf=%d s=%d ns=%d\n",
-                  bidx, count, no_name,
-                  wkd_not_found, wkd_supported, wkd_not_supported);
+      if (len > maxlen)
+        maxlen = len;
+      if (minlen == -1 || len < minlen)
+        minlen = len;
     }
+  log_info ("domaininfo: items=%d chainlen=%d..%d nn=%d nf=%d ns=%d s=%d\n",
+            count,
+            minlen > 0? minlen : 0,
+            maxlen,
+            no_name, wkd_not_found, wkd_not_supported, wkd_supported);
 }
 
 
@@ -122,7 +143,9 @@ insert_or_update (const char *domain,
 {
   domaininfo_t di;
   domaininfo_t di_new;
+  domaininfo_t di_cut;
   u32 hash;
+  int count;
 
   hash = hash_domain (domain);
   for (di = domainbuckets[hash]; di; di = di->next)
@@ -138,7 +161,8 @@ insert_or_update (const char *domain,
 
   /* Need to do another lookup because the malloc is a system call and
    * thus the hash array may have been changed by another thread.  */
-  for (di = domainbuckets[hash]; di; di = di->next)
+  di_cut = NULL;
+  for (count=0, di = domainbuckets[hash]; di; di = di->next, count++)
     if (!strcmp (di->name, domain))
       {
         callback (di, 0);  /* Update */
@@ -146,10 +170,32 @@ insert_or_update (const char *domain,
         return;
       }
 
-  callback (di_new, 1);  /* Insert */
+  /* Before we insert we need to check whether the chain gets too long.  */
+  di_cut = NULL;
+  if (count >= MAX_DOMAINBUCKET_LEN)
+    {
+      for (count=0, di = domainbuckets[hash]; di; di = di->next, count++)
+        if (count >= MAX_DOMAINBUCKET_LEN/2)
+          {
+            di_cut = di->next;
+            di->next = NULL;
+            break;
+          }
+    }
+
+  /* Insert */
+  callback (di_new, 1);
   di = di_new;
   di->next = domainbuckets[hash];
   domainbuckets[hash] = di;
+
+  /* Remove the rest of the cutted chain.  */
+  while (di_cut)
+    {
+      di = di_cut->next;
+      xfree (di_cut);
+      di_cut = di;
+    }
 }
 
 
