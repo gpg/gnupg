@@ -356,7 +356,7 @@ wait_for_sock (int secs, int which, const char *sockname,
             {
               log_info (which == 1?
                         _("connection to the dirmngr established\n"):
-                        _("connection to agent established\n"));
+                        _("connection to the agent established\n"));
               *did_success_msg = 1;
             }
           break;
@@ -513,7 +513,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
     }
 
   if (debug && !did_success_msg)
-    log_debug ("connection to agent established\n");
+    log_debug ("connection to the agent established\n");
 
   err = assuan_transact (ctx, "RESET",
                          NULL, NULL, NULL, NULL, NULL, NULL);
@@ -530,7 +530,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                                 NULL, NULL, NULL, NULL, NULL, NULL))
             {
               if (verbose)
-                log_info (_("connection to agent is in restricted mode\n"));
+                log_info (_("connection to the agent is in restricted mode\n"));
               err = 0;
             }
         }
@@ -587,7 +587,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
         dirmngr_program = gnupg_module_name (GNUPG_MODULE_NAME_DIRMNGR);
 
       if (verbose)
-        log_info (_("no running Dirmngr - starting '%s'\n"),
+        log_info (_("no running dirmngr - starting '%s'\n"),
                   dirmngr_program);
 
       if (status_cb)
