@@ -307,8 +307,19 @@ unlock_spawning (lock_spawn_t *lock, const char *name)
     }
 }
 
+
+/* Helper for start_new_gpg_agent and start_new_dirmngr.
+ * Values for WHICH are:
+ *   0 - Start gpg-agent
+ *   1 - Start dirmngr
+ * SECS give the number of seconds to wait.  SOCKNAME is the name of
+ * the socket to connect.  VERBOSE is the usual verbose flag. CTX is
+ * the assuan context.  DID_SUCCESS_MSG will be set to 1 if a success
+ * messages has been printed.
+ */
 static gpg_error_t
-wait_for_sock (int secs, const char *name, const char *sockname, int verbose, assuan_context_t ctx, int *did_success_msg)
+wait_for_sock (int secs, int which, const char *sockname,
+               int verbose, assuan_context_t ctx, int *did_success_msg)
 {
   gpg_error_t err = 0;
   int target_us = secs * 1000000;
@@ -329,8 +340,10 @@ wait_for_sock (int secs, const char *name, const char *sockname, int verbose, as
           secsleft = (target_us - elapsed_us)/1000000;
           if (secsleft < lastalert)
             {
-              log_info (_("waiting for the %s to come up ... (%ds)\n"),
-                        name, secsleft);
+              log_info (which == 1?
+                        _("waiting for the dirmngr to come up ... (%ds)\n"):
+                        _("waiting for the agent to come up ... (%ds)\n"),
+                        secsleft);
               lastalert = secsleft;
             }
         }
@@ -341,8 +354,9 @@ wait_for_sock (int secs, const char *name, const char *sockname, int verbose, as
         {
           if (verbose)
             {
-              log_info (_("connection to %s established\n"),
-                        name);
+              log_info (which == 1?
+                        _("connection to the dirmngr established\n"):
+                        _("connection to agent established\n"));
               *did_success_msg = 1;
             }
           break;
@@ -353,6 +367,7 @@ wait_for_sock (int secs, const char *name, const char *sockname, int verbose, as
     }
   return err;
 }
+
 
 /* Try to connect to the agent via socket or start it if it is not
    running and AUTOSTART is set.  Handle the server's initial
@@ -480,7 +495,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
             log_error ("failed to start agent '%s': %s\n",
                        agent_program, gpg_strerror (err));
           else
-            err = wait_for_sock (SECS_TO_WAIT_FOR_AGENT, "agent",
+            err = wait_for_sock (SECS_TO_WAIT_FOR_AGENT, 0,
                                  sockname, verbose, ctx, &did_success_msg);
         }
 
@@ -614,7 +629,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
             log_error ("failed to start the dirmngr '%s': %s\n",
                        dirmngr_program, gpg_strerror (err));
           else
-            err = wait_for_sock (SECS_TO_WAIT_FOR_DIRMNGR, "dirmngr",
+            err = wait_for_sock (SECS_TO_WAIT_FOR_DIRMNGR, 1,
                                  sockname, verbose, ctx, &did_success_msg);
         }
 
