@@ -1448,8 +1448,9 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	  if (!rc)
 	    {
 	      /* Key found.  */
-	      log_info (_("automatically retrieved '%s' via %s\n"),
-			name, mechanism);
+              if (opt.verbose)
+                log_info (_("automatically retrieved '%s' via %s\n"),
+                          name, mechanism);
 	      break;
 	    }
 	  if (gpg_err_code (rc) != GPG_ERR_NO_PUBKEY
