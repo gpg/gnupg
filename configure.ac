@@ -1814,7 +1814,7 @@ AC_DEFINE_UNQUOTED(DIRMNGR_DEFAULT_KEYSERVER,
 AC_DEFINE_UNQUOTED(GPGEXT_GPG, "gpg", [The standard binary file suffix])
 
 if test "$have_w32_system" = yes; then
-  AC_DEFINE_UNQUOTED(GNUPG_REGISTRY_DIR, "\\\\Software\\\\GNU\\\\GnuPG",
+  AC_DEFINE_UNQUOTED(GNUPG_REGISTRY_DIR, "Software\\\\GNU\\\\GnuPG",
                      [The directory part of the W32 registry keys])
 fi
 
