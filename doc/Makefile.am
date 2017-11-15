@@ -91,7 +91,7 @@ myman_sources = gnupg7.texi gpg.texi gpgsm.texi gpg-agent.texi \
 	        dirmngr.texi scdaemon.texi tools.texi wks.texi
 myman_pages   = gpgsm.1 gpg-agent.1 dirmngr.8 scdaemon.1 \
                 watchgnupg.1 gpgconf.1 addgnupghome.8 gpg-preset-passphrase.1 \
-		gpg-connect-agent.1 gpgparsemail.1 symcryptrun.1 \
+		gpg-connect-agent.1 gpgparsemail.1 symcryptrun.1 gpgtar.1 \
 		applygnupgdefaults.8 gpg-wks-client.1 gpg-wks-server.1 \
 		dirmngr-client.1
 if USE_GPG2_HACK
@@ -110,7 +110,7 @@ CLEANFILES = yat2m mkdefsinc defs.inc
 DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
                  gnupg-card-architecture.eps \
                  gnupg-module-overview.eps \
-		 $(myman_pages) gpg-zip.1 gnupg.7
+		 $(myman_pages) gnupg.7
 
 yat2m: yat2m.c
 	$(CC_FOR_BUILD) -o $@ $(srcdir)/yat2m.c

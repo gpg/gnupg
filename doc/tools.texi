@@ -20,7 +20,7 @@ GnuPG comes with a couple of smaller tools:
 * dirmngr-client::        How to use the Dirmngr client tool.
 * gpgparsemail::          Parse a mail message into an annotated format
 * symcryptrun::           Call a simple symmetric encryption tool.
-* gpg-zip::               Encrypt or sign files into an archive.
+* gpgtar::                Encrypt or sign files into an archive.
 @end menu
 
 @c
@@ -1894,23 +1894,19 @@ The possible exit status codes of @command{symcryptrun} are:
 
 
 @c
-@c  GPG-ZIP
+@c  GPGTAR
 @c
-@c The original manpage on which this section is based was written
-@c by Colin Tuckley  <colin@tuckley.org> and Daniel Leidert
-@c <daniel.leidert@wgdd.de> for the Debian distribution (but may be used by
-@c others).
-@manpage gpg-zip.1
-@node gpg-zip
+@manpage gpgtar.1
+@node gpgtar
 @section Encrypt or sign files into an archive
 @ifset manverb
-.B gpg-zip
+.B gpgtar
 \- Encrypt or sign files into an archive
 @end ifset
 
 @mansect synopsis
 @ifset manverb
-.B  gpg-zip
+.B  gpgtar
 .RI [ options ]
 .I filename1
 .I [ filename2, ... ]
@@ -1919,61 +1915,130 @@ The possible exit status codes of @command{symcryptrun} are:
 @end ifset
 
 @mansect description
-@command{gpg-zip} encrypts or signs files into an archive.  It is an
+@command{gpgtar} encrypts or signs files into an archive.  It is an
 gpg-ized tar using the same format as used by PGP's PGP Zip.
 
 @manpause
 @noindent
-@command{gpg-zip} is invoked this way:
+@command{gpgtar} is invoked this way:
 
 @example
-gpg-zip [options] @var{filename1} [@var{filename2}, ...] @var{directory} [@var{directory2}, ...]
+gpgtar [options] @var{filename1} [@var{filename2}, ...] @var{directory} [@var{directory2}, ...]
 @end example
 
 @mansect options
 @noindent
-@command{gpg-zip} understands these options:
+@command{gpgtar} understands these options:
 
 @table @gnupgtabopt
+
+@item --create
+@opindex create
+Put given files and directories into a vanilla ``ustar'' archive.
+
+@item --extract
+@opindex extract
+Extract all files from a vanilla ``ustar'' archive.
 
 @item --encrypt
 @itemx -e
 @opindex encrypt
-Encrypt data.  This option may be combined with @option{--symmetric} (for  output that may be decrypted via a secret key or a passphrase).
+Encrypt given files and directories into an archive.  This option may
+be combined with option @option{--symmetric} for an archive that may
+be decrypted via a secret key or a passphrase.
 
 @item --decrypt
 @itemx -d
 @opindex decrypt
-Decrypt data.
+Extract all files from an encrypted archive.
+
+@item --sign
+@itemx -s
+Make a signed archive from the given files and directories.  Thsi can
+be combined with option @option{--encrypt} to create a signed and then
+encrypted archive.
+
+@item --list-archive
+@itemx -t
+@opindex list-archive
+List the contents of the specified archive.
 
 @item --symmetric
 @itemx -c
 Encrypt with a symmetric cipher using a passphrase.  The default
-symmetric cipher used is CAST5, but may be chosen with the
+symmetric cipher used is @value{GPGSYMENCALGO}, but may be chosen with the
 @option{--cipher-algo} option to @command{gpg}.
-
-@item --sign
-@itemx -s
-Make a signature.  See @command{gpg}.
 
 @item --recipient @var{user}
 @itemx -r @var{user}
 @opindex recipient
-Encrypt for user id @var{user}. See @command{gpg}.
+Encrypt for user id @var{user}. For details see @command{gpg}.
 
 @item --local-user @var{user}
 @itemx -u @var{user}
 @opindex local-user
-Use @var{user} as the key to sign with.  See @command{gpg}.
-
-@item --list-archive
-@opindex list-archive
-List the contents of the specified archive.
+Use @var{user} as the key to sign with.  For details see @command{gpg}.
 
 @item --output @var{file}
 @itemx -o @var{file}
 @opindex output
-Write output to specified file @var{file}.
+Write the archive to the specified file @var{file}.
+
+@item --verbose
+@itemx -v
+@opindex verbose
+Enable extra informational output.
+
+@item --quiet
+@itemx -q
+@opindex quiet
+Try to be as quiet as possible.
+
+@item --skip-crypto
+@opindex skip-crypto
+Skip all crypto operations and create or extract vanilla ``ustar''
+archives.
+
+@item --dry-run
+@opindex dry-run
+Do not actually output the extracted files.
+
+@item --directory @var{dir}
+@itemx -C @var{dir}
+@opindex directory
+Extract the files into the directory @var{dir}.  The
+default is to take the directory name from
+the input filename.  If no input filename is known a directory named
+@file{GPGARCH} is used.
+
+@item --files-from @var{file}
+@itemx -T @var{file}
+Take the file names to work from the file @var{file}; one file per
+line.
+
+@item --null
+@opindex null
+Modify option @option{--files-from} to use a binary nul instead of a
+linefeed to separate file names.
+
+@item --openpgp
+@opindex openpgp
+This option has no effect becuase OpenPGP encryption and signing is
+the default.
+
+@item --cms
+@opindex cms
+This option is reserved and shall not be used.  It will eventually be
+used to encrypt or sign using the CMS protocol; but that is not yet
+implemented.
+
+
+@item --set-filename @var{file}
+@opindex set-filename
+Use the last component of @var{file} as the output directory.  The
+default is to take the directory name from the input filename.  If no
+input filename is known a directory named @file{GPGARCH} is used.
+This option is deprecated in favor of option @option{--directory}.
 
 @item --gpg @var{gpgcmd}
 @opindex gpg
@@ -1981,15 +2046,14 @@ Use the specified command @var{gpgcmd} instead of @command{gpg}.
 
 @item --gpg-args @var{args}
 @opindex gpg-args
-Pass the specified options to @command{gpg}.
-
-@item --tar @var{tarcmd}
-@opindex tar
-Use the specified command @var{tarcmd} instead of @command{tar}.
+Pass the specified extra options to @command{gpg}.
 
 @item --tar-args @var{args}
 @opindex tar-args
-Pass the specified options to @command{tar}.
+Assume @var{args} are standard options of the command @command{tar}
+and parse them.  The only supported tar options are "--directory",
+"--files-from", and "--null" This is an obsolete options because those
+supported tar options can also be given directly.
 
 @item --version
 @opindex version
@@ -2017,14 +2081,14 @@ Encrypt the contents of directory @file{mydocs} for user Bob to file
 @file{test1}:
 
 @example
-gpg-zip --encrypt --output test1 --gpg-args  -r Bob mydocs
+gpgtar --encrypt --output test1 -r Bob mydocs
 @end example
 
 @noindent
 List the contents of archive @file{test1}:
 
 @example
-gpg-zip --list-archive test1
+gpgtar --list-archive test1
 @end example
 
 
