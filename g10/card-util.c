@@ -531,9 +531,9 @@ current_card_status (ctrl_t ctrl, estream_t fp,
 
       print_isoname (fp, "Name of cardholder: ", "name", info.disp_name);
       print_name (fp, "Language prefs ...: ", info.disp_lang);
-      tty_fprintf (fp,    "Sex ..............: %s\n",
-                   info.disp_sex == 1? _("male"):
-                   info.disp_sex == 2? _("female") : _("unspecified"));
+      tty_fprintf (fp, "Salutation .......: %s\n",
+                   info.disp_sex == 1? _("Mr."):
+                   info.disp_sex == 2? _("Mrs.") : "");
       print_name (fp, "URL of public key : ", info.pubkey_url);
       print_name (fp, "Login data .......: ", info.login_data);
       if (info.private_do[0])
@@ -1088,7 +1088,7 @@ change_sex (void)
   int rc;
 
   data = cpr_get ("cardedit.change_sex",
-                  _("Sex ((M)ale, (F)emale or space): "));
+                  _("Salutation (M = Mr., F = Mrs., or space): "));
   if (!data)
     return -1;
   trim_spaces (data);
@@ -1109,7 +1109,7 @@ change_sex (void)
 
   rc = agent_scd_setattr ("DISP-SEX", str, 1, NULL );
   if (rc)
-    log_error ("error setting sex: %s\n", gpg_strerror (rc));
+    log_error ("error setting salutation: %s\n", gpg_strerror (rc));
   xfree (data);
   write_sc_op_status (rc);
   return rc;
@@ -1891,7 +1891,8 @@ static struct
     { "fetch"   , cmdFETCH , 0, N_("fetch the key specified in the card URL")},
     { "login"   , cmdLOGIN , 1, N_("change the login name")},
     { "lang"    , cmdLANG  , 1, N_("change the language preferences")},
-    { "sex"     , cmdSEX   , 1, N_("change card holder's sex")},
+    { "salutation",cmdSEX  , 1, N_("change card holder's salutation")},
+    { "sex"       ,cmdSEX  , 1, NULL },  /* Backward compatibility.  */
     { "cafpr"   , cmdCAFPR , 1, N_("change a CA fingerprint")},
     { "forcesig", cmdFORCESIG, 1, N_("toggle the signature force PIN flag")},
     { "generate", cmdGENERATE, 1, N_("generate new keys")},

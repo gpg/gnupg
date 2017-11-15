@@ -98,7 +98,7 @@ static struct {
   { 0x0065, 1,    0, 1, 0, 0, 0, 0, "Cardholder Related Data"},
   { 0x005B, 0, 0x65, 0, 0, 0, 0, 0, "Name" },
   { 0x5F2D, 0, 0x65, 0, 0, 0, 0, 0, "Language preferences" },
-  { 0x5F35, 0, 0x65, 0, 0, 0, 0, 0, "Sex" },
+  { 0x5F35, 0, 0x65, 0, 0, 0, 0, 0, "Salutation" },
   { 0x006E, 1,    0, 1, 0, 0, 0, 0, "Application Related Data" },
   { 0x004F, 0, 0x6E, 1, 0, 0, 0, 0, "AID" },
   { 0x0073, 1,    0, 1, 0, 0, 0, 0, "Discretionary Data Objects" },
