@@ -1193,6 +1193,14 @@ main (int argc, char **argv)
           current_logfile = xstrdup (logfile);
         }
 
+      if (debug_wait)
+        {
+          log_debug ("waiting for debugger - my pid is %u .....\n",
+                     (unsigned int)getpid());
+          gnupg_sleep (debug_wait);
+          log_debug ("... okay\n");
+        }
+
 #ifndef HAVE_W32_SYSTEM
       if (strchr (socket_name, ':'))
         {

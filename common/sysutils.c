@@ -340,11 +340,10 @@ gnupg_usleep (unsigned int usecs)
       struct timespec req;
       struct timespec rem;
 
-      req.tv_sec = 0;
-      req.tv_nsec = usecs * 1000;
-
+      req.tv_sec  = usecs / 1000000;
+      req.tv_nsec = (usecs % 1000000) * 1000;
       while (nanosleep (&req, &rem) < 0 && errno == EINTR)
-        req = rem;
+          req = rem;
     }
 
 #else /*Standard Unix*/

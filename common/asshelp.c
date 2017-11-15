@@ -337,7 +337,10 @@ wait_for_sock (int secs, int which, const char *sockname,
     {
       if (verbose)
         {
-          secsleft = (target_us - elapsed_us)/1000000;
+          secsleft = (target_us - elapsed_us + 999999)/1000000;
+          /* log_clock ("left=%d last=%d targ=%d elap=%d next=%d\n", */
+          /*            secsleft, lastalert, target_us, elapsed_us, */
+          /*            next_sleep_us); */
           if (secsleft < lastalert)
             {
               log_info (which == 1?
