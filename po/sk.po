@@ -1442,6 +1442,10 @@ msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "Akú veľkosť kľúča si prajete? (1024) "
 
 #, c-format
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr ""
+
+#, c-format
 msgid "rounded up to %u bits\n"
 msgstr "zaokrúhlené na %u bitov\n"
 
@@ -2773,14 +2777,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "kľúč %08lX: nezodpovedá našej kópii\n"
 
 #, fuzzy, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "kľúč %08lX: nemôžem nájsť originálny blok kľúča: %s\n"
-
-#, fuzzy, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "kľúč %08lX: nemôžem čítať originálny blok kľúča: %s\n"
-
-#, fuzzy, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "kľúč %08lX: \"%s\" 1 nový identifikátor užívateľa\n"
 
@@ -2867,6 +2863,14 @@ msgstr ""
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "kľúč %08lX: chýba verejný kľúč - nemôžem aplikovať revokačný certifikát\n"
+
+#, fuzzy, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "kľúč %08lX: nemôžem nájsť originálny blok kľúča: %s\n"
+
+#, fuzzy, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "kľúč %08lX: nemôžem čítať originálny blok kľúča: %s\n"
 
 #, fuzzy, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3367,6 +3371,11 @@ msgid "compact unusable user IDs and remove all signatures from key"
 msgstr ""
 
 msgid "Secret key is available.\n"
+msgstr "Tajný kľúč je dostupný.\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "Tajný kľúč je dostupný.\n"
 
 msgid "Need the secret key to do this.\n"

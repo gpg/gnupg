@@ -35,7 +35,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg2 2.1.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-12-07 20:45+0100\n"
+"PO-Revision-Date: 2017-11-02 17:38+0100\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <gnupg-i18n@gnupg.org>\n"
 "Language: cs\n"
@@ -1393,6 +1393,11 @@ msgstr "Jakou délku klíče pro šifrování si přejete? (%u) "
 msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "Jakou délku klíče pro autentizaci si přejete? (%u) "
 
+#, fuzzy, c-format
+#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr "Karta bude nyní přenastavena na generování klíče dlouhého %u bitů\n"
+
 #, c-format
 msgid "rounded up to %u bits\n"
 msgstr "zaokrouhleno na %u bitů\n"
@@ -2670,14 +2675,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "klíč %s: neodpovídá naší kopii\n"
 
 #, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "klíč %s: nemohu najít originální blok klíče: %s\n"
-
-#, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "klíč %s: nemohu číst originální blok klíče: %s\n"
-
-#, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "klíč %s: „%s“ 1 nový identifikátor uživatele\n"
 
@@ -2761,6 +2758,14 @@ msgstr "Pro migraci „%s“ u každé karty spusťte: %s\n"
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "klíč %s: chybí veřejný klíč – nemohu aplikovat revokační certifikát\n"
+
+#, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "klíč %s: nemohu najít originální blok klíče: %s\n"
+
+#, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "klíč %s: nemohu číst originální blok klíče: %s\n"
 
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3212,6 +3217,11 @@ msgid "compact unusable user IDs and remove all signatures from key"
 msgstr "směstnat nepoužitelná ID uživatelů a odstranit z klíče všechny podpisy"
 
 msgid "Secret key is available.\n"
+msgstr "Tajný klíč je dostupný.\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "Tajný klíč je dostupný.\n"
 
 msgid "Need the secret key to do this.\n"

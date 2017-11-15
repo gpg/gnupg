@@ -1505,6 +1505,10 @@ msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "Quina grandària voleu? (1024) "
 
 #, c-format
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr ""
+
+#, c-format
 msgid "rounded up to %u bits\n"
 msgstr "arrodonida fins a %u bits\n"
 
@@ -2849,14 +2853,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "clau %08lX: no correspon a la nostra còpia\n"
 
 #, fuzzy, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "clau %08lX: no s'ha trobat el bloc de claus original: %s\n"
-
-#, fuzzy, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "clau %08lX: no s'ha pogut llegir el bloc de claus original: %s\n"
-
-#, fuzzy, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "clau %08lX: «%s» 1 ID d'usuari nou\n"
 
@@ -2944,6 +2940,14 @@ msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "clau %08lX: falta la clau pública: no es pot aplicar el certificat\n"
 "de revocació\n"
+
+#, fuzzy, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "clau %08lX: no s'ha trobat el bloc de claus original: %s\n"
+
+#, fuzzy, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "clau %08lX: no s'ha pogut llegir el bloc de claus original: %s\n"
 
 # O «rebutjara»? ivb
 # Per tots els canvis d'anglicisme «ignorat» -> «es descarta»,
@@ -3464,6 +3468,11 @@ msgid "compact unusable user IDs and remove all signatures from key"
 msgstr ""
 
 msgid "Secret key is available.\n"
+msgstr "La clau secreta està disponible.\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "La clau secreta està disponible.\n"
 
 msgid "Need the secret key to do this.\n"

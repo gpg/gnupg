@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-09-26 11:51+0200\n"
+"PO-Revision-Date: 2017-11-02 17:36+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -1378,6 +1378,10 @@ msgstr ""
 "Welche Schlüssellänge wünschen Sie für den Authentisierungs-Schlüssel? (%u) "
 
 #, c-format
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr "Die Karte wird nun rekonfiguriert für einen Schlüssel des Typs: %s\n"
+
+#, c-format
 msgid "rounded up to %u bits\n"
 msgstr "aufgerundet auf %u Bit\n"
 
@@ -2629,14 +2633,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "Schlüssel %s: Stimmt nicht mit unserer Kopie überein\n"
 
 #, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "Schlüssel %s: der originale Schlüsselblock wurde nicht gefunden: %s\n"
-
-#, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "Schlüssel %s: Lesefehler im originalen Schlüsselblock: %s\n"
-
-#, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "Schlüssel %s: \"%s\" 1 neue User-ID\n"
 
@@ -2725,6 +2721,14 @@ msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "Schlüssel %s: Kein öffentlicher Schlüssel - der Schlüsselwiderruf kann nicht "
 "angebracht werden\n"
+
+#, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "Schlüssel %s: der originale Schlüsselblock wurde nicht gefunden: %s\n"
+
+#, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "Schlüssel %s: Lesefehler im originalen Schlüsselblock: %s\n"
 
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3190,6 +3194,9 @@ msgstr ""
 
 msgid "Secret key is available.\n"
 msgstr "Geheimer Schlüssel ist vorhanden.\n"
+
+msgid "Secret subkeys are available.\n"
+msgstr "Geheimer Unterschlüssel ist vorhanden.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Hierzu wird der geheime Schlüssel benötigt.\n"
@@ -5841,8 +5848,6 @@ msgstr ""
 "WARNUNG: Wir müssen noch eine mit diesem Schlüssel signierte Nachricht "
 "sehen.\n"
 
-#, fuzzy
-#| msgid "Warning: we've only seen a single message signed by this key!\n"
 msgid ""
 "Warning: we've only seen one message signed using this key and user id!\n"
 msgstr ""

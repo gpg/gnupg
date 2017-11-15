@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.20\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-02-22 16:03+0100\n"
+"PO-Revision-Date: 2017-11-02 17:41+0100\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
 "Language: pl\n"
@@ -1438,11 +1438,6 @@ msgstr "błąd podczas odczytu aktualnych informacji o kluczu: %s\n"
 msgid "Replace existing key? (y/N) "
 msgstr "Zastąpić istniejący klucz? (t/N) "
 
-#, fuzzy
-#| msgid ""
-#| "NOTE: There is no guarantee that the card supports the requested size.\n"
-#| "      If the key generation does not succeed, please check the\n"
-#| "      documentation of your card to see what sizes are allowed.\n"
 msgid ""
 "Note: There is no guarantee that the card supports the requested size.\n"
 "      If the key generation does not succeed, please check the\n"
@@ -1463,6 +1458,11 @@ msgstr "Jakiej długości klucz do szyfrowania wygenerować? (%u) "
 #, c-format
 msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "Jakiej długości klucz do uwierzytelniania wygenerować? (%u) "
+
+#, fuzzy, c-format
+#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr "Karta zostanie przekonfigurowana do tworzenia klucza %u-bitowego\n"
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -2817,14 +2817,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "klucz %s: nie zgadza się z lokalną kopią\n"
 
 #, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "klucz %s: brak oryginalnego bloku klucza; %s\n"
-
-#, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "klucz %s: nie można odczytać oryginalnego bloku klucza: %s\n"
-
-#, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "klucz %s: ,,%s'' 1 nowy identyfikator użytkownika\n"
 
@@ -2913,6 +2905,14 @@ msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
 "klucz %s: brak klucza publicznego którego dotyczy wczytany certyfikat\n"
 "              unieważnienia\n"
+
+#, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "klucz %s: brak oryginalnego bloku klucza; %s\n"
+
+#, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "klucz %s: nie można odczytać oryginalnego bloku klucza: %s\n"
 
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3389,6 +3389,11 @@ msgstr ""
 "kluczy"
 
 msgid "Secret key is available.\n"
+msgstr "Dostępny jest klucz tajny.\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "Dostępny jest klucz tajny.\n"
 
 msgid "Need the secret key to do this.\n"
