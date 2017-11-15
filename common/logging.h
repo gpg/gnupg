@@ -109,7 +109,7 @@ void log_flush (void);
    by the hexdump and a final LF.  */
 void log_printhex (const char *text, const void *buffer, size_t length);
 
-void log_clock (const char *string);
+void log_clock (const char *fmt, ...) GPGRT_ATTR_PRINTF(1,2);
 
 
 #endif /*GNUPG_COMMON_LOGGING_H*/
