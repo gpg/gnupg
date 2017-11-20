@@ -1,5 +1,20 @@
-Noteworthy changes in version 2.2.3 (unreleased)
+Noteworthy changes in version 2.2.3 (2017-11-20)
 ------------------------------------------------
+
+  * gpgsm: Fix initial keybox creation on Windows. [#3507]
+
+  * dirmngr: Fix crash in case of a CRL loading error. [#3510]
+
+  * Fix the name of the Windows registry key. [Git#4f5afaf1fd]
+
+  * gpgtar: Fix wrong behaviour of --set-filename. [#3500]
+
+  * gpg: Silence AKL retrieval messages. [#3504]
+
+  * agent: Use clock or clock_gettime for calibration. [#3056]
+
+  * agent: Improve robustness of the shutdown pending
+    state. [Git#7ffedfab89]
 
 
 Noteworthy changes in version 2.2.2 (2017-11-07)
@@ -43,6 +58,8 @@ Noteworthy changes in version 2.2.2 (2017-11-07)
     --apply-profile and --apply-defaults. [#3313]
 
   * Add configure option --enable-werror.  [#2423]
+
+  See-also: gnupg-announce/2017q4/000416.html
 
 
 Noteworthy changes in version 2.2.1 (2017-09-19)
