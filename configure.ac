@@ -1612,12 +1612,20 @@ if test "$GCC" = yes; then
           mycflags="$mycflags -Wdeclaration-after-statement"
         fi
 
-        AC_MSG_CHECKING([if gcc supports -Wlogical-op and -Wvla])
-        CFLAGS="-Wlogical-op -Wvla"
+        AC_MSG_CHECKING([if gcc supports -Wlogical-op])
+        CFLAGS="-Wlogical-op -Werror"
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_wopt=yes,_gcc_wopt=no)
         AC_MSG_RESULT($_gcc_wopt)
         if test x"$_gcc_wopt" = xyes ; then
-          mycflags="$mycflags -Wlogical-op -Wvla"
+          mycflags="$mycflags -Wlogical-op -Werror"
+        fi
+
+        AC_MSG_CHECKING([if gcc supports -Wvla])
+        CFLAGS="-Wvla"
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_wopt=yes,_gcc_wopt=no)
+        AC_MSG_RESULT($_gcc_wopt)
+        if test x"$_gcc_wopt" = xyes ; then
+          mycflags="$mycflags -Wvla"
         fi
 
     else
