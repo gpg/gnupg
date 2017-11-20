@@ -1617,7 +1617,7 @@ if test "$GCC" = yes; then
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_wopt=yes,_gcc_wopt=no)
         AC_MSG_RESULT($_gcc_wopt)
         if test x"$_gcc_wopt" = xyes ; then
-          mycflags="$mycflags -Wlogical-op -Werror"
+          mycflags="$mycflags -Wlogical-op"
         fi
 
         AC_MSG_CHECKING([if gcc supports -Wvla])
