@@ -602,8 +602,9 @@ AC_PROG_RANLIB
 AC_CHECK_TOOL(AR, ar, :)
 AC_PATH_PROG(PERL,"perl")
 AC_CHECK_TOOL(WINDRES, windres, :)
-AC_PATH_PROG(YAT2M, "yat2m", "./yat2m" )
+AC_PATH_PROG(YAT2M, "yat2m")
 AC_ARG_VAR(YAT2M, [tool to convert texi to man pages])
+AM_CONDITIONAL(HAVE_YAT2M, test -n "$ac_cv_path_YAT2M")
 AC_ISC_POSIX
 AC_SYS_LARGEFILE
 GNUPG_CHECK_USTAR
