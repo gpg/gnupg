@@ -1,6 +1,23 @@
 Noteworthy changes in version 2.3.0 (unreleased)
 ------------------------------------------------
 
+  Changes also found in 2.2.3:
+
+  * gpgsm: Fix initial keybox creation on Windows. [#3507]
+
+  * dirmngr: Fix crash in case of a CRL loading error. [#3510]
+
+  * Fix the name of the Windows registry key. [Git#4f5afaf1fd]
+
+  * gpgtar: Fix wrong behaviour of --set-filename. [#3500]
+
+  * gpg: Silence AKL retrieval messages. [#3504]
+
+  * agent: Use clock or clock_gettime for calibration. [#3056]
+
+  * agent: Improve robustness of the shutdown pending
+    state. [Git#7ffedfab89]
+
   Changes also found in 2.2.2:
 
   * gpg: Avoid duplicate key imports by concurrently running gpg
@@ -66,6 +83,7 @@ Noteworthy changes in version 2.3.0 (unreleased)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Version 2.2.1 (2017-09-19)
   Version 2.2.2 (2017-11-07)
+  Version 2.2.3 (2017-11-20)
 
 
 Noteworthy changes in version 2.2.0 (2017-08-28)
