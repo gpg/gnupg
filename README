@@ -34,11 +34,11 @@
 
   GnuPG 2.2 depends on the following GnuPG related packages:
 
-    npth         (ftp://ftp.gnupg.org/gcrypt/npth/)
-    libgpg-error (ftp://ftp.gnupg.org/gcrypt/libgpg-error/)
-    libgcrypt    (ftp://ftp.gnupg.org/gcrypt/libgcrypt/)
-    libksba      (ftp://ftp.gnupg.org/gcrypt/libksba/)
-    libassuan    (ftp://ftp.gnupg.org/gcrypt/libassuan/)
+    npth         (https://gnupg.org/ftp/gcrypt/npth/)
+    libgpg-error (https://gnupg.org/ftp/gcrypt/libgpg-error/)
+    libgcrypt    (https://gnupg.org/ftp/gcrypt/libgcrypt/)
+    libksba      (https://gnupg.org/ftp/gcrypt/libksba/)
+    libassuan    (https://gnupg.org/ftp/gcrypt/libassuan/)
 
   You should get the latest versions of course, the GnuPG configure
   script complains if a version is not sufficient.
@@ -49,7 +49,7 @@
 
   You also need the Pinentry package for most functions of GnuPG;
   however it is not a build requirement.  Pinentry is available at
-  ftp://ftp.gnupg.org/gcrypt/pinentry/ .
+  https://gnupg.org/ftp/gcrypt/pinentry/ .
 
   After building and installing the above packages in the order as
   given above, you may continue with GnuPG installation (you may also
@@ -229,7 +229,7 @@
   You subscribe to one of the list by sending mail with a subject of
   "subscribe" to x-request@gnupg.org, where x is the name of the
   mailing list (gnupg-announce, gnupg-users, etc.). See
-  https://www.gnupg.org/documentation/mailing-lists.html for archives
+  https://gnupg.org/documentation/mailing-lists.html for archives
   of the mailing lists.
 
   Please direct bug reports to [[https://bugs.gnupg.org]] or post them
@@ -242,7 +242,7 @@
   authors and we try to answer questions when time allows us.
 
   Commercial grade support for GnuPG is available; for a listing of
-  offers see https://www.gnupg.org/service.html .  Maintaining and
+  offers see https://gnupg.org/service.html .  Maintaining and
   improving GnuPG requires a lot of time.  Since 2001, g10 Code GmbH,
   a German company owned and headed by GnuPG's principal author Werner
   Koch, is bearing the majority of these costs.  To keep GnuPG in a

@@ -1562,7 +1562,7 @@ start_sig_check (ksba_crl_t crl, gcry_md_hd_t *md, int *algo)
    should return 0 on a good signature, GPG_ERR_BAD_SIGNATURE if the
    signature does not verify or any other error code. CRL is the CRL
    object we are working on, MD the hash context and ISSUER_CERT the
-   certificate of the CRL issuer.  This function closes MD.  */
+   certificate of the CRL issuer.  This function takes ownership of MD.  */
 static gpg_error_t
 finish_sig_check (ksba_crl_t crl, gcry_md_hd_t md, int algo,
                   ksba_cert_t issuer_cert)
@@ -1646,12 +1646,13 @@ finish_sig_check (ksba_crl_t crl, gcry_md_hd_t md, int algo,
 
 
 /* Call this to match a start_sig_check that can not be completed
-   normally.  */
+   normally.  Takes ownership of MD if MD is not NULL.  */
 static void
 abort_sig_check (ksba_crl_t crl, gcry_md_hd_t md)
 {
   (void)crl;
-  gcry_md_close (md);
+  if (md)
+    gcry_md_close (md);
 }
 
 
@@ -1842,13 +1843,13 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
               }
 
             err = finish_sig_check (crl, md, algo, crlissuer_cert);
+            md = NULL; /* Closed.  */
             if (err)
               {
                 log_error (_("CRL signature verification failed: %s\n"),
                            gpg_strerror (err));
                 goto failure;
               }
-	    md = NULL;
 
             err = validate_cert_chain (ctrl, crlissuer_cert, NULL,
                                        (VALIDATE_FLAG_TRUST_CONFIG
@@ -1877,8 +1878,7 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
 
 
  failure:
-  if (md)
-    abort_sig_check (crl, md);
+  abort_sig_check (crl, md);
   ksba_cert_release (crlissuer_cert);
   return err;
 }

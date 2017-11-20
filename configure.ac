@@ -611,8 +611,9 @@ AC_PROG_RANLIB
 AC_CHECK_TOOL(AR, ar, :)
 AC_PATH_PROG(PERL,"perl")
 AC_CHECK_TOOL(WINDRES, windres, :)
-AC_PATH_PROG(YAT2M, "yat2m", "./yat2m" )
+AC_PATH_PROG(YAT2M, "yat2m")
 AC_ARG_VAR(YAT2M, [tool to convert texi to man pages])
+AM_CONDITIONAL(HAVE_YAT2M, test -n "$ac_cv_path_YAT2M")
 AC_ISC_POSIX
 AC_SYS_LARGEFILE
 GNUPG_CHECK_USTAR
@@ -1620,12 +1621,20 @@ if test "$GCC" = yes; then
           mycflags="$mycflags -Wdeclaration-after-statement"
         fi
 
-        AC_MSG_CHECKING([if gcc supports -Wlogical-op and -Wvla])
-        CFLAGS="-Wlogical-op -Wvla"
+        AC_MSG_CHECKING([if gcc supports -Wlogical-op])
+        CFLAGS="-Wlogical-op -Werror"
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_wopt=yes,_gcc_wopt=no)
         AC_MSG_RESULT($_gcc_wopt)
         if test x"$_gcc_wopt" = xyes ; then
-          mycflags="$mycflags -Wlogical-op -Wvla"
+          mycflags="$mycflags -Wlogical-op"
+        fi
+
+        AC_MSG_CHECKING([if gcc supports -Wvla])
+        CFLAGS="-Wvla"
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_wopt=yes,_gcc_wopt=no)
+        AC_MSG_RESULT($_gcc_wopt)
+        if test x"$_gcc_wopt" = xyes ; then
+          mycflags="$mycflags -Wvla"
         fi
 
     else
@@ -1836,7 +1845,7 @@ AC_DEFINE_UNQUOTED(DIRMNGR_DEFAULT_KEYSERVER,
 AC_DEFINE_UNQUOTED(GPGEXT_GPG, "gpg", [The standard binary file suffix])
 
 if test "$have_w32_system" = yes; then
-  AC_DEFINE_UNQUOTED(GNUPG_REGISTRY_DIR, "\\\\Software\\\\GNU\\\\GnuPG",
+  AC_DEFINE_UNQUOTED(GNUPG_REGISTRY_DIR, "Software\\\\GNU\\\\GnuPG",
                      [The directory part of the W32 registry keys])
 fi
 

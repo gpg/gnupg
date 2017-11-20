@@ -112,8 +112,16 @@ DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
                  gnupg-module-overview.eps \
 		 $(myman_pages) gnupg.7
 
+if HAVE_YAT2M
+YAT2M_CMD = $(YAT2M)
+YAT2M_DEP = $(YAT2M)
+else
+YAT2M_CMD = ./yat2m
+YAT2M_DEP = yat2m
+
 yat2m: yat2m.c
 	$(CC_FOR_BUILD) -o $@ $(srcdir)/yat2m.c
+endif
 
 mkdefsinc: mkdefsinc.c Makefile ../config.h
 	$(CC_FOR_BUILD) -I. -I.. -I$(srcdir) $(AM_CPPFLAGS) \
@@ -146,12 +154,12 @@ yat2m-stamp: $(myman_sources) defs.inc
 	@touch yat2m-stamp.tmp
 	incd="`test -f defsincdate || echo '$(srcdir)/'`defsincdate"; \
 	for file in $(myman_sources) ; do \
-              $(YAT2M) $(YAT2M_OPTIONS) --store \
+              $(YAT2M_CMD) $(YAT2M_OPTIONS) --store \
                   --date "`cat $$incd 2>/dev/null`" \
 	          `test -f '$$file' || echo '$(srcdir)/'`$$file ; done
 	@mv -f yat2m-stamp.tmp $@
 
-yat2m-stamp: $(YAT2M)
+yat2m-stamp: $(YAT2M_DEP)
 
 $(myman_pages) gnupg.7 : yat2m-stamp defs.inc
 	@if test -f $@; then :; else \
