@@ -323,7 +323,7 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
   if (scan || !app_top)
     {
       struct dev_list *l;
-      int periodical_check_needed = 0;
+      int new_app = 0;
 
       /* Scan the devices to find new device(s).  */
       err = apdu_dev_list_start (opt.reader_port, &l);
@@ -349,8 +349,7 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
             {
               err = app_new_register (slot, ctrl, name,
                                       periodical_check_needed_this);
-              if (periodical_check_needed_this)
-                periodical_check_needed = 1;
+              new_app++;
             }
 
           if (err)
@@ -359,9 +358,8 @@ select_application (ctrl_t ctrl, const char *name, app_t *r_app,
 
       apdu_dev_list_finish (l);
 
-      /* If periodical check is needed for new device(s), kick the
-       scdaemon loop.  */
-      if (periodical_check_needed)
+      /* If new device(s), kick the scdaemon loop.  */
+      if (new_app)
         scd_kick_the_loop ();
     }
 

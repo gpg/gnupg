@@ -1003,6 +1003,7 @@ handle_signal (int signo)
 
     case SIGCONT:
       /* Nothing.  */
+      log_debug ("SIGCONT received - breaking select\n");
       break;
 
     case SIGTERM:
