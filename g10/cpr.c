@@ -425,11 +425,17 @@ do_get_from_fd ( const char *keyword, int hidden, int getbool )
     {
       if (i >= len-1 )
         {
+          /* On the first iteration allocate a new buffer.  If that
+           * buffer is too short at further iterations do a poor man's
+           * realloc.  */
           char *save = string;
           len += 100;
           string = hidden? xmalloc_secure ( len ) : xmalloc ( len );
           if (save)
-            memcpy (string, save, i );
+            {
+              memcpy (string, save, i);
+              xfree (save);
+            }
           else
             i = 0;
 	}
