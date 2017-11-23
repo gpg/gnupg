@@ -1661,9 +1661,6 @@ ccid_open_usb_reader (const char *spec_reader_name,
         }
     }
 
-  if ((*handle)->ep_intr >= 0)
-    ccid_setup_intr (*handle);
-
   rc = ccid_vendor_specific_init (*handle);
 
  leave:
@@ -2311,6 +2308,11 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits, int on_wire)
      no need to send on wire.  */
   if (!on_wire && !ccid_require_get_status (handle))
     {
+      /* Setup interrupt transfer at the initial call of slot_status
+         with ON_WIRE == 0 */
+      if (handle->transfer == NULL && handle->ep_intr >= 0)
+        ccid_setup_intr (handle);
+
       *statusbits = 0;
       return 0;
     }
@@ -3748,7 +3750,7 @@ main (int argc, char **argv)
   if (!no_poll)
     ccid_poll (ccid);
   fputs ("getting slot status ...\n", stderr);
-  rc = ccid_slot_status (ccid, &slotstat);
+  rc = ccid_slot_status (ccid, &slotstat, 1);
   if (rc)
     {
       print_error (rc);
