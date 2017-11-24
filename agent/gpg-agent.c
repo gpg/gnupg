@@ -135,6 +135,7 @@ enum cmd_and_opt_values
   oDisableScdaemon,
   oDisableCheckOwnSocket,
   oS2KCount,
+  oAutoExpandSecmem,
 
   oWriteEnvFile
 };
@@ -251,6 +252,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oEnableExtendedKeyFormat, "enable-extended-key-format", "@"),
 
   ARGPARSE_s_u (oS2KCount, "s2k-count", "@"),
+
+  ARGPARSE_op_u (oAutoExpandSecmem, "auto-expand-secmem", "@"),
 
   /* Dummy options for backward compatibility.  */
   ARGPARSE_o_s (oWriteEnvFile, "write-env-file", "@"),
@@ -1231,6 +1234,14 @@ main (int argc, char **argv )
         case oBrowserSocket:
           opt.browser_socket = 1;  /* (1 = points into argv)  */
           socket_name_browser = pargs.r.ret_str;
+          break;
+
+        case oAutoExpandSecmem:
+          /* Try to enable this option.  It will officially only be
+           * supported by Libgcrypt 1.9 but 1.8.2 already supports it
+           * on the quiet and thus we use the numeric value value.  */
+          gcry_control (78 /*GCRYCTL_AUTO_EXPAND_SECMEM*/,
+                        (unsigned int)pargs.r.ret_ulong,  0);
           break;
 
         case oDebugQuickRandom:
