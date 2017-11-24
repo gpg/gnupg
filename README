@@ -40,7 +40,7 @@
     libksba      (ftp://ftp.gnupg.org/gcrypt/libksba/)
     libassuan    (ftp://ftp.gnupg.org/gcrypt/libassuan/)
   
-  Downgrade may be required. For example, on Ubuntu 16.04, the latest version of libgcrypt will not work. In this case you will need to downgrade the library.
+  Downgrade may be required. For example, on Ubuntu 16.04, install libgcrypt version 1.8.1 of  will not work. In this case you will need to downgrade the library.
   
   You should get the latest versions of course, the GnuPG configure
   script complains if a version is not sufficient.
