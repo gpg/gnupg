@@ -1053,7 +1053,7 @@ http_start_data (http_t hd)
   if (!hd->in_data)
     {
       if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
-        log_debug_with_string ("\r\n", "http.c:request-header:");
+        log_debug_string ("\r\n", "http.c:request-header:");
       es_fputs ("\r\n", hd->fp_write);
       es_fflush (hd->fp_write);
       hd->in_data = 1;
@@ -1844,7 +1844,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
         return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
 
       if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
-        log_debug_with_string (request, "http.c:request:");
+        log_debug_string (request, "http.c:request:");
 
       cookie = xtrycalloc (1, sizeof *cookie);
       if (! cookie)
@@ -2159,7 +2159,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
     }
 
   if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
-    log_debug_with_string (request, "http.c:request:");
+    log_debug_string (request, "http.c:request:");
 
   /* First setup estream so that we can write even the first line
      using estream.  This is also required for the sake of gnutls. */
@@ -2195,7 +2195,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
       for (;headers; headers=headers->next)
         {
           if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
-            log_debug_with_string (headers->d, "http.c:request-header:");
+            log_debug_string (headers->d, "http.c:request-header:");
           if ((es_fputs (headers->d, hd->fp_write) || es_fflush (hd->fp_write))
               || (es_fputs("\r\n",hd->fp_write) || es_fflush(hd->fp_write)))
             {
@@ -2446,7 +2446,7 @@ parse_response (http_t hd)
 	return GPG_ERR_EOF;
 
       if (opt_debug || (hd->flags & HTTP_FLAG_LOG_RESP))
-        log_debug_with_string (line, "http.c:response:\n");
+        log_debug_string (line, "http.c:response:\n");
     }
   while (!*line);
 

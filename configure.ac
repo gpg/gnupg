@@ -557,8 +557,11 @@ AH_BOTTOM([
 # endif
 #endif
 
-/* Provide the es_ macro for estream.  */
+/* Enable the es_ macros from gpgrt.  */
 #define GPGRT_ENABLE_ES_MACROS 1
+
+/* Enable the log_ macros from gpgrt.  */
+#define GPGRT_ENABLE_LOG_MACROS 1
 
 /* Tell libgcrypt not to use its own libgpg-error implementation. */
 #define USE_LIBGPG_ERROR 1
@@ -1608,7 +1611,7 @@ if test "$GCC" = yes; then
           AC_MSG_RESULT($_gcc_wopt)
         fi
         if test x"$_gcc_wopt" = xyes ; then
-          mycflags="$mycflags -W -Wno-sign-compare"
+          mycflags="$mycflags -W -Wno-sign-compare -Wno-format-zero-length"
           mycflags="$mycflags -Wno-missing-field-initializers"
         fi
 

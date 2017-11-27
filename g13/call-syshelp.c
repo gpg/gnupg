@@ -366,7 +366,7 @@ create_inq_cb (void *opaque, const char *line)
           void *ciphertext;
           size_t ciphertextlen;
 
-          log_printhex ("plain", plaintext, plaintextlen);
+          log_printhex (plaintext, plaintextlen, "plain");
           err = g13_encrypt_keyblob (parm->ctrl,
                                      plaintext, plaintextlen,
                                      &ciphertext, &ciphertextlen);

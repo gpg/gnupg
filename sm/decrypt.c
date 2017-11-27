@@ -72,7 +72,7 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
     }
 
   if (DBG_CRYPTO)
-    log_printhex ("pkcs1 encoded session key:", seskey, seskeylen);
+    log_printhex (seskey, seskeylen, "pkcs1 encoded session key:");
 
   n=0;
   if (seskeylen == 24 || seskeylen == 16)
@@ -115,7 +115,7 @@ prepare_decryption (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
     }
 
   if (DBG_CRYPTO)
-    log_printhex ("session key:", seskey+n, seskeylen-n);
+    log_printhex (seskey+n, seskeylen-n, "session key:");
 
   rc = gcry_cipher_open (&parm->hd, parm->algo, parm->mode, 0);
   if (rc)

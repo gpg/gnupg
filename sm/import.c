@@ -836,7 +836,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader, struct stats_s *stats)
       log_error ("can't calculate keygrip\n");
       goto leave;
     }
-  log_printhex ("keygrip=", grip, 20);
+  log_printhex (grip, 20, "keygrip=");
 
   /* Convert to canonical encoding using a function which pads it to a
      multiple of 64 bits.  We need this padding for AESWRAP.  */

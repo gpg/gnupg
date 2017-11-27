@@ -1346,7 +1346,7 @@ cache_isvalid (ctrl_t ctrl, const char *issuer_hash,
         {
           log_error (_("WARNING: invalid cache record length for S/N "));
           log_printf ("0x");
-          log_printhex ("", sn, snlen);
+          log_printhex (sn, snlen, "");
         }
       else if (opt.verbose)
         {

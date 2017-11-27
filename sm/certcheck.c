@@ -374,7 +374,7 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
       return gpg_error (GPG_ERR_BUG);
     }
   if (DBG_CRYPTO)
-    log_printhex ("public key: ", p, n);
+    log_printhex (p, n, "public key: ");
 
   rc = gcry_sexp_sscan ( &s_pkey, NULL, (char*)p, n);
   ksba_free (p);

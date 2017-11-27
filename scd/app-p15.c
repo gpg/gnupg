@@ -2274,7 +2274,7 @@ read_ef_tokeninfo (app_t app)
     }
   memcpy (app->app_local->serialno, p, objlen);
   app->app_local->serialnolen = objlen;
-  log_printhex ("Serialnumber from EF(TokenInfo) is:", p, objlen);
+  log_printhex (p, objlen, "Serialnumber from EF(TokenInfo) is:");
 
  leave:
   xfree (buffer);
@@ -2781,7 +2781,7 @@ micardo_mse (app_t app, unsigned short fid)
                      gpg_strerror (err));
           return err;
         }
-      log_printhex ("keyD record:", buffer, buflen);
+      log_printhex (buffer, buflen, "keyD record:");
       p = find_tlv (buffer, buflen, 0x83, &n);
       if (p && n == 4 && ((p[2]<<8)|p[3]) == fid)
         {

@@ -63,6 +63,10 @@
 #include "logging.h"
 #include "sysutils.h"
 
+#if defined(GPGRT_ENABLE_LOG_MACROS) && defined(log_debug_string)
+      /* Nothing to do; the libgpgrt functions are used.  */
+#else /* Use our own logging functions.  */
+
 #ifdef HAVE_W32_SYSTEM
 # ifndef S_IRWXG
 #  define S_IRGRP S_IRUSR
@@ -885,7 +889,7 @@ log_logv (int level, const char *fmt, va_list arg_ptr)
  * Note that PREFIX is an additional string and independent of the
  * prefix set by log_set_prefix.  */
 void
-log_logv_with_prefix (int level, const char *prefix,
+log_logv_prefix (int level, const char *prefix,
                       const char *fmt, va_list arg_ptr)
 {
   do_logv (level, 0, NULL, prefix, fmt, arg_ptr);
@@ -977,7 +981,7 @@ log_debug (const char *fmt, ...)
  * printed with LFs expanded to include the prefix and a final --end--
  * marker.  */
 void
-log_debug_with_string (const char *string, const char *fmt, ...)
+log_debug_string (const char *string, const char *fmt, ...)
 {
   va_list arg_ptr ;
 
@@ -1011,7 +1015,7 @@ log_flush (void)
    dump, with TEXT just an empty string, print a trailing linefeed,
    otherwise print an entire debug line. */
 void
-log_printhex (const char *text, const void *buffer, size_t length)
+log_printhex (const void *buffer, size_t length, const char *text)
 {
   if (text && *text)
     log_debug ("%s ", text);
@@ -1113,3 +1117,5 @@ _log_assert (const char *expr, const char *file, int line)
   abort (); /* Never called; just to make the compiler happy.  */
 }
 #endif /*!GPGRT_HAVE_MACRO_FUNCTION*/
+
+#endif /* Use our own logging functions.  */

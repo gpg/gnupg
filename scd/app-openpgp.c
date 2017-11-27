@@ -558,7 +558,7 @@ dump_all_do (int slot)
           if (data_objects[i].binary)
             {
               log_info ("DO '%s': ", data_objects[i].desc);
-              log_printhex ("", buffer, buflen);
+              log_printhex (buffer, buflen, "");
             }
           else
             log_info ("DO '%s': '%.*s'\n",
@@ -588,7 +588,7 @@ dump_all_do (int slot)
                           if (valuelen > 200)
                             log_info ("[%u]\n", (unsigned int)valuelen);
                           else
-                            log_printhex ("", value, valuelen);
+                            log_printhex (value, valuelen, "");
                         }
                       else
                         log_info ("DO '%s': '%.*s'\n",
@@ -4973,7 +4973,7 @@ parse_algorithm_attribute (app_t app, int keyno)
       curve = ecc_curve (buffer + 1, oidlen);
 
       if (!curve)
-        log_printhex ("Curve with OID not supported: ", buffer+1, buflen-1);
+        log_printhex (buffer+1, buflen-1, "Curve with OID not supported: ");
       else
         {
           app->app_local->keyattr[keyno].key_type = KEY_TYPE_ECC;
@@ -4991,7 +4991,7 @@ parse_algorithm_attribute (app_t app, int keyno)
         }
     }
   else if (opt.verbose)
-    log_printhex ("", buffer, buflen);
+    log_printhex (buffer, buflen, "");
 
   xfree (relptr);
 }
@@ -5033,7 +5033,7 @@ app_select_openpgp (app_t app)
       if (opt.verbose)
         {
           log_info ("AID: ");
-          log_printhex ("", buffer, buflen);
+          log_printhex (buffer, buflen, "");
         }
 
       app->card_version = buffer[6] << 8;
@@ -5066,7 +5066,7 @@ app_select_openpgp (app_t app)
           if (opt.verbose)
             {
               log_info ("Historical Bytes: ");
-              log_printhex ("", buffer, buflen);
+              log_printhex (buffer, buflen, "");
             }
           parse_historical (app->app_local, buffer, buflen);
           xfree (relptr);

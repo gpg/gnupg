@@ -38,6 +38,34 @@
 #include "mischelp.h"
 #include "w32help.h"
 
+#if defined(GPGRT_ENABLE_LOG_MACROS) && defined(log_debug_string)
+  /* We use the libgpg-error provided log functions.  but we need one
+   * more function:  */
+# ifdef GPGRT_HAVE_MACRO_FUNCTION
+#  define BUG() bug_at ( __FILE__, __LINE__, __FUNCTION__)
+static inline void bug_at (const char *file, int line, const char *func)
+                           GPGRT_ATTR_NORETURN;
+static inline void
+bug_at (const char *file, int line, const char *func)
+{
+  gpgrt_log (GPGRT_LOG_BUG, "there is a bug at %s:%d:%s\n", file, line, func);
+  abort ();
+}
+# else
+#  define BUG() bug_at ( __FILE__, __LINE__)
+static inline void bug_at (const char *file, int line)
+                           GPGRT_ATTR_NORETURN;
+static inline void
+bug_at (const char *file, int line)
+{
+  gpgrt_log (GPGRT_LOG_BUG, "there is a bug at %s:%d\n", file, line);
+  abort ();
+}
+# endif /*!GPGRT_HAVE_MACRO_FUNCTION*/
+
+
+#else /* Use gnupg internal logging functions.  */
+
 int  log_get_errorcount (int clear);
 void log_inc_errorcount (void);
 void log_set_file( const char *name );
@@ -90,16 +118,16 @@ enum jnlib_log_levels {
 };
 void log_log (int level, const char *fmt, ...) GPGRT_ATTR_PRINTF(2,3);
 void log_logv (int level, const char *fmt, va_list arg_ptr);
-void log_logv_with_prefix (int level, const char *prefix,
-                           const char *fmt, va_list arg_ptr);
+void log_logv_prefix (int level, const char *prefix,
+                      const char *fmt, va_list arg_ptr);
 void log_string (int level, const char *string);
 void log_bug (const char *fmt, ...)    GPGRT_ATTR_NR_PRINTF(1,2);
 void log_fatal (const char *fmt, ...)  GPGRT_ATTR_NR_PRINTF(1,2);
 void log_error (const char *fmt, ...)  GPGRT_ATTR_PRINTF(1,2);
 void log_info (const char *fmt, ...)   GPGRT_ATTR_PRINTF(1,2);
 void log_debug (const char *fmt, ...)  GPGRT_ATTR_PRINTF(1,2);
-void log_debug_with_string (const char *string, const char *fmt,
-                            ...) GPGRT_ATTR_PRINTF(2,3);
+void log_debug_string (const char *string, const char *fmt,
+                       ...) GPGRT_ATTR_PRINTF(2,3);
 void log_printf (const char *fmt, ...) GPGRT_ATTR_PRINTF(1,2);
 void log_flush (void);
 
@@ -107,9 +135,9 @@ void log_flush (void);
    raw dump, with TEXT being an empty string, print a trailing
    linefeed, otherwise print an entire debug line with TEXT followed
    by the hexdump and a final LF.  */
-void log_printhex (const char *text, const void *buffer, size_t length);
+void log_printhex (const void *buffer, size_t length, const char *text);
 
 void log_clock (const char *fmt, ...) GPGRT_ATTR_PRINTF(1,2);
 
-
+#endif /* Use gnupg internal logging functions.  */
 #endif /*GNUPG_COMMON_LOGGING_H*/

@@ -470,7 +470,7 @@ dump_reader_status (int slot)
   if (reader_table[slot].atrlen)
     {
       log_info ("slot %d: ATR=", slot);
-      log_printhex ("", reader_table[slot].atr, reader_table[slot].atrlen);
+      log_printhex (reader_table[slot].atr, reader_table[slot].atrlen, "");
     }
 }
 
@@ -725,7 +725,7 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
     return err;
 
   if (DBG_CARD_IO)
-    log_printhex ("  PCSC_data:", apdu, apdulen);
+    log_printhex (apdu, apdulen, "  PCSC_data:");
 
   if ((reader_table[slot].pcsc.protocol & PCSC_PROTOCOL_T1))
       send_pci.protocol = PCSC_PROTOCOL_T1;
@@ -1421,7 +1421,7 @@ send_apdu_ccid (int slot, unsigned char *apdu, size_t apdulen,
     return err;
 
   if (DBG_CARD_IO)
-    log_printhex (" raw apdu:", apdu, apdulen);
+    log_printhex (apdu, apdulen, " raw apdu:");
 
   maxbuflen = *buflen;
   if (pininfo)
@@ -1690,7 +1690,7 @@ my_rapdu_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
 
   *buflen = 0;
   if (DBG_CARD_IO)
-    log_printhex ("  APDU_data:", apdu, apdulen);
+    log_printhex (apdu, apdulen, "  APDU_data:");
 
   if (apdulen < 4)
     {
@@ -2823,7 +2823,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
       log_debug (" response: sw=%04X  datalen=%d\n",
                  sw, (unsigned int)resultlen);
       if ( !retbuf && (sw == SW_SUCCESS || (sw & 0xff00) == SW_MORE_DATA))
-        log_printhex ("    dump: ", result, resultlen);
+        log_printhex (result, resultlen, "    dump: ");
     }
 
   if (sw == SW_SUCCESS || sw == SW_EOF_REACHED)
@@ -2896,7 +2896,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
               log_debug ("     more: sw=%04X  datalen=%d\n",
                          sw, (unsigned int)resultlen);
               if (!retbuf && (sw==SW_SUCCESS || (sw&0xff00)==SW_MORE_DATA))
-                log_printhex ("     dump: ", result, resultlen);
+                log_printhex (result, resultlen, "     dump: ");
             }
 
           if ((sw & 0xff00) == SW_MORE_DATA
@@ -2942,7 +2942,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
   xfree (result_buffer);
 
   if (DBG_CARD_IO && retbuf && sw == SW_SUCCESS)
-    log_printhex ("      dump: ", *retbuf, *retbuflen);
+    log_printhex (*retbuf, *retbuflen, "      dump: ");
 
   return sw;
 }
@@ -3102,7 +3102,7 @@ apdu_send_direct (int slot, size_t extended_length,
       log_debug (" response: sw=%04X  datalen=%d\n",
                  sw, (unsigned int)resultlen);
       if ( !retbuf && (sw == SW_SUCCESS || (sw & 0xff00) == SW_MORE_DATA))
-        log_printhex ("     dump: ", result, resultlen);
+        log_printhex (result, resultlen, "     dump: ");
     }
 
   if (handle_more && (sw & 0xff00) == SW_MORE_DATA)
@@ -3158,7 +3158,7 @@ apdu_send_direct (int slot, size_t extended_length,
               log_debug ("     more: sw=%04X  datalen=%d\n",
                          sw, (unsigned int)resultlen);
               if (!retbuf && (sw==SW_SUCCESS || (sw&0xff00)==SW_MORE_DATA))
-                log_printhex ("     dump: ", result, resultlen);
+                log_printhex (result, resultlen, "     dump: ");
             }
 
           if ((sw & 0xff00) == SW_MORE_DATA
@@ -3227,7 +3227,7 @@ apdu_send_direct (int slot, size_t extended_length,
     }
 
   if (DBG_CARD_IO && retbuf)
-    log_printhex ("      dump: ", *retbuf, *retbuflen);
+    log_printhex (*retbuf, *retbuflen, "      dump: ");
 
   return 0;
 }

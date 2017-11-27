@@ -781,12 +781,12 @@ my_ntbtls_log_handler (void *opaque, int level, const char *fmt, va_list argv)
   (void)opaque;
 
   if (level == -1)
-    log_logv_with_prefix (GPGRT_LOG_INFO, "ntbtls: ", fmt, argv);
+    log_logv_prefix (GPGRT_LOG_INFO, "ntbtls: ", fmt, argv);
   else
     {
       char prefix[10+20];
       snprintf (prefix, sizeof prefix, "ntbtls(%d): ", level);
-      log_logv_with_prefix (GPGRT_LOG_DEBUG, prefix, fmt, argv);
+      log_logv_prefix (GPGRT_LOG_DEBUG, prefix, fmt, argv);
     }
 }
 #endif
