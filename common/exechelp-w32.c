@@ -1,6 +1,6 @@
 /* exechelp-w32.c - Fork and exec helpers for W32.
- * Copyright (C) 2004, 2007, 2008, 2009,
- *               2010 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2007-2009, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2006-2012, 2014-2017 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -26,6 +26,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: (LGPL-3.0+ OR GPL-2.0+)
  */
 
 #include <config.h>
