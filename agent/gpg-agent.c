@@ -966,7 +966,6 @@ static void
 initialize_modules (void)
 {
   thread_init_once ();
-  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
   initialize_module_cache ();
   initialize_module_call_pinentry ();
   initialize_module_call_scd ();
@@ -1027,6 +1026,7 @@ main (int argc, char **argv )
   malloc_hooks.free = gcry_free;
   assuan_set_malloc_hooks (&malloc_hooks);
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
+  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
   assuan_sock_init ();
   setup_libassuan_logging (&opt.debug, NULL);
 
