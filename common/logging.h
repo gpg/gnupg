@@ -70,15 +70,21 @@ estream_t log_get_stream (void);
    : _log_assert (#expr, __FILE__, __LINE__))
 #endif /*!GPGRT_HAVE_MACRO_FUNCTION*/
 
-/* Flag values for log_set_prefix. */
-#define GPGRT_LOG_WITH_PREFIX  1
-#define GPGRT_LOG_WITH_TIME    2
-#define GPGRT_LOG_WITH_PID     4
-#define GPGRT_LOG_RUN_DETACHED 256
-#define GPGRT_LOG_NO_REGISTRY  512
 
-/* Log levels as used by log_log.  */
-enum jnlib_log_levels {
+/* If we use an older libgpg-error we need to define the constants
+ * which will be used by current libgpg-error development
+ * versions.  */
+#ifndef GPGRT_LOG_WITH_PREFIX
+
+  /* Flag values for log_set_prefix. */
+# define GPGRT_LOG_WITH_PREFIX  1
+# define GPGRT_LOG_WITH_TIME    2
+# define GPGRT_LOG_WITH_PID     4
+# define GPGRT_LOG_RUN_DETACHED 256
+# define GPGRT_LOG_NO_REGISTRY  512
+
+  /* Log levels as used by log_log.  */
+  enum jnlib_log_levels {
     GPGRT_LOG_BEGIN,
     GPGRT_LOG_CONT,
     GPGRT_LOG_INFO,
@@ -87,7 +93,9 @@ enum jnlib_log_levels {
     GPGRT_LOG_FATAL,
     GPGRT_LOG_BUG,
     GPGRT_LOG_DEBUG
-};
+  };
+#endif /* Old libgpg-error.  */
+
 void log_log (int level, const char *fmt, ...) GPGRT_ATTR_PRINTF(2,3);
 void log_logv (int level, const char *fmt, va_list arg_ptr);
 void log_logv_with_prefix (int level, const char *prefix,
