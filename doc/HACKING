@@ -33,9 +33,9 @@ not be copied to the ChangeLog, separate it by a line consisting of
 two dashes at the begin of a line.
 
 The one-line summary usually starts with a keyword to identify the
-mainly affected subsystem.  If more than one keyword is required the
-are delimited by a comma (e.g. =scd,w32:=). Commonly found keywords
-are
+mainly affected subsystem (that is not the directory).  If more than
+one keyword is required they are delimited by a comma
+(e.g. =scd,w32:=). Commonly found keywords are
 
  - agent   :: The gpg-agent component
  - build   :: Changes to the build system
@@ -207,10 +207,6 @@ Note that such a comment will be removed if the git commit option
   - The predefined macro =__func__=:
     : log_debug ("%s: Problem with foo\n", __func__);
 
-  - Variable declaration inside a for():
-    : for (int i = 0; i < 5; ++)
-    :   bar (i);
-
   Although we usually make use of the =u16=, =u32=, and =u64= types,
   it is also possible to include =<stdint.h>= and use =int16_t=,
   =int32_t=, =int64_t=, =uint16_t=, =uint32_t=, and =uint64_t=.  But do
@@ -224,6 +220,7 @@ Note that such a comment will be removed if the git commit option
   - CVE-id :: CVE id number pertaining to this commit.
   - Regression-due-to :: Commit id of the regression fixed by this commit.
   - Fixes-commit :: Commit id this commit fixes.
+  - Updates-commit :: Commit id this commit updates.
   - Reported-by :: Value is a name or mail address of a bug reporte.
   - Suggested-by :: Value is a name or mail address of someone how
                     suggested this change.
