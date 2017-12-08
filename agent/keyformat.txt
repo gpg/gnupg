@@ -271,7 +271,7 @@ to keys stored on a token:
    (comment whatever)
 )
 
-The currently used protocol is "ti-v1" (token info version 1).  The
+The currently used protocol is "t1-v1" (token info version 1).  The
 second list with the information has this layout:
 
 (card_serial_number id_string_of_key fixed_pin_length)
