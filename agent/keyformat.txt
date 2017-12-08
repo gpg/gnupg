@@ -379,7 +379,7 @@ Example:
 (protected-shared-secret
    ((desc "List of system passphrases")
     (key "uid-1002" ("Knuth" "Donald Ervin Knuth"))
-    (key "uid-1001" ("Dijkstra" "Edsgar Wybe Dijkstra"))
+    (key "uid-1001" ("Dijkstra" "Edsger Wybe Dijkstra"))
     (key)
     (protected mode (parms) encrypted_octet_string)
     (protected-at "20100915T111722")
@@ -402,7 +402,7 @@ hashed:
 
    ((desc "List of system passphrases")
     (key "uid-1002" ("Knuth" "Donald Ervin Knuth"))
-    (key "uid-1001" ("Dijkstra" "Edsgar Wybe Dijkstra"))
+    (key "uid-1001" ("Dijkstra" "Edsger Wybe Dijkstra"))
     (key)
     (value 4:1002 "signal flags at the lock")
     (value 4:1001 "taocp")
