@@ -288,7 +288,7 @@ static void
 test_agent_shadow_key (void)
 {
 /* Create a shadow key from a public key.  We use the shadow protocol
-  "ti-v1" and insert the S-expressionn SHADOW_INFO.  The resulting
+  "t1-v1" and insert the S-expressionn SHADOW_INFO.  The resulting
   S-expression is returned in an allocated buffer RESULT will point
   to. The input parameters are expected to be valid canonicalized
   S-expressions */

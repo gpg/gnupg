@@ -652,6 +652,17 @@ Select the digest algorithm used to compute ssh fingerprints that are
 communicated to the user, e.g. in pinentry dialogs.  OpenSSH has
 transitioned from using MD5 to the more secure SHA256.
 
+
+@item --auto-expand-secmem @var{n}
+@opindex auto-expand-secmem
+Allow Libgcrypt to expand its secure memory area as required.  The
+optional value @var{n} is a non-negative integer with a suggested size
+in bytes of each additionally allocated secure memory area.  The value
+is rounded up to the next 32 KiB; usual C style prefixes are allowed.
+For an heavy loaded gpg-agent with many concurrent connection this
+option avoids sign or decrypt errors due to out of secure memory error
+returns.
+
 @item --s2k-count @var{n}
 @opindex s2k-count
 Specify the iteration count used to protect the passphrase.  This

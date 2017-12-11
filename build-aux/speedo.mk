@@ -514,7 +514,10 @@ else
 speedo_pkg_pinentry_configure = --enable-pinentry-gtk2
 endif
 speedo_pkg_pinentry_configure += \
-        --disable-pinentry-qt4 \
+        --disable-pinentry-qt5   \
+        --disable-pinentry-qt    \
+	--disable-pinentry-fltk  \
+	--disable-pinentry-tty   \
 	CPPFLAGS=-I$(idir)/include   \
 	LDFLAGS=-L$(idir)/lib        \
 	CXXFLAGS=-static-libstdc++
