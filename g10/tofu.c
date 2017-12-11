@@ -3214,7 +3214,7 @@ show_statistics (tofu_dbs_t dbs,
             *p = ' ';
       }
 
-      log_string (GPGRT_LOG_INFO, msg);
+      log_string (GPGRT_LOGLVL_INFO, msg);
       xfree (msg);
 
       if (policy == TOFU_POLICY_AUTO)
@@ -3279,7 +3279,7 @@ show_warning (const char *fingerprint, strlist_t user_id_list)
     log_fatal ("format failed: %s\n",
                gpg_strerror (gpg_error_from_syserror()));
   xfree (tmpmsg);
-  log_string (GPGRT_LOG_INFO, text);
+  log_string (GPGRT_LOGLVL_INFO, text);
   xfree (text);
 
   es_free (set_policy_command);

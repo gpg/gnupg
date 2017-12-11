@@ -93,7 +93,7 @@ my_libassuan_log_handler (assuan_context_t ctx, void *hook,
     return 0; /* Temporary disabled.  */
 
   if (msg)
-    log_string (GPGRT_LOG_DEBUG, msg);
+    log_string (GPGRT_LOGLVL_DEBUG, msg);
 
   return 1;
 }

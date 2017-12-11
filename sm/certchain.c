@@ -119,7 +119,8 @@ do_list (int is_error, int listmode, estream_t fp, const char *format, ...)
     }
   else
     {
-      log_logv (is_error? GPGRT_LOG_ERROR: GPGRT_LOG_INFO, format, arg_ptr);
+      log_logv (is_error? GPGRT_LOGLVL_ERROR: GPGRT_LOGLVL_INFO,
+                format, arg_ptr);
       log_printf ("\n");
     }
   va_end (arg_ptr);

@@ -195,7 +195,7 @@ warn_version_mismatch (assuan_context_t ctx, const char *servername, int mode)
   err = get_assuan_server_version (ctx, mode, &serverversion);
   if (err)
     log_log (gpg_err_code (err) == GPG_ERR_NOT_SUPPORTED?
-             GPGRT_LOG_INFO : GPGRT_LOG_ERROR,
+             GPGRT_LOGLVL_INFO : GPGRT_LOGLVL_ERROR,
              _("error getting version from '%s': %s\n"),
              servername, gpg_strerror (err));
   else if (compare_version_strings (serverversion, myversion) < 0)

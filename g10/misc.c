@@ -396,7 +396,7 @@ print_further_info (const char *format, ...)
 
   log_info (_("(further info: "));
   va_start (arg_ptr, format);
-  log_logv (GPGRT_LOG_CONT, format, arg_ptr);
+  log_logv (GPGRT_LOGLVL_CONT, format, arg_ptr);
   va_end (arg_ptr);
   log_printf (")\n");
 }

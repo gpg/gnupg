@@ -87,7 +87,7 @@ gc_error (int status, int errnum, const char *fmt, ...)
   va_list arg_ptr;
 
   va_start (arg_ptr, fmt);
-  log_logv (GPGRT_LOG_ERROR, fmt, arg_ptr);
+  log_logv (GPGRT_LOGLVL_ERROR, fmt, arg_ptr);
   va_end (arg_ptr);
 
   if (errnum)

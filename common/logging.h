@@ -48,7 +48,8 @@ static inline void bug_at (const char *file, int line, const char *func)
 static inline void
 bug_at (const char *file, int line, const char *func)
 {
-  gpgrt_log (GPGRT_LOG_BUG, "there is a bug at %s:%d:%s\n", file, line, func);
+  gpgrt_log (GPGRT_LOGLVL_BUG, "there is a bug at %s:%d:%s\n",
+             file, line, func);
   abort ();
 }
 # else
@@ -58,7 +59,7 @@ static inline void bug_at (const char *file, int line)
 static inline void
 bug_at (const char *file, int line)
 {
-  gpgrt_log (GPGRT_LOG_BUG, "there is a bug at %s:%d\n", file, line);
+  gpgrt_log (GPGRT_LOGLVL_BUG, "there is a bug at %s:%d\n", file, line);
   abort ();
 }
 # endif /*!GPGRT_HAVE_MACRO_FUNCTION*/
@@ -116,6 +117,15 @@ enum jnlib_log_levels {
     GPGRT_LOG_BUG,
     GPGRT_LOG_DEBUG
 };
+#define GPGRT_LOGLVL_BEGIN  GPGRT_LOG_BEGIN
+#define GPGRT_LOGLVL_CONT   GPGRT_LOG_CONT
+#define GPGRT_LOGLVL_INFO   GPGRT_LOG_INFO
+#define GPGRT_LOGLVL_WARN   GPGRT_LOG_WARN
+#define GPGRT_LOGLVL_ERROR  GPGRT_LOG_ERROR
+#define GPGRT_LOGLVL_FATAL  GPGRT_LOG_FATAL
+#define GPGRT_LOGLVL_BUG    GPGRT_LOG_BUG
+#define GPGRT_LOGLVL_DEBUG  GPGRT_LOG_DEBUG
+
 void log_log (int level, const char *fmt, ...) GPGRT_ATTR_PRINTF(2,3);
 void log_logv (int level, const char *fmt, va_list arg_ptr);
 void log_logv_prefix (int level, const char *prefix,
