@@ -1714,6 +1714,22 @@ if test x"$gnupg_builddir_envvar" = x"yes"; then
       [This is only used with "make distcheck"])
 fi
 
+
+#
+# To avoid problems with systemd cleaning up the /run/user directory,
+# this option will make GnuPG try to use /run/gnupg/user as socket dir
+# before /run/user
+#
+AC_ARG_ENABLE(run-gnupg-user-socket,
+    AC_HELP_STRING([--enable-run-gnupg-user-socket],
+                   [try /run/gnupg/user for sockets prior to /run/user]),
+    use_run_gnupg_user_socket=$enableval)
+if test x"$use_run_gnupg_user_socket" = x"yes"; then
+   AC_DEFINE(USE_RUN_GNUPG_USER_SOCKET, 1,
+            [If defined try /run/gnupg/user before /run/user])
+fi
+
+
 #
 # Decide what to build
 #

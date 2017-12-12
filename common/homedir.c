@@ -541,7 +541,17 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
 
 #else /* Unix and stat(2) available. */
 
-  static const char * const bases[] = { "/run", "/var/run", NULL};
+  static const char * const bases[] = {
+#ifdef USE_RUN_GNUPG_USER_SOCKET
+    "/run/gnupg",
+#endif
+    "/run",
+#ifdef USE_RUN_GNUPG_USER_SOCKET
+    "/var/run/gnupg",
+#endif
+    "/var/run",
+    NULL
+  };
   int i;
   struct stat sb;
   char prefix[13 + 1 + 20 + 6 + 1];
@@ -559,7 +569,7 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
    * as a background process with no (desktop) user logged in.  Thus
    * we better don't do that.  */
 
-  /* Check whether we have a /run/user dir.  */
+  /* Check whether we have a /run/[gnupg/]user dir.  */
   for (i=0; bases[i]; i++)
     {
       snprintf (prefix, sizeof prefix, "%s/user/%u",
