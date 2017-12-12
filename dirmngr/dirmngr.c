@@ -151,6 +151,7 @@ enum cmd_and_opt_values {
   oResolverTimeout,
   oConnectTimeout,
   oConnectQuickTimeout,
+  oListenBacklog,
   aTest
 };
 
@@ -256,6 +257,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oResolverTimeout, "resolver-timeout", "@"),
   ARGPARSE_s_i (oConnectTimeout, "connect-timeout", "@"),
   ARGPARSE_s_i (oConnectQuickTimeout, "connect-quick-timeout", "@"),
+  ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
 
   ARGPARSE_group (302,N_("@\n(See the \"info\" manual for a complete listing "
                          "of all commands and options)\n")),
@@ -295,6 +297,10 @@ static const char *redir_socket_name;
 /* We need to keep track of the server's nonces (these are dummies for
    POSIX systems). */
 static assuan_sock_nonce_t socket_nonce;
+
+/* Value for the listen() backlog argument.
+ * Change at runtime with --listen-backlog.  */
+static int listen_backlog = 64;
 
 /* Only if this flag has been set will we remove the socket file.  */
 static int cleanup_socket;
@@ -1019,6 +1025,10 @@ main (int argc, char **argv)
 
         case oSocketName: socket_name = pargs.r.ret_str; break;
 
+        case oListenBacklog:
+          listen_backlog = pargs.r.ret_int;
+          break;
+
         default : pargs.err = configfp? 1:2; break;
 	}
     }
@@ -1263,9 +1273,10 @@ main (int argc, char **argv)
         log_error (_("can't set permissions of '%s': %s\n"),
                    serv_addr.sun_path, strerror (errno));
 
-      if (listen (FD2INT (fd), 5) == -1)
+      if (listen (FD2INT (fd), listen_backlog) == -1)
         {
-          log_error (_("listen() failed: %s\n"), strerror (errno));
+          log_error ("listen(fd,%d) failed: %s\n",
+                     listen_backlog, strerror (errno));
           assuan_sock_close (fd);
           dirmngr_exit (1);
         }

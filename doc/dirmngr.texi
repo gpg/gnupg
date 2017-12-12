@@ -282,6 +282,10 @@ default values are 15 and 2 seconds.  Note that the timeout values are
 for each connection attempt; the connection code will attempt to
 connect all addresses listed for a server.
 
+@item --listen-backlog @var{n}
+@opindex listen-backlog
+Set the size of the queue for pending connections.  The default is 64.
+
 @item --allow-version-check
 @opindex allow-version-check
 Allow Dirmngr to connect to @code{https://versions.gnupg.org} to get

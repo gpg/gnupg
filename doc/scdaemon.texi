@@ -236,6 +236,12 @@ a list of categories see the Libassuan manual.
 Don't detach the process from the console.  This is mainly useful for
 debugging.
 
+@item --listen-backlog @var{n}
+@opindex listen-backlog
+Set the size of the queue for pending connections.  The default is 64.
+This option has an effect only if @option{--multi-server} is also
+used.
+
 @item --log-file @var{file}
 @opindex log-file
 Append all logging output to @var{file}.  This is very helpful in
