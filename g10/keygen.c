@@ -4484,6 +4484,11 @@ card_write_key_to_backup_file (PKT_public_key *sk, const char *backup_dir)
       log_info (_("Note: backup of card key saved to '%s'\n"), fname);
 
       fprbuf = hexfingerprint (sk, NULL, 0);
+      if (!fprbuf)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
       write_status_text_and_buffer (STATUS_BACKUP_KEY_CREATED, fprbuf,
                                     fname, strlen (fname), 0);
       xfree (fprbuf);

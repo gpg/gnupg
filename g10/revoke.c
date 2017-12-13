@@ -536,7 +536,20 @@ gen_standard_revoke (ctrl_t ctrl, PKT_public_key *psk, const char *cache_nonce)
 
   dir = get_openpgp_revocdir (gnupg_homedir ());
   tmpstr = hexfingerprint (psk, NULL, 0);
-  fname = xstrconcat (dir, DIRSEP_S, tmpstr, NULL);
+  if (!tmpstr)
+    {
+      rc = gpg_error_from_syserror ();
+      xfree (dir);
+      return rc;
+    }
+  fname = strconcat (dir, DIRSEP_S, tmpstr, NULL);
+  if (!fname)
+    {
+      rc = gpg_error_from_syserror ();
+      xfree (tmpstr);
+      xfree (dir);
+      return rc;
+    }
   xfree (tmpstr);
   xfree (dir);
 

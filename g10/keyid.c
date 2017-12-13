@@ -790,12 +790,12 @@ fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
 
 
 /* Return an allocated buffer with the fingerprint of PK formatted as
-   a plain hexstring.  If BUFFER is NULL the result is a malloc'd
-   string.  If BUFFER is not NULL the result will be copied into this
-   buffer.  In the latter case BUFLEN describes the length of the
-   buffer; if this is too short the function terminates the process.
-   Returns a malloc'ed string or BUFFER.  A suitable length for BUFFER
-   is (2*MAX_FINGERPRINT_LEN + 1). */
+ * a plain hexstring.  If BUFFER is NULL the result is a malloc'd
+ * string.  If BUFFER is not NULL the result will be copied into this
+ * buffer.  In the latter case BUFLEN describes the length of the
+ * buffer; if this is too short the function terminates the process.
+ * Returns a malloc'ed string or BUFFER.  A suitable length for BUFFER
+ * is (2*MAX_FINGERPRINT_LEN + 1). */
 char *
 hexfingerprint (PKT_public_key *pk, char *buffer, size_t buflen)
 {
@@ -804,7 +804,11 @@ hexfingerprint (PKT_public_key *pk, char *buffer, size_t buflen)
 
   fingerprint_from_pk (pk, fpr, &len);
   if (!buffer)
-    buffer = xmalloc (2 * len + 1);
+    {
+      buffer = xtrymalloc (2 * len + 1);
+      if (!buffer)
+        return NULL;
+    }
   else if (buflen < 2*len+1)
     log_fatal ("%s: buffer too short (%zu)\n", __func__, buflen);
   bin2hex (fpr, len, buffer);
