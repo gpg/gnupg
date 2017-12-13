@@ -730,39 +730,34 @@ key_present_in_pk_list(PK_LIST pk_list, PKT_public_key *pk)
 }
 
 
-/****************
+/*
  * Return a malloced string with a default recipient if there is any
+ * Fixme: We don't distinguish between malloc failure and no-default-recipient.
  */
 static char *
-default_recipient(ctrl_t ctrl)
+default_recipient (ctrl_t ctrl)
 {
-    PKT_public_key *pk;
-    byte fpr[MAX_FINGERPRINT_LEN+1];
-    size_t n;
-    char *p;
-    int i;
+  PKT_public_key *pk;
+  char *result;
 
-    if( opt.def_recipient )
-	return xstrdup( opt.def_recipient );
-    if( !opt.def_recipient_self )
-	return NULL;
-    pk = xmalloc_clear( sizeof *pk );
-    i = get_seckey_default (ctrl, pk);
-    if( i ) {
-	free_public_key( pk );
-	return NULL;
+  if (opt.def_recipient)
+    return xtrystrdup (opt.def_recipient);
+
+  if (!opt.def_recipient_self)
+    return NULL;
+  pk = xtrycalloc (1, sizeof *pk );
+  if (!pk)
+    return NULL;
+  if (get_seckey_default (ctrl, pk))
+    {
+      free_public_key (pk);
+      return NULL;
     }
-    n = MAX_FINGERPRINT_LEN;
-    fingerprint_from_pk( pk, fpr, &n );
-    free_public_key( pk );
-    p = xmalloc( 2*n+3 );
-    *p++ = '0';
-    *p++ = 'x';
-    for(i=0; i < n; i++ )
-	sprintf( p+2*i, "%02X", fpr[i] );
-    p -= 2;
-    return p;
+  result = hexfingerprint (pk, NULL, 0);
+  free_public_key (pk);
+  return result;
 }
+
 
 static int
 expand_id(const char *id,strlist_t *into,unsigned int flags)
