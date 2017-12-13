@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.2.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-11-02 17:41+0100\n"
+"PO-Revision-Date: 2017-12-13 17:41+0100\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -1345,10 +1345,9 @@ msgstr "Какой Вам нужен размер ключа для шифров
 msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "Какой Вам нужен размер ключа для удостоверения личности? (%u) "
 
-#, fuzzy, c-format
-#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+#, c-format
 msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr "Теперь карта будет перенастроена на генерацию ключа длиной %u бит\n"
+msgstr "Теперь карта будет перенастроена на генерацию ключа типа %s\n"
 
 #, c-format
 msgid "rounded up to %u bits\n"
