@@ -64,6 +64,11 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
       if (DBG_HASHING)
         gcry_md_debug (cfx->mdc_hash, "creatmdc");
     }
+  else if (!opt.no_mdc_warn)
+    {
+      log_info ("WARNING: "
+                "encrypting without integrity protection is dangerous\n");
+    }
 
   write_status_printf (STATUS_BEGIN_ENCRYPTION, "%d %d",
                        ed.mdc_method, cfx->dek->algo);
@@ -91,7 +96,6 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
       BUG();
     }
 
-
   /* log_hexdump ("thekey", cfx->dek->key, cfx->dek->keylen); */
   gcry_cipher_setkey (cfx->cipher_hd, cfx->dek->key, cfx->dek->keylen);
   gcry_cipher_setiv (cfx->cipher_hd, NULL, 0);
@@ -101,7 +105,11 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
   gcry_cipher_encrypt (cfx->cipher_hd, temp, nprefix+2, NULL, 0);
   gcry_cipher_sync (cfx->cipher_hd);
   iobuf_write (a, temp, nprefix+2);
-  cfx->header = 1;
+
+  cfx->short_blklen_warn = (blocksize < 16);
+  cfx->short_blklen_count = nprefix+2;
+
+  cfx->wrote_header = 1;
 }
 
 
@@ -122,11 +130,23 @@ cipher_filter (void *opaque, int control, iobuf_t a, byte *buf, size_t *ret_len)
   else if (control == IOBUFCTRL_FLUSH) /* encrypt */
     {
       log_assert (a);
-      if (!cfx->header)
+      if (!cfx->wrote_header)
         write_header (cfx, a);
       if (cfx->mdc_hash)
         gcry_md_write (cfx->mdc_hash, buf, size);
       gcry_cipher_encrypt (cfx->cipher_hd, buf, size, NULL, 0);
+      if (cfx->short_blklen_warn)
+        {
+          cfx->short_blklen_count += size;
+          if (cfx->short_blklen_count > (150 * 1024 * 1024))
+            {
+              log_info ("WARNING: encrypting more than %d MiB with algorithm "
+                        "%s should be avoided\n", 150,
+                        openpgp_cipher_algo_name (cfx->dek->algo));
+              cfx->short_blklen_warn = 0; /* Don't show again.  */
+            }
+        }
+
       rc = iobuf_write (a, buf, size);
     }
   else if (control == IOBUFCTRL_FREE)
