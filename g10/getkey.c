@@ -497,7 +497,7 @@ get_pubkeys (ctrl_t ctrl,
                 search_terms, gpg_strerror (err));
       if (!opt.quiet && source)
         log_info (_("(check argument of option '%s')\n"), source);
-      goto out;
+      goto leave;
     }
 
   if (warn_possibly_ambiguous
@@ -517,8 +517,16 @@ get_pubkeys (ctrl_t ctrl,
   count = 0;
   do
     {
-      PKT_public_key *pk = xmalloc_clear (sizeof *pk);
+      PKT_public_key *pk;
       KBNODE kb;
+
+      pk = xtrycalloc (1, sizeof *pk);
+      if (!pk)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
       pk->req_usage = use;
 
       if (! ctx)
@@ -542,7 +550,13 @@ get_pubkeys (ctrl_t ctrl,
       /* Another result!  */
       count ++;
 
-      r = xmalloc_clear (sizeof (*r));
+      r = xtrycalloc (1, sizeof (*r));
+      if (!r)
+        {
+          err = gpg_error_from_syserror ();
+          xfree (pk);
+          goto leave;
+        }
       r->pk = pk;
       r->keyblock = kb;
       r->next = results;
@@ -569,14 +583,14 @@ get_pubkeys (ctrl_t ctrl,
       if (!opt.quiet && source)
         log_info (_("(check argument of option '%s')\n"), source);
 
-      goto out;
+      goto leave;
     }
   else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     ; /* No more matches.  */
   else if (err)
     { /* Some other error.  An error message was already printed out.
        * Free RESULTS and continue.  */
-      goto out;
+      goto leave;
     }
 
   /* Check for duplicates.  */
@@ -641,7 +655,7 @@ get_pubkeys (ctrl_t ctrl,
                                    fingerprint, sizeof fingerprint));
     }
 
- out:
+ leave:
   if (err)
     pubkeys_free (results);
   else
@@ -712,8 +726,13 @@ get_pubkey (ctrl_t ctrl, PKT_public_key * pk, u32 * keyid)
   /* More init stuff.  */
   if (!pk)
     {
-      pk = xmalloc_clear (sizeof *pk);
       internal++;
+      pk = xtrycalloc (1, sizeof *pk);
+      if (!pk)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
     }
 
 
