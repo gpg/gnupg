@@ -65,12 +65,8 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
         gcry_md_debug (cfx->mdc_hash, "creatmdc");
     }
 
-  {
-    char buf[20];
-
-    snprintf (buf, sizeof buf, "%d %d", ed.mdc_method, cfx->dek->algo);
-    write_status_text (STATUS_BEGIN_ENCRYPTION, buf);
-  }
+  write_status_printf (STATUS_BEGIN_ENCRYPTION, "%d %d",
+                       ed.mdc_method, cfx->dek->algo);
 
   init_packet (&pkt);
   pkt.pkttype = cfx->dek->use_mdc? PKT_ENCRYPTED_MDC : PKT_ENCRYPTED;
