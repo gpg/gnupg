@@ -7,9 +7,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 1.4.20\n"
+"Project-Id-Version: gnupg 1.4.22\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-12-21 21:25+0900\n"
+"PO-Revision-Date: 2017-12-18 14:27+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -3156,10 +3156,10 @@ msgid "invalid value\n"
 msgstr "無効な値\n"
 
 msgid "Key does not expire at all\n"
-msgstr "%sは無期限です\n"
+msgstr "鍵は無期限です\n"
 
 msgid "Signature does not expire at all\n"
-msgstr "%署名は無期限です\n"
+msgstr "署名は無期限です\n"
 
 #, c-format
 msgid "Key expires at %s\n"
