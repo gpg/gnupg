@@ -563,6 +563,9 @@ Ignore requests to change the current @code{tty} or X window system's
 @code{DISPLAY} variable respectively.  This is useful to lock the
 pinentry to pop up at the @code{tty} or display you started the agent.
 
+@item --listen-backlog @var{n}
+@opindex listen-backlog
+Set the size of the queue for pending connections.  The default is 64.
 
 @anchor{option --extra-socket}
 @item --extra-socket @var{name}

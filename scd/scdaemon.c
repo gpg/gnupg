@@ -99,6 +99,7 @@ enum cmd_and_opt_values
   oDenyAdmin,
   oDisableApplication,
   oEnablePinpadVarlen,
+  oListenBacklog
 };
 
 
@@ -156,6 +157,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oEnablePinpadVarlen, "enable-pinpad-varlen",
                 N_("use variable length input for pinpad")),
   ARGPARSE_s_s (oHomedir,    "homedir",      "@"),
+  ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
 
   ARGPARSE_end ()
 };
@@ -223,6 +225,10 @@ static char *redir_socket_name;
 /* We need to keep track of the server's nonces (these are dummies for
    POSIX systems). */
 static assuan_sock_nonce_t socket_nonce;
+
+/* Value for the listen() backlog argument.  Change at runtime with
+ * --listen-backlog.  */
+static int listen_backlog = 64;
 
 #ifdef HAVE_W32_SYSTEM
 static HANDLE the_event;
@@ -593,6 +599,10 @@ main (int argc, char **argv )
           break;
 
         case oEnablePinpadVarlen: opt.enable_pinpad_varlen = 1; break;
+
+        case oListenBacklog:
+          listen_backlog = pargs.r.ret_int;
+          break;
 
         default:
           pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;
@@ -1128,10 +1138,10 @@ create_server_socket (const char *name, char **r_redir_name,
     log_error (_("can't set permissions of '%s': %s\n"),
                unaddr->sun_path, strerror (errno));
 
-  if (listen (FD2INT(fd), 5 ) == -1)
+  if (listen (FD2INT(fd), listen_backlog) == -1)
     {
-      log_error (_("listen() failed: %s\n"),
-                 gpg_strerror (gpg_error_from_syserror ()));
+      log_error ("listen(fd, %d) failed: %s\n",
+                 listen_backlog, gpg_strerror (gpg_error_from_syserror ()));
       assuan_sock_close (fd);
       scd_exit (2);
     }

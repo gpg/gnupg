@@ -1430,6 +1430,11 @@ print_pka_or_dane_records (iobuf_t out, kbnode_t keyblock, PKT_public_key *pk,
   char *hexfpr;
 
   hexfpr = hexfingerprint (pk, NULL, 0);
+  if (!hexfpr)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
   hexdata = bin2hex (data, datalen, NULL);
   if (!hexdata)
     {

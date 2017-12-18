@@ -383,19 +383,36 @@ keygen_set_std_prefs (const char *string,int personal)
 	      strcat(dummy_string,"S7 ");
 	    strcat(dummy_string,"S2 "); /* 3DES */
 
-            /* The default hash algo order is:
-                 SHA-256, SHA-384, SHA-512, SHA-224, SHA-1.
-             */
-	    if (!openpgp_md_test_algo (DIGEST_ALGO_SHA256))
-	      strcat (dummy_string, "H8 ");
+            if (personal)
+              {
+                /* The default internal hash algo order is:
+                 *  SHA-256, SHA-384, SHA-512, SHA-224, SHA-1.
+                 */
+                if (!openpgp_md_test_algo (DIGEST_ALGO_SHA256))
+                  strcat (dummy_string, "H8 ");
 
-	    if (!openpgp_md_test_algo (DIGEST_ALGO_SHA384))
-	      strcat (dummy_string, "H9 ");
+                if (!openpgp_md_test_algo (DIGEST_ALGO_SHA384))
+                  strcat (dummy_string, "H9 ");
 
-	    if (!openpgp_md_test_algo (DIGEST_ALGO_SHA512))
-	      strcat (dummy_string, "H10 ");
+                if (!openpgp_md_test_algo (DIGEST_ALGO_SHA512))
+                  strcat (dummy_string, "H10 ");
+              }
+            else
+              {
+                /* The default advertised hash algo order is:
+                 *  SHA-512, SHA-384, SHA-256, SHA-224, SHA-1.
+                 */
+                if (!openpgp_md_test_algo (DIGEST_ALGO_SHA512))
+                  strcat (dummy_string, "H10 ");
 
-	    if (!openpgp_md_test_algo (DIGEST_ALGO_SHA224))
+                if (!openpgp_md_test_algo (DIGEST_ALGO_SHA384))
+                  strcat (dummy_string, "H9 ");
+
+                if (!openpgp_md_test_algo (DIGEST_ALGO_SHA256))
+                  strcat (dummy_string, "H8 ");
+              }
+
+            if (!openpgp_md_test_algo (DIGEST_ALGO_SHA224))
 	      strcat (dummy_string, "H11 ");
 
 	    strcat (dummy_string, "H2 "); /* SHA-1 */
@@ -4466,6 +4483,11 @@ card_write_key_to_backup_file (PKT_public_key *sk, const char *backup_dir)
       log_info (_("Note: backup of card key saved to '%s'\n"), fname);
 
       fprbuf = hexfingerprint (sk, NULL, 0);
+      if (!fprbuf)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
       write_status_text_and_buffer (STATUS_BACKUP_KEY_CREATED, fprbuf,
                                     fname, strlen (fname), 0);
       xfree (fprbuf);

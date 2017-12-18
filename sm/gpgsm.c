@@ -1456,6 +1456,7 @@ main ( int argc, char **argv)
           {
             struct gnupg_compliance_option compliance_options[] =
               {
+                { "gnupg", CO_GNUPG },
                 { "de-vs", CO_DE_VS }
               };
             int compliance = gnupg_parse_compliance_option (pargs.r.ret_str,

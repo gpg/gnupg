@@ -92,10 +92,11 @@ typedef struct {
     DEK *dek;
     u32 datalen;
     gcry_cipher_hd_t cipher_hd;
-    int header;
+    unsigned int wrote_header : 1;
+    unsigned int short_blklen_warn : 1;
+    unsigned long short_blklen_count;
     gcry_md_hd_t mdc_hash;
     byte enchash[20];
-    int create_mdc; /* flag will be set by the cipher filter */
 } cipher_filter_context_t;
 
 

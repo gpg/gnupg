@@ -136,6 +136,7 @@ enum cmd_and_opt_values
   oDisableCheckOwnSocket,
   oS2KCount,
   oAutoExpandSecmem,
+  oListenBacklog,
 
   oWriteEnvFile
 };
@@ -255,6 +256,8 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_op_u (oAutoExpandSecmem, "auto-expand-secmem", "@"),
 
+  ARGPARSE_s_i (oListenBacklog, "listen-backlog", "@"),
+
   /* Dummy options for backward compatibility.  */
   ARGPARSE_o_s (oWriteEnvFile, "write-env-file", "@"),
   ARGPARSE_s_n (oUseStandardSocket, "use-standard-socket", "@"),
@@ -371,6 +374,10 @@ static assuan_sock_nonce_t socket_nonce_extra;
 static assuan_sock_nonce_t socket_nonce_browser;
 static assuan_sock_nonce_t socket_nonce_ssh;
 
+/* Value for the listen() backlog argument.  We use the same value for
+ * all sockets - 64 is on current Linux half of the default maximum.
+ * Let's try this as default.  Change at runtime with --listen-backlog.  */
+static int listen_backlog = 64;
 
 /* Default values for options passed to the pinentry. */
 static char *default_display;
@@ -1243,6 +1250,10 @@ main (int argc, char **argv )
            * on the quiet and thus we use the numeric value value.  */
           gcry_control (78 /*GCRYCTL_AUTO_EXPAND_SECMEM*/,
                         (unsigned int)pargs.r.ret_ulong,  0);
+          break;
+
+        case oListenBacklog:
+          listen_backlog = pargs.r.ret_int;
           break;
 
         case oDebugQuickRandom:
@@ -2248,9 +2259,10 @@ create_server_socket (char *name, int primary, int cygwin,
     log_error (_("can't set permissions of '%s': %s\n"),
                unaddr->sun_path, strerror (errno));
 
-  if (listen (FD2INT(fd), 5 ) == -1)
+  if (listen (FD2INT(fd), listen_backlog ) == -1)
     {
-      log_error (_("listen() failed: %s\n"), strerror (errno));
+      log_error ("listen(fd,%d) failed: %s\n",
+                 listen_backlog, strerror (errno));
       *name = 0; /* Inhibit removal of the socket by cleanup(). */
       assuan_sock_close (fd);
       xfree (unaddr);

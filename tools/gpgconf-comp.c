@@ -714,7 +714,7 @@ static gc_option_t gc_options_gpg[] =
    { "options", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
      NULL, NULL,
      GC_ARG_TYPE_FILENAME, GC_BACKEND_GPG },
-   { "compliance", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+   { "compliance", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      NULL, NULL,
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
    { "default-new-key-algo", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
@@ -831,6 +831,9 @@ static gc_option_t gc_options_gpgsm[] =
      GC_ARG_TYPE_LDAP_SERVER, GC_BACKEND_GPGSM },
    { "default_pubkey_algo",
      (GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_NO_CHANGE), GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_STRING, GC_BACKEND_GPGSM },
+   { "compliance", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
      NULL, NULL,
      GC_ARG_TYPE_STRING, GC_BACKEND_GPGSM },
 

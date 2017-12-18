@@ -3336,8 +3336,8 @@ tofu_register_signature (ctrl_t ctrl,
   char *fingerprint = NULL;
   strlist_t user_id;
   char *email = NULL;
-  char *err = NULL;
-  char *sig_digest;
+  char *sqlerr = NULL;
+  char *sig_digest = NULL;
   unsigned long c;
 
   dbs = opendbs (ctrl);
@@ -3358,11 +3358,20 @@ tofu_register_signature (ctrl_t ctrl,
   log_assert (pk_is_primary (pk));
 
   sig_digest = make_radix64_string (sig_digest_bin, sig_digest_bin_len);
+  if (!sig_digest)
+    {
+      rc = gpg_error_from_syserror ();
+      goto leave;
+    }
   fingerprint = hexfingerprint (pk, NULL, 0);
+  if (!fingerprint)
+    {
+      rc = gpg_error_from_syserror ();
+      goto leave;
+    }
 
   if (! origin)
-    /* The default origin is simply "unknown".  */
-    origin = "unknown";
+    origin = "unknown";  /* The default origin is simply "unknown".  */
 
   for (user_id = user_id_list; user_id; user_id = user_id->next)
     {
@@ -3388,7 +3397,7 @@ tofu_register_signature (ctrl_t ctrl,
          it again.  */
       rc = gpgsql_stepx
         (dbs->db, &dbs->s.register_already_seen,
-         get_single_unsigned_long_cb2, &c, &err,
+         get_single_unsigned_long_cb2, &c, &sqlerr,
          "select count (*)\n"
          " from signatures left join bindings\n"
          "  on signatures.binding = bindings.oid\n"
@@ -3400,9 +3409,9 @@ tofu_register_signature (ctrl_t ctrl,
          GPGSQL_ARG_END);
       if (rc)
         {
-          log_error (_("error reading TOFU database: %s\n"), err);
+          log_error (_("error reading TOFU database: %s\n"), sqlerr);
           print_further_info ("checking existence");
-          sqlite3_free (err);
+          sqlite3_free (sqlerr);
           rc = gpg_error (GPG_ERR_GENERAL);
         }
       else if (c > 1)
@@ -3440,7 +3449,7 @@ tofu_register_signature (ctrl_t ctrl,
           log_assert (c == 0);
 
           rc = gpgsql_stepx
-            (dbs->db, &dbs->s.register_signature, NULL, NULL, &err,
+            (dbs->db, &dbs->s.register_signature, NULL, NULL, &sqlerr,
              "insert into signatures\n"
              " (binding, sig_digest, origin, sig_time, time)\n"
              " values\n"
@@ -3454,9 +3463,9 @@ tofu_register_signature (ctrl_t ctrl,
              GPGSQL_ARG_END);
           if (rc)
             {
-              log_error (_("error updating TOFU database: %s\n"), err);
+              log_error (_("error updating TOFU database: %s\n"), sqlerr);
               print_further_info ("insert signatures");
-              sqlite3_free (err);
+              sqlite3_free (sqlerr);
               rc = gpg_error (GPG_ERR_GENERAL);
             }
         }
@@ -3467,6 +3476,7 @@ tofu_register_signature (ctrl_t ctrl,
         break;
     }
 
+ leave:
   if (rc)
     rollback_transaction (ctrl);
   else
@@ -3490,7 +3500,8 @@ tofu_register_encryption (ctrl_t ctrl,
   int free_user_id_list = 0;
   char *fingerprint = NULL;
   strlist_t user_id;
-  char *err = NULL;
+  char *sqlerr = NULL;
+  int in_batch = 0;
 
   dbs = opendbs (ctrl);
   if (! dbs)
@@ -3535,8 +3546,14 @@ tofu_register_encryption (ctrl_t ctrl,
     }
 
   fingerprint = hexfingerprint (pk, NULL, 0);
+  if (!fingerprint)
+    {
+      rc = gpg_error_from_syserror ();
+      goto leave;
+    }
 
   tofu_begin_batch_update (ctrl);
+  in_batch = 1;
   tofu_resume_batch_transaction (ctrl);
 
   for (user_id = user_id_list; user_id; user_id = user_id->next)
@@ -3554,7 +3571,7 @@ tofu_register_encryption (ctrl_t ctrl,
           /* An error.  */
           rc = gpg_error (GPG_ERR_GENERAL);
           xfree (email);
-          goto die;
+          goto leave;
         }
 
 
@@ -3580,7 +3597,7 @@ tofu_register_encryption (ctrl_t ctrl,
       free_strlist (conflict_set);
 
       rc = gpgsql_stepx
-        (dbs->db, &dbs->s.register_encryption, NULL, NULL, &err,
+        (dbs->db, &dbs->s.register_encryption, NULL, NULL, &sqlerr,
          "insert into encryptions\n"
          " (binding, time)\n"
          " values\n"
@@ -3592,24 +3609,22 @@ tofu_register_encryption (ctrl_t ctrl,
          GPGSQL_ARG_END);
       if (rc)
         {
-          log_error (_("error updating TOFU database: %s\n"), err);
+          log_error (_("error updating TOFU database: %s\n"), sqlerr);
           print_further_info ("insert encryption");
-          sqlite3_free (err);
+          sqlite3_free (sqlerr);
           rc = gpg_error (GPG_ERR_GENERAL);
         }
 
       xfree (email);
     }
 
- die:
-  tofu_end_batch_update (ctrl);
+ leave:
+  if (in_batch)
+    tofu_end_batch_update (ctrl);
 
-  if (kb)
-    release_kbnode (kb);
-
+  release_kbnode (kb);
   if (free_user_id_list)
     free_strlist (user_id_list);
-
   xfree (fingerprint);
 
   return rc;
@@ -3685,10 +3700,10 @@ tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
                        PKT_public_key *pk, const char *user_id)
 {
   time_t now = gnupg_get_time ();
-  gpg_error_t err;
+  gpg_error_t err = 0;
   tofu_dbs_t dbs;
   char *fingerprint;
-  char *email;
+  char *email = NULL;
   enum tofu_policy policy;
 
   if (!*user_id)
@@ -3703,14 +3718,20 @@ tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
     }
 
   fingerprint = hexfingerprint (pk, NULL, 0);
+  if (!fingerprint)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
   email = email_from_user_id (user_id);
   policy = get_policy (ctrl, dbs, pk, fingerprint, user_id, email, NULL, now);
 
   show_statistics (dbs, fingerprint, email, policy, fp, 0, now);
 
+ leave:
   xfree (email);
   xfree (fingerprint);
-  return 0;
+  return err;
 }
 
 
@@ -3724,7 +3745,10 @@ tofu_write_tfs_record (ctrl_t ctrl, estream_t fp,
    will be prompted to choose a policy.  If MAY_ASK is 0 and the
    policy is TOFU_POLICY_ASK, then TRUST_UNKNOWN is returned.
 
-   Returns TRUST_UNDEFINED if an error occurs.  */
+   Returns TRUST_UNDEFINED if an error occurs.
+
+   Fixme: eturn an error code
+  */
 int
 tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
 		   int may_ask)
@@ -3748,6 +3772,8 @@ tofu_get_validity (ctrl_t ctrl, PKT_public_key *pk, strlist_t user_id_list,
     }
 
   fingerprint = hexfingerprint (pk, NULL, 0);
+  if (!fingerprint)
+    log_fatal ("%s: malloc failed\n", __func__);
 
   tofu_begin_batch_update (ctrl);
   /* Start the batch transaction now.  */
@@ -3893,6 +3919,8 @@ tofu_set_policy (ctrl_t ctrl, kbnode_t kb, enum tofu_policy policy)
     log_bug ("%s: Passed a subkey, but expecting a primary key.\n", __func__);
 
   fingerprint = hexfingerprint (pk, NULL, 0);
+  if (!fingerprint)
+    return gpg_error_from_syserror ();
 
   begin_transaction (ctrl, 0);
 
@@ -3962,6 +3990,8 @@ tofu_get_policy (ctrl_t ctrl, PKT_public_key *pk, PKT_user_id *user_id,
     }
 
   fingerprint = hexfingerprint (pk, NULL, 0);
+  if (!fingerprint)
+    return gpg_error_from_syserror ();
 
   email = email_from_user_id (user_id->name);
 
@@ -3998,6 +4028,8 @@ tofu_notice_key_changed (ctrl_t ctrl, kbnode_t kb)
     }
 
   fingerprint = hexfingerprint (pk, NULL, 0);
+  if (!fingerprint)
+    return gpg_error_from_syserror ();
 
   rc = gpgsql_stepx (dbs->db, NULL, NULL, NULL, &sqlerr,
                      "update bindings set effective_policy = ?"

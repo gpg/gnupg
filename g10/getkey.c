@@ -413,34 +413,35 @@ pubkeys_free (pubkey_t keys)
     }
 }
 
+
 /* Returns all keys that match the search specification SEARCH_TERMS.
-
-   This function also checks for and warns about duplicate entries in
-   the keydb, which can occur if the user has configured multiple
-   keyrings or keyboxes or if a keyring or keybox was corrupted.
-
-   Note: SEARCH_TERMS will not be expanded (i.e., it may not be a
-   group).
-
-   USE is the operation for which the key is required.  It must be
-   either PUBKEY_USAGE_ENC, PUBKEY_USAGE_SIG, PUBKEY_USAGE_CERT or
-   PUBKEY_USAGE_AUTH.
-
-   XXX: Currently, only PUBKEY_USAGE_ENC and PUBKEY_USAGE_SIG are
-   implemented.
-
-   INCLUDE_UNUSABLE indicates whether disabled keys are allowed.
-   (Recipients specified with --encrypt-to and --hidden-encrypt-to may
-   be disabled.  It is possible to edit disabled keys.)
-
-   SOURCE is the context in which SEARCH_TERMS was specified, e.g.,
-   "--encrypt-to", etc.  If this function is called interactively,
-   then this should be NULL.
-
-   If WARN_POSSIBLY_AMBIGUOUS is set, then emits a warning if the user
-   does not specify a long key id or a fingerprint.
-
-   The results are placed in *KEYS.  *KEYS must be NULL!  */
+ *
+ * This function also checks for and warns about duplicate entries in
+ * the keydb, which can occur if the user has configured multiple
+ * keyrings or keyboxes or if a keyring or keybox was corrupted.
+ *
+ * Note: SEARCH_TERMS will not be expanded (i.e., it may not be a
+ * group).
+ *
+ * USE is the operation for which the key is required.  It must be
+ * either PUBKEY_USAGE_ENC, PUBKEY_USAGE_SIG, PUBKEY_USAGE_CERT or
+ * PUBKEY_USAGE_AUTH.
+ *
+ * INCLUDE_UNUSABLE indicates whether disabled keys are allowed.
+ * (Recipients specified with --encrypt-to and --hidden-encrypt-to may
+ * be disabled.  It is possible to edit disabled keys.)
+ *
+ * SOURCE is the context in which SEARCH_TERMS was specified, e.g.,
+ * "--encrypt-to", etc.  If this function is called interactively,
+ * then this should be NULL.
+ *
+ * If WARN_POSSIBLY_AMBIGUOUS is set, then emits a warning if the user
+ * does not specify a long key id or a fingerprint.
+ *
+ * The results are placed in *KEYS.  *KEYS must be NULL!
+ *
+ * Fixme: Currently, only PUBKEY_USAGE_ENC and PUBKEY_USAGE_SIG are
+ * implemented.  */
 gpg_error_t
 get_pubkeys (ctrl_t ctrl,
              char *search_terms, int use, int include_unusable, char *source,
@@ -448,30 +449,23 @@ get_pubkeys (ctrl_t ctrl,
              pubkey_t *r_keys)
 {
   /* We show a warning when a key appears multiple times in the DB.
-     This can happen for two reasons:
-
-       - The user has configured multiple keyrings or keyboxes.
-
-       - The keyring or keybox has been corrupted in some way, e.g., a
-         bug or a random process changing them.
-
-     For each duplicate, we only want to show the key once.  Hence,
-     this list.  */
+   * This can happen for two reasons:
+   *
+   *   - The user has configured multiple keyrings or keyboxes.
+   *
+   *   - The keyring or keybox has been corrupted in some way, e.g., a
+   *     bug or a random process changing them.
+   *
+   * For each duplicate, we only want to show the key once.  Hence,
+   * this list.  */
   static strlist_t key_dups;
-
-  /* USE transformed to a string.  */
-  char *use_str;
-
   gpg_error_t err;
-
+  char *use_str;   /* USE transformed to a string.  */
   KEYDB_SEARCH_DESC desc;
-
   GETKEY_CTX ctx;
   pubkey_t results = NULL;
   pubkey_t r;
-
   int count;
-
   char fingerprint[2 * MAX_FINGERPRINT_LEN + 1];
 
   if (DBG_LOOKUP)
@@ -503,7 +497,7 @@ get_pubkeys (ctrl_t ctrl,
                 search_terms, gpg_strerror (err));
       if (!opt.quiet && source)
         log_info (_("(check argument of option '%s')\n"), source);
-      goto out;
+      goto leave;
     }
 
   if (warn_possibly_ambiguous
@@ -523,8 +517,16 @@ get_pubkeys (ctrl_t ctrl,
   count = 0;
   do
     {
-      PKT_public_key *pk = xmalloc_clear (sizeof *pk);
+      PKT_public_key *pk;
       KBNODE kb;
+
+      pk = xtrycalloc (1, sizeof *pk);
+      if (!pk)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
       pk->req_usage = use;
 
       if (! ctx)
@@ -533,17 +535,14 @@ get_pubkeys (ctrl_t ctrl,
       else
         err = getkey_next (ctrl, ctx, pk, &kb);
 
-      if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
-        /* No more results.   */
+      if (gpg_err_code (err) == GPG_ERR_NOT_FOUND) /* No more results.   */
         {
           xfree (pk);
           break;
         }
-      else if (err)
-        /* An error (other than "not found").  */
+      else if (err) /* An error (other than "not found").  */
         {
-          log_error (_("error looking up: %s\n"),
-                     gpg_strerror (err));
+          log_error (_("error looking up: %s\n"), gpg_strerror (err));
           xfree (pk);
           break;
         }
@@ -551,7 +550,13 @@ get_pubkeys (ctrl_t ctrl,
       /* Another result!  */
       count ++;
 
-      r = xmalloc_clear (sizeof (*r));
+      r = xtrycalloc (1, sizeof (*r));
+      if (!r)
+        {
+          err = gpg_error_from_syserror ();
+          xfree (pk);
+          goto leave;
+        }
       r->pk = pk;
       r->keyblock = kb;
       r->next = results;
@@ -570,8 +575,7 @@ get_pubkeys (ctrl_t ctrl,
     }
 
   if (! results && gpg_err_code (err) == GPG_ERR_NOT_FOUND)
-    /* No match.  */
-    {
+    { /* No match.  */
       if (DBG_LOOKUP)
         log_debug ("%s: '%s' not found.\n", __func__, search_terms);
 
@@ -579,15 +583,15 @@ get_pubkeys (ctrl_t ctrl,
       if (!opt.quiet && source)
         log_info (_("(check argument of option '%s')\n"), source);
 
-      goto out;
+      goto leave;
     }
   else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
-    /* No more matches.  */
-    ;
+    ; /* No more matches.  */
   else if (err)
-    /* Some other error.  An error message was already printed
-       out.  Free RESULTS and continue.  */
-    goto out;
+    { /* Some other error.  An error message was already printed out.
+       * Free RESULTS and continue.  */
+      goto leave;
+    }
 
   /* Check for duplicates.  */
   if (DBG_LOOKUP)
@@ -607,8 +611,7 @@ get_pubkeys (ctrl_t ctrl,
         {
           if (cmp_public_keys (r->keyblock->pkt->pkt.public_key,
                                r2->keyblock->pkt->pkt.public_key) != 0)
-            /* Not a dup.  */
-            {
+            { /* Not a dup.  */
               prevp = &r2->next;
               next = r2->next;
               continue;
@@ -652,7 +655,7 @@ get_pubkeys (ctrl_t ctrl,
                                    fingerprint, sizeof fingerprint));
     }
 
- out:
+ leave:
   if (err)
     pubkeys_free (results);
   else
@@ -723,8 +726,13 @@ get_pubkey (ctrl_t ctrl, PKT_public_key * pk, u32 * keyid)
   /* More init stuff.  */
   if (!pk)
     {
-      pk = xmalloc_clear (sizeof *pk);
       internal++;
+      pk = xtrycalloc (1, sizeof *pk);
+      if (!pk)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
     }
 
 
