@@ -1,5 +1,5 @@
 #!/bin/sh
-# Apply defaults from /etc/gnupg/gpg.conf to all users             -*- sh -*-
+# Apply defaults from /etc/gnupg/gpgconf.conf to all users       -*- sh -*-
 #
 # Copyright 2007 Free Software Foundation, Inc.
 #

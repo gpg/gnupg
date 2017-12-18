@@ -36,6 +36,10 @@ struct
 } opt;
 
 
+/*-- gpgconf.c --*/
+void gpgconf_write_status (int no, const char *format,
+                           ...) GPGRT_ATTR_PRINTF(2,3);
+void gpgconf_failure (gpg_error_t err) GPGRT_ATTR_NORETURN;
 
 /*-- gpgconf-comp.c --*/
 
