@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.2\n"
+"Project-Id-Version: gnupg 2.2.3\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-11-07 11:11+0900\n"
+"PO-Revision-Date: 2017-12-18 14:07+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1340,10 +1340,9 @@ msgstr "暗号化鍵の鍵長は? (%u) "
 msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "認証鍵の鍵長は? (%u) "
 
-#, fuzzy, c-format
-#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+#, c-format
 msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr "今、%uビットの鍵を生成するようにカードは再コンフィグされました\n"
+msgstr "カードは、今、こちらのタイプの鍵を生成するように再コンフィグされました: %s\n"
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -3775,10 +3774,10 @@ msgid "invalid value\n"
 msgstr "無効な値\n"
 
 msgid "Key does not expire at all\n"
-msgstr "%sは無期限です\n"
+msgstr "鍵は無期限です\n"
 
 msgid "Signature does not expire at all\n"
-msgstr "%署名は無期限です\n"
+msgstr "署名は無期限です\n"
 
 #, c-format
 msgid "Key expires at %s\n"
