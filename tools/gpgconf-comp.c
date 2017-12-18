@@ -833,6 +833,9 @@ static gc_option_t gc_options_gpgsm[] =
      (GC_OPT_FLAG_ARG_OPT|GC_OPT_FLAG_NO_CHANGE), GC_LEVEL_INVISIBLE,
      NULL, NULL,
      GC_ARG_TYPE_STRING, GC_BACKEND_GPGSM },
+   { "compliance", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
+     NULL, NULL,
+     GC_ARG_TYPE_STRING, GC_BACKEND_GPGSM },
 
    { "Debug",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,
