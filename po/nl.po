@@ -30,7 +30,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.28\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-06-07 16:56+0200\n"
+"PO-Revision-Date: 2017-12-19 12:28+0100\n"
 "Last-Translator: Frans Spiesschaert <Frans.Spiesschaert@yucom.be>\n"
 "Language-Team: Debian Dutch l10n Team <debian-l10n-dutch@lists.debian.org>\n"
 "Language: nl\n"
@@ -6501,7 +6501,7 @@ msgid "keybox `%s' created\n"
 msgstr "sleuteldoosje `%s' is aangemaakt\n"
 
 msgid "failed to get the fingerprint\n"
-msgstr "opvragen van de vingerafdruk is mislukt: %s\n"
+msgstr "opvragen van de vingerafdruk is mislukt\n"
 
 #, c-format
 msgid "problem looking for existing certificate: %s\n"

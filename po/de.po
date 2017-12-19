@@ -893,7 +893,7 @@ msgid "Data decryption succeeded"
 msgstr "Entschlüsselung der Daten erfolgreich"
 
 msgid "Encryption algorithm supported"
-msgstr "Verschlüsselungsverfahren %d%s wird nicht unterstützt"
+msgstr "Verschlüsselungsverfahren wird unterstützt"
 
 msgid "Data verification succeeded"
 msgstr "Prüfung der Signatur erfolgreich"
