@@ -438,10 +438,6 @@ msgid "can't set permissions of '%s': %s\n"
 msgstr "klarte ikke å endre tillatelser til «%s»: %s\n"
 
 #, c-format
-msgid "listen() failed: %s\n"
-msgstr "listen() mislyktes: %s\n"
-
-#, c-format
 msgid "listening on socket '%s'\n"
 msgstr "lytter på sokkel «%s»\n"
 
@@ -8439,6 +8435,9 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [valg] mønsterfil\n"
 "Kontroller passordfrase oppgitt på standard innkanal mot valgt mønsterfil\n"
+
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "listen() mislyktes: %s\n"
 
 #~ msgid "do not grab keyboard and mouse"
 #~ msgstr "ikke bruk tastatur og mus"

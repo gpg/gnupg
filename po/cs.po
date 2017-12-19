@@ -471,10 +471,6 @@ msgid "can't set permissions of '%s': %s\n"
 msgstr "Varování: přístupová práva %s „%s“ nejsou bezpečná\n"
 
 #, c-format
-msgid "listen() failed: %s\n"
-msgstr "volání listen() selhalo: %s\n"
-
-#, c-format
 msgid "listening on socket '%s'\n"
 msgstr "naslouchá se na socketu „%s“\n"
 
@@ -8709,6 +8705,9 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "volání listen() selhalo: %s\n"
 
 #~ msgid "do not grab keyboard and mouse"
 #~ msgstr "neuzurpovat si klávesnici a myš"

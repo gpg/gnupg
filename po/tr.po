@@ -489,10 +489,6 @@ msgstr "soket `%s'e bağlanırken hata: %s\n"
 msgid "can't set permissions of '%s': %s\n"
 msgstr "UYARI: %s üzerinde izinler güvensiz: \"%s\"\n"
 
-#, c-format
-msgid "listen() failed: %s\n"
-msgstr "soket dinleme başarısız: %s\n"
-
 #, fuzzy, c-format
 #| msgid "listening on socket `%s'\n"
 msgid "listening on socket '%s'\n"
@@ -9264,6 +9260,9 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "soket dinleme başarısız: %s\n"
 
 #~ msgid "do not grab keyboard and mouse"
 #~ msgstr "klavye ve fare gaspedilmez"

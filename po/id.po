@@ -469,10 +469,6 @@ msgid "can't set permissions of '%s': %s\n"
 msgstr "Peringatan: permisi tidak aman pada %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "listen() failed: %s\n"
-msgstr "gagal memperbarui: %s\n"
-
-#, fuzzy, c-format
 msgid "listening on socket '%s'\n"
 msgstr "menulis kunci rahasia ke `%s'\n"
 
@@ -8917,6 +8913,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "gagal memperbarui: %s\n"
 
 #, fuzzy
 #~ msgid ""

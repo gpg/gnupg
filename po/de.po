@@ -453,10 +453,6 @@ msgid "can't set permissions of '%s': %s\n"
 msgstr "Zugriffsrechte für '%s' können nicht gesetzt werden: %s\n"
 
 #, c-format
-msgid "listen() failed: %s\n"
-msgstr "Der listen()-Aufruf ist fehlgeschlagen: %s\n"
-
-#, c-format
 msgid "listening on socket '%s'\n"
 msgstr "Es wird auf Socket `%s' gehört\n"
 
@@ -8758,6 +8754,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "Der listen()-Aufruf ist fehlgeschlagen: %s\n"
 
 #~ msgid "do not grab keyboard and mouse"
 #~ msgstr "Tastatur und Maus nicht \"grabben\""

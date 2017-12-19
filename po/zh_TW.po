@@ -447,10 +447,6 @@ msgid "can't set permissions of '%s': %s\n"
 msgstr "警告: %s 的權限 \"%s\" 並不安全\n"
 
 #, c-format
-msgid "listen() failed: %s\n"
-msgstr "listen() 失敗: %s\n"
-
-#, c-format
 msgid "listening on socket '%s'\n"
 msgstr "正在候聽 socket '%s'\n"
 
@@ -8475,6 +8471,9 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "listen() 失敗: %s\n"
 
 #~ msgid "do not grab keyboard and mouse"
 #~ msgstr "不要奪取鍵盤及滑鼠"

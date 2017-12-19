@@ -523,10 +523,6 @@ msgstr "fel när \"%s\" bands till uttag: %s\n"
 msgid "can't set permissions of '%s': %s\n"
 msgstr "Varning: osäkra rättigheter på %s \"%s\"\n"
 
-#, c-format
-msgid "listen() failed: %s\n"
-msgstr "listen() misslyckades: %s\n"
-
 #, fuzzy, c-format
 #| msgid "listening on socket `%s'\n"
 msgid "listening on socket '%s'\n"
@@ -9358,6 +9354,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "listen() misslyckades: %s\n"
 
 #~ msgid "do not grab keyboard and mouse"
 #~ msgstr "fånga inte tangentbord och mus"
