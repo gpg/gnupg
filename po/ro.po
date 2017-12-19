@@ -2315,6 +2315,7 @@ msgstr ""
 msgid "User ID \"%s\" is revoked."
 msgstr "ID utilizator \"%s\" a fost revocat."
 
+#, fuzzy
 msgid "Are you sure you still want to sign it? (y/N) "
 msgstr "Sunteți sigur(ă) că doriți să ștergeți permanent \"%s\"? (d/N)"
 

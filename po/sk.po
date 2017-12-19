@@ -4190,6 +4190,7 @@ msgstr "Je táto fotografia správna (a/N/u)? "
 msgid "no photo viewer set\n"
 msgstr ""
 
+#, fuzzy
 msgid "unable to display photo ID!\n"
 msgstr "nemo¾no nastavi» exec-path na %s\n"
 
