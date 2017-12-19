@@ -4951,6 +4951,7 @@ msgstr "\"%s\" nie je súbor JPEG\n"
 msgid "Is this photo correct (y/N/q)? "
 msgstr "Je táto fotografia správna (a/N/u)? "
 
+#, fuzzy
 msgid "unable to display photo ID!\n"
 msgstr "nemožno nastaviť exec-path na %s\n"
 
