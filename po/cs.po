@@ -466,10 +466,6 @@ msgid "can't set permissions of '%s': %s\n"
 msgstr "přístupová práva „%s“ nelze nastavit: %s\n"
 
 #, c-format
-msgid "listen() failed: %s\n"
-msgstr "volání listen() selhalo: %s\n"
-
-#, c-format
 msgid "listening on socket '%s'\n"
 msgstr "naslouchá se na socketu „%s“\n"
 
@@ -1374,6 +1370,11 @@ msgstr "Jakou délku klíče pro šifrování si přejete? (%u) "
 #, c-format
 msgid "What keysize do you want for the Authentication key? (%u) "
 msgstr "Jakou délku klíče pro autentizaci si přejete? (%u) "
+
+#, fuzzy, c-format
+#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr "Karta bude nyní přenastavena na generování klíče dlouhého %u bitů\n"
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -2610,14 +2611,6 @@ msgid "key %s: doesn't match our copy\n"
 msgstr "klíč %s: neodpovídá naší kopii\n"
 
 #, c-format
-msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "klíč %s: nemohu najít originální blok klíče: %s\n"
-
-#, c-format
-msgid "key %s: can't read original keyblock: %s\n"
-msgstr "klíč %s: nemohu číst originální blok klíče: %s\n"
-
-#, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
 msgstr "klíč %s: „%s“ 1 nový identifikátor uživatele\n"
 
@@ -2701,6 +2694,14 @@ msgstr "Pro migraci „%s“ u každé karty spusťte: %s\n"
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "klíč %s: chybí veřejný klíč – nemohu aplikovat revokační certifikát\n"
+
+#, c-format
+msgid "key %s: can't locate original keyblock: %s\n"
+msgstr "klíč %s: nemohu najít originální blok klíče: %s\n"
+
+#, c-format
+msgid "key %s: can't read original keyblock: %s\n"
+msgstr "klíč %s: nemohu číst originální blok klíče: %s\n"
 
 #, c-format
 msgid "key %s: invalid revocation certificate: %s - rejected\n"
@@ -3151,6 +3152,11 @@ msgid "compact unusable user IDs and remove all signatures from key"
 msgstr "směstnat nepoužitelná ID uživatelů a odstranit z klíče všechny podpisy"
 
 msgid "Secret key is available.\n"
+msgstr "Tajný klíč je dostupný.\n"
+
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret subkeys are available.\n"
 msgstr "Tajný klíč je dostupný.\n"
 
 msgid "Need the secret key to do this.\n"
@@ -8553,6 +8559,9 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "volání listen() selhalo: %s\n"
 
 #~ msgid "shadowing the key failed: %s\n"
 #~ msgstr "výroba stínového klíče se nezdařila: %s\n"
