@@ -1,6 +1,35 @@
 Noteworthy changes in version 2.3.0 (unreleased)
 ------------------------------------------------
 
+  Changes also found in 2.2.4:
+
+  * gpg: Change default preferences to prefer SHA512.
+
+  * gpg: Print a warning when more than 150 MiB are encrypted using a
+    cipher with 64 bit block size.
+
+  * gpg: Print a warning if the MDC feature has not been used for a
+    message.
+
+  * gpg: Fix regular expression of domain addresses in trust
+    signatures. [#2923]
+
+  * agent: New option --auto-expand-secmem to help with high numbers
+    of concurrent connections.  Requires libgcrypt 1.8.2 for having
+    an effect.  [#3530]
+
+  * dirmngr: Cache responses of WKD queries.
+
+  * gpgconf: Add option --status-fd.
+
+  * wks: Add commands --check and --remove-key to gpg-wks-server.
+
+  * Increase the backlog parameter of the daemons to 64 and add
+    option --listen-backlog.
+
+  * New configure option --enable-run-gnupg-user-socket to first try a
+    socket directory which is not removed by systemd at session end.
+
   Changes also found in 2.2.3:
 
   * gpgsm: Fix initial keybox creation on Windows. [#3507]
@@ -84,6 +113,7 @@ Noteworthy changes in version 2.3.0 (unreleased)
   Version 2.2.1 (2017-09-19)
   Version 2.2.2 (2017-11-07)
   Version 2.2.3 (2017-11-20)
+  Version 2.2.4 (2017-12-20)
 
 
 Noteworthy changes in version 2.2.0 (2017-08-28)
