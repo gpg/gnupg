@@ -554,7 +554,7 @@ _gnupg_socketdir_internal (int skip_checks, unsigned *r_info)
   };
   int i;
   struct stat sb;
-  char prefix[13 + 1 + 20 + 6 + 1];
+  char prefix[19 + 1 + 20 + 6 + 1];
   const char *s;
   char *name = NULL;
 
