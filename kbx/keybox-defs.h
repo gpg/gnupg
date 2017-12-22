@@ -33,16 +33,7 @@
 
 #include <sys/types.h> /* off_t */
 
-/* We include the type definitions from jnlib instead of defining our
-   owns here.  This will not allow us build KBX in a standalone way
-   but there is currently no need for it anyway.  Same goes for
-   stringhelp.h which for example provides a replacement for stpcpy -
-   fixme: Better use the LIBOBJ mechnism. */
-#include "../common/types.h"
-#include "../common/stringhelp.h"
-#include "../common/dotlock.h"
-#include "../common/logging.h"
-
+#include "../common/util.h"
 #include "keybox.h"
 
 
@@ -209,64 +200,10 @@ int _keybox_dump_cut_records (const char *filename, unsigned long from,
 
 
 /*-- keybox-util.c --*/
-void *_keybox_malloc (size_t n);
-void *_keybox_calloc (size_t n, size_t m);
-void *_keybox_realloc (void *p, size_t n);
-void  _keybox_free (void *p);
-
-#define xtrymalloc(a)    _keybox_malloc ((a))
-#define xtrycalloc(a,b)  _keybox_calloc ((a),(b))
-#define xtryrealloc(a,b) _keybox_realloc((a),(b))
-#define xfree(a)         _keybox_free ((a))
-
-
-#define DIM(v) (sizeof(v)/sizeof((v)[0]))
-#define DIMof(type,member)   DIM(((type *)0)->member)
-#ifndef STR
-#  define STR(v) #v
-#endif
-#define STR2(v) STR(v)
 
 /*
-  a couple of handy macros
-*/
-
-#define return_if_fail(expr) do {                        \
-    if (!(expr)) {                                       \
-        fprintf (stderr, "%s:%d: assertion '%s' failed\n", \
-                 __FILE__, __LINE__, #expr );            \
-        return;	                                         \
-    } } while (0)
-#define return_null_if_fail(expr) do {                   \
-    if (!(expr)) {                                       \
-        fprintf (stderr, "%s:%d: assertion '%s' failed\n", \
-                 __FILE__, __LINE__, #expr );            \
-        return NULL;	                                 \
-    } } while (0)
-#define return_val_if_fail(expr,val) do {                \
-    if (!(expr)) {                                       \
-        fprintf (stderr, "%s:%d: assertion '%s' failed\n", \
-                 __FILE__, __LINE__, #expr );            \
-        return (val);	                                 \
-    } } while (0)
-#define never_reached() do {                                   \
-        fprintf (stderr, "%s:%d: oops; should never get here\n", \
-                 __FILE__, __LINE__ );                         \
-    } while (0)
-
-
-/* some macros to replace ctype ones and avoid locale problems */
-#define digitp(p)   (*(p) >= '0' && *(p) <= '9')
-#define hexdigitp(a) (digitp (a)                     \
-                      || (*(a) >= 'A' && *(a) <= 'F')  \
-                      || (*(a) >= 'a' && *(a) <= 'f'))
-/* the atoi macros assume that the buffer has only valid digits */
-#define atoi_1(p)   (*(p) - '0' )
-#define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
-#define atoi_4(p)   ((atoi_2(p) * 100) + atoi_2((p)+2))
-#define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
-                     *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
-#define xtoi_2(p)   ((xtoi_1(p) * 16) + xtoi_1((p)+1))
+ * A couple of handy macros
+ */
 
 
 #endif /*KEYBOX_DEFS_H*/

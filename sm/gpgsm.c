@@ -1007,8 +1007,6 @@ main ( int argc, char **argv)
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
   setup_libassuan_logging (&opt.debug, NULL);
 
-  keybox_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
-
   /* Setup a default control structure for command line mode */
   memset (&ctrl, 0, sizeof ctrl);
   gpgsm_init_default_ctrl (&ctrl);
