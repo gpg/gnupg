@@ -1778,6 +1778,7 @@ do_close_reader (ccid_driver_t handle)
         }
 
       libusb_free_transfer (handle->transfer);
+      handle->transfer = NULL;
     }
   libusb_release_interface (handle->idev, handle->ifc_no);
   --ccid_usb_thread_is_alive;
@@ -2038,10 +2039,14 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
       /*
        * Communication failure by device side.
        * Possibly, it was forcibly suspended and resumed.
+       *
+       * Only detect this kind of failure when interrupt transfer is
+       * not supported.  For card reader with interrupt transfer
+       * support removal is detected by intr_cb.
        */
-      DEBUGOUT ("CCID: card inactive/removed\n");
-      if (handle->transfer == NULL)
+      if (handle->ep_intr < 0)
         {
+          DEBUGOUT ("CCID: card inactive/removed\n");
           handle->powered_off = 1;
           scd_kick_the_loop ();
         }
@@ -2538,6 +2543,14 @@ ccid_get_atr (ccid_driver_t handle,
     return rc;
   if (statusbits == 2)
     return CCID_DRIVER_ERR_NO_CARD;
+
+  /*
+   * In the first invocation of ccid_slot_status, card reader may
+   * return CCID_DRIVER_ERR_CARD_INACTIVE and handle->powered_off may
+   * become 1.  Because inactive card is no problem (we are turning it
+   * ON here), clear the flag.
+   */
+  handle->powered_off = 0;
 
   /* For an inactive and also for an active card, issue the PowerOn
      command to get the ATR.  */
