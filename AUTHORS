@@ -3,6 +3,7 @@ Homepage: https://www.gnupg.org
 Maintainer: Werner Koch <wk@gnupg.org>
 Bug reports: http://bugs.gnupg.org
 Security related bug reports: <security@gnupg.org>
+End-of-life: 2017-12-31
 License: GPLv3+
 
 GnuPG is free software.  See the files COPYING for copying conditions.
