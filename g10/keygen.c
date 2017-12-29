@@ -1581,6 +1581,13 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
   if (!curve || !*curve)
     return gpg_error (GPG_ERR_UNKNOWN_CURVE);
 
+  /* Map the displayed short forms of some curves to their canonical
+   * names. */
+  if (!ascii_strcasecmp (curve, "cv25519"))
+    curve = "Curve25519";
+  else if (!ascii_strcasecmp (curve, "ed25519"))
+    curve = "Ed25519";
+
   /* Note that we use the "comp" flag with EdDSA to request the use of
      a 0x40 compression prefix octet.  */
   if (algo == PUBKEY_ALGO_EDDSA)
