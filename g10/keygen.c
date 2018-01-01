@@ -3153,9 +3153,10 @@ parse_key_parameter_string (const char *string, int part,
     *r_subcurve = NULL;
 
   if (!string || !*string
-      || !strcmp (string, "default") || !strcmp (string, "-"))
+      || !ascii_strcasecmp (string, "default") || !strcmp (string, "-"))
     string = get_default_pubkey_algo ();
-  else if (!strcmp (string, "future-default"))
+  else if (!ascii_strcasecmp (string, "future-default")
+           || !ascii_strcasecmp (string, "futuredefault"))
     string = FUTURE_STD_KEY_PARAM;
 
   primary = xstrdup (string);
@@ -3984,9 +3985,10 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
   if (!*expirestr || strcmp (expirestr, "-") == 0)
     expirestr = default_expiration_interval;
 
-  if ((!*algostr || !strcmp (algostr, "default")
-       || !strcmp (algostr, "future-default"))
-      && (!*usagestr || !strcmp (usagestr, "default")
+  if ((!*algostr || !ascii_strcasecmp (algostr, "default")
+       || !ascii_strcasecmp (algostr, "future-default")
+       || !ascii_strcasecmp (algostr, "futuredefault"))
+      && (!*usagestr || !ascii_strcasecmp (usagestr, "default")
           || !strcmp (usagestr, "-")))
     {
       /* Use default key parameters.  */
@@ -4928,7 +4930,7 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
 
   /* Parse the usage string.  */
   if (!usagestr || !*usagestr
-      || !strcmp (usagestr, "default") || !strcmp (usagestr, "-"))
+      || !ascii_strcasecmp (usagestr, "default") || !strcmp (usagestr, "-"))
     ; /* Keep usage from parse_key_parameter_string.  */
   else if ((wantuse = parse_usagestr (usagestr)) != -1)
     use = wantuse;
