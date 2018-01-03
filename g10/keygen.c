@@ -390,16 +390,16 @@ keygen_set_std_prefs (const char *string,int personal)
             if (personal)
               {
                 /* The default internal hash algo order is:
-                 *  SHA-256, SHA-384, SHA-512, SHA-224, SHA-1.
+                 *  SHA-512, SHA-384, SHA-256, SHA-224, SHA-1.
                  */
-                if (!openpgp_md_test_algo (DIGEST_ALGO_SHA256))
-                  strcat (dummy_string, "H8 ");
+                if (!openpgp_md_test_algo (DIGEST_ALGO_SHA512))
+                  strcat (dummy_string, "H10 ");
 
                 if (!openpgp_md_test_algo (DIGEST_ALGO_SHA384))
                   strcat (dummy_string, "H9 ");
 
-                if (!openpgp_md_test_algo (DIGEST_ALGO_SHA512))
-                  strcat (dummy_string, "H10 ");
+                if (!openpgp_md_test_algo (DIGEST_ALGO_SHA256))
+                  strcat (dummy_string, "H8 ");
               }
             else
               {
