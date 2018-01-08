@@ -422,7 +422,7 @@ proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
                        || have_secret_key_with_kid (enc->keyid)))
         {
           if(opt.list_only)
-            result = -1;
+            result = GPG_ERR_MISSING_ACTION; /* fixme: Use better error code. */
           else
             {
               c->dek = xmalloc_secure_clear (sizeof *c->dek);
@@ -440,9 +440,7 @@ proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
   else
     result = GPG_ERR_PUBKEY_ALGO;
 
-  if (result == -1)
-    ;
-  else
+  if (1)
     {
       /* Store it for later display.  */
       struct kidlist_item *x = xmalloc (sizeof *x);
@@ -510,6 +508,10 @@ print_pkenc_list (ctrl_t ctrl, struct kidlist_item *list, int failed)
               write_status_text (STATUS_NO_SECKEY, buf);
 	    }
 	}
+      else if (gpg_err_code (list->reason) == GPG_ERR_MISSING_ACTION)
+        {
+          /* Not tested for secret key due to --list-only mode.  */
+        }
       else if (list->reason)
         {
           log_info (_("public key decryption failed: %s\n"),
