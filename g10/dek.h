@@ -1,5 +1,5 @@
 /* dek.h - The data encryption key structure.
- * Copyright (C) 2014 Werner Koch
+ * Copyright (C) 2014, 2017 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -26,14 +26,25 @@ typedef struct
   int algo;
   /* The length of the key (in bytes).  */
   int keylen;
+
   /* Whether we've already printed information about this key.  This
-     is currently only used in decrypt_data() and only if we are in
-     verbose mode.  */
-  int algo_info_printed;
-  int use_mdc;
+   * is currently only used in decrypt_data() and only if we are in
+   * verbose mode.  */
+  int algo_info_printed : 1;
+
+  /* AEAD shall be used.  */
+  int use_aead : 1;
+
+  /* MDC shall be used.  */
+  int use_mdc : 1;
+
   /* This key was read from a SK-ESK packet (see proc_symkey_enc).  */
-  int symmetric;
-  byte key[32]; /* This is the largest used keylen (256 bit). */
+  int symmetric : 1;
+
+  /* This is the largest used keylen (256 bit). */
+  byte key[32];
+
+  /* The cacheid for the S2K. */
   char s2k_cacheid[1+16+1];
 } DEK;
 

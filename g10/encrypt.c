@@ -109,6 +109,47 @@ encrypt_seskey (DEK *dek, DEK **seskey, byte *enckey)
 }
 
 
+/* Return true if we shall use AEAD mode.  */
+int
+use_aead (pk_list_t pk_list, int algo)
+{
+  int can_use;
+
+  if (!opt.flags.rfc4880bis)
+    {
+      if (opt.force_aead)
+        log_info ("Warning: Option %s currently requires option '%s'\n",
+                  "--force-aead", "--rfc4880bis");
+      return 0;
+    }
+
+  can_use = openpgp_cipher_get_algo_blklen (algo) != 16;
+
+  /* With --force-mdc we clearly do not want AEAD.  */
+  if (opt.force_mdc)
+    return 0;
+
+  /* However with --force-aead we want AEAD.  */
+  if (opt.force_aead)
+    {
+      if (!can_use)
+        log_info ("Warning: request to use AEAD ignored for cipher '%s'\n",
+                  openpgp_cipher_algo_name (algo));
+      return 1;
+    }
+
+  /* AEAD does noly work with 128 bit cipher blocklength.  */
+  if (!can_use)
+    return 0;
+
+  /* If all keys support AEAD we can use it.  */
+  if (select_aead_from_pklist (pk_list))
+    return 1;
+
+  return 0; /* No AEAD. */
+}
+
+
 /* We try very hard to use a MDC */
 int
 use_mdc (pk_list_t pk_list,int algo)
@@ -265,10 +306,15 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
         log_info(_("using cipher %s\n"),
                  openpgp_cipher_algo_name (cfx.dek->algo));
 
-      cfx.dek->use_mdc=use_mdc(NULL,cfx.dek->algo);
+      if (use_aead (NULL, cfx.dek->algo))
+        cfx.dek->use_aead = 1;
+      else
+        cfx.dek->use_mdc = !!use_mdc (NULL, cfx.dek->algo);
     }
 
-  if (do_compress && cfx.dek && cfx.dek->use_mdc
+  if (do_compress
+      && cfx.dek
+      && (cfx.dek->use_mdc || cfx.dek->use_aead)
       && is_file_compressed(filename, &rc))
     {
       if (opt.verbose)
@@ -368,7 +414,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   /* Register the compress filter. */
   if ( do_compress )
     {
-      if (cfx.dek && cfx.dek->use_mdc)
+      if (cfx.dek && (cfx.dek->use_mdc || cfx.dek->use_aead))
         zfx.new_ctb = 1;
       push_compress_filter (out, &zfx, default_compress_algo());
     }
@@ -676,14 +722,18 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
                           gnupg_status_compliance_flag (CO_DE_VS),
                           NULL);
 
-  cfx.dek->use_mdc = use_mdc (pk_list,cfx.dek->algo);
+  if (use_aead (pk_list, cfx.dek->algo))
+    cfx.dek->use_aead = 1;
+  else
+    cfx.dek->use_mdc = !!use_mdc (pk_list, cfx.dek->algo);
 
   /* Only do the is-file-already-compressed check if we are using a
-     MDC.  This forces compressed files to be re-compressed if we do
-     not have a MDC to give some protection against chosen ciphertext
-     attacks. */
-
-  if (do_compress && cfx.dek->use_mdc && is_file_compressed(filename, &rc2))
+   * MDC or AEAD.  This forces compressed files to be re-compressed if
+   * we do not have a MDC to give some protection against chosen
+   * ciphertext attacks. */
+  if (do_compress
+      && (cfx.dek->use_mdc || cfx.dek->use_aead)
+      && is_file_compressed (filename, &rc2))
     {
       if (opt.verbose)
         log_info(_("'%s' already compressed\n"), filename);
@@ -777,7 +827,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
       /* Algo 0 means no compression. */
       if (compr_algo)
         {
-          if (cfx.dek && cfx.dek->use_mdc)
+          if (cfx.dek && (cfx.dek->use_mdc || cfx.dek->use_aead))
             zfx.new_ctb = 1;
           push_compress_filter (out,&zfx,compr_algo);
         }
@@ -887,7 +937,10 @@ encrypt_filter (void *opaque, int control,
 	      efx->cfx.dek->algo = opt.def_cipher_algo;
 	    }
 
-          efx->cfx.dek->use_mdc = use_mdc (efx->pk_list,efx->cfx.dek->algo);
+          if (use_aead (efx->pk_list, efx->cfx.dek->algo))
+            efx->cfx.dek->use_aead = 1;
+          else
+            efx->cfx.dek->use_mdc = !!use_mdc (efx->pk_list,efx->cfx.dek->algo);
 
           make_session_key ( efx->cfx.dek );
           if (DBG_CRYPTO)

@@ -1651,6 +1651,31 @@ select_mdc_from_pklist (PK_LIST pk_list)
 }
 
 
+/* Select the AEAD flag from the pk_list.  We can only use AEAD if all
+ * recipients support this feature.  Returns true if AEAD can be used.  */
+int
+select_aead_from_pklist (PK_LIST pk_list)
+{
+  pk_list_t pkr;
+  int aead;
+
+  if (!pk_list)
+    return 0;
+
+  for (pkr = pk_list; pkr; pkr = pkr->next)
+    {
+      if (pkr->pk->user_id) /* selected by user ID */
+        aead = pkr->pk->user_id->flags.aead;
+      else
+        aead = pkr->pk->flags.aead;
+      if (!aead)
+        return 0;  /* At least one recipient does not support it. */
+    }
+
+  return 1; /* Can be used. */
+}
+
+
 /* Print a warning for all keys in PK_LIST missing the MDC feature. */
 void
 warn_missing_mdc_from_pklist (PK_LIST pk_list)

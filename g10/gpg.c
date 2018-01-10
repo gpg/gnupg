@@ -304,6 +304,7 @@ enum cmd_and_opt_values
     oNoForceMDC,
     oDisableMDC,
     oNoDisableMDC,
+    oForceAEAD,
     oS2KMode,
     oS2KDigest,
     oS2KCipher,
@@ -604,6 +605,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoForceMDC, "no-force-mdc", "@"),
   ARGPARSE_s_n (oDisableMDC, "disable-mdc", "@"),
   ARGPARSE_s_n (oNoDisableMDC, "no-disable-mdc", "@"),
+
+  ARGPARSE_s_n (oForceAEAD, "force-aead", "@"),
 
   ARGPARSE_s_n (oDisableSignerUID, "disable-signer-uid", "@"),
 
@@ -2976,6 +2979,8 @@ main (int argc, char **argv)
 	  case oNoForceMDC: opt.force_mdc = 0; break;
 	  case oDisableMDC: opt.disable_mdc = 1; break;
 	  case oNoDisableMDC: opt.disable_mdc = 0; break;
+
+	  case oForceAEAD: opt.force_aead = 1; break;
 
           case oDisableSignerUID: opt.flags.disable_signer_uid = 1; break;
 
