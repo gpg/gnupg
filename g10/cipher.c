@@ -1,4 +1,4 @@
-/* cipher.c - En-/De-ciphering filter
+/* cipher.c - Enciphering filter for the old CFB mode.
  * Copyright (C) 1998-2003, 2006, 2009 Free Software Foundation, Inc.
  * Copyright (C) 1998-2003, 2006, 2009, 2017 Werner koch
  *
@@ -117,7 +117,8 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
  * This filter is used to en/de-cipher data with a symmetric algorithm
  */
 int
-cipher_filter (void *opaque, int control, iobuf_t a, byte *buf, size_t *ret_len)
+cipher_filter_cfb (void *opaque, int control,
+                   iobuf_t a, byte *buf, size_t *ret_len)
 {
   cipher_filter_context_t *cfx = opaque;
   size_t size = *ret_len;
@@ -177,7 +178,7 @@ cipher_filter (void *opaque, int control, iobuf_t a, byte *buf, size_t *ret_len)
     }
   else if (control == IOBUFCTRL_DESC)
     {
-      mem2str (buf, "cipher_filter", *ret_len);
+      mem2str (buf, "cipher_filter_cfb", *ret_len);
     }
 
   return rc;

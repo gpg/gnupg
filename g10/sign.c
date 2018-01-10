@@ -1379,7 +1379,10 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
     }
 
     /* Push the encryption filter */
-    iobuf_push_filter( out, cipher_filter, &cfx );
+    iobuf_push_filter (out,
+                       cfx.dek->use_aead? cipher_filter_aead
+                       /**/             : cipher_filter_cfb,
+                       &cfx);
 
     /* Push the compress filter */
     if (default_compress_algo())

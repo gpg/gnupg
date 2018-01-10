@@ -409,7 +409,10 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
 
   /* Register the cipher filter. */
   if (mode)
-    iobuf_push_filter ( out, cipher_filter, &cfx );
+    iobuf_push_filter (out,
+                       cfx.dek->use_aead? cipher_filter_aead
+                       /**/             : cipher_filter_cfb,
+                       &cfx );
 
   /* Register the compress filter. */
   if ( do_compress )
@@ -800,7 +803,10 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
     cfx.datalen = filesize && !do_compress ? filesize : 0;
 
   /* Register the cipher filter. */
-  iobuf_push_filter (out, cipher_filter, &cfx);
+  iobuf_push_filter (out,
+                     cfx.dek->use_aead? cipher_filter_aead
+                     /**/             : cipher_filter_cfb,
+                     &cfx);
 
   /* Register the compress filter. */
   if (do_compress)
@@ -959,7 +965,10 @@ encrypt_filter (void *opaque, int control,
                 return rc;
             }
 
-          iobuf_push_filter (a, cipher_filter, &efx->cfx);
+          iobuf_push_filter (a,
+                             efx->cfx.dek->use_aead? cipher_filter_aead
+                             /**/                  : cipher_filter_cfb,
+                             &efx->cfx);
 
           efx->header_okay = 1;
         }

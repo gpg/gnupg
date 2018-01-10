@@ -132,6 +132,7 @@ gpg_sources = server.c          \
 	      decrypt.c 	\
 	      decrypt-data.c	\
 	      cipher.c		\
+	      cipher-aead.c     \
 	      encrypt.c		\
 	      sign.c		\
 	      verify.c		\

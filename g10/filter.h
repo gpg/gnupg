@@ -145,8 +145,12 @@ void push_compress_filter2(iobuf_t out,compress_filter_context_t *zfx,
 			   int algo,int rel);
 
 /*-- cipher.c --*/
-int cipher_filter( void *opaque, int control,
-		   iobuf_t chain, byte *buf, size_t *ret_len);
+int cipher_filter_cfb (void *opaque, int control,
+                       iobuf_t chain, byte *buf, size_t *ret_len);
+
+/*-- cipher-aead.c --*/
+int cipher_filter_aead (void *opaque, int control,
+                        iobuf_t chain, byte *buf, size_t *ret_len);
 
 /*-- textfilter.c --*/
 int text_filter( void *opaque, int control,
