@@ -415,13 +415,14 @@ dump_kbnode (KBNODE node)
         {
           PKT_public_key *pk = node->pkt->pkt.public_key;
 
-          log_printf ("  keyid=%08lX a=%d u=%d %c%c%c%c\n",
+          log_printf ("  keyid=%08lX a=%d u=%d %c%c%c%c%c\n",
                       (ulong)keyid_from_pk( pk, NULL ),
                       pk->pubkey_algo, pk->pubkey_usage,
                       pk->has_expired? 'e':'.',
                       pk->flags.revoked? 'r':'.',
                       pk->flags.valid?    'v':'.',
-                      pk->flags.mdc?   'm':'.');
+                      pk->flags.mdc?   'm':'.',
+                      pk->flags.aead?  'a':'.');
         }
       else
         log_printf ("\n");

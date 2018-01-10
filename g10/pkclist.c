@@ -1468,8 +1468,11 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
 	     support.  All this doesn't mean IDEA is actually
 	     available, of course. */
           implicit=CIPHER_ALGO_3DES;
-
 	  break;
+
+	case PREFTYPE_AEAD:
+          /* No implicit algo.  */
+          break;
 
 	case PREFTYPE_HASH:
 	  /* While I am including this code for completeness, note
@@ -1553,6 +1556,8 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
       prefs=NULL;
       if(preftype==PREFTYPE_SYM && opt.personal_cipher_prefs)
 	prefs=opt.personal_cipher_prefs;
+      else if(preftype==PREFTYPE_AEAD && opt.personal_aead_prefs)
+	prefs=opt.personal_aead_prefs;
       else if(preftype==PREFTYPE_HASH && opt.personal_digest_prefs)
 	prefs=opt.personal_digest_prefs;
       else if(preftype==PREFTYPE_ZIP && opt.personal_compress_prefs)

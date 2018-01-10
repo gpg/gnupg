@@ -41,6 +41,8 @@
 # define DEFAULT_CIPHER_ALGO     CIPHER_ALGO_3DES
 #endif
 
+#define DEFAULT_AEAD_ALGO  AEAD_ALGO_EAX
+
 #define DEFAULT_DIGEST_ALGO     ((GNUPG)? DIGEST_ALGO_SHA256:DIGEST_ALGO_SHA1)
 #define DEFAULT_S2K_DIGEST_ALGO DIGEST_ALGO_SHA1
 #ifdef HAVE_ZIP
@@ -123,6 +125,9 @@ int openpgp_cipher_blocklen (cipher_algo_t algo);
 int openpgp_cipher_test_algo(cipher_algo_t algo);
 const char *openpgp_cipher_algo_name (cipher_algo_t algo);
 
+gpg_error_t openpgp_aead_test_algo (aead_algo_t algo);
+const char *openpgp_aead_algo_name (aead_algo_t algo);
+
 pubkey_algo_t map_pk_gcry_to_openpgp (enum gcry_pk_algos algo);
 int openpgp_pk_test_algo (pubkey_algo_t algo);
 int openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use);
@@ -151,12 +156,14 @@ void obsolete_scdaemon_option (const char *configname,
                                unsigned int configlineno, const char *name);
 
 int string_to_cipher_algo (const char *string);
+aead_algo_t string_to_aead_algo (const char *string);
 int string_to_digest_algo (const char *string);
 
 const char *compress_algo_to_string(int algo);
 int string_to_compress_algo(const char *string);
 int check_compress_algo(int algo);
 int default_cipher_algo(void);
+aead_algo_t default_aead_algo(void);
 int default_compress_algo(void);
 void compliance_failure(void);
 

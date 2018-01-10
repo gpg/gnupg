@@ -245,6 +245,7 @@ enum cmd_and_opt_values
     oRFC2440Text,
     oNoRFC2440Text,
     oCipherAlgo,
+    oAEADAlgo,
     oDigestAlgo,
     oCertDigestAlgo,
     oCompressAlgo,
@@ -371,6 +372,7 @@ enum cmd_and_opt_values
     oDefaultPreferenceList,
     oDefaultKeyserverURL,
     oPersonalCipherPreferences,
+    oPersonalAEADPreferences,
     oPersonalDigestPreferences,
     oPersonalCompressPreferences,
     oAgentProgram,
@@ -668,6 +670,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oS2KCipher, "s2k-cipher-algo", "@"),
   ARGPARSE_s_i (oS2KCount, "s2k-count", "@"),
   ARGPARSE_s_s (oCipherAlgo, "cipher-algo", "@"),
+  ARGPARSE_s_s (oAEADAlgo,   "aead-algo", "@"),
   ARGPARSE_s_s (oDigestAlgo, "digest-algo", "@"),
   ARGPARSE_s_s (oCertDigestAlgo, "cert-digest-algo", "@"),
   ARGPARSE_s_s (oCompressAlgo,"compress-algo", "@"),
@@ -824,6 +827,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oDefaultPreferenceList,  "default-preference-list", "@"),
   ARGPARSE_s_s (oDefaultKeyserverURL,  "default-keyserver-url", "@"),
   ARGPARSE_s_s (oPersonalCipherPreferences, "personal-cipher-preferences","@"),
+  ARGPARSE_s_s (oPersonalAEADPreferences, "personal-aead-preferences","@"),
   ARGPARSE_s_s (oPersonalDigestPreferences, "personal-digest-preferences","@"),
   ARGPARSE_s_s (oPersonalCompressPreferences,
                                          "personal-compress-preferences", "@"),
@@ -835,6 +839,7 @@ static ARGPARSE_OPTS opts[] = {
   /* Aliases.  I constantly mistype these, and assume other people do
      as well. */
   ARGPARSE_s_s (oPersonalCipherPreferences, "personal-cipher-prefs", "@"),
+  ARGPARSE_s_s (oPersonalAEADPreferences,   "personal-aead-prefs", "@"),
   ARGPARSE_s_s (oPersonalDigestPreferences, "personal-digest-prefs", "@"),
   ARGPARSE_s_s (oPersonalCompressPreferences, "personal-compress-prefs", "@"),
 
@@ -2125,6 +2130,7 @@ set_compliance_option (enum cmd_and_opt_values option)
       opt.escape_from = 1;
       opt.not_dash_escaped = 0;
       opt.def_cipher_algo = 0;
+      opt.def_aead_algo = 0;
       opt.def_digest_algo = 0;
       opt.cert_digest_algo = 0;
       opt.compress_algo = -1;
@@ -2141,6 +2147,7 @@ set_compliance_option (enum cmd_and_opt_values option)
       opt.escape_from = 0;
       opt.not_dash_escaped = 0;
       opt.def_cipher_algo = 0;
+      opt.def_aead_algo = 0;
       opt.def_digest_algo = 0;
       opt.cert_digest_algo = 0;
       opt.compress_algo = -1;
@@ -2157,6 +2164,7 @@ set_compliance_option (enum cmd_and_opt_values option)
       set_compliance_option (oOpenPGP);
       opt.compliance = CO_DE_VS;
       opt.force_mdc = 1;
+      opt.def_aead_algo = 0;
       /* Fixme: Change other options.  */
       break;
 
@@ -2286,12 +2294,14 @@ main (int argc, char **argv)
     const char *trustdb_name = NULL;
 #endif /*!NO_TRUST_MODELS*/
     char *def_cipher_string = NULL;
+    char *def_aead_string = NULL;
     char *def_digest_string = NULL;
     char *compress_algo_string = NULL;
     char *cert_digest_string = NULL;
     char *s2k_cipher_string = NULL;
     char *s2k_digest_string = NULL;
     char *pers_cipher_list = NULL;
+    char *pers_aead_list = NULL;
     char *pers_digest_list = NULL;
     char *pers_compress_list = NULL;
     int eyes_only=0;
@@ -2355,6 +2365,7 @@ main (int argc, char **argv)
     opt.bz2_compress_level = -1; /* defaults to standard compress level */
     /* note: if you change these lines, look at oOpenPGP */
     opt.def_cipher_algo = 0;
+    opt.def_aead_algo = 0;
     opt.def_digest_algo = 0;
     opt.cert_digest_algo = 0;
     opt.compress_algo = -1; /* defaults to DEFAULT_COMPRESS_ALGO */
@@ -3113,6 +3124,9 @@ main (int argc, char **argv)
 	  case oCipherAlgo:
             def_cipher_string = xstrdup(pargs.r.ret_str);
             break;
+	  case oAEADAlgo:
+            def_aead_string = xstrdup (pargs.r.ret_str);
+            break;
 	  case oDigestAlgo:
             def_digest_string = xstrdup(pargs.r.ret_str);
             break;
@@ -3391,6 +3405,9 @@ main (int argc, char **argv)
 	    break;
           case oPersonalCipherPreferences:
 	    pers_cipher_list=pargs.r.ret_str;
+	    break;
+          case oPersonalAEADPreferences:
+	    pers_aead_list = pargs.r.ret_str;
 	    break;
           case oPersonalDigestPreferences:
 	    pers_digest_list=pargs.r.ret_str;
@@ -3737,6 +3754,13 @@ main (int argc, char **argv)
 	if ( openpgp_cipher_test_algo (opt.def_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));
     }
+    if (def_aead_string)
+      {
+	opt.def_aead_algo = string_to_aead_algo (def_aead_string);
+	xfree (def_aead_string); def_aead_string = NULL;
+	if (openpgp_aead_test_algo (opt.def_aead_algo))
+          log_error(_("selected AEAD algorithm is invalid\n"));
+      }
     if( def_digest_string ) {
 	opt.def_digest_algo = string_to_digest_algo (def_digest_string);
 	xfree(def_digest_string); def_digest_string = NULL;
@@ -3795,6 +3819,9 @@ main (int argc, char **argv)
     if(pers_cipher_list &&
        keygen_set_std_prefs(pers_cipher_list,PREFTYPE_SYM))
       log_error(_("invalid personal cipher preferences\n"));
+
+    if (pers_aead_list && keygen_set_std_prefs (pers_aead_list, PREFTYPE_AEAD))
+      log_error(_("invalid personal AEAD preferences\n"));
 
     if(pers_digest_list &&
        keygen_set_std_prefs(pers_digest_list,PREFTYPE_HASH))
@@ -3861,6 +3888,12 @@ main (int argc, char **argv)
 	    badalg = openpgp_cipher_algo_name (opt.def_cipher_algo);
 	    badtype = PREFTYPE_SYM;
 	  }
+	else if(opt.def_aead_algo
+	   && !algo_available(PREFTYPE_AEAD, opt.def_aead_algo, NULL))
+	  {
+	    badalg = openpgp_aead_algo_name (opt.def_aead_algo);
+	    badtype = PREFTYPE_AEAD;
+	  }
 	else if(opt.def_digest_algo
 		&& !algo_available(PREFTYPE_HASH,opt.def_digest_algo,NULL))
 	  {
@@ -3890,6 +3923,12 @@ main (int argc, char **argv)
 			 badalg,
                           gnupg_compliance_option_string (opt.compliance));
 		break;
+	      case PREFTYPE_AEAD:
+		log_info (_("AEAD algorithm '%s'"
+                            " may not be used in %s mode\n"),
+                          badalg,
+                          gnupg_compliance_option_string (opt.compliance));
+		break;
 	      case PREFTYPE_HASH:
 		log_info (_("digest algorithm '%s'"
                             " may not be used in %s mode\n"),
@@ -3915,6 +3954,7 @@ main (int argc, char **argv)
      * is not.  This is us being nice to the user informing her early
      * that the chosen algorithms are not available.  We also check
      * and enforce this right before the actual operation.  */
+    /* FIXME: We also need to check the AEAD algo. */
     if (opt.def_cipher_algo
 	&& ! gnupg_cipher_is_allowed (opt.compliance,
 				      cmd == aEncr

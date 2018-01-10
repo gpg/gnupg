@@ -115,7 +115,8 @@ typedef enum
     SIGSUBPKT_FEATURES      = 30, /* Feature flags. */
 
     SIGSUBPKT_SIGNATURE     = 32, /* Embedded signature. */
-    SIGSUBPKT_ISSUER_FPR    = 33, /* EXPERIMENTAL: Issuer fingerprint. */
+    SIGSUBPKT_ISSUER_FPR    = 33, /* Issuer fingerprint. */
+    SIGSUBPKT_PREF_AEAD     = 34, /* Preferred AEAD algorithms. */
 
     SIGSUBPKT_FLAG_CRITICAL = 128
   }
@@ -140,6 +141,15 @@ typedef enum
     CIPHER_ALGO_PRIVATE10   = 110
   }
 cipher_algo_t;
+
+
+typedef enum
+  {
+    AEAD_ALGO_NONE	    =  0,
+    AEAD_ALGO_EAX	    =  1,
+    AEAD_ALGO_OCB	    =  2
+  }
+aead_algo_t;
 
 
 typedef enum

@@ -582,6 +582,41 @@ openpgp_cipher_algo_name (cipher_algo_t algo)
 }
 
 
+/* Return 0 if ALGO is supported.  Return an error if not. */
+gpg_error_t
+openpgp_aead_test_algo (aead_algo_t algo)
+{
+  switch (algo)
+    {
+    case AEAD_ALGO_NONE:
+      break;
+    case AEAD_ALGO_EAX:
+      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    case AEAD_ALGO_OCB:
+      return 0;
+    }
+
+  return gpg_error (GPG_ERR_INV_CIPHER_MODE);
+}
+
+
+/* Map the OpenPGP AEAD algorithm with ID ALGO to a string
+ * representation of the algorithm name.  For unknown algorithm IDs
+ * this function returns "?".  */
+const char *
+openpgp_aead_algo_name (aead_algo_t algo)
+{
+  switch (algo)
+    {
+    case AEAD_ALGO_NONE:  break;
+    case AEAD_ALGO_EAX:   return "EAX";
+    case AEAD_ALGO_OCB:   return "OCB";
+    }
+
+  return "?";
+}
+
+
 /* Return 0 if ALGO is a supported OpenPGP public key algorithm.  */
 int
 openpgp_pk_test_algo (pubkey_algo_t algo)
@@ -1112,6 +1147,39 @@ string_to_cipher_algo (const char *string)
   return val;
 }
 
+
+/*
+ * Map an AEAD mode string to a an AEAD algorithm number as defined by
+ * rrc4880bis.  Also support the "An" syntax as used by the preference
+ * strings.
+ */
+aead_algo_t
+string_to_aead_algo (const char *string)
+{
+  int result;
+
+  if (!string)
+    result = 0;
+  if (!ascii_strcasecmp (string, "EAX"))
+    result = 1;
+  else if (!ascii_strcasecmp (string, "OCB"))
+    result = 2;
+  else if ((string[0]=='A' || string[0]=='a'))
+    {
+      char *endptr;
+
+      string++;
+      result = strtol (string, &endptr, 10);
+      if (!*string || *endptr || result < 1 || result > 2)
+        result = 0;
+    }
+  else
+    result = 0;
+
+  return result;
+}
+
+
 /*
  * Wrapper around gcry_md_map_name to provide a fallback using the
  * "Hn" syntax as used by the preference strings.
@@ -1226,6 +1294,18 @@ default_cipher_algo(void)
     return opt.personal_cipher_prefs[0].value;
   else
     return opt.s2k_cipher_algo;
+}
+
+
+aead_algo_t
+default_aead_algo(void)
+{
+  if(opt.def_aead_algo)
+    return opt.def_aead_algo;
+  else if(opt.personal_aead_prefs)
+    return opt.personal_aead_prefs[0].value;
+  else
+    return DEFAULT_AEAD_ALGO;
 }
 
 /* There is no default_digest_algo function, but see

@@ -2539,6 +2539,12 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
   if (p && n && (p[0] & 0x01))
     uid->flags.mdc = 1;
 
+  /* See whether we have the AEAD feature.  */
+  uid->flags.aead = 0;
+  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n);
+  if (p && n && (p[0] & 0x01))
+    uid->flags.aead = 1;
+
   /* And the keyserver modify flag.  */
   uid->flags.ks_modify = 1;
   p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KS_FLAGS, &n);
@@ -3357,6 +3363,7 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
   PKT_public_key *main_pk;
   prefitem_t *prefs;
   unsigned int mdc_feature;
+  unsigned int aead_feature;
 
   if (keyblock->pkt->pkttype != PKT_PUBLIC_KEY)
     {
@@ -3418,7 +3425,7 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
    * all preferences.
    * Do a similar thing for the MDC feature flag.  */
   prefs = NULL;
-  mdc_feature = 0;
+  mdc_feature = aead_feature = 0;
   for (k = keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k = k->next)
     {
       if (k->pkt->pkttype == PKT_USER_ID
@@ -3427,6 +3434,7 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
 	{
 	  prefs = k->pkt->pkt.user_id->prefs;
 	  mdc_feature = k->pkt->pkt.user_id->flags.mdc;
+	  aead_feature = k->pkt->pkt.user_id->flags.aead;
 	  break;
 	}
     }
@@ -3440,6 +3448,7 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
 	    xfree (pk->prefs);
 	  pk->prefs = copy_prefs (prefs);
 	  pk->flags.mdc = mdc_feature;
+	  pk->flags.aead = aead_feature;
 	}
     }
 }

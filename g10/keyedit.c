@@ -3118,7 +3118,7 @@ show_prefs (PKT_user_id * uid, PKT_signature * selfsig, int verbose)
 	    }
 	  tty_printf ("%s", compress_algo_to_string (COMPRESS_ALGO_NONE));
 	}
-      if (uid->flags.mdc || !uid->flags.ks_modify)
+      if (uid->flags.mdc || uid->flags.aead || !uid->flags.ks_modify)
 	{
 	  tty_printf ("\n     ");
 	  tty_printf (_("Features: "));
@@ -3127,6 +3127,12 @@ show_prefs (PKT_user_id * uid, PKT_signature * selfsig, int verbose)
 	    {
 	      tty_printf ("MDC");
 	      any = 1;
+	    }
+	  if (!uid->flags.aead)
+	    {
+	      if (any)
+		tty_printf (", ");
+	      tty_printf ("AEAD");
 	    }
 	  if (!uid->flags.ks_modify)
 	    {
@@ -3172,6 +3178,8 @@ show_prefs (PKT_user_id * uid, PKT_signature * selfsig, int verbose)
 	}
       if (uid->flags.mdc)
 	tty_printf (" [mdc]");
+      if (uid->flags.aead)
+	tty_printf (" [aead]");
       if (!uid->flags.ks_modify)
 	tty_printf (" [no-ks-modify]");
       tty_printf ("\n");
@@ -3317,6 +3325,8 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 		}
 	      if (uid->flags.mdc)
 		es_fputs (",mdc", fp);
+	      if (uid->flags.aead)
+		es_fputs (",aead", fp);
 	      if (!uid->flags.ks_modify)
 		es_fputs (",no-ks-modify", fp);
 	    }

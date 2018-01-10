@@ -127,6 +127,9 @@ struct opaque_data_usage_and_pk {
 };
 
 
+/* FIXME: These globals vars are ugly.  And using MAX_PREFS even for
+ * aeads is useless, given that we don't expects more than a very few
+ * algorithms.  */
 static int prefs_initialized = 0;
 static byte sym_prefs[MAX_PREFS];
 static int nsym_prefs;
@@ -134,7 +137,11 @@ static byte hash_prefs[MAX_PREFS];
 static int nhash_prefs;
 static byte zip_prefs[MAX_PREFS];
 static int nzip_prefs;
-static int mdc_available,ks_modify;
+static byte aead_prefs[MAX_PREFS];
+static int naead_prefs;
+static int mdc_available;
+static int ks_modify;
+static int aead_available;
 
 static gpg_error_t parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
                                      const char *algostr, const char *usagestr,
@@ -326,6 +333,8 @@ set_one_pref (int val, int type, const char *item, byte *buf, int *nbuf)
 	  log_info(_("too many digest preferences\n"));
 	else if(type==3)
 	  log_info(_("too many compression preferences\n"));
+	else if(type==4)
+	  log_info(_("too many AEAD preferences\n"));
 	else
 	  BUG();
 
@@ -346,10 +355,10 @@ set_one_pref (int val, int type, const char *item, byte *buf, int *nbuf)
 int
 keygen_set_std_prefs (const char *string,int personal)
 {
-    byte sym[MAX_PREFS], hash[MAX_PREFS], zip[MAX_PREFS];
-    int nsym=0, nhash=0, nzip=0, val, rc=0;
+    byte sym[MAX_PREFS], hash[MAX_PREFS], zip[MAX_PREFS], aead[MAX_PREFS];
+    int nsym=0, nhash=0, nzip=0, naead=0, val, rc=0;
     int mdc=1, modify=0; /* mdc defaults on, modify defaults off. */
-    char dummy_string[20*4+1]; /* Enough for 20 items. */
+    char dummy_string[25*4+1]; /* Enough for 25 items. */
 
     if (!string || !ascii_strcasecmp (string, "default"))
       {
@@ -382,6 +391,11 @@ keygen_set_std_prefs (const char *string,int personal)
 	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_AES) )
 	      strcat(dummy_string,"S7 ");
 	    strcat(dummy_string,"S2 "); /* 3DES */
+
+            if (opt.flags.rfc4880bis && !openpgp_aead_test_algo (AEAD_ALGO_OCB))
+	      strcat(dummy_string,"A2 ");
+            if (opt.flags.rfc4880bis && !openpgp_aead_test_algo (AEAD_ALGO_EAX))
+	      strcat(dummy_string,"A1 ");
 
             if (personal)
               {
@@ -475,6 +489,11 @@ keygen_set_std_prefs (const char *string,int personal)
 		if(set_one_pref(val,3,tok,zip,&nzip))
 		  rc=-1;
 	      }
+	    else if ((val=string_to_aead_algo (tok)))
+	      {
+		if (set_one_pref (val, 4, tok, aead, &naead))
+		  rc = -1;
+	      }
 	    else if (ascii_strcasecmp(tok,"mdc")==0)
 	      mdc=1;
 	    else if (ascii_strcasecmp(tok,"no-mdc")==0)
@@ -518,6 +537,29 @@ keygen_set_std_prefs (const char *string,int personal)
 
 		    opt.personal_cipher_prefs[i].type = PREFTYPE_NONE;
 		    opt.personal_cipher_prefs[i].value = 0;
+		  }
+	      }
+	    else if (personal == PREFTYPE_AEAD)
+	      {
+		xfree(opt.personal_aead_prefs);
+
+		if (!naead)
+		  opt.personal_aead_prefs = NULL;
+		else
+		  {
+		    int i;
+
+		    opt.personal_aead_prefs=
+		      xmalloc(sizeof(prefitem_t *)*(naead+1));
+
+		    for (i=0; i<naead; i++)
+		      {
+			opt.personal_aead_prefs[i].type = PREFTYPE_AEAD;
+			opt.personal_aead_prefs[i].value = sym[i];
+		      }
+
+		    opt.personal_aead_prefs[i].type = PREFTYPE_NONE;
+		    opt.personal_aead_prefs[i].value = 0;
 		  }
 	      }
 	    else if(personal==PREFTYPE_HASH)
@@ -572,7 +614,9 @@ keygen_set_std_prefs (const char *string,int personal)
 	    memcpy (sym_prefs,  sym,  (nsym_prefs=nsym));
 	    memcpy (hash_prefs, hash, (nhash_prefs=nhash));
 	    memcpy (zip_prefs,  zip,  (nzip_prefs=nzip));
+	    memcpy (aead_prefs, aead,  (naead_prefs=naead));
 	    mdc_available = mdc;
+            aead_available = !!naead;
 	    ks_modify = modify;
 	    prefs_initialized = 1;
 	  }
@@ -580,6 +624,7 @@ keygen_set_std_prefs (const char *string,int personal)
 
     return rc;
 }
+
 
 /* Return a fake user ID containing the preferences.  Caller must
    free. */
@@ -594,13 +639,19 @@ keygen_get_std_prefs(void)
 
   uid->ref=1;
 
-  uid->prefs=xmalloc((sizeof(prefitem_t *)*
-		      (nsym_prefs+nhash_prefs+nzip_prefs+1)));
+  uid->prefs = xmalloc ((sizeof(prefitem_t *)*
+                         (nsym_prefs+naead_prefs+nhash_prefs+nzip_prefs+1)));
 
   for(i=0;i<nsym_prefs;i++,j++)
     {
       uid->prefs[j].type=PREFTYPE_SYM;
       uid->prefs[j].value=sym_prefs[i];
+    }
+
+  for (i=0; i < naead_prefs; i++, j++)
+    {
+      uid->prefs[j].type = PREFTYPE_AEAD;
+      uid->prefs[j].value = aead_prefs[i];
     }
 
   for(i=0;i<nhash_prefs;i++,j++)
@@ -618,8 +669,9 @@ keygen_get_std_prefs(void)
   uid->prefs[j].type=PREFTYPE_NONE;
   uid->prefs[j].value=0;
 
-  uid->flags.mdc=mdc_available;
-  uid->flags.ks_modify=ks_modify;
+  uid->flags.mdc = mdc_available;
+  uid->flags.aead = aead_available;
+  uid->flags.ks_modify = ks_modify;
 
   return uid;
 }
@@ -664,6 +716,49 @@ add_feature_mdc (PKT_signature *sig,int enabled)
 
     xfree (buf);
 }
+
+
+static void
+add_feature_aead (PKT_signature *sig, int enabled)
+{
+  const byte *s;
+  size_t n;
+  int i;
+  char *buf;
+
+  s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n );
+  if (s && n && ((enabled && (s[0] & 0x02)) || (!enabled && !(s[0] & 0x02))))
+    return; /* Already set or cleared */
+
+  if (!s || !n)
+    { /* Create a new one */
+      n = 1;
+      buf = xmalloc_clear (n);
+    }
+  else
+    {
+      buf = xmalloc (n);
+      memcpy (buf, s, n);
+    }
+
+  if (enabled)
+    buf[0] |= 0x02; /* AEAD supported */
+  else
+    buf[0] &= ~0x02;
+
+  /* Are there any bits set? */
+  for (i=0; i < n; i++)
+    if (buf[i])
+      break;
+
+  if (i == n)
+    delete_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES);
+  else
+    build_sig_subpkt (sig, SIGSUBPKT_FEATURES, buf, n);
+
+  xfree (buf);
+}
+
 
 static void
 add_keyserver_modify (PKT_signature *sig,int enabled)
@@ -726,6 +821,14 @@ keygen_upd_std_prefs (PKT_signature *sig, void *opaque)
       delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_SYM);
     }
 
+  if (naead_prefs)
+    build_sig_subpkt (sig, SIGSUBPKT_PREF_AEAD, aead_prefs, naead_prefs);
+  else
+    {
+      delete_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_AEAD);
+      delete_sig_subpkt (sig->unhashed, SIGSUBPKT_PREF_AEAD);
+    }
+
   if (nhash_prefs)
     build_sig_subpkt (sig, SIGSUBPKT_PREF_HASH, hash_prefs, nhash_prefs);
   else
@@ -744,6 +847,7 @@ keygen_upd_std_prefs (PKT_signature *sig, void *opaque)
 
   /* Make sure that the MDC feature flag is set if needed.  */
   add_feature_mdc (sig,mdc_available);
+  add_feature_aead (sig, aead_available);
   add_keyserver_modify (sig,ks_modify);
   keygen_add_keyserver_url(sig,NULL);
 

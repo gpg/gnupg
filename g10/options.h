@@ -92,6 +92,7 @@ struct
   int no_armor;
   int list_packets; /* Option --list-packets active.  */
   int def_cipher_algo;
+  int def_aead_algo;
   int force_mdc;
   int disable_mdc;
   int def_digest_algo;
@@ -177,6 +178,7 @@ struct
   const char *def_preference_list;
   const char *def_keyserver_url;
   prefitem_t *personal_cipher_prefs;
+  prefitem_t *personal_aead_prefs;
   prefitem_t *personal_digest_prefs;
   prefitem_t *personal_compress_prefs;
   struct weakhash *weak_digests;

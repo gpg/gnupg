@@ -72,7 +72,8 @@ typedef enum {
     PREFTYPE_NONE = 0,
     PREFTYPE_SYM = 1,
     PREFTYPE_HASH = 2,
-    PREFTYPE_ZIP = 3
+    PREFTYPE_ZIP = 3,
+    PREFTYPE_AEAD = 4
 } preftype_t;
 
 typedef struct {
@@ -290,6 +291,7 @@ typedef struct
   struct
   {
     unsigned int mdc:1;
+    unsigned int aead:1;
     unsigned int ks_modify:1;
     unsigned int compacted:1;
     unsigned int primary:2; /* 2 if set via the primary flag, 1 if calculated */
@@ -386,6 +388,7 @@ typedef struct
   struct
   {
     unsigned int mdc:1;           /* MDC feature set.  */
+    unsigned int aead:1;          /* AEAD feature set.  */
     unsigned int disabled_valid:1;/* The next flag is valid.  */
     unsigned int disabled:1;      /* The key has been disabled.  */
     unsigned int primary:1;       /* This is a primary key.  */
@@ -471,7 +474,7 @@ typedef struct {
      Note: this is ignored when encrypting.  */
   byte is_partial;
   /* If 0, MDC is disabled.  Otherwise, the MDC method that was used
-     (currently, only DIGEST_ALGO_SHA1 is supported).  */
+     (only DIGEST_ALGO_SHA1 has ever been defined).  */
   byte mdc_method;
   /* An iobuf holding the data to be decrypted.  (This is not used for
      encryption!)  */
