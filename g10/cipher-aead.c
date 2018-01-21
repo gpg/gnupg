@@ -33,6 +33,11 @@
 #include "options.h"
 #include "main.h"
 
+/* FIXME: Libgcrypt 1.9 will support EAX.  Until we kame this a
+ * requirement we hardwire the enum used for EAX.  */
+#define MY_GCRY_CIPHER_MODE_EAX 14
+
+
 /* The size of the buffer we allocate to encrypt the data.  This must
  * be a multiple of the OCB blocksize (16 byte).  */
 #define AEAD_ENC_BUFFER_SIZE (64*1024)
@@ -149,6 +154,11 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
     case AEAD_ALGO_OCB:
       ciphermode = GCRY_CIPHER_MODE_OCB;
       startivlen = 15;
+      break;
+
+    case AEAD_ALGO_EAX:
+      ciphermode = MY_GCRY_CIPHER_MODE_EAX;
+      startivlen = 16;
       break;
 
     default:

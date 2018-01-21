@@ -31,6 +31,10 @@
 #include "../common/status.h"
 #include "../common/compliance.h"
 
+/* FIXME: Libgcrypt 1.9 will support EAX.  Until we kame this a
+ * requirement we hardwire the enum used for EAX.  */
+#define MY_GCRY_CIPHER_MODE_EAX 14
+
 
 static int aead_decode_filter (void *opaque, int control, iobuf_t a,
                                byte *buf, size_t *ret_len);
@@ -278,9 +282,8 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
           break;
         case AEAD_ALGO_EAX:
           startivlen = 16;
-          log_error ("unsupported AEAD algo %d\n", ed->aead_algo);
-          rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-          goto leave;
+          ciphermode = MY_GCRY_CIPHER_MODE_EAX;
+          break;
         default:
           log_error ("unknown AEAD algo %d\n", ed->aead_algo);
           rc = gpg_error (GPG_ERR_INV_CIPHER_MODE);

@@ -591,7 +591,6 @@ openpgp_aead_test_algo (aead_algo_t algo)
     case AEAD_ALGO_NONE:
       break;
     case AEAD_ALGO_EAX:
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
     case AEAD_ALGO_OCB:
       return 0;
     }
