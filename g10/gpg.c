@@ -3882,7 +3882,7 @@ main (int argc, char **argv)
     /* Check our chosen algorithms against the list of legal
        algorithms. */
 
-    if(!GNUPG)
+    if(!GNUPG && !opt.flags.rfc4880bis)
       {
 	const char *badalg=NULL;
 	preftype_t badtype=PREFTYPE_NONE;

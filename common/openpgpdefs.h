@@ -51,6 +51,7 @@ typedef enum
     PKT_ATTRIBUTE     = 17, /* PGP's attribute packet. */
     PKT_ENCRYPTED_MDC = 18, /* Integrity protected encrypted data. */
     PKT_MDC 	      = 19, /* Manipulation detection code packet. */
+    PKT_ENCRYPTED_AEAD= 20, /* AEAD encrypted data packet. */
     PKT_COMMENT	      = 61, /* new comment packet (GnuPG specific). */
     PKT_GPG_CONTROL   = 63  /* internal control packet (GnuPG specific). */
   }
@@ -143,6 +144,7 @@ typedef enum
 cipher_algo_t;
 
 
+/* Note that we encode the AEAD algo in a 3 bit field at some places.  */
 typedef enum
   {
     AEAD_ALGO_NONE	    =  0,

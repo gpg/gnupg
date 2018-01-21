@@ -459,12 +459,13 @@ typedef struct {
 typedef struct {
   /* Remaining length of encrypted data. */
   u32  len;
-  /* When encrypting, the first block size bytes of data are random
-     data and the following 2 bytes are copies of the last two bytes
-     of the random data (RFC 4880, Section 5.7).  This provides a
-     simple check that the key is correct.  extralen is the size of
-     this extra data.  This is used by build_packet when writing out
-     the packet's header. */
+  /* When encrypting in CFB mode, the first block size bytes of data
+   * are random data and the following 2 bytes are copies of the last
+   * two bytes of the random data (RFC 4880, Section 5.7).  This
+   * provides a simple check that the key is correct.  EXTRALEN is the
+   * size of this extra data or, in AEAD mode, the length of the
+   * headers and the tags.  This is used by build_packet when writing
+   * out the packet's header. */
   int  extralen;
   /* Whether the serialized version of the packet used / should use
      the new format.  */
@@ -476,6 +477,15 @@ typedef struct {
   /* If 0, MDC is disabled.  Otherwise, the MDC method that was used
      (only DIGEST_ALGO_SHA1 has ever been defined).  */
   byte mdc_method;
+  /* If 0, AEAD is not used.  Otherwise, the used AEAD algorithm.
+   * MDC_METHOD (above) shall be zero if AEAD is used.  */
+  byte aead_algo;
+  /* The cipher algo for/from the AEAD packet.  0 for other encryption
+   * packets. */
+  byte cipher_algo;
+  /* The chunk byte from the AEAD packet.  */
+  byte chunkbyte;
+
   /* An iobuf holding the data to be decrypted.  (This is not used for
      encryption!)  */
   iobuf_t buf;

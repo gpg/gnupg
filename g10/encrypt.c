@@ -123,7 +123,7 @@ use_aead (pk_list_t pk_list, int algo)
       return 0;
     }
 
-  can_use = openpgp_cipher_get_algo_blklen (algo) != 16;
+  can_use = openpgp_cipher_get_algo_blklen (algo) == 16;
 
   /* With --force-mdc we clearly do not want AEAD.  */
   if (opt.force_mdc)
@@ -133,12 +133,15 @@ use_aead (pk_list_t pk_list, int algo)
   if (opt.force_aead)
     {
       if (!can_use)
-        log_info ("Warning: request to use AEAD ignored for cipher '%s'\n",
-                  openpgp_cipher_algo_name (algo));
+        {
+          log_info ("Warning: request to use AEAD ignored for cipher '%s'\n",
+                    openpgp_cipher_algo_name (algo));
+          return 0;
+        }
       return 1;
     }
 
-  /* AEAD does noly work with 128 bit cipher blocklength.  */
+  /* AEAD does only work with 128 bit cipher blocklength.  */
   if (!can_use)
     return 0;
 
@@ -307,7 +310,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
                  openpgp_cipher_algo_name (cfx.dek->algo));
 
       if (use_aead (NULL, cfx.dek->algo))
-        cfx.dek->use_aead = 1;
+        cfx.dek->use_aead = default_aead_algo ();
       else
         cfx.dek->use_mdc = !!use_mdc (NULL, cfx.dek->algo);
     }

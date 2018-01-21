@@ -648,6 +648,7 @@ proc_encrypted (CTX c, PACKET *pkt)
   else if (!result
            && !opt.ignore_mdc_error
            && !pkt->pkt.encrypted->mdc_method
+           && !pkt->pkt.encrypted->aead_algo
            && openpgp_cipher_get_algo_blklen (c->dek->algo) != 8
            && c->dek->algo != CIPHER_ALGO_TWOFISH)
     {
@@ -662,17 +663,25 @@ proc_encrypted (CTX c, PACKET *pkt)
       write_status (STATUS_DECRYPTION_FAILED);
     }
   else if (!result || (gpg_err_code (result) == GPG_ERR_BAD_SIGNATURE
+                       && !pkt->pkt.encrypted->aead_algo
                        && opt.ignore_mdc_error))
     {
+      /* All is fine or for an MDC message the MDC failed but the
+       * --ignore-mdc-error option is active.  For compatibility
+       * reasons we issue GOODMDC also for AEAD messages.  */
       write_status (STATUS_DECRYPTION_OKAY);
       if (opt.verbose > 1)
         log_info(_("decryption okay\n"));
-      if (pkt->pkt.encrypted->mdc_method && !result)
+
+      if (pkt->pkt.encrypted->aead_algo)
+        write_status (STATUS_GOODMDC);
+      else if (pkt->pkt.encrypted->mdc_method && !result)
         write_status (STATUS_GOODMDC);
       else if (!opt.no_mdc_warn)
         log_info (_("WARNING: message was not integrity protected\n"));
     }
-  else if (gpg_err_code (result) == GPG_ERR_BAD_SIGNATURE)
+  else if (gpg_err_code (result) == GPG_ERR_BAD_SIGNATURE
+           || gpg_err_code (result) == GPG_ERR_TRUNCATED)
     {
       glo_ctrl.lasterr = result;
       log_error (_("WARNING: encrypted message has been manipulated!\n"));
@@ -1391,7 +1400,8 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
             case PKT_PUBKEY_ENC:    proc_pubkey_enc (ctrl, c, pkt); break;
             case PKT_SYMKEY_ENC:    proc_symkey_enc (c, pkt); break;
             case PKT_ENCRYPTED:
-            case PKT_ENCRYPTED_MDC: proc_encrypted (c, pkt); break;
+            case PKT_ENCRYPTED_MDC:
+            case PKT_ENCRYPTED_AEAD:proc_encrypted (c, pkt); break;
             case PKT_COMPRESSED:    rc = proc_compressed (c, pkt); break;
             default: newpkt = 0; break;
 	    }
@@ -1407,6 +1417,7 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
             case PKT_PUBKEY_ENC:
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC:
+            case PKT_ENCRYPTED_AEAD:
               write_status_text( STATUS_UNEXPECTED, "0" );
               rc = GPG_ERR_UNEXPECTED;
               goto leave;
@@ -1434,7 +1445,8 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
             case PKT_SYMKEY_ENC:  proc_symkey_enc (c, pkt); break;
             case PKT_PUBKEY_ENC:  proc_pubkey_enc (ctrl, c, pkt); break;
             case PKT_ENCRYPTED:
-            case PKT_ENCRYPTED_MDC: proc_encrypted (c, pkt); break;
+            case PKT_ENCRYPTED_MDC:
+            case PKT_ENCRYPTED_AEAD: proc_encrypted (c, pkt); break;
             case PKT_PLAINTEXT:   proc_plaintext (c, pkt); break;
             case PKT_COMPRESSED:  rc = proc_compressed (c, pkt); break;
             case PKT_ONEPASS_SIG: newpkt = add_onepass_sig (c, pkt); break;
@@ -1461,7 +1473,8 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
             case PKT_PUBKEY_ENC:  proc_pubkey_enc (ctrl, c, pkt); break;
             case PKT_SYMKEY_ENC:  proc_symkey_enc (c, pkt); break;
             case PKT_ENCRYPTED:
-            case PKT_ENCRYPTED_MDC: proc_encrypted (c, pkt); break;
+            case PKT_ENCRYPTED_MDC:
+            case PKT_ENCRYPTED_AEAD: proc_encrypted (c, pkt); break;
             case PKT_PLAINTEXT:   proc_plaintext (c, pkt); break;
             case PKT_COMPRESSED:  rc = proc_compressed (c, pkt); break;
             case PKT_ONEPASS_SIG: newpkt = add_onepass_sig (c, pkt); break;

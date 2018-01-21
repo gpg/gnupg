@@ -32,8 +32,8 @@ typedef struct
    * verbose mode.  */
   int algo_info_printed : 1;
 
-  /* AEAD shall be used.  */
-  int use_aead : 1;
+  /* AEAD shall be used.  The value is the AEAD algo. */
+  int use_aead : 4;
 
   /* MDC shall be used.  */
   int use_mdc : 1;
