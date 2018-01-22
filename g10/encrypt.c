@@ -67,45 +67,75 @@ encrypt_store (const char *filename)
 }
 
 
-/* *SESKEY contains the unencrypted session key ((*SESKEY)->KEY) and
-   the algorithm that will be used to encrypt the contents of the SED
-   packet ((*SESKEY)->ALGO).  If *SESKEY is NULL, then a random
-   session key that is appropriate for DEK->ALGO is generated and
-   stored there.
-
-   Encrypt that session key using DEK and store the result in ENCKEY,
-   which must be large enough to hold (*SESKEY)->KEYLEN + 1 bytes.  */
-void
-encrypt_seskey (DEK *dek, DEK **seskey, byte *enckey)
+/* Encrypt a session key using DEK and store a pointer to the result
+ * at R_ENCKEY and its length at R_ENCKEYLEN.
+ *
+ * R_SESKEY points to the unencrypted session key (.KEY, >KEYLEN) and
+ * the algorithm that will be used to encrypt the contents of the
+ * SKESK packet (.ALGO).  If R_SESKEY points to NULL, then a random
+ * session key that is appropriate for DEK->ALGO is generated and
+ * stored at R_SESKEY.
+ */
+gpg_error_t
+encrypt_seskey (DEK *dek, DEK **r_seskey, void **r_enckey, size_t *r_enckeylen)
 {
-  gcry_cipher_hd_t hd;
-  byte buf[33];
+  gpg_error_t err;
+  gcry_cipher_hd_t hd = NULL;
+  byte *buf = NULL;
+  DEK *seskey;
 
-  log_assert ( dek->keylen <= 32 );
-  if (!*seskey)
+  *r_enckey = NULL;
+  *r_enckeylen = 0;
+
+  if (*r_seskey)
+    seskey = *r_seskey;
+  else
     {
-      *seskey=xmalloc_clear(sizeof(DEK));
-      (*seskey)->algo=dek->algo;
-      make_session_key(*seskey);
+      seskey = xtrycalloc (1, sizeof(DEK));
+      if (!seskey)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      seskey->algo = dek->algo;
+      make_session_key (seskey);
       /*log_hexdump( "thekey", c->key, c->keylen );*/
     }
 
+  buf = xtrymalloc_secure (1 + seskey->keylen);
+  if (!buf)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
   /* The encrypted session key is prefixed with a one-octet algorithm id.  */
-  buf[0] = (*seskey)->algo;
-  memcpy( buf + 1, (*seskey)->key, (*seskey)->keylen );
+  buf[0] = seskey->algo;
+  memcpy (buf + 1, seskey->key, seskey->keylen);
 
-  /* We only pass already checked values to the following function,
-     thus we consider any failure as fatal.  */
-  if (openpgp_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
-    BUG ();
-  if (gcry_cipher_setkey (hd, dek->key, dek->keylen))
-    BUG ();
-  gcry_cipher_setiv (hd, NULL, 0);
-  gcry_cipher_encrypt (hd, buf, (*seskey)->keylen + 1, NULL, 0);
+  err = openpgp_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1);
+  if (!err)
+    err =  gcry_cipher_setkey (hd, dek->key, dek->keylen);
+  if (!err)
+    err = gcry_cipher_setiv (hd, NULL, 0);
+  if (!err)
+    err = gcry_cipher_encrypt (hd, buf, seskey->keylen + 1, NULL, 0);
+  if (err)
+    goto leave;
+
+  *r_enckey = buf;
+  buf = NULL;
+  *r_enckeylen = seskey->keylen + 1;
+  /* Return the session key in case we allocated it.  */
+  *r_seskey = seskey;
+  seskey = NULL;
+
+ leave:
   gcry_cipher_close (hd);
-
-  memcpy( enckey, buf, (*seskey)->keylen + 1 );
-  wipememory( buf, sizeof buf ); /* burn key */
+  if (seskey != *r_seskey)
+    xfree (seskey);
+  xfree (buf);
+  return err;
 }
 
 
@@ -218,9 +248,9 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   PACKET pkt;
   PKT_plaintext *pt = NULL;
   STRING2KEY *s2k = NULL;
-  byte enckey[33];
+  void *enckey = NULL;
+  size_t enckeylen = 0;
   int rc = 0;
-  int seskeylen = 0;
   u32 filesize;
   cipher_filter_context_t cfx;
   armor_filter_context_t  *afx = NULL;
@@ -273,6 +303,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   if ( mode )
     {
       int canceled;
+      aead_algo_t aead_algo;
 
       s2k = xmalloc_clear( sizeof *s2k );
       s2k->mode = opt.s2k_mode;
@@ -296,21 +327,33 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
                       "due to the S2K mode\n"));
         }
 
+      /* See whether we want to use AEAD.  */
+      aead_algo = use_aead (NULL, cfx.dek->algo)? default_aead_algo () : 0;
+
       if ( use_seskey )
         {
           DEK *dek = NULL;
 
-          seskeylen = openpgp_cipher_get_algo_keylen (default_cipher_algo ());
-          encrypt_seskey( cfx.dek, &dek, enckey );
-          xfree( cfx.dek ); cfx.dek = dek;
+          rc = encrypt_seskey (cfx.dek, &dek, &enckey, &enckeylen);
+          if (rc)
+            {
+              xfree (cfx.dek);
+              xfree (s2k);
+              iobuf_close (inp);
+              release_progress_context (pfx);
+              return rc;
+            }
+          /* Replace key in DEK.  */
+          xfree (cfx.dek);
+          cfx.dek = dek;
         }
 
       if (opt.verbose)
         log_info(_("using cipher %s\n"),
                  openpgp_cipher_algo_name (cfx.dek->algo));
 
-      if (use_aead (NULL, cfx.dek->algo))
-        cfx.dek->use_aead = default_aead_algo ();
+      if (aead_algo)
+        cfx.dek->use_aead = aead_algo;
       else
         cfx.dek->use_mdc = !!use_mdc (NULL, cfx.dek->algo);
     }
@@ -342,20 +385,23 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
 
   if ( s2k )
     {
-      PKT_symkey_enc *enc = xmalloc_clear( sizeof *enc + seskeylen + 1 );
+      /* Fixme: This is quite similar to write_symkey_enc.  */
+      PKT_symkey_enc *enc = xmalloc_clear (sizeof *enc + enckeylen);
       enc->version = 4;
       enc->cipher_algo = cfx.dek->algo;
       enc->s2k = *s2k;
-      if ( use_seskey && seskeylen )
+      if (enckeylen)
         {
-          enc->seskeylen = seskeylen + 1; /* algo id */
-          memcpy (enc->seskey, enckey, seskeylen + 1 );
+          enc->seskeylen = enckeylen;
+          memcpy (enc->seskey, enckey, enckeylen);
         }
       pkt.pkttype = PKT_SYMKEY_ENC;
       pkt.pkt.symkey_enc = enc;
       if ((rc = build_packet( out, &pkt )))
         log_error("build symkey packet failed: %s\n", gpg_strerror (rc) );
       xfree (enc);
+      xfree (enckey);
+      enckey = NULL;
     }
 
   if (!opt.no_literal)
@@ -459,6 +505,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   if (pt)
     pt->buf = NULL;
   free_packet (&pkt, NULL);
+  xfree (enckey);
   xfree (cfx.dek);
   xfree (s2k);
   release_armor_context (afx);
@@ -493,20 +540,29 @@ static int
 write_symkey_enc (STRING2KEY *symkey_s2k, DEK *symkey_dek, DEK *dek,
                   iobuf_t out)
 {
-  int rc, seskeylen = openpgp_cipher_get_algo_keylen (dek->algo);
-
+  int rc;
+  void *enckey;
+  size_t enckeylen;
   PKT_symkey_enc *enc;
-  byte enckey[33];
   PACKET pkt;
 
-  enc=xmalloc_clear(sizeof(PKT_symkey_enc)+seskeylen+1);
-  encrypt_seskey(symkey_dek,&dek,enckey);
+  rc = encrypt_seskey (symkey_dek, &dek, &enckey, &enckeylen);
+  if (rc)
+    return rc;
+  enc = xtrycalloc (1, sizeof (PKT_symkey_enc) + enckeylen);
+  if (!enc)
+    {
+      rc = gpg_error_from_syserror ();
+      xfree (enckey);
+      return rc;
+    }
 
   enc->version = 4;
   enc->cipher_algo = opt.s2k_cipher_algo;
   enc->s2k = *symkey_s2k;
-  enc->seskeylen = seskeylen + 1; /* algo id */
-  memcpy( enc->seskey, enckey, seskeylen + 1 );
+  enc->seskeylen = enckeylen;
+  memcpy (enc->seskey, enckey, enckeylen);
+  xfree (enckey);
 
   pkt.pkttype = PKT_SYMKEY_ENC;
   pkt.pkt.symkey_enc = enc;
@@ -514,7 +570,7 @@ write_symkey_enc (STRING2KEY *symkey_s2k, DEK *symkey_dek, DEK *dek,
   if ((rc=build_packet(out,&pkt)))
     log_error("build symkey_enc packet failed: %s\n",gpg_strerror (rc));
 
-  xfree(enc);
+  xfree (enc);
   return rc;
 }
 

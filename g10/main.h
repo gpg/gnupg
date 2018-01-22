@@ -232,7 +232,8 @@ void display_online_help( const char *keyword );
 
 /*-- encode.c --*/
 int setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek);
-void encrypt_seskey (DEK *dek, DEK **seskey, byte *enckey);
+gpg_error_t encrypt_seskey (DEK *dek, DEK **r_seskey,
+                            void **r_enckey, size_t *r_enckeylen);
 int use_aead (pk_list_t pk_list, int algo);
 int use_mdc (pk_list_t pk_list,int algo);
 int encrypt_symmetric (const char *filename );
