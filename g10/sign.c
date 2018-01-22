@@ -1337,9 +1337,8 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
         goto leave;
     }
 
-    if (use_aead (NULL, cfx.dek->algo))
-      cfx.dek->use_aead = 1;
-    else
+    cfx.dek->use_aead = use_aead (NULL, cfx.dek->algo);
+    if (!cfx.dek->use_aead)
       cfx.dek->use_mdc = !!use_mdc (NULL, cfx.dek->algo);
 
     /* now create the outfile */

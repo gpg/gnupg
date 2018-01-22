@@ -31,10 +31,6 @@
 #include "../common/status.h"
 #include "../common/compliance.h"
 
-/* FIXME: Libgcrypt 1.9 will support EAX.  Until we kame this a
- * requirement we hardwire the enum used for EAX.  */
-#define MY_GCRY_CIPHER_MODE_EAX 14
-
 
 static int aead_decode_filter (void *opaque, int control, iobuf_t a,
                                byte *buf, size_t *ret_len);
@@ -274,28 +270,15 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
           goto leave;
         }
 
-      switch (ed->aead_algo)
-        {
-        case AEAD_ALGO_OCB:
-          startivlen = 15;
-          ciphermode = GCRY_CIPHER_MODE_OCB;
-          break;
-        case AEAD_ALGO_EAX:
-          startivlen = 16;
-          ciphermode = MY_GCRY_CIPHER_MODE_EAX;
-          break;
-        default:
-          log_error ("unknown AEAD algo %d\n", ed->aead_algo);
-          rc = gpg_error (GPG_ERR_INV_CIPHER_MODE);
-          goto leave;
-        }
+      rc = openpgp_aead_algo_info (ed->aead_algo, &ciphermode, &startivlen);
+      if (rc)
+        goto leave;
       log_assert (startivlen <= sizeof dfx->startiv);
 
-      if (ed->chunkbyte != 10)
+      if (ed->chunkbyte > 56)
         {
-          /* FIXME */
-          log_error ("unsupported chunkbyte %u\n", ed->chunkbyte);
-          rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+          log_error ("invalid AEAD chunkbyte %u\n", ed->chunkbyte);
+          rc = gpg_error (GPG_ERR_INV_PACKET);
           goto leave;
         }
 

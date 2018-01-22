@@ -1652,8 +1652,9 @@ select_mdc_from_pklist (PK_LIST pk_list)
 
 
 /* Select the AEAD flag from the pk_list.  We can only use AEAD if all
- * recipients support this feature.  Returns true if AEAD can be used.  */
-int
+ * recipients support this feature.  Returns the AEAD to be used or 0
+ * if AEAD shall not be used.  */
+aead_algo_t
 select_aead_from_pklist (PK_LIST pk_list)
 {
   pk_list_t pkr;
@@ -1672,7 +1673,7 @@ select_aead_from_pklist (PK_LIST pk_list)
         return 0;  /* At least one recipient does not support it. */
     }
 
-  return 1; /* Can be used. */
+  return default_aead_algo (); /* Yes, AEAD can be used. */
 }
 
 

@@ -232,7 +232,7 @@ int  algo_available( preftype_t preftype, int algo,
 int  select_algo_from_prefs( PK_LIST pk_list, int preftype,
 			     int request, const union pref_hint *hint);
 int  select_mdc_from_pklist (PK_LIST pk_list);
-int  select_aead_from_pklist (pk_list_t pk_list);
+aead_algo_t select_aead_from_pklist (pk_list_t pk_list);
 void warn_missing_mdc_from_pklist (PK_LIST pk_list);
 void warn_missing_aes_from_pklist (PK_LIST pk_list);
 

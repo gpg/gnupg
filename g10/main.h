@@ -127,6 +127,9 @@ const char *openpgp_cipher_algo_name (cipher_algo_t algo);
 
 gpg_error_t openpgp_aead_test_algo (aead_algo_t algo);
 const char *openpgp_aead_algo_name (aead_algo_t algo);
+gpg_error_t openpgp_aead_algo_info (aead_algo_t algo,
+                                    enum gcry_cipher_modes *r_mode,
+                                    unsigned int *r_noncelen);
 
 pubkey_algo_t map_pk_gcry_to_openpgp (enum gcry_pk_algos algo);
 int openpgp_pk_test_algo (pubkey_algo_t algo);
@@ -234,7 +237,7 @@ void display_online_help( const char *keyword );
 int setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek);
 gpg_error_t encrypt_seskey (DEK *dek, DEK **r_seskey,
                             void **r_enckey, size_t *r_enckeylen);
-int use_aead (pk_list_t pk_list, int algo);
+aead_algo_t use_aead (pk_list_t pk_list, int algo);
 int use_mdc (pk_list_t pk_list,int algo);
 int encrypt_symmetric (const char *filename );
 int encrypt_store (const char *filename );

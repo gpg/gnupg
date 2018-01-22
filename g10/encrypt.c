@@ -139,8 +139,9 @@ encrypt_seskey (DEK *dek, DEK **r_seskey, void **r_enckey, size_t *r_enckeylen)
 }
 
 
-/* Return true if we shall use AEAD mode.  */
-int
+/* Return the AEAD algo if we shall use AEAD mode.  Returns 0 if AEAD
+ * shall not be used.  */
+aead_algo_t
 use_aead (pk_list_t pk_list, int algo)
 {
   int can_use;
@@ -168,7 +169,7 @@ use_aead (pk_list_t pk_list, int algo)
                     openpgp_cipher_algo_name (algo));
           return 0;
         }
-      return 1;
+      return default_aead_algo ();
     }
 
   /* AEAD does only work with 128 bit cipher blocklength.  */
@@ -176,10 +177,7 @@ use_aead (pk_list_t pk_list, int algo)
     return 0;
 
   /* If all keys support AEAD we can use it.  */
-  if (select_aead_from_pklist (pk_list))
-    return 1;
-
-  return 0; /* No AEAD. */
+  return select_aead_from_pklist (pk_list);
 }
 
 
@@ -328,7 +326,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
         }
 
       /* See whether we want to use AEAD.  */
-      aead_algo = use_aead (NULL, cfx.dek->algo)? default_aead_algo () : 0;
+      aead_algo = use_aead (NULL, cfx.dek->algo);
 
       if ( use_seskey )
         {
@@ -784,9 +782,8 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
                           gnupg_status_compliance_flag (CO_DE_VS),
                           NULL);
 
-  if (use_aead (pk_list, cfx.dek->algo))
-    cfx.dek->use_aead = 1;
-  else
+  cfx.dek->use_aead = use_aead (pk_list, cfx.dek->algo);
+  if (!cfx.dek->use_aead)
     cfx.dek->use_mdc = !!use_mdc (pk_list, cfx.dek->algo);
 
   /* Only do the is-file-already-compressed check if we are using a
@@ -1002,9 +999,8 @@ encrypt_filter (void *opaque, int control,
 	      efx->cfx.dek->algo = opt.def_cipher_algo;
 	    }
 
-          if (use_aead (efx->pk_list, efx->cfx.dek->algo))
-            efx->cfx.dek->use_aead = 1;
-          else
+          efx->cfx.dek->use_aead = use_aead (efx->pk_list, efx->cfx.dek->algo);
+          if (!efx->cfx.dek->use_aead)
             efx->cfx.dek->use_mdc = !!use_mdc (efx->pk_list,efx->cfx.dek->algo);
 
           make_session_key ( efx->cfx.dek );

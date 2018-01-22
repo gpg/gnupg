@@ -70,6 +70,11 @@
 #include "../common/zb32.h"
 
 
+/* FIXME: Libgcrypt 1.9 will support EAX.  Until we kame this a
+ * requirement we hardwire the enum used for EAX.  */
+#define MY_GCRY_CIPHER_MODE_EAX 14
+
+
 #ifdef ENABLE_SELINUX_HACKS
 /* A object and a global variable to keep track of files marked as
    secured. */
@@ -613,6 +618,34 @@ openpgp_aead_algo_name (aead_algo_t algo)
     }
 
   return "?";
+}
+
+
+/* Return information for the AEAD algorithm ALGO.  The corresponding
+ * Libgcrypt ciphermode is stored at R_MODE and the required number of
+ * octets for the nonce at R_NONCELEN.  On error and error code is
+ * returned.  Note that the taglen is always 128 bits.  */
+gpg_error_t
+openpgp_aead_algo_info (aead_algo_t algo, enum gcry_cipher_modes *r_mode,
+                        unsigned int *r_noncelen)
+{
+  switch (algo)
+    {
+    case AEAD_ALGO_OCB:
+      *r_mode = GCRY_CIPHER_MODE_OCB;
+      *r_noncelen = 15;
+      break;
+
+    case AEAD_ALGO_EAX:
+      *r_mode = MY_GCRY_CIPHER_MODE_EAX;
+      *r_noncelen = 16;
+      break;
+
+    default:
+      log_error ("unsupported AEAD algo %d\n", algo);
+      return gpg_error (GPG_ERR_INV_CIPHER_MODE);
+    }
+  return 0;
 }
 
 
