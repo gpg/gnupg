@@ -2443,8 +2443,8 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
 {
   PKT_user_id *uid = uidnode->pkt->pkt.user_id;
   PKT_signature *sig = signode->pkt->pkt.signature;
-  const byte *p, *sym, *hash, *zip;
-  size_t n, nsym, nhash, nzip;
+  const byte *p, *sym, *aead, *hash, *zip;
+  size_t n, nsym, naead, nhash, nzip;
 
   sig->flags.chosen_selfsig = 1;/* We chose this one. */
   uid->created = 0;		/* Not created == invalid. */
@@ -2499,6 +2499,9 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
   p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_SYM, &n);
   sym = p;
   nsym = p ? n : 0;
+  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_AEAD, &n);
+  aead = p;
+  naead = p ? n : 0;
   p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PREF_HASH, &n);
   hash = p;
   nhash = p ? n : 0;
@@ -2507,7 +2510,7 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
   nzip = p ? n : 0;
   if (uid->prefs)
     xfree (uid->prefs);
-  n = nsym + nhash + nzip;
+  n = nsym + naead + nhash + nzip;
   if (!n)
     uid->prefs = NULL;
   else
@@ -2518,6 +2521,11 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
 	{
 	  uid->prefs[n].type = PREFTYPE_SYM;
 	  uid->prefs[n].value = *sym++;
+	}
+      for (; naead; naead--, n++)
+	{
+	  uid->prefs[n].type = PREFTYPE_AEAD;
+	  uid->prefs[n].value = *aead++;
 	}
       for (; nhash; nhash--, n++)
 	{
