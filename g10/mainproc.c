@@ -252,7 +252,6 @@ symkey_decrypt_seskey (DEK *dek, byte *seskey, size_t slen)
   gcry_cipher_hd_t hd;
   unsigned int noncelen, keylen;
   enum gcry_cipher_modes ciphermode;
-  byte ad[4];
 
   if (dek->use_aead)
     {
@@ -410,9 +409,17 @@ proc_symkey_enc (CTX c, PACKET *pkt)
                       log_info ("decryption of the symmetrically encrypted"
                                  " session key failed: %s\n",
                                  gpg_strerror (err));
-                      if (gpg_err_code (err) != GPG_ERR_BAD_KEY)
+                      if (gpg_err_code (err) != GPG_ERR_BAD_KEY
+                          && gpg_err_code (err) != GPG_ERR_CHECKSUM)
                         log_fatal ("process terminated to be bug compatible"
                                    " with GnuPG <= 2.2\n");
+                      if (c->dek->s2k_cacheid[0])
+                        {
+                          if (opt.debug)
+                            log_debug ("cleared passphrase cached with ID:"
+                                       " %s\n", c->dek->s2k_cacheid);
+                          passphrase_clear_cache (c->dek->s2k_cacheid);
+                        }
                       xfree (c->dek);
                       c->dek = NULL;
                     }
@@ -757,6 +764,7 @@ proc_encrypted (CTX c, PACKET *pkt)
   else
     {
       if ((gpg_err_code (result) == GPG_ERR_BAD_KEY
+	   || gpg_err_code (result) == GPG_ERR_CHECKSUM
 	   || gpg_err_code (result) == GPG_ERR_CIPHER_ALGO)
           && *c->dek->s2k_cacheid != '\0')
         {
