@@ -94,12 +94,14 @@ typedef struct
 /* A symmetric-key encrypted session key packet as defined in RFC
    4880, Section 5.3.  All fields are serialized.  */
 typedef struct {
-  /* RFC 4880: this must be 4.  */
+  /* We support version 4 (rfc4880) and 5 (rfc4880bis).  */
   byte version;
-  /* The cipher algorithm used to encrypt the session key.  (This may
-     be different from the algorithm that is used to encrypt the SED
-     packet.)  */
+  /* The cipher algorithm used to encrypt the session key.  Note that
+   * this may be different from the algorithm that is used to encrypt
+   * bulk data.  */
   byte cipher_algo;
+  /* The AEAD algorithm or 0 for CFB encryption.  */
+  byte aead_algo;
   /* The string-to-key specifier.  */
   STRING2KEY s2k;
   /* The length of SESKEY in bytes or 0 if this packet does not
@@ -107,7 +109,8 @@ typedef struct {
      S2K function on the password is the session key. See RFC 4880,
      Section 5.3.)  */
   byte seskeylen;
-  /* The session key as encrypted by the S2K specifier.  */
+  /* The session key as encrypted by the S2K specifier.  For AEAD this
+   * includes the nonce and the authentication tag.  */
   byte seskey[1];
 } PKT_symkey_enc;
 

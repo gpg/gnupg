@@ -2284,7 +2284,7 @@ sk_esk (const char *option, int argc, char *argv[], void *cookie)
 
       /* Now encrypt the session key (or rather, the algorithm used to
          encrypt the SKESK plus the session key) using ENCKEY.  */
-      err = encrypt_seskey (&s2kdek, &sesdekp,
+      err = encrypt_seskey (&s2kdek, 0, &sesdekp,
                             (void**)&ske->seskey, (size_t *)&ske->seskeylen);
       if (err)
         log_fatal ("encrypt_seskey failed: %s\n", gpg_strerror (err));

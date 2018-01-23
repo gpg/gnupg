@@ -617,11 +617,8 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
   IOBUF a = iobuf_temp();
 
   log_assert (ctb_pkttype (ctb) == PKT_SYMKEY_ENC);
+  log_assert (enc->version == 4 || enc->version == 5);
 
-  /* The only acceptable version.  */
-  log_assert( enc->version == 4 );
-
-  /* RFC 4880, Section 3.7.  */
   switch (enc->s2k.mode)
     {
     case 0: /* Simple S2K.  */
@@ -632,23 +629,26 @@ do_symkey_enc( IOBUF out, int ctb, PKT_symkey_enc *enc )
     default:
       log_bug ("do_symkey_enc: s2k=%d\n", enc->s2k.mode);
     }
-    iobuf_put( a, enc->version );
-    iobuf_put( a, enc->cipher_algo );
-    iobuf_put( a, enc->s2k.mode );
-    iobuf_put( a, enc->s2k.hash_algo );
-    if( enc->s2k.mode == 1 || enc->s2k.mode == 3 ) {
-	iobuf_write(a, enc->s2k.salt, 8 );
-	if( enc->s2k.mode == 3 )
-	    iobuf_put(a, enc->s2k.count);
+  iobuf_put (a, enc->version);
+  iobuf_put (a, enc->cipher_algo);
+  if (enc->version == 5)
+    iobuf_put (a, enc->aead_algo);
+  iobuf_put (a, enc->s2k.mode);
+  iobuf_put (a, enc->s2k.hash_algo);
+  if (enc->s2k.mode == 1 || enc->s2k.mode == 3)
+    {
+      iobuf_write (a, enc->s2k.salt, 8);
+      if (enc->s2k.mode == 3)
+        iobuf_put (a, enc->s2k.count);
     }
-    if( enc->seskeylen )
-	iobuf_write(a, enc->seskey, enc->seskeylen );
+  if (enc->seskeylen)
+    iobuf_write (a, enc->seskey, enc->seskeylen);
 
-    write_header(out, ctb, iobuf_get_temp_length(a) );
-    rc = iobuf_write_temp( out, a );
+  write_header (out, ctb, iobuf_get_temp_length(a));
+  rc = iobuf_write_temp (out, a);
 
-    iobuf_close(a);
-    return rc;
+  iobuf_close (a);
+  return rc;
 }
 
 

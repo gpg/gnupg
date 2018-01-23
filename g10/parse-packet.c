@@ -1105,7 +1105,7 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 {
   PKT_symkey_enc *k;
   int rc = 0;
-  int i, version, s2kmode, cipher_algo, hash_algo, seskeylen, minlen;
+  int i, version, s2kmode, cipher_algo, aead_algo, hash_algo, seskeylen, minlen;
 
   if (pktlen < 4)
     {
@@ -1117,7 +1117,11 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   version = iobuf_get_noeof (inp);
   pktlen--;
-  if (version != 4)
+  if (version == 4)
+    ;
+  else if (version == 5)
+    ;
+  else
     {
       log_error ("packet(%d) with unknown version %d\n", pkttype, version);
       if (list_mode)
@@ -1135,6 +1139,13 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   cipher_algo = iobuf_get_noeof (inp);
   pktlen--;
+  if (version == 5)
+    {
+      aead_algo = iobuf_get_noeof (inp);
+      pktlen--;
+    }
+  else
+    aead_algo = 0;
   s2kmode = iobuf_get_noeof (inp);
   pktlen--;
   hash_algo = iobuf_get_noeof (inp);
@@ -1169,6 +1180,7 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 					      + seskeylen - 1);
   k->version = version;
   k->cipher_algo = cipher_algo;
+  k->aead_algo = aead_algo;
   k->s2k.mode = s2kmode;
   k->s2k.hash_algo = hash_algo;
   if (s2kmode == 1 || s2kmode == 3)
@@ -1199,10 +1211,20 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   if (list_mode)
     {
       es_fprintf (listfp,
-                  ":symkey enc packet: version %d, cipher %d, s2k %d, hash %d",
-                  version, cipher_algo, s2kmode, hash_algo);
+                  ":symkey enc packet: version %d, cipher %d, aead %d,"
+                  " s2k %d, hash %d",
+                  version, cipher_algo, aead_algo, s2kmode, hash_algo);
       if (seskeylen)
-	es_fprintf (listfp, ", seskey %d bits", (seskeylen - 1) * 8);
+        {
+          /* To compute the size of the session key we need to know
+           * the size of the AEAD nonce which we may not know.  Thus
+           * we show only the seize of the entire encrypted session
+           * key.  */
+          if (aead_algo)
+            es_fprintf (listfp, ", encrypted seskey %d bytes", seskeylen);
+          else
+            es_fprintf (listfp, ", seskey %d bits", (seskeylen - 1) * 8);
+        }
       es_fprintf (listfp, "\n");
       if (s2kmode == 1 || s2kmode == 3)
 	{

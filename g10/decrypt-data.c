@@ -212,8 +212,10 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
   if ( opt.verbose && !dek->algo_info_printed )
     {
       if (!openpgp_cipher_test_algo (dek->algo))
-        log_info (_("%s encrypted data\n"),
-                  openpgp_cipher_algo_name (dek->algo));
+        log_info (_("%s.%s encrypted data\n"),
+                  openpgp_cipher_algo_name (dek->algo),
+                  ed->aead_algo? openpgp_aead_algo_name (ed->aead_algo)
+                  /**/         : "CFB");
       else
         log_info (_("encrypted with unknown algorithm %d\n"), dek->algo );
       dek->algo_info_printed = 1;

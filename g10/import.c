@@ -1113,6 +1113,24 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
 		      problem=1;
 		    }
 		}
+	      else if(prefs->type==PREFTYPE_AEAD)
+		{
+		  if (openpgp_aead_test_algo (prefs->value))
+		    {
+                      /* FIXME: The test below is wrong.  We should
+                       * check if ...algo_name yields a "?" and
+                       * only in that case use NUM.  */
+		      const char *algo =
+                        (openpgp_aead_test_algo (prefs->value)
+                         ? num
+                         : openpgp_aead_algo_name (prefs->value));
+		      if(!problem)
+			check_prefs_warning(pk);
+		      log_info(_("         \"%s\": preference for AEAD"
+				 " algorithm %s\n"), user, algo);
+		      problem=1;
+		    }
+		}
 	      else if(prefs->type==PREFTYPE_HASH)
 		{
 		  if(openpgp_md_test_algo(prefs->value))
@@ -2255,6 +2273,7 @@ transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
         {
           char countbuf[35];
 
+          /* FIXME: Support AEAD */
           /* Note that the IVLEN may be zero if we are working on a
              dummy key.  We can't express that in an S-expression and
              thus we send dummy data for the IV.  */

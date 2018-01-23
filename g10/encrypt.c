@@ -47,12 +47,12 @@ static int write_pubkey_enc_from_list (ctrl_t ctrl,
 
 /****************
  * Encrypt FILENAME with only the symmetric cipher.  Take input from
- * stdin if FILENAME is NULL.
+ * stdin if FILENAME is NULL.  If --force-aead is used we use an SKESK.
  */
 int
 encrypt_symmetric (const char *filename)
 {
-  return encrypt_simple( filename, 1, 0 );
+  return encrypt_simple( filename, 1, opt.force_aead);
 }
 
 
@@ -70,14 +70,16 @@ encrypt_store (const char *filename)
 /* Encrypt a session key using DEK and store a pointer to the result
  * at R_ENCKEY and its length at R_ENCKEYLEN.
  *
- * R_SESKEY points to the unencrypted session key (.KEY, >KEYLEN) and
+ * R_SESKEY points to the unencrypted session key (.KEY, .KEYLEN) and
  * the algorithm that will be used to encrypt the contents of the
  * SKESK packet (.ALGO).  If R_SESKEY points to NULL, then a random
  * session key that is appropriate for DEK->ALGO is generated and
- * stored at R_SESKEY.
+ * stored at R_SESKEY.  If AEAD_ALGO is not 0 the given AEAD algorithm
+ * is used for encryption.
  */
 gpg_error_t
-encrypt_seskey (DEK *dek, DEK **r_seskey, void **r_enckey, size_t *r_enckeylen)
+encrypt_seskey (DEK *dek, aead_algo_t aead_algo,
+                DEK **r_seskey, void **r_enckey, size_t *r_enckeylen)
 {
   gpg_error_t err;
   gcry_cipher_hd_t hd = NULL;
@@ -102,30 +104,84 @@ encrypt_seskey (DEK *dek, DEK **r_seskey, void **r_enckey, size_t *r_enckeylen)
       /*log_hexdump( "thekey", c->key, c->keylen );*/
     }
 
-  buf = xtrymalloc_secure (1 + seskey->keylen);
-  if (!buf)
+
+  if (aead_algo)
     {
-      err = gpg_error_from_syserror ();
-      goto leave;
+      unsigned int noncelen;
+      enum gcry_cipher_modes ciphermode;
+      byte ad[4];
+
+      err = openpgp_aead_algo_info (aead_algo, &ciphermode, &noncelen);
+      if (err)
+        goto leave;
+
+      /* Allocate space for the nonce, the key, and the authentication
+       * tag (16).  */
+      buf = xtrymalloc_secure (noncelen + seskey->keylen + 16);
+      if (!buf)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+
+      gcry_randomize (buf, noncelen, GCRY_STRONG_RANDOM);
+
+      err = openpgp_cipher_open (&hd, dek->algo,
+                                 ciphermode, GCRY_CIPHER_SECURE);
+      if (!err)
+        err = gcry_cipher_setkey (hd, dek->key, dek->keylen);
+      if (!err)
+        err = gcry_cipher_setiv (hd, buf, noncelen);
+      if (err)
+        goto leave;
+
+      ad[0] = (0xc0 | PKT_SYMKEY_ENC);
+      ad[1] = 5;
+      ad[2] = dek->algo;
+      ad[3] = aead_algo;
+      err = gcry_cipher_authenticate (hd, ad, 4);
+      if (err)
+        goto leave;
+
+      memcpy (buf + noncelen, seskey->key, seskey->keylen);
+      gcry_cipher_final (hd);
+      err = gcry_cipher_encrypt (hd, buf + noncelen, seskey->keylen, NULL,0);
+      if (err)
+        goto leave;
+      err = gcry_cipher_gettag (hd, buf + noncelen + seskey->keylen, 16);
+      if (err)
+        goto leave;
+      *r_enckeylen = noncelen + seskey->keylen + 16;
+      *r_enckey = buf;
+      buf = NULL;
+    }
+  else
+    {
+      /* In the old version 4 SKESK the encrypted session key is
+       * prefixed with a one-octet algorithm id.  */
+      buf = xtrymalloc_secure (1 + seskey->keylen);
+      if (!buf)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      buf[0] = seskey->algo;
+      memcpy (buf + 1, seskey->key, seskey->keylen);
+
+      err = openpgp_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1);
+      if (!err)
+        err = gcry_cipher_setkey (hd, dek->key, dek->keylen);
+      if (!err)
+        err = gcry_cipher_setiv (hd, NULL, 0);
+      if (!err)
+        err = gcry_cipher_encrypt (hd, buf, seskey->keylen + 1, NULL, 0);
+      if (err)
+        goto leave;
+      *r_enckeylen = seskey->keylen + 1;
+      *r_enckey = buf;
+      buf = NULL;
     }
 
-  /* The encrypted session key is prefixed with a one-octet algorithm id.  */
-  buf[0] = seskey->algo;
-  memcpy (buf + 1, seskey->key, seskey->keylen);
-
-  err = openpgp_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1);
-  if (!err)
-    err =  gcry_cipher_setkey (hd, dek->key, dek->keylen);
-  if (!err)
-    err = gcry_cipher_setiv (hd, NULL, 0);
-  if (!err)
-    err = gcry_cipher_encrypt (hd, buf, seskey->keylen + 1, NULL, 0);
-  if (err)
-    goto leave;
-
-  *r_enckey = buf;
-  buf = NULL;
-  *r_enckeylen = seskey->keylen + 1;
   /* Return the session key in case we allocated it.  */
   *r_seskey = seskey;
   seskey = NULL;
@@ -332,7 +388,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
         {
           DEK *dek = NULL;
 
-          rc = encrypt_seskey (cfx.dek, &dek, &enckey, &enckeylen);
+          rc = encrypt_seskey (cfx.dek, aead_algo, &dek, &enckey, &enckeylen);
           if (rc)
             {
               xfree (cfx.dek);
@@ -346,14 +402,16 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
           cfx.dek = dek;
         }
 
-      if (opt.verbose)
-        log_info(_("using cipher %s\n"),
-                 openpgp_cipher_algo_name (cfx.dek->algo));
-
       if (aead_algo)
         cfx.dek->use_aead = aead_algo;
       else
         cfx.dek->use_mdc = !!use_mdc (NULL, cfx.dek->algo);
+
+      if (opt.verbose)
+        log_info(_("using cipher %s.%s\n"),
+                 openpgp_cipher_algo_name (cfx.dek->algo),
+                 cfx.dek->use_aead? openpgp_aead_algo_name (cfx.dek->use_aead)
+                 /**/             : "CFB");
     }
 
   if (do_compress
@@ -385,8 +443,9 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
     {
       /* Fixme: This is quite similar to write_symkey_enc.  */
       PKT_symkey_enc *enc = xmalloc_clear (sizeof *enc + enckeylen);
-      enc->version = 4;
+      enc->version = cfx.dek->use_aead ? 5 : 4;
       enc->cipher_algo = cfx.dek->algo;
+      enc->aead_algo = cfx.dek->use_aead;
       enc->s2k = *s2k;
       if (enckeylen)
         {
@@ -535,8 +594,8 @@ setup_symkey (STRING2KEY **symkey_s2k,DEK **symkey_dek)
 
 
 static int
-write_symkey_enc (STRING2KEY *symkey_s2k, DEK *symkey_dek, DEK *dek,
-                  iobuf_t out)
+write_symkey_enc (STRING2KEY *symkey_s2k, aead_algo_t aead_algo,
+                  DEK *symkey_dek, DEK *dek, iobuf_t out)
 {
   int rc;
   void *enckey;
@@ -544,7 +603,7 @@ write_symkey_enc (STRING2KEY *symkey_s2k, DEK *symkey_dek, DEK *dek,
   PKT_symkey_enc *enc;
   PACKET pkt;
 
-  rc = encrypt_seskey (symkey_dek, &dek, &enckey, &enckeylen);
+  rc = encrypt_seskey (symkey_dek, aead_algo, &dek, &enckey, &enckeylen);
   if (rc)
     return rc;
   enc = xtrycalloc (1, sizeof (PKT_symkey_enc) + enckeylen);
@@ -555,8 +614,9 @@ write_symkey_enc (STRING2KEY *symkey_s2k, DEK *symkey_dek, DEK *dek,
       return rc;
     }
 
-  enc->version = 4;
+  enc->version = aead_algo? 5 : 4;
   enc->cipher_algo = opt.s2k_cipher_algo;
+  enc->aead_algo = aead_algo;
   enc->s2k = *symkey_s2k;
   enc->seskeylen = enckeylen;
   memcpy (enc->seskey, enckey, enckeylen);
@@ -813,10 +873,11 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
     goto leave;
 
   /* We put the passphrase (if any) after any public keys as this
-     seems to be the most useful on the recipient side - there is no
-     point in prompting a user for a passphrase if they have the
-     secret key needed to decrypt.  */
-  if(use_symkey && (rc = write_symkey_enc(symkey_s2k,symkey_dek,cfx.dek,out)))
+   * seems to be the most useful on the recipient side - there is no
+   * point in prompting a user for a passphrase if they have the
+   * secret key needed to decrypt.  */
+  if (use_symkey && (rc = write_symkey_enc (symkey_s2k, cfx.dek->use_aead,
+                                            symkey_dek, cfx.dek, out)))
     goto leave;
 
   if (!opt.no_literal)
@@ -1014,9 +1075,9 @@ encrypt_filter (void *opaque, int control,
 
           if(efx->symkey_s2k && efx->symkey_dek)
             {
-              rc=write_symkey_enc(efx->symkey_s2k,efx->symkey_dek,
-                                  efx->cfx.dek,a);
-              if(rc)
+              rc = write_symkey_enc (efx->symkey_s2k, efx->cfx.dek->use_aead,
+                                     efx->symkey_dek, efx->cfx.dek, a);
+              if (rc)
                 return rc;
             }
 
@@ -1084,9 +1145,11 @@ write_pubkey_enc (ctrl_t ctrl,
       if ( opt.verbose )
         {
           char *ustr = get_user_id_string_native (ctrl, enc->keyid);
-          log_info (_("%s/%s encrypted for: \"%s\"\n"),
+          log_info (_("%s/%s.%s encrypted for: \"%s\"\n"),
                     openpgp_pk_algo_name (enc->pubkey_algo),
                     openpgp_cipher_algo_name (dek->algo),
+                    dek->use_aead? openpgp_aead_algo_name (dek->use_aead)
+                    /**/         : "CFB",
                     ustr );
           xfree (ustr);
         }

@@ -245,46 +245,102 @@ add_signature (CTX c, PACKET *pkt)
   return 1;
 }
 
-static int
+static gpg_error_t
 symkey_decrypt_seskey (DEK *dek, byte *seskey, size_t slen)
 {
+  gpg_error_t err;
   gcry_cipher_hd_t hd;
+  unsigned int noncelen, keylen;
+  enum gcry_cipher_modes ciphermode;
+  byte ad[4];
 
-  if(slen < 17 || slen > 33)
+  if (dek->use_aead)
+    {
+      err = openpgp_aead_algo_info (dek->use_aead, &ciphermode, &noncelen);
+      if (err)
+        return err;
+    }
+  else
+    {
+      ciphermode = GCRY_CIPHER_MODE_CFB;
+      noncelen = 0;
+    }
+
+  /* Check that the session key has a size of 16 to 32 bytes.  */
+  if ((dek->use_aead && (slen < (noncelen + 16 + 16)
+                         || slen > (noncelen + 32 + 16)))
+      || (!dek->use_aead && (slen < 17 || slen > 33)))
     {
       log_error ( _("weird size for an encrypted session key (%d)\n"),
 		  (int)slen);
-      return GPG_ERR_BAD_KEY;
+      return gpg_error (GPG_ERR_BAD_KEY);
     }
 
-  if (openpgp_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
-      BUG ();
-  if (gcry_cipher_setkey ( hd, dek->key, dek->keylen ))
-    BUG ();
-  gcry_cipher_setiv ( hd, NULL, 0 );
-  gcry_cipher_decrypt ( hd, seskey, slen, NULL, 0 );
-  gcry_cipher_close ( hd );
+  err = openpgp_cipher_open (&hd, dek->algo, ciphermode, GCRY_CIPHER_SECURE);
+  if (!err)
+    err = gcry_cipher_setkey (hd, dek->key, dek->keylen);
+  if (!err)
+    err = gcry_cipher_setiv (hd, noncelen? seskey : NULL, noncelen);
+  if (err)
+    goto leave;
 
-  /* Now we replace the dek components with the real session key to
-     decrypt the contents of the sequencing packet. */
+  if (dek->use_aead)
+    {
+      byte ad[4];
 
-  dek->keylen=slen-1;
-  dek->algo=seskey[0];
-
-  if(dek->keylen > DIM(dek->key))
-    BUG ();
-
-  memcpy(dek->key, seskey + 1, dek->keylen);
+      ad[0] = (0xc0 | PKT_SYMKEY_ENC);
+      ad[1] = 5;
+      ad[2] = dek->algo;
+      ad[3] = dek->use_aead;
+      err = gcry_cipher_authenticate (hd, ad, 4);
+      if (err)
+        goto leave;
+      gcry_cipher_final (hd);
+      keylen = slen - noncelen - 16;
+      err = gcry_cipher_decrypt (hd, seskey+noncelen, keylen, NULL, 0);
+      if (err)
+        goto leave;
+      err = gcry_cipher_checktag (hd, seskey+noncelen+keylen, 16);
+      if (err)
+        goto leave;
+      /* Now we replace the dek components with the real session key to
+       * decrypt the contents of the sequencing packet. */
+      if (keylen > DIM(dek->key))
+        {
+          err = gpg_error (GPG_ERR_TOO_LARGE);
+          goto leave;
+        }
+      dek->keylen = keylen;
+      memcpy (dek->key, seskey + noncelen, dek->keylen);
+    }
+  else
+    {
+      gcry_cipher_decrypt (hd, seskey, slen, NULL, 0 );
+      /* Now we replace the dek components with the real session key to
+       * decrypt the contents of the sequencing packet. */
+      keylen = slen-1;
+      if (keylen > DIM(dek->key))
+        {
+          err = gpg_error (GPG_ERR_TOO_LARGE);
+          goto leave;
+        }
+      dek->algo = seskey[0];
+      dek->keylen = keylen;
+      memcpy (dek->key, seskey + 1, dek->keylen);
+    }
 
   /*log_hexdump( "thekey", dek->key, dek->keylen );*/
 
-  return 0;
+ leave:
+  gcry_cipher_close (hd);
+  return err;
 }
 
 
 static void
 proc_symkey_enc (CTX c, PACKET *pkt)
 {
+  gpg_error_t err;
   PKT_symkey_enc *enc;
 
   enc = pkt->pkt.symkey_enc;
@@ -294,19 +350,21 @@ proc_symkey_enc (CTX c, PACKET *pkt)
     {
       int algo = enc->cipher_algo;
       const char *s = openpgp_cipher_algo_name (algo);
+      const char *a = (enc->aead_algo ? openpgp_aead_algo_name (enc->aead_algo)
+                       /**/           : "CFB");
 
       if (!openpgp_cipher_test_algo (algo))
         {
           if (!opt.quiet)
             {
               if (enc->seskeylen)
-                log_info (_("%s encrypted session key\n"), s );
+                log_info (_("%s.%s encrypted session key\n"), s, a );
               else
-                log_info (_("%s encrypted data\n"), s );
+                log_info (_("%s.%s encrypted data\n"), s, a );
             }
         }
       else
-        log_error (_("encrypted with unknown algorithm %d\n"), algo);
+        log_error (_("encrypted with unknown algorithm %d.%s\n"), algo, a);
 
       if (openpgp_md_test_algo (enc->s2k.hash_algo))
         {
@@ -334,6 +392,7 @@ proc_symkey_enc (CTX c, PACKET *pkt)
           if (c->dek)
             {
               c->dek->symmetric = 1;
+              c->dek->use_aead = enc->aead_algo;
 
               /* FIXME: This doesn't work perfectly if a symmetric key
                  comes before a public key in the message - if the
@@ -344,9 +403,16 @@ proc_symkey_enc (CTX c, PACKET *pkt)
                  come later. */
               if (enc->seskeylen)
                 {
-                  if (symkey_decrypt_seskey (c->dek,
-                                             enc->seskey, enc->seskeylen))
+                  err = symkey_decrypt_seskey (c->dek,
+                                               enc->seskey, enc->seskeylen);
+                  if (err)
                     {
+                      log_info ("decryption of the symmetrically encrypted"
+                                 " session key failed: %s\n",
+                                 gpg_strerror (err));
+                      if (gpg_err_code (err) != GPG_ERR_BAD_KEY)
+                        log_fatal ("process terminated to be bug compatible"
+                                   " with GnuPG <= 2.2\n");
                       xfree (c->dek);
                       c->dek = NULL;
                     }

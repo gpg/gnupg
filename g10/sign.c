@@ -1326,9 +1326,6 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
     s2k->hash_algo = S2K_DIGEST_ALGO;
 
     algo = default_cipher_algo();
-    if (!opt.quiet || !opt.batch)
-        log_info (_("%s encryption will be used\n"),
-                  openpgp_cipher_algo_name (algo) );
     cfx.dek = passphrase_to_dek (algo, s2k, 1, 1, NULL, &canceled);
 
     if (!cfx.dek || !cfx.dek->keylen) {
@@ -1340,6 +1337,12 @@ sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
     cfx.dek->use_aead = use_aead (NULL, cfx.dek->algo);
     if (!cfx.dek->use_aead)
       cfx.dek->use_mdc = !!use_mdc (NULL, cfx.dek->algo);
+
+    if (!opt.quiet || !opt.batch)
+        log_info (_("%s.%s encryption will be used\n"),
+                  openpgp_cipher_algo_name (algo),
+                  cfx.dek->use_aead? openpgp_aead_algo_name (cfx.dek->use_aead)
+                  /**/             : "CFB");
 
     /* now create the outfile */
     rc = open_outfile (-1, fname, opt.armor? 1:0, 0, &out);
