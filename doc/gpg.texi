@@ -2255,6 +2255,16 @@ works properly with such messages, there is often a desire to set a
 maximum file size that will be generated before processing is forced to
 stop by the OS limits. Defaults to 0, which means "no limit".
 
+@item --chunk-size @var{n}
+@opindex chunk-size
+The AEAD encryption mode encrypts the data in chunks so that a
+receiving side can check for transmission errors or tampering at the
+end of each chunk and does not need to delay this until all data has
+been received.  The used chunk size is 2^@var{n} byte.  The lowest
+allowed value for @var{n} is 6 (64 byte) and the largest is 62 (4
+EiB). The default value for @var{n} is 30 which creates chunks not
+larger than 1 GiB.
+
 @item --input-size-hint @var{n}
 @opindex input-size-hint
 This option can be used to tell GPG the size of the input data in
@@ -2592,6 +2602,16 @@ is the default.
 @itemx --no-force-v4-certs
 These options are obsolete and have no effect since GnuPG 2.1.
 
+@item --force-aead
+@opindex force-aead
+Force the use of AEAD encryption over MDC encryption.  AEAD is a
+modern and faster way to do authenticated encrytion than the old MDC
+method.  See also options @option{--aead-algo} and
+@option{--chunk-size}.
+
+This option requires the use of option @option{--rfc4880bis} to
+declare that a not yet standardized feature is used.
+
 @item --force-mdc
 @opindex force-mdc
 Force the use of encryption with a modification detection code. This
@@ -2616,6 +2636,16 @@ option @option{--auto-key-retrieve}.
 @item --personal-cipher-preferences @var{string}
 @opindex personal-cipher-preferences
 Set the list of personal cipher preferences to @var{string}.  Use
+@command{@gpgname --version} to get a list of available algorithms,
+and use @code{none} to set no preference at all.  This allows the user
+to safely override the algorithm chosen by the recipient key
+preferences, as GPG will only select an algorithm that is usable by
+all recipients.  The most highly ranked cipher in this list is also
+used for the @option{--symmetric} encryption command.
+
+@item --personal-aead-preferences @var{string}
+@opindex personal-aead-preferences
+Set the list of personal AEAD preferences to @var{string}.  Use
 @command{@gpgname --version} to get a list of available algorithms,
 and use @code{none} to set no preference at all.  This allows the user
 to safely override the algorithm chosen by the recipient key
@@ -2981,17 +3011,28 @@ Use @var{name} as cipher algorithm. Running the program with the
 command @option{--version} yields a list of supported algorithms. If
 this is not used the cipher algorithm is selected from the preferences
 stored with the key. In general, you do not want to use this option as
-it allows you to violate the OpenPGP standard.
+it allows you to violate the OpenPGP standard.  The option
 @option{--personal-cipher-preferences} is the safe way to accomplish the
 same thing.
+
+@item --aead-algo @var{name}
+@opindex aead-algo
+Specify that the AEAD algorithm @var{name} is to be used.  This is
+useful for symmetric encryption where no key preference are available
+to select the AEAD algorithm.  Runing @command{@gpgname} with option
+@option{--version} shows the available AEAD algorithms.  In general,
+you do not want to use this option as it allows you to violate the
+OpenPGP standard.  The option @option{--personal-aead-preferences} is
+the safe way to accomplish the same thing.
 
 @item --digest-algo @var{name}
 @opindex digest-algo
 Use @var{name} as the message digest algorithm. Running the program
-with the command @option{--version} yields a list of supported algorithms. In
-general, you do not want to use this option as it allows you to
-violate the OpenPGP standard. @option{--personal-digest-preferences} is the
-safe way to accomplish the same thing.
+with the command @option{--version} yields a list of supported
+algorithms. In general, you do not want to use this option as it
+allows you to violate the OpenPGP standard.  The option
+@option{--personal-digest-preferences} is the safe way to accomplish
+the same thing.
 
 @item --compress-algo @var{name}
 @opindex compress-algo
@@ -3013,8 +3054,9 @@ significant in low memory situations. Note, however, that PGP (all
 versions) only supports ZIP compression. Using any algorithm other
 than ZIP or "none" will make the message unreadable with PGP. In
 general, you do not want to use this option as it allows you to
-violate the OpenPGP standard. @option{--personal-compress-preferences} is the
-safe way to accomplish the same thing.
+violate the OpenPGP standard.  The option
+@option{--personal-compress-preferences} is the safe way to accomplish
+the same thing.
 
 @item --cert-digest-algo @var{name}
 @opindex cert-digest-algo

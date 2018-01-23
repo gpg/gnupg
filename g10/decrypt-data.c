@@ -150,7 +150,8 @@ aead_set_nonce (decode_filter_ctx_t dfx)
   nonce[i++] ^= dfx->chunkindex >>  8;
   nonce[i++] ^= dfx->chunkindex;
 
-  log_printhex (nonce, i, "nonce:");
+  if (DBG_CRYPTO)
+    log_printhex (nonce, i, "nonce:");
   return gcry_cipher_setiv (dfx->cipher_hd, nonce, i);
 }
 
@@ -186,7 +187,8 @@ aead_set_ad (decode_filter_ctx_t dfx, int final)
       ad[19] = dfx->total >>  8;
       ad[20] = dfx->total;
     }
-  log_printhex (ad, final? 21 : 13, "authdata:");
+  if (DBG_CRYPTO)
+    log_printhex (ad, final? 21 : 13, "authdata:");
   return gcry_cipher_authenticate (dfx->cipher_hd, ad, final? 21 : 13);
 }
 
@@ -327,7 +329,8 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       if (rc)
         goto leave; /* Should never happen.  */
 
-      log_printhex (dek->key, dek->keylen, "thekey:");
+      if (DBG_CRYPTO)
+        log_printhex (dek->key, dek->keylen, "thekey:");
       rc = gcry_cipher_setkey (dfx->cipher_hd, dek->key, dek->keylen);
       if (gpg_err_code (rc) == GPG_ERR_WEAK_KEY)
         {
@@ -631,9 +634,10 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
       dfx->eof_seen = 1; /* Normal EOF. */
     }
 
-  log_debug ("decrypt: chunklen=%ju total=%ju size=%zu n=%zu%s\n",
-             (uintmax_t)dfx->chunklen, (uintmax_t)dfx->total, size, n,
-             dfx->eof_seen? " eof":"");
+  if (DBG_FILTER)
+    log_debug ("decrypt: chunklen=%ju total=%ju size=%zu n=%zu%s\n",
+               (uintmax_t)dfx->chunklen, (uintmax_t)dfx->total, size, n,
+               dfx->eof_seen? " eof":"");
 
   /* Now decrypt the buffer.  */
   if (n && dfx->eof_seen > 1)
@@ -653,12 +657,13 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
         {
           size_t n0 = dfx->chunksize - dfx->chunklen;
 
-          log_debug ("chunksize will be reached: n0=%zu\n", n0);
+          if (DBG_FILTER)
+            log_debug ("chunksize will be reached: n0=%zu\n", n0);
           gcry_cipher_final (dfx->cipher_hd);
           err = gcry_cipher_decrypt (dfx->cipher_hd, buf, n0, NULL, 0);
           if (err)
             {
-              log_debug ("gcry_cipher_decrypt failed (1): %s\n",
+              log_error ("gcry_cipher_decrypt failed (1): %s\n",
                          gpg_strerror (err));
               goto leave;
             }
@@ -668,15 +673,18 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
           off = n0;
           n -= n0;
 
-          log_debug ("bytes left: %zu  off=%zu\n", n, off);
+          if (DBG_FILTER)
+            log_debug ("bytes left: %zu  off=%zu\n", n, off);
           log_assert (n >= 16);
           log_assert (dfx->defer_filled);
-          log_printhex (buf+off, 16, "tag:");
+          if (DBG_CRYPTO)
+            log_printhex (buf+off, 16, "tag:");
           err = gcry_cipher_checktag (dfx->cipher_hd, buf + off, 16);
           if (err)
             {
-              log_debug ("gcry_cipher_checktag failed (1): %s\n",
-                         gpg_strerror (err));
+              if (DBG_FILTER)
+                log_debug ("gcry_cipher_checktag failed (1): %s\n",
+                           gpg_strerror (err));
               /* Return Bad Signature like we do with MDC encryption. */
               if (gpg_err_code (err) == GPG_ERR_CHECKSUM)
                 err = gpg_error (GPG_ERR_BAD_SIGNATURE);
@@ -714,7 +722,8 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
       err = gcry_cipher_decrypt (dfx->cipher_hd, buf + off, n, NULL, 0);
       if (err)
         {
-          log_debug ("gcry_cipher_decrypt failed (2): %s\n",gpg_strerror (err));
+          log_error ("gcry_cipher_decrypt failed (2): %s\n",
+                     gpg_strerror (err));
           goto leave;
         }
       dfx->chunklen += n;
@@ -723,14 +732,15 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
       if (dfx->eof_seen)
         {
           /* log_printhex (buf+off, n, "buf+off:"); */
-          log_debug ("eof seen: chunklen=%ju total=%ju off=%zu n=%zu\n",
-                     (uintmax_t)dfx->chunklen, (uintmax_t)dfx->total, off, n);
+          if (DBG_FILTER)
+            log_debug ("eof seen: chunklen=%ju total=%ju off=%zu n=%zu\n",
+                       (uintmax_t)dfx->chunklen, (uintmax_t)dfx->total, off, n);
 
           log_assert (dfx->defer_filled);
           err = gcry_cipher_checktag (dfx->cipher_hd, dfx->defer, 16);
           if (err)
             {
-              log_debug ("gcry_cipher_checktag failed (2): %s\n",
+              log_error ("gcry_cipher_checktag failed (2): %s\n",
                          gpg_strerror (err));
               /* Return Bad Signature like we do with MDC encryption. */
               if (gpg_err_code (err) == GPG_ERR_CHECKSUM)
@@ -751,15 +761,16 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
           err = gcry_cipher_decrypt (dfx->cipher_hd, buf, 0, NULL, 0);
           if (err)
             {
-              log_debug ("gcry_cipher_decrypt failed (final): %s\n",
+              log_error ("gcry_cipher_decrypt failed (final): %s\n",
                          gpg_strerror (err));
               goto leave;
             }
           err = gcry_cipher_checktag (dfx->cipher_hd, dfx->defer+16, 16);
           if (err)
             {
-              log_debug ("gcry_cipher_checktag failed (final): %s\n",
-                         gpg_strerror (err));
+              if (DBG_FILTER)
+                log_debug ("gcry_cipher_checktag failed (final): %s\n",
+                           gpg_strerror (err));
               /* Return Bad Signature like we do with MDC encryption. */
               if (gpg_err_code (err) == GPG_ERR_CHECKSUM)
                 err = gpg_error (GPG_ERR_BAD_SIGNATURE);
@@ -767,7 +778,8 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
             }
 
           n += off;
-          log_debug ("eof seen: returning %zu\n", n);
+          if (DBG_FILTER)
+            log_debug ("eof seen: returning %zu\n", n);
           /* log_printhex (buf, n, "buf:"); */
         }
       else

@@ -591,11 +591,23 @@ openpgp_cipher_algo_name (cipher_algo_t algo)
 gpg_error_t
 openpgp_aead_test_algo (aead_algo_t algo)
 {
+  /* FIXME: We currently have no easy way to test whether libgcrypt
+   * implements a mode.  The only way we can do this is to open a
+   * cipher context with that mode and close it immediately.  That is
+   * a bit costly.  So we look at the libgcrypt version and assume
+   * nothing has been patched out.  */
   switch (algo)
     {
     case AEAD_ALGO_NONE:
       break;
+
     case AEAD_ALGO_EAX:
+#if GCRYPT_VERSION_NUMBER < 0x010900
+      break;
+#else
+      return 0;
+#endif
+
     case AEAD_ALGO_OCB:
       return 0;
     }

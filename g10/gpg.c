@@ -105,6 +105,7 @@ enum cmd_and_opt_values
     oBatch	  = 500,
     oMaxOutput,
     oInputSizeHint,
+    oChunkSize,
     oSigNotation,
     oCertNotation,
     oShowNotation,
@@ -596,6 +597,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oOutput, "output", N_("|FILE|write output to FILE")),
   ARGPARSE_p_u (oMaxOutput, "max-output", "@"),
   ARGPARSE_s_s (oInputSizeHint, "input-size-hint", "@"),
+  ARGPARSE_s_i (oChunkSize, "chunk-size", "@"),
 
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
   ARGPARSE_s_n (oQuiet,	  "quiet",   "@"),
@@ -1016,6 +1018,18 @@ build_list_cipher_algo_name (int algo)
 }
 
 static int
+build_list_aead_test_algo (int algo)
+{
+  return openpgp_aead_test_algo (algo);
+}
+
+static const char *
+build_list_aead_algo_name (int algo)
+{
+  return openpgp_aead_algo_name (algo);
+}
+
+static int
 build_list_md_test_algo (int algo)
 {
   /* By default we do not accept MD5 based signatures.  To avoid
@@ -1036,7 +1050,7 @@ build_list_md_algo_name (int algo)
 static const char *
 my_strusage( int level )
 {
-  static char *digests, *pubkeys, *ciphers, *zips, *ver_gcry;
+  static char *digests, *pubkeys, *ciphers, *zips, *aeads, *ver_gcry;
   const char *p;
 
     switch( level ) {
@@ -1096,13 +1110,20 @@ my_strusage( int level )
 	p = ciphers;
 	break;
       case 36:
+	if (!aeads)
+          aeads = build_list ("AEAD: ", 'A',
+                              build_list_aead_algo_name,
+                              build_list_aead_test_algo);
+	p = aeads;
+	break;
+      case 37:
 	if( !digests )
 	    digests = build_list(_("Hash: "), 'H',
                                  build_list_md_algo_name,
                                  build_list_md_test_algo );
 	p = digests;
 	break;
-      case 37:
+      case 38:
 	if( !zips )
 	    zips = build_list(_("Compression: "),'Z',
                               compress_algo_to_string,
@@ -1123,6 +1144,7 @@ build_list (const char *text, char letter,
   membuf_t mb;
   int indent;
   int i, j, len;
+  int limit;
   const char *s;
   char *string;
 
@@ -1133,7 +1155,8 @@ build_list (const char *text, char letter,
   len = 0;
   init_membuf (&mb, 512);
 
-  for (i=0; i <= 110; i++ )
+  limit = (letter == 'A')? 4 : 110;
+  for (i=0; i <= limit; i++ )
     {
       if (!chkf (i) && (s = mapf (i)))
         {
@@ -2648,6 +2671,10 @@ main (int argc, char **argv)
             opt.input_size_hint = string_to_u64 (pargs.r.ret_str);
             break;
 
+          case oChunkSize:
+            opt.chunk_size = pargs.r.ret_int;
+            break;
+
 	  case oQuiet: opt.quiet = 1; break;
 	  case oNoTTY: tty_no_terminal(1); break;
 	  case oDryRun: opt.dry_run = 1; break;
@@ -3835,6 +3862,21 @@ main (int argc, char **argv)
     if(pers_compress_list &&
        keygen_set_std_prefs(pers_compress_list,PREFTYPE_ZIP))
       log_error(_("invalid personal compress preferences\n"));
+
+    /* Check chunk size.  Please fix also the man page if you chnage
+     * the default.  The limits are given by the specs.  */
+    if (!opt.chunk_size)
+      opt.chunk_size = 30; /* Default to 1 GiB chunks.  */
+    else if (opt.chunk_size < 6)
+      {
+        opt.chunk_size = 6;
+        log_info (_("chunk size invalid - using %d\n"), opt.chunk_size);
+      }
+    else if (opt.chunk_size > 62)
+      {
+        opt.chunk_size = 62;
+        log_info (_("chunk size invalid - using %d\n"), opt.chunk_size);
+      }
 
     /* We don't support all possible commands with multifile yet */
     if(multifile)

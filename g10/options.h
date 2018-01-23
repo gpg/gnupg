@@ -62,6 +62,9 @@ struct
    * progress info and to decide on how to allocate buffers.  */
   uint64_t input_size_hint;
 
+  /* The AEAD chunk size expressed as a power of 2.  */
+  int chunk_size;
+
   int dry_run;
   int autostart;
   int list_only;
@@ -318,7 +321,6 @@ struct {
 #define DBG_CACHE  (opt.debug & DBG_CACHE_VALUE)
 #define DBG_TRUST  (opt.debug & DBG_TRUST_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
-#define DBG_IPC     (opt.debug & DBG_IPC_VALUE)
 #define DBG_IPC     (opt.debug & DBG_IPC_VALUE)
 #define DBG_CLOCK   (opt.debug & DBG_CLOCK_VALUE)
 #define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
