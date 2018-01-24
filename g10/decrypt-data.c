@@ -56,11 +56,10 @@ struct decode_filter_context_s
   /* The start IV for AEAD encryption.   */
   byte startiv[16];
 
-  /* The holdback buffer.  For AEAD we need 32 bytes for MDC 22 bytes
-   * are enough.  The flag indicates whether the holdback buffer is
-   * filled. */
-  char defer[32];
-  unsigned int defer_filled : 1;
+  /* The holdback buffer and its used length.  For AEAD we need at
+   * least 32+1 byte for MDC 22 bytes are required.  */
+  char holdback[48];
+  unsigned int holdbacklen;
 
   /* Working on a partial length packet.  */
   unsigned int partial : 1;
@@ -512,16 +511,16 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
 
       log_assert (dfx->cipher_hd);
       log_assert (dfx->mdc_hash);
-      gcry_cipher_decrypt (dfx->cipher_hd, dfx->defer, 22, NULL, 0);
-      gcry_md_write (dfx->mdc_hash, dfx->defer, 2);
+      gcry_cipher_decrypt (dfx->cipher_hd, dfx->holdback, 22, NULL, 0);
+      gcry_md_write (dfx->mdc_hash, dfx->holdback, 2);
       gcry_md_final (dfx->mdc_hash);
 
-      if (   dfx->defer[0] != '\xd3'
-          || dfx->defer[1] != '\x14'
+      if (   dfx->holdback[0] != '\xd3'
+          || dfx->holdback[1] != '\x14'
           || datalen != 20
-          || memcmp (gcry_md_read (dfx->mdc_hash, 0), dfx->defer+2, datalen))
+          || memcmp (gcry_md_read (dfx->mdc_hash, 0), dfx->holdback+2, datalen))
         rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
-      /* log_printhex("MDC message:", dfx->defer, 22); */
+      /* log_printhex("MDC message:", dfx->holdback, 22); */
       /* log_printhex("MDC calc:", gcry_md_read (dfx->mdc_hash,0), datalen); */
     }
 
@@ -568,18 +567,18 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
     {
       /* We got 32 bytes from A which are good for the last chunk's
        * auth tag and the final chunk's auth tag.  On the first time
-       * we don't have anything in the defer buffer and thus we move
+       * we don't have anything in the holdback buffer and thus we move
        * those 32 bytes to the start of the buffer.  All further calls
-       * will copy the deferred 32 bytes to the start of the
+       * will copy the 32 bytes from the holdback buffer to the start of the
        * buffer.  */
-      if (!dfx->defer_filled)
+      if (!dfx->holdbacklen)
         {
           memcpy (buf, buf+32, 32);
           n = 32;  /* Continue at this position.  */
         }
       else
         {
-          memcpy (buf, dfx->defer, 32);
+          memcpy (buf, dfx->holdback, 32);
         }
 
       /* Now fill up the provided buffer.  */
@@ -611,16 +610,16 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
             dfx->eof_seen = 1; /* Normal EOF.  */
         }
 
-      /* Move the trailing 32 bytes back to the defer buffer.  We
+      /* Move the trailing 32 bytes back to the holdback buffer.  We
        * got at least 64 bytes and thus a memmove is not needed.  */
       n -= 32;
-      memcpy (dfx->defer, buf+n, 32);
-      dfx->defer_filled = 1;
+      memcpy (dfx->holdback, buf+n, 32);
+      dfx->holdbacklen = 32;
     }
-  else if (!dfx->defer_filled)
+  else if (!dfx->holdbacklen)
     {
-      /* EOF seen but empty defer buffer.  This means that we did not
-       * read enough for the two auth tags.  */
+      /* EOF seen but empty holdback buffer.  This means that we did
+       * not read enough for the two auth tags.  */
       n -= 32;
       memcpy (buf, buf+32, n );
       dfx->eof_seen = 2; /* EOF with incomplete tag.  */
@@ -628,9 +627,9 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
   else
     {
       /* EOF seen (i.e. read less than 32 bytes). */
-      memcpy (buf, dfx->defer, 32);
+      memcpy (buf, dfx->holdback, 32);
       n -= 32;
-      memcpy (dfx->defer, buf+n, 32);
+      memcpy (dfx->holdback, buf+n, 32);
       dfx->eof_seen = 1; /* Normal EOF. */
     }
 
@@ -676,7 +675,7 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
           if (DBG_FILTER)
             log_debug ("bytes left: %zu  off=%zu\n", n, off);
           log_assert (n >= 16);
-          log_assert (dfx->defer_filled);
+          log_assert (dfx->holdbacklen);
           if (DBG_CRYPTO)
             log_printhex (buf+off, 16, "tag:");
           err = gcry_cipher_checktag (dfx->cipher_hd, buf + off, 16);
@@ -717,7 +716,7 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
            * large 2^n sized buffers.  There is no assert because
            * gcry_cipher_decrypt would detect such an error.  */
           gcry_cipher_final (dfx->cipher_hd);
-          /*log_printhex (buf+off, n, "buf+off:");*/
+          /* log_printhex (buf+off, n, "buf+off:"); */
         }
       err = gcry_cipher_decrypt (dfx->cipher_hd, buf + off, n, NULL, 0);
       if (err)
@@ -731,15 +730,16 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
 
       if (dfx->eof_seen)
         {
-          /* log_printhex (buf+off, n, "buf+off:"); */
+          log_printhex (buf+off, n, "buf+off:");
           if (DBG_FILTER)
             log_debug ("eof seen: chunklen=%ju total=%ju off=%zu n=%zu\n",
                        (uintmax_t)dfx->chunklen, (uintmax_t)dfx->total, off, n);
 
-          log_assert (dfx->defer_filled);
-          err = gcry_cipher_checktag (dfx->cipher_hd, dfx->defer, 16);
+          log_assert (dfx->holdbacklen);
+          err = gcry_cipher_checktag (dfx->cipher_hd, dfx->holdback, 16);
           if (err)
             {
+              log_printhex (dfx->holdback, 16, "tag:");
               log_error ("gcry_cipher_checktag failed (2): %s\n",
                          gpg_strerror (err));
               /* Return Bad Signature like we do with MDC encryption. */
@@ -765,7 +765,7 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
                          gpg_strerror (err));
               goto leave;
             }
-          err = gcry_cipher_checktag (dfx->cipher_hd, dfx->defer+16, 16);
+          err = gcry_cipher_checktag (dfx->cipher_hd, dfx->holdback+16, 16);
           if (err)
             {
               if (DBG_FILTER)
@@ -881,8 +881,8 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
         }
       if (n == 44)
         {
-          /* We have enough stuff - flush the deferred stuff.  */
-          if ( !dfx->defer_filled )  /* First time. */
+          /* We have enough stuff - flush the holdback buffer.  */
+          if ( !dfx->holdbacklen )  /* First time. */
             {
               memcpy (buf, buf+22, 22);
               n = 22;
@@ -890,7 +890,7 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
           else
             {
 
-              memcpy (buf, dfx->defer, 22);
+              memcpy (buf, dfx->holdback, 22);
 	    }
           /* Fill up the buffer. */
           if (dfx->partial)
@@ -921,13 +921,13 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
                 dfx->eof_seen = 1; /* Normal EOF.  */
             }
 
-          /* Move the trailing 22 bytes back to the defer buffer.  We
+          /* Move the trailing 22 bytes back to the holdback buffer.  We
              have at least 44 bytes thus a memmove is not needed.  */
           n -= 22;
-          memcpy (dfx->defer, buf+n, 22 );
-          dfx->defer_filled = 1;
+          memcpy (dfx->holdback, buf+n, 22 );
+          dfx->holdbacklen = 22;
 	}
-      else if ( !dfx->defer_filled )  /* EOF seen but empty defer buffer. */
+      else if ( !dfx->holdbacklen ) /* EOF seen but empty holdback. */
         {
           /* This is bad because it means an incomplete hash. */
           n -= 22;
@@ -936,9 +936,9 @@ mdc_decode_filter (void *opaque, int control, IOBUF a,
 	}
       else  /* EOF seen (i.e. read less than 22 bytes). */
         {
-          memcpy (buf, dfx->defer, 22 );
+          memcpy (buf, dfx->holdback, 22 );
           n -= 22;
-          memcpy (dfx->defer, buf+n, 22 );
+          memcpy (dfx->holdback, buf+n, 22 );
           dfx->eof_seen = 1; /* Normal EOF. */
 	}
 
