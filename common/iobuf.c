@@ -59,9 +59,7 @@
 
 /*-- Begin configurable part.  --*/
 
-/* The size of the internal buffers.
-   NOTE: If you change this value you MUST also adjust the regression
-   test "armored_key_8192" in armor.test! */
+/* The standard size of the internal buffers.  */
 #define DEFAULT_IOBUF_BUFFER_SIZE  (64*1024)
 
 /* To avoid a potential DoS with compression packets we better limit

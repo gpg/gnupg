@@ -223,6 +223,7 @@ enum cmd_and_opt_values
     oDebugLevel,
     oDebugAll,
     oDebugIOLBF,
+    oDebugSetIobufSize,
     oStatusFD,
     oStatusFile,
     oAttributeFD,
@@ -642,6 +643,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oDebugLevel, "debug-level", "@"),
   ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
   ARGPARSE_s_n (oDebugIOLBF, "debug-iolbf", "@"),
+  ARGPARSE_s_u (oDebugSetIobufSize, "debug-set-iobuf-size", "@"),
   ARGPARSE_s_i (oStatusFD, "status-fd", "@"),
   ARGPARSE_s_s (oStatusFile, "status-file", "@"),
   ARGPARSE_s_i (oAttributeFD, "attribute-fd", "@"),
@@ -956,6 +958,8 @@ int g10_errors_seen = 0;
 
 static int utf8_strings = 0;
 static int maybe_setuid = 1;
+static unsigned int opt_set_iobuf_size;
+static unsigned int opt_set_iobuf_size_used;
 
 static char *build_list( const char *text, char letter,
 			 const char *(*mapf)(int), int (*chkf)(int) );
@@ -1276,6 +1280,10 @@ set_debug (const char *level)
 
   if (opt.debug)
     parse_debug_flag (NULL, &opt.debug, debug_flags);
+
+  if (opt_set_iobuf_size || opt_set_iobuf_size_used)
+    log_debug ("iobuf buffer size is %uk\n",
+               iobuf_set_buffer_size (opt_set_iobuf_size));
 }
 
 
@@ -2741,6 +2749,11 @@ main (int argc, char **argv)
           case oDebugLevel: debug_level = pargs.r.ret_str; break;
 
           case oDebugIOLBF: break; /* Already set in pre-parse step.  */
+
+          case oDebugSetIobufSize:
+            opt_set_iobuf_size = pargs.r.ret_ulong;
+            opt_set_iobuf_size_used = 1;
+            break;
 
 	  case oStatusFD:
             set_status_fd ( translate_sys2libc_fd_int (pargs.r.ret_int, 1) );

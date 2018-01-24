@@ -191,7 +191,7 @@ nW1ff9rt1YcTH9LiiE4EGBECAAYFAjnKLe0AEgkQ3uyMCd5BWw4HZUdQRwABAZeBAKDsa7tc
 (info "Checking armored_key_8192")
 (pipe:do
  (pipe:echo armored_key_8192)
- (pipe:gpg '(--import)))
+ (pipe:gpg '(--debug-set-iobuf-size=8 --import)))
 
 (define nopad_armored_msg "-----BEGIN PGP MESSAGE-----
 Version: GnuPG v1.4.11-svn5139 (GNU/Linux)
@@ -758,10 +758,10 @@ wg7Md81a5RI3F2FG8747t9gX
 (info "Importing alpha_seckey")
 (pipe:do
  (pipe:echo alpha_seckey)
- (pipe:gpg '(--import)))
+ (pipe:gpg '(--debug-set-iobuf-size=8 --import)))
 
 (info "Checking for bug #1179")
 (tr:do
  (tr:pipe-do
   (pipe:echo nopad_armored_msg)
-  (pipe:gpg '(--decrypt))))
+  (pipe:gpg '(--debug-set-iobuf-size=8 --decrypt))))
