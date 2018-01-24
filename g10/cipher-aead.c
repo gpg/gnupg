@@ -271,7 +271,7 @@ write_final_chunk (cipher_filter_context_t *cfx, iobuf_t a)
 static gpg_error_t
 do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   int newchunk = 0;
   size_t n;
 
@@ -285,9 +285,9 @@ do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
       else
         n = cfx->bufsize - cfx->buflen;
 
-      if (cfx->chunklen + n >= cfx->chunksize)
+      if (cfx->chunklen + cfx->buflen + n >= cfx->chunksize)
         {
-          size_t n1 = cfx->chunksize - cfx->chunklen;
+          size_t n1 = cfx->chunksize - (cfx->chunklen + cfx->buflen);
           newchunk = 1;
           if (DBG_FILTER)
             log_debug ("chunksize %ju reached;"
@@ -305,8 +305,8 @@ do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
       if (cfx->buflen == cfx->bufsize || newchunk)
         {
           if (DBG_FILTER)
-            log_debug ("encrypting: buflen=%zu %s %p\n",
-                       cfx->buflen, newchunk?"(newchunk)":"", cfx->cipher_hd);
+            log_debug ("encrypting: buflen=%zu %s n=%zu\n",
+                       cfx->buflen, newchunk?"(newchunk)":"", n);
           if (newchunk)
             gcry_cipher_final (cfx->cipher_hd);
           if (!DBG_FILTER)
@@ -372,6 +372,9 @@ do_free (cipher_filter_context_t *cfx, iobuf_t a)
 {
   gpg_error_t err = 0;
 
+  if (DBG_FILTER)
+    log_debug ("do_free: buflen=%zu\n", cfx->buflen);
+
   /* FIXME: Check what happens if we just wrote the last chunk and no
    * more bytes were to encrypt.  We should then not call finalize and
    * write the auth tag again, right?  May this at all happen?  */
@@ -394,6 +397,8 @@ do_free (cipher_filter_context_t *cfx, iobuf_t a)
       cfx->chunklen += cfx->buflen;
       cfx->total += cfx->buflen;
     }
+  else /* Dummy encryption.  */
+    gcry_cipher_encrypt (cfx->cipher_hd, cfx->buffer, 0, NULL, 0);
 
   /* Get and write the authentication tag.  */
   if (DBG_FILTER)
@@ -411,8 +416,8 @@ do_free (cipher_filter_context_t *cfx, iobuf_t a)
  leave:
   xfree (cfx->buffer);
   cfx->buffer = NULL;
-  /* gcry_cipher_close (cfx->cipher_hd); */
-  /* cfx->cipher_hd = NULL; */
+  gcry_cipher_close (cfx->cipher_hd);
+  cfx->cipher_hd = NULL;
   return err;
 }
 

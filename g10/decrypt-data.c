@@ -56,8 +56,8 @@ struct decode_filter_context_s
   /* The start IV for AEAD encryption.   */
   byte startiv[16];
 
-  /* The holdback buffer and its used length.  For AEAD we need at
-   * least 32+1 byte for MDC 22 bytes are required.  */
+  /* The holdback buffer and its used length.  For AEAD we need 32+1
+   * bytes but we use 48 byte.  For MDC we need 22 bytes.  */
   char holdback[48];
   unsigned int holdbacklen;
 
@@ -536,262 +536,277 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
 static gpg_error_t
 aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
 {
-  const size_t size = *ret_len; /* The initial length of BUF.  */
+  const size_t size = *ret_len; /* The allocated size of BUF.  */
   gpg_error_t err;
-  size_t n; /* Finally the number of decrypted bytes in BUF.  */
+  size_t totallen = 0; /* The number of bytes to return on success or EOF.  */
+  size_t off = 0;      /* The offset into the buffer.  */
+  size_t len;          /* The current number of bytes in BUF+OFF.  */
   int c;
 
-  log_assert (size > 64); /* Our code requires at least this size.  */
+  log_assert (size > 48); /* Our code requires at least this size.  */
 
-  /* Get at least 32 bytes and put it ahead in the buffer.  */
-  if (dfx->partial)
-    {
-      for (n=32; n < 64; n++)
-        {
-          if ((c = iobuf_get (a)) == -1)
-            break;
-          buf[n] = c;
-        }
-    }
-  else
-    {
-      for (n=32; n < 64 && dfx->length; n++, dfx->length--)
-        {
-          if ((c = iobuf_get (a)) == -1)
-            break; /* Premature EOF.  */
-          buf[n] = c;
-        }
-    }
-
-  if (n == 64)
-    {
-      /* We got 32 bytes from A which are good for the last chunk's
-       * auth tag and the final chunk's auth tag.  On the first time
-       * we don't have anything in the holdback buffer and thus we move
-       * those 32 bytes to the start of the buffer.  All further calls
-       * will copy the 32 bytes from the holdback buffer to the start of the
-       * buffer.  */
-      if (!dfx->holdbacklen)
-        {
-          memcpy (buf, buf+32, 32);
-          n = 32;  /* Continue at this position.  */
-        }
-      else
-        {
-          memcpy (buf, dfx->holdback, 32);
-        }
-
-      /* Now fill up the provided buffer.  */
-      if (dfx->partial)
-        {
-          for (; n < size; n++ )
-            {
-              if ((c = iobuf_get (a)) == -1)
-                {
-                  dfx->eof_seen = 1; /* Normal EOF. */
-                  break;
-                }
-              buf[n] = c;
-            }
-        }
-      else
-        {
-          for (; n < size && dfx->length; n++, dfx->length--)
-            {
-              c = iobuf_get (a);
-              if (c == -1)
-                {
-                  dfx->eof_seen = 3; /* Premature EOF. */
-                  break;
-                }
-              buf[n] = c;
-            }
-          if (!dfx->length)
-            dfx->eof_seen = 1; /* Normal EOF.  */
-        }
-
-      /* Move the trailing 32 bytes back to the holdback buffer.  We
-       * got at least 64 bytes and thus a memmove is not needed.  */
-      n -= 32;
-      memcpy (dfx->holdback, buf+n, 32);
-      dfx->holdbacklen = 32;
-    }
-  else if (!dfx->holdbacklen)
-    {
-      /* EOF seen but empty holdback buffer.  This means that we did
-       * not read enough for the two auth tags.  */
-      n -= 32;
-      memcpy (buf, buf+32, n );
-      dfx->eof_seen = 2; /* EOF with incomplete tag.  */
-    }
-  else
-    {
-      /* EOF seen (i.e. read less than 32 bytes). */
-      memcpy (buf, dfx->holdback, 32);
-      n -= 32;
-      memcpy (dfx->holdback, buf+n, 32);
-      dfx->eof_seen = 1; /* Normal EOF. */
-    }
+  /* Copy the rest from the last call of this function into BUF.  */
+  len = dfx->holdbacklen;
+  dfx->holdbacklen = 0;
+  memcpy (buf, dfx->holdback, len);
 
   if (DBG_FILTER)
-    log_debug ("decrypt: chunklen=%ju total=%ju size=%zu n=%zu%s\n",
-               (uintmax_t)dfx->chunklen, (uintmax_t)dfx->total, size, n,
-               dfx->eof_seen? " eof":"");
+    log_debug ("aead_underflow: size=%zu len=%zu%s\n",
+               size, len, dfx->eof_seen? " eof":"");
 
-  /* Now decrypt the buffer.  */
-  if (n && dfx->eof_seen > 1)
+  /* Read and fill up BUF.  We need to watchout for an EOF so that we
+   * can detect the last chunk which is commonly shorter than the
+   * chunksize.  After the last data byte from the last chunk 32 more
+   * bytes are expected for the last chunk's tag and the following
+   * final chunk's tag.  To detect the EOF we need to read at least
+   * one further byte; however we try to ready 16 extra bytes to avoid
+   * singel byte reads in some lower layers.  The outcome is that we
+   * have up to 48 extra extra octets which we will later put into the
+   * holdback buffer for the next invocation (which handles the EOF
+   * case).  */
+  if (dfx->partial)
     {
-      err = gpg_error (GPG_ERR_TRUNCATED);
-    }
-  else if (!n)
-    {
-      log_assert (dfx->eof_seen);
-      err = gpg_error (GPG_ERR_EOF);
+      for (; len < size; len++ )
+        {
+          if ((c = iobuf_get (a)) == -1)
+            {
+              dfx->eof_seen = 1; /* Normal EOF. */
+              break;
+            }
+          buf[len] = c;
+        }
     }
   else
     {
-      size_t off = 0;
-
-      if (dfx->chunklen + n >= dfx->chunksize)
+      for (; len < size && dfx->length; len++, dfx->length--)
         {
-          size_t n0 = dfx->chunksize - dfx->chunklen;
-
-          if (DBG_FILTER)
-            log_debug ("chunksize will be reached: n0=%zu\n", n0);
-          gcry_cipher_final (dfx->cipher_hd);
-          err = gcry_cipher_decrypt (dfx->cipher_hd, buf, n0, NULL, 0);
-          if (err)
+          c = iobuf_get (a);
+          if (c == -1)
             {
-              log_error ("gcry_cipher_decrypt failed (1): %s\n",
-                         gpg_strerror (err));
-              goto leave;
+              dfx->eof_seen = 3; /* Premature EOF. */
+              break;
             }
-          /*log_printhex (buf, n, "buf:");*/
-          dfx->chunklen += n0;
-          dfx->total += n0;
-          off = n0;
-          n -= n0;
-
-          if (DBG_FILTER)
-            log_debug ("bytes left: %zu  off=%zu\n", n, off);
-          log_assert (n >= 16);
-          log_assert (dfx->holdbacklen);
-          if (DBG_CRYPTO)
-            log_printhex (buf+off, 16, "tag:");
-          err = gcry_cipher_checktag (dfx->cipher_hd, buf + off, 16);
-          if (err)
-            {
-              if (DBG_FILTER)
-                log_debug ("gcry_cipher_checktag failed (1): %s\n",
-                           gpg_strerror (err));
-              /* Return Bad Signature like we do with MDC encryption. */
-              if (gpg_err_code (err) == GPG_ERR_CHECKSUM)
-                err = gpg_error (GPG_ERR_BAD_SIGNATURE);
-              goto leave;
-            }
-          /* Remove that tag from the output.  */
-          memmove (buf + off, buf + off + 16, n - 16);
-          n -= 16;
-
-          /* Prepare a new chunk.  */
-          dfx->chunklen = 0;
-          dfx->chunkindex++;
-          err = aead_set_nonce (dfx);
-          if (err)
-            goto leave;
-          err = aead_set_ad (dfx, 0);
-          if (err)
-            goto leave;
+          buf[len] = c;
         }
+      if (!dfx->length)
+        dfx->eof_seen = 1; /* Normal EOF.  */
+    }
 
-      if (dfx->eof_seen)
-        {
-          /* This is the last block of the last chunk.  Its length may
-           * not be a multiple of the block length.  We expect that it
-           * is followed by two authtags.  The first being the one
-           * from the current chunk and the second form the final
-           * chunk encrypting the empty string.  Note that for the
-           * other blocks we assume a multiple of the block length
-           * which is only true because the filter is called with
-           * large 2^n sized buffers.  There is no assert because
-           * gcry_cipher_decrypt would detect such an error.  */
-          gcry_cipher_final (dfx->cipher_hd);
-          /* log_printhex (buf+off, n, "buf+off:"); */
-        }
-      err = gcry_cipher_decrypt (dfx->cipher_hd, buf + off, n, NULL, 0);
+  if (len < 32)
+    {
+      /* Not enough data for the last two tags.  */
+      err = gpg_error (GPG_ERR_TRUNCATED);
+      goto leave;
+    }
+  if (dfx->eof_seen)
+    {
+      /* If have seen an EOF we copy only the last two auth tags into
+       * the holdback buffer.  */
+      dfx->holdbacklen = 32;
+      memcpy (dfx->holdback, buf+len-32, 32);
+      len -= 32;
+    }
+  else
+    {
+      /* If have not seen an EOF we copy the entire extra 48 bytes
+       * into the holdback buffer for processing at the next call of
+       * this function.  */
+      dfx->holdbacklen = len > 48? 48 : len;
+      memcpy (dfx->holdback, buf+len-dfx->holdbacklen, dfx->holdbacklen);
+      len -= dfx->holdbacklen;
+    }
+  /* log_printhex (dfx->holdback, dfx->holdbacklen, "holdback:"); */
+
+  /* Decrypt the buffer.  This requires a loop because a chunk may end
+   * within the buffer.  */
+  if (DBG_FILTER)
+    log_debug ("decrypt loop: chunklen=%ju total=%ju size=%zu len=%zu%s\n",
+               (uintmax_t)dfx->chunklen, (uintmax_t)dfx->total, size, len,
+               dfx->eof_seen? " eof":"");
+
+  while (len && dfx->chunklen + len >= dfx->chunksize)
+    {
+      size_t n = dfx->chunksize - dfx->chunklen;
+      byte tagbuf[16];
+
+      if (DBG_FILTER)
+        log_debug ("chunksize will be reached: n=%zu\n", n);
+      /* log_printhex (buf, n, "ciph:"); */
+      gcry_cipher_final (dfx->cipher_hd);
+      err = gcry_cipher_decrypt (dfx->cipher_hd, buf+off, n, NULL, 0);
       if (err)
         {
-          log_error ("gcry_cipher_decrypt failed (2): %s\n",
+          log_error ("gcry_cipher_decrypt failed (1): %s\n",
                      gpg_strerror (err));
           goto leave;
         }
+      /* log_printhex (buf, n, "plai:"); */
+      totallen += n;
       dfx->chunklen += n;
       dfx->total += n;
+      off += n;
+      len -= n;
 
-      if (dfx->eof_seen)
+      if (DBG_FILTER)
+        log_debug ("bytes left: %zu at off=%zu\n", len, off);
+
+      /* Check the tag.  */
+      if (len < 16)
         {
-          log_printhex (buf+off, n, "buf+off:");
-          if (DBG_FILTER)
-            log_debug ("eof seen: chunklen=%ju total=%ju off=%zu n=%zu\n",
-                       (uintmax_t)dfx->chunklen, (uintmax_t)dfx->total, off, n);
+          /* The tag is not entirely in the buffer.  Read the rest of
+           * the tag from the holdback buffer.  The shift the holdback
+           * buffer and fill it up again.  */
+          memcpy (tagbuf, buf+off, len);
+          memcpy (tagbuf + len, dfx->holdback, 16 - len);
+          dfx->holdbacklen -= 16-len;
+          memmove (dfx->holdback, dfx->holdback + (16-len), dfx->holdbacklen);
 
-          log_assert (dfx->holdbacklen);
-          err = gcry_cipher_checktag (dfx->cipher_hd, dfx->holdback, 16);
-          if (err)
+          len = dfx->holdbacklen;
+          if (dfx->partial)
             {
-              log_printhex (dfx->holdback, 16, "tag:");
-              log_error ("gcry_cipher_checktag failed (2): %s\n",
-                         gpg_strerror (err));
-              /* Return Bad Signature like we do with MDC encryption. */
-              if (gpg_err_code (err) == GPG_ERR_CHECKSUM)
-                err = gpg_error (GPG_ERR_BAD_SIGNATURE);
+              for (; len < 48; len++ )
+                {
+                  if ((c = iobuf_get (a)) == -1)
+                    {
+                      dfx->eof_seen = 1; /* Normal EOF. */
+                      break;
+                    }
+                  dfx->holdback[len] = c;
+                }
+            }
+          else
+            {
+              for (; len < 48 && dfx->length; len++, dfx->length--)
+                {
+                  c = iobuf_get (a);
+                  if (c == -1)
+                    {
+                      dfx->eof_seen = 3; /* Premature EOF. */
+                      break;
+                    }
+                  dfx->holdback[len] = c;
+                }
+              if (!dfx->length)
+                dfx->eof_seen = 1; /* Normal EOF.  */
+            }
+          if (len < 32)
+            {
+              /* Not enough data for the last two tags.  */
+              err = gpg_error (GPG_ERR_TRUNCATED);
               goto leave;
             }
-
-          /* Check the final chunk.  */
-          dfx->chunkindex++;
-          err = aead_set_nonce (dfx);
-          if (err)
-            goto leave;
-          err = aead_set_ad (dfx, 1);
-          if (err)
-            goto leave;
-          gcry_cipher_final (dfx->cipher_hd);
-          /* decrypt an empty string.  */
-          err = gcry_cipher_decrypt (dfx->cipher_hd, buf, 0, NULL, 0);
-          if (err)
-            {
-              log_error ("gcry_cipher_decrypt failed (final): %s\n",
-                         gpg_strerror (err));
-              goto leave;
-            }
-          err = gcry_cipher_checktag (dfx->cipher_hd, dfx->holdback+16, 16);
-          if (err)
-            {
-              if (DBG_FILTER)
-                log_debug ("gcry_cipher_checktag failed (final): %s\n",
-                           gpg_strerror (err));
-              /* Return Bad Signature like we do with MDC encryption. */
-              if (gpg_err_code (err) == GPG_ERR_CHECKSUM)
-                err = gpg_error (GPG_ERR_BAD_SIGNATURE);
-              goto leave;
-            }
-
-          n += off;
-          if (DBG_FILTER)
-            log_debug ("eof seen: returning %zu\n", n);
-          /* log_printhex (buf, n, "buf:"); */
+          dfx->holdbacklen = len;
+          /* log_printhex (dfx->holdback, dfx->holdbacklen, "holdback:"); */
+          len = 0;
         }
-      else
-        n += off;
+      else /* We already have the full tag.  */
+        {
+          memcpy (tagbuf, buf+off, 16);
+          /* Remove that tag from the output.  */
+          memmove (buf + off, buf + off + 16, len - 16);
+          len -= 16;
+        }
+      if (DBG_CRYPTO)
+        log_printhex (tagbuf, 16, "tag:");
+      err = gcry_cipher_checktag (dfx->cipher_hd, tagbuf, 16);
+      if (err)
+        {
+          if (DBG_FILTER)
+            log_debug ("gcry_cipher_checktag failed (1): %s\n",
+                       gpg_strerror (err));
+          goto leave;
+        }
+
+      /* Prepare a new chunk.  */
+      dfx->chunklen = 0;
+      dfx->chunkindex++;
+      err = aead_set_nonce (dfx);
+      if (err)
+        goto leave;
+      err = aead_set_ad (dfx, 0);
+      if (err)
+        goto leave;
+
+      continue;
+    }
+
+  if (dfx->eof_seen)
+    {
+      /* This is the last block of the last chunk.  Its length may
+       * not be a multiple of the block length.  */
+      gcry_cipher_final (dfx->cipher_hd);
+    }
+  err = gcry_cipher_decrypt (dfx->cipher_hd, buf + off, len, NULL, 0);
+  if (err)
+    {
+      log_error ("gcry_cipher_decrypt failed (2): %s\n", gpg_strerror (err));
+      goto leave;
+    }
+  totallen += len;
+  dfx->chunklen += len;
+  dfx->total += len;
+  if (dfx->eof_seen)
+    {
+      if (DBG_FILTER)
+        log_debug ("eof seen: holdback buffer has the tags.\n");
+
+      log_assert (dfx->holdbacklen >= 32);
+
+      if (DBG_FILTER)
+        log_printhex (dfx->holdback, 16, "tag:");
+      err = gcry_cipher_checktag (dfx->cipher_hd, dfx->holdback, 16);
+      if (err)
+        {
+          log_error ("gcry_cipher_checktag failed (2): %s\n",
+                     gpg_strerror (err));
+          goto leave;
+        }
+
+      /* Check the final chunk.  */
+      dfx->chunkindex++;
+      err = aead_set_nonce (dfx);
+      if (err)
+        goto leave;
+      err = aead_set_ad (dfx, 1);
+      if (err)
+        goto leave;
+      gcry_cipher_final (dfx->cipher_hd);
+      /* decrypt an empty string.  */
+      err = gcry_cipher_decrypt (dfx->cipher_hd, dfx->holdback, 0, NULL, 0);
+      if (err)
+        {
+          log_error ("gcry_cipher_decrypt failed (final): %s\n",
+                     gpg_strerror (err));
+          goto leave;
+        }
+      /* log_printhex (dfx->holdback+16, 16, "tag:"); */
+      err = gcry_cipher_checktag (dfx->cipher_hd, dfx->holdback+16, 16);
+      if (err)
+        {
+          if (DBG_FILTER)
+            log_debug ("gcry_cipher_checktag failed (final): %s\n",
+                       gpg_strerror (err));
+          goto leave;
+        }
+      err = gpg_error (GPG_ERR_EOF);
     }
 
  leave:
-  /* In case of a real error we better wipe out the buffer than to
-   * keep partly encrypted data.  */
+  if (DBG_FILTER)
+    log_debug ("aead_underflow: returning %zu (%s)\n",
+               totallen, gpg_strerror (err));
+
+  /* In case of an auth error we map the error code to the same as
+   * used by the MDC decryption.  */
+  if (gpg_err_code (err) == GPG_ERR_CHECKSUM)
+    err = gpg_error (GPG_ERR_BAD_SIGNATURE);
+
+  /* In case of an error we better wipe out the buffer than to convey
+   * partly decrypted data.  */
   if (err && gpg_err_code (err) != GPG_ERR_EOF)
     memset (buf, 0, size);
-  *ret_len = n;
+
+  *ret_len = totallen;
 
   return err;
 }
