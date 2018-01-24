@@ -259,6 +259,12 @@ struct iobuf_struct
 EXTERN_UNLESS_MAIN_MODULE int iobuf_debug_mode;
 
 
+/* Change the default size for all IOBUFs to KILOBYTE.  This needs to
+ * be called before any iobufs are used and can only be used once.
+ * Returns the current value.  Using 0 has no effect except for
+ * returning the current value.  */
+unsigned int iobuf_set_buffer_size (unsigned int kilobyte);
+
 /* Returns whether the specified filename corresponds to a pipe.  In
    particular, this function checks if FNAME is "-" and, if special
    filenames are enabled (see check_special_filename), whether

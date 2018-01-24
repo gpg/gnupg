@@ -62,13 +62,17 @@
 /* The size of the internal buffers.
    NOTE: If you change this value you MUST also adjust the regression
    test "armored_key_8192" in armor.test! */
-#define IOBUF_BUFFER_SIZE  8192
+#define DEFAULT_IOBUF_BUFFER_SIZE  (64*1024)
 
 /* To avoid a potential DoS with compression packets we better limit
    the number of filters in a chain.  */
 #define MAX_NESTING_FILTER 64
 
 /*-- End configurable part.  --*/
+
+/* The size of the iobuffers.  This can be chnages using the
+ * iobuf_set_buffer_size fucntion.  */
+static unsigned int iobuf_buffer_size = DEFAULT_IOBUF_BUFFER_SIZE;
 
 
 #ifdef HAVE_W32_SYSTEM
@@ -92,6 +96,7 @@ typedef struct
   int keep_open;
   int no_cache;
   int eof_seen;
+  int delayed_rc;
   int print_only_name; /* Flags indicating that fname is not a real file.  */
   char fname[1];       /* Name of the file.  */
 } file_filter_ctx_t;
@@ -167,7 +172,7 @@ static int translate_file_handle (int fd, int for_write);
    to be sent to A's filter function.
 
    If A is a IOBUF_OUTPUT_TEMP filter, then this also enlarges the
-   buffer by IOBUF_BUFFER_SIZE.
+   buffer by iobuf_buffer_size.
 
    May only be called on an IOBUF_OUTPUT or IOBUF_OUTPUT_TEMP filters.  */
 static int filter_flush (iobuf_t a);
@@ -451,12 +456,20 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 
   if (control == IOBUFCTRL_UNDERFLOW)
     {
-      assert (size); /* We need a buffer.  */
+      log_assert (size); /* We need a buffer.  */
       if (a->eof_seen)
 	{
 	  rc = -1;
 	  *ret_len = 0;
 	}
+      else if (a->delayed_rc)
+        {
+          rc = a->delayed_rc;
+          a->delayed_rc = 0;
+          if (rc == -1)
+            a->eof_seen = -1;
+	  *ret_len = 0;
+        }
       else
 	{
 #ifdef HAVE_W32_SYSTEM
@@ -487,29 +500,39 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	  int n;
 
 	  nbytes = 0;
-	  do
-	    {
-	      n = read (f, buf, size);
-	    }
-	  while (n == -1 && errno == EINTR);
-	  if (n == -1)
-	    {			/* error */
-	      if (errno != EPIPE)
-		{
-		  rc = gpg_error_from_syserror ();
-		  log_error ("%s: read error: %s\n",
-			     a->fname, strerror (errno));
-		}
-	    }
-	  else if (!n)
-	    {			/* eof */
-	      a->eof_seen = 1;
-	      rc = -1;
-	    }
-	  else
-	    {
-	      nbytes = n;
-	    }
+        read_more:
+          do
+            {
+              n = read (f, buf + nbytes, size - nbytes);
+            }
+          while (n == -1 && errno == EINTR);
+          if (n > 0)
+            {
+              nbytes += n;
+              if (nbytes < size)
+                goto read_more;
+            }
+          else if (!n) /* eof */
+            {
+              if (nbytes)
+                a->delayed_rc = -1;
+              else
+                {
+                  a->eof_seen = 1;
+                  rc = -1;
+                }
+            }
+          else /* error */
+            {
+              rc = gpg_error_from_syserror ();
+              if (gpg_err_code (rc) != GPG_ERR_EPIPE)
+                log_error ("%s: read error: %s\n", a->fname, gpg_strerror (rc));
+              if (nbytes)
+                {
+                  a->delayed_rc = rc;
+                  rc = 0;
+                }
+            }
 #endif
 	  *ret_len = nbytes;
 	}
@@ -569,6 +592,7 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
   else if (control == IOBUFCTRL_INIT)
     {
       a->eof_seen = 0;
+      a->delayed_rc = 0;
       a->keep_open = 0;
       a->no_cache = 0;
     }
@@ -1053,6 +1077,30 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
   return rc;
 }
 
+
+/* Change the default size for all IOBUFs to KILOBYTE.  This needs to
+ * be called before any iobufs are used and can only be used once.
+ * Returns the current value.  Using 0 has no effect except for
+ * returning the current value.  */
+unsigned int
+iobuf_set_buffer_size (unsigned int kilobyte)
+{
+  static int used;
+
+  if (!used && kilobyte)
+    {
+      if (kilobyte < 4)
+        kilobyte = 4;
+      else if (kilobyte > 16*1024)
+        kilobyte = 16*1024;
+
+      iobuf_buffer_size = kilobyte * 1024;
+      used = 1;
+    }
+  return iobuf_buffer_size / 1024;
+}
+
+
 #define MAX_IOBUF_DESC 32
 /*
  * Fill the buffer by the description of iobuf A.
@@ -1105,7 +1153,7 @@ iobuf_alloc (int use, size_t bufsize)
   if (bufsize == 0)
     {
       log_bug ("iobuf_alloc() passed a bufsize of 0!\n");
-      bufsize = IOBUF_BUFFER_SIZE;
+      bufsize = iobuf_buffer_size;
     }
 
   a = xcalloc (1, sizeof *a);
@@ -1213,7 +1261,7 @@ iobuf_cancel (iobuf_t a)
 iobuf_t
 iobuf_temp (void)
 {
-  return iobuf_alloc (IOBUF_OUTPUT_TEMP, IOBUF_BUFFER_SIZE);
+  return iobuf_alloc (IOBUF_OUTPUT_TEMP, iobuf_buffer_size);
 }
 
 iobuf_t
@@ -1288,7 +1336,7 @@ do_open (const char *fname, int special_filenames,
 	return NULL;
     }
 
-  a = iobuf_alloc (use, IOBUF_BUFFER_SIZE);
+  a = iobuf_alloc (use, iobuf_buffer_size);
   fcx = xmalloc (sizeof *fcx + strlen (fname));
   fcx->fp = fp;
   fcx->print_only_name = print_only;
@@ -1335,7 +1383,7 @@ do_iobuf_fdopen (int fd, const char *mode, int keep_open)
   fp = INT2FD (fd);
 
   a = iobuf_alloc (strchr (mode, 'w') ? IOBUF_OUTPUT : IOBUF_INPUT,
-		   IOBUF_BUFFER_SIZE);
+		   iobuf_buffer_size);
   fcx = xmalloc (sizeof *fcx + 20);
   fcx->fp = fp;
   fcx->print_only_name = 1;
@@ -1373,7 +1421,7 @@ iobuf_esopen (estream_t estream, const char *mode, int keep_open)
   size_t len = 0;
 
   a = iobuf_alloc (strchr (mode, 'w') ? IOBUF_OUTPUT : IOBUF_INPUT,
-		   IOBUF_BUFFER_SIZE);
+		   iobuf_buffer_size);
   fcx = xtrymalloc (sizeof *fcx + 30);
   fcx->fp = estream;
   fcx->print_only_name = 1;
@@ -1398,7 +1446,7 @@ iobuf_sockopen (int fd, const char *mode)
   size_t len;
 
   a = iobuf_alloc (strchr (mode, 'w') ? IOBUF_OUTPUT : IOBUF_INPUT,
-		   IOBUF_BUFFER_SIZE);
+		   iobuf_buffer_size);
   scx = xmalloc (sizeof *scx + 25);
   scx->sock = fd;
   scx->print_only_name = 1;
@@ -1599,13 +1647,13 @@ iobuf_push_filter2 (iobuf_t a,
 	 increased accordingly.  We don't need to allocate a 10 MB
 	 buffer for a non-terminal filter.  Just use the default
 	 size.  */
-      a->d.size = IOBUF_BUFFER_SIZE;
+      a->d.size = iobuf_buffer_size;
     }
   else if (a->use == IOBUF_INPUT_TEMP)
     /* Same idea as above.  */
     {
       a->use = IOBUF_INPUT;
-      a->d.size = IOBUF_BUFFER_SIZE;
+      a->d.size = iobuf_buffer_size;
     }
 
   /* The new filter (A) gets a new buffer.
@@ -1922,7 +1970,7 @@ filter_flush (iobuf_t a)
 
   if (a->use == IOBUF_OUTPUT_TEMP)
     {				/* increase the temp buffer */
-      size_t newsize = a->d.size + IOBUF_BUFFER_SIZE;
+      size_t newsize = a->d.size + iobuf_buffer_size;
 
       if (DBG_IOBUF)
 	log_debug ("increasing temp iobuf from %lu to %lu\n",
