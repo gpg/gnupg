@@ -521,10 +521,6 @@ msgstr "error enlazando el socket con `%s': %s\n"
 msgid "can't set permissions of '%s': %s\n"
 msgstr "Aviso: permisos inseguros en %s \"%s\"\n"
 
-#, c-format
-msgid "listen() failed: %s\n"
-msgstr "listen() falló: %s\n"
-
 #, fuzzy, c-format
 #| msgid "listening on socket `%s'\n"
 msgid "listening on socket '%s'\n"
@@ -9251,6 +9247,9 @@ msgstr ""
 "Sintaxis: gpg-check-pattern [opciones] fichero_de_patrones\n"
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
+
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "listen() falló: %s\n"
 
 #~ msgid "do not grab keyboard and mouse"
 #~ msgstr "no acaparar teclado y ratón"

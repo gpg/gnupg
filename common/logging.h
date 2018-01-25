@@ -150,4 +150,31 @@ void log_printhex (const void *buffer, size_t length, const char *text);
 void log_clock (const char *fmt, ...) GPGRT_ATTR_PRINTF(1,2);
 
 #endif /* Use gnupg internal logging functions.  */
+
+/* Some handy assertion macros which don't abort.  */
+
+#define return_if_fail(expr) do {                        \
+    if (!(expr)) {                                       \
+        log_debug ("%s:%d: assertion '%s' failed\n",     \
+                   __FILE__, __LINE__, #expr );          \
+        return;	                                         \
+    } } while (0)
+#define return_null_if_fail(expr) do {                   \
+    if (!(expr)) {                                       \
+        log_debug ("%s:%d: assertion '%s' failed\n",     \
+                   __FILE__, __LINE__, #expr );          \
+        return NULL;	                                 \
+    } } while (0)
+#define return_val_if_fail(expr,val) do {                \
+    if (!(expr)) {                                       \
+        log_debug ("%s:%d: assertion '%s' failed\n",     \
+                   __FILE__, __LINE__, #expr );          \
+        return (val);	                                 \
+    } } while (0)
+#define never_reached() do {                             \
+    log_debug ("%s:%d: oops - should never get here\n",  \
+               __FILE__, __LINE__ );                     \
+    } while (0)
+
+
 #endif /*GNUPG_COMMON_LOGGING_H*/

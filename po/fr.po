@@ -468,10 +468,6 @@ msgid "can't set permissions of '%s': %s\n"
 msgstr "Avertissement : les droits de %s ne sont pas sûrs « %s »\n"
 
 #, c-format
-msgid "listen() failed: %s\n"
-msgstr "échec de listen() : %s\n"
-
-#, c-format
 msgid "listening on socket '%s'\n"
 msgstr "écoute sur la socket « %s »\n"
 
@@ -8934,6 +8930,9 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "échec de listen() : %s\n"
 
 #~ msgid "do not grab keyboard and mouse"
 #~ msgstr "ne pas capturer le clavier et la souris"

@@ -464,7 +464,6 @@ main( int argc, char **argv )
   /*create_dotlock(NULL); register locking cleanup */
 
   /* We need to use the gcry malloc function because jnlib uses them.  */
-  keybox_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free);
   ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free );
 
 

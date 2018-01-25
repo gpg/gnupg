@@ -66,11 +66,14 @@ enum cmd_and_opt_values
     aInstallKey,
     aRevokeKey,
     aRemoveKey,
+    aCheck,
 
     oGpgProgram,
     oSend,
     oFrom,
     oHeader,
+    oWithDir,
+    oWithFile,
 
     oDummy
   };
@@ -86,12 +89,15 @@ static ARGPARSE_OPTS opts[] = {
               ("run regular jobs")),
   ARGPARSE_c (aListDomains, "list-domains",
               ("list configured domains")),
+  ARGPARSE_c (aCheck, "check",
+              ("check whether a key is installed")),
+  ARGPARSE_c (aCheck, "check-key", "@"),
   ARGPARSE_c (aInstallKey, "install-key",
-              "|FILE|install a key from FILE into the WKD"),
+              "install a key from FILE into the WKD"),
   ARGPARSE_c (aRemoveKey, "remove-key",
-              "|ADDR|remove the key ADDR from the WKD"),
+              "remove a key from the WKD"),
   ARGPARSE_c (aRevokeKey, "revoke-key",
-              "|ADDR|mark the key ADDR in the WKD as revoked"),
+              "mark a key as revoked"),
 
   ARGPARSE_group (301, ("@\nOptions:\n ")),
 
@@ -104,6 +110,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oFrom, "from", "|ADDR|use ADDR as the default sender"),
   ARGPARSE_s_s (oHeader, "header" ,
                 "|NAME=VALUE|add \"NAME: VALUE\" as header to all mails"),
+  ARGPARSE_s_n (oWithDir, "with-dir", "@"),
+  ARGPARSE_s_n (oWithFile, "with-file", "@"),
 
   ARGPARSE_end ()
 };
@@ -132,6 +140,13 @@ struct server_ctx_s
 };
 typedef struct server_ctx_s *server_ctx_t;
 
+
+/* Flag for --with-dir.  */
+static int opt_with_dir;
+/* Flag for --with-file.  */
+static int opt_with_file;
+
+
 /* Prototypes.  */
 static gpg_error_t get_domain_list (strlist_t *r_list);
 
@@ -142,6 +157,7 @@ static gpg_error_t command_list_domains (void);
 static gpg_error_t command_install_key (const char *fname);
 static gpg_error_t command_remove_key (const char *mailaddr);
 static gpg_error_t command_revoke_key (const char *mailaddr);
+static gpg_error_t command_check_key (const char *mailaddr);
 static gpg_error_t command_cron (void);
 
 
@@ -220,10 +236,17 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case oOutput:
           opt.output = pargs->r.ret_str;
           break;
+        case oWithDir:
+          opt_with_dir = 1;
+          break;
+        case oWithFile:
+          opt_with_file = 1;
+          break;
 
 	case aReceive:
         case aCron:
         case aListDomains:
+        case aCheck:
         case aInstallKey:
         case aRemoveKey:
         case aRevokeKey:
@@ -243,7 +266,7 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
 int
 main (int argc, char **argv)
 {
-  gpg_error_t err;
+  gpg_error_t err, firsterr;
   ARGPARSE_ARGS pargs;
   enum cmd_and_opt_values cmd;
 
@@ -360,14 +383,27 @@ main (int argc, char **argv)
 
     case aRemoveKey:
       if (argc != 1)
-        wrong_args ("--remove-key MAILADDR");
+        wrong_args ("--remove-key USER-ID");
       err = command_remove_key (*argv);
       break;
 
     case aRevokeKey:
       if (argc != 1)
-        wrong_args ("--revoke-key MAILADDR");
+        wrong_args ("--revoke-key USER-ID");
       err = command_revoke_key (*argv);
+      break;
+
+    case aCheck:
+      if (!argc)
+        wrong_args ("--check USER-IDs");
+      firsterr = 0;
+      for (; argc; argc--, argv++)
+        {
+          err = command_check_key (*argv);
+          if (!firsterr)
+            firsterr = err;
+        }
+      err = firsterr;
       break;
 
     default:
@@ -1776,7 +1812,11 @@ command_list_domains (void)
       domain = strrchr (sl->d, '/');
       log_assert (domain);
       domain++;
-      es_printf ("%s\n", domain);
+      if (opt_with_dir)
+        es_printf ("%s %s\n", domain, sl->d);
+      else
+        es_printf ("%s\n", domain);
+
 
       /* Check that the required directories are there.  */
       for (i=0; i < DIM (requireddirs); i++)
@@ -1900,12 +1940,140 @@ command_install_key (const char *fname)
 }
 
 
-/* Remove the key with mail address MAILADDR.  */
+/* Return the filename and optioanlly the addrspec for USERID at
+ * R_FNAME and R_ADDRSPEC.  R_ADDRSPEC might also be set on error.  */
 static gpg_error_t
-command_remove_key (const char *mailaddr)
+fname_from_userid (const char *userid, char **r_fname, char **r_addrspec)
 {
-  (void)mailaddr;
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  gpg_error_t err;
+  char *addrspec = NULL;
+  const char *domain;
+  char *hash = NULL;
+  const char *s;
+  char shaxbuf[32]; /* Used for SHA-1 and SHA-256 */
+
+  *r_fname = NULL;
+  if (r_addrspec)
+    *r_addrspec = NULL;
+
+  addrspec = mailbox_from_userid (userid);
+  if (!addrspec)
+    {
+      if (opt.verbose)
+        log_info ("\"%s\" is not a proper mail address\n", userid);
+      err = gpg_error (GPG_ERR_INV_USER_ID);
+      goto leave;
+    }
+
+  domain = strchr (addrspec, '@');
+  log_assert (domain);
+  domain++;
+
+  /* Hash user ID and create filename.  */
+  s = strchr (addrspec, '@');
+  log_assert (s);
+  gcry_md_hash_buffer (GCRY_MD_SHA1, shaxbuf, addrspec, s - addrspec);
+  hash = zb32_encode (shaxbuf, 8*20);
+  if (!hash)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  *r_fname = make_filename_try (opt.directory, domain, "hu", hash, NULL);
+  if (!*r_fname)
+    err = gpg_error_from_syserror ();
+  else
+    err = 0;
+
+ leave:
+  if (r_addrspec && addrspec)
+    *r_addrspec = addrspec;
+  else
+    xfree (addrspec);
+  xfree (hash);
+  return err;
+}
+
+
+/* Check whether the key with USER_ID is installed.  */
+static gpg_error_t
+command_check_key (const char *userid)
+{
+  gpg_error_t err;
+  char *addrspec = NULL;
+  char *fname = NULL;
+
+  err = fname_from_userid (userid, &fname, &addrspec);
+  if (err)
+    goto leave;
+
+  if (access (fname, R_OK))
+    {
+      err = gpg_error_from_syserror ();
+      if (opt_with_file)
+        es_printf ("%s n %s\n", addrspec, fname);
+      if (gpg_err_code (err) == GPG_ERR_ENOENT)
+        {
+          if (!opt.quiet)
+            log_info ("key for '%s' is NOT installed\n", addrspec);
+          log_inc_errorcount ();
+          err = 0;
+        }
+      else
+        log_error ("error stating '%s': %s\n", fname, gpg_strerror (err));
+      goto leave;
+    }
+
+  if (opt_with_file)
+    es_printf ("%s i %s\n", addrspec, fname);
+
+  if (opt.verbose)
+    log_info ("key for '%s' is installed\n", addrspec);
+  err = 0;
+
+ leave:
+  xfree (fname);
+  xfree (addrspec);
+  return err;
+}
+
+
+/* Remove the key with mail address in USERID.  */
+static gpg_error_t
+command_remove_key (const char *userid)
+{
+  gpg_error_t err;
+  char *addrspec = NULL;
+  char *fname = NULL;
+
+  err = fname_from_userid (userid, &fname, &addrspec);
+  if (err)
+    goto leave;
+
+  if (gnupg_remove (fname))
+    {
+      err = gpg_error_from_syserror ();
+      if (gpg_err_code (err) == GPG_ERR_ENOENT)
+        {
+          if (!opt.quiet)
+            log_info ("key for '%s' is not installed\n", addrspec);
+          log_inc_errorcount ();
+          err = 0;
+        }
+      else
+        log_error ("error removing '%s': %s\n", fname, gpg_strerror (err));
+      goto leave;
+    }
+
+  if (opt.verbose)
+    log_info ("key for '%s' removed\n", addrspec);
+  err = 0;
+
+ leave:
+  xfree (fname);
+  xfree (addrspec);
+  return err;
 }
 
 
@@ -1913,6 +2081,7 @@ command_remove_key (const char *mailaddr)
 static gpg_error_t
 command_revoke_key (const char *mailaddr)
 {
-  (void)mailaddr;
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  /* Remove should be different from removing but we have not yet
+   * defined a suitable way to do this.  */
+  return command_remove_key (mailaddr);
 }

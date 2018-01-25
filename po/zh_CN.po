@@ -477,10 +477,6 @@ msgid "can't set permissions of '%s': %s\n"
 msgstr "警告：扩展模块‘%s’权限不安全\n"
 
 #, fuzzy, c-format
-msgid "listen() failed: %s\n"
-msgstr "更新失败：%s\n"
-
-#, fuzzy, c-format
 msgid "listening on socket '%s'\n"
 msgstr "正在将私钥写至`%s'\n"
 
@@ -8825,6 +8821,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "更新失败：%s\n"
 
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "错误：URL 太长(至多 %d 个字符)\n"

@@ -174,18 +174,23 @@ Display a brief help page and exit.
 .br
 .B gpg-wks-server
 .RI [ options ]
+.B \-\-check-key
+.I user-id
+.br
+.B gpg-wks-server
+.RI [ options ]
 .B \-\-install-key
 .I file
 .br
 .B gpg-wks-server
 .RI [ options ]
 .B \-\-remove-key
-.I mailaddr
+.I user-id
 .br
 .B gpg-wks-server
 .RI [ options ]
 .B \-\-revoke-key
-.I mailaddr
+.I user-id
 @end ifset
 
 @mansect description
@@ -208,8 +213,22 @@ The command @option{--list-domains} prints all configured domains.
 Further it creates missing directories for the configuration and
 prints warnings pertaining to problems in the configuration.
 
-The commands @option{--install-key}, @option{--remove-key}, and
-@option{--revoke-key} are not yet functional.
+The command @option{--check-key} (or just @option{--check}) checks
+whether a key with the given user-id is installed.  The process return
+success in this case; to also print a diagnostic, use option
+@option{-v}.  If the key is not installed a diagnostics is printed and
+the process returns failure; to suppress the diagnostic, use option
+@option{-q}.  More than one user-id can be given; see also option
+@option{with-file}.
+
+The command @option{--remove-key} uninstalls a key from the WKD.  The
+process return success in this case; to also print a diagnostic, use
+option @option{-v}.  If the key is not installed a diagnostics is
+printed and the process returns failure; to suppress the diagnostic,
+use option @option{-q}.
+
+The commands @option{--install-key} and @option{--revoke-key} are not
+yet functional.
 
 
 @mansect options
@@ -236,6 +255,16 @@ Requires installation of that command.
 @opindex output
 Write the created mail also to @var{file}. Note that the value
 @code{-} for @var{file} would write it to stdout.
+
+@item --with-dir
+@opindex with-dir
+Also print the directory name for each domain listed by command
+@option{--list-domains}.
+
+@item --with-file
+@opindex with-file
+With command @option{--check-key} print for each user-id, the address,
+'i' for installed key or 'n' for not installed key, and the filename.
 
 @item --verbose
 @opindex verbose

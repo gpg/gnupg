@@ -47,6 +47,9 @@ Noteworthy changes in version 2.3.0 (unreleased)
   * agent: Improve robustness of the shutdown pending
     state. [Git#7ffedfab89]
 
+  See-also: gnupg-announce/2017q4/000417.html
+
+
   Changes also found in 2.2.2:
 
   * gpg: Avoid duplicate key imports by concurrently running gpg
@@ -87,6 +90,8 @@ Noteworthy changes in version 2.3.0 (unreleased)
     --apply-profile and --apply-defaults. [#3313]
 
   * Add configure option --enable-werror.  [#2423]
+
+  See-also: gnupg-announce/2017q4/000416.html
 
   Changes also found in 2.2.1:
 

@@ -467,10 +467,6 @@ msgid "can't set permissions of '%s': %s\n"
 msgstr "Averto: malsekuraj permesoj sur %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "listen() failed: %s\n"
-msgstr "aktualigo malsukcesis: %s\n"
-
-#, fuzzy, c-format
 msgid "listening on socket '%s'\n"
 msgstr "skribas sekretan ŝlosilon al '%s'\n"
 
@@ -8919,6 +8915,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "aktualigo malsukcesis: %s\n"
 
 #, fuzzy
 #~ msgid ""

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-11-02 17:36+0100\n"
+"PO-Revision-Date: 2017-12-19 12:28+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -451,10 +451,6 @@ msgstr "Der Socket kann nicht an `%s' gebunden werden: %s\n"
 #, c-format
 msgid "can't set permissions of '%s': %s\n"
 msgstr "Zugriffsrechte für '%s' können nicht gesetzt werden: %s\n"
-
-#, c-format
-msgid "listen() failed: %s\n"
-msgstr "Der listen()-Aufruf ist fehlgeschlagen: %s\n"
 
 #, c-format
 msgid "listening on socket '%s'\n"
@@ -955,7 +951,7 @@ msgid "Data decryption succeeded"
 msgstr "Entschlüsselung der Daten erfolgreich"
 
 msgid "Encryption algorithm supported"
-msgstr "Verschlüsselungsverfahren %d%s wird nicht unterstützt"
+msgstr "Verschlüsselungsverfahren wird unterstützt"
 
 msgid "Data verification succeeded"
 msgstr "Prüfung der Signatur erfolgreich"
@@ -8758,6 +8754,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "Der listen()-Aufruf ist fehlgeschlagen: %s\n"
 
 #~ msgid "do not grab keyboard and mouse"
 #~ msgstr "Tastatur und Maus nicht \"grabben\""

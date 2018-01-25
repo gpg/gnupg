@@ -505,10 +505,6 @@ msgstr "fejl ved binding af sokkel til »%s«: %s\n"
 msgid "can't set permissions of '%s': %s\n"
 msgstr "Advarsel: usikre rettigheder på %s »%s«\n"
 
-#, c-format
-msgid "listen() failed: %s\n"
-msgstr "listen() mislykkedes: %s\n"
-
 #, fuzzy, c-format
 #| msgid "listening on socket `%s'\n"
 msgid "listening on socket '%s'\n"
@@ -9212,6 +9208,9 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "listen() mislykkedes: %s\n"
 
 #~ msgid "do not grab keyboard and mouse"
 #~ msgstr "fang ikke tastatur og mus"

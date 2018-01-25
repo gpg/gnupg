@@ -622,7 +622,9 @@ This section explains the main commands for key management.
 @table @gnupgtabopt
 
 @item --quick-generate-key @var{user-id} [@var{algo} [@var{usage} [@var{expire}]]]
+@itemx --quick-gen-key
 @opindex quick-generate-key
+@opindex quick-gen-key
 This is a simple command to generate a standard key with one user id.
 In contrast to @option{--generate-key} the key is generated directly
 without the need to answer a bunch of prompts.  Unless the option
@@ -3130,8 +3132,9 @@ will be read from file descriptor @var{n}. If you use 0 for @var{n},
 the passphrase will be read from STDIN. This can only be used if only
 one passphrase is supplied.
 
-Note that this passphrase is only used if the option @option{--batch}
-has also been given.  This is different from GnuPG version 1.x.
+Note that since Version 2.0 this passphrase is only used if the
+option @option{--batch} has also been given. Since Version 2.1
+the @option{--pinentry-mode} also needs to be set to @code{loopback}.
 
 @item --passphrase-file @var{file}
 @opindex passphrase-file
@@ -3140,8 +3143,10 @@ be read from file @var{file}. This can only be used if only one
 passphrase is supplied. Obviously, a passphrase stored in a file is
 of questionable security if other users can read this file. Don't use
 this option if you can avoid it.
-Note that this passphrase is only used if the option @option{--batch}
-has also been given.  This is different from GnuPG version 1.x.
+
+Note that since Version 2.0 this passphrase is only used if the
+option @option{--batch} has also been given. Since Version 2.1
+the @option{--pinentry-mode} also needs to be set to @code{loopback}.
 
 @item --passphrase @var{string}
 @opindex passphrase
@@ -3149,8 +3154,10 @@ Use @var{string} as the passphrase. This can only be used if only one
 passphrase is supplied. Obviously, this is of very questionable
 security on a multi-user system. Don't use this option if you can
 avoid it.
-Note that this passphrase is only used if the option @option{--batch}
-has also been given.  This is different from GnuPG version 1.x.
+
+Note that since Version 2.0 this passphrase is only used if the
+option @option{--batch} has also been given. Since Version 2.1
+the @option{--pinentry-mode} also needs to be set to @code{loopback}.
 
 @item --pinentry-mode @var{mode}
 @opindex pinentry-mode

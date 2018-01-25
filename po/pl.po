@@ -494,10 +494,6 @@ msgstr "błąd podczas przypisywania gniazda do ,,%s'': %s\n"
 msgid "can't set permissions of '%s': %s\n"
 msgstr "Ostrzeżenie: niebezpieczne prawa dostępu do %s ,,%s''\n"
 
-#, c-format
-msgid "listen() failed: %s\n"
-msgstr "listen() nie powiodło się: %s\n"
-
 #, fuzzy, c-format
 #| msgid "listening on socket `%s'\n"
 msgid "listening on socket '%s'\n"
@@ -9280,6 +9276,9 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
+
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "listen() nie powiodło się: %s\n"
 
 #~ msgid "do not grab keyboard and mouse"
 #~ msgstr "nie przechwytywanie klawiatury i myszy"

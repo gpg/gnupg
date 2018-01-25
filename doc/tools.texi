@@ -407,6 +407,14 @@ changing.
 This means that the changes will take effect at run-time, as far as
 this is possible.  Otherwise, they will take effect at the next start
 of the respective backend programs.
+
+@item --status-fd @var{n}
+@opindex status-fd
+Write special status strings to the file descriptor @var{n}.  This
+program returns the status messages SUCCESS or FAILURE which are
+helpful when the caller uses a double fork approach and can't easily
+get the return code of the process.
+
 @manpause
 @end table
 

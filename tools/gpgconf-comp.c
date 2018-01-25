@@ -48,6 +48,7 @@
 #include "../common/i18n.h"
 #include "../common/exechelp.h"
 #include "../common/sysutils.h"
+#include "../common/status.h"
 
 #include "../common/gc-opt-flags.h"
 #include "gpgconf.h"
@@ -99,7 +100,7 @@ gc_error (int status, int errnum, const char *fmt, ...)
     {
       log_printf (NULL);
       log_printf ("fatal error (exit status %i)\n", status);
-      exit (status);
+      gpgconf_failure (gpg_error_from_errno (errnum));
     }
 }
 
@@ -1310,7 +1311,7 @@ gc_component_launch (int component)
     {
       es_fputs (_("Component not suitable for launching"), es_stderr);
       es_putc ('\n', es_stderr);
-      exit (1);
+      gpgconf_failure (0);
     }
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
@@ -3757,6 +3758,10 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
             {
               gc_error (0, 0, "missing rule at '%s', line %d", fname, lineno);
               result = -1;
+              gpgconf_write_status (STATUS_WARNING,
+                                    "gpgconf.conf %d file '%s' line %d "
+                                    "missing rule",
+                                    GPG_ERR_SYNTAX, fname, lineno);
               continue;
             }
           *p++ = 0;
@@ -3786,6 +3791,10 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
         {
           gc_error (0, 0, "missing component at '%s', line %d",
                     fname, lineno);
+          gpgconf_write_status (STATUS_WARNING,
+                                "gpgconf.conf %d file '%s' line %d "
+                                " missing component",
+                                GPG_ERR_NO_NAME, fname, lineno);
           result = -1;
           continue;
         }
@@ -3797,6 +3806,10 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
         {
           gc_error (0, 0, "unknown component at '%s', line %d",
                     fname, lineno);
+          gpgconf_write_status (STATUS_WARNING,
+                                "gpgconf.conf %d file '%s' line %d "
+                                "unknown component",
+                                GPG_ERR_UNKNOWN_NAME, fname, lineno);
           result = -1;
         }
 
@@ -3809,6 +3822,10 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
         {
           gc_error (0, 0, "missing option at '%s', line %d",
                     fname, lineno);
+          gpgconf_write_status (STATUS_WARNING,
+                                "gpgconf.conf %d file '%s' line %d "
+                                "missing option",
+                                GPG_ERR_INV_NAME, fname, lineno);
           result = -1;
           continue;
         }
@@ -3821,6 +3838,10 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
             {
               gc_error (0, 0, "unknown option at '%s', line %d",
                         fname, lineno);
+              gpgconf_write_status (STATUS_WARNING,
+                                    "gpgconf.conf %d file '%s' line %d "
+                                    "unknown option",
+                                    GPG_ERR_UNKNOWN_OPTION, fname, lineno);
               result = -1;
             }
         }
@@ -3837,6 +3858,10 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
             {
               gc_error (0, 0, "syntax error in rule at '%s', line %d",
                         fname, lineno);
+              gpgconf_write_status (STATUS_WARNING,
+                                    "gpgconf.conf %d file '%s' line %d "
+                                    "syntax error in rule",
+                                    GPG_ERR_SYNTAX, fname, lineno);
               result = -1;
               continue;
             }

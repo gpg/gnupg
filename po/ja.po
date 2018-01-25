@@ -434,10 +434,6 @@ msgid "can't set permissions of '%s': %s\n"
 msgstr "'%s'の許可が設定できません: %s\n"
 
 #, c-format
-msgid "listen() failed: %s\n"
-msgstr "listen() に失敗しました: %s\n"
-
-#, c-format
 msgid "listening on socket '%s'\n"
 msgstr "ソケット'%s'でlisten\n"
 
@@ -1342,7 +1338,8 @@ msgstr "認証鍵の鍵長は? (%u) "
 
 #, c-format
 msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr "カードは、今、こちらのタイプの鍵を生成するように再コンフィグされました: %s\n"
+msgstr ""
+"カードは、今、こちらのタイプの鍵を生成するように再コンフィグされました: %s\n"
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -8321,6 +8318,9 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "listen() に失敗しました: %s\n"
 
 #~ msgid "do not grab keyboard and mouse"
 #~ msgstr "キーボードとマウスを占有しない"

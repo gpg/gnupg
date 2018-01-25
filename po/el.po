@@ -467,10 +467,6 @@ msgid "can't set permissions of '%s': %s\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλείς άδειες στο %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "listen() failed: %s\n"
-msgstr "η ενημέρωση απέτυχε: %s\n"
-
-#, fuzzy, c-format
 msgid "listening on socket '%s'\n"
 msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
 
@@ -8978,6 +8974,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "η ενημέρωση απέτυχε: %s\n"
 
 #, fuzzy
 #~ msgid ""

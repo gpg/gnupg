@@ -440,10 +440,6 @@ msgid "can't set permissions of '%s': %s\n"
 msgstr "не вдалося встановити права доступу до «%s»: %s\n"
 
 #, c-format
-msgid "listen() failed: %s\n"
-msgstr "помилка listen(): %s\n"
-
-#, c-format
 msgid "listening on socket '%s'\n"
 msgstr "очікування даних на сокеті «%s»\n"
 
@@ -8692,6 +8688,9 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "помилка listen(): %s\n"
 
 #~ msgid "do not grab keyboard and mouse"
 #~ msgstr "не захоплювати керування клавіатурою і мишею"

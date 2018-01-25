@@ -469,10 +469,6 @@ msgid "can't set permissions of '%s': %s\n"
 msgstr "VAROVANIE: prístupové práva pre %s nie sú nastavené bezpečne \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "listen() failed: %s\n"
-msgstr "aktualizácia zlyhala: %s\n"
-
-#, fuzzy, c-format
 msgid "listening on socket '%s'\n"
 msgstr "zapisujem tajný kľúč do `%s'\n"
 
@@ -4951,6 +4947,7 @@ msgstr "\"%s\" nie je súbor JPEG\n"
 msgid "Is this photo correct (y/N/q)? "
 msgstr "Je táto fotografia správna (a/N/u)? "
 
+#, fuzzy
 msgid "unable to display photo ID!\n"
 msgstr "nemožno nastaviť exec-path na %s\n"
 
@@ -8948,6 +8945,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "aktualizácia zlyhala: %s\n"
 
 #, fuzzy
 #~ msgid ""

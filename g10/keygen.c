@@ -1684,6 +1684,13 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
   if (!curve || !*curve)
     return gpg_error (GPG_ERR_UNKNOWN_CURVE);
 
+  /* Map the displayed short forms of some curves to their canonical
+   * names. */
+  if (!ascii_strcasecmp (curve, "cv25519"))
+    curve = "Curve25519";
+  else if (!ascii_strcasecmp (curve, "ed25519"))
+    curve = "Ed25519";
+
   /* Note that we use the "comp" flag with EdDSA to request the use of
      a 0x40 compression prefix octet.  */
   if (algo == PUBKEY_ALGO_EDDSA)
@@ -2991,9 +2998,11 @@ generate_user_id (KBNODE keyblock, const char *uidstr)
  * success is returned.  On error an error code is returned.  Note
  * that STRING may be modified by this function.  NULL may be passed
  * for any parameter.  FOR_SUBKEY shall be true if this is used as a
+ * subkey.  If CLEAR_CERT is set a default CERT usage will be cleared;
+ * this is useful if for example the default algorithm is used for a
  * subkey.  */
 static gpg_error_t
-parse_key_parameter_part (char *string, int for_subkey,
+parse_key_parameter_part (char *string, int for_subkey, int clear_cert,
                           int *r_algo, unsigned int *r_size,
                           unsigned int *r_keyuse,
                           char const **r_curve)
@@ -3144,6 +3153,10 @@ parse_key_parameter_part (char *string, int for_subkey,
   if (!for_subkey)
     keyuse |= PUBKEY_USAGE_CERT;
 
+  /* But if requested remove th cert usage.  */
+  if (clear_cert)
+    keyuse &= ~PUBKEY_USAGE_CERT;
+
   /* Check that usage is actually possible.  */
   if (/**/((keyuse & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_AUTH|PUBKEY_USAGE_CERT))
            && !pubkey_get_nsig (algo))
@@ -3215,14 +3228,16 @@ parse_key_parameter_part (char *string, int for_subkey,
  *   -1 := Both parts
  *    0 := Only the part of the primary key
  *    1 := If there is one part parse that one, if there are
- *         two parts parse the second part.  Always return
- *         in the args for the primary key (R_ALGO,....).
+ *         two parts parse the part which best matches the
+ *         SUGGESTED_USE or in case that can't be evaluated the second part.
+ *         Always return using the args for the primary key (R_ALGO,....).
  *
  */
 gpg_error_t
 parse_key_parameter_string (const char *string, int part,
+                            unsigned int suggested_use,
                             int *r_algo, unsigned int *r_size,
-                            unsigned *r_keyuse,
+                            unsigned int *r_keyuse,
                             char const **r_curve,
                             int *r_subalgo, unsigned int *r_subsize,
                             unsigned *r_subkeyuse,
@@ -3249,9 +3264,10 @@ parse_key_parameter_string (const char *string, int part,
     *r_subcurve = NULL;
 
   if (!string || !*string
-      || !strcmp (string, "default") || !strcmp (string, "-"))
+      || !ascii_strcasecmp (string, "default") || !strcmp (string, "-"))
     string = get_default_pubkey_algo ();
-  else if (!strcmp (string, "future-default"))
+  else if (!ascii_strcasecmp (string, "future-default")
+           || !ascii_strcasecmp (string, "futuredefault"))
     string = FUTURE_STD_KEY_PARAM;
 
   primary = xstrdup (string);
@@ -3260,18 +3276,31 @@ parse_key_parameter_string (const char *string, int part,
     *secondary++ = 0;
   if (part == -1 || part == 0)
     {
-      err = parse_key_parameter_part (primary, 0, r_algo, r_size,
+      err = parse_key_parameter_part (primary, 0, 0, r_algo, r_size,
                                       r_keyuse, r_curve);
       if (!err && part == -1)
-        err = parse_key_parameter_part (secondary, 1, r_subalgo, r_subsize,
+        err = parse_key_parameter_part (secondary, 1, 0, r_subalgo, r_subsize,
                                         r_subkeyuse, r_subcurve);
     }
   else if (part == 1)
     {
       /* If we have SECONDARY, use that part.  If there is only one
-       * part consider this to be the subkey algo.  */
-      err = parse_key_parameter_part (secondary? secondary : primary, 1,
-                                      r_algo, r_size, r_keyuse, r_curve);
+       * part consider this to be the subkey algo.  In case a
+       * SUGGESTED_USE has been given and the usage of the secondary
+       * part does not match SUGGESTED_USE try again using the primary
+       * part.  Noet thar when falling back to the primary key we need
+       * to force clearing the cert usage. */
+      if (secondary)
+        {
+          err = parse_key_parameter_part (secondary, 1, 0,
+                                          r_algo, r_size, r_keyuse, r_curve);
+          if (!err && suggested_use && r_keyuse && !(suggested_use & *r_keyuse))
+            err = parse_key_parameter_part (primary, 1, 1 /*(clear cert)*/,
+                                            r_algo, r_size, r_keyuse, r_curve);
+        }
+      else
+        err = parse_key_parameter_part (primary, 1, 0,
+                                        r_algo, r_size, r_keyuse, r_curve);
     }
 
   xfree (primary);
@@ -3358,7 +3387,7 @@ get_parameter_algo( struct para_data_s *para, enum para_name key,
        * for the curve etc.  That is a ugly but demanded for backward
        * compatibility with the batch key generation.  It would be
        * better to make full use of parse_key_parameter_string.  */
-      parse_key_parameter_string (NULL, 0,
+      parse_key_parameter_string (NULL, 0, 0,
                                   &i, NULL, NULL, NULL,
                                   NULL, NULL, NULL, NULL);
 
@@ -4080,9 +4109,10 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
   if (!*expirestr || strcmp (expirestr, "-") == 0)
     expirestr = default_expiration_interval;
 
-  if ((!*algostr || !strcmp (algostr, "default")
-       || !strcmp (algostr, "future-default"))
-      && (!*usagestr || !strcmp (usagestr, "default")
+  if ((!*algostr || !ascii_strcasecmp (algostr, "default")
+       || !ascii_strcasecmp (algostr, "future-default")
+       || !ascii_strcasecmp (algostr, "futuredefault"))
+      && (!*usagestr || !ascii_strcasecmp (usagestr, "default")
           || !strcmp (usagestr, "-")))
     {
       /* Use default key parameters.  */
@@ -4091,7 +4121,7 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
       unsigned int keyuse, subkeyuse;
       const char *curve, *subcurve;
 
-      err = parse_key_parameter_string (algostr, -1,
+      err = parse_key_parameter_string (algostr, -1, 0,
                                         &algo, &size, &keyuse, &curve,
                                         &subalgo, &subsize, &subkeyuse,
                                         &subcurve);
@@ -4470,7 +4500,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
 #endif
                    , "--full-generate-key" );
 
-      err = parse_key_parameter_string (NULL, -1,
+      err = parse_key_parameter_string (NULL, -1, 0,
                                         &algo, &size, &keyuse, &curve,
                                         &subalgo, &subsize,
                                         &subkeyuse, &subcurve);
@@ -5017,6 +5047,7 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
     }
 
   err = parse_key_parameter_string (algostr, for_subkey? 1 : 0,
+                                    usagestr? parse_usagestr (usagestr):0,
                                     &algo, &nbits, &use, &curve,
                                     NULL, NULL, NULL, NULL);
   if (err)
@@ -5024,7 +5055,7 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
 
   /* Parse the usage string.  */
   if (!usagestr || !*usagestr
-      || !strcmp (usagestr, "default") || !strcmp (usagestr, "-"))
+      || !ascii_strcasecmp (usagestr, "default") || !strcmp (usagestr, "-"))
     ; /* Keep usage from parse_key_parameter_string.  */
   else if ((wantuse = parse_usagestr (usagestr)) != -1)
     use = wantuse;

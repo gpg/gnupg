@@ -27,52 +27,6 @@
 #endif
 
 #include "keybox-defs.h"
-#include "../common/utilproto.h"
-
-
-static void *(*alloc_func)(size_t n) = malloc;
-static void *(*realloc_func)(void *p, size_t n) = realloc;
-static void (*free_func)(void*) = free;
-
-
-
-void
-keybox_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
-                          void *(*new_realloc_func)(void *p, size_t n),
-                          void (*new_free_func)(void*) )
-{
-  alloc_func	    = new_alloc_func;
-  realloc_func      = new_realloc_func;
-  free_func	    = new_free_func;
-}
-
-void *
-_keybox_malloc (size_t n)
-{
-  return alloc_func (n);
-}
-
-void *
-_keybox_realloc (void *a, size_t n)
-{
-  return realloc_func (a, n);
-}
-
-void *
-_keybox_calloc (size_t n, size_t m)
-{
-  void *p = _keybox_malloc (n*m);
-  if (p)
-    memset (p, 0, n* m);
-  return p;
-}
-
-void
-_keybox_free (void *p)
-{
-  if (p)
-    free_func (p);
-}
 
 
 /* Store the two malloced temporary file names used for keybox updates
@@ -145,11 +99,4 @@ keybox_tmp_names (const char *filename, int for_keyring,
   *r_bakname = bak_name;
   *r_tmpname = tmp_name;
   return 0;
-}
-
-gpg_error_t
-keybox_file_rename (const char *oldname, const char *newname,
-                    int *block_signals)
-{
-  return gnupg_rename_file (oldname, newname, block_signals);
 }

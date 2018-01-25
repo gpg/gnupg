@@ -127,10 +127,6 @@ int keybox_rebuild_cache (void *);
 
 
 /*-- keybox-util.c --*/
-void keybox_set_malloc_hooks ( void *(*new_alloc_func)(size_t n),
-                               void *(*new_realloc_func)(void *p, size_t n),
-                               void (*new_free_func)(void*) );
-
 gpg_error_t keybox_tmp_names (const char *filename, int for_keyring,
                               char **r_bakname, char **r_tmpname);
 

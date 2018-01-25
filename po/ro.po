@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.2rc1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2005-05-31 22:00-0500\n"
+"PO-Revision-Date: 2017-12-19 12:30+0100\n"
 "Last-Translator: Laurentiu Buzdugan <lbuz@rolix.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
 "Language: ro\n"
@@ -477,10 +477,6 @@ msgstr "eroare trimitere la `%s': %s\n"
 #, fuzzy, c-format
 msgid "can't set permissions of '%s': %s\n"
 msgstr "AVERTISMENT: permisiuni nesigure (unsafe) pentru extensia `%s'\n"
-
-#, fuzzy, c-format
-msgid "listen() failed: %s\n"
-msgstr "actualizarea a eşuat: %s\n"
 
 #, fuzzy, c-format
 msgid "listening on socket '%s'\n"
@@ -3078,8 +3074,9 @@ msgstr ""
 msgid "User ID \"%s\" is revoked."
 msgstr "ID utilizator \"%s\" a fost revocat."
 
+#, fuzzy
 msgid "Are you sure you still want to sign it? (y/N) "
-msgstr "Sunteţi sigur(ă) că doriţi să ştergeţi permanent \"%s\"? (d/N)"
+msgstr "Sunteţi sigur(ă) că doriţi să ştergeţi permanent? (d/N)"
 
 msgid "  Unable to sign.\n"
 msgstr "  Nu pot semna.\n"
@@ -9001,6 +8998,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "listen() failed: %s\n"
+#~ msgstr "actualizarea a eşuat: %s\n"
 
 #~ msgid "Error: URL too long (limit is %d characters).\n"
 #~ msgstr "Eroare: URL prea lung (limita este de %d caractere).\n"
