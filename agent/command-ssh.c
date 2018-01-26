@@ -44,6 +44,9 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #endif /*!HAVE_W32_SYSTEM*/
+#ifdef HAVE_SYS_UCRED_H
+#include <sys/ucred.h>
+#endif
 #ifdef HAVE_UCRED_H
 #include <ucred.h>
 #endif
