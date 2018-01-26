@@ -3622,7 +3622,15 @@ get_client_info (int fd, struct peer_info_s *out)
     socklen_t len = sizeof (pid_t);
 
     getsockopt (fd, SOL_LOCAL, LOCAL_PEERPID, &client_pid, &len);
-    getsockopt (fd, SOL_LOCAL, LOCAL_PEERUID, &client_uid, &len);
+#if defined (LOCAL_PEERCRED)
+    {
+      struct xucred cr;
+      len = sizeof (struct xucred);
+
+      if (!getsockopt (fd, SOL_LOCAL, LOCAL_PEERCRED, &cr, &len))
+	client_uid = cr.cr_uid;
+    }
+#endif
   }
 #elif defined (LOCAL_PEEREID)
   {
