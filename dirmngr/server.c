@@ -2134,8 +2134,13 @@ cmd_keyserver (assuan_context_t ctx, char *line)
   if (resolve_flag)
     {
       err = ensure_keyserver (ctrl);
-      if (!err)
-        err = ks_action_resolve (ctrl, ctrl->server_local->keyservers);
+      if (err)
+        {
+          assuan_set_error (ctx, err,
+                            "Bad keyserver configuration in dirmngr.conf");
+          goto leave;
+        }
+      err = ks_action_resolve (ctrl, ctrl->server_local->keyservers);
       if (err)
         goto leave;
     }
