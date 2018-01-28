@@ -171,32 +171,34 @@ ask_outfile_name( const char *name, size_t namelen )
  *	2 = use ".sig"
  *      3 = use ".rev"
  *
- * If INP_FD is not -1 the function simply creates an IOBUF for that
- * file descriptor and ignore INAME and MODE.  Note that INP_FD won't
- * be closed if the returned IOBUF is closed.  With RESTRICTEDPERM a
- * file will be created with mode 700 if possible.
- */
+ * With RESTRICTEDPERM a file will be created with mode 700 if
+ * possible.
+ *
+ * If OUT_FD is not -1 the function simply creates an IOBUF for that
+ * file descriptor and ignores INAME and MODE.  Note that OUT_FD won't
+ * be closed if the returned IOBUF is closed.  This is used for gpg's
+ * --server mode.  */
 int
-open_outfile (int inp_fd, const char *iname, int mode, int restrictedperm,
+open_outfile (int out_fd, const char *iname, int mode, int restrictedperm,
               iobuf_t *a)
 {
   int rc = 0;
 
   *a = NULL;
-  if (inp_fd != -1)
+  if (out_fd != -1)
     {
       char xname[64];
 
-      *a = iobuf_fdopen_nc (inp_fd, "wb");
+      *a = iobuf_fdopen_nc (out_fd, "wb");
       if (!*a)
         {
           rc = gpg_error_from_syserror ();
-          snprintf (xname, sizeof xname, "[fd %d]", inp_fd);
+          snprintf (xname, sizeof xname, "[fd %d]", out_fd);
           log_error (_("can't open '%s': %s\n"), xname, gpg_strerror (rc));
         }
       else if (opt.verbose)
         {
-          snprintf (xname, sizeof xname, "[fd %d]", inp_fd);
+          snprintf (xname, sizeof xname, "[fd %d]", out_fd);
           log_info (_("writing to '%s'\n"), xname);
         }
     }
