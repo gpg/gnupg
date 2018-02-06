@@ -1108,13 +1108,7 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   int i, version, s2kmode, cipher_algo, aead_algo, hash_algo, seskeylen, minlen;
 
   if (pktlen < 4)
-    {
-      log_error ("packet(%d) too short\n", pkttype);
-      if (list_mode)
-        es_fprintf (listfp, ":symkey enc packet: [too short]\n");
-      rc = gpg_error (GPG_ERR_INV_PACKET);
-      goto leave;
-    }
+    goto too_short;
   version = iobuf_get_noeof (inp);
   pktlen--;
   if (version == 4)
@@ -1146,6 +1140,8 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   else
     aead_algo = 0;
+  if (pktlen < 2)
+    goto too_short;
   s2kmode = iobuf_get_noeof (inp);
   pktlen--;
   hash_algo = iobuf_get_noeof (inp);
@@ -1241,6 +1237,13 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
  leave:
   iobuf_skip_rest (inp, pktlen, 0);
   return rc;
+
+ too_short:
+  log_error ("packet(%d) too short\n", pkttype);
+  if (list_mode)
+    es_fprintf (listfp, ":symkey enc packet: [too short]\n");
+  rc = gpg_error (GPG_ERR_INV_PACKET);
+  goto leave;
 }
 
 
