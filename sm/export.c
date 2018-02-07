@@ -603,7 +603,7 @@ sexp_to_kparms (gcry_sexp_t sexp)
 
   array[6] = gcry_mpi_snew (0);  /* compute d mod (p-1) */
   gcry_mpi_sub_ui (array[6], array[4], 1);
-  gcry_mpi_mod (array[6], array[3], array[6]);
+  gcry_mpi_mod (array[6], array[2], array[6]);
 
   return array;
 }
