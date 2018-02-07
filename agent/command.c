@@ -1031,7 +1031,8 @@ cmd_readkey (assuan_context_t ctx, char *line)
             rc = gpg_error_from_syserror ();
           else
             {
-              gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, pkbuf, pkbuflen);
+              pkbuflen = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON,
+                                           pkbuf, pkbuflen);
               rc = assuan_send_data (ctx, pkbuf, pkbuflen);
             }
         }
