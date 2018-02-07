@@ -639,6 +639,7 @@ have_android_system=no
 use_simple_gettext=no
 use_ldapwrapper=yes
 mmap_needed=yes
+require_pipe_to_unblock_pselect=no
 case "${host}" in
     *-mingw32*)
         # special stuff for Windoze NT
@@ -715,9 +716,19 @@ case "${host}" in
         AC_DEFINE(_DARWIN_C_SOURCE, 900000L,
                   Expose all libc features (__DARWIN_C_FULL).)
         ;;
+    *-*-netbsd*)
+        require_pipe_to_unblock_pselect=yes
+        ;;
     *)
-       ;;
+        ;;
 esac
+
+if test "$require_pipe_to_unblock_pselect" = yes; then
+   AC_DEFINE(HAVE_PSELECT_NO_EINTR, 1,
+             [Defined if we run on systems like NetBSD, where
+              pselect cannot be unblocked by signal from a thread
+              within the same process.  We use pipe in this case, instead.])
+fi
 
 if test "$have_dosish_system" = yes; then
    AC_DEFINE(HAVE_DOSISH_SYSTEM,1,
@@ -820,7 +831,8 @@ if test x"$LIBUSB_NAME" != x ; then
                   have_libusb=yes ])
    AC_MSG_CHECKING([libusb include dir])
    usb_incdir_found="no"
-   for _incdir in "" "/usr/include/libusb-1.0" "/usr/local/include/libusb-1.0"; do
+   for _incdir in "" "/usr/include/libusb-1.0" \
+       "/usr/local/include/libusb-1.0" "/usr/pkg/include/libusb-1.0"; do
      _libusb_save_cppflags=$CPPFLAGS
      if test -n "${_incdir}"; then
        CPPFLAGS="-I${_incdir} ${CPPFLAGS}"
