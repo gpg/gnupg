@@ -2072,7 +2072,8 @@ pin2hash_if_kdf (app_t app, int chvno, char *pinvalue, int *r_pinlen)
   size_t buflen;
 
   if (app->app_local->extcap.kdf_do
-      && (relptr = get_one_do (app, 0x00F9, &buffer, &buflen, NULL)))
+      && (relptr = get_one_do (app, 0x00F9, &buffer, &buflen, NULL))
+      && buflen == 110 && (buffer[2] == 0x03))
     {
       char *salt;
       unsigned long s2k_count;
