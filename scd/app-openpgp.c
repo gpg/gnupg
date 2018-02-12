@@ -348,7 +348,8 @@ get_cached_data (app_t app, int tag,
   err = iso7816_get_data (app->slot, exmode, tag, &p, &len);
   if (err)
     return err;
-  *result = p;
+  if (len)
+    *result = p;
   *resultlen = len;
 
   /* Check whether we should cache this object. */
@@ -370,7 +371,10 @@ get_cached_data (app_t app, int tag,
   c = xtrymalloc (sizeof *c + len);
   if (c)
     {
-      memcpy (c->data, p, len);
+      if (len)
+        memcpy (c->data, p, len);
+      else
+        xfree (p);
       c->length = len;
       c->tag = tag;
       c->next = app->app_local->cache;
