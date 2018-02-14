@@ -1848,7 +1848,8 @@ send_status_info (ctrl_t ctrl, const char *keyword, ...)
 
   p = buf;
   n = 0;
-  while ( (value = va_arg (arg_ptr, const unsigned char *)) )
+  while ( (value = va_arg (arg_ptr, const unsigned char *))
+           && n < DIM (buf)-2 )
     {
       valuelen = va_arg (arg_ptr, size_t);
       if (!valuelen)
@@ -1865,6 +1866,7 @@ send_status_info (ctrl_t ctrl, const char *keyword, ...)
             {
               sprintf (p, "%%%02X", *value);
               p += 3;
+              n += 2;
             }
           else if (*value == ' ')
             *p++ = '+';

@@ -93,5 +93,12 @@ gpg_error_t vprint_assuan_status (assuan_context_t ctx,
                                   const char *format,
                                   va_list arg_ptr) GPGRT_ATTR_PRINTF(3,0);
 
+gpg_error_t vprint_assuan_status_strings (assuan_context_t ctx,
+                                          const char *keyword,
+                                          va_list arg_ptr);
+gpg_error_t print_assuan_status_strings (assuan_context_t ctx,
+                                         const char *keyword,
+                                         ...) GPGRT_ATTR_SENTINEL(1);
+
 
 #endif /*GNUPG_COMMON_ASSHELP_H*/

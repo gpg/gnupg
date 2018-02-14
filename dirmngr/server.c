@@ -2834,30 +2834,13 @@ dirmngr_status (ctrl_t ctrl, const char *keyword, ...)
 {
   gpg_error_t err = 0;
   va_list arg_ptr;
-  const char *text;
   assuan_context_t ctx;
 
   va_start (arg_ptr, keyword);
 
   if (ctrl->server_local && (ctx = ctrl->server_local->assuan_ctx))
     {
-      char buf[950], *p;
-      size_t n;
-
-      p = buf;
-      n = 0;
-      while ( (text = va_arg (arg_ptr, const char *)) )
-        {
-          if (n)
-            {
-              *p++ = ' ';
-              n++;
-            }
-          for ( ; *text && n < DIM (buf)-2; n++)
-            *p++ = *text++;
-        }
-      *p = 0;
-      err = assuan_write_status (ctx, keyword, buf);
+      err = vprint_assuan_status_strings (ctx, keyword, arg_ptr);
     }
 
   va_end (arg_ptr);

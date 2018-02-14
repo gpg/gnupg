@@ -293,50 +293,19 @@ parse_keygrip (assuan_context_t ctx, const char *string, unsigned char *buf)
 
 
 /* Write an Assuan status line.  KEYWORD is the first item on the
-   status line.  The following arguments are all separated by a space
-   in the output.  The last argument must be a NULL.  Linefeeds and
-   carriage returns characters (which are not allowed in an Assuan
-   status line) are silently quoted in C-style.  */
+ * status line.  The following arguments are all separated by a space
+ * in the output.  The last argument must be a NULL.  Linefeeds and
+ * carriage returns characters (which are not allowed in an Assuan
+ * status line) are silently quoted in C-style.  */
 gpg_error_t
 agent_write_status (ctrl_t ctrl, const char *keyword, ...)
 {
-  gpg_error_t err = 0;
+  gpg_error_t err;
   va_list arg_ptr;
-  const char *text;
   assuan_context_t ctx = ctrl->server_local->assuan_ctx;
-  char buf[950], *p;
-  size_t n;
 
   va_start (arg_ptr, keyword);
-
-  p = buf;
-  n = 0;
-  while ( (text = va_arg (arg_ptr, const char *)) )
-    {
-      if (n)
-        {
-          *p++ = ' ';
-          n++;
-        }
-      for ( ; *text && n < DIM (buf)-3; n++, text++)
-        {
-          if (*text == '\n')
-            {
-              *p++ = '\\';
-              *p++ = 'n';
-            }
-          else if (*text == '\r')
-            {
-              *p++ = '\\';
-              *p++ = 'r';
-            }
-          else
-            *p++ = *text;
-        }
-    }
-  *p = 0;
-  err = assuan_write_status (ctx, keyword, buf);
-
+  err = vprint_assuan_status_strings (ctx, keyword, arg_ptr);
   va_end (arg_ptr);
   return err;
 }

@@ -34,6 +34,7 @@
 #include "mount.h"
 #include "suspend.h"
 #include "../common/server-help.h"
+#include "../common/asshelp.h"
 #include "../common/call-gpg.h"
 
 
@@ -737,24 +738,8 @@ g13_status (ctrl_t ctrl, int no, ...)
     }
   else
     {
-      assuan_context_t ctx = ctrl->server_local->assuan_ctx;
-      char buf[950], *p;
-      size_t n;
-
-      p = buf;
-      n = 0;
-      while ( (text = va_arg (arg_ptr, const char *)) )
-        {
-          if (n)
-            {
-              *p++ = ' ';
-              n++;
-            }
-          for ( ; *text && n < DIM (buf)-2; n++)
-            *p++ = *text++;
-        }
-      *p = 0;
-      err = assuan_write_status (ctx, get_status_string (no), buf);
+      err = vprint_assuan_status_strings (ctrl->server_local->assuan_ctx,
+                                          get_status_string (no), arg_ptr);
     }
 
   va_end (arg_ptr);

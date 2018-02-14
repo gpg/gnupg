@@ -71,3 +71,66 @@ print_assuan_status (assuan_context_t ctx,
   va_end (arg_ptr);
   return err;
 }
+
+
+/* Helper function to print a list of strings as an assuan status
+ * line.  KEYWORD is the first item on the status line.  ARG_PTR is a
+ * list of strings which are all separated by a space in the output.
+ * The last argument must be a NULL.  Linefeeds and carriage returns
+ * characters (which are not allowed in an Assuan status line) are
+ * silently quoted in C-style.  */
+gpg_error_t
+vprint_assuan_status_strings (assuan_context_t ctx,
+                              const char *keyword, va_list arg_ptr)
+{
+  gpg_error_t err = 0;
+  const char *text;
+  char buf[950], *p;
+  size_t n;
+
+  p = buf;
+  n = 0;
+  while ((text = va_arg (arg_ptr, const char *)) && n < DIM (buf)-3 )
+    {
+      if (n)
+        {
+          *p++ = ' ';
+          n++;
+        }
+      for ( ; *text && n < DIM (buf)-3; n++, text++)
+        {
+          if (*text == '\n')
+            {
+              *p++ = '\\';
+              *p++ = 'n';
+              n++;
+            }
+          else if (*text == '\r')
+            {
+              *p++ = '\\';
+              *p++ = 'r';
+              n++;
+            }
+          else
+            *p++ = *text;
+        }
+    }
+  *p = 0;
+  err = assuan_write_status (ctx, keyword, buf);
+
+  return err;
+}
+
+
+/* See vprint_assuan_status_strings.  */
+gpg_error_t
+print_assuan_status_strings (assuan_context_t ctx, const char *keyword, ...)
+{
+  va_list arg_ptr;
+  gpg_error_t err;
+
+  va_start (arg_ptr, keyword);
+  err = vprint_assuan_status_strings (ctx, keyword, arg_ptr);
+  va_end (arg_ptr);
+  return err;
+}
