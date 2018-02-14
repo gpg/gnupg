@@ -479,6 +479,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream, int rawmode)
  leave:
   gnupg_ksba_destroy_writer (b64writer);
   ksba_cert_release (cert);
+  xfree (keygrip);
   xfree (desc);
   keydb_release (hd);
 }
