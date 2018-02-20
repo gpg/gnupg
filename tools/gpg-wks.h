@@ -60,6 +60,7 @@ struct
 /* The parsed policy flags. */
 struct policy_flags_s
 {
+  char *submission_address;
   unsigned int mailbox_only : 1;
   unsigned int dane_only : 1;
   unsigned int auth_submit : 1;
@@ -92,6 +93,7 @@ gpg_error_t wks_filter_uid (estream_t *r_newkey, estream_t key,
 gpg_error_t wks_send_mime (mime_maker_t mime);
 gpg_error_t wks_parse_policy (policy_flags_t flags, estream_t stream,
                               int ignore_unknown);
+void wks_free_policy (policy_flags_t policy);
 
 /*-- wks-receive.c --*/
 

@@ -782,27 +782,19 @@ command_send (const char *fingerprint, const char *userid)
       err = 0;
     }
   else
-    err = wkd_get_submission_address (addrspec, &submission_to);
-  if (err)
     {
-      log_error (_("error looking up submission address for domain '%s': %s\n"),
-                 domain, gpg_strerror (err));
-      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
-        log_error (_("this domain probably doesn't support WKS.\n"));
-      goto leave;
-    }
-  log_info ("submitting request to '%s'\n", submission_to);
-
-  /* Get the policy flags.  */
-  if (!fake_submission_addr)
-    {
+      /* We first try to get the submission address from the policy
+       * file (this is the new method).  If both are available we
+       * check that they match and print a warning if not.  In the
+       * latter case we keep on using the one from the
+       * submission-address file.  */
       estream_t mbuf;
 
       err = wkd_get_policy_flags (addrspec, &mbuf);
       if (err && gpg_err_code (err) != GPG_ERR_NO_DATA)
         {
           log_error ("error reading policy flags for '%s': %s\n",
-                     submission_to, gpg_strerror (err));
+                     domain, gpg_strerror (err));
           goto leave;
         }
       if (mbuf)
@@ -812,7 +804,34 @@ command_send (const char *fingerprint, const char *userid)
           if (err)
             goto leave;
         }
+
+      err = wkd_get_submission_address (addrspec, &submission_to);
+      if (err && !policy.submission_address)
+        {
+          log_error (_("error looking up submission address for domain '%s'"
+                       ": %s\n"), domain, gpg_strerror (err));
+          if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+            log_error (_("this domain probably doesn't support WKS.\n"));
+          goto leave;
+        }
+
+      if (submission_to && policy.submission_address
+          && ascii_strcasecmp (submission_to, policy.submission_address))
+        log_info ("Warning: different submission addresses (sa=%s, po=%s)\n",
+                  submission_to, policy.submission_address);
+
+      if (!submission_to)
+        {
+          submission_to = xtrystrdup (policy.submission_address);
+          if (!submission_to)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+        }
     }
+
+  log_info ("submitting request to '%s'\n", submission_to);
 
   if (policy.auth_submit)
     log_info ("no confirmation required for '%s'\n", addrspec);
@@ -1002,6 +1021,7 @@ command_send (const char *fingerprint, const char *userid)
   free_uidinfo_list (uidlist);
   es_fclose (keyenc);
   es_fclose (key);
+  wks_free_policy (&policy);
   xfree (addrspec);
   return err;
 }

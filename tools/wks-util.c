@@ -443,6 +443,7 @@ gpg_error_t
 wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
 {
   enum tokens {
+    TOK_SUBMISSION_ADDRESS,
     TOK_MAILBOX_ONLY,
     TOK_DANE_ONLY,
     TOK_AUTH_SUBMIT,
@@ -453,6 +454,7 @@ wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
     const char *name;
     enum tokens token;
   } keywords[] = {
+    { "submission-address", TOK_SUBMISSION_ADDRESS },
     { "mailbox-only", TOK_MAILBOX_ONLY },
     { "dane-only",    TOK_DANE_ONLY    },
     { "auth-submit",  TOK_AUTH_SUBMIT  },
@@ -519,6 +521,20 @@ wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
 
       switch (keywords[i].token)
         {
+        case TOK_SUBMISSION_ADDRESS:
+          if (!value || !*value)
+            {
+              err = gpg_error (GPG_ERR_SYNTAX);
+              goto leave;
+            }
+          xfree (flags->submission_address);
+          flags->submission_address = xtrystrdup (value);
+          if (!flags->submission_address)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          break;
         case TOK_MAILBOX_ONLY: flags->mailbox_only = 1; break;
         case TOK_DANE_ONLY:    flags->dane_only = 1;    break;
         case TOK_AUTH_SUBMIT:  flags->auth_submit = 1;  break;
@@ -552,4 +568,15 @@ wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
                es_fname_get (stream), lnr, gpg_strerror (err));
 
   return err;
+}
+
+
+void
+wks_free_policy (policy_flags_t policy)
+{
+  if (policy)
+    {
+      xfree (policy->submission_address);
+      memset (policy, 0, sizeof *policy);
+    }
 }

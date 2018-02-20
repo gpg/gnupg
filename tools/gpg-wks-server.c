@@ -1135,6 +1135,8 @@ process_new_key (server_ctx_t ctx, estream_t key)
   char *fname = NULL;
   struct policy_flags_s policybuf;
 
+  memset (&policybuf, 0, sizeof policybuf);
+
   /* First figure out the user id from the key.  */
   xfree (ctx->fpr);
   free_uidinfo_list (ctx->mboxes);
@@ -1206,6 +1208,7 @@ process_new_key (server_ctx_t ctx, estream_t key)
   xfree (nonce);
   xfree (fname);
   xfree (dname);
+  wks_free_policy (&policybuf);
   return err;
 }
 
@@ -1897,6 +1900,7 @@ command_list_domains (void)
               if (!memcmp (&empty_policy, &policy, sizeof policy))
                 log_error ("domain %s: empty policy file\n", domain);
             }
+          wks_free_policy (&policy);
         }
 
 
