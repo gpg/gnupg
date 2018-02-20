@@ -502,7 +502,7 @@ speedo_pkg_gnupg_configure = \
         --disable-g13 --enable-ntbtls \
         --enable-build-timestamp
 else
-speedo_pkg_gnupg_configure = --disable-g13
+speedo_pkg_gnupg_configure = --disable-g13 --enable-wks-tools
 endif
 speedo_pkg_gnupg_extracflags = -g
 
