@@ -35,6 +35,7 @@
 #include "../common/util.h"
 #include "../common/init.h"
 #include "../common/sysutils.h"
+#include "../common/userids.h"
 #include "../common/ccparray.h"
 #include "../common/exectool.h"
 #include "../common/zb32.h"
@@ -2002,7 +2003,8 @@ static gpg_error_t
 command_install_key (const char *fname, const char *userid)
 {
   gpg_error_t err;
-  estream_t fp;
+  KEYDB_SEARCH_DESC desc;
+  estream_t fp = NULL;
   char *addrspec = NULL;
   char *fpr = NULL;
   uidinfo_list_t uidlist = NULL;
@@ -2011,20 +2013,37 @@ command_install_key (const char *fname, const char *userid)
   char *huname = NULL;
   int any;
 
-  fp = es_fopen (fname, "rb");
-  if (!fp)
-    {
-      err = gpg_error_from_syserror ();
-      log_error ("error reading '%s': %s\n", fname, gpg_strerror (err));
-      goto leave;
-    }
-
   addrspec = mailbox_from_userid (userid);
   if (!addrspec)
     {
       log_error ("\"%s\" is not a proper mail address\n", userid);
       err = gpg_error (GPG_ERR_INV_USER_ID);
       goto leave;
+    }
+
+  if (!classify_user_id (fname, &desc, 1)
+      && (desc.mode == KEYDB_SEARCH_MODE_FPR
+          || desc.mode == KEYDB_SEARCH_MODE_FPR20))
+    {
+      /* FNAME looks like a fingerprint.  Get the key from the
+       * standard keyring.  */
+      err = wks_get_key (&fp, fname, addrspec, 0);
+      if (err)
+        {
+          log_error ("error getting key '%s' (uid='%s'): %s\n",
+                     fname, addrspec, gpg_strerror (err));
+          goto leave;
+        }
+    }
+  else /* Take it from the file */
+    {
+      fp = es_fopen (fname, "rb");
+      if (!fp)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error reading '%s': %s\n", fname, gpg_strerror (err));
+          goto leave;
+        }
     }
 
   /* List the key so that we can figure out the newest UID with the
