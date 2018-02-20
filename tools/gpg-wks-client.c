@@ -872,7 +872,7 @@ command_send (const char *fingerprint, const char *userid)
       estream_t newkey;
 
       es_rewind (key);
-      err = wks_filter_uid (&newkey, key, thisuid->uid);
+      err = wks_filter_uid (&newkey, key, thisuid->uid, 0);
       if (err)
         {
           log_error ("error filtering key: %s\n", gpg_strerror (err));

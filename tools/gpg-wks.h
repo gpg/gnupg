@@ -89,7 +89,7 @@ void free_uidinfo_list (uidinfo_list_t list);
 gpg_error_t wks_list_key (estream_t key, char **r_fpr,
                           uidinfo_list_t *r_mboxes);
 gpg_error_t wks_filter_uid (estream_t *r_newkey, estream_t key,
-                            const char *uid);
+                            const char *uid, int binary);
 gpg_error_t wks_send_mime (mime_maker_t mime);
 gpg_error_t wks_parse_policy (policy_flags_t flags, estream_t stream,
                               int ignore_unknown);

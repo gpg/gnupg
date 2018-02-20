@@ -317,10 +317,13 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
 
 
 /* Run gpg as a filter on KEY and write the output to a new stream
- * stored at R_NEWKEY.  The new key will containn only the user id
- * UID.  Returns 0 on success.  Only one key is expected in KEY. */
+ * stored at R_NEWKEY.  The new key will contain only the user id UID.
+ * Returns 0 on success.  Only one key is expected in KEY.  If BINARY
+ * is set the resulting key is returned as a binary (non-armored)
+ * keyblock.  */
 gpg_error_t
-wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid)
+wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid,
+                int binary)
 {
   gpg_error_t err;
   ccparray_t ccp;
@@ -340,8 +343,9 @@ wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid)
     }
 
   /* Prefix the key with the MIME content type.  */
-  es_fputs ("Content-Type: application/pgp-keys\n"
-            "\n", newkey);
+  if (!binary)
+    es_fputs ("Content-Type: application/pgp-keys\n"
+              "\n", newkey);
 
   filterexp = es_bsprintf ("keep-uid=uid=%s", uid);
   if (!filterexp)
@@ -361,7 +365,8 @@ wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid)
   ccparray_put (&ccp, "--batch");
   ccparray_put (&ccp, "--status-fd=2");
   ccparray_put (&ccp, "--always-trust");
-  ccparray_put (&ccp, "--armor");
+  if (!binary)
+    ccparray_put (&ccp, "--armor");
   ccparray_put (&ccp, "--import-options=import-export");
   ccparray_put (&ccp, "--import-filter");
   ccparray_put (&ccp, filterexp);

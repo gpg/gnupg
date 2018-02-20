@@ -181,6 +181,7 @@ Display a brief help page and exit.
 .RI [ options ]
 .B \-\-install-key
 .I file
+.I user-id
 .br
 .B gpg-wks-server
 .RI [ options ]
@@ -221,14 +222,17 @@ the process returns failure; to suppress the diagnostic, use option
 @option{-q}.  More than one user-id can be given; see also option
 @option{with-file}.
 
+The command @option{--install-key} manually installs a key into the
+WKD.  The arguments are a file with the keyblock and the user-id to
+install.
+
 The command @option{--remove-key} uninstalls a key from the WKD.  The
-process return success in this case; to also print a diagnostic, use
-option @option{-v}.  If the key is not installed a diagnostics is
+process returns success in this case; to also print a diagnostic, use
+option @option{-v}.  If the key is not installed a diagnostic is
 printed and the process returns failure; to suppress the diagnostic,
 use option @option{-q}.
 
-The commands @option{--install-key} and @option{--revoke-key} are not
-yet functional.
+The command @option{--revoke-key} is not yet functional.
 
 
 @mansect options

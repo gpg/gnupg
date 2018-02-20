@@ -1,5 +1,5 @@
 /* gpg-wks-server.c - A server for the Web Key Service protocols.
- * Copyright (C) 2016 Werner Koch
+ * Copyright (C) 2016, 2018 Werner Koch
  * Copyright (C) 2016 Bundesamt für Sicherheit in der Informationstechnik
  *
  * This file is part of GnuPG.
@@ -20,7 +20,7 @@
 
 /* The Web Key Service I-D defines an update protocol to store a
  * public key in the Web Key Directory.  The current specification is
- * draft-koch-openpgp-webkey-service-01.txt.
+ * draft-koch-openpgp-webkey-service-05.txt.
  */
 
 #include <config.h>
@@ -154,7 +154,7 @@ static gpg_error_t command_receive_cb (void *opaque,
                                        const char *mediatype, estream_t fp,
                                        unsigned int flags);
 static gpg_error_t command_list_domains (void);
-static gpg_error_t command_install_key (const char *fname);
+static gpg_error_t command_install_key (const char *fname, const char *userid);
 static gpg_error_t command_remove_key (const char *mailaddr);
 static gpg_error_t command_revoke_key (const char *mailaddr);
 static gpg_error_t command_check_key (const char *mailaddr);
@@ -376,9 +376,9 @@ main (int argc, char **argv)
       break;
 
     case aInstallKey:
-      if (argc != 1)
-        wrong_args ("--install-key FILE");
-      err = command_install_key (*argv);
+      if (argc != 2)
+        wrong_args ("--install-key FILE USER-ID");
+      err = command_install_key (*argv, argv[1]);
       break;
 
     case aRemoveKey:
@@ -1339,6 +1339,81 @@ send_congratulation_message (const char *mbox, const char *keyfile)
 }
 
 
+/* Write the content of SRC to the new file FNAME.  */
+static gpg_error_t
+write_to_file (estream_t src, const char *fname)
+{
+  gpg_error_t err;
+  estream_t dst;
+  char buffer[4096];
+  size_t nread, written;
+
+  dst = es_fopen (fname, "wb");
+  if (!dst)
+    return gpg_error_from_syserror ();
+
+  do
+    {
+      nread = es_fread (buffer, 1, sizeof buffer, src);
+      if (!nread)
+	break;
+      written = es_fwrite (buffer, 1, nread, dst);
+      if (written != nread)
+	break;
+    }
+  while (!es_feof (src) && !es_ferror (src) && !es_ferror (dst));
+  if (!es_feof (src) || es_ferror (src) || es_ferror (dst))
+    {
+      err = gpg_error_from_syserror ();
+      es_fclose (dst);
+      gnupg_remove (fname);
+      return err;
+    }
+
+  if (es_fclose (dst))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error closing '%s': %s\n", fname, gpg_strerror (err));
+      return err;
+    }
+
+  return 0;
+}
+
+
+/* Compute the the full file name for the key with ADDRSPEC and return
+ * it at R_FNAME.  */
+static gpg_error_t
+compute_hu_fname (char **r_fname, const char *addrspec)
+{
+  gpg_error_t err;
+  char *hash;
+  const char *domain;
+  char sha1buf[20];
+
+  *r_fname = NULL;
+
+  domain = strchr (addrspec, '@');
+  if (!domain || !domain[1] || domain == addrspec)
+    return gpg_error (GPG_ERR_INV_ARG);
+  domain++;
+
+  gcry_md_hash_buffer (GCRY_MD_SHA1, sha1buf, addrspec, domain - addrspec - 1);
+  hash = zb32_encode (sha1buf, 8*20);
+  if (!hash)
+    return gpg_error_from_syserror ();
+
+  *r_fname = make_filename_try (opt.directory, domain, "hu", hash, NULL);
+  if (!*r_fname)
+    err = gpg_error_from_syserror ();
+  else
+    err = 0;
+
+  xfree (hash);
+  return err;
+}
+
+
 /* Check that we have send a request with NONCE and publish the key.  */
 static gpg_error_t
 check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
@@ -1412,24 +1487,10 @@ check_and_publish (server_ctx_t ctx, const char *address, const char *nonce)
       goto leave;
     }
 
-
   /* Hash user ID and create filename.  */
-  s = strchr (address, '@');
-  log_assert (s);
-  gcry_md_hash_buffer (GCRY_MD_SHA1, shaxbuf, address, s - address);
-  hash = zb32_encode (shaxbuf, 8*20);
-  if (!hash)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-
-  fnewname = make_filename_try (opt.directory, domain, "hu", hash, NULL);
-  if (!fnewname)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
+  err = compute_hu_fname (&fnewname, address);
+  if (err)
+    goto leave;
 
   /* Publish.  */
   err = copy_key_as_binary (fname, fnewname, address);
@@ -1935,16 +1996,122 @@ command_cron (void)
 }
 
 
-/* Install a single key into the WKD by reading FNAME.  */
+/* Install a single key into the WKD by reading FNAME and extracting
+ * USERID.  */
 static gpg_error_t
-command_install_key (const char *fname)
+command_install_key (const char *fname, const char *userid)
 {
-  (void)fname;
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  gpg_error_t err;
+  estream_t fp;
+  char *addrspec = NULL;
+  char *fpr = NULL;
+  uidinfo_list_t uidlist = NULL;
+  uidinfo_list_t uid, thisuid;
+  time_t thistime;
+  char *huname = NULL;
+  int any;
+
+  fp = es_fopen (fname, "rb");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error reading '%s': %s\n", fname, gpg_strerror (err));
+      goto leave;
+    }
+
+  addrspec = mailbox_from_userid (userid);
+  if (!addrspec)
+    {
+      log_error ("\"%s\" is not a proper mail address\n", userid);
+      err = gpg_error (GPG_ERR_INV_USER_ID);
+      goto leave;
+    }
+
+  /* List the key so that we can figure out the newest UID with the
+   * requested addrspec.  */
+  err = wks_list_key (fp, &fpr, &uidlist);
+  if (err)
+    {
+      log_error ("error parsing key: %s\n", gpg_strerror (err));
+      err = gpg_error (GPG_ERR_NO_PUBKEY);
+      goto leave;
+    }
+  thistime = 0;
+  thisuid = NULL;
+  any = 0;
+  for (uid = uidlist; uid; uid = uid->next)
+    {
+      if (!uid->mbox)
+        continue; /* Should not happen anyway.  */
+      if (ascii_strcasecmp (uid->mbox, addrspec))
+        continue; /* Not the requested addrspec.  */
+      any = 1;
+      if (uid->created > thistime)
+        {
+          thistime = uid->created;
+          thisuid = uid;
+        }
+    }
+  if (!thisuid)
+    thisuid = uidlist;  /* This is the case for a missing timestamp.  */
+  if (!any)
+    {
+      log_error ("public key in '%s' has no mail address '%s'\n",
+                 fname, addrspec);
+      err = gpg_error (GPG_ERR_INV_USER_ID);
+      goto leave;
+    }
+
+  if (opt.verbose)
+    log_info ("using key with user id '%s'\n", thisuid->uid);
+
+  {
+    estream_t fp2;
+
+    es_rewind (fp);
+    err = wks_filter_uid (&fp2, fp, thisuid->uid, 1);
+    if (err)
+      {
+        log_error ("error filtering key: %s\n", gpg_strerror (err));
+        err = gpg_error (GPG_ERR_NO_PUBKEY);
+        goto leave;
+      }
+    es_fclose (fp);
+    fp = fp2;
+  }
+
+  /* Hash user ID and create filename.  */
+  err = compute_hu_fname (&huname, addrspec);
+  if (err)
+    goto leave;
+
+  /* Publish.  */
+  err = write_to_file (fp, huname);
+  if (err)
+    {
+      log_error ("copying key to '%s' failed: %s\n", huname,gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Make sure it is world readable.  */
+  if (gnupg_chmod (huname, "-rwxr--r--"))
+    log_error ("can't set permissions of '%s': %s\n",
+               huname, gpg_strerror (gpg_err_code_from_syserror()));
+
+  if (!opt.quiet)
+    log_info ("key %s published for '%s'\n", fpr, addrspec);
+
+ leave:
+  xfree (huname);
+  free_uidinfo_list (uidlist);
+  xfree (fpr);
+  xfree (addrspec);
+  es_fclose (fp);
+  return err;
 }
 
 
-/* Return the filename and optioanlly the addrspec for USERID at
+/* Return the filename and optionally the addrspec for USERID at
  * R_FNAME and R_ADDRSPEC.  R_ADDRSPEC might also be set on error.  */
 static gpg_error_t
 fname_from_userid (const char *userid, char **r_fname, char **r_addrspec)
