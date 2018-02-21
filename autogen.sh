@@ -1,6 +1,6 @@
 #! /bin/sh
 # autogen.sh
-# Copyright (C) 2003, 2014, 2017 g10 Code GmbH
+# Copyright (C) 2003, 2014, 2017, 2018 g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -15,7 +15,7 @@
 # configure it for the respective package.  It is maintained as part of
 # GnuPG and source copied by other packages.
 #
-# Version: 2017-01-17
+# Version: 2018-02-21
 
 configure_ac="configure.ac"
 
@@ -467,6 +467,10 @@ EOF
 EOF
       $CP build-aux/git-hooks/commit-msg .git/hooks/commit-msg
       chmod +x  .git/hooks/commit-msg
+      if [ x"${display_name}" != x ]; then
+         git config format.subjectPrefix "PATCH ${display_name}"
+         git config sendemail.to "${patches_to}"
+      fi
   fi
 fi
 
