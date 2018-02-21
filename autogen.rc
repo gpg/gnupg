@@ -1,5 +1,7 @@
 # autogen.sh configuration for GnuPG                           -*- sh -*-
 
+display_name=GnuPG
+
 #version_parts=3
 
 case "$myhost:$myhostsub" in
