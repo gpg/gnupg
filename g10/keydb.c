@@ -1269,10 +1269,7 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
           break; /* Allowed per RFC.  */
 
         default:
-          /* Note that can't allow ring trust packets here and some of
-             the other GPG specific packets don't make sense either.  */
-          log_error ("skipped packet of type %d in keybox\n",
-                     (int)pkt->pkttype);
+          log_info ("skipped packet of type %d in keybox\n", (int)pkt->pkttype);
           free_packet(pkt, &parsectx);
           init_packet(pkt);
           continue;
