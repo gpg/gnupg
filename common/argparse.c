@@ -71,7 +71,7 @@
 #else /* Used by GnuPG  */
 
 # define ARGPARSE_GPL_VERSION      3
-# define ARGPARSE_CRIGHT_STR "Copyright (C) 2017 Free Software Foundation, Inc."
+# define ARGPARSE_CRIGHT_STR "Copyright (C) 2018 Free Software Foundation, Inc."
 
 #endif /*GNUPG_MAJOR_VERSION*/
 

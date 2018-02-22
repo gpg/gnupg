@@ -15,9 +15,9 @@ copyrightable year that would otherwise be listed individually.
 List of Copyright holders
 =========================
 
-  Copyright (C) 1997-2017 Werner Koch
-  Copyright (C) 1994-2017 Free Software Foundation, Inc.
-  Copyright (C) 2003-2013,2015-2017 g10 Code GmbH
+  Copyright (C) 1997-2018 Werner Koch
+  Copyright (C) 1994-2018 Free Software Foundation, Inc.
+  Copyright (C) 2003-2013,2015-2018 g10 Code GmbH
   Copyright (C) 2002 Klarälvdalens Datakonsult AB
   Copyright (C) 1995-1997, 2000-2007 Ulrich Drepper <drepper@gnu.ai.mit.edu>
   Copyright (C) 1994 X Consortium
@@ -91,8 +91,8 @@ domain.
 
 =========
 
- Copyright 1998-2017 Free Software Foundation, Inc.
- Copyright 1997-2017 Werner Koch
+ Copyright 1998-2018 Free Software Foundation, Inc.
+ Copyright 1997-2018 Werner Koch
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

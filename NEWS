@@ -1,5 +1,46 @@
-Noteworthy changes in version 2.2.5 (unreleased)
+Noteworthy changes in version 2.2.5 (2018-02-22)
 ------------------------------------------------
+
+  * gpg: Allow the use of the "cv25519" and "ed25519" short names in
+    addition to the canonical curve names in --batch --gen-key.
+
+  * gpg: Make sure to print all secret keys with option --list-only
+    and --decrypt.  [#3718]
+
+  * gpg: Fix the use of future-default with --quick-add-key for
+    signing keys.  [#3747]
+
+  * gpg: Select a secret key by checking availability under gpg-agent.
+    [#1967]
+
+  * gpg: Fix reversed prompt texts for --only-sign-text-ids.  [#3787]
+
+  * gpg,gpgsm: Fix detection of bogus keybox blobs on 32 bit systems.
+    [#3770]
+
+  * gpgsm: Fix regression since 2.1 in --export-secret-key-raw which
+    got $d mod (q-1)$ wrong.  Note that most tools automatically fixup
+    that parameter anyway.
+
+  * ssh: Fix a regression in getting the client'd PID on *BSD and
+    macOS.
+
+  * scd: Support the KDF Data Object of the OpenPGP card 3.3.  [#3152]
+
+  * scd: Fix a regression in the internal CCID driver for certain card
+    readers.  [#3508]
+
+  * scd: Fix a problem on NetBSD killing scdaemon on gpg-agent
+    shutdown.  [#3778]
+
+  * dirmngr: Improve returned error description on failure of DNS
+    resolving.  [#3756]
+
+  * wks: Implement command --install-key for gpg-wks-server.
+
+  * Add option STATIC=1 to the Speedo build system to allow a build
+    with statically linked versions of the core GnuPG libraries.  Also
+    use --enable-wks-tools by default by Speedo builds for Unix.
 
 
 Noteworthy changes in version 2.2.4 (2017-12-20)
@@ -31,6 +72,8 @@ Noteworthy changes in version 2.2.4 (2017-12-20)
 
   * New configure option --enable-run-gnupg-user-socket to first try a
     socket directory which is not removed by systemd at session end.
+
+  See-also: gnupg-announce/2017q4/000419.html
 
 
 Noteworthy changes in version 2.2.3 (2017-11-20)
