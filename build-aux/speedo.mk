@@ -63,6 +63,7 @@ help:
 	@echo 'You may append INSTALL_PREFIX=<dir> for native builds.'
 	@echo 'Prepend TARGET with "git-" to build from GIT repos.'
 	@echo 'Prepend TARGET with "this-" to build from the source tarball.'
+	@echo 'Use STATIC=1 to build with statically linked libraries.'
 	@echo 'Use SELFCHECK=0 for a non-released version.'
 	@echo 'Use CUSTOM_SWDB=1 for an already downloaded swdb.lst.'
 
@@ -140,6 +141,9 @@ UPD_SWDB=0
 # Set to 0 to skip the GnuPG version self-check
 SELFCHECK=1
 
+# Set to 1 to build with statically linked libraries.
+STATIC=0
+
 # Set to the location of the directory with tarballs of
 # external packages.
 TARBALLS=$(shell pwd)/../tarballs
@@ -208,8 +212,10 @@ speedo_spkgs += \
 endif
 endif
 
+ifeq ($(STATIC),0)
 speedo_spkgs += \
 	gpgme
+endif
 
 ifeq ($(TARGETOS),w32)
 ifeq ($(WITH_GUI),1)
@@ -461,6 +467,8 @@ speedo_pkg_gtk__tar       = $(pkg2rep)/gtk+-$(gtk__ver).tar.xz
 # Package build options
 #
 
+speedo_pkg_npth_configure = --enable-static
+
 speedo_pkg_libgpg_error_configure = --enable-static
 speedo_pkg_w64_libgpg_error_configure = --enable-static
 
@@ -471,15 +479,30 @@ speedo_pkg_libgcrypt_configure = --disable-static
 
 speedo_pkg_libksba_configure = --disable-static
 
+speedo_pkg_ntbtls_configure = --enable-static
+
+
+ifeq ($(STATIC),1)
+speedo_pkg_npth_configure += --disable-shared
+
+speedo_pkg_libgpg_error_configure += --disable-shared
+
+speedo_pkg_libassuan_configure += --disable-shared
+
+speedo_pkg_libgcrypt_configure += --disable-shared
+
+speedo_pkg_libksba_configure += --disable-shared
+endif
+
 # For now we build ntbtls only static
-speedo_pkg_ntbtls_configure = --enable-static --disable-shared
+speedo_pkg_ntbtls_configure = --disable-shared
 
 ifeq ($(TARGETOS),w32)
 speedo_pkg_gnupg_configure = \
         --disable-g13 --enable-ntbtls \
         --enable-build-timestamp
 else
-speedo_pkg_gnupg_configure = --disable-g13
+speedo_pkg_gnupg_configure = --disable-g13 --enable-wks-tools
 endif
 speedo_pkg_gnupg_extracflags = -g
 

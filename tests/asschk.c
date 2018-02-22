@@ -116,7 +116,7 @@
 #endif
 
 #if __STDC_VERSION__ < 199901L
-# if __GNUC__ >= 2
+# if __GNUC__ >= 2 && !defined (__func__)
 #  define __func__ __FUNCTION__
 # else
 /* Let's try our luck here.  Some systems may provide __func__ without

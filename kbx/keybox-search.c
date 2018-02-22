@@ -247,7 +247,7 @@ blob_cmp_fpr (KEYBOXBLOB blob, const unsigned char *fpr)
   if (keyinfolen < 28)
     return 0; /* invalid blob */
   pos = 20;
-  if (pos + keyinfolen*nkeys > length)
+  if (pos + (uint64_t)keyinfolen*nkeys > (uint64_t)length)
     return 0; /* out of bounds */
 
   for (idx=0; idx < nkeys; idx++)
@@ -279,7 +279,7 @@ blob_cmp_fpr_part (KEYBOXBLOB blob, const unsigned char *fpr,
   if (keyinfolen < 28)
     return 0; /* invalid blob */
   pos = 20;
-  if (pos + keyinfolen*nkeys > length)
+  if (pos + (uint64_t)keyinfolen*nkeys > (uint64_t)length)
     return 0; /* out of bounds */
 
   for (idx=0; idx < nkeys; idx++)
@@ -313,7 +313,7 @@ blob_cmp_name (KEYBOXBLOB blob, int idx,
   if (keyinfolen < 28)
     return 0; /* invalid blob */
   pos = 20 + keyinfolen*nkeys;
-  if (pos+2 > length)
+  if ((uint64_t)pos+2 > (uint64_t)length)
     return 0; /* out of bounds */
 
   /*serial*/
@@ -340,7 +340,7 @@ blob_cmp_name (KEYBOXBLOB blob, int idx,
           mypos += idx*uidinfolen;
           off = get32 (buffer+mypos);
           len = get32 (buffer+mypos+4);
-          if (off+len > length)
+          if ((uint64_t)off+(uint64_t)len > (uint64_t)length)
             return 0; /* error: better stop here out of bounds */
           if (len < 1)
             continue; /* empty name */
@@ -439,7 +439,7 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr,
       mypos += idx*uidinfolen;
       off = get32 (buffer+mypos);
       len = get32 (buffer+mypos+4);
-      if (off+len > length)
+      if ((uint64_t)off+(uint64_t)len > (uint64_t)length)
         return 0; /* error: better stop here - out of bounds */
       if (x509)
         {
@@ -522,7 +522,7 @@ blob_x509_has_grip (KEYBOXBLOB blob, const unsigned char *grip)
     return 0; /* Too short. */
   cert_off = get32 (buffer+8);
   cert_len = get32 (buffer+12);
-  if (cert_off+cert_len > length)
+  if ((uint64_t)cert_off+(uint64_t)cert_len > (uint64_t)length)
     return 0; /* Too short.  */
 
   rc = ksba_reader_new (&reader);
@@ -1097,7 +1097,7 @@ keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf,
     return gpg_error (GPG_ERR_TOO_SHORT);
   image_off = get32 (buffer+8);
   image_len = get32 (buffer+12);
-  if (image_off+image_len > length)
+  if ((uint64_t)image_off+(uint64_t)image_len > (uint64_t)length)
     return gpg_error (GPG_ERR_TOO_SHORT);
 
   err = _keybox_get_flag_location (buffer, length, KEYBOX_FLAG_SIG_INFO,
@@ -1139,7 +1139,7 @@ keybox_get_cert (KEYBOX_HANDLE hd, ksba_cert_t *r_cert)
     return gpg_error (GPG_ERR_TOO_SHORT);
   cert_off = get32 (buffer+8);
   cert_len = get32 (buffer+12);
-  if (cert_off+cert_len > length)
+  if ((uint64_t)cert_off+(uint64_t)cert_len > (uint64_t)length)
     return gpg_error (GPG_ERR_TOO_SHORT);
 
   rc = ksba_reader_new (&reader);

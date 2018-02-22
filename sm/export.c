@@ -479,6 +479,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream, int rawmode)
  leave:
   gnupg_ksba_destroy_writer (b64writer);
   ksba_cert_release (cert);
+  xfree (keygrip);
   xfree (desc);
   keydb_release (hd);
 }
@@ -603,7 +604,7 @@ sexp_to_kparms (gcry_sexp_t sexp)
 
   array[6] = gcry_mpi_snew (0);  /* compute d mod (p-1) */
   gcry_mpi_sub_ui (array[6], array[4], 1);
-  gcry_mpi_mod (array[6], array[3], array[6]);
+  gcry_mpi_mod (array[6], array[2], array[6]);
 
   return array;
 }

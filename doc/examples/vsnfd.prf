@@ -6,6 +6,7 @@ default-new-key-algo rsa3072/cert,sign+rsa3072/encr
 
 [gpgsm]
 enable-crl-checks
+compliance de-vs
 
 [gpg-agent]
 enable-extended-key-format

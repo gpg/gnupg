@@ -325,119 +325,6 @@ main (int argc, char **argv)
 
 
 
-struct get_key_status_parm_s
-{
-  const char *fpr;
-  int found;
-  int count;
-};
-
-static void
-get_key_status_cb (void *opaque, const char *keyword, char *args)
-{
-  struct get_key_status_parm_s *parm = opaque;
-
-  /*log_debug ("%s: %s\n", keyword, args);*/
-  if (!strcmp (keyword, "EXPORTED"))
-    {
-      parm->count++;
-      if (!ascii_strcasecmp (args, parm->fpr))
-        parm->found = 1;
-    }
-}
-
-
-/* Get a key by fingerprint from gpg's keyring and make sure that the
- * mail address ADDRSPEC is included in the key.  If EXACT is set the
- * returned user id must match Addrspec exactly and not just in the
- * addr-spec (mailbox) part.  The key is returned as a new memory
- * stream at R_KEY.  */
-static gpg_error_t
-get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
-         int exact)
-{
-  gpg_error_t err;
-  ccparray_t ccp;
-  const char **argv = NULL;
-  estream_t key = NULL;
-  struct get_key_status_parm_s parm;
-  char *filterexp = NULL;
-
-  memset (&parm, 0, sizeof parm);
-
-  *r_key = NULL;
-
-  key = es_fopenmem (0, "w+b");
-  if (!key)
-    {
-      err = gpg_error_from_syserror ();
-      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
-      goto leave;
-    }
-
-  /* Prefix the key with the MIME content type.  */
-  es_fputs ("Content-Type: application/pgp-keys\n"
-            "\n", key);
-
-  filterexp = es_bsprintf ("keep-uid=%s=%s", exact? "uid":"mbox", addrspec);
-  if (!filterexp)
-    {
-      err = gpg_error_from_syserror ();
-      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
-      goto leave;
-    }
-
-  ccparray_init (&ccp, 0);
-
-  ccparray_put (&ccp, "--no-options");
-  if (!opt.verbose)
-    ccparray_put (&ccp, "--quiet");
-  else if (opt.verbose > 1)
-    ccparray_put (&ccp, "--verbose");
-  ccparray_put (&ccp, "--batch");
-  ccparray_put (&ccp, "--status-fd=2");
-  ccparray_put (&ccp, "--always-trust");
-  ccparray_put (&ccp, "--armor");
-  ccparray_put (&ccp, "--export-options=export-minimal");
-  ccparray_put (&ccp, "--export-filter");
-  ccparray_put (&ccp, filterexp);
-  ccparray_put (&ccp, "--export");
-  ccparray_put (&ccp, "--");
-  ccparray_put (&ccp, fingerprint);
-
-  ccparray_put (&ccp, NULL);
-  argv = ccparray_get (&ccp, NULL);
-  if (!argv)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-  parm.fpr = fingerprint;
-  err = gnupg_exec_tool_stream (opt.gpg_program, argv, NULL,
-                                NULL, key,
-                                get_key_status_cb, &parm);
-  if (!err && parm.count > 1)
-    err = gpg_error (GPG_ERR_TOO_MANY);
-  else if (!err && !parm.found)
-    err = gpg_error (GPG_ERR_NOT_FOUND);
-  if (err)
-    {
-      log_error ("export failed: %s\n", gpg_strerror (err));
-      goto leave;
-    }
-
-  es_rewind (key);
-  *r_key = key;
-  key = NULL;
-
- leave:
-  es_fclose (key);
-  xfree (argv);
-  xfree (filterexp);
-  return err;
-}
-
-
 /* Add the user id UID to the key identified by FINGERPRINT.  */
 static gpg_error_t
 add_user_id (const char *fingerprint, const char *uid)
@@ -767,7 +654,7 @@ command_send (const char *fingerprint, const char *userid)
       err = gpg_error (GPG_ERR_INV_USER_ID);
       goto leave;
     }
-  err = get_key (&key, fingerprint, addrspec, 0);
+  err = wks_get_key (&key, fingerprint, addrspec, 0);
   if (err)
     goto leave;
 
@@ -782,27 +669,19 @@ command_send (const char *fingerprint, const char *userid)
       err = 0;
     }
   else
-    err = wkd_get_submission_address (addrspec, &submission_to);
-  if (err)
     {
-      log_error (_("error looking up submission address for domain '%s': %s\n"),
-                 domain, gpg_strerror (err));
-      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
-        log_error (_("this domain probably doesn't support WKS.\n"));
-      goto leave;
-    }
-  log_info ("submitting request to '%s'\n", submission_to);
-
-  /* Get the policy flags.  */
-  if (!fake_submission_addr)
-    {
+      /* We first try to get the submission address from the policy
+       * file (this is the new method).  If both are available we
+       * check that they match and print a warning if not.  In the
+       * latter case we keep on using the one from the
+       * submission-address file.  */
       estream_t mbuf;
 
       err = wkd_get_policy_flags (addrspec, &mbuf);
       if (err && gpg_err_code (err) != GPG_ERR_NO_DATA)
         {
           log_error ("error reading policy flags for '%s': %s\n",
-                     submission_to, gpg_strerror (err));
+                     domain, gpg_strerror (err));
           goto leave;
         }
       if (mbuf)
@@ -812,7 +691,34 @@ command_send (const char *fingerprint, const char *userid)
           if (err)
             goto leave;
         }
+
+      err = wkd_get_submission_address (addrspec, &submission_to);
+      if (err && !policy.submission_address)
+        {
+          log_error (_("error looking up submission address for domain '%s'"
+                       ": %s\n"), domain, gpg_strerror (err));
+          if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+            log_error (_("this domain probably doesn't support WKS.\n"));
+          goto leave;
+        }
+
+      if (submission_to && policy.submission_address
+          && ascii_strcasecmp (submission_to, policy.submission_address))
+        log_info ("Warning: different submission addresses (sa=%s, po=%s)\n",
+                  submission_to, policy.submission_address);
+
+      if (!submission_to)
+        {
+          submission_to = xtrystrdup (policy.submission_address);
+          if (!submission_to)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+        }
     }
+
+  log_info ("submitting request to '%s'\n", submission_to);
 
   if (policy.auth_submit)
     log_info ("no confirmation required for '%s'\n", addrspec);
@@ -853,7 +759,7 @@ command_send (const char *fingerprint, const char *userid)
       estream_t newkey;
 
       es_rewind (key);
-      err = wks_filter_uid (&newkey, key, thisuid->uid);
+      err = wks_filter_uid (&newkey, key, thisuid->uid, 0);
       if (err)
         {
           log_error ("error filtering key: %s\n", gpg_strerror (err));
@@ -878,7 +784,7 @@ command_send (const char *fingerprint, const char *userid)
        * the key again.  */
       es_fclose (key);
       key = NULL;
-      err = get_key (&key, fingerprint, addrspec, 1);
+      err = wks_get_key (&key, fingerprint, addrspec, 1);
       if (err)
         goto leave;
     }
@@ -1002,6 +908,7 @@ command_send (const char *fingerprint, const char *userid)
   free_uidinfo_list (uidlist);
   es_fclose (keyenc);
   es_fclose (key);
+  wks_free_policy (&policy);
   xfree (addrspec);
   return err;
 }

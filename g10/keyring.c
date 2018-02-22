@@ -459,8 +459,8 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
             break; /* Allowed by us.  */
 
           default:
-	    log_error ("skipped packet of type %d in keyring\n",
-                       (int)pkt->pkttype);
+	    log_info ("skipped packet of type %d in keyring\n",
+                      (int)pkt->pkttype);
 	    free_packet(pkt, &parsectx);
 	    init_packet(pkt);
 	    continue;

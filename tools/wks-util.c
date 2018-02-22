@@ -133,6 +133,120 @@ free_uidinfo_list (uidinfo_list_t list)
 
 
 
+struct get_key_status_parm_s
+{
+  const char *fpr;
+  int found;
+  int count;
+};
+
+
+static void
+get_key_status_cb (void *opaque, const char *keyword, char *args)
+{
+  struct get_key_status_parm_s *parm = opaque;
+
+  /*log_debug ("%s: %s\n", keyword, args);*/
+  if (!strcmp (keyword, "EXPORTED"))
+    {
+      parm->count++;
+      if (!ascii_strcasecmp (args, parm->fpr))
+        parm->found = 1;
+    }
+}
+
+/* Get a key by fingerprint from gpg's keyring and make sure that the
+ * mail address ADDRSPEC is included in the key.  If EXACT is set the
+ * returned user id must match Addrspec exactly and not just in the
+ * addr-spec (mailbox) part.  The key is returned as a new memory
+ * stream at R_KEY.  */
+gpg_error_t
+wks_get_key (estream_t *r_key, const char *fingerprint, const char *addrspec,
+             int exact)
+{
+  gpg_error_t err;
+  ccparray_t ccp;
+  const char **argv = NULL;
+  estream_t key = NULL;
+  struct get_key_status_parm_s parm;
+  char *filterexp = NULL;
+
+  memset (&parm, 0, sizeof parm);
+
+  *r_key = NULL;
+
+  key = es_fopenmem (0, "w+b");
+  if (!key)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Prefix the key with the MIME content type.  */
+  es_fputs ("Content-Type: application/pgp-keys\n"
+            "\n", key);
+
+  filterexp = es_bsprintf ("keep-uid=%s=%s", exact? "uid":"mbox", addrspec);
+  if (!filterexp)
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error allocating memory buffer: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  ccparray_init (&ccp, 0);
+
+  ccparray_put (&ccp, "--no-options");
+  if (!opt.verbose)
+    ccparray_put (&ccp, "--quiet");
+  else if (opt.verbose > 1)
+    ccparray_put (&ccp, "--verbose");
+  ccparray_put (&ccp, "--batch");
+  ccparray_put (&ccp, "--status-fd=2");
+  ccparray_put (&ccp, "--always-trust");
+  ccparray_put (&ccp, "--armor");
+  ccparray_put (&ccp, "--export-options=export-minimal");
+  ccparray_put (&ccp, "--export-filter");
+  ccparray_put (&ccp, filterexp);
+  ccparray_put (&ccp, "--export");
+  ccparray_put (&ccp, "--");
+  ccparray_put (&ccp, fingerprint);
+
+  ccparray_put (&ccp, NULL);
+  argv = ccparray_get (&ccp, NULL);
+  if (!argv)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  parm.fpr = fingerprint;
+  err = gnupg_exec_tool_stream (opt.gpg_program, argv, NULL,
+                                NULL, key,
+                                get_key_status_cb, &parm);
+  if (!err && parm.count > 1)
+    err = gpg_error (GPG_ERR_TOO_MANY);
+  else if (!err && !parm.found)
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+  if (err)
+    {
+      log_error ("export failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  es_rewind (key);
+  *r_key = key;
+  key = NULL;
+
+ leave:
+  es_fclose (key);
+  xfree (argv);
+  xfree (filterexp);
+  return err;
+}
+
+
+
 /* Helper for wks_list_key and wks_filter_uid.  */
 static void
 key_status_cb (void *opaque, const char *keyword, char *args)
@@ -317,10 +431,13 @@ wks_list_key (estream_t key, char **r_fpr, uidinfo_list_t *r_mboxes)
 
 
 /* Run gpg as a filter on KEY and write the output to a new stream
- * stored at R_NEWKEY.  The new key will containn only the user id
- * UID.  Returns 0 on success.  Only one key is expected in KEY. */
+ * stored at R_NEWKEY.  The new key will contain only the user id UID.
+ * Returns 0 on success.  Only one key is expected in KEY.  If BINARY
+ * is set the resulting key is returned as a binary (non-armored)
+ * keyblock.  */
 gpg_error_t
-wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid)
+wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid,
+                int binary)
 {
   gpg_error_t err;
   ccparray_t ccp;
@@ -340,8 +457,9 @@ wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid)
     }
 
   /* Prefix the key with the MIME content type.  */
-  es_fputs ("Content-Type: application/pgp-keys\n"
-            "\n", newkey);
+  if (!binary)
+    es_fputs ("Content-Type: application/pgp-keys\n"
+              "\n", newkey);
 
   filterexp = es_bsprintf ("keep-uid=uid=%s", uid);
   if (!filterexp)
@@ -361,7 +479,8 @@ wks_filter_uid (estream_t *r_newkey, estream_t key, const char *uid)
   ccparray_put (&ccp, "--batch");
   ccparray_put (&ccp, "--status-fd=2");
   ccparray_put (&ccp, "--always-trust");
-  ccparray_put (&ccp, "--armor");
+  if (!binary)
+    ccparray_put (&ccp, "--armor");
   ccparray_put (&ccp, "--import-options=import-export");
   ccparray_put (&ccp, "--import-filter");
   ccparray_put (&ccp, filterexp);
@@ -443,6 +562,7 @@ gpg_error_t
 wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
 {
   enum tokens {
+    TOK_SUBMISSION_ADDRESS,
     TOK_MAILBOX_ONLY,
     TOK_DANE_ONLY,
     TOK_AUTH_SUBMIT,
@@ -453,6 +573,7 @@ wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
     const char *name;
     enum tokens token;
   } keywords[] = {
+    { "submission-address", TOK_SUBMISSION_ADDRESS },
     { "mailbox-only", TOK_MAILBOX_ONLY },
     { "dane-only",    TOK_DANE_ONLY    },
     { "auth-submit",  TOK_AUTH_SUBMIT  },
@@ -519,6 +640,20 @@ wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
 
       switch (keywords[i].token)
         {
+        case TOK_SUBMISSION_ADDRESS:
+          if (!value || !*value)
+            {
+              err = gpg_error (GPG_ERR_SYNTAX);
+              goto leave;
+            }
+          xfree (flags->submission_address);
+          flags->submission_address = xtrystrdup (value);
+          if (!flags->submission_address)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          break;
         case TOK_MAILBOX_ONLY: flags->mailbox_only = 1; break;
         case TOK_DANE_ONLY:    flags->dane_only = 1;    break;
         case TOK_AUTH_SUBMIT:  flags->auth_submit = 1;  break;
@@ -552,4 +687,15 @@ wks_parse_policy (policy_flags_t flags, estream_t stream, int ignore_unknown)
                es_fname_get (stream), lnr, gpg_strerror (err));
 
   return err;
+}
+
+
+void
+wks_free_policy (policy_flags_t policy)
+{
+  if (policy)
+    {
+      xfree (policy->submission_address);
+      memset (policy, 0, sizeof *policy);
+    }
 }

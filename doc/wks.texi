@@ -181,6 +181,7 @@ Display a brief help page and exit.
 .RI [ options ]
 .B \-\-install-key
 .I file
+.I user-id
 .br
 .B gpg-wks-server
 .RI [ options ]
@@ -221,14 +222,19 @@ the process returns failure; to suppress the diagnostic, use option
 @option{-q}.  More than one user-id can be given; see also option
 @option{with-file}.
 
+The command @option{--install-key} manually installs a key into the
+WKD.  The arguments are a file with the keyblock and the user-id to
+install.  If the first argument resembles a fingerprint the key is
+taken from the current keyring; to force the use of a file, prefix the
+first argument with "./".
+
 The command @option{--remove-key} uninstalls a key from the WKD.  The
-process return success in this case; to also print a diagnostic, use
-option @option{-v}.  If the key is not installed a diagnostics is
+process returns success in this case; to also print a diagnostic, use
+option @option{-v}.  If the key is not installed a diagnostic is
 printed and the process returns failure; to suppress the diagnostic,
 use option @option{-q}.
 
-The commands @option{--install-key} and @option{--revoke-key} are not
-yet functional.
+The command @option{--revoke-key} is not yet functional.
 
 
 @mansect options
@@ -326,7 +332,7 @@ the submission address:
 
 @example
   $ gpg --batch --passphrase '' --quick-gen-key key-submission@@example.net
-  $ gpg --with-wkd-hash -K key-submission@@example.net
+  $ gpg -K key-submission@@example.net
 @end example
 
 The output of the last command looks similar to this:
@@ -339,16 +345,12 @@ The output of the last command looks similar to this:
   ssb   rsa3072 2016-08-30 [E]
 @end example
 
-Take the hash of the string "key-submission", which is
-"bxzcxpxk8h87z1k7bzk86xn5aj47intu" and manually publish that key:
+Take the fingerprint from that output and manually publish the key:
 
 @example
-  $ gpg --export-options export-minimal --export \
-  >  -o /var/lib/gnupg/wks/example.net/hu/bxzcxpxk8h87z1k7bzk86xn5aj47intu \
-  >  key-submission@@example.new
+  $ gpg-wks-server --install-key C0FCF8642D830C53246211400346653590B3795B \
+  >                key-submission@@example.net
 @end example
-
-Make sure that the created file is world readable.
 
 Finally that submission address needs to be redirected to a script
 running @command{gpg-wks-server}.  The @command{procmail} command can

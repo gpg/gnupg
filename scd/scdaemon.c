@@ -236,6 +236,10 @@ static HANDLE the_event;
 /* PID to notify update of usb devices.  */
 static pid_t main_thread_pid;
 #endif
+#ifdef HAVE_PSELECT_NO_EINTR
+/* FD to notify changes.  */
+static int notify_fd;
+#endif
 
 static char *create_socket_name (char *standard_name);
 static gnupg_fd_t create_server_socket (const char *name,
@@ -1210,6 +1214,8 @@ scd_kick_the_loop (void)
   if (ret == 0)
     log_error ("SetEvent for scd_kick_the_loop failed: %s\n",
                w32_strerror (-1));
+#elif defined(HAVE_PSELECT_NO_EINTR)
+  write (notify_fd, "", 1);
 #else
   ret = kill (main_thread_pid, SIGCONT);
   if (ret < 0)
@@ -1240,6 +1246,17 @@ handle_connections (int listen_fd)
   unsigned int events_set;
 #else
   int signo;
+#endif
+#ifdef HAVE_PSELECT_NO_EINTR
+  int pipe_fd[2];
+
+  ret = gnupg_create_pipe (pipe_fd);
+  if (ret)
+    {
+      log_error ("pipe creation failed: %s\n", gpg_strerror (ret));
+      return;
+    }
+  notify_fd = pipe_fd[1];
 #endif
 
   ret = npth_attr_init(&tattr);
@@ -1298,6 +1315,7 @@ handle_connections (int listen_fd)
   for (;;)
     {
       int periodical_check;
+      int max_fd = nfd;
 
       if (shutdown_pending)
         {
@@ -1326,8 +1344,14 @@ handle_connections (int listen_fd)
          thus a simple assignment is fine to copy the entire set.  */
       read_fdset = fdset;
 
+#ifdef HAVE_PSELECT_NO_EINTR
+      FD_SET (pipe_fd[0], &read_fdset);
+      if (max_fd < pipe_fd[0])
+        max_fd = pipe_fd[0];
+#endif
+
 #ifndef HAVE_W32_SYSTEM
-      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, t,
+      ret = npth_pselect (max_fd+1, &read_fdset, NULL, NULL, t,
                           npth_sigev_sigmask ());
       saved_errno = errno;
 
@@ -1352,6 +1376,15 @@ handle_connections (int listen_fd)
       if (ret <= 0)
         /* Timeout.  Will be handled when calculating the next timeout.  */
         continue;
+
+#ifdef HAVE_PSELECT_NO_EINTR
+      if (FD_ISSET (pipe_fd[0], &read_fdset))
+        {
+          char buf[256];
+
+          read (pipe_fd[0], buf, sizeof buf);
+        }
+#endif
 
       if (listen_fd != -1 && FD_ISSET (listen_fd, &read_fdset))
         {
@@ -1393,6 +1426,10 @@ handle_connections (int listen_fd)
 #ifdef HAVE_W32_SYSTEM
   if (the_event != INVALID_HANDLE_VALUE)
     CloseHandle (the_event);
+#endif
+#ifdef HAVE_PSELECT_NO_EINTR
+  close (pipe_fd[0]);
+  close (pipe_fd[1]);
 #endif
   cleanup ();
   log_info (_("%s %s stopped\n"), strusage(11), strusage(13));

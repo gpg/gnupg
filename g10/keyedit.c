@@ -1664,11 +1664,11 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
                 if (opt.only_sign_text_ids)
                   result = cpr_get_answer_is_yes
                     ("keyedit.sign_all.okay",
-                     _("Really sign all user IDs? (y/N) "));
+                     _("Really sign all text user IDs? (y/N) "));
                 else
                   result = cpr_get_answer_is_yes
                     ("keyedit.sign_all.okay",
-                     _("Really sign all text user IDs? (y/N) "));
+                     _("Really sign all user IDs? (y/N) "));
 
                 if (! result)
                   {

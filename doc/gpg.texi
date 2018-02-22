@@ -3829,6 +3829,19 @@ If you are going to verify detached signatures, make sure that the
 program knows about it; either give both filenames on the command line
 or use @samp{-} to specify STDIN.
 
+For scripted or other unattended use of @command{gpg} make sure to use
+the machine-parseable interface and not the default interface which is
+intended for direct use by humans.  The machine-parseable interface
+provides a stable and well documented API independent of the locale or
+future changes of @command{gpg}.  To enable this interface use the
+options @option{--with-colons} and @option{--status-fd}.  For certain
+operations the option @option{--command-fd} may come handy too.  See
+this man page and the file @file{DETAILS} for the specification of the
+interface.  Note that the GnuPG ``info'' pages as well as the PDF
+version of the GnuPG manual features a chapter on unattended use of
+GnuPG.  As an alternative the library @command{GPGME} can be used as a
+high-level abstraction on top of that interface.
+
 @mansect interoperability
 @chapheading INTEROPERABILITY WITH OTHER OPENPGP PROGRAMS
 
