@@ -257,10 +257,10 @@ fingerprints or keygrips.
 @item --export-secret-key-p12 @var{key-id}
 @opindex export-secret-key-p12
 Export the private key and the certificate identified by @var{key-id} in
-a PKCS#12 format. When used with the @code{--armor} option a few
+using the PKCS#12 format.  When used with the @code{--armor} option a few
 informational lines are prepended to the output.  Note, that the PKCS#12
-format is not very secure and this command is only provided if there is
-no other way to exchange the private key. (@xref{option --p12-charset}.)
+format is not very secure and proper transport security should be used
+to convey the exported key.  (@xref{option --p12-charset}.)
 
 @item --export-secret-key-p8 @var{key-id}
 @itemx --export-secret-key-raw @var{key-id}
