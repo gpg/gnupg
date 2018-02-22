@@ -51,7 +51,7 @@ AC_INIT([mym4_package],[mym4_version], [https://bugs.gnupg.org])
 
 # When changing the SWDB tag please also adjust the hard coded tags in
 # build-aux/speedo.mk and Makefile.am
-AC_DEFINE_UNQUOTED(GNUPG_SWDB_TAG, "gnupg22", [swdb tag for this branch])
+AC_DEFINE_UNQUOTED(GNUPG_SWDB_TAG, "gnupg24", [swdb tag for this branch])
 
 NEED_GPG_ERROR_VERSION=1.24
 
