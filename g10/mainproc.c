@@ -315,6 +315,21 @@ symkey_decrypt_seskey (DEK *dek, byte *seskey, size_t slen)
   else
     {
       gcry_cipher_decrypt (hd, seskey, slen, NULL, 0 );
+      /* Here we can only test whether the algo given in decrypted
+       * session key is a valid OpenPGP algo.  With 11 defined
+       * symmetric algorithms we will miss 4.3% of wrong passphrases
+       * here.  The actual checking is done later during bulk
+       * decryption; we can't bring this check forward easily.  We
+       * need to use the GPG_ERR_CHECKSUM so that we won't run into
+       * the gnupg < 2.2 bug compatible case which would terminate the
+       * process on GPG_ERR_CIPHER_ALGO.  Note that with AEAD (above)
+       * we will have a reliable test here.  */
+      if (openpgp_cipher_test_algo (seskey[0]))
+        {
+          err = gpg_error (GPG_ERR_CHECKSUM);
+          goto leave;
+        }
+
       /* Now we replace the dek components with the real session key to
        * decrypt the contents of the sequencing packet. */
       keylen = slen-1;
