@@ -541,6 +541,7 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
   size_t totallen = 0; /* The number of bytes to return on success or EOF.  */
   size_t off = 0;      /* The offset into the buffer.  */
   size_t len;          /* The current number of bytes in BUF+OFF.  */
+  int last_chunk_done = 0; /* Flag that we processed the last chunk.  */
   int c;
 
   log_assert (size > 48); /* Our code requires at least this size.  */
@@ -551,16 +552,16 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
   memcpy (buf, dfx->holdback, len);
 
   if (DBG_FILTER)
-    log_debug ("aead_underflow: size=%zu len=%zu%s\n",
-               size, len, dfx->eof_seen? " eof":"");
+    log_debug ("aead_underflow: size=%zu len=%zu%s%s\n", size, len,
+               dfx->partial? " partial":"", dfx->eof_seen? " eof":"");
 
-  /* Read and fill up BUF.  We need to watchout for an EOF so that we
+  /* Read and fill up BUF.  We need to watch out for an EOF so that we
    * can detect the last chunk which is commonly shorter than the
    * chunksize.  After the last data byte from the last chunk 32 more
    * bytes are expected for the last chunk's tag and the following
-   * final chunk's tag.  To detect the EOF we need to read at least
+   * final chunk's tag.  To detect the EOF we need to try reading at least
    * one further byte; however we try to ready 16 extra bytes to avoid
-   * singel byte reads in some lower layers.  The outcome is that we
+   * single byte reads in some lower layers.  The outcome is that we
    * have up to 48 extra extra octets which we will later put into the
    * holdback buffer for the next invocation (which handles the EOF
    * case).  */
@@ -648,56 +649,72 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
       len -= n;
 
       if (DBG_FILTER)
-        log_debug ("bytes left: %zu at off=%zu\n", len, off);
+        log_debug ("ndecrypted: %zu (nchunk=%zu) bytes left: %zu at off=%zu\n",
+                   totallen, dfx->chunklen, len, off);
 
       /* Check the tag.  */
       if (len < 16)
         {
           /* The tag is not entirely in the buffer.  Read the rest of
-           * the tag from the holdback buffer.  The shift the holdback
+           * the tag from the holdback buffer.  Then shift the holdback
            * buffer and fill it up again.  */
           memcpy (tagbuf, buf+off, len);
           memcpy (tagbuf + len, dfx->holdback, 16 - len);
           dfx->holdbacklen -= 16-len;
           memmove (dfx->holdback, dfx->holdback + (16-len), dfx->holdbacklen);
 
-          len = dfx->holdbacklen;
-          if (dfx->partial)
+          if (dfx->eof_seen)
             {
-              for (; len < 48; len++ )
+              /* We should have the last chunk's tag in TAGBUF and the
+               * final tag in HOLDBACKBUF.  */
+              if (len || dfx->holdbacklen != 16)
                 {
-                  if ((c = iobuf_get (a)) == -1)
-                    {
-                      dfx->eof_seen = 1; /* Normal EOF. */
-                      break;
-                    }
-                  dfx->holdback[len] = c;
+                  /* Not enough data for the last two tags.  */
+                  err = gpg_error (GPG_ERR_TRUNCATED);
+                  goto leave;
                 }
+              len = 0;
+              last_chunk_done = 1;
             }
           else
             {
-              for (; len < 48 && dfx->length; len++, dfx->length--)
+              len = dfx->holdbacklen;
+              if (dfx->partial)
                 {
-                  c = iobuf_get (a);
-                  if (c == -1)
+                  for (; len < 48; len++ )
                     {
-                      dfx->eof_seen = 3; /* Premature EOF. */
-                      break;
+                      if ((c = iobuf_get (a)) == -1)
+                        {
+                          dfx->eof_seen = 1; /* Normal EOF. */
+                          break;
+                        }
+                      dfx->holdback[len] = c;
                     }
-                  dfx->holdback[len] = c;
                 }
-              if (!dfx->length)
-                dfx->eof_seen = 1; /* Normal EOF.  */
+              else
+                {
+                  for (; len < 48 && dfx->length; len++, dfx->length--)
+                    {
+                      c = iobuf_get (a);
+                      if (c == -1)
+                        {
+                          dfx->eof_seen = 3; /* Premature EOF. */
+                          break;
+                        }
+                      dfx->holdback[len] = c;
+                    }
+                  if (!dfx->length)
+                    dfx->eof_seen = 1; /* Normal EOF.  */
+                }
+              if (len < 32)
+                {
+                  /* Not enough data for the last two tags.  */
+                  err = gpg_error (GPG_ERR_TRUNCATED);
+                  goto leave;
+                }
+              dfx->holdbacklen = len;
+              len = 0;
             }
-          if (len < 32)
-            {
-              /* Not enough data for the last two tags.  */
-              err = gpg_error (GPG_ERR_TRUNCATED);
-              goto leave;
-            }
-          dfx->holdbacklen = len;
-          /* log_printhex (dfx->holdback, dfx->holdbacklen, "holdback:"); */
-          len = 0;
         }
       else /* We already have the full tag.  */
         {
@@ -716,54 +733,73 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
                        gpg_strerror (err));
           goto leave;
         }
+      if (DBG_FILTER)
+        log_debug ("tag is valid\n");
 
       /* Prepare a new chunk.  */
-      dfx->chunklen = 0;
-      dfx->chunkindex++;
-      err = aead_set_nonce (dfx);
-      if (err)
-        goto leave;
-      err = aead_set_ad (dfx, 0);
-      if (err)
-        goto leave;
+      if (!last_chunk_done)
+        {
+          dfx->chunklen = 0;
+          dfx->chunkindex++;
+          err = aead_set_nonce (dfx);
+          if (err)
+            goto leave;
+          err = aead_set_ad (dfx, 0);
+          if (err)
+            goto leave;
+        }
 
       continue;
     }
 
-  if (dfx->eof_seen)
+  if (!last_chunk_done)
     {
-      /* This is the last block of the last chunk.  Its length may
-       * not be a multiple of the block length.  */
-      gcry_cipher_final (dfx->cipher_hd);
-    }
-  err = gcry_cipher_decrypt (dfx->cipher_hd, buf + off, len, NULL, 0);
-  if (err)
-    {
-      log_error ("gcry_cipher_decrypt failed (2): %s\n", gpg_strerror (err));
-      goto leave;
-    }
-  totallen += len;
-  dfx->chunklen += len;
-  dfx->total += len;
-  if (dfx->eof_seen)
-    {
-      if (DBG_FILTER)
-        log_debug ("eof seen: holdback buffer has the tags.\n");
-
-      log_assert (dfx->holdbacklen >= 32);
-
-      if (DBG_FILTER)
-        log_printhex (dfx->holdback, 16, "tag:");
-      err = gcry_cipher_checktag (dfx->cipher_hd, dfx->holdback, 16);
+      if (dfx->eof_seen)
+        {
+          /* This is the last block of the last chunk.  Its length may
+           * not be a multiple of the block length.  */
+          gcry_cipher_final (dfx->cipher_hd);
+        }
+      err = gcry_cipher_decrypt (dfx->cipher_hd, buf + off, len, NULL, 0);
       if (err)
         {
-          log_error ("gcry_cipher_checktag failed (2): %s\n",
+          log_error ("gcry_cipher_decrypt failed (2): %s\n",
                      gpg_strerror (err));
           goto leave;
         }
+      totallen += len;
+      dfx->chunklen += len;
+      dfx->total += len;
+      if (DBG_FILTER)
+        log_debug ("ndecrypted: %zu (nchunk=%zu)\n", totallen, dfx->chunklen);
+    }
+
+  if (dfx->eof_seen)
+    {
+      if (DBG_FILTER)
+        log_debug ("eof seen: holdback buffer has the %s.\n",
+                   last_chunk_done? "final tag":"last and final tag");
+
+      if (!last_chunk_done)
+        {
+          log_assert (dfx->holdbacklen >= 32);
+
+          if (DBG_FILTER)
+            log_printhex (dfx->holdback, 16, "tag:");
+          err = gcry_cipher_checktag (dfx->cipher_hd, dfx->holdback, 16);
+          if (err)
+            {
+              log_error ("gcry_cipher_checktag failed (2): %s\n",
+                         gpg_strerror (err));
+              goto leave;
+            }
+          if (DBG_FILTER)
+            log_debug ("tag is valid\n");
+        }
 
       /* Check the final chunk.  */
-      dfx->chunkindex++;
+      if (dfx->chunklen)
+        dfx->chunkindex++;
       err = aead_set_nonce (dfx);
       if (err)
         goto leave;
@@ -771,7 +807,7 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
       if (err)
         goto leave;
       gcry_cipher_final (dfx->cipher_hd);
-      /* decrypt an empty string.  */
+      /* Decrypt an empty string.  */
       err = gcry_cipher_decrypt (dfx->cipher_hd, dfx->holdback, 0, NULL, 0);
       if (err)
         {
@@ -779,8 +815,10 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
                      gpg_strerror (err));
           goto leave;
         }
-      /* log_printhex (dfx->holdback+16, 16, "tag:"); */
-      err = gcry_cipher_checktag (dfx->cipher_hd, dfx->holdback+16, 16);
+      if (DBG_CRYPTO)
+        log_printhex (dfx->holdback+(last_chunk_done?0:16), 16, "tag:");
+      err = gcry_cipher_checktag (dfx->cipher_hd,
+                                  dfx->holdback+(last_chunk_done?0:16), 16);
       if (err)
         {
           if (DBG_FILTER)
@@ -788,6 +826,8 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
                        gpg_strerror (err));
           goto leave;
         }
+      if (DBG_FILTER)
+        log_debug ("final tag is valid\n");
       err = gpg_error (GPG_ERR_EOF);
     }
 

@@ -244,7 +244,8 @@ write_final_chunk (cipher_filter_context_t *cfx, iobuf_t a)
   gpg_error_t err;
   char dummy[1];
 
-  cfx->chunkindex++;
+  if (cfx->chunklen)
+    cfx->chunkindex++;
 
   err = set_nonce (cfx);
   if (err)
