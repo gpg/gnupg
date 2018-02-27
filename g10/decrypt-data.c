@@ -117,11 +117,15 @@ release_dfx_context (decode_filter_ctx_t dfx)
 }
 
 
-/* Set the nonce for AEAD.  This also reset the decryption machinery
- * so that the handle can be used for a new chunk.  */
+/* Set the nonce and the additional data for the current chunk.  This
+ * also reset the decryption machinery * so that the handle can be
+ * used for a new chunk.  If FINAL is set the final AEAD chunk is
+ * processed.  */
 static gpg_error_t
-aead_set_nonce (decode_filter_ctx_t dfx)
+aead_set_nonce_and_ad (decode_filter_ctx_t dfx, int final)
 {
+  gpg_error_t err;
+  unsigned char ad[21];
   unsigned char nonce[16];
   int i;
 
@@ -151,16 +155,9 @@ aead_set_nonce (decode_filter_ctx_t dfx)
 
   if (DBG_CRYPTO)
     log_printhex (nonce, i, "nonce:");
-  return gcry_cipher_setiv (dfx->cipher_hd, nonce, i);
-}
-
-
-/* Set the additional data for the current chunk.  If FINAL is set the
- * final AEAD chunk is processed.  */
-static gpg_error_t
-aead_set_ad (decode_filter_ctx_t dfx, int final)
-{
-  unsigned char ad[21];
+  err = gcry_cipher_setiv (dfx->cipher_hd, nonce, i);
+  if (err)
+    return err;
 
   ad[0] = (0xc0 | PKT_ENCRYPTED_AEAD);
   ad[1] = 1;
@@ -370,14 +367,6 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
           log_error(_("problem handling encrypted packet\n"));
           goto leave;
         }
-
-      rc = aead_set_nonce (dfx);
-      if (rc)
-        goto leave;
-
-      rc = aead_set_ad (dfx, 0);
-      if (rc)
-        goto leave;
 
     }
   else /* CFB encryption.  */
@@ -606,7 +595,6 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
   size_t totallen = 0; /* The number of bytes to return on success or EOF.  */
   size_t off = 0;      /* The offset into the buffer.  */
   size_t len;          /* The current number of bytes in BUF+OFF.  */
-  int last_chunk_done = 0; /* Flag that we processed the last chunk.  */
 
   log_assert (size > 48); /* Our code requires at least this size.  */
 
@@ -655,10 +643,10 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
     }
   /* log_printhex (dfx->holdback, dfx->holdbacklen, "holdback:"); */
 
-  /* Decrypt the buffer.  This requires a loop because a chunk may end
-   * within the buffer.  */
+  /* Decrypt the buffer.  This first requires a loop to handle the
+   * case when a chunk ends within the buffer.  */
   if (DBG_FILTER)
-    log_debug ("decrypt loop: chunklen=%ju total=%ju size=%zu len=%zu%s\n",
+    log_debug ("decrypt: chunklen=%ju total=%ju size=%zu len=%zu%s\n",
                (uintmax_t)dfx->chunklen, (uintmax_t)dfx->total, size, len,
                dfx->eof_seen? " eof":"");
 
@@ -669,6 +657,15 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
 
       if (DBG_FILTER)
         log_debug ("chunksize will be reached: n=%zu\n", n);
+
+      if (!dfx->chunklen)
+        {
+          /* First data for this chunk - prepare.  */
+          err = aead_set_nonce_and_ad (dfx, 0);
+          if (err)
+            goto leave;
+        }
+
       /* log_printhex (buf, n, "ciph:"); */
       gcry_cipher_final (dfx->cipher_hd);
       err = gcry_cipher_decrypt (dfx->cipher_hd, buf+off, n, NULL, 0);
@@ -710,7 +707,6 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
                   err = gpg_error (GPG_ERR_TRUNCATED);
                   goto leave;
                 }
-              last_chunk_done = 1;
             }
           else
             {
@@ -735,25 +731,23 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
       err = aead_checktag (dfx, 0, tagbuf);
       if (err)
         goto leave;
-
-      /* Prepare a new chunk.  */
-      if (!last_chunk_done)
-        {
-          dfx->chunklen = 0;
-          dfx->chunkindex++;
-          err = aead_set_nonce (dfx);
-          if (err)
-            goto leave;
-          err = aead_set_ad (dfx, 0);
-          if (err)
-            goto leave;
-        }
+      dfx->chunklen = 0;
+      dfx->chunkindex++;
 
       continue;
     }
 
-  if (!last_chunk_done)
+  /* The bulk decryption of our buffer.  */
+  if (len)
     {
+      if (!dfx->chunklen)
+        {
+          /* First data for this chunk - prepare.  */
+          err = aead_set_nonce_and_ad (dfx, 0);
+          if (err)
+            goto leave;
+        }
+
       if (dfx->eof_seen)
         {
           /* This is the last block of the last chunk.  Its length may
@@ -777,28 +771,24 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
   if (dfx->eof_seen)
     {
       if (DBG_FILTER)
-        log_debug ("eof seen: holdback buffer has the %s.\n",
-                   last_chunk_done? "final tag":"last and final tag");
+        log_debug ("eof seen: holdback buffer has the last and final tag\n");
 
-      if (!last_chunk_done)
+      log_assert (dfx->holdbacklen >= 32);
+      if (dfx->chunklen)
         {
-          log_assert (dfx->holdbacklen >= 32);
           err = aead_checktag (dfx, 0, dfx->holdback);
           if (err)
             goto leave;
+          dfx->chunklen = 0;
+          dfx->chunkindex++;
         }
 
       /* Check the final chunk.  */
-      if (dfx->chunklen)
-        dfx->chunkindex++;
-      err = aead_set_nonce (dfx);
-      if (err)
-        goto leave;
-      err = aead_set_ad (dfx, 1);
+      err = aead_set_nonce_and_ad (dfx, 1);
       if (err)
         goto leave;
       gcry_cipher_final (dfx->cipher_hd);
-      /* Decrypt an empty string.  */
+      /* Decrypt an empty string (using HOLDBACK as a dummy).  */
       err = gcry_cipher_decrypt (dfx->cipher_hd, dfx->holdback, 0, NULL, 0);
       if (err)
         {
@@ -806,7 +796,7 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
                      gpg_strerror (err));
           goto leave;
         }
-      err = aead_checktag (dfx, 1, dfx->holdback+(last_chunk_done?0:16));
+      err = aead_checktag (dfx, 1, dfx->holdback+16);
       if (err)
         goto leave;
       err = gpg_error (GPG_ERR_EOF);
