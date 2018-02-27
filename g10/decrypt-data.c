@@ -192,6 +192,28 @@ aead_set_ad (decode_filter_ctx_t dfx, int final)
 }
 
 
+/* Helper to check the 16 byte tag in TAGBUF.  The FINAL flag is only
+ * for debug messages.  */
+static gpg_error_t
+aead_checktag (decode_filter_ctx_t dfx, int final, const void *tagbuf)
+{
+  gpg_error_t err;
+
+  if (DBG_FILTER)
+    log_printhex (tagbuf, 16, "tag:");
+  err = gcry_cipher_checktag (dfx->cipher_hd, tagbuf, 16);
+  if (err)
+    {
+      log_error ("gcry_cipher_checktag%s failed: %s\n",
+                 final? " (final)":"", gpg_strerror (err));
+      return err;
+    }
+  if (DBG_FILTER)
+    log_debug ("%stag is valid\n", final?"final ":"");
+  return 0;
+}
+
+
 /****************
  * Decrypt the data, specified by ED with the key DEK.
  */
@@ -531,6 +553,49 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
 }
 
 
+/* Fill BUFFER with up to NBYTES-OFFSET from STREAM utilizing
+ * information from the context DFX.  Returns the new offset which is
+ * the number of bytes read plus the original offset.  On EOF the
+ * respective flag in DFX is set. */
+static size_t
+fill_buffer (decode_filter_ctx_t dfx, iobuf_t stream,
+             byte *buffer, size_t nbytes, size_t offset)
+{
+  size_t nread = offset;
+  int c;
+
+  if (dfx->partial)
+    {
+      for (; nread < nbytes; nread++ )
+        {
+          if ((c = iobuf_get (stream)) == -1)
+            {
+              dfx->eof_seen = 1; /* Normal EOF. */
+              break;
+            }
+          buffer[nread] = c;
+        }
+    }
+  else
+    {
+      for (; nread < nbytes && dfx->length; nread++, dfx->length--)
+        {
+          c = iobuf_get (stream);
+          if (c == -1)
+            {
+              dfx->eof_seen = 3; /* Premature EOF. */
+              break;
+            }
+          buffer[nread] = c;
+        }
+      if (!dfx->length)
+        dfx->eof_seen = 1; /* Normal EOF.  */
+    }
+
+  return nread;
+}
+
+
 /* The core of the AEAD decryption.  This is the underflow function of
  * the aead_decode_filter.  */
 static gpg_error_t
@@ -542,7 +607,6 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
   size_t off = 0;      /* The offset into the buffer.  */
   size_t len;          /* The current number of bytes in BUF+OFF.  */
   int last_chunk_done = 0; /* Flag that we processed the last chunk.  */
-  int c;
 
   log_assert (size > 48); /* Our code requires at least this size.  */
 
@@ -560,39 +624,12 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
    * chunksize.  After the last data byte from the last chunk 32 more
    * bytes are expected for the last chunk's tag and the following
    * final chunk's tag.  To detect the EOF we need to try reading at least
-   * one further byte; however we try to ready 16 extra bytes to avoid
+   * one further byte; however we try to read 16 extra bytes to avoid
    * single byte reads in some lower layers.  The outcome is that we
    * have up to 48 extra extra octets which we will later put into the
    * holdback buffer for the next invocation (which handles the EOF
    * case).  */
-  if (dfx->partial)
-    {
-      for (; len < size; len++ )
-        {
-          if ((c = iobuf_get (a)) == -1)
-            {
-              dfx->eof_seen = 1; /* Normal EOF. */
-              break;
-            }
-          buf[len] = c;
-        }
-    }
-  else
-    {
-      for (; len < size && dfx->length; len++, dfx->length--)
-        {
-          c = iobuf_get (a);
-          if (c == -1)
-            {
-              dfx->eof_seen = 3; /* Premature EOF. */
-              break;
-            }
-          buf[len] = c;
-        }
-      if (!dfx->length)
-        dfx->eof_seen = 1; /* Normal EOF.  */
-    }
-
+  len = fill_buffer (dfx, a, buf, size, len);
   if (len < 32)
     {
       /* Not enough data for the last two tags.  */
@@ -673,47 +710,19 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
                   err = gpg_error (GPG_ERR_TRUNCATED);
                   goto leave;
                 }
-              len = 0;
               last_chunk_done = 1;
             }
           else
             {
-              len = dfx->holdbacklen;
-              if (dfx->partial)
-                {
-                  for (; len < 48; len++ )
-                    {
-                      if ((c = iobuf_get (a)) == -1)
-                        {
-                          dfx->eof_seen = 1; /* Normal EOF. */
-                          break;
-                        }
-                      dfx->holdback[len] = c;
-                    }
-                }
-              else
-                {
-                  for (; len < 48 && dfx->length; len++, dfx->length--)
-                    {
-                      c = iobuf_get (a);
-                      if (c == -1)
-                        {
-                          dfx->eof_seen = 3; /* Premature EOF. */
-                          break;
-                        }
-                      dfx->holdback[len] = c;
-                    }
-                  if (!dfx->length)
-                    dfx->eof_seen = 1; /* Normal EOF.  */
-                }
-              if (len < 32)
+              len = 0;
+              dfx->holdbacklen = fill_buffer (dfx, a, dfx->holdback, 48,
+                                              dfx->holdbacklen);
+              if (dfx->holdbacklen < 32)
                 {
                   /* Not enough data for the last two tags.  */
                   err = gpg_error (GPG_ERR_TRUNCATED);
                   goto leave;
                 }
-              dfx->holdbacklen = len;
-              len = 0;
             }
         }
       else /* We already have the full tag.  */
@@ -723,18 +732,9 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
           memmove (buf + off, buf + off + 16, len - 16);
           len -= 16;
         }
-      if (DBG_CRYPTO)
-        log_printhex (tagbuf, 16, "tag:");
-      err = gcry_cipher_checktag (dfx->cipher_hd, tagbuf, 16);
+      err = aead_checktag (dfx, 0, tagbuf);
       if (err)
-        {
-          if (DBG_FILTER)
-            log_debug ("gcry_cipher_checktag failed (1): %s\n",
-                       gpg_strerror (err));
-          goto leave;
-        }
-      if (DBG_FILTER)
-        log_debug ("tag is valid\n");
+        goto leave;
 
       /* Prepare a new chunk.  */
       if (!last_chunk_done)
@@ -783,18 +783,9 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
       if (!last_chunk_done)
         {
           log_assert (dfx->holdbacklen >= 32);
-
-          if (DBG_FILTER)
-            log_printhex (dfx->holdback, 16, "tag:");
-          err = gcry_cipher_checktag (dfx->cipher_hd, dfx->holdback, 16);
+          err = aead_checktag (dfx, 0, dfx->holdback);
           if (err)
-            {
-              log_error ("gcry_cipher_checktag failed (2): %s\n",
-                         gpg_strerror (err));
-              goto leave;
-            }
-          if (DBG_FILTER)
-            log_debug ("tag is valid\n");
+            goto leave;
         }
 
       /* Check the final chunk.  */
@@ -815,19 +806,9 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
                      gpg_strerror (err));
           goto leave;
         }
-      if (DBG_CRYPTO)
-        log_printhex (dfx->holdback+(last_chunk_done?0:16), 16, "tag:");
-      err = gcry_cipher_checktag (dfx->cipher_hd,
-                                  dfx->holdback+(last_chunk_done?0:16), 16);
+      err = aead_checktag (dfx, 1, dfx->holdback+(last_chunk_done?0:16));
       if (err)
-        {
-          if (DBG_FILTER)
-            log_debug ("gcry_cipher_checktag failed (final): %s\n",
-                       gpg_strerror (err));
-          goto leave;
-        }
-      if (DBG_FILTER)
-        log_debug ("final tag is valid\n");
+        goto leave;
       err = gpg_error (GPG_ERR_EOF);
     }
 
