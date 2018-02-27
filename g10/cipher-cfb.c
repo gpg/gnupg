@@ -1,4 +1,4 @@
-/* cipher.c - Enciphering filter for the old CFB mode.
+/* cipher-cfb.c - Enciphering filter for the old CFB mode.
  * Copyright (C) 1998-2003, 2006, 2009 Free Software Foundation, Inc.
  * Copyright (C) 1998-2003, 2006, 2009, 2017 Werner koch
  *
