@@ -55,49 +55,16 @@ my_iobuf_write (iobuf_t a, const void *buffer, size_t buflen)
 }
 
 
-/* Set the additional data for the current chunk.  If FINAL is set the
- * final AEAD chunk is processed.  */
+/* Set the nonce and the additional data for the current chunk.  If
+ * FINAL is set the final AEAD chunk is processed.  This also reset
+ * the encryption machinery so that the handle can be used for a new
+ * chunk.  */
 static gpg_error_t
-set_additional_data (cipher_filter_context_t *cfx, int final)
+set_nonce_and_ad (cipher_filter_context_t *cfx, int final)
 {
-  unsigned char ad[21];
-
-  ad[0] = (0xc0 | PKT_ENCRYPTED_AEAD);
-  ad[1] = 1;
-  ad[2] = cfx->dek->algo;
-  ad[3] = cfx->dek->use_aead;
-  ad[4] = cfx->chunkbyte;
-  ad[5] = cfx->chunkindex >> 56;
-  ad[6] = cfx->chunkindex >> 48;
-  ad[7] = cfx->chunkindex >> 40;
-  ad[8] = cfx->chunkindex >> 32;
-  ad[9] = cfx->chunkindex >> 24;
-  ad[10]= cfx->chunkindex >> 16;
-  ad[11]= cfx->chunkindex >>  8;
-  ad[12]= cfx->chunkindex;
-  if (final)
-    {
-      ad[13] = cfx->total >> 56;
-      ad[14] = cfx->total >> 48;
-      ad[15] = cfx->total >> 40;
-      ad[16] = cfx->total >> 32;
-      ad[17] = cfx->total >> 24;
-      ad[18] = cfx->total >> 16;
-      ad[19] = cfx->total >>  8;
-      ad[20] = cfx->total;
-    }
-  if (DBG_CRYPTO)
-    log_printhex (ad, final? 21 : 13, "authdata:");
-  return gcry_cipher_authenticate (cfx->cipher_hd, ad, final? 21 : 13);
-}
-
-
-/* Set the nonce.  This also reset the encryption machinery so that
- * the handle can be used for a new chunk.  */
-static gpg_error_t
-set_nonce (cipher_filter_context_t *cfx)
-{
+  gpg_error_t err;
   unsigned char nonce[16];
+  unsigned char ad[21];
   int i;
 
   switch (cfx->dek->use_aead)
@@ -127,7 +94,37 @@ set_nonce (cipher_filter_context_t *cfx)
 
   if (DBG_CRYPTO)
     log_printhex (nonce, 15, "nonce:");
-  return gcry_cipher_setiv (cfx->cipher_hd, nonce, i);
+  err = gcry_cipher_setiv (cfx->cipher_hd, nonce, i);
+  if (err)
+    return err;
+
+  ad[0] = (0xc0 | PKT_ENCRYPTED_AEAD);
+  ad[1] = 1;
+  ad[2] = cfx->dek->algo;
+  ad[3] = cfx->dek->use_aead;
+  ad[4] = cfx->chunkbyte;
+  ad[5] = cfx->chunkindex >> 56;
+  ad[6] = cfx->chunkindex >> 48;
+  ad[7] = cfx->chunkindex >> 40;
+  ad[8] = cfx->chunkindex >> 32;
+  ad[9] = cfx->chunkindex >> 24;
+  ad[10]= cfx->chunkindex >> 16;
+  ad[11]= cfx->chunkindex >>  8;
+  ad[12]= cfx->chunkindex;
+  if (final)
+    {
+      ad[13] = cfx->total >> 56;
+      ad[14] = cfx->total >> 48;
+      ad[15] = cfx->total >> 40;
+      ad[16] = cfx->total >> 32;
+      ad[17] = cfx->total >> 24;
+      ad[18] = cfx->total >> 16;
+      ad[19] = cfx->total >>  8;
+      ad[20] = cfx->total;
+    }
+  if (DBG_CRYPTO)
+    log_printhex (ad, final? 21 : 13, "authdata:");
+  return gcry_cipher_authenticate (cfx->cipher_hd, ad, final? 21 : 13);
 }
 
 
@@ -203,14 +200,9 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
   if (err)
     return err;
 
-  err = set_nonce (cfx);
+  err = set_nonce_and_ad (cfx, 0);
   if (err)
     return err;
-
-  err = set_additional_data (cfx, 0);
-  if (err)
-    return err;
-
   cfx->wrote_header = 1;
 
  leave:
@@ -233,6 +225,8 @@ write_auth_tag (cipher_filter_context_t *cfx, iobuf_t a)
     goto leave;
 
  leave:
+  if (err)
+    log_error ("write_auth_tag failed: %s\n", gpg_strerror (err));
   return err;
 }
 
@@ -247,10 +241,7 @@ write_final_chunk (cipher_filter_context_t *cfx, iobuf_t a)
   if (cfx->chunklen)
     cfx->chunkindex++;
 
-  err = set_nonce (cfx);
-  if (err)
-    goto leave;
-  err = set_additional_data (cfx, 1);
+  err = set_nonce_and_ad (cfx, 1);
   if (err)
     goto leave;
 
@@ -273,7 +264,7 @@ static gpg_error_t
 do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
 {
   gpg_error_t err = 0;
-  int newchunk = 0;
+  int finalize = 0;
   size_t n;
 
   /* Put the data into a buffer, flush and encrypt as needed.  */
@@ -289,7 +280,7 @@ do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
       if (cfx->chunklen + cfx->buflen + n >= cfx->chunksize)
         {
           size_t n1 = cfx->chunksize - (cfx->chunklen + cfx->buflen);
-          newchunk = 1;
+          finalize = 1;
           if (DBG_FILTER)
             log_debug ("chunksize %ju reached;"
                        " cur buflen=%zu using %zu of %zu\n",
@@ -303,20 +294,21 @@ do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
       buf  += n;
       size -= n;
 
-      if (cfx->buflen == cfx->bufsize || newchunk)
+      if (cfx->buflen == cfx->bufsize || finalize)
         {
           if (DBG_FILTER)
             log_debug ("encrypting: buflen=%zu %s n=%zu\n",
-                       cfx->buflen, newchunk?"(newchunk)":"", n);
-          if (newchunk)
+                       cfx->buflen, finalize?"(finalize)":"", n);
+          if (finalize)
             gcry_cipher_final (cfx->cipher_hd);
-          if (!DBG_FILTER)
-            ;
-          else if (newchunk)
-            log_printhex (cfx->buffer, cfx->buflen, "plain(1):");
-          else if (cfx->buflen > 32)
-            log_printhex (cfx->buffer + cfx->buflen - 32, 32,
-                          "plain(last 32):");
+          if (DBG_FILTER)
+            {
+              if (finalize)
+                log_printhex (cfx->buffer, cfx->buflen, "plain(1):");
+              else if (cfx->buflen > 32)
+                log_printhex (cfx->buffer + cfx->buflen - 32, 32,
+                              "plain(last32):");
+            }
 
           /* Take care: even with a buflen of zero an encrypt needs to
            * be called after gcry_cipher_final and before
@@ -324,7 +316,7 @@ do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
            * mode.  */
           gcry_cipher_encrypt (cfx->cipher_hd, cfx->buffer, cfx->buflen,
                                NULL, 0);
-          if (newchunk && DBG_FILTER)
+          if (finalize && DBG_FILTER)
             log_printhex (cfx->buffer, cfx->buflen, "ciphr(1):");
           err = my_iobuf_write (a, cfx->buffer, cfx->buflen);
           if (err)
@@ -333,30 +325,23 @@ do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
           cfx->total += cfx->buflen;
           cfx->buflen = 0;
 
-          if (newchunk)
+          if (finalize)
             {
               if (DBG_FILTER)
                 log_debug ("chunklen=%ju  total=%ju\n",
                            (uintmax_t)cfx->chunklen, (uintmax_t)cfx->total);
               err = write_auth_tag (cfx, a);
               if (err)
-                {
-                  log_error ("gcry_cipher_gettag failed: %s\n",
-                             gpg_strerror (err));
-                  goto leave;
-                }
+                goto leave;
 
               if (DBG_FILTER)
                 log_debug ("starting a new chunk (cur size=%zu)\n", size);
               cfx->chunkindex++;
               cfx->chunklen = 0;
-              err = set_nonce (cfx);
+              err = set_nonce_and_ad (cfx, 0);
               if (err)
                 goto leave;
-              err = set_additional_data (cfx, 0);
-              if (err)
-                goto leave;
-              newchunk = 0;
+              finalize = 0;
             }
         }
     }
