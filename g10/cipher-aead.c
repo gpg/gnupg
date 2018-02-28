@@ -200,9 +200,6 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
   if (err)
     return err;
 
-  err = set_nonce_and_ad (cfx, 0);
-  if (err)
-    return err;
   cfx->wrote_header = 1;
 
  leave:
@@ -237,9 +234,6 @@ write_final_chunk (cipher_filter_context_t *cfx, iobuf_t a)
 {
   gpg_error_t err;
   char dummy[1];
-
-  if (cfx->chunklen)
-    cfx->chunkindex++;
 
   err = set_nonce_and_ad (cfx, 1);
   if (err)
@@ -297,8 +291,18 @@ do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
       if (cfx->buflen == cfx->bufsize || finalize)
         {
           if (DBG_FILTER)
-            log_debug ("encrypting: buflen=%zu %s n=%zu\n",
-                       cfx->buflen, finalize?"(finalize)":"", n);
+            log_debug ("encrypting: size=%zu buflen=%zu %s n=%zu\n",
+                       size, cfx->buflen, finalize?"(finalize)":"", n);
+
+          if (!cfx->chunklen)
+            {
+              if (DBG_FILTER)
+                log_debug ("start encrypting a new chunk\n");
+              err = set_nonce_and_ad (cfx, 0);
+              if (err)
+                goto leave;
+            }
+
           if (finalize)
             gcry_cipher_final (cfx->cipher_hd);
           if (DBG_FILTER)
@@ -314,8 +318,10 @@ do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
            * be called after gcry_cipher_final and before
            * gcry_cipher_gettag - at least with libgcrypt 1.8 and OCB
            * mode.  */
-          gcry_cipher_encrypt (cfx->cipher_hd, cfx->buffer, cfx->buflen,
-                               NULL, 0);
+          err = gcry_cipher_encrypt (cfx->cipher_hd, cfx->buffer, cfx->buflen,
+                                     NULL, 0);
+          if (err)
+            goto leave;
           if (finalize && DBG_FILTER)
             log_printhex (cfx->buffer, cfx->buflen, "ciphr(1):");
           err = my_iobuf_write (a, cfx->buffer, cfx->buflen);
@@ -328,19 +334,14 @@ do_flush (cipher_filter_context_t *cfx, iobuf_t a, byte *buf, size_t size)
           if (finalize)
             {
               if (DBG_FILTER)
-                log_debug ("chunklen=%ju  total=%ju\n",
+                log_debug ("writing tag: chunklen=%ju total=%ju\n",
                            (uintmax_t)cfx->chunklen, (uintmax_t)cfx->total);
               err = write_auth_tag (cfx, a);
               if (err)
                 goto leave;
 
-              if (DBG_FILTER)
-                log_debug ("starting a new chunk (cur size=%zu)\n", size);
               cfx->chunkindex++;
               cfx->chunklen = 0;
-              err = set_nonce_and_ad (cfx, 0);
-              if (err)
-                goto leave;
               finalize = 0;
             }
         }
@@ -361,38 +362,42 @@ do_free (cipher_filter_context_t *cfx, iobuf_t a)
   if (DBG_FILTER)
     log_debug ("do_free: buflen=%zu\n", cfx->buflen);
 
-  /* FIXME: Check what happens if we just wrote the last chunk and no
-   * more bytes were to encrypt.  We should then not call finalize and
-   * write the auth tag again, right?  May this at all happen?  */
-
-  /* Call finalize which will also allow us to flush out and encrypt
-   * the last arbitrary length buffer.  */
-  gcry_cipher_final (cfx->cipher_hd);
-
-  /* Encrypt any remaining bytes.  */
   if (cfx->buflen)
     {
       if (DBG_FILTER)
-        log_debug ("processing last %zu bytes of the last chunk\n",
-                   cfx->buflen);
-      gcry_cipher_encrypt (cfx->cipher_hd, cfx->buffer, cfx->buflen, NULL, 0);
+        log_debug ("encrypting last %zu bytes of the last chunk\n",cfx->buflen);
+
+      if (!cfx->chunklen)
+        {
+          if (DBG_FILTER)
+            log_debug ("start encrypting a new chunk\n");
+          err = set_nonce_and_ad (cfx, 0);
+          if (err)
+            goto leave;
+        }
+
+      gcry_cipher_final (cfx->cipher_hd);
+      err = gcry_cipher_encrypt (cfx->cipher_hd, cfx->buffer, cfx->buflen,
+                                 NULL, 0);
+      if (err)
+        goto leave;
       err = my_iobuf_write (a, cfx->buffer, cfx->buflen);
       if (err)
         goto leave;
       /* log_printhex (cfx->buffer, cfx->buflen, "wrote:"); */
       cfx->chunklen += cfx->buflen;
       cfx->total += cfx->buflen;
-    }
-  else /* Dummy encryption.  */
-    gcry_cipher_encrypt (cfx->cipher_hd, cfx->buffer, 0, NULL, 0);
 
-  /* Get and write the authentication tag.  */
-  if (DBG_FILTER)
-    log_debug ("chunklen=%ju  total=%ju\n",
-               (uintmax_t)cfx->chunklen, (uintmax_t)cfx->total);
-  err = write_auth_tag (cfx, a);
-  if (err)
-    goto leave;
+      /* Get and write the authentication tag.  */
+      if (DBG_FILTER)
+        log_debug ("writing tag: chunklen=%ju total=%ju\n",
+                   (uintmax_t)cfx->chunklen, (uintmax_t)cfx->total);
+      err = write_auth_tag (cfx, a);
+      if (err)
+        goto leave;
+      cfx->chunkindex++;
+      cfx->chunklen = 0;
+    }
 
   /* Write the final chunk.  */
   if (DBG_FILTER)

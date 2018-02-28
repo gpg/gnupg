@@ -770,17 +770,25 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
 
   if (dfx->eof_seen)
     {
-      if (DBG_FILTER)
-        log_debug ("eof seen: holdback buffer has the last and final tag\n");
 
-      log_assert (dfx->holdbacklen >= 32);
       if (dfx->chunklen)
         {
+          if (DBG_FILTER)
+            log_debug ("eof seen: holdback has the last and final tag\n");
+          log_assert (dfx->holdbacklen >= 32);
           err = aead_checktag (dfx, 0, dfx->holdback);
           if (err)
             goto leave;
           dfx->chunklen = 0;
           dfx->chunkindex++;
+          off = 16;
+        }
+      else
+        {
+          if (DBG_FILTER)
+            log_debug ("eof seen: holdback has the final tag\n");
+          log_assert (dfx->holdbacklen >= 16);
+          off = 0;
         }
 
       /* Check the final chunk.  */
@@ -796,7 +804,7 @@ aead_underflow (decode_filter_ctx_t dfx, iobuf_t a, byte *buf, size_t *ret_len)
                      gpg_strerror (err));
           goto leave;
         }
-      err = aead_checktag (dfx, 1, dfx->holdback+16);
+      err = aead_checktag (dfx, 1, dfx->holdback+off);
       if (err)
         goto leave;
       err = gpg_error (GPG_ERR_EOF);
