@@ -417,6 +417,7 @@ gpg_error_t agent_public_key_from_file (ctrl_t ctrl,
                                         gcry_sexp_t *result);
 int agent_is_dsa_key (gcry_sexp_t s_key);
 int agent_is_eddsa_key (gcry_sexp_t s_key);
+int agent_is_tpm2_key(gcry_sexp_t s_key);
 int agent_key_available (const unsigned char *grip);
 gpg_error_t agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
                                       int *r_keytype,
@@ -532,6 +533,18 @@ gpg_error_t agent_listtrusted (void *assuan_context);
 gpg_error_t agent_marktrusted (ctrl_t ctrl, const char *name,
                                const char *fpr, int flag);
 void agent_reload_trustlist (void);
+
+/*-- divert-tpm2.c --*/
+int divert_tpm2_pksign (ctrl_t ctrl, const char *desc_text,
+                        const unsigned char *digest, size_t digestlen, int algo,
+                        const unsigned char *shadow_info, unsigned char **r_sig,
+                        size_t *r_siglen);
+int divert_tpm2_pkdecrypt (ctrl_t ctrl, const char *desc_text,
+                           const unsigned char *cipher,
+                           const unsigned char *shadow_info,
+                           char **r_buf, size_t *r_len, int *r_padding);
+int divert_tpm2_writekey (ctrl_t ctrl, const unsigned char *grip,
+                          gcry_sexp_t s_skey);
 
 
 /*-- divert-scd.c --*/

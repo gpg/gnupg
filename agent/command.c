@@ -1192,6 +1192,11 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
           if (err)
             goto leave;
         }
+      else if (strcmp (shadow_info_type, "tpm2-v1") == 0)
+        {
+          serialno = xstrdup("TPM-Protected");
+          idstr = NULL;
+        }
       else
         {
           log_error ("Unrecognised shadow key type %s\n", shadow_info_type);
@@ -2578,6 +2583,57 @@ cmd_keytocard (assuan_context_t ctx, char *line)
 
 
 
+static const char hlp_keytotpm[] =
+  "KEYTOTPM <hexstring_with_keygrip>\n"
+  "\n";
+static gpg_error_t
+cmd_keytotpm (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+  unsigned char grip[20];
+  gcry_sexp_t s_skey;
+  unsigned char *shadow_info = NULL;
+
+  if (ctrl->restricted)
+    return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
+
+  err = parse_keygrip (ctx, line, grip);
+  if (err)
+    goto leave;
+
+  if (agent_key_available (grip))
+    {
+      err =gpg_error (GPG_ERR_NO_SECKEY);
+      goto leave;
+    }
+
+  err = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc, grip,
+                             &shadow_info, CACHE_MODE_IGNORE, NULL,
+                             &s_skey, NULL);
+  if (err)
+    {
+      xfree (shadow_info);
+      goto leave;
+    }
+  if (shadow_info)
+    {
+      /* Key is on a TPM or smartcard already.  */
+      xfree (shadow_info);
+      gcry_sexp_release (s_skey);
+      err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
+      goto leave;
+    }
+
+  err = divert_tpm2_writekey (ctrl, grip, s_skey);
+  gcry_sexp_release (s_skey);
+
+ leave:
+  return leave_cmd (ctx, err);
+}
+
+
+
 static const char hlp_getval[] =
   "GETVAL <key>\n"
   "\n"
@@ -3243,6 +3299,7 @@ register_commands (assuan_context_t ctx)
     { "RELOADAGENT",    cmd_reloadagent,hlp_reloadagent },
     { "GETINFO",        cmd_getinfo,   hlp_getinfo },
     { "KEYTOCARD",      cmd_keytocard, hlp_keytocard },
+    { "KEYTOTPM",	cmd_keytotpm, hlp_keytotpm },
     { NULL }
   };
   int i, rc;

@@ -353,10 +353,16 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
         if (desc_text)
           agent_modify_description (desc_text, NULL, s_skey, &desc2);
 
-        err = divert_pksign (ctrl, desc2? desc2 : desc_text,
-                             data, datalen,
-                             ctrl->digest.algo,
-                             shadow_info, &buf, &len);
+	if (agent_is_tpm2_key (s_skey))
+	  err = divert_tpm2_pksign (ctrl, desc2? desc2 : desc_text,
+				    data, datalen,
+				    ctrl->digest.algo,
+				    shadow_info, &buf, &len);
+	else
+	  err = divert_pksign (ctrl, desc2? desc2 : desc_text,
+			       data, datalen,
+			       ctrl->digest.algo,
+			       shadow_info, &buf, &len);
         xfree (desc2);
       }
       if (err)
