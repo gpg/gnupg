@@ -778,6 +778,28 @@ agent_scd_apdu (const char *hexapdu, unsigned int *r_sw)
   return err;
 }
 
+int
+agent_keytotpm (ctrl_t ctrl, const char *hexgrip)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  struct default_inq_parm_s parm;
+
+  snprintf(line, DIM(line), "KEYTOTPM %s\n", hexgrip);
+
+  rc = start_agent (ctrl, 0);
+  if (rc)
+    return rc;
+  parm.ctx = agent_ctx;
+  parm.ctrl = ctrl;
+
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, default_inq_cb, &parm,
+			NULL, NULL);
+  if (rc)
+    log_log (GPGRT_LOGLVL_ERROR, _("error from TPM: %s\n"), gpg_strerror (rc));
+  return rc;
+}
+
 
 int
 agent_keytocard (const char *hexgrip, int keyno, int force,

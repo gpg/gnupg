@@ -1241,7 +1241,7 @@ enum cmdids
 #endif /*!NO_TRUST_MODELS*/
   cmdSHOWPREF,
   cmdSETPREF, cmdPREFKS, cmdNOTATION, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST,
-  cmdCHKTRUST, cmdADDCARDKEY, cmdKEYTOCARD, cmdBKUPTOCARD,
+  cmdCHKTRUST, cmdADDCARDKEY, cmdKEYTOCARD, cmdKEYTOTPM, cmdBKUPTOCARD,
   cmdCLEAN, cmdMINIMIZE, cmdGRIP, cmdNOP
 };
 
@@ -1292,6 +1292,8 @@ static struct
     N_("add a key to a smartcard")},
   { "keytocard", cmdKEYTOCARD, KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK,
     N_("move a key to a smartcard")},
+  { "keytotpm", cmdKEYTOTPM, KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK,
+    N_("convert a key to TPM form using the local TPM")},
   { "bkuptocard", cmdBKUPTOCARD, KEYEDIT_NEED_SK | KEYEDIT_NEED_SUBSK,
     N_("move a backup key to a smartcard")},
 #endif /*ENABLE_CARD_SUPPORT */
@@ -1787,6 +1789,47 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	      modified = 1;
 	      merge_keys_and_selfsig (ctrl, keyblock);
 	    }
+	  break;
+
+	case cmdKEYTOTPM:
+	  /* FIXME need to store the key and not commit until later */
+	  {
+	    KBNODE node = NULL;
+	    switch (count_selected_keys (keyblock))
+	      {
+	      case 0:
+		if (cpr_get_answer_is_yes
+                    ("keyedit.keytocard.use_primary",
+                     /* TRANSLATORS: Please take care: This is about
+                        moving the key and not about removing it.  */
+                     _("Really move the primary key? (y/N) ")))
+		  node = keyblock;
+		break;
+	      case 1:
+		for (node = keyblock; node; node = node->next)
+		  {
+		    if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+			&& node->flag & NODFLG_SELKEY)
+		      break;
+		  }
+		break;
+	      default:
+		tty_printf (_("You must select exactly one key.\n"));
+		break;
+	      }
+	    if (node)
+	      {
+		PKT_public_key *xxpk = node->pkt->pkt.public_key;
+		char *hexgrip;
+
+		hexkeygrip_from_pk (xxpk, &hexgrip);
+		if (!agent_keytotpm (ctrl, hexgrip))
+		  {
+		    redisplay = 1;
+		  }
+		xfree (hexgrip);
+	      }
+	  }
 	  break;
 
 	case cmdKEYTOCARD:
