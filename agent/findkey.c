@@ -1359,7 +1359,8 @@ agent_key_available (const unsigned char *grip)
    S-expression.  */
 gpg_error_t
 agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
-                          int *r_keytype, unsigned char **r_shadow_info)
+                          int *r_keytype, unsigned char **r_shadow_info,
+                          unsigned char **r_shadow_info_type)
 {
   gpg_error_t err;
   unsigned char *buf;
@@ -1406,7 +1407,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
           const unsigned char *s;
           size_t n;
 
-          err = agent_get_shadow_info (buf, &s);
+          err = agent_get_shadow_info_type (buf, &s, r_shadow_info_type);
           if (!err)
             {
               n = gcry_sexp_canon_len (s, 0, NULL, NULL);

@@ -1104,7 +1104,7 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
   char hexgrip[40+1];
   char *fpr = NULL;
   int keytype;
-  unsigned char *shadow_info = NULL;
+  unsigned char *shadow_info = NULL, *shadow_info_type = NULL;
   char *serialno = NULL;
   char *idstr = NULL;
   const char *keytypestr;
@@ -1115,7 +1115,8 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
   char ttlbuf[20];
   char flagsbuf[5];
 
-  err = agent_key_info_from_file (ctrl, grip, &keytype, &shadow_info);
+  err = agent_key_info_from_file (ctrl, grip, &keytype, &shadow_info,
+                                  &shadow_info_type);
   if (err)
     {
       if (in_ssh && gpg_err_code (err) == GPG_ERR_NOT_FOUND)
@@ -1185,9 +1186,18 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
 
   if (shadow_info)
     {
-      err = parse_shadow_info (shadow_info, &serialno, &idstr, NULL);
-      if (err)
-        goto leave;
+      if (strcmp (shadow_info_type, "t1-v1") == 0)
+        {
+          err = parse_shadow_info (shadow_info, &serialno, &idstr, NULL);
+          if (err)
+            goto leave;
+        }
+      else
+        {
+          log_error ("Unrecognised shadow key type %s\n", shadow_info_type);
+          err = GPG_ERR_BAD_KEY;
+          goto leave;
+        }
     }
 
   if (!data)
@@ -1222,6 +1232,7 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
 
  leave:
   xfree (fpr);
+  xfree (shadow_info_type);
   xfree (shadow_info);
   xfree (serialno);
   xfree (idstr);

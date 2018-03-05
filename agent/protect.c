@@ -1499,9 +1499,10 @@ make_shadow_info (const char *serialno, const char *idstring)
   to. The input parameters are expected to be valid canonicalized
   S-expressions */
 int
-agent_shadow_key (const unsigned char *pubkey,
-                  const unsigned char *shadow_info,
-                  unsigned char **result)
+agent_shadow_key_type (const unsigned char *pubkey,
+                       const unsigned char *shadow_info,
+                       const unsigned char *type,
+                       unsigned char **result)
 {
   const unsigned char *s;
   const unsigned char *point;
@@ -1557,7 +1558,7 @@ agent_shadow_key (const unsigned char *pubkey,
   assert (depth == 1);
 
   /* Calculate required length by taking in account: the "shadowed-"
-     prefix, the "shadowed", "t1-v1" as well as some parenthesis */
+     prefix, the "shadowed", shadow type as well as some parenthesis */
   n = 12 + pubkey_len + 1 + 3+8 + 2+5 + shadow_info_len + 1;
   *result = xtrymalloc (n);
   p = (char*)*result;
@@ -1567,7 +1568,7 @@ agent_shadow_key (const unsigned char *pubkey,
   /* (10:public-key ...)*/
   memcpy (p, pubkey+14, point - (pubkey+14));
   p += point - (pubkey+14);
-  p = stpcpy (p, "(8:shadowed5:t1-v1");
+  p += sprintf (p, "(8:shadowed%d:%s", (int)strlen(type), type);
   memcpy (p, shadow_info, shadow_info_len);
   p += shadow_info_len;
   *p++ = ')';
@@ -1577,11 +1578,20 @@ agent_shadow_key (const unsigned char *pubkey,
   return 0;
 }
 
+int
+agent_shadow_key (const unsigned char *pubkey,
+                  const unsigned char *shadow_info,
+                  unsigned char **result)
+{
+  return agent_shadow_key_type (pubkey, shadow_info, "t1-v1", result);
+}
+
 /* Parse a canonical encoded shadowed key and return a pointer to the
-   inner list with the shadow_info */
+   inner list with the shadow_info and the shadow type */
 gpg_error_t
-agent_get_shadow_info (const unsigned char *shadowkey,
-                       unsigned char const **shadow_info)
+agent_get_shadow_info_type (const unsigned char *shadowkey,
+                            unsigned char const **shadow_info,
+                            unsigned char **shadow_type)
 {
   const unsigned char *s;
   size_t n;
@@ -1633,17 +1643,59 @@ agent_get_shadow_info (const unsigned char *shadowkey,
   n = snext (&s);
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP);
-  if (smatch (&s, n, "t1-v1"))
+  if (shadow_type) {
+    char *buf = xtrymalloc(n+1);
+    memcpy(buf, s, n);
+    buf[n] = '\0';
+    *shadow_type = buf;
+  }
+
+  if (smatch (&s, n, "t1-v1") || smatch(&s, n, "tpm2-v1"))
     {
       if (*s != '(')
         return gpg_error (GPG_ERR_INV_SEXP);
-      *shadow_info = s;
+      if (shadow_info)
+        *shadow_info = s;
     }
   else
     return gpg_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
   return 0;
 }
 
+gpg_error_t
+agent_get_shadow_info(const unsigned char *shadowkey,
+                      unsigned char const **shadow_info)
+{
+  return agent_get_shadow_info_type(shadowkey, shadow_info, NULL);
+}
+
+int
+agent_is_tpm2_key(gcry_sexp_t s_skey)
+{
+  unsigned char *buf;
+  unsigned char *type;
+  size_t len;
+  gpg_error_t err;
+
+  err = make_canon_sexp(s_skey, &buf, &len);
+  if (err)
+    return 0;
+
+  err = agent_get_shadow_info_type(buf, NULL, &type);
+  if (err)
+    return 0;
+
+  err = strcmp(type, "tpm2-v1") == 0;
+  xfree(type);
+  return err;
+}
+
+gpg_error_t
+agent_get_shadow_type(const unsigned char *shadowkey,
+                      unsigned char **shadow_type)
+{
+  return agent_get_shadow_info_type(shadowkey, NULL, shadow_type);
+}
 
 /* Parse the canonical encoded SHADOW_INFO S-expression.  On success
    the hex encoded serial number is returned as a malloced strings at
