@@ -51,6 +51,7 @@ gpg_agent_SOURCES = \
 	protect.c \
 	trustlist.c \
 	divert-scd.c \
+	tpm2.c \
 	cvt-openpgp.c cvt-openpgp.h \
 	call-scd.c \
 	learncard.c
@@ -70,7 +71,7 @@ gpg_agent_LDADD = $(commonpth_libs) \
                 $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
 	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
 		$(resource_objs)
-gpg_agent_LDFLAGS = $(extra_bin_ldflags)
+gpg_agent_LDFLAGS = $(DL_LIBS) $(extra_bin_ldflags)
 gpg_agent_DEPENDENCIES = $(resource_objs)
 
 gpg_protect_tool_SOURCES = \
