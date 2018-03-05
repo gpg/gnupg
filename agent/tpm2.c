@@ -313,7 +313,7 @@ parse_tpm2_shadow_info (const unsigned char *shadow_info,
 
 int
 tpm2_load_key(TSS_CONTEXT *tssc, const unsigned char *shadow_info,
-              TPM_HANDLE *key)
+              TPM_HANDLE *key, TPMI_ALG_PUBLIC *type)
 {
   uint32_t parent;
   Load_In in;
@@ -339,6 +339,8 @@ tpm2_load_key(TSS_CONTEXT *tssc, const unsigned char *shadow_info,
   size = pub_len;
   pTPM2B_PUBLIC_Unmarshal(&in.inPublic, &buf, &size, FALSE);
 
+  *type = in.inPublic.publicArea.type;
+
   rc = pTSS_Execute(tssc,
                     (RESPONSE_PARAMETERS *)&out,
                     (COMMAND_PARAMETERS *)&in,
@@ -358,7 +360,8 @@ tpm2_load_key(TSS_CONTEXT *tssc, const unsigned char *shadow_info,
 
 int
 tpm2_sign(ctrl_t ctrl, TSS_CONTEXT *tssc, TPM_HANDLE key,
-          const unsigned char *digest, size_t digestlen,
+	  TPMI_ALG_PUBLIC type,
+	  const unsigned char *digest, size_t digestlen,
           unsigned char **r_sig, size_t *r_siglen)
 {
   Sign_In in;
@@ -367,7 +370,6 @@ tpm2_sign(ctrl_t ctrl, TSS_CONTEXT *tssc, TPM_HANDLE key,
 
   /* The TPM insists on knowing the digest type, so
    * calculate that from the size */
-  in.inScheme.scheme = TPM_ALG_RSASSA;
   switch (digestlen) {
   case 20:
     in.inScheme.details.rsassa.hashAlg = TPM_ALG_SHA1;
@@ -394,22 +396,181 @@ tpm2_sign(ctrl_t ctrl, TSS_CONTEXT *tssc, TPM_HANDLE key,
   in.validation.hierarchy = TPM_RH_NULL;
   in.validation.digest.t.size = 0;
 
+  if (type == TPM_ALG_RSA)
+    in.inScheme.scheme = TPM_ALG_RSASSA;
+  else if (type == TPM_ALG_ECC)
+    in.inScheme.scheme = TPM_ALG_ECDSA;
+  else
+    return GPG_ERR_PUBKEY_ALGO;
+
+
   ret = tpm2_exec_with_auth(ctrl, tssc, TPM_CC_Sign, "TPM2_Sign", &out, &in);
   if (ret)
     return ret;
 
-  *r_siglen = out.signature.signature.rsassa.sig.t.size;
+  if (type == TPM_ALG_RSA)
+    *r_siglen = out.signature.signature.rsassa.sig.t.size;
+  else if (type == TPM_ALG_ECC)
+    *r_siglen = out.signature.signature.ecdsa.signatureR.t.size
+      + out.signature.signature.ecdsa.signatureS.t.size;
+
   *r_sig = xtrymalloc(*r_siglen);
   if (!r_sig)
     return GPG_ERR_ENOMEM;
 
-  memcpy(*r_sig, out.signature.signature.rsassa.sig.t.buffer, *r_siglen);
+  if (type == TPM_ALG_RSA)
+    {
+      memcpy(*r_sig, out.signature.signature.rsassa.sig.t.buffer, *r_siglen);
+    }
+  else if (type == TPM_ALG_ECC)
+    {
+      memcpy(*r_sig, out.signature.signature.ecdsa.signatureR.t.buffer,
+	     out.signature.signature.ecdsa.signatureR.t.size);
+      memcpy(*r_sig + out.signature.signature.ecdsa.signatureR.t.size,
+	     out.signature.signature.ecdsa.signatureS.t.buffer,
+	     out.signature.signature.ecdsa.signatureS.t.size);
+    }
 
   return 0;
 }
 
 static int
-sexp_to_tpm2_sensitive(TPMT_SENSITIVE *s, gcry_sexp_t key)
+sexp_to_tpm2_sensitive_ecc(TPMT_SENSITIVE *s, gcry_sexp_t key)
+{
+  gcry_mpi_t d;
+  gcry_sexp_t l;
+  int rc = -1;
+  size_t len;
+
+  s->sensitiveType = TPM_ALG_ECC;
+  s->seedValue.b.size = 0;
+
+  l = gcry_sexp_find_token (key, "d", 0);
+  if (!l)
+    return rc;
+  d = gcry_sexp_nth_mpi (l, 1, GCRYMPI_FMT_USG);
+  gcry_sexp_release (l);
+  len = sizeof(s->sensitive.ecc.t.buffer);
+  rc = gcry_mpi_print (GCRYMPI_FMT_USG, s->sensitive.ecc.t.buffer, len, &len, d);
+  s->sensitive.ecc.t.size = len;
+  gcry_mpi_release (d);
+
+  return rc;
+}
+
+/* try to match the libgcrypt curve names to known TPM parameters.
+ *
+ * As of 2018 the TCG defined curves are only NIST
+ * (192,224,256,384,521) Barreto-Naehring (256,638) and the Chinese
+ * SM2 (256), which means only the NIST ones overlap with libgcrypt */
+static struct {
+  const char *name;
+  TPMI_ECC_CURVE c;
+} tpm2_curves[] = {
+  { "NIST P-192", TPM_ECC_NIST_P192 },
+  { "prime192v1", TPM_ECC_NIST_P192 },
+  { "secp192r1", TPM_ECC_NIST_P192 },
+  { "nistp192", TPM_ECC_NIST_P192 },
+  { "NIST P-224", TPM_ECC_NIST_P224 },
+  { "secp224r1", TPM_ECC_NIST_P224 },
+  { "nistp224", TPM_ECC_NIST_P224 },
+  { "NIST P-256", TPM_ECC_NIST_P256 },
+  { "prime256v1", TPM_ECC_NIST_P256 },
+  { "secp256r1", TPM_ECC_NIST_P256 },
+  { "nistp256", TPM_ECC_NIST_P256 },
+  { "NIST P-384", TPM_ECC_NIST_P384 },
+  { "secp384r1", TPM_ECC_NIST_P384 },
+  { "nistp384", TPM_ECC_NIST_P384 },
+  { "NIST P-521", TPM_ECC_NIST_P521 },
+  { "secp521r1", TPM_ECC_NIST_P521 },
+  { "nistp521", TPM_ECC_NIST_P521 },
+};
+
+static int
+tpm2_ecc_curve (const char *curve_name, TPMI_ECC_CURVE *c)
+{
+  int i;
+
+  for (i = 0; i < DIM (tpm2_curves); i++)
+    if (strcmp (tpm2_curves[i].name, curve_name) == 0)
+      break;
+  if (i == DIM (tpm2_curves)) {
+    log_error ("curve %s does not match any available TPM curves\n", curve_name);
+    return GPG_ERR_UNKNOWN_CURVE;
+  }
+
+  *c = tpm2_curves[i].c;
+
+  return 0;
+}
+
+static int
+sexp_to_tpm2_public_ecc(TPMT_PUBLIC *p, gcry_sexp_t key)
+{
+  const char *q;
+  gcry_sexp_t l;
+  int rc = GPG_ERR_BAD_PUBKEY;
+  size_t len;
+  TPMI_ECC_CURVE curve;
+  char *curve_name;
+
+  l = gcry_sexp_find_token (key, "curve", 0);
+  if (!l)
+    return rc;
+  curve_name = gcry_sexp_nth_string (l, 1);
+  if (!curve_name)
+    goto out;
+  rc = tpm2_ecc_curve (curve_name, &curve);
+  gcry_free (curve_name);
+  if (rc)
+    goto out;
+  gcry_sexp_release(l);
+
+  l = gcry_sexp_find_token (key, "q", 0);
+  if (!l)
+    return rc;
+  q = gcry_sexp_nth_data (l, 1, &len);
+  /* This is a point representation, the first byte tells you what
+   * type.  The only format we understand is uncompressed (0x04)
+   * which has layout 0x04 | x | y */
+  if (q[0] != 0x04)
+    {
+      log_error ("Point format for q is not uncompressed\n");
+      goto out;
+    }
+  q++;
+  len--;
+  /* now should have to equal sized big endian point numbers */
+  if ((len & 0x01) == 1)
+    {
+      log_error ("Point format for q has incorrect length\n");
+      goto out;
+    }
+
+  len >>= 1;
+
+  p->type = TPM_ALG_ECC;
+  p->nameAlg = TPM_ALG_SHA256;
+  p->objectAttributes.val = TPMA_OBJECT_NODA |
+    TPMA_OBJECT_SIGN |
+    TPMA_OBJECT_DECRYPT |
+    TPMA_OBJECT_USERWITHAUTH;
+  p->authPolicy.t.size = 0;
+  p->parameters.eccDetail.symmetric.algorithm = TPM_ALG_NULL;
+  p->parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
+  p->parameters.eccDetail.curveID = curve;
+  p->parameters.eccDetail.kdf.scheme = TPM_ALG_NULL;
+  memcpy(p->unique.ecc.x.t.buffer, q, len);
+  p->unique.ecc.x.t.size = len;
+  memcpy(p->unique.ecc.y.t.buffer, q + len, len);
+  p->unique.ecc.y.t.size = len;
+ out:
+  gcry_sexp_release (l);
+  return rc;
+}
+
+static int
+sexp_to_tpm2_sensitive_rsa(TPMT_SENSITIVE *s, gcry_sexp_t key)
 {
   gcry_mpi_t p;
   gcry_sexp_t l;
@@ -433,7 +594,7 @@ sexp_to_tpm2_sensitive(TPMT_SENSITIVE *s, gcry_sexp_t key)
 }
 
 static int
-sexp_to_tpm2_public(TPMT_PUBLIC *p, gcry_sexp_t key)
+sexp_to_tpm2_public_rsa(TPMT_PUBLIC *p, gcry_sexp_t key)
 {
   gcry_mpi_t n, e;
   gcry_sexp_t l;
@@ -506,12 +667,18 @@ sexp_to_tpm2(TPMT_PUBLIC *p, TPMT_SENSITIVE *s, gcry_sexp_t s_skey)
     return rc;
 
   l2 = gcry_sexp_find_token (l1, "rsa", 0);
-  if (!l2)
-    goto out;
-
-  rc = sexp_to_tpm2_public(p, l2);
-  if (!rc)
-    rc = sexp_to_tpm2_sensitive(s, l2);
+  if (l2) {
+    rc = sexp_to_tpm2_public_rsa (p, l2);
+    if (!rc)
+      rc = sexp_to_tpm2_sensitive_rsa (s, l2);
+  } else {
+    l2 = gcry_sexp_find_token (l1, "ecc", 0);
+    if (!l2)
+      goto out;
+    rc = sexp_to_tpm2_public_ecc (p, l2);
+    if (!rc)
+      rc = sexp_to_tpm2_sensitive_ecc (s, l2);
+  }
 
   gcry_sexp_release(l2);
 
@@ -757,9 +924,61 @@ tpm2_import_key(ctrl_t ctrl, TSS_CONTEXT *tssc, char *pub, int *pub_len,
 }
 
 int
-tpm2_decrypt(ctrl_t ctrl, TSS_CONTEXT *tssc, TPM_HANDLE key,
-             const char *ciphertext, int ciphertext_len,
-             char **decrypt, size_t *decrypt_len)
+tpm2_ecc_decrypt(ctrl_t ctrl, TSS_CONTEXT *tssc, TPM_HANDLE key,
+		 const char *ciphertext, int ciphertext_len,
+		 char **decrypt, size_t *decrypt_len)
+{
+  ECDH_ZGen_In in;
+  ECDH_ZGen_Out out;
+  size_t len;
+  int ret;
+
+  /* This isn't really a decryption per se.  The ciphertext actually
+   * contains an EC Point which we must multiply by the private key number.
+   *
+   * The reason is to generate a diffe helman agreement on a shared
+   * point.  This shared point is then used to generate the per
+   * session encryption key.
+   */
+  if (ciphertext[0] != 0x04)
+    {
+      log_error ("Decryption Shared Point format is not uncompressed\n");
+      return GPG_ERR_ENCODING_PROBLEM;
+    }
+  if ((ciphertext_len & 0x01) != 1)
+    {
+      log_error ("Decryption Shared Point has incorrect length\n");
+      return GPG_ERR_ENCODING_PROBLEM;
+    }
+  len = ciphertext_len >> 1;
+
+  in.keyHandle = key;
+  memcpy(in.inPoint.point.x.t.buffer, ciphertext + 1, len);
+  in.inPoint.point.x.t.size = len;
+  memcpy(in.inPoint.point.y.t.buffer, ciphertext + 1 + len, len);
+  in.inPoint.point.y.t.size = len;
+
+  ret = tpm2_exec_with_auth(ctrl, tssc, TPM_CC_ECDH_ZGen, "TPM2_ECDH_ZGen",
+			    &out, &in);
+  if (ret)
+    return ret;
+
+  *decrypt_len = out.outPoint.point.x.t.size + out.outPoint.point.y.t.size + 1;
+  *decrypt = xtrymalloc(*decrypt_len);
+  (*decrypt)[0] = 0x04;
+  memcpy(*decrypt + 1, out.outPoint.point.x.t.buffer,
+	 out.outPoint.point.x.t.size);
+  memcpy(*decrypt + 1 + out.outPoint.point.x.t.size,
+	 out.outPoint.point.y.t.buffer,
+	 out.outPoint.point.y.t.size);
+
+  return 0;
+}
+
+int
+tpm2_rsa_decrypt(ctrl_t ctrl, TSS_CONTEXT *tssc, TPM_HANDLE key,
+		 const char *ciphertext, int ciphertext_len,
+		 char **decrypt, size_t *decrypt_len)
 {
   RSA_Decrypt_In in;
   RSA_Decrypt_Out out;

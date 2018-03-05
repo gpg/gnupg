@@ -22,15 +22,16 @@ divert_tpm2_pksign (ctrl_t ctrl, const char *desc_text,
 {
   TSS_CONTEXT *tssc;
   TPM_HANDLE key;
+  TPMI_ALG_PUBLIC type;
   int ret;
 
   ret = tpm2_start(&tssc);
   if (ret)
     return ret;
-  ret = tpm2_load_key(tssc, shadow_info, &key);
+  ret = tpm2_load_key(tssc, shadow_info, &key, &type);
   if (ret)
     goto out;
-  ret = tpm2_sign(ctrl, tssc, key, digest, digestlen, r_sig, r_siglen);
+  ret = tpm2_sign(ctrl, tssc, key, type, digest, digestlen, r_sig, r_siglen);
 
   tpm2_flush_handle(tssc, key);
 
@@ -130,11 +131,12 @@ divert_tpm2_pkdecrypt (ctrl_t ctrl, const char *desc_text,
 {
   TSS_CONTEXT *tssc;
   TPM_HANDLE key;
+  TPMI_ALG_PUBLIC type;
   int ret;
   const unsigned char *s;
   size_t n;
 
-  *r_padding = 0;
+  *r_padding = -1;
 
   (void)desc_text;
 
@@ -155,6 +157,7 @@ divert_tpm2_pkdecrypt (ctrl_t ctrl, const char *desc_text,
     return gpg_error (GPG_ERR_INV_SEXP);
   if (smatch (&s, n, "rsa"))
     {
+      *r_padding = 0;
       if (*s != '(')
         return gpg_error (GPG_ERR_UNKNOWN_SEXP);
       s++;
@@ -162,6 +165,30 @@ divert_tpm2_pkdecrypt (ctrl_t ctrl, const char *desc_text,
       if (!n)
         return gpg_error (GPG_ERR_INV_SEXP);
       if (!smatch (&s, n, "a"))
+        return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+      n = snext (&s);
+    }
+  else if (smatch (&s, n, "ecdh"))
+    {
+      if (*s != '(')
+        return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+      s++;
+      n = snext (&s);
+      if (!n)
+        return gpg_error (GPG_ERR_INV_SEXP);
+      if (smatch (&s, n, "s"))
+        {
+          n = snext (&s);
+          s += n;
+          if (*s++ != ')')
+            return gpg_error (GPG_ERR_INV_SEXP);
+          if (*s++ != '(')
+            return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+          n = snext (&s);
+          if (!n)
+            return gpg_error (GPG_ERR_INV_SEXP);
+        }
+      if (!smatch (&s, n, "e"))
         return gpg_error (GPG_ERR_UNKNOWN_SEXP);
       n = snext (&s);
     }
@@ -173,10 +200,14 @@ divert_tpm2_pkdecrypt (ctrl_t ctrl, const char *desc_text,
   ret = tpm2_start(&tssc);
   if (ret)
     return ret;
-  ret = tpm2_load_key(tssc, shadow_info, &key);
+  ret = tpm2_load_key(tssc, shadow_info, &key, &type);
   if (ret)
     goto out;
-  ret = tpm2_decrypt(ctrl, tssc, key, s, n, r_buf, r_len);
+
+  if (type == TPM_ALG_RSA)
+    ret = tpm2_rsa_decrypt(ctrl, tssc, key, s, n, r_buf, r_len);
+  else if (type == TPM_ALG_ECC)
+    ret = tpm2_ecc_decrypt(ctrl, tssc, key, s, n, r_buf, r_len);
 
   tpm2_flush_handle(tssc, key);
 
