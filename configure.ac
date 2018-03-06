@@ -100,6 +100,7 @@ have_gnutls=no
 have_sqlite=no
 have_npth=no
 have_libusb=no
+have_libtss=no
 have_system_resolver=no
 gnupg_have_ldap="n/a"
 
@@ -1590,6 +1591,15 @@ AC_SUBST(NETLIBS)
 AC_SUBST(W32SOCKLIBS)
 
 #
+# TPM libtss library .. don't compile TPM support if we don't have it
+#
+AC_CHECK_LIB(tss, TSS_Create, [have_libtss=yes])
+if test "$have_libtss" = yes; then
+   AC_DEFINE(HAVE_LIBTSS, 1, [Defined if we have TPM2 support library])
+fi
+AM_CONDITIONAL(HAVE_LIBTSS, test "$have_libtss" = yes)
+
+#
 # Setup gcc specific options
 #
 USE_C99_CFLAGS=
@@ -2072,6 +2082,7 @@ echo "
         TLS support:         $use_tls_library
         TOFU support:        $use_tofu
         Tor support:         $show_tor_support
+        TPM support:         $have_libtss
 "
 if test x"$use_regex" != xyes ; then
 echo "

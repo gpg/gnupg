@@ -51,11 +51,14 @@ gpg_agent_SOURCES = \
 	protect.c \
 	trustlist.c \
 	divert-scd.c \
-	divert-tpm2.c \
-	tpm2.c tpm2.h \
 	cvt-openpgp.c cvt-openpgp.h \
 	call-scd.c \
 	learncard.c
+
+if HAVE_LIBTSS
+gpg_agent_SOURCES += tpm2.c tpm2.h \
+	divert-tpm2.c
+endif
 
 common_libs = $(libcommon)
 commonpth_libs = $(libcommonpth)

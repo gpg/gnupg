@@ -535,6 +535,7 @@ gpg_error_t agent_marktrusted (ctrl_t ctrl, const char *name,
 void agent_reload_trustlist (void);
 
 /*-- divert-tpm2.c --*/
+#ifdef HAVE_LIBTSS
 int divert_tpm2_pksign (ctrl_t ctrl, const char *desc_text,
                         const unsigned char *digest, size_t digestlen, int algo,
                         const unsigned char *shadow_info, unsigned char **r_sig,
@@ -545,6 +546,31 @@ int divert_tpm2_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                            char **r_buf, size_t *r_len, int *r_padding);
 int divert_tpm2_writekey (ctrl_t ctrl, const unsigned char *grip,
                           gcry_sexp_t s_skey);
+#else
+static inline int divert_tpm2_pksign (ctrl_t ctrl, const char *desc_text,
+				      const unsigned char *digest,
+				      size_t digestlen, int algo,
+				      const unsigned char *shadow_info,
+				      unsigned char **r_sig,
+				      size_t *r_siglen)
+{
+  return -EINVAL;
+}
+static inline int divert_tpm2_pkdecrypt (ctrl_t ctrl, const char *desc_text,
+					 const unsigned char *cipher,
+					 const unsigned char *shadow_info,
+					 char **r_buf, size_t *r_len,
+					 int *r_padding)
+{
+  return -EINVAL;
+}
+static inline int divert_tpm2_writekey (ctrl_t ctrl, const unsigned char *grip,
+					gcry_sexp_t s_skey)
+{
+  return -EINVAL;
+}
+#endif
+
 
 
 /*-- divert-scd.c --*/
