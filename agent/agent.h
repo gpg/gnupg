@@ -451,6 +451,7 @@ int agent_clear_passphrase (ctrl_t ctrl,
 /*-- cache.c --*/
 void initialize_module_cache (void);
 void deinitialize_module_cache (void);
+void agent_cache_housekeeping (void);
 void agent_flush_cache (void);
 int agent_put_cache (const char *key, cache_mode_t cache_mode,
                      const char *data, int ttl);

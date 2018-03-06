@@ -47,6 +47,9 @@ struct agent_card_info_s
   u32  fpr1time;
   u32  fpr2time;
   u32  fpr3time;
+  char grp1[20];     /* The keygrip for OPENPGP.1 */
+  char grp2[20];     /* The keygrip for OPENPGP.2 */
+  char grp3[20];     /* The keygrip for OPENPGP.3 */
   unsigned long sig_counter;
   int chv1_cached;   /* True if a PIN is not required for each
                         signing.  Note that the gpg-agent might cache

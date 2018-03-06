@@ -2398,6 +2398,9 @@ handle_tick (void)
     }
 #endif
 
+  /* Need to check for expired cache entries.  */
+  agent_cache_housekeeping ();
+
   /* Check whether the homedir is still available.  */
   if (!shutdown_pending
       && (!have_homedir_inotify || !reliable_homedir_inotify)

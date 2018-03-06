@@ -264,6 +264,21 @@ print_sha1_fpr_colon (estream_t fp, const unsigned char *fpr)
 
 
 static void
+print_keygrip (estream_t fp, const unsigned char *grp)
+{
+  int i;
+
+  if (opt.with_keygrip)
+    {
+      tty_fprintf (fp, "      keygrip ....: ");
+      for (i=0; i < 20 ; i++, grp++)
+        es_fprintf (fp, "%02X", *grp);
+      tty_fprintf (fp, "\n");
+    }
+}
+
+
+static void
 print_name (estream_t fp, const char *text, const char *name)
 {
   tty_fprintf (fp, "%s", text);
@@ -517,6 +532,11 @@ current_card_status (ctrl_t ctrl, estream_t fp,
       es_fprintf (fp, "fprtime:%lu:%lu:%lu:\n",
                (unsigned long)info.fpr1time, (unsigned long)info.fpr2time,
                (unsigned long)info.fpr3time);
+      es_fputs ("grp:", fp);
+      print_sha1_fpr_colon (fp, info.grp1);
+      print_sha1_fpr_colon (fp, info.grp2);
+      print_sha1_fpr_colon (fp, info.grp3);
+      es_putc ('\n', fp);
     }
   else
     {
@@ -593,18 +613,27 @@ current_card_status (ctrl_t ctrl, estream_t fp,
       tty_fprintf (fp, "Signature key ....:");
       print_sha1_fpr (fp, info.fpr1valid? info.fpr1:NULL);
       if (info.fpr1valid && info.fpr1time)
-        tty_fprintf (fp, "      created ....: %s\n",
-                     isotimestamp (info.fpr1time));
+        {
+          tty_fprintf (fp, "      created ....: %s\n",
+                       isotimestamp (info.fpr1time));
+          print_keygrip (fp, info.grp1);
+        }
       tty_fprintf (fp, "Encryption key....:");
       print_sha1_fpr (fp, info.fpr2valid? info.fpr2:NULL);
       if (info.fpr2valid && info.fpr2time)
-        tty_fprintf (fp, "      created ....: %s\n",
-                     isotimestamp (info.fpr2time));
+        {
+          tty_fprintf (fp, "      created ....: %s\n",
+                       isotimestamp (info.fpr2time));
+          print_keygrip (fp, info.grp2);
+        }
       tty_fprintf (fp, "Authentication key:");
       print_sha1_fpr (fp, info.fpr3valid? info.fpr3:NULL);
       if (info.fpr3valid && info.fpr3time)
-        tty_fprintf (fp, "      created ....: %s\n",
-                     isotimestamp (info.fpr3time));
+        {
+          tty_fprintf (fp, "      created ....: %s\n",
+                       isotimestamp (info.fpr3time));
+          print_keygrip (fp, info.grp2);
+        }
       tty_fprintf (fp, "General key info..: ");
 
       thefpr = (info.fpr1valid? info.fpr1 : info.fpr2valid? info.fpr2 :

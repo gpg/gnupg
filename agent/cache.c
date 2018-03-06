@@ -259,6 +259,26 @@ housekeeping (void)
 
 
 void
+agent_cache_housekeeping (void)
+{
+  int res;
+
+  if (DBG_CACHE)
+    log_debug ("agent_cache_housekeeping\n");
+
+  res = npth_mutex_lock (&cache_lock);
+  if (res)
+    log_fatal ("failed to acquire cache mutex: %s\n", strerror (res));
+
+  housekeeping ();
+
+  res = npth_mutex_unlock (&cache_lock);
+  if (res)
+    log_fatal ("failed to release cache mutex: %s\n", strerror (res));
+}
+
+
+void
 agent_flush_cache (void)
 {
   ITEM r;

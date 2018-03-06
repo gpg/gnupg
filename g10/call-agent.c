@@ -381,10 +381,11 @@ unhexify_fpr (const char *hexstr, unsigned char *fpr)
 
   for (s=hexstr, n=0; hexdigitp (s); s++, n++)
     ;
-  if (*s || (n != 40))
+  if ((*s && *s != ' ') || (n != 40))
     return 0; /* no fingerprint (invalid or wrong length). */
-  for (s=hexstr, n=0; *s; s += 2, n++)
+  for (s=hexstr, n=0; *s && n < 20; s += 2, n++)
     fpr[n] = xtoi_2 (s);
+
   return 1; /* okay */
 }
 
@@ -624,6 +625,24 @@ learn_status_cb (void *opaque, const char *line)
         parm->fpr2time = strtoul (line, NULL, 10);
       else if (no == 3)
         parm->fpr3time = strtoul (line, NULL, 10);
+    }
+  else if (keywordlen == 11 && !memcmp (keyword, "KEYPAIRINFO", keywordlen))
+    {
+      const char *hexgrp = line;
+      int no;
+
+      while (*line && !spacep (line))
+        line++;
+      while (spacep (line))
+        line++;
+      if (strncmp (line, "OPENPGP.", 8))
+        ;
+      else if ((no = atoi (line+8)) == 1)
+        unhexify_fpr (hexgrp, parm->grp1);
+      else if (no == 2)
+        unhexify_fpr (hexgrp, parm->grp2);
+      else if (no == 3)
+        unhexify_fpr (hexgrp, parm->grp3);
     }
   else if (keywordlen == 6 && !memcmp (keyword, "CA-FPR", keywordlen))
     {

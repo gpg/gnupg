@@ -2076,7 +2076,9 @@ get_config_filename (gc_component_t component, gc_backend_t backend)
 #elif defined(HAVE_DOSISH_SYSTEM)
   if (!(filename[0]
         && filename[1] == ':'
-        && (filename[2] == '/' || filename[2] == '\\')))
+        && (filename[2] == '/' || filename[2] == '\\')) /* x:\ or x:/ */
+      && !((filename[0] == '\\' && filename[1] == '\\')
+           || (filename[0] == '/' && filename[1] == '/'))) /* \\server */
 #else
   if (filename[0] != '/')
 #endif
