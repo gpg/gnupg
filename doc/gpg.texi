@@ -2213,8 +2213,8 @@ handy in case where an encrypted message contains a bogus key ID.
 @opindex skip-hidden-recipients
 @opindex no-skip-hidden-recipients
 During decryption skip all anonymous recipients.  This option helps in
-the case that people use the hidden recipients feature to hide there
-own encrypt-to key from others.  If oneself has many secret keys this
+the case that people use the hidden recipients feature to hide their
+own encrypt-to key from others.  If one has many secret keys this
 may lead to a major annoyance because all keys are tried in turn to
 decrypt something which was not really intended for it.  The drawback
 of this option is that it is currently not possible to decrypt a
