@@ -667,27 +667,29 @@ pcsc_get_status (int slot, unsigned int *status, int on_wire)
       return pcsc_error_to_sw (err);
     }
 
-  reader_table[slot].pcsc.current_state =
-    (rdrstates[0].event_state & ~PCSC_STATE_CHANGED);
+  if ((rdrstates[0].event_state & PCSC_STATE_CHANGED))
+    reader_table[slot].pcsc.current_state =
+      (rdrstates[0].event_state & ~PCSC_STATE_CHANGED);
 
-  /*   log_debug  */
-  /*     ("pcsc_get_status_change: %s%s%s%s%s%s%s%s%s%s\n", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_IGNORE)? " ignore":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_CHANGED)? " changed":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_UNKNOWN)? " unknown":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_UNAVAILABLE)?" unavail":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_EMPTY)? " empty":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_PRESENT)? " present":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_ATRMATCH)? " atr":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_EXCLUSIVE)? " excl":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_INUSE)? " unuse":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_MUTE)? " mute":"" ); */
+  if (DBG_CARD_IO)
+    log_debug
+      ("pcsc_get_status_change: %s%s%s%s%s%s%s%s%s%s\n",
+       (rdrstates[0].event_state & PCSC_STATE_IGNORE)? " ignore":"",
+       (rdrstates[0].event_state & PCSC_STATE_CHANGED)? " changed":"",
+       (rdrstates[0].event_state & PCSC_STATE_UNKNOWN)? " unknown":"",
+       (rdrstates[0].event_state & PCSC_STATE_UNAVAILABLE)?" unavail":"",
+       (rdrstates[0].event_state & PCSC_STATE_EMPTY)? " empty":"",
+       (rdrstates[0].event_state & PCSC_STATE_PRESENT)? " present":"",
+       (rdrstates[0].event_state & PCSC_STATE_ATRMATCH)? " atr":"",
+       (rdrstates[0].event_state & PCSC_STATE_EXCLUSIVE)? " excl":"",
+       (rdrstates[0].event_state & PCSC_STATE_INUSE)? " unuse":"",
+       (rdrstates[0].event_state & PCSC_STATE_MUTE)? " mute":"" );
 
   *status = 0;
-  if ( (rdrstates[0].event_state & PCSC_STATE_PRESENT) )
+  if ( (reader_table[slot].pcsc.current_state & PCSC_STATE_PRESENT) )
     {
       *status |= APDU_CARD_PRESENT;
-      if ( !(rdrstates[0].event_state & PCSC_STATE_MUTE) )
+      if ( !(reader_table[slot].pcsc.current_state & PCSC_STATE_MUTE) )
         *status |= APDU_CARD_ACTIVE;
     }
 #ifndef HAVE_W32_SYSTEM
@@ -696,7 +698,7 @@ pcsc_get_status (int slot, unsigned int *status, int on_wire)
      mode.  */
   if ( (*status & (APDU_CARD_PRESENT|APDU_CARD_ACTIVE))
        == (APDU_CARD_PRESENT|APDU_CARD_ACTIVE)
-       && !(rdrstates[0].event_state & PCSC_STATE_INUSE) )
+       && !(reader_table[slot].pcsc.current_state & PCSC_STATE_INUSE) )
     *status |= APDU_CARD_USABLE;
 #else
   /* Some winscard drivers may set EXCLUSIVE and INUSE at the same
