@@ -119,6 +119,7 @@ struct reader_table_s {
     pcsc_dword_t modify_ioctl;
     int pinmin;
     int pinmax;
+    pcsc_dword_t current_state;
   } pcsc;
 #ifdef USE_G10CODE_RAPDU
   struct {
@@ -453,6 +454,7 @@ new_reader_slot (void)
   reader_table[reader].pcsc.modify_ioctl = 0;
   reader_table[reader].pcsc.pinmin = -1;
   reader_table[reader].pcsc.pinmax = -1;
+  reader_table[reader].pcsc.current_state = PCSC_STATE_UNAWARE;
 
   return reader;
 }
@@ -652,18 +654,21 @@ pcsc_get_status (int slot, unsigned int *status, int on_wire)
   (void)on_wire;
   memset (rdrstates, 0, sizeof *rdrstates);
   rdrstates[0].reader = reader_table[slot].rdrname;
-  rdrstates[0].current_state = PCSC_STATE_UNAWARE;
+  rdrstates[0].current_state = reader_table[slot].pcsc.current_state;
   err = pcsc_get_status_change (reader_table[slot].pcsc.context,
                                 0,
                                 rdrstates, 1);
   if (err == PCSC_E_TIMEOUT)
-    err = 0; /* Timeout is no error error here. */
+    err = 0; /* Timeout is no error here.  */
   if (err)
     {
       log_error ("pcsc_get_status_change failed: %s (0x%lx)\n",
                  pcsc_error_string (err), err);
       return pcsc_error_to_sw (err);
     }
+
+  reader_table[slot].pcsc.current_state =
+    (rdrstates[0].event_state & ~PCSC_STATE_CHANGED);
 
   /*   log_debug  */
   /*     ("pcsc_get_status_change: %s%s%s%s%s%s%s%s%s%s\n", */
@@ -701,7 +706,11 @@ pcsc_get_status (int slot, unsigned int *status, int on_wire)
     *status |= APDU_CARD_USABLE;
 #endif
 
-  return 0;
+  if (!on_wire && (rdrstates[0].event_state & PCSC_STATE_CHANGED))
+    /* Event like sleep/resume occurs, which requires RESET.  */
+    return SW_HOST_NO_READER;
+  else
+    return 0;
 }
 
 

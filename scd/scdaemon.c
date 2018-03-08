@@ -1348,6 +1348,8 @@ handle_connections (int listen_fd)
       FD_SET (pipe_fd[0], &read_fdset);
       if (max_fd < pipe_fd[0])
         max_fd = pipe_fd[0];
+#else
+      (void)max_fd;
 #endif
 
 #ifndef HAVE_W32_SYSTEM
