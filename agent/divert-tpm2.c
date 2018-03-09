@@ -8,6 +8,12 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+/* FIXME: Until we have a proper checking in configure we give a hint
+ * on what to do  */
+#ifndef HAVE_TSS2_TSS_H
+# error Please install the libtss2 dev package first
+#endif
+
 #include "agent.h"
 #include "../common/i18n.h"
 #include "../common/sexp-parse.h"

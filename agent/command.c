@@ -1104,7 +1104,8 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
   char hexgrip[40+1];
   char *fpr = NULL;
   int keytype;
-  unsigned char *shadow_info = NULL, *shadow_info_type = NULL;
+  unsigned char *shadow_info = NULL;
+  unsigned char *shadow_info_type = NULL;
   char *serialno = NULL;
   char *idstr = NULL;
   const char *keytypestr;
@@ -1194,7 +1195,12 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
         }
       else if (strcmp (shadow_info_type, "tpm2-v1") == 0)
         {
-          serialno = xstrdup("TPM-Protected");
+          serialno = xtrystrdup("TPM-Protected");
+          if (!serialno)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
           idstr = NULL;
         }
       else

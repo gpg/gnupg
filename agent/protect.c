@@ -1559,11 +1559,12 @@ agent_shadow_key_type (const unsigned char *pubkey,
 
   /* Calculate required length by taking in account: the "shadowed-"
      prefix, the "shadowed", shadow type as well as some parenthesis */
+  /* FIXME: We should use membuf functions here.  */
   n = 12 + pubkey_len + 1 + 3+8 + 2+5 + shadow_info_len + 1;
   *result = xtrymalloc (n);
   p = (char*)*result;
   if (!p)
-      return out_of_core ();
+    return out_of_core ();
   p = stpcpy (p, "(20:shadowed-private-key");
   /* (10:public-key ...)*/
   memcpy (p, pubkey+14, point - (pubkey+14));
@@ -1643,12 +1644,15 @@ agent_get_shadow_info_type (const unsigned char *shadowkey,
   n = snext (&s);
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP);
-  if (shadow_type) {
-    char *buf = xtrymalloc(n+1);
-    memcpy(buf, s, n);
-    buf[n] = '\0';
-    *shadow_type = buf;
-  }
+  if (shadow_type)
+    {
+      char *buf = xtrymalloc(n+1);
+      if (!buf)
+        return gpg_error_from_syserror ();
+      memcpy (buf, s, n);
+      buf[n] = '\0';
+      *shadow_type = buf;
+    }
 
   if (smatch (&s, n, "t1-v1") || smatch(&s, n, "tpm2-v1"))
     {

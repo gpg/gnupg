@@ -52,7 +52,7 @@ gpg_agent_SOURCES = \
 	trustlist.c \
 	divert-scd.c \
 	divert-tpm2.c \
-	tpm2.c \
+	tpm2.c tpm2.h \
 	cvt-openpgp.c cvt-openpgp.h \
 	call-scd.c \
 	learncard.c
