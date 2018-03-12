@@ -682,7 +682,7 @@ pcsc_get_status (int slot, unsigned int *status, int on_wire)
        (rdrstates[0].event_state & PCSC_STATE_PRESENT)? " present":"",
        (rdrstates[0].event_state & PCSC_STATE_ATRMATCH)? " atr":"",
        (rdrstates[0].event_state & PCSC_STATE_EXCLUSIVE)? " excl":"",
-       (rdrstates[0].event_state & PCSC_STATE_INUSE)? " unuse":"",
+       (rdrstates[0].event_state & PCSC_STATE_INUSE)? " inuse":"",
        (rdrstates[0].event_state & PCSC_STATE_MUTE)? " mute":"" );
 
   *status = 0;
