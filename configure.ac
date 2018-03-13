@@ -639,7 +639,7 @@ have_android_system=no
 use_simple_gettext=no
 use_ldapwrapper=yes
 mmap_needed=yes
-require_pipe_to_unblock_pselect=no
+require_pipe_to_unblock_pselect=yes
 case "${host}" in
     *-mingw32*)
         # special stuff for Windoze NT
@@ -654,6 +654,7 @@ case "${host}" in
         have_w32_system=yes
         require_iconv=no
         use_ldapwrapper=no  # Fixme: Do this only for CE.
+        require_pipe_to_unblock_pselect=no
         case "${host}" in
           *-mingw32ce*)
             have_w32ce_system=yes

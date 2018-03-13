@@ -1206,18 +1206,16 @@ start_connection_thread (void *arg)
 void
 scd_kick_the_loop (void)
 {
-  int ret;
-
   /* Kick the select loop.  */
 #ifdef HAVE_W32_SYSTEM
-  ret = SetEvent (the_event);
+  int ret = SetEvent (the_event);
   if (ret == 0)
     log_error ("SetEvent for scd_kick_the_loop failed: %s\n",
                w32_strerror (-1));
 #elif defined(HAVE_PSELECT_NO_EINTR)
   write (notify_fd, "", 1);
 #else
-  ret = kill (main_thread_pid, SIGCONT);
+  int ret = kill (main_thread_pid, SIGCONT);
   if (ret < 0)
     log_error ("SetEvent for scd_kick_the_loop failed: %s\n",
                gpg_strerror (gpg_error_from_syserror ()));
