@@ -229,6 +229,7 @@ static npth_mutex_t reader_table_lock;
 #define PCSC_E_READER_UNAVAILABLE      0x80100017
 #define PCSC_E_NO_SERVICE              0x8010001D
 #define PCSC_E_SERVICE_STOPPED         0x8010001E
+#define PCSC_W_RESET_CARD              0x80100068
 #define PCSC_W_REMOVED_CARD            0x80100069
 
 /* Fix pcsc-lite ABI incompatibility.  */
@@ -750,6 +751,14 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
   if (err)
     log_error ("pcsc_transmit failed: %s (0x%lx)\n",
                pcsc_error_string (err), err);
+
+  /* Handle fatal errors which require shutdown of reader.  */
+  if (err == PCSC_E_NOT_TRANSACTED || err == PCSC_W_RESET_CARD
+      || err == PCSC_W_REMOVED_CARD)
+    {
+      reader_table[slot].pcsc.current_state = PCSC_STATE_UNAWARE;
+      scd_kick_the_loop ();
+    }
 
   return pcsc_error_to_sw (err);
 }
