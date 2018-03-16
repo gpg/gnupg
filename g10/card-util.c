@@ -659,7 +659,7 @@ current_card_status (ctrl_t ctrl, estream_t fp,
 
 /* Print all available information for specific card with SERIALNO.
    Print all available information for current card when SERIALNO is NULL.
-   Or print llfor all cards when SERIALNO is "all".  */
+   Or print for all cards when SERIALNO is "all".  */
 void
 card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
 {
@@ -1792,6 +1792,7 @@ factory_reset (void)
         scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
         scd apdu 00 e6 00 00
         scd apdu 00 44 00 00
+        scd reset
         /echo Card has been reset to factory defaults
 
       but tries to find out something about the card first.
@@ -1804,7 +1805,7 @@ factory_reset (void)
   else if (err)
     {
       log_error (_("OpenPGP card not available: %s\n"), gpg_strerror (err));
-      return;
+      goto leave;
     }
 
   if (!termstate)
@@ -1854,10 +1855,16 @@ factory_reset (void)
          command because there is no machinery in scdaemon to catch
          the verify command and ask for the PIN when the "APDU"
          command is used. */
+      /* Here, the length of dummy wrong PIN is 32-byte, also
+         supporting authentication with KDF DO.  */
       for (i=0; i < 4; i++)
-        send_apdu ("00200081084040404040404040", "VERIFY", 0xffff);
+        send_apdu ("0020008120"
+                   "40404040404040404040404040404040"
+                   "40404040404040404040404040404040", "VERIFY", 0xffff);
       for (i=0; i < 4; i++)
-        send_apdu ("00200083084040404040404040", "VERIFY", 0xffff);
+        send_apdu ("0020008320"
+                   "40404040404040404040404040404040"
+                   "40404040404040404040404040404040", "VERIFY", 0xffff);
 
       /* Send terminate datafile command.  */
       err = send_apdu ("00e60000", "TERMINATE DF", 0x6985);
@@ -1873,8 +1880,16 @@ factory_reset (void)
 
   /* Finally we reset the card reader once more.  */
   err = send_apdu (NULL, "RESET", 0);
-  if (err)
-    goto leave;
+
+  /* Then, connect the card again.  */
+  if (!err)
+    {
+      char *serialno0;
+
+      err = agent_scd_serialno (&serialno0, NULL);
+      if (!err)
+        xfree (serialno0);
+    }
 
  leave:
   xfree (answer);
