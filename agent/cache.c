@@ -87,6 +87,7 @@ deinitialize_module_cache (void)
 {
   gcry_cipher_close (encryption_handle);
   encryption_handle = NULL;
+  //tttt
 }
 
 
