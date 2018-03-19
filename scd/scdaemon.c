@@ -393,7 +393,21 @@ cleanup (void)
     }
 }
 
-
+static void
+setup_signal_mask (void)
+{
+#ifndef HAVE_W32_SYSTEM
+  npth_sigev_init ();
+  npth_sigev_add (SIGHUP);
+  npth_sigev_add (SIGUSR1);
+  npth_sigev_add (SIGUSR2);
+  npth_sigev_add (SIGINT);
+  npth_sigev_add (SIGCONT);
+  npth_sigev_add (SIGTERM);
+  npth_sigev_fini ();
+  main_thread_pid = getpid ();
+#endif
+}
 
 int
 main (int argc, char **argv )
@@ -744,6 +758,7 @@ main (int argc, char **argv )
 #endif
 
       npth_init ();
+      setup_signal_mask ();
       gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 
       /* If --debug-allow-core-dump has been given we also need to
@@ -884,6 +899,7 @@ main (int argc, char **argv )
       /* This is the child. */
 
       npth_init ();
+      setup_signal_mask ();
       gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 
       /* Detach from tty and put process into a new session. */
@@ -1290,16 +1306,6 @@ handle_connections (int listen_fd)
         events[0] = the_event = h2;
       }
   }
-#else
-  npth_sigev_init ();
-  npth_sigev_add (SIGHUP);
-  npth_sigev_add (SIGUSR1);
-  npth_sigev_add (SIGUSR2);
-  npth_sigev_add (SIGINT);
-  npth_sigev_add (SIGCONT);
-  npth_sigev_add (SIGTERM);
-  npth_sigev_fini ();
-  main_thread_pid = getpid ();
 #endif
 
   FD_ZERO (&fdset);
