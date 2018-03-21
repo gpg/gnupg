@@ -964,10 +964,10 @@ skip_packet (IOBUF inp, int pkttype, unsigned long pktlen, int partial)
 }
 
 
-/* Read PKTLEN bytes form INP and return them in a newly allocated
-   buffer.  In case of an error (including reading fewer than PKTLEN
-   bytes from INP before EOF is returned), NULL is returned and an
-   error message is logged.  */
+/* Read PKTLEN bytes from INP and return them in a newly allocated
+ * buffer.  In case of an error (including reading fewer than PKTLEN
+ * bytes from INP before EOF is returned), NULL is returned and an
+ * error message is logged.  */
 static void *
 read_rest (IOBUF inp, size_t pktlen)
 {
