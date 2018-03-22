@@ -1126,7 +1126,9 @@ all affected self-signatures is set one second ahead.
 @opindex passwd
 Change the passphrase of the secret key belonging to the certificate
 specified as @var{user-id}.  This is a shortcut for the sub-command
-@code{passwd} of the edit key menu.
+@code{passwd} of the edit key menu.  When using together with the
+option @option{--dry-run} this will not actually change the passphrase
+but check that the current passphrase is correct.
 
 @end table
 
