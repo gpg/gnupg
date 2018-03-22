@@ -591,6 +591,8 @@ learn_status_cb (void *opaque, const char *line)
                     parm->extcap.ki = abool;
                   else if (!strcmp (p, "aac"))
                     parm->extcap.aac = abool;
+                  else if (!strcmp (p, "kdf"))
+                    parm->extcap.kdf = abool;
                   else if (!strcmp (p, "si"))
                     parm->status_indicator = strtoul (p2, NULL, 10);
                 }

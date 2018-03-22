@@ -1897,6 +1897,104 @@ factory_reset (void)
 }
 
 
+#define USER_PIN_DEFAULT "123456"
+#define ADMIN_PIN_DEFAULT "12345678"
+#define KDF_DATA_LENGTH 110
+
+/* Generate KDF data.  */
+static gpg_error_t
+gen_kdf_data (unsigned char *data)
+{
+  const unsigned char h0[] = { 0x81, 0x01, 0x03,
+                               0x82, 0x01, 0x08,
+                               0x83, 0x04 };
+  const unsigned char h1[] = { 0x84, 0x08 };
+  const unsigned char h2[] = { 0x85, 0x08 };
+  const unsigned char h3[] = { 0x86, 0x08 };
+  const unsigned char h4[] = { 0x87, 0x20 };
+  const unsigned char h5[] = { 0x88, 0x20 };
+  unsigned char *p, *salt_user, *salt_admin;
+  unsigned char s2k_char;
+  unsigned int iterations;
+  unsigned char count_4byte[4];
+  gpg_error_t err = 0;
+
+  p = data;
+
+  s2k_char = encode_s2k_iterations (0);
+  iterations = S2K_DECODE_COUNT (s2k_char);
+  count_4byte[0] = (iterations >> 24) & 0xff;
+  count_4byte[1] = (iterations >> 16) & 0xff;
+  count_4byte[2] = (iterations >>  8) & 0xff;
+  count_4byte[3] = (iterations & 0xff);
+
+  memcpy (p, h0, sizeof h0);
+  p += sizeof h0;
+  memcpy (p, count_4byte, sizeof count_4byte);
+  p += sizeof count_4byte;
+  memcpy (p, h1, sizeof h1);
+  salt_user = (p += sizeof h1);
+  gcry_randomize (p, 8, GCRY_STRONG_RANDOM);
+  p += 8;
+  memcpy (p, h2, sizeof h2);
+  p += sizeof h2;
+  gcry_randomize (p, 8, GCRY_STRONG_RANDOM);
+  p += 8;
+  memcpy (p, h3, sizeof h3);
+  salt_admin = (p += sizeof h3);
+  gcry_randomize (p, 8, GCRY_STRONG_RANDOM);
+  p += 8;
+  memcpy (p, h4, sizeof h4);
+  p += sizeof h4;
+  err = gcry_kdf_derive (USER_PIN_DEFAULT, strlen (USER_PIN_DEFAULT),
+                         GCRY_KDF_ITERSALTED_S2K, DIGEST_ALGO_SHA256,
+                         salt_user, 8, iterations, 32, p);
+  p += 32;
+  if (!err)
+    {
+      memcpy (p, h5, sizeof h5);
+      p += sizeof h5;
+      err = gcry_kdf_derive (ADMIN_PIN_DEFAULT, strlen (ADMIN_PIN_DEFAULT),
+                             GCRY_KDF_ITERSALTED_S2K, DIGEST_ALGO_SHA256,
+                             salt_admin, 8, iterations, 32, p);
+    }
+
+  return err;
+}
+
+/* Setup KDF data object which is used for PIN authentication.  */
+static void
+kdf_setup (void)
+{
+  struct agent_card_info_s info;
+  gpg_error_t err;
+  unsigned char kdf_data[KDF_DATA_LENGTH];
+
+  memset (&info, 0, sizeof info);
+
+  err = agent_scd_getattr ("EXTCAP", &info);
+  if (err)
+    {
+      log_error (_("error getting card info: %s\n"), gpg_strerror (err));
+      return;
+    }
+
+  if (!info.extcap.kdf)
+    {
+      log_error (_("This command is not supported by this card\n"));
+      goto leave;
+    }
+
+  if (!(err = gen_kdf_data (kdf_data))
+      && !(err = agent_scd_setattr ("KDF", kdf_data, KDF_DATA_LENGTH, NULL)))
+    err = agent_scd_getattr ("KDF", &info);
+
+  if (err)
+    log_error (_("error for setup KDF: %s\n"), gpg_strerror (err));
+
+ leave:
+  agent_release_card_info (&info);
+}
 
 /* Data used by the command parser.  This needs to be outside of the
    function scope to allow readline based command completion.  */
@@ -1906,7 +2004,7 @@ enum cmdids
     cmdQUIT, cmdADMIN, cmdHELP, cmdLIST, cmdDEBUG, cmdVERIFY,
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
-    cmdREADCERT, cmdUNBLOCK, cmdFACTORYRESET,
+    cmdREADCERT, cmdUNBLOCK, cmdFACTORYRESET, cmdKDFSETUP,
     cmdINVCMD
   };
 
@@ -1939,6 +2037,7 @@ static struct
     { "verify"  , cmdVERIFY, 0, N_("verify the PIN and list all data")},
     { "unblock" , cmdUNBLOCK,0, N_("unblock the PIN using a Reset Code") },
     { "factory-reset", cmdFACTORYRESET, 1, N_("destroy all keys and data")},
+    { "kdf-setup", cmdKDFSETUP, 1, N_("setup KDF for PIN authentication")},
     /* Note, that we do not announce these command yet. */
     { "privatedo", cmdPRIVATEDO, 0, NULL },
     { "readcert", cmdREADCERT, 0, NULL },
@@ -2220,6 +2319,10 @@ card_edit (ctrl_t ctrl, strlist_t commands)
 
         case cmdFACTORYRESET:
           factory_reset ();
+          break;
+
+        case cmdKDFSETUP:
+          kdf_setup ();
           break;
 
         case cmdQUIT:
