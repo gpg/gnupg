@@ -39,9 +39,22 @@ typedef enum
 pinentry_mode_t;
 
 
+/* Values for the request origin.  */
+typedef enum
+  {
+    REQUEST_ORIGIN_LOCAL = 0,
+    REQUEST_ORIGIN_REMOTE,
+    REQUEST_ORIGIN_BROWSER
+  }
+request_origin_t;
+
+
 /*-- agent-opt.c --*/
 int parse_pinentry_mode (const char *value);
 const char *str_pinentry_mode (pinentry_mode_t mode);
+
+int parse_request_origin (const char *value);
+const char *str_request_origin (request_origin_t mode);
 
 
 

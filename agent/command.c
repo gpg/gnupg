@@ -3101,6 +3101,21 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 	  ctrl->s2k_count = 0;
         }
     }
+  else if (!strcmp (key, "pretend-request-origin"))
+    {
+      log_assert (!ctrl->restricted);
+      switch (parse_request_origin (value))
+        {
+        case REQUEST_ORIGIN_LOCAL:   ctrl->restricted = 0; break;
+        case REQUEST_ORIGIN_REMOTE:  ctrl->restricted = 1; break;
+        case REQUEST_ORIGIN_BROWSER: ctrl->restricted = 2; break;
+        default:
+          err = gpg_error (GPG_ERR_INV_VALUE);
+          /* Better pretend to be remote in case of a bad value.  */
+          ctrl->restricted = 1;
+          break;
+        }
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
