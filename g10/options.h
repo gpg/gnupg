@@ -271,6 +271,7 @@ struct
 
   int passphrase_repeat;
   int pinentry_mode;
+  int request_origin;
 
   int unwrap_encryption;
   int only_sign_text_ids;

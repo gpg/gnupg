@@ -3131,6 +3131,15 @@ are:
   Pinentry the user is not prompted again if he enters a bad password.
 @end table
 
+@item --request-origin @var{origin}
+@opindex request-origin
+Tell gpg to assume that the operation ultimately originated at
+@var{origin}.  Depending on the origin certain restrictions are applied
+and the Pinentry may include an extra note on the origin.  Supported
+values for @var{origin} are: @code{local} which is the default,
+@code{remote} to indicate a remote origin or @code{browser} for an
+operation requested by a web browser.
+
 @item --command-fd @var{n}
 @opindex command-fd
 This is a replacement for the deprecated shared-memory IPC mode.
