@@ -1292,6 +1292,13 @@ lookup_hashtable (ulong table, const byte *key, size_t keylen,
   int msb;
   int level = 0;
 
+  if (!table)
+    {
+      rc = gpg_error (GPG_ERR_INV_RECORD);
+      log_error("lookup_hashtable failed: %s\n", "request for record 0");
+      return rc;
+    }
+
   hashrec = table;
  next_level:
   msb = key[level];
@@ -1464,7 +1471,7 @@ tdbio_dump_record (TRUSTREC *rec, estream_t fp)
  * EXPECTED is not 0 reading any other record type will return an
  * error.
  *
- * Return: 0 on success, -1 on EOF, or an error code.
+ * Return: 0 on success or an error code.
  */
 int
 tdbio_read_record (ulong recnum, TRUSTREC *rec, int expected)
@@ -1489,7 +1496,7 @@ tdbio_read_record (ulong recnum, TRUSTREC *rec, int expected)
       n = read (db_fd, readbuf, TRUST_RECORD_LEN);
       if (!n)
         {
-          return -1; /* eof */
+          return gpg_error (GPG_ERR_EOF);
 	}
       else if (n != TRUST_RECORD_LEN)
         {
@@ -1769,20 +1776,14 @@ tdbio_new_recnum (ctrl_t ctrl)
       recnum = vr.r.ver.firstfree;
       rc = tdbio_read_record (recnum, &rec, RECTYPE_FREE);
       if (rc)
-        {
-          log_error (_("%s: error reading free record: %s\n"),
-                     db_name,  gpg_strerror (rc));
-          return rc;
-	}
+        log_fatal (_("%s: error reading free record: %s\n"),
+                   db_name, gpg_strerror (rc));
       /* Update dir record.  */
       vr.r.ver.firstfree = rec.r.free.next;
       rc = tdbio_write_record (ctrl, &vr);
       if (rc)
-        {
-          log_error (_("%s: error writing dir record: %s\n"),
-                     db_name, gpg_strerror (rc));
-          return rc;
-	}
+        log_fatal (_("%s: error writing dir record: %s\n"),
+                   db_name, gpg_strerror (rc));
       /* Zero out the new record.  */
       memset (&rec, 0, sizeof rec);
       rec.rectype = 0; /* Mark as unused record (actually already done
@@ -1799,7 +1800,7 @@ tdbio_new_recnum (ctrl_t ctrl)
       if (offset == (off_t)(-1))
         log_fatal ("trustdb: lseek to end failed: %s\n", strerror (errno));
       recnum = offset / TRUST_RECORD_LEN;
-      log_assert (recnum); /* this is will never be the first record */
+      log_assert (recnum); /* This will never be the first record */
       /* We must write a record, so that the next call to this
        * function returns another recnum.  */
       memset (&rec, 0, sizeof rec);
@@ -1821,13 +1822,13 @@ tdbio_new_recnum (ctrl_t ctrl)
             {
               rc = gpg_error_from_syserror ();
               log_error (_("trustdb rec %lu: write failed (n=%d): %s\n"),
-                         recnum, n, strerror (errno));
+                         recnum, n, gpg_strerror (rc));
 	    }
 	}
 
       if (rc)
         log_fatal (_("%s: failed to append a record: %s\n"),
-                   db_name,	gpg_strerror (rc));
+                   db_name, gpg_strerror (rc));
     }
 
   return recnum ;
