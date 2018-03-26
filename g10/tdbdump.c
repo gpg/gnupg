@@ -189,7 +189,7 @@ import_ownertrust (ctrl_t ctrl, const char *fname )
 	while (fprlen < 20)
 	    fpr[fprlen++] = 0;
 
-	rc = tdbio_search_trust_byfpr (fpr, &rec);
+	rc = tdbio_search_trust_byfpr (ctrl, fpr, &rec);
 	if( !rc ) { /* found: update */
 	    if (rec.r.trust.ownertrust != otrust)
               {

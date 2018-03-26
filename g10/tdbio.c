@@ -974,9 +974,11 @@ tdbio_write_nextcheck (ctrl_t ctrl, ulong stamp)
  * Return: record number
  */
 static ulong
-get_trusthashrec(void)
+get_trusthashrec (ctrl_t ctrl)
 {
   static ulong trusthashtbl; /* Record number of the trust hashtable.  */
+
+  (void)ctrl;
 
   if (!trusthashtbl)
     {
@@ -1388,7 +1390,7 @@ lookup_hashtable (ulong table, const byte *key, size_t keylen,
 static int
 update_trusthashtbl (ctrl_t ctrl, TRUSTREC *tr)
 {
-  return upd_hashtable (ctrl, get_trusthashrec (),
+  return upd_hashtable (ctrl, get_trusthashrec (ctrl),
                         tr->r.trust.fingerprint, 20, tr->recnum);
 }
 
@@ -1730,7 +1732,7 @@ tdbio_delete_record (ctrl_t ctrl, ulong recnum)
     ;
   else if (rec.rectype == RECTYPE_TRUST)
     {
-      rc = drop_from_hashtable (ctrl, get_trusthashrec(),
+      rc = drop_from_hashtable (ctrl, get_trusthashrec (ctrl),
                                 rec.r.trust.fingerprint, 20, rec.recnum);
     }
 
@@ -1852,12 +1854,12 @@ cmp_trec_fpr ( const void *fpr, const TRUSTREC *rec )
  * Return: 0 if found, GPG_ERR_NOT_FOUND, or another error code.
  */
 gpg_error_t
-tdbio_search_trust_byfpr (const byte *fingerprint, TRUSTREC *rec)
+tdbio_search_trust_byfpr (ctrl_t ctrl, const byte *fingerprint, TRUSTREC *rec)
 {
   int rc;
 
   /* Locate the trust record using the hash table */
-  rc = lookup_hashtable (get_trusthashrec(), fingerprint, 20,
+  rc = lookup_hashtable (get_trusthashrec (ctrl), fingerprint, 20,
                          cmp_trec_fpr, fingerprint, rec );
   return rc;
 }
@@ -1870,7 +1872,7 @@ tdbio_search_trust_byfpr (const byte *fingerprint, TRUSTREC *rec)
  * Return: 0 if found, GPG_ERR_NOT_FOUND, or another error code.
  */
 gpg_error_t
-tdbio_search_trust_bypk (PKT_public_key *pk, TRUSTREC *rec)
+tdbio_search_trust_bypk (ctrl_t ctrl, PKT_public_key *pk, TRUSTREC *rec)
 {
   byte fingerprint[MAX_FINGERPRINT_LEN];
   size_t fingerlen;
@@ -1878,7 +1880,7 @@ tdbio_search_trust_bypk (PKT_public_key *pk, TRUSTREC *rec)
   fingerprint_from_pk( pk, fingerprint, &fingerlen );
   for (; fingerlen < 20; fingerlen++)
     fingerprint[fingerlen] = 0;
-  return tdbio_search_trust_byfpr (fingerprint, rec);
+  return tdbio_search_trust_byfpr (ctrl, fingerprint, rec);
 }
 
 
