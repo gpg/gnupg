@@ -990,6 +990,20 @@ get_trusthashrec (ctrl_t ctrl)
         log_fatal (_("%s: error reading version record: %s\n"),
                    db_name, gpg_strerror (rc) );
 
+      if (!vr.r.ver.trusthashtbl)
+        {
+          /* Oops: the trustdb is corrupt because the hashtable is
+           * always created along with the version record.  However,
+           * if something went initially wrong it may happen that
+           * there is just the version record.  We try to fix it here.
+           * If we can't do that we return 0 - this is the version
+           * record and thus the actual read will detect the mismatch
+           * and bail out.  Note that create_hashtable updates VR.  */
+          take_write_lock ();
+          if (lseek (db_fd, 0, SEEK_END) == TRUST_RECORD_LEN)
+            create_hashtable (ctrl, &vr, 0);
+          release_write_lock ();
+        }
       trusthashtbl = vr.r.ver.trusthashtbl;
     }
 
