@@ -114,7 +114,7 @@ static int is_locked;
 static int  db_fd = -1;
 
 /* A flag indicating that a transaction is active.  */
-static int in_transaction;
+/* static int in_transaction;   Not yet used. */
 
 
 
@@ -125,7 +125,7 @@ static void create_hashtable (ctrl_t ctrl, TRUSTREC *vr, int type);
 
 /*
  * Take a lock on the trustdb file name.  I a lock file can't be
- * created the function terminates the process.  Excvept for a
+ * created the function terminates the process.  Except for a
  * different return code the function does nothing if the lock has
  * already been taken.
  *
@@ -329,6 +329,7 @@ put_record_into_cache (ulong recno, const char *data)
     }
 
   /* No clean entries: We have to flush some dirty entries.  */
+#if 0 /* Transactions are not yet used.  */
   if (in_transaction)
     {
       /* But we can't do this while in a transaction.  Thus we
@@ -352,6 +353,7 @@ put_record_into_cache (ulong recno, const char *data)
       log_info (_("trustdb transaction too large\n"));
       return GPG_ERR_RESOURCE_LIMIT;
     }
+#endif
 
   if (dirty_count)
     {
@@ -418,8 +420,10 @@ tdbio_sync()
 
     if( db_fd == -1 )
 	open_db();
+#if 0 /* Transactions are not yet used.  */
     if( in_transaction )
 	log_bug("tdbio: syncing while in transaction\n");
+#endif
 
     if( !cache_is_dirty )
 	return 0;
@@ -560,7 +564,7 @@ tdbio_update_version_record (ctrl_t ctrl)
 
 /*
  * Create and write the trustdb version record.
- *
+ * This is called with the writelock activ.
  * Returns: 0 on success or an error code.
  */
 static int
