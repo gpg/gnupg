@@ -105,10 +105,11 @@ struct cmp_xdir_struct
 /* The name of the trustdb file.  */
 static char *db_name;
 
-/* The handle for locking the trustdb file and a flag to record
-   whether a lock has been taken.  */
+/* The handle for locking the trustdb file and a counter to record how
+ * often this lock has been taken.  That counter is required becuase
+ * dotlock does not implemen recursive locks.  */
 static dotlock_t lockhandle;
-static int is_locked;
+static unsigned int is_locked;
 
 /* The file descriptor of the trustdb.  */
 static int  db_fd = -1;
@@ -135,6 +136,8 @@ static void create_hashtable (ctrl_t ctrl, TRUSTREC *vr, int type);
 static int
 take_write_lock (void)
 {
+  int rc;
+
   if (!lockhandle)
     lockhandle = dotlock_create (db_name, 0);
   if (!lockhandle)
@@ -144,12 +147,16 @@ take_write_lock (void)
     {
       if (dotlock_take (lockhandle, -1) )
         log_fatal ( _("can't lock '%s'\n"), db_name );
-      else
-        is_locked = 1;
-      return 0;
+      rc = 0;
     }
   else
-    return 1;
+    rc = 1;
+
+  if (opt.lock_once)
+    is_locked = 1;
+  else
+    is_locked++;
+  return rc;
 }
 
 
@@ -160,10 +167,22 @@ take_write_lock (void)
 static void
 release_write_lock (void)
 {
-  if (!opt.lock_once)
-    if (!dotlock_release (lockhandle))
-      is_locked = 0;
+  if (opt.lock_once)
+    return;  /* Don't care; here IS_LOCKED is fixed to 1.  */
+
+  if (!is_locked)
+    {
+      log_error ("Ooops, tdbio:release_write_lock with no lock held\n");
+      return;
+    }
+  if (--is_locked)
+    return;
+
+  if (dotlock_release (lockhandle))
+    log_error ("Oops, tdbio:release_write_locked failed\n");
 }
+
+
 
 /*************************************
  ************* record cache **********
