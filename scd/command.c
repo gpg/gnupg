@@ -79,7 +79,7 @@ struct server_local_s
   assuan_context_t assuan_ctx;
 
 #ifdef HAVE_W32_SYSTEM
-  unsigned long event_signal;   /* Or 0 if not used. */
+  void *event_signal;           /* Or NULL if not used. */
 #else
   int event_signal;             /* Or 0 if not used. */
 #endif
@@ -178,7 +178,11 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 #ifdef HAVE_W32_SYSTEM
       if (!*value)
         return gpg_error (GPG_ERR_ASS_PARAMETER);
-      ctrl->server_local->event_signal = strtoul (value, NULL, 16);
+#ifdef _WIN64
+      ctrl->server_local->event_signal = (void *)strtoull (value, NULL, 16);
+#else
+      ctrl->server_local->event_signal = (void *)strtoul (value, NULL, 16);
+#endif
 #else
       int i = *value? atoi (value) : -1;
       if (i < 0)
@@ -1933,20 +1937,20 @@ send_client_notifications (app_t app, int removal)
         pid = assuan_get_pid (sl->assuan_ctx);
 
 #ifdef HAVE_W32_SYSTEM
-        handle = (void *)sl->event_signal;
+        handle = sl->event_signal;
         for (kidx=0; kidx < killidx; kidx++)
           if (killed[kidx].pid == pid
               && killed[kidx].handle == handle)
             break;
         if (kidx < killidx)
-          log_info ("event %lx (%p) already triggered for client %d\n",
+          log_info ("event %p (%p) already triggered for client %d\n",
                     sl->event_signal, handle, (int)pid);
         else
           {
-            log_info ("triggering event %lx (%p) for client %d\n",
+            log_info ("triggering event %p (%p) for client %d\n",
                       sl->event_signal, handle, (int)pid);
             if (!SetEvent (handle))
-              log_error ("SetEvent(%lx) failed: %s\n",
+              log_error ("SetEvent(%p) failed: %s\n",
                          sl->event_signal, w32_strerror (-1));
             if (killidx < DIM (killed))
               {
