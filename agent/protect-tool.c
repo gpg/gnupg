@@ -749,8 +749,9 @@ agent_key_available (const unsigned char *grip)
 }
 
 char *
-agent_get_cache (const char *key, cache_mode_t cache_mode)
+agent_get_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode)
 {
+  (void)ctrl;
   (void)key;
   (void)cache_mode;
   return NULL;

@@ -58,6 +58,7 @@ struct cache_item_s {
   int ttl;  /* max. lifetime given in seconds, -1 one means infinite */
   struct secret_data_s *pw;
   cache_mode_t cache_mode;
+  int restricted;  /* The value of ctrl->restricted is part of the key.  */
   char key[1];
 };
 
@@ -202,8 +203,8 @@ housekeeping (void)
       if (r->pw && r->ttl >= 0 && r->accessed + r->ttl < current)
         {
           if (DBG_CACHE)
-            log_debug ("  expired '%s' (%ds after last access)\n",
-                       r->key, r->ttl);
+            log_debug ("  expired '%s'.%d (%ds after last access)\n",
+                       r->key, r->restricted, r->ttl);
           release_data (r->pw);
           r->pw = NULL;
           r->accessed = current;
@@ -224,8 +225,8 @@ housekeeping (void)
       if (r->pw && r->created + maxttl < current)
         {
           if (DBG_CACHE)
-            log_debug ("  expired '%s' (%lus after creation)\n",
-                       r->key, opt.max_cache_ttl);
+            log_debug ("  expired '%s'.%d (%lus after creation)\n",
+                       r->key, r->restricted, opt.max_cache_ttl);
           release_data (r->pw);
           r->pw = NULL;
           r->accessed = current;
@@ -233,15 +234,15 @@ housekeeping (void)
     }
 
   /* Third, make sure that we don't have too many items in the list.
-     Expire old and unused entries after 30 minutes */
+   * Expire old and unused entries after 30 minutes.  */
   for (rprev=NULL, r=thecache; r; )
     {
       if (!r->pw && r->ttl >= 0 && r->accessed + 60*30 < current)
         {
           ITEM r2 = r->next;
           if (DBG_CACHE)
-            log_debug ("  removed '%s' (mode %d) (slot not used for 30m)\n",
-                       r->key, r->cache_mode);
+            log_debug ("  removed '%s'.%d (mode %d) (slot not used for 30m)\n",
+                       r->key, r->restricted, r->cache_mode);
           xfree (r);
           if (!rprev)
             thecache = r2;
@@ -296,7 +297,7 @@ agent_flush_cache (void)
       if (r->pw)
         {
           if (DBG_CACHE)
-            log_debug ("  flushing '%s'\n", r->key);
+            log_debug ("  flushing '%s'.%d\n", r->key, r->restricted);
           release_data (r->pw);
           r->pw = NULL;
           r->accessed = 0;
@@ -326,20 +327,21 @@ cache_mode_equal (cache_mode_t a, cache_mode_t b)
    set infinite timeout.  CACHE_MODE is stored with the cache entry
    and used to select different timeouts.  */
 int
-agent_put_cache (const char *key, cache_mode_t cache_mode,
+agent_put_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode,
                  const char *data, int ttl)
 {
   gpg_error_t err = 0;
   ITEM r;
   int res;
+  int restricted = ctrl? ctrl->restricted : -1;
 
   res = npth_mutex_lock (&cache_lock);
   if (res)
     log_fatal ("failed to acquire cache mutex: %s\n", strerror (res));
 
   if (DBG_CACHE)
-    log_debug ("agent_put_cache '%s' (mode %d) requested ttl=%d\n",
-               key, cache_mode, ttl);
+    log_debug ("agent_put_cache '%s'.%d (mode %d) requested ttl=%d\n",
+               key, restricted, cache_mode, ttl);
   housekeeping ();
 
   if (!ttl)
@@ -358,6 +360,7 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
       if (((cache_mode != CACHE_MODE_USER
             && cache_mode != CACHE_MODE_NONCE)
            || cache_mode_equal (r->cache_mode, cache_mode))
+          && r->restricted == restricted
           && !strcmp (r->key, key))
         break;
     }
@@ -386,6 +389,7 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
       else
         {
           strcpy (r->key, key);
+          r->restricted = restricted;
           r->created = r->accessed = gnupg_get_time ();
           r->ttl = ttl;
           r->cache_mode = cache_mode;
@@ -415,13 +419,14 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
    make use of CACHE_MODE except for CACHE_MODE_NONCE and
    CACHE_MODE_USER.  */
 char *
-agent_get_cache (const char *key, cache_mode_t cache_mode)
+agent_get_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode)
 {
   gpg_error_t err;
   ITEM r;
   char *value = NULL;
   int res;
   int last_stored = 0;
+  int restricted = ctrl? ctrl->restricted : -1;
 
   if (cache_mode == CACHE_MODE_IGNORE)
     return NULL;
@@ -439,8 +444,8 @@ agent_get_cache (const char *key, cache_mode_t cache_mode)
     }
 
   if (DBG_CACHE)
-    log_debug ("agent_get_cache '%s' (mode %d)%s ...\n",
-               key, cache_mode,
+    log_debug ("agent_get_cache '%s'.%d (mode %d)%s ...\n",
+               key, ctrl->restricted, cache_mode,
                last_stored? " (stored cache key)":"");
   housekeeping ();
 
@@ -450,6 +455,7 @@ agent_get_cache (const char *key, cache_mode_t cache_mode)
           && ((cache_mode != CACHE_MODE_USER
                && cache_mode != CACHE_MODE_NONCE)
               || cache_mode_equal (r->cache_mode, cache_mode))
+          && r->restricted == restricted
           && !strcmp (r->key, key))
         {
           /* Note: To avoid races KEY may not be accessed anymore below.  */
@@ -472,8 +478,8 @@ agent_get_cache (const char *key, cache_mode_t cache_mode)
             {
               xfree (value);
               value = NULL;
-              log_error ("retrieving cache entry '%s' failed: %s\n",
-                         key, gpg_strerror (err));
+              log_error ("retrieving cache entry '%s'.%d failed: %s\n",
+                         key, restricted, gpg_strerror (err));
             }
           break;
         }

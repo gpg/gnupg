@@ -511,7 +511,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
     {
       char *pw;
 
-      pw = agent_get_cache (cache_nonce, CACHE_MODE_NONCE);
+      pw = agent_get_cache (ctrl, cache_nonce, CACHE_MODE_NONCE);
       if (pw)
         {
           rc = agent_unprotect (ctrl, *keybuf, pw, NULL, &result, &resultlen);
@@ -536,7 +536,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
       char *pw;
 
     retry:
-      pw = agent_get_cache (hexgrip, cache_mode);
+      pw = agent_get_cache (ctrl, hexgrip, cache_mode);
       if (pw)
         {
           rc = agent_unprotect (ctrl, *keybuf, pw, NULL, &result, &resultlen);
@@ -574,7 +574,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
              We can often avoid the passphrase entry in the second
              step.  We do this only in normal mode, so not to
              interfere with unrelated cache entries.  */
-          pw = agent_get_cache (NULL, cache_mode);
+          pw = agent_get_cache (ctrl, NULL, cache_mode);
           if (pw)
             {
               rc = agent_unprotect (ctrl, *keybuf, pw, NULL,
@@ -670,7 +670,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
       else
         {
           /* Passphrase is fine.  */
-          agent_put_cache (hexgrip, cache_mode, pi->pin,
+          agent_put_cache (ctrl, hexgrip, cache_mode, pi->pin,
                            lookup_ttl? lookup_ttl (hexgrip) : 0);
           agent_store_cache_hit (hexgrip);
           if (r_passphrase && *pi->pin)

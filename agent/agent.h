@@ -452,9 +452,9 @@ void initialize_module_cache (void);
 void deinitialize_module_cache (void);
 void agent_cache_housekeeping (void);
 void agent_flush_cache (void);
-int agent_put_cache (const char *key, cache_mode_t cache_mode,
+int agent_put_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode,
                      const char *data, int ttl);
-char *agent_get_cache (const char *key, cache_mode_t cache_mode);
+char *agent_get_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode);
 void agent_store_cache_hit (const char *key);
 
 
