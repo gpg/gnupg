@@ -32,6 +32,7 @@
 #include "../common/sysutils.h"
 #include "../common/server-help.h"
 #include "../common/asshelp.h"
+#include "../common/shareddefs.h"
 
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
@@ -287,6 +288,17 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
         {
           int i = *value? !!atoi (value) : 1;
           ctrl->offline = i;
+        }
+    }
+  else if (!strcmp (key, "request-origin"))
+    {
+      if (!opt.request_origin)
+        {
+          int i = parse_request_origin (value);
+          if (i == -1)
+            err = gpg_error (GPG_ERR_INV_VALUE);
+          else
+            opt.request_origin = i;
         }
     }
   else

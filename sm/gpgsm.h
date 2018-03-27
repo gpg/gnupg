@@ -88,6 +88,7 @@ struct
   int with_key_screening; /* Option  --with-key-screening active.  */
 
   int pinentry_mode;
+  int request_origin;
 
   int armor;        /* force base64 armoring (see also ctrl.with_base64) */
   int no_armor;     /* don't try to figure out whether data is base64 armored*/

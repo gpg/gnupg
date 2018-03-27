@@ -3145,7 +3145,7 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
     goto out;
 
   /* Cache this passphrase. */
-  err = agent_put_cache (key_grip, CACHE_MODE_SSH, pi->pin, ttl);
+  err = agent_put_cache (ctrl, key_grip, CACHE_MODE_SSH, pi->pin, ttl);
   if (err)
     goto out;
 

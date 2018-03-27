@@ -24,6 +24,10 @@
    correct value and may be of advantage if we ever have to do
    special things. */
 
+#ifdef HAVE_W32_SYSTEM
+# define WIN32_LEAN_AND_MEAN 1
+#endif
+
 #ifdef GPG_ERR_SOURCE_DEFAULT
 #error GPG_ERR_SOURCE_DEFAULT already defined
 #endif

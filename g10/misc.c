@@ -42,6 +42,7 @@
 #include <time.h>
 #include <process.h>
 #ifdef HAVE_WINSOCK2_H
+# define WIN32_LEAN_AND_MEAN 1
 # include <winsock2.h>
 #endif
 #include <windows.h>

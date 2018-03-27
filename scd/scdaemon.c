@@ -393,7 +393,21 @@ cleanup (void)
     }
 }
 
-
+static void
+setup_signal_mask (void)
+{
+#ifndef HAVE_W32_SYSTEM
+  npth_sigev_init ();
+  npth_sigev_add (SIGHUP);
+  npth_sigev_add (SIGUSR1);
+  npth_sigev_add (SIGUSR2);
+  npth_sigev_add (SIGINT);
+  npth_sigev_add (SIGCONT);
+  npth_sigev_add (SIGTERM);
+  npth_sigev_fini ();
+  main_thread_pid = getpid ();
+#endif
+}
 
 int
 main (int argc, char **argv )
@@ -744,6 +758,7 @@ main (int argc, char **argv )
 #endif
 
       npth_init ();
+      setup_signal_mask ();
       gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 
       /* If --debug-allow-core-dump has been given we also need to
@@ -884,6 +899,7 @@ main (int argc, char **argv )
       /* This is the child. */
 
       npth_init ();
+      setup_signal_mask ();
       gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
 
       /* Detach from tty and put process into a new session. */
@@ -1206,18 +1222,16 @@ start_connection_thread (void *arg)
 void
 scd_kick_the_loop (void)
 {
-  int ret;
-
   /* Kick the select loop.  */
 #ifdef HAVE_W32_SYSTEM
-  ret = SetEvent (the_event);
+  int ret = SetEvent (the_event);
   if (ret == 0)
     log_error ("SetEvent for scd_kick_the_loop failed: %s\n",
                w32_strerror (-1));
 #elif defined(HAVE_PSELECT_NO_EINTR)
   write (notify_fd, "", 1);
 #else
-  ret = kill (main_thread_pid, SIGCONT);
+  int ret = kill (main_thread_pid, SIGCONT);
   if (ret < 0)
     log_error ("SetEvent for scd_kick_the_loop failed: %s\n",
                gpg_strerror (gpg_error_from_syserror ()));
@@ -1292,16 +1306,6 @@ handle_connections (int listen_fd)
         events[0] = the_event = h2;
       }
   }
-#else
-  npth_sigev_init ();
-  npth_sigev_add (SIGHUP);
-  npth_sigev_add (SIGUSR1);
-  npth_sigev_add (SIGUSR2);
-  npth_sigev_add (SIGINT);
-  npth_sigev_add (SIGCONT);
-  npth_sigev_add (SIGTERM);
-  npth_sigev_fini ();
-  main_thread_pid = getpid ();
 #endif
 
   FD_ZERO (&fdset);
@@ -1348,6 +1352,8 @@ handle_connections (int listen_fd)
       FD_SET (pipe_fd[0], &read_fdset);
       if (max_fd < pipe_fd[0])
         max_fd = pipe_fd[0];
+#else
+      (void)max_fd;
 #endif
 
 #ifndef HAVE_W32_SYSTEM

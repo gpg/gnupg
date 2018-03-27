@@ -119,6 +119,7 @@ struct reader_table_s {
     pcsc_dword_t modify_ioctl;
     int pinmin;
     int pinmax;
+    pcsc_dword_t current_state;
   } pcsc;
 #ifdef USE_G10CODE_RAPDU
   struct {
@@ -228,6 +229,7 @@ static npth_mutex_t reader_table_lock;
 #define PCSC_E_READER_UNAVAILABLE      0x80100017
 #define PCSC_E_NO_SERVICE              0x8010001D
 #define PCSC_E_SERVICE_STOPPED         0x8010001E
+#define PCSC_W_RESET_CARD              0x80100068
 #define PCSC_W_REMOVED_CARD            0x80100069
 
 /* Fix pcsc-lite ABI incompatibility.  */
@@ -453,6 +455,7 @@ new_reader_slot (void)
   reader_table[reader].pcsc.modify_ioctl = 0;
   reader_table[reader].pcsc.pinmin = -1;
   reader_table[reader].pcsc.pinmax = -1;
+  reader_table[reader].pcsc.current_state = PCSC_STATE_UNAWARE;
 
   return reader;
 }
@@ -653,12 +656,12 @@ pcsc_get_status (int slot, unsigned int *status, int on_wire)
   (void)on_wire;
   memset (rdrstates, 0, sizeof *rdrstates);
   rdrstates[0].reader = reader_table[slot].rdrname;
-  rdrstates[0].current_state = PCSC_STATE_UNAWARE;
+  rdrstates[0].current_state = reader_table[slot].pcsc.current_state;
   err = pcsc_get_status_change (reader_table[slot].pcsc.context,
                                 0,
                                 rdrstates, 1);
   if (err == PCSC_E_TIMEOUT)
-    err = 0; /* Timeout is no error error here. */
+    err = 0; /* Timeout is no error here.  */
   if (err)
     {
       log_error ("pcsc_get_status_change failed: %s (0x%lx)\n",
@@ -666,24 +669,29 @@ pcsc_get_status (int slot, unsigned int *status, int on_wire)
       return pcsc_error_to_sw (err);
     }
 
-  /*   log_debug  */
-  /*     ("pcsc_get_status_change: %s%s%s%s%s%s%s%s%s%s\n", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_IGNORE)? " ignore":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_CHANGED)? " changed":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_UNKNOWN)? " unknown":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_UNAVAILABLE)?" unavail":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_EMPTY)? " empty":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_PRESENT)? " present":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_ATRMATCH)? " atr":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_EXCLUSIVE)? " excl":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_INUSE)? " unuse":"", */
-  /*      (rdrstates[0].event_state & PCSC_STATE_MUTE)? " mute":"" ); */
+  if ((rdrstates[0].event_state & PCSC_STATE_CHANGED))
+    reader_table[slot].pcsc.current_state =
+      (rdrstates[0].event_state & ~PCSC_STATE_CHANGED);
+
+  if (DBG_CARD_IO)
+    log_debug
+      ("pcsc_get_status_change: %s%s%s%s%s%s%s%s%s%s\n",
+       (rdrstates[0].event_state & PCSC_STATE_IGNORE)? " ignore":"",
+       (rdrstates[0].event_state & PCSC_STATE_CHANGED)? " changed":"",
+       (rdrstates[0].event_state & PCSC_STATE_UNKNOWN)? " unknown":"",
+       (rdrstates[0].event_state & PCSC_STATE_UNAVAILABLE)?" unavail":"",
+       (rdrstates[0].event_state & PCSC_STATE_EMPTY)? " empty":"",
+       (rdrstates[0].event_state & PCSC_STATE_PRESENT)? " present":"",
+       (rdrstates[0].event_state & PCSC_STATE_ATRMATCH)? " atr":"",
+       (rdrstates[0].event_state & PCSC_STATE_EXCLUSIVE)? " excl":"",
+       (rdrstates[0].event_state & PCSC_STATE_INUSE)? " inuse":"",
+       (rdrstates[0].event_state & PCSC_STATE_MUTE)? " mute":"" );
 
   *status = 0;
-  if ( (rdrstates[0].event_state & PCSC_STATE_PRESENT) )
+  if ( (reader_table[slot].pcsc.current_state & PCSC_STATE_PRESENT) )
     {
       *status |= APDU_CARD_PRESENT;
-      if ( !(rdrstates[0].event_state & PCSC_STATE_MUTE) )
+      if ( !(reader_table[slot].pcsc.current_state & PCSC_STATE_MUTE) )
         *status |= APDU_CARD_ACTIVE;
     }
 #ifndef HAVE_W32_SYSTEM
@@ -692,7 +700,7 @@ pcsc_get_status (int slot, unsigned int *status, int on_wire)
      mode.  */
   if ( (*status & (APDU_CARD_PRESENT|APDU_CARD_ACTIVE))
        == (APDU_CARD_PRESENT|APDU_CARD_ACTIVE)
-       && !(rdrstates[0].event_state & PCSC_STATE_INUSE) )
+       && !(reader_table[slot].pcsc.current_state & PCSC_STATE_INUSE) )
     *status |= APDU_CARD_USABLE;
 #else
   /* Some winscard drivers may set EXCLUSIVE and INUSE at the same
@@ -702,7 +710,11 @@ pcsc_get_status (int slot, unsigned int *status, int on_wire)
     *status |= APDU_CARD_USABLE;
 #endif
 
-  return 0;
+  if (!on_wire && (rdrstates[0].event_state & PCSC_STATE_CHANGED))
+    /* Event like sleep/resume occurs, which requires RESET.  */
+    return SW_HOST_NO_READER;
+  else
+    return 0;
 }
 
 
@@ -740,6 +752,14 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
   if (err)
     log_error ("pcsc_transmit failed: %s (0x%lx)\n",
                pcsc_error_string (err), err);
+
+  /* Handle fatal errors which require shutdown of reader.  */
+  if (err == PCSC_E_NOT_TRANSACTED || err == PCSC_W_RESET_CARD
+      || err == PCSC_W_REMOVED_CARD)
+    {
+      reader_table[slot].pcsc.current_state = PCSC_STATE_UNAWARE;
+      scd_kick_the_loop ();
+    }
 
   return pcsc_error_to_sw (err);
 }

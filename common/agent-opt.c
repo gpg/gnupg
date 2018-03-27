@@ -69,3 +69,38 @@ str_pinentry_mode (pinentry_mode_t mode)
     }
  return "?";
 }
+
+
+/* Parse VALUE and return an integer representing a request_origin_t.
+ * (-1) is returned for an invalid VALUE.  */
+int
+parse_request_origin (const char *value)
+{
+  int result;
+
+  if (!strcmp (value, "none") || !strcmp (value, "local"))
+    result = REQUEST_ORIGIN_LOCAL;
+  else if (!strcmp (value, "remote"))
+    result = REQUEST_ORIGIN_REMOTE;
+  else if (!strcmp (value, "browser"))
+    result = REQUEST_ORIGIN_BROWSER;
+  else
+    result = -1;
+
+  return result;
+}
+
+
+/* Return the string representation for the request origin.  Returns
+ * "?" for an invalid mode.  */
+const char *
+str_request_origin (request_origin_t mode)
+{
+  switch (mode)
+    {
+    case REQUEST_ORIGIN_LOCAL:   return "local";
+    case REQUEST_ORIGIN_REMOTE:  return "remote";
+    case REQUEST_ORIGIN_BROWSER: return "browser";
+    }
+ return "?";
+}

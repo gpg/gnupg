@@ -199,14 +199,14 @@ clear_nonce_cache (ctrl_t ctrl)
 {
   if (ctrl->server_local->last_cache_nonce)
     {
-      agent_put_cache (ctrl->server_local->last_cache_nonce,
+      agent_put_cache (ctrl, ctrl->server_local->last_cache_nonce,
                        CACHE_MODE_NONCE, NULL, 0);
       xfree (ctrl->server_local->last_cache_nonce);
       ctrl->server_local->last_cache_nonce = NULL;
     }
   if (ctrl->server_local->last_passwd_nonce)
     {
-      agent_put_cache (ctrl->server_local->last_passwd_nonce,
+      agent_put_cache (ctrl, ctrl->server_local->last_passwd_nonce,
                        CACHE_MODE_NONCE, NULL, 0);
       xfree (ctrl->server_local->last_passwd_nonce);
       ctrl->server_local->last_passwd_nonce = NULL;
@@ -930,7 +930,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
     }
   else if (passwd_nonce)
-    newpasswd = agent_get_cache (passwd_nonce, CACHE_MODE_NONCE);
+    newpasswd = agent_get_cache (ctrl, passwd_nonce, CACHE_MODE_NONCE);
 
   rc = agent_genkey (ctrl, cache_nonce, (char*)value, valuelen, no_protection,
                      newpasswd, opt_preset, &outbuf);
@@ -1179,7 +1179,7 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
   /* Here we have a little race by doing the cache check separately
      from the retrieval function.  Given that the cache flag is only a
      hint, it should not really matter.  */
-  pw = agent_get_cache (hexgrip, CACHE_MODE_NORMAL);
+  pw = agent_get_cache (ctrl, hexgrip, CACHE_MODE_NORMAL);
   cached = pw ? "1" : "-";
   xfree (pw);
 
@@ -1484,7 +1484,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   if (!strcmp (desc, "X"))
     desc = NULL;
 
-  pw = cacheid ? agent_get_cache (cacheid, CACHE_MODE_USER) : NULL;
+  pw = cacheid ? agent_get_cache (ctrl, cacheid, CACHE_MODE_USER) : NULL;
   if (pw)
     {
       rc = send_back_passphrase (ctx, opt_data, pw);
@@ -1551,7 +1551,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
           if (!rc)
             {
               if (cacheid)
-                agent_put_cache (cacheid, CACHE_MODE_USER, response, 0);
+                agent_put_cache (ctrl, cacheid, CACHE_MODE_USER, response, 0);
               rc = send_back_passphrase (ctx, opt_data, response);
             }
           xfree (response);
@@ -1593,7 +1593,8 @@ cmd_clear_passphrase (assuan_context_t ctx, char *line)
   if (!*cacheid || strlen (cacheid) > 50)
     return set_error (GPG_ERR_ASS_PARAMETER, "invalid length of cacheID");
 
-  agent_put_cache (cacheid, opt_normal ? CACHE_MODE_NORMAL : CACHE_MODE_USER,
+  agent_put_cache (ctrl, cacheid,
+                   opt_normal ? CACHE_MODE_NORMAL : CACHE_MODE_USER,
                    NULL, 0);
 
   agent_clear_passphrase (ctrl, cacheid,
@@ -1770,7 +1771,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
               passwd_nonce = bin2hex (buf, 12, NULL);
             }
           if (passwd_nonce
-              && !agent_put_cache (passwd_nonce, CACHE_MODE_NONCE,
+              && !agent_put_cache (ctrl, passwd_nonce, CACHE_MODE_NONCE,
                                    passphrase, CACHE_TTL_NONCE))
             {
               assuan_write_status (ctx, "PASSWD_NONCE", passwd_nonce);
@@ -1785,7 +1786,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
       char *newpass = NULL;
 
       if (passwd_nonce)
-        newpass = agent_get_cache (passwd_nonce, CACHE_MODE_NONCE);
+        newpass = agent_get_cache (ctrl, passwd_nonce, CACHE_MODE_NONCE);
       err = agent_protect_and_store (ctrl, s_skey, &newpass);
       if (!err && passphrase)
         {
@@ -1800,7 +1801,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
               cache_nonce = bin2hex (buf, 12, NULL);
             }
           if (cache_nonce
-              && !agent_put_cache (cache_nonce, CACHE_MODE_NONCE,
+              && !agent_put_cache (ctrl, cache_nonce, CACHE_MODE_NONCE,
                                    passphrase, CACHE_TTL_NONCE))
             {
               assuan_write_status (ctx, "CACHE_NONCE", cache_nonce);
@@ -1820,7 +1821,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
                   passwd_nonce = bin2hex (buf, 12, NULL);
                 }
               if (passwd_nonce
-                  && !agent_put_cache (passwd_nonce, CACHE_MODE_NONCE,
+                  && !agent_put_cache (ctrl, passwd_nonce, CACHE_MODE_NONCE,
                                        newpass, CACHE_TTL_NONCE))
                 {
                   assuan_write_status (ctx, "PASSWD_NONCE", passwd_nonce);
@@ -1834,7 +1835,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
         {
 	  char hexgrip[40+1];
 	  bin2hex(grip, 20, hexgrip);
-	  err = agent_put_cache (hexgrip, CACHE_MODE_ANY, newpass,
+	  err = agent_put_cache (ctrl, hexgrip, CACHE_MODE_ANY, newpass,
                                  ctrl->cache_ttl_opt_preset);
         }
       xfree (newpass);
@@ -1939,7 +1940,7 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
 
   if (!rc)
     {
-      rc = agent_put_cache (grip_clear, CACHE_MODE_ANY, passphrase, ttl);
+      rc = agent_put_cache (ctrl, grip_clear, CACHE_MODE_ANY, passphrase, ttl);
       if (opt_inquire)
 	xfree (passphrase);
     }
@@ -2174,7 +2175,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
               cache_nonce = bin2hex (buf, 12, NULL);
             }
           if (cache_nonce
-              && !agent_put_cache (cache_nonce, CACHE_MODE_NONCE,
+              && !agent_put_cache (ctrl, cache_nonce, CACHE_MODE_NONCE,
                                    passphrase, CACHE_TTL_NONCE))
             assuan_write_status (ctx, "CACHE_NONCE", cache_nonce);
         }
@@ -2336,7 +2337,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
               cache_nonce = bin2hex (buf, 12, NULL);
             }
           if (cache_nonce
-              && !agent_put_cache (cache_nonce, CACHE_MODE_NONCE,
+              && !agent_put_cache (ctrl, cache_nonce, CACHE_MODE_NONCE,
                                    passphrase, CACHE_TTL_NONCE))
             {
               assuan_write_status (ctx, "CACHE_NONCE", cache_nonce);
@@ -3099,6 +3100,21 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       if (ctrl->s2k_count && ctrl->s2k_count < 65536)
         {
 	  ctrl->s2k_count = 0;
+        }
+    }
+  else if (!strcmp (key, "pretend-request-origin"))
+    {
+      log_assert (!ctrl->restricted);
+      switch (parse_request_origin (value))
+        {
+        case REQUEST_ORIGIN_LOCAL:   ctrl->restricted = 0; break;
+        case REQUEST_ORIGIN_REMOTE:  ctrl->restricted = 1; break;
+        case REQUEST_ORIGIN_BROWSER: ctrl->restricted = 2; break;
+        default:
+          err = gpg_error (GPG_ERR_INV_VALUE);
+          /* Better pretend to be remote in case of a bad value.  */
+          ctrl->restricted = 1;
+          break;
         }
     }
   else

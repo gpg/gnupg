@@ -289,6 +289,23 @@ start_agent (ctrl_t ctrl, int flag_for_card)
                 }
             }
 
+          /* Pass on the request origin.  */
+          if (opt.request_origin)
+            {
+              char *tmp = xasprintf ("OPTION pretend-request-origin=%s",
+                                     str_request_origin (opt.request_origin));
+              rc = assuan_transact (agent_ctx, tmp,
+                               NULL, NULL, NULL, NULL, NULL, NULL);
+              xfree (tmp);
+              if (rc)
+                {
+                  log_error ("setting request origin '%s' failed: %s\n",
+                             str_request_origin (opt.request_origin),
+                             gpg_strerror (rc));
+                  write_status_error ("set_request_origin", rc);
+                }
+            }
+
           /* In DE_VS mode under Windows we require that the JENT RNG
            * is active.  */
 #ifdef HAVE_W32_SYSTEM
@@ -591,6 +608,8 @@ learn_status_cb (void *opaque, const char *line)
                     parm->extcap.ki = abool;
                   else if (!strcmp (p, "aac"))
                     parm->extcap.aac = abool;
+                  else if (!strcmp (p, "kdf"))
+                    parm->extcap.kdf = abool;
                   else if (!strcmp (p, "si"))
                     parm->status_indicator = strtoul (p2, NULL, 10);
                 }

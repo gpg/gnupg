@@ -971,10 +971,10 @@ skip_packet (IOBUF inp, int pkttype, unsigned long pktlen, int partial)
 }
 
 
-/* Read PKTLEN bytes form INP and return them in a newly allocated
-   buffer.  In case of an error (including reading fewer than PKTLEN
-   bytes from INP before EOF is returned), NULL is returned and an
-   error message is logged.  */
+/* Read PKTLEN bytes from INP and return them in a newly allocated
+ * buffer.  In case of an error (including reading fewer than PKTLEN
+ * bytes from INP before EOF is returned), NULL is returned and an
+ * error message is logged.  */
 static void *
 read_rest (IOBUF inp, size_t pktlen)
 {
@@ -1741,6 +1741,8 @@ enum_sig_subpkt (const subpktarea_t * pktbuf, sigsubpkttype_t reqtype,
 	}
       if (buflen < n)
 	goto too_short;
+      if (!buflen)
+        goto no_type_byte;
       type = *buffer;
       if (type & 0x80)
 	{
@@ -1812,6 +1814,13 @@ enum_sig_subpkt (const subpktarea_t * pktbuf, sigsubpkttype_t reqtype,
  too_short:
   if (opt.verbose)
     log_info ("buffer shorter than subpacket\n");
+  if (start)
+    *start = -1;
+  return NULL;
+
+ no_type_byte:
+  if (opt.verbose)
+    log_info ("type octet missing in subpacket\n");
   if (start)
     *start = -1;
   return NULL;

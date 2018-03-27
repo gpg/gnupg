@@ -1018,7 +1018,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
       snprintf (tmp, sizeof tmp,
                 "gc=%d ki=%d fc=%d pd=%d mcl3=%u aac=%d "
-                "sm=%d si=%u dec=%d bt=%d",
+                "sm=%d si=%u dec=%d bt=%d kdf=%d",
                 app->app_local->extcap.get_challenge,
                 app->app_local->extcap.key_import,
                 app->app_local->extcap.change_force_chv,
@@ -1032,7 +1032,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
                  : 0),
                 app->app_local->status_indicator,
                 app->app_local->extcap.has_decrypt,
-                app->app_local->extcap.has_button);
+                app->app_local->extcap.has_button,
+                app->app_local->extcap.kdf_do);
       send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
       return 0;
     }

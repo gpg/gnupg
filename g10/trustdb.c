@@ -649,7 +649,7 @@ read_trust_record (ctrl_t ctrl, PKT_public_key *pk, TRUSTREC *rec)
   int rc;
 
   init_trustdb (ctrl, 0);
-  rc = tdbio_search_trust_bypk (pk, rec);
+  rc = tdbio_search_trust_bypk (ctrl, pk, rec);
   if (rc)
     {
       if (gpg_err_code (rc) != GPG_ERR_NOT_FOUND)

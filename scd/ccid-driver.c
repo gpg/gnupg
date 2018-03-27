@@ -1467,7 +1467,8 @@ intr_cb (struct libusb_transfer *transfer)
 
   DEBUGOUT_1 ("CCID: interrupt callback %d\n", transfer->status);
 
-  if (transfer->status == LIBUSB_TRANSFER_TIMED_OUT)
+  if (transfer->status == LIBUSB_TRANSFER_TIMED_OUT
+      || transfer->status == LIBUSB_TRANSFER_NO_DEVICE)
     {
       int err;
 

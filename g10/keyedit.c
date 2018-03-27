@@ -1134,8 +1134,10 @@ change_passphrase (ctrl_t ctrl, kbnode_t keyblock)
           if (err)
             goto leave;
 
+          /* Note that when using --dry-run we don't change the
+           * passphrase but merely verify the current passphrase.  */
           desc = gpg_format_keydesc (ctrl, pk, FORMAT_KEYDESC_NORMAL, 1);
-          err = agent_passwd (ctrl, hexgrip, desc, 0,
+          err = agent_passwd (ctrl, hexgrip, desc, !!opt.dry_run,
                               &cache_nonce, &passwd_nonce);
           xfree (desc);
 

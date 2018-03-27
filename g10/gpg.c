@@ -428,6 +428,7 @@ enum cmd_and_opt_values
     oDisableSignerUID,
     oSender,
     oKeyOrigin,
+    oRequestOrigin,
 
     oNoop
   };
@@ -719,6 +720,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oPassphraseFile,  "passphrase-file", "@"),
   ARGPARSE_s_i (oPassphraseRepeat,"passphrase-repeat", "@"),
   ARGPARSE_s_s (oPinentryMode,    "pinentry-mode", "@"),
+  ARGPARSE_s_s (oRequestOrigin,   "request-origin", "@"),
   ARGPARSE_s_i (oCommandFD, "command-fd", "@"),
   ARGPARSE_s_s (oCommandFile, "command-file", "@"),
   ARGPARSE_s_n (oQuickRandom, "debug-quick-random", "@"),
@@ -3156,6 +3158,12 @@ main (int argc, char **argv)
 	    opt.pinentry_mode = parse_pinentry_mode (pargs.r.ret_str);
 	    if (opt.pinentry_mode == -1)
               log_error (_("invalid pinentry mode '%s'\n"), pargs.r.ret_str);
+	    break;
+
+          case oRequestOrigin:
+	    opt.request_origin = parse_request_origin (pargs.r.ret_str);
+	    if (opt.request_origin == -1)
+              log_error (_("invalid request origin '%s'\n"), pargs.r.ret_str);
 	    break;
 
 	  case oCommandFD:

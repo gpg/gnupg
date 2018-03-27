@@ -1581,6 +1581,27 @@ option is valid for the entire session or until reset to 0.  This
 option is useful if the key is later used on boxes which are either
 much slower or faster than the actual box.
 
+@item pretend-request-origin
+This option switches the connection into a restricted mode which
+handles all further commands in the same way as they would be handled
+when originating from the extra or browser socket.  Note that this
+option is not available in the restricted mode.  Valid values for this
+option are:
+
+  @table @code
+  @item none
+  @itemx local
+  This is a NOP and leaves the connection in the standard way.
+
+  @item remote
+  Pretend to come from a remote origin in the same way as connections
+  from the @option{--extra-socket}.
+
+  @item browser
+  Pretend to come from a local web browser in the same way as connections
+  from the @option{--browser-socket}.
+  @end table
+
 @end table
 
 
