@@ -292,6 +292,7 @@ u32 parse_expire_string(const char *string);
 u32 ask_expire_interval(int object,const char *def_expire);
 u32 ask_expiredate(void);
 unsigned int ask_key_flags (int algo, int subkey, unsigned int current);
+const char *ask_curve (int *algo, int *subkey_algo, const char *current);
 void quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
                              const char *usagestr, const char *expirestr);
 void generate_keypair (ctrl_t ctrl, int full, const char *fname,

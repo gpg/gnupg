@@ -2235,8 +2235,8 @@ ask_keysize (int algo, unsigned int primary_keysize)
 /* Ask for the curve.  ALGO is the selected algorithm which this
    function may adjust.  Returns a const string of the name of the
    curve.  */
-static const char *
-ask_curve (int *algo, int *subkey_algo)
+const char *
+ask_curve (int *algo, int *subkey_algo, const char *current)
 {
   /* NB: We always use a complete algo list so that we have stable
      numbers in the menu regardless on how Gpg was configured.  */
@@ -2327,7 +2327,12 @@ ask_curve (int *algo, int *subkey_algo)
       answer = cpr_get ("keygen.curve", _("Your selection? "));
       cpr_kill_prompt ();
       idx = *answer? atoi (answer) : 1;
-      if (*answer && !idx)
+      if (!*answer && current)
+        {
+          xfree(answer);
+          return NULL;
+        }
+      else if (*answer && !idx)
         {
           /* See whether the user entered the name of the curve.  */
           for (idx=0; idx < DIM(curves); idx++)
@@ -4263,7 +4268,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
                   || algo == PUBKEY_ALGO_EDDSA
                   || algo == PUBKEY_ALGO_ECDH)
                 {
-                  curve = ask_curve (&algo, &subkey_algo);
+                  curve = ask_curve (&algo, &subkey_algo, NULL);
                   r = xmalloc_clear( sizeof *r + 20 );
                   r->key = pKEYTYPE;
                   sprintf( r->u.value, "%d", algo);
@@ -4333,7 +4338,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
                   || algo == PUBKEY_ALGO_EDDSA
                   || algo == PUBKEY_ALGO_ECDH)
                 {
-                  curve = ask_curve (&algo, NULL);
+                  curve = ask_curve (&algo, NULL, NULL);
                   r = xmalloc_clear (sizeof *r + strlen (curve));
                   r->key = pKEYCURVE;
                   strcpy (r->u.value, curve);
@@ -5075,7 +5080,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
       else if (algo == PUBKEY_ALGO_ECDSA
                || algo == PUBKEY_ALGO_EDDSA
                || algo == PUBKEY_ALGO_ECDH)
-        curve = ask_curve (&algo, NULL);
+        curve = ask_curve (&algo, NULL, NULL);
       else
         nbits = ask_keysize (algo, 0);
 

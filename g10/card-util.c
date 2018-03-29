@@ -1355,11 +1355,10 @@ show_keysize_warning (void)
 
 
 /* Ask for the size of a card key.  NBITS is the current size
-   configured for the card.  KEYNO is the number of the key used to
-   select the prompt.  Returns 0 to use the default size (i.e. NBITS)
-   or the selected size.  */
+   configured for the card.  Returns 0 to use the default size
+   (i.e. NBITS) or the selected size.  */
 static unsigned int
-ask_card_keyattr (int keyno, unsigned int nbits)
+ask_card_rsa_keysize (unsigned int nbits)
 {
   unsigned int min_nbits = 1024;
   unsigned int max_nbits = 4096;
@@ -1368,78 +1367,175 @@ ask_card_keyattr (int keyno, unsigned int nbits)
 
   for (;;)
     {
-      prompt = xasprintf
-        (keyno == 0?
-         _("What keysize do you want for the Signature key? (%u) "):
-         keyno == 1?
-         _("What keysize do you want for the Encryption key? (%u) "):
-         _("What keysize do you want for the Authentication key? (%u) "),
-         nbits);
+      prompt = xasprintf (_("What keysize do you want? (%u) "), nbits);
       answer = cpr_get ("cardedit.genkeys.size", prompt);
       cpr_kill_prompt ();
       req_nbits = *answer? atoi (answer): nbits;
       xfree (prompt);
       xfree (answer);
 
-      if (req_nbits == 25519)
+      if (req_nbits != nbits && (req_nbits % 32) )
         {
-          if (req_nbits == nbits)
-            return 0;  /* Use default.  */
+          req_nbits = ((req_nbits + 31) / 32) * 32;
+          tty_printf (_("rounded up to %u bits\n"), req_nbits);
+        }
 
-          tty_printf (_("The card will now be re-configured"
-                        " to generate a key of type: %s\n"),
-                      keyno==1? "cv25519":"ed25519");
-          show_keysize_warning ();
-          return req_nbits;
+      if (req_nbits == nbits)
+        return 0;  /* Use default.  */
+
+      if (req_nbits < min_nbits || req_nbits > max_nbits)
+        {
+          tty_printf (_("%s keysizes must be in the range %u-%u\n"),
+                      "RSA", min_nbits, max_nbits);
         }
       else
         {
-          if (req_nbits != nbits && (req_nbits % 32) )
-            {
-              req_nbits = ((req_nbits + 31) / 32) * 32;
-              tty_printf (_("rounded up to %u bits\n"), req_nbits);
-            }
-
-          if (req_nbits == nbits)
-            return 0;  /* Use default.  */
-
-          if (req_nbits < min_nbits || req_nbits > max_nbits)
-            {
-              tty_printf (_("%s keysizes must be in the range %u-%u\n"),
-                      "RSA", min_nbits, max_nbits);
-            }
-          else
-            {
-              tty_printf (_("The card will now be re-configured"
-                            " to generate a key of %u bits\n"), req_nbits);
-              show_keysize_warning ();
-              return req_nbits;
-            }
+          tty_printf (_("The card will now be re-configured"
+                        " to generate a key of %u bits\n"), req_nbits);
+          show_keysize_warning ();
+          return req_nbits;
         }
     }
 }
 
-
-/* Change the size of key KEYNO (0..2) to NBITS and show an error
- * message if that fails.  Using the magic value 25519 for NBITS
- * switches to ed25519 or cv25519 depending on the KEYNO.  */
-static gpg_error_t
-do_change_keyattr (int keyno, unsigned int nbits)
+/* Ask for the key attribute of a card key.  CURRENT is the current
+   attribute configured for the card.  KEYNO is the number of the key
+   used to select the prompt.  Returns NULL to use the default
+   attribute or the selected attribute structure.  */
+static struct key_attr *
+ask_card_keyattr (int keyno, const struct key_attr *current)
 {
-  gpg_error_t err;
+  struct key_attr *key_attr = NULL;
+  char *answer = NULL;
+  int algo;
+
+  tty_printf (_("Changing card key attribute for: "));
+  if (keyno == 0)
+    tty_printf (_("Signature key\n"));
+  else if (keyno == 1)
+    tty_printf (_("Encryption key\n"));
+  else
+    tty_printf (_("Authentication key\n"));
+
+  tty_printf (_("Please select what kind of key you want:\n"));
+  tty_printf (_("   (%d) RSA\n"), 1 );
+  tty_printf (_("   (%d) ECC\n"), 2 );
+
+  for (;;)
+    {
+      xfree (answer);
+      answer = cpr_get ("cardedit.genkeys.algo", _("Your selection? "));
+      cpr_kill_prompt ();
+      algo = *answer? atoi (answer) : 0;
+
+      if (!*answer || algo == 1 || algo == 2)
+        break;
+      else
+        tty_printf (_("Invalid selection.\n"));
+    }
+
+  if (algo == 0)
+    got leave;
+
+  key_attr = xmalloc (sizeof (struct key_attr));
+
+  if (algo == 1)
+    {
+      unsigned int nbits, result_nbits;
+
+      if (current->algo == PUBKEY_ALGO_RSA)
+        nbits = current->nbits;
+      else
+        nbits = 2048;
+
+      result_nbits = ask_card_rsa_keysize (nbits);
+      if (result_nbits == 0)
+        {
+          if (current->algo == PUBKEY_ALGO_RSA)
+            {
+              xfree (key_attr);
+              key_attr = NULL;
+            }
+          else
+            result_nbits = nbits;
+        }
+
+      if (key_attr)
+        {
+          key_attr->algo = PUBKEY_ALGO_RSA;
+          key_attr->nbits = result_nbits;
+        }
+    }
+  else
+    {
+      const char *curve;
+      const char *oid_str;
+
+      if (current->algo == PUBKEY_ALGO_RSA)
+        {
+          if (keyno == 1)
+            /* Encryption key */
+            algo = PUBKEY_ALGO_ECDH;
+          else /* Signature key or Authentication key */
+            algo = PUBKEY_ALGO_ECDSA;
+          curve = NULL;
+        }
+      else
+        {
+          algo = current->algo;
+          curve = current->curve;
+        }
+
+      curve = ask_curve (&algo, NULL, curve);
+      if (curve)
+        {
+          key_attr->algo = algo;
+          oid_str = openpgp_curve_to_oid (curve, NULL);
+          key_attr->curve = openpgp_oid_to_curve (oid_str, 0);
+        }
+      else
+        {
+          xfree (key_attr);
+          key_attr = NULL;
+        }
+    }
+
+ leave:
+  if (!key_attr)
+    tty_printf (_("No change."));
+
+  return key_attr;
+}
+
+
+
+/* Change the key attribute of key KEYNO (0..2) and show an error
+ * message if that fails.  */
+static gpg_error_t
+do_change_keyattr (int keyno, const struct key_attr *key_attr)
+{
+  gpg_error_t err = 0;
   char args[100];
 
-  if (nbits == 25519)
+  if (key_attr->algo == PUBKEY_ALGO_RSA)
+    snprintf (args, sizeof args, "--force %d 1 rsa%u", keyno+1,
+              key_attr->nbits);
+  else if (key_attr->algo == PUBKEY_ALGO_ECDH
+           || key_attr->algo == PUBKEY_ALGO_ECDSA
+           || key_attr->algo == PUBKEY_ALGO_EDDSA)
     snprintf (args, sizeof args, "--force %d %d %s",
-              keyno+1,
-              keyno == 1? PUBKEY_ALGO_ECDH : PUBKEY_ALGO_EDDSA,
-              keyno == 1? "cv25519" : "ed25519");
+              keyno+1, key_attr->algo, key_attr->curve);
   else
-    snprintf (args, sizeof args, "--force %d 1 rsa%u", keyno+1, nbits);
+    {
+      log_error (_("public key algorithm %d (%s) is not supported\n"),
+                 key_attr->algo, gcry_pk_algo_name (key_attr->algo));
+      return gpg_error (GPG_ERR_PUBKEY_ALGO);
+    }
+
   err = agent_scd_setattr ("KEY-ATTR", args, strlen (args), NULL);
   if (err)
-    log_error (_("error changing size of key %d to %u bits: %s\n"),
-               keyno+1, nbits, gpg_strerror (err));
+    log_error (_("error changing key attribute for key %d: %s\n"),
+               keyno+1, gpg_strerror (err));
   return err;
 }
 
@@ -1502,26 +1598,21 @@ generate_card_keys (ctrl_t ctrl)
      key size.  */
   if (info.is_v2 && info.extcap.aac)
     {
-      unsigned int nbits;
-
       for (keyno = 0; keyno < DIM (info.key_attr); keyno++)
         {
-          if (info.key_attr[keyno].algo == PUBKEY_ALGO_RSA
-              || info.key_attr[keyno].algo == PUBKEY_ALGO_ECDH
-              || info.key_attr[keyno].algo == PUBKEY_ALGO_EDDSA)
-            {
-              if (info.key_attr[keyno].algo == PUBKEY_ALGO_RSA)
-                nbits = ask_card_keyattr (keyno, info.key_attr[keyno].nbits);
-              else
-                nbits = ask_card_keyattr (keyno, 25519 /* magic */);
+          struct key_attr *key_attr;
 
-              if (nbits && do_change_keyattr (keyno, nbits))
+          if ((key_attr = ask_card_keyattr (keyno, &info.key_attr[keyno])))
+            {
+              gpg_error_t err = do_change_keyattr (keyno, key_attr);
+              xfree (key_attr);
+              if (err)
                 {
-                  /* Error: Better read the default key size again.  */
+                  /* Error: Better read the default key attribute again.  */
                   agent_release_card_info (&info);
                   if (get_info_for_key_operation (&info))
                     goto leave;
-                  /* Ask again for this key size. */
+                  /* Ask again for this key. */
                   keyno--;
                 }
             }
@@ -1591,21 +1682,16 @@ card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock)
      key size.  */
   if (info.is_v2 && info.extcap.aac)
     {
-      if (info.key_attr[keyno-1].algo == PUBKEY_ALGO_RSA
-          || info.key_attr[keyno].algo == PUBKEY_ALGO_ECDH
-          || info.key_attr[keyno].algo == PUBKEY_ALGO_EDDSA)
+      struct key_attr *key_attr;
+
+    ask_again:
+      if ((key_attr = ask_card_keyattr (keyno-1, &info.key_attr[keyno-1])))
         {
-          unsigned int nbits;
-
-        ask_again:
-          if (info.key_attr[keyno].algo == PUBKEY_ALGO_RSA)
-            nbits = ask_card_keyattr (keyno-1, info.key_attr[keyno-1].nbits);
-          else
-            nbits = ask_card_keyattr (keyno-1, 25519);
-
-          if (nbits && do_change_keyattr (keyno-1, nbits))
+          err = do_change_keyattr (keyno-1, key_attr);
+          xfree (key_attr);
+          if (err)
             {
-              /* Error: Better read the default key size again.  */
+              /* Error: Better read the default key attribute again.  */
               agent_release_card_info (&info);
               err = get_info_for_key_operation (&info);
               if (err)
