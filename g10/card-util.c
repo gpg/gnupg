@@ -1498,9 +1498,6 @@ generate_card_keys (ctrl_t ctrl)
       tty_printf ("\n");
     }
 
-  if (check_pin_for_key_operation (&info, &forced_chv1))
-    goto leave;
-
   /* If the cards features changeable key attributes, we ask for the
      key size.  */
   if (info.is_v2 && info.extcap.aac)
@@ -1532,6 +1529,9 @@ generate_card_keys (ctrl_t ctrl)
       /* Note that INFO has not be synced.  However we will only use
          the serialnumber and thus it won't harm.  */
     }
+
+  if (check_pin_for_key_operation (&info, &forced_chv1))
+    goto leave;
 
   generate_keypair (ctrl, 1, NULL, info.serialno, want_backup);
 
@@ -1587,10 +1587,6 @@ card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock)
       goto leave;
     }
 
-  err = check_pin_for_key_operation (&info, &forced_chv1);
-  if (err)
-    goto leave;
-
   /* If the cards features changeable key attributes, we ask for the
      key size.  */
   if (info.is_v2 && info.extcap.aac)
@@ -1620,6 +1616,10 @@ card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock)
       /* Note that INFO has not be synced.  However we will only use
          the serialnumber and thus it won't harm.  */
     }
+
+  err = check_pin_for_key_operation (&info, &forced_chv1);
+  if (err)
+    goto leave;
 
   err = generate_card_subkeypair (ctrl, pub_keyblock, keyno, info.serialno);
 
