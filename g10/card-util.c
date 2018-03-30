@@ -1435,7 +1435,7 @@ ask_card_keyattr (int keyno, const struct key_attr *current)
     }
 
   if (algo == 0)
-    got leave;
+    goto leave;
 
   key_attr = xmalloc (sizeof (struct key_attr));
 
@@ -1541,12 +1541,56 @@ do_change_keyattr (int keyno, const struct key_attr *key_attr)
 
 
 static void
+key_attr (void)
+{
+  struct agent_card_info_s info;
+  gpg_error_t err;
+  int keyno;
+
+  err = get_info_for_key_operation (&info);
+  if (err)
+    {
+      log_error (_("error getting card info: %s\n"), gpg_strerror (err));
+      return;
+    }
+
+  if (!(info.is_v2 && info.extcap.aac))
+    {
+      log_error (_("This command is not supported by this card\n"));
+      goto leave;
+    }
+
+  for (keyno = 0; keyno < DIM (info.key_attr); keyno++)
+    {
+      struct key_attr *key_attr;
+
+      if ((key_attr = ask_card_keyattr (keyno, &info.key_attr[keyno])))
+        {
+          err = do_change_keyattr (keyno, key_attr);
+          xfree (key_attr);
+          if (err)
+            {
+              /* Error: Better read the default key attribute again.  */
+              agent_release_card_info (&info);
+              if (get_info_for_key_operation (&info))
+                goto leave;
+              /* Ask again for this key. */
+              keyno--;
+            }
+        }
+    }
+
+ leave:
+  agent_release_card_info (&info);
+}
+
+
+static void
 generate_card_keys (ctrl_t ctrl)
 {
   struct agent_card_info_s info;
   int forced_chv1;
   int want_backup;
-  int keyno;
 
   if (get_info_for_key_operation (&info))
     return;
@@ -1594,32 +1638,6 @@ generate_card_keys (ctrl_t ctrl)
       tty_printf ("\n");
     }
 
-  /* If the cards features changeable key attributes, we ask for the
-     key size.  */
-  if (info.is_v2 && info.extcap.aac)
-    {
-      for (keyno = 0; keyno < DIM (info.key_attr); keyno++)
-        {
-          struct key_attr *key_attr;
-
-          if ((key_attr = ask_card_keyattr (keyno, &info.key_attr[keyno])))
-            {
-              gpg_error_t err = do_change_keyattr (keyno, key_attr);
-              xfree (key_attr);
-              if (err)
-                {
-                  /* Error: Better read the default key attribute again.  */
-                  agent_release_card_info (&info);
-                  if (get_info_for_key_operation (&info))
-                    goto leave;
-                  /* Ask again for this key. */
-                  keyno--;
-                }
-            }
-        }
-      /* Note that INFO has not be synced.  However we will only use
-         the serialnumber and thus it won't harm.  */
-    }
 
   if (check_pin_for_key_operation (&info, &forced_chv1))
     goto leave;
@@ -1676,31 +1694,6 @@ card_generate_subkey (ctrl_t ctrl, kbnode_t pub_keyblock)
     {
       err = gpg_error (GPG_ERR_CANCELED);
       goto leave;
-    }
-
-  /* If the cards features changeable key attributes, we ask for the
-     key size.  */
-  if (info.is_v2 && info.extcap.aac)
-    {
-      struct key_attr *key_attr;
-
-    ask_again:
-      if ((key_attr = ask_card_keyattr (keyno-1, &info.key_attr[keyno-1])))
-        {
-          err = do_change_keyattr (keyno-1, key_attr);
-          xfree (key_attr);
-          if (err)
-            {
-              /* Error: Better read the default key attribute again.  */
-              agent_release_card_info (&info);
-              err = get_info_for_key_operation (&info);
-              if (err)
-                goto leave;
-              goto ask_again;
-            }
-        }
-      /* Note that INFO has not be synced.  However we will only use
-         the serialnumber and thus it won't harm.  */
     }
 
   err = check_pin_for_key_operation (&info, &forced_chv1);
@@ -2091,6 +2084,7 @@ enum cmdids
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdREADCERT, cmdUNBLOCK, cmdFACTORYRESET, cmdKDFSETUP,
+    cmdKEYATTR,
     cmdINVCMD
   };
 
@@ -2124,6 +2118,7 @@ static struct
     { "unblock" , cmdUNBLOCK,0, N_("unblock the PIN using a Reset Code") },
     { "factory-reset", cmdFACTORYRESET, 1, N_("destroy all keys and data")},
     { "kdf-setup", cmdKDFSETUP, 1, N_("setup KDF for PIN authentication")},
+    { "key-attr", cmdKEYATTR, 1, N_("change the key attribute")},
     /* Note, that we do not announce these command yet. */
     { "privatedo", cmdPRIVATEDO, 0, NULL },
     { "readcert", cmdREADCERT, 0, NULL },
@@ -2409,6 +2404,10 @@ card_edit (ctrl_t ctrl, strlist_t commands)
 
         case cmdKDFSETUP:
           kdf_setup ();
+          break;
+
+        case cmdKEYATTR:
+          key_attr ();
           break;
 
         case cmdQUIT:
