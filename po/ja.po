@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.3\n"
+"Project-Id-Version: gnupg 2.2.6\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-12-18 14:07+0900\n"
+"PO-Revision-Date: 2018-03-30 19:31+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -1325,21 +1325,8 @@ msgstr ""
 "        利用できる鍵長について確認ください。\n"
 
 #, c-format
-msgid "What keysize do you want for the Signature key? (%u) "
-msgstr "署名鍵の鍵長は? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr "暗号化鍵の鍵長は? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr "認証鍵の鍵長は? (%u) "
-
-#, c-format
-msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr ""
-"カードは、今、こちらのタイプの鍵を生成するように再コンフィグされました: %s\n"
+msgid "What keysize do you want? (%u) "
+msgstr "鍵長は? (%u) "
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -1353,9 +1340,45 @@ msgstr "%s 鍵長は %u-%u の範囲でなければなりません\n"
 msgid "The card will now be re-configured to generate a key of %u bits\n"
 msgstr "今、%uビットの鍵を生成するようにカードは再コンフィグされました\n"
 
+msgid "Changing card key attribute for: "
+msgstr "こちらのカード鍵の属性を変更します: "
+
+msgid "Signature key\n"
+msgstr "署名鍵\n"
+
+msgid "Encryption key\n"
+msgstr "暗号化鍵\n"
+
+msgid "Authentication key\n"
+msgstr "認証鍵\n"
+
+msgid "Please select what kind of key you want:\n"
+msgstr "ご希望の鍵の種類を選択してください:\n"
+
 #, c-format
-msgid "error changing size of key %d to %u bits: %s\n"
-msgstr "鍵%dの長さを%u bit に変更する際にエラー: %s\n"
+msgid "   (%d) RSA\n"
+msgstr "   (%d) RSA\n"
+
+#, c-format
+msgid "   (%d) ECC\n"
+msgstr "   (%d) ECC\n"
+
+msgid "Invalid selection.\n"
+msgstr "無効な選択です。\n"
+
+msgid "No change."
+msgstr "変更なし。"
+
+#, c-format
+msgid "error changing key attribute for key %d: %s\n"
+msgstr "鍵%dの属性を変更する際にエラー: %s\n"
+
+#, c-format
+msgid "error getting card info: %s\n"
+msgstr "鍵情報の取得エラー: %s\n"
+
+msgid "This command is not supported by this card\n"
+msgstr "このカードでは、このコマンドはサポートされていません。\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "暗号化鍵のカード外バックアップを作成しますか? (Y/n) "
@@ -1388,18 +1411,12 @@ msgstr "   (2) 暗号化鍵\n"
 msgid "   (3) Authentication key\n"
 msgstr "   (3) 認証鍵\n"
 
-msgid "Invalid selection.\n"
-msgstr "無効な選択です。\n"
-
 msgid "Please select where to store the key:\n"
 msgstr "鍵を保管する場所を選択してください:\n"
 
 #, c-format
 msgid "KEYTOCARD failed: %s\n"
 msgstr "KEYTOCARDが失敗しました: %s\n"
-
-msgid "This command is not supported by this card\n"
-msgstr "このカードでは、このコマンドはサポートされていません。\n"
 
 msgid "Note: This command destroys all keys stored on the card!\n"
 msgstr "*注意*: このコマンドはカードに保管してあるすべての鍵を破壊します!\n"
@@ -1409,6 +1426,10 @@ msgstr "続けますか? (y/N) "
 
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr "工場出荷リセットを行いますか? (本当なら \"yes\" と入力) "
+
+#, c-format
+msgid "error for setup KDF: %s\n"
+msgstr "KDF設定のエラー: %s\n"
 
 msgid "quit this menu"
 msgstr "このメニューを終了"
@@ -1460,6 +1481,12 @@ msgstr "PINをリセット・コードでブロックを解除する"
 
 msgid "destroy all keys and data"
 msgstr "すべての鍵とデータを破壊します"
+
+msgid "setup KDF for PIN authentication"
+msgstr "PIN認証のKDFを設定する"
+
+msgid "change the key attribute"
+msgstr "鍵の属性の変更"
 
 msgid "gpg/card> "
 msgstr "gpg/card> "
@@ -2079,6 +2106,10 @@ msgstr "\"%s\"は正しいメール・アドレスではありません\n"
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
 msgstr "無効な pinentry mode '%s'です\n"
+
+#, c-format
+msgid "invalid request origin '%s'\n"
+msgstr "無効な送信元要求 '%s' です\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
@@ -3099,11 +3130,11 @@ msgstr ""
 msgid "Key is revoked."
 msgstr "鍵は、失効されています。"
 
-msgid "Really sign all user IDs? (y/N) "
-msgstr "本当に全ユーザIDに署名しますか? (y/N) "
-
 msgid "Really sign all text user IDs? (y/N) "
 msgstr "本当に全てのテキストユーザIDに署名しますか? (y/N) "
+
+msgid "Really sign all user IDs? (y/N) "
+msgstr "本当に全ユーザIDに署名しますか? (y/N) "
 
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "ヒント: まず署名するユーザIDを選択します\n"
@@ -3643,9 +3674,6 @@ msgstr "   (%c) 認証機能を反転する\n"
 msgid "   (%c) Finished\n"
 msgstr "   (%c) 完了\n"
 
-msgid "Please select what kind of key you want:\n"
-msgstr "ご希望の鍵の種類を選択してください:\n"
-
 #, c-format
 msgid "   (%d) RSA and RSA (default)\n"
 msgstr "   (%d) RSA と RSA (デフォルト)\n"
@@ -3718,10 +3746,6 @@ msgstr "%s 鍵は %u から %u ビットの長さで可能です。\n"
 #, c-format
 msgid "What keysize do you want for the subkey? (%u) "
 msgstr "副鍵の鍵長は? (%u) "
-
-#, c-format
-msgid "What keysize do you want? (%u) "
-msgstr "鍵長は? (%u) "
 
 #, c-format
 msgid "Requested keysize is %u bits\n"
@@ -6342,10 +6366,6 @@ msgstr ""
 "さい。\n"
 
 #, c-format
-msgid "   (%d) RSA\n"
-msgstr "   (%d) RSA\n"
-
-#, c-format
 msgid "   (%d) Existing key\n"
 msgstr "   (%d) 既存の鍵\n"
 
@@ -8318,6 +8338,20 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "What keysize do you want for the Signature key? (%u) "
+#~ msgstr "署名鍵の鍵長は? (%u) "
+
+#~ msgid "What keysize do you want for the Encryption key? (%u) "
+#~ msgstr "暗号化鍵の鍵長は? (%u) "
+
+#~ msgid "What keysize do you want for the Authentication key? (%u) "
+#~ msgstr "認証鍵の鍵長は? (%u) "
+
+#~ msgid "The card will now be re-configured to generate a key of type: %s\n"
+#~ msgstr ""
+#~ "カードは、今、こちらのタイプの鍵を生成するように再コンフィグされました: "
+#~ "%s\n"
 
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "listen() に失敗しました: %s\n"
