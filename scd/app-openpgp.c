@@ -3208,21 +3208,33 @@ change_rsa_keyattr (app_t app, int keyno, unsigned int nbits,
   relptr = get_one_do (app, 0xC1+keyno, &buf, &buflen, NULL);
   if (!relptr)
     err = gpg_error (GPG_ERR_CARD);
-  else if (buflen < 6 || buf[0] != PUBKEY_ALGO_RSA)
+  else if (buflen < 6)
     {
-      /* Attriutes too short or not an RSA key.  */
+      /* Attributes too short.  */
       xfree (relptr);
       err = gpg_error (GPG_ERR_CARD);
     }
   else
     {
-      /* We only change n_bits and don't touch anything else.  Before we
-         do so, we round up NBITS to a sensible way in the same way as
-         gpg's key generation does it.  This may help to sort out problems
-         with a few bits too short keys.  */
+      /* If key attribute was RSA, we only change n_bits and don't
+         touch anything else.  Before we do so, we round up NBITS to a
+         sensible way in the same way as gpg's key generation does it.
+         This may help to sort out problems with a few bits too short
+         keys.  */
       nbits = ((nbits + 31) / 32) * 32;
       buf[1] = (nbits >> 8);
       buf[2] = nbits;
+
+      /* If it was not RSA, we need to fill other parts.  */
+      if (buf[0] != PUBKEY_ALGO_RSA)
+        {
+          buf[0] = PUBKEY_ALGO_RSA;
+          buf[3] = 0;
+          buf[4] = 32;
+          buf[5] = 0;
+          buflen = 6;
+        }
+
       err = change_keyattr (app, keyno, buf, buflen, pincb, pincb_arg);
       xfree (relptr);
     }
