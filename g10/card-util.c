@@ -1978,11 +1978,12 @@ factory_reset (void)
 
 #define USER_PIN_DEFAULT "123456"
 #define ADMIN_PIN_DEFAULT "12345678"
-#define KDF_DATA_LENGTH 110
+#define KDF_DATA_LENGTH_MIN  90
+#define KDF_DATA_LENGTH_MAX 110
 
 /* Generate KDF data.  */
 static gpg_error_t
-gen_kdf_data (unsigned char *data)
+gen_kdf_data (unsigned char *data, int single_salt)
 {
   const unsigned char h0[] = { 0x81, 0x01, 0x03,
                                0x82, 0x01, 0x08,
@@ -2015,14 +2016,19 @@ gen_kdf_data (unsigned char *data)
   salt_user = (p += sizeof h1);
   gcry_randomize (p, 8, GCRY_STRONG_RANDOM);
   p += 8;
-  memcpy (p, h2, sizeof h2);
-  p += sizeof h2;
-  gcry_randomize (p, 8, GCRY_STRONG_RANDOM);
-  p += 8;
-  memcpy (p, h3, sizeof h3);
-  salt_admin = (p += sizeof h3);
-  gcry_randomize (p, 8, GCRY_STRONG_RANDOM);
-  p += 8;
+
+  if (!single_salt)
+    {
+      memcpy (p, h2, sizeof h2);
+      p += sizeof h2;
+      gcry_randomize (p, 8, GCRY_STRONG_RANDOM);
+      p += 8;
+      memcpy (p, h3, sizeof h3);
+      salt_admin = (p += sizeof h3);
+      gcry_randomize (p, 8, GCRY_STRONG_RANDOM);
+      p += 8;
+    }
+
   memcpy (p, h4, sizeof h4);
   p += sizeof h4;
   err = gcry_kdf_derive (USER_PIN_DEFAULT, strlen (USER_PIN_DEFAULT),
@@ -2043,11 +2049,12 @@ gen_kdf_data (unsigned char *data)
 
 /* Setup KDF data object which is used for PIN authentication.  */
 static void
-kdf_setup (void)
+kdf_setup (const char *args)
 {
   struct agent_card_info_s info;
   gpg_error_t err;
-  unsigned char kdf_data[KDF_DATA_LENGTH];
+  unsigned char kdf_data[KDF_DATA_LENGTH_MAX];
+  int single = (*args != 0);
 
   memset (&info, 0, sizeof info);
 
@@ -2064,10 +2071,19 @@ kdf_setup (void)
       goto leave;
     }
 
-  if (!(err = gen_kdf_data (kdf_data))
-      && !(err = agent_scd_setattr ("KDF", kdf_data, KDF_DATA_LENGTH, NULL)))
-    err = agent_scd_getattr ("KDF", &info);
+  err = gen_kdf_data (kdf_data, single);
+  if (err)
+    goto leave_error;
 
+  err = agent_scd_setattr ("KDF", kdf_data,
+                           single ? KDF_DATA_LENGTH_MIN : KDF_DATA_LENGTH_MAX,
+                           NULL);
+  if (err)
+    goto leave_error;
+
+  err = agent_scd_getattr ("KDF", &info);
+
+ leave_error:
   if (err)
     log_error (_("error for setup KDF: %s\n"), gpg_strerror (err));
 
@@ -2403,7 +2419,7 @@ card_edit (ctrl_t ctrl, strlist_t commands)
           break;
 
         case cmdKDFSETUP:
-          kdf_setup ();
+          kdf_setup (arg_string);
           break;
 
         case cmdKEYATTR:

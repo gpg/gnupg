@@ -2061,6 +2061,9 @@ get_prompt_info (app_t app, int chvno, unsigned long sigcount, int remaining)
   return result;
 }
 
+#define KDF_DATA_LENGTH_MIN  90
+#define KDF_DATA_LENGTH_MAX 110
+
 /* Compute hash if KDF-DO is available.  CHVNO must be 0 for reset
    code, 1 or 2 for user pin and 3 for admin pin.
  */
@@ -2068,21 +2071,33 @@ static gpg_error_t
 pin2hash_if_kdf (app_t app, int chvno, char *pinvalue, int *r_pinlen)
 {
   gpg_error_t err = 0;
-  void *relptr;
+  void *relptr = NULL;
   unsigned char *buffer;
   size_t buflen;
 
   if (app->app_local->extcap.kdf_do
       && (relptr = get_one_do (app, 0x00F9, &buffer, &buflen, NULL))
-      && buflen == 110 && (buffer[2] == 0x03))
+      && buflen >= KDF_DATA_LENGTH_MIN && (buffer[2] == 0x03))
     {
-      char *salt;
+      const char *salt;
       unsigned long s2k_count;
       char dek[32];
+      int salt_index;
 
-      salt = &buffer[(chvno==3 ? 34 : (chvno==0 ? 24 : 14))];
       s2k_count = (((unsigned int)buffer[8] << 24)
                    | (buffer[9] << 16) | (buffer[10] << 8) | buffer[11]);
+
+      if (buflen == KDF_DATA_LENGTH_MIN)
+        salt_index =14;
+      else if (buflen == KDF_DATA_LENGTH_MAX)
+        salt_index = (chvno==3 ? 34 : (chvno==0 ? 24 : 14));
+      else
+        {
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+
+      salt = &buffer[salt_index];
       err = gcry_kdf_derive (pinvalue, strlen (pinvalue),
                              GCRY_KDF_ITERSALTED_S2K,
                              DIGEST_ALGO_SHA256, salt, 8,
@@ -2094,12 +2109,12 @@ pin2hash_if_kdf (app_t app, int chvno, char *pinvalue, int *r_pinlen)
           memcpy (pinvalue, dek, *r_pinlen);
           wipememory (dek, *r_pinlen);
         }
-
-      xfree (relptr);
-    }
+   }
   else
     *r_pinlen = strlen (pinvalue);
 
+ leave:
+  xfree (relptr);
   return err;
 }
 
