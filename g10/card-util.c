@@ -2017,7 +2017,9 @@ gen_kdf_data (unsigned char *data, int single_salt)
   gcry_randomize (p, 8, GCRY_STRONG_RANDOM);
   p += 8;
 
-  if (!single_salt)
+  if (single_salt)
+    salt_admin = salt_user;
+  else
     {
       memcpy (p, h2, sizeof h2);
       p += sizeof h2;
