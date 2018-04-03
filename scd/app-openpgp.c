@@ -2459,7 +2459,7 @@ do_setattr (app_t app, const char *name,
     { "SM-KEY-MAC",   0x00D2, 3, 0, 1 },
     { "KEY-ATTR",     0,      0, 3, 1 },
     { "AESKEY",       0x00D5, 3, 0, 1 },
-    { "KDF",          0x00F9, 3, 0, 1 },
+    { "KDF",          0x00F9, 3, 4, 1 },
     { NULL, 0 }
   };
   int exmode;
@@ -2507,6 +2507,12 @@ do_setattr (app_t app, const char *name,
     app->force_chv1 = (valuelen && *value == 0);
   else if (table[idx].special == 2)
     parse_login_data (app);
+  else if (table[idx].special == 4)
+    {
+      app->did_chv1 = 0;
+      app->did_chv2 = 0;
+      app->did_chv3 = 0;
+    }
 
   return rc;
 }
