@@ -28,17 +28,22 @@
 
 ;; Evaluate a sequence of expressions with an ephemeral home
 ;; directory.
-(define-macro (with-ephemeral-home-directory setup-fn . expressions)
+(define-macro (with-ephemeral-home-directory setup-fn teardown-fn . expressions)
   (let ((original-home-directory (gensym))
 	(ephemeral-home-directory (gensym))
-	(setup (gensym)))
+	(setup (gensym))
+	(teardown (gensym)))
     `(let ((,original-home-directory (getenv "GNUPGHOME"))
 	   (,ephemeral-home-directory (mkdtemp))
-	   (,setup (delay (,setup-fn))))
+	   (,setup (delay (,setup-fn)))
+	   (,teardown (delay (,teardown-fn))))
        (finally (unlink-recursively ,ephemeral-home-directory)
 	 (dynamic-wind
 	     (lambda ()
 	       (setenv "GNUPGHOME" ,ephemeral-home-directory #t)
 	       (with-working-directory ,ephemeral-home-directory (force ,setup)))
 	     (lambda () ,@expressions)
-	     (lambda () (setenv "GNUPGHOME" ,original-home-directory #t)))))))
+	     (lambda ()
+	       (setenv "GNUPGHOME" ,ephemeral-home-directory #t)
+	       (with-working-directory ,ephemeral-home-directory (force ,teardown))
+	       (setenv "GNUPGHOME" ,original-home-directory #t)))))))

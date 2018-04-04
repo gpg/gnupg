@@ -35,7 +35,7 @@
 
        ;; Then, verify the signature with a clean working directory
        ;; containing only Steve's public key.
-       (with-ephemeral-home-directory setup-environment
+       (with-ephemeral-home-directory setup-environment-no-atexit stop-agent
 	(call-check `(,@gpg --import ,steve's-key))
 	(call-check `(,@gpg --verify ,unwrapped)))))
   '("encsig-2-keys-3" "encsig-2-keys-4")))

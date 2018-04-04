@@ -39,7 +39,7 @@
 (define GPGTAR (path-join (getenv "objdir") "tools" (qualify "gpgtar")))
 
 (define (untar-armored source-name)
-  (with-ephemeral-home-directory (lambda ())
+  (with-ephemeral-home-directory (lambda ()) (lambda ())
     (pipe:do
      (pipe:open source-name (logior O_RDONLY O_BINARY))
      (pipe:spawn `(,@GPG --dearmor))

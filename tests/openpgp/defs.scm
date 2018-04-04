@@ -201,7 +201,7 @@
 
 (define have-opt-always-trust
   (catch #f
-	 (with-ephemeral-home-directory (lambda ())
+	 (with-ephemeral-home-directory (lambda ()) (lambda ())
 	   (call-check `(,(tool 'gpg) --gpgconf-test --always-trust)))
 	 #t))
 
@@ -365,6 +365,10 @@
   (create-gpghome)
   (start-agent))
 
+(define (setup-environment-no-atexit)
+  (create-gpghome)
+  (start-agent #t))
+
 (define (create-sample-files)
   (log "Creating sample data files")
   (for-each
@@ -448,12 +452,12 @@
   (preset-passphrases))
 
 ;; Create the socket dir and start the agent.
-(define (start-agent)
+(define (start-agent . args)
   (log "Starting gpg-agent...")
   (let ((gnupghome (getenv "GNUPGHOME")))
-    (atexit (lambda ()
-	      (with-home-directory gnupghome
-				   (stop-agent)))))
+    (if (null? args)
+	(atexit (lambda ()
+		  (with-home-directory gnupghome (stop-agent))))))
   (catch (log "Warning: Creating socket directory failed:" (car *error*))
 	 (gpg-conf '--create-socketdir))
   (call-check `(,(tool 'gpg-connect-agent) --verbose
