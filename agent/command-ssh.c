@@ -27,8 +27,10 @@
    RFC-4253 - Transport Layer Protocol
    RFC-5656 - ECC support
 
-   The protocol for the agent is defined in OpenSSH's PROTOCL.agent
-   file.
+   The protocol for the agent is defined in:
+
+   https://tools.ietf.org/html/draft-miller-ssh-agent
+
   */
 
 #include <config.h>
