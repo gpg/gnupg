@@ -1389,12 +1389,7 @@ ask_card_rsa_keysize (unsigned int nbits)
                       "RSA", min_nbits, max_nbits);
         }
       else
-        {
-          tty_printf (_("The card will now be re-configured"
-                        " to generate a key of %u bits\n"), req_nbits);
-          show_keysize_warning ();
-          return req_nbits;
-        }
+        return req_nbits;
     }
 }
 
@@ -1501,8 +1496,19 @@ ask_card_keyattr (int keyno, const struct key_attr *current)
     }
 
  leave:
-  if (!key_attr)
-    tty_printf (_("No change."));
+  if (key_attr)
+    {
+      if (key_attr->algo == PUBKEY_ALGO_RSA)
+        tty_printf (_("The card will now be re-configured"
+                      " to generate a key of %u bits\n"), key_attr->nbits);
+      else if (key_attr->algo == PUBKEY_ALGO_ECDH
+               || key_attr->algo == PUBKEY_ALGO_ECDSA
+               || key_attr->algo == PUBKEY_ALGO_EDDSA)
+        tty_printf (_("The card will now be re-configured"
+                      " to generate a key of type: %s\n"), key_attr->curve),
+
+      show_keysize_warning ();
+    }
 
   return key_attr;
 }
