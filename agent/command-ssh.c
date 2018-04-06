@@ -83,6 +83,8 @@
 /* Other constants.  */
 #define SSH_DSA_SIGNATURE_PADDING 20
 #define SSH_DSA_SIGNATURE_ELEMS    2
+#define SSH_AGENT_RSA_SHA2_256            0x02
+#define SSH_AGENT_RSA_SHA2_512            0x04
 #define SPEC_FLAG_USE_PKCS1V2 (1 << 0)
 #define SPEC_FLAG_IS_ECDSA    (1 << 1)
 #define SPEC_FLAG_IS_EdDSA    (1 << 2)  /*(lowercase 'd' on purpose.)*/
@@ -2880,10 +2882,23 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   if (err)
     goto out;
 
-  /* FIXME?  */
   err = stream_read_uint32 (request, &flags);
   if (err)
     goto out;
+
+  if (spec.algo == GCRY_PK_RSA)
+    {
+      if ((flags & SSH_AGENT_RSA_SHA2_256))
+        {
+          spec.ssh_identifier = "rsa-sha2-256";
+          spec.hash_algo = GCRY_MD_SHA256;
+        }
+      else if ((flags & SSH_AGENT_RSA_SHA2_512))
+        {
+          spec.ssh_identifier = "rsa-sha2-512";
+          spec.hash_algo = GCRY_MD_SHA512;
+        }
+    }
 
   hash_algo = spec.hash_algo;
   if (!hash_algo)
