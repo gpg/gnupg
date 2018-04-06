@@ -33,6 +33,7 @@
 #define IS_KEY_SIG(s)    ((s)->sig_class == 0x1f)
 #define IS_UID_SIG(s)    (((s)->sig_class & ~3) == 0x10)
 #define IS_SUBKEY_SIG(s) ((s)->sig_class == 0x18)
+#define IS_BACK_SIG(s)   ((s)->sig_class == 0x19)
 #define IS_KEY_REV(s)    ((s)->sig_class == 0x20)
 #define IS_UID_REV(s)    ((s)->sig_class == 0x30)
 #define IS_SUBKEY_REV(s) ((s)->sig_class == 0x28)
