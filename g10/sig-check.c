@@ -464,6 +464,24 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
           }
     }
 
+  /* For key signatures check that the key has a cert usage.  We may
+   * do this only for subkeys because the primary may always issue key
+   * signature.  The latter may not be reflected in the pubkey_usage
+   * field because we need to check the key signatures to extract the
+   * key usage.  */
+  if (!pk->flags.primary
+      && IS_CERT (sig) && !(pk->pubkey_usage & PUBKEY_USAGE_CERT))
+    {
+      rc = gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+      if (!opt.quiet)
+        log_info (_("bad key signature from key %s: %s (0x%02x, 0x%x)\n"),
+                  keystr_from_pk (pk), gpg_strerror (rc),
+                  sig->sig_class, pk->pubkey_usage);
+      return rc;
+    }
+  /* Fixme: Should we also check the signing capability here for data
+   * signature?  */
+
   /* Make sure the digest algo is enabled (in case of a detached
    * signature).  */
   gcry_md_enable (digest, sig->digest_algo);
@@ -892,6 +910,9 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
                   signer = xmalloc_clear (sizeof (*signer));
                   signer_alloced = 2;
                 }
+
+              if (IS_CERT (sig))
+                signer->req_usage = PUBKEY_USAGE_CERT;
 
               rc = get_pubkey (ctrl, signer, sig->keyid);
               if (rc)
