@@ -1166,6 +1166,7 @@ static void
 wrong_args( const char *text)
 {
   es_fprintf (es_stderr, _("usage: %s [options] %s\n"), GPG_NAME, text);
+  log_inc_errorcount ();
   g10_exit(2);
 }
 
@@ -3107,7 +3108,7 @@ main (int argc, char **argv)
 	  case oCommandFD:
             opt.command_fd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);
 	    if (! gnupg_fd_valid (opt.command_fd))
-	      log_fatal ("command-fd is invalid: %s\n", strerror (errno));
+	      log_error ("command-fd is invalid: %s\n", strerror (errno));
             break;
 	  case oCommandFile:
             opt.command_fd = open_info_file (pargs.r.ret_str, 0, 1);
@@ -3563,7 +3564,16 @@ main (int argc, char **argv)
 	  case oNoop: break;
 
 	  default:
-            pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;
+            if (configfp)
+              pargs.err = ARGPARSE_PRINT_WARNING;
+            else
+              {
+                pargs.err = ARGPARSE_PRINT_ERROR;
+                /* The argparse fucntion calls a plain exit and thus
+                 * we need to print a status here.  */
+                write_status_failure ("option-parser",
+                                      gpg_error(GPG_ERR_GENERAL));
+              }
             break;
 	  }
       }
@@ -3582,7 +3592,10 @@ main (int argc, char **argv)
       }
     xfree(configname); configname = NULL;
     if (log_get_errorcount (0))
-      g10_exit(2);
+      {
+        write_status_failure ("option-parser", gpg_error(GPG_ERR_GENERAL));
+        g10_exit(2);
+      }
 
     /* The command --gpgconf-list is pretty simple and may be called
        directly after the option parsing. */
@@ -3603,7 +3616,10 @@ main (int argc, char **argv)
                  "--print-pks-records",
                  "--export-options export-pka");
     if (log_get_errorcount (0))
-      g10_exit(2);
+      {
+        write_status_failure ("option-checking", gpg_error(GPG_ERR_GENERAL));
+        g10_exit(2);
+      }
 
 
     if( nogreeting )
@@ -3704,6 +3720,7 @@ main (int argc, char **argv)
       {
 	log_info(_("will not run with insecure memory due to %s\n"),
 		 "--require-secmem");
+        write_status_failure ("option-checking", gpg_error(GPG_ERR_GENERAL));
 	g10_exit(2);
       }
 
@@ -3844,7 +3861,11 @@ main (int argc, char **argv)
       }
 
     if( log_get_errorcount(0) )
-	g10_exit(2);
+      {
+        write_status_failure ("option-postprocessing",
+                              gpg_error(GPG_ERR_GENERAL));
+	g10_exit (2);
+      }
 
     if(opt.compress_level==0)
       opt.compress_algo=COMPRESS_ALGO_NONE;
@@ -3945,7 +3966,10 @@ main (int argc, char **argv)
 
     /* Fail hard.  */
     if (log_get_errorcount (0))
+      {
+        write_status_failure ("option-checking", gpg_error(GPG_ERR_GENERAL));
 	g10_exit (2);
+      }
 
     /* Set the random seed file. */
     if( use_random_seed ) {
@@ -4929,7 +4953,10 @@ main (int argc, char **argv)
 
 	  hd = keydb_new ();
 	  if (! hd)
-            g10_exit (1);
+            {
+              write_status_failure ("tofu-driver", gpg_error(GPG_ERR_GENERAL));
+              g10_exit (1);
+            }
 
           tofu_begin_batch_update (ctrl);
 
@@ -4943,6 +4970,7 @@ main (int argc, char **argv)
 		{
 		  log_error (_("error parsing key specification '%s': %s\n"),
                              argv[i], gpg_strerror (rc));
+                  write_status_failure ("tofu-driver", rc);
 		  g10_exit (1);
 		}
 
@@ -4956,6 +4984,8 @@ main (int argc, char **argv)
 		  log_error (_("'%s' does not appear to be a valid"
 			       " key ID, fingerprint or keygrip\n"),
 			     argv[i]);
+                  write_status_failure ("tofu-driver",
+                                        gpg_error(GPG_ERR_GENERAL));
 		  g10_exit (1);
 		}
 
@@ -4966,6 +4996,7 @@ main (int argc, char **argv)
                      the string.  */
                   log_error ("keydb_search_reset failed: %s\n",
                              gpg_strerror (rc));
+                  write_status_failure ("tofu-driver", rc);
 		  g10_exit (1);
 		}
 
@@ -4974,6 +5005,7 @@ main (int argc, char **argv)
 		{
 		  log_error (_("key \"%s\" not found: %s\n"), argv[i],
                              gpg_strerror (rc));
+                  write_status_failure ("tofu-driver", rc);
 		  g10_exit (1);
 		}
 
@@ -4982,12 +5014,16 @@ main (int argc, char **argv)
 		{
 		  log_error (_("error reading keyblock: %s\n"),
                              gpg_strerror (rc));
+                  write_status_failure ("tofu-driver", rc);
 		  g10_exit (1);
 		}
 
 	      merge_keys_and_selfsig (ctrl, kb);
 	      if (tofu_set_policy (ctrl, kb, policy))
-		g10_exit (1);
+                {
+                  write_status_failure ("tofu-driver", rc);
+                  g10_exit (1);
+                }
 
               release_kbnode (kb);
 	    }
@@ -5069,6 +5105,12 @@ emergency_cleanup (void)
 void
 g10_exit( int rc )
 {
+  /* If we had an error but not printed an error message, do it now.
+   * Note that write_status_failure will never print a second failure
+   * status line. */
+  if (log_get_errorcount (0))
+    write_status_failure ("gpg-exit", gpg_error (GPG_ERR_GENERAL));
+
   gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
   if (DBG_CLOCK)
     log_clock ("stop");

@@ -1464,7 +1464,7 @@ main ( int argc, char **argv)
                                                             DIM (compliance_options),
                                                             opt.quiet);
             if (compliance < 0)
-              gpgsm_exit (1);
+              log_inc_errorcount (); /* Force later termination.  */
             opt.compliance = compliance;
           }
           break;
@@ -1493,7 +1493,11 @@ main ( int argc, char **argv)
                                          NULL);
 
   if (log_get_errorcount(0))
-    gpgsm_exit(2);
+    {
+      gpgsm_status_with_error (&ctrl, STATUS_FAILURE,
+                               "option-parser", gpg_error (GPG_ERR_GENERAL));
+      gpgsm_exit(2);
+    }
 
   if (pwfd != -1)	/* Read the passphrase now.  */
     read_passphrase_from_fd (pwfd);
@@ -1660,7 +1664,11 @@ main ( int argc, char **argv)
                gnupg_compliance_option_string (opt.compliance));
 
   if (log_get_errorcount(0))
-    gpgsm_exit(2);
+    {
+      gpgsm_status_with_error (&ctrl, STATUS_FAILURE, "option-postprocessing",
+                               gpg_error (GPG_ERR_GENERAL));
+      gpgsm_exit (2);
+    }
 
   /* Set the random seed file. */
   if (use_random_seed)
