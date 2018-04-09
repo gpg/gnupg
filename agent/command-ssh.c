@@ -2864,7 +2864,7 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   unsigned char *sig = NULL;
   size_t sig_n;
   u32 data_size;
-  u32 flags;
+  u32 flags, known_flags = 0;
   gpg_error_t err;
   gpg_error_t ret_err;
   int hash_algo;
@@ -2890,6 +2890,7 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
 
   if (spec.algo == GCRY_PK_RSA)
     {
+      known_flags = SSH_AGENT_RSA_SHA2_256 | SSH_AGENT_RSA_SHA2_512;
       if ((flags & SSH_AGENT_RSA_SHA2_256))
         {
           spec.ssh_identifier = "rsa-sha2-256";
@@ -2900,6 +2901,13 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
           spec.ssh_identifier = "rsa-sha2-512";
           spec.hash_algo = GCRY_MD_SHA512;
         }
+    }
+
+  /* some flag is present that we do not know about. */
+  if (flags & ~known_flags)
+    {
+      err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
+      goto out;
     }
 
   hash_algo = spec.hash_algo;
