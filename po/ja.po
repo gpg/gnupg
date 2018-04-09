@@ -1336,10 +1336,6 @@ msgstr "%uビットに切り上げます\n"
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr "%s 鍵長は %u-%u の範囲でなければなりません\n"
 
-#, c-format
-msgid "The card will now be re-configured to generate a key of %u bits\n"
-msgstr "今、%uビットの鍵を生成するようにカードは再コンフィグされました\n"
-
 msgid "Changing card key attribute for: "
 msgstr "こちらのカード鍵の属性を変更します: "
 
@@ -1366,8 +1362,14 @@ msgstr "   (%d) ECC\n"
 msgid "Invalid selection.\n"
 msgstr "無効な選択です。\n"
 
-msgid "No change."
-msgstr "変更なし。"
+#, c-format
+msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgstr "今、%uビットの鍵を生成するようにカードは再コンフィグされました\n"
+
+#, c-format
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr ""
+"カードは、今、こちらのタイプの鍵を生成するように再コンフィグされました: %s\n"
 
 #, c-format
 msgid "error changing key attribute for key %d: %s\n"
@@ -3465,6 +3467,16 @@ msgstr "主鍵の有効期限を変更します。\n"
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "v3鍵の有効期限は変更できません\n"
 
+#, fuzzy
+#| msgid "Changing expiration time for a subkey.\n"
+msgid "Changing usage of a subkey.\n"
+msgstr "副鍵の有効期限を変更します。\n"
+
+#, fuzzy
+#| msgid "Changing expiration time for the primary key.\n"
+msgid "Changing usage of the primary key.\n"
+msgstr "主鍵の有効期限を変更します。\n"
+
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "署名する副鍵%sはすでに相互証明されています\n"
@@ -5067,6 +5079,11 @@ msgstr "*注意*: 署名鍵%sは%sに期限切れとなります\n"
 #, c-format
 msgid "Note: signature key %s has been revoked\n"
 msgstr "*注意*: 鍵 %s は失効済みです\n"
+
+#, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "クラス0x%02xのスタンドアロン署名\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
@@ -8339,6 +8356,9 @@ msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
 
+#~ msgid "No change."
+#~ msgstr "変更なし。"
+
 #~ msgid "What keysize do you want for the Signature key? (%u) "
 #~ msgstr "署名鍵の鍵長は? (%u) "
 
@@ -8347,11 +8367,6 @@ msgstr ""
 
 #~ msgid "What keysize do you want for the Authentication key? (%u) "
 #~ msgstr "認証鍵の鍵長は? (%u) "
-
-#~ msgid "The card will now be re-configured to generate a key of type: %s\n"
-#~ msgstr ""
-#~ "カードは、今、こちらのタイプの鍵を生成するように再コンフィグされました: "
-#~ "%s\n"
 
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "listen() に失敗しました: %s\n"

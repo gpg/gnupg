@@ -1387,23 +1387,8 @@ msgstr ""
 "           tailles permises dans la documentation de la carte.\n"
 
 #, c-format
-msgid "What keysize do you want for the Signature key? (%u) "
-msgstr "Quelle taille de clef désirez-vous pour la clef de signature ? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr "Quelle taille de clef désirez-vous pour la clef de chiffrement ? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr ""
-"Quelle taille de clef désirez-vous pour la clef d'authentification ? (%u) "
-
-#, fuzzy, c-format
-#| msgid "The card will now be re-configured to generate a key of %u bits\n"
-msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr ""
-"La carte sera maintenant reconfigurée pour générer une clef de %u bits\n"
+msgid "What keysize do you want? (%u) "
+msgstr "Quelle taille de clef désirez-vous ? (%u) "
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -1413,14 +1398,65 @@ msgstr "arrondie à %u bits\n"
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr "les tailles de clefs %s doivent être dans l'intervalle %u-%u\n"
 
+msgid "Changing card key attribute for: "
+msgstr ""
+
+#, fuzzy
+#| msgid "   (1) Signature key\n"
+msgid "Signature key\n"
+msgstr "   (1) Clef de signature\n"
+
+#, fuzzy
+#| msgid "   (2) Encryption key\n"
+msgid "Encryption key\n"
+msgstr "   (2) Clef de chiffrement\n"
+
+#, fuzzy
+#| msgid "   (3) Authentication key\n"
+msgid "Authentication key\n"
+msgstr "   (3) Clef d'authentification\n"
+
+msgid "Please select what kind of key you want:\n"
+msgstr "Sélectionnez le type de clef désiré :\n"
+
+#, c-format
+msgid "   (%d) RSA\n"
+msgstr "   (%d) RSA\n"
+
+#, c-format
+msgid "   (%d) ECC\n"
+msgstr "   (%d) ECC\n"
+
+msgid "Invalid selection.\n"
+msgstr "Choix incorrect.\n"
+
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
 msgstr ""
 "La carte sera maintenant reconfigurée pour générer une clef de %u bits\n"
 
-#, c-format
-msgid "error changing size of key %d to %u bits: %s\n"
+#, fuzzy, c-format
+#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr ""
+"La carte sera maintenant reconfigurée pour générer une clef de %u bits\n"
+
+#, fuzzy, c-format
+#| msgid "error changing size of key %d to %u bits: %s\n"
+msgid "error changing key attribute for key %d: %s\n"
 msgstr "erreur de modification de taille de clef %d en %u bits : %s\n"
+
+#, fuzzy, c-format
+#| msgid "error getting current key info: %s\n"
+msgid "error getting card info: %s\n"
+msgstr ""
+"erreur de lecture des renseignements actuellement contenus\n"
+"dans la clef : %s\n"
+
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "Cette commande n'est pas permise en mode %s.\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
@@ -1454,20 +1490,12 @@ msgstr "   (2) Clef de chiffrement\n"
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Clef d'authentification\n"
 
-msgid "Invalid selection.\n"
-msgstr "Choix incorrect.\n"
-
 msgid "Please select where to store the key:\n"
 msgstr "Veuillez sélectionner l'endroit où stocker la clef :\n"
 
 #, c-format
 msgid "KEYTOCARD failed: %s\n"
 msgstr "échec de KEYTOCARD : %s\n"
-
-#, fuzzy
-#| msgid "This command is not allowed while in %s mode.\n"
-msgid "This command is not supported by this card\n"
-msgstr "Cette commande n'est pas permise en mode %s.\n"
 
 #, fuzzy
 #| msgid "Note: keys are already stored on the card!\n"
@@ -1481,6 +1509,11 @@ msgstr "Faut-il continuer ? (O/n) "
 
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error closing %s: %s\n"
+msgid "error for setup KDF: %s\n"
+msgstr "erreur de fermeture de %s : %s\n"
 
 msgid "quit this menu"
 msgstr "quitter ce menu"
@@ -1534,6 +1567,16 @@ msgstr "débloquer le code personnel en utilisant un code de réinitialisation"
 
 msgid "destroy all keys and data"
 msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|use user NAME for authentication"
+msgid "setup KDF for PIN authentication"
+msgstr "|NOM|utiliser le NOM d'utilisateur pour authentif."
+
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "change the key attribute"
+msgstr "modifier la confiance du propriétaire"
 
 msgid "gpg/card> "
 msgstr "gpg/carte> "
@@ -2223,6 +2266,11 @@ msgstr "ligne %d : ce n'est pas une adresse électronique valable\n"
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
 msgstr "mode pinentry « %s » incorrect\n"
+
+#, fuzzy, c-format
+#| msgid "invalid argument for option \"%.50s\"\n"
+msgid "invalid request origin '%s'\n"
+msgstr "argument incorrect pour l'option « %.50s »\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
@@ -3289,12 +3337,12 @@ msgstr ""
 msgid "Key is revoked."
 msgstr "La clef est révoquée."
 
-msgid "Really sign all user IDs? (y/N) "
-msgstr "Voulez-vous vraiment signer toutes les identités ? (o/N) "
-
 #, fuzzy
 #| msgid "Really sign all user IDs? (y/N) "
 msgid "Really sign all text user IDs? (y/N) "
+msgstr "Voulez-vous vraiment signer toutes les identités ? (o/N) "
+
+msgid "Really sign all user IDs? (y/N) "
 msgstr "Voulez-vous vraiment signer toutes les identités ? (o/N) "
 
 msgid "Hint: Select the user IDs to sign\n"
@@ -3653,6 +3701,16 @@ msgstr "Modification de la date d'expiration de la clef principale.\n"
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Vous ne pouvez pas modifier la date d'expiration d'une clef v3\n"
 
+#, fuzzy
+#| msgid "Changing expiration time for a subkey.\n"
+msgid "Changing usage of a subkey.\n"
+msgstr "Modification de la date d'expiration d'une sous-clef.\n"
+
+#, fuzzy
+#| msgid "Changing expiration time for the primary key.\n"
+msgid "Changing usage of the primary key.\n"
+msgstr "Modification de la date d'expiration de la clef principale.\n"
+
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "la sous-clef de signature %s a déjà une certification croisée\n"
@@ -3875,9 +3933,6 @@ msgstr "   (%c) Inverser la capacité d'authentification\n"
 msgid "   (%c) Finished\n"
 msgstr "   (%c) Terminé\n"
 
-msgid "Please select what kind of key you want:\n"
-msgstr "Sélectionnez le type de clef désiré :\n"
-
 #, c-format
 msgid "   (%d) RSA and RSA (default)\n"
 msgstr "   (%d) RSA et RSA (par défaut)\n"
@@ -3950,10 +4005,6 @@ msgstr "les clefs %s peuvent faire une taille comprise entre %u et %u bits.\n"
 #, c-format
 msgid "What keysize do you want for the subkey? (%u) "
 msgstr "Quelle taille de clef désirez-vous pour la sous-clef ? (%u) "
-
-#, c-format
-msgid "What keysize do you want? (%u) "
-msgstr "Quelle taille de clef désirez-vous ? (%u) "
 
 #, c-format
 msgid "Requested keysize is %u bits\n"
@@ -5420,6 +5471,11 @@ msgstr "Remarque : la clef de signature %s a expiré le %s\n"
 msgid "Note: signature key %s has been revoked\n"
 msgstr "Remarque : la clef de signature %s a été révoquée\n"
 
+#, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "signature autonome de classe 0x%02x\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -6843,10 +6899,6 @@ msgid ""
 msgstr ""
 "Pour terminer cette demande de certificat, veuillez entrer encore une fois "
 "la phrase secrète pour la clef que vous venez de créer.\n"
-
-#, c-format
-msgid "   (%d) RSA\n"
-msgstr "   (%d) RSA\n"
 
 #, c-format
 msgid "   (%d) Existing key\n"
@@ -8931,6 +8983,18 @@ msgstr ""
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
 
+#~ msgid "What keysize do you want for the Signature key? (%u) "
+#~ msgstr ""
+#~ "Quelle taille de clef désirez-vous pour la clef de signature ? (%u) "
+
+#~ msgid "What keysize do you want for the Encryption key? (%u) "
+#~ msgstr ""
+#~ "Quelle taille de clef désirez-vous pour la clef de chiffrement ? (%u) "
+
+#~ msgid "What keysize do you want for the Authentication key? (%u) "
+#~ msgstr ""
+#~ "Quelle taille de clef désirez-vous pour la clef d'authentification ? (%u) "
+
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "échec de listen() : %s\n"
 
@@ -9317,9 +9381,6 @@ msgstr ""
 
 #~ msgid "no secret subkey for public subkey %s - ignoring\n"
 #~ msgstr "pas de sous-clef secrète pour la sous-clef publique %s — ignorée\n"
-
-#~ msgid "   (%d) ECC\n"
-#~ msgstr "   (%d) ECC\n"
 
 #, fuzzy
 #~| msgid "can't create directory '%s': %s\n"

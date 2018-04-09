@@ -1328,21 +1328,8 @@ msgstr ""
 "      det tillater hvis nøkkelgenerering mislykkes.\n"
 
 #, c-format
-msgid "What keysize do you want for the Signature key? (%u) "
-msgstr "Hvor stor skal signaturnøkkelen være? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr "Hvor stor skal krypteringsnøkkelen være? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr "Hvor stor skal autentiseringsnøkkelen være? (%u) "
-
-#, fuzzy, c-format
-#| msgid "The card will now be re-configured to generate a key of %u bits\n"
-msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr "Kortet blir nå satt opp på nytt for å lage nøkkel på %u bit\n"
+msgid "What keysize do you want? (%u) "
+msgstr "Hvor stor skal nøkkelen være? (%u) "
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -1352,13 +1339,60 @@ msgstr "rundet opp til %u bit\n"
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr "%s nøkkelstørrelser må ligge i rekkevidden %u-%u\n"
 
+msgid "Changing card key attribute for: "
+msgstr ""
+
+#, fuzzy
+#| msgid "   (1) Signature key\n"
+msgid "Signature key\n"
+msgstr "   (1) Signaturnøkkel\n"
+
+#, fuzzy
+#| msgid "   (2) Encryption key\n"
+msgid "Encryption key\n"
+msgstr "   (2) Krypteringsnøkkel\n"
+
+#, fuzzy
+#| msgid "   (3) Authentication key\n"
+msgid "Authentication key\n"
+msgstr "   (3) Autentiseringsnøkkel\n"
+
+msgid "Please select what kind of key you want:\n"
+msgstr "Velg hvilken type nøkkel du vil ha:\n"
+
+#, c-format
+msgid "   (%d) RSA\n"
+msgstr "   (%d) RSA\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) ECC and ECC\n"
+msgid "   (%d) ECC\n"
+msgstr "   (%d) ECC og ECC\n"
+
+msgid "Invalid selection.\n"
+msgstr "Ugyldig valg.\n"
+
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
 msgstr "Kortet blir nå satt opp på nytt for å lage nøkkel på %u bit\n"
 
-#, c-format
-msgid "error changing size of key %d to %u bits: %s\n"
+#, fuzzy, c-format
+#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr "Kortet blir nå satt opp på nytt for å lage nøkkel på %u bit\n"
+
+#, fuzzy, c-format
+#| msgid "error changing size of key %d to %u bits: %s\n"
+msgid "error changing key attribute for key %d: %s\n"
 msgstr "feil under endring av størrelse på nøkkel %d til %u bit: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error getting current key info: %s\n"
+msgid "error getting card info: %s\n"
+msgstr "feil under henting av nøkkelinfo: %s\n"
+
+msgid "This command is not supported by this card\n"
+msgstr "Denne kommandoen støttes ikke av dette kortet\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Lage sikkerhetskopi av krypteringsnøkler utenfor kortet? (J/n) "
@@ -1391,18 +1425,12 @@ msgstr "   (2) Krypteringsnøkkel\n"
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Autentiseringsnøkkel\n"
 
-msgid "Invalid selection.\n"
-msgstr "Ugyldig valg.\n"
-
 msgid "Please select where to store the key:\n"
 msgstr "velg hvor nøkkelen skal lagres:\n"
 
 #, c-format
 msgid "KEYTOCARD failed: %s\n"
 msgstr "KEYTOCARD mislyktes: %s\n"
-
-msgid "This command is not supported by this card\n"
-msgstr "Denne kommandoen støttes ikke av dette kortet\n"
 
 msgid "Note: This command destroys all keys stored on the card!\n"
 msgstr "Merk: denne kommandoen ødelegger alle nøkler på kortet.\n"
@@ -1412,6 +1440,11 @@ msgstr "Vil du fortsette? (j/N) "
 
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr "Er du sikker på at du vil gjenopprette fabrikkoppsett? (skriv «ja») "
+
+#, fuzzy, c-format
+#| msgid "error looking up: %s\n"
+msgid "error for setup KDF: %s\n"
+msgstr "feil under oppslag av %s\n"
 
 msgid "quit this menu"
 msgstr "gå ut av denne menyen"
@@ -1463,6 +1496,16 @@ msgstr "fjern PIN-blokkering med en tilbakestillingskode"
 
 msgid "destroy all keys and data"
 msgstr "ødelegg alle nøkler og data"
+
+#, fuzzy
+#| msgid "|NAME|use user NAME for authentication"
+msgid "setup KDF for PIN authentication"
+msgstr "|NAVN|bruk valgt brukerNAVN til autentisering"
+
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "change the key attribute"
+msgstr "endre eiertillit"
 
 msgid "gpg/card> "
 msgstr "gpg/kort> "
@@ -2085,6 +2128,11 @@ msgstr "«%s» er en ugyldig e-postadresse\n"
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
 msgstr "PIN-inntastingsmodus «%s» er ugyldig\n"
+
+#, fuzzy, c-format
+#| msgid "invalid value for option '%s'\n"
+msgid "invalid request origin '%s'\n"
+msgstr "ugyldig verdi for valg «%s»\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
@@ -3128,11 +3176,11 @@ msgstr ""
 msgid "Key is revoked."
 msgstr "Nøkkelen er opphevet."
 
-msgid "Really sign all user IDs? (y/N) "
-msgstr "Er du sikekr på at du vil signerere alle bruker-id-er? (j/N) "
-
 msgid "Really sign all text user IDs? (y/N) "
 msgstr "Er du sikker på at du vil signerere alle bruker-id-er? (j/N) "
+
+msgid "Really sign all user IDs? (y/N) "
+msgstr "Er du sikekr på at du vil signerere alle bruker-id-er? (j/N) "
 
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Tips: Velg bruker-id-en(e) du vil signere\n"
@@ -3468,6 +3516,16 @@ msgstr "Endrer utløpstid for primærnøkkel.\n"
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Du kan ikke endre utløpsdato for v3-nøkler\n"
 
+#, fuzzy
+#| msgid "Changing expiration time for a subkey.\n"
+msgid "Changing usage of a subkey.\n"
+msgstr "Endrer utløpstid for undernøkkel.\n"
+
+#, fuzzy
+#| msgid "Changing expiration time for the primary key.\n"
+msgid "Changing usage of the primary key.\n"
+msgstr "Endrer utløpstid for primærnøkkel.\n"
+
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "signerings-undernøkkel %s er allerede kryssertifisert\n"
@@ -3682,9 +3740,6 @@ msgstr "   (%c) Slå av/på autentiseringsfunksjon\n"
 msgid "   (%c) Finished\n"
 msgstr "   (%c) Ferdig\n"
 
-msgid "Please select what kind of key you want:\n"
-msgstr "Velg hvilken type nøkkel du vil ha:\n"
-
 #, c-format
 msgid "   (%d) RSA and RSA (default)\n"
 msgstr "   (%d) RSA og RSA (standard)\n"
@@ -3757,10 +3812,6 @@ msgstr "%s-nøkler må være mellom %u og %u bit lange.\n"
 #, c-format
 msgid "What keysize do you want for the subkey? (%u) "
 msgstr "Hvor stor vil du at undernøkkelen skal være? (%u) "
-
-#, c-format
-msgid "What keysize do you want? (%u) "
-msgstr "Hvor stor skal nøkkelen være? (%u) "
 
 #, c-format
 msgid "Requested keysize is %u bits\n"
@@ -5125,6 +5176,11 @@ msgstr "Merk: signaturnøkkel %s utgått %s\n"
 msgid "Note: signature key %s has been revoked\n"
 msgstr "Merk: signaturnøkkel %s er opphevet\n"
 
+#, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "separat signatur av klasse 0x%02x\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "antatt ugyldig signatur fra nøkkel %s pga. ukjent «kritisk»-bit\n"
@@ -6453,10 +6509,6 @@ msgid ""
 msgstr ""
 "Skriv inn passordfrasen for nøkkelen én gang til for å fullføre denne "
 "sertifikat-forespørselen.\n"
-
-#, c-format
-msgid "   (%d) RSA\n"
-msgstr "   (%d) RSA\n"
 
 #, c-format
 msgid "   (%d) Existing key\n"
@@ -8435,6 +8487,15 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [valg] mønsterfil\n"
 "Kontroller passordfrase oppgitt på standard innkanal mot valgt mønsterfil\n"
+
+#~ msgid "What keysize do you want for the Signature key? (%u) "
+#~ msgstr "Hvor stor skal signaturnøkkelen være? (%u) "
+
+#~ msgid "What keysize do you want for the Encryption key? (%u) "
+#~ msgstr "Hvor stor skal krypteringsnøkkelen være? (%u) "
+
+#~ msgid "What keysize do you want for the Authentication key? (%u) "
+#~ msgstr "Hvor stor skal autentiseringsnøkkelen være? (%u) "
 
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "listen() mislyktes: %s\n"
