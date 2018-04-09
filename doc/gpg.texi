@@ -1014,7 +1014,7 @@ signing.
   Encrypt) are set during key creation.  Sometimes it is useful to
   have the opportunity to change them (for example to add
   Authenticate) after they have been created.  Please take care when
-  doing this, the possible usage flags depend on the key algorithm.
+  doing this; the allowed usage flags depend on the key algorithm.
 
   @item cross-certify
   @opindex keyedit:cross-certify
@@ -3338,9 +3338,14 @@ absolute date in the form YYYY-MM-DD. Defaults to "0".
 @item --default-new-key-algo @var{string}
 @opindex default-new-key-algo @var{string}
 This option can be used to change the default algorithms for key
-generation.  Note that the advanced key generation commands can always
-be used to specify a key algorithm directly.  Please consult the
-source code to learn the syntax of @var{string}.
+generation. The @var{string} is similar to the arguments required for
+the command @option{--quick-add-key} but slighly different.  For
+example the current default of @code{"rsa2048/cert,sign+rsa2048/encr"}
+(or @code{"rsa3072"}) can be changed to the value of what we currently
+call future default, which is @code{"ed25519/cert,sign+cv25519/encr"}.
+You need to consult the source code to learn the details.  Note that
+the advanced key generation commands can always be used to specify a
+key algorithm directly.
 
 @item --allow-secret-key-import
 @opindex allow-secret-key-import

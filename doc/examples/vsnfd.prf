@@ -1,12 +1,16 @@
 # vsnfd.prf - Configure options for the VS-NfD mode           -*- conf -*-
+#
+# The options for each tool are configured in a section ("[TOOL]");
+# see the respective man page for a description of these options and
+# the gpgconf manpage for a description of this file's syntax.
 
 [gpg]
 compliance de-vs
 default-new-key-algo rsa3072/cert,sign+rsa3072/encr
 
 [gpgsm]
-enable-crl-checks
 compliance de-vs
+enable-crl-checks
 
 [gpg-agent]
 enable-extended-key-format
