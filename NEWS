@@ -1,5 +1,48 @@
-Noteworthy changes in version 2.2.6 (unreleased)
+Noteworthy changes in version 2.2.6 (2018-04-09)
 ------------------------------------------------
+
+  * gpg,gpgsm: New option --request-origin to pretend requests coming
+    from a browser or a remote site.
+
+  * gpg: Fix race condition on trustdb.gpg updates due to too early
+    released lock.  [#3839]
+
+  * gpg: Emit FAILURE status lines in almost all cases.  [#3872]
+
+  * gpg: Implement --dry-run for --passwd to make checking a key's
+    passphrase straightforward.
+
+  * gpg: Make sure to only accept a certification capable key for key
+    signatures.  [#3844]
+
+  * gpg: Better user interaction in --card-edit for the factory-reset
+    sub-command.
+
+  * gpg: Improve changing key attributes in --card-edit by adding an
+    explicit "key-attr" sub-command.  [#3781]
+
+  * gpg: Print the keygrips in the --card-status.
+
+  * scd: Support KDF DO setup.  [#3823]
+
+  * scd: Fix some issues with PC/SC on Windows.  [#3825]
+
+  * scd: Fix suspend/resume handling in the CCID driver.
+
+  * agent: Evict cached passphrases also via a timer.  [#3829]
+
+  * agent: Use separate passphrase caches depending on the request
+    origin.  [#3858]
+
+  * ssh: Support signature flags.  [#3880]
+
+  * dirmngr: Handle failures related to missing IPv6 support
+    gracefully.  [#3331]
+
+  * Fix corner cases related to specified home directory with
+    drive letter on Windows.  [#3720]
+
+  * Allow the use of UNC directory names as homedir.  [#3818]
 
 
 Noteworthy changes in version 2.2.5 (2018-02-22)
