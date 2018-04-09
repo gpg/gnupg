@@ -1007,6 +1007,15 @@ signing.
   Make the key as small as possible. This removes all signatures from
   each user ID except for the most recent self-signature.
 
+  @item change-usage
+  @opindex keyedit:change-usage
+  Change the usage flags (capabilities) of the primary key or of
+  subkeys.  These usage flags (e.g. Certify, Sign, Authenticate,
+  Encrypt) are set during key creation.  Sometimes it is useful to
+  have the opportunity to change them (for example to add
+  Authenticate) after they have been created.  Please take care when
+  doing this, the possible usage flags depend on the key algorithm.
+
   @item cross-certify
   @opindex keyedit:cross-certify
   Add cross-certification signatures to signing subkeys that may not
