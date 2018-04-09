@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-12-19 12:28+0100\n"
+"PO-Revision-Date: 2018-04-09 20:39+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -1360,22 +1360,8 @@ msgstr ""
 "         zu Rate.\n"
 
 #, c-format
-msgid "What keysize do you want for the Signature key? (%u) "
-msgstr "Welche Schlüssellänge wünschen Sie für den Signatur-Schlüssel? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr ""
-"Welche Schlüssellänge wünschen Sie für den Verschlüsselungs-Schlüssel? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr ""
-"Welche Schlüssellänge wünschen Sie für den Authentisierungs-Schlüssel? (%u) "
-
-#, c-format
-msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr "Die Karte wird nun rekonfiguriert für einen Schlüssel des Typs: %s\n"
+msgid "What keysize do you want? (%u) "
+msgstr "Welche Schlüssellänge wünschen Sie? (%u) "
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -1385,6 +1371,32 @@ msgstr "aufgerundet auf %u Bit\n"
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr "%s-Schlüssellängen müssen im Bereich %u-%u sein\n"
 
+msgid "Changing card key attribute for: "
+msgstr "Ändern des Schlüsselattributs für den: "
+
+msgid "Signature key\n"
+msgstr "Signatur-Schlüssel\n"
+
+msgid "Encryption key\n"
+msgstr "Verschlüsselungs-Schlüssel\n"
+
+msgid "Authentication key\n"
+msgstr "Authentisierungs-Schlüssel\n"
+
+msgid "Please select what kind of key you want:\n"
+msgstr "Bitte wählen Sie, welche Art von Schlüssel Sie möchten:\n"
+
+#, c-format
+msgid "   (%d) RSA\n"
+msgstr "   (%d) RSA\n"
+
+#, c-format
+msgid "   (%d) ECC\n"
+msgstr "   (%d) ECC\n"
+
+msgid "Invalid selection.\n"
+msgstr "Ungültige Auswahl.\n"
+
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
 msgstr ""
@@ -1392,8 +1404,19 @@ msgstr ""
 "erzeugen\n"
 
 #, c-format
-msgid "error changing size of key %d to %u bits: %s\n"
-msgstr "Fehler bem Ändern der Länge des Schlüssels %d auf %u Bit: %s\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr "Die Karte wird nun rekonfiguriert für einen Schlüssel des Typs: %s\n"
+
+#, c-format
+msgid "error changing key attribute for key %d: %s\n"
+msgstr "Fehler beim Ändern der Attributs des Schlüssels %d: %s\n"
+
+#, c-format
+msgid "error getting card info: %s\n"
+msgstr "Fehler beim Holen der aktuellen Schlüsselinfo: %s\n"
+
+msgid "This command is not supported by this card\n"
+msgstr "Dieser Befehl wird von dieser Karte nicht unterstützt.\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
@@ -1427,18 +1450,12 @@ msgstr "   (2) Verschlüsselungs-Schlüssel\n"
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Authentisierungs-Schlüssel\n"
 
-msgid "Invalid selection.\n"
-msgstr "Ungültige Auswahl.\n"
-
 msgid "Please select where to store the key:\n"
 msgstr "Wählen Sie den Speicherort für den Schlüssel:\n"
 
 #, c-format
 msgid "KEYTOCARD failed: %s\n"
 msgstr "Das KEYTOCARD Kommando schlug fehl: %s\n"
-
-msgid "This command is not supported by this card\n"
-msgstr "Dieser Befehl wird von dieser Karte nicht unterstützt.\n"
 
 msgid "Note: This command destroys all keys stored on the card!\n"
 msgstr ""
@@ -1450,6 +1467,10 @@ msgstr "Fortsetzen? (j/N) "
 
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr "Möchten Sie die Karte wirklich komplett löschen? (\"yes\" eingeben) "
+
+#, c-format
+msgid "error for setup KDF: %s\n"
+msgstr "Fehler beim Einstellen der KDF: %s\n"
 
 msgid "quit this menu"
 msgstr "Menü verlassen"
@@ -1501,6 +1522,12 @@ msgstr "die PIN mit dem Rückstellcode wieder freigeben"
 
 msgid "destroy all keys and data"
 msgstr "alle Schlüssel und Daten löschen"
+
+msgid "setup KDF for PIN authentication"
+msgstr "Einrichten der KDF zur Authentifizierung"
+
+msgid "change the key attribute"
+msgstr "Das Schlüsselattribut ändern"
 
 msgid "gpg/card> "
 msgstr "gpg/card> "
@@ -2148,6 +2175,10 @@ msgstr "\"%s\" ist keine gültige E-Mailadresse\n"
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
 msgstr "Ungültiger Subjekt-Name '%s'\n"
+
+#, c-format
+msgid "invalid request origin '%s'\n"
+msgstr "Ungültiges \"Herkunft\"-Argument '%s'\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
@@ -3212,11 +3243,11 @@ msgstr ""
 msgid "Key is revoked."
 msgstr "Schlüssel wurde widerrufen."
 
-msgid "Really sign all user IDs? (y/N) "
-msgstr "Wirklich alle User-IDs beglaubigen? (j/N) "
-
 msgid "Really sign all text user IDs? (y/N) "
 msgstr "Wirklich alle textbasierten User-IDs beglaubigen? (j/N) "
+
+msgid "Really sign all user IDs? (y/N) "
+msgstr "Wirklich alle User-IDs beglaubigen? (j/N) "
 
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Tip: Wählen Sie die User-IDs, die beglaubigt werden sollen\n"
@@ -3563,6 +3594,12 @@ msgstr "Ändern des Verfallsdatums des Hauptschlüssels.\n"
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Sie können das Verfallsdatum eines v3-Schlüssels nicht ändern\n"
 
+msgid "Changing usage of a subkey.\n"
+msgstr "Ändern des Schlüsselverwendungszweckes des Unterschlüssels.\n"
+
+msgid "Changing usage of the primary key.\n"
+msgstr "Ändern des Schlüsselverwendungszweckes des Hauptschlüssels.\n"
+
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "Signaturunterschlüssel %s ist bereits rücksigniert\n"
@@ -3775,9 +3812,6 @@ msgstr "   (%c) Umschalten der Authentisierungsnutzbarkeit\n"
 msgid "   (%c) Finished\n"
 msgstr "   (%c) Beenden\n"
 
-msgid "Please select what kind of key you want:\n"
-msgstr "Bitte wählen Sie, welche Art von Schlüssel Sie möchten:\n"
-
 #, c-format
 msgid "   (%d) RSA and RSA (default)\n"
 msgstr "   (%d) RSA und RSA (voreingestellt)\n"
@@ -3850,10 +3884,6 @@ msgstr "%s-Schlüssel können zwischen %u und %u Bit lang sein.\n"
 #, c-format
 msgid "What keysize do you want for the subkey? (%u) "
 msgstr "Welche Schlüssellänge wünschen Sie für den Unterschlüssel? (%u) "
-
-#, c-format
-msgid "What keysize do you want? (%u) "
-msgstr "Welche Schlüssellänge wünschen Sie? (%u) "
 
 #, c-format
 msgid "Requested keysize is %u bits\n"
@@ -5260,6 +5290,10 @@ msgstr "Hinweis: Signaturschlüssel %s ist am %s verfallen\n"
 #, c-format
 msgid "Note: signature key %s has been revoked\n"
 msgstr "Hinweis: Signaturschlüssel %s wurde widerrufen\n"
+
+#, c-format
+msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "Falsche Schlüsselsignatur von Schlüssel %s: %s (0x%02x, 0x%x)\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
@@ -6732,10 +6766,6 @@ msgid ""
 msgstr ""
 "Um die Zertifikatsanforderung fertigzustellen, geben Sie nun bitte\n"
 "noch einmal die Passphrase des soeben erzeugten Schlüssels ein.\n"
-
-#, c-format
-msgid "   (%d) RSA\n"
-msgstr "   (%d) RSA\n"
 
 #, c-format
 msgid "   (%d) Existing key\n"
@@ -8755,6 +8785,20 @@ msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
 
+#~ msgid "What keysize do you want for the Signature key? (%u) "
+#~ msgstr ""
+#~ "Welche Schlüssellänge wünschen Sie für den Signatur-Schlüssel? (%u) "
+
+#~ msgid "What keysize do you want for the Encryption key? (%u) "
+#~ msgstr ""
+#~ "Welche Schlüssellänge wünschen Sie für den Verschlüsselungs-Schlüssel? "
+#~ "(%u) "
+
+#~ msgid "What keysize do you want for the Authentication key? (%u) "
+#~ msgstr ""
+#~ "Welche Schlüssellänge wünschen Sie für den Authentisierungs-Schlüssel? "
+#~ "(%u) "
+
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "Der listen()-Aufruf ist fehlgeschlagen: %s\n"
 
@@ -9254,9 +9298,6 @@ msgstr ""
 #~ msgid "can't connect to the agent - trying fall back\n"
 #~ msgstr ""
 #~ "Verbindung zum gpg-agent nicht möglich - Ersatzmethode wird versucht\n"
-
-#~ msgid "   (%d) ECC\n"
-#~ msgstr "   (%d) ECC\n"
 
 #~ msgid "can't create directory `%s': %s\n"
 #~ msgstr " git describe --match gnupg-2.1.*[0-9] --long"
