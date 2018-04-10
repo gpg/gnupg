@@ -1340,21 +1340,8 @@ msgstr ""
 "      看看這張卡片支援哪些尺寸.\n"
 
 #, c-format
-msgid "What keysize do you want for the Signature key? (%u) "
-msgstr "你的簽署金鑰想要用多大的金鑰尺寸? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr "你的加密金鑰想要用多大的金鑰尺寸? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr "你的認證金鑰想要用多大的金鑰尺寸? (%u) "
-
-#, fuzzy, c-format
-#| msgid "The card will now be re-configured to generate a key of %u bits\n"
-msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr "這張卡片將重新加以組態, 以便產生 %u 位元的金鑰\n"
+msgid "What keysize do you want? (%u) "
+msgstr "你想要用多大的金鑰尺寸? (%u) "
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -1364,13 +1351,62 @@ msgstr "加大到 %u 位元\n"
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr "%s 金鑰尺寸一定要介於 %u 到 %u 之間\n"
 
+msgid "Changing card key attribute for: "
+msgstr ""
+
+#, fuzzy
+#| msgid "   (1) Signature key\n"
+msgid "Signature key\n"
+msgstr "   (1) 簽署用金鑰\n"
+
+#, fuzzy
+#| msgid "   (2) Encryption key\n"
+msgid "Encryption key\n"
+msgstr "   (2) 加密用金鑰\n"
+
+#, fuzzy
+#| msgid "   (3) Authentication key\n"
+msgid "Authentication key\n"
+msgstr "   (3) 憑證用金鑰\n"
+
+msgid "Please select what kind of key you want:\n"
+msgstr "請選擇你要使用的金鑰種類:\n"
+
+#, c-format
+msgid "   (%d) RSA\n"
+msgstr "   (%d) RSA\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) ECC and ECC\n"
+msgid "   (%d) ECC\n"
+msgstr "   (%d) ECC 和 ECC\n"
+
+msgid "Invalid selection.\n"
+msgstr "無效的選擇.\n"
+
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
 msgstr "這張卡片將重新加以組態, 以便產生 %u 位元的金鑰\n"
 
-#, c-format
-msgid "error changing size of key %d to %u bits: %s\n"
+#, fuzzy, c-format
+#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr "這張卡片將重新加以組態, 以便產生 %u 位元的金鑰\n"
+
+#, fuzzy, c-format
+#| msgid "error changing size of key %d to %u bits: %s\n"
+msgid "error changing key attribute for key %d: %s\n"
 msgstr "將金鑰 %d 尺寸變更至 %u 位元時出錯: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error getting current key info: %s\n"
+msgid "error getting card info: %s\n"
+msgstr "取得現用金鑰資訊時出錯: %s\n"
+
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "在 %s 模式中不允許使用這個指令.\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "是否要為加密用金鑰建立卡外備份? (Y/n) "
@@ -1403,20 +1439,12 @@ msgstr "   (2) 加密用金鑰\n"
 msgid "   (3) Authentication key\n"
 msgstr "   (3) 憑證用金鑰\n"
 
-msgid "Invalid selection.\n"
-msgstr "無效的選擇.\n"
-
 msgid "Please select where to store the key:\n"
 msgstr "請選擇要把金鑰存放在哪裡:\n"
 
 #, c-format
 msgid "KEYTOCARD failed: %s\n"
 msgstr "KEYTOCARD 失敗: %s\n"
-
-#, fuzzy
-#| msgid "This command is not allowed while in %s mode.\n"
-msgid "This command is not supported by this card\n"
-msgstr "在 %s 模式中不允許使用這個指令.\n"
 
 #, fuzzy
 #| msgid "Note: keys are already stored on the card!\n"
@@ -1430,6 +1458,11 @@ msgstr "是否繼續? (Y/n) "
 
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error closing %s: %s\n"
+msgid "error for setup KDF: %s\n"
+msgstr "關閉 %s 時出錯: %s\n"
 
 msgid "quit this menu"
 msgstr "離開這個選單"
@@ -1481,6 +1514,16 @@ msgstr "用重設碼來解凍個人識別碼 (PIN)"
 
 msgid "destroy all keys and data"
 msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|use user NAME for authentication"
+msgid "setup KDF for PIN authentication"
+msgstr "|名字|使用指定名字做為認證用的使用者名稱"
+
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "change the key attribute"
+msgstr "更改主觀信任"
 
 msgid "gpg/card> "
 msgstr "gpg/卡片> "
@@ -2121,6 +2164,11 @@ msgstr "第 %d 列: 不是有效的電子郵件地址\n"
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
 msgstr "無效的個人識別碼項目模式 '%s'\n"
+
+#, fuzzy, c-format
+#| msgid "invalid argument for option \"%.50s\"\n"
+msgid "invalid request origin '%s'\n"
+msgstr "選項 \"%.50s\" 的引數無效\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
@@ -3161,12 +3209,12 @@ msgstr ""
 msgid "Key is revoked."
 msgstr "金鑰已撤銷."
 
-msgid "Really sign all user IDs? (y/N) "
-msgstr "真的要簽署所有的使用者 ID 嗎? (y/N) "
-
 #, fuzzy
 #| msgid "Really sign all user IDs? (y/N) "
 msgid "Really sign all text user IDs? (y/N) "
+msgstr "真的要簽署所有的使用者 ID 嗎? (y/N) "
+
+msgid "Really sign all user IDs? (y/N) "
 msgstr "真的要簽署所有的使用者 ID 嗎? (y/N) "
 
 msgid "Hint: Select the user IDs to sign\n"
@@ -3513,6 +3561,16 @@ msgstr "正在變更主鑰的使用期限.\n"
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "你不能變更 v3 金鑰的使用期限\n"
 
+#, fuzzy
+#| msgid "Changing expiration time for a subkey.\n"
+msgid "Changing usage of a subkey.\n"
+msgstr "正在變更子鑰的使用期限.\n"
+
+#, fuzzy
+#| msgid "Changing expiration time for the primary key.\n"
+msgid "Changing usage of the primary key.\n"
+msgstr "正在變更主鑰的使用期限.\n"
+
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "簽署子鑰 %s 已經交叉認證過了\n"
@@ -3724,9 +3782,6 @@ msgstr "   (%c) 切換鑑定性能\n"
 msgid "   (%c) Finished\n"
 msgstr "   (%c) 已完成\n"
 
-msgid "Please select what kind of key you want:\n"
-msgstr "請選擇你要使用的金鑰種類:\n"
-
 #, c-format
 msgid "   (%d) RSA and RSA (default)\n"
 msgstr "   (%d) RSA 和 RSA (預設)\n"
@@ -3799,10 +3854,6 @@ msgstr "%s 金鑰的長度可能介於 %u 位元和 %u 位元之間.\n"
 #, c-format
 msgid "What keysize do you want for the subkey? (%u) "
 msgstr "你的子鑰想要用多大的金鑰尺寸? (%u) "
-
-#, c-format
-msgid "What keysize do you want? (%u) "
-msgstr "你想要用多大的金鑰尺寸? (%u) "
 
 #, c-format
 msgid "Requested keysize is %u bits\n"
@@ -5164,6 +5215,11 @@ msgstr "請注意: 簽章金鑰 %s 已於 %s 過期\n"
 msgid "Note: signature key %s has been revoked\n"
 msgstr "請注意: 簽章金鑰 %s 已遭撤銷\n"
 
+#, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "等級 0x%02x 的獨立簽章\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "假設金鑰 %s 的損壞簽章導因於某個未知的關鍵位元\n"
@@ -6485,10 +6541,6 @@ msgid ""
 "To complete this certificate request please enter the passphrase for the key "
 "you just created once more.\n"
 msgstr "如欲完成此憑證請求, 請再輸入一次你剛才建立的金鑰密語.\n"
-
-#, c-format
-msgid "   (%d) RSA\n"
-msgstr "   (%d) RSA\n"
 
 #, c-format
 msgid "   (%d) Existing key\n"
@@ -8471,6 +8523,15 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "What keysize do you want for the Signature key? (%u) "
+#~ msgstr "你的簽署金鑰想要用多大的金鑰尺寸? (%u) "
+
+#~ msgid "What keysize do you want for the Encryption key? (%u) "
+#~ msgstr "你的加密金鑰想要用多大的金鑰尺寸? (%u) "
+
+#~ msgid "What keysize do you want for the Authentication key? (%u) "
+#~ msgstr "你的認證金鑰想要用多大的金鑰尺寸? (%u) "
 
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "listen() 失敗: %s\n"

@@ -19,6 +19,13 @@
 #ifndef GNUPG_G10_CALL_AGENT_H
 #define GNUPG_G10_CALL_AGENT_H
 
+struct key_attr {
+  int algo;              /* Algorithm identifier.  */
+  union {
+    unsigned int nbits;  /* Supported keysize.  */
+    const char *curve;   /* Name of curve.  */
+  };
+};
 
 struct agent_card_info_s
 {
@@ -57,13 +64,7 @@ struct agent_card_info_s
   int is_v2;         /* True if this is a v2 card.  */
   int chvmaxlen[3];  /* Maximum allowed length of a CHV. */
   int chvretry[3];   /* Allowed retries for the CHV; 0 = blocked. */
-  struct {           /* Array with key attributes.  */
-    int algo;              /* Algorithm identifier.  */
-    union {
-      unsigned int nbits;  /* Supported keysize.  */
-      const char *curve;   /* Name of curve.  */
-    };
-  } key_attr[3];
+  struct key_attr key_attr[3];
   struct {
     unsigned int ki:1;     /* Key import available.  */
     unsigned int aac:1;    /* Algorithm attributes are changeable.  */

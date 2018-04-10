@@ -37,7 +37,7 @@
  (lambda (name)
    (let* ((source (in-srcdir "tests" "openpgp" (string-append name ".asc")))
 	  (key (get-session-key source)))
-     (with-ephemeral-home-directory setup-environment
+     (with-ephemeral-home-directory setup-environment-no-atexit stop-agent
       (tr:do
        (tr:open source)
        (tr:gpg "" `(--yes --decrypt --override-session-key ,key))

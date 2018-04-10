@@ -171,6 +171,62 @@ is_gnupg_default_homedir (const char *dir)
 }
 
 
+/* Helper to remove trailing slashes from NEWDIR.  Return a new
+ * allocated string if that has been done or NULL if there are no
+ * slashes to remove.  Also inserts a missing slash after a Windows
+ * drive letter.  */
+static char *
+copy_dir_with_fixup (const char *newdir)
+{
+  char *result = NULL;
+  char *p;
+
+  if (!*newdir)
+    return NULL;
+
+#ifdef HAVE_W32_SYSTEM
+  if (newdir[0] && newdir[1] == ':'
+      && !(newdir[2] == '/' || newdir[2] == '\\'))
+    {
+      /* Drive letter with missing leading slash.  */
+      p = result = xmalloc (strlen (newdir) + 1 + 1);
+      *p++ = newdir[0];
+      *p++ = newdir[1];
+      *p++ = '\\';
+      strcpy (p, newdir+2);
+
+      /* Remove trailing slashes.  */
+      p = result + strlen (result) - 1;
+      while (p > result+2 && (*p == '/' || *p == '\\'))
+        *p-- = 0;
+    }
+  else if (newdir[strlen (newdir)-1] == '/'
+           || newdir[strlen (newdir)-1] == '\\' )
+    {
+      result = xstrdup (newdir);
+      p = result + strlen (result) - 1;
+      while (p > result
+             && (*p == '/' || *p == '\\')
+             && (p-1 > result && p[-1] != ':')) /* We keep "c:/". */
+        *p-- = 0;
+    }
+
+#else /*!HAVE_W32_SYSTEM*/
+
+  if (newdir[strlen (newdir)-1] == '/')
+    {
+      result = xstrdup (newdir);
+      p = result + strlen (result) - 1;
+      while (p > result && *p == '/')
+        *p-- = 0;
+    }
+
+#endif /*!HAVE_W32_SYSTEM*/
+
+  return result;
+}
+
+
 /* Get the standard home directory.  In general this function should
    not be used as it does not consider a registry value (under W32) or
    the GNUPGHOME environment variable.  It is better to use
@@ -278,18 +334,11 @@ default_homedir (void)
     dir = GNUPG_DEFAULT_HOMEDIR;
   else
     {
-      /* Strip trailing slashes if any.  */
-      if (dir[strlen (dir)-1] == '/')
-        {
-          char *tmp, *p;
+      char *p;
 
-          tmp = xstrdup (dir);
-          p = tmp + strlen (tmp) - 1;
-          while (p > tmp && *p == '/')
-            *p-- = 0;
-
-          dir = tmp;
-        }
+      p = copy_dir_with_fixup (dir);
+      if (p)
+        dir = p;
 
       if (!is_gnupg_default_homedir (dir))
         non_default_homedir = 1;
@@ -432,28 +481,10 @@ gnupg_set_homedir (const char *newdir)
     newdir = default_homedir ();
   else
     {
-      /* Remove trailing slashes from NEWSDIR.  */
-      if (newdir[strlen (newdir)-1] == '/'
-#ifdef HAVE_W32_SYSTEM
-          || newdir[strlen (newdir)-1] == '\\'
-#endif
-          )
-        {
-          char *p;
+      tmp = copy_dir_with_fixup (newdir);
+      if (tmp)
+        newdir = tmp;
 
-          tmp = xstrdup (newdir);
-          p = tmp + strlen (tmp) - 1;
-          while (p > tmp
-                 && (*p == '/'
-#ifdef HAVE_W32_SYSTEM
-                     || *p == '\\'
-#endif
-                     )
-                 )
-            *p-- = 0;
-
-          newdir = tmp;
-        }
       if (!is_gnupg_default_homedir (newdir))
         non_default_homedir = 1;
     }

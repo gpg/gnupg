@@ -306,7 +306,7 @@ List the specified secret keys.  If no keys are specified, then all
 known secret keys are listed.  A @code{#} after the initial tags
 @code{sec} or @code{ssb} means that the secret key or subkey is
 currently not usable.  We also say that this key has been taken
-offline (for example, a primary key can be taken offline by exported
+offline (for example, a primary key can be taken offline by exporting
 the key using the command @option{--export-secret-subkeys}).  A
 @code{>} after these tags indicate that the key is stored on a
 smartcard.  See also @option{--list-keys}.
@@ -1006,6 +1006,15 @@ signing.
   @opindex keyedit:minimize
   Make the key as small as possible. This removes all signatures from
   each user ID except for the most recent self-signature.
+
+  @item change-usage
+  @opindex keyedit:change-usage
+  Change the usage flags (capabilities) of the primary key or of
+  subkeys.  These usage flags (e.g. Certify, Sign, Authenticate,
+  Encrypt) are set during key creation.  Sometimes it is useful to
+  have the opportunity to change them (for example to add
+  Authenticate) after they have been created.  Please take care when
+  doing this; the allowed usage flags depend on the key algorithm.
 
   @item cross-certify
   @opindex keyedit:cross-certify
@@ -3377,9 +3386,14 @@ absolute date in the form YYYY-MM-DD. Defaults to "0".
 @item --default-new-key-algo @var{string}
 @opindex default-new-key-algo @var{string}
 This option can be used to change the default algorithms for key
-generation.  Note that the advanced key generation commands can always
-be used to specify a key algorithm directly.  Please consult the
-source code to learn the syntax of @var{string}.
+generation. The @var{string} is similar to the arguments required for
+the command @option{--quick-add-key} but slighly different.  For
+example the current default of @code{"rsa2048/cert,sign+rsa2048/encr"}
+(or @code{"rsa3072"}) can be changed to the value of what we currently
+call future default, which is @code{"ed25519/cert,sign+cv25519/encr"}.
+You need to consult the source code to learn the details.  Note that
+the advanced key generation commands can always be used to specify a
+key algorithm directly.
 
 @item --allow-secret-key-import
 @opindex allow-secret-key-import

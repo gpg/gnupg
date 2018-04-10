@@ -26,13 +26,16 @@
 #include "../common/util.h"
 #include "packet.h"
 
-/* What qualifies as a certification (rather than a signature?) */
+/* What qualifies as a certification (key-signature in contrast to a
+ * data signature)?  Note that a back signature is special and can be
+ * made by key and data signatures capable subkeys.) */
 #define IS_CERT(s)       (IS_KEY_SIG(s) || IS_UID_SIG(s) || IS_SUBKEY_SIG(s) \
                          || IS_KEY_REV(s) || IS_UID_REV(s) || IS_SUBKEY_REV(s))
 #define IS_SIG(s)        (!IS_CERT(s))
 #define IS_KEY_SIG(s)    ((s)->sig_class == 0x1f)
 #define IS_UID_SIG(s)    (((s)->sig_class & ~3) == 0x10)
 #define IS_SUBKEY_SIG(s) ((s)->sig_class == 0x18)
+#define IS_BACK_SIG(s)   ((s)->sig_class == 0x19)
 #define IS_KEY_REV(s)    ((s)->sig_class == 0x20)
 #define IS_UID_REV(s)    ((s)->sig_class == 0x30)
 #define IS_SUBKEY_REV(s) ((s)->sig_class == 0x28)

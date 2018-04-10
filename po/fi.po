@@ -1439,20 +1439,8 @@ msgid ""
 msgstr ""
 
 #, fuzzy, c-format
-msgid "What keysize do you want for the Signature key? (%u) "
+msgid "What keysize do you want? (%u) "
 msgstr "Minkä kokoisen avaimen haluat? (1024) "
-
-#, fuzzy, c-format
-msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr "Minkä kokoisen avaimen haluat? (1024) "
-
-#, fuzzy, c-format
-msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr "Minkä kokoisen avaimen haluat? (1024) "
-
-#, c-format
-msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr ""
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -1462,13 +1450,54 @@ msgstr "pyöristetty %u bittiin\n"
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr ""
 
+msgid "Changing card key attribute for: "
+msgstr ""
+
+#, fuzzy
+msgid "Signature key\n"
+msgstr "Allekirjoitus vanheni %s\n"
+
+#, fuzzy
+msgid "Encryption key\n"
+msgstr "   (%d) RSA (vain salaus)\n"
+
+msgid "Authentication key\n"
+msgstr ""
+
+msgid "Please select what kind of key you want:\n"
+msgstr "Valitse millaisen avaimen haluat:\n"
+
+#, fuzzy, c-format
+msgid "   (%d) RSA\n"
+msgstr "   (%d) RSA (vain allekirjoitus)\n"
+
+#, fuzzy, c-format
+msgid "   (%d) ECC\n"
+msgstr "   (%d) DSA ja ElGamal (oletus)\n"
+
+msgid "Invalid selection.\n"
+msgstr "Valinta ei kelpaa.\n"
+
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
 msgstr ""
 
+#, c-format
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
-msgid "error changing size of key %d to %u bits: %s\n"
+msgid "error changing key attribute for key %d: %s\n"
 msgstr "virhe lähettäessä kohteeseen \"%s\": %s\n"
+
+#, fuzzy, c-format
+msgid "error getting card info: %s\n"
+msgstr "virhe kirjoitettaessa salaiseen avainrenkaaseen \"%s\": %s\n"
+
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "Tätä komentoa ei sallita %s-tilassa.\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
@@ -1502,9 +1531,6 @@ msgstr "   (%d) RSA (vain salaus)\n"
 msgid "   (3) Authentication key\n"
 msgstr ""
 
-msgid "Invalid selection.\n"
-msgstr "Valinta ei kelpaa.\n"
-
 #, fuzzy
 msgid "Please select where to store the key:\n"
 msgstr "Valitse mitätöinnin syy:\n"
@@ -1512,11 +1538,6 @@ msgstr "Valitse mitätöinnin syy:\n"
 #, fuzzy, c-format
 msgid "KEYTOCARD failed: %s\n"
 msgstr "päivitys epäonnistui: %s\n"
-
-#, fuzzy
-#| msgid "This command is not allowed while in %s mode.\n"
-msgid "This command is not supported by this card\n"
-msgstr "Tätä komentoa ei sallita %s-tilassa.\n"
 
 #, fuzzy
 msgid "Note: This command destroys all keys stored on the card!\n"
@@ -1528,6 +1549,10 @@ msgstr "Varmastiko allekirjoita? "
 
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error for setup KDF: %s\n"
+msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
 
 msgid "quit this menu"
 msgstr "ulos tästä valikosta"
@@ -1585,6 +1610,16 @@ msgstr ""
 
 msgid "destroy all keys and data"
 msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|use NAME as default recipient"
+msgid "setup KDF for PIN authentication"
+msgstr "|NIMI|käytä NIMI oletusvastaanottajana"
+
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "change the key attribute"
+msgstr "muuta luottamusastetta"
 
 msgid "gpg/card> "
 msgstr ""
@@ -2280,6 +2315,10 @@ msgstr "Sähköpostiosoite ei kelpaa\n"
 #, fuzzy, c-format
 msgid "invalid pinentry mode '%s'\n"
 msgstr "virheellinen tiivistealgoritmi \"%s\"\n"
+
+#, fuzzy, c-format
+msgid "invalid request origin '%s'\n"
+msgstr "virheelliset tuontivalitsimet\n"
 
 #, fuzzy, c-format
 msgid "'%s' is not a valid character set\n"
@@ -3385,11 +3424,11 @@ msgid "Key is revoked."
 msgstr "Avain on mitätöity."
 
 #, fuzzy
-msgid "Really sign all user IDs? (y/N) "
+msgid "Really sign all text user IDs? (y/N) "
 msgstr "Varmastiko allekirjoita kaikki käyttäjätunnukset?"
 
 #, fuzzy
-msgid "Really sign all text user IDs? (y/N) "
+msgid "Really sign all user IDs? (y/N) "
 msgstr "Varmastiko allekirjoita kaikki käyttäjätunnukset?"
 
 msgid "Hint: Select the user IDs to sign\n"
@@ -3757,6 +3796,15 @@ msgstr "Muutetaan ensisijaisen avaimen vanhentumisaikaa.\n"
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Et voi muuttaa v3-avainten vanhentumispäivää\n"
 
+#, fuzzy
+msgid "Changing usage of a subkey.\n"
+msgstr "Muutetaan toissijaisen avaimen vanhentumisaikaa.\n"
+
+#, fuzzy
+#| msgid "Changing expiration time for the primary key.\n"
+msgid "Changing usage of the primary key.\n"
+msgstr "Muutetaan ensisijaisen avaimen vanhentumisaikaa.\n"
+
 #, fuzzy, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "VAROITUS: allekirjoitusaliavain %08lX ei ole ristiinvarmennettu\n"
@@ -3981,9 +4029,6 @@ msgstr ""
 msgid "   (%c) Finished\n"
 msgstr ""
 
-msgid "Please select what kind of key you want:\n"
-msgstr "Valitse millaisen avaimen haluat:\n"
-
 #, fuzzy, c-format
 msgid "   (%d) RSA and RSA (default)\n"
 msgstr "   (%d) DSA ja ElGamal (oletus)\n"
@@ -4060,10 +4105,6 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "What keysize do you want for the subkey? (%u) "
-msgstr "Minkä kokoisen avaimen haluat? (1024) "
-
-#, fuzzy, c-format
-msgid "What keysize do you want? (%u) "
 msgstr "Minkä kokoisen avaimen haluat? (1024) "
 
 #, c-format
@@ -5491,6 +5532,11 @@ msgid "Note: signature key %s has been revoked\n"
 msgstr "HUOM: avain on mitätöity!"
 
 #, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "itsenäinen allekirjoitus luokkaa 0x%02x\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "Epäkelpo allekirjoitus avaimelta %08lX oletettavasti johtuen tuntemattomasta "
@@ -6873,10 +6919,6 @@ msgid ""
 "To complete this certificate request please enter the passphrase for the key "
 "you just created once more.\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "   (%d) RSA\n"
-msgstr "   (%d) RSA (vain allekirjoitus)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) Existing key\n"
@@ -8952,6 +8994,18 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "What keysize do you want for the Signature key? (%u) "
+#~ msgstr "Minkä kokoisen avaimen haluat? (1024) "
+
+#, fuzzy
+#~ msgid "What keysize do you want for the Encryption key? (%u) "
+#~ msgstr "Minkä kokoisen avaimen haluat? (1024) "
+
+#, fuzzy
+#~ msgid "What keysize do you want for the Authentication key? (%u) "
+#~ msgstr "Minkä kokoisen avaimen haluat? (1024) "
 
 #, fuzzy
 #~ msgid "listen() failed: %s\n"

@@ -1486,23 +1486,8 @@ msgstr ""
 "      som tillåts.\n"
 
 #, c-format
-msgid "What keysize do you want for the Signature key? (%u) "
-msgstr "Vilken nyckelstorlek vill du använda för signaturnyckeln? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr "Vilken nyckelstorlek vill du använda för krypteringsnyckeln? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr "Vilken nyckelstorlek vill du använda för autentiseringsnyckeln? (%u) "
-
-#, fuzzy, c-format
-#| msgid "The card will now be re-configured to generate a key of %u bits\n"
-msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr ""
-"Kortet kommer nu att konfigureras om för att generera en nyckel med %u "
-"bitar\n"
+msgid "What keysize do you want? (%u) "
+msgstr "Vilken nyckelstorlek vill du ha? (%u) "
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -1512,15 +1497,66 @@ msgstr "avrundade uppåt till %u bitar\n"
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr "%s nyckelstorlekar måste vara inom intervallet %u-%u\n"
 
+msgid "Changing card key attribute for: "
+msgstr ""
+
+#, fuzzy
+#| msgid "   (1) Signature key\n"
+msgid "Signature key\n"
+msgstr "   (1) Signeringsnyckel\n"
+
+#, fuzzy
+#| msgid "   (2) Encryption key\n"
+msgid "Encryption key\n"
+msgstr "   (2) Krypteringsnyckel\n"
+
+#, fuzzy
+#| msgid "   (3) Authentication key\n"
+msgid "Authentication key\n"
+msgstr "   (3) Autentiseringsnyckel\n"
+
+msgid "Please select what kind of key you want:\n"
+msgstr "Välj vilken typ av nyckel du vill ha:\n"
+
+#, c-format
+msgid "   (%d) RSA\n"
+msgstr "   (%d) RSA\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) DSA and Elgamal\n"
+msgid "   (%d) ECC\n"
+msgstr "   (%d) DSA och Elgamal\n"
+
+msgid "Invalid selection.\n"
+msgstr "Ogiltigt val.\n"
+
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
 msgstr ""
 "Kortet kommer nu att konfigureras om för att generera en nyckel med %u "
 "bitar\n"
 
-#, c-format
-msgid "error changing size of key %d to %u bits: %s\n"
+#, fuzzy, c-format
+#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr ""
+"Kortet kommer nu att konfigureras om för att generera en nyckel med %u "
+"bitar\n"
+
+#, fuzzy, c-format
+#| msgid "error changing size of key %d to %u bits: %s\n"
+msgid "error changing key attribute for key %d: %s\n"
 msgstr "fel vid ändring av storlek för nyckel %d till %u bitar: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error getting current key info: %s\n"
+msgid "error getting card info: %s\n"
+msgstr "fel vid hämtning av aktuell nyckelinformation: %s\n"
+
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "Detta kommando är inte tillåtet när du är i %s-läge.\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Skapa säkerhetskopia av krypteringsnyckel utanför kortet? (J/n) "
@@ -1559,9 +1595,6 @@ msgstr "   (2) Krypteringsnyckel\n"
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Autentiseringsnyckel\n"
 
-msgid "Invalid selection.\n"
-msgstr "Ogiltigt val.\n"
-
 msgid "Please select where to store the key:\n"
 msgstr "Välj var nyckeln ska sparas:\n"
 
@@ -1569,11 +1602,6 @@ msgstr "Välj var nyckeln ska sparas:\n"
 #| msgid "read failed: %s\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "läsning misslyckades: %s\n"
-
-#, fuzzy
-#| msgid "This command is not allowed while in %s mode.\n"
-msgid "This command is not supported by this card\n"
-msgstr "Detta kommando är inte tillåtet när du är i %s-läge.\n"
 
 #, fuzzy
 #| msgid "NOTE: keys are already stored on the card!\n"
@@ -1587,6 +1615,11 @@ msgstr "Signera den? (j/N) "
 
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error closing %s: %s\n"
+msgid "error for setup KDF: %s\n"
+msgstr "fel vid stängning av %s: %s\n"
 
 msgid "quit this menu"
 msgstr "avsluta denna meny"
@@ -1640,6 +1673,17 @@ msgstr "lås upp PIN-koden med en nollställningskod"
 
 msgid "destroy all keys and data"
 msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|use NAME as default recipient"
+msgid "setup KDF for PIN authentication"
+msgstr "|NAMN|använd NAMN som standardmottagare"
+
+# originalet borde ha ett value
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "change the key attribute"
+msgstr "ändra ägartillitsvärdet"
 
 msgid "gpg/card> "
 msgstr "gpg/kort> "
@@ -2361,6 +2405,11 @@ msgstr "rad %d: inte en giltig e-postadress\n"
 #| msgid "invalid country code in `%s', line %d\n"
 msgid "invalid pinentry mode '%s'\n"
 msgstr "ogiltig landskod i \"%s\", rad %d\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid request origin '%s'\n"
+msgstr "argument för flaggan \"%.50s\" saknas\n"
 
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid character set\n"
@@ -3469,12 +3518,12 @@ msgstr ""
 msgid "Key is revoked."
 msgstr "Nyckeln är spärrad."
 
-msgid "Really sign all user IDs? (y/N) "
-msgstr "Verkligen signera alla användaridentiteter? (j/N) "
-
 #, fuzzy
 #| msgid "Really sign all user IDs? (y/N) "
 msgid "Really sign all text user IDs? (y/N) "
+msgstr "Verkligen signera alla användaridentiteter? (j/N) "
+
+msgid "Really sign all user IDs? (y/N) "
 msgstr "Verkligen signera alla användaridentiteter? (j/N) "
 
 msgid "Hint: Select the user IDs to sign\n"
@@ -3842,6 +3891,16 @@ msgstr "Ändrar giltighetstid för den primära nyckeln.\n"
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Du kan inte ändra giltighetsdatum för en v3-nyckel\n"
 
+#, fuzzy
+#| msgid "Changing expiration time for a subkey.\n"
+msgid "Changing usage of a subkey.\n"
+msgstr "Ändrar utgångstid för en undernyckel.\n"
+
+#, fuzzy
+#| msgid "Changing expiration time for the primary key.\n"
+msgid "Changing usage of the primary key.\n"
+msgstr "Ändrar giltighetstid för den primära nyckeln.\n"
+
 # Vad betyder det?
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
@@ -4067,9 +4126,6 @@ msgstr "   (%c) Växla autentiseringsförmågan\n"
 msgid "   (%c) Finished\n"
 msgstr "   (%c) Färdig\n"
 
-msgid "Please select what kind of key you want:\n"
-msgstr "Välj vilken typ av nyckel du vill ha:\n"
-
 #, c-format
 msgid "   (%d) RSA and RSA (default)\n"
 msgstr "   (%d) RSA och RSA (standard)\n"
@@ -4148,10 +4204,6 @@ msgstr "%s-nycklar kan vara mellan %u och %u bitar långa.\n"
 #, c-format
 msgid "What keysize do you want for the subkey? (%u) "
 msgstr "Vilken nyckelstorlek vill du använda för undernyckeln? (%u) "
-
-#, c-format
-msgid "What keysize do you want? (%u) "
-msgstr "Vilken nyckelstorlek vill du ha? (%u) "
 
 #, c-format
 msgid "Requested keysize is %u bits\n"
@@ -5624,6 +5676,11 @@ msgstr "OBSERVERA: signaturnyckeln %s gick ut %s\n"
 msgid "Note: signature key %s has been revoked\n"
 msgstr "OBSERVERA: signaturnyckeln %s har spärrats\n"
 
+#, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "fristående signatur av klassen 0x%02x\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -7075,10 +7132,6 @@ msgid ""
 msgstr ""
 "Ange lösenfrasen en gång till för nyckeln som du just skapade för att "
 "färdigställa denna certifikatbegäran.\n"
-
-#, c-format
-msgid "   (%d) RSA\n"
-msgstr "   (%d) RSA\n"
 
 #, c-format
 msgid "   (%d) Existing key\n"
@@ -9354,6 +9407,16 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid "What keysize do you want for the Signature key? (%u) "
+#~ msgstr "Vilken nyckelstorlek vill du använda för signaturnyckeln? (%u) "
+
+#~ msgid "What keysize do you want for the Encryption key? (%u) "
+#~ msgstr "Vilken nyckelstorlek vill du använda för krypteringsnyckeln? (%u) "
+
+#~ msgid "What keysize do you want for the Authentication key? (%u) "
+#~ msgstr ""
+#~ "Vilken nyckelstorlek vill du använda för autentiseringsnyckeln? (%u) "
 
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "listen() misslyckades: %s\n"

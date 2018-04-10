@@ -147,8 +147,8 @@ static gpg_error_t parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
                                      const char *algostr, const char *usagestr,
                                      const char *expirestr,
                                      int *r_algo, unsigned int *r_usage,
-                                     u32 *r_expire,
-                                     unsigned int *r_nbits, char **r_curve);
+                                     u32 *r_expire, unsigned int *r_nbits,
+                                     const char **r_curve);
 static void do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
                                  struct output_control_s *outctrl, int card );
 static int write_keyblock (iobuf_t out, kbnode_t node);
@@ -2336,10 +2336,10 @@ ask_keysize (int algo, unsigned int primary_keysize)
 
 
 /* Ask for the curve.  ALGO is the selected algorithm which this
-   function may adjust.  Returns a malloced string with the name of
-   the curve.  BOTH tells that gpg creates a primary and subkey. */
-static char *
-ask_curve (int *algo, int *subkey_algo)
+   function may adjust.  Returns a const string of the name of the
+   curve.  */
+const char *
+ask_curve (int *algo, int *subkey_algo, const char *current)
 {
   /* NB: We always use a complete algo list so that we have stable
      numbers in the menu regardless on how Gpg was configured.  */
@@ -2370,7 +2370,7 @@ ask_curve (int *algo, int *subkey_algo)
 #undef MY_USE_ECDSADH
   int idx;
   char *answer;
-  char *result = NULL;
+  const char *result = NULL;
   gcry_sexp_t keyparms;
 
   tty_printf (_("Please select which elliptic curve you want:\n"));
@@ -2430,7 +2430,12 @@ ask_curve (int *algo, int *subkey_algo)
       answer = cpr_get ("keygen.curve", _("Your selection? "));
       cpr_kill_prompt ();
       idx = *answer? atoi (answer) : 1;
-      if (*answer && !idx)
+      if (!*answer && current)
+        {
+          xfree(answer);
+          return NULL;
+        }
+      else if (*answer && !idx)
         {
           /* See whether the user entered the name of the curve.  */
           for (idx=0; idx < DIM(curves); idx++)
@@ -2461,16 +2466,16 @@ ask_curve (int *algo, int *subkey_algo)
               if (subkey_algo && *subkey_algo == PUBKEY_ALGO_ECDSA)
                 *subkey_algo = PUBKEY_ALGO_EDDSA;
               *algo = PUBKEY_ALGO_EDDSA;
-              result = xstrdup (curves[idx].eddsa_curve);
+              result = curves[idx].eddsa_curve;
             }
           else
-            result = xstrdup (curves[idx].name);
+            result = curves[idx].name;
           break;
         }
     }
 
   if (!result)
-    result = xstrdup (curves[0].name);
+    result = curves[0].name;
 
   return result;
 }
@@ -4161,7 +4166,7 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid, const char *algostr,
       unsigned int use;
       u32 expire;
       unsigned int nbits;
-      char *curve;
+      const char *curve;
 
       err = parse_algo_usage_expire (ctrl, 0, algostr, usagestr, expirestr,
                                      &algo, &use, &expire, &nbits, &curve);
@@ -4356,7 +4361,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
         }
       else
         {
-          char *curve = NULL;
+          const char *curve = NULL;
 
           if (subkey_algo)
             {
@@ -4366,7 +4371,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
                   || algo == PUBKEY_ALGO_EDDSA
                   || algo == PUBKEY_ALGO_ECDH)
                 {
-                  curve = ask_curve (&algo, &subkey_algo);
+                  curve = ask_curve (&algo, &subkey_algo, NULL);
                   r = xmalloc_clear( sizeof *r + 20 );
                   r->key = pKEYTYPE;
                   sprintf( r->u.value, "%d", algo);
@@ -4419,8 +4424,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
                     {
                       /* Need to switch to a different curve for the
                          encryption key.  */
-                      xfree (curve);
-                      curve = xstrdup ("Curve25519");
+                      curve = "Curve25519";
                     }
                   r = xmalloc_clear (sizeof *r + strlen (curve));
                   r->key = pSUBKEYCURVE;
@@ -4437,7 +4441,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
                   || algo == PUBKEY_ALGO_EDDSA
                   || algo == PUBKEY_ALGO_ECDH)
                 {
-                  curve = ask_curve (&algo, NULL);
+                  curve = ask_curve (&algo, NULL, NULL);
                   r = xmalloc_clear (sizeof *r + strlen (curve));
                   r->key = pKEYCURVE;
                   strcpy (r->u.value, curve);
@@ -4480,8 +4484,6 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
               r->next = para;
               para = r;
             }
-
-          xfree (curve);
         }
     }
   else /* Default key generation.  */
@@ -5024,7 +5026,7 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
                          const char *algostr, const char *usagestr,
                          const char *expirestr,
                          int *r_algo, unsigned int *r_usage, u32 *r_expire,
-                         unsigned int *r_nbits, char **r_curve)
+                         unsigned int *r_nbits, const char **r_curve)
 {
   gpg_error_t err;
   int algo;
@@ -5082,11 +5084,7 @@ parse_algo_usage_expire (ctrl_t ctrl, int for_subkey,
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if (curve)
-    {
-      *r_curve = xtrystrdup (curve);
-      if (!*r_curve)
-        return gpg_error_from_syserror ();
-    }
+    *r_curve = curve;
   *r_algo = algo;
   *r_usage = use;
   *r_expire = expire;
@@ -5111,7 +5109,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
   unsigned int use;
   u32 expire;
   unsigned int nbits = 0;
-  char *curve = NULL;
+  const char *curve = NULL;
   u32 cur_time;
   char *key_from_hexgrip = NULL;
   char *hexgrip = NULL;
@@ -5185,7 +5183,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
       else if (algo == PUBKEY_ALGO_ECDSA
                || algo == PUBKEY_ALGO_EDDSA
                || algo == PUBKEY_ALGO_ECDH)
-        curve = ask_curve (&algo, NULL);
+        curve = ask_curve (&algo, NULL, NULL);
       else
         nbits = ask_keysize (algo, 0);
 
@@ -5263,7 +5261,6 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock, const char *algostr,
 
  leave:
   xfree (key_from_hexgrip);
-  xfree (curve);
   xfree (hexgrip);
   xfree (serialno);
   xfree (cache_nonce);

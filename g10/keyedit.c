@@ -4563,10 +4563,10 @@ menu_changeusage (ctrl_t ctrl, kbnode_t keyblock)
       return 0;
     }
   else if (n1)
-    tty_printf ("Changing usage of a subkey.\n");
+    tty_printf (_("Changing usage of a subkey.\n"));
   else
     {
-      tty_printf ("Changing usage of the primary key.\n");
+      tty_printf (_("Changing usage of the primary key.\n"));
       mainkey = 1;
     }
 
@@ -4606,6 +4606,8 @@ menu_changeusage (ctrl_t ctrl, kbnode_t keyblock)
 	      if ((mainkey && main_pk->version < 4)
 		  || (!mainkey && sub_pk->version < 4))
 		{
+                  /* Note: This won't happen because we don't support
+                   * v3 keys anymore.  */
 		  log_info ("You can't change the capabilities of a v3 key\n");
 		  return 0;
 		}
@@ -4630,7 +4632,7 @@ menu_changeusage (ctrl_t ctrl, kbnode_t keyblock)
 	      if (rc)
 		{
 		  log_error ("make_keysig_packet failed: %s\n",
-			     gpg_strerror (rc));
+                             gpg_strerror (rc));
 		  return 0;
 		}
 

@@ -1360,21 +1360,8 @@ msgstr ""
 "          své karty, kde se dozvíte, jaké velikosti jsou dovoleny.\n"
 
 #, c-format
-msgid "What keysize do you want for the Signature key? (%u) "
-msgstr "Jakou délku klíče pro podepisování si přejete? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr "Jakou délku klíče pro šifrování si přejete? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr "Jakou délku klíče pro autentizaci si přejete? (%u) "
-
-#, fuzzy, c-format
-#| msgid "The card will now be re-configured to generate a key of %u bits\n"
-msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr "Karta bude nyní přenastavena na generování klíče dlouhého %u bitů\n"
+msgid "What keysize do you want? (%u) "
+msgstr "Jakou délku klíče si přejete? (%u) "
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -1384,13 +1371,60 @@ msgstr "zaokrouhleno na %u bitů\n"
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr "velikost klíče %s musí být v intervalu %u-%u\n"
 
+msgid "Changing card key attribute for: "
+msgstr ""
+
+#, fuzzy
+#| msgid "   (1) Signature key\n"
+msgid "Signature key\n"
+msgstr "   (1) Podepisovací klíč\n"
+
+#, fuzzy
+#| msgid "   (2) Encryption key\n"
+msgid "Encryption key\n"
+msgstr "   (2) Šifrovací klíč\n"
+
+#, fuzzy
+#| msgid "   (3) Authentication key\n"
+msgid "Authentication key\n"
+msgstr "   (3) Autentizační klíč\n"
+
+msgid "Please select what kind of key you want:\n"
+msgstr "Prosím, vyberte druh klíče, který chcete:\n"
+
+#, c-format
+msgid "   (%d) RSA\n"
+msgstr "   (%d) RSA\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) ECC and ECC\n"
+msgid "   (%d) ECC\n"
+msgstr "   (%d) ECC a ECC\n"
+
+msgid "Invalid selection.\n"
+msgstr "Neplatný výběr.\n"
+
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
 msgstr "Karta bude nyní přenastavena na generování klíče dlouhého %u bitů\n"
 
-#, c-format
-msgid "error changing size of key %d to %u bits: %s\n"
+#, fuzzy, c-format
+#| msgid "The card will now be re-configured to generate a key of %u bits\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr "Karta bude nyní přenastavena na generování klíče dlouhého %u bitů\n"
+
+#, fuzzy, c-format
+#| msgid "error changing size of key %d to %u bits: %s\n"
+msgid "error changing key attribute for key %d: %s\n"
 msgstr "chyba při změně velikosti klíče %d na %u bitů: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error getting current key info: %s\n"
+msgid "error getting card info: %s\n"
+msgstr "chyba při získání informací o aktuálním klíči: %s\n"
+
+msgid "This command is not supported by this card\n"
+msgstr "Tento příkaz není touto kartou podporován\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Vytvořit zálohu šifrovacího klíče mimo kartu? (A/n) "
@@ -1423,18 +1457,12 @@ msgstr "   (2) Šifrovací klíč\n"
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Autentizační klíč\n"
 
-msgid "Invalid selection.\n"
-msgstr "Neplatný výběr.\n"
-
 msgid "Please select where to store the key:\n"
 msgstr "Prosím vyberte, kam uložit klíč:\n"
 
 #, c-format
 msgid "KEYTOCARD failed: %s\n"
 msgstr "Volání KEYTOCARD selhalo: %s\n"
-
-msgid "This command is not supported by this card\n"
-msgstr "Tento příkaz není touto kartou podporován\n"
 
 msgid "Note: This command destroys all keys stored on the card!\n"
 msgstr "Poznámka: Tento příkaz zničí všechny klíče uložené na kartě!\n"
@@ -1445,6 +1473,11 @@ msgstr "Pokračovat (a/N) "
 # The code expects non-localized "yes"
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr "Opravdu obnovit tovární nastavení (zadejte „yes“) "
+
+#, fuzzy, c-format
+#| msgid "error looking up: %s\n"
+msgid "error for setup KDF: %s\n"
+msgstr "chyba při vyhledávání: %s\n"
 
 msgid "quit this menu"
 msgstr "ukončit toto menu"
@@ -1496,6 +1529,16 @@ msgstr "odblokovat PIN pomocí resetačního kódu"
 
 msgid "destroy all keys and data"
 msgstr "zničit všechny klíče a data"
+
+#, fuzzy
+#| msgid "|NAME|use user NAME for authentication"
+msgid "setup KDF for PIN authentication"
+msgstr "|JMÉNO|pro autentizaci použije JMÉNO uživatele"
+
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "change the key attribute"
+msgstr "změnit důvěryhodnost vlastníka klíče"
 
 msgid "gpg/card> "
 msgstr "gpg/karta> "
@@ -2138,6 +2181,11 @@ msgstr "„%s“ není správná e-mailová adresa\n"
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
 msgstr "neplatný režim pinentry „%s“\n"
+
+#, fuzzy, c-format
+#| msgid "invalid value for option '%s'\n"
+msgid "invalid request origin '%s'\n"
+msgstr "neplatný argument u volby „%s“\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
@@ -3175,11 +3223,11 @@ msgstr ""
 msgid "Key is revoked."
 msgstr "Klíč je odvolán."
 
-msgid "Really sign all user IDs? (y/N) "
-msgstr "Opravdu podepsat všechny id uživatele? (a/N) "
-
 msgid "Really sign all text user IDs? (y/N) "
 msgstr "Opravdu podepsat všechna textová ID uživatele? (a/N) "
+
+msgid "Really sign all user IDs? (y/N) "
+msgstr "Opravdu podepsat všechny id uživatele? (a/N) "
 
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Nápověda: Vyberte id uživatele k podepsání\n"
@@ -3515,6 +3563,16 @@ msgstr "Měním dobu expirace primárního klíče.\n"
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Nemůžete změnit dobu platnosti klíče verze 3\n"
 
+#, fuzzy
+#| msgid "Changing expiration time for a subkey.\n"
+msgid "Changing usage of a subkey.\n"
+msgstr "Měním dobu expirace podklíče.\n"
+
+#, fuzzy
+#| msgid "Changing expiration time for the primary key.\n"
+msgid "Changing usage of the primary key.\n"
+msgstr "Měním dobu expirace primárního klíče.\n"
+
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "podepisovací podklíč %s je již křížově certifikován\n"
@@ -3724,9 +3782,6 @@ msgstr "   (%c) Zapnout/vypnout schopnost autentizovat\n"
 msgid "   (%c) Finished\n"
 msgstr "   (%c) Konec\n"
 
-msgid "Please select what kind of key you want:\n"
-msgstr "Prosím, vyberte druh klíče, který chcete:\n"
-
 #, c-format
 msgid "   (%d) RSA and RSA (default)\n"
 msgstr "   (%d) RSA a RSA (implicitní)\n"
@@ -3799,10 +3854,6 @@ msgstr "klíč %s může mít délku v intervalu %u až %u bitů.\n"
 #, c-format
 msgid "What keysize do you want for the subkey? (%u) "
 msgstr "Jakou délku podklíče si přejete? (%u) "
-
-#, c-format
-msgid "What keysize do you want? (%u) "
-msgstr "Jakou délku klíče si přejete? (%u) "
 
 #, c-format
 msgid "Requested keysize is %u bits\n"
@@ -5179,6 +5230,11 @@ msgstr "Poznámka: podpisovému klíči %s skončila platnost v %s\n"
 #, c-format
 msgid "Note: signature key %s has been revoked\n"
 msgstr "Poznámka: podpisový klíč %s byl odvolán\n"
+
+#, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "samostatný podpis třídy 0x%02x\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
@@ -6565,10 +6621,6 @@ msgid ""
 msgstr ""
 "Žádost o certifikát dokončíte tím, že zadáte heslo pro klíč, který jste "
 "právě vytvořili, ještě jednou.\n"
-
-#, c-format
-msgid "   (%d) RSA\n"
-msgstr "   (%d) RSA\n"
 
 #, c-format
 msgid "   (%d) Existing key\n"
@@ -8559,6 +8611,15 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "What keysize do you want for the Signature key? (%u) "
+#~ msgstr "Jakou délku klíče pro podepisování si přejete? (%u) "
+
+#~ msgid "What keysize do you want for the Encryption key? (%u) "
+#~ msgstr "Jakou délku klíče pro šifrování si přejete? (%u) "
+
+#~ msgid "What keysize do you want for the Authentication key? (%u) "
+#~ msgstr "Jakou délku klíče pro autentizaci si přejete? (%u) "
 
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "volání listen() selhalo: %s\n"

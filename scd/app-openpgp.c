@@ -2061,6 +2061,9 @@ get_prompt_info (app_t app, int chvno, unsigned long sigcount, int remaining)
   return result;
 }
 
+#define KDF_DATA_LENGTH_MIN  90
+#define KDF_DATA_LENGTH_MAX 110
+
 /* Compute hash if KDF-DO is available.  CHVNO must be 0 for reset
    code, 1 or 2 for user pin and 3 for admin pin.
  */
@@ -2068,21 +2071,33 @@ static gpg_error_t
 pin2hash_if_kdf (app_t app, int chvno, char *pinvalue, int *r_pinlen)
 {
   gpg_error_t err = 0;
-  void *relptr;
+  void *relptr = NULL;
   unsigned char *buffer;
   size_t buflen;
 
   if (app->app_local->extcap.kdf_do
       && (relptr = get_one_do (app, 0x00F9, &buffer, &buflen, NULL))
-      && buflen == 110 && (buffer[2] == 0x03))
+      && buflen >= KDF_DATA_LENGTH_MIN && (buffer[2] == 0x03))
     {
-      char *salt;
+      const char *salt;
       unsigned long s2k_count;
       char dek[32];
+      int salt_index;
 
-      salt = &buffer[(chvno==3 ? 34 : (chvno==0 ? 24 : 14))];
       s2k_count = (((unsigned int)buffer[8] << 24)
                    | (buffer[9] << 16) | (buffer[10] << 8) | buffer[11]);
+
+      if (buflen == KDF_DATA_LENGTH_MIN)
+        salt_index =14;
+      else if (buflen == KDF_DATA_LENGTH_MAX)
+        salt_index = (chvno==3 ? 34 : (chvno==0 ? 24 : 14));
+      else
+        {
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
+        }
+
+      salt = &buffer[salt_index];
       err = gcry_kdf_derive (pinvalue, strlen (pinvalue),
                              GCRY_KDF_ITERSALTED_S2K,
                              DIGEST_ALGO_SHA256, salt, 8,
@@ -2094,12 +2109,12 @@ pin2hash_if_kdf (app_t app, int chvno, char *pinvalue, int *r_pinlen)
           memcpy (pinvalue, dek, *r_pinlen);
           wipememory (dek, *r_pinlen);
         }
-
-      xfree (relptr);
-    }
+   }
   else
     *r_pinlen = strlen (pinvalue);
 
+ leave:
+  xfree (relptr);
   return err;
 }
 
@@ -2444,7 +2459,7 @@ do_setattr (app_t app, const char *name,
     { "SM-KEY-MAC",   0x00D2, 3, 0, 1 },
     { "KEY-ATTR",     0,      0, 3, 1 },
     { "AESKEY",       0x00D5, 3, 0, 1 },
-    { "KDF",          0x00F9, 3, 0, 1 },
+    { "KDF",          0x00F9, 3, 4, 1 },
     { NULL, 0 }
   };
   int exmode;
@@ -2492,6 +2507,12 @@ do_setattr (app_t app, const char *name,
     app->force_chv1 = (valuelen && *value == 0);
   else if (table[idx].special == 2)
     parse_login_data (app);
+  else if (table[idx].special == 4)
+    {
+      app->did_chv1 = 0;
+      app->did_chv2 = 0;
+      app->did_chv3 = 0;
+    }
 
   return rc;
 }
@@ -3208,21 +3229,33 @@ change_rsa_keyattr (app_t app, int keyno, unsigned int nbits,
   relptr = get_one_do (app, 0xC1+keyno, &buf, &buflen, NULL);
   if (!relptr)
     err = gpg_error (GPG_ERR_CARD);
-  else if (buflen < 6 || buf[0] != PUBKEY_ALGO_RSA)
+  else if (buflen < 6)
     {
-      /* Attriutes too short or not an RSA key.  */
+      /* Attributes too short.  */
       xfree (relptr);
       err = gpg_error (GPG_ERR_CARD);
     }
   else
     {
-      /* We only change n_bits and don't touch anything else.  Before we
-         do so, we round up NBITS to a sensible way in the same way as
-         gpg's key generation does it.  This may help to sort out problems
-         with a few bits too short keys.  */
+      /* If key attribute was RSA, we only change n_bits and don't
+         touch anything else.  Before we do so, we round up NBITS to a
+         sensible way in the same way as gpg's key generation does it.
+         This may help to sort out problems with a few bits too short
+         keys.  */
       nbits = ((nbits + 31) / 32) * 32;
       buf[1] = (nbits >> 8);
       buf[2] = nbits;
+
+      /* If it was not RSA, we need to fill other parts.  */
+      if (buf[0] != PUBKEY_ALGO_RSA)
+        {
+          buf[0] = PUBKEY_ALGO_RSA;
+          buf[3] = 0;
+          buf[4] = 32;
+          buf[5] = 0;
+          buflen = 6;
+        }
+
       err = change_keyattr (app, keyno, buf, buflen, pincb, pincb_arg);
       xfree (relptr);
     }

@@ -1489,20 +1489,8 @@ msgid ""
 msgstr ""
 
 #, fuzzy, c-format
-msgid "What keysize do you want for the Signature key? (%u) "
+msgid "What keysize do you want? (%u) "
 msgstr "Quina grandària voleu? (1024) "
-
-#, fuzzy, c-format
-msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr "Quina grandària voleu? (1024) "
-
-#, fuzzy, c-format
-msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr "Quina grandària voleu? (1024) "
-
-#, c-format
-msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr ""
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -1512,13 +1500,54 @@ msgstr "arrodonida fins a %u bits\n"
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr ""
 
+msgid "Changing card key attribute for: "
+msgstr ""
+
+#, fuzzy
+msgid "Signature key\n"
+msgstr "Aquesta signatura va caducar el %s\n"
+
+#, fuzzy
+msgid "Encryption key\n"
+msgstr "   (%d) RSA (només xifrar)\n"
+
+msgid "Authentication key\n"
+msgstr ""
+
+msgid "Please select what kind of key you want:\n"
+msgstr "Seleccioneu quin tipus de clau voleu:\n"
+
+#, fuzzy, c-format
+msgid "   (%d) RSA\n"
+msgstr "   (%d) RSA (només signar)\n"
+
+#, fuzzy, c-format
+msgid "   (%d) ECC\n"
+msgstr "   (%d) DSA i ElGamal (predeterminat)\n"
+
+msgid "Invalid selection.\n"
+msgstr "La selecció és invàlida.\n"
+
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
 msgstr ""
 
+#, c-format
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
-msgid "error changing size of key %d to %u bits: %s\n"
+msgid "error changing key attribute for key %d: %s\n"
 msgstr "error mentre s'enviava a «%s»: %s\n"
+
+#, fuzzy, c-format
+msgid "error getting card info: %s\n"
+msgstr "s'ha produït un error mentre s'escrivia l'anell secret «%s»: %s\n"
+
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "Aquesta ordre no està permesa mentre s'està en mode %s.\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
@@ -1551,9 +1580,6 @@ msgstr "   (%d) RSA (només xifrar)\n"
 msgid "   (3) Authentication key\n"
 msgstr ""
 
-msgid "Invalid selection.\n"
-msgstr "La selecció és invàlida.\n"
-
 #, fuzzy
 msgid "Please select where to store the key:\n"
 msgstr "Seleccioneu la raó de la revocació:\n"
@@ -1561,11 +1587,6 @@ msgstr "Seleccioneu la raó de la revocació:\n"
 #, fuzzy, c-format
 msgid "KEYTOCARD failed: %s\n"
 msgstr "ha fallat l'actualització: %s\n"
-
-#, fuzzy
-#| msgid "This command is not allowed while in %s mode.\n"
-msgid "This command is not supported by this card\n"
-msgstr "Aquesta ordre no està permesa mentre s'està en mode %s.\n"
 
 #, fuzzy
 msgid "Note: This command destroys all keys stored on the card!\n"
@@ -1577,6 +1598,10 @@ msgstr "Signar realment? "
 
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error for setup KDF: %s\n"
+msgstr "error en la lectura de «%s»: %s\n"
 
 msgid "quit this menu"
 msgstr "ix del menú"
@@ -1636,6 +1661,16 @@ msgstr ""
 
 msgid "destroy all keys and data"
 msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|use NAME as default recipient"
+msgid "setup KDF for PIN authentication"
+msgstr "|NOM|usa NOM com a destinatari predeterminat"
+
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "change the key attribute"
+msgstr "canvia la confiança"
 
 msgid "gpg/card> "
 msgstr ""
@@ -2354,6 +2389,10 @@ msgstr "No és una adreça vàlida\n"
 #, fuzzy, c-format
 msgid "invalid pinentry mode '%s'\n"
 msgstr "l'algoritme de dispersió és invàlid «%s»\n"
+
+#, fuzzy, c-format
+msgid "invalid request origin '%s'\n"
+msgstr "opcions d'importació no vàlides\n"
 
 #, fuzzy, c-format
 msgid "'%s' is not a valid character set\n"
@@ -3485,11 +3524,11 @@ msgid "Key is revoked."
 msgstr "La clau està revocada."
 
 #, fuzzy
-msgid "Really sign all user IDs? (y/N) "
+msgid "Really sign all text user IDs? (y/N) "
 msgstr "Realment voleu signar tots els ID d'usuari? "
 
 #, fuzzy
-msgid "Really sign all text user IDs? (y/N) "
+msgid "Really sign all user IDs? (y/N) "
 msgstr "Realment voleu signar tots els ID d'usuari? "
 
 msgid "Hint: Select the user IDs to sign\n"
@@ -3867,6 +3906,15 @@ msgstr "S'està canviant la data de caducitat per a una clau primària.\n"
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "No podeu canviar la data de caducitat de les claus v3\n"
 
+#, fuzzy
+msgid "Changing usage of a subkey.\n"
+msgstr "S'està canviant la data de caducitat per a una clau secundària.\n"
+
+#, fuzzy
+#| msgid "Changing expiration time for the primary key.\n"
+msgid "Changing usage of the primary key.\n"
+msgstr "S'està canviant la data de caducitat per a una clau primària.\n"
+
 #, fuzzy, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr ""
@@ -4093,9 +4141,6 @@ msgstr ""
 msgid "   (%c) Finished\n"
 msgstr ""
 
-msgid "Please select what kind of key you want:\n"
-msgstr "Seleccioneu quin tipus de clau voleu:\n"
-
 #, fuzzy, c-format
 msgid "   (%d) RSA and RSA (default)\n"
 msgstr "   (%d) DSA i ElGamal (predeterminat)\n"
@@ -4172,10 +4217,6 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "What keysize do you want for the subkey? (%u) "
-msgstr "Quina grandària voleu? (1024) "
-
-#, fuzzy, c-format
-msgid "What keysize do you want? (%u) "
 msgstr "Quina grandària voleu? (1024) "
 
 #, c-format
@@ -5623,6 +5664,11 @@ msgid "Note: signature key %s has been revoked\n"
 msgstr "NOTA: aquesta clau ha estat revocada!"
 
 #, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "signatura autònoma de classe 0x%02x\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "es supossa una signatura incorrecta de la clau %08lX a causa d'un bit crític "
@@ -7050,10 +7096,6 @@ msgid ""
 "To complete this certificate request please enter the passphrase for the key "
 "you just created once more.\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "   (%d) RSA\n"
-msgstr "   (%d) RSA (només signar)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) Existing key\n"
@@ -9148,6 +9190,18 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "What keysize do you want for the Signature key? (%u) "
+#~ msgstr "Quina grandària voleu? (1024) "
+
+#, fuzzy
+#~ msgid "What keysize do you want for the Encryption key? (%u) "
+#~ msgstr "Quina grandària voleu? (1024) "
+
+#, fuzzy
+#~ msgid "What keysize do you want for the Authentication key? (%u) "
+#~ msgstr "Quina grandària voleu? (1024) "
 
 #, fuzzy
 #~ msgid "listen() failed: %s\n"

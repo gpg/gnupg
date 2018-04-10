@@ -1810,6 +1810,8 @@ get_pubkey_byfprint (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
       ctx.items[0].mode = fprint_len == 16 ? KEYDB_SEARCH_MODE_FPR16
 	: KEYDB_SEARCH_MODE_FPR20;
       memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
+      if (pk)
+        ctx.req_usage = pk->req_usage;
       rc = lookup (ctrl, &ctx, 0, &kb, &found_key);
       if (!rc && pk)
 	pk_from_block (pk, kb, found_key);

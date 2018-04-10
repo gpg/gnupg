@@ -99,3 +99,9 @@
       (call-check `(,(tool 'gpgtar) --extract --directory=. ,(cadr *args*)))
       (create-gpgsm-gpghome))
   (start-agent))
+
+(define (setup-gpgsm-environment-no-atexit)
+  (if (member "--unpack-tarball" *args*)
+      (call-check `(,(tool 'gpgtar) --extract --directory=. ,(cadr *args*)))
+      (create-gpgsm-gpghome))
+  (start-agent #t))

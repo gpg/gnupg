@@ -1444,21 +1444,9 @@ msgid ""
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
 
-#, fuzzy, c-format
-msgid "What keysize do you want for the Signature key? (%u) "
-msgstr "İstediğiniz anahtar uzunluğu nedir? (%u) "
-
-#, fuzzy, c-format
-msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr "İstediğiniz anahtar uzunluğu nedir? (%u) "
-
-#, fuzzy, c-format
-msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr "İstediğiniz anahtar uzunluğu nedir? (%u) "
-
 #, c-format
-msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr ""
+msgid "What keysize do you want? (%u) "
+msgstr "İstediğiniz anahtar uzunluğu nedir? (%u) "
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -1468,13 +1456,59 @@ msgstr "%u bite yuvarlandı\n"
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr "%s anahtar uzunlukları %u-%u aralığında olmalı\n"
 
+msgid "Changing card key attribute for: "
+msgstr ""
+
+#, fuzzy
+#| msgid "   (1) Signature key\n"
+msgid "Signature key\n"
+msgstr "   (1) İmzalama anahtarı\n"
+
+#, fuzzy
+#| msgid "   (2) Encryption key\n"
+msgid "Encryption key\n"
+msgstr "   (2) Şifreleme anahtarı\n"
+
+#, fuzzy
+#| msgid "   (3) Authentication key\n"
+msgid "Authentication key\n"
+msgstr "   (3) Kimlik kanıtlama anahtarı\n"
+
+msgid "Please select what kind of key you want:\n"
+msgstr "Lütfen istediğiniz anahtarı seçiniz:\n"
+
+#, c-format
+msgid "   (%d) RSA\n"
+msgstr "   (%d) RSA\n"
+
+#, fuzzy, c-format
+msgid "   (%d) ECC\n"
+msgstr "  (%d) DSA ve ElGamal (öntanımlı)\n"
+
+msgid "Invalid selection.\n"
+msgstr "Seçim geçersiz.\n"
+
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
 msgstr ""
 
+#, c-format
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
-msgid "error changing size of key %d to %u bits: %s\n"
+msgid "error changing key attribute for key %d: %s\n"
 msgstr "soket `%s'e bağlanırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error getting current key info: %s\n"
+msgid "error getting card info: %s\n"
+msgstr "geçerli anahtar bilgisi alınırken hata: %s\n"
+
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "%s kipindeyken bu komut kullanılamaz.\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Şifreli anahtarın kartsız yedeği yapılsın mı? (E/h ya da Y/n) "
@@ -1512,9 +1546,6 @@ msgstr "   (2) Şifreleme anahtarı\n"
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Kimlik kanıtlama anahtarı\n"
 
-msgid "Invalid selection.\n"
-msgstr "Seçim geçersiz.\n"
-
 msgid "Please select where to store the key:\n"
 msgstr "Lütfen anahtarın saklanacağı yeri seçiniz:\n"
 
@@ -1522,11 +1553,6 @@ msgstr "Lütfen anahtarın saklanacağı yeri seçiniz:\n"
 #| msgid "read failed: %s\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "read başarısız: %s\n"
-
-#, fuzzy
-#| msgid "This command is not allowed while in %s mode.\n"
-msgid "This command is not supported by this card\n"
-msgstr "%s kipindeyken bu komut kullanılamaz.\n"
 
 #, fuzzy
 msgid "Note: This command destroys all keys stored on the card!\n"
@@ -1539,6 +1565,11 @@ msgstr "İmzalayacak mısınız? (e/H veya y/N) "
 
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error closing %s: %s\n"
+msgid "error for setup KDF: %s\n"
+msgstr "%s kapanırken hata: %s\n"
 
 msgid "quit this menu"
 msgstr "bu menüden çık"
@@ -1590,6 +1621,14 @@ msgstr "Bir Sıfırlama Kodu kullanarak PIN'in engelini kaldır"
 
 msgid "destroy all keys and data"
 msgstr ""
+
+msgid "setup KDF for PIN authentication"
+msgstr ""
+
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "change the key attribute"
+msgstr "sahibiningüvencesini değiştirir"
 
 msgid "gpg/card> "
 msgstr ""
@@ -2301,6 +2340,11 @@ msgstr "%d. satır: geçerli bir eposta adresi değil\n"
 #| msgid "invalid country code in `%s', line %d\n"
 msgid "invalid pinentry mode '%s'\n"
 msgstr "`%s', %d. satırındaki ülke kodu geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid request origin '%s'\n"
+msgstr "\"%.50s\" seçeneği için değiştirge eksik\n"
 
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid character set\n"
@@ -3406,12 +3450,12 @@ msgstr ""
 msgid "Key is revoked."
 msgstr "Anahtar yürürlükten kaldırıldı."
 
-msgid "Really sign all user IDs? (y/N) "
-msgstr "Tüm kullanıcı kimlikler gerçekten imzalanacak mı? (e/H ya da y/N)"
-
 #, fuzzy
 #| msgid "Really sign all user IDs? (y/N) "
 msgid "Really sign all text user IDs? (y/N) "
+msgstr "Tüm kullanıcı kimlikler gerçekten imzalanacak mı? (e/H ya da y/N)"
+
+msgid "Really sign all user IDs? (y/N) "
 msgstr "Tüm kullanıcı kimlikler gerçekten imzalanacak mı? (e/H ya da y/N)"
 
 msgid "Hint: Select the user IDs to sign\n"
@@ -3798,6 +3842,16 @@ msgstr "Asıl anahtar için son kullanma tarihi değiştiriliyor.\n"
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Bir v3 anahtarının son kullanma tarihini değiştiremezsiniz\n"
 
+#, fuzzy
+#| msgid "Changing expiration time for a subkey.\n"
+msgid "Changing usage of a subkey.\n"
+msgstr "Bir yardımcı anahtar için son kullanma tarihi değiştiriliyor.\n"
+
+#, fuzzy
+#| msgid "Changing expiration time for the primary key.\n"
+msgid "Changing usage of the primary key.\n"
+msgstr "Asıl anahtar için son kullanma tarihi değiştiriliyor.\n"
+
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr "yardımcı imzalama anahtarı %s zaten çapraz sertifikalı\n"
@@ -4021,9 +4075,6 @@ msgstr "   (%c) Kimlik kanıtlama yeteneğini açar/kapar\n"
 msgid "   (%c) Finished\n"
 msgstr "   (%c) Bitti\n"
 
-msgid "Please select what kind of key you want:\n"
-msgstr "Lütfen istediğiniz anahtarı seçiniz:\n"
-
 #, fuzzy, c-format
 msgid "   (%d) RSA and RSA (default)\n"
 msgstr "  (%d) DSA ve ElGamal (öntanımlı)\n"
@@ -4102,10 +4153,6 @@ msgstr "%s anahtarları %u bit ile %u bit arasında olmalı.\n"
 
 #, fuzzy, c-format
 msgid "What keysize do you want for the subkey? (%u) "
-msgstr "İstediğiniz anahtar uzunluğu nedir? (%u) "
-
-#, c-format
-msgid "What keysize do you want? (%u) "
 msgstr "İstediğiniz anahtar uzunluğu nedir? (%u) "
 
 #, c-format
@@ -5553,6 +5600,11 @@ msgstr "BİLGİ: %s imza anahtarının kullanım süresi %s sularında dolmuş\n
 msgid "Note: signature key %s has been revoked\n"
 msgstr "BİLGİ: imza anahtarı %s yürürlükten kaldırılmıştı\n"
 
+#, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "0x%02x sınıfı tek başına imza\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -6984,10 +7036,6 @@ msgid ""
 msgstr ""
 "Bu sertifika isteğini tamamlamak için lütfen anahtar parolanızı girip "
 "anahtarınızı bir kere daha oluşturun.\n"
-
-#, c-format
-msgid "   (%d) RSA\n"
-msgstr "   (%d) RSA\n"
 
 #, c-format
 msgid "   (%d) Existing key\n"
@@ -9260,6 +9308,18 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#, fuzzy
+#~ msgid "What keysize do you want for the Signature key? (%u) "
+#~ msgstr "İstediğiniz anahtar uzunluğu nedir? (%u) "
+
+#, fuzzy
+#~ msgid "What keysize do you want for the Encryption key? (%u) "
+#~ msgstr "İstediğiniz anahtar uzunluğu nedir? (%u) "
+
+#, fuzzy
+#~ msgid "What keysize do you want for the Authentication key? (%u) "
+#~ msgstr "İstediğiniz anahtar uzunluğu nedir? (%u) "
 
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "soket dinleme başarısız: %s\n"

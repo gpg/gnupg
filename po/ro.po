@@ -1429,21 +1429,9 @@ msgid ""
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
 
-#, fuzzy, c-format
-msgid "What keysize do you want for the Signature key? (%u) "
-msgstr "Ce lungime de cheie doriţi? (%u) "
-
-#, fuzzy, c-format
-msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr "Ce lungime de cheie doriţi? (%u) "
-
-#, fuzzy, c-format
-msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr "Ce lungime de cheie doriţi? (%u) "
-
 #, c-format
-msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr ""
+msgid "What keysize do you want? (%u) "
+msgstr "Ce lungime de cheie doriţi? (%u) "
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -1453,13 +1441,59 @@ msgstr "rotunjită prin adaos la %u biţi\n"
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr "dimensiunile cheii %s trebuie să fie în intervalul %u-%u\n"
 
+msgid "Changing card key attribute for: "
+msgstr ""
+
+#, fuzzy
+#| msgid "   (1) Signature key\n"
+msgid "Signature key\n"
+msgstr "   (1) Cheie de semnare\n"
+
+#, fuzzy
+#| msgid "   (2) Encryption key\n"
+msgid "Encryption key\n"
+msgstr "   (2) Cheie de cifrare\n"
+
+#, fuzzy
+#| msgid "   (3) Authentication key\n"
+msgid "Authentication key\n"
+msgstr "   (3) Cheie de autentificare\n"
+
+msgid "Please select what kind of key you want:\n"
+msgstr "Selectaţi ce fel de cheie doriţi:\n"
+
+#, fuzzy, c-format
+msgid "   (%d) RSA\n"
+msgstr "   (%d) RSA (numai semnare)\n"
+
+#, fuzzy, c-format
+msgid "   (%d) ECC\n"
+msgstr "   (%d) DSA şi Elgamal (implicit)\n"
+
+msgid "Invalid selection.\n"
+msgstr "Selecţie invalidă.\n"
+
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
 msgstr ""
 
+#, c-format
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
-msgid "error changing size of key %d to %u bits: %s\n"
+msgid "error changing key attribute for key %d: %s\n"
 msgstr "eroare trimitere la `%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "error getting current key info: %s\n"
+msgid "error getting card info: %s\n"
+msgstr "eroare la obţinerea informaţiei pentru cheia curentă: %s\n"
+
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "Această comandă nu este permisă în modul %s.\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Creez copie de rezervă a cheii de cifrare în afara cardului? (d/N) "
@@ -1497,20 +1531,12 @@ msgstr "   (2) Cheie de cifrare\n"
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Cheie de autentificare\n"
 
-msgid "Invalid selection.\n"
-msgstr "Selecţie invalidă.\n"
-
 msgid "Please select where to store the key:\n"
 msgstr "Vă rugăm selectaţi unde să fie stocată cheia:\n"
 
 #, fuzzy, c-format
 msgid "KEYTOCARD failed: %s\n"
 msgstr "actualizarea a eşuat: %s\n"
-
-#, fuzzy
-#| msgid "This command is not allowed while in %s mode.\n"
-msgid "This command is not supported by this card\n"
-msgstr "Această comandă nu este permisă în modul %s.\n"
 
 #, fuzzy
 msgid "Note: This command destroys all keys stored on the card!\n"
@@ -1523,6 +1549,10 @@ msgstr "Doriţi să-l semnaţi? (d/N) "
 
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr ""
+
+#, fuzzy, c-format
+msgid "error for setup KDF: %s\n"
+msgstr "eroare în `%s': %s\n"
 
 msgid "quit this menu"
 msgstr "ieşi din acest meniu"
@@ -1574,6 +1604,16 @@ msgstr ""
 
 msgid "destroy all keys and data"
 msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|use NAME as default recipient"
+msgid "setup KDF for PIN authentication"
+msgstr "|NUME|foloseşte NUME ca destinatar implicit"
+
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "change the key attribute"
+msgstr "schimbă încrederea pentru proprietar"
 
 msgid "gpg/card> "
 msgstr ""
@@ -2300,6 +2340,10 @@ msgstr "Nu este o adresă de email validă\n"
 #, fuzzy, c-format
 msgid "invalid pinentry mode '%s'\n"
 msgstr "algoritm hash invalid `%s'\n"
+
+#, fuzzy, c-format
+msgid "invalid request origin '%s'\n"
+msgstr "opţiuni enumerare invalide\n"
 
 #, fuzzy, c-format
 #| msgid "`%s' is not a valid character set\n"
@@ -3388,12 +3432,12 @@ msgstr ""
 msgid "Key is revoked."
 msgstr "Cheia este revocată."
 
-msgid "Really sign all user IDs? (y/N) "
-msgstr "Semnaţi într-adevăr toate ID-urile utilizator? (d/N) "
-
 #, fuzzy
 #| msgid "Really sign all user IDs? (y/N) "
 msgid "Really sign all text user IDs? (y/N) "
+msgstr "Semnaţi într-adevăr toate ID-urile utilizator? (d/N) "
+
+msgid "Really sign all user IDs? (y/N) "
 msgstr "Semnaţi într-adevăr toate ID-urile utilizator? (d/N) "
 
 msgid "Hint: Select the user IDs to sign\n"
@@ -3759,6 +3803,16 @@ msgstr "Schimb timpul de expirare pentru cheia primară.\n"
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Nu puteţi schimba data de expirare a unei chei v3\n"
 
+#, fuzzy
+#| msgid "Changing expiration time for a subkey.\n"
+msgid "Changing usage of a subkey.\n"
+msgstr "Schimb timpul de expirare pentru o subcheie.\n"
+
+#, fuzzy
+#| msgid "Changing expiration time for the primary key.\n"
+msgid "Changing usage of the primary key.\n"
+msgstr "Schimb timpul de expirare pentru cheia primară.\n"
+
 #, fuzzy, c-format
 msgid "signing subkey %s is already cross-certified\n"
 msgstr ""
@@ -3977,9 +4031,6 @@ msgstr "   (%c) Comută capabilitatea de autentificare\n"
 msgid "   (%c) Finished\n"
 msgstr "   (%c) Terminat\n"
 
-msgid "Please select what kind of key you want:\n"
-msgstr "Selectaţi ce fel de cheie doriţi:\n"
-
 #, fuzzy, c-format
 msgid "   (%d) RSA and RSA (default)\n"
 msgstr "   (%d) DSA şi Elgamal (implicit)\n"
@@ -4057,10 +4108,6 @@ msgstr "cheile %s pot avea lungimea între %u şi %u biţi.\n"
 
 #, fuzzy, c-format
 msgid "What keysize do you want for the subkey? (%u) "
-msgstr "Ce lungime de cheie doriţi? (%u) "
-
-#, c-format
-msgid "What keysize do you want? (%u) "
 msgstr "Ce lungime de cheie doriţi? (%u) "
 
 #, c-format
@@ -5497,6 +5544,11 @@ msgstr "NOTĂ: cheia semnăturii %s a expirat %s\n"
 msgid "Note: signature key %s has been revoked\n"
 msgstr "NOTĂ: cheia a fost revocată"
 
+#, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "semnătură de sine stătătoare (standalone) de clasă 0x%02x\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -6888,10 +6940,6 @@ msgid ""
 "To complete this certificate request please enter the passphrase for the key "
 "you just created once more.\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "   (%d) RSA\n"
-msgstr "   (%d) RSA (numai semnare)\n"
 
 #, fuzzy, c-format
 msgid "   (%d) Existing key\n"
@@ -8998,6 +9046,18 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "What keysize do you want for the Signature key? (%u) "
+#~ msgstr "Ce lungime de cheie doriţi? (%u) "
+
+#, fuzzy
+#~ msgid "What keysize do you want for the Encryption key? (%u) "
+#~ msgstr "Ce lungime de cheie doriţi? (%u) "
+
+#, fuzzy
+#~ msgid "What keysize do you want for the Authentication key? (%u) "
+#~ msgstr "Ce lungime de cheie doriţi? (%u) "
 
 #, fuzzy
 #~ msgid "listen() failed: %s\n"
