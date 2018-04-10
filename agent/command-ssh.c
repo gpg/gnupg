@@ -2864,7 +2864,6 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   unsigned char *sig = NULL;
   size_t sig_n;
   u32 data_size;
-  u32 flags, known_flags = 0;
   gpg_error_t err;
   gpg_error_t ret_err;
   int hash_algo;
@@ -2884,31 +2883,39 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   if (err)
     goto out;
 
-  err = stream_read_uint32 (request, &flags);
-  if (err)
-    goto out;
+  /* Flag processing.  */
+  {
+    u32 flags;
 
-  if (spec.algo == GCRY_PK_RSA)
-    {
-      known_flags = SSH_AGENT_RSA_SHA2_256 | SSH_AGENT_RSA_SHA2_512;
-      if ((flags & SSH_AGENT_RSA_SHA2_256))
-        {
-          spec.ssh_identifier = "rsa-sha2-256";
-          spec.hash_algo = GCRY_MD_SHA256;
-        }
-      else if ((flags & SSH_AGENT_RSA_SHA2_512))
-        {
-          spec.ssh_identifier = "rsa-sha2-512";
-          spec.hash_algo = GCRY_MD_SHA512;
-        }
-    }
-
-  /* some flag is present that we do not know about. */
-  if (flags & ~known_flags)
-    {
-      err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
+    err = stream_read_uint32 (request, &flags);
+    if (err)
       goto out;
-    }
+
+    if (spec.algo == GCRY_PK_RSA)
+      {
+        if ((flags & SSH_AGENT_RSA_SHA2_512))
+          {
+            flags &= ~SSH_AGENT_RSA_SHA2_512;
+            spec.ssh_identifier = "rsa-sha2-512";
+            spec.hash_algo = GCRY_MD_SHA512;
+          }
+        if ((flags & SSH_AGENT_RSA_SHA2_256))
+          {
+            /* Note: We prefer SHA256 over SHA512.  */
+            flags &= ~SSH_AGENT_RSA_SHA2_256;
+            spec.ssh_identifier = "rsa-sha2-256";
+            spec.hash_algo = GCRY_MD_SHA256;
+          }
+      }
+
+    /* Some flag is present that we do not know about.  Note that
+     * processed or known flags have been cleared at this point.  */
+    if (flags)
+      {
+        err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
+        goto out;
+      }
+  }
 
   hash_algo = spec.hash_algo;
   if (!hash_algo)
