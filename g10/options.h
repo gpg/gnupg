@@ -242,7 +242,7 @@ struct
     unsigned int allow_weak_digest_algos:1;
     unsigned int large_rsa:1;
     unsigned int disable_signer_uid:1;
-    /* Flag to enbale experimental features from RFC4880bis.  */
+    /* Flag to enable experimental features from RFC4880bis.  */
     unsigned int rfc4880bis:1;
   } flags;
 
@@ -275,6 +275,8 @@ struct
 
   int unwrap_encryption;
   int only_sign_text_ids;
+
+  int no_symkey_cache;   /* Disable the cache used for --symmetric.  */
 } opt;
 
 /* CTRL is used to keep some global variables we currently can't

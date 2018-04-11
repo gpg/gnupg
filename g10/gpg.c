@@ -423,6 +423,7 @@ enum cmd_and_opt_values
     oSender,
     oKeyOrigin,
     oRequestOrigin,
+    oNoSymkeyCache,
 
     oNoop
   };
@@ -888,6 +889,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oAutoKeyLocate, "auto-key-locate", "@"),
   ARGPARSE_s_n (oNoAutoKeyLocate, "no-auto-key-locate", "@"),
   ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
+  ARGPARSE_s_n (oNoSymkeyCache, "no-symkey-cache", "@"),
 
   /* Dummy options with warnings.  */
   ARGPARSE_s_n (oUseAgent,      "use-agent", "@"),
@@ -3556,6 +3558,7 @@ main (int argc, char **argv)
             break;
 
           case oNoAutostart: opt.autostart = 0; break;
+          case oNoSymkeyCache: opt.no_symkey_cache = 1; break;
 
 	  case oDefaultNewKeyAlgo:
             opt.def_new_key_algo = pargs.r.ret_str;

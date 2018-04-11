@@ -317,6 +317,9 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
     canceled = &dummy_canceled;
   *canceled = 0;
 
+  if (opt.no_symkey_cache)
+    nocache = 1;  /* Force no symmtric key caching.  */
+
   if ( !s2k )
     {
       log_assert (create && !nocache);

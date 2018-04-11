@@ -214,7 +214,10 @@ symmetric cipher used is @value{GPGSYMENCALGO}, but may be chosen with the
 @option{--encrypt} (for a message that may be decrypted via a secret key
 or a passphrase), or @option{--sign} and @option{--encrypt} together
 (for a signed message that may be decrypted via a secret key or a
-passphrase).
+passphrase).  @command{@gpgname} caches the passphrase used for
+symmetric encryption so that a decrypt operation may not require that
+the user needs to enter the passphrase.  The option
+@option{--no-symkey-cache} can be used to disable this feature.
 
 @item --store
 @opindex store
@@ -3139,6 +3142,12 @@ are:
   Redirect Pinentry queries to the caller.  Note that in contrast to
   Pinentry the user is not prompted again if he enters a bad password.
 @end table
+
+@item --no-symkey-cache
+@opindex no-symkey-cache
+Disable the passphrase cache used for symmetrical en- and decryption.
+This cache is based on the message specific salt value
+(cf. @option{--s2k-mode}).
 
 @item --request-origin @var{origin}
 @opindex request-origin
