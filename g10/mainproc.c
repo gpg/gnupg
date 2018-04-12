@@ -1209,7 +1209,7 @@ list_node (CTX c, kbnode_t node)
 	}
       else if (!opt.fast_list_mode)
         {
-          p = get_user_id (c->ctrl, sig->keyid, &n);
+          p = get_user_id (c->ctrl, sig->keyid, &n, NULL);
           es_write_sanitized (es_stdout, p, n,
                               opt.with_colons?":":NULL, NULL );
           xfree (p);
@@ -1630,7 +1630,8 @@ issuer_fpr_raw (PKT_signature *sig, size_t *r_len)
 
 /* Return the ISSUER fingerprint string in human readbale format if
  * available.  Caller must release the string.  */
-static char *
+/* FIXME: Move to another file.  */
+char *
 issuer_fpr_string (PKT_signature *sig)
 {
   const byte *p;

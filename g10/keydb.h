@@ -404,10 +404,10 @@ void setup_main_keyids (kbnode_t keyblock);
    data structures.  */
 void merge_keys_and_selfsig (ctrl_t ctrl, kbnode_t keyblock);
 
-char*get_user_id_string_native (ctrl_t ctrl, u32 *keyid);
-char*get_long_user_id_string (ctrl_t ctrl, u32 *keyid);
-char*get_user_id (ctrl_t ctrl, u32 *keyid, size_t *rn);
-char*get_user_id_native (ctrl_t ctrl, u32 *keyid);
+char *get_user_id_string_native (ctrl_t ctrl, u32 *keyid);
+char *get_long_user_id_string (ctrl_t ctrl, u32 *keyid);
+char *get_user_id (ctrl_t ctrl, u32 *keyid, size_t *rn, int *r_nouid);
+char *get_user_id_native (ctrl_t ctrl, u32 *keyid);
 char *get_user_id_byfpr (ctrl_t ctrl, const byte *fpr, size_t *rn);
 char *get_user_id_byfpr_native (ctrl_t ctrl, const byte *fpr);
 

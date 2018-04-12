@@ -604,6 +604,8 @@ int proc_signature_packets_by_fd (ctrl_t ctrl,
 int proc_encryption_packets (ctrl_t ctrl, void *ctx, iobuf_t a);
 int list_packets( iobuf_t a );
 
+char *issuer_fpr_string (PKT_signature *sig);
+
 /*-- parse-packet.c --*/
 
 /* Sets the packet list mode to MODE (i.e., whether we are dumping a

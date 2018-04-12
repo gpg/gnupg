@@ -105,6 +105,19 @@ described here.
     certificate (i.e. for the trust anchor) and an 'f' for all other
     valid certificates.
 
+    In "sig" records, this field may have one of these values as first
+    character:
+
+    - ! :: Signature is good.
+    - - :: Signature is bad.
+    - ? :: No public key to verify signature or public key is not usable.
+    - % :: Other error verifying a signature
+
+    More values may be added later.  The field may also be empty if
+    gpg has been invoked in a non-checking mode (--list-sigs) or in a
+    fast checking mode.  Since 2.2.7 '?' will also be printed by the
+    command --list-sigs if the key is not in the local keyring.
+
 *** Field 3 - Key length
 
     The length of key in bits.
@@ -195,9 +208,11 @@ described here.
     gpg's --edit-key menu does.
 
     For "sig" records, this is the fingerprint of the key that issued
-    the signature.  Note that this is only filled in if the signature
+    the signature.  Note that this may only be filled if the signature
     verified correctly.  Note also that for various technical reasons,
     this fingerprint is only available if --no-sig-cache is used.
+    Since 2.2.7 this field will also be set if the key is missing but
+    the signature carries an issuer fingerprint as meta data.
 
 *** Field 14 - Flag field
 
