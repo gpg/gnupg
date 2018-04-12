@@ -1608,6 +1608,26 @@ akl_has_wkd_method (void)
 }
 
 
+/* Return the ISSUER fingerprint buffer and its lenbgth at R_LEN.
+ * Returns NULL if not available.  The returned buffer is valid as
+ * long as SIG is not modified.  */
+static const byte *
+issuer_fpr_raw (PKT_signature *sig, size_t *r_len)
+{
+  const byte *p;
+  size_t n;
+
+  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_ISSUER_FPR, &n);
+  if (p && n == 21 && p[0] == 4)
+    {
+      *r_len = n - 1;
+      return p+1;
+    }
+  *r_len = 0;
+  return NULL;
+}
+
+
 /* Return the ISSUER fingerprint string in human readbale format if
  * available.  Caller must release the string.  */
 static char *
@@ -1616,10 +1636,8 @@ issuer_fpr_string (PKT_signature *sig)
   const byte *p;
   size_t n;
 
-  p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_ISSUER_FPR, &n);
-  if (p && n == 21 && p[0] == 4)
-    return bin2hex (p+1, n-1, NULL);
-  return NULL;
+  p = issuer_fpr_raw (sig, &n);
+  return p? bin2hex (p, n, NULL) : NULL;
 }
 
 
@@ -1659,7 +1677,7 @@ check_sig_and_print (CTX c, kbnode_t node)
   int rc;
   int is_expkey = 0;
   int is_revkey = 0;
-  char *issuer_fpr;
+  char *issuer_fpr = NULL;
   PKT_public_key *pk = NULL;  /* The public key for the signature or NULL. */
   int tried_ks_by_fpr;
 
@@ -1786,13 +1804,14 @@ check_sig_and_print (CTX c, kbnode_t node)
     write_status_text (STATUS_NEWSIG, NULL);
 
   astr = openpgp_pk_algo_name ( sig->pubkey_algo );
-  if ((issuer_fpr = issuer_fpr_string (sig)))
+  issuer_fpr = issuer_fpr_string (sig);
+
+  if (issuer_fpr)
     {
       log_info (_("Signature made %s\n"), asctimestamp(sig->timestamp));
       log_info (_("               using %s key %s\n"),
                 astr? astr: "?", issuer_fpr);
 
-      xfree (issuer_fpr);
     }
   else if (!keystrlen () || keystrlen () > 8)
     {
@@ -1899,14 +1918,14 @@ check_sig_and_print (CTX c, kbnode_t node)
       const byte *p;
       size_t n;
 
-      p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_ISSUER_FPR, &n);
-      if (p && n == 21 && p[0] == 4)
+      p = issuer_fpr_raw (sig, &n);
+      if (p)
         {
           /* v4 packet with a SHA-1 fingerprint.  */
           free_public_key (pk);
           pk = NULL;
           glo_ctrl.in_auto_key_retrieve++;
-          res = keyserver_import_fprint (c->ctrl, p+1, n-1, opt.keyserver, 1);
+          res = keyserver_import_fprint (c->ctrl, p, n, opt.keyserver, 1);
           tried_ks_by_fpr = 1;
           glo_ctrl.in_auto_key_retrieve--;
           if (!res)
@@ -2273,22 +2292,22 @@ check_sig_and_print (CTX c, kbnode_t node)
     }
   else
     {
-      char buf[50];
-
-      snprintf (buf, sizeof buf, "%08lX%08lX %d %d %02x %lu %d",
-                (ulong)sig->keyid[0], (ulong)sig->keyid[1],
-                sig->pubkey_algo, sig->digest_algo,
-                sig->sig_class, (ulong)sig->timestamp, gpg_err_code (rc));
-      write_status_text (STATUS_ERRSIG, buf);
+      write_status_printf (STATUS_ERRSIG, "%08lX%08lX %d %d %02x %lu %d %s",
+                           (ulong)sig->keyid[0], (ulong)sig->keyid[1],
+                           sig->pubkey_algo, sig->digest_algo,
+                           sig->sig_class, (ulong)sig->timestamp,
+                           gpg_err_code (rc),
+                           issuer_fpr? issuer_fpr:"-");
       if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY)
         {
-          buf[16] = 0;
-          write_status_text (STATUS_NO_PUBKEY, buf);
+          write_status_printf (STATUS_NO_PUBKEY, "%08lX%08lX",
+                               (ulong)sig->keyid[0], (ulong)sig->keyid[1]);
 	}
       if (gpg_err_code (rc) != GPG_ERR_NOT_PROCESSED)
         log_error (_("Can't check signature: %s\n"), gpg_strerror (rc));
     }
 
+  xfree (issuer_fpr);
   return rc;
 }
 

@@ -435,14 +435,17 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     available.  This is the case with CMS and might eventually also be
     available for OpenPGP.
 
-*** ERRSIG  <keyid>  <pkalgo> <hashalgo> <sig_class> <time> <rc>
+*** ERRSIG  <keyid>  <pkalgo> <hashalgo> <sig_class> <time> <rc> <fpr>
     It was not possible to check the signature.  This may be caused by
     a missing public key or an unsupported algorithm.  A RC of 4
     indicates unknown algorithm, a 9 indicates a missing public
     key. The other fields give more information about this signature.
     sig_class is a 2 byte hex-value.  The fingerprint may be used
-    instead of the keyid if it is available.  This is the case with
-    gpgsm and might eventually also be available for OpenPGP.
+    instead of the long_keyid_or_fpr if it is available.  This is the
+    case with gpgsm and might eventually also be available for
+    OpenPGP.  The ERRSIG line has FPR filed which is only available
+    since 2.2.7; that FPR may either be missing or - if the signature
+    has no fingerprint as meta data.
 
     Note, that TIME may either be the number of seconds since Epoch or
     an ISO 8601 string.  The latter can be detected by the presence of
@@ -717,7 +720,9 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     The used key has been revoked by its owner.  No arguments yet.
 
 *** NO_PUBKEY  <long keyid>
-    The public key is not available
+    The public key is not available.  Note the arg should in general
+    not be used because it is better to take it from the ERRSIG
+    status line which is printed right before this one.
 
 *** NO_SECKEY  <long keyid>
     The secret key is not available
