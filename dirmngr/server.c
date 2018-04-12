@@ -2489,7 +2489,8 @@ static const char hlp_getinfo[] =
   "dnsinfo     - Return info about the DNS resolver\n"
   "socket_name - Return the name of the socket.\n"
   "session_id  - Return the current session_id.\n"
-  "workqueue   - Inspect the work queue\n";
+  "workqueue   - Inspect the work queue\n"
+  "getenv NAME - Return value of envvar NAME\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
@@ -2556,6 +2557,23 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     {
       workqueue_dump_queue (ctrl);
       err = 0;
+    }
+  else if (!strncmp (line, "getenv", 6)
+           && (line[6] == ' ' || line[6] == '\t' || !line[6]))
+    {
+      line += 6;
+      while (*line == ' ' || *line == '\t')
+        line++;
+      if (!*line)
+        err = gpg_error (GPG_ERR_MISSING_VALUE);
+      else
+        {
+          const char *s = getenv (line);
+          if (!s)
+            err = set_error (GPG_ERR_NOT_FOUND, "No such envvar");
+          else
+            err = assuan_send_data (ctx, s, strlen (s));
+        }
     }
   else
     err = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");

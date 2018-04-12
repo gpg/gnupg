@@ -2825,6 +2825,7 @@ static const char hlp_getinfo[] =
   "  std_env_names   - List the names of the standard environment.\n"
   "  std_session_env - List the standard session environment.\n"
   "  std_startup_env - List the standard startup environment.\n"
+  "  getenv NAME     - Return value of envvar NAME.\n"
   "  connections     - Return number of active connections.\n"
   "  jent_active     - Returns OK if Libgcrypt's JENT is active.\n"
   "  restricted      - Returns OK if the connection is in restricted mode.\n"
@@ -2959,6 +2960,23 @@ cmd_getinfo (assuan_context_t ctx, char *line)
               if (rc)
                 break;
             }
+        }
+    }
+  else if (!strncmp (line, "getenv", 6)
+           && (line[6] == ' ' || line[6] == '\t' || !line[6]))
+    {
+      line += 6;
+      while (*line == ' ' || *line == '\t')
+        line++;
+      if (!*line)
+        rc = gpg_error (GPG_ERR_MISSING_VALUE);
+      else
+        {
+          const char *s = getenv (line);
+          if (!s)
+            rc = set_error (GPG_ERR_NOT_FOUND, "No such envvar");
+          else
+            rc = assuan_send_data (ctx, s, strlen (s));
         }
     }
   else if (!strcmp (line, "connections"))
