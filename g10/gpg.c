@@ -5111,7 +5111,7 @@ g10_exit( int rc )
   /* If we had an error but not printed an error message, do it now.
    * Note that write_status_failure will never print a second failure
    * status line. */
-  if (log_get_errorcount (0))
+  if (rc)
     write_status_failure ("gpg-exit", gpg_error (GPG_ERR_GENERAL));
 
   gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
