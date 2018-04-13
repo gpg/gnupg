@@ -2308,6 +2308,7 @@ check_sig_and_print (CTX c, kbnode_t node)
         log_error (_("Can't check signature: %s\n"), gpg_strerror (rc));
     }
 
+  free_public_key (pk);
   xfree (issuer_fpr);
   return rc;
 }
