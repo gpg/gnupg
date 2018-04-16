@@ -4,13 +4,12 @@
 #  I've tried to mantain the terminology used by Armando Ramos
 #  <armando@clerval.org> in his PGP 2.3.6i translation.
 #  I also got inspiration from it.po by Marco d'Itri <md@linux.it>
-#  Jaime Suárez <jaime.suma@gmail.com> 2017
-#
+# Jaime Suárez <jaime.suma@gmail.com> 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.9\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-11-02 17:39+0100\n"
+"PO-Revision-Date: 2018-04-16 14:06+0000\n"
 "Last-Translator: emma peel <emma.peel@riseup.net>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "Language: es\n"
