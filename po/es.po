@@ -252,7 +252,7 @@ msgstr "Por favor introduzca el PIN%s%s%s para desbloquear la tarjeta"
 
 #, c-format
 msgid "error creating temporary file: %s\n"
-msgstr "error creando fichero temporal: %s\n"
+msgstr "error al crear fichero temporal: %s\n"
 
 #, c-format
 msgid "error writing to temporary file: %s\n"
@@ -483,7 +483,7 @@ msgstr "no puede usar '%s' como directorio personal\n"
 
 #, c-format
 msgid "error reading nonce on fd %d: %s\n"
-msgstr "error leyendo valor único en el descriptor %d: %s\n"
+msgstr "error al leer valor único en el descriptor %d: %s\n"
 
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
@@ -608,10 +608,10 @@ msgstr "opción de clave inválida en '%s', línea %d\n"
 
 #, c-format
 msgid "error reading '%s', line %d: %s\n"
-msgstr "error leyendo '%s', línea %d: %s\n"
+msgstr "error al leer '%s', línea %d: %s\n"
 
 msgid "error reading list of trusted root certificates\n"
-msgstr "error leyendo la lista de certificados raíz fiables\n"
+msgstr "error al leer la lista de certificados raíz fiables\n"
 
 #. TRANSLATORS: This prompt is shown by the Pinentry
 #. and has one special property: A "%%0A" is used by
@@ -736,11 +736,11 @@ msgstr "el algoritmo de protección de hash %d (%s) no se puede usar\n"
 
 #, c-format
 msgid "error creating a pipe: %s\n"
-msgstr "error creando tubería: %s\n"
+msgstr "error al crear tubería: %s\n"
 
 #, c-format
 msgid "error creating a stream for a pipe: %s\n"
-msgstr "error creando stream para una tubería: %s\n"
+msgstr "error al crear stream para una tubería: %s\n"
 
 #, c-format
 msgid "error forking process: %s\n"
@@ -1550,7 +1550,7 @@ msgstr "clave \"%s\" no encontrada: %s\n"
 
 #, c-format
 msgid "error reading keyblock: %s\n"
-msgstr "error leyendo bloque de claves: %s\n"
+msgstr "error al leer bloque de claves: %s\n"
 
 #, c-format
 msgid "key \"%s\" not found\n"
@@ -1594,7 +1594,7 @@ msgstr "use antes la opción \"--delete-secret-key\" para borrarla.\n"
 
 #, c-format
 msgid "error creating passphrase: %s\n"
-msgstr "error creando frase contraseña: %s\n"
+msgstr "error al crear frase contraseña: %s\n"
 
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
 msgstr "no puede usar un paquete simétrico ESK debido al modo S2K\n"
@@ -2395,7 +2395,7 @@ msgstr "algoritmo de distribución inválido '%s'\n"
 
 #, c-format
 msgid "error parsing key specification '%s': %s\n"
-msgstr "error leyendo la especificación de clave '%s': %s\n"
+msgstr "error al leer la especificación de clave '%s': %s\n"
 
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
@@ -3260,7 +3260,7 @@ msgstr "No se puede abrir '%s': %s\n"
 
 #, c-format
 msgid "Error reading backup key from '%s': %s\n"
-msgstr "Error leyendo clave de respaldo desde '%s': %s\n"
+msgstr "Error al leer clave de respaldo desde '%s': %s\n"
 
 msgid "You must select at least one key.\n"
 msgstr "Debe seleccionar por lo menos una clave.\n"
@@ -4051,14 +4051,14 @@ msgstr ""
 "\n"
 
 msgid "Continue? (Y/n) "
-msgstr "¿Continuar? (s/N) "
+msgstr "¿Continuar? (S/n) "
 
 #, c-format
 msgid "A key for \"%s\" already exists\n"
 msgstr "Ya existe una clave para \"%s\"\n"
 
 msgid "Create anyway? (y/N) "
-msgstr "¿Crear de todas formas?(y/N) "
+msgstr "¿Crear de todas formas?(s/N) "
 
 msgid "creating anyway\n"
 msgstr "creando de todas formas\n"
@@ -4088,7 +4088,7 @@ msgstr "anillo público de claves no escribible encontrado: %s\n"
 
 #, c-format
 msgid "error writing public keyring '%s': %s\n"
-msgstr "error escribiendo anillo público '%s': %s\n"
+msgstr "error al escribir en el anillo público '%s': %s\n"
 
 msgid "public and secret key created and signed.\n"
 msgstr "claves pública y secreta creadas y firmadas.\n"
@@ -4584,7 +4584,7 @@ msgstr ""
 
 #, c-format
 msgid "unknown weak digest '%s'\n"
-msgstr "algritmo débil de resumen desconocido '%s'\n"
+msgstr "algoritmo débil de resumen desconocido '%s'\n"
 
 #. Do not overwrite.
 #, c-format
@@ -5409,7 +5409,7 @@ msgstr "%s: error actualizando el registro de versión: %s\n"
 
 #, c-format
 msgid "%s: error reading version record: %s\n"
-msgstr "%s: error leyendo registro de versión: %s\n"
+msgstr "%s: error al leer registro de versión: %s\n"
 
 #, c-format
 msgid "%s: error writing version record: %s\n"
@@ -5437,7 +5437,7 @@ msgstr "%s: versión del fichero %d inválida\n"
 
 #, c-format
 msgid "%s: error reading free record: %s\n"
-msgstr "%s: error leyendo registro libre: %s\n"
+msgstr "%s: error al leer registro libre: %s\n"
 
 #, c-format
 msgid "%s: error writing dir record: %s\n"
@@ -5600,6 +5600,7 @@ msgid_plural "Encrypted %d messages in the future."
 msgstr[0] "Cifrado %d mensaje en el futuro."
 msgstr[1] "Cifrados %d mensajes en el futuro."
 
+# this string and the following ones are not easy to translate to spanish. is the string of the answer always meaning plural thins, or it can say 1week apart of 7weeks? if so, we in Spanish need to change the translation of 'last'...
 #, c-format
 msgid "Messages verified over the past %d day: %d."
 msgid_plural "Messages verified over the past %d days: %d."
@@ -6073,7 +6074,7 @@ msgstr "la respuesta no incluye la clave pública\n"
 
 #, c-format
 msgid "reading public key failed: %s\n"
-msgstr "fallo leyendo clave pública: %s\n"
+msgstr "fallo al leer clave pública: %s\n"
 
 #. TRANSLATORS: Put a \x1f right before a colon.  This can be
 #. * used by pinentry to nicely align the names and values.  Keep
@@ -6165,10 +6166,10 @@ msgid "||Please enter the PIN and New PIN"
 msgstr "||Por favor introduzca el PIN y el Nuevo PIN"
 
 msgid "error reading application data\n"
-msgstr "error leyendo datos de la aplicación\n"
+msgstr "error al leer datos de la aplicación\n"
 
 msgid "error reading fingerprint DO\n"
-msgstr "error leyendo huella digital DO\n"
+msgstr "error al leer huella digital DO\n"
 
 msgid "key already exists\n"
 msgstr "la clave ya existe\n"
@@ -6634,7 +6635,7 @@ msgstr "   (%d) Clave existente de la tarjeta\n"
 
 #, c-format
 msgid "error reading the card: %s\n"
-msgstr "error leyendo la tarjeta: %s\n"
+msgstr "error al leer la tarjeta: %s\n"
 
 #, c-format
 msgid "Serial number of the card: %s\n"
@@ -6911,7 +6912,7 @@ msgstr "error importando el certificado: %s\n"
 
 #, c-format
 msgid "error reading input: %s\n"
-msgstr "error leyendo entrada: %s\n"
+msgstr "error al leer la entrada: %s\n"
 
 msgid "failed to get the fingerprint\n"
 msgstr "fallo obteniendo huella digital\n"
@@ -7131,7 +7132,7 @@ msgstr "error al leer directorio '%s': %s\n"
 
 #, c-format
 msgid "removing cache file '%s'\n"
-msgstr "removiendo archivo de almacenamiento '%s'\n"
+msgstr "removiendo archivo de cache '%s'\n"
 
 #, c-format
 msgid "not removing file '%s'\n"
@@ -7139,41 +7140,41 @@ msgstr "no se remueve el archivo '%s'\n"
 
 #, c-format
 msgid "error closing cache file: %s\n"
-msgstr "error cerrando archivo de almacenamiento: %s\n"
+msgstr "error cerrando archivo de cache: %s\n"
 
 #, c-format
 msgid "failed to open cache dir file '%s': %s\n"
-msgstr "fallo al abrir archivo de directorio de almacenamiento '%s': %s\n"
+msgstr "fallo al abrir archivo de directorio de cache '%s': %s\n"
 
 #, c-format
 msgid "error creating new cache dir file '%s': %s\n"
-msgstr "error al crear nuevo archivo de almacenamiento '%s': %s\n"
+msgstr "error al crear nuevo archivo de cache '%s': %s\n"
 
 #, c-format
 msgid "error writing new cache dir file '%s': %s\n"
-msgstr "error al escribir nuevo archivo de almacenamiento '%s': %s\n"
+msgstr "error al escribir nuevo archivo de cache '%s': %s\n"
 
 #, c-format
 msgid "error closing new cache dir file '%s': %s\n"
-msgstr "error al cerrar nuevo archivo de almacenamiento '%s': %s\n"
+msgstr "error al cerrar nuevo archivo de cache '%s': %s\n"
 
 #, c-format
 msgid "new cache dir file '%s' created\n"
-msgstr "creado nuevo archivo de almacenamiento '%s'\n"
+msgstr "creado nuevo archivo de cache '%s'\n"
 
 #, c-format
 msgid "failed to re-open cache dir file '%s': %s\n"
-msgstr "no se puede reabrir el archivo de almacenamiento '%s': %s\n"
+msgstr "no se puede reabrir el archivo de cache '%s': %s\n"
 
 #, c-format
 msgid "first record of '%s' is not the version\n"
 msgstr "la primera entrada de '%s' no es la versión\n"
 
 msgid "old version of cache directory - cleaning up\n"
-msgstr "versión antigua del directorio de almacenamiento - limpiando\n"
+msgstr "versión antigua del directorio de cache - limpiando\n"
 
 msgid "old version of cache directory - giving up\n"
-msgstr "versión antigua del directorio de almacenamiento - me rindo\n"
+msgstr "versión antigua del directorio de cache - me rindo\n"
 
 #, c-format
 msgid "extra field detected in crl record of '%s' line %u\n"
@@ -7207,18 +7208,17 @@ msgstr "fecha no válida en '%s', línea %u\n"
 
 #, c-format
 msgid "WARNING: invalid cache file hash in '%s' line %u\n"
-msgstr ""
-"ADVERTENCIA: hash de archivo de almacenamiento no válida en '%s', línea %u\n"
+msgstr "ADVERTENCIA: hash de archivo de cache no válido en '%s', línea %u\n"
 
 msgid "detected errors in cache dir file\n"
-msgstr "errores detectados en el archivo de almacenamiento\n"
+msgstr "errores detectados en el archivo de cache\n"
 
 msgid "please check the reason and manually delete that file\n"
 msgstr "chequea el problema y borra este archivo manualmente\n"
 
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
-msgstr "no se puede crear el fichero de almacenamiento temporal '%s': %s\n"
+msgstr "no se puede crear el fichero de cache '%s': %s\n"
 
 #, c-format
 msgid "error closing '%s': %s\n"
@@ -7245,21 +7245,19 @@ msgid "invalid formatted checksum for '%s'\n"
 msgstr "formato inválido de huella digital para '%s'\n"
 
 msgid "too many open cache files; can't open anymore\n"
-msgstr ""
-"demasiados archivos de almacenamiento abiertos; ya no puedo abrir más\n"
+msgstr "demasiados archivos de cache abiertos; ya no puedo abrir más\n"
 
 #, c-format
 msgid "opening cache file '%s'\n"
-msgstr "abriendo archivo de almacenamiento '%s'\n"
+msgstr "abriendo archivo de cache '%s'\n"
 
 #, c-format
 msgid "error opening cache file '%s': %s\n"
-msgstr "error al abrir archivo de almacenamiento '%s': %s\n"
+msgstr "error al abrir archivo de cache '%s': %s\n"
 
 #, c-format
 msgid "error initializing cache file '%s' for reading: %s\n"
-msgstr ""
-"error al inicializar el archivo de almacenamiento '%s' para lectura: %s\n"
+msgstr "error al inicializar el archivo de cache '%s' para lectura: %s\n"
 
 msgid "calling unlock_db_file on a closed file\n"
 msgstr "llamando unlock_db_file para un archivo cerrado\n"
@@ -7269,7 +7267,7 @@ msgstr "llamando unlock_db_file para un archivo ya desbloqueado\n"
 
 #, c-format
 msgid "failed to create a new cache object: %s\n"
-msgstr "fallo al crear un nuevo objecto de almacenamiento: %s\n"
+msgstr "fallo al crear un nuevo objecto de cache: %s\n"
 
 #, c-format
 msgid "no CRL available for issuer id %s\n"
@@ -7308,11 +7306,11 @@ msgstr ""
 "toqueteado; necesitamos actualizar\n"
 
 msgid "WARNING: invalid cache record length for S/N "
-msgstr "ATENCIÓN: largo de entrada de almacenamiento no válido para S/N"
+msgstr "ATENCIÓN: largo de entrada de cache no válido para S/N "
 
 #, c-format
 msgid "problem reading cache record for S/N %s: %s\n"
-msgstr "problemas leyendo la entrada de cache para S/N %s: %s\n"
+msgstr "problemas al leer la entrada de cache para S/N %s: %s\n"
 
 #, c-format
 msgid "S/N %s is not valid; reason=%02X  date=%.15s\n"
@@ -7324,7 +7322,7 @@ msgstr "S/N %s es válido, no está listado en el CRL\n"
 
 #, c-format
 msgid "error getting data from cache file: %s\n"
-msgstr "error al obtener datos del archivo de almacenamiento: %s\n"
+msgstr "error al obtener datos del archivo de cache: %s\n"
 
 #, c-format
 msgid "unknown hash algorithm '%s'\n"
@@ -7393,17 +7391,15 @@ msgstr "ha fallado ksba_crl_set_reader: %s\n"
 
 #, c-format
 msgid "removed stale temporary cache file '%s'\n"
-msgstr "se ha removido el fichero temporal de almacenamiento en desuso '%s'\n"
+msgstr "se ha removido el fichero temporal de cache en desuso '%s'\n"
 
 #, c-format
 msgid "problem removing stale temporary cache file '%s': %s\n"
-msgstr ""
-"problema al remover el fichero temporal de almacenamiento en desuso '%s': "
-"%s\n"
+msgstr "problema al remover el fichero temporal de cache en desuso '%s': %s\n"
 
 #, c-format
 msgid "error creating temporary cache file '%s': %s\n"
-msgstr "error al crear fichero temporal de almacenamiento '%s': %s\n"
+msgstr "error al crear fichero temporal de cache '%s': %s\n"
 
 #, c-format
 msgid "crl_parse_insert failed: %s\n"
@@ -7411,11 +7407,11 @@ msgstr "ha fallado crl_parse_insert: %s\n"
 
 #, c-format
 msgid "error finishing temporary cache file '%s': %s\n"
-msgstr "error al finalizar fichero temporal de almacenamiento '%s': %s\n"
+msgstr "error al finalizar fichero temporal de cache '%s': %s\n"
 
 #, c-format
 msgid "error closing temporary cache file '%s': %s\n"
-msgstr "error al cerrar fichero temporal de almacenamiento '%s': %s\n"
+msgstr "error al cerrar fichero temporal de cache '%s': %s\n"
 
 #, c-format
 msgid "WARNING: new CRL still too old; it expired on %s - loading anyway\n"
@@ -7437,7 +7433,7 @@ msgstr "error al leer las extensiones CRL: %s\n"
 
 #, c-format
 msgid "creating cache file '%s'\n"
-msgstr "creando fichero de almacenamiento '%s'\n"
+msgstr "creando fichero de cache '%s'\n"
 
 #, c-format
 msgid "problem renaming '%s' to '%s': %s\n"
@@ -7447,8 +7443,8 @@ msgid ""
 "updating the DIR file failed - cache entry will get lost with the next "
 "program start\n"
 msgstr ""
-"ha fallado la actualización del archivo DIR - la entrada del almacenamiento "
-"local se perderá al reiniciar el programa\n"
+"ha fallado la actualización del archivo DIR - la entrada de cache se perderá "
+"al reiniciar el programa\n"
 
 #, c-format
 msgid "Begin CRL dump (retrieved via %s)\n"
@@ -7476,19 +7472,19 @@ msgstr ""
 " ERROR: ¡Puede que alguien haya manipulado este CRL almacenado en local!\n"
 
 msgid " WARNING: invalid cache record length\n"
-msgstr " ATENCIÓN: largo de entrada de almacenamiento no válido\n"
+msgstr " ATENCIÓN: el tamaño de la entrada de cache no es correcto\n"
 
 #, c-format
 msgid "problem reading cache record: %s\n"
-msgstr "error al leer entrada de almacenamiento: %s\n"
+msgstr "error al leer entrada de cache: %s\n"
 
 #, c-format
 msgid "problem reading cache key: %s\n"
-msgstr "problema al leer clave de almacenamiento: %s\n"
+msgstr "problema al leer clave de cache: %s\n"
 
 #, c-format
 msgid "error reading cache entry from db: %s\n"
-msgstr "error al leer entrada de almacenamiento de la base de datos: %s\n"
+msgstr "error al leer entrada de cache de la base de datos: %s\n"
 
 msgid "End CRL dump\n"
 msgstr "Terminar el dump de CRL\n"
@@ -7506,7 +7502,7 @@ msgid "crl_cache_insert via issuer failed: %s\n"
 msgstr "ha fallado crl_cache_insert via emisor: %s\n"
 
 msgid "reader to file mapping table full - waiting\n"
-msgstr ""
+msgstr "la tabla de mapeo lector a archivo está llena - esperando\n"
 
 msgid "using \"http\" instead of \"https\"\n"
 msgstr "usando \"http\" en lugar de \"https\"\n"
@@ -7552,7 +7548,7 @@ msgid "check whether a dirmngr is running"
 msgstr "verifica si hay un dirmngr corriendo"
 
 msgid "add a certificate to the cache"
-msgstr "añadir un certificado al almacenamiento local"
+msgstr "añadir un certificado a la cache"
 
 msgid "validate a certificate"
 msgstr "valida el certificado"
@@ -7652,10 +7648,10 @@ msgid "looking up '%s'\n"
 msgstr "buscando '%s'\n"
 
 msgid "list the contents of the CRL cache"
-msgstr "listar los contenidos del almacenamiento CRL"
+msgstr "listar los contenidos del cache CRL"
 
 msgid "|FILE|load CRL from FILE into cache"
-msgstr "|FILE|carga CRL de FILE al empezar"
+msgstr "|FILE|carga CRL de FILE en la cache"
 
 msgid "|URL|fetch a CRL from URL"
 msgstr "|URL|carga un CRL de una URL"
@@ -7664,7 +7660,7 @@ msgid "shutdown the dirmngr"
 msgstr "apaga el dirmngr"
 
 msgid "flush the cache"
-msgstr ""
+msgstr "descargar la memoria cache"
 
 msgid "|FILE|write server mode logs to FILE"
 msgstr "|FILE|escribir logs en modo servidor en FICHERO"
@@ -7983,7 +7979,7 @@ msgstr "el wrapper %d de ldap está parado - matándolo\n"
 
 #, c-format
 msgid "error spawning ldap wrapper reaper thread: %s\n"
-msgstr ""
+msgstr "error mientras desplegaba el hilo del ldap wrapper reaper: %s\n"
 
 #, c-format
 msgid "reading from ldap wrapper %d failed: %s\n"
@@ -7991,7 +7987,7 @@ msgstr "error al leer desde el wrapper %d de ldap: %s\n"
 
 #, c-format
 msgid "invalid char 0x%02x in host name - not added\n"
-msgstr ""
+msgstr "caracter incorrecto 0x%02x en el nombre de host - no añadido\n"
 
 #, c-format
 msgid "adding '%s:%d' to the ldap server list\n"
@@ -8003,10 +7999,10 @@ msgstr "ha fallado malloc: %s\n"
 
 #, c-format
 msgid "start_cert_fetch: invalid pattern '%s'\n"
-msgstr ""
+msgstr "start_cert_fetch: patrón '%s' incorrecto\n"
 
 msgid "ldap_search hit the size limit of the server\n"
-msgstr ""
+msgstr "ldap_search ha llegado al límite de tamaño del servidor\n"
 
 msgid "invalid canonical S-expression found\n"
 msgstr "se encontró S-expression canónica no válida\n"
@@ -8020,7 +8016,7 @@ msgid "oops: ksba_cert_hash failed: %s\n"
 msgstr "oops: ha fallado ksba_cert_hash: %s\n"
 
 msgid "bad URL encoding detected\n"
-msgstr ""
+msgstr "detectado mal encoding de la URL\n"
 
 #, c-format
 msgid "error reading from responder: %s\n"
@@ -8065,17 +8061,17 @@ msgstr "status del OCSP responder en '%s': %s\n"
 
 #, c-format
 msgid "hashing the OCSP response for '%s' failed: %s\n"
-msgstr ""
+msgstr "ha fallado el hashing de la respuesta OCSP para '%s': %s\n"
 
 msgid "not signed by a default OCSP signer's certificate"
-msgstr ""
+msgstr "no firmada por un certificado predeterminado de firma OCSP"
 
 msgid "only SHA-1 is supported for OCSP responses\n"
-msgstr ""
+msgstr "sólo SHA-1 es compatible para las respuestas OCSP\n"
 
 #, c-format
 msgid "allocating list item failed: %s\n"
-msgstr ""
+msgstr "fallo al colocar item en la lista: %s\n"
 
 #, c-format
 msgid "error getting responder ID: %s\n"
@@ -8091,10 +8087,10 @@ msgid "issuer certificate not found: %s\n"
 msgstr "no se encuentra el emisor de este certificado: %s\n"
 
 msgid "caller did not return the target certificate\n"
-msgstr ""
+msgstr "el caller no devolvió el certificado del target\n"
 
 msgid "caller did not return the issuing certificate\n"
-msgstr ""
+msgstr "el caller no devolvió el certificado emisor\n"
 
 #, c-format
 msgid "failed to allocate OCSP context: %s\n"
@@ -8102,10 +8098,10 @@ msgstr "fallo al asignar el contexto OCSP: %s\n"
 
 #, c-format
 msgid "can't get authorityInfoAccess: %s\n"
-msgstr ""
+msgstr "no se ha podido obtener authorityInfoAccess: %s\n"
 
 msgid "no default OCSP responder defined\n"
-msgstr ""
+msgstr "no hay un OCSP responder predeterminado\n"
 
 msgid "no default OCSP signer defined\n"
 msgstr "no hay ningún firmante OCSP predeterminado definido\n"
@@ -8120,7 +8116,7 @@ msgstr "usar OCSP responder '%s'\n"
 
 #, c-format
 msgid "failed to establish a hashing context for OCSP: %s\n"
-msgstr ""
+msgstr "fallo al establecer un contexto de hashing para OCSP: %s\n"
 
 #, c-format
 msgid "error getting OCSP status for target certificate: %s\n"
@@ -8138,68 +8134,67 @@ msgid "certificate has been revoked at: %s due to: %s\n"
 msgstr "el certificado ha sido revocado el: %s a causa de: %s\n"
 
 msgid "OCSP responder returned a status in the future\n"
-msgstr ""
+msgstr "el OCSP respondor ha devuelto un estado en el futuro\n"
 
 msgid "OCSP responder returned a non-current status\n"
-msgstr ""
+msgstr "el OCSP respondor ha devuelto un estado no actual\n"
 
 msgid "OCSP responder returned an too old status\n"
-msgstr ""
+msgstr "el OCSP respondor ha devuelto un estado demasiado antiguo\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "assuan_inquire(%s) failed: %s\n"
-msgstr "renombrar '%s' a '%s' falló: %s\n"
+msgstr "ha fallado assuan_inquire(%s): %s\n"
 
-#, fuzzy
 msgid "ldapserver missing"
-msgstr "falta el parámetro"
+msgstr "falta el ldapserver"
 
 msgid "serialno missing in cert ID"
-msgstr ""
+msgstr "falta el número de serie en el ID del certificado"
 
-#, fuzzy, c-format
+#, c-format
 msgid "assuan_inquire failed: %s\n"
-msgstr "ha fallado la búsqueda '%s': %s\n"
+msgstr "ha fallado assuan_inquire: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "fetch_cert_by_url failed: %s\n"
-msgstr "ha fallado crl_fetch via DP: %s\n"
+msgstr "ha fallado fetch_cert_by_url: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "error sending data: %s\n"
-msgstr "clave %s: error enviando al agente: %s\n"
+msgstr "error al enviar datos: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "start_cert_fetch failed: %s\n"
-msgstr "ha fallado crl_fetch via DP: %s\n"
+msgstr "ha fallado start_cert_fetch: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "fetch_next_cert failed: %s\n"
-msgstr "lectura fallida: %s\n"
+msgstr "ha fallado fetch_next_cert: %s\n"
 
 #, c-format
 msgid "max_replies %d exceeded\n"
-msgstr ""
+msgstr "se ha excedido el número de respuestas(max_replies) %d\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "can't allocate control structure: %s\n"
-msgstr "no puedo reservar espacio para la cadena de salida: %s\n"
+msgstr "no puedo colocar la estructura de control: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "failed to allocate assuan context: %s\n"
-msgstr "fallo al crear un flujo desde el socket: %s\n"
+msgstr "fallo al reservar el contexto assuan: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "failed to initialize the server: %s\n"
-msgstr "inicialización de la base de datos de confianza fallida: %s\n"
+msgstr "ha fallado la inicialización del servidor: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "failed to the register commands with Assuan: %s\n"
-msgstr "fallo guardando la fecha de creación: %s\n"
+msgstr "fallo en las órdenes de registro con Assuan: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Assuan accept problem: %s\n"
-msgstr "problema al renombrar '%s' a '%s': %s\n"
+msgstr "problema de aceptación Assuan: %s\n"
 
 #, c-format
 msgid "Assuan processing failed: %s\n"
@@ -8406,7 +8401,7 @@ msgid "Private Keys"
 msgstr "Claves privados"
 
 msgid "Smartcards"
-msgstr ""
+msgstr "Smartcards"
 
 msgid "S/MIME"
 msgstr "S/MIME"
@@ -8475,7 +8470,7 @@ msgid "check global configuration file"
 msgstr "comprobar fichero global de configuración"
 
 msgid "query the software version database"
-msgstr ""
+msgstr "consulta la base de datos de versiones de software"
 
 msgid "reload all or a given component"
 msgstr "listar todos los componentes, o uno en particular"
@@ -8576,7 +8571,7 @@ msgstr "error escribiendo en %s: %s\n"
 
 #, c-format
 msgid "error reading from %s: %s\n"
-msgstr "error leyendo de %s: %s\n"
+msgstr "error al leer de %s: %s\n"
 
 #, c-format
 msgid "error closing %s: %s\n"
