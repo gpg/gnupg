@@ -125,6 +125,9 @@
    idea anyway to limit the number of opened cache files. */
 #define MAX_OPEN_DB_FILES 5
 
+#ifndef O_BINARY
+# define O_BINARY 0
+#endif
 
 static const char oidstr_crlNumber[] = "2.5.29.20";
 /* static const char oidstr_issuingDistributionPoint[] = "2.5.29.28"; */
@@ -1139,7 +1142,7 @@ lock_db_file (crl_cache_t cache, crl_cache_entry_t entry)
       xfree (fname);
       return NULL;
     }
-  fd = open (fname, O_RDONLY);
+  fd = open (fname, O_RDONLY | O_BINARY);
   if (fd == -1)
     {
       log_error (_("error opening cache file '%s': %s\n"),
@@ -2051,7 +2054,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
       }
   }
 
-  fd_cdb = open (fname, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+  fd_cdb = open (fname, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
   if (fd_cdb == -1)
     {
       err = gpg_error_from_errno (errno);
