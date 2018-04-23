@@ -346,7 +346,7 @@ msgstr ""
 
 #, fuzzy
 msgid "|FILE|read options from FILE"
-msgstr "|FILE|lataa laajennusmoduuli TIEDOSTO"
+msgstr "|TIEDOSTO|lataa laajennusmoduuli TIEDOSTO"
 
 msgid "do not detach from the console"
 msgstr ""
@@ -368,7 +368,7 @@ msgstr "päivitä luottamustietokanta"
 #, fuzzy
 #| msgid "|NAME|set terminal charset to NAME"
 msgid "|NAME|accept some commands via NAME"
-msgstr "|NAME|aseta päätteen merkistöksi NIMI"
+msgstr "|NIMI|aseta päätteen merkistöksi NIMI"
 
 msgid "ignore requests to change the TTY"
 msgstr ""
@@ -1914,12 +1914,12 @@ msgstr "salaista avainta \"%s\" ei löydy: %s\n"
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
 msgid "Warning: not using '%s' as default key: %s\n"
-msgstr "|NAME|käytä oletusarvoisesti salaista avainta NIMI"
+msgstr "|NIMI|käytä oletusarvoisesti salaista avainta NIMI"
 
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
 msgid "using \"%s\" as default secret key for signing\n"
-msgstr "|NAME|käytä oletusarvoisesti salaista avainta NIMI"
+msgstr "|NIMI|käytä oletusarvoisesti salaista avainta NIMI"
 
 #, c-format
 msgid "all values passed to '%s' ignored\n"
@@ -2081,7 +2081,7 @@ msgstr "tuota ascii-koodattu tuloste"
 
 #, fuzzy
 msgid "|USER-ID|encrypt for USER-ID"
-msgstr "|USER-ID|salaa vastaanottajalle NIMI"
+msgstr "|NIMI|salaa vastaanottajalle NIMI"
 
 #, fuzzy
 msgid "|USER-ID|use USER-ID to sign or decrypt"
@@ -2096,7 +2096,7 @@ msgstr "käytä tekstimuotoa"
 
 #, fuzzy
 msgid "|FILE|write output to FILE"
-msgstr "|FILE|lataa laajennusmoduuli TIEDOSTO"
+msgstr "|TIEDOSTO|lataa laajennusmoduuli TIEDOSTO"
 
 msgid "do not make any changes"
 msgstr "älä tee muutoksia"
@@ -6534,18 +6534,18 @@ msgstr ""
 
 #, fuzzy
 msgid "|FILE|write a log to FILE"
-msgstr "|FILE|lataa laajennusmoduuli TIEDOSTO"
+msgstr "|TIEDOSTO|lataa laajennusmoduuli TIEDOSTO"
 
 msgid "|N|connect to reader at port N"
 msgstr ""
 
 #, fuzzy
 msgid "|NAME|use NAME as ct-API driver"
-msgstr "|NAME|käytä NIMI oletusvastaanottajana"
+msgstr "|NIMI|käytä NIMI oletusvastaanottajana"
 
 #, fuzzy
 msgid "|NAME|use NAME as PC/SC driver"
-msgstr "|NAME|käytä NIMI oletusvastaanottajana"
+msgstr "|NIMI|käytä NIMI oletusvastaanottajana"
 
 #, fuzzy
 msgid "do not use the internal CCID driver"
@@ -7121,7 +7121,7 @@ msgstr ""
 
 #, fuzzy
 msgid "|FILE|write an audit log to FILE"
-msgstr "|FILE|lataa laajennusmoduuli TIEDOSTO"
+msgstr "|TIEDOSTO|lataa laajennusmoduuli TIEDOSTO"
 
 msgid "batch mode: never ask"
 msgstr "eräajo: älä kysy mitään"
@@ -7138,17 +7138,17 @@ msgstr "lisää tämä avainrengas avainrenkaiden luetteloon"
 
 #, fuzzy
 msgid "|USER-ID|use USER-ID as default secret key"
-msgstr "|USER-ID|käytä oletusarvoisesti salaista avainta NIMI"
+msgstr "|NIMI|käytä oletusarvoisesti salaista avainta NIMI"
 
 #, fuzzy
 msgid "|SPEC|use this keyserver to lookup keys"
-msgstr "|SPEC|käytä tätä palvelinta avainten etsimiseen"
+msgstr "|PALVELIN|käytä tätä palvelinta avainten etsimiseen"
 
 msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NAME|käytä salausalgoritmia NIMI"
+msgstr "|NIMI|käytä salausalgoritmia NIMI"
 
 msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NAME|käytä viestintiivistealgoritmia NIMI"
+msgstr "|NIMI|käytä viestintiivistealgoritmia NIMI"
 
 #, fuzzy
 #| msgid "Usage: gpg [options] [files] (-h for help)"
@@ -7964,7 +7964,7 @@ msgstr ""
 
 #, fuzzy
 msgid "|FILE|load CRL from FILE into cache"
-msgstr "|FILE|lataa laajennusmoduuli TIEDOSTO"
+msgstr "|TIEDOSTO|lataa laajennusmoduuli TIEDOSTO"
 
 msgid "|URL|fetch a CRL from URL"
 msgstr ""
@@ -8017,7 +8017,7 @@ msgstr ""
 
 #, fuzzy
 msgid "|FILE|read LDAP server list from FILE"
-msgstr "|FILE|lataa laajennusmoduuli TIEDOSTO"
+msgstr "|TIEDOSTO|lataa laajennusmoduuli TIEDOSTO"
 
 msgid "add new servers discovered in CRL distribution points to serverlist"
 msgstr ""
@@ -8133,7 +8133,7 @@ msgstr ""
 #, fuzzy
 #| msgid "|NAME|set terminal charset to NAME"
 msgid "|NAME|connect to host NAME"
-msgstr "|NAME|aseta päätteen merkistöksi NIMI"
+msgstr "|NIMI|aseta päätteen merkistöksi NIMI"
 
 msgid "|N|connect to port N"
 msgstr ""
@@ -8141,7 +8141,7 @@ msgstr ""
 #, fuzzy
 #| msgid "|NAME|use NAME as default recipient"
 msgid "|NAME|use user NAME for authentication"
-msgstr "|NAME|käytä NIMI oletusvastaanottajana"
+msgstr "|NIMI|käytä NIMI oletusvastaanottajana"
 
 msgid "|PASS|use password PASS for authentication"
 msgstr ""
@@ -8589,7 +8589,7 @@ msgstr ""
 
 #, fuzzy
 msgid "|FILE|run commands from FILE on startup"
-msgstr "|FILE|lataa laajennusmoduuli TIEDOSTO"
+msgstr "|TIEDOSTO|lataa laajennusmoduuli TIEDOSTO"
 
 msgid "run /subst on startup"
 msgstr ""
@@ -8682,11 +8682,11 @@ msgid "|N|set the Pinentry timeout to N seconds"
 msgstr ""
 
 msgid "|NAME|use NAME as default secret key"
-msgstr "|NAME|käytä oletusarvoisesti salaista avainta NIMI"
+msgstr "|NIMI|käytä oletusarvoisesti salaista avainta NIMI"
 
 #, fuzzy
 msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|NAME|salaa vastaanottajalle NIMI"
+msgstr "|NIMI|salaa vastaanottajalle NIMI"
 
 msgid "|SPEC|set up email aliases"
 msgstr ""
@@ -8709,7 +8709,7 @@ msgstr ""
 
 #, fuzzy
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr "|NAME|käytä salasanoihin salausalgoritmia NIMI"
+msgstr "|NIMI|käytä salasanoihin salausalgoritmia NIMI"
 
 msgid "do not check CRLs for root certificates"
 msgstr ""
@@ -9649,7 +9649,7 @@ msgstr ""
 #~ msgstr "lisää tämä salainen avainrengas luetteloon"
 
 #~ msgid "|FILE|load extension module FILE"
-#~ msgstr "|FILE|lataa laajennusmoduuli TIEDOSTO"
+#~ msgstr "|TIEDOSTO|lataa laajennusmoduuli TIEDOSTO"
 
 #~ msgid "|N|use compress algorithm N"
 #~ msgstr "|N|käytä pakkausalgoritmia N"
@@ -10664,7 +10664,7 @@ msgstr ""
 #~ "aseta kaikki paketti-, salain- ja tiivistevaihtoehdot PGP 2.x -muotoon"
 
 #~ msgid "|NAME|use message digest algorithm NAME for passphrases"
-#~ msgstr "|NAME|käytä salasanoihin viestintiivistealgoritmia NIMI"
+#~ msgstr "|NIMI|käytä salasanoihin viestintiivistealgoritmia NIMI"
 
 #~ msgid "throw keyid field of encrypted packets"
 #~ msgstr "jätä avaintunnistekenttä pois salatuista paketeista"
