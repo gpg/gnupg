@@ -3263,8 +3263,14 @@ print the public key data.
 Same as @option{--list-keys}, but the signatures are listed too.  This
 command has the same effect as using @option{--list-keys} with
 @option{--with-sig-list}.  Note that in contrast to
-@option{--check-signatures} the key signatures are not verified.
+@option{--check-signatures} the key signatures are not verified.  This
+command can be used to create a list of signing keys missing in the
+lcoal keyring; for example:
 
+@example
+      gpg --list-sigs --with-colons USERID | \
+        awk -F: '$1=="sig" && $2=="?" @{if($13)@{print $13@}else@{print $5@}@}'
+@end example
 
 @item --fast-list-mode
 @opindex fast-list-mode
