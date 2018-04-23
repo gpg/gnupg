@@ -357,7 +357,7 @@ msgid "csh-style command output"
 msgstr "wyjście poleceń w stylu csh"
 
 msgid "|FILE|read options from FILE"
-msgstr "|FILE|odczyt opcji z PLIKU"
+msgstr "|PLIK|odczyt opcji z PLIKU"
 
 msgid "do not detach from the console"
 msgstr "nie odczepianie od konsoli"
@@ -377,7 +377,7 @@ msgstr "nie używanie SCdaemona"
 #, fuzzy
 #| msgid "|NAME|connect to Assuan socket NAME"
 msgid "|NAME|accept some commands via NAME"
-msgstr "|NAME|połączenie z gniazdem Assuan o tej nazwie"
+msgstr "|NAZWA|połączenie z gniazdem Assuan o tej nazwie"
 
 msgid "ignore requests to change the TTY"
 msgstr "ignorowanie żądań zmiany TTY"
@@ -1926,12 +1926,12 @@ msgstr "klucz prywatny ,,%s'' nie został odnaleziony: %s\n"
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
 msgid "Warning: not using '%s' as default key: %s\n"
-msgstr "|NAME|użycie NAZWY jako domyślnego klucza tajnego"
+msgstr "|NAZWA|użycie NAZWY jako domyślnego klucza tajnego"
 
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
 msgid "using \"%s\" as default secret key for signing\n"
-msgstr "|NAME|użycie NAZWY jako domyślnego klucza tajnego"
+msgstr "|NAZWA|użycie NAZWY jako domyślnego klucza tajnego"
 
 #, c-format
 msgid "all values passed to '%s' ignored\n"
@@ -2101,7 +2101,7 @@ msgid "use canonical text mode"
 msgstr "kanoniczny format tekstowy"
 
 msgid "|FILE|write output to FILE"
-msgstr "|FILE|zapis wyjścia do PLIKU"
+msgstr "|PLIK|zapis wyjścia do PLIKU"
 
 msgid "do not make any changes"
 msgstr "pozostawienie bez zmian"
@@ -2632,7 +2632,7 @@ msgid "the given preferred keyserver URL is invalid\n"
 msgstr "podany preferowany URL serwera kluczy jest niepoprawny\n"
 
 msgid "|FILE|take the keys from the keyring FILE"
-msgstr "|FILE|pobieranie kluczy ze zbioru PLIK"
+msgstr "|PLIK|pobieranie kluczy ze zbioru PLIK"
 
 msgid "make timestamp conflicts only a warning"
 msgstr "nie traktować konfliktu datowników jako błędu"
@@ -6659,19 +6659,19 @@ msgid "run in multi server mode (foreground)"
 msgstr "uruchomienie w trybie serwera (pierwszoplanowo)"
 
 msgid "|LEVEL|set the debugging level to LEVEL"
-msgstr "|LEVEL|ustawienie POZIOMU diagnostyki"
+msgstr "|POZIOM|ustawienie POZIOMU diagnostyki"
 
 msgid "|FILE|write a log to FILE"
-msgstr "|FILE|zapisanie logów do PLIKu"
+msgstr "|PLIK|zapisanie logów do PLIKu"
 
 msgid "|N|connect to reader at port N"
 msgstr "|N|połączenie z czytnikiem na porcie N"
 
 msgid "|NAME|use NAME as ct-API driver"
-msgstr "|NAME|użycie NAZWY jako sterownika ct-API"
+msgstr "|NAZWA|użycie NAZWY jako sterownika ct-API"
 
 msgid "|NAME|use NAME as PC/SC driver"
-msgstr "|NAME|użycie NAZWY jako sterownika PC/SC"
+msgstr "|NAZWA|użycie NAZWY jako sterownika PC/SC"
 
 msgid "do not use the internal CCID driver"
 msgstr "nie używanie wewnętrznego sterownika CCID"
@@ -7235,7 +7235,7 @@ msgid "|N|number of certificates to include"
 msgstr "|N|liczba certyfikatów do dołączenia"
 
 msgid "|FILE|take policy information from FILE"
-msgstr "|FILE|pobranie informacji o polityce z PLIKU"
+msgstr "|PLIK|pobranie informacji o polityce z PLIKU"
 
 msgid "do not check certificate policies"
 msgstr "nie sprawdzanie polityk certyfikatów"
@@ -7247,10 +7247,10 @@ msgid "don't use the terminal at all"
 msgstr "nie używanie w ogóle terminala"
 
 msgid "|FILE|write a server mode log to FILE"
-msgstr "|FILE|zapisanie logów trybu serwerowego do PLIKU"
+msgstr "|PLIK|zapisanie logów trybu serwerowego do PLIKU"
 
 msgid "|FILE|write an audit log to FILE"
-msgstr "|FILE|zapisanie logów audytowych do PLIKU"
+msgstr "|PLIK|zapisanie logów audytowych do PLIKU"
 
 msgid "batch mode: never ask"
 msgstr "tryb wsadowy: bez żadnych pytań"
@@ -7262,19 +7262,19 @@ msgid "assume no on most questions"
 msgstr "przyjęcie odpowiedzi ,,nie'' na większość pytań"
 
 msgid "|FILE|add keyring to the list of keyrings"
-msgstr "|FILE|dodanie tego zbioru kluczy do listy zbiorów kluczy"
+msgstr "|PLIK|dodanie tego zbioru kluczy do listy zbiorów kluczy"
 
 msgid "|USER-ID|use USER-ID as default secret key"
-msgstr "|USER-ID|użycie tego identyfikatora jako domyślnego klucza tajnego"
+msgstr "|UŻYTKOWNIK|użycie tego identyfikatora jako domyślnego klucza tajnego"
 
 msgid "|SPEC|use this keyserver to lookup keys"
 msgstr "|SPEC|użycie tego serwera do wyszukiwania kluczy"
 
 msgid "|NAME|use cipher algorithm NAME"
-msgstr "|NAME|użycie tego algorytmu szyfrowania NAZWA"
+msgstr "|NAZWA|użycie tego algorytmu szyfrowania NAZWA"
 
 msgid "|NAME|use message digest algorithm NAME"
-msgstr "|NAME|użycie tego algorytmu skrótu wiadomości"
+msgstr "|NAZWA|użycie tego algorytmu skrótu wiadomości"
 
 #, fuzzy
 #| msgid "Usage: gpg [options] [files] (-h for help)"
@@ -8187,7 +8187,7 @@ msgstr ""
 #, fuzzy
 #| msgid "|FILE|run commands from FILE on startup"
 msgid "|FILE|load CRL from FILE into cache"
-msgstr "|FILE|uruchomienie poleceń z PLIKU przy starcie"
+msgstr "|PLIK|uruchomienie poleceń z PLIKU przy starcie"
 
 msgid "|URL|fetch a CRL from URL"
 msgstr ""
@@ -8201,7 +8201,7 @@ msgid "flush the cache"
 msgstr ""
 
 msgid "|FILE|write server mode logs to FILE"
-msgstr "|FILE|zapisanie logów trybu serwerowego do PLIKu"
+msgstr "|PLIK|zapisanie logów trybu serwerowego do PLIKu"
 
 #, fuzzy
 #| msgid "Quit without saving? (y/N) "
@@ -8246,7 +8246,7 @@ msgstr ""
 #, fuzzy
 #| msgid "|FILE|read options from FILE"
 msgid "|FILE|read LDAP server list from FILE"
-msgstr "|FILE|odczyt opcji z PLIKU"
+msgstr "|PLIK|odczyt opcji z PLIKU"
 
 msgid "add new servers discovered in CRL distribution points to serverlist"
 msgstr ""
@@ -8380,7 +8380,7 @@ msgstr ""
 #, fuzzy
 #| msgid "|NAME|connect to Assuan socket NAME"
 msgid "|NAME|connect to host NAME"
-msgstr "|NAME|połączenie z gniazdem Assuan o tej nazwie"
+msgstr "|NAZWA|połączenie z gniazdem Assuan o tej nazwie"
 
 #, fuzzy
 #| msgid "|N|connect to reader at port N"
@@ -8882,12 +8882,12 @@ msgid "connect to the dirmngr"
 msgstr "przekazanie polecenia do dirmngr"
 
 msgid "|NAME|connect to Assuan socket NAME"
-msgstr "|NAME|połączenie z gniazdem Assuan o tej nazwie"
+msgstr "|NAZWA|połączenie z gniazdem Assuan o tej nazwie"
 
 #, fuzzy
 #| msgid "|NAME|connect to Assuan socket NAME"
 msgid "|ADDR|connect to Assuan server at ADDR"
-msgstr "|ADDR|połączenie z gniazdem Assuan o tej nazwie"
+msgstr "|NAZWA|połączenie z gniazdem Assuan o tej nazwie"
 
 msgid "run the Assuan server given on the command line"
 msgstr "uruchomienie serwera Assuan podanego z linii poleceń"
@@ -8896,7 +8896,7 @@ msgid "do not use extended connect mode"
 msgstr "nie używanie rozszerzonego trybu połączenia"
 
 msgid "|FILE|run commands from FILE on startup"
-msgstr "|FILE|uruchomienie poleceń z PLIKU przy starcie"
+msgstr "|PLIK|uruchomienie poleceń z PLIKU przy starcie"
 
 msgid "run /subst on startup"
 msgstr "uruchomienie /subst przy starcie"
@@ -8983,7 +8983,7 @@ msgid "|N|require at least N non-alpha characters for a new passphrase"
 msgstr "|N|wymaganie przynajmniej N znaków niealfanumerycznych w nowym haśle"
 
 msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr "|FILE|sprawdzanie nowych haseł pod kątem wzorców z PLIKU"
+msgstr "|PLIK|sprawdzanie nowych haseł pod kątem wzorców z PLIKU"
 
 msgid "|N|expire the passphrase after N days"
 msgstr "|N|przedawnianie haseł po N dniach"
@@ -8998,10 +8998,10 @@ msgstr ""
 "|N|ustawienie maksymalnego czasu życia pamięci podręcznej PIN-ów na N sekund"
 
 msgid "|NAME|use NAME as default secret key"
-msgstr "|NAME|użycie NAZWY jako domyślnego klucza tajnego"
+msgstr "|NAZWA|użycie NAZWY jako domyślnego klucza tajnego"
 
 msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|NAME|szyfrowanie także dla odbiorcy NAZWA"
+msgstr "|NAZWA|szyfrowanie także dla odbiorcy NAZWA"
 
 msgid "|SPEC|set up email aliases"
 msgstr "|SPEC|określ adres email"
@@ -9017,14 +9017,14 @@ msgstr "zezwolenie na wyszukiwania PKA (żądania DNS)"
 
 msgid "|MECHANISMS|use MECHANISMS to locate keys by mail address"
 msgstr ""
-"|MECHANISMS|wykorzystaj MECHANIZMY do wyszukiwania kluczy na podstawie "
+"|MECHANIZMY|wykorzystaj MECHANIZMY do wyszukiwania kluczy na podstawie "
 "adresów e-mail"
 
 msgid "disable all access to the dirmngr"
 msgstr "zablokuj dostęp do dirmngr"
 
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr "|NAME|użycie kodowania NAZWA dla haseł PKCS#12"
+msgstr "|NAZWA|użycie kodowania NAZWA dla haseł PKCS#12"
 
 msgid "do not check CRLs for root certificates"
 msgstr "nie sprawdzanie CRL dla głównych certyfikatów"
@@ -9104,13 +9104,13 @@ msgid "check all programs"
 msgstr "sprawdzenie wszystkich programów"
 
 msgid "|COMPONENT|list options"
-msgstr "|COMPONENT|wypisanie opcji"
+msgstr "|KOMPONENT|wypisanie opcji"
 
 msgid "|COMPONENT|change options"
-msgstr "|COMPONENT|zmiana opcji"
+msgstr "|KOMPONENT|zmiana opcji"
 
 msgid "|COMPONENT|check options"
-msgstr "|COMPONENT|zaznaczenie opcji"
+msgstr "|KOMPONENT|zaznaczenie opcji"
 
 msgid "apply global default values"
 msgstr "zastosowanie globalnych wartości domyślnych"
@@ -9118,7 +9118,7 @@ msgstr "zastosowanie globalnych wartości domyślnych"
 #, fuzzy
 #| msgid "|FILE|take policy information from FILE"
 msgid "|FILE|update configuration files using FILE"
-msgstr "|FILE|pobranie informacji o polityce z PLIKU"
+msgstr "|PLIK|pobranie informacji o polityce z PLIKU"
 
 #, fuzzy
 #| msgid "get the configuration directories for gpgconf"
@@ -9696,7 +9696,7 @@ msgstr ""
 #~ msgstr "użycie standardowego położenia gniazda"
 
 #~ msgid "|FILE|write environment settings also to FILE"
-#~ msgstr "|FILE|zapis ustawień środowiska także do PLIKU"
+#~ msgstr "|PLIK|zapis ustawień środowiska także do PLIKU"
 
 #~ msgid "Usage: gpg-agent [options] (-h for help)"
 #~ msgstr "Wywołanie: gpg-agent [opcje] (-h podaje pomoc)"
