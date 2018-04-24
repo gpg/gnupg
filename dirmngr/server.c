@@ -1105,7 +1105,7 @@ cmd_ldapserver (assuan_context_t ctx, char *line)
 
 static const char hlp_isvalid[] =
   "ISVALID [--only-ocsp] [--force-default-responder]"
-  " <certificate_id>|<certificate_fpr>\n"
+  " <certificate_id> [<certificate_fpr>]\n"
   "\n"
   "This command checks whether the certificate identified by the\n"
   "certificate_id is valid.  This is done by consulting CRLs or\n"
@@ -1117,8 +1117,9 @@ static const char hlp_isvalid[] =
   "delimited by a single dot.  The first part is the SHA-1 hash of the\n"
   "issuer name and the second part the serial number.\n"
   "\n"
-  "Alternatively the certificate's fingerprint may be given in which\n"
-  "case an OCSP request is done before consulting the CRL.\n"
+  "If an OCSP check is desired CERTIFICATE_FPR with the hex encoded\n"
+  "fingerprint of the certificate is required.  In this case an OCSP\n"
+  "request is done before consulting the CRL.\n"
   "\n"
   "If the option --only-ocsp is given, no fallback to a CRL check will\n"
   "be used.\n"
@@ -1130,7 +1131,7 @@ static gpg_error_t
 cmd_isvalid (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  char *issuerhash, *serialno;
+  char *issuerhash, *serialno, *fpr;
   gpg_error_t err;
   int did_inquire = 0;
   int ocsp_mode = 0;
@@ -1141,25 +1142,36 @@ cmd_isvalid (assuan_context_t ctx, char *line)
   force_default_responder = has_option (line, "--force-default-responder");
   line = skip_options (line);
 
-  issuerhash = xstrdup (line); /* We need to work on a copy of the
-                                  line because that same Assuan
-                                  context may be used for an inquiry.
-                                  That is because Assuan reuses its
-                                  line buffer.
-                                   */
+  /* We need to work on a copy of the line because that same Assuan
+   * context may be used for an inquiry.  That is because Assuan
+   * reuses its line buffer.  */
+  issuerhash = xstrdup (line);
 
   serialno = strchr (issuerhash, '.');
-  if (serialno)
-    *serialno++ = 0;
-  else
+  if (!serialno)
     {
-      char *endp = strchr (issuerhash, ' ');
+      xfree (issuerhash);
+      return leave_cmd (ctx, PARM_ERROR (_("serialno missing in cert ID")));
+    }
+  *serialno++ = 0;
+  if (strlen (issuerhash) != 40)
+    {
+      xfree (issuerhash);
+      return leave_cmd (ctx, PARM_ERROR ("cert ID is too short"));
+    }
+
+  fpr = strchr (serialno, ' ');
+  while (fpr && spacep (fpr))
+    fpr++;
+  if (fpr && *fpr)
+    {
+      char *endp = strchr (fpr, ' ');
       if (endp)
         *endp = 0;
-      if (strlen (issuerhash) != 40)
+      if (strlen (fpr) != 40)
         {
           xfree (issuerhash);
-          return leave_cmd (ctx, PARM_ERROR (_("serialno missing in cert ID")));
+          return leave_cmd (ctx, PARM_ERROR ("fingerprint too short"));
         }
       ocsp_mode = 1;
     }
@@ -1168,17 +1180,24 @@ cmd_isvalid (assuan_context_t ctx, char *line)
  again:
   if (ocsp_mode)
     {
-      /* Note, that we ignore the given issuer hash and instead rely
-         on the current certificate semantics used with this
-         command. */
+      /* Note, that we currently ignore the supplied fingerprint FPR;
+       * instead ocsp_isvalid does an inquire to ask for the cert.
+       * The fingerprint may eventually be used to lookup the
+       * certificate in a local cache.  */
       if (!opt.allow_ocsp)
         err = gpg_error (GPG_ERR_NOT_SUPPORTED);
       else
         err = ocsp_isvalid (ctrl, NULL, NULL, force_default_responder);
-      /* Fixme: If we got no ocsp response and --only-ocsp is not used
-         we should fall back to CRL mode.  Thus we need to clear
-         OCSP_MODE, get the issuerhash and the serialno from the
-         current certificate and jump to again. */
+
+      if (gpg_err_code (err) == GPG_ERR_CONFIGURATION
+          && gpg_err_source (err) == GPG_ERR_SOURCE_DIRMNGR)
+        {
+          /* No default responder configured - fallback to CRL.  */
+          if (!only_ocsp)
+            log_info ("falling back to CRL check\n");
+          ocsp_mode = 0;
+          goto again;
+        }
     }
   else if (only_ocsp)
     err = gpg_error (GPG_ERR_NO_CRL_KNOWN);

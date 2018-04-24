@@ -491,8 +491,8 @@ isvalid_status_cb (void *opaque, const char *line)
 
   Values for USE_OCSP:
      0 = Do CRL check.
-     1 = Do an OCSP check.
-     2 = Do an OCSP check using only the default responder.
+     1 = Do an OCSP check but fallback to CRL unless CRLS are disabled.
+     2 = Do only an OCSP check using only the default responder.
  */
 int
 gpgsm_dirmngr_isvalid (ctrl_t ctrl,
@@ -500,7 +500,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
 {
   static int did_options;
   int rc;
-  char *certid;
+  char *certid, *certfpr;
   char line[ASSUAN_LINELENGTH];
   struct inq_certificate_parm_s parm;
   struct isvalid_status_parm_s stparm;
@@ -509,19 +509,13 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
   if (rc)
     return rc;
 
-  if (use_ocsp)
+  certfpr = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
+  certid = gpgsm_get_certid (cert);
+  if (!certid)
     {
-      certid = gpgsm_get_fingerprint_hexstring (cert, GCRY_MD_SHA1);
-    }
-  else
-    {
-      certid = gpgsm_get_certid (cert);
-      if (!certid)
-        {
-          log_error ("error getting the certificate ID\n");
-	  release_dirmngr (ctrl);
-          return gpg_error (GPG_ERR_GENERAL);
-        }
+      log_error ("error getting the certificate ID\n");
+      release_dirmngr (ctrl);
+      return gpg_error (GPG_ERR_GENERAL);
     }
 
   if (opt.verbose > 1)
@@ -541,13 +535,8 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
   stparm.seen = 0;
   memset (stparm.fpr, 0, 20);
 
-  /* FIXME: If --disable-crl-checks has been set, we should pass an
-     option to dirmngr, so that no fallback CRL check is done after an
-     ocsp check.  It is not a problem right now as dirmngr does not
-     fallback to CRL checking.  */
-
   /* It is sufficient to send the options only once because we have
-     one connection per process only. */
+   * one connection per process only.  */
   if (!did_options)
     {
       if (opt.force_crl_refresh)
@@ -555,10 +544,14 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                          NULL, NULL, NULL, NULL, NULL, NULL);
       did_options = 1;
     }
-  snprintf (line, DIM(line), "ISVALID%s %s",
-            use_ocsp == 2? " --only-ocsp --force-default-responder":"",
-            certid);
+  snprintf (line, DIM(line), "ISVALID%s%s %s%s%s",
+            use_ocsp == 2 || opt.no_crl_check ? " --only-ocsp":"",
+            use_ocsp == 2? " --force-default-responder":"",
+            certid,
+            use_ocsp? " ":"",
+            use_ocsp? certfpr:"");
   xfree (certid);
+  xfree (certfpr);
 
   rc = assuan_transact (dirmngr_ctx, line, NULL, NULL,
                         inq_certificate, &parm,
