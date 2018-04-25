@@ -257,7 +257,8 @@ ks_action_get (ctrl_t ctrl, uri_item_t keyservers,
               if (is_hkp_s)
                 err = ks_hkp_get (ctrl, uri->parsed_uri, sl->d, &infp);
               else if (is_http_s)
-                err = ks_http_fetch (ctrl, uri->parsed_uri->original, 1, 0,
+                err = ks_http_fetch (ctrl, uri->parsed_uri->original,
+                                     KS_HTTP_FETCH_NOCACHE,
                                      &infp);
               else
                 BUG ();
@@ -315,7 +316,7 @@ ks_action_fetch (ctrl_t ctrl, const char *url, estream_t outfp)
 
   if (parsed_uri->is_http)
     {
-      err = ks_http_fetch (ctrl, url, 1, 0, &infp);
+      err = ks_http_fetch (ctrl, url, KS_HTTP_FETCH_NOCACHE, &infp);
       if (!err)
         {
           err = copy_stream (infp, outfp);

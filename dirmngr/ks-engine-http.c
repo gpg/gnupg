@@ -67,11 +67,12 @@ ks_http_help (ctrl_t ctrl, parsed_uri_t uri)
  * data via https or http.
  */
 gpg_error_t
-ks_http_fetch (ctrl_t ctrl, const char *url, int send_no_cache,
-               unsigned int extra_http_trust_flags, estream_t *r_fp)
+ks_http_fetch (ctrl_t ctrl, const char *url, unsigned int flags,
+               estream_t *r_fp)
 {
   gpg_error_t err;
   http_session_t session = NULL;
+  unsigned int session_flags;
   http_t http = NULL;
   int redirects_left = MAX_REDIRECTS;
   estream_t fp = NULL;
@@ -85,14 +86,16 @@ ks_http_fetch (ctrl_t ctrl, const char *url, int send_no_cache,
   is_onion = uri->onion;
   is_https = uri->use_tls;
 
- once_more:
   /* By default we only use the system provided certificates with this
-   * fetch command.  However, EXTRA_HTTP_FLAGS can be used to add more
-   * flags. */
-  err = http_session_new (&session, NULL,
-                          ((ctrl->http_no_crl? HTTP_FLAG_NO_CRL : 0)
-                           | HTTP_FLAG_TRUST_SYS
-                           | extra_http_trust_flags),
+   * fetch command.  */
+  session_flags = HTTP_FLAG_TRUST_SYS;
+  if ((flags & KS_HTTP_FETCH_NO_CRL) || ctrl->http_no_crl)
+    session_flags |= HTTP_FLAG_NO_CRL;
+  if ((flags & KS_HTTP_FETCH_TRUST_CFG))
+    session_flags |= HTTP_FLAG_TRUST_CFG;
+
+ once_more:
+  err = http_session_new (&session, NULL, session_flags,
                           gnupg_http_tls_verify_cb, ctrl);
   if (err)
     goto leave;
@@ -120,7 +123,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, int send_no_cache,
       /* Avoid caches to get the most recent copy of the key.  We set
        * both the Pragma and Cache-Control versions of the header, so
        * we're good with both HTTP 1.0 and 1.1.  */
-      if (send_no_cache)
+      if ((flags & KS_HTTP_FETCH_NOCACHE))
         es_fputs ("Pragma: no-cache\r\n"
                   "Cache-Control: no-cache\r\n", fp);
       http_start_data (http);
@@ -172,7 +175,13 @@ ks_http_fetch (ctrl_t ctrl, const char *url, int send_no_cache,
                 if (err)
                   goto leave;
 
-                if ((is_onion && ! uri->onion) || (is_https && ! uri->use_tls))
+                if (is_onion && !uri->onion)
+                  {
+                    err = gpg_error (GPG_ERR_FORBIDDEN);
+                    goto leave;
+                  }
+                if (!(flags & KS_HTTP_FETCH_ALLOW_DOWNGRADE)
+                    && is_https && !uri->use_tls)
                   {
                     err = gpg_error (GPG_ERR_FORBIDDEN);
                     goto leave;

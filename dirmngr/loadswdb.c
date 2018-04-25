@@ -126,7 +126,7 @@ fetch_file (ctrl_t ctrl, const char *url, estream_t *r_fp)
   size_t nread, nwritten;
   char buffer[1024];
 
-  if ((err = ks_http_fetch (ctrl, url, 1, 0, &httpfp)))
+  if ((err = ks_http_fetch (ctrl, url, KS_HTTP_FETCH_NOCACHE, &httpfp)))
     goto leave;
 
   /* We now read the data from the web server into a memory buffer.

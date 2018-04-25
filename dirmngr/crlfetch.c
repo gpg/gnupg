@@ -175,11 +175,14 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
       else
         {
           /* Note that we also allow root certificates loaded from
-           * "/etc/gnupg/trusted-certs/".  We also do not consult
-           * the CRL for the TLS connection - that may lwad to a
-           * loop.  */
-          err = ks_http_fetch (ctrl, url, 0,
-                               (HTTP_FLAG_TRUST_CFG | HTTP_FLAG_NO_CRL),
+           * "/etc/gnupg/trusted-certs/".  We also do not consult the
+           * CRL for the TLS connection - that may lead to a loop.
+           * Due to cacert.org redirecting their https URL to http we
+           * also allow such a downgrade.  */
+          err = ks_http_fetch (ctrl, url,
+                               (KS_HTTP_FETCH_TRUST_CFG
+                                | KS_HTTP_FETCH_NO_CRL
+                                | KS_HTTP_FETCH_ALLOW_DOWNGRADE ),
                                &httpfp);
         }
 
