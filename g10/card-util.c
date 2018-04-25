@@ -633,7 +633,7 @@ current_card_status (ctrl_t ctrl, estream_t fp,
         {
           tty_fprintf (fp, "      created ....: %s\n",
                        isotimestamp (info.fpr3time));
-          print_keygrip (fp, info.grp2);
+          print_keygrip (fp, info.grp3);
         }
       tty_fprintf (fp, "General key info..: ");
 
