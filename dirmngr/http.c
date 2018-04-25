@@ -318,6 +318,9 @@ static gpg_error_t (*tls_callback) (http_t, http_session_t, int);
 /* The list of files with trusted CA certificates.  */
 static strlist_t tls_ca_certlist;
 
+/* The list of files with extra trusted CA certificates.  */
+static strlist_t cfg_ca_certlist;
+
 /* The global callback for net activity.  */
 static void (*netactivity_cb)(void);
 
@@ -596,6 +599,35 @@ http_register_tls_ca (const char *fname)
 }
 
 
+/* Register a CA certificate for future use.  The certificate is
+ * expected to be in FNAME.  PEM format is assume if FNAME has a
+ * suffix of ".pem".  If FNAME is NULL the list of CA files is
+ * removed.  This is a variant of http_register_tls_ca which puts the
+ * certificate into a separate list enabled using HTTP_FLAG_TRUST_CFG.  */
+void
+http_register_cfg_ca (const char *fname)
+{
+  strlist_t sl;
+
+  if (!fname)
+    {
+      free_strlist (cfg_ca_certlist);
+      cfg_ca_certlist = NULL;
+    }
+  else
+    {
+      /* Warn if we can't access right now, but register it anyway in
+         case it becomes accessible later */
+      if (access (fname, F_OK))
+        log_info (_("can't access '%s': %s\n"), fname,
+                  gpg_strerror (gpg_error_from_syserror()));
+      sl = add_to_strlist (&cfg_ca_certlist, fname);
+      if (*sl->d && !strcmp (sl->d + strlen (sl->d) - 4, ".pem"))
+        sl->flags = 1;
+    }
+}
+
+
 /* Register a callback which is called every time the HTTP mode has
  * made a successful connection to some server.  */
 void
@@ -680,6 +712,7 @@ http_session_release (http_session_t sess)
  * Valid values for FLAGS are:
  *   HTTP_FLAG_TRUST_DEF - Use the CAs set with http_register_tls_ca
  *   HTTP_FLAG_TRUST_SYS - Also use the CAs defined by the system
+ *   HTTP_FLAG_TRUST_CFG - Also use CAs set with http_register_cfg_ca
  *   HTTP_FLAG_NO_CRL    - Do not consult CRLs for https.
  */
 gpg_error_t
@@ -792,6 +825,21 @@ http_session_new (http_session_t *r_session,
           }
 #endif /* gnutls >= 3.0.20 */
       }
+
+    /* Add other configured certificates to the session.  */
+    if ((flags & HTTP_FLAG_TRUST_CFG))
+      {
+        for (sl = cfg_ca_certlist; sl; sl = sl->next)
+          {
+            rc = gnutls_certificate_set_x509_trust_file
+              (sess->certcred, sl->d,
+               (sl->flags & 1)? GNUTLS_X509_FMT_PEM : GNUTLS_X509_FMT_DER);
+            if (rc < 0)
+              log_info ("setting extra CA from file '%s' failed: %s\n",
+                        sl->d, gnutls_strerror (rc));
+          }
+      }
+
 
     rc = gnutls_init (&sess->tls_session, GNUTLS_CLIENT);
     if (rc < 0)

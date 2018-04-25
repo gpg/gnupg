@@ -1877,7 +1877,7 @@ static const char hlp_validate[] =
   "  INQUIRE CERTLIST\n"
   "\n"
   "Here the first certificate is the target certificate, the remaining\n"
-  "certificates are suggested intermediary certificates.  All certifciates\n"
+  "certificates are suggested intermediary certificates.  All certificates\n"
   "need to be PEM encoded.\n"
   "\n"
   "The option --systrust changes the behaviour to include the system\n"
@@ -1928,7 +1928,7 @@ cmd_validate (assuan_context_t ctx, char *line)
             err = gpg_error (GPG_ERR_MISSING_CERT);
           if (!err)
             {
-              /* Extraxt the first certificate from the list.  */
+              /* Extract the first certificate from the list.  */
               cert = certlist->cert;
               ksba_cert_ref (cert);
             }

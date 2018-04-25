@@ -423,6 +423,9 @@ load_certs_from_dir (const char *dirname, unsigned int trustclass)
         log_info (_("certificate '%s' already cached\n"), fname);
       else if (!err)
         {
+          if ((trustclass & CERTTRUST_CLASS_CONFIG))
+            http_register_cfg_ca (fname);
+
           if (trustclass)
             log_info (_("trusted certificate '%s' loaded\n"), fname);
           else
@@ -762,6 +765,8 @@ cert_cache_deinit (int full)
           cert_cache[i] = NULL;
         }
     }
+
+  http_register_cfg_ca (NULL);
 
   total_nonperm_certificates = 0;
   any_cert_of_class = 0;
