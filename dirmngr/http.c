@@ -1736,9 +1736,19 @@ send_request (http_t hd, const char *httphost, const char *auth,
 #ifdef USE_TLS
   if (hd->uri->use_tls && !hd->session->tls_session)
     {
-      log_error ("TLS requested but no GNUTLS context available\n");
+      log_error ("TLS requested but no TLS context available\n");
       return gpg_err_make (default_errsource, GPG_ERR_INTERNAL);
     }
+  if (opt_debug)
+    log_debug ("Using TLS library: %s %s\n",
+# if HTTP_USE_NTBTLS
+               "NTBTLS", ntbtls_check_version (NULL)
+# elif HTTP_USE_GNUTLS
+               "GNUTLS", gnutls_check_version (NULL)
+# else
+               "?", "?"
+# endif /*HTTP_USE_*TLS*/
+               );
 #endif /*USE_TLS*/
 
   if ((hd->flags & HTTP_FLAG_FORCE_TOR))
