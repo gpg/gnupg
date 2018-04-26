@@ -19,6 +19,9 @@ Noteworthy changes in version 2.2.7 (unreleased)
   * dirmngr: Fix a regression since 2.1.16 which caused corrupted CRL
     caches under Windows.  [#2448,#3923]
 
+  * dirmngr: Fix a CNAME problem with pools and TLS.  Also use a fixed
+    mapping of keys.gnupg.net to sks-keyservers.net.  [#3755]
+
 
 Noteworthy changes in version 2.2.6 (2018-04-09)
 ------------------------------------------------

@@ -583,7 +583,7 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
       /* Deal with the pool name before selecting a host. */
       if (r_httphost)
         {
-          *r_httphost = xtrystrdup (hi->cname? hi->cname : hi->name);
+          *r_httphost = xtrystrdup (hi->name);
           if (!*r_httphost)
             return gpg_error_from_syserror ();
         }

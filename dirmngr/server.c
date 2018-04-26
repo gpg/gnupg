@@ -1997,6 +1997,38 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
   uri_item_t item;
 
   *r_item = NULL;
+
+  /* We used to have DNS CNAME redirection from the URLs below to
+   * sks-keyserver. pools.  The idea was to allow for a quick way to
+   * switch to a different set of pools.  The problem with that
+   * approach is that TLS needs to verify the hostname and - because
+   * DNS is not secured - it can only check the user supplied hostname
+   * and not a hostname from a CNAME RR.  Thus the final server all
+   * need to have certificates with the actual pool name as well as
+   * for keys.gnupg.net - that would render the advantage of
+   * keys.gnupg.net useless and so we better give up on this.  Because
+   * the keys.gnupg.net URL are still in widespread use we do a static
+   * mapping here.
+   */
+  if (!strcmp (uri, "hkps://keys.gnupg.net")
+      || !strcmp (uri, "keys.gnupg.net"))
+    uri = "hkps://hkps.pool.sks-keyservers.net";
+  else if (!strcmp (uri, "https://keys.gnupg.net"))
+    uri = "https://hkps.pool.sks-keyservers.net";
+  else if (!strcmp (uri, "hkp://keys.gnupg.net"))
+    uri = "hkp://hkps.pool.sks-keyservers.net";
+  else if (!strcmp (uri, "http://keys.gnupg.net"))
+    uri = "http://hkps.pool.sks-keyservers.net";
+  else if (!strcmp (uri, "hkps://http-keys.gnupg.net")
+           || !strcmp (uri, "http-keys.gnupg.net"))
+    uri = "hkps://ha.pool.sks-keyservers.net";
+  else if (!strcmp (uri, "https://http-keys.gnupg.net"))
+    uri = "https://ha.pool.sks-keyservers.net";
+  else if (!strcmp (uri, "hkp://http-keys.gnupg.net"))
+    uri = "hkp://ha.pool.sks-keyservers.net";
+  else if (!strcmp (uri, "http://http-keys.gnupg.net"))
+    uri = "http://ha.pool.sks-keyservers.net";
+
   item = xtrymalloc (sizeof *item + strlen (uri));
   if (!item)
     return gpg_error_from_syserror ();
