@@ -55,7 +55,7 @@
 
 
 /* Number of seconds after a host is marked as resurrected.  */
-#define RESURRECT_INTERVAL  (3600*3)  /* 3 hours */
+#define RESURRECT_INTERVAL  (3600+1800)  /* 1.5 hours */
 
 /* To match the behaviour of our old gpgkeys helper code we escape
    more characters than actually needed. */
@@ -110,7 +110,7 @@ static hostinfo_t *hosttable;
 static int hosttable_size;
 
 /* The number of host slots we initially allocate for HOSTTABLE.  */
-#define INITIAL_HOSTTABLE_SIZE 10
+#define INITIAL_HOSTTABLE_SIZE 50
 
 
 /* Create a new hostinfo object, fill in NAME and put it into

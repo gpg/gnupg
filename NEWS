@@ -22,6 +22,8 @@ Noteworthy changes in version 2.2.7 (unreleased)
   * dirmngr: Fix a CNAME problem with pools and TLS.  Also use a fixed
     mapping of keys.gnupg.net to sks-keyservers.net.  [#3755]
 
+  * dirmngr: Try resurrecting dead hosts earlier (from 3 to 1.5 hours).
+
 
 Noteworthy changes in version 2.2.6 (2018-04-09)
 ------------------------------------------------
