@@ -653,7 +653,6 @@ case "${host}" in
         have_dosish_system=yes
         have_w32_system=yes
         require_iconv=no
-        use_ldapwrapper=no  # Fixme: Do this only for CE.
         require_pipe_to_unblock_pselect=no
         case "${host}" in
           *-mingw32ce*)

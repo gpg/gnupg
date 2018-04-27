@@ -1,5 +1,5 @@
 /* ldap-wrapper.c - LDAP access via a wrapper process
- * Copyright (C) 2004, 2005, 2007, 2008 g10 Code GmbH
+ * Copyright (C) 2004, 2005, 2007, 2008, 2018 g10 Code GmbH
  * Copyright (C) 2010 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -19,31 +19,34 @@
  */
 
 /*
-   We can't use LDAP directly for these reasons:
-
-   1. On some systems the LDAP library uses (indirectly) pthreads and
-      that is not compatible with PTh.
-
-   2. It is huge library in particular if TLS comes into play.  So
-      problems with unfreed memory might turn up and we don't want
-      this in a long running daemon.
-
-   3. There is no easy way for timeouts. In particular the timeout
-      value does not work for DNS lookups (well, this is usual) and it
-      seems not to work while loading a large attribute like a
-      CRL. Having a separate process allows us to either tell the
-      process to commit suicide or have our own housekepping function
-      kill it after some time.  The latter also allows proper
-      cancellation of a query at any point of time.
-
-   4. Given that we are going out to the network and usually get back
-      a long response, the fork/exec overhead is acceptable.
-
-   Note that under WindowsCE the number of processes is strongly
-   limited (32 processes including the kernel processes) and thus we
-   don't use the process approach but implement a different wrapper in
-   ldap-wrapper-ce.c.
-*/
+ * We can't use LDAP directly for these reasons:
+ *
+ * 1. On some systems the LDAP library uses (indirectly) pthreads and
+ *    that is not compatible with GNU Pth.  Since 2.1 we use nPth
+ *    instead of GNU Pth which does not have this problem anymore
+ *    because it will use pthreads if the platform supports it.  Thus
+ *    this was a historical reasons.
+ *
+ * 2. It is huge library in particular if TLS comes into play.  So
+ *    problems with unfreed memory might turn up and we don't want
+ *    this in a long running daemon.
+ *
+ * 3. There is no easy way for timeouts. In particular the timeout
+ *    value does not work for DNS lookups (well, this is usual) and it
+ *    seems not to work while loading a large attribute like a
+ *    CRL. Having a separate process allows us to either tell the
+ *    process to commit suicide or have our own housekepping function
+ *    kill it after some time.  The latter also allows proper
+ *    cancellation of a query at any point of time.
+ *
+ * 4. Given that we are going out to the network and usually get back
+ *    a long response, the fork/exec overhead is acceptable.
+ *
+ * Note that under WindowsCE the number of processes is strongly
+ * limited (32 processes including the kernel processes) and thus we
+ * don't use the process approach but implement a different wrapper in
+ * ldap-wrapper-ce.c.
+ */
 
 
 #include <config.h>
@@ -89,20 +92,21 @@ struct wrapper_context_s
 {
   struct wrapper_context_s *next;
 
-  pid_t pid;    /* The pid of the wrapper process. */
-  int printable_pid; /* Helper to print diagnostics after the process has
-                        been cleaned up. */
-  int fd;       /* Connected with stdout of the ldap wrapper.  */
-  gpg_error_t fd_error; /* Set to the gpg_error of the last read error
-                           if any.  */
-  int log_fd;   /* Connected with stderr of the ldap wrapper.  */
-  ctrl_t ctrl;  /* Connection data. */
-  int ready;    /* Internally used to mark to be removed contexts. */
-  ksba_reader_t reader; /* The ksba reader object or NULL. */
-  char *line;     /* Used to print the log lines (malloced). */
-  size_t linesize;/* Allocated size of LINE.  */
-  size_t linelen; /* Use size of LINE.  */
-  time_t stamp;   /* The last time we noticed ativity.  */
+  pid_t pid;           /* The pid of the wrapper process. */
+  int printable_pid;   /* Helper to print diagnostics after the process has
+                        * been cleaned up. */
+  estream_t fp;        /* Connected with stdout of the ldap wrapper.  */
+  gpg_error_t fp_err;  /* Set to the gpg_error of the last read error
+                        * if any.  */
+  estream_t log_fp;    /* Connected with stderr of the ldap wrapper.  */
+  ctrl_t ctrl;         /* Connection data. */
+  int ready;           /* Internally used to mark to be removed contexts. */
+  ksba_reader_t reader;/* The ksba reader object or NULL. */
+  char *line;          /* Used to print the log lines (malloced). */
+  size_t linesize;     /* Allocated size of LINE.  */
+  size_t linelen;      /* Use size of LINE.  */
+  time_t stamp;        /* The last time we noticed ativity.  */
+  int reaper_idx;      /* Private to ldap_wrapper_thread.   */
 };
 
 
@@ -115,9 +119,9 @@ static struct wrapper_context_s *wrapper_list;
 /* We need to know whether we are shutting down the process.  */
 static int shutting_down;
 
-/* Close the pth file descriptor FD and set it to -1.  */
-#define SAFE_CLOSE(fd) \
-  do { int _fd = fd; if (_fd != -1) { close (_fd); fd = -1;} } while (0)
+/* Close the estream fp and set it to NULL.  */
+#define SAFE_CLOSE(fp) \
+  do { estream_t _fp = fp; es_fclose (_fp); fp = NULL; } while (0)
 
 
 
@@ -151,8 +155,8 @@ destroy_wrapper (struct wrapper_context_s *ctx)
       gnupg_release_process (ctx->pid);
     }
   ksba_reader_release (ctx->reader);
-  SAFE_CLOSE (ctx->fd);
-  SAFE_CLOSE (ctx->log_fd);
+  SAFE_CLOSE (ctx->fp);
+  SAFE_CLOSE (ctx->log_fp);
   xfree (ctx->line);
   xfree (ctx);
 }
@@ -218,25 +222,22 @@ print_log_line (struct wrapper_context_s *ctx, char *line)
 
 
 /* Read data from the log stream.  Returns true if the log stream
-   indicated EOF or error.  */
+ * indicated EOF or error.  */
 static int
 read_log_data (struct wrapper_context_s *ctx)
 {
-  int n;
+  int rc;
+  size_t n;
   char line[256];
 
-  /* We must use the npth_read function for pipes, always.  */
-  do
-    n = npth_read (ctx->log_fd, line, sizeof line - 1);
-  while (n < 0 && errno == EINTR);
-
-  if (n <= 0) /* EOF or error. */
+  rc = es_read (ctx->log_fp, line, sizeof line - 1, &n);
+  if (rc || !n)  /* Error or EOF.  */
     {
-      if (n < 0)
+      if (rc)
         log_error (_("error reading log from ldap wrapper %d: %s\n"),
                    (int)ctx->pid, strerror (errno));
-      print_log_line (ctx, NULL);
-      SAFE_CLOSE (ctx->log_fd);
+      print_log_line (ctx, NULL);  /* Flush.  */
+      SAFE_CLOSE (ctx->log_fp);
       return 1;
     }
 
@@ -253,13 +254,16 @@ read_log_data (struct wrapper_context_s *ctx)
 void *
 ldap_wrapper_thread (void *dummy)
 {
-  int nfds;
+  gpg_error_t err;
   struct wrapper_context_s *ctx;
   struct wrapper_context_s *ctx_prev;
   struct timespec abstime;
   struct timespec curtime;
   struct timespec timeout;
-  fd_set fdset;
+  int millisecs;
+  gpgrt_poll_t *fparray = NULL;
+  int fparraysize = 0;
+  int count;
   int ret;
   time_t exptime;
 
@@ -268,6 +272,11 @@ ldap_wrapper_thread (void *dummy)
   npth_clock_gettime (&abstime);
   abstime.tv_sec += TIMERTICK_INTERVAL;
 
+  /* FIXME: When we are idle (i.e. !COUNT) we should not use the
+   * TIMERTICK_INTERVAL but wait on a mutex to avoid unnecessary
+   * wakeups.  */
+
+ restart:
   for (;;)
     {
       int any_action = 0;
@@ -280,33 +289,88 @@ ldap_wrapper_thread (void *dummy)
 	  abstime.tv_sec += TIMERTICK_INTERVAL;
 	}
       npth_timersub (&abstime, &curtime, &timeout);
+      millisecs = timeout.tv_sec * 1000;
+      millisecs += timeout.tv_nsec / 1000000;
+      if (millisecs < 0)
+        millisecs = 1;
 
-      FD_ZERO (&fdset);
-      nfds = -1;
-      for (ctx = wrapper_list; ctx; ctx = ctx->next)
+      /* Setup FPARRAY.  */
+      for (count = 0, ctx = wrapper_list; ctx; ctx = ctx->next)
+        if (ctx->log_fp)
+          count++;
+      if (DBG_EXTPROG)
+        log_debug ("ldap-reaper: next run (count=%d size=%d, timeout=%d)\n",
+                   count, fparraysize, millisecs);
+      if (count > fparraysize || !fparray)
         {
-          if (ctx->log_fd != -1)
+          /* Need to realloc the array.  We simply discard it and
+           * replace it by a new one.  */
+          xfree (fparray);
+          fparray = xtrycalloc (count? count : 1, sizeof *fparray);
+          if (!fparray)
             {
-              FD_SET (ctx->log_fd, &fdset);
-              if (ctx->log_fd > nfds)
-                nfds = ctx->log_fd;
-            }
-        }
-      nfds++;
-
-      /* FIXME: For Windows, we have to use a reader thread on the
-	 pipe that signals an event (and a npth_select_ev variant).  */
-      ret = npth_pselect (nfds + 1, &fdset, NULL, NULL, &timeout, NULL);
-      if (ret == -1)
-	{
-          if (errno != EINTR)
-            {
-              log_error (_("npth_select failed: %s - waiting 1s\n"),
-                         strerror (errno));
+              err = gpg_error_from_syserror ();
+              log_error ("ldap-reaper can't allocate poll array: %s"
+                         " - waiting 1s\n", gpg_strerror (err));
               npth_sleep (1);
+              continue;
             }
+          fparraysize = count;
+        }
+      for (count = 0, ctx = wrapper_list; ctx; ctx = ctx->next)
+        {
+          if (ctx->log_fp)
+            {
+              if (count > fparraysize)
+                {
+                  /* Another thread added more items to WRAPPER_LIST.
+                   * Note that the calloc above is a system call and
+                   * thus may caused a context switch. */
+                  goto restart;
+                }
+              fparray[count].stream = ctx->log_fp;
+              fparray[count].want_read = 1;
+              fparray[count].ignore = 0;
+              ctx->reaper_idx = count;
+              count++;
+            }
+          else
+            ctx->reaper_idx = -1;
+        }
+      for (; count < fparraysize; count++)
+        fparray[count].ignore = 1;
+
+      if (DBG_EXTPROG)
+        {
+          for (count=0; count < fparraysize; count++)
+            if (!fparray[count].ignore)
+              log_debug ("ldap-reaper: fp[%d] stream=%p want=%d\n",
+                         count, fparray[count].stream,fparray[count].want_read);
+        }
+
+      ret = es_poll (fparray, fparraysize, millisecs);
+      if (ret < 0)
+	{
+          err = gpg_error_from_syserror ();
+          log_error ("ldap-reaper failed to poll: %s"
+                     " - waiting 1s\n", gpg_strerror (err));
+          /* In case the reason for the error is a too large array, we
+           * release it so that it will be allocated smaller in the
+           * next round.  */
+          xfree (fparray);
+          fparray = NULL;
+          fparraysize = 0;
+          npth_sleep (1);
           continue;
 	}
+
+      if (DBG_EXTPROG)
+        {
+          for (count=0; count < fparraysize; count++)
+            if (!fparray[count].ignore)
+              log_debug ("ldap-reaper: fp[%d] stream=%p got=%d\n",
+                         count, fparray[count].stream, fparray[count].got_read);
+        }
 
       /* All timestamps before exptime should be considered expired.  */
       exptime = time (NULL);
@@ -316,31 +380,36 @@ ldap_wrapper_thread (void *dummy)
       /* Note that there is no need to lock the list because we always
          add entries at the head (with a pending event status) and
          thus traversing the list will even work if we have a context
-         switch in waitpid (which should anyway only happen with Pth's
-         hard system call mapping).  */
+         switch in waitpid.  */
       for (ctx = wrapper_list; ctx; ctx = ctx->next)
         {
-          /* Check whether there is any logging to be done. */
-          if (nfds && ctx->log_fd != -1 && FD_ISSET (ctx->log_fd, &fdset))
+          /* Check whether there is any logging to be done.  We need
+           * to check FPARRAYSIZE because it can be 0 in case es_poll
+           * returned a timeout.  */
+          if (fparraysize && ctx->log_fp && ctx->reaper_idx >= 0)
             {
-              if (read_log_data (ctx))
+              log_assert (ctx->reaper_idx < fparraysize);
+              if (fparray[ctx->reaper_idx].got_read)
                 {
-                  SAFE_CLOSE (ctx->log_fd);
-                  any_action = 1;
+                  if (read_log_data (ctx))
+                    {
+                      SAFE_CLOSE (ctx->log_fp);
+                      any_action = 1;
+                    }
                 }
             }
 
           /* Check whether the process is still running.  */
           if (ctx->pid != (pid_t)(-1))
             {
-              gpg_error_t err;
 	      int status;
 
 	      err = gnupg_wait_process ("[dirmngr_ldap]", ctx->pid, 0,
                                         &status);
               if (!err)
                 {
-		  log_info (_("ldap wrapper %d ready"), (int)ctx->pid);
+                  if (DBG_EXTPROG)
+                    log_info (_("ldap wrapper %d ready"), (int)ctx->pid);
                   ctx->ready = 1;
 		  gnupg_release_process (ctx->pid);
                   ctx->pid = (pid_t)(-1);
@@ -375,9 +444,9 @@ ldap_wrapper_thread (void *dummy)
               ctx->stamp = (time_t)(-1);
               log_info (_("ldap wrapper %d stalled - killing\n"),
                         (int)ctx->pid);
-              /* We need to close the log fd because the cleanup loop
-                 waits for it.  */
-              SAFE_CLOSE (ctx->log_fd);
+              /* We need to close the log stream because the cleanup
+               * loop waits for it.  */
+              SAFE_CLOSE (ctx->log_fp);
               any_action = 1;
             }
         }
@@ -385,26 +454,27 @@ ldap_wrapper_thread (void *dummy)
       /* If something has been printed to the log file or we got an
          EOF from a wrapper, we now print the list of active
          wrappers.  */
-      if (any_action && DBG_LOOKUP)
+      if (any_action && DBG_EXTPROG)
         {
-          log_info ("ldap worker stati:\n");
+          log_debug ("ldap worker stati:\n");
           for (ctx = wrapper_list; ctx; ctx = ctx->next)
-            log_info ("  c=%p pid=%d/%d rdr=%p ctrl=%p/%d la=%lu rdy=%d\n",
-                      ctx,
-                      (int)ctx->pid, (int)ctx->printable_pid,
-                      ctx->reader,
-                      ctx->ctrl, ctx->ctrl? ctx->ctrl->refcount:0,
-                      (unsigned long)ctx->stamp, ctx->ready);
+            log_debug ("  c=%p pid=%d/%d rdr=%p logfp=%p"
+                       " ctrl=%p/%d la=%lu rdy=%d\n",
+                       ctx,
+                       (int)ctx->pid, (int)ctx->printable_pid,
+                       ctx->reader, ctx->log_fp,
+                       ctx->ctrl, ctx->ctrl? ctx->ctrl->refcount:0,
+                       (unsigned long)ctx->stamp, ctx->ready);
         }
 
 
-      /* Use a separate loop to check whether ready marked wrappers
-         may be removed.  We may only do so if the ksba reader object
-         is not anymore in use or we are in shutdown state.  */
+      /* Use an extra loop to check whether ready marked wrappers may
+       * be removed.  We may only do so if the ksba reader object is
+       * not anymore in use or we are in shutdown state.  */
      again:
       for (ctx_prev=NULL, ctx=wrapper_list; ctx; ctx_prev=ctx, ctx=ctx->next)
         if (ctx->ready
-            && ((ctx->log_fd == -1 && !ctx->reader) || shutting_down))
+            && ((!ctx->log_fp && !ctx->reader) || shutting_down))
           {
             if (ctx_prev)
               ctx_prev->next = ctx->next;
@@ -412,7 +482,7 @@ ldap_wrapper_thread (void *dummy)
               wrapper_list = ctx->next;
             destroy_wrapper (ctx);
             /* We need to restart because destroy_wrapper might have
-               done a context switch. */
+             * done a context switch. */
             goto again;
           }
     }
@@ -451,8 +521,6 @@ ldap_wrapper_launch_thread (void)
 
 
 
-
-
 /* Wait until all ldap wrappers have terminated.  We assume that the
    kill has already been sent to all of them.  */
 void
@@ -478,23 +546,23 @@ ldap_wrapper_release_context (ksba_reader_t reader)
   for (ctx=wrapper_list; ctx; ctx=ctx->next)
     if (ctx->reader == reader)
       {
-        if (DBG_LOOKUP)
-          log_info ("releasing ldap worker c=%p pid=%d/%d rdr=%p ctrl=%p/%d\n",
+        if (DBG_EXTPROG)
+          log_debug ("releasing ldap worker c=%p pid=%d/%d rdr=%p ctrl=%p/%d\n",
                     ctx,
                     (int)ctx->pid, (int)ctx->printable_pid,
                     ctx->reader,
                     ctx->ctrl, ctx->ctrl? ctx->ctrl->refcount:0);
 
         ctx->reader = NULL;
-        SAFE_CLOSE (ctx->fd);
+        SAFE_CLOSE (ctx->fp);
         if (ctx->ctrl)
           {
             ctx->ctrl->refcount--;
             ctx->ctrl = NULL;
           }
-        if (ctx->fd_error)
+        if (ctx->fp_err)
           log_info (_("reading from ldap wrapper %d failed: %s\n"),
-                    ctx->printable_pid, gpg_strerror (ctx->fd_error));
+                    ctx->printable_pid, gpg_strerror (ctx->fp_err));
         break;
       }
 }
@@ -513,34 +581,34 @@ ldap_wrapper_connection_cleanup (ctrl_t ctrl)
         ctx->ctrl = NULL;
         if (ctx->pid != (pid_t)(-1))
           gnupg_kill_process (ctx->pid);
-        if (ctx->fd_error)
+        if (ctx->fp_err)
           log_info (_("reading from ldap wrapper %d failed: %s\n"),
-                    ctx->printable_pid, gpg_strerror (ctx->fd_error));
+                    ctx->printable_pid, gpg_strerror (ctx->fp_err));
       }
 }
 
 
 /* This is the callback used by the ldap wrapper to feed the ksba
-   reader with the wrappers stdout.  See the description of
-   ksba_reader_set_cb for details.  */
+ * reader with the wrapper's stdout.  See the description of
+ * ksba_reader_set_cb for details.  */
 static int
 reader_callback (void *cb_value, char *buffer, size_t count,  size_t *nread)
 {
   struct wrapper_context_s *ctx = cb_value;
   size_t nleft = count;
-  int nfds;
   struct timespec abstime;
   struct timespec curtime;
   struct timespec timeout;
-  int saved_errno;
-  fd_set fdset, read_fdset;
+  int millisecs;
+  gpgrt_poll_t fparray[1];
   int ret;
+  gpg_error_t err;
+
 
   /* FIXME: We might want to add some internal buffering because the
      ksba code does not do any buffering for itself (because a ksba
      reader may be detached from another stream to read other data and
-     the it would be cumbersome to get back already buffered
-     stuff).  */
+     then it would be cumbersome to get back already buffered stuff).  */
 
   if (!buffer && !count && !nread)
     return -1; /* Rewind is not supported. */
@@ -548,80 +616,82 @@ reader_callback (void *cb_value, char *buffer, size_t count,  size_t *nread)
   /* If we ever encountered a read error, don't continue (we don't want to
      possibly overwrite the last error cause).  Bail out also if the
      file descriptor has been closed. */
-  if (ctx->fd_error || ctx->fd == -1)
+  if (ctx->fp_err || !ctx->fp)
     {
       *nread = 0;
       return -1;
     }
 
-  FD_ZERO (&fdset);
-  FD_SET (ctx->fd, &fdset);
-  nfds = ctx->fd + 1;
+  memset (fparray, 0, sizeof fparray);
+  fparray[0].stream = ctx->fp;
+  fparray[0].want_read = 1;
 
   npth_clock_gettime (&abstime);
   abstime.tv_sec += TIMERTICK_INTERVAL;
 
   while (nleft > 0)
     {
-      int n;
-      gpg_error_t err;
-
       npth_clock_gettime (&curtime);
       if (!(npth_timercmp (&curtime, &abstime, <)))
 	{
 	  err = dirmngr_tick (ctx->ctrl);
           if (err)
             {
-              ctx->fd_error = err;
-              SAFE_CLOSE (ctx->fd);
+              ctx->fp_err = err;
+              SAFE_CLOSE (ctx->fp);
               return -1;
             }
 	  npth_clock_gettime (&abstime);
 	  abstime.tv_sec += TIMERTICK_INTERVAL;
 	}
       npth_timersub (&abstime, &curtime, &timeout);
+      millisecs = timeout.tv_sec * 1000;
+      millisecs += timeout.tv_nsec / 1000000;
+      if (millisecs < 0)
+        millisecs = 1;
 
-      read_fdset = fdset;
-      ret = npth_pselect (nfds, &read_fdset, NULL, NULL, &timeout, NULL);
-      saved_errno = errno;
-
-      if (ret == -1 && saved_errno != EINTR)
+      ret = es_poll (fparray, DIM (fparray), millisecs);
+      if (ret < 0)
 	{
-          ctx->fd_error = gpg_error_from_errno (errno);
-          SAFE_CLOSE (ctx->fd);
+          ctx->fp_err = gpg_error_from_syserror ();
+          log_error ("error polling stdout of ldap wrapper %d: %s\n",
+                     ctx->printable_pid, gpg_strerror (ctx->fp_err));
+          SAFE_CLOSE (ctx->fp);
           return -1;
         }
-      if (ret <= 0)
-	/* Timeout.  Will be handled when calculating the next timeout.  */
-	continue;
+      if (!ret)
+        {
+          /* Timeout.  Will be handled when calculating the next timeout.  */
+          continue;
+        }
 
-      /* This should not block now that select returned with a file
-	 descriptor.  So it shouldn't be necessary to use npth_read
-	 (and it is slightly dangerous in the sense that a concurrent
-	 thread might (accidentially?) change the status of ctx->fd
-	 before we read.  FIXME: Set ctx->fd to nonblocking?  */
-      n = read (ctx->fd, buffer, nleft);
-      if (n < 0)
+      if (fparray[0].got_read)
         {
-          ctx->fd_error = gpg_error_from_errno (errno);
-          SAFE_CLOSE (ctx->fd);
-          return -1;
+          size_t n;
+
+          if (es_read (ctx->fp, buffer, nleft, &n))
+            {
+              ctx->fp_err = gpg_error_from_syserror ();
+              SAFE_CLOSE (ctx->fp);
+              return -1;
+            }
+          else if (!n) /* EOF */
+            {
+              if (nleft == count)
+                return -1; /* EOF. */
+              break;
+            }
+          nleft -= n;
+          buffer += n;
+          if (n > 0 && ctx->stamp != (time_t)(-1))
+            ctx->stamp = time (NULL);
         }
-      else if (!n)
-        {
-          if (nleft == count)
-	    return -1; /* EOF. */
-          break;
-        }
-      nleft -= n;
-      buffer += n;
-      if (n > 0 && ctx->stamp != (time_t)(-1))
-        ctx->stamp = time (NULL);
     }
   *nread = count - nleft;
 
   return 0;
 }
+
 
 /* Fork and exec the LDAP wrapper and return a new libksba reader
    object at READER.  ARGV is a NULL terminated list of arguments for
@@ -646,7 +716,7 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
   int j;
   const char **arg_list;
   const char *pgmname;
-  int outpipe[2], errpipe[2];
+  estream_t outfp, errfp;
 
   /* It would be too simple to connect stderr just to our logging
      stream.  The problem is that if we are running multi-threaded
@@ -696,41 +766,21 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
       return err;
     }
 
-  err = gnupg_create_inbound_pipe (outpipe, NULL, 0);
-  if (!err)
-    {
-      err = gnupg_create_inbound_pipe (errpipe, NULL, 0);
-      if (err)
-        {
-          close (outpipe[0]);
-          close (outpipe[1]);
-        }
-    }
-  if (err)
-    {
-      log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
-      xfree (arg_list);
-      xfree (ctx);
-      return err;
-    }
-
-  err = gnupg_spawn_process_fd (pgmname, arg_list,
-                                -1, outpipe[1], errpipe[1], &pid);
+  err = gnupg_spawn_process (pgmname, arg_list,
+                             NULL, NULL, GNUPG_SPAWN_NONBLOCK,
+                             NULL, &outfp, &errfp, &pid);
   xfree (arg_list);
-  close (outpipe[1]);
-  close (errpipe[1]);
   if (err)
     {
-      close (outpipe[0]);
-      close (errpipe[0]);
       xfree (ctx);
+      log_error ("error running '%s': %s\n", pgmname, gpg_strerror (err));
       return err;
     }
 
   ctx->pid = pid;
   ctx->printable_pid = (int) pid;
-  ctx->fd = outpipe[0];
-  ctx->log_fd = errpipe[0];
+  ctx->fp = outfp;
+  ctx->log_fp = errfp;
   ctx->ctrl = ctrl;
   ctrl->refcount++;
   ctx->stamp = time (NULL);
@@ -752,9 +802,9 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
   ctx->reader = *reader;
   ctx->next = wrapper_list;
   wrapper_list = ctx;
-  if (opt.verbose)
-    log_info ("ldap wrapper %d started (reader %p)\n",
-              (int)ctx->pid, ctx->reader);
+  if (DBG_EXTPROG)
+    log_debug ("ldap wrapper %d started (%p, %s)\n",
+               (int)ctx->pid, ctx->reader, pgmname);
 
   /* Need to wait for the first byte so we are able to detect an empty
      output and not let the consumer see an EOF without further error
