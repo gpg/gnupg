@@ -111,13 +111,19 @@ struct wrapper_context_s
 
 
 
-/* We keep a global list of spawned wrapper process.  A separate thread
-   makes use of this list to log error messages and to watch out for
-   finished processes. */
-static struct wrapper_context_s *wrapper_list;
+/* We keep a global list of spawned wrapper process.  A separate
+ * thread makes use of this list to log error messages and to watch
+ * out for finished processes.  Access to list is protected by a
+ * mutex.  The condition variable is used to wakeup the reaper
+ * thread.  */
+static struct wrapper_context_s *reaper_list;
+static npth_mutex_t reaper_list_mutex = NPTH_MUTEX_INITIALIZER;
+static npth_cond_t  reaper_run_cond  = NPTH_COND_INITIALIZER;
 
 /* We need to know whether we are shutting down the process.  */
 static int shutting_down;
+
+
 
 /* Close the estream fp and set it to NULL.  */
 #define SAFE_CLOSE(fp) \
@@ -126,6 +132,26 @@ static int shutting_down;
 
 
 
+
+static void
+lock_reaper_list (void)
+{
+  if (npth_mutex_lock (&reaper_list_mutex))
+    log_fatal ("%s: failed to acquire mutex: %s\n", __func__,
+               gpg_strerror (gpg_error_from_syserror ()));
+}
+
+
+static void
+unlock_reaper_list (void)
+{
+  if (npth_mutex_unlock (&reaper_list_mutex))
+    log_fatal ("%s: failed to release mutex: %s\n", __func__,
+               gpg_strerror (gpg_error_from_syserror ()));
+}
+
+
+
 /* Read a fixed amount of data from READER into BUFFER.  */
 static gpg_error_t
 read_buffer (ksba_reader_t reader, unsigned char *buffer, size_t count)
@@ -234,8 +260,13 @@ read_log_data (struct wrapper_context_s *ctx)
   if (rc || !n)  /* Error or EOF.  */
     {
       if (rc)
-        log_error (_("error reading log from ldap wrapper %d: %s\n"),
-                   (int)ctx->pid, strerror (errno));
+        {
+          gpg_error_t err = gpg_error_from_syserror ();
+          if (gpg_err_code (err) == GPG_ERR_EAGAIN)
+            return 0;
+          log_error (_("error reading log from ldap wrapper %d: %s\n"),
+                     (int)ctx->pid, gpg_strerror (err));
+        }
       print_log_line (ctx, NULL);  /* Flush.  */
       SAFE_CLOSE (ctx->log_fp);
       return 1;
@@ -252,7 +283,7 @@ read_log_data (struct wrapper_context_s *ctx)
 /* This function is run by a separate thread to maintain the list of
    wrappers and to log error messages from these wrappers.  */
 void *
-ldap_wrapper_thread (void *dummy)
+ldap_reaper_thread (void *dummy)
 {
   gpg_error_t err;
   struct wrapper_context_s *ctx;
@@ -263,7 +294,7 @@ ldap_wrapper_thread (void *dummy)
   int millisecs;
   gpgrt_poll_t *fparray = NULL;
   int fparraysize = 0;
-  int count;
+  int count, i;
   int ret;
   time_t exptime;
 
@@ -272,15 +303,65 @@ ldap_wrapper_thread (void *dummy)
   npth_clock_gettime (&abstime);
   abstime.tv_sec += TIMERTICK_INTERVAL;
 
-  /* FIXME: When we are idle (i.e. !COUNT) we should not use the
-   * TIMERTICK_INTERVAL but wait on a mutex to avoid unnecessary
-   * wakeups.  */
-
- restart:
   for (;;)
     {
       int any_action = 0;
 
+      /* Wait until we are needed and then setup the FPARRAY.  */
+      /* Note: There is one unlock inside the block!  */
+      lock_reaper_list ();
+      {
+        while (!reaper_list && !shutting_down)
+          {
+            if (npth_cond_wait (&reaper_run_cond, &reaper_list_mutex))
+              log_error ("ldap-reaper: waiting on condition failed: %s\n",
+                         gpg_strerror (gpg_error_from_syserror ()));
+          }
+
+        for (count = 0, ctx = reaper_list; ctx; ctx = ctx->next)
+          if (ctx->log_fp)
+            count++;
+        if (count > fparraysize || !fparray)
+          {
+            /* Need to realloc the array.  We simply discard it and
+             * replace it by a new one.  */
+            xfree (fparray);
+            fparray = xtrycalloc (count? count : 1, sizeof *fparray);
+            if (!fparray)
+              {
+                err = gpg_error_from_syserror ();
+                log_error ("ldap-reaper can't allocate poll array: %s"
+                           " - waiting 1s\n", gpg_strerror (err));
+                /* Note: Here we unlock and continue! */
+                unlock_reaper_list ();
+                npth_sleep (1);
+                continue;
+            }
+            fparraysize = count;
+          }
+        for (count = 0, ctx = reaper_list; ctx; ctx = ctx->next)
+          {
+            if (ctx->log_fp)
+              {
+                log_assert (count < fparraysize);
+                fparray[count].stream = ctx->log_fp;
+                fparray[count].want_read = 1;
+                fparray[count].ignore = 0;
+                ctx->reaper_idx = count;
+                count++;
+              }
+            else
+              {
+                ctx->reaper_idx = -1;
+                fparray[count].ignore = 1;
+              }
+          }
+        for (i=count; i < fparraysize; i++)
+          fparray[i].ignore = 1;
+      }
+      unlock_reaper_list (); /* Note the one unlock inside the block.  */
+
+      /* Compute the next timeout.  */
       npth_clock_gettime (&curtime);
       if (!(npth_timercmp (&curtime, &abstime, <)))
 	{
@@ -294,54 +375,10 @@ ldap_wrapper_thread (void *dummy)
       if (millisecs < 0)
         millisecs = 1;
 
-      /* Setup FPARRAY.  */
-      for (count = 0, ctx = wrapper_list; ctx; ctx = ctx->next)
-        if (ctx->log_fp)
-          count++;
-      if (DBG_EXTPROG)
-        log_debug ("ldap-reaper: next run (count=%d size=%d, timeout=%d)\n",
-                   count, fparraysize, millisecs);
-      if (count > fparraysize || !fparray)
-        {
-          /* Need to realloc the array.  We simply discard it and
-           * replace it by a new one.  */
-          xfree (fparray);
-          fparray = xtrycalloc (count? count : 1, sizeof *fparray);
-          if (!fparray)
-            {
-              err = gpg_error_from_syserror ();
-              log_error ("ldap-reaper can't allocate poll array: %s"
-                         " - waiting 1s\n", gpg_strerror (err));
-              npth_sleep (1);
-              continue;
-            }
-          fparraysize = count;
-        }
-      for (count = 0, ctx = wrapper_list; ctx; ctx = ctx->next)
-        {
-          if (ctx->log_fp)
-            {
-              if (count > fparraysize)
-                {
-                  /* Another thread added more items to WRAPPER_LIST.
-                   * Note that the calloc above is a system call and
-                   * thus may caused a context switch. */
-                  goto restart;
-                }
-              fparray[count].stream = ctx->log_fp;
-              fparray[count].want_read = 1;
-              fparray[count].ignore = 0;
-              ctx->reaper_idx = count;
-              count++;
-            }
-          else
-            ctx->reaper_idx = -1;
-        }
-      for (; count < fparraysize; count++)
-        fparray[count].ignore = 1;
-
       if (DBG_EXTPROG)
         {
+          log_debug ("ldap-reaper: next run (count=%d size=%d, timeout=%d)\n",
+                     count, fparraysize, millisecs);
           for (count=0; count < fparraysize; count++)
             if (!fparray[count].ignore)
               log_debug ("ldap-reaper: fp[%d] stream=%p want=%d\n",
@@ -368,8 +405,15 @@ ldap_wrapper_thread (void *dummy)
         {
           for (count=0; count < fparraysize; count++)
             if (!fparray[count].ignore)
-              log_debug ("ldap-reaper: fp[%d] stream=%p got=%d\n",
-                         count, fparray[count].stream, fparray[count].got_read);
+              log_debug ("ldap-reaper: fp[%d] stream=%p r=%d %c%c%c%c%c%c%c\n",
+                         count, fparray[count].stream, ret,
+                         fparray[count].got_read? 'r':'-',
+                         fparray[count].got_write?'w':'-',
+                         fparray[count].got_oob?  'o':'-',
+                         fparray[count].got_rdhup?'H':'-',
+                         fparray[count].got_err?  'e':'-',
+                         fparray[count].got_hup?  'h':'-',
+                         fparray[count].got_nval? 'n':'-');
         }
 
       /* All timestamps before exptime should be considered expired.  */
@@ -377,115 +421,115 @@ ldap_wrapper_thread (void *dummy)
       if (exptime > INACTIVITY_TIMEOUT)
         exptime -= INACTIVITY_TIMEOUT;
 
-      /* Note that there is no need to lock the list because we always
-         add entries at the head (with a pending event status) and
-         thus traversing the list will even work if we have a context
-         switch in waitpid.  */
-      for (ctx = wrapper_list; ctx; ctx = ctx->next)
-        {
-          /* Check whether there is any logging to be done.  We need
-           * to check FPARRAYSIZE because it can be 0 in case es_poll
-           * returned a timeout.  */
-          if (fparraysize && ctx->log_fp && ctx->reaper_idx >= 0)
-            {
-              log_assert (ctx->reaper_idx < fparraysize);
-              if (fparray[ctx->reaper_idx].got_read)
-                {
-                  if (read_log_data (ctx))
-                    {
-                      SAFE_CLOSE (ctx->log_fp);
-                      any_action = 1;
-                    }
-                }
-            }
-
-          /* Check whether the process is still running.  */
-          if (ctx->pid != (pid_t)(-1))
-            {
-	      int status;
-
-	      err = gnupg_wait_process ("[dirmngr_ldap]", ctx->pid, 0,
-                                        &status);
-              if (!err)
-                {
-                  if (DBG_EXTPROG)
-                    log_info (_("ldap wrapper %d ready"), (int)ctx->pid);
-                  ctx->ready = 1;
-		  gnupg_release_process (ctx->pid);
-                  ctx->pid = (pid_t)(-1);
-                  any_action = 1;
-                }
-              else if (gpg_err_code (err) == GPG_ERR_GENERAL)
-                {
-                  if (status == 10)
-                    log_info (_("ldap wrapper %d ready: timeout\n"),
-                              (int)ctx->pid);
-                  else
-                    log_info (_("ldap wrapper %d ready: exitcode=%d\n"),
-                              (int)ctx->pid, status);
-                  ctx->ready = 1;
-		  gnupg_release_process (ctx->pid);
-                  ctx->pid = (pid_t)(-1);
-                  any_action = 1;
-                }
-              else if (gpg_err_code (err) != GPG_ERR_TIMEOUT)
-                {
-                  log_error (_("waiting for ldap wrapper %d failed: %s\n"),
-                             (int)ctx->pid, gpg_strerror (err));
-                  any_action = 1;
-                }
-            }
-
-          /* Check whether we should terminate the process. */
-          if (ctx->pid != (pid_t)(-1)
-              && ctx->stamp != (time_t)(-1) && ctx->stamp < exptime)
-            {
-              gnupg_kill_process (ctx->pid);
-              ctx->stamp = (time_t)(-1);
-              log_info (_("ldap wrapper %d stalled - killing\n"),
-                        (int)ctx->pid);
-              /* We need to close the log stream because the cleanup
-               * loop waits for it.  */
-              SAFE_CLOSE (ctx->log_fp);
-              any_action = 1;
-            }
-        }
-
-      /* If something has been printed to the log file or we got an
-         EOF from a wrapper, we now print the list of active
-         wrappers.  */
-      if (any_action && DBG_EXTPROG)
-        {
-          log_debug ("ldap worker stati:\n");
-          for (ctx = wrapper_list; ctx; ctx = ctx->next)
-            log_debug ("  c=%p pid=%d/%d rdr=%p logfp=%p"
-                       " ctrl=%p/%d la=%lu rdy=%d\n",
-                       ctx,
-                       (int)ctx->pid, (int)ctx->printable_pid,
-                       ctx->reader, ctx->log_fp,
-                       ctx->ctrl, ctx->ctrl? ctx->ctrl->refcount:0,
-                       (unsigned long)ctx->stamp, ctx->ready);
-        }
-
-
-      /* Use an extra loop to check whether ready marked wrappers may
-       * be removed.  We may only do so if the ksba reader object is
-       * not anymore in use or we are in shutdown state.  */
-     again:
-      for (ctx_prev=NULL, ctx=wrapper_list; ctx; ctx_prev=ctx, ctx=ctx->next)
-        if (ctx->ready
-            && ((!ctx->log_fp && !ctx->reader) || shutting_down))
+      lock_reaper_list ();
+      {
+        for (ctx = reaper_list; ctx; ctx = ctx->next)
           {
-            if (ctx_prev)
-              ctx_prev->next = ctx->next;
-            else
-              wrapper_list = ctx->next;
-            destroy_wrapper (ctx);
-            /* We need to restart because destroy_wrapper might have
-             * done a context switch. */
-            goto again;
+            /* Check whether there is any logging to be done.  We need
+             * to check FPARRAYSIZE because it can be 0 in case
+             * es_poll returned a timeout.  */
+            if (fparraysize && ctx->log_fp && ctx->reaper_idx >= 0)
+              {
+                log_assert (ctx->reaper_idx < fparraysize);
+                if (fparray[ctx->reaper_idx].got_read)
+                  {
+                    if (read_log_data (ctx))
+                      {
+                        SAFE_CLOSE (ctx->log_fp);
+                        any_action = 1;
+                      }
+                  }
+              }
+
+            /* Check whether the process is still running.  */
+            if (ctx->pid != (pid_t)(-1))
+              {
+                int status;
+
+                err = gnupg_wait_process ("[dirmngr_ldap]", ctx->pid, 0,
+                                          &status);
+                if (!err)
+                  {
+                    if (DBG_EXTPROG)
+                      log_info (_("ldap wrapper %d ready"), (int)ctx->pid);
+                    ctx->ready = 1;
+                    gnupg_release_process (ctx->pid);
+                    ctx->pid = (pid_t)(-1);
+                    any_action = 1;
+                  }
+                else if (gpg_err_code (err) == GPG_ERR_GENERAL)
+                  {
+                    if (status == 10)
+                      log_info (_("ldap wrapper %d ready: timeout\n"),
+                                (int)ctx->pid);
+                    else
+                      log_info (_("ldap wrapper %d ready: exitcode=%d\n"),
+                                (int)ctx->pid, status);
+                    ctx->ready = 1;
+                    gnupg_release_process (ctx->pid);
+                    ctx->pid = (pid_t)(-1);
+                    any_action = 1;
+                  }
+                else if (gpg_err_code (err) != GPG_ERR_TIMEOUT)
+                  {
+                    log_error (_("waiting for ldap wrapper %d failed: %s\n"),
+                               (int)ctx->pid, gpg_strerror (err));
+                    any_action = 1;
+                  }
+              }
+
+            /* Check whether we should terminate the process. */
+            if (ctx->pid != (pid_t)(-1)
+                && ctx->stamp != (time_t)(-1) && ctx->stamp < exptime)
+              {
+                gnupg_kill_process (ctx->pid);
+                ctx->stamp = (time_t)(-1);
+                log_info (_("ldap wrapper %d stalled - killing\n"),
+                          (int)ctx->pid);
+                /* We need to close the log stream because the cleanup
+                 * loop waits for it.  */
+                SAFE_CLOSE (ctx->log_fp);
+                any_action = 1;
+              }
           }
+
+        /* If something has been printed to the log file or we got an
+         * EOF from a wrapper, we now print the list of active
+         * wrappers.  */
+        if (any_action && DBG_EXTPROG)
+          {
+            log_debug ("ldap worker stati:\n");
+            for (ctx = reaper_list; ctx; ctx = ctx->next)
+              log_debug ("  c=%p pid=%d/%d rdr=%p logfp=%p"
+                         " ctrl=%p/%d la=%lu rdy=%d\n",
+                         ctx,
+                         (int)ctx->pid, (int)ctx->printable_pid,
+                         ctx->reader, ctx->log_fp,
+                         ctx->ctrl, ctx->ctrl? ctx->ctrl->refcount:0,
+                         (unsigned long)ctx->stamp, ctx->ready);
+          }
+
+        /* An extra loop to check whether ready marked wrappers may be
+         * removed.  We may only do so if the ksba reader object is
+         * not anymore in use or we are in shutdown state.  */
+      again:
+        for (ctx_prev=NULL, ctx=reaper_list; ctx; ctx_prev=ctx, ctx=ctx->next)
+          {
+            if (ctx->ready
+                && ((!ctx->log_fp && !ctx->reader) || shutting_down))
+              {
+                if (ctx_prev)
+                  ctx_prev->next = ctx->next;
+                else
+                  reaper_list = ctx->next;
+                destroy_wrapper (ctx);
+                goto again;
+              }
+          }
+      }
+      unlock_reaper_list ();
     }
+
   /*NOTREACHED*/
   return NULL; /* Make the compiler happy.  */
 }
@@ -494,7 +538,7 @@ ldap_wrapper_thread (void *dummy)
 
 /* Start the reaper thread for the ldap wrapper.  */
 void
-ldap_wrapper_launch_thread (void)
+ldap_reaper_launch_thread (void)
 {
   static int done;
   npth_attr_t tattr;
@@ -505,14 +549,21 @@ ldap_wrapper_launch_thread (void)
     return;
   done = 1;
 
+#ifdef HAVE_W32_SYSTEM
+  /* Static init does not yet work in W32 nPth.  */
+  if (npth_cond_init (&reaper_run_cond, NULL))
+    log_fatal ("%s: failed to init condition variabale: %s\n",
+               __func__, gpg_strerror (gpg_error_from_syserror ()));
+#endif
+
   npth_attr_init (&tattr);
   npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
 
-  err = npth_create (&thread, &tattr, ldap_wrapper_thread, NULL);
-  if (err)
+  if (npth_create (&thread, &tattr, ldap_reaper_thread, NULL))
     {
-      log_error (_("error spawning ldap wrapper reaper thread: %s\n"),
-                 strerror (err) );
+      err = gpg_error_from_syserror ();
+      log_error ("error spawning ldap reaper reaper thread: %s\n",
+                 gpg_strerror (err) );
       dirmngr_exit (1);
     }
   npth_setname_np (thread, "ldap-reaper");
@@ -526,9 +577,15 @@ ldap_wrapper_launch_thread (void)
 void
 ldap_wrapper_wait_connections ()
 {
-  shutting_down = 1;
-  /* FIXME: This is a busy wait.  */
-  while (wrapper_list)
+  lock_reaper_list ();
+  {
+    shutting_down = 1;
+    if (npth_cond_signal (&reaper_run_cond))
+      log_error ("%s: Ooops: signaling condition failed: %s\n",
+                 __func__, gpg_strerror (gpg_error_from_syserror ()));
+  }
+  unlock_reaper_list ();
+  while (reaper_list)
     npth_usleep (200);
 }
 
@@ -543,29 +600,34 @@ ldap_wrapper_release_context (ksba_reader_t reader)
   if (!reader )
     return;
 
-  for (ctx=wrapper_list; ctx; ctx=ctx->next)
-    if (ctx->reader == reader)
-      {
-        if (DBG_EXTPROG)
-          log_debug ("releasing ldap worker c=%p pid=%d/%d rdr=%p ctrl=%p/%d\n",
-                    ctx,
-                    (int)ctx->pid, (int)ctx->printable_pid,
-                    ctx->reader,
-                    ctx->ctrl, ctx->ctrl? ctx->ctrl->refcount:0);
+  lock_reaper_list ();
+  {
+    for (ctx=reaper_list; ctx; ctx=ctx->next)
+      if (ctx->reader == reader)
+        {
+          if (DBG_EXTPROG)
+            log_debug ("releasing ldap worker c=%p pid=%d/%d rdr=%p"
+                       " ctrl=%p/%d\n", ctx,
+                       (int)ctx->pid, (int)ctx->printable_pid,
+                       ctx->reader,
+                       ctx->ctrl, ctx->ctrl? ctx->ctrl->refcount:0);
 
-        ctx->reader = NULL;
-        SAFE_CLOSE (ctx->fp);
-        if (ctx->ctrl)
-          {
-            ctx->ctrl->refcount--;
-            ctx->ctrl = NULL;
-          }
-        if (ctx->fp_err)
-          log_info (_("reading from ldap wrapper %d failed: %s\n"),
-                    ctx->printable_pid, gpg_strerror (ctx->fp_err));
-        break;
-      }
+          ctx->reader = NULL;
+          SAFE_CLOSE (ctx->fp);
+          if (ctx->ctrl)
+            {
+              ctx->ctrl->refcount--;
+              ctx->ctrl = NULL;
+            }
+          if (ctx->fp_err)
+            log_info ("%s: reading from ldap wrapper %d failed: %s\n",
+                      __func__, ctx->printable_pid, gpg_strerror (ctx->fp_err));
+          break;
+        }
+  }
+  unlock_reaper_list ();
 }
+
 
 /* Cleanup all resources held by the connection associated with
    CTRL.  This is used after a cancel to kill running wrappers.  */
@@ -574,17 +636,21 @@ ldap_wrapper_connection_cleanup (ctrl_t ctrl)
 {
   struct wrapper_context_s *ctx;
 
-  for (ctx=wrapper_list; ctx; ctx=ctx->next)
-    if (ctx->ctrl && ctx->ctrl == ctrl)
-      {
-        ctx->ctrl->refcount--;
-        ctx->ctrl = NULL;
-        if (ctx->pid != (pid_t)(-1))
-          gnupg_kill_process (ctx->pid);
-        if (ctx->fp_err)
-          log_info (_("reading from ldap wrapper %d failed: %s\n"),
-                    ctx->printable_pid, gpg_strerror (ctx->fp_err));
-      }
+  lock_reaper_list ();
+  {
+    for (ctx=reaper_list; ctx; ctx=ctx->next)
+      if (ctx->ctrl && ctx->ctrl == ctrl)
+        {
+          ctx->ctrl->refcount--;
+          ctx->ctrl = NULL;
+          if (ctx->pid != (pid_t)(-1))
+            gnupg_kill_process (ctx->pid);
+          if (ctx->fp_err)
+            log_info ("%s: reading from ldap wrapper %d failed: %s\n",
+                      __func__, ctx->printable_pid, gpg_strerror (ctx->fp_err));
+        }
+  }
+  unlock_reaper_list ();
 }
 
 
@@ -650,6 +716,12 @@ reader_callback (void *cb_value, char *buffer, size_t count,  size_t *nread)
       if (millisecs < 0)
         millisecs = 1;
 
+      if (DBG_EXTPROG)
+        {
+          log_debug ("%s: fp[0] stream=%p want=%d\n",
+                     __func__, fparray[0].stream,fparray[0].want_read);
+        }
+
       ret = es_poll (fparray, DIM (fparray), millisecs);
       if (ret < 0)
 	{
@@ -658,6 +730,18 @@ reader_callback (void *cb_value, char *buffer, size_t count,  size_t *nread)
                      ctx->printable_pid, gpg_strerror (ctx->fp_err));
           SAFE_CLOSE (ctx->fp);
           return -1;
+        }
+      if (DBG_EXTPROG)
+        {
+          log_debug ("%s: fp[0] stream=%p r=%d %c%c%c%c%c%c%c\n",
+                     __func__, fparray[0].stream, ret,
+                     fparray[0].got_read? 'r':'-',
+                     fparray[0].got_write?'w':'-',
+                     fparray[0].got_oob?  'o':'-',
+                     fparray[0].got_rdhup?'H':'-',
+                     fparray[0].got_err?  'e':'-',
+                     fparray[0].got_hup?  'h':'-',
+                     fparray[0].got_nval? 'n':'-');
         }
       if (!ret)
         {
@@ -672,8 +756,15 @@ reader_callback (void *cb_value, char *buffer, size_t count,  size_t *nread)
           if (es_read (ctx->fp, buffer, nleft, &n))
             {
               ctx->fp_err = gpg_error_from_syserror ();
-              SAFE_CLOSE (ctx->fp);
-              return -1;
+              if (gpg_err_code (ctx->fp_err) == GPG_ERR_EAGAIN)
+                ctx->fp_err = 0;
+              else
+                {
+                  log_error ("%s: error reading: %s (%d)\n",
+                             __func__, gpg_strerror (ctx->fp_err), ctx->fp_err);
+                  SAFE_CLOSE (ctx->fp);
+                  return -1;
+                }
             }
           else if (!n) /* EOF */
             {
@@ -726,7 +817,7 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
      wrapper module to do the logging on its own.  Given that we anyway
      need a way to reap the child process and this is best done using a
      general reaping thread, that thread can do the logging too. */
-  ldap_wrapper_launch_thread ();
+  ldap_reaper_launch_thread ();
 
   *reader = NULL;
 
@@ -799,9 +890,17 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
     }
 
   /* Hook the context into our list of running wrappers.  */
-  ctx->reader = *reader;
-  ctx->next = wrapper_list;
-  wrapper_list = ctx;
+  lock_reaper_list ();
+  {
+    ctx->reader = *reader;
+    ctx->next = reaper_list;
+    reaper_list = ctx;
+    if (npth_cond_signal (&reaper_run_cond))
+      log_error ("ldap-wrapper: Ooops: signaling condition failed: %s (%d)\n",
+                 gpg_strerror (gpg_error_from_syserror ()), errno);
+  }
+  unlock_reaper_list ();
+
   if (DBG_EXTPROG)
     log_debug ("ldap wrapper %d started (%p, %s)\n",
                (int)ctx->pid, ctx->reader, pgmname);
