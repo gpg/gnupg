@@ -29,7 +29,6 @@
 # include <signal.h>
 #endif
 #include <errno.h>
-#include <assert.h>
 #include <sys/time.h>
 #include <unistd.h>
 #ifndef USE_LDAPWRAPPER
@@ -343,7 +342,7 @@ ldap_wrapper_main (char **argv, estream_t outstream)
     usage (1);
 #else
   /* All passed arguments should be fine in this case.  */
-  assert (argc);
+  log_assert (argc);
 #endif
 
 #ifdef USE_LDAPWRAPPER
