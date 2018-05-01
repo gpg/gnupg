@@ -743,6 +743,8 @@ Section "-libgpg-error" SEC_libgpg_error
   File share/locale/de/LC_MESSAGES/libgpg-error.mo
   SetOutPath "$INSTDIR\share\locale\eo\LC_MESSAGES"
   File share/locale/eo/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\es\LC_MESSAGES"
+  File share/locale/es/LC_MESSAGES/libgpg-error.mo
   SetOutPath "$INSTDIR\share\locale\fr\LC_MESSAGES"
   File share/locale/fr/LC_MESSAGES/libgpg-error.mo
   SetOutPath "$INSTDIR\share\locale\hu\LC_MESSAGES"
@@ -1249,6 +1251,9 @@ Section "-un.libgpg-error"
   Delete "$INSTDIR\share\locale\eo\LC_MESSAGES\libgpg-error.mo"
   RMDir "$INSTDIR\share\locale\eo\LC_MESSAGES"
   RMDir "$INSTDIR\share\locale\eo"
+  Delete "$INSTDIR\share\locale\es\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\es\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\es"
   Delete "$INSTDIR\share\locale\fr\LC_MESSAGES\libgpg-error.mo"
   RMDir "$INSTDIR\share\locale\fr\LC_MESSAGES"
   RMDir "$INSTDIR\share\locale\fr"
