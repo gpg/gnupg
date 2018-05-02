@@ -625,6 +625,7 @@ Section "GnuPG" SEC_gnupg
   File "bin/gpgconf.exe"
   File "bin/gpg-connect-agent.exe"
   File "bin/gpgtar.exe"
+  File "libexec/dirmngr_ldap.exe"
   File "libexec/gpg-preset-passphrase.exe"
   File "libexec/gpg-wks-client.exe"
 
@@ -1312,6 +1313,7 @@ Section "-un.gnupg"
   Delete "$INSTDIR\bin\gpgconf.exe"
   Delete "$INSTDIR\bin\gpg-connect-agent.exe"
   Delete "$INSTDIR\bin\gpgtar.exe"
+  Delete "$INSTDIR\bin\dirmngr_ldap.exe"
   Delete "$INSTDIR\bin\gpg-preset-passphrase.exe"
   Delete "$INSTDIR\bin\gpg-wks-client.exe"
 
