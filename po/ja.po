@@ -1195,8 +1195,7 @@ msgstr "*警告*: %s\n"
 
 msgid "Note: Outdated servers may lack important security fixes.\n"
 msgstr ""
-"注意: 古いサーバは、重要なセキュリティの修正が欠如しているかもしれませ"
-"ん。\n"
+"注意: 古いサーバは、重要なセキュリティの修正が欠如しているかもしれません。\n"
 
 #, c-format
 msgid "Note: Use the command \"%s\" to restart them.\n"
@@ -2350,7 +2349,8 @@ msgstr "'%s'は有効な鍵ID, フィンガープリント、keygripではない
 
 msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
 msgstr ""
-"*警告*: コマンドが指定されていません。なにを意味しているのか当ててみます ...\n"
+"*警告*: コマンドが指定されていません。なにを意味しているのか当ててみま"
+"す ...\n"
 
 msgid "Go ahead and type your message ...\n"
 msgstr "開始します。メッセージを打ってください ...\n"
@@ -7228,31 +7228,17 @@ msgstr "発行者からcrl_cache_insertが失敗しました: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "readerからファイル・マッピングのテーブルがいっぱいです - 待ちます\n"
 
-msgid "using \"http\" instead of \"https\"\n"
-msgstr "\"http\" を \"https\" の代わりに使います\n"
-
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr "CRLアクセスは停止された%sのため不可能です\n"
-
-#, c-format
-msgid "error initializing reader object: %s\n"
-msgstr "リーダ・オブジェクトの初期化エラー: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr "URL'%s' は '%s' (%u) へリダイレクトされました\n"
-
-msgid "too many redirections\n"
-msgstr "リダイレクトが多すぎます\n"
 
 #, c-format
 msgid "error retrieving '%s': %s\n"
 msgstr "'%s'を取得する際のエラー: %s\n"
 
 #, c-format
-msgid "error retrieving '%s': http status %u\n"
-msgstr "'%s'の取得エラー: httpステイタス %u\n"
+msgid "error initializing reader object: %s\n"
+msgstr "リーダ・オブジェクトの初期化エラー: %s\n"
 
 msgid "CRL access not possible due to Tor mode\n"
 msgstr "CRLアクセスはTorモードのため不可能です\n"
@@ -7668,10 +7654,6 @@ msgid "error reading log from ldap wrapper %d: %s\n"
 msgstr "ldap wrapper %dからのログの読み込みエラー: %s\n"
 
 #, c-format
-msgid "npth_select failed: %s - waiting 1s\n"
-msgstr "npth_selectに失敗しました: %s - 一秒待ちます\n"
-
-#, c-format
 msgid "ldap wrapper %d ready"
 msgstr "ldap wrapper %d が準備完了"
 
@@ -7690,14 +7672,6 @@ msgstr "ldap wrapper %dの待ちが失敗: %s\n"
 #, c-format
 msgid "ldap wrapper %d stalled - killing\n"
 msgstr "ldap wrapper %d が止まりました - killしています\n"
-
-#, c-format
-msgid "error spawning ldap wrapper reaper thread: %s\n"
-msgstr "ldap wrapperのスレッドの起動でエラー: %s\n"
-
-#, c-format
-msgid "reading from ldap wrapper %d failed: %s\n"
-msgstr "ldap wrapper %d からの読み込みに失敗しました: %s\n"
 
 #, c-format
 msgid "invalid char 0x%02x in host name - not added\n"
@@ -7761,6 +7735,13 @@ msgstr "'%s'の接続エラー: %s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "'%s'のHTTP応答の読み込みエラー: %s\n"
+
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr "URL'%s' は '%s' (%u) へリダイレクトされました\n"
+
+msgid "too many redirections\n"
+msgstr "リダイレクトが多すぎます\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
@@ -8350,6 +8331,21 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "using \"http\" instead of \"https\"\n"
+#~ msgstr "\"http\" を \"https\" の代わりに使います\n"
+
+#~ msgid "error retrieving '%s': http status %u\n"
+#~ msgstr "'%s'の取得エラー: httpステイタス %u\n"
+
+#~ msgid "npth_select failed: %s - waiting 1s\n"
+#~ msgstr "npth_selectに失敗しました: %s - 一秒待ちます\n"
+
+#~ msgid "error spawning ldap wrapper reaper thread: %s\n"
+#~ msgstr "ldap wrapperのスレッドの起動でエラー: %s\n"
+
+#~ msgid "reading from ldap wrapper %d failed: %s\n"
+#~ msgstr "ldap wrapper %d からの読み込みに失敗しました: %s\n"
 
 #~ msgid "No change."
 #~ msgstr "変更なし。"

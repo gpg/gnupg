@@ -7608,31 +7608,17 @@ msgstr "помилка crl_cache_insert за видавцем: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "засіб читання до таблиці відповідності файлів переповнено — очікуємо\n"
 
-msgid "using \"http\" instead of \"https\"\n"
-msgstr "використовуємо «http» замість «https»\n"
-
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr "Доступ до CRL неможливий через вимкнений %s\n"
-
-#, c-format
-msgid "error initializing reader object: %s\n"
-msgstr "помилка під час спроби ініціалізації об’єкта читання: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr "Адресу «%s» переспрямовано до «%s» (%u)\n"
-
-msgid "too many redirections\n"
-msgstr "занадто багато переспрямувань\n"
 
 #, c-format
 msgid "error retrieving '%s': %s\n"
 msgstr "помилка отримання «%s»: %s\n"
 
 #, c-format
-msgid "error retrieving '%s': http status %u\n"
-msgstr "помилка отримання «%s»: стан http %u\n"
+msgid "error initializing reader object: %s\n"
+msgstr "помилка під час спроби ініціалізації об’єкта читання: %s\n"
 
 msgid "CRL access not possible due to Tor mode\n"
 msgstr "Доступ до CRL неможливий через увімкнений режим Tor\n"
@@ -8052,10 +8038,6 @@ msgid "error reading log from ldap wrapper %d: %s\n"
 msgstr "помилка під час спроби читання журналу з обгортки LDAP %d: %s\n"
 
 #, c-format
-msgid "npth_select failed: %s - waiting 1s\n"
-msgstr "помилка npth_select: %s — очікування у 1 с\n"
-
-#, c-format
 msgid "ldap wrapper %d ready"
 msgstr "обгортка LDAP %d готова"
 
@@ -8074,15 +8056,6 @@ msgstr "очікування даних з обгортки LDAP %d зазнал
 #, c-format
 msgid "ldap wrapper %d stalled - killing\n"
 msgstr "обгортка LDAP %d не відповідає — завершуємо роботу\n"
-
-#, c-format
-msgid "error spawning ldap wrapper reaper thread: %s\n"
-msgstr ""
-"помилка під час спроби породження потоку обгортки отримання даних LDAP: %s\n"
-
-#, c-format
-msgid "reading from ldap wrapper %d failed: %s\n"
-msgstr "спроба читання з обгортки LDAP %d зазнала невдачі: %s\n"
 
 #, c-format
 msgid "invalid char 0x%02x in host name - not added\n"
@@ -8146,6 +8119,13 @@ msgstr "помилка під час спроби встановлення з’
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "помилка під час спроби читання відповіді за HTTP для «%s»: %s\n"
+
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr "Адресу «%s» переспрямовано до «%s» (%u)\n"
+
+msgid "too many redirections\n"
+msgstr "занадто багато переспрямувань\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
@@ -8739,6 +8719,23 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "using \"http\" instead of \"https\"\n"
+#~ msgstr "використовуємо «http» замість «https»\n"
+
+#~ msgid "error retrieving '%s': http status %u\n"
+#~ msgstr "помилка отримання «%s»: стан http %u\n"
+
+#~ msgid "npth_select failed: %s - waiting 1s\n"
+#~ msgstr "помилка npth_select: %s — очікування у 1 с\n"
+
+#~ msgid "error spawning ldap wrapper reaper thread: %s\n"
+#~ msgstr ""
+#~ "помилка під час спроби породження потоку обгортки отримання даних LDAP: "
+#~ "%s\n"
+
+#~ msgid "reading from ldap wrapper %d failed: %s\n"
+#~ msgstr "спроба читання з обгортки LDAP %d зазнала невдачі: %s\n"
 
 #~ msgid "What keysize do you want for the Signature key? (%u) "
 #~ msgstr "Якому розміру ключа підписування ви надаєте перевагу? (%u) "

@@ -8009,26 +8009,9 @@ msgstr "odbieranie linii nie powiodło się: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
-msgid "using \"http\" instead of \"https\"\n"
-msgstr ""
-
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "%s: error writing dir record: %s\n"
-msgid "error initializing reader object: %s\n"
-msgstr "%s: błąd zapisu wpisu katalogowego: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy
-#| msgid "too many cipher preferences\n"
-msgid "too many redirections\n"
-msgstr "zbyt wiele ustawień szyfru\n"
 
 #, fuzzy, c-format
 #| msgid "error retrieving `%s' via %s: %s\n"
@@ -8036,9 +8019,9 @@ msgid "error retrieving '%s': %s\n"
 msgstr "błąd odtwarzania ,,%s'' poprzez %s: %s\n"
 
 #, fuzzy, c-format
-#| msgid "error running `%s': exit status %d\n"
-msgid "error retrieving '%s': http status %u\n"
-msgstr "błąd uruchamiania ,,%s'': kod wyjścia %d\n"
+#| msgid "%s: error writing dir record: %s\n"
+msgid "error initializing reader object: %s\n"
+msgstr "%s: błąd zapisu wpisu katalogowego: %s\n"
 
 #, fuzzy
 #| msgid "certificate `%s' not found: %s\n"
@@ -8540,11 +8523,6 @@ msgstr "błąd zapisu do %s: %s\n"
 msgid "error reading log from ldap wrapper %d: %s\n"
 msgstr "błąd odczytu z %s: %s\n"
 
-#, fuzzy, c-format
-#| msgid "pth_select failed: %s - waiting 1s\n"
-msgid "npth_select failed: %s - waiting 1s\n"
-msgstr "pth_select nie powiodło się: %s - czekanie 1s\n"
-
 #, c-format
 msgid "ldap wrapper %d ready"
 msgstr ""
@@ -8565,15 +8543,6 @@ msgstr "oczekiwanie na zakończenie procesu %d nie powiodło się: %s\n"
 #, c-format
 msgid "ldap wrapper %d stalled - killing\n"
 msgstr ""
-
-#, c-format
-msgid "error spawning ldap wrapper reaper thread: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "reading public key failed: %s\n"
-msgid "reading from ldap wrapper %d failed: %s\n"
-msgstr "odczyt klucza publicznego nie powiódł się: %s\n"
 
 #, c-format
 msgid "invalid char 0x%02x in host name - not added\n"
@@ -8651,6 +8620,15 @@ msgstr "błąd zapisu do ,,%s'': %s\n"
 #| msgid "error reading from %s: %s\n"
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "błąd odczytu z %s: %s\n"
+
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "too many cipher preferences\n"
+msgid "too many redirections\n"
+msgstr "zbyt wiele ustawień szyfru\n"
 
 #, fuzzy, c-format
 #| msgid "error binding socket to `%s': %s\n"
@@ -9326,6 +9304,21 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
+
+#, fuzzy
+#~| msgid "error running `%s': exit status %d\n"
+#~ msgid "error retrieving '%s': http status %u\n"
+#~ msgstr "błąd uruchamiania ,,%s'': kod wyjścia %d\n"
+
+#, fuzzy
+#~| msgid "pth_select failed: %s - waiting 1s\n"
+#~ msgid "npth_select failed: %s - waiting 1s\n"
+#~ msgstr "pth_select nie powiodło się: %s - czekanie 1s\n"
+
+#, fuzzy
+#~| msgid "reading public key failed: %s\n"
+#~ msgid "reading from ldap wrapper %d failed: %s\n"
+#~ msgstr "odczyt klucza publicznego nie powiódł się: %s\n"
 
 #~ msgid "What keysize do you want for the Signature key? (%u) "
 #~ msgstr "Jakiej długości klucz do podpisywania wygenerować? (%u) "

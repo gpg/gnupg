@@ -99,8 +99,6 @@ msgstr "PIN:"
 msgid "Passphrase:"
 msgstr "Frase contraseña:"
 
-#. The re-entered one did not match and the user did not
-#. hit cancel.
 msgid "does not match - try again"
 msgstr "no coincide - reinténtelo"
 
@@ -587,13 +585,10 @@ msgstr "error abriendo '%s': %s\n"
 msgid "file '%s', line %d: %s\n"
 msgstr "fichero '%s', línea %d: %s\n"
 
-#. Same file.
 #, c-format
 msgid "statement \"%s\" ignored in '%s', line %d\n"
 msgstr "declaración \"%s\" ignorada en '%s', línea %d\n"
 
-#. A non existent system trustlist is not an error.
-#. Just print a note.
 #, c-format
 msgid "system trustlist '%s' not available\n"
 msgstr "la lista de confianza '%s' del sistema no está disponible\n"
@@ -660,7 +655,6 @@ msgstr "Correcto"
 msgid "Wrong"
 msgstr "Incorrecto"
 
-#. No protection date known - must force passphrase change.
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
 msgstr ""
@@ -698,8 +692,6 @@ msgstr ""
 "Cuidado: ¡Esta clave también está listada para usarse con SSH!\n"
 "Borrarla puede remover tu capacidad de acceder a máquinas remotas."
 
-#. FIXME: We check the QBITS but print a message about the hash
-#. length.
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr "DSA necesita un resumen cuya longitud sea múltiplo de 8 bits\n"
 
@@ -715,7 +707,6 @@ msgstr "un hash de %zu bits no vale para %u bits de la clave %s\n"
 msgid "checking created signature failed: %s\n"
 msgstr "la comprobación de la firma creada falló: %s\n"
 
-#. Stub key.
 msgid "secret key parts are not available\n"
 msgstr "las partes de la clave privada no están disponibles\n"
 
@@ -723,9 +714,6 @@ msgstr "las partes de la clave privada no están disponibles\n"
 msgid "public key algorithm %d (%s) is not supported\n"
 msgstr "el algoritmo de llave pública %d (%s) no se puede usar\n"
 
-#. The algorithm numbers are Libgcrypt numbers but fortunately
-#. the OpenPGP algorithm numbers map one-to-one to the Libgcrypt
-#. numbers.
 #, c-format
 msgid "protection algorithm %d (%s) is not supported\n"
 msgstr "el algoritmo de protección %d (%s) no se puede usar\n"
@@ -1106,9 +1094,6 @@ msgstr "no se pudo crear el fichero temporal '%s': %s\n"
 msgid "error writing to '%s': %s\n"
 msgstr "error escribiendo a '%s': %s\n"
 
-#. Note: It is unlikley that we get a race here unless a pid is
-#. reused too fast or a new process with the same pid as the one
-#. of the stale file tries to lock right at the same time as we.
 #, c-format
 msgid "removing stale lockfile (created by %d)\n"
 msgstr "borrando fichero de bloqueo residual (creado por %d)\n"
@@ -1145,12 +1130,6 @@ msgstr "cabecera de armadura: "
 msgid "invalid clearsig header\n"
 msgstr "cabecera de firma clara inválida\n"
 
-#. Section 6.2: "Unknown keys should be reported to the user,
-#. but OpenPGP should continue to process the message."  Note
-#. that in a clearsigned message this applies to the signature
-#. part (i.e. "BEGIN PGP SIGNATURE") and not the signed data
-#. ("BEGIN PGP SIGNED MESSAGE").  The only key allowed in the
-#. signed data section is "Hash".
 msgid "unknown armor header: "
 msgstr "cabecera de armadura desconocida: "
 
@@ -1160,7 +1139,6 @@ msgstr "firmas en texto claro anidadas\n"
 msgid "unexpected armor: "
 msgstr "armadura inesperada: "
 
-#. Bad dash-escaping.
 msgid "invalid dash escaped line: "
 msgstr "Línea con guiones inválida: "
 
@@ -1381,21 +1359,8 @@ msgstr ""
 "      la documentación de su tarjeta para ver los tamaños posibles.\n"
 
 #, c-format
-msgid "What keysize do you want for the Signature key? (%u) "
-msgstr "¿De qué tamaño quiere la clave de Firmado? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr "¿De qué tamaño quiere la clave de Cifrado? (%u) "
-
-#, c-format
-msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr "¿De qué tamaño quiere la clave de Autenticación? (%u) "
-
-#. Use default.
-#, c-format
-msgid "The card will now be re-configured to generate a key of type: %s\n"
-msgstr "Ahora la tarjeta se reconfigurará para generar una clave de tipo: %s\n"
+msgid "What keysize do you want? (%u) "
+msgstr "¿De qué tamaño quiere la clave? (%u) "
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -1405,13 +1370,59 @@ msgstr "redondeados a %u bits\n"
 msgid "%s keysizes must be in the range %u-%u\n"
 msgstr "los tamaños de claves %s deben estar en el rango %u-%u\n"
 
+msgid "Changing card key attribute for: "
+msgstr ""
+
+#, fuzzy
+#| msgid "   (1) Signature key\n"
+msgid "Signature key\n"
+msgstr "   (1) Clave de firmado\n"
+
+#, fuzzy
+#| msgid "   (2) Encryption key\n"
+msgid "Encryption key\n"
+msgstr "   (2) Clave de cifrado\n"
+
+#, fuzzy
+#| msgid "   (3) Authentication key\n"
+msgid "Authentication key\n"
+msgstr "   (3) Clave de autentificación\n"
+
+msgid "Please select what kind of key you want:\n"
+msgstr "Por favor seleccione tipo de clave deseado:\n"
+
+#, c-format
+msgid "   (%d) RSA\n"
+msgstr "   (%d) RSA\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) ECC and ECC\n"
+msgid "   (%d) ECC\n"
+msgstr "   (%d) ECC y ECC\n"
+
+msgid "Invalid selection.\n"
+msgstr "Elección inválida.\n"
+
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
 msgstr "Ahora la tarjeta se reconfigurará para generar una clave de %u bits\n"
 
 #, c-format
-msgid "error changing size of key %d to %u bits: %s\n"
+msgid "The card will now be re-configured to generate a key of type: %s\n"
+msgstr "Ahora la tarjeta se reconfigurará para generar una clave de tipo: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error changing size of key %d to %u bits: %s\n"
+msgid "error changing key attribute for key %d: %s\n"
 msgstr "error cambiando el tamaño de la clave %d a %u bits: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error getting current key info: %s\n"
+msgid "error getting card info: %s\n"
+msgstr "error obteniendo la información actual de la clave: %s\n"
+
+msgid "This command is not supported by this card\n"
+msgstr "Esta orden no se puede usar con esta tarjeta\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
@@ -1445,21 +1456,12 @@ msgstr "   (2) Clave de cifrado\n"
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Clave de autentificación\n"
 
-#. Okay.
-msgid "Invalid selection.\n"
-msgstr "Elección inválida.\n"
-
 msgid "Please select where to store the key:\n"
 msgstr "Por favor elija donde guardar la clave:\n"
 
 #, c-format
 msgid "KEYTOCARD failed: %s\n"
 msgstr "KEYTOCARD fallido: %s\n"
-
-#. Note: We won't see status-indicator 3 here because it is not
-#. possible to select a card application in termination state.
-msgid "This command is not supported by this card\n"
-msgstr "Esta orden no se puede usar con esta tarjeta\n"
 
 msgid "Note: This command destroys all keys stored on the card!\n"
 msgstr ""
@@ -1470,6 +1472,11 @@ msgstr "¿Continuar? (s/N) "
 
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr "¿Realmente quiere volver a los valores de fábrica? (escriba \"sí\") "
+
+#, fuzzy, c-format
+#| msgid "error looking up: %s\n"
+msgid "error for setup KDF: %s\n"
+msgstr "error al buscar: %s\n"
 
 msgid "quit this menu"
 msgstr "salir de este menú"
@@ -1521,6 +1528,16 @@ msgstr "desbloquear PIN usando Código de Reinicio"
 
 msgid "destroy all keys and data"
 msgstr "destruir todas las claves y datos"
+
+#, fuzzy
+#| msgid "|NAME|use user NAME for authentication"
+msgid "setup KDF for PIN authentication"
+msgstr "|NAME|usa NOMBRE como destinatario por defecto"
+
+#, fuzzy
+#| msgid "change the ownertrust"
+msgid "change the key attribute"
+msgstr "cambia valores de confianza"
 
 msgid "gpg/card> "
 msgstr "gpg/tarjeta> "
@@ -1739,9 +1756,6 @@ msgstr " - omitido"
 msgid "writing to '%s'\n"
 msgstr "escribiendo en '%s'\n"
 
-#. It does not make sense to export a key with its
-#. * primary key on card using a non-key stub.  Thus we
-#. * skip those keys when used with --export-secret-subkeys.
 #, c-format
 msgid "key %s: key material on-card - skipped\n"
 msgstr "clave %s: material de la clave en la tarjeta - omitida\n"
@@ -1828,7 +1842,6 @@ msgstr "crea una firma"
 msgid "make a clear text signature"
 msgstr "crea una firma en texto claro"
 
-#. ARGPARSE_c (aClearsign, "clearsign", N_("make a clear text signature") ),
 msgid "make a detached signature"
 msgstr "crea una firma separada"
 
@@ -1838,7 +1851,6 @@ msgstr "cifra datos"
 msgid "encryption only with symmetric cipher"
 msgstr "cifra sólo con un cifrado simétrico"
 
-#. ARGPARSE_c (aSym, "symmetric", N_("encryption only with symmetric cipher")),
 msgid "decrypt data (default)"
 msgstr "descifra datos (predefinido)"
 
@@ -2165,6 +2177,11 @@ msgstr "\"%s\" no es una dirección de email válida\n"
 #, c-format
 msgid "invalid pinentry mode '%s'\n"
 msgstr "modo de entrada de pin inválido '%s'\n"
+
+#, fuzzy, c-format
+#| msgid "invalid value for option '%s'\n"
+msgid "invalid request origin '%s'\n"
+msgstr "parámetro incorrecto para la opción '%s'\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
@@ -2699,9 +2716,6 @@ msgstr "clave %s: error enviando al agente: %s\n"
 msgid "secret key %s: %s\n"
 msgstr "clave secreta %s: %s\n"
 
-#. We don't allow importing secret keys because that may be used
-#. to put a secret key into the keyring and the user might later
-#. be tricked into signing stuff with that key.
 msgid "importing secret keys not allowed\n"
 msgstr "no se permite importar claves secretas\n"
 
@@ -2955,8 +2969,6 @@ msgstr ""
 msgid "Do you want to issue a new signature to replace the expired one? (y/N) "
 msgstr "¿Quiere producir una nueva firma que reemplace a la expirada? (s/N) "
 
-#. It's a local sig, and we want to make a
-#. exportable sig.
 #, c-format
 msgid ""
 "Your current signature on \"%s\"\n"
@@ -3093,9 +3105,6 @@ msgstr "comprueba firmas"
 msgid "sign selected user IDs [* see below for related commands]"
 msgstr "firmar IDs seleccionadas [* ver debajo órdenes relacionadas]"
 
-#. "lsign" and friends will never match since "sign" comes first
-#. and it is a tail match.  They are just here so they show up in
-#. the help menu.
 msgid "sign selected user IDs locally"
 msgstr "firma localmente los IDs de usuarios elegidos"
 
@@ -3522,9 +3531,6 @@ msgstr "Introduzca el ID de usuario del revocador designado: "
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "no se puede elegir una clave tipo PGP 2.x como revocador designado\n"
 
-#. This actually causes no harm (after all, a key that
-#. designates itself as a revoker is the same as a
-#. regular key), but it's easy enough to check.
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "no puede elegir una clave como su propio revocador designado\n"
 
@@ -3555,6 +3561,16 @@ msgstr "Cambiando caducidad de clave primaria.\n"
 
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "No puede cambiar la fecha de caducidad de una clave v3\n"
+
+#, fuzzy
+#| msgid "Changing expiration time for a subkey.\n"
+msgid "Changing usage of a subkey.\n"
+msgstr "Cambiando fecha de caducidad de subclave.\n"
+
+#, fuzzy
+#| msgid "Changing expiration time for the primary key.\n"
+msgid "Changing usage of the primary key.\n"
+msgstr "Cambiando caducidad de clave primaria.\n"
 
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
@@ -3765,9 +3781,6 @@ msgstr "   (%c) Conmutar la capacidad de autenticación\n"
 msgid "   (%c) Finished\n"
 msgstr "   (%c) Acabado\n"
 
-msgid "Please select what kind of key you want:\n"
-msgstr "Por favor seleccione tipo de clave deseado:\n"
-
 #, c-format
 msgid "   (%d) RSA and RSA (default)\n"
 msgstr "   (%d) RSA y RSA (por defecto)\n"
@@ -3840,10 +3853,6 @@ msgstr "las claves %s pueden tener entre %u y %u bits de longitud.\n"
 #, c-format
 msgid "What keysize do you want for the subkey? (%u) "
 msgstr "¿De qué tamaño quiere la subclave? (%u) "
-
-#, c-format
-msgid "What keysize do you want? (%u) "
-msgstr "¿De qué tamaño quiere la clave? (%u) "
 
 #, c-format
 msgid "Requested keysize is %u bits\n"
@@ -3925,10 +3934,6 @@ msgstr ""
 "GnuPG debe construir un ID de usuario para identificar su clave.\n"
 "\n"
 
-#. There is no translation for the string thus we to use
-#. the old info text.  gettext has no way to tell whether
-#. a translation is actually available, thus we need to
-#. to compare again.
 #. TRANSLATORS: This string is in general not anymore used
 #. but you should keep your existing translation.  In case
 #. the new string is not translated this old string will
@@ -4412,7 +4417,6 @@ msgstr "Firmado el %s\n"
 msgid "               using %s key %s\n"
 msgstr "               usando %s clave %s\n"
 
-#. Legacy format.
 #, c-format
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Firmado el %s usando clave %s ID %s\n"
@@ -4421,10 +4425,6 @@ msgstr "Firmado el %s usando clave %s ID %s\n"
 msgid "               issuer \"%s\"\n"
 msgstr "               emisor \"%s\"\n"
 
-#. According to my favorite copy editor, in English grammar,
-#. you say "at" if the key is located on a web page, but
-#. "from" if it is located on a keyserver.  I'm not going to
-#. even try to make two strings here :)
 msgid "Key available at: "
 msgstr "Clave disponible en: "
 
@@ -4465,8 +4465,6 @@ msgstr "desconocido"
 msgid ", key algorithm "
 msgstr ", algoritmo de clave pública "
 
-#. Not only signature packets in the tree thus this
-#. is not a detached signature.
 #, c-format
 msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
 msgstr ""
@@ -4586,7 +4584,6 @@ msgstr ""
 msgid "unknown weak digest '%s'\n"
 msgstr "algoritmo débil de resumen desconocido '%s'\n"
 
-#. Do not overwrite.
 #, c-format
 msgid "File '%s' exists. "
 msgstr "El fichero '%s' ya existe. "
@@ -4725,8 +4722,6 @@ msgstr "razón para la revocación: "
 msgid "revocation comment: "
 msgstr "comentario a la revocación: "
 
-#. A string with valid answers.
-#.
 #. TRANSLATORS: These are the allowed answers in lower and
 #. uppercase.  Below you will find the matching strings which
 #. should be translated accordingly and the letter changed to
@@ -4809,8 +4804,6 @@ msgstr "Esta clave probablemente pertenece al usuario que se nombra\n"
 msgid "This key belongs to us\n"
 msgstr "Esta clave nos pertenece\n"
 
-#. This can be returned by TOFU, which can return negative
-#. assertions.
 #, c-format
 msgid "%s: This key is bad!  It has been marked as untrusted!\n"
 msgstr "%s: ¡Esta clave es mala! ¡Está marcada como no confiable!\n"
@@ -5048,7 +5041,6 @@ msgstr "se fuerza salida con armadura ASCII.\n"
 msgid "make_keysig_packet failed: %s\n"
 msgstr "make_keysig_packet falló: %s\n"
 
-#. and issue a usage notice
 msgid "Revocation certificate created.\n"
 msgstr "Certificado de revocación creado.\n"
 
@@ -5176,14 +5168,9 @@ msgstr ""
 "la clave %s %s requiere un resumen de %zu bits o mayor (el resumen es de "
 "%s)\n"
 
-#. Sanity check that the md has a context for the hash that the
-#. sig is expecting.  This can happen if a onepass sig header does
-#. not match the actual sig, and also if the clearsign "Hash:"
-#. header is missing or does not match the actual sig.
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "AVISO: conflicto con el resumen de la firma del mensaje\n"
 
-#. Compliance failure.
 #, c-format
 msgid "key %s may not be used for signing in %s mode\n"
 msgstr "no puede usar la clave %s para firmar en modo %s\n"
@@ -5243,6 +5230,11 @@ msgstr "NOTA: clave de firmado %s caducada el %s\n"
 #, c-format
 msgid "Note: signature key %s has been revoked\n"
 msgstr "NOTA: la clave de firmado %s ha sido revocada\n"
+
+#, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "firma independiente de clase 0x%02x\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
@@ -5338,7 +5330,6 @@ msgstr "huella digital no válida"
 msgid "ownertrust value missing"
 msgstr "falta el valor de confianza"
 
-#. error
 #, c-format
 msgid "error finding trust record in '%s': %s\n"
 msgstr "error intentando encontrar el registro de confianza en '%s': %s\n"
@@ -5368,7 +5359,6 @@ msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr ""
 "registro base de datos de confianza %lu: escritura fallida (n=%d): %s\n"
 
-#. Hard limit for the cache size reached.
 msgid "trustdb transaction too large\n"
 msgstr "transacción en la base de datos de confianza demasiado grande\n"
 
@@ -5485,13 +5475,10 @@ msgstr "error al crear tabla TOFU de 'claves confiadas': %s\n"
 msgid "TOFU DB error"
 msgstr "Error de la base de datos de TOFU"
 
-#. The result has the wrong form.
 #, c-format
 msgid "error reading TOFU database: %s\n"
 msgstr "error al leer la base de datos TOFU: %s\n"
 
-#. Unexpected success.  This can only happen if there are no
-#. rows.  (select returned 0, but expected ABORT.)
 #, c-format
 msgid "error determining TOFU database's version: %s\n"
 msgstr "error al intentar determinar la versión de la base de datos TOFU: %s\n"
@@ -5645,7 +5632,6 @@ msgstr "Mensajes verificados en el pasado: %d."
 msgid "Messages encrypted in the past: %d."
 msgstr "Mensajes cifrados en el pasado: %d."
 
-#. This is a conflict.
 #. TRANSLATORS: Please translate the text found in the source
 #. * file below.  We don't directly internationalize that text so
 #. * that we can tweak it without breaking translations.
@@ -6097,9 +6083,6 @@ msgstr "Intentos disponibles: %d"
 msgid "using default PIN as %s\n"
 msgstr "usando PIN por defecto %s\n"
 
-#. Verification of CHV2 with the default PIN failed,
-#. although the card pretends to have the default PIN set as
-#. CHV2.  We better disable the def_chv2 flag now.
 #, c-format
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr "fallo al usar el PIN por defecto %s: %s - en adelante deshabilitado\n"
@@ -6372,7 +6355,6 @@ msgstr "el certificado aún no es válido"
 msgid "root certificate not yet valid"
 msgstr "el certificado raíz no es válido aún"
 
-#. other
 msgid "intermediate certificate not yet valid"
 msgstr "el certificado intermedio aún no es válido"
 
@@ -6382,7 +6364,6 @@ msgstr "certificado caducado"
 msgid "root certificate has expired"
 msgstr "el certificado raíz ha caducado"
 
-#. other
 msgid "intermediate certificate has expired"
 msgstr "el certificado intermedio ha caducado"
 
@@ -6406,14 +6387,12 @@ msgstr ""
 msgid "  (  signature created at "
 msgstr "  ( firmas creadas en "
 
-#.
 msgid "  (certificate created at "
 msgstr "  (certificado creado en "
 
 msgid "  (certificate valid from "
 msgstr "  (certificado válido desde "
 
-#.
 msgid "  (     issuer valid from "
 msgstr "  (     emisor válido desde "
 
@@ -6468,7 +6447,6 @@ msgstr "certificado correcto\n"
 msgid "intermediate certificate is good\n"
 msgstr "certificado intermedio correcto\n"
 
-#. other
 msgid "root certificate is good\n"
 msgstr "certificado raíz correcto\n"
 
@@ -6622,10 +6600,6 @@ msgstr ""
 "la clave que acaba de crear una vez más.\n"
 
 #, c-format
-msgid "   (%d) RSA\n"
-msgstr "   (%d) RSA\n"
-
-#, c-format
 msgid "   (%d) Existing key\n"
 msgstr "   (%d) Clave existente\n"
 
@@ -6644,7 +6618,6 @@ msgstr "Número de serie de la tarjeta: %s\n"
 msgid "Available keys:\n"
 msgstr "Claves disponibles:\n"
 
-#. Ask for the key usage.
 #, c-format
 msgid "Possible actions for a %s key:\n"
 msgstr "Posibles acciones para una clave %s:\n"
@@ -6683,21 +6656,18 @@ msgstr "Nombre de entidad no válido '%s'\n"
 msgid "22 translator: see certreg-ui.c:gpgsm_gencertreq_tty"
 msgstr "28 visto por el traductor hasta la comilla inclusive"
 
-#. Get the email addresses.
 msgid "Enter email addresses"
 msgstr "Dirección de correo electrónico"
 
 msgid " (end with an empty line):\n"
 msgstr " (termine con una línea en blanco):\n"
 
-#. DNS names.
 msgid "Enter DNS names"
 msgstr "Introduzca nombres de DNS"
 
 msgid " (optional; end with an empty line):\n"
 msgstr " (opcional; acabe con una línea en blanco):\n"
 
-#. URIs.
 msgid "Enter URIs"
 msgstr "Introduzca URIs"
 
@@ -6760,8 +6730,6 @@ msgstr "lista claves externas"
 msgid "list certificate chain"
 msgstr "lista de cadenas de certificados"
 
-#. ARGPARSE_c (aSendKeys, "send-keys", N_("export keys to a keyserver")),
-#. ARGPARSE_c (aRecvKeys, "recv-keys", N_("import keys from a keyserver")),
 msgid "import certificates"
 msgstr "importa certificado"
 
@@ -6983,10 +6951,6 @@ msgstr ""
 "\"%s\"\n"
 "¡Observe que este certificado NO creará una firma cualificada!"
 
-#. case GCRY_MD_WHIRLPOOL: oid = "No OID yet"; break;
-#. We don't want to use MD5.
-#. No algorithm found in cert.
-#. Other algorithms.
 #, c-format
 msgid "hash algorithm %d (%s) for signer %d not supported; using %s\n"
 msgstr "resumen %d (%s) para firmante %d no puede utilizarse; usando %s\n"
@@ -7184,8 +7148,6 @@ msgstr "detectado un campo extra en la entrada crl de '%s' línea %u\n"
 msgid "invalid line detected in '%s' line %u\n"
 msgstr "línea no válida detectada en '%s', línea %u\n"
 
-#. Fixme: The duplicate checking used is not very
-#. effective for large numbers of issuers.
 #, c-format
 msgid "duplicate entry detected in '%s' line %u\n"
 msgstr "entrada duplicada detectada en '%s', línea %u\n"
@@ -7504,34 +7466,18 @@ msgstr "ha fallado crl_cache_insert via emisor: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "la tabla de mapeo lector a archivo está llena - esperando\n"
 
-msgid "using \"http\" instead of \"https\"\n"
-msgstr "usando \"http\" en lugar de \"https\"\n"
-
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr "el acceso CRL no es posible debido a que %s está desactivado\n"
 
 #, c-format
-msgid "error initializing reader object: %s\n"
-msgstr "error al inicializar objeto lector: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr "URL '%s' redirigida a '%s' (%u)\n"
-
-msgid "too many redirections\n"
-msgstr "demasiadas redirecciones\n"
-
-#. Made up status code for error reporting.
-#, c-format
 msgid "error retrieving '%s': %s\n"
 msgstr "error recuperando '%s': %s\n"
 
 #, c-format
-msgid "error retrieving '%s': http status %u\n"
-msgstr "error recurerando '%s': status http %u\n"
+msgid "error initializing reader object: %s\n"
+msgstr "error al inicializar objeto lector: %s\n"
 
-#. For now we do not support LDAP over Tor.
 msgid "CRL access not possible due to Tor mode\n"
 msgstr "el acceso a CRL no es posible a causa del modo Tor\n"
 
@@ -7776,7 +7722,6 @@ msgstr "%s:%u: línea demasiado larga - omitida\n"
 msgid "%s:%u: invalid fingerprint detected\n"
 msgstr "%s:%u: se detectó huella digital no válida\n"
 
-#.
 #, c-format
 msgid "%s:%u: read error: %s\n"
 msgstr "%s:%u: error de lectura: %s\n"
@@ -7954,10 +7899,6 @@ msgid "error reading log from ldap wrapper %d: %s\n"
 msgstr "error al leer desde el wrapper de ldap %d: %s\n"
 
 #, c-format
-msgid "npth_select failed: %s - waiting 1s\n"
-msgstr "ha fallado npth_select: %s - esperando 1s\n"
-
-#, c-format
 msgid "ldap wrapper %d ready"
 msgstr "el wrapper %d de ldap está listo"
 
@@ -7976,14 +7917,6 @@ msgstr "error al esperar el wrapper %d de ldap: %s\n"
 #, c-format
 msgid "ldap wrapper %d stalled - killing\n"
 msgstr "el wrapper %d de ldap está parado - matándolo\n"
-
-#, c-format
-msgid "error spawning ldap wrapper reaper thread: %s\n"
-msgstr "error mientras desplegaba el hilo del ldap wrapper reaper: %s\n"
-
-#, c-format
-msgid "reading from ldap wrapper %d failed: %s\n"
-msgstr "error al leer desde el wrapper %d de ldap: %s\n"
 
 #, c-format
 msgid "invalid char 0x%02x in host name - not added\n"
@@ -8027,8 +7960,6 @@ msgid "response from server too large; limit is %d bytes\n"
 msgstr ""
 "la respuesta del servidor es demasiado larga; el límite son los %d bytes\n"
 
-#. For now we do not allow OCSP via Tor due to possible privacy
-#. concerns.  Needs further research.
 msgid "OCSP request not possible due to Tor mode\n"
 msgstr "las consultas OCSP no son posibles a causa del modo Tor\n"
 
@@ -8050,6 +7981,13 @@ msgstr "error al conectar a '%s': %s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "error al leer la respuesta HTTP para '%s': %s\n"
+
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr "URL '%s' redirigida a '%s' (%u)\n"
+
+msgid "too many redirections\n"
+msgstr "demasiadas redirecciones\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
@@ -8655,6 +8593,30 @@ msgstr ""
 "Sintaxis: gpg-check-pattern [opciones] fichero_de_patrones\n"
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
+
+#~ msgid "What keysize do you want for the Signature key? (%u) "
+#~ msgstr "¿De qué tamaño quiere la clave de Firmado? (%u) "
+
+#~ msgid "What keysize do you want for the Encryption key? (%u) "
+#~ msgstr "¿De qué tamaño quiere la clave de Cifrado? (%u) "
+
+#~ msgid "What keysize do you want for the Authentication key? (%u) "
+#~ msgstr "¿De qué tamaño quiere la clave de Autenticación? (%u) "
+
+#~ msgid "using \"http\" instead of \"https\"\n"
+#~ msgstr "usando \"http\" en lugar de \"https\"\n"
+
+#~ msgid "error retrieving '%s': http status %u\n"
+#~ msgstr "error recurerando '%s': status http %u\n"
+
+#~ msgid "npth_select failed: %s - waiting 1s\n"
+#~ msgstr "ha fallado npth_select: %s - esperando 1s\n"
+
+#~ msgid "error spawning ldap wrapper reaper thread: %s\n"
+#~ msgstr "error mientras desplegaba el hilo del ldap wrapper reaper: %s\n"
+
+#~ msgid "reading from ldap wrapper %d failed: %s\n"
+#~ msgstr "error al leer desde el wrapper %d de ldap: %s\n"
 
 #~ msgid "listen() failed: %s\n"
 #~ msgstr "listen() falló: %s\n"

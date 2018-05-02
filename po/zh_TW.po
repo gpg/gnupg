@@ -7381,31 +7381,17 @@ msgstr "經由發行者的 crl_cache_insert 失敗: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "讀取程式至檔案映射表已滿 - 正在等待\n"
 
-msgid "using \"http\" instead of \"https\"\n"
-msgstr "正改以 \"http\" 代替 \"https\"\n"
-
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr "不可能存取 CRL 因已停用 %s\n"
-
-#, c-format
-msgid "error initializing reader object: %s\n"
-msgstr "啟始讀取程式物件時出錯: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr "網址 '%s' 重新轉向至 '%s' (%u)\n"
-
-msgid "too many redirections\n"
-msgstr "太多重新導向\n"
 
 #, c-format
 msgid "error retrieving '%s': %s\n"
 msgstr "取回 '%s' 時出錯: %s\n"
 
 #, c-format
-msgid "error retrieving '%s': http status %u\n"
-msgstr "取回 '%s' 時出錯: http 狀態 %u\n"
+msgid "error initializing reader object: %s\n"
+msgstr "啟始讀取程式物件時出錯: %s\n"
 
 #, fuzzy
 #| msgid "CRL access not possible due to disabled %s\n"
@@ -7822,10 +7808,6 @@ msgid "error reading log from ldap wrapper %d: %s\n"
 msgstr "從 ldap 封裝程式 %d 讀取日誌記錄時出錯: %s\n"
 
 #, c-format
-msgid "npth_select failed: %s - waiting 1s\n"
-msgstr "npth_select 失敗: %s - 等 1 秒鐘\n"
-
-#, c-format
 msgid "ldap wrapper %d ready"
 msgstr "ldap 封裝程式 %d 準備妥當"
 
@@ -7844,14 +7826,6 @@ msgstr "等候 ldap 封裝程式 %d 時失敗: %s\n"
 #, c-format
 msgid "ldap wrapper %d stalled - killing\n"
 msgstr "ldap 封裝程式 %d 已卡住 - 正在中止\n"
-
-#, c-format
-msgid "error spawning ldap wrapper reaper thread: %s\n"
-msgstr "繁衍 ldap 封裝程式收割執行緒時出錯: %s\n"
-
-#, c-format
-msgid "reading from ldap wrapper %d failed: %s\n"
-msgstr "從 ldap 封裝程式 %d 讀取時失敗: %s\n"
 
 #, c-format
 msgid "invalid char 0x%02x in host name - not added\n"
@@ -7917,6 +7891,13 @@ msgstr "連線至 '%s' 時出錯: %s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "讀取 '%s' HTTP 回應時出錯: %s\n"
+
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr "網址 '%s' 重新轉向至 '%s' (%u)\n"
+
+msgid "too many redirections\n"
+msgstr "太多重新導向\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
@@ -8523,6 +8504,21 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "using \"http\" instead of \"https\"\n"
+#~ msgstr "正改以 \"http\" 代替 \"https\"\n"
+
+#~ msgid "error retrieving '%s': http status %u\n"
+#~ msgstr "取回 '%s' 時出錯: http 狀態 %u\n"
+
+#~ msgid "npth_select failed: %s - waiting 1s\n"
+#~ msgstr "npth_select 失敗: %s - 等 1 秒鐘\n"
+
+#~ msgid "error spawning ldap wrapper reaper thread: %s\n"
+#~ msgstr "繁衍 ldap 封裝程式收割執行緒時出錯: %s\n"
+
+#~ msgid "reading from ldap wrapper %d failed: %s\n"
+#~ msgstr "從 ldap 封裝程式 %d 讀取時失敗: %s\n"
 
 #~ msgid "What keysize do you want for the Signature key? (%u) "
 #~ msgstr "你的簽署金鑰想要用多大的金鑰尺寸? (%u) "

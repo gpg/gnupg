@@ -7946,26 +7946,9 @@ msgstr "modtagelse af linje mislykkedes: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
-msgid "using \"http\" instead of \"https\"\n"
-msgstr ""
-
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "%s: error writing dir record: %s\n"
-msgid "error initializing reader object: %s\n"
-msgstr "%s: fejl ved skrivning af mappepost: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy
-#| msgid "too many cipher preferences\n"
-msgid "too many redirections\n"
-msgstr "for mange chifferpræferencer\n"
 
 #, fuzzy, c-format
 #| msgid "error retrieving `%s' via %s: %s\n"
@@ -7973,9 +7956,9 @@ msgid "error retrieving '%s': %s\n"
 msgstr "fejl ved indhentelse af »%s« via %s: %s\n"
 
 #, fuzzy, c-format
-#| msgid "error running `%s': exit status %d\n"
-msgid "error retrieving '%s': http status %u\n"
-msgstr "fejl ved kørsel af »%s«: afslutningsstatus %d\n"
+#| msgid "%s: error writing dir record: %s\n"
+msgid "error initializing reader object: %s\n"
+msgstr "%s: fejl ved skrivning af mappepost: %s\n"
 
 #, fuzzy
 #| msgid "certificate `%s' not found: %s\n"
@@ -8476,11 +8459,6 @@ msgstr "fejl ved skrivning til »%s«: %s\n"
 msgid "error reading log from ldap wrapper %d: %s\n"
 msgstr "fejl ved læsning fra %s: %s\n"
 
-#, fuzzy, c-format
-#| msgid "pth_select failed: %s - waiting 1s\n"
-msgid "npth_select failed: %s - waiting 1s\n"
-msgstr "pth_select mislykkeds: %s - venter 1s\n"
-
 #, c-format
 msgid "ldap wrapper %d ready"
 msgstr ""
@@ -8501,15 +8479,6 @@ msgstr "ventning på at proces %d skulle terminere mislykkedes: %s\n"
 #, c-format
 msgid "ldap wrapper %d stalled - killing\n"
 msgstr ""
-
-#, c-format
-msgid "error spawning ldap wrapper reaper thread: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "reading public key failed: %s\n"
-msgid "reading from ldap wrapper %d failed: %s\n"
-msgstr "læsning af offentlig nøgle mislykkedes: %s\n"
 
 #, c-format
 msgid "invalid char 0x%02x in host name - not added\n"
@@ -8587,6 +8556,15 @@ msgstr "fejl ved skrivning til »%s«: %s\n"
 #| msgid "error reading from %s: %s\n"
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "fejl ved læsning fra %s: %s\n"
+
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "too many cipher preferences\n"
+msgid "too many redirections\n"
+msgstr "for mange chifferpræferencer\n"
 
 #, fuzzy, c-format
 #| msgid "error binding socket to `%s': %s\n"
@@ -9258,6 +9236,21 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#, fuzzy
+#~| msgid "error running `%s': exit status %d\n"
+#~ msgid "error retrieving '%s': http status %u\n"
+#~ msgstr "fejl ved kørsel af »%s«: afslutningsstatus %d\n"
+
+#, fuzzy
+#~| msgid "pth_select failed: %s - waiting 1s\n"
+#~ msgid "npth_select failed: %s - waiting 1s\n"
+#~ msgstr "pth_select mislykkeds: %s - venter 1s\n"
+
+#, fuzzy
+#~| msgid "reading public key failed: %s\n"
+#~ msgid "reading from ldap wrapper %d failed: %s\n"
+#~ msgstr "læsning af offentlig nøgle mislykkedes: %s\n"
 
 #~ msgid "What keysize do you want for the Signature key? (%u) "
 #~ msgstr "Hvilken nøglestørrelse ønsker du for underskriftsnøglen (%u) "

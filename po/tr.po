@@ -7990,26 +7990,9 @@ msgstr "satır alımı başarısız: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
-msgid "using \"http\" instead of \"https\"\n"
-msgstr ""
-
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "%s: error writing dir record: %s\n"
-msgid "error initializing reader object: %s\n"
-msgstr "%s: dizin kaydını yazma hatası: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy
-#| msgid "too many cipher preferences\n"
-msgid "too many redirections\n"
-msgstr "çok fazla şifreleme tercihi\n"
 
 #, fuzzy, c-format
 #| msgid "error retrieving `%s' via %s: %s\n"
@@ -8017,9 +8000,9 @@ msgid "error retrieving '%s': %s\n"
 msgstr "`%s' %s üzerinden alınırken hata: %s\n"
 
 #, fuzzy, c-format
-#| msgid "error running `%s': exit status %d\n"
-msgid "error retrieving '%s': http status %u\n"
-msgstr "`%s' çalışırken hata: çıkış durumu: %d\n"
+#| msgid "%s: error writing dir record: %s\n"
+msgid "error initializing reader object: %s\n"
+msgstr "%s: dizin kaydını yazma hatası: %s\n"
 
 #, fuzzy
 #| msgid "certificate `%s' not found: %s\n"
@@ -8521,11 +8504,6 @@ msgstr "%s yazılırken hata: %s\n"
 msgid "error reading log from ldap wrapper %d: %s\n"
 msgstr "%s okunurken hata: %s\n"
 
-#, fuzzy, c-format
-#| msgid "pth_select failed: %s - waiting 1s\n"
-msgid "npth_select failed: %s - waiting 1s\n"
-msgstr "pth_select başarısız: %s - 1s bekliyor\n"
-
 #, c-format
 msgid "ldap wrapper %d ready"
 msgstr ""
@@ -8546,15 +8524,6 @@ msgstr "süreç %d sonlanacak diye beklerken başarısızlık: %s\n"
 #, c-format
 msgid "ldap wrapper %d stalled - killing\n"
 msgstr ""
-
-#, c-format
-msgid "error spawning ldap wrapper reaper thread: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "reading public key failed: %s\n"
-msgid "reading from ldap wrapper %d failed: %s\n"
-msgstr "genel anahtar okuması başarısız: %s\n"
 
 #, c-format
 msgid "invalid char 0x%02x in host name - not added\n"
@@ -8632,6 +8601,15 @@ msgstr "`%s' yazılırken hata: %s\n"
 #| msgid "error reading from %s: %s\n"
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "%s okunurken hata: %s\n"
+
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "too many cipher preferences\n"
+msgid "too many redirections\n"
+msgstr "çok fazla şifreleme tercihi\n"
 
 #, fuzzy, c-format
 #| msgid "error binding socket to `%s': %s\n"
@@ -9308,6 +9286,21 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#, fuzzy
+#~| msgid "error running `%s': exit status %d\n"
+#~ msgid "error retrieving '%s': http status %u\n"
+#~ msgstr "`%s' çalışırken hata: çıkış durumu: %d\n"
+
+#, fuzzy
+#~| msgid "pth_select failed: %s - waiting 1s\n"
+#~ msgid "npth_select failed: %s - waiting 1s\n"
+#~ msgstr "pth_select başarısız: %s - 1s bekliyor\n"
+
+#, fuzzy
+#~| msgid "reading public key failed: %s\n"
+#~ msgid "reading from ldap wrapper %d failed: %s\n"
+#~ msgstr "genel anahtar okuması başarısız: %s\n"
 
 #, fuzzy
 #~ msgid "What keysize do you want for the Signature key? (%u) "

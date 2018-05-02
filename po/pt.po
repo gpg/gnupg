@@ -7773,33 +7773,18 @@ msgstr "remoção do bloco de chave falhou: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
-msgid "using \"http\" instead of \"https\"\n"
-msgstr ""
-
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "%s: error writing dir record: %s\n"
-msgid "error initializing reader object: %s\n"
-msgstr "%s: erro ao escrever registo de diretório: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
-
-#, fuzzy
-msgid "too many redirections\n"
-msgstr "demasiadas preferências `%c'\n"
 
 #, fuzzy, c-format
 msgid "error retrieving '%s': %s\n"
 msgstr "erro ao criar `%s': %s\n"
 
 #, fuzzy, c-format
-msgid "error retrieving '%s': http status %u\n"
-msgstr "erro na leitura de `%s': %s\n"
+#| msgid "%s: error writing dir record: %s\n"
+msgid "error initializing reader object: %s\n"
+msgstr "%s: erro ao escrever registo de diretório: %s\n"
 
 #, fuzzy
 msgid "CRL access not possible due to Tor mode\n"
@@ -8249,10 +8234,6 @@ msgstr "erro na escrita do porta-chaves `%s': %s\n"
 msgid "error reading log from ldap wrapper %d: %s\n"
 msgstr "erro na leitura de `%s': %s\n"
 
-#, fuzzy, c-format
-msgid "npth_select failed: %s - waiting 1s\n"
-msgstr "actualização da chave secreta falhou: %s\n"
-
 #, c-format
 msgid "ldap wrapper %d ready"
 msgstr ""
@@ -8272,14 +8253,6 @@ msgstr "actualização falhou: %s\n"
 #, c-format
 msgid "ldap wrapper %d stalled - killing\n"
 msgstr ""
-
-#, c-format
-msgid "error spawning ldap wrapper reaper thread: %s\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "reading from ldap wrapper %d failed: %s\n"
-msgstr "remoção do bloco de chave falhou: %s\n"
 
 #, c-format
 msgid "invalid char 0x%02x in host name - not added\n"
@@ -8347,6 +8320,14 @@ msgstr "erro na escrita do porta-chaves `%s': %s\n"
 #, fuzzy, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "erro na leitura de `%s': %s\n"
+
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy
+msgid "too many redirections\n"
+msgstr "demasiadas preferências `%c'\n"
 
 #, fuzzy, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
@@ -8964,6 +8945,18 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "error retrieving '%s': http status %u\n"
+#~ msgstr "erro na leitura de `%s': %s\n"
+
+#, fuzzy
+#~ msgid "npth_select failed: %s - waiting 1s\n"
+#~ msgstr "actualização da chave secreta falhou: %s\n"
+
+#, fuzzy
+#~ msgid "reading from ldap wrapper %d failed: %s\n"
+#~ msgstr "remoção do bloco de chave falhou: %s\n"
 
 #, fuzzy
 #~ msgid "What keysize do you want for the Signature key? (%u) "
