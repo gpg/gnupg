@@ -401,6 +401,7 @@ is_file_compressed (const char *s, int *ret_rc)
         *ret_rc = gpg_error_from_syserror ();
         return 0;
     }
+    iobuf_ioctl (a, IOBUF_IOCTL_NO_CACHE, 1, NULL);
 
     if ( iobuf_get_filelength( a, &overflow ) < 6 && !overflow) {
         *ret_rc = 0;
