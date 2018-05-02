@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.2.7 (unreleased)
+Noteworthy changes in version 2.2.7 (2018-05-02)
 ------------------------------------------------
 
   * gpg: New option --no-symkey-cache to disable the passphrase cache
@@ -11,10 +11,9 @@ Noteworthy changes in version 2.2.7 (unreleased)
 
   * gpg: Add a status flag to "sig" lines printed with --list-sigs.
 
-  * ssh: Return an error for unknown ssh-agent flags.  [#3880]
+  * gpg: Fix "Too many open files" when using --multifile.  [#3951]
 
-  * agent,dirmngr: New sub-command "getenv" for "getinfo" to ease
-    debugging.
+  * ssh: Return an error for unknown ssh-agent flags.  [#3880]
 
   * dirmngr: Fix a regression since 2.1.16 which caused corrupted CRL
     caches under Windows.  [#2448,#3923]
@@ -23,6 +22,19 @@ Noteworthy changes in version 2.2.7 (unreleased)
     mapping of keys.gnupg.net to sks-keyservers.net.  [#3755]
 
   * dirmngr: Try resurrecting dead hosts earlier (from 3 to 1.5 hours).
+
+  * dirmngr: Fallback to CRL if no default OCSP responder is configured.
+
+  * dirmngr: Implement CRL fetching via https.  Here a redirection to
+    http is explictly allowed.
+
+  * dirmngr: Make LDAP searching and CRL fetching work under Windows.
+    This stopped working with 2.1.  [#3937]
+
+  * agent,dirmngr: New sub-command "getenv" for "getinfo" to ease
+    debugging.
+
+  See-also: gnupg-announce/2018q2/000422.html
 
 
 Noteworthy changes in version 2.2.6 (2018-04-09)
