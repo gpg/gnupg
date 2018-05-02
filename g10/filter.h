@@ -140,9 +140,10 @@ void        unarmor_pump_release (UnarmorPump x);
 int         unarmor_pump (UnarmorPump x, int c);
 
 /*-- compress.c --*/
-void push_compress_filter(iobuf_t out,compress_filter_context_t *zfx,int algo);
-void push_compress_filter2(iobuf_t out,compress_filter_context_t *zfx,
-			   int algo,int rel);
+gpg_error_t push_compress_filter (iobuf_t out, compress_filter_context_t *zfx,
+                                  int algo);
+gpg_error_t push_compress_filter2 (iobuf_t out,compress_filter_context_t *zfx,
+                                   int algo, int rel);
 
 /*-- cipher.c --*/
 int cipher_filter( void *opaque, int control,

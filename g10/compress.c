@@ -319,7 +319,8 @@ handle_compressed (ctrl_t ctrl, void *procctx, PKT_compressed *cd,
         cfx = xmalloc_clear (sizeof *cfx);
         cfx->release = release_context;
         cfx->algo = cd->algorithm;
-        push_compress_filter(cd->buf,cfx,cd->algorithm);
+        if (push_compress_filter(cd->buf, cfx, cd->algorithm))
+          xfree (cfx);
     }
     if( callback )
 	rc = callback(cd->buf, passthru );
@@ -329,16 +330,20 @@ handle_compressed (ctrl_t ctrl, void *procctx, PKT_compressed *cd,
     return rc;
 }
 
-void
+gpg_error_t
 push_compress_filter(IOBUF out,compress_filter_context_t *zfx,int algo)
 {
-  push_compress_filter2(out,zfx,algo,0);
+  return push_compress_filter2(out,zfx,algo,0);
 }
 
-void
+
+/* Push a compress filter and return 0 if that succeeded.  */
+gpg_error_t
 push_compress_filter2(IOBUF out,compress_filter_context_t *zfx,
 		      int algo,int rel)
 {
+  gpg_error_t err = gpg_error (GPG_ERR_FALSE);
+
   if(algo>=0)
     zfx->algo=algo;
   else
@@ -353,16 +358,20 @@ push_compress_filter2(IOBUF out,compress_filter_context_t *zfx,
     case COMPRESS_ALGO_ZIP:
     case COMPRESS_ALGO_ZLIB:
       iobuf_push_filter2(out,compress_filter,zfx,rel);
+      err = 0;
       break;
 #endif
 
 #ifdef HAVE_BZIP2
     case COMPRESS_ALGO_BZIP2:
       iobuf_push_filter2(out,compress_filter_bz2,zfx,rel);
+      err = 0;
       break;
 #endif
 
     default:
       BUG();
     }
+
+  return err;
 }

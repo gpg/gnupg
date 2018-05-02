@@ -767,7 +767,7 @@ valid_keyblock_packet (int pkttype)
  * Meta data (ring trust packets) are only considered of WITH_META is set.
  * PENDING_PKT should be initialized to NULL and not changed by the caller.
  * Return: 0 = okay, -1 no more blocks or another errorcode.
- *         The int at at R_V3KEY counts the number of unsupported v3
+ *         The int at R_V3KEY counts the number of unsupported v3
  *         keyblocks.
  */
 static int
@@ -856,7 +856,9 @@ read_block( IOBUF a, int with_meta,
 	      {
 		compress_filter_context_t *cfx = xmalloc_clear( sizeof *cfx );
 		pkt->pkt.compressed->buf = NULL;
-		push_compress_filter2(a,cfx,pkt->pkt.compressed->algorithm,1);
+		if (push_compress_filter2 (a, cfx,
+                                           pkt->pkt.compressed->algorithm, 1))
+                  xfree (cfx); /* e.g. in case of compression_algo NONE.  */
 	      }
 	    free_packet (pkt, &parsectx);
 	    init_packet(pkt);
