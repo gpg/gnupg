@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.2.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2017-12-13 17:41+0100\n"
+"PO-Revision-Date: 2018-05-05 17:41+0100\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -1346,22 +1346,16 @@ msgid "%s keysizes must be in the range %u-%u\n"
 msgstr "размер ключей %s должен быть в пределах %u-%u\n"
 
 msgid "Changing card key attribute for: "
-msgstr ""
+msgstr "Изменение атрибутов ключа на карте:"
 
-#, fuzzy
-#| msgid "   (1) Signature key\n"
 msgid "Signature key\n"
-msgstr "   (1) Ключ подписи\n"
+msgstr "Ключа для подписи\n"
 
-#, fuzzy
-#| msgid "   (2) Encryption key\n"
 msgid "Encryption key\n"
-msgstr "   (2) Ключ шифрования\n"
+msgstr "Ключа для шифрования\n"
 
-#, fuzzy
-#| msgid "   (3) Authentication key\n"
 msgid "Authentication key\n"
-msgstr "   (3) Ключ удостоверения личности\n"
+msgstr "Ключа для удостоверения личности\n"
 
 msgid "Please select what kind of key you want:\n"
 msgstr "Выберите тип ключа:\n"
@@ -1370,10 +1364,9 @@ msgstr "Выберите тип ключа:\n"
 msgid "   (%d) RSA\n"
 msgstr "   (%d) RSA\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) ECC and ECC\n"
+#, c-format
 msgid "   (%d) ECC\n"
-msgstr "   (%d) ECC и ECC\n"
+msgstr "   (%d) ECC\n"
 
 msgid "Invalid selection.\n"
 msgstr "Неправильный выбор.\n"
@@ -1386,15 +1379,13 @@ msgstr "Теперь карта будет перенастроена на ге�
 msgid "The card will now be re-configured to generate a key of type: %s\n"
 msgstr "Теперь карта будет перенастроена на генерацию ключа типа %s\n"
 
-#, fuzzy, c-format
-#| msgid "error changing size of key %d to %u bits: %s\n"
+#, c-format
 msgid "error changing key attribute for key %d: %s\n"
-msgstr "ошибка изменения размера ключа %d до %u бит: %s\n"
+msgstr "ошибка изменения атрибута ключа %d: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error getting current key info: %s\n"
+#, c-format
 msgid "error getting card info: %s\n"
-msgstr "ошибка при считывании информации ключа: %s\n"
+msgstr "ошибка при считывании информации карты: %s\n"
 
 msgid "This command is not supported by this card\n"
 msgstr "Данная команда этой картой не поддерживается\n"
@@ -1446,10 +1437,9 @@ msgstr "Продолжить? (y/N) "
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr "Подтвердите сброс к заводским установкам (введите \"yes\") "
 
-#, fuzzy, c-format
-#| msgid "error looking up: %s\n"
+#, c-format
 msgid "error for setup KDF: %s\n"
-msgstr "ошибка поиска: %s\n"
+msgstr "ошибка при настройке KDF: %s\n"
 
 msgid "quit this menu"
 msgstr "выйти из этого меню"
@@ -1502,15 +1492,11 @@ msgstr "разблокировать PIN с помощью кода сброса
 msgid "destroy all keys and data"
 msgstr "уничтожить все ключи и данные"
 
-#, fuzzy
-#| msgid "|NAME|use user NAME for authentication"
 msgid "setup KDF for PIN authentication"
-msgstr "|NAME|использовать имя пользователя NAME для удостоверения личности"
+msgstr "настроить KDF для проверки по PIN"
 
-#, fuzzy
-#| msgid "change the ownertrust"
 msgid "change the key attribute"
-msgstr "изменить уровень доверия владельцу"
+msgstr "изменить атрибут ключа"
 
 msgid "gpg/card> "
 msgstr "gpg/card> "
@@ -2151,10 +2137,9 @@ msgstr "\"%s\" не является адресом электронной по�
 msgid "invalid pinentry mode '%s'\n"
 msgstr "недопустимый режим ввода пароля '%s'\n"
 
-#, fuzzy, c-format
-#| msgid "invalid value for option '%s'\n"
+#, c-format
 msgid "invalid request origin '%s'\n"
-msgstr "недопустимое значения параметра \"%s\"\n"
+msgstr "недопустимый источник запроса '%s'\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
@@ -3552,15 +3537,11 @@ msgstr "Смена срока действия первичного ключа.\
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Нельзя изменить срок действия ключа v3\n"
 
-#, fuzzy
-#| msgid "Changing expiration time for a subkey.\n"
 msgid "Changing usage of a subkey.\n"
-msgstr "Смена срока действия подключа.\n"
+msgstr "Смена режимов использования подключа.\n"
 
-#, fuzzy
-#| msgid "Changing expiration time for the primary key.\n"
 msgid "Changing usage of the primary key.\n"
-msgstr "Смена срока действия первичного ключа.\n"
+msgstr "Смена режимов использования первичного ключа.\n"
 
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
@@ -5220,10 +5201,9 @@ msgstr "Замечание: срок действия подписавшего �
 msgid "Note: signature key %s has been revoked\n"
 msgstr "Замечание: ключ для подписей %s отозван\n"
 
-#, fuzzy, c-format
-#| msgid "standalone signature of class 0x%02x\n"
+#, c-format
 msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
-msgstr "отдельная подпись класса 0x%02x\n"
+msgstr "плохая подпись ключом %s: %s (0x%02x 0x%x)\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
