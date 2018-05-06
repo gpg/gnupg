@@ -140,6 +140,7 @@ the administration and the architecture.
 * Invoking GPGSM::      Using the S/MIME protocol.
 * Invoking SCDAEMON::   How to handle Smartcards.
 * Specify a User ID::   How to Specify a User Id.
+* Trust Values::        How GnuPG displays trust values.
 
 * Helper Tools::        Description of small helper tools
 * Web Key Service::     Tools for the Web Key Service
@@ -179,6 +180,11 @@ the administration and the architecture.
 @anchor{how-to-specify-a-user-id}
 @include specify-user-id.texi
 
+@node Trust Values
+@chapter Trust Values
+@anchor{trust-values}
+@cindex trust values
+@include trust-values.texi
 
 @include tools.texi
 @include wks.texi

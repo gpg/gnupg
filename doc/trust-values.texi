@@ -1,0 +1,47 @@
+@c Copyright (C) 2018 Free Software Foundation, Inc.
+@c This is part of the GnuPG manual.
+@c For copying conditions, see the file gnupg.texi.
+
+Trust values are used to indicate ownertrust and validity of keys and
+user IDs.  They are displayed with letters or strings:
+
+@table @asis
+
+  @item -
+  @itemx unknown
+  No ownertrust assigned / not yet calculated.
+
+  @item e
+  @itemx expired
+
+  Trust calculation has failed; probably due to an expired key.
+
+  @item q
+  @itemx undefined, undef
+  Not enough information for calculation.
+
+  @item n
+  @itemx never
+  Never trust this key.
+
+  @item m
+  @itemx marginal
+  Marginally trusted.
+
+  @item f
+  @itemx full
+  Fully trusted.
+
+  @item u
+  @itemx ultimate
+  Ultimately trusted.
+
+  @item r
+  @itemx revoked
+  For validity only: the key or the user ID has been revoked.
+
+  @item ?
+  @itemx err
+  The program encountered an unknown trust value.
+
+@end table

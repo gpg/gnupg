@@ -1040,38 +1040,13 @@ signing.
 
 @c man:.RS
 The listing shows you the key with its secondary keys and all user
-ids.  The primary user id is indicated by a dot, and selected keys or
-user ids are indicated by an asterisk.  The trust
-value is displayed with the primary key: the first is the assigned owner
-trust and the second is the calculated trust value. Letters are used for
-the values:
+IDs.  The primary user ID is indicated by a dot, and selected keys or
+user IDs are indicated by an asterisk.  The trust
+value is displayed with the primary key: "trust" is the assigned owner
+trust and "validity" is the calculated validity of the key.  Validity
+values are also displayed for all user IDs.
+For possible values of trust, @pxref{trust-values}.
 @c man:.RE
-
-@table @asis
-
-  @item -
-  No ownertrust assigned / not yet calculated.
-
-  @item e
-  Trust
-  calculation has failed; probably due to an expired key.
-
-  @item q
-  Not enough information for calculation.
-
-  @item n
-  Never trust this key.
-
-  @item m
-  Marginally trusted.
-
-  @item f
-  Fully trusted.
-
-  @item u
-  Ultimately trusted.
-
-@end table
 @c ******** End Edit-key Options **********
 
 @item --sign-key @var{name}
@@ -3798,6 +3773,10 @@ which is equivalent to
 imports only the user ids of a key containing the strings "Alfa"
 or "Alpha" but not the string "test".
 
+@mansect trust values
+@ifset isman
+@include trust-values.texi
+@end ifset
 
 @mansect return value
 @chapheading RETURN VALUE

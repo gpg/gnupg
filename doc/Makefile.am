@@ -49,7 +49,8 @@ EXTRA_DIST = samplekeys.asc mksamplekeys com-certs.pem qualified.txt \
              gnupg-card-architecture.png gnupg-card-architecture.pdf \
              FAQ gnupg7.texi mkdefsinc.c defsincdate \
              opt-homedir.texi see-also-note.texi specify-user-id.texi \
-	     gpgv.texi yat2m.c ChangeLog-2011 whats-new-in-2.1.txt
+	     gpgv.texi yat2m.c ChangeLog-2011 whats-new-in-2.1.txt \
+             trust-values.texi
 
 BUILT_SOURCES = gnupg-module-overview.png gnupg-module-overview.pdf \
                 gnupg-card-architecture.png gnupg-card-architecture.pdf \
