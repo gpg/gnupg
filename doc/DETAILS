@@ -105,6 +105,19 @@ described here.
     certificate (i.e. for the trust anchor) and an 'f' for all other
     valid certificates.
 
+    In "sig" records, this field may have one of these values as first
+    character:
+
+    - ! :: Signature is good.
+    - - :: Signature is bad.
+    - ? :: No public key to verify signature or public key is not usable.
+    - % :: Other error verifying a signature
+
+    More values may be added later.  The field may also be empty if
+    gpg has been invoked in a non-checking mode (--list-sigs) or in a
+    fast checking mode.  Since 2.2.7 '?' will also be printed by the
+    command --list-sigs if the key is not in the local keyring.
+
 *** Field 3 - Key length
 
     The length of key in bits.
@@ -195,9 +208,11 @@ described here.
     gpg's --edit-key menu does.
 
     For "sig" records, this is the fingerprint of the key that issued
-    the signature.  Note that this is only filled in if the signature
+    the signature.  Note that this may only be filled if the signature
     verified correctly.  Note also that for various technical reasons,
     this fingerprint is only available if --no-sig-cache is used.
+    Since 2.2.7 this field will also be set if the key is missing but
+    the signature carries an issuer fingerprint as meta data.
 
 *** Field 14 - Flag field
 
@@ -437,14 +452,17 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     available.  This is the case with CMS and might eventually also be
     available for OpenPGP.
 
-*** ERRSIG  <keyid>  <pkalgo> <hashalgo> <sig_class> <time> <rc>
+*** ERRSIG  <keyid>  <pkalgo> <hashalgo> <sig_class> <time> <rc> <fpr>
     It was not possible to check the signature.  This may be caused by
     a missing public key or an unsupported algorithm.  A RC of 4
     indicates unknown algorithm, a 9 indicates a missing public
     key. The other fields give more information about this signature.
     sig_class is a 2 byte hex-value.  The fingerprint may be used
-    instead of the keyid if it is available.  This is the case with
-    gpgsm and might eventually also be available for OpenPGP.
+    instead of the long_keyid_or_fpr if it is available.  This is the
+    case with gpgsm and might eventually also be available for
+    OpenPGP.  The ERRSIG line has FPR filed which is only available
+    since 2.2.7; that FPR may either be missing or - if the signature
+    has no fingerprint as meta data.
 
     Note, that TIME may either be the number of seconds since Epoch or
     an ISO 8601 string.  The latter can be detected by the presence of
@@ -722,7 +740,9 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     The used key has been revoked by its owner.  No arguments yet.
 
 *** NO_PUBKEY  <long keyid>
-    The public key is not available
+    The public key is not available.  Note the arg should in general
+    not be used because it is better to take it from the ERRSIG
+    status line which is printed right before this one.
 
 *** NO_SECKEY  <long keyid>
     The secret key is not available

@@ -264,7 +264,7 @@ keyedit_print_one_sig (ctrl_t ctrl, estream_t fp,
       else
 	{
 	  size_t n;
-	  char *p = get_user_id (ctrl, sig->keyid, &n);
+	  char *p = get_user_id (ctrl, sig->keyid, &n, NULL);
 	  tty_print_utf8_string2 (fp, p, n,
 				  opt.screen_columns - keystrlen () - 26 -
 				  ((opt.

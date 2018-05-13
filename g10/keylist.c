@@ -1182,7 +1182,7 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 	  else if (!opt.fast_list_mode)
 	    {
 	      size_t n;
-	      char *p = get_user_id (ctrl, sig->keyid, &n);
+	      char *p = get_user_id (ctrl, sig->keyid, &n, NULL);
 	      print_utf8_buffer (es_stdout, p, n);
 	      xfree (p);
 	    }
@@ -1553,6 +1553,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	  byte fparray[MAX_FINGERPRINT_LEN];
           char *siguid;
           size_t siguidlen;
+          char *issuer_fpr = NULL;
 
 	  if (sig->sig_class == 0x20 || sig->sig_class == 0x28
 	      || sig->sig_class == 0x30)
@@ -1610,11 +1611,16 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	  else
 	    {
 	      rc = 0;
-	      sigrc = ' ';
+	      sigrc = ' '; /* Note the fix-up below in --list-sigs mode.  */
 	    }
 
 	  if (sigrc != '%' && sigrc != '?' && !opt.fast_list_mode)
-            siguid = get_user_id (ctrl, sig->keyid, &siguidlen);
+            {
+              int nouid;
+              siguid = get_user_id (ctrl, sig->keyid, &siguidlen, &nouid);
+              if (!opt.check_sigs && nouid)
+                sigrc = '?';  /* No key in local keyring.  */
+            }
           else
             {
               siguid = NULL;
@@ -1653,6 +1659,8 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	      for (i = 0; i < fplen; i++)
 		es_fprintf (es_stdout, "%02X", fparray[i]);
 	    }
+          else if ((issuer_fpr = issuer_fpr_string (sig)))
+            es_fputs (issuer_fpr, es_stdout);
 
 	  es_fprintf (es_stdout, ":::%d:\n", sig->digest_algo);
 
@@ -1661,6 +1669,7 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 
 	  /* fixme: check or list other sigs here */
           xfree (siguid);
+          xfree (issuer_fpr);
 	}
     }
 

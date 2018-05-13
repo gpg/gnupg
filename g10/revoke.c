@@ -571,7 +571,7 @@ gen_standard_revoke (ctrl_t ctrl, PKT_public_key *psk, const char *cache_nonce)
 
   kl = opt.keyid_format == KF_NONE? 0 : keystrlen ();
 
-  tmpstr = get_user_id (ctrl, keyid, &len);
+  tmpstr = get_user_id (ctrl, keyid, &len, NULL);
   es_fprintf (memfp, "uid%*s%.*s\n\n",
               kl + 10, "",
               (int)len, tmpstr);

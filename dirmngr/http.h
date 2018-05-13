@@ -88,8 +88,9 @@ enum
     HTTP_FLAG_IGNORE_IPv4 = 64,  /* Do not use IPv4.  */
     HTTP_FLAG_IGNORE_IPv6 = 128, /* Do not use IPv6.  */
     HTTP_FLAG_TRUST_DEF   = 256, /* Use the CAs configured for HKP.  */
-    HTTP_FLAG_TRUST_SYS   = 512, /* Also use the system defined CAs.  */
-    HTTP_FLAG_NO_CRL     = 1024  /* Do not consult CRLs for https.  */
+    HTTP_FLAG_TRUST_SYS   = 512, /* Also use the system defined CAs. */
+    HTTP_FLAG_TRUST_CFG  = 1024, /* Also use configured CAs.         */
+    HTTP_FLAG_NO_CRL     = 2048  /* Do not consult CRLs for https.   */
   };
 
 
@@ -110,6 +111,7 @@ void http_set_verbose (int verbose, int debug);
 
 void http_register_tls_callback (gpg_error_t (*cb)(http_t,http_session_t,int));
 void http_register_tls_ca (const char *fname);
+void http_register_cfg_ca (const char *fname);
 void http_register_netactivity_cb (void (*cb)(void));
 
 

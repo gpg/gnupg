@@ -214,7 +214,10 @@ symmetric cipher used is @value{GPGSYMENCALGO}, but may be chosen with the
 @option{--encrypt} (for a message that may be decrypted via a secret key
 or a passphrase), or @option{--sign} and @option{--encrypt} together
 (for a signed message that may be decrypted via a secret key or a
-passphrase).
+passphrase).  @command{@gpgname} caches the passphrase used for
+symmetric encryption so that a decrypt operation may not require that
+the user needs to enter the passphrase.  The option
+@option{--no-symkey-cache} can be used to disable this feature.
 
 @item --store
 @opindex store
@@ -1037,38 +1040,13 @@ signing.
 
 @c man:.RS
 The listing shows you the key with its secondary keys and all user
-ids.  The primary user id is indicated by a dot, and selected keys or
-user ids are indicated by an asterisk.  The trust
-value is displayed with the primary key: the first is the assigned owner
-trust and the second is the calculated trust value. Letters are used for
-the values:
+IDs.  The primary user ID is indicated by a dot, and selected keys or
+user IDs are indicated by an asterisk.  The trust
+value is displayed with the primary key: "trust" is the assigned owner
+trust and "validity" is the calculated validity of the key.  Validity
+values are also displayed for all user IDs.
+For possible values of trust, @pxref{trust-values}.
 @c man:.RE
-
-@table @asis
-
-  @item -
-  No ownertrust assigned / not yet calculated.
-
-  @item e
-  Trust
-  calculation has failed; probably due to an expired key.
-
-  @item q
-  Not enough information for calculation.
-
-  @item n
-  Never trust this key.
-
-  @item m
-  Marginally trusted.
-
-  @item f
-  Fully trusted.
-
-  @item u
-  Ultimately trusted.
-
-@end table
 @c ******** End Edit-key Options **********
 
 @item --sign-key @var{name}
@@ -3188,6 +3166,12 @@ are:
   Pinentry the user is not prompted again if he enters a bad password.
 @end table
 
+@item --no-symkey-cache
+@opindex no-symkey-cache
+Disable the passphrase cache used for symmetrical en- and decryption.
+This cache is based on the message specific salt value
+(cf. @option{--s2k-mode}).
+
 @item --request-origin @var{origin}
 @opindex request-origin
 Tell gpg to assume that the operation ultimately originated at
@@ -3302,8 +3286,14 @@ print the public key data.
 Same as @option{--list-keys}, but the signatures are listed too.  This
 command has the same effect as using @option{--list-keys} with
 @option{--with-sig-list}.  Note that in contrast to
-@option{--check-signatures} the key signatures are not verified.
+@option{--check-signatures} the key signatures are not verified.  This
+command can be used to create a list of signing keys missing in the
+lcoal keyring; for example:
 
+@example
+      gpg --list-sigs --with-colons USERID | \
+        awk -F: '$1=="sig" && $2=="?" @{if($13)@{print $13@}else@{print $5@}@}'
+@end example
 
 @item --fast-list-mode
 @opindex fast-list-mode
@@ -3831,6 +3821,10 @@ which is equivalent to
 imports only the user ids of a key containing the strings "Alfa"
 or "Alpha" but not the string "test".
 
+@mansect trust values
+@ifset isman
+@include trust-values.texi
+@end ifset
 
 @mansect return value
 @chapheading RETURN VALUE

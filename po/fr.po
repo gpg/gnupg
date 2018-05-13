@@ -7805,9 +7805,6 @@ msgstr "échec de crl_cache_insert par émetteur : %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "table de projection de lecteur vers fichier pleine — attente\n"
 
-msgid "using \"http\" instead of \"https\"\n"
-msgstr "utilisation d'« http » au lieu d'« https »\n"
-
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr ""
@@ -7815,23 +7812,12 @@ msgstr ""
 "désactivé\n"
 
 #, c-format
-msgid "error initializing reader object: %s\n"
-msgstr "erreur d'initialisation de l'objet lecteur : %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr "URL « %s » redirigée vers « %s » (%u)\n"
-
-msgid "too many redirections\n"
-msgstr "trop de redirections\n"
-
-#, c-format
 msgid "error retrieving '%s': %s\n"
 msgstr "erreur de récupération de « %s » : %s\n"
 
 #, c-format
-msgid "error retrieving '%s': http status %u\n"
-msgstr "erreur de récupération de « %s » : état HTTP %u\n"
+msgid "error initializing reader object: %s\n"
+msgstr "erreur d'initialisation de l'objet lecteur : %s\n"
 
 #, fuzzy
 #| msgid "CRL access not possible due to disabled %s\n"
@@ -8265,10 +8251,6 @@ msgid "error reading log from ldap wrapper %d: %s\n"
 msgstr "erreur de lecture du journal par l'enveloppe LDAP %d : %s\n"
 
 #, c-format
-msgid "npth_select failed: %s - waiting 1s\n"
-msgstr "échec de npth_select : %s — attente 1 s\n"
-
-#, c-format
 msgid "ldap wrapper %d ready"
 msgstr "enveloppe LDAP %d prête"
 
@@ -8287,15 +8269,6 @@ msgstr "échec d'attente de l'enveloppe LDAP %d : %s\n"
 #, c-format
 msgid "ldap wrapper %d stalled - killing\n"
 msgstr "enveloppe LDAP %d à l'arrêt — le processus va être tué\n"
-
-# NOTE: Incorrectly set as translatable?
-#, c-format
-msgid "error spawning ldap wrapper reaper thread: %s\n"
-msgstr "error spawning ldap wrapper reaper thread: %s\n"
-
-#, c-format
-msgid "reading from ldap wrapper %d failed: %s\n"
-msgstr "échec de lecture par l'enveloppe LDAP %d : %s\n"
 
 #, c-format
 msgid "invalid char 0x%02x in host name - not added\n"
@@ -8361,6 +8334,13 @@ msgstr "erreur de connexion à « %s » : %s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "erreur de lecture de réponse HTTP pour « %s » : %s\n"
+
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr "URL « %s » redirigée vers « %s » (%u)\n"
+
+msgid "too many redirections\n"
+msgstr "trop de redirections\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
@@ -8982,6 +8962,22 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "using \"http\" instead of \"https\"\n"
+#~ msgstr "utilisation d'« http » au lieu d'« https »\n"
+
+#~ msgid "error retrieving '%s': http status %u\n"
+#~ msgstr "erreur de récupération de « %s » : état HTTP %u\n"
+
+#~ msgid "npth_select failed: %s - waiting 1s\n"
+#~ msgstr "échec de npth_select : %s — attente 1 s\n"
+
+# NOTE: Incorrectly set as translatable?
+#~ msgid "error spawning ldap wrapper reaper thread: %s\n"
+#~ msgstr "error spawning ldap wrapper reaper thread: %s\n"
+
+#~ msgid "reading from ldap wrapper %d failed: %s\n"
+#~ msgstr "échec de lecture par l'enveloppe LDAP %d : %s\n"
 
 #~ msgid "What keysize do you want for the Signature key? (%u) "
 #~ msgstr ""

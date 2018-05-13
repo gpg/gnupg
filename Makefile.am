@@ -18,10 +18,21 @@
 
 ## Process this file with automake to produce Makefile.in
 
+# Location of the released tarball archives.  Note that this is an
+# internal archive and before uploading this to the public server,
+# manual tests should be run and the git release tat set and pushed.
+# Adjust as needed.
+RELEASE_ARCHIVE_DIR  = wk@vigenere:tarballs/gnupg/v2.2
+
+# The key used to sign the released sources.  Adjust as needed.
+RELEASE_SIGNING_KEY  = D8692123C4065DEA5E0F3AB5249B39D24F25E3B6
+
+
+# Autoconf flags.
 ACLOCAL_AMFLAGS = -I m4
 AM_DISTCHECK_CONFIGURE_FLAGS = --enable-gnupg-builddir-envvar \
   --enable-all-tests --enable-symcryptrun --enable-g13 \
-  --enable-gpg2-is-gpg --enable-gpgtar --enable-wks-tools --disable-ntbtls
+  --enable-gpgtar --enable-wks-tools --disable-ntbtls
 
 GITLOG_TO_CHANGELOG=gitlog-to-changelog
 
@@ -151,8 +162,68 @@ TESTS_ENVIRONMENT = \
 	objdir=$(abs_top_builddir) \
 	GPGSCM_PATH=$(abs_top_srcdir)/tests/gpgscm
 
-.PHONY: check-all
+.PHONY: check-all release sign-release
 check-all:
 	$(TESTS_ENVIRONMENT) \
 	  $(abs_top_builddir)/tests/gpgscm/gpgscm \
 	  $(abs_srcdir)/tests/run-tests.scm $(TESTFLAGS) $(TESTS)
+
+# Names of to help the release target.
+RELEASE_NAME = $(PACKAGE_TARNAME)-$(PACKAGE_VERSION)
+RELEASE_W32_STEM_NAME = $(PACKAGE_TARNAME)-w32-$(PACKAGE_VERSION)
+
+release:
+	+(set -e;\
+	 if [ "$(abs_top_builddir)" = "$(abs_top_srcdir)" ]; then \
+           echo "error: build directory must not be the source directory" >&2;\
+	   exit 2;\
+         fi ;\
+	 echo "/* Build started at $$(date -uIseconds) */" ;\
+	 cd $(top_srcdir); \
+	 ./autogen.sh --force; \
+	 cd $(abs_top_builddir); \
+	 rm -rf dist; mkdir dist ; cd dist ; \
+	 $(abs_top_srcdir)/configure --enable-maintainer-mode; \
+	 $(MAKE) distcheck TESTFLAGS=--parallel; \
+	 $(TAR) xjf $(RELEASE_NAME).tar.bz2 ;\
+	 $(MAKE) -f  $(RELEASE_NAME)/build-aux/speedo.mk w32-release ;\
+	 echo "/* Build finished at $$(date -uIseconds) */" ;\
+         echo "/*" ;\
+	 echo " * Please run the final step interactivly:" ;\
+	 echo " *   make sign-release" ;\
+	 echo " */" ;\
+	) 2>&1 | tee "$(RELEASE_NAME).buildlog"
+
+sign-release:
+	 +(set -e; \
+	  cd dist; \
+	  release_w32_name="$(RELEASE_W32_STEM_NAME)_$$(date -u +%Y%m%d)" ;\
+	  files1="$(RELEASE_NAME).tar.bz2 \
+                  $${release_w32_name}.tar.xz \
+                  $${release_w32_name}.exe" ;\
+	  files2="$(RELEASE_NAME).tar.bz2.sig \
+		  $(RELEASE_NAME).swdb \
+		  $(RELEASE_NAME).buildlog \
+		  $${release_w32_name}.tar.xz.sig \
+		  $${release_w32_name}.exe.sig    \
+		  $${release_w32_name}.exe.swdb" ;\
+	  $(MAKE) -f $(RELEASE_NAME)/build-aux/speedo.mk w32-sign-installer ;\
+	  echo "/* Signing the source tarball ..." ;\
+	  gpg -sbu $(RELEASE_SIGNING_KEY) $(RELEASE_NAME).tar.bz2 ;\
+	  echo "/* Signing the W32 source tarball ..." ;\
+	  gpg -sbu $(RELEASE_SIGNING_KEY) $${release_w32_name}.tar.xz ;\
+	  echo "/* Signing the W32 installer ..." ;\
+	  gpg -sbu $(RELEASE_SIGNING_KEY) $${release_w32_name}.exe ;\
+	  cat $(RELEASE_NAME).swdb >swdb.snippet;\
+	  echo '#+macro: gnupg22_branch  STABLE-BRANCH-2-2' >>swdb.snippet;\
+	  cat  $${release_w32_name}.exe.swdb >>swdb.snippet;\
+	  echo >>swdb.snippet ;\
+	  sha1sum $${files1} >>swdb.snippet ;\
+          cat "../$(RELEASE_NAME).buildlog" swdb.snippet \
+               | gzip >$(RELEASE_NAME).buildlog ;\
+          echo "Release created - copying it to the local archive ..." ;\
+	  scp -p $${files1} $${files2} $(RELEASE_ARCHIVE_DIR)/ || true;\
+	  echo '/*' ;\
+	  echo ' * All done; for checksums see dist/swdb.snippet' ;\
+	  echo ' */' ;\
+         )

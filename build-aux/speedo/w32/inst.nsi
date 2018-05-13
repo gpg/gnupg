@@ -625,6 +625,7 @@ Section "GnuPG" SEC_gnupg
   File "bin/gpgconf.exe"
   File "bin/gpg-connect-agent.exe"
   File "bin/gpgtar.exe"
+  File "libexec/dirmngr_ldap.exe"
   File "libexec/gpg-preset-passphrase.exe"
   File "libexec/gpg-wks-client.exe"
 
@@ -743,6 +744,8 @@ Section "-libgpg-error" SEC_libgpg_error
   File share/locale/de/LC_MESSAGES/libgpg-error.mo
   SetOutPath "$INSTDIR\share\locale\eo\LC_MESSAGES"
   File share/locale/eo/LC_MESSAGES/libgpg-error.mo
+  SetOutPath "$INSTDIR\share\locale\es\LC_MESSAGES"
+  File share/locale/es/LC_MESSAGES/libgpg-error.mo
   SetOutPath "$INSTDIR\share\locale\fr\LC_MESSAGES"
   File share/locale/fr/LC_MESSAGES/libgpg-error.mo
   SetOutPath "$INSTDIR\share\locale\hu\LC_MESSAGES"
@@ -1249,6 +1252,9 @@ Section "-un.libgpg-error"
   Delete "$INSTDIR\share\locale\eo\LC_MESSAGES\libgpg-error.mo"
   RMDir "$INSTDIR\share\locale\eo\LC_MESSAGES"
   RMDir "$INSTDIR\share\locale\eo"
+  Delete "$INSTDIR\share\locale\es\LC_MESSAGES\libgpg-error.mo"
+  RMDir "$INSTDIR\share\locale\es\LC_MESSAGES"
+  RMDir "$INSTDIR\share\locale\es"
   Delete "$INSTDIR\share\locale\fr\LC_MESSAGES\libgpg-error.mo"
   RMDir "$INSTDIR\share\locale\fr\LC_MESSAGES"
   RMDir "$INSTDIR\share\locale\fr"
@@ -1307,6 +1313,7 @@ Section "-un.gnupg"
   Delete "$INSTDIR\bin\gpgconf.exe"
   Delete "$INSTDIR\bin\gpg-connect-agent.exe"
   Delete "$INSTDIR\bin\gpgtar.exe"
+  Delete "$INSTDIR\bin\dirmngr_ldap.exe"
   Delete "$INSTDIR\bin\gpg-preset-passphrase.exe"
   Delete "$INSTDIR\bin\gpg-wks-client.exe"
 

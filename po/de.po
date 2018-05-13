@@ -7653,31 +7653,17 @@ msgstr "crl_cache_insert über den Issuer fehlgeschlagen: %s\n"
 msgid "reader to file mapping table full - waiting\n"
 msgstr "\"reader to file\" Zuordnungstabelle ist voll - warte\n"
 
-msgid "using \"http\" instead of \"https\"\n"
-msgstr "Es wird \"HTTP\" anstatt \"HTTPS\" verwendet\n"
-
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
 msgstr "CRL Zugriff nicht möglich da %s abgeschaltet ist\n"
-
-#, c-format
-msgid "error initializing reader object: %s\n"
-msgstr "Fehler beim Initialisieren des \"reader\" Objekts: %s\n"
-
-#, c-format
-msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr "URL `%s' nach `%s' umgeleitet (%u)\n"
-
-msgid "too many redirections\n"
-msgstr "zu viele verschachtelte Umleitungen\n"
 
 #, c-format
 msgid "error retrieving '%s': %s\n"
 msgstr "Fehler beim Holen von `%s': %s\n"
 
 #, c-format
-msgid "error retrieving '%s': http status %u\n"
-msgstr "Fehler beim Holen von `%s': HTTP Status %u\n"
+msgid "error initializing reader object: %s\n"
+msgstr "Fehler beim Initialisieren des \"reader\" Objekts: %s\n"
 
 msgid "CRL access not possible due to Tor mode\n"
 msgstr "CRL Zugriff ist im Tor Modus nicht möglich\n"
@@ -8097,10 +8083,6 @@ msgid "error reading log from ldap wrapper %d: %s\n"
 msgstr "Fehler beim Lesen des Logs vom LDAP Wrapper %d: %s\n"
 
 #, c-format
-msgid "npth_select failed: %s - waiting 1s\n"
-msgstr "npth_select()-Aufruf fehlgeschlagen: %s - warte 1s\n"
-
-#, c-format
 msgid "ldap wrapper %d ready"
 msgstr "LDAP Wrapper %d fertig"
 
@@ -8119,14 +8101,6 @@ msgstr "Warten auf den LDAP Wrapper %d fehlgeschlagen: %s\n"
 #, c-format
 msgid "ldap wrapper %d stalled - killing\n"
 msgstr "LDAP Wrapper %d versackt - abgeschossen\n"
-
-#, c-format
-msgid "error spawning ldap wrapper reaper thread: %s\n"
-msgstr "Fehler beim Starten des LDAP Wrapper Kontrollthreads: %s\n"
-
-#, c-format
-msgid "reading from ldap wrapper %d failed: %s\n"
-msgstr "Lesen vom LDAP Wrapper %d fehlgeschlagen: %s\n"
 
 #, c-format
 msgid "invalid char 0x%02x in host name - not added\n"
@@ -8190,6 +8164,13 @@ msgstr "Fehler beim Verbinden mit '%s': %s\n"
 #, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "Fehler beim Lesen der HTTP Antwort von `%s': %s\n"
+
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr "URL `%s' nach `%s' umgeleitet (%u)\n"
+
+msgid "too many redirections\n"
+msgstr "zu viele verschachtelte Umleitungen\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
@@ -8784,6 +8765,21 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "using \"http\" instead of \"https\"\n"
+#~ msgstr "Es wird \"HTTP\" anstatt \"HTTPS\" verwendet\n"
+
+#~ msgid "error retrieving '%s': http status %u\n"
+#~ msgstr "Fehler beim Holen von `%s': HTTP Status %u\n"
+
+#~ msgid "npth_select failed: %s - waiting 1s\n"
+#~ msgstr "npth_select()-Aufruf fehlgeschlagen: %s - warte 1s\n"
+
+#~ msgid "error spawning ldap wrapper reaper thread: %s\n"
+#~ msgstr "Fehler beim Starten des LDAP Wrapper Kontrollthreads: %s\n"
+
+#~ msgid "reading from ldap wrapper %d failed: %s\n"
+#~ msgstr "Lesen vom LDAP Wrapper %d fehlgeschlagen: %s\n"
 
 #~ msgid "What keysize do you want for the Signature key? (%u) "
 #~ msgstr ""

@@ -41,8 +41,16 @@ gpg_error_t ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri,
                         const void *data, size_t datalen);
 
 /*-- ks-engine-http.c --*/
+
+/* Flags for the ks_http_fetch.  */
+#define KS_HTTP_FETCH_NOCACHE         1  /* Request no caching.  */
+#define KS_HTTP_FETCH_TRUST_CFG       2  /* Requests HTTP_FLAG_TRUST_CFG.  */
+#define KS_HTTP_FETCH_NO_CRL          4  /* Requests HTTP_FLAG_NO_CRL.     */
+#define KS_HTTP_FETCH_ALLOW_DOWNGRADE 8  /* Allow redirect https -> http.  */
+
 gpg_error_t ks_http_help (ctrl_t ctrl, parsed_uri_t uri);
-gpg_error_t ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp);
+gpg_error_t ks_http_fetch (ctrl_t ctrl, const char *url, unsigned int flags,
+                           estream_t *r_fp);
 
 
 /*-- ks-engine-finger.c --*/

@@ -665,7 +665,6 @@ case "${host}" in
         have_dosish_system=yes
         have_w32_system=yes
         require_iconv=no
-        use_ldapwrapper=no  # Fixme: Do this only for CE.
         require_pipe_to_unblock_pselect=no
         case "${host}" in
           *-mingw32ce*)
@@ -976,6 +975,17 @@ else
 *** we need the support of the New Portable Threads Library.
 ***]])
 fi
+#
+# Enable debugging of nPth
+#
+AC_ARG_ENABLE(npth-debug,
+   AC_HELP_STRING([--enable-npth-debug],
+                  [build with debug version of npth]),
+                  [if test $enableval = yes ; then
+                     AC_DEFINE(NPTH_ENABLE_DEBUG,1,
+                              [Build with debug version of nPth])
+                  fi])
+
 
 
 #

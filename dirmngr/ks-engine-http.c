@@ -62,12 +62,17 @@ ks_http_help (ctrl_t ctrl, parsed_uri_t uri)
 
 
 /* Get the key from URL which is expected to specify a http style
-   scheme.  On success R_FP has an open stream to read the data.  */
+ * scheme.  On success R_FP has an open stream to read the data.
+ * Despite its name this function is also used to retrieve arbitrary
+ * data via https or http.
+ */
 gpg_error_t
-ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
+ks_http_fetch (ctrl_t ctrl, const char *url, unsigned int flags,
+               estream_t *r_fp)
 {
   gpg_error_t err;
   http_session_t session = NULL;
+  unsigned int session_flags;
   http_t http = NULL;
   int redirects_left = MAX_REDIRECTS;
   estream_t fp = NULL;
@@ -81,12 +86,16 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
   is_onion = uri->onion;
   is_https = uri->use_tls;
 
- once_more:
-  /* Note that we only use the system provided certificates with the
+  /* By default we only use the system provided certificates with this
    * fetch command.  */
-  err = http_session_new (&session, NULL,
-                          ((ctrl->http_no_crl? HTTP_FLAG_NO_CRL : 0)
-                           | HTTP_FLAG_TRUST_SYS),
+  session_flags = HTTP_FLAG_TRUST_SYS;
+  if ((flags & KS_HTTP_FETCH_NO_CRL) || ctrl->http_no_crl)
+    session_flags |= HTTP_FLAG_NO_CRL;
+  if ((flags & KS_HTTP_FETCH_TRUST_CFG))
+    session_flags |= HTTP_FLAG_TRUST_CFG;
+
+ once_more:
+  err = http_session_new (&session, NULL, session_flags,
                           gnupg_http_tls_verify_cb, ctrl);
   if (err)
     goto leave;
@@ -100,6 +109,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
                    /* httphost */ NULL,
                    /* fixme: AUTH */ NULL,
                    ((opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0)
+                    | (DBG_LOOKUP? HTTP_FLAG_LOG_RESP:0)
                     | (dirmngr_use_tor ()? HTTP_FLAG_FORCE_TOR:0)
                     | (opt.disable_ipv4? HTTP_FLAG_IGNORE_IPv4 : 0)
                     | (opt.disable_ipv6? HTTP_FLAG_IGNORE_IPv6 : 0)),
@@ -111,10 +121,11 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
     {
       fp = http_get_write_ptr (http);
       /* Avoid caches to get the most recent copy of the key.  We set
-         both the Pragma and Cache-Control versions of the header, so
-         we're good with both HTTP 1.0 and 1.1.  */
-      es_fputs ("Pragma: no-cache\r\n"
-                "Cache-Control: no-cache\r\n", fp);
+       * both the Pragma and Cache-Control versions of the header, so
+       * we're good with both HTTP 1.0 and 1.1.  */
+      if ((flags & KS_HTTP_FETCH_NOCACHE))
+        es_fputs ("Pragma: no-cache\r\n"
+                  "Cache-Control: no-cache\r\n", fp);
       http_start_data (http);
       if (es_ferror (fp))
         err = gpg_error_from_syserror ();
@@ -164,7 +175,13 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
                 if (err)
                   goto leave;
 
-                if ((is_onion && ! uri->onion) || (is_https && ! uri->use_tls))
+                if (is_onion && !uri->onion)
+                  {
+                    err = gpg_error (GPG_ERR_FORBIDDEN);
+                    goto leave;
+                  }
+                if (!(flags & KS_HTTP_FETCH_ALLOW_DOWNGRADE)
+                    && is_https && !uri->use_tls)
                   {
                     err = gpg_error (GPG_ERR_FORBIDDEN);
                     goto leave;

@@ -28,6 +28,7 @@
 #include "dirmngr.h"
 #include "misc.h"
 #include "http.h"
+#include "ks-engine.h"  /* For ks_http_fetch.  */
 
 #if USE_LDAP
 # include "ldap-wrapper.h"
@@ -154,41 +155,17 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
 {
   gpg_error_t err;
   parsed_uri_t uri;
-  char *free_this = NULL;
-  int redirects_left = 2; /* We allow for 2 redirect levels.  */
+  estream_t httpfp = NULL;
 
   *reader = NULL;
 
   if (!url)
     return gpg_error (GPG_ERR_INV_ARG);
 
- once_more:
   err = http_parse_uri (&uri, url, 0);
   http_release_parsed_uri (uri);
-  if (err && !strncmp (url, "https:", 6))
-    {
-      /* FIXME: We now support https.
-       * Our HTTP code does not support TLS, thus we can't use this
-       * scheme and it is frankly not useful for CRL retrieval anyway.
-       * We resort to using http, assuming that the server also
-       * provides plain http access.  */
-      free_this = xtrymalloc (strlen (url) + 1);
-      if (free_this)
-        {
-          strcpy (stpcpy (free_this,"http:"), url+6);
-          err = http_parse_uri (&uri, free_this, 0);
-          http_release_parsed_uri (uri);
-          if (!err)
-            {
-              log_info (_("using \"http\" instead of \"https\"\n"));
-              url = free_this;
-            }
-        }
-    }
   if (!err) /* Yes, our HTTP code groks that. */
     {
-      http_t hd;
-
       if (opt.disable_http)
         {
           log_error (_("CRL access not possible due to disabled %s\n"),
@@ -196,97 +173,57 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
           err = gpg_error (GPG_ERR_NOT_SUPPORTED);
         }
       else
-        err = http_open_document (&hd, url, NULL,
-                                  ((opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0)
-                                   |(DBG_LOOKUP? HTTP_FLAG_LOG_RESP:0)
-                                   |(dirmngr_use_tor()? HTTP_FLAG_FORCE_TOR:0)
-                                   |(opt.disable_ipv4? HTTP_FLAG_IGNORE_IPv4:0)
-                                   |(opt.disable_ipv6? HTTP_FLAG_IGNORE_IPv6:0)
-                                   ),
-                                  ctrl->http_proxy, NULL, NULL, NULL);
-
-      switch ( err? 99999 : http_get_status_code (hd) )
         {
-        case 200:
-          {
-            estream_t fp = http_get_read_ptr (hd);
-            struct reader_cb_context_s *cb_ctx;
+          /* Note that we also allow root certificates loaded from
+           * "/etc/gnupg/trusted-certs/".  We also do not consult the
+           * CRL for the TLS connection - that may lead to a loop.
+           * Due to cacert.org redirecting their https URL to http we
+           * also allow such a downgrade.  */
+          err = ks_http_fetch (ctrl, url,
+                               (KS_HTTP_FETCH_TRUST_CFG
+                                | KS_HTTP_FETCH_NO_CRL
+                                | KS_HTTP_FETCH_ALLOW_DOWNGRADE ),
+                               &httpfp);
+        }
 
-            cb_ctx = xtrycalloc (1, sizeof *cb_ctx);
-            if (!cb_ctx)
-              err = gpg_error_from_syserror ();
-            if (!err)
-              err = ksba_reader_new (reader);
-            if (!err)
-              {
-                cb_ctx->fp = fp;
-                err = ksba_reader_set_cb (*reader, &my_es_read, cb_ctx);
-              }
-            if (err)
-              {
-                log_error (_("error initializing reader object: %s\n"),
-                           gpg_strerror (err));
-                ksba_reader_release (*reader);
-                *reader = NULL;
-                http_close (hd, 0);
-              }
-            else
-              {
-                /* The ksba reader misses a user pointer thus we need
-                   to come up with our own way of associating a file
-                   pointer (or well the callback context) with the
-                   reader.  It is only required when closing the
-                   reader thus there is no performance issue doing it
-                   this way.  FIXME: We now have a close notification
-                   which might be used here. */
-                register_file_reader (*reader, cb_ctx);
-                http_close (hd, 1);
-              }
-          }
-          break;
+      if (err)
+        log_error (_("error retrieving '%s': %s\n"), url, gpg_strerror (err));
+      else
+        {
+          struct reader_cb_context_s *cb_ctx;
 
-        case 301: /* Redirection (perm.). */
-        case 302: /* Redirection (temp.). */
-          {
-            const char *s = http_get_header (hd, "Location");
+          cb_ctx = xtrycalloc (1, sizeof *cb_ctx);
+          if (!cb_ctx)
+            err = gpg_error_from_syserror ();
+          else if (!(err = ksba_reader_new (reader)))
+            {
+              cb_ctx->fp = httpfp;
+              err = ksba_reader_set_cb (*reader, &my_es_read, cb_ctx);
+              if (!err)
+                {
+                  /* The ksba reader misses a user pointer thus we
+                   * need to come up with our own way of associating a
+                   * file pointer (or well the callback context) with
+                   * the reader.  It is only required when closing the
+                   * reader thus there is no performance issue doing
+                   * it this way.  FIXME: We now have a close
+                   * notification which might be used here. */
+                  register_file_reader (*reader, cb_ctx);
+                  httpfp = NULL;
+                }
+            }
 
-            log_info (_("URL '%s' redirected to '%s' (%u)\n"),
-                      url, s?s:"[none]", http_get_status_code (hd));
-            if (s && *s && redirects_left-- )
-              {
-                xfree (free_this); url = NULL;
-                free_this = xtrystrdup (s);
-                if (!free_this)
-                  err = gpg_error_from_errno (errno);
-                else
-                  {
-                    url = free_this;
-                    http_close (hd, 0);
-                    /* Note, that our implementation of redirection
-                       actually handles a redirect to LDAP.  */
-                    goto once_more;
-                  }
-              }
-            else
-              err = gpg_error (GPG_ERR_NO_DATA);
-            log_error (_("too many redirections\n")); /* Or no "Location". */
-            http_close (hd, 0);
-          }
-          break;
-
-        case 99999: /* Made up status code for error reporting.  */
-          log_error (_("error retrieving '%s': %s\n"),
-                     url, gpg_strerror (err));
-          break;
-
-        default:
-          log_error (_("error retrieving '%s': http status %u\n"),
-                     url, http_get_status_code (hd));
-          err = gpg_error (GPG_ERR_NO_DATA);
-          http_close (hd, 0);
+          if (err)
+            {
+              log_error (_("error initializing reader object: %s\n"),
+                         gpg_strerror (err));
+              ksba_reader_release (*reader);
+              *reader = NULL;
+              xfree (cb_ctx);
+            }
         }
     }
-  else /* Let the LDAP code try other schemes. */
+  else /* Let the LDAP code parse other schemes.  */
     {
       if (opt.disable_ldap)
         {
@@ -310,7 +247,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
         }
     }
 
-  xfree (free_this);
+  es_fclose (httpfp);
   return err;
 }
 

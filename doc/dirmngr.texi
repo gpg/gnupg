@@ -208,9 +208,10 @@ flag names.  To get a list of all supported flags the single word
 @opindex debug-all
 Same as @code{--debug=0xffffffff}
 
-@item --gnutls-debug @var{level}
-@opindex gnutls-debug
-Enable debugging of GNUTLS at @var{level}.
+@item --tls-debug @var{level}
+@opindex tls-debug
+Enable debugging of the TLS layer at @var{level}.  The details of the
+debug level depend on the used TLS library and are not set in stone.
 
 @item --debug-wait @var{n}
 @opindex debug-wait

@@ -29,7 +29,6 @@
 # include <signal.h>
 #endif
 #include <errno.h>
-#include <assert.h>
 #include <sys/time.h>
 #include <unistd.h>
 #ifndef USE_LDAPWRAPPER
@@ -343,7 +342,7 @@ ldap_wrapper_main (char **argv, estream_t outstream)
     usage (1);
 #else
   /* All passed arguments should be fine in this case.  */
-  assert (argc);
+  log_assert (argc);
 #endif
 
 #ifdef USE_LDAPWRAPPER
@@ -382,16 +381,56 @@ catch_alarm (int dummy)
 }
 #endif
 
+
+#ifdef HAVE_W32_SYSTEM
+static DWORD CALLBACK
+alarm_thread (void *arg)
+{
+  HANDLE timer = arg;
+
+  WaitForSingleObject (timer, INFINITE);
+  _exit (10);
+
+  return 0;
+}
+#endif
+
+
 static void
 set_timeout (my_opt_t myopt)
 {
-#ifdef HAVE_W32_SYSTEM
-  /* FIXME for W32.  */
-  (void)myopt;
-#else
   if (myopt->alarm_timeout)
-    alarm (myopt->alarm_timeout);
+    {
+#ifdef HAVE_W32_SYSTEM
+      static HANDLE timer;
+      LARGE_INTEGER due_time;
+
+      /* A negative value is a relative time.  */
+      due_time.QuadPart = (unsigned long long)-10000000 * myopt->alarm_timeout;
+
+      if (!timer)
+        {
+          SECURITY_ATTRIBUTES sec_attr;
+          DWORD tid;
+
+          memset (&sec_attr, 0, sizeof sec_attr);
+          sec_attr.nLength = sizeof sec_attr;
+          sec_attr.bInheritHandle = FALSE;
+
+          /* Create a manual resetable timer.  */
+          timer = CreateWaitableTimer (NULL, TRUE, NULL);
+          /* Intially set the timer.  */
+          SetWaitableTimer (timer, &due_time, 0, NULL, NULL, 0);
+
+          if (CreateThread (&sec_attr, 0, alarm_thread, timer, 0, &tid))
+            log_error ("failed to create alarm thread\n");
+        }
+      else /* Retrigger the timer.  */
+        SetWaitableTimer (timer, &due_time, 0, NULL, NULL, 0);
+#else
+      alarm (myopt->alarm_timeout);
 #endif
+    }
 }
 
 

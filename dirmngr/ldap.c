@@ -136,8 +136,12 @@ run_ldap_wrapper (ctrl_t ctrl,
       argv[argc++] = "--pass";
       argv[argc++] = pass;
     }
-  if (opt.verbose)
+
+  if (DBG_LOOKUP)
     argv[argc++] = "-vv";
+  else if (DBG_EXTPROG)
+    argv[argc++] = "-v";
+
   argv[argc++] = "--log-with-pid";
   if (multi_mode)
     argv[argc++] = "--multi";
@@ -564,8 +568,12 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
       argv[argc++] = "--pass";
       argv[argc++] = pass;
     }
-  if (opt.verbose)
+
+  if (DBG_LOOKUP)
     argv[argc++] = "-vv";
+  else if (DBG_EXTPROG)
+    argv[argc++] = "-v";
+
   argv[argc++] = "--log-with-pid";
   argv[argc++] = "--multi";
   if (opt.ldaptimeout)

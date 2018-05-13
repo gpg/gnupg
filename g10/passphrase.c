@@ -317,6 +317,9 @@ passphrase_to_dek (int cipher_algo, STRING2KEY *s2k,
     canceled = &dummy_canceled;
   *canceled = 0;
 
+  if (opt.no_symkey_cache)
+    nocache = 1;  /* Force no symmtric key caching.  */
+
   if ( !s2k )
     {
       log_assert (create && !nocache);
@@ -485,7 +488,7 @@ gpg_format_keydesc (ctrl_t ctrl, PKT_public_key *pk, int mode, int escaped)
                && pk->keyid[1] != pk->main_keyid[1]);
   algo_name = openpgp_pk_algo_name (pk->pubkey_algo);
   timestr = strtimestamp (pk->timestamp);
-  uid = get_user_id (ctrl, is_subkey? pk->main_keyid:pk->keyid, &uidlen);
+  uid = get_user_id (ctrl, is_subkey? pk->main_keyid:pk->keyid, &uidlen, NULL);
 
   orig_codeset = i18n_switchto_utf8 ();
 

@@ -1105,7 +1105,7 @@ cmd_ldapserver (assuan_context_t ctx, char *line)
 
 static const char hlp_isvalid[] =
   "ISVALID [--only-ocsp] [--force-default-responder]"
-  " <certificate_id>|<certificate_fpr>\n"
+  " <certificate_id> [<certificate_fpr>]\n"
   "\n"
   "This command checks whether the certificate identified by the\n"
   "certificate_id is valid.  This is done by consulting CRLs or\n"
@@ -1117,8 +1117,9 @@ static const char hlp_isvalid[] =
   "delimited by a single dot.  The first part is the SHA-1 hash of the\n"
   "issuer name and the second part the serial number.\n"
   "\n"
-  "Alternatively the certificate's fingerprint may be given in which\n"
-  "case an OCSP request is done before consulting the CRL.\n"
+  "If an OCSP check is desired CERTIFICATE_FPR with the hex encoded\n"
+  "fingerprint of the certificate is required.  In this case an OCSP\n"
+  "request is done before consulting the CRL.\n"
   "\n"
   "If the option --only-ocsp is given, no fallback to a CRL check will\n"
   "be used.\n"
@@ -1130,7 +1131,7 @@ static gpg_error_t
 cmd_isvalid (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  char *issuerhash, *serialno;
+  char *issuerhash, *serialno, *fpr;
   gpg_error_t err;
   int did_inquire = 0;
   int ocsp_mode = 0;
@@ -1141,25 +1142,36 @@ cmd_isvalid (assuan_context_t ctx, char *line)
   force_default_responder = has_option (line, "--force-default-responder");
   line = skip_options (line);
 
-  issuerhash = xstrdup (line); /* We need to work on a copy of the
-                                  line because that same Assuan
-                                  context may be used for an inquiry.
-                                  That is because Assuan reuses its
-                                  line buffer.
-                                   */
+  /* We need to work on a copy of the line because that same Assuan
+   * context may be used for an inquiry.  That is because Assuan
+   * reuses its line buffer.  */
+  issuerhash = xstrdup (line);
 
   serialno = strchr (issuerhash, '.');
-  if (serialno)
-    *serialno++ = 0;
-  else
+  if (!serialno)
     {
-      char *endp = strchr (issuerhash, ' ');
+      xfree (issuerhash);
+      return leave_cmd (ctx, PARM_ERROR (_("serialno missing in cert ID")));
+    }
+  *serialno++ = 0;
+  if (strlen (issuerhash) != 40)
+    {
+      xfree (issuerhash);
+      return leave_cmd (ctx, PARM_ERROR ("cert ID is too short"));
+    }
+
+  fpr = strchr (serialno, ' ');
+  while (fpr && spacep (fpr))
+    fpr++;
+  if (fpr && *fpr)
+    {
+      char *endp = strchr (fpr, ' ');
       if (endp)
         *endp = 0;
-      if (strlen (issuerhash) != 40)
+      if (strlen (fpr) != 40)
         {
           xfree (issuerhash);
-          return leave_cmd (ctx, PARM_ERROR (_("serialno missing in cert ID")));
+          return leave_cmd (ctx, PARM_ERROR ("fingerprint too short"));
         }
       ocsp_mode = 1;
     }
@@ -1168,17 +1180,24 @@ cmd_isvalid (assuan_context_t ctx, char *line)
  again:
   if (ocsp_mode)
     {
-      /* Note, that we ignore the given issuer hash and instead rely
-         on the current certificate semantics used with this
-         command. */
+      /* Note, that we currently ignore the supplied fingerprint FPR;
+       * instead ocsp_isvalid does an inquire to ask for the cert.
+       * The fingerprint may eventually be used to lookup the
+       * certificate in a local cache.  */
       if (!opt.allow_ocsp)
         err = gpg_error (GPG_ERR_NOT_SUPPORTED);
       else
         err = ocsp_isvalid (ctrl, NULL, NULL, force_default_responder);
-      /* Fixme: If we got no ocsp response and --only-ocsp is not used
-         we should fall back to CRL mode.  Thus we need to clear
-         OCSP_MODE, get the issuerhash and the serialno from the
-         current certificate and jump to again. */
+
+      if (gpg_err_code (err) == GPG_ERR_CONFIGURATION
+          && gpg_err_source (err) == GPG_ERR_SOURCE_DIRMNGR)
+        {
+          /* No default responder configured - fallback to CRL.  */
+          if (!only_ocsp)
+            log_info ("falling back to CRL check\n");
+          ocsp_mode = 0;
+          goto again;
+        }
     }
   else if (only_ocsp)
     err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
@@ -1858,7 +1877,7 @@ static const char hlp_validate[] =
   "  INQUIRE CERTLIST\n"
   "\n"
   "Here the first certificate is the target certificate, the remaining\n"
-  "certificates are suggested intermediary certificates.  All certifciates\n"
+  "certificates are suggested intermediary certificates.  All certificates\n"
   "need to be PEM encoded.\n"
   "\n"
   "The option --systrust changes the behaviour to include the system\n"
@@ -1909,7 +1928,7 @@ cmd_validate (assuan_context_t ctx, char *line)
             err = gpg_error (GPG_ERR_MISSING_CERT);
           if (!err)
             {
-              /* Extraxt the first certificate from the list.  */
+              /* Extract the first certificate from the list.  */
               cert = certlist->cert;
               ksba_cert_ref (cert);
             }
@@ -1978,6 +1997,38 @@ make_keyserver_item (const char *uri, uri_item_t *r_item)
   uri_item_t item;
 
   *r_item = NULL;
+
+  /* We used to have DNS CNAME redirection from the URLs below to
+   * sks-keyserver. pools.  The idea was to allow for a quick way to
+   * switch to a different set of pools.  The problem with that
+   * approach is that TLS needs to verify the hostname and - because
+   * DNS is not secured - it can only check the user supplied hostname
+   * and not a hostname from a CNAME RR.  Thus the final server all
+   * need to have certificates with the actual pool name as well as
+   * for keys.gnupg.net - that would render the advantage of
+   * keys.gnupg.net useless and so we better give up on this.  Because
+   * the keys.gnupg.net URL are still in widespread use we do a static
+   * mapping here.
+   */
+  if (!strcmp (uri, "hkps://keys.gnupg.net")
+      || !strcmp (uri, "keys.gnupg.net"))
+    uri = "hkps://hkps.pool.sks-keyservers.net";
+  else if (!strcmp (uri, "https://keys.gnupg.net"))
+    uri = "https://hkps.pool.sks-keyservers.net";
+  else if (!strcmp (uri, "hkp://keys.gnupg.net"))
+    uri = "hkp://hkps.pool.sks-keyservers.net";
+  else if (!strcmp (uri, "http://keys.gnupg.net"))
+    uri = "http://hkps.pool.sks-keyservers.net";
+  else if (!strcmp (uri, "hkps://http-keys.gnupg.net")
+           || !strcmp (uri, "http-keys.gnupg.net"))
+    uri = "hkps://ha.pool.sks-keyservers.net";
+  else if (!strcmp (uri, "https://http-keys.gnupg.net"))
+    uri = "https://ha.pool.sks-keyservers.net";
+  else if (!strcmp (uri, "hkp://http-keys.gnupg.net"))
+    uri = "hkp://ha.pool.sks-keyservers.net";
+  else if (!strcmp (uri, "http://http-keys.gnupg.net"))
+    uri = "http://ha.pool.sks-keyservers.net";
+
   item = xtrymalloc (sizeof *item + strlen (uri));
   if (!item)
     return gpg_error_from_syserror ();
@@ -2489,7 +2540,8 @@ static const char hlp_getinfo[] =
   "dnsinfo     - Return info about the DNS resolver\n"
   "socket_name - Return the name of the socket.\n"
   "session_id  - Return the current session_id.\n"
-  "workqueue   - Inspect the work queue\n";
+  "workqueue   - Inspect the work queue\n"
+  "getenv NAME - Return value of envvar NAME\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
@@ -2556,6 +2608,23 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     {
       workqueue_dump_queue (ctrl);
       err = 0;
+    }
+  else if (!strncmp (line, "getenv", 6)
+           && (line[6] == ' ' || line[6] == '\t' || !line[6]))
+    {
+      line += 6;
+      while (*line == ' ' || *line == '\t')
+        line++;
+      if (!*line)
+        err = gpg_error (GPG_ERR_MISSING_VALUE);
+      else
+        {
+          const char *s = getenv (line);
+          if (!s)
+            err = set_error (GPG_ERR_NOT_FOUND, "No such envvar");
+          else
+            err = assuan_send_data (ctx, s, strlen (s));
+        }
     }
   else
     err = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");

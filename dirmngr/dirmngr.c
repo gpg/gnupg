@@ -2243,7 +2243,8 @@ handle_connections (assuan_fd_t listen_fd)
       npth_timersub (&abstime, &curtime, &timeout);
 
 #ifndef HAVE_W32_SYSTEM
-      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, &timeout, npth_sigev_sigmask());
+      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, &timeout,
+                          npth_sigev_sigmask());
       saved_errno = errno;
 
       while (npth_sigev_get_pending(&signo))

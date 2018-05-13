@@ -45,6 +45,7 @@
 #ifdef USE_LDAPWRAPPER
 # error This module is not expected to be build.
 #endif
+#error This module might not anymore work.
 
 
 

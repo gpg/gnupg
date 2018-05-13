@@ -4136,14 +4136,19 @@ get_seckey_default_or_card (ctrl_t ctrl, PKT_public_key *pk,
  *********************************************/
 
 /* Return a string with a printable representation of the user_id.
- * this string must be freed by xfree.   */
+ * this string must be freed by xfree.  If R_NOUID is not NULL it is
+ * set to true if a user id was not found; otherwise to false.  */
 static char *
-get_user_id_string (ctrl_t ctrl, u32 * keyid, int mode, size_t *r_len)
+get_user_id_string (ctrl_t ctrl, u32 * keyid, int mode, size_t *r_len,
+                    int *r_nouid)
 {
   user_id_db_t r;
   keyid_list_t a;
   int pass = 0;
   char *p;
+
+  if (r_nouid)
+    *r_nouid = 0;
 
   /* Try it two times; second pass reads from the database.  */
   do
@@ -4191,6 +4196,8 @@ get_user_id_string (ctrl_t ctrl, u32 * keyid, int mode, size_t *r_len)
   else
     p = xasprintf ("%s [?]", keystr (keyid));
 
+  if (r_nouid)
+    *r_nouid = 1;
   if (r_len)
     *r_len = strlen (p);
   return p;
@@ -4200,7 +4207,7 @@ get_user_id_string (ctrl_t ctrl, u32 * keyid, int mode, size_t *r_len)
 char *
 get_user_id_string_native (ctrl_t ctrl, u32 * keyid)
 {
-  char *p = get_user_id_string (ctrl, keyid, 0, NULL);
+  char *p = get_user_id_string (ctrl, keyid, 0, NULL, NULL);
   char *p2 = utf8_to_native (p, strlen (p), 0);
   xfree (p);
   return p2;
@@ -4210,15 +4217,15 @@ get_user_id_string_native (ctrl_t ctrl, u32 * keyid)
 char *
 get_long_user_id_string (ctrl_t ctrl, u32 * keyid)
 {
-  return get_user_id_string (ctrl, keyid, 1, NULL);
+  return get_user_id_string (ctrl, keyid, 1, NULL, NULL);
 }
 
 
 /* Please try to use get_user_byfpr instead of this one.  */
 char *
-get_user_id (ctrl_t ctrl, u32 *keyid, size_t *rn)
+get_user_id (ctrl_t ctrl, u32 *keyid, size_t *rn, int *r_nouid)
 {
-  return get_user_id_string (ctrl, keyid, 2, rn);
+  return get_user_id_string (ctrl, keyid, 2, rn, r_nouid);
 }
 
 
@@ -4227,7 +4234,7 @@ char *
 get_user_id_native (ctrl_t ctrl, u32 *keyid)
 {
   size_t rn;
-  char *p = get_user_id (ctrl, keyid, &rn);
+  char *p = get_user_id (ctrl, keyid, &rn, NULL);
   char *p2 = utf8_to_native (p, rn, 0);
   xfree (p);
   return p2;

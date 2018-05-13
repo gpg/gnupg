@@ -1149,7 +1149,7 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
                   else
                     {
                       size_t n;
-                      char *p = get_user_id (ctrl, keyid, &n );
+                      char *p = get_user_id (ctrl, keyid, &n, NULL);
                       tty_print_utf8_string ( p, n );
                       xfree(p);
                     }
