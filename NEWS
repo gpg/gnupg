@@ -1,6 +1,41 @@
 Noteworthy changes in version 2.3.0 (unreleased)
 ------------------------------------------------
 
+  Changes also found in 2.2.7:
+
+  * gpg: New option --no-symkey-cache to disable the passphrase cache
+    for symmetrical en- and decryption.
+
+  * gpg: The ERRSIG status now prints the fingerprint if that is part
+    of the signature.
+
+  * gpg: Relax emitting of FAILURE status lines
+
+  * gpg: Add a status flag to "sig" lines printed with --list-sigs.
+
+  * gpg: Fix "Too many open files" when using --multifile.  [#3951]
+
+  * ssh: Return an error for unknown ssh-agent flags.  [#3880]
+
+  * dirmngr: Fix a regression since 2.1.16 which caused corrupted CRL
+    caches under Windows.  [#2448,#3923]
+
+  * dirmngr: Fix a CNAME problem with pools and TLS.  Also use a fixed
+    mapping of keys.gnupg.net to sks-keyservers.net.  [#3755]
+
+  * dirmngr: Try resurrecting dead hosts earlier (from 3 to 1.5 hours).
+
+  * dirmngr: Fallback to CRL if no default OCSP responder is configured.
+
+  * dirmngr: Implement CRL fetching via https.  Here a redirection to
+    http is explictly allowed.
+
+  * dirmngr: Make LDAP searching and CRL fetching work under Windows.
+    This stopped working with 2.1.  [#3937]
+
+  * agent,dirmngr: New sub-command "getenv" for "getinfo" to ease
+    debugging.
+
   Changes also found in 2.2.6:
 
   * gpg,gpgsm: New option --request-origin to pretend requests coming
@@ -209,6 +244,7 @@ Noteworthy changes in version 2.3.0 (unreleased)
   Version 2.2.4 (2017-12-20)
   Version 2.2.5 (2018-02-22)
   Version 2.2.6 (2018-04-09)
+  Version 2.2.7 (2018-05-02)
 
 
 Noteworthy changes in version 2.2.0 (2017-08-28)
