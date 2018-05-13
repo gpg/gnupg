@@ -38,7 +38,7 @@ Noteworthy changes in version 2.2.7 (2018-05-02)
   * agent,dirmngr: New sub-command "getenv" for "getinfo" to ease
     debugging.
 
-  See-also: gnupg-announce/2018q2/000422.html
+  See-also: gnupg-announce/2018q2/000424.html
 
 
 Noteworthy changes in version 2.2.6 (2018-04-09)
