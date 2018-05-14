@@ -5065,7 +5065,7 @@ msgstr "tilbagekaldskommentar: "
 #. q = quit
 #.
 msgid "iImMqQsS"
-msgstr "iImMqQsS"
+msgstr "iIhHaAsS"
 
 msgid "No trust value assigned to:\n"
 msgstr "Ingen tillidsværdi tildelt til:\n"
