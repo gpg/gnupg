@@ -5088,7 +5088,7 @@ msgstr "yürürlükten kaldırma açıklaması: "
 #. q = quit
 #.
 msgid "iImMqQsS"
-msgstr "bBmMaAkK"
+msgstr "bBmMkKaA"
 
 msgid "No trust value assigned to:\n"
 msgstr "Güven değeri belirtilmemiş:\n"
@@ -5121,7 +5121,7 @@ msgid "  s = skip this key\n"
 msgstr " a = bu anahtarı atla\n"
 
 msgid "  q = quit\n"
-msgstr " ç = çık\n"
+msgstr " k = çık\n"
 
 #, c-format
 msgid ""

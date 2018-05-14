@@ -5152,7 +5152,7 @@ msgstr "spärrningskommentar: "
 #. q = quit
 #.
 msgid "iImMqQsS"
-msgstr "iImHhAsS"
+msgstr "iIhHaAsS"
 
 msgid "No trust value assigned to:\n"
 msgstr "Inget tillitsvärde tilldelat till:\n"
