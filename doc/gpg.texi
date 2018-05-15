@@ -3230,10 +3230,11 @@ to ignore CRC errors.
 @item --ignore-mdc-error
 @opindex ignore-mdc-error
 This option changes a MDC integrity protection failure into a warning.
-This can be useful if a message is partially corrupt, but it is
-necessary to get as much data as possible out of the corrupt message.
-However, be aware that a MDC protection failure may also mean that the
-message was tampered with intentionally by an attacker.
+It is required to decrypt old messages which did not use an MDC.  It
+may also be useful if a message is partially garbled, but it is
+necessary to get as much data as possible out of that garbled message.
+Be aware that a missing or failed MDC can be an indication of an
+attack.  Use with caution.
 
 @item --allow-weak-digest-algos
 @opindex allow-weak-digest-algos

@@ -341,6 +341,7 @@
                "no-auto-key-retrieve"
                "no-auto-key-locate"
 	       "allow-weak-digest-algos"
+               "ignore-mdc-error"
 	       (if have-opt-always-trust
 		   "no-auto-check-trustdb" "#no-auto-check-trustdb")
 	       (string-append "agent-program "

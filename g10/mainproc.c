@@ -738,15 +738,12 @@ proc_encrypted (CTX c, PACKET *pkt)
   else if (!result
            && !opt.ignore_mdc_error
            && !pkt->pkt.encrypted->mdc_method
-           && !pkt->pkt.encrypted->aead_algo
-           && openpgp_cipher_get_algo_blklen (c->dek->algo) != 8
-           && c->dek->algo != CIPHER_ALGO_TWOFISH)
+           && !pkt->pkt.encrypted->aead_algo)
     {
-      /* The message has been decrypted but has no MDC despite that a
-         modern cipher (blocklength != 64 bit, except for Twofish) is
-         used and the option to ignore MDC errors is not used: To
-         avoid attacks changing an MDC message to a non-MDC message,
-         we fail here.  */
+      /* The message has been decrypted but does not carry an MDC or
+       * uses AEAD encryption.  --ignore-mdc-error has also not been
+       * used.  To avoid attacks changing an MDC message to a non-MDC
+       * message, we fail here.  */
       log_error (_("WARNING: message was not integrity protected\n"));
       if (opt.verbose > 1)
         log_info ("decryption forced to fail\n");
