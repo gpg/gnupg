@@ -268,7 +268,6 @@ enum cmd_and_opt_values
     oRequireSecmem,
     oNoRequireSecmem,
     oNoPermissionWarn,
-    oNoMDCWarn,
     oNoArmor,
     oNoDefKeyring,
     oNoKeyring,
@@ -738,7 +737,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oRequireSecmem, "require-secmem", "@"),
   ARGPARSE_s_n (oNoRequireSecmem, "no-require-secmem", "@"),
   ARGPARSE_s_n (oNoPermissionWarn, "no-permission-warning", "@"),
-  ARGPARSE_s_n (oNoMDCWarn, "no-mdc-warning", "@"),
   ARGPARSE_s_n (oNoArmor, "no-armor", "@"),
   ARGPARSE_s_n (oNoArmor, "no-armour", "@"),
   ARGPARSE_s_n (oNoDefKeyring, "no-default-keyring", "@"),
@@ -925,6 +923,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoop, "no-force-v3-sigs", "@"),
   ARGPARSE_s_n (oNoop, "force-v4-certs", "@"),
   ARGPARSE_s_n (oNoop, "no-force-v4-certs", "@"),
+  ARGPARSE_s_n (oNoop, "no-mdc-warning", "@"),
 
   ARGPARSE_end ()
 };
@@ -3221,7 +3220,6 @@ main (int argc, char **argv)
 	  case oRequireSecmem: require_secmem=1; break;
 	  case oNoRequireSecmem: require_secmem=0; break;
 	  case oNoPermissionWarn: opt.no_perm_warn=1; break;
-	  case oNoMDCWarn: opt.no_mdc_warn=1; break;
           case oDisplayCharset:
 	    if( set_native_charset( pargs.r.ret_str ) )
 		log_error(_("'%s' is not a valid character set\n"),

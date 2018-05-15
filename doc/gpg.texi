@@ -2041,10 +2041,6 @@ place an unsafe gpg.conf file in place, and use this file to suppress
 warnings about itself. The @option{--homedir} permissions warning may only be
 suppressed on the command line.
 
-@item --no-mdc-warning
-@opindex no-mdc-warning
-Suppress the warning about missing MDC integrity protection.
-
 @item --require-secmem
 @itemx --no-require-secmem
 @opindex require-secmem

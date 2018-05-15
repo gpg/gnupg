@@ -64,7 +64,7 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
       if (DBG_HASHING)
         gcry_md_debug (cfx->mdc_hash, "creatmdc");
     }
-  else if (!opt.no_mdc_warn)
+  else
     {
       log_info ("WARNING: "
                 "encrypting without integrity protection is dangerous\n");
