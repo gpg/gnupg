@@ -180,7 +180,6 @@ struct
   prefitem_t *personal_compress_prefs;
   struct weakhash *weak_digests;
   int no_perm_warn;
-  int no_mdc_warn;
   char *temp_dir;
   int no_encrypt_to;
   int encrypt_to_default_key;

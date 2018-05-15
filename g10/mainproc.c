@@ -671,7 +671,7 @@ proc_encrypted (CTX c, PACKET *pkt)
         log_info(_("decryption okay\n"));
       if (pkt->pkt.encrypted->mdc_method && !result)
         write_status (STATUS_GOODMDC);
-      else if (!opt.no_mdc_warn)
+      else
         log_info (_("WARNING: message was not integrity protected\n"));
     }
   else if (gpg_err_code (result) == GPG_ERR_BAD_SIGNATURE)
