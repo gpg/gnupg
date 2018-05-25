@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.9\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2018-04-16 14:06+0000\n"
+"PO-Revision-Date: 2018-05-25 15:44+0000\n"
 "Last-Translator: emma peel <emma.peel@riseup.net>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "Language: es\n"
@@ -1371,22 +1371,16 @@ msgid "%s keysizes must be in the range %u-%u\n"
 msgstr "los tamaños de claves %s deben estar en el rango %u-%u\n"
 
 msgid "Changing card key attribute for: "
-msgstr ""
+msgstr "Cambiando el atributo de la clave de tarjeta por: "
 
-#, fuzzy
-#| msgid "   (1) Signature key\n"
 msgid "Signature key\n"
-msgstr "   (1) Clave de firmado\n"
+msgstr "Clave de firmado\n"
 
-#, fuzzy
-#| msgid "   (2) Encryption key\n"
 msgid "Encryption key\n"
-msgstr "   (2) Clave de cifrado\n"
+msgstr "Clave de cifrado\n"
 
-#, fuzzy
-#| msgid "   (3) Authentication key\n"
 msgid "Authentication key\n"
-msgstr "   (3) Clave de autentificación\n"
+msgstr "Clave de autentificación\n"
 
 msgid "Please select what kind of key you want:\n"
 msgstr "Por favor seleccione tipo de clave deseado:\n"
@@ -1395,10 +1389,9 @@ msgstr "Por favor seleccione tipo de clave deseado:\n"
 msgid "   (%d) RSA\n"
 msgstr "   (%d) RSA\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) ECC and ECC\n"
+#, c-format
 msgid "   (%d) ECC\n"
-msgstr "   (%d) ECC y ECC\n"
+msgstr "   (%d) ECC\n"
 
 msgid "Invalid selection.\n"
 msgstr "Elección inválida.\n"
@@ -1411,15 +1404,13 @@ msgstr "Ahora la tarjeta se reconfigurará para generar una clave de %u bits\n"
 msgid "The card will now be re-configured to generate a key of type: %s\n"
 msgstr "Ahora la tarjeta se reconfigurará para generar una clave de tipo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error changing size of key %d to %u bits: %s\n"
+#, c-format
 msgid "error changing key attribute for key %d: %s\n"
-msgstr "error cambiando el tamaño de la clave %d a %u bits: %s\n"
+msgstr "error cambiando el atributo de clave de la clave %d: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error getting current key info: %s\n"
+#, c-format
 msgid "error getting card info: %s\n"
-msgstr "error obteniendo la información actual de la clave: %s\n"
+msgstr "error al obtener información de la clave: %s\n"
 
 msgid "This command is not supported by this card\n"
 msgstr "Esta orden no se puede usar con esta tarjeta\n"
@@ -1473,10 +1464,9 @@ msgstr "¿Continuar? (s/N) "
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr "¿Realmente quiere volver a los valores de fábrica? (escriba \"sí\") "
 
-#, fuzzy, c-format
-#| msgid "error looking up: %s\n"
+#, c-format
 msgid "error for setup KDF: %s\n"
-msgstr "error al buscar: %s\n"
+msgstr "error de la configuración KDF: %s\n"
 
 msgid "quit this menu"
 msgstr "salir de este menú"
@@ -1529,15 +1519,12 @@ msgstr "desbloquear PIN usando Código de Reinicio"
 msgid "destroy all keys and data"
 msgstr "destruir todas las claves y datos"
 
-#, fuzzy
 #| msgid "|NAME|use user NAME for authentication"
 msgid "setup KDF for PIN authentication"
-msgstr "|NAME|usa NOMBRE como destinatario por defecto"
+msgstr "configurar KDF para autentificación de PIN"
 
-#, fuzzy
-#| msgid "change the ownertrust"
 msgid "change the key attribute"
-msgstr "cambia valores de confianza"
+msgstr "cambia valores de la clave"
 
 msgid "gpg/card> "
 msgstr "gpg/tarjeta> "
@@ -2178,10 +2165,9 @@ msgstr "\"%s\" no es una dirección de email válida\n"
 msgid "invalid pinentry mode '%s'\n"
 msgstr "modo de entrada de pin inválido '%s'\n"
 
-#, fuzzy, c-format
-#| msgid "invalid value for option '%s'\n"
+#, c-format
 msgid "invalid request origin '%s'\n"
-msgstr "parámetro incorrecto para la opción '%s'\n"
+msgstr "origen incorrecto de la consulta '%s'\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
@@ -3562,15 +3548,11 @@ msgstr "Cambiando caducidad de clave primaria.\n"
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "No puede cambiar la fecha de caducidad de una clave v3\n"
 
-#, fuzzy
-#| msgid "Changing expiration time for a subkey.\n"
 msgid "Changing usage of a subkey.\n"
-msgstr "Cambiando fecha de caducidad de subclave.\n"
+msgstr "Cambiando el uso de una subclave.\n"
 
-#, fuzzy
-#| msgid "Changing expiration time for the primary key.\n"
 msgid "Changing usage of the primary key.\n"
-msgstr "Cambiando caducidad de clave primaria.\n"
+msgstr "Cambiando uso de clave primaria.\n"
 
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
@@ -5231,10 +5213,10 @@ msgstr "NOTA: clave de firmado %s caducada el %s\n"
 msgid "Note: signature key %s has been revoked\n"
 msgstr "NOTA: la clave de firmado %s ha sido revocada\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "standalone signature of class 0x%02x\n"
 msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
-msgstr "firma independiente de clase 0x%02x\n"
+msgstr "firma incorrecta de la clave %s: %s (0x%02x, 0x%x)\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
@@ -5592,37 +5574,37 @@ msgstr[1] "Cifrados %d mensajes en el futuro."
 msgid "Messages verified over the past %d day: %d."
 msgid_plural "Messages verified over the past %d days: %d."
 msgstr[0] ""
-msgstr[1] ""
+msgstr[1] "Mensajes verificados los últimos %d días: %d."
 
 #, c-format
 msgid "Messages encrypted over the past %d day: %d."
 msgid_plural "Messages encrypted over the past %d days: %d."
 msgstr[0] ""
-msgstr[1] ""
+msgstr[1] "Mensajes cifrados los últimos %d días: %d."
 
 #, c-format
 msgid "Messages verified over the past %d month: %d."
 msgid_plural "Messages verified over the past %d months: %d."
 msgstr[0] ""
-msgstr[1] ""
+msgstr[1] "Mensajes verificados los últimos %d meses: %d."
 
 #, c-format
 msgid "Messages encrypted over the past %d month: %d."
 msgid_plural "Messages encrypted over the past %d months: %d."
 msgstr[0] ""
-msgstr[1] ""
+msgstr[1] "Mensajes cifrados los últimos %d meses: %d."
 
 #, c-format
 msgid "Messages verified over the past %d year: %d."
 msgid_plural "Messages verified over the past %d years: %d."
 msgstr[0] ""
-msgstr[1] ""
+msgstr[1] "Mensajes verificados los últimos %d años: %d."
 
 #, c-format
 msgid "Messages encrypted over the past %d year: %d."
 msgid_plural "Messages encrypted over the past %d years: %d."
 msgstr[0] ""
-msgstr[1] ""
+msgstr[1] "Mensajes cifrados los últimos %d años: %d."
 
 #, c-format
 msgid "Messages verified in the past: %d."
