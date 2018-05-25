@@ -2600,11 +2600,14 @@ This option requires the use of option @option{--rfc4880bis} to
 declare that a not yet standardized feature is used.
 
 @item --force-mdc
+@item --no-force-mdc
 @opindex force-mdc
-Force the use of encryption with a modification detection code. This
-is always used with the newer ciphers (those with a blocksize greater
-than 64 bits), or if all of the recipient keys indicate MDC support in
-their feature flags.
+Force (or do not force) the use of encryption with a modification
+detection code.  The default is to always force the MDC when
+encrypting (@option{--force-mdc}).  If @option{--no-force-mdc} is
+given, the MDC may be skipped when using older ciphers (those with a
+blocksize 64 bits or less), and if some of the recipient keys do not
+indicate MDC support in their feature flags.
 
 @item --disable-mdc
 @opindex disable-mdc

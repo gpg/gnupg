@@ -2443,6 +2443,7 @@ main (int argc, char **argv)
     opt.passphrase_repeat = 1;
     opt.emit_version = 0;
     opt.weak_digests = NULL;
+    opt.force_mdc = 1;
 
     /* Check whether we have a config file on the command line.  */
     orig_argc = argc;
