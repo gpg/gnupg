@@ -2552,7 +2552,7 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
   /* See whether we have the AEAD feature.  */
   uid->flags.aead = 0;
   p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_FEATURES, &n);
-  if (p && n && (p[0] & 0x01))
+  if (p && n && (p[0] & 0x02))
     uid->flags.aead = 1;
 
   /* And the keyserver modify flag.  */
