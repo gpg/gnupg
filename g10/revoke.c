@@ -480,7 +480,7 @@ create_revocation (ctrl_t ctrl,
       goto leave;
     }
 
-  if (keyblock && (PGP6 || PGP7 || PGP8))
+  if (keyblock && (PGP7 || PGP8))
     {
       /* Use a minimal pk for PGPx mode, since PGP can't import bare
          revocation certificates. */

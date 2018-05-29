@@ -3474,7 +3474,7 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
  *
  * In case the primary key is not required, select a suitable subkey.
  * We need the primary key if PUBKEY_USAGE_CERT is set in REQ_USAGE or
- * we are in PGP6 or PGP7 mode and PUBKEY_USAGE_SIG is set in
+ * we are in PGP7 mode and PUBKEY_USAGE_SIG is set in
  * REQ_USAGE.
  *
  * If any of PUBKEY_USAGE_SIG, PUBKEY_USAGE_ENC and PUBKEY_USAGE_CERT
@@ -3536,10 +3536,10 @@ finish_lookup (kbnode_t keyblock, unsigned int req_usage, int want_exact,
   req_usage &= USAGE_MASK;
 
   /* Request the primary if we're certifying another key, and also if
-   * signing data while --pgp6 or --pgp7 is on since pgp 6 and 7 do
+   * signing data while --pgp7 is on since pgp 7 do
    * not understand signatures made by a signing subkey.  PGP 8 does. */
   req_prim = ((req_usage & PUBKEY_USAGE_CERT)
-              || ((PGP6 || PGP7) && (req_usage & PUBKEY_USAGE_SIG)));
+              || (PGP7 && (req_usage & PUBKEY_USAGE_SIG)));
 
 
   log_assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);

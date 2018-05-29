@@ -340,10 +340,9 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define GNUPG   (opt.compliance==CO_GNUPG || opt.compliance==CO_DE_VS)
 #define RFC2440 (opt.compliance==CO_RFC2440)
 #define RFC4880 (opt.compliance==CO_RFC4880)
-#define PGP6    (opt.compliance==CO_PGP6)
 #define PGP7    (opt.compliance==CO_PGP7)
 #define PGP8    (opt.compliance==CO_PGP8)
-#define PGPX    (PGP6 || PGP7 || PGP8)
+#define PGPX    (PGP7 || PGP8)
 
 /* Various option flags.  Note that there should be no common string
    names between the IMPORT_ and EXPORT_ flags as they can be mixed in

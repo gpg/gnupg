@@ -240,7 +240,6 @@ enum cmd_and_opt_values
     oRFC4880,
     oRFC4880bis,
     oOpenPGP,
-    oPGP6,
     oPGP7,
     oPGP8,
     oDE_VS,
@@ -658,7 +657,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oRFC4880, "rfc4880", "@"),
   ARGPARSE_s_n (oRFC4880bis, "rfc4880bis", "@"),
   ARGPARSE_s_n (oOpenPGP, "openpgp", N_("use strict OpenPGP behavior")),
-  ARGPARSE_s_n (oPGP6, "pgp6", "@"),
+  ARGPARSE_s_n (oPGP7, "pgp6", "@"),
   ARGPARSE_s_n (oPGP7, "pgp7", "@"),
   ARGPARSE_s_n (oPGP8, "pgp8", "@"),
 
@@ -2132,7 +2131,7 @@ static struct gnupg_compliance_option compliance_options[] =
     { "rfc4880bis", oRFC4880bis },
     { "rfc4880",    oRFC4880 },
     { "rfc2440",    oRFC2440 },
-    { "pgp6",       oPGP6 },
+    { "pgp6",       oPGP7 },
     { "pgp7",       oPGP7 },
     { "pgp8",       oPGP8 },
     { "de-vs",      oDE_VS }
@@ -2189,7 +2188,6 @@ set_compliance_option (enum cmd_and_opt_values option)
       opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
       opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
       break;
-    case oPGP6:  opt.compliance = CO_PGP6;  break;
     case oPGP7:  opt.compliance = CO_PGP7;  break;
     case oPGP8:  opt.compliance = CO_PGP8;  break;
     case oGnuPG: opt.compliance = CO_GNUPG; break;
@@ -2935,7 +2933,6 @@ main (int argc, char **argv)
           case oRFC2440:
           case oRFC4880:
           case oRFC4880bis:
-          case oPGP6:
           case oPGP7:
           case oPGP8:
           case oGnuPG:
@@ -3788,14 +3785,7 @@ main (int argc, char **argv)
       log_clock ("start");
 
     /* Do these after the switch(), so they can override settings. */
-    if(PGP6)
-      {
-        /* That does not anymore work because we have no more support
-           for v3 signatures.  */
-	opt.escape_from=1;
-	opt.ask_sig_expire=0;
-      }
-    else if(PGP7)
+    if (PGP7)
       {
         /* That does not anymore work because we have no more support
            for v3 signatures.  */
@@ -4274,7 +4264,7 @@ main (int argc, char **argv)
 	else if(opt.s2k_mode==0)
 	  log_error(_("you cannot use --symmetric --encrypt"
 		      " with --s2k-mode 0\n"));
-	else if(PGP6 || PGP7)
+	else if (PGP7)
 	  log_error(_("you cannot use --symmetric --encrypt"
 		      " in %s mode\n"),
 		    gnupg_compliance_option_string (opt.compliance));
@@ -4335,7 +4325,7 @@ main (int argc, char **argv)
 	else if(opt.s2k_mode==0)
 	  log_error(_("you cannot use --symmetric --sign --encrypt"
 		      " with --s2k-mode 0\n"));
-	else if(PGP6 || PGP7)
+	else if (PGP7)
 	  log_error(_("you cannot use --symmetric --sign --encrypt"
 		      " in %s mode\n"),
 		    gnupg_compliance_option_string (opt.compliance));

@@ -1387,10 +1387,6 @@ compliance_failure(void)
       ver="OpenPGP (older)";
       break;
 
-    case CO_PGP6:
-      ver="PGP 6.x";
-      break;
-
     case CO_PGP7:
       ver="PGP 7.x";
       break;

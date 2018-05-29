@@ -2744,22 +2744,15 @@ and should thus only be used for experiments.  See also option
 
 @item --pgp6
 @opindex pgp6
-Set up all options to be as PGP 6 compliant as possible. This
-restricts you to the ciphers IDEA (if the IDEA plugin is installed),
-3DES, and CAST5, the hashes MD5, SHA1 and RIPEMD160, and the
-compression algorithms none and ZIP. This also disables
-@option{--throw-keyids}, and making signatures with signing subkeys as PGP 6
-does not understand signatures made by signing subkeys.
-FIXME: remove this options.
-
-This option implies @option{--escape-from-lines}.
+This option is obsolete; it is handled as an alias for @option{--pgp7}
 
 @item --pgp7
 @opindex pgp7
-Set up all options to be as PGP 7 compliant as possible. This is
-identical to @option{--pgp6} except that MDCs are not disabled, and the
-list of allowable ciphers is expanded to add AES128, AES192, AES256, and
-TWOFISH.
+Set up all options to be as PGP 7 compliant as possible. This allowd
+the ciphers IDEA, 3DES, CAST5,AES128, AES192, AES256, and TWOFISH.,
+the hashes MD5, SHA1 and RIPEMD160, and the compression algorithms
+none and ZIP.  This option implies @option{--escape-from-lines} and
+disables @option{--throw-keyids},
 
 @item --pgp8
 @opindex pgp8

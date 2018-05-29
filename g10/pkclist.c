@@ -1022,7 +1022,7 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
 
           /* Hidden recipients are not allowed while in PGP mode,
              issue a warning and switch into GnuPG mode. */
-          if ((rov->flags & PK_LIST_HIDDEN) && (PGP6 || PGP7 || PGP8))
+          if ((rov->flags & PK_LIST_HIDDEN) && (PGP7 || PGP8))
             {
               log_info(_("option '%s' may not be used in %s mode\n"),
                        "--hidden-recipient",
@@ -1073,7 +1073,7 @@ build_pk_list (ctrl_t ctrl, strlist_t rcpts, PK_LIST *ret_pk_list)
                   /* Hidden encrypt-to recipients are not allowed while
                      in PGP mode, issue a warning and switch into
                      GnuPG mode. */
-                  if ((r->flags&PK_LIST_ENCRYPT_TO) && (PGP6 || PGP7 || PGP8))
+                  if ((r->flags&PK_LIST_ENCRYPT_TO) && (PGP7 || PGP8))
                     {
                       log_info(_("option '%s' may not be used in %s mode\n"),
                                "--hidden-encrypt-to",
@@ -1370,11 +1370,6 @@ algo_available( preftype_t preftype, int algo, const union pref_hint *hint)
 {
   if( preftype == PREFTYPE_SYM )
     {
-      if(PGP6 && (algo != CIPHER_ALGO_IDEA
-		  && algo != CIPHER_ALGO_3DES
-		  && algo != CIPHER_ALGO_CAST5))
-	return 0;
-
       if(PGP7 && (algo != CIPHER_ALGO_IDEA
 		  && algo != CIPHER_ALGO_3DES
 		  && algo != CIPHER_ALGO_CAST5
@@ -1405,9 +1400,9 @@ algo_available( preftype_t preftype, int algo, const union pref_hint *hint)
 	    return 0;
 	}
 
-      if((PGP6 || PGP7) && (algo != DIGEST_ALGO_MD5
-			    && algo != DIGEST_ALGO_SHA1
-			    && algo != DIGEST_ALGO_RMD160))
+      if (PGP7 && (algo != DIGEST_ALGO_MD5
+                   && algo != DIGEST_ALGO_SHA1
+                   && algo != DIGEST_ALGO_RMD160))
 	return 0;
 
 
@@ -1421,8 +1416,8 @@ algo_available( preftype_t preftype, int algo, const union pref_hint *hint)
     }
   else if( preftype == PREFTYPE_ZIP )
     {
-      if((PGP6 || PGP7) && (algo != COMPRESS_ALGO_NONE
-			    && algo != COMPRESS_ALGO_ZIP))
+      if (PGP7 && (algo != COMPRESS_ALGO_NONE
+                   && algo != COMPRESS_ALGO_ZIP))
 	return 0;
 
       /* PGP8 supports all the compression algos we do */

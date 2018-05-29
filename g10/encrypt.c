@@ -1136,7 +1136,7 @@ write_pubkey_enc (ctrl_t ctrl,
 static int
 write_pubkey_enc_from_list (ctrl_t ctrl, PK_LIST pk_list, DEK *dek, iobuf_t out)
 {
-  if (opt.throw_keyids && (PGP6 || PGP7 || PGP8))
+  if (opt.throw_keyids && (PGP7 || PGP8))
     {
       log_info(_("option '%s' may not be used in %s mode\n"),
                "--throw-keyids",
