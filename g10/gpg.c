@@ -297,10 +297,6 @@ enum cmd_and_opt_values
     oShowPhotos,
     oNoShowPhotos,
     oPhotoViewer,
-    oForceMDC,
-    oNoForceMDC,
-    oDisableMDC,
-    oNoDisableMDC,
     oS2KMode,
     oS2KDigest,
     oS2KCipher,
@@ -597,11 +593,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
   ARGPARSE_s_n (oQuiet,	  "quiet",   "@"),
   ARGPARSE_s_n (oNoTTY,   "no-tty",  "@"),
-
-  ARGPARSE_s_n (oForceMDC, "force-mdc", "@"),
-  ARGPARSE_s_n (oNoForceMDC, "no-force-mdc", "@"),
-  ARGPARSE_s_n (oDisableMDC, "disable-mdc", "@"),
-  ARGPARSE_s_n (oNoDisableMDC, "no-disable-mdc", "@"),
 
   ARGPARSE_s_n (oDisableSignerUID, "disable-signer-uid", "@"),
 
@@ -910,6 +901,11 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoop, "force-v4-certs", "@"),
   ARGPARSE_s_n (oNoop, "no-force-v4-certs", "@"),
   ARGPARSE_s_n (oNoop, "no-mdc-warning", "@"),
+  ARGPARSE_s_n (oNoop, "force-mdc", "@"),
+  ARGPARSE_s_n (oNoop, "no-force-mdc", "@"),
+  ARGPARSE_s_n (oNoop, "disable-mdc", "@"),
+  ARGPARSE_s_n (oNoop, "no-disable-mdc", "@"),
+
 
   ARGPARSE_end ()
 };
@@ -2158,7 +2154,6 @@ set_compliance_option (enum cmd_and_opt_values option)
     case oDE_VS:
       set_compliance_option (oOpenPGP);
       opt.compliance = CO_DE_VS;
-      opt.force_mdc = 1;
       /* Fixme: Change other options.  */
       break;
 
@@ -2959,11 +2954,6 @@ main (int argc, char **argv)
 	    break;
 	  case oPhotoViewer: opt.photo_viewer = pargs.r.ret_str; break;
 
-	  case oForceMDC: opt.force_mdc = 1; break;
-	  case oNoForceMDC: opt.force_mdc = 0; break;
-	  case oDisableMDC: opt.disable_mdc = 1; break;
-	  case oNoDisableMDC: opt.disable_mdc = 0; break;
-
           case oDisableSignerUID: opt.flags.disable_signer_uid = 1; break;
 
 	  case oS2KMode:   opt.s2k_mode = pargs.r.ret_int; break;
@@ -3734,7 +3724,6 @@ main (int argc, char **argv)
       {
         /* That does not anymore work because we have no more support
            for v3 signatures.  */
-	opt.disable_mdc=1;
 	opt.escape_from=1;
 	opt.ask_sig_expire=0;
       }

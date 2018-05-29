@@ -2580,17 +2580,13 @@ is the default.
 These options are obsolete and have no effect since GnuPG 2.1.
 
 @item --force-mdc
+@itemx --disable-mdc
 @opindex force-mdc
-Force the use of encryption with a modification detection code. This
-is always used with the newer ciphers (those with a blocksize greater
-than 64 bits), or if all of the recipient keys indicate MDC support in
-their feature flags.
-
-@item --disable-mdc
 @opindex disable-mdc
-Disable the use of the modification detection code. Note that by
-using this option, the encrypted message becomes vulnerable to a
-message modification attack.
+These options are obsolete and have no effect since GnuPG 2.2.8.  The
+MDC is always used.  But note: If the creation of a legacy non-MDC
+message is exceptionally required, the option @option{--rfc2440}
+allows for this.
 
 @item --disable-signer-uid
 @opindex disable-signer-uid
@@ -2710,7 +2706,10 @@ keys or data may not be usable with future GnuPG versions.
 @item --rfc2440
 @opindex rfc2440
 Reset all packet, cipher and digest options to strict RFC-2440
-behavior.
+behavior.  Note that by using this option encryption packets are
+created in a legacy mode without MDC protection.  This is dangerous
+and should thus only be used for experiments.  See also option
+@option{--ignore-mdc-error}.
 
 @item --pgp6
 @opindex pgp6
@@ -2721,7 +2720,7 @@ compression algorithms none and ZIP. This also disables
 @option{--throw-keyids}, and making signatures with signing subkeys as PGP 6
 does not understand signatures made by signing subkeys.
 
-This option implies @option{--disable-mdc --escape-from-lines}.
+This option implies @option{--escape-from-lines}.
 
 @item --pgp7
 @opindex pgp7
@@ -3186,7 +3185,7 @@ It is required to decrypt old messages which did not use an MDC.  It
 may also be useful if a message is partially garbled, but it is
 necessary to get as much data as possible out of that garbled message.
 Be aware that a missing or failed MDC can be an indication of an
-attack.  Use with caution.
+attack.  Use with great caution; see also option @option{--rfc2440}.
 
 @item --allow-weak-digest-algos
 @opindex allow-weak-digest-algos

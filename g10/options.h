@@ -91,8 +91,6 @@ struct
   int no_armor;
   int list_packets; /* Option --list-packets active.  */
   int def_cipher_algo;
-  int force_mdc;
-  int disable_mdc;
   int def_digest_algo;
   int cert_digest_algo;
   int compress_algo;
