@@ -212,11 +212,7 @@ use_aead (pk_list_t pk_list, int algo)
 
   can_use = openpgp_cipher_get_algo_blklen (algo) == 16;
 
-  /* With --force-mdc we clearly do not want AEAD.  */
-  if (opt.force_mdc)
-    return 0;
-
-  /* However with --force-aead we want AEAD.  */
+  /* With --force-aead we want AEAD.  */
   if (opt.force_aead)
     {
       if (!can_use)
@@ -232,62 +228,29 @@ use_aead (pk_list_t pk_list, int algo)
   if (!can_use)
     return 0;
 
+  /* Note the user which keys have no AEAD feature flag set.  */
+  if (opt.verbose)
+    warn_missing_aead_from_pklist (pk_list);
+
   /* If all keys support AEAD we can use it.  */
   return select_aead_from_pklist (pk_list);
 }
 
 
-/* We try very hard to use a MDC */
+/* Shall we use the MDC?  Yes - unless rfc-2440 compatibility is
+ * requested. */
 int
 use_mdc (pk_list_t pk_list,int algo)
 {
-  /* RFC-2440 don't has MDC */
+  (void)pk_list;
+  (void)algo;
+
+  /* RFC-2440 don't has MDC - this is the only way to create a legacy
+   * non-MDC encryption packet.  */
   if (RFC2440)
     return 0;
 
-  /* --force-mdc overrides --disable-mdc */
-  if(opt.force_mdc)
-    return 1;
-
-  if(opt.disable_mdc)
-    return 0;
-
-  /* Do the keys really support MDC? */
-
-  if(select_mdc_from_pklist(pk_list))
-    return 1;
-
-  /* The keys don't support MDC, so now we do a bit of a hack - if any
-     of the AESes or TWOFISH are in the prefs, we assume that the user
-     can handle a MDC.  This is valid for PGP 7, which can handle MDCs
-     though it will not generate them.  2440bis allows this, by the
-     way. */
-
-  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
-			    CIPHER_ALGO_AES,NULL)==CIPHER_ALGO_AES)
-    return 1;
-
-  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
-			    CIPHER_ALGO_AES192,NULL)==CIPHER_ALGO_AES192)
-    return 1;
-
-  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
-			    CIPHER_ALGO_AES256,NULL)==CIPHER_ALGO_AES256)
-    return 1;
-
-  if(select_algo_from_prefs(pk_list,PREFTYPE_SYM,
-			    CIPHER_ALGO_TWOFISH,NULL)==CIPHER_ALGO_TWOFISH)
-    return 1;
-
-  /* Last try.  Use MDC for the modern ciphers. */
-
-  if (openpgp_cipher_get_algo_blklen (algo) != 8)
-    return 1;
-
-  if (opt.verbose)
-    warn_missing_mdc_from_pklist (pk_list);
-
-  return 0; /* No MDC */
+  return 1; /* In all other cases we use the MDC */
 }
 
 

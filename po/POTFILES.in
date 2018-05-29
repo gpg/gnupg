@@ -75,6 +75,8 @@ g10/tofu.c
 g10/trustdb.c
 g10/trust.c
 g10/verify.c
+g10/cipher-cfb.c
+g10/cipher-aead.c
 
 kbx/kbxutil.c
 

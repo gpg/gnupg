@@ -1677,9 +1677,10 @@ select_aead_from_pklist (PK_LIST pk_list)
 }
 
 
-/* Print a warning for all keys in PK_LIST missing the MDC feature. */
+/* Print a warning for all keys in PK_LIST missing the AEAD feature
+ * flag or AEAD algorithms. */
 void
-warn_missing_mdc_from_pklist (PK_LIST pk_list)
+warn_missing_aead_from_pklist (PK_LIST pk_list)
 {
   PK_LIST pkr;
 
@@ -1688,12 +1689,12 @@ warn_missing_mdc_from_pklist (PK_LIST pk_list)
       int mdc;
 
       if (pkr->pk->user_id) /* selected by user ID */
-        mdc = pkr->pk->user_id->flags.mdc;
+        mdc = pkr->pk->user_id->flags.aead;
       else
-        mdc = pkr->pk->flags.mdc;
+        mdc = pkr->pk->flags.aead;
       if (!mdc)
         log_info (_("Note: key %s has no %s feature\n"),
-                  keystr_from_pk (pkr->pk), "MDC");
+                  keystr_from_pk (pkr->pk), "AEAD");
     }
 }
 

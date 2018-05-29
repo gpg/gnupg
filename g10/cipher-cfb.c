@@ -33,6 +33,7 @@
 #include "packet.h"
 #include "options.h"
 #include "main.h"
+#include "../common/i18n.h"
 #include "../common/status.h"
 
 
@@ -66,8 +67,9 @@ write_header (cipher_filter_context_t *cfx, iobuf_t a)
     }
   else
     {
-      log_info ("WARNING: "
-                "encrypting without integrity protection is dangerous\n");
+      log_info (_("WARNING: "
+                  "encrypting without integrity protection is dangerous\n"));
+      log_info (_("Hint: Do not use option %s\n"), "--rfc2440");
     }
 
   write_status_printf (STATUS_BEGIN_ENCRYPTION, "%d %d",
