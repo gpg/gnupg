@@ -899,12 +899,9 @@ proc_plaintext( CTX c, PACKET *pkt )
     {
       log_info (_("WARNING: multiple plaintexts seen\n"));
 
-      if (!opt.flags.allow_multiple_messages)
-        {
-          write_status_text (STATUS_ERROR, "proc_pkt.plaintext 89_BAD_DATA");
-          log_inc_errorcount ();
-          rc = gpg_error (GPG_ERR_UNEXPECTED);
-        }
+      write_status_text (STATUS_ERROR, "proc_pkt.plaintext 89_BAD_DATA");
+      log_inc_errorcount ();
+      rc = gpg_error (GPG_ERR_UNEXPECTED);
     }
 
   if (!rc)
@@ -1871,14 +1868,12 @@ check_sig_and_print (CTX c, kbnode_t node)
           goto ambiguous;
 
 	/* If we wanted to disallow multiple sig verification, we'd do
-	   something like this:
-
-	   if (n && !opt.allow_multisig_verification)
-             goto ambiguous;
-
-	   However, now that we have --allow-multiple-messages, this
-	   can stay allowable as we can't get here unless multiple
-	   messages (i.e. multiple literals) are allowed. */
+	 * something like this:
+         *
+	 * if (n)
+         *   goto ambiguous;
+         *
+         * However, this can stay allowable as we can't get here.  */
 
         if (n_onepass != n_sig)
           {

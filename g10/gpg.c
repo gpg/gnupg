@@ -401,13 +401,10 @@ enum cmd_and_opt_values
     oNoRequireCrossCert,
     oAutoKeyLocate,
     oNoAutoKeyLocate,
-    oAllowMultisigVerification,
     oEnableLargeRSA,
     oDisableLargeRSA,
     oEnableDSA2,
     oDisableDSA2,
-    oAllowMultipleMessages,
-    oNoAllowMultipleMessages,
     oAllowWeakDigestAlgos,
     oFakedSystemTime,
     oNoAutostart,
@@ -863,14 +860,10 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oExitOnStatusWriteError, "exit-on-status-write-error", "@"),
   ARGPARSE_s_i (oLimitCardInsertTries, "limit-card-insert-tries", "@"),
 
-  ARGPARSE_s_n (oAllowMultisigVerification,
-                "allow-multisig-verification", "@"),
   ARGPARSE_s_n (oEnableLargeRSA, "enable-large-rsa", "@"),
   ARGPARSE_s_n (oDisableLargeRSA, "disable-large-rsa", "@"),
   ARGPARSE_s_n (oEnableDSA2, "enable-dsa2", "@"),
   ARGPARSE_s_n (oDisableDSA2, "disable-dsa2", "@"),
-  ARGPARSE_s_n (oAllowMultipleMessages,      "allow-multiple-messages", "@"),
-  ARGPARSE_s_n (oNoAllowMultipleMessages, "no-allow-multiple-messages", "@"),
   ARGPARSE_s_n (oAllowWeakDigestAlgos, "allow-weak-digest-algos", "@"),
 
   ARGPARSE_s_s (oDefaultNewKeyAlgo, "default-new-key-algo", "@"),
@@ -918,7 +911,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoop, "no-force-mdc", "@"),
   ARGPARSE_s_n (oNoop, "disable-mdc", "@"),
   ARGPARSE_s_n (oNoop, "no-disable-mdc", "@"),
-
+  ARGPARSE_s_n (oNoop, "allow-multisig-verification", "@"),
+  ARGPARSE_s_n (oNoop, "allow-multiple-messages", "@"),
+  ARGPARSE_s_n (oNoop, "no-allow-multiple-messages", "@"),
 
   ARGPARSE_end ()
 };
@@ -3577,15 +3572,6 @@ main (int argc, char **argv)
 
 	  case oEnableDSA2: opt.flags.dsa2=1; break;
 	  case oDisableDSA2: opt.flags.dsa2=0; break;
-
-          case oAllowMultisigVerification:
-	  case oAllowMultipleMessages:
-	    opt.flags.allow_multiple_messages=1;
-	    break;
-
-	  case oNoAllowMultipleMessages:
-	    opt.flags.allow_multiple_messages=0;
-	    break;
 
           case oAllowWeakDigestAlgos:
             opt.flags.allow_weak_digest_algos = 1;

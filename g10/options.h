@@ -244,7 +244,6 @@ struct
     unsigned int use_embedded_filename:1;
     unsigned int utf8_filename:1;
     unsigned int dsa2:1;
-    unsigned int allow_multiple_messages:1;
     unsigned int allow_weak_digest_algos:1;
     unsigned int large_rsa:1;
     unsigned int disable_signer_uid:1;

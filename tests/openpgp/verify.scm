@@ -51,16 +51,12 @@
  '(msg_ols_asc msg_cols_asc msg_sl_asc msg_oolss_asc msg_cls_asc msg_clss_asc))
 
 (for-each-p
- "Checking that a valid signature over multiple messages is verified as such"
+ "Checking that a valid signature over multiple messages is rejected"
  (lambda (armored-file)
-   (pipe:do
-    (pipe:echo (eval armored-file (current-environment)))
-    (pipe:spawn `(,@GPG --verify --allow-multiple-messages)))
    (catch '()
-	  (pipe:do
-	   (pipe:defer (lambda (sink)
-			 (display armored-file (fdopen sink "w"))))
-	   (pipe:spawn `(,@GPG --verify)))
+          (pipe:do
+           (pipe:echo (eval armored-file (current-environment)))
+           (pipe:spawn `(,@GPG --verify)))
 	  (fail "verification succeeded but should not")))
  '(msg_olsols_asc_multiple msg_clsclss_asc_multiple))
 

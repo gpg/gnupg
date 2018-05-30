@@ -3382,16 +3382,7 @@ This is an obsolete option and is not used anywhere.
 
 @item --allow-multiple-messages
 @item --no-allow-multiple-messages
-@opindex allow-multiple-messages
-Allow processing of multiple OpenPGP messages contained in a single file
-or stream.  Some programs that call GPG are not prepared to deal with
-multiple messages being processed together, so this option defaults to
-no.  Note that versions of GPG prior to 1.4.7 always allowed multiple
-messages.
-
-Warning: Do not use this option unless you need it as a temporary
-workaround!
-
+These are obsolete options; they have no more effect since GnuPG 2.2.8.
 
 @item --enable-special-filenames
 @opindex enable-special-filenames
