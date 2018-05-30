@@ -105,16 +105,22 @@ struct mainproc_context
 };
 
 
+/* Counter with the number of literal data packets seen.  Note that
+ * this is also bumped at the end of an encryption.  This counter is
+ * used for a basic consistency check of a received PGP message.  */
+static int literals_seen;
+
+
 /*** Local prototypes.  ***/
 static int do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a);
 static void list_node (CTX c, kbnode_t node);
 static void proc_tree (CTX c, kbnode_t node);
-static int literals_seen;
 
 
 /*** Functions.  ***/
 
-
+/* Reset the literal data counter.  This is required to setup a new
+ * decryption or verification context.  */
 void
 reset_literals_seen(void)
 {
@@ -701,6 +707,12 @@ proc_encrypted (CTX c, PACKET *pkt)
   free_packet (pkt, NULL);
   c->last_was_session_key = 0;
   write_status (STATUS_END_DECRYPTION);
+
+  /* Bump the counter even if we have not seen a literal data packet
+   * inside an encryption container.  This acts as a sentinel in case
+   * a misplace extra literal data packets follows after this
+   * encrypted packet.  */
+  literals_seen++;
 }
 
 
@@ -711,6 +723,7 @@ proc_plaintext( CTX c, PACKET *pkt )
   int any, clearsig, rc;
   kbnode_t n;
 
+  /* This is a literal data packet.  Bumb a counter for later checks.  */
   literals_seen++;
 
   if (pt->namelen == 8 && !memcmp( pt->name, "_CONSOLE", 8))
