@@ -751,8 +751,25 @@ proc_encrypted (CTX c, PACKET *pkt)
        * used.  To avoid attacks changing an MDC message to a non-MDC
        * message, we fail here.  */
       log_error (_("WARNING: message was not integrity protected\n"));
-      if (opt.verbose > 1)
-        log_info ("decryption forced to fail\n");
+      if (!pkt->pkt.encrypted->mdc_method
+          && (openpgp_cipher_get_algo_blklen (c->dek->algo) == 8
+              || c->dek->algo == CIPHER_ALGO_TWOFISH))
+        {
+          /* Before 2.2.8 we did not fail hard for a missing MDC if
+           * one of the old ciphers where used.  Although these cases
+           * are rare in practice we print a hint on how to decrypt
+           * such messages.  */
+          log_string
+            (GPGRT_LOGLVL_INFO,
+             _("Hint: If this message was created before the year 2003 it is\n"
+               "likely that this message is legitimate.  This is because back\n"
+               "then integrity protection was not widely used.\n"));
+          log_info (_("Use the option '%s' to decrypt anyway.\n"),
+                     "--ignore-mdc-error");
+          write_status_errcode ("nomdc_with_legacy_cipher",
+                                GPG_ERR_DECRYPT_FAILED);
+        }
+      log_info (_("decryption forced to fail!\n"));
       write_status (STATUS_DECRYPTION_FAILED);
     }
   else if (!result || (gpg_err_code (result) == GPG_ERR_BAD_SIGNATURE
