@@ -399,7 +399,7 @@ comes with almost all German banking cards.
 This application adds read-only support for keys and certificates
 stored on a @uref{http://www.smartcard-hsm.com, SmartCard-HSM}.
 
-To generate keys and store certifiates you may use
+To generate keys and store certificates you may use
 @uref{https://github.com/OpenSC/OpenSC/wiki/SmartCardHSM, OpenSC} or
 the tools from @uref{http://www.openscdp.org, OpenSCDP}.
 

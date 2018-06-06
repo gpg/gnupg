@@ -290,7 +290,7 @@ Check the options for the component @var{component}.
 Apply the configuration settings listed in @var{file} to the
 configuration files.  If @var{file} has no suffix and no slashes the
 command first tries to read a file with the suffix @code{.prf} from
-the the data directory (@code{gpgconf --list-dirs datadir}) before it
+the data directory (@code{gpgconf --list-dirs datadir}) before it
 reads the file verbatim.  A profile is divided into sections using the
 bracketed  component name.  Each section then lists the option which
 shall go into the respective configuration file.
