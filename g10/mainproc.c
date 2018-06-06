@@ -532,6 +532,14 @@ static void
 proc_encrypted (CTX c, PACKET *pkt)
 {
   int result = 0;
+  int early_plaintext = literals_seen;
+
+  if (early_plaintext)
+    {
+      log_info (_("WARNING: multiple plaintexts seen\n"));
+      write_status_errcode ("decryption.early_plaintext", GPG_ERR_BAD_DATA);
+      /* We fail only later so that we can print some more info first.  */
+    }
 
   if (!opt.quiet)
     {
@@ -650,6 +658,10 @@ proc_encrypted (CTX c, PACKET *pkt)
 
   if (!result)
     result = decrypt_data (c->ctrl, c, pkt->pkt.encrypted, c->dek );
+
+  /* Trigger the deferred error.  */
+  if (!result && early_plaintext)
+    result = gpg_error (GPG_ERR_BAD_DATA);
 
   if (result == -1)
     ;
