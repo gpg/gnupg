@@ -328,7 +328,7 @@ following the "sig" tag (and thus before the flags described below.  A
 "!" indicates that the signature has been successfully verified, a "-"
 denotes a bad signature and a "%" is used if an error occurred while
 checking the signature (e.g. a non supported algorithm).  Signatures
-where the public key is not availabale are not listed; to see their
+where the public key is not available are not listed; to see their
 keyids the command @option{--list-sigs} can be used.
 
 For each signature listed, there are several flags in between the
@@ -3377,7 +3377,7 @@ absolute date in the form YYYY-MM-DD. Defaults to "0".
 @opindex default-new-key-algo @var{string}
 This option can be used to change the default algorithms for key
 generation. The @var{string} is similar to the arguments required for
-the command @option{--quick-add-key} but slighly different.  For
+the command @option{--quick-add-key} but slightly different.  For
 example the current default of @code{"rsa2048/cert,sign+rsa2048/encr"}
 (or @code{"rsa3072"}) can be changed to the value of what we currently
 call future default, which is @code{"ed25519/cert,sign+cv25519/encr"}.
