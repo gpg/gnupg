@@ -353,6 +353,14 @@ may thus be used to see what keys @command{@gpgname} might use.  In
 particular external methods as defined by @option{--auto-key-locate} may
 be used to locate a key.  Only public keys are listed.
 
+@item --show-keys
+@opindex show-keys
+This commands takes OpenPGP keys as input and prints information about
+them in the same way the command @option{--list-keys} does for
+imported key.  No internal state is changed.  For automated processing
+this command should be combined with the option
+@option{--with-colons}.
+
 @item --fingerprint
 @opindex fingerprint
 List all keys (or the specified ones) along with their
@@ -2295,7 +2303,8 @@ opposite meaning. The options are:
   Show a listing of the key as imported right before it is stored.
   This can be combined with the option @option{--dry-run} to only look
   at keys; the option @option{show-only} is a shortcut for this
-  combination.  Note that suffixes like '#' for "sec" and "sbb" lines
+  combination.  The command @option{--show-keys} is another shortcut
+  for this.  Note that suffixes like '#' for "sec" and "sbb" lines
   may or may not be printed.
 
   @item import-export

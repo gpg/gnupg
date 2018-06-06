@@ -494,7 +494,9 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
 
   if (!stats_handle)
     {
-      import_print_stats (stats);
+      if ((options & (IMPORT_SHOW | IMPORT_DRY_RUN))
+          != (IMPORT_SHOW | IMPORT_DRY_RUN))
+        import_print_stats (stats);
       import_release_stats_handle (stats);
     }
 
@@ -1634,6 +1636,10 @@ import_one (ctrl_t ctrl,
   int merge_keys_done = 0;
   int any_filter = 0;
   KEYDB_HANDLE hd = NULL;
+
+  /* If show-only is active we don't won't any extra output.  */
+  if ((options & (IMPORT_SHOW | IMPORT_DRY_RUN)))
+    silent = 1;
 
   /* Get the key and print some info about it. */
   node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
