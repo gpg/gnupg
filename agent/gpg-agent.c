@@ -1979,15 +1979,15 @@ agent_deinit_default_ctrl (ctrl_t ctrl)
 gpg_error_t
 agent_copy_startup_env (ctrl_t ctrl)
 {
-  static const char *names[] =
-    {"GPG_TTY", "DISPLAY", "TERM", "XAUTHORITY", "PINENTRY_USER_DATA", NULL};
   gpg_error_t err = 0;
-  int idx;
-  const char *value;
+  int iterator = 0;
+  const char *name, *value;
 
-  for (idx=0; !err && names[idx]; idx++)
-    if ((value = session_env_getenv (opt.startup_env, names[idx])))
-      err = session_env_setenv (ctrl->session_env, names[idx], value);
+  while (!err && (name = session_env_list_stdenvnames (&iterator, NULL)))
+    {
+      if ((value = session_env_getenv (opt.startup_env, name)))
+        err = session_env_setenv (ctrl->session_env, name, value);
+    }
 
   if (!err && !ctrl->lc_ctype && opt.startup_lc_ctype)
     if (!(ctrl->lc_ctype = xtrystrdup (opt.startup_lc_ctype)))
