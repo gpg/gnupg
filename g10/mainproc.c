@@ -52,7 +52,7 @@ struct kidlist_item
   struct kidlist_item *next;
   u32 kid[2];
   int pubkey_algo;
-  int reason;
+  gcry_mpi_t data[2];
 };
 
 
@@ -136,6 +136,9 @@ release_list( CTX c )
   while (c->pkenc_list)
     {
       struct kidlist_item *tmp = c->pkenc_list->next;
+
+      mpi_release (c->pkenc_list->data[0]);
+      mpi_release (c->pkenc_list->data[1]);
       xfree (c->pkenc_list);
       c->pkenc_list = tmp;
     }
@@ -461,7 +464,7 @@ static void
 proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
 {
   PKT_pubkey_enc *enc;
-  int result = 0;
+  struct kidlist_item *x = xmalloc (sizeof *x);
 
   /* Check whether the secret key is available and store in this case.  */
   c->last_was_session_key = 1;
@@ -472,76 +475,27 @@ proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
   if (opt.verbose)
     log_info (_("public key is %s\n"), keystr (enc->keyid));
 
-  if (is_status_enabled())
+  if (is_status_enabled ())
     {
       char buf[50];
       snprintf (buf, sizeof buf, "%08lX%08lX %d 0",
-		(ulong)enc->keyid[0], (ulong)enc->keyid[1], enc->pubkey_algo);
+                (ulong)enc->keyid[0], (ulong)enc->keyid[1], enc->pubkey_algo);
       write_status_text (STATUS_ENC_TO, buf);
     }
 
-  if (!opt.list_only && opt.override_session_key)
+  if (!opt.list_only && !opt.override_session_key)
     {
-      /* It does not make much sense to store the session key in
-       * secure memory because it has already been passed on the
-       * command line and the GCHQ knows about it.  */
-      c->dek = xmalloc_clear (sizeof *c->dek);
-      result = get_override_session_key (c->dek, opt.override_session_key);
-      if (result)
-        {
-          xfree (c->dek);
-          c->dek = NULL;
-	}
-    }
-  else if (enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E
-           || enc->pubkey_algo == PUBKEY_ALGO_ECDH
-           || enc->pubkey_algo == PUBKEY_ALGO_RSA
-           || enc->pubkey_algo == PUBKEY_ALGO_RSA_E
-           || enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL)
-    {
-      /* Note that we also allow type 20 Elgamal keys for decryption.
-         There are still a couple of those keys in active use as a
-         subkey.  */
-
-      /* FIXME: Store this all in a list and process it later so that
-         we can prioritize what key to use.  This gives a better user
-         experience if wildcard keyids are used.  */
-      if  (!c->dek && ((!enc->keyid[0] && !enc->keyid[1])
-                       || opt.try_all_secrets
-                       || have_secret_key_with_kid (enc->keyid)))
-        {
-          if(opt.list_only)
-            result = GPG_ERR_MISSING_ACTION; /* fixme: Use better error code. */
-          else
-            {
-              c->dek = xmalloc_secure_clear (sizeof *c->dek);
-              if ((result = get_session_key (ctrl, enc, c->dek)))
-                {
-                  /* Error: Delete the DEK. */
-                  xfree (c->dek);
-                  c->dek = NULL;
-		}
-	    }
-	}
-      else
-        result = GPG_ERR_NO_SECKEY;
-    }
-  else
-    result = GPG_ERR_PUBKEY_ALGO;
-
-  if (1)
-    {
-      /* Store it for later display.  */
-      struct kidlist_item *x = xmalloc (sizeof *x);
       x->kid[0] = enc->keyid[0];
       x->kid[1] = enc->keyid[1];
       x->pubkey_algo = enc->pubkey_algo;
-      x->reason = result;
+      x->data[0] = x->data[1] = NULL;
+      if (enc->data[0])
+        {
+          x->data[0] = mpi_copy (enc->data[0]);
+          x->data[1] = mpi_copy (enc->data[1]);
+        }
       x->next = c->pkenc_list;
       c->pkenc_list = x;
-
-      if (!result && opt.verbose > 1)
-        log_info (_("public key encrypted data: good DEK\n"));
     }
 
   free_packet(pkt, NULL);
@@ -553,17 +507,12 @@ proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
  * not decrypt.
  */
 static void
-print_pkenc_list (ctrl_t ctrl, struct kidlist_item *list, int failed)
+print_pkenc_list (ctrl_t ctrl, struct kidlist_item *list)
 {
   for (; list; list = list->next)
     {
       PKT_public_key *pk;
       const char *algstr;
-
-      if (failed && !list->reason)
-        continue;
-      if (!failed && list->reason)
-        continue;
 
       algstr = openpgp_pk_algo_name (list->pubkey_algo);
       pk = xmalloc_clear (sizeof *pk);
@@ -586,27 +535,6 @@ print_pkenc_list (ctrl_t ctrl, struct kidlist_item *list, int failed)
                   algstr, keystr(list->kid));
 
       free_public_key (pk);
-
-      if (gpg_err_code (list->reason) == GPG_ERR_NO_SECKEY)
-        {
-          if (is_status_enabled())
-            {
-              char buf[20];
-              snprintf (buf, sizeof buf, "%08lX%08lX",
-                        (ulong)list->kid[0], (ulong)list->kid[1]);
-              write_status_text (STATUS_NO_SECKEY, buf);
-	    }
-	}
-      else if (gpg_err_code (list->reason) == GPG_ERR_MISSING_ACTION)
-        {
-          /* Not tested for secret key due to --list-only mode.  */
-        }
-      else if (list->reason)
-        {
-          log_info (_("public key decryption failed: %s\n"),
-                    gpg_strerror (list->reason));
-          write_status_error ("pkdecrypt_failed", list->reason);
-        }
     }
 }
 
@@ -614,6 +542,7 @@ print_pkenc_list (ctrl_t ctrl, struct kidlist_item *list, int failed)
 static void
 proc_encrypted (CTX c, PACKET *pkt)
 {
+  struct kidlist_item *item;
   int result = 0;
 
   if (!opt.quiet)
@@ -622,11 +551,79 @@ proc_encrypted (CTX c, PACKET *pkt)
         log_info (_("encrypted with %lu passphrases\n"), c->symkeys);
       else if (c->symkeys == 1)
         log_info (_("encrypted with 1 passphrase\n"));
-      print_pkenc_list (c->ctrl, c->pkenc_list, 1 );
-      print_pkenc_list (c->ctrl, c->pkenc_list, 0 );
+      print_pkenc_list (c->ctrl, c->pkenc_list);
     }
 
-  /* FIXME: Figure out the session key by looking at all pkenc packets. */
+  /* Figure out the session key by looking at all pkenc packets. */
+  if (opt.list_only)
+    ;
+  else if (opt.override_session_key)
+    {
+      c->dek = xmalloc_clear (sizeof *c->dek);
+      result = get_override_session_key (c->dek, opt.override_session_key);
+      if (result)
+        {
+          xfree (c->dek);
+          c->dek = NULL;
+          log_info (_("public key decryption failed: %s\n"),
+                    gpg_strerror (result));
+          write_status_error ("pkdecrypt_failed", result);
+        }
+    }
+  else
+    {
+      for (item = c->pkenc_list; item; item = item->next)
+        if (item->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E
+            || item->pubkey_algo == PUBKEY_ALGO_ECDH
+            || item->pubkey_algo == PUBKEY_ALGO_RSA
+            || item->pubkey_algo == PUBKEY_ALGO_RSA_E
+            || item->pubkey_algo == PUBKEY_ALGO_ELGAMAL)
+          {
+            if  (((!item->kid[0] && !item->kid[1])
+                  || opt.try_all_secrets
+                  || have_secret_key_with_kid (item->kid)))
+              {
+                PKT_pubkey_enc enc;
+
+                enc.keyid[0] = item->kid[0];
+                enc.keyid[1] = item->kid[1];
+                enc.pubkey_algo = item->pubkey_algo;
+                enc.data[0] = item->data[0];
+                enc.data[1] = item->data[1];
+
+                c->dek = xmalloc_secure_clear (sizeof *c->dek);
+                if (!(result = get_session_key (c->ctrl, &enc, c->dek)))
+                  break;
+
+                log_info (_("public key decryption failed: %s\n"),
+                          gpg_strerror (result));
+                write_status_error ("pkdecrypt_failed", result);
+
+                /* Error: Delete the DEK. */
+                xfree (c->dek);
+                c->dek = NULL;
+              }
+            else
+              {
+                if (is_status_enabled ())
+                  {
+                    char buf[20];
+                    snprintf (buf, sizeof buf, "%08lX%08lX",
+                              (ulong)item->kid[0], (ulong)item->kid[1]);
+                    write_status_text (STATUS_NO_SECKEY, buf);
+                  }
+              }
+          }
+      else
+        {
+          log_info (_("public key decryption failed: %s\n"),
+                    gpg_strerror (GPG_ERR_PUBKEY_ALGO));
+          write_status_error ("pkdecrypt_failed", GPG_ERR_PUBKEY_ALGO);
+        }
+    }
+
+  if (c->dek && opt.verbose > 1)
+    log_info (_("public key encrypted data: good DEK\n"));
 
   write_status (STATUS_BEGIN_DECRYPTION);
 
