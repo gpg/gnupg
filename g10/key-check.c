@@ -72,6 +72,13 @@ sig_comparison (const void *av, const void *bv)
   a = an->pkt->pkt.signature;
   b = bn->pkt->pkt.signature;
 
+  /* Signatures with a different help counter are not identical for
+   * our purpose.  */
+  if (a->help_counter < b->help_counter)
+    return -1;
+  if (a->help_counter > b->help_counter)
+    return 1;
+
   if (a->digest_algo < b->digest_algo)
     return -1;
   if (a->digest_algo > b->digest_algo)
@@ -133,6 +140,7 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
   int bad_signature = 0;
   int missing_selfsig = 0;
   int modified = 0;
+  PKT_signature *sig;
 
   log_assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
   pk = kb->pkt->pkt.public_key;
@@ -143,6 +151,7 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
     kbnode_t *sigs;
     int i;
     int last_i;
+    int block;
 
     /* Count the sigs.  */
     for (nsigs = 0, n = kb; n; n = n->next)
@@ -166,14 +175,31 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
       }
 
     i = 0;
+    block = 0;
     for (n = kb; n; n = n->next)
       {
         if (is_deleted_kbnode (n))
           continue;
 
         if (n->pkt->pkttype != PKT_SIGNATURE)
-          continue;
-
+          {
+            switch (n->pkt->pkttype)
+              {
+              case PKT_PUBLIC_SUBKEY:
+              case PKT_SECRET_SUBKEY:
+              case PKT_USER_ID:
+              case PKT_ATTRIBUTE:
+                /* Bump the block number so that we only consider
+                 * signatures below the same object as duplicates.  */
+                block++;
+                break;
+              default:
+                break;
+              }
+            continue;
+          }
+        sig = n->pkt->pkt.signature;
+        sig->help_counter = block;
         sigs[i] = n;
         i ++;
       }
@@ -194,7 +220,7 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
           {
             if (DBG_PACKET)
               {
-                PKT_signature *sig = sigs[i]->pkt->pkt.signature;
+                sig = sigs[i]->pkt->pkt.signature;
 
                 log_debug ("Signature appears multiple times, "
                            "deleting duplicate:\n");
@@ -244,7 +270,6 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
     {
       PACKET *p;
       int processed_current_component;
-      PKT_signature *sig;
       int rc;
       int dump_sig_params = 0;
 
@@ -577,7 +602,6 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
   {
     int has_selfsig = 0;
     PACKET *p;
-    PKT_signature *sig;
 
     current_component = NULL;
     for (n = kb; n; n = n->next)
