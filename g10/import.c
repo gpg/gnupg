@@ -2750,8 +2750,9 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
 }
 
 
-/* Loop over the keyblock and check all self signatures.  On return
- * the following bis in the node flags are set:
+/* Loop over the KEYBLOCK and check all self signatures.  KEYID is the
+ * keyid of the primary key for reporting purposes. On return the
+ * following bits in the node flags are set:
  *
  * - NODE_GOOD_SELFSIG  :: User ID or subkey has a self-signature
  * - NODE_BAD_SELFSIG   :: Used ID or subkey has an invalid self-signature
@@ -2766,17 +2767,22 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
 static int
 chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid, int *non_self)
 {
-  kbnode_t n, knode = NULL;
+  kbnode_t knode = NULL;   /* The node of the current subkey.  */
+  PKT_public_key *subpk = NULL; /* and its packet. */
+  kbnode_t bsnode = NULL;  /* Subkey binding signature node.  */
+  u32 bsdate = 0;          /* Timestamp of that node.   */
+  kbnode_t rsnode = NULL;  /* Subkey recocation signature node.  */
+  u32 rsdate = 0;          /* Timestamp of tha node.  */
   PKT_signature *sig;
   int rc;
-  u32 bsdate=0, rsdate=0;
-  kbnode_t bsnode = NULL, rsnode = NULL;
+  kbnode_t n;
 
   for (n=keyblock; (n = find_next_kbnode (n, 0)); )
     {
       if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
 	  knode = n;
+          subpk = knode->pkt->pkt.public_key;
 	  bsdate = 0;
 	  rsdate = 0;
 	  bsnode = NULL;
@@ -2865,11 +2871,14 @@ chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid, int *non_self)
               if ( rc )
                 {
                   if (opt.verbose)
-                    log_info (gpg_err_code (rc) == GPG_ERR_PUBKEY_ALGO ?
-                              _("key %s: unsupported public key"
-                                " algorithm\n"):
-                              _("key %s: invalid subkey binding\n"),
-                              keystr (keyid));
+                    {
+                      keyid_from_pk (subpk, NULL);
+                      log_info (gpg_err_code (rc) == GPG_ERR_PUBKEY_ALGO ?
+                                _("key %s: unsupported public key"
+                                  " algorithm\n"):
+                                _("key %s: invalid subkey binding\n"),
+                                keystr_with_sub (keyid, subpk->keyid));
+                    }
                   n->flag |= NODE_DELETION_MARK;
                 }
               else
@@ -2884,8 +2893,12 @@ chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid, int *non_self)
                              one is newer */
                           bsnode->flag |= NODE_DELETION_MARK;
                           if (opt.verbose)
-                            log_info (_("key %s: removed multiple subkey"
-                                        " binding\n"),keystr(keyid));
+                            {
+                              keyid_from_pk (subpk, NULL);
+                              log_info (_("key %s: removed multiple subkey"
+                                          " binding\n"),
+                                        keystr_with_sub (keyid, subpk->keyid));
+                            }
                         }
 
                       bsnode = n;
@@ -2964,6 +2977,7 @@ delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
 {
   kbnode_t node;
   int nvalid=0, uid_seen=0, subkey_seen=0;
+  PKT_public_key *pk;
 
   for (node=keyblock->next; node; node = node->next )
     {
@@ -3001,7 +3015,12 @@ delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
               || !(node->flag & NODE_GOOD_SELFSIG))
             {
               if (opt.verbose )
-                log_info( _("key %s: skipped subkey\n"),keystr(keyid));
+                {
+                  pk = node->pkt->pkt.public_key;
+                  keyid_from_pk (pk, NULL);
+                  log_info (_("key %s: skipped subkey\n"),
+                            keystr_with_sub (keyid, pk->keyid));
+                }
 
               delete_kbnode( node ); /* the subkey */
               /* and all following signature packets */
