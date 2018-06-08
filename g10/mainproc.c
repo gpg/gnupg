@@ -46,16 +46,6 @@
 #define MAX_NESTING_DEPTH 32
 
 
-/* An object to build a list of keyid related info.  */
-struct kidlist_item
-{
-  struct kidlist_item *next;
-  u32 kid[2];
-  int pubkey_algo;
-  gcry_mpi_t data[2];
-};
-
-
 /*
  * Object to hold the processing context.
  */
@@ -95,7 +85,7 @@ struct mainproc_context
   iobuf_t iobuf;    /* Used to get the filename etc. */
   int trustletter;  /* Temporary usage in list_node. */
   ulong symkeys;    /* Number of symmetrically encrypted session keys.  */
-  struct kidlist_item *pkenc_list; /* List of encryption packets. */
+  struct pubkey_enc_list *pkenc_list; /* List of encryption packets. */
   struct {
     unsigned int sig_seen:1;      /* Set to true if a signature packet
                                      has been seen. */
@@ -135,7 +125,7 @@ release_list( CTX c )
   release_kbnode (c->list);
   while (c->pkenc_list)
     {
-      struct kidlist_item *tmp = c->pkenc_list->next;
+      struct pubkey_enc_list *tmp = c->pkenc_list->next;
 
       mpi_release (c->pkenc_list->data[0]);
       mpi_release (c->pkenc_list->data[1]);
@@ -464,7 +454,7 @@ static void
 proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
 {
   PKT_pubkey_enc *enc;
-  struct kidlist_item *x = xmalloc (sizeof *x);
+  struct pubkey_enc_list *x = xmalloc (sizeof *x);
 
   /* Check whether the secret key is available and store in this case.  */
   c->last_was_session_key = 1;
@@ -485,8 +475,8 @@ proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
 
   if (!opt.list_only && !opt.override_session_key)
     {
-      x->kid[0] = enc->keyid[0];
-      x->kid[1] = enc->keyid[1];
+      x->keyid[0] = enc->keyid[0];
+      x->keyid[1] = enc->keyid[1];
       x->pubkey_algo = enc->pubkey_algo;
       x->data[0] = x->data[1] = NULL;
       if (enc->data[0])
@@ -507,7 +497,7 @@ proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
  * not decrypt.
  */
 static void
-print_pkenc_list (ctrl_t ctrl, struct kidlist_item *list)
+print_pkenc_list (ctrl_t ctrl, struct pubkey_enc_list *list)
 {
   for (; list; list = list->next)
     {
@@ -520,19 +510,19 @@ print_pkenc_list (ctrl_t ctrl, struct kidlist_item *list)
       if (!algstr)
         algstr = "[?]";
       pk->pubkey_algo = list->pubkey_algo;
-      if (!get_pubkey (ctrl, pk, list->kid))
+      if (!get_pubkey (ctrl, pk, list->keyid))
         {
           char *p;
           log_info (_("encrypted with %u-bit %s key, ID %s, created %s\n"),
                     nbits_from_pk (pk), algstr, keystr_from_pk(pk),
                     strtimestamp (pk->timestamp));
-          p = get_user_id_native (ctrl, list->kid);
+          p = get_user_id_native (ctrl, list->keyid);
           log_printf (_("      \"%s\"\n"), p);
           xfree (p);
         }
       else
         log_info (_("encrypted with %s key, ID %s\n"),
-                  algstr, keystr(list->kid));
+                  algstr, keystr(list->keyid));
 
       free_public_key (pk);
     }
@@ -542,7 +532,6 @@ print_pkenc_list (ctrl_t ctrl, struct kidlist_item *list)
 static void
 proc_encrypted (CTX c, PACKET *pkt)
 {
-  struct kidlist_item *item;
   int result = 0;
 
   if (!opt.quiet)
@@ -555,7 +544,7 @@ proc_encrypted (CTX c, PACKET *pkt)
     }
 
   /* Figure out the session key by looking at all pkenc packets. */
-  if (opt.list_only)
+  if (opt.list_only || c->dek)
     ;
   else if (opt.override_session_key)
     {
@@ -572,53 +561,16 @@ proc_encrypted (CTX c, PACKET *pkt)
     }
   else
     {
-      for (item = c->pkenc_list; item; item = item->next)
-        if (item->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E
-            || item->pubkey_algo == PUBKEY_ALGO_ECDH
-            || item->pubkey_algo == PUBKEY_ALGO_RSA
-            || item->pubkey_algo == PUBKEY_ALGO_RSA_E
-            || item->pubkey_algo == PUBKEY_ALGO_ELGAMAL)
-          {
-            if  (((!item->kid[0] && !item->kid[1])
-                  || opt.try_all_secrets
-                  || have_secret_key_with_kid (item->kid)))
-              {
-                PKT_pubkey_enc enc;
-
-                enc.keyid[0] = item->kid[0];
-                enc.keyid[1] = item->kid[1];
-                enc.pubkey_algo = item->pubkey_algo;
-                enc.data[0] = item->data[0];
-                enc.data[1] = item->data[1];
-
-                c->dek = xmalloc_secure_clear (sizeof *c->dek);
-                if (!(result = get_session_key (c->ctrl, &enc, c->dek)))
-                  break;
-
-                log_info (_("public key decryption failed: %s\n"),
-                          gpg_strerror (result));
-                write_status_error ("pkdecrypt_failed", result);
-
-                /* Error: Delete the DEK. */
-                xfree (c->dek);
-                c->dek = NULL;
-              }
-            else
-              {
-                if (is_status_enabled ())
-                  {
-                    char buf[20];
-                    snprintf (buf, sizeof buf, "%08lX%08lX",
-                              (ulong)item->kid[0], (ulong)item->kid[1]);
-                    write_status_text (STATUS_NO_SECKEY, buf);
-                  }
-              }
-          }
-      else
+      c->dek = xmalloc_secure_clear (sizeof *c->dek);
+      if ((result = get_session_key (c->ctrl, c->pkenc_list, c->dek)))
         {
           log_info (_("public key decryption failed: %s\n"),
-                    gpg_strerror (GPG_ERR_PUBKEY_ALGO));
-          write_status_error ("pkdecrypt_failed", GPG_ERR_PUBKEY_ALGO);
+                    gpg_strerror (result));
+          write_status_error ("pkdecrypt_failed", result);
+
+          /* Error: Delete the DEK. */
+          xfree (c->dek);
+          c->dek = NULL;
         }
     }
 
@@ -698,7 +650,7 @@ proc_encrypted (CTX c, PACKET *pkt)
       && gnupg_cipher_is_compliant (CO_DE_VS, c->dek->algo,
                                     GCRY_CIPHER_MODE_CFB))
     {
-      struct kidlist_item *i;
+      struct pubkey_enc_list *i;
       int compliant = 1;
       PKT_public_key *pk = xmalloc (sizeof *pk);
 
@@ -711,7 +663,7 @@ proc_encrypted (CTX c, PACKET *pkt)
         {
           memset (pk, 0, sizeof *pk);
           pk->pubkey_algo = i->pubkey_algo;
-          if (get_pubkey (c->ctrl, pk, i->kid) != 0
+          if (get_pubkey (c->ctrl, pk, i->keyid) != 0
               || ! gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, pk->pkey,
                                           nbits_from_pk (pk), NULL))
             compliant = 0;

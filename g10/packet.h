@@ -131,6 +131,16 @@ typedef struct {
 } PKT_pubkey_enc;
 
 
+/* An object to build a list of public-key encrypted session key.  */
+struct pubkey_enc_list
+{
+  struct pubkey_enc_list *next;
+  u32 keyid[2];
+  int pubkey_algo;
+  gcry_mpi_t data[PUBKEY_MAX_NENC];
+};
+
+
 /* A one-pass signature packet as defined in RFC 4880, Section
    5.4.  All fields are serialized.  */
 typedef struct {
@@ -887,7 +897,7 @@ gpg_error_t check_signature2 (ctrl_t ctrl,
 
 
 /*-- pubkey-enc.c --*/
-gpg_error_t get_session_key (ctrl_t ctrl, PKT_pubkey_enc *k, DEK *dek);
+gpg_error_t get_session_key (ctrl_t ctrl, struct pubkey_enc_list *k, DEK *dek);
 gpg_error_t get_override_session_key (DEK *dek, const char *string);
 
 /*-- compress.c --*/
