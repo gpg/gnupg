@@ -1,5 +1,29 @@
-Noteworthy changes in version 2.2.8 (unreleased)
+Noteworthy changes in version 2.2.8 (2018-06-08)
 ------------------------------------------------
+
+  * gpg: Decryption of messages not using the MDC mode will now lead
+    to a hard failure even if a legacy cipher algorithm was used.  The
+    option --ignore-mdc-error can be used to turn this failure into a
+    warning.  Take care: Never use that option unconditionally or
+    without a prior warning.
+
+  * gpg: The MDC encryption mode is now always used regardless of the
+    cipher algorithm or any preferences.  For testing --rfc2440 can be
+    used to create a message without an MDC.
+
+  * gpg: Sanitize the diagnostic output of the original file name in
+    verbose mode.  [#4012,CVE-2018-12020]
+
+  * gpg: Detect suspicious multiple plaintext packets in a more
+    reliable way.  [#4000]
+
+  * gpg: Fix the duplicate key signature detection code.  [#3994]
+
+  * gpg: The options --no-mdc-warn, --force-mdc, --no-force-mdc,
+    --disable-mdc and --no-disable-mdc have no more effect.
+
+  * agent: Add DBUS_SESSION_BUS_ADDRESS and a few other envvars to the
+    list of startup environment variables.  [#3947]
 
 
 Noteworthy changes in version 2.2.7 (2018-05-02)
