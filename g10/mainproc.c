@@ -683,7 +683,7 @@ proc_encrypted (CTX c, PACKET *pkt)
            * are rare in practice we print a hint on how to decrypt
            * such messages.  */
           log_string
-            (GPGRT_LOGLVL_INFO,
+            (GPGRT_LOG_INFO,
              _("Hint: If this message was created before the year 2003 it is\n"
                "likely that this message is legitimate.  This is because back\n"
                "then integrity protection was not widely used.\n"));
