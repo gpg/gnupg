@@ -851,7 +851,14 @@ proc_plaintext( CTX c, PACKET *pkt )
   if (pt->namelen == 8 && !memcmp( pt->name, "_CONSOLE", 8))
     log_info (_("Note: sender requested \"for-your-eyes-only\"\n"));
   else if (opt.verbose)
-    log_info (_("original file name='%.*s'\n"), pt->namelen, pt->name);
+    {
+      /* We don't use print_utf8_buffer because that would require a
+       * string change which we don't want in 2.2.  It is also not
+       * clear whether the filename is always utf-8 encoded.  */
+      char *tmp = make_printable_string (pt->name, pt->namelen, 0);
+      log_info (_("original file name='%.*s'\n"), (int)strlen (tmp), tmp);
+      xfree (tmp);
+    }
 
   free_md_filter_context (&c->mfx);
   if (gcry_md_open (&c->mfx.md, 0, 0))
