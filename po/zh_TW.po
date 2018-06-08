@@ -4340,6 +4340,9 @@ msgstr "已用 %s 金鑰, ID %s 所加密\n"
 msgid "public key decryption failed: %s\n"
 msgstr "公鑰解密失敗: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr "警告: 看到了多份明文\n"
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "已用 %lu 個密語加密了\n"
@@ -4358,6 +4361,21 @@ msgstr "IDEA 編密法不可用, 我們樂觀地試著改以 %s 代替\n"
 msgid "WARNING: message was not integrity protected\n"
 msgstr "警告: 訊息未受到完整的保護\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "解密失敗: %s\n"
+
 msgid "decryption okay\n"
 msgstr "解密成功\n"
 
@@ -4374,9 +4392,6 @@ msgstr "請注意: 寄件者要求了 \"只准你用眼睛看\"\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "原始的檔名 ='%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr "警告: 看到了多份明文\n"
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "獨立撤銷 - 請用 \"gpg --import\" 來套用\n"

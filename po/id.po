@@ -4606,6 +4606,9 @@ msgstr "dienkripsi dengan kunci %s, ID %08lX\n"
 msgid "public key decryption failed: %s\n"
 msgstr "gagal dekripsi kunci publik: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr ""
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "dienkripsi dengan passphrase %lu\n"
@@ -4623,6 +4626,21 @@ msgstr "Cipher IDEA tidak tersedia, secara optimis berusaha menggunakan %s\n"
 
 msgid "WARNING: message was not integrity protected\n"
 msgstr "PERINGATAN: integritas pesan tidak terlindungi\n"
+
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "dekripsi gagal: %s\n"
 
 msgid "decryption okay\n"
 msgstr "dekripsi lancar\n"
@@ -4642,9 +4660,6 @@ msgstr "CATATAN: pengirim meminta \"for-your-eyes-only\"\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "original file name='%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr ""
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "pembatalan mandiri - gunakan \"gpg --import\" untuk mengaplikasikan\n"

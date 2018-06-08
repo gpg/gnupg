@@ -4639,6 +4639,9 @@ msgstr "cifrado cunha chave %s, ID %08lX\n"
 msgid "public key decryption failed: %s\n"
 msgstr "fallou o descifrado de chave pública: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr ""
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "cifrado con %lu contrasinais\n"
@@ -4656,6 +4659,21 @@ msgstr "A cifra IDEA non está dispoñible, téntase empregar %s no seu canto\n"
 
 msgid "WARNING: message was not integrity protected\n"
 msgstr "AVISO: a mensaxe non tiña protección de integridade\n"
+
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "o descifrado fallou: %s\n"
 
 msgid "decryption okay\n"
 msgstr "descifrado correcto\n"
@@ -4675,9 +4693,6 @@ msgstr "NOTA: o remitente pediu \"confidencial\"\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "nome do ficheiro orixinal='%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr ""
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "revocación independente - empregue \"gpg --import\" para aplicar\n"

@@ -4744,6 +4744,9 @@ msgstr "xifrat amb una clau %s, ID %08lX\n"
 msgid "public key decryption failed: %s\n"
 msgstr "ha fallat el desxifratge amb la clau pública: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr ""
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "xifrat amb %lu contrasenyes\n"
@@ -4768,6 +4771,21 @@ msgstr ""
 msgid "WARNING: message was not integrity protected\n"
 msgstr "AVÍS: el missatge no tenia protecció d'integritat\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "ha fallat el desxifratge: %s\n"
+
 msgid "decryption okay\n"
 msgstr "desxifratge correcte\n"
 
@@ -4786,9 +4804,6 @@ msgstr "NOTA: el remitent ha sol·licitat \"alt secret\"\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "nom del fitxer original='%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr ""
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "revocació autònoma: useu \"gpg --import\" per a aplicar-la\n"

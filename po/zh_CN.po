@@ -4517,6 +4517,9 @@ msgstr "由 %s 密钥加密、钥匙号为 %s\n"
 msgid "public key decryption failed: %s\n"
 msgstr "公钥解密失败：%s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr ""
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "以 %lu 个密码加密\n"
@@ -4534,6 +4537,21 @@ msgstr "IDEA 算法不可用，试以 %s 代替\n"
 
 msgid "WARNING: message was not integrity protected\n"
 msgstr "警告：报文未受到完整的保护\n"
+
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "解密失败：%s\n"
 
 msgid "decryption okay\n"
 msgstr "解密成功\n"
@@ -4553,9 +4571,6 @@ msgstr "注意：发件者要求您“只阅读不存盘”\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "原始文件名 =‘%.*s’\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr ""
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "独立的吊销证书――请用“gpg --import”来应用\n"

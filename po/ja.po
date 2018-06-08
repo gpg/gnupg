@@ -4229,6 +4229,9 @@ msgstr "%s鍵, ID %sで暗号化されました\n"
 msgid "public key decryption failed: %s\n"
 msgstr "公開鍵の復号に失敗しました: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr "*警告*: 複数のプレインテクストが見られます\n"
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "%lu 個のパスフレーズで暗号化\n"
@@ -4247,6 +4250,21 @@ msgstr "IDEA暗号方式は利用不能なので、楽天的ですが%sで代用
 msgid "WARNING: message was not integrity protected\n"
 msgstr "*警告*: メッセージの完全性は保護されていません\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "復号に失敗しました: %s\n"
+
 msgid "decryption okay\n"
 msgstr "復号に成功\n"
 
@@ -4263,9 +4281,6 @@ msgstr "注意: 送信者は\"極秘とする\"ように求めています\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "元のファイル名='%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr "*警告*: 複数のプレインテクストが見られます\n"
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "スタンドアロン失効 - \"gpg --import\"を使って適用してください\n"

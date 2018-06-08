@@ -4615,6 +4615,9 @@ msgstr "ĉifrita per %s-ŝlosilo, %08lX\n"
 msgid "public key decryption failed: %s\n"
 msgstr "publikŝlosila malĉifrado malsukcesis: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "Ripetu pasfrazon\n"
@@ -4635,6 +4638,21 @@ msgstr "Ĉifro IDEA ne disponata, optimisme provas uzi %s anstataŭe\n"
 msgid "WARNING: message was not integrity protected\n"
 msgstr "AVERTO: nenio estis eksportita\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "malĉifrado malsukcesis: %s\n"
+
 msgid "decryption okay\n"
 msgstr "malĉifrado sukcesis\n"
 
@@ -4653,9 +4671,6 @@ msgstr "NOTO: sendinto petis konfidencon (\"for-your-eyes-only\")\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "originala dosiernomo='%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr ""
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "memstara revoko - uzu \"gpg --import\" por apliki ĝin\n"

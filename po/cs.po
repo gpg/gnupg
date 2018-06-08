@@ -4358,6 +4358,9 @@ msgstr "zašifrováno %s klíčem, ID %s\n"
 msgid "public key decryption failed: %s\n"
 msgstr "dešifrování veřejným klíčem selhalo: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr "VAROVÁNÍ: zachyceno více prostých textů\n"
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "zašifrováno s heslem %lu\n"
@@ -4378,6 +4381,21 @@ msgstr ""
 msgid "WARNING: message was not integrity protected\n"
 msgstr "VAROVÁNÍ: zpráva nebyla chráněna proti porušení její integrity\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "dešifrování selhalo: %s\n"
+
 msgid "decryption okay\n"
 msgstr "dešifrování o.k.\n"
 
@@ -4395,9 +4413,6 @@ msgstr ""
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "původní jméno souboru='%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr "VAROVÁNÍ: zachyceno více prostých textů\n"
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""

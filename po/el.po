@@ -4640,6 +4640,9 @@ msgstr "κρυπτογραφημένο με %s key, ID %08lX\n"
 msgid "public key decryption failed: %s\n"
 msgstr "κρυπτογράφηση με δημόσιο κλειδί απέτυχε: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr ""
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "κρυπτογραφημένο με %lu φράσεις κλειδιά\n"
@@ -4660,6 +4663,21 @@ msgstr ""
 msgid "WARNING: message was not integrity protected\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: δεν προστατεύτηκε η ακεραιότητα του μηύματος\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "αποκρυπτογράφηση απέτυχε: %s\n"
+
 msgid "decryption okay\n"
 msgstr "αποκρυπτογράφηση OK\n"
 
@@ -4678,9 +4696,6 @@ msgstr "ΣΗΜΕΙΩΣΗ: ο αποστολέας ζήτησε \"για-τα-μ�
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "αρχικό όνομα αρχείου='%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr ""
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "ανεξάρτητη ανάκληση - χρησιμοποιείστε \"gpg --import\" για εφαρμογή\n"

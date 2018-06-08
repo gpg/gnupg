@@ -1519,7 +1519,6 @@ msgstr "desbloquear PIN usando Código de Reinicio"
 msgid "destroy all keys and data"
 msgstr "destruir todas las claves y datos"
 
-#| msgid "|NAME|use user NAME for authentication"
 msgid "setup KDF for PIN authentication"
 msgstr "configurar KDF para autentificación de PIN"
 
@@ -4328,6 +4327,9 @@ msgstr "cifrado con clave %s, ID %s\n"
 msgid "public key decryption failed: %s\n"
 msgstr "descifrado de la clave pública fallido: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr "AVISO: se observan varios textos en claro\n"
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "cifrado con %lu frases contraseña\n"
@@ -4347,6 +4349,21 @@ msgstr ""
 msgid "WARNING: message was not integrity protected\n"
 msgstr "ATENCIÓN: la intgridad del mensaje no está protegida\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "descifrado fallido: %s\n"
+
 msgid "decryption okay\n"
 msgstr "descifrado correcto\n"
 
@@ -4363,9 +4380,6 @@ msgstr "Atención: el remitente solicitó \"sólo-para-tus-ojos\"\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "nombre fichero original='%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr "AVISO: se observan varios textos en claro\n"
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "revocación independiente - use \"gpg --import\" para aplicarla\n"
@@ -5214,7 +5228,6 @@ msgid "Note: signature key %s has been revoked\n"
 msgstr "NOTA: la clave de firmado %s ha sido revocada\n"
 
 #, c-format
-#| msgid "standalone signature of class 0x%02x\n"
 msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
 msgstr "firma incorrecta de la clave %s: %s (0x%02x, 0x%x)\n"
 

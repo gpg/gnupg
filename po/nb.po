@@ -4306,6 +4306,9 @@ msgstr "kryptert med %s-nøkkel, ID %s\n"
 msgid "public key decryption failed: %s\n"
 msgstr "offentlig nøkkel-dekryptering mislyktes: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr "ADVARSEL: fant flere elementer i ren tekst\n"
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "kryptert med %lu passordfraser\n"
@@ -4324,6 +4327,21 @@ msgstr "IDEA-kryptering er utilgjengelig. Prøver å bruke %s i stedet\n"
 msgid "WARNING: message was not integrity protected\n"
 msgstr "ADVARSEL: meldinga var ikke integritetsbeskyttet\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "dekryptering mislyktes: %s\n"
+
 msgid "decryption okay\n"
 msgstr "dekryptering ok\n"
 
@@ -4340,9 +4358,6 @@ msgstr "Merk: senderen spesifiserte «kun for dine øyne»\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "opprinnelig filnavn=«%.*s»\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr "ADVARSEL: fant flere elementer i ren tekst\n"
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "selvstendig opphevelse - bruk «gpg --import» for å ta i bruk\n"

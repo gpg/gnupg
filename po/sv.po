@@ -4730,6 +4730,9 @@ msgstr "krypterad med %s-nyckel, id %s\n"
 msgid "public key decryption failed: %s\n"
 msgstr "dekryptering med publik nyckel misslyckades: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr "VARNING: multipla klartexter har påträffats\n"
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "krypterad med %lu lösenfraser\n"
@@ -4751,6 +4754,21 @@ msgstr ""
 msgid "WARNING: message was not integrity protected\n"
 msgstr "VARNING: detta meddelande var inte integritetsskyddat\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "dekrypteringen misslyckades: %s\n"
+
 msgid "decryption okay\n"
 msgstr "dekrypteringen lyckades\n"
 
@@ -4770,9 +4788,6 @@ msgstr "OBS: avsändaren begärde \"endast-för-dina-ögon\"\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "ursprungligt filnamn=\"%.*s\"\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr "VARNING: multipla klartexter har påträffats\n"
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""

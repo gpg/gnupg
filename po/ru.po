@@ -4329,6 +4329,9 @@ msgstr "зашифровано ключом %s с идентификатором
 msgid "public key decryption failed: %s\n"
 msgstr "сбой расшифровки с открытым ключом: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr "Внимание: наблюдается несколько текстов\n"
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "зашифровано %lu фразами-паролями\n"
@@ -4347,6 +4350,21 @@ msgstr "шифр IDEA недоступен, попробую вместо нег
 msgid "WARNING: message was not integrity protected\n"
 msgstr "Внимание: целостность сообщения не защищена\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "сбой расшифровки: %s\n"
+
 msgid "decryption okay\n"
 msgstr "расшифровано нормально\n"
 
@@ -4363,9 +4381,6 @@ msgstr "Замечание: отправитель запросил \"тольк
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "первоначальное имя файла='%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr "Внимание: наблюдается несколько текстов\n"
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "отдельный сертификат отзыва: задействуется командой \"gpg --import\"\n"

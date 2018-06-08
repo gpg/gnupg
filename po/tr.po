@@ -4677,6 +4677,9 @@ msgstr "%s anahtarı ve %s kullanıcı kimliği ile şifrelenmiş\n"
 msgid "public key decryption failed: %s\n"
 msgstr "genel anahtar şifre çözümü başarısız: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr "UYAR: çok sayıda salt metin görüldü\n"
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "%lu anahtar parolası ile şifrelenmiş\n"
@@ -4696,6 +4699,21 @@ msgstr ""
 msgid "WARNING: message was not integrity protected\n"
 msgstr "UYARI: ileti bütünlük korumalı değildi\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "şifre çözme başarısız: %s\n"
+
 msgid "decryption okay\n"
 msgstr "Şifre çözme tamam\n"
 
@@ -4714,9 +4732,6 @@ msgstr "BİLGİ: gönderen \"yalnız-gözleriniz-için\" ricasında bulundu\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "özgün dosya adı = '%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr "UYAR: çok sayıda salt metin görüldü\n"
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""

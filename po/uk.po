@@ -4418,6 +4418,9 @@ msgstr "зашифровано ключем %s, ідентифікатор %s\n"
 msgid "public key decryption failed: %s\n"
 msgstr "невдала спроба розшифровування відкритим ключем: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr "УВАГА: виявлено декілька фрагментів нешифрованого тексту\n"
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "зашифровано за допомогою %lu паролів\n"
@@ -4436,6 +4439,21 @@ msgstr "Шифр IDEA недоступний, спробуємо скорист�
 msgid "WARNING: message was not integrity protected\n"
 msgstr "УВАГА: цілісність повідомлення не захищено\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "невдала спроба розшифрування: %s\n"
+
 msgid "decryption okay\n"
 msgstr "розшифровано\n"
 
@@ -4452,9 +4470,6 @@ msgstr "ЗАУВАЖЕННЯ: вимога відправника: «лише д
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "початкова назва файла=«%.*s»\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr "УВАГА: виявлено декілька фрагментів нешифрованого тексту\n"
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""

@@ -4620,6 +4620,9 @@ msgstr "zašifrovaná %s kľúčom, ID %08lX\n"
 msgid "public key decryption failed: %s\n"
 msgstr "dešifrovanie verejným kľúčom zlyhalo: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr ""
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "zašifrované s %lu heslami\n"
@@ -4640,6 +4643,21 @@ msgstr ""
 msgid "WARNING: message was not integrity protected\n"
 msgstr "VAROVANIE: správa nemá ochranu integrity\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "dešifrovanie zlyhalo: %s\n"
+
 msgid "decryption okay\n"
 msgstr "dešifrovanie o.k.\n"
 
@@ -4658,9 +4676,6 @@ msgstr "POZNÁMKA: odosielateľ požadoval (\"for-your-eyes-only\")\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "pôvodné meno súboru='%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr ""
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""

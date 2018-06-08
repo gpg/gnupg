@@ -4673,6 +4673,9 @@ msgstr "zaszyfrowano kluczem %s o identyfikatorze %s\n"
 msgid "public key decryption failed: %s\n"
 msgstr "błąd odszyfrowywania kluczem publicznym: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr "OSTRZEŻENIE: widziano wiele czystych tekstów\n"
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "zaszyfrowane za pomocą %lu haseł\n"
@@ -4690,6 +4693,21 @@ msgstr "szyfr IDEA nie jest dostępny, próba użycia %s zamiast niego\n"
 
 msgid "WARNING: message was not integrity protected\n"
 msgstr "OSTRZEŻENIE: wiadomość nie była zabezpieczona przed manipulacją\n"
+
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "błąd odszyfrowywania: %s\n"
 
 msgid "decryption okay\n"
 msgstr "odszyfrowanie poprawne\n"
@@ -4709,9 +4727,6 @@ msgstr "UWAGA: nadawca zaznaczył że wiadomość nie powinna być zapisywana\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "pierwotna nazwa pliku='%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr "OSTRZEŻENIE: widziano wiele czystych tekstów\n"
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""

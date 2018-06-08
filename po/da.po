@@ -4650,6 +4650,9 @@ msgstr "krypteret med %s nøgle, id %s\n"
 msgid "public key decryption failed: %s\n"
 msgstr "afkryptering af offentlig nøgle mislykkedes: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr "ADVARSEL: flere klartekster set\n"
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "krypteret med %lu adgangsfraser\n"
@@ -4669,6 +4672,21 @@ msgstr ""
 msgid "WARNING: message was not integrity protected\n"
 msgstr "ADVARSEL: besked var ikke integritetsbeskyttet\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "afkryptering mislykkedes: %s\n"
+
 msgid "decryption okay\n"
 msgstr "afkryptering okay\n"
 
@@ -4687,9 +4705,6 @@ msgstr "BEMÆRK: afsender anmodte om »for-your-eyes-only«\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "oprindeligt filnavn=»%.*s«\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr "ADVARSEL: flere klartekster set\n"
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "uafhængig tilbagekald - brug »gpg --import« for at anvende\n"

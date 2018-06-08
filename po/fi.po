@@ -4622,6 +4622,9 @@ msgstr "salattu %s-avaimella, tunnus %08lX\n"
 msgid "public key decryption failed: %s\n"
 msgstr "julkisen avaimen avaus epäonnistui: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr ""
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "salattu %lu salasanalla\n"
@@ -4642,6 +4645,21 @@ msgstr ""
 msgid "WARNING: message was not integrity protected\n"
 msgstr "VAROITUS: viestin eheyttä ei oltu suojattu\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "avaus epäonnistui: %s\n"
+
 msgid "decryption okay\n"
 msgstr "avaus onnistui\n"
 
@@ -4660,9 +4678,6 @@ msgstr "HUOM: lähettäjä määrittää \"vain-sinun-silmillesi\"\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "alkuperäisen tiedoston nimi=\"%.*s\"\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr ""
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "itsenäinen mitätöinti - käytä \"gpg --import\" ottaaksesi käyttöön\n"

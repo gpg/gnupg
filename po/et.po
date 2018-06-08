@@ -4592,6 +4592,9 @@ msgstr "krüpteeritud %s võtmega, ID %08lX\n"
 msgid "public key decryption failed: %s\n"
 msgstr "avaliku võtmega lahtikrüpteerimine ebaõnnestus: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr ""
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "krüpteeritud kasutades %lu parooli\n"
@@ -4609,6 +4612,21 @@ msgstr "IDEA šiffer pole saadaval, loodan kasutada selle asemel %s\n"
 
 msgid "WARNING: message was not integrity protected\n"
 msgstr "HOIATUS: teate kooskõlalisus ei ole tagatud\n"
+
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "decryption failed: %s\n"
+msgid "decryption forced to fail!\n"
+msgstr "lahtikrüpteerimine ebaõnnestus: %s\n"
 
 msgid "decryption okay\n"
 msgstr "lahtikrüpteerimine õnnestus\n"
@@ -4628,9 +4646,6 @@ msgstr "MÄRKUS: saatja nõudis \"ainult-teie-silmadele\"\n"
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "algne failinimi on='%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr ""
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "eraldiseisev tühistus - realiseerimiseks kasutage \"gpg --import\"\n"
