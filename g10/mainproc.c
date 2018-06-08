@@ -638,7 +638,11 @@ proc_plaintext( CTX c, PACKET *pkt )
     if( pt->namelen == 8 && !memcmp( pt->name, "_CONSOLE", 8 ) )
 	log_info(_("NOTE: sender requested \"for-your-eyes-only\"\n"));
     else if( opt.verbose )
-	log_info(_("original file name='%.*s'\n"), pt->namelen, pt->name);
+      {
+        char *tmp = make_printable_string (pt->name, pt->namelen, 0);
+        log_info (_("original file name='%.*s'\n"), (int)strlen (tmp), tmp);
+        xfree (tmp);
+      }
     free_md_filter_context( &c->mfx );
     c->mfx.md = md_open( 0, 0);
     /* fixme: we may need to push the textfilter if we have sigclass 1
