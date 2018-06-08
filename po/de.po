@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2018-04-09 20:39+0200\n"
+"PO-Revision-Date: 2018-06-08 11:22+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -4376,6 +4376,9 @@ msgstr "verschlüsselt mit %s Schlüssel, ID %s\n"
 msgid "public key decryption failed: %s\n"
 msgstr "Entschlüsselung mit Public-Key-Verfahren fehlgeschlagen: %s\n"
 
+msgid "WARNING: multiple plaintexts seen\n"
+msgstr "WARNUNG: Mehr als ein Klartext erkannt\n"
+
 #, c-format
 msgid "encrypted with %lu passphrases\n"
 msgstr "Verschlüsselt mit %lu Passphrases\n"
@@ -4395,6 +4398,22 @@ msgid "WARNING: message was not integrity protected\n"
 msgstr ""
 "WARNUNG: Botschaft wurde nicht integritätsgeschützt (integrity protected)\n"
 
+msgid ""
+"Hint: If this message was created before the year 2003 it is\n"
+"likely that this message is legitimate.  This is because back\n"
+"then integrity protection was not widely used.\n"
+msgstr ""
+"Tip: Falls diese Botschaft vor dem Jahr 2003 erzeugt wurde, so wird es\n"
+"vermutlich eine legitime Botschaft sein.  Die kann vermutet werden, da\n"
+"vor diesem Zeitpunkt ein Integritätsschutz nur selten verwendet wurde.\n"
+
+#, c-format
+msgid "Use the option '%s' to decrypt anyway.\n"
+msgstr "Mit der Option '%s' kann trotzdem entschlüsselt werden.\n"
+
+msgid "decryption forced to fail!\n"
+msgstr "Entschlüsselung als fehlgeschlagen angesehen: %s\n"
+
 msgid "decryption okay\n"
 msgstr "Entschlüsselung erfolgreich\n"
 
@@ -4412,9 +4431,6 @@ msgstr ""
 #, c-format
 msgid "original file name='%.*s'\n"
 msgstr "Ursprünglicher Dateiname='%.*s'\n"
-
-msgid "WARNING: multiple plaintexts seen\n"
-msgstr "WARNUNG: Mehr als ein Klartext erkannt\n"
 
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr ""
