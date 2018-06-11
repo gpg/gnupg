@@ -1,10 +1,10 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-                            Version 1.4.22
+                            Version 1.4.23
 
-	 Copyright 1998-2017 Free Software Foundation, Inc.
-         Copyright 1997-2017 Werner Koch
+	 Copyright 1998-2018 Free Software Foundation, Inc.
+         Copyright 1997-2018 Werner Koch
 
     This file is free software; as a special exception the author
     gives unlimited permission to copy and/or distribute it, with or
@@ -14,6 +14,26 @@
     WITHOUT ANY WARRANTY, to the extent permitted by law; without even
     the implied warranty of MERCHANTABILITY or FITNESS FOR A
     PARTICULAR PURPOSE.
+
+    Warning
+    -------
+
+    This version is from a legacy branch of GnuPG.  We provide this
+    version only for two purposes:
+
+     - To decrypt and verify old messages created using PGP-2 keys.
+       Due to security problems with PGP-2 keys, these keys are not
+       anymore supported by the current stable GnuPG versions.
+
+     - For ancient pre-POSIX platforms which are not capable of
+       building the modern GnuPG-2.
+
+    Although there are no plans to stop basic maintenance of the 1.4
+    branch, it will not see any updates except for severe security
+    problems.  Side-channel attacks and the like won't be fixed in
+    this branch.  It is strongly suggested to migrate to the current
+    stable GnuPG version and - if at all needed - use the 1.4 version
+    only for the above listed purposes.
 
 
     Intro

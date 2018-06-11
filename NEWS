@@ -1,5 +1,21 @@
-Noteworthy changes in version 1.4.23 (unreleased)
+Noteworthy changes in version 1.4.23 (2018-06-11)
 -------------------------------------------------
+
+ * gpg: Sanitize the diagnostic output of the original file name in
+   verbose mode.  [#4012,CVE-2018-12020]
+
+ * Does not push the compress-filter if not needed.  [#3898]
+
+ * Fix the regexp sanitation. [#2923]
+
+ * Fix the accidental use of a C99 feature.
+
+ * Does not try to use the removed /dev/srandom device on OpenBSD.
+
+ * Updated the Danish, Dutch and Spansih translations.
+
+ Release info at <https://dev.gnupg.org/T4015>.
+
 
 Noteworthy changes in version 1.4.22 (2017-07-19)
 -------------------------------------------------
