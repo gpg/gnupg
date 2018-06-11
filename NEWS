@@ -26,8 +26,12 @@ Noteworthy changes in version 2.2.8 (2018-06-08)
   * gpg: The options --no-mdc-warn, --force-mdc, --no-force-mdc,
     --disable-mdc and --no-disable-mdc have no more effect.
 
+  * gpg: New command --show-keys.
+
   * agent: Add DBUS_SESSION_BUS_ADDRESS and a few other envvars to the
     list of startup environment variables.  [#3947]
+
+  See-also: gnupg-announce/2018q2/000425.html
 
 
 Noteworthy changes in version 2.2.7 (2018-05-02)
