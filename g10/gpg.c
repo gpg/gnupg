@@ -2610,6 +2610,10 @@ main (int argc, char **argv)
             opt.import_options |= IMPORT_SHOW;
             opt.import_options |= IMPORT_DRY_RUN;
             opt.import_options &= ~IMPORT_REPAIR_KEYS;
+            opt.list_options |= LIST_SHOW_UNUSABLE_UIDS;
+            opt.list_options |= LIST_SHOW_UNUSABLE_SUBKEYS;
+            opt.list_options |= LIST_SHOW_NOTATIONS;
+            opt.list_options |= LIST_SHOW_POLICY_URLS;
             break;
 
 	  case aDetachedSign: detached_sig = 1; set_cmd( &cmd, aSign ); break;

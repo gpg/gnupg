@@ -356,9 +356,11 @@ be used to locate a key.  Only public keys are listed.
 @item --show-keys
 @opindex show-keys
 This commands takes OpenPGP keys as input and prints information about
-them in the same way the command @option{--list-keys} does for
-imported key.  No internal state is changed.  For automated processing
-this command should be combined with the option
+them in the same way the command @option{--list-keys} does for locally
+stored key.  In addition the list options @code{show-unusable-uids},
+@code{show-unusable-subkeys}, @code{show-notations} and
+@code{show-policy-urls} are also enabled.  As usual for automated
+processing, this command should be combined with the option
 @option{--with-colons}.
 
 @item --fingerprint
