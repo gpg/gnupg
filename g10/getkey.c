@@ -3968,13 +3968,11 @@ lookup (ctrl_t ctrl, getkey_ctx_t ctx, int want_secret,
  *     { // Process SK.
  *       if (done)
  *         break;
- *       free_public_key (sk);
  *       sk = xmalloc_clear (sizeof (*sk));
  *     }
  *
  *   // Release any resources used by CTX.
  *   enum_secret_keys (&ctx, NULL);
- *   free_public_key (sk);
  *
  *   if (gpg_err_code (err) != GPG_ERR_EOF)
  *     ; // An error occurred.
