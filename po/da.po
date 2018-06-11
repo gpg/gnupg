@@ -3802,7 +3802,8 @@ msgstr "ukendt"
 
 #, c-format
 msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
-msgstr "ADVARSEL: Ikke en frakoblet underskrift; filen »%s« blev IKKE verificeret!\n"
+msgstr ""
+"ADVARSEL: Ikke en frakoblet underskrift; filen »%s« blev IKKE verificeret!\n"
 
 #, c-format
 msgid "Can't check signature: %s\n"

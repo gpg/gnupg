@@ -2946,7 +2946,6 @@ msgstr ""
 msgid "WARNING: Your encryption subkey expires soon.\n"
 msgstr "WAARSCHUWING: uw encryptie-subsleutel vervalt weldra.\n"
 
-#| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
 msgstr "Misschien wilt u ook zijn vervaldatum wijzigen.\n"
 
@@ -4055,7 +4054,6 @@ msgid "unknown option `%s'\n"
 msgstr "onbekende optie `%s'\n"
 
 #, c-format
-#| msgid "Unknown signature type `%s'\n"
 msgid "Unknown weak digest '%s'\n"
 msgstr "Onbekende zwakke hash '%s'\n"
 
@@ -4681,7 +4679,6 @@ msgid "NOTE: signature key %s expired %s\n"
 msgstr "NOOT: ondertekeningssleutel %s verviel op %s\n"
 
 #, c-format
-#| msgid "%s signature, digest algorithm %s\n"
 msgid "Note: signatures using the %s algorithm are rejected\n"
 msgstr ""
 "Merk op: handtekeningen die het algoritme %s gebruiken, worden verworpen\n"
