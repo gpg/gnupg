@@ -1,6 +1,36 @@
 Noteworthy changes in version 2.3.0 (unreleased)
 ------------------------------------------------
 
+  Changes also found in 2.2.8:
+
+  * gpg: Decryption of messages not using the MDC mode will now lead
+    to a hard failure even if a legacy cipher algorithm was used.  The
+    option --ignore-mdc-error can be used to turn this failure into a
+    warning.  Take care: Never use that option unconditionally or
+    without a prior warning.
+
+  * gpg: The MDC encryption mode is now always used regardless of the
+    cipher algorithm or any preferences.  For testing --rfc2440 can be
+    used to create a message without an MDC.
+
+  * gpg: Sanitize the diagnostic output of the original file name in
+    verbose mode.  [#4012,CVE-2018-12020]
+
+  * gpg: Detect suspicious multiple plaintext packets in a more
+    reliable way.  [#4000]
+
+  * gpg: Fix the duplicate key signature detection code.  [#3994]
+
+  * gpg: The options --no-mdc-warn, --force-mdc, --no-force-mdc,
+    --disable-mdc and --no-disable-mdc have no more effect.
+
+  * gpg: New command --show-keys.
+
+  * agent: Add DBUS_SESSION_BUS_ADDRESS and a few other envvars to the
+    list of startup environment variables.  [#3947]
+
+  See-also: gnupg-announce/2018q2/000425.html
+
   Changes also found in 2.2.7:
 
   * gpg: New option --no-symkey-cache to disable the passphrase cache
@@ -35,6 +65,8 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * agent,dirmngr: New sub-command "getenv" for "getinfo" to ease
     debugging.
+
+  See-also: gnupg-announce/2018q2/000424.html
 
   Changes also found in 2.2.6:
 
@@ -81,6 +113,8 @@ Noteworthy changes in version 2.3.0 (unreleased)
 
   * Allow the use of UNC directory names as homedir.  [#3818]
 
+  See-also: gnupg-announce/2018q2/000421.html
+
   Changes also found in 2.2.5:
 
   * gpg: Allow the use of the "cv25519" and "ed25519" short names in
@@ -124,6 +158,8 @@ Noteworthy changes in version 2.3.0 (unreleased)
     with statically linked versions of the core GnuPG libraries.  Also
     use --enable-wks-tools by default by Speedo builds for Unix.
 
+  See-also: gnupg-announce/2018q1/000420.html
+
   Changes also found in 2.2.4:
 
   * gpg: Change default preferences to prefer SHA512.
@@ -153,6 +189,8 @@ Noteworthy changes in version 2.3.0 (unreleased)
   * New configure option --enable-run-gnupg-user-socket to first try a
     socket directory which is not removed by systemd at session end.
 
+  See-also: gnupg-announce/2017q4/000419.html
+
   Changes also found in 2.2.3:
 
   * gpgsm: Fix initial keybox creation on Windows. [#3507]
@@ -171,7 +209,6 @@ Noteworthy changes in version 2.3.0 (unreleased)
     state. [Git#7ffedfab89]
 
   See-also: gnupg-announce/2017q4/000417.html
-
 
   Changes also found in 2.2.2:
 
@@ -236,6 +273,8 @@ Noteworthy changes in version 2.3.0 (unreleased)
     certificates are configured.  If build with GNUTLS, this was
     already the case.
 
+  See-also: gnupg-announce/2017q3/000415.html
+
   Release dates of 2.2.x versions:
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Version 2.2.1 (2017-09-19)
@@ -245,6 +284,7 @@ Noteworthy changes in version 2.3.0 (unreleased)
   Version 2.2.5 (2018-02-22)
   Version 2.2.6 (2018-04-09)
   Version 2.2.7 (2018-05-02)
+  Version 2.2.8 (2018-06-08)
 
 
 Noteworthy changes in version 2.2.0 (2017-08-28)
