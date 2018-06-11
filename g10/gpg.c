@@ -2609,6 +2609,7 @@ main (int argc, char **argv)
             set_cmd (&cmd, pargs.r_opt);
             opt.import_options |= IMPORT_SHOW;
             opt.import_options |= IMPORT_DRY_RUN;
+            opt.dry_run = 1;
             opt.import_options &= ~IMPORT_REPAIR_KEYS;
             opt.list_options |= LIST_SHOW_UNUSABLE_UIDS;
             opt.list_options |= LIST_SHOW_UNUSABLE_SUBKEYS;
@@ -2647,7 +2648,10 @@ main (int argc, char **argv)
 
 	  case oQuiet: opt.quiet = 1; break;
 	  case oNoTTY: tty_no_terminal(1); break;
-	  case oDryRun: opt.dry_run = 1; break;
+	  case oDryRun:
+            opt.dry_run = 1;
+            opt.import_options |= IMPORT_DRY_RUN;
+            break;
 	  case oInteractive: opt.interactive = 1; break;
 	  case oVerbose:
 	    opt.verbose++;
@@ -3208,14 +3212,19 @@ main (int argc, char **argv)
 	      }
 	    break;
 	  case oImportOptions:
-	    if(!parse_import_options(pargs.r.ret_str,&opt.import_options,1))
-	      {
-		if(configname)
-		  log_error(_("%s:%d: invalid import options\n"),
-			    configname,configlineno);
-		else
-		  log_error(_("invalid import options\n"));
-	      }
+            {
+              unsigned int old_import_options = opt.import_options;
+              if(!parse_import_options(pargs.r.ret_str,&opt.import_options,1))
+                {
+                  if(configname)
+                    log_error(_("%s:%d: invalid import options\n"),
+                              configname,configlineno);
+                  else
+                    log_error(_("invalid import options\n"));
+                }
+              if ((old_import_options & IMPORT_DRY_RUN) != (opt.import_options & IMPORT_DRY_RUN))
+                opt.dry_run = !!(opt.import_options & IMPORT_DRY_RUN);
+            }
 	    break;
 	  case oImportFilter:
 	    rc = parse_and_set_import_filter (pargs.r.ret_str);
