@@ -87,7 +87,6 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
     {
       struct pubkey_enc_list *k;
 
-      free_public_key (sk);
       sk = xmalloc_clear (sizeof *sk);
       rc = enum_secret_keys (ctrl, &enum_context, sk);
       if (rc)
@@ -156,7 +155,6 @@ get_session_key (ctrl_t ctrl, struct pubkey_enc_list *list, DEK *dek)
         }
     }
   enum_secret_keys (ctrl, &enum_context, NULL);  /* free context */
-  free_public_key (sk);
 
   if (DBG_CLOCK)
     log_clock ("get_session_key leave");

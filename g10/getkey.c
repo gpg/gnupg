@@ -3993,6 +3993,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
     kbnode_t keyblock;
     kbnode_t node;
     getkey_ctx_t ctx;
+    pubkey_t results;
   } *c = *context;
 
   if (!c)
@@ -4007,6 +4008,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
   if (!sk)
     {
       /* Free the context.  */
+      pubkeys_free (c->results);
       release_kbnode (c->keyblock);
       getkey_end (ctrl, c->ctx);
       xfree (c);
@@ -4109,8 +4111,31 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
 	  if (c->node->pkt->pkttype == PKT_PUBLIC_KEY
               || c->node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	    {
+              pubkey_t r;
+
+              /* Skip this candidate if it's already enumerated.  */
+              for (r = c->results; r; r = r->next)
+                if (!cmp_public_keys (r->pk, c->node->pkt->pkt.public_key))
+                  break;
+              if (r)
+                continue;
+
 	      copy_public_key (sk, c->node->pkt->pkt.public_key);
 	      c->node = c->node->next;
+
+              r = xtrycalloc (1, sizeof (*r));
+              if (!r)
+                {
+                  err = gpg_error_from_syserror ();
+                  free_public_key (sk);
+                  return err;
+                }
+
+              r->pk = sk;
+              r->keyblock = NULL;
+              r->next = c->results;
+              c->results = r;
+
 	      return 0;	/* Found.  */
 	    }
         }
