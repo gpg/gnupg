@@ -329,6 +329,9 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
     int eof;
     int state;
     strlist_t sl;
+    strlist_t card_list;
+    char *serialno;
+    struct agent_card_info_s info;
     kbnode_t keyblock;
     kbnode_t node;
     getkey_ctx_t ctx;
@@ -347,6 +350,9 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
   if (!sk)
     {
       /* Free the context.  */
+      agent_release_card_info (&c->info);
+      xfree (c->serialno);
+      free_strlist (c->card_list);
       pubkeys_free (c->results);
       release_kbnode (c->keyblock);
       getkey_end (ctrl, c->ctx);
@@ -390,7 +396,49 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                     c->state++;
                   break;
 
-                case 3: /* Init search context to enum all secret keys.  */
+                case 3: /* Init list of card keys to try.  */
+                  err = agent_scd_cardlist (&c->card_list);
+                  if (!err)
+                    agent_scd_serialno (&c->serialno, NULL);
+                  c->sl = c->card_list;
+                  c->state++;
+                  break;
+
+                case 4: /* Get next item from card list.  */
+                  if (c->sl)
+                    {
+                      char *serialno;
+
+                      err = agent_scd_serialno (&serialno, c->sl->d);
+                      if (err)
+                        {
+                          if (opt.verbose)
+                            log_info (_("error getting serial number of card: %s\n"),
+                                      gpg_strerror (err));
+                          continue;
+                        }
+
+                      xfree (serialno);
+                      agent_release_card_info (&c->info);
+                      err = agent_scd_getattr ("KEY-FPR", &c->info);
+                      if (err)
+                        log_error ("error retrieving key fingerprint from card: %s\n",
+                                   gpg_strerror (err));
+
+                      if (c->info.fpr2valid)
+                        name = c->info.fpr2;
+                      c->sl = c->sl->next;
+                    }
+                  else
+                    {
+                      if (c->serialno)
+                        /* Select the original card again.  */
+                        agent_scd_serialno (&c->serialno, c->serialno);
+                      c->state++;
+                    }
+                  break;
+
+                case 5: /* Init search context to enum all secret keys.  */
                   err = getkey_bynames (ctrl, &c->ctx, NULL, NULL, 1,
                                         &keyblock);
                   if (err)
@@ -403,7 +451,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                   c->state++;
                   break;
 
-                case 4: /* Get next item from the context.  */
+                case 6: /* Get next item from the context.  */
                   if (c->ctx)
                     {
                       err = getkey_next (ctrl, c->ctx, NULL, &keyblock);
@@ -446,10 +494,10 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
 
       /* Get the next key from the current keyblock.  */
       for (; c->node; c->node = c->node->next)
-	{
-	  if (c->node->pkt->pkttype == PKT_PUBLIC_KEY
+        {
+          if (c->node->pkt->pkttype == PKT_PUBLIC_KEY
               || c->node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-	    {
+            {
               pubkey_t r;
 
               /* Skip this candidate if it's already enumerated.  */
@@ -459,8 +507,8 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
               if (r)
                 continue;
 
-	      copy_public_key (sk, c->node->pkt->pkt.public_key);
-	      c->node = c->node->next;
+              copy_public_key (sk, c->node->pkt->pkt.public_key);
+              c->node = c->node->next;
 
               r = xtrycalloc (1, sizeof (*r));
               if (!r)
@@ -475,8 +523,8 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
               r->next = c->results;
               c->results = r;
 
-	      return 0;	/* Found.  */
-	    }
+              return 0; /* Found.  */
+            }
         }
 
       /* Dispose the keyblock and continue.  */
