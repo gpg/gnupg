@@ -114,7 +114,8 @@ static int import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
                               unsigned int options, int for_migration,
                               import_screener_t screener, void *screener_arg);
 static int import_revoke_cert (ctrl_t ctrl,
-                               kbnode_t node, struct import_stats_s *stats);
+                               kbnode_t node, unsigned int options,
+                               struct import_stats_s *stats);
 static int chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
                           int *non_self);
 static int delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock,
@@ -590,7 +591,7 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
                                 screener, screener_arg);
       else if (keyblock->pkt->pkttype == PKT_SIGNATURE
                && IS_KEY_REV (keyblock->pkt->pkt.signature) )
-        rc = import_revoke_cert (ctrl, keyblock, stats);
+        rc = import_revoke_cert (ctrl, keyblock, options, stats);
       else
         {
           log_info (_("skipping block of type %d\n"), keyblock->pkt->pkttype);
@@ -2607,7 +2608,7 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
  * Import a revocation certificate; this is a single signature packet.
  */
 static int
-import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
+import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options, struct import_stats_s *stats)
 {
   PKT_public_key *pk = NULL;
   kbnode_t onode;
@@ -2622,6 +2623,24 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
 
   keyid[0] = node->pkt->pkt.signature->keyid[0];
   keyid[1] = node->pkt->pkt.signature->keyid[1];
+
+  if ((options & IMPORT_SHOW) &&
+      (opt.with_colons))
+    {
+      PKT_signature *sig = node->pkt->pkt.signature;
+      char *issuer_fpr = issuer_fpr = issuer_fpr_string (sig);
+
+      es_fprintf (es_stdout, "rev::%d:%08lX%08lX:%s:%s:::::::%s:::%d:\n",
+                  sig->pubkey_algo,
+		  (ulong) sig->keyid[0], (ulong) sig->keyid[1],
+		  colon_datestr_from_sig (sig),
+		  colon_expirestr_from_sig (sig),
+                  issuer_fpr ? issuer_fpr : "",
+                  sig->digest_algo);
+
+      xfree (issuer_fpr);
+      es_fflush (es_stdout);
+    }
 
   pk = xmalloc_clear( sizeof *pk );
   rc = get_pubkey (ctrl, pk, keyid );
