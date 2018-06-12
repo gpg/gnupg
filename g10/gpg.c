@@ -3625,7 +3625,7 @@ main (int argc, char **argv)
             else
               {
                 pargs.err = ARGPARSE_PRINT_ERROR;
-                /* The argparse fucntion calls a plain exit and thus
+                /* The argparse function calls a plain exit and thus
                  * we need to print a status here.  */
                 write_status_failure ("option-parser",
                                       gpg_error(GPG_ERR_GENERAL));
