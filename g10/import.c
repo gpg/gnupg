@@ -1314,6 +1314,16 @@ impex_filter_getval (void *cookie, const char *propname)
         {
           result = pk_is_disabled (pk)? "1":"0";
         }
+      else if (!strcmp (propname, "usage"))
+        {
+          snprintf (numbuf, sizeof numbuf, "%s%s%s%s%s",
+                    (pk->pubkey_usage & PUBKEY_USAGE_ENC)?"e":"",
+                    (pk->pubkey_usage & PUBKEY_USAGE_SIG)?"s":"",
+                    (pk->pubkey_usage & PUBKEY_USAGE_CERT)?"c":"",
+                    (pk->pubkey_usage & PUBKEY_USAGE_AUTH)?"a":"",
+                    (pk->pubkey_usage & PUBKEY_USAGE_UNKNOWN)?"?":"");
+          result = numbuf;
+        }
       else
         result = NULL;
     }

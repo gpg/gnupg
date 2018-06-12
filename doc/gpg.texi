@@ -2428,6 +2428,11 @@ The available properties are:
   Boolean indicating whether a key or subkey is a secret one.
   (drop-subkey)
 
+  @item usage
+  A string indicating the usage flags for the subkey, from the
+  sequence ``ecsa?''.  For example, a subkey capable of just signing
+  and authentication would be an exact match for ``sa''. (drop-subkey)
+
   @item sig_created
   @itemx sig_created_d
   The first is the timestamp a signature packet was created.  The
