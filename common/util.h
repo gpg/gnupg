@@ -39,21 +39,6 @@
  * libgpg-error version.  Define them here.
  * Example: (#if GPG_ERROR_VERSION_NUMBER < 0x011500 // 1.21)
  */
-#if GPG_ERROR_VERSION_NUMBER < 0x011a00 /* 1.26 */
-# define GPG_ERR_UNKNOWN_FLAG     309
-# define GPG_ERR_INV_ORDER	  310
-# define GPG_ERR_ALREADY_FETCHED  311
-# define GPG_ERR_TRY_LATER        312
-# define GPG_ERR_SYSTEM_BUG	  666
-# define GPG_ERR_DNS_UNKNOWN	  711
-# define GPG_ERR_DNS_SECTION	  712
-# define GPG_ERR_DNS_ADDRESS	  713
-# define GPG_ERR_DNS_NO_QUERY	  714
-# define GPG_ERR_DNS_NO_ANSWER	  715
-# define GPG_ERR_DNS_CLOSED	  716
-# define GPG_ERR_DNS_VERIFY	  717
-# define GPG_ERR_DNS_TIMEOUT	  718
-#endif
 
 
 /* Hash function used with libksba. */
