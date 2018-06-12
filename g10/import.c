@@ -113,8 +113,8 @@ static int import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
                               struct import_stats_s *stats, int batch,
                               unsigned int options, int for_migration,
                               import_screener_t screener, void *screener_arg);
-static int import_revoke_cert (ctrl_t ctrl,
-                               kbnode_t node, struct import_stats_s *stats);
+static int import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
+                               struct import_stats_s *stats);
 static int chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
                           int *non_self);
 static int delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock,
@@ -590,7 +590,7 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
                                 screener, screener_arg);
       else if (keyblock->pkt->pkttype == PKT_SIGNATURE
                && IS_KEY_REV (keyblock->pkt->pkt.signature) )
-        rc = import_revoke_cert (ctrl, keyblock, stats);
+        rc = import_revoke_cert (ctrl, keyblock, options, stats);
       else
         {
           log_info (_("skipping block of type %d\n"), keyblock->pkt->pkttype);
@@ -2617,7 +2617,8 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
  * Import a revocation certificate; this is a single signature packet.
  */
 static int
-import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
+import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
+                    struct import_stats_s *stats)
 {
   PKT_public_key *pk = NULL;
   kbnode_t onode;
@@ -2707,31 +2708,34 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
   /* insert it */
   insert_kbnode( keyblock, clone_kbnode(node), 0 );
 
-  /* and write the keyblock back */
-  rc = keydb_update_keyblock (ctrl, hd, keyblock );
-  if (rc)
-    log_error (_("error writing keyring '%s': %s\n"),
-               keydb_get_resource_name (hd), gpg_strerror (rc) );
-  keydb_release (hd);
-  hd = NULL;
-
-  /* we are ready */
-  if (!opt.quiet )
+  /* and write the keyblock back unless in dry run mode.  */
+  if (!(opt.dry_run || (options & IMPORT_DRY_RUN)))
     {
-      char *p=get_user_id_native (ctrl, keyid);
-      log_info( _("key %s: \"%s\" revocation certificate imported\n"),
-                keystr(keyid),p);
-      xfree(p);
+      rc = keydb_update_keyblock (ctrl, hd, keyblock );
+      if (rc)
+        log_error (_("error writing keyring '%s': %s\n"),
+                   keydb_get_resource_name (hd), gpg_strerror (rc) );
+      keydb_release (hd);
+      hd = NULL;
+
+      /* we are ready */
+      if (!opt.quiet )
+        {
+          char *p=get_user_id_native (ctrl, keyid);
+          log_info( _("key %s: \"%s\" revocation certificate imported\n"),
+                    keystr(keyid),p);
+          xfree(p);
+        }
+
+      /* If the key we just revoked was ultimately trusted, remove its
+       * ultimate trust.  This doesn't stop the user from putting the
+       * ultimate trust back, but is a reasonable solution for now. */
+      if (get_ownertrust (ctrl, pk) == TRUST_ULTIMATE)
+        clear_ownertrusts (ctrl, pk);
+
+      revalidation_mark (ctrl);
     }
   stats->n_revoc++;
-
-  /* If the key we just revoked was ultimately trusted, remove its
-     ultimate trust.  This doesn't stop the user from putting the
-     ultimate trust back, but is a reasonable solution for now. */
-  if (get_ownertrust (ctrl, pk) == TRUST_ULTIMATE)
-    clear_ownertrusts (ctrl, pk);
-
-  revalidation_mark (ctrl);
 
  leave:
   keydb_release (hd);
