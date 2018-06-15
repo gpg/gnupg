@@ -5549,6 +5549,7 @@ int dns_resconf_pton(struct sockaddr_storage *ss, const char *src) {
 	unsigned short port = 0;
 	int ch, af = AF_INET, error;
 
+	memset(ss, 0, sizeof *ss);
 	while ((ch = *src++)) {
 		switch (ch) {
 		case ' ':
@@ -6311,6 +6312,7 @@ int dns_resconf_setiface(struct dns_resolv_conf *resconf, const char *addr, unsi
 	int af = (strchr(addr, ':'))? AF_INET6 : AF_INET;
 	int error;
 
+	memset(&resconf->iface, 0, sizeof (struct sockaddr_storage));
 	if ((error = dns_pton(af, addr, dns_sa_addr(af, &resconf->iface, NULL))))
 		return error;
 
@@ -6622,6 +6624,7 @@ struct dns_hints *dns_hints_root(struct dns_resolv_conf *resconf, int *error_) {
 	for (i = 0; i < lengthof(root_hints); i++) {
 		af	= root_hints[i].af;
 
+		memset(&ss, 0, sizeof ss);
 		if ((error = dns_pton(af, root_hints[i].addr, dns_sa_addr(af, &ss, NULL))))
 			goto error;
 
@@ -10866,6 +10869,7 @@ static int send_query(int argc, char *argv[]) {
 	struct dns_socket *so;
 	int error, type;
 
+	memset(&ss, 0, sizeof ss);
 	if (argc > 1) {
 		ss.ss_family	= (strchr(argv[1], ':'))? AF_INET6 : AF_INET;
 
