@@ -7614,8 +7614,23 @@ retry:
 
 		so->state++;	/* FALL THROUGH */
 	case DNS_SO_UDP_CONN:
+	udp_connect_retry:
 		error = dns_connect(so->udp, (struct sockaddr *)&so->remote, dns_sa_len(&so->remote));
 		dns_trace_sys_connect(so->trace, so->udp, SOCK_DGRAM, (struct sockaddr *)&so->remote, error);
+
+		/* Linux returns EINVAL when address was bound to
+		   localhost and it's external IP address now.  */
+		if (error == EINVAL) {
+			struct sockaddr unspec_addr;
+			memset (&unspec_addr, 0, sizeof unspec_addr);
+			unspec_addr.sa_family = AF_UNSPEC;
+			connect(so->udp, &unspec_addr, sizeof unspec_addr);
+			goto udp_connect_retry;
+		} else if (error == ECONNREFUSED)
+			/* Error for previous socket operation may
+			   be reserverd asynchronously. */
+			goto udp_connect_retry;
+
 		if (error)
 			goto error;
 
@@ -8824,7 +8839,10 @@ exec:
 		if (dns_so_elapsed(&R->so) >= dns_resconf_timeout(R->resconf))
 			dgoto(R->sp, DNS_R_FOREACH_A);
 
-		if ((error = dns_so_check(&R->so)))
+		error = dns_so_check(&R->so);
+		if (error == ECONNREFUSED)
+			dgoto(R->sp, DNS_R_FOREACH_A);
+		else if (error)
 			goto error;
 
 		if (!dns_p_setptr(&F->answer, dns_so_fetch(&R->so, &error)))
@@ -8957,7 +8975,10 @@ exec:
 		if (dns_so_elapsed(&R->so) >= dns_resconf_timeout(R->resconf))
 			dgoto(R->sp, DNS_R_FOREACH_AAAA);
 
-		if ((error = dns_so_check(&R->so)))
+		error = dns_so_check(&R->so);
+		if (error == ECONNREFUSED)
+			dgoto(R->sp, DNS_R_FOREACH_AAAA);
+		else if (error)
 			goto error;
 
 		if (!dns_p_setptr(&F->answer, dns_so_fetch(&R->so, &error)))
