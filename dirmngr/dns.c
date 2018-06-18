@@ -5371,13 +5371,16 @@ struct dns_resolv_conf *dns_resconf_open(int *error) {
 	if (0 != gethostname(resconf->search[0], sizeof resconf->search[0]))
 		goto syerr;
 
-	dns_d_anchor(resconf->search[0], sizeof resconf->search[0], resconf->search[0], strlen(resconf->search[0]));
-	dns_d_cleave(resconf->search[0], sizeof resconf->search[0], resconf->search[0], strlen(resconf->search[0]));
-
 	/*
-	 * XXX: If gethostname() returned a string without any label
-	 *      separator, then search[0][0] should be NUL.
+	 * If gethostname() returned a string without any label
+	 * separator, then search[0][0] should be NUL.
 	 */
+	if (strchr (resconf->search[0], '.')) {
+		dns_d_anchor(resconf->search[0], sizeof resconf->search[0], resconf->search[0], strlen(resconf->search[0]));
+		dns_d_cleave(resconf->search[0], sizeof resconf->search[0], resconf->search[0], strlen(resconf->search[0]));
+	} else {
+		memset (resconf->search[0], 0, sizeof resconf->search[0]);
+	}
 
 	dns_resconf_acquire(resconf);
 
