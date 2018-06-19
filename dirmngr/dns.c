@@ -7121,6 +7121,8 @@ static int dns_socket(struct sockaddr *local, int type, int *error_) {
 	if (type != SOCK_DGRAM)
 		return fd;
 
+#define LEAVE_SELECTION_OF_PORT_TO_KERNEL
+#if !defined(LEAVE_SELECTION_OF_PORT_TO_KERNEL)
 	/*
 	 * FreeBSD, Linux, OpenBSD, OS X, and Solaris use random ports by
 	 * default. Though the ephemeral range is quite small on OS X
@@ -7146,6 +7148,7 @@ static int dns_socket(struct sockaddr *local, int type, int *error_) {
 
 		/* NB: continue to next bind statement */
 	}
+#endif
 
 	if (0 == bind(fd, local, dns_sa_len(local)))
 		return fd;
