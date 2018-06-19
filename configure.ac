@@ -1220,6 +1220,8 @@ elif test x"$with_mailprog" != xno ; then
     AC_SUBST(SENDMAIL,$with_mailprog)
     AC_MSG_RESULT($with_mailprog)
 fi
+AC_DEFINE_UNQUOTED(NAME_OF_SENDMAIL,"$SENDMAIL",
+                   [Tool with sendmail -t interface])
 
 
 #

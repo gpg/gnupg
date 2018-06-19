@@ -33,7 +33,7 @@ static gpg_error_t
 run_sendmail (estream_t data)
 {
   gpg_error_t err;
-  const char pgmname[] = "/usr/lib/sendmail";
+  const char pgmname[] = NAME_OF_SENDMAIL;
   const char *argv[3];
 
   argv[0] = "-oi";
