@@ -180,6 +180,9 @@ described here.
     revocation key is also given here, 'x' and 'l' is used the same
     way.  This field if not used for X.509.
 
+    "rev" and "rvs" may be followed by a comma and a 2 digit hexnumber
+    with the revocation reason.
+
 *** Field 12 - Key capabilities
 
     The defined capabilities are:
@@ -259,6 +262,12 @@ described here.
     The origin of the key or the user ID.  This is an integer
     optionally followed by a space and an URL.  This goes along with
     the previous field.  The URL is quoted in C style.
+
+*** Field 21 - Comment
+
+    This is currently only used in "rev" and "rvs" records to carry
+    the the comment field of the recocation reason.  The value is
+    quoted in C style.
 
 ** Special fields
 
