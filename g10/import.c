@@ -2633,6 +2633,69 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
 
 
 
+/* Return the recocation reason from signature SIG.  If no revocation
+ * reason is availabale 0 is returned, in other cases the reason
+ * (0..255).  If R_REASON is not NULL a malloced textual
+ * representation of the code is stored there.  If R_COMMENT is not
+ * NULL the comment from the reason is stored there and its length at
+ * R_COMMENTLEN.  Note that the value at R_COMMENT is not filtered but
+ * user supplied data in UTF8; thus it needs to be escaped for display
+ * purposes.  Both return values are either NULL or a malloced
+ * string/buffer.  */
+int
+get_revocation_reason (PKT_signature *sig, char **r_reason,
+                       char **r_comment, size_t *r_commentlen)
+{
+  int reason_seq = 0;
+  size_t reason_n;
+  const byte *reason_p;
+  char reason_code_buf[20];
+  const char *reason_text = NULL;
+  int reason_code = 0;
+
+  if (r_reason)
+    *r_reason = NULL;
+  if (r_comment)
+    *r_comment = NULL;
+
+  /* Skip over empty reason packets.  */
+  while ((reason_p = enum_sig_subpkt (sig->hashed, SIGSUBPKT_REVOC_REASON,
+                                      &reason_n, &reason_seq, NULL))
+         && !reason_n)
+    ;
+  if (reason_p)
+    {
+      reason_code = *reason_p;
+      reason_n--; reason_p++;
+      switch (reason_code)
+        {
+        case 0x00: reason_text = _("No reason specified"); break;
+        case 0x01: reason_text = _("Key is superseded");   break;
+        case 0x02: reason_text = _("Key has been compromised"); break;
+        case 0x03: reason_text = _("Key is no longer used"); break;
+        case 0x20: reason_text = _("User ID is no longer valid"); break;
+        default:
+          snprintf (reason_code_buf, sizeof reason_code_buf,
+                    "code=%02x", reason_code);
+          reason_text = reason_code_buf;
+          break;
+        }
+
+      if (r_reason)
+        *r_reason = xstrdup (reason_text);
+
+      if (r_comment && reason_n)
+        {
+          *r_comment = xmalloc (reason_n);
+          memcpy (*r_comment, reason_p, reason_n);
+          *r_commentlen = reason_n;
+        }
+    }
+
+  return reason_code;
+}
+
+
 /* List the recocation signature as a "rvs" record.  SIGRC shows the
  * character from the signature verification or 0 if no public key was
  * found.  */
@@ -2642,6 +2705,10 @@ list_standalone_revocation (ctrl_t ctrl, PKT_signature *sig, int sigrc)
   char *siguid = NULL;
   size_t siguidlen = 0;
   char *issuer_fpr = NULL;
+  int reason_code = 0;
+  char *reason_text = NULL;
+  char *reason_comment = NULL;
+  size_t reason_commentlen;
 
   if (sigrc != '%' && sigrc != '?' && !opt.fast_list_mode)
     {
@@ -2650,6 +2717,9 @@ list_standalone_revocation (ctrl_t ctrl, PKT_signature *sig, int sigrc)
       if (nouid)
         sigrc = '?';
     }
+
+  reason_code = get_revocation_reason (sig, &reason_text,
+                                       &reason_comment, &reason_commentlen);
 
   if (opt.with_colons)
     {
@@ -2665,13 +2735,25 @@ list_standalone_revocation (ctrl_t ctrl, PKT_signature *sig, int sigrc)
       if (siguid)
         es_write_sanitized (es_stdout, siguid, siguidlen, ":", NULL);
 
-      es_fprintf (es_stdout, ":%02x%c::", sig->sig_class,
+      es_fprintf (es_stdout, ":%02x%c", sig->sig_class,
                   sig->flags.exportable ? 'x' : 'l');
+      if (reason_text)
+        es_fprintf (es_stdout, ",%02x", reason_code);
+      es_fputs ("::", es_stdout);
 
       if ((issuer_fpr = issuer_fpr_string (sig)))
         es_fputs (issuer_fpr, es_stdout);
 
-      es_fprintf (es_stdout, ":::%d:\n", sig->digest_algo);
+      es_fprintf (es_stdout, ":::%d:", sig->digest_algo);
+
+      if (reason_comment)
+        {
+          es_fputs ("::::", es_stdout);
+          es_write_sanitized (es_stdout, reason_comment, reason_commentlen,
+                              ":", NULL);
+          es_putc (':', es_stdout);
+        }
+      es_putc ('\n', es_stdout);
 
       if (opt.show_subpackets)
         print_subpackets_colon (sig);
@@ -2712,10 +2794,43 @@ list_standalone_revocation (ctrl_t ctrl, PKT_signature *sig, int sigrc)
       if (sig->flags.pref_ks
           && (opt.list_options & LIST_SHOW_KEYSERVER_URLS))
         show_keyserver_url (sig, 3, 0);
+
+      if (reason_text)
+        {
+          es_fprintf (es_stdout, "      %s%s\n",
+                      _("reason for revocation: "), reason_text);
+          if (reason_comment)
+            {
+              const byte *s, *s_lf;
+              size_t n, n_lf;
+
+              s = reason_comment;
+              n = reason_commentlen;
+              s_lf = NULL;
+              do
+                {
+                  /* We don't want any empty lines, so we skip them.  */
+                  for (;n && *s == '\n'; s++, n--)
+                    ;
+                  if (n)
+                    {
+                      s_lf = memchr (s, '\n', n);
+                      n_lf = s_lf? s_lf - s : n;
+                      es_fprintf (es_stdout, "         %s",
+                                  _("revocation comment: "));
+                      es_write_sanitized (es_stdout, s, n_lf, NULL, NULL);
+                      es_putc ('\n', es_stdout);
+                      s += n_lf; n -= n_lf;
+                    }
+                } while (s_lf);
+            }
+        }
     }
 
   es_fflush (es_stdout);
 
+  xfree (reason_text);
+  xfree (reason_comment);
   xfree (siguid);
   xfree (issuer_fpr);
 }

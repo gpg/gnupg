@@ -113,7 +113,7 @@ void
 show_revocation_reason (ctrl_t ctrl, PKT_public_key *pk, int mode)
 {
     /* Hmmm, this is not so easy because we have to duplicate the code
-     * used in the trustbd to calculate the keyflags.  We need to find
+     * used in the trustdb to calculate the keyflags.  We need to find
      * a clean way to check revocation certificates on keys and
      * signatures.  And there should be no duplicate code.  Because we
      * enter this function only when the trustdb told us that we have
