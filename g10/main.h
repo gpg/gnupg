@@ -378,6 +378,9 @@ gpg_error_t transfer_secret_keys (ctrl_t ctrl, struct import_stats_s *stats,
 
 int collapse_uids( KBNODE *keyblock );
 
+int get_revocation_reason (PKT_signature *sig, char **r_reason,
+                           char **r_comment, size_t *r_commentlen);
+
 
 /*-- export.c --*/
 struct export_stats_s;
