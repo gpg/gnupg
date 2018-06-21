@@ -2613,6 +2613,95 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
 }
 
 
+
+/* List the recocation signature as a "rvs" record.  SIGRC shows the
+ * character from the signature verification or 0 if no public key was
+ * found.  */
+static void
+list_standalone_revocation (ctrl_t ctrl, PKT_signature *sig, int sigrc)
+{
+  char *siguid = NULL;
+  size_t siguidlen = 0;
+  char *issuer_fpr = NULL;
+
+  if (sigrc != '%' && sigrc != '?' && !opt.fast_list_mode)
+    {
+      int nouid;
+      siguid = get_user_id (ctrl, sig->keyid, &siguidlen, &nouid);
+      if (nouid)
+        sigrc = '?';
+    }
+
+  if (opt.with_colons)
+    {
+      es_fputs ("rvs:", es_stdout);
+      if (sigrc)
+        es_putc (sigrc, es_stdout);
+      es_fprintf (es_stdout, "::%d:%08lX%08lX:%s:%s:::",
+                  sig->pubkey_algo,
+                  (ulong) sig->keyid[0], (ulong) sig->keyid[1],
+                  colon_datestr_from_sig (sig),
+                  colon_expirestr_from_sig (sig));
+
+      if (siguid)
+        es_write_sanitized (es_stdout, siguid, siguidlen, ":", NULL);
+
+      es_fprintf (es_stdout, ":%02x%c::", sig->sig_class,
+                  sig->flags.exportable ? 'x' : 'l');
+
+      if ((issuer_fpr = issuer_fpr_string (sig)))
+        es_fputs (issuer_fpr, es_stdout);
+
+      es_fprintf (es_stdout, ":::%d:\n", sig->digest_algo);
+
+      if (opt.show_subpackets)
+        print_subpackets_colon (sig);
+    }
+  else /* Human readable. */
+    {
+      es_fputs ("rvs", es_stdout);
+      es_fprintf (es_stdout, "%c%c %c%c%c%c%c%c %s %s",
+		  sigrc, (sig->sig_class - 0x10 > 0 &&
+			  sig->sig_class - 0x10 <
+			  4) ? '0' + sig->sig_class - 0x10 : ' ',
+		  sig->flags.exportable ? ' ' : 'L',
+		  sig->flags.revocable ? ' ' : 'R',
+		  sig->flags.policy_url ? 'P' : ' ',
+		  sig->flags.notation ? 'N' : ' ',
+		  sig->flags.expired ? 'X' : ' ',
+		  (sig->trust_depth > 9) ? 'T' : (sig->trust_depth >
+						  0) ? '0' +
+		  sig->trust_depth : ' ', keystr (sig->keyid),
+		  datestr_from_sig (sig));
+      if (siguid)
+        {
+          es_fprintf (es_stdout, "  ");
+          print_utf8_buffer (es_stdout, siguid, siguidlen);
+        }
+      es_putc ('\n', es_stdout);
+
+      if (sig->flags.policy_url
+          && (opt.list_options & LIST_SHOW_POLICY_URLS))
+        show_policy_url (sig, 3, 0);
+
+      if (sig->flags.notation && (opt.list_options & LIST_SHOW_NOTATIONS))
+        show_notation (sig, 3, 0,
+                       ((opt.list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0)
+                       +
+                       ((opt.list_options & LIST_SHOW_USER_NOTATIONS) ? 2 : 0));
+
+      if (sig->flags.pref_ks
+          && (opt.list_options & LIST_SHOW_KEYSERVER_URLS))
+        show_keyserver_url (sig, 3, 0);
+    }
+
+  es_fflush (es_stdout);
+
+  xfree (siguid);
+  xfree (issuer_fpr);
+}
+
+
 /****************
  * Import a revocation certificate; this is a single signature packet.
  */
@@ -2626,6 +2715,11 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
   KEYDB_HANDLE hd = NULL;
   u32 keyid[2];
   int rc = 0;
+  int sigrc = 0;
+  int silent;
+
+  /* No error output for --show-keys.  */
+  silent = (options & (IMPORT_SHOW | IMPORT_DRY_RUN));
 
   log_assert (!node->next );
   log_assert (node->pkt->pkttype == PKT_SIGNATURE );
@@ -2638,15 +2732,16 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
   rc = get_pubkey (ctrl, pk, keyid );
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY )
     {
-      log_error(_("key %s: no public key -"
-                  " can't apply revocation certificate\n"), keystr(keyid));
+      if (!silent)
+        log_error (_("key %s: no public key -"
+                     " can't apply revocation certificate\n"), keystr(keyid));
       rc = 0;
       goto leave;
     }
   else if (rc )
     {
-      log_error(_("key %s: public key not found: %s\n"),
-                keystr(keyid), gpg_strerror (rc));
+      log_error (_("key %s: public key not found: %s\n"),
+                 keystr(keyid), gpg_strerror (rc));
       goto leave;
     }
 
@@ -2683,12 +2778,21 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
 
   /* it is okay, that node is not in keyblock because
    * check_key_signature works fine for sig_class 0x20 (KEY_REV) in
-   * this special case. */
+   * this special case.  SIGRC is only used for IMPORT_SHOW.  */
   rc = check_key_signature (ctrl, keyblock, node, NULL);
+  switch (gpg_err_code (rc))
+    {
+    case 0:                       sigrc = '!'; break;
+    case GPG_ERR_BAD_SIGNATURE:   sigrc = '-'; break;
+    case GPG_ERR_NO_PUBKEY:       sigrc = '?'; break;
+    case GPG_ERR_UNUSABLE_PUBKEY: sigrc = '?'; break;
+    default:                      sigrc = '%'; break;
+    }
   if (rc )
     {
-      log_error( _("key %s: invalid revocation certificate"
-                   ": %s - rejected\n"), keystr(keyid), gpg_strerror (rc));
+      if (!silent)
+        log_error (_("key %s: invalid revocation certificate"
+                     ": %s - rejected\n"), keystr(keyid), gpg_strerror (rc));
       goto leave;
     }
 
@@ -2738,6 +2842,9 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
   stats->n_revoc++;
 
  leave:
+  if ((options & IMPORT_SHOW))
+    list_standalone_revocation (ctrl, node->pkt->pkt.signature, sigrc);
+
   keydb_release (hd);
   release_kbnode( keyblock );
   free_public_key( pk );
