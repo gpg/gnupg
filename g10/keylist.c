@@ -1107,6 +1107,9 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 	  PKT_signature *sig = node->pkt->pkt.signature;
 	  int sigrc;
 	  char *sigstr;
+          char *reason_text = NULL;
+          char *reason_comment = NULL;
+          size_t reason_commentlen;
 
 	  if (listctx->check_sigs)
 	    {
@@ -1143,7 +1146,11 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 
 	  if (sig->sig_class == 0x20 || sig->sig_class == 0x28
 	      || sig->sig_class == 0x30)
-	    sigstr = "rev";
+            {
+              sigstr = "rev";
+              get_revocation_reason (sig, &reason_text,
+                                     &reason_comment, &reason_commentlen);
+            }
 	  else if ((sig->sig_class & ~3) == 0x10)
 	    sigstr = "sig";
 	  else if (sig->sig_class == 0x18)
@@ -1204,6 +1211,40 @@ list_keyblock_print (ctrl_t ctrl, kbnode_t keyblock, int secret, int fpr,
 	  if (sig->flags.pref_ks
 	      && (opt.list_options & LIST_SHOW_KEYSERVER_URLS))
 	    show_keyserver_url (sig, 3, 0);
+
+          if (reason_text)
+            {
+              es_fprintf (es_stdout, "      %s%s\n",
+                          _("reason for revocation: "), reason_text);
+              if (reason_comment)
+                {
+                  const byte *s, *s_lf;
+                  size_t n, n_lf;
+
+                  s = reason_comment;
+                  n = reason_commentlen;
+                  s_lf = NULL;
+                  do
+                    {
+                      /* We don't want any empty lines, so we skip them.  */
+                      for (;n && *s == '\n'; s++, n--)
+                        ;
+                      if (n)
+                        {
+                          s_lf = memchr (s, '\n', n);
+                          n_lf = s_lf? s_lf - s : n;
+                          es_fprintf (es_stdout, "         %s",
+                                      _("revocation comment: "));
+                          es_write_sanitized (es_stdout, s, n_lf, NULL, NULL);
+                          es_putc ('\n', es_stdout);
+                          s += n_lf; n -= n_lf;
+                        }
+                    } while (s_lf);
+                }
+            }
+
+          xfree (reason_text);
+          xfree (reason_comment);
 
 	  /* fixme: check or list other sigs here */
 	}
@@ -1554,10 +1595,19 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
           char *siguid;
           size_t siguidlen;
           char *issuer_fpr = NULL;
+          char *reason_text = NULL;
+          char *reason_comment = NULL;
+          size_t reason_commentlen;
+          int reason_code;
 
 	  if (sig->sig_class == 0x20 || sig->sig_class == 0x28
 	      || sig->sig_class == 0x30)
-	    sigstr = "rev";
+            {
+              sigstr = "rev";
+              reason_code = get_revocation_reason (sig, &reason_text,
+                                                   &reason_comment,
+                                                   &reason_commentlen);
+            }
 	  else if ((sig->sig_class & ~3) == 0x10)
 	    sigstr = "sig";
 	  else if (sig->sig_class == 0x18)
@@ -1651,8 +1701,11 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
 	  else if (siguid)
             es_write_sanitized (es_stdout, siguid, siguidlen, ":", NULL);
 
-	  es_fprintf (es_stdout, ":%02x%c::", sig->sig_class,
+	  es_fprintf (es_stdout, ":%02x%c", sig->sig_class,
                       sig->flags.exportable ? 'x' : 'l');
+          if (reason_text)
+            es_fprintf (es_stdout, ",%02x", reason_code);
+          es_fputs ("::", es_stdout);
 
 	  if (opt.no_sig_cache && opt.check_sigs && fprokay)
 	    {
@@ -1662,12 +1715,23 @@ list_keyblock_colon (ctrl_t ctrl, kbnode_t keyblock,
           else if ((issuer_fpr = issuer_fpr_string (sig)))
             es_fputs (issuer_fpr, es_stdout);
 
-	  es_fprintf (es_stdout, ":::%d:\n", sig->digest_algo);
+	  es_fprintf (es_stdout, ":::%d:", sig->digest_algo);
+
+          if (reason_comment)
+            {
+              es_fputs ("::::", es_stdout);
+              es_write_sanitized (es_stdout, reason_comment, reason_commentlen,
+                                  ":", NULL);
+              es_putc (':', es_stdout);
+            }
+          es_putc ('\n', es_stdout);
 
 	  if (opt.show_subpackets)
 	    print_subpackets_colon (sig);
 
 	  /* fixme: check or list other sigs here */
+          xfree (reason_text);
+          xfree (reason_comment);
           xfree (siguid);
           xfree (issuer_fpr);
 	}
