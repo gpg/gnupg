@@ -1392,18 +1392,17 @@ AC_CHECK_DECLS(getpagesize)
 AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
-AC_CHECK_FUNCS([strerror strlwr tcgetattr mmap canonicalize_file_name])
-AC_CHECK_FUNCS([strcasecmp strncasecmp ctermid times gmtime_r strtoull])
-AC_CHECK_FUNCS([setenv unsetenv fcntl ftruncate inet_ntop])
-AC_CHECK_FUNCS([canonicalize_file_name])
-AC_CHECK_FUNCS([gettimeofday getrusage getrlimit setrlimit clock_gettime])
-AC_CHECK_FUNCS([atexit raise getpagesize strftime nl_langinfo setlocale])
-AC_CHECK_FUNCS([waitpid wait4 sigaction sigprocmask pipe getaddrinfo])
-AC_CHECK_FUNCS([ttyname rand ftello fsync stat lstat])
-AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol \
-                memrchr isascii timegm getrusage setrlimit stat setlocale   \
-                flockfile funlockfile getpwnam getpwuid \
-                getenv inet_pton strpbrk])
+AC_CHECK_FUNCS([atexit canonicalize_file_name clock_gettime ctermid  \
+                fcntl flockfile fsync ftello ftruncate funlockfile   \
+                getaddrinfo getenv getpagesize getpwnam getpwuid     \
+                getrlimit getrusage gettimeofday gmtime_r            \
+                inet_ntop inet_pton isascii lstat                    \
+                memicmp memmove memrchr mmap nl_langinfo pipe        \
+                raise rand setenv setlocale setrlimit sigaction      \
+                sigprocmask stat stpcpy strcasecmp strerror strftime \
+                stricmp strlwr strncasecmp strpbrk strsep            \
+                strtol strtoul strtoull tcgetattr timegm times       \
+                ttyname unsetenv wait4 waitpid ])
 
 # On some systems (e.g. Solaris) nanosleep requires linking to librl.
 # Given that we use nanosleep only as an optimization over a select
