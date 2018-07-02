@@ -87,6 +87,50 @@ percent_plus_escape (const char *string)
 }
 
 
+/* Create a newly alloced string from (DATA,DATALEN) with embedded
+ * Nuls quoted as %00.  The standard percent unescaping can be
+ * used to reverse this encoding.   */
+char *
+percent_data_escape (const void *data, size_t datalen)
+{
+  char *buffer, *p;
+  const char *s;
+  size_t n, length;
+
+  for (length=1, s=data, n=datalen; n; s++, n--)
+    {
+      if (!*s || *s == '%')
+        length += 3;
+      else
+        length++;
+    }
+
+  buffer = p = xtrymalloc (length);
+  if (!buffer)
+    return NULL;
+
+  for (s=data, n=datalen; n; s++, n--)
+    {
+      if (!*s)
+        {
+          memcpy (p, "%00", 3);
+          p += 3;
+        }
+      else if (*s == '%')
+        {
+          memcpy (p, "%25", 3);
+          p += 3;
+        }
+      else
+        *p++ = *s;
+    }
+  *p = 0;
+
+  return buffer;
+
+}
+
+
 /* Do the percent and plus/space unescaping from STRING to BUFFER and
    return the length of the valid buffer.  Plus unescaping is only
    done if WITHPLUS is true.  An escaped Nul character will be

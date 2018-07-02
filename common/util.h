@@ -201,6 +201,7 @@ char *hex2str_alloc (const char *hexstring, size_t *r_count);
 
 /*-- percent.c --*/
 char *percent_plus_escape (const char *string);
+char *percent_data_escape (const void *data, size_t datalen);
 char *percent_plus_unescape (const char *string, int nulrepl);
 char *percent_unescape (const char *string, int nulrepl);
 
