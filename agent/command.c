@@ -3351,7 +3351,8 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
 
   for (;;)
     {
-      assuan_peercred_t client_creds;
+      assuan_peercred_t client_creds; /* Note: Points into CTX.  */
+      pid_t pid;
 
       rc = assuan_accept (ctx);
       if (gpg_err_code (rc) == GPG_ERR_EOF || rc == -1)
@@ -3367,17 +3368,21 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
       rc = assuan_get_peercred (ctx, &client_creds);
       if (rc)
         {
-          log_info ("Assuan get_peercred failed: %s\n", gpg_strerror (rc));
-          client_creds->pid = assuan_get_pid (ctx);
+
+          if (listen_fd == GNUPG_INVALID_FD && fd == GNUPG_INVALID_FD)
+            ;
+          else
+            log_info ("Assuan get_peercred failed: %s\n", gpg_strerror (rc));
+          pid = assuan_get_pid (ctx);
           ctrl->client_uid = -1;
         }
-      ctrl->server_local->connect_from_self =
-        (client_creds->pid == getpid ());
-      if (client_creds->pid != ASSUAN_INVALID_PID)
-        ctrl->client_pid = (unsigned long)client_creds->pid;
       else
-        ctrl->client_pid = 0;
-      ctrl->client_uid = client_creds->uid;
+        {
+          pid = client_creds->pid;
+          ctrl->client_uid = client_creds->uid;
+        }
+      ctrl->client_pid = (pid == ASSUAN_INVALID_PID)? 0 : (unsigned long)pid;
+      ctrl->server_local->connect_from_self = (pid == getpid ());
 
       rc = assuan_process (ctx);
       if (rc)
