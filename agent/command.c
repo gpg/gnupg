@@ -50,6 +50,8 @@
 #define MAXLEN_KEYPARAM 1024
 /* Maximum allowed size of key data as used in inquiries (bytes). */
 #define MAXLEN_KEYDATA 8192
+/* Maximum length of a secret to store under one key.  */
+#define MAXLEN_PUT_SECRET 4096
 /* The size of the import/export KEK key (in bytes).  */
 #define KEYWRAP_KEYSIZE (128/8)
 
@@ -289,6 +291,31 @@ parse_keygrip (assuan_context_t ctx, const char *string, unsigned char *buf)
     return set_error (GPG_ERR_BUG, "hex2bin");
 
   return 0;
+}
+
+
+/* Parse the TTL from STRING.  Leading and trailing spaces are
+ * skipped.  The value is constrained to -1 .. MAXINT.  On error 0 is
+ * returned, else the number of bytes scanned.  */
+static size_t
+parse_ttl (const char *string, int *r_ttl)
+{
+  const char *string_orig = string;
+  long ttl;
+  char *pend;
+
+  ttl = strtol (string, &pend, 10);
+  string = pend;
+  if (string == string_orig || !(spacep (string) || !*string)
+      || ttl < -1L || (int)ttl != (long)ttl)
+    {
+      *r_ttl = 0;
+      return 0;
+    }
+  while (spacep (string) || *string== '\n')
+    string++;
+  *r_ttl = (int)ttl;
+  return string - string_orig;
 }
 
 
@@ -2568,6 +2595,187 @@ cmd_keytocard (assuan_context_t ctx, char *line)
 
 
 
+static const char hlp_get_secret[] =
+  "GET_SECRET <key>\n"
+  "\n"
+  "Return the secret value stored under KEY\n";
+static gpg_error_t
+cmd_get_secret (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  char *p, *key;
+  char *value = NULL;
+  size_t valuelen;
+
+  /* For now we allow this only for local connections.  */
+  if (ctrl->restricted)
+    {
+      err = gpg_error (GPG_ERR_FORBIDDEN);
+      goto leave;
+    }
+
+  line = skip_options (line);
+
+  for (p=line; *p == ' '; p++)
+    ;
+  key = p;
+  p = strchr (key, ' ');
+  if (p)
+    {
+      *p++ = 0;
+      for (; *p == ' '; p++)
+        ;
+      if (*p)
+        {
+          err = set_error (GPG_ERR_ASS_PARAMETER, "too many arguments");
+          goto leave;
+        }
+    }
+  if (!*key)
+    {
+      err = set_error (GPG_ERR_ASS_PARAMETER, "no key given");
+      goto leave;
+    }
+
+
+  value = agent_get_cache (ctrl, key, CACHE_MODE_DATA);
+  if (!value)
+    {
+      err = gpg_error (GPG_ERR_NO_DATA);
+      goto leave;
+    }
+
+  valuelen = percent_unescape_inplace (value, 0);
+  err = assuan_send_data (ctx, value, valuelen);
+  wipememory (value, valuelen);
+
+ leave:
+  xfree (value);
+  return leave_cmd (ctx, err);
+}
+
+
+static const char hlp_put_secret[] =
+  "PUT_SECRET [--clear] <key> <ttl> [<percent_escaped_value>]\n"
+  "\n"
+  "This commands stores a secret under KEY in gpg-agent's in-memory\n"
+  "cache.  The TTL must be explicitly given by TTL and the options\n"
+  "from the configuration file are not used.  The value is either given\n"
+  "percent-escaped as 3rd argument or if not given inquired by gpg-agent\n"
+  "using the keyword \"SECRET\".\n"
+  "The option --clear removes the secret from the cache."
+  "";
+static gpg_error_t
+cmd_put_secret (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
+  int opt_clear;
+  unsigned char *value = NULL;
+  size_t valuelen = 0;
+  size_t n;
+  char *p, *key, *ttlstr;
+  unsigned char *valstr;
+  int ttl;
+  char *string = NULL;
+
+  /* For now we allow this only for local connections.  */
+  if (ctrl->restricted)
+    {
+      err = gpg_error (GPG_ERR_FORBIDDEN);
+      goto leave;
+    }
+
+  opt_clear = has_option (line, "--clear");
+  line = skip_options (line);
+
+  for (p=line; *p == ' '; p++)
+    ;
+  key = p;
+  ttlstr = NULL;
+  valstr = NULL;
+  p = strchr (key, ' ');
+  if (p)
+    {
+      *p++ = 0;
+      for (; *p == ' '; p++)
+        ;
+      if (*p)
+        {
+          ttlstr = p;
+          p = strchr (ttlstr, ' ');
+          if (p)
+            {
+              *p++ = 0;
+              for (; *p == ' '; p++)
+                ;
+              if (*p)
+                valstr = p;
+            }
+        }
+    }
+  if (!*key)
+    {
+      err = set_error (GPG_ERR_ASS_PARAMETER, "no key given");
+      goto leave;
+    }
+  if (!ttlstr || !*ttlstr || !(n = parse_ttl (ttlstr, &ttl)))
+    {
+      err = set_error (GPG_ERR_ASS_PARAMETER, "no or invalid TTL given");
+      goto leave;
+    }
+  if (valstr && opt_clear)
+    {
+      err = set_error (GPG_ERR_ASS_PARAMETER,
+                       "value not expected with --clear");
+      goto leave;
+    }
+
+  if (valstr)
+    {
+      valuelen = percent_unescape_inplace (valstr, 0);
+      value = NULL;
+    }
+  else /* Inquire the value to store */
+    {
+      err = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%u",MAXLEN_PUT_SECRET);
+      if (!err)
+        err = assuan_inquire (ctx, "SECRET",
+                              &value, &valuelen, MAXLEN_PUT_SECRET);
+      if (err)
+        goto leave;
+    }
+
+  /* Our cache expects strings and thus we need to turn the buffer
+   * into a string.  Instead of resorting to base64 encoding we use a
+   * special percent escaping which only quoted the Nul and the
+   * percent character. */
+  string = percent_data_escape (value? value : valstr, valuelen);
+  if (!string)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = agent_put_cache (ctrl, key, CACHE_MODE_DATA, string, ttl);
+
+
+ leave:
+  if (string)
+    {
+      wipememory (string, strlen (string));
+      xfree (string);
+    }
+  if (value)
+    {
+      wipememory (value, valuelen);
+      xfree (value);
+    }
+  return leave_cmd (ctx, err);
+}
+
+
+
 static const char hlp_getval[] =
   "GETVAL <key>\n"
   "\n"
@@ -3259,6 +3467,8 @@ register_commands (assuan_context_t ctx)
     { "IMPORT_KEY",     cmd_import_key, hlp_import_key },
     { "EXPORT_KEY",     cmd_export_key, hlp_export_key },
     { "DELETE_KEY",     cmd_delete_key, hlp_delete_key },
+    { "GET_SECRET",     cmd_get_secret, hlp_get_secret },
+    { "PUT_SECRET",     cmd_put_secret, hlp_put_secret },
     { "GETVAL",         cmd_getval,    hlp_getval },
     { "PUTVAL",         cmd_putval,    hlp_putval },
     { "UPDATESTARTUPTTY",  cmd_updatestartuptty, hlp_updatestartuptty },
