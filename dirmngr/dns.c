@@ -8846,7 +8846,7 @@ exec:
 			dgoto(R->sp, DNS_R_FOREACH_A);
 
 		error = dns_so_check(&R->so);
-		if (error == ECONNREFUSED)
+		if (R->so.state != DNS_SO_SOCKS_CONN && error == ECONNREFUSED)
 			dgoto(R->sp, DNS_R_FOREACH_A);
 		else if (error)
 			goto error;
