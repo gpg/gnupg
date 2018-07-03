@@ -772,7 +772,7 @@ write_signature_packets (ctrl_t ctrl,
                        gpg_strerror (rc));
 	}
       else
-        xfree (sig);
+        free_seckey_enc (sig);
 
       if (rc)
         return rc;

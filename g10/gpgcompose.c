@@ -1835,7 +1835,7 @@ signature (const char *option, int argc, char *argv[], void *cookie)
   debug ("Wrote signature packet:\n");
   dump_component (&pkt);
 
-  xfree (sig);
+  free_seckey_enc (sig);
   release_kbnode (si.issuer_kb);
   xfree (si.revocation_key);
 

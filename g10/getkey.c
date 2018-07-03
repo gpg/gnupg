@@ -3128,7 +3128,7 @@ buf_to_sig (const byte * buf, size_t len)
 
   if (parse_signature (iobuf, PKT_SIGNATURE, len, sig) != 0)
     {
-      xfree (sig);
+      free_seckey_enc (sig);
       sig = NULL;
     }
 
