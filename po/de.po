@@ -4412,7 +4412,7 @@ msgid "Use the option '%s' to decrypt anyway.\n"
 msgstr "Mit der Option '%s' kann trotzdem entschlüsselt werden.\n"
 
 msgid "decryption forced to fail!\n"
-msgstr "Entschlüsselung als fehlgeschlagen angesehen: %s\n"
+msgstr "Entschlüsselungs-Fehler erzwungen!\n"
 
 msgid "decryption okay\n"
 msgstr "Entschlüsselung erfolgreich\n"
