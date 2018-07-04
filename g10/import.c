@@ -826,76 +826,77 @@ read_block( IOBUF a, int with_meta,
           continue;
 	}
 
-        if (in_v3key && !(pkt->pkttype == PKT_PUBLIC_KEY
-                          || pkt->pkttype == PKT_SECRET_KEY))
-          {
-	    free_packet (pkt, &parsectx);
-	    init_packet(pkt);
-	    continue;
-          }
-        in_v3key = 0;
+      if (in_v3key && !(pkt->pkttype == PKT_PUBLIC_KEY
+                        || pkt->pkttype == PKT_SECRET_KEY))
+        {
+          free_packet (pkt, &parsectx);
+          init_packet(pkt);
+          continue;
+        }
+      in_v3key = 0;
 
-	if (!root && pkt->pkttype == PKT_SIGNATURE
-            && IS_KEY_REV (pkt->pkt.signature) )
-          {
-	    /* This is a revocation certificate which is handled in a
-	     * special way.  */
-	    root = new_kbnode( pkt );
-	    pkt = NULL;
-	    goto ready;
-          }
+      if (!root && pkt->pkttype == PKT_SIGNATURE
+          && IS_KEY_REV (pkt->pkt.signature) )
+        {
+          /* This is a revocation certificate which is handled in a
+           * special way.  */
+          root = new_kbnode( pkt );
+          pkt = NULL;
+          goto ready;
+        }
 
-	/* Make a linked list of all packets.  */
-	switch (pkt->pkttype)
-          {
-	  case PKT_COMPRESSED:
-	    if (check_compress_algo (pkt->pkt.compressed->algorithm))
-	      {
-		rc = GPG_ERR_COMPR_ALGO;
-		goto ready;
-	      }
-	    else
-	      {
-		compress_filter_context_t *cfx = xmalloc_clear( sizeof *cfx );
-		pkt->pkt.compressed->buf = NULL;
-		if (push_compress_filter2 (a, cfx,
-                                           pkt->pkt.compressed->algorithm, 1))
-                  xfree (cfx); /* e.g. in case of compression_algo NONE.  */
-	      }
-	    free_packet (pkt, &parsectx);
-	    init_packet(pkt);
-	    break;
+      /* Make a linked list of all packets.  */
+      switch (pkt->pkttype)
+        {
+        case PKT_COMPRESSED:
+          if (check_compress_algo (pkt->pkt.compressed->algorithm))
+            {
+              rc = GPG_ERR_COMPR_ALGO;
+              goto ready;
+            }
+          else
+            {
+              compress_filter_context_t *cfx = xmalloc_clear( sizeof *cfx );
+              pkt->pkt.compressed->buf = NULL;
+              if (push_compress_filter2 (a, cfx,
+                                         pkt->pkt.compressed->algorithm, 1))
+                xfree (cfx); /* e.g. in case of compression_algo NONE.  */
+            }
+          free_packet (pkt, &parsectx);
+          init_packet(pkt);
+          break;
 
-          case PKT_RING_TRUST:
-            /* Skip those packets unless we are in restore mode.  */
-            if ((opt.import_options & IMPORT_RESTORE))
-              goto x_default;
-	    free_packet (pkt, &parsectx);
-	    init_packet(pkt);
-            break;
+        case PKT_RING_TRUST:
+          /* Skip those packets unless we are in restore mode.  */
+          if ((opt.import_options & IMPORT_RESTORE))
+            goto x_default;
+          free_packet (pkt, &parsectx);
+          init_packet(pkt);
+          break;
 
-	  case PKT_PUBLIC_KEY:
-	  case PKT_SECRET_KEY:
-	    if (in_cert ) /* Store this packet.  */
-              {
-		*pending_pkt = pkt;
-		pkt = NULL;
-		goto ready;
-              }
-	    in_cert = 1; /* fall through */
-	  default:
-          x_default:
-	    if (in_cert && valid_keyblock_packet (pkt->pkttype))
-              {
-		if (!root )
-                  root = new_kbnode (pkt);
-		else
-                  add_kbnode (root, new_kbnode (pkt));
-		pkt = xmalloc (sizeof *pkt);
-              }
-	    init_packet(pkt);
-	    break;
-          }
+        case PKT_PUBLIC_KEY:
+        case PKT_SECRET_KEY:
+          if (in_cert ) /* Store this packet.  */
+            {
+              *pending_pkt = pkt;
+              pkt = NULL;
+              goto ready;
+            }
+          in_cert = 1;
+          /* fall through */
+        default:
+        x_default:
+          if (in_cert && valid_keyblock_packet (pkt->pkttype))
+            {
+              if (!root )
+                root = new_kbnode (pkt);
+              else
+                add_kbnode (root, new_kbnode (pkt));
+              pkt = xmalloc (sizeof *pkt);
+            }
+          init_packet(pkt);
+          break;
+        }
     }
 
  ready:
