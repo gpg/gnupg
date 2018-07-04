@@ -780,7 +780,7 @@ read_block( IOBUF a, int with_meta,
   struct parse_packet_ctx_s parsectx;
   PACKET *pkt;
   kbnode_t root = NULL;
-  int in_cert, in_v3key;
+  int in_cert, in_v3key, skip_sigs;
 
   *r_v3keys = 0;
 
@@ -799,6 +799,7 @@ read_block( IOBUF a, int with_meta,
   if (!with_meta)
     parsectx.skip_meta = 1;
   in_v3key = 0;
+  skip_sigs = 0;
   while ((rc=parse_packet (&parsectx, pkt)) != -1)
     {
       if (rc && (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY
@@ -813,8 +814,25 @@ read_block( IOBUF a, int with_meta,
         }
       else if (rc ) /* (ignore errors) */
         {
+          skip_sigs = 0;
           if (gpg_err_code (rc) == GPG_ERR_UNKNOWN_PACKET)
             ; /* Do not show a diagnostic.  */
+          else if (gpg_err_code (rc) == GPG_ERR_INV_PACKET
+                   && (pkt->pkttype == PKT_USER_ID
+                       || pkt->pkttype == PKT_ATTRIBUTE))
+            {
+              /* This indicates a too large user id or attribute
+               * packet.  We skip this packet and all following
+               * signatures.  Sure, this won't allow to repair a
+               * garbled keyring in case one of the signatures belong
+               * to another user id.  However, this better mitigates
+               * DoS using inserted user ids.  */
+              skip_sigs = 1;
+            }
+          else if (gpg_err_code (rc) == GPG_ERR_INV_PACKET
+                   && (pkt->pkttype == PKT_OLD_COMMENT
+                       || pkt->pkttype == PKT_COMMENT))
+            ; /* Ignore too large comment packets.  */
           else
             {
               log_error("read_block: read error: %s\n", gpg_strerror (rc) );
@@ -825,6 +843,17 @@ read_block( IOBUF a, int with_meta,
           init_packet(pkt);
           continue;
 	}
+
+      if (skip_sigs)
+        {
+          if (pkt->pkttype == PKT_SIGNATURE)
+            {
+              free_packet (pkt, &parsectx);
+              init_packet (pkt);
+              continue;
+            }
+          skip_sigs = 0;
+        }
 
       if (in_v3key && !(pkt->pkttype == PKT_PUBLIC_KEY
                         || pkt->pkttype == PKT_SECRET_KEY))
