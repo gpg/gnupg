@@ -3293,7 +3293,7 @@ parse_key_parameter_string (const char *string, int part,
        * part consider this to be the subkey algo.  In case a
        * SUGGESTED_USE has been given and the usage of the secondary
        * part does not match SUGGESTED_USE try again using the primary
-       * part.  Noet thar when falling back to the primary key we need
+       * part.  Note that when falling back to the primary key we need
        * to force clearing the cert usage. */
       if (secondary)
         {
