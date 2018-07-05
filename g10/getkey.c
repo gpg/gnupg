@@ -677,6 +677,24 @@ pk_from_block (PKT_public_key *pk, kbnode_t keyblock, kbnode_t found_key)
 }
 
 
+/* Specialized version of get_pubkey which retrieves the key based on
+ * information in SIG.  In contrast to get_pubkey PK is required.  */
+gpg_error_t
+get_pubkey_for_sig (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig)
+{
+  const byte *fpr;
+  size_t fprlen;
+
+  /* First try the new ISSUER_FPR info.  */
+  fpr = issuer_fpr_raw (sig, &fprlen);
+  if (fpr && !get_pubkey_byfprint (ctrl, pk, NULL, fpr, fprlen))
+    return 0;
+
+  /* Fallback to use the ISSUER_KEYID.  */
+  return get_pubkey (ctrl, pk, sig->keyid);
+}
+
+
 /* Return the public key with the key id KEYID and store it at PK.
  * The resources in *PK should be released using
  * release_public_key_parts().  This function also stores a copy of
@@ -739,8 +757,9 @@ get_pubkey (ctrl_t ctrl, PKT_public_key * pk, u32 * keyid)
   /* Do a lookup.  */
   {
     struct getkey_ctx_s ctx;
-    KBNODE kb = NULL;
-    KBNODE found_key = NULL;
+    kbnode_t kb = NULL;
+    kbnode_t found_key = NULL;
+
     memset (&ctx, 0, sizeof ctx);
     ctx.exact = 1; /* Use the key ID exactly as given.  */
     ctx.not_allocated = 1;
@@ -860,6 +879,28 @@ get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
      properly set. */
 
   return rc;
+}
+
+
+/* Return the entire keyblock used to create SIG.  This is a
+ * specialized version of get_pubkeyblock.
+ *
+ * FIXME: This is a hack because get_pubkey_for_sig was already called
+ * and it could have used a cache to hold the key.  */
+kbnode_t
+get_pubkeyblock_for_sig (ctrl_t ctrl, PKT_signature *sig)
+{
+  const byte *fpr;
+  size_t fprlen;
+  kbnode_t keyblock;
+
+  /* First try the new ISSUER_FPR info.  */
+  fpr = issuer_fpr_raw (sig, &fprlen);
+  if (fpr && !get_pubkey_byfprint (ctrl, NULL, &keyblock, fpr, fprlen))
+    return keyblock;
+
+  /* Fallback to use the ISSUER_KEYID.  */
+  return get_pubkeyblock (ctrl, sig->keyid);
 }
 
 
@@ -1802,6 +1843,8 @@ get_pubkey_byfprint (ctrl_t ctrl, PKT_public_key *pk, kbnode_t *r_keyblock,
       memset (&ctx, 0, sizeof ctx);
       ctx.exact = 1;
       ctx.not_allocated = 1;
+      /* FIXME: We should get the handle from the cache like we do in
+       * get_pubkey.  */
       ctx.kr_handle = keydb_new ();
       if (!ctx.kr_handle)
         return gpg_error_from_syserror ();

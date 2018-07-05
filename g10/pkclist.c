@@ -548,7 +548,7 @@ check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
   unsigned int trustlevel = TRUST_UNKNOWN;
   int rc=0;
 
-  rc = get_pubkey (ctrl, pk, sig->keyid );
+  rc = get_pubkey_for_sig (ctrl, pk, sig);
   if (rc)
     { /* this should not happen */
       log_error("Ooops; the key vanished  - can't check the trust\n");
