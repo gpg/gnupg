@@ -283,6 +283,10 @@ void cache_public_key( PKT_public_key *pk );
 /* Disable and drop the public key cache.  */
 void getkey_disable_caches(void);
 
+/* Return the public key used for signature SIG and store it at PK.  */
+gpg_error_t get_pubkey_for_sig (ctrl_t ctrl,
+                                PKT_public_key *pk, PKT_signature *sig);
+
 /* Return the public key with the key id KEYID and store it at PK.  */
 int get_pubkey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid);
 
@@ -290,6 +294,10 @@ int get_pubkey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid);
    account nor does it merge in the self-signed data.  This function
    also only considers primary keys.  */
 int get_pubkey_fast (PKT_public_key *pk, u32 *keyid);
+
+/* Return the entire keyblock used to create SIG.  This is a
+ * specialized version of get_pubkeyblock.  */
+kbnode_t get_pubkeyblock_for_sig (ctrl_t ctrl, PKT_signature *sig);
 
 /* Return the key block for the key with KEYID.  */
 kbnode_t get_pubkeyblock (ctrl_t ctrl, u32 *keyid);

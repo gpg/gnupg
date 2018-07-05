@@ -156,7 +156,7 @@ check_signature2 (ctrl_t ctrl,
       log_info(_("WARNING: signature digest conflict in message\n"));
       rc = gpg_error (GPG_ERR_GENERAL);
     }
-  else if (get_pubkey (ctrl, pk, sig->keyid))
+  else if (get_pubkey_for_sig (ctrl, pk, sig))
     rc = gpg_error (GPG_ERR_NO_PUBKEY);
   else if (!gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
                                  pk->pubkey_algo, pk->pkey,
@@ -926,7 +926,7 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
               if (IS_CERT (sig))
                 signer->req_usage = PUBKEY_USAGE_CERT;
 
-              rc = get_pubkey (ctrl, signer, sig->keyid);
+              rc = get_pubkey_for_sig (ctrl, signer, sig);
               if (rc)
                 {
                   xfree (signer);

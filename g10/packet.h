@@ -621,6 +621,7 @@ int proc_signature_packets_by_fd (ctrl_t ctrl,
 int proc_encryption_packets (ctrl_t ctrl, void *ctx, iobuf_t a);
 int list_packets( iobuf_t a );
 
+const byte *issuer_fpr_raw (PKT_signature *sig, size_t *r_len);
 char *issuer_fpr_string (PKT_signature *sig);
 
 /*-- parse-packet.c --*/

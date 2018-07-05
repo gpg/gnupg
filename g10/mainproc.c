@@ -1751,7 +1751,7 @@ akl_has_wkd_method (void)
 /* Return the ISSUER fingerprint buffer and its lenbgth at R_LEN.
  * Returns NULL if not available.  The returned buffer is valid as
  * long as SIG is not modified.  */
-static const byte *
+const byte *
 issuer_fpr_raw (PKT_signature *sig, size_t *r_len)
 {
   const byte *p;
@@ -1768,7 +1768,7 @@ issuer_fpr_raw (PKT_signature *sig, size_t *r_len)
 }
 
 
-/* Return the ISSUER fingerprint string in human readbale format if
+/* Return the ISSUER fingerprint string in human readable format if
  * available.  Caller must release the string.  */
 /* FIXME: Move to another file.  */
 char *
@@ -2134,7 +2134,7 @@ check_sig_and_print (CTX c, kbnode_t node)
        * keyblock has already been fetched.  Thus we could use the
        * fingerprint or PK itself to lookup the entire keyblock.  That
        * would best be done with a cache.  */
-      keyblock = get_pubkeyblock (c->ctrl, sig->keyid);
+      keyblock = get_pubkeyblock_for_sig (c->ctrl, sig);
 
       snprintf (keyid_str, sizeof keyid_str, "%08lX%08lX [uncertain] ",
                 (ulong)sig->keyid[0], (ulong)sig->keyid[1]);
