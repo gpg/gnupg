@@ -51,7 +51,7 @@ else
   gpg_wks_server =
 endif
 
-libexec_PROGRAMS = gpg-wks-client
+libexec_PROGRAMS = gpg-wks-client gpg-pair-tool
 
 bin_PROGRAMS = gpgconf gpg-connect-agent ${symcryptrun}
 if !HAVE_W32_SYSTEM
@@ -171,6 +171,14 @@ gpg_wks_client_SOURCES = \
 gpg_wks_client_CFLAGS = $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(INCICONV)
 gpg_wks_client_LDADD = $(libcommon) \
 		       $(LIBASSUAN_LIBS) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
+		       $(LIBINTL) $(LIBICONV)
+
+gpg_pair_tool_SOURCES = \
+	gpg-pair-tool.c
+
+gpg_pair_tool_CFLAGS = $(GPG_ERROR_CFLAGS) $(INCICONV)
+gpg_pair_tool_LDADD =  $(libcommon) \
+		       $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 		       $(LIBINTL) $(LIBICONV)
 
 
