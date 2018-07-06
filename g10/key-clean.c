@@ -383,14 +383,13 @@ clean_one_uid (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
 
 
 /* NB: This function marks the deleted nodes only and the caller is
- * responsible to skip or remove them.  */
+ * responsible to skip or remove them.  Needs to be called after a
+ * merge_keys_and_selfsig().  */
 void
-clean_key (ctrl_t ctrl, kbnode_t keyblock, int noisy, int self_only,
-           int *uids_cleaned, int *sigs_cleaned)
+clean_all_uids (ctrl_t ctrl, kbnode_t keyblock, int noisy, int self_only,
+                int *uids_cleaned, int *sigs_cleaned)
 {
   kbnode_t node;
-
-  merge_keys_and_selfsig (ctrl, keyblock);
 
   for (node = keyblock->next;
        node && !(node->pkt->pkttype == PKT_PUBLIC_SUBKEY
@@ -406,6 +405,26 @@ clean_key (ctrl_t ctrl, kbnode_t keyblock, int noisy, int self_only,
    * allowed are of class 0x18 and 0x28.  */
   log_assert (!node || (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
                         || node->pkt->pkttype == PKT_SECRET_SUBKEY));
+}
+
+
+/* This function only marks the deleted nodes and the caller is
+ * responsible to skip or remove them.  Needs to be called after a
+ * merge_keys_and_selfsig.  */
+void
+clean_all_subkeys (ctrl_t ctrl, kbnode_t keyblock, int noisy,
+                   int *subkeys_cleaned, int *sigs_cleaned)
+{
+  kbnode_t node;
+
+  for (node = keyblock->next; node; node = node->next)
+    if (!is_deleted_kbnode (node)
+        && (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+            || node->pkt->pkttype == PKT_SECRET_SUBKEY))
+      break;
+
+  /* Remove bogus subkey binding signatures: The only signatures
+   * allowed are of class 0x18 and 0x28.  */
   for (; node; node = node->next)
     {
       if (is_deleted_kbnode (node))

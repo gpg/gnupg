@@ -30,8 +30,10 @@ void mark_usable_uid_certs (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
 void clean_one_uid (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
                     int noisy, int self_only,
                     int *uids_cleaned, int *sigs_cleaned);
-void clean_key (ctrl_t ctrl, kbnode_t keyblock, int noisy, int self_only,
-                int *uids_cleaned,int *sigs_cleaned);
+void clean_all_uids (ctrl_t ctrl, kbnode_t keyblock, int noisy, int self_only,
+                     int *uids_cleaned,int *sigs_cleaned);
+void clean_all_subkeys (ctrl_t ctrl, kbnode_t keyblock, int noisy,
+                        int *subkeys_cleaned, int *sigs_cleaned);
 
 
 #endif /*GNUPG_G10_KEY_CLEAN_H*/

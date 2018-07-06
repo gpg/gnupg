@@ -1759,9 +1759,13 @@ import_one (ctrl_t ctrl,
      that we have to clean later.  This has no practical impact on the
      end result, but does result in less logging which might confuse
      the user. */
-  if (options&IMPORT_CLEAN)
-    clean_key (ctrl, keyblock,
-               opt.verbose, (options&IMPORT_MINIMAL), NULL, NULL);
+  if ((options & IMPORT_CLEAN))
+    {
+      merge_keys_and_selfsig (ctrl, keyblock);
+      clean_all_uids (ctrl, keyblock,
+                      opt.verbose, (options&IMPORT_MINIMAL), NULL, NULL);
+      clean_all_subkeys (ctrl, keyblock, opt.verbose, NULL, NULL);
+    }
 
   clear_kbnode_flags( keyblock );
 
@@ -1902,8 +1906,12 @@ import_one (ctrl_t ctrl,
         log_info (_("writing to '%s'\n"), keydb_get_resource_name (hd) );
 
       if ((options & IMPORT_CLEAN))
-        clean_key (ctrl, keyblock, opt.verbose, (options&IMPORT_MINIMAL),
-                   &n_uids_cleaned,&n_sigs_cleaned);
+        {
+          merge_keys_and_selfsig (ctrl, keyblock);
+          clean_all_uids (ctrl, keyblock, opt.verbose, (options&IMPORT_MINIMAL),
+                          &n_uids_cleaned,&n_sigs_cleaned);
+          clean_all_subkeys (ctrl, keyblock, opt.verbose, NULL, NULL);
+        }
 
       /* Unless we are in restore mode apply meta data to the
        * keyblock.  Note that this will never change the first packet
@@ -1988,8 +1996,13 @@ import_one (ctrl_t ctrl,
         goto leave;
 
       if ((options & IMPORT_CLEAN))
-        clean_key (ctrl, keyblock_orig, opt.verbose, (options&IMPORT_MINIMAL),
-                   &n_uids_cleaned,&n_sigs_cleaned);
+        {
+          merge_keys_and_selfsig (ctrl, keyblock_orig);
+          clean_all_uids (ctrl, keyblock_orig, opt.verbose,
+                          (options&IMPORT_MINIMAL),
+                          &n_uids_cleaned,&n_sigs_cleaned);
+          clean_all_subkeys (ctrl, keyblock_orig, opt.verbose, NULL, NULL);
+        }
 
       if (n_uids || n_sigs || n_subk || n_sigs_cleaned || n_uids_cleaned)
         {
