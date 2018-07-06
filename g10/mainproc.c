@@ -271,6 +271,14 @@ symkey_decrypt_seskey (DEK *dek, byte *seskey, size_t slen)
   gcry_cipher_decrypt ( hd, seskey, slen, NULL, 0 );
   gcry_cipher_close ( hd );
 
+  /* Here we can only test whether the algo given in decrypted
+   * session key is a valid OpenPGP algo.  With 11 defined
+   * symmetric algorithms we will miss 4.3% of wrong passphrases
+   * here.  The actual checking is done later during bulk
+   * decryption; we can't bring this check forward easily.  */
+  if (openpgp_cipher_test_algo (seskey[0]))
+    return gpg_error (GPG_ERR_BAD_KEY);
+
   /* Now we replace the dek components with the real session key to
      decrypt the contents of the sequencing packet. */
 
@@ -353,6 +361,13 @@ proc_symkey_enc (CTX c, PACKET *pkt)
                   if (symkey_decrypt_seskey (c->dek,
                                              enc->seskey, enc->seskeylen))
                     {
+                      if (c->dek->s2k_cacheid[0])
+                        {
+                          if (opt.debug)
+                            log_debug ("cleared passphrase cached with ID:"
+                                       " %s\n", c->dek->s2k_cacheid);
+                          passphrase_clear_cache (c->dek->s2k_cacheid);
+                        }
                       xfree (c->dek);
                       c->dek = NULL;
                     }
