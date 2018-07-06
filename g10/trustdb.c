@@ -41,6 +41,7 @@
 #include "tdbio.h"
 #include "trustdb.h"
 #include "tofu.h"
+#include "key-clean.h"
 
 
 typedef struct key_item **KeyHashTable; /* see new_key_hash_table() */

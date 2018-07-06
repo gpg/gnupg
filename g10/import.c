@@ -41,6 +41,7 @@
 #include "../common/init.h"
 #include "../common/mbox-util.h"
 #include "key-check.h"
+#include "key-clean.h"
 
 
 struct import_stats_s
