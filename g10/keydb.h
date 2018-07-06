@@ -64,6 +64,20 @@ struct kbnode_struct {
 #define is_cloned_kbnode(a)   ((a)->private_flag & 2)
 
 
+/*
+ * A structure to store key identification as well as some stuff
+ * needed for key validation.
+ */
+struct key_item {
+  struct key_item *next;
+  unsigned int ownertrust,min_ownertrust;
+  byte trust_depth;
+  byte trust_value;
+  char *trust_regexp;
+  u32 kid[2];
+};
+
+
 /* Bit flags used with build_pk_list.  */
 enum
   {
@@ -131,6 +145,22 @@ enum
     KEYORG_FILE    = 6, /* Trusted file.        */
     KEYORG_SELF    = 7  /* We generated it.     */
   };
+
+
+/*
+ * Check whether the signature SIG is in the klist K.
+ */
+static inline struct key_item *
+is_in_klist (struct key_item *k, PKT_signature *sig)
+{
+  for (; k; k = k->next)
+    {
+      if (k->kid[0] == sig->keyid[0] && k->kid[1] == sig->keyid[1])
+        return k;
+    }
+  return NULL;
+}
+
 
 
 /*-- keydb.c --*/

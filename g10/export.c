@@ -41,6 +41,8 @@
 #include "../common/init.h"
 #include "trustdb.h"
 #include "call-agent.h"
+#include "key-clean.h"
+
 
 /* An object to keep track of subkeys. */
 struct subkey_list_s
