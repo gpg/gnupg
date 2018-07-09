@@ -479,6 +479,67 @@ clean_one_subkey (ctrl_t ctrl, kbnode_t subkeynode, int noisy, int clean_level)
 }
 
 
+/* Helper for clean_all_subkeys.  Here duplicate signatures from a
+ * subkey are removed.  This should in general not happen because
+ * import takes care of that.  However, sometimes other tools are used
+ * to manage a keyring or key has been imported a long time ago.  */
+static int
+clean_one_subkey_dupsigs (ctrl_t ctrl, kbnode_t subkeynode)
+{
+  kbnode_t node;
+  PKT_public_key *pk = subkeynode->pkt->pkt.public_key;
+  int any_choosen = 0;
+  int count = 0;
+
+  (void)ctrl;
+
+  log_assert (subkeynode->pkt->pkttype == PKT_PUBLIC_SUBKEY
+              || subkeynode->pkt->pkttype == PKT_SECRET_SUBKEY);
+
+  if (DBG_LOOKUP)
+    log_debug ("\tchecking subkey %08lX for dupsigs\n",
+               (ulong) keyid_from_pk (pk, NULL));
+
+  /* First check that the choosen flag has been set.  Note that we
+   * only look at plain signatures so to keep all revocation
+   * signatures which may carry important information.  */
+  for (node = subkeynode->next;
+       node && !(node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                 || node->pkt->pkttype == PKT_SECRET_SUBKEY);
+       node = node->next)
+    {
+      if (!is_deleted_kbnode (node)
+          && node->pkt->pkttype == PKT_SIGNATURE
+          && IS_SUBKEY_SIG (node->pkt->pkt.signature)
+          && node->pkt->pkt.signature->flags.chosen_selfsig)
+        {
+          any_choosen = 1;
+          break;
+        }
+    }
+
+  if (!any_choosen)
+    return 0; /* Ooops no choosen flag set - we can't decide.  */
+
+  for (node = subkeynode->next;
+       node && !(node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                 || node->pkt->pkttype == PKT_SECRET_SUBKEY);
+       node = node->next)
+    {
+      if (!is_deleted_kbnode (node)
+          && node->pkt->pkttype == PKT_SIGNATURE
+          && IS_SUBKEY_SIG (node->pkt->pkt.signature)
+          && !node->pkt->pkt.signature->flags.chosen_selfsig)
+        {
+          delete_kbnode (node);
+          count++;
+        }
+    }
+
+  return count;
+}
+
+
 /* This function only marks the deleted nodes and the caller is
  * responsible to skip or remove them.  Needs to be called after a
  * merge_keys_and_selfsig.  CLEAN_LEVEL is one of the KEY_CLEAN_*
@@ -488,6 +549,7 @@ clean_all_subkeys (ctrl_t ctrl, kbnode_t keyblock, int noisy, int clean_level,
                    int *subkeys_cleaned, int *sigs_cleaned)
 {
   kbnode_t first_subkey, node;
+  int n;
 
   if (DBG_LOOKUP)
     log_debug ("clean_all_subkeys: checking key %08lX\n",
@@ -519,17 +581,34 @@ clean_all_subkeys (ctrl_t ctrl, kbnode_t keyblock, int noisy, int clean_level,
   /* Do the selected cleaning.  */
   if (clean_level > KEY_CLEAN_NONE)
     {
+      /* Clean enitre subkeys.  */
       for (node = first_subkey; node; node = node->next)
         {
           if (is_deleted_kbnode (node))
             continue;
           if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
               || node->pkt->pkttype == PKT_SECRET_SUBKEY)
-            if (clean_one_subkey (ctrl, node, noisy, clean_level))
-              {
-                if (subkeys_cleaned)
-                  ++*subkeys_cleaned;
-              }
+            {
+              if (clean_one_subkey (ctrl, node, noisy, clean_level))
+                {
+                  if (subkeys_cleaned)
+                    ++*subkeys_cleaned;
+                }
+            }
+        }
+
+      /* Clean duplicate signatures from a subkey.  */
+      for (node = first_subkey; node; node = node->next)
+        {
+          if (is_deleted_kbnode (node))
+            continue;
+          if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+              || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+            {
+              n = clean_one_subkey_dupsigs (ctrl, node);
+              if (sigs_cleaned)
+                *sigs_cleaned += n;
+            }
         }
     }
 }
