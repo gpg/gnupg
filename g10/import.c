@@ -1746,7 +1746,8 @@ import_one (ctrl_t ctrl,
       merge_keys_and_selfsig (ctrl, keyblock);
       clean_all_uids (ctrl, keyblock,
                       opt.verbose, (options&IMPORT_MINIMAL), NULL, NULL);
-      clean_all_subkeys (ctrl, keyblock, opt.verbose, NULL, NULL);
+      clean_all_subkeys (ctrl, keyblock, opt.verbose, KEY_CLEAN_NONE,
+                         NULL, NULL);
     }
 
   clear_kbnode_flags( keyblock );
@@ -1892,7 +1893,8 @@ import_one (ctrl_t ctrl,
           merge_keys_and_selfsig (ctrl, keyblock);
           clean_all_uids (ctrl, keyblock, opt.verbose, (options&IMPORT_MINIMAL),
                           &n_uids_cleaned,&n_sigs_cleaned);
-          clean_all_subkeys (ctrl, keyblock, opt.verbose, NULL, NULL);
+          clean_all_subkeys (ctrl, keyblock, opt.verbose, KEY_CLEAN_NONE,
+                             NULL, NULL);
         }
 
       /* Unless we are in restore mode apply meta data to the
@@ -1983,7 +1985,8 @@ import_one (ctrl_t ctrl,
           clean_all_uids (ctrl, keyblock_orig, opt.verbose,
                           (options&IMPORT_MINIMAL),
                           &n_uids_cleaned,&n_sigs_cleaned);
-          clean_all_subkeys (ctrl, keyblock_orig, opt.verbose, NULL, NULL);
+          clean_all_subkeys (ctrl, keyblock_orig, opt.verbose, KEY_CLEAN_NONE,
+                             NULL, NULL);
         }
 
       if (n_uids || n_sigs || n_subk || n_sigs_cleaned || n_uids_cleaned)

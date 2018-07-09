@@ -23,6 +23,18 @@
 
 #include "gpg.h"
 
+/* No explict cleaning.  */
+#define KEY_CLEAN_NONE      0
+/* Remove only invalid subkeys (ie. missing key-bindings) */
+#define KEY_CLEAN_INVALID   1
+/* Remove expired encryption keys */
+#define KEY_CLEAN_ENCR      2
+/* Remove expired authentication and encryption keys.  */
+#define KEY_CLEAN_AUTHENCR  3
+/* Remove all expired subkeys.  */
+#define KEY_CLEAN_ALL       4
+
+
 void mark_usable_uid_certs (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
                             u32 *main_kid, struct key_item *klist,
                             u32 curtime, u32 *next_expire);
@@ -32,7 +44,8 @@ void clean_one_uid (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
                     int *uids_cleaned, int *sigs_cleaned);
 void clean_all_uids (ctrl_t ctrl, kbnode_t keyblock, int noisy, int self_only,
                      int *uids_cleaned,int *sigs_cleaned);
-void clean_all_subkeys (ctrl_t ctrl, kbnode_t keyblock, int noisy,
+void clean_all_subkeys (ctrl_t ctrl, kbnode_t keyblock,
+                        int noisy, int clean_level,
                         int *subkeys_cleaned, int *sigs_cleaned);
 
 

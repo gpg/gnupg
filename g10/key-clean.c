@@ -408,24 +408,101 @@ clean_all_uids (ctrl_t ctrl, kbnode_t keyblock, int noisy, int self_only,
 }
 
 
-/* This function only marks the deleted nodes and the caller is
- * responsible to skip or remove them.  Needs to be called after a
- * merge_keys_and_selfsig.  */
-void
-clean_all_subkeys (ctrl_t ctrl, kbnode_t keyblock, int noisy,
-                   int *subkeys_cleaned, int *sigs_cleaned)
+/* Helper for clean_all_subkeys.  */
+static int
+clean_one_subkey (ctrl_t ctrl, kbnode_t subkeynode, int noisy, int clean_level)
 {
   kbnode_t node;
+  PKT_public_key *pk = subkeynode->pkt->pkt.public_key;
+  unsigned int use = pk->pubkey_usage;
+  int do_clean = 0;
+
+  (void)ctrl;
+  (void)noisy;
+
+  log_assert (subkeynode->pkt->pkttype == PKT_PUBLIC_SUBKEY
+              || subkeynode->pkt->pkttype == PKT_SECRET_SUBKEY);
+
+  if (DBG_LOOKUP)
+    log_debug ("\tchecking subkey %08lX [%c%c%c%c%c]\n",
+               (ulong) keyid_from_pk (pk, NULL),
+               (use & PUBKEY_USAGE_ENC)? 'e':'-',
+               (use & PUBKEY_USAGE_SIG)? 's':'-',
+               (use & PUBKEY_USAGE_CERT)? 'c':'-',
+               (use & PUBKEY_USAGE_AUTH)? 'a':'-',
+               (use & PUBKEY_USAGE_UNKNOWN)? '?':'-');
+
+  if (!pk->flags.valid)
+    {
+      if (DBG_LOOKUP)
+        log_debug ("\tsubkey not valid\n");
+      if (clean_level == KEY_CLEAN_INVALID)
+        do_clean = 1;
+    }
+  if (pk->has_expired)
+    {
+      if (DBG_LOOKUP)
+        log_debug ("\tsubkey has expired\n");
+      if (clean_level == KEY_CLEAN_ALL)
+        do_clean = 1;
+      else if (clean_level == KEY_CLEAN_AUTHENCR
+               && (use & (PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH))
+               && !(use & (PUBKEY_USAGE_SIG | PUBKEY_USAGE_CERT)))
+        do_clean = 1;
+      else if (clean_level == KEY_CLEAN_ENCR
+               && (use & PUBKEY_USAGE_ENC)
+               && !(use & (PUBKEY_USAGE_SIG | PUBKEY_USAGE_CERT
+                           | PUBKEY_USAGE_AUTH)))
+        do_clean = 1;
+    }
+  if (pk->flags.revoked)
+    {
+      if (DBG_LOOKUP)
+        log_debug ("\tsubkey has been revoked (keeping)\n");
+      /* Avoid any cleaning because revocations are important.  */
+      do_clean = 0;
+    }
+  if (!do_clean)
+    return 0;
+
+  if (DBG_LOOKUP)
+    log_debug ("\t=> removing this subkey\n");
+
+  delete_kbnode (subkeynode);
+  for (node = subkeynode->next;
+       node && !(node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                 || node->pkt->pkttype == PKT_SECRET_SUBKEY);
+       node = node->next)
+    delete_kbnode (node);
+
+  return 1;
+}
+
+
+/* This function only marks the deleted nodes and the caller is
+ * responsible to skip or remove them.  Needs to be called after a
+ * merge_keys_and_selfsig.  CLEAN_LEVEL is one of the KEY_CLEAN_*
+ * values.   */
+void
+clean_all_subkeys (ctrl_t ctrl, kbnode_t keyblock, int noisy, int clean_level,
+                   int *subkeys_cleaned, int *sigs_cleaned)
+{
+  kbnode_t first_subkey, node;
+
+  if (DBG_LOOKUP)
+    log_debug ("clean_all_subkeys: checking key %08lX\n",
+	       (ulong) keyid_from_pk (keyblock->pkt->pkt.public_key, NULL));
 
   for (node = keyblock->next; node; node = node->next)
     if (!is_deleted_kbnode (node)
         && (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
             || node->pkt->pkttype == PKT_SECRET_SUBKEY))
       break;
+  first_subkey = node;
 
   /* Remove bogus subkey binding signatures: The only signatures
    * allowed are of class 0x18 and 0x28.  */
-  for (; node; node = node->next)
+  for (node = first_subkey; node; node = node->next)
     {
       if (is_deleted_kbnode (node))
         continue;
@@ -436,6 +513,23 @@ clean_all_subkeys (ctrl_t ctrl, kbnode_t keyblock, int noisy,
           delete_kbnode (node);
           if (sigs_cleaned)
             ++*sigs_cleaned;
+        }
+    }
+
+  /* Do the selected cleaning.  */
+  if (clean_level > KEY_CLEAN_NONE)
+    {
+      for (node = first_subkey; node; node = node->next)
+        {
+          if (is_deleted_kbnode (node))
+            continue;
+          if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+              || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+            if (clean_one_subkey (ctrl, node, noisy, clean_level))
+              {
+                if (subkeys_cleaned)
+                  ++*subkeys_cleaned;
+              }
         }
     }
 }
