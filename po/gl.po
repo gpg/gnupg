@@ -420,6 +420,7 @@ msgstr ""
 msgid "invalid debug-level '%s' given\n"
 msgstr ""
 
+#, c-format
 msgid "selected digest algorithm is invalid\n"
 msgstr "o algoritmo de resumo seleccionado non é válido\n"
 
@@ -451,11 +452,11 @@ msgstr "non foi posible crear %s: %s\n"
 msgid "socket name '%s' is too long\n"
 msgstr "Revocación de certificado válida"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent non está dispoñible nesta sesión\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
@@ -516,7 +517,7 @@ msgstr "o segredo da actualización fallou: %s\n"
 msgid "%s %s stopped\n"
 msgstr "\t%lu chaves omitidas\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent non está dispoñible nesta sesión\n"
 
@@ -573,7 +574,7 @@ msgid ""
 "needed to complete this operation."
 msgstr "Por favor, introduza o contrasinal; esta é unha frase secreta \n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "cancelled\n"
 msgstr "Cancelar"
 
@@ -609,6 +610,7 @@ msgstr "erro: pegada dactilar non válida\n"
 msgid "error reading '%s', line %d: %s\n"
 msgstr "erro lendo `%s': %s\n"
 
+#, c-format
 msgid "error reading list of trusted root certificates\n"
 msgstr ""
 
@@ -688,6 +690,7 @@ msgid ""
 "Deleting the key might remove your ability to access remote machines."
 msgstr ""
 
+#, c-format
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr ""
 
@@ -703,6 +706,7 @@ msgstr ""
 msgid "checking created signature failed: %s\n"
 msgstr "fallou a comprobación da sinatura creada: %s\n"
 
+#, c-format
 msgid "secret key parts are not available\n"
 msgstr "hai partes da chave secreta non dispoñibles\n"
 
@@ -762,7 +766,7 @@ msgstr "erro escribindo no chaveiro secreto `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "non se puido conectar a `%s': %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "problem setting the gpg-agent options\n"
 msgstr "problema co axente: o axente voltou coa resposta 0x%lx\n"
 
@@ -854,10 +858,11 @@ msgstr ""
 msgid "waiting for the agent to come up ... (%ds)\n"
 msgstr ""
 
+#, c-format
 msgid "connection to agent established\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "connection to agent is in restricted mode\n"
 msgstr "non se pode facer iso no modo por lotes\n"
 
@@ -869,6 +874,7 @@ msgstr ""
 msgid "waiting for the dirmngr to come up ... (%ds)\n"
 msgstr ""
 
+#, c-format
 msgid "connection to the dirmngr established\n"
 msgstr ""
 
@@ -1110,7 +1116,7 @@ msgstr ""
 msgid "command \"%.50s\" is ambiguous\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "out of core\n"
 msgstr "non procesado"
 
@@ -1165,26 +1171,31 @@ msgstr ""
 msgid "armor: %s\n"
 msgstr "armadura: %s\n"
 
+#, c-format
 msgid "invalid armor header: "
 msgstr "cabeceira de armadura non válida: "
 
+#, c-format
 msgid "armor header: "
 msgstr "cabeceira de armadura: "
 
+#, c-format
 msgid "invalid clearsig header\n"
 msgstr "cabeceira de sinatura en claro non válida\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "unknown armor header: "
 msgstr "cabeceira de armadura: "
 
+#, c-format
 msgid "nested clear text signatures\n"
 msgstr "sinaturas en texto claro aniñadas\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "unexpected armor: "
 msgstr "armadura inesperada:"
 
+#, c-format
 msgid "invalid dash escaped line: "
 msgstr "liña escapada cunha barra non válida: "
 
@@ -1192,12 +1203,15 @@ msgstr "liña escapada cunha barra non válida: "
 msgid "invalid radix64 character %02X skipped\n"
 msgstr "carácter radix64 non válido %02x omitido\n"
 
+#, c-format
 msgid "premature eof (no CRC)\n"
 msgstr "fin de ficheiro prematura (non hai CRC)\n"
 
+#, c-format
 msgid "premature eof (in CRC)\n"
 msgstr "fin de ficheiro prematura (no CRC)\n"
 
+#, c-format
 msgid "malformed CRC\n"
 msgstr "CRC mal formado\n"
 
@@ -1205,13 +1219,15 @@ msgstr "CRC mal formado\n"
 msgid "CRC error; %06lX - %06lX\n"
 msgstr "Erro de CRC; %06lx - %06lx\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "premature eof (in trailer)\n"
 msgstr "fin de ficheiro prematura (nas liñas adicionais)\n"
 
+#, c-format
 msgid "error in trailer line\n"
 msgstr "error nunha liña adicional\n"
 
+#, c-format
 msgid "no valid OpenPGP data found.\n"
 msgstr "non se atoparon datos OpenPGP válidos.\n"
 
@@ -1219,6 +1235,7 @@ msgstr "non se atoparon datos OpenPGP válidos.\n"
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "armadura incorrecta: liña máis longa ca %d caracteres\n"
 
+#, c-format
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
@@ -1230,6 +1247,7 @@ msgstr ""
 msgid "[ not human readable (%zu bytes: %s%s) ]"
 msgstr "non lexible por humanos"
 
+#, c-format
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1237,21 +1255,23 @@ msgstr ""
 "un nome de notación só debe ter caracteres imprimibles ou espacios, e debe "
 "rematar en '='\n"
 
+#, c-format
 msgid "a user notation name must contain the '@' character\n"
 msgstr "un nome de notación de usuario debe conte-lo carácter '@'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "a notation name must not contain more than one '@' character\n"
 msgstr "un nome de notación de usuario debe conte-lo carácter '@'\n"
 
+#, c-format
 msgid "a notation value must not use any control characters\n"
 msgstr "un valor de notación non pode empregar ningún carácter de control\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "a notation name may not contain an '=' character\n"
 msgstr "un nome de notación de usuario debe conte-lo carácter '@'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid ""
 #| "a notation name must have only printable characters or spaces, and end "
 #| "with an '='\n"
@@ -1260,6 +1280,7 @@ msgstr ""
 "un nome de notación só debe ter caracteres imprimibles ou espacios, e debe "
 "rematar en '='\n"
 
+#, c-format
 msgid "WARNING: invalid notation data found\n"
 msgstr "AVISO: atopáronse datos de notación non válidos\n"
 
@@ -1284,6 +1305,7 @@ msgstr ""
 msgid "WARNING: %s\n"
 msgstr "AVISO: %s fai que se ignore %s\n"
 
+#, c-format
 msgid "Note: Outdated servers may lack important security fixes.\n"
 msgstr ""
 
@@ -1305,15 +1327,15 @@ msgstr "a chave secreta non está dispoñible"
 msgid "OpenPGP card no. %s detected\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "can't do this in batch mode\n"
 msgstr "non se pode facer iso no modo por lotes\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "This command is only available for version 2 cards\n"
 msgstr "Non se admite este comando no modo %s.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Reset Code not or not anymore available\n"
 msgstr "hai partes da chave secreta non dispoñibles\n"
 
@@ -1484,7 +1506,7 @@ msgstr "erro ao enviar a `%s': %s\n"
 msgid "error getting card info: %s\n"
 msgstr "erro escribindo no chaveiro secreto `%s': %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "This command is not allowed while in %s mode.\n"
 msgid "This command is not supported by this card\n"
 msgstr "Non se admite este comando no modo %s.\n"
@@ -1492,7 +1514,7 @@ msgstr "Non se admite este comando no modo %s.\n"
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Note: keys are already stored on the card!\n"
 msgstr "omítese: a chave secreta xa está presente\n"
 
@@ -1529,7 +1551,7 @@ msgstr "Por favor, escolla o motivo da revocación:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "a actualización fallou: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Note: This command destroys all keys stored on the card!\n"
 msgstr "omítese: a chave secreta xa está presente\n"
 
@@ -1629,6 +1651,7 @@ msgstr "gravando a chave secreta en `%s'\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Comando incorrecto (tente \"help\")\n"
 
+#, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output non traballa con este comando\n"
 
@@ -1649,10 +1672,11 @@ msgstr "erro ao le-lo bloque de chaves: %s\n"
 msgid "key \"%s\" not found\n"
 msgstr "non se atopou a chave `%s': %s\n"
 
+#, c-format
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(a menos que especifique a chave por pegada dactilar)\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr ""
 "iso non se pode facer no modo de procesamento por lotes sen \"--yes\"\n"
@@ -1681,6 +1705,7 @@ msgstr "Pública: "
 msgid "deleting keyblock failed: %s\n"
 msgstr "fallou o borrado do bloque de chaves: %s\n"
 
+#, c-format
 msgid "ownertrust information cleared\n"
 msgstr "borrouse a información de confianza\n"
 
@@ -1688,6 +1713,7 @@ msgstr "borrouse a información de confianza\n"
 msgid "there is a secret key for public key \"%s\"!\n"
 msgstr "¡hai unha chave secreta para a chave pública \"%s\"!\n"
 
+#, c-format
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "empregue a opción \"--delete-secret-keys\" para borrala primeiro.\n"
 
@@ -1695,6 +1721,7 @@ msgstr "empregue a opción \"--delete-secret-keys\" para borrala primeiro.\n"
 msgid "error creating passphrase: %s\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
+#, c-format
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
 msgstr "non se pode empregar un paquete simétrico ESK debido ao modo S2K\n"
 
@@ -1761,23 +1788,27 @@ msgstr "datos cifrados con %s\n"
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "cifrado cun algoritmo descoñecido %d\n"
 
+#, c-format
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr "AVISO: cifrouse a mensaxe cunha chave feble no cifrado simétrico.\n"
 
+#, c-format
 msgid "problem handling encrypted packet\n"
 msgstr "problema ao manexa-lo paquete cifrado\n"
 
+#, c-format
 msgid "no remote program execution supported\n"
 msgstr "non se soporta a execución remota de programas\n"
 
+#, c-format
 msgid ""
 "external program calls are disabled due to unsafe options file permissions\n"
 msgstr ""
 "as chamadas a programas externos están desactivadas debido a opcións de "
 "permisos de ficheiros non seguras\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "this platform requires temporary files when calling external programs\n"
 msgstr ""
 "esta plataforma precisa de ficheiros temporais ao chamar a programas "
@@ -1795,9 +1826,11 @@ msgstr "non se puido executar %s \"%s\": %s\n"
 msgid "system error while calling external program: %s\n"
 msgstr "erro do sistema ao chamar a un programa externo: %s\n"
 
+#, c-format
 msgid "unnatural exit of external program\n"
 msgstr "saída non natural do programa externo\n"
 
+#, c-format
 msgid "unable to execute external program\n"
 msgstr "non se puido executar un programa externo\n"
 
@@ -1852,7 +1885,7 @@ msgstr "escribindo a `%s'\n"
 msgid "key %s: key material on-card - skipped\n"
 msgstr "chave %08lX: sinatura da sub-chave nun lugar incorrecto - omitida\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "exporting secret keys not allowed\n"
 msgstr "gravando a chave secreta en `%s'\n"
 
@@ -1860,6 +1893,7 @@ msgstr "gravando a chave secreta en `%s'\n"
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "chave %08lX: chave estilo PGP 2.x - omitida\n"
 
+#, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "AVISO: non se exportou nada\n"
 
@@ -2178,6 +2212,7 @@ msgstr "Compresión: "
 msgid "usage: %s [options] %s\n"
 msgstr "uso: gpg [opcións] "
 
+#, c-format
 msgid "conflicting commands\n"
 msgstr "comandos conflictivos\n"
 
@@ -2284,6 +2319,7 @@ msgstr "Non hai unha sinatura correspondiente no chaveiro secreto\n"
 msgid "unknown TOFU policy '%s'\n"
 msgstr "destinatario por defecto `%s' descoñecido\n"
 
+#, c-format
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
@@ -2317,7 +2353,7 @@ msgstr "opcións de importación non válidas\n"
 msgid "'%s' is not a valid character set\n"
 msgstr "%s non é un xogo de caracteres válido\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "could not parse keyserver URL\n"
 msgstr "non se puido analisa-lo URI do servidor de chaves\n"
 
@@ -2325,7 +2361,7 @@ msgstr "non se puido analisa-lo URI do servidor de chaves\n"
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: opcións de exportación non válidas\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "invalid keyserver options\n"
 msgstr "opcións de exportación non válidas\n"
 
@@ -2333,6 +2369,7 @@ msgstr "opcións de exportación non válidas\n"
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: opcións de importación non válidas\n"
 
+#, c-format
 msgid "invalid import options\n"
 msgstr "opcións de importación non válidas\n"
 
@@ -2344,6 +2381,7 @@ msgstr "opcións de importación non válidas\n"
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: opcións de exportación non válidas\n"
 
+#, c-format
 msgid "invalid export options\n"
 msgstr "opcións de exportación non válidas\n"
 
@@ -2351,7 +2389,7 @@ msgstr "opcións de exportación non válidas\n"
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: opcións de importación non válidas\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "invalid list options\n"
 msgstr "opcións de importación non válidas\n"
 
@@ -2396,7 +2434,7 @@ msgstr ""
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: opcións de exportación non válidas\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "invalid verify options\n"
 msgstr "opcións de exportación non válidas\n"
 
@@ -2408,9 +2446,11 @@ msgstr "non se puido estabrecer exec-path a %s\n"
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: opcións de exportación non válidas\n"
 
+#, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "AVISO: ¡o programa pode crear un ficheiro 'core'!\n"
 
@@ -2426,6 +2466,7 @@ msgstr "¡%s non se admite con %s!\n"
 msgid "%s makes no sense with %s!\n"
 msgstr "¡%s non ten sentido empregándoo con %s!\n"
 
+#, c-format
 msgid "WARNING: running with faked system time: "
 msgstr ""
 
@@ -2433,51 +2474,60 @@ msgstr ""
 msgid "will not run with insecure memory due to %s\n"
 msgstr "gravando a chave secreta en `%s'\n"
 
+#, c-format
 msgid "selected cipher algorithm is invalid\n"
 msgstr "o algoritmo de cifrado seleccionado non é válido\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "o algoritmo de cifrado seleccionado non é válido\n"
 
+#, c-format
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "o algoritmo de resumo de certificación seleccionado non é válido\n"
 
+#, c-format
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed debe ser superior a 0\n"
 
+#, c-format
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed debe ser superior a 1\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth debe valer entre 1 e 255\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "nivel de comprobación por defecto non válido; debe ser 0, 1, 2 ou 3\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "nivel de comprobación por defecto non válido; debe ser 0, 1, 2 ou 3\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgid "Note: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTA: desaconséllase encarecidamente o modo S2K simple (0)\n"
 
+#, c-format
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "modo S2K non válido; debe ser 0, 1 ou 3\n"
 
+#, c-format
 msgid "invalid default preferences\n"
 msgstr "preferencias por defecto non válidas\n"
 
+#, c-format
 msgid "invalid personal cipher preferences\n"
 msgstr "preferencias de cifrado personais non válidas\n"
 
+#, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "preferencias de resumo personais non válidas\n"
 
+#, c-format
 msgid "invalid personal compress preferences\n"
 msgstr "preferencias de compresión personais non válidas\n"
 
@@ -2497,6 +2547,7 @@ msgstr "non se pode empregar o algoritmo de compresión \"%s\" no modo %s\n"
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "non se puido inicializa-la base de datos de confianzas: %s\n"
 
+#, c-format
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "AVISO: deronse destinatarios (-r) sen empregar cifrado de chave pública\n"
@@ -2505,6 +2556,7 @@ msgstr ""
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "o descifrado fallou: %s\n"
 
+#, c-format
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
@@ -2512,6 +2564,7 @@ msgstr ""
 msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "non se pode empregar %s no modo %s\n"
 
+#, c-format
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
@@ -2565,19 +2618,23 @@ msgstr "erro ao crea-lo contrasinal: %s\n"
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
 msgstr ""
 
+#, c-format
 msgid "Go ahead and type your message ...\n"
 msgstr "Escriba a súa mensaxe ...\n"
 
+#, c-format
 msgid "the given certification policy URL is invalid\n"
 msgstr "o URL de normativa de certificación dado non é válido\n"
 
+#, c-format
 msgid "the given signature policy URL is invalid\n"
 msgstr "o URL de normativa de sinaturas dado non é válido\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "o URL de normativa de sinaturas dado non é válido\n"
 
@@ -2742,9 +2799,11 @@ msgstr "Sinatura %s, algoritmo de resumo %s\n"
 msgid "         \"%s\": preference for compression algorithm %s\n"
 msgstr ""
 
+#, c-format
 msgid "it is strongly suggested that you update your preferences and\n"
 msgstr ""
 
+#, c-format
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
 msgstr ""
 
@@ -2775,6 +2834,7 @@ msgstr "chave %08lX: aceptouse o ID de usuario '%s' sen auto-sinatura\n"
 msgid "key %s: no valid user IDs\n"
 msgstr "chave %08lX: non hai IDs de usuario válidos\n"
 
+#, c-format
 msgid "this may be caused by a missing self-signature\n"
 msgstr "isto pode ser causado por unha auto-sinatura que falta\n"
 
@@ -2864,7 +2924,7 @@ msgstr "erro ao enviar a `%s': %s\n"
 msgid "secret key %s: %s\n"
 msgstr "non se atopou a chave secreta `%s': %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "importing secret keys not allowed\n"
 msgstr "gravando a chave secreta en `%s'\n"
 
@@ -2885,6 +2945,29 @@ msgstr "chave %08lX: chave secreta cunha cifra %d non válida - omitida\n"
 #, c-format
 msgid "To migrate '%s', with each smartcard, run: %s\n"
 msgstr ""
+
+msgid "No reason specified"
+msgstr "Non se especificou un motivo"
+
+msgid "Key is superseded"
+msgstr "A chave é obsoleta"
+
+msgid "Key has been compromised"
+msgstr "Esta chave quedou descoberta"
+
+msgid "Key is no longer used"
+msgstr "Xa non se emprega esta chave"
+
+msgid "User ID is no longer valid"
+msgstr "O ID de usuario xa non é válido"
+
+#, c-format
+msgid "reason for revocation: "
+msgstr "motivo para a revocación: "
+
+#, c-format
+msgid "revocation comment: "
+msgstr "comentario de revocación: "
 
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
@@ -3545,10 +3628,11 @@ msgstr "¿Saír sin gardar? "
 msgid "update failed: %s\n"
 msgstr "a actualización fallou: %s\n"
 
+#, c-format
 msgid "Key not changed so no update needed.\n"
 msgstr "A chave non cambiou, polo que non fai falla actualizar.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't delete the last user ID!\n"
 msgid "cannot revoke the last valid user ID.\n"
 msgstr "¡Non pode borra-lo último ID de usuario!\n"
@@ -3675,6 +3759,7 @@ msgstr "[revocada] "
 msgid "expired"
 msgstr "expire"
 
+#, c-format
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -3682,10 +3767,11 @@ msgstr ""
 "AVISO: non se marcou ningún ID de usuario coma primario. Esta orde pode\n"
 "              facer que un ID de usuario diferente se converta no primario.\n"
 
+#, c-format
 msgid "WARNING: Your encryption subkey expires soon.\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
 msgstr "Non pode cambia-la data de expiración dunha chave v3\n"
@@ -3769,14 +3855,16 @@ msgstr ""
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Introduza o ID de usuario do revocador designado: "
 
+#, c-format
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr ""
 "non se pode nomear unha chave estilo PGP 2.x coma revocador designado\n"
 
+#, c-format
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "non se pode nomear unha chave coma o seu propio revocador designado\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "this key has already been designated as a revoker\n"
 msgstr "AVISO: ¡Esta chave está revocada polo propietario!\n"
 
@@ -3805,6 +3893,7 @@ msgstr "Cambiando a data de expiración para a chave secundaria.\n"
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Cambiando a data de expiración da chave primaria.\n"
 
+#, c-format
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Non pode cambia-la data de expiración dunha chave v3\n"
 
@@ -3912,6 +4001,7 @@ msgstr "Está a punto de revocar estas sinaturas:\n"
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "¿Realmente desexa crea-los certificados de revocación? (s/N) "
 
+#, c-format
 msgid "no secret key\n"
 msgstr "non hai chave secreta\n"
 
@@ -3928,7 +4018,7 @@ msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "AVISO: unha sinatura de ID de usuario ten unha data %d segundos no futuro\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't delete the last user ID!\n"
 msgid "Cannot revoke the last valid user ID.\n"
 msgstr "¡Non pode borra-lo último ID de usuario!\n"
@@ -3954,15 +4044,15 @@ msgstr "opcións de importación non válidas\n"
 msgid "preference '%s' duplicated\n"
 msgstr "preferencia %c%lu duplicada\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "too many cipher preferences\n"
 msgstr "demasiadas preferencias `%c'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "too many digest preferences\n"
 msgstr "demasiadas preferencias `%c'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "too many compression preferences\n"
 msgstr "demasiadas preferencias `%c'\n"
 
@@ -3970,12 +4060,15 @@ msgstr "demasiadas preferencias `%c'\n"
 msgid "invalid item '%s' in preference string\n"
 msgstr "caracter non válido na cadea de preferencias\n"
 
+#, c-format
 msgid "writing direct signature\n"
 msgstr "escribindo unha sinatura directa\n"
 
+#, c-format
 msgid "writing self signature\n"
 msgstr "escribindo a propia sinatura\n"
 
+#, c-format
 msgid "writing key binding signature\n"
 msgstr "escribindo unha sinatura que liga a chave\n"
 
@@ -3987,6 +4080,7 @@ msgstr "tamaño de chave non válido; empregando %u bits\n"
 msgid "keysize rounded up to %u bits\n"
 msgstr "tamaño de chave redondeado a %u bits\n"
 
+#, c-format
 msgid ""
 "WARNING: some OpenPGP programs can't handle a DSA key with this digest size\n"
 msgstr ""
@@ -4335,7 +4429,7 @@ msgstr "`%s' xa está comprimido\n"
 msgid "Create anyway? (y/N) "
 msgstr "¿Crear de tódolos xeitos? "
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "Create anyway? "
 msgid "creating anyway\n"
 msgstr "¿Crear de tódolos xeitos? "
@@ -4344,6 +4438,7 @@ msgstr "¿Crear de tódolos xeitos? "
 msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
 msgstr ""
 
+#, c-format
 msgid "Key generation canceled.\n"
 msgstr "Cancelouse a xeración de chaves.\n"
 
@@ -4395,15 +4490,16 @@ msgstr ""
 "creouse a chave %lu segundos no futuro (salto no tempo ou problemas co "
 "reloxo)\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "NOTA: a creación de subchaves para chaves v3 non cumpre OpenPGP\n"
 
+#, c-format
 msgid "Secret parts of primary key are not available.\n"
 msgstr "as partes secretas da chave primaria non están dispoñibles.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "as partes secretas da chave primaria non están dispoñibles.\n"
 
@@ -4566,10 +4662,11 @@ msgstr "AVISO: non se puido borra-lo ficheiro temporal (%s) `%s': %s\n"
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "non se atopou a chave `%s': %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "key not found on keyserver\n"
 msgstr "non se atopou a chave `%s': %s\n"
 
+#, c-format
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 "non hai un servidor de chaves coñecido (empregue a opción --keyserver)\n"
@@ -4582,7 +4679,7 @@ msgstr "solicitando a chave %08lX de %s\n"
 msgid "requesting key %s from %s\n"
 msgstr "solicitando a chave %08lX de %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no keyserver known\n"
 msgstr "opcións de exportación non válidas\n"
 
@@ -4620,6 +4717,7 @@ msgstr "cifrado cun algoritmo descoñecido %d\n"
 msgid "public key is %s\n"
 msgstr "a chave pública é %08lX\n"
 
+#, c-format
 msgid "public key encrypted data: good DEK\n"
 msgstr "datos cifrados coa chave pública: DEK correcto\n"
 
@@ -4639,6 +4737,7 @@ msgstr "cifrado cunha chave %s, ID %08lX\n"
 msgid "public key decryption failed: %s\n"
 msgstr "fallou o descifrado de chave pública: %s\n"
 
+#, c-format
 msgid "WARNING: multiple plaintexts seen\n"
 msgstr ""
 
@@ -4646,6 +4745,7 @@ msgstr ""
 msgid "encrypted with %lu passphrases\n"
 msgstr "cifrado con %lu contrasinais\n"
 
+#, c-format
 msgid "encrypted with 1 passphrase\n"
 msgstr "cifrado con 1 contrasinal\n"
 
@@ -4657,6 +4757,7 @@ msgstr "supoñendo datos cifrados con %s\n"
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "A cifra IDEA non está dispoñible, téntase empregar %s no seu canto\n"
 
+#, c-format
 msgid "WARNING: message was not integrity protected\n"
 msgstr "AVISO: a mensaxe non tiña protección de integridade\n"
 
@@ -4670,14 +4771,16 @@ msgstr ""
 msgid "Use the option '%s' to decrypt anyway.\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "decryption failed: %s\n"
 msgid "decryption forced to fail!\n"
 msgstr "o descifrado fallou: %s\n"
 
+#, c-format
 msgid "decryption okay\n"
 msgstr "descifrado correcto\n"
 
+#, c-format
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "AVISO: ¡a mensaxe cifrada foi manipulada!\n"
 
@@ -4685,7 +4788,7 @@ msgstr "AVISO: ¡a mensaxe cifrada foi manipulada!\n"
 msgid "decryption failed: %s\n"
 msgstr "o descifrado fallou: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
 msgstr "NOTA: o remitente pediu \"confidencial\"\n"
@@ -4694,10 +4797,11 @@ msgstr "NOTA: o remitente pediu \"confidencial\"\n"
 msgid "original file name='%.*s'\n"
 msgstr "nome do ficheiro orixinal='%.*s'\n"
 
+#, c-format
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "revocación independente - empregue \"gpg --import\" para aplicar\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no signature found\n"
 msgstr "Sinatura correcta de \""
 
@@ -4713,10 +4817,11 @@ msgstr "Sinatura caducada de \""
 msgid "Good signature from \"%s\""
 msgstr "Sinatura correcta de \""
 
+#, c-format
 msgid "signature verification suppressed\n"
 msgstr "verificación de sinatura suprimida\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "can't handle this ambiguous signature data\n"
 msgstr "non se poden manexar estas sinaturas múltiples\n"
 
@@ -4736,6 +4841,7 @@ msgstr "Sinatura feita o %.*s usando %s coa chave de ID %08lX\n"
 msgid "               issuer \"%s\"\n"
 msgstr "               alias \""
 
+#, c-format
 msgid "Key available at: "
 msgstr "Chave dispoñible en: "
 
@@ -4786,9 +4892,11 @@ msgstr ""
 msgid "Can't check signature: %s\n"
 msgstr "Non foi posible verifica-la sinatura: %s\n"
 
+#, c-format
 msgid "not a detached signature\n"
 msgstr "non é unha sinatura separada\n"
 
+#, c-format
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr ""
@@ -4798,6 +4906,7 @@ msgstr ""
 msgid "standalone signature of class 0x%02x\n"
 msgstr "sinatura independiente de clase 0x%02x\n"
 
+#, c-format
 msgid "old style (PGP 2.x) signature\n"
 msgstr "Sinatura ó vello estilo (PGP 2.x)\n"
 
@@ -4815,7 +4924,7 @@ msgstr "base de datos de confianza: fallou a lectura (n=%d): %s\n"
 msgid "WARNING: using experimental public key algorithm %s\n"
 msgstr "non é posible manexa-lo algoritmo de chave pública %d\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "WARNING: Elgamal sign+encrypt keys are deprecated\n"
 msgstr ""
 "forza-lo algoritmo de resumo %s (%d) viola as preferencias do destinatario\n"
@@ -4846,6 +4955,7 @@ msgstr "erro de lectura: %s\n"
 msgid "(reported error: %s <%s>)\n"
 msgstr "erro de lectura: %s\n"
 
+#, c-format
 msgid "(further info: "
 msgstr ""
 
@@ -4894,6 +5004,7 @@ msgstr "lendo as opcións de `%s'\n"
 msgid "unknown option '%s'\n"
 msgstr "destinatario por defecto `%s' descoñecido\n"
 
+#, c-format
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr ""
 
@@ -4917,6 +5028,7 @@ msgstr "%s: sufixo descoñecido\n"
 msgid "Enter new filename"
 msgstr "Introduza o novo nome de ficheiro"
 
+#, c-format
 msgid "writing to stdout\n"
 msgstr "escribindo na saída estándar\n"
 
@@ -4929,6 +5041,7 @@ msgstr "suponse que hai datos asinados en `%s'\n"
 msgid "can't handle public key algorithm %d\n"
 msgstr "non é posible manexa-lo algoritmo de chave pública %d\n"
 
+#, c-format
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr ""
 "AVISO: chave de sesión cifrada simetricamente potencialmente insegura\n"
@@ -4944,6 +5057,7 @@ msgstr "problema co axente: o axente voltou coa resposta 0x%lx\n"
 msgid "Enter passphrase\n"
 msgstr "Introduza o contrasinal\n"
 
+#, c-format
 msgid "cancelled by user\n"
 msgstr "cancelado polo usuario\n"
 
@@ -5019,29 +5133,9 @@ msgstr "\"%s\" non é un ficheiro JPEG\n"
 msgid "Is this photo correct (y/N/q)? "
 msgstr "¿É esta foto correcta (s/N/q)? "
 
+#, c-format
 msgid "unable to display photo ID!\n"
 msgstr "¡non se pode amosa-la identificación fotográfica!\n"
-
-msgid "No reason specified"
-msgstr "Non se especificou un motivo"
-
-msgid "Key is superseded"
-msgstr "A chave é obsoleta"
-
-msgid "Key has been compromised"
-msgstr "Esta chave quedou descoberta"
-
-msgid "Key is no longer used"
-msgstr "Xa non se emprega esta chave"
-
-msgid "User ID is no longer valid"
-msgstr "O ID de usuario xa non é válido"
-
-msgid "reason for revocation: "
-msgstr "motivo para a revocación: "
-
-msgid "revocation comment: "
-msgstr "comentario de revocación: "
 
 #. TRANSLATORS: These are the allowed answers in lower and
 #. uppercase.  Below you will find the matching strings which
@@ -5121,10 +5215,11 @@ msgid "%s: There is limited assurance this key belongs to the named user\n"
 msgstr ""
 "%08lX: Non hai indicacións de que a sinatura pertenza ao seu propietario.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "This key probably belongs to the named user\n"
 msgstr "Esta chave probablemente pertenza ao propietario\n"
 
+#, c-format
 msgid "This key belongs to us\n"
 msgstr "Esta chave perténcenos a nós\n"
 
@@ -5160,29 +5255,33 @@ msgstr ""
 msgid "Use this key anyway? (y/N) "
 msgstr "¿Empregar esta chave de tódolos xeitos?"
 
+#, c-format
 msgid "WARNING: Using untrusted key!\n"
 msgstr "AVISO: ¡Emprégase unha chave que non é de confianza!\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "WARNING: this key might be revoked (revocation key not present)\n"
 msgstr ""
 "AVISO: a chave %08lX pode estar revocada: chave de revocación %08lX "
 "ausente.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "WARNING: This key has been revoked by its designated revoker!\n"
 msgstr "AVISO: ¡Esta chave está revocada polo propietario!\n"
 
+#, c-format
 msgid "WARNING: This key has been revoked by its owner!\n"
 msgstr "AVISO: ¡Esta chave está revocada polo propietario!\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "         This could mean that the signature is forged.\n"
 msgstr "       Isto pode significar que a sinatura está falsificada.\n"
 
+#, c-format
 msgid "WARNING: This subkey has been revoked by its owner!\n"
 msgstr "AVISO: ¡Esta subchave está revocada polo propietario!\n"
 
+#, c-format
 msgid "Note: This key has been disabled.\n"
 msgstr "Nota: Esta chave está desactivada.\n"
 
@@ -5194,35 +5293,44 @@ msgstr ""
 msgid "Note: Signer's address '%s' does not match DNS entry\n"
 msgstr ""
 
+#, c-format
 msgid "trustlevel adjusted to FULL due to valid PKA info\n"
 msgstr ""
 
+#, c-format
 msgid "trustlevel adjusted to NEVER due to bad PKA info\n"
 msgstr ""
 
+#, c-format
 msgid "Note: This key has expired!\n"
 msgstr "Nota: ¡Esta chave xa caducou!\n"
 
+#, c-format
 msgid "WARNING: This key is not certified with a trusted signature!\n"
 msgstr "AVISO: ¡Esta chave non está certificada cunha sinatura de confianza!\n"
 
+#, c-format
 msgid ""
 "         There is no indication that the signature belongs to the owner.\n"
 msgstr ""
 "       Non hai indicacións de que a sinatura pertenza ao seu propietario.\n"
 
+#, c-format
 msgid "WARNING: We do NOT trust this key!\n"
 msgstr "AVISO: ¡Esta chave NON é de confianza!\n"
 
+#, c-format
 msgid "         The signature is probably a FORGERY.\n"
 msgstr "       Probablemente, a sinatura estea FALSIFICADA.\n"
 
+#, c-format
 msgid ""
 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr ""
 "AVISO: ¡Esta chave non está certificada con sinaturas de suficiente "
 "confianza!\n"
 
+#, c-format
 msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr "       Non é seguro que a sinatura pertenza ao seu propietario.\n"
 
@@ -5267,6 +5375,7 @@ msgstr ""
 msgid "No such user ID.\n"
 msgstr "Non hai tal ID de usuario.\n"
 
+#, c-format
 msgid "skipped: public key already set as default recipient\n"
 msgstr ""
 "omitido: a chave pública xa está estabrecida coma destinatario por defecto\n"
@@ -5274,6 +5383,7 @@ msgstr ""
 msgid "Public key is disabled.\n"
 msgstr "A chave pública está desactivada.\n"
 
+#, c-format
 msgid "skipped: public key already set\n"
 msgstr "omitido: chave pública xa estabrecida\n"
 
@@ -5281,6 +5391,7 @@ msgstr "omitido: chave pública xa estabrecida\n"
 msgid "unknown default recipient \"%s\"\n"
 msgstr "destinatario por defecto `%s' descoñecido\n"
 
+#, c-format
 msgid "no valid addressees\n"
 msgstr "non hai enderezos válidos\n"
 
@@ -5292,6 +5403,7 @@ msgstr "chave %08lX: non hai ID de usuario\n"
 msgid "Note: key %s has no preference for %s\n"
 msgstr "chave %08lX: non hai ID de usuario\n"
 
+#, c-format
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "os datos non foron gardados; use a opción \"--output\" para gardalos\n"
 
@@ -5301,9 +5413,11 @@ msgstr "Sinatura non adxunta.\n"
 msgid "Please enter name of data file: "
 msgstr "Por favor, introduza o nome do ficheiro de datos: "
 
+#, c-format
 msgid "reading stdin ...\n"
 msgstr "lendo de stdin ...\n"
 
+#, c-format
 msgid "no signed data\n"
 msgstr "non hai datos asinados\n"
 
@@ -5324,9 +5438,11 @@ msgstr "chave %08lX: non hai ID de usuario\n"
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "destinatario anónimo; tentando a chave secreta %08lX ...\n"
 
+#, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "vale, nós somo-lo destinatario anónimo.\n"
 
+#, c-format
 msgid "old encoding of the DEK is not supported\n"
 msgstr "a codificación vella do DEK non está soportada\n"
 
@@ -5342,7 +5458,7 @@ msgstr "NOTA: o algoritmo de cifrado %d non foi atopado nas preferencias\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "NOTA: a chave secreta %08lX caducou o %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "NOTA: a chave está revocada"
@@ -5474,6 +5590,7 @@ msgstr "(Non se deu unha descrición)\n"
 msgid "Is this okay? (y/N) "
 msgstr "¿É correcto? "
 
+#, c-format
 msgid "weak key created - retrying\n"
 msgstr "creouse unha chave feble - volvendo a tentalo\n"
 
@@ -5491,6 +5608,7 @@ msgstr ""
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "AVISO: conflicto de resumo de sinatura na mensaxe\n"
 
@@ -5562,6 +5680,11 @@ msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
 msgstr "sinatura independiente de clase 0x%02x\n"
 
 #, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad data signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "sinatura independiente de clase 0x%02x\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "asumindo unha sinatura incorrecta da chave %08lX debido a un bit crítico "
@@ -5604,6 +5727,7 @@ msgid ""
 msgstr ""
 "forza-lo algoritmo de resumo %s (%d) viola as preferencias do destinatario\n"
 
+#, c-format
 msgid "signing:"
 msgstr "asinando:"
 
@@ -5611,6 +5735,7 @@ msgstr "asinando:"
 msgid "%s encryption will be used\n"
 msgstr "hase empregar cifrado %s\n"
 
+#, c-format
 msgid "key is not flagged as insecure - can't use it with the faked RNG!\n"
 msgstr ""
 "a chave non está marcada coma insegura - non se pode empregar co xerador de "
@@ -5620,6 +5745,7 @@ msgstr ""
 msgid "skipped \"%s\": duplicated\n"
 msgstr "omítese `%s': duplicada\n"
 
+#, c-format
 msgid "skipped: secret key already present\n"
 msgstr "omítese: a chave secreta xa está presente\n"
 
@@ -5689,6 +5815,7 @@ msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr ""
 "rexistro da base de datos de confianza %lu: fallou a escritura (n=%d): %s\n"
 
+#, c-format
 msgid "trustdb transaction too large\n"
 msgstr "transacción da base de datos de confianza demasiado grande\n"
 
@@ -5712,7 +5839,7 @@ msgstr "%s: creouse unha base de datos de confianza incorrecta\n"
 msgid "%s: trustdb created\n"
 msgstr "%s: creouse a base de datos de confianza\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: trustdb not writable\n"
 msgid "Note: trustdb not writable\n"
 msgstr "NOTA: non se pode escribir na base de datos de confianza\n"
@@ -5773,7 +5900,7 @@ msgstr "%s: non se puido pór a cero un rexistro: %s\n"
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: non se puido engadir un rexistro: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Error: The trustdb is corrupted.\n"
 msgstr "%s: creouse a base de datos de confianza\n"
 
@@ -5807,6 +5934,7 @@ msgstr ""
 msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
+#, c-format
 msgid "TOFU DB error"
 msgstr ""
 
@@ -5980,6 +6108,7 @@ msgstr ""
 msgid "Defaulting to unknown.\n"
 msgstr ""
 
+#, c-format
 msgid "TOFU db corruption detected.\n"
 msgstr ""
 
@@ -6068,17 +6197,21 @@ msgstr[1] "|algo [ficheiros]|visualizar resumos de mensaxes"
 msgid "(policy: %s)"
 msgstr "Normativa: "
 
+#, c-format
 msgid ""
 "Warning: we have yet to see a message signed using this key and user id!\n"
 msgstr ""
 
+#, c-format
 msgid ""
 "Warning: we've only seen one message signed using this key and user id!\n"
 msgstr ""
 
+#, c-format
 msgid "Warning: you have yet to encrypt a message to this key!\n"
 msgstr ""
 
+#, c-format
 msgid "Warning: you have only encrypted one message to this key!\n"
 msgstr ""
 
@@ -6141,9 +6274,11 @@ msgstr "rexistro de confianza %lu, tipo da petición %d: fallou a lectura: %s\n"
 msgid "trust record %lu is not of requested type %d\n"
 msgstr "o rexistro de confianza %lu non é do tipo %d solicitado\n"
 
+#, c-format
 msgid "You may try to re-create the trustdb using the commands:\n"
 msgstr ""
 
+#, c-format
 msgid "If that does not work, please consult the manual\n"
 msgstr ""
 
@@ -6155,6 +6290,7 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr ""
 
+#, c-format
 msgid "no need for a trustdb check\n"
 msgstr "non se precisa comproba-la base de datos de confianza\n"
 
@@ -6174,9 +6310,11 @@ msgstr "non se precisa comproba-la base de datos de confianza\n"
 msgid "public key %s not found: %s\n"
 msgstr "non se atopou a chave pública %08lX: %s\n"
 
+#, c-format
 msgid "please do a --check-trustdb\n"
 msgstr "por favor, execute con --check-trustdb\n"
 
+#, c-format
 msgid "checking the trustdb\n"
 msgstr "comprobando a base de datos de confianza\n"
 
@@ -6193,6 +6331,7 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "procesáronse %d chaves (marcáronse %d contas de validez)\n"
 msgstr[1] "procesáronse %d chaves (marcáronse %d contas de validez)\n"
 
+#, c-format
 msgid "no ultimately trusted keys found\n"
 msgstr "non se atoparon chaves de confianza absoluta\n"
 
@@ -6264,6 +6403,7 @@ msgstr ""
 msgid "[ultimate]"
 msgstr ""
 
+#, c-format
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -6310,6 +6450,7 @@ msgstr ""
 msgid "PIN callback returned error: %s\n"
 msgstr ""
 
+#, c-format
 msgid "the NullPIN has not yet been changed\n"
 msgstr ""
 
@@ -6357,20 +6498,24 @@ msgstr "non se puido inicializa-la base de datos de confianzas: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "fallo ao reconstruí-la caché de chaveiros: %s\n"
 
+#, c-format
 msgid "error retrieving CHV status from card\n"
 msgstr ""
 
+#, c-format
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
+#, c-format
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "remove keys from the public keyring"
 msgid "response does not contain the EC public key\n"
 msgstr "borrar chaves do chaveiro público"
 
+#, c-format
 msgid "response does not contain the public key data\n"
 msgstr ""
 
@@ -6415,6 +6560,7 @@ msgstr ""
 msgid "verify CHV%d failed: %s\n"
 msgstr "o envío ao servidor de chaves fallou: %s\n"
 
+#, c-format
 msgid "card is permanently locked!\n"
 msgstr ""
 
@@ -6431,6 +6577,7 @@ msgstr[1] ""
 msgid "|A|Please enter the Admin PIN"
 msgstr "cambia-lo contrasinal"
 
+#, c-format
 msgid "access to admin commands is not configured\n"
 msgstr ""
 
@@ -6466,29 +6613,31 @@ msgstr "cambia-lo contrasinal"
 msgid "||Please enter the PIN and New PIN"
 msgstr "cambia-lo contrasinal"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "error reading application data\n"
 msgstr "erro ao le-lo bloque de chaves: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "error reading fingerprint DO\n"
 msgstr "%s: erro ao ler un rexistro libre: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "key already exists\n"
 msgstr "`%s' xa está comprimido\n"
 
+#, c-format
 msgid "existing key will be replaced\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "generating new key\n"
 msgstr "xerar un novo par de chaves"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "writing new key\n"
 msgstr "xerar un novo par de chaves"
 
+#, c-format
 msgid "creation timestamp missing\n"
 msgstr ""
 
@@ -6500,15 +6649,16 @@ msgstr ""
 msgid "failed to store the key: %s\n"
 msgstr "non se puido inicializa-la base de datos de confianzas: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "unsupported URI"
 msgid "unsupported curve\n"
 msgstr "URI non soportado"
 
+#, c-format
 msgid "please wait while key is being generated ...\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "generating key failed\n"
 msgstr "fallou o borrado do bloque de chaves: %s\n"
 
@@ -6518,9 +6668,11 @@ msgid_plural "key generation completed (%d seconds)\n"
 msgstr[0] "A xeración da chave fallou: %s\n"
 msgstr[1] "A xeración da chave fallou: %s\n"
 
+#, c-format
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr ""
 
+#, c-format
 msgid "fingerprint on card does not match requested one\n"
 msgstr ""
 
@@ -6532,6 +6684,7 @@ msgstr "Sinatura %s, algoritmo de resumo %s\n"
 msgid "signatures created so far: %lu\n"
 msgstr ""
 
+#, c-format
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
@@ -6598,6 +6751,7 @@ msgid ""
 "Smartcard daemon for @GNUPG@\n"
 msgstr ""
 
+#, c-format
 msgid "please use the option '--daemon' to run the program in the background\n"
 msgstr ""
 
@@ -6609,7 +6763,7 @@ msgstr ""
 msgid "handler for fd %d terminated\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no dirmngr running in this session\n"
 msgstr "gpg-agent non está dispoñible nesta sesión\n"
 
@@ -6628,6 +6782,7 @@ msgstr "axuda"
 msgid "critical certificate extension %s is not supported"
 msgstr "a versión %d do protocolo de gpg-agent non está soportada\n"
 
+#, c-format
 msgid "issuer certificate is not marked as a CA"
 msgstr ""
 
@@ -6638,14 +6793,15 @@ msgstr ""
 msgid "failed to open '%s': %s\n"
 msgstr "non se puido abrir `%s': %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Note: non-critical certificate policy not allowed"
 msgstr "gravando a chave secreta en `%s'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate policy not allowed"
 msgstr "gravando a chave secreta en `%s'\n"
 
+#, c-format
 msgid "looking up issuer at external location\n"
 msgstr ""
 
@@ -6653,6 +6809,7 @@ msgstr ""
 msgid "number of issuers matching: %d\n"
 msgstr ""
 
+#, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
 msgstr ""
 
@@ -6664,7 +6821,7 @@ msgstr "erro ao crea-lo contrasinal: %s\n"
 msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "fallou o borrado do bloque de chaves: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "failed to allocate keyDB handle\n"
 msgstr "non se puido inicializa-la base de datos de confianzas: %s\n"
 
@@ -6675,6 +6832,7 @@ msgstr "NOTA: a chave está revocada"
 msgid "the status of the certificate is unknown"
 msgstr ""
 
+#, c-format
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
 msgstr ""
 
@@ -6686,7 +6844,7 @@ msgstr "fallou a comprobación da sinatura creada: %s\n"
 msgid "certificate with invalid validity: %s"
 msgstr "problema de lectura do certificado: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate not yet valid"
 msgstr "Revocación de certificado válida"
 
@@ -6698,7 +6856,7 @@ msgstr "Revocación de certificado válida"
 msgid "intermediate certificate not yet valid"
 msgstr "Revocación de certificado válida"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate has expired"
 msgstr "problema de lectura do certificado: %s\n"
 
@@ -6727,18 +6885,19 @@ msgstr ""
 msgid "intermediate certificate not created during lifetime of issuer"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "  (  signature created at "
 msgstr "         novas sinaturas: %lu\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "  (certificate created at "
 msgstr "Creouse o certificado de revocación.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "  (certificate valid from "
 msgstr "Revocación de certificado válida"
 
+#, c-format
 msgid "  (     issuer valid from "
 msgstr ""
 
@@ -6746,15 +6905,17 @@ msgstr ""
 msgid "fingerprint=%s\n"
 msgstr "Pegada dactilar:"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "root certificate has now been marked as trusted\n"
 msgstr ""
 "Non se atoparon certificados con confianza non definida.\n"
 "\n"
 
+#, c-format
 msgid "interactive marking as trusted not enabled in gpg-agent\n"
 msgstr ""
 
+#, c-format
 msgid "interactive marking as trusted disabled for this session\n"
 msgstr ""
 
@@ -6768,7 +6929,7 @@ msgstr "Certificado correcto"
 msgid "self-signed certificate has a BAD signature"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "root certificate is not marked trusted"
 msgstr ""
 "Non se atoparon certificados con confianza non definida.\n"
@@ -6778,15 +6939,15 @@ msgstr ""
 msgid "checking the trust list failed: %s\n"
 msgstr "fallou a comprobación da sinatura creada: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate chain too long\n"
 msgstr "Revocación de certificado válida"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "issuer certificate not found"
 msgstr "Revocación de certificado válida"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate has a BAD signature"
 msgstr "verificar unha sinatura"
 
@@ -6797,15 +6958,15 @@ msgstr ""
 msgid "certificate chain longer than allowed by CA (%d)"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate is good\n"
 msgstr "Revocación de certificado válida"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "intermediate certificate is good\n"
 msgstr "certificado duplicado - borrado"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "root certificate is good\n"
 msgstr ""
 "Non se atoparon certificados con confianza non definida.\n"
@@ -6822,6 +6983,7 @@ msgstr ""
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 
@@ -6855,6 +7017,7 @@ msgstr ""
 "\"%.*s\"\n"
 "Chave de %u bits, %s, ID %08lX, creada o %s%s\n"
 
+#, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
 
@@ -6862,21 +7025,27 @@ msgstr ""
 msgid "error getting key usage information: %s\n"
 msgstr "erro escribindo no chaveiro secreto `%s': %s\n"
 
+#, c-format
 msgid "certificate should not have been used for certification\n"
 msgstr ""
 
+#, c-format
 msgid "certificate should not have been used for OCSP response signing\n"
 msgstr ""
 
+#, c-format
 msgid "certificate should not have been used for encryption\n"
 msgstr ""
 
+#, c-format
 msgid "certificate should not have been used for signing\n"
 msgstr ""
 
+#, c-format
 msgid "certificate is not usable for encryption\n"
 msgstr ""
 
+#, c-format
 msgid "certificate is not usable for signing\n"
 msgstr ""
 
@@ -7062,12 +7231,15 @@ msgstr ""
 msgid "Ready.  You should now send this request to your CA.\n"
 msgstr ""
 
+#, c-format
 msgid "resource problem: out of core\n"
 msgstr ""
 
+#, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr ""
 
+#, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr ""
 
@@ -7091,7 +7263,7 @@ msgstr "certificado duplicado - borrado"
 msgid "deleting certificate \"%s\" failed: %s\n"
 msgstr "fallou o borrado do bloque de chaves: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no valid recipients given\n"
 msgstr "(Non se deu unha descrición)\n"
 
@@ -7223,7 +7395,7 @@ msgstr ""
 msgid "%s:%u: skipping this line\n"
 msgstr " o = omitir esta chave\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "could not parse keyserver\n"
 msgstr "non se puido analisa-lo URI do servidor de chaves\n"
 
@@ -7235,6 +7407,7 @@ msgstr "escribindo a `%s'\n"
 msgid "can't sign using '%s': %s\n"
 msgstr "non se pode pechar `%s': %s\n"
 
+#, c-format
 msgid "invalid command (there is no implicit command)\n"
 msgstr ""
 
@@ -7242,10 +7415,11 @@ msgstr ""
 msgid "total number processed: %lu\n"
 msgstr "Número total procesado: %lu\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "error storing certificate\n"
 msgstr "Certificado correcto"
 
+#, c-format
 msgid "basic certificate checks failed - not imported\n"
 msgstr ""
 
@@ -7261,7 +7435,7 @@ msgstr "erro ao crea-lo contrasinal: %s\n"
 msgid "error reading input: %s\n"
 msgstr "erro lendo `%s': %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "failed to get the fingerprint\n"
 msgstr "non se puido inicializa-la base de datos de confianzas: %s\n"
 
@@ -7288,6 +7462,7 @@ msgstr "erro lendo `%s': %s\n"
 msgid "Error - "
 msgstr ""
 
+#, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
 msgstr ""
 
@@ -7309,6 +7484,7 @@ msgid ""
 "%s%sAre you really sure that you want to do this?"
 msgstr ""
 
+#, c-format
 msgid ""
 "Note, that this software is not officially approved to create or verify such "
 "signatures.\n"
@@ -7333,10 +7509,11 @@ msgstr ""
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "fallou a comprobación da sinatura creada: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Signature made "
 msgstr "A sinatura caducou o %s\n"
 
+#, c-format
 msgid "[date not given]"
 msgstr ""
 
@@ -7344,19 +7521,20 @@ msgstr ""
 msgid " using certificate ID 0x%08lX\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
+#, c-format
 msgid ""
 "invalid signature: message digest attribute does not match computed one\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Good signature from"
 msgstr "Sinatura correcta de \""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "                aka"
 msgstr "               alias \""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "This is a qualified signature\n"
 msgstr ""
 "\n"
@@ -7425,11 +7603,11 @@ msgstr "erro ao crea-lo contrasinal: %s\n"
 msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate already cached\n"
 msgstr "Creouse o certificado de revocación.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate cached\n"
 msgstr "Revocación de certificado válida"
 
@@ -7449,7 +7627,7 @@ msgstr "erro ao crea-lo contrasinal: %s\n"
 msgid "error fetching certificate by subject: %s\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no issuer found in certificate\n"
 msgstr "Certificado correcto"
 
@@ -7517,9 +7695,11 @@ msgstr "non se pode crea-lo directorio `%s': %s\n"
 msgid "first record of '%s' is not the version\n"
 msgstr ""
 
+#, c-format
 msgid "old version of cache directory - cleaning up\n"
 msgstr ""
 
+#, c-format
 msgid "old version of cache directory - giving up\n"
 msgstr ""
 
@@ -7556,9 +7736,11 @@ msgstr "erro: pegada dactilar non válida\n"
 msgid "WARNING: invalid cache file hash in '%s' line %u\n"
 msgstr "AVISO: tamaño do ficheiro random_seed non válido - non se emprega\n"
 
+#, c-format
 msgid "detected errors in cache dir file\n"
 msgstr ""
 
+#, c-format
 msgid "please check the reason and manually delete that file\n"
 msgstr ""
 
@@ -7591,6 +7773,7 @@ msgstr "erro lendo `%s': %s\n"
 msgid "invalid formatted checksum for '%s'\n"
 msgstr "erro: pegada dactilar non válida\n"
 
+#, c-format
 msgid "too many open cache files; can't open anymore\n"
 msgstr ""
 
@@ -7606,9 +7789,11 @@ msgstr "erro lendo `%s': %s\n"
 msgid "error initializing cache file '%s' for reading: %s\n"
 msgstr ""
 
+#, c-format
 msgid "calling unlock_db_file on a closed file\n"
 msgstr ""
 
+#, c-format
 msgid "calling unlock_db_file on an unlocked file\n"
 msgstr ""
 
@@ -7643,6 +7828,7 @@ msgstr ""
 msgid "cached CRL for issuer id %s tampered; we need to update\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: invalid cache record length for S/N "
 msgstr ""
 
@@ -7672,7 +7858,7 @@ msgstr "algoritmo de hash non válido `%s'\n"
 msgid "gcry_md_open for algorithm %d failed: %s\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "invalid response from agent\n"
 msgid "got an invalid S-expression from libksba\n"
 msgstr "resposta do axente non válida\n"
@@ -7700,6 +7886,7 @@ msgstr "erro ao crea-lo contrasinal: %s\n"
 msgid "update times of this CRL: this=%s next=%s\n"
 msgstr ""
 
+#, c-format
 msgid "nextUpdate not given; assuming a validity period of one day\n"
 msgstr ""
 
@@ -7715,6 +7902,7 @@ msgstr "escribindo a `%s'\n"
 msgid "no CRL issuer found in CRL: %s\n"
 msgstr "Certificado correcto"
 
+#, c-format
 msgid "locating CRL issuer certificate by authorityKeyIdentifier\n"
 msgstr ""
 
@@ -7784,6 +7972,7 @@ msgstr "erro ao crea-lo contrasinal: %s\n"
 msgid "problem renaming '%s' to '%s': %s\n"
 msgstr "non se puido poñe-la armadura: %s\n"
 
+#, c-format
 msgid ""
 "updating the DIR file failed - cache entry will get lost with the next "
 "program start\n"
@@ -7808,7 +7997,7 @@ msgstr ""
 msgid " ERROR: This cached CRL may have been tampered with!\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "WARNING: invalid size of random_seed file - not used\n"
 msgid " WARNING: invalid cache record length\n"
 msgstr "AVISO: tamaño do ficheiro random_seed non válido - non se emprega\n"
@@ -7841,6 +8030,7 @@ msgstr "lid ?: a inserción fallou: %s\n"
 msgid "crl_cache_insert via issuer failed: %s\n"
 msgstr "fallou o borrado do bloque de chaves: %s\n"
 
+#, c-format
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
@@ -7857,7 +8047,7 @@ msgstr "erro ao crear `%s': %s\n"
 msgid "error initializing reader object: %s\n"
 msgstr "%s: erro ao escribi-lo rexistro de directorios: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "CRL access not possible due to Tor mode\n"
 msgstr "non se atopou a chave `%s': %s\n"
 
@@ -7927,6 +8117,7 @@ msgstr "erro ao crea-lo contrasinal: %s\n"
 msgid "error reading certificate from '%s': %s\n"
 msgstr "erro lendo `%s': %s\n"
 
+#, c-format
 msgid "certificate too large to make any sense\n"
 msgstr ""
 
@@ -7944,6 +8135,7 @@ msgstr "a actualización fallou: %s\n"
 msgid "loading CRL '%s' failed: %s\n"
 msgstr "non se puido poñe-la armadura: %s\n"
 
+#, c-format
 msgid "a dirmngr daemon is up and running\n"
 msgstr ""
 
@@ -7951,11 +8143,11 @@ msgstr ""
 msgid "validation of certificate failed: %s\n"
 msgstr "fallou o borrado do bloque de chaves: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate is valid\n"
 msgstr "Revocación de certificado válida"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate has been revoked\n"
 msgstr "NOTA: a chave está revocada"
 
@@ -7979,6 +8171,7 @@ msgstr ""
 "\n"
 "Algoritmos soportados:\n"
 
+#, c-format
 msgid "absolute file name expected\n"
 msgstr ""
 
@@ -8097,7 +8290,7 @@ msgstr ""
 msgid "usage: %s [options] "
 msgstr "uso: gpg [opcións] "
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "%s not allowed with %s!\n"
 msgid "colons are not allowed in the socket name\n"
 msgstr "¡%s non se admite con %s!\n"
@@ -8126,12 +8319,15 @@ msgstr "erro de lectura: %s\n"
 msgid "%s:%u: garbage at end of line ignored\n"
 msgstr ""
 
+#, c-format
 msgid "SIGHUP received - re-reading configuration and flushing caches\n"
 msgstr ""
 
+#, c-format
 msgid "SIGUSR2 received - no action defined\n"
 msgstr ""
 
+#, c-format
 msgid "SIGTERM received - shutting down ...\n"
 msgstr ""
 
@@ -8139,10 +8335,11 @@ msgstr ""
 msgid "SIGTERM received - still %d active connections\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "shutdown forced\n"
 msgstr "non procesado"
 
+#, c-format
 msgid "SIGINT received - immediate shutdown\n"
 msgstr ""
 
@@ -8263,7 +8460,7 @@ msgstr "(Non se deu unha descrición)\n"
 msgid "no attribute given for query '%s'\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "WARNING: using insecure memory!\n"
 msgid "WARNING: using first attribute only\n"
 msgstr "AVISO: ¡úsase memoria insegura!\n"
@@ -8341,10 +8538,11 @@ msgstr "fallou o borrado do bloque de chaves: %s\n"
 msgid "start_cert_fetch: invalid pattern '%s'\n"
 msgstr ""
 
+#, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "%s: invalid file version %d\n"
 msgid "invalid canonical S-expression found\n"
 msgstr "%s: versión do ficheiro incorrecta %d\n"
@@ -8358,6 +8556,7 @@ msgstr "non se puido abrir un ficheiro: %s\n"
 msgid "oops: ksba_cert_hash failed: %s\n"
 msgstr "o segredo da actualización fallou: %s\n"
 
+#, c-format
 msgid "bad URL encoding detected\n"
 msgstr ""
 
@@ -8369,10 +8568,11 @@ msgstr "erro lendo `%s': %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "OCSP request not possible due to Tor mode\n"
 msgstr "non se atopou a chave `%s': %s\n"
 
+#, c-format
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
 
@@ -8396,7 +8596,7 @@ msgstr "erro lendo `%s': %s\n"
 msgid "URL '%s' redirected to '%s' (%u)\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "too many redirections\n"
 msgstr "demasiadas preferencias `%c'\n"
 
@@ -8413,9 +8613,11 @@ msgstr ""
 msgid "hashing the OCSP response for '%s' failed: %s\n"
 msgstr "o cambio de permisos de `%s' fallou: %s\n"
 
+#, c-format
 msgid "not signed by a default OCSP signer's certificate"
 msgstr ""
 
+#, c-format
 msgid "only SHA-1 is supported for OCSP responses\n"
 msgstr ""
 
@@ -8427,6 +8629,7 @@ msgstr "fallou o borrado do bloque de chaves: %s\n"
 msgid "error getting responder ID: %s\n"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
+#, c-format
 msgid "no suitable certificate found to verify the OCSP response\n"
 msgstr ""
 
@@ -8434,10 +8637,11 @@ msgstr ""
 msgid "issuer certificate not found: %s\n"
 msgstr "Revocación de certificado válida"
 
+#, c-format
 msgid "caller did not return the target certificate\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "caller did not return the issuing certificate\n"
 msgstr "Certificado correcto"
 
@@ -8450,10 +8654,11 @@ msgstr "non se puido inicializa-la base de datos de confianzas: %s\n"
 msgid "can't get authorityInfoAccess: %s\n"
 msgstr "%s: non é posible acceder: %s\n"
 
+#, c-format
 msgid "no default OCSP responder defined\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "no default secret keyring: %s\n"
 msgid "no default OCSP signer defined\n"
 msgstr "non hai un chaveiro privado por defecto: %s\n"
@@ -8485,12 +8690,15 @@ msgstr ""
 msgid "certificate has been revoked at: %s due to: %s\n"
 msgstr "NOTA: a chave está revocada"
 
+#, c-format
 msgid "OCSP responder returned a status in the future\n"
 msgstr ""
 
+#, c-format
 msgid "OCSP responder returned a non-current status\n"
 msgstr ""
 
+#, c-format
 msgid "OCSP responder returned an too old status\n"
 msgstr ""
 
@@ -8554,10 +8762,11 @@ msgstr ""
 msgid "Assuan processing failed: %s\n"
 msgstr "fallou a sinatura: %s\n"
 
+#, c-format
 msgid "accepting root CA not marked as a CA"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "checking the trustdb\n"
 msgid "CRL checking too deeply nested\n"
 msgstr "comprobando a base de datos de confianza\n"
@@ -8569,7 +8778,7 @@ msgstr ""
 msgid "checking CRL for"
 msgstr "fallou a comprobación da sinatura creada: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "selfsigned certificate has a BAD signature"
 msgstr "verificar unha sinatura"
 
@@ -8577,10 +8786,11 @@ msgstr "verificar unha sinatura"
 msgid "checking trustworthiness of root certificate failed: %s\n"
 msgstr "fallou a comprobación da sinatura creada: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate chain is good\n"
 msgstr "Revocación de certificado válida"
 
+#, c-format
 msgid "certificate should not have been used for CRL signing\n"
 msgstr ""
 
@@ -8637,10 +8847,11 @@ msgstr ""
 msgid "receiving line failed: %s\n"
 msgstr "fallou o borrado do bloque de chaves: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "line too long - skipped\n"
 msgstr "liña longa de máis\n"
 
+#, c-format
 msgid "line shortened due to embedded Nul character\n"
 msgstr ""
 
@@ -8943,16 +9154,19 @@ msgstr "erro lendo `%s': %s\n"
 msgid "error closing %s: %s\n"
 msgstr "erro lendo `%s': %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no --program option provided\n"
 msgstr "non se soporta a execución remota de programas\n"
 
+#, c-format
 msgid "only --decrypt and --encrypt are supported\n"
 msgstr ""
 
+#, c-format
 msgid "no --keyfile option provided\n"
 msgstr ""
 
+#, c-format
 msgid "cannot allocate args vector\n"
 msgstr ""
 
@@ -9004,6 +9218,7 @@ msgstr "non se pode crear `%s': %s\n"
 msgid "either %s or %s must be given\n"
 msgstr ""
 
+#, c-format
 msgid "no class provided\n"
 msgstr ""
 

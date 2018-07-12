@@ -457,6 +457,7 @@ msgstr ""
 msgid "invalid debug-level '%s' given\n"
 msgstr "ugyldigt fejlsøgningsniveau »%s« angivet\n"
 
+#, c-format
 msgid "selected digest algorithm is invalid\n"
 msgstr "valgt sammendragsalgoritme er ugyldig\n"
 
@@ -489,9 +490,11 @@ msgstr "kan ikke oprette sokkel: %s\n"
 msgid "socket name '%s' is too long\n"
 msgstr "sokkelnavnet »%s« er for langt\n"
 
+#, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "en gpg-agent kører allerede - starter ikke en ny\n"
 
+#, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "fejl ved indhentelse af nonce for soklen\n"
 
@@ -559,6 +562,7 @@ msgstr "pth_select mislykkeds: %s - venter 1s\n"
 msgid "%s %s stopped\n"
 msgstr "%s %s stoppet\n"
 
+#, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "ingen gpg-agent kører i denne session\n"
 
@@ -620,6 +624,7 @@ msgstr ""
 "Indtast venligst adgangsfrasen eller PIN'en\n"
 "krævet for at færdiggøre denne handling."
 
+#, c-format
 msgid "cancelled\n"
 msgstr "afbrudt\n"
 
@@ -662,6 +667,7 @@ msgstr "ugyldigt nøgleflag i »%s«, linje %d\n"
 msgid "error reading '%s', line %d: %s\n"
 msgstr "fejl ved læsning af »%s«, linje %d: %s\n"
 
+#, c-format
 msgid "error reading list of trusted root certificates\n"
 msgstr "fejl ved læsning af liste over betroede rodcertifikater\n"
 
@@ -747,6 +753,7 @@ msgid ""
 "Deleting the key might remove your ability to access remote machines."
 msgstr ""
 
+#, c-format
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr "DSA kræver at hashlængden skal gå op i 8 bit\n"
 
@@ -763,6 +770,7 @@ msgstr "en %u-bit-hash er ikke gyldig for en %u-bit %s-nøgle\n"
 msgid "checking created signature failed: %s\n"
 msgstr "kontrol af oprettet underskrift mislykkedes: %s\n"
 
+#, c-format
 msgid "secret key parts are not available\n"
 msgstr "hemmelige nøgledele er ikke tilgængelige\n"
 
@@ -827,6 +835,7 @@ msgstr "fejl ved indhentelse af afslutningskode for proces %d: %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "kan ikke forbinde til »%s«: %s\n"
 
+#, c-format
 msgid "problem setting the gpg-agent options\n"
 msgstr "problem ved angivelse af indstillinger for gpg-agent\n"
 
@@ -922,10 +931,11 @@ msgstr "ingen kørende gpg-agent - starter en\n"
 msgid "waiting for the agent to come up ... (%ds)\n"
 msgstr "venter %d sekunder på at agenten kommer frem\n"
 
+#, c-format
 msgid "connection to agent established\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "can't connect to the dirmngr - trying fall back\n"
 msgid "connection to agent is in restricted mode\n"
 msgstr "kan ikke forbinde til dirmngr - forsøger reserve\n"
@@ -940,7 +950,7 @@ msgstr "ingen kørende dirmngr - starter »%s«\n"
 msgid "waiting for the dirmngr to come up ... (%ds)\n"
 msgstr "venter %d sekunder på at agenten kommer frem\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "can't connect to the dirmngr - trying fall back\n"
 msgid "connection to the dirmngr established\n"
 msgstr "kan ikke forbinde til dirmngr - forsøger reserve\n"
@@ -1147,6 +1157,7 @@ msgstr "tilvalg »%.50s« er tvetydigt\n"
 msgid "command \"%.50s\" is ambiguous\n"
 msgstr "kommando »%.50s« er tvetydig\n"
 
+#, c-format
 msgid "out of core\n"
 msgstr "uden for kerne\n"
 
@@ -1206,24 +1217,31 @@ msgstr "%s er for gammel (kræver %s, har %s)\n"
 msgid "armor: %s\n"
 msgstr "panser: %s\n"
 
+#, c-format
 msgid "invalid armor header: "
 msgstr "ugyldigt panserhoved: "
 
+#, c-format
 msgid "armor header: "
 msgstr "panserhoved: "
 
+#, c-format
 msgid "invalid clearsig header\n"
 msgstr "ugyldigt clearsig-hoved\n"
 
+#, c-format
 msgid "unknown armor header: "
 msgstr "ukendt panserhoved: "
 
+#, c-format
 msgid "nested clear text signatures\n"
 msgstr "indlejrede underskrifter i klartekst\n"
 
+#, c-format
 msgid "unexpected armor: "
 msgstr "uventet panser: "
 
+#, c-format
 msgid "invalid dash escaped line: "
 msgstr "ugyldig striplet undvegen linje: "
 
@@ -1231,12 +1249,15 @@ msgstr "ugyldig striplet undvegen linje: "
 msgid "invalid radix64 character %02X skipped\n"
 msgstr "ugyldigt radix64-tegn %02x udeladt\n"
 
+#, c-format
 msgid "premature eof (no CRC)\n"
 msgstr "for tidlig eof (ingen CRC)\n"
 
+#, c-format
 msgid "premature eof (in CRC)\n"
 msgstr "for tidlig eof (i CRC)\n"
 
+#, c-format
 msgid "malformed CRC\n"
 msgstr "ugyldig udformet CRC\n"
 
@@ -1244,12 +1265,15 @@ msgstr "ugyldig udformet CRC\n"
 msgid "CRC error; %06lX - %06lX\n"
 msgstr "CRC-fejl; %06lx - %06lx\n"
 
+#, c-format
 msgid "premature eof (in trailer)\n"
 msgstr "for tidlig eof (i trailer)\n"
 
+#, c-format
 msgid "error in trailer line\n"
 msgstr "fejl i trailerlinje\n"
 
+#, c-format
 msgid "no valid OpenPGP data found.\n"
 msgstr "ingen gyldige OpenPGP-data fundet.\n"
 
@@ -1257,6 +1281,7 @@ msgstr "ingen gyldige OpenPGP-data fundet.\n"
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "ugyldigt panser: linje længere end %d tegn\n"
 
+#, c-format
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
@@ -1267,6 +1292,7 @@ msgstr ""
 msgid "[ not human readable (%zu bytes: %s%s) ]"
 msgstr "kan ikke læses af mennesker"
 
+#, c-format
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1274,21 +1300,24 @@ msgstr ""
 "et notationsnavn må kun have udskrivningstegn eller mellemrum og skal "
 "sluttes med et »=«\n"
 
+#, c-format
 msgid "a user notation name must contain the '@' character\n"
 msgstr "et brugernotationsnavn skal indeholde tegnet »@«\n"
 
+#, c-format
 msgid "a notation name must not contain more than one '@' character\n"
 msgstr "et notationsnavn må ikke indeholde mere end et »@«-tegn\n"
 
+#, c-format
 msgid "a notation value must not use any control characters\n"
 msgstr "en notationsværdi må ikke bruge nogen kontroltegn\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "a notation name must not contain more than one '@' character\n"
 msgid "a notation name may not contain an '=' character\n"
 msgstr "et notationsnavn må ikke indeholde mere end et »@«-tegn\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid ""
 #| "a notation name must have only printable characters or spaces, and end "
 #| "with an '='\n"
@@ -1297,6 +1326,7 @@ msgstr ""
 "et notationsnavn må kun have udskrivningstegn eller mellemrum og skal "
 "sluttes med et »=«\n"
 
+#, c-format
 msgid "WARNING: invalid notation data found\n"
 msgstr "ADVARSEL: Ingen notationsdata fundet\n"
 
@@ -1323,6 +1353,7 @@ msgstr ""
 msgid "WARNING: %s\n"
 msgstr "ADVARSEL: %s overskriver %s\n"
 
+#, c-format
 msgid "Note: Outdated servers may lack important security fixes.\n"
 msgstr ""
 
@@ -1344,12 +1375,15 @@ msgstr "OpenPGP-kort er ikke tilgængeligt: %s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "OpenPGP-kortnr. %s detekteret\n"
 
+#, c-format
 msgid "can't do this in batch mode\n"
 msgstr "kan ikke udføre dette i jobtilstand\n"
 
+#, c-format
 msgid "This command is only available for version 2 cards\n"
 msgstr "Denne kommando er kun tilgængelig for version 2-kort\n"
 
+#, c-format
 msgid "Reset Code not or not anymore available\n"
 msgstr "Nulstillingskode er ikke eller ikke mere tilgængelig\n"
 
@@ -1521,7 +1555,7 @@ msgstr "fejl ved ændring af størrelsen på nøglen %d til %u bit: %s\n"
 msgid "error getting card info: %s\n"
 msgstr "fejl ved indhentelse af aktuel nøgleinformation: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "This command is not allowed while in %s mode.\n"
 msgid "This command is not supported by this card\n"
 msgstr "Denne kommando er ikke tilladt i tilstanden %s.\n"
@@ -1530,7 +1564,7 @@ msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 "Lav sikkerhedskopi et andet sted end på kortet for krypteringsnøglen? (J/n) "
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: keys are already stored on the card!\n"
 msgid "Note: keys are already stored on the card!\n"
 msgstr "BEMÆRK: Nøgler er allerede gemt på kortet!\n"
@@ -1572,7 +1606,7 @@ msgstr "Vælg venligst hvor nøglen skal gemmes:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "læsning mislykkedes: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: keys are already stored on the card!\n"
 msgid "Note: This command destroys all keys stored on the card!\n"
 msgstr "BEMÆRK: Nøgler er allerede gemt på kortet!\n"
@@ -1664,6 +1698,7 @@ msgstr "Administratorkommandoer er ikke tilladt\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Ugyldig kommando (prøv »help«)\n"
 
+#, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "--output virker ikke for denne kommando\n"
 
@@ -1685,9 +1720,11 @@ msgstr "fejl ved læsning af nøgleblok: %s\n"
 msgid "key \"%s\" not found\n"
 msgstr "nøglen »%s« blev ikke fundet: %s\n"
 
+#, c-format
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(med mindre du angiver nøglen med fingeraftryk)\n"
 
+#, c-format
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "kan ikke udføre dette i jobtilstand uden »--yes«\n"
 
@@ -1714,6 +1751,7 @@ msgstr "Pubkey: "
 msgid "deleting keyblock failed: %s\n"
 msgstr "sletning af nøgleblok mislykkedes: %s\n"
 
+#, c-format
 msgid "ownertrust information cleared\n"
 msgstr "information om ejertroværdighed ryddet\n"
 
@@ -1721,6 +1759,7 @@ msgstr "information om ejertroværdighed ryddet\n"
 msgid "there is a secret key for public key \"%s\"!\n"
 msgstr "der er en hemmelig nøgle for offentlig nøgle »%s«!\n"
 
+#, c-format
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "brug tilvalget »--delete-secret-keys« for at slette den først.\n"
 
@@ -1728,6 +1767,7 @@ msgstr "brug tilvalget »--delete-secret-keys« for at slette den først.\n"
 msgid "error creating passphrase: %s\n"
 msgstr "fejl ved oprettelse af adgangsfrase: %s\n"
 
+#, c-format
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
 msgstr "kan ikke bruge en symmetrisk ESK-pakke på grund af S2K-tilstanden\n"
 
@@ -1797,24 +1837,29 @@ msgstr "%s krypterede data\n"
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "krypteret med ukendt algoritme %d\n"
 
+#, c-format
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr ""
 "ADVARSEL: Besked blev krypteret med en svag nøgle i den symmetriske "
 "chiffer.\n"
 
+#, c-format
 msgid "problem handling encrypted packet\n"
 msgstr "problem ved håndtering af krypteret pakke\n"
 
+#, c-format
 msgid "no remote program execution supported\n"
 msgstr "kørsel via eksternt program er ikke understøttet\n"
 
+#, c-format
 msgid ""
 "external program calls are disabled due to unsafe options file permissions\n"
 msgstr ""
 "kald fra eksterne programmer er deaktiveret på grund af usikre rettigheder "
 "for indstillingsfil\n"
 
+#, c-format
 msgid "this platform requires temporary files when calling external programs\n"
 msgstr ""
 "denne platform kræver midlertidige filer når der kaldes eksterne programmer\n"
@@ -1833,9 +1878,11 @@ msgstr "kan ikke køre skal »%s«: %s\n"
 msgid "system error while calling external program: %s\n"
 msgstr "systemfejl under kald af eksternt program: %s\n"
 
+#, c-format
 msgid "unnatural exit of external program\n"
 msgstr "unaturlig afslutning på eksternt program\n"
 
+#, c-format
 msgid "unable to execute external program\n"
 msgstr "kan ikke køre eksternt program\n"
 
@@ -1885,6 +1932,7 @@ msgstr "skriver til »%s«\n"
 msgid "key %s: key material on-card - skipped\n"
 msgstr "nøgle %s: nøglemateriale på kort - udeladt\n"
 
+#, c-format
 msgid "exporting secret keys not allowed\n"
 msgstr "eksport af hemmelige nøgler er ikke tilladt\n"
 
@@ -1892,6 +1940,7 @@ msgstr "eksport af hemmelige nøgler er ikke tilladt\n"
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "nøgle %s: nøgle i PGP 2.x-stil - udeladt\n"
 
+#, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "ADVARSEL: intet blev eksporteret\n"
 
@@ -2205,6 +2254,7 @@ msgstr "Komprimering: "
 msgid "usage: %s [options] %s\n"
 msgstr "brug: gpgsm [tilvalg] "
 
+#, c-format
 msgid "conflicting commands\n"
 msgstr "kommandoer er i konflikt\n"
 
@@ -2328,6 +2378,7 @@ msgstr "vis udløbsdatoer under underskriftvisninger"
 msgid "unknown TOFU policy '%s'\n"
 msgstr "ukendt tilvalg »%s«\n"
 
+#, c-format
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
@@ -2366,6 +2417,7 @@ msgstr "manglende parameter for indstilling »%.50s«\n"
 msgid "'%s' is not a valid character set\n"
 msgstr "»%s« er ikke et gyldigt tegnsæt\n"
 
+#, c-format
 msgid "could not parse keyserver URL\n"
 msgstr "kunne ikke fortolke nøgleserveradresse\n"
 
@@ -2373,6 +2425,7 @@ msgstr "kunne ikke fortolke nøgleserveradresse\n"
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: ugyldige indstillinger for nøgleserver\n"
 
+#, c-format
 msgid "invalid keyserver options\n"
 msgstr "ugyldige indstillinger for nøgleserver\n"
 
@@ -2380,6 +2433,7 @@ msgstr "ugyldige indstillinger for nøgleserver\n"
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: ugyldige importindstillinger\n"
 
+#, c-format
 msgid "invalid import options\n"
 msgstr "ugyldige importindstillinger\n"
 
@@ -2392,6 +2446,7 @@ msgstr "ugyldige listeindstillinger\n"
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: ugyldige eksportindstillinger\n"
 
+#, c-format
 msgid "invalid export options\n"
 msgstr "ugyldige eksportindstillinger\n"
 
@@ -2399,6 +2454,7 @@ msgstr "ugyldige eksportindstillinger\n"
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: ugyldige listeindstillinger\n"
 
+#, c-format
 msgid "invalid list options\n"
 msgstr "ugyldige listeindstillinger\n"
 
@@ -2439,6 +2495,7 @@ msgstr "hæv troværdigheden for underskrifter med gyldige PKA-data"
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: ugyldige verificeringsindstillinger\n"
 
+#, c-format
 msgid "invalid verify options\n"
 msgstr "ugyldige verificeringsindstillinger\n"
 
@@ -2450,9 +2507,11 @@ msgstr "kunne ikke angive kørselssti til %s\n"
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: ugyldig liste for auto-key-locate\n"
 
+#, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr "ugyldig liste for auto-key-locate\n"
 
+#, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "ADVARSEL: program kan oprette en kernefil!\n"
 
@@ -2468,6 +2527,7 @@ msgstr "%s ikke tilladt med %s!\n"
 msgid "%s makes no sense with %s!\n"
 msgstr "%s er meningsløs sammen med %s!\n"
 
+#, c-format
 msgid "WARNING: running with faked system time: "
 msgstr "ADVARSEL: kører med forfalsket systemtid: "
 
@@ -2475,47 +2535,60 @@ msgstr "ADVARSEL: kører med forfalsket systemtid: "
 msgid "will not run with insecure memory due to %s\n"
 msgstr "vil ikke køre med usikker hukommelse på grund af %s\n"
 
+#, c-format
 msgid "selected cipher algorithm is invalid\n"
 msgstr "valgt chifferalgoritme er ugyldig\n"
 
+#, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "valgt komprimeringsalgoritme er ugyldig\n"
 
+#, c-format
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "valgt algoritme for certifikationssammendrag er ugyldig\n"
 
+#, c-format
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed skal være større end 0\n"
 
+#, c-format
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed skal være større end 1\n"
 
+#, c-format
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth skal være i intervallet fra 1 til 255\n"
 
+#, c-format
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "ugyldigt default-cert-level; skal være 0, 1, 2 eller 3\n"
 
+#, c-format
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "ugyldigt min-cert-level; skal være 1, 2 eller 3\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgid "Note: simple S2K mode (0) is strongly discouraged\n"
 msgstr "BEMÆRK: simpel S2K-tilstand (0) frarådes på det skarpeste\n"
 
+#, c-format
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "ugyldig S2K-tilstand; skal være 0, 1 eller 3\n"
 
+#, c-format
 msgid "invalid default preferences\n"
 msgstr "ugyldige standardpræferencer\n"
 
+#, c-format
 msgid "invalid personal cipher preferences\n"
 msgstr "ugyldige præferencer for personlig chiffer\n"
 
+#, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "ugyldige præferencer for personlig sammendrag\n"
 
+#, c-format
 msgid "invalid personal compress preferences\n"
 msgstr "ugyldige præferencer for personlig komprimering\n"
 
@@ -2537,6 +2610,7 @@ msgstr "du må ikke bruge komprimeringsalgoritmen »%s« i tilstanden %s\n"
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "kunne ikke initialisere TrustDB: %s\n"
 
+#, c-format
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "ADVARSEL: modtagere (-r) angivet uden brug af offentlig nøglekryptering\n"
@@ -2546,6 +2620,7 @@ msgstr ""
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "symmetrisk kryptering af »%s« mislykkedes: %s\n"
 
+#, c-format
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr "du kan ikke bruge --symmetric --encrypt med --s2k-mode 0\n"
 
@@ -2554,6 +2629,7 @@ msgstr "du kan ikke bruge --symmetric --encrypt med --s2k-mode 0\n"
 msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "du kan ikke bruge --symmetric --encrypt i tilstanden %s\n"
 
+#, c-format
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr "du kan ikke bruge --symmetric --sign --encrypt med --s2k-mode 0\n"
 
@@ -2609,18 +2685,23 @@ msgstr "fejl ved lagring af certifikat: %s\n"
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
 msgstr ""
 
+#, c-format
 msgid "Go ahead and type your message ...\n"
 msgstr "Gå til sagen og skriv meddelelsen ...\n"
 
+#, c-format
 msgid "the given certification policy URL is invalid\n"
 msgstr "den angivne adresse for certifikatpolitik er ugyldig\n"
 
+#, c-format
 msgid "the given signature policy URL is invalid\n"
 msgstr "den angivne adresse for underskriftpolitik er ugyldig\n"
 
+#, c-format
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "den angivne adresse for foretrukken nøgleserver er ugyldig\n"
 
@@ -2788,9 +2869,11 @@ msgstr "        »%s«: præference for sammendragsalgortime %s\n"
 msgid "         \"%s\": preference for compression algorithm %s\n"
 msgstr "        »%s«: præference for komprimeringsalgortime %s\n"
 
+#, c-format
 msgid "it is strongly suggested that you update your preferences and\n"
 msgstr "det anbefales på det stærkeste, at du opdaterer dine præferencer og\n"
 
+#, c-format
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
 msgstr ""
 "gendistribuerer denne nøgle for at undgå potentielle problemer med rod i\n"
@@ -2824,6 +2907,7 @@ msgstr "nøgle %s: accepteret ikke egenunderskrevet bruger-id »%s«\n"
 msgid "key %s: no valid user IDs\n"
 msgstr "nøgle %s: ingen gyldige bruger-id'er\n"
 
+#, c-format
 msgid "this may be caused by a missing self-signature\n"
 msgstr "dette kan skyldes en manglende egenunderskrift\n"
 
@@ -2915,6 +2999,7 @@ msgstr "fejl under afsendelse af %s-kommando: %s\n"
 msgid "secret key %s: %s\n"
 msgstr "hemmelig nøgle »%s« blev ikke fundet: %s\n"
 
+#, c-format
 msgid "importing secret keys not allowed\n"
 msgstr "import af hemmelige nøgler er ikke tilladt\n"
 
@@ -2935,6 +3020,29 @@ msgstr "nøgle %s: hemmelig nøgle med ugyldig chiffer %d - udeladt\n"
 #, c-format
 msgid "To migrate '%s', with each smartcard, run: %s\n"
 msgstr ""
+
+msgid "No reason specified"
+msgstr "Ingen årsag angivet"
+
+msgid "Key is superseded"
+msgstr "Nøglen er blevet afløst"
+
+msgid "Key has been compromised"
+msgstr "Nøglen er blevet kompromitteret"
+
+msgid "Key is no longer used"
+msgstr "Nøglen bruges ikke længere"
+
+msgid "User ID is no longer valid"
+msgstr "Bruger-id er ikke længere gyldigt"
+
+#, c-format
+msgid "reason for revocation: "
+msgstr "årsag for tilbagekald: "
+
+#, c-format
+msgid "revocation comment: "
+msgstr "tilbagekaldskommentar: "
 
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
@@ -3560,10 +3668,11 @@ msgstr "Afslut uden at gemme? (j/N) "
 msgid "update failed: %s\n"
 msgstr "opdatering mislykkedes: %s\n"
 
+#, c-format
 msgid "Key not changed so no update needed.\n"
 msgstr "Nøgle ikke ændret så ingen opdatering krævet.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't delete the last user ID!\n"
 msgid "cannot revoke the last valid user ID.\n"
 msgstr "Du kan ikke slette den sidste bruger-id!\n"
@@ -3694,6 +3803,7 @@ msgstr "tilbagekaldt"
 msgid "expired"
 msgstr "udløbet"
 
+#, c-format
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -3701,10 +3811,11 @@ msgstr ""
 "ADVARSEL: Intet bruger-id er blevet markeret som primær. Denne kommando\n"
 "        kan medføre at et anden bruger-id bliver den formodede primære.\n"
 
+#, c-format
 msgid "WARNING: Your encryption subkey expires soon.\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
 msgstr "Du kan ikke ændre udløbsdatoen for en v3-nøgle\n"
@@ -3787,12 +3898,15 @@ msgstr ""
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Indtast bruger'id for den dedikerede tilbagekalder: "
 
+#, c-format
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "kan ikke udpege en nøgle i PGP 2.x-stil som dedikeret tilbagekalder\n"
 
+#, c-format
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "du kan ikke udpege en nøgle som dets egen dedikerede tilbagekalder\n"
 
+#, c-format
 msgid "this key has already been designated as a revoker\n"
 msgstr "denne nøgle er allerede blevet dedikeret som en tilbagekalder\n"
 
@@ -3823,6 +3937,7 @@ msgstr "Ændrer udløbstidspunkt for en undernøgle.\n"
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Ændrer udløbstidspunkt for den primære nøgle.\n"
 
+#, c-format
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Du kan ikke ændre udløbsdatoen for en v3-nøgle\n"
 
@@ -3925,6 +4040,7 @@ msgstr "Du er i gang med at tilbagekalde disse underskrifter:\n"
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Opret tilbagekaldscertifikaterne? (j/N) "
 
+#, c-format
 msgid "no secret key\n"
 msgstr "ingen hemmelig nøgle\n"
 
@@ -3941,7 +4057,7 @@ msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr ""
 "ADVARSEL: En bruger-id-underskrift er dateret %d sekunder inde i fremtiden\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't delete the last user ID!\n"
 msgid "Cannot revoke the last valid user ID.\n"
 msgstr "Du kan ikke slette den sidste bruger-id!\n"
@@ -3968,12 +4084,15 @@ msgstr "manglende parameter for indstilling »%.50s«\n"
 msgid "preference '%s' duplicated\n"
 msgstr "præference »%s« duplikeret\n"
 
+#, c-format
 msgid "too many cipher preferences\n"
 msgstr "for mange chifferpræferencer\n"
 
+#, c-format
 msgid "too many digest preferences\n"
 msgstr "for mange sammendragpræferencer\n"
 
+#, c-format
 msgid "too many compression preferences\n"
 msgstr "for mange komprimeringspræferencer\n"
 
@@ -3982,12 +4101,15 @@ msgstr "for mange komprimeringspræferencer\n"
 msgid "invalid item '%s' in preference string\n"
 msgstr "ugyldigt punkt »%s« i præferencestreng\n"
 
+#, c-format
 msgid "writing direct signature\n"
 msgstr "skriver direkte underskrift\n"
 
+#, c-format
 msgid "writing self signature\n"
 msgstr "skriver egenunderskrift\n"
 
+#, c-format
 msgid "writing key binding signature\n"
 msgstr "skriver underskrift for nøglebinding\n"
 
@@ -3999,6 +4121,7 @@ msgstr "nøglestørrelse er ugyldig; bruger %u bit\n"
 msgid "keysize rounded up to %u bits\n"
 msgstr "nøglestørrelse afrundet op til %u bit\n"
 
+#, c-format
 msgid ""
 "WARNING: some OpenPGP programs can't handle a DSA key with this digest size\n"
 msgstr ""
@@ -4350,7 +4473,7 @@ msgstr "nøgle findes allerede\n"
 msgid "Create anyway? (y/N) "
 msgstr "Brug denne nøgle alligevel? (j/N) "
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "generating new key\n"
 msgid "creating anyway\n"
 msgstr "opretter ny nøgle\n"
@@ -4359,6 +4482,7 @@ msgstr "opretter ny nøgle\n"
 msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
 msgstr ""
 
+#, c-format
 msgid "Key generation canceled.\n"
 msgstr "Nøgleoprettelse annulleret.\n"
 
@@ -4410,15 +4534,17 @@ msgstr ""
 "nøgle er blevet oprettet %lu sekunder i fremtiden (tidsforskydning eller "
 "urproblem)\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr ""
 "BEMÆRK: Oprettelse af undernøgler for v3-nøgler overholder ikke OpenPGP\n"
 
+#, c-format
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Hemmelige dele for primær nøgle er ikke tilgængelige.\n"
 
+#, c-format
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Hemmelige dele for primær nøgle gemmes på kortet.\n"
 
@@ -4579,9 +4705,11 @@ msgstr "ADVARSEL: Kan ikke opdatere nøgle %s via %s: %s\n"
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "nøgle »%s« blev ikke fundet på nøgleserver\n"
 
+#, c-format
 msgid "key not found on keyserver\n"
 msgstr "nøgle blev ikke fundet på nøgleserver\n"
 
+#, c-format
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "ingen kendt nøgleserver (brug tilvalget --keyserver)\n"
 
@@ -4593,7 +4721,7 @@ msgstr "anmoder om nøgle %s fra %s server %s\n"
 msgid "requesting key %s from %s\n"
 msgstr "anmoder om nøgle %s fra %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "no keyserver action!\n"
 msgid "no keyserver known\n"
 msgstr "ingen nøgleserverhandling!\n"
@@ -4631,6 +4759,7 @@ msgstr "adgangsfrase oprettet med ukendt sammendragsalgoritme %d\n"
 msgid "public key is %s\n"
 msgstr "offentlig nøgle er %s\n"
 
+#, c-format
 msgid "public key encrypted data: good DEK\n"
 msgstr "krypterede data for offentlig nøgle: god DEK\n"
 
@@ -4650,6 +4779,7 @@ msgstr "krypteret med %s nøgle, id %s\n"
 msgid "public key decryption failed: %s\n"
 msgstr "afkryptering af offentlig nøgle mislykkedes: %s\n"
 
+#, c-format
 msgid "WARNING: multiple plaintexts seen\n"
 msgstr "ADVARSEL: flere klartekster set\n"
 
@@ -4657,6 +4787,7 @@ msgstr "ADVARSEL: flere klartekster set\n"
 msgid "encrypted with %lu passphrases\n"
 msgstr "krypteret med %lu adgangsfraser\n"
 
+#, c-format
 msgid "encrypted with 1 passphrase\n"
 msgstr "krypteret med 1 adgangsfrase\n"
 
@@ -4669,6 +4800,7 @@ msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr ""
 "IDEA-chiffer utilgængelig, forsøger optimistisk at bruge %s i stedet for\n"
 
+#, c-format
 msgid "WARNING: message was not integrity protected\n"
 msgstr "ADVARSEL: besked var ikke integritetsbeskyttet\n"
 
@@ -4682,14 +4814,16 @@ msgstr ""
 msgid "Use the option '%s' to decrypt anyway.\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "decryption failed: %s\n"
 msgid "decryption forced to fail!\n"
 msgstr "afkryptering mislykkedes: %s\n"
 
+#, c-format
 msgid "decryption okay\n"
 msgstr "afkryptering okay\n"
 
+#, c-format
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "ADVARSEL: krypteret besked er blevet manipuleret!\n"
 
@@ -4697,7 +4831,7 @@ msgstr "ADVARSEL: krypteret besked er blevet manipuleret!\n"
 msgid "decryption failed: %s\n"
 msgstr "afkryptering mislykkedes: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
 msgstr "BEMÆRK: afsender anmodte om »for-your-eyes-only«\n"
@@ -4706,9 +4840,11 @@ msgstr "BEMÆRK: afsender anmodte om »for-your-eyes-only«\n"
 msgid "original file name='%.*s'\n"
 msgstr "oprindeligt filnavn=»%.*s«\n"
 
+#, c-format
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "uafhængig tilbagekald - brug »gpg --import« for at anvende\n"
 
+#, c-format
 msgid "no signature found\n"
 msgstr "ingen underskrift fundet\n"
 
@@ -4724,9 +4860,11 @@ msgstr "Udløbet underskrift fra »%s«"
 msgid "Good signature from \"%s\""
 msgstr "God underskrift fra »%s«"
 
+#, c-format
 msgid "signature verification suppressed\n"
 msgstr "underskriftverificering undertrykt\n"
 
+#, c-format
 msgid "can't handle this ambiguous signature data\n"
 msgstr "kan ikke håndtere disse tvetydige underskriftdata\n"
 
@@ -4747,6 +4885,7 @@ msgstr "Underskrift lavet %s med %s nøgle-id %s\n"
 msgid "               issuer \"%s\"\n"
 msgstr "       også kendt som »%s«"
 
+#, c-format
 msgid "Key available at: "
 msgstr "Nøgle tilgængelig på: "
 
@@ -4798,9 +4937,11 @@ msgstr ""
 msgid "Can't check signature: %s\n"
 msgstr "Kan ikke kontrollere underskrift: %s\n"
 
+#, c-format
 msgid "not a detached signature\n"
 msgstr "ikke en frakoblet underskrift\n"
 
+#, c-format
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr ""
@@ -4811,6 +4952,7 @@ msgstr ""
 msgid "standalone signature of class 0x%02x\n"
 msgstr "uafhængig underskrift for klasse 0x%02x\n"
 
+#, c-format
 msgid "old style (PGP 2.x) signature\n"
 msgstr "gammeldags (PGP 2.x) underskrift\n"
 
@@ -4827,6 +4969,7 @@ msgstr "fstat(%d) mislykkedes i %s: %s\n"
 msgid "WARNING: using experimental public key algorithm %s\n"
 msgstr "ADVARSEL: bruger eksperimentel offentlig nøglealgoritme %s\n"
 
+#, c-format
 msgid "WARNING: Elgamal sign+encrypt keys are deprecated\n"
 msgstr "ADVARSEL: Elgamalnøgler for underskriv+krypter er forældede\n"
 
@@ -4857,6 +5000,7 @@ msgstr "læsefejl i »%s«: %s\n"
 msgid "(reported error: %s <%s>)\n"
 msgstr "læsefejl i »%s«: %s\n"
 
+#, c-format
 msgid "(further info: "
 msgstr ""
 
@@ -4908,7 +5052,7 @@ msgstr "tvetydigt tilvalg »%s«\n"
 msgid "unknown option '%s'\n"
 msgstr "ukendt tilvalg »%s«\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr "DSA kræver at hashlængden skal gå op i 8 bit\n"
@@ -4933,6 +5077,7 @@ msgstr "%s: ukendt suffiks\n"
 msgid "Enter new filename"
 msgstr "Indtast nyt filnavn"
 
+#, c-format
 msgid "writing to stdout\n"
 msgstr "skriver til stdout\n"
 
@@ -4945,6 +5090,7 @@ msgstr "antager underskrevne data i »%s«\n"
 msgid "can't handle public key algorithm %d\n"
 msgstr "kan ikke håndtere offentlig nøglealgoritme %d\n"
 
+#, c-format
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "ADVARSEL: potentiel usikker symmetrisk krypteret sessionsnøgle\n"
 
@@ -4959,6 +5105,7 @@ msgstr "problem med agenten: %s\n"
 msgid "Enter passphrase\n"
 msgstr "Indtast adgangsfrase\n"
 
+#, c-format
 msgid "cancelled by user\n"
 msgstr "afbrudt af bruger\n"
 
@@ -5044,29 +5191,9 @@ msgstr "»%s« er ikke en JPEG-fil\n"
 msgid "Is this photo correct (y/N/q)? "
 msgstr "Er dette billede korrekt (j/N/a)? "
 
+#, c-format
 msgid "unable to display photo ID!\n"
 msgstr "kan ikke vise billed-id!\n"
-
-msgid "No reason specified"
-msgstr "Ingen årsag angivet"
-
-msgid "Key is superseded"
-msgstr "Nøglen er blevet afløst"
-
-msgid "Key has been compromised"
-msgstr "Nøglen er blevet kompromitteret"
-
-msgid "Key is no longer used"
-msgstr "Nøglen bruges ikke længere"
-
-msgid "User ID is no longer valid"
-msgstr "Bruger-id er ikke længere gyldigt"
-
-msgid "reason for revocation: "
-msgstr "årsag for tilbagekald: "
-
-msgid "revocation comment: "
-msgstr "tilbagekaldskommentar: "
 
 # ikke helt klart hvad de her forkortelser står for
 #. TRANSLATORS: These are the allowed answers in lower and
@@ -5144,9 +5271,11 @@ msgstr ""
 "%s: Der er begrænset garanti for, at denne nøgle tilhører den navngivne "
 "bruger\n"
 
+#, c-format
 msgid "This key probably belongs to the named user\n"
 msgstr "Denne nøgle tilhører sikkert den navngivne bruger\n"
 
+#, c-format
 msgid "This key belongs to us\n"
 msgstr "Denne nøgle tilhører os\n"
 
@@ -5181,28 +5310,35 @@ msgstr ""
 msgid "Use this key anyway? (y/N) "
 msgstr "Brug denne nøgle alligevel? (j/N) "
 
+#, c-format
 msgid "WARNING: Using untrusted key!\n"
 msgstr "ADVARSEL: Bruger nøgle uden troværdighed!\n"
 
+#, c-format
 msgid "WARNING: this key might be revoked (revocation key not present)\n"
 msgstr ""
 "ADVARSEL: Denne nøgle kan tilbagekaldes (tilbagekaldsnøgle er ikke til "
 "stede)\n"
 
+#, c-format
 msgid "WARNING: This key has been revoked by its designated revoker!\n"
 msgstr ""
 "ADVARSEL: Denne nøgle er blevet tilbagekaldt af dens designmæssige "
 "tilbagekalder!\n"
 
+#, c-format
 msgid "WARNING: This key has been revoked by its owner!\n"
 msgstr "ADVARSEL: Denne nøgle er blevet tilbagekaldt af dets ejer!\n"
 
+#, c-format
 msgid "         This could mean that the signature is forged.\n"
 msgstr "         Dette kan betyde at underskriften er forfalsket.\n"
 
+#, c-format
 msgid "WARNING: This subkey has been revoked by its owner!\n"
 msgstr "ADVARSEL: Denne undernøgle er blevet tilbagekaldt af dens ejer!\n"
 
+#, c-format
 msgid "Note: This key has been disabled.\n"
 msgstr "Bemærk: Denne nøgle er blevet deaktiveret.\n"
 
@@ -5216,37 +5352,46 @@ msgstr "Bemærk: Verificeret underskriftsejers adresse er »%s«\n"
 msgid "Note: Signer's address '%s' does not match DNS entry\n"
 msgstr "Bemærk: Underskriftejers adresse »%s« matcher ikke DNS-post\n"
 
+#, c-format
 msgid "trustlevel adjusted to FULL due to valid PKA info\n"
 msgstr ""
 "troværdighedsniveau justeret til FULL på grund af gyldig PKA-information\n"
 
+#, c-format
 msgid "trustlevel adjusted to NEVER due to bad PKA info\n"
 msgstr ""
 "troværdighedsniveau justeret til NEVER på grund af ugyldig PKA-information\n"
 
+#, c-format
 msgid "Note: This key has expired!\n"
 msgstr "Bemærk: Denne nøgle er forældet!\n"
 
+#, c-format
 msgid "WARNING: This key is not certified with a trusted signature!\n"
 msgstr ""
 "ADVARSEL: Denne nøgle er ikke certificeret med en troværdig underskrift!\n"
 
+#, c-format
 msgid ""
 "         There is no indication that the signature belongs to the owner.\n"
 msgstr "         Intet tyder på at denne signatur tilhører ejeren.\n"
 
+#, c-format
 msgid "WARNING: We do NOT trust this key!\n"
 msgstr "ADVARSEL: Vi tror IKKE på denne nøgle!\n"
 
+#, c-format
 msgid "         The signature is probably a FORGERY.\n"
 msgstr "         Signaturen er formentlig FORFALSKET.\n"
 
+#, c-format
 msgid ""
 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr ""
 "ADVARSEL: Denne nøgle er ikke certificeret med tilstrækkelig troværdige "
 "underskrifter!\n"
 
+#, c-format
 msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr "         Det er ikke sikkert at signaturen tilhører ejeren.\n"
 
@@ -5293,12 +5438,14 @@ msgstr ""
 msgid "No such user ID.\n"
 msgstr "Ingen sådan bruger-id.\n"
 
+#, c-format
 msgid "skipped: public key already set as default recipient\n"
 msgstr "udeladt: offentlig nøgle er allerede valgt som standardmodtager\n"
 
 msgid "Public key is disabled.\n"
 msgstr "Offentlig nøgle er slået fra.\n"
 
+#, c-format
 msgid "skipped: public key already set\n"
 msgstr "udelod: offentlig nøgle er allerede angivet\n"
 
@@ -5306,6 +5453,7 @@ msgstr "udelod: offentlig nøgle er allerede angivet\n"
 msgid "unknown default recipient \"%s\"\n"
 msgstr "ukendt standardmodtager »%s«\n"
 
+#, c-format
 msgid "no valid addressees\n"
 msgstr "ingen gyldige adresser\n"
 
@@ -5317,6 +5465,7 @@ msgstr "Bemærk: nøgle %s har ingen %s-funktion\n"
 msgid "Note: key %s has no preference for %s\n"
 msgstr "Bemærk: nøgle %s har ingen præference for %s\n"
 
+#, c-format
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "data ej gemt; brug tilvalg »--output« for at gemme\n"
 
@@ -5326,9 +5475,11 @@ msgstr "Frakoblet underskrift.\n"
 msgid "Please enter name of data file: "
 msgstr "Indtast navn for datafil: "
 
+#, c-format
 msgid "reading stdin ...\n"
 msgstr "læser stdin ...\n"
 
+#, c-format
 msgid "no signed data\n"
 msgstr "ingen underskrevne data\n"
 
@@ -5350,9 +5501,11 @@ msgstr "certifikat kan ikke bruges til kryptering\n"
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "anonym modtager; prøver hemmelig nøgle %s ...\n"
 
+#, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "okay, vi er den anonyme modtager.\n"
 
+#, c-format
 msgid "old encoding of the DEK is not supported\n"
 msgstr "gammel kodning for DEK'en er ikke understøttet\n"
 
@@ -5369,7 +5522,7 @@ msgstr "ADVARSEL: chifferalgoritme %s ikke fundet i modtagerpræferencer\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "BEMÆRK: hemmelig nøgle %s udløb den %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "BEMÆRK: nøgle er blevet tilbagekaldt"
@@ -5501,6 +5654,7 @@ msgstr "(Ingen beskrivelse angivet)\n"
 msgid "Is this okay? (y/N) "
 msgstr "Er dette okay? (j/N) "
 
+#, c-format
 msgid "weak key created - retrying\n"
 msgstr "svag nøgle oprettet - prøver igen\n"
 
@@ -5518,6 +5672,7 @@ msgstr "%s-nøglen bruger en usikker (%u bit) hash\n"
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr "DSA-nøgle %s kræver en %u bit eller større hash\n"
 
+#, c-format
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "ADVARSEL: konflikt for underskriftssammendrag i besked\n"
 
@@ -5595,6 +5750,11 @@ msgstr "BEMÆRK: underskriftnøgle %s er blevet tilbagekaldt\n"
 msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
 msgstr "uafhængig underskrift for klasse 0x%02x\n"
 
+#, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad data signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "uafhængig underskrift for klasse 0x%02x\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -5640,6 +5800,7 @@ msgstr ""
 "ADVARSEL: tvang af sammendragsalgoritme %s (%d) overtræder "
 "modtagerpræferencer\n"
 
+#, c-format
 msgid "signing:"
 msgstr "underskriver:"
 
@@ -5647,6 +5808,7 @@ msgstr "underskriver:"
 msgid "%s encryption will be used\n"
 msgstr "%s-kryptering vil blive brugt\n"
 
+#, c-format
 msgid "key is not flagged as insecure - can't use it with the faked RNG!\n"
 msgstr ""
 "nøgle er ikke markeret som usikker - kan ikke bruge den med falsk RNG!\n"
@@ -5655,6 +5817,7 @@ msgstr ""
 msgid "skipped \"%s\": duplicated\n"
 msgstr "udelod »%s«: duplikeret\n"
 
+#, c-format
 msgid "skipped: secret key already present\n"
 msgstr "udelod: hemmelig nøgle er allerede til stede\n"
 
@@ -5723,6 +5886,7 @@ msgstr "trustdb rec %lu: lseek mislykkedes: %s\n"
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "trustdb rec %lu: skrivning mislykkedes (n=%d): %s\n"
 
+#, c-format
 msgid "trustdb transaction too large\n"
 msgstr "transaktion for trustdb er for stor\n"
 
@@ -5747,7 +5911,7 @@ msgstr "%s: ugyldig trustdb oprettet\n"
 msgid "%s: trustdb created\n"
 msgstr "%s: trustdb oprettet\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: trustdb not writable\n"
 msgid "Note: trustdb not writable\n"
 msgstr "BEMÆRK: trustdb ikke skrivbar\n"
@@ -5808,6 +5972,7 @@ msgstr "%s: mislykkedes med at nulle en post: %s\n"
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: mislykkedes med at vedhæfte en post: %s\n"
 
+#, c-format
 msgid "Error: The trustdb is corrupted.\n"
 msgstr "Fejl: trustdb er ødelagt.\n"
 
@@ -5842,6 +6007,7 @@ msgstr "ikke understøttet algoritme: %s"
 msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
 msgstr "fejl ved oprettelse af midlertidig fil: %s\n"
 
+#, c-format
 msgid "TOFU DB error"
 msgstr ""
 
@@ -6025,6 +6191,7 @@ msgstr ""
 msgid "Defaulting to unknown.\n"
 msgstr ""
 
+#, c-format
 msgid "TOFU db corruption detected.\n"
 msgstr ""
 
@@ -6118,17 +6285,21 @@ msgstr[1] "vis beskedsammendrag"
 msgid "(policy: %s)"
 msgstr "validitet: %s"
 
+#, c-format
 msgid ""
 "Warning: we have yet to see a message signed using this key and user id!\n"
 msgstr ""
 
+#, c-format
 msgid ""
 "Warning: we've only seen one message signed using this key and user id!\n"
 msgstr ""
 
+#, c-format
 msgid "Warning: you have yet to encrypt a message to this key!\n"
 msgstr ""
 
+#, c-format
 msgid "Warning: you have only encrypted one message to this key!\n"
 msgstr ""
 
@@ -6191,9 +6362,11 @@ msgstr "troværdighedspost %lu, req-type %d: læsning mislykkedes: %s\n"
 msgid "trust record %lu is not of requested type %d\n"
 msgstr "troværdighedspost %lu er ikke af den anmodne type %d\n"
 
+#, c-format
 msgid "You may try to re-create the trustdb using the commands:\n"
 msgstr "Du kan forsøge at genskabe trustdb med kommandoerne:\n"
 
+#, c-format
 msgid "If that does not work, please consult the manual\n"
 msgstr "Hvis det ikke virker, så se venligst manualen\n"
 
@@ -6207,6 +6380,7 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr "bruger %s troværdighedsmodel\n"
 
+#, c-format
 msgid "no need for a trustdb check\n"
 msgstr "intet behov for kontrol af trustdb\n"
 
@@ -6229,9 +6403,11 @@ msgstr ""
 msgid "public key %s not found: %s\n"
 msgstr "offentlig nøgle %s blev ikke fundet: %s\n"
 
+#, c-format
 msgid "please do a --check-trustdb\n"
 msgstr "udfør venligst en --check-trustdb\n"
 
+#, c-format
 msgid "checking the trustdb\n"
 msgstr "kontrollerer trustdb\n"
 
@@ -6249,6 +6425,7 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d nøgler behandlet (%d validiteter ryddet)\n"
 msgstr[1] "%d nøgler behandlet (%d validiteter ryddet)\n"
 
+#, c-format
 msgid "no ultimately trusted keys found\n"
 msgstr "ingen ultimativ troværdige nøgler fundet\n"
 
@@ -6321,6 +6498,7 @@ msgstr "[  fuld  ]"
 msgid "[ultimate]"
 msgstr "[ ultim. ]"
 
+#, c-format
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -6366,6 +6544,7 @@ msgstr "RSA offentlig eksponent mangler eller større end %d bit\n"
 msgid "PIN callback returned error: %s\n"
 msgstr "PIN-tilbagekald returnerede fejl: %s\n"
 
+#, c-format
 msgid "the NullPIN has not yet been changed\n"
 msgstr "NullPIN'en er endnu ikke ændret\n"
 
@@ -6418,20 +6597,24 @@ msgstr "kunne ikke gemme fingeraftrykket: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "kunne ikke gemme oprettelsesdatoen: %s\n"
 
+#, c-format
 msgid "error retrieving CHV status from card\n"
 msgstr "fejl ved indhentelse af CHV-status fra kort\n"
 
+#, c-format
 msgid "response does not contain the RSA modulus\n"
 msgstr "svar indeholder ikke RSA modulus'erne\n"
 
+#, c-format
 msgid "response does not contain the RSA public exponent\n"
 msgstr "svar indeholder ikke den RSA-offentlige eksponent\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "response does not contain the RSA public exponent\n"
 msgid "response does not contain the EC public key\n"
 msgstr "svar indeholder ikke den RSA-offentlige eksponent\n"
 
+#, c-format
 msgid "response does not contain the public key data\n"
 msgstr "svar indeholder ikke data for offentlig nøgle\n"
 
@@ -6479,6 +6662,7 @@ msgstr "PIN for CHV%d er for kort; minimumlængde er %d\n"
 msgid "verify CHV%d failed: %s\n"
 msgstr "verificering af CHV%d mislykkedes: %s\n"
 
+#, c-format
 msgid "card is permanently locked!\n"
 msgstr "kort er permanent låst!\n"
 
@@ -6495,6 +6679,7 @@ msgstr[1] "%d PIN-forsøg for administrator før kort permanent låses\n"
 msgid "|A|Please enter the Admin PIN"
 msgstr "|A|Indtast venligst administrator-PIN'en"
 
+#, c-format
 msgid "access to admin commands is not configured\n"
 msgstr "adgang til administratorkommandoer er ikke konfigureret\n"
 
@@ -6526,24 +6711,31 @@ msgstr "||Indtast venligst administrator-PIN'en og ny administrator-PIN"
 msgid "||Please enter the PIN and New PIN"
 msgstr "||Indtast venligst PIN'en og ny PIN"
 
+#, c-format
 msgid "error reading application data\n"
 msgstr "fejl ved læsning af programdata\n"
 
+#, c-format
 msgid "error reading fingerprint DO\n"
 msgstr "fejl ved læsning af fingeraftryk DO\n"
 
+#, c-format
 msgid "key already exists\n"
 msgstr "nøgle findes allerede\n"
 
+#, c-format
 msgid "existing key will be replaced\n"
 msgstr "eksisterende nøgle vil blive erstattet\n"
 
+#, c-format
 msgid "generating new key\n"
 msgstr "opretter ny nøgle\n"
 
+#, c-format
 msgid "writing new key\n"
 msgstr "skriver ny nøgle\n"
 
+#, c-format
 msgid "creation timestamp missing\n"
 msgstr "oprettelsestidsstempel mangler\n"
 
@@ -6555,14 +6747,16 @@ msgstr "RSA-primtal %s mangler eller har ikke størrelsen %d bit\n"
 msgid "failed to store the key: %s\n"
 msgstr "kunne ikke gemme nøglen: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "unsupported algorithm: %s"
 msgid "unsupported curve\n"
 msgstr "ikke understøttet algoritme: %s"
 
+#, c-format
 msgid "please wait while key is being generated ...\n"
 msgstr "vent venligst mens nøglen bliver oprettet ...\n"
 
+#, c-format
 msgid "generating key failed\n"
 msgstr "oprettelse af nøgle mislykkedes\n"
 
@@ -6573,9 +6767,11 @@ msgid_plural "key generation completed (%d seconds)\n"
 msgstr[0] "nøgleoprettelse færdig (%d sekunder)\n"
 msgstr[1] "nøgleoprettelse færdig (%d sekunder)\n"
 
+#, c-format
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr "ugyldig struktur for OpenPGP-kort (DO 0x93)\n"
 
+#, c-format
 msgid "fingerprint on card does not match requested one\n"
 msgstr "fingeraftryk på kort matcher ikke den anmodte\n"
 
@@ -6587,6 +6783,7 @@ msgstr "kort understøtter ikke sammendragsalgoritme %s\n"
 msgid "signatures created so far: %lu\n"
 msgstr "underskrifter oprettet indtil videre: %lu\n"
 
+#, c-format
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
@@ -6655,7 +6852,7 @@ msgstr ""
 "Syntaks: scdaemon [tilvalg] kommando [parametre]]\n"
 "Smartcard-dæmon for GnuPG\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid ""
 #| "please use the option `--daemon' to run the program in the background\n"
 msgid "please use the option '--daemon' to run the program in the background\n"
@@ -6670,7 +6867,7 @@ msgstr "håndtering for fd %d startet\n"
 msgid "handler for fd %d terminated\n"
 msgstr "håndtering for fd %d termineret\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "no gpg-agent running in this session\n"
 msgid "no dirmngr running in this session\n"
 msgstr "ingen gpg-agent kører i denne session\n"
@@ -6689,6 +6886,7 @@ msgstr "skal"
 msgid "critical certificate extension %s is not supported"
 msgstr "kritisk certifikatudvidelse %s er ikke understøttet"
 
+#, c-format
 msgid "issuer certificate is not marked as a CA"
 msgstr "udstedercertifikat er ikke markeret som en CA"
 
@@ -6700,14 +6898,16 @@ msgstr "kritisk markeret politik uden konfigurerede politikker"
 msgid "failed to open '%s': %s\n"
 msgstr "kan ikke åbne »%s«: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "note: non-critical certificate policy not allowed"
 msgid "Note: non-critical certificate policy not allowed"
 msgstr "bemærk: ikkekritisk certifikatpolitik er ikke tilladt"
 
+#, c-format
 msgid "certificate policy not allowed"
 msgstr "certifikatpolitik er ikke tilladt"
 
+#, c-format
 msgid "looking up issuer at external location\n"
 msgstr "slår udsteder op på ekstern placering\n"
 
@@ -6715,6 +6915,7 @@ msgstr "slår udsteder op på ekstern placering\n"
 msgid "number of issuers matching: %d\n"
 msgstr "antallet af udstedere der matcher: %d\n"
 
+#, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
 msgstr "slår udsteder op fra Dirmngr-mellemlageret\n"
 
@@ -6726,6 +6927,7 @@ msgstr "antallet af matchende certifikater: %d\n"
 msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "dirmngr cache-only-nøgleopslag mislykkedes: %s\n"
 
+#, c-format
 msgid "failed to allocate keyDB handle\n"
 msgstr "kunne ikke allokere keyDB-håndtag\n"
 
@@ -6735,6 +6937,7 @@ msgstr "certifikat er blevet tilbagekaldt"
 msgid "the status of the certificate is unknown"
 msgstr "status for certifikatet er ukendt"
 
+#, c-format
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
 msgstr "sikr dig at »dirmngr« er korrekt installeret\n"
 
@@ -6746,6 +6949,7 @@ msgstr "kontrol af CRL'en mislykkedes: %s"
 msgid "certificate with invalid validity: %s"
 msgstr "certifikat med ugyldig validitet: %s"
 
+#, c-format
 msgid "certificate not yet valid"
 msgstr "certifikat er endnu ikke gyldigt"
 
@@ -6755,6 +6959,7 @@ msgstr "rodcertifikat er endnu ikke gyldigt"
 msgid "intermediate certificate not yet valid"
 msgstr "mellemliggende certifikat er endnu ikke gyldigt"
 
+#, c-format
 msgid "certificate has expired"
 msgstr "certifikat er udløbet"
 
@@ -6781,15 +6986,19 @@ msgid "intermediate certificate not created during lifetime of issuer"
 msgstr ""
 "mellemliggende certifikat blev ikke oprettet under udsteders livsforløb"
 
+#, c-format
 msgid "  (  signature created at "
 msgstr "  (underskr. oprettet den "
 
+#, c-format
 msgid "  (certificate created at "
 msgstr "  (certifkat oprettet den "
 
+#, c-format
 msgid "  (certificate valid from "
 msgstr "  (certifikat gyldigt fra "
 
+#, c-format
 msgid "  (     issuer valid from "
 msgstr "  (   udsteder gyldig fra "
 
@@ -6797,12 +7006,15 @@ msgstr "  (   udsteder gyldig fra "
 msgid "fingerprint=%s\n"
 msgstr "fingeraftryk=%s\n"
 
+#, c-format
 msgid "root certificate has now been marked as trusted\n"
 msgstr "rodcertifikat er nu blevet markeret som troværdig\n"
 
+#, c-format
 msgid "interactive marking as trusted not enabled in gpg-agent\n"
 msgstr "interaktiv markering som troværdig er ikke aktiveret i gpg-agent\n"
 
+#, c-format
 msgid "interactive marking as trusted disabled for this session\n"
 msgstr "interaktiv markering som troværdig deaktiveret for denne session\n"
 
@@ -6817,6 +7029,7 @@ msgstr "ingen udsteder fundet i certifikat"
 msgid "self-signed certificate has a BAD signature"
 msgstr "egenunderskrevet certifikat har en UGYLDIG underskrift"
 
+#, c-format
 msgid "root certificate is not marked trusted"
 msgstr "rodcertifikat er ikke markeret som troværdig"
 
@@ -6824,12 +7037,15 @@ msgstr "rodcertifikat er ikke markeret som troværdig"
 msgid "checking the trust list failed: %s\n"
 msgstr "kontrol af troværdighedslisten mislykkedes: %s\n"
 
+#, c-format
 msgid "certificate chain too long\n"
 msgstr "certifikatkæde er for lang\n"
 
+#, c-format
 msgid "issuer certificate not found"
 msgstr "udstedercertifikat blev ikke fundet"
 
+#, c-format
 msgid "certificate has a BAD signature"
 msgstr "certifikat har en UGYLDIG underskrift"
 
@@ -6840,12 +7056,15 @@ msgstr "fandt et andet mulig matchende CA-certifikat - prøver igen"
 msgid "certificate chain longer than allowed by CA (%d)"
 msgstr "certifikatkæde er længere end tilladt af CA (%d)"
 
+#, c-format
 msgid "certificate is good\n"
 msgstr "certifikat er gyldigt\n"
 
+#, c-format
 msgid "intermediate certificate is good\n"
 msgstr "mellemliggende certifikat er gyldigt\n"
 
+#, c-format
 msgid "root certificate is good\n"
 msgstr "rodcertifikat er gyldigt\n"
 
@@ -6860,6 +7079,7 @@ msgstr "valideringsmodel brugt: %s"
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr "en %u-bit-hash er ikke gyldig for en %u-bit %s-nøgle\n"
 
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(dette er MD2-algoritmen)\n"
 
@@ -6892,6 +7112,7 @@ msgstr ""
 "S/N %s, id 0x%08lX,\n"
 "oprettet %s, udløber %s.\n"
 
+#, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr "ingen nøglebrug angivet - antager alle mulige brug\n"
 
@@ -6899,21 +7120,27 @@ msgstr "ingen nøglebrug angivet - antager alle mulige brug\n"
 msgid "error getting key usage information: %s\n"
 msgstr "fejl ved indhentelse af nøglebrugsinformation: %s\n"
 
+#, c-format
 msgid "certificate should not have been used for certification\n"
 msgstr "certifikat burde ikke være brugt for certificering\n"
 
+#, c-format
 msgid "certificate should not have been used for OCSP response signing\n"
 msgstr "certifikat burde ikke være brugt for OCSP-svarunderskrivning\n"
 
+#, c-format
 msgid "certificate should not have been used for encryption\n"
 msgstr "certifikat burde ikke være brugt for kryptering\n"
 
+#, c-format
 msgid "certificate should not have been used for signing\n"
 msgstr "certifikat burde ikke være brugt for underskrift\n"
 
+#, c-format
 msgid "certificate is not usable for encryption\n"
 msgstr "certifikat kan ikke bruges til kryptering\n"
 
+#, c-format
 msgid "certificate is not usable for signing\n"
 msgstr "certifikat kan ikke bruges til underskrivning\n"
 
@@ -7110,12 +7337,15 @@ msgstr ""
 msgid "Ready.  You should now send this request to your CA.\n"
 msgstr "Klar. Du skal nu sende denne forespørgsel til din CA.\n"
 
+#, c-format
 msgid "resource problem: out of core\n"
 msgstr "ressourceproblem: ikke nok kerne\n"
 
+#, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr "(dette er RC2-algoritmen)\n"
 
+#, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(dette ser ikke ud til at være en krypteret besked)\n"
 
@@ -7142,6 +7372,7 @@ msgstr "certifikat »%s« slettet\n"
 msgid "deleting certificate \"%s\" failed: %s\n"
 msgstr "sletning af certifikat »%s« mislykkedes: %s\n"
 
+#, c-format
 msgid "no valid recipients given\n"
 msgstr "ingen gyldige modtagere angivet\n"
 
@@ -7270,6 +7501,7 @@ msgstr "%s:%u: adgangskode angivet uden bruger\n"
 msgid "%s:%u: skipping this line\n"
 msgstr "%s:%u: udelader denne linje\n"
 
+#, c-format
 msgid "could not parse keyserver\n"
 msgstr "kunne ikke fortolke nøgleserver\n"
 
@@ -7283,6 +7515,7 @@ msgstr "importerer gængse certifikater »%s«\n"
 msgid "can't sign using '%s': %s\n"
 msgstr "kan ikke underskrive med »%s«: %s\n"
 
+#, c-format
 msgid "invalid command (there is no implicit command)\n"
 msgstr "ugyldig kommando (der er ingen implict kommando)\n"
 
@@ -7290,9 +7523,11 @@ msgstr "ugyldig kommando (der er ingen implict kommando)\n"
 msgid "total number processed: %lu\n"
 msgstr "samlet antal behandlede: %lu\n"
 
+#, c-format
 msgid "error storing certificate\n"
 msgstr "fejl ved lagring af certifikat\n"
 
+#, c-format
 msgid "basic certificate checks failed - not imported\n"
 msgstr "grundlæggende certifikatkontroller mislykkedes - ikke importeret\n"
 
@@ -7308,6 +7543,7 @@ msgstr "fejl under import af certifikat: %s\n"
 msgid "error reading input: %s\n"
 msgstr "fejl ved læsning af inddata: %s\n"
 
+#, c-format
 msgid "failed to get the fingerprint\n"
 msgstr "kunne ikke indhente fingeraftrykket\n"
 
@@ -7334,6 +7570,7 @@ msgstr "fejl ved lagring af flag: %s\n"
 msgid "Error - "
 msgstr "Fejl - "
 
+#, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
 msgstr "GPG_TTY er ikke blevet angivet - bruger måske fejlbehæftet standard\n"
 
@@ -7363,6 +7600,7 @@ msgstr ""
 "\n"
 "%s%sEr du sikker på, at det er hvad du ønsker?"
 
+#, c-format
 msgid ""
 "Note, that this software is not officially approved to create or verify such "
 "signatures.\n"
@@ -7393,9 +7631,11 @@ msgstr "hashalgoritme brugt for underskriver %d: %s (%s)\n"
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "kontrollerer for kvalificeret certifikat mislykkedes: %s\n"
 
+#, c-format
 msgid "Signature made "
 msgstr "Underskrift lavet "
 
+#, c-format
 msgid "[date not given]"
 msgstr "[dato ikke angivet]"
 
@@ -7403,18 +7643,22 @@ msgstr "[dato ikke angivet]"
 msgid " using certificate ID 0x%08lX\n"
 msgstr " bruger certifikat-id 0x%08lX\n"
 
+#, c-format
 msgid ""
 "invalid signature: message digest attribute does not match computed one\n"
 msgstr ""
 "ugyldig underskrift: attribut for beskedsammendag matcher ikke den "
 "beregnede\n"
 
+#, c-format
 msgid "Good signature from"
 msgstr "God underskrift fra"
 
+#, c-format
 msgid "                aka"
 msgstr "     også kendt som"
 
+#, c-format
 msgid "This is a qualified signature\n"
 msgstr "Dette er en kvalificeret underskrift\n"
 
@@ -7492,12 +7736,12 @@ msgstr "antallet af matchende certifikater: %d\n"
 msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
 msgstr "antallet af matchende certifikater: %d\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "  (certificate created at "
 msgid "certificate already cached\n"
 msgstr "  (certifkat oprettet den "
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "certificate is good\n"
 msgid "certificate cached\n"
 msgstr "certifikat er gyldigt\n"
@@ -7522,7 +7766,7 @@ msgstr "fejl ved lagring af certifikat: %s\n"
 msgid "error fetching certificate by subject: %s\n"
 msgstr "fejl ved lagring af certifikat: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "no issuer found in certificate"
 msgid "no issuer found in certificate\n"
 msgstr "ingen udsteder fundet i certifikat"
@@ -7601,9 +7845,11 @@ msgstr "kunne ikke oprette midlertidig fil »%s«: %s\n"
 msgid "first record of '%s' is not the version\n"
 msgstr ""
 
+#, c-format
 msgid "old version of cache directory - cleaning up\n"
 msgstr ""
 
+#, c-format
 msgid "old version of cache directory - giving up\n"
 msgstr ""
 
@@ -7645,9 +7891,11 @@ msgstr "ugyldigt nøgleflag i »%s«, linje %d\n"
 msgid "WARNING: invalid cache file hash in '%s' line %u\n"
 msgstr "ugyldigt nøgleflag i »%s«, linje %d\n"
 
+#, c-format
 msgid "detected errors in cache dir file\n"
 msgstr ""
 
+#, c-format
 msgid "please check the reason and manually delete that file\n"
 msgstr ""
 
@@ -7686,6 +7934,7 @@ msgstr "fejl i »%s«: %s\n"
 msgid "invalid formatted checksum for '%s'\n"
 msgstr "ugyldigt formateret fingeraftryk i »%s«, linje %d\n"
 
+#, c-format
 msgid "too many open cache files; can't open anymore\n"
 msgstr ""
 
@@ -7703,9 +7952,11 @@ msgstr "fejl ved åbning af »%s«: %s\n"
 msgid "error initializing cache file '%s' for reading: %s\n"
 msgstr ""
 
+#, c-format
 msgid "calling unlock_db_file on a closed file\n"
 msgstr ""
 
+#, c-format
 msgid "calling unlock_db_file on an unlocked file\n"
 msgstr ""
 
@@ -7741,6 +7992,7 @@ msgstr ""
 msgid "cached CRL for issuer id %s tampered; we need to update\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: invalid cache record length for S/N "
 msgstr ""
 
@@ -7771,6 +8023,7 @@ msgstr "ugyldig hash-algoritme »%s«\n"
 msgid "gcry_md_open for algorithm %d failed: %s\n"
 msgstr ""
 
+#, c-format
 msgid "got an invalid S-expression from libksba\n"
 msgstr ""
 
@@ -7798,6 +8051,7 @@ msgstr "fejl ved indhentelse af serielnummer for kort: %s\n"
 msgid "update times of this CRL: this=%s next=%s\n"
 msgstr ""
 
+#, c-format
 msgid "nextUpdate not given; assuming a validity period of one day\n"
 msgstr ""
 
@@ -7816,6 +8070,7 @@ msgstr "fejl ved skrivning til midlertidig fil: %s\n"
 msgid "no CRL issuer found in CRL: %s\n"
 msgstr "ingen udsteder fundet i certifikat"
 
+#, c-format
 msgid "locating CRL issuer certificate by authorityKeyIdentifier\n"
 msgstr ""
 
@@ -7896,6 +8151,7 @@ msgstr "fejl ved oprettelse af datakanal: %s\n"
 msgid "problem renaming '%s' to '%s': %s\n"
 msgstr "omdøbelse af »%s« til »%s« mislykkedes: %s\n"
 
+#, c-format
 msgid ""
 "updating the DIR file failed - cache entry will get lost with the next "
 "program start\n"
@@ -7920,7 +8176,7 @@ msgstr ""
 msgid " ERROR: This cached CRL may have been tampered with!\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "WARNING: invalid notation data found\n"
 msgid " WARNING: invalid cache record length\n"
 msgstr "ADVARSEL: Ingen notationsdata fundet\n"
@@ -7958,6 +8214,7 @@ msgstr "kontrol af troværdighedslisten mislykkedes: %s\n"
 msgid "crl_cache_insert via issuer failed: %s\n"
 msgstr "modtagelse af linje mislykkedes: %s\n"
 
+#, c-format
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
@@ -7975,7 +8232,7 @@ msgstr "fejl ved indhentelse af »%s« via %s: %s\n"
 msgid "error initializing reader object: %s\n"
 msgstr "%s: fejl ved skrivning af mappepost: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "certificate `%s' not found: %s\n"
 msgid "CRL access not possible due to Tor mode\n"
 msgstr "certifikat »%s« blev ikke fundet: %s\n"
@@ -8054,6 +8311,7 @@ msgstr "fejl ved lagring af certifikat: %s\n"
 msgid "error reading certificate from '%s': %s\n"
 msgstr "fejl ved læsning fra %s: %s\n"
 
+#, c-format
 msgid "certificate too large to make any sense\n"
 msgstr ""
 
@@ -8072,6 +8330,7 @@ msgstr "opdatering mislykkedes: %s\n"
 msgid "loading CRL '%s' failed: %s\n"
 msgstr "omdøbelse af »%s« til »%s« mislykkedes: %s\n"
 
+#, c-format
 msgid "a dirmngr daemon is up and running\n"
 msgstr ""
 
@@ -8080,12 +8339,12 @@ msgstr ""
 msgid "validation of certificate failed: %s\n"
 msgstr "sletning af certifikat »%s« mislykkedes: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "certificate is good\n"
 msgid "certificate is valid\n"
 msgstr "certifikat er gyldigt\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "certificate has been revoked"
 msgid "certificate has been revoked\n"
 msgstr "certifikat er blevet tilbagekaldt"
@@ -8109,6 +8368,7 @@ msgstr "fejl ved skrivning af hemmelig nøglering »%s«: %s\n"
 msgid "unsupported inquiry '%s'\n"
 msgstr "ikke understøttet algoritme: %s"
 
+#, c-format
 msgid "absolute file name expected\n"
 msgstr ""
 
@@ -8246,7 +8506,7 @@ msgstr "ugyldigt fejlsøgningsniveau »%s« angivet\n"
 msgid "usage: %s [options] "
 msgstr "brug: gpgsm [tilvalg] "
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "%s not allowed with %s!\n"
 msgid "colons are not allowed in the socket name\n"
 msgstr "%s ikke tilladt med %s!\n"
@@ -8280,12 +8540,15 @@ msgstr "læsefejl i »%s«: %s\n"
 msgid "%s:%u: garbage at end of line ignored\n"
 msgstr ""
 
+#, c-format
 msgid "SIGHUP received - re-reading configuration and flushing caches\n"
 msgstr ""
 
+#, c-format
 msgid "SIGUSR2 received - no action defined\n"
 msgstr ""
 
+#, c-format
 msgid "SIGTERM received - shutting down ...\n"
 msgstr ""
 
@@ -8293,11 +8556,12 @@ msgstr ""
 msgid "SIGTERM received - still %d active connections\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "not forced"
 msgid "shutdown forced\n"
 msgstr "ikke tvunget"
 
+#, c-format
 msgid "SIGINT received - immediate shutdown\n"
 msgstr ""
 
@@ -8425,7 +8689,7 @@ msgstr "%s:%u: intet værtsnavn angivet\n"
 msgid "no attribute given for query '%s'\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "WARNING: Using untrusted key!\n"
 msgid "WARNING: using first attribute only\n"
 msgstr "ADVARSEL: Bruger nøgle uden troværdighed!\n"
@@ -8513,10 +8777,11 @@ msgstr "select mislykkedes: %s\n"
 msgid "start_cert_fetch: invalid pattern '%s'\n"
 msgstr ""
 
+#, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "%s: invalid file version %d\n"
 msgid "invalid canonical S-expression found\n"
 msgstr "%s: ugyldig filversion %d\n"
@@ -8531,6 +8796,7 @@ msgstr "iconv_open mislykkedes: %s:\n"
 msgid "oops: ksba_cert_hash failed: %s\n"
 msgstr "opdatering af hemmelighed mislykkedes: %s\n"
 
+#, c-format
 msgid "bad URL encoding detected\n"
 msgstr ""
 
@@ -8544,11 +8810,12 @@ msgstr "fejl ved læsning fra %s: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Fejl: Privat DO er for lang (begrænsningen er %d tegn).\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "certificate `%s' not found: %s\n"
 msgid "OCSP request not possible due to Tor mode\n"
 msgstr "certifikat »%s« blev ikke fundet: %s\n"
 
+#, c-format
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
 
@@ -8576,7 +8843,7 @@ msgstr "fejl ved læsning fra %s: %s\n"
 msgid "URL '%s' redirected to '%s' (%u)\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "too many cipher preferences\n"
 msgid "too many redirections\n"
 msgstr "for mange chifferpræferencer\n"
@@ -8595,9 +8862,11 @@ msgstr ""
 msgid "hashing the OCSP response for '%s' failed: %s\n"
 msgstr "kontrol af troværdighedslisten mislykkedes: %s\n"
 
+#, c-format
 msgid "not signed by a default OCSP signer's certificate"
 msgstr ""
 
+#, c-format
 msgid "only SHA-1 is supported for OCSP responses\n"
 msgstr ""
 
@@ -8611,7 +8880,7 @@ msgstr "modtagelse af linje mislykkedes: %s\n"
 msgid "error getting responder ID: %s\n"
 msgstr "fejl ved indhentelse af ny PIN: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "certificate should not have been used for OCSP response signing\n"
 msgid "no suitable certificate found to verify the OCSP response\n"
 msgstr "certifikat burde ikke være brugt for OCSP-svarunderskrivning\n"
@@ -8621,12 +8890,12 @@ msgstr "certifikat burde ikke være brugt for OCSP-svarunderskrivning\n"
 msgid "issuer certificate not found: %s\n"
 msgstr "udstedercertifikat blev ikke fundet"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "error reading list of trusted root certificates\n"
 msgid "caller did not return the target certificate\n"
 msgstr "fejl ved læsning af liste over betroede rodcertifikater\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "error storing certificate\n"
 msgid "caller did not return the issuing certificate\n"
 msgstr "fejl ved lagring af certifikat\n"
@@ -8641,10 +8910,11 @@ msgstr "kunne ikke allokere keyDB-håndtag\n"
 msgid "can't get authorityInfoAccess: %s\n"
 msgstr "kan ikke tilgå »%s«: %s\n"
 
+#, c-format
 msgid "no default OCSP responder defined\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "no default secret keyring: %s\n"
 msgid "no default OCSP signer defined\n"
 msgstr "ingen hemmelig standardnøglering: %s\n"
@@ -8680,12 +8950,15 @@ msgstr ""
 msgid "certificate has been revoked at: %s due to: %s\n"
 msgstr "certifikat er blevet tilbagekaldt"
 
+#, c-format
 msgid "OCSP responder returned a status in the future\n"
 msgstr ""
 
+#, c-format
 msgid "OCSP responder returned a non-current status\n"
 msgstr ""
 
+#, c-format
 msgid "OCSP responder returned an too old status\n"
 msgstr ""
 
@@ -8758,12 +9031,12 @@ msgstr ""
 msgid "Assuan processing failed: %s\n"
 msgstr "underskrift mislykkedes: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "issuer certificate is not marked as a CA"
 msgid "accepting root CA not marked as a CA"
 msgstr "udstedercertifikat er ikke markeret som en CA"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "checking the trustdb\n"
 msgid "CRL checking too deeply nested\n"
 msgstr "kontrollerer trustdb\n"
@@ -8776,7 +9049,7 @@ msgstr ""
 msgid "checking CRL for"
 msgstr "kontrol af CRL'en mislykkedes: %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "self-signed certificate has a BAD signature"
 msgid "selfsigned certificate has a BAD signature"
 msgstr "egenunderskrevet certifikat har en UGYLDIG underskrift"
@@ -8786,12 +9059,12 @@ msgstr "egenunderskrevet certifikat har en UGYLDIG underskrift"
 msgid "checking trustworthiness of root certificate failed: %s\n"
 msgstr "kontrollerer for kvalificeret certifikat mislykkedes: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "certificate is good\n"
 msgid "certificate chain is good\n"
 msgstr "certifikat er gyldigt\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "certificate should not have been used for signing\n"
 msgid "certificate should not have been used for CRL signing\n"
 msgstr "certifikat burde ikke være brugt for underskrift\n"
@@ -8858,9 +9131,11 @@ msgstr "tilvalg »%s« ignoreret på grund af »%s«\n"
 msgid "receiving line failed: %s\n"
 msgstr "modtagelse af linje mislykkedes: %s\n"
 
+#, c-format
 msgid "line too long - skipped\n"
 msgstr "linje er for lang - udeladt\n"
 
+#, c-format
 msgid "line shortened due to embedded Nul character\n"
 msgstr "linje forkortet på grund af indlejret Nul-tegn\n"
 
@@ -9175,15 +9450,19 @@ msgstr "fejl ved læsning fra %s: %s\n"
 msgid "error closing %s: %s\n"
 msgstr "fejl ved lukning af %s: %s\n"
 
+#, c-format
 msgid "no --program option provided\n"
 msgstr "tilvalget --program blev ikke leveret\n"
 
+#, c-format
 msgid "only --decrypt and --encrypt are supported\n"
 msgstr "kun --decrypt og --encrypt er understøttet\n"
 
+#, c-format
 msgid "no --keyfile option provided\n"
 msgstr "tilvalget --keyfile blev ikke leveret\n"
 
+#, c-format
 msgid "cannot allocate args vector\n"
 msgstr "kan ikke allokere parametervektor\n"
 
@@ -9235,6 +9514,7 @@ msgstr "kan ikke allokere outfile-streng: %s\n"
 msgid "either %s or %s must be given\n"
 msgstr "enten %s eller %s skal være angivet\n"
 
+#, c-format
 msgid "no class provided\n"
 msgstr "ingen klasse angivet\n"
 

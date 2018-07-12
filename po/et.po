@@ -416,6 +416,7 @@ msgstr ""
 msgid "invalid debug-level '%s' given\n"
 msgstr ""
 
+#, c-format
 msgid "selected digest algorithm is invalid\n"
 msgstr "valitud lühendi algoritm ei ole lubatud\n"
 
@@ -447,11 +448,11 @@ msgstr "%s ei õnnestu luua: %s\n"
 msgid "socket name '%s' is too long\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent ei ole sesses sessioonis kasutatav\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "error getting nonce for the socket\n"
 msgstr "viga parooli loomisel: %s\n"
 
@@ -512,7 +513,7 @@ msgstr "salajase võtme uuendamine ebaõnnestus: %s\n"
 msgid "%s %s stopped\n"
 msgstr "%s: jätsin vahele: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent ei ole sesses sessioonis kasutatav\n"
 
@@ -569,7 +570,7 @@ msgid ""
 "needed to complete this operation."
 msgstr "Palun sisestage parool; see on salajane tekst \n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "cancelled\n"
 msgstr "Katkesta"
 
@@ -605,6 +606,7 @@ msgstr "viga: vigane sõrmejälg\n"
 msgid "error reading '%s', line %d: %s\n"
 msgstr "viga `%s' lugemisel: %s\n"
 
+#, c-format
 msgid "error reading list of trusted root certificates\n"
 msgstr ""
 
@@ -684,6 +686,7 @@ msgid ""
 "Deleting the key might remove your ability to access remote machines."
 msgstr ""
 
+#, c-format
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr ""
 
@@ -699,6 +702,7 @@ msgstr ""
 msgid "checking created signature failed: %s\n"
 msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
 
+#, c-format
 msgid "secret key parts are not available\n"
 msgstr "salajase võtme komponendid ei ole kättesaadavad\n"
 
@@ -758,7 +762,7 @@ msgstr "viga salajase võtme võtmehoidlasse `%s' kirjutamisel: %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "ei õnnestu luua ühendust serveriga `%s': %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "problem setting the gpg-agent options\n"
 msgstr "probleem agendiga: agent tagastas 0x%lx\n"
 
@@ -850,10 +854,11 @@ msgstr ""
 msgid "waiting for the agent to come up ... (%ds)\n"
 msgstr ""
 
+#, c-format
 msgid "connection to agent established\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "connection to agent is in restricted mode\n"
 msgstr "seda ei saa teha pakettmoodis\n"
 
@@ -865,6 +870,7 @@ msgstr ""
 msgid "waiting for the dirmngr to come up ... (%ds)\n"
 msgstr ""
 
+#, c-format
 msgid "connection to the dirmngr established\n"
 msgstr ""
 
@@ -1102,7 +1108,7 @@ msgstr ""
 msgid "command \"%.50s\" is ambiguous\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "out of core\n"
 msgstr "ei töödeldud"
 
@@ -1157,26 +1163,31 @@ msgstr ""
 msgid "armor: %s\n"
 msgstr "pakend: %s\n"
 
+#, c-format
 msgid "invalid armor header: "
 msgstr "vigane pakendi päis: "
 
+#, c-format
 msgid "armor header: "
 msgstr "pakendi päis: "
 
+#, c-format
 msgid "invalid clearsig header\n"
 msgstr "vigane avateksti allkirja päis\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "unknown armor header: "
 msgstr "pakendi päis: "
 
+#, c-format
 msgid "nested clear text signatures\n"
 msgstr "avateksti allkirjad üksteise sees\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "unexpected armor: "
 msgstr "ootamatu pakend:"
 
+#, c-format
 msgid "invalid dash escaped line: "
 msgstr "vigane kriipsudega märgitud rida: "
 
@@ -1184,12 +1195,15 @@ msgstr "vigane kriipsudega märgitud rida: "
 msgid "invalid radix64 character %02X skipped\n"
 msgstr "vigane radix64 sümbol %02x vahele jäetud\n"
 
+#, c-format
 msgid "premature eof (no CRC)\n"
 msgstr "enneaegne faililõpp (puudub CRC)\n"
 
+#, c-format
 msgid "premature eof (in CRC)\n"
 msgstr "enneaegne faililõpp (poolik CRC)\n"
 
+#, c-format
 msgid "malformed CRC\n"
 msgstr "vigane CRC\n"
 
@@ -1197,13 +1211,15 @@ msgstr "vigane CRC\n"
 msgid "CRC error; %06lX - %06lX\n"
 msgstr "CRC viga; %06lx - %06lx\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "premature eof (in trailer)\n"
 msgstr "enneaegne faililõpp (lõpetaval real)\n"
 
+#, c-format
 msgid "error in trailer line\n"
 msgstr "viga lõpetaval real\n"
 
+#, c-format
 msgid "no valid OpenPGP data found.\n"
 msgstr "ei leia OpenPGP andmeid.\n"
 
@@ -1211,6 +1227,7 @@ msgstr "ei leia OpenPGP andmeid.\n"
 msgid "invalid armor: line longer than %d characters\n"
 msgstr "vigane pakend: rida on pikem, kui %d sümbolit\n"
 
+#, c-format
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
 msgstr ""
@@ -1221,6 +1238,7 @@ msgstr ""
 msgid "[ not human readable (%zu bytes: %s%s) ]"
 msgstr "pole inimese poolt loetav"
 
+#, c-format
 msgid ""
 "a notation name must have only printable characters or spaces, and end with "
 "an '='\n"
@@ -1228,21 +1246,23 @@ msgstr ""
 "noteerimise nimes võivad olla ainult trükitavad sümbolid või tühikud\n"
 "ning lõpus peab olema '='\n"
 
+#, c-format
 msgid "a user notation name must contain the '@' character\n"
 msgstr "kasutaja noteerimise nimi peab sisaldama '@' märki\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "a notation name must not contain more than one '@' character\n"
 msgstr "kasutaja noteerimise nimi peab sisaldama '@' märki\n"
 
+#, c-format
 msgid "a notation value must not use any control characters\n"
 msgstr "noteerimise väärtus ei või sisaldada kontroll sümboleid\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "a notation name may not contain an '=' character\n"
 msgstr "kasutaja noteerimise nimi peab sisaldama '@' märki\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid ""
 #| "a notation name must have only printable characters or spaces, and end "
 #| "with an '='\n"
@@ -1251,6 +1271,7 @@ msgstr ""
 "noteerimise nimes võivad olla ainult trükitavad sümbolid või tühikud\n"
 "ning lõpus peab olema '='\n"
 
+#, c-format
 msgid "WARNING: invalid notation data found\n"
 msgstr "HOIATUS: leidsin vigased noteerimise andmed\n"
 
@@ -1275,6 +1296,7 @@ msgstr ""
 msgid "WARNING: %s\n"
 msgstr "HOIATUS: %s määrab üle %s\n"
 
+#, c-format
 msgid "Note: Outdated servers may lack important security fixes.\n"
 msgstr ""
 
@@ -1296,15 +1318,15 @@ msgstr "salajane võti ei ole kättesaadav"
 msgid "OpenPGP card no. %s detected\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "can't do this in batch mode\n"
 msgstr "seda ei saa teha pakettmoodis\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "This command is only available for version 2 cards\n"
 msgstr "See käsklus ei ole %s moodis lubatud.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Reset Code not or not anymore available\n"
 msgstr "salajase võtme komponendid ei ole kättesaadavad\n"
 
@@ -1475,7 +1497,7 @@ msgstr "viga teate saatmisel serverile `%s': %s\n"
 msgid "error getting card info: %s\n"
 msgstr "viga salajase võtme võtmehoidlasse `%s' kirjutamisel: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "This command is not allowed while in %s mode.\n"
 msgid "This command is not supported by this card\n"
 msgstr "See käsklus ei ole %s moodis lubatud.\n"
@@ -1483,7 +1505,7 @@ msgstr "See käsklus ei ole %s moodis lubatud.\n"
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Note: keys are already stored on the card!\n"
 msgstr "jätsin vahele: avalik võti on juba olemas\n"
 
@@ -1520,7 +1542,7 @@ msgstr "Palun valige tühistamise põhjus:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "uuendamine ebaõnnestus: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Note: This command destroys all keys stored on the card!\n"
 msgstr "jätsin vahele: avalik võti on juba olemas\n"
 
@@ -1620,6 +1642,7 @@ msgstr "kirjutan salajase võtme faili `%s'\n"
 msgid "Invalid command  (try \"help\")\n"
 msgstr "Vigane käsklus (proovige \"help\")\n"
 
+#, c-format
 msgid "--output doesn't work for this command\n"
 msgstr "võti --output ei tööta selle käsuga\n"
 
@@ -1640,10 +1663,11 @@ msgstr "viga võtmebloki lugemisel: %s\n"
 msgid "key \"%s\" not found\n"
 msgstr "võtit '%s' ei leitud: %s\n"
 
+#, c-format
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(kui te just ei määra võtit sõrmejäljega)\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "pakettmoodis ei õnnestu seda teha võtmeta \"--yes\"\n"
 
@@ -1671,6 +1695,7 @@ msgstr "Avalik võti: "
 msgid "deleting keyblock failed: %s\n"
 msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
 
+#, c-format
 msgid "ownertrust information cleared\n"
 msgstr "omaniku usalduse info puhastatud\n"
 
@@ -1678,6 +1703,7 @@ msgstr "omaniku usalduse info puhastatud\n"
 msgid "there is a secret key for public key \"%s\"!\n"
 msgstr "avaliku võtme \"%s\" jaoks on salajane võti!\n"
 
+#, c-format
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr "selle kustutamiseks kasutage võtit \"--delete-secret-keys\".\n"
 
@@ -1685,6 +1711,7 @@ msgstr "selle kustutamiseks kasutage võtit \"--delete-secret-keys\".\n"
 msgid "error creating passphrase: %s\n"
 msgstr "viga parooli loomisel: %s\n"
 
+#, c-format
 msgid "can't use a symmetric ESK packet due to the S2K mode\n"
 msgstr "S2K moodi tõttu ei saa sümmeetrilist ESK paketti kasutada\n"
 
@@ -1750,23 +1777,27 @@ msgstr "%s krüpteeritud andmed\n"
 msgid "encrypted with unknown algorithm %d\n"
 msgstr "krüpteeritud tundmatu algoritmiga %d\n"
 
+#, c-format
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
 msgstr "HOIATUS: teade on krüptitud sümmeetrilise šifri nõrga võtmega.\n"
 
+#, c-format
 msgid "problem handling encrypted packet\n"
 msgstr "probleem krüptitud paketi käsitlemisel\n"
 
+#, c-format
 msgid "no remote program execution supported\n"
 msgstr "mittelokaalse programmi käivitamist ei toetata\n"
 
+#, c-format
 msgid ""
 "external program calls are disabled due to unsafe options file permissions\n"
 msgstr ""
 "väliste programmide käivitamine on blokeeritud, kuna seadete failil on\n"
 "ebaturvalised õigused\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "this platform requires temporary files when calling external programs\n"
 msgstr ""
 "see platvorm nõuab väliste programmide käivitamiseks ajutiste failide "
@@ -1784,9 +1815,11 @@ msgstr "ei Õnnestu käivitada %s \"%s\": %s\n"
 msgid "system error while calling external program: %s\n"
 msgstr "süsteemi viga välise programmi kasutamisel: %s\n"
 
+#, c-format
 msgid "unnatural exit of external program\n"
 msgstr "väline programm lõpetas erandlikult\n"
 
+#, c-format
 msgid "unable to execute external program\n"
 msgstr "välist programmi ei õnnestu käivitada\n"
 
@@ -1843,7 +1876,7 @@ msgstr "kirjutan faili `%s'\n"
 msgid "key %s: key material on-card - skipped\n"
 msgstr "võti %08lX: alamvõtme allkiri on vales kohas - jätan vahele\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "exporting secret keys not allowed\n"
 msgstr "kirjutan salajase võtme faili `%s'\n"
 
@@ -1851,6 +1884,7 @@ msgstr "kirjutan salajase võtme faili `%s'\n"
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "võti %08lX: PGP 2.x stiilis võti - jätsin vahele\n"
 
+#, c-format
 msgid "WARNING: nothing exported\n"
 msgstr "HOIATUS: midagi ei eksporditud\n"
 
@@ -2170,6 +2204,7 @@ msgstr "Pakkimine: "
 msgid "usage: %s [options] %s\n"
 msgstr "kasuta: gpg [võtmed] "
 
+#, c-format
 msgid "conflicting commands\n"
 msgstr "vastuolulised käsud\n"
 
@@ -2276,6 +2311,7 @@ msgstr "Vastavat allkirja salajaste võtmete hoidlas pole\n"
 msgid "unknown TOFU policy '%s'\n"
 msgstr "tundmatu vaikimisi saaja `%s'\n"
 
+#, c-format
 msgid "(use \"help\" to list choices)\n"
 msgstr ""
 
@@ -2309,7 +2345,7 @@ msgstr "vigased impordi võtmed\n"
 msgid "'%s' is not a valid character set\n"
 msgstr "%s ei ole lubatud kooditabel\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "could not parse keyserver URL\n"
 msgstr "ei saa parsida võtmeserveri URI\n"
 
@@ -2317,7 +2353,7 @@ msgstr "ei saa parsida võtmeserveri URI\n"
 msgid "%s:%d: invalid keyserver options\n"
 msgstr "%s:%d: vigased ekspordi võtmed\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "invalid keyserver options\n"
 msgstr "vigased ekspordi võtmed\n"
 
@@ -2325,6 +2361,7 @@ msgstr "vigased ekspordi võtmed\n"
 msgid "%s:%d: invalid import options\n"
 msgstr "%s:%d: vigased impordi võtmed\n"
 
+#, c-format
 msgid "invalid import options\n"
 msgstr "vigased impordi võtmed\n"
 
@@ -2336,6 +2373,7 @@ msgstr "vigased impordi võtmed\n"
 msgid "%s:%d: invalid export options\n"
 msgstr "%s:%d: vigased ekspordi võtmed\n"
 
+#, c-format
 msgid "invalid export options\n"
 msgstr "vigased ekspordi võtmed\n"
 
@@ -2343,7 +2381,7 @@ msgstr "vigased ekspordi võtmed\n"
 msgid "%s:%d: invalid list options\n"
 msgstr "%s:%d: vigased impordi võtmed\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "invalid list options\n"
 msgstr "vigased impordi võtmed\n"
 
@@ -2388,7 +2426,7 @@ msgstr ""
 msgid "%s:%d: invalid verify options\n"
 msgstr "%s:%d: vigased ekspordi võtmed\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "invalid verify options\n"
 msgstr "vigased ekspordi võtmed\n"
 
@@ -2400,9 +2438,11 @@ msgstr "exec-path väärtuseks ei õnnestu seada %s\n"
 msgid "%s:%d: invalid auto-key-locate list\n"
 msgstr "%s:%d: vigased ekspordi võtmed\n"
 
+#, c-format
 msgid "invalid auto-key-locate list\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: program may create a core file!\n"
 msgstr "HOIATUS: programm võib salvestada oma mälupildi!\n"
 
@@ -2418,6 +2458,7 @@ msgstr "%s ja %s ei ole koos lubatud!\n"
 msgid "%s makes no sense with %s!\n"
 msgstr "%s ja %s ei oma koos mõtet!\n"
 
+#, c-format
 msgid "WARNING: running with faked system time: "
 msgstr ""
 
@@ -2425,49 +2466,60 @@ msgstr ""
 msgid "will not run with insecure memory due to %s\n"
 msgstr "kirjutan salajase võtme faili `%s'\n"
 
+#, c-format
 msgid "selected cipher algorithm is invalid\n"
 msgstr "valitud šifri algoritm ei ole lubatud\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "selected compression algorithm is invalid\n"
 msgstr "valitud šifri algoritm ei ole lubatud\n"
 
+#, c-format
 msgid "selected certification digest algorithm is invalid\n"
 msgstr "valitud sertifikaadi lühendi algoritm ei ole lubatud\n"
 
+#, c-format
 msgid "completes-needed must be greater than 0\n"
 msgstr "completes-needed peab olema suurem, kui 0\n"
 
+#, c-format
 msgid "marginals-needed must be greater than 1\n"
 msgstr "marginals-needed peab olema suurem, kui 1\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "max-cert-depth must be in the range from 1 to 255\n"
 msgstr "max-cert-depth peab olema vahemikus 1 kuni 255\n"
 
+#, c-format
 msgid "invalid default-cert-level; must be 0, 1, 2, or 3\n"
 msgstr "vigane vaikimisi-sert-tase; peab olema 0, 1, 2 või 3\n"
 
+#, c-format
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "vigane min-sert-tase; peab olema 1, 2 või 3\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgid "Note: simple S2K mode (0) is strongly discouraged\n"
 msgstr "MÄRKUS: lihtne S2K mood (0) ei soovitata kasutada\n"
 
+#, c-format
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "vigane S2K mood; peab olema 0, 1 või 3\n"
 
+#, c-format
 msgid "invalid default preferences\n"
 msgstr "vigased vaikimisi eelistused\n"
 
+#, c-format
 msgid "invalid personal cipher preferences\n"
 msgstr "vigased isikliku šifri eelistused\n"
 
+#, c-format
 msgid "invalid personal digest preferences\n"
 msgstr "vigased isikliku lühendi eelistused\n"
 
+#, c-format
 msgid "invalid personal compress preferences\n"
 msgstr "vigased isikliku pakkimise eelistused\n"
 
@@ -2487,6 +2539,7 @@ msgstr "pakkimise algoritm \"%s\" ei ole moodis %s lubatud\n"
 msgid "failed to initialize the TrustDB: %s\n"
 msgstr "TrustDB initsialiseerimine ebaõnnestus: %s\n"
 
+#, c-format
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "HOIATUS: määrati saajad (-r) aga ei kasutata avaliku võtme krüptograafiat\n"
@@ -2495,6 +2548,7 @@ msgstr ""
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "lahtikrüpteerimine ebaõnnestus: %s\n"
 
+#, c-format
 msgid "you cannot use --symmetric --encrypt with --s2k-mode 0\n"
 msgstr ""
 
@@ -2502,6 +2556,7 @@ msgstr ""
 msgid "you cannot use --symmetric --encrypt in %s mode\n"
 msgstr "%s ei ole moodis %s lubatud.\n"
 
+#, c-format
 msgid "you cannot use --symmetric --sign --encrypt with --s2k-mode 0\n"
 msgstr ""
 
@@ -2555,19 +2610,23 @@ msgstr "viga parooli loomisel: %s\n"
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: no command supplied.  Trying to guess what you mean ...\n"
 msgstr ""
 
+#, c-format
 msgid "Go ahead and type your message ...\n"
 msgstr "Kirjutage nüüd oma teade ...\n"
 
+#, c-format
 msgid "the given certification policy URL is invalid\n"
 msgstr "antud sertifikaadi poliisi URL on vigane\n"
 
+#, c-format
 msgid "the given signature policy URL is invalid\n"
 msgstr "antud allkirja poliisi URL on vigane\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "the given preferred keyserver URL is invalid\n"
 msgstr "antud allkirja poliisi URL on vigane\n"
 
@@ -2732,9 +2791,11 @@ msgstr "%s allkiri, sõnumilühendi algoritm %s\n"
 msgid "         \"%s\": preference for compression algorithm %s\n"
 msgstr ""
 
+#, c-format
 msgid "it is strongly suggested that you update your preferences and\n"
 msgstr ""
 
+#, c-format
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
 msgstr ""
 
@@ -2766,6 +2827,7 @@ msgstr ""
 msgid "key %s: no valid user IDs\n"
 msgstr "võti %08lX: puudub kehtiv kasutaja ID\n"
 
+#, c-format
 msgid "this may be caused by a missing self-signature\n"
 msgstr "see võib olla põhjustatud puuduvast iseenda allkirjast\n"
 
@@ -2855,7 +2917,7 @@ msgstr "viga teate saatmisel serverile `%s': %s\n"
 msgid "secret key %s: %s\n"
 msgstr "salajast võtit `%s' ei leitud: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "importing secret keys not allowed\n"
 msgstr "kirjutan salajase võtme faili `%s'\n"
 
@@ -2876,6 +2938,29 @@ msgstr "võti %08lX: salajane võti vigase šifriga %d - jätsin vahele\n"
 #, c-format
 msgid "To migrate '%s', with each smartcard, run: %s\n"
 msgstr ""
+
+msgid "No reason specified"
+msgstr "Põhjus puudub"
+
+msgid "Key is superseded"
+msgstr "Võti on asendatud"
+
+msgid "Key has been compromised"
+msgstr "Võti on kompromiteeritud"
+
+msgid "Key is no longer used"
+msgstr "Võti ei ole enam kasutusel"
+
+msgid "User ID is no longer valid"
+msgstr "Kasutaja ID ei ole enam kehtiv"
+
+#, c-format
+msgid "reason for revocation: "
+msgstr "tühistamise põhjus: "
+
+#, c-format
+msgid "revocation comment: "
+msgstr "tühistamise kommentaar: "
 
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
@@ -3519,10 +3604,11 @@ msgstr "Väljun salvestamata? "
 msgid "update failed: %s\n"
 msgstr "uuendamine ebaõnnestus: %s\n"
 
+#, c-format
 msgid "Key not changed so no update needed.\n"
 msgstr "Võtit ei muudetud, seega pole uuendamist vaja.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't delete the last user ID!\n"
 msgid "cannot revoke the last valid user ID.\n"
 msgstr "Viimast kasutaja ID ei saa kustutada!\n"
@@ -3649,6 +3735,7 @@ msgstr "[tühistatud] "
 msgid "expired"
 msgstr "expire"
 
+#, c-format
 msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
@@ -3656,10 +3743,11 @@ msgstr ""
 "HOIATUS: ühtegi kasutaja ID pole märgitud primaarseks.  See käsklus võib\n"
 "              põhjustada muu kasutaja ID primaarseks määramist.\n"
 
+#, c-format
 msgid "WARNING: Your encryption subkey expires soon.\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
 msgstr "v3 võtme aegumise aega ei saa muuta.\n"
@@ -3739,13 +3827,15 @@ msgstr "PGP 2.x-stiili võtmele ei saa määratud tühistajat lisada.\n"
 msgid "Enter the user ID of the designated revoker: "
 msgstr "Sisestage määratud tühistaja kasutaja ID: "
 
+#, c-format
 msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr "PGP 2.x stiilis võtit ei saa nimetada määratud tühistajaks\n"
 
+#, c-format
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr "te ei saa nimetada võtit iseenda määratud tühistajaks\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "this key has already been designated as a revoker\n"
 msgstr "HOIATUS: See võti on määratud tühistaja poolt tühistatud!\n"
 
@@ -3772,6 +3862,7 @@ msgstr "Muudan sekundaarse võtme aegumise aega.\n"
 msgid "Changing expiration time for the primary key.\n"
 msgstr "Muudan primaarse võtme aegumise aega.\n"
 
+#, c-format
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "v3 võtme aegumise aega ei saa muuta.\n"
 
@@ -3877,6 +3968,7 @@ msgstr "Te asute tühistama järgmisi allkirju:\n"
 msgid "Really create the revocation certificates? (y/N) "
 msgstr "Kas tõesti loon tühistamise sertifikaadid? (j/E) "
 
+#, c-format
 msgid "no secret key\n"
 msgstr "salajast võtit pole\n"
 
@@ -3892,7 +3984,7 @@ msgstr "kasutaja ID \"%s\" on juba tühistatud\n"
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "HOIATUS: kasutaja ID allkirja ajatempel on %d sekundit tulevikus\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "You can't delete the last user ID!\n"
 msgid "Cannot revoke the last valid user ID.\n"
 msgstr "Viimast kasutaja ID ei saa kustutada!\n"
@@ -3917,15 +4009,15 @@ msgstr "vigased impordi võtmed\n"
 msgid "preference '%s' duplicated\n"
 msgstr "eelistus %c%lu on duplikaat\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "too many cipher preferences\n"
 msgstr "liiga palju `%c' eelistusi\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "too many digest preferences\n"
 msgstr "liiga palju `%c' eelistusi\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "too many compression preferences\n"
 msgstr "liiga palju `%c' eelistusi\n"
 
@@ -3933,12 +4025,15 @@ msgstr "liiga palju `%c' eelistusi\n"
 msgid "invalid item '%s' in preference string\n"
 msgstr "lubamatu sümbol eelistuste sõnes\n"
 
+#, c-format
 msgid "writing direct signature\n"
 msgstr "kirjutan otsese allkirja\n"
 
+#, c-format
 msgid "writing self signature\n"
 msgstr "kirjutan iseenda allkirja\n"
 
+#, c-format
 msgid "writing key binding signature\n"
 msgstr "kirjutan võtit siduva allkirja\n"
 
@@ -3950,6 +4045,7 @@ msgstr "vigane võtme suurus; kasutan %u bitti\n"
 msgid "keysize rounded up to %u bits\n"
 msgstr "võtme suurus ümardatud üles %u bitini\n"
 
+#, c-format
 msgid ""
 "WARNING: some OpenPGP programs can't handle a DSA key with this digest size\n"
 msgstr ""
@@ -4295,7 +4391,7 @@ msgstr "`%s' on juba pakitud\n"
 msgid "Create anyway? (y/N) "
 msgstr "Kasutan seda võtit ikka? "
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "creating anyway\n"
 msgstr "genereeri uus võtmepaar"
 
@@ -4303,6 +4399,7 @@ msgstr "genereeri uus võtmepaar"
 msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
 msgstr ""
 
+#, c-format
 msgid "Key generation canceled.\n"
 msgstr "Võtme genereerimine katkestati.\n"
 
@@ -4350,15 +4447,16 @@ msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr "võti loodi %lu sekundit tulevikus (ajahüpe või kella probleem)\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "MÄRKUS: v3 võtmetele alamvõtmete loomine ei ole OpenPGP ühilduv\n"
 
+#, c-format
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Primaarse võtme salajased komponendid ei ole kättesaadavad.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Secret parts of primary key are stored on-card.\n"
 msgstr "Primaarse võtme salajased komponendid ei ole kättesaadavad.\n"
 
@@ -4520,10 +4618,11 @@ msgstr "HOIATUS: ei saa kustutada ajutist faili (%s) `%s': %s\n"
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "võtit '%s' ei leitud: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "key not found on keyserver\n"
 msgstr "võtit '%s' ei leitud: %s\n"
 
+#, c-format
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 
@@ -4535,7 +4634,7 @@ msgstr "küsin võtit %08lX võtmeserverist %s\n"
 msgid "requesting key %s from %s\n"
 msgstr "küsin võtit %08lX võtmeserverist %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no keyserver known\n"
 msgstr "vigased ekspordi võtmed\n"
 
@@ -4573,6 +4672,7 @@ msgstr "krüpteeritud tundmatu algoritmiga %d\n"
 msgid "public key is %s\n"
 msgstr "avalik võti on %08lX\n"
 
+#, c-format
 msgid "public key encrypted data: good DEK\n"
 msgstr "avaliku võtmega krüpteeritud andmed: hea DEK\n"
 
@@ -4592,6 +4692,7 @@ msgstr "krüpteeritud %s võtmega, ID %08lX\n"
 msgid "public key decryption failed: %s\n"
 msgstr "avaliku võtmega lahtikrüpteerimine ebaõnnestus: %s\n"
 
+#, c-format
 msgid "WARNING: multiple plaintexts seen\n"
 msgstr ""
 
@@ -4599,6 +4700,7 @@ msgstr ""
 msgid "encrypted with %lu passphrases\n"
 msgstr "krüpteeritud kasutades %lu parooli\n"
 
+#, c-format
 msgid "encrypted with 1 passphrase\n"
 msgstr "krüpteeritud ühe parooliga\n"
 
@@ -4610,6 +4712,7 @@ msgstr "eeldan %s krüpteeritud andmeid\n"
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "IDEA šiffer pole saadaval, loodan kasutada selle asemel %s\n"
 
+#, c-format
 msgid "WARNING: message was not integrity protected\n"
 msgstr "HOIATUS: teate kooskõlalisus ei ole tagatud\n"
 
@@ -4623,14 +4726,16 @@ msgstr ""
 msgid "Use the option '%s' to decrypt anyway.\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "decryption failed: %s\n"
 msgid "decryption forced to fail!\n"
 msgstr "lahtikrüpteerimine ebaõnnestus: %s\n"
 
+#, c-format
 msgid "decryption okay\n"
 msgstr "lahtikrüpteerimine õnnestus\n"
 
+#, c-format
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "HOIATUS: krüpteeritud teadet on muudetud!\n"
 
@@ -4638,7 +4743,7 @@ msgstr "HOIATUS: krüpteeritud teadet on muudetud!\n"
 msgid "decryption failed: %s\n"
 msgstr "lahtikrüpteerimine ebaõnnestus: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
 msgstr "MÄRKUS: saatja nõudis \"ainult-teie-silmadele\"\n"
@@ -4647,10 +4752,11 @@ msgstr "MÄRKUS: saatja nõudis \"ainult-teie-silmadele\"\n"
 msgid "original file name='%.*s'\n"
 msgstr "algne failinimi on='%.*s'\n"
 
+#, c-format
 msgid "standalone revocation - use \"gpg --import\" to apply\n"
 msgstr "eraldiseisev tühistus - realiseerimiseks kasutage \"gpg --import\"\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no signature found\n"
 msgstr "Korrektne allkiri kasutajalt \""
 
@@ -4666,10 +4772,11 @@ msgstr "Aegunud allkiri kasutajalt \""
 msgid "Good signature from \"%s\""
 msgstr "Korrektne allkiri kasutajalt \""
 
+#, c-format
 msgid "signature verification suppressed\n"
 msgstr "allkirja kontroll jäeti ära\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "can't handle this ambiguous signature data\n"
 msgstr "neid allkirju ei õnnestu töödelda\n"
 
@@ -4689,6 +4796,7 @@ msgstr "Allkirja lõi %.*s kasutades %s võtit ID %08lX\n"
 msgid "               issuer \"%s\"\n"
 msgstr "                 ka \""
 
+#, c-format
 msgid "Key available at: "
 msgstr "Võtme leiate: "
 
@@ -4739,9 +4847,11 @@ msgstr ""
 msgid "Can't check signature: %s\n"
 msgstr "Allkirja ei saa kontrollida: %s\n"
 
+#, c-format
 msgid "not a detached signature\n"
 msgstr "ei ole eraldiseisev allkiri\n"
 
+#, c-format
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
 msgstr "HOIATUS: leidsin mitu allkirja. Kontrollitakse ainult esimest.\n"
@@ -4750,6 +4860,7 @@ msgstr "HOIATUS: leidsin mitu allkirja. Kontrollitakse ainult esimest.\n"
 msgid "standalone signature of class 0x%02x\n"
 msgstr "eraldiseisev allkiri klassiga 0x%02x\n"
 
+#, c-format
 msgid "old style (PGP 2.x) signature\n"
 msgstr "vana stiili (PGP 2.x) allkiri\n"
 
@@ -4765,7 +4876,7 @@ msgstr "trustdb: lugemine ebaõnnestus (n=%d): %s\n"
 msgid "WARNING: using experimental public key algorithm %s\n"
 msgstr "ei oska käsitleda avaliku võtme algoritmi %d\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "WARNING: Elgamal sign+encrypt keys are deprecated\n"
 msgstr ""
 "sõnumilühendi algoritmi %s (%d) kasutamine on vastuolus saaja eelistustega\n"
@@ -4796,6 +4907,7 @@ msgstr "viga lugemisel: %s\n"
 msgid "(reported error: %s <%s>)\n"
 msgstr "viga lugemisel: %s\n"
 
+#, c-format
 msgid "(further info: "
 msgstr ""
 
@@ -4844,6 +4956,7 @@ msgstr "loen võtmeid failist `%s'\n"
 msgid "unknown option '%s'\n"
 msgstr "tundmatu vaikimisi saaja `%s'\n"
 
+#, c-format
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr ""
 
@@ -4867,6 +4980,7 @@ msgstr "%s: tundmatu suffiks\n"
 msgid "Enter new filename"
 msgstr "Sisestage uus failinimi"
 
+#, c-format
 msgid "writing to stdout\n"
 msgstr "kirjutan standardväljundisse\n"
 
@@ -4879,6 +4993,7 @@ msgstr "eeldan allkirjastatud andmeid failis `%s'\n"
 msgid "can't handle public key algorithm %d\n"
 msgstr "ei oska käsitleda avaliku võtme algoritmi %d\n"
 
+#, c-format
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr ""
 "HOIATUS: tõenäoliselt ebaturvaline sümmeetriliselt krüpteeritud sessiooni "
@@ -4895,6 +5010,7 @@ msgstr "probleem agendiga: agent tagastas 0x%lx\n"
 msgid "Enter passphrase\n"
 msgstr "Sisestage parool\n"
 
+#, c-format
 msgid "cancelled by user\n"
 msgstr "katkestatud kasutaja poolt\n"
 
@@ -4970,29 +5086,9 @@ msgstr "\"%s\": ei ole JPEG fail\n"
 msgid "Is this photo correct (y/N/q)? "
 msgstr "On see foto õige (j/E/v)? "
 
+#, c-format
 msgid "unable to display photo ID!\n"
 msgstr "foto ID ei saa näidata!\n"
-
-msgid "No reason specified"
-msgstr "Põhjus puudub"
-
-msgid "Key is superseded"
-msgstr "Võti on asendatud"
-
-msgid "Key has been compromised"
-msgstr "Võti on kompromiteeritud"
-
-msgid "Key is no longer used"
-msgstr "Võti ei ole enam kasutusel"
-
-msgid "User ID is no longer valid"
-msgstr "Kasutaja ID ei ole enam kehtiv"
-
-msgid "reason for revocation: "
-msgstr "tühistamise põhjus: "
-
-msgid "revocation comment: "
-msgstr "tühistamise kommentaar: "
 
 #. TRANSLATORS: These are the allowed answers in lower and
 #. uppercase.  Below you will find the matching strings which
@@ -5070,10 +5166,11 @@ msgstr "%08lX: Ei ole midagi, mis näitaks, et see võti kuulub omanikule\n"
 msgid "%s: There is limited assurance this key belongs to the named user\n"
 msgstr "%08lX: Ei ole midagi, mis näitaks, et see võti kuulub omanikule\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "This key probably belongs to the named user\n"
 msgstr "See võti kuulub tõenäoliselt omanikule\n"
 
+#, c-format
 msgid "This key belongs to us\n"
 msgstr "See võti kuulub meile\n"
 
@@ -5107,25 +5204,31 @@ msgstr ""
 msgid "Use this key anyway? (y/N) "
 msgstr "Kasutan seda võtit ikka? "
 
+#, c-format
 msgid "WARNING: Using untrusted key!\n"
 msgstr "HOIATUS: Kasutan mitteusaldatavat võtit!\n"
 
+#, c-format
 msgid "WARNING: this key might be revoked (revocation key not present)\n"
 msgstr "HOIATUS: see võti võib olla tühistatud (tühistamise võtit pole)\n"
 
+#, c-format
 msgid "WARNING: This key has been revoked by its designated revoker!\n"
 msgstr "HOIATUS: See võti on määratud tühistaja poolt tühistatud!\n"
 
+#, c-format
 msgid "WARNING: This key has been revoked by its owner!\n"
 msgstr "HOIATUS: See võti on omaniku poolt tühistatud!\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "         This could mean that the signature is forged.\n"
 msgstr "         See võib tähendada, et allkiri on võltsing.\n"
 
+#, c-format
 msgid "WARNING: This subkey has been revoked by its owner!\n"
 msgstr "HOIATUS: See alamvõti on omaniku poolt tühistatud!\n"
 
+#, c-format
 msgid "Note: This key has been disabled.\n"
 msgstr "Märkus: See võti on blokeeritud.\n"
 
@@ -5137,34 +5240,43 @@ msgstr ""
 msgid "Note: Signer's address '%s' does not match DNS entry\n"
 msgstr ""
 
+#, c-format
 msgid "trustlevel adjusted to FULL due to valid PKA info\n"
 msgstr ""
 
+#, c-format
 msgid "trustlevel adjusted to NEVER due to bad PKA info\n"
 msgstr ""
 
+#, c-format
 msgid "Note: This key has expired!\n"
 msgstr "Märkus: See võti on aegunud!\n"
 
+#, c-format
 msgid "WARNING: This key is not certified with a trusted signature!\n"
 msgstr "HOIATUS: Seda võtit ei ole sertifitseeritud usaldatava allkirjaga!\n"
 
+#, c-format
 msgid ""
 "         There is no indication that the signature belongs to the owner.\n"
 msgstr "         Ei ole midagi, mis näitaks, et allkiri kuulub omanikule.\n"
 
+#, c-format
 msgid "WARNING: We do NOT trust this key!\n"
 msgstr "HOIATUS: Me EI usalda seda võtit!\n"
 
+#, c-format
 msgid "         The signature is probably a FORGERY.\n"
 msgstr "         Allkiri on tõenäoliselt VÕLTSING.\n"
 
+#, c-format
 msgid ""
 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr ""
 "HOIATUS: Seda võtit ei ole sertifitseeritud piisavalt usaldatava "
 "allkirjaga!\n"
 
+#, c-format
 msgid "         It is not certain that the signature belongs to the owner.\n"
 msgstr "         Ei ole kindel, et allkiri kuulub omanikule.\n"
 
@@ -5209,12 +5321,14 @@ msgstr ""
 msgid "No such user ID.\n"
 msgstr "Tundmatu kasutaja ID.\n"
 
+#, c-format
 msgid "skipped: public key already set as default recipient\n"
 msgstr "jätsin vahele: avalik võti on juba vaikimisi saaja\n"
 
 msgid "Public key is disabled.\n"
 msgstr "Avalik võti on blokeeritud.\n"
 
+#, c-format
 msgid "skipped: public key already set\n"
 msgstr "jätsin vahele: avalik võti on juba olemas\n"
 
@@ -5222,6 +5336,7 @@ msgstr "jätsin vahele: avalik võti on juba olemas\n"
 msgid "unknown default recipient \"%s\"\n"
 msgstr "tundmatu vaikimisi saaja `%s'\n"
 
+#, c-format
 msgid "no valid addressees\n"
 msgstr "kehtivaid aadresse pole\n"
 
@@ -5233,6 +5348,7 @@ msgstr "võti %08lX: kasutaja ID puudub\n"
 msgid "Note: key %s has no preference for %s\n"
 msgstr "võti %08lX: kasutaja ID puudub\n"
 
+#, c-format
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "andmeid ei salvestatud; salvestamiseks kasutage võtit \"--output\"\n"
 
@@ -5242,9 +5358,11 @@ msgstr "Eraldiseisev allkiri.\n"
 msgid "Please enter name of data file: "
 msgstr "Palun sisestage andmefaili nimi: "
 
+#, c-format
 msgid "reading stdin ...\n"
 msgstr "loen standardsisendit ...\n"
 
+#, c-format
 msgid "no signed data\n"
 msgstr "allkirjastatud andmeid pole\n"
 
@@ -5265,9 +5383,11 @@ msgstr "võti %08lX: kasutaja ID puudub\n"
 msgid "anonymous recipient; trying secret key %s ...\n"
 msgstr "anonüümne saaja; proovin salajast võtit %08lX ...\n"
 
+#, c-format
 msgid "okay, we are the anonymous recipient.\n"
 msgstr "ok, me oleme anonüümne teate saaja.\n"
 
+#, c-format
 msgid "old encoding of the DEK is not supported\n"
 msgstr "vana DEK kodeerimine ei ole toetatud\n"
 
@@ -5283,7 +5403,7 @@ msgstr "MÄRKUS: šifri algoritm %d puudub eelistustes\n"
 msgid "Note: secret key %s expired at %s\n"
 msgstr "MÄRKUS: salajane võti %08lX aegus %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
 msgstr "MÄRKUS: võti on tühistatud"
@@ -5420,6 +5540,7 @@ msgstr "(Kirjeldust ei antud)\n"
 msgid "Is this okay? (y/N) "
 msgstr "On see hästi? "
 
+#, c-format
 msgid "weak key created - retrying\n"
 msgstr "loodi nõrk võti - proovin uuesti\n"
 
@@ -5437,6 +5558,7 @@ msgstr ""
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "HOIATUS: allkirja lühend on teatega konfliktne\n"
 
@@ -5498,6 +5620,11 @@ msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
 msgstr "eraldiseisev allkiri klassiga 0x%02x\n"
 
 #, fuzzy, c-format
+#| msgid "standalone signature of class 0x%02x\n"
+msgid "bad data signature from key %s: %s (0x%02x, 0x%x)\n"
+msgstr "eraldiseisev allkiri klassiga 0x%02x\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "eeldan tundmatu kriitilise biti tõttu võtmel %08lX vigast allkirja\n"
 
@@ -5540,6 +5667,7 @@ msgid ""
 msgstr ""
 "sõnumilühendi algoritmi %s (%d) kasutamine on vastuolus saaja eelistustega\n"
 
+#, c-format
 msgid "signing:"
 msgstr "allkirjastan:"
 
@@ -5547,6 +5675,7 @@ msgstr "allkirjastan:"
 msgid "%s encryption will be used\n"
 msgstr "kasutatakse %s krüpteerimist\n"
 
+#, c-format
 msgid "key is not flagged as insecure - can't use it with the faked RNG!\n"
 msgstr ""
 "võti ei ole märgitud ebaturvaliseks - sellega ei saa võlts RNGd kasutada!\n"
@@ -5555,6 +5684,7 @@ msgstr ""
 msgid "skipped \"%s\": duplicated\n"
 msgstr "`%s' jätsin vahele: duplikaat\n"
 
+#, c-format
 msgid "skipped: secret key already present\n"
 msgstr "jätsin vahele: avalik võti on juba olemas\n"
 
@@ -5623,6 +5753,7 @@ msgstr "trustdb kirje %lu: lseek ebaõnnestus: %s\n"
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr "trustdb rec %lu: write failed (n=%d): %s\n"
 
+#, c-format
 msgid "trustdb transaction too large\n"
 msgstr "trustdb transaktsioon on liiga suur\n"
 
@@ -5646,7 +5777,7 @@ msgstr "%s: loodi vigane usalduse andmebaas\n"
 msgid "%s: trustdb created\n"
 msgstr "%s: trustdb on loodud\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "NOTE: trustdb not writable\n"
 msgid "Note: trustdb not writable\n"
 msgstr "MÄRKUS: trustdb pole kirjutatav\n"
@@ -5707,7 +5838,7 @@ msgstr "%s: kirje nullimine ebaõnnestus: %s\n"
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: kirje lisamine ebaõnnestus: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Error: The trustdb is corrupted.\n"
 msgstr "%s: trustdb on loodud\n"
 
@@ -5741,6 +5872,7 @@ msgstr ""
 msgid "error creating 'ultimately_trusted_keys' TOFU table: %s\n"
 msgstr "viga parooli loomisel: %s\n"
 
+#, c-format
 msgid "TOFU DB error"
 msgstr ""
 
@@ -5914,6 +6046,7 @@ msgstr ""
 msgid "Defaulting to unknown.\n"
 msgstr ""
 
+#, c-format
 msgid "TOFU db corruption detected.\n"
 msgstr ""
 
@@ -6002,17 +6135,21 @@ msgstr[1] "|algo [failid]|trüki teatelühendid"
 msgid "(policy: %s)"
 msgstr "Poliis: "
 
+#, c-format
 msgid ""
 "Warning: we have yet to see a message signed using this key and user id!\n"
 msgstr ""
 
+#, c-format
 msgid ""
 "Warning: we've only seen one message signed using this key and user id!\n"
 msgstr ""
 
+#, c-format
 msgid "Warning: you have yet to encrypt a message to this key!\n"
 msgstr ""
 
+#, c-format
 msgid "Warning: you have only encrypted one message to this key!\n"
 msgstr ""
 
@@ -6074,9 +6211,11 @@ msgstr "usalduse kirje %lu, päringu tüüp %d: lugemine ebaõnnestus: %s\n"
 msgid "trust record %lu is not of requested type %d\n"
 msgstr "usalduse kirje %lu ei oma soovitud tüüpi %d\n"
 
+#, c-format
 msgid "You may try to re-create the trustdb using the commands:\n"
 msgstr ""
 
+#, c-format
 msgid "If that does not work, please consult the manual\n"
 msgstr ""
 
@@ -6088,6 +6227,7 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr ""
 
+#, c-format
 msgid "no need for a trustdb check\n"
 msgstr "trustdb kontrolliks puudub vajadus\n"
 
@@ -6107,9 +6247,11 @@ msgstr "trustdb kontrolliks puudub vajadus\n"
 msgid "public key %s not found: %s\n"
 msgstr "ei leia avalikku võtit %08lX: %s\n"
 
+#, c-format
 msgid "please do a --check-trustdb\n"
 msgstr "palun tehke --check-trustdb\n"
 
+#, c-format
 msgid "checking the trustdb\n"
 msgstr "kontrollin trustdb faili\n"
 
@@ -6126,6 +6268,7 @@ msgid_plural " (%d validity counts cleared)\n"
 msgstr[0] "%d võtit töödeldud (%d kehtivust puhastatud)\n"
 msgstr[1] "%d võtit töödeldud (%d kehtivust puhastatud)\n"
 
+#, c-format
 msgid "no ultimately trusted keys found\n"
 msgstr "absoluutselt usaldatavaid võtmeid pole\n"
 
@@ -6197,6 +6340,7 @@ msgstr ""
 msgid "[ultimate]"
 msgstr ""
 
+#, c-format
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -6242,6 +6386,7 @@ msgstr ""
 msgid "PIN callback returned error: %s\n"
 msgstr ""
 
+#, c-format
 msgid "the NullPIN has not yet been changed\n"
 msgstr ""
 
@@ -6289,20 +6434,24 @@ msgstr "TrustDB initsialiseerimine ebaõnnestus: %s\n"
 msgid "failed to store the creation date: %s\n"
 msgstr "võtmehoidla vahemälu uuesti loomine ebaõnnestus: %s\n"
 
+#, c-format
 msgid "error retrieving CHV status from card\n"
 msgstr ""
 
+#, c-format
 msgid "response does not contain the RSA modulus\n"
 msgstr ""
 
+#, c-format
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "remove keys from the public keyring"
 msgid "response does not contain the EC public key\n"
 msgstr "eemalda võtmed avalike võtmete hoidlast"
 
+#, c-format
 msgid "response does not contain the public key data\n"
 msgstr ""
 
@@ -6347,6 +6496,7 @@ msgstr ""
 msgid "verify CHV%d failed: %s\n"
 msgstr "võtmeserverile saatmine ebaõnnestus: %s\n"
 
+#, c-format
 msgid "card is permanently locked!\n"
 msgstr ""
 
@@ -6363,6 +6513,7 @@ msgstr[1] ""
 msgid "|A|Please enter the Admin PIN"
 msgstr "muuda parooli"
 
+#, c-format
 msgid "access to admin commands is not configured\n"
 msgstr ""
 
@@ -6398,29 +6549,31 @@ msgstr "muuda parooli"
 msgid "||Please enter the PIN and New PIN"
 msgstr "muuda parooli"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "error reading application data\n"
 msgstr "viga võtmebloki lugemisel: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "error reading fingerprint DO\n"
 msgstr "%s: viga vaba kirje lugemisel: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "key already exists\n"
 msgstr "`%s' on juba pakitud\n"
 
+#, c-format
 msgid "existing key will be replaced\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "generating new key\n"
 msgstr "genereeri uus võtmepaar"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "writing new key\n"
 msgstr "genereeri uus võtmepaar"
 
+#, c-format
 msgid "creation timestamp missing\n"
 msgstr ""
 
@@ -6432,15 +6585,16 @@ msgstr ""
 msgid "failed to store the key: %s\n"
 msgstr "TrustDB initsialiseerimine ebaõnnestus: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "unsupported URI"
 msgid "unsupported curve\n"
 msgstr "mittetoetatud URI"
 
+#, c-format
 msgid "please wait while key is being generated ...\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "generating key failed\n"
 msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
 
@@ -6450,9 +6604,11 @@ msgid_plural "key generation completed (%d seconds)\n"
 msgstr[0] "Võtme genereerimine ebaõnnestus: %s\n"
 msgstr[1] "Võtme genereerimine ebaõnnestus: %s\n"
 
+#, c-format
 msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr ""
 
+#, c-format
 msgid "fingerprint on card does not match requested one\n"
 msgstr ""
 
@@ -6464,6 +6620,7 @@ msgstr "%s allkiri, sõnumilühendi algoritm %s\n"
 msgid "signatures created so far: %lu\n"
 msgstr ""
 
+#, c-format
 msgid ""
 "verification of Admin PIN is currently prohibited through this command\n"
 msgstr ""
@@ -6529,6 +6686,7 @@ msgid ""
 "Smartcard daemon for @GNUPG@\n"
 msgstr ""
 
+#, c-format
 msgid "please use the option '--daemon' to run the program in the background\n"
 msgstr ""
 
@@ -6540,7 +6698,7 @@ msgstr ""
 msgid "handler for fd %d terminated\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no dirmngr running in this session\n"
 msgstr "gpg-agent ei ole sesses sessioonis kasutatav\n"
 
@@ -6559,6 +6717,7 @@ msgstr "help"
 msgid "critical certificate extension %s is not supported"
 msgstr "gpg-agendi protokolli versioon %d ei ole toetatud\n"
 
+#, c-format
 msgid "issuer certificate is not marked as a CA"
 msgstr ""
 
@@ -6569,14 +6728,15 @@ msgstr ""
 msgid "failed to open '%s': %s\n"
 msgstr "`%s' ei õnnestu avada: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Note: non-critical certificate policy not allowed"
 msgstr "kirjutan salajase võtme faili `%s'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate policy not allowed"
 msgstr "kirjutan salajase võtme faili `%s'\n"
 
+#, c-format
 msgid "looking up issuer at external location\n"
 msgstr ""
 
@@ -6584,6 +6744,7 @@ msgstr ""
 msgid "number of issuers matching: %d\n"
 msgstr ""
 
+#, c-format
 msgid "looking up issuer from the Dirmngr cache\n"
 msgstr ""
 
@@ -6595,7 +6756,7 @@ msgstr "viga parooli loomisel: %s\n"
 msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "failed to allocate keyDB handle\n"
 msgstr "TrustDB initsialiseerimine ebaõnnestus: %s\n"
 
@@ -6606,6 +6767,7 @@ msgstr "MÄRKUS: võti on tühistatud"
 msgid "the status of the certificate is unknown"
 msgstr ""
 
+#, c-format
 msgid "please make sure that the \"dirmngr\" is properly installed\n"
 msgstr ""
 
@@ -6617,6 +6779,7 @@ msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
 msgid "certificate with invalid validity: %s"
 msgstr ""
 
+#, c-format
 msgid "certificate not yet valid"
 msgstr ""
 
@@ -6627,7 +6790,7 @@ msgstr "kirjutan salajase võtme faili `%s'\n"
 msgid "intermediate certificate not yet valid"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate has expired"
 msgstr "See võti on aegunud!"
 
@@ -6656,18 +6819,19 @@ msgstr ""
 msgid "intermediate certificate not created during lifetime of issuer"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "  (  signature created at "
 msgstr "         uusi allkirju: %lu\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "  (certificate created at "
 msgstr "Tühistamise sertifikaat on loodud.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "  (certificate valid from "
 msgstr "halb sertifikaat"
 
+#, c-format
 msgid "  (     issuer valid from "
 msgstr ""
 
@@ -6675,12 +6839,15 @@ msgstr ""
 msgid "fingerprint=%s\n"
 msgstr "näita sõrmejälge"
 
+#, c-format
 msgid "root certificate has now been marked as trusted\n"
 msgstr ""
 
+#, c-format
 msgid "interactive marking as trusted not enabled in gpg-agent\n"
 msgstr ""
 
+#, c-format
 msgid "interactive marking as trusted disabled for this session\n"
 msgstr ""
 
@@ -6694,6 +6861,7 @@ msgstr "genereeri tühistamise sertifikaat"
 msgid "self-signed certificate has a BAD signature"
 msgstr ""
 
+#, c-format
 msgid "root certificate is not marked trusted"
 msgstr ""
 
@@ -6701,13 +6869,15 @@ msgstr ""
 msgid "checking the trust list failed: %s\n"
 msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
 
+#, c-format
 msgid "certificate chain too long\n"
 msgstr ""
 
+#, c-format
 msgid "issuer certificate not found"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate has a BAD signature"
 msgstr "kontrolli allkirja"
 
@@ -6718,15 +6888,15 @@ msgstr ""
 msgid "certificate chain longer than allowed by CA (%d)"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate is good\n"
 msgstr "eelistus %c%lu on duplikaat\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "intermediate certificate is good\n"
 msgstr "Tühistamise sertifikaat on loodud.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "root certificate is good\n"
 msgstr "halb sertifikaat"
 
@@ -6741,6 +6911,7 @@ msgstr ""
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, c-format
 msgid "(this is the MD2 algorithm)\n"
 msgstr ""
 
@@ -6774,6 +6945,7 @@ msgstr ""
 "\"%.*s\"\n"
 "%u-bitti %s võti, ID %08lX, loodud %s%s\n"
 
+#, c-format
 msgid "no key usage specified - assuming all usages\n"
 msgstr ""
 
@@ -6781,21 +6953,27 @@ msgstr ""
 msgid "error getting key usage information: %s\n"
 msgstr "viga salajase võtme võtmehoidlasse `%s' kirjutamisel: %s\n"
 
+#, c-format
 msgid "certificate should not have been used for certification\n"
 msgstr ""
 
+#, c-format
 msgid "certificate should not have been used for OCSP response signing\n"
 msgstr ""
 
+#, c-format
 msgid "certificate should not have been used for encryption\n"
 msgstr ""
 
+#, c-format
 msgid "certificate should not have been used for signing\n"
 msgstr ""
 
+#, c-format
 msgid "certificate is not usable for encryption\n"
 msgstr ""
 
+#, c-format
 msgid "certificate is not usable for signing\n"
 msgstr ""
 
@@ -6980,12 +7158,15 @@ msgstr ""
 msgid "Ready.  You should now send this request to your CA.\n"
 msgstr ""
 
+#, c-format
 msgid "resource problem: out of core\n"
 msgstr ""
 
+#, c-format
 msgid "(this is the RC2 algorithm)\n"
 msgstr ""
 
+#, c-format
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr ""
 
@@ -7009,7 +7190,7 @@ msgstr "eelistus %c%lu on duplikaat\n"
 msgid "deleting certificate \"%s\" failed: %s\n"
 msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no valid recipients given\n"
 msgstr "(Kirjeldust ei antud)\n"
 
@@ -7141,7 +7322,7 @@ msgstr ""
 msgid "%s:%u: skipping this line\n"
 msgstr " j = jäta see võti vahele\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "could not parse keyserver\n"
 msgstr "ei saa parsida võtmeserveri URI\n"
 
@@ -7153,6 +7334,7 @@ msgstr "kirjutan faili `%s'\n"
 msgid "can't sign using '%s': %s\n"
 msgstr "`%s' ei õnnestu sulgeda: %s\n"
 
+#, c-format
 msgid "invalid command (there is no implicit command)\n"
 msgstr ""
 
@@ -7160,10 +7342,11 @@ msgstr ""
 msgid "total number processed: %lu\n"
 msgstr "Töödeldud kokku: %lu\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "error storing certificate\n"
 msgstr "genereeri tühistamise sertifikaat"
 
+#, c-format
 msgid "basic certificate checks failed - not imported\n"
 msgstr ""
 
@@ -7179,7 +7362,7 @@ msgstr "viga parooli loomisel: %s\n"
 msgid "error reading input: %s\n"
 msgstr "viga `%s' lugemisel: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "failed to get the fingerprint\n"
 msgstr "TrustDB initsialiseerimine ebaõnnestus: %s\n"
 
@@ -7206,6 +7389,7 @@ msgstr "viga `%s' lugemisel: %s\n"
 msgid "Error - "
 msgstr ""
 
+#, c-format
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
 msgstr ""
 
@@ -7227,6 +7411,7 @@ msgid ""
 "%s%sAre you really sure that you want to do this?"
 msgstr ""
 
+#, c-format
 msgid ""
 "Note, that this software is not officially approved to create or verify such "
 "signatures.\n"
@@ -7251,10 +7436,11 @@ msgstr ""
 msgid "checking for qualified certificate failed: %s\n"
 msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Signature made "
 msgstr "Allkiri aegus %s\n"
 
+#, c-format
 msgid "[date not given]"
 msgstr ""
 
@@ -7262,19 +7448,20 @@ msgstr ""
 msgid " using certificate ID 0x%08lX\n"
 msgstr "viga parooli loomisel: %s\n"
 
+#, c-format
 msgid ""
 "invalid signature: message digest attribute does not match computed one\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "Good signature from"
 msgstr "Korrektne allkiri kasutajalt \""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "                aka"
 msgstr "                 ka \""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "This is a qualified signature\n"
 msgstr ""
 "\n"
@@ -7343,11 +7530,11 @@ msgstr "viga parooli loomisel: %s\n"
 msgid "           trusted certificates: %u (%u,%u,%u,%u)\n"
 msgstr "viga parooli loomisel: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate already cached\n"
 msgstr "Tühistamise sertifikaat on loodud.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate cached\n"
 msgstr "eelistus %c%lu on duplikaat\n"
 
@@ -7367,7 +7554,7 @@ msgstr "viga parooli loomisel: %s\n"
 msgid "error fetching certificate by subject: %s\n"
 msgstr "viga parooli loomisel: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no issuer found in certificate\n"
 msgstr "genereeri tühistamise sertifikaat"
 
@@ -7435,9 +7622,11 @@ msgstr "kataloogi `%s' ei õnnestu luua: %s\n"
 msgid "first record of '%s' is not the version\n"
 msgstr ""
 
+#, c-format
 msgid "old version of cache directory - cleaning up\n"
 msgstr ""
 
+#, c-format
 msgid "old version of cache directory - giving up\n"
 msgstr ""
 
@@ -7474,9 +7663,11 @@ msgstr "viga: vigane sõrmejälg\n"
 msgid "WARNING: invalid cache file hash in '%s' line %u\n"
 msgstr "HOIATUS: vigane random_seed faili suurus - ei kasuta\n"
 
+#, c-format
 msgid "detected errors in cache dir file\n"
 msgstr ""
 
+#, c-format
 msgid "please check the reason and manually delete that file\n"
 msgstr ""
 
@@ -7509,6 +7700,7 @@ msgstr "viga `%s' lugemisel: %s\n"
 msgid "invalid formatted checksum for '%s'\n"
 msgstr "viga: vigane sõrmejälg\n"
 
+#, c-format
 msgid "too many open cache files; can't open anymore\n"
 msgstr ""
 
@@ -7524,9 +7716,11 @@ msgstr "viga `%s' lugemisel: %s\n"
 msgid "error initializing cache file '%s' for reading: %s\n"
 msgstr ""
 
+#, c-format
 msgid "calling unlock_db_file on a closed file\n"
 msgstr ""
 
+#, c-format
 msgid "calling unlock_db_file on an unlocked file\n"
 msgstr ""
 
@@ -7561,6 +7755,7 @@ msgstr ""
 msgid "cached CRL for issuer id %s tampered; we need to update\n"
 msgstr ""
 
+#, c-format
 msgid "WARNING: invalid cache record length for S/N "
 msgstr ""
 
@@ -7589,7 +7784,7 @@ msgstr "vigane räsialgoritm `%s'\n"
 msgid "gcry_md_open for algorithm %d failed: %s\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "invalid response from agent\n"
 msgid "got an invalid S-expression from libksba\n"
 msgstr "vigane vastus agendilt\n"
@@ -7615,6 +7810,7 @@ msgstr "viga parooli loomisel: %s\n"
 msgid "update times of this CRL: this=%s next=%s\n"
 msgstr ""
 
+#, c-format
 msgid "nextUpdate not given; assuming a validity period of one day\n"
 msgstr ""
 
@@ -7630,6 +7826,7 @@ msgstr "kirjutan faili `%s'\n"
 msgid "no CRL issuer found in CRL: %s\n"
 msgstr "genereeri tühistamise sertifikaat"
 
+#, c-format
 msgid "locating CRL issuer certificate by authorityKeyIdentifier\n"
 msgstr ""
 
@@ -7699,6 +7896,7 @@ msgstr "viga parooli loomisel: %s\n"
 msgid "problem renaming '%s' to '%s': %s\n"
 msgstr "pakendamine ebaõnnestus: %s\n"
 
+#, c-format
 msgid ""
 "updating the DIR file failed - cache entry will get lost with the next "
 "program start\n"
@@ -7723,7 +7921,7 @@ msgstr ""
 msgid " ERROR: This cached CRL may have been tampered with!\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "WARNING: invalid size of random_seed file - not used\n"
 msgid " WARNING: invalid cache record length\n"
 msgstr "HOIATUS: vigane random_seed faili suurus - ei kasuta\n"
@@ -7755,6 +7953,7 @@ msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
 msgid "crl_cache_insert via issuer failed: %s\n"
 msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
 
+#, c-format
 msgid "reader to file mapping table full - waiting\n"
 msgstr ""
 
@@ -7771,7 +7970,7 @@ msgstr "viga `%s' loomisel: %s\n"
 msgid "error initializing reader object: %s\n"
 msgstr "%s: viga kataloogikirje kirjutamisel: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "CRL access not possible due to Tor mode\n"
 msgstr "võtit '%s' ei leitud: %s\n"
 
@@ -7839,6 +8038,7 @@ msgstr "viga parooli loomisel: %s\n"
 msgid "error reading certificate from '%s': %s\n"
 msgstr "viga `%s' lugemisel: %s\n"
 
+#, c-format
 msgid "certificate too large to make any sense\n"
 msgstr ""
 
@@ -7856,6 +8056,7 @@ msgstr "uuendamine ebaõnnestus: %s\n"
 msgid "loading CRL '%s' failed: %s\n"
 msgstr "pakendamine ebaõnnestus: %s\n"
 
+#, c-format
 msgid "a dirmngr daemon is up and running\n"
 msgstr ""
 
@@ -7863,11 +8064,11 @@ msgstr ""
 msgid "validation of certificate failed: %s\n"
 msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate is valid\n"
 msgstr "eelistus %c%lu on duplikaat\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate has been revoked\n"
 msgstr "MÄRKUS: võti on tühistatud"
 
@@ -7891,6 +8092,7 @@ msgstr ""
 "\n"
 "Toetatud algoritmid:\n"
 
+#, c-format
 msgid "absolute file name expected\n"
 msgstr ""
 
@@ -8009,7 +8211,7 @@ msgstr ""
 msgid "usage: %s [options] "
 msgstr "kasuta: gpg [võtmed] "
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "%s not allowed with %s!\n"
 msgid "colons are not allowed in the socket name\n"
 msgstr "%s ja %s ei ole koos lubatud!\n"
@@ -8038,12 +8240,15 @@ msgstr "viga lugemisel: %s\n"
 msgid "%s:%u: garbage at end of line ignored\n"
 msgstr ""
 
+#, c-format
 msgid "SIGHUP received - re-reading configuration and flushing caches\n"
 msgstr ""
 
+#, c-format
 msgid "SIGUSR2 received - no action defined\n"
 msgstr ""
 
+#, c-format
 msgid "SIGTERM received - shutting down ...\n"
 msgstr ""
 
@@ -8051,10 +8256,11 @@ msgstr ""
 msgid "SIGTERM received - still %d active connections\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "shutdown forced\n"
 msgstr "ei töödeldud"
 
+#, c-format
 msgid "SIGINT received - immediate shutdown\n"
 msgstr ""
 
@@ -8175,7 +8381,7 @@ msgstr "(Kirjeldust ei antud)\n"
 msgid "no attribute given for query '%s'\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "WARNING: using insecure memory!\n"
 msgid "WARNING: using first attribute only\n"
 msgstr "HOIATUS: kasutan ebaturvalist mälu!\n"
@@ -8253,10 +8459,11 @@ msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
 msgid "start_cert_fetch: invalid pattern '%s'\n"
 msgstr ""
 
+#, c-format
 msgid "ldap_search hit the size limit of the server\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "%s: invalid file version %d\n"
 msgid "invalid canonical S-expression found\n"
 msgstr "%s: vigane faili versioon %d\n"
@@ -8270,6 +8477,7 @@ msgstr "faili ei õnnestu avada: %s\n"
 msgid "oops: ksba_cert_hash failed: %s\n"
 msgstr "salajase võtme uuendamine ebaõnnestus: %s\n"
 
+#, c-format
 msgid "bad URL encoding detected\n"
 msgstr ""
 
@@ -8281,10 +8489,11 @@ msgstr "viga `%s' lugemisel: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "OCSP request not possible due to Tor mode\n"
 msgstr "võtit '%s' ei leitud: %s\n"
 
+#, c-format
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
 
@@ -8308,7 +8517,7 @@ msgstr "viga `%s' lugemisel: %s\n"
 msgid "URL '%s' redirected to '%s' (%u)\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "too many redirections\n"
 msgstr "liiga palju `%c' eelistusi\n"
 
@@ -8324,9 +8533,11 @@ msgstr ""
 msgid "hashing the OCSP response for '%s' failed: %s\n"
 msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
 
+#, c-format
 msgid "not signed by a default OCSP signer's certificate"
 msgstr ""
 
+#, c-format
 msgid "only SHA-1 is supported for OCSP responses\n"
 msgstr ""
 
@@ -8338,6 +8549,7 @@ msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
 msgid "error getting responder ID: %s\n"
 msgstr "viga parooli loomisel: %s\n"
 
+#, c-format
 msgid "no suitable certificate found to verify the OCSP response\n"
 msgstr ""
 
@@ -8345,10 +8557,11 @@ msgstr ""
 msgid "issuer certificate not found: %s\n"
 msgstr "võtit '%s' ei leitud: %s\n"
 
+#, c-format
 msgid "caller did not return the target certificate\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "caller did not return the issuing certificate\n"
 msgstr "genereeri tühistamise sertifikaat"
 
@@ -8361,10 +8574,11 @@ msgstr "TrustDB initsialiseerimine ebaõnnestus: %s\n"
 msgid "can't get authorityInfoAccess: %s\n"
 msgstr "%s: ei õnnestu kasutada: %s\n"
 
+#, c-format
 msgid "no default OCSP responder defined\n"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "no default secret keyring: %s\n"
 msgid "no default OCSP signer defined\n"
 msgstr "puudub salajaste võtmete vaikimisi võtmehoidla: %s\n"
@@ -8397,12 +8611,15 @@ msgstr ""
 msgid "certificate has been revoked at: %s due to: %s\n"
 msgstr "MÄRKUS: võti on tühistatud"
 
+#, c-format
 msgid "OCSP responder returned a status in the future\n"
 msgstr ""
 
+#, c-format
 msgid "OCSP responder returned a non-current status\n"
 msgstr ""
 
+#, c-format
 msgid "OCSP responder returned an too old status\n"
 msgstr ""
 
@@ -8466,10 +8683,11 @@ msgstr ""
 msgid "Assuan processing failed: %s\n"
 msgstr "allkirjastamine ebaõnnestus: %s\n"
 
+#, c-format
 msgid "accepting root CA not marked as a CA"
 msgstr ""
 
-#, fuzzy
+#, fuzzy, c-format
 #| msgid "checking the trustdb\n"
 msgid "CRL checking too deeply nested\n"
 msgstr "kontrollin trustdb faili\n"
@@ -8481,7 +8699,7 @@ msgstr ""
 msgid "checking CRL for"
 msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "selfsigned certificate has a BAD signature"
 msgstr "kontrolli allkirja"
 
@@ -8489,10 +8707,11 @@ msgstr "kontrolli allkirja"
 msgid "checking trustworthiness of root certificate failed: %s\n"
 msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "certificate chain is good\n"
 msgstr "eelistus %c%lu on duplikaat\n"
 
+#, c-format
 msgid "certificate should not have been used for CRL signing\n"
 msgstr ""
 
@@ -8549,10 +8768,11 @@ msgstr ""
 msgid "receiving line failed: %s\n"
 msgstr "võtmebloki kustutamine ebaõnnestus: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "line too long - skipped\n"
 msgstr "rida on liiga pikk\n"
 
+#, c-format
 msgid "line shortened due to embedded Nul character\n"
 msgstr ""
 
@@ -8852,16 +9072,19 @@ msgstr "viga `%s' lugemisel: %s\n"
 msgid "error closing %s: %s\n"
 msgstr "viga `%s' lugemisel: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 msgid "no --program option provided\n"
 msgstr "mittelokaalse programmi käivitamist ei toetata\n"
 
+#, c-format
 msgid "only --decrypt and --encrypt are supported\n"
 msgstr ""
 
+#, c-format
 msgid "no --keyfile option provided\n"
 msgstr ""
 
+#, c-format
 msgid "cannot allocate args vector\n"
 msgstr ""
 
@@ -8913,6 +9136,7 @@ msgstr "`%s' ei õnnestu luua: %s\n"
 msgid "either %s or %s must be given\n"
 msgstr ""
 
+#, c-format
 msgid "no class provided\n"
 msgstr ""
 
