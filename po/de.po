@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2018-06-08 11:22+0200\n"
+"PO-Revision-Date: 2018-07-12 14:48+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -5484,10 +5484,9 @@ msgstr "Hinweis: Signaturschlüssel %s wurde widerrufen\n"
 msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
 msgstr "Falsche Schlüsselsignatur von Schlüssel %s: %s (0x%02x, 0x%x)\n"
 
-#, fuzzy, c-format
-#| msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+#, c-format
 msgid "bad data signature from key %s: %s (0x%02x, 0x%x)\n"
-msgstr "Falsche Schlüsselsignatur von Schlüssel %s: %s (0x%02x, 0x%x)\n"
+msgstr "Falsche Datensignatur von Schlüssel %s: %s (0x%02x, 0x%x)\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
