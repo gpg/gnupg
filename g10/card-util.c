@@ -851,6 +851,7 @@ fetch_url (ctrl_t ctrl)
 	}
     }
 
+  agent_release_card_info (&info);
   return rc;
 }
 

@@ -99,6 +99,55 @@ test_percent_plus_escape (void)
 }
 
 
+static void
+test_percent_data_escape (void)
+{
+  static struct {
+    const char *data;
+    size_t datalen;
+    const char *expect;
+  } tbl[] = {
+    {
+      "", 0,
+      ""
+    }, {
+      "a", 1,
+      "a",
+    }, {
+      "%22", 3,
+      "%2522"
+    }, {
+      "%%", 3,
+      "%25%25%00"
+    }, {
+      "\n \0BC\t", 6,
+      "\n %00BC\t"
+    }, { NULL, 0, NULL }
+  };
+  char *buf;
+  int i;
+  size_t len;
+
+  for (i=0; tbl[i].data; i++)
+    {
+      buf = percent_data_escape (tbl[i].data, tbl[i].datalen);
+      if (!buf)
+        {
+          fprintf (stderr, "out of core: %s\n", strerror (errno));
+          exit (2);
+        }
+      if (strcmp (buf, tbl[i].expect))
+        fail (i);
+      len = percent_plus_unescape_inplace (buf, 0);
+      if (len != tbl[i].datalen)
+        fail (i);
+      else if (memcmp (buf, tbl[i].data, tbl[i].datalen))
+        fail (i);
+      xfree (buf);
+    }
+}
+
+
 
 int
 main (int argc, char **argv)
@@ -109,6 +158,6 @@ main (int argc, char **argv)
   /* FIXME: We escape_unescape is not tested - only
      percent_plus_unescape.  */
   test_percent_plus_escape ();
-
+  test_percent_data_escape ();
   return 0;
 }

@@ -53,7 +53,7 @@ AC_INIT([mym4_package],[mym4_version], [https://bugs.gnupg.org])
 # build-aux/speedo.mk and Makefile.am
 AC_DEFINE_UNQUOTED(GNUPG_SWDB_TAG, "gnupg24", [swdb tag for this branch])
 
-NEED_GPG_ERROR_VERSION=1.24
+NEED_GPG_ERROR_VERSION=1.29
 
 NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.7.0
@@ -506,6 +506,9 @@ AH_BOTTOM([
 #endif
 #define GNUPG_PRIVATE_KEYS_DIR  "private-keys-v1.d"
 #define GNUPG_OPENPGP_REVOC_DIR "openpgp-revocs.d"
+
+#define GNUPG_DEF_COPYRIGHT_LINE \
+        "Copyright (C) 2018 Free Software Foundation, Inc."
 
 /* For some systems (DOS currently), we hardcode the path here.  For
    POSIX systems the values are constructed by the Makefiles, so that
@@ -1216,6 +1219,8 @@ elif test x"$with_mailprog" != xno ; then
     AC_SUBST(SENDMAIL,$with_mailprog)
     AC_MSG_RESULT($with_mailprog)
 fi
+AC_DEFINE_UNQUOTED(NAME_OF_SENDMAIL,"$SENDMAIL",
+                   [Tool with sendmail -t interface])
 
 
 #
@@ -1387,18 +1392,17 @@ AC_CHECK_DECLS(getpagesize)
 AC_FUNC_FSEEKO
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
-AC_CHECK_FUNCS([strerror strlwr tcgetattr mmap canonicalize_file_name])
-AC_CHECK_FUNCS([strcasecmp strncasecmp ctermid times gmtime_r strtoull])
-AC_CHECK_FUNCS([setenv unsetenv fcntl ftruncate inet_ntop])
-AC_CHECK_FUNCS([canonicalize_file_name])
-AC_CHECK_FUNCS([gettimeofday getrusage getrlimit setrlimit clock_gettime])
-AC_CHECK_FUNCS([atexit raise getpagesize strftime nl_langinfo setlocale])
-AC_CHECK_FUNCS([waitpid wait4 sigaction sigprocmask pipe getaddrinfo])
-AC_CHECK_FUNCS([ttyname rand ftello fsync stat lstat])
-AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol \
-                memrchr isascii timegm getrusage setrlimit stat setlocale   \
-                flockfile funlockfile getpwnam getpwuid \
-                getenv inet_pton strpbrk])
+AC_CHECK_FUNCS([atexit canonicalize_file_name clock_gettime ctermid  \
+                fcntl flockfile fsync ftello ftruncate funlockfile   \
+                getaddrinfo getenv getpagesize getpwnam getpwuid     \
+                getrlimit getrusage gettimeofday gmtime_r            \
+                inet_ntop inet_pton isascii lstat                    \
+                memicmp memmove memrchr mmap nl_langinfo pipe        \
+                raise rand setenv setlocale setrlimit sigaction      \
+                sigprocmask stat stpcpy strcasecmp strerror strftime \
+                stricmp strlwr strncasecmp strpbrk strsep            \
+                strtol strtoul strtoull tcgetattr timegm times       \
+                ttyname unsetenv wait4 waitpid ])
 
 # On some systems (e.g. Solaris) nanosleep requires linking to librl.
 # Given that we use nanosleep only as an optimization over a select

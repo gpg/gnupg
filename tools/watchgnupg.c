@@ -253,7 +253,7 @@ static void
 print_version (int with_help)
 {
   fputs (MYVERSION_LINE "\n"
-         "Copyright (C) 2017 Free Software Foundation, Inc.\n"
+         GNUPG_DEF_COPYRIGHT_LINE "\n"
          "License GPLv3+: "
          "GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>\n"
          "This is free software: you are free to change and redistribute it.\n"

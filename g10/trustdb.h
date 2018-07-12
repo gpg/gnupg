@@ -46,36 +46,6 @@
 #define NAMEHASH_LEN  20
 
 
-/*
- * A structure to store key identification as well as some stuff needed
- * for validation
- */
-struct key_item {
-  struct key_item *next;
-  unsigned int ownertrust,min_ownertrust;
-  byte trust_depth;
-  byte trust_value;
-  char *trust_regexp;
-  u32 kid[2];
-};
-
-
-/*
- * Check whether the signature SIG is in the klist K.
- */
-static inline struct key_item *
-is_in_klist (struct key_item *k, PKT_signature *sig)
-{
-  for (; k; k = k->next)
-    {
-      if (k->kid[0] == sig->keyid[0] && k->kid[1] == sig->keyid[1])
-        return k;
-    }
-  return NULL;
-}
-
-
-
 /*-- trust.c --*/
 int cache_disabled_value (ctrl_t ctrl, PKT_public_key *pk);
 void register_trusted_keyid (u32 *keyid);
@@ -102,17 +72,6 @@ int get_validity_info (ctrl_t ctrl, kbnode_t kb, PKT_public_key *pk,
                        PKT_user_id *uid);
 const char *get_validity_string (ctrl_t ctrl,
                                  PKT_public_key *pk, PKT_user_id *uid);
-
-void mark_usable_uid_certs (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
-                            u32 *main_kid, struct key_item *klist,
-                            u32 curtime, u32 *next_expire);
-
-void clean_one_uid (ctrl_t ctrl, kbnode_t keyblock, kbnode_t uidnode,
-                    int noisy, int self_only,
-                    int *uids_cleaned, int *sigs_cleaned);
-void clean_key (ctrl_t ctrl, kbnode_t keyblock, int noisy, int self_only,
-                int *uids_cleaned,int *sigs_cleaned);
-
 
 
 /*-- trustdb.c --*/

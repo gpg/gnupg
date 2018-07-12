@@ -5371,13 +5371,16 @@ struct dns_resolv_conf *dns_resconf_open(int *error) {
 	if (0 != gethostname(resconf->search[0], sizeof resconf->search[0]))
 		goto syerr;
 
-	dns_d_anchor(resconf->search[0], sizeof resconf->search[0], resconf->search[0], strlen(resconf->search[0]));
-	dns_d_cleave(resconf->search[0], sizeof resconf->search[0], resconf->search[0], strlen(resconf->search[0]));
-
 	/*
-	 * XXX: If gethostname() returned a string without any label
-	 *      separator, then search[0][0] should be NUL.
+	 * If gethostname() returned a string without any label
+	 * separator, then search[0][0] should be NUL.
 	 */
+	if (strchr (resconf->search[0], '.')) {
+		dns_d_anchor(resconf->search[0], sizeof resconf->search[0], resconf->search[0], strlen(resconf->search[0]));
+		dns_d_cleave(resconf->search[0], sizeof resconf->search[0], resconf->search[0], strlen(resconf->search[0]));
+	} else {
+		memset (resconf->search[0], 0, sizeof resconf->search[0]);
+	}
 
 	dns_resconf_acquire(resconf);
 
@@ -5549,6 +5552,7 @@ int dns_resconf_pton(struct sockaddr_storage *ss, const char *src) {
 	unsigned short port = 0;
 	int ch, af = AF_INET, error;
 
+	memset(ss, 0, sizeof *ss);
 	while ((ch = *src++)) {
 		switch (ch) {
 		case ' ':
@@ -6096,17 +6100,9 @@ int dns_nssconf_loadfile(struct dns_resolv_conf *resconf, FILE *fp) {
 			dns_anyconf_skip(" \t", fp);
 
 			if ('[' == dns_anyconf_peek(fp)) {
-				dns_anyconf_skip("[ \t", fp);
+				dns_anyconf_skip("[! \t", fp);
 
-				for (;;) {
-					if ('!' == dns_anyconf_peek(fp)) {
-						dns_anyconf_skip("! \t", fp);
-						/* FIXME: negating statuses; currently not implemented */
-						dns_anyconf_skip("^#;]\n", fp); /* skip to end of criteria */
-						break;
-					}
-
-					if (!dns_anyconf_scan(&cf, "%w_", fp, &error)) break;
+				while (dns_anyconf_scan(&cf, "%w_", fp, &error)) {
 					dns_anyconf_skip("= \t", fp);
 					if (!dns_anyconf_scan(&cf, "%w_", fp, &error)) {
 						dns_anyconf_pop(&cf); /* discard status */
@@ -6319,6 +6315,7 @@ int dns_resconf_setiface(struct dns_resolv_conf *resconf, const char *addr, unsi
 	int af = (strchr(addr, ':'))? AF_INET6 : AF_INET;
 	int error;
 
+	memset(&resconf->iface, 0, sizeof (struct sockaddr_storage));
 	if ((error = dns_pton(af, addr, dns_sa_addr(af, &resconf->iface, NULL))))
 		return error;
 
@@ -6630,6 +6627,7 @@ struct dns_hints *dns_hints_root(struct dns_resolv_conf *resconf, int *error_) {
 	for (i = 0; i < lengthof(root_hints); i++) {
 		af	= root_hints[i].af;
 
+		memset(&ss, 0, sizeof ss);
 		if ((error = dns_pton(af, root_hints[i].addr, dns_sa_addr(af, &ss, NULL))))
 			goto error;
 
@@ -7123,6 +7121,8 @@ static int dns_socket(struct sockaddr *local, int type, int *error_) {
 	if (type != SOCK_DGRAM)
 		return fd;
 
+#define LEAVE_SELECTION_OF_PORT_TO_KERNEL
+#if !defined(LEAVE_SELECTION_OF_PORT_TO_KERNEL)
 	/*
 	 * FreeBSD, Linux, OpenBSD, OS X, and Solaris use random ports by
 	 * default. Though the ephemeral range is quite small on OS X
@@ -7148,6 +7148,7 @@ static int dns_socket(struct sockaddr *local, int type, int *error_) {
 
 		/* NB: continue to next bind statement */
 	}
+#endif
 
 	if (0 == bind(fd, local, dns_sa_len(local)))
 		return fd;
@@ -7619,8 +7620,23 @@ retry:
 
 		so->state++;	/* FALL THROUGH */
 	case DNS_SO_UDP_CONN:
+	udp_connect_retry:
 		error = dns_connect(so->udp, (struct sockaddr *)&so->remote, dns_sa_len(&so->remote));
 		dns_trace_sys_connect(so->trace, so->udp, SOCK_DGRAM, (struct sockaddr *)&so->remote, error);
+
+		/* Linux returns EINVAL when address was bound to
+		   localhost and it's external IP address now.  */
+		if (error == EINVAL) {
+			struct sockaddr unspec_addr;
+			memset (&unspec_addr, 0, sizeof unspec_addr);
+			unspec_addr.sa_family = AF_UNSPEC;
+			connect(so->udp, &unspec_addr, sizeof unspec_addr);
+			goto udp_connect_retry;
+		} else if (error == ECONNREFUSED)
+			/* Error for previous socket operation may
+			   be reserverd asynchronously. */
+			goto udp_connect_retry;
+
 		if (error)
 			goto error;
 
@@ -8829,7 +8845,10 @@ exec:
 		if (dns_so_elapsed(&R->so) >= dns_resconf_timeout(R->resconf))
 			dgoto(R->sp, DNS_R_FOREACH_A);
 
-		if ((error = dns_so_check(&R->so)))
+		error = dns_so_check(&R->so);
+		if (R->so.state != DNS_SO_SOCKS_CONN && error == ECONNREFUSED)
+			dgoto(R->sp, DNS_R_FOREACH_A);
+		else if (error)
 			goto error;
 
 		if (!dns_p_setptr(&F->answer, dns_so_fetch(&R->so, &error)))
@@ -8962,7 +8981,10 @@ exec:
 		if (dns_so_elapsed(&R->so) >= dns_resconf_timeout(R->resconf))
 			dgoto(R->sp, DNS_R_FOREACH_AAAA);
 
-		if ((error = dns_so_check(&R->so)))
+		error = dns_so_check(&R->so);
+		if (error == ECONNREFUSED)
+			dgoto(R->sp, DNS_R_FOREACH_AAAA);
+		else if (error)
 			goto error;
 
 		if (!dns_p_setptr(&F->answer, dns_so_fetch(&R->so, &error)))
@@ -10874,6 +10896,7 @@ static int send_query(int argc, char *argv[]) {
 	struct dns_socket *so;
 	int error, type;
 
+	memset(&ss, 0, sizeof ss);
 	if (argc > 1) {
 		ss.ss_family	= (strchr(argv[1], ':'))? AF_INET6 : AF_INET;
 

@@ -156,7 +156,7 @@ check_signature2 (ctrl_t ctrl,
       log_info(_("WARNING: signature digest conflict in message\n"));
       rc = gpg_error (GPG_ERR_GENERAL);
     }
-  else if (get_pubkey (ctrl, pk, sig->keyid))
+  else if (get_pubkey_for_sig (ctrl, pk, sig))
     rc = gpg_error (GPG_ERR_NO_PUBKEY);
   else if (!gnupg_pk_is_allowed (opt.compliance, PK_USE_VERIFICATION,
                                  pk->pubkey_algo, pk->pkey,
@@ -478,8 +478,17 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
                   sig->sig_class, pk->pubkey_usage);
       return rc;
     }
-  /* Fixme: Should we also check the signing capability here for data
-   * signature?  */
+
+  /* For data signatures check that the key has sign usage.  */
+  if (IS_SIG (sig) && !(pk->pubkey_usage & PUBKEY_USAGE_SIG))
+    {
+      rc = gpg_error (GPG_ERR_WRONG_KEY_USAGE);
+      if (!opt.quiet)
+        log_info (_("bad data signature from key %s: %s (0x%02x, 0x%x)\n"),
+                  keystr_from_pk (pk), gpg_strerror (rc),
+                  sig->sig_class, pk->pubkey_usage);
+      return rc;
+    }
 
   /* Make sure the digest algo is enabled (in case of a detached
    * signature).  */
@@ -917,7 +926,7 @@ check_signature_over_key_or_uid (ctrl_t ctrl, PKT_public_key *signer,
               if (IS_CERT (sig))
                 signer->req_usage = PUBKEY_USAGE_CERT;
 
-              rc = get_pubkey (ctrl, signer, sig->keyid);
+              rc = get_pubkey_for_sig (ctrl, signer, sig);
               if (rc)
                 {
                   xfree (signer);

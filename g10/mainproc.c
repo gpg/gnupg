@@ -533,6 +533,14 @@ static void
 proc_encrypted (CTX c, PACKET *pkt)
 {
   int result = 0;
+  int early_plaintext = literals_seen;
+
+  if (early_plaintext)
+    {
+      log_info (_("WARNING: multiple plaintexts seen\n"));
+      write_status_errcode ("decryption.early_plaintext", GPG_ERR_BAD_DATA);
+      /* We fail only later so that we can print some more info first.  */
+    }
 
   if (!opt.quiet)
     {
@@ -683,6 +691,10 @@ proc_encrypted (CTX c, PACKET *pkt)
   if (!result)
     result = decrypt_data (c->ctrl, c, pkt->pkt.encrypted, c->dek );
 
+  /* Trigger the deferred error.  */
+  if (!result && early_plaintext)
+    result = gpg_error (GPG_ERR_BAD_DATA);
+
   if (result == -1)
     ;
   else if (!result
@@ -788,7 +800,14 @@ proc_plaintext( CTX c, PACKET *pkt )
   if (pt->namelen == 8 && !memcmp( pt->name, "_CONSOLE", 8))
     log_info (_("Note: sender requested \"for-your-eyes-only\"\n"));
   else if (opt.verbose)
-    log_info (_("original file name='%.*s'\n"), pt->namelen, pt->name);
+    {
+      /* We don't use print_utf8_buffer because that would require a
+       * string change which we don't want in 2.2.  It is also not
+       * clear whether the filename is always utf-8 encoded.  */
+      char *tmp = make_printable_string (pt->name, pt->namelen, 0);
+      log_info (_("original file name='%.*s'\n"), (int)strlen (tmp), tmp);
+      xfree (tmp);
+    }
 
   free_md_filter_context (&c->mfx);
   if (gcry_md_open (&c->mfx.md, 0, 0))
@@ -1681,7 +1700,7 @@ akl_has_wkd_method (void)
 /* Return the ISSUER fingerprint buffer and its lenbgth at R_LEN.
  * Returns NULL if not available.  The returned buffer is valid as
  * long as SIG is not modified.  */
-static const byte *
+const byte *
 issuer_fpr_raw (PKT_signature *sig, size_t *r_len)
 {
   const byte *p;
@@ -1698,7 +1717,7 @@ issuer_fpr_raw (PKT_signature *sig, size_t *r_len)
 }
 
 
-/* Return the ISSUER fingerprint string in human readbale format if
+/* Return the ISSUER fingerprint string in human readable format if
  * available.  Caller must release the string.  */
 /* FIXME: Move to another file.  */
 char *
@@ -2064,7 +2083,7 @@ check_sig_and_print (CTX c, kbnode_t node)
        * keyblock has already been fetched.  Thus we could use the
        * fingerprint or PK itself to lookup the entire keyblock.  That
        * would best be done with a cache.  */
-      keyblock = get_pubkeyblock (c->ctrl, sig->keyid);
+      keyblock = get_pubkeyblock_for_sig (c->ctrl, sig);
 
       snprintf (keyid_str, sizeof keyid_str, "%08lX%08lX [uncertain] ",
                 (ulong)sig->keyid[0], (ulong)sig->keyid[1]);

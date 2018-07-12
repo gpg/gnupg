@@ -28,6 +28,10 @@
 
 #include "agent.h"
 
+/* The default TTL for DATA items.  This has no configure
+ * option because it is expected that clients provide a TTL.  */
+#define DEF_CACHE_TTL_DATA  (10 * 60)  /* 10 minutes.  */
+
 /* The size of the encryption key in bytes.  */
 #define ENCRYPTION_KEYSIZE (128/8)
 
@@ -50,11 +54,12 @@ struct secret_data_s {
   char data[1];  /* A string.  */
 };
 
+/* The cache object.  */
 typedef struct cache_item_s *ITEM;
 struct cache_item_s {
   ITEM next;
   time_t created;
-  time_t accessed;
+  time_t accessed;  /* Not updated for CACHE_MODE_DATA */
   int ttl;  /* max. lifetime given in seconds, -1 one means infinite */
   struct secret_data_s *pw;
   cache_mode_t cache_mode;
@@ -211,14 +216,18 @@ housekeeping (void)
         }
     }
 
-  /* Second, make sure that we also remove them based on the created stamp so
-     that the user has to enter it from time to time. */
+  /* Second, make sure that we also remove them based on the created
+   * stamp so that the user has to enter it from time to time.  We
+   * don't do this for data items which are used to storage secrets in
+   * meory and are not user entered passphrases etc.  */
   for (r=thecache; r; r = r->next)
     {
       unsigned long maxttl;
 
       switch (r->cache_mode)
         {
+        case CACHE_MODE_DATA:
+          continue;  /* No MAX TTL here.  */
         case CACHE_MODE_SSH: maxttl = opt.max_cache_ttl_ssh; break;
         default: maxttl = opt.max_cache_ttl; break;
         }
@@ -315,8 +324,11 @@ static int
 cache_mode_equal (cache_mode_t a, cache_mode_t b)
 {
   /* CACHE_MODE_ANY matches any mode other than CACHE_MODE_IGNORE.  */
-  return ((a == CACHE_MODE_ANY && b != CACHE_MODE_IGNORE)
-          || (b == CACHE_MODE_ANY && a != CACHE_MODE_IGNORE) || a == b);
+  return ((a == CACHE_MODE_ANY
+           && !(b == CACHE_MODE_IGNORE || b == CACHE_MODE_DATA))
+          || (b == CACHE_MODE_ANY
+              && !(a == CACHE_MODE_IGNORE || a == CACHE_MODE_DATA))
+          || a == b);
 }
 
 
@@ -349,6 +361,7 @@ agent_put_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode,
       switch(cache_mode)
         {
         case CACHE_MODE_SSH: ttl = opt.def_cache_ttl_ssh; break;
+        case CACHE_MODE_DATA: ttl = DEF_CACHE_TTL_DATA; break;
         default: ttl = opt.def_cache_ttl; break;
         }
     }
@@ -415,9 +428,7 @@ agent_put_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode,
 }
 
 
-/* Try to find an item in the cache.  Note that we currently don't
-   make use of CACHE_MODE except for CACHE_MODE_NONCE and
-   CACHE_MODE_USER.  */
+/* Try to find an item in the cache.  */
 char *
 agent_get_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode)
 {
@@ -458,8 +469,11 @@ agent_get_cache (ctrl_t ctrl, const char *key, cache_mode_t cache_mode)
           && r->restricted == restricted
           && !strcmp (r->key, key))
         {
-          /* Note: To avoid races KEY may not be accessed anymore below.  */
-          r->accessed = gnupg_get_time ();
+          /* Note: To avoid races KEY may not be accessed anymore
+           * below.  Note also that we don't update the accessed time
+           * for data items.  */
+          if (r->cache_mode != CACHE_MODE_DATA)
+            r->accessed = gnupg_get_time ();
           if (DBG_CACHE)
             log_debug ("... hit\n");
           if (r->pw->totallen < 32)

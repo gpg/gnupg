@@ -150,6 +150,7 @@ enum cmd_and_opt_values
     aSearchKeys,
     aRefreshKeys,
     aFetchKeys,
+    aShowKeys,
     aExport,
     aExportSecret,
     aExportSecretSub,
@@ -500,6 +501,7 @@ static ARGPARSE_OPTS opts[] = {
               N_("update all keys from a keyserver")),
   ARGPARSE_c (aLocateKeys, "locate-keys", "@"),
   ARGPARSE_c (aFetchKeys, "fetch-keys" , "@" ),
+  ARGPARSE_c (aShowKeys, "show-keys" , "@" ),
   ARGPARSE_c (aExportSecret, "export-secret-keys" , "@" ),
   ARGPARSE_c (aExportSecretSub, "export-secret-subkeys" , "@" ),
   ARGPARSE_c (aExportSshKey, "export-ssh-key", "@" ),
@@ -740,6 +742,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aListKeys, "list-key", "@"),   /* alias */
   ARGPARSE_c (aListSigs, "list-sig", "@"),   /* alias */
   ARGPARSE_c (aCheckKeys, "check-sig", "@"), /* alias */
+  ARGPARSE_c (aShowKeys,  "show-key", "@"), /* alias */
   ARGPARSE_s_n (oSkipVerify, "skip-verify", "@"),
   ARGPARSE_s_n (oSkipHiddenRecipients, "skip-hidden-recipients", "@"),
   ARGPARSE_s_n (oNoSkipHiddenRecipients, "no-skip-hidden-recipients", "@"),
@@ -2642,6 +2645,17 @@ main (int argc, char **argv)
             greeting=1;
             break;
 
+	  case aShowKeys:
+            set_cmd (&cmd, pargs.r_opt);
+            opt.import_options |= IMPORT_SHOW;
+            opt.import_options |= IMPORT_DRY_RUN;
+            opt.import_options &= ~IMPORT_REPAIR_KEYS;
+            opt.list_options |= LIST_SHOW_UNUSABLE_UIDS;
+            opt.list_options |= LIST_SHOW_UNUSABLE_SUBKEYS;
+            opt.list_options |= LIST_SHOW_NOTATIONS;
+            opt.list_options |= LIST_SHOW_POLICY_URLS;
+            break;
+
 	  case aDetachedSign: detached_sig = 1; set_cmd( &cmd, aSign ); break;
 
 	  case aDecryptFiles: multifile=1; /* fall through */
@@ -3611,7 +3625,7 @@ main (int argc, char **argv)
             else
               {
                 pargs.err = ARGPARSE_PRINT_ERROR;
-                /* The argparse fucntion calls a plain exit and thus
+                /* The argparse function calls a plain exit and thus
                  * we need to print a status here.  */
                 write_status_failure ("option-parser",
                                       gpg_error(GPG_ERR_GENERAL));
@@ -4638,6 +4652,7 @@ main (int argc, char **argv)
       case aFastImport:
         opt.import_options |= IMPORT_FAST; /* fall through */
       case aImport:
+      case aShowKeys:
 	import_keys (ctrl, argc? argv:NULL, argc, NULL,
                      opt.import_options, opt.key_origin, opt.key_origin_url);
 	break;

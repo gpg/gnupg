@@ -304,11 +304,12 @@ enum
 typedef enum
   {
     CACHE_MODE_IGNORE = 0, /* Special mode to bypass the cache. */
-    CACHE_MODE_ANY,        /* Any mode except ignore matches. */
+    CACHE_MODE_ANY,        /* Any mode except ignore and data matches. */
     CACHE_MODE_NORMAL,     /* Normal cache (gpg-agent). */
     CACHE_MODE_USER,       /* GET_PASSPHRASE related cache. */
     CACHE_MODE_SSH,        /* SSH related cache. */
-    CACHE_MODE_NONCE       /* This is a non-predictable nonce.  */
+    CACHE_MODE_NONCE,      /* This is a non-predictable nonce.  */
+    CACHE_MODE_DATA        /* Arbitrary data.  */
   }
 cache_mode_t;
 

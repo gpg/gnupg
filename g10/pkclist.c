@@ -113,7 +113,7 @@ void
 show_revocation_reason (ctrl_t ctrl, PKT_public_key *pk, int mode)
 {
     /* Hmmm, this is not so easy because we have to duplicate the code
-     * used in the trustbd to calculate the keyflags.  We need to find
+     * used in the trustdb to calculate the keyflags.  We need to find
      * a clean way to check revocation certificates on keys and
      * signatures.  And there should be no duplicate code.  Because we
      * enter this function only when the trustdb told us that we have
@@ -548,7 +548,7 @@ check_signatures_trust (ctrl_t ctrl, PKT_signature *sig)
   unsigned int trustlevel = TRUST_UNKNOWN;
   int rc=0;
 
-  rc = get_pubkey (ctrl, pk, sig->keyid );
+  rc = get_pubkey_for_sig (ctrl, pk, sig);
   if (rc)
     { /* this should not happen */
       log_error("Ooops; the key vanished  - can't check the trust\n");

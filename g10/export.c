@@ -41,6 +41,8 @@
 #include "../common/init.h"
 #include "trustdb.h"
 #include "call-agent.h"
+#include "key-clean.h"
+
 
 /* An object to keep track of subkeys. */
 struct subkey_list_s
@@ -2001,12 +2003,19 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
         }
 
       /* Always do the cleaning on the public key part if requested.
-       * Note that both export-clean and export-minimal only apply to
-       * UID sigs (0x10, 0x11, 0x12, and 0x13).  A designated
-       * revocation is never stripped, even with export-minimal set.  */
+       * A designated revocation is never stripped, even with
+       * export-minimal set.  */
       if ((options & EXPORT_CLEAN))
-        clean_key (ctrl, keyblock, opt.verbose,
-                   (options&EXPORT_MINIMAL), NULL, NULL);
+        {
+          merge_keys_and_selfsig (ctrl, keyblock);
+          clean_all_uids (ctrl, keyblock, opt.verbose,
+                          (options&EXPORT_MINIMAL), NULL, NULL);
+          clean_all_subkeys (ctrl, keyblock, opt.verbose,
+                             (options&EXPORT_MINIMAL)? KEY_CLEAN_ALL
+                             /**/                    : KEY_CLEAN_AUTHENCR,
+                             NULL, NULL);
+          commit_kbnode (&keyblock);
+        }
 
       if (export_keep_uid)
         {

@@ -59,6 +59,7 @@ described here.
     - uat :: User attribute (same as user id except for field 10).
     - sig :: Signature
     - rev :: Revocation signature
+    - rvs :: Recocation signature (standalone) [since 2.2.9]
     - fpr :: Fingerprint (fingerprint is in field 10)
     - pkd :: Public key data [*]
     - grp :: Keygrip
@@ -179,6 +180,9 @@ described here.
     revocation key is also given here, 'x' and 'l' is used the same
     way.  This field if not used for X.509.
 
+    "rev" and "rvs" may be followed by a comma and a 2 digit hexnumber
+    with the revocation reason.
+
 *** Field 12 - Key capabilities
 
     The defined capabilities are:
@@ -207,12 +211,13 @@ described here.
     For "uid" records this field lists the preferences in the same way
     gpg's --edit-key menu does.
 
-    For "sig" records, this is the fingerprint of the key that issued
-    the signature.  Note that this may only be filled if the signature
-    verified correctly.  Note also that for various technical reasons,
-    this fingerprint is only available if --no-sig-cache is used.
-    Since 2.2.7 this field will also be set if the key is missing but
-    the signature carries an issuer fingerprint as meta data.
+    For "sig", "rev" and "rvs" records, this is the fingerprint of the
+    key that issued the signature.  Note that this may only be filled
+    if the signature verified correctly.  Note also that for various
+    technical reasons, this fingerprint is only available if
+    --no-sig-cache is used.  Since 2.2.7 this field will also be set
+    if the key is missing but the signature carries an issuer
+    fingerprint as meta data.
 
 *** Field 14 - Flag field
 
@@ -259,6 +264,12 @@ described here.
     The origin of the key or the user ID.  This is an integer
     optionally followed by a space and an URL.  This goes along with
     the previous field.  The URL is quoted in C style.
+
+*** Field 21 - Comment
+
+    This is currently only used in "rev" and "rvs" records to carry
+    the the comment field of the recocation reason.  The value is
+    quoted in C style.
 
 ** Special fields
 

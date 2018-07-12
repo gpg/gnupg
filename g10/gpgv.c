@@ -772,3 +772,18 @@ tofu_notice_key_changed (ctrl_t ctrl, kbnode_t kb)
 
   return 0;
 }
+
+
+int
+get_revocation_reason (PKT_signature *sig, char **r_reason,
+                       char **r_comment, size_t *r_commentlen)
+{
+  (void)sig;
+  (void)r_commentlen;
+
+  if (r_reason)
+    *r_reason = NULL;
+  if (r_comment)
+    *r_comment = NULL;
+  return 0;
+}

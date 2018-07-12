@@ -49,6 +49,7 @@
 #include "../common/host2net.h"
 #include "tofu.h"
 #include "key-check.h"
+#include "key-clean.h"
 #include "keyedit.h"
 
 static void show_prefs (PKT_user_id * uid, PKT_signature * selfsig,

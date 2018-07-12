@@ -328,7 +328,7 @@ following the "sig" tag (and thus before the flags described below.  A
 "!" indicates that the signature has been successfully verified, a "-"
 denotes a bad signature and a "%" is used if an error occurred while
 checking the signature (e.g. a non supported algorithm).  Signatures
-where the public key is not availabale are not listed; to see their
+where the public key is not available are not listed; to see their
 keyids the command @option{--list-sigs} can be used.
 
 For each signature listed, there are several flags in between the
@@ -352,6 +352,16 @@ same algorithm as used when locating keys for encryption or signing and
 may thus be used to see what keys @command{@gpgname} might use.  In
 particular external methods as defined by @option{--auto-key-locate} may
 be used to locate a key.  Only public keys are listed.
+
+@item --show-keys
+@opindex show-keys
+This commands takes OpenPGP keys as input and prints information about
+them in the same way the command @option{--list-keys} does for locally
+stored key.  In addition the list options @code{show-unusable-uids},
+@code{show-unusable-subkeys}, @code{show-notations} and
+@code{show-policy-urls} are also enabled.  As usual for automated
+processing, this command should be combined with the option
+@option{--with-colons}.
 
 @item --fingerprint
 @opindex fingerprint
@@ -2305,7 +2315,8 @@ opposite meaning. The options are:
   Show a listing of the key as imported right before it is stored.
   This can be combined with the option @option{--dry-run} to only look
   at keys; the option @option{show-only} is a shortcut for this
-  combination.  Note that suffixes like '#' for "sec" and "sbb" lines
+  combination.  The command @option{--show-keys} is another shortcut
+  for this.  Note that suffixes like '#' for "sec" and "sbb" lines
   may or may not be printed.
 
   @item import-export
@@ -2416,6 +2427,11 @@ The available properties are:
   @item secret
   Boolean indicating whether a key or subkey is a secret one.
   (drop-subkey)
+
+  @item usage
+  A string indicating the usage flags for the subkey, from the
+  sequence ``ecsa?''.  For example, a subkey capable of just signing
+  and authentication would be an exact match for ``sa''. (drop-subkey)
 
   @item sig_created
   @itemx sig_created_d
@@ -3368,7 +3384,7 @@ absolute date in the form YYYY-MM-DD. Defaults to "0".
 @opindex default-new-key-algo @var{string}
 This option can be used to change the default algorithms for key
 generation. The @var{string} is similar to the arguments required for
-the command @option{--quick-add-key} but slighly different.  For
+the command @option{--quick-add-key} but slightly different.  For
 example the current default of @code{"rsa2048/cert,sign+rsa2048/encr"}
 (or @code{"rsa3072"}) can be changed to the value of what we currently
 call future default, which is @code{"ed25519/cert,sign+cv25519/encr"}.

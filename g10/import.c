@@ -41,6 +41,7 @@
 #include "../common/init.h"
 #include "../common/mbox-util.h"
 #include "key-check.h"
+#include "key-clean.h"
 
 
 struct import_stats_s
@@ -113,8 +114,8 @@ static int import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
                               struct import_stats_s *stats, int batch,
                               unsigned int options, int for_migration,
                               import_screener_t screener, void *screener_arg);
-static int import_revoke_cert (ctrl_t ctrl,
-                               kbnode_t node, struct import_stats_s *stats);
+static int import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
+                               struct import_stats_s *stats);
 static int chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
                           int *non_self);
 static int delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock,
@@ -494,7 +495,9 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
 
   if (!stats_handle)
     {
-      import_print_stats (stats);
+      if ((options & (IMPORT_SHOW | IMPORT_DRY_RUN))
+          != (IMPORT_SHOW | IMPORT_DRY_RUN))
+        import_print_stats (stats);
       import_release_stats_handle (stats);
     }
 
@@ -588,7 +591,7 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct import_stats_s *stats,
                                 screener, screener_arg);
       else if (keyblock->pkt->pkttype == PKT_SIGNATURE
                && IS_KEY_REV (keyblock->pkt->pkt.signature) )
-        rc = import_revoke_cert (ctrl, keyblock, stats);
+        rc = import_revoke_cert (ctrl, keyblock, options, stats);
       else
         {
           log_info (_("skipping block of type %d\n"), keyblock->pkt->pkttype);
@@ -778,7 +781,7 @@ read_block( IOBUF a, int with_meta,
   struct parse_packet_ctx_s parsectx;
   PACKET *pkt;
   kbnode_t root = NULL;
-  int in_cert, in_v3key;
+  int in_cert, in_v3key, skip_sigs;
 
   *r_v3keys = 0;
 
@@ -797,6 +800,7 @@ read_block( IOBUF a, int with_meta,
   if (!with_meta)
     parsectx.skip_meta = 1;
   in_v3key = 0;
+  skip_sigs = 0;
   while ((rc=parse_packet (&parsectx, pkt)) != -1)
     {
       if (rc && (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY
@@ -811,8 +815,25 @@ read_block( IOBUF a, int with_meta,
         }
       else if (rc ) /* (ignore errors) */
         {
+          skip_sigs = 0;
           if (gpg_err_code (rc) == GPG_ERR_UNKNOWN_PACKET)
             ; /* Do not show a diagnostic.  */
+          else if (gpg_err_code (rc) == GPG_ERR_INV_PACKET
+                   && (pkt->pkttype == PKT_USER_ID
+                       || pkt->pkttype == PKT_ATTRIBUTE))
+            {
+              /* This indicates a too large user id or attribute
+               * packet.  We skip this packet and all following
+               * signatures.  Sure, this won't allow to repair a
+               * garbled keyring in case one of the signatures belong
+               * to another user id.  However, this better mitigates
+               * DoS using inserted user ids.  */
+              skip_sigs = 1;
+            }
+          else if (gpg_err_code (rc) == GPG_ERR_INV_PACKET
+                   && (pkt->pkttype == PKT_OLD_COMMENT
+                       || pkt->pkttype == PKT_COMMENT))
+            ; /* Ignore too large comment packets.  */
           else
             {
               log_error("read_block: read error: %s\n", gpg_strerror (rc) );
@@ -824,76 +845,88 @@ read_block( IOBUF a, int with_meta,
           continue;
 	}
 
-        if (in_v3key && !(pkt->pkttype == PKT_PUBLIC_KEY
-                          || pkt->pkttype == PKT_SECRET_KEY))
-          {
-	    free_packet (pkt, &parsectx);
-	    init_packet(pkt);
-	    continue;
-          }
-        in_v3key = 0;
+      if (skip_sigs)
+        {
+          if (pkt->pkttype == PKT_SIGNATURE)
+            {
+              free_packet (pkt, &parsectx);
+              init_packet (pkt);
+              continue;
+            }
+          skip_sigs = 0;
+        }
 
-	if (!root && pkt->pkttype == PKT_SIGNATURE
-            && IS_KEY_REV (pkt->pkt.signature) )
-          {
-	    /* This is a revocation certificate which is handled in a
-	     * special way.  */
-	    root = new_kbnode( pkt );
-	    pkt = NULL;
-	    goto ready;
-          }
+      if (in_v3key && !(pkt->pkttype == PKT_PUBLIC_KEY
+                        || pkt->pkttype == PKT_SECRET_KEY))
+        {
+          free_packet (pkt, &parsectx);
+          init_packet(pkt);
+          continue;
+        }
+      in_v3key = 0;
 
-	/* Make a linked list of all packets.  */
-	switch (pkt->pkttype)
-          {
-	  case PKT_COMPRESSED:
-	    if (check_compress_algo (pkt->pkt.compressed->algorithm))
-	      {
-		rc = GPG_ERR_COMPR_ALGO;
-		goto ready;
-	      }
-	    else
-	      {
-		compress_filter_context_t *cfx = xmalloc_clear( sizeof *cfx );
-		pkt->pkt.compressed->buf = NULL;
-		if (push_compress_filter2 (a, cfx,
-                                           pkt->pkt.compressed->algorithm, 1))
-                  xfree (cfx); /* e.g. in case of compression_algo NONE.  */
-	      }
-	    free_packet (pkt, &parsectx);
-	    init_packet(pkt);
-	    break;
+      if (!root && pkt->pkttype == PKT_SIGNATURE
+          && IS_KEY_REV (pkt->pkt.signature) )
+        {
+          /* This is a revocation certificate which is handled in a
+           * special way.  */
+          root = new_kbnode( pkt );
+          pkt = NULL;
+          goto ready;
+        }
 
-          case PKT_RING_TRUST:
-            /* Skip those packets unless we are in restore mode.  */
-            if ((opt.import_options & IMPORT_RESTORE))
-              goto x_default;
-	    free_packet (pkt, &parsectx);
-	    init_packet(pkt);
-            break;
+      /* Make a linked list of all packets.  */
+      switch (pkt->pkttype)
+        {
+        case PKT_COMPRESSED:
+          if (check_compress_algo (pkt->pkt.compressed->algorithm))
+            {
+              rc = GPG_ERR_COMPR_ALGO;
+              goto ready;
+            }
+          else
+            {
+              compress_filter_context_t *cfx = xmalloc_clear( sizeof *cfx );
+              pkt->pkt.compressed->buf = NULL;
+              if (push_compress_filter2 (a, cfx,
+                                         pkt->pkt.compressed->algorithm, 1))
+                xfree (cfx); /* e.g. in case of compression_algo NONE.  */
+            }
+          free_packet (pkt, &parsectx);
+          init_packet(pkt);
+          break;
 
-	  case PKT_PUBLIC_KEY:
-	  case PKT_SECRET_KEY:
-	    if (in_cert ) /* Store this packet.  */
-              {
-		*pending_pkt = pkt;
-		pkt = NULL;
-		goto ready;
-              }
-	    in_cert = 1; /* fall through */
-	  default:
-          x_default:
-	    if (in_cert && valid_keyblock_packet (pkt->pkttype))
-              {
-		if (!root )
-                  root = new_kbnode (pkt);
-		else
-                  add_kbnode (root, new_kbnode (pkt));
-		pkt = xmalloc (sizeof *pkt);
-              }
-	    init_packet(pkt);
-	    break;
-          }
+        case PKT_RING_TRUST:
+          /* Skip those packets unless we are in restore mode.  */
+          if ((opt.import_options & IMPORT_RESTORE))
+            goto x_default;
+          free_packet (pkt, &parsectx);
+          init_packet(pkt);
+          break;
+
+        case PKT_PUBLIC_KEY:
+        case PKT_SECRET_KEY:
+          if (in_cert ) /* Store this packet.  */
+            {
+              *pending_pkt = pkt;
+              pkt = NULL;
+              goto ready;
+            }
+          in_cert = 1;
+          /* fall through */
+        default:
+        x_default:
+          if (in_cert && valid_keyblock_packet (pkt->pkttype))
+            {
+              if (!root )
+                root = new_kbnode (pkt);
+              else
+                add_kbnode (root, new_kbnode (pkt));
+              pkt = xmalloc (sizeof *pkt);
+            }
+          init_packet(pkt);
+          break;
+        }
     }
 
  ready:
@@ -1312,6 +1345,16 @@ impex_filter_getval (void *cookie, const char *propname)
         {
           result = pk_is_disabled (pk)? "1":"0";
         }
+      else if (!strcmp (propname, "usage"))
+        {
+          snprintf (numbuf, sizeof numbuf, "%s%s%s%s%s",
+                    (pk->pubkey_usage & PUBKEY_USAGE_ENC)?"e":"",
+                    (pk->pubkey_usage & PUBKEY_USAGE_SIG)?"s":"",
+                    (pk->pubkey_usage & PUBKEY_USAGE_CERT)?"c":"",
+                    (pk->pubkey_usage & PUBKEY_USAGE_AUTH)?"a":"",
+                    (pk->pubkey_usage & PUBKEY_USAGE_UNKNOWN)?"?":"");
+          result = numbuf;
+        }
       else
         result = NULL;
     }
@@ -1653,6 +1696,10 @@ import_one (ctrl_t ctrl,
   int any_filter = 0;
   KEYDB_HANDLE hd = NULL;
 
+  /* If show-only is active we don't won't any extra output.  */
+  if ((options & (IMPORT_SHOW | IMPORT_DRY_RUN)))
+    silent = 1;
+
   /* Get the key and print some info about it. */
   node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
   if (!node )
@@ -1712,9 +1759,14 @@ import_one (ctrl_t ctrl,
      that we have to clean later.  This has no practical impact on the
      end result, but does result in less logging which might confuse
      the user. */
-  if (options&IMPORT_CLEAN)
-    clean_key (ctrl, keyblock,
-               opt.verbose, (options&IMPORT_MINIMAL), NULL, NULL);
+  if ((options & IMPORT_CLEAN))
+    {
+      merge_keys_and_selfsig (ctrl, keyblock);
+      clean_all_uids (ctrl, keyblock,
+                      opt.verbose, (options&IMPORT_MINIMAL), NULL, NULL);
+      clean_all_subkeys (ctrl, keyblock, opt.verbose, KEY_CLEAN_NONE,
+                         NULL, NULL);
+    }
 
   clear_kbnode_flags( keyblock );
 
@@ -1855,8 +1907,13 @@ import_one (ctrl_t ctrl,
         log_info (_("writing to '%s'\n"), keydb_get_resource_name (hd) );
 
       if ((options & IMPORT_CLEAN))
-        clean_key (ctrl, keyblock, opt.verbose, (options&IMPORT_MINIMAL),
-                   &n_uids_cleaned,&n_sigs_cleaned);
+        {
+          merge_keys_and_selfsig (ctrl, keyblock);
+          clean_all_uids (ctrl, keyblock, opt.verbose, (options&IMPORT_MINIMAL),
+                          &n_uids_cleaned,&n_sigs_cleaned);
+          clean_all_subkeys (ctrl, keyblock, opt.verbose, KEY_CLEAN_NONE,
+                             NULL, NULL);
+        }
 
       /* Unless we are in restore mode apply meta data to the
        * keyblock.  Note that this will never change the first packet
@@ -1941,8 +1998,14 @@ import_one (ctrl_t ctrl,
         goto leave;
 
       if ((options & IMPORT_CLEAN))
-        clean_key (ctrl, keyblock_orig, opt.verbose, (options&IMPORT_MINIMAL),
-                   &n_uids_cleaned,&n_sigs_cleaned);
+        {
+          merge_keys_and_selfsig (ctrl, keyblock_orig);
+          clean_all_uids (ctrl, keyblock_orig, opt.verbose,
+                          (options&IMPORT_MINIMAL),
+                          &n_uids_cleaned,&n_sigs_cleaned);
+          clean_all_subkeys (ctrl, keyblock_orig, opt.verbose, KEY_CLEAN_NONE,
+                             NULL, NULL);
+        }
 
       if (n_uids || n_sigs || n_subk || n_sigs_cleaned || n_uids_cleaned)
         {
@@ -2616,11 +2679,216 @@ import_secret_one (ctrl_t ctrl, kbnode_t keyblock,
 }
 
 
+
+/* Return the recocation reason from signature SIG.  If no revocation
+ * reason is availabale 0 is returned, in other cases the reason
+ * (0..255).  If R_REASON is not NULL a malloced textual
+ * representation of the code is stored there.  If R_COMMENT is not
+ * NULL the comment from the reason is stored there and its length at
+ * R_COMMENTLEN.  Note that the value at R_COMMENT is not filtered but
+ * user supplied data in UTF8; thus it needs to be escaped for display
+ * purposes.  Both return values are either NULL or a malloced
+ * string/buffer.  */
+int
+get_revocation_reason (PKT_signature *sig, char **r_reason,
+                       char **r_comment, size_t *r_commentlen)
+{
+  int reason_seq = 0;
+  size_t reason_n;
+  const byte *reason_p;
+  char reason_code_buf[20];
+  const char *reason_text = NULL;
+  int reason_code = 0;
+
+  if (r_reason)
+    *r_reason = NULL;
+  if (r_comment)
+    *r_comment = NULL;
+
+  /* Skip over empty reason packets.  */
+  while ((reason_p = enum_sig_subpkt (sig->hashed, SIGSUBPKT_REVOC_REASON,
+                                      &reason_n, &reason_seq, NULL))
+         && !reason_n)
+    ;
+  if (reason_p)
+    {
+      reason_code = *reason_p;
+      reason_n--; reason_p++;
+      switch (reason_code)
+        {
+        case 0x00: reason_text = _("No reason specified"); break;
+        case 0x01: reason_text = _("Key is superseded");   break;
+        case 0x02: reason_text = _("Key has been compromised"); break;
+        case 0x03: reason_text = _("Key is no longer used"); break;
+        case 0x20: reason_text = _("User ID is no longer valid"); break;
+        default:
+          snprintf (reason_code_buf, sizeof reason_code_buf,
+                    "code=%02x", reason_code);
+          reason_text = reason_code_buf;
+          break;
+        }
+
+      if (r_reason)
+        *r_reason = xstrdup (reason_text);
+
+      if (r_comment && reason_n)
+        {
+          *r_comment = xmalloc (reason_n);
+          memcpy (*r_comment, reason_p, reason_n);
+          *r_commentlen = reason_n;
+        }
+    }
+
+  return reason_code;
+}
+
+
+/* List the recocation signature as a "rvs" record.  SIGRC shows the
+ * character from the signature verification or 0 if no public key was
+ * found.  */
+static void
+list_standalone_revocation (ctrl_t ctrl, PKT_signature *sig, int sigrc)
+{
+  char *siguid = NULL;
+  size_t siguidlen = 0;
+  char *issuer_fpr = NULL;
+  int reason_code = 0;
+  char *reason_text = NULL;
+  char *reason_comment = NULL;
+  size_t reason_commentlen;
+
+  if (sigrc != '%' && sigrc != '?' && !opt.fast_list_mode)
+    {
+      int nouid;
+      siguid = get_user_id (ctrl, sig->keyid, &siguidlen, &nouid);
+      if (nouid)
+        sigrc = '?';
+    }
+
+  reason_code = get_revocation_reason (sig, &reason_text,
+                                       &reason_comment, &reason_commentlen);
+
+  if (opt.with_colons)
+    {
+      es_fputs ("rvs:", es_stdout);
+      if (sigrc)
+        es_putc (sigrc, es_stdout);
+      es_fprintf (es_stdout, "::%d:%08lX%08lX:%s:%s:::",
+                  sig->pubkey_algo,
+                  (ulong) sig->keyid[0], (ulong) sig->keyid[1],
+                  colon_datestr_from_sig (sig),
+                  colon_expirestr_from_sig (sig));
+
+      if (siguid)
+        es_write_sanitized (es_stdout, siguid, siguidlen, ":", NULL);
+
+      es_fprintf (es_stdout, ":%02x%c", sig->sig_class,
+                  sig->flags.exportable ? 'x' : 'l');
+      if (reason_text)
+        es_fprintf (es_stdout, ",%02x", reason_code);
+      es_fputs ("::", es_stdout);
+
+      if ((issuer_fpr = issuer_fpr_string (sig)))
+        es_fputs (issuer_fpr, es_stdout);
+
+      es_fprintf (es_stdout, ":::%d:", sig->digest_algo);
+
+      if (reason_comment)
+        {
+          es_fputs ("::::", es_stdout);
+          es_write_sanitized (es_stdout, reason_comment, reason_commentlen,
+                              ":", NULL);
+          es_putc (':', es_stdout);
+        }
+      es_putc ('\n', es_stdout);
+
+      if (opt.show_subpackets)
+        print_subpackets_colon (sig);
+    }
+  else /* Human readable. */
+    {
+      es_fputs ("rvs", es_stdout);
+      es_fprintf (es_stdout, "%c%c %c%c%c%c%c%c %s %s",
+		  sigrc, (sig->sig_class - 0x10 > 0 &&
+			  sig->sig_class - 0x10 <
+			  4) ? '0' + sig->sig_class - 0x10 : ' ',
+		  sig->flags.exportable ? ' ' : 'L',
+		  sig->flags.revocable ? ' ' : 'R',
+		  sig->flags.policy_url ? 'P' : ' ',
+		  sig->flags.notation ? 'N' : ' ',
+		  sig->flags.expired ? 'X' : ' ',
+		  (sig->trust_depth > 9) ? 'T' : (sig->trust_depth >
+						  0) ? '0' +
+		  sig->trust_depth : ' ', keystr (sig->keyid),
+		  datestr_from_sig (sig));
+      if (siguid)
+        {
+          es_fprintf (es_stdout, "  ");
+          print_utf8_buffer (es_stdout, siguid, siguidlen);
+        }
+      es_putc ('\n', es_stdout);
+
+      if (sig->flags.policy_url
+          && (opt.list_options & LIST_SHOW_POLICY_URLS))
+        show_policy_url (sig, 3, 0);
+
+      if (sig->flags.notation && (opt.list_options & LIST_SHOW_NOTATIONS))
+        show_notation (sig, 3, 0,
+                       ((opt.list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0)
+                       +
+                       ((opt.list_options & LIST_SHOW_USER_NOTATIONS) ? 2 : 0));
+
+      if (sig->flags.pref_ks
+          && (opt.list_options & LIST_SHOW_KEYSERVER_URLS))
+        show_keyserver_url (sig, 3, 0);
+
+      if (reason_text)
+        {
+          es_fprintf (es_stdout, "      %s%s\n",
+                      _("reason for revocation: "), reason_text);
+          if (reason_comment)
+            {
+              const byte *s, *s_lf;
+              size_t n, n_lf;
+
+              s = reason_comment;
+              n = reason_commentlen;
+              s_lf = NULL;
+              do
+                {
+                  /* We don't want any empty lines, so we skip them.  */
+                  for (;n && *s == '\n'; s++, n--)
+                    ;
+                  if (n)
+                    {
+                      s_lf = memchr (s, '\n', n);
+                      n_lf = s_lf? s_lf - s : n;
+                      es_fprintf (es_stdout, "         %s",
+                                  _("revocation comment: "));
+                      es_write_sanitized (es_stdout, s, n_lf, NULL, NULL);
+                      es_putc ('\n', es_stdout);
+                      s += n_lf; n -= n_lf;
+                    }
+                } while (s_lf);
+            }
+        }
+    }
+
+  es_fflush (es_stdout);
+
+  xfree (reason_text);
+  xfree (reason_comment);
+  xfree (siguid);
+  xfree (issuer_fpr);
+}
+
+
 /****************
  * Import a revocation certificate; this is a single signature packet.
  */
 static int
-import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
+import_revoke_cert (ctrl_t ctrl, kbnode_t node, unsigned int options,
+                    struct import_stats_s *stats)
 {
   PKT_public_key *pk = NULL;
   kbnode_t onode;
@@ -2628,6 +2896,11 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
   KEYDB_HANDLE hd = NULL;
   u32 keyid[2];
   int rc = 0;
+  int sigrc = 0;
+  int silent;
+
+  /* No error output for --show-keys.  */
+  silent = (options & (IMPORT_SHOW | IMPORT_DRY_RUN));
 
   log_assert (!node->next );
   log_assert (node->pkt->pkttype == PKT_SIGNATURE );
@@ -2640,15 +2913,16 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
   rc = get_pubkey (ctrl, pk, keyid );
   if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY )
     {
-      log_error(_("key %s: no public key -"
-                  " can't apply revocation certificate\n"), keystr(keyid));
+      if (!silent)
+        log_error (_("key %s: no public key -"
+                     " can't apply revocation certificate\n"), keystr(keyid));
       rc = 0;
       goto leave;
     }
   else if (rc )
     {
-      log_error(_("key %s: public key not found: %s\n"),
-                keystr(keyid), gpg_strerror (rc));
+      log_error (_("key %s: public key not found: %s\n"),
+                 keystr(keyid), gpg_strerror (rc));
       goto leave;
     }
 
@@ -2685,12 +2959,21 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
 
   /* it is okay, that node is not in keyblock because
    * check_key_signature works fine for sig_class 0x20 (KEY_REV) in
-   * this special case. */
+   * this special case.  SIGRC is only used for IMPORT_SHOW.  */
   rc = check_key_signature (ctrl, keyblock, node, NULL);
+  switch (gpg_err_code (rc))
+    {
+    case 0:                       sigrc = '!'; break;
+    case GPG_ERR_BAD_SIGNATURE:   sigrc = '-'; break;
+    case GPG_ERR_NO_PUBKEY:       sigrc = '?'; break;
+    case GPG_ERR_UNUSABLE_PUBKEY: sigrc = '?'; break;
+    default:                      sigrc = '%'; break;
+    }
   if (rc )
     {
-      log_error( _("key %s: invalid revocation certificate"
-                   ": %s - rejected\n"), keystr(keyid), gpg_strerror (rc));
+      if (!silent)
+        log_error (_("key %s: invalid revocation certificate"
+                     ": %s - rejected\n"), keystr(keyid), gpg_strerror (rc));
       goto leave;
     }
 
@@ -2710,33 +2993,39 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
   /* insert it */
   insert_kbnode( keyblock, clone_kbnode(node), 0 );
 
-  /* and write the keyblock back */
-  rc = keydb_update_keyblock (ctrl, hd, keyblock );
-  if (rc)
-    log_error (_("error writing keyring '%s': %s\n"),
-               keydb_get_resource_name (hd), gpg_strerror (rc) );
-  keydb_release (hd);
-  hd = NULL;
-
-  /* we are ready */
-  if (!opt.quiet )
+  /* and write the keyblock back unless in dry run mode.  */
+  if (!(opt.dry_run || (options & IMPORT_DRY_RUN)))
     {
-      char *p=get_user_id_native (ctrl, keyid);
-      log_info( _("key %s: \"%s\" revocation certificate imported\n"),
-                keystr(keyid),p);
-      xfree(p);
+      rc = keydb_update_keyblock (ctrl, hd, keyblock );
+      if (rc)
+        log_error (_("error writing keyring '%s': %s\n"),
+                   keydb_get_resource_name (hd), gpg_strerror (rc) );
+      keydb_release (hd);
+      hd = NULL;
+
+      /* we are ready */
+      if (!opt.quiet )
+        {
+          char *p=get_user_id_native (ctrl, keyid);
+          log_info( _("key %s: \"%s\" revocation certificate imported\n"),
+                    keystr(keyid),p);
+          xfree(p);
+        }
+
+      /* If the key we just revoked was ultimately trusted, remove its
+       * ultimate trust.  This doesn't stop the user from putting the
+       * ultimate trust back, but is a reasonable solution for now. */
+      if (get_ownertrust (ctrl, pk) == TRUST_ULTIMATE)
+        clear_ownertrusts (ctrl, pk);
+
+      revalidation_mark (ctrl);
     }
   stats->n_revoc++;
 
-  /* If the key we just revoked was ultimately trusted, remove its
-     ultimate trust.  This doesn't stop the user from putting the
-     ultimate trust back, but is a reasonable solution for now. */
-  if (get_ownertrust (ctrl, pk) == TRUST_ULTIMATE)
-    clear_ownertrusts (ctrl, pk);
-
-  revalidation_mark (ctrl);
-
  leave:
+  if ((options & IMPORT_SHOW))
+    list_standalone_revocation (ctrl, node->pkt->pkt.signature, sigrc);
+
   keydb_release (hd);
   release_kbnode( keyblock );
   free_public_key( pk );
@@ -2744,8 +3033,9 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
 }
 
 
-/* Loop over the keyblock and check all self signatures.  On return
- * the following bis in the node flags are set:
+/* Loop over the KEYBLOCK and check all self signatures.  KEYID is the
+ * keyid of the primary key for reporting purposes. On return the
+ * following bits in the node flags are set:
  *
  * - NODE_GOOD_SELFSIG  :: User ID or subkey has a self-signature
  * - NODE_BAD_SELFSIG   :: Used ID or subkey has an invalid self-signature
@@ -2760,17 +3050,22 @@ import_revoke_cert (ctrl_t ctrl, kbnode_t node, struct import_stats_s *stats)
 static int
 chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid, int *non_self)
 {
-  kbnode_t n, knode = NULL;
+  kbnode_t knode = NULL;   /* The node of the current subkey.  */
+  PKT_public_key *subpk = NULL; /* and its packet. */
+  kbnode_t bsnode = NULL;  /* Subkey binding signature node.  */
+  u32 bsdate = 0;          /* Timestamp of that node.   */
+  kbnode_t rsnode = NULL;  /* Subkey recocation signature node.  */
+  u32 rsdate = 0;          /* Timestamp of tha node.  */
   PKT_signature *sig;
   int rc;
-  u32 bsdate=0, rsdate=0;
-  kbnode_t bsnode = NULL, rsnode = NULL;
+  kbnode_t n;
 
   for (n=keyblock; (n = find_next_kbnode (n, 0)); )
     {
       if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
 	  knode = n;
+          subpk = knode->pkt->pkt.public_key;
 	  bsdate = 0;
 	  rsdate = 0;
 	  bsnode = NULL;
@@ -2859,11 +3154,14 @@ chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid, int *non_self)
               if ( rc )
                 {
                   if (opt.verbose)
-                    log_info (gpg_err_code (rc) == GPG_ERR_PUBKEY_ALGO ?
-                              _("key %s: unsupported public key"
-                                " algorithm\n"):
-                              _("key %s: invalid subkey binding\n"),
-                              keystr (keyid));
+                    {
+                      keyid_from_pk (subpk, NULL);
+                      log_info (gpg_err_code (rc) == GPG_ERR_PUBKEY_ALGO ?
+                                _("key %s: unsupported public key"
+                                  " algorithm\n"):
+                                _("key %s: invalid subkey binding\n"),
+                                keystr_with_sub (keyid, subpk->keyid));
+                    }
                   n->flag |= NODE_DELETION_MARK;
                 }
               else
@@ -2878,8 +3176,12 @@ chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid, int *non_self)
                              one is newer */
                           bsnode->flag |= NODE_DELETION_MARK;
                           if (opt.verbose)
-                            log_info (_("key %s: removed multiple subkey"
-                                        " binding\n"),keystr(keyid));
+                            {
+                              keyid_from_pk (subpk, NULL);
+                              log_info (_("key %s: removed multiple subkey"
+                                          " binding\n"),
+                                        keystr_with_sub (keyid, subpk->keyid));
+                            }
                         }
 
                       bsnode = n;
@@ -2958,6 +3260,7 @@ delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
 {
   kbnode_t node;
   int nvalid=0, uid_seen=0, subkey_seen=0;
+  PKT_public_key *pk;
 
   for (node=keyblock->next; node; node = node->next )
     {
@@ -2995,7 +3298,12 @@ delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
               || !(node->flag & NODE_GOOD_SELFSIG))
             {
               if (opt.verbose )
-                log_info( _("key %s: skipped subkey\n"),keystr(keyid));
+                {
+                  pk = node->pkt->pkt.public_key;
+                  keyid_from_pk (pk, NULL);
+                  log_info (_("key %s: skipped subkey\n"),
+                            keystr_with_sub (keyid, pk->keyid));
+                }
 
               delete_kbnode( node ); /* the subkey */
               /* and all following signature packets */

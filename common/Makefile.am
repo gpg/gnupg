@@ -49,7 +49,7 @@ common_sources = \
 	strlist.c strlist.h \
 	utf8conv.c utf8conv.h \
 	argparse.c argparse.h \
-	logging.c logging.h  \
+	logging.h  \
 	dotlock.c dotlock.h  \
         mischelp.c mischelp.h \
 	status.c status.h\

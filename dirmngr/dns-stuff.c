@@ -612,6 +612,8 @@ libdns_init (void)
       }
   }
 
+  ld.resolv_conf->options.recurse = recursive_resolver_p ();
+
   /* dns_hints_local for stub mode, dns_hints_root for recursive.  */
   ld.hints = (recursive_resolver
               ? dns_hints_root  (ld.resolv_conf, &derr)

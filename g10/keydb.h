@@ -64,6 +64,20 @@ struct kbnode_struct {
 #define is_cloned_kbnode(a)   ((a)->private_flag & 2)
 
 
+/*
+ * A structure to store key identification as well as some stuff
+ * needed for key validation.
+ */
+struct key_item {
+  struct key_item *next;
+  unsigned int ownertrust,min_ownertrust;
+  byte trust_depth;
+  byte trust_value;
+  char *trust_regexp;
+  u32 kid[2];
+};
+
+
 /* Bit flags used with build_pk_list.  */
 enum
   {
@@ -131,6 +145,22 @@ enum
     KEYORG_FILE    = 6, /* Trusted file.        */
     KEYORG_SELF    = 7  /* We generated it.     */
   };
+
+
+/*
+ * Check whether the signature SIG is in the klist K.
+ */
+static inline struct key_item *
+is_in_klist (struct key_item *k, PKT_signature *sig)
+{
+  for (; k; k = k->next)
+    {
+      if (k->kid[0] == sig->keyid[0] && k->kid[1] == sig->keyid[1])
+        return k;
+    }
+  return NULL;
+}
+
 
 
 /*-- keydb.c --*/
@@ -283,6 +313,10 @@ void cache_public_key( PKT_public_key *pk );
 /* Disable and drop the public key cache.  */
 void getkey_disable_caches(void);
 
+/* Return the public key used for signature SIG and store it at PK.  */
+gpg_error_t get_pubkey_for_sig (ctrl_t ctrl,
+                                PKT_public_key *pk, PKT_signature *sig);
+
 /* Return the public key with the key id KEYID and store it at PK.  */
 int get_pubkey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid);
 
@@ -290,6 +324,10 @@ int get_pubkey (ctrl_t ctrl, PKT_public_key *pk, u32 *keyid);
    account nor does it merge in the self-signed data.  This function
    also only considers primary keys.  */
 int get_pubkey_fast (PKT_public_key *pk, u32 *keyid);
+
+/* Return the entire keyblock used to create SIG.  This is a
+ * specialized version of get_pubkeyblock.  */
+kbnode_t get_pubkeyblock_for_sig (ctrl_t ctrl, PKT_signature *sig);
 
 /* Return the key block for the key with KEYID.  */
 kbnode_t get_pubkeyblock (ctrl_t ctrl, u32 *keyid);

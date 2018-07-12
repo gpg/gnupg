@@ -8,7 +8,63 @@ subdir = po
 top_builddir = ..
 
 # These options get passed to xgettext.
-XGETTEXT_OPTIONS = --keyword=_ --keyword=N_ --keyword=L_
+XGETTEXT_OPTIONS = \
+	--keyword=_ --keyword=N_ --keyword=L_ \
+        --flag=gcry_log_debug:1:c-format   \
+        --flag=gpgrt_fprintf:2:c-format   \
+        --flag=gpgrt_fprintf_unlocked:2:c-format   \
+        --flag=gpgrt_printf:1:c-format   \
+        --flag=gpgrt_printf_unlocked:1:c-format   \
+        --flag=gpgrt_vfprintf:2:c-format   \
+        --flag=gpgrt_vfprintf_unlocked:2:c-format   \
+        --flag=gpgrt_asprintf:2:c-format   \
+        --flag=gpgrt_vasprintf:2:c-format   \
+        --flag=gpgrt_bsprintf:1:c-format   \
+        --flag=gpgrt_vbsprintf:1:c-format   \
+        --flag=gpgrt_snprintf:3:c-format   \
+        --flag=gpgrt_vsnprintf:3:c-format   \
+        --flag=gpgrt_log:2:c-format   \
+        --flag=gpgrt_log_bug:1:c-format   \
+        --flag=gpgrt_log_fatal:1:c-format   \
+        --flag=gpgrt_log_error:1:c-format   \
+        --flag=gpgrt_log_info:1:c-format   \
+        --flag=gpgrt_log_debug:1:c-format   \
+        --flag=gpgrt_log_debug_string:2:c-format   \
+        --flag=gpgrt_log_printf:1:c-format   \
+        --flag=gpgrt_log_printhex:3:c-format   \
+        --flag=gpgrt_log_clock:1:c-format   \
+        --flag=log_log:2:c-format   \
+        --flag=log_bug:1:c-format   \
+        --flag=log_fatal:1:c-format   \
+        --flag=log_error:1:c-format   \
+        --flag=log_info:1:c-format   \
+        --flag=log_debug:1:c-format   \
+        --flag=log_debug_string:2:c-format   \
+        --flag=log_printf:1:c-format   \
+        --flag=log_printhex:3:c-format   \
+        --flag=log_clock:1:c-format
+        --flag=put_membuf_printf:2:c-format   \
+        --flag=tty_printf:1:c-format   \
+        --flag=tty_fprintf:2:c-format   \
+        --flag=tty_getf:1:c-format   \
+        --flag=writeout_para:2:c-format   \
+        --flag=writeout_li:3:c-format   \
+        --flag=writeout_rem:2:c-format   \
+        --flag=xasprintf:1:c-format   \
+        --flag=xtryasprintf:1:c-format   \
+        --flag=log_debug_with_string:2:c-format   \
+        --flag=print_assuan_status:3:c-format    \
+        --flag=vprint_assuan_status:3:c-format   \
+	--flag=agent_print_status:3:c-format     \
+	--flag=dirmngr_status_helpf:2:c-format   \
+	--flag=dirmngr_status_printf:3:c-format  \
+	--flag=ks_printf_help:2:c-format         \
+	--flag=print_further_info:1:c-format     \
+	--flag=write_status_printf:2:c-format    \
+	--flag=kbxd_print_status:3:c-format      \
+	--flag=gpgconf_write_status:2:c-format   \
+	--flag=wks_write_status:2:c-format
+
 
 # This is the copyright holder that gets inserted into the header of the
 # $(DOMAIN).pot file.  Set this to the copyright holder of the surrounding

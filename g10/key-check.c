@@ -1,7 +1,7 @@
 /* key-check.c - Detect and fix various problems with keys
  * Copyright (C) 1998-2010 Free Software Foundation, Inc.
  * Copyright (C) 1998-2017 Werner Koch
- * Copyright (C) 2015-2017 g10 Code GmbH
+ * Copyright (C) 2015-2018 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -72,6 +72,13 @@ sig_comparison (const void *av, const void *bv)
   a = an->pkt->pkt.signature;
   b = bn->pkt->pkt.signature;
 
+  /* Signatures with a different help counter are not identical for
+   * our purpose.  */
+  if (a->help_counter < b->help_counter)
+    return -1;
+  if (a->help_counter > b->help_counter)
+    return 1;
+
   if (a->digest_algo < b->digest_algo)
     return -1;
   if (a->digest_algo > b->digest_algo)
@@ -90,6 +97,125 @@ sig_comparison (const void *av, const void *bv)
     }
 
   /* Okay, they are equal.  */
+  return 0;
+}
+
+
+static gpg_error_t
+remove_duplicate_sigs (kbnode_t kb, int *dups, int *modified)
+{
+  gpg_error_t err;
+  kbnode_t n;
+  int nsigs;
+  kbnode_t *sigs;  /* Allocated array with the signature packet.  */
+  int i;
+  int last_i;
+  int block;
+  PKT_signature *sig;
+
+  /* Count the sigs.  */
+  for (nsigs = 0, n = kb; n; n = n->next)
+    {
+      if (is_deleted_kbnode (n))
+        continue;
+      else if (n->pkt->pkttype == PKT_SIGNATURE)
+        nsigs ++;
+    }
+
+  if (!nsigs)
+    return 0; /* No signatures at all.  */
+
+  /* Add them all to the SIGS array.  */
+  sigs = xtrycalloc (nsigs, sizeof *sigs);
+  if (!sigs)
+    {
+      err = gpg_error_from_syserror ();
+      log_error (_("error allocating memory: %s\n"), gpg_strerror (err));
+      return err;
+    }
+
+  block = 0;
+  i = 0;
+  for (n = kb; n; n = n->next)
+    {
+      if (is_deleted_kbnode (n))
+        continue;
+
+      if (n->pkt->pkttype != PKT_SIGNATURE)
+        {
+          switch (n->pkt->pkttype)
+            {
+            case PKT_PUBLIC_SUBKEY:
+            case PKT_SECRET_SUBKEY:
+            case PKT_USER_ID:
+            case PKT_ATTRIBUTE:
+              /* Bump the block number so that we only consider
+               * signatures below the same object as duplicates.  */
+              block++;
+              break;
+            default:
+              break;
+            }
+          continue;
+        }
+      sig = n->pkt->pkt.signature;
+      sig->help_counter = block;
+      sigs[i++] = n;
+    }
+  log_assert (i == nsigs);
+
+  qsort (sigs, nsigs, sizeof (sigs[0]), sig_comparison);
+
+  last_i = 0;
+  for (i = 1; i < nsigs; i ++)
+    {
+      log_assert (sigs[last_i]);
+      log_assert (sigs[last_i]->pkt->pkttype == PKT_SIGNATURE);
+      log_assert (sigs[i]);
+      log_assert (sigs[i]->pkt->pkttype == PKT_SIGNATURE);
+
+      if (sig_comparison (&sigs[last_i], &sigs[i]) == 0)
+        {
+          /* They are the same.  Kill the latter.  */
+          if (DBG_PACKET)
+            {
+              sig = sigs[i]->pkt->pkt.signature;
+
+              log_debug ("Signature appears multiple times, "
+                         "deleting duplicate:\n");
+              log_debug ("  sig: class 0x%x, issuer: %s,"
+                         " timestamp: %s (%lld), digest: %02x %02x\n",
+                         sig->sig_class, keystr (sig->keyid),
+                         isotimestamp (sig->timestamp),
+                         (long long) sig->timestamp,
+                         sig->digest_start[0], sig->digest_start[1]);
+            }
+
+          /* Remove sigs[i] from the keyblock.  */
+          {
+            kbnode_t z, *prevp;
+            int to_kill = last_i;
+            last_i = i;
+
+            for (prevp = &kb, z = kb; z; prevp = &z->next, z = z->next)
+              if (z == sigs[to_kill])
+                break;
+
+            *prevp = sigs[to_kill]->next;
+
+            sigs[to_kill]->next = NULL;
+            release_kbnode (sigs[to_kill]);
+            sigs[to_kill] = NULL;
+
+            ++*dups;
+            *modified = 1;
+          }
+        }
+      else
+        last_i = i;
+    }
+
+  xfree (sigs);
   return 0;
 }
 
@@ -133,108 +259,17 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
   int bad_signature = 0;
   int missing_selfsig = 0;
   int modified = 0;
+  PKT_signature *sig;
 
   log_assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
   pk = kb->pkt->pkt.public_key;
 
   /* First we look for duplicates.  */
-  {
-    int nsigs;
-    kbnode_t *sigs;
-    int i;
-    int last_i;
+  if (remove_duplicate_sigs (kb, &dups, &modified))
+    goto leave;  /* Error */
 
-    /* Count the sigs.  */
-    for (nsigs = 0, n = kb; n; n = n->next)
-      {
-        if (is_deleted_kbnode (n))
-          continue;
-        else if (n->pkt->pkttype == PKT_SIGNATURE)
-          nsigs ++;
-      }
-
-    if (!nsigs)
-      return 0; /* No signatures at all.  */
-
-    /* Add them all to the SIGS array.  */
-    sigs = xtrycalloc (nsigs, sizeof *sigs);
-    if (!sigs)
-      {
-        log_error (_("error allocating memory: %s\n"),
-                   gpg_strerror (gpg_error_from_syserror ()));
-        return 0;
-      }
-
-    i = 0;
-    for (n = kb; n; n = n->next)
-      {
-        if (is_deleted_kbnode (n))
-          continue;
-
-        if (n->pkt->pkttype != PKT_SIGNATURE)
-          continue;
-
-        sigs[i] = n;
-        i ++;
-      }
-    log_assert (i == nsigs);
-
-    qsort (sigs, nsigs, sizeof (sigs[0]), sig_comparison);
-
-    last_i = 0;
-    for (i = 1; i < nsigs; i ++)
-      {
-        log_assert (sigs[last_i]);
-        log_assert (sigs[last_i]->pkt->pkttype == PKT_SIGNATURE);
-        log_assert (sigs[i]);
-        log_assert (sigs[i]->pkt->pkttype == PKT_SIGNATURE);
-
-        if (sig_comparison (&sigs[last_i], &sigs[i]) == 0)
-          /* They are the same.  Kill the latter.  */
-          {
-            if (DBG_PACKET)
-              {
-                PKT_signature *sig = sigs[i]->pkt->pkt.signature;
-
-                log_debug ("Signature appears multiple times, "
-                           "deleting duplicate:\n");
-                log_debug ("  sig: class 0x%x, issuer: %s,"
-                           " timestamp: %s (%lld), digest: %02x %02x\n",
-                           sig->sig_class, keystr (sig->keyid),
-                           isotimestamp (sig->timestamp),
-                           (long long) sig->timestamp,
-                           sig->digest_start[0], sig->digest_start[1]);
-              }
-
-            /* Remove sigs[i] from the keyblock.  */
-            {
-              KBNODE z, *prevp;
-              int to_kill = last_i;
-              last_i = i;
-
-              for (prevp = &kb, z = kb; z; prevp = &z->next, z = z->next)
-                if (z == sigs[to_kill])
-                  break;
-
-              *prevp = sigs[to_kill]->next;
-
-              sigs[to_kill]->next = NULL;
-              release_kbnode (sigs[to_kill]);
-              sigs[to_kill] = NULL;
-
-              dups ++;
-              modified = 1;
-            }
-          }
-        else
-          last_i = i;
-      }
-
-    xfree (sigs);
-  }
-
-  /* Make sure the sigs occur after the component (public key, subkey,
-     user id) that they sign.  */
+  /* Now make sure the sigs occur after the component (aka block)
+   * (public key, subkey, user id) that they sign.  */
   issuer = NULL;
   last_printed_component = NULL;
   for (n_prevp = &kb, n = kb;
@@ -244,7 +279,6 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
     {
       PACKET *p;
       int processed_current_component;
-      PKT_signature *sig;
       int rc;
       int dump_sig_params = 0;
 
@@ -573,11 +607,18 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
     free_public_key (issuer);
   issuer = NULL;
 
+  /* If we reordered signatures we need to de-duplicate again because
+   * a signature can now be a duplicate in another block.  */
+  if (reordered)
+    {
+      if (remove_duplicate_sigs (kb, &dups, &modified))
+        goto leave;
+    }
+
   /* Identify keys / uids that don't have a self-sig.  */
   {
     int has_selfsig = 0;
     PACKET *p;
-    PKT_signature *sig;
 
     current_component = NULL;
     for (n = kb; n; n = n->next)
@@ -643,6 +684,8 @@ key_check_all_keysigs (ctrl_t ctrl, int mode, kbnode_t kb,
       }
   }
 
+
+ leave:
   if (!opt.quiet)
     {
       char prefix[100];

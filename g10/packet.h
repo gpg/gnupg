@@ -244,6 +244,7 @@ typedef struct
   const byte *trust_regexp;
   struct revocation_key *revkey;
   int numrevkeys;
+  int help_counter;          /* Used internally bu some fucntions.  */
   pka_info_t *pka_info;      /* Malloced PKA data or NULL if not
                                 available.  See also flags.pka_tried. */
   char *signers_uid;         /* Malloced value of the SIGNERS_UID
@@ -630,6 +631,7 @@ int proc_signature_packets_by_fd (ctrl_t ctrl,
 int proc_encryption_packets (ctrl_t ctrl, void *ctx, iobuf_t a);
 int list_packets( iobuf_t a );
 
+const byte *issuer_fpr_raw (PKT_signature *sig, size_t *r_len);
 char *issuer_fpr_string (PKT_signature *sig);
 
 /*-- parse-packet.c --*/
