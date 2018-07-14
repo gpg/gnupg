@@ -4,14 +4,14 @@
 #              !-- no such user (2011-01-11)
 # Thanks Pawel I. Shajdo <pshajdo@gmail.com>.
 # Thanks Cmecb for the inspiration.
-# Ineiev <ineiev@gnu.org>, 2014, 2015, 2016, 2017
+# Ineiev <ineiev@gnu.org>, 2014, 2015, 2016, 2017, 2018
 #
 # Designated-Translator: none
 msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.2.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2018-05-05 17:41+0100\n"
+"PO-Revision-Date: 2018-07-14 17:41+0100\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -4501,15 +4501,17 @@ msgid ""
 "likely that this message is legitimate.  This is because back\n"
 "then integrity protection was not widely used.\n"
 msgstr ""
+"Подсказка: если это сообщение создано до 2003 года, вероятно, что\n"
+"оно правомерно, поскольку в те времена защита целостности широко\n"
+"не применялась.\n"
 
 #, c-format
 msgid "Use the option '%s' to decrypt anyway.\n"
-msgstr ""
+msgstr "Воспользуйтесь параметром '%s', чтобы тем не менее расшифровать.\n"
 
-#, fuzzy, c-format
-#| msgid "decryption failed: %s\n"
+#, c-format
 msgid "decryption forced to fail!\n"
-msgstr "сбой расшифровки: %s\n"
+msgstr "принудительный сбой расшифровки!\n"
 
 #, c-format
 msgid "decryption okay\n"
@@ -5390,12 +5392,11 @@ msgstr "Замечание: ключ для подписей %s отозван\n
 
 #, c-format
 msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
-msgstr "плохая подпись ключом %s: %s (0x%02x 0x%x)\n"
+msgstr "плохая подпись ключа ключом %s: %s (0x%02x 0x%x)\n"
 
-#, fuzzy, c-format
-#| msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+#, c-format
 msgid "bad data signature from key %s: %s (0x%02x, 0x%x)\n"
-msgstr "плохая подпись ключом %s: %s (0x%02x 0x%x)\n"
+msgstr "плохая подпись данных ключом %s: %s (0x%02x 0x%x)\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
