@@ -68,7 +68,8 @@ enum {
   VENDOR_REINER = 0x0c4b,
   VENDOR_KAAN   = 0x0d46,
   VENDOR_FSIJ   = 0x234b,
-  VENDOR_VASCO  = 0x1a44
+  VENDOR_VASCO  = 0x1a44,
+  VENDOR_NXP    = 0x1fc9,
 };
 
 
@@ -84,6 +85,7 @@ enum {
 #define GEMPC_CT30      0x3437
 #define VEGA_ALPHA      0x0008
 #define CYBERJACK_GO    0x0504
+#define CRYPTOUCAN      0x81e6
 
 #endif /*CCID_DRIVER_INCLUDE_USB_IDS*/
 
