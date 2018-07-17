@@ -965,7 +965,8 @@ pcsc_vendor_specific_init (int slot)
           else if (strstr (reader_table[slot].rdrname, "cyberJack")
                    || strstr (reader_table[slot].rdrname, "DIGIPASS")
                    || strstr (reader_table[slot].rdrname, "Gnuk")
-                   || strstr (reader_table[slot].rdrname, "KAAN"))
+                   || strstr (reader_table[slot].rdrname, "KAAN")
+                   || strstr (reader_table[slot].rdrname, "Trustica"))
             reader_table[slot].pinpad_varlen_supported = 1;
         }
 
@@ -1039,7 +1040,8 @@ pcsc_vendor_specific_init (int slot)
   else if (vendor == 0x0c4b /* Tested with Reiner cyberJack GO */
            || vendor == 0x1a44 /* Tested with Vasco DIGIPASS 920 */
            || vendor == 0x234b /* Tested with FSIJ Gnuk Token */
-           || vendor == 0x0d46 /* Tested with KAAN Advanced??? */)
+           || vendor == 0x0d46 /* Tested with KAAN Advanced??? */
+           || (vendor == 0x1fc9 && product == 0x81e6) /* Tested with Trustica Cryptoucan */)
     reader_table[slot].pinpad_varlen_supported = 1;
 
   return 0;

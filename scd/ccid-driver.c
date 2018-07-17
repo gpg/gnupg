@@ -3387,6 +3387,12 @@ ccid_transceive_secure (ccid_driver_t handle,
       if (handle->id_product != CHERRY_ST2000)
         cherry_mode = 1;
       break;
+    case VENDOR_NXP:
+      if (handle->id_product == CRYPTOUCAN){
+        pininfo->maxlen = 25;
+        enable_varlen = 1;
+      }
+      break;
     default:
       if ((handle->id_vendor == VENDOR_GEMPC &&
            handle->id_product == GEMPC_PINPAD)
