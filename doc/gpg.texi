@@ -2258,9 +2258,8 @@ The AEAD encryption mode encrypts the data in chunks so that a
 receiving side can check for transmission errors or tampering at the
 end of each chunk and does not need to delay this until all data has
 been received.  The used chunk size is 2^@var{n} byte.  The lowest
-allowed value for @var{n} is 6 (64 byte) and the largest is 62 (4
-EiB). The default value for @var{n} is 30 which creates chunks not
-larger than 1 GiB.
+allowed value for @var{n} is 6 (64 byte) and the largest is the
+default of 27 which creates chunks not larger than 128 MiB.
 
 @item --input-size-hint @var{n}
 @opindex input-size-hint
@@ -2621,7 +2620,7 @@ to declare that a not yet standardized feature is used.
 @opindex disable-mdc
 These options are obsolete and have no effect since GnuPG 2.2.8.  The
 MDC is always used unless the keys indicate that an AEAD algorithm can
-be used in which case AEAD is used.  But note: If the creation or of a
+be used in which case AEAD is used.  But note: If the creation of a
 legacy non-MDC message is exceptionally required, the option
 @option{--rfc2440} allows for this.
 
@@ -2861,6 +2860,13 @@ given on the command line.
 Change the buffer size of the IOBUFs to @var{n} kilobyte.  Using 0
 prints the current size.  Note well: This is a maintainer only option
 and may thus be changed or removed at any time without notice.
+
+@item --debug-allow-large-chunks
+@opindex debug-allow-large-chunks
+To facilitate in-memory decryption on the receiving site, the largest
+recommended chunk size is 128 MiB (@code{--chunk-size 27}).  This
+option allows to specify a limit of up to 4 EiB (@code{--chunk-size
+62}) for experiments.
 
 @item --faked-system-time @var{epoch}
 @opindex faked-system-time

@@ -225,6 +225,7 @@ enum cmd_and_opt_values
     oDebugAll,
     oDebugIOLBF,
     oDebugSetIobufSize,
+    oDebugAllowLargeChunks,
     oStatusFD,
     oStatusFile,
     oAttributeFD,
@@ -634,6 +635,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
   ARGPARSE_s_n (oDebugIOLBF, "debug-iolbf", "@"),
   ARGPARSE_s_u (oDebugSetIobufSize, "debug-set-iobuf-size", "@"),
+  ARGPARSE_s_u (oDebugAllowLargeChunks, "debug-allow-large-chunks", "@"),
   ARGPARSE_s_i (oStatusFD, "status-fd", "@"),
   ARGPARSE_s_s (oStatusFile, "status-file", "@"),
   ARGPARSE_s_i (oAttributeFD, "attribute-fd", "@"),
@@ -2347,6 +2349,7 @@ main (int argc, char **argv)
 
     static int print_dane_records;
     static int print_pka_records;
+    static int allow_large_chunks;
 
 
 #ifdef __riscos__
@@ -2759,6 +2762,10 @@ main (int argc, char **argv)
           case oDebugSetIobufSize:
             opt_set_iobuf_size = pargs.r.ret_ulong;
             opt_set_iobuf_size_used = 1;
+            break;
+
+          case oDebugAllowLargeChunks:
+            allow_large_chunks = 1;
             break;
 
 	  case oStatusFD:
@@ -3884,15 +3891,15 @@ main (int argc, char **argv)
     /* Check chunk size.  Please fix also the man page if you chnage
      * the default.  The limits are given by the specs.  */
     if (!opt.chunk_size)
-      opt.chunk_size = 30; /* Default to 1 GiB chunks.  */
+      opt.chunk_size = 27; /* Default to the suggested max of 128 MiB.  */
     else if (opt.chunk_size < 6)
       {
         opt.chunk_size = 6;
         log_info (_("chunk size invalid - using %d\n"), opt.chunk_size);
       }
-    else if (opt.chunk_size > 62)
+    else if (opt.chunk_size > (allow_large_chunks? 62 : 27))
       {
-        opt.chunk_size = 62;
+        opt.chunk_size = (allow_large_chunks? 62 : 27);
         log_info (_("chunk size invalid - using %d\n"), opt.chunk_size);
       }
 
