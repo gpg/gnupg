@@ -304,7 +304,7 @@ tor_not_running_p (ctrl_t ctrl)
    PROTOCOL.  If NAME specifies a pool (as indicated by IS_POOL),
    update the given reference table accordingly.  */
 static void
-add_host (const char *name, int is_pool,
+add_host (ctrl_t ctrl, const char *name, int is_pool,
           const dns_addrinfo_t ai,
           enum ks_protocol protocol, unsigned short port)
 {
@@ -320,7 +320,7 @@ add_host (const char *name, int is_pool,
   if (is_pool)
     {
       /* For a pool immediately convert the address to a string.  */
-      tmperr = resolve_dns_addr (ai->addr, ai->addrlen,
+      tmperr = resolve_dns_addr (ctrl, ai->addr, ai->addrlen,
                                  (DNS_NUMERICHOST | DNS_WITHBRACKET), &tmphost);
     }
   else if (!is_ip_address (name))
@@ -337,7 +337,7 @@ add_host (const char *name, int is_pool,
     {
       /* Do a PTR lookup on AI.  If a name was not found the function
        * returns the numeric address (with brackets).  */
-      tmperr = resolve_dns_addr (ai->addr, ai->addrlen,
+      tmperr = resolve_dns_addr (ctrl, ai->addr, ai->addrlen,
                                  DNS_WITHBRACKET, &tmphost);
     }
 
@@ -498,7 +498,7 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
       unsigned int srvscount;
 
       /* Check for SRV records.  */
-      err = get_dns_srv (name, srvtag, NULL, &srvs, &srvscount);
+      err = get_dns_srv (ctrl, name, srvtag, NULL, &srvs, &srvscount);
       if (err)
         {
           if (gpg_err_code (err) == GPG_ERR_ECONNREFUSED)
@@ -514,13 +514,13 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
 
           for (i = 0; i < srvscount; i++)
             {
-              err = resolve_dns_name (srvs[i].target, 0,
+              err = resolve_dns_name (ctrl, srvs[i].target, 0,
                                       AF_UNSPEC, SOCK_STREAM,
                                       &ai, &cname);
               if (err)
                 continue;
               dirmngr_tick (ctrl);
-              add_host (name, is_pool, ai, protocol, srvs[i].port);
+              add_host (ctrl, name, is_pool, ai, protocol, srvs[i].port);
               new_hosts = 1;
             }
 
@@ -535,7 +535,7 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
     {
       /* Find all A records for this entry and put them into the pool
          list - if any.  */
-      err = resolve_dns_name (name, 0, 0, SOCK_STREAM, &aibuf, &cname);
+      err = resolve_dns_name (ctrl, name, 0, 0, SOCK_STREAM, &aibuf, &cname);
       if (err)
         {
           log_error ("resolving '%s' failed: %s\n", name, gpg_strerror (err));
@@ -566,7 +566,7 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
                 continue;
               dirmngr_tick (ctrl);
 
-              add_host (name, is_pool, ai, 0, 0);
+              add_host (ctrl, name, is_pool, ai, 0, 0);
               new_hosts = 1;
             }
 
@@ -624,7 +624,7 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
        * hosttable. */
       char *host;
 
-      err = resolve_dns_name (hi->name, 0, 0, SOCK_STREAM, &aibuf, NULL);
+      err = resolve_dns_name (ctrl, hi->name, 0, 0, SOCK_STREAM, &aibuf, NULL);
       if (!err)
         {
           for (ai = aibuf; ai; ai = ai->next)
@@ -632,7 +632,8 @@ map_host (ctrl_t ctrl, const char *name, const char *srvtag, int force_reselect,
               if ((!opt.disable_ipv6 && ai->family == AF_INET6)
                   || (!opt.disable_ipv4 && ai->family == AF_INET))
                 {
-                  err = resolve_dns_addr (ai->addr, ai->addrlen, 0, &host);
+                  err = resolve_dns_addr (ctrl,
+                                          ai->addr, ai->addrlen, 0, &host);
                   if (!err)
                     {
                       /* Okay, we return the first found name.  */
@@ -865,7 +866,7 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
 
                 /* Turn the numerical IP address string into an AI and
                  * then do a DNS PTR lookup.  */
-                if (!resolve_dns_name (hi->name, 0, 0,
+                if (!resolve_dns_name (ctrl, hi->name, 0, 0,
                                        SOCK_STREAM,
                                        &aibuf, &canon))
                   {
@@ -876,7 +877,7 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
                       }
                     for (ai = aibuf; !canon && ai; ai = ai->next)
                       {
-                        resolve_dns_addr (ai->addr, ai->addrlen,
+                        resolve_dns_addr (ctrl, ai->addr, ai->addrlen,
                                           DNS_WITHBRACKET, &canon);
                         if (canon && is_ip_address (canon))
                           {
@@ -896,14 +897,14 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
                 /* Get the IP address as a string from a name.  Note
                  * that resolve_dns_addr allocates CANON on success
                  * and thus terminates the loop. */
-                if (!resolve_dns_name (hi->name, 0,
+                if (!resolve_dns_name (ctrl, hi->name, 0,
                                        hi->v6? AF_INET6 : AF_INET,
                                        SOCK_STREAM,
                                        &aibuf, NULL))
                   {
                     for (ai = aibuf; !canon && ai; ai = ai->next)
                       {
-                        resolve_dns_addr (ai->addr, ai->addrlen,
+                        resolve_dns_addr (ctrl, ai->addr, ai->addrlen,
                                           DNS_NUMERICHOST|DNS_WITHBRACKET,
                                           &canon);
                       }
@@ -1182,7 +1183,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
   http_session_set_timeout (session, ctrl->timeout);
 
  once_more:
-  err = http_open (&http,
+  err = http_open (ctrl, &http,
                    post_cb? HTTP_REQ_POST : HTTP_REQ_GET,
                    request,
                    httphost,

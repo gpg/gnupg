@@ -137,12 +137,14 @@ void reload_dns_stuff (int force);
 void free_dns_addrinfo (dns_addrinfo_t ai);
 
 /* Function similar to getaddrinfo.  */
-gpg_error_t resolve_dns_name (const char *name, unsigned short port,
+gpg_error_t resolve_dns_name (ctrl_t ctrl,
+                              const char *name, unsigned short port,
                               int want_family, int want_socktype,
                               dns_addrinfo_t *r_dai, char **r_canonname);
 
 /* Function similar to getnameinfo.  */
-gpg_error_t resolve_dns_addr (const struct sockaddr_storage *addr, int addrlen,
+gpg_error_t resolve_dns_addr (ctrl_t ctrl,
+                              const struct sockaddr_storage *addr, int addrlen,
                               unsigned int flags, char **r_name);
 
 /* Return true if NAME is a numerical IP address.  */
@@ -152,16 +154,18 @@ int is_ip_address (const char *name);
 int is_onion_address (const char *name);
 
 /* Get the canonical name for NAME.  */
-gpg_error_t get_dns_cname (const char *name, char **r_cname);
+gpg_error_t get_dns_cname (ctrl_t ctrl, const char *name, char **r_cname);
 
 /* Return a CERT record or an arbitrary RR.  */
-gpg_error_t get_dns_cert (const char *name, int want_certtype,
+gpg_error_t get_dns_cert (ctrl_t ctrl,
+                          const char *name, int want_certtype,
                           void **r_key, size_t *r_keylen,
                           unsigned char **r_fpr, size_t *r_fprlen,
                           char **r_url);
 
 /* Return an array of SRV records.  */
-gpg_error_t get_dns_srv (const char *name,
+gpg_error_t get_dns_srv (ctrl_t ctrl,
+                         const char *name,
                          const char *service, const char *proto,
                          struct srventry **list, unsigned int *r_count);
 

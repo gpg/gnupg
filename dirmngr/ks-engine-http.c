@@ -103,7 +103,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, unsigned int flags,
   http_session_set_timeout (session, ctrl->timeout);
 
   *r_fp = NULL;
-  err = http_open (&http,
+  err = http_open (ctrl, &http,
                    HTTP_REQ_GET,
                    url,
                    /* httphost */ NULL,

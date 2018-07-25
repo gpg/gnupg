@@ -172,7 +172,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
     }
 
  once_more:
-  err = http_open (&http, HTTP_REQ_POST, url, NULL, NULL,
+  err = http_open (ctrl, &http, HTTP_REQ_POST, url, NULL, NULL,
                    ((opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0)
                     | (dirmngr_use_tor ()? HTTP_FLAG_FORCE_TOR:0)
                     | (opt.disable_ipv4? HTTP_FLAG_IGNORE_IPv4 : 0)

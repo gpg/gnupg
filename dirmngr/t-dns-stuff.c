@@ -178,7 +178,7 @@ main (int argc, char **argv)
       if (verbose || any_options)
         printf ("CERT lookup on '%s'\n", name);
 
-      err = get_dns_cert (name, DNS_CERTTYPE_ANY, &key, &keylen,
+      err = get_dns_cert (NULL, name, DNS_CERTTYPE_ANY, &key, &keylen,
                           &fpr, &fpr_len, &url);
       if (err)
         printf ("get_dns_cert failed: %s <%s>\n",
@@ -218,7 +218,7 @@ main (int argc, char **argv)
       char *cname;
 
       printf ("CNAME lookup on '%s'\n", name);
-      err = get_dns_cname (name, &cname);
+      err = get_dns_cname (NULL, name, &cname);
       if (err)
         printf ("get_dns_cname failed: %s <%s>\n",
                 gpg_strerror (err), gpg_strsource (err));
@@ -234,7 +234,7 @@ main (int argc, char **argv)
       unsigned int count;
       int i;
 
-      err = get_dns_srv (name? name : "_hkp._tcp.wwwkeys.pgp.net",
+      err = get_dns_srv (NULL, name? name : "_hkp._tcp.wwwkeys.pgp.net",
                          NULL, NULL, &srv, &count);
       if (err)
         printf ("get_dns_srv failed: %s <%s>\n",
@@ -261,7 +261,7 @@ main (int argc, char **argv)
 
       printf ("Lookup on '%s'\n", name);
 
-      err = resolve_dns_name (name, 0, 0, SOCK_STREAM, &aibuf, &cname);
+      err = resolve_dns_name (NULL, name, 0, 0, SOCK_STREAM, &aibuf, &cname);
       if (err)
         {
           fprintf (stderr, PGM": resolving '%s' failed: %s\n",
@@ -278,7 +278,7 @@ main (int argc, char **argv)
                   ai->family == AF_INET?  "inet4" : "?    ",
                   ai->socktype, ai->protocol);
 
-          err = resolve_dns_addr (ai->addr, ai->addrlen,
+          err = resolve_dns_addr (NULL, ai->addr, ai->addrlen,
                                   (DNS_NUMERICHOST
                                    | (opt_bracket? DNS_WITHBRACKET:0)),
                                   &host);
@@ -290,7 +290,7 @@ main (int argc, char **argv)
               xfree (host);
             }
 
-          err = resolve_dns_addr (ai->addr, ai->addrlen,
+          err = resolve_dns_addr (NULL, ai->addr, ai->addrlen,
                                   (opt_bracket? DNS_WITHBRACKET:0),
                                   &host);
           if (err)

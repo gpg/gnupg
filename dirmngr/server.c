@@ -666,7 +666,7 @@ static const char hlp_dns_cert[] =
 static gpg_error_t
 cmd_dns_cert (assuan_context_t ctx, char *line)
 {
-  /* ctrl_t ctrl = assuan_get_pointer (ctx); */
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
   int pka_mode, dane_mode;
   char *mbox = NULL;
@@ -782,7 +782,7 @@ cmd_dns_cert (assuan_context_t ctx, char *line)
   else
     name = line;
 
-  err = get_dns_cert (name, certtype, &key, &keylen, &fpr, &fprlen, &url);
+  err = get_dns_cert (ctrl, name, certtype, &key, &keylen, &fpr, &fprlen, &url);
   if (err)
     goto leave;
 
@@ -883,7 +883,7 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
       size_t domainlen, targetlen;
       int i;
 
-      err = get_dns_srv (domain, "openpgpkey", NULL, &srvs, &srvscount);
+      err = get_dns_srv (ctrl, domain, "openpgpkey", NULL, &srvs, &srvscount);
       if (err)
         goto leave;
 
@@ -2977,7 +2977,7 @@ dirmngr_status_printf (ctrl_t ctrl, const char *keyword,
   va_list arg_ptr;
   assuan_context_t ctx;
 
-  if (!ctrl->server_local || !(ctx = ctrl->server_local->assuan_ctx))
+  if (!ctrl || !ctrl->server_local || !(ctx = ctrl->server_local->assuan_ctx))
     return 0;
 
   va_start (arg_ptr, format);

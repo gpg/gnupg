@@ -36,6 +36,7 @@
 #include "../common/sysutils.h" /* (gnupg_fd_t) */
 #include "../common/asshelp.h"  /* (assuan_context_t) */
 #include "../common/i18n.h"
+#include "dirmngr-status.h"
 #include "http.h"     /* (parsed_uri_t) */
 
 /* This objects keeps information about a particular LDAP server and
@@ -229,13 +230,6 @@ gpg_error_t get_istrusted_from_client (ctrl_t ctrl, const char *hexfpr);
 int dirmngr_assuan_log_monitor (assuan_context_t ctx, unsigned int cat,
                                 const char *msg);
 void start_command_handler (gnupg_fd_t fd, unsigned int session_id);
-gpg_error_t dirmngr_status (ctrl_t ctrl, const char *keyword, ...);
-gpg_error_t dirmngr_status_help (ctrl_t ctrl, const char *text);
-gpg_error_t dirmngr_status_helpf (ctrl_t ctrl, const char *format,
-                                  ...) GPGRT_ATTR_PRINTF(2,3);
-gpg_error_t dirmngr_status_printf (ctrl_t ctrl, const char *keyword,
-                                   const char *format,
-                                   ...) GPGRT_ATTR_PRINTF(3,4);
 gpg_error_t dirmngr_tick (ctrl_t ctrl);
 
 /*-- http-ntbtls.c --*/

@@ -438,7 +438,7 @@ main (int argc, char **argv)
   if (session)
     http_session_set_timeout (session, timeout);
 
-  rc = http_open_document (&hd, *argv, NULL, my_http_flags,
+  rc = http_open_document (NULL, &hd, *argv, NULL, my_http_flags,
                            NULL, session, NULL, NULL);
   if (rc)
     {

@@ -406,6 +406,8 @@ ks_status_cb (void *opaque, const char *line)
         warn = _("Tor is not running");
       else if ((s2 = has_leading_keyword (s, "tor_config_problem")))
         warn = _("Tor is not properly configured");
+      else if ((s2 = has_leading_keyword (s, "dns_config_problem")))
+        warn = _("DNS is not properly configured");
       else
         warn = NULL;
 

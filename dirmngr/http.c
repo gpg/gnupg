@@ -2,7 +2,7 @@
  * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006, 2009, 2010,
  *               2011 Free Software Foundation, Inc.
  * Copyright (C) 2014 Werner Koch
- * Copyright (C) 2015-2017 g10 Code GmbH
+ * Copyright (C) 2015-2018 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -152,14 +152,15 @@ static int remove_escapes (char *string);
 static int insert_escapes (char *buffer, const char *string,
                            const char *special);
 static uri_tuple_t parse_tuple (char *string);
-static gpg_error_t send_request (http_t hd, const char *httphost,
+static gpg_error_t send_request (ctrl_t ctrl, http_t hd, const char *httphost,
                                  const char *auth,const char *proxy,
 				 const char *srvtag, unsigned int timeout,
                                  strlist_t headers);
 static char *build_rel_path (parsed_uri_t uri);
 static gpg_error_t parse_response (http_t hd);
 
-static gpg_error_t connect_server (const char *server, unsigned short port,
+static gpg_error_t connect_server (ctrl_t ctrl,
+                                   const char *server, unsigned short port,
                                    unsigned int flags, const char *srvtag,
                                    unsigned int timeout, assuan_fd_t *r_sock);
 static gpgrt_ssize_t read_server (assuan_fd_t sock, void *buffer, size_t size);
@@ -937,7 +938,7 @@ http_session_set_timeout (http_session_t sess, unsigned int timeout)
    If HTTPHOST is not NULL it is used for the Host header instead of a
    Host header derived from the URL. */
 gpg_error_t
-http_open (http_t *r_hd, http_req_t reqtype, const char *url,
+http_open (ctrl_t ctrl, http_t *r_hd, http_req_t reqtype, const char *url,
            const char *httphost,
            const char *auth, unsigned int flags, const char *proxy,
            http_session_t session, const char *srvtag, strlist_t headers)
@@ -961,7 +962,7 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
 
   err = parse_uri (&hd->uri, url, 0, !!(flags & HTTP_FLAG_FORCE_TLS));
   if (!err)
-    err = send_request (hd, httphost, auth, proxy, srvtag,
+    err = send_request (ctrl, hd, httphost, auth, proxy, srvtag,
                         hd->session? hd->session->connect_timeout : 0,
                         headers);
 
@@ -985,7 +986,8 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
    this http abstraction layer.  This has the advantage of providing
    service tags and an estream interface.  TIMEOUT is in milliseconds. */
 gpg_error_t
-http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
+http_raw_connect (ctrl_t ctrl, http_t *r_hd,
+                  const char *server, unsigned short port,
                   unsigned int flags, const char *srvtag, unsigned int timeout)
 {
   gpg_error_t err = 0;
@@ -1021,7 +1023,8 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
   {
     assuan_fd_t sock;
 
-    err = connect_server (server, port, hd->flags, srvtag, timeout, &sock);
+    err = connect_server (ctrl, server, port,
+                          hd->flags, srvtag, timeout, &sock);
     if (err)
       {
         xfree (hd);
@@ -1174,14 +1177,14 @@ http_wait_response (http_t hd)
    be used as an HTTP proxy and any enabled $http_proxy gets
    ignored. */
 gpg_error_t
-http_open_document (http_t *r_hd, const char *document,
+http_open_document (ctrl_t ctrl, http_t *r_hd, const char *document,
                     const char *auth, unsigned int flags, const char *proxy,
                     http_session_t session,
                     const char *srvtag, strlist_t headers)
 {
   gpg_error_t err;
 
-  err = http_open (r_hd, HTTP_REQ_GET, document, NULL, auth, flags,
+  err = http_open (ctrl, r_hd, HTTP_REQ_GET, document, NULL, auth, flags,
                    proxy, session, srvtag, headers);
   if (err)
     return err;
@@ -1712,7 +1715,7 @@ is_hostname_port (const char *string)
  * Returns 0 if the request was successful
  */
 static gpg_error_t
-send_request (http_t hd, const char *httphost, const char *auth,
+send_request (ctrl_t ctrl, http_t hd, const char *httphost, const char *auth,
 	      const char *proxy, const char *srvtag, unsigned int timeout,
               strlist_t headers)
 {
@@ -1859,14 +1862,16 @@ send_request (http_t hd, const char *httphost, const char *auth,
             }
         }
 
-      err = connect_server (*uri->host ? uri->host : "localhost",
+      err = connect_server (ctrl,
+                            *uri->host ? uri->host : "localhost",
                             uri->port ? uri->port : 80,
                             hd->flags, NULL, timeout, &sock);
       http_release_parsed_uri (uri);
     }
   else
     {
-      err = connect_server (server, port, hd->flags, srvtag, timeout, &sock);
+      err = connect_server (ctrl,
+                            server, port, hd->flags, srvtag, timeout, &sock);
     }
 
   if (err)
@@ -2870,7 +2875,7 @@ connect_with_timeout (assuan_fd_t sock,
  * function tries to connect to all known addresses and the timeout is
  * for each one. */
 static gpg_error_t
-connect_server (const char *server, unsigned short port,
+connect_server (ctrl_t ctrl, const char *server, unsigned short port,
                 unsigned int flags, const char *srvtag, unsigned int timeout,
                 assuan_fd_t *r_sock)
 {
@@ -2923,7 +2928,7 @@ connect_server (const char *server, unsigned short port,
   /* Do the SRV thing */
   if (srvtag)
     {
-      err = get_dns_srv (server, srvtag, NULL, &serverlist, &srvcount);
+      err = get_dns_srv (ctrl, server, srvtag, NULL, &serverlist, &srvcount);
       if (err)
         log_info ("getting '%s' SRV for '%s' failed: %s\n",
                   srvtag, server, gpg_strerror (err));
@@ -2953,7 +2958,8 @@ connect_server (const char *server, unsigned short port,
       if (opt_debug)
         log_debug ("http.c:connect_server: trying name='%s' port=%hu\n",
                    serverlist[srv].target, port);
-      err = resolve_dns_name (serverlist[srv].target, port, 0, SOCK_STREAM,
+      err = resolve_dns_name (ctrl,
+                              serverlist[srv].target, port, 0, SOCK_STREAM,
                               &aibuf, NULL);
       if (err)
         {
