@@ -241,3 +241,42 @@ is_valid_user_id (const char *uid)
 
   return 1;
 }
+
+
+/* Returns true if STRING is a valid domain name according to the LDH
+ * rule. */
+int
+is_valid_domain_name (const char *string)
+{
+  static char const ldh_chars[] =
+    "01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-";
+  const char *s;
+
+  /* Note that we do not check the length limit of a label or the
+   * entire name */
+
+  for (s=string; *s; s++)
+    if (*s == '.')
+      {
+        if (string == s)
+          return 0; /* Dot at the start of the string.  */
+                    /* (may also be at the end like in ".") */
+        if (s[1] == '.')
+          return 0; /* No - double dot.  */
+      }
+    else if (!strchr (ldh_chars, *s))
+      return 0;
+    else if (*s == '-')
+      {
+        if (string == s)
+          return 0;  /* Leading hyphen.  */
+        if (s[-1] == '.')
+          return 0;  /* Hyphen at begin of a label.  */
+        if (s[1] == '.')
+          return 0;  /* Hyphen at start of a label.  */
+        if (!s[1])
+          return 0;  /* Trailing hyphen.  */
+      }
+
+  return !!*string;
+}
