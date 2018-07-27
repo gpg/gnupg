@@ -41,6 +41,12 @@
 #include "call-dirmngr.h"
 
 
+/* Keys retrieved from the web key directory should be small.  There
+ * is only one UID and we can expect that the number of subkeys is
+ * reasonable.  So we set a generous limit of 256 KiB.  */
+#define MAX_WKD_RESULT_LENGTH   (256 * 1024)
+
+
 /* Parameter structure used to gather status info.  Note that it is
  * also used for WKD requests.  */
 struct ks_status_parm_s
@@ -1367,7 +1373,7 @@ gpg_dirmngr_wkd_get (ctrl_t ctrl, const char *name, int quick,
       goto leave;
     }
 
-  parm.memfp = es_fopenmem (0, "rwb");
+  parm.memfp = es_fopenmem (MAX_WKD_RESULT_LENGTH, "rwb");
   if (!parm.memfp)
     {
       err = gpg_error_from_syserror ();
@@ -1375,6 +1381,8 @@ gpg_dirmngr_wkd_get (ctrl_t ctrl, const char *name, int quick,
     }
   err = assuan_transact (ctx, line, dns_cert_data_cb, &parm,
                          NULL, NULL, ks_status_cb, &stparm);
+  if (gpg_err_code (err) == GPG_ERR_ENOSPC)
+    err = gpg_error (GPG_ERR_TOO_LARGE);
   if (err)
     goto leave;
 
