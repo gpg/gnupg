@@ -887,6 +887,18 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
       if (err)
         goto leave;
 
+      /* Check for rogue DNS names.  */
+      for (i = 0; i < srvscount; i++)
+        {
+          if (!is_valid_domain_name (srvs[i].target))
+            {
+              err = gpg_error (GPG_ERR_DNS_ADDRESS);
+              log_error ("rogue openpgpkey SRV record for '%s'\n", domain);
+              xfree (srvs);
+              goto leave;
+            }
+        }
+
       /* Find the first target which also ends in DOMAIN or is equal
        * to DOMAIN.  */
       domainlen = strlen (domain);
