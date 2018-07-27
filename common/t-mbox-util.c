@@ -33,7 +33,7 @@
 
 
 static void
-run_test (void)
+run_mbox_test (void)
 {
   static struct
   {
@@ -93,13 +93,64 @@ run_test (void)
 }
 
 
+static void
+run_dns_test (void)
+{
+  static struct
+  {
+    const char *name;
+    int valid;
+  } testtbl[] =
+    {
+      { "", 0 },
+      { ".", 0 },
+      { "-", 0 },
+      { "a", 1 },
+      { "ab", 1 },
+      { "a.b", 1 },
+      { "a.b.", 1 },
+      { ".a.b.", 0 },
+      { ".a.b", 0 },
+      { "-a.b", 0 },
+      { "a-.b", 0 },
+      { "a.-b", 0 },
+      { "a.b-", 0 },
+      { "a.b-.", 0 },
+      { "a..b", 0 },
+      { "ab.c", 1 },
+      { "a-b.c", 1 },
+      { "a-b-.c", 0 },
+      { "-a-b.c", 0 },
+      { "example.org", 1 },
+      { "x.example.org", 1 },
+      { "xy.example.org", 1 },
+      { "Xy.example.org", 1 },
+      { "-Xy.example.org", 0 },
+      { "Xy.example-.org", 0 },
+      { "foo.example.org..", 0 },
+      { "foo.example.org.", 1 },
+      { ".foo.example.org.", 0 },
+      { "..foo.example.org.", 0 },
+      { NULL, 0 }
+    };
+  int idx;
+
+  for (idx=0; testtbl[idx].name; idx++)
+    {
+      if (is_valid_domain_name (testtbl[idx].name) != testtbl[idx].valid)
+        fail (idx);
+    }
+}
+
+
 int
 main (int argc, char **argv)
 {
   (void)argc;
   (void)argv;
 
-  run_test ();
+  run_mbox_test ();
+  run_dns_test ();
 
   return 0;
 }
