@@ -1186,7 +1186,7 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   if (s2kmode == 3)
     {
-      k->s2k.count = iobuf_get (inp);
+      k->s2k.count = iobuf_get_noeof (inp);
       pktlen--;
     }
   k->seskeylen = seskeylen;
@@ -2528,7 +2528,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		      err = gpg_error (GPG_ERR_INV_PACKET);
 		      goto leave;
 		    }
-		  ski->s2k.count = iobuf_get (inp);
+		  ski->s2k.count = iobuf_get_noeof (inp);
 		  pktlen--;
 		  if (list_mode)
 		    es_fprintf (listfp, "\tprotect count: %lu (%lu)\n",
