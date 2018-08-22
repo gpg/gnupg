@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.2.6\n"
+"Project-Id-Version: gnupg 2.2.9\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2018-04-12 10:51+0900\n"
+"PO-Revision-Date: 2018-08-22 17:43+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -4401,15 +4401,17 @@ msgid ""
 "likely that this message is legitimate.  This is because back\n"
 "then integrity protection was not widely used.\n"
 msgstr ""
+"ヒント: もし、このメッセージが2003年以前に作成されたのであれば、\n"
+"このメッセージはおそらく正当でしょう。当時、整合性の保護機能は\n"
+"広く使われてはいなかったためです。\n"
 
 #, c-format
 msgid "Use the option '%s' to decrypt anyway.\n"
-msgstr ""
+msgstr "それでも復号するにはオプション '%s' を使います。\n"
 
-#, fuzzy, c-format
-#| msgid "decryption failed: %s\n"
+#, c-format
 msgid "decryption forced to fail!\n"
-msgstr "復号に失敗しました: %s\n"
+msgstr "復号は強制的に失敗とされました!\n"
 
 #, c-format
 msgid "decryption okay\n"
@@ -5267,10 +5269,9 @@ msgstr "注意: 鍵 %s は失効済みです\n"
 msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
 msgstr "鍵%sによる不正な鍵への署名: %s (0x%02x, 0x%x)\n"
 
-#, fuzzy, c-format
-#| msgid "bad key signature from key %s: %s (0x%02x, 0x%x)\n"
+#, c-format
 msgid "bad data signature from key %s: %s (0x%02x, 0x%x)\n"
-msgstr "鍵%sによる不正な鍵への署名: %s (0x%02x, 0x%x)\n"
+msgstr "鍵%sによる不正なデータへの署名: %s (0x%02x, 0x%x)\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
