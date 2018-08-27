@@ -149,7 +149,8 @@ build_sk_list (ctrl_t ctrl,
         }
 
       err = get_seckey_default_or_card (ctrl, pk,
-                                        info.fpr1valid? info.fpr1 : NULL, 20);
+                                        info.fpr1len? info.fpr1 : NULL,
+                                        info.fpr1len);
       if (err)
 	{
 	  free_public_key (pk);
@@ -331,7 +332,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
     strlist_t sl;
     strlist_t card_list;
     char *serialno;
-    char fpr2[43];
+    char fpr2[2 * MAX_FINGERPRINT_LEN + 3 ];
     struct agent_card_info_s info;
     kbnode_t keyblock;
     kbnode_t node;
@@ -419,17 +420,17 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                         }
 
                       xfree (serialno);
-                      c->info.fpr2valid = 0;
+                      c->info.fpr2len = 0;
                       err = agent_scd_getattr ("KEY-FPR", &c->info);
                       if (err)
                         log_error ("error retrieving key fingerprint from card: %s\n",
                                    gpg_strerror (err));
 
-                      if (c->info.fpr2valid)
+                      if (c->info.fpr2len)
                         {
                           c->fpr2[0] = '0';
                           c->fpr2[1] = 'x';
-                          bin2hex (c->info.fpr2, 20, c->fpr2+2);
+                          bin2hex (c->info.fpr2, sizeof c->info.fpr2,c->fpr2+2);
                           name = c->fpr2;
                         }
                       c->sl = c->sl->next;

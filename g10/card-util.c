@@ -231,13 +231,14 @@ get_manufacturer (unsigned int no)
 
 
 static void
-print_sha1_fpr (estream_t fp, const unsigned char *fpr)
+print_shax_fpr (estream_t fp, const unsigned char *fpr, unsigned int fprlen)
 {
   int i;
 
   if (fpr)
     {
-      for (i=0; i < 20 ; i+=2, fpr += 2 )
+      /* FIXME: Fix formatting for FPRLEN != 20 */
+      for (i=0; i < fprlen ; i+=2, fpr += 2 )
         {
           if (i == 10 )
             tty_fprintf (fp, " ");
@@ -251,13 +252,14 @@ print_sha1_fpr (estream_t fp, const unsigned char *fpr)
 
 
 static void
-print_sha1_fpr_colon (estream_t fp, const unsigned char *fpr)
+print_shax_fpr_colon (estream_t fp,
+                      const unsigned char *fpr, unsigned int fprlen)
 {
   int i;
 
   if (fpr)
     {
-      for (i=0; i < 20 ; i++, fpr++)
+      for (i=0; i < fprlen ; i++, fpr++)
         es_fprintf (fp, "%02X", *fpr);
     }
   es_putc (':', fp);
@@ -356,25 +358,25 @@ print_isoname (estream_t fp, const char *text,
 
 /* Return true if the SHA1 fingerprint FPR consists only of zeroes. */
 static int
-fpr_is_zero (const char *fpr)
+fpr_is_zero (const char *fpr, unsigned int fprlen)
 {
   int i;
 
-  for (i=0; i < 20 && !fpr[i]; i++)
+  for (i=0; i < fprlen && !fpr[i]; i++)
     ;
-  return (i == 20);
+  return (i == fprlen);
 }
 
 
-/* Return true if the SHA1 fingerprint FPR consists only of 0xFF. */
+/* Return true if the fingerprint FPR consists only of 0xFF. */
 static int
-fpr_is_ff (const char *fpr)
+fpr_is_ff (const char *fpr, unsigned int fprlen)
 {
   int i;
 
-  for (i=0; i < 20 && fpr[i] == '\xff'; i++)
+  for (i=0; i < fprlen && fpr[i] == '\xff'; i++)
     ;
-  return (i == 20);
+  return (i == fprlen);
 }
 
 
@@ -389,6 +391,7 @@ current_card_status (ctrl_t ctrl, estream_t fp,
   int rc;
   unsigned int uval;
   const unsigned char *thefpr;
+  unsigned int thefprlen;
   int i;
 
   if (serialno && serialnobuflen)
@@ -521,22 +524,25 @@ current_card_status (ctrl_t ctrl, estream_t fp,
         }
 
       es_fputs ("cafpr:", fp);
-      print_sha1_fpr_colon (fp, info.cafpr1valid? info.cafpr1:NULL);
-      print_sha1_fpr_colon (fp, info.cafpr2valid? info.cafpr2:NULL);
-      print_sha1_fpr_colon (fp, info.cafpr3valid? info.cafpr3:NULL);
+      print_shax_fpr_colon (fp, info.cafpr1len? info.cafpr1:NULL,
+                            info.cafpr2len);
+      print_shax_fpr_colon (fp, info.cafpr2len? info.cafpr2:NULL,
+                            info.cafpr2len);
+      print_shax_fpr_colon (fp, info.cafpr3len? info.cafpr3:NULL,
+                            info.cafpr3len);
       es_putc ('\n', fp);
       es_fputs ("fpr:", fp);
-      print_sha1_fpr_colon (fp, info.fpr1valid? info.fpr1:NULL);
-      print_sha1_fpr_colon (fp, info.fpr2valid? info.fpr2:NULL);
-      print_sha1_fpr_colon (fp, info.fpr3valid? info.fpr3:NULL);
+      print_shax_fpr_colon (fp, info.fpr1len? info.fpr1:NULL, info.fpr1len);
+      print_shax_fpr_colon (fp, info.fpr2len? info.fpr2:NULL, info.fpr2len);
+      print_shax_fpr_colon (fp, info.fpr3len? info.fpr3:NULL, info.fpr3len);
       es_putc ('\n', fp);
       es_fprintf (fp, "fprtime:%lu:%lu:%lu:\n",
                (unsigned long)info.fpr1time, (unsigned long)info.fpr2time,
                (unsigned long)info.fpr3time);
       es_fputs ("grp:", fp);
-      print_sha1_fpr_colon (fp, info.grp1);
-      print_sha1_fpr_colon (fp, info.grp2);
-      print_sha1_fpr_colon (fp, info.grp3);
+      print_shax_fpr_colon (fp, info.grp1, sizeof info.grp1);
+      print_shax_fpr_colon (fp, info.grp2, sizeof info.grp2);
+      print_shax_fpr_colon (fp, info.grp3, sizeof info.grp3);
       es_putc ('\n', fp);
     }
   else
@@ -566,20 +572,20 @@ current_card_status (ctrl_t ctrl, estream_t fp,
         print_name (fp, "Private DO 3 .....: ", info.private_do[2]);
       if (info.private_do[3])
         print_name (fp, "Private DO 4 .....: ", info.private_do[3]);
-      if (info.cafpr1valid)
+      if (info.cafpr1len)
         {
           tty_fprintf (fp, "CA fingerprint %d .:", 1);
-          print_sha1_fpr (fp, info.cafpr1);
+          print_shax_fpr (fp, info.cafpr1, info.cafpr1len);
         }
-      if (info.cafpr2valid)
+      if (info.cafpr2len)
         {
           tty_fprintf (fp, "CA fingerprint %d .:", 2);
-          print_sha1_fpr (fp, info.cafpr2);
+          print_shax_fpr (fp, info.cafpr2, info.cafpr2len);
         }
-      if (info.cafpr3valid)
+      if (info.cafpr3len)
         {
           tty_fprintf (fp, "CA fingerprint %d .:", 3);
-          print_sha1_fpr (fp, info.cafpr3);
+          print_shax_fpr (fp, info.cafpr3, info.cafpr3len);
         }
       tty_fprintf (fp,    "Signature PIN ....: %s\n",
                    info.chv1_cached? _("not forced"): _("forced"));
@@ -612,24 +618,24 @@ current_card_status (ctrl_t ctrl, estream_t fp,
                    info.chvretry[0], info.chvretry[1], info.chvretry[2]);
       tty_fprintf (fp,    "Signature counter : %lu\n", info.sig_counter);
       tty_fprintf (fp, "Signature key ....:");
-      print_sha1_fpr (fp, info.fpr1valid? info.fpr1:NULL);
-      if (info.fpr1valid && info.fpr1time)
+      print_shax_fpr (fp, info.fpr1len? info.fpr1:NULL, info.fpr1len);
+      if (info.fpr1len && info.fpr1time)
         {
           tty_fprintf (fp, "      created ....: %s\n",
                        isotimestamp (info.fpr1time));
           print_keygrip (fp, info.grp1);
         }
       tty_fprintf (fp, "Encryption key....:");
-      print_sha1_fpr (fp, info.fpr2valid? info.fpr2:NULL);
-      if (info.fpr2valid && info.fpr2time)
+      print_shax_fpr (fp, info.fpr2len? info.fpr2:NULL, info.fpr2len);
+      if (info.fpr2len && info.fpr2time)
         {
           tty_fprintf (fp, "      created ....: %s\n",
                        isotimestamp (info.fpr2time));
           print_keygrip (fp, info.grp2);
         }
       tty_fprintf (fp, "Authentication key:");
-      print_sha1_fpr (fp, info.fpr3valid? info.fpr3:NULL);
-      if (info.fpr3valid && info.fpr3time)
+      print_shax_fpr (fp, info.fpr3len? info.fpr3:NULL, info.fpr3len);
+      if (info.fpr3len && info.fpr3time)
         {
           tty_fprintf (fp, "      created ....: %s\n",
                        isotimestamp (info.fpr3time));
@@ -637,12 +643,14 @@ current_card_status (ctrl_t ctrl, estream_t fp,
         }
       tty_fprintf (fp, "General key info..: ");
 
-      thefpr = (info.fpr1valid? info.fpr1 : info.fpr2valid? info.fpr2 :
-                info.fpr3valid? info.fpr3 : NULL);
+      thefpr = (info.fpr1len? info.fpr1 : info.fpr2len? info.fpr2 :
+                info.fpr3len? info.fpr3 : NULL);
+      thefprlen = (info.fpr1len? info.fpr1len : info.fpr2len? info.fpr2len :
+                   info.fpr3len? info.fpr3len : 0);
       /* If the fingerprint is all 0xff, the key has no asssociated
          OpenPGP certificate.  */
-      if ( thefpr && !fpr_is_ff (thefpr)
-           && !get_pubkey_byfprint (ctrl, pk, &keyblock, thefpr, 20))
+      if ( thefpr && !fpr_is_ff (thefpr, thefprlen)
+           && !get_pubkey_byfprint (ctrl, pk, &keyblock, thefpr, thefprlen))
         {
           print_pubkey_info (ctrl, fp, pk);
           if (keyblock)
@@ -845,9 +853,10 @@ fetch_url (ctrl_t ctrl)
           rc = keyserver_fetch (ctrl, sl, KEYORG_URL);
           free_strlist (sl);
         }
-      else if (info.fpr1valid)
+      else if (info.fpr1len)
 	{
-          rc = keyserver_import_fprint (ctrl, info.fpr1, 20, opt.keyserver, 0);
+          rc = keyserver_import_fprint (ctrl, info.fpr1, info.fpr1len,
+                                        opt.keyserver, 0);
 	}
     }
 
@@ -1309,11 +1318,11 @@ static void
 show_card_key_info (struct agent_card_info_s *info)
 {
   tty_fprintf (NULL, "Signature key ....:");
-  print_sha1_fpr (NULL, info->fpr1valid? info->fpr1:NULL);
+  print_shax_fpr (NULL, info->fpr1len? info->fpr1:NULL, info->fpr1len);
   tty_fprintf (NULL, "Encryption key....:");
-  print_sha1_fpr (NULL, info->fpr2valid? info->fpr2:NULL);
+  print_shax_fpr (NULL, info->fpr2len? info->fpr2:NULL, info->fpr2len);
   tty_fprintf (NULL, "Authentication key:");
-  print_sha1_fpr (NULL, info->fpr3valid? info->fpr3:NULL);
+  print_shax_fpr (NULL, info->fpr3len? info->fpr3:NULL, info->fpr3len);
   tty_printf ("\n");
 }
 
@@ -1324,9 +1333,9 @@ replace_existing_key_p (struct agent_card_info_s *info, int keyno)
 {
   log_assert (keyno >= 0 && keyno <= 3);
 
-  if ((keyno == 1 && info->fpr1valid)
-      || (keyno == 2 && info->fpr2valid)
-      || (keyno == 3 && info->fpr3valid))
+  if ((keyno == 1 && info->fpr1len)
+      || (keyno == 2 && info->fpr2len)
+      || (keyno == 3 && info->fpr3len))
     {
       tty_printf ("\n");
       log_info ("WARNING: such a key has already been stored on the card!\n");
@@ -1620,9 +1629,9 @@ generate_card_keys (ctrl_t ctrl)
   else
     want_backup = 0;
 
-  if ( (info.fpr1valid && !fpr_is_zero (info.fpr1))
-       || (info.fpr2valid && !fpr_is_zero (info.fpr2))
-       || (info.fpr3valid && !fpr_is_zero (info.fpr3)))
+  if ( (info.fpr1len && !fpr_is_zero (info.fpr1, info.fpr1len))
+       || (info.fpr2len && !fpr_is_zero (info.fpr2, info.fpr2len))
+       || (info.fpr3len && !fpr_is_zero (info.fpr3, info.fpr3len)))
     {
       tty_printf ("\n");
       log_info (_("Note: keys are already stored on the card!\n"));

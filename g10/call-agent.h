@@ -39,15 +39,15 @@ struct agent_card_info_s
   char *pubkey_url;  /* malloced. */
   char *login_data;  /* malloced. */
   char *private_do[4]; /* malloced. */
-  char cafpr1valid;
-  char cafpr2valid;
-  char cafpr3valid;
+  char cafpr1len;     /* Length of the CA-fingerprint or 0 if invalid.  */
+  char cafpr2len;
+  char cafpr3len;
   char cafpr1[20];
   char cafpr2[20];
   char cafpr3[20];
-  char fpr1valid;
-  char fpr2valid;
-  char fpr3valid;
+  unsigned char fpr1len; /* Length of the fingerprint or 0 if invalid.  */
+  unsigned char fpr2len;
+  unsigned char fpr3len;
   char fpr1[20];
   char fpr2[20];
   char fpr3[20];

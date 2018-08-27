@@ -388,22 +388,23 @@ unescape_status_string (const unsigned char *s)
 }
 
 
-/* Take a 20 byte hexencoded string and put it into the provided
-   20 byte buffer FPR in binary format. */
-static int
-unhexify_fpr (const char *hexstr, unsigned char *fpr)
+/* Take a 20 or 32 byte hexencoded string and put it into the provided
+ * FPRLEN byte long buffer FPR in binary format.  Returns the actual
+ * used length of the FPR buffer or 0 on error.  */
+static unsigned int
+unhexify_fpr (const char *hexstr, unsigned char *fpr, unsigned int fprlen)
 {
   const char *s;
   int n;
 
   for (s=hexstr, n=0; hexdigitp (s); s++, n++)
     ;
-  if ((*s && *s != ' ') || (n != 40))
+  if ((*s && *s != ' ') || !(n == 40 || n == 64))
     return 0; /* no fingerprint (invalid or wrong length). */
-  for (s=hexstr, n=0; *s && n < 20; s += 2, n++)
+  for (s=hexstr, n=0; *s && n < fprlen; s += 2, n++)
     fpr[n] = xtoi_2 (s);
 
-  return 1; /* okay */
+  return (n == 20 || n == 32)? n : 0;
 }
 
 /* Take the serial number from LINE and return it verbatim in a newly
@@ -488,8 +489,8 @@ agent_release_card_info (struct agent_card_info_s *info)
   xfree (info->disp_lang); info->disp_lang = NULL;
   xfree (info->pubkey_url); info->pubkey_url = NULL;
   xfree (info->login_data); info->login_data = NULL;
-  info->cafpr1valid = info->cafpr2valid = info->cafpr3valid = 0;
-  info->fpr1valid = info->fpr2valid = info->fpr3valid = 0;
+  info->cafpr1len = info->cafpr2len = info->cafpr3len = 0;
+  info->fpr1len = info->fpr2len = info->fpr3len = 0;
   for (i=0; i < DIM(info->private_do); i++)
     {
       xfree (info->private_do[i]);
@@ -625,11 +626,11 @@ learn_status_cb (void *opaque, const char *line)
       while (spacep (line))
         line++;
       if (no == 1)
-        parm->fpr1valid = unhexify_fpr (line, parm->fpr1);
+        parm->fpr1len = unhexify_fpr (line, parm->fpr1, sizeof parm->fpr1);
       else if (no == 2)
-        parm->fpr2valid = unhexify_fpr (line, parm->fpr2);
+        parm->fpr2len = unhexify_fpr (line, parm->fpr2, sizeof parm->fpr2);
       else if (no == 3)
-        parm->fpr3valid = unhexify_fpr (line, parm->fpr3);
+        parm->fpr3len = unhexify_fpr (line, parm->fpr3, sizeof parm->fpr3);
     }
   else if (keywordlen == 8 && !memcmp (keyword, "KEY-TIME", keywordlen))
     {
@@ -657,11 +658,11 @@ learn_status_cb (void *opaque, const char *line)
       if (strncmp (line, "OPENPGP.", 8))
         ;
       else if ((no = atoi (line+8)) == 1)
-        unhexify_fpr (hexgrp, parm->grp1);
+        unhexify_fpr (hexgrp, parm->grp1, sizeof parm->grp1);
       else if (no == 2)
-        unhexify_fpr (hexgrp, parm->grp2);
+        unhexify_fpr (hexgrp, parm->grp2, sizeof parm->grp2);
       else if (no == 3)
-        unhexify_fpr (hexgrp, parm->grp3);
+        unhexify_fpr (hexgrp, parm->grp3, sizeof parm->grp3);
     }
   else if (keywordlen == 6 && !memcmp (keyword, "CA-FPR", keywordlen))
     {
@@ -671,11 +672,11 @@ learn_status_cb (void *opaque, const char *line)
       while (spacep (line))
         line++;
       if (no == 1)
-        parm->cafpr1valid = unhexify_fpr (line, parm->cafpr1);
+        parm->cafpr1len = unhexify_fpr (line, parm->cafpr1,sizeof parm->cafpr1);
       else if (no == 2)
-        parm->cafpr2valid = unhexify_fpr (line, parm->cafpr2);
+        parm->cafpr2len = unhexify_fpr (line, parm->cafpr2,sizeof parm->cafpr2);
       else if (no == 3)
-        parm->cafpr3valid = unhexify_fpr (line, parm->cafpr3);
+        parm->cafpr3len = unhexify_fpr (line, parm->cafpr3,sizeof parm->cafpr3);
     }
   else if (keywordlen == 8 && !memcmp (keyword, "KEY-ATTR", keywordlen))
     {
@@ -823,6 +824,8 @@ agent_keytocard (const char *hexgrip, int keyno, int force,
 
   return rc;
 }
+
+
 
 /* Call the agent to retrieve a data object.  This function returns
    the data in the same structure as used by the learn command.  It is
