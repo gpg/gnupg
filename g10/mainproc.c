@@ -46,16 +46,6 @@
 #define MAX_NESTING_DEPTH 32
 
 
-/* An object to build a list of keyid related info.  */
-struct kidlist_item
-{
-  struct kidlist_item *next;
-  u32 kid[2];
-  int pubkey_algo;
-  int reason;
-};
-
-
 /*
  * Object to hold the processing context.
  */
@@ -95,7 +85,7 @@ struct mainproc_context
   iobuf_t iobuf;    /* Used to get the filename etc. */
   int trustletter;  /* Temporary usage in list_node. */
   ulong symkeys;    /* Number of symmetrically encrypted session keys.  */
-  struct kidlist_item *pkenc_list; /* List of encryption packets. */
+  struct pubkey_enc_list *pkenc_list; /* List of encryption packets. */
   struct {
     unsigned int sig_seen:1;      /* Set to true if a signature packet
                                      has been seen. */
@@ -112,7 +102,7 @@ static int literals_seen;
 
 
 /*** Local prototypes.  ***/
-static int do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a);
+static int do_proc_packets (CTX c, iobuf_t a);
 static void list_node (CTX c, kbnode_t node);
 static void proc_tree (CTX c, kbnode_t node);
 
@@ -135,7 +125,10 @@ release_list( CTX c )
   release_kbnode (c->list);
   while (c->pkenc_list)
     {
-      struct kidlist_item *tmp = c->pkenc_list->next;
+      struct pubkey_enc_list *tmp = c->pkenc_list->next;
+
+      mpi_release (c->pkenc_list->data[0]);
+      mpi_release (c->pkenc_list->data[1]);
       xfree (c->pkenc_list);
       c->pkenc_list = tmp;
     }
@@ -458,10 +451,9 @@ proc_symkey_enc (CTX c, PACKET *pkt)
 
 
 static void
-proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
+proc_pubkey_enc (CTX c, PACKET *pkt)
 {
   PKT_pubkey_enc *enc;
-  int result = 0;
 
   /* Check whether the secret key is available and store in this case.  */
   c->last_was_session_key = 1;
@@ -472,76 +464,29 @@ proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
   if (opt.verbose)
     log_info (_("public key is %s\n"), keystr (enc->keyid));
 
-  if (is_status_enabled())
+  if (is_status_enabled ())
     {
       char buf[50];
       snprintf (buf, sizeof buf, "%08lX%08lX %d 0",
-		(ulong)enc->keyid[0], (ulong)enc->keyid[1], enc->pubkey_algo);
+                (ulong)enc->keyid[0], (ulong)enc->keyid[1], enc->pubkey_algo);
       write_status_text (STATUS_ENC_TO, buf);
     }
 
-  if (!opt.list_only && opt.override_session_key)
+  if (!opt.list_only && !opt.override_session_key)
     {
-      /* It does not make much sense to store the session key in
-       * secure memory because it has already been passed on the
-       * command line and the GCHQ knows about it.  */
-      c->dek = xmalloc_clear (sizeof *c->dek);
-      result = get_override_session_key (c->dek, opt.override_session_key);
-      if (result)
-        {
-          xfree (c->dek);
-          c->dek = NULL;
-	}
-    }
-  else if (enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E
-           || enc->pubkey_algo == PUBKEY_ALGO_ECDH
-           || enc->pubkey_algo == PUBKEY_ALGO_RSA
-           || enc->pubkey_algo == PUBKEY_ALGO_RSA_E
-           || enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL)
-    {
-      /* Note that we also allow type 20 Elgamal keys for decryption.
-         There are still a couple of those keys in active use as a
-         subkey.  */
+      struct pubkey_enc_list *x = xmalloc (sizeof *x);
 
-      /* FIXME: Store this all in a list and process it later so that
-         we can prioritize what key to use.  This gives a better user
-         experience if wildcard keyids are used.  */
-      if  (!c->dek && ((!enc->keyid[0] && !enc->keyid[1])
-                       || opt.try_all_secrets
-                       || have_secret_key_with_kid (enc->keyid)))
-        {
-          if(opt.list_only)
-            result = GPG_ERR_MISSING_ACTION; /* fixme: Use better error code. */
-          else
-            {
-              c->dek = xmalloc_secure_clear (sizeof *c->dek);
-              if ((result = get_session_key (ctrl, enc, c->dek)))
-                {
-                  /* Error: Delete the DEK. */
-                  xfree (c->dek);
-                  c->dek = NULL;
-		}
-	    }
-	}
-      else
-        result = GPG_ERR_NO_SECKEY;
-    }
-  else
-    result = GPG_ERR_PUBKEY_ALGO;
-
-  if (1)
-    {
-      /* Store it for later display.  */
-      struct kidlist_item *x = xmalloc (sizeof *x);
-      x->kid[0] = enc->keyid[0];
-      x->kid[1] = enc->keyid[1];
+      x->keyid[0] = enc->keyid[0];
+      x->keyid[1] = enc->keyid[1];
       x->pubkey_algo = enc->pubkey_algo;
-      x->reason = result;
+      x->data[0] = x->data[1] = NULL;
+      if (enc->data[0])
+        {
+          x->data[0] = mpi_copy (enc->data[0]);
+          x->data[1] = mpi_copy (enc->data[1]);
+        }
       x->next = c->pkenc_list;
       c->pkenc_list = x;
-
-      if (!result && opt.verbose > 1)
-        log_info (_("public key encrypted data: good DEK\n"));
     }
 
   free_packet(pkt, NULL);
@@ -553,17 +498,12 @@ proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
  * not decrypt.
  */
 static void
-print_pkenc_list (ctrl_t ctrl, struct kidlist_item *list, int failed)
+print_pkenc_list (ctrl_t ctrl, struct pubkey_enc_list *list)
 {
   for (; list; list = list->next)
     {
       PKT_public_key *pk;
       const char *algstr;
-
-      if (failed && !list->reason)
-        continue;
-      if (!failed && list->reason)
-        continue;
 
       algstr = openpgp_pk_algo_name (list->pubkey_algo);
       pk = xmalloc_clear (sizeof *pk);
@@ -571,42 +511,21 @@ print_pkenc_list (ctrl_t ctrl, struct kidlist_item *list, int failed)
       if (!algstr)
         algstr = "[?]";
       pk->pubkey_algo = list->pubkey_algo;
-      if (!get_pubkey (ctrl, pk, list->kid))
+      if (!get_pubkey (ctrl, pk, list->keyid))
         {
           char *p;
           log_info (_("encrypted with %u-bit %s key, ID %s, created %s\n"),
                     nbits_from_pk (pk), algstr, keystr_from_pk(pk),
                     strtimestamp (pk->timestamp));
-          p = get_user_id_native (ctrl, list->kid);
+          p = get_user_id_native (ctrl, list->keyid);
           log_printf (_("      \"%s\"\n"), p);
           xfree (p);
         }
       else
         log_info (_("encrypted with %s key, ID %s\n"),
-                  algstr, keystr(list->kid));
+                  algstr, keystr(list->keyid));
 
       free_public_key (pk);
-
-      if (gpg_err_code (list->reason) == GPG_ERR_NO_SECKEY)
-        {
-          if (is_status_enabled())
-            {
-              char buf[20];
-              snprintf (buf, sizeof buf, "%08lX%08lX",
-                        (ulong)list->kid[0], (ulong)list->kid[1]);
-              write_status_text (STATUS_NO_SECKEY, buf);
-	    }
-	}
-      else if (gpg_err_code (list->reason) == GPG_ERR_MISSING_ACTION)
-        {
-          /* Not tested for secret key due to --list-only mode.  */
-        }
-      else if (list->reason)
-        {
-          log_info (_("public key decryption failed: %s\n"),
-                    gpg_strerror (list->reason));
-          write_status_error ("pkdecrypt_failed", list->reason);
-        }
     }
 }
 
@@ -630,11 +549,58 @@ proc_encrypted (CTX c, PACKET *pkt)
         log_info (_("encrypted with %lu passphrases\n"), c->symkeys);
       else if (c->symkeys == 1)
         log_info (_("encrypted with 1 passphrase\n"));
-      print_pkenc_list (c->ctrl, c->pkenc_list, 1 );
-      print_pkenc_list (c->ctrl, c->pkenc_list, 0 );
+      print_pkenc_list (c->ctrl, c->pkenc_list);
     }
 
-  /* FIXME: Figure out the session key by looking at all pkenc packets. */
+  /* Figure out the session key by looking at all pkenc packets. */
+  if (opt.list_only || c->dek)
+    ;
+  else if (opt.override_session_key)
+    {
+      c->dek = xmalloc_clear (sizeof *c->dek);
+      result = get_override_session_key (c->dek, opt.override_session_key);
+      if (result)
+        {
+          xfree (c->dek);
+          c->dek = NULL;
+          log_info (_("public key decryption failed: %s\n"),
+                    gpg_strerror (result));
+          write_status_error ("pkdecrypt_failed", result);
+        }
+    }
+  else
+    {
+      c->dek = xmalloc_secure_clear (sizeof *c->dek);
+      result = get_session_key (c->ctrl, c->pkenc_list, c->dek);
+      if (result  == GPG_ERR_NO_SECKEY)
+        {
+          if (is_status_enabled ())
+            {
+              struct pubkey_enc_list *list;
+
+              for (list = c->pkenc_list; list; list = list->next)
+                {
+                  char buf[20];
+                  snprintf (buf, sizeof buf, "%08lX%08lX",
+                            (ulong)list->keyid[0], (ulong)list->keyid[1]);
+                  write_status_text (STATUS_NO_SECKEY, buf);
+                }
+            }
+        }
+      else if (result)
+        {
+          log_info (_("public key decryption failed: %s\n"),
+                    gpg_strerror (result));
+          write_status_error ("pkdecrypt_failed", result);
+
+          /* Error: Delete the DEK. */
+          xfree (c->dek);
+          c->dek = NULL;
+        }
+    }
+
+  if (c->dek && opt.verbose > 1)
+    log_info (_("public key encrypted data: good DEK\n"));
 
   write_status (STATUS_BEGIN_DECRYPTION);
 
@@ -709,7 +675,7 @@ proc_encrypted (CTX c, PACKET *pkt)
       && gnupg_cipher_is_compliant (CO_DE_VS, c->dek->algo,
                                     GCRY_CIPHER_MODE_CFB))
     {
-      struct kidlist_item *i;
+      struct pubkey_enc_list *i;
       int compliant = 1;
       PKT_public_key *pk = xmalloc (sizeof *pk);
 
@@ -722,7 +688,7 @@ proc_encrypted (CTX c, PACKET *pkt)
         {
           memset (pk, 0, sizeof *pk);
           pk->pubkey_algo = i->pubkey_algo;
-          if (get_pubkey (c->ctrl, pk, i->kid) != 0
+          if (get_pubkey (c->ctrl, pk, i->keyid) != 0
               || ! gnupg_pk_is_compliant (CO_DE_VS, pk->pubkey_algo, pk->pkey,
                                           nbits_from_pk (pk), NULL))
             compliant = 0;
@@ -1367,7 +1333,7 @@ proc_packets (ctrl_t ctrl, void *anchor, iobuf_t a )
 
   c->ctrl = ctrl;
   c->anchor = anchor;
-  rc = do_proc_packets (ctrl, c, a);
+  rc = do_proc_packets (c, a);
   xfree (c);
 
   return rc;
@@ -1390,7 +1356,7 @@ proc_signature_packets (ctrl_t ctrl, void *anchor, iobuf_t a,
   c->signed_data.used = !!signedfiles;
 
   c->sigfilename = sigfilename;
-  rc = do_proc_packets (ctrl, c, a);
+  rc = do_proc_packets (c, a);
 
   /* If we have not encountered any signature we print an error
      messages, send a NODATA status back and return an error code.
@@ -1433,7 +1399,7 @@ proc_signature_packets_by_fd (ctrl_t ctrl,
   c->signed_data.data_names = NULL;
   c->signed_data.used = (signed_data_fd != -1);
 
-  rc = do_proc_packets (ctrl, c, a);
+  rc = do_proc_packets (c, a);
 
   /* If we have not encountered any signature we print an error
      messages, send a NODATA status back and return an error code.
@@ -1466,7 +1432,7 @@ proc_encryption_packets (ctrl_t ctrl, void *anchor, iobuf_t a )
   c->ctrl = ctrl;
   c->anchor = anchor;
   c->encrypt_only = 1;
-  rc = do_proc_packets (ctrl, c, a);
+  rc = do_proc_packets (c, a);
   xfree (c);
   return rc;
 }
@@ -1492,7 +1458,7 @@ check_nesting (CTX c)
 
 
 static int
-do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
+do_proc_packets (CTX c, iobuf_t a)
 {
   PACKET *pkt;
   struct parse_packet_ctx_s parsectx;
@@ -1526,7 +1492,7 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
         {
           switch (pkt->pkttype)
             {
-            case PKT_PUBKEY_ENC:    proc_pubkey_enc (ctrl, c, pkt); break;
+            case PKT_PUBKEY_ENC:    proc_pubkey_enc (c, pkt); break;
             case PKT_SYMKEY_ENC:    proc_symkey_enc (c, pkt); break;
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC:
@@ -1572,7 +1538,7 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
 
             case PKT_SIGNATURE:   newpkt = add_signature (c, pkt); break;
             case PKT_SYMKEY_ENC:  proc_symkey_enc (c, pkt); break;
-            case PKT_PUBKEY_ENC:  proc_pubkey_enc (ctrl, c, pkt); break;
+            case PKT_PUBKEY_ENC:  proc_pubkey_enc (c, pkt); break;
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC:
             case PKT_ENCRYPTED_AEAD: proc_encrypted (c, pkt); break;
@@ -1599,7 +1565,7 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
               break;
             case PKT_USER_ID:     newpkt = add_user_id (c, pkt); break;
             case PKT_SIGNATURE:   newpkt = add_signature (c, pkt); break;
-            case PKT_PUBKEY_ENC:  proc_pubkey_enc (ctrl, c, pkt); break;
+            case PKT_PUBKEY_ENC:  proc_pubkey_enc (c, pkt); break;
             case PKT_SYMKEY_ENC:  proc_symkey_enc (c, pkt); break;
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC:

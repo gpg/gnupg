@@ -490,7 +490,7 @@ read_key_from_file (ctrl_t ctrl, const char *fname, kbnode_t *r_keyblock)
  * No encryption here but mainproc links to these functions.
  */
 gpg_error_t
-get_session_key (ctrl_t ctrl, PKT_pubkey_enc *k, DEK *dek)
+get_session_key (ctrl_t ctrl, struct pubkey_enc_list *k, DEK *dek)
 {
   (void)ctrl;
   (void)k;
