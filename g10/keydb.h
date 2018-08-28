@@ -368,7 +368,7 @@ int get_pubkey_byname (ctrl_t ctrl,
 gpg_error_t get_best_pubkey_byname (ctrl_t ctrl,
                                     GETKEY_CTX *retctx, PKT_public_key *pk,
                                     const char *name, KBNODE *ret_keyblock,
-                                    int include_unusable, int no_akl);
+                                    int include_unusable);
 
 /* Get a public key directly from file FNAME.  */
 gpg_error_t get_pubkey_fromfile (ctrl_t ctrl,
