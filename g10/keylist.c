@@ -652,7 +652,7 @@ locate_one (ctrl_t ctrl, strlist_t names)
 
   for (sl = names; sl; sl = sl->next)
     {
-      rc = get_best_pubkey_byname (ctrl, &ctx, NULL, sl->d, &keyblock, 1, 0);
+      rc = get_best_pubkey_byname (ctrl, &ctx, NULL, sl->d, &keyblock, 1);
       if (rc)
 	{
 	  if (gpg_err_code (rc) != GPG_ERR_NO_PUBKEY)

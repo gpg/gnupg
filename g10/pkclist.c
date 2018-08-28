@@ -834,7 +834,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
   if (from_file)
     rc = get_pubkey_fromfile (ctrl, pk, name);
   else
-    rc = get_best_pubkey_byname (ctrl, NULL, pk, name, &keyblock, 0, 0);
+    rc = get_best_pubkey_byname (ctrl, NULL, pk, name, &keyblock, 0);
   if (rc)
     {
       int code;

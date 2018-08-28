@@ -1636,7 +1636,7 @@ pubkey_cmp (ctrl_t ctrl, const char *name, struct pubkey_cmp_cookie *old,
 gpg_error_t
 get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
                         const char *name, KBNODE *ret_keyblock,
-                        int include_unusable, int no_akl)
+                        int include_unusable)
 {
   gpg_error_t err;
   struct getkey_ctx_s *ctx = NULL;
@@ -1645,7 +1645,7 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
     *retctx = NULL;
 
   err = get_pubkey_byname (ctrl, &ctx, pk, name, ret_keyblock,
-                           NULL, include_unusable, no_akl);
+                           NULL, include_unusable, 0);
   if (err)
     {
       getkey_end (ctrl, ctx);
