@@ -2088,9 +2088,12 @@ import_one (ctrl_t ctrl,
           keydb_release (hd);
           hd = NULL;
 
-          /* Fixme: we do not track the time we last checked a key for
+          /* FIXME: We do not track the time we last checked a key for
            * updates.  To do this we would need to rewrite even the
-           * keys which have no changes.  */
+           * keys which have no changes.  Adding this would be useful
+           * for the automatic update of expired keys via the WKD in
+           * case the WKD still carries the expired key.  See
+           * get_best_pubkey_byname.  */
           same_key = 1;
           if (is_status_enabled ())
             print_import_ok (pk, 0);

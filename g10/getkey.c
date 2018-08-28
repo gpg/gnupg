@@ -88,6 +88,9 @@ struct getkey_ctx_s
      their address used in ITEMS.  */
   strlist_t extra_list;
 
+  /* Hack to return the mechanism (AKL_foo) used to find the key.  */
+  int found_via_akl;
+
   /* Part of the search criteria: The low-level search specification
      as passed to keydb_search.  */
   int nitems;
@@ -1265,6 +1268,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
   int is_mbox;
   int nodefault = 0;
   int anylocalfirst = 0;
+  int mechanism_type = AKL_NODEFAULT;
 
   /* If RETCTX is not NULL, then RET_KDBHD must be NULL.  */
   log_assert (retctx == NULL || ret_kdbhd == NULL);
@@ -1354,18 +1358,19 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	  size_t fpr_len;
 	  int did_akl_local = 0;
 	  int no_fingerprint = 0;
-	  const char *mechanism = "?";
+	  const char *mechanism_string = "?";
 
-	  switch (akl->type)
+          mechanism_type = akl->type;
+	  switch (mechanism_type)
 	    {
 	    case AKL_NODEFAULT:
 	      /* This is a dummy mechanism.  */
-	      mechanism = "None";
+	      mechanism_string = "None";
 	      rc = GPG_ERR_NO_PUBKEY;
 	      break;
 
 	    case AKL_LOCAL:
-	      mechanism = "Local";
+	      mechanism_string = "Local";
 	      did_akl_local = 1;
 	      if (retctx)
 		{
@@ -1379,35 +1384,35 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	      break;
 
 	    case AKL_CERT:
-	      mechanism = "DNS CERT";
+	      mechanism_string = "DNS CERT";
 	      glo_ctrl.in_auto_key_retrieve++;
 	      rc = keyserver_import_cert (ctrl, name, 0, &fpr, &fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 	      break;
 
 	    case AKL_PKA:
-	      mechanism = "PKA";
+	      mechanism_string = "PKA";
 	      glo_ctrl.in_auto_key_retrieve++;
 	      rc = keyserver_import_pka (ctrl, name, &fpr, &fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 	      break;
 
 	    case AKL_DANE:
-	      mechanism = "DANE";
+	      mechanism_string = "DANE";
 	      glo_ctrl.in_auto_key_retrieve++;
 	      rc = keyserver_import_cert (ctrl, name, 1, &fpr, &fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 	      break;
 
 	    case AKL_WKD:
-	      mechanism = "WKD";
+	      mechanism_string = "WKD";
 	      glo_ctrl.in_auto_key_retrieve++;
 	      rc = keyserver_import_wkd (ctrl, name, 0, &fpr, &fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 	      break;
 
 	    case AKL_LDAP:
-	      mechanism = "LDAP";
+	      mechanism_string = "LDAP";
 	      glo_ctrl.in_auto_key_retrieve++;
 	      rc = keyserver_import_ldap (ctrl, name, &fpr, &fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
@@ -1420,7 +1425,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	       * and getting a whole lot of keys back. */
 	      if (keyserver_any_configured (ctrl))
 		{
-		  mechanism = "keyserver";
+		  mechanism_string = "keyserver";
 		  glo_ctrl.in_auto_key_retrieve++;
 		  rc = keyserver_import_name (ctrl, name, &fpr, &fpr_len,
                                               opt.keyserver);
@@ -1428,7 +1433,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 		}
 	      else
 		{
-		  mechanism = "Unconfigured keyserver";
+		  mechanism_string = "Unconfigured keyserver";
 		  rc = GPG_ERR_NO_PUBKEY;
 		}
 	      break;
@@ -1437,7 +1442,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	      {
 		struct keyserver_spec *keyserver;
 
-		mechanism = akl->spec->uri;
+		mechanism_string = akl->spec->uri;
 		keyserver = keyserver_match (akl->spec);
 		glo_ctrl.in_auto_key_retrieve++;
 		rc = keyserver_import_name (ctrl,
@@ -1499,13 +1504,13 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	      /* Key found.  */
               if (opt.verbose)
                 log_info (_("automatically retrieved '%s' via %s\n"),
-                          name, mechanism);
+                          name, mechanism_string);
 	      break;
 	    }
 	  if (gpg_err_code (rc) != GPG_ERR_NO_PUBKEY
               || opt.verbose || no_fingerprint)
 	    log_info (_("error retrieving '%s' via %s: %s\n"),
-		      name, mechanism,
+		      name, mechanism_string,
 		      no_fingerprint ? _("No fingerprint") : gpg_strerror (rc));
 	}
     }
@@ -1521,6 +1526,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
     {
       log_assert (!(*retctx)->extra_list);
       (*retctx)->extra_list = namelist;
+      (*retctx)->found_via_akl = mechanism_type;
     }
   else
     free_strlist (namelist);
@@ -1568,6 +1574,34 @@ subkey_is_ok (const PKT_public_key *sub)
   return ! sub->flags.revoked && sub->flags.valid && ! sub->flags.disabled;
 }
 
+/* Return true if KEYBLOCK has only expired encryption subkyes.  Note
+ * that the function returns false if the key has no encryption
+ * subkeys at all or the subkecys are revoked.  */
+static int
+only_expired_enc_subkeys (kbnode_t keyblock)
+{
+  kbnode_t node;
+  PKT_public_key *sub;
+  int any = 0;
+
+  for (node = find_next_kbnode (keyblock, PKT_PUBLIC_SUBKEY);
+       node; node = find_next_kbnode (node, PKT_PUBLIC_SUBKEY))
+    {
+      sub = node->pkt->pkt.public_key;
+
+      if (!(sub->pubkey_usage & PUBKEY_USAGE_ENC))
+        continue;
+
+      if (!subkey_is_ok (sub))
+        continue;
+
+      any = 1;
+      if (!sub->has_expired)
+        return 0;
+    }
+
+  return any? 1 : 0;
+}
 
 /* Finally this function compares a NEW key to the former candidate
  * OLD.  Returns < 0 if the old key is worse, > 0 if the old key is
@@ -1640,10 +1674,23 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
 {
   gpg_error_t err;
   struct getkey_ctx_s *ctx = NULL;
+  int is_mbox = is_valid_mailbox (name);
+  int wkd_tried = 0;
 
   if (retctx)
     *retctx = NULL;
 
+ start_over:
+  if (ctx)  /* Clear  in case of a start over.  */
+    {
+      if (ret_keyblock)
+        {
+          release_kbnode (*ret_keyblock);
+          *ret_keyblock = NULL;
+        }
+      getkey_end (ctrl, ctx);
+      ctx = NULL;
+    }
   err = get_pubkey_byname (ctrl, &ctx, pk, name, ret_keyblock,
                            NULL, include_unusable, 0);
   if (err)
@@ -1652,7 +1699,39 @@ get_best_pubkey_byname (ctrl_t ctrl, GETKEY_CTX *retctx, PKT_public_key *pk,
       return err;
     }
 
-  if (is_valid_mailbox (name) && ctx)
+  /* If the keyblock was retrieved from the local database and the key
+   * has expired, do further checks.  However, we can do this only if
+   * the caller requested a keyblock.  */
+  if (is_mbox && ctx && ctx->found_via_akl == AKL_LOCAL && ret_keyblock)
+    {
+      u32 now = make_timestamp ();
+      PKT_public_key *pk2 = (*ret_keyblock)->pkt->pkt.public_key;
+      int found;
+
+      /* If the key has expired and its origin was the WKD then try to
+       * get a fresh key from the WKD.  We also try this if the key
+       * has any only expired encryption subkeys.  In case we checked
+       * for a fresh copy in the last 3 hours we won't do that again.
+       * Unfortunately that does not yet work because KEYUPDATE is
+       * only updated during import iff the key has actually changed
+       * (see import.c:import_one).  */
+      if (!wkd_tried && pk2->keyorg == KEYORG_WKD
+          && (pk2->keyupdate + 3*3600) < now
+          && (pk2->has_expired || only_expired_enc_subkeys (*ret_keyblock)))
+        {
+          if (opt.verbose)
+            log_info (_("checking for a fresh copy of an expired key via %s\n"),
+                      "WKD");
+          wkd_tried = 1;
+          glo_ctrl.in_auto_key_retrieve++;
+          found = !keyserver_import_wkd (ctrl, name, 0, NULL, NULL);
+          glo_ctrl.in_auto_key_retrieve--;
+          if (found)
+            goto start_over;
+        }
+    }
+
+  if (is_mbox && ctx)
     {
       /* Rank results and return only the most relevant key.  */
       struct pubkey_cmp_cookie best = { 0 };
