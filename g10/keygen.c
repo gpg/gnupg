@@ -4135,8 +4135,10 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
 
   if (opt.batch && card_serialno)
     {
-      /* We don't yet support unattended key generation. */
+      /* We don't yet support unattended key generation with a card
+       * serial number. */
       log_error (_("can't do this in batch mode\n"));
+      print_further_info ("key generation with card serial number");
       return;
     }
 
