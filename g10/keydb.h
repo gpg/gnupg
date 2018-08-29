@@ -342,19 +342,8 @@ struct pubkey_s
 };
 typedef struct pubkey_s *pubkey_t;
 
-/* Free a single key.  This does not remove key from any list!  */
-void pubkey_free (pubkey_t key);
-
 /* Free a list of public keys.  */
 void pubkeys_free (pubkey_t keys);
-
-/* Returns all keys that match the search specification SEARCH_TERMS.
-   The returned keys should be freed using pubkeys_free.  */
-gpg_error_t
-get_pubkeys (ctrl_t ctrl,
-             char *search_terms, int use, int include_unusable, char *source,
-             int warn_possibly_ambiguous,
-             pubkey_t *r_keys);
 
 /* Find a public key identified by NAME.  */
 int get_pubkey_byname (ctrl_t ctrl,
