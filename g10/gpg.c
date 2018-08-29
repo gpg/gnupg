@@ -109,6 +109,7 @@ enum cmd_and_opt_values
     oCertNotation,
     oShowNotation,
     oNoShowNotation,
+    oKnownNotation,
     aEncrFiles,
     aEncrSym,
     aDecryptFiles,
@@ -673,6 +674,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oSetNotation,  "set-notation", "@"),
   ARGPARSE_s_s (oSigNotation,  "sig-notation", "@"),
   ARGPARSE_s_s (oCertNotation, "cert-notation", "@"),
+  ARGPARSE_s_s (oKnownNotation, "known-notation", "@"),
 
   ARGPARSE_group (302, N_(
   "@\n(See the man page for a complete listing of all commands and options)\n"
@@ -3301,6 +3303,7 @@ main (int argc, char **argv)
 	    break;
 	  case oSigNotation: add_notation_data( pargs.r.ret_str, 0 ); break;
 	  case oCertNotation: add_notation_data( pargs.r.ret_str, 1 ); break;
+          case oKnownNotation: register_known_notation (pargs.r.ret_str); break;
 	  case oShowNotation:
 	    deprecated_warning(configname,configlineno,"--show-notation",
 			       "--list-options ","show-notations");

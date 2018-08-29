@@ -43,10 +43,14 @@
 #define MAX_COMMENT_PACKET_LENGTH ( 64 * 1024)
 #define MAX_ATTR_PACKET_LENGTH    ( 16 * 1024*1024)
 
-
 static int mpi_print_mode;
 static int list_mode;
 static estream_t listfp;
+
+/* A linked list of known notation names.  Note that the FLAG is used
+ * to store the length of the name to speed up the check.  */
+static strlist_t known_notations_list;
+
 
 static int parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts,
 		  off_t * retpos, int *skip, IOBUF out, int do_skip
@@ -183,6 +187,36 @@ mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
   *ret_nread = nread;
   gcry_free(buf);
   return a;
+}
+
+
+/* Register STRING as a known critical notation name.  */
+void
+register_known_notation (const char *string)
+{
+  strlist_t sl;
+
+  if (!known_notations_list)
+    {
+      sl = add_to_strlist (&known_notations_list,
+                           "preferred-email-encoding@pgp.com");
+      sl->flags = 32;
+      sl = add_to_strlist (&known_notations_list, "pka-address@gnupg.org");
+      sl->flags = 21;
+    }
+  if (!string)
+    return; /* Only initialized the default known notations.  */
+
+  /* In --set-notation we use an exclamation mark to indicate a
+   * critical notation.  As a convenience skip this here.  */
+  if (*string == '!')
+    string++;
+
+  if (!*string || strlist_find (known_notations_list, string))
+    return; /* Empty string or already registered.  */
+
+  sl = add_to_strlist (&known_notations_list, string);
+  sl->flags = strlen (string);
 }
 
 
@@ -1602,14 +1636,24 @@ parse_one_sig_subpkt (const byte * buffer, size_t n, int type)
 
 /* Return true if we understand the critical notation.  */
 static int
-can_handle_critical_notation (const byte * name, size_t len)
+can_handle_critical_notation (const byte *name, size_t len)
 {
-  if (len == 32 && memcmp (name, "preferred-email-encoding@pgp.com", 32) == 0)
-    return 1;
-  if (len == 21 && memcmp (name, "pka-address@gnupg.org", 21) == 0)
-    return 1;
+  strlist_t sl;
 
-  return 0;
+  register_known_notation (NULL); /* Make sure it is initialized.  */
+
+  for (sl = known_notations_list; sl; sl = sl->next)
+    if (sl->flags == len && !memcmp (sl->d, name, len))
+      return 1; /* Known */
+
+  if (opt.verbose)
+    {
+      log_info(_("Unknown critical signature notation: ") );
+      print_utf8_buffer (log_get_stream(), name, len);
+      log_printf ("\n");
+    }
+
+  return 0; /* Unknown.  */
 }
 
 
