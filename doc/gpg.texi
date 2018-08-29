@@ -2970,6 +2970,13 @@ smartcard, and "%%" results in a single "%". %k, %K, and %f are only
 meaningful when making a key signature (certification), and %c is only
 meaningful when using the OpenPGP smartcard.
 
+@item --known-notation @var{name}
+@opindex known-notation
+Adds @var{name} to a list of known critical signature notations.  The
+effect of this is that gpg will not mark a signature with a critical
+signature notation of that name as bad.  Note that gpg already knows
+by default about a few critical signatures notation names.
+
 @item --sig-policy-url @var{string}
 @itemx --cert-policy-url @var{string}
 @itemx --set-policy-url @var{string}

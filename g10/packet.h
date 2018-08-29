@@ -636,6 +636,9 @@ char *issuer_fpr_string (PKT_signature *sig);
 
 /*-- parse-packet.c --*/
 
+
+void register_known_notation (const char *string);
+
 /* Sets the packet list mode to MODE (i.e., whether we are dumping a
    packet or not).  Returns the current mode.  This allows for
    temporarily suspending dumping by doing the following:
