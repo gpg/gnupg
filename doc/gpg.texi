@@ -675,6 +675,10 @@ supplied passphrase is used for the new key and the agent does not ask
 for it.  To create a key without any protection @code{--passphrase ''}
 may be used.
 
+Note that it is possible to create a primary key and a subkey using
+non-default algorithms by using ``default'' and changing the default
+parameters using the option @option{--default-new-key-algo}.
+
 @item --quick-set-expire @var{fpr} @var{expire} [*|@var{subfprs}]
 @opindex quick-set-expire
 With two arguments given, directly set the expiration time of the
@@ -702,7 +706,8 @@ and other ECC curves.  For example the string ``rsa'' adds an RSA key
 with the default key length; a string ``rsa4096'' requests that the
 key length is 4096 bits.  The string ``future-default'' is an alias
 for the algorithm which will likely be used as default algorithm in
-future versions of gpg.
+future versions of gpg.  To list the supported ECC curves the command
+@code{gpg --with-colons --list-config curve} can be used.
 
 Depending on the given @var{algo} the subkey may either be an
 encryption subkey or a signing subkey.  If an algorithm is capable of
@@ -3353,13 +3358,14 @@ user.
 @opindex override-session-key
 Don't use the public key but the session key @var{string} respective
 the session key taken from the first line read from file descriptor
-@var{fd}.  The format of this string is the same as the one printed
-by @option{--show-session-key}. This option is normally not used but
+@var{fd}.  The format of this string is the same as the one printed by
+@option{--show-session-key}. This option is normally not used but
 comes handy in case someone forces you to reveal the content of an
 encrypted message; using this option you can do this without handing
 out the secret key.  Note that using @option{--override-session-key}
 may reveal the session key to all local users via the global process
-table.
+table.  Often it is useful to combine this option with
+@option{--no-keyring}.
 
 @item --ask-sig-expire
 @itemx --no-ask-sig-expire
