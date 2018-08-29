@@ -3610,6 +3610,15 @@ Operation is further controlled by a few environment variables:
 
 @end table
 
+When calling the gpg-agent component @command{@gpgname} sends a set of
+environment variables to gpg-agent.  The names of these variables can
+be listed using the command:
+
+@example
+  gpg-connect-agent 'getinfo std_env_names' /bye | awk '$1=="D" @{print $2@}'
+@end example
+
+
 
 @c *******************************************
 @c ***************            ****************
