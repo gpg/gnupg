@@ -922,18 +922,19 @@ msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "waiting %d seconds for the agent to come up\n"
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "venter %d sekunder på at agenten kommer frem\n"
+
+#, fuzzy, c-format
+#| msgid "can't connect to the dirmngr - trying fall back\n"
+msgid "connection to %s established\n"
+msgstr "kan ikke forbinde til dirmngr - forsøger reserve\n"
+
+#, fuzzy, c-format
 #| msgid "no running gpg-agent - starting one\n"
 msgid "no running gpg-agent - starting '%s'\n"
 msgstr "ingen kørende gpg-agent - starter en\n"
-
-#, fuzzy, c-format
-#| msgid "waiting %d seconds for the agent to come up\n"
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr "venter %d sekunder på at agenten kommer frem\n"
-
-#, c-format
-msgid "connection to agent established\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "can't connect to the dirmngr - trying fall back\n"
@@ -944,16 +945,6 @@ msgstr "kan ikke forbinde til dirmngr - forsøger reserve\n"
 #| msgid "no running dirmngr - starting `%s'\n"
 msgid "no running Dirmngr - starting '%s'\n"
 msgstr "ingen kørende dirmngr - starter »%s«\n"
-
-#, fuzzy, c-format
-#| msgid "waiting %d seconds for the agent to come up\n"
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr "venter %d sekunder på at agenten kommer frem\n"
-
-#, fuzzy, c-format
-#| msgid "can't connect to the dirmngr - trying fall back\n"
-msgid "connection to the dirmngr established\n"
-msgstr "kan ikke forbinde til dirmngr - forsøger reserve\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -1953,25 +1944,6 @@ msgid "[User ID not found]"
 msgstr "[Bruger-id blev ikke fundet]"
 
 #, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "(check argument of option '%s')\n"
-msgstr "manglende parameter for indstilling »%.50s«\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error closing %s: %s\n"
-msgid "error looking up: %s\n"
-msgstr "fejl ved lukning af %s: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error creating keyring `%s': %s\n"
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "fejl ved oprettelse af nøglering »%s«: %s\n"
-
-#, fuzzy, c-format
 #| msgid "automatically retrieved `%s' via %s\n"
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "hentede automatisk »%s« via %s\n"
@@ -1985,8 +1957,17 @@ msgid "No fingerprint"
 msgstr "Ingen fingeraftryk"
 
 #, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
+#, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "hemmelig nøgle »%s« blev ikke fundet: %s\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "(check argument of option '%s')\n"
+msgstr "manglende parameter for indstilling »%.50s«\n"
 
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
@@ -5093,6 +5074,11 @@ msgstr "kan ikke håndtere offentlig nøglealgoritme %d\n"
 #, c-format
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "ADVARSEL: potentiel usikker symmetrisk krypteret sessionsnøgle\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "Kritisk underskriftnotation: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -9531,6 +9517,21 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#, fuzzy
+#~| msgid "waiting %d seconds for the agent to come up\n"
+#~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
+#~ msgstr "venter %d sekunder på at agenten kommer frem\n"
+
+#, fuzzy
+#~| msgid "error closing %s: %s\n"
+#~ msgid "error looking up: %s\n"
+#~ msgstr "fejl ved lukning af %s: %s\n"
+
+#, fuzzy
+#~| msgid "error creating keyring `%s': %s\n"
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "fejl ved oprettelse af nøglering »%s«: %s\n"
 
 #, fuzzy
 #~| msgid "error running `%s': exit status %d\n"

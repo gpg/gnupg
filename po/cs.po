@@ -852,17 +852,19 @@ msgstr "VAROVÁNÍ: „%s%s“ je zastaralý parametr – neúčinkuje\n"
 msgid "unknown debug flag '%s' ignored\n"
 msgstr "neznámý ladicí příznak „%s“ se ignoruje\n"
 
+#, fuzzy, c-format
+#| msgid "waiting for the agent to come up ... (%ds)\n"
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "čeká se na agenta… (%d s)\n"
+
+#, fuzzy, c-format
+#| msgid "connection to agent established\n"
+msgid "connection to %s established\n"
+msgstr "spojení na agenta ustanoveno\n"
+
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
 msgstr "gpg-agent neběží – spouští se „%s“\n"
-
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr "čeká se na agenta… (%d s)\n"
-
-#, c-format
-msgid "connection to agent established\n"
-msgstr "spojení na agenta ustanoveno\n"
 
 #, c-format
 msgid "connection to agent is in restricted mode\n"
@@ -871,14 +873,6 @@ msgstr "spojení na agenta je v omezeném režimu\n"
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
 msgstr "žádný dirmngr neběží – spouští se „%s“\n"
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr "čeká se na dirmngr… (%d s)\n"
-
-#, c-format
-msgid "connection to the dirmngr established\n"
-msgstr "spojení na dirmngr ustanoveno\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -1834,22 +1828,6 @@ msgid "[User ID not found]"
 msgstr "[ID uživatele nenalezeno]"
 
 #, c-format
-msgid "(check argument of option '%s')\n"
-msgstr "(zkontrolujte argument volby „%s“)\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr "Pozor: „%s“ by měl být dlouhý identifikátor klíče nebo jeho otisk\n"
-
-#, c-format
-msgid "error looking up: %s\n"
-msgstr "chyba při vyhledávání: %s\n"
-
-#, c-format
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "Pozor: %s se nachází v souboru klíčů (keyring) %dkrát\n"
-
-#, c-format
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "„%s“ automaticky získáno přes %s\n"
 
@@ -1861,8 +1839,16 @@ msgid "No fingerprint"
 msgstr "Chybí otisk"
 
 #, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
+#, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "tajný klíč „%s“ nenalezen: %s\n"
+
+#, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "(zkontrolujte argument volby „%s“)\n"
 
 #, c-format
 msgid "Warning: not using '%s' as default key: %s\n"
@@ -4801,6 +4787,11 @@ msgstr "nemohu pracovat s algoritmem veřejného klíče %d\n"
 #, c-format
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "VAROVÁNÍ: potencionálně nebezpečně symetricky zašifrován klíč sezení\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "Kritická podepisovací notace: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -8932,6 +8923,21 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
+#~ msgstr "čeká se na dirmngr… (%d s)\n"
+
+#~ msgid "connection to the dirmngr established\n"
+#~ msgstr "spojení na dirmngr ustanoveno\n"
+
+#~ msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
+#~ msgstr "Pozor: „%s“ by měl být dlouhý identifikátor klíče nebo jeho otisk\n"
+
+#~ msgid "error looking up: %s\n"
+#~ msgstr "chyba při vyhledávání: %s\n"
+
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "Pozor: %s se nachází v souboru klíčů (keyring) %dkrát\n"
 
 #~ msgid "using \"http\" instead of \"https\"\n"
 #~ msgstr "namísto „https“ se použije „http“\n"

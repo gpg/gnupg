@@ -866,18 +866,20 @@ msgstr "Attention : « %s%s » est une option obsolète — non prise en com
 msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "waiting for the agent to come up ... (%ds)\n"
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "attente pour permettre à l'agent d'arriver… (%d s)\n"
+
+#, fuzzy, c-format
+#| msgid "connection to agent established\n"
+msgid "connection to %s established\n"
+msgstr "connexion à l'agent établie\n"
+
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
 msgstr ""
 "pas d'instance de gpg-agent en cours d'exécution — démarrage de « %s »\n"
-
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr "attente pour permettre à l'agent d'arriver… (%d s)\n"
-
-#, c-format
-msgid "connection to agent established\n"
-msgstr "connexion à l'agent établie\n"
 
 #, fuzzy, c-format
 #| msgid "connection to agent established\n"
@@ -887,14 +889,6 @@ msgstr "connexion à l'agent établie\n"
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
 msgstr "pas d'instance de Dirmngr en cours d'exécution — démarrage de « %s »\n"
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr "attente pour permettre au dirmngr d'arriver… (%d s)\n"
-
-#, c-format
-msgid "connection to the dirmngr established\n"
-msgstr "connexion au dirmngr établie\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -1875,25 +1869,6 @@ msgstr "erreur de création de « %s » : %s\n"
 msgid "[User ID not found]"
 msgstr "[identité introuvable]"
 
-#, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "(check argument of option '%s')\n"
-msgstr "argument manquant pour l'option « %.50s »\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error closing %s: %s\n"
-msgid "error looking up: %s\n"
-msgstr "erreur de fermeture de %s : %s\n"
-
-#, fuzzy, c-format
-#| msgid "error creating keyring '%s': %s\n"
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "erreur de création du porte-clefs « %s » : %s\n"
-
 #, c-format
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "« %s » automatiquement récupéré par %s\n"
@@ -1906,8 +1881,17 @@ msgid "No fingerprint"
 msgstr "Aucune empreinte"
 
 #, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
+#, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "clef secrète « %s » introuvable : %s\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "(check argument of option '%s')\n"
+msgstr "argument manquant pour l'option « %.50s »\n"
 
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
@@ -4972,6 +4956,11 @@ msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr ""
 "Attention : la clef de session chiffrée de manière symétrique risque\n"
 "            de ne pas être sécurisée\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "Notation de signature critique : "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -9289,6 +9278,22 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
+#~ msgstr "attente pour permettre au dirmngr d'arriver… (%d s)\n"
+
+#~ msgid "connection to the dirmngr established\n"
+#~ msgstr "connexion au dirmngr établie\n"
+
+#, fuzzy
+#~| msgid "error closing %s: %s\n"
+#~ msgid "error looking up: %s\n"
+#~ msgstr "erreur de fermeture de %s : %s\n"
+
+#, fuzzy
+#~| msgid "error creating keyring '%s': %s\n"
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "erreur de création du porte-clefs « %s » : %s\n"
 
 #~ msgid "using \"http\" instead of \"https\"\n"
 #~ msgstr "utilisation d'« http » au lieu d'« https »\n"

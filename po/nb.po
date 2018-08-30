@@ -825,17 +825,19 @@ msgstr "ADVARSEL: valget «%s%s» er utgått, og har ingen effekt\n"
 msgid "unknown debug flag '%s' ignored\n"
 msgstr "unknown debug flag '%s' ignored\n"
 
+#, fuzzy, c-format
+#| msgid "waiting for the agent to come up ... (%ds)\n"
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "venter på at agent skal dukke opp … (%ds)\n"
+
+#, fuzzy, c-format
+#| msgid "connection to agent established\n"
+msgid "connection to %s established\n"
+msgstr "koblet til agent\n"
+
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
 msgstr "ingen kjørende gpg-agent. Starter «%s»\n"
-
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr "venter på at agent skal dukke opp … (%ds)\n"
-
-#, c-format
-msgid "connection to agent established\n"
-msgstr "koblet til agent\n"
 
 #, c-format
 msgid "connection to agent is in restricted mode\n"
@@ -844,14 +846,6 @@ msgstr "kobler til agent i begrenset modus\n"
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
 msgstr "ingen kjørende Dirmngr. Starter «%s»\n"
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr "venter på at dirmngr skal dukke opp … (%ds)\n"
-
-#, c-format
-msgid "connection to the dirmngr established\n"
-msgstr "koblet til dirmngr\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -1799,22 +1793,6 @@ msgid "[User ID not found]"
 msgstr "[Fant ikke bruker-ID]"
 
 #, c-format
-msgid "(check argument of option '%s')\n"
-msgstr "(kontroller argument for valget «%s»)\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr "Advarsel: «%s» må være en lang nøkkel-ID eller et fingeravtrykk\n"
-
-#, c-format
-msgid "error looking up: %s\n"
-msgstr "feil under oppslag av %s\n"
-
-#, c-format
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "Advarsel: %s står oppført på nøkkelknippet %d ganger\n"
-
-#, c-format
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "hentet «%s» via %s automatisk\n"
 
@@ -1826,8 +1804,16 @@ msgid "No fingerprint"
 msgstr "Ingen fingeravtrykk"
 
 #, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
+#, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "fant ikke hemmelig nøkkel «%s»: %s\n"
+
+#, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "(kontroller argument for valget «%s»)\n"
 
 #, c-format
 msgid "Warning: not using '%s' as default key: %s\n"
@@ -4742,6 +4728,11 @@ msgstr "klarte ikke å håndtere offentlig nøkkelalgoritme %d\n"
 #, c-format
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "ADVARSEL: det er usikkert å kryptere øktnøkkel symmetrisk\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "Kritisk signaturnotat: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -8809,6 +8800,21 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [valg] mønsterfil\n"
 "Kontroller passordfrase oppgitt på standard innkanal mot valgt mønsterfil\n"
+
+#~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
+#~ msgstr "venter på at dirmngr skal dukke opp … (%ds)\n"
+
+#~ msgid "connection to the dirmngr established\n"
+#~ msgstr "koblet til dirmngr\n"
+
+#~ msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
+#~ msgstr "Advarsel: «%s» må være en lang nøkkel-ID eller et fingeravtrykk\n"
+
+#~ msgid "error looking up: %s\n"
+#~ msgstr "feil under oppslag av %s\n"
+
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "Advarsel: %s står oppført på nøkkelknippet %d ganger\n"
 
 #~ msgid "using \"http\" instead of \"https\"\n"
 #~ msgstr "bruker «http» i stedet for «https»\n"

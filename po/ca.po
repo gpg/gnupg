@@ -883,16 +883,18 @@ msgstr "AVÍS: %s és una opció desaconsellada.\n"
 msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "ha fallat l'actualització: %s\n"
+
+# Destès? ivb
+# Desatès, sí. jm
+#, fuzzy, c-format
+msgid "connection to %s established\n"
+msgstr "no es pot fet això en mode desatès\n"
+
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr ""
-
-#, c-format
-msgid "connection to agent established\n"
 msgstr ""
 
 # Destès? ivb
@@ -903,14 +905,6 @@ msgstr "no es pot fet això en mode desatès\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr ""
-
-#, c-format
-msgid "connection to the dirmngr established\n"
 msgstr ""
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
@@ -1974,23 +1968,6 @@ msgid "[User ID not found]"
 msgstr "[No s'ha trobat l'id d'usuari]"
 
 #, fuzzy, c-format
-msgid "(check argument of option '%s')\n"
-msgstr "opcions d'importació no vàlides\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "error looking up: %s\n"
-msgstr "error en la lectura de «%s»: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error creating keyring `%s': %s\n"
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "error en crear l'anell «%s»: %s\n"
-
-#, fuzzy, c-format
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "error en crear «%s»: %s\n"
 
@@ -2002,9 +1979,17 @@ msgstr "error en crear «%s»: %s\n"
 msgid "No fingerprint"
 msgstr "Empremta digital:"
 
+#, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "no s'ha trobat la clau secreta «%s»: %s\n"
+
+#, fuzzy, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "opcions d'importació no vàlides\n"
 
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
@@ -5160,6 +5145,11 @@ msgstr "no es pot treballar amb l'algoritme de clau pública %d\n"
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr ""
 "AVÍS: la clau de sessió pot estar xifrada simètricament de forma insegura\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "Notació de signatura crítica: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -9401,6 +9391,15 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "error looking up: %s\n"
+#~ msgstr "error en la lectura de «%s»: %s\n"
+
+#, fuzzy
+#~| msgid "error creating keyring `%s': %s\n"
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "error en crear l'anell «%s»: %s\n"
 
 #, fuzzy
 #~ msgid "error retrieving '%s': http status %u\n"

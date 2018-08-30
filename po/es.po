@@ -853,17 +853,19 @@ msgstr "ATENCIÓN: \"%s%s\" es una opción obsoleta - no tiene efecto\n"
 msgid "unknown debug flag '%s' ignored\n"
 msgstr "etiqueta de debug '%s' ignorada\n"
 
+#, fuzzy, c-format
+#| msgid "waiting for the agent to come up ... (%ds)\n"
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "esperando que el agente arranque... ( %ds)\n"
+
+#, fuzzy, c-format
+#| msgid "connection to agent established\n"
+msgid "connection to %s established\n"
+msgstr "conexión establecida al agente\n"
+
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
 msgstr "no hay gpg-agent en ejecución - iniciando '%s'\n"
-
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr "esperando que el agente arranque... ( %ds)\n"
-
-#, c-format
-msgid "connection to agent established\n"
-msgstr "conexión establecida al agente\n"
 
 #, c-format
 msgid "connection to agent is in restricted mode\n"
@@ -872,14 +874,6 @@ msgstr "la conexión al agente está en modo restringido\n"
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
 msgstr "no hay dirmngr en ejecución - iniciando '%s'\n"
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr "esperando que el dirmngr arranque... ( %ds)\n"
-
-#, c-format
-msgid "connection to the dirmngr established\n"
-msgstr "conexión establecida al dirmngr\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -1820,26 +1814,6 @@ msgid "[User ID not found]"
 msgstr "[ID de usuario no encontrado]"
 
 #, c-format
-msgid "(check argument of option '%s')\n"
-msgstr "(revisar el parámetro de la opción '%s')\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-"Atención: '%s' debería ser un identificador largo de usuario o una huella "
-"digital\n"
-
-#, c-format
-msgid "error looking up: %s\n"
-msgstr "error al buscar: %s\n"
-
-#, c-format
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr ""
-"Advertencia: %s aparece %d veces en el anillo de claves\n"
-"\n"
-
-#, c-format
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "'%s' recuperado automáticamente vía %s\n"
 
@@ -1851,8 +1825,16 @@ msgid "No fingerprint"
 msgstr "No hay huella digital"
 
 #, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
+#, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "clave secreta \"%s\" no encontrada: %s\n"
+
+#, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "(revisar el parámetro de la opción '%s')\n"
 
 #, c-format
 msgid "Warning: not using '%s' as default key: %s\n"
@@ -4770,6 +4752,11 @@ msgstr "no puedo manejar el algoritmo de clave pública %d\n"
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr ""
 "AVISO: clave de sesión cifrada simétricamente potencialmente insegura\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "Notación de firmas críticas: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -8913,6 +8900,25 @@ msgstr ""
 "Sintaxis: gpg-check-pattern [opciones] fichero_de_patrones\n"
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
+
+#~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
+#~ msgstr "esperando que el dirmngr arranque... ( %ds)\n"
+
+#~ msgid "connection to the dirmngr established\n"
+#~ msgstr "conexión establecida al dirmngr\n"
+
+#~ msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
+#~ msgstr ""
+#~ "Atención: '%s' debería ser un identificador largo de usuario o una huella "
+#~ "digital\n"
+
+#~ msgid "error looking up: %s\n"
+#~ msgstr "error al buscar: %s\n"
+
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr ""
+#~ "Advertencia: %s aparece %d veces en el anillo de claves\n"
+#~ "\n"
 
 #~ msgid "What keysize do you want for the Signature key? (%u) "
 #~ msgstr "¿De qué tamaño quiere la clave de Firmado? (%u) "

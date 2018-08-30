@@ -862,16 +862,17 @@ msgstr "警告：“%s”选项已不建议使用\n"
 msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "更新失败：%s\n"
+
+#, fuzzy, c-format
+#| msgid "can't do this in batch mode\n"
+msgid "connection to %s established\n"
+msgstr "在批处理模式中无法完成此操作\n"
+
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr ""
-
-#, c-format
-msgid "connection to agent established\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -881,14 +882,6 @@ msgstr "在批处理模式中无法完成此操作\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr ""
-
-#, c-format
-msgid "connection to the dirmngr established\n"
 msgstr ""
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
@@ -1882,23 +1875,6 @@ msgid "[User ID not found]"
 msgstr "[找不到用户标识]"
 
 #, fuzzy, c-format
-msgid "(check argument of option '%s')\n"
-msgstr "无效的列表选项\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "error looking up: %s\n"
-msgstr "‘%s’中出错：%s\n"
-
-#, fuzzy, c-format
-#| msgid "error creating keyring `%s': %s\n"
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "建立钥匙环‘%s’时发生错误：%s\n"
-
-#, fuzzy, c-format
 #| msgid "automatically retrieved `%s' via %s\n"
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "自动获取‘%s’，通过 %s\n"
@@ -1912,8 +1888,16 @@ msgid "No fingerprint"
 msgstr "CA 指纹："
 
 #, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
+#, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "找不到私钥“%s”：%s\n"
+
+#, fuzzy, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "无效的列表选项\n"
 
 #, fuzzy, c-format
 #| msgid "unusable secret key"
@@ -4948,6 +4932,11 @@ msgstr "无法操作公钥算法 %d\n"
 #, c-format
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "警告：潜在不安全的对称加密会话密钥\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "关键签名注记："
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -9117,6 +9106,15 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "error looking up: %s\n"
+#~ msgstr "‘%s’中出错：%s\n"
+
+#, fuzzy
+#~| msgid "error creating keyring `%s': %s\n"
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "建立钥匙环‘%s’时发生错误：%s\n"
 
 #, fuzzy
 #~ msgid "error retrieving '%s': http status %u\n"

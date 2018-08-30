@@ -908,18 +908,19 @@ msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "waiting %d seconds for the agent to come up\n"
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "oczekiwanie (%d s) na uruchomienie agenta\n"
+
+#, fuzzy, c-format
+#| msgid "can't connect to the dirmngr - trying fall back\n"
+msgid "connection to %s established\n"
+msgstr "nie można połączyć się z dirmngr - próba fallbacku\n"
+
+#, fuzzy, c-format
 #| msgid "no running gpg-agent - starting one\n"
 msgid "no running gpg-agent - starting '%s'\n"
 msgstr "gpg-agent nie działa - uruchamianie\n"
-
-#, fuzzy, c-format
-#| msgid "waiting %d seconds for the agent to come up\n"
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr "oczekiwanie (%d s) na uruchomienie agenta\n"
-
-#, c-format
-msgid "connection to agent established\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "can't connect to the dirmngr - trying fall back\n"
@@ -930,16 +931,6 @@ msgstr "nie można połączyć się z dirmngr - próba fallbacku\n"
 #| msgid "no running dirmngr - starting `%s'\n"
 msgid "no running Dirmngr - starting '%s'\n"
 msgstr "dirmngr nie działa - uruchamianie ,,%s''\n"
-
-#, fuzzy, c-format
-#| msgid "waiting %d seconds for the agent to come up\n"
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr "oczekiwanie (%d s) na uruchomienie agenta\n"
-
-#, fuzzy, c-format
-#| msgid "can't connect to the dirmngr - trying fall back\n"
-msgid "connection to the dirmngr established\n"
-msgstr "nie można połączyć się z dirmngr - próba fallbacku\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -1937,25 +1928,6 @@ msgid "[User ID not found]"
 msgstr "[brak identyfikatora użytkownika]"
 
 #, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "(check argument of option '%s')\n"
-msgstr "brak argumentu dla opcji ,,%.50s''\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error closing %s: %s\n"
-msgid "error looking up: %s\n"
-msgstr "błąd zamykania %s: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error creating keyring `%s': %s\n"
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "błąd tworzenia zbioru kluczy `%s': %s\n"
-
-#, fuzzy, c-format
 #| msgid "automatically retrieved `%s' via %s\n"
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "automatycznie pobrano `%s' poprzez %s\n"
@@ -1969,8 +1941,17 @@ msgid "No fingerprint"
 msgstr "Brak odcisku"
 
 #, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
+#, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "klucz prywatny ,,%s'' nie został odnaleziony: %s\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "(check argument of option '%s')\n"
+msgstr "brak argumentu dla opcji ,,%.50s''\n"
 
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
@@ -5119,6 +5100,11 @@ msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr ""
 "OSTRZEŻENIE: symetrycznie zaszyfrowany klucz sesyjny może nie być "
 "bezpieczny\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "Krytyczne adnotacje podpisu: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -9599,6 +9585,21 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
+
+#, fuzzy
+#~| msgid "waiting %d seconds for the agent to come up\n"
+#~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
+#~ msgstr "oczekiwanie (%d s) na uruchomienie agenta\n"
+
+#, fuzzy
+#~| msgid "error closing %s: %s\n"
+#~ msgid "error looking up: %s\n"
+#~ msgstr "błąd zamykania %s: %s\n"
+
+#, fuzzy
+#~| msgid "error creating keyring `%s': %s\n"
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "błąd tworzenia zbioru kluczy `%s': %s\n"
 
 #, fuzzy
 #~| msgid "error running `%s': exit status %d\n"

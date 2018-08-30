@@ -834,17 +834,19 @@ msgstr "УВАГА: «%s%s» є застарілим параметром — в
 msgid "unknown debug flag '%s' ignored\n"
 msgstr "невідомий прапорець діагностики «%s» проігноровано\n"
 
+#, fuzzy, c-format
+#| msgid "waiting for the agent to come up ... (%ds)\n"
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "очікування на працездатність агента… (%d с)\n"
+
+#, fuzzy, c-format
+#| msgid "connection to agent established\n"
+msgid "connection to %s established\n"
+msgstr "встановлено з’єднання з агентом\n"
+
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
 msgstr "не запущено gpg-agent — запускаємо «%s»\n"
-
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr "очікування на працездатність агента… (%d с)\n"
-
-#, c-format
-msgid "connection to agent established\n"
-msgstr "встановлено з’єднання з агентом\n"
 
 #, c-format
 msgid "connection to agent is in restricted mode\n"
@@ -853,14 +855,6 @@ msgstr "з’єднання з агентом відбувається у обм
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
 msgstr "Dirmngr не запущено — запускаємо «%s»\n"
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr "очікування на працездатність dirmngr… (%d с)\n"
-
-#, c-format
-msgid "connection to the dirmngr established\n"
-msgstr "встановлено з’єднання з dirmngr\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -1824,23 +1818,6 @@ msgid "[User ID not found]"
 msgstr "[Ідентифікатор не знайдено]"
 
 #, c-format
-msgid "(check argument of option '%s')\n"
-msgstr "(перевірте аргумент параметра «%s»)\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-"Попередження: «%s» має бути довгим ідентифікатором ключа або відбитком\n"
-
-#, c-format
-msgid "error looking up: %s\n"
-msgstr "помилка під час пошуку: %s\n"
-
-#, c-format
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "Попередження: запис %s наявний у сховищі %d разів\n"
-
-#, c-format
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "автоматично отримано «%s» за допомогою %s\n"
 
@@ -1852,8 +1829,16 @@ msgid "No fingerprint"
 msgstr "Без відбитка"
 
 #, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
+#, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "закритий ключ «%s» не знайдено: %s\n"
+
+#, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "(перевірте аргумент параметра «%s»)\n"
 
 #, c-format
 msgid "Warning: not using '%s' as default key: %s\n"
@@ -4862,6 +4847,11 @@ msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr ""
 "УВАГА: потенційно небезпечний зашифрований симетричним алгоритмом ключ "
 "сеансу\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "Критична примітка підпису: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -9057,6 +9047,22 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
+#~ msgstr "очікування на працездатність dirmngr… (%d с)\n"
+
+#~ msgid "connection to the dirmngr established\n"
+#~ msgstr "встановлено з’єднання з dirmngr\n"
+
+#~ msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
+#~ msgstr ""
+#~ "Попередження: «%s» має бути довгим ідентифікатором ключа або відбитком\n"
+
+#~ msgid "error looking up: %s\n"
+#~ msgstr "помилка під час пошуку: %s\n"
+
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "Попередження: запис %s наявний у сховищі %d разів\n"
 
 #~ msgid "using \"http\" instead of \"https\"\n"
 #~ msgstr "використовуємо «http» замість «https»\n"

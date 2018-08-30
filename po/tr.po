@@ -907,17 +907,19 @@ msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "waiting for process %d to terminate failed: %s\n"
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "süreç %d sonlanacak diye beklerken başarısızlık: %s\n"
+
+#, fuzzy, c-format
+#| msgid "can't connect to the dirmngr - trying fall back\n"
+msgid "connection to %s established\n"
+msgstr "dirmngr'a bağlanılamıyor - son çareye başvuruluyor\n"
+
+#, fuzzy, c-format
 #| msgid "no running gpg-agent - starting one\n"
 msgid "no running gpg-agent - starting '%s'\n"
 msgstr "çalışan gpg-agent yok - bir tane başlatılıyor\n"
-
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr ""
-
-#, c-format
-msgid "connection to agent established\n"
-msgstr ""
 
 #, fuzzy, c-format
 #| msgid "can't connect to the dirmngr - trying fall back\n"
@@ -928,15 +930,6 @@ msgstr "dirmngr'a bağlanılamıyor - son çareye başvuruluyor\n"
 #| msgid "no running dirmngr - starting `%s'\n"
 msgid "no running Dirmngr - starting '%s'\n"
 msgstr "çalışan dirmngr yok - `%s' başlatılıyor\n"
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "can't connect to the dirmngr - trying fall back\n"
-msgid "connection to the dirmngr established\n"
-msgstr "dirmngr'a bağlanılamıyor - son çareye başvuruluyor\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -1933,25 +1926,6 @@ msgid "[User ID not found]"
 msgstr "[Kullanıcı kimliği yok]"
 
 #, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "(check argument of option '%s')\n"
-msgstr "\"%.50s\" seçeneği için değiştirge eksik\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error closing %s: %s\n"
-msgid "error looking up: %s\n"
-msgstr "%s kapanırken hata: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error creating keyring `%s': %s\n"
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "`%s' anahtarlığı oluşturulurken hata: %s\n"
-
-#, fuzzy, c-format
 #| msgid "automatically retrieved `%s' via %s\n"
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "`%s' %s üzerinden özdevinimli olarak alındı\n"
@@ -1965,8 +1939,17 @@ msgid "No fingerprint"
 msgstr "Parmak izi yok"
 
 #, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
+#, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "gizli anahtar \"%s\" yok: %s\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "(check argument of option '%s')\n"
+msgstr "\"%.50s\" seçeneği için değiştirge eksik\n"
 
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
@@ -5118,6 +5101,11 @@ msgstr "%d genel anahtar algoritması kullanılamadı\n"
 #, c-format
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "UYARI: simetrik şifreli oturum anahtarı potansiyel olarak güvensiz\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "Kritik imza simgelemi: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -9575,6 +9563,16 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#, fuzzy
+#~| msgid "error closing %s: %s\n"
+#~ msgid "error looking up: %s\n"
+#~ msgstr "%s kapanırken hata: %s\n"
+
+#, fuzzy
+#~| msgid "error creating keyring `%s': %s\n"
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "`%s' anahtarlığı oluşturulurken hata: %s\n"
 
 #, fuzzy
 #~| msgid "error running `%s': exit status %d\n"

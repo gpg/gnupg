@@ -828,17 +828,19 @@ msgstr "警告: \"%s%s\" 是已廢棄的選項 - 沒有效果\n"
 msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "waiting for the agent to come up ... (%ds)\n"
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "正在等候代理程式出現 ... (%d 秒)\n"
+
+#, fuzzy, c-format
+#| msgid "connection to agent established\n"
+msgid "connection to %s established\n"
+msgstr "至代理程式的連線已建立\n"
+
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
 msgstr "沒有執行中的 gpg-agent - 正在啟動 '%s'\n"
-
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr "正在等候代理程式出現 ... (%d 秒)\n"
-
-#, c-format
-msgid "connection to agent established\n"
-msgstr "至代理程式的連線已建立\n"
 
 #, fuzzy, c-format
 #| msgid "connection to agent established\n"
@@ -848,14 +850,6 @@ msgstr "至代理程式的連線已建立\n"
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
 msgstr "沒有執行中的 Dirmngr - 正在啟動 '%s'\n"
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr "正在等候 dirmngr 出現 ... (%d 秒)\n"
-
-#, c-format
-msgid "connection to the dirmngr established\n"
-msgstr "連線至 dirmngr 已建立\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -1805,25 +1799,6 @@ msgstr "建立 '%s' 時出錯: %s\n"
 msgid "[User ID not found]"
 msgstr "[找不到使用者 ID]"
 
-#, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
-msgid "(check argument of option '%s')\n"
-msgstr "\"%.50s\" 選項遺失了引數\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "error closing %s: %s\n"
-msgid "error looking up: %s\n"
-msgstr "關閉 %s 時出錯: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error creating keyring '%s': %s\n"
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "建立鑰匙圈 '%s' 時出錯: %s\n"
-
 #, c-format
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "已自動取回 '%s' (經由 %s )\n"
@@ -1836,8 +1811,17 @@ msgid "No fingerprint"
 msgstr "沒有指紋"
 
 #, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
+#, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "找不到私鑰 \"%s\": %s\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "(check argument of option '%s')\n"
+msgstr "\"%.50s\" 選項遺失了引數\n"
 
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
@@ -4772,6 +4756,11 @@ msgstr "無法操作 %d 公開金鑰演算法\n"
 #, c-format
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "警告: 可能並不安全的對稱式加密階段金鑰\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "關鍵簽章註記: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -8831,6 +8820,22 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
+#~ msgstr "正在等候 dirmngr 出現 ... (%d 秒)\n"
+
+#~ msgid "connection to the dirmngr established\n"
+#~ msgstr "連線至 dirmngr 已建立\n"
+
+#, fuzzy
+#~| msgid "error closing %s: %s\n"
+#~ msgid "error looking up: %s\n"
+#~ msgstr "關閉 %s 時出錯: %s\n"
+
+#, fuzzy
+#~| msgid "error creating keyring '%s': %s\n"
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "建立鑰匙圈 '%s' 時出錯: %s\n"
 
 #~ msgid "using \"http\" instead of \"https\"\n"
 #~ msgstr "正改以 \"http\" 代替 \"https\"\n"

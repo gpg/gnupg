@@ -863,16 +863,16 @@ msgstr "VAROITUS: \"%s\" on paheksuttu valitsin\n"
 msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "päivitys epäonnistui: %s\n"
+
+#, fuzzy, c-format
+msgid "connection to %s established\n"
+msgstr "tätä ei voi tehdä eräajossa\n"
+
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr ""
-
-#, c-format
-msgid "connection to agent established\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -881,14 +881,6 @@ msgstr "tätä ei voi tehdä eräajossa\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr ""
-
-#, c-format
-msgid "connection to the dirmngr established\n"
 msgstr ""
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
@@ -1913,23 +1905,6 @@ msgid "[User ID not found]"
 msgstr "[Käyttäjätunnusta ei löytynyt]"
 
 #, fuzzy, c-format
-msgid "(check argument of option '%s')\n"
-msgstr "virheelliset tuontivalitsimet\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "error looking up: %s\n"
-msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
-
-#, fuzzy, c-format
-#| msgid "error creating keyring `%s': %s\n"
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "virhe luotaessa avainrengasta \"%s\": %s\n"
-
-#, fuzzy, c-format
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "virhe luotaessa \"%s\": %s\n"
 
@@ -1941,9 +1916,17 @@ msgstr "virhe luotaessa \"%s\": %s\n"
 msgid "No fingerprint"
 msgstr "näytä sormenjälki"
 
+#, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "salaista avainta \"%s\" ei löydy: %s\n"
+
+#, fuzzy, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "virheelliset tuontivalitsimet\n"
 
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
@@ -5035,6 +5018,11 @@ msgstr "julkisen avaimen algorimin %d käsittely ei onnistu\n"
 #, c-format
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "VAROITUS: mahdollisesti turvaton symmetrisesti salattu istuntoavain\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "Kriittinen allekirjoitusnotaatio: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -9214,6 +9202,15 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "error looking up: %s\n"
+#~ msgstr "virhe luettaessa tiedostoa \"%s\": %s\n"
+
+#, fuzzy
+#~| msgid "error creating keyring `%s': %s\n"
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "virhe luotaessa avainrengasta \"%s\": %s\n"
 
 #, fuzzy
 #~ msgid "error retrieving '%s': http status %u\n"

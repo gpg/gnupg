@@ -846,16 +846,16 @@ msgstr "HOIATUS: võtit \"%s\" ei soovitata kasutada.\n"
 msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "uuendamine ebaõnnestus: %s\n"
+
+#, fuzzy, c-format
+msgid "connection to %s established\n"
+msgstr "seda ei saa teha pakettmoodis\n"
+
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr ""
-
-#, c-format
-msgid "connection to agent established\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -864,14 +864,6 @@ msgstr "seda ei saa teha pakettmoodis\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr ""
-
-#, c-format
-msgid "connection to the dirmngr established\n"
 msgstr ""
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
@@ -1898,23 +1890,6 @@ msgid "[User ID not found]"
 msgstr "[Kasutaja id puudub]"
 
 #, fuzzy, c-format
-msgid "(check argument of option '%s')\n"
-msgstr "vigased impordi võtmed\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "error looking up: %s\n"
-msgstr "viga `%s' lugemisel: %s\n"
-
-#, fuzzy, c-format
-#| msgid "error creating keyring `%s': %s\n"
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "viga võtmehoidla `%s' loomisel: %s\n"
-
-#, fuzzy, c-format
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "viga `%s' loomisel: %s\n"
 
@@ -1926,9 +1901,17 @@ msgstr "viga `%s' loomisel: %s\n"
 msgid "No fingerprint"
 msgstr "näita sõrmejälge"
 
+#, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "salajast võtit `%s' ei leitud: %s\n"
+
+#, fuzzy, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "vigased impordi võtmed\n"
 
 #, fuzzy, c-format
 #| msgid "|NAME|use NAME as default secret key"
@@ -4998,6 +4981,11 @@ msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr ""
 "HOIATUS: tõenäoliselt ebaturvaline sümmeetriliselt krüpteeritud sessiooni "
 "võti\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "Kriitiline allkirja noteerimine: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -9152,6 +9140,15 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "error looking up: %s\n"
+#~ msgstr "viga `%s' lugemisel: %s\n"
+
+#, fuzzy
+#~| msgid "error creating keyring `%s': %s\n"
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "viga võtmehoidla `%s' loomisel: %s\n"
 
 #, fuzzy
 #~ msgid "error retrieving '%s': http status %u\n"

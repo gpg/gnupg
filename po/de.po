@@ -1836,7 +1836,8 @@ msgstr "Kein Fingerabdruck vorhanden"
 
 #, c-format
 msgid "checking for a fresh copy of an expired key via %s\n"
-msgstr "Prüfe auf eine aktuellere Kopie eines abgelaufenen Schlüssels über %s\n"
+msgstr ""
+"Prüfe auf eine aktuellere Kopie eines abgelaufenen Schlüssels über %s\n"
 
 #, c-format
 msgid "secret key \"%s\" not found: %s\n"

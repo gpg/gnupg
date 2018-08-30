@@ -821,17 +821,19 @@ msgstr ""
 msgid "unknown debug flag '%s' ignored\n"
 msgstr "未知のdebugフラグ'%s'は無視されました\n"
 
+#, fuzzy, c-format
+#| msgid "waiting for the agent to come up ... (%ds)\n"
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "agentの起動のため、%d秒待ちます\n"
+
+#, fuzzy, c-format
+#| msgid "connection to agent established\n"
+msgid "connection to %s established\n"
+msgstr "エージェントへの接続が確立しました。\n"
+
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
 msgstr "gpg-agentが実行されていません - '%s'を開始します\n"
-
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr "agentの起動のため、%d秒待ちます\n"
-
-#, c-format
-msgid "connection to agent established\n"
-msgstr "エージェントへの接続が確立しました。\n"
 
 #, c-format
 msgid "connection to agent is in restricted mode\n"
@@ -840,14 +842,6 @@ msgstr "エージェントへの接続は制限モードです。\n"
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
 msgstr "dirmngrが動いていません - 開始します'%s'\n"
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr "dirmngrの起動のため、%d秒待ちます\n"
-
-#, c-format
-msgid "connection to the dirmngr established\n"
-msgstr "dirmngrへの接続が確立しました\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -1776,22 +1770,6 @@ msgid "[User ID not found]"
 msgstr "[ユーザIDが見つかりません]"
 
 #, c-format
-msgid "(check argument of option '%s')\n"
-msgstr "(オプション'%s'の引数を確認ください)\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr "警告: '%s'は長い鍵IDかフィンガープリントであるべきです。\n"
-
-#, c-format
-msgid "error looking up: %s\n"
-msgstr "検索のエラー: %s\n"
-
-#, c-format
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "警告: %sは鍵リングに%d回出現します\n"
-
-#, c-format
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "'%s'を %s から自動取得\n"
 
@@ -1803,8 +1781,16 @@ msgid "No fingerprint"
 msgstr "フィンガープリントがありません"
 
 #, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr ""
+
+#, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "秘密鍵\"%s\"が見つかりません: %s\n"
+
+#, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "(オプション'%s'の引数を確認ください)\n"
 
 #, c-format
 msgid "Warning: not using '%s' as default key: %s\n"
@@ -4671,6 +4657,11 @@ msgstr "公開鍵のアルゴリズム%dは、取り扱えません\n"
 #, c-format
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "*警告*: 潜在的にセキュアでない共通鍵暗号化セッション鍵です\n"
+
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "クリティカルな署名注釈: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
@@ -8672,6 +8663,21 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
+#~ msgstr "dirmngrの起動のため、%d秒待ちます\n"
+
+#~ msgid "connection to the dirmngr established\n"
+#~ msgstr "dirmngrへの接続が確立しました\n"
+
+#~ msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
+#~ msgstr "警告: '%s'は長い鍵IDかフィンガープリントであるべきです。\n"
+
+#~ msgid "error looking up: %s\n"
+#~ msgstr "検索のエラー: %s\n"
+
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "警告: %sは鍵リングに%d回出現します\n"
 
 #~ msgid "using \"http\" instead of \"https\"\n"
 #~ msgstr "\"http\" を \"https\" の代わりに使います\n"
