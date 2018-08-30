@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2018-07-12 14:48+0200\n"
+"PO-Revision-Date: 2018-08-30 09:44+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -851,17 +851,19 @@ msgstr "WARNUNG: \"%s%s\" ist eine veraltete Option - sie hat keine Wirkung.\n"
 msgid "unknown debug flag '%s' ignored\n"
 msgstr "Unbekanntes Debug Flag '%s' wird ignoriert\n"
 
+#, fuzzy, c-format
+#| msgid "waiting for the agent to come up ... (%ds)\n"
+msgid "waiting for the %s to come up ... (%ds)\n"
+msgstr "Warte bis der gpg-agent bereit ist ... (%ds)\n"
+
+#, fuzzy, c-format
+#| msgid "connection to agent established\n"
+msgid "connection to %s established\n"
+msgstr "Verbindung zum gpg-agent aufgebaut\n"
+
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
 msgstr "Kein aktiver gpg-agent - `%s' wird gestartet\n"
-
-#, c-format
-msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr "Warte bis der gpg-agent bereit ist ... (%ds)\n"
-
-#, c-format
-msgid "connection to agent established\n"
-msgstr "Verbindung zum gpg-agent aufgebaut\n"
 
 #, c-format
 msgid "connection to agent is in restricted mode\n"
@@ -870,14 +872,6 @@ msgstr "Verbindung zum gpg-agent ist im eingeschränkten Modus.\n"
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
 msgstr "Kein aktiver Dirmngr - `%s' wird gestartet\n"
-
-#, c-format
-msgid "waiting for the dirmngr to come up ... (%ds)\n"
-msgstr "Warte bis der Dirmngr bereit ist ... (%ds)\n"
-
-#, c-format
-msgid "connection to the dirmngr established\n"
-msgstr "Verbindung zum Dirmngr aufgebaut\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -1830,23 +1824,6 @@ msgid "[User ID not found]"
 msgstr "[User-ID nicht gefunden]"
 
 #, c-format
-msgid "(check argument of option '%s')\n"
-msgstr "(Prüfe das Argument der Option '%s')\n"
-
-#, c-format
-msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
-msgstr ""
-"WARNUNG: '%s' sollte eine lange Schlüssel-ID oder ein Fingerabdruck sein\n"
-
-#, c-format
-msgid "error looking up: %s\n"
-msgstr "Fehler beim Nachschlagen von: %s\n"
-
-#, c-format
-msgid "Warning: %s appears in the keyring %d times\n"
-msgstr "WARNUNG: %s ist %d mal im Schlüsselbund vorhanden\n"
-
-#, c-format
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "`%s' automatisch via %s geholt\n"
 
@@ -1858,8 +1835,16 @@ msgid "No fingerprint"
 msgstr "Kein Fingerabdruck vorhanden"
 
 #, c-format
+msgid "checking for a fresh copy of an expired key via %s\n"
+msgstr "Prüfe auf eine aktuellere Kopie eines abgelaufenen Schlüssels über %s\n"
+
+#, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "Geheimer Schlüssel \"%s\" nicht gefunden: %s\n"
+
+#, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "(Prüfe das Argument der Option '%s')\n"
 
 #, c-format
 msgid "Warning: not using '%s' as default key: %s\n"
@@ -4831,6 +4816,11 @@ msgstr ""
 "WARNUNG: Möglicherweise unsicherer symmetrisch verschlüsselter "
 "Sitzungsschlüssel\n"
 
+#, fuzzy, c-format
+#| msgid "Critical signature notation: "
+msgid "Unknown critical signature notation: "
+msgstr "Entscheidender Beglaubigungs-\"Notation\": "
+
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "Im Unterpaket des Typs %d ist das \"critical bit\" gesetzt\n"
@@ -5831,19 +5821,17 @@ msgstr "Statistik für Schlüssel mit der Email-Adresse \"%s\":\n"
 msgid "this key"
 msgstr "dieser Schlüssel"
 
-#, fuzzy, c-format
-#| msgid "Verified %ld messages signed by \"%s\"."
+#, c-format
 msgid "Verified %d message."
 msgid_plural "Verified %d messages."
-msgstr[0] "%ld überprüfte Nachrichten von \"%s\"."
-msgstr[1] "%ld überprüfte Nachrichten von \"%s\"."
+msgstr[0] "%d überprüfte Nachricht."
+msgstr[1] "%d überprüfte Nachrichten."
 
-#, fuzzy, c-format
-#| msgid "encrypted with %lu passphrases\n"
+#, c-format
 msgid "Encrypted %d message."
 msgid_plural "Encrypted %d messages."
-msgstr[0] "Verschlüsselt mit %lu Passphrases\n"
-msgstr[1] "Verschlüsselt mit %lu Passphrases\n"
+msgstr[0] "%d Nachricht wurde verschlüsselt."
+msgstr[1] "%d Nachrichten wurden verschlüsselt."
 
 #, fuzzy, c-format
 #| msgid "%ld message signed in the future."
@@ -9103,6 +9091,22 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
+#~ msgstr "Warte bis der Dirmngr bereit ist ... (%ds)\n"
+
+#~ msgid "connection to the dirmngr established\n"
+#~ msgstr "Verbindung zum Dirmngr aufgebaut\n"
+
+#~ msgid "Warning: '%s' should be a long key ID or a fingerprint\n"
+#~ msgstr ""
+#~ "WARNUNG: '%s' sollte eine lange Schlüssel-ID oder ein Fingerabdruck sein\n"
+
+#~ msgid "error looking up: %s\n"
+#~ msgstr "Fehler beim Nachschlagen von: %s\n"
+
+#~ msgid "Warning: %s appears in the keyring %d times\n"
+#~ msgstr "WARNUNG: %s ist %d mal im Schlüsselbund vorhanden\n"
 
 #~ msgid "using \"http\" instead of \"https\"\n"
 #~ msgstr "Es wird \"HTTP\" anstatt \"HTTPS\" verwendet\n"
