@@ -1,5 +1,20 @@
-Noteworthy changes in version 2.2.10 (unreleased)
+Noteworthy changes in version 2.2.10 (2018-08-30)
 -------------------------------------------------
+
+  gpg: Refresh expired keys originating from the WKD.  [#2917]
+
+  gpg: Use a 256 KiB limit for a WKD imported key.
+
+  gpg: New option --known-notation.  [#4060]
+
+  scd: Add support for the Trustica Cryptoucan reader.
+
+  agent: Speed up starting during on-demand launching.  [#3490]
+
+  dirmngr: Validate SRV records in WKD queries.
+
+  Release-info: https://dev.gnupg.org/T4112
+  See-also: gnupg-announce/2018q3/000428.html
 
 
 Noteworthy changes in version 2.2.9 (2018-07-12)
@@ -41,7 +56,6 @@ Noteworthy changes in version 2.2.9 (2018-07-12)
   * gpg: New "usage" property for the drop-subkey filters.  [#4019]
 
   Release-info: https://dev.gnupg.org/T4036
-
   See-also: gnupg-announce/2018q3/000427.html
 
 
