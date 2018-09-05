@@ -53,6 +53,7 @@ XGETTEXT_OPTIONS = \
         --flag=xasprintf:1:c-format   \
         --flag=xtryasprintf:1:c-format   \
         --flag=log_debug_with_string:2:c-format   \
+	--flag=status_printf:3:c-format  \
         --flag=print_assuan_status:3:c-format    \
         --flag=vprint_assuan_status:3:c-format   \
 	--flag=agent_print_status:3:c-format     \

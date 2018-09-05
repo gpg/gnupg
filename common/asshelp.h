@@ -82,8 +82,14 @@ gpg_error_t get_assuan_server_version (assuan_context_t ctx,
 
 /*-- asshelp2.c --*/
 
+void set_assuan_context_func (assuan_context_t (*func)(ctrl_t ctrl));
+
 /* Helper function to print an assuan status line using a printf
    format string.  */
+
+gpg_error_t status_printf (ctrl_t ctrl, int no, const char *format,
+                           ...) GPGRT_ATTR_PRINTF(3,4);
+
 gpg_error_t print_assuan_status (assuan_context_t ctx,
                                  const char *keyword,
                                  const char *format,
