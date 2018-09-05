@@ -18,22 +18,29 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = mkerrors
+EXTRA_DIST = mkerrors keyboxd-w32info.rc
 
 AM_CPPFLAGS =
 
 include $(top_srcdir)/am/cmacros.am
+if HAVE_W32_SYSTEM
+resource_objs += keyboxd-w32info.o
+endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
 noinst_LIBRARIES = libkeybox.a libkeybox509.a
 bin_PROGRAMS = kbxutil
+libexec_PROGRAMS = keyboxd
 
 if HAVE_W32CE_SYSTEM
 extra_libs =  $(LIBASSUAN_LIBS)
 else
 extra_libs =
 endif
+
+common_libs = $(libcommon)
+commonpth_libs = $(libcommonpth)
 
 common_sources = \
 	keybox.h keybox-defs.h keybox-search-desc.h \
@@ -59,9 +66,26 @@ libkeybox509_a_CFLAGS = $(AM_CFLAGS) -DKEYBOX_WITH_X509=1
 # to do it this way.
 kbxutil_SOURCES = kbxutil.c $(common_sources)
 kbxutil_CFLAGS = $(AM_CFLAGS) -DKEYBOX_WITH_X509=1
-kbxutil_LDADD   = ../common/libcommon.a \
+kbxutil_LDADD   = $(common_libs) \
                   $(KSBA_LIBS) $(LIBGCRYPT_LIBS) $(extra_libs) \
                   $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS) \
 		  $(NETLIBS)
 
-$(PROGRAMS) : ../common/libcommon.a
+
+keyboxd_SOURCES = \
+	keyboxd.c keyboxd.h \
+	kbxserver.c
+
+keyboxd_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS) \
+		$(INCICONV)
+keyboxd_LDADD = $(commonpth_libs) \
+                $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
+	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
+		$(resource_objs)
+keyboxd_LDFLAGS = $(extra_bin_ldflags)
+keyboxd_DEPENDENCIES = $(resource_objs)
+
+
+# Make sure that all libs are build before we use them.  This is
+# important for things like make -j2.
+$(PROGRAMS): $(common_libs) $(commonpth_libs)
