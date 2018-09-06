@@ -1266,7 +1266,7 @@ string_to_notation(const char *string,int is_utf8)
     }
 
   notation->name=xmalloc((s-string)+1);
-  strncpy(notation->name,string,s-string);
+  memcpy(notation->name,string,s-string);
   notation->name[s-string]='\0';
 
   if(!saw_at && !opt.expert)
