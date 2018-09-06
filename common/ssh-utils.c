@@ -247,7 +247,7 @@ get_fingerprint (gcry_sexp_t key, int algo,
           goto leave;
         }
 
-      strncpy (*r_fpr, algo_name, strlen (algo_name));
+      memcpy (*r_fpr, algo_name, strlen (algo_name));
       fpr = (char *) *r_fpr + strlen (algo_name);
       *fpr++ = ':';
 
