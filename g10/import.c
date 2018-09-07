@@ -924,6 +924,8 @@ read_block( IOBUF a, int with_meta,
                 add_kbnode (root, new_kbnode (pkt));
               pkt = xmalloc (sizeof *pkt);
             }
+          else
+            free_packet (pkt, &parsectx);
           init_packet(pkt);
           break;
         }
