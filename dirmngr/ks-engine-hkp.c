@@ -1493,7 +1493,11 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
       goto again;
     }
   if (err)
-    goto leave;
+    {
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+        dirmngr_status (ctrl, "SOURCE", hostport, NULL);
+      goto leave;
+    }
 
   err = dirmngr_status (ctrl, "SOURCE", hostport, NULL);
   if (err)
@@ -1628,7 +1632,11 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
       goto again;
     }
   if (err)
-    goto leave;
+    {
+      if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+        dirmngr_status (ctrl, "SOURCE", hostport, NULL);
+      goto leave;
+    }
 
   err = dirmngr_status (ctrl, "SOURCE", hostport, NULL);
   if (err)
