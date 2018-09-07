@@ -608,6 +608,12 @@ gpg_dirmngr_ks_search (ctrl_t ctrl, const char *searchstr,
                         NULL, NULL, ks_status_cb, &stparm);
   if (!err)
     err = cb (cb_value, 0, NULL);  /* Send EOF.  */
+  else if (parm.stparm->source)
+    {
+      /* Error but we received a SOURCE status.  Tell via callback but
+       * ignore errors.  */
+      parm.data_cb (parm.data_cb_value, 1, parm.stparm->source);
+    }
 
   xfree (get_membuf (&parm.saveddata, NULL));
   xfree (parm.helpbuf);
@@ -650,6 +656,7 @@ ks_get_data_cb (void *opaque, const void *data, size_t datalen)
 
    If R_SOURCE is not NULL the source of the data is stored as a
    malloced string there.  If a source is not known NULL is stored.
+   Note that this may even be returned after an error.
 
    If there are too many patterns the function returns an error.  That
    could be fixed by issuing several search commands or by
@@ -737,13 +744,13 @@ gpg_dirmngr_ks_get (ctrl_t ctrl, char **pattern,
   *r_fp = parm.memfp;
   parm.memfp = NULL;
 
-  if (r_source)
+
+ leave:
+  if (r_source && stparm.source)
     {
       *r_source = stparm.source;
       stparm.source = NULL;
     }
-
- leave:
   es_fclose (parm.memfp);
   xfree (stparm.source);
   xfree (line);
