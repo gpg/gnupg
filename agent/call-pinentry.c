@@ -98,11 +98,15 @@ void
 initialize_module_call_pinentry (void)
 {
   static int initialized;
+  int err;
 
   if (!initialized)
     {
-      if (npth_mutex_init (&entry_lock, NULL))
-        initialized = 1;
+      err = npth_mutex_init (&entry_lock, NULL);
+      if (err)
+	log_fatal ("error initializing mutex: %s\n", strerror (err));
+
+      initialized = 1;
     }
 }
 
