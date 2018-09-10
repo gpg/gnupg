@@ -856,9 +856,9 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
 		    }
 		  else if (c == 255)
 		    {
-		      a->size = (size_t)iobuf_get (chain) << 24;
-		      a->size |= iobuf_get (chain) << 16;
-		      a->size |= iobuf_get (chain) << 8;
+		      a->size = iobuf_get_noeof (chain) << 24;
+		      a->size |= iobuf_get_noeof (chain) << 16;
+		      a->size |= iobuf_get_noeof (chain) << 8;
 		      if ((c = iobuf_get (chain)) == -1)
 			{
 			  log_error ("block_filter: invalid 4 byte length\n");
