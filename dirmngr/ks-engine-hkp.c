@@ -35,6 +35,7 @@
 # include <netdb.h>
 #endif /*!HAVE_W32_SYSTEM*/
 
+#include <npth.h>
 #include "dirmngr.h"
 #include "misc.h"
 #include "../common/userids.h"
@@ -108,6 +109,8 @@ struct hostinfo_s
    resolved from a pool name and its allocated size.*/
 static hostinfo_t *hosttable;
 static int hosttable_size;
+/* A mutex used to serialize access to the hosttable. */
+static npth_mutex_t hosttable_lock;
 
 /* The number of host slots we initially allocate for HOSTTABLE.  */
 #define INITIAL_HOSTTABLE_SIZE 50
@@ -753,9 +756,15 @@ ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive)
   if (!name || !*name || !strcmp (name, "localhost"))
     return 0;
 
+  if (npth_mutex_lock (&hosttable_lock))
+    log_fatal ("failed to acquire mutex\n");
+
   idx = find_hostinfo (name);
   if (idx == -1)
-    return gpg_error (GPG_ERR_NOT_FOUND);
+    {
+      err = gpg_error (GPG_ERR_NOT_FOUND);
+      goto leave;
+    }
 
   hi = hosttable[idx];
   if (alive && hi->dead)
@@ -814,6 +823,10 @@ ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive)
         }
     }
 
+ leave:
+  if (npth_mutex_unlock (&hosttable_lock))
+    log_fatal ("failed to release mutex\n");
+
   return err;
 }
 
@@ -834,7 +847,9 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
   if (err)
     return err;
 
-  /* FIXME: We need a lock for the hosttable.  */
+  if (npth_mutex_lock (&hosttable_lock))
+    log_fatal ("failed to acquire mutex\n");
+
   curtime = gnupg_get_time ();
   for (idx=0; idx < hosttable_size; idx++)
     if ((hi=hosttable[idx]))
@@ -927,12 +942,12 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
                               diedstr? ")":""   );
         xfree (died);
         if (err)
-          return err;
+	  goto leave;
 
         if (hi->cname)
           err = ks_printf_help (ctrl, "  .       %s", hi->cname);
         if (err)
-          return err;
+	  goto leave;
 
         if (hi->pool)
           {
@@ -947,14 +962,21 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
             put_membuf( &mb, "", 1);
             p = get_membuf (&mb, NULL);
             if (!p)
-              return gpg_error_from_syserror ();
+	      {
+		err = gpg_error_from_syserror ();
+		goto leave;
+	      }
             err = ks_print_help (ctrl, p);
             xfree (p);
             if (err)
-              return err;
+              goto leave;
           }
       }
-  return 0;
+
+ leave:
+  if (npth_mutex_unlock (&hosttable_lock))
+    log_fatal ("failed to release mutex\n");
+  return err;
 }
 
 
@@ -1023,9 +1045,16 @@ make_host_part (ctrl_t ctrl,
       protocol = KS_PROTOCOL_HKP;
     }
 
+  if (npth_mutex_lock (&hosttable_lock))
+    log_fatal ("failed to acquire mutex\n");
+
   portstr[0] = 0;
   err = map_host (ctrl, host, srvtag, force_reselect, protocol,
                   &hostname, portstr, r_httpflags, r_httphost);
+
+  if (npth_mutex_unlock (&hosttable_lock))
+    log_fatal ("failed to release mutex\n");
+
   if (err)
     return err;
 
@@ -1099,6 +1128,9 @@ ks_hkp_housekeeping (time_t curtime)
   int idx;
   hostinfo_t hi;
 
+  if (npth_mutex_lock (&hosttable_lock))
+    log_fatal ("failed to acquire mutex\n");
+
   for (idx=0; idx < hosttable_size; idx++)
     {
       hi = hosttable[idx];
@@ -1115,6 +1147,9 @@ ks_hkp_housekeeping (time_t curtime)
           log_info ("resurrected host '%s'", hi->name);
         }
     }
+
+  if (npth_mutex_unlock (&hosttable_lock))
+    log_fatal ("failed to release mutex\n");
 }
 
 
@@ -1125,6 +1160,9 @@ ks_hkp_reload (void)
 {
   int idx, count;
   hostinfo_t hi;
+
+  if (npth_mutex_lock (&hosttable_lock))
+    log_fatal ("failed to acquire mutex\n");
 
   for (idx=count=0; idx < hosttable_size; idx++)
     {
@@ -1139,6 +1177,9 @@ ks_hkp_reload (void)
     }
   if (count)
     log_info ("number of resurrected hosts: %d", count);
+
+  if (npth_mutex_unlock (&hosttable_lock))
+    log_fatal ("failed to release mutex\n");
 }
 
 
@@ -1753,4 +1794,14 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   xfree (hostport);
   xfree (httphost);
   return err;
+}
+
+void
+ks_hkp_init (void)
+{
+  int err;
+
+  err = npth_mutex_init (&hosttable_lock, NULL);
+  if (err)
+    log_fatal ("error initializing mutex: %s\n", strerror (err));
 }

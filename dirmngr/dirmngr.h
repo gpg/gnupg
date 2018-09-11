@@ -218,7 +218,7 @@ int dirmngr_use_tor (void);
 /*-- Various housekeeping functions.  --*/
 void ks_hkp_housekeeping (time_t curtime);
 void ks_hkp_reload (void);
-
+void ks_hkp_init (void);
 
 /*-- server.c --*/
 ldap_server_t get_ldapservers_from_ctrl (ctrl_t ctrl);

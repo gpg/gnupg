@@ -1143,6 +1143,7 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
+      ks_hkp_init ();
       http_register_netactivity_cb (netactivity_action);
       start_command_handler (ASSUAN_INVALID_FD, 0);
       shutdown_reaper ();
@@ -1178,6 +1179,7 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
+      ks_hkp_init ();
       http_register_netactivity_cb (netactivity_action);
       handle_connections (3);
       shutdown_reaper ();
@@ -1399,6 +1401,7 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
+      ks_hkp_init ();
       http_register_netactivity_cb (netactivity_action);
       handle_connections (fd);
       shutdown_reaper ();
@@ -1421,6 +1424,7 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
+      ks_hkp_init ();
       if (!argc)
         rc = crl_cache_load (&ctrlbuf, NULL);
       else
@@ -1444,6 +1448,7 @@ main (int argc, char **argv)
       thread_init ();
       cert_cache_init (hkp_cacert_filenames);
       crl_cache_init ();
+      ks_hkp_init ();
       rc = crl_fetch (&ctrlbuf, argv[0], &reader);
       if (rc)
         log_error (_("fetching CRL from '%s' failed: %s\n"),
