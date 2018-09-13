@@ -380,6 +380,8 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
           /* Loop over the list of secret keys.  */
           do
             {
+              char *serialno;
+
               name = NULL;
               keyblock = NULL;
               switch (c->state)
@@ -415,8 +417,6 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                 case 4: /* Get next item from card list.  */
                   if (c->sl)
                     {
-                      char *serialno;
-
                       err = agent_scd_serialno (&serialno, c->sl->d);
                       if (err)
                         {
@@ -444,9 +444,13 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                     }
                   else
                     {
-                      if (c->serialno)
-                        /* Select the original card again.  */
-                        agent_scd_serialno (&c->serialno, c->serialno);
+                      serialno = c->serialno;
+                      if (serialno)
+                        {
+                          /* Select the original card again.  */
+                          agent_scd_serialno (&c->serialno, serialno);
+                          xfree (serialno);
+                        }
                       c->state++;
                     }
                   break;
