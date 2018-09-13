@@ -337,7 +337,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
     kbnode_t keyblock;
     kbnode_t node;
     getkey_ctx_t ctx;
-    pubkey_t results;
+    SK_LIST results;
   } *c = *context;
 
   if (!c)
@@ -358,7 +358,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
       /* Free the context.  */
       xfree (c->serialno);
       free_strlist (c->card_list);
-      pubkeys_free (c->results);
+      release_sk_list (c->results);
       release_kbnode (c->keyblock);
       getkey_end (ctrl, c->ctx);
       xfree (c);
@@ -516,7 +516,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
           if (c->node->pkt->pkttype == PKT_PUBLIC_KEY
               || c->node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
             {
-              pubkey_t r;
+              SK_LIST r;
 
               /* Skip this candidate if it's already enumerated.  */
               for (r = c->results; r; r = r->next)
@@ -537,7 +537,6 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
                 }
 
               r->pk = sk;
-              r->keyblock = NULL;
               r->next = c->results;
               c->results = r;
 
