@@ -345,7 +345,11 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
       /* Make a new context.  */
       c = xtrycalloc (1, sizeof *c);
       if (!c)
-        return gpg_error_from_syserror ();
+        {
+          err = gpg_error_from_syserror ();
+          free_public_key (sk);
+          return err;
+        }
       *context = c;
     }
 
@@ -363,7 +367,10 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
     }
 
   if (c->eof)
-    return gpg_error (GPG_ERR_EOF);
+    {
+      free_public_key (sk);
+      return gpg_error (GPG_ERR_EOF);
+    }
 
   for (;;)
     {
@@ -475,6 +482,7 @@ enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
 
                 default: /* No more names to check - stop.  */
                   c->eof = 1;
+                  free_public_key (sk);
                   return gpg_error (GPG_ERR_EOF);
                 }
             }
