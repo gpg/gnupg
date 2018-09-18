@@ -674,7 +674,7 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
 {
   int err;
   strlist_t card_list, sl;
-  char *serialno0;
+  char *serialno0, *serialno1;
   int all_cards = 0;
 
   if (serialno == NULL)
@@ -700,8 +700,6 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
 
   for (sl = card_list; sl; sl = sl->next)
     {
-      char *serialno1;
-
       if (!all_cards && strcmp (serialno, sl->d))
         continue;
 
@@ -722,7 +720,8 @@ card_status (ctrl_t ctrl, estream_t fp, const char *serialno)
     }
 
   /* Select the original card again.  */
-  err = agent_scd_serialno (&serialno0, serialno0);
+  err = agent_scd_serialno (&serialno1, serialno0);
+  xfree (serialno1);
 
  leave:
   xfree (serialno0);
