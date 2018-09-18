@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.2.9\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2018-08-22 17:43+0900\n"
+"PO-Revision-Date: 2018-09-18 09:58+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -821,15 +821,13 @@ msgstr ""
 msgid "unknown debug flag '%s' ignored\n"
 msgstr "未知のdebugフラグ'%s'は無視されました\n"
 
-#, fuzzy, c-format
-#| msgid "waiting for the agent to come up ... (%ds)\n"
+#, c-format
 msgid "waiting for the %s to come up ... (%ds)\n"
-msgstr "agentの起動のため、%d秒待ちます\n"
+msgstr "%s の起動のため、%d秒待ちます...\n"
 
-#, fuzzy, c-format
-#| msgid "connection to agent established\n"
+#, c-format
 msgid "connection to %s established\n"
-msgstr "エージェントへの接続が確立しました。\n"
+msgstr "%s への接続が確立しました。\n"
 
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
@@ -1782,7 +1780,7 @@ msgstr "フィンガープリントがありません"
 
 #, c-format
 msgid "checking for a fresh copy of an expired key via %s\n"
-msgstr ""
+msgstr "%s から失効した鍵の新しいコピーを確認します。\n"
 
 #, c-format
 msgid "secret key \"%s\" not found: %s\n"
@@ -4658,10 +4656,9 @@ msgstr "公開鍵のアルゴリズム%dは、取り扱えません\n"
 msgid "WARNING: potentially insecure symmetrically encrypted session key\n"
 msgstr "*警告*: 潜在的にセキュアでない共通鍵暗号化セッション鍵です\n"
 
-#, fuzzy, c-format
-#| msgid "Critical signature notation: "
+#, c-format
 msgid "Unknown critical signature notation: "
-msgstr "クリティカルな署名注釈: "
+msgstr "不明なクリティカルな署名注釈: "
 
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
