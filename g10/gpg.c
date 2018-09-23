@@ -257,6 +257,7 @@ enum cmd_and_opt_values
     oBZ2CompressLevel,
     oBZ2DecompressLowmem,
     oPassphrase,
+    oPassphraseEnv,
     oPassphraseFD,
     oPassphraseFile,
     oPassphraseRepeat,
@@ -709,6 +710,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aRebuildKeydbCaches, "rebuild-keydb-caches", "@"),
 
   ARGPARSE_s_s (oPassphrase,      "passphrase", "@"),
+  ARGPARSE_s_s (oPassphraseEnv,   "passphrase-env", "@"),
   ARGPARSE_s_i (oPassphraseFD,    "passphrase-fd", "@"),
   ARGPARSE_s_s (oPassphraseFile,  "passphrase-file", "@"),
   ARGPARSE_s_i (oPassphraseRepeat,"passphrase-repeat", "@"),
@@ -3150,6 +3152,9 @@ main (int argc, char **argv)
 	  case oBZ2DecompressLowmem: opt.bz2_decompress_lowmem=1; break;
 	  case oPassphrase:
 	    set_passphrase_from_string(pargs.r.ret_str);
+	    break;
+	  case oPassphraseEnv:
+	    set_passphrase_from_environment_variable(pargs.r.ret_str);
 	    break;
 	  case oPassphraseFD:
             pwfd = translate_sys2libc_fd_int (pargs.r.ret_int, 0);

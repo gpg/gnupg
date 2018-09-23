@@ -670,7 +670,8 @@ used for no expiration date.
 If this command is used with @option{--batch},
 @option{--pinentry-mode} has been set to @code{loopback}, and one of
 the passphrase options (@option{--passphrase},
-@option{--passphrase-fd}, or @option{passphrase-file}) is used, the
+@option{--passphrase-fd}, @option{--passphrase-env}, or
+@option{passphrase-file}) is used, the
 supplied passphrase is used for the new key and the agent does not ask
 for it.  To create a key without any protection @code{--passphrase ''}
 may be used.
@@ -3171,6 +3172,14 @@ avoid it.
 Note that since Version 2.0 this passphrase is only used if the
 option @option{--batch} has also been given. Since Version 2.1
 the @option{--pinentry-mode} also needs to be set to @code{loopback}.
+
+@item --passphrase-env @var{string}
+@opindex passphrase-env
+Use the value of the environment variable @var{string} as the passphrase.
+This can only be used if only one passphrase is supplied.
+
+This passphrase is only used if the option @option{--batch} has also
+been given, and if @option{--pinentry-mode} is set to @code{loopback}.
 
 @item --pinentry-mode @var{mode}
 @opindex pinentry-mode

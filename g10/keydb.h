@@ -279,6 +279,7 @@ gpg_error_t build_sk_list (ctrl_t ctrl, strlist_t locusr,
 unsigned char encode_s2k_iterations (int iterations);
 int  have_static_passphrase(void);
 const char *get_static_passphrase (void);
+void set_passphrase_from_environment_variable(const char *envvar);
 void set_passphrase_from_string(const char *pass);
 void read_passphrase_from_fd( int fd );
 void passphrase_clear_cache (const char *cacheid);

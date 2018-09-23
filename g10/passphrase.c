@@ -159,6 +159,19 @@ set_passphrase_from_string(const char *pass)
   strcpy (fd_passwd, pass);
 }
 
+void
+set_passphrase_from_environment_variable(const char *envvar)
+{
+  const char *val = getenv(envvar);
+  if (val == NULL)
+    val = "";
+  xfree (fd_passwd);
+  fd_passwd = xmalloc_secure(strlen(val)+1);
+  strcpy (fd_passwd, val);
+  /* clean up sensitive environment variable to avoid accidental
+     propagation: */
+  unsetenv(envvar);
+}
 
 void
 read_passphrase_from_fd( int fd )
