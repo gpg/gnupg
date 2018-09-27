@@ -113,8 +113,11 @@ static struct {
   { 0x0104, 0,    0, 0, 0, 0, 0, 2, "Private DO 4"},
   { 0x7F21, 1,    0, 1, 0, 0, 0, 1, "Cardholder certificate"},
   /* V3.0 */
-  { 0x7F74, 0,    0, 1, 0, 0, 0, 0, "General Feature Management"},
+  { 0x7F74, 0, 0x6E, 1, 0, 0, 0, 0, "General Feature Management"},
   { 0x00D5, 0,    0, 1, 0, 0, 0, 0, "AES key data"},
+  { 0x00D6, 0, 0x6E, 1, 0, 0, 0, 0, "UIF for Signature"},
+  { 0x00D7, 0, 0x6E, 1, 0, 0, 0, 0, "UIF for decryption"},
+  { 0x00D8, 0, 0x6E, 1, 0, 0, 0, 0, "UIF for authentication"},
   { 0x00F9, 0,    0, 1, 0, 0, 0, 0, "KDF data object"},
   { 0x00FA, 0,    0, 1, 0, 0, 0, 2, "Algorithm Information"},
   { 0 }
@@ -1063,6 +1066,9 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "$ENCRKEYID",   0x0000, -6 },
     { "$SIGNKEYID",   0x0000, -7 },
     { "$DISPSERIALNO",0x0000, -4 },
+    { "UIF-1",        0x00D6, 0 },
+    { "UIF-2",        0x00D7, 0 },
+    { "UIF-3",        0x00D8, 0 },
     { "KDF",          0x00F9, 5 },
     { "MANUFACTURER", 0x0000, -8 },
     { NULL, 0 }
@@ -2049,7 +2055,13 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
     err = do_getattr (app, ctrl, "CHV-STATUS");
   if (!err)
     err = do_getattr (app, ctrl, "SIG-COUNTER");
-  if (!err && app->app_local->extcap.kdf_do)
+  if (!err)
+    err = do_getattr (app, ctrl, "UIF-1");
+  if (!err)
+    err = do_getattr (app, ctrl, "UIF-2");
+  if (!err)
+    err = do_getattr (app, ctrl, "UIF-3");
+  if (app->app_local->extcap.private_dos)
     {
       err = do_getattr (app, ctrl, "KDF");
       if (gpg_err_code (err) == GPG_ERR_NO_OBJ)
@@ -2756,6 +2768,9 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
     { "SM-KEY-MAC",   0x00D2, 0,      3, 0, 1 },
     { "KEY-ATTR",     0,      0,      0, 3, 1 },
     { "AESKEY",       0x00D5, 0,      3, 0, 1 },
+    { "UIF-1",        0x00D6, 0,      3, 5, 1 },
+    { "UIF-2",        0x00D7, 0,      3, 5, 1 },
+    { "UIF-3",        0x00D8, 0,      3, 5, 1 },
     { "KDF",          0x00F9, 0,      3, 4, 1 },
     { NULL, 0 }
   };
@@ -2769,6 +2784,9 @@ do_setattr (app_t app, ctrl_t ctrl, const char *name,
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
   if (table[idx].need_v3 && !app->app_local->extcap.is_v3)
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  if (table[idx].special == 5 && app->app_local->extcap.has_button == 0)
+    return gpg_error (GPG_ERR_INV_OBJ);
 
   if (table[idx].special == 3)
     return change_keyattr_from_string (app, ctrl, pincb, pincb_arg,
@@ -3201,10 +3219,10 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           pincb (pincb_arg, NULL, NULL); /* Dismiss the prompt. */
         }
       else
-	{
+        {
           rc = pin2hash_if_kdf (app, chvno, oldpinvalue, &pinlen0);
           if (!rc)
-	    rc = pin2hash_if_kdf (app, chvno, pinvalue, &pinlen);
+            rc = pin2hash_if_kdf (app, chvno, pinvalue, &pinlen);
           if (!rc)
             rc = iso7816_change_reference_data (app->slot, 0x80 + chvno,
                                                 oldpinvalue, pinlen0,
