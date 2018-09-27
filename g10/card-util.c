@@ -2109,6 +2109,28 @@ kdf_setup (const char *args)
  leave:
   agent_release_card_info (&info);
 }
+
+static void
+uif (int arg_number, const char *arg_rest)
+{
+  gpg_error_t err;
+  char name[100];
+  unsigned char data[2];
+
+  snprintf (name, sizeof name, "UIF-%d", arg_number);
+  if ( !strcmp (arg_rest, "off") )
+    data[0] = 0x00;
+  else if ( !strcmp (arg_rest, "on") )
+    data[0] = 0x01;
+  else if ( !strcmp (arg_rest, "permanent") )
+    data[0] = 0x02;
+
+  data[1] = 0x20;
+
+  err = agent_scd_setattr (name, data, 2, NULL);
+  if (err)
+    log_error (_("error for setup UIF: %s\n"), gpg_strerror (err));
+}
 
 /* Data used by the command parser.  This needs to be outside of the
    function scope to allow readline based command completion.  */
@@ -2119,7 +2141,7 @@ enum cmdids
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
     cmdREADCERT, cmdUNBLOCK, cmdFACTORYRESET, cmdKDFSETUP,
-    cmdKEYATTR,
+    cmdKEYATTR, cmdUIF,
     cmdINVCMD
   };
 
@@ -2151,10 +2173,11 @@ static struct
     { "generate", cmdGENERATE, 1, N_("generate new keys")},
     { "passwd"  , cmdPASSWD, 0, N_("menu to change or unblock the PIN")},
     { "verify"  , cmdVERIFY, 0, N_("verify the PIN and list all data")},
-    { "unblock" , cmdUNBLOCK,0, N_("unblock the PIN using a Reset Code") },
+    { "unblock" , cmdUNBLOCK,0, N_("unblock the PIN using a Reset Code")},
     { "factory-reset", cmdFACTORYRESET, 1, N_("destroy all keys and data")},
     { "kdf-setup", cmdKDFSETUP, 1, N_("setup KDF for PIN authentication")},
     { "key-attr", cmdKEYATTR, 1, N_("change the key attribute")},
+    { "uif", cmdUIF, 1, N_("change the User Interaction Flag")},
     /* Note, that we do not announce these command yet. */
     { "privatedo", cmdPRIVATEDO, 0, NULL },
     { "readcert", cmdREADCERT, 0, NULL },
@@ -2444,6 +2467,14 @@ card_edit (ctrl_t ctrl, strlist_t commands)
 
         case cmdKEYATTR:
           key_attr ();
+          break;
+
+        case cmdUIF:
+          if ( arg_number < 1 || arg_number > 3 )
+            tty_printf ("usage: uif N [on|off|permanent]\n"
+                        "       1 <= N <= 3\n");
+          else
+            uif (arg_number, arg_rest);
           break;
 
         case cmdQUIT:

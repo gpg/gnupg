@@ -119,8 +119,11 @@ static struct {
   { 0x0104, 0,    0, 0, 0, 0, 0, 2, "Private DO 4"},
   { 0x7F21, 1,    0, 1, 0, 0, 0, 1, "Cardholder certificate"},
   /* V3.0 */
-  { 0x7F74, 0,    0, 1, 0, 0, 0, 0, "General Feature Management"},
+  { 0x7F74, 0, 0x6E, 1, 0, 0, 0, 0, "General Feature Management"},
   { 0x00D5, 0,    0, 1, 0, 0, 0, 0, "AES key data"},
+  { 0x00D6, 0, 0x6E, 1, 0, 0, 0, 0, "UIF for Signature"},
+  { 0x00D7, 0, 0x6E, 1, 0, 0, 0, 0, "UIF for decryption"},
+  { 0x00D8, 0, 0x6E, 1, 0, 0, 0, 0, "UIF for authentication"},
   { 0x00F9, 0,    0, 1, 0, 0, 0, 0, "KDF data object"},
   { 0 }
 };
@@ -985,6 +988,9 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     { "PRIVATE-DO-4", 0x0104 },
     { "$AUTHKEYID",   0x0000, -3 },
     { "$DISPSERIALNO",0x0000, -4 },
+    { "UIF-1",        0x00D6, 0 },
+    { "UIF-2",        0x00D7, 0 },
+    { "UIF-3",        0x00D8, 0 },
     { "KDF",          0x00F9 },
     { NULL, 0 }
   };
@@ -1827,6 +1833,9 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
   do_getattr (app, ctrl, "CA-FPR");
   do_getattr (app, ctrl, "CHV-STATUS");
   do_getattr (app, ctrl, "SIG-COUNTER");
+  do_getattr (app, ctrl, "UIF-1");
+  do_getattr (app, ctrl, "UIF-2");
+  do_getattr (app, ctrl, "UIF-3");
   if (app->app_local->extcap.private_dos)
     {
       do_getattr (app, ctrl, "PRIVATE-DO-1");
@@ -2459,6 +2468,9 @@ do_setattr (app_t app, const char *name,
     { "SM-KEY-MAC",   0x00D2, 3, 0, 1 },
     { "KEY-ATTR",     0,      0, 3, 1 },
     { "AESKEY",       0x00D5, 3, 0, 1 },
+    { "UIF-1",        0x00D6, 3, 0, 1 },
+    { "UIF-2",        0x00D7, 3, 0, 1 },
+    { "UIF-3",        0x00D8, 3, 0, 1 },
     { "KDF",          0x00F9, 3, 4, 1 },
     { NULL, 0 }
   };
@@ -2839,10 +2851,10 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           pincb (pincb_arg, NULL, NULL); /* Dismiss the prompt. */
         }
       else
-	{
+        {
           rc = pin2hash_if_kdf (app, chvno, oldpinvalue, &pinlen0);
           if (!rc)
-	    rc = pin2hash_if_kdf (app, chvno, pinvalue, &pinlen);
+            rc = pin2hash_if_kdf (app, chvno, pinvalue, &pinlen);
           if (!rc)
             rc = iso7816_change_reference_data (app->slot, 0x80 + chvno,
                                                 oldpinvalue, pinlen0,
