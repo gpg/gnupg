@@ -1521,6 +1521,8 @@ optlen(const char *s)
     return strlen(s);
 }
 
+
+/* Note: This function returns true on success.  */
 int
 parse_options(char *str,unsigned int *options,
 	      struct parse_options *opts,int noisy)

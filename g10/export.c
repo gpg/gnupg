@@ -97,7 +97,7 @@ cleanup_export_globals (void)
 }
 
 
-/* Option parser for export options.  See parse_options fro
+/* Option parser for export options.  See parse_options for
    details.  */
 int
 parse_export_options(char *str,unsigned int *options,int noisy)
@@ -114,6 +114,8 @@ parse_export_options(char *str,unsigned int *options,int noisy)
        N_("remove unusable parts from key during export")},
       {"export-minimal",EXPORT_MINIMAL|EXPORT_CLEAN,NULL,
        N_("remove as much as possible from key during export")},
+      {"export-drop-uids", EXPORT_DROP_UIDS, NULL,
+       N_("Do not export user id or attribute packets")},
 
       {"export-pka", EXPORT_PKA_FORMAT, NULL, NULL },
       {"export-dane", EXPORT_DANE_FORMAT, NULL, NULL },
@@ -136,14 +138,20 @@ parse_export_options(char *str,unsigned int *options,int noisy)
   int rc;
 
   rc = parse_options (str, options, export_opts, noisy);
-  if (rc && (*options & EXPORT_BACKUP))
+  if (!rc)
+    return 0;
+
+  /* Alter other options we want or don't want for restore.  */
+  if ((*options & EXPORT_BACKUP))
     {
-      /* Alter other options we want or don't want for restore.  */
       *options |= (EXPORT_LOCAL_SIGS | EXPORT_ATTRIBUTES
                    | EXPORT_SENSITIVE_REVKEYS);
       *options &= ~(EXPORT_CLEAN | EXPORT_MINIMAL
                     | EXPORT_PKA_FORMAT | EXPORT_DANE_FORMAT);
     }
+  /* Dropping uids also means to drop attributes.  */
+  if ((*options & EXPORT_DROP_UIDS))
+    *options &= ~(EXPORT_ATTRIBUTES);
   return rc;
 }
 
@@ -1575,7 +1583,7 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
       if (node->pkt->pkttype == PKT_COMMENT)
         continue;
 
-      /* Skip ring trust packets - they should not ne here anyway.  */
+      /* Skip ring trust packets - they should not be here anyway.  */
       if (node->pkt->pkttype == PKT_RING_TRUST)
         continue;
 
@@ -1648,6 +1656,19 @@ do_export_one_keyblock (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
               if (i < node->pkt->pkt.signature->numrevkeys)
                 continue;
             }
+        }
+
+      /* Don't export user ids (and attributes)?  This is not RFC-4880
+       * compliant but we allow it anyway.  */
+      if ((options & EXPORT_DROP_UIDS)
+          && node->pkt->pkttype == PKT_USER_ID)
+        {
+          /* Skip until we get to something that is not a user id (or
+           * attrib) or a signature on it.  */
+          while (kbctx->next && kbctx->next->pkt->pkttype == PKT_SIGNATURE)
+            kbctx = kbctx->next;
+
+          continue;
         }
 
       /* Don't export attribs? */

@@ -121,6 +121,7 @@ static int chk_self_sigs (ctrl_t ctrl, kbnode_t keyblock, u32 *keyid,
 static int delete_inv_parts (ctrl_t ctrl, kbnode_t keyblock,
                              u32 *keyid, unsigned int options);
 static int any_uid_left (kbnode_t keyblock);
+static int remove_all_uids (kbnode_t *keyblock);
 static int merge_blocks (ctrl_t ctrl, unsigned int options,
                          kbnode_t keyblock_orig,
 			 kbnode_t keyblock, u32 *keyid,
@@ -180,6 +181,9 @@ parse_import_options(char *str,unsigned int *options,int noisy)
 
       {"import-minimal",IMPORT_MINIMAL|IMPORT_CLEAN,NULL,
        N_("remove as much as possible from key after import")},
+
+      {"import-drop-uids", IMPORT_DROP_UIDS, NULL,
+       N_("Do not import user id or attribute packets")},
 
       {"import-export", IMPORT_EXPORT, NULL,
        N_("run import filters and export key immediately")},
@@ -1728,7 +1732,9 @@ import_one (ctrl_t ctrl,
     }
 
 
-  if (!uidnode )
+  /* Unless import-drop-uids has been requested we don't allow import
+   * of a key without UIDs.  */
+  if (!uidnode && !(options & IMPORT_DROP_UIDS))
     {
       if (!silent)
         log_error( _("key %s: no user ID\n"), keystr_from_pk(pk));
@@ -1755,7 +1761,11 @@ import_one (ctrl_t ctrl,
         return 0;
     }
 
-  collapse_uids(&keyblock);
+  /* Remove or collapse the user ids.  */
+  if ((options & IMPORT_DROP_UIDS))
+    remove_all_uids (&keyblock);
+  else
+    collapse_uids (&keyblock);
 
   /* Clean the key that we're about to import, to cut down on things
      that we have to clean later.  This has no practical impact on the
@@ -1802,7 +1812,10 @@ import_one (ctrl_t ctrl,
 	  }
     }
 
-  if (!delete_inv_parts (ctrl, keyblock, keyid, options ) )
+  /* Delete invalid parts and without the drop otions bail out if
+   * there are no user ids.  */
+  if (!delete_inv_parts (ctrl, keyblock, keyid, options)
+      && !(options & IMPORT_DROP_UIDS) )
     {
       if (!silent)
         {
@@ -3417,14 +3430,51 @@ any_uid_left (kbnode_t keyblock)
 
 
 
-/****************
+/* Delete all user ids from KEYBLOCK.
+ * Returns: True if the keyblock has changed.  */
+static int
+remove_all_uids (kbnode_t *keyblock)
+{
+  kbnode_t node;
+  int any = 0;
+
+  for (node = *keyblock; node; node = node->next)
+    {
+      if (is_deleted_kbnode (node))
+	continue;
+
+      if (node->pkt->pkttype != PKT_USER_ID)
+	continue;
+
+      /* We are at the first user id.  Delete everything up to the
+       * first subkey.  */
+      for (; node; node = node->next)
+	{
+	  if (is_deleted_kbnode (node))
+	    continue;
+
+	  if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+              || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+	    break;
+          delete_kbnode (node);
+          any = 1;
+	}
+      break;  /* All done.  */
+    }
+
+  commit_kbnode (keyblock);
+  return any;
+}
+
+
+/*
  * It may happen that the imported keyblock has duplicated user IDs.
  * We check this here and collapse those user IDs together with their
  * sigs into one.
  * Returns: True if the keyblock has changed.
  */
 int
-collapse_uids( kbnode_t *keyblock )
+collapse_uids (kbnode_t *keyblock)
 {
   kbnode_t uid1;
   int any=0;
