@@ -480,7 +480,8 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
     }
 
   /* For data signatures check that the key has sign usage.  */
-  if (IS_SIG (sig) && !(pk->pubkey_usage & PUBKEY_USAGE_SIG))
+  if (!IS_BACK_SIG (sig) && IS_SIG (sig)
+      && !(pk->pubkey_usage & PUBKEY_USAGE_SIG))
     {
       rc = gpg_error (GPG_ERR_WRONG_KEY_USAGE);
       if (!opt.quiet)
