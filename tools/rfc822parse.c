@@ -1013,8 +1013,7 @@ is_parameter (TOKEN t)
    parse context is valid; NULL is returned in case that attr is not
    defined in the header, a missing value is reppresented by an empty string.
 
-   With LOWER_VALUE set to true, a matching field valuebe be
-   lowercased.
+   With LOWER_VALUE set to true, a matching field value be lowercased.
 
    Note, that ATTR should be lowercase.
  */
