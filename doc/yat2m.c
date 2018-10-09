@@ -55,7 +55,7 @@
       .B whateever you want
       @end ifset
 
-    alternativly a special comment may be used:
+    alternatively a special comment may be used:
 
       @c man:.B whatever you want
 
@@ -704,7 +704,7 @@ write_th (FILE *fp)
 
 
 /* Process the texinfo command COMMAND (without the leading @) and
-   write output if needed to FP. REST is the remainer of the line
+   write output if needed to FP. REST is the remainder of the line
    which should either point to an opening brace or to a white space.
    The function returns the number of characters already processed
    from REST.  LEN is the usable length of REST.  TABLE_LEVEL is used to

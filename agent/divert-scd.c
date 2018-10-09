@@ -195,7 +195,7 @@ has_percent0A_suffix (const char *string)
    string with the passphrase, the buffer may optionally be padded
    with arbitrary characters.
 
-   If DESC_TEXT is not NULL it can be used as further informtion shown
+   If DESC_TEXT is not NULL it can be used as further information shown
    atop of the INFO message.
 
    INFO gets displayed as part of a generic string.  However if the

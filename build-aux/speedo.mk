@@ -970,7 +970,7 @@ else
 endif
 	@touch $(stampdir)/stamp-$(1)-01-configure
 
-# Note that unpack has no 64 bit version becuase it is just the source.
+# Note that unpack has no 64 bit version because it is just the source.
 # Fixme: We should use templates to create the standard and w64
 # version of these rules.
 $(stampdir)/stamp-w64-$(1)-01-configure: $(stampdir)/stamp-$(1)-00-unpack
@@ -1283,7 +1283,7 @@ endif
 
 
 #
-# Check availibility of standard tools
+# Check availability of standard tools
 #
 check-tools:
 

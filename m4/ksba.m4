@@ -13,7 +13,7 @@
 dnl AM_PATH_KSBA([MINIMUM-VERSION,
 dnl              [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl Test for libksba and define KSBA_CFLAGS and KSBA_LIBS
-dnl MINIMUM-VERSION is a string with the version number optionalliy prefixed
+dnl MINIMUM-VERSION is a string with the version number optionally prefixed
 dnl with the API version to also check the API compatibility. Example:
 dnl a MINIMUM-VERSION of 1:1.0.7 won't pass the test unless the installed
 dnl version of libksba is at least 1.0.7 *and* the API number is 1.  Using

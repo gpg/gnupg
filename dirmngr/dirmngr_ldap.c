@@ -417,9 +417,9 @@ set_timeout (my_opt_t myopt)
           sec_attr.nLength = sizeof sec_attr;
           sec_attr.bInheritHandle = FALSE;
 
-          /* Create a manual resetable timer.  */
+          /* Create a manual resettable timer.  */
           timer = CreateWaitableTimer (NULL, TRUE, NULL);
-          /* Intially set the timer.  */
+          /* Initially set the timer.  */
           SetWaitableTimer (timer, &due_time, 0, NULL, NULL, 0);
 
           if (CreateThread (&sec_attr, 0, alarm_thread, timer, 0, &tid))

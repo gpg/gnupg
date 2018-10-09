@@ -85,7 +85,7 @@ int cdb_make_put(struct cdb_make *cdbmp,
 		 const void *key, cdbi_t klen,
 		 const void *val, cdbi_t vlen,
 		 int flag);
-#define CDB_PUT_ADD	0	/* add unconditionnaly, like cdb_make_add() */
+#define CDB_PUT_ADD	0	/* add unconditionally, like cdb_make_add() */
 #define CDB_PUT_REPLACE	1	/* replace: do not place to index OLD record */
 #define CDB_PUT_INSERT	2	/* add only if not already exists */
 #define CDB_PUT_WARN	3	/* add unconditionally but ret. 1 if exists */

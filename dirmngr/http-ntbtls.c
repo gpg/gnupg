@@ -55,7 +55,7 @@ gnupg_http_tls_verify_cb (void *opaque,
   log_assert (ctrl && ctrl->magic == SERVER_CONTROL_MAGIC);
   log_assert (!ntbtls_check_context (tls));
 
-  /* Get the peer's certs fron ntbtls.  */
+  /* Get the peer's certs from ntbtls.  */
   for (idx = 0;
        (cert = ntbtls_x509_get_peer_cert (tls, idx)); idx++)
     {

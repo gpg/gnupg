@@ -408,7 +408,7 @@ static void
 store_alias( ARGPARSE_ARGS *arg, char *name, char *value )
 {
     /* TODO: replace this dummy function with a rea one
-     * and fix the probelms IRIX has with (ALIAS_DEV)arg..
+     * and fix the problems IRIX has with (ALIAS_DEV)arg..
      * used as lvalue
      */
   (void)arg;
@@ -439,7 +439,7 @@ ignore_invalid_option_p (ARGPARSE_ARGS *arg, const char *keyword)
 
 /* Add the keywords up to the next LF to the list of to be ignored
    options.  After returning FP will either be at EOF or the next
-   character read wll be the first of a new line.  The function
+   character read will be the first of a new line.  The function
    returns 0 on success or true on malloc failure.  */
 static int
 ignore_invalid_option_add (ARGPARSE_ARGS *arg, FILE *fp)
@@ -1280,7 +1280,7 @@ long_opt_strlen( ARGPARSE_OPTS *o )
  *    this option
  *  - a description,ine which starts with a '@' and is followed by
  *    any other characters is printed as is; this may be used for examples
- *    ans such.
+ *    and such.
  *  - A description which starts with a '|' outputs the string between this
  *    bar and the next one as arguments of the long option.
  */

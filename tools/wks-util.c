@@ -65,7 +65,7 @@ wks_set_status_fd (int fd)
 }
 
 
-/* Write a status line with code NO followed by the outout of the
+/* Write a status line with code NO followed by the output of the
  * printf style FORMAT.  The caller needs to make sure that LFs and
  * CRs are not printed.  */
 void

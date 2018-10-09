@@ -234,7 +234,7 @@ The currently defined protection modes are:
      (csum n)
      (protection PROTTYPE PROTALGO IV S2KMODE S2KHASH S2KSALT S2KCOUNT)))
 
-  Note that the public key paramaters in SKEY are duplicated and
+  Note that the public key parameters in SKEY are duplicated and
   should be identical to their copies in the standard parameter
   elements.  Here is an example of an entire protected private key
   using this format:

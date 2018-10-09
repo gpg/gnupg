@@ -126,7 +126,7 @@ described here.
 *** Field 4 - Public key algorithm
 
     The values here are those from the OpenPGP specs or if they are
-    greather than 255 the algorithm ids as used by Libgcrypt.
+    greater than 255 the algorithm ids as used by Libgcrypt.
 
 *** Field 5 - KeyID
 
@@ -544,7 +544,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 *** DECRYPTION_KEY <fpr> <fpr2> <otrust>
     This line is emitted when a public key decryption succeeded in
     providing a session key.  <fpr> is the hexified fingerprint of the
-    actual key used for descryption.  <fpr2> is the fingerprint of the
+    actual key used for decryption.  <fpr2> is the fingerprint of the
     primary key.  <otrust> is the letter with the ownertrust; this is
     in general a 'u' which stands for ultimately trusted.
 *** DECRYPTION_INFO <mdc_method> <sym_algo> [<aead_algo>]
@@ -700,7 +700,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 
        -  0 :: No specific reason given
        -  1 :: Not Found
-       -  2 :: Ambigious specification
+       -  2 :: Ambiguous specification
        -  3 :: Wrong key usage
        -  4 :: Key revoked
        -  5 :: Key expired
@@ -1016,7 +1016,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
       - 2 :: bad PIN
 
 *** SC_OP_SUCCESS
-    A smart card operaion succeeded.  This status is only printed for
+    A smart card operation succeeded.  This status is only printed for
     certain operation and is mostly useful to check whether a PIN
     change really worked.
 
@@ -1073,7 +1073,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     Deleting a key failed.  Reason codes are:
     - 1 :: No such key
     - 2 :: Must delete secret key first
-    - 3 :: Ambigious specification
+    - 3 :: Ambiguous specification
     - 4 :: Key is stored on a smartcard.
 
 *** PROGRESS <what> <char> <cur> <total> [<units>]

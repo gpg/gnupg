@@ -7634,7 +7634,7 @@ retry:
 			goto udp_connect_retry;
 		} else if (error == ECONNREFUSED)
 			/* Error for previous socket operation may
-			   be reserverd asynchronously. */
+			   be reserved asynchronously. */
 			goto udp_connect_retry;
 
 		if (error)

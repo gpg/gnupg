@@ -167,7 +167,7 @@ my_stpcpy (char *a,const char *b)
 #endif
 
 
-/* If a callback has been registerd, call it for the event of type
+/* If a callback has been registered, call it for the event of type
    EVENT. */
 static int
 do_callback (rfc822parse_t msg, rfc822parse_event_t event)
@@ -578,7 +578,7 @@ rfc822parse_get_field (rfc822parse_t msg, const char *name, int which,
 
 /****************
  * Enumerate all header.  Caller has to provide the address of a pointer
- * which has to be initialzed to NULL, the caller should then never change this
+ * which has to be initialized to NULL, the caller should then never change this
  * pointer until he has closed the enumeration by passing again the address
  * of the pointer but with msg set to NULL.
  * The function returns pointers to all the header lines or NULL when
@@ -616,7 +616,7 @@ rfc822parse_enum_header_lines (rfc822parse_t msg, void **context)
  *	   >0 : Retrieve the n-th field
 
  * RPREV may be used to return the predecessor of the returned field;
- * which may be NULL for the very first one. It has to be initialzed
+ * which may be NULL for the very first one. It has to be initialized
  * to either NULL in which case the search start at the first header line,
  * or it may point to a headerline, where the search should start
  */

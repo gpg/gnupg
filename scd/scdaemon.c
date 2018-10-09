@@ -1069,7 +1069,7 @@ handle_signal (int signo)
 /* Create a name for the socket.  We check for valid characters as
    well as against a maximum allowed length for a unix domain socket
    is done.  The function terminates the process in case of an error.
-   Retunrs: Pointer to an allcoated string with the absolute name of
+   Returns: Pointer to an allcoated string with the absolute name of
    the socket used.  */
 static char *
 create_socket_name (char *standard_name)

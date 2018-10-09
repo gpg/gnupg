@@ -1506,7 +1506,7 @@ store_validation_status (ctrl_t ctrl, int depth,
 /* Returns a sanitized copy of the regexp (which might be "", but not
    NULL). */
 #ifndef DISABLE_REGEX
-/* Operator charactors except '.' and backslash.
+/* Operator characters except '.' and backslash.
    See regex(7) on BSD.  */
 #define REGEXP_OPERATOR_CHARS "^[$()|*+?{"
 

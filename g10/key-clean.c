@@ -500,7 +500,7 @@ clean_one_subkey_dupsigs (ctrl_t ctrl, kbnode_t subkeynode)
     log_debug ("\tchecking subkey %08lX for dupsigs\n",
                (ulong) keyid_from_pk (pk, NULL));
 
-  /* First check that the choosen flag has been set.  Note that we
+  /* First check that the chosen flag has been set.  Note that we
    * only look at plain signatures so to keep all revocation
    * signatures which may carry important information.  */
   for (node = subkeynode->next;
@@ -519,7 +519,7 @@ clean_one_subkey_dupsigs (ctrl_t ctrl, kbnode_t subkeynode)
     }
 
   if (!any_choosen)
-    return 0; /* Ooops no choosen flag set - we can't decide.  */
+    return 0; /* Ooops no chosen flag set - we can't decide.  */
 
   for (node = subkeynode->next;
        node && !(node->pkt->pkttype == PKT_PUBLIC_SUBKEY

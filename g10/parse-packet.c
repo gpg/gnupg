@@ -3180,7 +3180,7 @@ parse_plaintext (IOBUF inp, int pkttype, unsigned long pktlen,
 	  pt->name[i] = c;
     }
   /* Fill up NAME so that a check with valgrind won't complain about
-   * reading from uninitalized memory.  This case may be triggred by
+   * reading from uninitialized memory.  This case may be triggred by
    * corrupted packets.  */
   for (; i < namelen; i++)
     pt->name[i] = 0;

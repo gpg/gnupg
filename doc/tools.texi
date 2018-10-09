@@ -1962,7 +1962,7 @@ Extract all files from an encrypted archive.
 
 @item --sign
 @itemx -s
-Make a signed archive from the given files and directories.  Thsi can
+Make a signed archive from the given files and directories.  This can
 be combined with option @option{--encrypt} to create a signed and then
 encrypted archive.
 
@@ -2031,7 +2031,7 @@ linefeed to separate file names.
 
 @item --openpgp
 @opindex openpgp
-This option has no effect becuase OpenPGP encryption and signing is
+This option has no effect because OpenPGP encryption and signing is
 the default.
 
 @item --cms

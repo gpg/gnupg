@@ -23,7 +23,7 @@
 
 #include "gpg.h"
 
-/* No explict cleaning.  */
+/* No explicit cleaning.  */
 #define KEY_CLEAN_NONE      0
 /* Remove only invalid subkeys (ie. missing key-bindings) */
 #define KEY_CLEAN_INVALID   1

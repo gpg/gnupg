@@ -61,7 +61,7 @@ Service provider.  This is usuallay done to upload a key into a Web
 Key Directory.
 
 With the @option{--supported} command the caller can test whether a
-site supports the Web Key Service.  The argument is an arbitray
+site supports the Web Key Service.  The argument is an arbitrary
 address in the to be tested domain. For example
 @file{foo@@example.net}.  The command returns success if the Web Key
 Service is supported.  The operation is silent; to get diagnostic
@@ -206,7 +206,7 @@ mail is processed.  Commonly this command is used with the option
 @option{--send} to directly send the crerated mails back.  See below
 for an installation example.
 
-The command @option{--cron} is used for regualr cleanup tasks.  For
+The command @option{--cron} is used for regular cleanup tasks.  For
 example non-confirmed requested should be removed after their expire
 time.  It is best to run this command once a day from a cronjob.
 

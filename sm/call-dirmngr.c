@@ -474,7 +474,7 @@ isvalid_status_cb (void *opaque, const char *line)
     {
       parm->seen++;
       if (!*s || !unhexify_fpr (s, parm->fpr))
-        parm->seen++; /* Bumb it to indicate an error. */
+        parm->seen++; /* Bump it to indicate an error. */
     }
   return 0;
 }

@@ -131,7 +131,7 @@ test_close_all_fds (void)
   free (array);
 
   /* Now let's check the realloc we use.  We do this and the next
-     tests only if we are allowed to open enought descriptors.  */
+     tests only if we are allowed to open enough descriptors.  */
   if (get_max_fds () > 32)
     {
       int except[] = { 20, 23, 24, -1 };

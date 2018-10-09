@@ -60,7 +60,7 @@ struct getkey_ctx_s
      search or not.  A search that is exact requires that a key or
      subkey meet all of the specified criteria.  A search that is not
      exact allows selecting a different key or subkey from the
-     keyblock that matched the critera.  Further, an exact search
+     keyblock that matched the criteria.  Further, an exact search
      returns the key or subkey that matched whereas a non-exact search
      typically returns the primary key.  See finish_lookup for
      details.  */
@@ -3364,7 +3364,7 @@ merge_selfsigs (ctrl_t ctrl, kbnode_t keyblock)
  *
  *  1. No requested usage and no primary key requested
  *     Examples for this case are that we have a keyID to be used
- *     for decrytion or verification.
+ *     for decryption or verification.
  *  2. No usage but primary key requested
  *     This is the case for all functions which work on an
  *     entire keyblock, e.g. for editing or listing

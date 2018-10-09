@@ -278,7 +278,7 @@ runner_set_pid (runner_t runner, pid_t pid)
 }
 
 
-/* Register the engine handler fucntions HANDLER and HANDLER_CLEANUP
+/* Register the engine handler functions HANDLER and HANDLER_CLEANUP
    and its private HANDLER_DATA with RUNNER.  */
 void
 runner_set_handler (runner_t runner,

@@ -1083,7 +1083,7 @@ ks_put_inq_cb (void *opaque, const char *line)
 
 /* Send a key to the configured server.  {DATA,DATLEN} contains the
    key in OpenPGP binary transport format.  If KEYBLOCK is not NULL it
-   has the internal representaion of that key; this is for example
+   has the internal representation of that key; this is for example
    used to convey meta data to LDAP keyservers.  */
 gpg_error_t
 gpg_dirmngr_ks_put (ctrl_t ctrl, void *data, size_t datalen, kbnode_t keyblock)

@@ -1069,7 +1069,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
 
 
 /* Return the last found keyblock.  Returns 0 on success and stores a
- * new iobuf at R_IOBUF.  R_UID_NO and R_PK_NO are used to retun the
+ * new iobuf at R_IOBUF.  R_UID_NO and R_PK_NO are used to return the
  * number of the key or user id which was matched the search criteria;
  * if not known they are set to 0. */
 gpg_error_t
