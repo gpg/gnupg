@@ -823,7 +823,7 @@ main (int argc, char **argv)
           ;
         else if (rmdir (socketdir))
           {
-            /* If the director is not empty we first try to delet
+            /* If the director is not empty we first try to delete
              * socket files.  */
             err = gpg_error_from_syserror ();
             if (gpg_err_code (err) == GPG_ERR_ENOTEMPTY

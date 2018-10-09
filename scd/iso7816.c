@@ -427,7 +427,7 @@ iso7816_put_data_odd (int slot, int extended_mode, int tag,
 
 /* Manage Security Environment.  This is a weird operation and there
    is no easy abstraction for it.  Furthermore, some card seem to have
-   a different interpreation of 7816-8 and thus we resort to let the
+   a different interpretation of 7816-8 and thus we resort to let the
    caller decide what to do. */
 gpg_error_t
 iso7816_manage_security_env (int slot, int p1, int p2,
@@ -445,7 +445,7 @@ iso7816_manage_security_env (int slot, int p1, int p2,
 
 
 /* Perform the security operation COMPUTE DIGITAL SIGANTURE.  On
-   success 0 is returned and the data is availavle in a newly
+   success 0 is returned and the data is available in a newly
    allocated buffer stored at RESULT with its length stored at
    RESULTLEN.  For LE see do_generate_keypair. */
 gpg_error_t

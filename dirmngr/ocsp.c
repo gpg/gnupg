@@ -343,7 +343,7 @@ validate_responder_cert (ctrl_t ctrl, ksba_cert_t cert,
 
          Note, that in theory we could simply ask the client via an
          inquire to validate a certificate but this might involve
-         calling DirMngr again recursivly - we can't do that as of now
+         calling DirMngr again recursively - we can't do that as of now
          (neither DirMngr nor gpgsm have the ability for concurrent
          access to DirMngr.   */
 
@@ -391,7 +391,7 @@ check_signature_core (ctrl_t ctrl, ksba_cert_t cert, gcry_sexp_t s_sig,
 }
 
 
-/* Check the signature of an OCSP repsonse.  OCSP is the context,
+/* Check the signature of an OCSP response.  OCSP is the context,
    S_SIG the signature value and MD the handle of the hash we used for
    the response.  This function automagically finds the correct public
    key.  If SIGNER_FPR_LIST is not NULL, the default OCSP reponder has been
@@ -761,7 +761,7 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
         err = gpg_error (GPG_ERR_TIME_CONFLICT);
     }
 
-  /* Check that we are not beyound NEXT_UPDATE  (plus some extra time). */
+  /* Check that we are not beyond NEXT_UPDATE  (plus some extra time). */
   if (*next_update)
     {
       gnupg_copy_time (tmp_time, next_update);

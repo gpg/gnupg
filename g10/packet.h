@@ -244,7 +244,7 @@ typedef struct
   const byte *trust_regexp;
   struct revocation_key *revkey;
   int numrevkeys;
-  int help_counter;          /* Used internally bu some fucntions.  */
+  int help_counter;          /* Used internally bu some functions.  */
   pka_info_t *pka_info;      /* Malloced PKA data or NULL if not
                                 available.  See also flags.pka_tried. */
   char *signers_uid;         /* Malloced value of the SIGNERS_UID

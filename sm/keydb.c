@@ -106,7 +106,7 @@ try_make_homedir (const char *fname)
 
 
 /* Handle the creation of a keybox if it does not yet exist.  Take
-   into acount that other processes might have the keybox already
+   into account that other processes might have the keybox already
    locked.  This lock check does not work if the directory itself is
    not yet available.  If R_CREATED is not NULL it will be set to true
    if the function created a new keybox.  */

@@ -625,7 +625,7 @@ fingerprint (preferred) or their keyid.
 
 
 @c *******************************************
-@c *******  KEY MANGEMENT COMMANDS  **********
+@c *******  KEY MANAGEMENT COMMANDS  *********
 @c *******************************************
 @node OpenPGP Key Management
 @subsection How to manage your keys
@@ -2622,7 +2622,7 @@ These options are obsolete and have no effect since GnuPG 2.1.
 @item --force-aead
 @opindex force-aead
 Force the use of AEAD encryption over MDC encryption.  AEAD is a
-modern and faster way to do authenticated encrytion than the old MDC
+modern and faster way to do authenticated encryption than the old MDC
 method.  See also options @option{--aead-algo} and
 @option{--chunk-size}.
 
@@ -2778,7 +2778,7 @@ This option is obsolete; it is handled as an alias for @option{--pgp7}
 
 @item --pgp7
 @opindex pgp7
-Set up all options to be as PGP 7 compliant as possible. This allowd
+Set up all options to be as PGP 7 compliant as possible. This allows
 the ciphers IDEA, 3DES, CAST5,AES128, AES192, AES256, and TWOFISH.,
 the hashes MD5, SHA1 and RIPEMD160, and the compression algorithms
 none and ZIP.  This option implies @option{--escape-from-lines} and
@@ -3050,7 +3050,7 @@ same thing.
 @opindex aead-algo
 Specify that the AEAD algorithm @var{name} is to be used.  This is
 useful for symmetric encryption where no key preference are available
-to select the AEAD algorithm.  Runing @command{@gpgname} with option
+to select the AEAD algorithm.  Running @command{@gpgname} with option
 @option{--version} shows the available AEAD algorithms.  In general,
 you do not want to use this option as it allows you to violate the
 OpenPGP standard.  The option @option{--personal-aead-preferences} is

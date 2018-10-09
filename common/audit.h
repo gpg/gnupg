@@ -185,7 +185,7 @@ typedef enum
        if no real recipient has been given.  */
 
     AUDIT_SESSION_KEY,     /* string */
-    /* Mark the creation or availibility of the session key.  The
+    /* Mark the creation or availability of the session key.  The
        parameter is the algorithm ID.  */
 
     AUDIT_ENCRYPTED_TO,   /* cert, err */

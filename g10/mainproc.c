@@ -811,7 +811,7 @@ proc_plaintext( CTX c, PACKET *pkt )
   int any, clearsig, rc;
   kbnode_t n;
 
-  /* This is a literal data packet.  Bumb a counter for later checks.  */
+  /* This is a literal data packet.  Bump a counter for later checks.  */
   literals_seen++;
 
   if (pt->namelen == 8 && !memcmp( pt->name, "_CONSOLE", 8))

@@ -42,7 +42,7 @@ static int decode_filter ( void *opaque, int control, IOBUF a,
 /* Our context object.  */
 struct decode_filter_context_s
 {
-  /* Recounter (max value is 2).  We need it becuase we do not know
+  /* Recounter (max value is 2).  We need it because we do not know
    * whether the iobuf or the outer control code frees this object
    * first.  */
   int  refcount;

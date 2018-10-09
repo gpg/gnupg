@@ -91,7 +91,7 @@ static struct
 enum {
   PAT_NULL,    /* Indicates end of the array.  */
   PAT_STRING,  /* The pattern is a simple string.  */
-  PAT_REGEX    /* The pattern is an extended regualr expression. */
+  PAT_REGEX    /* The pattern is an extended regular expression. */
 };
 
 

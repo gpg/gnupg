@@ -616,7 +616,7 @@ create_blob_header (KEYBOXBLOB blob, int blobtype, int as_ephemeral)
   if (blobtype == KEYBOX_BLOBTYPE_X509)
     {
       /* We don't want to point to ASN.1 encoded UserIDs (DNs) but to
-         the utf-8 string represenation of them */
+         the utf-8 string representation of them */
       for (i=0; i < blob->nuids; i++ )
         {
           if (blob->uids[i].name)

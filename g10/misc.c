@@ -712,7 +712,7 @@ openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use)
 #endif
 
     case PUBKEY_ALGO_ELGAMAL:
-      /* Dont't allow type 20 keys unless in rfc2440 mode.  */
+      /* Don't allow type 20 keys unless in rfc2440 mode.  */
       if (RFC2440)
         ga = GCRY_PK_ELG;
       break;

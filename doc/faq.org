@@ -1096,7 +1096,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     As of 1.0.3, keys generated with gpg are created with preferences to
     TWOFISH (and AES since 1.0.4) and that also means that they have the
     capability to use the new MDC encryption method. This will go into
-    OpenPGP soon, and is also suppoted by PGP 7. This new method avoids
+    OpenPGP soon, and is also supported by PGP 7. This new method avoids
     a (not so new) attack on all email encryption systems.
 
     This in turn means that pre-1.0.3 gpg binaries have problems with

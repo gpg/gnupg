@@ -1179,7 +1179,7 @@ print_status_exported (PKT_public_key *pk)
  * passphrase-protected.  Otherwise, store secret key material in the
  * clear.
  *
- * CACHE_NONCE_ADDR is used to share nonce for multple key retrievals.
+ * CACHE_NONCE_ADDR is used to share nonce for multiple key retrievals.
  */
 gpg_error_t
 receive_seckey_from_agent (ctrl_t ctrl, gcry_cipher_hd_t cipherhd,

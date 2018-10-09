@@ -1481,7 +1481,7 @@ if test "$use_regex" = yes ; then
     use_regex=no
   else
     if test x"$cross_compiling" = xyes; then
-      AC_MSG_WARN([cross compiling; assuming regexp libray is not broken])
+      AC_MSG_WARN([cross compiling; assuming regexp library is not broken])
     else
       AC_CACHE_CHECK([whether your system's regexp library is broken],
        [gnupg_cv_regex_broken],

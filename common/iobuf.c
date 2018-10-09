@@ -68,8 +68,8 @@
 
 /*-- End configurable part.  --*/
 
-/* The size of the iobuffers.  This can be chnages using the
- * iobuf_set_buffer_size fucntion.  */
+/* The size of the iobuffers.  This can be changed using the
+ * iobuf_set_buffer_size function.  */
 static unsigned int iobuf_buffer_size = DEFAULT_IOBUF_BUFFER_SIZE;
 
 

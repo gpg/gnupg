@@ -2612,7 +2612,7 @@ send_apdu (int slot, unsigned char *apdu, size_t apdulen,
 }
 
 
-/* Core APDU tranceiver function. Parameters are described at
+/* Core APDU transceiver function. Parameters are described at
    apdu_send_le with the exception of PININFO which indicates pinpad
    related operations if not NULL.  If EXTENDED_MODE is not 0
    command chaining or extended length will be used according to these

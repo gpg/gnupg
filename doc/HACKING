@@ -150,7 +150,7 @@ Note that such a comment will be removed if the git commit option
       if ( 42 == foo )
 #+end_src
     this is harder to read and modern compilers are pretty good in
-    detecing accidential assignments.  It is also suggested not to
+    detecing accidental assignments.  It is also suggested not to
     compare to 0 or NULL but to test the value direct or with a '!';
     this makes it easier to see that a boolean test is done.
   - We use our own printf style functions like =es_printf=, and
@@ -342,7 +342,7 @@ Note that such a comment will be removed if the git commit option
   - g10/main.h     :: Prototypes and some constants
   - g10/mainproc.c :: Message processing
   - g10/armor.c    :: Ascii armor filter
-  - g10/mdfilter.c :: Filter to calculate hashs
+  - g10/mdfilter.c :: Filter to calculate hashes
   - g10/textfilter.c :: Filter to handle CR/LF and trailing white space
   - g10/cipher.c   :: En-/Decryption filter
   - g10/misc.c     :: Utility functions
@@ -395,7 +395,7 @@ The *secure versions allocate memory in the secure memory.  That is,
 swapping out of this memory is avoided and is gets overwritten on
 free.  Use this for passphrases, session keys and other sensitive
 material.  This memory set aside for secure memory is linited to a few
-k.  In general the function don't print a memeory message and
+k.  In general the function don't print a memory message and
 terminate the process if there is not enough memory available.  The
 "try" versions of the functions return NULL instead.
 
