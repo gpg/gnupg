@@ -1724,7 +1724,8 @@ Set what trust model GnuPG should follow. The models are:
   @opindex trust-model:auto
   Select the trust model depending on whatever the internal trust
   database says. This is the default model if such a database already
-  exists.
+  exists.  Note that a tofu trust model is not considered here and
+  must be enabled explicitly.
 @end table
 
 @item --auto-key-locate @var{mechanisms}
