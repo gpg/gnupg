@@ -126,6 +126,8 @@ int ccid_open_reader (const char *spec_reader_name,
 int ccid_set_progress_cb (ccid_driver_t handle,
                           void (*cb)(void *, const char *, int, int, int),
                           void *cb_arg);
+int ccid_set_prompt_cb (ccid_driver_t handle, void (*cb)(void *, int),
+                        void *cb_arg);
 int ccid_shutdown_reader (ccid_driver_t handle);
 int ccid_close_reader (ccid_driver_t handle);
 int ccid_get_atr (ccid_driver_t handle,

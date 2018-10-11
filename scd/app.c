@@ -67,6 +67,7 @@ lock_app (app_t app, ctrl_t ctrl)
     }
 
   apdu_set_progress_cb (app->slot, print_progress_line, ctrl);
+  apdu_set_prompt_cb (app->slot, popup_prompt, ctrl);
 
   return 0;
 }
@@ -76,6 +77,7 @@ static void
 unlock_app (app_t app)
 {
   apdu_set_progress_cb (app->slot, NULL, NULL);
+  apdu_set_prompt_cb (app->slot, NULL, NULL);
 
   if (npth_mutex_unlock (&app->lock))
     {
