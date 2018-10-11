@@ -1898,6 +1898,34 @@ send_status_direct (ctrl_t ctrl, const char *keyword, const char *args)
 }
 
 
+void
+popup_prompt (void *opaque, int on)
+{
+  ctrl_t ctrl = opaque;
+
+  if (ctrl)
+    {
+      assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+
+      if (ctx)
+        {
+          const char *cmd;
+          gpg_error_t err;
+          unsigned char *value;
+          size_t valuelen;
+
+          if (on)
+            cmd = "POPUPPINPADPROMPT --ack";
+          else
+            cmd = "DISMISSPINPADPROMPT";
+          err = assuan_inquire (ctx, cmd, &value, &valuelen, 100);
+          if (!err)
+            xfree (value);
+        }
+    }
+}
+
+
 /* Helper to send the clients a status change notification.  */
 void
 send_client_notifications (app_t app, int removal)

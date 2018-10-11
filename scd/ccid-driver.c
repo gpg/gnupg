@@ -255,6 +255,9 @@ struct ccid_driver_s
   void (*progress_cb)(void *, const char *, int, int, int);
   void *progress_cb_arg;
 
+  void (*prompt_cb)(void *, int);
+  void *prompt_cb_arg;
+
   unsigned char intr_buf[64];
   struct libusb_transfer *transfer;
 };
@@ -1802,6 +1805,19 @@ ccid_set_progress_cb (ccid_driver_t handle,
 }
 
 
+int
+ccid_set_prompt_cb (ccid_driver_t handle,
+		    void (*cb)(void *, int), void *cb_arg)
+{
+  if (!handle)
+    return CCID_DRIVER_ERR_INV_VALUE;
+
+  handle->prompt_cb = cb;
+  handle->prompt_cb_arg = cb_arg;
+  return 0;
+}
+
+
 /* Close the reader HANDLE. */
 int
 ccid_close_reader (ccid_driver_t handle)
@@ -1930,6 +1946,7 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
 {
   int rc;
   int msglen;
+  int notified = 0;
 
   /* Fixme: The next line for the current Valgrind without support
      for USB IOCTLs. */
@@ -1982,13 +1999,24 @@ bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
      we got the expected message type.  This is in particular required
      for the Cherry keyboard which sends a time extension request for
      each key hit.  */
-  if ( !(buffer[7] & 0x03) && (buffer[7] & 0xC0) == 0x80)
+  if (!(buffer[7] & 0x03) && (buffer[7] & 0xC0) == 0x80)
     {
       /* Card present and active, time extension requested. */
       DEBUGOUT_2 ("time extension requested (%02X,%02X)\n",
                   buffer[7], buffer[8]);
+
+      /* Gnuk enhancement to prompt user input by ack button */
+      if (buffer[8] == 0xff && !notified)
+        {
+          notified = 1;
+	  handle->prompt_cb (handle->prompt_cb_arg, 1);
+        }
+
       goto retry;
     }
+
+  if (notified)
+    handle->prompt_cb (handle->prompt_cb_arg, 0);
 
   if (buffer[0] != expected_type && buffer[0] != RDR_to_PC_SlotStatus)
     {

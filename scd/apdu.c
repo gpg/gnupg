@@ -105,6 +105,7 @@ struct reader_table_s {
   int (*check_pinpad)(int, int, pininfo_t *);
   void (*dump_status_reader)(int);
   int (*set_progress_cb)(int, gcry_handler_progress_t, void*);
+  int (*set_prompt_cb)(int, void (*) (void *, int), void*);
   int (*pinpad_verify)(int, int, int, int, int, pininfo_t *);
   int (*pinpad_modify)(int, int, int, int, int, pininfo_t *);
 
@@ -444,6 +445,7 @@ new_reader_slot (void)
   reader_table[reader].check_pinpad = check_pcsc_pinpad;
   reader_table[reader].dump_status_reader = NULL;
   reader_table[reader].set_progress_cb = NULL;
+  reader_table[reader].set_prompt_cb = NULL;
   reader_table[reader].pinpad_verify = pcsc_pinpad_verify;
   reader_table[reader].pinpad_modify = pcsc_pinpad_modify;
 
@@ -1404,6 +1406,14 @@ set_progress_cb_ccid_reader (int slot, gcry_handler_progress_t cb, void *cb_arg)
   return ccid_set_progress_cb (slotp->ccid.handle, cb, cb_arg);
 }
 
+static int
+set_prompt_cb_ccid_reader (int slot, void (*cb) (void *, int ), void *cb_arg)
+{
+  reader_table_t slotp = reader_table + slot;
+
+  return ccid_set_prompt_cb (slotp->ccid.handle, cb, cb_arg);
+}
+
 
 static int
 get_status_ccid (int slot, unsigned int *status, int on_wire)
@@ -1543,6 +1553,7 @@ open_ccid_reader (struct dev_list *dl)
   reader_table[slot].check_pinpad = check_ccid_pinpad;
   reader_table[slot].dump_status_reader = dump_ccid_reader_status;
   reader_table[slot].set_progress_cb = set_progress_cb_ccid_reader;
+  reader_table[slot].set_prompt_cb = set_prompt_cb_ccid_reader;
   reader_table[slot].pinpad_verify = ccid_pinpad_operation;
   reader_table[slot].pinpad_modify = ccid_pinpad_operation;
   /* Our CCID reader code does not support T=0 at all, thus reset the
@@ -2373,6 +2384,29 @@ apdu_set_progress_cb (int slot, gcry_handler_progress_t cb, void *cb_arg)
       if (!sw)
         {
           sw = reader_table[slot].set_progress_cb (slot, cb, cb_arg);
+          unlock_slot (slot);
+        }
+    }
+  else
+    sw = 0;
+  return sw;
+}
+
+
+int
+apdu_set_prompt_cb (int slot, void (*cb) (void *, int), void *cb_arg)
+{
+  int sw;
+
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+
+  if (reader_table[slot].set_prompt_cb)
+    {
+      sw = lock_slot (slot);
+      if (!sw)
+        {
+          sw = reader_table[slot].set_prompt_cb (slot, cb, cb_arg);
           unlock_slot (slot);
         }
     }
