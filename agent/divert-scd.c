@@ -276,7 +276,7 @@ getpin_cb (void *opaque, const char *desc_text, const char *info,
         }
       else if (maxbuf == 1)  /* Open the pinentry. */
         {
-          if (info)
+          if (info && strcmp (info, "--ack") != 0)
             {
               char *desc, *desc2;
 
