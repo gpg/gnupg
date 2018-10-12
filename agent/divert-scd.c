@@ -276,27 +276,49 @@ getpin_cb (void *opaque, const char *desc_text, const char *info,
         }
       else if (maxbuf == 1)  /* Open the pinentry. */
         {
-          if (info && strcmp (info, "--ack") != 0)
+          if (info)
             {
-              char *desc, *desc2;
+              char *desc;
+              const char *desc2;
 
-              if ( asprintf (&desc,
-                             L_("%s%%0A%%0AUse the reader's pinpad for input."),
-                             info) < 0 )
+              if (!strcmp (info, "--ack"))
+                {
+                  desc2 = L_("Push ACK button on card/token.");
+
+                  if (desc_text)
+                    {
+                      desc = strconcat (desc_text,
+                                        has_percent0A_suffix (desc_text)
+                                        ? "%0A" : "%0A%0A",
+                                        desc2, NULL);
+                      desc2 = NULL;
+                    }
+                  else
+                    desc = NULL;
+                }
+              else
+                {
+                  desc2 = NULL;
+
+                  if (desc_text)
+                    desc = strconcat (desc_text,
+                                      has_percent0A_suffix (desc_text)
+                                      ? "%0A" : "%0A%0A",
+                                      info, "%0A%0A",
+                                      L_("Use the reader's pinpad for input."),
+                                      NULL);
+                  else
+                    desc = strconcat (info, "%0A%0A",
+                                      L_("Use the reader's pinpad for input."),
+                                      NULL);
+                }
+
+              if (!desc2 && !desc)
                 rc = gpg_error_from_syserror ();
               else
                 {
-                  /* Prepend DESC_TEXT to INFO.  */
-                  if (desc_text)
-                    desc2 = strconcat (desc_text,
-                                       has_percent0A_suffix (desc_text)
-                                       ? "%0A" : "%0A%0A",
-                                       desc, NULL);
-                  else
-                    desc2 = NULL;
                   rc = agent_popup_message_start (ctrl,
                                                   desc2? desc2:desc, NULL);
-                  xfree (desc2);
                   xfree (desc);
                 }
             }
