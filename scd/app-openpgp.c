@@ -4381,7 +4381,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
   log_info (_("signatures created so far: %lu\n"), sigcount);
 
   /* Check CHV if needed.  */
-  if (!app->did_chv1 || app->force_chv1 )
+  if (!app->did_chv1 || app->force_chv1)
     {
       char *pinvalue;
       int pinlen;
@@ -4429,6 +4429,9 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
     }
   rc = iso7816_compute_ds (app->slot, exmode, data, datalen, le_value,
                            outdata, outdatalen);
+  if (!rc && app->force_chv1)
+    app->did_chv1 = 0;
+
   return rc;
 }
 
