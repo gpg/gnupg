@@ -41,6 +41,12 @@
 
 #include "rfc822parse.h"
 
+/* All valid characters in a header name.  */
+#define HEADER_NAME_CHARS  ("abcdefghijklmnopqrstuvwxyz" \
+                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+                            "-01234567890")
+
+
 enum token_type
   {
     tSPACE,
@@ -131,27 +137,30 @@ lowercase_string (unsigned char *string)
       *string = *string - 'A' + 'a';
 }
 
-/* Transform a header name into a standard capitalized format; i.e
-   "Content-Type".  Conversion stops at the colon.  As usual we don't
-   use the localized versions of ctype.h.
- */
-static void
-capitalize_header_name (unsigned char *name)
-{
-  int first = 1;
 
-  for (; *name && *name != ':'; name++)
-    if (*name == '-')
-      first = 1;
-    else if (first)
-      {
-        if (*name >= 'a' && *name <= 'z')
-          *name = *name - 'a' + 'A';
-        first = 0;
-      }
-    else if (*name >= 'A' && *name <= 'Z')
-      *name = *name - 'A' + 'a';
+static int
+my_toupper (int c)
+{
+  if (c >= 'a' && c <= 'z')
+    c &= ~0x20;
+  return c;
 }
+
+/* This is the same as ascii_strcasecmp.  */
+static int
+my_strcasecmp (const char *a, const char *b)
+{
+  if (a == b)
+    return 0;
+
+  for (; *a && *b; a++, b++)
+    {
+      if (*a != *b && my_toupper(*a) != my_toupper(*b))
+        break;
+    }
+  return *a == *b? 0 : (my_toupper (*a) - my_toupper (*b));
+}
+
 
 #ifndef HAVE_STPCPY
 static char *
@@ -226,6 +235,62 @@ release_handle_data (rfc822parse_t msg)
   msg->current_part = NULL;
   msg->boundary = NULL;
 }
+
+
+/* Check that the header name is valid.  We allow all lower and
+ * uppercase letters and, except for the first character, digits and
+ * the dash.  The check stops at the first colon or at string end.
+ * Returns true if the name is valid.  */
+int
+rfc822_valid_header_name_p (const char *name)
+{
+  const char *s;
+  size_t namelen;
+
+  if ((s=strchr (name, ':')))
+    namelen = s - name;
+  else
+    namelen = strlen (name);
+
+  if (!namelen
+      || strspn (name, HEADER_NAME_CHARS) != namelen
+      || strchr ("-0123456789", *name))
+    return 0;
+  return 1;
+}
+
+
+/* Transform a header NAME into a standard capitalized format.
+ * Conversion stops at the colon. */
+void
+rfc822_capitalize_header_name (char *name)
+{
+  unsigned char *p = name;
+  int first = 1;
+
+  /* Special cases first.  */
+  if (!my_strcasecmp (name, "MIME-Version"))
+    {
+      strcpy (name, "MIME-Version");
+      return;
+    }
+
+  /* Regular cases.  */
+  for (; *p && *p != ':'; p++)
+    {
+      if (*p == '-')
+        first = 1;
+      else if (first)
+        {
+          if (*p >= 'a' && *p <= 'z')
+            *p = *p - 'a' + 'A';
+          first = 0;
+        }
+      else if (*p >= 'A' && *p <= 'Z')
+        *p = *p - 'A' + 'a';
+    }
+}
+
 
 
 /* Create a new parsing context for an entire rfc822 message and
@@ -432,7 +497,7 @@ insert_header (rfc822parse_t msg, const unsigned char *line, size_t length)
 
   /* Transform a field name into canonical format. */
   if (!hdr->cont && strchr (line, ':'))
-     capitalize_header_name (hdr->line);
+    rfc822_capitalize_header_name (hdr->line);
 
   *msg->current_part->hdr_lines_tail = hdr;
   msg->current_part->hdr_lines_tail = &hdr->next;
