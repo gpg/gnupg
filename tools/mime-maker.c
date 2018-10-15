@@ -25,13 +25,9 @@
 
 #include "../common/util.h"
 #include "../common/zb32.h"
+#include "rfc822parse.h"
 #include "mime-maker.h"
 
-
-/* All valid characters in a header name.  */
-#define HEADER_NAME_CHARS  ("abcdefghijklmnopqrstuvwxyz" \
-                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
-                            "-01234567890")
 
 /* An object to store an header.  Also used for a list of headers.  */
 struct header_s
@@ -269,38 +265,6 @@ ensure_part (mime_maker_t ctx, part_t *r_parent)
 }
 
 
-/* Transform a header name into a standard capitalized format.
- * "Content-Type".  Conversion stops at the colon. */
-static void
-capitalize_header_name (char *name)
-{
-  unsigned char *p = name;
-  int first = 1;
-
-  /* Special cases first.  */
-  if (!ascii_strcasecmp (name, "MIME-Version"))
-    {
-      strcpy (name, "MIME-Version");
-      return;
-    }
-
-  /* Regular cases.  */
-  for (; *p && *p != ':'; p++)
-    {
-      if (*p == '-')
-        first = 1;
-      else if (first)
-        {
-          if (*p >= 'a' && *p <= 'z')
-            *p = *p - 'a' + 'A';
-          first = 0;
-        }
-      else if (*p >= 'A' && *p <= 'Z')
-        *p = *p - 'A' + 'a';
-    }
-}
-
-
 /* Check whether a header with NAME has already been set into PART.
  * NAME must be in canonical capitalized format.  Return true or
  * false. */
@@ -344,17 +308,14 @@ add_header (part_t part, const char *name, const char *value)
   memcpy (hdr->name, name, namelen);
   hdr->name[namelen] = 0;
 
-  /* Check that the header name is valid.  We allow all lower and
-   * uppercase letters and, except for the first character, digits and
-   * the dash.  */
-  if (strspn (hdr->name, HEADER_NAME_CHARS) != namelen
-      || strchr ("-0123456789", *hdr->name))
+  /* Check that the header name is valid.  */
+  if (!rfc822_valid_header_name_p (hdr->name))
     {
       xfree (hdr);
       return gpg_error (GPG_ERR_INV_NAME);
     }
 
-  capitalize_header_name (hdr->name);
+  rfc822_capitalize_header_name (hdr->name);
   hdr->value = xtrystrdup (value);
   if (!hdr->value)
     {

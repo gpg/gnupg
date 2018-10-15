@@ -48,6 +48,8 @@ typedef int (*rfc822parse_cb_t) (void *opaque,
                                  rfc822parse_event_t event,
                                  rfc822parse_t msg);
 
+int rfc822_valid_header_name_p (const char *name);
+void rfc822_capitalize_header_name (char *name);
 
 rfc822parse_t rfc822parse_open (rfc822parse_cb_t cb, void *opaque_value);
 
