@@ -653,6 +653,33 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
   if (err)
     goto leave;
 
+  /* It is sometimes useful to know the responder ID. */
+  if (opt.verbose)
+    {
+      char *resp_name;
+      ksba_sexp_t resp_keyid;
+
+      err = ksba_ocsp_get_responder_id (ocsp, &resp_name, &resp_keyid);
+      if (err)
+        log_info (_("error getting responder ID: %s\n"), gpg_strerror (err));
+      else
+        {
+          log_info ("responder id: ");
+          if (resp_name)
+            log_printf ("'/%s' ", resp_name);
+          if (resp_keyid)
+            {
+              log_printf ("{");
+              dump_serial (resp_keyid);
+              log_printf ("} ");
+            }
+          log_printf ("\n");
+        }
+      ksba_free (resp_name);
+      ksba_free (resp_keyid);
+      err = 0;
+    }
+
   /* We got a useful answer, check that the answer has a valid signature. */
   sigval = ksba_ocsp_get_sig_val (ocsp, produced_at);
   if (!sigval || !*produced_at)
