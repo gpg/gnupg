@@ -3625,7 +3625,7 @@ static void
 get_client_info (int fd, struct peer_info_s *out)
 {
   pid_t client_pid = (pid_t)(-1);
-  uid_t client_uid = (uid_t)-1;
+  int client_uid = -1;
 
 #ifdef SO_PEERCRED
   {
@@ -3640,10 +3640,10 @@ get_client_info (int fd, struct peer_info_s *out)
       {
 #if defined (HAVE_STRUCT_SOCKPEERCRED_PID) || defined (HAVE_STRUCT_UCRED_PID)
         client_pid = cr.pid;
-        client_uid = cr.uid;
+        client_uid = (int)cr.uid;
 #elif defined (HAVE_STRUCT_UCRED_CR_PID)
         client_pid = cr.cr_pid;
-        client_pid = cr.cr_uid;
+        client_uid = (int)cr.cr_uid;
 #else
 #error "Unknown SO_PEERCRED struct"
 #endif
@@ -3660,7 +3660,7 @@ get_client_info (int fd, struct peer_info_s *out)
       len = sizeof (struct xucred);
 
       if (!getsockopt (fd, SOL_LOCAL, LOCAL_PEERCRED, &cr, &len))
-	client_uid = cr.cr_uid;
+	client_uid = (int)cr.cr_uid;
     }
 #endif
   }
@@ -3670,8 +3670,10 @@ get_client_info (int fd, struct peer_info_s *out)
     socklen_t unpl = sizeof unp;
 
     if (getsockopt (fd, 0, LOCAL_PEEREID, &unp, &unpl) != -1)
-      client_pid = unp.unp_pid;
-      client_uid = unp.unp_euid;
+      {
+        client_pid = unp.unp_pid;
+        client_uid = (int)unp.unp_euid;
+      }
   }
 #elif defined (HAVE_GETPEERUCRED)
   {
@@ -3680,7 +3682,7 @@ get_client_info (int fd, struct peer_info_s *out)
     if (getpeerucred (fd, &ucred) != -1)
       {
         client_pid = ucred_getpid (ucred);
-	client_uid = ucred_geteuid (ucred);
+	client_uid = (int)ucred_geteuid (ucred);
         ucred_free (ucred);
       }
   }
@@ -3689,7 +3691,7 @@ get_client_info (int fd, struct peer_info_s *out)
 #endif
 
   out->pid = (client_pid == (pid_t)(-1)? 0 : (unsigned long)client_pid);
-  out->uid = (int)client_uid;
+  out->uid = client_uid;
 }
 
 

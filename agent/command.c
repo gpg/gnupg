@@ -3588,8 +3588,13 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
         }
       else
         {
+#ifdef HAVE_W32_SYSTEM
+          pid = assuan_get_pid (ctx);
+          ctrl->client_uid = -1;
+#else
           pid = client_creds->pid;
           ctrl->client_uid = client_creds->uid;
+#endif
         }
       ctrl->client_pid = (pid == ASSUAN_INVALID_PID)? 0 : (unsigned long)pid;
       ctrl->server_local->connect_from_self = (pid == getpid ());
