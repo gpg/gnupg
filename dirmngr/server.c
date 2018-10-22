@@ -957,19 +957,28 @@ proc_wkd_get (ctrl_t ctrl, assuan_context_t ctx, char *line)
     }
   else
     {
-      uri = strconcat ("https://",
-                       domain,
-                       portstr,
-                       "/.well-known/openpgpkey/hu/",
-                       encodedhash,
-                       NULL);
-      no_log = 1;
-      if (uri)
+      char *escapedmbox;
+
+      escapedmbox = http_escape_string (mbox, "%;?&=");
+      if (escapedmbox)
         {
-          err = dirmngr_status_printf (ctrl, "SOURCE", "https://%s%s",
-                                       domain, portstr);
-          if (err)
-            goto leave;
+          uri = strconcat ("https://",
+                           domain,
+                           portstr,
+                           "/.well-known/openpgpkey/hu/",
+                           encodedhash,
+                           "?l=",
+                           escapedmbox,
+                           NULL);
+          xfree (escapedmbox);
+          no_log = 1;
+          if (uri)
+            {
+              err = dirmngr_status_printf (ctrl, "SOURCE", "https://%s%s",
+                                           domain, portstr);
+              if (err)
+                goto leave;
+            }
         }
     }
   if (!uri)
