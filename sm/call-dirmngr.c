@@ -362,7 +362,7 @@ inq_certificate (void *opaque, const char *line)
     }
   else
     {
-      log_error ("unsupported inquiry '%s'\n", line);
+      log_error ("unsupported certificate inquiry '%s'\n", line);
       return gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 
@@ -1035,9 +1035,33 @@ run_command_inq_cb (void *opaque, const char *line)
       line = s;
       log_info ("dirmngr: %s\n", line);
     }
+  else if ((s = has_leading_keyword (line, "ISTRUSTED")))
+    {
+      /* The server is asking us whether the certificate is a trusted
+         root certificate.  */
+      char fpr[41];
+      struct rootca_flags_s rootca_flags;
+      int n;
+
+      line = s;
+
+      for (s=line,n=0; hexdigitp (s); s++, n++)
+        ;
+      if (*s || n != 40)
+        return gpg_error (GPG_ERR_ASS_PARAMETER);
+      for (s=line, n=0; n < 40; s++, n++)
+        fpr[n] = (*s >= 'a')? (*s & 0xdf): *s;
+      fpr[n] = 0;
+
+      if (!gpgsm_agent_istrusted (parm->ctrl, NULL, fpr, &rootca_flags))
+        rc = assuan_send_data (parm->ctx, "1", 1);
+      else
+        rc = 0;
+      return rc;
+    }
   else
     {
-      log_error ("unsupported inquiry '%s'\n", line);
+      log_error ("unsupported command inquiry '%s'\n", line);
       rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 
