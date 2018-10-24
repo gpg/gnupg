@@ -1932,7 +1932,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 {
   int md5_len = 0;
   unsigned n;
-  int is_v4 = 0;
+  int is_v4or5 = 0;
   int rc = 0;
   int i, ndata;
 
@@ -1945,8 +1945,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   sig->version = iobuf_get_noeof (inp);
   pktlen--;
-  if (sig->version == 4)
-    is_v4 = 1;
+  if (sig->version == 4 || sig->version == 5)
+    is_v4or5 = 1;
   else if (sig->version != 2 && sig->version != 3)
     {
       log_error ("packet(%d) with unknown version %d\n",
@@ -1957,7 +1957,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       goto leave;
     }
 
-  if (!is_v4)
+  if (!is_v4or5)
     {
       if (pktlen == 0)
 	goto underflow;
@@ -1968,7 +1968,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
     goto underflow;
   sig->sig_class = iobuf_get_noeof (inp);
   pktlen--;
-  if (!is_v4)
+  if (!is_v4or5)
     {
       if (pktlen < 12)
 	goto underflow;
@@ -1987,7 +1987,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
   pktlen--;
   sig->flags.exportable = 1;
   sig->flags.revocable = 1;
-  if (is_v4) /* Read subpackets.  */
+  if (is_v4or5) /* Read subpackets.  */
     {
       if (pktlen < 2)
 	goto underflow;
@@ -2058,7 +2058,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
   sig->digest_start[1] = iobuf_get_noeof (inp);
   pktlen--;
 
-  if (is_v4 && sig->pubkey_algo)  /* Extract required information.  */
+  if (is_v4or5 && sig->pubkey_algo)  /* Extract required information.  */
     {
       const byte *p;
       size_t len;
@@ -2159,7 +2159,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
                   (ulong) sig->keyid[0], (ulong) sig->keyid[1],
                   sig->version, (ulong) sig->timestamp, md5_len, sig->sig_class,
                   sig->digest_algo, sig->digest_start[0], sig->digest_start[1]);
-      if (is_v4)
+      if (is_v4or5)
 	{
 	  parse_sig_subpkt (sig->hashed, SIGSUBPKT_LIST_HASHED, NULL);
 	  parse_sig_subpkt (sig->unhashed, SIGSUBPKT_LIST_UNHASHED, NULL);

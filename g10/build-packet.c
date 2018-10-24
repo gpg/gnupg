@@ -1536,7 +1536,7 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
   else
     iobuf_put( a, sig->version );
   if ( sig->version < 4 )
-    iobuf_put (a, 5 ); /* Constant */
+    iobuf_put (a, 5 ); /* Constant used by pre-v4 signatures. */
   iobuf_put (a, sig->sig_class );
   if ( sig->version < 4 )
     {

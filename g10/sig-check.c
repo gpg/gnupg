@@ -510,7 +510,8 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
     }
   else
     {
-      byte buf[6];
+      byte buf[10];
+      int i;
       size_t n;
       gcry_md_putc (digest, sig->pubkey_algo);
       gcry_md_putc (digest, sig->digest_algo);
@@ -531,13 +532,21 @@ check_signature_end_simple (PKT_public_key *pk, PKT_signature *sig,
 	  n = 6;
 	}
 	/* add some magic per Section 5.2.4 of RFC 4880.  */
-	buf[0] = sig->version;
-	buf[1] = 0xff;
-	buf[2] = n >> 24;
-	buf[3] = n >> 16;
-	buf[4] = n >>  8;
-	buf[5] = n;
-	gcry_md_write( digest, buf, 6 );
+        i = 0;
+	buf[i++] = sig->version;
+	buf[i++] = 0xff;
+        if (sig->version >= 5)
+          {
+            buf[i++] = 0;
+            buf[i++] = 0;
+            buf[i++] = 0;
+            buf[i++] = 0;
+          }
+	buf[i++] = n >> 24;
+	buf[i++] = n >> 16;
+	buf[i++] = n >>  8;
+	buf[i++] = n;
+	gcry_md_write (digest, buf, i);
     }
     gcry_md_final( digest );
 
@@ -572,7 +581,7 @@ hash_uid_packet (PKT_user_id *uid, gcry_md_hd_t md, PKT_signature *sig )
 {
   if (uid->attrib_data)
     {
-      if (sig->version >=4)
+      if (sig->version >= 4)
         {
           byte buf[5];
           buf[0] = 0xd1;		   /* packet of type 17 */
@@ -586,7 +595,7 @@ hash_uid_packet (PKT_user_id *uid, gcry_md_hd_t md, PKT_signature *sig )
     }
   else
     {
-      if (sig->version >=4)
+      if (sig->version >= 4)
         {
           byte buf[5];
           buf[0] = 0xb4;	      /* indicates a userid packet */

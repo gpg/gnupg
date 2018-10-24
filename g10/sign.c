@@ -220,7 +220,8 @@ hash_uid (gcry_md_hd_t md, int sigversion, const PKT_user_id *uid)
 static void
 hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
 {
-  byte buf[6];
+  byte buf[10];
+  int i;
   size_t n;
 
   gcry_md_putc (md, sig->version);
@@ -242,13 +243,21 @@ hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
       n = 6;
     }
   /* Add some magic.  */
-  buf[0] = sig->version;
-  buf[1] = 0xff;
-  buf[2] = n >> 24;         /* (n is only 16 bit, so this is always 0) */
-  buf[3] = n >> 16;
-  buf[4] = n >>  8;
-  buf[5] = n;
-  gcry_md_write (md, buf, 6);
+  i = 0;
+  buf[i++] = sig->version;
+  buf[i++] = 0xff;
+  if (sig->version >= 5)
+    {
+      buf[i++] = 0;
+      buf[i++] = 0;
+      buf[i++] = 0;
+      buf[i++] = 0;
+    }
+  buf[i++] = n >> 24;         /* (n is only 16 bit, so this is always 0) */
+  buf[i++] = n >> 16;
+  buf[i++] = n >>  8;
+  buf[i++] = n;
+  gcry_md_write (md, buf, i);
 }
 
 
@@ -731,11 +740,10 @@ write_signature_packets (ctrl_t ctrl,
       if (!sig)
         return gpg_error_from_syserror ();
 
-      if (duration || opt.sig_policy_url
-          || opt.sig_notations || opt.sig_keyserver_url)
-        sig->version = 4;
+      if (pk->version >= 5)
+        sig->version = 5;  /* Required for v5 keys.  */
       else
-        sig->version = pk->version;
+        sig->version = 4;  /*Required.  */
 
       keyid_from_pk (pk, sig->keyid);
       sig->digest_algo = hash_for (pk);
@@ -751,12 +759,8 @@ write_signature_packets (ctrl_t ctrl,
       if (gcry_md_copy (&md, hash))
         BUG ();
 
-      if (sig->version >= 4)
-        {
-          build_sig_subpkt_from_sig (sig, pk);
-          mk_notation_policy_etc (sig, NULL, pk);
-        }
-
+      build_sig_subpkt_from_sig (sig, pk);
+      mk_notation_policy_etc (sig, NULL, pk);
       hash_sigversion_to_magic (md, sig);
       gcry_md_final (md);
 
@@ -1523,9 +1527,10 @@ make_keysig_packet (ctrl_t ctrl,
               || sigclass == 0x20 || sigclass == 0x18 || sigclass == 0x19
               || sigclass == 0x30 || sigclass == 0x28 );
 
-  sigversion = 4;
-  if (sigversion < pksk->version)
-    sigversion = pksk->version;
+  if (pksk->version >= 5)
+    sigversion = 5;
+  else
+    sigversion = 4;
 
   if (!digest_algo)
     {
