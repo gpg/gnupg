@@ -51,7 +51,8 @@
 
 static int recipient_digest_algo=0;
 
-/****************
+
+/*
  * Create notations and other stuff.  It is assumed that the stings in
  * STRLIST are already checked to contain only printable data and have
  * a valid NAME=VALUE format.
@@ -574,50 +575,52 @@ print_status_sig_created (PKT_public_key *pk, PKT_signature *sig, int what)
  * Loop over the secret certificates in SK_LIST and build the one pass
  * signature packets.  OpenPGP says that the data should be bracket by
  * the onepass-sig and signature-packet; so we build these onepass
- * packet here in reverse order
+ * packet here in reverse order.
  */
 static int
 write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
 {
-    int skcount;
-    SK_LIST sk_rover;
+  int skcount;
+  SK_LIST sk_rover;
 
-    for (skcount=0, sk_rover=sk_list; sk_rover; sk_rover = sk_rover->next)
-        skcount++;
+  for (skcount=0, sk_rover=sk_list; sk_rover; sk_rover = sk_rover->next)
+    skcount++;
 
-    for (; skcount; skcount--) {
-        PKT_public_key *pk;
-        PKT_onepass_sig *ops;
-        PACKET pkt;
-        int i, rc;
+  for (; skcount; skcount--)
+    {
+      PKT_public_key *pk;
+      PKT_onepass_sig *ops;
+      PACKET pkt;
+      int i, rc;
 
-        for (i=0, sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
-            if (++i == skcount)
-                break;
-        }
+      for (i=0, sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
+        if (++i == skcount)
+          break;
 
-        pk = sk_rover->pk;
-        ops = xmalloc_clear (sizeof *ops);
-        ops->sig_class = sigclass;
-        ops->digest_algo = hash_for (pk);
-        ops->pubkey_algo = pk->pubkey_algo;
-        keyid_from_pk (pk, ops->keyid);
-        ops->last = (skcount == 1);
+      pk = sk_rover->pk;
+      ops = xmalloc_clear (sizeof *ops);
+      ops->sig_class = sigclass;
+      ops->digest_algo = hash_for (pk);
+      ops->pubkey_algo = pk->pubkey_algo;
+      keyid_from_pk (pk, ops->keyid);
+      ops->last = (skcount == 1);
 
-        init_packet(&pkt);
-        pkt.pkttype = PKT_ONEPASS_SIG;
-        pkt.pkt.onepass_sig = ops;
-        rc = build_packet (out, &pkt);
-        free_packet (&pkt, NULL);
-        if (rc) {
-            log_error ("build onepass_sig packet failed: %s\n",
-                       gpg_strerror (rc));
-            return rc;
+      init_packet (&pkt);
+      pkt.pkttype = PKT_ONEPASS_SIG;
+      pkt.pkt.onepass_sig = ops;
+      rc = build_packet (out, &pkt);
+      free_packet (&pkt, NULL);
+      if (rc)
+        {
+          log_error ("build onepass_sig packet failed: %s\n",
+                     gpg_strerror (rc));
+          return rc;
         }
     }
 
-    return 0;
+  return 0;
 }
+
 
 /*
  * Helper to write the plaintext (literal data) packet
@@ -625,77 +628,81 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
 static int
 write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
 {
-    PKT_plaintext *pt = NULL;
-    u32 filesize;
-    int rc = 0;
+  PKT_plaintext *pt = NULL;
+  u32 filesize;
+  int rc = 0;
 
-    if (!opt.no_literal)
-      pt=setup_plaintext_name(fname,inp);
+  if (!opt.no_literal)
+    pt = setup_plaintext_name (fname, inp);
 
-    /* try to calculate the length of the data */
-    if ( !iobuf_is_pipe_filename (fname) && *fname )
-      {
-        off_t tmpsize;
-        int overflow;
+  /* Try to calculate the length of the data. */
+  if ( !iobuf_is_pipe_filename (fname) && *fname)
+    {
+      off_t tmpsize;
+      int overflow;
 
-        if( !(tmpsize = iobuf_get_filelength(inp, &overflow))
-            && !overflow && opt.verbose)
-	  log_info (_("WARNING: '%s' is an empty file\n"), fname);
+      if (!(tmpsize = iobuf_get_filelength (inp, &overflow))
+          && !overflow && opt.verbose)
+        log_info (_("WARNING: '%s' is an empty file\n"), fname);
 
-        /* We can't encode the length of very large files because
-           OpenPGP uses only 32 bit for file sizes.  So if the size of
-           a file is larger than 2^32 minus some bytes for packet
-           headers, we switch to partial length encoding. */
-        if ( tmpsize < (IOBUF_FILELENGTH_LIMIT - 65536) )
-          filesize = tmpsize;
-        else
-          filesize = 0;
+      /* We can't encode the length of very large files because
+       * OpenPGP uses only 32 bit for file sizes.  So if the size of a
+       * file is larger than 2^32 minus some bytes for packet headers,
+       * we switch to partial length encoding. */
+      if (tmpsize < (IOBUF_FILELENGTH_LIMIT - 65536))
+        filesize = tmpsize;
+      else
+        filesize = 0;
 
-        /* Because the text_filter modifies the length of the
-         * data, it is not possible to know the used length
-         * without a double read of the file - to avoid that
-         * we simple use partial length packets. */
-        if ( ptmode == 't' || ptmode == 'u' || ptmode == 'm')
-	  filesize = 0;
-      }
-    else
-      filesize = opt.set_filesize? opt.set_filesize : 0; /* stdin */
-
-    if (!opt.no_literal) {
-        PACKET pkt;
-
-        /* Note that PT has been initialized above in no_literal mode.  */
-        pt->timestamp = make_timestamp ();
-        pt->mode = ptmode;
-        pt->len = filesize;
-        pt->new_ctb = !pt->len;
-        pt->buf = inp;
-        init_packet(&pkt);
-        pkt.pkttype = PKT_PLAINTEXT;
-        pkt.pkt.plaintext = pt;
-        /*cfx.datalen = filesize? calc_packet_length( &pkt ) : 0;*/
-        if( (rc = build_packet (out, &pkt)) )
-            log_error ("build_packet(PLAINTEXT) failed: %s\n",
-                       gpg_strerror (rc) );
-        pt->buf = NULL;
-        free_packet (&pkt, NULL);
+      /* Because the text_filter modifies the length of the
+       * data, it is not possible to know the used length
+       * without a double read of the file - to avoid that
+       * we simple use partial length packets. */
+      if (ptmode == 't' || ptmode == 'u' || ptmode == 'm')
+        filesize = 0;
     }
-    else {
-        byte copy_buffer[4096];
-        int  bytes_copied;
+  else
+    filesize = opt.set_filesize? opt.set_filesize : 0; /* stdin */
 
-        while ((bytes_copied = iobuf_read(inp, copy_buffer, 4096)) != -1)
-            if ( (rc=iobuf_write(out, copy_buffer, bytes_copied)) ) {
-                log_error ("copying input to output failed: %s\n",
-                           gpg_strerror (rc));
-                break;
-            }
-        wipememory(copy_buffer,4096); /* burn buffer */
+  if (!opt.no_literal)
+    {
+      PACKET pkt;
+
+      /* Note that PT has been initialized above in no_literal mode.  */
+      pt->timestamp = make_timestamp ();
+      pt->mode = ptmode;
+      pt->len = filesize;
+      pt->new_ctb = !pt->len;
+      pt->buf = inp;
+      init_packet (&pkt);
+      pkt.pkttype = PKT_PLAINTEXT;
+      pkt.pkt.plaintext = pt;
+      /*cfx.datalen = filesize? calc_packet_length( &pkt ) : 0;*/
+      if ((rc = build_packet (out, &pkt)))
+        log_error ("build_packet(PLAINTEXT) failed: %s\n",
+                   gpg_strerror (rc) );
+      pt->buf = NULL;
+      free_packet (&pkt, NULL);
     }
-    /* fixme: it seems that we never freed pt/pkt */
+  else
+    {
+      byte copy_buffer[4096];
+      int  bytes_copied;
 
-    return rc;
+      while ((bytes_copied = iobuf_read (inp, copy_buffer, 4096)) != -1)
+        if ((rc = iobuf_write (out, copy_buffer, bytes_copied)))
+          {
+            log_error ("copying input to output failed: %s\n",
+                       gpg_strerror (rc));
+            break;
+          }
+      wipememory (copy_buffer, 4096); /* burn buffer */
+    }
+  /* fixme: it seems that we never freed pt/pkt */
+
+  return rc;
 }
+
 
 /*
  * Write the signatures from the SK_LIST to OUT. HASH must be a non-finalized
@@ -782,7 +789,7 @@ write_signature_packets (ctrl_t ctrl,
 }
 
 
-/****************
+/*
  * Sign the files whose names are in FILENAME.
  * If DETACHED has the value true,
  * make a detached signature.  If FILENAMES->d is NULL read from stdin
@@ -798,62 +805,65 @@ int
 sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	   int encryptflag, strlist_t remusr, const char *outfile )
 {
-    const char *fname;
-    armor_filter_context_t *afx;
-    compress_filter_context_t zfx;
-    md_filter_context_t mfx;
-    text_filter_context_t tfx;
-    progress_filter_context_t *pfx;
-    encrypt_filter_context_t efx;
-    IOBUF inp = NULL, out = NULL;
-    PACKET pkt;
-    int rc = 0;
-    PK_LIST pk_list = NULL;
-    SK_LIST sk_list = NULL;
-    SK_LIST sk_rover = NULL;
-    int multifile = 0;
-    u32 duration=0;
+  const char *fname;
+  armor_filter_context_t *afx;
+  compress_filter_context_t zfx;
+  md_filter_context_t mfx;
+  text_filter_context_t tfx;
+  progress_filter_context_t *pfx;
+  encrypt_filter_context_t efx;
+  iobuf_t inp = NULL;
+  iobuf_t out = NULL;
+  PACKET pkt;
+  int rc = 0;
+  PK_LIST pk_list = NULL;
+  SK_LIST sk_list = NULL;
+  SK_LIST sk_rover = NULL;
+  int multifile = 0;
+  u32 duration=0;
 
-    pfx = new_progress_context ();
-    afx = new_armor_context ();
-    memset( &zfx, 0, sizeof zfx);
-    memset( &mfx, 0, sizeof mfx);
-    memset( &efx, 0, sizeof efx);
-    efx.ctrl = ctrl;
-    init_packet( &pkt );
+  pfx = new_progress_context ();
+  afx = new_armor_context ();
+  memset (&zfx, 0, sizeof zfx);
+  memset (&mfx, 0, sizeof mfx);
+  memset (&efx, 0, sizeof efx);
+  efx.ctrl = ctrl;
+  init_packet (&pkt);
 
-    if( filenames ) {
-	fname = filenames->d;
-	multifile = !!filenames->next;
+  if (filenames)
+    {
+      fname = filenames->d;
+      multifile = !!filenames->next;
     }
-    else
-	fname = NULL;
+  else
+    fname = NULL;
 
-    if( fname && filenames->next && (!detached || encryptflag) )
-	log_bug("multiple files can only be detached signed");
+  if (fname && filenames->next && (!detached || encryptflag))
+    log_bug ("multiple files can only be detached signed");
 
-    if(encryptflag==2
-       && (rc=setup_symkey(&efx.symkey_s2k,&efx.symkey_dek)))
-      goto leave;
+  if (encryptflag == 2
+      && (rc = setup_symkey (&efx.symkey_s2k, &efx.symkey_dek)))
+    goto leave;
 
-    if (opt.ask_sig_expire && !opt.batch)
-      duration = ask_expire_interval(1,opt.def_sig_expire);
-    else
-      duration = parse_expire_string(opt.def_sig_expire);
+  if (opt.ask_sig_expire && !opt.batch)
+    duration = ask_expire_interval(1,opt.def_sig_expire);
+  else
+    duration = parse_expire_string(opt.def_sig_expire);
 
-    /* Note: In the old non-agent version the following call used to
-       unprotect the secret key.  This is now done on demand by the agent.  */
-    if( (rc = build_sk_list (ctrl, locusr, &sk_list, PUBKEY_USAGE_SIG )) )
-	goto leave;
+  /* Note: In the old non-agent version the following call used to
+   * unprotect the secret key.  This is now done on demand by the agent.  */
+  if ((rc = build_sk_list (ctrl, locusr, &sk_list, PUBKEY_USAGE_SIG )))
+    goto leave;
 
-    if (encryptflag
-        && (rc=build_pk_list (ctrl, remusr, &pk_list)))
-      goto leave;
+  if (encryptflag
+      && (rc = build_pk_list (ctrl, remusr, &pk_list)))
+    goto leave;
 
-    /* prepare iobufs */
-    if( multifile )  /* have list of filenames */
-	inp = NULL; /* we do it later */
-    else {
+  /* Prepare iobufs. */
+  if (multifile)    /* have list of filenames */
+    inp = NULL;     /* we do it later */
+  else
+    {
       inp = iobuf_open(fname);
       if (inp && is_secured_file (iobuf_get_fd (inp)))
         {
@@ -861,406 +871,434 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
           inp = NULL;
           gpg_err_set_errno (EPERM);
         }
-      if( !inp )
+      if (!inp)
         {
           rc = gpg_error_from_syserror ();
           log_error (_("can't open '%s': %s\n"), fname? fname: "[stdin]",
-                     strerror(errno) );
+                     strerror (errno));
           goto leave;
 	}
 
-        handle_progress (pfx, inp, fname);
+      handle_progress (pfx, inp, fname);
     }
 
-    if( outfile ) {
-        if (is_secured_filename ( outfile )) {
-            out = NULL;
-            gpg_err_set_errno (EPERM);
+  if (outfile)
+    {
+      if (is_secured_filename (outfile))
+        {
+          out = NULL;
+          gpg_err_set_errno (EPERM);
         }
-        else
-          out = iobuf_create (outfile, 0);
-	if( !out )
-	  {
-            rc = gpg_error_from_syserror ();
-	    log_error(_("can't create '%s': %s\n"), outfile, strerror(errno) );
-	    goto leave;
-	  }
-	else if( opt.verbose )
-	    log_info(_("writing to '%s'\n"), outfile );
+      else
+        out = iobuf_create (outfile, 0);
+      if (!out)
+        {
+          rc = gpg_error_from_syserror ();
+          log_error (_("can't create '%s': %s\n"), outfile, gpg_strerror (rc));
+          goto leave;
+        }
+      else if (opt.verbose)
+        log_info (_("writing to '%s'\n"), outfile);
     }
-    else if( (rc = open_outfile (-1, fname,
-                                 opt.armor? 1: detached? 2:0, 0, &out)))
-	goto leave;
-
-    /* prepare to calculate the MD over the input */
-    if( opt.textmode && !outfile && !multifile )
-      {
-	memset( &tfx, 0, sizeof tfx);
-	iobuf_push_filter( inp, text_filter, &tfx );
-      }
-
-    if ( gcry_md_open (&mfx.md, 0, 0) )
-      BUG ();
-    if (DBG_HASHING)
-      gcry_md_debug (mfx.md, "sign");
-
-    /* If we're encrypting and signing, it is reasonable to pick the
-       hash algorithm to use out of the recipient key prefs.  This is
-       best effort only, as in a DSA2 and smartcard world there are
-       cases where we cannot please everyone with a single hash (DSA2
-       wants >160 and smartcards want =160).  In the future this could
-       be more complex with different hashes for each sk, but the
-       current design requires a single hash for all SKs. */
-    if(pk_list)
-      {
-	if(opt.def_digest_algo)
-	  {
-	    if(!opt.expert &&
-	       select_algo_from_prefs(pk_list,PREFTYPE_HASH,
-				      opt.def_digest_algo,
-				      NULL)!=opt.def_digest_algo)
-	  log_info(_("WARNING: forcing digest algorithm %s (%d)"
-		     " violates recipient preferences\n"),
-		   gcry_md_algo_name (opt.def_digest_algo),
-		   opt.def_digest_algo );
-	  }
-	else
-	  {
-	    int algo, smartcard=0;
-	    union pref_hint hint;
-
-            hint.digest_length = 0;
-
-	    /* Of course, if the recipient asks for something
-	       unreasonable (like the wrong hash for a DSA key) then
-	       don't do it.  Check all sk's - if any are DSA or live
-	       on a smartcard, then the hash has restrictions and we
-	       may not be able to give the recipient what they want.
-	       For DSA, pass a hint for the largest q we have.  Note
-	       that this means that a q>160 key will override a q=160
-	       key and force the use of truncation for the q=160 key.
-	       The alternative would be to ignore the recipient prefs
-	       completely and get a different hash for each DSA key in
-	       hash_for().  The override behavior here is more or less
-	       reasonable as it is under the control of the user which
-	       keys they sign with for a given message and the fact
-	       that the message with multiple signatures won't be
-	       usable on an implementation that doesn't understand
-	       DSA2 anyway. */
-
-	    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
-	      {
-		if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_DSA
-                    || sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
-		  {
-		    int temp_hashlen = (gcry_mpi_get_nbits
-                                        (sk_rover->pk->pkey[1]));
-
-		    if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
-		      temp_hashlen = ecdsa_qbits_from_Q (temp_hashlen);
-		    temp_hashlen = (temp_hashlen+7)/8;
-
-		    /* Pick a hash that is large enough for our
-		       largest q */
-
-		    if (hint.digest_length<temp_hashlen)
-		      hint.digest_length=temp_hashlen;
-		  }
-                /* FIXME: need to check gpg-agent for this. */
-		/* else if (sk_rover->pk->is_protected */
-                /*          && sk_rover->pk->protect.s2k.mode == 1002) */
-		/*   smartcard = 1;  */
-	      }
-
-	    /* Current smartcards only do 160-bit hashes.  If we have
-	       to have a >160-bit hash, then we can't use the
-	       recipient prefs as we'd need both =160 and >160 at the
-	       same time and recipient prefs currently require a
-	       single hash for all signatures.  All this may well have
-	       to change as the cards add algorithms. */
-
-	    if (!smartcard || (smartcard && hint.digest_length==20))
-	      if ( (algo=
-                   select_algo_from_prefs(pk_list,PREFTYPE_HASH,-1,&hint)) > 0)
-		recipient_digest_algo=algo;
-	  }
-      }
-
-    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
-      gcry_md_enable (mfx.md, hash_for (sk_rover->pk));
-
-    if( !multifile )
-	iobuf_push_filter( inp, md_filter, &mfx );
-
-    if( detached && !encryptflag)
-	afx->what = 2;
-
-    if( opt.armor && !outfile  )
-	push_armor_filter (afx, out);
-
-    if( encryptflag ) {
-	efx.pk_list = pk_list;
-	/* fixme: set efx.cfx.datalen if known */
-	iobuf_push_filter( out, encrypt_filter, &efx );
+  else if ((rc = open_outfile (-1, fname,
+                               opt.armor? 1 : detached? 2 : 0, 0, &out)))
+    {
+      goto leave;
     }
 
-    if (opt.compress_algo && !outfile && !detached)
-      {
-        int compr_algo=opt.compress_algo;
-
-	/* If not forced by user */
-	if(compr_algo==-1)
-	  {
-	    /* If we're not encrypting, then select_algo_from_prefs
-	       will fail and we'll end up with the default.  If we are
-	       encrypting, select_algo_from_prefs cannot fail since
-	       there is an assumed preference for uncompressed data.
-	       Still, if it did fail, we'll also end up with the
-	       default. */
-
-	    if((compr_algo=
-		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,-1,NULL))==-1)
-	      compr_algo=default_compress_algo();
-	  }
- 	else if(!opt.expert && pk_list
- 		&& select_algo_from_prefs(pk_list,PREFTYPE_ZIP,
-					  compr_algo,NULL)!=compr_algo)
- 	  log_info(_("WARNING: forcing compression algorithm %s (%d)"
- 		     " violates recipient preferences\n"),
- 		   compress_algo_to_string(compr_algo),compr_algo);
-
-	/* algo 0 means no compression */
-	if( compr_algo )
-	  push_compress_filter(out,&zfx,compr_algo);
-      }
-
-    /* Write the one-pass signature packets if needed */
-    if (!detached) {
-        rc = write_onepass_sig_packets (sk_list, out,
-                                        opt.textmode && !outfile ? 0x01:0x00);
-        if (rc)
-            goto leave;
+  /* Prepare to calculate the MD over the input.  */
+  if (opt.textmode && !outfile && !multifile)
+    {
+      memset (&tfx, 0, sizeof tfx);
+      iobuf_push_filter (inp, text_filter, &tfx);
     }
 
-    write_status_begin_signing (mfx.md);
+  if (gcry_md_open (&mfx.md, 0, 0))
+    BUG ();
+  if (DBG_HASHING)
+    gcry_md_debug (mfx.md, "sign");
 
-    /* Setup the inner packet. */
-    if( detached ) {
-	if( multifile ) {
-	    strlist_t sl;
+  /* If we're encrypting and signing, it is reasonable to pick the
+   * hash algorithm to use out of the recipient key prefs.  This is
+   * best effort only, as in a DSA2 and smartcard world there are
+   * cases where we cannot please everyone with a single hash (DSA2
+   * wants >160 and smartcards want =160).  In the future this could
+   * be more complex with different hashes for each sk, but the
+   * current design requires a single hash for all SKs. */
+  if (pk_list)
+    {
+      if (opt.def_digest_algo)
+        {
+          if (!opt.expert
+              && select_algo_from_prefs (pk_list,PREFTYPE_HASH,
+                                         opt.def_digest_algo,
+                                         NULL) != opt.def_digest_algo)
+            {
+              log_info (_("WARNING: forcing digest algorithm %s (%d)"
+                          " violates recipient preferences\n"),
+                        gcry_md_algo_name (opt.def_digest_algo),
+                        opt.def_digest_algo);
+            }
+        }
+      else
+        {
+          int algo;
+          int smartcard=0;
+          union pref_hint hint;
 
-	    if( opt.verbose )
-		log_info(_("signing:") );
-	    /* must walk reverse trough this list */
-	    for( sl = strlist_last(filenames); sl;
-			sl = strlist_prev( filenames, sl ) ) {
-                inp = iobuf_open(sl->d);
-                if (inp && is_secured_file (iobuf_get_fd (inp)))
-                  {
-                    iobuf_close (inp);
-                    inp = NULL;
-                    gpg_err_set_errno (EPERM);
-                  }
-		if( !inp )
-		  {
-                    rc = gpg_error_from_syserror ();
-		    log_error(_("can't open '%s': %s\n"),
-			      sl->d,strerror(errno));
-		    goto leave;
-		  }
-                handle_progress (pfx, inp, sl->d);
-		if( opt.verbose )
-                  log_printf (" '%s'", sl->d );
-		if(opt.textmode)
-		  {
-		    memset( &tfx, 0, sizeof tfx);
-		    iobuf_push_filter( inp, text_filter, &tfx );
-		  }
-		iobuf_push_filter( inp, md_filter, &mfx );
-		while( iobuf_get(inp) != -1 )
-		    ;
-		iobuf_close(inp); inp = NULL;
-	    }
-	    if( opt.verbose )
-              log_printf ("\n");
-	}
-	else {
-	    /* read, so that the filter can calculate the digest */
-	    while( iobuf_get(inp) != -1 )
-		;
-	}
+          hint.digest_length = 0;
+
+          /* Of course, if the recipient asks for something
+           * unreasonable (like the wrong hash for a DSA key) then
+           * don't do it.  Check all sk's - if any are DSA or live
+           * on a smartcard, then the hash has restrictions and we
+           * may not be able to give the recipient what they want.
+           * For DSA, pass a hint for the largest q we have.  Note
+           * that this means that a q>160 key will override a q=160
+           * key and force the use of truncation for the q=160 key.
+           * The alternative would be to ignore the recipient prefs
+           * completely and get a different hash for each DSA key in
+           * hash_for().  The override behavior here is more or less
+           * reasonable as it is under the control of the user which
+           * keys they sign with for a given message and the fact
+           * that the message with multiple signatures won't be
+           * usable on an implementation that doesn't understand
+           * DSA2 anyway. */
+          for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
+            {
+              if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_DSA
+                  || sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
+                {
+                  int temp_hashlen = gcry_mpi_get_nbits (sk_rover->pk->pkey[1]);
+
+                  if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
+                    temp_hashlen = ecdsa_qbits_from_Q (temp_hashlen);
+
+                  temp_hashlen = (temp_hashlen+7)/8;
+
+                  /* Pick a hash that is large enough for our largest Q */
+                  if (hint.digest_length < temp_hashlen)
+                    hint.digest_length = temp_hashlen;
+                }
+              /* FIXME: need to check gpg-agent for this. */
+              /* else if (sk_rover->pk->is_protected */
+              /*          && sk_rover->pk->protect.s2k.mode == 1002) */
+              /*   smartcard = 1;  */
+            }
+
+          /* Current smartcards only do 160-bit hashes.  If we have
+           * to have a >160-bit hash, then we can't use the
+           * recipient prefs as we'd need both =160 and >160 at the
+           * same time and recipient prefs currently require a
+           * single hash for all signatures.  All this may well have
+           * to change as the cards add algorithms. */
+          if ((!smartcard || (smartcard && hint.digest_length==20))
+              && ((algo = select_algo_from_prefs (pk_list, PREFTYPE_HASH,
+                                                  -1, &hint)) > 0))
+            {
+              recipient_digest_algo = algo;
+            }
+        }
     }
-    else {
-        rc = write_plaintext_packet (out, inp, fname,
-                                     opt.textmode && !outfile ?
-                                     (opt.mimemode? 'm':'t'):'b');
+
+  for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
+    gcry_md_enable (mfx.md, hash_for (sk_rover->pk));
+
+  if (!multifile)
+    iobuf_push_filter (inp, md_filter, &mfx);
+
+  if (detached && !encryptflag)
+    afx->what = 2;
+
+  if (opt.armor && !outfile)
+    push_armor_filter (afx, out);
+
+  if (encryptflag)
+    {
+      efx.pk_list = pk_list;
+      /* fixme: set efx.cfx.datalen if known */
+      iobuf_push_filter (out, encrypt_filter, &efx);
     }
 
-    /* catch errors from above */
-    if (rc)
-	goto leave;
+  if (opt.compress_algo && !outfile && !detached)
+    {
+      int compr_algo = opt.compress_algo;
 
-    /* write the signatures */
-    rc = write_signature_packets (ctrl, sk_list, out, mfx.md,
-                                  opt.textmode && !outfile? 0x01 : 0x00,
-				  0, duration, detached ? 'D':'S', NULL);
-    if( rc )
+      /* If not forced by user */
+      if (compr_algo==-1)
+        {
+          /* If we're not encrypting, then select_algo_from_prefs
+           * will fail and we'll end up with the default.  If we are
+           * encrypting, select_algo_from_prefs cannot fail since
+           * there is an assumed preference for uncompressed data.
+           * Still, if it did fail, we'll also end up with the
+           * default. */
+          if ((compr_algo = select_algo_from_prefs (pk_list, PREFTYPE_ZIP,
+                                                    -1, NULL)) == -1)
+            {
+              compr_algo = default_compress_algo();
+            }
+        }
+      else if (!opt.expert && pk_list
+               && select_algo_from_prefs (pk_list, PREFTYPE_ZIP,
+					  compr_algo, NULL) != compr_algo)
+        {
+          log_info (_("WARNING: forcing compression algorithm %s (%d)"
+                      " violates recipient preferences\n"),
+                    compress_algo_to_string (compr_algo), compr_algo);
+        }
+
+      /* Algo 0 means no compression. */
+      if (compr_algo)
+        push_compress_filter (out, &zfx, compr_algo);
+    }
+
+  /* Write the one-pass signature packets if needed */
+  if (!detached)
+    {
+      rc = write_onepass_sig_packets (sk_list, out,
+                                      opt.textmode && !outfile ? 0x01:0x00);
+      if (rc)
         goto leave;
-
-
-  leave:
-    if( rc )
-	iobuf_cancel(out);
-    else {
-	iobuf_close(out);
-        if (encryptflag)
-            write_status( STATUS_END_ENCRYPTION );
     }
-    iobuf_close(inp);
-    gcry_md_close ( mfx.md );
-    release_sk_list( sk_list );
-    release_pk_list( pk_list );
-    recipient_digest_algo=0;
-    release_progress_context (pfx);
-    release_armor_context (afx);
-    return rc;
+
+  write_status_begin_signing (mfx.md);
+
+  /* Setup the inner packet. */
+  if (detached)
+    {
+      if (multifile)
+        {
+          strlist_t sl;
+
+          if (opt.verbose)
+            log_info (_("signing:") );
+          /* Must walk reverse trough this list.  */
+          for (sl = strlist_last(filenames);
+               sl;
+               sl = strlist_prev( filenames, sl))
+            {
+              inp = iobuf_open (sl->d);
+              if (inp && is_secured_file (iobuf_get_fd (inp)))
+                {
+                  iobuf_close (inp);
+                  inp = NULL;
+                  gpg_err_set_errno (EPERM);
+                }
+              if (!inp)
+                {
+                  rc = gpg_error_from_syserror ();
+                  log_error (_("can't open '%s': %s\n"),
+                             sl->d, gpg_strerror (rc));
+                  goto leave;
+                }
+              handle_progress (pfx, inp, sl->d);
+              if (opt.verbose)
+                log_printf (" '%s'", sl->d );
+              if (opt.textmode)
+                {
+                  memset (&tfx, 0, sizeof tfx);
+                  iobuf_push_filter (inp, text_filter, &tfx);
+                }
+              iobuf_push_filter (inp, md_filter, &mfx);
+              while (iobuf_get (inp) != -1)
+                ;
+              iobuf_close (inp);
+              inp = NULL;
+	    }
+          if (opt.verbose)
+            log_printf ("\n");
+	}
+      else
+        {
+          /* Read, so that the filter can calculate the digest. */
+          while (iobuf_get(inp) != -1)
+            ;
+	}
+    }
+  else
+    {
+      rc = write_plaintext_packet (out, inp, fname,
+                                   (opt.textmode && !outfile) ?
+                                   (opt.mimemode? 'm' : 't') : 'b');
+    }
+
+  /* Catch errors from above. */
+  if (rc)
+    goto leave;
+
+  /* Write the signatures. */
+  rc = write_signature_packets (ctrl, sk_list, out, mfx.md,
+                                opt.textmode && !outfile? 0x01 : 0x00,
+                                0, duration, detached ? 'D':'S', NULL);
+  if (rc)
+    goto leave;
+
+
+ leave:
+  if (rc)
+    iobuf_cancel (out);
+  else
+    {
+      iobuf_close (out);
+      if (encryptflag)
+        write_status (STATUS_END_ENCRYPTION);
+    }
+  iobuf_close (inp);
+  gcry_md_close (mfx.md);
+  release_sk_list (sk_list);
+  release_pk_list (pk_list);
+  recipient_digest_algo = 0;
+  release_progress_context (pfx);
+  release_armor_context (afx);
+  return rc;
 }
 
 
-
-/****************
- * make a clear signature. note that opt.armor is not needed
+/*
+ * Make a clear signature.  Note that opt.armor is not needed.
  */
 int
 clearsign_file (ctrl_t ctrl,
-                const char *fname, strlist_t locusr, const char *outfile )
+                const char *fname, strlist_t locusr, const char *outfile)
 {
-    armor_filter_context_t *afx;
-    progress_filter_context_t *pfx;
-    gcry_md_hd_t textmd = NULL;
-    IOBUF inp = NULL, out = NULL;
-    PACKET pkt;
-    int rc = 0;
-    SK_LIST sk_list = NULL;
-    SK_LIST sk_rover = NULL;
-    u32 duration=0;
+  armor_filter_context_t *afx;
+  progress_filter_context_t *pfx;
+  gcry_md_hd_t textmd = NULL;
+  iobuf_t inp = NULL;
+  iobuf_t out = NULL;
+  PACKET pkt;
+  int rc = 0;
+  SK_LIST sk_list = NULL;
+  SK_LIST sk_rover = NULL;
+  u32 duration = 0;
 
-    pfx = new_progress_context ();
-    afx = new_armor_context ();
-    init_packet( &pkt );
+  pfx = new_progress_context ();
+  afx = new_armor_context ();
+  init_packet( &pkt );
 
-    if (opt.ask_sig_expire && !opt.batch)
-      duration = ask_expire_interval (1,opt.def_sig_expire);
-    else
-      duration = parse_expire_string (opt.def_sig_expire);
+  if (opt.ask_sig_expire && !opt.batch)
+    duration = ask_expire_interval (1, opt.def_sig_expire);
+  else
+    duration = parse_expire_string (opt.def_sig_expire);
 
-    /* Note: In the old non-agent version the following call used to
-       unprotect the secret key.  This is now done on demand by the agent.  */
-    if( (rc=build_sk_list (ctrl, locusr, &sk_list, PUBKEY_USAGE_SIG )) )
-	goto leave;
+  /* Note: In the old non-agent version the following call used to
+   * unprotect the secret key.  This is now done on demand by the agent.  */
+  if ((rc=build_sk_list (ctrl, locusr, &sk_list, PUBKEY_USAGE_SIG)))
+    goto leave;
 
-    /* prepare iobufs */
-    inp = iobuf_open(fname);
-    if (inp && is_secured_file (iobuf_get_fd (inp)))
-      {
-        iobuf_close (inp);
-        inp = NULL;
-        gpg_err_set_errno (EPERM);
-      }
-    if( !inp ) {
-        rc = gpg_error_from_syserror ();
-	log_error (_("can't open '%s': %s\n"),
-                   fname? fname: "[stdin]", strerror(errno) );
-	goto leave;
-    }
-    handle_progress (pfx, inp, fname);
-
-    if( outfile ) {
-        if (is_secured_filename (outfile) ) {
-            outfile = NULL;
-            gpg_err_set_errno (EPERM);
-        }
-        else
-          out = iobuf_create (outfile, 0);
-	if( !out )
-	  {
-            rc = gpg_error_from_syserror ();
-	    log_error(_("can't create '%s': %s\n"), outfile, strerror(errno) );
-	    goto leave;
-	  }
-	else if( opt.verbose )
-	    log_info(_("writing to '%s'\n"), outfile );
-    }
-    else if ((rc = open_outfile (-1, fname, 1, 0, &out)))
-	goto leave;
-
-    iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----" LF );
-
+  /* Prepare iobufs.  */
+  inp = iobuf_open (fname);
+  if (inp && is_secured_file (iobuf_get_fd (inp)))
     {
-	const char *s;
-	int any = 0;
-	byte hashs_seen[256];
+      iobuf_close (inp);
+      inp = NULL;
+      gpg_err_set_errno (EPERM);
+    }
+  if (!inp)
+    {
+      rc = gpg_error_from_syserror ();
+      log_error (_("can't open '%s': %s\n"),
+                 fname? fname: "[stdin]", gpg_strerror (rc));
+      goto leave;
+    }
+  handle_progress (pfx, inp, fname);
 
-	memset( hashs_seen, 0, sizeof hashs_seen );
-	iobuf_writestr(out, "Hash: " );
-	for( sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
-	    int i = hash_for (sk_rover->pk);
+  if (outfile)
+    {
+      if (is_secured_filename (outfile))
+        {
+          outfile = NULL;
+          gpg_err_set_errno (EPERM);
+        }
+      else
+        out = iobuf_create (outfile, 0);
 
-	    if( !hashs_seen[ i & 0xff ] ) {
-		s = gcry_md_algo_name ( i );
-		if( s ) {
-		    hashs_seen[ i & 0xff ] = 1;
-		    if( any )
-			iobuf_put(out, ',' );
-		    iobuf_writestr(out, s );
-		    any = 1;
-		}
-	    }
-	}
-	log_assert(any);
-	iobuf_writestr(out, LF );
+      if (!out)
+        {
+          rc = gpg_error_from_syserror ();
+          log_error (_("can't create '%s': %s\n"), outfile, gpg_strerror (rc));
+          goto leave;
+        }
+      else if (opt.verbose)
+        log_info (_("writing to '%s'\n"), outfile);
+
+    }
+  else if ((rc = open_outfile (-1, fname, 1, 0, &out)))
+    {
+      goto leave;
     }
 
-    if( opt.not_dash_escaped )
-      iobuf_writestr( out,
-                      "NotDashEscaped: You need "GPG_NAME
-                      " to verify this message" LF );
-    iobuf_writestr(out, LF );
+  iobuf_writestr (out, "-----BEGIN PGP SIGNED MESSAGE-----" LF);
 
-    if ( gcry_md_open (&textmd, 0, 0) )
-      BUG ();
+  {
+    const char *s;
+    int any = 0;
+    byte hashs_seen[256];
+
+    memset (hashs_seen, 0, sizeof hashs_seen);
+    iobuf_writestr (out, "Hash: " );
     for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
-      gcry_md_enable (textmd, hash_for(sk_rover->pk));
+      {
+        int i = hash_for (sk_rover->pk);
 
-    if ( DBG_HASHING )
-      gcry_md_debug ( textmd, "clearsign" );
+        if (!hashs_seen[ i & 0xff ])
+          {
+            s = gcry_md_algo_name (i);
+            if (s)
+              {
+                hashs_seen[ i & 0xff ] = 1;
+                if (any)
+                  iobuf_put (out, ',');
+                iobuf_writestr (out, s);
+                any = 1;
+              }
+          }
+      }
+    log_assert (any);
+    iobuf_writestr (out, LF);
+  }
 
-    copy_clearsig_text (out, inp, textmd, !opt.not_dash_escaped,
-                        opt.escape_from);
-    /* fixme: check for read errors */
+  if (opt.not_dash_escaped)
+    iobuf_writestr (out,
+                    "NotDashEscaped: You need "GPG_NAME
+                    " to verify this message" LF);
+  iobuf_writestr (out, LF );
 
-    /* now write the armor */
-    afx->what = 2;
-    push_armor_filter (afx, out);
+  if (gcry_md_open (&textmd, 0, 0))
+    BUG ();
+  for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
+    gcry_md_enable (textmd, hash_for(sk_rover->pk));
 
-    /* Write the signatures.  */
-    rc = write_signature_packets (ctrl, sk_list, out, textmd, 0x01, 0,
-                                  duration, 'C', NULL);
-    if( rc )
-        goto leave;
+  if (DBG_HASHING)
+    gcry_md_debug (textmd, "clearsign");
 
-  leave:
-    if( rc )
-	iobuf_cancel(out);
-    else
-	iobuf_close(out);
-    iobuf_close(inp);
-    gcry_md_close ( textmd );
-    release_sk_list( sk_list );
-    release_progress_context (pfx);
-    release_armor_context (afx);
-    return rc;
+  copy_clearsig_text (out, inp, textmd, !opt.not_dash_escaped, opt.escape_from);
+  /* fixme: check for read errors */
+
+  /* Now write the armor. */
+  afx->what = 2;
+  push_armor_filter (afx, out);
+
+  /* Write the signatures.  */
+  rc = write_signature_packets (ctrl, sk_list, out, textmd, 0x01, 0,
+                                duration, 'C', NULL);
+  if (rc)
+    goto leave;
+
+ leave:
+  if (rc)
+    iobuf_cancel (out);
+  else
+    iobuf_close (out);
+  iobuf_close (inp);
+  gcry_md_close (textmd);
+  release_sk_list (sk_list);
+  release_progress_context (pfx);
+  release_armor_context (afx);
+  return rc;
 }
+
 
 /*
  * Sign and conventionally encrypt the given file.
@@ -1269,175 +1307,179 @@ clearsign_file (ctrl_t ctrl,
 int
 sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
 {
-    armor_filter_context_t *afx;
-    progress_filter_context_t *pfx;
-    compress_filter_context_t zfx;
-    md_filter_context_t mfx;
-    text_filter_context_t tfx;
-    cipher_filter_context_t cfx;
-    IOBUF inp = NULL, out = NULL;
-    PACKET pkt;
-    STRING2KEY *s2k = NULL;
-    int rc = 0;
-    SK_LIST sk_list = NULL;
-    SK_LIST sk_rover = NULL;
-    int algo;
-    u32 duration=0;
-    int canceled;
+  armor_filter_context_t *afx;
+  progress_filter_context_t *pfx;
+  compress_filter_context_t zfx;
+  md_filter_context_t mfx;
+  text_filter_context_t tfx;
+  cipher_filter_context_t cfx;
+  iobuf_t inp = NULL;
+  iobuf_t out = NULL;
+  PACKET pkt;
+  STRING2KEY *s2k = NULL;
+  int rc = 0;
+  SK_LIST sk_list = NULL;
+  SK_LIST sk_rover = NULL;
+  int algo;
+  u32 duration = 0;
+  int canceled;
 
-    pfx = new_progress_context ();
-    afx = new_armor_context ();
-    memset( &zfx, 0, sizeof zfx);
-    memset( &mfx, 0, sizeof mfx);
-    memset( &tfx, 0, sizeof tfx);
-    memset( &cfx, 0, sizeof cfx);
-    init_packet( &pkt );
+  pfx = new_progress_context ();
+  afx = new_armor_context ();
+  memset (&zfx, 0, sizeof zfx);
+  memset (&mfx, 0, sizeof mfx);
+  memset (&tfx, 0, sizeof tfx);
+  memset (&cfx, 0, sizeof cfx);
+  init_packet (&pkt);
 
-    if (opt.ask_sig_expire && !opt.batch)
-      duration = ask_expire_interval (1, opt.def_sig_expire);
-    else
-      duration = parse_expire_string (opt.def_sig_expire);
+  if (opt.ask_sig_expire && !opt.batch)
+    duration = ask_expire_interval (1, opt.def_sig_expire);
+  else
+    duration = parse_expire_string (opt.def_sig_expire);
 
-    /* Note: In the old non-agent version the following call used to
-       unprotect the secret key.  This is now done on demand by the agent.  */
-    rc = build_sk_list (ctrl, locusr, &sk_list, PUBKEY_USAGE_SIG);
-    if (rc)
-	goto leave;
+  /* Note: In the old non-agent version the following call used to
+   * unprotect the secret key.  This is now done on demand by the agent.  */
+  rc = build_sk_list (ctrl, locusr, &sk_list, PUBKEY_USAGE_SIG);
+  if (rc)
+    goto leave;
 
-    /* prepare iobufs */
-    inp = iobuf_open(fname);
-    if (inp && is_secured_file (iobuf_get_fd (inp)))
-      {
-        iobuf_close (inp);
-        inp = NULL;
-        gpg_err_set_errno (EPERM);
-      }
-    if( !inp ) {
-        rc = gpg_error_from_syserror ();
-	log_error (_("can't open '%s': %s\n"),
-                   fname? fname: "[stdin]", strerror(errno) );
-	goto leave;
-    }
-    handle_progress (pfx, inp, fname);
-
-    /* prepare key */
-    s2k = xmalloc_clear( sizeof *s2k );
-    s2k->mode = opt.s2k_mode;
-    s2k->hash_algo = S2K_DIGEST_ALGO;
-
-    algo = default_cipher_algo();
-    cfx.dek = passphrase_to_dek (algo, s2k, 1, 1, NULL, &canceled);
-
-    if (!cfx.dek || !cfx.dek->keylen) {
-        rc = gpg_error (canceled?GPG_ERR_CANCELED:GPG_ERR_BAD_PASSPHRASE);
-        log_error(_("error creating passphrase: %s\n"), gpg_strerror (rc) );
-        goto leave;
-    }
-
-    cfx.dek->use_aead = use_aead (NULL, cfx.dek->algo);
-    if (!cfx.dek->use_aead)
-      cfx.dek->use_mdc = !!use_mdc (NULL, cfx.dek->algo);
-
-    if (!opt.quiet || !opt.batch)
-        log_info (_("%s.%s encryption will be used\n"),
-                  openpgp_cipher_algo_name (algo),
-                  cfx.dek->use_aead? openpgp_aead_algo_name (cfx.dek->use_aead)
-                  /**/             : "CFB");
-
-    /* now create the outfile */
-    rc = open_outfile (-1, fname, opt.armor? 1:0, 0, &out);
-    if (rc)
-	goto leave;
-
-    /* prepare to calculate the MD over the input */
-    if (opt.textmode)
-	iobuf_push_filter (inp, text_filter, &tfx);
-    if ( gcry_md_open (&mfx.md, 0, 0) )
-      BUG ();
-    if ( DBG_HASHING )
-      gcry_md_debug (mfx.md, "symc-sign");
-
-    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
-      gcry_md_enable (mfx.md, hash_for (sk_rover->pk));
-
-    iobuf_push_filter (inp, md_filter, &mfx);
-
-    /* Push armor output filter */
-    if (opt.armor)
-	push_armor_filter (afx, out);
-
-    /* Write the symmetric key packet */
-    /*(current filters: armor)*/
+  /* Prepare iobufs.  */
+  inp = iobuf_open (fname);
+  if (inp && is_secured_file (iobuf_get_fd (inp)))
     {
-	PKT_symkey_enc *enc = xmalloc_clear( sizeof *enc );
-	enc->version = 4;
-	enc->cipher_algo = cfx.dek->algo;
-	enc->s2k = *s2k;
-	pkt.pkttype = PKT_SYMKEY_ENC;
-	pkt.pkt.symkey_enc = enc;
-	if( (rc = build_packet( out, &pkt )) )
-	    log_error("build symkey packet failed: %s\n", gpg_strerror (rc) );
-	xfree(enc);
+      iobuf_close (inp);
+      inp = NULL;
+      gpg_err_set_errno (EPERM);
     }
-
-    /* Push the encryption filter */
-    iobuf_push_filter (out,
-                       cfx.dek->use_aead? cipher_filter_aead
-                       /**/             : cipher_filter_cfb,
-                       &cfx);
-
-    /* Push the compress filter */
-    if (default_compress_algo())
-      {
-        if (cfx.dek && (cfx.dek->use_mdc || cfx.dek->use_aead))
-          zfx.new_ctb = 1;
-        push_compress_filter (out, &zfx,default_compress_algo() );
-      }
-
-    /* Write the one-pass signature packets */
-    /*(current filters: zip - encrypt - armor)*/
-    rc = write_onepass_sig_packets (sk_list, out,
-                                    opt.textmode? 0x01:0x00);
-    if (rc)
+  if (!inp)
+    {
+      rc = gpg_error_from_syserror ();
+      log_error (_("can't open '%s': %s\n"),
+                 fname? fname: "[stdin]", gpg_strerror (rc));
       goto leave;
-
-    write_status_begin_signing (mfx.md);
-
-    /* Pipe data through all filters; i.e. write the signed stuff */
-    /*(current filters: zip - encrypt - armor)*/
-    rc = write_plaintext_packet (out, inp, fname,
-                                 opt.textmode ? (opt.mimemode?'m':'t'):'b');
-    if (rc)
-	goto leave;
-
-    /* Write the signatures */
-    /*(current filters: zip - encrypt - armor)*/
-    rc = write_signature_packets (ctrl, sk_list, out, mfx.md,
-				  opt.textmode? 0x01 : 0x00,
-				  0, duration, 'S', NULL);
-    if( rc )
-        goto leave;
-
-
-  leave:
-    if( rc )
-	iobuf_cancel(out);
-    else {
-	iobuf_close(out);
-        write_status( STATUS_END_ENCRYPTION );
     }
-    iobuf_close(inp);
-    release_sk_list( sk_list );
-    gcry_md_close( mfx.md );
-    xfree(cfx.dek);
-    xfree(s2k);
-    release_progress_context (pfx);
-    release_armor_context (afx);
-    return rc;
+  handle_progress (pfx, inp, fname);
+
+  /* Prepare key.  */
+  s2k = xmalloc_clear (sizeof *s2k);
+  s2k->mode = opt.s2k_mode;
+  s2k->hash_algo = S2K_DIGEST_ALGO;
+
+  algo = default_cipher_algo ();
+  cfx.dek = passphrase_to_dek (algo, s2k, 1, 1, NULL, &canceled);
+
+  if (!cfx.dek || !cfx.dek->keylen)
+    {
+      rc = gpg_error (canceled?GPG_ERR_CANCELED:GPG_ERR_BAD_PASSPHRASE);
+      log_error (_("error creating passphrase: %s\n"), gpg_strerror (rc));
+      goto leave;
+    }
+
+  cfx.dek->use_aead = use_aead (NULL, cfx.dek->algo);
+  if (!cfx.dek->use_aead)
+    cfx.dek->use_mdc = !!use_mdc (NULL, cfx.dek->algo);
+
+  if (!opt.quiet || !opt.batch)
+    log_info (_("%s.%s encryption will be used\n"),
+              openpgp_cipher_algo_name (algo),
+              cfx.dek->use_aead? openpgp_aead_algo_name (cfx.dek->use_aead)
+              /**/             : "CFB");
+
+  /* Now create the outfile.  */
+  rc = open_outfile (-1, fname, opt.armor? 1:0, 0, &out);
+  if (rc)
+    goto leave;
+
+  /* Prepare to calculate the MD over the input.  */
+  if (opt.textmode)
+    iobuf_push_filter (inp, text_filter, &tfx);
+  if (gcry_md_open (&mfx.md, 0, 0))
+    BUG ();
+  if  (DBG_HASHING)
+    gcry_md_debug (mfx.md, "symc-sign");
+
+  for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
+    gcry_md_enable (mfx.md, hash_for (sk_rover->pk));
+
+  iobuf_push_filter (inp, md_filter, &mfx);
+
+  /* Push armor output filter */
+  if (opt.armor)
+    push_armor_filter (afx, out);
+
+  /* Write the symmetric key packet */
+  /* (current filters: armor)*/
+  {
+    PKT_symkey_enc *enc = xmalloc_clear( sizeof *enc );
+
+    enc->version = 4;
+    enc->cipher_algo = cfx.dek->algo;
+    enc->s2k = *s2k;
+    pkt.pkttype = PKT_SYMKEY_ENC;
+    pkt.pkt.symkey_enc = enc;
+    if ((rc = build_packet (out, &pkt)))
+      log_error ("build symkey packet failed: %s\n", gpg_strerror (rc));
+    xfree (enc);
+  }
+
+  /* Push the encryption filter */
+  iobuf_push_filter (out,
+                     cfx.dek->use_aead? cipher_filter_aead
+                     /**/             : cipher_filter_cfb,
+                     &cfx);
+
+  /* Push the compress filter */
+  if (default_compress_algo())
+    {
+      if (cfx.dek && (cfx.dek->use_mdc || cfx.dek->use_aead))
+        zfx.new_ctb = 1;
+      push_compress_filter (out, &zfx,default_compress_algo() );
+    }
+
+  /* Write the one-pass signature packets */
+  /* (current filters: zip - encrypt - armor) */
+  rc = write_onepass_sig_packets (sk_list, out, opt.textmode? 0x01:0x00);
+  if (rc)
+    goto leave;
+
+  write_status_begin_signing (mfx.md);
+
+  /* Pipe data through all filters; i.e. write the signed stuff.  */
+  /* (current filters: zip - encrypt - armor) */
+  rc = write_plaintext_packet (out, inp, fname,
+                               opt.textmode ? (opt.mimemode?'m':'t'):'b');
+  if (rc)
+    goto leave;
+
+  /* Write the signatures.  */
+  /* (current filters: zip - encrypt - armor) */
+  rc = write_signature_packets (ctrl, sk_list, out, mfx.md,
+                                opt.textmode? 0x01 : 0x00,
+                                0, duration, 'S', NULL);
+  if (rc)
+    goto leave;
+
+
+ leave:
+  if (rc)
+    iobuf_cancel (out);
+  else
+    {
+      iobuf_close (out);
+      write_status (STATUS_END_ENCRYPTION);
+    }
+  iobuf_close (inp);
+  release_sk_list (sk_list);
+  gcry_md_close (mfx.md);
+  xfree (cfx.dek);
+  xfree (s2k);
+  release_progress_context (pfx);
+  release_armor_context (afx);
+  return rc;
 }
 
 
-/****************
+/*
  * Create a v4 signature in *RET_SIG.
  *
  * PK is the primary key to sign (required for all sigs)
@@ -1472,105 +1514,101 @@ make_keysig_packet (ctrl_t ctrl,
 		    int (*mksubpkt)(PKT_signature *, void *), void *opaque,
                     const char *cache_nonce)
 {
-    PKT_signature *sig;
-    int rc=0;
-    int sigversion;
-    gcry_md_hd_t md;
+  PKT_signature *sig;
+  int rc = 0;
+  int sigversion;
+  gcry_md_hd_t md;
 
-    log_assert ((sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x1F
-                || sigclass == 0x20 || sigclass == 0x18 || sigclass == 0x19
-                || sigclass == 0x30 || sigclass == 0x28 );
+  log_assert ((sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x1F
+              || sigclass == 0x20 || sigclass == 0x18 || sigclass == 0x19
+              || sigclass == 0x30 || sigclass == 0x28 );
 
-    sigversion = 4;
-    if (sigversion < pksk->version)
-        sigversion = pksk->version;
+  sigversion = 4;
+  if (sigversion < pksk->version)
+    sigversion = pksk->version;
 
-    if( !digest_algo )
-      {
-	/* Basically, this means use SHA1 always unless the user
-	   specified something (use whatever they said), or it's DSA
-	   (use the best match).  They still can't pick an
-	   inappropriate hash for DSA or the signature will fail.
-	   Note that this still allows the caller of
-	   make_keysig_packet to override the user setting if it
-	   must. */
+  if (!digest_algo)
+    {
+      /* Basically, this means use SHA1 always unless the user
+       * specified something (use whatever they said), or it's DSA
+       * (use the best match).  They still can't pick an inappropriate
+       * hash for DSA or the signature will fail.  Note that this
+       * still allows the caller of make_keysig_packet to override the
+       * user setting if it must. */
 
-	if(opt.cert_digest_algo)
-	  digest_algo=opt.cert_digest_algo;
-	else if(pksk->pubkey_algo == PUBKEY_ALGO_DSA)
-	  digest_algo = match_dsa_hash (gcry_mpi_get_nbits (pksk->pkey[1])/8);
-        else if (pksk->pubkey_algo == PUBKEY_ALGO_ECDSA
-                 || pksk->pubkey_algo == PUBKEY_ALGO_EDDSA)
-          {
-            if (openpgp_oid_is_ed25519 (pksk->pkey[0]))
-              digest_algo = DIGEST_ALGO_SHA256;
-            else
-              digest_algo = match_dsa_hash
-                (ecdsa_qbits_from_Q (gcry_mpi_get_nbits (pksk->pkey[1]))/8);
-          }
-	else
-	  digest_algo = DEFAULT_DIGEST_ALGO;
-      }
-
-    if ( gcry_md_open (&md, digest_algo, 0 ) )
-      BUG ();
-
-    /* Hash the public key certificate. */
-    hash_public_key( md, pk );
-
-    if( sigclass == 0x18 || sigclass == 0x19 || sigclass == 0x28 )
-      {
-	/* hash the subkey binding/backsig/revocation */
-	hash_public_key( md, subpk );
-      }
-    else if( sigclass != 0x1F && sigclass != 0x20 )
-      {
-	/* hash the user id */
-        hash_uid (md, sigversion, uid);
-      }
-    /* and make the signature packet */
-    sig = xmalloc_clear( sizeof *sig );
-    sig->version = sigversion;
-    sig->flags.exportable=1;
-    sig->flags.revocable=1;
-    keyid_from_pk (pksk, sig->keyid);
-    sig->pubkey_algo = pksk->pubkey_algo;
-    sig->digest_algo = digest_algo;
-    if(timestamp)
-      sig->timestamp=timestamp;
-    else
-      sig->timestamp=make_timestamp();
-    if(duration)
-      sig->expiredate=sig->timestamp+duration;
-    sig->sig_class = sigclass;
-
-    build_sig_subpkt_from_sig (sig, pksk);
-    mk_notation_policy_etc (sig, pk, pksk);
-
-    /* Crucial that the call to mksubpkt comes LAST before the calls
-       to finalize the sig as that makes it possible for the mksubpkt
-       function to get a reliable pointer to the subpacket area. */
-    if (mksubpkt)
-	rc = (*mksubpkt)( sig, opaque );
-
-    if( !rc ) {
-        hash_sigversion_to_magic (md, sig);
-	gcry_md_final (md);
-
-	rc = complete_sig (ctrl, sig, pksk, md, cache_nonce);
+      if (opt.cert_digest_algo)
+        digest_algo = opt.cert_digest_algo;
+      else if (pksk->pubkey_algo == PUBKEY_ALGO_DSA)
+        digest_algo = match_dsa_hash (gcry_mpi_get_nbits (pksk->pkey[1])/8);
+      else if (pksk->pubkey_algo == PUBKEY_ALGO_ECDSA
+               || pksk->pubkey_algo == PUBKEY_ALGO_EDDSA)
+        {
+          if (openpgp_oid_is_ed25519 (pksk->pkey[0]))
+            digest_algo = DIGEST_ALGO_SHA256;
+          else
+            digest_algo = match_dsa_hash
+              (ecdsa_qbits_from_Q (gcry_mpi_get_nbits (pksk->pkey[1]))/8);
+        }
+      else
+        digest_algo = DEFAULT_DIGEST_ALGO;
     }
 
-    gcry_md_close (md);
-    if( rc )
-	free_seckey_enc( sig );
-    else
-	*ret_sig = sig;
-    return rc;
+  if (gcry_md_open (&md, digest_algo, 0))
+    BUG ();
+
+  /* Hash the public key certificate. */
+  hash_public_key (md, pk);
+
+  if (sigclass == 0x18 || sigclass == 0x19 || sigclass == 0x28)
+    {
+      /* Hash the subkey binding/backsig/revocation.  */
+      hash_public_key (md, subpk);
+    }
+  else if (sigclass != 0x1F && sigclass != 0x20)
+    {
+      /* Hash the user id. */
+      hash_uid (md, sigversion, uid);
+    }
+  /* Make the signature packet.  */
+  sig = xmalloc_clear (sizeof *sig);
+  sig->version = sigversion;
+  sig->flags.exportable = 1;
+  sig->flags.revocable = 1;
+  keyid_from_pk (pksk, sig->keyid);
+  sig->pubkey_algo = pksk->pubkey_algo;
+  sig->digest_algo = digest_algo;
+  sig->timestamp = timestamp? timestamp : make_timestamp ();
+  if (duration)
+    sig->expiredate = sig->timestamp + duration;
+  sig->sig_class = sigclass;
+
+  build_sig_subpkt_from_sig (sig, pksk);
+  mk_notation_policy_etc (sig, pk, pksk);
+
+  /* Crucial that the call to mksubpkt comes LAST before the calls
+   * to finalize the sig as that makes it possible for the mksubpkt
+   * function to get a reliable pointer to the subpacket area. */
+  if (mksubpkt)
+    rc = (*mksubpkt)(sig, opaque);
+
+  if (!rc)
+    {
+      hash_sigversion_to_magic (md, sig);
+      gcry_md_final (md);
+      rc = complete_sig (ctrl, sig, pksk, md, cache_nonce);
+    }
+
+  gcry_md_close (md);
+  if (rc)
+    free_seckey_enc (sig);
+  else
+    *ret_sig = sig;
+  return rc;
 }
 
 
 
-/****************
+/*
  * Create a new signature packet based on an existing one.
  * Only user ID signatures are supported for now.
  * PK is the public key to work on.
@@ -1589,82 +1627,82 @@ update_keysig_packet (ctrl_t ctrl,
                       int (*mksubpkt)(PKT_signature *, void *),
                       void *opaque)
 {
-    PKT_signature *sig;
-    gpg_error_t rc = 0;
-    int digest_algo;
-    gcry_md_hd_t md;
+  PKT_signature *sig;
+  gpg_error_t rc = 0;
+  int digest_algo;
+  gcry_md_hd_t md;
 
-    if ((!orig_sig || !pk || !pksk)
-	|| (orig_sig->sig_class >= 0x10 && orig_sig->sig_class <= 0x13 && !uid)
-	|| (orig_sig->sig_class == 0x18 && !subpk))
-      return GPG_ERR_GENERAL;
+  if ((!orig_sig || !pk || !pksk)
+      || (orig_sig->sig_class >= 0x10 && orig_sig->sig_class <= 0x13 && !uid)
+      || (orig_sig->sig_class == 0x18 && !subpk))
+    return GPG_ERR_GENERAL;
 
-    if ( opt.cert_digest_algo )
-      digest_algo = opt.cert_digest_algo;
-    else
-      digest_algo = orig_sig->digest_algo;
+  if  (opt.cert_digest_algo)
+    digest_algo = opt.cert_digest_algo;
+  else
+    digest_algo = orig_sig->digest_algo;
 
-    if ( gcry_md_open (&md, digest_algo, 0 ) )
-      BUG ();
+  if (gcry_md_open (&md, digest_algo, 0))
+    BUG ();
 
-    /* Hash the public key certificate and the user id. */
-    hash_public_key( md, pk );
+  /* Hash the public key certificate and the user id. */
+  hash_public_key (md, pk);
 
-    if( orig_sig->sig_class == 0x18 )
-      hash_public_key( md, subpk );
-    else
-      hash_uid (md, orig_sig->version, uid);
+  if (orig_sig->sig_class == 0x18)
+    hash_public_key (md, subpk);
+  else
+    hash_uid (md, orig_sig->version, uid);
 
-    /* create a new signature packet */
-    sig = copy_signature (NULL, orig_sig);
+  /* Create a new signature packet.  */
+  sig = copy_signature (NULL, orig_sig);
 
-    sig->digest_algo=digest_algo;
+  sig->digest_algo = digest_algo;
 
-    /* We need to create a new timestamp so that new sig expiration
-       calculations are done correctly... */
-    sig->timestamp=make_timestamp();
+  /* We need to create a new timestamp so that new sig expiration
+   * calculations are done correctly... */
+  sig->timestamp = make_timestamp();
 
-    /* ... but we won't make a timestamp earlier than the existing
-       one. */
+  /* ... but we won't make a timestamp earlier than the existing
+   * one. */
+  {
+    int tmout = 0;
+    while (sig->timestamp <= orig_sig->timestamp)
+      {
+        if (++tmout > 5 && !opt.ignore_time_conflict)
+          {
+            rc = gpg_error (GPG_ERR_TIME_CONFLICT);
+            goto leave;
+          }
+        gnupg_sleep (1);
+        sig->timestamp = make_timestamp();
+      }
+  }
+
+  /* Note that already expired sigs will remain expired (with a
+   * duration of 1) since build-packet.c:build_sig_subpkt_from_sig
+   * detects this case. */
+
+  /* Put the updated timestamp into the sig.  Note that this will
+   * automagically lower any sig expiration dates to correctly
+   * correspond to the differences in the timestamps (i.e. the
+   * duration will shrink).  */
+  build_sig_subpkt_from_sig (sig, pksk);
+
+  if (mksubpkt)
+    rc = (*mksubpkt)(sig, opaque);
+
+  if (!rc)
     {
-      int tmout = 0;
-      while(sig->timestamp<=orig_sig->timestamp)
-        {
-          if (++tmout > 5 && !opt.ignore_time_conflict)
-            {
-              rc = gpg_error (GPG_ERR_TIME_CONFLICT);
-              goto leave;
-            }
-          gnupg_sleep (1);
-          sig->timestamp=make_timestamp();
-        }
-    }
-
-    /* Note that already expired sigs will remain expired (with a
-       duration of 1) since build-packet.c:build_sig_subpkt_from_sig
-       detects this case. */
-
-    /* Put the updated timestamp into the sig.  Note that this will
-       automagically lower any sig expiration dates to correctly
-       correspond to the differences in the timestamps (i.e. the
-       duration will shrink).  */
-    build_sig_subpkt_from_sig (sig, pksk);
-
-    if (mksubpkt)
-      rc = (*mksubpkt)(sig, opaque);
-
-    if (!rc) {
-        hash_sigversion_to_magic (md, sig);
-	gcry_md_final (md);
-
-	rc = complete_sig (ctrl, sig, pksk, md, NULL);
+      hash_sigversion_to_magic (md, sig);
+      gcry_md_final (md);
+      rc = complete_sig (ctrl, sig, pksk, md, NULL);
     }
 
  leave:
-    gcry_md_close (md);
-    if( rc )
-	free_seckey_enc (sig);
-    else
-	*ret_sig = sig;
-    return rc;
+  gcry_md_close (md);
+  if (rc)
+    free_seckey_enc (sig);
+  else
+    *ret_sig = sig;
+  return rc;
 }
